@@ -2,6 +2,7 @@
 #include <ace/Service_Config.h>
 #include <ace/Reactor.h>
 
+#include "GadgetServerAcceptor.h"
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 {
@@ -13,6 +14,12 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
   ACE_DEBUG(( LM_DEBUG, ACE_TEXT("%IConfiguring services\n") ));
 
   //ACE_Service_Config::open(argc, argv);
+
+  ACE_INET_Addr port_to_listen ("9002");
+  GadgetServerAcceptor acceptor;
+  acceptor.reactor (ACE_Reactor::instance ());
+  if (acceptor.open (port_to_listen) == -1)
+    return 1;
 
   ACE_Reactor::instance()->run_reactor_event_loop ();
 
