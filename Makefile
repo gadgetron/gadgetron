@@ -8,7 +8,7 @@ ifeq ($(UNAME), Darwin)
 DLLEXTENSION=dylib
 endif
 
-EXESOURCES=main.cpp GadgetStreamController.cpp GadgetServerAcceptor.cpp
+EXESOURCES=main.cpp GadgetStreamController.cpp GadgetServerAcceptor.cpp GadgetStreamConfigurator.cpp GadgetStreamConfiguratorFactory.cpp DefaultConfigurator.cpp
 LIBSOURCES=
 
 EXEOBJECTS=$(EXESOURCES:.cpp=.o)

@@ -6,6 +6,8 @@
 #include "ace/SOCK_Stream.h"
 #include "ace/Stream.h"
 
+#include "GadgetStreamConfigurator.h"
+
 class GadgetStreamController : public ACE_Event_Handler
 {
 public:
@@ -22,6 +24,8 @@ public:
   virtual int handle_output (ACE_HANDLE fd = ACE_INVALID_HANDLE);
   virtual int handle_close (ACE_HANDLE handle,
                             ACE_Reactor_Mask close_mask);
+
+  virtual int read_configuration();
 
 protected:
   ACE_SOCK_Stream sock_;
