@@ -51,17 +51,51 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   
   ACE_DEBUG(( LM_INFO, ACE_TEXT("Gadgetron Data Sender\n") ));
   
+  //We need some data to work with
+  SiemensRawData sd;
+  sd.ReadRawFile(filename);
+
+  SiemensBaseParameters bp = sd.GetBaseParameters();
+
+  GadgetMessageAcquisition acq_head_base;
+  memset(&acq_head_base, 0, sizeof(GadgetMessageAcquisition) ); 
+
+  acq_head_base.min_idx.line = sd.GetMinValues()->sLC.ushLine;
+  acq_head_base.min_idx.acquisition = sd.GetMinValues()->sLC.ushAcquisition;
+  acq_head_base.min_idx.slice = sd.GetMinValues()->sLC.ushSlice;
+  acq_head_base.min_idx.partition = sd.GetMinValues()->sLC.ushPartition;
+  acq_head_base.min_idx.echo = sd.GetMinValues()->sLC.ushEcho;
+  acq_head_base.min_idx.phase = sd.GetMinValues()->sLC.ushPhase;
+  acq_head_base.min_idx.repetition = sd.GetMinValues()->sLC.ushRepetition;
+  acq_head_base.min_idx.set = sd.GetMinValues()->sLC.ushSet;
+  acq_head_base.min_idx.segment = sd.GetMinValues()->sLC.ushSeg;
+  acq_head_base.min_idx.channel = sd.GetMinValues()->ushChannelId;
+
+  acq_head_base.max_idx.line = sd.GetMaxValues()->sLC.ushLine;
+  acq_head_base.max_idx.acquisition = sd.GetMaxValues()->sLC.ushAcquisition;
+  acq_head_base.max_idx.slice = sd.GetMaxValues()->sLC.ushSlice;
+  acq_head_base.max_idx.partition = sd.GetMaxValues()->sLC.ushPartition;
+  acq_head_base.max_idx.echo = sd.GetMaxValues()->sLC.ushEcho;
+  acq_head_base.max_idx.phase = sd.GetMaxValues()->sLC.ushPhase;
+  acq_head_base.max_idx.repetition = sd.GetMaxValues()->sLC.ushRepetition;
+  acq_head_base.max_idx.set = sd.GetMaxValues()->sLC.ushSet;
+  acq_head_base.max_idx.segment = sd.GetMaxValues()->sLC.ushSeg;
+  acq_head_base.max_idx.channel = sd.GetMaxValues()->ushChannelId;
+
   GadgetMessageIdentifier id;
   GadgetMessageConfigurator conf;
 
   id.id = GADGET_MESSAGE_CONFIGURATION;
   ACE_OS_String::strncpy(conf.configurator_lib,config_lib,1024);
   ACE_OS_String::strncpy(conf.configurator_name,config_name,1024);
-  conf.configuration_length = 1024;
 
-  //Let's declare an empty config file for now.
+  //Let's declare an empty config file for now. 
+  //We need to add necesarry config info from file when ConfigParser is ready
+  conf.configuration_length = 1024;
   char configuration_file[1024];
   ACE_OS::memset(configuration_file,0,1024);
+
+  
 
   ACE_DEBUG(( LM_INFO, ACE_TEXT("Sending configuration %s@%s \n"), conf.configurator_name, conf.configurator_lib ));
   
@@ -71,13 +105,50 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   
   if (connector.connect(peer,server) == -1) {
     ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("connect")), 100);
-  } else {
+  } 
+
+  peer.send_n(&id, sizeof(GadgetMessageIdentifier));
+  peer.send_n(&conf, sizeof(GadgetMessageConfigurator));
+  peer.send_n(configuration_file, conf.configuration_length);
+  
+  //Now loop through the data and send it all to the Gadgetron
+  SiemensMdhNode* next = sd.GetFirstNode();
+  while (next) {
+    GadgetMessageAcquisition acq_head = acq_head_base;
+
+    acq_head.idx.line                 = next->mdh.sLC.ushLine;
+    acq_head.idx.acquisition          = next->mdh.sLC.ushAcquisition;
+    acq_head.idx.slice                = next->mdh.sLC.ushSlice;
+    acq_head.idx.partition            = next->mdh.sLC.ushPartition;
+    acq_head.idx.echo                 = next->mdh.sLC.ushEcho;
+    acq_head.idx.phase                = next->mdh.sLC.ushPhase;
+    acq_head.idx.repetition           = next->mdh.sLC.ushRepetition;
+    acq_head.idx.set                  = next->mdh.sLC.ushSet;
+    acq_head.idx.segment              = next->mdh.sLC.ushSeg;
+    acq_head.idx.channel              = next->mdh.ushChannelId;
+    //acq_head_base.flags;
+    acq_head.meas_uid                 = next->mdh.lMeasUID;
+    acq_head.scan_counter             = next->mdh.ulScanCounter;
+    acq_head.time_stamp               = next->mdh.ulTimeStamp;
+    acq_head.samples                  = next->mdh.ushSamplesInScan;
+    acq_head.channels                 = next->mdh.ushUsedChannels;
+    acq_head.position[0]              = next->mdh.sSD.sSlicePosVec.flSag;
+    acq_head.position[1]              = next->mdh.sSD.sSlicePosVec.flCor;
+    acq_head.position[2]              = next->mdh.sSD.sSlicePosVec.flTra;
+
+    memcpy(acq_head_base.quarternion, next->mdh.sSliceData.aflQuaternion,sizeof(float)*4);   
+    
+    id.id = GADGET_MESSAGE_ACQUISITION;
+
     peer.send_n(&id, sizeof(GadgetMessageIdentifier));
-    peer.send_n(&conf, sizeof(GadgetMessageConfigurator));
-    peer.send_n(configuration_file, conf.configuration_length);
-    peer.close();
+    peer.send_n(&acq_head, sizeof(GadgetMessageAcquisition));
+    peer.send_n(next->data,sizeof(float)*acq_head.samples*2 );
+
+    next = (SiemensMdhNode*)next->next;
   }
-  
-  
+
+
+  peer.close();
+   
   return 0;
 }

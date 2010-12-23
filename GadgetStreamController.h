@@ -25,13 +25,14 @@ public:
   virtual int handle_close (ACE_HANDLE handle,
                             ACE_Reactor_Mask close_mask);
 
-  virtual int read_configuration();
 
 protected:
   ACE_SOCK_Stream sock_;
   ACE_Stream<ACE_MT_SYNCH> stream_;
   bool stream_configured_;
-  
+
+  virtual int read_configuration();
+  virtual int read_acquisition();
 };
 
 #endif //GADGETSTREAMCONTROLLER_H

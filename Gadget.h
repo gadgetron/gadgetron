@@ -5,7 +5,7 @@
 #include <ace/Stream.h>
 #include <ace/Module.h>
 
-#include "GadgetContainerMessage.hpp"
+#include "GadgetContainerMessage.h"
 
 class Gadget : public ACE_Task<ACE_MT_SYNCH>
 {
@@ -164,7 +164,7 @@ protected:
 };
 
 
-class GADGETS_Export EndGadget : public Gadget
+class EndGadget : public Gadget
 {
 protected:
   virtual int process(ACE_Message_Block *m)
@@ -187,7 +187,7 @@ protected:
 
 };
 
-template <class P1> GADGETS_Export class Gadget1 : public Gadget
+template <class P1> class Gadget1 : public Gadget
 {
   
 protected:
@@ -210,7 +210,7 @@ protected:
 
 };
 
-template <class P1, class P2> GADGETS_Export class Gadget2 : public Gadget
+template <class P1, class P2> class Gadget2 : public Gadget
 {
   
 protected:

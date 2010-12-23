@@ -54,7 +54,6 @@ struct GadgetMessageAcquisition
   LoopCounters   idx;
   LoopCounters   min_idx;
   LoopCounters   max_idx;
-  LoopCounters   center_idx;
 };
 
 struct GadgetMessageImage

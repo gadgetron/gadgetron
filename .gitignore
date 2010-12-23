@@ -3,3 +3,5 @@
 *.dll
 *.o
 *#
+gadgetron
+gadgetdatasender/gadgetrondatasender
