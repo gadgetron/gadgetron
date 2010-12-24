@@ -2,14 +2,14 @@
 
 UNAME := $(shell uname)
 
-EXESOURCES=main.cpp siemensraw.cpp
+EXESOURCES=main.cpp siemensraw.cpp ../gadgettools/ConfigParser.cpp
 LIBSOURCES=
 
 EXEOBJECTS=$(EXESOURCES:.cpp=.o)
 
 CXX=g++
 EXELDFLAGS= -lACE 
-CXXFLAGS=-c -Wall -I. #-DACE_NTRACE=0
+CXXFLAGS=-c -Wall -I. -I../gadgettools #-DACE_NTRACE=0
 
 EXECUTABLE=gadgetrondatasender
 
