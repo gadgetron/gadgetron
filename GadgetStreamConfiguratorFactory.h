@@ -7,7 +7,7 @@ class GadgetStreamConfiguratorFactory
 {
  public:
   static GadgetStreamConfigurator* 
-    CreateConfigurator(GadgetMessageConfigurator c, char* config);
+    CreateConfigurator(GadgetMessageConfigurator c, char* config, GadgetStreamController* controller);
 };
 
 #endif //GADGETSTREAMCONFIGURATORFACTOR_H

@@ -4,10 +4,6 @@ int AcquisitionPassthroughGadget
 ::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 	  GadgetContainerMessage< NDArray< std::complex<float> > >* m2)
 {
-  ACE_DEBUG( (LM_DEBUG, 
-	      ACE_TEXT("AcquisitionPassthroughGadget::process called\n")) );
-
-
   //It is enough to put the first one, since they are linked
   if (this->next()->putq(m1) == -1) {
     m1->release();

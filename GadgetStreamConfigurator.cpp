@@ -1,9 +1,10 @@
 #include "GadgetStreamConfigurator.h"
 
 GadgetStreamConfigurator
-::GadgetStreamConfigurator(char* config, ACE_UINT16 config_len)
+::GadgetStreamConfigurator(char* config, ACE_UINT16 config_len, GadgetStreamController* controller)
   : config_(0)
   , config_length_(0)
+  , controller_(controller)
 {
   config_length_ = config_len;
   config_ = new ACE_TCHAR[config_length_];

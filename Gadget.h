@@ -36,11 +36,6 @@ public:
   {
     ACE_TRACE(( ACE_TEXT("Gadget::open") ));
     
-    ACE_DEBUG(( LM_DEBUG,
-		ACE_TEXT("%IGadget::open() starting ")
-		ACE_TEXT("%d threads\n"),
-		this->desired_threads() ));
-
     return this->activate( THR_NEW_LWP | THR_JOINABLE,
 			   this->desired_threads() );
   }
@@ -92,8 +87,6 @@ public:
     ACE_TRACE(( ACE_TEXT("Gadget::svc") ));
     
     for (ACE_Message_Block *m = 0; ;) {
-      ACE_DEBUG(( LM_DEBUG,
-		  ACE_TEXT("%IGadget::svc, waiting for work\n") ));
 
       if (this->getq(m) == -1) {
 	ACE_ERROR_RETURN( (LM_ERROR, ACE_TEXT("%p\n"),
@@ -171,16 +164,12 @@ protected:
   {
     ACE_TRACE(( ACE_TEXT("EndGadget::process(ACE_Message_Block* m)") ));
     
-    ACE_DEBUG(( LM_DEBUG, ACE_TEXT("EndGadget::process - doing nothing\n") ));
- 
     return 0;
   }
 
   virtual int next_step(ACE_Message_Block *m)
   {
     ACE_TRACE(( ACE_TEXT("EndGadget::next_step(ACE_Message_Block *m)") ));
-
-    ACE_DEBUG(( LM_DEBUG, ACE_TEXT("EndGadget - This is the end of the line \n") ));
     m->release();
     return 0;
   }

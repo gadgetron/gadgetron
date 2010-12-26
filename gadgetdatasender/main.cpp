@@ -4,9 +4,11 @@
 #include "ace/Log_Msg.h"
 #include "ace/Get_Opt.h"
 #include "ace/OS_String.h"
+#include "ace/Reactor.h"
 
 #include "../gadgetheaders.h"
 #include "siemensraw.hpp"
+#include "GadgetSocketReceiver.h"
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 {
@@ -101,11 +103,24 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   
   ACE_INET_Addr server(port_no,hostname);
   ACE_SOCK_Connector connector;
-  ACE_SOCK_Stream peer;
-  
+  ACE_SOCK_Stream peer;  
+
   if (connector.connect(peer,server) == -1) {
     ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("connect")), 100);
   } 
+
+  GadgetSocketReceiver mrecv(&peer);
+  if (mrecv.register_reader(GADGET_MESSAGE_ACQUISITION, new GadgetAcquisitionMessageReader()) < 0) {
+    ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("Unable to register acquisition reader")), -1);
+  }
+
+  if (mrecv.register_reader(GADGET_MESSAGE_IMAGE, new GadgetImageMessageReader()) < 0) {
+    ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("Unable to register image reader")), -1);
+  }
+
+  if (mrecv.open() < 0) {
+    ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("Failed to open message receiver")), -1);
+  }
 
   peer.send_n(&id, sizeof(GadgetMessageIdentifier));
   peer.send_n(&conf, sizeof(GadgetMessageConfigurator));
@@ -147,6 +162,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
     next = (SiemensMdhNode*)next->next;
   }
 
+  //Now we have to run the event loop and wait for images to come back
+  ACE_Reactor::instance()->run_reactor_event_loop ();
 
   peer.close();
    
