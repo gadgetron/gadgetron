@@ -182,7 +182,21 @@ class GadgetSocketSender : public ACE_Task<ACE_MT_SYNCH>
   virtual int close(unsigned long flags)
   {
     ACE_TRACE(( ACE_TEXT("GagetSocketSender::close") ));
-    return 0;
+    
+    int rval = 0;
+    if (flags == 1) {
+      ACE_Message_Block *hangup = new ACE_Message_Block();
+      hangup->msg_type( ACE_Message_Block::MB_HANGUP );
+      if (this->putq(hangup) == -1) {
+	hangup->release();
+	ACE_ERROR_RETURN( (LM_ERROR,
+			   ACE_TEXT("%p\n"),
+			   ACE_TEXT("GadgetSocketSender::close, putq")),
+			  -1);
+      }
+      rval = this->wait();
+    }
+    return rval;
   }
 
   virtual int svc(void) 
@@ -192,6 +206,18 @@ class GadgetSocketSender : public ACE_Task<ACE_MT_SYNCH>
     ACE_Message_Block *mb;
     
     while (this->getq(mb) >= 0) {
+
+      if (mb->msg_type() == ACE_Message_Block::MB_HANGUP) {
+	if (this->putq(mb) == -1) {
+	  ACE_ERROR_RETURN( (LM_ERROR,
+			     ACE_TEXT("%p\n"),
+			     ACE_TEXT("SocketSender::svc, putq")),
+			    -1);
+	}
+	break;
+      }
+
+
       GadgetContainerMessage<GadgetMessageIdentifier>* mid;
       if (!(mid = dynamic_cast< GadgetContainerMessage<GadgetMessageIdentifier>* >(mb))) {
 	ACE_ERROR_RETURN ((LM_ERROR,
@@ -231,7 +257,7 @@ class GadgetSocketSender : public ACE_Task<ACE_MT_SYNCH>
   GadgetMessageWriter* find_writer(ACE_UINT16 slot) {
     GadgetMessageWriter* ret = 0;
     for (unsigned int i = 0; i < slots_.size(); i++) {
-      if (slots_[i] == slot) ret = writers_[i]; break;
+      if (slots_[i] == slot) {ret = writers_[i]; break;}
     }
     return ret;
   }

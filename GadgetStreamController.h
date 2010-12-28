@@ -16,8 +16,18 @@
 class GadgetStreamController : public ACE_Event_Handler
 {
 public:
-  ACE_SOCK_Stream &peer (void) { return this->sock_; }
+  GadgetStreamController()
+    : stream_configured_(false)
+    { }
 
+  virtual ~GadgetStreamController()
+    { 
+      //ACE_DEBUG( (LM_INFO, ACE_TEXT("~GadgetStreamController() called\n")) );
+    }
+
+
+
+  ACE_SOCK_Stream &peer (void) { return this->sock_; }
 
   int open (void);
 
@@ -30,7 +40,13 @@ public:
   virtual int handle_close (ACE_HANDLE handle,
                             ACE_Reactor_Mask close_mask);
 
-  virtual int output_ready(ACE_Message_Block* mb) { return this->output_->putq (mb); }
+  virtual int output_ready(ACE_Message_Block* mb) { 
+    if (this->output_) {
+      return this->output_->putq (mb); 
+    } else {
+      return 0;
+    }
+  }
 
 protected:
   ACE_SOCK_Stream sock_;

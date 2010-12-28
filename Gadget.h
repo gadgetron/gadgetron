@@ -21,7 +21,6 @@ public:
   Gadget() 
     : inherited()
     , desired_threads_(1)
-    , calls_(0)
   {
     ACE_TRACE(( ACE_TEXT("Gadget::Gadget") ));
   }
@@ -66,7 +65,6 @@ public:
     ACE_TRACE(( ACE_TEXT("Gadget::close") ));
 
     int rval = 0;
-    
     if (flags == 1) {
       ACE_Message_Block *hangup = new ACE_Message_Block();
       hangup->msg_type( ACE_Message_Block::MB_HANGUP );
@@ -118,12 +116,14 @@ public:
 	}
 
 	//Push this onto next gadgets queue, other gadgets may need this configuration information
-	if (this->next()->putq(m) == -1) {
-	  m->release();
-	  ACE_ERROR_RETURN( (LM_ERROR,
-			     ACE_TEXT("%p\n"),
-			     ACE_TEXT("Gadget::svc, passing config on to next gadget")),
-			    -1);
+	if (this->next()) {
+	  if (this->next()->putq(m) == -1) {
+	    m->release();
+	    ACE_ERROR_RETURN( (LM_ERROR,
+			       ACE_TEXT("%p\n"),
+			       ACE_TEXT("Gadget::svc, passing config on to next gadget")),
+			      -1);
+	  }
 	}
 	continue;
       }
@@ -149,11 +149,11 @@ protected:
 
   virtual int process(ACE_Message_Block * m) = 0;
 
-  virtual int process_config(ACE_Message_Block * m) {return 0;}
+  virtual int process_config(ACE_Message_Block * m) {
+    return 0;
+  }
 
   unsigned int desired_threads_;
-
-  unsigned int calls_;
 };
 
 
@@ -170,6 +170,11 @@ protected:
   virtual int next_step(ACE_Message_Block *m)
   {
     ACE_TRACE(( ACE_TEXT("EndGadget::next_step(ACE_Message_Block *m)") ));
+    m->release();
+    return 0;
+  }
+
+  virtual int process_config(ACE_Message_Block * m) {
     m->release();
     return 0;
   }
@@ -205,14 +210,19 @@ template <class P1, class P2> class Gadget2 : public Gadget
 protected:
   int process(ACE_Message_Block* mb)
   {
+
     GadgetContainerMessage<P1>* m1 = dynamic_cast< GadgetContainerMessage<P1>* >(mb);
     
     if (!m1) {
-      ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p, %s, %s, %i\n"),
-			 ACE_TEXT("Gadget2::process, dynamic cast failed (arg 0)"),
-			 typeid(P1).name(),
-			 typeid(P2).name(), calls_++),
-		       -1);
+      ACE_DEBUG( (LM_ERROR, ACE_TEXT("%s -> %s, %s, %s, %@, %@\n"),
+		  this->module()->name(),
+		  ACE_TEXT("Gadget2::process, dynamic cast failed (arg 0)"),
+		  typeid(GadgetContainerMessage<P1>*).name(),
+		  typeid(m1).name(),
+		  mb,
+		  m1));
+
+      return -1;
     }
     
     if (!m1->cont()) {
@@ -224,14 +234,13 @@ protected:
     GadgetContainerMessage<P2>* m2 = dynamic_cast< GadgetContainerMessage<P2>* >(m1->cont());
     
     if (!m2) {
-      ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"),
+      ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%s\n"),
+			 this->module()->name(),
 			 ACE_TEXT("Gadget2::process, dynamic cast failed (arg 1)")),
 		       -1);
     }
     
-    this->process(m1,m2);
-
-    return 0;
+    return this->process(m1,m2);
   }
 
   virtual int process(GadgetContainerMessage<P1>* m1, GadgetContainerMessage<P2>* m2) = 0;

@@ -25,3 +25,5 @@ clean:
 	rm -rf *~
 	rm -rf $(EXECUTABLE)
 	rm -rf *.o
+	rm -rf *.cplx
+	rm -rf *.real

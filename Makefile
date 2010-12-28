@@ -8,7 +8,8 @@ ifeq ($(UNAME), Darwin)
 DLLEXTENSION=dylib
 endif
 
-EXESOURCES=main.cpp GadgetStreamController.cpp GadgetServerAcceptor.cpp GadgetStreamConfigurator.cpp GadgetStreamConfiguratorFactory.cpp DefaultConfigurator.cpp AcquisitionPassthroughGadget.cpp gadgettools/ConfigParser.cpp AcquisitionFinishGadget.cpp
+EXESOURCES=main.cpp GadgetStreamController.cpp GadgetServerAcceptor.cpp GadgetStreamConfigurator.cpp GadgetStreamConfiguratorFactory.cpp DefaultConfigurator.cpp AcquisitionPassthroughGadget.cpp gadgettools/ConfigParser.cpp AcquisitionFinishGadget.cpp AccumulatorGadget.cpp FFTGadget.cpp ImageFinishGadget.cpp CropAndCombineGadget.cpp ImageWriterGadget.cpp
+
 LIBSOURCES=
 
 EXEOBJECTS=$(EXESOURCES:.cpp=.o)
@@ -18,7 +19,7 @@ CXX=g++
 #CXXFLAGS=-c -Wall -I.
 EXELDFLAGS= -lACE -lfftw3 -lfftw3f
 
-CXXFLAGS=-c -fPIC -Wall -I. -I./gadgettools/ #-DACE_NTRACE=0
+CXXFLAGS=-c -fPIC -Wall -I. -I./gadgettools/ -g #-DACE_NTRACE=0
 LIBLDFLAGS= -shared -lACE 
 
 LIBFILE=libgadgets.$(DLLEXTENSION)
@@ -40,3 +41,5 @@ clean:
 	rm -rf $(EXECUTABLE)
 	rm -rf $(LIBFILE)
 	rm -rf *.o
+	rm -rf *.cplx
+	rm -rf *.real

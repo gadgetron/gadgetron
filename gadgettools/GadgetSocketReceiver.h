@@ -89,7 +89,8 @@ class GadgetImageMessageReader : public GadgetMessageReader
     dims[0] = imgh.matrix_size[0];dims[1] = imgh.matrix_size[1];dims[2] = imgh.matrix_size[2];
     NDArray< std::complex<float> > data;
     if (!data.create(dims)) {
-      ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageMessageReader, failed to allocate memory\n")) );
+      ACE_DEBUG( (LM_ERROR, 
+		  ACE_TEXT("%P, %l, GadgetImageMessageReader, failed to allocate memory\n")) );
       return -1;
     }
 
@@ -219,7 +220,7 @@ class GadgetSocketReceiver : public ACE_Task<ACE_MT_SYNCH>
   GadgetMessageReader* find_reader(ACE_UINT16 slot) {
     GadgetMessageReader* ret = 0;
     for (unsigned int i = 0; i < slots_.size(); i++) {
-      if (slots_[i] == slot) ret = readers_[i]; break;
+      if (slots_[i] == slot) {ret = readers_[i]; break;}
     }
     return ret;
   }

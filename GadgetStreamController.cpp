@@ -4,6 +4,7 @@
 #include "GadgetContainerMessage.h"
 #include "GadgetSocketSender.h"
 #include "NDArray.h"
+#include "Gadget.h"
 
 #include <complex>
 
@@ -57,7 +58,6 @@ int GadgetStreamController::handle_input (ACE_HANDLE)
   if ((recv_cnt = this->sock_.recv_n (&id, sizeof(GadgetMessageIdentifier))) <= 0) {
     ACE_DEBUG ((LM_DEBUG,
 		ACE_TEXT ("(%P|%t) GadgetStreamController, unable to read message identifier\n")));
-    stream_.close();
     return -1;
   }
 
@@ -66,7 +66,6 @@ int GadgetStreamController::handle_input (ACE_HANDLE)
   case GADGET_MESSAGE_ACQUISITION:
     if (read_acquisition() < 0) {
       ACE_DEBUG( (LM_ERROR, ACE_TEXT("ACQ read failed\n")) );
-      stream_.close();
       return -1;
     }
     break;
@@ -74,7 +73,6 @@ int GadgetStreamController::handle_input (ACE_HANDLE)
     ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Configuration received\n")) );
     if (read_configuration() < 0) {
       ACE_DEBUG( (LM_ERROR, ACE_TEXT("CONFIG read failed\n")) );
-      stream_.close();
       return -1;
     }
     break;
@@ -97,63 +95,6 @@ int GadgetStreamController::handle_input (ACE_HANDLE)
 
 int GadgetStreamController::handle_output (ACE_HANDLE)
 {
-  /*
-  ACE_Message_Block *mb;
-  while (0 == this->output_queue_.dequeue_head(mb)) {
-    GadgetContainerMessage<GadgetMessageIdentifier>* mid;
-    if (!(mid = dynamic_cast< GadgetContainerMessage<GadgetMessageIdentifier>* >(mb))) {
-      ACE_ERROR_RETURN ((LM_ERROR,
-			 ACE_TEXT ("(%P|%t) %p\n"),
-			 ACE_TEXT ("GadgetStreamController::handle_output, Invalid message on output queue")), -1);
-
-    }
-    
-    switch (mid->getObjectPtr()->id) {
-      
-    case GADGET_MESSAGE_ACQUISITION:
-      {
-	GadgetContainerMessage<GadgetMessageAcquisition>* acqmb =
-	  dynamic_cast< GadgetContainerMessage<GadgetMessageAcquisition>* >(mb->cont());
-	
-	GadgetContainerMessage< NDArray< std::complex<float> > >* datamb =
-	  dynamic_cast< GadgetContainerMessage< NDArray< std::complex<float> > >* >(acqmb->cont());
-
-	  if (!acqmb || !datamb) {
-	  ACE_DEBUG( (LM_ERROR, ACE_TEXT("(%P,%l), GadgetStreamController::handle_output, invalid acquisition message objects")) );
-	  mb->release();
-	  return -1;
-	  }
-	  
-	  write_acquisition(acqmb->getObjectPtr(), datamb->getObjectPtr());
-      }
-      break;
-    case GADGET_MESSAGE_IMAGE:
-      {
-	GadgetContainerMessage<GadgetMessageImage>* imagemb = 
-	  dynamic_cast< GadgetContainerMessage<GadgetMessageImage>* >(mb->cont());
-	
-	GadgetContainerMessage< NDArray< std::complex<float> > >* datamb =
-	  dynamic_cast< GadgetContainerMessage< NDArray< std::complex<float> > >* >(imagemb->cont());
-
-	if (!imagemb || !datamb) {
-	  ACE_DEBUG( (LM_ERROR, ACE_TEXT("(%P,%l), GadgetStreamController::handle_output, invalid image message objects")) );
-	  mb->release();
-	  return -1;
-	}
-	
-	write_image(imagemb->getObjectPtr(), datamb->getObjectPtr());
-      }
-      break;
-    default:
-      ACE_DEBUG( (LM_ERROR, ACE_TEXT("(%P,%l), GadgetStreamController::handle_output, unsupported message id")) );
-      mb->release();
-      return -1;
-      break;
-
-    }
-    mb->release();
-  }
-  */
   return 0;
 }
 
@@ -164,9 +105,18 @@ int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
   mask = ACE_Event_Handler::ALL_EVENTS_MASK |
          ACE_Event_Handler::DONT_CALL;
   this->reactor ()->remove_handler (this, mask);
+
+  //We need to grab the pointer and set it to zero so that no output
+  //is put on the output queue while shutting down.
+  GadgetSocketSender* tmp = output_;
+  output_ = 0;  
+  tmp->close(1);
+  delete tmp;
+
+  this->stream_.close();
   this->sock_.close ();
-  delete output_;
   delete this;
+
   return 0;
 }
 
@@ -181,30 +131,43 @@ int GadgetStreamController::read_configuration()
     return -1;
   }
 
-  ACE_TCHAR* config_info = 0;
-  ACE_NEW_RETURN(config_info, ACE_TCHAR[c.configuration_length],-1);
+  ACE_Message_Block* mb = new ACE_Message_Block(c.configuration_length);
 
-  if ((recv_cnt = this->sock_.recv_n (config_info, c.configuration_length)) <= 0) {
+  //ACE_TCHAR* config_info = 0;
+  //ACE_NEW_RETURN(config_info, ACE_TCHAR[c.configuration_length],-1);
+
+  if ((recv_cnt = this->sock_.recv_n (mb->wr_ptr(), c.configuration_length)) <= 0) {
     ACE_DEBUG ((LM_ERROR,
 		ACE_TEXT ("(%P|%t)  GadgetStreamController: Unable to read configuration info\n")));
     return -1;
   }
+  mb->wr_ptr(c.configuration_length);
+  mb->set_flags(Gadget::GADGET_MESSAGE_CONFIG);
 
-
-  GadgetStreamConfigurator* cfg = 
-    GadgetStreamConfiguratorFactory::CreateConfigurator(c,config_info, this);
-
-  auto_ptr<GadgetStreamConfigurator> co(cfg);
-  if (cfg) {
-    if (cfg->ConfigureStream(&this->stream_)) {
-      delete [] config_info;
-      ACE_ERROR_RETURN( (LM_ERROR, ACE_TEXT("Unable to configure stream")), -1);
+  //For now it is only possible to configure the stream once.
+  if (!stream_configured_) {
+    GadgetStreamConfigurator* cfg = 
+      GadgetStreamConfiguratorFactory::CreateConfigurator(c,mb->rd_ptr(), this);
+    
+    auto_ptr<GadgetStreamConfigurator> co(cfg);
+    if (cfg) {
+      if (cfg->ConfigureStream(&this->stream_)) {
+	mb->release();
+	ACE_ERROR_RETURN( (LM_ERROR, ACE_TEXT("Unable to configure stream")), -1);
+      }
     }
+    co.release();
+    
+    stream_configured_ = true;
+    if (cfg) delete cfg;
   }
-  co.release();
-  
-  if (cfg) delete cfg;
-  delete [] config_info;
+
+  if (stream_.put(mb) < 0) {
+    ACE_DEBUG( (LM_ERROR, 
+		ACE_TEXT("Unable to send config down stream failed") ));
+    mb->release();
+    return -1;
+  }
 
   return 0;
 }
@@ -267,67 +230,3 @@ int GadgetStreamController::read_acquisition()
   return 0;
 }
 
-/*
-int GadgetStreamController::write_image(GadgetMessageImage* imgmh, NDArray< std::complex<float> >* data)
-{
-
-  ssize_t send_cnt = 0;
-
-  GadgetMessageIdentifier id;
-  id.id = GADGET_MESSAGE_IMAGE;
-
-  if ((send_cnt = this->sock_.send_n (&id, sizeof(GadgetMessageIdentifier))) <= 0) {
-    ACE_DEBUG ((LM_ERROR,
-		ACE_TEXT ("(%P|%t) Unable to send image message identifier\n")));
-
-    return -1;
-  }
-
-  if ((send_cnt = this->sock_.send_n (imgmh, sizeof(GadgetMessageImage))) <= 0) {
-    ACE_DEBUG ((LM_ERROR,
-		ACE_TEXT ("(%P|%t) Unable to send image header\n")));
-
-    return -1;
-  }
-
-  if ((send_cnt = this->sock_.send_n (data->get_data_ptr(), sizeof(std::complex<float>)*data->get_number_of_elements())) <= 0) {
-    ACE_DEBUG ((LM_ERROR,
-		ACE_TEXT ("(%P|%t) Unable to send image data\n")));
-    
-    return -1;
-  }
-
-  return 0;
-}
-
-int GadgetStreamController::write_acquisition(GadgetMessageAcquisition* acqmh, NDArray< std::complex<float> >* data)
-{  
-  ssize_t send_cnt = 0;
-
-  GadgetMessageIdentifier id;
-  id.id = GADGET_MESSAGE_ACQUISITION;
-
-  if ((send_cnt = this->sock_.send_n (&id, sizeof(GadgetMessageIdentifier))) <= 0) {
-    ACE_DEBUG ((LM_ERROR,
-		ACE_TEXT ("(%P|%t) Unable to send acquisition message identifier\n")));
-
-    return -1;
-  }
-
-  if ((send_cnt = this->sock_.send_n (acqmh, sizeof(GadgetMessageAcquisition))) <= 0) {
-    ACE_DEBUG ((LM_ERROR,
-		ACE_TEXT ("(%P|%t) Unable to send acquisition header\n")));
-
-    return -1;
-  }
-
-  if ((send_cnt = this->sock_.send_n (data->get_data_ptr(), sizeof(std::complex<float>)*data->get_number_of_elements())) <= 0) {
-    ACE_DEBUG ((LM_ERROR,
-		ACE_TEXT ("(%P|%t) Unable to send acquisition data\n")));
-    
-    return -1;
-  }
-
-  return 0;
-}
-*/

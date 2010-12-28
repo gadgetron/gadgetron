@@ -41,8 +41,8 @@ template <class T> class NDArray
     return dimensions_.size();
   }
 
-  int get_size(int dimension) {
-    if (dimension > dimensions_.size() || dimension < 0) {
+  int get_size(unsigned int dimension) {
+    if (dimension >= dimensions_.size() || dimension < 0) {
       return 1;
     } else {
       return dimensions_[dimension];

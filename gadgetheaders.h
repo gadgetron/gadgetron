@@ -3,6 +3,15 @@
 
 #include <ace/Basic_Types.h>
 
+//Data flags
+#define GADGET_FLAG_ACQ_END                   (1 << 0) /* 0x01 */
+#define GADGET_FLAG_LAST_ACQ_IN_SLICE         (1 << 1) /* 0x02 */
+#define GADGET_FLAG_LAST_ACQ_IN_MEAS          (1 << 2) /* 0x04 */
+#define GADGET_FLAG_LAST_ACQ_IN_CONCAT        (1 << 3) /* 0x08 */
+#define GADGET_FLAG_FIRST_ACQ_IN_SLICE        (1 << 4) /* 0x02 */
+#define GADGET_FLAG_FIRST_ACQ_IN_MEAS         (1 << 5) /* 0x04 */
+#define GADGET_FLAG_FIRST_ACQ_IN_CONCAT       (1 << 6) /* 0x08 */
+
 enum GadgetMessageID {
   GADGET_MESSAGE_ID_MIN = 0,
   GADGET_MESSAGE_ACQUISITION,
@@ -59,6 +68,7 @@ struct GadgetMessageAcquisition
 struct GadgetMessageImage
 {
   ACE_UINT16     matrix_size[3];
+  ACE_UINT16     channels;
   float          position[3];
   float          quarternion[4];
   LoopCounters   data_idx_min;

@@ -9,6 +9,9 @@
 #include "../gadgetheaders.h"
 #include "siemensraw.hpp"
 #include "GadgetSocketReceiver.h"
+#include "ImageWriter.h"
+#include "ConfigParser.h"
+
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 {
@@ -91,13 +94,41 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   ACE_OS_String::strncpy(conf.configurator_lib,config_lib,1024);
   ACE_OS_String::strncpy(conf.configurator_name,config_name,1024);
 
-  //Let's declare an empty config file for now. 
-  //We need to add necesarry config info from file when ConfigParser is ready
-  conf.configuration_length = 1024;
-  char configuration_file[1024];
-  ACE_OS::memset(configuration_file,0,1024);
 
+  ConfigParser cp;
+  cp.add(std::string("encoding"), std::string("matrix_x"), 
+	 (size_t)bp.matrix_size[0]);
+
+  cp.add(std::string("encoding"), std::string("matrix_y"), 
+	 (size_t)bp.matrix_size[1]);
+
+  cp.add(std::string("encoding"), std::string("matrix_z"), 
+	 (size_t)bp.matrix_size[2]);
+
+  cp.add(std::string("encoding"), std::string("readout_length"), 
+	 (size_t)sd.GetFirstNode()->mdh.ushSamplesInScan);
+
+  cp.add(std::string("encoding"), std::string("channels"), 
+	 (size_t)sd.GetFirstNode()->mdh.ushUsedChannels);
+
+  cp.add(std::string("encoding"), std::string("base_resolution"), 
+	 (size_t)bp.base_resolution);
+
+  cp.add(std::string("encoding"), std::string("slices"), 
+	 (size_t)acq_head_base.max_idx.slice+1);
   
+
+  ACE_DEBUG( (LM_DEBUG, 
+	      ACE_TEXT("Running with config:\n %s"), 
+	      cp.exportCharArray()) );
+
+
+  std::string config = cp.exportConf();
+
+  conf.configuration_length = config.size()+1; //+1 for the null termination
+  //char config_info[1024];
+  
+
 
   ACE_DEBUG(( LM_INFO, ACE_TEXT("Sending configuration %s@%s \n"), conf.configurator_name, conf.configurator_lib ));
   
@@ -114,7 +145,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
     ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("Unable to register acquisition reader")), -1);
   }
 
-  if (mrecv.register_reader(GADGET_MESSAGE_IMAGE, new GadgetImageMessageReader()) < 0) {
+  if (mrecv.register_reader(GADGET_MESSAGE_IMAGE, new ImageWriter()) < 0) {
     ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("Unable to register image reader")), -1);
   }
 
@@ -124,8 +155,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 
   peer.send_n(&id, sizeof(GadgetMessageIdentifier));
   peer.send_n(&conf, sizeof(GadgetMessageConfigurator));
-  peer.send_n(configuration_file, conf.configuration_length);
-  
+  peer.send_n(config.c_str(), conf.configuration_length);
+  //peer.send_n(config_info, conf.configuration_length);
+
   //Now loop through the data and send it all to the Gadgetron
   SiemensMdhNode* next = sd.GetFirstNode();
   while (next) {
@@ -141,7 +173,11 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
     acq_head.idx.set                  = next->mdh.sLC.ushSet;
     acq_head.idx.segment              = next->mdh.sLC.ushSeg;
     acq_head.idx.channel              = next->mdh.ushChannelId;
-    //acq_head_base.flags;
+    
+    acq_head.flags |= 
+      (next->mdh.aulEvalInfoMask[0] & (1 << 29)) ?
+      GADGET_FLAG_LAST_ACQ_IN_SLICE : 0;
+      
     acq_head.meas_uid                 = next->mdh.lMeasUID;
     acq_head.scan_counter             = next->mdh.ulScanCounter;
     acq_head.time_stamp               = next->mdh.ulTimeStamp;

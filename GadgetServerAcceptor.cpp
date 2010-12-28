@@ -42,6 +42,9 @@ int GadgetServerAcceptor::handle_input (ACE_HANDLE)
 
 int GadgetServerAcceptor::handle_close (ACE_HANDLE, ACE_Reactor_Mask)
 {
+  ACE_DEBUG( (LM_DEBUG, 
+	      ACE_TEXT("GadgetServerAcceptor::handle_close")) );
+
   if (this->acceptor_.get_handle () != ACE_INVALID_HANDLE) {
     ACE_Reactor_Mask m = 
       ACE_Event_Handler::ACCEPT_MASK | ACE_Event_Handler::DONT_CALL;
