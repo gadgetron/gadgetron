@@ -60,7 +60,6 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 
   
   int samples =  m1->getObjectPtr()->samples;
-  int channel =  m1->getObjectPtr()->idx.channel;
   int line = m1->getObjectPtr()->idx.line;
   int partition = m1->getObjectPtr()->idx.partition;
   int slice = m1->getObjectPtr()->idx.slice;
@@ -71,19 +70,24 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     return -1;    
   }
 
-  size_t offset = 
-    slice*dimensions_[0]*dimensions_[1]*dimensions_[2]*dimensions_[3] +
-    channel*dimensions_[0]*dimensions_[1]*dimensions_[2] +
-    partition*dimensions_[0]*dimensions_[1] +
-    line*dimensions_[0];
-
-  memcpy(b+offset,d,sizeof(std::complex<float>)*samples);
+  size_t offset= 0;
+  //Copy the data for all the channels
+  for (int c = 0; c < m1->getObjectPtr()->channels; c++) {
+    offset = 
+      slice*dimensions_[0]*dimensions_[1]*dimensions_[2]*dimensions_[3] +
+      c*dimensions_[0]*dimensions_[1]*dimensions_[2] +
+      partition*dimensions_[0]*dimensions_[1] +
+      line*dimensions_[0];
+    
+    memcpy(b+offset,d+c*samples,sizeof(std::complex<float>)*samples);
+  }
   
   bool is_last_scan_in_slice =
-    (m1->getObjectPtr()->flags & GADGET_FLAG_LAST_ACQ_IN_SLICE &&
-     m1->getObjectPtr()->idx.channel ==  (m1->getObjectPtr()->channels-1));
+    (m1->getObjectPtr()->flags & GADGET_FLAG_LAST_ACQ_IN_SLICE);
   
   if (is_last_scan_in_slice) {
+    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Passing slice on to next step\n")) );
+
     GadgetContainerMessage<GadgetMessageImage>* cm1 = 
       new GadgetContainerMessage<GadgetMessageImage>();
     
@@ -120,7 +124,13 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     cm1->getObjectPtr()->data_idx_min       = m1->getObjectPtr()->min_idx;
     cm1->getObjectPtr()->data_idx_max       = m1->getObjectPtr()->max_idx;
     cm1->getObjectPtr()->data_idx_current   = m1->getObjectPtr()->idx;	
-    
+
+    memcpy(cm1->getObjectPtr()->position,m1->getObjectPtr()->position,
+	   sizeof(float)*3);
+
+    memcpy(cm1->getObjectPtr()->quarternion,m1->getObjectPtr()->quarternion,
+	   sizeof(float)*4);
+ 
     m1->release();
     
     return this->next()->putq(cm1);

@@ -11,7 +11,7 @@
 #include "GadgetSocketReceiver.h"
 #include "ImageWriter.h"
 #include "ConfigParser.h"
-
+#include "NDArray.h"
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 {
@@ -130,7 +130,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   
 
 
-  ACE_DEBUG(( LM_INFO, ACE_TEXT("Sending configuration %s@%s \n"), conf.configurator_name, conf.configurator_lib ));
+  ACE_DEBUG(( LM_INFO, ACE_TEXT("Sending configuration %s@%s \n"), 
+	      conf.configurator_name, conf.configurator_lib ));
   
   ACE_INET_Addr server(port_no,hostname);
   ACE_SOCK_Connector connector;
@@ -141,22 +142,38 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   } 
 
   GadgetSocketReceiver mrecv(&peer);
-  if (mrecv.register_reader(GADGET_MESSAGE_ACQUISITION, new GadgetAcquisitionMessageReader()) < 0) {
-    ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("Unable to register acquisition reader")), -1);
+  if (mrecv.register_reader(GADGET_MESSAGE_ACQUISITION, 
+			    new GadgetAcquisitionMessageReader()) < 0) {
+    ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"), 
+		       ACE_TEXT("Unable to register acquisition reader")), -1);
   }
 
   if (mrecv.register_reader(GADGET_MESSAGE_IMAGE, new ImageWriter()) < 0) {
-    ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("Unable to register image reader")), -1);
+    ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"), 
+		       ACE_TEXT("Unable to register image reader")), -1);
   }
 
   if (mrecv.open() < 0) {
-    ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("Failed to open message receiver")), -1);
+    ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"), 
+		       ACE_TEXT("Failed to open message receiver")), -1);
   }
 
   peer.send_n(&id, sizeof(GadgetMessageIdentifier));
   peer.send_n(&conf, sizeof(GadgetMessageConfigurator));
   peer.send_n(config.c_str(), conf.configuration_length);
   //peer.send_n(config_info, conf.configuration_length);
+
+  //We need an array for collecting the data from all channels prior to transmission
+  NDArray< std::complex<float> > buf;
+  std::vector<int> buf_dim; 
+  buf_dim.push_back(sd.GetMaxValues()->ushSamplesInScan);
+  buf_dim.push_back(sd.GetMaxValues()->ushUsedChannels);
+
+  if (!buf.create(buf_dim)) {
+    ACE_DEBUG( (LM_ERROR, 
+		ACE_TEXT("Unable to allocate buffer for collecting channel data\n")) );
+    return -1;
+  }
 
   //Now loop through the data and send it all to the Gadgetron
   SiemensMdhNode* next = sd.GetFirstNode();
@@ -187,13 +204,23 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
     acq_head.position[1]              = next->mdh.sSD.sSlicePosVec.flCor;
     acq_head.position[2]              = next->mdh.sSD.sSlicePosVec.flTra;
 
-    memcpy(acq_head_base.quarternion, next->mdh.sSliceData.aflQuaternion,sizeof(float)*4);   
+    memcpy(acq_head_base.quarternion, 
+	   next->mdh.sSliceData.aflQuaternion,
+	   sizeof(float)*4);   
     
-    id.id = GADGET_MESSAGE_ACQUISITION;
+    memcpy(buf.get_data_ptr()+next->mdh.ushChannelId*next->mdh.ushSamplesInScan,
+	   next->data,
+	   sizeof(float)*acq_head.samples*2);
 
-    peer.send_n(&id, sizeof(GadgetMessageIdentifier));
-    peer.send_n(&acq_head, sizeof(GadgetMessageAcquisition));
-    peer.send_n(next->data,sizeof(float)*acq_head.samples*2 );
+    if (next->mdh.ushChannelId == (next->mdh.ushUsedChannels-1)) {
+      //This is it, let's send it!
+      id.id = GADGET_MESSAGE_ACQUISITION;
+
+      peer.send_n(&id, sizeof(GadgetMessageIdentifier));
+      peer.send_n(&acq_head, sizeof(GadgetMessageAcquisition));
+      peer.send_n(buf.get_data_ptr(),
+		  sizeof(float)*acq_head.samples*2*acq_head.channels );
+    }
 
     next = (SiemensMdhNode*)next->next;
   }

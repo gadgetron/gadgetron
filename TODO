@@ -1,7 +1,5 @@
-- Pass parameters from scanner file into ini file parser and send parameters to configurator
-- Make accumulator gadget to receive data and collect in k-spaces
-- Add flags to the data to indicate end of slice, etc.
-- Make FFT gadget to Fourier transform output from accumulator gadget
-- Create ImageFinishGadget to put output back on putput queue
+- Make reader and writer classes fo receiving and sending configurations
+- Make customized macros for writing logs GADGET_DEBUG(...,...), GADGET_ERROR(...,...)
+- Make defines for return integers, #define GADGET_FAIL -1, #define GADGET_OK 0, etc.
 - Create Siemens functor that uses GadgetSocketSender and GadgetSocketReceiver to communicate with Gadgetron
 - Replace current code in GadgetStreamController for reading from the socket with GadgetSocketReader
