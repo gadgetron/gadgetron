@@ -85,7 +85,7 @@ int GadgetStreamController::handle_input (ACE_HANDLE)
   case GADGET_MESSAGE_EMPTY:
     break;
   default:
-    ACE_DEBUG( (LM_ERROR, ACE_TEXT("Received BAD MESSAGE IDENTIFIER\n")) );
+    ACE_DEBUG( (LM_ERROR, ACE_TEXT("Received BAD MESSAGE IDENTIFIER %d\n"), id.id ) );
     return -1;
     break;
   }
@@ -197,6 +197,7 @@ int GadgetStreamController::read_acquisition()
 
   std::vector<int> adims;
   adims.push_back(m1->getObjectPtr()->samples);
+  adims.push_back(m1->getObjectPtr()->channels);
 
   if (!m2->getObjectPtr()->create(adims)) {
     ACE_DEBUG ((LM_ERROR,
@@ -210,7 +211,7 @@ int GadgetStreamController::read_acquisition()
   if ((recv_cnt = 
        this->sock_.recv_n
        (m2->getObjectPtr()->get_data_ptr(), 
-	sizeof(std::complex<float>)*m1->getObjectPtr()->samples)) <= 0) {
+	sizeof(std::complex<float>)*m1->getObjectPtr()->samples*m1->getObjectPtr()->channels)) <= 0) {
 
     ACE_DEBUG ((LM_ERROR,
 		ACE_TEXT ("(%P|%t) Unable to read Acq data\n")));
