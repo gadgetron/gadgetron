@@ -11,9 +11,12 @@ int FFTGadget::process( GadgetContainerMessage< GadgetMessageImage>* m1,
   ft.ifft(m2->getObjectPtr(),2);
 
   std::complex<float>* d = m2->getObjectPtr()->get_data_ptr();
-  for (int i = 0; i <  m2->getObjectPtr()->get_number_of_elements(); i++) {
-    d[i] *= m2->getObjectPtr()->get_number_of_elements();
-  } 
+  for (unsigned int i = 0; 
+       i <  m2->getObjectPtr()->get_number_of_elements(); 
+       i++) 
+    {
+      d[i] *= m2->getObjectPtr()->get_number_of_elements();
+    } 
 
   return this->next()->putq(m1);
 }

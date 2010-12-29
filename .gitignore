@@ -8,3 +8,4 @@ gadgetdatasender/gadgetrondatasender
 *.dylib
 *.real
 *.cplx
+inc/

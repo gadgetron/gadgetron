@@ -1,45 +1,49 @@
 #Gadgetron Makefile
 
+GADGETRONHOME=.
+
 UNAME := $(shell uname)
 
-DLLEXTENSION=so
+HEADERS=\
+	GadgetContainerMessage.h \
+	Gadget.h \
+	gadgetheaders.h \
+	GadgetServerAcceptor.h \
+	GadgetStreamConfiguratorFactory.h \
+	GadgetStreamConfigurator.h \
+	GadgetStreamController.h
 
-ifeq ($(UNAME), Darwin)
-DLLEXTENSION=dylib
-endif
-
-EXESOURCES=main.cpp GadgetStreamController.cpp GadgetServerAcceptor.cpp GadgetStreamConfigurator.cpp GadgetStreamConfiguratorFactory.cpp DefaultConfigurator.cpp AcquisitionPassthroughGadget.cpp gadgettools/ConfigParser.cpp AcquisitionFinishGadget.cpp AccumulatorGadget.cpp FFTGadget.cpp ImageFinishGadget.cpp CropAndCombineGadget.cpp ImageWriterGadget.cpp
-
-LIBSOURCES=
+EXESOURCES=\
+	main.cpp \
+	GadgetStreamController.cpp \
+	GadgetServerAcceptor.cpp \
+	GadgetStreamConfigurator.cpp \
+	GadgetStreamConfiguratorFactory.cpp 
 
 EXEOBJECTS=$(EXESOURCES:.cpp=.o)
-LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 
 CXX=g++
-#CXXFLAGS=-c -Wall -I.
-EXELDFLAGS= -lACE -lfftw3 -lfftw3f
+EXELDFLAGS= -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -lgadgetroncore -lgadgetrontools
 
-CXXFLAGS=-c -fPIC -Wall -I. -I./gadgettools/ -g #-DACE_NTRACE=0
-LIBLDFLAGS= -shared -lACE 
+CXXFLAGS=-c -fPIC -Wall -I. -I$(GADGETRONHOME)/inc/ -I./gadgettools/ -g #-DACE_NTRACE=0
 
-LIBFILE=libgadgets.$(DLLEXTENSION)
 EXECUTABLE=gadgetron
 
-all: $(EXECUTABLE) $(LIBFILE)
+all: $(EXECUTABLE)
 
 $(EXECUTABLE): $(EXEOBJECTS) Makefile
 	$(CXX) $(EXELDFLAGS) $(EXEOBJECTS) -o $@
 
-$(LIBFILE): $(LIBOBJECTS) Makefile
-	$(CXX) $(LIBLDFLAGS) $(LIBOBJECTS) -o $@
-
 .cpp.o:
-	$(CXX) $(CXXFLAGS) -DGADGETS_BUILD_DLL $< -o $@
+	$(CXX) $(CXXFLAGS) $< -o $@
 
 clean:
 	rm -rf *~
 	rm -rf $(EXECUTABLE)
-	rm -rf $(LIBFILE)
 	rm -rf *.o
 	rm -rf *.cplx
 	rm -rf *.real
+
+install:
+	cp $(HEADERS) inc/
+	cp $(EXECUTABLE) lib/

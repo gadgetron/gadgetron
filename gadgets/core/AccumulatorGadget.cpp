@@ -86,8 +86,6 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     (m1->getObjectPtr()->flags & GADGET_FLAG_LAST_ACQ_IN_SLICE);
   
   if (is_last_scan_in_slice) {
-    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Passing slice on to next step\n")) );
-
     GadgetContainerMessage<GadgetMessageImage>* cm1 = 
       new GadgetContainerMessage<GadgetMessageImage>();
     
