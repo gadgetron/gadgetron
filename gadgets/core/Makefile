@@ -38,7 +38,7 @@ CXX=g++
 EXELDFLAGS= -lACE -lfftw3 -lfftw3f
 
 CXXFLAGS=-c -fPIC -Wall -I. -I$(GADGETRONHOME)/gadgettools -I$(GADGETRONHOME) -g #-DACE_NTRACE=0
-LIBLDFLAGS= -shared -lACE 
+LIBLDFLAGS= -shared -lACE -lfftw3 -lfftw3f
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 

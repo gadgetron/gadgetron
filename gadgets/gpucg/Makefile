@@ -47,9 +47,7 @@ CUDASOURCES=\
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 
-#LIBCUDAOBJECTS=$OBJS +=  $(patsubst %.cu,$(OBJDIR)/%.cu.o,$(notdir $(CUFILES)))(CUDASOURCES:.cu=.cu.o)
-
-LIBCUDAOBJECTS=$(patsubst %.cu,%.cu.o,$(CUDASOURCES))
+LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
 CXX=g++
 
@@ -69,19 +67,24 @@ LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 
 all: $(LIBFILE)
 
-$(LIBFILE): $(LIBOBJECTS) $(LIBCUDAOBJECTS) Makefile
-	$(CXX) -m64 $(LIBLDFLAGS) $(LIBOBJECTS) $(LIBCUDAOBJECTS) -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux -lshrutil_$(MACHINE) -lcutil_$(MACHINE) -o $@
+test:
+	echo $(LIBCUDAOBJECTS)
 
-.cpp.o:
+
+$(LIBFILE): $(LIBOBJECTS) $(LIBCUDAOBJECTS) Makefile
+	$(CXX) -m64 $(LIBLDFLAGS) $(LIBOBJECTS) $(LIBCUDAOBJECTS) -L$(CUDAHOME)/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux -lshrutil_$(MACHINE) -lcutil_$(MACHINE) -lcudpp_$(MACHINE) -lcudart -lcublas -lcufft -o $@
+
+%.cpp.o: %.cpp
 	$(CXX) $(CXXFLAGS) -DGADGETS_BUILD_DLL $< -o $@
 
-%.cu.o: %.cu
+%.cuo: %.cu
 	$(NVCC) $(NVCCFLAGS) -DGADGETS_BUILD_DLL -o $@ $<
 
 clean:
 	rm -rf *~
 	rm -rf $(LIBFILE)
-	rm -rf *.o
+	rm -rf $(LIBOBJECTS)
+	rm -rf $(LIBCUDAOBJECTS)
 	rm -rf *.cplx
 	rm -rf *.real
 

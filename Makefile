@@ -7,12 +7,12 @@ GADGETRONHOME=.
 MACHINE   := $(shell uname -m)
 KERNEL    := $(shell uname -s)
 
-CUDASDK=$(HOME)/NVIDIA_GPU_Computing_SDK
 
-CUDALIBRARIES=-L/usr/local/cuda/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux
-ifeq ($(KERNEL), Darwin)
-CUDALIBRARIES=-L/usr/local/cuda/lib -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/darwin
-endif
+#CUDASDK=$(HOME)/NVIDIA_GPU_Computing_SDK
+#CUDALIBRARIES=-L/usr/local/cuda/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux
+#ifeq ($(KERNEL), Darwin)
+#CUDALIBRARIES=-L/usr/local/cuda/lib -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/darwin
+#endif
 
 HEADERS=\
 	GadgetContainerMessage.h \
@@ -34,7 +34,7 @@ EXESOURCES=\
 EXEOBJECTS=$(EXESOURCES:.cpp=.o)
 
 CXX=g++
-EXELDFLAGS= -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -lgadgetroncore -lgadgetrontools -lgadgetrongpucg $(CUDALIBRARIES) -lcudart -lcublas -lcufft -lshrutil_$(MACHINE) -lcutil_$(MACHINE) -lcudpp_$(MACHINE)
+EXELDFLAGS= -L$(GADGETRONHOME)/lib -lACE -lgadgetroncore -lgadgetrontools -lgadgetrongpucg 
 
 CXXFLAGS=-c -fPIC -Wall -I. -I$(GADGETRONHOME)/inc/ -I./gadgettools/ -g #-DACE_NTRACE=0
 

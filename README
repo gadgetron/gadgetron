@@ -1,0 +1,19 @@
+
+
+-Prerequisites for building:
+
+gadgetron
+  ACE (tested with versions 5.6 and 6.0)
+
+gadgetron/gadgets/core
+  FFTW3
+
+gadgetron/gadgets/gpucg
+  CUDA (in /usr/local/cuda)
+  thrust (in /usr/local/cuda/include)
+  NVIDIA Cuda SDK (in ~/NVIDIA_GPU_Computing_SDK/)
+  CUDPP (recompiled with -fPIC)
+     Normally distributed with NVIDIA SDK (but not PIC)
+
+
+

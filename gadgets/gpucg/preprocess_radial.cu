@@ -1706,7 +1706,7 @@ compute_trajectory_radial_2d( unsigned int matrix_size, unsigned int matrix_size
 {
 	const unsigned int number_of_samples = samples_per_projection*projections_per_frame;
 	const float alpha = (float)matrix_size_os/(float)matrix_size;
-	const unsigned int bias = matrix_size>>1;
+	//const unsigned int bias = matrix_size>>1;
 
 	// Find dimensions of grid/blocks.
 	const unsigned int block_size = min(256,number_of_samples);
