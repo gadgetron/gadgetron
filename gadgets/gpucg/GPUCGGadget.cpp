@@ -5,8 +5,8 @@
 
 
 GPUCGGadget::GPUCGGadget()
-  : profiles_per_frame_(64)
-  , shared_profiles_(0)
+  : profiles_per_frame_(48)
+  , shared_profiles_(16)
   , channels_(0)
   , samples_per_profile_(0)
   , device_number_(0)
@@ -49,6 +49,8 @@ int GPUCGGadget::process_config(ACE_Message_Block* mb)
 
   ConfigParser cp;
   cp.parse(mb->rd_ptr());
+
+  GADGET_DEBUG2("Running with config: %s\n", (char*)mb->rd_ptr());
 
   if (!is_configured_) {
     //Initialize Cuda
