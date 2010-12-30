@@ -1,5 +1,5 @@
+- Add appripriate export statements to classes in shared objects (for windows compatibility and to enable runtime linking)
 - Make reader and writer classes fo receiving and sending configurations
 - Make customized macros for writing logs GADGET_DEBUG(...,...), GADGET_ERROR(...,...)
 - Make defines for return integers, #define GADGET_FAIL -1, #define GADGET_OK 0, etc.
-- Create Siemens functor that uses GadgetSocketSender and GadgetSocketReceiver to communicate with Gadgetron
 - Replace current code in GadgetStreamController for reading from the socket with GadgetSocketReader

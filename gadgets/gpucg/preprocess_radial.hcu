@@ -1,0 +1,45 @@
+#ifndef PREPROCESS_RADIAL_HCU
+#define PREPROCESS_RADIAL_HCU
+
+#include "preprocess.hpp"
+#include "preprocess.hcu"
+
+#include <cuda_runtime_api.h>
+#include <cuComplex.h>
+
+/*
+	Type 1 and 2 plans: parallel preprocessing online
+*/
+
+template< class UINTd, class FLOATd, char TYPE > mr_recon::NFFT_plan<UINTd, FLOATd, TYPE>*
+preprocess_radial_NFFT( UINTd matrix_size, UINTd matrix_size_os, UINTd fixed_dims, unsigned int domain_size_samples, unsigned int domain_size_coils, float W, unsigned int num_projections, unsigned int samples_per_projection, unsigned int projections_per_frame, unsigned int angular_offset = 0, unsigned int frames_per_rotation = 1, float gc_factor = 1.0f );
+
+template< class UINTd, class FLOATd, char TYPE > mr_recon::NFFT_H_plan<UINTd, FLOATd, TYPE>*
+preprocess_radial_NFFT( UINTd matrix_size, UINTd matrix_size_os, UINTd fixed_dims, UINTd domain_size_grid, unsigned int domain_size_coils, float W, unsigned int num_projections, unsigned int samples_per_projection, unsigned int projections_per_frame, unsigned int angular_offset = 0, unsigned int frames_per_rotation = 1, float gc_factor = 1.0f );
+
+template< class UINTd, class FLOATd, char TYPE > mr_recon::NFFT_iteration_plan<UINTd, FLOATd, TYPE>*
+preprocess_radial_NFFT( UINTd matrix_size, UINTd matrix_size_os, UINTd fixed_dims, UINTd domain_size_grid, unsigned int domain_size_samples, unsigned int domain_size_coils, float W, unsigned int num_projections, unsigned int samples_per_projection, unsigned int projections_per_frame, unsigned int angular_offset = 0, unsigned int frames_per_rotation = 1, float gc_factor  = 1.0f );
+
+template< class UINTd, class FLOATd, char TYPE, template< class, class, char > class PLAN  > bool
+preprocess_radial_NFFT( PLAN<UINTd, FLOATd, TYPE> *plan, unsigned int num_projections, unsigned int samples_per_projection, unsigned int projections_per_frame, unsigned int angular_offset = 0, unsigned int frames_per_rotation = 1, float gc_factor = 1.0f );
+
+// Compute sampling trajectory and return corresponding device pointer. TYPE 1: golden ratio, TYPE 2: fixed angle.
+template< char TYPE > float2* 
+compute_trajectory_radial_2d( unsigned int matrix_size, unsigned int matrix_size_os, unsigned int samples_per_projection, unsigned int projections_per_frame, unsigned int angular_offset = 0, unsigned int frames_per_rotation = 1, float gc_factor = 1.0f );
+
+// Compute density compensation weights and return corresponding device pointer. TYPE 1: golden ratio, TYPE 2: fixed angle.
+template< char TYPE > float* 
+compute_dcw_radial_2d( unsigned int matrix_size, unsigned int matrix_size_os, unsigned int samples_per_projection, unsigned int projections_per_frame, unsigned int angular_offset = 0, unsigned int frames_per_rotation = 1, float gc_factor = 1.0f );
+
+// Compute density compensation weights. Store result in plan. Returns success/failure.
+template< class UINTd, class FLOATd, char TYPE, template< class, class, char > class PLAN > bool
+compute_dcw_radial( PLAN<UINTd, FLOATd, TYPE> *plan );
+
+// Returns dcw device pointer stored in plan
+template< class UINTd, class FLOATd, char TYPE, template< class, class, char > class PLAN > 
+float* get_dcw( PLAN<UINTd, FLOATd, TYPE> *plan );
+
+template< class UINTd, class FLOATd, char TYPE, template< class, class, char > class PLAN > bool
+noise_decorrelate_radial( PLAN<UINTd, FLOATd, TYPE> *plan, float shutter_radius, cuFloatComplex *samples_DevPtr );
+
+#endif

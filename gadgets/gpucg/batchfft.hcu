@@ -1,0 +1,103 @@
+/**
+ * @file
+ * Declarations for batched 2D FFTs with CUDA
+ *
+ * @author Jim Hardwick
+ *
+ * @note
+ * This code was posted to nVidia's public CUDA forum as thanks to the CUDA
+ * forum membership for their assistance. No copyright was asserted and no
+ * license terms were imposed in the post. The post can be found at
+ * http://forums.nvidia.com/index.php?showtopic=34241
+ */
+
+/**
+ * @note
+ * Modified and extended to suit the mr_recon project...
+ */
+
+#ifndef _BATCHFFT_H_
+#define _BATCHFFT_H_
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * Batched 2D/3D FFT plan
+ * 
+ * This struct is meant to be opaque to the caller -
+ * it is initialized by batchfftPlan2d() and destroyed
+ * by batchfftDestroy().
+ */
+struct batchfftHandle
+{
+	int nx;		///< FFT size dimension
+	int ny;		///< FFT size dimension
+	int nz;
+
+	int batch;	///< Number of FFTs in the batch
+
+	cufftType type;	///< FFT type
+
+	cufftHandle rowplan;	///< CUFFT plan for FFTing rows
+	cufftHandle colplan;	///< CUFFT plan for FFTing columns
+	cufftHandle layerplan;	///< CUFFT plan for FFTing layers (z dim)
+
+	dim3 transpose_threads;		///< Block dimensions for transpose
+	dim3 transpose_grid;		///< Grid dimensions for first transpose
+	dim3 transpose_back_grid;	///< Grid dimensions for second transpose
+
+	void* temp;	///< Temporary buffer for transpose kernel
+
+	batchfftHandle() : temp(NULL) { }; // use temp to tell if this handle has been allocated
+};
+
+/**
+ * Create a batched 2D/3D FFT plan
+ *
+ * This implementation requires a temporary buffer on the GPU the same size as
+ * the data to transform. The buffer is allocated when the plan is created and
+ * released when the plan is destroyed.
+ *
+ * @param plan Pointer to an uninitialized plan
+ * @param nx Dimension, must be > 1 and a multiple of 16
+ * @param ny Dimension, must be > 1 and a multiple of 16
+ * @param type FFT type (only CUFFT_C2C supported)
+ * @param batch Number of FFTs in the batch
+ * 
+ * @returns See CUFFT documentation for possible return values
+ */
+cufftResult batchfftPlan2d(batchfftHandle* plan, int nx, int ny, cufftType type, int batch);
+cufftResult batchfftPlan3d(batchfftHandle* plan, int nx, int ny, int nz, cufftType type, int batch);
+
+/**
+ * Destroy a batched 2D/3D FFT plan
+ *
+ * This implementation requires a temporary buffer on the GPU the same size as
+ * the data to transform. The buffer is allocated when the plan is created and
+ * released when the plan is destroyed.
+ *
+ * @param plan Plan to destroy
+ * 
+ * @returns See CUFFT documentation for possible return values
+ */
+cufftResult batchfftDestroy(batchfftHandle* plan);
+
+/**
+ * Execute a batched 2D/3D FFT
+ *
+ * @param plan Plan
+ * @param idata Pointer to input data
+ * @param odata Pointer to output data (if same as idata, performs in-place transforms)
+ * @param sign CUFFT_FORWARD or CUFFT_INVERSE
+ * 
+ * @returns See CUFFT documentation for possible return values
+ */
+cufftResult batchfftExecute(batchfftHandle plan, void* idata, void* odata, int sign);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

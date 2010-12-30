@@ -1,0 +1,28 @@
+#ifndef _PREPROCESS_HCU_
+#define _PREPROCESS_HCU_
+
+#include "preprocess.hpp"
+
+#include <cuComplex.h>
+
+// Generic preprocessing NFFT_H
+template< class UINTd, class FLOATd > mr_recon::NFFT_H_plan<UINTd, FLOATd, 0 >*
+preprocess_generic_NFFT( UINTd matrix_size, UINTd matrix_size_os, UINTd fixed_dims, UINTd domain_size_grid, unsigned int domain_size_coils, float W, unsigned int num_samples, FLOATd *trajectory_DevPtr );
+
+// Generic preprocessing NFFT iteration
+template< class UINTd, class FLOATd > mr_recon::NFFT_iteration_plan<UINTd, FLOATd, 0 >*
+preprocess_generic_NFFT( UINTd matrix_size, UINTd matrix_size_os, UINTd fixed_dims, UINTd domain_size_grid, unsigned int domain_size_samples, unsigned int domain_size_coils, float W, unsigned int num_samples, FLOATd *trajectory_DevPtr );
+
+// Generic preprocessing NFFT - updates existing plan
+template< class UINTd, class FLOATd, template< class, class, char > class PLAN  > bool
+preprocess_generic_NFFT( PLAN<UINTd, FLOATd, 0> *plan, unsigned int num_samples, FLOATd *trajectory_DevPtr );
+
+// Set DCW
+template< class UINTd, class FLOATd, char TYPE, template< class, class, char > class PLAN > 
+bool set_dcw( PLAN<UINTd, FLOATd, TYPE> *plan, float *dcwDevPtr );
+
+// Generic noise decorrelation
+template< class FLOATd > bool
+noise_decorrelate_generic( unsigned int num_samples, unsigned int num_coils, float shutter_radius, cuFloatComplex *samples_DevPtr, FLOATd *trajectory_DevPtr );
+
+#endif

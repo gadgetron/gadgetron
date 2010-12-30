@@ -15,7 +15,7 @@
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 {
-  static const ACE_TCHAR options[] = ACE_TEXT(":p:h:c:f:");
+  static const ACE_TCHAR options[] = ACE_TEXT(":p:h:c:f:l:");
   
   ACE_Get_Opt cmd_opts(argc, argv, options);
   
@@ -42,6 +42,12 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
       break;
     case 'h':
       ACE_OS_String::strncpy(hostname, cmd_opts.opt_arg(), 1024);
+      break;
+    case 'l':
+      ACE_OS_String::strncpy(config_lib, cmd_opts.opt_arg(), 1024);
+      break;
+    case 'c':
+      ACE_OS_String::strncpy(config_name, cmd_opts.opt_arg(), 1024);
       break;
     case 'f':
       ACE_OS_String::strncpy(filename, cmd_opts.opt_arg(), 4096);
@@ -178,6 +184,15 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   //Now loop through the data and send it all to the Gadgetron
   SiemensMdhNode* next = sd.GetFirstNode();
   while (next) {
+    //Now do we have any noise adjust scans
+    unsigned int noise_adjust_mask = (1<<25);
+    if (next->mdh.aulEvalInfoMask[0] & noise_adjust_mask) {
+      std::cout << "Skipping profile" << std::endl;
+      next = (SiemensMdhNode*)next->next;
+      continue;
+    }
+ 
+
     GadgetMessageAcquisition acq_head = acq_head_base;
 
     acq_head.idx.line                 = next->mdh.sLC.ushLine;

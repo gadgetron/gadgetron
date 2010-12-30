@@ -1,15 +1,15 @@
 #Gadgetron Makefile
 
+GADGETRONHOME=..
+
 UNAME := $(shell uname)
 
-EXESOURCES=main.cpp siemensraw.cpp ../gadgettools/ConfigParser.cpp
-LIBSOURCES=
-
+EXESOURCES=main.cpp siemensraw.cpp
 EXEOBJECTS=$(EXESOURCES:.cpp=.o)
 
 CXX=g++
-EXELDFLAGS= -lACE 
-CXXFLAGS=-c -Wall -I. -I../gadgettools #-DACE_NTRACE=0
+EXELDFLAGS= -L$(GADGETRONHOME)/lib -lACE -lgadgetrontools 
+CXXFLAGS=-c -Wall -I. -I$(GADGETRONHOME)/inc #-DACE_NTRACE=0
 
 EXECUTABLE=gadgetrondatasender
 

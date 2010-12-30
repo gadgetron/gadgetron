@@ -1,0 +1,123 @@
+/*
+
+	-------------------------------------------------------------------------------------
+	Implementation details header. For internal use only in the cuda NFFT implementation.
+	-------------------------------------------------------------------------------------
+
+*/
+
+#ifndef _NFFT_PRIVATE_HCU_
+#define _NFFT_PRIVATE_HCU_
+
+#include <cuComplex.h>
+#include <thrust/pair.h>
+
+/*
+	Private host implementation
+*/
+
+// Core convolution functions
+
+// It would be nice to templetize these two function with the PLAN as argument to avoid all the arguments. 
+// I have not been able to make the 'nvcc' accept temlates with a template class as argument
+
+template< class UINTd, class FLOATd, char TYPE, bool CORE, template< class, class, char > class PLAN > __host__ bool 
+NFFT_convolve_to_samples( PLAN<UINTd, FLOATd, TYPE> *plan, texture<cuFloatComplex, 1, cudaReadModeElementType> *tex_image_values, cuFloatComplex *samplesDevPtr, cuFloatComplex *imageDevPtr );
+
+template< class UINTd, class FLOATd, char TYPE, bool CORE, template< class, class, char > class PLAN > __host__ bool 
+NFFT_convolve_to_image( PLAN<UINTd, FLOATd, TYPE> *plan, texture<cuFloatComplex, 1, cudaReadModeElementType> *sample_values, cuFloatComplex *samplesDevPtr, cuFloatComplex *imageDevPtr, bool accumulate = false );
+
+// Calculate deapodization filter
+template< class UINTd > __host__ bool
+cuda_calculate_deapodization_filter( UINTd matrix_size, UINTd matrix_size_os, UINTd fixed_dims, float W, UINTd domain_size_grid, cuFloatComplex *out_filterDevPtr );
+
+// Online computation of deapodization filter
+template< class UINTd, class FLOATd > __host__ bool
+compute_deapodization_filter( UINTd matrix_size_os, float W, float one_over_W, float beta, cuFloatComplex *out_filterDevPtr );
+
+// Resolve NFFT_H wrapping
+template< class UINTd > void
+image_wrap( UINTd matrix_size_os, UINTd matrix_size_wrap, unsigned int number_of_images, bool accumulate, cuFloatComplex *image_source, cuFloatComplex *image_target );
+
+// Copy image to oversampled buffer with zero fill
+template< class UINTd > __host__ void
+image_copy_with_zero_fill( UINTd matrix_size, UINTd matrix_size_os, cuFloatComplex *image_DevPtr, cuFloatComplex *image_os_DevPtr, unsigned int number_of_images );
+
+// Normalize density compensation weights
+__host__ bool cuda_normalize_weights( unsigned int num_elements, unsigned int fixed_dims_multiplum, float acquisition_area, float *weightsDevPtr );
+
+// Convert float3 array to float4 array
+__host__ void
+cuda_float3_to_float4( float4 *targetDevPtr, float3 *sourceDevPtr, unsigned int number_of_elements );
+
+// Convert uint3 array to uint4 array
+__host__ void
+cuda_uint3_to_uint4( uint4 *targetDevPtr, uint3 *sourceDevPtr, unsigned int number_of_elements );
+
+// Get sample trajectory 
+template< class UINTd, class FLOATd, char TYPE, template< class, class, char > class PLAN > 
+__host__ bool NFFT_get_samples( PLAN<UINTd, FLOATd, TYPE> *plan, FLOATd* result );
+
+// Device utilities
+
+template <class FLOATd, bool CORE> __inline__ __device__ FLOATd NFFT_get_sample_position( unsigned int sampleIdx );
+
+
+/*
+	Kernels
+*/
+
+// Convolution
+template <class UINTd, class FLOATd, char TYPE, bool CORE> __global__ void NFFT_convolve_kernel_generic( float half_alpha_times_W_SQR, float one_over_alpha_squared, float one_over_W, float beta, unsigned int domain_size_samples, unsigned int domain_count_samples, unsigned int domain_size_coils, UINTd matrix_size_os, unsigned int warp_size, unsigned int number_of_strips, cuFloatComplex *out_data );
+
+template <class UINTd, class FLOATd, char TYPE, bool CORE> __global__ void NFFT_convolve_kernel_parallel( float alpha, float W, float beta, unsigned int domain_count_samples, unsigned int domain_size_coils, UINTd matrix_size, UINTd matrix_size_os, unsigned int double_warp_size_power, float one_over_num_encodings, unsigned int number_of_strips, uint2 *stripsMap, UINTd *stripsDir, UINTd *stripOrigins, unsigned int *stripLengths, cuFloatComplex *out_data, bool lastDimFixed );
+
+template <class UINTd, class FLOATd, char TYPE, bool CORE> __global__ void
+NFFT_convolve_kernel_parallel_generic( float alpha, float W, float beta, unsigned int domain_count_samples, unsigned int domain_size_coils, UINTd matrix_size, UINTd matrix_size_os, UINTd matrix_size_wrap, unsigned int double_warp_size_power, FLOATd *traj_positions, cuFloatComplex *out_data, bool lastDimFixed );
+
+template <class UINTd, class FLOATd, char TYPE, bool CORE> __global__ void NFFT_convolve_kernel_sequential( float half_alpha_times_W_SQR, float one_over_alpha_squared, float one_over_W, float beta, unsigned int domain_size_samples, unsigned int domain_count_samples, UINTd matrix_size_os, unsigned int warp_size, unsigned int number_of_strips, cuFloatComplex *out_data );
+
+template <class UINTd, class FLOATd, char TYPE, bool CORE> __global__ void NFFT_H_convolve_kernel_generic( float half_alpha_times_W_SQR, float one_over_alpha_squared, float one_over_W, float beta, UINTd domain_size_grid, UINTd domain_count_grid, unsigned int domain_size_coils, UINTd matrix_size_os, UINTd bias, unsigned int warp_size, unsigned int number_of_strips, unsigned int number_of_samples, cuFloatComplex *out_data );
+
+template <class UINTd, class FLOATd, char TYPE, bool CORE> __global__ void NFFT_H_convolve_kernel_semigeneric( UINTd domain_count_grid, UINTd matrix_size_os, UINTd matrix_size_wrap, UINTd bias, UINTd bias_os, unsigned int domain_size_grid_X, unsigned int domain_size_grid_power, unsigned int double_warp_size_power, float one_over_num_encoding_steps, float alpha, float W, float beta, unsigned int domain_size_coils, unsigned int number_of_samples, unsigned int number_of_strips, uint2 *stripsMap, uint2 *strips, cuFloatComplex *out_data );
+
+template <class UINTd, class FLOATd, char TYPE, bool CORE> __global__ void NFFT_H_convolve_kernel_parallel_radial( UINTd domain_count_grid, UINTd matrix_size_os, UINTd matrix_size_wrap, UINTd bias, UINTd bias_os, float alpha, float W, float beta, unsigned int domain_size_coils, unsigned int double_warp_size_power, float one_over_num_encoding_steps, unsigned int number_of_samples, unsigned int number_of_strips, uint2 *stripsMap, uint2 *strips, uint2 *domainsMap, cuFloatComplex *out_data, bool lastDimFixed );
+template <class UINTd, class FLOATd, char TYPE, bool CORE> __global__ void NFFT_H_convolve_kernel_parallel_generic( UINTd domain_count_grid, UINTd matrix_size_os, UINTd matrix_size_wrap, UINTd bias, UINTd bias_os, float alpha, float W, float beta, unsigned int domain_size_coils, unsigned int double_warp_size_power, unsigned int number_of_samples, uint2 *domainsMap, FLOATd *traj_positions, unsigned int *tuples_last, unsigned int *bucket_begin, unsigned int *bucket_end, cuFloatComplex *out_data, bool lastDimFixed );
+template <class UINTd, class FLOATd, char TYPE, bool CORE> __global__ void NFFT_H_convolve_kernel_parallel( UINTd domain_count_grid, UINTd matrix_size_os, UINTd matrix_size_wrap, UINTd bias, UINTd bias_os, float alpha, float W, float beta, unsigned int domain_size_coils, unsigned int double_warp_size_power, unsigned int number_of_samples, FLOATd *traj_positions, thrust::pair<unsigned int, unsigned int> *grid_sample_tuples, unsigned int *bucket_begin, unsigned int *bucket_end, uint2 *domainsMap, cuFloatComplex *out_data, bool lastDimFixed );
+
+template <class UINTd, class FLOATd, char TYPE, bool CORE> __global__ void NFFT_H_convolve_kernel_sequential( float half_alpha_times_W_SQR, float one_over_alpha_squared, float one_over_W, float beta, UINTd domain_size_grid, UINTd domain_count_grid, UINTd matrix_size_os, UINTd bias, unsigned int warp_size, unsigned int number_of_strips, unsigned int number_of_samples, cuFloatComplex *out_data );
+
+// Density compensation kernel
+__global__ void 
+density_compensate_kernel( unsigned int number_of_samples, cuFloatComplex *out_devPtr, const cuFloatComplex *in_samples_devPtr, const float *in_weights_devPtr, unsigned int number_of_images );
+
+// Deapodize kernels (in Cuda 2.0 beta overloading of template/regular function doesn't seem to work...)
+__global__ void 
+_deapodize_kernel( unsigned int num_elements, cuFloatComplex *imageDevPtr, cuFloatComplex *filterDevPtr, unsigned int number_of_images );
+
+template< class UINTd > __global__ void 
+deapodize_kernel( UINTd image_size, UINTd filter_size, UINTd corner1, UINTd corner2, cuFloatComplex *imageDevPtr, cuFloatComplex *filterDevPtr, unsigned int number_of_images );
+
+template< class UINTd, class FLOATd > __global__ void
+compute_deapodization_filter_kernel( UINTd matrix_size_os, float W, float one_over_W, float beta, cuFloatComplex *out_DevPtr );
+
+// Convolution wrap kernel
+template< class UINTd > __global__ void
+image_wrap_kernel( UINTd matrix_size_os, UINTd matrix_size_wrap, unsigned int number_of_images, bool accumulate, cuFloatComplex *source_image, cuFloatComplex *target_image );
+
+// Copy image to oversampled buffer with zero fill
+template< class UINTd > __global__ void
+image_copy_with_zero_fill_kernel( UINTd matrix_size, UINTd matrix_size_os, cuFloatComplex *image_DevPtr, cuFloatComplex *image_os_DevPtr, unsigned int number_of_images );
+
+// Convert float3 array to float4 array
+__global__ void
+cuda_float3_to_float4_kernel( float4 *targetDevPtr, float3 *sourceDevPtr, unsigned int number_of_elements );
+
+// Convert uint3 array to uint4 array
+__global__ void
+cuda_uint3_to_uint4_kernel( uint4 *targetDevPtr, uint3 *sourceDevPtr, unsigned int number_of_elements );
+
+template <class UINTd, class FLOATd, char TYPE> __global__ void 
+compute_radial_sample_positions_kernel( UINTd bias, UINTd bias_os, FLOATd matrix_size_os_f, FLOATd bias_os_f, unsigned int number_of_samples, float alpha, FLOATd *co, bool remove_os, bool normalize );
+
+#endif
