@@ -56,5 +56,7 @@ clean:
 	rm -rf *.real
 
 install:
+	mkdir -p inc
+	mkdir -p lib
 	cp $(HEADERS) inc/
 	cp $(EXECUTABLE) lib/

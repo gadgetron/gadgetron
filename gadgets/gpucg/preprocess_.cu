@@ -18,6 +18,8 @@
 #include <thrust/sort.h>
 #include <thrust/binary_search.h>
 #include <thrust/iterator/counting_iterator.h>
+#include <thrust/scan.h>
+
 
 #include <assert.h>
 
