@@ -35,7 +35,7 @@ class GPUCGGadget :
 public Gadget2<GadgetMessageAcquisition, NDArray< std::complex<float> > >
 {
  public:
-  GPUCGGadget();
+  GPUCGGadget(bool pass_on_data = false, int slice = 0);
   virtual ~GPUCGGadget();
 
 
@@ -52,6 +52,7 @@ public Gadget2<GadgetMessageAcquisition, NDArray< std::complex<float> > >
   virtual int allocate_csm_buffer();
 
   ACE_Message_Queue<ACE_MT_SYNCH> buffer_;
+  int slice_no_;
   int profiles_per_frame_;
   int shared_profiles_;
   int channels_;

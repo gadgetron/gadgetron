@@ -28,10 +28,22 @@ int GPUCGConfigurator::ConfigureStream(ACE_Stream<ACE_MT_SYNCH>* stream)
   }
 
 
-  ACE_Module<ACE_MT_SYNCH> *gpucg = 0;
-  ACE_NEW_RETURN (gpucg,
-		  ACE_Module<ACE_MT_SYNCH> (ACE_TEXT ("GPUCG"),
-			  new GPUCGGadget ()),
+  ACE_Module<ACE_MT_SYNCH> *gpucg0 = 0;
+  ACE_NEW_RETURN (gpucg0,
+		  ACE_Module<ACE_MT_SYNCH> (ACE_TEXT ("GPUCG0"),
+					    new GPUCGGadget (true, 0)),
+		  -1);
+
+  ACE_Module<ACE_MT_SYNCH> *gpucg1 = 0;
+  ACE_NEW_RETURN (gpucg1,
+		  ACE_Module<ACE_MT_SYNCH> (ACE_TEXT ("GPUCG1"),
+					    new GPUCGGadget (true, 1)),
+		  -1);
+
+  ACE_Module<ACE_MT_SYNCH> *gpucg2 = 0;
+  ACE_NEW_RETURN (gpucg2,
+		  ACE_Module<ACE_MT_SYNCH> (ACE_TEXT ("GPUCG2"),
+					    new GPUCGGadget (true, 2)),
 		  -1);
 
   /*
@@ -64,7 +76,19 @@ int GPUCGConfigurator::ConfigureStream(ACE_Stream<ACE_MT_SYNCH>* stream)
 
   */
 
-  if (stream->push (gpucg) == -1) {
+  if (stream->push (gpucg2) == -1) {
+    GADGET_DEBUG1("Failed to push GPUCG Gadget\n");
+    return -1;
+    
+  }
+
+  if (stream->push (gpucg1) == -1) {
+    GADGET_DEBUG1("Failed to push GPUCG Gadget\n");
+    return -1;
+    
+  }
+
+  if (stream->push (gpucg0) == -1) {
     GADGET_DEBUG1("Failed to push GPUCG Gadget\n");
     return -1;
     

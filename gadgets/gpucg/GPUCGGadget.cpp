@@ -4,8 +4,9 @@
 
 
 
-GPUCGGadget::GPUCGGadget()
-  : profiles_per_frame_(48)
+GPUCGGadget::GPUCGGadget(bool pass_on_data, int slice_no)
+  : slice_no_(slice_no)
+  , profiles_per_frame_(48)
   , shared_profiles_(16)
   , channels_(0)
   , samples_per_profile_(0)
@@ -32,6 +33,7 @@ GPUCGGadget::GPUCGGadget()
 {
   matrix_size_    = make_uint2(0,0);
   matrix_size_os_ = make_uint2(0,0);
+  pass_on_undesired_data_ = pass_on_data; //We will make one of these for each slice and so data should be passed on.
 }
 
 
@@ -165,6 +167,18 @@ int  GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
   if (!is_configured_) {
     GADGET_DEBUG1("Data received before configuration complete\n");
     return GADGET_FAIL;
+  }
+
+  //Is this data for me?
+  if (m1->getObjectPtr()->idx.slice != slice_no_) {
+    //This data is not for me
+    if (pass_on_undesired_data_) {
+      this->next()->putq(m1);
+    } else {
+      GADGET_DEBUG2("Dropping slice: %d\n", m1->getObjectPtr()->idx.slice);
+      m1->release();
+    }
+    return GADGET_OK;
   }
 
   buffer_.enqueue_tail(m1);

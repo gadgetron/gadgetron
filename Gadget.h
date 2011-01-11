@@ -21,6 +21,7 @@ public:
   Gadget() 
     : inherited()
     , desired_threads_(1)
+    , pass_on_undesired_data_(false)
   {
     ACE_TRACE(( ACE_TEXT("Gadget::Gadget") ));
   }
@@ -154,6 +155,8 @@ protected:
   }
 
   unsigned int desired_threads_;
+  bool pass_on_undesired_data_;
+
 };
 
 
@@ -190,9 +193,14 @@ protected:
     GadgetContainerMessage<P1>* m = dynamic_cast< GadgetContainerMessage<P1>* >(mb);
     
     if (!m) {
-      ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"),
-			 ACE_TEXT("Gadget1::process, dynamic cast failed")),
-		       -1);
+      if (!pass_on_undesired_data_) {
+	ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"),
+			   ACE_TEXT("Gadget1::process, dynamic cast failed")),
+			 -1);
+      } else {
+	return (this->next()->putq(mb));
+      }
+
     }
     
     process(m);
@@ -213,31 +221,29 @@ protected:
 
     GadgetContainerMessage<P1>* m1 = dynamic_cast< GadgetContainerMessage<P1>* >(mb);
     
-    if (!m1) {
-      ACE_DEBUG( (LM_ERROR, ACE_TEXT("%s -> %s, %s, %s, %@, %@\n"),
-		  this->module()->name(),
-		  ACE_TEXT("Gadget2::process, dynamic cast failed (arg 0)"),
-		  typeid(GadgetContainerMessage<P1>*).name(),
-		  typeid(m1).name(),
-		  mb,
-		  m1));
-
-      return -1;
-    }
-    
-    if (!m1->cont()) {
-      ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"),
-			 ACE_TEXT("Gadget2::process, missing argument")),
-		       -1);
+    GadgetContainerMessage<P2>* m2 = 0;
+    if (m1) {
+      m2 = dynamic_cast< GadgetContainerMessage<P2>* >(m1->cont());
     }
 
-    GadgetContainerMessage<P2>* m2 = dynamic_cast< GadgetContainerMessage<P2>* >(m1->cont());
-    
-    if (!m2) {
-      ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%s\n"),
-			 this->module()->name(),
-			 ACE_TEXT("Gadget2::process, dynamic cast failed (arg 1)")),
-		       -1);
+    if (!m1 || !m2) {
+      if (!pass_on_undesired_data_) {
+	ACE_DEBUG( (LM_ERROR, ACE_TEXT("%s -> %s, (%s, %s, %@, %@), (%s, %s, %@, %@)\n"),
+		    this->module()->name(),
+		    ACE_TEXT("Gadget2::process, dynamic cast failed"),
+		    typeid(GadgetContainerMessage<P1>*).name(),
+		    typeid(m1).name(),
+		    mb,
+		    m1,
+		    typeid(GadgetContainerMessage<P2>*).name(),
+		    typeid(m2).name(),
+		    mb->cont(),
+		    m2));
+	
+	return -1;
+      } else {
+	return (this->next()->putq(mb));
+      }
     }
     
     return this->process(m1,m2);
