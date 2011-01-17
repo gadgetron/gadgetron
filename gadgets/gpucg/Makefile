@@ -30,10 +30,12 @@ LIBSOURCES=\
 	GPUCGConfigurator.cpp \
 	GPUCGGadget.cpp \
 	GPUCGGoldenRadial.cpp \
+	GPUCGGoldenSpiral.cpp \
 	NSense.cpp \
 	preprocess.cpp \
 	ndarray.cpp \
-	vec.cpp
+	vec.cpp \
+	vds.cpp
 
 CUDASOURCES=\
 	NFFT.cu \

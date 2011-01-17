@@ -13,6 +13,109 @@
 #include "ConfigParser.h"
 #include "NDArray.h"
 
+struct spiral_parameters {
+  int Interleaves;
+  int ADCsPerInterleave;
+  int SamplesPerADC;
+  int SamplesToSkipStart;
+  int SamplesToSkipEnd; 
+  int SamplingTime_ns;
+  int Reordering;
+  double MaxGradient_Gcm;
+  double MaxSlewRate_Gcms;
+  double krmax_cm;
+  double FOVCoeff_1;
+};
+
+int getSpiralParameters(SiemensRawData* sd, spiral_parameters* parm)
+{
+  std::string val;
+  if (sd->GetMeasYapsParameter(std::string("sKSpace.lRadialViews"), val) == -1) {
+    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Unable to findsKSpace.lRadialViews\n")) );
+    return -1;
+  }
+  parm->Interleaves = atoi(val.c_str());
+
+  if (sd->GetMeasYapsParameter(std::string("sWiPMemBlock.alFree[52]"), val) == -1) {
+    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Unable to find sWiPMemBlock.alFree[52]\n")) );
+    return -1;
+  }
+  parm->ADCsPerInterleave = atoi(val.c_str());
+
+  if (sd->GetMeasYapsParameter(std::string("sWiPMemBlock.alFree[53]"), val) == -1) {
+    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Unable to find sWiPMemBlock.alFree[53]\n")) );
+    return -1;
+  }
+  parm->SamplesPerADC = atoi(val.c_str());
+
+  if (sd->GetMeasYapsParameter(std::string("sWiPMemBlock.alFree[54]"), val) == -1) {
+    //ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Unable to find sWiPMemBlock.alFree[54]\n")) );
+    parm->SamplesToSkipStart = 0;//atoi(val.c_str());
+  } else {
+    parm->SamplesToSkipStart = atoi(val.c_str());
+  }
+
+  if (sd->GetMeasYapsParameter(std::string("sWiPMemBlock.alFree[55]"), val) == -1) {
+    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Unable to find sWiPMemBlock.alFree[55]\n")) );
+    return -1;
+  }
+  parm->SamplesToSkipEnd = atoi(val.c_str());
+
+  if (sd->GetMeasYapsParameter(std::string("sWiPMemBlock.alFree[56]"), val) == -1) {
+    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Unable to find sWiPMemBlock.alFree[56]\n")) );
+    return -1;
+  }
+  parm->SamplingTime_ns = atoi(val.c_str());
+
+  if (sd->GetMeasYapsParameter(std::string("sKSpace.unReordering"), val) == -1) {
+    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Unable to find sKSpace.unReordering\n")) );
+    return -1;
+  }
+  parm->Reordering = strtol (val.c_str(), NULL, 16);
+
+  if (sd->GetMeasYapsParameter(std::string("sWiPMemBlock.adFree[6]"), val) == -1) {
+    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Unable to find sWiPMemBlock.adFree[6]\n")) );
+    return -1;
+  }
+  parm->MaxGradient_Gcm = atof(val.c_str());
+
+  if (sd->GetMeasYapsParameter(std::string("sWiPMemBlock.adFree[7]"), val) == -1) {
+    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Unable to find sWiPMemBlock.adFree[7]\n")) );
+    return -1;
+  }
+  parm->MaxSlewRate_Gcms = atof(val.c_str());
+
+  if (sd->GetMeasYapsParameter(std::string("sWiPMemBlock.adFree[8]"), val) == -1) {
+    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Unable to find sWiPMemBlock.adFree[8]\n")) );
+    return -1;
+  }
+  parm->krmax_cm= atof(val.c_str());
+
+  if (sd->GetMeasYapsParameter(std::string("sWiPMemBlock.adFree[9]"), val) == -1) {
+    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Unable to find sWiPMemBlock.adFree[9]\n")) );
+    return -1;
+  }
+  parm->FOVCoeff_1= atof(val.c_str());
+
+  return 0;
+}
+
+int dumpSpiralParameters(spiral_parameters* spi_parm) {
+
+  ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Interleaves           = %d\n"), spi_parm->Interleaves) );
+  ACE_DEBUG( (LM_DEBUG, ACE_TEXT("ADCsPerInterleave     = %d\n"), spi_parm->ADCsPerInterleave) );
+  ACE_DEBUG( (LM_DEBUG, ACE_TEXT("SamplesPerADC         = %d\n"), spi_parm->SamplesPerADC) );
+  ACE_DEBUG( (LM_DEBUG, ACE_TEXT("SamplesToSkipStart    = %d\n"), spi_parm->SamplesToSkipStart) );
+  ACE_DEBUG( (LM_DEBUG, ACE_TEXT("SamplesToSkipEnd      = %d\n"), spi_parm->SamplesToSkipEnd) );
+  ACE_DEBUG( (LM_DEBUG, ACE_TEXT("SamplingTime_ns       = %d\n"), spi_parm->SamplingTime_ns) );
+  ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Reordering            = %d\n"), spi_parm->Reordering) );
+  ACE_DEBUG( (LM_DEBUG, ACE_TEXT("MaxGradient_Gcm       = %f\n"), spi_parm->MaxGradient_Gcm) );
+  ACE_DEBUG( (LM_DEBUG, ACE_TEXT("MaxSlewRate_Gcms      = %f\n"), spi_parm->MaxSlewRate_Gcms) );
+  ACE_DEBUG( (LM_DEBUG, ACE_TEXT("krmax_cm              = %f\n"), spi_parm->krmax_cm) );
+  ACE_DEBUG( (LM_DEBUG, ACE_TEXT("FOVCoeff_1            = %f\n"), spi_parm->FOVCoeff_1) );
+  return 0;
+}
+
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 {
   static const ACE_TCHAR options[] = ACE_TEXT(":p:h:c:f:l:");
@@ -101,7 +204,41 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   ACE_OS_String::strncpy(conf.configurator_name,config_name,1024);
 
 
+  std::string ucTrajectory;
+  int trajectory;
+  spiral_parameters spi_parm;
+  if (sd.GetMeasYapsParameter(std::string("sKSpace.ucTrajectory"), ucTrajectory) == -1) {
+    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Unable to find trajectory parameter, assuming Cartesian data\n")) ); 
+    trajectory = TRAJECTORY_CARTESIAN;
+  } else {
+    trajectory = strtol (ucTrajectory.c_str(), NULL, 16);
+    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Trajectory : %d\n"), trajectory) );
+  }
+
+
   ConfigParser cp;
+
+  switch (trajectory) {
+
+  case TRAJECTORY_CARTESIAN:
+    cp.add(std::string("encoding"), std::string("trajectory"),
+	   std::string("cartesian"));
+    break;
+  case TRAJECTORY_RADIAL:
+    cp.add(std::string("encoding"), std::string("trajectory"),
+	   std::string("radial"));
+    break;
+  case TRAJECTORY_SPIRAL:
+    cp.add(std::string("encoding"), std::string("trajectory"),
+	   std::string("spiral"));
+    break;
+  default:
+    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Unknown trajectory, assumin Cartesian\n")) );
+    cp.add(std::string("encoding"), std::string("trajectory"),
+	   std::string("cartesian"));
+    break;
+  };
+  
   cp.add(std::string("encoding"), std::string("matrix_x"), 
 	 (size_t)bp.matrix_size[0]);
 
@@ -122,6 +259,47 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 
   cp.add(std::string("encoding"), std::string("slices"), 
 	 (size_t)acq_head_base.max_idx.slice+1);
+
+
+  if (trajectory == TRAJECTORY_SPIRAL) {
+    if (getSpiralParameters(&sd,&spi_parm) < 0) {
+      ACE_DEBUG( (LM_ERROR, ACE_TEXT("Unable to locate spiral parameters\n")) );
+      return -1;
+    } else {
+      cp.add(std::string("spiral"), std::string("Interleaves"), 
+	     (size_t)spi_parm.Interleaves);
+      
+      cp.add(std::string("spiral"), std::string("ADCsPerInterleave"), 
+	     (size_t)spi_parm.ADCsPerInterleave);
+
+      cp.add(std::string("spiral"), std::string("SamplesPerADC"), 
+	     (size_t)spi_parm.SamplesPerADC);
+
+      cp.add(std::string("spiral"), std::string("SamplesToSkipStart"), 
+	     (size_t)spi_parm.SamplesToSkipStart);
+
+      cp.add(std::string("spiral"), std::string("SamplesToSkipEnd"), 
+	     (size_t)spi_parm.SamplesToSkipEnd);
+
+      cp.add(std::string("spiral"), std::string("SamplingTime_ns"), 
+	     (size_t)spi_parm.SamplingTime_ns);
+
+      cp.add(std::string("spiral"), std::string("Reordering"), 
+	     (size_t)spi_parm.Reordering);
+      
+      cp.add(std::string("spiral"), std::string("MaxGradient_Gcm"), 
+	     spi_parm.MaxGradient_Gcm);
+      
+      cp.add(std::string("spiral"), std::string("MaxSlewRate_Gcms"), 
+	     spi_parm.MaxSlewRate_Gcms);
+      
+      cp.add(std::string("spiral"), std::string("krmax_cm"), 
+	     spi_parm.krmax_cm);
+      
+      cp.add(std::string("spiral"), std::string("FOVCoeff_1"), 
+	     spi_parm.FOVCoeff_1);      
+    }
+  }
   
 
   ACE_DEBUG( (LM_DEBUG, 

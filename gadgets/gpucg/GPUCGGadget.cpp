@@ -45,6 +45,21 @@ GPUCGGadget::~GPUCGGadget()
   if (dcw_dev_ptr_)        cudaFree(dcw_dev_ptr_);
 }
 
+int GPUCGGadget::set_base_parameters(ConfigParser* cp)
+{
+  
+  samples_per_profile_ = cp->getIntVal("encoding","readout_length");
+  channels_ = cp->getIntVal("encoding","channels");
+
+  if (matrix_size_.x == 0 && matrix_size_.y == 0) {
+    matrix_size_ = make_uint2(cp->getIntVal("encoding","matrix_x"), 
+			      cp->getIntVal("encoding","matrix_y"));
+  }
+
+  return GADGET_OK;
+}
+
+
 int GPUCGGadget::process_config(ACE_Message_Block* mb)
 {
   GADGET_DEBUG1("GPUCGGadget::process_config\n");
@@ -68,13 +83,9 @@ int GPUCGGadget::process_config(ACE_Message_Block* mb)
     cublasInit();
     //End of Cuda Initilization
 
-    samples_per_profile_ = cp.getIntVal("encoding","readout_length");
-    channels_ = cp.getIntVal("encoding","channels");
-
-    //Only set matrix size if not set from the outside
-    if (matrix_size_.x == 0 && matrix_size_.y == 0) {
-      matrix_size_ = make_uint2(cp.getIntVal("encoding","matrix_x"), 
-				cp.getIntVal("encoding","matrix_y"));
+    if (set_base_parameters(&cp) != GADGET_OK) {
+      GADGET_DEBUG1("Failed to set base parameters\n");
+      return GADGET_FAIL;
     }
 
     GADGET_DEBUG2("Matrix size  : [%d,%d] \n", matrix_size_.x, matrix_size_.y);
@@ -216,7 +227,7 @@ int  GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     }
 
 
-    float shutter_radius = 0.95*0.5;
+    float shutter_radius = 0.85*0.5;
     if (!noise_decorrelate_generic(samples_in_frame, 
 				   channels_, 
 				   shutter_radius, 
@@ -329,6 +340,20 @@ int  GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 }
 
 
+int GPUCGGadget::copy_samples_for_profile(float* host_base_ptr,
+					  std::complex<float>* data_base_ptr,
+					  int profile_no,
+					  int channel_no)
+{
+
+  memcpy(host_base_ptr + 
+	 (channel_no*allocated_samples_ + profile_no*samples_per_profile_) * 2,
+	 data_base_ptr + channel_no*samples_per_profile_, 
+	 sizeof(float)*samples_per_profile_*2);
+  
+  return GADGET_OK;
+}
+
 int GPUCGGadget::upload_samples()
 {
   int samples_needed = 
@@ -388,11 +413,10 @@ int GPUCGGadget::upload_samples()
     int current_profile = profiles_per_frame_-profiles_copied-1;
     
     for (int i = 0; i < channels_; i++) {
-      
-      memcpy(data_host_ptr_ + 
-	     (i*allocated_samples_ + current_profile*samples_per_profile_) * 2,
-	     d + i*samples_per_profile_, sizeof(float)*samples_per_profile_*2);
-      
+      copy_samples_for_profile(data_host_ptr_,
+			       d,
+			       current_profile,
+			       i);
     }
     
     

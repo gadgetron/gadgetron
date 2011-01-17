@@ -291,6 +291,17 @@ sMDH* SiemensRawData::GetMaxValues()
   return &m_mdh_max;
 }
 
+int SiemensRawData::GetMeasYapsParameter(std::string parameter_name, std::string& value)
+{
+  std::map<std::string, std::string>::iterator it;
+  if ((it = m_meas_yaps.find(parameter_name)) == m_meas_yaps.end()) {
+    return -1;
+  } 
+
+  value = it->second;
+  return 0;
+}
+
 int SiemensRawData::ParseMeasYaps()
 {
   static const char fname[] = "SiemensRawData::ParseMeasYaps";

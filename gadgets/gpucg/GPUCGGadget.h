@@ -9,6 +9,7 @@
 #include "Gadgetron.h"
 #include "NDArray.h"
 #include "gadgetheaders.h"
+#include "ConfigParser.h"
 
 // Cuda includes
 #include <cuda.h>
@@ -45,6 +46,13 @@ public Gadget2<GadgetMessageAcquisition, NDArray< std::complex<float> > >
 		GadgetContainerMessage< NDArray< std::complex<float> > >* m2);
 
   virtual int process_config(ACE_Message_Block* mb);
+
+  virtual int set_base_parameters(ConfigParser* cp);
+
+  virtual int copy_samples_for_profile(float* host_base_ptr,
+				       std::complex<float>* data_base_ptr,
+				       int profile_no,
+				       int channel_no);
 
   virtual int calculate_trajectory() = 0;
   virtual int calculate_density_compensation() = 0;

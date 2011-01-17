@@ -6,6 +6,13 @@
 #define MDH_NUMBEROFICEPROGRAMPARA 4
 #define MDH_FREEHDRPARA            4
 
+enum Trajectory {
+  TRAJECTORY_CARTESIAN = 0x01,
+  TRAJECTORY_RADIAL    = 0x02,
+  TRAJECTORY_SPIRAL    = 0x04,
+  TRAJECTORY_BLADE     = 0x08
+};
+
 struct mdhLC {
   uint16_t ushLine;
   uint16_t ushAcquisition;
@@ -109,6 +116,9 @@ public:
   sMDH* GetMaxValues();
 
   SiemensBaseParameters GetBaseParameters() {return m_base_parameters;}
+  
+  int GetMeasYapsParameter(std::string parameter_name, std::string& value);
+
 protected:
   int ReadMdhNode(std::ifstream* f);
   int DeleteNode(SiemensMdhNode* node);
