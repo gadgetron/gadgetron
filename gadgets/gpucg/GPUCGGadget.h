@@ -46,8 +46,8 @@ public Gadget2<GadgetMessageAcquisition, NDArray< std::complex<float> > >
 
   virtual int process_config(ACE_Message_Block* mb);
 
-  virtual int calculate_trajectory();
-  virtual int calculate_density_compensation();
+  virtual int calculate_trajectory() = 0;
+  virtual int calculate_density_compensation() = 0;
   virtual int upload_samples();
   virtual int allocate_csm_buffer();
 

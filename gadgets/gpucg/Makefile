@@ -29,6 +29,7 @@ LIBHEADERS=\
 LIBSOURCES=\
 	GPUCGConfigurator.cpp \
 	GPUCGGadget.cpp \
+	GPUCGGoldenRadial.cpp \
 	NSense.cpp \
 	preprocess.cpp \
 	ndarray.cpp \
