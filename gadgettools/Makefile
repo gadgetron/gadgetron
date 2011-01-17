@@ -24,11 +24,18 @@ LIBSOURCES=\
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 
-CXX=g++
 EXELDFLAGS= -lACE
 
 CXXFLAGS=-c -fPIC -Wall -I. -I$(GADGETRONHOME) -g #-DACE_NTRACE=0
+
+ifeq ($(UNAME), Darwin)
+CXXFLAGS=-arch i386 -c -fPIC -Wall -I. -I$(GADGETRONHOME) -g #-DACE_NTRACE=0
+endif
+
 LIBLDFLAGS= -shared -lACE 
+ifeq ($(UNAME), Darwin)
+LIBLDFLAGS= -arch i386 -shared -lACE 
+endif
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 
