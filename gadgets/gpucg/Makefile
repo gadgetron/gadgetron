@@ -51,6 +51,9 @@ LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
 CXX=g++
+ifeq ($(KERNEL), Darwin)
+CXX=g++ -m32 -arch i386
+endif 
 
 CXXFLAGS=-c -fPIC -Wall -I. \
 	-I$(GADGETRONHOME)/gadgettools \
@@ -58,11 +61,17 @@ CXXFLAGS=-c -fPIC -Wall -I. \
 	$(CUDAINCLUDES) \
 	-g #-DACE_NTRACE=0
 
-LIBLDFLAGS= -shared -lACE 
+LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -lgadgetron -lgadgetroncore -lgadgetrontools 
 
 NVCC=$(CUDAHOME)/bin/nvcc
-NVCCFLAGS=-c $(CUDAINCLUDES) -Xcompiler -fPIC 
+NVCCFLAGS= --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC
 
+
+CUDALIBRARIES=-L$(CUDAHOME)/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudpp_$(MACHINE) -lcudart -lcublas -lcufft
+
+ifeq ($(KERNEL), Darwin)
+CUDALIBRARIES=-L$(CUDAHOME)/lib -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/darwin -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudpp_$(MACHINE) -lcudart -lcublas -lcufft
+endif 
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 
@@ -73,7 +82,7 @@ test:
 
 
 $(LIBFILE): $(LIBOBJECTS) $(LIBCUDAOBJECTS) Makefile
-	$(CXX) -m64 $(LIBLDFLAGS) $(LIBOBJECTS) $(LIBCUDAOBJECTS) -L$(CUDAHOME)/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux -lshrutil_$(MACHINE) -lcutil_$(MACHINE) -lcudpp_$(MACHINE) -lcudart -lcublas -lcufft -o $@
+	$(CXX) $(LIBLDFLAGS) $(LIBOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) -o $@
 
 %.cpp.o: %.cpp
 	$(CXX) $(CXXFLAGS) -DGADGETS_BUILD_DLL $< -o $@
@@ -92,5 +101,5 @@ clean:
 install:
 	mkdir -p $(GADGETRONHOME)/lib
 	mkdir -p $(GADGETRONHOME)/inc
-	cp $(LIBFILE) $(GADGETRONHOME)/lib/
 	cp $(LIBHEADERS) $(GADGETRONHOME)/inc/
+	cp $(LIBFILE) $(GADGETRONHOME)/lib/
