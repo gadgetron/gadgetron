@@ -261,7 +261,8 @@ int GPUCGGoldenSpiralGadget::calculate_trajectory()
 
 
     for (int i = 0; i < Interleaves_; i++) {
-      float rotation = (current_profile_offset_ + i) * ((PI / (sqrt(5.0) + 1))/4);
+      float rotation = (current_profile_offset_ + i) * 2* (PI / ((sqrt(5.0) + 1)/2));
+
       float cos_rot = cos(rotation);
       float sin_rot = sin(rotation);
       for (int s = 0; s < samples_per_profile_; s++) {
@@ -276,7 +277,7 @@ int GPUCGGoldenSpiralGadget::calculate_trajectory()
     }
 
     cudaMemcpy(trajectory_dev_ptr_,
-	       host_trajectory_ptr_,//tmp_traj,
+	       tmp_traj,
 	       host_allocated_traj_samples_*sizeof(float2),
 	       cudaMemcpyHostToDevice);
 
