@@ -7,8 +7,10 @@ class GPUCGGoldenSpiralGadget : public GPUCGGadget
 {
 
  public:
-  GPUCGGoldenSpiralGadget(bool pass_on_data = false, int slice = 0);
-  ~GPUCGGoldenSpiralGadget();
+  GADGET_DECLARE(GPUCGGoldenSpiralGadget)
+
+  GPUCGGoldenSpiralGadget();
+  virtual ~GPUCGGoldenSpiralGadget();
 
  protected:
   virtual int set_base_parameters(ConfigParser* cp);

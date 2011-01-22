@@ -4,8 +4,8 @@
 
 
 
-GPUCGGadget::GPUCGGadget(bool pass_on_data, int slice_no)
-  : slice_no_(slice_no)
+GPUCGGadget::GPUCGGadget()
+  : slice_no_(0)
   , profiles_per_frame_(48)
   , shared_profiles_(16)
   , channels_(0)
@@ -33,7 +33,7 @@ GPUCGGadget::GPUCGGadget(bool pass_on_data, int slice_no)
 {
   matrix_size_    = make_uint2(0,0);
   matrix_size_os_ = make_uint2(0,0);
-  pass_on_undesired_data_ = pass_on_data; //We will make one of these for each slice and so data should be passed on.
+  pass_on_undesired_data_ = true; //We will make one of these for each slice and so data should be passed on.
 }
 
 
@@ -63,6 +63,9 @@ int GPUCGGadget::set_base_parameters(ConfigParser* cp)
 int GPUCGGadget::process_config(ACE_Message_Block* mb)
 {
   GADGET_DEBUG1("GPUCGGadget::process_config\n");
+
+  slice_no_ = get_int_value(std::string("sliceno"));
+  pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data"));
 
   ConfigParser cp;
   cp.parse(mb->rd_ptr());

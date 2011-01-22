@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>  
+
+<stream>
+<gadget name="ImageFinish" dll="gadgetroncore" class="ImageFinishGadget" />
+
+<gadget name="GPUCGRadial0" dll="gadgetrongpucg" class="GPUCGGoldenRadialGadget">
+<property name="sliceno" value="0" />
+<property name="pass_on_undesired_data" value="true" />
+</gadget>
+
+<gadget name="GPUCGRadial1" dll="gadgetrongpucg" class="GPUCGGoldenRadialGadget">
+<property name="sliceno" value="1" />
+<property name="pass_on_undesired_data" value="true" />
+</gadget>
+
+<gadget name="GPUCGRadial2" dll="gadgetrongpucg" class="GPUCGGoldenRadialGadget">
+<property name="sliceno" value="2" />
+<property name="pass_on_undesired_data" value="true" />
+</gadget>
+
+</stream>
+

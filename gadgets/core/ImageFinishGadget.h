@@ -12,14 +12,11 @@ class ImageFinishGadget :
 public Gadget2<GadgetMessageImage,NDArray< std::complex<float> > >
 {
  public:
-  ImageFinishGadget(GadgetStreamController* controller) 
-    : controller_(controller)
-    { }
-  virtual int process(GadgetContainerMessage<GadgetMessageImage>* m1,
-		      GadgetContainerMessage< NDArray< std::complex<float> > >* m2);
+  GADGET_DECLARE(ImageFinishGadget);
 
  protected:
-  GadgetStreamController* controller_;
+  virtual int process(GadgetContainerMessage<GadgetMessageImage>* m1,
+		      GadgetContainerMessage< NDArray< std::complex<float> > >* m2);
   
 };
 

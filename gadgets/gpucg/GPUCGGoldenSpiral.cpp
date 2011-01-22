@@ -18,10 +18,8 @@ void calc_vds(double slewmax,double gradmax,double Tgsample,
    #define PI 3.14159265
 #endif
 
-GPUCGGoldenSpiralGadget::GPUCGGoldenSpiralGadget(bool pass_on_data, 
-						 int slice)
-  : GPUCGGadget(pass_on_data, slice)
-  , Interleaves_(0)
+GPUCGGoldenSpiralGadget::GPUCGGoldenSpiralGadget()
+  : Interleaves_(0)
   , ADCsPerInterleave_(0)
   , SamplesPerADC_(0)
   , SamplesToSkipStart_(0)
@@ -317,3 +315,5 @@ int GPUCGGoldenSpiralGadget::calculate_density_compensation()
 
   return GADGET_OK;
 }
+
+GADGET_FACTORY_DECLARE(GPUCGGoldenSpiralGadget)

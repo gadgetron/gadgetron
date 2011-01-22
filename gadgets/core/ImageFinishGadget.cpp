@@ -20,3 +20,5 @@ int ImageFinishGadget
   return controller_->output_ready(mb);
 
 }
+
+GADGET_FACTORY_DECLARE(ImageFinishGadget)

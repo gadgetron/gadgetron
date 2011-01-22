@@ -1,11 +1,18 @@
 #ifndef GADGET_H
 #define GADGET_H
 
+#include <ace/OS_NS_stdlib.h>
 #include <ace/Task.h>
 #include <ace/Stream.h>
 #include <ace/Module.h>
+#include <ace/OS_Memory.h>
+
+#include <map>
 
 #include "GadgetContainerMessage.h"
+#include "GadgetronExport.h"
+
+class GadgetStreamController;
 
 class Gadget : public ACE_Task<ACE_MT_SYNCH>
 {
@@ -22,6 +29,7 @@ public:
     : inherited()
     , desired_threads_(1)
     , pass_on_undesired_data_(false)
+    , controller_(0)
   {
     ACE_TRACE(( ACE_TEXT("Gadget::Gadget") ));
   }
@@ -61,6 +69,15 @@ public:
     desired_threads_ = t;
   }
   
+  virtual void set_controller(GadgetStreamController* controller) {
+    controller_ = controller;
+  }
+
+  virtual GadgetStreamController* get_controller()
+  {
+    return controller_;
+  }
+
   virtual int close(unsigned long flags)
   {
     ACE_TRACE(( ACE_TEXT("Gadget::close") ));
@@ -141,6 +158,36 @@ public:
     return 0;
   }
 
+  int set_parameter(std::string name, std::string val) {
+
+    return 0;
+  }
+
+
+  int get_bool_value(std::string name) {
+    return (0 == ACE_OS::strcmp(get_string_value(name).c_str(), "true"));
+  }
+
+  int get_int_value(std::string name) {
+    return ACE_OS::atoi(get_string_value(name).c_str());
+  }
+
+  double get_double_value(std::string name) {
+    return ACE_OS::atof(get_string_value(name).c_str());
+  }
+
+  std::string get_string_value(std::string name) {
+    std::map<std::string,std::string>::iterator it;
+    
+    it = parameters_.find(name);
+    
+    if (it != parameters_.end()) {
+      return it->second;
+    }
+
+    return std::string("");
+  }
+
 
 protected:
   virtual int next_step(ACE_Message_Block *m) 
@@ -156,7 +203,8 @@ protected:
 
   unsigned int desired_threads_;
   bool pass_on_undesired_data_;
-
+  GadgetStreamController* controller_;
+  std::map<std::string, std::string> parameters_;
 };
 
 
@@ -252,5 +300,29 @@ protected:
   virtual int process(GadgetContainerMessage<P1>* m1, GadgetContainerMessage<P2>* m2) = 0;
 
 };
+
+
+/* Macros for handling dyamic linking */
+
+//In header file add this macro
+#define GADGET_DECLARE(GADGET) \
+  void *operator new (size_t bytes);\
+  void operator delete (void *ptr); \
+
+//In CPP file add this macro add the end
+#define GADGET_FACTORY_DECLARE(GADGET)                     \
+extern "C" DLLEXPORT Gadget* make_##GADGET (void); \
+Gadget * make_##GADGET (void)       				\
+{							       	\
+  return new GADGET;                                            \
+} \
+void * GADGET ::operator new (size_t bytes)                  \
+{                                                               \
+  return ::new char[bytes];                                     \
+}                                                               \
+void GADGET ::operator delete (void *ptr) \
+{ \
+  delete [] static_cast <char *> (ptr); \
+} 
 
 #endif //GADGET_H

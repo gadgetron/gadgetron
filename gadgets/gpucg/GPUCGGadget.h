@@ -36,7 +36,7 @@ class GPUCGGadget :
 public Gadget2<GadgetMessageAcquisition, NDArray< std::complex<float> > >
 {
  public:
-  GPUCGGadget(bool pass_on_data = false, int slice = 0);
+  GPUCGGadget();
   virtual ~GPUCGGadget();
 
 

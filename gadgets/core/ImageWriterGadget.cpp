@@ -30,3 +30,5 @@ process( GadgetContainerMessage< GadgetMessageImage>* m1,
     calls_++;
     return this->next()->putq(m1);
 }
+
+GADGET_FACTORY_DECLARE(ImageWriterGadget)

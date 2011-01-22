@@ -12,8 +12,10 @@ ifeq ($(UNAME), Darwin)
 DLLEXTENSION=dylib
 endif
 
+CONFIG_FILES=\
+	default.xml
+
 LIBHEADERS=\
-	DefaultConfigurator.h \
 	AcquisitionPassthroughGadget.h \
 	AcquisitionFinishGadget.h \
 	AccumulatorGadget.h \
@@ -23,7 +25,6 @@ LIBHEADERS=\
 	ImageWriterGadget.h
 
 LIBSOURCES=\
-	DefaultConfigurator.cpp \
 	AcquisitionPassthroughGadget.cpp \
 	AcquisitionFinishGadget.cpp \
 	AccumulatorGadget.cpp \
@@ -46,7 +47,7 @@ endif
 
 LIBLDFLAGS= -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -lgadgetron -lgadgetrontools
 ifeq ($(UNAME), Darwin)
-LIBLDFLAGS= -arch i386 -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -lgadgetron -lgadgetrontools
+LIBLDFLAGS= -arch i386 -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -lgadgetrontools
 endif
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
@@ -69,5 +70,7 @@ clean:
 install:
 	mkdir -p $(GADGETRONHOME)/lib
 	mkdir -p $(GADGETRONHOME)/inc
+	mkdir -p $(GADGETRONHOME)/config
 	cp $(LIBHEADERS) $(GADGETRONHOME)/inc/
 	cp $(LIBFILE) $(GADGETRONHOME)/lib/
+	cp $(CONFIG_FILES) $(GADGETRONHOME)/config/

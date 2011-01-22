@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>  
+
+<stream>
+<gadget name="ImageFinish" dll="gadgetroncore" class="ImageFinishGadget" />
+
+<gadget name="GPUCGSpiral0" dll="gadgetrongpucg" class="GPUCGGoldenSpiralGadget">
+<property name="sliceno" value="0" />
+<property name="pass_on_undesired_data" value="true" />
+</gadget>
+
+</stream>
+

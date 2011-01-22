@@ -12,6 +12,8 @@ public Gadget2< GadgetMessageAcquisition, NDArray< std::complex<float> > >
 {
   
  public:
+  GADGET_DECLARE(AccumulatorGadget);
+
   AccumulatorGadget();
   ~AccumulatorGadget();
 

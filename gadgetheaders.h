@@ -19,6 +19,7 @@ enum GadgetMessageID {
   GADGET_MESSAGE_NEW_MEASUREMENT,
   GADGET_MESSAGE_END_OF_SCAN,
   GADGET_MESSAGE_IMAGE,
+  GADGET_MESSAGE_INITIALIZATION,
   GADGET_MESSAGE_EMPTY,
   GADGET_MESSAGE_ID_MAX
 };
@@ -26,6 +27,11 @@ enum GadgetMessageID {
 struct GadgetMessageIdentifier
 {
   ACE_UINT16 id;
+};
+
+struct GadgetMessageInitializer
+{
+  char configuration_file[1024];
 };
 
 struct GadgetMessageConfigurator

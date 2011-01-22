@@ -9,9 +9,12 @@
 
 #include <complex>
 
-#include "GadgetStreamConfigurator.h"
 #include "GadgetSocketSender.h"
 #include "NDArray.h"
+#include "Gadgetron.h"
+#include "Gadget.h"
+
+typedef ACE_Module<ACE_MT_SYNCH> GadgetModule;
 
 class GadgetStreamController : public ACE_Event_Handler
 {
@@ -56,8 +59,13 @@ protected:
 
   virtual int read_configuration();
   virtual int read_acquisition();
+  virtual int read_initialization();
+
   //virtual int write_image(GadgetMessageImage* imageh, NDArray< std::complex<float> >* data);
   //virtual int write_acquisition(GadgetMessageAcquisition* imgh, NDArray< std::complex<float> >* data);
+
+  virtual int configure(char* init_filename);
+  virtual GadgetModule * create_gadget_module(const char* DLL, const char* gadget, const char* gadget_module_name);
 
 };
 

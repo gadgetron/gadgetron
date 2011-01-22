@@ -140,3 +140,4 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
   return 0;
 }
 
+GADGET_FACTORY_DECLARE(AccumulatorGadget)

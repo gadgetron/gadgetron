@@ -118,7 +118,7 @@ int dumpSpiralParameters(spiral_parameters* spi_parm) {
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 {
-  static const ACE_TCHAR options[] = ACE_TEXT(":p:h:c:f:l:");
+  static const ACE_TCHAR options[] = ACE_TEXT(":p:h:c:f:l:i:");
   
   ACE_Get_Opt cmd_opts(argc, argv, options);
   
@@ -137,6 +137,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   ACE_TCHAR config_name[1024];
   ACE_OS_String::strncpy(config_name, "default", 1024);
  
+  ACE_TCHAR config_file[1024];
+  ACE_OS_String::strncpy(config_file, "default.xml", 1024);
+
    int option;
   while ((option = cmd_opts()) != EOF) {
     switch (option) {
@@ -154,6 +157,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
       break;
     case 'f':
       ACE_OS_String::strncpy(filename, cmd_opts.opt_arg(), 4096);
+      break;
+    case 'i':
+      ACE_OS_String::strncpy(config_file, cmd_opts.opt_arg(), 1024);
       break;
     case ':':
       ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("-%c requires an argument.\n"), cmd_opts.opt_opt()),-1);
@@ -342,6 +348,14 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 		       ACE_TEXT("Failed to open message receiver")), -1);
   }
 
+  id.id = GADGET_MESSAGE_INITIALIZATION;
+  GadgetMessageInitializer ini;
+  ACE_OS_String::strncpy(ini.configuration_file,config_file,1024);
+  peer.send_n(&id, sizeof(GadgetMessageIdentifier));
+  peer.send_n(&ini, sizeof(GadgetMessageInitializer));
+
+
+  id.id = GADGET_MESSAGE_CONFIGURATION;
   peer.send_n(&id, sizeof(GadgetMessageIdentifier));
   peer.send_n(&conf, sizeof(GadgetMessageConfigurator));
   peer.send_n(config.c_str(), conf.configuration_length);

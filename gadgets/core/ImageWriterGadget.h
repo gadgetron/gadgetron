@@ -12,6 +12,8 @@ class ImageWriterGadget :
 public Gadget2<GadgetMessageImage, NDArray< std::complex<float> > >
 {
  public:
+  GADGET_DECLARE(ImageWriterGadget)
+
   ImageWriterGadget()
     : calls_(0)
     {}

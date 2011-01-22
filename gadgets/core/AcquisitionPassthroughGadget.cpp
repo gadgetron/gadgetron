@@ -15,3 +15,6 @@ int AcquisitionPassthroughGadget
 
   return 0;
 }
+
+
+GADGET_FACTORY_DECLARE(AcquisitionPassthroughGadget)

@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>  
+
+<stream>
+<gadget name="ImageFinish" dll="gadgetroncore" class="ImageFinishGadget" />
+<gadget name="CropCombine" dll="gadgetroncore" class="CropAndCombineGadget" />
+<gadget name="FFT" dll="gadgetroncore" class="FFTGadget" />
+<gadget name="Acc" dll="gadgetroncore" class="AccumulatorGadget" />
+<gadget name="PassThrough" dll="gadgetroncore" class="AcquisitionPassthroughGadget" />
+</stream>
+

@@ -22,12 +22,16 @@ ifeq ($(KERNEL), Darwin)
 DLLEXTENSION=dylib
 endif
 
+CONFIG_FILES=\
+	gpucg_radial_single.xml \
+	gpucg_radial_3_slices.xml \
+	gpucg_spiral_single.xml \
+	gpucg_spiral_3_slices.xml
+
 LIBHEADERS=\
-	GPUCGConfigurator.h \
 	GPUCGGadget.h 
 
 LIBSOURCES=\
-	GPUCGConfigurator.cpp \
 	GPUCGGadget.cpp \
 	GPUCGGoldenRadial.cpp \
 	GPUCGGoldenSpiral.cpp \
@@ -63,7 +67,7 @@ CXXFLAGS=-c -fPIC -Wall -I. \
 	$(CUDAINCLUDES) \
 	-g #-DACE_NTRACE=0
 
-LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -lgadgetron -lgadgetroncore -lgadgetrontools 
+LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -lgadgetrontools 
 
 NVCC=$(CUDAHOME)/bin/nvcc
 NVCCFLAGS= --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC
@@ -103,5 +107,8 @@ clean:
 install:
 	mkdir -p $(GADGETRONHOME)/lib
 	mkdir -p $(GADGETRONHOME)/inc
+	mkdir -p $(GADGETRONHOME)/config
 	cp $(LIBHEADERS) $(GADGETRONHOME)/inc/
 	cp $(LIBFILE) $(GADGETRONHOME)/lib/
+	cp $(CONFIG_FILES) $(GADGETRONHOME)/config/
+

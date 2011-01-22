@@ -18,3 +18,5 @@ int AcquisitionFinishGadget::process(GadgetContainerMessage<GadgetMessageAcquisi
   return controller_->output_ready(mb);
 
 }
+
+GADGET_FACTORY_DECLARE(AcquisitionFinishGadget)

@@ -31,7 +31,7 @@ endif
 
 LIBLDFLAGS=-shared
 
-CXXFLAGS=-c -fPIC -Wall -I. 
+CXXFLAGS=-c -fPIC -MMD -MP -DTIXML_USE_TICPP -Wall -I. 
 
 
 LIBFILE=libticpp.$(DLLEXTENSION)
