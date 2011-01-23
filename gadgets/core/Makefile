@@ -22,7 +22,9 @@ LIBHEADERS=\
 	FFTGadget.h \
 	ImageFinishGadget.h \
 	CropAndCombineGadget.h \
-	ImageWriterGadget.h
+	ImageWriterGadget.h \
+	MRIAcquisitionReader.h \
+	MRIImageWriter.h
 
 LIBSOURCES=\
 	AcquisitionPassthroughGadget.cpp \
@@ -31,7 +33,9 @@ LIBSOURCES=\
 	FFTGadget.cpp \
 	ImageFinishGadget.cpp \
 	CropAndCombineGadget.cpp \
-	ImageWriterGadget.cpp
+	ImageWriterGadget.cpp \
+	MRIAcquisitionReader.cpp \
+	MRIImageWriter.cpp 
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 

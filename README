@@ -6,6 +6,9 @@ gadgetron
   ACE (tested with versions 5.6 and 6.0)
   (See instructions for MAC below)
 
+  TinyXML++
+  (Included in depedencies/)
+
 gadgetron/gadgets/core
   FFTW3
   (See instructions for MAC below)
@@ -27,16 +30,13 @@ There are some (counter intuitive) steps to build.
     git clone ssh://username@137.187.134.61/home/gitrepos/gadgetron.git
 
 2.  cd gadgetron/
-3.  make (it will fail to build the executable but will build lib)
-4.  make install  (install headers and lib)
-5.  cd gadgettools/
-6.  make; make install
-7.  cd ../gadgets/core/
-8.  make;make install
-9.  cd ../gpucg/
-10. make; make install
-11. cd ../../
-12  make; make install
+3.  make; make install
+4.  cd gadgettools/
+5.  make; make install
+6.  cd ../gadgets/core/
+7.  make;make install
+8.  cd ../gpucg/
+9. make; make install
 
 To run the gadgetron
 1.  cd lib/
@@ -45,7 +45,7 @@ To run the gadgetron
 To feed data into the gadgetron
 1.  cd gadgetron/gadgetdatasender/
 2.  make
-3.  ./gadgetdatasender -f filname.dat -l core -c default
+3.  ./gadgetdatasender -f filname.dat -i configuration_file.xml
 
 ------------------------------------
 ACE Install instructions on Mac (Snow Leopard)

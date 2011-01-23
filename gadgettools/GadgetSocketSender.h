@@ -6,22 +6,10 @@
 
 #include <complex>
 
-#include "../gadgetheaders.h"
+#include "GadgetMRIHeaders.h"
 #include "NDArray.h"
-#include "../GadgetContainerMessage.h"
-
-/**
-   Class for writing a specific message to a socket. 
-   This is an abstract class, implementations need to be done for each message type.
- */
-class GadgetMessageWriter
-{
- public:
-  /**
-     Function must be implemented to read a specific message.
-   */
-  virtual int write(ACE_SOCK_Stream* stream, ACE_Message_Block* mb) = 0;
-};
+#include "GadgetContainerMessage.h"
+#include "GadgetMessageInterface.h"
 
 /**
    Default implementation of GadgetMessageWriter for Acquisition messages

@@ -1,0 +1,59 @@
+#include "MRIAcquisitionReader.h"
+#include "GadgetMRIHeaders.h"
+#include "NDArray.h"
+#include <complex>
+#include "GadgetMessageInterface.h"
+
+ACE_Message_Block* MRIAcquisitionReader::read(ACE_SOCK_Stream* sock)
+{
+  
+  GadgetContainerMessage<GadgetMessageAcquisition>* m1 = 
+    new GadgetContainerMessage<GadgetMessageAcquisition>();
+  
+  GadgetContainerMessage<NDArray< std::complex<float> > >* m2 = 
+    new GadgetContainerMessage< NDArray< std::complex<float> > >();
+  
+  m1->cont(m2);
+  
+  ssize_t recv_cnt = 0;
+  if ((recv_cnt = 
+       sock->recv_n (m1->getObjectPtr(), 
+		     sizeof(GadgetMessageAcquisition))) <= 0) {
+    ACE_DEBUG ((LM_ERROR,
+		ACE_TEXT ("(%P|%t) Unable to read Acq header\n")));
+    
+    m1->release();
+    
+    return 0;
+  }
+
+  std::vector<int> adims;
+  adims.push_back(m1->getObjectPtr()->samples);
+  adims.push_back(m1->getObjectPtr()->channels);
+
+  if (!m2->getObjectPtr()->create(adims)) {
+    ACE_DEBUG ((LM_ERROR,
+		ACE_TEXT ("(%P|%t) Allocate sample data\n")));
+
+    m1->release();
+
+    return 0;
+  }
+  
+  if ((recv_cnt = 
+       sock->recv_n
+       (m2->getObjectPtr()->get_data_ptr(), 
+	sizeof(std::complex<float>)*m1->getObjectPtr()->samples*m1->getObjectPtr()->channels)) <= 0) {
+
+    ACE_DEBUG ((LM_ERROR,
+		ACE_TEXT ("(%P|%t) Unable to read Acq data\n")));
+
+    m1->release();
+
+    return 0;
+  }
+
+  return m1;
+}
+
+GADGETRON_READER_FACTORY_DECLARE(MRIAcquisitionReader)

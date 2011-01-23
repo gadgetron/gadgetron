@@ -238,12 +238,12 @@ template <class P1> class Gadget1 : public Gadget
 protected:
   int process(ACE_Message_Block* mb)
   {
-    GadgetContainerMessage<P1>* m = dynamic_cast< GadgetContainerMessage<P1>* >(mb);
+    GadgetContainerMessage<P1>* m = AsContainerMessage<P1>(mb);
     
     if (!m) {
       if (!pass_on_undesired_data_) {
 	ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"),
-			   ACE_TEXT("Gadget1::process, dynamic cast failed")),
+			   ACE_TEXT("Gadget1::process, conversion of message block")),
 			 -1);
       } else {
 	return (this->next()->putq(mb));
@@ -267,18 +267,18 @@ protected:
   int process(ACE_Message_Block* mb)
   {
 
-    GadgetContainerMessage<P1>* m1 = dynamic_cast< GadgetContainerMessage<P1>* >(mb);
+    GadgetContainerMessage<P1>* m1 = AsContainerMessage<P1>(mb);
     
     GadgetContainerMessage<P2>* m2 = 0;
     if (m1) {
-      m2 = dynamic_cast< GadgetContainerMessage<P2>* >(m1->cont());
+      m2 = AsContainerMessage<P2>(m1->cont());
     }
 
     if (!m1 || !m2) {
       if (!pass_on_undesired_data_) {
 	ACE_DEBUG( (LM_ERROR, ACE_TEXT("%s -> %s, (%s, %s, %@, %@), (%s, %s, %@, %@)\n"),
 		    this->module()->name(),
-		    ACE_TEXT("Gadget2::process, dynamic cast failed"),
+		    ACE_TEXT("Gadget2::process, Conversion of Message Block Failed"),
 		    typeid(GadgetContainerMessage<P1>*).name(),
 		    typeid(m1).name(),
 		    mb,

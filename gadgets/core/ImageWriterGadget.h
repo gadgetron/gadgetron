@@ -5,7 +5,7 @@
 
 #include "Gadget.h"
 #include "NDArray.h"
-#include "gadgetheaders.h"
+#include "GadgetMRIHeaders.h"
 
 
 class ImageWriterGadget :

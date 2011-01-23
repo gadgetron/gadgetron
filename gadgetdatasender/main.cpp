@@ -6,7 +6,8 @@
 #include "ace/OS_NS_string.h"
 #include "ace/Reactor.h"
 
-#include "../gadgetheaders.h"
+#include "GadgetMessageInterface.h"
+#include "GadgetMRIHeaders.h"
 #include "siemensraw.hpp"
 #include "GadgetSocketReceiver.h"
 #include "ImageWriter.h"
@@ -203,11 +204,11 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   acq_head_base.max_idx.channel = sd.GetMaxValues()->ushChannelId;
 
   GadgetMessageIdentifier id;
-  GadgetMessageConfigurator conf;
+  //GadgetMessageConfigurator conf;
 
-  id.id = GADGET_MESSAGE_CONFIGURATION;
-  ACE_OS_String::strncpy(conf.configurator_lib,config_lib,1024);
-  ACE_OS_String::strncpy(conf.configurator_name,config_name,1024);
+  //id.id = GADGET_MESSAGE_CONFIGURATION;
+  //ACE_OS_String::strncpy(conf.configurator_lib,config_lib,1024);
+  //ACE_OS_String::strncpy(conf.configurator_name,config_name,1024);
 
 
   std::string ucTrajectory;
@@ -315,13 +316,13 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 
   std::string config = cp.exportConf();
 
-  conf.configuration_length = config.size()+1; //+1 for the null termination
+  //conf.configuration_length = config.size()+1; //+1 for the null termination
   //char config_info[1024];
   
 
 
-  ACE_DEBUG(( LM_INFO, ACE_TEXT("Sending configuration %s@%s \n"), 
-	      conf.configurator_name, conf.configurator_lib ));
+  //  ACE_DEBUG(( LM_INFO, ACE_TEXT("Sending configuration %s@%s \n"), 
+  //	      conf.configurator_name, conf.configurator_lib ));
   
   ACE_INET_Addr server(port_no,hostname);
   ACE_SOCK_Connector connector;
@@ -348,17 +349,19 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 		       ACE_TEXT("Failed to open message receiver")), -1);
   }
 
-  id.id = GADGET_MESSAGE_INITIALIZATION;
-  GadgetMessageInitializer ini;
+  id.id = GADGET_MESSAGE_CONFIG_FILE;
+  GadgetMessageConfigurationFile ini;
   ACE_OS_String::strncpy(ini.configuration_file,config_file,1024);
   peer.send_n(&id, sizeof(GadgetMessageIdentifier));
-  peer.send_n(&ini, sizeof(GadgetMessageInitializer));
+  peer.send_n(&ini, sizeof(GadgetMessageConfigurationFile));
 
 
-  id.id = GADGET_MESSAGE_CONFIGURATION;
+  id.id = GADGET_MESSAGE_PARAMETER_SCRIPT;
+  GadgetMessageScript conf;
+  conf.script_length = config.size()+1;
   peer.send_n(&id, sizeof(GadgetMessageIdentifier));
-  peer.send_n(&conf, sizeof(GadgetMessageConfigurator));
-  peer.send_n(config.c_str(), conf.configuration_length);
+  peer.send_n(&conf, sizeof(GadgetMessageScript));
+  peer.send_n(config.c_str(), conf.script_length);
   //peer.send_n(config_info, conf.configuration_length);
 
   //We need an array for collecting the data from all channels prior to transmission

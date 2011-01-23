@@ -13,11 +13,13 @@ endif
 HEADERS=\
 	GadgetContainerMessage.h \
 	Gadget.h \
-	gadgetheaders.h \
+	GadgetMRIHeaders.h \
 	GadgetServerAcceptor.h \
 	GadgetStreamController.h \
 	Gadgetron.h \
-	GadgetronExport.h
+	GadgetronExport.h \
+	GadgetMessageInterface.h \
+	GadgetronRuntimeLinking.h 
 
 EXESOURCES=\
 	main.cpp \
@@ -32,11 +34,11 @@ ifeq ($(KERNEL), Darwin)
 CXX=g++ -m32 -arch i386
 endif
 
-EXELDFLAGS= -L. -L$(GADGETRONHOME)/lib -lACE -lticpp
+EXELDFLAGS=-lACE -lticpp
 
 LIBLDFLAGS= -shared -lACE 
 
-CXXFLAGS=-c -fPIC -Wall -I. -I$(GADGETRONHOME)/inc/ -I./gadgettools/ -g #-DACE_NTRACE=0
+CXXFLAGS=-c -fPIC -Wall -I.  -I$(GADGETRONHOME)/gadgettools -g #-DACE_NTRACE=0
 
 EXECUTABLE=gadgetron
 LIBFILE=libgadgetron.$(DLLEXTENSION)

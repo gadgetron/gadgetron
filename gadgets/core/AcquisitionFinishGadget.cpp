@@ -1,4 +1,6 @@
+#include "GadgetMessageInterface.h"
 #include "AcquisitionFinishGadget.h"
+#include "GadgetStreamController.h"
 
 int AcquisitionFinishGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 				 GadgetContainerMessage< NDArray< std::complex<float> > >* m2)

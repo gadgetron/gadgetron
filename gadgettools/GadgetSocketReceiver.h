@@ -6,21 +6,10 @@
 
 #include <complex>
 
-#include "../gadgetheaders.h"
+#include "GadgetMRIHeaders.h"
 #include "NDArray.h"
+#include "GadgetMessageInterface.h"
 
-/**
-   Class for reading a specific message of a socket. 
-   This is an abstract class, implementations need to be done for each message type.
- */
-class GadgetMessageReader
-{
- public:
-  /**
-     Function must be implemented to read a specific message.
-   */
-  virtual int read(ACE_SOCK_Stream* stream) = 0;
-};
 
 /**
    Default implementation of GadgetMessageReader for Acquisition messages
@@ -30,40 +19,39 @@ class GadgetAcquisitionMessageReader : public GadgetMessageReader
 {
 
  public:
-  virtual int read(ACE_SOCK_Stream* stream) 
+  virtual ACE_Message_Block* read(ACE_SOCK_Stream* stream) 
   {
-    GadgetMessageAcquisition acqh;
+
+    GadgetContainerMessage<GadgetMessageAcquisition>* acqh =
+      new GadgetContainerMessage<GadgetMessageAcquisition>();
+
     ssize_t recv_count = 0;
 
-    if ((recv_count = stream->recv_n(&acqh, sizeof(GadgetMessageAcquisition))) <= 0) {
+    if ((recv_count = stream->recv_n(acqh->getObjectPtr(), sizeof(GadgetMessageAcquisition))) <= 0) {
       ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetAcquisitionMessageReader, failed to read ACQ Header\n")) );
-      return -1;
+      acqh->release();
+      return 0;
     }
 
-    std::vector<int> dims(1);dims[0] = acqh.samples;
-    NDArray< std::complex<float> > data;
-    if (!data.create(dims)) {
+    std::vector<int> dims(1);dims[0] = acqh->getObjectPtr()->samples;
+    GadgetContainerMessage< NDArray< std::complex<float> > >* data = 
+      new GadgetContainerMessage< NDArray< std::complex<float> > >();
+
+    if (!data->getObjectPtr()->create(dims)) {
       ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetAcquisitionMessageReader, failed to allocate memory\n")) );
-      return -1;
+      acqh->release();
+      return 0;
     }
 
-    if ((recv_count = stream->recv_n(data.get_data_ptr(), sizeof(float)*2*acqh.samples)) <= 0) {
+    acqh->cont(data);
+
+    if ((recv_count = stream->recv_n(data->getObjectPtr()->get_data_ptr(), sizeof(float)*2*acqh->getObjectPtr()->samples)) <= 0) {
       ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetAcquisitionMessageReader, failed to read data from socket\n")) );
-      return -1;
+      acqh->release();
+      return 0;
     }
 
-    if (process_acquisition(&acqh,&data) < 0) {
-      ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetAcquisitionMessageReader, failed to processdata\n")) );
-      return -1;
-    }
-
-    return 0;
-  }
-
-  virtual int process_acquisition(GadgetMessageAcquisition* acq_head, NDArray< std::complex<float> >* data)
-  {
-    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("GadgetAcquisitionMessageReader processing ACQUISITION\n")) );
-    return 0;
+    return acqh;
   }
 };
 
@@ -75,46 +63,45 @@ class GadgetImageMessageReader : public GadgetMessageReader
 {
 
  public:
-  virtual int read(ACE_SOCK_Stream* stream) 
+  virtual ACE_Message_Block* read(ACE_SOCK_Stream* stream) 
   {
-    GadgetMessageImage imgh;
-    ssize_t recv_count = 0;
+    GadgetContainerMessage<GadgetMessageImage>* imgh = 
+      new GadgetContainerMessage<GadgetMessageImage>();
 
-    if ((recv_count = stream->recv_n(&imgh, sizeof(GadgetMessageImage))) <= 0) {
+    ssize_t recv_count = 0;
+    if ((recv_count = stream->recv_n(imgh->getObjectPtr(), sizeof(GadgetMessageImage))) <= 0) {
       ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageMessageReader, failed to read IMAGE Header\n")) );
-      return -1;
+      imgh->release();
+      return 0;
     }
 
     std::vector<int> dims(3);
-    dims[0] = imgh.matrix_size[0];dims[1] = imgh.matrix_size[1];dims[2] = imgh.matrix_size[2];
-    NDArray< std::complex<float> > data;
-    if (!data.create(dims)) {
+    dims[0] = imgh->getObjectPtr()->matrix_size[0];
+    dims[1] = imgh->getObjectPtr()->matrix_size[1];
+    dims[2] = imgh->getObjectPtr()->matrix_size[2];
+
+    GadgetContainerMessage< NDArray< std::complex<float> > >* data = 
+      new GadgetContainerMessage< NDArray< std::complex<float> > >();
+
+    if (!data->getObjectPtr()->create(dims)) {
       ACE_DEBUG( (LM_ERROR, 
 		  ACE_TEXT("%P, %l, GadgetImageMessageReader, failed to allocate memory\n")) );
-      return -1;
+      imgh->release();
+      return 0;
     }
 
-    if ((recv_count = stream->recv_n(data.get_data_ptr(), sizeof(float)*2*data.get_number_of_elements())) <= 0) {
+    imgh->cont(data);
+
+    if ((recv_count = stream->recv_n(data->getObjectPtr()->get_data_ptr(), sizeof(float)*2*data->getObjectPtr()->get_number_of_elements())) <= 0) {
       ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageMessageReader, failed to read data from socket\n")) );
-      return -1;
+      imgh->release();
+      return 0;
     }
-
-    if (process_image(&imgh,&data) < 0) {
-      ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageMessageReader, failed to read data\n")) );
-      return -1;
-    }
-
-    return 0;
-  }
-
-  virtual int process_image(GadgetMessageImage* img_head, NDArray< std::complex<float> >* data)
-  {
-    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("GadgetImagenMessageReader processing IMAGE\n")) );
-    return 0;
+    
+    return imgh;
   }
 };
 
-#if 1
 class GadgetSocketReceiver : public ACE_Task<ACE_MT_SYNCH>
 {
 
@@ -203,11 +190,20 @@ class GadgetSocketReceiver : public ACE_Task<ACE_MT_SYNCH>
 	return -1;
       }
 
-      if (r->read(socket_) < 0) {
+      ACE_Message_Block* mb = r->read(socket_);
+
+      if (!mb) {
 	ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetSocketReceiver, Failed to read message\n")) );
 	return -1;
-      }	
+      }	else {
+	if (process(mid.id, mb) < 0) {
+	  ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetSocketReceiver, Failed to process message\n")) );	  
+	  return -1;;
+	}
+      }
     }
+
+    return 0;
   }
 
 
@@ -224,7 +220,12 @@ class GadgetSocketReceiver : public ACE_Task<ACE_MT_SYNCH>
     }
     return ret;
   }
+
+  //Default implementation. To be overwritten by sub classes.
+  int process(ACE_UINT16 id, ACE_Message_Block* mb) {
+    mb->release();
+    return 0;
+  }
 };
-#endif
 
 #endif //GADGETSOCKETRECEIVER_H

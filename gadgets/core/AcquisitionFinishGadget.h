@@ -3,8 +3,7 @@
 
 #include "Gadget.h"
 #include "NDArray.h"
-#include "gadgetheaders.h"
-#include "GadgetStreamController.h"
+#include "GadgetMRIHeaders.h"
 
 #include <complex>
 

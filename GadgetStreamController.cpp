@@ -6,49 +6,35 @@
 #include <ticpp.h>
 
 #include "GadgetStreamController.h"
-#include "gadgetheaders.h"
 #include "GadgetContainerMessage.h"
-#include "GadgetSocketSender.h"
 #include "NDArray.h"
 #include "Gadget.h"
+#include "GadgetronRuntimeLinking.h"
 
 #include <complex>
 
 int GadgetStreamController::open (void)
 {
+
+  //We will set up the controllers message queue such that when a packet is enqueued write will be triggered.
+  this->notifier_.reactor (this->reactor ());
+  this->msg_queue ()->notification_strategy (&this->notifier_);
+
   ACE_TCHAR peer_name[MAXHOSTNAMELEN];
   ACE_INET_Addr peer_addr;
-  if (this->sock_.get_remote_addr (peer_addr) == 0 &&
+  if (peer().get_remote_addr (peer_addr) == 0 &&
       peer_addr.addr_to_string (peer_name, MAXHOSTNAMELEN) == 0)
     ACE_DEBUG ((LM_DEBUG,
                 ACE_TEXT ("(%P|%t) Connection from %s\n"),
                 peer_name));
 
-  if (!(output_ = new GadgetSocketSender(&this->sock_))) {
-    ACE_ERROR_RETURN ((LM_ERROR,
-		       ACE_TEXT ("(%P|%t) %p\n"),
-		       ACE_TEXT ("GadgetStreamController::open, Unable to create output_ task")), -1);
+  //We have to have these basic types to be able to receive configuration file for stream
+  readers_.insert(GADGET_MESSAGE_CONFIG_FILE, 
+		  new GadgetMessageConfigFileReader());
 
-  }
+  readers_.insert(GADGET_MESSAGE_PARAMETER_SCRIPT, 
+		  new GadgetMessageScriptReader());
 
-  if (output_->register_writer(GADGET_MESSAGE_ACQUISITION, new GadgetAcquisitionMessageWriter()) < 0) {
-    ACE_ERROR_RETURN ((LM_ERROR,
-		       ACE_TEXT ("(%P|%t) %p\n"),
-		       ACE_TEXT ("GadgetStreamController::open, to register acquisition writer with output_ task")), -1);
-  }
-
-  if (output_->register_writer(GADGET_MESSAGE_IMAGE, new GadgetImageMessageWriter()) < 0) {
-    ACE_ERROR_RETURN ((LM_ERROR,
-		       ACE_TEXT ("(%P|%t) %p\n"),
-		       ACE_TEXT ("GadgetStreamController::open, to register acquisition writer with output_ task")), -1);
-  }
-
-
-  if (output_->open() == -1) {
-    ACE_ERROR_RETURN ((LM_ERROR,
-		       ACE_TEXT ("(%P|%t) %p\n"),
-		       ACE_TEXT ("GadgetStreamController::open, Unable to open output_ task")), -1);
-  }
 
   GadgetModule *head = 0;
   GadgetModule *tail = 0;
@@ -63,7 +49,7 @@ int GadgetStreamController::open (void)
   }
 
   return this->reactor ()->register_handler(this, 
-					    ACE_Event_Handler::READ_MASK);  
+					    ACE_Event_Handler::READ_MASK);// | ACE_Event_Handler::WRITE_MASK);  
 }
 
 
@@ -73,91 +59,129 @@ int GadgetStreamController::handle_input (ACE_HANDLE)
   //Reading sequence:
   GadgetMessageIdentifier id;
   ssize_t recv_cnt = 0;
-  if ((recv_cnt = this->sock_.recv_n (&id, sizeof(GadgetMessageIdentifier))) <= 0) {
+  if ((recv_cnt = peer().recv_n (&id, sizeof(GadgetMessageIdentifier))) <= 0) {
     ACE_DEBUG ((LM_DEBUG,
 		ACE_TEXT ("(%P|%t) GadgetStreamController, unable to read message identifier\n")));
     return -1;
   }
 
-  switch (id.id) {
+  GadgetMessageReader* r = readers_.find(id.id);
 
-  case GADGET_MESSAGE_ACQUISITION:
-    if (read_acquisition() < 0) {
-      ACE_DEBUG( (LM_ERROR, ACE_TEXT("ACQ read failed\n")) );
-      return -1;
-    }
-    break;
-  case GADGET_MESSAGE_CONFIGURATION:
-    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Configuration received\n")) );
-    if (read_configuration() < 0) {
-      ACE_DEBUG( (LM_ERROR, ACE_TEXT("CONFIG read failed\n")) );
-      return -1;
-    }
-    break;
-  case GADGET_MESSAGE_INITIALIZATION:
-    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Initialization received\n")) );
-    if (read_initialization() < 0) {
-      ACE_DEBUG( (LM_ERROR, ACE_TEXT("INITIALIZATION read failed\n")) );
-      return -1;
-    }
-    break;
-  case GADGET_MESSAGE_NEW_MEASUREMENT:
-    break;
-  case GADGET_MESSAGE_END_OF_SCAN:
-    break;
-  case GADGET_MESSAGE_IMAGE:
-    break;
-  case GADGET_MESSAGE_EMPTY:
-    break;
-  default:
-    ACE_DEBUG( (LM_ERROR, ACE_TEXT("Received BAD MESSAGE IDENTIFIER %d\n"), id.id ) );
-    return -1;
-    break;
+  if (!r) {
+    GADGET_DEBUG2("Unrecognized Message ID received: %d\n", id.id);
+    return GADGET_FAIL;
   }
 
-  return 0;
+  ACE_Message_Block* mb = r->read(&peer());
+
+  if (!mb) {
+    GADGET_DEBUG1("GadgetMessageReader returned null pointer\n");
+    return GADGET_FAIL;
+  }
+
+  //We need to handle some special cases to make sure that we can get a stream set up.
+  if (id.id == GADGET_MESSAGE_CONFIG_FILE) {
+    GadgetContainerMessage<GadgetMessageConfigurationFile>* cfgm = 
+      AsContainerMessage<GadgetMessageConfigurationFile>(mb);
+
+    if (!cfgm) {
+      GADGET_DEBUG1("Failed to cast message block to configuration file\n");
+      mb->release();
+      return GADGET_FAIL;
+    } else {
+      if (this->configure(cfgm->getObjectPtr()->configuration_file) != GADGET_OK) {
+	GADGET_DEBUG1("GadgetStream configuration failed\n");
+	mb->release();
+	return GADGET_FAIL;
+      } else {
+	return GADGET_OK;
+      }
+    }
+
+  }
+    
+ 
+  ACE_Time_Value wait = ACE_OS::gettimeofday() + ACE_Time_Value(0,10000); //10ms from now
+  if (stream_.put(mb,&wait) == -1) {
+    GADGET_DEBUG2("Failed to put stuff on stream, too long wait, %d\n",  ACE_OS::last_error () ==  EWOULDBLOCK);
+    mb->release();
+    return GADGET_FAIL;
+  } 
+
+  return GADGET_OK;
+
+}
+
+
+int GadgetStreamController::output_ready(ACE_Message_Block* mb) { 
+  
+  int res = this->putq(mb);
+  return res;
 }
 
 int GadgetStreamController::handle_output (ACE_HANDLE)
 {
+  ACE_Message_Block *mb = 0;
+  ACE_Time_Value nowait (ACE_OS::gettimeofday ());
+
+  //Send packages as long as we have them
+  while (-1 != this->getq (mb, &nowait)) {
+    GadgetContainerMessage<GadgetMessageIdentifier>* mid =
+      AsContainerMessage<GadgetMessageIdentifier>(mb);
+
+    if (!mid) {
+      GADGET_DEBUG1("Invalid message on output queue\n");
+      mb->release();
+      return GADGET_FAIL;
+    }
+
+    GadgetMessageWriter* w = writers_.find(mid->getObjectPtr()->id);
+    
+    if (!w) {
+      GADGET_DEBUG2("Unrecognized Message ID received: %d\n", mid->getObjectPtr()->id);
+      return GADGET_FAIL;
+    }
+    
+    if (w->write(&peer(),mb->cont()) < 0) {
+      GADGET_DEBUG1("Failed to write Message using writer\n");
+      mb->release ();
+      return GADGET_FAIL;
+    }
+
+    mb->release();
+  }
+
+
+  if (this->msg_queue ()->is_empty ()) {
+    //No point in coming back to handle_ouput until something is put on the queue,
+    //in which case, the msg queue's notification strategy will tell us
+    this->reactor ()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
+  } else {
+    //There is still more on the queue, let's come back when idle
+    this->reactor ()->schedule_wakeup(this, ACE_Event_Handler::WRITE_MASK);
+  }
+
   return 0;
 }
 
 int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
 {
+
+  GADGET_DEBUG1("handle_close called\n");
+
   if (mask == ACE_Event_Handler::WRITE_MASK)
     return 0;
+
+  GADGET_DEBUG1("Shutting down stream and closing up shop\n");
+
   mask = ACE_Event_Handler::ALL_EVENTS_MASK |
          ACE_Event_Handler::DONT_CALL;
   this->reactor ()->remove_handler (this, mask);
 
-  //We need to grab the pointer and set it to zero so that no output
-  //is put on the output queue while shutting down.
-  GadgetSocketSender* tmp = output_;
-  output_ = 0;  
-  tmp->close(1);
-  delete tmp;
 
   this->stream_.close();
-  this->sock_.close ();
   delete this;
-
   return 0;
-}
-
-int GadgetStreamController::read_initialization()
-{
-  GadgetMessageInitializer ini;
-  ssize_t recv_cnt = 0;
-  if ((recv_cnt = this->sock_.recv_n (&ini, sizeof(GadgetMessageInitializer))) <= 0) {
-    ACE_DEBUG ((LM_ERROR,
-		ACE_TEXT ("(%P|%t) GadgetStreamController: Unable to read Initialization\n")));
-    return GADGET_FAIL;
-  }
-
-  GADGET_DEBUG2("Received initialization file name: %s\n", ini.configuration_file);
-  
-  return this->configure(ini.configuration_file);
 }
 
 int GadgetStreamController::configure(char* init_filename)
@@ -178,11 +202,66 @@ int GadgetStreamController::configure(char* init_filename)
     ticpp::Document doc( config_file_name );
     doc.LoadFile();
 
-    //Let's configure the stream
+    //Configuration of readers
     ticpp::Iterator< ticpp::Node > child;
-    ticpp::Element* pElem = doc.FirstChildElement("stream");
+    ticpp::Element* pElem = doc.FirstChildElement("readers");
     for ( child = child.begin( pElem ); child != child.end(); child++ ) {
-      if (ACE_OS::strncmp(child.Get()->ToElement()->Value().c_str(), "gadget", 6) == 0) {
+      if (child.Get()->Type() == TiXmlNode::ELEMENT &&
+	  ACE_OS::strncmp(child.Get()->ToElement()->Value().c_str(), "reader", 6) == 0) {
+	GADGET_DEBUG1("--Found reader declaration\n");
+	GADGET_DEBUG2("  Reader dll: %s\n", child.Get()->ToElement()->GetAttribute("dll").c_str());
+	GADGET_DEBUG2("  Reader class: %s\n", child.Get()->ToElement()->GetAttribute("class").c_str());
+	GADGET_DEBUG2("  Reader slot: %d\n", ACE_OS::atoi(child.Get()->ToElement()->GetAttribute("slot").c_str()));
+
+	GadgetMessageReader* r =
+	  GadgetronLoadComponent<GadgetMessageReader>(child.Get()->ToElement()->GetAttribute("dll").c_str(),
+						      child.Get()->ToElement()->GetAttribute("class").c_str());
+       
+	if (!r) {
+	  GADGET_DEBUG1("Failed to load GadgetMessageReader from DLL\n");
+	  return GADGET_FAIL;
+	}
+
+	readers_.insert(ACE_OS::atoi(child.Get()->ToElement()->GetAttribute("slot").c_str()),
+			r);
+
+      }
+    }
+    //Configuration of readers end
+    
+
+    //Configuration of writers
+    //Configuration of readers
+    pElem = doc.FirstChildElement("writers");
+    for ( child = child.begin( pElem ); child != child.end(); child++ ) {
+      if (child.Get()->Type() == TiXmlNode::ELEMENT &&
+	  ACE_OS::strncmp(child.Get()->ToElement()->Value().c_str(), "writer", 6) == 0) {
+	GADGET_DEBUG1("--Found writer declaration\n");
+	GADGET_DEBUG2("  Writer dll: %s\n", child.Get()->ToElement()->GetAttribute("dll").c_str());
+	GADGET_DEBUG2("  Writer class: %s\n", child.Get()->ToElement()->GetAttribute("class").c_str());
+	GADGET_DEBUG2("  Writer slot: %d\n", ACE_OS::atoi(child.Get()->ToElement()->GetAttribute("slot").c_str()));
+
+	GadgetMessageWriter* w =
+	  GadgetronLoadComponent<GadgetMessageWriter>(child.Get()->ToElement()->GetAttribute("dll").c_str(),
+						      child.Get()->ToElement()->GetAttribute("class").c_str());
+       
+	if (!w) {
+	  GADGET_DEBUG1("Failed to load GadgetMessageWriter from DLL\n");
+	  return GADGET_FAIL;
+	}
+
+	writers_.insert(ACE_OS::atoi(child.Get()->ToElement()->GetAttribute("slot").c_str()),
+			w);
+
+      }
+    }
+
+    //Configuration of writers end
+
+    //Let's configure the stream
+    pElem = doc.FirstChildElement("stream");
+    for ( child = child.begin( pElem ); child != child.end(); child++ ) {
+      if (child.Get()->Type() == TiXmlNode::ELEMENT && ACE_OS::strncmp(child.Get()->ToElement()->Value().c_str(), "gadget", 6) == 0) {
 	GADGET_DEBUG1("--Found gadget declaration\n");
 	GADGET_DEBUG2("  Gadget Name: %s\n", child.Get()->ToElement()->GetAttribute("name").c_str());
 	GADGET_DEBUG2("  Gadget dll: %s\n", child.Get()->ToElement()->GetAttribute("dll").c_str());
@@ -231,43 +310,10 @@ GadgetModule * GadgetStreamController::create_gadget_module(const char* DLL,
 							   const char* gadget_module_name)
 {
 
-  ACE_DLL dll;
-
-  ACE_TCHAR dllname[1024];
-  ACE_OS::sprintf(dllname, "%s%s",ACE_DLL_PREFIX, DLL);
-
-  ACE_TCHAR factoryname[1024];
-  ACE_OS::sprintf(factoryname, "make_%s", gadget);
-
-  int retval = dll.open (dllname);
-
-  if (retval != 0)
-    ACE_ERROR_RETURN ((LM_ERROR,
-                       "%p, %s\n",
-                       "dll.open", dllname),
-                      0);
-
-  //Function pointer
-  typedef Gadget* (*GadgetCreator) (void);
-  
-  
-  void *void_ptr = dll.symbol (factoryname);
-  ptrdiff_t tmp = reinterpret_cast<ptrdiff_t> (void_ptr);
-  GadgetCreator gc = reinterpret_cast<GadgetCreator> (tmp);
-
-  if (gc == 0) {
-    ACE_ERROR_RETURN ((LM_ERROR,
-		       "%p, %s",
-		       "dll.symbol", factoryname),
-		      0);
-  }
-
-  dll.close ();
-
-  Gadget* g = gc();
+  Gadget* g = GadgetronLoadComponent<Gadget>(DLL,gadget);
   
   if (!g) {
-    GADGET_DEBUG1("Failed to create gadget using factory\n");
+    GADGET_DEBUG1("Failed to load gadget using factory\n");
     return 0;
   }
 
@@ -282,115 +328,4 @@ GadgetModule * GadgetStreamController::create_gadget_module(const char* DLL,
   return module;
 }
 
-int GadgetStreamController::read_configuration()
-{
-  GadgetMessageConfigurator c;
-  ssize_t recv_cnt = 0;
-  if ((recv_cnt = this->sock_.recv_n (&c, sizeof(GadgetMessageConfigurator))) <= 0) {
-    ACE_DEBUG ((LM_ERROR,
-		ACE_TEXT ("(%P|%t) GadgetStreamController: Unable to read configuration\n")));
-    return -1;
-  }
-
-  ACE_Message_Block* mb = new ACE_Message_Block(c.configuration_length);
-
-  //ACE_TCHAR* config_info = 0;
-  //ACE_NEW_RETURN(config_info, ACE_TCHAR[c.configuration_length],-1);
-
-  if ((recv_cnt = this->sock_.recv_n (mb->wr_ptr(), c.configuration_length)) <= 0) {
-    ACE_DEBUG ((LM_ERROR,
-		ACE_TEXT ("(%P|%t)  GadgetStreamController: Unable to read configuration info\n")));
-    return -1;
-  }
-  mb->wr_ptr(c.configuration_length);
-  mb->set_flags(Gadget::GADGET_MESSAGE_CONFIG);
-
-  //For now it is only possible to configure the stream once.
-#if 0
-  if (!stream_configured_) {
-    GadgetStreamConfigurator* cfg = 
-      GadgetStreamConfiguratorFactory::CreateConfigurator(c,mb->rd_ptr(), this);
-    
-    auto_ptr<GadgetStreamConfigurator> co(cfg);
-    if (cfg) {
-      if (cfg->ConfigureStream(&this->stream_)) {
-	mb->release();
-	ACE_ERROR_RETURN( (LM_ERROR, ACE_TEXT("Unable to configure stream")), -1);
-      }
-    }
-    co.release();
-    
-    stream_configured_ = true;
-    if (cfg) delete cfg;
-  }
-#endif
-
-  if (stream_.put(mb) < 0) {
-    ACE_DEBUG( (LM_ERROR, 
-		ACE_TEXT("Unable to send config down stream failed") ));
-    mb->release();
-    return -1;
-  }
-
-  return 0;
-}
-
-int GadgetStreamController::read_acquisition()
-{
-  
-  GadgetContainerMessage<GadgetMessageAcquisition>* m1 = 
-    new GadgetContainerMessage<GadgetMessageAcquisition>();
-
-  GadgetContainerMessage<NDArray< std::complex<float> > >* m2 = 
-    new GadgetContainerMessage< NDArray< std::complex<float> > >();
-
-  m1->cont(m2);
-
-  ssize_t recv_cnt = 0;
-  if ((recv_cnt = 
-       this->sock_.recv_n (m1->getObjectPtr(), 
-			   sizeof(GadgetMessageAcquisition))) <= 0) {
-    ACE_DEBUG ((LM_ERROR,
-		ACE_TEXT ("(%P|%t) Unable to read Acq header\n")));
-
-    m1->release();
-
-    return -1;
-  }
-
-  std::vector<int> adims;
-  adims.push_back(m1->getObjectPtr()->samples);
-  adims.push_back(m1->getObjectPtr()->channels);
-
-  if (!m2->getObjectPtr()->create(adims)) {
-    ACE_DEBUG ((LM_ERROR,
-		ACE_TEXT ("(%P|%t) Allocate sample data\n")));
-
-    m1->release();
-
-    return -1;
-  }
-  
-  if ((recv_cnt = 
-       this->sock_.recv_n
-       (m2->getObjectPtr()->get_data_ptr(), 
-	sizeof(std::complex<float>)*m1->getObjectPtr()->samples*m1->getObjectPtr()->channels)) <= 0) {
-
-    ACE_DEBUG ((LM_ERROR,
-		ACE_TEXT ("(%P|%t) Unable to read Acq data\n")));
-
-    m1->release();
-
-    return -1;
-  }
-
-  if (stream_.put(m1) < 0) {
-
-    ACE_DEBUG( (LM_ERROR, 
-		ACE_TEXT("Data send down stream failed") ));
-    return -1;
-  }
-
-  return 0;
-}
 

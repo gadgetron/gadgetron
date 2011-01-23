@@ -2,7 +2,7 @@
 #define FFTGADGET_H
 
 #include "Gadget.h"
-#include "gadgetheaders.h"
+#include "GadgetMRIHeaders.h"
 #include "NDArray.h"
 #include <complex>
 
