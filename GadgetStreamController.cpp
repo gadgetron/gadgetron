@@ -102,7 +102,7 @@ int GadgetStreamController::handle_input (ACE_HANDLE)
     
  
   ACE_Time_Value wait = ACE_OS::gettimeofday() + ACE_Time_Value(0,10000); //10ms from now
-  if (stream_.put(mb,&wait) == -1) {
+  if (stream_.put(mb) == -1) {
     GADGET_DEBUG2("Failed to put stuff on stream, too long wait, %d\n",  ACE_OS::last_error () ==  EWOULDBLOCK);
     mb->release();
     return GADGET_FAIL;
@@ -215,7 +215,7 @@ int GadgetStreamController::configure(char* init_filename)
 	  GADGET_DEBUG2("  Reader slot: %d\n", ACE_OS::atoi(child.Get()->ToElement()->GetAttribute("slot").c_str()));
 
 	  GadgetMessageReader* r =
-	    GadgetronLoadComponent<GadgetMessageReader>(child.Get()->ToElement()->GetAttribute("dll").c_str(),
+	    load_dll_component<GadgetMessageReader>(child.Get()->ToElement()->GetAttribute("dll").c_str(),
 							child.Get()->ToElement()->GetAttribute("class").c_str());
        
 	  if (!r) {
@@ -245,7 +245,7 @@ int GadgetStreamController::configure(char* init_filename)
 	  GADGET_DEBUG2("  Writer slot: %d\n", ACE_OS::atoi(child.Get()->ToElement()->GetAttribute("slot").c_str()));
 
 	  GadgetMessageWriter* w =
-	    GadgetronLoadComponent<GadgetMessageWriter>(child.Get()->ToElement()->GetAttribute("dll").c_str(),
+	    load_dll_component<GadgetMessageWriter>(child.Get()->ToElement()->GetAttribute("dll").c_str(),
 							child.Get()->ToElement()->GetAttribute("class").c_str());
        
 	  if (!w) {
@@ -314,7 +314,7 @@ GadgetModule * GadgetStreamController::create_gadget_module(const char* DLL,
 							   const char* gadget_module_name)
 {
 
-  Gadget* g = GadgetronLoadComponent<Gadget>(DLL,gadget);
+  Gadget* g = load_dll_component<Gadget>(DLL,gadget);
   
   if (!g) {
     GADGET_DEBUG1("Failed to load gadget using factory\n");
@@ -333,3 +333,52 @@ GadgetModule * GadgetStreamController::create_gadget_module(const char* DLL,
 }
 
 
+template <class T>  
+T* GadgetStreamController::load_dll_component(const char* DLL, const char* component_name)
+{
+
+  ACE_DLL_Manager* dllmgr = ACE_DLL_Manager::instance();
+
+  ACE_DLL_Handle* dll;
+  ACE_SHLIB_HANDLE dll_handle = 0;
+
+  ACE_TCHAR dllname[1024];
+  ACE_OS::sprintf(dllname, "%s%s",ACE_DLL_PREFIX, DLL);
+
+  ACE_TCHAR factoryname[1024];
+  ACE_OS::sprintf(factoryname, "make_%s", component_name);
+
+
+  dll = dllmgr->open_dll (dllname, ACE_DEFAULT_SHLIB_MODE, dll_handle );
+
+  if (!dll)
+    ACE_ERROR_RETURN ((LM_ERROR,
+                       "%p, ---%s---\n",
+                       "dll.open", dllname),
+                      0);
+
+  //Function pointer
+  typedef T* (*ComponentCreator) (void);
+  
+  
+  void *void_ptr = dll->symbol (factoryname);
+  ptrdiff_t tmp = reinterpret_cast<ptrdiff_t> (void_ptr);
+  ComponentCreator cc = reinterpret_cast<ComponentCreator> (tmp);
+
+  if (cc == 0) {
+    ACE_ERROR_RETURN ((LM_ERROR,
+		       "%p,  ---%s---\n",
+		       "dll.symbol", factoryname),
+		      0);
+  }
+
+
+  T* c = cc();
+  
+  if (!c) {
+    GADGET_DEBUG1("Failed to create component using factory\n");
+    return 0;
+  }
+
+  return c;
+}

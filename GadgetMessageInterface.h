@@ -1,7 +1,7 @@
 #ifndef GADGETMESSAGEINTERFACE_H
 #define GADGETMESSAGEINTERFACE_H
 
-#include "ace/SOCK_stream.h"
+#include "ace/SOCK_Stream.h"
 #include <ace/Basic_Types.h>
 
 #include <map>

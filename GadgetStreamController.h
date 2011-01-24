@@ -70,7 +70,11 @@ protected:
   //virtual int write_acquisition(GadgetMessageAcquisition* imgh, NDArray< std::complex<float> >* data);
 
   virtual int configure(char* init_filename);
+  
+
   virtual GadgetModule * create_gadget_module(const char* DLL, const char* gadget, const char* gadget_module_name);
+
+  template <class T>  T* load_dll_component(const char* DLL, const char* component_name);
 
 };
 

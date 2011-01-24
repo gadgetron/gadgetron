@@ -31,54 +31,6 @@ void COMPONENT ::operator delete (void *ptr)                    \
   delete [] static_cast <char *> (ptr);                         \
 } 
 
-template <class T> inline T* GadgetronLoadComponent(const char* DLL, const char* component_name)
-{
-
-  ACE_DLL_Manager* dllmgr = ACE_DLL_Manager::instance();
-
-  ACE_DLL_Handle* dll;
-  ACE_SHLIB_HANDLE dll_handle;
-
-  ACE_TCHAR dllname[1024];
-  ACE_OS::sprintf(dllname, "%s%s",ACE_DLL_PREFIX, DLL);
-
-  ACE_TCHAR factoryname[1024];
-  ACE_OS::sprintf(factoryname, "make_%s", component_name);
-
-
-  dll = dllmgr->open_dll (dllname, ACE_DEFAULT_SHLIB_MODE, dll_handle );
-
-  if (!dll)
-    ACE_ERROR_RETURN ((LM_ERROR,
-                       "%p, ---%s---\n",
-                       "dll.open", dllname),
-                      0);
-
-  //Function pointer
-  typedef T* (*ComponentCreator) (void);
-  
-  
-  void *void_ptr = dll->symbol (factoryname);
-  ptrdiff_t tmp = reinterpret_cast<ptrdiff_t> (void_ptr);
-  ComponentCreator cc = reinterpret_cast<ComponentCreator> (tmp);
-
-  if (cc == 0) {
-    ACE_ERROR_RETURN ((LM_ERROR,
-		       "%p,  ---%s---\n",
-		       "dll.symbol", factoryname),
-		      0);
-  }
-
-
-  T* c = cc();
-  
-  if (!c) {
-    GADGET_DEBUG1("Failed to create component using factory\n");
-    return 0;
-  }
-
-  return c;
-}
 
 
 #endif //GADGETRONRUNTIMELINKING_H
