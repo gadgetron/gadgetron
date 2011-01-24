@@ -339,7 +339,7 @@ T* GadgetStreamController::load_dll_component(const char* DLL, const char* compo
 
   ACE_DLL_Manager* dllmgr = ACE_DLL_Manager::instance();
 
-  ACE_DLL_Handle* dll;
+  ACE_DLL_Handle* dll = 0;
   ACE_SHLIB_HANDLE dll_handle = 0;
 
   ACE_TCHAR dllname[1024];
@@ -350,12 +350,15 @@ T* GadgetStreamController::load_dll_component(const char* DLL, const char* compo
 
 
   dll = dllmgr->open_dll (dllname, ACE_DEFAULT_SHLIB_MODE, dll_handle );
+  
 
-  if (!dll)
-    ACE_ERROR_RETURN ((LM_ERROR,
-                       "%p, ---%s---\n",
-                       "dll.open", dllname),
-                      0);
+  if (!dll) {
+    GADGET_DEBUG1("Failed to load DLL, Possible reasons: \n");
+    GADGET_DEBUG1("   * Name of DLL is wrong in XML file \n");
+    GADGET_DEBUG1("   * Path of DLL is not in your DLL search path (LD_LIBRARY_PATH on Unix)\n");
+    GADGET_DEBUG1("   * Path of other DLLs that this DLL depends on is not in the search path\n");
+    return 0;
+  }
 
   //Function pointer
   typedef T* (*ComponentCreator) (void);
@@ -366,10 +369,8 @@ T* GadgetStreamController::load_dll_component(const char* DLL, const char* compo
   ComponentCreator cc = reinterpret_cast<ComponentCreator> (tmp);
 
   if (cc == 0) {
-    ACE_ERROR_RETURN ((LM_ERROR,
-		       "%p,  ---%s---\n",
-		       "dll.symbol", factoryname),
-		      0);
+    GADGET_DEBUG2("Failed to load factory (%s) from DLL (%s)\n", dllname, factoryname);
+    return 0;
   }
 
 
