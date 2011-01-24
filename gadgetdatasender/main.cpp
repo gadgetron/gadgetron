@@ -237,6 +237,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
     cp.add(std::string("encoding"), std::string("trajectory"),
 	   std::string("cartesian"));
     break;
+
   };
   
   cp.add(std::string("encoding"), std::string("matrix_x"), 
