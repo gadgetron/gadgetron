@@ -65,12 +65,12 @@ CXXFLAGS=-c -fPIC -Wall -I. \
 	-I$(GADGETRONHOME)/gadgettools \
 	-I$(GADGETRONHOME)/inc \
 	$(CUDAINCLUDES) \
-	-g #-DACE_NTRACE=0
+	-DGADGETS_BUILD_DLL -g #-DACE_NTRACE=0
 
-LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -lgadgetrontools 
+LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -lticpp
 
 NVCC=$(CUDAHOME)/bin/nvcc
-NVCCFLAGS= --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC
+NVCCFLAGS= --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC -DGADGETS_BUILD_DLL
 
 
 CUDALIBRARIES=-L$(CUDAHOME)/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudpp_$(MACHINE) -lcudart -lcublas -lcufft
@@ -91,10 +91,10 @@ $(LIBFILE): $(LIBOBJECTS) $(LIBCUDAOBJECTS) Makefile
 	$(CXX) $(LIBLDFLAGS) $(LIBOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) -o $@
 
 %.cpp.o: %.cpp
-	$(CXX) $(CXXFLAGS) -DGADGETS_BUILD_DLL $< -o $@
+	$(CXX) $(CXXFLAGS) $< -o $@
 
 %.cuo: %.cu
-	$(NVCC) $(NVCCFLAGS) -DGADGETS_BUILD_DLL -o $@ $<
+	$(NVCC) $(NVCCFLAGS)  -o $@ $<
 
 clean:
 	rm -rf *~

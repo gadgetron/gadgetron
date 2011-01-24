@@ -204,27 +204,29 @@ int GadgetStreamController::configure(char* init_filename)
 
     //Configuration of readers
     ticpp::Iterator< ticpp::Node > child;
-    ticpp::Element* pElem = doc.FirstChildElement("readers");
-    for ( child = child.begin( pElem ); child != child.end(); child++ ) {
-      if (child.Get()->Type() == TiXmlNode::ELEMENT &&
-	  ACE_OS::strncmp(child.Get()->ToElement()->Value().c_str(), "reader", 6) == 0) {
-	GADGET_DEBUG1("--Found reader declaration\n");
-	GADGET_DEBUG2("  Reader dll: %s\n", child.Get()->ToElement()->GetAttribute("dll").c_str());
-	GADGET_DEBUG2("  Reader class: %s\n", child.Get()->ToElement()->GetAttribute("class").c_str());
-	GADGET_DEBUG2("  Reader slot: %d\n", ACE_OS::atoi(child.Get()->ToElement()->GetAttribute("slot").c_str()));
+    ticpp::Element* pElem = doc.FirstChildElement("readers", false);
+    if (pElem) {
+      for ( child = child.begin( pElem ); child != child.end(); child++ ) {
+	if (child.Get()->Type() == TiXmlNode::ELEMENT &&
+	    ACE_OS::strncmp(child.Get()->ToElement()->Value().c_str(), "reader", 6) == 0) {
+	  GADGET_DEBUG1("--Found reader declaration\n");
+	  GADGET_DEBUG2("  Reader dll: %s\n", child.Get()->ToElement()->GetAttribute("dll").c_str());
+	  GADGET_DEBUG2("  Reader class: %s\n", child.Get()->ToElement()->GetAttribute("class").c_str());
+	  GADGET_DEBUG2("  Reader slot: %d\n", ACE_OS::atoi(child.Get()->ToElement()->GetAttribute("slot").c_str()));
 
-	GadgetMessageReader* r =
-	  GadgetronLoadComponent<GadgetMessageReader>(child.Get()->ToElement()->GetAttribute("dll").c_str(),
-						      child.Get()->ToElement()->GetAttribute("class").c_str());
+	  GadgetMessageReader* r =
+	    GadgetronLoadComponent<GadgetMessageReader>(child.Get()->ToElement()->GetAttribute("dll").c_str(),
+							child.Get()->ToElement()->GetAttribute("class").c_str());
        
-	if (!r) {
-	  GADGET_DEBUG1("Failed to load GadgetMessageReader from DLL\n");
-	  return GADGET_FAIL;
+	  if (!r) {
+	    GADGET_DEBUG1("Failed to load GadgetMessageReader from DLL\n");
+	    return GADGET_FAIL;
+	  }
+
+	  readers_.insert(ACE_OS::atoi(child.Get()->ToElement()->GetAttribute("slot").c_str()),
+			  r);
+
 	}
-
-	readers_.insert(ACE_OS::atoi(child.Get()->ToElement()->GetAttribute("slot").c_str()),
-			r);
-
       }
     }
     //Configuration of readers end
@@ -232,27 +234,29 @@ int GadgetStreamController::configure(char* init_filename)
 
     //Configuration of writers
     //Configuration of readers
-    pElem = doc.FirstChildElement("writers");
-    for ( child = child.begin( pElem ); child != child.end(); child++ ) {
-      if (child.Get()->Type() == TiXmlNode::ELEMENT &&
-	  ACE_OS::strncmp(child.Get()->ToElement()->Value().c_str(), "writer", 6) == 0) {
-	GADGET_DEBUG1("--Found writer declaration\n");
-	GADGET_DEBUG2("  Writer dll: %s\n", child.Get()->ToElement()->GetAttribute("dll").c_str());
-	GADGET_DEBUG2("  Writer class: %s\n", child.Get()->ToElement()->GetAttribute("class").c_str());
-	GADGET_DEBUG2("  Writer slot: %d\n", ACE_OS::atoi(child.Get()->ToElement()->GetAttribute("slot").c_str()));
+    pElem = doc.FirstChildElement("writers", false);
+    if (pElem) {
+      for ( child = child.begin( pElem ); child != child.end(); child++ ) {
+	if (child.Get()->Type() == TiXmlNode::ELEMENT &&
+	    ACE_OS::strncmp(child.Get()->ToElement()->Value().c_str(), "writer", 6) == 0) {
+	  GADGET_DEBUG1("--Found writer declaration\n");
+	  GADGET_DEBUG2("  Writer dll: %s\n", child.Get()->ToElement()->GetAttribute("dll").c_str());
+	  GADGET_DEBUG2("  Writer class: %s\n", child.Get()->ToElement()->GetAttribute("class").c_str());
+	  GADGET_DEBUG2("  Writer slot: %d\n", ACE_OS::atoi(child.Get()->ToElement()->GetAttribute("slot").c_str()));
 
-	GadgetMessageWriter* w =
-	  GadgetronLoadComponent<GadgetMessageWriter>(child.Get()->ToElement()->GetAttribute("dll").c_str(),
-						      child.Get()->ToElement()->GetAttribute("class").c_str());
+	  GadgetMessageWriter* w =
+	    GadgetronLoadComponent<GadgetMessageWriter>(child.Get()->ToElement()->GetAttribute("dll").c_str(),
+							child.Get()->ToElement()->GetAttribute("class").c_str());
        
-	if (!w) {
-	  GADGET_DEBUG1("Failed to load GadgetMessageWriter from DLL\n");
-	  return GADGET_FAIL;
+	  if (!w) {
+	    GADGET_DEBUG1("Failed to load GadgetMessageWriter from DLL\n");
+	    return GADGET_FAIL;
+	  }
+
+	  writers_.insert(ACE_OS::atoi(child.Get()->ToElement()->GetAttribute("slot").c_str()),
+			  w);
+
 	}
-
-	writers_.insert(ACE_OS::atoi(child.Get()->ToElement()->GetAttribute("slot").c_str()),
-			w);
-
       }
     }
 

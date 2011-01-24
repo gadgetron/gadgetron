@@ -49,9 +49,9 @@ ifeq ($(UNAME), Darwin)
 CXXFLAGS=-m32 -arch i386 -c -fPIC -Wall -I. -I$(GADGETRONHOME)/gadgettools -I$(GADGETRONHOME) -g #-DACE_NTRACE=0
 endif 
 
-LIBLDFLAGS= -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -lgadgetron -lgadgetrontools
+LIBLDFLAGS= -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -lticpp
 ifeq ($(UNAME), Darwin)
-LIBLDFLAGS= -arch i386 -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -lgadgetrontools
+LIBLDFLAGS= -arch i386 -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -lticpp
 endif
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)

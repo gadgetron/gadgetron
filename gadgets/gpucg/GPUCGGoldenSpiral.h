@@ -13,7 +13,7 @@ class GPUCGGoldenSpiralGadget : public GPUCGGadget
   virtual ~GPUCGGoldenSpiralGadget();
 
  protected:
-  virtual int set_base_parameters(ConfigParser* cp);
+  virtual int set_base_parameters(TiXmlNode* node);
   virtual int process_config(ACE_Message_Block* mb);
 
   virtual int copy_samples_for_profile(float* host_base_ptr,

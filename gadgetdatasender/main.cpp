@@ -6,6 +6,8 @@
 #include "ace/OS_NS_string.h"
 #include "ace/Reactor.h"
 
+#include <ticpp.h>
+
 #include "GadgetMessageInterface.h"
 #include "GadgetMRIHeaders.h"
 #include "siemensraw.hpp"
@@ -13,6 +15,7 @@
 #include "ImageWriter.h"
 #include "ConfigParser.h"
 #include "NDArray.h"
+#include "GadgetXml.h"
 
 struct spiral_parameters {
   int Interleaves;
@@ -117,9 +120,94 @@ int dumpSpiralParameters(spiral_parameters* spi_parm) {
   return 0;
 }
 
+
+int SiemensProtocolToGenericXML(SiemensRawData* sd, TiXmlDocument* doc)
+{
+  SiemensBaseParameters bp = sd->GetBaseParameters();
+
+  //Ddeclaration
+  TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
+  doc->LinkEndChild( decl );
+
+  TiXmlElement * sectionElement = 0;
+  TiXmlElement * parameterElement = 0;
+
+  /* encoding section (begin) */
+  std::string ucTrajectory;
+  int trajectory;
+  if (sd->GetMeasYapsParameter(std::string("sKSpace.ucTrajectory"), ucTrajectory) == -1) {
+    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Unable to find trajectory parameter, assuming Cartesian data\n")) ); 
+    trajectory = TRAJECTORY_CARTESIAN;
+  } else {
+    trajectory = strtol (ucTrajectory.c_str(), NULL, 16);
+  }
+
+  switch (trajectory) {
+
+  case TRAJECTORY_CARTESIAN:
+    AddParameterToXML(doc,"encoding","trajectory","cartesian");
+    break;
+  case TRAJECTORY_RADIAL:
+    AddParameterToXML(doc,"encoding","trajectory","radial");
+    break;
+  case TRAJECTORY_SPIRAL:
+    AddParameterToXML(doc,"encoding","trajectory","spiral");
+    break;
+  case TRAJECTORY_BLADE:
+    AddParameterToXML(doc,"encoding","trajectory","blade");
+    break;
+  default:
+    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Unknown trajectory, assuming Cartesian\n")) );
+    AddParameterToXML(doc,"encoding","trajectory","cartesian");
+    break;
+  };
+
+  
+  AddParameterToXML(doc,"encoding","matrix_x", bp.matrix_size[0]);
+  AddParameterToXML(doc,"encoding","matrix_y", bp.matrix_size[1]);
+  AddParameterToXML(doc,"encoding","matrix_z", bp.matrix_size[2]);
+
+  AddParameterToXML(doc,"encoding","readout_length", 
+		    sd->GetFirstNode()->mdh.ushSamplesInScan);
+
+  AddParameterToXML(doc,"encoding","channels", 
+		    sd->GetFirstNode()->mdh.ushUsedChannels);
+
+  AddParameterToXML(doc,"encoding","base_resolution", 
+		    bp.base_resolution);
+
+  AddParameterToXML(doc,"encoding","slices", sd->GetMaxValues()->sLC.ushSlice+1);
+
+
+  if (trajectory == TRAJECTORY_SPIRAL) {
+    spiral_parameters spi_parm;
+    getSpiralParameters(sd,&spi_parm);
+
+    if (getSpiralParameters(sd,&spi_parm) < 0) {
+      ACE_DEBUG( (LM_ERROR, ACE_TEXT("Unable to locate spiral parameters\n")) );
+      return -1;
+    } else {
+        AddParameterToXML(doc,"spiral","Interleaves", spi_parm.Interleaves);
+	AddParameterToXML(doc,"spiral","ADCsPerInterleave", spi_parm.ADCsPerInterleave);
+	AddParameterToXML(doc,"spiral","SamplesPerADC",spi_parm.SamplesPerADC );
+	AddParameterToXML(doc,"spiral","SamplesToSkipStart",spi_parm.SamplesToSkipStart );
+	AddParameterToXML(doc,"spiral","SamplesToSkipEnd", spi_parm.SamplesToSkipEnd);
+	AddParameterToXML(doc,"spiral","SamplingTime_ns",spi_parm.SamplingTime_ns );
+	AddParameterToXML(doc,"spiral","Reordering", spi_parm.Reordering);
+	AddParameterToXML(doc,"spiral","MaxGradient_Gcm", spi_parm.MaxGradient_Gcm);
+	AddParameterToXML(doc,"spiral","MaxSlewRate_Gcms", spi_parm.MaxSlewRate_Gcms);
+	AddParameterToXML(doc,"spiral","krmax_cm",  spi_parm.krmax_cm);
+	AddParameterToXML(doc,"spiral","FOVCoeff_1", spi_parm.FOVCoeff_1);
+    }
+  }
+  /* encoding section (end) */
+
+  return 0;
+}
+
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 {
-  static const ACE_TCHAR options[] = ACE_TEXT(":p:h:c:f:l:i:");
+  static const ACE_TCHAR options[] = ACE_TEXT(":p:h:f:c:");
   
   ACE_Get_Opt cmd_opts(argc, argv, options);
   
@@ -132,16 +220,10 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   ACE_TCHAR filename[4096];
   ACE_OS_String::strncpy(filename, "./data.dat", 4096);
 
-  ACE_TCHAR config_lib[1024];
-  ACE_OS_String::strncpy(config_lib, "core", 1024);
-
-  ACE_TCHAR config_name[1024];
-  ACE_OS_String::strncpy(config_name, "default", 1024);
- 
   ACE_TCHAR config_file[1024];
   ACE_OS_String::strncpy(config_file, "default.xml", 1024);
 
-   int option;
+  int option;
   while ((option = cmd_opts()) != EOF) {
     switch (option) {
     case 'p':
@@ -150,16 +232,10 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
     case 'h':
       ACE_OS_String::strncpy(hostname, cmd_opts.opt_arg(), 1024);
       break;
-    case 'l':
-      ACE_OS_String::strncpy(config_lib, cmd_opts.opt_arg(), 1024);
-      break;
-    case 'c':
-      ACE_OS_String::strncpy(config_name, cmd_opts.opt_arg(), 1024);
-      break;
     case 'f':
       ACE_OS_String::strncpy(filename, cmd_opts.opt_arg(), 4096);
       break;
-    case 'i':
+    case 'c':
       ACE_OS_String::strncpy(config_file, cmd_opts.opt_arg(), 1024);
       break;
     case ':':
@@ -204,126 +280,15 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   acq_head_base.max_idx.channel = sd.GetMaxValues()->ushChannelId;
 
   GadgetMessageIdentifier id;
-  //GadgetMessageConfigurator conf;
-
-  //id.id = GADGET_MESSAGE_CONFIGURATION;
-  //ACE_OS_String::strncpy(conf.configurator_lib,config_lib,1024);
-  //ACE_OS_String::strncpy(conf.configurator_name,config_name,1024);
-
-
-  std::string ucTrajectory;
-  int trajectory;
-  spiral_parameters spi_parm;
-  if (sd.GetMeasYapsParameter(std::string("sKSpace.ucTrajectory"), ucTrajectory) == -1) {
-    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Unable to find trajectory parameter, assuming Cartesian data\n")) ); 
-    trajectory = TRAJECTORY_CARTESIAN;
-  } else {
-    trajectory = strtol (ucTrajectory.c_str(), NULL, 16);
-    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Trajectory : %d\n"), trajectory) );
-  }
-
-
-  ConfigParser cp;
-
-  switch (trajectory) {
-
-  case TRAJECTORY_CARTESIAN:
-    cp.add(std::string("encoding"), std::string("trajectory"),
-	   std::string("cartesian"));
-    break;
-  case TRAJECTORY_RADIAL:
-    cp.add(std::string("encoding"), std::string("trajectory"),
-	   std::string("radial"));
-    break;
-  case TRAJECTORY_SPIRAL:
-    cp.add(std::string("encoding"), std::string("trajectory"),
-	   std::string("spiral"));
-    break;
-  default:
-    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Unknown trajectory, assumin Cartesian\n")) );
-    cp.add(std::string("encoding"), std::string("trajectory"),
-	   std::string("cartesian"));
-    break;
-  };
   
-  cp.add(std::string("encoding"), std::string("matrix_x"), 
-	 (size_t)bp.matrix_size[0]);
+  //XML Parameters
+  TiXmlDocument parameter_doc;
+  if (SiemensProtocolToGenericXML(&sd, &parameter_doc) < 0) {
+    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Failed to convert Siemens Protocol to generic XML\n")) ); 
+    return -1;
+  }  
+  std::string config = XmlToString(parameter_doc);
 
-  cp.add(std::string("encoding"), std::string("matrix_y"), 
-	 (size_t)bp.matrix_size[1]);
-
-  cp.add(std::string("encoding"), std::string("matrix_z"), 
-	 (size_t)bp.matrix_size[2]);
-
-  cp.add(std::string("encoding"), std::string("readout_length"), 
-	 (size_t)sd.GetFirstNode()->mdh.ushSamplesInScan);
-
-  cp.add(std::string("encoding"), std::string("channels"), 
-	 (size_t)sd.GetFirstNode()->mdh.ushUsedChannels);
-
-  cp.add(std::string("encoding"), std::string("base_resolution"), 
-	 (size_t)bp.base_resolution);
-
-  cp.add(std::string("encoding"), std::string("slices"), 
-	 (size_t)acq_head_base.max_idx.slice+1);
-
-
-  if (trajectory == TRAJECTORY_SPIRAL) {
-    if (getSpiralParameters(&sd,&spi_parm) < 0) {
-      ACE_DEBUG( (LM_ERROR, ACE_TEXT("Unable to locate spiral parameters\n")) );
-      return -1;
-    } else {
-      cp.add(std::string("spiral"), std::string("Interleaves"), 
-	     (size_t)spi_parm.Interleaves);
-      
-      cp.add(std::string("spiral"), std::string("ADCsPerInterleave"), 
-	     (size_t)spi_parm.ADCsPerInterleave);
-
-      cp.add(std::string("spiral"), std::string("SamplesPerADC"), 
-	     (size_t)spi_parm.SamplesPerADC);
-
-      cp.add(std::string("spiral"), std::string("SamplesToSkipStart"), 
-	     (size_t)spi_parm.SamplesToSkipStart);
-
-      cp.add(std::string("spiral"), std::string("SamplesToSkipEnd"), 
-	     (size_t)spi_parm.SamplesToSkipEnd);
-
-      cp.add(std::string("spiral"), std::string("SamplingTime_ns"), 
-	     (size_t)spi_parm.SamplingTime_ns);
-
-      cp.add(std::string("spiral"), std::string("Reordering"), 
-	     (size_t)spi_parm.Reordering);
-      
-      cp.add(std::string("spiral"), std::string("MaxGradient_Gcm"), 
-	     spi_parm.MaxGradient_Gcm);
-      
-      cp.add(std::string("spiral"), std::string("MaxSlewRate_Gcms"), 
-	     spi_parm.MaxSlewRate_Gcms);
-      
-      cp.add(std::string("spiral"), std::string("krmax_cm"), 
-	     spi_parm.krmax_cm);
-      
-      cp.add(std::string("spiral"), std::string("FOVCoeff_1"), 
-	     spi_parm.FOVCoeff_1);      
-    }
-  }
-  
-
-  ACE_DEBUG( (LM_DEBUG, 
-	      ACE_TEXT("Running with config:\n %s"), 
-	      cp.exportCharArray()) );
-
-
-  std::string config = cp.exportConf();
-
-  //conf.configuration_length = config.size()+1; //+1 for the null termination
-  //char config_info[1024];
-  
-
-
-  //  ACE_DEBUG(( LM_INFO, ACE_TEXT("Sending configuration %s@%s \n"), 
-  //	      conf.configurator_name, conf.configurator_lib ));
-  
   ACE_INET_Addr server(port_no,hostname);
   ACE_SOCK_Connector connector;
   ACE_SOCK_Stream peer;  
@@ -355,14 +320,12 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   peer.send_n(&id, sizeof(GadgetMessageIdentifier));
   peer.send_n(&ini, sizeof(GadgetMessageConfigurationFile));
 
-
   id.id = GADGET_MESSAGE_PARAMETER_SCRIPT;
   GadgetMessageScript conf;
   conf.script_length = config.size()+1;
   peer.send_n(&id, sizeof(GadgetMessageIdentifier));
   peer.send_n(&conf, sizeof(GadgetMessageScript));
   peer.send_n(config.c_str(), conf.script_length);
-  //peer.send_n(config_info, conf.configuration_length);
 
   //We need an array for collecting the data from all channels prior to transmission
   NDArray< std::complex<float> > buf;
@@ -387,7 +350,6 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
       continue;
     }
  
-
     GadgetMessageAcquisition acq_head = acq_head_base;
 
     acq_head.idx.line                 = next->mdh.sLC.ushLine;

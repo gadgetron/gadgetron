@@ -30,7 +30,7 @@ void COMPONENT ::operator delete (void *ptr)                    \
   delete [] static_cast <char *> (ptr);                         \
 } 
 
-template <class T> T* GadgetronLoadComponent(const char* DLL, const char* component_name)
+template <class T> inline T* GadgetronLoadComponent(const char* DLL, const char* component_name)
 {
   ACE_DLL dll;
 
@@ -44,8 +44,8 @@ template <class T> T* GadgetronLoadComponent(const char* DLL, const char* compon
 
   if (retval != 0)
     ACE_ERROR_RETURN ((LM_ERROR,
-                       "%p, %s\n",
-                       "dll.open", dllname),
+                       "%p, ---%s---, %s\n",
+                       "dll.open", dllname, dll.error()),
                       0);
 
   //Function pointer
@@ -58,8 +58,8 @@ template <class T> T* GadgetronLoadComponent(const char* DLL, const char* compon
 
   if (cc == 0) {
     ACE_ERROR_RETURN ((LM_ERROR,
-		       "%p, %s",
-		       "dll.symbol", factoryname),
+		       "%p,  ---%s---, %s\n",
+		       "dll.symbol", factoryname, dll.error()),
 		      0);
   }
 

@@ -3,13 +3,12 @@
 
 #include "ace/Message_Queue.h"
 
-
 #include <complex>
 
 #include "Gadgetron.h"
 #include "NDArray.h"
-#include "gadgetheaders.h"
-#include "ConfigParser.h"
+#include "GadgetMRIHeaders.h"
+#include "GadgetXml.h"
 
 // Cuda includes
 #include <cuda.h>
@@ -47,7 +46,7 @@ public Gadget2<GadgetMessageAcquisition, NDArray< std::complex<float> > >
 
   virtual int process_config(ACE_Message_Block* mb);
 
-  virtual int set_base_parameters(ConfigParser* cp);
+  virtual int set_base_parameters(TiXmlNode* xmlnode);
 
   virtual int copy_samples_for_profile(float* host_base_ptr,
 				       std::complex<float>* data_base_ptr,
