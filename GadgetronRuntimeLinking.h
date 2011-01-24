@@ -4,7 +4,8 @@
 #include "ace/OS_NS_stdlib.h"
 #include "ace/OS_NS_string.h"
 #include "ace/OS_NS_stdio.h"
-#include "ace/DLL.h"
+#include "ace/DLL_Manager.h"
+
 #include "ace/Log_Msg.h"
 #include "Gadgetron.h"
 
@@ -32,7 +33,11 @@ void COMPONENT ::operator delete (void *ptr)                    \
 
 template <class T> inline T* GadgetronLoadComponent(const char* DLL, const char* component_name)
 {
-  ACE_DLL dll;
+
+  ACE_DLL_Manager* dllmgr = ACE_DLL_Manager::instance();
+
+  ACE_DLL_Handle* dll;
+  ACE_SHLIB_HANDLE dll_handle;
 
   ACE_TCHAR dllname[1024];
   ACE_OS::sprintf(dllname, "%s%s",ACE_DLL_PREFIX, DLL);
@@ -40,26 +45,27 @@ template <class T> inline T* GadgetronLoadComponent(const char* DLL, const char*
   ACE_TCHAR factoryname[1024];
   ACE_OS::sprintf(factoryname, "make_%s", component_name);
 
-  int retval = dll.open (dllname);
 
-  if (retval != 0)
+  dll = dllmgr->open_dll (dllname, ACE_DEFAULT_SHLIB_MODE, dll_handle );
+
+  if (!dll)
     ACE_ERROR_RETURN ((LM_ERROR,
-                       "%p, ---%s---, %s\n",
-                       "dll.open", dllname, dll.error()),
+                       "%p, ---%s---\n",
+                       "dll.open", dllname),
                       0);
 
   //Function pointer
   typedef T* (*ComponentCreator) (void);
   
   
-  void *void_ptr = dll.symbol (factoryname);
+  void *void_ptr = dll->symbol (factoryname);
   ptrdiff_t tmp = reinterpret_cast<ptrdiff_t> (void_ptr);
   ComponentCreator cc = reinterpret_cast<ComponentCreator> (tmp);
 
   if (cc == 0) {
     ACE_ERROR_RETURN ((LM_ERROR,
-		       "%p,  ---%s---, %s\n",
-		       "dll.symbol", factoryname, dll.error()),
+		       "%p,  ---%s---\n",
+		       "dll.symbol", factoryname),
 		      0);
   }
 
@@ -70,8 +76,6 @@ template <class T> inline T* GadgetronLoadComponent(const char* DLL, const char*
     GADGET_DEBUG1("Failed to create component using factory\n");
     return 0;
   }
-
-  dll.close ();
 
   return c;
 }
