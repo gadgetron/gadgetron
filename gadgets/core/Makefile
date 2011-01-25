@@ -15,17 +15,6 @@ endif
 CONFIG_FILES=\
 	default.xml
 
-LIBHEADERS=\
-	AcquisitionPassthroughGadget.h \
-	AcquisitionFinishGadget.h \
-	AccumulatorGadget.h \
-	FFTGadget.h \
-	ImageFinishGadget.h \
-	CropAndCombineGadget.h \
-	ImageWriterGadget.h \
-	MRIAcquisitionReader.h \
-	MRIImageWriter.h
-
 LIBSOURCES=\
 	AcquisitionPassthroughGadget.cpp \
 	AcquisitionFinishGadget.cpp \
@@ -49,7 +38,7 @@ ifeq ($(UNAME), Darwin)
 CXXFLAGS=-m32 -arch i386 -c -fPIC -Wall -I. -I$(GADGETRONHOME)/gadgettools -I$(GADGETRONHOME) -g #-DACE_NTRACE=0
 endif 
 
-LIBLDFLAGS= -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -lticpp
+LIBLDFLAGS= -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -ltinyxml
 ifeq ($(UNAME), Darwin)
 LIBLDFLAGS= -arch i386 -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -lticpp
 endif
@@ -73,8 +62,6 @@ clean:
 
 install:
 	mkdir -p $(GADGETRONHOME)/lib
-	mkdir -p $(GADGETRONHOME)/inc
 	mkdir -p $(GADGETRONHOME)/config
-	cp $(LIBHEADERS) $(GADGETRONHOME)/inc/
 	cp $(LIBFILE) $(GADGETRONHOME)/lib/
 	cp $(CONFIG_FILES) $(GADGETRONHOME)/config/

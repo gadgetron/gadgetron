@@ -63,16 +63,31 @@ int GPUCGGoldenSpiralGadget::set_base_parameters(TiXmlNode* xmlnode)
 
 int GPUCGGoldenSpiralGadget::process_config(ACE_Message_Block* mb)
 {
+
   TiXmlDocument doc;
   doc.Parse(mb->rd_ptr());
 
   if (!is_configured_) {
 
-    if (!doc.FirstChildElement("spiral")) {
+    if (!doc.FirstChild("spiral")) {
       GADGET_DEBUG1("Unable to locate spiral section of configuration.\n");
       return GADGET_FAIL;
     }
     
+    /*
+    Interleaves_        = 16;
+    ADCsPerInterleave_  = 1;
+    SamplesPerADC_      = 1100;
+    SamplesToSkipStart_ = 0;
+    SamplesToSkipEnd_   = 229;
+    SamplingTime_ns_    = 3900;
+    Reordering_         = 1;
+    MaxGradient_Gcm_    = 1.8;
+    MaxSlewRate_Gcms_   = 7500.0;
+    krmax_cm_           = 1.6;
+    FOVCoeff_1_         = 40.0;
+    */
+
     Interleaves_        = GetIntParameterValueFromXML(&doc,"spiral","Interleaves");
     ADCsPerInterleave_  = GetIntParameterValueFromXML(&doc,"spiral","ADCsPerInterleave");
     SamplesPerADC_      = GetIntParameterValueFromXML(&doc,"spiral","SamplesPerADC");
@@ -168,12 +183,12 @@ int  GPUCGGoldenSpiralGadget::copy_samples_for_profile(float* host_base_ptr,
 						       int profile_no,
 						       int channel_no)
 {
-  
+ 
   memcpy(host_base_ptr + 
 	 (channel_no*allocated_samples_ + profile_no*samples_per_profile_) * 2,
 	 data_base_ptr + channel_no*SamplesPerADC_, 
 	 sizeof(float)*samples_per_profile_*2);
-  
+
   return GADGET_OK;
 }
 
@@ -225,7 +240,6 @@ int GPUCGGoldenSpiralGadget::calculate_trajectory()
 
   } else {
     //This must be a golden angle....we need to deal with that
-
     float2* tmp_traj = new float2[samples_per_profile_*Interleaves_];
     if (!tmp_traj) {
       GADGET_DEBUG1("Failed to allocate temporary host memory for trajectory\n");

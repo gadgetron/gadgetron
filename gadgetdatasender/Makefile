@@ -13,8 +13,8 @@ ifeq ($(KERNEL), Darwin)
 CXX=g++ -m32 -arch i386
 endif
 
-EXELDFLAGS= -L$(GADGETRONHOME)/lib -lACE -lticpp -lgadgetrontools 
-CXXFLAGS=-c -Wall -I. -I$(GADGETRONHOME)/inc #-DACE_NTRACE=0
+EXELDFLAGS= -L$(GADGETRONHOME)/lib -lACE -ltinyxml -lgadgetrontools 
+CXXFLAGS=-c -Wall -I. -I$(GADGETRONHOME)/gadgets/core -I$(GADGETRONHOME)/inc #-DACE_NTRACE=0
 
 EXECUTABLE=gadgetrondatasender
 

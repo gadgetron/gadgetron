@@ -6,14 +6,11 @@
 #include "ace/OS_NS_string.h"
 #include "ace/Reactor.h"
 
-#include <ticpp.h>
-
 #include "GadgetMessageInterface.h"
 #include "GadgetMRIHeaders.h"
 #include "siemensraw.hpp"
 #include "GadgetSocketReceiver.h"
 #include "ImageWriter.h"
-#include "ConfigParser.h"
 #include "NDArray.h"
 #include "GadgetXml.h"
 
@@ -194,10 +191,10 @@ int SiemensProtocolToGenericXML(SiemensRawData* sd, TiXmlDocument* doc)
 	AddParameterToXML(doc,"spiral","SamplesToSkipEnd", spi_parm.SamplesToSkipEnd);
 	AddParameterToXML(doc,"spiral","SamplingTime_ns",spi_parm.SamplingTime_ns );
 	AddParameterToXML(doc,"spiral","Reordering", spi_parm.Reordering);
-	AddParameterToXML(doc,"spiral","MaxGradient_Gcm", spi_parm.MaxGradient_Gcm);
-	AddParameterToXML(doc,"spiral","MaxSlewRate_Gcms", spi_parm.MaxSlewRate_Gcms);
-	AddParameterToXML(doc,"spiral","krmax_cm",  spi_parm.krmax_cm);
-	AddParameterToXML(doc,"spiral","FOVCoeff_1", spi_parm.FOVCoeff_1);
+	AddDoubleParameterToXML(doc,"spiral","MaxGradient_Gcm", spi_parm.MaxGradient_Gcm);
+	AddDoubleParameterToXML(doc,"spiral","MaxSlewRate_Gcms", spi_parm.MaxSlewRate_Gcms);
+	AddDoubleParameterToXML(doc,"spiral","krmax_cm",  spi_parm.krmax_cm);
+	AddDoubleParameterToXML(doc,"spiral","FOVCoeff_1", spi_parm.FOVCoeff_1);
     }
   }
   /* encoding section (end) */

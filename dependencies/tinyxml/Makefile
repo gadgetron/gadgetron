@@ -10,14 +10,9 @@ endif
 
 
 HEADERS=\
-	ticpp.h \
-	ticpprc.h \
-	tinystr.h \
 	tinyxml.h
 
 LIBSOURCES=\
-	ticpp.cpp \
-	tinystr.cpp \
 	tinyxml.cpp \
 	tinyxmlerror.cpp \
 	tinyxmlparser.cpp
@@ -31,10 +26,10 @@ endif
 
 LIBLDFLAGS=-shared
 
-CXXFLAGS=-c -fPIC -DTIXML_USE_TICPP -Wall -I. 
+CXXFLAGS=-c -fPIC -Wall -I. 
 
 
-LIBFILE=libticpp.$(DLLEXTENSION)
+LIBFILE=libtinyxml.$(DLLEXTENSION)
 
 all: $(LIBFILE) 
 

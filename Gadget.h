@@ -159,7 +159,7 @@ public:
   }
 
   int set_parameter(std::string name, std::string val) {
-
+    parameters_[name] = val;
     return 0;
   }
 
@@ -303,26 +303,11 @@ protected:
 
 
 /* Macros for handling dyamic linking */
-
-//In header file add this macro
 #define GADGET_DECLARE(GADGET) \
-  void *operator new (size_t bytes);\
-  void operator delete (void *ptr); \
+  GADGETRON_LOADABLE_DECLARE(GADGET)
 
-//In CPP file add this macro add the end
-#define GADGET_FACTORY_DECLARE(GADGET)                     \
-extern "C" DLLEXPORT Gadget* make_##GADGET (void); \
-Gadget * make_##GADGET (void)       				\
-{							       	\
-  return new GADGET;                                            \
-} \
-void * GADGET ::operator new (size_t bytes)                  \
-{                                                               \
-  return ::new char[bytes];                                     \
-}                                                               \
-void GADGET ::operator delete (void *ptr) \
-{ \
-  delete [] static_cast <char *> (ptr); \
-} 
+#define GADGET_FACTORY_DECLARE(GADGET)	\
+  GADGETRON_LOADABLE_FACTORY_DECLARE(Gadget,GADGET)
+
 
 #endif //GADGET_H

@@ -45,7 +45,7 @@ To run the gadgetron
 To feed data into the gadgetron
 1.  cd gadgetron/gadgetdatasender/
 2.  make
-3.  ./gadgetdatasender -f filname.dat -i configuration_file.xml
+3.  ./gadgetdatasender -f filname.dat -c configuration_file.xml
 
 ------------------------------------
 ACE Install instructions on Mac (Snow Leopard)

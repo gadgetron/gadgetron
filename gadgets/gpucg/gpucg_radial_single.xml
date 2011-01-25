@@ -10,7 +10,6 @@
 
 <stream>
 <gadget name="ImageFinish" dll="gadgetroncore" class="ImageFinishGadget" />
-
 <gadget name="GPUCGRadial0" dll="gadgetrongpucg" class="GPUCGGoldenRadialGadget">
 <property name="sliceno" value="0" />
 <property name="pass_on_undesired_data" value="true" />

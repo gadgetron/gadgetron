@@ -28,9 +28,6 @@ CONFIG_FILES=\
 	gpucg_spiral_single.xml \
 	gpucg_spiral_3_slices.xml
 
-LIBHEADERS=\
-	GPUCGGadget.h 
-
 LIBSOURCES=\
 	GPUCGGadget.cpp \
 	GPUCGGoldenRadial.cpp \
@@ -64,10 +61,11 @@ endif
 CXXFLAGS=-c -fPIC -Wall -I. \
 	-I$(GADGETRONHOME)/gadgettools \
 	-I$(GADGETRONHOME)/inc \
+	-I$(GADGETRONHOME)/gadgets/core \
 	$(CUDAINCLUDES) \
 	-DGADGETS_BUILD_DLL -g #-DACE_NTRACE=0
 
-LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -lticpp
+LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml
 
 NVCC=$(CUDAHOME)/bin/nvcc
 NVCCFLAGS= --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC -DGADGETS_BUILD_DLL
@@ -106,9 +104,7 @@ clean:
 
 install:
 	mkdir -p $(GADGETRONHOME)/lib
-	mkdir -p $(GADGETRONHOME)/inc
 	mkdir -p $(GADGETRONHOME)/config
-	cp $(LIBHEADERS) $(GADGETRONHOME)/inc/
 	cp $(LIBFILE) $(GADGETRONHOME)/lib/
 	cp $(CONFIG_FILES) $(GADGETRONHOME)/config/
 

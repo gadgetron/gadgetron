@@ -7,8 +7,8 @@
 #include <map>
 
 #include "GadgetContainerMessage.h"
-#include "GadgetronRuntimeLinking.h"
 #include "Gadgetron.h"
+#include "GadgetronExport.h"
 
 enum GadgetronMessageID {
   GADGET_MESSAGE_INT_ID_MIN       =   0,
@@ -196,6 +196,8 @@ class GadgetMessageScriptReader : public GadgetMessageReader
     return mb;
   }
 };
+
+/* Macros for handling dyamic linking */
 
 #define GADGETRON_READER_DECLARE(READER) \
   GADGETRON_LOADABLE_DECLARE(READER)

@@ -13,13 +13,11 @@ endif
 HEADERS=\
 	GadgetContainerMessage.h \
 	Gadget.h \
-	GadgetMRIHeaders.h \
 	GadgetServerAcceptor.h \
 	GadgetStreamController.h \
 	Gadgetron.h \
 	GadgetronExport.h \
 	GadgetMessageInterface.h \
-	GadgetronRuntimeLinking.h 
 
 EXESOURCES=\
 	main.cpp \
@@ -34,7 +32,7 @@ ifeq ($(KERNEL), Darwin)
 CXX=g++ -m32 -arch i386
 endif
 
-EXELDFLAGS=-lACE -lticpp
+EXELDFLAGS=-lACE -ltinyxml
 
 LIBLDFLAGS= -shared -lACE 
 
