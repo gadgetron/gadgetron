@@ -40,7 +40,7 @@ endif
 
 LIBLDFLAGS= -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -ltinyxml
 ifeq ($(UNAME), Darwin)
-LIBLDFLAGS= -arch i386 -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -lticpp
+LIBLDFLAGS= -arch i386 -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -ltinyxml
 endif
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
