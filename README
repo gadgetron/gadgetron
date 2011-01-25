@@ -6,8 +6,8 @@ gadgetron
   ACE (tested with versions 5.6 and 6.0)
   (See instructions for MAC below)
 
-  TinyXML++
-  (Included in depedencies/)
+  TinyXML version >= 2.6.1
+  (Included in depedencies/, make; make install)
 
 gadgetron/gadgets/core
   FFTW3

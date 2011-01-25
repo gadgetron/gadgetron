@@ -1,2 +1,5 @@
 - Remove ConfigParser
 - Make common.mk Makefile for including into all projects
+- Add Event_Handler to Reactor to deal with key strokes and SIGINT to ensure graceful shutdown
+- Logging server
+- Data display

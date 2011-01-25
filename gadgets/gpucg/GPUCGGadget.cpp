@@ -67,9 +67,6 @@ int GPUCGGadget::process_config(ACE_Message_Block* mb)
   TiXmlDocument doc;
   doc.Parse(mb->rd_ptr());
 
-  GADGET_DEBUG1("Running with config:\n");
-  doc.Print();
-
   if (!is_configured_) {
     //Initialize Cuda
     cudaDeviceProp deviceProp;

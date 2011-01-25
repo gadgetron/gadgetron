@@ -126,9 +126,6 @@ int SiemensProtocolToGenericXML(SiemensRawData* sd, TiXmlDocument* doc)
   TiXmlDeclaration * decl = new TiXmlDeclaration( "1.0", "", "" );
   doc->LinkEndChild( decl );
 
-  TiXmlElement * sectionElement = 0;
-  TiXmlElement * parameterElement = 0;
-
   /* encoding section (begin) */
   std::string ucTrajectory;
   int trajectory;
