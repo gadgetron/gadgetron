@@ -53,3 +53,4 @@ int GPUCGGoldenRadialGadget::calculate_density_compensation()
   return GADGET_OK;
 }
 
+GADGET_FACTORY_DECLARE(GPUCGGoldenRadialGadget)

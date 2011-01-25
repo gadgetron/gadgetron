@@ -4,12 +4,14 @@
 #include <complex>
 
 #include "Gadget.h"
-#include "gadgetheaders.h"
+#include "GadgetMRIHeaders.h"
 #include "NDArray.h"
 
 class CropAndCombineGadget : 
 public Gadget2<GadgetMessageImage, NDArray< std::complex<float> > >
 {
+ public:
+  GADGET_DECLARE(CropAndCombineGadget);
 
  protected:
   virtual int process( GadgetContainerMessage<GadgetMessageImage>* m1,

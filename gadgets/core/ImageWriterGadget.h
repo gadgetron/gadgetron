@@ -5,13 +5,15 @@
 
 #include "Gadget.h"
 #include "NDArray.h"
-#include "gadgetheaders.h"
+#include "GadgetMRIHeaders.h"
 
 
 class ImageWriterGadget :
 public Gadget2<GadgetMessageImage, NDArray< std::complex<float> > >
 {
  public:
+  GADGET_DECLARE(ImageWriterGadget)
+
   ImageWriterGadget()
     : calls_(0)
     {}

@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>  
+
+<readers>
+<reader slot="1001" dll="gadgetroncore" class="MRIAcquisitionReader" />
+</readers>
+
+<writers>
+<writer slot="1004" dll="gadgetroncore" class="MRIImageWriter" />
+</writers>
+
+<stream>
+<gadget name="ImageFinish" dll="gadgetroncore" class="ImageFinishGadget" />
+<gadget name="GPUCGRadial0" dll="gadgetrongpucg" class="GPUCGGoldenRadialGadget">
+<property name="sliceno" value="0" />
+<property name="pass_on_undesired_data" value="true" />
+</gadget>
+
+</stream>
+

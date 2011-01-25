@@ -1,4 +1,5 @@
 #include "AcquisitionPassthroughGadget.h"
+#include "Gadgetron.h"
 
 int AcquisitionPassthroughGadget
 ::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
@@ -15,3 +16,6 @@ int AcquisitionPassthroughGadget
 
   return 0;
 }
+
+
+GADGET_FACTORY_DECLARE(AcquisitionPassthroughGadget)

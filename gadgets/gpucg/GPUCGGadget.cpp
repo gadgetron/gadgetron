@@ -1,11 +1,7 @@
 #include "GPUCGGadget.h"
-#include "ConfigParser.h"
 
-
-
-
-GPUCGGadget::GPUCGGadget(bool pass_on_data, int slice_no)
-  : slice_no_(slice_no)
+GPUCGGadget::GPUCGGadget()
+  : slice_no_(0)
   , profiles_per_frame_(48)
   , shared_profiles_(16)
   , channels_(0)
@@ -33,7 +29,7 @@ GPUCGGadget::GPUCGGadget(bool pass_on_data, int slice_no)
 {
   matrix_size_    = make_uint2(0,0);
   matrix_size_os_ = make_uint2(0,0);
-  pass_on_undesired_data_ = pass_on_data; //We will make one of these for each slice and so data should be passed on.
+  pass_on_undesired_data_ = true; //We will make one of these for each slice and so data should be passed on.
 }
 
 
@@ -45,15 +41,16 @@ GPUCGGadget::~GPUCGGadget()
   if (dcw_dev_ptr_)        cudaFree(dcw_dev_ptr_);
 }
 
-int GPUCGGadget::set_base_parameters(ConfigParser* cp)
+int GPUCGGadget::set_base_parameters(TiXmlNode* xmlnode)
 {
   
-  samples_per_profile_ = cp->getIntVal("encoding","readout_length");
-  channels_ = cp->getIntVal("encoding","channels");
+  samples_per_profile_ = GetIntParameterValueFromXML(xmlnode, "encoding","readout_length");
+
+  channels_ = GetIntParameterValueFromXML(xmlnode,"encoding","channels");
 
   if (matrix_size_.x == 0 && matrix_size_.y == 0) {
-    matrix_size_ = make_uint2(cp->getIntVal("encoding","matrix_x"), 
-			      cp->getIntVal("encoding","matrix_y"));
+    matrix_size_ = make_uint2(GetIntParameterValueFromXML(xmlnode,"encoding","matrix_x"), 
+			      GetIntParameterValueFromXML(xmlnode,"encoding","matrix_y"));
   }
 
   return GADGET_OK;
@@ -64,10 +61,14 @@ int GPUCGGadget::process_config(ACE_Message_Block* mb)
 {
   GADGET_DEBUG1("GPUCGGadget::process_config\n");
 
-  ConfigParser cp;
-  cp.parse(mb->rd_ptr());
+  slice_no_ = get_int_value(std::string("sliceno"));
+  pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data"));
 
-  GADGET_DEBUG2("Running with config: %s\n", (char*)mb->rd_ptr());
+  TiXmlDocument doc;
+  doc.Parse(mb->rd_ptr());
+
+  GADGET_DEBUG1("Running with config:\n");
+  doc.Print();
 
   if (!is_configured_) {
     //Initialize Cuda
@@ -83,7 +84,7 @@ int GPUCGGadget::process_config(ACE_Message_Block* mb)
     cublasInit();
     //End of Cuda Initilization
 
-    if (set_base_parameters(&cp) != GADGET_OK) {
+    if (set_base_parameters(&doc) != GADGET_OK) {
       GADGET_DEBUG1("Failed to set base parameters\n");
       return GADGET_FAIL;
     }

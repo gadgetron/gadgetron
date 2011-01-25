@@ -1,5 +1,5 @@
 #include "AccumulatorGadget.h"
-#include "ConfigParser.h"
+#include "GadgetXml.h"
 
 AccumulatorGadget::AccumulatorGadget()
   :buffer_(0)
@@ -14,16 +14,15 @@ AccumulatorGadget::~AccumulatorGadget()
 
 int AccumulatorGadget::process_config(ACE_Message_Block* mb)
 {
-  
-  ConfigParser cp;
-  cp.parse(mb->rd_ptr());
-  
-  dimensions_.push_back(cp.getIntVal("encoding","readout_length"));
-  dimensions_.push_back(cp.getIntVal("encoding","matrix_y"));
-  dimensions_.push_back(cp.getIntVal("encoding","matrix_z"));
-  dimensions_.push_back(cp.getIntVal("encoding","channels"));
-  dimensions_.push_back(cp.getIntVal("encoding","slices"));
- 
+  TiXmlDocument doc;
+  doc.Parse(mb->rd_ptr());
+
+  dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "readout_length"));
+  dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "matrix_y"));
+  dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "matrix_z"));
+  dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "channels"));
+  dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "slices"));
+
   if (!(buffer_ = new NDArray< std::complex<float> >())) {
     ACE_DEBUG( (LM_ERROR, ACE_TEXT("Failed to allocate buffer array")) );
     return -1;
@@ -33,11 +32,6 @@ int AccumulatorGadget::process_config(ACE_Message_Block* mb)
     ACE_DEBUG( (LM_ERROR, ACE_TEXT("Failed to create buffer array")) );
     return -1;    
   }
-
-  /*
-  std::cout << "buffer_.get_number_of_elements() = " 
-	    << buffer_->get_number_of_elements() << std::endl;
-  */
 
   return 0;
 }
@@ -140,3 +134,4 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
   return 0;
 }
 
+GADGET_FACTORY_DECLARE(AccumulatorGadget)

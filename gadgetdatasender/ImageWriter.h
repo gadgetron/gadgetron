@@ -13,6 +13,43 @@ class ImageWriter : public GadgetImageMessageReader
     : number_of_calls_(0)
     {}
 
+
+  virtual ACE_Message_Block* read(ACE_SOCK_Stream* socket) {
+    ACE_Message_Block* mb = GadgetImageMessageReader::read(socket);
+
+    if (!mb) {
+      GADGET_DEBUG1("Read failed in parent\n");
+      return 0;
+    }
+    
+    GadgetContainerMessage<GadgetMessageImage> * img_head_mb = 
+      dynamic_cast<GadgetContainerMessage<GadgetMessageImage> *>(mb);
+
+    if (!img_head_mb) {
+      GADGET_DEBUG1("Failed in dynamic cast\n");
+      mb->release();
+      return 0;
+    }
+
+
+    GadgetContainerMessage<NDArray< std::complex<float> > > * img_data_mb = 
+      dynamic_cast<GadgetContainerMessage<NDArray< std::complex<float> > > *>(img_head_mb->cont());
+
+    if (!img_data_mb) {
+      GADGET_DEBUG1("Failed in dynamic cast\n");
+      mb->release();
+      return 0;
+    }
+    
+    if (this->process_image(img_head_mb->getObjectPtr(), img_data_mb->getObjectPtr()) < 0) {
+      GADGET_DEBUG1("Failed to process image\n");
+      mb->release();
+      return 0;
+    }
+
+    return mb;
+  }
+  
   virtual int process_image(GadgetMessageImage* img_head, 
 			    NDArray< std::complex<float> >* data)
   {

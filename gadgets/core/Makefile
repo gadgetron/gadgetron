@@ -12,25 +12,19 @@ ifeq ($(UNAME), Darwin)
 DLLEXTENSION=dylib
 endif
 
-LIBHEADERS=\
-	DefaultConfigurator.h \
-	AcquisitionPassthroughGadget.h \
-	AcquisitionFinishGadget.h \
-	AccumulatorGadget.h \
-	FFTGadget.h \
-	ImageFinishGadget.h \
-	CropAndCombineGadget.h \
-	ImageWriterGadget.h
+CONFIG_FILES=\
+	default.xml
 
 LIBSOURCES=\
-	DefaultConfigurator.cpp \
 	AcquisitionPassthroughGadget.cpp \
 	AcquisitionFinishGadget.cpp \
 	AccumulatorGadget.cpp \
 	FFTGadget.cpp \
 	ImageFinishGadget.cpp \
 	CropAndCombineGadget.cpp \
-	ImageWriterGadget.cpp
+	ImageWriterGadget.cpp \
+	MRIAcquisitionReader.cpp \
+	MRIImageWriter.cpp 
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 
@@ -44,9 +38,9 @@ ifeq ($(UNAME), Darwin)
 CXXFLAGS=-m32 -arch i386 -c -fPIC -Wall -I. -I$(GADGETRONHOME)/gadgettools -I$(GADGETRONHOME) -g #-DACE_NTRACE=0
 endif 
 
-LIBLDFLAGS= -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -lgadgetron -lgadgetrontools
+LIBLDFLAGS= -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -ltinyxml
 ifeq ($(UNAME), Darwin)
-LIBLDFLAGS= -arch i386 -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -lgadgetron -lgadgetrontools
+LIBLDFLAGS= -arch i386 -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -ltinyxml
 endif
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
@@ -68,6 +62,6 @@ clean:
 
 install:
 	mkdir -p $(GADGETRONHOME)/lib
-	mkdir -p $(GADGETRONHOME)/inc
-	cp $(LIBHEADERS) $(GADGETRONHOME)/inc/
+	mkdir -p $(GADGETRONHOME)/config
 	cp $(LIBFILE) $(GADGETRONHOME)/lib/
+	cp $(CONFIG_FILES) $(GADGETRONHOME)/config/

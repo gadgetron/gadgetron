@@ -22,12 +22,13 @@ ifeq ($(KERNEL), Darwin)
 DLLEXTENSION=dylib
 endif
 
-LIBHEADERS=\
-	GPUCGConfigurator.h \
-	GPUCGGadget.h 
+CONFIG_FILES=\
+	gpucg_radial_single.xml \
+	gpucg_radial_3_slices.xml \
+	gpucg_spiral_single.xml \
+	gpucg_spiral_3_slices.xml
 
 LIBSOURCES=\
-	GPUCGConfigurator.cpp \
 	GPUCGGadget.cpp \
 	GPUCGGoldenRadial.cpp \
 	GPUCGGoldenSpiral.cpp \
@@ -60,13 +61,14 @@ endif
 CXXFLAGS=-c -fPIC -Wall -I. \
 	-I$(GADGETRONHOME)/gadgettools \
 	-I$(GADGETRONHOME)/inc \
+	-I$(GADGETRONHOME)/gadgets/core \
 	$(CUDAINCLUDES) \
-	-g #-DACE_NTRACE=0
+	-DGADGETS_BUILD_DLL -g #-DACE_NTRACE=0
 
-LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -lgadgetron -lgadgetroncore -lgadgetrontools 
+LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml
 
 NVCC=$(CUDAHOME)/bin/nvcc
-NVCCFLAGS= --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC
+NVCCFLAGS= --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC -DGADGETS_BUILD_DLL
 
 
 CUDALIBRARIES=-L$(CUDAHOME)/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudpp_$(MACHINE) -lcudart -lcublas -lcufft
@@ -87,10 +89,10 @@ $(LIBFILE): $(LIBOBJECTS) $(LIBCUDAOBJECTS) Makefile
 	$(CXX) $(LIBLDFLAGS) $(LIBOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) -o $@
 
 %.cpp.o: %.cpp
-	$(CXX) $(CXXFLAGS) -DGADGETS_BUILD_DLL $< -o $@
+	$(CXX) $(CXXFLAGS) $< -o $@
 
 %.cuo: %.cu
-	$(NVCC) $(NVCCFLAGS) -DGADGETS_BUILD_DLL -o $@ $<
+	$(NVCC) $(NVCCFLAGS)  -o $@ $<
 
 clean:
 	rm -rf *~
@@ -102,6 +104,7 @@ clean:
 
 install:
 	mkdir -p $(GADGETRONHOME)/lib
-	mkdir -p $(GADGETRONHOME)/inc
-	cp $(LIBHEADERS) $(GADGETRONHOME)/inc/
+	mkdir -p $(GADGETRONHOME)/config
 	cp $(LIBFILE) $(GADGETRONHOME)/lib/
+	cp $(CONFIG_FILES) $(GADGETRONHOME)/config/
+

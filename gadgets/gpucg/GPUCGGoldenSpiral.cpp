@@ -1,5 +1,4 @@
 #include "GPUCGGoldenSpiral.h"
-#include "ConfigParser.h"
 #include <iostream>
 #include <fstream>
 
@@ -18,10 +17,8 @@ void calc_vds(double slewmax,double gradmax,double Tgsample,
    #define PI 3.14159265
 #endif
 
-GPUCGGoldenSpiralGadget::GPUCGGoldenSpiralGadget(bool pass_on_data, 
-						 int slice)
-  : GPUCGGadget(pass_on_data, slice)
-  , Interleaves_(0)
+GPUCGGoldenSpiralGadget::GPUCGGoldenSpiralGadget()
+  : Interleaves_(0)
   , ADCsPerInterleave_(0)
   , SamplesPerADC_(0)
   , SamplesToSkipStart_(0)
@@ -49,16 +46,16 @@ GPUCGGoldenSpiralGadget::~GPUCGGoldenSpiralGadget()
   if (host_density_weight_ptr_) delete [] host_density_weight_ptr_;
 }
 
-int GPUCGGoldenSpiralGadget::set_base_parameters(ConfigParser* cp)
+int GPUCGGoldenSpiralGadget::set_base_parameters(TiXmlNode* xmlnode)
 {
   
   profiles_per_frame_ = Interleaves_;
 
-  channels_ = cp->getIntVal("encoding","channels");
+  channels_ = GetIntParameterValueFromXML(xmlnode,"encoding","channels");
 
   if (matrix_size_.x == 0 && matrix_size_.y == 0) {
-    matrix_size_ = make_uint2(cp->getIntVal("encoding","matrix_x"), 
-			      cp->getIntVal("encoding","matrix_y"));
+    matrix_size_ = make_uint2(GetIntParameterValueFromXML(xmlnode,"encoding","matrix_x"), 
+			      GetIntParameterValueFromXML(xmlnode,"encoding","matrix_y"));
   }
 
   return GADGET_OK;
@@ -66,51 +63,42 @@ int GPUCGGoldenSpiralGadget::set_base_parameters(ConfigParser* cp)
 
 int GPUCGGoldenSpiralGadget::process_config(ACE_Message_Block* mb)
 {
-  ConfigParser cp;
-  cp.parse(mb->rd_ptr());
 
+  TiXmlDocument doc;
+  doc.Parse(mb->rd_ptr());
 
   if (!is_configured_) {
-    if (!cp.findSection(std::string("spiral"))) {
+
+    if (!doc.FirstChild("spiral")) {
       GADGET_DEBUG1("Unable to locate spiral section of configuration.\n");
       return GADGET_FAIL;
     }
     
-    Interleaves_        = cp.getIntVal(std::string("spiral"), 
-				       std::string("Interleaves"));
-    
-    ADCsPerInterleave_  = cp.getIntVal(std::string("spiral"),
-				       std::string("ADCsPerInterleave"));
-    
-    SamplesPerADC_      = cp.getIntVal(std::string("spiral"),
-				       std::string("SamplesPerADC"));
-    
-    SamplesToSkipStart_ =  cp.getIntVal(std::string("spiral"),
-					std::string("SamplesToSkipStart"));
-    
-    SamplesToSkipEnd_   =  cp.getIntVal(std::string("spiral"),
-					std::string("SamplesToSkipEnd"));
-    
-    SamplingTime_ns_    =  cp.getIntVal(std::string("spiral"),
-					std::string("SamplingTime_ns"));
-    
-    Reordering_         =  cp.getIntVal(std::string("spiral"),
-					std::string("Reordering"));
-    
-    MaxGradient_Gcm_    =  cp.getFloatVal(std::string("spiral"),
-					  std::string("MaxGradient_Gcm"));
-    
-    MaxSlewRate_Gcms_   =  cp.getFloatVal(std::string("spiral"),
-					  std::string("MaxSlewRate_Gcms"));
-    
-    
-    krmax_cm_           =  cp.getFloatVal(std::string("spiral"),
-					  std::string("krmax_cm"));
-    
-    
-    FOVCoeff_1_         =  cp.getFloatVal(std::string("spiral"),
-					  std::string("FOVCoeff_1"));
+    /*
+    Interleaves_        = 16;
+    ADCsPerInterleave_  = 1;
+    SamplesPerADC_      = 1100;
+    SamplesToSkipStart_ = 0;
+    SamplesToSkipEnd_   = 229;
+    SamplingTime_ns_    = 3900;
+    Reordering_         = 1;
+    MaxGradient_Gcm_    = 1.8;
+    MaxSlewRate_Gcms_   = 7500.0;
+    krmax_cm_           = 1.6;
+    FOVCoeff_1_         = 40.0;
+    */
 
+    Interleaves_        = GetIntParameterValueFromXML(&doc,"spiral","Interleaves");
+    ADCsPerInterleave_  = GetIntParameterValueFromXML(&doc,"spiral","ADCsPerInterleave");
+    SamplesPerADC_      = GetIntParameterValueFromXML(&doc,"spiral","SamplesPerADC");
+    SamplesToSkipStart_ = GetIntParameterValueFromXML(&doc,"spiral","SamplesToSkipStart");
+    SamplesToSkipEnd_   = GetIntParameterValueFromXML(&doc,"spiral","SamplesToSkipEnd");
+    SamplingTime_ns_    = GetIntParameterValueFromXML(&doc,"spiral","SamplingTime_ns");
+    Reordering_         = GetIntParameterValueFromXML(&doc,"spiral", "Reordering");
+    MaxGradient_Gcm_    = GetDoubleParameterValueFromXML(&doc,"spiral","MaxGradient_Gcm");
+    MaxSlewRate_Gcms_   = GetDoubleParameterValueFromXML(&doc,"spiral","MaxSlewRate_Gcms");
+    krmax_cm_           = GetDoubleParameterValueFromXML(&doc,"spiral","krmax_cm");
+    FOVCoeff_1_         = GetDoubleParameterValueFromXML(&doc,"spiral","FOVCoeff_1");
 
     //Calculate trajectory
     {
@@ -195,12 +183,12 @@ int  GPUCGGoldenSpiralGadget::copy_samples_for_profile(float* host_base_ptr,
 						       int profile_no,
 						       int channel_no)
 {
-  
+ 
   memcpy(host_base_ptr + 
 	 (channel_no*allocated_samples_ + profile_no*samples_per_profile_) * 2,
 	 data_base_ptr + channel_no*SamplesPerADC_, 
 	 sizeof(float)*samples_per_profile_*2);
-  
+
   return GADGET_OK;
 }
 
@@ -252,7 +240,6 @@ int GPUCGGoldenSpiralGadget::calculate_trajectory()
 
   } else {
     //This must be a golden angle....we need to deal with that
-
     float2* tmp_traj = new float2[samples_per_profile_*Interleaves_];
     if (!tmp_traj) {
       GADGET_DEBUG1("Failed to allocate temporary host memory for trajectory\n");
@@ -317,3 +304,5 @@ int GPUCGGoldenSpiralGadget::calculate_density_compensation()
 
   return GADGET_OK;
 }
+
+GADGET_FACTORY_DECLARE(GPUCGGoldenSpiralGadget)

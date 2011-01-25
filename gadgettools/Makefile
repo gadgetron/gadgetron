@@ -17,7 +17,8 @@ LIBHEADERS=\
 	FFT.h \
 	GadgetSocketReceiver.h \
 	GadgetSocketSender.h \
-	NDArray.h
+	NDArray.h \
+	GadgetXml.h
 
 LIBSOURCES=\
 	ConfigParser.cpp

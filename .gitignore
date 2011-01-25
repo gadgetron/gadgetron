@@ -10,3 +10,6 @@ gadgetdatasender/gadgetrondatasender
 *.real
 *.cplx
 inc/
+*.d
+*.txt
+config/

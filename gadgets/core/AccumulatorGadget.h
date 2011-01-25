@@ -4,7 +4,7 @@
 #include <complex>
 
 #include "Gadget.h"
-#include "gadgetheaders.h"
+#include "GadgetMRIHeaders.h"
 #include "NDArray.h"
 
 class AccumulatorGadget : 
@@ -12,6 +12,8 @@ public Gadget2< GadgetMessageAcquisition, NDArray< std::complex<float> > >
 {
   
  public:
+  GADGET_DECLARE(AccumulatorGadget);
+
   AccumulatorGadget();
   ~AccumulatorGadget();
 

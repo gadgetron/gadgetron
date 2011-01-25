@@ -7,11 +7,13 @@ class GPUCGGoldenSpiralGadget : public GPUCGGadget
 {
 
  public:
-  GPUCGGoldenSpiralGadget(bool pass_on_data = false, int slice = 0);
-  ~GPUCGGoldenSpiralGadget();
+  GADGET_DECLARE(GPUCGGoldenSpiralGadget)
+
+  GPUCGGoldenSpiralGadget();
+  virtual ~GPUCGGoldenSpiralGadget();
 
  protected:
-  virtual int set_base_parameters(ConfigParser* cp);
+  virtual int set_base_parameters(TiXmlNode* node);
   virtual int process_config(ACE_Message_Block* mb);
 
   virtual int copy_samples_for_profile(float* host_base_ptr,

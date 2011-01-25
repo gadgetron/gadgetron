@@ -20,3 +20,5 @@ int FFTGadget::process( GadgetContainerMessage< GadgetMessageImage>* m1,
 
   return this->next()->putq(m1);
 }
+
+GADGET_FACTORY_DECLARE(FFTGadget)

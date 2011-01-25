@@ -1,5 +1,5 @@
-#ifndef GADGETHEADERS_H
-#define GADGETHEADERS_H
+#ifndef GADGETMRIHEADERS_H
+#define GADGETMRIHEADERS_H
 
 #include <ace/Basic_Types.h>
 
@@ -13,29 +13,15 @@
 #define GADGET_FLAG_FIRST_ACQ_IN_CONCAT       (1 << 6) /* 0x08 */
 
 enum GadgetMessageID {
-  GADGET_MESSAGE_ID_MIN = 0,
-  GADGET_MESSAGE_ACQUISITION,
-  GADGET_MESSAGE_CONFIGURATION,
-  GADGET_MESSAGE_NEW_MEASUREMENT,
-  GADGET_MESSAGE_END_OF_SCAN,
-  GADGET_MESSAGE_IMAGE,
-  GADGET_MESSAGE_EMPTY,
-  GADGET_MESSAGE_ID_MAX
+  GADGET_MESSAGE_EXT_ID_MIN        = 1000,
+  GADGET_MESSAGE_ACQUISITION       = 1001,
+  GADGET_MESSAGE_NEW_MEASUREMENT   = 1002,
+  GADGET_MESSAGE_END_OF_SCAN       = 1003,
+  GADGET_MESSAGE_IMAGE             = 1004,
+  GADGET_MESSAGE_EMPTY             = 1005,
+  GADGET_MESSAGE_EXT_ID_MAX        = 4096
 };
   
-struct GadgetMessageIdentifier
-{
-  ACE_UINT16 id;
-};
-
-struct GadgetMessageConfigurator
-{
-  char configurator_lib[1024];
-  char configurator_name[1024];
-  ACE_UINT32 configuration_length;
-};
-
-
 struct LoopCounters {
   ACE_UINT16 line;
   ACE_UINT16 acquisition;
@@ -48,7 +34,6 @@ struct LoopCounters {
   ACE_UINT16 segment;
   ACE_UINT16 channel;
 };
-
 
 struct GadgetMessageAcquisition
 {
@@ -76,4 +61,4 @@ struct GadgetMessageImage
   LoopCounters   data_idx_current;
 }; 
 
-#endif  //GADGETHEADERS_H
+#endif  //GADGETMRIHEADERS_H
