@@ -36,7 +36,7 @@ EXELDFLAGS=-lACE -ltinyxml
 
 LIBLDFLAGS= -shared -lACE 
 
-CXXFLAGS=-c -fPIC -Wall -I.  -I$(GADGETRONHOME)/gadgettools -g #-DACE_NTRACE=0
+CXXFLAGS=-c -fPIC -Wall -I.  -I$(GADGETRONHOME)/toolboxes/gadgettools -g #-DACE_NTRACE=0
 
 EXECUTABLE=gadgetron
 LIBFILE=libgadgetron.$(DLLEXTENSION)

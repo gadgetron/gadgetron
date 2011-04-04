@@ -8,7 +8,6 @@
 
 #include "GadgetStreamController.h"
 #include "GadgetContainerMessage.h"
-#include "NDArray.h"
 #include "Gadget.h"
 
 #include <complex>

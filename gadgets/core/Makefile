@@ -32,10 +32,10 @@ CXX=g++
 
 EXELDFLAGS= -lACE -lfftw3 -lfftw3f
 
-CXXFLAGS=-c -fPIC -Wall -I. -I$(GADGETRONHOME)/gadgettools -I$(GADGETRONHOME) -g #-DACE_NTRACE=0
+CXXFLAGS=-c -fPIC -Wall -I. -I$(GADGETRONHOME)/inc -I$(GADGETRONHOME) -g #-DACE_NTRACE=0
 
 ifeq ($(UNAME), Darwin)
-CXXFLAGS=-m32 -arch i386 -c -fPIC -Wall -I. -I$(GADGETRONHOME)/gadgettools -I$(GADGETRONHOME) -g #-DACE_NTRACE=0
+CXXFLAGS=-m32 -arch i386 -c -fPIC -Wall -I. -I$(GADGETRONHOME)/inc -I$(GADGETRONHOME) -g #-DACE_NTRACE=0
 endif 
 
 LIBLDFLAGS= -shared -L$(GADGETRONHOME)/lib -lACE -lfftw3 -lfftw3f -ltinyxml

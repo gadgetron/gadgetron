@@ -59,7 +59,6 @@ CXX=g++ -m32 -arch i386
 endif 
 
 CXXFLAGS=-c -fPIC -Wall -I. \
-	-I$(GADGETRONHOME)/gadgettools \
 	-I$(GADGETRONHOME)/inc \
 	-I$(GADGETRONHOME)/gadgets/core \
 	$(CUDAINCLUDES) \

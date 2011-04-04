@@ -2,9 +2,9 @@
 
 UNAME := $(shell uname)
 
-GADGETRONHOME=..
+GADGETRONHOME=../..
 
-DLLNAME=gadgetrontools
+DLLNAME=ndarray
 
 DLLEXTENSION=so
 
@@ -13,14 +13,10 @@ DLLEXTENSION=dylib
 endif
 
 LIBHEADERS=\
-	ConfigParser.h \
-	FFT.h \
-	GadgetSocketReceiver.h \
-	GadgetSocketSender.h \
 	NDArray.h \
-	GadgetXml.h
+	FFT.h
 
-LIBSOURCES=\
+#LIBSOURCES=\
 	ConfigParser.cpp
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
@@ -40,7 +36,12 @@ endif
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 
-all: $(LIBFILE)
+#all: $(LIBFILE)
+
+install:
+	mkdir -p $(GADGETRONHOME)/lib
+	mkdir -p $(GADGETRONHOME)/inc
+	cp $(LIBHEADERS) $(GADGETRONHOME)/inc/
 
 $(LIBFILE): $(LIBOBJECTS) Makefile
 	$(CXX) $(LIBLDFLAGS) $(LIBOBJECTS) -o $@
@@ -55,8 +56,3 @@ clean:
 	rm -rf *.cplx
 	rm -rf *.real
 
-install:
-	mkdir -p $(GADGETRONHOME)/lib
-	mkdir -p $(GADGETRONHOME)/inc
-	cp $(LIBFILE) $(GADGETRONHOME)/lib/
-	cp $(LIBHEADERS) $(GADGETRONHOME)/inc/

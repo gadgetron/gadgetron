@@ -31,12 +31,14 @@ There are some (counter intuitive) steps to build.
 
 2.  cd gadgetron/
 3.  make; make install
-4.  cd gadgettools/
+4.  cd toolboxes/gadgettools/
 5.  make; make install
-6.  cd ../gadgets/core/
-7.  make;make install
-8.  cd ../gpucg/
-9. make; make install
+6.  cd ../ndarray/
+7.  make; make install
+8.  cd ../../gadgets/core/
+9.  make;make install
+10.  cd ../../gpucg/
+11. make; make install
 
 To run the gadgetron
 1.  cd lib/

@@ -12,7 +12,6 @@
 
 #include <complex>
 
-#include "NDArray.h"
 #include "Gadgetron.h"
 #include "Gadget.h"
 #include "GadgetMessageInterface.h"
