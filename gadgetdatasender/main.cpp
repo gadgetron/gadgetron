@@ -11,7 +11,7 @@
 #include "siemensraw.hpp"
 #include "GadgetSocketReceiver.h"
 #include "ImageWriter.h"
-#include "NDArray.h"
+#include "hoNDArray.h"
 #include "GadgetXml.h"
 
 struct spiral_parameters {
@@ -322,8 +322,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   peer.send_n(config.c_str(), conf.script_length);
 
   //We need an array for collecting the data from all channels prior to transmission
-  NDArray< std::complex<float> > buf;
-  std::vector<int> buf_dim; 
+  hoNDArray< std::complex<float> > buf;
+  std::vector<unsigned int> buf_dim; 
   buf_dim.push_back(sd.GetMaxValues()->ushSamplesInScan);
   buf_dim.push_back(sd.GetMaxValues()->ushUsedChannels);
 

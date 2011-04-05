@@ -3,7 +3,7 @@
 
 int AcquisitionPassthroughGadget
 ::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
-	  GadgetContainerMessage< NDArray< std::complex<float> > >* m2)
+	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
   //It is enough to put the first one, since they are linked
   if (this->next()->putq(m1) == -1) {

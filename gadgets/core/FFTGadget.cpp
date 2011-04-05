@@ -2,7 +2,7 @@
 #include "FFT.h"
 
 int FFTGadget::process( GadgetContainerMessage< GadgetMessageImage>* m1,
-			GadgetContainerMessage< NDArray< std::complex<float> > >* m2)
+			GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
   FFT<float> ft;
 

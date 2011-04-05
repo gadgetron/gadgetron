@@ -171,7 +171,7 @@ int GPUCGGadget::process_config(ACE_Message_Block* mb)
 
 
 int  GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
-			  GadgetContainerMessage< NDArray< std::complex<float> > >* m2)
+			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
   if (!is_configured_) {
     GADGET_DEBUG1("Data received before configuration complete\n");
@@ -278,12 +278,12 @@ int  GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     GadgetContainerMessage<GadgetMessageImage>* cm1 = 
       new GadgetContainerMessage<GadgetMessageImage>();
     
-    GadgetContainerMessage< NDArray< std::complex<float> > >* cm2 = 
-      new GadgetContainerMessage<NDArray< std::complex<float> > >();
+    GadgetContainerMessage< hoNDArray< std::complex<float> > >* cm2 = 
+      new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
     
     cm1->cont(cm2);
     
-    std::vector<int> img_dims(2);
+    std::vector<unsigned int> img_dims(2);
     img_dims[0] = matrix_size_.x;
     img_dims[1] = matrix_size_.y;
     
@@ -386,7 +386,7 @@ int GPUCGGadget::upload_samples()
   ACE_Message_Queue_Reverse_Iterator<ACE_MT_SYNCH> it(buffer_);
   int profiles_copied = 0;
   GadgetContainerMessage<GadgetMessageAcquisition>* m1;
-  GadgetContainerMessage< NDArray< std::complex<float> > >* m2;
+  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2;
   ACE_Message_Block* mb;
 
   while (profiles_copied < profiles_per_frame_) {
@@ -399,7 +399,7 @@ int GPUCGGadget::upload_samples()
     }
 
       
-    m2 = dynamic_cast< GadgetContainerMessage< NDArray< std::complex<float> > >* > (m1->cont());
+    m2 = dynamic_cast< GadgetContainerMessage< hoNDArray< std::complex<float> > >* > (m1->cont());
   
     if (!m2) {
       GADGET_DEBUG1("Failed to dynamic cast message\n");

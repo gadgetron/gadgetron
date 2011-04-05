@@ -8,6 +8,7 @@ process( GadgetContainerMessage< GadgetMessageImage>* m1,
 {
     ACE_DEBUG( (LM_DEBUG, ACE_TEXT("ImageWriterGadget writing image\n")) );
 
+
     char filename[1024];
     sprintf(filename, "out_%05d.cplx", (int)calls_);
 

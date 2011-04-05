@@ -5,7 +5,7 @@
 
 #include <fftw3.h>
 
-#include "NDArray.h"
+#include "hoNDArray.h"
 
 template <class T> class FFT
 {
@@ -16,19 +16,19 @@ public:
   virtual ~FFT() { fftw_cleanup_ptr_(); }
 
 
-  void fft(NDArray< std::complex<T> >* input, int dim_to_transform)
+  void fft(hoNDArray< std::complex<T> >* input, unsigned int dim_to_transform)
   {
     fft_int(input,dim_to_transform,-1); 
     //-1 refers to the sign of the transform, -1 for FFTW_FORWA
   }
   
   
-  void ifft(NDArray< std::complex<T> >* input, int dim_to_transform)
+  void ifft(hoNDArray< std::complex<T> >* input, unsigned int dim_to_transform)
   {
     fft_int(input,dim_to_transform,1);
   }
   
-  void fft(NDArray< std::complex<T> >* input)
+  void fft(hoNDArray< std::complex<T> >* input)
   {
       for (int i = 0; i < input->get_number_of_dimensions(); i++) {
 	fft_int(input,i,-1); 
@@ -37,7 +37,7 @@ public:
 
   }
   
-  void ifft(NDArray< std::complex<T> >* input)
+  void ifft(hoNDArray< std::complex<T> >* input)
   {
     for (int i = 0; i < input->get_number_of_dimensions(); i++) {
       fft_int(input,i,1); 
@@ -46,7 +46,7 @@ public:
   }
 
 protected:
-  void fft_int(NDArray< std::complex<T> >* input, int dim_to_transform, int sign)
+  void fft_int(hoNDArray< std::complex<T> >* input, unsigned int dim_to_transform, int sign)
   {
 
     if (sign != -1 && sign != 1) return;
@@ -84,7 +84,7 @@ protected:
 
     if (dim_to_transform != 0)
       {
-	for (int i = 0; i < dim_to_transform; i++)
+	for (unsigned int i = 0; i < dim_to_transform; i++)
 	  {
 	    chunk_size *= input->get_size(i);
 	  }
@@ -92,14 +92,14 @@ protected:
 	trafos = chunk_size;
 	chunk_size *= length;
 	
-	for (int i = dim_to_transform+1; i < input->get_number_of_dimensions(); i++)
+	for (unsigned int i = dim_to_transform+1; i < input->get_number_of_dimensions(); i++)
 	  {
 	    chunks *= input->get_size(i);
 	  }
       }
     else
       {
-	for (int i = 1; i < input->get_number_of_dimensions(); i++)
+	for (unsigned int i = 1; i < input->get_number_of_dimensions(); i++)
 	  {
 	    trafos *= input->get_size(i);
 	  }

@@ -5,10 +5,10 @@
 
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
-#include "NDArray.h"
+#include "hoNDArray.h"
 
 class AccumulatorGadget : 
-public Gadget2< GadgetMessageAcquisition, NDArray< std::complex<float> > >
+public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
 {
   
  public:
@@ -20,10 +20,10 @@ public Gadget2< GadgetMessageAcquisition, NDArray< std::complex<float> > >
  protected:
   virtual int process_config(ACE_Message_Block* mb);
   virtual int process(GadgetContainerMessage< GadgetMessageAcquisition >* m1,
-		      GadgetContainerMessage< NDArray< std::complex<float> > > * m2);
+		      GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2);
 
-  NDArray< std::complex<float> >* buffer_;
-  std::vector<int> dimensions_;
+  hoNDArray< std::complex<float> >* buffer_;
+  std::vector<unsigned int> dimensions_;
 
 };
 

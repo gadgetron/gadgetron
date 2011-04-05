@@ -3,7 +3,7 @@
 #include <complex>
 
 #include "GadgetContainerMessage.h"
-#include "NDArray.h"
+#include "hoNDArray.h"
 
 
 int MRIImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb) 
@@ -17,8 +17,8 @@ int MRIImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
     return -1;    
   }
 
-  GadgetContainerMessage< NDArray< std::complex<float> > >* datamb =
-    AsContainerMessage< NDArray< std::complex<float> > >(imagemb->cont());
+  GadgetContainerMessage< hoNDArray< std::complex<float> > >* datamb =
+    AsContainerMessage< hoNDArray< std::complex<float> > >(imagemb->cont());
   
   if (!datamb) {
     ACE_DEBUG( (LM_ERROR, ACE_TEXT("(%P,%l), MRIImageWriter::write, invalid image message objects\n")) );

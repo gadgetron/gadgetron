@@ -15,7 +15,7 @@
 #include "radixSort/radixsort.cuh"
 
 #include <cublas.h>
-#include <cudpp/cudpp.h>
+//#include <cudpp/cudpp.h>
 #include <math_constants.h>
 #include <vector_functions.h>
 
@@ -24,7 +24,7 @@
 #include <stdio.h>
 
 const unsigned int preprocess_radial_NFFT_H_block_dim_x = 256;
-CUDPPHandle scanplan;
+//CUDPPHandle scanplan;
 
 /*
 	Variables specific for the "online radial" types
@@ -1149,17 +1149,17 @@ mr_recon::NFFT_H_plan< UINTd, FLOATd, TYPE >::preprocess_radial_allocate( unsign
 
 	if( _make_plan[dev] || (_prod_domain_count_grid[dev] != prod(domain_count_grid)) ){
 		// Scan stripcount array
-		CUDPPConfiguration config;
-		config.algorithm = CUDPP_SCAN;
-		config.datatype = CUDPP_UINT;
-		config.op = CUDPP_ADD;
-		config.options = CUDPP_OPTION_FORWARD | CUDPP_OPTION_EXCLUSIVE;
-		cudppPlan(&scanplan, config, prod(domain_count_grid), 1, 0);
+		//CUDPPConfiguration config;
+		//config.algorithm = CUDPP_SCAN;
+		//config.datatype = CUDPP_UINT;
+		//config.op = CUDPP_ADD;
+		//config.options = CUDPP_OPTION_FORWARD | CUDPP_OPTION_EXCLUSIVE;
+		//cudppPlan(&scanplan, config, prod(domain_count_grid), 1, 0);
 
 		_prod_domain_count_grid[dev] = prod(domain_count_grid);
 		_make_plan[dev] = false;
 	}
-	cudppScan(scanplan, stripOffsets, stripCounts, prod(domain_count_grid));
+	//cudppScan(scanplan, stripOffsets, stripCounts, prod(domain_count_grid));
 
 	// readback total number of strips
 	unsigned int lastElement, lastScanElement;

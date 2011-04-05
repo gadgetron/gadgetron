@@ -7,7 +7,7 @@
 #include <complex>
 
 #include "GadgetMRIHeaders.h"
-#include "NDArray.h"
+#include "hoNDArray.h"
 #include "GadgetContainerMessage.h"
 #include "GadgetMessageInterface.h"
 
@@ -24,8 +24,8 @@ class GadgetAcquisitionMessageWriter : public GadgetMessageWriter
     GadgetContainerMessage<GadgetMessageAcquisition>* acqmb =
       dynamic_cast< GadgetContainerMessage<GadgetMessageAcquisition>* >(mb);
     
-    GadgetContainerMessage< NDArray< std::complex<float> > >* datamb =
-      dynamic_cast< GadgetContainerMessage< NDArray< std::complex<float> > >* >(acqmb->cont());
+    GadgetContainerMessage< hoNDArray< std::complex<float> > >* datamb =
+      dynamic_cast< GadgetContainerMessage< hoNDArray< std::complex<float> > >* >(acqmb->cont());
     
     if (!acqmb || !datamb) {
       ACE_DEBUG( (LM_ERROR, ACE_TEXT("(%P,%l), GadgetAcquisitionMessageWriter, invalid acquisition message objects")) );
@@ -77,8 +77,8 @@ class GadgetImageMessageWriter : public GadgetMessageWriter
     GadgetContainerMessage<GadgetMessageImage>* imagemb = 
       dynamic_cast< GadgetContainerMessage<GadgetMessageImage>* >(mb);
     
-    GadgetContainerMessage< NDArray< std::complex<float> > >* datamb =
-      dynamic_cast< GadgetContainerMessage< NDArray< std::complex<float> > >* >(imagemb->cont());
+    GadgetContainerMessage< hoNDArray< std::complex<float> > >* datamb =
+      dynamic_cast< GadgetContainerMessage< hoNDArray< std::complex<float> > >* >(imagemb->cont());
     
     if (!imagemb || !datamb) {
       ACE_DEBUG( (LM_ERROR, ACE_TEXT("(%P,%l), GadgetStreamController::handle_output, invalid image message objects")) );

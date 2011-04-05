@@ -23,7 +23,7 @@ int AccumulatorGadget::process_config(ACE_Message_Block* mb)
   dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "channels"));
   dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "slices"));
 
-  if (!(buffer_ = new NDArray< std::complex<float> >())) {
+  if (!(buffer_ = new hoNDArray< std::complex<float> >())) {
     ACE_DEBUG( (LM_ERROR, ACE_TEXT("Failed to allocate buffer array")) );
     return -1;
   }
@@ -38,7 +38,7 @@ int AccumulatorGadget::process_config(ACE_Message_Block* mb)
 
 int AccumulatorGadget::
 process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
-	GadgetContainerMessage< NDArray< std::complex<float> > >* m2)
+	GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
   ACE_TRACE(( ACE_TEXT("AccumulatorGadget::process") ));
 
@@ -58,7 +58,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
   int partition = m1->getObjectPtr()->idx.partition;
   int slice = m1->getObjectPtr()->idx.slice;
 
-  if (samples != dimensions_[0]) {
+  if (samples != static_cast<int>(dimensions_[0])) {
     ACE_DEBUG( (LM_ERROR, ACE_TEXT("Accumulator: wrong number of samples received")) );
     m1->release();
     return -1;    
@@ -83,12 +83,12 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     GadgetContainerMessage<GadgetMessageImage>* cm1 = 
       new GadgetContainerMessage<GadgetMessageImage>();
     
-    GadgetContainerMessage< NDArray< std::complex<float> > >* cm2 = 
-      new GadgetContainerMessage<NDArray< std::complex<float> > >();
+    GadgetContainerMessage< hoNDArray< std::complex<float> > >* cm2 = 
+      new GadgetContainerMessage<hoNDArray< std::complex<float> > >();
     
     cm1->cont(cm2);
     
-    std::vector<int> img_dims(4);
+    std::vector<unsigned int> img_dims(4);
     img_dims[0] = dimensions_[0];
     img_dims[1] = dimensions_[1];
     img_dims[2] = dimensions_[2];

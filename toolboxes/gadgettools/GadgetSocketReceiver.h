@@ -7,7 +7,7 @@
 #include <complex>
 
 #include "GadgetMRIHeaders.h"
-#include "NDArray.h"
+#include "hoNDArray.h"
 #include "GadgetMessageInterface.h"
 
 
@@ -33,9 +33,9 @@ class GadgetAcquisitionMessageReader : public GadgetMessageReader
       return 0;
     }
 
-    std::vector<int> dims(1);dims[0] = acqh->getObjectPtr()->samples;
-    GadgetContainerMessage< NDArray< std::complex<float> > >* data = 
-      new GadgetContainerMessage< NDArray< std::complex<float> > >();
+    std::vector<unsigned int> dims(1);dims[0] = acqh->getObjectPtr()->samples;
+    GadgetContainerMessage< hoNDArray< std::complex<float> > >* data = 
+      new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
 
     if (!data->getObjectPtr()->create(dims)) {
       ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetAcquisitionMessageReader, failed to allocate memory\n")) );
@@ -75,13 +75,13 @@ class GadgetImageMessageReader : public GadgetMessageReader
       return 0;
     }
 
-    std::vector<int> dims(3);
+    std::vector<unsigned int> dims(3);
     dims[0] = imgh->getObjectPtr()->matrix_size[0];
     dims[1] = imgh->getObjectPtr()->matrix_size[1];
     dims[2] = imgh->getObjectPtr()->matrix_size[2];
 
-    GadgetContainerMessage< NDArray< std::complex<float> > >* data = 
-      new GadgetContainerMessage< NDArray< std::complex<float> > >();
+    GadgetContainerMessage< hoNDArray< std::complex<float> > >* data = 
+      new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
 
     if (!data->getObjectPtr()->create(dims)) {
       ACE_DEBUG( (LM_ERROR, 

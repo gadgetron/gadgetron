@@ -1,6 +1,6 @@
 #include "MRIAcquisitionReader.h"
 #include "GadgetMRIHeaders.h"
-#include "NDArray.h"
+#include "hoNDArray.h"
 #include <complex>
 #include "GadgetMessageInterface.h"
 
@@ -10,8 +10,8 @@ ACE_Message_Block* MRIAcquisitionReader::read(ACE_SOCK_Stream* sock)
   GadgetContainerMessage<GadgetMessageAcquisition>* m1 = 
     new GadgetContainerMessage<GadgetMessageAcquisition>();
   
-  GadgetContainerMessage<NDArray< std::complex<float> > >* m2 = 
-    new GadgetContainerMessage< NDArray< std::complex<float> > >();
+  GadgetContainerMessage<hoNDArray< std::complex<float> > >* m2 = 
+    new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
   
   m1->cont(m2);
   
@@ -27,7 +27,7 @@ ACE_Message_Block* MRIAcquisitionReader::read(ACE_SOCK_Stream* sock)
     return 0;
   }
 
-  std::vector<int> adims;
+  std::vector<unsigned int> adims;
   adims.push_back(m1->getObjectPtr()->samples);
   adims.push_back(m1->getObjectPtr()->channels);
 

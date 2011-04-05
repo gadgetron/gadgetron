@@ -6,7 +6,7 @@
 #include <complex>
 
 #include "Gadgetron.h"
-#include "NDArray.h"
+#include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
 #include "GadgetXml.h"
 
@@ -32,7 +32,7 @@
 #include "NFFT.hcu"
 
 class GPUCGGadget : 
-public Gadget2<GadgetMessageAcquisition, NDArray< std::complex<float> > >
+public Gadget2<GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
 {
  public:
   GPUCGGadget();
@@ -42,7 +42,7 @@ public Gadget2<GadgetMessageAcquisition, NDArray< std::complex<float> > >
  protected:
   virtual 
     int process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
-		GadgetContainerMessage< NDArray< std::complex<float> > >* m2);
+		GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
   virtual int process_config(ACE_Message_Block* mb);
 

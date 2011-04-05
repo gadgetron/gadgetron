@@ -14,6 +14,7 @@ endif
 
 LIBHEADERS=\
 	NDArray.h \
+	hoNDArray.h \
 	FFT.h
 
 #LIBSOURCES=\

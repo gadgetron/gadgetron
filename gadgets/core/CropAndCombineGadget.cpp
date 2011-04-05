@@ -3,14 +3,14 @@
 
 int CropAndCombineGadget::
 process( GadgetContainerMessage<GadgetMessageImage>* m1,
-	 GadgetContainerMessage< NDArray< std::complex<float> > >* m2)
+	 GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
 
-  GadgetContainerMessage< NDArray< std::complex<float> > >* m3 = 
-    new GadgetContainerMessage< NDArray< std::complex<float> > >();
+  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 = 
+    new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
 
-  std::vector<int> new_dimensions(3);
+  std::vector<unsigned int> new_dimensions(3);
   new_dimensions[0] = m2->getObjectPtr()->get_size(0)>>1;
   new_dimensions[1] = m2->getObjectPtr()->get_size(1);
   new_dimensions[2] = m2->getObjectPtr()->get_size(2);

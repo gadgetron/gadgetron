@@ -32,8 +32,8 @@ class ImageWriter : public GadgetImageMessageReader
     }
 
 
-    GadgetContainerMessage<NDArray< std::complex<float> > > * img_data_mb = 
-      dynamic_cast<GadgetContainerMessage<NDArray< std::complex<float> > > *>(img_head_mb->cont());
+    GadgetContainerMessage<hoNDArray< std::complex<float> > > * img_data_mb = 
+      dynamic_cast<GadgetContainerMessage<hoNDArray< std::complex<float> > > *>(img_head_mb->cont());
 
     if (!img_data_mb) {
       GADGET_DEBUG1("Failed in dynamic cast\n");
@@ -51,7 +51,7 @@ class ImageWriter : public GadgetImageMessageReader
   }
   
   virtual int process_image(GadgetMessageImage* img_head, 
-			    NDArray< std::complex<float> >* data)
+			    hoNDArray< std::complex<float> >* data)
   {
     ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Image Writer writing image\n")) );
 
