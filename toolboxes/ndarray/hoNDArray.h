@@ -73,13 +73,13 @@ template <class T> class hoNDArray : public NDArray<T>
     }
   }
 
-  virtual T* create(std::vector<unsigned int>& dimensions) {
+  virtual T* create(std::vector<unsigned int> dimensions) {
     this->dimensions_ = dimensions; 
     allocate_memory();
     return this->get_data_ptr();
   }
 
-  virtual T* create(std::vector<unsigned int>& dimensions, T* data, 
+  virtual T* create(std::vector<unsigned int> dimensions, T* data, 
 		    bool delete_data_on_destruct = false) 
   {
 

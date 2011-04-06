@@ -36,7 +36,8 @@ LIBSOURCES=
 	vec.cpp \
 	vds.cpp
 
-CUDASOURCES=\
+CUDASOURCES=
+#CUDASOURCES=\
 	cuNDArray_kernels.cu
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
@@ -60,6 +61,7 @@ CXXFLAGS_MAIN=-c -Wall -I. \
 	$(CUDAINCLUDES)
 
 LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml
+MAINLDFLAGS= -lACE -L$(GADGETRONHOME)/lib -ltinyxml -lcundarray
 
 NVCC=$(CUDAHOME)/bin/nvcc
 NVCCFLAGS= --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC -DGADGETS_BUILD_DLL -I$(GADGETRONHOME)/inc
@@ -75,9 +77,9 @@ LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 
 all: $(LIBFILE)
 
-test: main.cpp $(LIBCUDAOBJECTS)
+test: main.o $(LIBCUDAOBJECTS)
 	$(CXX) $(CXXFLAGS_MAIN) main.cpp
-	$(CXX) main.o $(LIBOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) -o test 
+	$(CXX) main.o $(LIBOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) $(MAINLDFLAGS) -o test 
 
 
 $(LIBFILE): $(LIBOBJECTS) $(LIBCUDAOBJECTS) Makefile
@@ -96,6 +98,7 @@ clean:
 	rm -rf $(LIBCUDAOBJECTS)
 	rm -rf *.cplx
 #	rm -rf *.real
+	rm -rf main.o 
 
 install:
 	mkdir -p $(GADGETRONHOME)/lib

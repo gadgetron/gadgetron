@@ -18,9 +18,9 @@ template <class T> class NDArray
 
   virtual ~NDArray() {  }
 
-  virtual T* create(std::vector<unsigned int>& dimensions) = 0;
+  virtual T* create(std::vector<unsigned int> dimensions) = 0;
 
-  virtual T* create(std::vector<unsigned int>& dimensions, T* data, 
+  virtual T* create(std::vector<unsigned int> dimensions, T* data, 
 		    bool delete_data_on_destruct = false) = 0;
 
   virtual int permute(std::vector<unsigned int>& dim_order, NDArray<T>* out = 0) = 0;

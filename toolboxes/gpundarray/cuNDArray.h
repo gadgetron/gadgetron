@@ -33,7 +33,7 @@ template <class T> class cuNDArray : public NDArray<T>
     }
   }
 
-  virtual T* create(std::vector<unsigned int>& dimensions) {
+  virtual T* create(std::vector<unsigned int> dimensions) {
     this->dimensions_ = dimensions; 
     allocate_memory();
     return this->get_data_ptr();
@@ -48,7 +48,7 @@ template <class T> class cuNDArray : public NDArray<T>
   }
   */
 
-  virtual T* create(std::vector<unsigned int>& dimensions, T* data, 
+  virtual T* create(std::vector<unsigned int> dimensions, T* data, 
 		    bool delete_data_on_destruct = false) 
   {
     if (!data) {
@@ -57,14 +57,11 @@ template <class T> class cuNDArray : public NDArray<T>
     }
     
     cudaPointerAttributes attrib;
-    attrib.device = 10;
     if (cudaPointerGetAttributes(&attrib, data) != cudaSuccess) {
       std::cerr << "cuNDArray::create: Unable to determine attributes of pointer" << std::endl;
       return 0;
     }
     
-    std::cout << "Device termined to be: " << attrib.device << std::endl;
-
     this->dimensions_ = dimensions;
     this->data_ = data;
     this->device_ = attrib.device;
