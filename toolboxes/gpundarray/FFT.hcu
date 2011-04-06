@@ -1,0 +1,19 @@
+#ifndef __FFT_HCU__
+#define __FFT_HCU__
+
+#include <cuComplex.h>
+
+template<class T> __host__ void fft_shift( cuFloatComplex* data_in, cuFloatComplex* data_out, T dim, unsigned int num_images = 1 );
+
+__host__ bool K2I( cuFloatComplex* data, uint4 dim, unsigned int dim_to_trans, bool do_scale = true, bool shift = true );
+__host__ bool I2K( cuFloatComplex* data, uint4 dim, unsigned int dim_to_trans, bool do_scale = true, bool shift = true );
+
+__host__ bool K2I_ALL( cuFloatComplex* data, uint4 dim, unsigned int num_images = 1, bool do_scale = true, bool shift = true );
+__host__ bool K2I_ALL( cuFloatComplex* data, uint3 dim, unsigned int num_images = 1, bool do_scale = true, bool shift = true );
+__host__ bool K2I_ALL( cuFloatComplex* data, uint2 dim, unsigned int num_images = 1, bool do_scale = true, bool shift = true );
+
+__host__ bool I2K_ALL( cuFloatComplex* data, uint4 dim, unsigned int num_images = 1, bool do_scale = true, bool shift = true );
+__host__ bool I2K_ALL( cuFloatComplex* data, uint3 dim, unsigned int num_images = 1, bool do_scale = true, bool shift = true );
+__host__ bool I2K_ALL( cuFloatComplex* data, uint2 dim, unsigned int num_images = 1, bool do_scale = true, bool shift = true );
+
+#endif
