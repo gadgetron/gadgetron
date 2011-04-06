@@ -145,14 +145,14 @@ template <class T> class cuNDArray : public NDArray<T>
 	  this->dimensions_.clear();
 	}
 	
-	if (cudaMemcpy(tmp->get_data_ptr(), a.data_, this->elements_*sizeof(T), cudaMemcpyDeviceToHost) !=
+	if (cudaMemcpy(tmp.get_data_ptr(), a.data_, this->elements_*sizeof(T), cudaMemcpyDeviceToHost) !=
 	    cudaSuccess) {
 	  deallocate_memory();
 	  this->data_ = 0;
 	  this->dimensions_.clear();
 	}
 
-	if (cudaMemcpy(this->data, tmp->get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) !=
+	if (cudaMemcpy(this->data_, tmp.get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) !=
 	    cudaSuccess) {
 	  deallocate_memory();
 	  this->data_ = 0;
