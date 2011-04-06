@@ -24,10 +24,10 @@ endif
 
 LIBHEADERS=\
 	cuNDArray.h \
-	cuFFT.h
+	cuNDFFT.h
 
 LIBSOURCES=\
-	cuFFT.cpp 
+	cuNDFFT.cpp 
 
 CUDASOURCES=\
 	cuNDArray_kernels.cu \

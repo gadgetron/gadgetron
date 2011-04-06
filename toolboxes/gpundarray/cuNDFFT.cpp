@@ -1,6 +1,6 @@
-#include "cuFFT.h"
+#include "cuNDFFT.h"
 
-int cuFFT::fft(cuNDArray< cuFloatComplex >* input, unsigned int dim_to_transform)
+int cuNDFFT::fft(cuNDArray< cuFloatComplex >* input, unsigned int dim_to_transform)
 {
 
   /*
@@ -18,7 +18,7 @@ int cuFFT::fft(cuNDArray< cuFloatComplex >* input, unsigned int dim_to_transform
   return 0;
 }
   
-int cuFFT::ifft(cuNDArray< cuFloatComplex >* input, unsigned int dim_to_transform)
+int cuNDFFT::ifft(cuNDArray< cuFloatComplex >* input, unsigned int dim_to_transform)
 {
   /*
   if (!is_array_valid(input)) {
@@ -36,14 +36,14 @@ int cuFFT::ifft(cuNDArray< cuFloatComplex >* input, unsigned int dim_to_transfor
   return 0;
 }
 
-int cuFFT::fft(cuNDArray< cuFloatComplex >* input)
+int cuNDFFT::fft(cuNDArray< cuFloatComplex >* input)
 {
   
 
   return 0;
 }
 
-int cuFFT::ifft(cuNDArray< cuFloatComplex >* input)
+int cuNDFFT::ifft(cuNDArray< cuFloatComplex >* input)
 {
   return 0;
 }
@@ -51,7 +51,7 @@ int cuFFT::ifft(cuNDArray< cuFloatComplex >* input)
 bool is_array_valid(cuNDArray< cuFloatComplex >* in)
 {
   if (in->get_number_of_dimensions() > 4) {
-    std::cerr << "cuFFT: arrays with more dimensions than 4 are not supported at the moment" 
+    std::cerr << "cuNDFFT: arrays with more dimensions than 4 are not supported at the moment" 
 	      << std::endl;
 
     return false;
@@ -60,7 +60,7 @@ bool is_array_valid(cuNDArray< cuFloatComplex >* in)
   return true;
 }
 
-uint2 cuFFT::uintvec_to_uint2(std::vector<unsigned int>& vec)
+uint2 cuNDFFT::uintvec_to_uint2(std::vector<unsigned int>& vec)
 {
   uint2 ret;
 
@@ -77,7 +77,7 @@ uint2 cuFFT::uintvec_to_uint2(std::vector<unsigned int>& vec)
   return ret;
 }
 
-uint3 cuFFT::uintvec_to_uint3(std::vector<unsigned int>& vec)
+uint3 cuNDFFT::uintvec_to_uint3(std::vector<unsigned int>& vec)
 {
   uint3 ret;
 
@@ -99,7 +99,7 @@ uint3 cuFFT::uintvec_to_uint3(std::vector<unsigned int>& vec)
   return ret;
 }
 
-uint4 cuFFT::uintvec_to_uint4(std::vector<unsigned int>& vec)
+uint4 cuNDFFT::uintvec_to_uint4(std::vector<unsigned int>& vec)
 {
   uint4 ret;
 
