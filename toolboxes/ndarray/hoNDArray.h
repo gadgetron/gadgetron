@@ -73,6 +73,23 @@ template <class T> class hoNDArray : public NDArray<T>
     }
   }
 
+  static hoNDArray<T>* allocate(std::vector<unsigned int> dimensions)
+  {
+    hoNDArray<T>* ret = 0;
+    
+    ret = new hoNDArray<T>;
+    
+    if (ret) {
+      if (!ret->create(dimensions)) {
+	std::cerr << "hoNDArray<T>* allocate failed to allocate memory in array" << std::endl;
+	delete ret;
+	ret = 0;
+      }
+    }
+    
+    return ret;
+  }
+
   virtual T* create(std::vector<unsigned int> dimensions) {
     this->dimensions_ = dimensions; 
     allocate_memory();
