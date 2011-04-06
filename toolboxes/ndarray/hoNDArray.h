@@ -68,7 +68,9 @@ template <class T> class hoNDArray : public NDArray<T>
   }
 
   ~hoNDArray() {
-    deallocate_memory();
+    if (this->delete_data_on_destruct_) {
+      deallocate_memory();
+    }
   }
 
   virtual T* create(std::vector<unsigned int>& dimensions) {
@@ -81,6 +83,19 @@ template <class T> class hoNDArray : public NDArray<T>
 		    bool delete_data_on_destruct = false) 
   {
 
+    if (!data) {
+      std::cerr << "hoNDArray::create : zero pointer provided" << std::endl;
+      return 0;
+    }
+
+    this->dimensions_ = dimensions;
+    this->data_ = data;
+    this->delete_data_on_destruct_ = delete_data_on_destruct;
+    this->elements_ = 1;
+    for (unsigned int i = 0; i < this->dimensions_.size(); i++) {
+      this->elements_ *= this->dimensions_[i];
+    }
+    
     return this->get_data_ptr();
   }
 
@@ -96,16 +111,6 @@ template <class T> class hoNDArray : public NDArray<T>
   }
   
   
-  virtual int clear() {
-    if (this->data_ == 0) {
-      return -1;
-    }
-
-    memset(this->data_, 0, this->elements_*sizeof(T));
-    return 0;
-  }
-
-
   virtual int permute(std::vector<unsigned int>& dim_order, NDArray<T>* out = 0)
   {
     hoNDArray<T>* out_int = 0;
@@ -205,7 +210,6 @@ template <class T> class hoNDArray : public NDArray<T>
       return -1;
     }
     
-    clear();
     return 0;
   }
   

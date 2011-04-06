@@ -11,6 +11,7 @@ template <class T> class NDArray
   NDArray () 
     : data_(0)
     , elements_(0)
+    , delete_data_on_destruct_(true)
   {
     
   }
@@ -21,8 +22,6 @@ template <class T> class NDArray
 
   virtual T* create(std::vector<unsigned int>& dimensions, T* data, 
 		    bool delete_data_on_destruct = false) = 0;
-
-  virtual int clear() = 0;
 
   virtual int permute(std::vector<unsigned int>& dim_order, NDArray<T>* out = 0) = 0;
 
@@ -39,7 +38,7 @@ template <class T> class NDArray
   }
 
   unsigned int get_size(unsigned int dimension) {
-    if (dimension >= dimensions_.size() || dimension < 0) {
+    if (dimension >= dimensions_.size()) {
       return 1;
     } else {
       return dimensions_[dimension];
@@ -60,6 +59,7 @@ template <class T> class NDArray
   std::vector<unsigned int> dimensions_;
   T* data_;
   unsigned long int elements_;
+  bool delete_data_on_destruct_;
   
 };
 

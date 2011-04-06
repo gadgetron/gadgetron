@@ -14,7 +14,7 @@ CUDAINCLUDES=\
 
 CUDAHOME=/usr/local/cuda
 
-DLLNAME=gadgetrongpucg
+DLLNAME=gadgetrongputest
 
 DLLEXTENSION=so
 
@@ -23,12 +23,10 @@ DLLEXTENSION=dylib
 endif
 
 CONFIG_FILES=\
-	gpucg_radial_single.xml \
-	gpucg_radial_3_slices.xml \
-	gpucg_spiral_single.xml \
-	gpucg_spiral_3_slices.xml
+	gputest.xml
 
-LIBSOURCES=\
+LIBSOURCES=
+#LIBSOURCES=\
 	GPUCGGadget.cpp \
 	GPUCGGoldenRadial.cpp \
 	GPUCGGoldenSpiral.cpp \
@@ -39,15 +37,7 @@ LIBSOURCES=\
 	vds.cpp
 
 CUDASOURCES=\
-	NFFT.cu \
-	FFT.cu \
-	image_utilities.cu \
-	preprocess_.cu \
-	preprocess_radial.cu \
-	preprocess_sense.cu \
-	radixSort/radixsort.cu \
-	batchfft.cu \
-	NSense_.cu
+	cuNDArray_kernels.cu
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 
@@ -64,24 +54,30 @@ CXXFLAGS=-c -fPIC -Wall -I. \
 	$(CUDAINCLUDES) \
 	-DGADGETS_BUILD_DLL -g #-DACE_NTRACE=0
 
+CXXFLAGS_MAIN=-c -Wall -I. \
+	-I$(GADGETRONHOME)/inc \
+	-I$(GADGETRONHOME)/gadgets/core \
+	$(CUDAINCLUDES)
+
 LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml
 
 NVCC=$(CUDAHOME)/bin/nvcc
-NVCCFLAGS= --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC -DGADGETS_BUILD_DLL
+NVCCFLAGS= --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC -DGADGETS_BUILD_DLL -I$(GADGETRONHOME)/inc
 
 
-CUDALIBRARIES=-L$(CUDAHOME)/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudpp_$(MACHINE) -lcudart -lcublas -lcufft
+CUDALIBRARIES=-L$(CUDAHOME)/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudart -lcublas -lcufft
 
 ifeq ($(KERNEL), Darwin)
-CUDALIBRARIES=-L$(CUDAHOME)/lib -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/darwin -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudpp_$(MACHINE) -lcudart -lcublas -lcufft
+CUDALIBRARIES=-L$(CUDAHOME)/lib -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/darwin -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudart -lcublas -lcufft
 endif 
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 
 all: $(LIBFILE)
 
-test:
-	echo $(LIBCUDAOBJECTS)
+test: main.cpp $(LIBCUDAOBJECTS)
+	$(CXX) $(CXXFLAGS_MAIN) main.cpp
+	$(CXX) main.o $(LIBOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) -o test 
 
 
 $(LIBFILE): $(LIBOBJECTS) $(LIBCUDAOBJECTS) Makefile
@@ -99,7 +95,7 @@ clean:
 	rm -rf $(LIBOBJECTS)
 	rm -rf $(LIBCUDAOBJECTS)
 	rm -rf *.cplx
-	rm -rf *.real
+#	rm -rf *.real
 
 install:
 	mkdir -p $(GADGETRONHOME)/lib
