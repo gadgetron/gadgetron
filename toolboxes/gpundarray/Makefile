@@ -57,6 +57,10 @@ CXXFLAGS=-c -fPIC -Wall -I. \
 LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml
 
 NVCC=$(CUDAHOME)/bin/nvcc
+ifeq ($(KERNEL), Darwin)
+NVCC=$(CUDAHOME)/bin/nvcc -m32 -arch i386
+endif 
+
 NVCCFLAGS= --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC -DGADGETS_BUILD_DLL -I$(GADGETRONHOME)/inc
 
 CUDALIBRARIES=-L$(CUDAHOME)/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudart -lcublas -lcufft
