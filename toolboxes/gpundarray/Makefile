@@ -23,21 +23,16 @@ DLLEXTENSION=dylib
 endif
 
 LIBHEADERS=\
-	cuNDArray.h
+	cuNDArray.h \
+	cuFFT.h
 
-LIBSOURCES=
-#LIBSOURCES=\
-	GPUCGGadget.cpp \
-	GPUCGGoldenRadial.cpp \
-	GPUCGGoldenSpiral.cpp \
-	NSense.cpp \
-	preprocess.cpp \
-	ndarray.cpp \
-	vec.cpp \
-	vds.cpp
+LIBSOURCES=\
+	cuFFT.cpp 
 
 CUDASOURCES=\
-	cuNDArray_kernels.cu
+	cuNDArray_kernels.cu \
+	FFT.cu
+
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 

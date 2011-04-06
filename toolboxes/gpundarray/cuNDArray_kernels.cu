@@ -13,12 +13,10 @@ __global__ void cuNDArray_permute_kernel(T* in, T* out,
   unsigned long idx_in_tmp = idx_in;
   if (idx_in < elements) {
     unsigned int cur_index;
-    unsigned long cur_block_size = 1;
     for (unsigned int i = 0; i < ndim; i++) {
       cur_index = idx_in_tmp%dims[i];
       idx_in_tmp -= cur_index;
       idx_out += cur_index*strides_out[i];
-      cur_block_size *= dims[i];
       idx_in_tmp /= dims[i];
     }
     

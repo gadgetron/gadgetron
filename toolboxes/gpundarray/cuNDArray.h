@@ -33,6 +33,39 @@ template <class T> class cuNDArray : public NDArray<T>
     }
   }
 
+  static cuNDArray<T>* allocate(std::vector<unsigned int> dimensions) {
+    cuNDArray<T>* ret = 0;
+    
+    ret = new cuNDArray<T>;
+
+    if (ret) {
+      if (!ret->create(dimensions)) {
+	std::cerr << "cuNDArray<T>* allocate failed to allocate memory in array" << std::endl;
+	delete ret;
+	ret = 0;
+      }
+    }
+    
+    return ret;
+  }
+
+  static cuNDArray<T>* allocate(std::vector<unsigned int> dimensions, int device_no) {
+    cuNDArray<T>* ret = 0;
+    
+    ret = new cuNDArray<T>;
+
+    if (ret) {
+      if (!ret->create(dimensions, device_no)) {
+	std::cerr << "cuNDArray<T>* allocate failed to allocate memory in array" << std::endl;
+	delete ret;
+	ret = 0;
+      }
+    }
+    
+    return ret;
+  }
+
+
   virtual T* create(std::vector<unsigned int> dimensions) {
     this->dimensions_ = dimensions; 
     allocate_memory();
@@ -40,13 +73,29 @@ template <class T> class cuNDArray : public NDArray<T>
   }
 
 
-  /*
-  virtual T* create(std::vector<unsigned int>& dimensions, int device_no = -1) {
-  TODO: Implement device logic.
+  virtual T* create(std::vector<unsigned int>& dimensions, int device_no) {
+    int device_no_old;
+    if (cudaGetDevice(&device_no_old) != cudaSuccess) {
+      std::cerr << "cuNDArray::create unable to get device no" << std::endl;
+    }
 
-    return this->get_data_ptr();
+    if ((device_no >= 0) && (device_no != device_no_old) ) {
+      if (cudaSetDevice(device_no) != cudaSuccess) {
+	std::cerr << "cuNDArray::create unable to set device no" << std::endl;
+      }
+    }
+
+    T* ret_value = create(dimensions);
+
+    if ((device_no >= 0) && (device_no != device_no_old) ) {
+      if (cudaSetDevice(device_no_old) != cudaSuccess) {
+	std::cerr << "cuNDArray::create unable to set device no" << std::endl;
+      }
+    }
+
+    return ret_value;
   }
-  */
+
 
   virtual T* create(std::vector<unsigned int> dimensions, T* data, 
 		    bool delete_data_on_destruct = false) 
