@@ -136,5 +136,29 @@ template <class T> int cuNDArray_permute(cuNDArray<T>* in,
 template int cuNDArray_permute<>(cuNDArray<float>* in,
 				 cuNDArray<float>* out,
 				 std::vector<unsigned int> order);
+template int cuNDArray_permute<>(cuNDArray<float2>* in,
+				 cuNDArray<float2>* out,
+				 std::vector<unsigned int> order);
+template int cuNDArray_permute<>(cuNDArray<float3>* in,
+				 cuNDArray<float3>* out,
+				 std::vector<unsigned int> order);
+template int cuNDArray_permute<>(cuNDArray<float4>* in,
+				 cuNDArray<float4>* out,
+				 std::vector<unsigned int> order);
 
+template int cuNDArray_permute<>(cuNDArray<uint>* in,
+				 cuNDArray<uint>* out,
+				 std::vector<unsigned int> order);
+
+template int cuNDArray_permute<>(cuNDArray<uint2>* in,
+				 cuNDArray<uint2>* out,
+				 std::vector<unsigned int> order);
+
+template int cuNDArray_permute<>(cuNDArray<uint3>* in,
+				 cuNDArray<uint3>* out,
+				 std::vector<unsigned int> order);
+
+template int cuNDArray_permute<>(cuNDArray<uint4>* in,
+				 cuNDArray<uint4>* out,
+				 std::vector<unsigned int> order);
 

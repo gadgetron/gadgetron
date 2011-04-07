@@ -196,7 +196,9 @@ template <class T> class cuNDArray : public NDArray<T>
   }
 
 
-  virtual int permute(std::vector<unsigned int>& dim_order, NDArray<T>* out = 0)
+  virtual int permute(std::vector<unsigned int>& dim_order, 
+		      NDArray<T>* out = 0,
+		      int shift_mode = 0)
   {
 
     cuNDArray<T>* out_int = 0;
