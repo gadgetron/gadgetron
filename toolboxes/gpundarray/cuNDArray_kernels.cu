@@ -146,8 +146,8 @@ template int cuNDArray_permute<>(cuNDArray<float4>* in,
 				 cuNDArray<float4>* out,
 				 std::vector<unsigned int> order);
 
-template int cuNDArray_permute<>(cuNDArray<uint>* in,
-				 cuNDArray<uint>* out,
+template int cuNDArray_permute<>(cuNDArray<unsigned int>* in,
+				 cuNDArray<unsigned int>* out,
 				 std::vector<unsigned int> order);
 
 template int cuNDArray_permute<>(cuNDArray<uint2>* in,
