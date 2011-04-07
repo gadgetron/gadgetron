@@ -23,7 +23,9 @@ template <class T> class NDArray
   virtual T* create(std::vector<unsigned int> dimensions, T* data, 
 		    bool delete_data_on_destruct = false) = 0;
 
-  virtual int permute(std::vector<unsigned int>& dim_order, NDArray<T>* out = 0) = 0;
+  virtual int permute(std::vector<unsigned int>& dim_order, 
+		      NDArray<T>* out = 0,
+		      int shift_mode = 0) = 0;
 
   virtual int shift_dim(int shift, NDArray<T>* out = 0) {
     std::vector<unsigned int> order;
