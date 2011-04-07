@@ -144,8 +144,6 @@ template <class T> int cuNDArray_permute(cuNDArray<T>* in,
   return 0;
 }
 
-
-//Template instanciation
 template int cuNDArray_permute<>(cuNDArray<float>* in,
 				 cuNDArray<float>* out,
 				 std::vector<unsigned int> order,
@@ -185,4 +183,6 @@ template int cuNDArray_permute<>(cuNDArray<uint4>* in,
 				 cuNDArray<uint4>* out,
 				 std::vector<unsigned int> order,
 				 int shift_mode);
+
+
 

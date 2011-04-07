@@ -3,6 +3,8 @@
 
 #include "NDArray.h"
 
+#include <string.h> //memcpy
+
 class ArrayIterator
 {
  public:
@@ -127,6 +129,22 @@ template <class T> class hoNDArray : public NDArray<T>
     }
   }
   
+
+  hoNDArray& operator=(const hoNDArray& rhs) {
+    //Are the dimensions the same? Then we can just memcpy
+    if (std::equal(this->dimensions_.begin(), this->dimensions_.end(), rhs.dimensions_.begin())) {
+      memcpy(this->data_, rhs.data_, this->elements_*sizeof(T));
+    } else {
+      deallocate_memory();
+      this->data_ = 0;
+      this->dimensions_ = rhs.dimensions_;
+      if (allocate_memory() == 0) {
+	memcpy( this->data_, rhs.data_, this->elements_*sizeof(T) );
+      }
+    }
+    return *this;
+  }
+
   
   virtual int permute(std::vector<unsigned int>& dim_order, 
 		      NDArray<T>* out = 0,

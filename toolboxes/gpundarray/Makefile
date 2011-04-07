@@ -27,7 +27,8 @@ LIBHEADERS=\
 	cuNDFFT.h
 
 LIBSOURCES=\
-	cuNDFFT.cpp 
+	cuNDFFT.cpp \
+	cuNDArray.cpp
 
 CUDASOURCES=\
 	cuNDArray_kernels.cu \

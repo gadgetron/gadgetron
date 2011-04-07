@@ -55,6 +55,20 @@ template <class T> class NDArray
     return elements_;
   }
 
+  /**
+     Remove all non-singleton dimensions;
+   */
+  void squeeze()
+  {
+    std::vector<unsigned int> new_dimensions;
+    for (unsigned int i = 0; i < dimensions_.size(); i++) {
+      if (dimensions_[i] != 1) {
+	new_dimensions.push_back(dimensions_[i]);
+      }
+    }
+    dimensions_ = new_dimensions;
+  }
+
   T* get_data_ptr() { return data_; }
   
  protected:
