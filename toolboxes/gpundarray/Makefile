@@ -53,7 +53,7 @@ LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml
 
 NVCC=$(CUDAHOME)/bin/nvcc
 ifeq ($(KERNEL), Darwin)
-NVCC=$(CUDAHOME)/bin/nvcc -m32 -gencode=arch=compute_20,code=\"sm_20,compute_20\"
+NVCC=$(CUDAHOME)/bin/nvcc -m32 -gencode=arch=compute_10,code=\"sm_10,compute_10\"
 endif 
 
 NVCCFLAGS= --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC -DGADGETS_BUILD_DLL -I$(GADGETRONHOME)/inc
