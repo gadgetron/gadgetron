@@ -1,5 +1,5 @@
-#ifndef CUFFT_H
-#define CUFFT_H
+#ifndef CUNDFFT_H
+#define CUNDFFT_H
 
 #include "cuda.h"
 #include "cuComplex.h"
@@ -7,11 +7,11 @@
 #include "cuNDArray.h"
 #include "FFT.hcu"
 
-class cuFFT
+class cuNDFFT
 {
 
  public:
-  cuFFT() {}
+  cuNDFFT() {}
 
   int fft(cuNDArray< cuFloatComplex >* input, unsigned int dim_to_transform);
   int ifft(cuNDArray< cuFloatComplex >* input, unsigned int dim_to_transform);
