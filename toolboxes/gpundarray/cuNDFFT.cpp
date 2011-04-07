@@ -1,127 +1,122 @@
 #include "cuNDFFT.h"
 
-int cuNDFFT::fft(cuNDArray< cuFloatComplex >* input, unsigned int dim_to_transform)
-{
+#include <cufft.h>
+#include <cublas.h>
 
-  /*
-  if (!is_array_valid(input)) {
+int cuNDFFT::fft_int(cuNDArray< cuFloatComplex >* input, std::vector<unsigned int> dims_to_transform, 
+		     int direction, bool do_scale)
+{
+  std::vector<unsigned int> new_dim_order;
+  std::vector<unsigned int> reverse_dim_order;
+  std::vector<int> dims;
+  std::vector<unsigned int> dim_count(input->get_number_of_dimensions(),0);
+  
+  unsigned int array_ndim = input->get_number_of_dimensions();
+  std::vector<unsigned int> array_dims = input->get_dimensions();
+  
+  dims = std::vector<int>(dims_to_transform.size(),0);
+  for (unsigned int i = 0; i < dims_to_transform.size(); i++) {
+    if (dims_to_transform[i] >= array_ndim) {
+      std::cerr << "cuNDFFT::fft Invalid dimensions specified for transform " << dims_to_transform[i] << "max " << array_ndim << std::endl;
+      return -1;
+    }
+    if (dim_count[dims_to_transform[i]] > 0) {
+      std::cerr << "cuNDFFT::fft Invalid dimensions (duplicates) specified for transform" << std::endl;
+      return -1;
+    }
+    dim_count[dims_to_transform[i]]++;
+    dims[dims_to_transform.size()-1-i] = array_dims[dims_to_transform[i]];
+  }
+  
+  new_dim_order = dims_to_transform;
+  for (unsigned int i = 0; i < array_ndim; i++) {
+    if (!dim_count[i]) new_dim_order.push_back(i);
+  }
+
+  reverse_dim_order = std::vector<unsigned int>(array_ndim,0);
+  for (unsigned int i = 0; i < array_ndim; i++) {
+    reverse_dim_order[new_dim_order[i]] = i;
+  }
+
+  int ndim = dims.size();
+  int batches = 0;
+  int elements_in_ft = 1;
+  for (unsigned int i = 0; i < dims.size(); i++) elements_in_ft *= dims[i];
+  batches = input->get_number_of_elements() / elements_in_ft;
+
+
+  cufftHandle plan;
+  cufftResult ftres;
+
+  ftres = cufftPlanMany(&plan,ndim,&dims[0],&dims[0],1,elements_in_ft,&dims[0],1,elements_in_ft,CUFFT_C2C,batches);
+  if (ftres != CUFFT_SUCCESS) {
+    std::cerr << "cuNDFFT FFT plan failed: " << ftres << std::endl;
     return -1;
   }
-  */
 
-  /*
-  K2I( input->get_data_ptr(), 
-       uintvec_to_uint4(input->get_dimensions()), 
-       dim_to_transform);
-  */
+  //IFFTSHIFT
+  if (input->permute(new_dim_order,0,-1) < 0) {
+    std::cerr << "cuNDFFT error permuting before FFT" << std::endl;
+    return -1;
+  }
 
+  if (cufftExecC2C(plan, input->get_data_ptr(), input->get_data_ptr(), direction) != CUFFT_SUCCESS) {
+    std::cerr << "cuNDFFT FFT execute failed" << std::endl;
+    return -1;
+
+  }
+
+  if (do_scale) {
+    cuFloatComplex scale;
+    scale.x = 1.0f/elements_in_ft;
+    scale.y = 0.0f;
+    cublasCscal(input->get_number_of_elements(), scale, input->get_data_ptr(), 1);
+  }
+
+  //FFTSHIFT 
+  if (input->permute(reverse_dim_order,0,1) < 0) {
+    std::cerr << "cuNDFFT error permuting after FFT" << std::endl;
+    return -1;
+  }
+  
   return 0;
 }
-  
-int cuNDFFT::ifft(cuNDArray< cuFloatComplex >* input, unsigned int dim_to_transform)
+
+int cuNDFFT::fft(cuNDArray< cuFloatComplex >* input, std::vector<unsigned int> dims_to_transform)
 {
-  /*
-  if (!is_array_valid(input)) {
-    return -1;
-  }
-  */
+  return fft_int(input,dims_to_transform, CUFFT_FORWARD, false);
+}
 
-  /*
+int cuNDFFT::ifft(cuNDArray< cuFloatComplex >* input, std::vector<unsigned int> dims_to_transform, bool do_scale)
+{
+  return fft_int(input,dims_to_transform, CUFFT_INVERSE, do_scale);
+}
 
-  K2I( input->get_data_ptr(), 
-       uintvec_to_uint4(input->get_dimensions()), 
-       dim_to_transform);
-  */
 
-  return 0;
+int cuNDFFT::fft(cuNDArray< cuFloatComplex >* input, unsigned int dim_to_transform)
+{
+  std::vector<unsigned int> dims(1,dim_to_transform);
+  return fft_int(input,dims, CUFFT_FORWARD, false);
+}
+  
+int cuNDFFT::ifft(cuNDArray< cuFloatComplex >* input, unsigned int dim_to_transform, bool do_scale)
+{
+  std::vector<unsigned int> dims(1,dim_to_transform);
+  return fft_int(input,dims, CUFFT_INVERSE, do_scale);
 }
 
 int cuNDFFT::fft(cuNDArray< cuFloatComplex >* input)
 {
-  
+  std::vector<unsigned int> dims(input->get_number_of_dimensions(),0);
+  for (unsigned int i = 0; i < dims.size(); i++) dims[i] = i;
 
-  return 0;
+  return fft_int(input,dims, CUFFT_FORWARD, false);
 }
 
-int cuNDFFT::ifft(cuNDArray< cuFloatComplex >* input)
+int cuNDFFT::ifft(cuNDArray< cuFloatComplex >* input, bool do_scale)
 {
-  return 0;
+  std::vector<unsigned int> dims(input->get_number_of_dimensions(),0);
+  for (unsigned int i = 0; i < dims.size(); i++) dims[i] = i;
+  return fft_int(input,dims, CUFFT_FORWARD, do_scale);
 }
 
-bool is_array_valid(cuNDArray< cuFloatComplex >* in)
-{
-  if (in->get_number_of_dimensions() > 4) {
-    std::cerr << "cuNDFFT: arrays with more dimensions than 4 are not supported at the moment" 
-	      << std::endl;
-
-    return false;
-  }
-
-  return true;
-}
-
-uint2 cuNDFFT::uintvec_to_uint2(std::vector<unsigned int>& vec)
-{
-  uint2 ret;
-
-  if (vec.size() < 1) 
-    ret.x = 1;
-  else 
-    ret.x = vec[0];
-
-  if (vec.size() < 2) 
-    ret.y = 1;
-  else 
-    ret.y = vec[1];
-
-  return ret;
-}
-
-uint3 cuNDFFT::uintvec_to_uint3(std::vector<unsigned int>& vec)
-{
-  uint3 ret;
-
-  if (vec.size() < 1) 
-    ret.x = 1;
-  else 
-    ret.x = vec[0];
-
-  if (vec.size() < 2) 
-    ret.y = 1;
-  else 
-    ret.y = vec[1];
-
-  if (vec.size() < 3) 
-    ret.z = 1;
-  else 
-    ret.z = vec[2];
-
-  return ret;
-}
-
-uint4 cuNDFFT::uintvec_to_uint4(std::vector<unsigned int>& vec)
-{
-  uint4 ret;
-
-  if (vec.size() < 1) 
-    ret.x = 1;
-  else 
-    ret.x = vec[0];
-
-  if (vec.size() < 2) 
-    ret.y = 1;
-  else 
-    ret.y = vec[1];
-
-  if (vec.size() < 3) 
-    ret.z = 1;
-  else 
-    ret.z = vec[2];
-
-  if (vec.size() < 4) 
-    ret.w = 1;
-  else 
-    ret.w = vec[3];
-
-  return ret;
-}
