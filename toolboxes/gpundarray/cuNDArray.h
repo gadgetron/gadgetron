@@ -10,14 +10,16 @@
 template <class T> class cuNDArray;
 template <class T> int cuNDArray_permute(cuNDArray<T>* in, 
 					 cuNDArray<T>* out,
-					 std::vector<unsigned int> order);
+					 std::vector<unsigned int> order,
+					 int shift_mode);
 
 template <class T> class cuNDArray : public NDArray<T>
 {
   
   friend int cuNDArray_permute<>(cuNDArray<T>* in, 
 				 cuNDArray<T>* out,
-				 std::vector<unsigned int> order);
+				 std::vector<unsigned int> order,
+				 int shift_mode);
   
  public:
   cuNDArray () 
@@ -146,6 +148,7 @@ template <class T> class cuNDArray : public NDArray<T>
 	}
       } else {
 	//This memory is on a different device, we must move it.
+	//TODO: fix bug in here
 	hoNDArray<T> tmp;
 	if (!tmp.create(a.dimensions_)) {
 	  std::cerr << "cuNDArray: Unable to allocate temporary memory in copy constructor" << std::endl;
@@ -253,7 +256,7 @@ template <class T> class cuNDArray : public NDArray<T>
       }
     }
 
-    return cuNDArray_permute(this, out_int, dim_order_int);
+    return cuNDArray_permute(this, out_int, dim_order_int, shift_mode);
   }
 
  protected:

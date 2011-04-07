@@ -3,9 +3,7 @@
 
 #include "cuda.h"
 #include "cuComplex.h"
-
 #include "cuNDArray.h"
-#include "FFT.hcu"
 
 class cuNDFFT
 {
@@ -13,17 +11,17 @@ class cuNDFFT
  public:
   cuNDFFT() {}
 
+  int fft(cuNDArray< cuFloatComplex >* input, std::vector<unsigned int> dims_to_transform);
+  int ifft(cuNDArray< cuFloatComplex >* input, std::vector<unsigned int> dims_to_transform, bool do_scale = true);
+
   int fft(cuNDArray< cuFloatComplex >* input, unsigned int dim_to_transform);
-  int ifft(cuNDArray< cuFloatComplex >* input, unsigned int dim_to_transform);
+  int ifft(cuNDArray< cuFloatComplex >* input, unsigned int dim_to_transform, bool do_scale = true);
+
   int fft(cuNDArray< cuFloatComplex >* input);
-  int ifft(cuNDArray< cuFloatComplex >* input);
+  int ifft(cuNDArray< cuFloatComplex >* input, bool do_scale = true);
 
  protected:
-  bool is_array_valid(cuNDArray< cuFloatComplex >* in);
-  uint2 uintvec_to_uint2(std::vector<unsigned int>& vec);
-  uint3 uintvec_to_uint3(std::vector<unsigned int>& vec);
-  uint4 uintvec_to_uint4(std::vector<unsigned int>& vec);
-
+  int fft_int(cuNDArray< cuFloatComplex >* input, std::vector<unsigned int> dims_to_transform, int direction, bool do_scale = true);
 };
 
 #endif
