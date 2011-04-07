@@ -105,15 +105,23 @@ template <class T> class cuNDArray : public NDArray<T>
       return 0;
     }
     
-    cudaPointerAttributes attrib;
-    if (cudaPointerGetAttributes(&attrib, data) != cudaSuccess) {
-      std::cerr << "cuNDArray::create: Unable to determine attributes of pointer" << std::endl;
-      return 0;
+
+    cudaDeviceProp deviceProp;  
+    cudaGetDeviceProperties( &deviceProp, 0);
+
+    if (deviceProp.major >= 2) {
+      cudaPointerAttributes attrib;
+      if (cudaPointerGetAttributes(&attrib, data) != cudaSuccess) {
+	std::cerr << "cuNDArray::create: Unable to determine attributes of pointer" << std::endl;
+	return 0;
+      }
+      this->device_ = attrib.device;
+    } else {
+      cudaGetDevice(&this->device_);
     }
     
     this->dimensions_ = dimensions;
     this->data_ = data;
-    this->device_ = attrib.device;
     this->delete_data_on_destruct_ = delete_data_on_destruct;
     this->elements_ = 1;
     for (unsigned int i = 0; i < this->dimensions_.size(); i++) {

@@ -18,7 +18,7 @@ template <class T> int write_nd_array(hoNDArray<T>& a, const char* filename)
     header[i+1] = static_cast<int>(a.get_size(i));
   }
 
-  std::ofstream f(filename,std::ios::out | std::ios::binary);
+  std::fstream f(filename,std::ios::out | std::ios::binary);
 
   if( !f.is_open() ){
     std::cout << "ERROR: Cannot write file " << filename << std::endl;
@@ -40,7 +40,7 @@ template <class T> hoNDArray<T> read_nd_array(const char* filename)
 {
   int dimensions,tmp;
   std::vector<unsigned int> dim_array;
-  std::ifstream f(filename,std::ios::in | std::ios::binary);
+  std::fstream f(filename,std::ios::in | std::ios::binary);
 
   if( !f.is_open() ){
     std::cout << "ERROR: Cannot open file " << filename << std::endl;

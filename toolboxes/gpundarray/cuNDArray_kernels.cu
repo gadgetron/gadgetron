@@ -98,7 +98,7 @@ template <class T> int cuNDArray_permute(cuNDArray<T>* in,
 
   err = cudaGetLastError();
   if( err != cudaSuccess ){
-    std::cerr << "cuNDArray_permute : Error during kernel call" << std::endl;
+    std::cerr << "cuNDArray_permute : Error during kernel call: " << cudaGetErrorString(err) << std::endl;
     return -1;
   }
 
