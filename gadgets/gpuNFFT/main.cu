@@ -100,8 +100,10 @@ int main( int argc, char** argv)
     success = plan.compute_iteration( &data, &image, &weights, NFFT_plan<uint2, float2, float, cuFloatComplex>::NFFT_FORWARDS );
   
   cudaThreadSynchronize(); cutStopTimer( timer );
-  time = cutGetTimerValue( timer ); printf("done: %.1f ms.", time ); fflush(stdout);
+  time = cutGetTimerValue( timer ); printf("done: %.1f ms", time ); fflush(stdout);
   
+  CHECK_FOR_CUDA_ERROR();
+
   if( !success ){
     printf("\nNFFT failed. Quitting.\n");
     exit(1);
@@ -110,9 +112,9 @@ int main( int argc, char** argv)
   // Output result
   hoNDArray<cuFloatComplex> host_image = image.to_host();
   hoNDArray<float> host_norm = cuNDA_norm<cuFloatComplex, float>(&image)->to_host();
-
   write_nd_array<cuFloatComplex>( host_image, "result.cplx" );
   write_nd_array<float>( host_norm, "result.real" );
 
+  printf("\n", time ); fflush(stdout);
   return 0;
 }

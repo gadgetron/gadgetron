@@ -39,7 +39,7 @@ LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
 CXX=g++
 ifeq ($(KERNEL), Darwin)
-CXX=g++ -fPIC -arch i386 -Xlinker -rpath /usr/local/cuda/lib -O2
+CXX=g++ -fPIC -arch i386 -m32 -Xlinker -rpath /usr/local/cuda/lib -O2
 endif 
 
 CXXFLAGS=-c -fPIC -Wall -I. \
@@ -66,8 +66,10 @@ ifeq ($(KERNEL), Darwin)
 GENCODE_SM := $(GENCODE_SM10)
 endif
 
-NVCCFLAGS_1= $(GENCODE_SM) --compiler-options -fno-strict-aliasing $(CUDAINCLUDES) -O2
-NVCCFLAGS_2= -c
+NVCCFLAGS= $(GENCODE_SM) --compiler-options -fno-strict-aliasing $(CUDAINCLUDES) -O2 -c
+ifeq ($(KERNEL), Darwin)
+NVCCFLAGS += -m32
+endif
 
 CUDALIBRARIES=-L$(CUDAHOME)/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux -lshrutil_$(MACHINE) -lcutil_$(MACHINE) -lcudart -lcublas -lcufft
 
@@ -90,7 +92,7 @@ $(LIBFILE): $(LIBOBJECTS) $(LIBCUDAOBJECTS) Makefile
 	$(CXX) $(CXXFLAGS) $< -o $@
 
 %.cuo: %.cu
-	$(NVCC) $(NVCCFLAGS_1) -o $@ $(NVCCFLAGS_2) $<
+	$(NVCC) $(NVCCFLAGS) -o $@ $<
 
 clean:
 	rm -rf *~

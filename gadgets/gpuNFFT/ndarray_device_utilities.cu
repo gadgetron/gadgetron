@@ -216,9 +216,6 @@ void cuNDA_scale_kernel( A *a, X *x, unsigned int number_of_batches, unsigned in
   }
 }
 
-#include "hoNDArray_fileio.h"
-
-
 // Scale 
 template<class A, class X> __host__
 bool cuNDA_scale( cuNDArray<A> *a, cuNDArray<X> *x )
