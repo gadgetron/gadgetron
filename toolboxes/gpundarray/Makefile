@@ -31,9 +31,7 @@ LIBSOURCES=\
 	cuNDArray.cpp
 
 CUDASOURCES=\
-	cuNDArray_kernels.cu \
-	FFT.cu
-
+	cuNDArray_kernels.cu 
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 

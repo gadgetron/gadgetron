@@ -117,6 +117,6 @@ int cuNDFFT::ifft(cuNDArray< cuFloatComplex >* input, bool do_scale)
 {
   std::vector<unsigned int> dims(input->get_number_of_dimensions(),0);
   for (unsigned int i = 0; i < dims.size(); i++) dims[i] = i;
-  return fft_int(input,dims, CUFFT_FORWARD, do_scale);
+  return fft_int(input,dims, CUFFT_INVERSE, do_scale);
 }
 
