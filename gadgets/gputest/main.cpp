@@ -39,12 +39,30 @@ int main(int argc, char** argv)
   tmp_out_dev.create(dims_out);
 
   if (E.mult_M(&phantom_dev,&tmp_out_dev,false) < 0) {
-    std::cerr << "Failed to multiply with system matrix" << std::endl;
+    std::cerr << "Failed to multiply with system matrix E" << std::endl;
   }
 
   hoNDArray<float2> tmp_out = tmp_out_dev.to_host();
-
   write_nd_array<float2>(tmp_out,"tmp_out.cplx");
+
+  cuNDArray<float2> tmp2_out_dev;
+  tmp2_out_dev.create(phantom.get_dimensions());
+  
+  if (E.mult_MH(&tmp_out_dev,&tmp2_out_dev,false) < 0) {
+    std::cerr << "Failed to multiply with system matrix EH" << std::endl;
+  }
+
+  hoNDArray<float2> tmp2_out = tmp2_out_dev.to_host();
+  write_nd_array<float2>(tmp2_out,"tmp2_out.cplx");
+
+
+  if (E.mult_MH_M(&phantom_dev,&tmp2_out_dev,false) < 0) {
+    std::cerr << "Failed to multiply with system matrix EHE" << std::endl;
+  }
+
+  hoNDArray<float2> tmp3_out = tmp2_out_dev.to_host();
+  write_nd_array<float2>(tmp3_out,"tmp3_out.cplx");
+
 
   /*
   std::vector<unsigned int> dims;
