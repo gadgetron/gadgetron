@@ -11,8 +11,6 @@
 	T.S. Sørensen, D. Atkinson, T. Schaeffter, M.S. Hansen.
 	IEEE Transactions on Medical Imaging 2009; 28(12): 1974-1985. 
 */
-#include "hoNDArray_fileio.h"
-
 
 // Includes - our own code
 #include "NFFT.hcu"
@@ -486,6 +484,7 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute( cuNDArray<NDTYPE> *samples, cuND
     cerr << "NFFT_plan::setup: unable to set device" << endl;
   }
 
+  CHECK_FOR_CUDA_ERROR();
   return success;
 }
 
@@ -530,9 +529,11 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_iteration( cuNDArray<NDTYPE> *sam
   switch(mode){
 
   case NFFT_FORWARDS: // iteration from image
-
+    
     if( !oversampled_image ){
+      
       working_image = cuNDArray<NDTYPE>::allocate(vec_dims);
+
       cuNDA_expand_with_zero_fill<UINTd, REALd>( image, working_image );
     }
     else{
@@ -602,6 +603,7 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_iteration( cuNDArray<NDTYPE> *sam
     cerr << "NFFT_plan::setup: unable to set device" << endl;
   }
 
+  CHECK_FOR_CUDA_ERROR();
   return success;
 }
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdio.h>
+
 inline void THROW_ERROR(const char* file, const int line,
                         const char* errorString) {
     const int bLength = 256;

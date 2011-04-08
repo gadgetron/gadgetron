@@ -1,8 +1,9 @@
 #include "ndarray_device_utilities.hcu"
 
-#include <uintd_operators.hcu>
-#include <uintd_utilities.hcu>
-#include <floatd_utilities.hcu>
+#include "uintd_operators.hcu"
+#include "uintd_utilities.hcu"
+#include "floatd_operators.hcu"
+#include "floatd_utilities.hcu"
 #include "check_CUDA.h"
 
 #include <cublas.h>
@@ -215,6 +216,9 @@ void cuNDA_scale_kernel( A *a, X *x, unsigned int number_of_batches, unsigned in
   }
 }
 
+#include "hoNDArray_fileio.h"
+
+
 // Scale 
 template<class A, class X> __host__
 bool cuNDA_scale( cuNDArray<A> *a, cuNDArray<X> *x )
@@ -390,7 +394,7 @@ cuNDA_expand_with_zero_fill_kernel( UINTd matrix_size_in, UINTd matrix_size_out,
     const UINTd co_out = idx_to_co( idx, matrix_size_out );
     const UINTd offset = (matrix_size_out-matrix_size_in)>>1;
     T _out;
-    bool inside = weak_greater_equal( co_out, offset ) && weak_less( co_out, matrix_size_in+offset );
+    bool inside = (co_out>=offset) && (co_out<(matrix_size_in+offset));
     for( unsigned int batch=0; batch<number_of_batches; batch++ ){
       if( inside )
 	_out = in[co_to_idx(co_out-offset, matrix_size_in)+batch*prod(matrix_size_in)];
@@ -493,8 +497,8 @@ cuNDA_zero_fill_border_kernel( REALd radius, UINTd matrix_size_out, T *image, un
   
   if( idx < number_of_elements ){
     const UINTd co_out = idx_to_co( idx, matrix_size_out );
-    const REALd co_f = abs(uintd_to_reald(co_out) - uintd_to_reald(matrix_size_out));
-    if( weak_less( co_f, radius ) )
+    const REALd co_f = abs(uintd_to_reald(co_out) - uintd_to_reald(matrix_size_out>>1));
+    if( co_f<radius )
       ; // do nothing
     else{
       T zero; get_zero(zero);

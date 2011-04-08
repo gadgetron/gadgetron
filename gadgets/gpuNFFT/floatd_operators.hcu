@@ -216,3 +216,78 @@ inline __host__ __device__ void operator /=(float4 &b, float f)
 	b.z /= f;
 	b.w /= f;
 }
+
+__inline__ __host__ __device__ bool operator <(float2 f1, float2 f2)
+{
+  return f1.x<f2.x && f1.y<f2.y;
+}
+
+__inline__ __host__ __device__ bool operator <(float3 f1, float3 f2)
+{
+  return f1.x<f2.x && f1.y<f2.y && f1.z<f2.z;
+}
+
+__inline__ __host__ __device__ bool operator <(float4 f1, float4 f2)
+{
+  return f1.x<f2.x && f1.y<f2.y && f1.z<f2.z && f1.w<f2.w;
+}
+
+__inline__ __host__ __device__ bool operator <=(float2 f1, float2 f2)
+{
+  return f1.x<=f2.x && f1.y<=f2.y;
+}
+
+__inline__ __host__ __device__ bool operator <=(float3 f1, float3 f2)
+{
+  return f1.x<=f2.x && f1.y<=f2.y && f1.z<=f2.z;
+}
+
+__inline__ __host__ __device__ bool operator <=(float4 f1, float4 f2)
+{
+  return f1.x<=f2.x && f1.y<=f2.y && f1.z<=f2.z && f1.w<=f2.w;
+}
+
+__inline__ __host__ __device__ bool operator >(float2 f1, float2 f2)
+{
+  return f1.x>f2.x && f1.y>f2.y;
+}
+
+__inline__ __host__ __device__ bool operator >(float3 f1, float3 f2)
+{
+  return f1.x>f2.x && f1.y>f2.y && f1.z>f2.z;
+}
+
+__inline__ __host__ __device__ bool operator >(float4 f1, float4 f2)
+{
+  return f1.x>f2.x && f1.y>f2.y && f1.z>f2.z && f1.w>f2.w;
+}
+
+__inline__ __host__ __device__ bool operator >=(float2 f1, float2 f2)
+{
+  return f1.x>=f2.x && f1.y>=f2.y;
+}
+
+__inline__ __host__ __device__ bool operator >=(float3 f1, float3 f2)
+{
+  return f1.x>=f2.x && f1.y>=f2.y && f1.z>=f2.z;
+}
+
+__inline__ __host__ __device__ bool operator >=(float4 f1, float4 f2)
+{
+  return f1.x>=f2.x && f1.y>=f2.y && f1.z>=f2.z && f1.w>=f2.w;
+}
+
+__inline__ __host__ __device__ bool operator ==(float2 a, float2 b)
+{
+  return (a.x==b.x && a.y==b.y);
+}
+
+__inline__ __host__ __device__ bool operator ==(float3 a, float3 b)
+{
+  return (a.x==b.x && a.y==b.y && a.z==b.z );
+}
+
+__inline__ __host__ __device__ bool operator ==(float4 a, float4 b)
+{
+  return (a.x==b.x && a.y==b.y && a.z==b.z && a.w==b.w );
+}

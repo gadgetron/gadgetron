@@ -2,6 +2,7 @@
 #include "cuNDArray.h"
 #include "ndarray_device_utilities.hcu"
 #include "NFFT.hcu"
+#include "check_CUDA.h"
 
 #include <cutil.h>
 #include <cuComplex.h>
@@ -39,10 +40,10 @@ int main( int argc, char** argv)
   
   // Matrix sizes
   const uint2 matrix_size = make_uint2(192,192);
-  const uint2 matrix_size_os = make_uint2(512,512);
+  const uint2 matrix_size_os = make_uint2(256,256);
 
   // Kernel width
-  const float W = 6.5f;
+  const float W = 5.5f;
 
   // No fixed dimensions
   uint2 fixed_dims = make_uint2(0,0);
