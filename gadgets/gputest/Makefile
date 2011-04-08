@@ -43,7 +43,7 @@ LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 
 LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
-CXX=g++
+CXX=g++ -g
 ifeq ($(KERNEL), Darwin)
 CXX=g++ -m32 -arch i386
 endif 
@@ -63,7 +63,7 @@ LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml
 MAINLDFLAGS= -lACE -L$(GADGETRONHOME)/lib -ltinyxml -lcundarray -lcucg
 
 NVCC=$(CUDAHOME)/bin/nvcc
-NVCCFLAGS= --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC -DGADGETS_BUILD_DLL -I$(GADGETRONHOME)/inc
+NVCCFLAGS= -g --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC -DGADGETS_BUILD_DLL -I$(GADGETRONHOME)/inc
 
 
 CUDALIBRARIES=-L$(CUDAHOME)/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudart -lcublas -lcufft
@@ -95,7 +95,7 @@ clean:
 	rm -rf $(LIBFILE)
 	rm -rf $(LIBOBJECTS)
 	rm -rf $(LIBCUDAOBJECTS)
-	rm -rf *.cplx
+#	rm -rf *.cplx
 #	rm -rf *.real
 	rm -rf main.o 
 
