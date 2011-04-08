@@ -60,7 +60,7 @@ CXXFLAGS_MAIN=-c -Wall -I. \
 	$(CUDAINCLUDES)
 
 LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml
-MAINLDFLAGS= -lACE -L$(GADGETRONHOME)/lib -ltinyxml -lcundarray
+MAINLDFLAGS= -lACE -L$(GADGETRONHOME)/lib -ltinyxml -lcundarray -lcucg
 
 NVCC=$(CUDAHOME)/bin/nvcc
 NVCCFLAGS= --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC -DGADGETS_BUILD_DLL -I$(GADGETRONHOME)/inc
