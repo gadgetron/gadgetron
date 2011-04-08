@@ -14,7 +14,7 @@ CUDAINCLUDES=\
 
 CUDAHOME=/usr/local/cuda
 
-DLLNAME=gadgetrongputest
+DLLNAME=cucg
 
 DLLEXTENSION=so
 
@@ -22,22 +22,17 @@ ifeq ($(KERNEL), Darwin)
 DLLEXTENSION=dylib
 endif
 
-CONFIG_FILES=\
-	gputest.xml
+LIBHEADERS=\
+	cuCG.h \
+	cuCGMatrixOperator.h
 
-LIBSOURCES=
-#LIBSOURCES=\
-	GPUCGGadget.cpp \
-	GPUCGGoldenRadial.cpp \
-	GPUCGGoldenSpiral.cpp \
-	NSense.cpp \
-	preprocess.cpp \
-	ndarray.cpp \
-	vec.cpp \
-	vds.cpp
+LIBSOURCES=\
+	cuCG.cpp \
 
-CUDASOURCES=\
-	cgOperatorCartesianSense.cu
+#CUDASOURCES=\
+	cuNDArray_kernels.cu 
+
+CUDASOURCES=
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 
@@ -54,17 +49,14 @@ CXXFLAGS=-c -fPIC -Wall -I. \
 	$(CUDAINCLUDES) \
 	-DGADGETS_BUILD_DLL -g #-DACE_NTRACE=0
 
-CXXFLAGS_MAIN=-c -Wall -I. \
-	-I$(GADGETRONHOME)/inc \
-	-I$(GADGETRONHOME)/gadgets/core \
-	$(CUDAINCLUDES)
-
 LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml
-MAINLDFLAGS= -lACE -L$(GADGETRONHOME)/lib -ltinyxml -lcundarray
 
 NVCC=$(CUDAHOME)/bin/nvcc
-NVCCFLAGS= --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC -DGADGETS_BUILD_DLL -I$(GADGETRONHOME)/inc
+ifeq ($(KERNEL), Darwin)
+NVCC=$(CUDAHOME)/bin/nvcc -m32 -gencode=arch=compute_10,code=\"sm_10,compute_10\"
+endif 
 
+NVCCFLAGS= --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC -DGADGETS_BUILD_DLL -I$(GADGETRONHOME)/inc
 
 CUDALIBRARIES=-L$(CUDAHOME)/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudart -lcublas -lcufft
 
@@ -75,11 +67,6 @@ endif
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 
 all: $(LIBFILE)
-
-test: main.o $(LIBCUDAOBJECTS)
-	$(CXX) $(CXXFLAGS_MAIN) main.cpp
-	$(CXX) main.o $(LIBOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) $(MAINLDFLAGS) -o test 
-
 
 $(LIBFILE): $(LIBOBJECTS) $(LIBCUDAOBJECTS) Makefile
 	$(CXX) $(LIBLDFLAGS) $(LIBOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) -o $@
@@ -96,12 +83,11 @@ clean:
 	rm -rf $(LIBOBJECTS)
 	rm -rf $(LIBCUDAOBJECTS)
 	rm -rf *.cplx
-#	rm -rf *.real
-	rm -rf main.o 
+	rm -rf *.real
 
 install:
 	mkdir -p $(GADGETRONHOME)/lib
-	mkdir -p $(GADGETRONHOME)/config
+	mkdir -p $(GADGETRONHOME)/inc
 	cp $(LIBFILE) $(GADGETRONHOME)/lib/
-	cp $(CONFIG_FILES) $(GADGETRONHOME)/config/
+	cp $(LIBHEADERS) $(GADGETRONHOME)/inc/
 

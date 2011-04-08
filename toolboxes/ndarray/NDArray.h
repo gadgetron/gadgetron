@@ -69,6 +69,16 @@ template <class T> class NDArray
     dimensions_ = new_dimensions;
   }
 
+  bool dimensions_equal(std::vector<unsigned int>& d) {
+    return ((this->dimensions_.size() == d.size()) &&
+	    std::equal(this->dimensions_.begin(), this->dimensions_.end(), d.begin()));
+  }
+
+  bool dimensions_equal(NDArray<T>& a) {
+    return ((this->dimensions_.size() == a.dimensions_.size()) &&
+	    std::equal(this->dimensions_.begin(), this->dimensions_.end(), a.dimensions_.begin()));
+  }
+
   T* get_data_ptr() { return data_; }
   
  protected:
