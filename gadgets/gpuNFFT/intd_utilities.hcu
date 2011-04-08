@@ -1,0 +1,301 @@
+#pragma once
+
+//
+// Overloaded utilities for int2/3/4
+//
+
+#include <vector_functions.h>
+
+// operators <, <=, >, >= are "strong" in the sense they require all components to fullfil the scalar operator.
+// Here are the corresponding "weak" alternatives
+
+__inline__ __host__ __device__ bool weak_less(int2 ui1, int2 ui2)
+{
+  return ui1.x<ui2.x || ui1.y<ui2.y;
+}
+
+__inline__ __host__ __device__ bool weak_less(int3 ui1, int3 ui2)
+{
+  return ui1.x<ui2.x || ui1.y<ui2.y || ui1.z<ui2.z;
+}
+
+__inline__ __host__ __device__ bool weak_less(int4 ui1, int4 ui2)
+{
+  return ui1.x<ui2.x || ui1.y<ui2.y || ui1.z<ui2.z || ui1.w<ui2.w;
+}
+
+__inline__ __host__ __device__ bool weak_less_equal(int2 ui1, int2 ui2)
+{
+  return ui1.x<=ui2.x || ui1.y<=ui2.y;
+}
+
+__inline__ __host__ __device__ bool weak_less_equal(int3 ui1, int3 ui2)
+{
+  return ui1.x<=ui2.x || ui1.y<=ui2.y || ui1.z<=ui2.z;
+}
+
+__inline__ __host__ __device__ bool weak_less_equal(int4 ui1, int4 ui2)
+{
+  return ui1.x<=ui2.x || ui1.y<=ui2.y || ui1.z<=ui2.z || ui1.w<=ui2.w;
+}
+
+__inline__ __host__ __device__ bool weak_greater(int2 ui1, int2 ui2)
+{
+  return ui1.x>ui2.x || ui1.y>ui2.y;
+}
+
+__inline__ __host__ __device__ bool weak_greater(int3 ui1, int3 ui2)
+{
+  return ui1.x>ui2.x || ui1.y>ui2.y || ui1.z>ui2.z;
+}
+
+__inline__ __host__ __device__ bool weak_greater(int4 ui1, int4 ui2)
+{
+  return ui1.x>ui2.x || ui1.y>ui2.y || ui1.z>ui2.z || ui1.w>ui2.w;
+}
+
+__inline__ __host__ __device__ bool weak_greater_equal(int2 ui1, int2 ui2)
+{
+  return ui1.x>=ui2.x || ui1.y>=ui2.y;
+}
+
+__inline__ __host__ __device__ bool weak_greater_equal(int3 ui1, int3 ui2)
+{
+  return ui1.x>=ui2.x || ui1.y>=ui2.y || ui1.z>=ui2.z;
+}
+
+__inline__ __host__ __device__ bool weak_greater_equal(int4 ui1, int4 ui2)
+{
+  return ui1.x>=ui2.x || ui1.y>=ui2.y || ui1.z>=ui2.z || ui1.w>=ui2.w;
+}
+
+
+/* Coordinate transformation functions */
+
+__inline__ __host__ __device__ int co_to_idx(int2 co, int2 dim)
+{
+  return co.y*dim.x + co.x;
+}
+
+__inline__ __host__ __device__ int co_to_idx(int3 co, int3 dim)
+{
+  return co.z*dim.x*dim.y + co.y*dim.x + co.x;
+}
+
+__inline__ __host__ __device__ int co_to_idx(int4 co, int4 dim)
+{
+  return co.w*dim.x*dim.y*dim.z + co.z*dim.x*dim.y + co.y*dim.x + co.x;
+}
+
+__inline__ __host__ __device__ int2 idx_to_co(int idx, int2 dim)
+{
+  int2 co;
+  int temp = idx;
+  co.x = temp%dim.x;temp -= co.x;
+  co.y = temp/(dim.x);
+  
+  return co;
+}
+
+__inline__ __host__ __device__ int3 idx_to_co(int idx, int3 dim)
+{
+  int3 co;
+  int temp = idx;
+  co.x = temp%dim.x;temp -= co.x;
+  co.y = (temp/(dim.x))%dim.y; temp -= co.y*dim.x;
+  co.z = temp/(dim.x*dim.y);
+  return co;
+}
+
+__inline__ __host__ __device__ int4 idx_to_co(int idx, int4 dim)
+{
+  int4 co;
+  int temp = idx;
+  co.x = temp%dim.x;temp -= co.x;
+  co.y = (temp/(dim.x))%dim.y; temp -= co.y*dim.x;
+  co.z = (temp/(dim.x*dim.y))%dim.z; temp -= co.z*dim.x*dim.y;
+  co.w = temp/(dim.x*dim.y*dim.z);
+  
+  return co;
+}
+
+__inline__ __host__ __device__ int prod(int2 ui)
+{
+  return ui.x*ui.y;
+}
+
+__inline__ __host__ __device__ int prod(int3 ui)
+{
+  return ui.x*ui.y*ui.z;
+}
+
+__inline__ __host__ __device__ int prod(int4 ui)
+{
+  return ui.x*ui.y*ui.z*ui.w;
+}
+/*
+  __inline__ __host__ __device__ int2 int4_to_int2(int4 ui)
+  {
+  int2 val;
+  val.x = ui.x;
+  val.y = ui.y;
+  return val;
+  }
+
+  __inline__ __host__ __device__ int3 int4_to_int3(int4 ui)
+  {
+  int3 val;
+  val.x = ui.x;
+  val.y = ui.y;
+  val.z = ui.z;
+  return val;
+  }
+
+  __inline__ __host__ __device__ int2 int3_to_int2(int3 ui)
+  {
+  int2 val;
+  val.x = ui.x;
+  val.y = ui.y;
+  return val;
+  }
+*/
+
+__inline__ __host__ __device__ int2 shift_down(int2 ui)
+{
+  return make_int2(ui.y, ui.x);
+}
+
+__inline__ __host__ __device__ int3 shift_down(int3 ui)
+{
+  return make_int3(ui.y, ui.z, ui.x);
+}
+
+__inline__ __host__ __device__ int4 shift_down(int4 ui)
+{
+  return make_int4(ui.y, ui.z, ui.w, ui.x);
+}
+
+template<class T> __inline__ __host__ __device__ T shift_down(T ui, int steps)
+{
+  T temp = ui;
+  for (int i = 0; i < steps; i++)
+    {
+      temp = shift_down(temp);
+    }   
+  return temp;
+}
+
+__inline__ __host__ __device__ int2 shift_up(int2 ui)
+{
+  return make_int2(ui.y, ui.x);
+}
+
+__inline__ __host__ __device__ int3 shift_up(int3 ui)
+{
+  return make_int3(ui.z, ui.x, ui.y);
+}
+
+__inline__ __host__ __device__ int4 shift_up(int4 ui)
+{
+  return make_int4(ui.w, ui.x, ui.y, ui.z);
+}
+
+template<class T> __inline__ __host__ __device__ T shift_up(T ui, int steps)
+{
+  T temp = ui;
+  for (int i = 0; i < steps; i++)
+    {
+      temp = shift_up(temp);
+    }   
+  return temp;
+}
+
+__inline__ __host__ __device__ int dot( int2 a, int2 b )
+{
+  return a.x * b.x + a.y * b.y;
+}
+
+__inline__ __host__ __device__ int dot( int3 a, int3 b )
+{
+  return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+__inline__ __host__ __device__ int dot( int4 a, int4 b )
+{
+  return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+}
+
+__inline__ __device__ int2 uintd_to_intd( uint2 a )
+{
+  return make_int2( a.x, a.y );
+}
+
+__inline__ __device__ int3 uintd_to_intd( uint3 a )
+{
+  return make_int3( a.x, a.y, a.z );
+}
+
+__inline__ __device__ int4 uintd_to_intd( uint4 a )
+{
+  return make_int4( a.x, a.y, a.z, a.w );
+}
+
+__inline__ __device__ int2 reald_to_intd( float2 a )
+{
+  return make_int2( float2int(a.x), float2int(a.y) );
+}
+
+__inline__ __device__ int3 reald_to_intd( float3 a )
+{
+  return make_int3( float2int(a.x), float2int(a.y), float2int(a.z) );
+}
+
+__inline__ __device__ int4 reald_to_intd( float4 a )
+{
+  return make_int4( float2int(a.x), float2int(a.y), float2int(a.z), float2int(a.w) );
+}
+
+__inline__ __device__ int2 reald_to_intd( double2 a )
+{
+  return make_int2( double2int(a.x), double2int(a.y) );
+}
+
+__inline__ __device__ int3 reald_to_intd( double3 a )
+{
+  return make_int3( double2int(a.x), double2int(a.y), double2int(a.z) );
+}
+
+__inline__ __device__ int4 reald_to_intd( double4 a )
+{
+  return make_int4( double2int(a.x), double2int(a.y), double2int(a.z), double2int(a.w) );
+}
+
+__inline__ __host__ int2 reald_to_intd( float2 a )
+{
+  return make_int2( (int)a.x, (int)a.y );
+}
+
+__inline__ __host__ int3 reald_to_intd( float3 a )
+{
+  return make_int3( (int)a.x, (int)a.y, (int)a.z );
+}
+
+__inline__ __host__ int4 reald_to_intd( float4 a )
+{
+  return make_int4( (int)a.x, (int)a.y, (int)a.z, (int)a.w );
+}
+
+__inline__ __host__ int2 reald_to_intd( double2 a )
+{
+  return make_int2( (int)a.x, (int)a.y );
+}
+
+__inline__ __host__ int3 reald_to_intd( double3 a )
+{
+  return make_int3( (int)a.x, (int)a.y, (int)a.z );
+}
+
+__inline__ __host__ int4 reald_to_intd( double4 a )
+{
+  return make_int4( (int)a.x, (int)a.y, (int)a.z, (int)a.w );
+}

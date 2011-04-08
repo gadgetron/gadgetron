@@ -1,0 +1,296 @@
+#pragma once
+
+//
+// Overloaded operators for int2/3/4
+//
+
+#include <vector_functions.h>
+
+
+__inline__ __host__ __device__ int2 operator *(int2 a, int2 b)
+{
+	return make_int2(a.x*b.x, a.y*b.y);
+}
+
+__inline__ __host__ __device__ int3 operator *(int3 a, int3 b)
+{
+	return make_int3(a.x*b.x, a.y*b.y, a.z*b.z);
+}
+
+__inline__ __host__ __device__ int4 operator *(int4 a, int4 b)
+{
+	return make_int4(a.x*b.x, a.y*b.y, a.z*b.z, a.w*b.w);
+}
+
+__inline__ __host__ __device__ int2 operator *(int f, int2 v)
+{
+	return make_int2(v.x*f, v.y*f);
+}
+
+__inline__ __host__ __device__ int3 operator *(int f, int3 v)
+{
+	return make_int3(v.x*f, v.y*f, v.z*f);
+}
+
+__inline__ __host__ __device__ int4 operator *(int f, int4 v)
+{
+	return make_int4(v.x*f, v.y*f, v.z*f, v.w*f);
+}
+
+__inline__ __host__ __device__ int2 operator *(int2 v, int f)
+{
+	return make_int2(v.x*f, v.y*f);
+}
+
+__inline__ __host__ __device__ int3 operator *(int3 v, int f)
+{
+	return make_int3(v.x*f, v.y*f, v.z*f);
+}
+
+__inline__ __host__ __device__ int4 operator *(int4 v, int f)
+{
+	return make_int4(v.x*f, v.y*f, v.z*f, v.w*f);
+}
+
+__inline__ __host__ __device__ int2 operator +(int2 a, int2 b)
+{
+	return make_int2(a.x+b.x, a.y+b.y);
+}
+
+__inline__ __host__ __device__ int3 operator +(int3 a, int3 b)
+{
+	return make_int3(a.x+b.x, a.y+b.y, a.z+b.z);
+}
+
+__inline__ __host__ __device__ int4 operator +(int4 a, int4 b)
+{
+	return make_int4(a.x+b.x, a.y+b.y, a.z+b.z, a.w+b.w);
+}
+
+__inline__ __host__ __device__ void operator +=(int2 &b, int2 a)
+{
+	b.x += a.x;
+	b.y += a.y;
+}
+
+__inline__ __host__ __device__ void operator +=(int3 &b, int3 a)
+{
+	b.x += a.x;
+	b.y += a.y;
+	b.z += a.z;
+}
+
+__inline__ __host__ __device__ void operator +=(int4 &b, int4 a)
+{
+	b.x += a.x;
+	b.y += a.y;
+	b.z += a.z;
+	b.w += a.w;
+}
+
+__inline__ __host__ __device__ int2 operator -(int2 a, int2 b)
+{
+	return make_int2(a.x-b.x, a.y-b.y);
+}
+
+__inline__ __host__ __device__ int3 operator -(int3 a, int3 b)
+{
+	return make_int3(a.x-b.x, a.y-b.y, a.z-b.z);
+}
+
+__inline__ __host__ __device__ int4 operator -(int4 a, int4 b)
+{
+	return make_int4(a.x-b.x, a.y-b.y, a.z-b.z, a.w-b.w);
+}
+
+__inline__ __host__ __device__ void operator -=(int2 & b, int2 a)
+{
+	b.x -= a.x;
+	b.y -= a.y;
+}
+
+__inline__ __host__ __device__ void operator -=(int3 & b, int3 a)
+{
+	b.x -= a.x;
+	b.y -= a.y;
+	b.z -= a.z;
+}
+
+__inline__ __host__ __device__ void operator -=(int4 & b, int4 a)
+{
+	b.x -= a.x;
+	b.y -= a.y;
+	b.z -= a.z;
+	b.w -= a.w;
+}
+
+__inline__ __host__ __device__ int2 operator /(int2 a, int f)
+{
+	return make_int2(a.x/f, a.y/f);
+}
+
+__inline__ __host__ __device__ int3 operator /(int3 a, int f)
+{
+	return make_int3(a.x/f, a.y/f, a.z/f);
+}
+
+__inline__ __host__ __device__ int4 operator /(int4 a, int f)
+{
+	return make_int4(a.x/f, a.y/f, a.z/f, a.w/f);
+}
+
+__inline__ __host__ __device__ void operator /=(int2 &b, int f)
+{
+	b.x /= f;
+	b.y /= f;
+}
+
+__inline__ __host__ __device__ void operator /=(int3 &b, int f)
+{
+	b.x /= f;
+	b.y /= f;
+	b.z /= f;
+}
+
+__inline__ __host__ __device__ void operator /=(int4 &b, int f)
+{
+	b.x /= f;
+	b.y /= f;
+	b.z /= f;
+	b.w /= f;
+}
+
+__inline__ __host__ __device__ int2 operator >>(int2 a, int b)
+{
+	return make_int2(a.x>>b, a.y>>b);
+}
+
+__inline__ __host__ __device__ int3 operator >>(int3 a, int b)
+{
+	return make_int3(a.x>>b, a.y>>b, a.z>>b);
+}
+
+__inline__ __host__ __device__ int4 operator >>(int4 a, int b)
+{
+	return make_int4(a.x>>b, a.y>>b, a.z>>b, a.w>>b );
+}
+
+__inline__ __host__ __device__ int2 operator <<(int2 a, int b)
+{
+	return make_int2(a.x<<b, a.y<<b);
+}
+
+__inline__ __host__ __device__ int3 operator <<(int3 a, int b)
+{
+	return make_int3(a.x<<b, a.y<<b, a.z<<b);
+}
+
+__inline__ __host__ __device__ int4 operator <<(int4 a, int b)
+{
+	return make_int4(a.x<<b, a.y<<b, a.z<<b, a.w<<b);
+}
+
+__inline__ __host__ __device__ int2 operator %(int2 ui1, int ui2)
+{
+  return make_int2(ui1.x%ui2, ui1.y%ui2);
+}
+
+__inline__ __host__ __device__ int3 operator %(int3 ui1, int ui2)
+{
+  return make_int3(ui1.x%ui2, ui1.y%ui2, ui1.z%ui2);
+}
+
+__inline__ __host__ __device__ int4 operator %(int4 ui1, int ui2)
+{
+  return make_int4(ui1.x%ui2, ui1.y%ui2, ui1.z%ui2, ui1.w%ui2);
+}
+
+__inline__ __host__ __device__ int2 operator %(int2 ui1, int2 ui2)
+{
+  return make_int2(ui1.x%ui2.x, ui1.y%ui2.y);
+}
+
+__inline__ __host__ __device__ int3 operator %(int3 ui1, int3 ui2)
+{
+  return make_int3(ui1.x%ui2.x, ui1.y%ui2.y, ui1.z%ui2.z);
+}
+
+__inline__ __host__ __device__ int4 operator %(int4 ui1, int4 ui2)
+{
+  return make_int4(ui1.x%ui2.x, ui1.y%ui2.y, ui1.z%ui2.z, ui1.w%ui2.w);
+}
+
+__inline__ __host__ __device__ bool operator <(int2 ui1, int2 ui2)
+{
+  return ui1.x<ui2.x && ui1.y<ui2.y;
+}
+
+__inline__ __host__ __device__ bool operator <(int3 ui1, int3 ui2)
+{
+  return ui1.x<ui2.x && ui1.y<ui2.y && ui1.z<ui2.z;
+}
+
+__inline__ __host__ __device__ bool operator <(int4 ui1, int4 ui2)
+{
+  return ui1.x<ui2.x && ui1.y<ui2.y && ui1.z<ui2.z && ui1.w<ui2.w;
+}
+
+__inline__ __host__ __device__ bool operator <=(int2 ui1, int2 ui2)
+{
+  return ui1.x<=ui2.x && ui1.y<=ui2.y;
+}
+
+__inline__ __host__ __device__ bool operator <=(int3 ui1, int3 ui2)
+{
+  return ui1.x<=ui2.x && ui1.y<=ui2.y && ui1.z<=ui2.z;
+}
+
+__inline__ __host__ __device__ bool operator <=(int4 ui1, int4 ui2)
+{
+  return ui1.x<=ui2.x && ui1.y<=ui2.y && ui1.z<=ui2.z && ui1.w<=ui2.w;
+}
+
+__inline__ __host__ __device__ bool operator >(int2 ui1, int2 ui2)
+{
+  return ui1.x>ui2.x && ui1.y>ui2.y;
+}
+
+__inline__ __host__ __device__ bool operator >(int3 ui1, int3 ui2)
+{
+  return ui1.x>ui2.x && ui1.y>ui2.y && ui1.z>ui2.z;
+}
+
+__inline__ __host__ __device__ bool operator >(int4 ui1, int4 ui2)
+{
+  return ui1.x>ui2.x && ui1.y>ui2.y && ui1.z>ui2.z && ui1.w>ui2.w;
+}
+
+__inline__ __host__ __device__ bool operator >=(int2 ui1, int2 ui2)
+{
+  return ui1.x>=ui2.x && ui1.y>=ui2.y;
+}
+
+__inline__ __host__ __device__ bool operator >=(int3 ui1, int3 ui2)
+{
+  return ui1.x>=ui2.x && ui1.y>=ui2.y && ui1.z>=ui2.z;
+}
+
+__inline__ __host__ __device__ bool operator >=(int4 ui1, int4 ui2)
+{
+  return ui1.x>=ui2.x && ui1.y>=ui2.y && ui1.z>=ui2.z && ui1.w>=ui2.w;
+}
+
+__inline__ __host__ __device__ bool operator ==(int2 a, int2 b)
+{
+	return (a.x==b.x && a.y==b.y);
+}
+
+__inline__ __host__ __device__ bool operator ==(int3 a, int3 b)
+{
+	return (a.x==b.x && a.y==b.y && a.z==b.z );
+}
+
+__inline__ __host__ __device__ bool operator ==(int4 a, int4 b)
+{
+	return (a.x==b.x && a.y==b.y && a.z==b.z && a.w==b.w );
+}
