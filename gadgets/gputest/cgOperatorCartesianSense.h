@@ -11,6 +11,7 @@ class cgOperatorCartesianSense : public cuCGMatrixOperator<float2>
     : csm_(0)
     , idx_(0)
     , coils_(0)
+    , samples_(0)
     { }
 
   virtual int mult_M(cuNDArray<float2>* in, cuNDArray<float2>* out, bool accumulate = false);
@@ -41,11 +42,13 @@ class cgOperatorCartesianSense : public cuCGMatrixOperator<float2>
 
  protected:
   cuNDArray<float2>* csm_;
+  cuNDArray<unsigned int>* idx_;
   unsigned int coils_;
   unsigned int samples_;
   std::vector<unsigned int> dimensions_;
   std::vector<unsigned int> dimensions_out_;
-  cuNDArray<unsigned int>* idx_;
+  
+  int clear(cuNDArray<float2>* in);
 };
 
 

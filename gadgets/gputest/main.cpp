@@ -3,11 +3,50 @@
 #include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
 #include "cuNDFFT.h"
+#include "cgOperatorCartesianSense.h"
 
 int main(int argc, char** argv)
 {
   std::cout << "Simple GPU Test program" << std::endl;
 
+  
+  hoNDArray<float2> phantom = read_nd_array<float2>("phantom.cplx");
+  hoNDArray<float2> csm = read_nd_array<float2>("csm.cplx");
+  hoNDArray<float>  idxf = read_nd_array<float>("idx.real");
+
+  hoNDArray<unsigned int> idx;
+  idx.create(idxf.get_dimensions());
+
+  
+  for (unsigned int i = 0; i < idxf.get_number_of_elements(); i++) {
+    idx.get_data_ptr()[i] = static_cast<unsigned int>(idxf.get_data_ptr()[i]);
+  }
+
+  cuNDArray<float2> phantom_dev(phantom);
+  cuNDArray<float2> csm_dev(csm);
+  cuNDArray<unsigned int> idx_dev(idx);
+
+  cgOperatorCartesianSense E;
+
+  E.set_csm(&csm_dev);
+  E.set_sampling_indices(&idx_dev);
+
+  std::vector<unsigned int> dims_out;
+  dims_out.push_back(idx.get_number_of_elements());
+  dims_out.push_back(csm.get_size(csm.get_number_of_dimensions()-1));
+
+  cuNDArray<float2> tmp_out_dev;
+  tmp_out_dev.create(dims_out);
+
+  if (E.mult_M(&phantom_dev,&tmp_out_dev,false) < 0) {
+    std::cerr << "Failed to multiply with system matrix" << std::endl;
+  }
+
+  hoNDArray<float2> tmp_out = tmp_out_dev.to_host();
+
+  write_nd_array<float2>(tmp_out,"tmp_out.cplx");
+
+  /*
   std::vector<unsigned int> dims;
   dims.push_back(128);
   dims.push_back(1);
@@ -50,11 +89,14 @@ int main(int argc, char** argv)
   ft.fft(&cuND_tmp);
   ft.ifft(&cuND_tmp);
   
+
   //cuND_tmp.permute(ft_dims,0,1);
   //cuND_tmp.permute(ft_dims,0,-1);
   hoNDArray<float2> hoND_tmp2 = cuND_tmp.to_host();
 
   write_nd_array<float2>(hoND_tmp2,"test_data_fft.cplx");
+
+  */
 
   /*
   hoNDArray<float> hoND_tmp = read_nd_array<float>("test_data.real");
