@@ -49,7 +49,7 @@ CXXFLAGS=-c -fPIC -Wall -I. \
 	$(CUDAINCLUDES) \
 	-DGADGETS_BUILD_DLL -g #-DACE_NTRACE=0
 
-LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml
+LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml -lcundarray
 
 NVCC=$(CUDAHOME)/bin/nvcc
 ifeq ($(KERNEL), Darwin)
