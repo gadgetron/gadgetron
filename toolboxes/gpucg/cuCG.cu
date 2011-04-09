@@ -138,10 +138,6 @@ int scal(float a, cuNDArray<float>* x, cublasHandle_t handle)
 
 template <class T> cuNDArray<T> cuCG<T>::solve(cuNDArray<T>* rhs)
 {
-  if (precond_ == 0) {
-    std::cout << "Running without preconditioning" << std::endl;
-  }
-  
   cuNDArray<T> rho;
   if (!rho.create(rhs->get_dimensions())) {
     std::cerr << "cuCG<T>::solve : Unable to allocate temp storage (rho)" << std::endl;
@@ -153,7 +149,7 @@ template <class T> cuNDArray<T> cuCG<T>::solve(cuNDArray<T>* rhs)
   }
 
   //Calculate residual r
-  cuNDArray<T> r;//(*rhs);
+  cuNDArray<T> r;
   if (precond_) {
     if (!r.create(rhs->get_dimensions())) {
       std::cerr << "cuCG<T>::solve : Unable to allocate storage (r)" << std::endl;
@@ -201,7 +197,10 @@ template <class T> cuNDArray<T> cuCG<T>::solve(cuNDArray<T>* rhs)
 
   double alpha, beta, rel_res;
 
-  std::cout << "Iterating..." << std::endl;
+  if (output_mode_ >= OUTPUT_VERBOSE) {
+    std::cout << "Iterating..." << std::endl;
+  }
+
   for (unsigned int it = 0; it < iterations_; it++) { //iterations_; it++) {
     rr_1 = rr;
     rr = inner_product(&r, &r, cublas_handle_);
@@ -272,11 +271,16 @@ template <class T> cuNDArray<T> cuCG<T>::solve(cuNDArray<T>* rhs)
 
     /* Calculate relative residual norm */
     rel_res = rr/rr_0;
-    std::cout << "Iteration " << it+1 << ". rr/rr_0 = " << rel_res << " ";
-    if ((rr_last-rel_res) < 0.0) {
-      std::cout << "(Warning: residual increase. Stability problem) ";
+    
+    if (output_mode_ >= OUTPUT_WARNINGS) {
+      if (output_mode_ >= OUTPUT_VERBOSE) {
+	std::cout << "Iteration " << it+1 << ". rr/rr_0 = " << rel_res << std::endl;
+      }
+      if ((rr_last-rel_res) < 0.0) {
+	std::cout << "----- Warning: CG residual increase. Stability problem! -----" << std::endl;
+      }
     }
-    std::cout << std::endl;
+
     if (rel_res < limit_) {
       break;
     } else {

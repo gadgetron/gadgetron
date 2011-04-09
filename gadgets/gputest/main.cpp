@@ -15,7 +15,7 @@ int main(int argc, char** argv)
   hoNDArray<float2> D = read_nd_array<float2>("D.cplx");
   hoNDArray<float>  idxf = read_nd_array<float>("idx.real");
 
-  std::cout << "Done reading data" << std::endl;
+  std::cout << "Done reading input data" << std::endl;
 
   hoNDArray<unsigned int> idx;
   idx.create(idxf.get_dimensions());
@@ -67,10 +67,20 @@ int main(int argc, char** argv)
   cuCG<float2> cg;
   cg.add_matrix_operator(&E, 1.0);
   cg.set_preconditioner(&Dm);
+  cg.set_iterations(20);
+  cg.set_limit(1e-10);
+  cg.set_output_mode(cuCG<float2>::OUTPUT_VERBOSE);
 
   cuNDArray<float2> cgresult = cg.solve(&tmp2_out_dev);
   hoNDArray<float2> rho_out = cgresult.to_host();
+
+  std::vector<unsigned int> new_dims;
+  new_dims.push_back(128*129);
+  rho_out.reshape(new_dims);
+
   write_nd_array<float2>(rho_out,"rho_out.cplx");
+
+  std::cout << "Reconstruction done" << std::endl;
 
   /*
   std::vector<unsigned int> dims;

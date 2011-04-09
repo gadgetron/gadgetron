@@ -12,16 +12,25 @@
 
 template <class T> class cuCG
 {
+
  public:
+  enum cuCGOutputModes {
+    OUTPUT_SILENT   = 0,
+    OUTPUT_WARNINGS = 1,
+    OUTPUT_VERBOSE  = 2,
+    OUTPUT_MAX      = 3
+  };
+
   cuCG() 
     : precond_(0) 
     , iterations_(10)
     , limit_(1e-3)
-    , output_mode_(0)
+    , output_mode_(OUTPUT_SILENT)
   {
     if (cublasCreate(&cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
       std::cerr << "cuCG unable to create cublas handle" << std::endl;
     }
+    output_mode_ = 0;
   }
 
   virtual ~cuCG() {
@@ -42,6 +51,20 @@ template <class T> class cuCG
     return 0;
   }
 
+  void set_output_mode(int output_mode) {
+    if (!(output_mode >= OUTPUT_MAX || output_mode < 0)) {
+      output_mode_ = output_mode;
+    }
+  }
+
+  void set_limit(double limit) {
+    limit_ = limit;
+  }
+
+  void set_iterations(unsigned int iterations) {
+    iterations_ = iterations;
+  }
+
   cuNDArray<T> solve(cuNDArray<T>* rhs);
 
 
@@ -53,7 +76,6 @@ template <class T> class cuCG
   unsigned int iterations_;
   double limit_;
   int output_mode_;
-
 };
 
 #endif //CUCG_H

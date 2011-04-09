@@ -69,6 +69,22 @@ template <class T> class NDArray
     dimensions_ = new_dimensions;
   }
 
+  int reshape(std::vector<unsigned int> dims) {
+    unsigned long int new_elements = 1;
+    for (unsigned int i = 0; i < dims.size(); i++) {
+      new_elements *= dims[i];
+    }
+
+    if (new_elements != elements_) {
+      std::cerr << "NDArray<T>::reshape : Number of elements cannot change during reshape" << std::endl;
+      return -1;
+    }
+    
+    dimensions_ = dims;
+    return 0;
+
+  }
+
   bool dimensions_equal(std::vector<unsigned int>& d) {
     return ((this->dimensions_.size() == d.size()) &&
 	    std::equal(this->dimensions_.begin(), this->dimensions_.end(), d.begin()));
