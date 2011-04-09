@@ -24,12 +24,14 @@ endif
 
 LIBHEADERS=\
 	cuCG.h \
-	cuCGMatrixOperator.h
+	cuCGMatrixOperator.h \
+	cuCGPreconditioner.h
 
 LIBSOURCES=
 
 CUDASOURCES=\
-	cuCG.cu
+	cuCG.cu \
+	cuCGPreconditioner.cu
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 

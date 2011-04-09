@@ -8,12 +8,14 @@
 
 #include "cuNDArray.h"
 #include "cuCGMatrixOperator.h"
+#include "cuCGPreconditioner.h"
 
 template <class T> class cuCG
 {
  public:
   cuCG() 
-    : iterations_(10)
+    : precond_(0) 
+    , iterations_(10)
     , limit_(1e-3)
     , output_mode_(0)
   {
@@ -35,12 +37,18 @@ template <class T> class cuCG
     return 0;
   }
 
+  int set_preconditioner(cuCGPreconditioner<T>* precond) {
+    precond_ = precond;
+    return 0;
+  }
+
   cuNDArray<T> solve(cuNDArray<T>* rhs);
 
 
  protected:
   std::vector< cuCGMatrixOperator<T>* > operators_;
   std::vector<double> weights_;
+  cuCGPreconditioner<T>* precond_;
   cublasHandle_t cublas_handle_;
   unsigned int iterations_;
   double limit_;

@@ -40,17 +40,17 @@ template <class T> cuNDArray<T>::cuNDArray(const cuNDArray<T>& a) {
 }
 
 template <class T> cuNDArray<T>&  cuNDArray<T>::operator=(const cuNDArray<T>& rhs) {
+  std::cout << "Assignment operator called" << std::endl;
   int old_device = this->device_;
   int cur_device;
   cudaGetDevice(&cur_device);
   
-  bool dimensions_match = std::equal(rhs.dimensions_.begin(),
-				     rhs.dimensions_.end(), this->dimensions_.begin());
+  bool dimensions_match = this->dimensions_equal(rhs);
   
   if (dimensions_match &&
       (rhs.device_ == cur_device) &&
       (cur_device == old_device)) {
-    
+
     if (cudaMemcpy(this->data_, rhs.data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice) !=
 	cudaSuccess) {
       std::cerr << "cuNDArray& operator= failed to copy data" << std::endl;

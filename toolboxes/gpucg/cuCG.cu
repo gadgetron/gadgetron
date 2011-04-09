@@ -138,18 +138,11 @@ int scal(float a, cuNDArray<float>* x, cublasHandle_t handle)
 
 template <class T> cuNDArray<T> cuCG<T>::solve(cuNDArray<T>* rhs)
 {
-  cuNDArray<T> rho;
-
-  //TODO: Multiply rhs with preconditioning matrix
+  if (precond_ == 0) {
+    std::cout << "Running without preconditioning" << std::endl;
+  }
   
-  cuNDArray<T> r(*rhs);
-
-  double rr_0    = inner_product(&r, &r, cublas_handle_);
-
-  double rr_1    = rr_0;
-  double rr      = 0;
-  double rr_last = 1e10;
-
+  cuNDArray<T> rho;
   if (!rho.create(rhs->get_dimensions())) {
     std::cerr << "cuCG<T>::solve : Unable to allocate temp storage (rho)" << std::endl;
     return rho;
@@ -159,10 +152,39 @@ template <class T> cuNDArray<T> cuCG<T>::solve(cuNDArray<T>* rhs)
     return rho;
   }
 
+  //Calculate residual r
+  cuNDArray<T> r;//(*rhs);
+  if (precond_) {
+    if (!r.create(rhs->get_dimensions())) {
+      std::cerr << "cuCG<T>::solve : Unable to allocate storage (r)" << std::endl;
+      return rho;
+    }
+    if (precond_->apply(rhs,&r) < 0) {
+      std::cerr << "cuCG<T>::solve : Unable to apply preconditioning to rhs" << std::endl;
+      return rho;
+    }
+  } else {
+    r =  *rhs;
+  }
+
+
+  double rr_0    = inner_product(&r, &r, cublas_handle_);
+  double rr_1    = rr_0;
+  double rr      = 0;
+  double rr_last = 1e10;
+
   cuNDArray<T> p;
   if (!p.create(rhs->get_dimensions())) {
     std::cerr << "cuCG<T>::solve : Unable to allocate temp storage (p)" << std::endl;
     return rho;
+  }
+
+  cuNDArray<T> p_precond;
+  if (precond_) { //We only need this additional storage if we are using a preconditioner
+    if (!p_precond.create(rhs->get_dimensions())) {
+      std::cerr << "cuCG<T>::solve : Unable to allocate temp storage (p_precond)" << std::endl;
+      return rho;
+    }
   }
 
   cuNDArray<T> q;
@@ -180,10 +202,9 @@ template <class T> cuNDArray<T> cuCG<T>::solve(cuNDArray<T>* rhs)
   double alpha, beta, rel_res;
 
   std::cout << "Iterating..." << std::endl;
-  for (unsigned int it = 0; it < 100; it++) { //iterations_; it++) {
+  for (unsigned int it = 0; it < iterations_; it++) { //iterations_; it++) {
     rr_1 = rr;
     rr = inner_product(&r, &r, cublas_handle_);
-
     
     //Update p
     if (it == 0){
@@ -206,12 +227,31 @@ template <class T> cuNDArray<T> cuCG<T>::solve(cuNDArray<T>* rhs)
       return rho;
     }
     
+
+    //Take care of preconditioning
+    cuNDArray<T>* cur_p = &p;
+    if (precond_) {
+      if (!precond_->apply(&p,&p_precond) < 0) {
+	std::cerr << "cuCG<T>::solve : failed to apply preconditioner to p" << std::endl;
+	return rho;
+      }
+      cur_p = &p_precond;
+    }
+
     for (unsigned int i = 0; i < operators_.size(); i++) {
-      if (operators_[i]->mult_MH_M(&p, &q2, false) < 0) {
+      if (operators_[i]->mult_MH_M(cur_p, &q2, false) < 0) {
 	std::cerr << "cuCG<T>::solve : failed to apply operator number " << i << std::endl;
+	return rho;
       }
       if (axpy(weights_[i],&q2,&q,cublas_handle_) < 0) {
 	std::cerr << "cuCG<T>::solve : failed to add q1 to q" << std::endl;
+	return rho;
+      }
+    }
+
+    if (precond_) {
+      if (!precond_->apply(&q,&q) < 0) {
+	std::cerr << "cuCG<T>::solve : failed to apply preconditioner to q" << std::endl;
 	return rho;
       }
     }
@@ -244,7 +284,14 @@ template <class T> cuNDArray<T> cuCG<T>::solve(cuNDArray<T>* rhs)
     }
 
   }
-  
+
+  if (precond_) {
+    if (!precond_->apply(&rho,&rho) < 0) {
+      std::cerr << "cuCG<T>::solve : failed to apply preconditioner to rho" << std::endl;
+      return rho;
+    }
+  }
+
   return rho;
 }
 

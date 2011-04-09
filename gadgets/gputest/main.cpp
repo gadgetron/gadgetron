@@ -12,7 +12,10 @@ int main(int argc, char** argv)
   
   hoNDArray<float2> phantom = read_nd_array<float2>("phantom.cplx");
   hoNDArray<float2> csm = read_nd_array<float2>("csm.cplx");
+  hoNDArray<float2> D = read_nd_array<float2>("D.cplx");
   hoNDArray<float>  idxf = read_nd_array<float>("idx.real");
+
+  std::cout << "Done reading data" << std::endl;
 
   hoNDArray<unsigned int> idx;
   idx.create(idxf.get_dimensions());
@@ -45,7 +48,6 @@ int main(int argc, char** argv)
   hoNDArray<float2> tmp_out = tmp_out_dev.to_host();
   write_nd_array<float2>(tmp_out,"tmp_out.cplx");
 
-
   cuNDArray<float2> tmp2_out_dev;
   tmp2_out_dev.create(phantom.get_dimensions());
   
@@ -54,21 +56,18 @@ int main(int argc, char** argv)
   }
 
   hoNDArray<float2> tmp2_out = tmp2_out_dev.to_host();
-  write_nd_array<float2>(tmp2_out,"tmp2_out.cplx");
+  //write_nd_array<float2>(tmp2_out,"tmp2_out.cplx");
   
-  /*
-  if (E.mult_MH_M(&phantom_dev,&tmp2_out_dev,false) < 0) {
-    std::cerr << "Failed to multiply with system matrix EHE" << std::endl;
-  }
 
-  hoNDArray<float2> tmp3_out = tmp2_out_dev.to_host();
-  write_nd_array<float2>(tmp3_out,"tmp3_out.cplx");
-  */
-
+  cuNDArray<float2> D_dev(D);
+  
+  cuCGPrecondWeight<float2> Dm;
+  Dm.set_weights(&D_dev);
 
   cuCG<float2> cg;
   cg.add_matrix_operator(&E, 1.0);
-  
+  cg.set_preconditioner(&Dm);
+
   cuNDArray<float2> cgresult = cg.solve(&tmp2_out_dev);
   hoNDArray<float2> rho_out = cgresult.to_host();
   write_nd_array<float2>(rho_out,"rho_out.cplx");

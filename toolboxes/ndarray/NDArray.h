@@ -35,11 +35,11 @@ template <class T> class NDArray
     return permute(order,out);
   }
 
-  unsigned int get_number_of_dimensions() {
+  unsigned int get_number_of_dimensions() const {
     return dimensions_.size();
   }
 
-  unsigned int get_size(unsigned int dimension) {
+  unsigned int get_size(unsigned int dimension) const {
     if (dimension >= dimensions_.size()) {
       return 1;
     } else {
@@ -47,11 +47,11 @@ template <class T> class NDArray
     }
   }
 
-  std::vector<unsigned int> get_dimensions() {
+  std::vector<unsigned int> get_dimensions() const {
     return dimensions_;
   }
 
-  unsigned long int get_number_of_elements() {
+  unsigned long int get_number_of_elements() const {
     return elements_;
   }
 
@@ -74,7 +74,7 @@ template <class T> class NDArray
 	    std::equal(this->dimensions_.begin(), this->dimensions_.end(), d.begin()));
   }
 
-  bool dimensions_equal(NDArray<T>& a) {
+  bool dimensions_equal(const NDArray<T>& a) {
     return ((this->dimensions_.size() == a.dimensions_.size()) &&
 	    std::equal(this->dimensions_.begin(), this->dimensions_.end(), a.dimensions_.begin()));
   }
