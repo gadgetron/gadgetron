@@ -1,10 +1,13 @@
 #pragma once
 
+#include "vector_utilities.hcu"
+
+#include <vector_functions.h>
+#include <device_functions.h>
+
 //
 // Overloaded utilities for int2/3/4
 //
-
-#include <vector_functions.h>
 
 // operators <, <=, >, >= are "strong" in the sense they require all components to fullfil the scalar operator.
 // Here are the corresponding "weak" alternatives
@@ -133,32 +136,75 @@ __inline__ __host__ __device__ int prod(int4 ui)
 {
   return ui.x*ui.y*ui.z*ui.w;
 }
-/*
-  __inline__ __host__ __device__ int2 int4_to_int2(int4 ui)
-  {
-  int2 val;
-  val.x = ui.x;
-  val.y = ui.y;
-  return val;
-  }
 
-  __inline__ __host__ __device__ int3 int4_to_int3(int4 ui)
-  {
-  int3 val;
-  val.x = ui.x;
-  val.y = ui.y;
-  val.z = ui.z;
-  return val;
-  }
+template<> __inline__ __host__ __device__ int2 int_to_intd<int2>( const int i, const int fill )
+{
+  int2 ui;
+  ui.x = i;
+  ui.y = fill;
+  return ui;
+}
 
-  __inline__ __host__ __device__ int2 int3_to_int2(int3 ui)
-  {
-  int2 val;
-  val.x = ui.x;
-  val.y = ui.y;
-  return val;
-  }
-*/
+template<> __inline__ __host__ __device__ int3 int_to_intd<int3>( const int i, const int fill )
+{
+  int3 ui;
+  ui.x = i;
+  ui.y = fill;
+  ui.z = fill;
+  return ui;
+}
+
+template<> __inline__ __host__ __device__ int4 int_to_intd<int4>( const int i, const int fill )
+{
+  int4 ui;
+  ui.x = i;
+  ui.y = fill;
+  ui.z = fill;
+  ui.w = fill;
+  return ui;
+}
+
+template<> __inline__ __host__ __device__ int2 int_to_intd<int2>( const int *in )
+{
+  int2 ui;
+  ui.x = in[0];
+  ui.y = in[1];
+  return ui;
+}
+
+template<> __inline__ __host__ __device__ int3 int_to_intd<int3>( const int *in )
+{
+  int3 ui;
+  ui.x = in[0];
+  ui.y = in[1];
+  ui.z = in[2];
+  return ui;
+}
+
+template<> __inline__ __host__ __device__ int4 int_to_intd<int4>( const int *in )
+{
+  int4 ui;
+  ui.x = in[0];
+  ui.y = in[1];
+  ui.z = in[2];
+  ui.w = in[3];
+  return ui;
+}
+
+__inline__ __host__ __device__ int2 make_intd( const int int1, const int int2 )
+{
+  return make_int2(int1,int2);
+}
+
+__inline__ __host__ __device__ int3 make_intd( const int int1, const int int2, const int int3 )
+{
+  return make_int3(int1,int2,int3);
+}
+
+__inline__ __host__ __device__ int4 make_intd( const int int1, const int int2, const int int3, const int int4 )
+{
+  return make_int4(int1,int2,int3,int4);
+}
 
 __inline__ __host__ __device__ int2 shift_down(int2 ui)
 {
@@ -254,7 +300,7 @@ __inline__ __device__ int4 reald_to_intd( float4 a )
 {
   return make_int4( float2int(a.x), float2int(a.y), float2int(a.z), float2int(a.w) );
 }
-
+/*
 __inline__ __device__ int2 reald_to_intd( double2 a )
 {
   return make_int2( double2int(a.x), double2int(a.y) );
@@ -269,33 +315,4 @@ __inline__ __device__ int4 reald_to_intd( double4 a )
 {
   return make_int4( double2int(a.x), double2int(a.y), double2int(a.z), double2int(a.w) );
 }
-
-__inline__ __host__ int2 reald_to_intd( float2 a )
-{
-  return make_int2( (int)a.x, (int)a.y );
-}
-
-__inline__ __host__ int3 reald_to_intd( float3 a )
-{
-  return make_int3( (int)a.x, (int)a.y, (int)a.z );
-}
-
-__inline__ __host__ int4 reald_to_intd( float4 a )
-{
-  return make_int4( (int)a.x, (int)a.y, (int)a.z, (int)a.w );
-}
-
-__inline__ __host__ int2 reald_to_intd( double2 a )
-{
-  return make_int2( (int)a.x, (int)a.y );
-}
-
-__inline__ __host__ int3 reald_to_intd( double3 a )
-{
-  return make_int3( (int)a.x, (int)a.y, (int)a.z );
-}
-
-__inline__ __host__ int4 reald_to_intd( double4 a )
-{
-  return make_int4( (int)a.x, (int)a.y, (int)a.z, (int)a.w );
-}
+*/

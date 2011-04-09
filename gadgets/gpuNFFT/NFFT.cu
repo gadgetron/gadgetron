@@ -19,11 +19,9 @@
 #include "cuNDArray.h"
 #include "ndarray_device_utilities.hcu"
 
+#include "vector_utilities.hcu"
 #include "uintd_operators.hcu"
-#include "uintd_utilities.hcu"
-
 #include "floatd_operators.hcu"
-#include "floatd_utilities.hcu"
 
 #include "check_CUDA.h"
 
@@ -217,10 +215,10 @@ bool NFFT_plan<UINTd, REALd, REAL, NDTYPE>::setup( UINTd matrix_size, UINTd matr
     }
   }
 
-  REAL one; get_one(one);
-  UINTd ones; uint_to_uintd( 1, 1, ones );  
+  REAL one = get_one<REAL>();
+  UINTd ones = uint_to_uintd<UINTd>(1,1);  
   REAL W_half = half(W);
-  REALd W_vec; real_to_reald( W_half, W_half, W_vec );
+  REALd W_vec = real_to_reald<REAL, REALd>( W_half, W_half );
 
   matrix_size_wrap = hreald_to_uintd(ceil(W_vec))<<1; // TODO: check if padding to warp_size changes performance
   
@@ -925,9 +923,9 @@ compute_deapodization_filter_kernel( UINTd matrix_size_os, REALd matrix_size_os_
     const REALd delta = abs(sample_pos-uintd_to_reald(cell_pos));
 
     // Compute convolution weight. 
-    REAL weight, zero;
-    get_zero(zero);
-    REALd half_W_vec; real_to_reald(half_W, half_W, half_W_vec );
+    REAL weight; 
+    REAL zero = get_zero<REAL>();
+    REALd half_W_vec = real_to_reald<REAL, REALd>( half_W, half_W );
 
     if( weak_greater(delta, half_W_vec ) )
       weight = zero;

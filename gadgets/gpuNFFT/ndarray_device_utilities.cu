@@ -1,149 +1,29 @@
 #include "ndarray_device_utilities.hcu"
-
 #include "uintd_operators.hcu"
-#include "uintd_utilities.hcu"
 #include "floatd_operators.hcu"
-#include "floatd_utilities.hcu"
+#include "vector_utilities.hcu"
 #include "check_CUDA.h"
 
 #include <cublas.h>
-
 #include <vector>
 
 using namespace std;
 
-// Abs (component-wise)
-template<class REALd> __global__ 
-void cuNDA_abs_kernel( REALd *in_out, unsigned int number_of_elements )
-{
-  int idx = blockIdx.x*blockDim.x+threadIdx.x;
-  
-  if( idx<number_of_elements ){
-    REALd val = in_out[idx];    
-    in_out[idx] = abs(val);
-  }
-}
-
-// Abs (component-wise)
-template<class REALd> __host__ 
-void cuNDA_abs( cuNDArray<REALd> *in_out )
-{
-  unsigned int number_of_elements = in_out->get_number_of_elements();
-
-  dim3 blockDim(512);
-  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
-  
-  // Make modulus image
-  cuNDA_abs_kernel<<< gridDim, blockDim >>>( in_out->get_data_ptr(), number_of_elements );
-  
-  CHECK_FOR_CUDA_ERROR();
-}
-
-// Norm
-template<class REALd, class REAL> __global__ 
-void cuNDA_norm_kernel( REALd *in, REAL *out, unsigned int number_of_elements )
-{
-  int idx = blockIdx.x*blockDim.x+threadIdx.x;
-  
-  if( idx<number_of_elements ){
-    REALd val = in[idx];    
-    out[idx] = norm(val);
-  }
-}
-
-// Norm
-template<class REALd, class REAL> __host__ 
-cuNDArray<REAL>* cuNDA_norm( cuNDArray<REALd> *in )
-{
-  unsigned int number_of_elements = in->get_number_of_elements();
-
-  dim3 blockDim(512);
-  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
-
-  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(in->get_dimensions());
-  if( out == 0x0 ) return 0x0;
-  
-  // Make modulus image
-  cuNDA_norm_kernel<<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_elements );
-  
-  CHECK_FOR_CUDA_ERROR();
-  
-  return out;
-}
-
-// Norm sqaured
-template<class REALd, class REAL> __global__ 
-void cuNDA_norm_squared_kernel( REALd *in, REAL *out, unsigned int number_of_elements )
-{
-  int idx = blockIdx.x*blockDim.x+threadIdx.x;
-  
-  if( idx<number_of_elements ){
-    REALd val = in[idx];    
-    out[idx] = norm_sq(val);
-  }
-}
-
-// Norm squared
-template<class REALd, class REAL> __host__
-cuNDArray<REAL>* cuNDA_norm_squared( cuNDArray<REALd> *in )
-{
-  unsigned int number_of_elements = in->get_number_of_elements();
-
-  dim3 blockDim(512);
-  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
-
-  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(in->get_dimensions());
-  if( out == 0x0 ) return 0x0;
-  
-  // Make norm image
-  cuNDA_norm_squared_kernel<<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_elements );
-  
-  CHECK_FOR_CUDA_ERROR();
-  
-  return out;
-}
-
-// Reciprocal
-template<class REALd> __global__ 
-void cuNDA_reciprocal_kernel( REALd *data, unsigned int number_of_elements )
-{
-  int idx = blockIdx.x*blockDim.x+threadIdx.x;
-  
-  if( idx<number_of_elements ){
-    data[idx] = reciprocal(data[idx]);
-  }
-}
-
-// Reciprocal
-template<class REALd> __host__
-void cuNDA_reciprocal( cuNDArray<REALd> *in )
-{
-  unsigned int number_of_elements = in->get_number_of_elements();
-
-  dim3 blockDim(512);
-  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
-
-  // Make reciprocal image
-  cuNDA_reciprocal_kernel<<< gridDim, blockDim >>>( in->get_data_ptr(), number_of_elements );
-  
-  CHECK_FOR_CUDA_ERROR();
-}
-
 // Clear
-template<class REALd> __global__ 
-void cuNDA_clear_kernel( REALd *data, unsigned int number_of_elements )
+template<class T> __global__ 
+void cuNDA_clear_kernel( T *data, unsigned int number_of_elements )
 {
   int idx = blockIdx.x*blockDim.x+threadIdx.x;
   
   if( idx<number_of_elements ){
-    REALd zero; get_zero( zero );
+    T zero = get_zero<T>();
     data[idx] = zero;
   }
 }
 
 // Clear
-template<class REALd> __host__
-void cuNDA_clear( cuNDArray<REALd> *in )
+template<class T> __host__
+void cuNDA_clear( cuNDArray<T> *in )
 {
   unsigned int number_of_elements = in->get_number_of_elements();
 
@@ -156,9 +36,62 @@ void cuNDA_clear( cuNDArray<REALd> *in )
   CHECK_FOR_CUDA_ERROR();
 }
 
+// Abs
+template<class T> __global__ 
+void cuNDA_abs_kernel( T *in_out, unsigned int number_of_elements )
+{
+  int idx = blockIdx.x*blockDim.x+threadIdx.x;
+  
+  if( idx<number_of_elements ){
+    T val = in_out[idx];    
+    in_out[idx] = abs(val);
+  }
+}
+
+// Abs
+template<class T> __host__ 
+void cuNDA_abs( cuNDArray<T> *in_out )
+{
+  unsigned int number_of_elements = in_out->get_number_of_elements();
+
+  dim3 blockDim(512);
+  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
+  
+  // Make modulus image
+  cuNDA_abs_kernel<<< gridDim, blockDim >>>( in_out->get_data_ptr(), number_of_elements );
+  
+  CHECK_FOR_CUDA_ERROR();
+}
+
+// Reciprocal
+template<class T> __global__ 
+void cuNDA_reciprocal_kernel( T *data, unsigned int number_of_elements )
+{
+  int idx = blockIdx.x*blockDim.x+threadIdx.x;
+  
+  if( idx<number_of_elements ){
+    data[idx] = reciprocal(data[idx]);
+  }
+}
+
+// Reciprocal
+template<class T> __host__
+void cuNDA_reciprocal( cuNDArray<T> *in )
+{
+  unsigned int number_of_elements = in->get_number_of_elements();
+
+  dim3 blockDim(512);
+  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
+
+  // Make reciprocal image
+  cuNDA_reciprocal_kernel<<< gridDim, blockDim >>>( in->get_data_ptr(), number_of_elements );
+  
+  CHECK_FOR_CUDA_ERROR();
+}
+
 // Normalize
-template<class REAL> __host__
-void cuNDA_normalize( cuNDArray<REAL> *data, REAL new_max )
+template<> __host__
+void cuNDA_normalize<float, float>( cuNDArray<float> *data, float new_max )
 {
   unsigned int number_of_elements = data->get_number_of_elements();
 
@@ -166,13 +99,93 @@ void cuNDA_normalize( cuNDArray<REAL> *data, REAL new_max )
   int max_idx = cublasIsamax (number_of_elements, data->get_data_ptr(), 1);
 
   // Copy that value back to host memory
-  REAL max_val;
-  cudaMemcpy(&max_val, (data->get_data_ptr()+max_idx-1), sizeof(REAL), cudaMemcpyDeviceToHost);
+  float max_val;
+  cudaMemcpy(&max_val, (data->get_data_ptr()+max_idx-1), sizeof(float), cudaMemcpyDeviceToHost);
 
-  // Scale the array (2.5 is an "arbitrary" scaling constant)
+  // Scale the array
   cublasSscal( number_of_elements, new_max/max_val, data->get_data_ptr(), 1 );
 
   CHECK_FOR_CUDA_ERROR();
+}
+
+// Normalize
+template<> __host__
+void cuNDA_normalize<float, cuFloatComplex>( cuNDArray<cuFloatComplex> *data, float new_max )
+{
+  unsigned int number_of_elements = data->get_number_of_elements();
+
+  // Normalize from magnitudes image
+  auto_ptr< cuNDArray<float> > normed_image = cuNDA_norm<float, cuFloatComplex>( data );
+
+  // Find the maximum value in the array
+  int max_idx = cublasIsamax( number_of_elements, normed_image->get_data_ptr(), 1 );
+
+  // Copy that value back to host memory
+  float max_val;
+  cudaMemcpy(&max_val, (normed_image->get_data_ptr()+max_idx-1), sizeof(float), cudaMemcpyDeviceToHost);
+
+  // Scale the array
+  cublasCscal( number_of_elements, make_cuFloatComplex(new_max/max_val, 0.0f), data->get_data_ptr(), 1 );
+
+  CHECK_FOR_CUDA_ERROR();
+}
+
+// Normalized RSS
+template<class REAL, class T> __global__ void
+cuNDA_rss_normalize_kernel( T *in_out, unsigned int stride, unsigned int number_of_batches, unsigned int number_of_elements )
+{
+  const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
+
+  if( idx < number_of_elements ){
+
+    unsigned int in_idx = (idx/stride)*stride*number_of_batches+(idx%stride);
+
+    REAL rss = get_zero<REAL>();
+    
+    for( unsigned int i=0; i<number_of_batches; i++ )
+      rss += norm_sq(in_out[i*stride+in_idx]);
+
+    rss = sqrt(rss);
+    rss += get_epsilon<REAL>(); // avoid potential division by zero
+    reciprocal(rss);
+    
+    for( unsigned int i=0; i<number_of_batches; i++ ) {
+      T out = in_out[i*stride+in_idx];
+      out *= rss;
+      in_out[i*stride+in_idx] = out; 
+    } 
+  }
+}
+
+// Normalized RSS
+template<class REAL, class T> __host__
+bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim )
+{
+  if( !(in_out->get_number_of_dimensions()>1) ){
+    cout << endl << "cuNDA_rss_normalized:: underdimensioned." << endl; 
+    return false;
+  }
+  
+  if( dim > in_out->get_number_of_dimensions()-1 ){
+    cout << endl << "cuNDA_rss_normalized:: dimension out of range." << endl; 
+    return false;
+  }
+
+  unsigned int number_of_batches = in_out->get_size(dim);
+  unsigned int number_of_elements = in_out->get_number_of_elements()/number_of_batches;
+
+  unsigned int stride = 1;
+  for( unsigned int i=0; i<dim; i++ )
+    stride *= in_out->get_size(i);
+
+  dim3 blockDim(512);
+  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
+
+  // Make reciprocal image
+  cuNDA_rss_normalize_kernel<REAL, T><<< gridDim, blockDim >>>( in_out->get_data_ptr(), stride, number_of_batches, number_of_elements );
+  
+  CHECK_FOR_CUDA_ERROR();
+  return true;
 }
 
 // Scale
@@ -326,8 +339,190 @@ bool cuNDA_axpby( cuNDArray<A> *a, cuNDArray<XY> *x, cuNDArray<B> *b, cuNDArray<
   return true;
 }
 
+// Norm
+template<class REAL, class T> __global__ 
+void cuNDA_norm_kernel( T *in, REAL *out, unsigned int number_of_elements )
+{
+  int idx = blockIdx.x*blockDim.x+threadIdx.x;
+  
+  if( idx<number_of_elements ){
+    T val = in[idx];    
+    out[idx] = norm(val);
+  }
+}
+
+// Norm
+template<class REAL, class T> __host__ 
+auto_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<T> *in )
+{
+  unsigned int number_of_elements = in->get_number_of_elements();
+
+  dim3 blockDim(512);
+  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
+
+  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(in->get_dimensions());
+  
+  // Make modulus image
+  if( out != 0x0 )
+    cuNDA_norm_kernel<<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_elements );
+  
+  CHECK_FOR_CUDA_ERROR();
+  
+  return auto_ptr< cuNDArray<REAL> >(out);
+}
+
+// Norm sqaured
+template<class REAL, class T> __global__ 
+void cuNDA_norm_squared_kernel( T *in, REAL *out, unsigned int number_of_elements )
+{
+  int idx = blockIdx.x*blockDim.x+threadIdx.x;
+  
+  if( idx<number_of_elements ){
+    T val = in[idx];    
+    out[idx] = norm_sq(val);
+  }
+}
+
+// Norm squared
+template<class REAL, class T> __host__
+auto_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<T> *in )
+{
+  unsigned int number_of_elements = in->get_number_of_elements();
+
+  dim3 blockDim(512);
+  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
+
+  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(in->get_dimensions());
+  
+  // Make norm image
+  if( out != 0x0 )
+    cuNDA_norm_squared_kernel<<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_elements );
+  
+  CHECK_FOR_CUDA_ERROR();
+  
+  return auto_ptr< cuNDArray<REAL> >(out);
+}
+
+// RSS
+template<class REAL, class T> __global__ void
+cuNDA_rss_kernel( T *in, REAL *out, unsigned int stride, unsigned int number_of_batches, unsigned int number_of_elements )
+{
+  const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
+
+  if( idx < number_of_elements ){
+
+    unsigned int in_idx = (idx/stride)*stride*number_of_batches+(idx%stride);
+
+    REAL rss = get_zero<REAL>();
+    
+    for( unsigned int i=0; i<number_of_batches; i++ ) 
+      rss += norm_sq(in[i*stride+in_idx]);
+
+    rss = sqrt(rss);
+
+    out[idx] = rss; 
+  }
+}
+
+// RSS
+template<class REAL, class T> __host__ 
+auto_ptr< cuNDArray<REAL> > cuNDA_rss( cuNDArray<T> *in, unsigned int dim )
+{
+  if( !(in->get_number_of_dimensions()>1) ){
+    cout << endl << "cuNDA_rss:: underdimensioned." << endl; 
+    return auto_ptr< cuNDArray<REAL> >(0x0);
+  }
+  
+  if( dim > in->get_number_of_dimensions()-1 ){
+    cout << endl << "cuNDA_rss:: dimension out of range." << endl; 
+    return auto_ptr< cuNDArray<REAL> >(0x0);
+  }
+
+  unsigned int number_of_batches = in->get_size(dim);
+  unsigned int number_of_elements = in->get_number_of_elements()/number_of_batches;
+  unsigned int stride = 1;
+
+  vector<unsigned int> dims;
+  for( unsigned int i=0; i<in->get_number_of_dimensions(); i++ ){
+    if( i != dim )
+      dims.push_back(in->get_size(i));
+    if( i < dim )
+      stride *= in->get_size(i);
+  }
+
+  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(dims);
+  
+  dim3 blockDim(512);
+  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
+
+  if ( out != 0x0 )
+    cuNDA_rss_kernel<<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
+  
+  CHECK_FOR_CUDA_ERROR();
+  
+  return auto_ptr< cuNDArray<REAL> >(out);
+}
+
+// Sum
+template<class T> __global__ void
+cuNDA_sum_kernel( T *in, T *out, unsigned int stride, unsigned int number_of_batches, unsigned int number_of_elements )
+{
+  const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
+
+  if( idx < number_of_elements ){
+
+    unsigned int in_idx = (idx/stride)*stride*number_of_batches+(idx%stride);
+    
+    T val = get_zero<T>();
+    
+    for( unsigned int i=0; i<number_of_batches; i++ ) 
+      val += in[i*stride+in_idx];
+
+    out[idx] = val; 
+  }
+}
+
+// Sum
+template<class T> __host__ 
+auto_ptr< cuNDArray<T> > cuNDA_sum( cuNDArray<T> *in, unsigned int dim )
+{
+  if( !(in->get_number_of_dimensions()>1) ){
+    cout << endl << "cuNDA_add:: underdimensioned." << endl; 
+    return auto_ptr< cuNDArray<T> >(0x0);
+  }
+  
+  if( dim > in->get_number_of_dimensions()-1 ){
+    cout << endl << "cuNDA_rss:: dimension out of range." << endl; 
+    return auto_ptr< cuNDArray<T> >(0x0);
+  }
+  
+  unsigned int number_of_batches = in->get_size(dim);
+  unsigned int number_of_elements = in->get_number_of_elements()/number_of_batches;
+  unsigned int stride = 1;
+
+  vector<unsigned int> dims;
+  for( unsigned int i=0; i<in->get_number_of_dimensions(); i++ ){
+    if( i != dim )
+      dims.push_back(in->get_size(i));
+    if( i < dim )
+      stride *= in->get_size(i);
+  }
+
+  cuNDArray<T> *out = cuNDArray<T>::allocate(dims);
+  
+  dim3 blockDim(512);
+  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
+
+  if( out != 0x0 )
+    cuNDA_sum_kernel<<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
+  
+  CHECK_FOR_CUDA_ERROR();
+
+  return auto_ptr< cuNDArray<T> >(out);
+}
+
 // Crop
-template< class UINTd, class T > __global__ void
+template<class UINTd, class T> __global__ void
 cuNDA_crop_kernel( UINTd offset, UINTd matrix_size_in, UINTd matrix_size_out, T *in, T *out, unsigned int number_of_batches, unsigned int number_of_elements )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
@@ -342,6 +537,7 @@ cuNDA_crop_kernel( UINTd offset, UINTd matrix_size_in, UINTd matrix_size_out, T 
   }
 }
 
+// Crop
 template<class UINTd, class T> __host__
 bool cuNDA_crop( UINTd offset, cuNDArray<T> *in, cuNDArray<T> *out )
 { 
@@ -381,8 +577,8 @@ bool cuNDA_crop( UINTd offset, cuNDArray<T> *in, cuNDArray<T> *out )
   return true;
 }
 
-// Expand_With_Zero_Fill
-template< class UINTd, class T > __global__ void
+// Expand and zero fill
+template<class UINTd, class T> __global__ void
 cuNDA_expand_with_zero_fill_kernel( UINTd matrix_size_in, UINTd matrix_size_out, T *in, T *out, unsigned int number_of_batches, unsigned int number_of_elements )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
@@ -396,7 +592,7 @@ cuNDA_expand_with_zero_fill_kernel( UINTd matrix_size_in, UINTd matrix_size_out,
       if( inside )
 	_out = in[co_to_idx(co_out-offset, matrix_size_in)+batch*prod(matrix_size_in)];
       else{
-	T zero; get_zero(zero);
+	T zero = get_zero<T>();
 	_out = zero;
       } 
       out[idx+batch*number_of_elements] = _out;
@@ -404,6 +600,7 @@ cuNDA_expand_with_zero_fill_kernel( UINTd matrix_size_in, UINTd matrix_size_out,
   }
 }
 
+// Expand and zero fill
 template<class UINTd, class T> __host__
 bool cuNDA_expand_with_zero_fill( cuNDArray<T> *in, cuNDArray<T> *out )
 { 
@@ -438,8 +635,8 @@ bool cuNDA_expand_with_zero_fill( cuNDArray<T> *in, cuNDArray<T> *out )
   return true;
 }
 
-// Zero_Fill_Border
-template< class UINTd, class T > __global__ void
+// Zero fill border (rectangular)
+template<class UINTd, class T> __global__ void
 cuNDA_zero_fill_border_kernel( UINTd matrix_size_in, UINTd matrix_size_out, T *image, unsigned int number_of_batches, unsigned int number_of_elements )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
@@ -448,7 +645,7 @@ cuNDA_zero_fill_border_kernel( UINTd matrix_size_in, UINTd matrix_size_out, T *i
     const UINTd co_out = idx_to_co( idx, matrix_size_out );
     const UINTd offset = (matrix_size_out-matrix_size_in)>>1;
     if( weak_less( co_out, offset ) || weak_greater_equal( co_out, matrix_size_in+offset ) ){
-      T zero; get_zero(zero);
+      T zero = get_zero<T>();
       for( unsigned int batch=0; batch<number_of_batches; batch++ ){
 	image[idx+batch*number_of_elements] = zero;
       }
@@ -458,6 +655,7 @@ cuNDA_zero_fill_border_kernel( UINTd matrix_size_in, UINTd matrix_size_out, T *i
   }
 }
 
+// Zero fill border (rectangular)
 template<class UINTd, class T> __host__
 bool cuNDA_zero_fill_border( UINTd matrix_size_in, cuNDArray<T> *out )
 { 
@@ -486,8 +684,8 @@ bool cuNDA_zero_fill_border( UINTd matrix_size_in, cuNDArray<T> *out )
   return true;
 }
 
-// Zero_Fill_Border
-template< class UINTd, class REALd, class T > __global__ void
+// Zero fill border (circular)
+template<class UINTd, class REALd, class T> __global__ void
 cuNDA_zero_fill_border_kernel( REALd radius, UINTd matrix_size_out, T *image, unsigned int number_of_batches, unsigned int number_of_elements )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
@@ -498,7 +696,7 @@ cuNDA_zero_fill_border_kernel( REALd radius, UINTd matrix_size_out, T *image, un
     if( co_f<radius )
       ; // do nothing
     else{
-      T zero; get_zero(zero);
+      T zero = get_zero<T>();
       for( unsigned int batch=0; batch<number_of_batches; batch++ ){
 	image[idx+batch*number_of_elements] = zero;
       }
@@ -506,6 +704,7 @@ cuNDA_zero_fill_border_kernel( REALd radius, UINTd matrix_size_out, T *image, un
   }
 }
 
+// Zero fill border (circular)
 template<class UINTd, class REALd, class T> __host__
 bool cuNDA_zero_fill_border( REALd radius, cuNDArray<T> *out )
 {
@@ -539,6 +738,7 @@ bool cuNDA_zero_fill_border( REALd radius, cuNDArray<T> *out )
   return true;
 }
 
+// cuNDArray to std::vector
 template<class UINTd>  __host__
 vector<unsigned int> cuNDA_toVec( UINTd dims )
 {
@@ -549,6 +749,7 @@ vector<unsigned int> cuNDA_toVec( UINTd dims )
   return out;
 }
 
+// std::vector to cuNDArray
 template<class UINTd>  __host__
 bool cuNDA_fromVec( vector<unsigned int> from, UINTd &to )
 {
@@ -565,78 +766,6 @@ bool cuNDA_fromVec( vector<unsigned int> from, UINTd &to )
   return true;
 }
 
-
-/*
-template< class T > __global__ void 
-add_images_kernel( unsigned int num_elements, T *target, T *source1, T *source2  )
-{
-  const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
-  if( idx < num_elements )
-    target[idx] = __image_add( source1[idx], source2[idx] );
-}
-
-template< class T > __host__ void 
-add_images( unsigned int num_elements, T *targetDevPtr, T *source1DevPtr,  T *source2DevPtr  )
-{
-
-  // Find dimensions of grid/blocks.
-
-  cudaDeviceProp deviceProp;  
-  cudaGetDeviceProperties( &deviceProp, _convolution_device );
-
-  dim3 blockDim( deviceProp.maxThreadsPerBlock, 1, 1 );
-  dim3 gridDim( (unsigned int) ceil((double)num_elements/blockDim.x), 1, 1 );
-
-  // Invoke kernel
-  add_images_kernel<T><<< gridDim, blockDim >>>( num_elements, targetDevPtr, source1DevPtr, source2DevPtr );
-
-  cudaError_t err = cudaGetLastError();
-  if( err != cudaSuccess ){
-    printf("\nCuda error detected in 'add_images_kernel': %s. Quitting.\n", cudaGetErrorString(err) ); fflush(stdout);
-    exit(1);
-  }
-}
-
-template< class T > __global__ void 
-add_images_kernel( unsigned int num_elements, T *target, T *source, unsigned int num_images  )
-{
-  const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
-  if( idx < num_elements ){
-
-    T out;
-
-    __zero_element( &out );
-
-    for( unsigned int i=0; i<num_images; i++ )
-      out = __image_add( out, source[i*num_elements+idx] );
-
-    target[idx] = out;
-  }
-}
-
-template< class T > void 
-add_images( unsigned int num_elements, T *targetDevPtr, T *sourceDevPtr, unsigned int num_source_images )
-{
-
-  // Find dimensions of grid/blocks.
-
-  cudaDeviceProp deviceProp;  
-  cudaGetDeviceProperties( &deviceProp, _convolution_device );
-
-  dim3 blockDim( deviceProp.maxThreadsPerBlock, 1, 1 );
-  dim3 gridDim( (unsigned int) ceil((double)num_elements/blockDim.x), 1, 1 );
-
-  // Invoke kernel
-  add_images_kernel<T><<< gridDim, blockDim >>>( num_elements, targetDevPtr, sourceDevPtr, num_source_images );
-
-  cudaError_t err = cudaGetLastError();
-  if( err != cudaSuccess ){
-    printf("\nCuda error detected in 'add_images_kernel': %s. Quitting.\n", cudaGetErrorString(err) ); fflush(stdout);
-    exit(1);
-  }
-}
-*/
-
 // Instanciation
 
 template void cuNDA_clear<float>(cuNDArray<float>*);
@@ -645,14 +774,11 @@ template void cuNDA_clear<cuFloatComplex>(cuNDArray<cuFloatComplex>*);
 template void cuNDA_abs<float>(cuNDArray<float>*);
 template void cuNDA_abs<cuFloatComplex>(cuNDArray<cuFloatComplex>*);
 
-template cuNDArray<float>* cuNDA_norm<cuFloatComplex, float>(cuNDArray<cuFloatComplex>*);
-
-template cuNDArray<float>* cuNDA_norm_squared<cuFloatComplex, float>(cuNDArray<cuFloatComplex>*);
-
 template void cuNDA_reciprocal<float>(cuNDArray<float>*);
 template void cuNDA_reciprocal<cuFloatComplex>(cuNDArray<cuFloatComplex>*);
 
-template void cuNDA_normalize<float>( cuNDArray<float>*, float);
+template bool cuNDA_rss_normalize<float, float>(cuNDArray<float>*, unsigned int);
+template bool cuNDA_rss_normalize<float, cuFloatComplex>(cuNDArray<cuFloatComplex>*, unsigned int);
 
 template void cuNDA_scale<float, float>(float, cuNDArray<float>*);
 template void cuNDA_scale<float, cuFloatComplex>(float, cuNDArray<cuFloatComplex>*);
@@ -667,6 +793,17 @@ template bool cuNDA_axpy<float, cuFloatComplex>( float, cuNDArray<cuFloatComplex
 
 template bool cuNDA_axpby<float, float, float>( cuNDArray<float>*, cuNDArray<float>*, cuNDArray<float>*, cuNDArray<float>*);
 template bool cuNDA_axpby<float, float, cuFloatComplex>( cuNDArray<float>*, cuNDArray<cuFloatComplex>*, cuNDArray<float>*, cuNDArray<cuFloatComplex>*);
+
+template auto_ptr< cuNDArray<float> > cuNDA_norm<float, cuFloatComplex>(cuNDArray<cuFloatComplex>*);
+
+template auto_ptr< cuNDArray<float> > cuNDA_norm_squared<float, float>(cuNDArray<float>*);
+template auto_ptr< cuNDArray<float> > cuNDA_norm_squared<float, cuFloatComplex>(cuNDArray<cuFloatComplex>*);
+
+template auto_ptr< cuNDArray<float> > cuNDA_rss<float, float>(cuNDArray<float>*, unsigned int);
+template auto_ptr< cuNDArray<float> > cuNDA_rss<float, cuFloatComplex>(cuNDArray<cuFloatComplex>*, unsigned int);
+
+template auto_ptr< cuNDArray<float> > cuNDA_sum<float>(cuNDArray<float>*, unsigned int);
+template auto_ptr< cuNDArray<cuFloatComplex> > cuNDA_sum<cuFloatComplex>(cuNDArray<cuFloatComplex>*, unsigned int);
 
 template bool cuNDA_crop<uint2, float>(uint2, cuNDArray<float>*, cuNDArray<float>*);
 template bool cuNDA_crop<uint2, cuFloatComplex>(uint2, cuNDArray<cuFloatComplex>*, cuNDArray<cuFloatComplex>*);

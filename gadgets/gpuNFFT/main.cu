@@ -109,11 +109,20 @@ int main( int argc, char** argv)
     exit(1);
   }
 
+  //
   // Output result
+  //
+
   hoNDArray<cuFloatComplex> host_image = image.to_host();
-  hoNDArray<float> host_norm = cuNDA_norm<cuFloatComplex, float>(&image)->to_host();
+  hoNDArray<float> host_norm = cuNDA_norm<float, cuFloatComplex>(&image)->to_host();
+
   write_nd_array<cuFloatComplex>( host_image, "result.cplx" );
   write_nd_array<float>( host_norm, "result.real" );
+
+  if( num_batches > 1 ) {
+    hoNDArray<float> host_rss = cuNDA_rss<float, cuFloatComplex>(&image, 2)->to_host();
+    write_nd_array<float>( host_rss, "result_rss.real" );
+  }
 
   printf("\n", time ); fflush(stdout);
   return 0;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "vector_utilities.hcu"
+
 #include <vector_functions.h>
 #include <device_functions.h>
 
@@ -259,46 +261,58 @@ __inline__ __host__ __device__ unsigned int sum( uint4 ui )
   return ui.x+ui.y+ui.z+ui.w;
 }
 
-__inline__ __host__ __device__ void uint_to_uintd(const unsigned int i, const unsigned int fill, uint2 &ui)
+template<> __inline__ __host__ __device__ uint2 uint_to_uintd<uint2>( const unsigned int i, const unsigned int fill )
 {
+  uint2 ui;
   ui.x = i;
   ui.y = fill;
+  return ui;
 }
 
-__inline__ __host__ __device__ void uint_to_uintd(const unsigned int i, const unsigned int fill, uint3 &ui)
+template<> __inline__ __host__ __device__ uint3 uint_to_uintd<uint3>( const unsigned int i, const unsigned int fill )
 {
+  uint3 ui;
   ui.x = i;
   ui.y = fill;
   ui.z = fill;
+  return ui;
 }
 
-__inline__ __host__ __device__ void uint_to_uintd(const unsigned int i, const unsigned int fill, uint4 &ui)
+template<> __inline__ __host__ __device__ uint4 uint_to_uintd<uint4>( const unsigned int i, const unsigned int fill )
 {
+  uint4 ui;
   ui.x = i;
   ui.y = fill;
   ui.z = fill;
   ui.w = fill;
+  return ui;
 }
 
-__inline__ __host__ __device__ void uint_to_uintd( unsigned int *in, uint2 &ui)
+template<> __inline__ __host__ __device__ uint2 uint_to_uintd<uint2>( const unsigned int *in )
 {
+  uint2 ui;
   ui.x = in[0];
   ui.y = in[1];
+  return ui;
 }
 
-__inline__ __host__ __device__ void uint_to_uintd( unsigned int *in, uint3 &ui)
+template<> __inline__ __host__ __device__ uint3 uint_to_uintd<uint3>( const unsigned int *in )
 {
+  uint3 ui;
   ui.x = in[0];
   ui.y = in[1];
   ui.z = in[2];
+  return ui;
 }
 
-__inline__ __host__ __device__ void uint_to_uintd( unsigned int *in, uint4 &ui)
+template<> __inline__ __host__ __device__ uint4 uint_to_uintd<uint4>( const unsigned int *in )
 {
+  uint4 ui;
   ui.x = in[0];
   ui.y = in[1];
   ui.z = in[2];
   ui.w = in[3];
+  return ui;
 }
 
 __inline__ __host__ __device__ uint2 make_uintd( const unsigned int uint1, const unsigned int uint2 )
@@ -316,180 +330,6 @@ __inline__ __host__ __device__ uint4 make_uintd( const unsigned int uint1, const
   return make_uint4(uint1,uint2,uint3,uint4);
 }
 
-/*
-  __inline__ __host__ __device__ uint2 uint4_to_uint2(uint4 ui)
-  {
-  uint2 val;
-  val.x = ui.x;
-  val.y = ui.y;
-  return val;
-  }
-
-  __inline__ __host__ __device__ uint3 uint4_to_uint3(uint4 ui)
-  {
-  uint3 val;
-  val.x = ui.x;
-  val.y = ui.y;
-  val.z = ui.z;
-  return val;
-  }
-
-  __inline__ __host__ __device__ uint2 uint3_to_uint2(uint3 ui)
-  {
-  uint2 val;
-  val.x = ui.x;
-  val.y = ui.y;
-  return val;
-  }
-*//*
-    __inline__ __host__ __device__ uint2 uintd_to_uint2(uint2 ui)
-    {
-    return ui;
-    }
-
-    __inline__ __host__ __device__ uint2 uintd_to_uint2(uint3 ui)
-    {
-    uint2 val;
-    val.x = ui.x;
-    val.y = ui.y;
-    return val;
-    }
-
-    __inline__ __host__ __device__ uint2 uintd_to_uint2(uint4 ui)
-    {
-    uint2 val;
-    val.x = ui.x;
-    val.y = ui.y;
-    return val;
-    }
-
-    __inline__ __host__ __device__ uint3 uintd_to_uint3(uint2 ui)
-    {
-    uint3 val;
-    val.x = ui.x;
-    val.y = ui.y;
-    val.z = 0;
-    return val;
-    }
-
-    __inline__ __host__ __device__ uint3 uintd_to_uint3(uint3 ui)
-    {
-    return ui;
-    }
-
-    __inline__ __host__ __device__ uint3 uintd_to_uint3(uint4 ui)
-    {
-    uint3 val;
-    val.x = ui.x;
-    val.y = ui.y;
-    val.z = ui.z;
-    return val;
-    }
-
-    __inline__ __host__ __device__ uint4 uintd_to_uint4(uint2 ui)
-    {
-    uint4 val;
-    val.x = ui.x;
-    val.y = ui.y;
-    val.z = 0;
-    val.w = 0;
-    return val;
-    }
-
-    __inline__ __host__ __device__ uint4 uintd_to_uint4(uint3 ui)
-    {
-    uint4 val;
-    val.x = ui.x;
-    val.y = ui.y;
-    val.z = ui.z;
-    val.w = 0;
-    return val;
-    }
-
-    __inline__ __host__ __device__ uint4 uintd_to_uint4(uint4 ui)
-    {
-    return ui;
-    }
-
-    __inline__ __host__ __device__ uint4 uintd_to_uint4_with_ones(uint2 ui)
-    {
-    uint4 val;
-    val.x = ui.x;
-    val.y = ui.y;
-    val.z = 1;
-    val.w = 1;
-    return val;
-    }
-
-    __inline__ __host__ __device__ uint4 uintd_to_uint4_with_ones(uint3 ui)
-    {
-    uint4 val;
-    val.x = ui.x;
-    val.y = ui.y;
-    val.z = ui.z;
-    val.w = 1;
-    return val;
-    }
-
-    __inline__ __host__ __device__ uint4 uintd_to_uint4_with_ones(uint4 ui)
-    {
-    return ui;
-    }
-
-    __inline__ __host__ __device__ dim3 uintd_to_dim3(uint2 ui)
-    {
-    dim3 val;
-    val.x = ui.x;
-    val.y = ui.y;
-    val.z = 1;
-    return val;
-    }
-
-    __inline__ __host__ __device__ dim3 uintd_to_dim3(uint3 ui)
-    {
-    return dim3(ui);
-    }
-
-    __inline__ __host__ __device__ dim3 uintd_to_dim3(uint4 ui)
-    {
-    dim3 val;
-    val.x = ui.x;
-    val.y = ui.y;
-    val.z = ui.z;
-    return val;
-    }
-  */
-/*
-  __inline__ __host__ __device__ unsigned int get_last_dim(uint2 ui)
-  {
-  return ui.y;
-  }
-
-  __inline__ __host__ __device__ unsigned int get_last_dim(uint3 ui)
-  {
-  return ui.z;
-  }
-
-  __inline__ __host__ __device__ unsigned int get_last_dim(uint4 ui)
-  {
-  return ui.w;
-  }
-
-  __inline__ __host__ __device__ unsigned int crop_last_dim(uint2 ui)
-  {
-  return ui.x;
-  }
-
-  __inline__ __host__ __device__ uint2 crop_last_dim(uint3 ui)
-  {
-  return make_uint2( ui.x, ui.y );
-  }
-
-  __inline__ __host__ __device__ uint3 crop_last_dim(uint4 ui)
-  {
-  return make_uint3( ui.x, ui.y, ui.z );
-  }
-*/
 __inline__ __host__ __device__ uint2 shift_down(uint2 ui)
 {
   return make_uint2(ui.y, ui.x);
