@@ -26,13 +26,10 @@ LIBHEADERS=\
 	cuCG.h \
 	cuCGMatrixOperator.h
 
-LIBSOURCES=\
-	cuCG.cpp \
+LIBSOURCES=
 
-#CUDASOURCES=\
-	cuNDArray_kernels.cu 
-
-CUDASOURCES=
+CUDASOURCES=\
+	cuCG.cu
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 

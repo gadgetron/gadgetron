@@ -4,11 +4,11 @@
 #include "hoNDArray_fileio.h"
 #include "cuNDFFT.h"
 #include "cgOperatorCartesianSense.h"
+#include "cuCG.h"
 
 int main(int argc, char** argv)
 {
   std::cout << "Simple GPU Test program" << std::endl;
-
   
   hoNDArray<float2> phantom = read_nd_array<float2>("phantom.cplx");
   hoNDArray<float2> csm = read_nd_array<float2>("csm.cplx");
@@ -45,6 +45,7 @@ int main(int argc, char** argv)
   hoNDArray<float2> tmp_out = tmp_out_dev.to_host();
   write_nd_array<float2>(tmp_out,"tmp_out.cplx");
 
+
   cuNDArray<float2> tmp2_out_dev;
   tmp2_out_dev.create(phantom.get_dimensions());
   
@@ -54,15 +55,23 @@ int main(int argc, char** argv)
 
   hoNDArray<float2> tmp2_out = tmp2_out_dev.to_host();
   write_nd_array<float2>(tmp2_out,"tmp2_out.cplx");
-
-
+  
+  /*
   if (E.mult_MH_M(&phantom_dev,&tmp2_out_dev,false) < 0) {
     std::cerr << "Failed to multiply with system matrix EHE" << std::endl;
   }
 
   hoNDArray<float2> tmp3_out = tmp2_out_dev.to_host();
   write_nd_array<float2>(tmp3_out,"tmp3_out.cplx");
+  */
 
+
+  cuCG<float2> cg;
+  cg.add_matrix_operator(&E, 1.0);
+  
+  cuNDArray<float2> cgresult = cg.solve(&tmp2_out_dev);
+  hoNDArray<float2> rho_out = cgresult.to_host();
+  write_nd_array<float2>(rho_out,"rho_out.cplx");
 
   /*
   std::vector<unsigned int> dims;

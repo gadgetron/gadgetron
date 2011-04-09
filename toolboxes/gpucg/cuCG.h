@@ -2,16 +2,31 @@
 #define CUCG_H
 
 #include <vector>
+#include <iostream>
+
+#include <cublas_v2.h>
 
 #include "cuNDArray.h"
 #include "cuCGMatrixOperator.h"
 
 template <class T> class cuCG
 {
-
  public:
-  cuCG() {}
-  virtual ~cuCG() {}
+  cuCG() 
+    : iterations_(10)
+    , limit_(1e-3)
+    , output_mode_(0)
+  {
+    if (cublasCreate(&cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
+      std::cerr << "cuCG unable to create cublas handle" << std::endl;
+    }
+  }
+
+  virtual ~cuCG() {
+    if (cublasDestroy(cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
+      std::cerr << "cuCG unable to create cublas handle" << std::endl;
+    }
+  }
   
   int add_matrix_operator(cuCGMatrixOperator<T>* op, double weight)
   {
@@ -26,7 +41,10 @@ template <class T> class cuCG
  protected:
   std::vector< cuCGMatrixOperator<T>* > operators_;
   std::vector<double> weights_;
-
+  cublasHandle_t cublas_handle_;
+  unsigned int iterations_;
+  double limit_;
+  int output_mode_;
 
 };
 

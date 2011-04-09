@@ -66,6 +66,12 @@ int cuNDFFT::fft_int(cuNDArray< cuFloatComplex >* input, std::vector<unsigned in
 
   }
 
+  ftres = cufftDestroy( plan );
+  if (ftres != CUFFT_SUCCESS) {
+    std::cerr << "cuNDFFT FFT plan destroy failed: " << ftres << std::endl;
+    return -1;
+  }
+
   if (do_scale) {
     cuFloatComplex scale;
     scale.x = 1.0f/elements_in_ft;
