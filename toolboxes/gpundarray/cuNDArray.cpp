@@ -57,6 +57,7 @@ template <class T> cuNDArray<T>&  cuNDArray<T>::operator=(const cuNDArray<T>& rh
       return *this;
 	}
   } else {
+
     if (old_device != cur_device) {
       cudaSetDevice(old_device);
     }
