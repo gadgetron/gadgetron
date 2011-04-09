@@ -59,7 +59,7 @@ NFFT_H_convolve( REAL alpha, REAL beta, REAL W,
       
       // Calculate the distance between the cell and the sample
       REALd delta = abs(sample_pos-cell_pos);
-      REALd half_W_vec; real_to_reald(half_W, half_W, half_W_vec );
+      REALd half_W_vec = real_to_reald<REAL, REALd>( half_W, half_W );
   
       // Check if sample will contribute
       if( weak_greater(delta, half_W_vec ))
@@ -120,7 +120,7 @@ NFFT_H_convolve_kernel( REAL alpha, REAL beta, REAL W,
   const unsigned int sharedMemFirstCellIdx = scatterSharedMemStart*num_reals + scatterSharedMemStartOffset;
 
   REAL *shared_mem = (REAL*) _shared_mem;
-  REAL zero; get_zero(zero);
+  REAL zero = get_zero<REAL>();
 
   // Initialize shared memory
   for( unsigned int i=0; i<num_reals; i++ )

@@ -1,77 +1,100 @@
 #pragma once
 
 #include "cuNDArray.h"
+
+#include <memory>
 #include <vector>
 
-/*	
-	ndarray device utilities
-*/
+//	
+// cuNDArray utilities
+//
+
+//
+// Utilities overwriting the input
+//
 
 // Clear
-template<class REALd> __host__
-void cuNDA_clear( cuNDArray<REALd> *data );
+template<class T> 
+void cuNDA_clear( cuNDArray<T> *data );
 
-// Abs (component-wise)
-template<class REALd> __host__
-void cuNDA_abs( cuNDArray<REALd> *in_out );
-
-// Norm (component-wise)
-template<class REALd, class REAL> __host__
-cuNDArray<REAL>* cuNDA_norm( cuNDArray<REALd> *in );
-
-// Abs magnitudes squared (component-wise)
-template<class REALd, class REAL> __host__ 
-cuNDArray<REAL>* cuNDA_norm_squared( cuNDArray<REALd> *in );
+// Abs
+template<class T> 
+void cuNDA_abs( cuNDArray<T> *in_out );
 
 // Reciprocal
-template<class REALd> __host__
-void cuNDA_reciprocal( cuNDArray<REALd> *in_out );
+template<class T> 
+void cuNDA_reciprocal( cuNDArray<T> *in_out );
 
 // Normalize
-template<class REAL> __host__
-void cuNDA_normalize( cuNDArray<REAL> *in_out, REAL new_max );
+template<class REAL, class T> 
+void cuNDA_normalize( cuNDArray<T> *in_out, REAL new_max );
+
+// Normalize by RSS
+template<class REAL, class T>  
+bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim );
 
 // Scale - cublas wrapper
-template<class A, class X> __host__
+template<class A, class X> 
 void cuNDA_scale( A a, X *x );
 
 // .scale - x is overwritten
-template<class A, class X> __host__
+template<class A, class X> 
 bool cuNDA_scale( cuNDArray<A> *a, cuNDArray<X> *x );
 
 // 'axpy' - cublas wrapper
-template<class A, class XY> __host__
+template<class A, class XY> 
 bool cuNDA_axpy( A a, cuNDArray<XY> *x, cuNDArray<XY> *y );
 
 // '.axpby' - .ax plus .by - y is overwritten
-template<class A, class B, class XY> __host__
+template<class A, class B, class XY> 
 bool cuNDA_axpby( cuNDArray<A> *a, cuNDArray<XY> *x, cuNDArray<B> *b, cuNDArray<XY> *y );
 
-/*
-// Add multiple arrays. TODO. Maybe to this by "dimension reduction" of cuNDArray instead
-template<class NDTYPE> __host__
-cuNDArray<NDTYPE>* cuNDA_add( cuNDArray<NDTYPE> **sources, unsigned int number_of_arrays );
-*/
+//
+// Utilities returning an auto_ptr to the resulting cuNDArray
+//
+
+// Norm
+template<class REAL, class T> 
+std::auto_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<T> *in );
+
+// Norm squared
+template<class REAL, class T>  
+std::auto_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<T> *in );
+
+// RSS
+template<class REAL, class T>  
+std::auto_ptr< cuNDArray<REAL> > cuNDA_rss( cuNDArray<T> *in, unsigned int dim );
+
+// Sum
+template<class T>  
+std::auto_ptr< cuNDArray<T> > cuNDA_sum( cuNDArray<T> *in, unsigned int dim );
+
+//
+// Utilities limited to UINTd instantiation
+//
 
 // Crop
-template<class UINTd, class T> __host__
+template<class UINTd, class T> 
 bool cuNDA_crop( UINTd offset, cuNDArray<T> *in, cuNDArray<T> *out );
 
 // Expand with zero filling
-template<class UINTd, class T>  __host__
+template<class UINTd, class T>  
 bool cuNDA_expand_with_zero_fill( cuNDArray<T> *in, cuNDArray<T> *out );
 
 // Zero fill border (rectangular).
-template<class UINTd, class T> __host__
+template<class UINTd, class T> 
 bool cuNDA_zero_fill_border( UINTd matrix_size, cuNDArray<T> *image );
 
 // Border fill (circular)
-template<class UINTd, class REALd, class T>  __host__
+template<class UINTd, class REALd, class T>  
 bool cuNDA_zero_fill_border( REALd radius, cuNDArray<T> *image );
 
+//
 // Conversion between vector<unsigned int> and UINTd
-template<class UINTd>  __host__
+//
+
+template<class UINTd>  
 std::vector<unsigned int> cuNDA_toVec( UINTd dims );
 
-template<class UINTd>  __host__
+template<class UINTd>  
 bool cuNDA_fromVec( std::vector<unsigned int> from, UINTd &to );

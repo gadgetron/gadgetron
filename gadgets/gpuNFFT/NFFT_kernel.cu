@@ -55,7 +55,7 @@ NFFT_iterate_body( REAL alpha, REAL beta, REAL W,
       
   // Calculate the distance between current sample and the grid cell
   REALd delta = abs(sample_position-uintd_to_reald(grid_position));
-  REALd half_W_vec; real_to_reald(half_W, half_W, half_W_vec );
+  REALd half_W_vec = real_to_reald<REAL, REALd>( half_W, half_W );
 
   // If cell too distant from sample then move on to the next cell
   if( weak_greater(delta, half_W_vec ))
@@ -183,7 +183,7 @@ NFFT_convolve( REAL alpha, REAL beta, REAL W,
   REALd sample_position = traj_positions[globalThreadId];
   
   // Half the kernel width
-  REALd half_W_vec; real_to_reald(half_W, half_W, half_W_vec);
+  REALd half_W_vec = real_to_reald<REAL, REALd>( half_W, half_W );
   
   // Limits of the subgrid to consider
   UINTd lower_limit = reald_to_uintd(ceil(sample_position-half_W_vec*uintd_to_reald(non_fixed_dims)));
@@ -222,7 +222,7 @@ NFFT_convolve_kernel( REAL alpha, REAL beta, REAL W,
   const unsigned int sharedMemFirstSampleIdx = scatterSharedMemStart*num_reals + scatterSharedMemStartOffset;
 
   REAL *shared_mem = (REAL*) _shared_mem;
-  REAL zero; get_zero(zero);
+  REAL zero = get_zero<REAL>();
 
   // Initialize shared memory
   for( unsigned int i=0; i<num_reals; i++ )

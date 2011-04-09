@@ -1,6 +1,9 @@
 #pragma once
 
+#include "vector_utilities.hcu"
 #include "floatd_operators.hcu"
+
+#include <float.h>
 #include <cuComplex.h>
 
 //
@@ -22,19 +25,24 @@ __inline__ __host__ __device__ float prod(float4 f)
   return f.x*f.y*f.z*f.w;
 }
 
-__inline__ __host__ __device__ void get_zero( float &val )
+template<> __inline__ __host__ __device__ float get_zero<float>()
 {
-  val = 0.0f;
+  return 0.0f;
 }
 
-__inline__ __host__ __device__ void get_zero( cuFloatComplex &val )
+template<> __inline__ __host__ __device__ float2 get_zero<float2>()
 {
-  val = make_cuFloatComplex( 0.0f, 0.0f );
+  return make_cuFloatComplex( 0.0f, 0.0f );
 }
 
-__inline__ __host__ __device__ void get_one( float &val )
+template<> __inline__ __host__ __device__ float get_one<float>()
 {
-  val = 1.0f;
+  return 1.0f;
+}
+
+template<> __inline__ __host__ __device__ float2 get_one<float2>()
+{
+  return make_cuFloatComplex( 1.0f, 0.0f );
 }
 
 __inline__ __host__ __device__ float half( const float real )
@@ -97,6 +105,11 @@ __inline__ __host__ __device__ float norm_sq( float4 v )
   return v.x*v.x + v.y*v.y + v.z*v.z + v.w*v.w;
 }
 
+template<> __inline__ __host__ __device__ float get_epsilon<float>()
+{
+  return FLT_EPSILON;
+}
+
 __inline__ __host__ __device__ float reciprocal( const float real )
 {
   return 1.0f/real;
@@ -107,25 +120,58 @@ __inline__ __host__ __device__ cuFloatComplex reciprocal( const cuFloatComplex z
   return cuCmulf( make_cuFloatComplex(1.0f/norm_sq(z),0.0f), cuConjf(z) );
 }
 
-__inline__ __host__ __device__ void real_to_reald(const float i, const float fill, float2 &ui)
+template<> __inline__ __host__ __device__ float2 real_to_reald<float, float2>( const float *in )
 {
-  ui.x = i;
-  ui.y = fill;
+  float2 f;
+  f.x = in[0];
+  f.y = in[1];
+  return f;
 }
 
-__inline__ __host__ __device__ void real_to_reald(const float i, const float fill, float3 &ui)
+template<> __inline__ __host__ __device__ float3 real_to_reald<float, float3>( const float *in )
 {
-  ui.x = i;
-  ui.y = fill;
-  ui.z = fill;
+  float3 f;
+  f.x = in[0];
+  f.y = in[1];
+  f.z = in[2];
+  return f;
 }
 
-__inline__ __host__ __device__ void real_to_reald(const float i, const float fill, float4 &ui)
+template<> __inline__ __host__ __device__ float4 real_to_reald<float, float4>( const float *in )
 {
-  ui.x = i;
-  ui.y = fill;
-  ui.z = fill;
-  ui.w = fill;
+  float4 f;
+  f.x = in[0];
+  f.y = in[1];
+  f.z = in[2];
+  f.w = in[3];
+  return f;
+}
+
+template<> __inline__ __host__ __device__ float2 real_to_reald<float, float2>(const float i, const float fill )
+{
+  float2 f;
+  f.x = i;
+  f.y = fill;
+  return f;
+}
+
+template<> __inline__ __host__ __device__ float3 real_to_reald<float, float3>( const float i, const float fill )
+{
+  float3 f;
+  f.x = i;
+  f.y = fill;
+  f.z = fill;
+  return f;
+}
+
+template<> __inline__ __host__ __device__ float4 real_to_reald<float, float4>( const float i, const float fill )
+{
+  float4 f;
+  f.x = i;
+  f.y = fill;
+  f.z = fill;
+  f.w = fill;
+  return f;
 }
 
 __inline__ __host__ __device__ float2 make_reald( const float real1, const float real2 )
@@ -147,45 +193,6 @@ __inline__ __host__ __device__ cuFloatComplex make_realComplex( const float real
 {
   return make_cuFloatComplex(real1,real2);
 }
-/*
-  __inline__ __host__ __device__ float2 floatd_to_float2(float4 f)
-  {
-  float2 val;
-  val.x = f.x;
-  val.y = f.y;
-  return val;
-  }
-
-  __inline__ __host__ __device__ float2 floatd_to_float2(float3 f)
-  {
-  float2 val;
-  val.x = f.x;
-  val.y = f.y;
-  return val;
-  }
-
-  __inline__ __host__ __device__ float2 floatd_to_float2(float2 f)
-  {
-  return f;
-  }
-
-  __inline__ __host__ __device__ float2 float4_to_float2(float4 f)
-  {
-  float2 val;
-  val.x = f.x;
-  val.y = f.y;
-  return val;
-  }
-
-  __inline__ __host__ __device__ float3 float4_to_float3(float4 f)
-  {
-  float3 val;
-  val.x = f.x;
-  val.y = f.y;
-  val.z = f.z;
-  return val;
-  }
-*/
 
 __inline__ __host__ __device__ float dot( float2 a, float2 b )
 {
@@ -243,72 +250,6 @@ __inline__ __host__ __device__ float4 abs(float4 f)
   val.w = fabsf(f.w);
   return val;
 }
-
-
-/*
-  __inline__ __host__ __device__ float4 float2_to_float4_with_ones(float2 ui)
-  {
-  float4 val;
-  val.x = ui.x;
-  val.y = ui.y;
-  val.z = 1;
-  val.w = 1;
-  return val;
-  }
-
-  __inline__ __host__ __device__ float3 float2_to_float3_with_ones(float2 ui)
-  {
-  float3 val;
-  val.x = ui.x;
-  val.y = ui.y;
-  val.z = 1;
-  return val;
-  }
-*/
-/*
-  __inline__ __host__ __device__ float get_last_dim(float2 ui)
-  {
-  return ui.y;
-  }
-
-  __inline__ __host__ __device__ float get_last_dim(float3 ui)
-  {
-  return ui.z;
-  }
-
-  __inline__ __host__ __device__ float get_last_dim(float4 ui)
-  {
-  return ui.w;
-  }
-*/
-/*
-  __inline__ __host__ __device__ float2 fabs(float2 f)
-  {
-  float2 val;
-  val.x = fabsf(f.x);
-  val.y = fabsf(f.y);
-  return val;
-  }
-
-  __inline__ __host__ __device__ float3 fabs(float3 f)
-  {
-  float3 val;
-  val.x = fabsf(f.x);
-  val.y = fabsf(f.y);
-  val.z = fabsf(f.z);
-  return val;
-  }
-
-  __inline__ __host__ __device__ float4 fabs(float4 f)
-  {
-  float4 val;
-  val.x = fabsf(f.x);
-  val.y = fabsf(f.y);
-  val.z = fabsf(f.z);
-  val.w = fabsf(f.w);
-  return val;
-  }
-*/
 
 __inline__ __host__ __device__ float2 floor(float2 f)
 {
