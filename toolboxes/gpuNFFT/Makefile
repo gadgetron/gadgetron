@@ -16,7 +16,7 @@ CUDAINCLUDES=\
 
 CUDAHOME=/usr/local/cuda
 
-DLLNAME=NFFT
+DLLNAME=cuNFFT
 
 DLLEXTENSION=so
 
@@ -24,12 +24,12 @@ ifeq ($(KERNEL), Darwin)
 DLLEXTENSION=dylib
 endif
 
-CONFIG_FILES=
-
 LIBSOURCES=
 
+HEADERFILES=\
+	NFFT.hcu
+
 CUDASOURCES=\
-	main.cu \
 	NFFT.cu \
 	ndarray_device_utilities.cu
 
@@ -54,7 +54,7 @@ CXXFLAGS_MAIN=-c --Wall -I. \
 	$(CUDAINCLUDES) \
 	-O2
 
-LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml
+LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml -lcundarray
 MAINLDFLAGS= -lACE -L$(GADGETRONHOME)/lib -ltinyxml -lcundarray
 
 NVCC=$(CUDAHOME)/bin/nvcc
@@ -79,10 +79,11 @@ endif
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 
-all: test
+all: $(LIBFILE)
 
 test: $(LIBCUDAOBJECTS)
-	$(CXX) $(LIBOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) $(MAINLDFLAGS) -o test 
+	$(NVCC) $(NVCCFLAGS) -o main.cuo main.cu
+	$(CXX) $(LIBOBJECTS) $(LIBCUDAOBJECTS) main.cuo $(CUDALIBRARIES) $(MAINLDFLAGS) -o test 
 
 
 $(LIBFILE): $(LIBOBJECTS) $(LIBCUDAOBJECTS) Makefile
@@ -99,10 +100,14 @@ clean:
 	rm -rf $(LIBFILE)
 	rm -rf $(LIBOBJECTS)
 	rm -rf $(LIBCUDAOBJECTS)
+	rm -rf test
+
+cleandata:
+	rm -rf *.cplx
+	rm -rf *.real
 
 install:
 	mkdir -p $(GADGETRONHOME)/lib
-	mkdir -p $(GADGETRONHOME)/config
+	mkdir -p $(GADGETRONHOME)/inc
 	cp $(LIBFILE) $(GADGETRONHOME)/lib/
-	cp $(CONFIG_FILES) $(GADGETRONHOME)/config/
-
+	cp $(HEADERFILES) $(GADGETRONHOME)/inc/
