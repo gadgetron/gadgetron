@@ -1,22 +1,20 @@
 #ifndef CGOPERATORCARTESIANSENSE_H
 #define CGOPERATORCARTESIANSENSE_H
 
-#include "cuCGMatrixOperator.h"
+#include "cgOperatorSense.h"
 
-class cgOperatorCartesianSense : public cuCGMatrixOperator<float2>
+class cgOperatorCartesianSense : public cgOperatorSense
 {
 
  public:
   cgOperatorCartesianSense()
-    : csm_(0)
+    : cgOperatorSense()
     , idx_(0)
-    , coils_(0)
-    , samples_(0)
     { }
 
   virtual int mult_M(cuNDArray<float2>* in, cuNDArray<float2>* out, bool accumulate = false);
   virtual int mult_MH(cuNDArray<float2>* in, cuNDArray<float2>* out, bool accumulate = false);
-  virtual int mult_MH_M(cuNDArray<float2>* in, cuNDArray<float2>* out, bool accumulate = false);
+  //virtual int mult_MH_M(cuNDArray<float2>* in, cuNDArray<float2>* out, bool accumulate = false);
 
   virtual int set_csm(cuNDArray<float2>* csm) {
     if (csm != 0) {
@@ -41,14 +39,7 @@ class cgOperatorCartesianSense : public cuCGMatrixOperator<float2>
   }
 
  protected:
-  cuNDArray<float2>* csm_;
   cuNDArray<unsigned int>* idx_;
-  unsigned int coils_;
-  unsigned int samples_;
-  std::vector<unsigned int> dimensions_;
-  std::vector<unsigned int> dimensions_out_;
-  
-  int clear(cuNDArray<float2>* in);
 };
 
 
