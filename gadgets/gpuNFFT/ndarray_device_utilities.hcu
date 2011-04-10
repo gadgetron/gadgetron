@@ -55,19 +55,23 @@ bool cuNDA_axpby( cuNDArray<A> *a, cuNDArray<XY> *x, cuNDArray<B> *b, cuNDArray<
 
 // Norm
 template<class REAL, class T> 
-std::auto_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<T> *in );
+std::auto_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<T> *data );
 
 // Norm squared
 template<class REAL, class T>  
-std::auto_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<T> *in );
+std::auto_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<T> *data );
 
 // RSS
 template<class REAL, class T>  
-std::auto_ptr< cuNDArray<REAL> > cuNDA_rss( cuNDArray<T> *in, unsigned int dim );
+std::auto_ptr< cuNDArray<REAL> > cuNDA_rss( cuNDArray<T> *data, unsigned int dim );
 
 // Sum
 template<class T>  
-std::auto_ptr< cuNDArray<T> > cuNDA_sum( cuNDArray<T> *in, unsigned int dim );
+std::auto_ptr< cuNDArray<T> > cuNDA_sum( cuNDArray<T> *data, unsigned int dim );
+
+// Build correlation matrix
+template<class T>
+std::auto_ptr< cuNDArray<T> > cuNDA_correlation( cuNDArray<T> *data );
 
 //
 // Utilities limited to UINTd instantiation

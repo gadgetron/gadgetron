@@ -487,7 +487,7 @@ template<class T> __host__
 auto_ptr< cuNDArray<T> > cuNDA_sum( cuNDArray<T> *in, unsigned int dim )
 {
   if( !(in->get_number_of_dimensions()>1) ){
-    cout << endl << "cuNDA_add:: underdimensioned." << endl; 
+    cout << endl << "cuNDA_sum:: underdimensioned." << endl; 
     return auto_ptr< cuNDArray<T> >(0x0);
   }
   
@@ -518,6 +518,59 @@ auto_ptr< cuNDArray<T> > cuNDA_sum( cuNDArray<T> *in, unsigned int dim )
   
   CHECK_FOR_CUDA_ERROR();
 
+  return auto_ptr< cuNDArray<T> >(out);
+}
+
+// Build correlation matrix
+template<class T> __global__ void
+cuNDA_correlation_kernel( T *in, T *corrm, unsigned int num_batches, unsigned int num_elements )
+{
+  const unsigned int p = blockIdx.x*blockDim.x + threadIdx.x;
+  const unsigned int i = threadIdx.y;
+
+  if( p < num_elements ){    
+    for( unsigned int j=0; j<i; j++){
+      corrm[(j*num_batches+i)*num_elements+p] = in[i*num_elements+p]*conj(in[j*num_elements+p]);
+      corrm[(i*num_batches+j)*num_elements+p] = conj(corrm[(j*num_batches+i)*num_elements+p]);
+    }
+    corrm[(i*num_batches+i)*num_elements+p] = in[i*num_elements+p]*conj(in[i*num_elements+p]);
+  }
+}
+
+// Build correlation matrix
+template<class T> __host__ 
+auto_ptr< cuNDArray<T> > cuNDA_correlation( cuNDArray<T> *in )
+{
+  if( !(in->get_number_of_dimensions()>1) ){
+    cout << endl << "cuNDA_correlation:: underdimensioned." << endl; 
+    return auto_ptr< cuNDArray<T> >(0x0);
+  }
+
+  unsigned int number_of_batches = in->get_size(in->get_number_of_dimensions()-1);
+  unsigned int number_of_elements = in->get_number_of_elements()/number_of_batches;
+
+  vector<unsigned int> dims = in->get_dimensions();
+  dims.push_back(number_of_batches);
+
+  cuNDArray<T> *out = cuNDArray<T>::allocate(dims);
+  
+  int device; cudaGetDevice( &device );
+  cudaDeviceProp deviceProp; cudaGetDeviceProperties( &deviceProp, device );
+  unsigned int warp_size = deviceProp.warpSize;
+
+  dim3 blockDim(((512/number_of_batches)/warp_size)*warp_size, number_of_batches);
+  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
+
+  if( blockDim.x == 0 ){
+    cout << endl << "cuNDA_correlation:: correlation dimension exceeds capacity." << endl; 
+    return auto_ptr< cuNDArray<T> >(0x0);
+  }
+
+  if( out != 0x0 )
+    cuNDA_correlation_kernel<<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements );
+  
+  CHECK_FOR_CUDA_ERROR();
+  
   return auto_ptr< cuNDArray<T> >(out);
 }
 
@@ -804,6 +857,9 @@ template auto_ptr< cuNDArray<float> > cuNDA_rss<float, cuFloatComplex>(cuNDArray
 
 template auto_ptr< cuNDArray<float> > cuNDA_sum<float>(cuNDArray<float>*, unsigned int);
 template auto_ptr< cuNDArray<cuFloatComplex> > cuNDA_sum<cuFloatComplex>(cuNDArray<cuFloatComplex>*, unsigned int);
+
+template auto_ptr< cuNDArray<float> > cuNDA_correlation<float>(cuNDArray<float>*);
+template auto_ptr< cuNDArray<cuFloatComplex> > cuNDA_correlation<cuFloatComplex>(cuNDArray<cuFloatComplex>*);
 
 template bool cuNDA_crop<uint2, float>(uint2, cuNDArray<float>*, cuNDArray<float>*);
 template bool cuNDA_crop<uint2, cuFloatComplex>(uint2, cuNDArray<cuFloatComplex>*, cuNDArray<cuFloatComplex>*);

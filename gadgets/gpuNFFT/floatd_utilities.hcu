@@ -115,6 +115,16 @@ __inline__ __host__ __device__ float reciprocal( const float real )
   return 1.0f/real;
 }
 
+__inline__ __host__ __device__ float conj( const float f )
+{
+  return f;
+}
+
+__inline__ __host__ __device__ cuFloatComplex conj( const cuFloatComplex z )
+{
+  return cuConjf(z);
+}
+
 __inline__ __host__ __device__ cuFloatComplex reciprocal( const cuFloatComplex z )
 {
   return cuCmulf( make_cuFloatComplex(1.0f/norm_sq(z),0.0f), cuConjf(z) );

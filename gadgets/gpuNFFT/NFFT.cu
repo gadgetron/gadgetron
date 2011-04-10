@@ -177,7 +177,7 @@ bool NFFT_plan<UINTd, REALd, REAL, NDTYPE>::setup( UINTd matrix_size, UINTd matr
   //
 
   if( _device<0 )
-    cudaGetDevice( (int*)&device );
+    cudaGetDevice( &device );
   else
     device = _device;
 
