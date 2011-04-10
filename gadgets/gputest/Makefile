@@ -37,7 +37,10 @@ LIBSOURCES=
 	vds.cpp
 
 CUDASOURCES=\
-	cgOperatorCartesianSense.cu
+	cgOperatorSense.cu \
+	cgOperatorCartesianSense.cu \
+	cgOperatorNonCartesianSense.cu
+
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 
@@ -60,7 +63,7 @@ CXXFLAGS_MAIN=-c -Wall -I. \
 	$(CUDAINCLUDES)
 
 LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml
-MAINLDFLAGS= -lACE -L$(GADGETRONHOME)/lib -ltinyxml -lcundarray -lcucg
+MAINLDFLAGS= -lACE -L$(GADGETRONHOME)/lib -ltinyxml -lcundarray -lcucg -lcuNFFT
 
 NVCC=$(CUDAHOME)/bin/nvcc
 NVCCFLAGS= -g --compiler-options -fno-strict-aliasing -c $(CUDAINCLUDES) -Xcompiler -fPIC -DGADGETS_BUILD_DLL -I$(GADGETRONHOME)/inc
