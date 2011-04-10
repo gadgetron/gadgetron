@@ -20,13 +20,13 @@ class cgOperatorNonCartesianSense : public cgOperatorSense
   virtual int set_trajectories(cuNDArray<float2>* trajectory);
 
   virtual int set_weights(cuNDArray<float>* w) {
-    if (!trajectory_) {
+     if (!trajectory_) {
       std::cerr << "cgOperatorNonCartesianSense::set_weights : Error setting weights, trajectory not set" << std::endl;
       return -1;
     }
     if (w->get_number_of_elements() != trajectory_->get_number_of_elements()) {
       std::cerr << "cgOperatorNonCartesianSense::set_weights : weights don't match trajectory" << std::endl;
-      return -1;
+       return -1;
     }
 
     weights_ = w;

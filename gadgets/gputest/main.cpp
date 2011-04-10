@@ -12,12 +12,18 @@ int main(int argc, char** argv)
   std::cout << "Simple GPU Test program" << std::endl;
   
   hoNDArray<float2> phantom = read_nd_array<float2>("phantom.cplx");
-  hoNDArray<float2> csm = read_nd_array<float2>("csm.cplx");
+  hoNDArray<float2> csm = read_nd_array<float2>("csm2.cplx");
   hoNDArray<float2> D = read_nd_array<float2>("D.cplx");
   hoNDArray<float>  idxf = read_nd_array<float>("idx.real");  
   hoNDArray<float2>  co = read_nd_array<float2>("co.cplx");
   hoNDArray<float>   w = read_nd_array<float>("w.real");
   
+  if (csm.get_number_of_dimensions() == 2) {
+    std::vector<unsigned int> tmp_reshape_dim = csm.get_dimensions();
+    tmp_reshape_dim.push_back(1);
+    csm.reshape(tmp_reshape_dim);
+  }
+
   std::cout << "Done reading input data" << std::endl;
 
   hoNDArray<unsigned int> idx;
@@ -106,6 +112,15 @@ int main(int argc, char** argv)
   cuNDArray<float2> tmp2_out_nc_dev;
   tmp2_out_nc_dev.create(phantom.get_dimensions());
   
+
+  hoNDArray<float2> matlab_data = read_nd_array<float2>("data_out.cplx");
+  cuNDArray<float2> matlab_data_dev(matlab_data);
+
+  /*
+  if (E_noncart.mult_MH(&tmp_out_nc_dev,&tmp2_out_nc_dev,false) < 0) {
+    std::cerr << "Failed to multiply with system matrix EH (non cartesian)" << std::endl;
+  }
+  */
   if (E_noncart.mult_MH(&tmp_out_nc_dev,&tmp2_out_nc_dev,false) < 0) {
     std::cerr << "Failed to multiply with system matrix EH (non cartesian)" << std::endl;
   }
@@ -115,11 +130,11 @@ int main(int argc, char** argv)
   cuCG<float2> cg_nc;
   cg_nc.add_matrix_operator(&E_noncart, 1.0);
   cg_nc.set_preconditioner(&Dm);
-  //cg.set_iterations(20);
-  //cg.set_limit(1e-10);
+  cg_nc.set_iterations(10);
+  cg_nc.set_limit(1e-5);
   cg_nc.set_output_mode(cuCG<float2>::OUTPUT_VERBOSE);
 
-  cuNDArray<float2> cgresult_nc = cg_nc.solve(&tmp2_out_dev);
+  cuNDArray<float2> cgresult_nc = cg_nc.solve(&tmp2_out_nc_dev);
   hoNDArray<float2> rho_out_nc = cgresult_nc.to_host();
   write_nd_array<float2>(rho_out_nc,"rho_out_nc.cplx");
 

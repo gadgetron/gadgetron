@@ -81,7 +81,7 @@ LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 
 all: $(LIBFILE)
 
-test: $(LIBCUDAOBJECTS)
+test: $(LIBCUDAOBJECTS) main.cuo
 	$(NVCC) $(NVCCFLAGS) -o main.cuo main.cu
 	$(CXX) $(LIBOBJECTS) $(LIBCUDAOBJECTS) main.cuo $(CUDALIBRARIES) $(MAINLDFLAGS) -o test 
 

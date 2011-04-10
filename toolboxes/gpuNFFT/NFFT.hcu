@@ -48,7 +48,7 @@ public: // Utilities
   bool convolve( cuNDArray<NDTYPE> *samples, cuNDArray<NDTYPE> *image, cuNDArray<REAL> *weights, NFFT_mode mode );
     
   // NFFT FFT
-  bool FFT( cuNDArray<NDTYPE> *data, NFFT_mode mode, bool do_scale = false );
+  bool FFT( cuNDArray<NDTYPE> *data, NFFT_mode mode, bool do_scale = true );
 
   // NFFT deapodization
   bool deapodize( cuNDArray<NDTYPE> *image );
