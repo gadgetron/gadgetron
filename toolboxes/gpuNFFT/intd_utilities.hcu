@@ -72,6 +72,80 @@ __inline__ __host__ __device__ bool weak_greater_equal(int4 ui1, int4 ui2)
   return ui1.x>=ui2.x || ui1.y>=ui2.y || ui1.z>=ui2.z || ui1.w>=ui2.w;
 }
 
+__inline__ __host__ __device__ int2 vec_equal(int2 i1, int2 i2)
+{
+  return make_int2((i1.x==i2.x), (i1.y==i2.y));
+}
+
+__inline__ __host__ __device__ int3 vec_equal(int3 i1, int3 i2)
+{
+  return make_int3((i1.x==i2.x), (i1.y==i2.y), (i1.z==i2.z));
+}
+
+__inline__ __host__ __device__ int4 vec_equal(int4 i1, int4 i2)
+{
+  return make_int4((i1.x==i2.x), (i1.y==i2.y), (i1.z==i2.z), (i1.w==i2.w));
+}
+
+__inline__ __host__ __device__ int2 vec_less(int2 i1, int2 i2)
+{
+  return make_int2((i1.x<i2.x), (i1.y<i2.y));
+}
+
+__inline__ __host__ __device__ int3 vec_less(int3 i1, int3 i2)
+{
+  return make_int3((i1.x<i2.x), (i1.y<i2.y), (i1.z<i2.z));
+}
+
+__inline__ __host__ __device__ int4 vec_less(int4 i1, int4 i2)
+{
+  return make_int4((i1.x<i2.x), (i1.y<i2.y), (i1.z<i2.z), (i1.w<i2.w));
+}
+
+__inline__ __host__ __device__ int2 vec_less_equal(int2 i1, int2 i2)
+{
+  return make_int2((i1.x<=i2.x), (i1.y<=i2.y));
+}
+
+__inline__ __host__ __device__ int3 vec_less_equal(int3 i1, int3 i2)
+{
+  return make_int3((i1.x<=i2.x), (i1.y<=i2.y), (i1.z<=i2.z));
+}
+
+__inline__ __host__ __device__ int4 vec_less_equal(int4 i1, int4 i2)
+{
+  return make_int4((i1.x<=i2.x), (i1.y<=i2.y), (i1.z<=i2.z), (i1.w<=i2.w));
+}
+
+__inline__ __host__ __device__ int2 vec_greater(int2 i1, int2 i2)
+{
+  return make_int2((i1.x>i2.x), (i1.y>i2.y));
+}
+
+__inline__ __host__ __device__ int3 vec_greater(int3 i1, int3 i2)
+{
+  return make_int3((i1.x>i2.x), (i1.y>i2.y), (i1.z>i2.z));
+}
+
+__inline__ __host__ __device__ int4 vec_greater(int4 i1, int4 i2)
+{
+  return make_int4((i1.x>i2.x), (i1.y>i2.y), (i1.z>i2.z), (i1.w>i2.w));
+}
+
+__inline__ __host__ __device__ int2 vec_greater_equal(int2 i1, int2 i2)
+{
+  return make_int2((i1.x>=i2.x), (i1.y>=i2.y));
+}
+
+__inline__ __host__ __device__ int3 vec_greater_equal(int3 i1, int3 i2)
+{
+  return make_int3((i1.x>=i2.x), (i1.y>=i2.y), (i1.z>=i2.z));
+}
+
+__inline__ __host__ __device__ int4 vec_greater_equal(int4 i1, int4 i2)
+{
+  return make_int4((i1.x>=i2.x), (i1.y>=i2.y), (i1.z>=i2.z), (i1.w>=i2.w));
+}
 
 /* Coordinate transformation functions */
 

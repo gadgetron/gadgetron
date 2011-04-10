@@ -20,6 +20,7 @@
 #include "ndarray_device_utilities.hcu"
 
 #include "vector_utilities.hcu"
+#include "intd_operators.hcu"
 #include "uintd_operators.hcu"
 #include "floatd_operators.hcu"
 
