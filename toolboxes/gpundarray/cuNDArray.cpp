@@ -40,7 +40,6 @@ template <class T> cuNDArray<T>::cuNDArray(const cuNDArray<T>& a) {
 }
 
 template <class T> cuNDArray<T>&  cuNDArray<T>::operator=(const cuNDArray<T>& rhs) {
-  std::cout << "Assignment operator called" << std::endl;
   int old_device = this->device_;
   int cur_device;
   cudaGetDevice(&cur_device);
