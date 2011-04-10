@@ -1,0 +1,7 @@
+#pragma once
+
+#include "cuNDArray.h"
+#include <memory>
+
+template<class REAL, class T> 
+std::auto_ptr< cuNDArray<T> > estimate_b1_map( cuNDArray<T>* data );
