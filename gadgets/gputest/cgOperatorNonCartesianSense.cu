@@ -30,10 +30,6 @@ int cgOperatorNonCartesianSense::mult_M(cuNDArray<float2>* in,
     return -1;
   }
 
-  std::cout << "Writing temp" << std::endl;
-  hoNDArray<float2> tmp_host = tmp.to_host();
-  write_nd_array<float2>(tmp_host,"tmp_csm_mult.cplx");
-
   std::vector<unsigned int> out_dims = out->get_dimensions();
   std::vector<unsigned int> tmp_dims = tmp.get_dimensions();
 
