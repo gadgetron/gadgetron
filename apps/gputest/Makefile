@@ -13,7 +13,7 @@ CUDASOURCES=\
 APPOBJECTS=$(APPSOURCES:.cpp=.o)
 CUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
-APPLDFLAGS += -lcuNFFT -lcundarray -lcucg
+APPLDFLAGS += -lcuNFFT -lcundarray -lcucg -lgpucore
 
 test: main.o $(LIBCUDAOBJECTS)
 	$(CXX) $(APPOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) $(APPLDFLAGS) -o $(EXECUTABLE) 
@@ -31,7 +31,7 @@ clean:
 	rm -rf $(EXECUTABLE)
 	rm -rf $(APPOBJECTS)
 	rm -rf $(CUDAOBJECTS)
-	rm -rf *.cplx
-	rm -rf *.real
+#	rm -rf *.cplx
+#	rm -rf *.real
 
 

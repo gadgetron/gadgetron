@@ -6,6 +6,7 @@
 #include "cgOperatorCartesianSense.h"
 #include "cgOperatorNonCartesianSense.h"
 #include "cuCG.h"
+#include "GPUTimer.h"
 
 int main(int argc, char** argv)
 {
@@ -87,11 +88,16 @@ int main(int argc, char** argv)
   cuCG<float2> cg;
   cg.add_matrix_operator(&E, 1.0);
   cg.set_preconditioner(&Dm);
-  cg.set_iterations(20);
-  cg.set_limit(1e-10);
+  cg.set_iterations(10);
+  cg.set_limit(1e-5);
   cg.set_output_mode(cuCG<float2>::OUTPUT_VERBOSE);
 
-  cuNDArray<float2> cgresult = cg.solve(&tmp2_out_dev);
+  cuNDArray<float2> cgresult;
+  {
+    GPUTimer timer("GPU Conjugate Gradient solve");
+    cgresult = cg.solve(&tmp2_out_dev);
+  }
+
   hoNDArray<float2> rho_out = cgresult.to_host();
   write_nd_array<float2>(rho_out,"rho_out.cplx");
   
@@ -122,11 +128,15 @@ int main(int argc, char** argv)
   cuCG<float2> cg_nc;
   cg_nc.add_matrix_operator(&E_noncart, 1.0);
   cg_nc.set_preconditioner(&Dm);
-  cg_nc.set_iterations(10);
+  cg_nc.set_iterations(5);
   cg_nc.set_limit(1e-5);
   cg_nc.set_output_mode(cuCG<float2>::OUTPUT_VERBOSE);
 
-  cuNDArray<float2> cgresult_nc = cg_nc.solve(&tmp2_out_nc_dev);
+  cuNDArray<float2> cgresult_nc;
+  {
+    GPUTimer timer("GPU Conjugate Gradient solve");
+    cgresult_nc = cg_nc.solve(&tmp2_out_nc_dev);
+  }
   hoNDArray<float2> rho_out_nc = cgresult_nc.to_host();
   write_nd_array<float2>(rho_out_nc,"rho_out_nc.cplx");
 
