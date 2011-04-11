@@ -5,7 +5,7 @@
 *.cuo
 *#
 gadgetron
-gadgetdatasender/gadgetrondatasender
+gadgetrondatasender
 *.dylib
 *.real
 *.cplx

@@ -3,6 +3,7 @@ include $(GADGETRONHOME)/Makefile.inc
 
 DIRS=\
 	toolboxes/gadgettools \
+	toolboxes/gpucore \
 	toolboxes/ndarray \
 	toolboxes/gpundarray \
 	toolboxes/gpuNFFT \
@@ -10,6 +11,7 @@ DIRS=\
 	toolboxes/gpucg \
 	apps/gputest \
 	apps/gadgetron \
+	apps/gadgetdatasender \
 	gadgets/core \
 	gadgets/gpucg
 
@@ -22,7 +24,7 @@ clean :
 	rm -rf inc
 	rm -rf lib
 	rm -rf bin
-	rm *~
+	rm -rf *~
 	-for d in $(DIRS); do (cd $$d; $(MAKE) clean ); done
 
 force_look :
