@@ -18,6 +18,7 @@
 
 #include "cuNDArray.h"
 #include "ndarray_device_utilities.hcu"
+#include "hoNDArray_fileio.h"
 
 #include "vector_utilities.hcu"
 #include "intd_operators.hcu"
@@ -745,7 +746,7 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::deapodize( cuNDArray<NDTYPE> *image )
     return false;
   }
 
-  unsigned char components;
+ unsigned char components;
   
   components = NFFT_FFT;
   
@@ -762,6 +763,7 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::deapodize( cuNDArray<NDTYPE> *image )
   
  cuNDA_scale( deapodization_filter, image );
   
+
  if( device != device_no_old && cudaSetDevice(device_no_old) != cudaSuccess) {
    cerr << "NFFT_plan::setup: unable to set device" << endl;
  }
@@ -998,11 +1000,11 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_NFFT( cuNDArray<NDTYPE> *samples,
   // Convolution
   if( success )
     success = deapodize( image );
-  
+    
   // FFT
   if( success )
     success = FFT( image, NFFT_FORWARDS );
-  
+
   // Deapodization
   if( success )
     success = convolve( samples, image, 0x0, NFFT_FORWARDS );

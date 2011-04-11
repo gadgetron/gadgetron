@@ -30,6 +30,10 @@ int cgOperatorNonCartesianSense::mult_M(cuNDArray<float2>* in,
     return -1;
   }
 
+  std::cout << "Writing temp" << std::endl;
+  hoNDArray<float2> tmp_host = tmp.to_host();
+  write_nd_array<float2>(tmp_host,"tmp_csm_mult.cplx");
+
   std::vector<unsigned int> out_dims = out->get_dimensions();
   std::vector<unsigned int> tmp_dims = tmp.get_dimensions();
 
@@ -37,18 +41,6 @@ int cgOperatorNonCartesianSense::mult_M(cuNDArray<float2>* in,
     out->squeeze();
     tmp.squeeze();
   }
-
-  /*
-  for (unsigned int i = 0; i < out->get_number_of_dimensions(); i++) {
-    std::cout << " " << out->get_size(i) << std::endl;
-  }
-  std::cout << std::endl;
-
-  for (unsigned int i = 0; i < tmp.get_number_of_dimensions(); i++) {
-    std::cout << " " << tmp.get_size(i) << std::endl;
-  }
-  std::cout << std::endl;
-  */
 
   //Do the NFFT
   if (!plan_.compute( out, &tmp, weights_, NFFT_plan<uint2, float2, float, float2>::NFFT_FORWARDS )) {
@@ -106,28 +98,6 @@ int cgOperatorNonCartesianSense::mult_MH(cuNDArray<float2>* in, cuNDArray<float2
 
   if (!accumulate) clear(out);
   
-  if (0) { //Temp fix for scaling problem in NFFT
-    cublasHandle_t cublas_handle_;
-    if (cublasCreate(&cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
-      std::cerr << "unable to create cublas handle" << std::endl;
-    }
-    
-    float2 a_int;
-    a_int.x = 1.0f/(256*256);
-    a_int.y = 0.0;
-    
-    if (cublasCscal(cublas_handle_, tmp.get_number_of_elements(), &a_int,
-		    tmp.get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS) 
-      {
-	std::cerr << "scal calculating using cublas failed" << std::endl;
-	return -1;
-      }
-    
-    
-    if (cublasDestroy(cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
-      std::cerr << "unable to create cublas handle" << std::endl;
-    }
-  }
 
   if (mult_csm_conj_sum(&tmp,out) < 0) {
     std::cerr << "cgOperatorCartesianSense::mult_MH: Unable to multiply with conjugate of sensitivity maps and sum" << std::endl;
