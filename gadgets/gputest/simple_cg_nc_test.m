@@ -1,9 +1,13 @@
 
 
-function rho = simple_cg_nc_test(rhs, csm, co, w)
-  r = rhs;
-
-  rr_0 = r(:)' * r(:)
+function rho = simple_cg_nc_test(rhs, csm, co, w, D)
+  if (isempty(D)), 
+    D = ones(size(rhs));
+  end
+  
+  r = D .* rhs;
+  
+  rr_0 = r(:)' * r(:);
 
   rr_1 = 0;
   rr = 0;
@@ -13,7 +17,7 @@ function rho = simple_cg_nc_test(rhs, csm, co, w)
   rho = zeros(size(rhs));
   p = rho;
   
-  for it=1:50,
+  for it=1:5,
       rr_1 = rr;
       rr = r(:)' * r(:);
       
@@ -25,11 +29,14 @@ function rho = simple_cg_nc_test(rhs, csm, co, w)
           p = p + r;
       end
       
+      p1 = D .* p;
       %tmp_pp = p(:)' * p(:)
 
-      q = mult_MH_M(p, csm, co, w);
+      q = mult_MH_M(p1, csm, co, w);
       %tmp_qq = q(:)' * q(:)
 
+      q = D .* q;
+      
       alpha = rr/(p(:)'* q(:));
       
       rho = rho + alpha * p;
@@ -38,6 +45,8 @@ function rho = simple_cg_nc_test(rhs, csm, co, w)
       rr_rr0 = rr/rr_0
       
   end
+  
+  rho = D .* rho; 
 
 return
 

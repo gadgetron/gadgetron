@@ -1,5 +1,9 @@
 #include "cgOperatorNonCartesianSense.h"
 
+#include "hoNDArray_fileio.h"
+
+#include <cublas_v2.h>
+
 int cgOperatorNonCartesianSense::mult_M(cuNDArray<float2>* in, 
 				     cuNDArray<float2>* out, 
 				     bool accumulate)
@@ -26,10 +30,34 @@ int cgOperatorNonCartesianSense::mult_M(cuNDArray<float2>* in,
     return -1;
   }
 
+  std::vector<unsigned int> out_dims = out->get_dimensions();
+  std::vector<unsigned int> tmp_dims = tmp.get_dimensions();
+
+  if (coils_ == 1) {
+    out->squeeze();
+    tmp.squeeze();
+  }
+
+  /*
+  for (unsigned int i = 0; i < out->get_number_of_dimensions(); i++) {
+    std::cout << " " << out->get_size(i) << std::endl;
+  }
+  std::cout << std::endl;
+
+  for (unsigned int i = 0; i < tmp.get_number_of_dimensions(); i++) {
+    std::cout << " " << tmp.get_size(i) << std::endl;
+  }
+  std::cout << std::endl;
+  */
+
   //Do the NFFT
   if (!plan_.compute( out, &tmp, weights_, NFFT_plan<uint2, float2, float, float2>::NFFT_FORWARDS )) {
     std::cerr << "cgOperatorNonCartesianSense::mult_M : failed during NFFT" << std::endl;
     return -1;
+  }
+
+  if (coils_ == 1) {
+    out->reshape(out_dims);
   }
 
   return 0;
@@ -55,15 +83,52 @@ int cgOperatorNonCartesianSense::mult_MH(cuNDArray<float2>* in, cuNDArray<float2
 
   clear(&tmp);
 
+  if (!weights_) {
+    std::cerr << "cgOperatorNonCartesianSense::mult_MH : gridding weights are zero, aborting" << std::endl;
+    return -1;
+  }
+
+  std::vector<unsigned int> tmp_dims_in = in->get_dimensions();
+  if (coils_ == 1) {
+    in->squeeze();
+    tmp.squeeze();
+  }
+
   //Do the NFFT
   if (!plan_.compute( in, &tmp, weights_, NFFT_plan<uint2, float2, float, float2>::NFFT_BACKWARDS )) {
     std::cerr << "cgOperatorNonCartesianSense::mult_MH : failed during NFFT" << std::endl;
     return -1;
   }
 
-  //do the iNFFT
+  if (coils_ == 1) {
+    in->reshape(tmp_dims_in);
+  }
+
   if (!accumulate) clear(out);
   
+  if (0) { //Temp fix for scaling problem in NFFT
+    cublasHandle_t cublas_handle_;
+    if (cublasCreate(&cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
+      std::cerr << "unable to create cublas handle" << std::endl;
+    }
+    
+    float2 a_int;
+    a_int.x = 1.0f/(256*256);
+    a_int.y = 0.0;
+    
+    if (cublasCscal(cublas_handle_, tmp.get_number_of_elements(), &a_int,
+		    tmp.get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS) 
+      {
+	std::cerr << "scal calculating using cublas failed" << std::endl;
+	return -1;
+      }
+    
+    
+    if (cublasDestroy(cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
+      std::cerr << "unable to create cublas handle" << std::endl;
+    }
+  }
+
   if (mult_csm_conj_sum(&tmp,out) < 0) {
     std::cerr << "cgOperatorCartesianSense::mult_MH: Unable to multiply with conjugate of sensitivity maps and sum" << std::endl;
     return -1;
@@ -87,14 +152,14 @@ int cgOperatorNonCartesianSense::set_trajectories(cuNDArray<float2>* trajectory)
     matrix_size.y = dimensions_[1];
     
     uint2 matrix_size_os;
-    matrix_size_os.x = ((dimensions_[0]*1.25)/32 + 1)*32;
-    matrix_size_os.y = ((dimensions_[1]*1.25)/32 + 1)*32;
+    matrix_size_os.x = ((dimensions_[0]*2.0)/32)*32;
+    matrix_size_os.y = ((dimensions_[1]*2.0)/32)*32;
     
     uint2 fixed_dims;
     fixed_dims.x = 0;
     fixed_dims.y = 0;
     
-    if (!plan_.setup(matrix_size,matrix_size_os,fixed_dims, 5.5)) {
+    if (!plan_.setup(matrix_size,matrix_size_os,fixed_dims, 4)) {
       std::cerr << "cgOperatorNonCartesianSense: failed to setup plan" << std::endl;
       return -1;
     }

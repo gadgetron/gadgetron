@@ -976,7 +976,7 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_deapodization_filter()
   
   // FFT
   if( success )
-    success = FFT( deapodization_filter, NFFT_BACKWARDS );
+    success = FFT( deapodization_filter, NFFT_BACKWARDS, false );
   
   // Reciprocal
   if( success )

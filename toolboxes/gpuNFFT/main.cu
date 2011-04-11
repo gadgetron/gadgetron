@@ -39,7 +39,7 @@ int main( int argc, char** argv)
   }
   
   // Matrix sizes
-  const uint2 matrix_size = make_uint2(192,192);
+  const uint2 matrix_size = make_uint2(128,128);
   const uint2 matrix_size_os = make_uint2(256,256);
 
   // Kernel width
@@ -96,9 +96,11 @@ int main( int argc, char** argv)
   printf("\nNFFT_iteration..."); fflush(stdout);
   cutResetTimer( timer ); cutStartTimer( timer );
 
+  /*
   if( success )
     success = plan.compute_iteration( &data, &image, &weights, NFFT_plan<uint2, float2, float, cuFloatComplex>::NFFT_FORWARDS );
-  
+  */
+
   cudaThreadSynchronize(); cutStopTimer( timer );
   time = cutGetTimerValue( timer ); printf("done: %.1f ms", time ); fflush(stdout);
   
@@ -114,14 +116,14 @@ int main( int argc, char** argv)
   //
 
   hoNDArray<cuFloatComplex> host_image = image.to_host();
-  hoNDArray<float> host_norm = cuNDA_norm<float, cuFloatComplex>(&image)->to_host();
+  //hoNDArray<float> host_norm = cuNDA_norm<float, cuFloatComplex>(&image)->to_host();
 
   write_nd_array<cuFloatComplex>( host_image, "result.cplx" );
-  write_nd_array<float>( host_norm, "result.real" );
+  //write_nd_array<float>( host_norm, "result.real" );
 
   if( num_batches > 1 ) {
-    hoNDArray<float> host_rss = cuNDA_rss<float, cuFloatComplex>(&image, 2)->to_host();
-    write_nd_array<float>( host_rss, "result_rss.real" );
+    //hoNDArray<float> host_rss = cuNDA_rss<float, cuFloatComplex>(&image, 2)->to_host();
+    //write_nd_array<float>( host_rss, "result_rss.real" );
   }
 
   printf("\n", time ); fflush(stdout);
