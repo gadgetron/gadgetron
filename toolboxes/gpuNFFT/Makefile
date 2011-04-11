@@ -74,7 +74,7 @@ ifeq ($(KERNEL), Darwin)
 GENCODE_SM := $(GENCODE_SM10)
 endif
 
-NVCCFLAGS= $(GENCODE_SM) --compiler-options -fno-strict-aliasing $(CUDAINCLUDES) -g -c
+NVCCFLAGS= $(GENCODE_SM) --compiler-options -fno-strict-aliasing -Xcompiler -fPIC $(CUDAINCLUDES) -g -c
 ifeq ($(KERNEL), Darwin)
 NVCCFLAGS += -m32
 endif
