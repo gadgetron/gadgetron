@@ -712,7 +712,7 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve( cuNDArray<NDTYPE> *samples, cuN
   return success;
 }
 
-
+//TODO: set default scale=true og sikr samme resultat
 template<class UINTd, class REALd, class REAL, class NDTYPE> bool
 NFFT_plan<UINTd, REALd, REAL, NDTYPE>::FFT(cuNDArray<NDTYPE> *data, NFFT_mode mode, bool do_scale )
 {
@@ -760,7 +760,8 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::deapodize( cuNDArray<NDTYPE> *image )
   if( device != device_no_old && cudaSetDevice(device) != cudaSuccess) {
     cerr << "NFFT_plan::setup: unable to set device" << endl;
   }  
-  
+
+  // TODO: fixeme!!!!
  cuNDA_scale( deapodization_filter, image );
   
 
@@ -1100,7 +1101,7 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve_NFFT( cuNDArray<NDTYPE> *samples
       return false;
     }
 
-  // We can (only) convolve domain_size_coils batches per run due to shared memory issues. 
+  // We can (only) convolve max_coils batches per run due to shared memory issues. 
   unsigned int domain_size_coils_desired = (samples->get_number_of_dimensions()==1) ? 1 : samples->get_size(1);
   unsigned int num_repetitions = domain_size_coils_desired/(max_coils+1) + 1;
   unsigned int domain_size_coils = (num_repetitions==1) ? domain_size_coils_desired : max_coils;
@@ -1256,6 +1257,7 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve_NFFT_H( cuNDArray<NDTYPE> *sampl
 	double_warp_size_power, half(W), reciprocal(W), huintd_to_reald(matrix_size_os) );
   }
   
+  //cudaThreadSynchronize();
   CHECK_FOR_CUDA_ERROR();
   
   bool success = image_wrap( _tmp, image );
@@ -1406,6 +1408,10 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::image_wrap( cuNDArray<NDTYPE> *source, cu
 
   // Invoke kernel
   image_wrap_kernel<UINTd, REALd, REAL, NDTYPE><<<dimGrid, dimBlock>>>( matrix_size_os, matrix_size_wrap, number_of_images, /*accumulate,*/ source->get_data_ptr(), target->get_data_ptr() );
+
+  //cout << endl << "dimBX: " << dimBlockX << ", num images: " << dimBlock.y << ", gridX: " << dimGrid.x << ", gridY: " << dimGrid.y << endl; 
+  
+  // TODO: hvorfor fejler dette for matrix_size 128: os: 192? osx. stoerre er ok.
 
   CHECK_FOR_CUDA_ERROR();
 

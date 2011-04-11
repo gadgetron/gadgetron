@@ -13,6 +13,8 @@ template<class T> __inline__ __host__ __device__ T int_to_intd( const int i, con
 template<class T> __inline__ __host__ __device__ T uint_to_uintd( const unsigned int *in );
 template<class T> __inline__ __host__ __device__ T uint_to_uintd( const unsigned int i, const unsigned int fill );
 
+template<class S, class T> __inline__ __host__ __device__ T mul( S s, T t );
+
 #include "uintd_utilities.hcu"
 #include "intd_utilities.hcu"
 #include "floatd_utilities.hcu"

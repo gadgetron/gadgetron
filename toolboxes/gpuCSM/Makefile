@@ -8,16 +8,14 @@ GADGETRONHOME=../..
 CUDASDK=$(HOME)/NVIDIA_GPU_Computing_SDK
 CUDAINCLUDES=\
 	-I. \
-	-I../../toolboxes/ndarray \
-	-I../../toolboxes/gpundarray \
-	-I../../toolboxes/gpuNFFT \
+	-I../../inc \
 	-I/usr/local/cuda/include \
 	-I$(CUDASDK)/C/common/inc \
 	-I$(CUDASDK)/shared/inc
 
 CUDAHOME=/usr/local/cuda
 
-DLLNAME=CSM
+DLLNAME=cuCSM
 
 DLLEXTENSION=so
 
@@ -25,13 +23,13 @@ ifeq ($(KERNEL), Darwin)
 DLLEXTENSION=dylib
 endif
 
-CONFIG_FILES=
-
 LIBSOURCES=
 
+HEADERFILES=\
+	b1_map.hcu
+
 CUDASOURCES=\
-	b1_map.cu \
-	main.cu 
+	b1_map.cu
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 
@@ -39,23 +37,23 @@ LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
 CXX=g++
 ifeq ($(KERNEL), Darwin)
-CXX=g++ -fPIC -arch i386 -m32 -Xlinker -rpath /usr/local/cuda/lib -O2
+CXX=g++ -fPIC -arch i386 -m32 -Xlinker -rpath /usr/local/cuda/lib -g
 endif 
 
 CXXFLAGS=-c -fPIC -Wall -I. \
 	-I$(GADGETRONHOME)/inc \
 	-I$(GADGETRONHOME)/gadgets/core \
 	$(CUDAINCLUDES) \
-	-DGADGETS_BUILD_DLL -O2
+	-DGADGETS_BUILD_DLL -g
 
 CXXFLAGS_MAIN=-c --Wall -I. \
 	-I$(GADGETRONHOME)/inc \
 	-I$(GADGETRONHOME)/gadgets/core \
 	$(CUDAINCLUDES) \
-	-O2
+	-g
 
-LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml
-MAINLDFLAGS= -lACE -L$(GADGETRONHOME)/lib -ltinyxml -lcundarray
+LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml -lcundarray -lcuNFFT
+MAINLDFLAGS= -lACE -L$(GADGETRONHOME)/lib -ltinyxml -lcundarray -lcuNFFT
 
 NVCC=$(CUDAHOME)/bin/nvcc
 GENCODE_SM10 := -gencode=arch=compute_10,code=\"sm_10,compute_10\"
@@ -66,7 +64,7 @@ ifeq ($(KERNEL), Darwin)
 GENCODE_SM := $(GENCODE_SM10)
 endif
 
-NVCCFLAGS= $(GENCODE_SM) --compiler-options -fno-strict-aliasing $(CUDAINCLUDES) -O2 -c
+NVCCFLAGS= $(GENCODE_SM) --compiler-options -fno-strict-aliasing $(CUDAINCLUDES) -g -c
 ifeq ($(KERNEL), Darwin)
 NVCCFLAGS += -m32
 endif
@@ -79,10 +77,11 @@ endif
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 
-all: test
+all: $(LIBFILE)
 
-test: $(LIBCUDAOBJECTS)
-	$(CXX) $(LIBOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) $(MAINLDFLAGS) -o test 
+test: $(LIBCUDAOBJECTS) main.cuo
+	$(NVCC) $(NVCCFLAGS) -o main.cuo main.cu
+	$(CXX) $(LIBOBJECTS) $(LIBCUDAOBJECTS) main.cuo $(CUDALIBRARIES) $(MAINLDFLAGS) -o test 
 
 
 $(LIBFILE): $(LIBOBJECTS) $(LIBCUDAOBJECTS) Makefile
@@ -99,10 +98,14 @@ clean:
 	rm -rf $(LIBFILE)
 	rm -rf $(LIBOBJECTS)
 	rm -rf $(LIBCUDAOBJECTS)
+	rm -rf test
+
+cleandata:
+	rm -rf *.cplx
+	rm -rf *.real
 
 install:
 	mkdir -p $(GADGETRONHOME)/lib
-	mkdir -p $(GADGETRONHOME)/config
+	mkdir -p $(GADGETRONHOME)/inc
 	cp $(LIBFILE) $(GADGETRONHOME)/lib/
-	cp $(CONFIG_FILES) $(GADGETRONHOME)/config/
-
+	cp $(HEADERFILES) $(GADGETRONHOME)/inc/
