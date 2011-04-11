@@ -1,67 +1,29 @@
-#Gadgetron Makefile
-
 GADGETRONHOME=.
+include $(GADGETRONHOME)/Makefile.inc
 
-MACHINE   := $(shell uname -m)
-KERNEL    := $(shell uname -s)
+DIRS=\
+	toolboxes/gadgettools \
+	toolboxes/ndarray \
+	toolboxes/gpundarray \
+	toolboxes/gpuNFFT \
+	toolboxes/gpuCSM \
+	toolboxes/gpucg \
+	apps/gputest \
+	apps/gadgetron \
+	gadgets/core \
+	gadgets/gpucg
 
-DLLEXTENSION=so
-ifeq ($(KERNEL), Darwin)
-DLLEXTENSION=dylib
-endif
+all: $(DIRS)
 
-HEADERS=\
-	GadgetContainerMessage.h \
-	Gadget.h \
-	GadgetServerAcceptor.h \
-	GadgetStreamController.h \
-	Gadgetron.h \
-	GadgetronExport.h \
-	GadgetMessageInterface.h \
+$(DIRS): force_look
+	cd $@ ; $(MAKE) $(MFLAGS)
 
-EXESOURCES=\
-	main.cpp \
-	GadgetStreamController.cpp \
-	GadgetServerAcceptor.cpp
+clean :
+	rm -rf inc
+	rm -rf lib
+	rm -rf bin
+	rm *~
+	-for d in $(DIRS); do (cd $$d; $(MAKE) clean ); done
 
-EXEOBJECTS=$(EXESOURCES:.cpp=.o)
-LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
-
-CXX=g++
-ifeq ($(KERNEL), Darwin)
-CXX=g++ -m32 -arch i386
-endif
-
-EXELDFLAGS=-lACE -ltinyxml
-
-LIBLDFLAGS= -shared -lACE 
-
-CXXFLAGS=-c -fPIC -Wall -I.  -I$(GADGETRONHOME)/toolboxes/gadgettools -g #-DACE_NTRACE=0
-
-EXECUTABLE=gadgetron
-LIBFILE=libgadgetron.$(DLLEXTENSION)
-
-all: $(EXECUTABLE)
-
-$(EXECUTABLE): $(EXEOBJECTS) Makefile
-	$(CXX) $(EXELDFLAGS) $(EXEOBJECTS) -o $@
-
-#$(LIBFILE): $(LIBOBJECTS) Makefile
-#	$(CXX) $(LIBLDFLAGS) $(LIBOBJECTS) -o $@
-
-.cpp.o:
-	$(CXX) $(CXXFLAGS) $< -o $@
-
-clean:
-	rm -rf *~
-	rm -rf $(EXECUTABLE)
-	rm -rf $(LIBFILE)
-	rm -rf *.o
-	rm -rf *.cplx
-	rm -rf *.real
-
-install:
-	mkdir -p inc
-	mkdir -p lib
-	cp $(HEADERS) inc/
-	cp $(EXECUTABLE) lib/
+force_look :
+	true

@@ -13,3 +13,4 @@ inc/
 *.d
 *.txt
 config/
+bin/
