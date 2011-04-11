@@ -33,19 +33,19 @@ void cuNDA_normalize( cuNDArray<T> *in_out, REAL new_max );
 template<class REAL, class T>  
 bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim );
 
-// Scale - cublas wrapper
+// Scale - for real and complex types.
 template<class A, class X> 
 void cuNDA_scale( A a, X *x );
 
-// .scale - x is overwritten
+// Component-wise scale - for real and complex types
 template<class A, class X> 
 bool cuNDA_scale( cuNDArray<A> *a, cuNDArray<X> *x );
 
-// 'axpy' - cublas wrapper
+// 'axpy' - for real and complex types
 template<class A, class XY> 
 bool cuNDA_axpy( A a, cuNDArray<XY> *x, cuNDArray<XY> *y );
 
-// '.axpby' - .ax plus .by - y is overwritten
+// 'axpby' - for real and complex types
 template<class A, class B, class XY> 
 bool cuNDA_axpby( cuNDArray<A> *a, cuNDArray<XY> *x, cuNDArray<B> *b, cuNDArray<XY> *y );
 

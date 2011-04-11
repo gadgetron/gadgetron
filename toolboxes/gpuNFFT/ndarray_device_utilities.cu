@@ -145,13 +145,13 @@ cuNDA_rss_normalize_kernel( T *in_out, unsigned int stride, unsigned int number_
     for( unsigned int i=0; i<number_of_batches; i++ )
       rss += norm_sq(in_out[i*stride+in_idx]);
 
-    rss = sqrt(rss);
+    rss = sqrt(rss); // TODO: overload neccesary?
     rss += get_epsilon<REAL>(); // avoid potential division by zero
-    reciprocal(rss);
+    rss = reciprocal(rss);
     
     for( unsigned int i=0; i<number_of_batches; i++ ) {
       T out = in_out[i*stride+in_idx];
-      out *= rss;
+      out *= rss; // this works since rss is scalar
       in_out[i*stride+in_idx] = out; 
     } 
   }
@@ -195,7 +195,7 @@ void cuNDA_scale_kernel( A a, X *x, unsigned int number_of_elements )
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
   if( idx < number_of_elements ){
     X in = x[idx];
-    in *= a;
+    in = mul<A,X>(a,in);
     x[idx] = in;
   }
 }
@@ -224,7 +224,7 @@ void cuNDA_scale_kernel( A *a, X *x, unsigned int number_of_batches, unsigned in
     A in_a = a[idx];
     for( unsigned int batch=0; batch<number_of_batches; batch++ ){
       X in_x = x[batch*number_of_elements+idx];
-      x[batch*number_of_elements+idx] = in_a*in_x;
+      x[batch*number_of_elements+idx] = mul<A,X>(in_a,in_x);
     }
   }
 }
@@ -260,7 +260,7 @@ void cuNDA_axpy_kernel( A a, XY *x, XY *y, unsigned int number_of_elements )
   if( idx < number_of_elements ){
     XY in_x = x[idx];
     XY in_y = y[idx];
-    in_y += (a*in_x);
+    in_y += mul<A,XY>(a,in_x);
     y[idx] = in_y;
   }
 }
@@ -286,7 +286,7 @@ bool cuNDA_axpy( A a, cuNDArray<XY> *x, cuNDArray<XY> *y )
   return true;
 }
 
-// '.axpby'
+// 'axpby'
 template<class A, class B, class XY> __global__ 
 void cuNDA_axpby_kernel( A *a, XY *x, B *b, XY *y, unsigned int number_of_batches, unsigned int number_of_elements )
 {
@@ -298,8 +298,8 @@ void cuNDA_axpby_kernel( A *a, XY *x, B *b, XY *y, unsigned int number_of_batche
       unsigned int iidx = batch*number_of_elements + idx;
       XY in_x = x[iidx];
       XY in_y = y[iidx];
-      in_y *= in_b;
-      in_y += (in_a*in_x);
+      in_y = mul<B,XY>(in_b,in_y);
+      in_y += mul<A,XY>(in_a,in_x);
       y[iidx] = in_y;
     }
   }
@@ -309,7 +309,6 @@ void cuNDA_axpby_kernel( A *a, XY *x, B *b, XY *y, unsigned int number_of_batche
 template<class A, class B, class XY> __host__
 bool cuNDA_axpby( cuNDArray<A> *a, cuNDArray<XY> *x, cuNDArray<B> *b, cuNDArray<XY> *y )
 {
-
   if( x->get_number_of_elements() != y->get_number_of_elements() ){
     cout << endl << "image dimensions mismatch in 'axpby'" << endl;
     return false;
@@ -530,10 +529,10 @@ cuNDA_correlation_kernel( T *in, T *corrm, unsigned int num_batches, unsigned in
 
   if( p < num_elements ){    
     for( unsigned int j=0; j<i; j++){
-      corrm[(j*num_batches+i)*num_elements+p] = in[i*num_elements+p]*conj(in[j*num_elements+p]);
+      corrm[(j*num_batches+i)*num_elements+p] = mul<T,T>(in[i*num_elements+p], conj(in[j*num_elements+p]));
       corrm[(i*num_batches+j)*num_elements+p] = conj(corrm[(j*num_batches+i)*num_elements+p]);
     }
-    corrm[(i*num_batches+i)*num_elements+p] = in[i*num_elements+p]*conj(in[i*num_elements+p]);
+    corrm[(i*num_batches+i)*num_elements+p] = mul<T,T>(in[i*num_elements+p],conj(in[i*num_elements+p]));
   }
 }
 
@@ -874,6 +873,10 @@ template bool cuNDA_zero_fill_border<uint2, float2, float>(float2, cuNDArray<flo
 template bool cuNDA_zero_fill_border<uint2, float2, cuFloatComplex>(float2, cuNDArray<cuFloatComplex>*);
 
 template std::vector<unsigned int> cuNDA_toVec<uint2>(uint2);
+template std::vector<unsigned int> cuNDA_toVec<uint3>(uint3);
+template std::vector<unsigned int> cuNDA_toVec<uint4>(uint4);
 
 template bool cuNDA_fromVec<uint2>( std::vector<unsigned int>, uint2&);
+template bool cuNDA_fromVec<uint3>( std::vector<unsigned int>, uint3&);
+template bool cuNDA_fromVec<uint4>( std::vector<unsigned int>, uint4&);
 

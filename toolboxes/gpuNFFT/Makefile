@@ -8,8 +8,7 @@ GADGETRONHOME=../..
 CUDASDK=$(HOME)/NVIDIA_GPU_Computing_SDK
 CUDAINCLUDES=\
 	-I. \
-	-I../../toolboxes/ndarray \
-	-I../../toolboxes/gpundarray \
+	-I../../inc \
 	-I/usr/local/cuda/include \
 	-I$(CUDASDK)/C/common/inc \
 	-I$(CUDASDK)/shared/inc
@@ -27,7 +26,16 @@ endif
 LIBSOURCES=
 
 HEADERFILES=\
-	NFFT.hcu
+	NFFT.hcu \
+	ndarray_device_utilities.hcu \
+	vector_utilities.hcu \
+	floatd_operators.hcu \
+	floatd_utilities.hcu \
+	uintd_operators.hcu \
+	uintd_utilities.hcu \
+	intd_operators.hcu \
+	intd_utilities.hcu \
+	check_CUDA.h
 
 CUDASOURCES=\
 	NFFT.cu \
@@ -39,20 +47,20 @@ LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
 CXX=g++
 ifeq ($(KERNEL), Darwin)
-CXX=g++ -fPIC -arch i386 -m32 -Xlinker -rpath /usr/local/cuda/lib -O2
+CXX=g++ -fPIC -arch i386 -m32 -Xlinker -rpath /usr/local/cuda/lib -g
 endif 
 
 CXXFLAGS=-c -fPIC -Wall -I. \
 	-I$(GADGETRONHOME)/inc \
 	-I$(GADGETRONHOME)/gadgets/core \
 	$(CUDAINCLUDES) \
-	-DGADGETS_BUILD_DLL -O2
+	-DGADGETS_BUILD_DLL -g
 
 CXXFLAGS_MAIN=-c --Wall -I. \
 	-I$(GADGETRONHOME)/inc \
 	-I$(GADGETRONHOME)/gadgets/core \
 	$(CUDAINCLUDES) \
-	-O2
+	-g
 
 LIBLDFLAGS= -shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml -lcundarray
 MAINLDFLAGS= -lACE -L$(GADGETRONHOME)/lib -ltinyxml -lcundarray
@@ -66,7 +74,7 @@ ifeq ($(KERNEL), Darwin)
 GENCODE_SM := $(GENCODE_SM10)
 endif
 
-NVCCFLAGS= $(GENCODE_SM) --compiler-options -fno-strict-aliasing $(CUDAINCLUDES) -O2 -c
+NVCCFLAGS= $(GENCODE_SM) --compiler-options -fno-strict-aliasing $(CUDAINCLUDES) -g -c
 ifeq ($(KERNEL), Darwin)
 NVCCFLAGS += -m32
 endif
@@ -81,7 +89,7 @@ LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 
 all: $(LIBFILE)
 
-test: $(LIBCUDAOBJECTS)
+test: $(LIBCUDAOBJECTS) main.cuo
 	$(NVCC) $(NVCCFLAGS) -o main.cuo main.cu
 	$(CXX) $(LIBOBJECTS) $(LIBCUDAOBJECTS) main.cuo $(CUDALIBRARIES) $(MAINLDFLAGS) -o test 
 

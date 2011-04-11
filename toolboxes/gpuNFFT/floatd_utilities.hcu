@@ -105,6 +105,16 @@ __inline__ __host__ __device__ float norm_sq( float4 v )
   return v.x*v.x + v.y*v.y + v.z*v.z + v.w*v.w;
 }
 
+__inline__ __host__ __device__ void sin_cos( float angle, float *_sin, float *_cos )
+{
+  sincosf( angle, _sin, _cos );
+}
+
+__inline__ __host__ __device__ float arg( cuFloatComplex z )
+{
+  return atan2f(z.y, z.x);
+}
+
 template<> __inline__ __host__ __device__ float get_epsilon<float>()
 {
   return FLT_EPSILON;
@@ -113,6 +123,11 @@ template<> __inline__ __host__ __device__ float get_epsilon<float>()
 __inline__ __host__ __device__ float reciprocal( const float real )
 {
   return 1.0f/real;
+}
+
+__inline__ __host__ __device__ cuFloatComplex reciprocal( const cuFloatComplex z )
+{
+  return cuCmulf( make_cuFloatComplex(1.0f/norm_sq(z),0.0f), cuConjf(z) );
 }
 
 __inline__ __host__ __device__ float conj( const float f )
@@ -125,9 +140,19 @@ __inline__ __host__ __device__ cuFloatComplex conj( const cuFloatComplex z )
   return cuConjf(z);
 }
 
-__inline__ __host__ __device__ cuFloatComplex reciprocal( const cuFloatComplex z )
+template<> __inline__ __host__ __device__ float mul<float,float>( float a, float b )
 {
-  return cuCmulf( make_cuFloatComplex(1.0f/norm_sq(z),0.0f), cuConjf(z) );
+  return a*b;
+}
+
+template<> __inline__ __host__ __device__ cuFloatComplex mul<float, cuFloatComplex>( float a, cuFloatComplex b )
+{
+  return make_cuFloatComplex( a*b.x, a*b.y );
+}
+
+template<> __inline__ __host__ __device__ cuFloatComplex mul<cuFloatComplex,cuFloatComplex>( cuFloatComplex a, cuFloatComplex b )
+{
+  return cuCmulf(a,b);
 }
 
 template<> __inline__ __host__ __device__ float2 real_to_reald<float, float2>( const float *in )
@@ -406,6 +431,11 @@ __inline__ __host__ __device__ bool equal(float3 f)
 __inline__ __host__ __device__ bool equal(float4 f)
 {
   return (f.x==f.y) && (f.y==f.z) && (f.z==f.w); 
+}
+
+__inline__ __device__ float uintd_to_reald( unsigned int a )
+{
+  return uint2float(a);
 }
 
 __inline__ __device__ float2 uintd_to_reald( uint2 a )
