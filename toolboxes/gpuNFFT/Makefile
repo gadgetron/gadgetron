@@ -24,6 +24,7 @@ LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 APPLDFLAGS += -lcuNFFT -lcundarray
+LIBLDFLAGS += -lcundarray
 
 all: $(LIBFILE)
 	mkdir -p $(GADGETRONHOME)/lib
