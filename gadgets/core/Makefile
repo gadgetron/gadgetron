@@ -21,6 +21,8 @@ LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 
+LIBLDFLAGS += -lfftw3 -lfftw3f
+
 all: $(LIBFILE)
 
 $(LIBFILE): $(LIBOBJECTS) Makefile

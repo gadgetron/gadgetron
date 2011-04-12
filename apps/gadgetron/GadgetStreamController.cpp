@@ -368,7 +368,7 @@ T* GadgetStreamController::load_dll_component(const char* DLL, const char* compo
   
 
   if (!dll) {
-    GADGET_DEBUG1("Failed to load DLL, Possible reasons: \n");
+     GADGET_DEBUG1("Failed to load DLL, Possible reasons: \n");
     GADGET_DEBUG1("   * Name of DLL is wrong in XML file \n");
     GADGET_DEBUG1("   * Path of DLL is not in your DLL search path (LD_LIBRARY_PATH on Unix)\n");
     GADGET_DEBUG1("   * Path of other DLLs that this DLL depends on is not in the search path\n");
