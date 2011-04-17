@@ -20,7 +20,7 @@ LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 
 LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
-CXX=g++ -g
+CXX=g++
 ifeq ($(KERNEL), Darwin)
 CXX=g++ -m32 -arch i386
 endif 
