@@ -1,5 +1,4 @@
 #include "htgrappa.h"
-#include "uintd.hcu"
 #include <cublas.h>
 
 #include <cublas_v2.h>
