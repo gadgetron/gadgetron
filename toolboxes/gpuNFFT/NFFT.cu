@@ -1,35 +1,32 @@
 /*
-	CUDA implementation of the NFFT.
+  CUDA implementation of the NFFT.
 
-	-----------
+  -----------
 
-	Accelerating the Non-equispaced Fast Fourier Transform on Commodity Graphics Hardware.
-	T.S. Sørensen, T. Schaeffter, K.Ø. Noe, M.S. Hansen. 
-	IEEE Transactions on Medical Imaging 2008; 27(4):538-547.
+  Accelerating the Non-equispaced Fast Fourier Transform on Commodity Graphics Hardware.
+  T.S. Sørensen, T. Schaeffter, K.Ø. Noe, M.S. Hansen. 
+  IEEE Transactions on Medical Imaging 2008; 27(4):538-547.
 
-	Real-time Reconstruction of Sensitivity Encoded Radial Magnetic Resonance Imaging Using a Graphics Processing Unit.
-	T.S. Sørensen, D. Atkinson, T. Schaeffter, M.S. Hansen.
-	IEEE Transactions on Medical Imaging 2009; 28(12): 1974-1985. 
+  Real-time Reconstruction of Sensitivity Encoded Radial Magnetic Resonance Imaging Using a Graphics Processing Unit.
+  T.S. Sørensen, D. Atkinson, T. Schaeffter, M.S. Hansen.
+  IEEE Transactions on Medical Imaging 2009; 28(12): 1974-1985. 
 */
 
 // Includes - our own code
-#include "NFFT.hcu"
+#include "NFFT.h"
 #include "cuNDFFT.h"
 
+#include "hoNDArray_fileio.h"
 #include "cuNDArray.h"
 #include "ndarray_device_utilities.hcu"
-#include "hoNDArray_fileio.h"
 
-#include "vector_utilities.hcu"
-#include "intd_operators.hcu"
-#include "uintd_operators.hcu"
-#include "floatd_operators.hcu"
+#include "vectord_operators.hcu"
+#include "vectord_utilities.hcu"
 
 #include "check_CUDA.h"
 
 // Includes - CUDA
 #include <math_constants.h>
-#include <cuComplex.h>
 #include <cufft.h>
 #include <cublas.h>
 
@@ -51,7 +48,7 @@ using namespace thrust;
 // Some defines used to configure our kernels
 //
 
-// TODO: make d x generation dimensional struct to contain MAX_COILS and THREADS_PER_KERNEL for the NFFT and NFFT_H respectively
+// TODO: make "d x generation"-dimensional struct to contain MAX_COILS and THREADS_PER_KERNEL for the NFFT and NFFT_H respectively
 
 // Block configuration for kernel
 // ------------------------------
@@ -96,24 +93,24 @@ extern __shared__ char _shared_mem[];
 // Includes containing the NFFT convolution implementation
 // 
 
+#include "KaiserBessel_kernel.cu"
 #include "NFFT_kernel.cu"
 #include "NFFT_H_kernel.cu"
-#include "KaiserBessel_kernel.cu"
 #include "NFFT_preprocess_kernel.cu"
 
 //
 // Public class methods
 //
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> 
-NFFT_plan<UINTd, REALd, REAL, NDTYPE>::NFFT_plan()
+template<class REAL, unsigned int D> 
+NFFT_plan<REAL,D>::NFFT_plan()
 {
   // Minimal initialization
   barebones();
 }
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> 
-NFFT_plan<UINTd, REALd, REAL, NDTYPE>::NFFT_plan( UINTd matrix_size, UINTd matrix_size_os, UINTd fixed_dims, REAL W, int device )
+template<class REAL, unsigned int D> 
+NFFT_plan<REAL,D>::NFFT_plan( uintd<D> matrix_size, uintd<D> matrix_size_os, uintd<D> fixed_dims, REAL W, int device )
 {
   // Minimal initialization
   barebones();
@@ -125,15 +122,14 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::NFFT_plan( UINTd matrix_size, UINTd matri
     cout << endl << "Initialization of the plan failed." << endl;
 }
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> 
-NFFT_plan<UINTd, REALd, REAL, NDTYPE>::NFFT_plan( NFFT_plan<UINTd, REALd, REAL, NDTYPE> *plan )
+template<class REAL, unsigned int D> 
+NFFT_plan<REAL,D>::NFFT_plan( NFFT_plan<REAL,D> *plan )
 {
   matrix_size = plan->matrix_size;
   matrix_size_os = plan->matrix_size_os;
   matrix_size_wrap = plan->matrix_size_wrap;
   fixed_dims = plan->fixed_dims;
   non_fixed_dims = plan->non_fixed_dims;
-  d = plan->d;
   W = plan->W;
   alpha = plan->alpha;
   beta = plan->beta;
@@ -152,8 +148,8 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::NFFT_plan( NFFT_plan<UINTd, REALd, REAL, 
   preprocessed_NFFT_H = plan->preprocessed_NFFT_H;
    
   if( plan->preprocessed_NFFT || plan->preprocessed_NFFT_H ){
-      *trajectory_positions = *(plan->trajectory_positions);
-    }
+    *trajectory_positions = *(plan->trajectory_positions);
+  }
  
   if( plan->preprocessed_NFFT_H ){
     *tuples_last = *(plan->tuples_last);
@@ -162,17 +158,17 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::NFFT_plan( NFFT_plan<UINTd, REALd, REAL, 
   }
 }
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> 
-NFFT_plan<UINTd, REALd, REAL, NDTYPE>::~NFFT_plan()
+template<class REAL, unsigned int D> 
+NFFT_plan<REAL,D>::~NFFT_plan()
 {
-  wipe();
+  wipe(NFFT_WIPE_ALL);
 }
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> 
-bool NFFT_plan<UINTd, REALd, REAL, NDTYPE>::setup( UINTd matrix_size, UINTd matrix_size_os, UINTd fixed_dims, REAL W, int _device )
+template<class REAL, unsigned int D> 
+bool NFFT_plan<REAL,D>::setup( uintd<D> matrix_size, uintd<D> matrix_size_os, uintd<D> fixed_dims, REAL W, int _device )
 {	
   // Free memory
-  wipe();
+  wipe(NFFT_WIPE_ALL);
 
   //
   // Check if the device is valid
@@ -187,12 +183,13 @@ bool NFFT_plan<UINTd, REALd, REAL, NDTYPE>::setup( UINTd matrix_size, UINTd matr
   cudaGetDeviceProperties( &deviceProp, device );
 
   unsigned int warp_size = deviceProp.warpSize;
-  
+  uintd<D> vec_warp_size; to_vectord<unsigned int,D>(vec_warp_size, warp_size);
+
   //
   // Check input against certain requirements
   //
   
-  if( sum(matrix_size%warp_size) || sum(matrix_size_os%warp_size) ){
+  if( sum(matrix_size%vec_warp_size) || sum(matrix_size_os%vec_warp_size) ){
     cout << endl << "Illegal matrix size for the NFFT plan (not a multiple of the warp size)" << endl;
     return false;
   }
@@ -201,31 +198,30 @@ bool NFFT_plan<UINTd, REALd, REAL, NDTYPE>::setup( UINTd matrix_size, UINTd matr
   // Setup private variables
   //
 
-  d = sizeof(UINTd)/sizeof(unsigned int);
-
   this->matrix_size = matrix_size;
   this->matrix_size_os = matrix_size_os;
   this->fixed_dims = fixed_dims;
 
-  for( unsigned int i=0; i<d; i++ ){
-
-    if( ((unsigned int*)(&fixed_dims))[i] >= 1 ){
-      ((unsigned int*)(&non_fixed_dims))[i] = 0;
+  for( unsigned int i=0; i<D; i++ ){
+    
+    if( fixed_dims.vec[i] >= 1 ){
+      non_fixed_dims.vec[i] = 0;
     }
     else{
-      ((unsigned int*)(&non_fixed_dims))[i] = 1;
+      non_fixed_dims.vec[i] = 1;
     }
   }
 
-  REAL one = get_one<REAL>();
-  UINTd ones = uint_to_uintd<UINTd>(1,1);  
-  REAL W_half = half(W);
-  REALd W_vec = real_to_reald<REAL, REALd>( W_half, W_half );
 
-  matrix_size_wrap = hreald_to_uintd(ceil(W_vec))<<1; // TODO: check if padding to warp_size changes performance
+  REAL W_half = get_half<REAL>()*W;
+  vectord<REAL,D> W_vec; to_vectord<REAL,D>(W_vec, W_half);
+
+  to_uintd<REAL,D>( matrix_size_wrap, ceil(W_vec));
+  matrix_size_wrap<<=1; 
   
-  alpha = (REAL) matrix_size_os.x / (REAL) matrix_size.x;
+  alpha = (REAL) matrix_size_os.vec[0] / (REAL) matrix_size.vec[0];
   
+  REAL one = get_one<REAL>();
   if( alpha < one ){
     cout << endl << "Illegal oversampling ratio suggested" << endl;
     return false;
@@ -233,24 +229,21 @@ bool NFFT_plan<UINTd, REALd, REAL, NDTYPE>::setup( UINTd matrix_size, UINTd matr
 
   this->W = W;
 
-  unsigned int fracX = matrix_size_os.x / matrix_size.x;
-  unsigned int moduX = matrix_size_os.x % matrix_size.x;
+  unsigned int fracX = matrix_size_os.vec[0] / matrix_size.vec[0];
+  unsigned int moduX = matrix_size_os.vec[0] % matrix_size.vec[0];
 
-  for( unsigned int dim=0; dim<d; dim++){
+  for( unsigned int dim=0; dim<D; dim++){
 
-    if( !(((unsigned int*)(&fixed_dims))[dim]) && ( W > ((unsigned int*)(&matrix_size))[dim])){
-    }
+    if( fixed_dims.vec[dim] > 1 )
+      fixed_dims.vec[dim] = 1; // enforce fixed_dims as "boolean style"
 
-    if( (((unsigned int*)(&fixed_dims))[dim]) > 1 )
-      ((unsigned int*)(&fixed_dims))[dim] = 1; // enforce fixed_dims as "boolean style"
-
-    if( (((unsigned int*)(&fixed_dims))[dim]) ){
-      ((unsigned int*)(&matrix_size_wrap))[dim] = 0;
+    if( fixed_dims.vec[dim] ){
+      matrix_size_wrap.vec[dim] = 0;
     }
     
-    if( !(((unsigned int*)(&fixed_dims))[dim]) &&
-	((((unsigned int*)(&matrix_size_os))[dim]/(((unsigned int*)(&matrix_size))[dim])) != fracX ||
-	 (((unsigned int*)(&matrix_size_os))[dim]%(((unsigned int*)(&matrix_size))[dim])) != moduX) ){
+    if( !fixed_dims.vec[dim] &&
+	((matrix_size_os.vec[dim]/(matrix_size.vec[dim])) != fracX ||
+	 (matrix_size_os.vec[dim]%(matrix_size.vec[dim]) != moduX) )){
       cout << endl << "Oversampling ratio is not constant between dimensions" << endl;
       return false;
     }
@@ -284,15 +277,15 @@ bool NFFT_plan<UINTd, REALd, REAL, NDTYPE>::setup( UINTd matrix_size, UINTd matr
   return success;
 }
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> 
-bool NFFT_plan<UINTd, REALd, REAL, NDTYPE>::preprocess( cuNDArray<REALd> *trajectory, bool forwards_only )
+template<class REAL, unsigned int D> 
+bool NFFT_plan<REAL,D>::preprocess( cuNDArray< vectord<REAL,D> > *trajectory, NFFT_prep_mode mode )
 {
   if( trajectory->get_device() != device ){
     cout << endl << "NFFT_plan::preprocess: device mismatch." << endl;
     return false;
   }
 
-  wipe( true );
+  wipe(NFFT_WIPE_PREPROCESSING);
 
   if( !trajectory || !trajectory->get_number_of_dimensions() == 1 ){
     cout << endl << "NFFT_plan preprocessing: illegal trajecotry ndarray." << endl;
@@ -315,15 +308,36 @@ bool NFFT_plan<UINTd, REALd, REAL, NDTYPE>::preprocess( cuNDArray<REALd> *trajec
   }  
   
   // Make Thrust device vector of trajectory and samples
-  device_vector<REALd> trajectory_positions_in( device_pointer_cast<REALd>(trajectory->get_data_ptr()), device_pointer_cast<REALd>(trajectory->get_data_ptr()+number_of_samples) );
-  trajectory_positions = new device_vector<REALd>( number_of_samples );
-
+  device_vector< vectord<REAL,D> > trajectory_positions_in( device_pointer_cast< vectord<REAL,D> >(trajectory->get_data_ptr()), 
+							    device_pointer_cast< vectord<REAL,D> >(trajectory->get_data_ptr()+number_of_samples) );
+  switch(D){
+    
+    // Switch to ensure alignment issues
+    
+  case 2:
+    trajectory_positions = (sizeof(REAL)==sizeof(float)) ? 
+      (device_vector< vectord<REAL,D> >*) (new device_vector<floatd2>(number_of_samples)) : 
+      (device_vector< vectord<REAL,D> >*) (new device_vector<doubled2>(number_of_samples));
+    break;
+  case 4:
+    trajectory_positions = (sizeof(REAL)==sizeof(float)) ? 
+      (device_vector< vectord<REAL,D> >*) (new device_vector<floatd4>(number_of_samples)) : 
+      (device_vector< vectord<REAL,D> >*) (new device_vector<doubled4>(number_of_samples));
+    break;
+  default:
+    trajectory_positions = new device_vector< vectord<REAL,D> >( number_of_samples );
+    break;
+  }
+  
   CHECK_FOR_CUDA_ERROR();
 
-  // convert input trajectory in [-1/2;1/2] to [0;matrix_size_os]
-  thrust::transform( trajectory_positions_in.begin(), trajectory_positions_in.end(), trajectory_positions->begin(), trajectory_scale<REALd>(huintd_to_reald(matrix_size_os), huintd_to_reald((matrix_size_os+matrix_size_wrap)>>1)) );
+  vectord<REAL,D> matrix_size_os_real; to_reald<REAL,unsigned int,D>( matrix_size_os_real, matrix_size_os );
+  vectord<REAL,D> matrix_size_os_plus_wrap_real; to_reald<REAL,unsigned int,D>( matrix_size_os_plus_wrap_real, (matrix_size_os+matrix_size_wrap)>>1 );
 
-  if( !forwards_only ){
+  // convert input trajectory in [-1/2;1/2] to [0;matrix_size_os]
+  thrust::transform( trajectory_positions_in.begin(), trajectory_positions_in.end(), trajectory_positions->begin(), trajectory_scale<REAL,D>(matrix_size_os_real, matrix_size_os_plus_wrap_real) );
+
+  if( mode != NFFT_PREP_FORWARDS ){
     
     // allocate storage for and compute temporary prefix-sum variable (#cells influenced per sample)
     device_vector<unsigned int> c_p_s(number_of_samples);
@@ -331,9 +345,9 @@ bool NFFT_plan<UINTd, REALd, REAL, NDTYPE>::preprocess( cuNDArray<REALd> *trajec
     
     CHECK_FOR_CUDA_ERROR();
     
-    REAL half_W = half(W);
+    REAL half_W = get_half<REAL>()*W;
     thrust::plus<unsigned int> binary_op;
-    thrust::transform(trajectory_positions->begin(), trajectory_positions->end(), c_p_s.begin(), compute_num_cells_per_sample<REALd, REAL>(d,half_W));
+    thrust::transform(trajectory_positions->begin(), trajectory_positions->end(), c_p_s.begin(), compute_num_cells_per_sample<REAL,D>(half_W));
     inclusive_scan( c_p_s.begin(), c_p_s.end(), c_p_s_ps.begin(), binary_op ); // prefix sum
     
     // Build the vector of (grid_idx, sample_idx) tuples. Actually kept in two seperate vectors.
@@ -344,9 +358,9 @@ bool NFFT_plan<UINTd, REALd, REAL, NDTYPE>::preprocess( cuNDArray<REALd> *trajec
     CHECK_FOR_CUDA_ERROR();
     
     // Fill tuple vector
-    write_pairs<UINTd, REALd, REAL>( matrix_size_os, matrix_size_wrap, number_of_samples, W, 
-				     raw_pointer_cast(&(*trajectory_positions)[0]), raw_pointer_cast(&c_p_s_ps[0]), 
-				     raw_pointer_cast(&tuples_first[0]), raw_pointer_cast(&(*tuples_last)[0]) );
+    write_pairs<REAL,D>( matrix_size_os, matrix_size_wrap, number_of_samples, W, 
+			 raw_pointer_cast(&(*trajectory_positions)[0]), raw_pointer_cast(&c_p_s_ps[0]), 
+			 raw_pointer_cast(&tuples_first[0]), raw_pointer_cast(&(*tuples_last)[0]) );
     
     // Sort by grid indices
     sort_by_key(tuples_first.begin(), tuples_first.end(), tuples_last->begin() );
@@ -372,15 +386,15 @@ bool NFFT_plan<UINTd, REALd, REAL, NDTYPE>::preprocess( cuNDArray<REALd> *trajec
   
   preprocessed_NFFT = true;
 
-  if( !forwards_only )
+  if( mode != NFFT_PREP_FORWARDS )
     preprocessed_NFFT_H = true;
 
   return true;
 }
-  
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> bool
-NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute( cuNDArray<NDTYPE> *samples, cuNDArray<NDTYPE> *image, cuNDArray<REAL> *weights, NFFT_mode mode )
+
+template<class REAL, unsigned int D> bool
+NFFT_plan<REAL,D>::compute( cuNDArray< real_complex<REAL> > *samples, cuNDArray< real_complex<REAL> > *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode )
 {  
   if( samples->get_device() != device || image->get_device() != device || (weights && weights->get_device() != device) ){
     cout << endl << "NFFT_plan::compute: device mismatch." << endl;
@@ -401,16 +415,16 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute( cuNDArray<NDTYPE> *samples, cuND
     return false;
   
   bool success;  
-  cuNDArray<NDTYPE> *working_image = 0x0, *working_samples = 0x0;
+  cuNDArray< real_complex<REAL> > *working_image = 0x0, *working_samples = 0x0;
   
-  UINTd image_dims; 
+  uintd<D> image_dims; 
   if( !cuNDA_fromVec( image->get_dimensions(), image_dims ) ){
     cout << "NFFT_plan::compute: image dimension undermatch the plan" << endl;
     return false;
   }
   
   bool oversampled_image = (image_dims==matrix_size_os); 
-  unsigned int num_batches = (image->get_number_of_dimensions()>d) ? image->get_size(image->get_number_of_dimensions()-1) : 1;
+  unsigned int num_batches = (image->get_number_of_dimensions()>D) ? image->get_size(image->get_number_of_dimensions()-1) : 1;
   vector<unsigned int> vec_dims = cuNDA_toVec(matrix_size_os); 
   if( num_batches > 1 ) 
     vec_dims.push_back(num_batches);
@@ -428,8 +442,12 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute( cuNDArray<NDTYPE> *samples, cuND
   case NFFT_FORWARDS:
     
     if( !oversampled_image ){
-      working_image = cuNDArray<NDTYPE>::allocate(vec_dims);
-      cuNDA_expand_with_zero_fill<UINTd, REALd>( image, working_image );
+
+      working_image = (sizeof(REAL)==sizeof(float)) ? // ensures alignment; do not compact allocations into real_complex<REAL>
+	(cuNDArray< real_complex<REAL> >*) cuNDArray<float_complex>::allocate(vec_dims) :
+	(cuNDArray< real_complex<REAL> >*) cuNDArray<double_complex>::allocate(vec_dims); 
+
+      cuNDA_expand_with_zero_fill<real_complex<REAL>,D>( image, working_image );
     }
     else{
       working_image = image;
@@ -447,7 +465,9 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute( cuNDArray<NDTYPE> *samples, cuND
 
     // Density compensation
     if( weights ){
-      working_samples = new cuNDArray<NDTYPE>(*samples);
+      working_samples = (sizeof(REAL)==sizeof(float)) ? 
+	(cuNDArray< real_complex<REAL> >*) new cuNDArray<float_complex>((cuNDArray<float_complex>*) samples) : 
+      	(cuNDArray< real_complex<REAL> >*) new cuNDArray<double_complex>((cuNDArray<double_complex>*) samples);
       cuNDA_scale( weights, working_samples );
     }
     else{
@@ -455,7 +475,10 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute( cuNDArray<NDTYPE> *samples, cuND
     }
     
     if( !oversampled_image ){
-      working_image = cuNDArray<NDTYPE>::allocate(vec_dims);
+
+      working_image = (sizeof(REAL)==sizeof(float)) ? // ensures alignment; do not compact allocations into real_complex<REAL>
+	(cuNDArray< real_complex<REAL> >*) cuNDArray<float_complex>::allocate(vec_dims) :
+	(cuNDArray< real_complex<REAL> >*) cuNDArray<double_complex>::allocate(vec_dims); 
     }
     else{
       working_image = image;
@@ -465,7 +488,7 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute( cuNDArray<NDTYPE> *samples, cuND
 
     if( success ){
       if( !oversampled_image ){
-	cuNDA_crop( (matrix_size_os-matrix_size)>>1, working_image, image );
+	cuNDA_crop<real_complex<REAL>,D>( (matrix_size_os-matrix_size)>>1, working_image, image );
       }
     }
     
@@ -488,8 +511,8 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute( cuNDArray<NDTYPE> *samples, cuND
   return success;
 }
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> bool
-NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_iteration( cuNDArray<NDTYPE> *samples, cuNDArray<NDTYPE> *image, cuNDArray<REAL> *weights, NFFT_mode mode )
+template<class REAL, unsigned int D> bool
+NFFT_plan<REAL,D>::compute_iteration( cuNDArray< real_complex<REAL> > *samples, cuNDArray< real_complex<REAL> > *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode )
 {  
   if( samples->get_device() != device || image->get_device() != device || (weights && weights->get_device() != device) ){
     cout << endl << "NFFT_plan::compute_iteration: device mismatch." << endl;
@@ -504,16 +527,16 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_iteration( cuNDArray<NDTYPE> *sam
     return false;
   
   bool success;  
-  cuNDArray<NDTYPE> *working_image = 0x0, *working_samples = 0x0;
+  cuNDArray< real_complex<REAL> > *working_image = 0x0, *working_samples = 0x0;
 
-  UINTd image_dims; 
+  uintd<D> image_dims; 
   if( !cuNDA_fromVec( image->get_dimensions(), image_dims ) ){
     cout << "NFFT_plan::compute_iteration: image dimension undermatch the plan" << endl;
     return false;
   }
   
   bool oversampled_image = (image_dims==matrix_size_os); 
-  unsigned int num_batches = (image->get_number_of_dimensions()>d) ? image->get_size(image->get_number_of_dimensions()-1) : 1;
+  unsigned int num_batches = (image->get_number_of_dimensions()>D) ? image->get_size(image->get_number_of_dimensions()-1) : 1;
   vector<unsigned int> vec_dims = cuNDA_toVec(matrix_size_os); 
   if( num_batches > 1 ) 
     vec_dims.push_back(num_batches);
@@ -532,9 +555,11 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_iteration( cuNDArray<NDTYPE> *sam
     
     if( !oversampled_image ){
       
-      working_image = cuNDArray<NDTYPE>::allocate(vec_dims);
+      working_image = (sizeof(REAL)==sizeof(float)) ? // ensures alignment; do not compact allocations into real_complex<REAL>
+	(cuNDArray< real_complex<REAL> >*) cuNDArray<float_complex>::allocate(vec_dims) :
+	(cuNDArray< real_complex<REAL> >*) cuNDArray<double_complex>::allocate(vec_dims); 
 
-      cuNDA_expand_with_zero_fill<UINTd, REALd>( image, working_image );
+      cuNDA_expand_with_zero_fill<real_complex<REAL>,D>( image, working_image );
     }
     else{
       working_image = image;
@@ -556,7 +581,7 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_iteration( cuNDArray<NDTYPE> *sam
     
     if( success ){
       if( !oversampled_image ){
-	cuNDA_crop( (matrix_size_os-matrix_size)>>1, working_image, image );
+	cuNDA_crop<real_complex<REAL>,D>( (matrix_size_os-matrix_size)>>1, working_image, image );
 	delete working_image; working_image = 0x0;
       }
     }
@@ -567,7 +592,9 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_iteration( cuNDArray<NDTYPE> *sam
 
     // Density compensation
     if( weights ){
-      working_samples = new cuNDArray<NDTYPE>(*samples);
+      working_samples = (sizeof(REAL)==sizeof(float)) ? 
+	(cuNDArray< real_complex<REAL> >*) new cuNDArray<float_complex>((cuNDArray<float_complex>*) samples) : 
+      	(cuNDArray< real_complex<REAL> >*) new cuNDArray<double_complex>((cuNDArray<double_complex>*) samples);
       cuNDA_scale( weights, working_samples );
     }
     else{
@@ -575,7 +602,11 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_iteration( cuNDArray<NDTYPE> *sam
     }
     
     if( !oversampled_image )
-      working_image = cuNDArray<NDTYPE>::allocate(vec_dims);
+      
+      working_image = (sizeof(REAL)==sizeof(float)) ? // ensures alignment; do not compact allocations into real_complex<REAL>
+	(cuNDArray< real_complex<REAL> >*) cuNDArray<float_complex>::allocate(vec_dims) :
+	(cuNDArray< real_complex<REAL> >*) cuNDArray<double_complex>::allocate(vec_dims); 
+
     else
       working_image = image;
 
@@ -607,8 +638,8 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_iteration( cuNDArray<NDTYPE> *sam
   return success;
 }
 
-template <class UINTd, class REALd, class REAL, class NDTYPE> bool
-NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve( cuNDArray<NDTYPE> *samples, cuNDArray<NDTYPE> *image, cuNDArray<REAL> *weights, NFFT_mode mode )
+template<class REAL, unsigned int D> bool
+NFFT_plan<REAL,D>::convolve( cuNDArray< real_complex<REAL> > *samples, cuNDArray< real_complex<REAL> > *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode )
 {
   if( samples->get_device() != device || image->get_device() != device || (weights && weights->get_device() != device) ){
     cout << endl << "NFFT_plan::convolve: device mismatch." << endl;
@@ -626,16 +657,16 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve( cuNDArray<NDTYPE> *samples, cuN
     return false;
   
   bool success;  
-  cuNDArray<NDTYPE> *working_image = 0x0, *working_samples = 0x0;
+  cuNDArray< real_complex<REAL> > *working_image = 0x0, *working_samples = 0x0;
   
-  UINTd image_dims; 
+  uintd<D> image_dims; 
   if( !cuNDA_fromVec( image->get_dimensions(), image_dims ) ){
     cout << "NFFT_plan::convolve: image dimension undermatch the plan" << endl;
     return false;
   }
   
   bool oversampled_image = (image_dims==matrix_size_os); 
-  unsigned int num_batches = (image->get_number_of_dimensions()>d) ? image->get_size(image->get_number_of_dimensions()-1) : 1;
+  unsigned int num_batches = (image->get_number_of_dimensions()>D) ? image->get_size(image->get_number_of_dimensions()-1) : 1;
   vector<unsigned int> vec_dims = cuNDA_toVec(matrix_size_os); 
   if( num_batches > 1 ) 
     vec_dims.push_back(num_batches);
@@ -653,8 +684,12 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve( cuNDArray<NDTYPE> *samples, cuN
   case NFFT_FORWARDS:
     
     if( !oversampled_image ){
-      working_image = cuNDArray<NDTYPE>::allocate(vec_dims);
-      cuNDA_expand_with_zero_fill<UINTd, REALd>( image, working_image );
+
+      working_image = (sizeof(REAL)==sizeof(float)) ? // ensures alignment; do not compact allocations into real_complex<REAL>
+	(cuNDArray< real_complex<REAL> >*) cuNDArray<float_complex>::allocate(vec_dims) :
+	(cuNDArray< real_complex<REAL> >*) cuNDArray<double_complex>::allocate(vec_dims); 
+
+      cuNDA_expand_with_zero_fill<real_complex<REAL>,D>( image, working_image );
     }
     else{
       working_image = image;
@@ -672,7 +707,9 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve( cuNDArray<NDTYPE> *samples, cuN
 
     // Density compensation
     if( weights ){
-      working_samples = new cuNDArray<NDTYPE>(*samples);
+      working_samples = (sizeof(REAL)==sizeof(float)) ? 
+	(cuNDArray< real_complex<REAL> >*) new cuNDArray<float_complex>((cuNDArray<float_complex>*) samples) : 
+      	(cuNDArray< real_complex<REAL> >*) new cuNDArray<double_complex>((cuNDArray<double_complex>*) samples);
       cuNDA_scale( weights, working_samples );
     }
     else{
@@ -680,7 +717,10 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve( cuNDArray<NDTYPE> *samples, cuN
     }
     
     if( !oversampled_image ){
-      working_image = cuNDArray<NDTYPE>::allocate(vec_dims);
+
+      working_image = (sizeof(REAL)==sizeof(float)) ? // ensures alignment; do not compact allocations into real_complex<REAL>
+	(cuNDArray< real_complex<REAL> >*) cuNDArray<float_complex>::allocate(vec_dims) :
+	(cuNDArray< real_complex<REAL> >*) cuNDArray<double_complex>::allocate(vec_dims); 
     }
     else{
       working_image = image;
@@ -690,7 +730,7 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve( cuNDArray<NDTYPE> *samples, cuN
 
     if( success ){
       if( !oversampled_image ){
-	cuNDA_crop( (matrix_size_os-matrix_size)>>1, working_image, image );
+	cuNDA_crop<real_complex<REAL>,D>( (matrix_size_os-matrix_size)>>1, working_image, image );
       }
     }
     
@@ -712,24 +752,23 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve( cuNDArray<NDTYPE> *samples, cuN
   return success;
 }
 
-//TODO: set default scale=true og sikr samme resultat
-template<class UINTd, class REALd, class REAL, class NDTYPE> bool
-NFFT_plan<UINTd, REALd, REAL, NDTYPE>::FFT(cuNDArray<NDTYPE> *data, NFFT_mode mode, bool do_scale )
+template<class REAL, unsigned int D> bool
+NFFT_plan<REAL,D>::FFT(cuNDArray< real_complex<REAL> > *data, NFFT_comp_mode mode, bool do_scale )
 {
   if( data->get_device() != device ){
     cout << endl << "NFFT_plan::FFT: device mismatch." << endl;
     return false;
   }
 
-  UINTd _dims_to_transform; counting_vec( _dims_to_transform );
+  uintd<D> _dims_to_transform = counting_vec<D>();
   vector<unsigned int> dims_to_transform = cuNDA_toVec( _dims_to_transform );
 
   int res;
   if( mode == NFFT_FORWARDS ){
-    res = cuNDFFT().fft( data, dims_to_transform );
+    res = cuNDFFT().fft( (cuNDArray<cuFloatComplex>*)data, dims_to_transform ); // TODO: remove casting / fix fft interface in cuNDFFT.h/cu
   }
   else{
-    res = cuNDFFT().ifft( data, dims_to_transform, do_scale );
+    res = cuNDFFT().ifft( (cuNDArray<cuFloatComplex>*)data, dims_to_transform, do_scale );
   }
 
   if( res == 0 )
@@ -738,15 +777,15 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::FFT(cuNDArray<NDTYPE> *data, NFFT_mode mo
     return false;
 }
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> bool
-NFFT_plan<UINTd, REALd, REAL, NDTYPE>::deapodize( cuNDArray<NDTYPE> *image )
+template<class REAL, unsigned int D> bool
+NFFT_plan<REAL,D>::deapodize( cuNDArray< real_complex<REAL> > *image )
 {
   if( image->get_device() != device ){
     cout << endl << "NFFT_plan::FFT: device mismatch." << endl;
     return false;
   }
 
- unsigned char components;
+  unsigned char components;
   
   components = NFFT_FFT;
   
@@ -761,13 +800,11 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::deapodize( cuNDArray<NDTYPE> *image )
     cerr << "NFFT_plan::setup: unable to set device" << endl;
   }  
 
-  // TODO: fixeme!!!!
- cuNDA_scale( deapodization_filter, image );
+  cuNDA_scale( deapodization_filter, image );
   
-
- if( device != device_no_old && cudaSetDevice(device_no_old) != cudaSuccess) {
-   cerr << "NFFT_plan::setup: unable to set device" << endl;
- }
+  if( device != device_no_old && cudaSetDevice(device_no_old) != cudaSuccess) {
+    cerr << "NFFT_plan::setup: unable to set device" << endl;
+  }
 
   return true;
 }
@@ -776,8 +813,8 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::deapodize( cuNDArray<NDTYPE> *image )
 // Private class methods
 //
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> bool 
-NFFT_plan<UINTd, REALd, REAL, NDTYPE>::check_consistency( cuNDArray<NDTYPE> *samples, cuNDArray<NDTYPE> *image, cuNDArray<REAL> *weights, unsigned char components )
+template<class REAL, unsigned int D> bool 
+NFFT_plan<REAL,D>::check_consistency( cuNDArray< real_complex<REAL> > *samples, cuNDArray< real_complex<REAL> > *image, cuNDArray<REAL> *weights, unsigned char components )
 {
   if( !initialized ){
     cout << endl << "NFFT_plan: Unable to proceed without setup." << endl;
@@ -804,12 +841,12 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::check_consistency( cuNDArray<NDTYPE> *sam
     return false;
   }
 
-  if( !((image->get_number_of_dimensions() == d) || (image->get_number_of_dimensions() == (d+1))) ){
+  if( !((image->get_number_of_dimensions() == D) || (image->get_number_of_dimensions() == (D+1))) ){
     cout << endl << "NFFT_plan: Number of image dimensions mismatch the plan." << endl;
     return false;
   }    
 
-  UINTd image_dims; cuNDA_fromVec( image->get_dimensions(), image_dims );
+  uintd<D> image_dims; cuNDA_fromVec( image->get_dimensions(), image_dims );
   bool oversampled_image = (image_dims==matrix_size_os);
   
   if( !((oversampled_image) ? (image_dims == matrix_size_os) : (image_dims == matrix_size) )){
@@ -829,8 +866,8 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::check_consistency( cuNDArray<NDTYPE> *sam
       return false;
     }
     
-    if( samples->get_number_of_dimensions()==2 || image->get_number_of_dimensions() == d+1 ){
-      if( !(samples->get_number_of_dimensions()==2) || !(image->get_number_of_dimensions() == d+1) || !(samples->get_size(1)==image->get_size(d)) ){
+    if( samples->get_number_of_dimensions()==2 || image->get_number_of_dimensions() == D+1 ){
+      if( !(samples->get_number_of_dimensions()==2) || !(image->get_number_of_dimensions() == D+1) || !(samples->get_size(1)==image->get_size(D)) ){
 	cout << endl << "NFFT_plan: Number of batches mismatch between samples and image." << endl;
 	return false;
       }
@@ -855,8 +892,8 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::check_consistency( cuNDArray<NDTYPE> *sam
   return true;
 }
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> 
-bool NFFT_plan<UINTd, REALd, REAL, NDTYPE>::barebones()
+template<class REAL, unsigned int D> 
+bool NFFT_plan<REAL,D>::barebones()
 {	
   // These are the fundamental booleans checked before accessing the various member pointers
   initialized = preprocessed_NFFT = preprocessed_NFFT_H = false;
@@ -872,10 +909,10 @@ bool NFFT_plan<UINTd, REALd, REAL, NDTYPE>::barebones()
   return true;
 }
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> 
-void NFFT_plan<UINTd, REALd, REAL, NDTYPE>::wipe( bool preprocess_only )
+template<class REAL, unsigned int D> 
+void NFFT_plan<REAL,D>::wipe( NFFT_wipe_mode mode )
 {
-  if( !preprocess_only && initialized ){
+  if( mode==NFFT_WIPE_ALL && initialized ){
     delete deapodization_filter;
     initialized = false;
   }
@@ -892,8 +929,8 @@ void NFFT_plan<UINTd, REALd, REAL, NDTYPE>::wipe( bool preprocess_only )
   }
 }
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> 
-bool NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_beta()
+template<class REAL, unsigned int D> 
+bool NFFT_plan<REAL,D>::compute_beta()
 {	
   // Compute Kaiser-Bessel beta paramter according to the formula provided in 
   // Beatty et. al. IEEE TMI 2005;24(6):799-808.
@@ -907,9 +944,9 @@ bool NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_beta()
 // Grid fictitious trajectory with a single sample at the origin
 //
 
-template <class UINTd, class REALd, class REAL, class NDTYPE> __global__ void
-compute_deapodization_filter_kernel( UINTd matrix_size_os, REALd matrix_size_os_real, UINTd fixed_dims, 
-				     REAL W, REAL half_W, REAL one_over_W, REAL beta, NDTYPE *image_os )
+template<class REAL, unsigned int D> __global__ void
+compute_deapodization_filter_kernel( vectord<unsigned int,D> matrix_size_os, vectord<REAL,D> matrix_size_os_real, vectord<unsigned int,D> fixed_dims, 
+				     REAL W, REAL half_W, REAL one_over_W, REAL beta, real_complex<REAL> *image_os )
 {
 
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
@@ -918,29 +955,33 @@ compute_deapodization_filter_kernel( UINTd matrix_size_os, REALd matrix_size_os_
   if( idx <num_elements ){
 
     // Compute weight from Kaiser-Bessel filter
-    const UINTd cell_pos = idx_to_co(idx, matrix_size_os);
+    const vectord<unsigned int,D> cell_pos = idx_to_co<D>(idx, matrix_size_os);
 
     // Sample position ("origin")
-    const REALd sample_pos = half(matrix_size_os_real);
+    const vectord<REAL,D> sample_pos = get_half<REAL>()*matrix_size_os_real;
 
     // Calculate the distance between the cell and the sample
-    const REALd delta = abs(sample_pos-uintd_to_reald(cell_pos));
+    vectord<REAL,D> cell_pos_real; to_reald<REAL,unsigned int,D>(cell_pos_real, cell_pos);
+    const vectord<REAL,D> delta = abs(sample_pos-cell_pos_real);
 
     // Compute convolution weight. 
     REAL weight; 
     REAL zero = get_zero<REAL>();
-    REALd half_W_vec = real_to_reald<REAL, REALd>( half_W, half_W );
+    vectord<REAL,D> half_W_vec; to_vectord<REAL,D>( half_W_vec, half_W );
 
     if( weak_greater(delta, half_W_vec ) )
       weight = zero;
     else{ 
-      weight = KaiserBessel( delta, matrix_size_os_real, one_over_W, beta, fixed_dims );
+      weight = KaiserBessel<REAL>( delta, matrix_size_os_real, one_over_W, beta, fixed_dims );
       if( !isfinite(weight) )
 	weight = zero;
     }
     
     // Output weight
-    image_os[idx] =  make_realComplex( weight, zero );
+    real_complex<REAL> result;
+    result.vec[0] = weight; 
+    result.vec[1] = zero;
+    image_os[idx] = result;
   }
 }
 
@@ -948,19 +989,23 @@ compute_deapodization_filter_kernel( UINTd matrix_size_os, REALd matrix_size_os_
 // Function to calculate the deapodization filter
 //
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> bool
-NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_deapodization_filter()
+template<class REAL, unsigned int D> bool
+NFFT_plan<REAL,D>::compute_deapodization_filter()
 {
 
   if( initialized && deapodization_filter ) 
     delete( deapodization_filter );
   
-  deapodization_filter = cuNDArray<NDTYPE>::allocate(cuNDA_toVec(matrix_size_os));
-
+  deapodization_filter = (sizeof(REAL)==sizeof(float)) ? // ensures alignment; do not compact allocations into real_complex<REAL>
+    (cuNDArray< real_complex<REAL> >*) cuNDArray<float_complex>::allocate(cuNDA_toVec(matrix_size_os)) :
+    (cuNDArray< real_complex<REAL> >*) cuNDArray<double_complex>::allocate(cuNDA_toVec(matrix_size_os)); 
+  
   if( !deapodization_filter ){
     cout << endl << "cuNDArray allocation failed" << endl;
     return false;
   }
+
+  vectord<REAL,D> matrix_size_os_real; to_reald<REAL,unsigned int, D>(matrix_size_os_real, matrix_size_os);
   
   // Be optimistic
   bool success = true;
@@ -971,8 +1016,8 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_deapodization_filter()
   dim3 dimGrid( (unsigned int) ceil((double)prod(matrix_size_os)/(double)dimBlock.x) );
 
   // Invoke kernel
-  compute_deapodization_filter_kernel<UINTd, REALd, REAL, NDTYPE><<<dimGrid, dimBlock>>> 
-    ( matrix_size_os, huintd_to_reald(matrix_size_os), fixed_dims, W, half(W), reciprocal(W), beta, deapodization_filter->get_data_ptr() );
+  compute_deapodization_filter_kernel<REAL,D><<<dimGrid, dimBlock>>> 
+    ( matrix_size_os, matrix_size_os_real, fixed_dims, W, get_half<REAL>()*W, reciprocal<REAL>(W), beta, deapodization_filter->get_data_ptr() );
 
   CHECK_FOR_CUDA_ERROR();
   
@@ -980,9 +1025,14 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_deapodization_filter()
   if( success )
     success = FFT( deapodization_filter, NFFT_BACKWARDS, false );
   
+  // Scale (multiplication by N, i.e. not what the FFT provides)
+  // Now the NFFT achieves scaling by applying the deapodization filter and we save a little bit of time...
+  if( success )
+    cuNDA_scale<REAL,real_complex<REAL> >( (REAL)prod(matrix_size_os), deapodization_filter );
+  
   // Reciprocal
   if( success )
-    cuNDA_reciprocal( deapodization_filter );
+    cuNDA_reciprocal<real_complex<REAL> >( deapodization_filter );
 
   if( !success ){
     delete deapodization_filter;
@@ -991,8 +1041,8 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_deapodization_filter()
   return success;
 }
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> bool
-NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_NFFT( cuNDArray<NDTYPE> *samples, cuNDArray<NDTYPE> *image )
+template<class REAL, unsigned int D> bool
+NFFT_plan<REAL,D>::compute_NFFT( cuNDArray< real_complex<REAL> > *samples, cuNDArray< real_complex<REAL> > *image )
 {
   // private method - no consistency check. We trust in ourselves.
 
@@ -1004,7 +1054,7 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_NFFT( cuNDArray<NDTYPE> *samples,
     
   // FFT
   if( success )
-    success = FFT( image, NFFT_FORWARDS );
+    success = FFT( image, NFFT_FORWARDS ); 
 
   // Deapodization
   if( success )
@@ -1013,8 +1063,8 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_NFFT( cuNDArray<NDTYPE> *samples,
   return success;
 }
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> bool
-NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_NFFT_H( cuNDArray<NDTYPE> *samples, cuNDArray<NDTYPE> *image )
+template<class REAL, unsigned int D> bool
+NFFT_plan<REAL,D>::compute_NFFT_H( cuNDArray< real_complex<REAL> > *samples, cuNDArray< real_complex<REAL> > *image )
 {
   // private method - no consistency check. We trust in ourselves.
 
@@ -1026,7 +1076,7 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_NFFT_H( cuNDArray<NDTYPE> *sample
   
   // FFT
   if( success )
-    success = FFT( image, NFFT_BACKWARDS );
+    success = FFT( image, NFFT_BACKWARDS, false ); // scaling is cared for by deapodization
   
   // Deapodization
   if( success )
@@ -1035,8 +1085,8 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::compute_NFFT_H( cuNDArray<NDTYPE> *sample
   return success;
 }
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> bool
-NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve_NFFT( cuNDArray<NDTYPE> *samples, cuNDArray<NDTYPE> *image )
+template<class REAL, unsigned int D> bool
+NFFT_plan<REAL,D>::convolve_NFFT( cuNDArray< real_complex<REAL> > *samples, cuNDArray< real_complex<REAL> > *image )
 {
   // private method - no consistency check. We trust in ourselves.
 
@@ -1060,47 +1110,46 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve_NFFT( cuNDArray<NDTYPE> *samples
   size_t threads_per_block;
   unsigned int max_coils;
 
-  switch( sizeof(UINTd) )
-    {
-
-    case sizeof(uint2):
-      if( generation == 1 ){
-	threads_per_block = NFFT_THREADS_PER_2D_KERNEL_1x;
-	max_coils = NFFT_MAX_COILS_2D_COMPUTE_1x;
-      }
-      else{
-	threads_per_block = NFFT_THREADS_PER_2D_KERNEL_2x;
-	max_coils = NFFT_MAX_COILS_2D_COMPUTE_2x;
-      }
-      break;
-      
-    case sizeof(uint3):
-      if( generation == 1 ){
-	threads_per_block = NFFT_THREADS_PER_2D_KERNEL_1x;
-	max_coils = NFFT_MAX_COILS_2D_COMPUTE_1x;
-      }
-      else{
-	threads_per_block = NFFT_THREADS_PER_2D_KERNEL_2x;
-	max_coils = NFFT_MAX_COILS_2D_COMPUTE_2x;
-      }
-      break;
-
-    case sizeof(uint4):
-      if( generation == 1 ){
-	threads_per_block = NFFT_THREADS_PER_3D_KERNEL_1x;
-	max_coils = NFFT_MAX_COILS_3D_COMPUTE_1x;
-      }
-      else{
-	threads_per_block = NFFT_THREADS_PER_4D_KERNEL_2x;
-	max_coils = NFFT_MAX_COILS_4D_COMPUTE_2x;
-      }
-      break;
-      
-    default:
-      printf("\nNFFT Convolution: Dimensionality not supported!\n");
-      return false;
+  switch(D){
+    
+  case 2:
+    if( generation == 1 ){
+      threads_per_block = NFFT_THREADS_PER_2D_KERNEL_1x;
+      max_coils = NFFT_MAX_COILS_2D_COMPUTE_1x;
     }
-
+    else{
+      threads_per_block = NFFT_THREADS_PER_2D_KERNEL_2x;
+      max_coils = NFFT_MAX_COILS_2D_COMPUTE_2x;
+    }
+    break;
+    
+  case 3:
+    if( generation == 1 ){
+      threads_per_block = NFFT_THREADS_PER_2D_KERNEL_1x;
+      max_coils = NFFT_MAX_COILS_2D_COMPUTE_1x;
+    }
+    else{
+      threads_per_block = NFFT_THREADS_PER_2D_KERNEL_2x;
+      max_coils = NFFT_MAX_COILS_2D_COMPUTE_2x;
+    }
+    break;
+    
+  case 4:
+    if( generation == 1 ){
+      threads_per_block = NFFT_THREADS_PER_3D_KERNEL_1x;
+      max_coils = NFFT_MAX_COILS_3D_COMPUTE_1x;
+    }
+    else{
+      threads_per_block = NFFT_THREADS_PER_4D_KERNEL_2x;
+      max_coils = NFFT_MAX_COILS_4D_COMPUTE_2x;
+    }
+    break;
+    
+  default:
+    printf("\nNFFT Convolution: Dimensionality not supported!\n");
+    return false;
+  }
+  
   // We can (only) convolve max_coils batches per run due to shared memory issues. 
   unsigned int domain_size_coils_desired = (samples->get_number_of_dimensions()==1) ? 1 : samples->get_size(1);
   unsigned int num_repetitions = domain_size_coils_desired/(max_coils+1) + 1;
@@ -1115,8 +1164,8 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve_NFFT( cuNDArray<NDTYPE> *samples
   dim3 dimGrid( gridDimX );
 
   // Calculate how much shared memory to use per thread
-  size_t bytes_per_thread = domain_size_coils * sizeof(NDTYPE);
-  size_t bytes_per_thread_tail = domain_size_coils_tail * sizeof(NDTYPE);
+  size_t bytes_per_thread = domain_size_coils * sizeof( vectord<REAL,D> );
+  size_t bytes_per_thread_tail = domain_size_coils_tail * sizeof( vectord<REAL,D> );
 
   /*
     Invoke kernel
@@ -1129,14 +1178,16 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve_NFFT( cuNDArray<NDTYPE> *samples
     double_warp_size_power++;
   }
   
+  vectord<REAL,D> matrix_size_os_real; to_reald<REAL,unsigned int,D>( matrix_size_os_real, matrix_size_os );
+
   for( unsigned int batch = 0; batch<num_repetitions; batch++ ){
-    NFFT_convolve_kernel<UINTd,REALd,REAL,NDTYPE>
-      <<<dimGrid, dimBlock, (batch==num_repetitions-1) ? prod(dimBlock)*bytes_per_thread_tail : prod(dimBlock)*bytes_per_thread>>>
+    NFFT_convolve_kernel<REAL,D>
+      <<<dimGrid, dimBlock, (batch==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
       ( alpha, beta, W, matrix_size_os, matrix_size_wrap, fixed_dims, number_of_samples, 
 	(batch==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils, 
 	raw_pointer_cast(&(*trajectory_positions)[0]), 
 	&(image->get_data_ptr()[batch*prod(matrix_size_os)*domain_size_coils]), &(samples->get_data_ptr()[batch*number_of_samples*domain_size_coils]), 
-	double_warp_size_power, half(W), reciprocal(W), huintd_to_reald(matrix_size_os), non_fixed_dims );
+	double_warp_size_power, get_half<REAL>()*W, reciprocal(W), matrix_size_os_real, non_fixed_dims );
   }
   
   CHECK_FOR_CUDA_ERROR();
@@ -1144,8 +1195,8 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve_NFFT( cuNDArray<NDTYPE> *samples
   return true;
 }
 
-template<class UINTd, class REALd, class REAL, class NDTYPE> bool
-NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve_NFFT_H( cuNDArray<NDTYPE> *samples, cuNDArray<NDTYPE> *image )
+template<class REAL, unsigned int D> bool
+NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray< real_complex<REAL> > *samples, cuNDArray< real_complex<REAL> > *image )
 {
 
   // private method - no consistency check. We trust in ourselves.
@@ -1170,47 +1221,46 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve_NFFT_H( cuNDArray<NDTYPE> *sampl
   size_t threads_per_block;
   unsigned int max_coils;
 
-  switch( sizeof(UINTd) )
-    {
+  switch(D){
 
-    case sizeof(uint2):
-      if( generation == 1 ){
-	threads_per_block = NFFT_H_THREADS_PER_2D_KERNEL_1x;
-	max_coils = NFFT_H_MAX_COILS_2D_COMPUTE_1x;
-      }
-      else{
-	threads_per_block = NFFT_H_THREADS_PER_2D_KERNEL_2x;
-	max_coils = NFFT_H_MAX_COILS_2D_COMPUTE_2x;
-      }
-      break;
-      
-    case sizeof(uint3):
-      if( generation == 1 ){
-	threads_per_block = NFFT_H_THREADS_PER_2D_KERNEL_1x;
-	max_coils = NFFT_H_MAX_COILS_2D_COMPUTE_1x;
-      }
-      else{
-	threads_per_block = NFFT_H_THREADS_PER_2D_KERNEL_2x;
-	max_coils = NFFT_H_MAX_COILS_2D_COMPUTE_2x;
-      }
-      break;
-
-    case sizeof(uint4):
-      if( generation == 1 ){
-	threads_per_block = NFFT_H_THREADS_PER_3D_KERNEL_1x;
-	max_coils = NFFT_H_MAX_COILS_3D_COMPUTE_1x;
-      }
-      else{
-	threads_per_block = NFFT_H_THREADS_PER_4D_KERNEL_2x;
-	max_coils = NFFT_H_MAX_COILS_4D_COMPUTE_2x;
-      }
-      break;
-      
-    default:
-      printf("\nNFFT Convolution: Dimensionality not supported!\n");
-      return false;
+  case 2:
+    if( generation == 1 ){
+      threads_per_block = NFFT_H_THREADS_PER_2D_KERNEL_1x;
+      max_coils = NFFT_H_MAX_COILS_2D_COMPUTE_1x;
     }
-
+    else{
+      threads_per_block = NFFT_H_THREADS_PER_2D_KERNEL_2x;
+      max_coils = NFFT_H_MAX_COILS_2D_COMPUTE_2x;
+    }
+    break;
+      
+  case 3:
+    if( generation == 1 ){
+      threads_per_block = NFFT_H_THREADS_PER_2D_KERNEL_1x;
+      max_coils = NFFT_H_MAX_COILS_2D_COMPUTE_1x;
+    }
+    else{
+      threads_per_block = NFFT_H_THREADS_PER_2D_KERNEL_2x;
+      max_coils = NFFT_H_MAX_COILS_2D_COMPUTE_2x;
+    }
+    break;
+    
+  case 4:
+    if( generation == 1 ){
+      threads_per_block = NFFT_H_THREADS_PER_3D_KERNEL_1x;
+      max_coils = NFFT_H_MAX_COILS_3D_COMPUTE_1x;
+    }
+    else{
+      threads_per_block = NFFT_H_THREADS_PER_4D_KERNEL_2x;
+      max_coils = NFFT_H_MAX_COILS_4D_COMPUTE_2x;
+    }
+    break;
+    
+  default:
+    printf("\nNFFT Convolution: Dimensionality not supported!\n");
+    return false;
+  }
+  
   // We can (only) convolve domain_size_coils batches per run due to shared memory issues. 
   unsigned int domain_size_coils_desired = (samples->get_number_of_dimensions()==1) ? 1 : samples->get_size(1);
   unsigned int num_repetitions = domain_size_coils_desired/(max_coils+1) + 1;
@@ -1225,15 +1275,18 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve_NFFT_H( cuNDArray<NDTYPE> *sampl
   dim3 dimGrid( gridDimX );
 
   // Calculate how much shared memory to use per thread
-  size_t bytes_per_thread = domain_size_coils * sizeof(NDTYPE);
-  size_t bytes_per_thread_tail = domain_size_coils_tail * sizeof(NDTYPE);
+  size_t bytes_per_thread = domain_size_coils * sizeof( vectord<REAL,D> );
+  size_t bytes_per_thread_tail = domain_size_coils_tail * sizeof( vectord<REAL,D> );
 
-  vector<unsigned int> vec_dims = cuNDA_toVec(matrix_size_os+matrix_size_wrap); 
+  vector<unsigned int> vec_dims = cuNDA_toVec<D>(matrix_size_os+matrix_size_wrap); 
   if( domain_size_coils_desired > 1 ) 
     vec_dims.push_back(domain_size_coils_desired);
   
   // Allocate and clear temporary image that includes a wrapping zone
-  cuNDArray<NDTYPE> *_tmp = cuNDArray<NDTYPE>::allocate(vec_dims);
+  cuNDArray< real_complex<REAL> > *_tmp = 
+    (sizeof(REAL)==sizeof(float)) ? // ensures alignment; do not compact allocations into real_complex<REAL>
+    (cuNDArray< real_complex<REAL> >*) cuNDArray<float_complex>::allocate(vec_dims) :
+    (cuNDArray< real_complex<REAL> >*) cuNDArray<double_complex>::allocate(vec_dims); 
   
   if( !_tmp ){
     cout << endl << "Memory allocation failed before convolution." << endl;
@@ -1245,174 +1298,164 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::convolve_NFFT_H( cuNDArray<NDTYPE> *sampl
     __tmp>>=1;
     double_warp_size_power++;
   }
-  
+
+  vectord<REAL,D> matrix_size_os_real; to_reald<REAL,unsigned int,D>( matrix_size_os_real, matrix_size_os );
+
   for( unsigned int batch = 0; batch<num_repetitions; batch++ ){
-    NFFT_H_convolve_kernel<UINTd,REALd,REAL,NDTYPE>
-      <<<dimGrid, dimBlock, (batch==num_repetitions-1) ? prod(dimBlock)*bytes_per_thread_tail : prod(dimBlock)*bytes_per_thread>>>
+    NFFT_H_convolve_kernel<REAL,D>
+      <<<dimGrid, dimBlock, (batch==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
       ( alpha, beta, W, matrix_size_os+matrix_size_wrap, fixed_dims, number_of_samples, 
 	(batch==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils, 
 	raw_pointer_cast(&(*trajectory_positions)[0]), 
 	&(_tmp->get_data_ptr()[batch*prod(matrix_size_os)*domain_size_coils]), &(samples->get_data_ptr()[batch*number_of_samples*domain_size_coils]), 
 	raw_pointer_cast(&(*tuples_last)[0]), raw_pointer_cast(&(*bucket_begin)[0]), raw_pointer_cast(&(*bucket_end)[0]),
-	double_warp_size_power, half(W), reciprocal(W), huintd_to_reald(matrix_size_os) );
+	double_warp_size_power, get_half<REAL>()*W, reciprocal(W), matrix_size_os_real );
   }
   
   //cudaThreadSynchronize();
   CHECK_FOR_CUDA_ERROR();
   
   bool success = image_wrap( _tmp, image );
-  
+ 
   delete _tmp;
-  
+
   return success;
 }
 
-// TODO: GENERALIZE/TEMPLETIZE the wrapping
-
 // Image wrap kernels
 
-template<class NDTYPE> __inline__ __device__ void 
-__wrap_image( uint2 co, uint2 matrix_size_os, uint2 half_wrap, uint2 source_image_size, unsigned int source_image_offset, NDTYPE *source_image, NDTYPE *out )
+template<class REAL, unsigned int D> __global__ void
+image_wrap_kernel( vectord<unsigned int,D> matrix_size_os, vectord<unsigned int,D> non_fixed_dims, vectord<unsigned int,D> matrix_size_wrap, 
+		   real_complex<REAL> *in, real_complex<REAL> *out )
 {
-  // Wrap edges
-  if( co.x < half_wrap.x )
-    *out += source_image[co_to_idx(make_uint2(co.x+half_wrap.x+matrix_size_os.x, co.y+half_wrap.y),source_image_size)+source_image_offset];
-  if( co.x >= (matrix_size_os.x-half_wrap.x) )
-    *out += source_image[co_to_idx(make_uint2(co.x+half_wrap.x-matrix_size_os.x, co.y+half_wrap.y),source_image_size)+source_image_offset];
-  if( co.y < half_wrap.y )
-    *out += source_image[co_to_idx(make_uint2(co.x+half_wrap.x, co.y+half_wrap.y+matrix_size_os.y),source_image_size)+source_image_offset];
-  if( co.y >= (matrix_size_os.y-half_wrap.y) )
-    *out += source_image[co_to_idx(make_uint2(co.x+half_wrap.x, co.y+half_wrap.y-matrix_size_os.y),source_image_size)+source_image_offset];
+  const unsigned int number_of_images = blockDim.z;
+  const unsigned int num_elements_per_image_src = prod(matrix_size_os+matrix_size_wrap);
 
-  // Wrap corners
-  if( co.x < half_wrap.x && co.y < half_wrap.y )
-    *out += source_image[co_to_idx(make_uint2(co.x+half_wrap.x+matrix_size_os.x, co.y+half_wrap.y+matrix_size_os.y),source_image_size)+source_image_offset];
-  if( co.x < half_wrap.x && co.y >= (matrix_size_os.y-half_wrap.y) )
-    *out += source_image[co_to_idx(make_uint2(co.x+half_wrap.x+matrix_size_os.x, co.y+half_wrap.y-matrix_size_os.y),source_image_size)+source_image_offset];
-  if( co.x >= (matrix_size_os.x-half_wrap.x) && co.y < half_wrap.y )
-    *out += source_image[co_to_idx(make_uint2(co.x+half_wrap.x-matrix_size_os.x, co.y+half_wrap.y+matrix_size_os.y),source_image_size)+source_image_offset];
-  if( co.x >= (matrix_size_os.x-half_wrap.x) && co.y >= (matrix_size_os.y-half_wrap.y) )
-    *out += source_image[co_to_idx(make_uint2(co.x+half_wrap.x-matrix_size_os.x, co.y+half_wrap.y-matrix_size_os.y),source_image_size)+source_image_offset];
-}
+  unsigned int idx;
 
-template<class NDTYPE> __inline__ __device__ void
-__wrap_image( uint3 co, uint3 matrix_size_os, uint3 half_wrap, uint3 source_image_size, unsigned int source_image_offset, NDTYPE *source_image, NDTYPE *out )
-{
+  if( number_of_images == 1 )
+    idx = (blockIdx.x/(matrix_size_os.vec[0]/blockDim.x))*blockDim.y*matrix_size_os.vec[0] + 
+      (blockIdx.x%(matrix_size_os.vec[0]/blockDim.x))*blockDim.x + threadIdx.y*matrix_size_os.vec[0] + threadIdx.x;
+  else
+    idx = blockIdx.x*blockDim.x + threadIdx.x;
 
-  // !!! THIS CODE IS ONLY VALID WHEN THE THERE IS NO CONVOLUTION IN THE 'Z' DIMENSION (k-t SENSE) !!!
-
-  // Wrap edges
-  if( co.x < half_wrap.x )
-    *out += source_image[co_to_idx(make_uint3(co.x+half_wrap.x+matrix_size_os.x, co.y+half_wrap.y, co.z),source_image_size)+source_image_offset];
-  if( co.x >= (matrix_size_os.x-half_wrap.x) )
-    *out += source_image[co_to_idx(make_uint3(co.x+half_wrap.x-matrix_size_os.x, co.y+half_wrap.y, co.z),source_image_size)+source_image_offset];
-  if( co.y < half_wrap.y )
-    *out += source_image[co_to_idx(make_uint3(co.x+half_wrap.x, co.y+half_wrap.y+matrix_size_os.y, co.z),source_image_size)+source_image_offset];
-  if( co.y >= (matrix_size_os.y-half_wrap.y) )
-    *out += source_image[co_to_idx(make_uint3(co.x+half_wrap.x, co.y+half_wrap.y-matrix_size_os.y, co.z),source_image_size)+source_image_offset];
-
-  // Wrap corners
-  if( co.x < half_wrap.x && co.y < half_wrap.y )
-    *out += source_image[co_to_idx(make_uint3(co.x+half_wrap.x+matrix_size_os.x, co.y+half_wrap.y+matrix_size_os.y, co.z),source_image_size)+source_image_offset];
-  if( co.x < half_wrap.x && co.y >= (matrix_size_os.y-half_wrap.y) )
-    *out += source_image[co_to_idx(make_uint3(co.x+half_wrap.x+matrix_size_os.x, co.y+half_wrap.y-matrix_size_os.y, co.z),source_image_size)+source_image_offset];
-  if( co.x >= (matrix_size_os.x-half_wrap.x) && co.y < half_wrap.y )
-    *out += source_image[co_to_idx(make_uint3(co.x+half_wrap.x-matrix_size_os.x, co.y+half_wrap.y+matrix_size_os.y, co.z),source_image_size)+source_image_offset];
-  if( co.x >= (matrix_size_os.x-half_wrap.x) && co.y >= (matrix_size_os.y-half_wrap.y) )
-    *out += source_image[co_to_idx(make_uint3(co.x+half_wrap.x-matrix_size_os.x, co.y+half_wrap.y-matrix_size_os.y, co.z),source_image_size)+source_image_offset];
-
-}
-
-template<class NDTYPE> __inline__ __device__ void
-__wrap_image( uint4 co, uint4 matrix_size_os, uint4 half_wrap, uint4 source_image_size, unsigned int source_image_offset, NDTYPE *source_image, NDTYPE *out )
-{
-}
-
-template<class UINTd, class REALd, class REAL, class NDTYPE> __global__ void
-image_wrap_kernel( UINTd matrix_size_os, UINTd matrix_size_wrap, unsigned int number_of_images, /*bool accumulate, */NDTYPE *source, NDTYPE *target )
-{
-  const unsigned int image_idx = blockIdx.y*gridDim.x*blockDim.x+blockIdx.x*blockDim.x+threadIdx.x;
-  const unsigned int image_number = threadIdx.y;
-  const unsigned int idx = image_number*gridDim.y*gridDim.x*blockDim.x+image_idx;
-
-  if( image_idx <prod(matrix_size_os) ){
-
-    const UINTd source_image_size = matrix_size_os+matrix_size_wrap;
-    const unsigned int source_image_offset = image_number*prod(source_image_size);
-    
-    const UINTd half_wrap = matrix_size_wrap>>1;
-    const UINTd co = idx_to_co( image_idx, matrix_size_os );
-    
-    NDTYPE out = source[co_to_idx(co+half_wrap,source_image_size)+source_image_offset];
-    
-    /*
-    if( accumulate )
-      out += target_image[idx];
-    */
-
-    // Wrap image
-    __wrap_image<NDTYPE>( co, matrix_size_os, half_wrap, source_image_size, source_image_offset, source, &out ); 
-		
-    target[idx] = out;
-  }
-}
-
-template<class UINTd, class REALd, class REAL, class NDTYPE> bool
-NFFT_plan<UINTd, REALd, REAL, NDTYPE>::image_wrap( cuNDArray<NDTYPE> *source, cuNDArray<NDTYPE> *target )
-{
+  const unsigned int image_offset_src = threadIdx.z * num_elements_per_image_src;
   
-  // private method - no consistency check. We trust in ourselves.
+  const vectord<unsigned int,D> co = idx_to_co(idx, matrix_size_os);
+  const vectord<unsigned int,D> half_wrap = matrix_size_wrap>>1;
   
-  UINTd source_dims; cuNDA_fromVec( source->get_dimensions(), source_dims );
-  UINTd target_dims; cuNDA_fromVec( target->get_dimensions(), target_dims );
-
-  unsigned int number_of_images = (source->get_number_of_dimensions()==d+1) ? source->get_size(source->get_number_of_dimensions()-1) : 1;
+  // Make "boolean" vectors denoting whether wrapping needs to be performed in a given direction (forwards/backwards)
+  vectord<unsigned int,D> B_l = vector_less( co, half_wrap ); 
+  vectord<unsigned int,D> B_r = vector_greater_equal( co, matrix_size_os-half_wrap ); 
+  B_l *= non_fixed_dims; B_r *= non_fixed_dims; // don't wrap fixed dimensions
   
-  // Find dimensions of grid/blocks.
+  real_complex<REAL> result = in[co_to_idx(co+half_wrap, matrix_size_os+matrix_size_wrap) + image_offset_src];
 
-  cudaDeviceProp deviceProp;
-  cudaGetDeviceProperties( &deviceProp, device );
-
-  unsigned int dimBlockX = ((deviceProp.maxThreadsPerBlock/number_of_images)/deviceProp.warpSize)*deviceProp.warpSize;
-  unsigned int last_dim_os = cuNDA_toVec(matrix_size_os)[d-1];
-
-  // TODO: recall why we do this ugly code!
-
-  // Make sure that gridDim.x becomes integer valued
-  while(((prod(matrix_size_os)/last_dim_os)%dimBlockX) != 0 ){
-    if( dimBlockX<deviceProp.warpSize ){
-      printf("\nImplementation error: image_wrap: Cannot reduce the block size below the warp size.\n");
-      exit(1);
-    }
-    else{
-      dimBlockX -= deviceProp.warpSize;	
+  if( sum(B_l+B_r) > 0 ){
+    
+    // Fold back the wrapping zone onto the image ("periodically")
+    //
+    // There is 2^D-1 ways to pick combinations of dimensions in D-dimensionsal space, e.g. 
+    // 
+    //  { x, y, xy } in 2D
+    //  { x, y, x, xy, xz, yz, xyz } in 3D
+    //
+    // Every "letter" in aech combination provides two possible wraps (eiher end of the dimension)
+    // 
+    // For every 2^D-1 combinations DO
+    //   - find the number of dimensions, d, in the combination
+    //   - create 2^(d) stride vectors and test for wrapping the 'B'-vectors above.
+    //   - accumulate the contributions
+    // 
+    //   The following code represents dimensions as bits in a char.
+    //
+    
+    for( unsigned char combination = 1; combination < (1<<D); combination++ ){
+    
+      // Find d
+      unsigned char d = 0;
+      for( unsigned char i=0; i<D; i++ )
+	d += ((combination & (1<<i)) > 0 );
+       
+      // Create stride vector for each wrapping test
+      for( unsigned char s = 0; s < (1<<d); s++ ){
+        
+	// Target for stride
+	intd<D> stride;
+	char wrap_requests = 0;
+	char skipped_dims = 0;
+	
+	// Fill dimensions of the stride
+	for( unsigned char i=1; i<D+1; i++ ){
+    
+	  // Is the stride dimension present in the current combination?
+	  if( i & combination ){
+    
+	    // A zero bit in s indicates "check for left wrap" and a one bit is interpreted as "check for right wrap" 
+	    // ("left/right" for the individual dimension meaning wrapping on either side of the dimension).
+    
+	    if( i & (s<<(skipped_dims)) ){
+	      if( B_r.vec[i-1] ){ // Wrapping required 
+		set( stride, i-1, -1 );
+		wrap_requests++;
+	      }
+	      else
+		set( stride, i-1, 0 );
+	    }
+	    else{ 
+	      if( B_l.vec[i-1] ){ // Wrapping required 
+		set( stride, i-1, +1 );
+		wrap_requests++;
+	      }
+	      else
+		set( stride, i-1, 0 );
+	    }
+	  }
+	  else{
+	    // Do not test for wrapping in dimension 'i-1' (for this combination)
+	    set( stride, i-1, 0 );
+	    skipped_dims++;
+	  }
+	}
+	
+	// Now it is time to do the actual wrapping (if needed)
+	if( wrap_requests == d ){
+	  vectord<int,D> src_co_int; to_intd(src_co_int, co+half_wrap);
+	  vectord<int,D> matrix_size_os_int; to_intd(matrix_size_os_int, matrix_size_os);
+	  vectord<int,D> co_offset_int = src_co_int + stride*matrix_size_os_int;
+	  vectord<unsigned int,D> co_offset; to_uintd(co_offset, co_offset_int);
+	  result += in[co_to_idx(co_offset, matrix_size_os+matrix_size_wrap) + image_offset_src];
+	  break; // only one stride per combination can contribute (e.g. one edge, one corner)
+	} 
+      } 
     }
   }
+  
+  // Output
+  const unsigned int image_offset_tgt = threadIdx.z * prod(matrix_size_os);
+  out[idx+image_offset_tgt] = result;
+}
 
-  // TODO: fix me for manyD
+template<class REAL, unsigned int D> bool
+NFFT_plan<REAL,D>::image_wrap( cuNDArray< real_complex<REAL> > *source, cuNDArray< real_complex<REAL> > *target )
+{
+  unsigned int number_of_images = (source->get_number_of_dimensions()==(D+1)) ? source->get_size(source->get_number_of_dimensions()-1) : 1;
+  
+  // Set dimensions of grid/blocks.
+  unsigned int bdim = 16;
+  dim3 dimBlock( bdim, (number_of_images==1) ? bdim : 1, number_of_images );
+  dim3 dimGrid( prod(matrix_size_os)/(dimBlock.x*dimBlock.y) );
 
-  if(dimBlockX == 0){
-    printf("\nImplementation error: image_wrap: Too many coils reduces the block size below the warp size.\n");
-    exit(1);
+  // Safety check
+  if( (matrix_size_os.vec[0]%bdim) || (number_of_images==1 && (matrix_size_os.vec[1]%bdim)) ) {
+    cout << endl << "dimensions mismatch in wrapping setup." << endl;
+    return false;
   }
-
-  unsigned int last_dim_wrap = cuNDA_toVec(matrix_size_wrap)[d-1];
-
-  if( (sizeof(UINTd)!=sizeof(uint2)) && last_dim_wrap != 0 ){
-    printf("\nImplementation error: image_wrap: 3D wrapping not yet implemented.\n");
-    exit(1);
-  }
-
-  dim3 dimBlock( dimBlockX, number_of_images );
-  dim3 dimGrid( (prod(matrix_size_os)/last_dim_os)/dimBlock.x, last_dim_os ); // No 'ceil'!!!
 
   // Invoke kernel
-  image_wrap_kernel<UINTd, REALd, REAL, NDTYPE><<<dimGrid, dimBlock>>>( matrix_size_os, matrix_size_wrap, number_of_images, /*accumulate,*/ source->get_data_ptr(), target->get_data_ptr() );
-
-  //cout << endl << "dimBX: " << dimBlockX << ", num images: " << dimBlock.y << ", gridX: " << dimGrid.x << ", gridY: " << dimGrid.y << endl; 
+  image_wrap_kernel<REAL,D><<<dimGrid, dimBlock>>>( matrix_size_os, non_fixed_dims, matrix_size_wrap, /*accumulate,*/
+						    source->get_data_ptr(), target->get_data_ptr() );
   
-  // TODO: hvorfor fejler dette for matrix_size 128: os: 192? osx. stoerre er ok.
-
   CHECK_FOR_CUDA_ERROR();
 
   return true;
@@ -1422,4 +1465,11 @@ NFFT_plan<UINTd, REALd, REAL, NDTYPE>::image_wrap( cuNDArray<NDTYPE> *source, cu
 // Template instantion
 //
 
-template class NFFT_plan< uint2, float2, float, cuFloatComplex >;
+template class NFFT_plan< float, 2 >;
+template class NFFT_plan< double, 2 >;
+
+template class NFFT_plan< float, 3 >;
+template class NFFT_plan< double, 3 >;
+
+template class NFFT_plan< float, 4 >;
+template class NFFT_plan< double, 4 >;

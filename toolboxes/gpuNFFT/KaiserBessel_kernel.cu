@@ -71,35 +71,35 @@ KaiserBessel( float u, float matrix_size_os, float one_over_W, float beta )
 // Below the intended interface
 //
 
-template<class REALd, class REAL> __inline__ __device__ REAL
-KaiserBessel( REALd u, REALd matrix_size_os, REAL one_over_W, REAL beta, uint2 fixedDims )
+template<class REAL> __inline__ __device__ REAL
+KaiserBessel( const vectord<REAL,2> &u, const vectord<REAL,2> &matrix_size_os, REAL one_over_W, REAL beta, const vectord<unsigned int,2> &fixedDims )
 {
   REAL one = get_one<REAL>();
-  REAL phi_x = (fixedDims.x) ? one : KaiserBessel( u.x, matrix_size_os.x, one_over_W, beta );
-  REAL phi_y = (fixedDims.y) ? one : KaiserBessel( u.y, matrix_size_os.y, one_over_W, beta );
+  REAL phi_x = (fixedDims.vec[0]) ? one : KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta );
+  REAL phi_y = (fixedDims.vec[1]) ? one : KaiserBessel( u.vec[1], matrix_size_os.vec[1], one_over_W, beta );
 
   return phi_x*phi_y;
 }
 
-template<class REALd, class REAL> __inline__ __device__ REAL
-KaiserBessel( REALd u, REALd matrix_size_os, REAL one_over_W, REAL beta, uint3 fixedDims )
+template<class REAL> __inline__ __device__ REAL
+KaiserBessel( const vectord<REAL,3> &u, const vectord<REAL,3> &matrix_size_os, REAL one_over_W, REAL beta, const vectord<unsigned int,3> &fixedDims )
 {
   REAL one = get_one<REAL>();
-  REAL phi_x = (fixedDims.x) ? one : KaiserBessel( u.x, matrix_size_os.x, one_over_W, beta );
-  REAL phi_y = (fixedDims.y) ? one : KaiserBessel( u.y, matrix_size_os.y, one_over_W, beta );
-  REAL phi_z = (fixedDims.z) ? one : KaiserBessel( u.z, matrix_size_os.z, one_over_W, beta );
+  REAL phi_x = (fixedDims.vec[0]) ? one : KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta );
+  REAL phi_y = (fixedDims.vec[1]) ? one : KaiserBessel( u.vec[1], matrix_size_os.vec[1], one_over_W, beta );
+  REAL phi_z = (fixedDims.vec[2]) ? one : KaiserBessel( u.vec[2], matrix_size_os.vec[2], one_over_W, beta );
 
   return phi_x*phi_y*phi_z;
 }
 
-template<class REALd, class REAL> __inline__ __device__ REAL
-KaiserBessel( REALd u, REALd matrix_size_os, REAL one_over_W, REAL beta, uint4 fixedDims )
+template<class REAL> __inline__ __device__ REAL
+KaiserBessel( const vectord<REAL,4> &u, const vectord<REAL,4> &matrix_size_os, REAL one_over_W, REAL beta, const vectord<unsigned int, 4> &fixedDims )
 {
   REAL one = get_one<REAL>();
-  REAL phi_x = (fixedDims.x) ? one : KaiserBessel( u.x, matrix_size_os.x, one_over_W, beta );
-  REAL phi_y = (fixedDims.y) ? one : KaiserBessel( u.y, matrix_size_os.y, one_over_W, beta );
-  REAL phi_z = (fixedDims.z) ? one : KaiserBessel( u.z, matrix_size_os.z, one_over_W, beta );
-  REAL phi_w = (fixedDims.w) ? one : KaiserBessel( u.w, matrix_size_os.w, one_over_W, beta );
+  REAL phi_x = (fixedDims.vec[0]) ? one : KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta );
+  REAL phi_y = (fixedDims.vec[1]) ? one : KaiserBessel( u.vec[1], matrix_size_os.vec[1], one_over_W, beta );
+  REAL phi_z = (fixedDims.vec[2]) ? one : KaiserBessel( u.vec[2], matrix_size_os.vec[2], one_over_W, beta );
+  REAL phi_w = (fixedDims.vec[3]) ? one : KaiserBessel( u.vec[3], matrix_size_os.vec[3], one_over_W, beta );
 
   return phi_x*phi_y*phi_z*phi_w;
 }

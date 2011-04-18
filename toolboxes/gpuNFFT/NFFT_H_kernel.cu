@@ -20,8 +20,8 @@
 // Transfer result from shared memory to global memory.
 //
 
-template<class REAL, class NDTYPE> __inline__ __device__ void 
-NFFT_H_output( unsigned int number_of_batches, NDTYPE *image, 
+template<class REAL> __inline__ __device__ void 
+NFFT_H_output( unsigned int number_of_batches, vectord<REAL,2> *image, 
 	       unsigned int double_warp_size_power, unsigned int number_of_domains, 
 	       unsigned int globalThreadId, unsigned int sharedMemFirstCellIdx )
 {
@@ -29,25 +29,27 @@ NFFT_H_output( unsigned int number_of_batches, NDTYPE *image,
   REAL *shared_mem = (REAL*) _shared_mem;
   
   for( unsigned int batch=0; batch<number_of_batches; batch++ ){
-    NDTYPE cell_coefficient = make_realComplex( shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)], 
-						shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)+warpSize] );
+    vectord<REAL,2> cell_coefficient;
+    cell_coefficient.vec[0] = shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)];
+    cell_coefficient.vec[1] = shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)+warpSize];
     image[batch*number_of_domains+globalThreadId] = cell_coefficient;
   }
 }
 
 
-template <class UINTd, class REALd, class REAL, class NDTYPE> __inline__ __device__ void
+template<class REAL, unsigned int D> __inline__ __device__ void
 NFFT_H_convolve( REAL alpha, REAL beta, REAL W, 
-		 UINTd fixed_dims, unsigned int number_of_samples, unsigned int number_of_batches,
-		 REALd *traj_positions, NDTYPE *samples, unsigned int *tuples_last, unsigned int *bucket_begin, unsigned int *bucket_end,
-		 unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, REALd matrix_size_os_real, unsigned int globalThreadId, UINTd domainPos, unsigned int sharedMemFirstCellIdx )
+		 vectord<unsigned int,D> fixed_dims, unsigned int number_of_samples, unsigned int number_of_batches,
+		 vectord<REAL,D> *traj_positions, vectord<REAL,2> *samples, unsigned int *tuples_last, unsigned int *bucket_begin, unsigned int *bucket_end,
+		 unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vectord<REAL,D> matrix_size_os_real, 
+		 unsigned int globalThreadId, vectord<unsigned int,D> domainPos, unsigned int sharedMemFirstCellIdx )
 {
 
   REAL *shared_mem = (REAL*) _shared_mem;
 
   // Cell position as reald
-  const REALd cell_pos = uintd_to_reald( domainPos ); 
-
+  vectord<REAL,D> cell_pos; to_reald<REAL,unsigned int,D>( cell_pos, domainPos ); 
+  
   // Convolve samples onto the domain (shared memory)
   for( unsigned int i=bucket_begin[globalThreadId]; i<bucket_end[globalThreadId]; i++ )
     {
@@ -55,18 +57,18 @@ NFFT_H_convolve( REAL alpha, REAL beta, REAL W,
       unsigned int sampleIdx = tuples_last[i];
 
       // Safety precaution TODO
-      REALd sample_pos = traj_positions[sampleIdx];
+      vectord<REAL,D> sample_pos = traj_positions[sampleIdx];
       
       // Calculate the distance between the cell and the sample
-      REALd delta = abs(sample_pos-cell_pos);
-      REALd half_W_vec = real_to_reald<REAL, REALd>( half_W, half_W );
+      vectord<REAL,D> delta = abs(sample_pos-cell_pos);
+      vectord<REAL,D> half_W_vec; to_vectord<REAL,D>( half_W_vec, half_W );
   
       // Check if sample will contribute
-      if( weak_greater(delta, half_W_vec ))
-	continue;
+      //if( weak_greater(delta, half_W_vec ))
+      //continue;
       
       // Compute convolution weights
-      float weight = KaiserBessel( delta, matrix_size_os_real, one_over_W, beta, fixed_dims );
+      float weight = KaiserBessel<REAL>( delta, matrix_size_os_real, one_over_W, beta, fixed_dims );
       
       // Safety measure. We have occationally observed a NaN from the KaiserBessel computation
       if( !isfinite(weight) )
@@ -75,11 +77,11 @@ NFFT_H_convolve( REAL alpha, REAL beta, REAL W,
       // Apply Kaiser-Bessel filter to input images
       for( unsigned int batch=0; batch<number_of_batches; batch++ ){
 	
-	NDTYPE sample_val = samples[sampleIdx+batch*number_of_samples];
+	vectord<REAL,2> sample_val = samples[sampleIdx+batch*number_of_samples];
 	
 	// Apply filter to shared memory domain. 
-	shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)] += weight*sample_val.x;
-	shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)+warpSize] += weight*sample_val.y;
+	shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)] += weight*sample_val.vec[0];
+	shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)+warpSize] += weight*sample_val.vec[1];
       }
     }
 }
@@ -88,11 +90,13 @@ NFFT_H_convolve( REAL alpha, REAL beta, REAL W,
 // kernel main
 //
 
-template <class UINTd, class REALd, class REAL, class NDTYPE> __global__ void
+template<class REAL, unsigned int D> __global__ void
 NFFT_H_convolve_kernel( REAL alpha, REAL beta, REAL W,
-			UINTd domain_count_grid, UINTd fixed_dims, unsigned int number_of_samples, unsigned int number_of_batches,
-			REALd *traj_positions, NDTYPE *image, NDTYPE *samples, unsigned int *tuples_last, unsigned int *bucket_begin, unsigned int *bucket_end,
-			unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, REALd matrix_size_os_real )
+			vectord<unsigned int,D> domain_count_grid, vectord<unsigned int,D> fixed_dims, 
+			unsigned int number_of_samples, unsigned int number_of_batches,
+			vectord<REAL,D> *traj_positions, vectord<REAL,2> *image, vectord<REAL,2> *samples, 
+			unsigned int *tuples_last, unsigned int *bucket_begin, unsigned int *bucket_end,
+			unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vectord<REAL,D> matrix_size_os_real )
 {
   
   // Global thread index
@@ -106,10 +110,10 @@ NFFT_H_convolve_kernel( REAL alpha, REAL beta, REAL W,
     return;
   
   // Mapped global thread index
-  const unsigned int domainIdx = index;// TODO: domainsMap[number_of_domains-index-1].y;
+  const unsigned int domainIdx = index;// TODO: domainsMap[number_of_domains-index-1].vec[1];
 
   // Compute global domain position
-  const UINTd domainPos = idx_to_co( domainIdx, domain_count_grid );
+  const vectord<unsigned int,D> domainPos = idx_to_co<D>( domainIdx, domain_count_grid );
 	
   // Number of cells
   const unsigned int num_reals = number_of_batches<<1;
@@ -127,11 +131,11 @@ NFFT_H_convolve_kernel( REAL alpha, REAL beta, REAL W,
     shared_mem[sharedMemFirstCellIdx+warpSize*i] = zero;
   
   // Compute NFFT using arbitrary sample trajectories.
-  NFFT_H_convolve<UINTd, REALd, REAL, NDTYPE>
+  NFFT_H_convolve<REAL, D>
     ( alpha, beta, W, fixed_dims, number_of_samples, number_of_batches,
       traj_positions, samples, tuples_last, bucket_begin, bucket_end,
       double_warp_size_power, half_W, one_over_W, matrix_size_os_real, index, domainPos, sharedMemFirstCellIdx );
   
   // Output k-space image to global memory
-  NFFT_H_output<REAL,NDTYPE>( number_of_batches, image, double_warp_size_power, number_of_domains, index, sharedMemFirstCellIdx );
+  NFFT_H_output<REAL>( number_of_batches, image, double_warp_size_power, number_of_domains, index, sharedMemFirstCellIdx );
 }

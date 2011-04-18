@@ -137,6 +137,8 @@ template <class T> class cuNDArray : public NDArray<T>
   virtual int get_device() {return device_;}
 
   //Copy constructor
+  cuNDArray(cuNDArray<T>& a);
+  cuNDArray(cuNDArray<T>* a);
   cuNDArray(const cuNDArray<T>& a);
 
   //Assignment operator

@@ -1,4 +1,5 @@
 #include "cuNDArray.h"
+#include "vectord.h"
 
 template <class T> cuNDArray<T>::cuNDArray(hoNDArray<T>& a) {
   this->data_ = 0;
@@ -27,6 +28,58 @@ template <class T> cuNDArray<T>::cuNDArray(const cuNDArray<T>& a) {
       //This memory is on a different device, we must move it.
       cudaSetDevice(a.device_);
 	hoNDArray<T> tmp = a.to_host();
+	cudaSetDevice(this->device_);
+	
+	if (cudaMemcpy(this->data_, tmp.get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) !=
+	    cudaSuccess) {
+	  deallocate_memory();
+	  this->data_ = 0;
+	  this->dimensions_.clear();
+	}
+    }
+  }
+}
+
+template <class T> cuNDArray<T>::cuNDArray(cuNDArray<T>& a) {
+  cudaGetDevice(&this->device_);
+  this->data_ = 0;
+  this->dimensions_ = a.dimensions_;
+  if (allocate_memory() == 0) {
+    if (a.device_ == this->device_) {
+      if (cudaMemcpy(this->data_, a.data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice) !=
+	  cudaSuccess) {
+	std::cerr << "cuNDArray: Unable to copy data in copy constructor" << std::endl;
+      }
+    } else {
+      //This memory is on a different device, we must move it.
+      cudaSetDevice(a.device_);
+	hoNDArray<T> tmp = a.to_host();
+	cudaSetDevice(this->device_);
+	
+	if (cudaMemcpy(this->data_, tmp.get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) !=
+	    cudaSuccess) {
+	  deallocate_memory();
+	  this->data_ = 0;
+	  this->dimensions_.clear();
+	}
+    }
+  }
+}
+
+template <class T> cuNDArray<T>::cuNDArray(cuNDArray<T> *a) {
+  cudaGetDevice(&this->device_);
+  this->data_ = 0;
+  this->dimensions_ = a->dimensions_;
+  if (allocate_memory() == 0) {
+    if (a->device_ == this->device_) {
+      if (cudaMemcpy(this->data_, a->data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice) !=
+	  cudaSuccess) {
+	std::cerr << "cuNDArray: Unable to copy data in copy constructor" << std::endl;
+      }
+    } else {
+      //This memory is on a different device, we must move it.
+      cudaSetDevice(a->device_);
+	hoNDArray<T> tmp = a->to_host();
 	cudaSetDevice(this->device_);
 	
 	if (cudaMemcpy(this->data_, tmp.get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) !=
@@ -153,12 +206,64 @@ template <class T> int cuNDArray<T>::permute(std::vector<unsigned int>& dim_orde
   return cuNDArray_permute(this, out_int, dim_order_int, shift_mode);
 }
 
+//
+// Instantiation
+//
+
+template class cuNDArray< int >;
+template class cuNDArray< int2 >;
+template class cuNDArray< int3 >;
+template class cuNDArray< int4 >;
+
+template class cuNDArray< unsigned int >;
+template class cuNDArray< uint2 >;
+template class cuNDArray< uint3 >;
+template class cuNDArray< uint4 >;
 
 template class cuNDArray< float >;
 template class cuNDArray< float2 >;
 template class cuNDArray< float3 >;
 template class cuNDArray< float4 >;
-template class cuNDArray< unsigned int >;
-template class cuNDArray< uint2 >;
-template class cuNDArray< uint3 >;
-template class cuNDArray< uint4 >;
+
+template class cuNDArray< double >;
+template class cuNDArray< double2 >;
+template class cuNDArray< double3 >;
+template class cuNDArray< double4 >;
+
+template class cuNDArray< vectord<int,2> >;
+template class cuNDArray< vectord<int,3> >;
+template class cuNDArray< vectord<int,4> >;
+
+template class cuNDArray< vectord<unsigned int,2> >;
+template class cuNDArray< vectord<unsigned int,3> >;
+template class cuNDArray< vectord<unsigned int,4> >;
+
+template class cuNDArray< vectord<float,2> >;
+template class cuNDArray< vectord<float,3> >;
+template class cuNDArray< vectord<float,4> >;
+
+template class cuNDArray< vectord<double,2> >;
+template class cuNDArray< vectord<double,3> >;
+template class cuNDArray< vectord<double,4> >;
+
+template class cuNDArray<intd2>;
+template class cuNDArray<intd3>;
+template class cuNDArray<intd4>;
+
+template class cuNDArray<uintd2>;
+template class cuNDArray<uintd3>;
+template class cuNDArray<uintd4>;
+
+template class cuNDArray<floatd2>;
+template class cuNDArray<floatd3>;
+template class cuNDArray<floatd4>;
+
+template class cuNDArray<doubled2>;
+template class cuNDArray<doubled3>;
+template class cuNDArray<doubled4>;
+
+template class cuNDArray<real_complex<float> >;
+template class cuNDArray<real_complex<double> >;
+
+template class cuNDArray<float_complex>;
+template class cuNDArray<double_complex>;

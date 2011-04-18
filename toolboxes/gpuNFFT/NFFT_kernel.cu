@@ -20,9 +20,9 @@
 // Transfer result from shared memory to global memory.
 //
 
-template<class REAL, class NDTYPE> __inline__ __device__ void 
+template<class REAL> __inline__ __device__ void 
 NFFT_output( unsigned int number_of_samples, unsigned int number_of_batches,
-	     NDTYPE *samples,
+	     vectord<REAL,2> *samples,
 	     unsigned int double_warp_size_power,
 	     unsigned int globalThreadId, unsigned int sharedMemFirstSampleIdx )
 {
@@ -30,58 +30,60 @@ NFFT_output( unsigned int number_of_samples, unsigned int number_of_batches,
   REAL *shared_mem = (REAL*) _shared_mem;
   
   for( unsigned int batch=0; batch<number_of_batches; batch++ ){
-    NDTYPE sample_value = make_realComplex( shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)], 
-					    shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)+warpSize] );
+    vectord<REAL,2> sample_value;
+    sample_value.vec[0] = shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)];
+    sample_value.vec[1] = shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)+warpSize];
     samples[batch*number_of_samples+globalThreadId] = sample_value;
   }
 }
 
-template<class INTd> __inline__ __device__ void
-resolve_wrap( INTd &grid_position, INTd matrix_size_os )
+template<unsigned int D> __inline__ __device__ void
+resolve_wrap( vectord<int,D> &grid_position, vectord<int,D> &matrix_size_os )
 {
-  INTd zero = make_intd(0,0);
-  grid_position += (vec_less(grid_position, zero)*matrix_size_os);
-  grid_position -= (vec_greater_equal(grid_position, matrix_size_os)*matrix_size_os);
+  vectord<int,D> zero; to_vectord<int,D>(zero,0);
+  grid_position += (vector_less<int,D>(grid_position, zero)*matrix_size_os);
+  grid_position -= (vector_greater_equal<int,D>(grid_position, matrix_size_os)*matrix_size_os);
 }
 
-template<class INTd, class UINTd, class REALd, class REAL, class NDTYPE> __inline__ __device__ void
+template<class REAL, unsigned int D> __inline__ __device__ void
 NFFT_iterate_body( REAL alpha, REAL beta, REAL W,
-		   UINTd matrix_size_os, UINTd fixed_dims,
+		   vectord<unsigned int, D> matrix_size_os, vectord<unsigned int, D> fixed_dims,
 		   unsigned int number_of_batches, 
-		   NDTYPE *image,
-		   unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, REALd matrix_size_os_real,
+		   vectord<REAL,2> *image,
+		   unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vectord<REAL,D> matrix_size_os_real,
 		   unsigned int sharedMemFirstSampleIdx,
-		   REALd sample_position, INTd grid_position )
+		   vectord<REAL,D> sample_position, vectord<int,D> grid_position )
 {
       
   // Calculate the distance between current sample and the grid cell
-  REALd delta = abs(sample_position-intd_to_reald(grid_position));
-  REALd half_W_vec = real_to_reald<REAL, REALd>( half_W, half_W );
-
+  vectord<REAL,D> grid_position_real; to_reald<REAL,int,D>(grid_position_real, grid_position);
+  vectord<REAL,D> delta = abs(sample_position-grid_position_real);
+  vectord<REAL,D> half_W_vec; to_vectord<REAL,D>( half_W_vec, half_W );
+  
   // If cell too distant from sample then move on to the next cell
-  if( weak_greater(delta, half_W_vec ))
-    return;
+  //if( weak_greater(delta, half_W_vec ))
+  //return;
 
   // Compute convolution weight.
-  REAL weight = KaiserBessel( delta, matrix_size_os_real, one_over_W, beta, fixed_dims );
+  REAL weight = KaiserBessel<REAL>( delta, matrix_size_os_real, one_over_W, beta, fixed_dims );
 
   // Safety measure. We have occationally observed a NaN from the KaiserBessel computation
   if( !isfinite(weight) )
     return;
 
   // Resolve wrapping of grid position
-  resolve_wrap( grid_position, *((INTd*)&matrix_size_os) );
+  resolve_wrap<D>( grid_position, *((vectord<int,D>*)&matrix_size_os) );
 
   REAL *shared_mem = (REAL*) _shared_mem;
   
   for( unsigned int batch=0; batch<number_of_batches; batch++ ){
     
     // Read the grid cell value from global memory
-    NDTYPE grid_value = image[batch*prod(matrix_size_os)+co_to_idx( *((UINTd*)&grid_position), matrix_size_os )];
+    vectord<REAL,2> grid_value = image[batch*prod(matrix_size_os)+co_to_idx( *((vectord<unsigned int, D>*)&grid_position), matrix_size_os )];
     
     // Add 'weight*grid_value' to the samples in shared memory
-    shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)] += (weight*grid_value.x);
-    shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)+warpSize] += (weight*grid_value.y);
+    shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)] += (weight*grid_value.vec[0]);
+    shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)+warpSize] += (weight*grid_value.vec[1]);
   }
 }
 
@@ -89,24 +91,25 @@ NFFT_iterate_body( REAL alpha, REAL beta, REAL W,
 // This method is deliberately overloaded in 'UINTd' (rather than templetized) to improve performance of the loop iteration
 //
 
-template <class INTd, class UINTd, class REALd, class REAL, class NDTYPE> __inline__ __device__ void
+template<class REAL> __inline__ __device__ void
 NFFT_iterate( REAL alpha, REAL beta, REAL W,
-	      uint2 matrix_size_os, uint2 fixed_dims,
+	      vectord<unsigned int,2> matrix_size_os, vectord<unsigned int,2> fixed_dims,
 	      unsigned int number_of_batches, 
-	      NDTYPE *image,
-	      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, REALd matrix_size_os_real,
+	      vectord<REAL,2> *image,
+	      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vectord<REAL,2> matrix_size_os_real,
 	      unsigned int sharedMemFirstSampleIdx,
-	      REALd sample_position, INTd lower_limit, INTd upper_limit )
+	      vectord<REAL,2> sample_position, vectord<int,2> lower_limit, vectord<int,2> upper_limit )
 {
   
   // Iterate through all grid cells influencing the corresponding sample
-  for( int y = lower_limit.y; y<=upper_limit.y; y++ ){
-    for( int x = lower_limit.x; x<=upper_limit.x; x++ ){
+  for( int y = lower_limit.vec[1]; y<=upper_limit.vec[1]; y++ ){
+    for( int x = lower_limit.vec[0]; x<=upper_limit.vec[0]; x++ ){
       
-      INTd grid_position = make_intd(x,y);
+      intd<2> grid_position;
+      grid_position.vec[0] = x; grid_position.vec[1] = y;
       
-      NFFT_iterate_body( alpha, beta, W, matrix_size_os, fixed_dims, number_of_batches, image, double_warp_size_power, 
-			 half_W, one_over_W, matrix_size_os_real, sharedMemFirstSampleIdx, sample_position, grid_position );
+      NFFT_iterate_body<REAL,2>( alpha, beta, W, matrix_size_os, fixed_dims, number_of_batches, image, double_warp_size_power, 
+				 half_W, one_over_W, matrix_size_os_real, sharedMemFirstSampleIdx, sample_position, grid_position );
     }
   }
 }
@@ -115,25 +118,26 @@ NFFT_iterate( REAL alpha, REAL beta, REAL W,
 // This method is deliberately overloaded in 'd' (rather than templetized) to improve performance of the loop iteration
 //
 
-template < class INTd, class UINTd, class REALd, class REAL, class NDTYPE> __inline__ __device__ void
+template<class REAL> __inline__ __device__ void
 NFFT_iterate( REAL alpha, REAL beta, REAL W,
-	      uint3 matrix_size_os, uint3 fixed_dims,
+	      vectord<unsigned int,3> matrix_size_os, vectord<unsigned int,3> fixed_dims,
 	      unsigned int number_of_batches, 
-	      NDTYPE *image,
-	      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, REALd matrix_size_os_real, 
+	      vectord<REAL,2> *image,
+	      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vectord<REAL,3> matrix_size_os_real, 
 	      unsigned int sharedMemFirstSampleIdx,
-	      REALd sample_position, INTd lower_limit, INTd upper_limit )
+	      vectord<REAL,3> sample_position, vectord<int,3> lower_limit, vectord<int,3> upper_limit )
 {
 
   // Iterate through all grid cells influencing the corresponding sample
-  for( int z = lower_limit.z; z<=upper_limit.z; z++ ){
-    for( int y = lower_limit.y; y<=upper_limit.y; y++ ){
-      for( int x = lower_limit.x; x<=upper_limit.x; x++ ){
+  for( int z = lower_limit.vec[2]; z<=upper_limit.vec[2]; z++ ){
+    for( int y = lower_limit.vec[1]; y<=upper_limit.vec[1]; y++ ){
+      for( int x = lower_limit.vec[0]; x<=upper_limit.vec[0]; x++ ){
 	
-	INTd grid_position = make_intd(x,y,z);
+	intd<3> grid_position;
+	grid_position.vec[0] = x; grid_position.vec[1] = y; grid_position.vec[2] = z;
 	
-	NFFT_iterate_body( alpha, beta, W, matrix_size_os, fixed_dims, number_of_batches, image, double_warp_size_power, 
-			   half_W, one_over_W, matrix_size_os_real, sharedMemFirstSampleIdx, sample_position, grid_position );
+	NFFT_iterate_body<REAL,3>( alpha, beta, W, matrix_size_os, fixed_dims, number_of_batches, image, double_warp_size_power, 
+				   half_W, one_over_W, matrix_size_os_real, sharedMemFirstSampleIdx, sample_position, grid_position );
       }
     }
   }
@@ -143,67 +147,70 @@ NFFT_iterate( REAL alpha, REAL beta, REAL W,
 // This method is deliberately overloaded in 'd' (rather than templetized) to improve performance of the loop iteration
 //
 
-template <class INTd, class UINTd, class REALd, class REAL, class NDTYPE> __inline__ __device__ void
+template<class REAL> __inline__ __device__ void
 NFFT_iterate( REAL alpha, REAL beta, REAL W,
-	      uint4 matrix_size_os, uint4 fixed_dims,
+	      vectord<unsigned int,4> matrix_size_os, vectord<unsigned int,4> fixed_dims,
 	      unsigned int number_of_batches, 
-	      NDTYPE *image,
-	      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, REALd matrix_size_os_real, 
+	      vectord<REAL,2> *image,
+	      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vectord<REAL,4> matrix_size_os_real, 
 	      unsigned int sharedMemFirstSampleIdx,
-	      REALd sample_position, INTd lower_limit, INTd upper_limit )
+	      vectord<REAL,4> sample_position, vectord<int,4> lower_limit, vectord<int,4> upper_limit )
 {
 
   // Iterate through all grid cells influencing the corresponding sample
-  for( int w = lower_limit.w; w<=upper_limit.w; w++ ){
-    for( int z = lower_limit.z; z<=upper_limit.z; z++ ){
-      for( int y = lower_limit.y; y<=upper_limit.y; y++ ){
-	for( int x = lower_limit.x; x<=upper_limit.x; x++ ){
+  for( int w = lower_limit.vec[3]; w<=upper_limit.vec[3]; w++ ){
+    for( int z = lower_limit.vec[2]; z<=upper_limit.vec[2]; z++ ){
+      for( int y = lower_limit.vec[1]; y<=upper_limit.vec[1]; y++ ){
+	for( int x = lower_limit.vec[0]; x<=upper_limit.vec[0]; x++ ){
 	  
-	  INTd grid_position = make_intd(x,y,z,w);
+	  intd<4> grid_position;
+	  grid_position.vec[0] = x; grid_position.vec[1] = y; grid_position.vec[2] = z; grid_position.vec[3] = w;
 	  
-	  NFFT_iterate_body( alpha, beta, W, matrix_size_os, fixed_dims, number_of_batches, image, double_warp_size_power, 
-			     half_W, one_over_W, matrix_size_os_real, sharedMemFirstSampleIdx, sample_position, grid_position );
+	  NFFT_iterate_body<REAL,4>( alpha, beta, W, matrix_size_os, fixed_dims, number_of_batches, image, double_warp_size_power, 
+				     half_W, one_over_W, matrix_size_os_real, sharedMemFirstSampleIdx, sample_position, grid_position );
 	}
       }
     }
   }
 }
 
-template <class INTd, class UINTd, class REALd, class REAL, class NDTYPE> __inline__ __device__ void
+template<class REAL, unsigned int D> __inline__ __device__ void
 NFFT_convolve( REAL alpha, REAL beta, REAL W,
-	       UINTd matrix_size_os, UINTd matrix_size_wrap, UINTd fixed_dims,
+	       vectord<unsigned int, D> matrix_size_os, vectord<unsigned int, D> matrix_size_wrap, vectord<unsigned int, D> fixed_dims,
 	       unsigned int number_of_batches, 
-	       REALd *traj_positions, NDTYPE *image,
-	       unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, REALd matrix_size_os_real, UINTd non_fixed_dims,
+	       vectord<REAL,D> *traj_positions, vectord<REAL,2> *image,
+	       unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vectord<REAL,D> matrix_size_os_real, vectord<unsigned int, D> non_fixed_dims,
 	       unsigned int globalThreadId, unsigned int sharedMemFirstSampleIdx )
 {
   
   // Sample position to convolve onto
   // Computed in preprocessing, which included a wrap zone. Remove this wrapping.
-  REALd sample_position = traj_positions[globalThreadId]-uintd_to_reald(matrix_size_wrap>>1);
+  vectord<REAL,D> half_wrap_real; to_reald<REAL,unsigned int,D>(half_wrap_real, matrix_size_wrap>>1);
+  vectord<REAL,D> sample_position = traj_positions[globalThreadId]-half_wrap_real;
   
   // Half the kernel width
-  REALd half_W_vec = real_to_reald<REAL, REALd>( half_W, half_W );
+  vectord<REAL,D> half_W_vec; to_vectord<REAL,D>( half_W_vec, half_W );
   
   // Limits of the subgrid to consider
-  INTd lower_limit = reald_to_intd(ceil(sample_position-half_W_vec*uintd_to_reald(non_fixed_dims)));
-  INTd upper_limit = reald_to_intd(floor(sample_position+half_W_vec*uintd_to_reald(non_fixed_dims)));
+  vectord<REAL,D> non_fixed_dims_real; to_reald<REAL,unsigned int,D>(non_fixed_dims_real,non_fixed_dims);
+  vectord<int,D> lower_limit; to_intd<REAL,D>(lower_limit, ceil(sample_position-half_W_vec*non_fixed_dims_real));
+  vectord<int,D> upper_limit; to_intd<REAL,D>(upper_limit, floor(sample_position+half_W_vec*non_fixed_dims_real));
 
   // Accumulate contributions from the grid
-  NFFT_iterate<INTd, UINTd, REALd, REAL, NDTYPE>( alpha, beta, W, matrix_size_os, fixed_dims, number_of_batches, image, double_warp_size_power, 
-						  half_W, one_over_W, matrix_size_os_real, sharedMemFirstSampleIdx, sample_position, lower_limit, upper_limit );
+  NFFT_iterate<REAL>( alpha, beta, W, matrix_size_os, fixed_dims, number_of_batches, image, double_warp_size_power, 
+			half_W, one_over_W, matrix_size_os_real, sharedMemFirstSampleIdx, sample_position, lower_limit, upper_limit );
 }
 
 //
 // kernel main
 //
 
-template <class UINTd, class REALd, class REAL, class NDTYPE> __global__ void
+template<class REAL, unsigned int D> __global__ void
 NFFT_convolve_kernel( REAL alpha, REAL beta, REAL W,
-		      UINTd matrix_size_os, UINTd matrix_size_wrap, UINTd fixed_dims,
+		      vectord<unsigned int, D> matrix_size_os, vectord<unsigned int, D> matrix_size_wrap, vectord<unsigned int, D> fixed_dims,
 		      unsigned int number_of_samples, unsigned int number_of_batches,
-		      REALd *traj_positions, NDTYPE *image, NDTYPE *samples,
-		      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, REALd matrix_size_os_real, UINTd non_fixed_dims )
+		      vectord<REAL,D> *traj_positions, vectord<REAL,2> *image, vectord<REAL,2> *samples,
+		      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vectord<REAL,D> matrix_size_os_real, vectord<unsigned int, D> non_fixed_dims )
 {
 
   // Global thread number	
@@ -227,30 +234,12 @@ NFFT_convolve_kernel( REAL alpha, REAL beta, REAL W,
   // Initialize shared memory
   for( unsigned int i=0; i<num_reals; i++ )
     shared_mem[sharedMemFirstSampleIdx+warpSize*i] = zero;
-
+  
   // Compute NFFT using arbitrary sample trajectories.
-  switch(sizeof(UINTd)){
-
-  case sizeof(uint2):
-    NFFT_convolve<int2, uint2, REALd, REAL, NDTYPE>( alpha, beta, W, matrix_size_os, matrix_size_wrap, fixed_dims, number_of_batches, 
-						     traj_positions, image, double_warp_size_power, half_W, one_over_W, 
-						     matrix_size_os_real, non_fixed_dims, globalThreadId, sharedMemFirstSampleIdx );
-    break;
-    /*   
-  case sizeof(uint3):
-    NFFT_convolve<int3, uint3, REALd, REAL, NDTYPE>( alpha, beta, W, matrix_size_os, matrix_size_wrap, fixed_dims, number_of_batches, 
-						     traj_positions, image, double_warp_size_power, half_W, one_over_W, 
-						     matrix_size_os_real, non_fixed_dims, globalThreadId, sharedMemFirstSampleIdx );
-    break;
-    
-  case sizeof(uint4):
-    NFFT_convolve<int4, uint4, REALd, REAL, NDTYPE>( alpha, beta, W, matrix_size_os, matrix_size_wrap, fixed_dims, number_of_batches, 
-						     traj_positions, image, double_warp_size_power, half_W, one_over_W, 
-						     matrix_size_os_real, non_fixed_dims, globalThreadId, sharedMemFirstSampleIdx );
-    break;
-    */
-  }
-    
+  NFFT_convolve<REAL,D>( alpha, beta, W, matrix_size_os, matrix_size_wrap, fixed_dims, number_of_batches, 
+			 traj_positions, image, double_warp_size_power, half_W, one_over_W, 
+			 matrix_size_os_real, non_fixed_dims, globalThreadId, sharedMemFirstSampleIdx );
+  
   // Output k-space image to global memory
-  NFFT_output<REAL, NDTYPE>( number_of_samples, number_of_batches, samples, double_warp_size_power, globalThreadId, sharedMemFirstSampleIdx );
+  NFFT_output<REAL>( number_of_samples, number_of_batches, samples, double_warp_size_power, globalThreadId, sharedMemFirstSampleIdx );
 }

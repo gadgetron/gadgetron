@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cuNDArray.h"
+#include "vectord.h"
 
 #include <memory>
 #include <vector>
@@ -25,19 +26,19 @@ void cuNDA_abs( cuNDArray<T> *in_out );
 template<class T> 
 void cuNDA_reciprocal( cuNDArray<T> *in_out );
 
-// Normalize
-template<class REAL, class T> 
-void cuNDA_normalize( cuNDArray<T> *in_out, REAL new_max );
+// Normalize (scalar entries)
+template<class REAL>
+void cuNDA_normalize( cuNDArray<REAL> *in_out, REAL new_max );
 
 // Normalize by RSS
-template<class REAL, class T>  
+template<class REAL, class T> 
 bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim );
 
-// Scale - for real and complex types.
+// Scale (with constant)
 template<class A, class X> 
-void cuNDA_scale( A a, X *x );
+void cuNDA_scale( A a, cuNDArray<X> *x );
 
-// Component-wise scale - for real and complex types
+// Scale (component-wise)
 template<class A, class X> 
 bool cuNDA_scale( cuNDArray<A> *a, cuNDArray<X> *x );
 
@@ -54,19 +55,19 @@ bool cuNDA_axpby( cuNDArray<A> *a, cuNDArray<XY> *x, cuNDArray<B> *b, cuNDArray<
 //
 
 // Norm
-template<class REAL, class T> 
+template<class REAL, class T>
 std::auto_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<T> *data );
 
 // Norm squared
-template<class REAL, class T>  
+template<class REAL, class T> 
 std::auto_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<T> *data );
 
 // RSS
-template<class REAL, class T>  
+template<class REAL, class T> 
 std::auto_ptr< cuNDArray<REAL> > cuNDA_rss( cuNDArray<T> *data, unsigned int dim );
 
 // Sum
-template<class T>  
+template<class T> 
 std::auto_ptr< cuNDArray<T> > cuNDA_sum( cuNDArray<T> *data, unsigned int dim );
 
 // Build correlation matrix
@@ -78,27 +79,27 @@ std::auto_ptr< cuNDArray<T> > cuNDA_correlation( cuNDArray<T> *data );
 //
 
 // Crop
-template<class UINTd, class T> 
-bool cuNDA_crop( UINTd offset, cuNDArray<T> *in, cuNDArray<T> *out );
+template<class T, unsigned int D>
+bool cuNDA_crop( vectord<unsigned int,D> offset, cuNDArray<T> *in, cuNDArray<T> *out );
 
 // Expand with zero filling
-template<class UINTd, class T>  
+template<class T, unsigned int D>
 bool cuNDA_expand_with_zero_fill( cuNDArray<T> *in, cuNDArray<T> *out );
 
 // Zero fill border (rectangular).
-template<class UINTd, class T> 
-bool cuNDA_zero_fill_border( UINTd matrix_size, cuNDArray<T> *image );
+template<class T, unsigned int D> 
+bool cuNDA_zero_fill_border( vectord<unsigned int, D> matrix_size, cuNDArray<T> *image );
 
 // Border fill (circular)
-template<class UINTd, class REALd, class T>  
-bool cuNDA_zero_fill_border( REALd radius, cuNDArray<T> *image );
+template<class REAL, class T, unsigned int D>
+bool cuNDA_zero_fill_border( vectord<REAL,D> radius, cuNDArray<T> *image );
 
 //
 // Conversion between vector<unsigned int> and UINTd
 //
 
-template<class UINTd>  
-std::vector<unsigned int> cuNDA_toVec( UINTd dims );
+template<unsigned int D> 
+std::vector<unsigned int> cuNDA_toVec( vectord<unsigned int,D> dims );
 
-template<class UINTd>  
-bool cuNDA_fromVec( std::vector<unsigned int> from, UINTd &to );
+template<unsigned int D> 
+bool cuNDA_fromVec( std::vector<unsigned int> from, vectord<unsigned int,D> &to );

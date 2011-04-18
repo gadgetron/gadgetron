@@ -4,15 +4,11 @@ include $(GADGETRONHOME)/Makefile.inc
 DLLNAME=cuNFFT
 
 HEADERFILES=\
-	NFFT.hcu \
+	NFFT.h \
 	ndarray_device_utilities.hcu \
-	vector_utilities.hcu \
-	floatd_operators.hcu \
-	floatd_utilities.hcu \
-	uintd_operators.hcu \
-	uintd_utilities.hcu \
-	intd_operators.hcu \
-	intd_utilities.hcu \
+	vectord.h \
+	vectord_operators.hcu \
+	vectord_utilities.hcu \
 	check_CUDA.h
 
 CUDASOURCES=\
@@ -51,9 +47,9 @@ clean:
 	rm -rf $(LIBFILE)
 	rm -rf $(LIBOBJECTS)
 	rm -rf $(LIBCUDAOBJECTS)
+	rm -rf main.cuo
 	rm -rf test
 
 cleandata:
 	rm -rf *.cplx
 	rm -rf *.real
-
