@@ -14,7 +14,7 @@ LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 APPLDFLAGS += -l gpucore -lcuNFFT -lcundarray
-LIBLDFLAGS += -lcundarray
+LIBLDFLAGS += -lcundarray -lgpucore
 
 all: $(LIBFILE)
 	mkdir -p $(GADGETRONHOME)/lib
