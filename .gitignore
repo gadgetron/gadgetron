@@ -14,3 +14,4 @@ inc/
 *.txt
 config/
 bin/
+dependencies/magma_1.0.0-rc4/

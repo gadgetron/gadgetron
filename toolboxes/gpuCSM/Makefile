@@ -18,7 +18,8 @@ LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
 LIBLDFLAGS += -lcundarray -lcuNFFT
 APPLDFLAGS += -lcundarray -lcuNFFT
-
+CXXFLAGS += -g
+NVCCFLAGS += -g
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 
 all: $(LIBFILE)
