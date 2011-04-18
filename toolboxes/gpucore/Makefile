@@ -2,12 +2,18 @@ GADGETRONHOME=../..
 include $(GADGETRONHOME)/Makefile.inc
 
 LIBHEADERS=\
-	GPUTimer.h
+	GPUTimer.h \
+	check_CUDA.h \
+	vectord.h \
+	vectord_operators.hcu \
+	vectord_utilities.hcu \
+	ndarray_device_utilities.hcu
 
 LIBSOURCES=\
 	GPUTimer.cpp
 
-CUDASOURCES=
+CUDASOURCES= \
+	ndarray_device_utilities.cu
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)

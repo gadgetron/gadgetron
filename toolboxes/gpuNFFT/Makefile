@@ -4,22 +4,16 @@ include $(GADGETRONHOME)/Makefile.inc
 DLLNAME=cuNFFT
 
 HEADERFILES=\
-	NFFT.h \
-	ndarray_device_utilities.hcu \
-	vectord.h \
-	vectord_operators.hcu \
-	vectord_utilities.hcu \
-	check_CUDA.h
+	NFFT.h
 
 CUDASOURCES=\
-	NFFT.cu \
-	ndarray_device_utilities.cu
+	NFFT.cu
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
-APPLDFLAGS += -lcuNFFT -lcundarray
+APPLDFLAGS += -l gpucore -lcuNFFT -lcundarray
 LIBLDFLAGS += -lcundarray
 
 all: $(LIBFILE)
