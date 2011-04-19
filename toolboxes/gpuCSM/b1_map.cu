@@ -127,7 +127,7 @@ set_box_convkernel( uintd<D> dims, uintd<D> box )
   
   return auto_ptr< cuNDArray<real_complex<REAL> > >(out);
 }
-
+/*
 extern __shared__ char shared_mem[];
 
 // Extract CSM
@@ -185,6 +185,55 @@ extract_csm_kernel( real_complex<REAL> *corrm, real_complex<REAL> *csm, unsigned
     }
   }
 }
+*/
+
+// Extract CSM
+template<class REAL> __global__ void
+extract_csm_kernel( real_complex<REAL> *corrm, real_complex<REAL> *csm, unsigned int num_batches, unsigned int num_elements, real_complex<REAL> *tmp_v )
+{
+  const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
+
+  if( idx < num_elements ){    
+    
+    // Get the dominant eigenvector for each correlation matrix.
+    // Copying Peter Kellman's approach we use the power method:
+    //  b_k+1 = A*b_k / ||A*b_k||
+    
+    const unsigned int iterations = 2;
+
+    for( unsigned int c=0; c<num_batches; c++){
+      csm[c*num_elements+idx] = get_one<real_complex<REAL> >();
+    }
+    
+    for( unsigned int it=0; it<iterations; it++ ){
+
+      for( unsigned int c=0; c<num_batches; c++){
+	tmp_v[c*num_elements+idx] = get_zero<real_complex<REAL> >();
+      }
+      
+      for( unsigned j=0; j<num_batches; j++){
+	for( unsigned int k=0; k<num_batches; k++){
+	  tmp_v[j*num_elements+idx] += corrm[(k*num_batches+j)*num_elements+idx]*csm[k*num_elements+idx];
+	}
+      }
+
+      REAL tmp = get_zero<REAL>();
+      
+      for (unsigned int c=0; c<num_batches; c++){
+	tmp += norm_squared(tmp_v[c*num_elements+idx]);
+      }
+      
+      tmp = sqrt(tmp);
+      tmp = reciprocal(tmp);
+      
+      for (unsigned int c=0; c<num_batches; c++){
+	vectord<REAL,2> _res = tmp*tmp_v[c*num_elements+idx];
+	real_complex<REAL> res; res.vec[0]=_res.vec[0]; res.vec[1]=_res.vec[1]; // TODO: do this assignment elegantly
+	csm[c*num_elements+idx] = res;
+      }
+    }
+  }
+}
 
 // Extract CSM
 template<class REAL> __host__ 
@@ -203,11 +252,22 @@ auto_ptr< cuNDArray<real_complex<REAL> > > extract_csm( cuNDArray<real_complex<R
 
   dim3 blockDim(128);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
-  
+
+  /*  
   if( out != 0x0 )
     extract_csm_kernel<REAL><<< gridDim, blockDim, number_of_batches*blockDim.x*2*sizeof(real_complex<REAL>) >>>
       ( corrm_in->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements );
-  
+  */
+
+  // Temporary buffer. TODO: use shared memory
+  cuNDArray<real_complex<REAL> > *tmp_v = (sizeof(REAL)==sizeof(float)) ?
+    (cuNDArray<real_complex<REAL> >*) cuNDArray<float_complex>::allocate(image_dims) :
+    (cuNDArray<real_complex<REAL> >*) cuNDArray<double_complex>::allocate(image_dims);
+
+  if( out != 0x0 )
+    extract_csm_kernel<REAL><<< gridDim, blockDim >>>
+      ( corrm_in->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements, tmp_v->get_data_ptr() );
+
   CHECK_FOR_CUDA_ERROR();
   
   return auto_ptr< cuNDArray<real_complex<REAL> > >(out);
