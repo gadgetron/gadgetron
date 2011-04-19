@@ -11,6 +11,7 @@ DIRS=\
 	apps/gputest \
 	apps/gadgetron \
 	apps/gadgetdatasender \
+	apps/htgrappa \
 	gadgets/core \
 	gadgets/gpucg
 

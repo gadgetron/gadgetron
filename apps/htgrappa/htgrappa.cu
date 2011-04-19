@@ -5,6 +5,7 @@
 #include "cposv_wrapper.h"
 #include "hoNDArray_fileio.h"
 #include "cuNDFFT.h"
+#include "GPUTimer.h"
 
 int2 vec_to_int2(std::vector<unsigned int> vec)
 {
@@ -322,13 +323,15 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 
     //write_cuNDArray_to_disk(&AHA,"AHA.cplx");
 
+    {
+      GPUTimer timer("GRAPPA cublas gemm");
     stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
 		       n,coils,m,&alpha,
 		       system_matrix.get_data_ptr(), m,
 		       b.get_data_ptr(), m,
 		       &beta, AHrhs.get_data_ptr(), n);
     
-
+    }
     //write_cuNDArray_to_disk(&AHrhs,"AHrhs.cplx");
  
     if (stat != CUBLAS_STATUS_SUCCESS) {

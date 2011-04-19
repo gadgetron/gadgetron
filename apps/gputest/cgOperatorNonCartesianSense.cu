@@ -39,7 +39,7 @@ int cgOperatorNonCartesianSense::mult_M(cuNDArray<float2>* in,
   }
 
   //Do the NFFT
-  if (!plan_.compute( out, &tmp, weights_, NFFT_plan<uint2, float2, float, float2>::NFFT_FORWARDS )) {
+  if (!plan_.compute( (cuNDArray<real_complex<float> >*)out, (cuNDArray<real_complex<float> >*)&tmp, weights_, NFFT_plan<float, 2>::NFFT_FORWARDS )) {
     std::cerr << "cgOperatorNonCartesianSense::mult_M : failed during NFFT" << std::endl;
     return -1;
   }
@@ -83,7 +83,7 @@ int cgOperatorNonCartesianSense::mult_MH(cuNDArray<float2>* in, cuNDArray<float2
   }
 
   //Do the NFFT
-  if (!plan_.compute( in, &tmp, weights_, NFFT_plan<uint2, float2, float, float2>::NFFT_BACKWARDS )) {
+  if (!plan_.compute( (cuNDArray<real_complex<float> >*)in, (cuNDArray<real_complex<float> >*)&tmp, weights_, NFFT_plan<float,2>::NFFT_BACKWARDS )) {
     std::cerr << "cgOperatorNonCartesianSense::mult_MH : failed during NFFT" << std::endl;
     return -1;
   }
@@ -105,7 +105,7 @@ int cgOperatorNonCartesianSense::mult_MH(cuNDArray<float2>* in, cuNDArray<float2
 }
 
 
-int cgOperatorNonCartesianSense::set_trajectories(cuNDArray<float2>* trajectory) {
+int cgOperatorNonCartesianSense::set_trajectories(cuNDArray<floatd2>* trajectory) {
   if (trajectory) {
     trajectory_ = trajectory;
     samples_ = trajectory->get_number_of_elements();
@@ -113,24 +113,24 @@ int cgOperatorNonCartesianSense::set_trajectories(cuNDArray<float2>* trajectory)
     dimensions_out_.push_back(samples_);
     dimensions_out_.push_back(coils_);
   
-    uint2 matrix_size;
-    matrix_size.x = dimensions_[0];
-    matrix_size.y = dimensions_[1];
+    uintd2 matrix_size;
+    matrix_size.vec[0] = dimensions_[0];
+    matrix_size.vec[1] = dimensions_[1];
     
-    uint2 matrix_size_os;
-    matrix_size_os.x = ((dimensions_[0]*2.0)/32)*32;
-    matrix_size_os.y = ((dimensions_[1]*2.0)/32)*32;
+    uintd2 matrix_size_os;
+    matrix_size_os.vec[0] = ((dimensions_[0]*2.0)/32)*32;
+    matrix_size_os.vec[1] = ((dimensions_[1]*2.0)/32)*32;
     
-    uint2 fixed_dims;
-    fixed_dims.x = 0;
-    fixed_dims.y = 0;
+    uintd2 fixed_dims;
+    fixed_dims.vec[0] = 0;
+    fixed_dims.vec[1] = 0;
     
-    if (!plan_.setup(matrix_size,matrix_size_os,fixed_dims, 4)) {
+    if (!plan_.setup(matrix_size,matrix_size_os,fixed_dims, 5.5f)) {
       std::cerr << "cgOperatorNonCartesianSense: failed to setup plan" << std::endl;
       return -1;
     }
 
-    if (!plan_.preprocess(trajectory_,false)) {
+    if (!plan_.preprocess( (cuNDArray<vectord<float,2> >*)trajectory_,  NFFT_plan<float,2>::NFFT_PREP_ALL )) {
       std::cerr << "cgOperatorNonCartesianSense: failed to run preprocess" << std::endl;
       return -1;
     }

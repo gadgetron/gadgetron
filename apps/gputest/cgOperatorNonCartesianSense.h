@@ -2,7 +2,7 @@
 #define CGOPERATORNONCARTESIANSENSE_H
 
 #include "cgOperatorSense.h"
-#include "NFFT.hcu"
+#include "NFFT.h"
 
 class cgOperatorNonCartesianSense : public cgOperatorSense
 {
@@ -17,7 +17,7 @@ class cgOperatorNonCartesianSense : public cgOperatorSense
 
   virtual int mult_M(cuNDArray<float2>* in, cuNDArray<float2>* out, bool accumulate = false);
   virtual int mult_MH(cuNDArray<float2>* in, cuNDArray<float2>* out, bool accumulate = false);
-  virtual int set_trajectories(cuNDArray<float2>* trajectory);
+  virtual int set_trajectories(cuNDArray<floatd2>* trajectory);
 
   virtual int set_weights(cuNDArray<float>* w) {
      if (!trajectory_) {
@@ -35,9 +35,9 @@ class cgOperatorNonCartesianSense : public cgOperatorSense
   }
 
  protected:
-  cuNDArray<float2>* trajectory_;
+  cuNDArray<floatd2>* trajectory_;
   cuNDArray<float>* weights_;
-  NFFT_plan<uint2,float2,float,float2> plan_;
+  NFFT_plan<float, 2> plan_;
   
 };
 
