@@ -3,9 +3,8 @@ include $(GADGETRONHOME)/Makefile.inc
 
 DIRS=\
 	toolboxes/gadgettools \
-	toolboxes/gpucore \
 	toolboxes/ndarray \
-	toolboxes/gpundarray \
+	toolboxes/gpucore \
 	toolboxes/gpuNFFT \
 	toolboxes/gpuCSM \
 	toolboxes/gpucg \

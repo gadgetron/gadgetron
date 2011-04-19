@@ -26,7 +26,7 @@ template<class S, class T> __inline__ __host__ __device__ T mul(const S&, const 
 // Math operations on reals
 //
 
-template<class REAL> __inline__ __host__ __device__ REAL sincos( REAL, REAL );
+template<class REAL> __inline__ __host__ __device__ void sin_cos( REAL, REAL*, REAL* );
 
 //
 // Individual member operations
@@ -245,20 +245,20 @@ template<class REAL, class T, unsigned int D> __inline__ __host__ __device__ voi
 // Operations on complex types
 //
 
-template<class REAL> __inline__ __host__ __device__ vectord<REAL,2> real( const vectord<REAL,2> &z ){
+template<class REAL> __inline__ __host__ __device__ REAL real( const real_complex<REAL> &z ){
   return z.vec[0];
 }
 
-template<class REAL> __inline__ __host__ __device__ vectord<REAL,2> imag( const vectord<REAL,2> &z ){
+template<class REAL> __inline__ __host__ __device__ REAL imag( const real_complex<REAL> &z ){
   return z.vec[1];
 }
 
-template<class REAL> __inline__ __host__ __device__ vectord<REAL,2> arg( const vectord<REAL,2> &z ){
+template<class REAL> __inline__ __host__ __device__ REAL arg( const real_complex<REAL> &z ){
   return atan2(imag(z), real(z));
 }
 
-template<class REAL> __inline__ __host__ __device__ vectord<REAL,2> conj( const vectord<REAL,2> &z ){
-  vectord<REAL,2> res;
+template<class REAL> __inline__ __host__ __device__ real_complex<REAL> conj( const real_complex<REAL> &z ){
+  real_complex<REAL> res;
   res.vec[0] = z.vec[0]; 
   res.vec[1] = -z.vec[1];
   return res;
@@ -582,4 +582,14 @@ template<> __inline__ __host__ __device__ double_complex mul<double_complex,doub
   res.vec[0] = a.vec[0]*b.vec[0]-a.vec[1]*b.vec[1];
   res.vec[1] = a.vec[0]*b.vec[1]+a.vec[1]*b.vec[0];
   return res;
+}
+
+template<>__inline__ __host__ __device__ void sin_cos( float angle, float *a, float *b )
+{
+  sincosf(angle, a,b);
+}
+
+template<>__inline__ __host__ __device__ void sin_cos( double angle, double *a, double *b )
+{
+  sincos(angle, a,b);
 }

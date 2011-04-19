@@ -1,6 +1,6 @@
 #include "b1_map.hcu"
-#include "uintd_operators.hcu"
-#include "uintd_utilities.hcu"
+#include "vectord_operators.hcu"
+#include "vectord_utilities.hcu"
 #include "ndarray_device_utilities.hcu"
 #include "check_CUDA.h"
 #include "cuNDFFT.h"
@@ -10,123 +10,129 @@
 
 using namespace std;
 
-template< class UINTd, class T> __host__ 
-auto_ptr< cuNDArray<T> > set_box_convkernel( UINTd dims, UINTd box );
+template< class REAL, unsigned int D> __host__ 
+auto_ptr< cuNDArray<real_complex<REAL> > > set_box_convkernel( uintd<D> dims, uintd<D> box );
 
-template<class REAL, class T> __host__ 
-auto_ptr< cuNDArray<T> > extract_csm( cuNDArray<T> *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements );
+template<class REAL> __host__ 
+auto_ptr< cuNDArray<real_complex<REAL> > > extract_csm( cuNDArray<real_complex<REAL> > *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements );
 
-template<class REAL, class T> __host__ 
-void set_phase_reference( cuNDArray<T> *csm, unsigned int number_of_batches, unsigned int number_of_elements );
+template<class REAL> __host__ 
+void set_phase_reference( cuNDArray<real_complex<REAL> > *csm, unsigned int number_of_batches, unsigned int number_of_elements );
 
 //
 // Main method:
 //
 
-template<class UINTd, class REAL, class T> auto_ptr< cuNDArray<T> >
-estimate_b1_map( cuNDArray<T>* data_in )
+template<class REAL, unsigned int D> auto_ptr< cuNDArray<real_complex<REAL> > >
+estimate_b1_map( cuNDArray<real_complex<REAL> >* data_in )
 {
   if( data_in->get_number_of_dimensions() < 2 ){
     cout << endl << "estimate_b1_map:: dimensionality mismatch." << endl; 
-    return auto_ptr< cuNDArray<T> >(0x0);
+    return auto_ptr< cuNDArray<real_complex<REAL> > >(0x0);
   }
 
-  unsigned int d = data_in->get_number_of_dimensions()-1;
-
-  if( d != sizeof(UINTd)/sizeof(unsigned int) ){
+  if( data_in->get_number_of_dimensions()-1 != D ){
     cout << endl << "estimate_b1_map:: dimensionality mismatch." << endl; 
-    return auto_ptr< cuNDArray<T> >(0x0);
+    return auto_ptr< cuNDArray<real_complex<REAL> > >(0x0);
   }
 
   vector<unsigned int> image_dims, dims_to_xform;
   unsigned int pixels_per_coil = 1;
   
-  for( unsigned int i=0; i<d; i++ ){
+  for( unsigned int i=0; i<D; i++ ){
     image_dims.push_back(data_in->get_size(i));
     dims_to_xform.push_back(i);
     pixels_per_coil *= data_in->get_size(i);
   }
   
-  unsigned int ncoils = data_in->get_size(d);
+  unsigned int ncoils = data_in->get_size(D);
 
-  // Make a copy of input data
-  cuNDArray<T> _data_out = *data_in;
-  auto_ptr< cuNDArray<T> > data_out(&_data_out);
-
+  // Make a copy of input data (use aligned structs)
+  cuNDArray<real_complex<REAL> > *_data_out = (sizeof(REAL)==sizeof(float)) ?
+    (cuNDArray<real_complex<REAL> >*) new cuNDArray<float_complex>((cuNDArray<float_complex>*) data_in) : 
+    (cuNDArray<real_complex<REAL> >*) new cuNDArray<double_complex>((cuNDArray<double_complex>*) data_in);
+  auto_ptr< cuNDArray<real_complex<REAL> > > data_out(_data_out);
+  
   // Normalize by the RSS of the coils
-  if( !cuNDA_rss_normalize<REAL, T>( data_out.get(), d ) ){
+  if( !cuNDA_rss_normalize<REAL, real_complex<REAL> >( data_out.get(), D ) ){
     cout << endl << "estimate_b1_map:: error in rss_normalize" << endl;
-    return auto_ptr< cuNDArray<T> >(0x0);
+    return auto_ptr< cuNDArray<real_complex<REAL> > >(0x0);
   }
   
   // Now calculate the correlation matrices
-  auto_ptr< cuNDArray<T> > corrm = cuNDA_correlation( data_out.get() );
-  //data_out.reset(); // TODO: why does this statement generate a runtime error?
+  auto_ptr< cuNDArray<real_complex<REAL> > > corrm = cuNDA_correlation( data_out.get() );
+  data_out.reset();
   
-// Compute smoothing kernel for convolution
-  UINTd dims; cuNDA_fromVec( image_dims, dims );
+  // Compute smoothing kernel for convolution
+  uintd<D> dims; cuNDA_fromVec<D>( image_dims, dims );
 
-  UINTd box = uint_to_uintd<UINTd>(7,7);
-  auto_ptr< cuNDArray<T> > conv_kernel = set_box_convkernel<UINTd,T>( dims, box );
+  uintd<D> box; to_vectord<unsigned int,D>(box,7);
+  auto_ptr< cuNDArray<real_complex<REAL> > > conv_kernel = set_box_convkernel<REAL,D>( dims, box );
 
   // Perform convolution by multiplication in image space
-  cuNDFFT().fft( conv_kernel.get() );
-  cuNDFFT().fft( corrm.get(), dims_to_xform );
+  cuNDFFT().fft( (cuNDArray<cuFloatComplex>*) conv_kernel.get() );           // TODO: fixme (requires new cuNDFFT interface)
+  cuNDFFT().fft( (cuNDArray<cuFloatComplex>*) corrm.get(), dims_to_xform );  // TODO: fixme (requires new cuNDFFT interface)
   cuNDA_scale( conv_kernel.get(), corrm.get() );
-  cuNDFFT().ifft( corrm.get(), dims_to_xform );
-  //conv_kernel.reset();
+  cuNDFFT().ifft( (cuNDArray<cuFloatComplex>*) corrm.get(), dims_to_xform ); // TODO: fixme (requires new cuNDFFT interface)
+  conv_kernel.reset();
 
   // Get the dominant eigenvector for each correlation matrix.
-  auto_ptr< cuNDArray<T> > csm = extract_csm<REAL,T>( corrm.get(), ncoils, pixels_per_coil );
-  //corrm.reset();
+  auto_ptr< cuNDArray<real_complex<REAL> > > csm = extract_csm<REAL>( corrm.get(), ncoils, pixels_per_coil );
+  corrm.reset();
   
   // Set phase according to reference (coil 0)
-  set_phase_reference<REAL, T>( csm.get(), ncoils, pixels_per_coil );
+  set_phase_reference<REAL>( csm.get(), ncoils, pixels_per_coil );
   
   return csm;
 }
 
-template< class UINTd, class T> __global__ void
-set_box_convkernel_kernel( T *out, UINTd dims, UINTd box )
+template<class REAL, unsigned int D> __global__ void
+set_box_convkernel_kernel( real_complex<REAL> *out, uintd<D> dims, uintd<D> box )
 {
   unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
 
   if( idx < prod(dims) ){
     
-    UINTd co = idx_to_co(idx,dims);
-    UINTd offset_dim = (dims>>1);
-    UINTd offset_box = (box>>1);
+    vectord<unsigned int,D> co = idx_to_co(idx,dims);
+    vectord<unsigned int,D> offset_dim = (dims>>1);
+    vectord<unsigned int,D> offset_box = (box>>1);
     
     if( weak_less(co, offset_dim-offset_box ) || weak_greater_equal(co, offset_dim+offset_box ))
-      out[idx] = get_zero<T>();
+      out[idx] = get_zero<real_complex<REAL> >();
     else{
-      T _out = get_one<T>();
-      out[idx] = _out*reciprocal(uintd_to_reald(prod(box)));
+      real_complex<REAL> _out = get_one<real_complex<REAL> >();
+      real_complex<REAL> scale; scale.vec[0] = (REAL)prod(box); scale.vec[1] = get_zero<REAL>();
+      scale = reciprocal<real_complex<REAL> >(scale);
+      _out *= scale;
+      out[idx] = _out;
     }
   }
 }
 
-template< class UINTd, class T> auto_ptr< cuNDArray<T> >
-set_box_convkernel( UINTd dims, UINTd box )
+template<class REAL, unsigned int D> auto_ptr< cuNDArray<real_complex<REAL> > >
+set_box_convkernel( uintd<D> dims, uintd<D> box )
 {
-  cuNDArray<T> *out = cuNDArray<T>::allocate(cuNDA_toVec(dims));
+  // Allocate output (aligned)
+  cuNDArray<real_complex<REAL> > *out = (sizeof(REAL)==sizeof(float)) ?
+    (cuNDArray<real_complex<REAL> >*) cuNDArray<float_complex>::allocate(cuNDA_toVec(dims)) :
+    (cuNDArray<real_complex<REAL> >*) cuNDArray<double_complex>::allocate(cuNDA_toVec(dims));
   
   dim3 blockDim(512);
   dim3 gridDim((unsigned int) ceil((double)prod(dims)/blockDim.x));
   
   if( out != 0x0 )
-    set_box_convkernel_kernel<UINTd,T><<< gridDim, blockDim >>>( out->get_data_ptr(), dims, box );
+    set_box_convkernel_kernel<REAL,D><<< gridDim, blockDim >>>( out->get_data_ptr(), dims, box );
   
   CHECK_FOR_CUDA_ERROR();
   
-  return auto_ptr< cuNDArray<T> >(out);
+  return auto_ptr< cuNDArray<real_complex<REAL> > >(out);
 }
 
 extern __shared__ char shared_mem[];
 
 // Extract CSM
-template<class REAL, class T> __global__ void
-extract_csm_kernel( T *corrm, T *csm, unsigned int num_batches, unsigned int num_elements )
+template<class REAL> __global__ void
+extract_csm_kernel( real_complex<REAL> *corrm, real_complex<REAL> *csm, unsigned int num_batches, unsigned int num_elements )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const unsigned int i = threadIdx.x;
@@ -137,19 +143,19 @@ extract_csm_kernel( T *corrm, T *csm, unsigned int num_batches, unsigned int num
     // Copying Peter Kellman's approach we use the power method:
     //  b_k+1 = A*b_k / ||A*b_k||
     
-    T *data_out = (T*) shared_mem;
-    T *tmp_v = &(((T*) shared_mem)[num_batches*blockDim.x]);
+    real_complex<REAL> *data_out = (real_complex<REAL>*) shared_mem;
+    real_complex<REAL> *tmp_v = &(((real_complex<REAL>*) shared_mem)[num_batches*blockDim.x]);
 
     const unsigned int iterations = 2;
 
     for( unsigned int c=0; c<num_batches; c++){
-      data_out[c*blockDim.x+i] = get_one<T>();
+      data_out[c*blockDim.x+i] = get_one<real_complex<REAL> >();
     }
     
     for( unsigned int it=0; it<iterations; it++ ){
 
       for( unsigned int c=0; c<num_batches; c++){
-	tmp_v[c*blockDim.x+i] = get_zero<T>();
+	tmp_v[c*blockDim.x+i] = get_zero<real_complex<REAL> >();
       }
       
       for( unsigned j=0; j<num_batches; j++){
@@ -161,14 +167,16 @@ extract_csm_kernel( T *corrm, T *csm, unsigned int num_batches, unsigned int num
       REAL tmp = get_zero<REAL>();
       
       for (unsigned int c=0; c<num_batches; c++){
-	tmp += norm_sq(tmp_v[c*blockDim.x+i]);
+	tmp += norm_squared(tmp_v[c*blockDim.x+i]);
       }
       
       tmp = sqrt(tmp);
       tmp = reciprocal(tmp);
       
       for (unsigned int c=0; c<num_batches; c++){
-	data_out[c*blockDim.x+i] = tmp*tmp_v[c*blockDim.x+i];
+	vectord<REAL,2> _res = tmp*tmp_v[c*blockDim.x+i];
+	real_complex<REAL> res; res.vec[0]=_res.vec[0]; res.vec[1]=_res.vec[1]; // TODO: do this assignment elegantly
+	data_out[c*blockDim.x+i] = res;
       }
     }
 
@@ -179,8 +187,8 @@ extract_csm_kernel( T *corrm, T *csm, unsigned int num_batches, unsigned int num
 }
 
 // Extract CSM
-template<class REAL, class T> __host__ 
-auto_ptr< cuNDArray<T> > extract_csm( cuNDArray<T> *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements )
+template<class REAL> __host__ 
+auto_ptr< cuNDArray<real_complex<REAL> > > extract_csm( cuNDArray<real_complex<REAL> > *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements )
 {
   vector<unsigned int> image_dims;
 
@@ -188,22 +196,26 @@ auto_ptr< cuNDArray<T> > extract_csm( cuNDArray<T> *corrm_in, unsigned int numbe
     image_dims.push_back(corrm_in->get_size(i));
   }
   
-  cuNDArray<T> *out = cuNDArray<T>::allocate(image_dims);
-  
+  // Allocate output (aligned)
+  cuNDArray<real_complex<REAL> > *out = (sizeof(REAL)==sizeof(float)) ?
+    (cuNDArray<real_complex<REAL> >*) cuNDArray<float_complex>::allocate(image_dims) :
+    (cuNDArray<real_complex<REAL> >*) cuNDArray<double_complex>::allocate(image_dims);
+
   dim3 blockDim(128);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
   
   if( out != 0x0 )
-    extract_csm_kernel<REAL, T><<< gridDim, blockDim, number_of_batches*blockDim.x*2*sizeof(T) >>>( corrm_in->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements );
+    extract_csm_kernel<REAL><<< gridDim, blockDim, number_of_batches*blockDim.x*2*sizeof(real_complex<REAL>) >>>
+      ( corrm_in->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements );
   
   CHECK_FOR_CUDA_ERROR();
   
-  return auto_ptr< cuNDArray<T> >(out);
+  return auto_ptr< cuNDArray<real_complex<REAL> > >(out);
 }
 
 // Set refence phase
-template<class REAL, class T> __global__ void
-set_phase_reference_kernel( T *csm, unsigned int num_batches, unsigned int num_elements )
+template<class REAL> __global__ void
+set_phase_reference_kernel( real_complex<REAL> *csm, unsigned int num_batches, unsigned int num_elements )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
 
@@ -211,10 +223,12 @@ set_phase_reference_kernel( T *csm, unsigned int num_batches, unsigned int num_e
     REAL angle = arg(csm[idx]); //Phase of the first coil
     REAL sin_a, cos_a; sin_cos( angle, &sin_a, &cos_a );
 
-    T tmp = conj(make_realComplex(cos_a,sin_a));
+    real_complex<REAL> tmp;
+    tmp.vec[0] = cos_a; tmp.vec[1] = sin_a;
+    tmp = conj(tmp);
 
     for( unsigned int c=0; c<num_batches; c++ ){
-      T val =  csm[c*num_elements+idx];
+      real_complex<REAL> val =  csm[c*num_elements+idx];
       val *= tmp;
       csm[c*num_elements+idx] = val;
     }
@@ -222,13 +236,13 @@ set_phase_reference_kernel( T *csm, unsigned int num_batches, unsigned int num_e
 }
   
 // Extract CSM
-template<class REAL, class T> __host__ 
-void set_phase_reference( cuNDArray<T> *csm, unsigned int number_of_batches, unsigned int number_of_elements )
+template<class REAL> __host__ 
+void set_phase_reference( cuNDArray<real_complex<REAL> > *csm, unsigned int number_of_batches, unsigned int number_of_elements )
 {
   dim3 blockDim(512);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
   
-  set_phase_reference_kernel<REAL, T><<< gridDim, blockDim >>>( csm->get_data_ptr(), number_of_batches, number_of_elements );
+  set_phase_reference_kernel<REAL><<< gridDim, blockDim >>>( csm->get_data_ptr(), number_of_batches, number_of_elements );
   
   CHECK_FOR_CUDA_ERROR();
 }
@@ -237,6 +251,6 @@ void set_phase_reference( cuNDArray<T> *csm, unsigned int number_of_batches, uns
 // Template instantiation
 //
 
-template auto_ptr< cuNDArray<cuFloatComplex> > estimate_b1_map<uint2, float, cuFloatComplex>(cuNDArray<cuFloatComplex>*);
-template auto_ptr< cuNDArray<cuFloatComplex> > estimate_b1_map<uint3, float, cuFloatComplex>(cuNDArray<cuFloatComplex>*);
-template auto_ptr< cuNDArray<cuFloatComplex> > estimate_b1_map<uint4, float, cuFloatComplex>(cuNDArray<cuFloatComplex>*);
+template auto_ptr< cuNDArray<real_complex<float> > > estimate_b1_map<float,2>(cuNDArray<real_complex<float> >*);
+template auto_ptr< cuNDArray<real_complex<float> > > estimate_b1_map<float,3>(cuNDArray<real_complex<float> >*);
+template auto_ptr< cuNDArray<real_complex<float> > > estimate_b1_map<float,4>(cuNDArray<real_complex<float> >*);

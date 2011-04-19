@@ -1,7 +1,8 @@
 #pragma once
 
+#include "vectord.h"
 #include "cuNDArray.h"
 #include <memory>
 
-template<class UINTd, class REAL, class T> 
-std::auto_ptr< cuNDArray<T> > estimate_b1_map( cuNDArray<T>* data );
+template<class REAL, unsigned int D> 
+std::auto_ptr< cuNDArray<real_complex<REAL> > > estimate_b1_map( cuNDArray<real_complex<REAL> >* data );

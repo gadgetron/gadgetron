@@ -13,7 +13,7 @@ CUDASOURCES=\
 APPOBJECTS=$(APPSOURCES:.cpp=.o)
 CUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
-APPLDFLAGS += -lcuNFFT -lcundarray -lcucg -lgpucore
+APPLDFLAGS += -lgpucore -lcuNFFT -lcucg
 
 test: main.o $(LIBCUDAOBJECTS)
 	$(CXX) $(APPOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) $(APPLDFLAGS) -o $(EXECUTABLE) 

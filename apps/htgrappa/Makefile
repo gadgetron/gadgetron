@@ -13,7 +13,7 @@ CUDASOURCES=\
 APPOBJECTS=$(APPSOURCES:.cpp=.o)
 CUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
-APPLDFLAGS += -lcuNFFT -lcundarray -lcucg -lgpucore -lcuCSM -L../../dependencies/magma_1.0.0-rc4/lib -lmagma -lmagmablas -lf77blas -latlas -lcblas -lf2c -lcublas -lm -llapack 
+APPLDFLAGS += -lgpucore -lcuNFFT -lcucg -lcuCSM -L../../dependencies/magma_1.0.0-rc4/lib -lmagma -lmagmablas -lf77blas -latlas -lcblas -lf2c -lcublas -lm -llapack 
 
 NVCCFLAGS += -I../../dependencies/magma_1.0.0-rc4/include
 

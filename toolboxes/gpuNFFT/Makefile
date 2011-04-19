@@ -13,8 +13,8 @@ LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
-APPLDFLAGS += -l gpucore -lcuNFFT -lcundarray
-LIBLDFLAGS += -lcundarray -lgpucore
+APPLDFLAGS += -lgpucore -lcuNFFT
+LIBLDFLAGS += -lgpucore
 
 all: $(LIBFILE)
 	mkdir -p $(GADGETRONHOME)/lib

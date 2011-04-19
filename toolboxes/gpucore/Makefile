@@ -7,19 +7,24 @@ LIBHEADERS=\
 	vectord.h \
 	vectord_operators.hcu \
 	vectord_utilities.hcu \
-	ndarray_device_utilities.hcu
+	ndarray_device_utilities.hcu \
+	cuNDArray.h \
+	cuNDFFT.h 
 
 LIBSOURCES=\
-	GPUTimer.cpp
+	GPUTimer.cpp \
+	cuNDArray.cpp \
+	cuNDFFT.cpp
 
 CUDASOURCES= \
-	ndarray_device_utilities.cu
+	ndarray_device_utilities.cu \
+	cuNDArray_kernels.cu
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 DLLNAME=gpucore
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
-LIBLDFLAGS += -lcundarray
+LIBLDFLAGS +=
 
 all: $(LIBFILE)
 
