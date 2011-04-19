@@ -817,8 +817,9 @@ bool cuNDA_fromVec( vector<unsigned int> from, vectord<unsigned int,D> &to )
   }
  
   vector<unsigned int>::iterator it = from.begin();
-  for( unsigned int i=0; i<D; i++ )
-    to.vec[i] = *it;
+  for( unsigned int i=0; i<D; i++ ){
+    to.vec[i] = *it; it++;
+  }
  
   return true;
 }

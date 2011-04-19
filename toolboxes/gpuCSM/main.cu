@@ -14,6 +14,7 @@ using namespace std;
 int main( int argc, char** argv) 
 {
   hoNDArray<float_complex> host_data = read_nd_array<float_complex>("b1_mapping_data/coil_images.cplx");
+  //hoNDArray<float_complex> host_data = read_nd_array<float_complex>("b1_mapping_data/5ch.cplx");
   
   if( host_data.get_number_of_dimensions() != 3 ){
     printf("\nInput data is not three-dimensional (a series of images). Quitting!\n");
@@ -24,10 +25,10 @@ int main( int argc, char** argv)
   cuNDArray<float_complex> device_data(host_data); // Use float_complex to ensure alignment
 
   // But split into two runs (the test data has 32 coils and the csm estimation eats memory)
-  vector<unsigned int> reduced_dims;
-  reduced_dims.push_back(device_data.get_size(0)>>1);
-  reduced_dims.push_back(device_data.get_size(1));
-  reduced_dims.push_back(device_data.get_size(2));
+  vector<unsigned int> reduced_dims(3);
+  reduced_dims[0] = (device_data.get_size(0)>>1);
+  reduced_dims[1] = device_data.get_size(1);
+  reduced_dims[2] = device_data.get_size(2);
   cuNDArray<float_complex> part_data; part_data.create(reduced_dims);
 
   bool success;

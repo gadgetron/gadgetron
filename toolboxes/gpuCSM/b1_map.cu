@@ -185,8 +185,8 @@ extract_csm_kernel( real_complex<REAL> *corrm, real_complex<REAL> *csm, unsigned
     }
   }
 }
-*/
 
+*/
 // Extract CSM
 template<class REAL> __global__ void
 extract_csm_kernel( real_complex<REAL> *corrm, real_complex<REAL> *csm, unsigned int num_batches, unsigned int num_elements, real_complex<REAL> *tmp_v )
