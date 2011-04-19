@@ -270,6 +270,7 @@ auto_ptr< cuNDArray<real_complex<REAL> > > extract_csm( cuNDArray<real_complex<R
 
   CHECK_FOR_CUDA_ERROR();
   
+  delete tmp_v;
   return auto_ptr< cuNDArray<real_complex<REAL> > >(out);
 }
 
