@@ -561,7 +561,7 @@ auto_ptr< cuNDArray<T> > cuNDA_correlation( cuNDArray<T> *in )
   cudaDeviceProp deviceProp; cudaGetDeviceProperties( &deviceProp, device );
   unsigned int warp_size = deviceProp.warpSize;
 
-  dim3 blockDim(((512/number_of_batches)/warp_size)*warp_size, number_of_batches);
+  dim3 blockDim(((deviceProp.maxThreadsPerBlock/number_of_batches)/warp_size)*warp_size, number_of_batches);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
   if( blockDim.x == 0 ){

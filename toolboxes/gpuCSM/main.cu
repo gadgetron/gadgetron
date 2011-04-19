@@ -36,6 +36,11 @@ int main( int argc, char** argv)
   // Get reduces size device data array
   success = cuNDA_crop<float_complex,2>( offset, &device_data, &part_data );
 
+  if( !success ){
+    printf("\nerror:\n");
+    exit(1);
+  }
+
   unsigned int timer; cutCreateTimer(&timer); double time;
   printf("\nComputing CSM (part one)..."); fflush(stdout);
   cutResetTimer( timer ); cutStartTimer( timer );
