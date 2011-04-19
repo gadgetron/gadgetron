@@ -25,8 +25,8 @@ int main( int argc, char** argv)
 
   // But split into two runs (the test data has 32 coils and the csm estimation eats memory)
   vector<unsigned int> reduced_dims;
-  reduced_dims.push_back(device_data.get_size(0));
-  reduced_dims.push_back(device_data.get_size(1)>>1);
+  reduced_dims.push_back(device_data.get_size(0)>>1);
+  reduced_dims.push_back(device_data.get_size(1));
   reduced_dims.push_back(device_data.get_size(2));
   cuNDArray<float_complex> part_data; part_data.create(reduced_dims);
 
@@ -36,6 +36,11 @@ int main( int argc, char** argv)
   // Get reduces size device data array
   success = cuNDA_crop<float_complex,2>( offset, &device_data, &part_data );
 
+  if( !success ){
+    printf("\nerror:\n");
+    exit(1);
+  }
+
   unsigned int timer; cutCreateTimer(&timer); double time;
   printf("\nComputing CSM (part one)..."); fflush(stdout);
   cutResetTimer( timer ); cutStartTimer( timer );
@@ -44,7 +49,7 @@ int main( int argc, char** argv)
 
   // Compute CSM
   if( success ) 
-    csm = estimate_b1_map<float,2>( (cuNDArray<real_complex<float> >*) &device_data );
+    csm = estimate_b1_map<float,2>( (cuNDArray<real_complex<float> >*) &part_data );
   
   cudaThreadSynchronize(); cutStopTimer( timer );
   time = cutGetTimerValue( timer ); printf("done: %.1f ms.", time ); fflush(stdout);
@@ -56,7 +61,7 @@ int main( int argc, char** argv)
 
   // Get reduces size device data array - part 2
   if( success ){
-    offset = uintd2(0,reduced_dims[1]);
+    offset = uintd2(reduced_dims[0],0);
     success = cuNDA_crop<float_complex,2>( offset, &device_data, &part_data );
   }
 
@@ -65,7 +70,7 @@ int main( int argc, char** argv)
 
   // Compute CSM
   if( success )
-    csm = estimate_b1_map<float,2>( (cuNDArray<real_complex<float> >*) &device_data );
+    csm = estimate_b1_map<float,2>( (cuNDArray<real_complex<float> >*) &part_data );
   
   cudaThreadSynchronize(); cutStopTimer( timer );
   time = cutGetTimerValue( timer ); printf("done: %.1f ms.", time ); fflush(stdout);
