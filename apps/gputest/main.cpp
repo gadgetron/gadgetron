@@ -7,7 +7,7 @@
 #include "cgOperatorNonCartesianSense.h"
 #include "cuCG.h"
 #include "GPUTimer.h"
-#include "vectord.h"
+#include "vector_td.h"
 
 int main(int argc, char** argv)
 {
@@ -17,7 +17,7 @@ int main(int argc, char** argv)
   hoNDArray<float2> csm = read_nd_array<float2>("csm.cplx");
   hoNDArray<float2> D = read_nd_array<float2>("D.cplx");
   hoNDArray<float>  idxf = read_nd_array<float>("idx.real");  
-  hoNDArray<floatd2>  co = read_nd_array<floatd2>("co.cplx");
+  hoNDArray<floatd2::Type>  co = read_nd_array<floatd2::Type>("co.cplx");
   hoNDArray<float>   w = read_nd_array<float>("w.real");
   
   if (csm.get_number_of_dimensions() == 2) {
@@ -40,7 +40,7 @@ int main(int argc, char** argv)
   cuNDArray<float2> csm_dev(csm);
   cuNDArray<unsigned int> idx_dev(idx);
   cgOperatorCartesianSense E;
-  cuNDArray<floatd2> co_dev(co);
+  cuNDArray<floatd2::Type> co_dev(co);
   cuNDArray<float> w_dev(w);
 
   E.set_csm(&csm_dev);

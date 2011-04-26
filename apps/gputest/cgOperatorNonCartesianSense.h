@@ -17,7 +17,7 @@ class cgOperatorNonCartesianSense : public cgOperatorSense
 
   virtual int mult_M(cuNDArray<float2>* in, cuNDArray<float2>* out, bool accumulate = false);
   virtual int mult_MH(cuNDArray<float2>* in, cuNDArray<float2>* out, bool accumulate = false);
-  virtual int set_trajectories(cuNDArray<floatd2>* trajectory);
+  virtual int set_trajectories(cuNDArray<floatd2::Type>* trajectory);
 
   virtual int set_weights(cuNDArray<float>* w) {
      if (!trajectory_) {
@@ -35,7 +35,7 @@ class cgOperatorNonCartesianSense : public cgOperatorSense
   }
 
  protected:
-  cuNDArray<floatd2>* trajectory_;
+  cuNDArray<floatd2::Type>* trajectory_;
   cuNDArray<float>* weights_;
   NFFT_plan<float, 2> plan_;
   

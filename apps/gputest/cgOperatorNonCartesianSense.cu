@@ -39,7 +39,7 @@ int cgOperatorNonCartesianSense::mult_M(cuNDArray<float2>* in,
   }
 
   //Do the NFFT
-  if (!plan_.compute( (cuNDArray<real_complex<float> >*)out, (cuNDArray<real_complex<float> >*)&tmp, weights_, NFFT_plan<float, 2>::NFFT_FORWARDS )) {
+  if (!plan_.compute( (cuNDArray<float_complext::Type>*)out, (cuNDArray<float_complext::Type>*)&tmp, weights_, NFFT_plan<float, 2>::NFFT_FORWARDS )) {
     std::cerr << "cgOperatorNonCartesianSense::mult_M : failed during NFFT" << std::endl;
     return -1;
   }
@@ -83,7 +83,7 @@ int cgOperatorNonCartesianSense::mult_MH(cuNDArray<float2>* in, cuNDArray<float2
   }
 
   //Do the NFFT
-  if (!plan_.compute( (cuNDArray<real_complex<float> >*)in, (cuNDArray<real_complex<float> >*)&tmp, weights_, NFFT_plan<float,2>::NFFT_BACKWARDS )) {
+  if (!plan_.compute( (cuNDArray<float_complext::Type>*)in, (cuNDArray<float_complext::Type>*)&tmp, weights_, NFFT_plan<float,2>::NFFT_BACKWARDS )) {
     std::cerr << "cgOperatorNonCartesianSense::mult_MH : failed during NFFT" << std::endl;
     return -1;
   }
@@ -105,7 +105,7 @@ int cgOperatorNonCartesianSense::mult_MH(cuNDArray<float2>* in, cuNDArray<float2
 }
 
 
-int cgOperatorNonCartesianSense::set_trajectories(cuNDArray<floatd2>* trajectory) {
+int cgOperatorNonCartesianSense::set_trajectories(cuNDArray<floatd2::Type>* trajectory) {
   if (trajectory) {
     trajectory_ = trajectory;
     samples_ = trajectory->get_number_of_elements();
@@ -130,7 +130,7 @@ int cgOperatorNonCartesianSense::set_trajectories(cuNDArray<floatd2>* trajectory
       return -1;
     }
 
-    if (!plan_.preprocess( (cuNDArray<vectord<float,2> >*)trajectory_,  NFFT_plan<float,2>::NFFT_PREP_ALL )) {
+    if (!plan_.preprocess( trajectory_,  NFFT_plan<float,2>::NFFT_PREP_ALL )) {
       std::cerr << "cgOperatorNonCartesianSense: failed to run preprocess" << std::endl;
       return -1;
     }
