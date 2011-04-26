@@ -20,7 +20,7 @@ bessi0(double x)
       ans=(-0.02057706+y*(0.02635537+y*(-0.01647633+(y*0.00392377))));
       ans=(exp(ax)/sqrt(ax))*(0.39894228+y*(0.01328592+y*(0.00225319+y*(-0.00157565+y*(0.00916281+y*ans)))));
     }
-  return ans;
+  return ans/1000000000.0;
 }
 
 __inline__ __device__ float 
@@ -39,7 +39,7 @@ bessi0(float x)
       ans=(-0.02057706f+y*(0.02635537f+y*(-0.01647633f+(y*0.00392377f))));
       ans=(expf(ax)/sqrtf(ax))*(0.39894228f+y*(0.01328592f+y*(0.00225319f+y*(-0.00157565f+y*(0.00916281f+y*ans)))));
     }
-  return ans;
+  return ans/1000000000.0f;
 }
 
 // Kaiser Bessel according to Beatty et. al. IEEE TMI 2005;24(6):799-808.

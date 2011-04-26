@@ -71,8 +71,8 @@ NFFT_H_convolve( REAL alpha, REAL beta, REAL W,
       float weight = KaiserBessel<REAL>( delta, matrix_size_os_real, one_over_W, beta, fixed_dims );
       
       // Safety measure. We have occationally observed a NaN from the KaiserBessel computation
-      if( !isfinite(weight) )
-	continue;
+      //if( !isfinite(weight) )
+      //continue;
       
       // Apply Kaiser-Bessel filter to input images
       for( unsigned int batch=0; batch<number_of_batches; batch++ ){

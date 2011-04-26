@@ -957,8 +957,8 @@ compute_deapodization_filter_kernel( typename uintd<D>::Type matrix_size_os, typ
       weight = zero;
     else{ 
       weight = KaiserBessel<REAL>( delta, matrix_size_os_real, one_over_W, beta, fixed_dims );
-      if( !isfinite(weight) )
-	weight = zero;
+      //if( !isfinite(weight) )
+      //weight = zero;
     }
     
     // Output weight
