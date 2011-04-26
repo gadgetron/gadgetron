@@ -6,15 +6,15 @@
 
 template<class REAL, unsigned int D> struct trajectory_scale
 {
-  vectord<REAL,D> matrix, bias;
+  vector_td<REAL,D> matrix, bias;
   
-  trajectory_scale( const vectord<REAL,D> &m, const vectord<REAL,D> &b ){
-    assign(matrix,m);
-    assign(bias,b);
+  trajectory_scale( const vector_td<REAL,D> &m, const vector_td<REAL,D> &b ){
+    matrix = m;
+    bias = b;
   }
   
   __host__ __device__
-  vectord<REAL,D> operator()(const vectord<REAL,D> &in) const { 
+  vector_td<REAL,D> operator()(const vector_td<REAL,D> &in) const { 
     return (in*matrix)+bias;
   }
 };
@@ -26,7 +26,7 @@ struct compute_num_cells_per_sample
   compute_num_cells_per_sample(REAL _half_W) : half_W(_half_W) {}
   
   __host__ __device__
-  unsigned int operator()(vectord<REAL,D> p) const
+  unsigned int operator()(vector_td<REAL,D> p) const
   {
     unsigned int num_cells = 1;
     for( unsigned int dim=0; dim<D; dim++ ){
@@ -42,7 +42,7 @@ struct compute_num_cells_per_sample
 
 // TODO: can we avoid overloading here?
 template<class REAL> __inline__ __device__ void
-output_pairs( unsigned int sample_idx, vectord<REAL,2> &p, vectord<unsigned int, 2> &matrix_size_os, vectord<unsigned int, 2> &matrix_size_wrap, REAL half_W, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
+output_pairs( unsigned int sample_idx, vector_td<REAL,2> &p, vector_td<unsigned int, 2> &matrix_size_os, vector_td<unsigned int, 2> &matrix_size_wrap, REAL half_W, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
 {
   unsigned int lower_limit_x = (unsigned int)ceil(p.vec[0]-half_W);
   unsigned int lower_limit_y = (unsigned int)ceil(p.vec[1]-half_W);
@@ -53,7 +53,7 @@ output_pairs( unsigned int sample_idx, vectord<REAL,2> &p, vectord<unsigned int,
   unsigned int write_offset = (sample_idx==0) ? 0 : write_offsets[sample_idx-1];
   for( unsigned int y=lower_limit_y; y<=upper_limit_y; y++ ){
     for( unsigned int x=lower_limit_x; x<=upper_limit_x; x++ ){
-      vectord<unsigned int, 2> co; co.vec[0] = x; co.vec[1] = y;
+      vector_td<unsigned int, 2> co; co.vec[0] = x; co.vec[1] = y;
       tuples_first[write_offset+pair_idx] = co_to_idx<2>(co, matrix_size_os+matrix_size_wrap);
       tuples_last[write_offset+pair_idx] = sample_idx;
       pair_idx++;
@@ -62,7 +62,7 @@ output_pairs( unsigned int sample_idx, vectord<REAL,2> &p, vectord<unsigned int,
 }
 
 template <class REAL> __inline__ __device__ void
-output_pairs( unsigned int sample_idx, vectord<REAL,3> &p, vectord<unsigned int, 3> &matrix_size_os, vectord<unsigned int, 3> &matrix_size_wrap, REAL half_W, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
+output_pairs( unsigned int sample_idx, vector_td<REAL,3> &p, vector_td<unsigned int, 3> &matrix_size_os, vector_td<unsigned int, 3> &matrix_size_wrap, REAL half_W, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
 {
   unsigned int lower_limit_x = (unsigned int)ceil(p.vec[0]-half_W);
   unsigned int lower_limit_y = (unsigned int)ceil(p.vec[1]-half_W);
@@ -76,7 +76,7 @@ output_pairs( unsigned int sample_idx, vectord<REAL,3> &p, vectord<unsigned int,
   for( unsigned int z=lower_limit_z; z<=upper_limit_z; z++ ){
     for( unsigned int y=lower_limit_y; y<=upper_limit_y; y++ ){
       for( unsigned int x=lower_limit_x; x<=upper_limit_x; x++ ){
-	vectord<unsigned int, 3> co; co.vec[0] = x; co.vec[1] = y; co.vec[2] = z;
+	vector_td<unsigned int, 3> co; co.vec[0] = x; co.vec[1] = y; co.vec[2] = z;
 	tuples_first[write_offset+pair_idx] = co_to_idx<3>(co, matrix_size_os+matrix_size_wrap);
 	tuples_last[write_offset+pair_idx] = sample_idx;
 	pair_idx++;
@@ -86,7 +86,7 @@ output_pairs( unsigned int sample_idx, vectord<REAL,3> &p, vectord<unsigned int,
 }
 
 template <class REAL> __inline__ __device__ void
-output_pairs( unsigned int sample_idx, vectord<REAL,4> &p, vectord<unsigned int, 4> &matrix_size_os, vectord<unsigned int, 4> &matrix_size_wrap, REAL half_W, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
+output_pairs( unsigned int sample_idx, vector_td<REAL,4> &p, vector_td<unsigned int, 4> &matrix_size_os, vector_td<unsigned int, 4> &matrix_size_wrap, REAL half_W, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
 {
   unsigned int lower_limit_x = (unsigned int)ceil(p.vec[0]-half_W);
   unsigned int lower_limit_y = (unsigned int)ceil(p.vec[1]-half_W);
@@ -103,8 +103,8 @@ output_pairs( unsigned int sample_idx, vectord<REAL,4> &p, vectord<unsigned int,
     for( unsigned int z=lower_limit_z; z<=upper_limit_z; z++ ){
       for( unsigned int y=lower_limit_y; y<=upper_limit_y; y++ ){
 	for( unsigned int x=lower_limit_x; x<=upper_limit_x; x++ ){
-	  vectord<unsigned int, 4> co; co.vec[0] = x; co.vec[1] = y; co.vec[2] = z; co.vec[3] = w;
-	  tuples_first[write_offset+pair_idx] = co_to_idx(co, matrix_size_os+matrix_size_wrap);
+	  vector_td<unsigned int, 4> co; co.vec[0] = x; co.vec[1] = y; co.vec[2] = z; co.vec[3] = w;
+	  tuples_first[write_offset+pair_idx] = co_to_idx<4>(co, matrix_size_os+matrix_size_wrap);
 	  tuples_last[write_offset+pair_idx] = sample_idx;
 	  pair_idx++;
 	}
@@ -114,20 +114,20 @@ output_pairs( unsigned int sample_idx, vectord<REAL,4> &p, vectord<unsigned int,
 }
 
 template<class REAL, unsigned int D> __global__ void
-write_pairs_kernel( vectord<unsigned int, D> matrix_size_os, vectord<unsigned int, D> matrix_size_wrap, unsigned int num_samples, REAL half_W, vectord<REAL,D> *traj_positions, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
+write_pairs_kernel( vector_td<unsigned int, D> matrix_size_os, vector_td<unsigned int, D> matrix_size_wrap, unsigned int num_samples, REAL half_W, vector_td<REAL,D> *traj_positions, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
 {
   // Get sample idx
   unsigned int sample_idx = blockIdx.x*blockDim.x + threadIdx.x;
 
   if( sample_idx<num_samples ){
 
-    vectord<REAL,D> p; assign( p, traj_positions[sample_idx] );
+    vector_td<REAL,D> p = traj_positions[sample_idx];
     output_pairs<REAL>( sample_idx, p, matrix_size_os, matrix_size_wrap, half_W, write_offsets, tuples_first, tuples_last );
   }
 };
 
 template <class REAL, unsigned int D> void 
-write_pairs( vectord<unsigned int, D> matrix_size_os, vectord<unsigned int, D> matrix_size_wrap, unsigned int num_samples, REAL W, vectord<REAL,D> *traj_positions, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
+write_pairs( vector_td<unsigned int, D> matrix_size_os, vector_td<unsigned int, D> matrix_size_wrap, unsigned int num_samples, REAL W, vector_td<REAL,D> *traj_positions, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
 {  
   dim3 blockDim(512);
   dim3 gridDim((int)ceil((double)num_samples/(double)blockDim.x));

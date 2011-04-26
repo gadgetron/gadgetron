@@ -1,7 +1,7 @@
 #include "b1_map.hcu"
-#include "vectord_operators.hcu"
-#include "vectord_utilities.hcu"
-#include "ndarray_device_utilities.hcu"
+#include "vector_td_operators.hcu"
+#include "vector_td_utilities.hcu"
+#include "ndarray_vector_td_utilities.hcu"
 #include "check_CUDA.h"
 #include "cuNDFFT.h"
 
@@ -11,29 +11,29 @@
 using namespace std;
 
 template< class REAL, unsigned int D> __host__ 
-auto_ptr< cuNDArray<real_complex<REAL> > > set_box_convkernel( uintd<D> dims, uintd<D> box );
+auto_ptr< cuNDArray<typename complext<REAL>::Type> > set_box_convkernel( typename uintd<D>::Type dims, typename uintd<D>::Type box );
 
 template<class REAL> __host__ 
-auto_ptr< cuNDArray<real_complex<REAL> > > extract_csm( cuNDArray<real_complex<REAL> > *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements );
+auto_ptr< cuNDArray<typename complext<REAL>::Type> > extract_csm( cuNDArray<typename complext<REAL>::Type> *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements );
 
 template<class REAL> __host__ 
-void set_phase_reference( cuNDArray<real_complex<REAL> > *csm, unsigned int number_of_batches, unsigned int number_of_elements );
+void set_phase_reference( cuNDArray<typename complext<REAL>::Type> *csm, unsigned int number_of_batches, unsigned int number_of_elements );
 
 //
 // Main method:
 //
 
-template<class REAL, unsigned int D> auto_ptr< cuNDArray<real_complex<REAL> > >
-estimate_b1_map( cuNDArray<real_complex<REAL> >* data_in )
+template<class REAL, unsigned int D> auto_ptr< cuNDArray<typename complext<REAL>::Type> >
+estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data_in )
 {
   if( data_in->get_number_of_dimensions() < 2 ){
     cout << endl << "estimate_b1_map:: dimensionality mismatch." << endl; 
-    return auto_ptr< cuNDArray<real_complex<REAL> > >(0x0);
+    return auto_ptr< cuNDArray<typename complext<REAL>::Type > >(0x0);
   }
 
   if( data_in->get_number_of_dimensions()-1 != D ){
     cout << endl << "estimate_b1_map:: dimensionality mismatch." << endl; 
-    return auto_ptr< cuNDArray<real_complex<REAL> > >(0x0);
+    return auto_ptr< cuNDArray<typename complext<REAL>::Type > >(0x0);
   }
 
   vector<unsigned int> image_dims, dims_to_xform;
@@ -48,26 +48,24 @@ estimate_b1_map( cuNDArray<real_complex<REAL> >* data_in )
   unsigned int ncoils = data_in->get_size(D);
 
   // Make a copy of input data (use aligned structs)
-  cuNDArray<real_complex<REAL> > *_data_out = (sizeof(REAL)==sizeof(float)) ?
-    (cuNDArray<real_complex<REAL> >*) new cuNDArray<float_complex>((cuNDArray<float_complex>*) data_in) : 
-    (cuNDArray<real_complex<REAL> >*) new cuNDArray<double_complex>((cuNDArray<double_complex>*) data_in);
-  auto_ptr< cuNDArray<real_complex<REAL> > > data_out(_data_out);
+  cuNDArray<typename complext<REAL>::Type > *_data_out = new cuNDArray<typename complext<REAL>::Type>(*data_in);
+  auto_ptr< cuNDArray<typename complext<REAL>::Type> > data_out(_data_out);
   
   // Normalize by the RSS of the coils
-  if( !cuNDA_rss_normalize<REAL, real_complex<REAL> >( data_out.get(), D ) ){
+  if( !cuNDA_rss_normalize<REAL, typename complext<REAL>::Type>( data_out.get(), D ) ){
     cout << endl << "estimate_b1_map:: error in rss_normalize" << endl;
-    return auto_ptr< cuNDArray<real_complex<REAL> > >(0x0);
+    return auto_ptr< cuNDArray<typename complext<REAL>::Type> >(0x0);
   }
   
   // Now calculate the correlation matrices
-  auto_ptr< cuNDArray<real_complex<REAL> > > corrm = cuNDA_correlation( data_out.get() );
+  auto_ptr<cuNDArray<typename complext<REAL>::Type> > corrm = cuNDA_correlation( data_out.get() );
   data_out.reset();
   
   // Compute smoothing kernel for convolution
-  uintd<D> dims; cuNDA_fromVec<D>( image_dims, dims );
+  typename uintd<D>::Type dims; cuNDA_fromVec<D>( image_dims, dims );
 
-  uintd<D> box; to_vectord<unsigned int,D>(box,7);
-  auto_ptr< cuNDArray<real_complex<REAL> > > conv_kernel = set_box_convkernel<REAL,D>( dims, box );
+  typename uintd<D>::Type box; to_vector_td<unsigned int,D>(box,7);
+  auto_ptr<cuNDArray<typename complext<REAL>::Type> > conv_kernel = set_box_convkernel<REAL,D>( dims, box );
 
   // Perform convolution by multiplication in image space
   cuNDFFT().fft( (cuNDArray<cuFloatComplex>*) conv_kernel.get() );           // TODO: fixme (requires new cuNDFFT interface)
@@ -77,7 +75,7 @@ estimate_b1_map( cuNDArray<real_complex<REAL> >* data_in )
   conv_kernel.reset();
 
   // Get the dominant eigenvector for each correlation matrix.
-  auto_ptr< cuNDArray<real_complex<REAL> > > csm = extract_csm<REAL>( corrm.get(), ncoils, pixels_per_coil );
+  auto_ptr<cuNDArray<typename complext<REAL>::Type> > csm = extract_csm<REAL>( corrm.get(), ncoils, pixels_per_coil );
   corrm.reset();
   
   // Set phase according to reference (coil 0)
@@ -87,35 +85,33 @@ estimate_b1_map( cuNDArray<real_complex<REAL> >* data_in )
 }
 
 template<class REAL, unsigned int D> __global__ void
-set_box_convkernel_kernel( real_complex<REAL> *out, uintd<D> dims, uintd<D> box )
+set_box_convkernel_kernel( typename complext<REAL>::Type *out, typename uintd<D>::Type dims, typename uintd<D>::Type box )
 {
   unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
 
   if( idx < prod(dims) ){
     
-    vectord<unsigned int,D> co = idx_to_co(idx,dims);
-    vectord<unsigned int,D> offset_dim = (dims>>1);
-    vectord<unsigned int,D> offset_box = (box>>1);
+    typename uintd<D>::Type co = idx_to_co<D>(idx,dims);
+    typename uintd<D>::Type offset_dim = (dims>>1);
+    typename uintd<D>::Type offset_box = (box>>1);
     
     if( weak_less(co, offset_dim-offset_box ) || weak_greater_equal(co, offset_dim+offset_box ))
-      out[idx] = get_zero<real_complex<REAL> >();
+      out[idx] = get_zero<typename complext<REAL>::Type >();
     else{
-      real_complex<REAL> _out = get_one<real_complex<REAL> >();
-      real_complex<REAL> scale; scale.vec[0] = (REAL)prod(box); scale.vec[1] = get_zero<REAL>();
-      scale = reciprocal<real_complex<REAL> >(scale);
+      typename complext<REAL>::Type _out = get_one<typename complext<REAL>::Type >();
+      typename complext<REAL>::Type scale; scale.vec[0] = (REAL)prod(box); scale.vec[1] = get_zero<REAL>();
+      scale = reciprocal<typename complext<REAL>::Type >(scale);
       _out *= scale;
       out[idx] = _out;
     }
   }
 }
 
-template<class REAL, unsigned int D> auto_ptr< cuNDArray<real_complex<REAL> > >
-set_box_convkernel( uintd<D> dims, uintd<D> box )
+template<class REAL, unsigned int D> auto_ptr<cuNDArray<typename complext<REAL>::Type> >
+set_box_convkernel( typename uintd<D>::Type dims, typename uintd<D>::Type box )
 {
   // Allocate output (aligned)
-  cuNDArray<real_complex<REAL> > *out = (sizeof(REAL)==sizeof(float)) ?
-    (cuNDArray<real_complex<REAL> >*) cuNDArray<float_complex>::allocate(cuNDA_toVec(dims)) :
-    (cuNDArray<real_complex<REAL> >*) cuNDArray<double_complex>::allocate(cuNDA_toVec(dims));
+  cuNDArray<typename complext<REAL>::Type> *out = cuNDArray<typename complext<REAL>::Type>::allocate(cuNDA_toVec<D>(dims));
   
   dim3 blockDim(512);
   dim3 gridDim((unsigned int) ceil((double)prod(dims)/blockDim.x));
@@ -125,14 +121,14 @@ set_box_convkernel( uintd<D> dims, uintd<D> box )
   
   CHECK_FOR_CUDA_ERROR();
   
-  return auto_ptr< cuNDArray<real_complex<REAL> > >(out);
+  return auto_ptr<cuNDArray<typename complext<REAL>::Type> >(out);
 }
 /*
 extern __shared__ char shared_mem[];
 
 // Extract CSM
 template<class REAL> __global__ void
-extract_csm_kernel( real_complex<REAL> *corrm, real_complex<REAL> *csm, unsigned int num_batches, unsigned int num_elements )
+extract_csm_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL>::Type *csm, unsigned int num_batches, unsigned int num_elements )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const unsigned int i = threadIdx.x;
@@ -143,19 +139,19 @@ extract_csm_kernel( real_complex<REAL> *corrm, real_complex<REAL> *csm, unsigned
     // Copying Peter Kellman's approach we use the power method:
     //  b_k+1 = A*b_k / ||A*b_k||
     
-    real_complex<REAL> *data_out = (real_complex<REAL>*) shared_mem;
-    real_complex<REAL> *tmp_v = &(((real_complex<REAL>*) shared_mem)[num_batches*blockDim.x]);
+    typename complext<REAL>::Type *data_out = (typename complext<REAL>::Type*) shared_mem;
+    typename complext<REAL>::Type *tmp_v = &(((typename complext<REAL>::Type*) shared_mem)[num_batches*blockDim.x]);
 
     const unsigned int iterations = 2;
 
     for( unsigned int c=0; c<num_batches; c++){
-      data_out[c*blockDim.x+i] = get_one<real_complex<REAL> >();
+      data_out[c*blockDim.x+i] = get_one<typename complext<REAL>::Type >();
     }
     
     for( unsigned int it=0; it<iterations; it++ ){
 
       for( unsigned int c=0; c<num_batches; c++){
-	tmp_v[c*blockDim.x+i] = get_zero<real_complex<REAL> >();
+	tmp_v[c*blockDim.x+i] = get_zero<typename complext<REAL>::Type >();
       }
       
       for( unsigned j=0; j<num_batches; j++){
@@ -175,7 +171,7 @@ extract_csm_kernel( real_complex<REAL> *corrm, real_complex<REAL> *csm, unsigned
       
       for (unsigned int c=0; c<num_batches; c++){
 	vectord<REAL,2> _res = tmp*tmp_v[c*blockDim.x+i];
-	real_complex<REAL> res; res.vec[0]=_res.vec[0]; res.vec[1]=_res.vec[1]; // TODO: do this assignment elegantly
+	typename complext<REAL>::Type res; res.vec[0]=_res.vec[0]; res.vec[1]=_res.vec[1]; // TODO: do this assignment elegantly
 	data_out[c*blockDim.x+i] = res;
       }
     }
@@ -189,7 +185,7 @@ extract_csm_kernel( real_complex<REAL> *corrm, real_complex<REAL> *csm, unsigned
 */
 // Extract CSM
 template<class REAL> __global__ void
-extract_csm_kernel( real_complex<REAL> *corrm, real_complex<REAL> *csm, unsigned int num_batches, unsigned int num_elements, real_complex<REAL> *tmp_v )
+extract_csm_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL>::Type *csm, unsigned int num_batches, unsigned int num_elements, typename complext<REAL>::Type *tmp_v )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
 
@@ -202,13 +198,13 @@ extract_csm_kernel( real_complex<REAL> *corrm, real_complex<REAL> *csm, unsigned
     const unsigned int iterations = 2;
 
     for( unsigned int c=0; c<num_batches; c++){
-      csm[c*num_elements+idx] = get_one<real_complex<REAL> >();
+      csm[c*num_elements+idx] = get_one<typename complext<REAL>::Type >();
     }
     
     for( unsigned int it=0; it<iterations; it++ ){
 
       for( unsigned int c=0; c<num_batches; c++){
-	tmp_v[c*num_elements+idx] = get_zero<real_complex<REAL> >();
+	tmp_v[c*num_elements+idx] = get_zero<typename complext<REAL>::Type >();
       }
       
       for( unsigned j=0; j<num_batches; j++){
@@ -227,8 +223,7 @@ extract_csm_kernel( real_complex<REAL> *corrm, real_complex<REAL> *csm, unsigned
       tmp = reciprocal(tmp);
       
       for (unsigned int c=0; c<num_batches; c++){
-	vectord<REAL,2> _res = tmp*tmp_v[c*num_elements+idx];
-	real_complex<REAL> res; res.vec[0]=_res.vec[0]; res.vec[1]=_res.vec[1]; // TODO: do this assignment elegantly
+	typename complext<REAL>::Type res = tmp*tmp_v[c*num_elements+idx];
 	csm[c*num_elements+idx] = res;
       }
     }
@@ -237,7 +232,7 @@ extract_csm_kernel( real_complex<REAL> *corrm, real_complex<REAL> *csm, unsigned
 
 // Extract CSM
 template<class REAL> __host__ 
-auto_ptr< cuNDArray<real_complex<REAL> > > extract_csm( cuNDArray<real_complex<REAL> > *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements )
+auto_ptr<cuNDArray<typename complext<REAL>::Type> > extract_csm(cuNDArray<typename complext<REAL>::Type> *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements )
 {
   vector<unsigned int> image_dims;
 
@@ -246,23 +241,19 @@ auto_ptr< cuNDArray<real_complex<REAL> > > extract_csm( cuNDArray<real_complex<R
   }
   
   // Allocate output (aligned)
-  cuNDArray<real_complex<REAL> > *out = (sizeof(REAL)==sizeof(float)) ?
-    (cuNDArray<real_complex<REAL> >*) cuNDArray<float_complex>::allocate(image_dims) :
-    (cuNDArray<real_complex<REAL> >*) cuNDArray<double_complex>::allocate(image_dims);
+  cuNDArray<typename complext<REAL>::Type> *out = cuNDArray<typename complext<REAL>::Type>::allocate(image_dims);
 
   dim3 blockDim(128);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
   /*  
   if( out != 0x0 )
-    extract_csm_kernel<REAL><<< gridDim, blockDim, number_of_batches*blockDim.x*2*sizeof(real_complex<REAL>) >>>
+    extract_csm_kernel<REAL><<< gridDim, blockDim, number_of_batches*blockDim.x*2*sizeof(typename complext<REAL>::Type) >>>
       ( corrm_in->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements );
   */
 
   // Temporary buffer. TODO: use shared memory
-  cuNDArray<real_complex<REAL> > *tmp_v = (sizeof(REAL)==sizeof(float)) ?
-    (cuNDArray<real_complex<REAL> >*) cuNDArray<float_complex>::allocate(image_dims) :
-    (cuNDArray<real_complex<REAL> >*) cuNDArray<double_complex>::allocate(image_dims);
+  cuNDArray<typename complext<REAL>::Type> *tmp_v = cuNDArray<typename complext<REAL>::Type>::allocate(image_dims);
 
   if( out != 0x0 )
     extract_csm_kernel<REAL><<< gridDim, blockDim >>>
@@ -271,25 +262,25 @@ auto_ptr< cuNDArray<real_complex<REAL> > > extract_csm( cuNDArray<real_complex<R
   CHECK_FOR_CUDA_ERROR();
   
   delete tmp_v;
-  return auto_ptr< cuNDArray<real_complex<REAL> > >(out);
+  return auto_ptr<cuNDArray<typename complext<REAL>::Type> >(out);
 }
 
 // Set refence phase
 template<class REAL> __global__ void
-set_phase_reference_kernel( real_complex<REAL> *csm, unsigned int num_batches, unsigned int num_elements )
+set_phase_reference_kernel( typename complext<REAL>::Type *csm, unsigned int num_batches, unsigned int num_elements )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
 
   if( idx < num_elements ){    
-    REAL angle = arg(csm[idx]); //Phase of the first coil
+    REAL angle = arg<REAL>(csm[idx]); //Phase of the first coil
     REAL sin_a, cos_a; sin_cos( angle, &sin_a, &cos_a );
 
-    real_complex<REAL> tmp;
+    typename complext<REAL>::Type tmp;
     tmp.vec[0] = cos_a; tmp.vec[1] = sin_a;
     tmp = conj(tmp);
 
     for( unsigned int c=0; c<num_batches; c++ ){
-      real_complex<REAL> val =  csm[c*num_elements+idx];
+      typename complext<REAL>::Type val =  csm[c*num_elements+idx];
       val *= tmp;
       csm[c*num_elements+idx] = val;
     }
@@ -298,7 +289,7 @@ set_phase_reference_kernel( real_complex<REAL> *csm, unsigned int num_batches, u
   
 // Extract CSM
 template<class REAL> __host__ 
-void set_phase_reference( cuNDArray<real_complex<REAL> > *csm, unsigned int number_of_batches, unsigned int number_of_elements )
+void set_phase_reference(cuNDArray<typename complext<REAL>::Type> *csm, unsigned int number_of_batches, unsigned int number_of_elements )
 {
   dim3 blockDim(512);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
@@ -312,6 +303,12 @@ void set_phase_reference( cuNDArray<real_complex<REAL> > *csm, unsigned int numb
 // Template instantiation
 //
 
-template auto_ptr< cuNDArray<real_complex<float> > > estimate_b1_map<float,2>(cuNDArray<real_complex<float> >*);
-template auto_ptr< cuNDArray<real_complex<float> > > estimate_b1_map<float,3>(cuNDArray<real_complex<float> >*);
-template auto_ptr< cuNDArray<real_complex<float> > > estimate_b1_map<float,4>(cuNDArray<real_complex<float> >*);
+template auto_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,1>(cuNDArray<typename complext<float>::Type >*);
+template auto_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,2>(cuNDArray<typename complext<float>::Type >*);
+template auto_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,3>(cuNDArray<typename complext<float>::Type >*);
+template auto_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,4>(cuNDArray<typename complext<float>::Type >*);
+
+template auto_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,1>(cuNDArray<typename complext<double>::Type >*);
+template auto_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,2>(cuNDArray<typename complext<double>::Type >*);
+template auto_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,3>(cuNDArray<typename complext<double>::Type >*);
+template auto_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,4>(cuNDArray<typename complext<double>::Type >*);

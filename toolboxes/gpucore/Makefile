@@ -4,10 +4,10 @@ include $(GADGETRONHOME)/Makefile.inc
 LIBHEADERS=\
 	GPUTimer.h \
 	check_CUDA.h \
-	vectord.h \
-	vectord_operators.hcu \
-	vectord_utilities.hcu \
-	ndarray_device_utilities.hcu \
+	vector_td.h \
+	vector_td_operators.hcu \
+	vector_td_utilities.hcu \
+	ndarray_vector_td_utilities.hcu \
 	cuNDArray.h \
 	cuNDFFT.h 
 
@@ -17,7 +17,7 @@ LIBSOURCES=\
 	cuNDFFT.cpp
 
 CUDASOURCES= \
-	ndarray_device_utilities.cu \
+	ndarray_vector_td_utilities.cu \
 	cuNDArray_kernels.cu
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)

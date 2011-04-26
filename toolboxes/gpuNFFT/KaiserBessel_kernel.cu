@@ -72,7 +72,8 @@ KaiserBessel( float u, float matrix_size_os, float one_over_W, float beta )
 //
 
 template<class REAL> __inline__ __device__ REAL
-KaiserBessel( const vectord<REAL,2> &u, const vectord<REAL,2> &matrix_size_os, REAL one_over_W, REAL beta, const vectord<unsigned int,2> &fixedDims )
+KaiserBessel( const typename reald<REAL,2>::Type &u, const typename reald<REAL,2>::Type &matrix_size_os, REAL one_over_W, REAL beta, 
+	      const typename uintd<2>::Type &fixedDims )
 {
   REAL one = get_one<REAL>();
   REAL phi_x = (fixedDims.vec[0]) ? one : KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta );
@@ -82,7 +83,8 @@ KaiserBessel( const vectord<REAL,2> &u, const vectord<REAL,2> &matrix_size_os, R
 }
 
 template<class REAL> __inline__ __device__ REAL
-KaiserBessel( const vectord<REAL,3> &u, const vectord<REAL,3> &matrix_size_os, REAL one_over_W, REAL beta, const vectord<unsigned int,3> &fixedDims )
+KaiserBessel( const typename reald<REAL,3>::Type &u, const typename reald<REAL,3>::Type &matrix_size_os, REAL one_over_W, REAL beta, 
+	      const typename uintd<3>::Type &fixedDims )
 {
   REAL one = get_one<REAL>();
   REAL phi_x = (fixedDims.vec[0]) ? one : KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta );
@@ -93,7 +95,8 @@ KaiserBessel( const vectord<REAL,3> &u, const vectord<REAL,3> &matrix_size_os, R
 }
 
 template<class REAL> __inline__ __device__ REAL
-KaiserBessel( const vectord<REAL,4> &u, const vectord<REAL,4> &matrix_size_os, REAL one_over_W, REAL beta, const vectord<unsigned int, 4> &fixedDims )
+KaiserBessel( const typename reald<REAL,4>::Type &u, const typename reald<REAL,4>::Type &matrix_size_os, REAL one_over_W, REAL beta, 
+	      const typename uintd<4>::Type &fixedDims )
 {
   REAL one = get_one<REAL>();
   REAL phi_x = (fixedDims.vec[0]) ? one : KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta );

@@ -1,5 +1,5 @@
 #include "cuNDArray.h"
-#include "vectord.h"
+#include "vector_td.h"
 
 template <class T> 
 __global__ void cuNDArray_permute_kernel(T* in, T* out, 
@@ -225,65 +225,90 @@ template int cuNDArray_permute<>(cuNDArray<double4>* in,
 				 std::vector<unsigned int> order,
 				 int shift_mode);
 
-template int cuNDArray_permute<>(cuNDArray<vectord<int,2> >* in,
-				   cuNDArray<vectord<int,2> >* out,
-				     std::vector<unsigned int> order,
-				     int shift_mode);
+template int cuNDArray_permute<>(cuNDArray<intd<1>::Type>* in,
+				 cuNDArray<intd<1>::Type>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
 
-template int cuNDArray_permute<>(cuNDArray<vectord<int,3> >* in,
-				   cuNDArray<vectord<int,3> >* out,
-				     std::vector<unsigned int> order,
-				     int shift_mode);
+template int cuNDArray_permute<>(cuNDArray<intd<2>::Type>* in,
+				 cuNDArray<intd<2>::Type>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
 
-template int cuNDArray_permute<>(cuNDArray<vectord<int,4> >* in,
-				   cuNDArray<vectord<int,4> >* out,
-				     std::vector<unsigned int> order,
-				     int shift_mode);
+template int cuNDArray_permute<>(cuNDArray<intd<3>::Type>* in,
+				 cuNDArray<intd<3>::Type>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
 
-template int cuNDArray_permute<>(cuNDArray<vectord<unsigned int,2> >* in,
-				   cuNDArray<vectord<unsigned int,2> >* out,
-				     std::vector<unsigned int> order,
-				     int shift_mode);
+template int cuNDArray_permute<>(cuNDArray<intd<4>::Type>* in,
+				 cuNDArray<intd<4>::Type>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
 
-template int cuNDArray_permute<>(cuNDArray<vectord<unsigned int,3> >* in,
-				   cuNDArray<vectord<unsigned int,3> >* out,
-				     std::vector<unsigned int> order,
-				     int shift_mode);
+template int cuNDArray_permute<>(cuNDArray<uintd<1>::Type>* in,
+				 cuNDArray<uintd<1>::Type>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
 
-template int cuNDArray_permute<>(cuNDArray<vectord<unsigned int,4> >* in,
-				   cuNDArray<vectord<unsigned int,4> >* out,
-				     std::vector<unsigned int> order,
-				     int shift_mode);
+template int cuNDArray_permute<>(cuNDArray<uintd<2>::Type>* in,
+				 cuNDArray<uintd<2>::Type>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
 
-template int cuNDArray_permute<>(cuNDArray<vectord<float,2> >* in,
-				   cuNDArray<vectord<float,2> >* out,
-				     std::vector<unsigned int> order,
-				     int shift_mode);
+template int cuNDArray_permute<>(cuNDArray<uintd<3>::Type>* in,
+				 cuNDArray<uintd<3>::Type>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
 
-template int cuNDArray_permute<>(cuNDArray<vectord<float,3> >* in,
-				   cuNDArray<vectord<float,3> >* out,
-				     std::vector<unsigned int> order,
-				     int shift_mode);
+template int cuNDArray_permute<>(cuNDArray<uintd<4>::Type>* in,
+				 cuNDArray<uintd<4>::Type>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
 
-template int cuNDArray_permute<>(cuNDArray<vectord<float,4> >* in,
-				   cuNDArray<vectord<float,4> >* out,
-				     std::vector<unsigned int> order,
-				     int shift_mode);
+template int cuNDArray_permute<>(cuNDArray<floatd<1>::Type>* in,
+				 cuNDArray<floatd<1>::Type>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
 
-template int cuNDArray_permute<>(cuNDArray<vectord<double,2> >* in,
-				   cuNDArray<vectord<double,2> >* out,
-				     std::vector<unsigned int> order,
-				     int shift_mode);
+template int cuNDArray_permute<>(cuNDArray<floatd<2>::Type>* in,
+				 cuNDArray<floatd<2>::Type>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
 
-template int cuNDArray_permute<>(cuNDArray<vectord<double,3> >* in,
-				   cuNDArray<vectord<double,3> >* out,
-				     std::vector<unsigned int> order,
-				     int shift_mode);
+template int cuNDArray_permute<>(cuNDArray<floatd<3>::Type>* in,
+				 cuNDArray<floatd<3>::Type>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
 
-template int cuNDArray_permute<>(cuNDArray<vectord<double,4> >* in,
-				   cuNDArray<vectord<double,4> >* out,
-				     std::vector<unsigned int> order,
-				     int shift_mode);
+template int cuNDArray_permute<>(cuNDArray<floatd<4>::Type>* in,
+				 cuNDArray<floatd<4>::Type>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
+
+template int cuNDArray_permute<>(cuNDArray<doubled<1>::Type>* in,
+				 cuNDArray<doubled<1>::Type>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
+
+template int cuNDArray_permute<>(cuNDArray<doubled<2>::Type>* in,
+				 cuNDArray<doubled<2>::Type>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
+
+template int cuNDArray_permute<>(cuNDArray<doubled<3>::Type>* in,
+				 cuNDArray<doubled<3>::Type>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
+
+template int cuNDArray_permute<>(cuNDArray<doubled<4>::Type>* in,
+				 cuNDArray<doubled<4>::Type>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
+
+template int cuNDArray_permute<>(cuNDArray<intd1>* in,
+				 cuNDArray<intd1>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
 
 template int cuNDArray_permute<>(cuNDArray<intd2>* in,
 				 cuNDArray<intd2>* out,
@@ -297,6 +322,11 @@ template int cuNDArray_permute<>(cuNDArray<intd3>* in,
 
 template int cuNDArray_permute<>(cuNDArray<intd4>* in,
 				 cuNDArray<intd4>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
+
+template int cuNDArray_permute<>(cuNDArray<uintd1>* in,
+				 cuNDArray<uintd1>* out,
 				 std::vector<unsigned int> order,
 				 int shift_mode);
 
@@ -315,6 +345,11 @@ template int cuNDArray_permute<>(cuNDArray<uintd4>* in,
 				 std::vector<unsigned int> order,
 				 int shift_mode);
 
+template int cuNDArray_permute<>(cuNDArray<floatd1>* in,
+				 cuNDArray<floatd1>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
+
 template int cuNDArray_permute<>(cuNDArray<floatd2>* in,
 				 cuNDArray<floatd2>* out,
 				 std::vector<unsigned int> order,
@@ -327,6 +362,11 @@ template int cuNDArray_permute<>(cuNDArray<floatd3>* in,
 
 template int cuNDArray_permute<>(cuNDArray<floatd4>* in,
 				 cuNDArray<floatd4>* out,
+				 std::vector<unsigned int> order,
+				 int shift_mode);
+
+template int cuNDArray_permute<>(cuNDArray<doubled1>* in,
+				 cuNDArray<doubled1>* out,
 				 std::vector<unsigned int> order,
 				 int shift_mode);
 
@@ -345,22 +385,12 @@ template int cuNDArray_permute<>(cuNDArray<doubled4>* in,
 				 std::vector<unsigned int> order,
 				 int shift_mode);
 				   
-template int cuNDArray_permute<>(cuNDArray<real_complex<float> >* in,
-				 cuNDArray<real_complex<float> >* out,
+template int cuNDArray_permute<>(cuNDArray<float_complext>* in,
+				 cuNDArray<float_complext>* out,
 				 std::vector<unsigned int> order,
 				 int shift_mode);
 
-template int cuNDArray_permute<>(cuNDArray<real_complex<double> >* in,
-				 cuNDArray<real_complex<double> >* out,
-				 std::vector<unsigned int> order,
-				 int shift_mode);
-
-template int cuNDArray_permute<>(cuNDArray<float_complex >* in,
-				 cuNDArray<float_complex >* out,
-				 std::vector<unsigned int> order,
-				 int shift_mode);
-
-template int cuNDArray_permute<>(cuNDArray<double_complex>* in,
-				 cuNDArray<double_complex>* out,
+template int cuNDArray_permute<>(cuNDArray<double_complext>* in,
+				 cuNDArray<double_complext>* out,
 				 std::vector<unsigned int> order,
 				 int shift_mode);

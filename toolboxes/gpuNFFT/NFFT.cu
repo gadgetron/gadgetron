@@ -18,10 +18,10 @@
 
 #include "hoNDArray_fileio.h"
 #include "cuNDArray.h"
-#include "ndarray_device_utilities.hcu"
+#include "ndarray_vector_td_utilities.hcu"
 
-#include "vectord_operators.hcu"
-#include "vectord_utilities.hcu"
+#include "vector_td_operators.hcu"
+#include "vector_td_utilities.hcu"
 
 #include "check_CUDA.h"
 
@@ -110,7 +110,7 @@ NFFT_plan<REAL,D>::NFFT_plan()
 }
 
 template<class REAL, unsigned int D> 
-NFFT_plan<REAL,D>::NFFT_plan( uintd<D> matrix_size, uintd<D> matrix_size_os, uintd<D> fixed_dims, REAL W, int device )
+NFFT_plan<REAL,D>::NFFT_plan( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type fixed_dims, REAL W, int device )
 {
   // Minimal initialization
   barebones();
@@ -165,7 +165,7 @@ NFFT_plan<REAL,D>::~NFFT_plan()
 }
 
 template<class REAL, unsigned int D> 
-bool NFFT_plan<REAL,D>::setup( uintd<D> matrix_size, uintd<D> matrix_size_os, uintd<D> fixed_dims, REAL W, int _device )
+bool NFFT_plan<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type fixed_dims, REAL W, int _device )
 {	
   // Free memory
   wipe(NFFT_WIPE_ALL);
@@ -183,7 +183,7 @@ bool NFFT_plan<REAL,D>::setup( uintd<D> matrix_size, uintd<D> matrix_size_os, ui
   cudaGetDeviceProperties( &deviceProp, device );
 
   unsigned int warp_size = deviceProp.warpSize;
-  uintd<D> vec_warp_size; to_vectord<unsigned int,D>(vec_warp_size, warp_size);
+  typename uintd<D>::Type vec_warp_size; to_vector_td<unsigned int,D>(vec_warp_size, warp_size);
 
   //
   // Check input against certain requirements
@@ -214,7 +214,7 @@ bool NFFT_plan<REAL,D>::setup( uintd<D> matrix_size, uintd<D> matrix_size_os, ui
 
 
   REAL W_half = get_half<REAL>()*W;
-  vectord<REAL,D> W_vec; to_vectord<REAL,D>(W_vec, W_half);
+  vector_td<REAL,D> W_vec; to_vector_td<REAL,D>(W_vec, W_half);
 
   to_uintd<REAL,D>( matrix_size_wrap, ceil(W_vec));
   matrix_size_wrap<<=1; 
@@ -278,7 +278,7 @@ bool NFFT_plan<REAL,D>::setup( uintd<D> matrix_size, uintd<D> matrix_size_os, ui
 }
 
 template<class REAL, unsigned int D> 
-bool NFFT_plan<REAL,D>::preprocess( cuNDArray< vectord<REAL,D> > *trajectory, NFFT_prep_mode mode )
+bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory, NFFT_prep_mode mode )
 {
   if( trajectory->get_device() != device ){
     cout << endl << "NFFT_plan::preprocess: device mismatch." << endl;
@@ -308,31 +308,31 @@ bool NFFT_plan<REAL,D>::preprocess( cuNDArray< vectord<REAL,D> > *trajectory, NF
   }  
   
   // Make Thrust device vector of trajectory and samples
-  device_vector< vectord<REAL,D> > trajectory_positions_in( device_pointer_cast< vectord<REAL,D> >(trajectory->get_data_ptr()), 
-							    device_pointer_cast< vectord<REAL,D> >(trajectory->get_data_ptr()+number_of_samples) );
+  device_vector< vector_td<REAL,D> > trajectory_positions_in( device_pointer_cast< vector_td<REAL,D> >(trajectory->get_data_ptr()), 
+							    device_pointer_cast< vector_td<REAL,D> >(trajectory->get_data_ptr()+number_of_samples) );
   switch(D){
     
     // Switch to ensure alignment issues
     
   case 2:
     trajectory_positions = (sizeof(REAL)==sizeof(float)) ? 
-      (device_vector< vectord<REAL,D> >*) (new device_vector<floatd2>(number_of_samples)) : 
-      (device_vector< vectord<REAL,D> >*) (new device_vector<doubled2>(number_of_samples));
+      (device_vector< vector_td<REAL,D> >*) (new device_vector<floatd2>(number_of_samples)) : 
+      (device_vector< vector_td<REAL,D> >*) (new device_vector<doubled2>(number_of_samples));
     break;
   case 4:
     trajectory_positions = (sizeof(REAL)==sizeof(float)) ? 
-      (device_vector< vectord<REAL,D> >*) (new device_vector<floatd4>(number_of_samples)) : 
-      (device_vector< vectord<REAL,D> >*) (new device_vector<doubled4>(number_of_samples));
+      (device_vector< vector_td<REAL,D> >*) (new device_vector<floatd4>(number_of_samples)) : 
+      (device_vector< vector_td<REAL,D> >*) (new device_vector<doubled4>(number_of_samples));
     break;
   default:
-    trajectory_positions = new device_vector< vectord<REAL,D> >( number_of_samples );
+    trajectory_positions = new device_vector< vector_td<REAL,D> >( number_of_samples );
     break;
   }
   
   CHECK_FOR_CUDA_ERROR();
 
-  vectord<REAL,D> matrix_size_os_real; to_reald<REAL,unsigned int,D>( matrix_size_os_real, matrix_size_os );
-  vectord<REAL,D> matrix_size_os_plus_wrap_real; to_reald<REAL,unsigned int,D>( matrix_size_os_plus_wrap_real, (matrix_size_os+matrix_size_wrap)>>1 );
+  vector_td<REAL,D> matrix_size_os_real; to_reald<REAL,unsigned int,D>( matrix_size_os_real, matrix_size_os );
+  vector_td<REAL,D> matrix_size_os_plus_wrap_real; to_reald<REAL,unsigned int,D>( matrix_size_os_plus_wrap_real, (matrix_size_os+matrix_size_wrap)>>1 );
 
   // convert input trajectory in [-1/2;1/2] to [0;matrix_size_os]
   thrust::transform( trajectory_positions_in.begin(), trajectory_positions_in.end(), trajectory_positions->begin(), trajectory_scale<REAL,D>(matrix_size_os_real, matrix_size_os_plus_wrap_real) );
@@ -394,7 +394,7 @@ bool NFFT_plan<REAL,D>::preprocess( cuNDArray< vectord<REAL,D> > *trajectory, NF
 
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::compute( cuNDArray< real_complex<REAL> > *samples, cuNDArray< real_complex<REAL> > *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode )
+NFFT_plan<REAL,D>::compute( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode )
 {  
   if( samples->get_device() != device || image->get_device() != device || (weights && weights->get_device() != device) ){
     cout << endl << "NFFT_plan::compute: device mismatch." << endl;
@@ -415,17 +415,17 @@ NFFT_plan<REAL,D>::compute( cuNDArray< real_complex<REAL> > *samples, cuNDArray<
     return false;
   
   bool success;  
-  cuNDArray< real_complex<REAL> > *working_image = 0x0, *working_samples = 0x0;
+  cuNDArray<typename complext<REAL>::Type> *working_image = 0x0, *working_samples = 0x0;
   
-  uintd<D> image_dims; 
-  if( !cuNDA_fromVec( image->get_dimensions(), image_dims ) ){
+  typename uintd<D>::Type image_dims; 
+  if( !cuNDA_fromVec<D>( image->get_dimensions(), image_dims ) ){
     cout << "NFFT_plan::compute: image dimension undermatch the plan" << endl;
     return false;
   }
   
   bool oversampled_image = (image_dims==matrix_size_os); 
   unsigned int num_batches = (image->get_number_of_dimensions()>D) ? image->get_size(image->get_number_of_dimensions()-1) : 1;
-  vector<unsigned int> vec_dims = cuNDA_toVec(matrix_size_os); 
+  vector<unsigned int> vec_dims = cuNDA_toVec<D>(matrix_size_os); 
   if( num_batches > 1 ) 
     vec_dims.push_back(num_batches);
 
@@ -443,11 +443,9 @@ NFFT_plan<REAL,D>::compute( cuNDArray< real_complex<REAL> > *samples, cuNDArray<
     
     if( !oversampled_image ){
 
-      working_image = (sizeof(REAL)==sizeof(float)) ? // ensures alignment; do not compact allocations into real_complex<REAL>
-	(cuNDArray< real_complex<REAL> >*) cuNDArray<float_complex>::allocate(vec_dims) :
-	(cuNDArray< real_complex<REAL> >*) cuNDArray<double_complex>::allocate(vec_dims); 
+      working_image = cuNDArray<typename complext<REAL>::Type>::allocate(vec_dims);
 
-      cuNDA_expand_with_zero_fill<real_complex<REAL>,D>( image, working_image );
+      cuNDA_expand_with_zero_fill<typename complext<REAL>::Type,D>( image, working_image );
     }
     else{
       working_image = image;
@@ -465,9 +463,8 @@ NFFT_plan<REAL,D>::compute( cuNDArray< real_complex<REAL> > *samples, cuNDArray<
 
     // Density compensation
     if( weights ){
-      working_samples = (sizeof(REAL)==sizeof(float)) ? 
-	(cuNDArray< real_complex<REAL> >*) new cuNDArray<float_complex>((cuNDArray<float_complex>*) samples) : 
-      	(cuNDArray< real_complex<REAL> >*) new cuNDArray<double_complex>((cuNDArray<double_complex>*) samples);
+      working_samples = new cuNDArray<typename complext<REAL>::Type>(*samples); 
+   
       cuNDA_scale( weights, working_samples );
     }
     else{
@@ -476,9 +473,7 @@ NFFT_plan<REAL,D>::compute( cuNDArray< real_complex<REAL> > *samples, cuNDArray<
     
     if( !oversampled_image ){
 
-      working_image = (sizeof(REAL)==sizeof(float)) ? // ensures alignment; do not compact allocations into real_complex<REAL>
-	(cuNDArray< real_complex<REAL> >*) cuNDArray<float_complex>::allocate(vec_dims) :
-	(cuNDArray< real_complex<REAL> >*) cuNDArray<double_complex>::allocate(vec_dims); 
+      working_image = cuNDArray<typename complext<REAL>::Type>::allocate(vec_dims); 
     }
     else{
       working_image = image;
@@ -488,7 +483,7 @@ NFFT_plan<REAL,D>::compute( cuNDArray< real_complex<REAL> > *samples, cuNDArray<
 
     if( success ){
       if( !oversampled_image ){
-	cuNDA_crop<real_complex<REAL>,D>( (matrix_size_os-matrix_size)>>1, working_image, image );
+	cuNDA_crop<typename complext<REAL>::Type,D>( (matrix_size_os-matrix_size)>>1, working_image, image );
       }
     }
     
@@ -512,7 +507,7 @@ NFFT_plan<REAL,D>::compute( cuNDArray< real_complex<REAL> > *samples, cuNDArray<
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::compute_iteration( cuNDArray< real_complex<REAL> > *samples, cuNDArray< real_complex<REAL> > *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode )
+NFFT_plan<REAL,D>::compute_iteration( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode )
 {  
   if( samples->get_device() != device || image->get_device() != device || (weights && weights->get_device() != device) ){
     cout << endl << "NFFT_plan::compute_iteration: device mismatch." << endl;
@@ -527,17 +522,17 @@ NFFT_plan<REAL,D>::compute_iteration( cuNDArray< real_complex<REAL> > *samples, 
     return false;
   
   bool success;  
-  cuNDArray< real_complex<REAL> > *working_image = 0x0, *working_samples = 0x0;
+  cuNDArray<typename complext<REAL>::Type> *working_image = 0x0, *working_samples = 0x0;
 
-  uintd<D> image_dims; 
-  if( !cuNDA_fromVec( image->get_dimensions(), image_dims ) ){
+  typename uintd<D>::Type image_dims; 
+  if( !cuNDA_fromVec<D>( image->get_dimensions(), image_dims ) ){
     cout << "NFFT_plan::compute_iteration: image dimension undermatch the plan" << endl;
     return false;
   }
   
   bool oversampled_image = (image_dims==matrix_size_os); 
   unsigned int num_batches = (image->get_number_of_dimensions()>D) ? image->get_size(image->get_number_of_dimensions()-1) : 1;
-  vector<unsigned int> vec_dims = cuNDA_toVec(matrix_size_os); 
+  vector<unsigned int> vec_dims = cuNDA_toVec<D>(matrix_size_os); 
   if( num_batches > 1 ) 
     vec_dims.push_back(num_batches);
 
@@ -555,11 +550,9 @@ NFFT_plan<REAL,D>::compute_iteration( cuNDArray< real_complex<REAL> > *samples, 
     
     if( !oversampled_image ){
       
-      working_image = (sizeof(REAL)==sizeof(float)) ? // ensures alignment; do not compact allocations into real_complex<REAL>
-	(cuNDArray< real_complex<REAL> >*) cuNDArray<float_complex>::allocate(vec_dims) :
-	(cuNDArray< real_complex<REAL> >*) cuNDArray<double_complex>::allocate(vec_dims); 
+      working_image = cuNDArray<typename complext<REAL>::Type>::allocate(vec_dims); 
 
-      cuNDA_expand_with_zero_fill<real_complex<REAL>,D>( image, working_image );
+      cuNDA_expand_with_zero_fill<typename complext<REAL>::Type,D>( image, working_image );
     }
     else{
       working_image = image;
@@ -581,7 +574,7 @@ NFFT_plan<REAL,D>::compute_iteration( cuNDArray< real_complex<REAL> > *samples, 
     
     if( success ){
       if( !oversampled_image ){
-	cuNDA_crop<real_complex<REAL>,D>( (matrix_size_os-matrix_size)>>1, working_image, image );
+	cuNDA_crop<typename complext<REAL>::Type,D>( (matrix_size_os-matrix_size)>>1, working_image, image );
 	delete working_image; working_image = 0x0;
       }
     }
@@ -592,9 +585,7 @@ NFFT_plan<REAL,D>::compute_iteration( cuNDArray< real_complex<REAL> > *samples, 
 
     // Density compensation
     if( weights ){
-      working_samples = (sizeof(REAL)==sizeof(float)) ? 
-	(cuNDArray< real_complex<REAL> >*) new cuNDArray<float_complex>((cuNDArray<float_complex>*) samples) : 
-      	(cuNDArray< real_complex<REAL> >*) new cuNDArray<double_complex>((cuNDArray<double_complex>*) samples);
+      working_samples = new cuNDArray<typename complext<REAL>::Type>(*samples);
       cuNDA_scale( weights, working_samples );
     }
     else{
@@ -603,9 +594,7 @@ NFFT_plan<REAL,D>::compute_iteration( cuNDArray< real_complex<REAL> > *samples, 
     
     if( !oversampled_image )
       
-      working_image = (sizeof(REAL)==sizeof(float)) ? // ensures alignment; do not compact allocations into real_complex<REAL>
-	(cuNDArray< real_complex<REAL> >*) cuNDArray<float_complex>::allocate(vec_dims) :
-	(cuNDArray< real_complex<REAL> >*) cuNDArray<double_complex>::allocate(vec_dims); 
+      working_image = cuNDArray<typename complext<REAL>::Type>::allocate(vec_dims); 
 
     else
       working_image = image;
@@ -614,7 +603,7 @@ NFFT_plan<REAL,D>::compute_iteration( cuNDArray< real_complex<REAL> > *samples, 
     
     if( success ){
       
-      cuNDA_zero_fill_border( matrix_size, working_image );
+      cuNDA_zero_fill_border<typename complext<REAL>::Type,D>( matrix_size, working_image );
       
       success = compute_NFFT( samples, working_image );
     }
@@ -639,7 +628,7 @@ NFFT_plan<REAL,D>::compute_iteration( cuNDArray< real_complex<REAL> > *samples, 
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::convolve( cuNDArray< real_complex<REAL> > *samples, cuNDArray< real_complex<REAL> > *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode )
+NFFT_plan<REAL,D>::convolve( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode )
 {
   if( samples->get_device() != device || image->get_device() != device || (weights && weights->get_device() != device) ){
     cout << endl << "NFFT_plan::convolve: device mismatch." << endl;
@@ -657,17 +646,17 @@ NFFT_plan<REAL,D>::convolve( cuNDArray< real_complex<REAL> > *samples, cuNDArray
     return false;
   
   bool success;  
-  cuNDArray< real_complex<REAL> > *working_image = 0x0, *working_samples = 0x0;
+  cuNDArray<typename complext<REAL>::Type> *working_image = 0x0, *working_samples = 0x0;
   
-  uintd<D> image_dims; 
-  if( !cuNDA_fromVec( image->get_dimensions(), image_dims ) ){
+  typename uintd<D>::Type image_dims; 
+  if( !cuNDA_fromVec<D>( image->get_dimensions(), image_dims ) ){
     cout << "NFFT_plan::convolve: image dimension undermatch the plan" << endl;
     return false;
   }
   
   bool oversampled_image = (image_dims==matrix_size_os); 
   unsigned int num_batches = (image->get_number_of_dimensions()>D) ? image->get_size(image->get_number_of_dimensions()-1) : 1;
-  vector<unsigned int> vec_dims = cuNDA_toVec(matrix_size_os); 
+  vector<unsigned int> vec_dims = cuNDA_toVec<D>(matrix_size_os); 
   if( num_batches > 1 ) 
     vec_dims.push_back(num_batches);
 
@@ -685,11 +674,9 @@ NFFT_plan<REAL,D>::convolve( cuNDArray< real_complex<REAL> > *samples, cuNDArray
     
     if( !oversampled_image ){
 
-      working_image = (sizeof(REAL)==sizeof(float)) ? // ensures alignment; do not compact allocations into real_complex<REAL>
-	(cuNDArray< real_complex<REAL> >*) cuNDArray<float_complex>::allocate(vec_dims) :
-	(cuNDArray< real_complex<REAL> >*) cuNDArray<double_complex>::allocate(vec_dims); 
+      working_image = cuNDArray<typename complext<REAL>::Type>::allocate(vec_dims); 
 
-      cuNDA_expand_with_zero_fill<real_complex<REAL>,D>( image, working_image );
+      cuNDA_expand_with_zero_fill<typename complext<REAL>::Type,D>( image, working_image );
     }
     else{
       working_image = image;
@@ -707,9 +694,7 @@ NFFT_plan<REAL,D>::convolve( cuNDArray< real_complex<REAL> > *samples, cuNDArray
 
     // Density compensation
     if( weights ){
-      working_samples = (sizeof(REAL)==sizeof(float)) ? 
-	(cuNDArray< real_complex<REAL> >*) new cuNDArray<float_complex>((cuNDArray<float_complex>*) samples) : 
-      	(cuNDArray< real_complex<REAL> >*) new cuNDArray<double_complex>((cuNDArray<double_complex>*) samples);
+      working_samples = new cuNDArray<typename complext<REAL>::Type>(*samples);
       cuNDA_scale( weights, working_samples );
     }
     else{
@@ -718,9 +703,7 @@ NFFT_plan<REAL,D>::convolve( cuNDArray< real_complex<REAL> > *samples, cuNDArray
     
     if( !oversampled_image ){
 
-      working_image = (sizeof(REAL)==sizeof(float)) ? // ensures alignment; do not compact allocations into real_complex<REAL>
-	(cuNDArray< real_complex<REAL> >*) cuNDArray<float_complex>::allocate(vec_dims) :
-	(cuNDArray< real_complex<REAL> >*) cuNDArray<double_complex>::allocate(vec_dims); 
+      working_image = cuNDArray<typename complext<REAL>::Type>::allocate(vec_dims); 
     }
     else{
       working_image = image;
@@ -730,7 +713,7 @@ NFFT_plan<REAL,D>::convolve( cuNDArray< real_complex<REAL> > *samples, cuNDArray
 
     if( success ){
       if( !oversampled_image ){
-	cuNDA_crop<real_complex<REAL>,D>( (matrix_size_os-matrix_size)>>1, working_image, image );
+	cuNDA_crop<typename complext<REAL>::Type,D>( (matrix_size_os-matrix_size)>>1, working_image, image );
       }
     }
     
@@ -753,15 +736,15 @@ NFFT_plan<REAL,D>::convolve( cuNDArray< real_complex<REAL> > *samples, cuNDArray
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::FFT(cuNDArray< real_complex<REAL> > *data, NFFT_comp_mode mode, bool do_scale )
+NFFT_plan<REAL,D>::FFT(cuNDArray<typename complext<REAL>::Type> *data, NFFT_comp_mode mode, bool do_scale )
 {
   if( data->get_device() != device ){
     cout << endl << "NFFT_plan::FFT: device mismatch." << endl;
     return false;
   }
 
-  uintd<D> _dims_to_transform = counting_vec<D>();
-  vector<unsigned int> dims_to_transform = cuNDA_toVec( _dims_to_transform );
+  typename uintd<D>::Type _dims_to_transform = counting_vec<D>();
+  vector<unsigned int> dims_to_transform = cuNDA_toVec<D>( _dims_to_transform );
 
   int res;
   if( mode == NFFT_FORWARDS ){
@@ -778,7 +761,7 @@ NFFT_plan<REAL,D>::FFT(cuNDArray< real_complex<REAL> > *data, NFFT_comp_mode mod
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::deapodize( cuNDArray< real_complex<REAL> > *image )
+NFFT_plan<REAL,D>::deapodize( cuNDArray<typename complext<REAL>::Type> *image )
 {
   if( image->get_device() != device ){
     cout << endl << "NFFT_plan::FFT: device mismatch." << endl;
@@ -814,7 +797,7 @@ NFFT_plan<REAL,D>::deapodize( cuNDArray< real_complex<REAL> > *image )
 //
 
 template<class REAL, unsigned int D> bool 
-NFFT_plan<REAL,D>::check_consistency( cuNDArray< real_complex<REAL> > *samples, cuNDArray< real_complex<REAL> > *image, cuNDArray<REAL> *weights, unsigned char components )
+NFFT_plan<REAL,D>::check_consistency( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, cuNDArray<REAL> *weights, unsigned char components )
 {
   if( !initialized ){
     cout << endl << "NFFT_plan: Unable to proceed without setup." << endl;
@@ -846,7 +829,7 @@ NFFT_plan<REAL,D>::check_consistency( cuNDArray< real_complex<REAL> > *samples, 
     return false;
   }    
 
-  uintd<D> image_dims; cuNDA_fromVec( image->get_dimensions(), image_dims );
+  typename uintd<D>::Type image_dims; cuNDA_fromVec<D>( image->get_dimensions(), image_dims );
   bool oversampled_image = (image_dims==matrix_size_os);
   
   if( !((oversampled_image) ? (image_dims == matrix_size_os) : (image_dims == matrix_size) )){
@@ -945,8 +928,9 @@ bool NFFT_plan<REAL,D>::compute_beta()
 //
 
 template<class REAL, unsigned int D> __global__ void
-compute_deapodization_filter_kernel( vectord<unsigned int,D> matrix_size_os, vectord<REAL,D> matrix_size_os_real, vectord<unsigned int,D> fixed_dims, 
-				     REAL W, REAL half_W, REAL one_over_W, REAL beta, real_complex<REAL> *image_os )
+compute_deapodization_filter_kernel( typename uintd<D>::Type matrix_size_os, typename reald<REAL,D>::Type matrix_size_os_real, 
+				     typename uintd<D>::Type fixed_dims, 
+				     REAL W, REAL half_W, REAL one_over_W, REAL beta, typename complext<REAL>::Type*image_os )
 {
 
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
@@ -955,19 +939,19 @@ compute_deapodization_filter_kernel( vectord<unsigned int,D> matrix_size_os, vec
   if( idx <num_elements ){
 
     // Compute weight from Kaiser-Bessel filter
-    const vectord<unsigned int,D> cell_pos = idx_to_co<D>(idx, matrix_size_os);
+    const vector_td<unsigned int,D> cell_pos = idx_to_co<D>(idx, matrix_size_os);
 
     // Sample position ("origin")
-    const vectord<REAL,D> sample_pos = get_half<REAL>()*matrix_size_os_real;
+    const vector_td<REAL,D> sample_pos = get_half<REAL>()*matrix_size_os_real;
 
     // Calculate the distance between the cell and the sample
-    vectord<REAL,D> cell_pos_real; to_reald<REAL,unsigned int,D>(cell_pos_real, cell_pos);
-    const vectord<REAL,D> delta = abs(sample_pos-cell_pos_real);
+    vector_td<REAL,D> cell_pos_real; to_reald<REAL,unsigned int,D>(cell_pos_real, cell_pos);
+    const typename reald<REAL,D>::Type delta = abs(sample_pos-cell_pos_real);
 
     // Compute convolution weight. 
     REAL weight; 
     REAL zero = get_zero<REAL>();
-    vectord<REAL,D> half_W_vec; to_vectord<REAL,D>( half_W_vec, half_W );
+    vector_td<REAL,D> half_W_vec; to_vector_td<REAL,D>( half_W_vec, half_W );
 
     if( weak_greater(delta, half_W_vec ) )
       weight = zero;
@@ -978,7 +962,7 @@ compute_deapodization_filter_kernel( vectord<unsigned int,D> matrix_size_os, vec
     }
     
     // Output weight
-    real_complex<REAL> result;
+   typename complext<REAL>::Type result;
     result.vec[0] = weight; 
     result.vec[1] = zero;
     image_os[idx] = result;
@@ -996,16 +980,14 @@ NFFT_plan<REAL,D>::compute_deapodization_filter()
   if( initialized && deapodization_filter ) 
     delete( deapodization_filter );
   
-  deapodization_filter = (sizeof(REAL)==sizeof(float)) ? // ensures alignment; do not compact allocations into real_complex<REAL>
-    (cuNDArray< real_complex<REAL> >*) cuNDArray<float_complex>::allocate(cuNDA_toVec(matrix_size_os)) :
-    (cuNDArray< real_complex<REAL> >*) cuNDArray<double_complex>::allocate(cuNDA_toVec(matrix_size_os)); 
+  deapodization_filter = cuNDArray<typename complext<REAL>::Type>::allocate(cuNDA_toVec<D>(matrix_size_os)); 
   
   if( !deapodization_filter ){
     cout << endl << "cuNDArray allocation failed" << endl;
     return false;
   }
 
-  vectord<REAL,D> matrix_size_os_real; to_reald<REAL,unsigned int, D>(matrix_size_os_real, matrix_size_os);
+  vector_td<REAL,D> matrix_size_os_real; to_reald<REAL,unsigned int, D>(matrix_size_os_real, matrix_size_os);
   
   // Be optimistic
   bool success = true;
@@ -1028,11 +1010,11 @@ NFFT_plan<REAL,D>::compute_deapodization_filter()
   // Scale (multiplication by N, i.e. not what the FFT provides)
   // Now the NFFT achieves scaling by applying the deapodization filter and we save a little bit of time...
   if( success )
-    cuNDA_scale<REAL,real_complex<REAL> >( (REAL)prod(matrix_size_os), deapodization_filter );
+    cuNDA_scale<REAL,typename complext<REAL>::Type>( (REAL)prod(matrix_size_os), deapodization_filter );
   
   // Reciprocal
   if( success )
-    cuNDA_reciprocal<real_complex<REAL> >( deapodization_filter );
+    cuNDA_reciprocal<typename complext<REAL>::Type>( deapodization_filter );
 
   if( !success ){
     delete deapodization_filter;
@@ -1042,7 +1024,7 @@ NFFT_plan<REAL,D>::compute_deapodization_filter()
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::compute_NFFT( cuNDArray< real_complex<REAL> > *samples, cuNDArray< real_complex<REAL> > *image )
+NFFT_plan<REAL,D>::compute_NFFT( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image )
 {
   // private method - no consistency check. We trust in ourselves.
 
@@ -1064,7 +1046,7 @@ NFFT_plan<REAL,D>::compute_NFFT( cuNDArray< real_complex<REAL> > *samples, cuNDA
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::compute_NFFT_H( cuNDArray< real_complex<REAL> > *samples, cuNDArray< real_complex<REAL> > *image )
+NFFT_plan<REAL,D>::compute_NFFT_H( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image )
 {
   // private method - no consistency check. We trust in ourselves.
 
@@ -1086,7 +1068,7 @@ NFFT_plan<REAL,D>::compute_NFFT_H( cuNDArray< real_complex<REAL> > *samples, cuN
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::convolve_NFFT( cuNDArray< real_complex<REAL> > *samples, cuNDArray< real_complex<REAL> > *image )
+NFFT_plan<REAL,D>::convolve_NFFT( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image )
 {
   // private method - no consistency check. We trust in ourselves.
 
@@ -1164,8 +1146,8 @@ NFFT_plan<REAL,D>::convolve_NFFT( cuNDArray< real_complex<REAL> > *samples, cuND
   dim3 dimGrid( gridDimX );
 
   // Calculate how much shared memory to use per thread
-  size_t bytes_per_thread = domain_size_coils * sizeof( vectord<REAL,D> );
-  size_t bytes_per_thread_tail = domain_size_coils_tail * sizeof( vectord<REAL,D> );
+  size_t bytes_per_thread = domain_size_coils * sizeof( vector_td<REAL,D> );
+  size_t bytes_per_thread_tail = domain_size_coils_tail * sizeof( vector_td<REAL,D> );
 
   /*
     Invoke kernel
@@ -1178,7 +1160,7 @@ NFFT_plan<REAL,D>::convolve_NFFT( cuNDArray< real_complex<REAL> > *samples, cuND
     double_warp_size_power++;
   }
   
-  vectord<REAL,D> matrix_size_os_real; to_reald<REAL,unsigned int,D>( matrix_size_os_real, matrix_size_os );
+  vector_td<REAL,D> matrix_size_os_real; to_reald<REAL,unsigned int,D>( matrix_size_os_real, matrix_size_os );
 
   for( unsigned int batch = 0; batch<num_repetitions; batch++ ){
     NFFT_convolve_kernel<REAL,D>
@@ -1196,7 +1178,7 @@ NFFT_plan<REAL,D>::convolve_NFFT( cuNDArray< real_complex<REAL> > *samples, cuND
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray< real_complex<REAL> > *samples, cuNDArray< real_complex<REAL> > *image )
+NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image )
 {
 
   // private method - no consistency check. We trust in ourselves.
@@ -1275,18 +1257,15 @@ NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray< real_complex<REAL> > *samples, cu
   dim3 dimGrid( gridDimX );
 
   // Calculate how much shared memory to use per thread
-  size_t bytes_per_thread = domain_size_coils * sizeof( vectord<REAL,D> );
-  size_t bytes_per_thread_tail = domain_size_coils_tail * sizeof( vectord<REAL,D> );
+  size_t bytes_per_thread = domain_size_coils * sizeof( vector_td<REAL,D> );
+  size_t bytes_per_thread_tail = domain_size_coils_tail * sizeof( vector_td<REAL,D> );
 
   vector<unsigned int> vec_dims = cuNDA_toVec<D>(matrix_size_os+matrix_size_wrap); 
   if( domain_size_coils_desired > 1 ) 
     vec_dims.push_back(domain_size_coils_desired);
   
   // Allocate and clear temporary image that includes a wrapping zone
-  cuNDArray< real_complex<REAL> > *_tmp = 
-    (sizeof(REAL)==sizeof(float)) ? // ensures alignment; do not compact allocations into real_complex<REAL>
-    (cuNDArray< real_complex<REAL> >*) cuNDArray<float_complex>::allocate(vec_dims) :
-    (cuNDArray< real_complex<REAL> >*) cuNDArray<double_complex>::allocate(vec_dims); 
+  cuNDArray<typename complext<REAL>::Type> *_tmp = cuNDArray<typename complext<REAL>::Type>::allocate(vec_dims); 
   
   if( !_tmp ){
     cout << endl << "Memory allocation failed before convolution." << endl;
@@ -1299,7 +1278,7 @@ NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray< real_complex<REAL> > *samples, cu
     double_warp_size_power++;
   }
 
-  vectord<REAL,D> matrix_size_os_real; to_reald<REAL,unsigned int,D>( matrix_size_os_real, matrix_size_os );
+  vector_td<REAL,D> matrix_size_os_real; to_reald<REAL,unsigned int,D>( matrix_size_os_real, matrix_size_os );
 
   for( unsigned int batch = 0; batch<num_repetitions; batch++ ){
     NFFT_H_convolve_kernel<REAL,D>
@@ -1325,8 +1304,8 @@ NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray< real_complex<REAL> > *samples, cu
 // Image wrap kernels
 
 template<class REAL, unsigned int D> __global__ void
-image_wrap_kernel( vectord<unsigned int,D> matrix_size_os, vectord<unsigned int,D> non_fixed_dims, vectord<unsigned int,D> matrix_size_wrap, 
-		   real_complex<REAL> *in, real_complex<REAL> *out )
+image_wrap_kernel( vector_td<unsigned int,D> matrix_size_os, vector_td<unsigned int,D> non_fixed_dims, vector_td<unsigned int,D> matrix_size_wrap, 
+		  typename complext<REAL>::Type*in,typename complext<REAL>::Type*out )
 {
   const unsigned int number_of_images = blockDim.z;
   const unsigned int num_elements_per_image_src = prod(matrix_size_os+matrix_size_wrap);
@@ -1341,15 +1320,15 @@ image_wrap_kernel( vectord<unsigned int,D> matrix_size_os, vectord<unsigned int,
 
   const unsigned int image_offset_src = threadIdx.z * num_elements_per_image_src;
   
-  const vectord<unsigned int,D> co = idx_to_co(idx, matrix_size_os);
-  const vectord<unsigned int,D> half_wrap = matrix_size_wrap>>1;
+  const vector_td<unsigned int,D> co = idx_to_co<D>(idx, matrix_size_os);
+  const vector_td<unsigned int,D> half_wrap = matrix_size_wrap>>1;
   
   // Make "boolean" vectors denoting whether wrapping needs to be performed in a given direction (forwards/backwards)
-  vectord<unsigned int,D> B_l = vector_less( co, half_wrap ); 
-  vectord<unsigned int,D> B_r = vector_greater_equal( co, matrix_size_os-half_wrap ); 
+  vector_td<unsigned int,D> B_l = vector_less( co, half_wrap ); 
+  vector_td<unsigned int,D> B_r = vector_greater_equal( co, matrix_size_os-half_wrap ); 
   B_l *= non_fixed_dims; B_r *= non_fixed_dims; // don't wrap fixed dimensions
   
-  real_complex<REAL> result = in[co_to_idx(co+half_wrap, matrix_size_os+matrix_size_wrap) + image_offset_src];
+  typename complext<REAL>::Type result = in[co_to_idx<D>(co+half_wrap, matrix_size_os+matrix_size_wrap) + image_offset_src];
 
   if( sum(B_l+B_r) > 0 ){
     
@@ -1381,7 +1360,7 @@ image_wrap_kernel( vectord<unsigned int,D> matrix_size_os, vectord<unsigned int,
       for( unsigned char s = 0; s < (1<<d); s++ ){
         
 	// Target for stride
-	intd<D> stride;
+	typename intd<D>::Type stride;
 	char wrap_requests = 0;
 	char skipped_dims = 0;
 	
@@ -1420,11 +1399,11 @@ image_wrap_kernel( vectord<unsigned int,D> matrix_size_os, vectord<unsigned int,
 	
 	// Now it is time to do the actual wrapping (if needed)
 	if( wrap_requests == d ){
-	  vectord<int,D> src_co_int; to_intd(src_co_int, co+half_wrap);
-	  vectord<int,D> matrix_size_os_int; to_intd(matrix_size_os_int, matrix_size_os);
-	  vectord<int,D> co_offset_int = src_co_int + stride*matrix_size_os_int;
-	  vectord<unsigned int,D> co_offset; to_uintd(co_offset, co_offset_int);
-	  result += in[co_to_idx(co_offset, matrix_size_os+matrix_size_wrap) + image_offset_src];
+	  vector_td<int,D> src_co_int; to_intd(src_co_int, co+half_wrap);
+	  vector_td<int,D> matrix_size_os_int; to_intd(matrix_size_os_int, matrix_size_os);
+	  vector_td<int,D> co_offset_int = src_co_int + stride*matrix_size_os_int;
+	  vector_td<unsigned int,D> co_offset; to_uintd(co_offset, co_offset_int);
+	  result += in[co_to_idx<D>(co_offset, matrix_size_os+matrix_size_wrap) + image_offset_src];
 	  break; // only one stride per combination can contribute (e.g. one edge, one corner)
 	} 
       } 
@@ -1437,7 +1416,7 @@ image_wrap_kernel( vectord<unsigned int,D> matrix_size_os, vectord<unsigned int,
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::image_wrap( cuNDArray< real_complex<REAL> > *source, cuNDArray< real_complex<REAL> > *target )
+NFFT_plan<REAL,D>::image_wrap( cuNDArray<typename complext<REAL>::Type> *source, cuNDArray<typename complext<REAL>::Type> *target )
 {
   unsigned int number_of_images = (source->get_number_of_dimensions()==(D+1)) ? source->get_size(source->get_number_of_dimensions()-1) : 1;
   
