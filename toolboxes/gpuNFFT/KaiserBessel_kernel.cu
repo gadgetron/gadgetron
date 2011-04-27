@@ -18,7 +18,7 @@ bessi0(double x)
     {
       y=3.75/ax;
       ans=(-0.02057706+y*(0.02635537+y*(-0.01647633+(y*0.00392377))));
-      ans=(exp(ax)/sqrt(ax))*(0.39894228+y*(0.01328592+y*(0.00225319+y*(-0.00157565+y*(0.00916281+y*ans)))));
+      ans=(std::exp(ax)/std::sqrt(ax))*(0.39894228+y*(0.01328592+y*(0.00225319+y*(-0.00157565+y*(0.00916281+y*ans)))));
     }
   const double scale = 1.0/1000000000.0;
   return ans*scale;
@@ -38,7 +38,7 @@ bessi0(float x)
     {
       y=3.75f/ax;
       ans=(-0.02057706f+y*(0.02635537f+y*(-0.01647633f+(y*0.00392377f))));
-      ans=(expf(ax)/sqrtf(ax))*(0.39894228f+y*(0.01328592f+y*(0.00225319f+y*(-0.00157565f+y*(0.00916281f+y*ans)))));
+      ans=(std::exp(ax)/std::sqrt(ax))*(0.39894228f+y*(0.01328592f+y*(0.00225319f+y*(-0.00157565f+y*(0.00916281f+y*ans)))));
     }
   const float scale = 1.0f/1000000000.0f;
   return ans*scale;
@@ -52,7 +52,7 @@ KaiserBessel( double u, double matrix_size_os, double one_over_W, double beta )
 {
   double _tmp = 2.0*u*one_over_W;
   double tmp = _tmp*_tmp;
-  double arg = beta*sqrt(1.0-tmp);
+  double arg = beta*std::sqrt(1.0-tmp);
   double bessi = bessi0(arg);
   double ret = matrix_size_os*bessi*one_over_W;
   return ret;
@@ -63,7 +63,7 @@ KaiserBessel( float u, float matrix_size_os, float one_over_W, float beta )
 {
   float _tmp = 2.0f*u*one_over_W;
   float tmp = _tmp*_tmp;
-  float arg = beta*sqrtf(1.0f-tmp);
+  float arg = beta*std::sqrt(1.0f-tmp);
   float bessi = bessi0(arg);
   float ret = matrix_size_os*bessi*one_over_W;
   return ret;

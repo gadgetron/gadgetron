@@ -206,7 +206,7 @@ auto_ptr< cuNDArray<REAL> > cuNDA_rss( cuNDArray<T> *in, unsigned int dim )
 }
 
 // Build correlation matrix
-template<class T> __global__ void
+template<class REAL, class T> __global__ void
 cuNDA_correlation_kernel( T *in, T *corrm, unsigned int num_batches, unsigned int num_elements )
 {
   const unsigned int p = blockIdx.x*blockDim.x + threadIdx.x;
@@ -214,20 +214,22 @@ cuNDA_correlation_kernel( T *in, T *corrm, unsigned int num_batches, unsigned in
 
   if( p < num_elements ){
     for( unsigned int j=0; j<i; j++){
-      corrm[(j*num_batches+i)*num_elements+p] = mul<T,T>(in[i*num_elements+p], conj(in[j*num_elements+p]));
-      corrm[(i*num_batches+j)*num_elements+p] = conj(corrm[(j*num_batches+i)*num_elements+p]);
+      T tmp = mul<T,T>(in[i*num_elements+p], conj<REAL>(in[j*num_elements+p]));
+      corrm[(j*num_batches+i)*num_elements+p] = tmp;
+      corrm[(i*num_batches+j)*num_elements+p] = conj<REAL>(tmp);
     }
-    corrm[(i*num_batches+i)*num_elements+p] = mul<T,T>(in[i*num_elements+p],conj(in[i*num_elements+p]));
+    T tmp = in[i*num_elements+p];
+    corrm[(i*num_batches+i)*num_elements+p] = mul<T,T>(tmp,conj<REAL>(tmp));
   }
 }
 
 // Build correlation matrix
-template<class T> __host__ 
-auto_ptr< cuNDArray<T> > cuNDA_correlation( cuNDArray<T> *in )
+template<class REAL> __host__ 
+auto_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_correlation( cuNDArray<typename complext<REAL>::Type> *in )
 {
   if( !(in->get_number_of_dimensions()>1) ){
     cout << endl << "cuNDA_correlation:: underdimensioned." << endl; 
-    return auto_ptr< cuNDArray<T> >(0x0);
+    return auto_ptr< cuNDArray<typename complext<REAL>::Type> >(0x0);
   }
 
   unsigned int number_of_batches = in->get_size(in->get_number_of_dimensions()-1);
@@ -236,7 +238,7 @@ auto_ptr< cuNDArray<T> > cuNDA_correlation( cuNDArray<T> *in )
   vector<unsigned int> dims = in->get_dimensions();
   dims.push_back(number_of_batches);
 
-  cuNDArray<T> *out = cuNDArray<T>::allocate(dims);
+  cuNDArray<typename complext<REAL>::Type> *out = cuNDArray<typename complext<REAL>::Type>::allocate(dims);
  
   int device; cudaGetDevice( &device );
   cudaDeviceProp deviceProp; cudaGetDeviceProperties( &deviceProp, device );
@@ -247,15 +249,15 @@ auto_ptr< cuNDArray<T> > cuNDA_correlation( cuNDArray<T> *in )
 
   if( blockDim.x == 0 ){
     cout << endl << "cuNDA_correlation:: correlation dimension exceeds capacity." << endl; 
-    return auto_ptr< cuNDArray<T> >(0x0);
+    return auto_ptr< cuNDArray<typename complext<REAL>::Type> >(0x0);
   }
 
   if( out != 0x0 )
-    cuNDA_correlation_kernel<T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements );
+    cuNDA_correlation_kernel<REAL><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
  
-  return auto_ptr< cuNDArray<T> >(out);
+  return auto_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
 }
 
 // Clear
@@ -398,13 +400,13 @@ cuNDA_rss_normalize_kernel( T *in_out, unsigned int stride, unsigned int number_
     for( unsigned int i=0; i<number_of_batches; i++ )
       rss += norm_squared(in_out[i*stride+in_idx]);
  
-    rss = sqrt(rss); // TODO: overload neccesary?
+    rss = sqrt(rss);
     rss += get_epsilon<REAL>(); // avoid potential division by zero
     rss = reciprocal(rss);
  
     for( unsigned int i=0; i<number_of_batches; i++ ) {
       T out = in_out[i*stride+in_idx];
-      out *= rss; // this works since rss is scalar
+      out *= rss; // complex-scalar multiplication (element-wise operator)
       in_out[i*stride+in_idx] = out; 
     } 
   }
@@ -435,7 +437,8 @@ bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim )
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
   // Make reciprocal image
-  cuNDA_rss_normalize_kernel<REAL,T><<< gridDim, blockDim >>>( in_out->get_data_ptr(), stride, number_of_batches, number_of_elements );
+  cuNDA_rss_normalize_kernel<REAL,T><<< gridDim, blockDim >>>
+    ( in_out->get_data_ptr(), stride, number_of_batches, number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
   return true;
@@ -887,8 +890,7 @@ template auto_ptr< cuNDArray<float> > cuNDA_norm_squared<float,4>( cuNDArray<flo
 template auto_ptr< cuNDArray<float> > cuNDA_rss<float, float>( cuNDArray<float>*, unsigned int);
 template auto_ptr< cuNDArray<float> > cuNDA_rss<float, typename complext<float>::Type>( cuNDArray<typename complext<float>::Type>*, unsigned int);
 
-template auto_ptr< cuNDArray<float> > cuNDA_correlation<float>( cuNDArray<float>*);
-template auto_ptr< cuNDArray<typename complext<float>::Type> > cuNDA_correlation<typename complext<float>::Type>( cuNDArray<typename complext<float>::Type>*);
+template auto_ptr< cuNDArray<typename complext<float>::Type> > cuNDA_correlation<float>( cuNDArray<typename complext<float>::Type>*);
 
 template bool cuNDA_crop<float,1>( typename uintd<1>::Type, cuNDArray<float>*, cuNDArray<float>*);
 template bool cuNDA_crop<vector_td<float,1>,1>( typename uintd<1>::Type, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*);
@@ -1003,8 +1005,7 @@ template auto_ptr< cuNDArray<double> > cuNDA_norm_squared<double,4>( cuNDArray<d
 template auto_ptr< cuNDArray<double> > cuNDA_rss<double, double>( cuNDArray<double>*, unsigned int);
 template auto_ptr< cuNDArray<double> > cuNDA_rss<double, typename complext<double>::Type>( cuNDArray<typename complext<double>::Type>*, unsigned int);
 
-template auto_ptr< cuNDArray<double> > cuNDA_correlation<double>( cuNDArray<double>*);
-template auto_ptr< cuNDArray<typename complext<double>::Type> > cuNDA_correlation<typename complext<double>::Type>( cuNDArray<typename complext<double>::Type>*);
+template auto_ptr< cuNDArray<typename complext<double>::Type> > cuNDA_correlation<double>( cuNDArray<typename complext<double>::Type>*);
 
 template bool cuNDA_crop<double,1>( typename uintd<1>::Type, cuNDArray<double>*, cuNDArray<double>*);
 template bool cuNDA_crop<vector_td<double,1>,1>( typename uintd<1>::Type, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*);

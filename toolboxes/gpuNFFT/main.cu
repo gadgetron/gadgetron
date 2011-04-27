@@ -75,7 +75,7 @@ int main( int argc, char** argv)
   unsigned int num_batches = (data.get_number_of_dimensions() == 2) ? data.get_size(1) : 1;
   
   // Setup result image
-  vector<unsigned int> image_dims = cuNDA_toVec<2>(matrix_size_os); 
+  vector<unsigned int> image_dims = cuNDA_toVec<2>(matrix_size); 
   if( num_batches > 1 ) image_dims.push_back(num_batches);
   cuNDArray<float_complext::Type> image; image.create(image_dims);
   
@@ -95,12 +95,18 @@ int main( int argc, char** argv)
   cudaThreadSynchronize(); cutStopTimer( timer );
   time = cutGetTimerValue( timer ); printf("done: %.1f ms.", time ); fflush(stdout);
 
-  printf("\nNFFT_H..."); fflush(stdout);
+  printf("\nNFFT iteration..."); fflush(stdout);
   cutResetTimer( timer ); cutStartTimer( timer );
 
   // Gridder
-  //if( success )
-  //success = plan.compute_iteration( &data, &image, &weights, NFFT_plan<uint2, float2, float, cuFloatComplex>::NFFT_BACKWARDS );
+  if( success )
+    success = plan.compute_iteration( &data, &image, &weights, NFFT_plan<float,2>::NFFT_BACKWARDS );
+  
+  cudaThreadSynchronize(); cutStopTimer( timer );
+  time = cutGetTimerValue( timer ); printf("done: %.1f ms.", time ); fflush(stdout);
+
+  printf("\nNFFT_H..."); fflush(stdout);
+  cutResetTimer( timer ); cutStartTimer( timer );
 
   if( success )
     success = plan.compute( &data, &image, &weights, NFFT_plan<float,2>::NFFT_BACKWARDS );
@@ -110,12 +116,10 @@ int main( int argc, char** argv)
 
   printf("\nNFFT_iteration..."); fflush(stdout);
   cutResetTimer( timer ); cutStartTimer( timer );
-
-  /*
+  
   if( success )
-    success = plan.compute_iteration( &data, &image, &weights, NFFT_plan<uint2, float2, float, cuFloatComplex>::NFFT_FORWARDS );
-  */
-
+    success = plan.compute_iteration( &data, &image, &weights, NFFT_plan<float,2>::NFFT_FORWARDS );
+  
   cudaThreadSynchronize(); cutStopTimer( timer );
   time = cutGetTimerValue( timer ); printf("done: %.1f ms", time ); fflush(stdout);
   

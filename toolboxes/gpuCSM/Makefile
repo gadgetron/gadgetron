@@ -6,7 +6,7 @@ DLLNAME=cuCSM
 LIBSOURCES=
 
 HEADERFILES=\
-	b1_map.hcu
+	b1_map.h
 
 CUDASOURCES=\
 	b1_map.cu

@@ -918,7 +918,7 @@ bool NFFT_plan<REAL,D>::compute_beta()
   // Compute Kaiser-Bessel beta paramter according to the formula provided in 
   // Beatty et. al. IEEE TMI 2005;24(6):799-808.
 
-  beta = (M_PI*sqrt((W*W)/(alpha*alpha)*(alpha-0.5)*(alpha-0.5)-0.8)); 
+  beta = (M_PI*std::sqrt((W*W)/(alpha*alpha)*(alpha-0.5)*(alpha-0.5)-0.8)); 
 
   return true;
 }
@@ -1326,7 +1326,8 @@ image_wrap_kernel( vector_td<unsigned int,D> matrix_size_os, vector_td<unsigned 
   // Make "boolean" vectors denoting whether wrapping needs to be performed in a given direction (forwards/backwards)
   vector_td<unsigned int,D> B_l = vector_less( co, half_wrap ); 
   vector_td<unsigned int,D> B_r = vector_greater_equal( co, matrix_size_os-half_wrap ); 
-  B_l *= non_fixed_dims; B_r *= non_fixed_dims; // don't wrap fixed dimensions
+  B_l = component_wise_mul<unsigned int,D>(B_l, non_fixed_dims); // don't wrap fixed dimensions
+  B_r = component_wise_mul<unsigned int,D>(B_r, non_fixed_dims); // don't wrap fixed dimensions
   
   typename complext<REAL>::Type result = in[co_to_idx<D>(co+half_wrap, matrix_size_os+matrix_size_wrap) + image_offset_src];
 
@@ -1401,7 +1402,7 @@ image_wrap_kernel( vector_td<unsigned int,D> matrix_size_os, vector_td<unsigned 
 	if( wrap_requests == d ){
 	  vector_td<int,D> src_co_int; to_intd(src_co_int, co+half_wrap);
 	  vector_td<int,D> matrix_size_os_int; to_intd(matrix_size_os_int, matrix_size_os);
-	  vector_td<int,D> co_offset_int = src_co_int + stride*matrix_size_os_int;
+	  vector_td<int,D> co_offset_int = src_co_int + component_wise_mul<int,D>(stride,matrix_size_os_int);
 	  vector_td<unsigned int,D> co_offset; to_uintd(co_offset, co_offset_int);
 	  result += in[co_to_idx<D>(co_offset, matrix_size_os+matrix_size_wrap) + image_offset_src];
 	  break; // only one stride per combination can contribute (e.g. one edge, one corner)

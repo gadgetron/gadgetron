@@ -41,8 +41,8 @@ template<unsigned int D> __inline__ __device__ void
 resolve_wrap( vector_td<int,D> &grid_position, vector_td<int,D> &matrix_size_os )
 {
   vector_td<int,D> zero; to_vector_td<int,D>(zero,0);
-  grid_position += (vector_less<int,D>(grid_position, zero)*matrix_size_os);
-  grid_position -= (vector_greater_equal<int,D>(grid_position, matrix_size_os)*matrix_size_os);
+  grid_position += (component_wise_mul<int,D>(vector_less<int,D>(grid_position, zero), matrix_size_os));
+  grid_position -= (component_wise_mul<int,D>(vector_greater_equal<int,D>(grid_position, matrix_size_os), matrix_size_os));
 }
 
 template<class REAL, unsigned int D> __inline__ __device__ void
@@ -193,8 +193,8 @@ NFFT_convolve( REAL alpha, REAL beta, REAL W,
   
   // Limits of the subgrid to consider
   vector_td<REAL,D> non_fixed_dims_real; to_reald<REAL,unsigned int,D>(non_fixed_dims_real,non_fixed_dims);
-  vector_td<int,D> lower_limit; to_intd<REAL,D>(lower_limit, ceil(sample_position-half_W_vec*non_fixed_dims_real));
-  vector_td<int,D> upper_limit; to_intd<REAL,D>(upper_limit, floor(sample_position+half_W_vec*non_fixed_dims_real));
+  vector_td<int,D> lower_limit; to_intd<REAL,D>(lower_limit, ceil(sample_position-component_wise_mul<REAL,D>(half_W_vec,non_fixed_dims_real)));
+  vector_td<int,D> upper_limit; to_intd<REAL,D>(upper_limit, floor(sample_position+component_wise_mul<REAL,D>(half_W_vec,non_fixed_dims_real)));
 
   // Accumulate contributions from the grid
   NFFT_iterate<REAL>( alpha, beta, W, matrix_size_os, fixed_dims, number_of_batches, image, double_warp_size_power, 

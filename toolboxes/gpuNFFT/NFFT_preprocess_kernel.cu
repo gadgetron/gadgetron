@@ -15,7 +15,7 @@ template<class REAL, unsigned int D> struct trajectory_scale
   
   __host__ __device__
   vector_td<REAL,D> operator()(const vector_td<REAL,D> &in) const { 
-    return (in*matrix)+bias;
+    return component_wise_mul<REAL,D>(in,matrix)+bias;
   }
 };
 

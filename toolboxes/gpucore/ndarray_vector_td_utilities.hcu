@@ -38,9 +38,9 @@ std::auto_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<typename reald<RE
 template<class REAL, class T>
 std::auto_ptr< cuNDArray<REAL> > cuNDA_rss( cuNDArray<T> *data, unsigned int dim );
 
-// Correlation matrix (real and complext types)
-template<class T>
-std::auto_ptr< cuNDArray<T> > cuNDA_correlation( cuNDArray<T> *data );
+// Correlation matrix (complext types)
+template<class REAL>
+std::auto_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_correlation( cuNDArray<typename complext<REAL>::Type> *data );
 
 //
 // Utilities overwriting the input

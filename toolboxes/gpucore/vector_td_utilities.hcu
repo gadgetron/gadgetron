@@ -93,6 +93,18 @@ template<unsigned int D> __inline__ __host__ __device__ typename uintd<D>::Type 
   return co;
 } 
 
+template<unsigned int D> __inline__ __host__ __device__ typename intd<D>::Type idx_to_co( int idx, const typename intd<D>::Type &dims )
+{
+  typename intd<D>::Type co;
+  int idx_tmp = idx;
+  for (unsigned int i=0; i<D; i++) {
+    co.vec[i] = idx_tmp%dims.vec[i];
+    idx_tmp -= co.vec[i];
+    idx_tmp /= dims.vec[i];
+  }
+  return co;
+} 
+
 template<unsigned int D> __inline__ __host__ __device__ unsigned int co_to_idx( const typename uintd<D>::Type &co, const typename uintd<D>::Type &dims )
 {
   unsigned int idx = 0;
@@ -157,7 +169,7 @@ template<class REAL, unsigned int D> __inline__ __host__ __device__ REAL norm( c
   for (unsigned int i=0; i<D; i++){
     res += (vec.vec[i]*vec.vec[i]);
   }
-  return sqrt(res);
+  return std::sqrt(res);
 }
 
 template <class REAL> __inline__ __host__ __device__ REAL norm( const REAL r ){
@@ -222,7 +234,7 @@ template<class REAL> __inline__ __host__ __device__ REAL imag( const typename co
 }
 
 template<class REAL> __inline__ __host__ __device__ REAL arg( const typename complext<REAL>::Type &z ){
-  return atan2(imag<REAL>(z), real<REAL>(z));
+  return std::atan2(imag<REAL>(z), real<REAL>(z));
 }
 
 template<class REAL> __inline__ __host__ __device__ typename complext<REAL>::Type conj( const typename complext<REAL>::Type &z ){
@@ -231,8 +243,6 @@ template<class REAL> __inline__ __host__ __device__ typename complext<REAL>::Typ
   res.vec[1] = -z.vec[1];
   return res;
 }
-
-template<class REAL> __inline__ __host__ __device__ REAL conj( const REAL r ){ return r; } // required for template support of various types
 
 //
 // Explicit instantiations 
@@ -348,14 +358,14 @@ template<> __inline__ __host__ __device__ double reciprocal<double>( const doubl
 
 template<> __inline__ __host__ __device__ vector_td<float,2> reciprocal<vector_td<float,2> >( const vector_td<float,2> &z )
 {
-  vector_td<float,2> res = conj(z);
+  vector_td<float,2> res = conj<float>(z);
   res *= (1.0f/norm_squared<float,2>(z));
   return res;
 }
 
 template<> __inline__ __host__ __device__ vector_td<double,2> reciprocal<vector_td<double,2> >( const vector_td<double,2> &z )
 {
-  vector_td<double,2> res = conj(z);
+  vector_td<double,2> res = conj<double>(z);
   res *= (1.0/norm_squared<double,2>(z));
   return res;
 }
