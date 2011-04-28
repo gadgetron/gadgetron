@@ -11,7 +11,7 @@
 using namespace std;
 
 template<class REAL, unsigned int D> void
-smooth_correlation_matrices( cuNDArray<typename complext<REAL>::Type> *corrm );
+smooth_correlation_matrices( cuNDArray<typename complext<REAL>::Type> *corrm, cuNDArray<typename complext<REAL>::Type> *corrm_smooth );
 
 template<class REAL> __host__ 
 auto_ptr< cuNDArray<typename complext<REAL>::Type> > extract_csm( cuNDArray<typename complext<REAL>::Type> *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements );
@@ -61,12 +61,17 @@ estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data_in )
   auto_ptr<cuNDArray<typename complext<REAL>::Type> > corrm = cuNDA_correlation<REAL>( data_out.get() );
   data_out.reset();
   
-  // Smooth
-  smooth_correlation_matrices<REAL,D>( corrm.get() );
+  // Smooth (onto copy of corrm)
+  cuNDArray<typename complext<REAL>::Type > *_corrm_smooth = new cuNDArray<typename complext<REAL>::Type>();
+  _corrm_smooth->create(corrm->get_dimensions());
+  auto_ptr<cuNDArray<typename complext<REAL>::Type> > corrm_smooth(_corrm_smooth);
+
+  smooth_correlation_matrices<REAL,D>( corrm.get(), corrm_smooth.get() );
+  corrm.reset();
 
   // Get the dominant eigenvector for each correlation matrix.
-  auto_ptr<cuNDArray<typename complext<REAL>::Type> > csm = extract_csm<REAL>( corrm.get(), ncoils, pixels_per_coil );
-  corrm.reset();
+  auto_ptr<cuNDArray<typename complext<REAL>::Type> > csm = extract_csm<REAL>( corrm_smooth.get(), ncoils, pixels_per_coil );
+  corrm_smooth.reset();
   
   // Set phase according to reference (coil 0)
   set_phase_reference<REAL>( csm.get(), ncoils, pixels_per_coil );
@@ -76,7 +81,7 @@ estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data_in )
 
 // Smooth correlation matrices by box filter (1D)
 template<class REAL> __global__ void
-smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, intd<1>::Type image_dims )
+smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL>::Type *corrm_smooth, intd<1>::Type image_dims )
 {
   const int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const int batch = blockIdx.y;
@@ -107,13 +112,13 @@ smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, intd<1
 	  result += corrm[source_offset];
 	}
     }
-    corrm[batch*num_image_elements+idx] = scale*result;
+    corrm_smooth[batch*num_image_elements+idx] = scale*result;
   }
 }
 
 // Smooth correlation matrices by box filter (2D)
 template<class REAL> __global__ void
-smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, intd<2>::Type image_dims )
+smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL>::Type *corrm_smooth, intd<2>::Type image_dims )
 {
   const int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const int batch = blockIdx.y;
@@ -131,34 +136,54 @@ smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, intd<2
     const int size_y = image_dims.vec[1];
     
     const int kernel_width = 7;
+    const int half_width = 7>>1;
+
+    const int yminus = y-half_width;
+    const int xminus = x-half_width;
+    const int yplus = y+half_width;
+    const int xplus = x+half_width;
+
     const REAL scale = get_one<REAL>()/((REAL)(kernel_width*kernel_width));
     
     typename complext<REAL>::Type result = get_zero<typename complext<REAL>::Type>();
-    
-    for (int ky = 0; ky < kernel_width; ky++) {
-      for (int kx = 0; kx < kernel_width; kx++) {
-	
-	if ((y-(kernel_width>>1)+ky) >= 0 &&
-	    (y-(kernel_width>>1)+ky) < size_y &&
-	    (x-(kernel_width>>1)+kx) >= 0 &&
-	    (x-(kernel_width>>1)+kx) < size_x) 
-	  {	    
-	    int source_offset = 
-	      batch*num_image_elements +
-	      (y-(kernel_width>>1)+ky)*size_x +
-	      (x-(kernel_width>>1)+kx);
-	    
-	    result += corrm[source_offset];
+   
+    bool out_of_bounds = true;
+ 
+    if( (yminus >=0) ){
+      if( yplus < size_y ){
+	if( xminus >= 0 ){
+	  if( xplus < size_x ){
+
+	    out_of_bounds = false;
+
+#pragma unroll
+	    for (int ky = 0; ky < kernel_width; ky++){
+#pragma unroll
+	      for (int kx = 0; kx < kernel_width; kx++) {
+		
+		int cy = yminus+ky;
+		int cx = xminus+kx;
+		
+		int source_offset = batch*num_image_elements + cy*size_x + cx;
+		result += corrm[source_offset];
+	      }
+	    }
 	  }
+	}
       }
     }
-    corrm[batch*num_image_elements+idx] = scale*result;
+
+    if( out_of_bounds ){
+      corrm_smooth[batch*num_image_elements+idx] = corrm[batch*num_image_elements+idx];
+    }
+    else
+      corrm_smooth[batch*num_image_elements+idx] = scale*result;
   }
 }
 
 // Smooth correlation matrices by box filter (3D)
 template<class REAL> __global__ void
-smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, intd<3>::Type image_dims )
+smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL>::Type *corrm_smooth, intd<3>::Type image_dims )
 {
   const int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const int batch = blockIdx.y;
@@ -204,13 +229,13 @@ smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, intd<3
 	}
       }
     }
-    corrm[batch*num_image_elements+idx] = scale*result;
+    corrm_smooth[batch*num_image_elements+idx] = scale*result;
   }
 }
 
 // Smooth correlation matrices by box filter (3D)
 template<class REAL> __global__ void
-smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, intd<4>::Type image_dims )
+smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL>::Type *corrm_smooth, intd<4>::Type image_dims )
 {
   const int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const int batch = blockIdx.y;
@@ -263,12 +288,12 @@ smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, intd<4
 	}
       }
     }
-    corrm[batch*num_image_elements+idx] = scale*result;
+    corrm_smooth[batch*num_image_elements+idx] = scale*result;
   }
 }
 
 template<class REAL, unsigned int D> void
-smooth_correlation_matrices( cuNDArray<typename complext<REAL>::Type> *corrm )
+smooth_correlation_matrices( cuNDArray<typename complext<REAL>::Type> *corrm, cuNDArray<typename complext<REAL>::Type> *corrm_smooth )
 {
   typename intd<D>::Type image_dims;
 
@@ -286,7 +311,7 @@ smooth_correlation_matrices( cuNDArray<typename complext<REAL>::Type> *corrm )
   dim3 gridDim((unsigned int) ceil((double)prod(image_dims)/blockDim.x), number_of_batches);
 
   smooth_correlation_matrices_kernel<REAL><<<gridDim, blockDim>>>
-    ( corrm->get_data_ptr(), image_dims );
+    ( corrm->get_data_ptr(), corrm_smooth->get_data_ptr(), image_dims );
   
   CHECK_FOR_CUDA_ERROR();
 }
