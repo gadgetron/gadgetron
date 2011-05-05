@@ -13,7 +13,8 @@ DIRS=\
 	apps/gadgetdatasender \
 	apps/htgrappa \
 	gadgets/core \
-	gadgets/gpucg
+	gadgets/gpucg \
+	gadgets/grappa
 
 all: $(DIRS)
 

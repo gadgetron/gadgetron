@@ -104,7 +104,6 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     (m1->getObjectPtr()->flags & GADGET_FLAG_LAST_ACQ_IN_SLICE);
   
   if (is_last_scan_in_slice) {
-    FFT<float> ft;
 
     GadgetContainerMessage<GadgetMessageImage>* cm1 = 
       new GadgetContainerMessage<GadgetMessageImage>();
@@ -141,9 +140,9 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
       return GADGET_FAIL;
     }
 
-    ft.ifft(image_data_[slice]->getObjectPtr(),0);
-    //ft.ifft(image_data_[slice]->getObjectPtr(),1);
-    //ft.ifft(image_data_[slice]->getObjectPtr(),2);
+    FFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),0);
+    FFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),1);
+    FFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),2);
 
     if (this->next()->putq(cm1) < 0) {
       GADGET_DEBUG1("Failed to pass image on to next Gadget in chain\n");
