@@ -9,13 +9,16 @@
 </writers>
 
 <stream>
+
 <gadget name="ImageFinish" dll="gadgetroncore" class="ImageFinishGadget" />
 
 <!--
 <gadget name="ImageWrite" dll="gadgetroncore" class="ImageWriterGadget" />
 -->
 
+<!--
 <gadget name="CropCombine" dll="gadgetroncore" class="CropAndCombineGadget" />
+-->
 
 <!--
 <gadget name="FFT" dll="gadgetroncore" class="FFTGadget" />

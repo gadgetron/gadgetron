@@ -117,7 +117,13 @@ template <class T> class hoNDArray : public NDArray<T>
     
     return this->get_data_ptr();
   }
-
+  
+  virtual void clear(T value)
+  {
+    std::fill(this->get_data_ptr(),
+	      this->get_data_ptr()+this->get_number_of_elements(),
+	      value);
+  }
 
 
   //Copy constructor

@@ -13,6 +13,9 @@ GrappaGadget::~GrappaGadget()
   for (unsigned int i = 0; i < buffers_.size(); i++) {
     if (buffers_[i]) delete buffers_[i];
     buffers_[i] = 0;
+
+    if (weights_[i]) delete weights_[i];
+    weights_[i] = 0;
   }
 
 }
@@ -34,9 +37,32 @@ int GrappaGadget::process_config(ACE_Message_Block* mb)
   image_dimensions_.push_back(dimensions_[3]);
 
 
+  weights_ = std::vector< GrappaWeights<float>* >(dimensions_[4],0);
   buffers_ = std::vector<GrappaCalibrationBuffer* >(dimensions_[4],0);
   for (unsigned int i = 0; i < buffers_.size(); i++) {
-    buffers_[i] = new GrappaCalibrationBuffer(dimensions_);
+    weights_[i] = new GrappaWeights<float>();
+
+    //Let's set some default GRAPPA weights, so that we have something to work with the first couple of frames.
+    std::vector<unsigned int> wdims = image_dimensions_;
+    //TODO: push back any additional dimensions for uncombined channels
+
+    hoNDArray< std::complex<float> > tmp_w;
+    if (!tmp_w.create(wdims)) {
+      GADGET_DEBUG1("Unable to create temporary array with dimensions\n");
+      return GADGET_FAIL;
+    }
+    tmp_w.clear(std::complex<float>(1.0,0));
+    weights_[i]->update(&tmp_w);
+    
+
+    buffers_[i] = new GrappaCalibrationBuffer(image_dimensions_,
+					      weights_[i],
+					      &weights_calculator_);
+  }
+
+  if (weights_calculator_.open() < 0) {
+    GADGET_DEBUG1("Failed to open GrappaWeightsCalculator\n");
+    return GADGET_FAIL;
   }
 
   image_data_ = std::vector< GadgetContainerMessage< hoNDArray< std::complex<float> > >* >(dimensions_[4],0);
@@ -62,10 +88,6 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
   unsigned int partition = acq_head->idx.partition;
   unsigned int slice = acq_head->idx.slice;
 
-  //TODO:
-  //2. If last line in slice, FFT and apply weights
-  //3. Hand off data to GrappaBuffers //We will do this last to not delay pushing out images
-  
   if (samples != image_dimensions_[0]) {
     GADGET_DEBUG1("GrappaGadget: wrong number of samples received\n");
     m1->release();
@@ -108,13 +130,27 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     GadgetContainerMessage<GadgetMessageImage>* cm1 = 
       new GadgetContainerMessage<GadgetMessageImage>();
     
-    cm1->cont(image_data_[slice]);
+    GadgetContainerMessage< hoNDArray<std::complex<float> > >* cm2 = 
+      new GadgetContainerMessage< hoNDArray<std::complex<float> > >();
+    
+    
+    std::vector<unsigned int> combined_dims(3,0);
+    combined_dims[0] = image_dimensions_[0];
+    combined_dims[1] = image_dimensions_[1];
+    combined_dims[2] = image_dimensions_[2];
+ 
+    if (!cm2->getObjectPtr()->create(combined_dims)) {
+      GADGET_DEBUG1("Unable to create combined image array\n");
+      return GADGET_FAIL;
+    }
+
+    cm1->cont(cm2);
     
 
     cm1->getObjectPtr()->matrix_size[0] = image_dimensions_[0];
     cm1->getObjectPtr()->matrix_size[1] = image_dimensions_[1];
     cm1->getObjectPtr()->matrix_size[2] = image_dimensions_[2];
-    cm1->getObjectPtr()->channels       = image_dimensions_[3];
+    cm1->getObjectPtr()->channels       = 1;//image_dimensions_[3]; This should be fixed when we know what channels to preserve
     cm1->getObjectPtr()->data_idx_min       = m1->getObjectPtr()->min_idx;
     cm1->getObjectPtr()->data_idx_max       = m1->getObjectPtr()->max_idx;
     cm1->getObjectPtr()->data_idx_current   = m1->getObjectPtr()->idx;	
@@ -126,32 +162,30 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 	   sizeof(float)*4);
 
 
-    
-    //TODO:
-    //apply weights
-    if (!image_data_[slice]) {
-      GADGET_DEBUG1("Image buffer point is zero, not expected\n");
-      return GADGET_FAIL;
-    }
-
-
-    if (!image_data_[slice]->getObjectPtr()) {
-      GADGET_DEBUG1("Image buffer point is zero, not expected\n");
-      return GADGET_FAIL;
-    }
-
     FFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),0);
     FFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),1);
     FFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),2);
+
+    //apply weights
+    if (weights_[slice]->apply(image_data_[slice]->getObjectPtr(), cm2->getObjectPtr()) < 0) {
+      GADGET_DEBUG1("Failed to apply GRAPPA weights\n");
+      return GADGET_FAIL;
+    }
 
     if (this->next()->putq(cm1) < 0) {
       GADGET_DEBUG1("Failed to pass image on to next Gadget in chain\n");
       return GADGET_FAIL;
     }
 
-    //For allocation of new image buffer next time around.
-    image_data_[slice] = 0;
+    std::fill(image_data_[slice]->getObjectPtr()->get_data_ptr(),
+	      image_data_[slice]->getObjectPtr()->get_data_ptr()+image_data_[slice]->getObjectPtr()->get_number_of_elements(),
+	      std::complex<float>(0.0f,0.0f));
 
+  }
+
+  if (buffers_[slice]->add_data(m1->getObjectPtr(),m2->getObjectPtr()) < 0) {
+    GADGET_DEBUG1("Failed to add incoming data to grappa calibration buffer\n");
+    return GADGET_FAIL;
   }
 
   m1->release();

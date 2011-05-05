@@ -36,6 +36,8 @@ public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
   std::vector<unsigned int> dimensions_;
   std::vector<unsigned int> image_dimensions_;
   std::vector< GadgetContainerMessage<  hoNDArray< std::complex<float> > >* > image_data_;
+  std::vector< GrappaWeights<float>* > weights_;
+  GrappaWeightsCalculator<float> weights_calculator_;
 };
 
 #endif //GRAPPAGADGET_H

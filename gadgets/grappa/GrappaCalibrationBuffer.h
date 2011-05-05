@@ -8,9 +8,13 @@
 
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
+#include "GrappaWeights.h"
+#include "GrappaWeightsCalculator.h"
 
 class CalibrationBufferCounter
 {
+
+ public:
   CalibrationBufferCounter(unsigned int lines)  {
     lines_sampled_ = std::vector<unsigned int>(lines,0);
     memset(position_,   3*sizeof(float),0);
@@ -86,12 +90,19 @@ class GrappaCalibrationBuffer
 {
 
  public:
-  GrappaCalibrationBuffer(std::vector<unsigned int> dimensions);
+  GrappaCalibrationBuffer(std::vector<unsigned int> dimensions, 
+			  GrappaWeights<float>* w,
+			  GrappaWeightsCalculator<float>* weights_calculator);
   virtual ~GrappaCalibrationBuffer() {}
 
   int add_data(GadgetMessageAcquisition* m1, hoNDArray< std::complex<float> >* m2);
 
  protected:
+  hoNDArray< std::complex<float> > buffer_;
+  std::vector<unsigned int> dimensions_;
+  GrappaWeights<float>* weights_;
+  GrappaWeightsCalculator<float>* weights_calculator_;
+  CalibrationBufferCounter buffer_counter_;
 
 };
 
