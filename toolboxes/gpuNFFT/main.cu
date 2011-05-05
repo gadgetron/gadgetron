@@ -55,7 +55,7 @@ int main( int argc, char** argv)
   }
   
   // Matrix sizes
-  uintd2 matrix_size = uintd2(128,128);
+  uintd2 matrix_size = uintd2(192,192);
   uintd2 matrix_size_os = uintd2(256,256);
 
   // Kernel width

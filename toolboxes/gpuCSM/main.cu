@@ -14,12 +14,9 @@ int main( int argc, char** argv)
 {
   hoNDArray<float_complext::Type> host_data = 
     read_nd_array<float_complext::Type>("b1_mapping_data/coil_images.cplx");
-
-  //complex<float> *out = (complex<float>*)malloc(256*192*32*8);
-  //estimate_b1_map_gold((complex<float>*)host_data.get_data_ptr(), out, 32, 256, 192, 1);
-
-  //hoNDArray<float_complex::Type> host_data = 
-  //read_nd_array<float_complex::Type>("b1_mapping_data/5ch.cplx");
+  
+  //hoNDArray<float_complext::Type> host_data = 
+  //read_nd_array<float_complext::Type>("b1_mapping_data/5ch.cplx");
   
   if( host_data.get_number_of_dimensions() != 3 ){
     printf("\nInput data is not three-dimensional (a series of images). Quitting!\n");
