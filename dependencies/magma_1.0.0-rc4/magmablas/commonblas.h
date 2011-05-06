@@ -1,0 +1,14 @@
+#ifndef _COMMONBLAS_H_
+#define _COMMONBLAS_H_
+
+#define ZSIZE_1SHARED 16
+#define CSIZE_1SHARED 32
+#define DSIZE_1SHARED 32
+#define SSIZE_1SHARED 32
+
+#define ZSIZE_2SHARED 16
+#define CSIZE_2SHARED 16
+#define DSIZE_2SHARED 16
+#define SSIZE_2SHARED 32
+
+#endif /* _COMMONBLAS_H_ */

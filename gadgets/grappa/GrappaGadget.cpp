@@ -177,10 +177,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
       return GADGET_FAIL;
     }
 
-    std::fill(image_data_[slice]->getObjectPtr()->get_data_ptr(),
-	      image_data_[slice]->getObjectPtr()->get_data_ptr()+image_data_[slice]->getObjectPtr()->get_number_of_elements(),
-	      std::complex<float>(0.0f,0.0f));
-
+    image_data_[slice]->getObjectPtr()->clear(std::complex<float>(0.0f,0.0f));
   }
 
   if (buffers_[slice]->add_data(m1->getObjectPtr(),m2->getObjectPtr()) < 0) {

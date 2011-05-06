@@ -1,6 +1,7 @@
 #include "GrappaWeightsCalculator.h"
-
 #include "GadgetContainerMessage.h"
+
+#include "Gadgetron.h"
 
 template <class T> class GrappaWeightsDescription
 {
@@ -47,7 +48,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)
      }
 
      //TODO: call htgrappa weights GPU function
-
+     GADGET_DEBUG1("This is where we should be calculating the GRAPPA weights\n");
 
      mb->release();
    }

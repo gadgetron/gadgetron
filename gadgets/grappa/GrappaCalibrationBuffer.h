@@ -104,6 +104,10 @@ class GrappaCalibrationBuffer
   GrappaWeightsCalculator<float>* weights_calculator_;
   CalibrationBufferCounter buffer_counter_;
 
+  unsigned int biggest_gap_current_;
+  unsigned int acceleration_factor_;
+  unsigned int last_line_;
+  bool weights_invalid_;
 };
 
 #endif
