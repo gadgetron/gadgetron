@@ -1,23 +1,16 @@
 #include "cuCGPreconditioner.h"
 
-#include <cuComplex.h>
+//#include <cuComplex.h>
+#include "vector_td_utilities.h"
 
-__global__ void weight_multiplication(float2* in, float2* out, float2* weight, unsigned long elements)
+template<class T> __global__ void 
+weight_multiplication( T* in, T* out, T* weight, unsigned long elements )
 {
   unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
   if (idx_in < elements) {
-    out[idx_in] = cuCmulf(in[idx_in],weight[idx_in]);
+    out[idx_in] = mul<T,T>(in[idx_in], weight[idx_in]);
   }
 }
-
-__global__ void weight_multiplication(float* in, float* out, float* weight, unsigned long elements)
-{
-  unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
-  if (idx_in < elements) {
-    out[idx_in] = in[idx_in] * weight[idx_in];
-  }
-}
-
 
 template <class T> int cuCGPrecondWeight<T>::apply(cuNDArray<T>* in, cuNDArray<T>* out)
 {
@@ -31,7 +24,7 @@ template <class T> int cuCGPrecondWeight<T>::apply(cuNDArray<T>* in, cuNDArray<T
     return -1;
   }
 
-  dim3 blockDim(512,1,1);
+  dim3 blockDim(256,1,1);
   dim3 gridDim((unsigned int) ceil((double)in->get_number_of_elements()/blockDim.x), 1, 1 );
   weight_multiplication<<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(),
 						  weights_.get_data_ptr(), in->get_number_of_elements());
@@ -46,6 +39,11 @@ template <class T> int cuCGPrecondWeight<T>::apply(cuNDArray<T>* in, cuNDArray<T
   return 0;
 }
 
-template class cuCGPrecondWeight<float>;
-template class cuCGPrecondWeight<float2>;
 
+//
+// Instantiation
+//
+
+template class cuCGPrecondWeight<float>;
+//template class cuCGPrecondWeight<float2>;
+template class cuCGPrecondWeight<float_complext::Type>;

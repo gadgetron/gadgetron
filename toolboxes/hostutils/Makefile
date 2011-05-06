@@ -1,30 +1,22 @@
 GADGETRONHOME=../..
 include $(GADGETRONHOME)/Makefile.inc
 
+DLLNAME=hostutils
+
 LIBHEADERS=\
-	GPUTimer.h \
-	check_CUDA.h \
-	vector_td.h \
-	vector_td_operators.h \
-	vector_td_utilities.h \
-	ndarray_vector_td_utilities.h \
-	cuNDArray.h \
-	cuNDFFT.h 
+	parameterparser.h \
+	declspec.h
 
 LIBSOURCES=\
-	GPUTimer.cpp \
-	cuNDArray.cpp \
-	cuNDFFT.cpp
+	parameterparser.cpp
 
-CUDASOURCES= \
-	ndarray_vector_td_utilities.cu \
-	cuNDArray_kernels.cu
+CUDASOURCES=
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
-DLLNAME=gpucore
-LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 LIBLDFLAGS +=
+
+LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 
 all: $(LIBFILE)
 
@@ -48,5 +40,3 @@ clean:
 	rm -rf $(LIBCUDAOBJECTS)
 	rm -rf *.cplx
 	rm -rf *.real
-
-

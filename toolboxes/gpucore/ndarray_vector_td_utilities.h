@@ -6,6 +6,8 @@
 #include <memory>
 #include <vector>
 
+#include <cublas_v2.h>
+
 //	
 // cuNDArray of scalar/vector_td utilities
 //
@@ -57,7 +59,7 @@ void cuNDA_reciprocal( cuNDArray<T> *in_out );
 // Normalize (real types)
 // TODO: complex version
 template<class REAL>
-void cuNDA_normalize( cuNDArray<REAL> *in_out, REAL new_max );
+void cuNDA_normalize( cuNDArray<REAL> *in_out, REAL new_max, cublasHandle_t handle );
 
 // Abs (floatd types supported, hence component-wise operation also for arrays of complex types!)
 template<class T> 
@@ -74,10 +76,6 @@ void cuNDA_scale( A a, cuNDArray<X> *x );
 // Scale (component-wise) - real and complex types
 template<class A, class X> 
 bool cuNDA_scale( cuNDArray<A> *a, cuNDArray<X> *x );
-
-// 'axpy' - for real and complex types
-template<class A, class XY> 
-bool cuNDA_axpy( A a, cuNDArray<XY> *x, cuNDArray<XY> *y );
 
 // 'axpby' - for real and complex types
 template<class A, class B, class XY> 
@@ -98,6 +96,19 @@ bool cuNDA_zero_fill_border( typename uintd<D>::Type matrix_size, cuNDArray<T> *
 // Border fill (circular) - (real and complex types)
 template<class REAL, class T, unsigned int D>
 bool cuNDA_zero_fill_border( typename reald<REAL,D>::Type radius, cuNDArray<T> *image );
+
+//
+// cublas wrappers (real and complex types)
+//
+
+template<class T> T
+cuNDA_dot( cuNDArray<T>* arr1, cuNDArray<T>* arr2, cublasHandle_t handle );
+
+template<class T> bool
+cuNDA_axpy( T a, cuNDArray<T>* x, cuNDArray<T>* y, cublasHandle_t handle );
+
+template<class T> bool
+cuNDA_scal( T a, cuNDArray<T>* x, cublasHandle_t handle );
 
 //
 // Conversion between vector<unsigned int> and uintd

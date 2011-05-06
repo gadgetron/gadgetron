@@ -1,8 +1,10 @@
 #pragma once
 
 #include "vector_td.h"
+#include "vector_td_operators.h"
 
 #include <float.h>
+#include <cmath>
 
 //
 // Get scalar limits of operation
@@ -191,10 +193,10 @@ template<class REAL, unsigned int D> __inline__ __host__ __device__ REAL norm( c
   for (unsigned int i=0; i<D; i++){
     res += (vec.vec[i]*vec.vec[i]);
   }
-  return std::sqrt(res);
+  return sqrt(res);
 }
 
-template <class REAL> __inline__ __host__ __device__ REAL norm( const REAL r ){
+template<class REAL> __inline__ __host__ __device__ REAL norm( const REAL r ){
   return abs(r);
 }
 
@@ -247,6 +249,10 @@ template<class REAL, class T, unsigned int D> __inline__ __host__ __device__ voi
 // Operations on complex types
 //
 
+template<class REAL> __inline__ __host__ __device__ REAL real( const REAL &z ){ // just to easy templetization
+  return z;
+}
+
 template<class REAL> __inline__ __host__ __device__ REAL real( const typename complext<REAL>::Type &z ){
   return z.vec[0];
 }
@@ -256,7 +262,7 @@ template<class REAL> __inline__ __host__ __device__ REAL imag( const typename co
 }
 
 template<class REAL> __inline__ __host__ __device__ REAL arg( const typename complext<REAL>::Type &z ){
-  return std::atan2(imag<REAL>(z), real<REAL>(z));
+  return atan2(imag<REAL>(z), real<REAL>(z));
 }
 
 template<class REAL> __inline__ __host__ __device__ typename complext<REAL>::Type conj( const typename complext<REAL>::Type &z ){
@@ -442,14 +448,4 @@ template<> __inline__ __host__ __device__ vector_td<double,2> mul<vector_td<doub
   res.vec[0] = a.vec[0]*b.vec[0]-a.vec[1]*b.vec[1];
   res.vec[1] = a.vec[0]*b.vec[1]+a.vec[1]*b.vec[0];
   return res;
-}
-
-template<>__inline__ __host__ __device__ void sin_cos( float angle, float *a, float *b )
-{
-  sincosf(angle, a,b);
-}
-
-template<>__inline__ __host__ __device__ void sin_cos( double angle, double *a, double *b )
-{
-  sincos(angle, a,b);
 }

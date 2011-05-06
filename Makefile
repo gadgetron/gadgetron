@@ -3,11 +3,13 @@ include $(GADGETRONHOME)/Makefile.inc
 
 DIRS=\
 	toolboxes/gadgettools \
+	toolboxes/hostutils \
 	toolboxes/ndarray \
 	toolboxes/gpucore \
 	toolboxes/gpuNFFT \
 	toolboxes/gpuCSM \
 	toolboxes/gpucg \
+	apps/standalone/radial_sense \
 	apps/gputest \
 	apps/gadgetron \
 	apps/gadgetdatasender \

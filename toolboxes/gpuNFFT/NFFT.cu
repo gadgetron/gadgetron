@@ -18,17 +18,14 @@
 
 #include "hoNDArray_fileio.h"
 #include "cuNDArray.h"
-#include "ndarray_vector_td_utilities.hcu"
-
-#include "vector_td_operators.hcu"
-#include "vector_td_utilities.hcu"
+#include "ndarray_vector_td_utilities.h"
+#include "vector_td_utilities.h"
 
 #include "check_CUDA.h"
 
 // Includes - CUDA
 #include <math_constants.h>
 #include <cufft.h>
-#include <cublas.h>
 
 // Includes - CUDA thrust
 #include <thrust/scan.h>

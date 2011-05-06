@@ -1,7 +1,7 @@
 GADGETRONHOME=../..
 include $(GADGETRONHOME)/Makefile.inc
 
-DLLNAME=cuCSM
+DLLNAME=gpucsm
 
 LIBSOURCES=
 
@@ -16,8 +16,8 @@ LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
 
-LIBLDFLAGS += -lgpucore -lcuNFFT
-APPLDFLAGS += -lgpucore -lcuNFFT
+LIBLDFLAGS += -lgpucore -lgpunfft
+APPLDFLAGS += -lgpucore -lgpunfft
 CXXFLAGS += -g
 NVCCFLAGS += -g
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)

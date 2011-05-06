@@ -1,13 +1,11 @@
-#include "ndarray_vector_td_utilities.hcu"
-#include "vector_td_operators.hcu"
-#include "vector_td_utilities.hcu"
+#include "ndarray_vector_td_utilities.h"
+#include "vector_td_operators.h"
+#include "vector_td_utilities.h"
 #include "check_CUDA.h"
 
-#include <cublas.h>
 #include <vector>
 
 using namespace std;
-
 
 // Sum
 template<class T> __global__ void
@@ -56,7 +54,7 @@ auto_ptr< cuNDArray<T> > cuNDA_sum( cuNDArray<T> *in, unsigned int dim )
 
   cuNDArray<T> *out = cuNDArray<T>::allocate(dims);
  
-  dim3 blockDim(512);
+  dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
   if( out != 0x0 )
@@ -92,7 +90,7 @@ auto_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<typename reald<REAL,D>::Type> 
 {
   unsigned int number_of_elements = in->get_number_of_elements();
 
-  dim3 blockDim(512);
+  dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
   cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(in->get_dimensions());
@@ -131,7 +129,7 @@ auto_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<typename reald<REAL,D>
 {
   unsigned int number_of_elements = in->get_number_of_elements();
 
-  dim3 blockDim(512);
+  dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
   cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(in->get_dimensions());
@@ -194,7 +192,7 @@ auto_ptr< cuNDArray<REAL> > cuNDA_rss( cuNDArray<T> *in, unsigned int dim )
 
   cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(dims);
  
-  dim3 blockDim(512);
+  dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
   if ( out != 0x0 )
@@ -278,7 +276,7 @@ void cuNDA_clear( cuNDArray<T> *in_out )
 {
   unsigned int number_of_elements = in_out->get_number_of_elements();
 
-  dim3 blockDim(512);
+  dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
   // Make clear image
@@ -305,7 +303,7 @@ void cuNDA_abs( cuNDArray<T> *in_out )
 {
   unsigned int number_of_elements = in_out->get_number_of_elements();
 
-  dim3 blockDim(512);
+  dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
  
   // Make modulus image
@@ -331,7 +329,7 @@ void cuNDA_reciprocal( cuNDArray<T> *in_out )
 {
   unsigned int number_of_elements = in_out->get_number_of_elements();
 
-  dim3 blockDim(512);
+  dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
   // Make reciprocal image
@@ -342,38 +340,42 @@ void cuNDA_reciprocal( cuNDArray<T> *in_out )
 
 // Normalize (float)
 __host__
-void cuNDA_normalize( cuNDArray<float> *data, float new_max )
+void cuNDA_normalize( cuNDArray<float> *data, float new_max, cublasHandle_t handle )
 {
   unsigned int number_of_elements = data->get_number_of_elements();
 
   // Find the maximum value in the array
-  int max_idx = cublasIsamax (number_of_elements, data->get_data_ptr(), 1);
+  int max_idx;
+  cublasIsamax( handle, number_of_elements, data->get_data_ptr(), 1, &max_idx );
 
   // Copy that value back to host memory
   float max_val;
   cudaMemcpy(&max_val, (data->get_data_ptr()+max_idx-1), sizeof(float), cudaMemcpyDeviceToHost);
 
   // Scale the array
-  cublasSscal( number_of_elements, new_max/max_val, data->get_data_ptr(), 1 );
+  float scale = new_max/max_val;
+  cublasSscal( handle, number_of_elements, &scale, data->get_data_ptr(), 1 );
 
   CHECK_FOR_CUDA_ERROR();
 }
 
 // Normalize (double)
 __host__
-void cuNDA_normalize( cuNDArray<double> *data, double new_max )
+void cuNDA_normalize( cuNDArray<double> *data, double new_max, cublasHandle_t handle )
 {
   unsigned int number_of_elements = data->get_number_of_elements();
 
   // Find the maximum value in the array
-  int max_idx = cublasIdamax (number_of_elements, data->get_data_ptr(), 1);
+  int max_idx;
+  cublasIdamax( handle, number_of_elements, data->get_data_ptr(), 1, &max_idx );
 
   // Copy that value back to host memory
   double max_val;
   cudaMemcpy(&max_val, (data->get_data_ptr()+max_idx-1), sizeof(double), cudaMemcpyDeviceToHost);
 
   // Scale the array
-  cublasDscal( number_of_elements, new_max/max_val, data->get_data_ptr(), 1 );
+  double scale = new_max/max_val;
+  cublasDscal( handle, number_of_elements, &scale, data->get_data_ptr(), 1 );
 
   CHECK_FOR_CUDA_ERROR();
 }
@@ -398,7 +400,7 @@ cuNDA_rss_normalize_kernel( T *in_out, unsigned int stride, unsigned int number_
     REAL rss = get_zero<REAL>();
  
     for( unsigned int i=0; i<number_of_batches; i++ )
-      rss += norm_squared(in_out[i*stride+in_idx]);
+      rss += norm_squared<REAL>(in_out[i*stride+in_idx]);
  
     rss = sqrt(rss);
     rss += get_epsilon<REAL>(); // avoid potential division by zero
@@ -433,7 +435,7 @@ bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim )
   for( unsigned int i=0; i<dim; i++ )
     stride *= in_out->get_size(i);
 
-  dim3 blockDim(512);
+  dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
   // Make reciprocal image
@@ -462,7 +464,7 @@ void cuNDA_scale( A a, cuNDArray<X> *x )
 {
   unsigned int number_of_elements = x->get_number_of_elements();
 
-  dim3 blockDim(512);
+  dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
   // Invoke kernel
@@ -498,7 +500,7 @@ bool cuNDA_scale( cuNDArray<A> *a, cuNDArray<X> *x )
   unsigned int number_of_elements = a->get_number_of_elements();
   unsigned int num_batches = x->get_number_of_elements() / a->get_number_of_elements();
  
-  dim3 blockDim(512);
+  dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
  
   // Invoke kernel
@@ -532,7 +534,7 @@ bool cuNDA_axpy( A a, cuNDArray<XY> *x, cuNDArray<XY> *y )
 
   unsigned int number_of_elements = y->get_number_of_elements();
 
-  dim3 blockDim(512);
+  dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
   // Invoke kernel
@@ -584,7 +586,7 @@ bool cuNDA_axpby( cuNDArray<A> *a, cuNDArray<XY> *x, cuNDArray<B> *b, cuNDArray<
   unsigned int number_of_batches = x->get_number_of_elements() / a->get_number_of_elements();
   unsigned int number_of_elements = a->get_number_of_elements();
 
-  dim3 blockDim(512);
+  dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
   // Invoke kernel
@@ -638,7 +640,7 @@ bool cuNDA_crop( typename uintd<D>::Type offset, cuNDArray<T> *in, cuNDArray<T> 
  
   unsigned int number_of_elements = prod(matrix_size_out);
 
-  dim3 blockDim(512);
+  dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
   // Invoke kernel
@@ -695,7 +697,7 @@ bool cuNDA_expand_with_zero_fill( cuNDArray<T> *in, cuNDArray<T> *out )
 
   unsigned int number_of_elements = prod(matrix_size_out);
  
-  dim3 blockDim(512);
+  dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
  
   // Invoke kernel
@@ -743,7 +745,7 @@ bool cuNDA_zero_fill_border( typename uintd<D>::Type matrix_size_in, cuNDArray<T
 
   unsigned int number_of_elements = prod(matrix_size_out);
  
-  dim3 blockDim(512);
+  dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
  
   // Invoke kernel
@@ -803,7 +805,7 @@ bool cuNDA_zero_fill_border( typename reald<REAL,D>::Type radius, cuNDArray<T> *
 
   unsigned int number_of_elements = prod(matrix_size_out);
  
-  dim3 blockDim(512);
+  dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
  
   // Invoke kernel
@@ -812,6 +814,212 @@ bool cuNDA_zero_fill_border( typename reald<REAL,D>::Type radius, cuNDArray<T> *
   CHECK_FOR_CUDA_ERROR();
  
   return true;
+}
+
+template<class T> T _dot( cuNDArray<T>* arr1, cuNDArray<T>* arr2, cublasHandle_t handle );
+
+template<> typename float_complext::Type
+_dot( cuNDArray<typename float_complext::Type>* arr1, cuNDArray<typename float_complext::Type>* arr2, cublasHandle_t handle )
+{
+  typename float_complext::Type ret = get_zero<float_complext::Type>();
+  
+  if (cublasCdotc( handle, arr1->get_number_of_elements(),
+		   (const cuComplex*) arr1->get_data_ptr(), 1, 
+		   (const cuComplex*) arr2->get_data_ptr(), 1,
+		   (cuComplex*) &ret) != CUBLAS_STATUS_SUCCESS ) 
+    {
+      cout << "cuNDA_dot: inner product calculating using cublas failed" << std::endl;
+    }
+  
+  return ret;
+}
+
+template<> float 
+_dot( cuNDArray<float>* arr1, cuNDArray<float>* arr2, cublasHandle_t handle )
+{
+  float ret = get_zero<float>();
+  if( cublasSdot(handle, arr1->get_number_of_elements(),
+		 arr1->get_data_ptr(), 1, 
+		 arr2->get_data_ptr(), 1,
+		 &ret) != CUBLAS_STATUS_SUCCESS ) 
+    {
+      cout << "cuNDA_dot: inner product calculating using cublas failed" << std::endl;
+    }
+  
+  return ret;
+}
+
+template<> typename double_complext::Type
+_dot( cuNDArray<typename double_complext::Type>* arr1, cuNDArray<typename double_complext::Type>* arr2, cublasHandle_t handle )
+{
+  typename double_complext::Type ret = get_zero<double_complext::Type>();
+  
+  if( cublasZdotc(handle, arr1->get_number_of_elements(),
+		  (const cuDoubleComplex*) arr1->get_data_ptr(), 1, 
+		  (const cuDoubleComplex*) arr2->get_data_ptr(), 1,
+		  (cuDoubleComplex*) &ret) != CUBLAS_STATUS_SUCCESS ) 
+    {
+      cout << "cuNDA_dot: inner product calculating using cublas failed" << std::endl;
+    }
+  
+  return ret;
+}
+
+template<> double 
+_dot( cuNDArray<double>* arr1, cuNDArray<double>* arr2, cublasHandle_t handle )
+{
+  double ret = get_zero<double>();
+  if( cublasDdot(handle, arr1->get_number_of_elements(),
+		 arr1->get_data_ptr(), 1, 
+		 arr2->get_data_ptr(), 1,
+		 &ret) != CUBLAS_STATUS_SUCCESS ) 
+    {
+      cout << "cuNDA_dot: inner product calculating using cublas failed" << std::endl;
+    }
+  
+  return ret;
+}
+
+template<class T> T
+cuNDA_dot( cuNDArray<T>* arr1, cuNDArray<T>* arr2, cublasHandle_t handle )
+{
+  if (arr1->get_number_of_elements() != arr2->get_number_of_elements()) {
+    cout << "cuNDA_dot: array dimensions mismatch" << std::endl;
+    return get_zero<T>();
+  }
+
+  return _dot<T>( arr1, arr2, handle );  
+}
+
+template<class T> bool 
+_axpy( T a, cuNDArray<T>* x, cuNDArray<T>* y, cublasHandle_t handle );
+
+template<> bool 
+_axpy( float_complext::Type a, cuNDArray<float_complext::Type>* x, cuNDArray<float_complext::Type>* y, cublasHandle_t handle )
+{
+  if( cublasCaxpy( handle, x->get_number_of_elements(), (cuComplex*) &a,
+		   (cuComplex*) x->get_data_ptr(), 1, 
+		   (cuComplex*) y->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
+    {
+      cout << "cuNDA_dot: axpy calculating using cublas failed" << std::endl;
+      return false;
+    }
+  
+  return true;
+} 
+
+template<> bool
+_axpy( float a, cuNDArray<float>* x, cuNDArray<float>* y, cublasHandle_t handle )
+{
+  if( cublasSaxpy( handle, x->get_number_of_elements(), &a,
+		   x->get_data_ptr(), 1, 
+		   y->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
+    {
+      cout << "cuNDA_dot: axpy calculating using cublas failed" << std::endl;
+      return false;
+    }
+  
+  return true;
+} 
+
+template<> bool 
+_axpy( double_complext::Type a, cuNDArray<double_complext::Type>* x, cuNDArray<double_complext::Type>* y, cublasHandle_t handle )
+{
+  if( cublasZaxpy( handle, x->get_number_of_elements(), (cuDoubleComplex*) &a,
+		   (cuDoubleComplex*) x->get_data_ptr(), 1, 
+		   (cuDoubleComplex*) y->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
+    {
+      cout << "cuNDA_dot: axpy calculating using cublas failed" << std::endl;
+      return false;
+    }
+  
+  return true;
+} 
+
+template<> bool
+_axpy( double a, cuNDArray<double>* x, cuNDArray<double>* y, cublasHandle_t handle )
+{
+  if( cublasDaxpy( handle, x->get_number_of_elements(), &a,
+		   x->get_data_ptr(), 1, 
+		   y->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
+    {
+      cout << "cuNDA_dot: axpy calculating using cublas failed" << std::endl;
+      return false;
+    }
+  
+  return true;
+} 
+
+template<class T> bool
+cuNDA_axpy( T a, cuNDArray<T>* x, cuNDArray<T>* y, cublasHandle_t handle )
+{
+  if (x->get_number_of_elements() != y->get_number_of_elements()) {
+    cout << "cuNDA_dot: axpy array dimensions mismatch" << std::endl;
+    return false;
+  }
+  
+  return _axpy<T>( a, x, y, handle );
+}
+
+template<class T> bool 
+_scal( T a, cuNDArray<T>* x, cublasHandle_t handle );
+
+template<> bool
+_scal( float_complext::Type a, cuNDArray<float_complext::Type>* x, cublasHandle_t handle) 
+{
+  if( cublasCscal( handle, x->get_number_of_elements(), (cuComplex*) &a,
+		   (cuComplex*) x->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
+    {
+      cout << "ccuNDA_scal: calculating using cublas failed" << std::endl;
+      return false;
+    }
+
+  return true;
+}
+
+template<> bool
+_scal( float a, cuNDArray<float>* x, cublasHandle_t handle ) 
+{
+  if( cublasSscal( handle, x->get_number_of_elements(), &a,
+		   x->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
+    {
+      cout << "ccuNDA_scal: calculating using cublas failed" << std::endl;
+      return false;
+    }
+
+  return true;
+}
+
+template<> bool
+_scal( double_complext::Type a, cuNDArray<double_complext::Type>* x, cublasHandle_t handle) 
+{
+  if( cublasZscal( handle, x->get_number_of_elements(), (cuDoubleComplex*) &a,
+		   (cuDoubleComplex*) x->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
+    {
+      cout << "ccuNDA_scal: calculating using cublas failed" << std::endl;
+      return false;
+    }
+
+  return true;
+}
+
+template<> bool
+_scal( double a, cuNDArray<double>* x, cublasHandle_t handle ) 
+{
+  if( cublasDscal( handle, x->get_number_of_elements(), &a,
+		   x->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
+    {
+      cout << "ccuNDA_scal: calculating using cublas failed" << std::endl;
+      return false;
+    }
+
+  return true;
+}
+
+template<class T> bool
+cuNDA_scal( T a, cuNDArray<T>* x, cublasHandle_t handle )
+{
+  return _scal<T>( a, x, handle );
 }
 
 // cuNDArray to std::vector
@@ -967,13 +1175,13 @@ template void cuNDA_reciprocal<typename complext<float>::Type>(cuNDArray<typenam
 template bool cuNDA_rss_normalize<float, float>(cuNDArray<float>*, unsigned int);
 template bool cuNDA_rss_normalize<float, typename complext<float>::Type>(cuNDArray<typename complext<float>::Type>*, unsigned int);
 
-template void cuNDA_scale<float, float>(float, cuNDArray<float>*);
-template void cuNDA_scale<float, vector_td<float,2> >(float, cuNDArray<vector_td<float,2> >*);
-template void cuNDA_scale<vector_td<float,2>, vector_td<float,2> >(vector_td<float,2>, cuNDArray<vector_td<float,2> >*);
-
 template bool cuNDA_scale<float, float>(cuNDArray<float>*, cuNDArray<float>*);
 template bool cuNDA_scale<float, typename complext<float>::Type>(cuNDArray<float>*, cuNDArray<typename complext<float>::Type>*);
 template bool cuNDA_scale<typename complext<float>::Type, typename complext<float>::Type>(cuNDArray<typename complext<float>::Type>*, cuNDArray<typename complext<float>::Type>*);
+
+template void cuNDA_scale<float, float>(float, cuNDArray<float>*);
+template void cuNDA_scale<float, typename complext<float>::Type>(float, cuNDArray<typename complext<float>::Type>*);
+template void cuNDA_scale<typename complext<float>::Type, typename complext<float>::Type>(typename complext<float>::Type, cuNDArray<typename complext<float>::Type>*);
 
 template bool cuNDA_axpy<float, float>( float, cuNDArray<float>*, cuNDArray<float>*);
 template bool cuNDA_axpy<float, typename complext<float>::Type>( float, cuNDArray<typename complext<float>::Type>*, cuNDArray<typename complext<float>::Type>*);
@@ -981,6 +1189,15 @@ template bool cuNDA_axpy<float, typename complext<float>::Type>( float, cuNDArra
 template bool cuNDA_axpby<float, float, float>( cuNDArray<float>*, cuNDArray<float>*, cuNDArray<float>*, cuNDArray<float>*);
 template bool cuNDA_axpby<float, float, typename complext<float>::Type>( cuNDArray<float>*, cuNDArray<typename complext<float>::Type>*, cuNDArray<float>*, cuNDArray<typename complext<float>::Type>*);
 template bool cuNDA_axpby<typename complext<float>::Type, typename complext<float>::Type, typename complext<float>::Type>( cuNDArray<typename complext<float>::Type>*, cuNDArray<typename complext<float>::Type>*, cuNDArray<typename complext<float>::Type>*, cuNDArray<typename complext<float>::Type>*);
+
+template float cuNDA_dot<float>( cuNDArray<float>*, cuNDArray<float>*, cublasHandle_t );
+template float_complext::Type cuNDA_dot<float_complext::Type>( cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, cublasHandle_t );
+
+template bool cuNDA_axpy<float>( float, cuNDArray<float>*, cuNDArray<float>*, cublasHandle_t );
+template bool cuNDA_axpy<typename float_complext::Type>( typename float_complext::Type, cuNDArray<typename float_complext::Type>*, cuNDArray<typename float_complext::Type>*, cublasHandle_t );
+
+template bool cuNDA_scal<float>( float, cuNDArray<float>*, cublasHandle_t );
+template bool cuNDA_scal<typename float_complext::Type>( typename float_complext::Type, cuNDArray<typename float_complext::Type>*, cublasHandle_t );
 
 // Instanciation -- double precision
 
@@ -1083,8 +1300,8 @@ template bool cuNDA_rss_normalize<double, double>(cuNDArray<double>*, unsigned i
 template bool cuNDA_rss_normalize<double, typename complext<double>::Type>(cuNDArray<typename complext<double>::Type>*, unsigned int);
 
 template void cuNDA_scale<double, double>(double, cuNDArray<double>*);
-template void cuNDA_scale<double, vector_td<double,2> >(double, cuNDArray<vector_td<double,2> >*);
-template void cuNDA_scale<vector_td<double,2>, vector_td<double,2> >(vector_td<double,2>, cuNDArray<vector_td<double,2> >*);
+template void cuNDA_scale<double, typename complext<double>::Type>(double, cuNDArray<typename complext<double>::Type>*);
+template void cuNDA_scale<typename complext<double>::Type, typename complext<double>::Type>(typename complext<double>::Type, cuNDArray<typename complext<double>::Type>*);
 
 template bool cuNDA_scale<double, double>(cuNDArray<double>*, cuNDArray<double>*);
 template bool cuNDA_scale<double, typename complext<double>::Type>(cuNDArray<double>*, cuNDArray<typename complext<double>::Type>*);
@@ -1096,3 +1313,12 @@ template bool cuNDA_axpy<double, typename complext<double>::Type>( double, cuNDA
 template bool cuNDA_axpby<double, double, double>( cuNDArray<double>*, cuNDArray<double>*, cuNDArray<double>*, cuNDArray<double>*);
 template bool cuNDA_axpby<double, double, typename complext<double>::Type>( cuNDArray<double>*, cuNDArray<typename complext<double>::Type>*, cuNDArray<double>*, cuNDArray<typename complext<double>::Type>*);
 template bool cuNDA_axpby<typename complext<double>::Type, typename complext<double>::Type, typename complext<double>::Type>( cuNDArray<typename complext<double>::Type>*, cuNDArray<typename complext<double>::Type>*, cuNDArray<typename complext<double>::Type>*, cuNDArray<typename complext<double>::Type>*);
+
+template double cuNDA_dot<double>( cuNDArray<double>*, cuNDArray<double>*, cublasHandle_t );
+template double_complext::Type cuNDA_dot<double_complext::Type>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, cublasHandle_t );
+
+template bool cuNDA_axpy<double>( double, cuNDArray<double>*, cuNDArray<double>*, cublasHandle_t );
+template bool cuNDA_axpy<typename double_complext::Type>( typename double_complext::Type, cuNDArray<typename double_complext::Type>*, cuNDArray<typename double_complext::Type>*, cublasHandle_t );
+
+template bool cuNDA_scal<double>( double, cuNDArray<double>*, cublasHandle_t );
+template bool cuNDA_scal<typename double_complext::Type>( typename double_complext::Type, cuNDArray<typename double_complext::Type>*, cublasHandle_t );

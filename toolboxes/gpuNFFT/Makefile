@@ -1,7 +1,7 @@
 GADGETRONHOME=../..
 include $(GADGETRONHOME)/Makefile.inc
 
-DLLNAME=cuNFFT
+DLLNAME=gpunfft
 
 HEADERFILES=\
 	NFFT.h

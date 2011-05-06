@@ -1,24 +1,29 @@
-GADGETRONHOME=../..
+GADGETRONHOME=../../..
 include $(GADGETRONHOME)/Makefile.inc
 
-EXECUTABLE=gputestapp
+EXECUTABLE=radial_Sense
+
+HEADERFILES=\
+        cgOperatorSense.h \
+	cgOperatorNonCartesianSense.h
 
 APPSOURCES=\
 	main.cpp
+
 CUDASOURCES=\
 	cgOperatorSense.cu \
-	cgOperatorCartesianSense.cu \
 	cgOperatorNonCartesianSense.cu
 
 APPOBJECTS=$(APPSOURCES:.cpp=.o)
 CUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
-APPLDFLAGS += -lgpucore -lgpunfft -lgpucg
+APPLDFLAGS += -lhostutils -lgpucore -lgpunfft -lgpucsm -lgpucg
 
 test: main.o $(LIBCUDAOBJECTS)
 	$(CXX) $(APPOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) $(APPLDFLAGS) -o $(EXECUTABLE) 
 	mkdir -p $(GADGETRONHOME)/bin
 	cp $(EXECUTABLE) $(GADGETRONHOME)/bin/
+	cp $(HEADERFILES) $(GADGETRONHOME)/inc/
 
 %.cpp.o: %.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
@@ -31,7 +36,3 @@ clean:
 	rm -rf $(EXECUTABLE)
 	rm -rf $(APPOBJECTS)
 	rm -rf $(CUDAOBJECTS)
-#	rm -rf *.cplx
-#	rm -rf *.real
-
-
