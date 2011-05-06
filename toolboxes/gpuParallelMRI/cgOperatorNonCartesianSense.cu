@@ -114,7 +114,7 @@ cgOperatorNonCartesianSense<REAL,D>::set_trajectory( cuNDArray<_reald>* trajecto
 {
   // TEMPORARY
   if( trajectory && trajectory->get_number_of_dimensions() > 1 ){
-    printf("\nTEMPORARILY the trajectory array must be one-dimensional");
+    std::cout << "\nTEMPORARILY the trajectory array must be one-dimensional" << std::endl;
     return -1;
   }
 
