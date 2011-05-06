@@ -7,10 +7,6 @@ DIRS=\
 	toolboxes/ndarray \
 	toolboxes/gpucore \
 	toolboxes/gpuNFFT \
-<<<<<<< HEAD
-=======
-	toolboxes/gpuParallelMRI \
->>>>>>> c6d0956fc957b1c9326002e3738bb338c1096c65
 	toolboxes/gpucg \
 	toolboxes/gpuParallelMRI \
 	apps/gputest \
