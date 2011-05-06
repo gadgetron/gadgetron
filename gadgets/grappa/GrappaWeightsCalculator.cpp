@@ -2,6 +2,10 @@
 #include "GadgetContainerMessage.h"
 
 #include "Gadgetron.h"
+#include "b1_map.h"
+#include "hoNDArray_fileio.h"
+#include "cuNDFFT.h"
+#include "htgrappa.h"
 
 template <class T> class GrappaWeightsDescription
 {
@@ -47,8 +51,69 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)
        return -3;
      }
 
-     //TODO: call htgrappa weights GPU function
-     GADGET_DEBUG1("This is where we should be calculating the GRAPPA weights\n");
+     hoNDArray<float_complext::Type>* host_data = 
+       reinterpret_cast< hoNDArray<float_complext::Type>* >(mb2->getObjectPtr());
+
+
+     // Copy the image data to the device
+     cuNDArray<float_complext::Type> device_data(*host_data);
+     device_data.squeeze();
+     
+     std::vector<unsigned int> ftdims(2,0); ftdims[1] = 1;
+     cuNDFFT ft;
+
+     //Go to image space
+     ft.ifft(reinterpret_cast< cuNDArray<cuFloatComplex>* >(&device_data),ftdims);
+
+     // Compute CSM
+     auto_ptr< cuNDArray<float_complext::Type> > csm = estimate_b1_map<float,2>( &device_data );
+
+     //Go back to kspace
+     ft.fft(reinterpret_cast< cuNDArray<cuFloatComplex>* >(&device_data),ftdims);
+
+
+     //TODO: Change dimensions of this to deal with uncombinex channels
+     cuNDArray<cuFloatComplex> unmixing_dev;
+     if (!unmixing_dev.create(csm.get()->get_dimensions())) {
+       GADGET_DEBUG1("Unable to allocate device memory for unmixing coeffcients\n");
+       return GADGET_FAIL;
+     }
+
+     {
+       //GPUTimer unmix_timer("GRAPPA Unmixing");
+       std::vector<unsigned int> kernel_size;
+
+       //TODO: Add parameters for kernel size
+       kernel_size.push_back(5);
+       kernel_size.push_back(4);
+       if ( htgrappa_calculate_grappa_unmixing(reinterpret_cast< cuNDArray<cuFloatComplex>* >(&device_data), 
+					       reinterpret_cast< cuNDArray<cuFloatComplex>* >(csm.get()),
+					       mb1->getObjectPtr()->acceleration_factor,
+					       kernel_size,
+					       &unmixing_dev) < 0) {
+	 GADGET_DEBUG1("GRAPPA unmixing coefficients calculation failed\n");
+	 return GADGET_FAIL;
+       }
+     }
+
+     if (mb1->getObjectPtr()->destination) {
+       hoNDArray<cuFloatComplex> unmixing_host = unmixing_dev.to_host();
+
+       //TODO: This reshaping needs to take uncombined channels into account
+       if (unmixing_host.reshape(mb2->getObjectPtr()->get_dimensions()) < 0) {
+	 GADGET_DEBUG1("Failed to reshape GRAPPA weights\n");
+	 return GADGET_FAIL;
+       }
+
+       if (mb1->getObjectPtr()->destination->update(reinterpret_cast<hoNDArray<std::complex<float> >* >(&unmixing_host)) < 0) {
+	 GADGET_DEBUG1("Update of GRAPPA weights failed\n");
+	 return GADGET_FAIL;
+       }
+     } else {
+       GADGET_DEBUG1("Undefined GRAPPA weights destination\n");
+       return GADGET_FAIL;
+     }
+     
 
      mb->release();
    }

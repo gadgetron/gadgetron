@@ -324,8 +324,8 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
     //write_cuNDArray_to_disk(&AHA,"AHA.cplx");
 
     {
-      GPUTimer timer("GRAPPA cublas gemm");
-    stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
+      //GPUTimer timer("GRAPPA cublas gemm");
+      stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
 		       n,coils,m,&alpha,
 		       system_matrix.get_data_ptr(), m,
 		       b.get_data_ptr(), m,
