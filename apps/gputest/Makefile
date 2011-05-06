@@ -5,15 +5,12 @@ EXECUTABLE=gputestapp
 
 APPSOURCES=\
 	main.cpp
-CUDASOURCES=\
-	cgOperatorSense.cu \
-	cgOperatorCartesianSense.cu \
-	cgOperatorNonCartesianSense.cu
+CUDASOURCES=
 
 APPOBJECTS=$(APPSOURCES:.cpp=.o)
 CUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
-APPLDFLAGS += -lgpucore -lgpunfft -lgpucg
+APPLDFLAGS += -lgpucore -lgpunfft -lgpucg -lgpuparallelmri
 
 test: main.o $(LIBCUDAOBJECTS)
 	$(CXX) $(APPOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) $(APPLDFLAGS) -o $(EXECUTABLE) 

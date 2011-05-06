@@ -1,0 +1,54 @@
+#//////////////////////////////////////////////////////////////////////////////
+#   -- MAGMA (version 1.0) --
+#      Univ. of Tennessee, Knoxville
+#      Univ. of California, Berkeley
+#      Univ. of Colorado, Denver
+#      November 2010
+#//////////////////////////////////////////////////////////////////////////////
+
+include $(MAGMA_DIR)/make.inc
+-include $(MAGMA_DIR)/make.inc.${MACHINE}
+
+#
+# Set default values if they are not set in make.inc
+#
+PGIFORTRAN   ?= 0
+GPU_TARGET   ?= 1
+LIBMAGMA     ?= $(MAGMA_DIR)/lib/libmagma.a
+LIBMAGMABLAS ?= $(MAGMA_DIR)/lib/libmagmablas.a
+
+prefix ?= ./install
+#prefix :=`($(prefix) && pwd)`
+
+#
+# Quark
+#
+QUARKDIR ?= $(MAGMA_DIR)/quark
+INCQUARK  = -I$(QUARKDIR)/include
+#LIBQUARK  = -L$(QUARKDIR)/lib -lquark
+
+#
+# NVCC options for the different cards
+#
+TESLAOPT = -arch sm_13 -DGPUSHMEM=130 -gencode arch=compute_13,code=compute_13 -gencode arch=compute_10,code=compute_10 
+FERMIOPT = -arch sm_20 -DGPUSHMEM=200
+
+ifeq (${GPU_TARGET}, 0)
+	GPUOPT = ${TESLAOPT}
+	OPTS   += -DGPUSHMEM=130
+	LDOPTS += -DGPUSHMEM=130
+endif
+
+ifeq (${GPU_TARGET}, 1)
+	GPUOPT = ${FERMIOPT}
+	OPTS   += -DGPUSHMEM=200
+	LDOPTS += -DGPUSHMEM=200
+endif
+
+
+LIB := $(LIBQUARK) $(LIB)
+INC += -I../include $(INCQUARK)
+
+LIBEXT = $(LIBDIR) $(LIB)
+
+-include $(MAGMA_DIR)/Makefile.gen

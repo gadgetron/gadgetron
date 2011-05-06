@@ -1,1 +1,0 @@
-../standalone/radial_sense/cgOperatorNonCartesianSense.cu

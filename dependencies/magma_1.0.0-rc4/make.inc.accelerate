@@ -1,0 +1,38 @@
+#//////////////////////////////////////////////////////////////////////////////
+#   -- MAGMA (version 1.0) --
+#      Univ. of Tennessee, Knoxville
+#      Univ. of California, Berkeley
+#      Univ. of	Colorado, Denver
+#      November 2010
+#
+#      Contributed by: Massimiliano Fatica (NVIDIA)
+#//////////////////////////////////////////////////////////////////////////////
+
+#
+# GPU_TARGET specifies for which GPU you want to compile MAGMA
+#      0: Tesla family
+#      1: Fermi Family
+#
+	GPU_TARGET = 0
+
+	CC        = gcc
+	NVCC      = nvcc
+	FORT      = g95
+
+	ARCH      = ar
+	ARCHFLAGS = cr
+	RANLIB    = ranlib
+
+	OPTS      = -O3 -DADD_
+	NVOPTS    = -DADD_ --compiler-options -fno-strict-aliasing -DUNIX -O3 
+        LDOPTS    = -fPIC
+
+	LIB       = -framework Accelerate -lcublas -lcudart -lm -lstdc++.6
+
+	CUDADIR   = /usr/local/cuda
+
+	LIBDIR    = -L/usr/local/cuda/lib 
+	INC       = -I../include -I$(CUDADIR)/include
+	
+	LIBMAGMA     = ../lib/libmagma.a
+	LIBMAGMABLAS = ../lib/libmagmablas.a

@@ -4,12 +4,12 @@
 #include <complex>
 
 #include "Gadget.h"
-#include "NDArray.h"
+#include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
 
 
 class ImageWriterGadget :
-public Gadget2<GadgetMessageImage, NDArray< std::complex<float> > >
+public Gadget2<GadgetMessageImage, hoNDArray< std::complex<float> > >
 {
  public:
   GADGET_DECLARE(ImageWriterGadget)
@@ -20,7 +20,7 @@ public Gadget2<GadgetMessageImage, NDArray< std::complex<float> > >
 
  protected:
   virtual int process( GadgetContainerMessage< GadgetMessageImage>* m1,
-		       GadgetContainerMessage< NDArray< std::complex<float> > >* m2);
+		       GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
   long calls_;
 

@@ -161,6 +161,10 @@ std::auto_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
   return std::auto_ptr< cuNDArray<T> >(rho);
 }
 
+//
+// Instantiation
+//
+
 template class cuCG<float, float>;
 //template class cuCG<float2>;
 template class cuCG<float, float_complext::Type>;

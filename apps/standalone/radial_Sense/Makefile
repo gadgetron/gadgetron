@@ -3,27 +3,22 @@ include $(GADGETRONHOME)/Makefile.inc
 
 EXECUTABLE=radial_Sense
 
-HEADERFILES=\
-        cgOperatorSense.h \
-	cgOperatorNonCartesianSense.h
+HEADERFILES=
 
 APPSOURCES=\
 	main.cpp
 
-CUDASOURCES=\
-	cgOperatorSense.cu \
-	cgOperatorNonCartesianSense.cu
+CUDASOURCES=
 
 APPOBJECTS=$(APPSOURCES:.cpp=.o)
 CUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
-APPLDFLAGS += -lhostutils -lgpucore -lgpunfft -lgpucsm -lgpucg
+APPLDFLAGS += -lhostutils -lgpucore -lgpunfft -lgpucg -lgpuparallelmri
 
 test: main.o $(LIBCUDAOBJECTS)
 	$(CXX) $(APPOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) $(APPLDFLAGS) -o $(EXECUTABLE) 
 	mkdir -p $(GADGETRONHOME)/bin
 	cp $(EXECUTABLE) $(GADGETRONHOME)/bin/
-	cp $(HEADERFILES) $(GADGETRONHOME)/inc/
 
 %.cpp.o: %.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@

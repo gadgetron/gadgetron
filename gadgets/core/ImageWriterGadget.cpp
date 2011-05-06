@@ -4,7 +4,7 @@
 
 int ImageWriterGadget ::
 process( GadgetContainerMessage< GadgetMessageImage>* m1,
-	 GadgetContainerMessage< NDArray< std::complex<float> > >* m2)
+	 GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
     ACE_DEBUG( (LM_DEBUG, ACE_TEXT("ImageWriterGadget writing image\n")) );
 

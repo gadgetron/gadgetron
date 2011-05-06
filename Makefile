@@ -7,15 +7,15 @@ DIRS=\
 	toolboxes/ndarray \
 	toolboxes/gpucore \
 	toolboxes/gpuNFFT \
-	toolboxes/gpuCSM \
 	toolboxes/gpucg \
-	apps/standalone/radial_sense \
+	toolboxes/gpuParallelMRI \
 	apps/gputest \
+	apps/standalone/radial_sense \
 	apps/gadgetron \
 	apps/gadgetdatasender \
-	apps/htgrappa \
 	gadgets/core \
-	gadgets/gpucg
+	gadgets/gpucg \
+	gadgets/grappa
 
 all: $(DIRS)
 

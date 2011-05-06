@@ -1,0 +1,37 @@
+==================
+MAGMA README FILE
+==================
+
+VERSION 0.1  :  September 2009
+VERSION 0.2  :   November 2009
+VERSION 1.0  :   November 2010 
+
+* To INSTALL MAGMA, modify the make.inc file to indicate where 
+  CUDA, CPU BLAS, and LAPACK are installed on your system. Examples
+  are given in make.inc.mkl, make.inc.acml, make.inc.goto, and 
+  make.inc.atlas, showing how to link correspondingly to MKL, ACML,
+  GOTO BLAS or ATLAS BLAS. After proper modification of the make.inc
+  file, typing 'make', will create 
+   1) the libmagma.a and libmagmablas.a libraries in directory 'lib'
+   2) testing drivers in directory 'testing'.
+
+* To TEST MAGMA, go to directory 'testing'. Provided are a number of
+  drivers testing different routines. These drivers are also useful
+  as examples on how to use MAGMA, as well as to benchmark the performance.
+ 
+* To TUNE MAGMA, you can modify the blocking factors for the algorithms of
+  interest in file 'src/get_nb.cpp'. The default values are tuned for 
+  general Tesla and Fermi GPUs. If you have a Fermi (C2050), you can also 
+  compare your performance to what we get, given in file 
+  'testing/results_fermi.txt', as an easy check for your installation.
+
+For more INFORMATION, please refer to the MAGMA homepage and user forum:
+  
+  http://icl.cs.utk.edu/magma/
+  http://icl.cs.utk.edu/magma/forum/
+
+The MAGMA project supports the package in the sense that reports of 
+errors or poor performance will gain immediate attention from the 
+developers. Such reports, descriptions of interesting applications, 
+and other comments should be posted on the MAGMA user forum.
+

@@ -1,20 +1,30 @@
 #ifndef FFT_H
 #define FFT_H
 
+#include <ace/Synch.h>
+
 #include <iostream>
-
 #include <fftw3.h>
-
 #include "hoNDArray.h"
 
+/** 
+    Generic class for Fourier Transforms
+    This class is a singleton because the planning
+    and memory allocation routines of FFTW are NOT 
+    threadsafe.
+    
+    Access it for instance with
+
+    FFT<float>::instance()
+*/
 template <class T> class FFT
 {
 
 public:
-  FFT() { set_function_pointers(); }
-  
-  virtual ~FFT() { fftw_cleanup_ptr_(); }
-
+  static FFT<T>* instance() {
+    if (!instance_) instance_ = new FFT<T>();
+    return instance_;
+  }
 
   void fft(hoNDArray< std::complex<T> >* input, unsigned int dim_to_transform)
   {
@@ -46,6 +56,15 @@ public:
   }
 
 protected:
+  //We are making these protected since this class is a singleton
+  FFT()
+    : mutex_("FFTWThreadMutex")
+    { 
+      set_function_pointers(); 
+    }
+
+  virtual ~FFT() { fftw_cleanup_ptr_(); }
+
   void fft_int(hoNDArray< std::complex<T> >* input, unsigned int dim_to_transform, int sign)
   {
 
@@ -115,24 +134,31 @@ protected:
     
     
     //Allocate storage and make plan
-    fft_storage = (T*)fftw_malloc_ptr_(sizeof(T)*length*2);
-    if (fft_storage == 0)
-      {
-	std::cout << "Failed to allocate buffer for FFT" << std::endl;
+    {
+      ACE_Guard<ACE_Thread_Mutex> guard(mutex_);
+      if (!guard.locked()) {
 	return;
       }
-    fft_buffer = (T*)fft_storage;
-    
-    unsigned planner_flags = FFTW_MEASURE | FFTW_DESTROY_INPUT;
-    
-    fft_plan = fftw_plan_dft_1d_ptr_(length, fft_storage, fft_storage, sign, planner_flags);
 
-    if (fft_plan == 0)
-      {
-	fftw_free_ptr_(fft_storage);
-	std::cout << "Failed to create plan for FFT" << std::endl;
-	return;
+      fft_storage = (T*)fftw_malloc_ptr_(sizeof(T)*length*2);
+      if (fft_storage == 0)
+	{
+	  std::cout << "Failed to allocate buffer for FFT" << std::endl;
+	  return;
       }
+      fft_buffer = (T*)fft_storage;
+    
+      unsigned planner_flags = FFTW_MEASURE | FFTW_DESTROY_INPUT;
+    
+      fft_plan = fftw_plan_dft_1d_ptr_(length, fft_storage, fft_storage, sign, planner_flags);
+      
+      if (fft_plan == 0)
+	{
+	  fftw_free_ptr_(fft_storage);
+	  std::cout << "Failed to create plan for FFT" << std::endl;
+	  return;
+	}
+    }
     
     //Grab address of data
     data_ptr = reinterpret_cast<T*>(input->get_data_ptr());
@@ -185,16 +211,22 @@ protected:
       } //Loop over chunks
     
     //clean up
-    if (fft_plan != 0)
-      {
-	fftw_destroy_plan_ptr_(fft_plan);
+    {
+      ACE_Guard<ACE_Thread_Mutex> guard(mutex_);
+      if (!guard.locked()) {
+	return;
       }
-    
-    if (fft_storage != 0)
-      {
-	fftw_free_ptr_(fft_storage);
-      }
-    
+
+      if (fft_plan != 0)
+	{
+	  fftw_destroy_plan_ptr_(fft_plan);
+	}
+      
+      if (fft_storage != 0)
+	{
+	  fftw_free_ptr_(fft_storage);
+	}
+    }
   } 
   
   void set_function_pointers();
@@ -207,6 +239,10 @@ protected:
   void  (*fftw_execute_ptr_)(void*);
   void* (*fftw_plan_dft_1d_ptr_)(int, void*, void*, int, unsigned);
   void  (*fftw_destroy_plan_ptr_)(void*);
+
+  static FFT<T>* instance_;
+  ACE_Thread_Mutex mutex_;
+
 };
 
 template<> void FFT<float>::set_function_pointers()
@@ -232,5 +268,7 @@ template<> void FFT<double>::set_function_pointers()
     fftw_plan_dft_1d_ptr_ = (void* (*)(int, void*, void*, int, unsigned))(&fftw_plan_dft_1d);
     fftw_destroy_plan_ptr_ = (void (*)(void*))(&fftw_destroy_plan);
 }
+
+template <class T> FFT<T>* FFT<T>::instance_ = NULL;
 
 #endif //FFT_H
