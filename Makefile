@@ -6,12 +6,11 @@ DIRS=\
 	toolboxes/ndarray \
 	toolboxes/gpucore \
 	toolboxes/gpuNFFT \
-	toolboxes/gpuCSM \
+	toolboxes/gpuParallelMRI \
 	toolboxes/gpucg \
 	apps/gputest \
 	apps/gadgetron \
 	apps/gadgetdatasender \
-	apps/htgrappa \
 	gadgets/core \
 	gadgets/gpucg \
 	gadgets/grappa
