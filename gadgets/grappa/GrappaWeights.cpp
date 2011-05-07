@@ -3,10 +3,14 @@
 template <class T> int GrappaWeights<T>::
 update(hoNDArray< std::complex<T> >* new_weights)
 {
+  /*
   ACE_Guard<ACE_Thread_Mutex> guard(mutex_);
   if (!guard.locked()) {
     return -1;
   }
+  */
+
+  mutex_.acquire();
 
   if (!weights_.dimensions_equal(*new_weights)) {
     if (!weights_.create(new_weights->get_dimensions())) {
@@ -17,6 +21,8 @@ update(hoNDArray< std::complex<T> >* new_weights)
   memcpy(weights_.get_data_ptr(), new_weights->get_data_ptr(),
 	 weights_.get_number_of_elements()*sizeof(T)*2);
   
+  mutex_.release();
+
   return 0;
 }
 
@@ -25,10 +31,14 @@ apply(hoNDArray< std::complex<T> >* data_in,
       hoNDArray< std::complex<T> >* data_out)
 {
 
+  /*
   ACE_Guard<ACE_Thread_Mutex> guard(mutex_);
   if (!guard.locked()) {
     return -1;
   }
+  */
+
+  mutex_.acquire();
 
   if (weights_.get_number_of_elements()%data_in->get_number_of_elements()) {
     return -3;
@@ -77,6 +87,7 @@ apply(hoNDArray< std::complex<T> >* data_in,
     }
   }
 
+  mutex_.release();
   return 0;
 }
 

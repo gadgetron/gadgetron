@@ -85,3 +85,12 @@ Compiling FFTW as universal library
 8. make clean; make
 9. sudo make install
 
+-------
+Tools for Mac:
+
+- gfortran:
+http://gcc.gnu.org/wiki/GFortranBinaries#MacOS
+
+-on MAGMA
+in make.inc, change to Tesla architecture
+remove "-zmuldefs"
