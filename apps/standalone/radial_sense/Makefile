@@ -1,7 +1,7 @@
 GADGETRONHOME=../../..
 include $(GADGETRONHOME)/Makefile.inc
 
-EXECUTABLE=radial_Sense
+EXECUTABLE=radial_sense
 
 HEADERFILES=
 

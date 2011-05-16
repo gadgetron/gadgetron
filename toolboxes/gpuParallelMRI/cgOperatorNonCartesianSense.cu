@@ -98,8 +98,7 @@ cgOperatorNonCartesianSense<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArra
 template<class REAL, unsigned int D> int 
 cgOperatorNonCartesianSense<REAL,D>::setup( _uintd matrix_size, _uintd matrix_size_os, REAL W )
 {  
-  _uintd fixed_dims;
-  to_vector_td<unsigned int,D>( fixed_dims, 0 );
+  _uintd fixed_dims = to_vector_td<unsigned int,D>(0);
   
   if( !plan_.setup( matrix_size, matrix_size_os, fixed_dims, W )) {
     std::cerr << "cgOperatorNonCartesianSense: failed to setup plan" << std::endl;

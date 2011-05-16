@@ -24,7 +24,7 @@ template<class REAL> __inline__ __device__ void
 NFFT_output( unsigned int number_of_samples, unsigned int number_of_batches,
 	     vector_td<REAL,2> *samples,
 	     unsigned int double_warp_size_power,
-	     unsigned int globalThreadId, unsigned int sharedMemFirstSampleIdx )
+	     unsigned int globalThreadId, unsigned int sharedMemFirstSampleIdx, bool accumulate )
 {
   
   REAL *shared_mem = (REAL*) _shared_mem;
@@ -33,14 +33,18 @@ NFFT_output( unsigned int number_of_samples, unsigned int number_of_batches,
     vector_td<REAL,2> sample_value;
     sample_value.vec[0] = shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)];
     sample_value.vec[1] = shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)+warpSize];
-    samples[batch*number_of_samples+globalThreadId] = sample_value;
+
+    unsigned int out_idx = batch*number_of_samples+globalThreadId;
+
+    if( accumulate ) sample_value += samples[out_idx];
+    samples[out_idx] = sample_value;
   }
 }
 
 template<unsigned int D> __inline__ __device__ void
 resolve_wrap( vector_td<int,D> &grid_position, vector_td<int,D> &matrix_size_os )
 {
-  vector_td<int,D> zero; to_vector_td<int,D>(zero,0);
+  vector_td<int,D> zero = to_vector_td<int,D>(0);
   grid_position += (component_wise_mul<int,D>(vector_less<int,D>(grid_position, zero), matrix_size_os));
   grid_position -= (component_wise_mul<int,D>(vector_greater_equal<int,D>(grid_position, matrix_size_os), matrix_size_os));
 }
@@ -56,9 +60,9 @@ NFFT_iterate_body( REAL alpha, REAL beta, REAL W,
 {
       
   // Calculate the distance between current sample and the grid cell
-  vector_td<REAL,D> grid_position_real; to_reald<REAL,int,D>(grid_position_real, grid_position);
+  vector_td<REAL,D> grid_position_real = to_reald<REAL,int,D>(grid_position);
   vector_td<REAL,D> delta = abs(sample_position-grid_position_real);
-  vector_td<REAL,D> half_W_vec; to_vector_td<REAL,D>( half_W_vec, half_W );
+  vector_td<REAL,D> half_W_vec =to_vector_td<REAL,D>(half_W );
   
   // If cell too distant from sample then move on to the next cell
   //if( weak_greater(delta, half_W_vec ))
@@ -185,16 +189,16 @@ NFFT_convolve( REAL alpha, REAL beta, REAL W,
   
   // Sample position to convolve onto
   // Computed in preprocessing, which included a wrap zone. Remove this wrapping.
-  vector_td<REAL,D> half_wrap_real; to_reald<REAL,unsigned int,D>(half_wrap_real, matrix_size_wrap>>1);
+  vector_td<REAL,D> half_wrap_real = to_reald<REAL,unsigned int,D>(matrix_size_wrap>>1);
   vector_td<REAL,D> sample_position = traj_positions[globalThreadId]-half_wrap_real;
   
   // Half the kernel width
-  vector_td<REAL,D> half_W_vec; to_vector_td<REAL,D>( half_W_vec, half_W );
+  vector_td<REAL,D> half_W_vec = to_vector_td<REAL,D>( half_W );
   
   // Limits of the subgrid to consider
-  vector_td<REAL,D> non_fixed_dims_real; to_reald<REAL,unsigned int,D>(non_fixed_dims_real,non_fixed_dims);
-  vector_td<int,D> lower_limit; to_intd<REAL,D>(lower_limit, ceil(sample_position-component_wise_mul<REAL,D>(half_W_vec,non_fixed_dims_real)));
-  vector_td<int,D> upper_limit; to_intd<REAL,D>(upper_limit, floor(sample_position+component_wise_mul<REAL,D>(half_W_vec,non_fixed_dims_real)));
+  vector_td<REAL,D> non_fixed_dims_real = to_reald<REAL,unsigned int,D>(non_fixed_dims);
+  vector_td<int,D> lower_limit = to_intd<REAL,D>( ceil(sample_position-component_wise_mul<REAL,D>(half_W_vec,non_fixed_dims_real)));
+  vector_td<int,D> upper_limit = to_intd<REAL,D>( floor(sample_position+component_wise_mul<REAL,D>(half_W_vec,non_fixed_dims_real)));
 
   // Accumulate contributions from the grid
   NFFT_iterate<REAL>( alpha, beta, W, matrix_size_os, fixed_dims, number_of_batches, image, double_warp_size_power, 
@@ -210,7 +214,8 @@ NFFT_convolve_kernel( REAL alpha, REAL beta, REAL W,
 		      vector_td<unsigned int, D> matrix_size_os, vector_td<unsigned int, D> matrix_size_wrap, vector_td<unsigned int, D> fixed_dims,
 		      unsigned int number_of_samples, unsigned int number_of_batches,
 		      vector_td<REAL,D> *traj_positions, vector_td<REAL,2> *image, vector_td<REAL,2> *samples,
-		      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vector_td<REAL,D> matrix_size_os_real, vector_td<unsigned int, D> non_fixed_dims )
+		      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, bool accumulate,
+		      vector_td<REAL,D> matrix_size_os_real, vector_td<unsigned int, D> non_fixed_dims )
 {
 
   // Global thread number	
@@ -241,5 +246,5 @@ NFFT_convolve_kernel( REAL alpha, REAL beta, REAL W,
 			 matrix_size_os_real, non_fixed_dims, globalThreadId, sharedMemFirstSampleIdx );
   
   // Output k-space image to global memory
-  NFFT_output<REAL>( number_of_samples, number_of_batches, samples, double_warp_size_power, globalThreadId, sharedMemFirstSampleIdx );
+  NFFT_output<REAL>( number_of_samples, number_of_batches, samples, double_warp_size_power, globalThreadId, sharedMemFirstSampleIdx, accumulate );
 }

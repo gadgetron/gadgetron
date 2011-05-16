@@ -22,7 +22,7 @@ LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
 CXX=g++ -g
 ifeq ($(KERNEL), Darwin)
-CXX=g++ -m32 -arch i386
+CXX=g++ -g -m32 -arch i386
 endif 
 
 NVCC=$(CUDAHOME)/bin/nvcc

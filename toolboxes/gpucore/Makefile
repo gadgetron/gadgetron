@@ -9,7 +9,9 @@ LIBHEADERS=\
 	vector_td_utilities.h \
 	ndarray_vector_td_utilities.h \
 	cuNDArray.h \
-	cuNDFFT.h 
+	cuNDFFT.h \
+	radial_utilities.h \
+	real_utilities.h
 
 LIBSOURCES=\
 	GPUTimer.cpp \
@@ -18,7 +20,8 @@ LIBSOURCES=\
 
 CUDASOURCES= \
 	ndarray_vector_td_utilities.cu \
-	cuNDArray_kernels.cu
+	cuNDArray_kernels.cu \
+	radial_utilities.cu
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)

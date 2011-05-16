@@ -110,12 +110,3 @@ cuNDA_axpy( T a, cuNDArray<T>* x, cuNDArray<T>* y, cublasHandle_t handle );
 template<class T> bool
 cuNDA_scal( T a, cuNDArray<T>* x, cublasHandle_t handle );
 
-//
-// Conversion between vector<unsigned int> and uintd
-//
-
-template<unsigned int D> 
-std::vector<unsigned int> cuNDA_toVec( typename uintd<D>::Type dims );
-
-template<unsigned int D> 
-bool cuNDA_fromVec( std::vector<unsigned int> from, typename uintd<D>::Type &to );

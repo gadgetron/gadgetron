@@ -7,14 +7,6 @@
 #include <cmath>
 
 //
-// Get scalar limits of operation
-//
-
-template<class T> __inline__ __host__ __device__ T get_min();
-template<class T> __inline__ __host__ __device__ T get_max();
-template<class T> __inline__ __host__ __device__ T get_epsilon();
-
-//
 // Operations on real and real complex. (!!! _not_ a component-wise operation for complex numbers !!!)
 //
 
@@ -23,12 +15,6 @@ template<class T> __inline__ __host__ __device__ T get_one();
 template<class T> __inline__ __host__ __device__ T get_half();
 template<class T> __inline__ __host__ __device__ T reciprocal(const T&);
 template<class S, class T> __inline__ __host__ __device__ T mul(const S&, const T&);
-
-//
-// Math operations on reals
-//
-
-template<class REAL> __inline__ __host__ __device__ void sin_cos( REAL, REAL*, REAL* );
 
 //
 // Individual member operations
@@ -72,12 +58,14 @@ template<class REAL, unsigned int D> __inline__ __host__ __device__ vector_td<RE
 // Vectorize a scalar value
 //
 
-template<class T, unsigned int D> __inline__ __host__ __device__ void to_vector_td( vector_td<T,D> &res, const T scalar )
+template<class T, unsigned int D> __inline__ __host__ __device__ vector_td<T,D> to_vector_td( const T scalar )
 {
+  vector_td<T,D> res;
   for (unsigned int i=0; i<D; i++) {
     res.vec[i] = scalar;
   }
-} 
+  return res;
+}
 
 //
 // Grid <-> index transformations
@@ -224,25 +212,31 @@ template <class REAL> __inline__ __host__ __device__ REAL norm_squared( const ty
 // Type conversion
 //
 
-template<class T, unsigned int D> __inline__ __host__ __device__ void to_intd( vector_td<int,D> &res, const vector_td<T,D> &vec )
+template<class T, unsigned int D> __inline__ __host__ __device__ vector_td<int,D> to_intd( const vector_td<T,D> &vec )
 {
+  vector_td<int,D> res;
   for (unsigned int i=0; i<D; i++){
     res.vec[i] = (int) vec.vec[i];
   }
+  return res;
 }
 
-template<class T, unsigned int D> __inline__ __host__ __device__ void to_uintd( vector_td<unsigned int,D> &res, const vector_td<T,D> &vec )
+template<class T, unsigned int D> __inline__ __host__ __device__ vector_td<unsigned int,D> to_uintd( const vector_td<T,D> &vec )
 {
+  vector_td<unsigned int,D> res;
   for (unsigned int i=0; i<D; i++){
     res.vec[i] = (unsigned int) vec.vec[i];
   }
+  return res;
 }
 
-template<class REAL, class T, unsigned int D> __inline__ __host__ __device__ void to_reald( vector_td<REAL,D> &res, const vector_td<T,D> &vec )
+template<class REAL, class T, unsigned int D> __inline__ __host__ __device__ vector_td<REAL,D> to_reald( const vector_td<T,D> &vec )
 {
+  vector_td<REAL,D> res;
   for (unsigned int i=0; i<D; i++){
     res.vec[i] = (REAL) vec.vec[i];
   }
+  return res;
 }
 
 //
@@ -398,16 +392,6 @@ template<> __inline__ __host__ __device__ vector_td<double,2> reciprocal<vector_
   return res;
 }
 
-template<> __inline__ __host__ __device__ float get_epsilon<float>()
-{
-  return FLT_EPSILON;
-}
-
-template<> __inline__ __host__ __device__ double get_epsilon<double>()
-{
-  return DBL_EPSILON;
-}
-
 template<> __inline__ __host__ __device__ float mul<float,float>( const float &a, const float &b )
 {
   return a*b;
@@ -448,4 +432,33 @@ template<> __inline__ __host__ __device__ vector_td<double,2> mul<vector_td<doub
   res.vec[0] = a.vec[0]*b.vec[0]-a.vec[1]*b.vec[1];
   res.vec[1] = a.vec[0]*b.vec[1]+a.vec[1]*b.vec[0];
   return res;
+}
+
+//
+// Conversion between vector<unsigned int> and uintd
+//
+
+template<unsigned int D> 
+std::vector<unsigned int> uintd_to_vector( typename uintd<D>::Type _uintd )
+{
+  std::vector<unsigned int> out(D);
+  for( unsigned int i=0; i<D; i++ )
+    out[i] = _uintd.vec[i];
+  return out;
+}
+
+template<unsigned int D> 
+typename uintd<D>::Type vector_to_uintd( std::vector<unsigned int> _vector )
+{
+  typename uintd<D>::Type out;
+  if( _vector.size() < D ){
+    std::cout << "Cannot convert vector to typename uintd<D>" << std::endl;
+    return typename uintd<D>::Type();
+  }
+  
+  for( unsigned int i=0; i<D; i++ ){
+    out.vec[i] = _vector[i];
+  }
+  
+  return out;
 }

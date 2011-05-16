@@ -48,7 +48,7 @@ NFFT_H_convolve( REAL alpha, REAL beta, REAL W,
   REAL *shared_mem = (REAL*) _shared_mem;
 
   // Cell position as reald
-  vector_td<REAL,D> cell_pos; to_reald<REAL,unsigned int,D>( cell_pos, domainPos ); 
+  vector_td<REAL,D> cell_pos = to_reald<REAL,unsigned int,D>( domainPos ); 
   
   // Convolve samples onto the domain (shared memory)
   for( unsigned int i=bucket_begin[globalThreadId]; i<bucket_end[globalThreadId]; i++ )
@@ -61,7 +61,7 @@ NFFT_H_convolve( REAL alpha, REAL beta, REAL W,
       
       // Calculate the distance between the cell and the sample
       vector_td<REAL,D> delta = abs(sample_pos-cell_pos);
-      vector_td<REAL,D> half_W_vec; to_vector_td<REAL,D>( half_W_vec, half_W );
+      vector_td<REAL,D> half_W_vec = to_vector_td<REAL,D>( half_W );
   
       // Check if sample will contribute
       //if( weak_greater(delta, half_W_vec ))

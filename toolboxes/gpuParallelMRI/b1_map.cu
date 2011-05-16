@@ -1,10 +1,10 @@
 #include "b1_map.h"
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
+#include "real_utilities.h"
 #include "check_CUDA.h"
 #include "cuNDFFT.h"
 
-#include <math_functions.h>
 #include <iostream>
 
 using namespace std;
@@ -19,18 +19,6 @@ auto_ptr< cuNDArray<typename complext<REAL>::Type> > extract_csm( cuNDArray<type
 
 template<class REAL> __host__ 
 void set_phase_reference( cuNDArray<typename complext<REAL>::Type> *csm, unsigned int number_of_batches, unsigned int number_of_elements );
-
-// Overloaded sin_cos (to enable templetized code)
-
-template<>__inline__ __host__ __device__ void sin_cos( float angle, float *a, float *b )
-{
-  sincosf(angle, a,b);
-}
-
-template<>__inline__ __host__ __device__ void sin_cos( double angle, double *a, double *b )
-{
-  sincos(angle, a,b);
-}
 
 //
 // Main method

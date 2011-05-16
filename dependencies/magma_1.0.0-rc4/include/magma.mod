@@ -1,4 +1,4 @@
-GFORTRAN module version '4' created from magma.f90 on Sat May  7 13:10:38 2011
+GFORTRAN module version '4' created from magma.f90 on Fri May 13 16:23:57 2011
 MD5:ae8052aab24f23deb4ab6b64f51463c6 -- If you edit this, you'll get what you deserve.
 
 (() () () () () () () () () () () () () () () () () () () () () () ()

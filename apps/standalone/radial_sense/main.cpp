@@ -3,6 +3,7 @@
 #include "vector_td.h"
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
+#include "radial_utilities.h"
 #include "cgOperatorNonCartesianSense.h"
 #include "cuCG.h"
 #include "b1_map.h"
@@ -21,15 +22,14 @@ int main(int argc, char** argv)
   //
 
   ParameterParser parms;
-  parms.add_parameter('d', COMMAND_LINE_STRING,	1, "Sample data file name", true);
-  parms.add_parameter('w', COMMAND_LINE_STRING,	1, "Weights file name", true);
-  parms.add_parameter('t', COMMAND_LINE_STRING,	1, "Trajecotry file name", true);
-  parms.add_parameter('m', COMMAND_LINE_INT,    1, "Matrix size", true);
-  parms.add_parameter('o', COMMAND_LINE_INT,    1, "Oversampled Matrix size", true);
-  parms.add_parameter('f', COMMAND_LINE_FLOAT,  1, "Projections per frame", false);
-  parms.add_parameter('i', COMMAND_LINE_INT,    1, "Number of iterations", true, "10");
-  parms.add_parameter('k', COMMAND_LINE_FLOAT,  1, "Kernel width", true, "5.5");
-  parms.add_parameter('K', COMMAND_LINE_FLOAT,  1, "Kappa", true, "0.1");
+  parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Sample data file name", true );
+  parms.add_parameter( 'm', COMMAND_LINE_INT,    1, "Matrix size", true );
+  parms.add_parameter( 'o', COMMAND_LINE_INT,    1, "Oversampled Matrix size", true );
+  parms.add_parameter( 'p', COMMAND_LINE_INT,    1, "Profiles per frame", true );
+  parms.add_parameter( 'f', COMMAND_LINE_INT,    1, "Frames per reconstruction (negative meaning all)", true, "-1" );
+  parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of iterations", true, "10" );
+  parms.add_parameter( 'k', COMMAND_LINE_FLOAT,  1, "Kernel width", true, "5.5" );
+  parms.add_parameter( 'K', COMMAND_LINE_FLOAT,  1, "Kappa", true, "0.1" );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -43,80 +43,124 @@ int main(int argc, char** argv)
     exit(1);
   }
   
-  GPUTimer *timer = new GPUTimer("Loading data");
+  GPUTimer *timer;
+  
+  // Load sample data from disk
+  timer = new GPUTimer("\nLoading data");
   hoNDArray<float_complext::Type> host_data = read_nd_array<float_complext::Type>((char*)parms.get_parameter('d')->get_string_value());
-  hoNDArray<float> host_weights = read_nd_array<float>((char*)parms.get_parameter('w')->get_string_value());
-  hoNDArray<float> host_traj = read_nd_array<float>((char*)parms.get_parameter('t')->get_string_value());
   delete timer;
-
-  host_data.squeeze();
-  host_weights.squeeze();
-  host_traj.squeeze();
-
-  if( !(host_data.get_number_of_dimensions() == 1 || host_data.get_number_of_dimensions() == 2) || 
-      !(host_weights.get_number_of_dimensions() == 1 || host_weights.get_number_of_dimensions() == 2 ) ||
-      host_traj.get_number_of_dimensions() != 2 ){
-    
-    printf("\nInput data is not two-dimensional. Quitting!\n");
+   
+  if( !host_data.get_number_of_dimensions() == 3 ){
+    printf("\nInput data is not three-dimensional (#samples/profile x #profiles x #coils). Quitting!\n");
     exit(1);
   }
   
-  if( host_data.get_size(0) != host_weights.get_size(0) ){
-    printf("\nInput data dimensions mismatch between sample data and weights. Quitting!\n");
-    exit(1);
-  }
+  unsigned int samples_per_profile = host_data.get_size(0);
+  unsigned int num_profiles = host_data.get_size(1);
+  unsigned int num_coils = host_data.get_size(2);
   
-  if( host_data.get_size(0) != host_traj.get_size(1) || host_traj.get_size(0) != 2 ){
-    printf("\nInput trajectory data mismatch. Quitting!\n");
-    exit(1);
-  }
-
-  // Matrix sizes
+  // Get command line control parameters
   uintd2 matrix_size = uintd2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
   uintd2 matrix_size_os = uintd2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
   float kernel_width = parms.get_parameter('k')->get_float_value();
   float kappa = parms.get_parameter('K')->get_float_value();
   unsigned int num_iterations = parms.get_parameter('i')->get_int_value();
-  
-  // Get trajectory dimensions 'float2' style
-  timer = new GPUTimer("uploading to device");
-  vector<unsigned int> traj_dims = host_traj.get_dimensions(); traj_dims.erase(traj_dims.begin());
-  cuNDArray<float> _traj(host_traj); 
-  cuNDArray<floatd2::Type> traj; traj.create(traj_dims, (floatd2::Type*)_traj.get_data_ptr());
-  
-  cuNDArray<float_complext::Type> *data = new cuNDArray<float_complext::Type>(host_data);
-  cuNDArray<float> weights(host_weights);
-  delete timer;
+  unsigned int profiles_per_frame = parms.get_parameter('p')->get_int_value();
+  unsigned int frames_per_reconstruction = parms.get_parameter('f')->get_int_value();
 
-  unsigned int num_batches = (data->get_number_of_dimensions() == 2) ? data->get_size(1) : 1;
+  // Silent correction of invalid command line parameters (clamp to valid range)
+  if( profiles_per_frame > num_profiles ) profiles_per_frame = num_profiles;
+  if( frames_per_reconstruction < 0 ) frames_per_reconstruction = num_profiles / profiles_per_frame;
+  if( frames_per_reconstruction*profiles_per_frame > num_profiles ) frames_per_reconstruction = num_profiles / profiles_per_frame;
+  
+  unsigned int profiles_per_reconstruction = frames_per_reconstruction*profiles_per_frame;
+  unsigned int samples_per_reconstruction = profiles_per_reconstruction*samples_per_profile;
+
+  cout << endl << "#samples/profile: " << samples_per_profile;
+  cout << endl << "#profiles: " << num_profiles;
+  cout << endl << "#coils: " << num_coils;
+  cout << endl << "#profiles/reconstruction " << profiles_per_reconstruction;
+  cout << endl << "#samples/reconstruction " << samples_per_reconstruction << endl << endl;
 
   //
-  // Estimate CSM from initial gridding
+  // Compute CSM, preconditioner, and regularization image
+  // 
+
+  auto_ptr< cuNDArray<float_complext::Type> > csm;
+  auto_ptr< cuNDArray<float_complext::Type> > preconditioner;
+  auto_ptr< cuNDArray<float_complext::Type> > regularization;
+
+  {
+    GPUTimer csm_timer("CSM estimation");
+
+    vector<unsigned int> image_os_dims = uintd_to_vector<2>(matrix_size_os); image_os_dims.push_back(num_coils);
+    cuNDArray<float_complext::Type> image_os; image_os.create(image_os_dims);
+    
+    timer = new GPUTimer("Creating plan (CSM)");
+    uintd2 fixed_dims(0,0);
+    NFFT_plan<float, 2> plan( matrix_size, matrix_size_os, fixed_dims, kernel_width );
+    delete timer;
+
+    for( unsigned int iteration = 0; iteration < num_profiles/profiles_per_reconstruction; iteration++ ) {
+  
+      // Determine trajectories
+      timer = new GPUTimer("Computing trajectories (CSM)");
+      auto_ptr< cuNDArray< floatd2::Type > > traj = compute_radial_trajectory_golden_ratio_2d<float>
+	( samples_per_profile, profiles_per_reconstruction, iteration*profiles_per_reconstruction );
+      delete timer;
+
+      // Preprocess
+      timer = new GPUTimer("Preprocessing (CSM)");
+      plan.preprocess( traj.get(), NFFT_plan<float,2>::NFFT_PREP_BACKWARDS );
+      delete timer; traj.reset();
+
+      // Determine DCW
+      timer = new GPUTimer("Computing DCW (CSM)");
+      auto_ptr< cuNDArray<float> > dcw = compute_radial_dcw_golden_ratio_2d
+	( samples_per_profile, profiles_per_reconstruction, (float)matrix_size_os.vec[0]/(float)matrix_size.vec[0], 
+	  get_one<float>()/((float)samples_per_profile/(float)max(matrix_size.vec[0],matrix_size.vec[1])), iteration*profiles_per_reconstruction );
+      delete timer;
+      
+      // Upload data
+      timer = new GPUTimer("Uploading data (CSM)");
+      vector<unsigned int> csm_dims; csm_dims.push_back(samples_per_reconstruction); csm_dims.push_back(num_coils);
+      cuNDArray<float_complext::Type> csm_data; csm_data.create( csm_dims );
+      for( unsigned int i=0; i<num_coils; i++ )
+	cudaMemcpy( csm_data.get_data_ptr()+i*samples_per_reconstruction, 
+		    host_data.get_data_ptr()+i*samples_per_profile*num_profiles+iteration*samples_per_reconstruction, 
+		    samples_per_reconstruction*sizeof(floatd2::Type), cudaMemcpyHostToDevice );
+      delete timer;
+      
+      // Accumulate k-space for CSM estimation.
+      timer = new GPUTimer("Convolving (CSM)");
+      plan.convolve( &csm_data, &image_os, dcw.get(), NFFT_plan<float,2>::NFFT_BACKWARDS, (iteration==0) ? false : true );
+      delete timer;
+    }
+    
+    // Complete gridding of k-space CSM image
+    plan.fft( &image_os, NFFT_plan<float,2>::NFFT_BACKWARDS );
+    plan.deapodize( &image_os );
+
+    // Remove oversampling
+    vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size); image_dims.push_back(num_coils);
+    cuNDArray<float_complext::Type> image; image.create(image_dims);
+    cuNDA_crop<float_complext::Type,2>( (matrix_size_os-matrix_size)>>1, &image_os, &image );
+
+    // Estimate CSM
+    timer = new GPUTimer("Estimating CSM");
+    csm = estimate_b1_map<float,2>( &image );
+    delete timer; 
+    
+    //hoNDArray<float_complext::Type> out = csm->to_host();
+    //write_nd_array<float_complext::Type>(out,"csm.cplx");
+    //exit(1); 
+  }
+  
+  // 
+  // Setup radial SENSE reconstruction
   //
-
-  timer = new GPUTimer("Reconstructing for CSM");
-  vector<unsigned int> image_dims = cuNDA_toVec<2>(matrix_size); 
-  if( num_batches > 1 ) image_dims.push_back(num_batches);
-  cuNDArray<float_complext::Type> *image = new cuNDArray<float_complext::Type>(); 
-  image->create(image_dims);
-  uintd2 fixed_dims(0,0);
-
-  NFFT_plan<float, 2> plan( matrix_size, matrix_size_os, fixed_dims, kernel_width );
-  plan.preprocess( &traj, NFFT_plan<float,2>::NFFT_PREP_BACKWARDS );
-  plan.compute( data, image, &weights, NFFT_plan<float,2>::NFFT_BACKWARDS );
-  delete timer;
   
-  timer = new GPUTimer("Estimate CSM");
-  auto_ptr< cuNDArray<float_complext::Type> > csm = estimate_b1_map<float,2>( image );
-  delete timer; 
-
-  plan.wipe(NFFT_plan<float,2>::NFFT_WIPE_ALL);
-  delete data;
-
-  // Form rhs
-  std::auto_ptr< cuNDArray<float_complext::Type> > rhs = cuNDA_sum<float_complext::Type>( image, 2 );
-  delete image;
-  
+  /*
   cgOperatorNonCartesianSense<float,2> E;
   
   E.setup( matrix_size, matrix_size_os, kernel_width );
@@ -125,13 +169,13 @@ int main(int argc, char** argv)
     cout << "Failed to set csm on encoding matrix" << endl;
   }
   
-  if (E.set_trajectory(&traj) < 0) {
+  if (E.set_trajectory(traj.get()) < 0) {
     cout << "Failed to set trajectory on encoding matrix" << endl;
   }
 
-  if (E.set_weights(&weights) < 0) {
-    cout << "Failed to set weights on encoding matrix" << endl;
-  }
+  //  if (E.set_weights(&weights) < 0) {
+  //  cout << "Failed to set weights on encoding matrix" << endl;
+  //}
 
   //  cuCGPrecondWeight<float2> Dm; brug kappa
   //Dm.set_weights(&D_dev);
@@ -142,6 +186,21 @@ int main(int argc, char** argv)
   cg.set_iterations(num_iterations);
   cg.set_limit(1e-5);
   cg.set_output_mode(cuCG<float, float_complext::Type>::OUTPUT_VERBOSE);
+
+
+  timer = new GPUTimer("Uploading data for SENSE reconstruction");
+  vector<unsigned int> dims; dims.push_back(samples_per_reconstruction); csm_dims.push_back(num_coils);
+  cuNDArray<float_complext::Type> data; data.create( dims );
+  for( unsigned int i=0; i<num_coils; i++ )
+    cudaMemcpy( data.get_data_ptr()+i*samples_per_reconstruction,
+		host_data.get_data_ptr()+i*samples_per_profile*num_profiles, 
+		samples_per_reconstruction*sizeof(floatd2::Type), cudaMemcpyHostToDevice );
+  delete timer;
+  
+  // Form rhs
+  std::auto_ptr< cuNDArray<float_complext::Type> > rhs = cuNDA_sum<float_complext::Type>( image, 2 );
+  delete image;
+
 
   auto_ptr< cuNDArray<float_complext::Type> > cgresult;
   {
@@ -156,6 +215,6 @@ int main(int argc, char** argv)
   write_nd_array<float>( host_norm, "rho_out.real" );
 
   cout << "Reconstruction done" << endl;
- 
+  */
   return 0;
 }

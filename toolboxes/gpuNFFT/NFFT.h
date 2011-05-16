@@ -50,10 +50,10 @@ public: // Main interface
 public: // Utilities
   
   // NFFT convolution
-  bool convolve( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode );
+  bool convolve( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode, bool accumulate = false );
     
   // NFFT FFT
-  bool FFT( cuNDArray<typename complext<REAL>::Type> *data, NFFT_comp_mode mode, bool do_scale = true );
+  bool fft( cuNDArray<typename complext<REAL>::Type> *data, NFFT_comp_mode mode, bool do_scale = true );
   
   // NFFT deapodization
   bool deapodize( cuNDArray<typename complext<REAL>::Type> *image );
@@ -77,11 +77,11 @@ private:
   bool compute_NFFT_H( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image );
 
   // A dedicated convolution for each of the two NFFT directions
-  bool convolve_NFFT( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image );
-  bool convolve_NFFT_H( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image );
+  bool convolve_NFFT( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, bool accumulate );
+  bool convolve_NFFT_H( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, bool accumulate );
    
   // Internal utility to the NFFT_H convolution
-  bool image_wrap( cuNDArray<typename complext<REAL>::Type> *source, cuNDArray<typename complext<REAL>::Type> *target/*, bool accumulate*/ );
+  bool image_wrap( cuNDArray<typename complext<REAL>::Type> *source, cuNDArray<typename complext<REAL>::Type> *target, bool accumulate );
 
 private:
     

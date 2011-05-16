@@ -1,6 +1,7 @@
 #include "ndarray_vector_td_utilities.h"
 #include "vector_td_operators.h"
 #include "vector_td_utilities.h"
+#include "real_utilities.h"
 #include "check_CUDA.h"
 
 #include <vector>
@@ -630,8 +631,8 @@ bool cuNDA_crop( typename uintd<D>::Type offset, cuNDArray<T> *in, cuNDArray<T> 
   unsigned int number_of_batches = 
     (out->get_number_of_dimensions() == D ) ? 1 : out->get_size(out->get_number_of_dimensions()-1);
 
-  typename uintd<D>::Type matrix_size_in; cuNDA_fromVec<D>( in->get_dimensions(), matrix_size_in );
-  typename uintd<D>::Type matrix_size_out; cuNDA_fromVec<D>( out->get_dimensions(), matrix_size_out );
+  typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( in->get_dimensions() );
+  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( out->get_dimensions() );
  
   if( weak_greater(offset+matrix_size_out, matrix_size_in) ){
     cout << endl << "cropping size mismatch, cannot crop" << endl;
@@ -684,8 +685,8 @@ bool cuNDA_expand_with_zero_fill( cuNDArray<T> *in, cuNDArray<T> *out )
     return false;
   }
  
-  typename uintd<D>::Type matrix_size_in; cuNDA_fromVec<D>( in->get_dimensions(), matrix_size_in );
-  typename uintd<D>::Type matrix_size_out; cuNDA_fromVec<D>( out->get_dimensions(), matrix_size_out );
+  typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( in->get_dimensions() );
+  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( out->get_dimensions() );
  
   if( weak_greater(matrix_size_in,matrix_size_out) ){
     cout << endl << "Size mismatch, cannot expand" << endl;
@@ -733,7 +734,7 @@ cuNDA_zero_fill_border_kernel( typename uintd<D>::Type matrix_size_in, typename 
 template<class T, unsigned int D> __host__
 bool cuNDA_zero_fill_border( typename uintd<D>::Type matrix_size_in, cuNDArray<T> *out )
 { 
-  typename uintd<D>::Type matrix_size_out; cuNDA_fromVec<D>( out->get_dimensions(), matrix_size_out );
+  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( out->get_dimensions() );
  
   if( weak_greater(matrix_size_in, matrix_size_out) ){
     cout << endl << "Size mismatch, cannot zero fill" << endl;
@@ -765,10 +766,10 @@ cuNDA_zero_fill_border_kernel( typename reald<REAL,D>::Type radius, typename uin
  
   if( idx < number_of_elements ){
     
-    typename reald<REAL,D>::Type half_matrix_size_out_real; to_reald( half_matrix_size_out_real, matrix_size_out>>1 );
+    typename reald<REAL,D>::Type half_matrix_size_out_real = to_reald<REAL,unsigned int,D>( matrix_size_out>>1 );
 
     const typename uintd<D>::Type co_out = idx_to_co<D>( idx, matrix_size_out );
-    typename reald<REAL,D>::Type co_out_real; to_reald( co_out_real, co_out );
+    typename reald<REAL,D>::Type co_out_real = to_reald<REAL,unsigned int,D>( co_out );
     
     typename reald<REAL,D>::Type co_f = abs( co_out_real - half_matrix_size_out_real );
     
@@ -792,8 +793,8 @@ bool cuNDA_zero_fill_border( typename reald<REAL,D>::Type radius, cuNDArray<T> *
     return false;
   }
  
-  typename uintd<D>::Type matrix_size_out; cuNDA_fromVec<D>( out->get_dimensions(), matrix_size_out );
-  typename reald<REAL,D>::Type matrix_size_out_real; to_reald( matrix_size_out_real, matrix_size_out );
+  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( out->get_dimensions() );
+  typename reald<REAL,D>::Type matrix_size_out_real = to_reald<REAL,unsigned int,D>( matrix_size_out );
 
   if( weak_greater(radius, matrix_size_out_real) ){
     cout << endl << "Size mismatch, cannot zero fill" << endl;
@@ -1022,46 +1023,9 @@ cuNDA_scal( T a, cuNDArray<T>* x, cublasHandle_t handle )
   return _scal<T>( a, x, handle );
 }
 
-// cuNDArray to std::vector
-template<unsigned int D> __host__
-vector<unsigned int> cuNDA_toVec( typename uintd<D>::Type dims )
-{
-  vector<unsigned int> out(D);
-  for( unsigned int i=0; i<D; i++ )
-    out[i] = dims.vec[i];
-  return out;
-}
-
-// std::vector to cuNDArray
-template<unsigned int D> __host__
-bool cuNDA_fromVec( vector<unsigned int> from, typename uintd<D>::Type &to )
-{
-  if( from.size() < D ){
-    cout << "Cannot convert vector to Typename Uintd" << endl;
-    return false;
-  }
- 
-  vector<unsigned int>::iterator it = from.begin();
-  for( unsigned int i=0; i<D; i++ ){
-    to.vec[i] = *it; it++;
-  }
- 
-  return true;
-}
-
 //
 // Instantiation
 //
-
-template std::vector<unsigned int> cuNDA_toVec<1>( typename uintd<1>::Type );
-template std::vector<unsigned int> cuNDA_toVec<2>( typename uintd<2>::Type );
-template std::vector<unsigned int> cuNDA_toVec<3>( typename uintd<3>::Type );
-template std::vector<unsigned int> cuNDA_toVec<4>( typename uintd<4>::Type );
-
-template bool cuNDA_fromVec<1>( std::vector<unsigned int>, typename uintd<1>::Type& );
-template bool cuNDA_fromVec<2>( std::vector<unsigned int>, typename uintd<2>::Type& );
-template bool cuNDA_fromVec<3>( std::vector<unsigned int>, typename uintd<3>::Type& );
-template bool cuNDA_fromVec<4>( std::vector<unsigned int>, typename uintd<4>::Type& );
 
 template auto_ptr< cuNDArray<int> > cuNDA_sum<int>( cuNDArray<int>*, unsigned int);
 template auto_ptr< cuNDArray<intd<1>::Type> > cuNDA_sum<intd<1>::Type >( cuNDArray<intd<1>::Type >*, unsigned int );
