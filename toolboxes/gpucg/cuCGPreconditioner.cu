@@ -8,7 +8,7 @@ weight_multiplication( T* in, T* out, T* weight, unsigned long elements )
 {
   unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
   if (idx_in < elements) {
-    out[idx_in] = mul<T,T>(in[idx_in], weight[idx_in]);
+    out[idx_in] = mul<T>(in[idx_in], weight[idx_in]);
   }
 }
 

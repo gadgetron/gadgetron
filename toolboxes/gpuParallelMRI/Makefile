@@ -10,7 +10,8 @@ HEADERFILES=\
 	htgrappa.h \
 	cgOperatorSense.h \
 	cgOperatorCartesianSense.h \
-	cgOperatorNonCartesianSense.h
+	cgOperatorNonCartesianSense.h \
+	vector_td_identity_operator.h
 
 CUDASOURCES=\
 	b1_map.cu \

@@ -53,7 +53,7 @@ estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data_in )
   auto_ptr< cuNDArray<typename complext<REAL>::Type> > data_out(_data_out);
   
   // Normalize by the RSS of the coils
-  if( !cuNDA_rss_normalize<REAL, typename complext<REAL>::Type>( data_out.get(), D ) ){
+  if( !cuNDA_rss_normalize<REAL>( data_out.get(), D ) ){
     cout << endl << "estimate_b1_map:: error in rss_normalize" << endl;
     return auto_ptr< cuNDArray<typename complext<REAL>::Type> >(0x0);
   }
@@ -475,14 +475,14 @@ extract_csm_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL
       for( unsigned j=0; j<num_batches; j++){
 	for( unsigned int k=0; k<num_batches; k++){
 	  typedef typename complext<REAL>::Type T;
-	  tmp_v[j*num_elements+idx] += mul<T,T>(corrm[(k*num_batches+j)*num_elements+idx],csm[k*num_elements+idx]);
+	  tmp_v[j*num_elements+idx] += mul<T>(corrm[(k*num_batches+j)*num_elements+idx],csm[k*num_elements+idx]);
 	}
       }
 
       REAL tmp = get_zero<REAL>();
       
       for (unsigned int c=0; c<num_batches; c++){
-	tmp += norm_squared(tmp_v[c*num_elements+idx]);
+	tmp += norm_squared<REAL>(tmp_v[c*num_elements+idx]);
       }
       
       tmp = sqrt(tmp);
@@ -548,7 +548,7 @@ set_phase_reference_kernel( typename complext<REAL>::Type *csm, unsigned int num
     for( unsigned int c=0; c<num_batches; c++ ){
       typename complext<REAL>::Type val = csm[c*num_elements+idx];
       typedef typename complext<REAL>::Type T;
-      val = mul<T,T>( val, tmp );
+      val = mul<T>( val, tmp );
       csm[c*num_elements+idx] = val;
     }
   }

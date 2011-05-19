@@ -65,6 +65,10 @@ template<class REAL, class T> class cuCG
     iterations_ = iterations;
   }
   
+  cublasHandle_t get_cublas_handle() {
+    return cublas_handle_; 
+  }
+
   std::auto_ptr< cuNDArray<T> > solve(cuNDArray<T>* rhs);
 
  protected:

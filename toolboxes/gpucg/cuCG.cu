@@ -76,7 +76,7 @@ std::auto_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
     if (it == 0){
       p = r;
     } else {        
-      T beta = mul<REAL,T>(rr/rr_1, get_one<T>());
+      T beta = mul<REAL>(rr/rr_1, get_one<T>());
       if (cuNDA_scal<T>(beta,&p,cublas_handle_) < 0) {
 	std::cerr << "cuCG<T>::solve : failed to scale p" << std::endl;
 	return std::auto_ptr< cuNDArray<T> >(rho);
@@ -105,7 +105,7 @@ std::auto_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
 	std::cerr << "cuCG<T>::solve : failed to apply operator number " << i << std::endl;
 	return std::auto_ptr< cuNDArray<T> >(rho);
       }
-      if (cuNDA_axpy(mul<REAL,T>(weights_[i], get_one<T>()),&q2,&q,cublas_handle_) < 0) {
+      if (cuNDA_axpy(mul<REAL>(weights_[i], get_one<T>()),&q2,&q,cublas_handle_) < 0) {
 	std::cerr << "cuCG<T>::solve : failed to add q1 to q" << std::endl;
 	return std::auto_ptr< cuNDArray<T> >(rho);
       }
@@ -118,7 +118,7 @@ std::auto_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
       }
     }
 
-    T alpha = mul<REAL,T>(rr, reciprocal<T>(cuNDA_dot<T>(&p,&q,cublas_handle_)));
+    T alpha = mul<REAL>(rr, reciprocal<T>(cuNDA_dot<T>(&p,&q,cublas_handle_)));
     
     // Update solution
     if (cuNDA_axpy<T>(alpha,&p,rho,cublas_handle_) < 0) {
@@ -127,7 +127,7 @@ std::auto_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
     }
     
     // Update residual
-    if (cuNDA_axpy<T>(mul<REAL,T>(-get_one<REAL>(),alpha),&q,&r,cublas_handle_) < 0) {
+    if (cuNDA_axpy<T>(mul<REAL>(-get_one<REAL>(),alpha),&q,&r,cublas_handle_) < 0) {
       std::cerr << "cuCG<T>::solve : failed to update residual" << std::endl;
       return std::auto_ptr< cuNDArray<T> >(rho);
     }

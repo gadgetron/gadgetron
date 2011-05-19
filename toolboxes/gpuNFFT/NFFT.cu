@@ -955,7 +955,7 @@ NFFT_plan<REAL,D>::compute_deapodization_filter()
   // Scale (multiplication by N, i.e. not what the FFT provides)
   // Now the NFFT achieves scaling by applying the deapodization filter and we save a little bit of time...
   if( success )
-    cuNDA_scale<REAL,typename complext<REAL>::Type>( (REAL)prod(matrix_size_os), deapodization_filter );
+    cuNDA_scale<REAL>( (REAL)prod(matrix_size_os), deapodization_filter );
   
   // Reciprocal
   if( success )
