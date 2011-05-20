@@ -235,11 +235,10 @@ template<class REAL, unsigned int D> __inline__ __host__ __device__ REAL norm( c
 // Reductions on float/double and complext<REAL>
 //
 
-template<class REAL> __inline__ __host__ __device__ REAL norm_squared( const REAL );
-template<class REAL> __inline__ __host__ __device__ REAL norm_squared( const typename complext<REAL>::Type );
+template<class REAL, class T> __inline__ __host__ __device__ REAL norm_squared( const T );
 
-template<class REAL> __inline__ __host__ __device__ REAL norm( const REAL );
-template<class REAL> __inline__ __host__ __device__ REAL norm( const typename complext<REAL>::Type );
+template<class REAL, class T> __inline__ __host__ __device__ REAL norm( const T );
+
 
 //
 // Type conversion
@@ -276,8 +275,7 @@ template<class REAL, class T, unsigned int D> __inline__ __host__ __device__ vec
 // Trigonometry on complext<REAL>
 //
 
-template<class REAL> __inline__ __host__ __device__ REAL real( const REAL r );
-template<class REAL> __inline__ __host__ __device__ REAL real( const typename complext<REAL>::Type z );
+template<class REAL, class T> __inline__ __host__ __device__ REAL real( const T );
 
 template<class REAL> __inline__ __host__ __device__ REAL imag( const typename complext<REAL>::Type z ){
   return z.vec[1];
@@ -287,12 +285,7 @@ template<class REAL> __inline__ __host__ __device__ REAL arg( const typename com
   return atan2(imag<REAL>(z), real<REAL>(z));
 }
 
-template<class REAL> __inline__ __host__ __device__ typename complext<REAL>::Type conj( const typename complext<REAL>::Type z ){
-  typename complext<REAL>::Type res;
-  res.vec[0] = z.vec[0]; 
-  res.vec[1] = -z.vec[1];
-  return res;
-}
+template<class T> __inline__ __host__ __device__ T conj( const T );
 
 //
 // Explicit instantiations 
@@ -396,35 +389,35 @@ template<> __inline__ __host__ __device__ vector_td<double,2> get_half<vector_td
   return res;
 }
 
-template <> __inline__ __host__ __device__ float norm_squared<float>( const float v ){
+template <> __inline__ __host__ __device__ float norm_squared<float,float>( const float v ){
   return v*v;
 }
 
-template <> __inline__ __host__ __device__ double norm_squared<double>( const double v ){
+template <> __inline__ __host__ __device__ double norm_squared<double,double>( const double v ){
   return v*v;
 }
 
-template <> __inline__ __host__ __device__ float norm_squared<float>( const float_complext::Type z ){
+template <> __inline__ __host__ __device__ float norm_squared<float,float_complext::Type>( const float_complext::Type z ){
   return norm_squared<float,2>(z);
 }
 
-template <> __inline__ __host__ __device__ double norm_squared<double>( const double_complext::Type z ){
+template <> __inline__ __host__ __device__ double norm_squared<double,double_complext::Type>( const double_complext::Type z ){
   return norm_squared<double,2>(z);
 }
 
-template<> __inline__ __host__ __device__ float norm<float>( const float v ){
+template<> __inline__ __host__ __device__ float norm<float,float>( const float v ){
   return abs(v);
 }
 
-template<> __inline__ __host__ __device__ double norm<double>( const double v ){
+template<> __inline__ __host__ __device__ double norm<double,double>( const double v ){
   return abs(v);
 }
 
-template<> __inline__ __host__ __device__ float norm<float>( const float_complext::Type z ){
+template<> __inline__ __host__ __device__ float norm<float,float_complext::Type>( const float_complext::Type z ){
   return norm<float,2>(z);
 }
 
-template<> __inline__ __host__ __device__ double norm<double>( const double_complext::Type z ){
+template<> __inline__ __host__ __device__ double norm<double,double_complext::Type>( const double_complext::Type z ){
   return norm<double,2>(z);
 }
 
@@ -438,17 +431,39 @@ template<> __inline__ __host__ __device__ double reciprocal<double>( const doubl
   return 1.0/real;
 }
 
+template<> __inline__ __host__ __device__ float conj<float>( const float r ){
+  return r;
+}
+
+template<> __inline__ __host__ __device__ double conj<double>( const double r ){
+  return r;
+}
+
+template<> __inline__ __host__ __device__ float_complext::Type conj<float_complext::Type>( const float_complext::Type z ){
+  float_complext::Type res;
+  res.vec[0] = z.vec[0]; 
+  res.vec[1] = -z.vec[1];
+  return res;
+}
+
+template<> __inline__ __host__ __device__ double_complext::Type conj<double_complext::Type>( const double_complext::Type z ){
+  double_complext::Type res;
+  res.vec[0] = z.vec[0]; 
+  res.vec[1] = -z.vec[1];
+  return res;
+}
+
 template<> __inline__ __host__ __device__ float_complext::Type reciprocal<float_complext::Type>( const float_complext::Type z )
 {
-  float_complext::Type res = conj<float>(z);
-  res *= (1.0f/norm_squared<float>(z));
+  float_complext::Type res = conj<float_complext::Type>(z);
+  res *= (1.0f/norm_squared<float,float_complext::Type>(z));
   return res;
 }
 
 template<> __inline__ __host__ __device__ double_complext::Type reciprocal<double_complext::Type>( const double_complext::Type z )
 {
-  double_complext::Type res = conj<double>(z);
-  res *= (1.0/norm_squared<double>(z));
+  double_complext::Type res = conj<double_complext::Type>(z);
+  res *= (1.0/norm_squared<double,double_complext::Type>(z));
   return res;
 }
 
@@ -510,18 +525,18 @@ template<> __inline__ __host__ __device__ double_complext::Type mul<double>( con
   return res;
 }
 
-template<> __inline__ __host__ __device__ float real( float r ){
+template<> __inline__ __host__ __device__ float real<float,float>( float r ){
   return r;
 }
 
-template<> __inline__ __host__ __device__ double real( double r ){
+template<> __inline__ __host__ __device__ double real<double,double>( double r ){
   return r;
 }
 
-template<> __inline__ __host__ __device__ float real( const float_complext::Type z ){
+template<> __inline__ __host__ __device__ float real<float,float_complext::Type>( const float_complext::Type z ){
   return z.vec[0];
 }
 
-template<> __inline__ __host__ __device__ double real( const double_complext::Type z ){
+template<> __inline__ __host__ __device__ double real<double,double_complext::Type>( const double_complext::Type z ){
   return z.vec[0];
 }

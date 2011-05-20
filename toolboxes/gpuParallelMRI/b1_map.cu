@@ -59,7 +59,7 @@ estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data_in )
   }
   
   // Now calculate the correlation matrices
-  auto_ptr<cuNDArray<typename complext<REAL>::Type> > corrm = cuNDA_correlation<REAL>( data_out.get() );
+  auto_ptr<cuNDArray<typename complext<REAL>::Type> > corrm = cuNDA_correlation<typename complext<REAL>::Type>( data_out.get() );
   data_out.reset();
   
   // Smooth (onto copy of corrm)
@@ -543,7 +543,7 @@ set_phase_reference_kernel( typename complext<REAL>::Type *csm, unsigned int num
 
     typename complext<REAL>::Type tmp;
     tmp.vec[0] = cos_a; tmp.vec[1] = sin_a;
-    tmp = conj<REAL>(tmp);
+    tmp = conj<typename complext<REAL>::Type>(tmp);
 
     for( unsigned int c=0; c<num_batches; c++ ){
       typename complext<REAL>::Type val = csm[c*num_elements+idx];

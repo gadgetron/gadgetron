@@ -145,7 +145,7 @@ int main(int argc, char** argv)
     csm = estimate_b1_map<float,2>( &image );
     
     // Define preconditioner
-    preconditioner = cuNDA_creciprocal_rss<float>( csm.get(), 2 );    
+    preconditioner = cuNDA_reciprocal_rss<float_complext::Type>( csm.get(), 2 );    
 
     delete timer;
   }

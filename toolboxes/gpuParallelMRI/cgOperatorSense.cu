@@ -56,7 +56,7 @@ mult_csm_conj_sum_kernel( typename complext<REAL>::Type *in, typename complext<R
   if( idx_in < image_elements ) {
     for( unsigned int i = 0; i < ncoils; i++ ) {
       typedef typename complext<REAL>::Type T;
-      T tmp = mul<T>( in[idx_in+i*image_elements], conj<REAL>(csm[idx_in+i*image_elements]) );
+      T tmp = mul<T>( in[idx_in+i*image_elements], conj<typename complext<REAL>::Type>(csm[idx_in+i*image_elements]) );
       out[idx_in] += tmp;
     }
   }
