@@ -107,13 +107,13 @@ NFFT_plan<REAL,D>::NFFT_plan()
 }
 
 template<class REAL, unsigned int D> 
-NFFT_plan<REAL,D>::NFFT_plan( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type fixed_dims, REAL W, int device )
+NFFT_plan<REAL,D>::NFFT_plan( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int device )
 {
   // Minimal initialization
   barebones();
 
   // Setup plan
-  setup( matrix_size, matrix_size_os, fixed_dims, W, device );
+  setup( matrix_size, matrix_size_os, W, device );
   
   if( !initialized )
     cout << endl << "Initialization of the plan failed." << endl;
@@ -125,8 +125,6 @@ NFFT_plan<REAL,D>::NFFT_plan( NFFT_plan<REAL,D> *plan )
   matrix_size = plan->matrix_size;
   matrix_size_os = plan->matrix_size_os;
   matrix_size_wrap = plan->matrix_size_wrap;
-  fixed_dims = plan->fixed_dims;
-  non_fixed_dims = plan->non_fixed_dims;
   W = plan->W;
   alpha = plan->alpha;
   beta = plan->beta;
@@ -162,7 +160,7 @@ NFFT_plan<REAL,D>::~NFFT_plan()
 }
 
 template<class REAL, unsigned int D> 
-bool NFFT_plan<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type fixed_dims, REAL W, int _device )
+bool NFFT_plan<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int _device )
 {	
   // Free memory
   wipe(NFFT_WIPE_ALL);
@@ -197,17 +195,6 @@ bool NFFT_plan<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uin
 
   this->matrix_size = matrix_size;
   this->matrix_size_os = matrix_size_os;
-  this->fixed_dims = fixed_dims;
-
-  for( unsigned int i=0; i<D; i++ ){
-    
-    if( fixed_dims.vec[i] >= 1 ){
-      non_fixed_dims.vec[i] = 0;
-    }
-    else{
-      non_fixed_dims.vec[i] = 1;
-    }
-  }
 
   REAL W_half = get_half<REAL>()*W;
   vector_td<REAL,D> W_vec = to_vector_td<REAL,D>(W_half);
@@ -229,17 +216,8 @@ bool NFFT_plan<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uin
   unsigned int moduX = matrix_size_os.vec[0] % matrix_size.vec[0];
 
   for( unsigned int dim=0; dim<D; dim++){
-
-    if( fixed_dims.vec[dim] > 1 )
-      fixed_dims.vec[dim] = 1; // enforce fixed_dims as "boolean style"
-
-    if( fixed_dims.vec[dim] ){
-      matrix_size_wrap.vec[dim] = 0;
-    }
     
-    if( !fixed_dims.vec[dim] &&
-	((matrix_size_os.vec[dim]/(matrix_size.vec[dim])) != fracX ||
-	 (matrix_size_os.vec[dim]%(matrix_size.vec[dim]) != moduX) )){
+    if( ((matrix_size_os.vec[dim]/(matrix_size.vec[dim])) != fracX || (matrix_size_os.vec[dim]%(matrix_size.vec[dim]) != moduX) )){
       cout << endl << "Oversampling ratio is not constant between dimensions" << endl;
       return false;
     }
@@ -874,7 +852,6 @@ bool NFFT_plan<REAL,D>::compute_beta()
 
 template<class REAL, unsigned int D> __global__ void
 compute_deapodization_filter_kernel( typename uintd<D>::Type matrix_size_os, typename reald<REAL,D>::Type matrix_size_os_real, 
-				     typename uintd<D>::Type fixed_dims, 
 				     REAL W, REAL half_W, REAL one_over_W, REAL beta, typename complext<REAL>::Type*image_os )
 {
 
@@ -901,7 +878,7 @@ compute_deapodization_filter_kernel( typename uintd<D>::Type matrix_size_os, typ
     if( weak_greater(delta, half_W_vec ) )
       weight = zero;
     else{ 
-      weight = KaiserBessel<REAL>( delta, matrix_size_os_real, one_over_W, beta, fixed_dims );
+      weight = KaiserBessel<REAL>( delta, matrix_size_os_real, one_over_W, beta );
       //if( !isfinite(weight) )
       //weight = zero;
     }
@@ -944,7 +921,7 @@ NFFT_plan<REAL,D>::compute_deapodization_filter()
 
   // Invoke kernel
   compute_deapodization_filter_kernel<REAL,D><<<dimGrid, dimBlock>>> 
-    ( matrix_size_os, matrix_size_os_real, fixed_dims, W, get_half<REAL>()*W, reciprocal<REAL>(W), beta, deapodization_filter->get_data_ptr() );
+    ( matrix_size_os, matrix_size_os_real, W, get_half<REAL>()*W, reciprocal<REAL>(W), beta, deapodization_filter->get_data_ptr() );
 
   CHECK_FOR_CUDA_ERROR();
   
@@ -1110,11 +1087,11 @@ NFFT_plan<REAL,D>::convolve_NFFT( cuNDArray<typename complext<REAL>::Type> *samp
   for( unsigned int batch = 0; batch<num_repetitions; batch++ ){
     NFFT_convolve_kernel<REAL,D>
       <<<dimGrid, dimBlock, (batch==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
-      ( alpha, beta, W, matrix_size_os, matrix_size_wrap, fixed_dims, number_of_samples, 
+      ( alpha, beta, W, matrix_size_os, matrix_size_wrap, number_of_samples, 
 	(batch==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils, 
 	raw_pointer_cast(&(*trajectory_positions)[0]), 
 	&(image->get_data_ptr()[batch*prod(matrix_size_os)*domain_size_coils]), &(samples->get_data_ptr()[batch*number_of_samples*domain_size_coils]), 
-	double_warp_size_power, get_half<REAL>()*W, reciprocal(W), accumulate, matrix_size_os_real, non_fixed_dims );
+	double_warp_size_power, get_half<REAL>()*W, reciprocal(W), accumulate, matrix_size_os_real );
   }
   
   CHECK_FOR_CUDA_ERROR();
@@ -1228,7 +1205,7 @@ NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray<typename complext<REAL>::Type> *sa
   for( unsigned int batch = 0; batch<num_repetitions; batch++ ){
     NFFT_H_convolve_kernel<REAL,D>
       <<<dimGrid, dimBlock, (batch==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
-      ( alpha, beta, W, matrix_size_os+matrix_size_wrap, fixed_dims, number_of_samples, 
+      ( alpha, beta, W, matrix_size_os+matrix_size_wrap, number_of_samples, 
 	(batch==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils, 
 	raw_pointer_cast(&(*trajectory_positions)[0]), 
 	&(_tmp->get_data_ptr()[batch*prod(matrix_size_os)*domain_size_coils]), &(samples->get_data_ptr()[batch*number_of_samples*domain_size_coils]), 
@@ -1249,7 +1226,7 @@ NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray<typename complext<REAL>::Type> *sa
 // Image wrap kernels
 
 template<class REAL, unsigned int D> __global__ void
-image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type non_fixed_dims, typename uintd<D>::Type matrix_size_wrap, bool accumulate,
+image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type matrix_size_wrap, bool accumulate,
 		  typename complext<REAL>::Type*in,typename complext<REAL>::Type*out )
 {
   const unsigned int number_of_images = blockDim.z;
@@ -1271,8 +1248,6 @@ image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Ty
   // Make "boolean" vectors denoting whether wrapping needs to be performed in a given direction (forwards/backwards)
   typename uintd<D>::Type B_l = vector_less( co, half_wrap ); 
   typename uintd<D>::Type B_r = vector_greater_equal( co, matrix_size_os-half_wrap ); 
-  B_l = component_wise_mul<unsigned int,D>(B_l, non_fixed_dims); // don't wrap fixed dimensions
-  B_r = component_wise_mul<unsigned int,D>(B_r, non_fixed_dims); // don't wrap fixed dimensions
   
   typename complext<REAL>::Type result = in[co_to_idx<D>(co+half_wrap, matrix_size_os+matrix_size_wrap) + image_offset_src];
 
@@ -1379,8 +1354,7 @@ NFFT_plan<REAL,D>::image_wrap( cuNDArray<typename complext<REAL>::Type> *source,
   }
 
   // Invoke kernel
-  image_wrap_kernel<REAL,D><<<dimGrid, dimBlock>>>( matrix_size_os, non_fixed_dims, matrix_size_wrap, accumulate,
-						    source->get_data_ptr(), target->get_data_ptr() );
+  image_wrap_kernel<REAL,D><<<dimGrid, dimBlock>>>( matrix_size_os, matrix_size_wrap, accumulate, source->get_data_ptr(), target->get_data_ptr() );
   
   CHECK_FOR_CUDA_ERROR();
 

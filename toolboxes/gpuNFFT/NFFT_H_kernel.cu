@@ -38,8 +38,7 @@ NFFT_H_output( unsigned int number_of_batches, vector_td<REAL,2> *image,
 
 
 template<class REAL, unsigned int D> __inline__ __device__ void
-NFFT_H_convolve( REAL alpha, REAL beta, REAL W, 
-		 vector_td<unsigned int,D> fixed_dims, unsigned int number_of_samples, unsigned int number_of_batches,
+NFFT_H_convolve( REAL alpha, REAL beta, REAL W, unsigned int number_of_samples, unsigned int number_of_batches,
 		 vector_td<REAL,D> *traj_positions, vector_td<REAL,2> *samples, unsigned int *tuples_last, unsigned int *bucket_begin, unsigned int *bucket_end,
 		 unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vector_td<REAL,D> matrix_size_os_real, 
 		 unsigned int globalThreadId, vector_td<unsigned int,D> domainPos, unsigned int sharedMemFirstCellIdx )
@@ -68,7 +67,7 @@ NFFT_H_convolve( REAL alpha, REAL beta, REAL W,
       //continue;
       
       // Compute convolution weights
-      float weight = KaiserBessel<REAL>( delta, matrix_size_os_real, one_over_W, beta, fixed_dims );
+      float weight = KaiserBessel<REAL>( delta, matrix_size_os_real, one_over_W, beta );
       
       // Safety measure. We have occationally observed a NaN from the KaiserBessel computation
       //if( !isfinite(weight) )
@@ -92,8 +91,7 @@ NFFT_H_convolve( REAL alpha, REAL beta, REAL W,
 
 template<class REAL, unsigned int D> __global__ void
 NFFT_H_convolve_kernel( REAL alpha, REAL beta, REAL W,
-			vector_td<unsigned int,D> domain_count_grid, vector_td<unsigned int,D> fixed_dims, 
-			unsigned int number_of_samples, unsigned int number_of_batches,
+			vector_td<unsigned int,D> domain_count_grid, unsigned int number_of_samples, unsigned int number_of_batches,
 			vector_td<REAL,D> *traj_positions, vector_td<REAL,2> *image, vector_td<REAL,2> *samples, 
 			unsigned int *tuples_last, unsigned int *bucket_begin, unsigned int *bucket_end,
 			unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vector_td<REAL,D> matrix_size_os_real )
@@ -132,7 +130,7 @@ NFFT_H_convolve_kernel( REAL alpha, REAL beta, REAL W,
   
   // Compute NFFT using arbitrary sample trajectories.
   NFFT_H_convolve<REAL, D>
-    ( alpha, beta, W, fixed_dims, number_of_samples, number_of_batches,
+    ( alpha, beta, W, number_of_samples, number_of_batches,
       traj_positions, samples, tuples_last, bucket_begin, bucket_end,
       double_warp_size_power, half_W, one_over_W, matrix_size_os_real, index, domainPos, sharedMemFirstCellIdx );
   

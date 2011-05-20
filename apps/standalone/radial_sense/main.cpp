@@ -102,8 +102,7 @@ int main(int argc, char** argv)
     vector<unsigned int> image_os_dims = uintd_to_vector<2>(matrix_size_os); image_os_dims.push_back(num_coils);
     cuNDArray<float_complext::Type> image_os; image_os.create(image_os_dims);
     
-    uintd2 fixed_dims(0,0);
-    NFFT_plan<float, 2> plan( matrix_size, matrix_size_os, fixed_dims, kernel_width );
+    NFFT_plan<float, 2> plan( matrix_size, matrix_size_os, kernel_width );
 
     for( unsigned int iteration = 0; iteration < num_profiles/profiles_per_reconstruction; iteration++ ) {
   

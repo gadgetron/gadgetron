@@ -25,7 +25,7 @@ public: // Main interface
     
   // Constructors
   NFFT_plan();
-  NFFT_plan( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type fixed_dims, REAL W, int device = -1 );
+  NFFT_plan( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int device = -1 );
   NFFT_plan( NFFT_plan<REAL,D> *plan );
 
   // Destructor
@@ -36,7 +36,7 @@ public: // Main interface
   void wipe( NFFT_wipe_mode mode );
 
   // Replan 
-  bool setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type fixed_dims, REAL W, int device = -1 );
+  bool setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int device = -1 );
     
   // Preproces trajectory
   enum NFFT_prep_mode { NFFT_PREP_ALL, NFFT_PREP_FORWARDS, NFFT_PREP_BACKWARDS };
@@ -89,16 +89,13 @@ private:
   typename uintd<D>::Type matrix_size_os;       // Oversampled matrix size
   typename uintd<D>::Type matrix_size_wrap;     // Wrap size at border
 
-  typename uintd<D>::Type fixed_dims;           // "Boolean" denoting which dimensions are fixed
-  typename uintd<D>::Type non_fixed_dims;       // "Boolean" denoting which dimensions are non-fixed
+  REAL alpha;                                   // Oversampling factor
+  REAL beta;                                    // Kaiser-Bessel convolution kernel control parameter
+  REAL W;                                       // Kernel width in oversampled grid
 
-  REAL alpha;                          // Oversampling factor
-  REAL beta;                           // Kaiser-Bessel convolution kernel control parameter
-  REAL W;                              // Kernel width in oversampled grid
-
-  unsigned int number_of_samples;      // Number of amples (per batch)
+  unsigned int number_of_samples;               // Number of samples (per batch)
     
-  int device;                          // Associated device id
+  int device;                                    // Associated device id
 
   //
   // Internal data structures for convolution and deapodization
