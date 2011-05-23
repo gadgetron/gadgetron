@@ -916,18 +916,16 @@ bool cuNDA_axpby( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *
 
 // Crop
 template<class T, unsigned int D> __global__ void
-cuNDA_crop_kernel( typename uintd<D>::Type offset, typename uintd<D>::Type matrix_size_in, typename uintd<D>::Type matrix_size_out, 
-		   T *in, T *out, unsigned int number_of_batches, unsigned int number_of_elements )
+cuNDA_crop_kernel( typename uintd<D>::Type offset, typename uintd<D>::Type matrix_size_in, typename uintd<D>::Type matrix_size_out, T *in, T *out )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
 
-  if( idx < number_of_elements ){
+  if( idx < prod(matrix_size_out) ){
     const typename uintd<D>::Type co = idx_to_co<D>( idx, matrix_size_out );
     const typename uintd<D>::Type co_os = offset + co;
-    const unsigned int source_idx = co_to_idx<D>(co_os, matrix_size_in);
-    const unsigned int source_elements = prod(matrix_size_in);
-    for( unsigned int image=0; image<number_of_batches; image++ )
-      out[image*number_of_elements+idx] = in[image*source_elements+source_idx];
+    const unsigned int in_idx = co_to_idx<D>(co_os, matrix_size_in)+blockIdx.y*prod(matrix_size_in);
+    const unsigned int out_idx = idx+blockIdx.y*prod(matrix_size_out);
+    out[out_idx] = in[in_idx];
   }
 }
 
@@ -940,29 +938,28 @@ bool cuNDA_crop( typename uintd<D>::Type offset, cuNDArray<T> *in, cuNDArray<T> 
     return false;
   }
 
-  if( !(in->get_number_of_dimensions() == D || in->get_number_of_dimensions() == D+1) ){
-    cout << endl << "image dimensions mismatch, cannot crop" << endl;
+  if( in->get_number_of_dimensions() < D ){
+    cout << endl << "number of image dimensions should be at least " << D << ", cannot crop" << endl;
     return false;
   }
-
-  unsigned int number_of_batches = 
-    (out->get_number_of_dimensions() == D ) ? 1 : out->get_size(out->get_number_of_dimensions()-1);
 
   typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( in->get_dimensions() );
   typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( out->get_dimensions() );
  
+  unsigned int number_of_batches = 1;
+  for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ )
+    number_of_batches *= in->get_size(d);
+
   if( weak_greater(offset+matrix_size_out, matrix_size_in) ){
     cout << endl << "cropping size mismatch, cannot crop" << endl;
     return false;
   }
- 
-  unsigned int number_of_elements = prod(matrix_size_out);
 
   dim3 blockDim(256);
-  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
+  dim3 gridDim((unsigned int) ceil((double)prod(matrix_size_out)/blockDim.x), number_of_batches);
 
   // Invoke kernel
-  cuNDA_crop_kernel<T,D><<< gridDim, blockDim >>> ( offset, matrix_size_in, matrix_size_out, in->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements );
+  cuNDA_crop_kernel<T,D><<< gridDim, blockDim >>> ( offset, matrix_size_in, matrix_size_out, in->get_data_ptr(), out->get_data_ptr() );
  
   CHECK_FOR_CUDA_ERROR();
 

@@ -93,7 +93,8 @@ private:
   REAL beta;                                    // Kaiser-Bessel convolution kernel control parameter
   REAL W;                                       // Kernel width in oversampled grid
 
-  unsigned int number_of_samples;               // Number of samples (per batch)
+  unsigned int number_of_samples;               // Number of samples per frame per coil
+  unsigned int number_of_frames;                 // Number of frames per reconstruction
     
   int device;                                    // Associated device id
 

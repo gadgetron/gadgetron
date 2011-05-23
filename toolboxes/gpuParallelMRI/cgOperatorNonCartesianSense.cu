@@ -3,16 +3,25 @@
 #include "ndarray_vector_td_utilities.h"
 #include <cublas_v2.h>
 
+static unsigned int prod( std::vector<unsigned int> &vec )
+{
+  unsigned int result = 1;
+  for( unsigned int i=0; i<vec.size(); i++ ){
+    result *= vec[i];
+  }
+  return result;
+}
+
 template<class REAL, unsigned int D> int 
 cgOperatorNonCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {
-  if (!(in->dimensions_equal(this->dimensions_)) || !(out->dimensions_equal(this->dimensions_out_)) ) {
+  if( (in->get_number_of_elements() != prod(this->dimensionsI_)) || (out->get_number_of_elements() != prod(this->dimensionsK_)) ) {
     std::cerr << "cgOperatorNonCartesianSense::mult_M dimensions mismatch" << std::endl;
     return -1;
   }
-  
+
   cuNDArray<_complext> tmp;
-  std::vector<unsigned int> full_dimensions = this->dimensions_;
+  std::vector<unsigned int> full_dimensions = this->dimensionsI_;
   full_dimensions.push_back(this->ncoils_);
 
   if( !tmp.create(full_dimensions) ) {
@@ -20,27 +29,15 @@ cgOperatorNonCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray
     return -2;    
   }
   
-  if( mult_csm( in,&tmp ) < 0 ) {
+  if( mult_csm( in, &tmp ) < 0 ) {
     std::cerr << "cgOperatorNonCartesianSense::mult_M : Unable to multiply with coil sensitivities" << std::endl;
     return -3;
   }
 
-  std::vector<unsigned int> out_dims = out->get_dimensions();
-  std::vector<unsigned int> tmp_dims = tmp.get_dimensions();
-
-  if (this->ncoils_ == 1) {
-    out->squeeze();
-    tmp.squeeze();
-  }
-
-  //Do the NFFT
+  // Forwards NFFT
   if( !plan_.compute( out, &tmp, weights_, NFFT_plan<REAL,D>::NFFT_FORWARDS )) {
     std::cerr << "cgOperatorNonCartesianSense::mult_M : failed during NFFT" << std::endl;
     return -4;
-  }
-
-  if (this->ncoils_ == 1) {
-    out->reshape(out_dims);
   }
 
   return 0;
@@ -49,12 +46,12 @@ cgOperatorNonCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray
 template<class REAL, unsigned int D> int 
 cgOperatorNonCartesianSense<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {
-  if( !(out->dimensions_equal(this->dimensions_)) || !(in->dimensions_equal(this->dimensions_out_)) ) {
+  if( (out->get_number_of_elements() != prod(this->dimensionsI_)) || (in->get_number_of_elements() != prod(this->dimensionsK_)) ) {
     std::cerr << "cgOperatorNonCartesianSense::mult_MH dimensions mismatch" << std::endl;
     return -1;
   }
 
-  std::vector<unsigned int> tmp_dimensions = this->dimensions_;
+  std::vector<unsigned int> tmp_dimensions = this->dimensionsI_;
   tmp_dimensions.push_back(this->ncoils_);
 
   cuNDArray<_complext> tmp;
@@ -63,25 +60,10 @@ cgOperatorNonCartesianSense<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArra
     return -2;
   }
 
-  //  if( !weights_ ) {
-  //  std::cout << "cgOperatorNonCartesianSense::mult_MH : gridding weights are zero, aborting" << std::endl;
-  //  return -1;
-  // }
-  
-  std::vector<unsigned int> tmp_dims_in = in->get_dimensions();
-  if (this->ncoils_ == 1) {
-    in->squeeze();
-    tmp.squeeze();
-  }
-
   // Do the NFFT
   if( !plan_.compute( in, &tmp, weights_, NFFT_plan<REAL,D>::NFFT_BACKWARDS )) {
     std::cerr << "cgOperatorNonCartesianSense::mult_MH : failed during NFFT" << std::endl;
     return -3;
-  }
-  
-  if( this->ncoils_ == 1 ) {
-    in->reshape(tmp_dims_in);
   }
 
   if( !accumulate )
@@ -109,28 +91,35 @@ cgOperatorNonCartesianSense<REAL,D>::setup( _uintd matrix_size, _uintd matrix_si
 template<class REAL, unsigned int D> int 
 cgOperatorNonCartesianSense<REAL,D>::set_trajectory( cuNDArray<_reald>* trajectory ) 
 {
-  // TEMPORARY
-  if( trajectory && trajectory->get_number_of_dimensions() > 1 ){
-    std::cout << "\nTEMPORARILY the trajectory array must be one-dimensional" << std::endl;
+  if (!this->csm_) {
+    std::cerr << "cgOperatorNonCartesianSense::set_trajectory : Error setting trajectory, csm not set" << std::endl;
     return -1;
   }
-
+  
   if (trajectory) {
     trajectory_ = trajectory;
-    this->nsamples_ = trajectory->get_number_of_elements();
-    this->dimensions_out_.clear();
-    this->dimensions_out_.push_back(this->nsamples_);
-    this->dimensions_out_.push_back(this->ncoils_);
+    
+    unsigned int num_frames = trajectory->get_number_of_elements()/trajectory->get_size(0);
+    this->dimensionsK_.clear();
+    this->dimensionsK_.push_back(trajectory->get_size(0));
+    this->dimensionsK_.push_back(num_frames);
+    this->dimensionsK_.push_back(this->ncoils_);
+
+    this->dimensionsI_.clear();
+    this->dimensionsI_ = this->csm_->get_dimensions();
+    this->dimensionsI_.pop_back();
+    this->dimensionsI_.push_back(num_frames);
     
     if( !plan_.preprocess( trajectory_, NFFT_plan<REAL,D>::NFFT_PREP_ALL )) {
       std::cerr << "cgOperatorNonCartesianSense: failed to run preprocess" << std::endl;
-      return -1;
+      return -2;
     }
-  } 
-  else {
-    return -2;
   }
-
+  else {
+    std::cerr << "cgOperatorNonCartesianSense: cannot set trajectory to 0x0." << std::endl;
+    return -3;
+  }
+  
   return 0;
 }
 
@@ -141,11 +130,12 @@ cgOperatorNonCartesianSense<REAL,D>::set_weights( cuNDArray<REAL>* w )
     std::cerr << "cgOperatorNonCartesianSense::set_weights : Error setting weights, trajectory not set" << std::endl;
     return -1;
   }
-  if (w->get_number_of_elements() != trajectory_->get_number_of_elements()) {
+  
+  if( !(w->get_number_of_elements() == trajectory_->get_size(0) || w->get_number_of_elements() == trajectory_->get_number_of_elements()) ) {
     std::cerr << "cgOperatorNonCartesianSense::set_weights : weights dimensionality do not match trajectory" << std::endl;
     return -2;
   }
-
+  
   weights_ = w;
 
   return 0;

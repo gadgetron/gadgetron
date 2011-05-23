@@ -37,7 +37,8 @@ compute_radial_trajectory_golden_ratio_2d_kernel( typename reald<REAL,2>::Type *
 
 
 template<class REAL> auto_ptr< cuNDArray< typename reald<REAL,2>::Type > > 
-compute_radial_trajectory_golden_ratio_2d( unsigned int samples_per_profile, unsigned int num_profiles, unsigned int profile_offset )
+compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile, unsigned int num_profiles_per_frame, unsigned int num_frames, 
+					   unsigned int profile_offset )
 {
   typedef typename reald<REAL,2>::Type T;
 
@@ -46,15 +47,15 @@ compute_radial_trajectory_golden_ratio_2d( unsigned int samples_per_profile, uns
   cudaDeviceProp deviceProp; cudaGetDeviceProperties( &deviceProp, device );
   const unsigned int warp_size = deviceProp.warpSize;
   
-  if( samples_per_profile%warp_size ){
-    cout << endl << "compute_radial_trajectory_golden_ratio_2d: samples/profile number a multiple of the device's warp size." << endl;
+  if( num_samples_per_profile%warp_size ){
+    cout << endl << "compute_radial_trajectory_golden_ratio_2d: #samples/profile number a multiple of the device's warp size." << endl;
     return auto_ptr< cuNDArray<T> >(0x0);
   }
 
-  unsigned int number_of_samples = samples_per_profile * num_profiles;
+  unsigned int number_of_samples_per_frame = num_samples_per_profile * num_profiles_per_frame;
 
   // Allocate space for result
-  vector<unsigned int> dims; dims.push_back( number_of_samples );
+  vector<unsigned int> dims; dims.push_back( number_of_samples_per_frame ); dims.push_back( num_frames );
   cuNDArray<T> *co = cuNDArray<T>::allocate(dims);
   
   if(!co){
@@ -63,8 +64,8 @@ compute_radial_trajectory_golden_ratio_2d( unsigned int samples_per_profile, uns
   }
   
   // Set dimensions of grid/blocks.
-  dim3 dimBlock( samples_per_profile );
-  dim3 dimGrid( num_profiles );
+  dim3 dimBlock( num_samples_per_profile );
+  dim3 dimGrid( num_profiles_per_frame*num_frames );
   
   // Invoke kernel
   compute_radial_trajectory_golden_ratio_2d_kernel<REAL><<< dimGrid, dimBlock >>> ( co->get_data_ptr(), (REAL)profile_offset );
@@ -317,8 +318,11 @@ compute_radial_dcw_golden_ratio_2d( unsigned int samples_per_profile, unsigned i
 // Instantiation
 //
 
-template auto_ptr< cuNDArray< typename reald<float,2>::Type > > compute_radial_trajectory_golden_ratio_2d<float>( unsigned int, unsigned int, unsigned int );
-template auto_ptr< cuNDArray< typename reald<double,2>::Type > > compute_radial_trajectory_golden_ratio_2d<double>( unsigned int, unsigned int, unsigned int );
+template auto_ptr< cuNDArray< typename reald<float,2>::Type > > 
+compute_radial_trajectory_golden_ratio_2d<float>( unsigned int, unsigned int, unsigned int, unsigned int );
+
+template auto_ptr< cuNDArray< typename reald<double,2>::Type > > 
+compute_radial_trajectory_golden_ratio_2d<double>( unsigned int, unsigned int, unsigned int, unsigned int );
 
 template auto_ptr< cuNDArray<float> >compute_radial_dcw_golden_ratio_2d<float>( unsigned int, unsigned int, float, float, unsigned int );
 template auto_ptr< cuNDArray<double> >compute_radial_dcw_golden_ratio_2d<double>( unsigned int, unsigned int, double, double, unsigned int );

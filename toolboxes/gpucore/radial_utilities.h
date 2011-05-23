@@ -6,7 +6,8 @@
 
 // Compute radial trajectory in the normalized range [-1/2;1/2]
 template<class REAL> std::auto_ptr< cuNDArray< typename reald<REAL,2>::Type > > 
-compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile, unsigned int num_profiles, unsigned int profile_offset = 0 );
+compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile, unsigned int num_profiles_per_frame, unsigned int num_frames, 
+					   unsigned int profile_offset = 0 );
 
 // Compute density compensation weights (a function of the chose reconstruction settings: matrix_size and oversampling factor)
 template<class REAL> std::auto_ptr< cuNDArray<REAL> >

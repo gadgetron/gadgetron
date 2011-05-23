@@ -16,7 +16,6 @@
 #include "NFFT.h"
 #include "cuNDFFT.h"
 
-#include "hoNDArray_fileio.h"
 #include "cuNDArray.h"
 #include "ndarray_vector_td_utilities.h"
 #include "vector_td_utilities.h"
@@ -129,7 +128,8 @@ NFFT_plan<REAL,D>::NFFT_plan( NFFT_plan<REAL,D> *plan )
   alpha = plan->alpha;
   beta = plan->beta;
   number_of_samples = plan->number_of_samples;
-  
+  number_of_frames = plan->number_of_frames;
+
   if (cudaGetDevice(&device) != cudaSuccess) {
     cerr << "NFFT_plan::NFFT_plan: unable to get device no" << endl;
   }  
@@ -227,8 +227,6 @@ bool NFFT_plan<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uin
   bool success = 
     compute_beta();
   
-  //cout << endl << "beta: " << beta << endl;
-
   int device_no_old;
   if (cudaGetDevice(&device_no_old) != cudaSuccess) {
     cerr << "NFFT_plan::setup: unable to get device no" << endl;
@@ -261,8 +259,8 @@ bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *tra
 
   wipe(NFFT_WIPE_PREPROCESSING);
 
-  if( !trajectory || !trajectory->get_number_of_dimensions() == 1 ){
-    cout << endl << "NFFT_plan preprocessing: illegal trajecotry ndarray." << endl;
+  if( !trajectory ){
+    cout << endl << "NFFT_plan preprocessing: illegal trajectory array." << endl;
     return false;
   }
   
@@ -272,6 +270,7 @@ bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *tra
   }
 
   number_of_samples = trajectory->get_size(0);
+  number_of_frames = trajectory->get_number_of_elements()/number_of_samples;
 
   int device_no_old;
   if (cudaGetDevice(&device_no_old) != cudaSuccess) {
@@ -283,9 +282,9 @@ bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *tra
   
   // Make Thrust device vector of trajectory and samples
   device_vector< vector_td<REAL,D> > trajectory_positions_in( device_pointer_cast< vector_td<REAL,D> >(trajectory->get_data_ptr()), 
-							      device_pointer_cast< vector_td<REAL,D> >(trajectory->get_data_ptr()+number_of_samples) );
+							      device_pointer_cast< vector_td<REAL,D> >(trajectory->get_data_ptr()+trajectory->get_number_of_elements() ));
 
-  trajectory_positions = new device_vector< vector_td<REAL,D> >( number_of_samples );
+  trajectory_positions = new device_vector< vector_td<REAL,D> >( trajectory->get_number_of_elements() );
     
   CHECK_FOR_CUDA_ERROR();
 
@@ -298,8 +297,8 @@ bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *tra
   if( mode != NFFT_PREP_FORWARDS ){
     
     // allocate storage for and compute temporary prefix-sum variable (#cells influenced per sample)
-    device_vector<unsigned int> c_p_s(number_of_samples);
-    device_vector<unsigned int> c_p_s_ps(number_of_samples);
+    device_vector<unsigned int> c_p_s(trajectory->get_number_of_elements());
+    device_vector<unsigned int> c_p_s_ps(trajectory->get_number_of_elements());
     
     CHECK_FOR_CUDA_ERROR();
     
@@ -318,27 +317,28 @@ bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *tra
     CHECK_FOR_CUDA_ERROR();
     
     // Fill tuple vector
-    write_pairs<REAL,D>( matrix_size_os, matrix_size_wrap, number_of_samples, W, 
+    write_pairs<REAL,D>( matrix_size_os, matrix_size_wrap, number_of_samples, number_of_frames, W, 
 			 raw_pointer_cast(&(*trajectory_positions)[0]), raw_pointer_cast(&c_p_s_ps[0]), 
 			 raw_pointer_cast(&(*tuples_first)[0]), raw_pointer_cast(&(*tuples_last)[0]) );
     c_p_s_ps.clear();
 
     // Sort by grid indices
-    sort_by_key(tuples_first->begin(), tuples_first->end(), tuples_last->begin() );
+    sort_by_key( tuples_first->begin(), tuples_first->end(), tuples_last->begin() );
     
     // each bucket_begin[i] indexes the first element of bucket i's list of points
     // each bucket_end[i] indexes one past the last element of bucket i's list of points
-    bucket_begin = new device_vector<unsigned int>(prod(matrix_size_os+matrix_size_wrap));
-    bucket_end = new device_vector<unsigned int>(prod(matrix_size_os+matrix_size_wrap));
+
+    bucket_begin = new device_vector<unsigned int>(number_of_frames*prod(matrix_size_os+matrix_size_wrap));
+    bucket_end   = new device_vector<unsigned int>(number_of_frames*prod(matrix_size_os+matrix_size_wrap));
     
     CHECK_FOR_CUDA_ERROR();
     
     // find the beginning of each bucket's list of points
     counting_iterator<unsigned int> search_begin(0);
-    lower_bound(tuples_first->begin(), tuples_first->end(), search_begin, search_begin + prod(matrix_size_os+matrix_size_wrap), bucket_begin->begin() );
+    lower_bound(tuples_first->begin(), tuples_first->end(), search_begin, search_begin + number_of_frames*prod(matrix_size_os+matrix_size_wrap), bucket_begin->begin() );
     
     // find the end of each bucket's list of points
-    upper_bound(tuples_first->begin(), tuples_first->end(), search_begin, search_begin + prod(matrix_size_os+matrix_size_wrap), bucket_end->begin() );
+    upper_bound(tuples_first->begin(), tuples_first->end(), search_begin, search_begin + number_of_frames*prod(matrix_size_os+matrix_size_wrap), bucket_end->begin() );
   
     delete tuples_first;
   }
@@ -354,7 +354,6 @@ bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *tra
 
   return true;
 }
-
 
 template<class REAL, unsigned int D> bool
 NFFT_plan<REAL,D>::compute( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode )
@@ -382,11 +381,11 @@ NFFT_plan<REAL,D>::compute( cuNDArray<typename complext<REAL>::Type> *samples, c
   
   typename uintd<D>::Type image_dims = vector_to_uintd<D>(image->get_dimensions()); 
   bool oversampled_image = (image_dims==matrix_size_os); 
-  unsigned int num_batches = (image->get_number_of_dimensions()>D) ? image->get_size(image->get_number_of_dimensions()-1) : 1;
-  vector<unsigned int> vec_dims = uintd_to_vector<D>(matrix_size_os); 
-  if( num_batches > 1 ) 
-    vec_dims.push_back(num_batches);
 
+  vector<unsigned int> vec_dims = uintd_to_vector<D>(matrix_size_os); 
+  for( unsigned int d=D; d<image->get_number_of_dimensions(); d++ )
+    vec_dims.push_back(image->get_size(d));
+  
   int device_no_old;
   if (cudaGetDevice(&device_no_old) != cudaSuccess) {
     cerr << "NFFT_plan::setup: unable to get device no" << endl;
@@ -480,11 +479,11 @@ NFFT_plan<REAL,D>::compute_iteration( cuNDArray<typename complext<REAL>::Type> *
 
   typename uintd<D>::Type image_dims = vector_to_uintd<D>(image->get_dimensions()); 
   bool oversampled_image = (image_dims==matrix_size_os); 
-  unsigned int num_batches = (image->get_number_of_dimensions()>D) ? image->get_size(image->get_number_of_dimensions()-1) : 1;
+ 
   vector<unsigned int> vec_dims = uintd_to_vector<D>(matrix_size_os); 
-  if( num_batches > 1 ) 
-    vec_dims.push_back(num_batches);
-
+  for( unsigned int d=D; d<image->get_number_of_dimensions(); d++ )
+    vec_dims.push_back(image->get_size(d));
+  
   int device_no_old;
   if (cudaGetDevice(&device_no_old) != cudaSuccess) {
     cerr << "NFFT_plan::setup: unable to get device no" << endl;
@@ -599,16 +598,16 @@ NFFT_plan<REAL,D>::convolve( cuNDArray<typename complext<REAL>::Type> *samples, 
   
   typename uintd<D>::Type image_dims = vector_to_uintd<D>(image->get_dimensions()); 
   bool oversampled_image = (image_dims==matrix_size_os); 
-  unsigned int num_batches = (image->get_number_of_dimensions()>D) ? image->get_size(image->get_number_of_dimensions()-1) : 1;
-  vector<unsigned int> vec_dims = uintd_to_vector<D>(matrix_size_os); 
-  if( num_batches > 1 ) 
-    vec_dims.push_back(num_batches);
-
+ 
   if( !oversampled_image ){
     cout << endl << "NFFT_plan::convolve: ERROR: oversampled image not provided as input." << endl;
     return false;
   }
 
+  vector<unsigned int> vec_dims = uintd_to_vector<D>(matrix_size_os); 
+  for( unsigned int d=D; d<image->get_number_of_dimensions(); d++ )
+    vec_dims.push_back(image->get_size(d));
+  
   int device_no_old;
   if (cudaGetDevice(&device_no_old) != cudaSuccess) {
     cerr << "NFFT_plan::setup: unable to get device no" << endl;
@@ -683,6 +682,13 @@ NFFT_plan<REAL,D>::deapodize( cuNDArray<typename complext<REAL>::Type> *image )
     return false;
   }
 
+  unsigned char components;
+  
+  components = NFFT_FFT;
+  
+  if( !check_consistency( 0x0, image, 0x0, components ) )
+    return false;
+
   typename uintd<D>::Type image_dims = vector_to_uintd<D>(image->get_dimensions()); 
   bool oversampled_image = (image_dims==matrix_size_os); 
   
@@ -690,13 +696,6 @@ NFFT_plan<REAL,D>::deapodize( cuNDArray<typename complext<REAL>::Type> *image )
     cout << endl << "NFFT_plan::deapodize: ERROR: oversampled image not provided as input." << endl;
     return false;
   }
-
-  unsigned char components;
-  
-  components = NFFT_FFT;
-  
-  if( !check_consistency( 0x0, image, 0x0, components ) )
-    return false;
   
   int device_no_old;
   if (cudaGetDevice(&device_no_old) != cudaSuccess) {
@@ -747,7 +746,7 @@ NFFT_plan<REAL,D>::check_consistency( cuNDArray<typename complext<REAL>::Type> *
     return false;
   }
 
-  if( !((image->get_number_of_dimensions() == D) || (image->get_number_of_dimensions() == (D+1))) ){
+  if( image->get_number_of_dimensions() < D ){
     cout << endl << "NFFT_plan: Number of image dimensions mismatch the plan." << endl;
     return false;
   }    
@@ -762,39 +761,35 @@ NFFT_plan<REAL,D>::check_consistency( cuNDArray<typename complext<REAL>::Type> *
   
   if( (components & NFFT_CONVOLUTION ) || (components & NFFT_H_CONVOLUTION ) ){
     
-    if( !(samples->get_number_of_dimensions()==1 || samples->get_number_of_dimensions()==2) ){
-      cout << endl << "NFFT_plan: Number of sample dimensions should be one or two: samples_per_recon (x batch_size)." << endl;
+    if( (samples->get_number_of_elements() == 0) || (samples->get_number_of_elements() % (number_of_frames*number_of_samples)) ){
+      cout << endl << "NFFT_plan: The number of samples is not a multiple of #samples/frame x #frames as requested through preprocessing" << endl;
       return false;
     }
     
-    if( !(samples->get_size(0)==number_of_samples) ){
-      cout << endl << "NFFT_plan: Number of samples mismatch the preprocessed trajectory." << endl;
-      return false;
+    unsigned int num_batches_in_samples_array = samples->get_number_of_elements()/(number_of_frames*number_of_samples);
+
+    unsigned int num_batches_in_image_array = 1;
+    for( unsigned int d=D; d<image->get_number_of_dimensions(); d++ ){
+      num_batches_in_image_array *= image->get_size(d);
     }
-    
-    if( samples->get_number_of_dimensions()==2 || image->get_number_of_dimensions() == D+1 ){
-      if( !(samples->get_number_of_dimensions()==2) || !(image->get_number_of_dimensions() == D+1) || !(samples->get_size(1)==image->get_size(D)) ){
-	cout << endl << "NFFT_plan: Number of batches mismatch between samples and image." << endl;
-	return false;
-      }
+    num_batches_in_image_array /= number_of_frames;
+
+    if( num_batches_in_samples_array != num_batches_in_image_array ){
+      cout << endl << "NFFT_plan: Number of batches mismatch between samples and image arrays" << endl;
+      return false;
     }
   }
   
   if( components & NFFT_H_CONVOLUTION ){
     if( weights ){
  
-      if( !(weights->get_number_of_dimensions()==1 || weights->get_number_of_dimensions()==2) ){
-	cout << endl << "NFFT_plan: Number of weight dimensions should be one or two: samples_per_recon (x batch_size)." << endl;
-	return false;
-      }
-      
-      if( !(weights->get_size(0)==number_of_samples) ){
-	cout << endl << "NFFT_plan: Number of weights mismatch the preprocessed trajectory." << endl;
+      if( weights->get_number_of_elements() == 0 || weights->get_number_of_elements() != number_of_frames*number_of_samples ){
+	cout << endl << "NFFT_plan: The number of weights should match #samples/frame x #frames as requested through preprocessing" << endl;
 	return false;
       }
     }
   }
-
+  
   return true;
 }
 
@@ -980,7 +975,7 @@ NFFT_plan<REAL,D>::compute_NFFT_H( cuNDArray<typename complext<REAL>::Type> *sam
   
   // FFT
   if( success )
-    success = fft( image, NFFT_BACKWARDS, false ); // scaling is cared for by deapodization
+    success = fft( image, NFFT_BACKWARDS, false ); // scaling is cared for by the deapodization
   
   // Deapodization
   if( success )
@@ -1007,6 +1002,11 @@ NFFT_plan<REAL,D>::convolve_NFFT( cuNDArray<typename complext<REAL>::Type> *samp
     return false;
   }
   
+  unsigned int num_batches = 1;
+  for( unsigned int d=D; d<image->get_number_of_dimensions(); d++ )
+    num_batches *= image->get_size(d);
+  num_batches /= number_of_frames;
+
   /*
     Setup grid and threads
   */
@@ -1055,7 +1055,7 @@ NFFT_plan<REAL,D>::convolve_NFFT( cuNDArray<typename complext<REAL>::Type> *samp
   }
   
   // We can (only) convolve max_coils batches per run due to shared memory issues. 
-  unsigned int domain_size_coils_desired = (samples->get_number_of_dimensions()==1) ? 1 : samples->get_size(1);
+  unsigned int domain_size_coils_desired = num_batches;
   unsigned int num_repetitions = domain_size_coils_desired/(max_coils+1) + 1;
   unsigned int domain_size_coils = (num_repetitions==1) ? domain_size_coils_desired : max_coils;
   unsigned int domain_size_coils_tail = (num_repetitions==1) ? domain_size_coils_desired : domain_size_coils_desired - (num_repetitions-1)*domain_size_coils;
@@ -1065,7 +1065,7 @@ NFFT_plan<REAL,D>::convolve_NFFT( cuNDArray<typename complext<REAL>::Type> *samp
 
   // Block and Grid dimensions
   dim3 dimBlock( (unsigned int)threads_per_block ); 
-  dim3 dimGrid( gridDimX );
+  dim3 dimGrid( gridDimX, number_of_frames );
 
   // Calculate how much shared memory to use per thread
   size_t bytes_per_thread = domain_size_coils * sizeof( vector_td<REAL,D> );
@@ -1118,6 +1118,11 @@ NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray<typename complext<REAL>::Type> *sa
     return false;
   }
   
+  unsigned int num_batches = 1;
+  for( unsigned int d=D; d<image->get_number_of_dimensions(); d++ )
+    num_batches *= image->get_size(d);
+  num_batches /= number_of_frames;
+
   /*
     Setup grid and threads
   */
@@ -1166,7 +1171,7 @@ NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray<typename complext<REAL>::Type> *sa
   }
   
   // We can (only) convolve domain_size_coils batches per run due to shared memory issues. 
-  unsigned int domain_size_coils_desired = (samples->get_number_of_dimensions()==1) ? 1 : samples->get_size(1);
+  unsigned int domain_size_coils_desired = num_batches;
   unsigned int num_repetitions = domain_size_coils_desired/(max_coils+1) + 1;
   unsigned int domain_size_coils = (num_repetitions==1) ? domain_size_coils_desired : max_coils;
   unsigned int domain_size_coils_tail = (num_repetitions==1) ? domain_size_coils_desired : domain_size_coils_desired - (num_repetitions-1)*domain_size_coils;
@@ -1176,15 +1181,17 @@ NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray<typename complext<REAL>::Type> *sa
 
   // Block and Grid dimensions
   dim3 dimBlock( (unsigned int)threads_per_block ); 
-  dim3 dimGrid( gridDimX );
+  dim3 dimGrid( gridDimX, number_of_frames );
 
   // Calculate how much shared memory to use per thread
   size_t bytes_per_thread = domain_size_coils * sizeof( vector_td<REAL,D> );
   size_t bytes_per_thread_tail = domain_size_coils_tail * sizeof( vector_td<REAL,D> );
 
   vector<unsigned int> vec_dims = uintd_to_vector<D>(matrix_size_os+matrix_size_wrap); 
-  if( domain_size_coils_desired > 1 ) 
-    vec_dims.push_back(domain_size_coils_desired);
+  if( number_of_frames > 1 )
+    vec_dims.push_back(number_of_frames);
+  if( num_batches > 1 ) 
+    vec_dims.push_back(num_batches);
   
   // Allocate and clear temporary image that includes a wrapping zone
   cuNDArray<typename complext<REAL>::Type> *_tmp = cuNDArray<typename complext<REAL>::Type>::allocate(vec_dims); 
@@ -1202,18 +1209,18 @@ NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray<typename complext<REAL>::Type> *sa
 
   vector_td<REAL,D> matrix_size_os_real = to_reald<REAL,unsigned int,D>( matrix_size_os );
 
-  for( unsigned int batch = 0; batch<num_repetitions; batch++ ){
+  for( unsigned int i = 0; i<num_repetitions; i++ ){
     NFFT_H_convolve_kernel<REAL,D>
-      <<<dimGrid, dimBlock, (batch==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
+      <<<dimGrid, dimBlock, (i==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
       ( alpha, beta, W, matrix_size_os+matrix_size_wrap, number_of_samples, 
-	(batch==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils, 
+	(i==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils, 
 	raw_pointer_cast(&(*trajectory_positions)[0]), 
-	&(_tmp->get_data_ptr()[batch*prod(matrix_size_os)*domain_size_coils]), &(samples->get_data_ptr()[batch*number_of_samples*domain_size_coils]), 
+	&(_tmp->get_data_ptr()[i*prod(matrix_size_os)*number_of_frames*domain_size_coils]),
+	&(samples->get_data_ptr()[i*number_of_samples*number_of_frames*domain_size_coils]), 
 	raw_pointer_cast(&(*tuples_last)[0]), raw_pointer_cast(&(*bucket_begin)[0]), raw_pointer_cast(&(*bucket_end)[0]),
 	double_warp_size_power, get_half<REAL>()*W, reciprocal(W), matrix_size_os_real );
   }
   
-  //cudaThreadSynchronize();
   CHECK_FOR_CUDA_ERROR();
   
   bool success = image_wrap( _tmp, image, accumulate );
@@ -1222,6 +1229,7 @@ NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray<typename complext<REAL>::Type> *sa
 
   return success;
 }
+
 
 // Image wrap kernels
 
@@ -1240,7 +1248,7 @@ image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Ty
   else
     idx = blockIdx.x*blockDim.x + threadIdx.x;
 
-  const unsigned int image_offset_src = threadIdx.z * num_elements_per_image_src;
+  const unsigned int image_offset_src = (threadIdx.z*gridDim.y+blockIdx.y)*num_elements_per_image_src;
   
   const typename uintd<D>::Type co = idx_to_co<D>(idx, matrix_size_os);
   const typename uintd<D>::Type half_wrap = matrix_size_wrap>>1;
@@ -1332,7 +1340,7 @@ image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Ty
   }
   
   // Output
-  const unsigned int image_offset_tgt = threadIdx.z * prod(matrix_size_os);
+  const unsigned int image_offset_tgt = (threadIdx.z*gridDim.y+blockIdx.y)*prod(matrix_size_os);
   if( accumulate ) result += out[idx+image_offset_tgt];
   out[idx+image_offset_tgt] = result;
 }
@@ -1340,15 +1348,18 @@ image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Ty
 template<class REAL, unsigned int D> bool
 NFFT_plan<REAL,D>::image_wrap( cuNDArray<typename complext<REAL>::Type> *source, cuNDArray<typename complext<REAL>::Type> *target, bool accumulate )
 {
-  unsigned int number_of_images = (source->get_number_of_dimensions()==(D+1)) ? source->get_size(source->get_number_of_dimensions()-1) : 1;
-  
+  unsigned int num_batches = 1;
+  for( unsigned int d=D; d<source->get_number_of_dimensions(); d++ )
+    num_batches *= source->get_size(d);
+  num_batches /= number_of_frames;
+
   // Set dimensions of grid/blocks.
   unsigned int bdim = 16;
-  dim3 dimBlock( bdim, (number_of_images==1) ? bdim : 1, number_of_images );
-  dim3 dimGrid( prod(matrix_size_os)/(dimBlock.x*dimBlock.y) );
+  dim3 dimBlock( bdim, (num_batches==1) ? bdim : 1, num_batches );
+  dim3 dimGrid( prod(matrix_size_os)/(dimBlock.x*dimBlock.y), number_of_frames );
 
   // Safety check
-  if( (matrix_size_os.vec[0]%bdim) || (number_of_images==1 && (matrix_size_os.vec[1]%bdim)) ) {
+  if( (matrix_size_os.vec[0]%bdim) || (num_batches==1 && (matrix_size_os.vec[1]%bdim)) ) {
     cout << endl << "dimensions mismatch in wrapping setup." << endl;
     return false;
   }

@@ -37,7 +37,7 @@ insert_samples_kernel( typename complext<REAL>::Type* in, typename complext<REAL
 template<class REAL, unsigned int D> int 
 cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {
-  if (!(in->dimensions_equal(this->dimensions_)) || !(out->dimensions_equal(this->dimensions_out_)) ) {
+  if (!(in->dimensions_equal(this->dimensionsI_)) || !(out->dimensions_equal(this->dimensionsK_)) ) {
 
     std::cerr << "cgOperatorCartesianSense::mult_M dimensions mismatch" << std::endl;
 
@@ -45,7 +45,7 @@ cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_c
   }
 
   cuNDArray<_complext> tmp;
-  std::vector<unsigned int> full_dimensions = this->dimensions_;
+  std::vector<unsigned int> full_dimensions = this->dimensionsI_;
   full_dimensions.push_back(this->ncoils_);
 
   if (!tmp.create(full_dimensions)) {
@@ -60,7 +60,7 @@ cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_c
 
   cuNDFFT ft;
   std::vector<unsigned int> ft_dims;
-  for (unsigned int i = 0; i < this->dimensions_.size(); i++) {
+  for (unsigned int i = 0; i < this->dimensionsI_.size(); i++) {
     ft_dims.push_back(i);
   }
 
@@ -86,12 +86,12 @@ cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_c
 template<class REAL, unsigned int D> int 
 cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate)
 {
-  if (!(out->dimensions_equal(this->dimensions_)) || !(in->dimensions_equal(this->dimensions_out_)) ) {
+  if (!(out->dimensions_equal(this->dimensionsI_)) || !(in->dimensions_equal(this->dimensionsK_)) ) {
     std::cerr << "cgOperatorCartesianSense::mult_MH dimensions mismatch" << std::endl;
     return -1;
   }
 
-  std::vector<unsigned int> tmp_dimensions = this->dimensions_;
+  std::vector<unsigned int> tmp_dimensions = this->dimensionsI_;
   tmp_dimensions.push_back(this->ncoils_);
 
   cuNDArray<_complext> tmp;
@@ -117,7 +117,7 @@ cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_c
 
   cuNDFFT ft;
   std::vector<unsigned int> ft_dims;
-  for (unsigned int i = 0; i < this->dimensions_.size(); i++) {
+  for (unsigned int i = 0; i < this->dimensionsI_.size(); i++) {
     ft_dims.push_back(i);
   }
 

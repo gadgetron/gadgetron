@@ -19,8 +19,8 @@ class cgOperatorCartesianSense : public cgOperatorSense<REAL,D>
     if (csm != 0) {
       this->csm_ = csm;
       this->ncoils_ = csm->get_size(csm->get_number_of_dimensions()-1);
-      this->dimensions_ = csm->get_dimensions();
-      this->dimensions_.pop_back();
+      this->dimensionsI_ = csm->get_dimensions();
+      this->dimensionsI_.pop_back();
     }
     return 0;
   }
@@ -28,10 +28,9 @@ class cgOperatorCartesianSense : public cgOperatorSense<REAL,D>
   virtual int set_sampling_indices(cuNDArray<unsigned int>* idx) {
     if (idx) {
       idx_ = idx;
-      this->nsamples_ = idx_->get_number_of_elements();
-      this->dimensions_out_.clear();
-      this->dimensions_out_.push_back(this->nsamples_);
-      this->dimensions_out_.push_back(this->ncoils_);
+      this->dimensionsK_.clear();
+      this->dimensionsK_.push_back(idx_->get_number_of_elements());
+      this->dimensionsK_.push_back(this->ncoils_);
     }
     return 0;
   }

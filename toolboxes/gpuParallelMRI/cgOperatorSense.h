@@ -9,7 +9,7 @@ class cgOperatorSense : public cuCGMatrixOperator< typename complext<REAL>::Type
 {
 public:
 
-  cgOperatorSense() : csm_(0x0), ncoils_(0), nsamples_(0) {}
+  cgOperatorSense() : csm_(0x0), ncoils_(0) {}
 
   typedef typename complext<REAL>::Type _complext;
   
@@ -22,9 +22,8 @@ public:
 protected:
   cuNDArray<_complext>* csm_;
   unsigned int ncoils_;
-  unsigned int nsamples_;
-  std::vector<unsigned int> dimensions_;
-  std::vector<unsigned int> dimensions_out_;
+  std::vector<unsigned int> dimensionsI_;
+  std::vector<unsigned int> dimensionsK_;
   
   int mult_csm( cuNDArray<_complext>* in, cuNDArray<_complext>* out );
   int mult_csm_conj_sum( cuNDArray<_complext>* in, cuNDArray<_complext>* out) ;
