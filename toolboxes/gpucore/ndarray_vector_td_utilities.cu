@@ -771,15 +771,14 @@ void cuNDA_scale( REAL a, cuNDArray<typename complext<REAL>::Type> *x )
 
 // Scale
 template<class S, class T> __global__ 
-void cuNDA_scale2_kernel( S *a, T *x, unsigned int number_of_batches, unsigned int number_of_elements )
+void cuNDA_scale2_kernel( S *a, T *x, unsigned int number_of_elements )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
   if( idx < number_of_elements ){
+    unsigned int frame_offset = blockIdx.y*number_of_elements;
     S in_a = a[idx];
-    for( unsigned int batch=0; batch<number_of_batches; batch++ ){
-      T in_x = x[batch*number_of_elements+idx];
-      x[batch*number_of_elements+idx] = mul<S>(in_a,in_x);
-    }
+    T in_x = x[idx+frame_offset];
+    x[idx+frame_offset] = mul<S>(in_a,in_x);
   }
 }
 
@@ -797,10 +796,10 @@ bool cuNDA_scale( cuNDArray<T> *a, cuNDArray<T> *x )
   unsigned int num_batches = x->get_number_of_elements() / a->get_number_of_elements();
  
   dim3 blockDim(256);
-  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
+  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x), num_batches);
  
   // Invoke kernel
-  cuNDA_scale2_kernel<T,T><<< gridDim, blockDim >>> ( a->get_data_ptr(), x->get_data_ptr(), num_batches, number_of_elements );
+  cuNDA_scale2_kernel<T,T><<< gridDim, blockDim >>> ( a->get_data_ptr(), x->get_data_ptr(), number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
   return true;
@@ -820,10 +819,10 @@ bool cuNDA_scale( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *
   unsigned int num_batches = x->get_number_of_elements() / a->get_number_of_elements();
  
   dim3 blockDim(256);
-  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
+  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x), num_batches);
  
   // Invoke kernel
-  cuNDA_scale2_kernel<REAL, typename complext<REAL>::Type><<< gridDim, blockDim >>> ( a->get_data_ptr(), x->get_data_ptr(), num_batches, number_of_elements );
+  cuNDA_scale2_kernel<REAL, typename complext<REAL>::Type><<< gridDim, blockDim >>> ( a->get_data_ptr(), x->get_data_ptr(), number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
   return true;
@@ -968,25 +967,24 @@ bool cuNDA_crop( typename uintd<D>::Type offset, cuNDArray<T> *in, cuNDArray<T> 
 
 // Expand and zero fill
 template<class T, unsigned int D> __global__ void
-cuNDA_expand_with_zero_fill_kernel( typename uintd<D>::Type matrix_size_in, typename uintd<D>::Type matrix_size_out, 
-				    T *in, T *out, unsigned int number_of_batches, unsigned int number_of_elements )
+cuNDA_expand_with_zero_fill_kernel( typename uintd<D>::Type matrix_size_in, typename uintd<D>::Type matrix_size_out, T *in, T *out )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
 
-  if( idx < number_of_elements ){
+  if( idx < prod(matrix_size_out) ){
+
     const typename uintd<D>::Type co_out = idx_to_co<D>( idx, matrix_size_out );
     const typename uintd<D>::Type offset = (matrix_size_out-matrix_size_in)>>1;
     T _out;
     bool inside = (co_out>=offset) && (co_out<(matrix_size_in+offset));
-    for( unsigned int batch=0; batch<number_of_batches; batch++ ){
-      if( inside )
-	_out = in[co_to_idx<D>(co_out-offset, matrix_size_in)+batch*prod(matrix_size_in)];
-      else{
-	T zero = get_zero<T>();
-	_out = zero;
-      } 
-      out[idx+batch*number_of_elements] = _out;
+
+    if( inside )
+      _out = in[co_to_idx<D>(co_out-offset, matrix_size_in)+blockIdx.y*prod(matrix_size_in)];
+    else{      
+      _out = get_zero<T>();
     }
+
+    out[idx+blockIdx.y*prod(matrix_size_out)] = _out;
   }
 }
 
@@ -1002,21 +1000,21 @@ bool cuNDA_expand_with_zero_fill( cuNDArray<T> *in, cuNDArray<T> *out )
   typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( in->get_dimensions() );
   typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( out->get_dimensions() );
  
+  unsigned int number_of_batches = 1;
+  for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ )
+    number_of_batches *= in->get_size(d);
+
   if( weak_greater(matrix_size_in,matrix_size_out) ){
     cout << endl << "Size mismatch, cannot expand" << endl;
     return false;
   }
  
-  unsigned int number_of_batches = 
-    (out->get_number_of_dimensions() == D ) ? 1 : out->get_size(out->get_number_of_dimensions()-1);
-
-  unsigned int number_of_elements = prod(matrix_size_out);
- 
   dim3 blockDim(256);
-  dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
+  dim3 gridDim((unsigned int) ceil((double)prod(matrix_size_out)/blockDim.x), number_of_batches );
  
   // Invoke kernel
-  cuNDA_expand_with_zero_fill_kernel<T,D><<< gridDim, blockDim >>> ( matrix_size_in, matrix_size_out, in->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements );
+  cuNDA_expand_with_zero_fill_kernel<T,D><<< gridDim, blockDim >>> 
+    ( matrix_size_in, matrix_size_out, in->get_data_ptr(), out->get_data_ptr() );
  
   CHECK_FOR_CUDA_ERROR();
 

@@ -6,9 +6,10 @@
 template<class T> __global__ void 
 weight_multiplication( T* in, T* out, T* weight, unsigned long elements )
 {
-  unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
-  if (idx_in < elements) {
-    out[idx_in] = mul<T>(in[idx_in], weight[idx_in]);
+  unsigned long idx = blockIdx.x*blockDim.x+threadIdx.x;
+  if (idx < elements) {
+    const unsigned int frame_offset = blockIdx.y*elements;
+    out[idx+frame_offset] = mul<T>(in[idx+frame_offset], weight[idx]);
   }
 }
 
@@ -19,15 +20,17 @@ template <class T> int cuCGPrecondWeight<T>::apply(cuNDArray<T>* in, cuNDArray<T
     return -1;
   }
 
-  if (in->get_number_of_elements() != weights_.get_number_of_elements()) {
+  if (in->get_number_of_elements() % weights_.get_number_of_elements()) {
     std::cerr << "cuCGPreconWeight::apply : input dimensions don't match weights dimensions" << std::endl;
     return -1;
   }
 
-  dim3 blockDim(256,1,1);
-  dim3 gridDim((unsigned int) ceil((double)in->get_number_of_elements()/blockDim.x), 1, 1 );
+  unsigned int num_frames = in->get_number_of_elements() / weights_.get_number_of_elements();
+
+  dim3 blockDim(256);
+  dim3 gridDim((unsigned int) ceil((double)weights_.get_number_of_elements()/blockDim.x), num_frames );
   weight_multiplication<<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(),
-						  weights_.get_data_ptr(), in->get_number_of_elements());
+						  weights_.get_data_ptr(), weights_.get_number_of_elements());
 
   cudaError_t err = cudaGetLastError();
   if( err != cudaSuccess ){

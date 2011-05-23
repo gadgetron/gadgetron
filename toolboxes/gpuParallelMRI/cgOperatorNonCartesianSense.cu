@@ -101,8 +101,7 @@ cgOperatorNonCartesianSense<REAL,D>::set_trajectory( cuNDArray<_reald>* trajecto
     
     unsigned int num_frames = trajectory->get_number_of_elements()/trajectory->get_size(0);
     this->dimensionsK_.clear();
-    this->dimensionsK_.push_back(trajectory->get_size(0));
-    this->dimensionsK_.push_back(num_frames);
+    this->dimensionsK_ = trajectory->get_dimensions();
     this->dimensionsK_.push_back(this->ncoils_);
 
     this->dimensionsI_.clear();

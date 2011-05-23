@@ -356,7 +356,8 @@ bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *tra
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::compute( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode )
+NFFT_plan<REAL,D>::compute( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, 
+			    cuNDArray<REAL> *weights, NFFT_comp_mode mode )
 {  
   if( samples->get_device() != device || image->get_device() != device || (weights && weights->get_device() != device) ){
     cout << endl << "NFFT_plan::compute: device mismatch." << endl;
@@ -783,7 +784,10 @@ NFFT_plan<REAL,D>::check_consistency( cuNDArray<typename complext<REAL>::Type> *
   if( components & NFFT_H_CONVOLUTION ){
     if( weights ){
  
-      if( weights->get_number_of_elements() == 0 || weights->get_number_of_elements() != number_of_frames*number_of_samples ){
+      if( weights->get_number_of_elements() == 0 ||
+	  !( weights->get_number_of_elements() == number_of_samples || 
+	     weights->get_number_of_elements() == number_of_frames*number_of_samples) ){
+
 	cout << endl << "NFFT_plan: The number of weights should match #samples/frame x #frames as requested through preprocessing" << endl;
 	return false;
       }
@@ -1029,19 +1033,19 @@ NFFT_plan<REAL,D>::convolve_NFFT( cuNDArray<typename complext<REAL>::Type> *samp
     
   case 3:
     if( generation == 1 ){
-      threads_per_block = NFFT_THREADS_PER_2D_KERNEL_1x;
-      max_coils = NFFT_MAX_COILS_2D_COMPUTE_1x;
+      threads_per_block = NFFT_THREADS_PER_3D_KERNEL_1x;
+      max_coils = NFFT_MAX_COILS_3D_COMPUTE_1x;
     }
     else{
-      threads_per_block = NFFT_THREADS_PER_2D_KERNEL_2x;
-      max_coils = NFFT_MAX_COILS_2D_COMPUTE_2x;
+      threads_per_block = NFFT_THREADS_PER_3D_KERNEL_2x;
+      max_coils = NFFT_MAX_COILS_3D_COMPUTE_2x;
     }
     break;
     
   case 4:
     if( generation == 1 ){
-      threads_per_block = NFFT_THREADS_PER_3D_KERNEL_1x;
-      max_coils = NFFT_MAX_COILS_3D_COMPUTE_1x;
+      threads_per_block = NFFT_THREADS_PER_4D_KERNEL_1x;
+      max_coils = NFFT_MAX_COILS_4D_COMPUTE_1x;
     }
     else{
       threads_per_block = NFFT_THREADS_PER_4D_KERNEL_2x;
@@ -1084,13 +1088,14 @@ NFFT_plan<REAL,D>::convolve_NFFT( cuNDArray<typename complext<REAL>::Type> *samp
   
   vector_td<REAL,D> matrix_size_os_real = to_reald<REAL,unsigned int,D>( matrix_size_os );
 
-  for( unsigned int batch = 0; batch<num_repetitions; batch++ ){
+  for( unsigned int repetition = 0; repetition<num_repetitions; repetition++ ){
     NFFT_convolve_kernel<REAL,D>
-      <<<dimGrid, dimBlock, (batch==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
+      <<<dimGrid, dimBlock, (repetition==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
       ( alpha, beta, W, matrix_size_os, matrix_size_wrap, number_of_samples, 
-	(batch==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils, 
+	(repetition==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils, 
 	raw_pointer_cast(&(*trajectory_positions)[0]), 
-	&(image->get_data_ptr()[batch*prod(matrix_size_os)*domain_size_coils]), &(samples->get_data_ptr()[batch*number_of_samples*domain_size_coils]), 
+	image->get_data_ptr()+repetition*prod(matrix_size_os)*number_of_frames*domain_size_coils,
+	samples->get_data_ptr()+repetition*number_of_samples*number_of_frames*domain_size_coils, 
 	double_warp_size_power, get_half<REAL>()*W, reciprocal(W), accumulate, matrix_size_os_real );
   }
   
@@ -1145,19 +1150,19 @@ NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray<typename complext<REAL>::Type> *sa
       
   case 3:
     if( generation == 1 ){
-      threads_per_block = NFFT_H_THREADS_PER_2D_KERNEL_1x;
-      max_coils = NFFT_H_MAX_COILS_2D_COMPUTE_1x;
+      threads_per_block = NFFT_H_THREADS_PER_3D_KERNEL_1x;
+      max_coils = NFFT_H_MAX_COILS_3D_COMPUTE_1x;
     }
     else{
-      threads_per_block = NFFT_H_THREADS_PER_2D_KERNEL_2x;
-      max_coils = NFFT_H_MAX_COILS_2D_COMPUTE_2x;
+      threads_per_block = NFFT_H_THREADS_PER_3D_KERNEL_2x;
+      max_coils = NFFT_H_MAX_COILS_3D_COMPUTE_2x;
     }
     break;
     
   case 4:
     if( generation == 1 ){
-      threads_per_block = NFFT_H_THREADS_PER_3D_KERNEL_1x;
-      max_coils = NFFT_H_MAX_COILS_3D_COMPUTE_1x;
+      threads_per_block = NFFT_H_THREADS_PER_4D_KERNEL_1x;
+      max_coils = NFFT_H_MAX_COILS_4D_COMPUTE_1x;
     }
     else{
       threads_per_block = NFFT_H_THREADS_PER_4D_KERNEL_2x;
@@ -1215,8 +1220,8 @@ NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray<typename complext<REAL>::Type> *sa
       ( alpha, beta, W, matrix_size_os+matrix_size_wrap, number_of_samples, 
 	(i==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils, 
 	raw_pointer_cast(&(*trajectory_positions)[0]), 
-	&(_tmp->get_data_ptr()[i*prod(matrix_size_os)*number_of_frames*domain_size_coils]),
-	&(samples->get_data_ptr()[i*number_of_samples*number_of_frames*domain_size_coils]), 
+	_tmp->get_data_ptr()+i*prod(matrix_size_os+matrix_size_wrap)*number_of_frames*domain_size_coils,
+	samples->get_data_ptr()+i*number_of_samples*number_of_frames*domain_size_coils, 
 	raw_pointer_cast(&(*tuples_last)[0]), raw_pointer_cast(&(*bucket_begin)[0]), raw_pointer_cast(&(*bucket_end)[0]),
 	double_warp_size_power, get_half<REAL>()*W, reciprocal(W), matrix_size_os_real );
   }

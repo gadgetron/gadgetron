@@ -101,10 +101,12 @@ std::auto_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
     }
 
     for (unsigned int i = 0; i < operators_.size(); i++) {
+
       if (operators_[i]->mult_MH_M(cur_p, &q2, false) < 0) {
 	std::cerr << "cuCG<T>::solve : failed to apply operator number " << i << std::endl;
 	return std::auto_ptr< cuNDArray<T> >(rho);
       }
+
       if (cuNDA_axpy(mul<REAL>(weights_[i], get_one<T>()),&q2,&q,cublas_handle_) < 0) {
 	std::cerr << "cuCG<T>::solve : failed to add q1 to q" << std::endl;
 	return std::auto_ptr< cuNDArray<T> >(rho);

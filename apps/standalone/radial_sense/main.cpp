@@ -41,6 +41,7 @@ int main(int argc, char** argv)
 
   ParameterParser parms;
   parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Sample data file name", true );
+  parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Result file name", true, "result.cplx" );
   parms.add_parameter( 'm', COMMAND_LINE_INT,    1, "Matrix size", true );
   parms.add_parameter( 'o', COMMAND_LINE_INT,    1, "Oversampled Matrix size", true );
   parms.add_parameter( 'p', COMMAND_LINE_INT,    1, "Profiles per frame", true );
@@ -93,7 +94,6 @@ int main(int argc, char** argv)
   if( frames_per_reconstruction*profiles_per_frame > num_profiles ) frames_per_reconstruction = num_profiles / profiles_per_frame;
   
   unsigned int profiles_per_reconstruction = frames_per_reconstruction*profiles_per_frame;
-  unsigned int samples_per_frame = profiles_per_frame*samples_per_profile;
   unsigned int samples_per_reconstruction = profiles_per_reconstruction*samples_per_profile;
 
   cout << endl << "#samples/profile: " << samples_per_profile;
@@ -105,14 +105,9 @@ int main(int argc, char** argv)
   cout << endl << "#samples/reconstruction " << samples_per_reconstruction << endl << endl;
 
   // Density compensation weights are constant throughout all reconstrutions
-  auto_ptr< cuNDArray<float> > _dcw = compute_radial_dcw_golden_ratio_2d
+  auto_ptr< cuNDArray<float> > dcw = compute_radial_dcw_golden_ratio_2d
     ( samples_per_profile, profiles_per_frame, (float)matrix_size_os.vec[0]/(float)matrix_size.vec[0], 
       get_one<float>()/((float)samples_per_profile/(float)max(matrix_size.vec[0],matrix_size.vec[1])) );
-  vector<unsigned int> dcw_dims; dcw_dims.push_back(samples_per_frame); dcw_dims.push_back(frames_per_reconstruction);
-  cuNDArray<float> dcw; dcw.create(dcw_dims);
-  for(unsigned int i=0; i<frames_per_reconstruction; i++ ){
-    cudaMemcpy( dcw.get_data_ptr()+i*samples_per_frame, _dcw->get_data_ptr(), samples_per_frame*sizeof(float), cudaMemcpyDeviceToDevice );
-  }
   
   //
   // Compute CSM, preconditioner, and regularization image
@@ -146,7 +141,7 @@ int main(int argc, char** argv)
 	( iteration, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, &host_data );
       
       // Accumulate k-space for CSM estimation.
-      plan.convolve( csm_data.get(), image_os, &dcw, NFFT_plan<float,2>::NFFT_BACKWARDS, (iteration==0) ? false : true );
+      plan.convolve( csm_data.get(), image_os, dcw.get(), NFFT_plan<float,2>::NFFT_BACKWARDS, (iteration==0) ? false : true );
       csm_data.reset();
     }
     
@@ -207,51 +202,69 @@ int main(int argc, char** argv)
   cg.set_iterations( num_iterations );
   cg.set_limit( 1e-5 );
   cg.set_output_mode( cuCG<float, float_complext::Type>::OUTPUT_VERBOSE );
+      
+  // Reconstruct all SENSE frames iteratively
+  unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
   
-  unsigned int reconstruction = 0;
+  // Allocate space for result
+  vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size); image_dims.push_back(frames_per_reconstruction*num_reconstructions); 
+  cuNDArray<float_complext::Type> result; result.create(image_dims);
 
-  // Determine trajectories
-  auto_ptr< cuNDArray<floatd2::Type> > traj = compute_radial_trajectory_golden_ratio_2d<float>
-    ( samples_per_profile, profiles_per_frame, frames_per_reconstruction, reconstruction*profiles_per_reconstruction );
-  
-  // Upload data
-  auto_ptr< cuNDArray<float_complext::Type> > data = upload_data
-    ( reconstruction, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, &host_data );
+  timer = new GPUTimer("Full SENSE reconstruction.");
 
-  // Set current trajectory and trigger NFFT preprocessing
-  if( E.set_trajectory(traj.get()) < 0 ) {
-    cout << "Failed to set trajectory on encoding matrix" << endl;
+  for( unsigned int reconstruction = 0; reconstruction<num_reconstructions; reconstruction++ ){
+
+    // Determine trajectories
+    auto_ptr< cuNDArray<floatd2::Type> > traj = compute_radial_trajectory_golden_ratio_2d<float>
+      ( samples_per_profile, profiles_per_frame, frames_per_reconstruction, reconstruction*profiles_per_reconstruction );
+    
+    // Upload data
+    auto_ptr< cuNDArray<float_complext::Type> > data = upload_data
+      ( reconstruction, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, &host_data );
+    
+    // Set current trajectory and trigger NFFT preprocessing
+    if( E.set_trajectory(traj.get()) < 0 ) {
+      cout << "Failed to set trajectory on encoding matrix" << endl;
+    }
+    
+    // Associate density compensation weights
+    if( E.set_weights(dcw.get()) < 0 ) {
+      cout << "Failed to set density compensation weights on encoding matrix" << endl;
+    }
+    
+    // Form rhs (use result array to save memory)
+    vector<unsigned int> rhs_dims = uintd_to_vector<2>(matrix_size); rhs_dims.push_back(frames_per_reconstruction);
+    cuNDArray<float_complext::Type> rhs; rhs.create(rhs_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );
+    
+    E.mult_MH( data.get(), &rhs );
+    
+    //
+    // Conjugate grafient solver
+    //
+
+    auto_ptr< cuNDArray<float_complext::Type> > cgresult;
+    {
+      GPUTimer timer("GPU Conjugate Gradient solve");
+      cgresult = cg.solve(&rhs);
+    }
+
+    // Copy cgresult to result (pointed to by rhs)
+    rhs = *(cgresult.get());
   }
-
-  // Associate density compensation weights
-  if( E.set_weights(&dcw) < 0 ) {
-    cout << "Failed to set density compensation weights on encoding matrix" << endl;
-  }
-
-  // Form rhs
-  vector<unsigned int> rhs_dims = uintd_to_vector<2>(matrix_size);
-  if( frames_per_reconstruction > 1 ) rhs_dims.push_back(frames_per_reconstruction);
-  cuNDArray<float_complext::Type> rhs; rhs.create(rhs_dims);
   
-  E.mult_MH( data.get(), &rhs );
+  delete timer;
 
-  hoNDArray<float_complext::Type> out_rhs = rhs.to_host();
-  write_nd_array<float_complext::Type>(out_rhs,"rhs.cplx");
-  exit(1);
+  // All done, write out the result
 
-  auto_ptr< cuNDArray<float_complext::Type> > cgresult;
-  {
-    GPUTimer timer("GPU Conjugate Gradient solve");
-    cgresult = cg.solve(&rhs);
-  }
-
-  hoNDArray<float_complext::Type> rho_out = cgresult->to_host();
-  write_nd_array<float_complext::Type>(rho_out,"rho_out.cplx");
-
-  hoNDArray<float> host_norm = cuNDA_norm<float,2>(cgresult.get())->to_host();
-  write_nd_array<float>( host_norm, "rho_out.real" );
-
-  cout << "Reconstruction done" << endl;
+  timer = new GPUTimer("Writing out result");
   
+  hoNDArray<float_complext::Type> host_result = result.to_host();
+  write_nd_array<float_complext::Type>(host_result, (char*)parms.get_parameter('r')->get_string_value());
+    
+  hoNDArray<float> host_norm = cuNDA_norm<float,2>(&result)->to_host();
+  write_nd_array<float>( host_norm, "result.real" );
+  
+  delete timer;
+
   return 0;
 }
