@@ -91,7 +91,7 @@ cgOperatorNonCartesianSense<REAL,D>::setup( _uintd matrix_size, _uintd matrix_si
 template<class REAL, unsigned int D> int 
 cgOperatorNonCartesianSense<REAL,D>::set_trajectory( cuNDArray<_reald>* trajectory ) 
 {
-  if (!this->csm_) {
+  if( this->csm_.get_number_of_elements() == 0 ) {
     std::cerr << "cgOperatorNonCartesianSense::set_trajectory : Error setting trajectory, csm not set" << std::endl;
     return -1;
   }
@@ -105,7 +105,7 @@ cgOperatorNonCartesianSense<REAL,D>::set_trajectory( cuNDArray<_reald>* trajecto
     this->dimensionsK_.push_back(this->ncoils_);
 
     this->dimensionsI_.clear();
-    this->dimensionsI_ = this->csm_->get_dimensions();
+    this->dimensionsI_ = this->csm_.get_dimensions();
     this->dimensionsI_.pop_back();
     this->dimensionsI_.push_back(num_frames);
     

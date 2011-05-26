@@ -13,7 +13,7 @@ LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
-APPLDFLAGS += -lgpucore -lcuNFFT
+APPLDFLAGS += -lgpucore -lgpuNFFT
 LIBLDFLAGS += -lgpucore
 
 all: $(LIBFILE)
@@ -22,9 +22,8 @@ all: $(LIBFILE)
 	cp $(LIBFILE) $(GADGETRONHOME)/lib/
 	cp $(HEADERFILES) $(GADGETRONHOME)/inc/
 
-test: $(LIBCUDAOBJECTS) main.cuo
-#	$(NVCC) $(NVCCFLAGS) -o main.cuo main.cu
-	$(CXX) $(LIBOBJECTS) $(LIBCUDAOBJECTS) main.cuo $(CUDALIBRARIES) $(APPLDFLAGS) -o test 
+test: $(LIBCUDAOBJECTS) main.o
+	$(CXX) $(LIBOBJECTS) $(LIBCUDAOBJECTS) main.o $(CUDALIBRARIES) $(APPLDFLAGS) -o test 
 
 
 $(LIBFILE): $(LIBOBJECTS) $(LIBCUDAOBJECTS) Makefile

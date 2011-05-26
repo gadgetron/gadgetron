@@ -17,7 +17,7 @@ class cgOperatorCartesianSense : public cgOperatorSense<REAL,D>
 
   virtual int set_csm(cuNDArray<_complext>* csm) {
     if (csm != 0) {
-      this->csm_ = csm;
+      this->csm_ = *csm;
       this->ncoils_ = csm->get_size(csm->get_number_of_dimensions()-1);
       this->dimensionsI_ = csm->get_dimensions();
       this->dimensionsI_.pop_back();

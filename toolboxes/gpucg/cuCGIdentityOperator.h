@@ -1,8 +1,6 @@
 #pragma once
 
 #include "cuCGMatrixOperator.h"
-
-#include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
 
 #include <cublas_v2.h>

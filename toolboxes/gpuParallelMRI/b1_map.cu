@@ -539,7 +539,7 @@ set_phase_reference_kernel( typename complext<REAL>::Type *csm, unsigned int num
 
   if( idx < num_elements ){
     REAL angle = arg<REAL>(csm[idx]); //Phase of the first coil
-    REAL sin_a, cos_a; sin_cos( angle, &sin_a, &cos_a );
+    REAL sin_a, cos_a; gad_sincos( angle, &sin_a, &cos_a );
 
     typename complext<REAL>::Type tmp;
     tmp.vec[0] = cos_a; tmp.vec[1] = sin_a;

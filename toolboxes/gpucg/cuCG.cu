@@ -112,7 +112,7 @@ std::auto_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
 	return std::auto_ptr< cuNDArray<T> >(rho);
       }
     }
-
+    
     if (precond_) {
       if (!precond_->apply(&q,&q) < 0) {
 	std::cerr << "cuCG<T>::solve : failed to apply preconditioner to q" << std::endl;
@@ -167,6 +167,5 @@ std::auto_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
 // Instantiation
 //
 
-template class cuCG<float, float>;
-//template class cuCG<float2>;
+//template class cuCG<float, float>;
 template class cuCG<float, float_complext::Type>;

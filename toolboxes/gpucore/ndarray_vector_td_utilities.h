@@ -33,7 +33,11 @@ std::auto_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<T> *data );
 template<class REAL, unsigned int D>
 std::auto_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray< typename reald<REAL,D>::Type > *data );
 
-// RSS (float/double/complext array)
+// Sum of Squares (float/double/complext array)
+template<class S, class T>
+std::auto_ptr< cuNDArray<S> > cuNDA_ss( cuNDArray<T> *data, unsigned int dim );
+
+// Root Sum of Squares (float/double/complext array)
 template<class S, class T>
 std::auto_ptr< cuNDArray<S> > cuNDA_rss( cuNDArray<T> *data, unsigned int dim );
 
@@ -44,6 +48,12 @@ std::auto_ptr< cuNDArray<S> > cuNDA_reciprocal_rss( cuNDArray<T> *data, unsigned
 // Correlation matrix (float/double/complext array)
 template<class T>
 std::auto_ptr< cuNDArray<T> > cuNDA_correlation( cuNDArray<T> *data );
+
+// Real to complext
+template<class REAL>
+std::auto_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_real_to_complext( cuNDArray<REAL> *data );
+
+
 
 //
 // Utilities overwriting the input
@@ -56,6 +66,14 @@ void cuNDA_clear( cuNDArray<T> *in_out );
 // Reciprocal (real and complex types)
 template<class T> 
 void cuNDA_reciprocal( cuNDArray<T> *in_out );
+
+// Square root (float/double for now)
+template<class T>
+void cuNDA_sqrt( cuNDArray<T> *in_out );
+
+// Reciprocal square root (float/double for now)
+template<class T>
+void cuNDA_reciprocal_sqrt( cuNDArray<T> *in_out );
 
 // Normalize (float/double arrays)
 template<class REAL>
@@ -81,13 +99,13 @@ bool cuNDA_scale( cuNDArray<T> *a, cuNDArray<T> *x );
 template<class REAL>
 bool cuNDA_scale( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *x );
 
-// 'axpby' - overwrites y
+// 'axpy' - component-wise
 template<class T>
-bool cuNDA_axpby( cuNDArray<T> *a, cuNDArray<T> *x, cuNDArray<T> *b, cuNDArray<T> *y );
+bool cuNDA_axpy( cuNDArray<T> *a, cuNDArray<T> *x, cuNDArray<T> *y );
 
-// 'axpby' - overwrites y
+// 'axpy' - component-wise
 template<class REAL>
-bool cuNDA_axpby( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *x, cuNDArray<REAL> *b, cuNDArray<typename complext<REAL>::Type> *y );
+bool cuNDA_axpy( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *x, cuNDArray<typename complext<REAL>::Type> *y );
 
 // Crop
 template<class T, unsigned int D>
@@ -111,6 +129,9 @@ bool cuNDA_zero_fill_border( typename reald<REAL,D>::Type radius, cuNDArray<T> *
 
 template<class T> T
 cuNDA_dot( cuNDArray<T>* arr1, cuNDArray<T>* arr2, cublasHandle_t handle );
+
+template<class REAL, class T> REAL
+cuNDA_asum( cuNDArray<T>* arr, cublasHandle_t handle );
 
 template<class T> bool
 cuNDA_axpy( T a, cuNDArray<T>* x, cuNDArray<T>* y, cublasHandle_t handle );

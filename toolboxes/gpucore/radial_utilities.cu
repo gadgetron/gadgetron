@@ -26,7 +26,7 @@ compute_radial_trajectory_golden_ratio_2d_kernel( typename reald<REAL,2>::Type *
   const REAL angle_step = get_angle_step_GR<REAL>();
 
   REAL cos_angle, sin_angle;
-  sin_cos<REAL>( (profile+angular_offset)*angle_step, &sin_angle, &cos_angle );
+  gad_sincos<REAL>( (profile+angular_offset)*angle_step, &sin_angle, &cos_angle );
 
   typename reald<REAL,2>::Type sample_pos; 
   sample_pos.vec[0] = (sample_idx_on_profile-bias)*cos_angle/samples_per_profile;
@@ -100,7 +100,7 @@ compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL 
   case true: // golden ratio
     {
       const REAL angle_step = get_angle_step_GR<REAL>();
-      sin_cos<REAL>( (profile+angular_offset)*angle_step, &sin_angle, &cos_angle );
+      gad_sincos<REAL>( (profile+angular_offset)*angle_step, &sin_angle, &cos_angle );
     }
     break;
     /*	  
@@ -144,7 +144,7 @@ compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL 
       case true:
 	{
 	  const REAL angle_step = get_angle_step_GR<REAL>();
-	  sin_cos<REAL>( ((REAL)i+angular_offset)*angle_step, &sin_angle, &cos_angle );
+	  gad_sincos<REAL>( ((REAL)i+angular_offset)*angle_step, &sin_angle, &cos_angle );
 	}
 	break;
 	/*	

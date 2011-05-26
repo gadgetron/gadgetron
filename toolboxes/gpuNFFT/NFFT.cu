@@ -928,11 +928,6 @@ NFFT_plan<REAL,D>::compute_deapodization_filter()
   if( success )
     success = fft( deapodization_filter, NFFT_BACKWARDS, false );
   
-  // Scale (multiplication by N, i.e. not what the FFT provides)
-  // Now the NFFT achieves scaling by applying the deapodization filter and we save a little bit of time...
-  if( success )
-    cuNDA_scale<REAL>( (REAL)prod(matrix_size_os), deapodization_filter );
-  
   // Reciprocal
   if( success )
     cuNDA_reciprocal<typename complext<REAL>::Type>( deapodization_filter );
@@ -979,7 +974,7 @@ NFFT_plan<REAL,D>::compute_NFFT_H( cuNDArray<typename complext<REAL>::Type> *sam
   
   // FFT
   if( success )
-    success = fft( image, NFFT_BACKWARDS, false ); // scaling is cared for by the deapodization
+    success = fft( image, NFFT_BACKWARDS );
   
   // Deapodization
   if( success )
