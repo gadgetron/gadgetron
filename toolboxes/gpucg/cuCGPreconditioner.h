@@ -2,6 +2,7 @@
 #define CUCGPRECONDITIONER_H
 
 #include "cuNDArray.h"
+#include <memory>
 
 template <class T> class cuCGPreconditioner
 {
@@ -14,15 +15,15 @@ template <class T> class cuCGPreconditioner
 template <class T> class cuCGPrecondWeight : public cuCGPreconditioner<T>
 {
  public:
-  virtual int set_weights(cuNDArray<T>* w) {
-    weights_ = *w;
+  virtual int set_weights( std::auto_ptr< cuNDArray<T> > w ) {
+    weights_ = w;
     return 0;
   }
 
   virtual int apply(cuNDArray<T>* in, cuNDArray<T>* out);
 
  protected:
-  cuNDArray<T> weights_;
+  std::auto_ptr< cuNDArray<T> > weights_;
 };
 
 #endif //CUCGPRECONDITIONER_H

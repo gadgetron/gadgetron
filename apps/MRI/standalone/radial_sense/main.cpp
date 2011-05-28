@@ -19,19 +19,24 @@
 
 using namespace std;
 
+// Define desired precision
+typedef float _real; 
+typedef complext<_real>::Type _complex;
+typedef reald<_real,2>::Type _real2;
+
 // Upload samples for one reconstruction from host to device
-auto_ptr< cuNDArray<float_complext::Type> > 
+auto_ptr< cuNDArray<_complex> > 
 upload_data( unsigned int reconstruction, unsigned int samples_per_reconstruction, unsigned int total_samples_per_coil, unsigned int num_coils,
-	     hoNDArray<float_complext::Type> *host_data )
+	     hoNDArray<_complex> *host_data )
 {
   vector<unsigned int> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
-  cuNDArray<float_complext::Type> *data = new cuNDArray<float_complext::Type>(); data->create( dims );
+  cuNDArray<_complex> *data = new cuNDArray<_complex>(); data->create( dims );
   for( unsigned int i=0; i<num_coils; i++ )
     cudaMemcpy( data->get_data_ptr()+i*samples_per_reconstruction, 
 		host_data->get_data_ptr()+i*total_samples_per_coil+reconstruction*samples_per_reconstruction, 
-		samples_per_reconstruction*sizeof(float_complext::Type), cudaMemcpyHostToDevice );
+		samples_per_reconstruction*sizeof(_complex), cudaMemcpyHostToDevice );
 
-  return auto_ptr< cuNDArray<float_complext::Type> >(data);
+  return auto_ptr< cuNDArray<_complex> >(data);
 }
 
 int main(int argc, char** argv)
@@ -68,7 +73,7 @@ int main(int argc, char** argv)
   
   // Load sample data from disk
   timer = new GPUTimer("\nLoading data");
-  hoNDArray<float_complext::Type> host_data = read_nd_array<float_complext::Type>((char*)parms.get_parameter('d')->get_string_value());
+  hoNDArray<_complex> host_data = read_nd_array<_complex>((char*)parms.get_parameter('d')->get_string_value());
   delete timer;
    
   if( !host_data.get_number_of_dimensions() == 3 ){
@@ -84,8 +89,8 @@ int main(int argc, char** argv)
   // Configuration from the command line
   uintd2 matrix_size = uintd2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
   uintd2 matrix_size_os = uintd2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
-  float kernel_width = parms.get_parameter('k')->get_float_value();
-  float kappa = parms.get_parameter('K')->get_float_value();
+  _real kernel_width = parms.get_parameter('k')->get_float_value();
+  _real kappa = parms.get_parameter('K')->get_float_value();
   unsigned int num_iterations = parms.get_parameter('i')->get_int_value();
   unsigned int profiles_per_frame = parms.get_parameter('p')->get_int_value();
   unsigned int frames_per_reconstruction = parms.get_parameter('f')->get_int_value();
@@ -107,9 +112,9 @@ int main(int argc, char** argv)
   cout << endl << "#samples/reconstruction " << samples_per_reconstruction << endl << endl;
 
   // Density compensation weights are constant throughout all reconstrutions
-  auto_ptr< cuNDArray<float> > dcw = compute_radial_dcw_golden_ratio_2d
-    ( samples_per_profile, profiles_per_frame, (float)matrix_size_os.vec[0]/(float)matrix_size.vec[0], 
-      get_one<float>()/((float)samples_per_profile/(float)max(matrix_size.vec[0],matrix_size.vec[1])) );
+  auto_ptr< cuNDArray<_real> > dcw = compute_radial_dcw_golden_ratio_2d
+    ( samples_per_profile, profiles_per_frame, (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0], 
+      get_one<_real>()/((_real)samples_per_profile/(_real)max(matrix_size.vec[0],matrix_size.vec[1])) );
   
   //
   // Compute CSM, preconditioner, and regularization image
@@ -119,78 +124,80 @@ int main(int argc, char** argv)
   
   vector<unsigned int> image_os_dims = uintd_to_vector<2>(matrix_size_os); 
   image_os_dims.push_back(frames_per_reconstruction); image_os_dims.push_back(num_coils);    
-  cuNDArray<float_complext::Type> *image_os = new cuNDArray<float_complext::Type>(); image_os->create(image_os_dims);
+  cuNDArray<_complex> *image_os = new cuNDArray<_complex>(); image_os->create(image_os_dims);
     
-  NFFT_plan<float, 2> plan( matrix_size, matrix_size_os, kernel_width );
+  NFFT_plan<_real, 2> plan( matrix_size, matrix_size_os, kernel_width );
   
   // Go through all the data...
   for( unsigned int iteration = 0; iteration < num_profiles/profiles_per_reconstruction; iteration++ ) {
 
     // Define trajectories
-    auto_ptr< cuNDArray<floatd2::Type> > traj = compute_radial_trajectory_golden_ratio_2d<float>
+    auto_ptr< cuNDArray<_real2> > traj = compute_radial_trajectory_golden_ratio_2d<_real>
       ( samples_per_profile, profiles_per_frame, frames_per_reconstruction, iteration*profiles_per_reconstruction );
     
     // Preprocess
-    plan.preprocess( traj.get(), NFFT_plan<float,2>::NFFT_PREP_BACKWARDS );
+    plan.preprocess( traj.get(), NFFT_plan<_real,2>::NFFT_PREP_BACKWARDS );
     traj.reset();
     
     // Upload data
-    auto_ptr< cuNDArray<float_complext::Type> > csm_data = upload_data
+    auto_ptr< cuNDArray<_complex> > csm_data = upload_data
       ( iteration, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, &host_data );
     
-    // Accumulate k-space for CSM estimation.
-    plan.convolve( csm_data.get(), image_os, dcw.get(), NFFT_plan<float,2>::NFFT_BACKWARDS, (iteration==0) ? false : true );
+    // Accumulate k-space for CSM estimation
+    plan.convolve( csm_data.get(), image_os, dcw.get(), NFFT_plan<_real,2>::NFFT_BACKWARDS, (iteration==0) ? false : true );
     csm_data.reset();
   }
  
   // We now have 'frames_per_reconstruction' k-space images of each coil. Add these up.
-  auto_ptr< cuNDArray<float_complext::Type> > acc_image_os = cuNDA_sum<float_complext::Type>( image_os, 2 );    
+  auto_ptr< cuNDArray<_complex> > acc_image_os = cuNDA_sum<_complex>( image_os, 2 );    
   delete image_os;
 
   // Complete gridding of k-space CSM image
-  plan.fft( acc_image_os.get(), NFFT_plan<float,2>::NFFT_BACKWARDS );
+  plan.fft( acc_image_os.get(), NFFT_plan<_real,2>::NFFT_BACKWARDS );
   plan.deapodize( acc_image_os.get() );
   
   // Remove oversampling
   vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size); image_dims.push_back(num_coils);
-  cuNDArray<float_complext::Type> *image = new cuNDArray<float_complext::Type>(); image->create(image_dims);
-  cuNDA_crop<float_complext::Type,2>( (matrix_size_os-matrix_size)>>1, acc_image_os.get(), image );
+  cuNDArray<_complex> *image = new cuNDArray<_complex>(); image->create(image_dims);
+  cuNDA_crop<_complex,2>( (matrix_size_os-matrix_size)>>1, acc_image_os.get(), image );
   acc_image_os.reset();
   
-  // Estimate CSM
-  auto_ptr< cuNDArray<float_complext::Type> > csm = estimate_b1_map<float,2>( image );
+  // Estimate CSM (make two copies)
+  auto_ptr< cuNDArray<_complex> > csm_rhs = estimate_b1_map<_real,2>( image );
+  cuNDArray<_complex> *_csm_cg = new cuNDArray<_complex>(*csm_rhs);
+  auto_ptr< cuNDArray<_complex> > csm_cg = auto_ptr< cuNDArray<_complex> >(_csm_cg);
 
   // Define conjugate gradient solver
-  cuCG<float, float_complext::Type> cg;
+  cuCG<_real, _complex> cg;
 
   // Define regularization image operator
-  cgOperatorSenseRHSBuffer<float,2> rhs_operator(csm.get());
-  cuCGImageOperator<float,float_complext::Type> R( image, uintd_to_vector<2>(matrix_size), &rhs_operator, cg.get_cublas_handle() );
+  cgOperatorSenseRHSBuffer<_real,2> rhs_operator(csm);
+  cuCGImageOperator<_real,_complex> R( image, uintd_to_vector<2>(matrix_size), &rhs_operator, cg.get_cublas_handle() );
  
   // Define preconditioning weights
-  auto_ptr< cuNDArray<float> > _precon_weights = cuNDA_ss<float,float_complext::Type>( csm.get(), 2 );
-  cuNDA_axpy<float>( kappa, R.get(), _precon_weights.get(), cg.get_cublas_handle() );  
-  cuNDA_reciprocal_sqrt<float>( _precon_weights.get() );
-  auto_ptr< cuNDArray<float_complext::Type> > precon_weights = cuNDA_real_to_complext<float>( _precon_weights.get() );
+  auto_ptr< cuNDArray<_real> > _precon_weights = cuNDA_ss<_real,_complex>( csm.get(), 2 );
+  cuNDA_axpy<_real>( kappa, R.get(), _precon_weights.get(), cg.get_cublas_handle() );  
+  cuNDA_reciprocal_sqrt<_real>( _precon_weights.get() );
+  auto_ptr< cuNDArray<_complex> > precon_weights = cuNDA_real_to_complext<_real>( _precon_weights.get() );
   _precon_weights.reset();
 
   // Define preconditioning matrix
-  cuCGPrecondWeight<float_complext::Type> D;
+  cuCGPrecondWeight<_complex> D;
   D.set_weights( precon_weights.get() );
   precon_weights.reset();
 
   delete image;
   delete timer;
   
-  //hoNDArray<float_complext::Type> out_csm = csm->to_host();
-  //write_nd_array<float_complext::Type>(out_csm,"csm.cplx");
+  //hoNDArray<_complex> out_csm = csm->to_host();
+  //write_nd_array<_complex>(out_csm,"csm.cplx");
   
   // 
   // Setup radial SENSE reconstructions
   //
 
   // Define encoding matrix for non-Cartesian SENSE
-  cgOperatorNonCartesianSense<float,2> E;
+  cgOperatorNonCartesianSense<_real,2> E;
   
   E.setup( matrix_size, matrix_size_os, kernel_width );
 
@@ -205,25 +212,25 @@ int main(int argc, char** argv)
   cg.set_preconditioner ( &D );         // preconditioning matrix
   cg.set_iterations( num_iterations );
   cg.set_limit( 1e-5 );
-  cg.set_output_mode( cuCG<float, float_complext::Type>::OUTPUT_VERBOSE );
+  cg.set_output_mode( cuCG<_real, _complex>::OUTPUT_VERBOSE );
       
   // Reconstruct all SENSE frames iteratively
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
   
   // Allocate space for result
   image_dims = uintd_to_vector<2>(matrix_size); image_dims.push_back(frames_per_reconstruction*num_reconstructions); 
-  cuNDArray<float_complext::Type> result; result.create(image_dims);
+  cuNDArray<_complex> result; result.create(image_dims);
 
   timer = new GPUTimer("Full SENSE reconstruction.");
 
   for( unsigned int reconstruction = 0; reconstruction<num_reconstructions; reconstruction++ ){
 
     // Determine trajectories
-    auto_ptr< cuNDArray<floatd2::Type> > traj = compute_radial_trajectory_golden_ratio_2d<float>
+    auto_ptr< cuNDArray<_real2> > traj = compute_radial_trajectory_golden_ratio_2d<_real>
       ( samples_per_profile, profiles_per_frame, frames_per_reconstruction, reconstruction*profiles_per_reconstruction );
     
     // Upload data
-    auto_ptr< cuNDArray<float_complext::Type> > data = upload_data
+    auto_ptr< cuNDArray<_complex> > data = upload_data
       ( reconstruction, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, &host_data );
     
     // Set current trajectory and trigger NFFT preprocessing
@@ -238,7 +245,7 @@ int main(int argc, char** argv)
     
     // Form rhs (use result array to save memory)
     vector<unsigned int> rhs_dims = uintd_to_vector<2>(matrix_size); rhs_dims.push_back(frames_per_reconstruction);
-    cuNDArray<float_complext::Type> rhs; rhs.create(rhs_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );
+    cuNDArray<_complex> rhs; rhs.create(rhs_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );
     
     E.mult_MH( data.get(), &rhs );
     
@@ -246,7 +253,7 @@ int main(int argc, char** argv)
     // Conjugate gradient solver
     //
 
-    auto_ptr< cuNDArray<float_complext::Type> > cgresult;
+    auto_ptr< cuNDArray<_complex> > cgresult;
     {
       GPUTimer timer("GPU Conjugate Gradient solve");
       cgresult = cg.solve(&rhs);
@@ -262,11 +269,11 @@ int main(int argc, char** argv)
 
   timer = new GPUTimer("Writing out result");
   
-  hoNDArray<float_complext::Type> host_result = result.to_host();
-  write_nd_array<float_complext::Type>(host_result, (char*)parms.get_parameter('r')->get_string_value());
+  hoNDArray<_complex> host_result = result.to_host();
+  write_nd_array<_complex>(host_result, (char*)parms.get_parameter('r')->get_string_value());
     
-  hoNDArray<float> host_norm = cuNDA_norm<float,2>(&result)->to_host();
-  write_nd_array<float>( host_norm, "result.real" );
+  hoNDArray<_real> host_norm = cuNDA_norm<_real,2>(&result)->to_host();
+  write_nd_array<_real>( host_norm, "result.real" );
   
   delete timer;
 

@@ -10,6 +10,9 @@
 
 #include <cublas_v2.h>
 
+// Maximum number of matrix operators in each cg solver
+static unsigned int const MAX_CG_MATRIX_OPERATORS = 32;
+
 template<class REAL, class T> class cuCG
 {
  public:
@@ -21,8 +24,8 @@ template<class REAL, class T> class cuCG
     OUTPUT_MAX      = 3
   };
 
-  cuCG() 
-    : precond_(0) 
+  cuCG()
+    : num_operators_(0)
     , iterations_(10)
     , limit_(1e-3)
     , output_mode_(OUTPUT_SILENT)
@@ -30,7 +33,6 @@ template<class REAL, class T> class cuCG
     if (cublasCreate(&cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
       std::cerr << "cuCG unable to create cublas handle" << std::endl;
     }
-    output_mode_ = 0;
   }
 
   virtual ~cuCG() {
@@ -39,14 +41,14 @@ template<class REAL, class T> class cuCG
     }
   }
   
-  int add_matrix_operator(cuCGMatrixOperator<T>* op, REAL weight)
+  int add_matrix_operator( std::auto_ptr< cuCGMatrixOperator<T> > op, REAL weight )
   {
-    operators_.push_back(op);
-    weights_.push_back(weight);
+    operators_[num_operators_++] = op;
+    op_weights_.push_back(weight);
     return 0;
   }
 
-  int set_preconditioner(cuCGPreconditioner<T>* precond) {
+  int set_preconditioner( std::auto_ptr< cuCGPreconditioner<T> > precond ) {
     precond_ = precond;
     return 0;
   }
@@ -72,9 +74,11 @@ template<class REAL, class T> class cuCG
   std::auto_ptr< cuNDArray<T> > solve(cuNDArray<T>* rhs);
 
  protected:
-  std::vector< cuCGMatrixOperator<T>* > operators_;
-  std::vector<REAL> weights_;
-  cuCGPreconditioner<T>* precond_;
+  // It is not safe to use auto_ptrs in std STL containers, so we store them in an array instead.
+  std::auto_ptr< cuCGMatrixOperator<T> > operators_[MAX_CG_MATRIX_OPERATORS];
+  unsigned int num_operators_;
+  std::vector<REAL> op_weights_;
+  std::auto_ptr< cuCGPreconditioner<T> > precond_;
   cublasHandle_t cublas_handle_;
   unsigned int iterations_;
   REAL limit_;

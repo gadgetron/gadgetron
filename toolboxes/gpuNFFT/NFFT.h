@@ -58,7 +58,7 @@ public: // Utilities
   // NFFT deapodization
   bool deapodize( cuNDArray<typename complext<REAL>::Type> *image );
 
-private:   
+private:
 
   enum NFFT_components { NFFT_CONVOLUTION = 1, NFFT_H_CONVOLUTION = 2, NFFT_FFT = 4, NFFT_DEAPODIZATION = 8 };
   bool check_consistency( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, cuNDArray<REAL> *weights, unsigned char components );

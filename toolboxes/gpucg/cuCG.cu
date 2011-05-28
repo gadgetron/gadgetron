@@ -1,4 +1,5 @@
 #include "cuCG.h"
+#include "real_utilities.h"
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
 
@@ -17,7 +18,7 @@ std::auto_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
   
   // Calculate residual r
   cuNDArray<T> r;
-  if (precond_) {
+  if (precond_.get()) {
     if (!r.create(rhs->get_dimensions())) {
       std::cerr << "cuCG<T>::solve : Unable to allocate storage (r)" << std::endl;
       return std::auto_ptr< cuNDArray<T> >(rho);
@@ -33,7 +34,7 @@ std::auto_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
   REAL rr_0    = real<REAL>(cuNDA_dot<T>(&r, &r, cublas_handle_));
   REAL rr_1    = rr_0;
   REAL rr      = get_zero<REAL>();
-  REAL rr_last = 1e10;
+  REAL rr_last = get_max<REAL>();
 
   cuNDArray<T> p;
   if (!p.create(rhs->get_dimensions())) {
@@ -42,7 +43,7 @@ std::auto_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
   }
 
   cuNDArray<T> p_precond;
-  if (precond_) { // We only need this additional storage if we are using a preconditioner
+  if (precond_.get()) { // We only need this additional storage if we are using a preconditioner
     if (!p_precond.create(rhs->get_dimensions())) {
       std::cerr << "cuCG<T>::solve : Unable to allocate temp storage (p_precond)" << std::endl;
       return std::auto_ptr< cuNDArray<T> >(rho);
@@ -70,7 +71,7 @@ std::auto_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
   for (unsigned int it = 0; it < iterations_; it++) { //iterations_; it++) {
 
     rr_1 = rr;
-    rr = real<REAL>(cuNDA_dot<T>(&r, &r, cublas_handle_));
+    rr = real<REAL,T>(cuNDA_dot<T>(&r, &r, cublas_handle_));
     
     // Update p
     if (it == 0){
@@ -81,7 +82,7 @@ std::auto_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
 	std::cerr << "cuCG<T>::solve : failed to scale p" << std::endl;
 	return std::auto_ptr< cuNDArray<T> >(rho);
       }
-      if (cuNDA_axpy(get_one<T>(),&r,&p,cublas_handle_) < 0) {
+      if (cuNDA_axpy<T>(get_one<T>(),&r,&p,cublas_handle_) < 0) {
 	std::cerr << "cuCG<T>::solve : failed to add r to scaled p" << std::endl;
 	return std::auto_ptr< cuNDArray<T> >(rho);
       }
@@ -92,7 +93,7 @@ std::auto_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
     
     // Take care of preconditioning
     cuNDArray<T>* cur_p = &p;
-    if (precond_) {
+    if (precond_.get()) {
       if (!precond_->apply(&p,&p_precond) < 0) {
 	std::cerr << "cuCG<T>::solve : failed to apply preconditioner to p" << std::endl;
 	return std::auto_ptr< cuNDArray<T> >(rho);
@@ -100,20 +101,20 @@ std::auto_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
       cur_p = &p_precond;
     }
 
-    for (unsigned int i = 0; i < operators_.size(); i++) {
+    for (unsigned int i = 0; i < num_operators_; i++) {
 
       if (operators_[i]->mult_MH_M(cur_p, &q2, false) < 0) {
 	std::cerr << "cuCG<T>::solve : failed to apply operator number " << i << std::endl;
 	return std::auto_ptr< cuNDArray<T> >(rho);
       }
 
-      if (cuNDA_axpy(mul<REAL>(weights_[i], get_one<T>()),&q2,&q,cublas_handle_) < 0) {
+      if (cuNDA_axpy<T>(mul<REAL>(op_weights_[i], get_one<T>()),&q2,&q,cublas_handle_) < 0) {
 	std::cerr << "cuCG<T>::solve : failed to add q1 to q" << std::endl;
 	return std::auto_ptr< cuNDArray<T> >(rho);
       }
     }
     
-    if (precond_) {
+    if (precond_.get()) {
       if (!precond_->apply(&q,&q) < 0) {
 	std::cerr << "cuCG<T>::solve : failed to apply preconditioner to q" << std::endl;
 	return std::auto_ptr< cuNDArray<T> >(rho);
@@ -153,7 +154,7 @@ std::auto_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
     }
   }
 
-  if (precond_) {
+  if (precond_.get()) {
     if (!precond_->apply(rho,rho) < 0) {
       std::cerr << "cuCG<T>::solve : failed to apply preconditioner to rho" << std::endl;
       return std::auto_ptr< cuNDArray<T> >(rho);

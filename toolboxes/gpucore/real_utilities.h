@@ -1,5 +1,8 @@
+#pragma once
+
 #include <math_constants.h>
 #include <math_functions.h>
+#include <float.h>
 
 //
 // Get scalar limits of operation

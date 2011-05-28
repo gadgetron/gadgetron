@@ -1268,11 +1268,11 @@ image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Ty
     //  { x, y, xy } in 2D
     //  { x, y, x, xy, xz, yz, xyz } in 3D
     //
-    // Every "letter" in aech combination provides two possible wraps (eiher end of the dimension)
+    // Every "letter" in each combination provides two possible wraps (eiher end of the dimension)
     // 
     // For every 2^D-1 combinations DO
     //   - find the number of dimensions, d, in the combination
-    //   - create 2^(d) stride vectors and test for wrapping the 'B'-vectors above.
+    //   - create 2^(d) stride vectors and test for wrapping using the 'B'-vectors above.
     //   - accumulate the contributions
     // 
     //   The following code represents dimensions as bits in a char.

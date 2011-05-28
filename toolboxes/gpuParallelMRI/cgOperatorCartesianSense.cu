@@ -72,7 +72,7 @@ cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_c
   dim3 blockDim(512,1,1);
   dim3 gridDim((unsigned int) ceil((double)idx_->get_number_of_elements()/blockDim.x), 1, 1 );
   sample_array_kernel<REAL><<< gridDim, blockDim >>>( tmp.get_data_ptr(), out->get_data_ptr(), idx_->get_data_ptr(),
-						in->get_number_of_elements(), idx_->get_number_of_elements(), this->ncoils_);
+						      in->get_number_of_elements(), idx_->get_number_of_elements(), this->ncoils_);
   cudaError_t err = cudaGetLastError();
   if( err != cudaSuccess ){
     std::cerr << "cgOperatorCartesianSense::mult_M : Unable to sample data: " << 
@@ -105,8 +105,8 @@ cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_c
   dim3 blockDim(512,1,1);
   dim3 gridDim((unsigned int) ceil((double)idx_->get_number_of_elements()/blockDim.x), 1, 1 );
   insert_samples_kernel<REAL><<< gridDim, blockDim >>>( in->get_data_ptr(), tmp.get_data_ptr(),
-						  idx_->get_data_ptr(),out->get_number_of_elements(),
-						  idx_->get_number_of_elements(), this->ncoils_);
+							idx_->get_data_ptr(),out->get_number_of_elements(),
+							idx_->get_number_of_elements(), this->ncoils_);
   
   cudaError_t err = cudaGetLastError();
   if( err != cudaSuccess ){

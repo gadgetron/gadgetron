@@ -17,7 +17,7 @@ cgOperatorSenseRHSBuffer<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_
     return -1;
   }
   
-  if( in->get_number_of_elements() != this->csm_.get_number_of_elements() ){
+  if( in->get_number_of_elements() != this->csm_->get_number_of_elements() ){
     std::cerr << "cgOperatorSenseRHSBuffer::mult_MH input array dimensions mismatch csm" << std::endl;
     return -2;
   }

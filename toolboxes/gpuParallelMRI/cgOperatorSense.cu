@@ -2,11 +2,11 @@
 #include "vector_td_utilities.h"
 
 template<class REAL, unsigned int D> int 
-cgOperatorSense<REAL,D>::set_csm( cuNDArray<_complext>* csm ) 
+cgOperatorSense<REAL,D>::set_csm( std::auto_ptr< cuNDArray<_complext> > csm ) 
 {
-  if( csm && csm->get_number_of_dimensions() == D+1 ) {
-    csm_ = *csm;
-    ncoils_ = csm_.get_size(D);
+  if( csm->get_number_of_dimensions() == D+1 ) {
+    csm_ = csm;
+    ncoils_ = csm_->get_size(D);
     dimensionsI_ = csm->get_dimensions();
     dimensionsI_.pop_back();
     return 0;
@@ -44,7 +44,7 @@ cgOperatorSense<REAL,D>::mult_csm( cuNDArray<_complext>* in, cuNDArray<_complext
 
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)num_image_elements/blockDim.x), num_frames);
-  mult_csm_kernel<REAL><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), csm_.get_data_ptr(), 
+  mult_csm_kernel<REAL><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), csm_->get_data_ptr(), 
 						  num_image_elements, num_frames, ncoils_ );
   cudaError_t err = cudaGetLastError();
   if( err != cudaSuccess ){
@@ -84,7 +84,7 @@ cgOperatorSense<REAL,D>:: mult_csm_conj_sum( cuNDArray<_complext>* in, cuNDArray
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)num_image_elements/blockDim.x), num_frames);
 
-  mult_csm_conj_sum_kernel<REAL><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), csm_.get_data_ptr(),
+  mult_csm_conj_sum_kernel<REAL><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), csm_->get_data_ptr(),
 							   num_image_elements, num_frames, ncoils_ );
   
   cudaError_t err = cudaGetLastError();

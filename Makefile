@@ -9,8 +9,8 @@ DIRS=\
 	toolboxes/gpuNFFT \
 	toolboxes/gpucg \
 	toolboxes/gpuParallelMRI \
-	apps/gputest \
-	apps/standalone/radial_sense \
+	apps/MRI/gputest \
+	apps/MRI/standalone/radial_sense \
 	apps/gadgetron \
 	apps/gadgetdatasender \
 	gadgets/core \
