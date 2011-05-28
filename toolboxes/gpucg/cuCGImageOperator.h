@@ -5,6 +5,7 @@
 
 #include <cublas_v2.h>
 #include <cmath>
+#include <boost/smart_ptr.hpp>
 
 template <class REAL, class T> 
 class cuCGImageOperator : public cuCGMatrixOperator<T>
@@ -54,5 +55,5 @@ class cuCGImageOperator : public cuCGMatrixOperator<T>
   cuNDArray<REAL>* get() { return image_.get(); }
   
 private:
-  std::auto_ptr< cuNDArray<REAL> > image_;
+  boost::shared_ptr< cuNDArray<REAL> > image_;
 };

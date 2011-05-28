@@ -30,16 +30,16 @@ cuNDA_sum_kernel( T *in, T *out, unsigned int stride, unsigned int number_of_bat
 
 // Sum
 template<class T>  
-auto_ptr< cuNDArray<T> > cuNDA_sum( cuNDArray<T> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<T> > cuNDA_sum( cuNDArray<T> *in, unsigned int dim )
 {
   if( !(in->get_number_of_dimensions()>1) ){
     cout << endl << "cuNDA_sum:: underdimensioned." << endl; 
-    return auto_ptr< cuNDArray<T> >(0x0);
+    return boost::shared_ptr< cuNDArray<T> >();
   }
  
   if( dim > in->get_number_of_dimensions()-1 ){
     cout << endl << "cuNDA_sum:: dimension out of range." << endl; 
-    return auto_ptr< cuNDArray<T> >(0x0);
+    return boost::shared_ptr< cuNDArray<T> >();
   }
  
   unsigned int number_of_batches = in->get_size(dim);
@@ -64,7 +64,7 @@ auto_ptr< cuNDArray<T> > cuNDA_sum( cuNDArray<T> *in, unsigned int dim )
  
   CHECK_FOR_CUDA_ERROR();
 
-  return auto_ptr< cuNDArray<T> >(out);
+  return boost::shared_ptr< cuNDArray<T> >(out);
 }
 
 // Norm
@@ -93,7 +93,7 @@ void cuNDA_norm_kernel( T *in, REAL *out, unsigned int number_of_elements )
 
 // Norm
 template<class REAL, unsigned int D>  
-auto_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<typename reald<REAL,D>::Type> *in )
+boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<typename reald<REAL,D>::Type> *in )
 {
   unsigned int number_of_elements = in->get_number_of_elements();
 
@@ -108,12 +108,12 @@ auto_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<typename reald<REAL,D>::Type> 
  
   CHECK_FOR_CUDA_ERROR();
  
-  return auto_ptr< cuNDArray<REAL> >(out);
+  return boost::shared_ptr< cuNDArray<REAL> >(out);
 }
 
 // Norm
 template<class REAL, class T>  
-auto_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<T> *in )
+boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<T> *in )
 {
   unsigned int number_of_elements = in->get_number_of_elements();
 
@@ -128,7 +128,7 @@ auto_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<T> *in )
  
   CHECK_FOR_CUDA_ERROR();
  
-  return auto_ptr< cuNDArray<REAL> >(out);
+  return boost::shared_ptr< cuNDArray<REAL> >(out);
 }
 
 // Norm squared
@@ -157,7 +157,7 @@ void cuNDA_norm_squared_kernel( T *in, REAL *out, unsigned int number_of_element
 
 // Norm Squared
 template<class REAL, unsigned int D>  
-auto_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<typename reald<REAL,D>::Type> *in )
+boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<typename reald<REAL,D>::Type> *in )
 {
   unsigned int number_of_elements = in->get_number_of_elements();
 
@@ -172,12 +172,12 @@ auto_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<typename reald<REAL,D>
  
   CHECK_FOR_CUDA_ERROR();
  
-  return auto_ptr< cuNDArray<REAL> >(out);
+  return boost::shared_ptr< cuNDArray<REAL> >(out);
 }
 
 // Norm Squared
 template<class REAL, class T>  
-auto_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<T> *in )
+boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<T> *in )
 {
   unsigned int number_of_elements = in->get_number_of_elements();
 
@@ -192,7 +192,7 @@ auto_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<T> *in )
  
   CHECK_FOR_CUDA_ERROR();
  
-  return auto_ptr< cuNDArray<REAL> >(out);
+  return boost::shared_ptr< cuNDArray<REAL> >(out);
 }
 
 // SS
@@ -221,16 +221,16 @@ cuNDA_ss_kernel( T *in, REAL *out, unsigned int stride, unsigned int number_of_b
 
 // SS
 template<class REAL, class T>  
-auto_ptr< cuNDArray<REAL> > _cuNDA_ss( cuNDArray<T> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<REAL> > _cuNDA_ss( cuNDArray<T> *in, unsigned int dim )
 {
   if( !(in->get_number_of_dimensions()>1) ){
     cout << endl << "cuNDA_ss:: underdimensioned." << endl; 
-    return auto_ptr< cuNDArray<REAL> >(0x0);
+    return boost::shared_ptr< cuNDArray<REAL> >();
   }
  
   if( dim > in->get_number_of_dimensions()-1 ){
     cout << endl << "cuNDA_ss:: dimension out of range." << endl; 
-    return auto_ptr< cuNDArray<REAL> >(0x0);
+    return boost::shared_ptr< cuNDArray<REAL> >();
   }
 
   unsigned int number_of_batches = in->get_size(dim);
@@ -255,29 +255,29 @@ auto_ptr< cuNDArray<REAL> > _cuNDA_ss( cuNDArray<T> *in, unsigned int dim )
  
   CHECK_FOR_CUDA_ERROR();
  
-  return auto_ptr< cuNDArray<REAL> >(out);
+  return boost::shared_ptr< cuNDArray<REAL> >(out);
 }
 
 template<>  
-auto_ptr< cuNDArray<float> > cuNDA_ss<float,float>( cuNDArray<float> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<float> > cuNDA_ss<float,float>( cuNDArray<float> *in, unsigned int dim )
 {
   return _cuNDA_ss<float, float>(in,dim);
 }
 
 template<>  
-auto_ptr< cuNDArray<double> > cuNDA_ss<double,double>( cuNDArray<double> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<double> > cuNDA_ss<double,double>( cuNDArray<double> *in, unsigned int dim )
 {
   return _cuNDA_ss<double, double>(in,dim);
 }
 
 template<>
-auto_ptr< cuNDArray<float> > cuNDA_ss<float,float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<float> > cuNDA_ss<float,float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_ss<float, float_complext::Type>(in,dim);
 }
 
 template<>
-auto_ptr< cuNDArray<double> > cuNDA_ss<double,double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<double> > cuNDA_ss<double,double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_ss<double, double_complext::Type>(in,dim);
 }
@@ -299,16 +299,16 @@ cuNDA_css_kernel( T *in, T *out, unsigned int stride, unsigned int number_of_bat
 
 // cSS
 template<class REAL>  
-auto_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_css( cuNDArray<typename complext<REAL>::Type> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_css( cuNDArray<typename complext<REAL>::Type> *in, unsigned int dim )
 {
   if( !(in->get_number_of_dimensions()>1) ){
     cout << endl << "cuNDA_ss:: underdimensioned." << endl; 
-    return auto_ptr< cuNDArray<typename complext<REAL>::Type> >(0x0);
+    return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >();
   }
  
   if( dim > in->get_number_of_dimensions()-1 ){
     cout << endl << "cuNDA_ss:: dimension out of range." << endl; 
-    return auto_ptr< cuNDArray<typename complext<REAL>::Type> >(0x0);
+    return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >();
   }
 
   unsigned int number_of_batches = in->get_size(dim);
@@ -333,17 +333,17 @@ auto_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_css( cuNDArray<typena
  
   CHECK_FOR_CUDA_ERROR();
  
-  return auto_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
+  return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
 }
 
 template<>
-auto_ptr< cuNDArray<float_complext::Type> > cuNDA_ss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_ss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_css<float>( in, dim );
 }
 
 template<>
-auto_ptr< cuNDArray<double_complext::Type> > cuNDA_ss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_ss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_css<double>( in, dim );
 }
@@ -376,16 +376,16 @@ cuNDA_rss_kernel( T *in, REAL *out, unsigned int stride, unsigned int number_of_
 
 // RSS
 template<class REAL, class T>  
-auto_ptr< cuNDArray<REAL> > _cuNDA_rss( cuNDArray<T> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<REAL> > _cuNDA_rss( cuNDArray<T> *in, unsigned int dim )
 {
   if( !(in->get_number_of_dimensions()>1) ){
     cout << endl << "cuNDA_rss:: underdimensioned." << endl; 
-    return auto_ptr< cuNDArray<REAL> >(0x0);
+    return boost::shared_ptr< cuNDArray<REAL> >();
   }
  
   if( dim > in->get_number_of_dimensions()-1 ){
     cout << endl << "cuNDA_rss:: dimension out of range." << endl; 
-    return auto_ptr< cuNDArray<REAL> >(0x0);
+    return boost::shared_ptr< cuNDArray<REAL> >();
   }
 
   unsigned int number_of_batches = in->get_size(dim);
@@ -410,29 +410,29 @@ auto_ptr< cuNDArray<REAL> > _cuNDA_rss( cuNDArray<T> *in, unsigned int dim )
  
   CHECK_FOR_CUDA_ERROR();
  
-  return auto_ptr< cuNDArray<REAL> >(out);
+  return boost::shared_ptr< cuNDArray<REAL> >(out);
 }
 
 template<>  
-auto_ptr< cuNDArray<float> > cuNDA_rss<float,float>( cuNDArray<float> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<float> > cuNDA_rss<float,float>( cuNDArray<float> *in, unsigned int dim )
 {
   return _cuNDA_rss<float, float>(in,dim);
 }
 
 template<>  
-auto_ptr< cuNDArray<double> > cuNDA_rss<double,double>( cuNDArray<double> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<double> > cuNDA_rss<double,double>( cuNDArray<double> *in, unsigned int dim )
 {
   return _cuNDA_rss<double, double>(in,dim);
 }
 
 template<>
-auto_ptr< cuNDArray<float> > cuNDA_rss<float,float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<float> > cuNDA_rss<float,float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_rss<float, float_complext::Type>(in,dim);
 }
 
 template<>
-auto_ptr< cuNDArray<double> > cuNDA_rss<double,double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<double> > cuNDA_rss<double,double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_rss<double, double_complext::Type>(in,dim);
 }
@@ -454,16 +454,16 @@ cuNDA_crss_kernel( T *in, T *out, unsigned int stride, unsigned int number_of_ba
 
 // cRSS
 template<class REAL>  
-auto_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_crss( cuNDArray<typename complext<REAL>::Type> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_crss( cuNDArray<typename complext<REAL>::Type> *in, unsigned int dim )
 {
   if( !(in->get_number_of_dimensions()>1) ){
     cout << endl << "cuNDA_rss:: underdimensioned." << endl; 
-    return auto_ptr< cuNDArray<typename complext<REAL>::Type> >(0x0);
+    return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >();
   }
  
   if( dim > in->get_number_of_dimensions()-1 ){
     cout << endl << "cuNDA_rss:: dimension out of range." << endl; 
-    return auto_ptr< cuNDArray<typename complext<REAL>::Type> >(0x0);
+    return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >();
   }
 
   unsigned int number_of_batches = in->get_size(dim);
@@ -488,17 +488,17 @@ auto_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_crss( cuNDArray<typen
  
   CHECK_FOR_CUDA_ERROR();
  
-  return auto_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
+  return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
 }
 
 template<>
-auto_ptr< cuNDArray<float_complext::Type> > cuNDA_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_crss<float>( in, dim );
 }
 
 template<>
-auto_ptr< cuNDArray<double_complext::Type> > cuNDA_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_crss<double>( in, dim );
 }
@@ -516,16 +516,16 @@ cuNDA_reciprocal_rss_kernel( T *in, REAL *out, unsigned int stride, unsigned int
 
 // Reciprocal RSS
 template<class REAL, class T>  
-auto_ptr< cuNDArray<REAL> > _cuNDA_reciprocal_rss( cuNDArray<T> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<REAL> > _cuNDA_reciprocal_rss( cuNDArray<T> *in, unsigned int dim )
 {
   if( !(in->get_number_of_dimensions()>1) ){
     cout << endl << "cuNDA_reciprocal_rss:: underdimensioned." << endl; 
-    return auto_ptr< cuNDArray<REAL> >(0x0);
+    return boost::shared_ptr< cuNDArray<REAL> >();
   }
  
   if( dim > in->get_number_of_dimensions()-1 ){
     cout << endl << "cuNDA_reciprocal_rss:: dimension out of range." << endl; 
-    return auto_ptr< cuNDArray<REAL> >(0x0);
+    return boost::shared_ptr< cuNDArray<REAL> >();
   }
 
   unsigned int number_of_batches = in->get_size(dim);
@@ -550,29 +550,29 @@ auto_ptr< cuNDArray<REAL> > _cuNDA_reciprocal_rss( cuNDArray<T> *in, unsigned in
  
   CHECK_FOR_CUDA_ERROR();
  
-  return auto_ptr< cuNDArray<REAL> >(out);
+  return boost::shared_ptr< cuNDArray<REAL> >(out);
 }
 
 template<>
-auto_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float>( cuNDArray<float> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float>( cuNDArray<float> *in, unsigned int dim )
 {
   return _cuNDA_reciprocal_rss<float, float>(in,dim);
 }
 
 template<>
-auto_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double>( cuNDArray<double> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double>( cuNDArray<double> *in, unsigned int dim )
 {
   return _cuNDA_reciprocal_rss<double, double>(in,dim);
 }
 
 template<>
-auto_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_reciprocal_rss<float, float_complext::Type>(in,dim);
 }
 
 template<>
-auto_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_reciprocal_rss<double, double_complext::Type>(in,dim);
 }
@@ -594,16 +594,16 @@ cuNDA_creciprocal_rss_kernel( T *in, T *out, unsigned int stride, unsigned int n
 
 // cReciprocal RSS
 template<class REAL>  
-auto_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_creciprocal_rss( cuNDArray<typename complext<REAL>::Type> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_creciprocal_rss( cuNDArray<typename complext<REAL>::Type> *in, unsigned int dim )
 {
   if( !(in->get_number_of_dimensions()>1) ){
     cout << endl << "cuNDA_reciprocal_rss:: underdimensioned." << endl; 
-    return auto_ptr< cuNDArray<typename complext<REAL>::Type> >(0x0);
+    return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >();
   }
  
   if( dim > in->get_number_of_dimensions()-1 ){
     cout << endl << "cuNDA_reciprocal_rss:: dimension out of range." << endl; 
-    return auto_ptr< cuNDArray<typename complext<REAL>::Type> >(0x0);
+    return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >();
   }
 
   unsigned int number_of_batches = in->get_size(dim);
@@ -628,17 +628,17 @@ auto_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_creciprocal_rss( cuND
  
   CHECK_FOR_CUDA_ERROR();
  
-  return auto_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
+  return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
 }
 
 template<>
-auto_ptr< cuNDArray<float_complext::Type> > cuNDA_reciprocal_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_reciprocal_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_creciprocal_rss<float>( in, dim );
 }
 
 template<>
-auto_ptr< cuNDArray<double_complext::Type> > cuNDA_reciprocal_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
+boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_reciprocal_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_creciprocal_rss<double>( in, dim );
 }
@@ -663,11 +663,11 @@ cuNDA_correlation_kernel( T *in, T *corrm, unsigned int num_batches, unsigned in
 
 // Build correlation matrix
 template<class REAL, class T>  
-auto_ptr< cuNDArray<T> > _cuNDA_correlation( cuNDArray<T> *in )
+boost::shared_ptr< cuNDArray<T> > _cuNDA_correlation( cuNDArray<T> *in )
 {
   if( !(in->get_number_of_dimensions()>1) ){
     cout << endl << "cuNDA_correlation:: underdimensioned." << endl; 
-    return auto_ptr< cuNDArray<T> >(0x0);
+    return boost::shared_ptr< cuNDArray<T> >();
   }
 
   unsigned int number_of_batches = in->get_size(in->get_number_of_dimensions()-1);
@@ -687,7 +687,7 @@ auto_ptr< cuNDArray<T> > _cuNDA_correlation( cuNDArray<T> *in )
 
   if( blockDim.x == 0 ){
     cout << endl << "cuNDA_correlation:: correlation dimension exceeds capacity." << endl; 
-    return auto_ptr< cuNDArray<T> >(0x0);
+    return boost::shared_ptr< cuNDArray<T> >();
   }
 
   if( out != 0x0 )
@@ -695,7 +695,7 @@ auto_ptr< cuNDArray<T> > _cuNDA_correlation( cuNDArray<T> *in )
  
   CHECK_FOR_CUDA_ERROR();
  
-  return auto_ptr< cuNDArray<T> >(out);
+  return boost::shared_ptr< cuNDArray<T> >(out);
 }
 
 // Build correlation matrix
@@ -714,7 +714,7 @@ cuNDA_real_to_complext_kernel( REAL *in, typename complext<REAL>::Type *out, uns
 
 // Build correlation matrix
 template<class REAL>  
-auto_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_real_to_complext( cuNDArray<REAL> *in )
+boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_real_to_complext( cuNDArray<REAL> *in )
 {
   cuNDArray<typename complext<REAL>::Type> *out = cuNDArray<typename complext<REAL>::Type>::allocate(in->get_dimensions());
 
@@ -726,29 +726,29 @@ auto_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_real_to_complext( cuN
   
   CHECK_FOR_CUDA_ERROR();
   
-  return auto_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
+  return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
 }
 
 template<>
-auto_ptr< cuNDArray<float> > cuNDA_correlation<float>( cuNDArray<float> *data )
+boost::shared_ptr< cuNDArray<float> > cuNDA_correlation<float>( cuNDArray<float> *data )
 {
   return _cuNDA_correlation<float,float>(data);
 }
 
 template<>
-auto_ptr< cuNDArray<double> > cuNDA_correlation<double>( cuNDArray<double> *data )
+boost::shared_ptr< cuNDArray<double> > cuNDA_correlation<double>( cuNDArray<double> *data )
 {
   return _cuNDA_correlation<double,double>(data);
 }
 
 template<>
-auto_ptr< cuNDArray<float_complext::Type> > cuNDA_correlation<float_complext::Type>( cuNDArray<float_complext::Type> *data )
+boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_correlation<float_complext::Type>( cuNDArray<float_complext::Type> *data )
 {
   return _cuNDA_correlation<float,float_complext::Type>(data);
 }
 
 template<>
-auto_ptr< cuNDArray<double_complext::Type> > cuNDA_correlation<double_complext::Type>( cuNDArray<double_complext::Type> *data )
+boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_correlation<double_complext::Type>( cuNDArray<double_complext::Type> *data )
 {
   return _cuNDA_correlation<double,double_complext::Type>(data);
 }
@@ -1628,67 +1628,67 @@ cuNDA_scal( T a, cuNDArray<T>* x, cublasHandle_t handle )
 // Instantiation
 //
 
-template auto_ptr< cuNDArray<int> > cuNDA_sum<int>( cuNDArray<int>*, unsigned int);
-template auto_ptr< cuNDArray<intd<1>::Type> > cuNDA_sum<intd<1>::Type >( cuNDArray<intd<1>::Type >*, unsigned int );
-template auto_ptr< cuNDArray<intd<2>::Type> > cuNDA_sum<intd<2>::Type >( cuNDArray<intd<2>::Type >*, unsigned int );
-template auto_ptr< cuNDArray<intd<3>::Type> > cuNDA_sum<intd<3>::Type >( cuNDArray<intd<3>::Type >*, unsigned int );
-template auto_ptr< cuNDArray<intd<4>::Type> > cuNDA_sum<intd<4>::Type >( cuNDArray<intd<4>::Type >*, unsigned int );
+template boost::shared_ptr< cuNDArray<int> > cuNDA_sum<int>( cuNDArray<int>*, unsigned int);
+template boost::shared_ptr< cuNDArray<intd<1>::Type> > cuNDA_sum<intd<1>::Type >( cuNDArray<intd<1>::Type >*, unsigned int );
+template boost::shared_ptr< cuNDArray<intd<2>::Type> > cuNDA_sum<intd<2>::Type >( cuNDArray<intd<2>::Type >*, unsigned int );
+template boost::shared_ptr< cuNDArray<intd<3>::Type> > cuNDA_sum<intd<3>::Type >( cuNDArray<intd<3>::Type >*, unsigned int );
+template boost::shared_ptr< cuNDArray<intd<4>::Type> > cuNDA_sum<intd<4>::Type >( cuNDArray<intd<4>::Type >*, unsigned int );
 
-template auto_ptr< cuNDArray<unsigned int> > cuNDA_sum<unsigned int>( cuNDArray<unsigned int>*, unsigned int);
-template auto_ptr< cuNDArray<uintd<1>::Type> > cuNDA_sum<uintd<1>::Type>( cuNDArray<uintd<1>::Type>*, unsigned int );
-template auto_ptr< cuNDArray<uintd<2>::Type> > cuNDA_sum<uintd<2>::Type>( cuNDArray<uintd<2>::Type>*, unsigned int );
-template auto_ptr< cuNDArray<uintd<3>::Type> > cuNDA_sum<uintd<3>::Type>( cuNDArray<uintd<3>::Type>*, unsigned int );
-template auto_ptr< cuNDArray<uintd<4>::Type> > cuNDA_sum<uintd<4>::Type>( cuNDArray<uintd<4>::Type>*, unsigned int );
+template boost::shared_ptr< cuNDArray<unsigned int> > cuNDA_sum<unsigned int>( cuNDArray<unsigned int>*, unsigned int);
+template boost::shared_ptr< cuNDArray<uintd<1>::Type> > cuNDA_sum<uintd<1>::Type>( cuNDArray<uintd<1>::Type>*, unsigned int );
+template boost::shared_ptr< cuNDArray<uintd<2>::Type> > cuNDA_sum<uintd<2>::Type>( cuNDArray<uintd<2>::Type>*, unsigned int );
+template boost::shared_ptr< cuNDArray<uintd<3>::Type> > cuNDA_sum<uintd<3>::Type>( cuNDArray<uintd<3>::Type>*, unsigned int );
+template boost::shared_ptr< cuNDArray<uintd<4>::Type> > cuNDA_sum<uintd<4>::Type>( cuNDArray<uintd<4>::Type>*, unsigned int );
 
 // Instanciation -- single precision
 
 
-template auto_ptr< cuNDArray<float> > cuNDA_sum<float>( cuNDArray<float>*, unsigned int);
-template auto_ptr< cuNDArray<floatd<1>::Type> > cuNDA_sum<floatd<1>::Type>( cuNDArray<floatd<1>::Type>*, unsigned int );
-template auto_ptr< cuNDArray<floatd<2>::Type> > cuNDA_sum<floatd<2>::Type>( cuNDArray<floatd<2>::Type>*, unsigned int );
-template auto_ptr< cuNDArray<floatd<3>::Type> > cuNDA_sum<floatd<3>::Type>( cuNDArray<floatd<3>::Type>*, unsigned int );
-template auto_ptr< cuNDArray<floatd<4>::Type> > cuNDA_sum<floatd<4>::Type>( cuNDArray<floatd<4>::Type>*, unsigned int );
+template boost::shared_ptr< cuNDArray<float> > cuNDA_sum<float>( cuNDArray<float>*, unsigned int);
+template boost::shared_ptr< cuNDArray<floatd<1>::Type> > cuNDA_sum<floatd<1>::Type>( cuNDArray<floatd<1>::Type>*, unsigned int );
+template boost::shared_ptr< cuNDArray<floatd<2>::Type> > cuNDA_sum<floatd<2>::Type>( cuNDArray<floatd<2>::Type>*, unsigned int );
+template boost::shared_ptr< cuNDArray<floatd<3>::Type> > cuNDA_sum<floatd<3>::Type>( cuNDArray<floatd<3>::Type>*, unsigned int );
+template boost::shared_ptr< cuNDArray<floatd<4>::Type> > cuNDA_sum<floatd<4>::Type>( cuNDArray<floatd<4>::Type>*, unsigned int );
 
-template auto_ptr< cuNDArray<float> > cuNDA_norm<float,float>( cuNDArray<float>*);
+template boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,float>( cuNDArray<float>*);
 
-template auto_ptr< cuNDArray<float> > cuNDA_norm<float,float_complext::Type>( cuNDArray<float_complext::Type>* );
+template boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,float_complext::Type>( cuNDArray<float_complext::Type>* );
 
-template auto_ptr< cuNDArray<float> > cuNDA_norm<float,1>( cuNDArray<floatd<1>::Type>*);
-template auto_ptr< cuNDArray<float> > cuNDA_norm<float,2>( cuNDArray<floatd<2>::Type>*);
-template auto_ptr< cuNDArray<float> > cuNDA_norm<float,3>( cuNDArray<floatd<3>::Type>*);
-template auto_ptr< cuNDArray<float> > cuNDA_norm<float,4>( cuNDArray<floatd<4>::Type>*);
+template boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,1>( cuNDArray<floatd<1>::Type>*);
+template boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,2>( cuNDArray<floatd<2>::Type>*);
+template boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,3>( cuNDArray<floatd<3>::Type>*);
+template boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,4>( cuNDArray<floatd<4>::Type>*);
 
-template auto_ptr< cuNDArray<float> > cuNDA_norm_squared<float,float>( cuNDArray<float>*);
+template boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,float>( cuNDArray<float>*);
 
-template auto_ptr< cuNDArray<float> > cuNDA_norm_squared<float,float_complext::Type>( cuNDArray<float_complext::Type>* );
+template boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,float_complext::Type>( cuNDArray<float_complext::Type>* );
 
-template auto_ptr< cuNDArray<float> > cuNDA_norm_squared<float,1>( cuNDArray<floatd<1>::Type>*);
-template auto_ptr< cuNDArray<float> > cuNDA_norm_squared<float,2>( cuNDArray<floatd<2>::Type>*);
-template auto_ptr< cuNDArray<float> > cuNDA_norm_squared<float,3>( cuNDArray<floatd<3>::Type>*);
-template auto_ptr< cuNDArray<float> > cuNDA_norm_squared<float,4>( cuNDArray<floatd<4>::Type>*);
+template boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,1>( cuNDArray<floatd<1>::Type>*);
+template boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,2>( cuNDArray<floatd<2>::Type>*);
+template boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,3>( cuNDArray<floatd<3>::Type>*);
+template boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,4>( cuNDArray<floatd<4>::Type>*);
 
-template auto_ptr< cuNDArray<float> > cuNDA_ss<float,float>( cuNDArray<float>*, unsigned int);
+template boost::shared_ptr< cuNDArray<float> > cuNDA_ss<float,float>( cuNDArray<float>*, unsigned int);
 
-template auto_ptr< cuNDArray<float> > cuNDA_ss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template boost::shared_ptr< cuNDArray<float> > cuNDA_ss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template auto_ptr< cuNDArray<float_complext::Type> > cuNDA_ss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_ss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template auto_ptr< cuNDArray<float> > cuNDA_rss<float,float>( cuNDArray<float>*, unsigned int);
+template boost::shared_ptr< cuNDArray<float> > cuNDA_rss<float,float>( cuNDArray<float>*, unsigned int);
 
-template auto_ptr< cuNDArray<float> > cuNDA_rss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template boost::shared_ptr< cuNDArray<float> > cuNDA_rss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template auto_ptr< cuNDArray<float_complext::Type> > cuNDA_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template auto_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float>( cuNDArray<float>*, unsigned int);
+template boost::shared_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float>( cuNDArray<float>*, unsigned int);
 
-template auto_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template boost::shared_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template auto_ptr< cuNDArray<float_complext::Type> > cuNDA_reciprocal_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_reciprocal_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template auto_ptr< cuNDArray<float> > cuNDA_correlation<float>( cuNDArray<float>*);
-template auto_ptr< cuNDArray<float_complext::Type> > cuNDA_correlation<float_complext::Type>( cuNDArray<float_complext::Type>*);
+template boost::shared_ptr< cuNDArray<float> > cuNDA_correlation<float>( cuNDArray<float>*);
+template boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_correlation<float_complext::Type>( cuNDArray<float_complext::Type>*);
 
-template auto_ptr< cuNDArray<float_complext::Type> > cuNDA_real_to_complext<float>( cuNDArray<float>*);
+template boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_real_to_complext<float>( cuNDArray<float>*);
 
 template void cuNDA_clear<float>(cuNDArray<float>*);
 template void cuNDA_clear<float_complext::Type>(cuNDArray<float_complext::Type>*);
@@ -1796,52 +1796,52 @@ template bool cuNDA_scal<float_complext::Type>( float_complext::Type, cuNDArray<
 
 // Instanciation -- double precision
 
-template auto_ptr< cuNDArray<double> > cuNDA_sum<double>( cuNDArray<double>*, unsigned int);
-template auto_ptr< cuNDArray<doubled<1>::Type> > cuNDA_sum<doubled<1>::Type>( cuNDArray<doubled<1>::Type>*, unsigned int );
-template auto_ptr< cuNDArray<doubled<2>::Type> > cuNDA_sum<doubled<2>::Type>( cuNDArray<doubled<2>::Type>*, unsigned int );
-template auto_ptr< cuNDArray<doubled<3>::Type> > cuNDA_sum<doubled<3>::Type>( cuNDArray<doubled<3>::Type>*, unsigned int );
-template auto_ptr< cuNDArray<doubled<4>::Type> > cuNDA_sum<doubled<4>::Type>( cuNDArray<doubled<4>::Type>*, unsigned int );
+template boost::shared_ptr< cuNDArray<double> > cuNDA_sum<double>( cuNDArray<double>*, unsigned int);
+template boost::shared_ptr< cuNDArray<doubled<1>::Type> > cuNDA_sum<doubled<1>::Type>( cuNDArray<doubled<1>::Type>*, unsigned int );
+template boost::shared_ptr< cuNDArray<doubled<2>::Type> > cuNDA_sum<doubled<2>::Type>( cuNDArray<doubled<2>::Type>*, unsigned int );
+template boost::shared_ptr< cuNDArray<doubled<3>::Type> > cuNDA_sum<doubled<3>::Type>( cuNDArray<doubled<3>::Type>*, unsigned int );
+template boost::shared_ptr< cuNDArray<doubled<4>::Type> > cuNDA_sum<doubled<4>::Type>( cuNDArray<doubled<4>::Type>*, unsigned int );
 
-template auto_ptr< cuNDArray<double> > cuNDA_norm<double,double>( cuNDArray<double>*);
+template boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,double>( cuNDArray<double>*);
 
-template auto_ptr< cuNDArray<double> > cuNDA_norm<double,double_complext::Type>( cuNDArray<double_complext::Type>* );
+template boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,double_complext::Type>( cuNDArray<double_complext::Type>* );
 
-template auto_ptr< cuNDArray<double> > cuNDA_norm<double,1>( cuNDArray<doubled<1>::Type>*);
-template auto_ptr< cuNDArray<double> > cuNDA_norm<double,2>( cuNDArray<doubled<2>::Type>*);
-template auto_ptr< cuNDArray<double> > cuNDA_norm<double,3>( cuNDArray<doubled<3>::Type>*);
-template auto_ptr< cuNDArray<double> > cuNDA_norm<double,4>( cuNDArray<doubled<4>::Type>*);
+template boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,1>( cuNDArray<doubled<1>::Type>*);
+template boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,2>( cuNDArray<doubled<2>::Type>*);
+template boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,3>( cuNDArray<doubled<3>::Type>*);
+template boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,4>( cuNDArray<doubled<4>::Type>*);
 
-template auto_ptr< cuNDArray<double> > cuNDA_norm_squared<double,double>( cuNDArray<double>*);
+template boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,double>( cuNDArray<double>*);
 
-template auto_ptr< cuNDArray<double> > cuNDA_norm_squared<double,double_complext::Type>( cuNDArray<double_complext::Type>* );
+template boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,double_complext::Type>( cuNDArray<double_complext::Type>* );
 
-template auto_ptr< cuNDArray<double> > cuNDA_norm_squared<double,1>( cuNDArray<doubled<1>::Type>*);
-template auto_ptr< cuNDArray<double> > cuNDA_norm_squared<double,2>( cuNDArray<doubled<2>::Type>*);
-template auto_ptr< cuNDArray<double> > cuNDA_norm_squared<double,3>( cuNDArray<doubled<3>::Type>*);
-template auto_ptr< cuNDArray<double> > cuNDA_norm_squared<double,4>( cuNDArray<doubled<4>::Type>*);
+template boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,1>( cuNDArray<doubled<1>::Type>*);
+template boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,2>( cuNDArray<doubled<2>::Type>*);
+template boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,3>( cuNDArray<doubled<3>::Type>*);
+template boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,4>( cuNDArray<doubled<4>::Type>*);
 
-template auto_ptr< cuNDArray<double> > cuNDA_ss<double,double>( cuNDArray<double>*, unsigned int);
+template boost::shared_ptr< cuNDArray<double> > cuNDA_ss<double,double>( cuNDArray<double>*, unsigned int);
 
-template auto_ptr< cuNDArray<double> > cuNDA_ss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template boost::shared_ptr< cuNDArray<double> > cuNDA_ss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template auto_ptr< cuNDArray<double_complext::Type> > cuNDA_ss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_ss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template auto_ptr< cuNDArray<double> > cuNDA_rss<double,double>( cuNDArray<double>*, unsigned int);
+template boost::shared_ptr< cuNDArray<double> > cuNDA_rss<double,double>( cuNDArray<double>*, unsigned int);
 
-template auto_ptr< cuNDArray<double> > cuNDA_rss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template boost::shared_ptr< cuNDArray<double> > cuNDA_rss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template auto_ptr< cuNDArray<double_complext::Type> > cuNDA_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template auto_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double>( cuNDArray<double>*, unsigned int);
+template boost::shared_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double>( cuNDArray<double>*, unsigned int);
 
-template auto_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template boost::shared_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template auto_ptr< cuNDArray<double_complext::Type> > cuNDA_reciprocal_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_reciprocal_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template auto_ptr< cuNDArray<double> > cuNDA_correlation<double>( cuNDArray<double>*);
-template auto_ptr< cuNDArray<double_complext::Type> > cuNDA_correlation<double_complext::Type>( cuNDArray<double_complext::Type>*);
+template boost::shared_ptr< cuNDArray<double> > cuNDA_correlation<double>( cuNDArray<double>*);
+template boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_correlation<double_complext::Type>( cuNDArray<double_complext::Type>*);
 
-template auto_ptr< cuNDArray<double_complext::Type> > cuNDA_real_to_complext<double>( cuNDArray<double>*);
+template boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_real_to_complext<double>( cuNDArray<double>*);
 
 template void cuNDA_clear<double>(cuNDArray<double>*);
 template void cuNDA_clear<double_complext::Type>(cuNDArray<double_complext::Type>*);

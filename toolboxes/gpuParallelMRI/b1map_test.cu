@@ -31,7 +31,7 @@ int main( int argc, char** argv)
   cutResetTimer( timer ); cutStartTimer( timer );
   
   // Compute CSM
-  auto_ptr< cuNDArray<float_complext::Type> > csm = estimate_b1_map<float,2>( &device_data );
+  boost::shared_ptr< cuNDArray<float_complext::Type> > csm = estimate_b1_map<float,2>( &device_data );
   
   cudaThreadSynchronize(); cutStopTimer( timer );
   time = cutGetTimerValue( timer ); printf("done: %.1f ms.", time ); fflush(stdout);

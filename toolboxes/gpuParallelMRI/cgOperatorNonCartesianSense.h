@@ -9,7 +9,7 @@ class cgOperatorNonCartesianSense : public cgOperatorSense<REAL,D>
 
  public:
   
-  cgOperatorNonCartesianSense() : cgOperatorSense<REAL,D>(), dcw_(0) {}
+  cgOperatorNonCartesianSense() : cgOperatorSense<REAL,D>() {}
 
   typedef typename cgOperatorSense<REAL,D>::_complext _complext;
   typedef typename uintd<D>::Type _uintd;
@@ -20,10 +20,10 @@ class cgOperatorNonCartesianSense : public cgOperatorSense<REAL,D>
 
   virtual int setup( _uintd matrix_size, _uintd matrix_size_os, REAL W );
   virtual int preprocess( cuNDArray<_reald> *trajectory );
-  virtual int set_dcw( std::auto_ptr< cuNDArray<REAL> > dcw );
+  virtual int set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw );
 
  protected:
 
   NFFT_plan<REAL, D> plan_;
-  std::auto_ptr< cuNDArray<float> > dcw_;
+  boost::shared_ptr< cuNDArray<float> > dcw_;
 };

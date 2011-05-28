@@ -2,7 +2,7 @@
 #include "vector_td_utilities.h"
 
 template<class REAL, unsigned int D> int 
-cgOperatorSense<REAL,D>::set_csm( std::auto_ptr< cuNDArray<_complext> > csm ) 
+cgOperatorSense<REAL,D>::set_csm( boost::shared_ptr< cuNDArray<_complext> > csm ) 
 {
   if( csm->get_number_of_dimensions() == D+1 ) {
     csm_ = csm;

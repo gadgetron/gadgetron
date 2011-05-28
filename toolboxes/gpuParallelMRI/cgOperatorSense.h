@@ -4,7 +4,7 @@
 #include "cuNDArray.h"
 #include "vector_td.h"
 
-#include <memory>
+#include <boost/smart_ptr.hpp>
 
 template<class REAL, unsigned int D>
 class cgOperatorSense : public cuCGMatrixOperator<typename complext<REAL>::Type>
@@ -16,7 +16,7 @@ public:
   
   cgOperatorSense() : cuCGMatrixOperator<_complext>(), ncoils_(0) {}
   
-  virtual int set_csm( std::auto_ptr< cuNDArray<_complext> > csm );
+  virtual int set_csm( boost::shared_ptr< cuNDArray<_complext> > csm );
 
   virtual int mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false ) = 0;
   virtual int mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false ) = 0;
@@ -27,7 +27,7 @@ protected:
   int mult_csm( cuNDArray<_complext>* in, cuNDArray<_complext>* out );
   int mult_csm_conj_sum( cuNDArray<_complext>* in, cuNDArray<_complext>* out) ;
 
-  std::auto_ptr< cuNDArray<_complext> > csm_;
+  boost::shared_ptr< cuNDArray<_complext> > csm_;
   unsigned int ncoils_;
   std::vector<unsigned int> dimensionsI_;
   std::vector<unsigned int> dimensionsK_;

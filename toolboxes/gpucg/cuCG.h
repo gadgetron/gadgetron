@@ -4,14 +4,11 @@
 #include "cuCGMatrixOperator.h"
 #include "cuCGPreconditioner.h"
 
-#include <memory>
 #include <vector>
 #include <iostream>
 
 #include <cublas_v2.h>
-
-// Maximum number of matrix operators in each cg solver
-static unsigned int const MAX_CG_MATRIX_OPERATORS = 32;
+#include <boost/smart_ptr.hpp>
 
 template<class REAL, class T> class cuCG
 {
@@ -25,8 +22,7 @@ template<class REAL, class T> class cuCG
   };
 
   cuCG()
-    : num_operators_(0)
-    , iterations_(10)
+    : iterations_(10)
     , limit_(1e-3)
     , output_mode_(OUTPUT_SILENT)
   {
@@ -41,14 +37,14 @@ template<class REAL, class T> class cuCG
     }
   }
   
-  int add_matrix_operator( std::auto_ptr< cuCGMatrixOperator<T> > op, REAL weight )
+  int add_matrix_operator( boost::shared_ptr< cuCGMatrixOperator<T> > op, REAL weight )
   {
-    operators_[num_operators_++] = op;
+    operators_.push_back(op);
     op_weights_.push_back(weight);
     return 0;
   }
 
-  int set_preconditioner( std::auto_ptr< cuCGPreconditioner<T> > precond ) {
+  int set_preconditioner( boost::shared_ptr< cuCGPreconditioner<T> > precond ) {
     precond_ = precond;
     return 0;
   }
@@ -71,14 +67,12 @@ template<class REAL, class T> class cuCG
     return cublas_handle_; 
   }
 
-  std::auto_ptr< cuNDArray<T> > solve(cuNDArray<T>* rhs);
+  boost::shared_ptr< cuNDArray<T> > solve(cuNDArray<T>* rhs);
 
  protected:
-  // It is not safe to use auto_ptrs in std STL containers, so we store them in an array instead.
-  std::auto_ptr< cuCGMatrixOperator<T> > operators_[MAX_CG_MATRIX_OPERATORS];
-  unsigned int num_operators_;
+  std::vector< boost::shared_ptr< cuCGMatrixOperator<T> > > operators_;
   std::vector<REAL> op_weights_;
-  std::auto_ptr< cuCGPreconditioner<T> > precond_;
+  boost::shared_ptr< cuCGPreconditioner<T> > precond_;
   cublasHandle_t cublas_handle_;
   unsigned int iterations_;
   REAL limit_;

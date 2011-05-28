@@ -34,16 +34,16 @@ ifeq ($(KERNEL), Darwin)
 GENCODE_SM=$(GENCODE_SM10)
 endif
 
-NVCCFLAGS= $(GENCODE_SM) -g --compiler-options -fno-strict-aliasing -Xcompiler -fPIC -I$(GADGETRONHOME)/inc $(CUDAINCLUDES) -c
+NVCCFLAGS= $(GENCODE_SM) -g --compiler-options -fno-strict-aliasing -Xcompiler -fPIC -I$(GADGETRONHOME)/inc $(CUDAINCLUDES) -I/usr/local/boost -c
 ifeq ($(KERNEL), Darwin)
 NVCCFLAGS += -m32
 endif
 
 CXXFLAGS=-c -fPIC -Wall -I. \
 	-I$(GADGETRONHOME)/inc \
-	$(CUDAINCLUDES)
-
-
+	$(CUDAINCLUDES) \
+	-I/usr/local/boost
+       
 CUDALIBRARIES=-L$(CUDAHOME)/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudart -lcublas -lcufft
 
 ifeq ($(KERNEL), Darwin)

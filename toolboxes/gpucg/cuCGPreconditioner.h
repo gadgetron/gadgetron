@@ -2,7 +2,7 @@
 #define CUCGPRECONDITIONER_H
 
 #include "cuNDArray.h"
-#include <memory>
+#include <boost/smart_ptr.hpp>
 
 template <class T> class cuCGPreconditioner
 {
@@ -15,7 +15,7 @@ template <class T> class cuCGPreconditioner
 template <class T> class cuCGPrecondWeight : public cuCGPreconditioner<T>
 {
  public:
-  virtual int set_weights( std::auto_ptr< cuNDArray<T> > w ) {
+  virtual int set_weights( boost::shared_ptr< cuNDArray<T> > w ) {
     weights_ = w;
     return 0;
   }
@@ -23,7 +23,7 @@ template <class T> class cuCGPrecondWeight : public cuCGPreconditioner<T>
   virtual int apply(cuNDArray<T>* in, cuNDArray<T>* out);
 
  protected:
-  std::auto_ptr< cuNDArray<T> > weights_;
+  boost::shared_ptr< cuNDArray<T> > weights_;
 };
 
 #endif //CUCGPRECONDITIONER_H

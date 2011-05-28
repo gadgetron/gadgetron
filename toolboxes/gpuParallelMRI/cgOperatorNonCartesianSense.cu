@@ -122,7 +122,7 @@ cgOperatorNonCartesianSense<REAL,D>::preprocess( cuNDArray<_reald> *trajectory )
 }
 
 template<class REAL, unsigned int D> int 
-cgOperatorNonCartesianSense<REAL,D>::set_dcw( std::auto_ptr< cuNDArray<REAL> > dcw ) 
+cgOperatorNonCartesianSense<REAL,D>::set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw ) 
 {
   dcw_ = dcw;
   

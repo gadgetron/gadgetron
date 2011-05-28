@@ -1,14 +1,13 @@
 #pragma once
 
 #include "cgOperatorSense.h"
-#include <memory>
 
 template<class REAL, unsigned int D>
 class cgOperatorCartesianSense : public cgOperatorSense<REAL,D>
 {
  public:
 
-  cgOperatorCartesianSense() : cgOperatorSense<REAL,D>(), idx_(0) {}
+  cgOperatorCartesianSense() : cgOperatorSense<REAL,D>() {}
 
   typedef typename cgOperatorSense<REAL,D>::_complext _complext;
 
@@ -16,7 +15,7 @@ class cgOperatorCartesianSense : public cgOperatorSense<REAL,D>
   virtual int mult_MH(cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false);
   //virtual int mult_MH_M(cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false);
 
-  virtual int set_sampling_indices( std::auto_ptr< cuNDArray<unsigned int> > idx) {
+  virtual int set_sampling_indices( boost::shared_ptr< cuNDArray<unsigned int> > idx) {
     if (idx.get()) {
       idx_ = idx;
       this->dimensionsK_.clear();
@@ -27,5 +26,5 @@ class cgOperatorCartesianSense : public cgOperatorSense<REAL,D>
   }
 
  protected:
-  std::auto_ptr< cuNDArray<unsigned int> > idx_;
+  boost::shared_ptr< cuNDArray<unsigned int> > idx_;
 };

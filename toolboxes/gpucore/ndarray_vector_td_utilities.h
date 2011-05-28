@@ -3,55 +3,55 @@
 #include "cuNDArray.h"
 #include "vector_td.h"
 
-#include <memory>
 #include <vector>
 
 #include <cublas_v2.h>
+#include <boost/smart_ptr.hpp>
 
 //
-// Utilities returning an auto_ptr to the resulting cuNDArray
+// Utilities returning a shared_ptr to the resulting cuNDArray
 // Component-wise operations.
 //
 
 // Sum over dimension dim (scalar and vector_td arrays)
 template<class T>
-std::auto_ptr< cuNDArray<T> > cuNDA_sum( cuNDArray<T> *data, unsigned int dim );
+boost::shared_ptr< cuNDArray<T> > cuNDA_sum( cuNDArray<T> *data, unsigned int dim );
 
 // Norm (float/double/complext arrays)
 template<class REAL, class T>
-std::auto_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<T> *data );
+boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<T> *data );
 
 // Norm (reald arrays)
 template<class REAL, unsigned int D>
-std::auto_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray< typename reald<REAL,D>::Type > *data );
+boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray< typename reald<REAL,D>::Type > *data );
 
 // Norm squared (float/double/complext arrays)
 template<class REAL, class T>
-std::auto_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<T> *data );
+boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<T> *data );
 
 // Norm squared (reald arrays)
 template<class REAL, unsigned int D>
-std::auto_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray< typename reald<REAL,D>::Type > *data );
+boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray< typename reald<REAL,D>::Type > *data );
 
 // Sum of Squares (float/double/complext array)
 template<class S, class T>
-std::auto_ptr< cuNDArray<S> > cuNDA_ss( cuNDArray<T> *data, unsigned int dim );
+boost::shared_ptr< cuNDArray<S> > cuNDA_ss( cuNDArray<T> *data, unsigned int dim );
 
 // Root Sum of Squares (float/double/complext array)
 template<class S, class T>
-std::auto_ptr< cuNDArray<S> > cuNDA_rss( cuNDArray<T> *data, unsigned int dim );
+boost::shared_ptr< cuNDArray<S> > cuNDA_rss( cuNDArray<T> *data, unsigned int dim );
 
 // Reciprocal RSS (float/double/complext array)
 template<class S, class T>
-std::auto_ptr< cuNDArray<S> > cuNDA_reciprocal_rss( cuNDArray<T> *data, unsigned int dim );
+boost::shared_ptr< cuNDArray<S> > cuNDA_reciprocal_rss( cuNDArray<T> *data, unsigned int dim );
 
 // Correlation matrix (float/double/complext array)
 template<class T>
-std::auto_ptr< cuNDArray<T> > cuNDA_correlation( cuNDArray<T> *data );
+boost::shared_ptr< cuNDArray<T> > cuNDA_correlation( cuNDArray<T> *data );
 
 // Real to complext
 template<class REAL>
-std::auto_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_real_to_complext( cuNDArray<REAL> *data );
+boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_real_to_complext( cuNDArray<REAL> *data );
 
 
 
