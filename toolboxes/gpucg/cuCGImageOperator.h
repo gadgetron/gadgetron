@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cuCGMatrixOperator.h"
+#include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
 
 #include <cublas_v2.h>
@@ -8,16 +9,27 @@
 #include <boost/smart_ptr.hpp>
 
 template <class REAL, class T> 
-class cuCGImageOperator : public cuCGMatrixOperator<T>
+class cuCGImageOperator : public cuCGMatrixOperator<REAL,T>
 {
  public:
 
-  cuCGImageOperator( cuNDArray<T> *encoded_image, const std::vector<unsigned int> &decoded_image_dimensions,
-		     cuCGMatrixOperator<T> *encoding_matrix, cublasHandle_t handle ) 
+  cuCGImageOperator() {}
+
+  inline int set_encoding_operator( boost::shared_ptr< cuCGMatrixOperator<REAL,T> > encoding_operator ){
+    encoding_operator_ = encoding_operator;
+    return 0;
+  }
+  
+  inline int compute( cuNDArray<T> *encoded_image, const std::vector<unsigned int> &decoded_image_dimensions, cublasHandle_t handle ) 
   { 
+    if( !encoding_operator_.get() ){
+      std::cout << std::endl << "cuCGImageOperator::compute: encoding operator not set" << std::endl;
+      return -1;
+    }
+    
     // Reconstruct regularization image
     cuNDArray<T> tmp; tmp.create(decoded_image_dimensions);
-    encoding_matrix->mult_MH( encoded_image, &tmp );
+    encoding_operator_->mult_MH( encoded_image, &tmp );
     
     // Normalize to an average energy of "one intensity unit per image element"
     REAL sum = cuNDA_asum<REAL,T>( &tmp, handle );
@@ -27,8 +39,10 @@ class cuCGImageOperator : public cuCGMatrixOperator<T>
     // Square and reciprocalize image
     image_ = cuNDA_norm_squared<REAL,T>(&tmp);     
     cuNDA_reciprocal<REAL>(image_.get()); 
+    
+    return 0;
   }
-
+  
   virtual ~cuCGImageOperator() {}
   
   virtual int mult_M(cuNDArray<T>* in, cuNDArray<T>* out, bool accumulate = false){
@@ -55,5 +69,6 @@ class cuCGImageOperator : public cuCGMatrixOperator<T>
   cuNDArray<REAL>* get() { return image_.get(); }
   
 private:
+  boost::shared_ptr< cuCGMatrixOperator<REAL,T> > encoding_operator_;
   boost::shared_ptr< cuNDArray<REAL> > image_;
 };

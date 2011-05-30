@@ -108,7 +108,7 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
 
-      if (cuNDA_axpy<T>(mul<REAL>(op_weights_[i], get_one<T>()),&q2,&q,cublas_handle_) < 0) {
+      if (cuNDA_axpy<T>(mul<REAL>(operators_[i]->get_weight(), get_one<T>()),&q2,&q,cublas_handle_) < 0) {
 	std::cerr << "cuCG<T>::solve : failed to add q1 to q" << std::endl;
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }

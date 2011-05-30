@@ -37,10 +37,9 @@ template<class REAL, class T> class cuCG
     }
   }
   
-  int add_matrix_operator( boost::shared_ptr< cuCGMatrixOperator<T> > op, REAL weight )
+  int add_matrix_operator( boost::shared_ptr< cuCGMatrixOperator<REAL,T> > op )
   {
     operators_.push_back(op);
-    op_weights_.push_back(weight);
     return 0;
   }
 
@@ -70,8 +69,7 @@ template<class REAL, class T> class cuCG
   boost::shared_ptr< cuNDArray<T> > solve(cuNDArray<T>* rhs);
 
  protected:
-  std::vector< boost::shared_ptr< cuCGMatrixOperator<T> > > operators_;
-  std::vector<REAL> op_weights_;
+  std::vector< boost::shared_ptr< cuCGMatrixOperator<REAL,T> > > operators_;
   boost::shared_ptr< cuCGPreconditioner<T> > precond_;
   cublasHandle_t cublas_handle_;
   unsigned int iterations_;

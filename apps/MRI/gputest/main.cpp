@@ -90,7 +90,7 @@ int main(int argc, char** argv)
   Dm->set_weights(boost::shared_ptr< cuNDArray<float_complext::Type> >(D_dev));
 
   cuCG<float,float_complext::Type> cg;
-  cg.add_matrix_operator( boost::shared_ptr< cuCGMatrixOperator<float_complext::Type> >(E), 1.0f );
+  cg.add_matrix_operator( boost::shared_ptr< cuCGMatrixOperator<float,float_complext::Type> >(E) );
   cg.set_preconditioner( boost::shared_ptr< cuCGPreconditioner<float_complext::Type> >(Dm) );
   cg.set_iterations(10);
   cg.set_limit(1e-5);
@@ -130,7 +130,7 @@ int main(int argc, char** argv)
   write_nd_array<float_complext::Type>(tmp2_out_nc,"tmp2_out_nc.cplx");
 
   cuCG<float, float_complext::Type> cg_nc;
-  cg_nc.add_matrix_operator( boost::shared_ptr< cuCGMatrixOperator<float_complext::Type> >(E_noncart), 1.0f );
+  cg_nc.add_matrix_operator( boost::shared_ptr< cuCGMatrixOperator<float,float_complext::Type> >(E_noncart) );
   cg_nc.set_preconditioner(  boost::shared_ptr< cuCGPreconditioner<float_complext::Type> >(Dm) );
   cg_nc.set_iterations(5);
   cg_nc.set_limit(1e-5);

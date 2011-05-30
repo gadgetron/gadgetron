@@ -169,9 +169,13 @@ int main(int argc, char** argv)
   cuCG<_real, _complex> cg;
 
   // Define regularization image operator
-  cgOperatorSenseRHSBuffer<_real,2> rhs_operator(csm);
-  boost::shared_ptr< cuCGImageOperator<_real,_complex> > 
-    R( new cuCGImageOperator<_real,_complex>( image, uintd_to_vector<2>(matrix_size), &rhs_operator, cg.get_cublas_handle() ));
+  boost::shared_ptr< cgOperatorSenseRHSBuffer<_real,2> > rhs_buffer( new cgOperatorSenseRHSBuffer<_real,2>() );
+  rhs_buffer->set_csm(csm);
+
+  boost::shared_ptr< cuCGImageOperator<_real,_complex> > R( new cuCGImageOperator<_real,_complex>() ); 
+  R->set_weight( kappa );
+  R->set_encoding_operator( rhs_buffer );
+  R->compute( image, uintd_to_vector<2>(matrix_size), cg.get_cublas_handle() );
  
   // Define preconditioning weights
   boost::shared_ptr< cuNDArray<_real> > _precon_weights = cuNDA_ss<_real,_complex>( csm.get(), 2 );
@@ -206,8 +210,8 @@ int main(int argc, char** argv)
   csm.reset();
     
   // Setup solver
-  cg.add_matrix_operator( E, 1.0f );   // encoding matrix
-  cg.add_matrix_operator( R, kappa );  // regularization matrix
+  cg.add_matrix_operator( E );   // encoding matrix
+  cg.add_matrix_operator( R );  // regularization matrix
   cg.set_preconditioner ( D );         // preconditioning matrix
   cg.set_iterations( num_iterations );
   cg.set_limit( 1e-5 );

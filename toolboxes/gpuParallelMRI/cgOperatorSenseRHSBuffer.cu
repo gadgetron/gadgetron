@@ -12,6 +12,11 @@ cgOperatorSenseRHSBuffer<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_c
 template<class REAL, unsigned int D> int 
 cgOperatorSenseRHSBuffer<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {
+  if( !this->csm_.get() ){
+    std::cerr << "cgOperatorSenseRHSBuffer::mult_MH: csm not set" << std::endl;
+    return -1;
+  }
+  
   if( out->get_number_of_dimensions() != D && in->get_number_of_dimensions() != D+1 ){
     std::cerr << "cgOperatorSenseRHSBuffer::mult_MH array dimensions mismatch" << std::endl;
     return -1;

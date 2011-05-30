@@ -135,7 +135,7 @@ NFFT_plan<REAL,D>::NFFT_plan( NFFT_plan<REAL,D> *plan )
   }  
 
   if(plan->initialized){
-    *deapodization_filter = *(plan->deapodization_filter);
+    deapodization_filter = plan->deapodization_filter;
     initialized = true;
   }
 
@@ -706,7 +706,7 @@ NFFT_plan<REAL,D>::deapodize( cuNDArray<typename complext<REAL>::Type> *image )
     cerr << "NFFT_plan::setup: unable to set device" << endl;
   }  
 
-  cuNDA_scale( deapodization_filter, image );
+  cuNDA_scale( deapodization_filter.get(), image );
   
   if( device != device_no_old && cudaSetDevice(device_no_old) != cudaSuccess) {
     cerr << "NFFT_plan::setup: unable to set device" << endl;
@@ -803,8 +803,6 @@ bool NFFT_plan<REAL,D>::barebones()
   // These are the fundamental booleans checked before accessing the various member pointers
   initialized = preprocessed_NFFT = preprocessed_NFFT_H = false;
   
-  deapodization_filter = 0x0;
-
   // and specify the device
   if (cudaGetDevice(&device) != cudaSuccess) {
     cerr << "NFFT_plan::barebones:: unable to get device no" << endl;
@@ -818,7 +816,7 @@ template<class REAL, unsigned int D>
 void NFFT_plan<REAL,D>::wipe( NFFT_wipe_mode mode )
 {
   if( mode==NFFT_WIPE_ALL && initialized ){
-    delete deapodization_filter;
+    deapodization_filter.reset();
     initialized = false;
   }
     
@@ -897,17 +895,9 @@ compute_deapodization_filter_kernel( typename uintd<D>::Type matrix_size_os, typ
 template<class REAL, unsigned int D> bool
 NFFT_plan<REAL,D>::compute_deapodization_filter()
 {
-
-  if( initialized && deapodization_filter ) 
-    delete( deapodization_filter );
+  deapodization_filter = boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >
+    (cuNDArray<typename complext<REAL>::Type>::allocate(uintd_to_vector<D>(matrix_size_os)));
   
-  deapodization_filter = cuNDArray<typename complext<REAL>::Type>::allocate(uintd_to_vector<D>(matrix_size_os)); 
-  
-  if( !deapodization_filter ){
-    cout << endl << "cuNDArray allocation failed" << endl;
-    return false;
-  }
-
   vector_td<REAL,D> matrix_size_os_real = to_reald<REAL,unsigned int, D>(matrix_size_os);
   
   // Be optimistic
@@ -926,16 +916,12 @@ NFFT_plan<REAL,D>::compute_deapodization_filter()
   
   // FFT
   if( success )
-    success = fft( deapodization_filter, NFFT_BACKWARDS, false );
+    success = fft( deapodization_filter.get(), NFFT_BACKWARDS, false );
   
   // Reciprocal
   if( success )
-    cuNDA_reciprocal<typename complext<REAL>::Type>( deapodization_filter );
+    cuNDA_reciprocal<typename complext<REAL>::Type>( deapodization_filter.get() );
 
-  if( !success ){
-    delete deapodization_filter;
-  }
-  
   return success;
 }
 

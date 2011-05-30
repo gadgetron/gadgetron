@@ -7,14 +7,14 @@
 #include <boost/smart_ptr.hpp>
 
 template<class REAL, unsigned int D>
-class cgOperatorSense : public cuCGMatrixOperator<typename complext<REAL>::Type>
+class cgOperatorSense : public cuCGMatrixOperator<REAL,typename complext<REAL>::Type>
 {
 
 public:
 
   typedef typename complext<REAL>::Type _complext;
   
-  cgOperatorSense() : cuCGMatrixOperator<_complext>(), ncoils_(0) {}
+  cgOperatorSense() : cuCGMatrixOperator<REAL,_complext>(), ncoils_(0) {}
   
   virtual int set_csm( boost::shared_ptr< cuNDArray<_complext> > csm );
 

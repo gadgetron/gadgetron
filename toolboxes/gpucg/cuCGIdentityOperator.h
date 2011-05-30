@@ -5,8 +5,8 @@
 
 #include <cublas_v2.h>
 
-template <class T> 
-class cuCGIdentityOperator : public cuCGMatrixOperator<T>
+template <class REAL, class T> 
+class cuCGIdentityOperator : public cuCGMatrixOperator<REAL,T>
 {
  public:
 
