@@ -19,8 +19,7 @@ LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 DLLNAME=gadgetrongrappa
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
-#LIBLDFLAGS += -lgpuparallelmri -L../../dependencies/magma_1.0.0-rc4/lib -lmagma -lmagmablas -lf77blas -latlas -lcblas -lf2c -lcublas -lm -llapack  
-LIBLDFLAGS += -lgpuparallelmri -L../../dependencies/magma_1.0.0-rc4/lib -lmagma -lmagmablas -lgpucore -lfftw3 -lfftw3f
+LIBLDFLAGS += -lgpuparallelmri -lfftw3 -lfftw3f -lgpucore
 
 CXXFLAGS += -I../core
 
