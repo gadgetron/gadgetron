@@ -34,21 +34,21 @@ ifeq ($(KERNEL), Darwin)
 GENCODE_SM=$(GENCODE_SM10)
 endif
 
-NVCCFLAGS= $(GENCODE_SM) -g --compiler-options -fno-strict-aliasing -Xcompiler -fPIC -I$(GADGETRONHOME)/inc $(CUDAINCLUDES) -I/usr/local/boost -c
+NVCCFLAGS= $(GENCODE_SM) -g --compiler-options -fno-strict-aliasing -Xcompiler -fPIC -I$(GADGETRONHOME)/inc $(CUDAINCLUDES) -c
 ifeq ($(KERNEL), Darwin)
 NVCCFLAGS += -m32
 endif
 
 CXXFLAGS=-c -fPIC -Wall -I. \
 	-I$(GADGETRONHOME)/inc \
-	$(CUDAINCLUDES) \
-	-I/usr/local/boost
-       
+	$(CUDAINCLUDES)
+
+
 CUDALIBRARIES=-L$(CUDAHOME)/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudart -lcublas -lcufft
 
 ifeq ($(KERNEL), Darwin)
 CUDALIBRARIES=-L$(CUDAHOME)/lib -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/darwin -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudart -lcublas -lcufft
 endif 
 
-LIBLDFLAGS=-shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml
-APPLDFLAGS=-lACE -L$(GADGETRONHOME)/lib -ltinyxml
+LIBLDFLAGS=-shared -L$(GADGETRONHOME)/lib
+APPLDFLAGS=-L$(GADGETRONHOME)/lib
