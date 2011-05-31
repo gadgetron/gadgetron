@@ -8,7 +8,8 @@ LIBSOURCES=\
 	GrappaGadget.cpp \
 	GrappaCalibrationBuffer.cpp \
 	GrappaWeights.cpp \
-	GrappaWeightsCalculator.cpp
+	GrappaWeightsCalculator.cpp \
+	RemoveROOversamplingGadget.cpp
 
 CUDASOURCES=
 

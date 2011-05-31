@@ -245,7 +245,7 @@ protected:
 
 };
 
-template<> void FFT<float>::set_function_pointers()
+template<> inline void FFT<float>::set_function_pointers()
 {
     fftw_import_wisdom_from_file_ptr_ = &fftwf_import_wisdom_from_file;
     fftw_export_wisdom_to_file_ptr_ = &fftwf_export_wisdom_to_file;
@@ -257,7 +257,7 @@ template<> void FFT<float>::set_function_pointers()
     fftw_destroy_plan_ptr_ = (void (*)(void*))(&fftwf_destroy_plan);
 }
 
-template<> void FFT<double>::set_function_pointers()
+template<> inline void FFT<double>::set_function_pointers()
 {
     fftw_import_wisdom_from_file_ptr_ = &fftw_import_wisdom_from_file;
     fftw_export_wisdom_to_file_ptr_ = &fftw_export_wisdom_to_file;

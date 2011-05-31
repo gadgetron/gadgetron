@@ -6,6 +6,7 @@
 #include "hoNDArray_fileio.h"
 #include "cuNDFFT.h"
 #include "htgrappa.h"
+#include "GPUTimer.h"
 
 template <class T> class GrappaWeightsDescription
 {
