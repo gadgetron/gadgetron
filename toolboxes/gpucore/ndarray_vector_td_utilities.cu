@@ -1667,26 +1667,26 @@ template boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,2>( cuND
 template boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,3>( cuNDArray<floatd<3>::Type>*);
 template boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,4>( cuNDArray<floatd<4>::Type>*);
 
-template boost::shared_ptr< cuNDArray<float> > cuNDA_ss<float,float>( cuNDArray<float>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<float> > cuNDA_ss<float,float>( cuNDArray<float>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<float> > cuNDA_ss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<float> > cuNDA_ss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_ss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_ss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<float> > cuNDA_rss<float,float>( cuNDArray<float>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<float> > cuNDA_rss<float,float>( cuNDArray<float>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<float> > cuNDA_rss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<float> > cuNDA_rss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float>( cuNDArray<float>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float>( cuNDArray<float>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_reciprocal_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_reciprocal_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<float> > cuNDA_correlation<float>( cuNDArray<float>*);
-template boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_correlation<float_complext::Type>( cuNDArray<float_complext::Type>*);
+template<> boost::shared_ptr< cuNDArray<float> > cuNDA_correlation<float>( cuNDArray<float>*);
+template<> boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_correlation<float_complext::Type>( cuNDArray<float_complext::Type>*);
 
 template boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_real_to_complext<float>( cuNDArray<float>*);
 
@@ -1820,26 +1820,26 @@ template boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,2>( cu
 template boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,3>( cuNDArray<doubled<3>::Type>*);
 template boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,4>( cuNDArray<doubled<4>::Type>*);
 
-template boost::shared_ptr< cuNDArray<double> > cuNDA_ss<double,double>( cuNDArray<double>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<double> > cuNDA_ss<double,double>( cuNDArray<double>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<double> > cuNDA_ss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<double> > cuNDA_ss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_ss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_ss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<double> > cuNDA_rss<double,double>( cuNDArray<double>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<double> > cuNDA_rss<double,double>( cuNDArray<double>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<double> > cuNDA_rss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<double> > cuNDA_rss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double>( cuNDArray<double>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double>( cuNDArray<double>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_reciprocal_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template<> boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_reciprocal_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template boost::shared_ptr< cuNDArray<double> > cuNDA_correlation<double>( cuNDArray<double>*);
-template boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_correlation<double_complext::Type>( cuNDArray<double_complext::Type>*);
+template<> boost::shared_ptr< cuNDArray<double> > cuNDA_correlation<double>( cuNDArray<double>*);
+template<> boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_correlation<double_complext::Type>( cuNDArray<double_complext::Type>*);
 
 template boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_real_to_complext<double>( cuNDArray<double>*);
 

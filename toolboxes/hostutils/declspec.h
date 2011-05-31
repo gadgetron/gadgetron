@@ -1,5 +1,5 @@
 #pragma once
-
+/*
 #if defined (_WIN32)
 
 #ifdef __BUILD_GADGETRON__
@@ -9,6 +9,9 @@
 #endif
 
 #else
-/* DLLSPEC is ignored */
+// DLLSPEC is ignored
 #define DLLSPEC
 #endif
+*/
+//TMP
+#define DLLSPEC
