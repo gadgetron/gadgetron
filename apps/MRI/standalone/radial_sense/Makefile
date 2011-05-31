@@ -1,4 +1,4 @@
-GADGETRONHOME=../../..
+GADGETRONHOME=../../../..
 include $(GADGETRONHOME)/Makefile.inc
 
 EXECUTABLE=radial_sense

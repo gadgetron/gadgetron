@@ -5,8 +5,10 @@ DLLNAME=gpucg
 
 LIBHEADERS=\
 	cuCG.h \
+	cuCGPreconditioner.h \
 	cuCGMatrixOperator.h \
-	cuCGPreconditioner.h
+	cuCGIdentityOperator.h \
+	cuCGImageOperator.h
 
 LIBSOURCES=
 

@@ -15,7 +15,7 @@ template<class REAL, unsigned int D> void
 smooth_correlation_matrices( cuNDArray<typename complext<REAL>::Type> *corrm, cuNDArray<typename complext<REAL>::Type> *corrm_smooth );
 
 template<class REAL> __host__ 
-auto_ptr< cuNDArray<typename complext<REAL>::Type> > extract_csm( cuNDArray<typename complext<REAL>::Type> *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements );
+boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > extract_csm( cuNDArray<typename complext<REAL>::Type> *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements );
 
 template<class REAL> __host__ 
 void set_phase_reference( cuNDArray<typename complext<REAL>::Type> *csm, unsigned int number_of_batches, unsigned int number_of_elements );
@@ -24,17 +24,17 @@ void set_phase_reference( cuNDArray<typename complext<REAL>::Type> *csm, unsigne
 // Main method
 //
 
-template<class REAL, unsigned int D> auto_ptr< cuNDArray<typename complext<REAL>::Type> >
+template<class REAL, unsigned int D> boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >
 estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data_in )
 {
   if( data_in->get_number_of_dimensions() < 2 ){
     cout << endl << "estimate_b1_map:: dimensionality mismatch." << endl; 
-    return auto_ptr< cuNDArray<typename complext<REAL>::Type > >(0x0);
+    return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type > >();
   }
 
   if( data_in->get_number_of_dimensions()-1 != D ){
     cout << endl << "estimate_b1_map:: dimensionality mismatch." << endl; 
-    return auto_ptr< cuNDArray<typename complext<REAL>::Type > >(0x0);
+    return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type > >();
   }
 
   vector<unsigned int> image_dims, dims_to_xform;
@@ -50,28 +50,28 @@ estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data_in )
 
   // Make a copy of input data
   cuNDArray<typename complext<REAL>::Type > *_data_out = new cuNDArray<typename complext<REAL>::Type>(*data_in);
-  auto_ptr< cuNDArray<typename complext<REAL>::Type> > data_out(_data_out);
+  boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > data_out(_data_out);
   
   // Normalize by the RSS of the coils
   if( !cuNDA_rss_normalize<REAL>( data_out.get(), D ) ){
     cout << endl << "estimate_b1_map:: error in rss_normalize" << endl;
-    return auto_ptr< cuNDArray<typename complext<REAL>::Type> >(0x0);
+    return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >();
   }
   
   // Now calculate the correlation matrices
-  auto_ptr<cuNDArray<typename complext<REAL>::Type> > corrm = cuNDA_correlation<typename complext<REAL>::Type>( data_out.get() );
+  boost::shared_ptr<cuNDArray<typename complext<REAL>::Type> > corrm = cuNDA_correlation<typename complext<REAL>::Type>( data_out.get() );
   data_out.reset();
   
   // Smooth (onto copy of corrm)
   cuNDArray<typename complext<REAL>::Type > *_corrm_smooth = new cuNDArray<typename complext<REAL>::Type>();
   _corrm_smooth->create(corrm->get_dimensions());
-  auto_ptr<cuNDArray<typename complext<REAL>::Type> > corrm_smooth(_corrm_smooth);
+  boost::shared_ptr<cuNDArray<typename complext<REAL>::Type> > corrm_smooth(_corrm_smooth);
 
   smooth_correlation_matrices<REAL,D>( corrm.get(), corrm_smooth.get() );
   corrm.reset();
 
   // Get the dominant eigenvector for each correlation matrix.
-  auto_ptr<cuNDArray<typename complext<REAL>::Type> > csm = extract_csm<REAL>( corrm_smooth.get(), ncoils, pixels_per_coil );
+  boost::shared_ptr<cuNDArray<typename complext<REAL>::Type> > csm = extract_csm<REAL>( corrm_smooth.get(), ncoils, pixels_per_coil );
   corrm_smooth.reset();
   
   // Set phase according to reference (coil 0)
@@ -498,7 +498,7 @@ extract_csm_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL
 
 // Extract CSM
 template<class REAL> __host__ 
-auto_ptr<cuNDArray<typename complext<REAL>::Type> > extract_csm(cuNDArray<typename complext<REAL>::Type> *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements )
+boost::shared_ptr<cuNDArray<typename complext<REAL>::Type> > extract_csm(cuNDArray<typename complext<REAL>::Type> *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements )
 {
   vector<unsigned int> image_dims;
 
@@ -528,7 +528,7 @@ auto_ptr<cuNDArray<typename complext<REAL>::Type> > extract_csm(cuNDArray<typena
   CHECK_FOR_CUDA_ERROR();
   
   delete tmp_v;
-  return auto_ptr<cuNDArray<typename complext<REAL>::Type> >(out);
+  return boost::shared_ptr<cuNDArray<typename complext<REAL>::Type> >(out);
 }
 
 // Set refence phase
@@ -539,7 +539,7 @@ set_phase_reference_kernel( typename complext<REAL>::Type *csm, unsigned int num
 
   if( idx < num_elements ){
     REAL angle = arg<REAL>(csm[idx]); //Phase of the first coil
-    REAL sin_a, cos_a; sin_cos( angle, &sin_a, &cos_a );
+    REAL sin_a, cos_a; gad_sincos( angle, &sin_a, &cos_a );
 
     typename complext<REAL>::Type tmp;
     tmp.vec[0] = cos_a; tmp.vec[1] = sin_a;
@@ -570,12 +570,12 @@ void set_phase_reference(cuNDArray<typename complext<REAL>::Type> *csm, unsigned
 // Template instantiation
 //
 
-//template auto_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,1>(cuNDArray<typename complext<float>::Type >*);
-template auto_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,2>(cuNDArray<typename complext<float>::Type >*);
-//template auto_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,3>(cuNDArray<typename complext<float>::Type >*);
-//template auto_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,4>(cuNDArray<typename complext<float>::Type >*);
+//template boost::shared_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,1>(cuNDArray<typename complext<float>::Type >*);
+template boost::shared_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,2>(cuNDArray<typename complext<float>::Type >*);
+//template boost::shared_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,3>(cuNDArray<typename complext<float>::Type >*);
+//template boost::shared_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,4>(cuNDArray<typename complext<float>::Type >*);
 
-//template auto_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,1>(cuNDArray<typename complext<double>::Type >*);
-template auto_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,2>(cuNDArray<typename complext<double>::Type >*);
-//template auto_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,3>(cuNDArray<typename complext<double>::Type >*);
-//template auto_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,4>(cuNDArray<typename complext<double>::Type >*);
+//template boost::shared_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,1>(cuNDArray<typename complext<double>::Type >*);
+template boost::shared_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,2>(cuNDArray<typename complext<double>::Type >*);
+//template boost::shared_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,3>(cuNDArray<typename complext<double>::Type >*);
+//template boost::shared_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,4>(cuNDArray<typename complext<double>::Type >*);

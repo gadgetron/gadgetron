@@ -26,7 +26,7 @@ compute_radial_trajectory_golden_ratio_2d_kernel( typename reald<REAL,2>::Type *
   const REAL angle_step = get_angle_step_GR<REAL>();
 
   REAL cos_angle, sin_angle;
-  sin_cos<REAL>( (profile+angular_offset)*angle_step, &sin_angle, &cos_angle );
+  gad_sincos<REAL>( (profile+angular_offset)*angle_step, &sin_angle, &cos_angle );
 
   typename reald<REAL,2>::Type sample_pos; 
   sample_pos.vec[0] = (sample_idx_on_profile-bias)*cos_angle/samples_per_profile;
@@ -36,7 +36,7 @@ compute_radial_trajectory_golden_ratio_2d_kernel( typename reald<REAL,2>::Type *
 }
 
 
-template<class REAL> auto_ptr< cuNDArray< typename reald<REAL,2>::Type > > 
+template<class REAL> boost::shared_ptr< cuNDArray< typename reald<REAL,2>::Type > > 
 compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile, unsigned int num_profiles_per_frame, unsigned int num_frames, 
 					   unsigned int profile_offset )
 {
@@ -49,7 +49,7 @@ compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile,
   
   if( num_samples_per_profile%warp_size ){
     cout << endl << "compute_radial_trajectory_golden_ratio_2d: #samples/profile number a multiple of the device's warp size." << endl;
-    return auto_ptr< cuNDArray<T> >(0x0);
+    return boost::shared_ptr< cuNDArray<T> >();
   }
 
   unsigned int number_of_samples_per_frame = num_samples_per_profile * num_profiles_per_frame;
@@ -60,7 +60,7 @@ compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile,
   
   if(!co){
     cout << endl << "compute_radial_trajectory_golden_ratio_2d: memory allocation failed." << endl;
-    return auto_ptr< cuNDArray<T> >(0x0);
+    return boost::shared_ptr< cuNDArray<T> >();
   }
   
   // Set dimensions of grid/blocks.
@@ -72,7 +72,7 @@ compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile,
   
   CHECK_FOR_CUDA_ERROR();
   
-  return auto_ptr< cuNDArray<T> >(co);  
+  return boost::shared_ptr< cuNDArray<T> >(co);  
 }
 
 // Find the (eight) neighbors to a given radial sample index
@@ -100,7 +100,7 @@ compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL 
   case true: // golden ratio
     {
       const REAL angle_step = get_angle_step_GR<REAL>();
-      sin_cos<REAL>( (profile+angular_offset)*angle_step, &sin_angle, &cos_angle );
+      gad_sincos<REAL>( (profile+angular_offset)*angle_step, &sin_angle, &cos_angle );
     }
     break;
     /*	  
@@ -144,7 +144,7 @@ compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL 
       case true:
 	{
 	  const REAL angle_step = get_angle_step_GR<REAL>();
-	  sin_cos<REAL>( ((REAL)i+angular_offset)*angle_step, &sin_angle, &cos_angle );
+	  gad_sincos<REAL>( ((REAL)i+angular_offset)*angle_step, &sin_angle, &cos_angle );
 	}
 	break;
 	/*	
@@ -271,13 +271,13 @@ compute_radial_dcw_golden_ratio_2d_kernel( REAL alpha, REAL one_over_radial_over
 }
 
 
-template<class REAL> auto_ptr< cuNDArray<REAL> >
+template<class REAL> boost::shared_ptr< cuNDArray<REAL> >
 compute_radial_dcw_golden_ratio_2d( unsigned int samples_per_profile, unsigned int num_profiles, 
 				    REAL alpha, REAL one_over_radial_oversampling_factor, unsigned int profile_offset )
 {
   if( num_profiles < 4 ){
     cout << endl << "compute_radial_dcw_golden_ratio_2d: use at least four profiles" << endl;
-    return auto_ptr< cuNDArray<REAL> >(0x0);
+    return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
   // Get device properties
@@ -287,7 +287,7 @@ compute_radial_dcw_golden_ratio_2d( unsigned int samples_per_profile, unsigned i
   
   if( samples_per_profile%warp_size ){
     cout << endl << "compute_radial_dcw_golden_ratio_2d: samples/profile number a multiple of the device's warp size." << endl;
-    return auto_ptr< cuNDArray<REAL> >(0x0);
+    return boost::shared_ptr< cuNDArray<REAL> >();
   }
 
   unsigned int number_of_samples = samples_per_profile * num_profiles;
@@ -298,7 +298,7 @@ compute_radial_dcw_golden_ratio_2d( unsigned int samples_per_profile, unsigned i
   
   if(!dcw){
     cout << endl << "compute_radial_dcw_golden_ratio_2d: memory allocation failed." << endl;
-    return auto_ptr< cuNDArray<REAL> >(0x0);
+    return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
   // Set dimensions of grid/blocks.
@@ -310,7 +310,7 @@ compute_radial_dcw_golden_ratio_2d( unsigned int samples_per_profile, unsigned i
   
   CHECK_FOR_CUDA_ERROR();
   
-  return auto_ptr< cuNDArray<REAL> >(dcw);  
+  return boost::shared_ptr< cuNDArray<REAL> >(dcw);  
 }
 
 
@@ -318,11 +318,11 @@ compute_radial_dcw_golden_ratio_2d( unsigned int samples_per_profile, unsigned i
 // Instantiation
 //
 
-template auto_ptr< cuNDArray< typename reald<float,2>::Type > > 
+template boost::shared_ptr< cuNDArray< typename reald<float,2>::Type > > 
 compute_radial_trajectory_golden_ratio_2d<float>( unsigned int, unsigned int, unsigned int, unsigned int );
 
-template auto_ptr< cuNDArray< typename reald<double,2>::Type > > 
+template boost::shared_ptr< cuNDArray< typename reald<double,2>::Type > > 
 compute_radial_trajectory_golden_ratio_2d<double>( unsigned int, unsigned int, unsigned int, unsigned int );
 
-template auto_ptr< cuNDArray<float> >compute_radial_dcw_golden_ratio_2d<float>( unsigned int, unsigned int, float, float, unsigned int );
-template auto_ptr< cuNDArray<double> >compute_radial_dcw_golden_ratio_2d<double>( unsigned int, unsigned int, double, double, unsigned int );
+template boost::shared_ptr< cuNDArray<float> >compute_radial_dcw_golden_ratio_2d<float>( unsigned int, unsigned int, float, float, unsigned int );
+template boost::shared_ptr< cuNDArray<double> >compute_radial_dcw_golden_ratio_2d<double>( unsigned int, unsigned int, double, double, unsigned int );

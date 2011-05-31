@@ -51,5 +51,5 @@ ifeq ($(KERNEL), Darwin)
 CUDALIBRARIES=-L$(CUDAHOME)/lib -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/darwin -L/usr/local/cula/lib -lcula -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudart -lcublas -lcufft
 endif 
 
-LIBLDFLAGS=-shared -lACE -L$(GADGETRONHOME)/lib -ltinyxml
-APPLDFLAGS=-lACE -L$(GADGETRONHOME)/lib -ltinyxml
+LIBLDFLAGS=-shared -L$(GADGETRONHOME)/lib
+APPLDFLAGS=-L$(GADGETRONHOME)/lib

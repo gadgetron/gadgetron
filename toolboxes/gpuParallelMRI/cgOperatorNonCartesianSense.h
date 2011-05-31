@@ -6,9 +6,10 @@
 template<class REAL, unsigned int D>
 class cgOperatorNonCartesianSense : public cgOperatorSense<REAL,D>
 {
+
  public:
   
-  cgOperatorNonCartesianSense() : cgOperatorSense<REAL,D>(), trajectory_(0), weights_(0) {}
+  cgOperatorNonCartesianSense() : cgOperatorSense<REAL,D>() {}
 
   typedef typename cgOperatorSense<REAL,D>::_complext _complext;
   typedef typename uintd<D>::Type _uintd;
@@ -18,11 +19,11 @@ class cgOperatorNonCartesianSense : public cgOperatorSense<REAL,D>
   virtual int mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
 
   virtual int setup( _uintd matrix_size, _uintd matrix_size_os, REAL W );
-  virtual int set_trajectory( cuNDArray<_reald> *trajectory );
-  virtual int set_weights( cuNDArray<REAL> *w );
+  virtual int preprocess( cuNDArray<_reald> *trajectory );
+  virtual int set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw );
 
  protected:
-  cuNDArray<_reald> *trajectory_;
-  cuNDArray<float> *weights_;
+
   NFFT_plan<REAL, D> plan_;
+  boost::shared_ptr< cuNDArray<float> > dcw_;
 };

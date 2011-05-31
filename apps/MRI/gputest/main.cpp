@@ -33,32 +33,30 @@ int main(int argc, char** argv)
   hoNDArray<unsigned int> idx;
   idx.create(idxf.get_dimensions());
 
-  
   for (unsigned int i = 0; i < idxf.get_number_of_elements(); i++) {
     idx.get_data_ptr()[i] = static_cast<unsigned int>(idxf.get_data_ptr()[i]);
   }
 
   cuNDArray<float_complext::Type> phantom_dev(phantom);
-  cuNDArray<float_complext::Type> csm_dev(csm);
-  cuNDArray<unsigned int> idx_dev(idx);
-  cgOperatorCartesianSense<float,2> E;
+  cuNDArray<float_complext::Type> *csm_dev = new cuNDArray<float_complext::Type>(csm);
+  cuNDArray<unsigned int> *idx_dev = new cuNDArray<unsigned int>(idx);
+  cgOperatorCartesianSense<float,2> *E = new cgOperatorCartesianSense<float,2>();
   cuNDArray<floatd2::Type> co_dev(co); co_dev.squeeze();
-  cuNDArray<float> w_dev(w);
+  cuNDArray<float> *w_dev = new cuNDArray<float>(w);
 
-  E.set_csm(&csm_dev);
-  E.set_sampling_indices(&idx_dev);
+  E->set_csm(boost::shared_ptr< cuNDArray<float_complext::Type> >(csm_dev));
+  E->set_sampling_indices( boost::shared_ptr< cuNDArray<unsigned int> >(idx_dev));
 
-
-  cgOperatorNonCartesianSense<float,2> E_noncart;
+  cgOperatorNonCartesianSense<float,2> *E_noncart = new cgOperatorNonCartesianSense<float,2>();
   uintd2 matrix_size(128,128);
   uintd2 matrix_size_os(256,256);
   float kernel_width = 5.5f;
-  E_noncart.setup( matrix_size, matrix_size_os, kernel_width );
-  E_noncart.set_csm(&csm_dev);
-  if (E_noncart.set_trajectory(&co_dev) < 0) {
+  E_noncart->setup( matrix_size, matrix_size_os, kernel_width );
+  E_noncart->set_csm(boost::shared_ptr<cuNDArray<float_complext::Type> >(csm_dev));
+  if (E_noncart->preprocess(&co_dev) < 0) {
     std::cout << "Failed to set trajectory on encoding matrix" << std::endl;
   }
-  if (E_noncart.set_weights(&w_dev) < 0) {
+  if (E_noncart->set_dcw(boost::shared_ptr< cuNDArray<float> >(w_dev)) < 0) {
     std::cout << "Failed to set weights on encoding matrix" << std::endl;
   }
 
@@ -69,7 +67,7 @@ int main(int argc, char** argv)
   cuNDArray<float_complext::Type> tmp_out_dev;
   tmp_out_dev.create(dims_out);
 
-  if (E.mult_M(&phantom_dev,&tmp_out_dev,false) < 0) {
+  if (E->mult_M(&phantom_dev,&tmp_out_dev,false) < 0) {
     std::cerr << "Failed to multiply with system matrix E" << std::endl;
   }
 
@@ -79,27 +77,26 @@ int main(int argc, char** argv)
   cuNDArray<float_complext::Type> tmp2_out_dev;
   tmp2_out_dev.create(phantom.get_dimensions());
   
-  if (E.mult_MH(&tmp_out_dev,&tmp2_out_dev,false) < 0) {
+  if (E->mult_MH(&tmp_out_dev,&tmp2_out_dev,false) < 0) {
     std::cerr << "Failed to multiply with system matrix EH" << std::endl;
   }
 
   hoNDArray<float_complext::Type> tmp2_out = tmp2_out_dev.to_host();
   //write_nd_array<float_complext::Type>(tmp2_out,"tmp2_out.cplx");
   
-
-  cuNDArray<float_complext::Type> D_dev(D);
+  cuNDArray<float_complext::Type> *D_dev = new cuNDArray<float_complext::Type>(D);
   
-  cuCGPrecondWeight<float_complext::Type> Dm;
-  Dm.set_weights(&D_dev);
+  cuCGPrecondWeight<float_complext::Type> *Dm = new cuCGPrecondWeight<float_complext::Type>();
+  Dm->set_weights(boost::shared_ptr< cuNDArray<float_complext::Type> >(D_dev));
 
   cuCG<float,float_complext::Type> cg;
-  cg.add_matrix_operator(&E, 1.0);
-  cg.set_preconditioner(&Dm);
+  cg.add_matrix_operator( boost::shared_ptr< cuCGMatrixOperator<float,float_complext::Type> >(E) );
+  cg.set_preconditioner( boost::shared_ptr< cuCGPreconditioner<float_complext::Type> >(Dm) );
   cg.set_iterations(10);
   cg.set_limit(1e-5);
   cg.set_output_mode(cuCG<float, float_complext::Type>::OUTPUT_VERBOSE);
 
-  std::auto_ptr< cuNDArray<float_complext::Type> > cgresult;
+  boost::shared_ptr< cuNDArray<float_complext::Type> > cgresult;
   {
     GPUTimer timer("GPU Conjugate Gradient solve");
     cgresult = cg.solve(&tmp2_out_dev);
@@ -115,7 +112,7 @@ int main(int argc, char** argv)
   cuNDArray<float_complext::Type> tmp_out_nc_dev;
   tmp_out_nc_dev.create(dims_out_nc);
 
-  if (E_noncart.mult_M(&phantom_dev,&tmp_out_nc_dev,false) < 0) {
+  if (E_noncart->mult_M(&phantom_dev,&tmp_out_nc_dev,false) < 0) {
     std::cerr << "Failed to multiply with system matrix non-cartE" << std::endl;
   }
 
@@ -126,20 +123,20 @@ int main(int argc, char** argv)
   tmp2_out_nc_dev.create(phantom.get_dimensions());
   
 
-  if (E_noncart.mult_MH(&tmp_out_nc_dev,&tmp2_out_nc_dev,false) < 0) {
+  if (E_noncart->mult_MH(&tmp_out_nc_dev,&tmp2_out_nc_dev,false) < 0) {
     std::cerr << "Failed to multiply with system matrix EH (non cartesian)" << std::endl;
   }
   hoNDArray<float_complext::Type> tmp2_out_nc = tmp2_out_nc_dev.to_host();
   write_nd_array<float_complext::Type>(tmp2_out_nc,"tmp2_out_nc.cplx");
 
   cuCG<float, float_complext::Type> cg_nc;
-  cg_nc.add_matrix_operator(&E_noncart, 1.0);
-  cg_nc.set_preconditioner(&Dm);
+  cg_nc.add_matrix_operator( boost::shared_ptr< cuCGMatrixOperator<float,float_complext::Type> >(E_noncart) );
+  cg_nc.set_preconditioner(  boost::shared_ptr< cuCGPreconditioner<float_complext::Type> >(Dm) );
   cg_nc.set_iterations(5);
   cg_nc.set_limit(1e-5);
   cg_nc.set_output_mode(cuCG<float, float_complext::Type>::OUTPUT_VERBOSE);
 
-  std::auto_ptr< cuNDArray<float_complext::Type> > cgresult_nc;
+  boost::shared_ptr< cuNDArray<float_complext::Type> > cgresult_nc;
   {
     GPUTimer timer("GPU Conjugate Gradient solve");
     cgresult_nc = cg_nc.solve(&tmp2_out_nc_dev);

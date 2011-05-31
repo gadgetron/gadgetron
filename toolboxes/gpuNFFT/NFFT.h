@@ -16,7 +16,9 @@
 
 #include "vector_td.h"
 #include "cuNDArray.h"
+
 #include <thrust/device_vector.h>
+#include <boost/shared_ptr.hpp>
 
 template< class REAL, unsigned int D > class NFFT_plan
 {
@@ -58,7 +60,7 @@ public: // Utilities
   // NFFT deapodization
   bool deapodize( cuNDArray<typename complext<REAL>::Type> *image );
 
-private:   
+private:
 
   enum NFFT_components { NFFT_CONVOLUTION = 1, NFFT_H_CONVOLUTION = 2, NFFT_FFT = 4, NFFT_DEAPODIZATION = 8 };
   bool check_consistency( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, cuNDArray<REAL> *weights, unsigned char components );
@@ -102,7 +104,7 @@ private:
   // Internal data structures for convolution and deapodization
   //
 
-  cuNDArray<typename complext<REAL>::Type> *deapodization_filter; 
+  boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > deapodization_filter; 
    
   thrust::device_vector< typename reald<REAL,D>::Type > *trajectory_positions;
   thrust::device_vector<unsigned int> *tuples_last;

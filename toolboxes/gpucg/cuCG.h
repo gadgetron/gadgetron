@@ -4,11 +4,11 @@
 #include "cuCGMatrixOperator.h"
 #include "cuCGPreconditioner.h"
 
-#include <memory>
 #include <vector>
 #include <iostream>
 
 #include <cublas_v2.h>
+#include <boost/smart_ptr.hpp>
 
 template<class REAL, class T> class cuCG
 {
@@ -21,16 +21,14 @@ template<class REAL, class T> class cuCG
     OUTPUT_MAX      = 3
   };
 
-  cuCG() 
-    : precond_(0) 
-    , iterations_(10)
+  cuCG()
+    : iterations_(10)
     , limit_(1e-3)
     , output_mode_(OUTPUT_SILENT)
   {
     if (cublasCreate(&cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
       std::cerr << "cuCG unable to create cublas handle" << std::endl;
     }
-    output_mode_ = 0;
   }
 
   virtual ~cuCG() {
@@ -39,14 +37,13 @@ template<class REAL, class T> class cuCG
     }
   }
   
-  int add_matrix_operator(cuCGMatrixOperator<T>* op, REAL weight)
+  int add_matrix_operator( boost::shared_ptr< cuCGMatrixOperator<REAL,T> > op )
   {
     operators_.push_back(op);
-    weights_.push_back(weight);
     return 0;
   }
 
-  int set_preconditioner(cuCGPreconditioner<T>* precond) {
+  int set_preconditioner( boost::shared_ptr< cuCGPreconditioner<T> > precond ) {
     precond_ = precond;
     return 0;
   }
@@ -69,12 +66,11 @@ template<class REAL, class T> class cuCG
     return cublas_handle_; 
   }
 
-  std::auto_ptr< cuNDArray<T> > solve(cuNDArray<T>* rhs);
+  boost::shared_ptr< cuNDArray<T> > solve(cuNDArray<T>* rhs);
 
  protected:
-  std::vector< cuCGMatrixOperator<T>* > operators_;
-  std::vector<REAL> weights_;
-  cuCGPreconditioner<T>* precond_;
+  std::vector< boost::shared_ptr< cuCGMatrixOperator<REAL,T> > > operators_;
+  boost::shared_ptr< cuCGPreconditioner<T> > precond_;
   cublasHandle_t cublas_handle_;
   unsigned int iterations_;
   REAL limit_;

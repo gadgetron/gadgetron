@@ -11,15 +11,15 @@ HEADERFILES=\
 	cgOperatorSense.h \
 	cgOperatorCartesianSense.h \
 	cgOperatorNonCartesianSense.h \
-	vector_td_identity_operator.h
+	cgOperatorSenseRHSBuffer.h
 
 CUDASOURCES=\
 	b1_map.cu \
 	cgOperatorSense.cu \
 	cgOperatorCartesianSense.cu \
 	cgOperatorNonCartesianSense.cu \
+	cgOperatorSenseRHSBuffer.cu \
 	htgrappa.cu
-
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 
@@ -27,7 +27,6 @@ LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
 LIBLDFLAGS += -lgpucore -lgpunfft 
 APPLDFLAGS += -lgpucore -lgpunfft 
-
 CXXFLAGS += 
 NVCCFLAGS += 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)

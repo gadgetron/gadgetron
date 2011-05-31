@@ -35,7 +35,7 @@ cgOperatorNonCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray
   }
 
   // Forwards NFFT
-  if( !plan_.compute( out, &tmp, weights_, NFFT_plan<REAL,D>::NFFT_FORWARDS )) {
+  if( !plan_.compute( out, &tmp, dcw_.get(), NFFT_plan<REAL,D>::NFFT_FORWARDS )) {
     std::cerr << "cgOperatorNonCartesianSense::mult_M : failed during NFFT" << std::endl;
     return -4;
   }
@@ -61,7 +61,7 @@ cgOperatorNonCartesianSense<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArra
   }
 
   // Do the NFFT
-  if( !plan_.compute( in, &tmp, weights_, NFFT_plan<REAL,D>::NFFT_BACKWARDS )) {
+  if( !plan_.compute( in, &tmp, dcw_.get(), NFFT_plan<REAL,D>::NFFT_BACKWARDS )) {
     std::cerr << "cgOperatorNonCartesianSense::mult_MH : failed during NFFT" << std::endl;
     return -3;
   }
@@ -89,27 +89,26 @@ cgOperatorNonCartesianSense<REAL,D>::setup( _uintd matrix_size, _uintd matrix_si
 }
 
 template<class REAL, unsigned int D> int 
-cgOperatorNonCartesianSense<REAL,D>::set_trajectory( cuNDArray<_reald>* trajectory ) 
+cgOperatorNonCartesianSense<REAL,D>::preprocess( cuNDArray<_reald> *trajectory ) 
 {
-  if (!this->csm_) {
+  if( this->csm_->get_number_of_elements() == 0 ) {
     std::cerr << "cgOperatorNonCartesianSense::set_trajectory : Error setting trajectory, csm not set" << std::endl;
     return -1;
   }
   
-  if (trajectory) {
-    trajectory_ = trajectory;
-    
+  if( trajectory ){
+
     unsigned int num_frames = trajectory->get_number_of_elements()/trajectory->get_size(0);
     this->dimensionsK_.clear();
     this->dimensionsK_ = trajectory->get_dimensions();
     this->dimensionsK_.push_back(this->ncoils_);
-
+    
     this->dimensionsI_.clear();
     this->dimensionsI_ = this->csm_->get_dimensions();
     this->dimensionsI_.pop_back();
     this->dimensionsI_.push_back(num_frames);
     
-    if( !plan_.preprocess( trajectory_, NFFT_plan<REAL,D>::NFFT_PREP_ALL )) {
+    if( !plan_.preprocess( trajectory, NFFT_plan<REAL,D>::NFFT_PREP_ALL )) {
       std::cerr << "cgOperatorNonCartesianSense: failed to run preprocess" << std::endl;
       return -2;
     }
@@ -123,20 +122,10 @@ cgOperatorNonCartesianSense<REAL,D>::set_trajectory( cuNDArray<_reald>* trajecto
 }
 
 template<class REAL, unsigned int D> int 
-cgOperatorNonCartesianSense<REAL,D>::set_weights( cuNDArray<REAL>* w ) 
+cgOperatorNonCartesianSense<REAL,D>::set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw ) 
 {
-  if (!trajectory_) {
-    std::cerr << "cgOperatorNonCartesianSense::set_weights : Error setting weights, trajectory not set" << std::endl;
-    return -1;
-  }
+  dcw_ = dcw;
   
-  if( !(w->get_number_of_elements() == trajectory_->get_size(0) || w->get_number_of_elements() == trajectory_->get_number_of_elements()) ) {
-    std::cerr << "cgOperatorNonCartesianSense::set_weights : weights dimensionality do not match trajectory" << std::endl;
-    return -2;
-  }
-  
-  weights_ = w;
-
   return 0;
 }
 

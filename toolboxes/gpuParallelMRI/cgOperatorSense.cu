@@ -2,9 +2,9 @@
 #include "vector_td_utilities.h"
 
 template<class REAL, unsigned int D> int 
-cgOperatorSense<REAL,D>::set_csm( cuNDArray<_complext>* csm ) 
+cgOperatorSense<REAL,D>::set_csm( boost::shared_ptr< cuNDArray<_complext> > csm ) 
 {
-  if( csm && csm->get_number_of_dimensions() == D+1 ) {
+  if( csm->get_number_of_dimensions() == D+1 ) {
     csm_ = csm;
     ncoils_ = csm_->get_size(D);
     dimensionsI_ = csm->get_dimensions();

@@ -67,7 +67,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)
      ft.ifft(reinterpret_cast< cuNDArray<cuFloatComplex>* >(&device_data),ftdims);
 
      // Compute CSM
-     auto_ptr< cuNDArray<float_complext::Type> > csm = estimate_b1_map<float,2>( &device_data );
+     boost::shared_ptr< cuNDArray<float_complext::Type> > csm = estimate_b1_map<float,2>( &device_data );
 
      //Go back to kspace
      ft.fft(reinterpret_cast< cuNDArray<cuFloatComplex>* >(&device_data),ftdims);
