@@ -19,7 +19,7 @@ LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 DLLNAME=gadgetrongrappa
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
-LIBLDFLAGS += -lgpuparallelmri -lfftw3 -lfftw3f -lgpucore
+LIBLDFLAGS += -lgpuparallelmri -lfftw3 -lfftw3f -lgpucore -lACE -ltinyxml
 
 CXXFLAGS += -I../core
 

@@ -21,7 +21,7 @@ LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
 
-LIBLDFLAGS += -lfftw3 -lfftw3f
+LIBLDFLAGS += -lfftw3 -lfftw3f -lACE -ltinyxml
 
 all: $(LIBFILE)
 
