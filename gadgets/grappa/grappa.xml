@@ -25,6 +25,6 @@
 -->
 
 <gadget name="Grappa" dll="gadgetrongrappa" class="GrappaGadget" /> 
-<gadget name="PassThrough" dll="gadgetroncore" class="AcquisitionPassthroughGadget" />
+<gadget name="RemoveROOversampling" dll="gadgetrongrappa" class="RemoveROOversamplingGadget" />
 </stream>
 

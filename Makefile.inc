@@ -6,7 +6,8 @@ CUDASDK=$(HOME)/NVIDIA_GPU_Computing_SDK
 CUDAINCLUDES=\
 	-I/usr/local/cuda/include \
 	-I$(CUDASDK)/C/common/inc \
-	-I$(CUDASDK)/shared/inc
+	-I$(CUDASDK)/shared/inc \
+	-I/usr/local/cula/include 
 
 DLLEXTENSION=so
 
@@ -44,10 +45,10 @@ CXXFLAGS=-c -fPIC -Wall -I. \
 	$(CUDAINCLUDES)
 
 
-CUDALIBRARIES=-L$(CUDAHOME)/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudart -lcublas -lcufft
+CUDALIBRARIES=-L$(CUDAHOME)/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux -L/usr/local/cula/lib64 -lcula -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudart -lcublas -lcufft
 
 ifeq ($(KERNEL), Darwin)
-CUDALIBRARIES=-L$(CUDAHOME)/lib -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/darwin -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudart -lcublas -lcufft
+CUDALIBRARIES=-L$(CUDAHOME)/lib -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/darwin -L/usr/local/cula/lib -lcula -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudart -lcublas -lcufft
 endif 
 
 LIBLDFLAGS=-shared -L$(GADGETRONHOME)/lib

@@ -2,7 +2,7 @@
 #include <cublas.h>
 
 #include <cublas_v2.h>
-#include "cposv_wrapper.h"
+#include <culapackdevice.h>
 #include "hoNDArray_fileio.h"
 #include "cuNDFFT.h"
 #include "GPUTimer.h"
@@ -340,10 +340,31 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
       return -1;
     }
 
+
+    culaStatus s;
+    s = culaInitialize();
+    if(s != culaNoError) {
+      std::cerr << "htgrappa: failed to initialize CULA" << std::endl;
+      return -1;
+    }
+
+    s = culaDeviceCgels( 'N', n, n, coils, 
+			 (culaDeviceFloatComplex*)AHA.get_data_ptr(), n, 
+			 (culaDeviceFloatComplex*)AHrhs.get_data_ptr(), n);
+    
+    if (s != culaNoError) {
+      std::cout << "htgrappa_calculate_grappa_unmixing: linear solve failed" << std::endl;
+      return -1;
+    }
+
+    culaShutdown();
+
+    /*
     if (cposv_wrapper(&AHA, &AHrhs) < 0) {
       std::cerr << "htgrappa_calculate_grappa_unmixing: Error calling cgels" << std::endl;
       return -1;
     }
+    */
     
     //write_cuNDArray_to_disk(&AHrhs,"AHrhs_solution.cplx");
 

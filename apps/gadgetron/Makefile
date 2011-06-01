@@ -19,6 +19,7 @@ EXEOBJECTS=$(EXESOURCES:.cpp=.o)
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 
 EXECUTABLE=gadgetron
+APPLDFLAGS += -lACE -ltinyxml
 
 all: $(EXECUTABLE)
 

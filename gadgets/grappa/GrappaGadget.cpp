@@ -31,7 +31,7 @@ int GrappaGadget::process_config(ACE_Message_Block* mb)
   dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "channels"));
   dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "slices"));
 
-  image_dimensions_.push_back(dimensions_[0]); //This should be changed when we deal with oversampling
+  image_dimensions_.push_back(dimensions_[0] / 2); //TODO: fix this in general
   image_dimensions_.push_back(dimensions_[1]);
   image_dimensions_.push_back(dimensions_[2]);
   image_dimensions_.push_back(dimensions_[3]);

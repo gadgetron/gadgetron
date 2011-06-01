@@ -14,7 +14,6 @@ APPOBJECTS=$(APPSOURCES:.cpp=.o)
 CUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
 APPLDFLAGS += -lhostutils -lgpucore -lgpunfft -lgpucg -lgpuparallelmri
-APPLDFLAGS += -L$(GADGETRONHOME)/dependencies/magma_1.0.0-rc4/lib -lmagma -lmagmablas
 
 test: main.o $(LIBCUDAOBJECTS)
 	$(CXX) $(APPOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) $(APPLDFLAGS) -o $(EXECUTABLE) 
