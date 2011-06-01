@@ -167,7 +167,9 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     FFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),2);
 
     //apply weights
-    if (weights_[slice]->apply(image_data_[slice]->getObjectPtr(), cm2->getObjectPtr()) < 0) {
+    float scale_factor = dimensions_[0]*dimensions_[1];
+
+    if (weights_[slice]->apply(image_data_[slice]->getObjectPtr(), cm2->getObjectPtr(), scale_factor*scale_factor) < 0) {
       GADGET_DEBUG1("Failed to apply GRAPPA weights\n");
       return GADGET_FAIL;
     }

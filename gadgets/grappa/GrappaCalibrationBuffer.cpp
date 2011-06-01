@@ -50,13 +50,19 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
     memcpy(b+offset,d+c*samples,sizeof(std::complex<float>)*samples);
   }
 
-  if (buffer_counter_.update_line(line,m1->position,m1->quarternion) < 0) {
-    GADGET_DEBUG1("Unable to update buffer counter\n");
+  int buf_update  = buffer_counter_.update_line(line,m1->position,m1->quarternion);
+  if ( buf_update < 0) {
+    GADGET_DEBUG2("Unable to update buffer counter for line %d\n", line);
     return GADGET_FAIL;
   }
 
   //Let's figure out if we should start a weight calculation job
   
+  //This means that the orientation changed
+  if (buf_update == 1) {
+    weights_invalid_ = true;
+  }
+
   bool is_first_scan_in_slice =
     (m1->flags & GADGET_FLAG_FIRST_ACQ_IN_SLICE);
 

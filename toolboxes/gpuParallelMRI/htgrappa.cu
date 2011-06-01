@@ -157,10 +157,10 @@ template <class T> __global__ void copy_grappa_kernel_to_kspace_2d(T* kernel,
 }
 
 __global__ void scale_and_add_unmixing_coeffs(cuFloatComplex* unmixing,
-								 cuFloatComplex* csm,
-								 cuFloatComplex* out,
-								 int elements,
-								 int coils)
+					      cuFloatComplex* csm,
+					      cuFloatComplex* out,
+					      int elements,
+					      int coils)
 {
   unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
 
@@ -174,6 +174,18 @@ __global__ void scale_and_add_unmixing_coeffs(cuFloatComplex* unmixing,
   }
 }
 
+__global__ void conj_csm_coeffs(cuFloatComplex* csm,
+				cuFloatComplex* out,
+				int elements)
+{
+  unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
+
+  if (idx_in < elements) {
+    out[idx_in] = cuConjf(csm[idx_in]); 
+  }
+}
+
+
 template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data, 
 							  cuNDArray<T>* b1,
 							  unsigned int acceleration_factor,
@@ -185,6 +197,16 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
       !ref_data->dimensions_equal(*out_mixing_coeff)) {
     std::cerr << "htgrappa_calculate_grappa_unmixing: Dimensions mismatch" << std::endl;
     return -1;
+  }
+
+  if (acceleration_factor == 1) {
+    dim3 blockDim(512,1,1);
+    dim3 gridDim((unsigned int) ceil((1.0f*b1->get_number_of_elements())/blockDim.x), 1, 1 );
+    conj_csm_coeffs<<< gridDim, blockDim >>>( b1->get_data_ptr(),
+					      out_mixing_coeff->get_data_ptr(), 
+					      b1->get_number_of_elements());
+    
+    return 0;
   }
 
   if (kernel_size.size() != (ref_data->get_number_of_dimensions()-1)) {

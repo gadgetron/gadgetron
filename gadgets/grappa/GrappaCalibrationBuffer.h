@@ -26,12 +26,15 @@ class CalibrationBufferCounter
 
   int update_line(unsigned int ky_index, float* position, float* quarternion)
   {
+    int ret_val = 0;
+
     if (!quarterion_equal(quarternion) || !position_equal(position)) {
       for (unsigned int i = 0; i < lines_sampled_.size(); i++) {
 	lines_sampled_[i] = 0;
       }
       memcpy(position_,position,3*sizeof(float));
       memcpy(quarternion_,quarternion,4*sizeof(float));
+      ret_val = 1;
     }
 
     if (ky_index >= lines_sampled_.size()) {
@@ -40,7 +43,7 @@ class CalibrationBufferCounter
 
     lines_sampled_[ky_index] = 1;
 
-    return 0;
+    return ret_val;
   }
 
   int get_region_of_support(unsigned int& min_ky_index, unsigned int& max_ky_index) {

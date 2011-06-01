@@ -28,7 +28,8 @@ update(hoNDArray< std::complex<T> >* new_weights)
 
 template<class T> int GrappaWeights<T>::
 apply(hoNDArray< std::complex<T> >* data_in,
-      hoNDArray< std::complex<T> >* data_out)
+      hoNDArray< std::complex<T> >* data_out,
+      T scale)
 {
 
   /*
@@ -82,7 +83,7 @@ apply(hoNDArray< std::complex<T> >* data_in,
       for (unsigned int c = 0; c < coils; c++) {
 	out_ptr[s*image_elements + p] += 
 	  weights_ptr[s*image_elements*coils + c*image_elements + p] * 
-	  in_ptr[c*image_elements + p];
+	  in_ptr[c*image_elements + p]*scale;
       }
     }
   }

@@ -15,7 +15,8 @@ template <class T> class GrappaWeights
   int update(hoNDArray< std::complex<T> >* new_weights);
 
   int apply(hoNDArray< std::complex<T> >* data_in,
-	    hoNDArray< std::complex<T> >* data_out);
+	    hoNDArray< std::complex<T> >* data_out, 
+	    T scale = 1.0);
 
  protected:
   ACE_Thread_Mutex mutex_;
