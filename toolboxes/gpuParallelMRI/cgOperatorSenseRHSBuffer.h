@@ -3,7 +3,7 @@
 #include "cgOperatorSense.h"
 
 template<class REAL, unsigned int D>
-class cgOperatorSenseRHSBuffer : public cgOperatorSense<REAL,D>
+class EXPORTGPUPMRI cgOperatorSenseRHSBuffer : public cgOperatorSense<REAL,D>
 {
  public:
   

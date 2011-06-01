@@ -3,7 +3,6 @@
 
 #include "cuNDArray.h"
 
-int cposv_wrapper(cuNDArray<float2>* A, cuNDArray<float2>* rhs);
-
+EXPORTGPUPMRI int cposv_wrapper(cuNDArray<float2>* A, cuNDArray<float2>* rhs);
 
 #endif //CPOSV_WRAPPER

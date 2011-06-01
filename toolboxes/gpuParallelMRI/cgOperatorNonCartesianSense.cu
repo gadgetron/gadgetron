@@ -133,4 +133,4 @@ cgOperatorNonCartesianSense<REAL,D>::set_dcw( boost::shared_ptr< cuNDArray<REAL>
 // Instantiations
 //
 
-template class cgOperatorNonCartesianSense<float,2>;
+template class EXPORTGPUPMRI cgOperatorNonCartesianSense<float,2>;

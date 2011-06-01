@@ -1,11 +1,14 @@
 #ifndef CUNDFFT_H
 #define CUNDFFT_H
 
+#pragma once
+#include "gadgetron_export.h"
+
 #include "cuda.h"
 #include "cuComplex.h"
 #include "cuNDArray.h"
 
-class cuNDFFT
+class EXPORTGPUCORE cuNDFFT
 {
 
  public:

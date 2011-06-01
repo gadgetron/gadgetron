@@ -7,7 +7,7 @@
 #include <boost/smart_ptr.hpp>
 
 template<class REAL, unsigned int D>
-class cgOperatorSense : public cuCGMatrixOperator<REAL,typename complext<REAL>::Type>
+class EXPORTGPUPMRI cgOperatorSense : public cuCGMatrixOperator<REAL,typename complext<REAL>::Type>
 {
 
 public:

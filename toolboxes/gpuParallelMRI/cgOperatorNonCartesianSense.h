@@ -4,7 +4,7 @@
 #include "NFFT.h"
 
 template<class REAL, unsigned int D>
-class cgOperatorNonCartesianSense : public cgOperatorSense<REAL,D>
+class EXPORTGPUPMRI cgOperatorNonCartesianSense : public cgOperatorSense<REAL,D>
 {
 
  public:

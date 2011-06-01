@@ -1,10 +1,13 @@
 #ifndef CUCGPRECONDITIONER_H
 #define CUCGPRECONDITIONER_H
 
+#pragma once
+#include "gadgetron_export.h"
 #include "cuNDArray.h"
+
 #include <boost/smart_ptr.hpp>
 
-template <class T> class cuCGPreconditioner
+template <class T> class EXPORTGPUCG cuCGPreconditioner
 {
  public:
   cuCGPreconditioner() {}

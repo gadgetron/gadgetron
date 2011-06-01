@@ -1,12 +1,12 @@
 #pragma once
-
+#include "gadgetron_export.h"
 #include "cuCGMatrixOperator.h"
 #include "ndarray_vector_td_utilities.h"
 
 #include <cublas_v2.h>
 
 template <class REAL, class T> 
-class cuCGIdentityOperator : public cuCGMatrixOperator<REAL,T>
+class EXPORTGPUCG cuCGIdentityOperator : public cuCGMatrixOperator<REAL,T>
 {
  public:
 

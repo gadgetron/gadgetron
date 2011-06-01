@@ -1,5 +1,5 @@
 #pragma once
-
+#include "gadgetron_export.h"
 #include "cuCGMatrixOperator.h"
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
@@ -9,7 +9,7 @@
 #include <boost/smart_ptr.hpp>
 
 template <class REAL, class T> 
-class cuCGImageOperator : public cuCGMatrixOperator<REAL,T>
+class EXPORTGPUCG cuCGImageOperator : public cuCGMatrixOperator<REAL,T>
 {
  public:
 

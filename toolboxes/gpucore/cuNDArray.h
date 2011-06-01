@@ -1,19 +1,19 @@
 #ifndef CUNDARRAY_H
 #define CUNDARRAY_H
 
+#pragma once
+#include "gadgetron_export.h"
+
 #include "NDArray.h"
 #include "hoNDArray.h"
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 
-template <class T> class cuNDArray;
-template <class T> int cuNDArray_permute(cuNDArray<T>* in, 
-					 cuNDArray<T>* out,
-					 std::vector<unsigned int> order,
-					 int shift_mode);
+template <class T> class EXPORTGPUCORE cuNDArray;
+template <class T> int EXPORTGPUCORE cuNDArray_permute(cuNDArray<T>* in, cuNDArray<T>* out, std::vector<unsigned int> order, int shift_mode);
 
-template <class T> class cuNDArray : public NDArray<T>
+template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
 {
   
   friend int cuNDArray_permute<>(cuNDArray<T>* in, 

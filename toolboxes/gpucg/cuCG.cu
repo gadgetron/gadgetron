@@ -78,11 +78,11 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
       p = r;
     } else {        
       T beta = mul<REAL>(rr/rr_1, get_one<T>());
-      if (cuNDA_scal<T>(beta,&p,cublas_handle_) < 0) {
+      if (!cuNDA_scal<T>(beta,&p,cublas_handle_)) {
 	std::cerr << "cuCG<T>::solve : failed to scale p" << std::endl;
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
-      if (cuNDA_axpy<T>(get_one<T>(),&r,&p,cublas_handle_) < 0) {
+      if (!cuNDA_axpy<T>(get_one<T>(),&r,&p,cublas_handle_)) {
 	std::cerr << "cuCG<T>::solve : failed to add r to scaled p" << std::endl;
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
@@ -94,7 +94,7 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
     // Take care of preconditioning
     cuNDArray<T>* cur_p = &p;
     if (precond_.get()) {
-      if (!precond_->apply(&p,&p_precond) < 0) {
+      if (precond_->apply(&p,&p_precond) < 0) {
 	std::cerr << "cuCG<T>::solve : failed to apply preconditioner to p" << std::endl;
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
@@ -108,14 +108,14 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
 
-      if (cuNDA_axpy<T>(mul<REAL>(operators_[i]->get_weight(), get_one<T>()),&q2,&q,cublas_handle_) < 0) {
+      if (!cuNDA_axpy<T>(mul<REAL>(operators_[i]->get_weight(), get_one<T>()),&q2,&q,cublas_handle_)) {
 	std::cerr << "cuCG<T>::solve : failed to add q1 to q" << std::endl;
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
     }
     
     if (precond_.get()) {
-      if (!precond_->apply(&q,&q) < 0) {
+      if (precond_->apply(&q,&q) < 0) {
 	std::cerr << "cuCG<T>::solve : failed to apply preconditioner to q" << std::endl;
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
@@ -124,13 +124,13 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
     T alpha = mul<REAL>(rr, reciprocal<T>(cuNDA_dot<T>(&p,&q,cublas_handle_)));
     
     // Update solution
-    if (cuNDA_axpy<T>(alpha,&p,rho,cublas_handle_) < 0) {
+    if (!cuNDA_axpy<T>(alpha,&p,rho,cublas_handle_)) {
       std::cerr << "cuCG<T>::solve : failed to update solution" << std::endl;
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
     
     // Update residual
-    if (cuNDA_axpy<T>(mul<REAL>(-get_one<REAL>(),alpha),&q,&r,cublas_handle_) < 0) {
+    if (!cuNDA_axpy<T>(mul<REAL>(-get_one<REAL>(),alpha),&q,&r,cublas_handle_)) {
       std::cerr << "cuCG<T>::solve : failed to update residual" << std::endl;
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
@@ -155,7 +155,7 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
   }
 
   if (precond_.get()) {
-    if (!precond_->apply(rho,rho) < 0) {
+    if (precond_->apply(rho,rho) < 0) {
       std::cerr << "cuCG<T>::solve : failed to apply preconditioner to rho" << std::endl;
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
@@ -168,5 +168,5 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
 // Instantiation
 //
 
-//template class cuCG<float, float>;
-template class cuCG<float, float_complext::Type>;
+//template class EXPORTGPUCG cuCG<float, float>;
+template class EXPORTGPUCG cuCG<float, float_complext::Type>;

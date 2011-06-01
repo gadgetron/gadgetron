@@ -50,4 +50,4 @@ cgOperatorSenseRHSBuffer<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_
 // Instantiations
 //
 
-template class cgOperatorSenseRHSBuffer<float,2>;
+template class EXPORTGPUPMRI cgOperatorSenseRHSBuffer<float,2>;

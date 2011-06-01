@@ -3,7 +3,7 @@
 #include "cgOperatorSense.h"
 
 template<class REAL, unsigned int D>
-class cgOperatorCartesianSense : public cgOperatorSense<REAL,D>
+class EXPORTGPUPMRI cgOperatorCartesianSense : public cgOperatorSense<REAL,D>
 {
  public:
 

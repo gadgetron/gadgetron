@@ -20,7 +20,7 @@
 #include <thrust/device_vector.h>
 #include <boost/shared_ptr.hpp>
 
-template< class REAL, unsigned int D > class NFFT_plan
+template< class REAL, unsigned int D > class EXPORTGPUNFFT NFFT_plan
 {
   
 public: // Main interface

@@ -8,5 +8,5 @@
 // Estimate b1 map
 //
 
-template<class REAL, unsigned int D> boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >
+template<class REAL, unsigned int D> EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >
 estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data );

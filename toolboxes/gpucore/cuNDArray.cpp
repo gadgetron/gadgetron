@@ -158,65 +158,65 @@ template <class T> int cuNDArray<T>::permute(std::vector<unsigned int>& dim_orde
 // Instantiation
 //
 
-template class cuNDArray< int >;
-template class cuNDArray< int2 >;
-template class cuNDArray< int3 >;
-template class cuNDArray< int4 >;
+template EXPORTGPUCORE class cuNDArray< int >;
+template EXPORTGPUCORE class cuNDArray< int2 >;
+template EXPORTGPUCORE class cuNDArray< int3 >;
+template EXPORTGPUCORE class cuNDArray< int4 >;
 
-template class cuNDArray< unsigned int >;
-template class cuNDArray< uint2 >;
-template class cuNDArray< uint3 >;
-template class cuNDArray< uint4 >;
+template EXPORTGPUCORE class cuNDArray< unsigned int >;
+template EXPORTGPUCORE class cuNDArray< uint2 >;
+template EXPORTGPUCORE class cuNDArray< uint3 >;
+template EXPORTGPUCORE class cuNDArray< uint4 >;
 
-template class cuNDArray< float >;
-template class cuNDArray< float2 >;
-template class cuNDArray< float3 >;
-template class cuNDArray< float4 >;
+template EXPORTGPUCORE class cuNDArray< float >;
+template EXPORTGPUCORE class cuNDArray< float2 >;
+template EXPORTGPUCORE class cuNDArray< float3 >;
+template EXPORTGPUCORE class cuNDArray< float4 >;
 
-template class cuNDArray< double >;
-template class cuNDArray< double2 >;
-template class cuNDArray< double3 >;
-template class cuNDArray< double4 >;
+template EXPORTGPUCORE class cuNDArray< double >;
+template EXPORTGPUCORE class cuNDArray< double2 >;
+template EXPORTGPUCORE class cuNDArray< double3 >;
+template EXPORTGPUCORE class cuNDArray< double4 >;
 
-template class cuNDArray< intd<1>::Type >;
-template class cuNDArray< intd<2>::Type >;
-template class cuNDArray< intd<3>::Type >;
-template class cuNDArray< intd<4>::Type >;
+template EXPORTGPUCORE class cuNDArray< intd<1>::Type >;
+template EXPORTGPUCORE class cuNDArray< intd<2>::Type >;
+template EXPORTGPUCORE class cuNDArray< intd<3>::Type >;
+template EXPORTGPUCORE class cuNDArray< intd<4>::Type >;
 
-template class cuNDArray< uintd<1>::Type >;
-template class cuNDArray< uintd<2>::Type >;
-template class cuNDArray< uintd<3>::Type >;
-template class cuNDArray< uintd<4>::Type >;
+template EXPORTGPUCORE class cuNDArray< uintd<1>::Type >;
+template EXPORTGPUCORE class cuNDArray< uintd<2>::Type >;
+template EXPORTGPUCORE class cuNDArray< uintd<3>::Type >;
+template EXPORTGPUCORE class cuNDArray< uintd<4>::Type >;
 
-template class cuNDArray< floatd<1>::Type >;
-template class cuNDArray< floatd<2>::Type >;
-template class cuNDArray< floatd<3>::Type >;
-template class cuNDArray< floatd<4>::Type >;
+template EXPORTGPUCORE class cuNDArray< floatd<1>::Type >;
+template EXPORTGPUCORE class cuNDArray< floatd<2>::Type >;
+template EXPORTGPUCORE class cuNDArray< floatd<3>::Type >;
+template EXPORTGPUCORE class cuNDArray< floatd<4>::Type >;
 
-template class cuNDArray< doubled<1>::Type >;
-template class cuNDArray< doubled<2>::Type >;
-template class cuNDArray< doubled<3>::Type >;
-template class cuNDArray< doubled<4>::Type >;
+template EXPORTGPUCORE class cuNDArray< doubled<1>::Type >;
+template EXPORTGPUCORE class cuNDArray< doubled<2>::Type >;
+template EXPORTGPUCORE class cuNDArray< doubled<3>::Type >;
+template EXPORTGPUCORE class cuNDArray< doubled<4>::Type >;
 
-template class cuNDArray< intd1 >;
-template class cuNDArray< intd2 >;
-template class cuNDArray< intd3 >;
-template class cuNDArray< intd4 >;
+template EXPORTGPUCORE class cuNDArray< intd1 >;
+template EXPORTGPUCORE class cuNDArray< intd2 >;
+template EXPORTGPUCORE class cuNDArray< intd3 >;
+template EXPORTGPUCORE class cuNDArray< intd4 >;
 
-template class cuNDArray< uintd1 >;
-template class cuNDArray< uintd2 >;
-template class cuNDArray< uintd3 >;
-template class cuNDArray< uintd4 >;
+template EXPORTGPUCORE class cuNDArray< uintd1 >;
+template EXPORTGPUCORE class cuNDArray< uintd2 >;
+template EXPORTGPUCORE class cuNDArray< uintd3 >;
+template EXPORTGPUCORE class cuNDArray< uintd4 >;
 
-template class cuNDArray< floatd1 >;
-template class cuNDArray< floatd2 >;
-template class cuNDArray< floatd3 >;
-template class cuNDArray< floatd4 >;
+template EXPORTGPUCORE class cuNDArray< floatd1 >;
+template EXPORTGPUCORE class cuNDArray< floatd2 >;
+template EXPORTGPUCORE class cuNDArray< floatd3 >;
+template EXPORTGPUCORE class cuNDArray< floatd4 >;
 
-template class cuNDArray< doubled1 >;
-template class cuNDArray< doubled2 >;
-template class cuNDArray< doubled3 >;
-template class cuNDArray< doubled4 >;
+template EXPORTGPUCORE class cuNDArray< doubled1 >;
+template EXPORTGPUCORE class cuNDArray< doubled2 >;
+template EXPORTGPUCORE class cuNDArray< doubled3 >;
+template EXPORTGPUCORE class cuNDArray< doubled4 >;
 
-template class cuNDArray<float_complext>;
-template class cuNDArray<double_complext>;
+template EXPORTGPUCORE class cuNDArray<float_complext>;
+template EXPORTGPUCORE class cuNDArray<double_complext>;

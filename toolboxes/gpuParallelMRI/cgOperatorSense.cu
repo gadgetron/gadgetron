@@ -125,4 +125,4 @@ cgOperatorSense<REAL,D>::mult_MH_M( cuNDArray<_complext>* in, cuNDArray<_complex
 // Instantiations
 //
 
-template class cgOperatorSense<float,2>;
+template class EXPORTGPUPMRI cgOperatorSense<float,2>;

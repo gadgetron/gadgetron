@@ -47,6 +47,6 @@ template <class T> int cuCGPrecondWeight<T>::apply(cuNDArray<T>* in, cuNDArray<T
 // Instantiation
 //
 
-template class cuCGPrecondWeight<float>;
-//template class cuCGPrecondWeight<float2>;
-template class cuCGPrecondWeight<float_complext::Type>;
+template class EXPORTGPUCG cuCGPrecondWeight<float>;
+//template class EXPORTGPUCG cuCGPrecondWeight<float2>;
+template class EXPORTGPUCG cuCGPrecondWeight<float_complext::Type>;

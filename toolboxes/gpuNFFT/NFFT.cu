@@ -1362,11 +1362,11 @@ NFFT_plan<REAL,D>::image_wrap( cuNDArray<typename complext<REAL>::Type> *source,
 // Template instantion
 //
 
-template class NFFT_plan< float, 2 >;
-template class NFFT_plan< double, 2 >;
+template class EXPORTGPUNFFT NFFT_plan< float, 2 >;
+template class EXPORTGPUNFFT NFFT_plan< double, 2 >;
 
-template class NFFT_plan< float, 3 >;
-template class NFFT_plan< double, 3 >;
+template class EXPORTGPUNFFT NFFT_plan< float, 3 >;
+template class EXPORTGPUNFFT NFFT_plan< double, 3 >;
 
-template class NFFT_plan< float, 4 >;
-template class NFFT_plan< double, 4 >;
+template class EXPORTGPUNFFT NFFT_plan< float, 4 >;
+template class EXPORTGPUNFFT NFFT_plan< double, 4 >;

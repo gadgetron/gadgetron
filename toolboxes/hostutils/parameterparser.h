@@ -1,5 +1,5 @@
 #pragma once
-#include "declspec.h"
+#include "gadgetron_export.h"
 
 #include <vector>
 #include <string>
@@ -12,7 +12,7 @@ typedef enum
   COMMAND_LINE_NO_ARG
 } CommandLineParameterType; 
 
-class DLLSPEC CommandLineParameter
+class EXPORTHOSTUTILS CommandLineParameter
 {
  public:
   CommandLineParameter(char com_switch, CommandLineParameterType type, unsigned int nr_values, const char* desc, bool required);
@@ -45,7 +45,7 @@ class DLLSPEC CommandLineParameter
   float         *m_float_value;
 };
 
-class DLLSPEC ParameterParser
+class EXPORTHOSTUTILS ParameterParser
 {
  public:
   ParameterParser(int list_size = 10, int list_increment = 10);

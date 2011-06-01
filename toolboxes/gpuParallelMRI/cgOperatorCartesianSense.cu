@@ -139,4 +139,4 @@ cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_c
 // Instantiations
 //
 
-template class cgOperatorCartesianSense<float,2>;
+template class EXPORTGPUPMRI cgOperatorCartesianSense<float,2>;

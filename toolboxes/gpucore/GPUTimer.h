@@ -1,11 +1,13 @@
 #ifndef __GPUTIMER_H
 #define __GPUTIMER_H
 
+#pragma once
+#include "gadgetron_export.h"
+
 #include <string>
 
-class GPUTimer
+class EXPORTGPUCORE GPUTimer
 {
-
  public:
   GPUTimer(const char* name);
   GPUTimer();

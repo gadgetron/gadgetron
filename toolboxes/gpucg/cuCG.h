@@ -1,5 +1,5 @@
 #pragma once
-
+#include "gadgetron_export.h"
 #include "cuNDArray.h"
 #include "cuCGMatrixOperator.h"
 #include "cuCGPreconditioner.h"
@@ -10,7 +10,7 @@
 #include <cublas_v2.h>
 #include <boost/smart_ptr.hpp>
 
-template<class REAL, class T> class cuCG
+template<class REAL, class T> class EXPORTGPUCG cuCG
 {
  public:
 
