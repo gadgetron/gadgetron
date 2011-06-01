@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gadgetron_export.h"
 #include "cuCGMatrixOperator.h"
 #include "cuNDArray.h"
 #include "vector_td.h"

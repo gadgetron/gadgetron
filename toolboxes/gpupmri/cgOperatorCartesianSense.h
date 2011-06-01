@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gadgetron_export.h"
 #include "cgOperatorSense.h"
 
 template<class REAL, unsigned int D>

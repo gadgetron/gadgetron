@@ -32,6 +32,8 @@ void radialSenseAppMainWindow::resetPrivateData()
 
 radialSenseAppMainWindow::radialSenseAppMainWindow(QWidget *parent) : QMainWindow(parent)
 {
+  statusLabel = 0x0;
+
   setupUi(this);
   retranslateUi(this);
 

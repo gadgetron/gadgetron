@@ -15,7 +15,7 @@ template <class T> class EXPORTGPUCG cuCGPreconditioner
   virtual int apply(cuNDArray<T>* in, cuNDArray<T>* out) = 0;
 };
 
-template <class T> class cuCGPrecondWeight : public cuCGPreconditioner<T>
+template <class T> class EXPORTGPUCG cuCGPrecondWeight : public cuCGPreconditioner<T>
 {
  public:
   virtual int set_weights( boost::shared_ptr< cuNDArray<T> > w ) {

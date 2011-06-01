@@ -6,7 +6,7 @@
 #include <cublas_v2.h>
 
 template <class REAL, class T> 
-class EXPORTGPUCG cuCGIdentityOperator : public cuCGMatrixOperator<REAL,T>
+class cuCGIdentityOperator : public cuCGMatrixOperator<REAL,T>
 {
  public:
 
@@ -14,6 +14,7 @@ class EXPORTGPUCG cuCGIdentityOperator : public cuCGMatrixOperator<REAL,T>
   virtual ~cuCGIdentityOperator() {}
   
   virtual int mult_M(cuNDArray<T>* in, cuNDArray<T>* out, bool accumulate = false){
+
 
     if( accumulate ) 
       cuNDA_axpy( get_one<T>(), in, out, handle_ );

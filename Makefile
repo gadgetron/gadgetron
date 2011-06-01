@@ -6,9 +6,9 @@ DIRS=\
 	toolboxes/hostutils \
 	toolboxes/ndarray \
 	toolboxes/gpucore \
-	toolboxes/gpuNFFT \
+	toolboxes/gpunfft \
 	toolboxes/gpucg \
-	toolboxes/gpuParallelMRI \
+	toolboxes/gpupmri \
 	apps/MRI/gputest \
 	apps/MRI/standalone/radial_sense \
 	apps/gadgetron \

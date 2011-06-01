@@ -6,7 +6,7 @@
 #include "cuNDArray.h"
 #include "vector_td_utilities.h"
 
-template <class REAL, class T> class EXPORTGPUCG cuCGMatrixOperator
+template <class REAL, class T> class cuCGMatrixOperator
 {
 
  public:

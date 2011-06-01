@@ -9,7 +9,7 @@
 #include <boost/smart_ptr.hpp>
 
 template <class REAL, class T> 
-class EXPORTGPUCG cuCGImageOperator : public cuCGMatrixOperator<REAL,T>
+class cuCGImageOperator : public cuCGMatrixOperator<REAL,T>
 {
  public:
 

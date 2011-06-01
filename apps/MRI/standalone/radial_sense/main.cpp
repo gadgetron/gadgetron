@@ -73,18 +73,18 @@ int main(int argc, char** argv)
   
   // Load sample data from disk
   timer = new GPUTimer("\nLoading data");
-  hoNDArray<_complext> host_data = read_nd_array<_complext>((char*)parms.get_parameter('d')->get_string_value());
+  boost::shared_ptr< hoNDArray<_complext> > host_data = read_nd_array<_complext>((char*)parms.get_parameter('d')->get_string_value());
   delete timer;
    
-  if( !host_data.get_number_of_dimensions() == 3 ){
+  if( !host_data->get_number_of_dimensions() == 3 ){
     cout << endl << "Input data is not three-dimensional (#samples/profile x #profiles x #coils). Quitting!\n" << endl;
     return 1;
   }
 
   // Configuration from the host data
-  unsigned int samples_per_profile = host_data.get_size(0);
-  unsigned int num_profiles = host_data.get_size(1);
-  unsigned int num_coils = host_data.get_size(2);
+  unsigned int samples_per_profile = host_data->get_size(0);
+  unsigned int num_profiles = host_data->get_size(1);
+  unsigned int num_coils = host_data->get_size(2);
   
   // Configuration from the command line
   uintd2 matrix_size = uintd2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
@@ -124,7 +124,8 @@ int main(int argc, char** argv)
   
   vector<unsigned int> image_os_dims = uintd_to_vector<2>(matrix_size_os); 
   image_os_dims.push_back(frames_per_reconstruction); image_os_dims.push_back(num_coils);    
-  cuNDArray<_complext> *image_os = new cuNDArray<_complext>(); image_os->create(image_os_dims);
+  cuNDArray<_complext> *image_os = new cuNDArray<_complext>(); 
+  image_os->create(image_os_dims);
     
   NFFT_plan<_real, 2> plan( matrix_size, matrix_size_os, kernel_width );
   
@@ -141,7 +142,7 @@ int main(int argc, char** argv)
     
     // Upload data
     boost::shared_ptr< cuNDArray<_complext> > csm_data = upload_data
-      ( iteration, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, &host_data );
+      ( iteration, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, host_data.get() );
     
     // Accumulate k-space for CSM estimation
     plan.convolve( csm_data.get(), image_os, dcw.get(), NFFT_plan<_real,2>::NFFT_BACKWARDS, (iteration==0) ? false : true );
@@ -234,7 +235,7 @@ int main(int argc, char** argv)
     
     // Upload data
     boost::shared_ptr< cuNDArray<_complext> > data = upload_data
-      ( reconstruction, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, &host_data );
+      ( reconstruction, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, host_data.get() );
     
     // Set current trajectory and trigger NFFT preprocessing
     if( E->preprocess(traj.get()) < 0 ) {

@@ -11,12 +11,12 @@
 #include <cuda_runtime_api.h>
 
 template <class T> class EXPORTGPUCORE cuNDArray;
-template <class T> int EXPORTGPUCORE cuNDArray_permute(cuNDArray<T>* in, cuNDArray<T>* out, std::vector<unsigned int> order, int shift_mode);
+template <class T> EXPORTGPUCORE int cuNDArray_permute(cuNDArray<T>* in, cuNDArray<T>* out, std::vector<unsigned int> order, int shift_mode);
 
 template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
 {
   
-  friend int cuNDArray_permute<>(cuNDArray<T>* in, 
+  friend EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<T>* in, 
 				 cuNDArray<T>* out,
 				 std::vector<unsigned int> order,
 				 int shift_mode);

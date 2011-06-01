@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include "gadgetron_export.h"
+
 #include "vector_td.h"
 #include "cuNDArray.h"
 

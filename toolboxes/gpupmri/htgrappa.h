@@ -1,6 +1,7 @@
 #ifndef HTGRAPPA_H
 #define HTGRAPPA_H
 
+#include "gadgetron_export.h"
 #include "cuNDArray.h"
 
 template <class T> EXPORTGPUPMRI int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data, 

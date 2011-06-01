@@ -258,25 +258,25 @@ boost::shared_ptr< cuNDArray<REAL> > _cuNDA_ss( cuNDArray<T> *in, unsigned int d
   return boost::shared_ptr< cuNDArray<REAL> >(out);
 }
 
-template<>  
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float> > cuNDA_ss<float,float>( cuNDArray<float> *in, unsigned int dim )
 {
   return _cuNDA_ss<float, float>(in,dim);
 }
 
-template<>  
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double> > cuNDA_ss<double,double>( cuNDArray<double> *in, unsigned int dim )
 {
   return _cuNDA_ss<double, double>(in,dim);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float> > cuNDA_ss<float,float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_ss<float, float_complext::Type>(in,dim);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double> > cuNDA_ss<double,double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_ss<double, double_complext::Type>(in,dim);
@@ -336,13 +336,13 @@ boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_css( cuNDArr
   return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_ss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_css<float>( in, dim );
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_ss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_css<double>( in, dim );
@@ -413,25 +413,25 @@ boost::shared_ptr< cuNDArray<REAL> > _cuNDA_rss( cuNDArray<T> *in, unsigned int 
   return boost::shared_ptr< cuNDArray<REAL> >(out);
 }
 
-template<>  
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float> > cuNDA_rss<float,float>( cuNDArray<float> *in, unsigned int dim )
 {
   return _cuNDA_rss<float, float>(in,dim);
 }
 
-template<>  
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double> > cuNDA_rss<double,double>( cuNDArray<double> *in, unsigned int dim )
 {
   return _cuNDA_rss<double, double>(in,dim);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float> > cuNDA_rss<float,float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_rss<float, float_complext::Type>(in,dim);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double> > cuNDA_rss<double,double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_rss<double, double_complext::Type>(in,dim);
@@ -491,13 +491,13 @@ boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_crss( cuNDAr
   return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_crss<float>( in, dim );
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_crss<double>( in, dim );
@@ -553,25 +553,25 @@ boost::shared_ptr< cuNDArray<REAL> > _cuNDA_reciprocal_rss( cuNDArray<T> *in, un
   return boost::shared_ptr< cuNDArray<REAL> >(out);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float>( cuNDArray<float> *in, unsigned int dim )
 {
   return _cuNDA_reciprocal_rss<float, float>(in,dim);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double>( cuNDArray<double> *in, unsigned int dim )
 {
   return _cuNDA_reciprocal_rss<double, double>(in,dim);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_reciprocal_rss<float, float_complext::Type>(in,dim);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_reciprocal_rss<double, double_complext::Type>(in,dim);
@@ -631,13 +631,13 @@ boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_creciprocal_
   return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_reciprocal_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_creciprocal_rss<float>( in, dim );
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_reciprocal_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_creciprocal_rss<double>( in, dim );
@@ -712,7 +712,7 @@ cuNDA_real_to_complext_kernel( REAL *in, typename complext<REAL>::Type *out, uns
   }
 }
 
-// Build correlation matrix
+// Convert real to complext
 template<class REAL>  
 boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_real_to_complext( cuNDArray<REAL> *in )
 {
@@ -729,25 +729,25 @@ boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_real_to_comp
   return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float> > cuNDA_correlation<float>( cuNDArray<float> *data )
 {
   return _cuNDA_correlation<float,float>(data);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double> > cuNDA_correlation<double>( cuNDArray<double> *data )
 {
   return _cuNDA_correlation<double,double>(data);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_correlation<float_complext::Type>( cuNDArray<float_complext::Type> *data )
 {
   return _cuNDA_correlation<float,float_complext::Type>(data);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_correlation<double_complext::Type>( cuNDArray<double_complext::Type> *data )
 {
   return _cuNDA_correlation<double,double_complext::Type>(data);
@@ -886,7 +886,8 @@ void cuNDA_reciprocal_sqrt( cuNDArray<T> *in_out )
 }
 
 // Normalize (float)
-template<> void cuNDA_normalize<float>( cuNDArray<float> *data, float new_max, cublasHandle_t handle )
+template<> EXPORTGPUCORE
+void cuNDA_normalize<float>( cuNDArray<float> *data, float new_max, cublasHandle_t handle )
 {
   unsigned int number_of_elements = data->get_number_of_elements();
 
@@ -906,7 +907,8 @@ template<> void cuNDA_normalize<float>( cuNDArray<float> *data, float new_max, c
 }
 
 // Normalize (double)
-template<> void cuNDA_normalize<double>( cuNDArray<double> *data, double new_max, cublasHandle_t handle )
+template<> EXPORTGPUCORE
+void cuNDA_normalize<double>( cuNDArray<double> *data, double new_max, cublasHandle_t handle )
 {
   unsigned int number_of_elements = data->get_number_of_elements();
 

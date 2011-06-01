@@ -7,6 +7,7 @@
 #include <fstream>
 #include <vector>
 #include <string.h>
+#include <boost/shared_ptr.hpp>
 
 template <class T> int write_nd_array(hoNDArray<T>& a, const char* filename)
 {
@@ -36,7 +37,7 @@ template <class T> int write_nd_array(hoNDArray<T>& a, const char* filename)
 }
 
 
-template <class T> hoNDArray<T> read_nd_array(const char* filename)
+template <class T> boost::shared_ptr< hoNDArray<T> > read_nd_array(const char* filename)
 {
   int dimensions,tmp;
   std::vector<unsigned int> dim_array;
@@ -44,7 +45,7 @@ template <class T> hoNDArray<T> read_nd_array(const char* filename)
 
   if( !f.is_open() ){
     std::cout << "ERROR: Cannot open file " << filename << std::endl;
-    return hoNDArray<T>();
+    return boost::shared_ptr< hoNDArray<T> >();
   }
 
   f.read(reinterpret_cast<char*>(&dimensions),sizeof(int));
@@ -54,12 +55,15 @@ template <class T> hoNDArray<T> read_nd_array(const char* filename)
     dim_array.push_back(static_cast<unsigned int>(tmp));
   }
 
-  hoNDArray<T> out;
-  out.create(dim_array);
+  hoNDArray<T> *out = new hoNDArray<T>();
+  if( out->create(dim_array) < 0 ){
+    std::cout << "ERROR: Cannot create array from file " << filename << std::endl;
+    return boost::shared_ptr< hoNDArray<T> >();	
+  }
 
-  f.read(reinterpret_cast<char*>(out.get_data_ptr()),sizeof(T)*out.get_number_of_elements());
+  f.read(reinterpret_cast<char*>(out->get_data_ptr()),sizeof(T)*out.get_number_of_elements());
 
-  return out;
+  return boost::shared_ptr< hoNDArray<T> >(out);
 }
 
 
