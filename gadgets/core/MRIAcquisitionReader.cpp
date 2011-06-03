@@ -31,7 +31,7 @@ ACE_Message_Block* MRIAcquisitionReader::read(ACE_SOCK_Stream* sock)
   adims.push_back(m1->getObjectPtr()->samples);
   adims.push_back(m1->getObjectPtr()->channels);
 
-  if (!m2->getObjectPtr()->create(adims)) {
+  if (!m2->getObjectPtr()->create(&adims)) {
     ACE_DEBUG ((LM_ERROR,
 		ACE_TEXT ("(%P|%t) Allocate sample data\n")));
 

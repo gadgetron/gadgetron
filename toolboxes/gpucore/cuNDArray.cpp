@@ -1,15 +1,15 @@
 #include "cuNDArray.h"
 #include "vector_td.h"
 
-template <class T> cuNDArray<T>::cuNDArray(hoNDArray<T>& a) {
+template <class T> cuNDArray<T>::cuNDArray(hoNDArray<T>  *a) {
   this->data_ = 0;
-  this->dimensions_ = a.get_dimensions();
+  this->dimensions_ = a->get_dimensions();
   if (allocate_memory() == 0) {
-    if (cudaMemcpy(this->data_, a.get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) !=
+    if (cudaMemcpy(this->data_, a->get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) !=
 	cudaSuccess) {
       deallocate_memory();
       this->data_ = 0;
-      this->dimensions_.clear();
+      this->dimensions_->clear();
     }
   }
 }
@@ -27,15 +27,14 @@ template <class T> cuNDArray<T>::cuNDArray(const cuNDArray<T>& a) {
     } else {
       //This memory is on a different device, we must move it.
       cudaSetDevice(a.device_);
-	hoNDArray<T> tmp = a.to_host();
-	cudaSetDevice(this->device_);
-	
-	if (cudaMemcpy(this->data_, tmp.get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) !=
-	    cudaSuccess) {
-	  deallocate_memory();
-	  this->data_ = 0;
-	  this->dimensions_.clear();
-	}
+      boost::shared_ptr< hoNDArray<T> > tmp = a.to_host();
+      cudaSetDevice(this->device_);
+      
+      if (cudaMemcpy(this->data_, tmp->get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) !=cudaSuccess) {
+	deallocate_memory();
+	this->data_ = 0;
+	this->dimensions_->clear();
+      }
     }
   }
 }
@@ -45,7 +44,7 @@ template <class T> cuNDArray<T>&  cuNDArray<T>::operator=(const cuNDArray<T>& rh
   int cur_device;
   cudaGetDevice(&cur_device);
   
-  bool dimensions_match = this->dimensions_equal(rhs);
+  bool dimensions_match = this->dimensions_equal(&rhs);
   
   if (dimensions_match &&
       (rhs.device_ == cur_device) &&
@@ -81,11 +80,10 @@ template <class T> cuNDArray<T>&  cuNDArray<T>::operator=(const cuNDArray<T>& rh
       }
     } else {
       cudaSetDevice(rhs.device_);
-      hoNDArray<T> tmp = rhs.to_host();
+      boost::shared_ptr< hoNDArray<T> > tmp = rhs.to_host();
       cudaSetDevice(this->device_);
       
-      if (cudaMemcpy(this->data_, tmp.get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) !=
-	  cudaSuccess) {
+      if (cudaMemcpy(this->data_, tmp->get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) != cudaSuccess) {
 	std::cerr << "cuNDArray& operator= failed to copy data (3)" << std::endl;
 	return *this;
       }
@@ -95,41 +93,40 @@ template <class T> cuNDArray<T>&  cuNDArray<T>::operator=(const cuNDArray<T>& rh
   return *this;
 }
 
-template <class T> int cuNDArray<T>::permute(std::vector<unsigned int>& dim_order, 
-					     NDArray<T>* out, int shift_mode)
+template <class T> int cuNDArray<T>::permute(std::vector<unsigned int> *dim_order, NDArray<T> *out, int shift_mode)
 {
 
-  cuNDArray<T>* out_int = 0;
+  cuNDArray<T>* out_int = 0x0;
   
   //Check ordering array
-  if (dim_order.size() > this->dimensions_.size()) {
+  if (dim_order->size() > this->dimensions_->size()) {
     std::cerr << "hoNDArray::permute - Invalid length of dimension ordering array" << std::endl;
     return -1;
   }
   
-  std::vector<unsigned int> dim_count(this->dimensions_.size(),0);
-  for (unsigned int i = 0; i < dim_order.size(); i++) {
-    if (dim_order[i] >= this->dimensions_.size()) {
+  std::vector<unsigned int> dim_count(this->dimensions_->size(),0);
+  for (unsigned int i = 0; i < dim_order->size(); i++) {
+    if ((*dim_order)[i] >= this->dimensions_->size()) {
       std::cerr << "hoNDArray::permute - Invalid dimension order array" << std::endl;
       return -1;
     }
-    dim_count[dim_order[i]]++;
+    dim_count[(*dim_order)[i]]++;
   }
   
   //Create an internal array to store the dimensions
   std::vector<unsigned int> dim_order_int;
   
   //Check that there are no duplicate dimensions
-  for (unsigned int i = 0; i < dim_order.size(); i++) {
-    if (dim_count[dim_order[i]] != 1) {
+  for (unsigned int i = 0; i < dim_order->size(); i++) {
+    if (dim_count[(*dim_order)[i]] != 1) {
       std::cerr << "hoNDArray::permute - Invalid dimension order array (duplicates)" << std::endl;
       return -1;
     }
-    dim_order_int.push_back(dim_order[i]);
+    dim_order_int.push_back((*dim_order)[i]);
   }
   
   //Pad dimension order array with dimension not mentioned in order array
-  if (dim_order_int.size() < this->dimensions_.size()) {
+  if (dim_order_int.size() < this->dimensions_->size()) {
     for (unsigned int i = 0; i < dim_count.size(); i++) {
       if (dim_count[i] == 0) {
 	dim_order_int.push_back(i);
@@ -144,14 +141,14 @@ template <class T> int cuNDArray<T>::permute(std::vector<unsigned int>& dim_orde
       return -1;
     }
     for (unsigned int i = 0; i < dim_order_int.size(); i++) {
-      if (this->dimensions_[dim_order_int[i]] != out_int->get_size(i)) {
+      if ((*this->dimensions_)[dim_order_int[i]] != out_int->get_size(i)) {
 	std::cerr << "cuNDArray::permute: Dimensions of output array do not match the input array" << std::endl;
 	return -1;
       }
     }
   }
   
-  return cuNDArray_permute(this, out_int, dim_order_int, shift_mode);
+  return cuNDArray_permute(this, out_int, &dim_order_int, shift_mode);
 }
 
 //

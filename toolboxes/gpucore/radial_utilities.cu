@@ -37,18 +37,18 @@ compute_radial_trajectory_golden_ratio_2d_kernel( typename reald<REAL,2>::Type *
 
 
 template<class REAL> boost::shared_ptr< cuNDArray< typename reald<REAL,2>::Type > > 
-compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile, unsigned int num_profiles_per_frame, unsigned int num_frames, 
-					   unsigned int profile_offset )
+compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile, unsigned int num_profiles_per_frame, 
+					   unsigned int num_frames, unsigned int profile_offset )
 {
   typedef typename reald<REAL,2>::Type T;
-
+  
   // Get device properties
   int device; cudaGetDevice( &device );
   cudaDeviceProp deviceProp; cudaGetDeviceProperties( &deviceProp, device );
   const unsigned int warp_size = deviceProp.warpSize;
   
   if( num_samples_per_profile%warp_size ){
-    cout << endl << "compute_radial_trajectory_golden_ratio_2d: #samples/profile number a multiple of the device's warp size." << endl;
+    cout << endl << "compute_radial_trajectory_golden_ratio_2d: #samples/profile is not a multiple of the device's warp size." << endl;
     return boost::shared_ptr< cuNDArray<T> >();
   }
 
@@ -56,9 +56,9 @@ compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile,
 
   // Allocate space for result
   vector<unsigned int> dims; dims.push_back( number_of_samples_per_frame ); dims.push_back( num_frames );
-  cuNDArray<T> *co = cuNDArray<T>::allocate(dims);
+  boost::shared_ptr< cuNDArray<T> > co = cuNDArray<T>::allocate(&dims);
   
-  if(!co){
+  if(!co.get()){
     cout << endl << "compute_radial_trajectory_golden_ratio_2d: memory allocation failed." << endl;
     return boost::shared_ptr< cuNDArray<T> >();
   }
@@ -72,7 +72,7 @@ compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile,
   
   CHECK_FOR_CUDA_ERROR();
   
-  return boost::shared_ptr< cuNDArray<T> >(co);  
+  return co;
 }
 
 // Find the (eight) neighbors to a given radial sample index
@@ -294,9 +294,9 @@ compute_radial_dcw_golden_ratio_2d( unsigned int samples_per_profile, unsigned i
   
   // Allocate space for result
   vector<unsigned int> dims; dims.push_back( number_of_samples );
-  cuNDArray<REAL> *dcw = cuNDArray<REAL>::allocate(dims);
+  boost::shared_ptr< cuNDArray<REAL> > dcw = cuNDArray<REAL>::allocate(&dims);
   
-  if(!dcw){
+  if(!dcw.get()){
     cout << endl << "compute_radial_dcw_golden_ratio_2d: memory allocation failed." << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
@@ -310,7 +310,7 @@ compute_radial_dcw_golden_ratio_2d( unsigned int samples_per_profile, unsigned i
   
   CHECK_FOR_CUDA_ERROR();
   
-  return boost::shared_ptr< cuNDArray<REAL> >(dcw);  
+  return dcw;
 }
 
 

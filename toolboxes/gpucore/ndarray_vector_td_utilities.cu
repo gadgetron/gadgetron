@@ -54,17 +54,17 @@ boost::shared_ptr< cuNDArray<T> > cuNDA_sum( cuNDArray<T> *in, unsigned int dim 
       stride *= in->get_size(i);
   }
 
-  cuNDArray<T> *out = cuNDArray<T>::allocate(dims);
+  boost::shared_ptr< cuNDArray<T> > out = cuNDArray<T>::allocate(&dims);
  
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  if( out != 0x0 )
+  if( out.get() != 0x0 )
     cuNDA_sum_kernel<T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
 
-  return boost::shared_ptr< cuNDArray<T> >(out);
+  return out;
 }
 
 // Norm
@@ -100,15 +100,15 @@ boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<typename reald<REAL,D
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(in->get_dimensions());
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(in->get_dimensions().get());
  
   // Make modulus image
-  if( out != 0x0 )
+  if( out.get() != 0x0 )
     cuNDA_norm_kernel<REAL,D><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<REAL> >(out);
+  return out;
 }
 
 // Norm
@@ -120,15 +120,15 @@ boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<T> *in )
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(in->get_dimensions());
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(in->get_dimensions().get());
  
   // Make modulus image
-  if( out != 0x0 )
+  if( out.get() != 0x0 )
     cuNDA_norm_kernel<REAL,T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<REAL> >(out);
+  return out;
 }
 
 // Norm squared
@@ -164,15 +164,15 @@ boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<typename real
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(in->get_dimensions());
- 
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(in->get_dimensions().get());
+  
   // Make modulus image
-  if( out != 0x0 )
+  if( out.get() != 0x0 )
     cuNDA_norm_squared_kernel<REAL,D><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<REAL> >(out);
+  return out;
 }
 
 // Norm Squared
@@ -184,15 +184,15 @@ boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<T> *in )
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(in->get_dimensions());
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(in->get_dimensions().get());
  
   // Make modulus image
-  if( out != 0x0 )
+  if( out.get() != 0x0 )
     cuNDA_norm_squared_kernel<REAL,T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_elements );
- 
+  
   CHECK_FOR_CUDA_ERROR();
- 
-  return boost::shared_ptr< cuNDArray<REAL> >(out);
+  
+  return out;
 }
 
 // SS
@@ -245,17 +245,17 @@ boost::shared_ptr< cuNDArray<REAL> > _cuNDA_ss( cuNDArray<T> *in, unsigned int d
       stride *= in->get_size(i);
   }
 
-  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(dims);
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(&dims);
  
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  if ( out != 0x0 )
+  if ( out.get() != 0x0 )
     cuNDA_ss_kernel<REAL,T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<REAL> >(out);
+  return out;
 }
 
 template<>  
@@ -323,17 +323,18 @@ boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_css( cuNDArr
       stride *= in->get_size(i);
   }
 
-  cuNDArray<typename complext<REAL>::Type> *out = cuNDArray<typename complext<REAL>::Type>::allocate(dims);
+  boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > out = cuNDArray<typename complext<REAL>::Type>::allocate(&dims);
  
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
-  if ( out != 0x0 ){
+
+  if ( out.get() != 0x0 ){
     cuNDA_css_kernel<REAL, typename complext<REAL>::Type><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
   }
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
+  return out;
 }
 
 template<>
@@ -400,17 +401,17 @@ boost::shared_ptr< cuNDArray<REAL> > _cuNDA_rss( cuNDArray<T> *in, unsigned int 
       stride *= in->get_size(i);
   }
 
-  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(dims);
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(&dims);
  
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  if ( out != 0x0 )
+  if ( out.get() != 0x0 )
     cuNDA_rss_kernel<REAL,T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
- 
+  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<REAL> >(out);
+  return out;
 }
 
 template<>  
@@ -478,17 +479,18 @@ boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_crss( cuNDAr
       stride *= in->get_size(i);
   }
 
-  cuNDArray<typename complext<REAL>::Type> *out = cuNDArray<typename complext<REAL>::Type>::allocate(dims);
- 
+  boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > out = cuNDArray<typename complext<REAL>::Type>::allocate(&dims);
+  
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
-  if ( out != 0x0 ){
+  
+  if ( out.get() != 0x0 ){
     cuNDA_crss_kernel<REAL, typename complext<REAL>::Type><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
   }
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
+  return out;
 }
 
 template<>
@@ -540,17 +542,17 @@ boost::shared_ptr< cuNDArray<REAL> > _cuNDA_reciprocal_rss( cuNDArray<T> *in, un
       stride *= in->get_size(i);
   }
 
-  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(dims);
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(&dims);
  
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  if ( out != 0x0 )
+  if ( out.get() != 0x0 )
     cuNDA_reciprocal_rss_kernel<REAL,T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<REAL> >(out);
+  return out;
 }
 
 template<>
@@ -618,17 +620,17 @@ boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_creciprocal_
       stride *= in->get_size(i);
   }
 
-  cuNDArray<typename complext<REAL>::Type> *out = cuNDArray<typename complext<REAL>::Type>::allocate(dims);
+  boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > out = cuNDArray<typename complext<REAL>::Type>::allocate(&dims);
  
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  if ( out != 0x0 )
+  if ( out.get() != 0x0 )
     cuNDA_creciprocal_rss_kernel<REAL, typename complext<REAL>::Type><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
+  return out;
 }
 
 template<>
@@ -673,10 +675,10 @@ boost::shared_ptr< cuNDArray<T> > _cuNDA_correlation( cuNDArray<T> *in )
   unsigned int number_of_batches = in->get_size(in->get_number_of_dimensions()-1);
   unsigned int number_of_elements = in->get_number_of_elements()/number_of_batches;
 
-  vector<unsigned int> dims = in->get_dimensions();
+  vector<unsigned int> dims = *in->get_dimensions();
   dims.push_back(number_of_batches);
 
-  cuNDArray<T> *out = cuNDArray<T>::allocate(dims);
+  boost::shared_ptr< cuNDArray<T> > out = cuNDArray<T>::allocate(&dims);
  
   int device; cudaGetDevice( &device );
   cudaDeviceProp deviceProp; cudaGetDeviceProperties( &deviceProp, device );
@@ -689,13 +691,13 @@ boost::shared_ptr< cuNDArray<T> > _cuNDA_correlation( cuNDArray<T> *in )
     cout << endl << "cuNDA_correlation:: correlation dimension exceeds capacity." << endl; 
     return boost::shared_ptr< cuNDArray<T> >();
   }
-
-  if( out != 0x0 )
+  
+  if( out.get() != 0x0 )
     cuNDA_correlation_kernel<REAL,T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<T> >(out);
+  return out;
 }
 
 // Build correlation matrix
@@ -716,17 +718,18 @@ cuNDA_real_to_complext_kernel( REAL *in, typename complext<REAL>::Type *out, uns
 template<class REAL>  
 boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_real_to_complext( cuNDArray<REAL> *in )
 {
-  cuNDArray<typename complext<REAL>::Type> *out = cuNDArray<typename complext<REAL>::Type>::allocate(in->get_dimensions());
+  boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > out 
+    = cuNDArray<typename complext<REAL>::Type>::allocate(in->get_dimensions().get());
 
   dim3 blockDim( 256 );
   dim3 gridDim((unsigned int) ceil((double)in->get_number_of_elements()/blockDim.x));
   
-  if( out != 0x0 )
+  if( out.get() != 0x0 )
     cuNDA_real_to_complext_kernel<REAL><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), in->get_number_of_elements());
   
   CHECK_FOR_CUDA_ERROR();
   
-  return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
+  return out;
 }
 
 template<>
@@ -1165,8 +1168,8 @@ bool cuNDA_crop( typename uintd<D>::Type offset, cuNDArray<T> *in, cuNDArray<T> 
     return false;
   }
 
-  typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( in->get_dimensions() );
-  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( out->get_dimensions() );
+  typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
+  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( *out->get_dimensions() );
  
   unsigned int number_of_batches = 1;
   for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ )
@@ -1220,8 +1223,8 @@ bool cuNDA_expand_with_zero_fill( cuNDArray<T> *in, cuNDArray<T> *out )
     return false;
   }
  
-  typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( in->get_dimensions() );
-  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( out->get_dimensions() );
+  typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
+  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( *out->get_dimensions() );
  
   unsigned int number_of_batches = 1;
   for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ )
@@ -1269,7 +1272,7 @@ cuNDA_zero_fill_border_kernel( typename uintd<D>::Type matrix_size_in, typename 
 template<class T, unsigned int D> 
 bool cuNDA_zero_fill_border( typename uintd<D>::Type matrix_size_in, cuNDArray<T> *out )
 { 
-  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( out->get_dimensions() );
+  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( *out->get_dimensions() );
  
   if( weak_greater(matrix_size_in, matrix_size_out) ){
     cout << endl << "Size mismatch, cannot zero fill" << endl;
@@ -1328,7 +1331,7 @@ bool cuNDA_zero_fill_border( typename reald<REAL,D>::Type radius, cuNDArray<T> *
     return false;
   }
  
-  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( out->get_dimensions() );
+  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( *out->get_dimensions() );
   typename reald<REAL,D>::Type matrix_size_out_real = to_reald<REAL,unsigned int,D>( matrix_size_out );
 
   if( weak_greater(radius, matrix_size_out_real) ){
@@ -1503,7 +1506,7 @@ _axpy( float_complext::Type a, cuNDArray<float_complext::Type>* x, cuNDArray<flo
 		   (cuComplex*) x->get_data_ptr(), 1, 
 		   (cuComplex*) y->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
-      cout << "cuNDA_axpy: axpy calculating using cublas failed" << std::endl;
+      cout << "cuNDA_axpy: axpy calculation using cublas failed" << std::endl;
       return false;
     }
   
@@ -1517,7 +1520,7 @@ _axpy( float a, cuNDArray<float>* x, cuNDArray<float>* y, cublasHandle_t handle 
 		   x->get_data_ptr(), 1, 
 		   y->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
-      cout << "cuNDA_axpy: axpy calculating using cublas failed" << std::endl;
+      cout << "cuNDA_axpy: axpy calculation using cublas failed" << std::endl;
       return false;
     }
   
@@ -1531,7 +1534,7 @@ _axpy( double_complext::Type a, cuNDArray<double_complext::Type>* x, cuNDArray<d
 		   (cuDoubleComplex*) x->get_data_ptr(), 1, 
 		   (cuDoubleComplex*) y->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
-      cout << "cuNDA_axpy: axpy calculating using cublas failed" << std::endl;
+      cout << "cuNDA_axpy: axpy calculation using cublas failed" << std::endl;
       return false;
     }
   
@@ -1545,7 +1548,7 @@ _axpy( double a, cuNDArray<double>* x, cuNDArray<double>* y, cublasHandle_t hand
 		   x->get_data_ptr(), 1, 
 		   y->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
-      cout << "cuNDA_axpy: axpy calculating using cublas failed" << std::endl;
+      cout << "cuNDA_axpy: axpy calculation using cublas failed" << std::endl;
       return false;
     }
   
@@ -1572,7 +1575,7 @@ _scal( float_complext::Type a, cuNDArray<float_complext::Type>* x, cublasHandle_
   if( cublasCscal( handle, x->get_number_of_elements(), (cuComplex*) &a,
 		   (cuComplex*) x->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
-      cout << "ccuNDA_scal: calculating using cublas failed" << std::endl;
+      cout << "cuNDA_scal: calculation using cublas failed" << std::endl;
       return false;
     }
 
@@ -1585,7 +1588,7 @@ _scal( float a, cuNDArray<float>* x, cublasHandle_t handle )
   if( cublasSscal( handle, x->get_number_of_elements(), &a,
 		   x->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
-      cout << "ccuNDA_scal: calculating using cublas failed" << std::endl;
+      cout << "cuNDA_scal: calculation using cublas failed" << std::endl;
       return false;
     }
 
@@ -1598,7 +1601,7 @@ _scal( double_complext::Type a, cuNDArray<double_complext::Type>* x, cublasHandl
   if( cublasZscal( handle, x->get_number_of_elements(), (cuDoubleComplex*) &a,
 		   (cuDoubleComplex*) x->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
-      cout << "ccuNDA_scal: calculating using cublas failed" << std::endl;
+      cout << "cuNDA_scal: calculation using cublas failed" << std::endl;
       return false;
     }
 
@@ -1611,7 +1614,7 @@ _scal( double a, cuNDArray<double>* x, cublasHandle_t handle )
   if( cublasDscal( handle, x->get_number_of_elements(), &a,
 		   x->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
-      cout << "ccuNDA_scal: calculating using cublas failed" << std::endl;
+      cout << "cuNDA_scal: calculation using cublas failed" << std::endl;
       return false;
     }
 

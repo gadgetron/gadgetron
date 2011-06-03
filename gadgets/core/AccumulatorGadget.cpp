@@ -28,7 +28,7 @@ int AccumulatorGadget::process_config(ACE_Message_Block* mb)
     return -1;
   }
 
-  if (!buffer_->create(dimensions_)) {
+  if (!buffer_->create(&dimensions_)) {
     ACE_DEBUG( (LM_ERROR, ACE_TEXT("Failed to create buffer array")) );
     return -1;    
   }
@@ -94,7 +94,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     img_dims[2] = dimensions_[2];
     img_dims[3] = dimensions_[3];
     
-    if (!cm2->getObjectPtr()->create(img_dims)) {
+    if (!cm2->getObjectPtr()->create(&img_dims)) {
       ACE_DEBUG( (LM_ERROR, ACE_TEXT("Unable to allocate new image array")) );
       m1->release();
       cm1->release();

@@ -9,7 +9,7 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
   // Result, rho
   cuNDArray<T> *rho = new cuNDArray<T>();
   
-  if (!rho->create(rhs->get_dimensions())) {
+  if (!rho->create(rhs->get_dimensions().get())) {
     std::cerr << "cuCG<T>::solve : Unable to allocate temp storage (rho)" << std::endl;
     return boost::shared_ptr< cuNDArray<T> >(rho);
   }
@@ -19,7 +19,7 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
   // Calculate residual r
   cuNDArray<T> r;
   if (precond_.get()) {
-    if (!r.create(rhs->get_dimensions())) {
+    if (!r.create(rhs->get_dimensions().get())) {
       std::cerr << "cuCG<T>::solve : Unable to allocate storage (r)" << std::endl;
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
@@ -37,27 +37,27 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
   REAL rr_last = get_max<REAL>();
 
   cuNDArray<T> p;
-  if (!p.create(rhs->get_dimensions())) {
+  if (!p.create(rhs->get_dimensions().get())) {
     std::cerr << "cuCG<T>::solve : Unable to allocate temp storage (p)" << std::endl;
     return boost::shared_ptr< cuNDArray<T> >(rho);
   }
 
   cuNDArray<T> p_precond;
   if (precond_.get()) { // We only need this additional storage if we are using a preconditioner
-    if (!p_precond.create(rhs->get_dimensions())) {
+    if (!p_precond.create(rhs->get_dimensions().get())) {
       std::cerr << "cuCG<T>::solve : Unable to allocate temp storage (p_precond)" << std::endl;
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
   }
 
   cuNDArray<T> q;
-  if (!q.create(rhs->get_dimensions())) {
+  if (!q.create(rhs->get_dimensions().get())) {
     std::cerr << "cuCG<T>::solve : Unable to allocate temp storage (q)" << std::endl;
     return boost::shared_ptr< cuNDArray<T> >(rho);
   }
 
   cuNDArray<T> q2;
-  if (!q2.create(rhs->get_dimensions())) {
+  if (!q2.create(rhs->get_dimensions().get())) {
     std::cerr << "cuCG<T>::solve : Unable to allocate temp storage (q2)" << std::endl;
     return boost::shared_ptr< cuNDArray<T> >(rho);
   }

@@ -30,7 +30,7 @@ upload_data( unsigned int reconstruction, unsigned int samples_per_reconstructio
 	     hoNDArray<_complext> *host_data )
 {
   vector<unsigned int> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
-  cuNDArray<_complext> *data = new cuNDArray<_complext>(); data->create( dims );
+  cuNDArray<_complext> *data = new cuNDArray<_complext>(); data->create( &dims );
   for( unsigned int i=0; i<num_coils; i++ )
     cudaMemcpy( data->get_data_ptr()+i*samples_per_reconstruction, 
 		host_data->get_data_ptr()+i*total_samples_per_coil+reconstruction*samples_per_reconstruction, 
@@ -41,7 +41,6 @@ upload_data( unsigned int reconstruction, unsigned int samples_per_reconstructio
 
 int main(int argc, char** argv)
 {
-
   //
   // Parse command line
   //
@@ -73,18 +72,19 @@ int main(int argc, char** argv)
   
   // Load sample data from disk
   timer = new GPUTimer("\nLoading data");
-  hoNDArray<_complext> host_data = read_nd_array<_complext>((char*)parms.get_parameter('d')->get_string_value());
+  boost::shared_ptr< hoNDArray<_complext> > host_data 
+    = read_nd_array<_complext>((char*)parms.get_parameter('d')->get_string_value());
   delete timer;
    
-  if( !host_data.get_number_of_dimensions() == 3 ){
+  if( !host_data->get_number_of_dimensions() == 3 ){
     cout << endl << "Input data is not three-dimensional (#samples/profile x #profiles x #coils). Quitting!\n" << endl;
     return 1;
   }
 
   // Configuration from the host data
-  unsigned int samples_per_profile = host_data.get_size(0);
-  unsigned int num_profiles = host_data.get_size(1);
-  unsigned int num_coils = host_data.get_size(2);
+  unsigned int samples_per_profile = host_data->get_size(0);
+  unsigned int num_profiles = host_data->get_size(1);
+  unsigned int num_coils = host_data->get_size(2);
   
   // Configuration from the command line
   uintd2 matrix_size = uintd2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
@@ -124,7 +124,7 @@ int main(int argc, char** argv)
   
   vector<unsigned int> image_os_dims = uintd_to_vector<2>(matrix_size_os); 
   image_os_dims.push_back(frames_per_reconstruction); image_os_dims.push_back(num_coils);    
-  cuNDArray<_complext> *image_os = new cuNDArray<_complext>(); image_os->create(image_os_dims);
+  cuNDArray<_complext> *image_os = new cuNDArray<_complext>(); image_os->create(&image_os_dims);
     
   NFFT_plan<_real, 2> plan( matrix_size, matrix_size_os, kernel_width );
   
@@ -141,7 +141,7 @@ int main(int argc, char** argv)
     
     // Upload data
     boost::shared_ptr< cuNDArray<_complext> > csm_data = upload_data
-      ( iteration, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, &host_data );
+      ( iteration, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, host_data.get() );
     
     // Accumulate k-space for CSM estimation
     plan.convolve( csm_data.get(), image_os, dcw.get(), NFFT_plan<_real,2>::NFFT_BACKWARDS, (iteration==0) ? false : true );
@@ -158,7 +158,7 @@ int main(int argc, char** argv)
   
   // Remove oversampling
   vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size); image_dims.push_back(num_coils);
-  cuNDArray<_complext> *image = new cuNDArray<_complext>(); image->create(image_dims);
+  cuNDArray<_complext> *image = new cuNDArray<_complext>(); image->create(&image_dims);
   cuNDA_crop<_complext,2>( (matrix_size_os-matrix_size)>>1, acc_image_os.get(), image );
   acc_image_os.reset();
   
@@ -171,11 +171,11 @@ int main(int argc, char** argv)
   // Define regularization image operator
   boost::shared_ptr< cgOperatorSenseRHSBuffer<_real,2> > rhs_buffer( new cgOperatorSenseRHSBuffer<_real,2>() );
   rhs_buffer->set_csm(csm);
-
+  image_dims = uintd_to_vector<2>(matrix_size);
   boost::shared_ptr< cuCGImageOperator<_real,_complext> > R( new cuCGImageOperator<_real,_complext>() ); 
   R->set_weight( kappa );
   R->set_encoding_operator( rhs_buffer );
-  R->compute( image, uintd_to_vector<2>(matrix_size), cg.get_cublas_handle() );
+  R->compute( image, &image_dims, cg.get_cublas_handle() );
  
   // Define preconditioning weights
   boost::shared_ptr< cuNDArray<_real> > _precon_weights = cuNDA_ss<_real,_complext>( csm.get(), 2 );
@@ -222,7 +222,7 @@ int main(int argc, char** argv)
   
   // Allocate space for result
   image_dims = uintd_to_vector<2>(matrix_size); image_dims.push_back(frames_per_reconstruction*num_reconstructions); 
-  cuNDArray<_complext> result; result.create(image_dims);
+  cuNDArray<_complext> result; result.create(&image_dims);
 
   timer = new GPUTimer("Full SENSE reconstruction.");
 
@@ -234,7 +234,7 @@ int main(int argc, char** argv)
     
     // Upload data
     boost::shared_ptr< cuNDArray<_complext> > data = upload_data
-      ( reconstruction, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, &host_data );
+      ( reconstruction, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, host_data.get() );
     
     // Set current trajectory and trigger NFFT preprocessing
     if( E->preprocess(traj.get()) < 0 ) {
@@ -248,7 +248,7 @@ int main(int argc, char** argv)
     
     // Form rhs (use result array to save memory)
     vector<unsigned int> rhs_dims = uintd_to_vector<2>(matrix_size); rhs_dims.push_back(frames_per_reconstruction);
-    cuNDArray<_complext> rhs; rhs.create(rhs_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );    
+    cuNDArray<_complext> rhs; rhs.create(&rhs_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );    
     E->mult_MH( data.get(), &rhs );
     
     //
@@ -271,11 +271,11 @@ int main(int argc, char** argv)
 
   timer = new GPUTimer("Writing out result");
   
-  hoNDArray<_complext> host_result = result.to_host();
-  write_nd_array<_complext>(host_result, (char*)parms.get_parameter('r')->get_string_value());
+  boost::shared_ptr< hoNDArray<_complext> > host_result = result.to_host();
+  write_nd_array<_complext>(host_result.get(), (char*)parms.get_parameter('r')->get_string_value());
     
-  hoNDArray<_real> host_norm = cuNDA_norm<_real,2>(&result)->to_host();
-  write_nd_array<_real>( host_norm, "result.real" );
+  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_norm<_real,2>(&result)->to_host();
+  write_nd_array<_real>( host_norm.get(), "result.real" );
   
   delete timer;
 

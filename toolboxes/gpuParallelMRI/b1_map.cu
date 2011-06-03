@@ -64,7 +64,7 @@ estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data_in )
   
   // Smooth (onto copy of corrm)
   cuNDArray<typename complext<REAL>::Type > *_corrm_smooth = new cuNDArray<typename complext<REAL>::Type>();
-  _corrm_smooth->create(corrm->get_dimensions());
+  _corrm_smooth->create(corrm->get_dimensions().get());
   boost::shared_ptr<cuNDArray<typename complext<REAL>::Type> > corrm_smooth(_corrm_smooth);
 
   smooth_correlation_matrices<REAL,D>( corrm.get(), corrm_smooth.get() );
@@ -507,7 +507,7 @@ boost::shared_ptr<cuNDArray<typename complext<REAL>::Type> > extract_csm(cuNDArr
   }
   
   // Allocate output
-  cuNDArray<typename complext<REAL>::Type> *out = cuNDArray<typename complext<REAL>::Type>::allocate(image_dims);
+  cuNDArray<typename complext<REAL>::Type> *out = new cuNDArray<typename complext<REAL>::Type>; out->create(&image_dims);
 
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
@@ -519,7 +519,7 @@ boost::shared_ptr<cuNDArray<typename complext<REAL>::Type> > extract_csm(cuNDArr
   */
 
   // Temporary buffer. TODO: use shared memory
-  cuNDArray<typename complext<REAL>::Type> *tmp_v = cuNDArray<typename complext<REAL>::Type>::allocate(image_dims);
+  cuNDArray<typename complext<REAL>::Type> *tmp_v = new cuNDArray<typename complext<REAL>::Type>; tmp_v->create(&image_dims);
 
   if( out != 0x0 && tmp_v != 0x0 )
     extract_csm_kernel<REAL><<< gridDim, blockDim >>>
