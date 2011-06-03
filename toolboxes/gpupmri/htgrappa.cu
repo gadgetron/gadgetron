@@ -446,5 +446,5 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 template EXPORTGPUPMRI int htgrappa_calculate_grappa_unmixing(cuNDArray<float2>* ref_data, 
 						cuNDArray<float2>* b1,
 						unsigned int acceleration_factor,
-						std::vector<unsigned int> kernel_size,
+						std::vector<unsigned int> *kernel_size,
 						cuNDArray<float2>* out_mixing_coeff);

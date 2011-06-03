@@ -1,0 +1,222 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\gadgets\core\AccumulatorGadget.h" />
+    <ClInclude Include="..\..\..\gadgets\core\AcquisitionFinishGadget.h" />
+    <ClInclude Include="..\..\..\gadgets\core\AcquisitionPassthroughGadget.h" />
+    <ClInclude Include="..\..\..\gadgets\core\CropAndCombineGadget.h" />
+    <ClInclude Include="..\..\..\gadgets\core\FFTGadget.h" />
+    <ClInclude Include="..\..\..\gadgets\core\GadgetMRIHeaders.h" />
+    <ClInclude Include="..\..\..\gadgets\core\ImageFinishGadget.h" />
+    <ClInclude Include="..\..\..\gadgets\core\ImageWriterGadget.h" />
+    <ClInclude Include="..\..\..\gadgets\core\MRIAcquisitionReader.h" />
+    <ClInclude Include="..\..\..\gadgets\core\MRIImageWriter.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\gadgets\core\AccumulatorGadget.cpp" />
+    <ClCompile Include="..\..\..\gadgets\core\AcquisitionFinishGadget.cpp" />
+    <ClCompile Include="..\..\..\gadgets\core\AcquisitionPassthroughGadget.cpp" />
+    <ClCompile Include="..\..\..\gadgets\core\CropAndCombineGadget.cpp" />
+    <ClCompile Include="..\..\..\gadgets\core\FFTGadget.cpp" />
+    <ClCompile Include="..\..\..\gadgets\core\ImageFinishGadget.cpp" />
+    <ClCompile Include="..\..\..\gadgets\core\ImageWriterGadget.cpp" />
+    <ClCompile Include="..\..\..\gadgets\core\MRIAcquisitionReader.cpp" />
+    <ClCompile Include="..\..\..\gadgets\core\MRIImageWriter.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{45AF3104-CD12-4D18-9E1B-83485CDCB983}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>hostutils</RootNamespace>
+    <ProjectName>gadgets_core</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <TargetExt>.exe</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <TargetExt>.exe</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <TargetExt>.exe</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <TargetExt>.exe</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;_USRDLL;__BUILD_GADGETRON_HOSTUTILS__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ACEDIR);$(BOOST_ROOT_DIR);..\..\..\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OutputFile>$(TargetDir)gadgetroncore.exe</OutputFile>
+      <AdditionalLibraryDirectories>$(TINYXML_LIBDIR)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>tinyxmlSTL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /i $(TargetDir)gadgetdatasender.exe ..\..\..\bin\
+move /y $(TargetDir)toolboxes_hostutils.lib $(TargetDir)hostutils.lib
+xcopy /y /i $(TargetDir)hostutils.lib ..\..\..\lib\</Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>xcopy /y /i ..\..\..\gadgets\core\*.h ..\..\..\inc\</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;_USRDLL;__BUILD_GADGETRON_HOSTUTILS__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ACEDIR);$(BOOST_ROOT_DIR);..\..\..\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OutputFile>$(TargetDir)gadgetroncore.exe</OutputFile>
+      <AdditionalLibraryDirectories>$(TINYXML_LIBDIR)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>tinyxmlSTL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /i $(TargetDir)gadgetdatasender.exe ..\..\..\bin\
+move /y $(TargetDir)toolboxes_hostutils.lib $(TargetDir)hostutils.lib
+xcopy /y /i $(TargetDir)hostutils.lib ..\..\..\lib\</Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>xcopy /y /i ..\..\..\gadgets\core\*.h ..\..\..\inc\</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;NDEBUG;_USRDLL;__BUILD_GADGETRON_HOSTUTILS__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ACEDIR);$(BOOST_ROOT_DIR);..\..\..\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <OutputFile>$(TargetDir)gadgetroncore.exe</OutputFile>
+      <AdditionalLibraryDirectories>$(TINYXML_LIBDIR)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>tinyxmlSTL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /i $(TargetDir)gadgetdatasender.exe ..\..\..\bin\
+move /y $(TargetDir)toolboxes_hostutils.lib $(TargetDir)hostutils.lib
+xcopy /y /i $(TargetDir)hostutils.lib ..\..\..\lib\</Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>xcopy /y /i ..\..\..\gadgets\core\*.h ..\..\..\inc\</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;NDEBUG;_USRDLL;__BUILD_GADGETRON_HOSTUTILS__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ACEDIR);$(BOOST_ROOT_DIR);..\..\..\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <OutputFile>$(TargetDir)gadgetroncore.exe</OutputFile>
+      <AdditionalLibraryDirectories>$(TINYXML_LIBDIR)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>tinyxmlSTL.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /i $(TargetDir)gadgetdatasender.exe ..\..\..\bin\
+move /y $(TargetDir)toolboxes_hostutils.lib $(TargetDir)hostutils.lib
+xcopy /y /i $(TargetDir)hostutils.lib ..\..\..\lib\</Command>
+    </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>xcopy /y /i ..\..\..\gadgets\core\*.h ..\..\..\inc\</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
