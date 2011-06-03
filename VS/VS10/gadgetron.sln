@@ -56,7 +56,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "apps_gadgetdatasender", "ga
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "apps_gadgetron", "gadgetron\gadgetron.vcxproj", "{61DC401F-D93D-419E-B4FF-A30BFB2ED8DB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gadgets_core", "gadgets_core\gadgets_core.vcxproj", "{45AF3104-CD12-4D18-9E1B-83485CDCB983}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gadgets_core", "gadgetroncore\gadgetroncore.vcxproj", "{45AF3104-CD12-4D18-9E1B-83485CDCB983}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
