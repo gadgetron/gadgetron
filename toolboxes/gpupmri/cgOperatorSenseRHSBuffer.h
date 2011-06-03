@@ -11,7 +11,8 @@ class EXPORTGPUPMRI cgOperatorSenseRHSBuffer : public cgOperatorSense<REAL,D>
   typedef typename cgOperatorSense<REAL,D>::_complext _complext;
   
   cgOperatorSenseRHSBuffer() : cgOperatorSense<REAL,D>() {}
+  virtual ~cgOperatorSenseRHSBuffer() {}
 
-  virtual int mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
-  virtual int mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
+  virtual int mult_M( cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate = false );
+  virtual int mult_MH( cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate = false );
 };

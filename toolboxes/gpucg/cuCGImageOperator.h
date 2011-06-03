@@ -14,6 +14,7 @@ class cuCGImageOperator : public cuCGMatrixOperator<REAL,T>
  public:
 
   cuCGImageOperator() {}
+  virtual ~cuCGImageOperator() {}
 
   inline int set_encoding_operator( boost::shared_ptr< cuCGMatrixOperator<REAL,T> > encoding_operator ){
     encoding_operator_ = encoding_operator;
@@ -42,9 +43,7 @@ class cuCGImageOperator : public cuCGMatrixOperator<REAL,T>
     
     return 0;
   }
-  
-  virtual ~cuCGImageOperator() {}
-  
+    
   virtual int mult_M(cuNDArray<T>* in, cuNDArray<T>* out, bool accumulate = false){
     std::cout << std::endl << "cuCGImageOperator::mult_M not defined." << std::endl;
     return -1;

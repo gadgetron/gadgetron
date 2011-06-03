@@ -75,7 +75,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > host_data = read_nd_array<_complext>((char*)parms.get_parameter('d')->get_string_value());
   delete timer;
    
-  if( !host_data->get_number_of_dimensions() == 3 ){
+  if( !(host_data->get_number_of_dimensions() == 3) ){
     cout << endl << "Input data is not three-dimensional (#samples/profile x #profiles x #coils). Quitting!\n" << endl;
     return 1;
   }

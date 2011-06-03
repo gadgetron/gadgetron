@@ -5,6 +5,7 @@
 
 #include <float.h>
 #include <cmath>
+#include <vector>
 
 //
 // Get/set operations on vector_td<T,D>

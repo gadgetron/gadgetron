@@ -8,8 +8,8 @@
 
 template <class REAL, class T> class cuCGMatrixOperator
 {
-
  public:
+
   cuCGMatrixOperator() { weight_ = get_one<REAL>(); }
   virtual ~cuCGMatrixOperator() {}
 
@@ -20,6 +20,9 @@ template <class REAL, class T> class cuCGMatrixOperator
   virtual int mult_MH(cuNDArray<T>* in, cuNDArray<T>* out, bool accumulate = false) = 0;
   virtual int mult_MH_M(cuNDArray<T>* in, cuNDArray<T>* out, bool accumulate = false) = 0;
   
+  void* operator new (size_t bytes) { return ::new char[bytes]; }
+  void operator delete (void *ptr) { delete [] static_cast <char *> (ptr); } 
+
 private:
   REAL weight_;
 };

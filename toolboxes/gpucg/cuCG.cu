@@ -101,14 +101,14 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
       cur_p = &p_precond;
     }
 
-    for (unsigned int i = 0; i < operators_.size(); i++) {
+    for (unsigned int i = 0; i < operators_->size(); i++) {
 
-      if (operators_[i]->mult_MH_M(cur_p, &q2, false) < 0) {
+      if ((*operators_)[i]->mult_MH_M(cur_p, &q2, false) < 0) {
 	std::cerr << "cuCG<T>::solve : failed to apply operator number " << i << std::endl;
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
 
-      if (!cuNDA_axpy<T>(mul<REAL>(operators_[i]->get_weight(), get_one<T>()),&q2,&q,cublas_handle_)) {
+      if (!cuNDA_axpy<T>(mul<REAL>((*operators_)[i]->get_weight(), get_one<T>()),&q2,&q,cublas_handle_)) {
 	std::cerr << "cuCG<T>::solve : failed to add q1 to q" << std::endl;
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
@@ -168,5 +168,8 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
 // Instantiation
 //
 
-//template class EXPORTGPUCG cuCG<float, float>;
+template class EXPORTGPUCG cuCG<float, float>;
 template class EXPORTGPUCG cuCG<float, float_complext::Type>;
+
+template class EXPORTGPUCG cuCG<double, double>;
+template class EXPORTGPUCG cuCG<double, double_complext::Type>;

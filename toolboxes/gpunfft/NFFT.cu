@@ -658,10 +658,10 @@ NFFT_plan<REAL,D>::fft(cuNDArray<typename complext<REAL>::Type> *data, NFFT_comp
 
   int res;
   if( mode == NFFT_FORWARDS ){
-    res = cuNDFFT().fft( (cuNDArray<cuFloatComplex>*)data, dims_to_transform ); // TODO: remove casting / fix fft interface in cuNDFFT.h/cu
+    res = cuNDFFT().fft( (cuNDArray<cuFloatComplex>*)data, &dims_to_transform ); // TODO: remove casting / fix fft interface in cuNDFFT.h/cu
   }
   else{
-    res = cuNDFFT().ifft( (cuNDArray<cuFloatComplex>*)data, dims_to_transform, do_scale );
+    res = cuNDFFT().ifft( (cuNDArray<cuFloatComplex>*)data, &dims_to_transform, do_scale );
   }
 
   if( res == 0 )

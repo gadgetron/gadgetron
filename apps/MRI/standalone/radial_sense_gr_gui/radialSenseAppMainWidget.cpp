@@ -28,6 +28,7 @@ void radialSenseAppMainWindow::resetPrivateData()
 {
   if( statusLabel ) delete statusLabel;
   statusLabel = 0x0;
+  ready = false;
 }
 
 radialSenseAppMainWindow::radialSenseAppMainWindow(QWidget *parent) : QMainWindow(parent)
@@ -106,20 +107,20 @@ void radialSenseAppMainWindow::open()
   statusLabel = new QLabel(filename);	
   statusBar()->addWidget(statusLabel);
 
-  // Chose startup frame
-  reconWidget->projectionSelectionScrollBar->setValue(get_matrix_size().vec[0]>>2);
-  reconWidget->numProjectionsScrollBar->setValue(34);
-
   // Read samples from disk
   host_samples = read_nd_array<float_complext::Type>(filename.toLatin1().constData());
-
-  cout << endl << "loaded dataset with " << host_samples.get_number_of_elements() << " samples." << endl;
+  cout << endl << "loaded dataset with " << host_samples->get_number_of_elements() << " samples." << endl;
 
   // This is to prevent the user changing the matrix sizes before any data is initially loaded
   matrixSizeSpinBox->setEnabled(true); 
   oversampledMatrixSizeSpinBox->setEnabled(true);
   
+  // Chose startup frame
+  reconWidget->projectionSelectionScrollBar->setValue(get_matrix_size().vec[0]>>2);
+  reconWidget->numProjectionsScrollBar->setValue(34);
+
   replan();
+
 }
 
 void radialSenseAppMainWindow::saveImage()
@@ -208,7 +209,7 @@ void radialSenseAppMainWindow::replan()
   vector<unsigned int> image_os_dims = uintd_to_vector<2>(get_matrix_size_os()); 
   image_os_dims.push_back(frames_per_reconstruction); image_os_dims.push_back(get_num_coils());    
   cuNDArray<float_complext::Type> *image_os = new cuNDArray<float_complext::Type>(); 
-  if( !image_os->create(image_os_dims) ){
+  if( !image_os->create(&image_os_dims) ){
     cerr << "Unable to allocate device memory for oversampled image" << endl;
     exit(1);
   }
@@ -227,7 +228,7 @@ void radialSenseAppMainWindow::replan()
     // Upload data
     boost::shared_ptr< cuNDArray<float_complext::Type> > csm_data = 
       upload_data( iteration*profiles_per_reconstruction, samples_per_profile, samples_per_reconstruction,
-		   num_profiles*samples_per_profile, get_num_coils(), &host_samples );
+		   num_profiles*samples_per_profile, get_num_coils(), host_samples.get() );
     
     // Accumulate k-space for CSM estimation
     plan.convolve( csm_data.get(), image_os, dcw.get(), NFFT_plan<float,2>::NFFT_BACKWARDS, (iteration==0) ? false : true );
@@ -245,7 +246,7 @@ void radialSenseAppMainWindow::replan()
   // Remove oversampling
   vector<unsigned int> image_dims = uintd_to_vector<2>(get_matrix_size()); image_dims.push_back(get_num_coils());
   cuNDArray<float_complext::Type> *image = new cuNDArray<float_complext::Type>(); 
-  if( !image->create(image_dims) ){
+  if( !image->create(&image_dims) ){
     cerr << "Unable to allocate device memory for image" << endl;
     exit(1);
   }
@@ -256,9 +257,10 @@ void radialSenseAppMainWindow::replan()
   csm = estimate_b1_map<float,2>( image );
 
   // Setup encoding and regularization operators
+  image_dims = uintd_to_vector<2>(get_matrix_size());
   rhs_buffer->set_csm(csm);
   E->setup( get_matrix_size(), get_matrix_size_os(), get_kernel_width() ); 
-  R->compute( image, uintd_to_vector<2>(get_matrix_size()), cg.get_cublas_handle() );
+  R->compute( image, &image_dims, cg.get_cublas_handle() );
   delete image; image = 0x0; 
 
   // Define preconditioning weights
@@ -272,9 +274,11 @@ void radialSenseAppMainWindow::replan()
   
   progress.setValue(5);
 
+  ready = true;
+
   // Trigger the #projections slot
   reconWidget->numProjectionsScrollBar->setValue(reconWidget->numProjectionsScrollBar->value()+1);
-    
+
   // Perform reconstruction
   reconstruct();
 }
@@ -300,6 +304,8 @@ void radialSenseAppMainWindow::projectionsPerFrameChanged(int)
     reconWidget->numProjectionsScrollBar->setValue(value);
     return;
   }
+
+  if(!ready) return;
 
   // Remove the Qt lag of the slider rendering
   QApplication::processEvents();
@@ -340,6 +346,8 @@ void radialSenseAppMainWindow::centralProjectionChanged(int id)
     return;
   }
 
+  if(!ready) return;
+
   // Remove the lag of the slider rendering
   QApplication::processEvents();
 
@@ -358,6 +366,8 @@ void radialSenseAppMainWindow::matrixSizeChanged()
     return;
   else 
     lastValue = value;
+
+  if(!ready) return;
 
   // Pass matrix size to GLReconWidget
   reconWidget->openglCanvas->setMatrixSize( value, value );
@@ -395,6 +405,8 @@ void radialSenseAppMainWindow::matrixSizeOSChanged()
     return;
   }
 
+  if(!ready) return;
+
   E->setup( get_matrix_size(), get_matrix_size_os(), get_kernel_width() );  
 
   reconstruct();
@@ -410,6 +422,8 @@ void radialSenseAppMainWindow::kernelWidthChanged()
     return;
   else 
     lastValue = value;
+
+  if(!ready) return;
 
   E->setup( get_matrix_size(), get_matrix_size_os(), get_kernel_width() );  
   
@@ -428,6 +442,8 @@ void radialSenseAppMainWindow::numIterationsChanged()
     lastValue = value;
 
   cg.set_iterations( get_num_iterations() );
+
+  if(!ready) return;
 
   reconstruct();
 }
@@ -449,11 +465,14 @@ void radialSenseAppMainWindow::regularizationWeightChanged()
   // Update operator R 
   R->set_weight( get_kappa() );
 
+  if(!ready) return;
+
   reconstruct();
 }
 
 void radialSenseAppMainWindow::windowScaleChanged(double)
 {
+  if(!ready) return;
   reconstruct();
 }
 
@@ -463,9 +482,10 @@ void radialSenseAppMainWindow::windowScaleChanged(double)
 
 void radialSenseAppMainWindow::reconstruct()
 {
+  if(!ready) return;
   
   // Check if any data has been loaded
-  if( host_samples.get_number_of_elements() == 0 )
+  if( host_samples->get_number_of_elements() == 0 )
     return;
   
   // See if there is any uncaught errors before starting
@@ -499,7 +519,7 @@ void radialSenseAppMainWindow::reconstruct()
   // Upload data
   boost::shared_ptr< cuNDArray<float_complext::Type> > data = 
     upload_data( get_first_projection(), samples_per_profile, samples_per_reconstruction,
-		 num_profiles*samples_per_profile, num_coils, &host_samples );
+		 num_profiles*samples_per_profile, num_coils, host_samples.get() );
     
     // Set current trajectory and trigger NFFT preprocessing
     if( E->preprocess(traj.get()) < 0 ) {
@@ -508,7 +528,7 @@ void radialSenseAppMainWindow::reconstruct()
         
     // Form rhs (use result array to save memory)
     vector<unsigned int> rhs_dims = uintd_to_vector<2>(matrix_size); rhs_dims.push_back(frames_per_reconstruction);
-    cuNDArray<float_complext::Type> rhs; rhs.create(rhs_dims);
+    cuNDArray<float_complext::Type> rhs; rhs.create(&rhs_dims);
     E->mult_MH( data.get(), &rhs );
     
     //
@@ -574,8 +594,8 @@ float radialSenseAppMainWindow::get_window_scale()
 
 unsigned int radialSenseAppMainWindow::get_num_samples_per_projection()
 {
-  if( host_samples.get_number_of_dimensions() > 0 )
-    return host_samples.get_size(0);
+  if( host_samples->get_number_of_dimensions() > 0 )
+    return host_samples->get_size(0);
   else return 0;
 }
 
@@ -611,12 +631,12 @@ unsigned int radialSenseAppMainWindow::get_num_projections_per_frame()
 
 unsigned int radialSenseAppMainWindow::get_num_coils()
 {
-  if( host_samples.get_number_of_dimensions() < 3 )
+  if( host_samples->get_number_of_dimensions() < 3 )
     return 0;
 
   unsigned int val;
-  if( host_samples.get_number_of_dimensions() == 3 )
-    val = host_samples.get_size(2);
+  if( host_samples->get_number_of_dimensions() == 3 )
+    val = host_samples->get_size(2);
   else{
     printf("\nUnknown number of dimensions in dataset. Quitting.\n");
     exit(1);
@@ -633,15 +653,15 @@ unsigned int radialSenseAppMainWindow::get_num_points_per_reconstruction()
 
 hoNDArray<floatd2::Type>* radialSenseAppMainWindow::get_sample_values_array()
 {
-  return &host_samples;
+  return host_samples.get();
 }
 
 unsigned int radialSenseAppMainWindow::get_num_points_per_array_coil()
 {
-  if(host_samples.get_number_of_dimensions()<2)
+  if(host_samples->get_number_of_dimensions()<2)
     return 0;
 
-  unsigned int val = host_samples.get_size(0)*host_samples.get_size(1);
+  unsigned int val = host_samples->get_size(0)*host_samples->get_size(1);
   return val;
 }
 
@@ -665,7 +685,7 @@ radialSenseAppMainWindow::upload_data( unsigned int profile_offset, unsigned int
 {
   vector<unsigned int> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
   cuNDArray<float_complext::Type> *data = new cuNDArray<float_complext::Type>(); 
-  if( !data->create( dims ) ){
+  if( !data->create( &dims ) ){
     cerr << "Unable to allocate device memory for samples" << endl;
     exit(1);
   }

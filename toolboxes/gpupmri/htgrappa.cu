@@ -177,7 +177,7 @@ __global__ void scale_and_add_unmixing_coeffs(cuFloatComplex* unmixing,
 template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data, 
 							  cuNDArray<T>* b1,
 							  unsigned int acceleration_factor,
-							  std::vector<unsigned int> kernel_size,
+							  std::vector<unsigned int>* kernel_size,
 							  cuNDArray<T>* out_mixing_coeff)
 {
 
@@ -187,7 +187,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
     return -1;
   }
 
-  if (kernel_size.size() != (ref_data->get_number_of_dimensions()-1)) {
+  if (kernel_size->size() != (ref_data->get_number_of_dimensions()-1)) {
     std::cerr << "htgrappa_calculate_grappa_unmixing: Kernel size does not match the data dimensions" << std::endl;
     return -1;
   }
@@ -205,9 +205,9 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
   unsigned long int kspace_locations = 1;
   for (unsigned int i = 0; i < ros.size(); i++) {
     if (i > 0) {
-      ros[i] -= (kernel_size[i]*acceleration_factor);
+      ros[i] -= ((*kernel_size)[i]*acceleration_factor);
     } else {
-      ros[i] -= kernel_size[i];
+      ros[i] -= (*kernel_size)[i];
     }
     ros_offset[i] = (ref_data->get_size(i)-ros[i])>>1;
     kspace_locations *= ros[i];
@@ -217,7 +217,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 
   std::vector<unsigned int> sys_matrix_size; 
   sys_matrix_size.push_back(kspace_locations);
-  sys_matrix_size.push_back(coils*kernel_size[0]*kernel_size[1]);
+  sys_matrix_size.push_back(coils*(*kernel_size)[0]*(*kernel_size)[1]);
   
   std::vector<unsigned int> b_size;
   b_size.push_back(kspace_locations);
@@ -240,9 +240,9 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
   int2 dims = vec_to_int2(*ref_data->get_dimensions());
   int2 dros = vec_to_int2(ros);
   int2 dros_offset = vec_to_int2(ros_offset);
-  int2 dkernel_size = vec_to_int2(kernel_size);
+  int2 dkernel_size = vec_to_int2(*kernel_size);
 
-  int n = coils*kernel_size[0]*kernel_size[1];
+  int n = coils*(*kernel_size)[0]*(*kernel_size)[1];
   int m = kspace_locations;
 
   std::vector<unsigned int> AHA_dims(2,n);
@@ -271,8 +271,8 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
   }
 
   std::vector<unsigned int> gkernel_dims;
-  gkernel_dims.push_back(kernel_size[0]);
-  gkernel_dims.push_back(kernel_size[1]*acceleration_factor);
+  gkernel_dims.push_back((*kernel_size)[0]);
+  gkernel_dims.push_back((*kernel_size)[1]*acceleration_factor);
   gkernel_dims.push_back(coils);
   gkernel_dims.push_back(coils);
   cuNDArray<T> gkernel;
@@ -419,7 +419,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
       return -1;
     }
 
-    ft.ifft(&tmp_mixing,ft_dims);
+    ft.ifft(&tmp_mixing, &ft_dims);
 
     gridDim = dim3((unsigned int) ceil(1.0f*total_elements/blockDim.x), 1, 1 ); 
     scale_and_add_unmixing_coeffs<<< gridDim, blockDim >>>(tmp_mixing.get_data_ptr(),

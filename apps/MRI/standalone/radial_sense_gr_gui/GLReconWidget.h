@@ -2,6 +2,10 @@
 
 #include "cuNDArray.h"
 
+#if defined (WIN32)
+#include <Windows.h>
+#endif
+
 #include <GL/gl.h>
 #include <QtOpenGL/QGLWidget>
 

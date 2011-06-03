@@ -1,0 +1,313 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{CE56C0A8-D96A-42D5-970D-21B4C6971FCE}</ProjectGuid>
+    <RootNamespace>imageDenoising_vs2010</RootNamespace>
+    <ProjectName>apps_MRI_standalone_sense_gui</ProjectName>
+    <CudaToolkitCustomDir>$(CUDA_PATH)</CudaToolkitCustomDir>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 4.0.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)/$(Configuration)/</IntDir>
+    <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)/$(Configuration)/</IntDir>
+    <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)/$(Configuration)/</IntDir>
+    <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(Platform)/$(Configuration)/</IntDir>
+    <IncludePath>$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(CudaToolkitIncludeDir);C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\inc;$(BOOST_ROOT_DIR);$(QTDIR)/include;..\..\..\inc</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_MBCS;_USE_MATH_DEFINES;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;OpenGL32.lib;glew32.lib;Qtcore4.lib;QtGui4.lib;QtOpenGL4.lib;gpucore.lib;gpucg.lib;gpunfft.lib;gpupmri.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(CudaToolkitLibDir);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\Win32;$(QTDIR)\lib</AdditionalLibraryDirectories>
+      <OutputFile>$(TargetDir)standalone_sense.exe</OutputFile>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /i $(TargetDir)standalone_sense_gui.exe ..\..\..\bin\</Command>
+    </PostBuildEvent>
+    <CudaCompile>
+      <CodeGeneration>compute_10,sm_10;compute_20,sm_20</CodeGeneration>
+      <Include>$(BOOST_ROOT_DIR);..\..\..\toolboxes\hostutils;..\..\..\toolboxes\ndarray;..\..\..\toolboxes\gpucore;..\..\..\toolboxes\gpucg;..\..\..\toolboxes\gpuNFFT;..\..\..\toolboxes\gpuParallelMRI</Include>
+      <Runtime>MTd</Runtime>
+      <Defines>_USE_MATH_DEFINES</Defines>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(CudaToolkitIncludeDir);C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\inc;$(BOOST_ROOT_DIR);$(QTDIR)/include;..\..\..\inc</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_MBCS;_USE_MATH_DEFINES;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;OpenGL32.lib;glew64.lib;Qtcore4.lib;QtGui4.lib;QtOpenGL4.lib;gpucore.lib;gpucg.lib;gpunfft.lib;gpupmri.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(CudaToolkitLibDir);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\x64;$(QTDIR)\lib</AdditionalLibraryDirectories>
+      <OutputFile>$(TargetDir)standalone_sense.exe</OutputFile>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <ForceFileOutput>MultiplyDefinedSymbolOnly</ForceFileOutput>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /i $(TargetDir)standalone_sense_gui.exe ..\..\..\bin\</Command>
+    </PostBuildEvent>
+    <CudaCompile>
+      <CodeGeneration>compute_10,sm_10;compute_20,sm_20</CodeGeneration>
+      <Include>$(BOOST_ROOT_DIR);..\..\..\toolboxes\hostutils;..\..\..\toolboxes\ndarray;..\..\..\toolboxes\gpucore;..\..\..\toolboxes\gpucg;..\..\..\toolboxes\gpuNFFT;..\..\..\toolboxes\gpuParallelMRI</Include>
+      <Defines>_USE_MATH_DEFINES</Defines>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <Runtime>MTd</Runtime>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(CudaToolkitIncludeDir);C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\inc;$(BOOST_ROOT_DIR);$(QTDIR)/include;..\..\..\inc</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_MBCS;_USE_MATH_DEFINES;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;OpenGL32.lib;glew32.lib;Qtcore4.lib;QtGui4.lib;QtOpenGL4.lib;gpucore.lib;gpucg.lib;gpunfft.lib;gpupmri.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(CudaToolkitLibDir);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\Win32;$(QTDIR)\lib</AdditionalLibraryDirectories>
+      <OutputFile>$(TargetDir)standalone_sense.exe</OutputFile>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /i $(TargetDir)standalone_sense_gui.exe ..\..\..\bin\</Command>
+    </PostBuildEvent>
+    <CudaCompile>
+      <CodeGeneration>compute_10,sm_10;compute_20,sm_20</CodeGeneration>
+      <Runtime>MT</Runtime>
+      <Include>$(BOOST_ROOT_DIR);..\..\..\toolboxes\hostutils;..\..\..\toolboxes\ndarray;..\..\..\toolboxes\gpucore;..\..\..\toolboxes\gpucg;..\..\..\toolboxes\gpuNFFT;..\..\..\toolboxes\gpuParallelMRI</Include>
+      <Defines>_USE_MATH_DEFINES</Defines>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(CudaToolkitIncludeDir);C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\inc;$(BOOST_ROOT_DIR);$(QTDIR)/include;..\..\..\inc</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_MBCS;_USE_MATH_DEFINES;_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;OpenGL32.lib;glew64.lib;Qtcore4.lib;QtGui4.lib;QtOpenGL4.lib;gpucore.lib;gpucg.lib;gpunfft.lib;gpupmri.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(CudaToolkitLibDir);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\x64;$(QTDIR)\lib</AdditionalLibraryDirectories>
+      <OutputFile>$(TargetDir)standalone_sense.exe</OutputFile>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy /y /i $(TargetDir)standalone_sense_gui.exe ..\..\..\bin\</Command>
+    </PostBuildEvent>
+    <CudaCompile>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <Runtime>MT</Runtime>
+      <CodeGeneration>compute_10,sm_10;compute_20,sm_20</CodeGeneration>
+      <Include>$(BOOST_ROOT_DIR);..\..\..\toolboxes\hostutils;..\..\..\toolboxes\ndarray;..\..\..\toolboxes\gpucore;..\..\..\toolboxes\gpucg;..\..\..\toolboxes\gpuNFFT;..\..\..\toolboxes\gpuParallelMRI</Include>
+      <Defines>_USE_MATH_DEFINES</Defines>
+    </CudaCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\GLReconWidget.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc %(Identity)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc %(Identity)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc %(Identity)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc %(Identity)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc_%(Identity).cpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc_%(Identity).cpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc_%(Identity).cpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc_%(Identity).cpp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Identity)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Identity)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Identity)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Identity)</AdditionalInputs>
+    </CustomBuild>
+    <ClInclude Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\radialSenseAppBaseMainWidget.ui.h" />
+    <CustomBuild Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\radialSenseAppMainWidget.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc %(Identity)</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc %(Identity)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc %(Identity)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc %(Identity)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc_%(Identity).cpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc_%(Identity).cpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc_%(Identity).cpp</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc_%(Identity).cpp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Identity)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Identity)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Identity)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Identity)</AdditionalInputs>
+    </CustomBuild>
+    <ClInclude Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\reconBaseWidget.ui.h" />
+    <CustomBuild Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\reconWidget.h">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc %(Identity)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc_%(Identity).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc %(Identity)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc_%(Identity).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc %(Identity)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc_%(Identity).cpp</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc %(Identity)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc_%(Identity).cpp</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Identity)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Identity)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Identity)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Identity)</AdditionalInputs>
+    </CustomBuild>
+    <ClInclude Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\UIconstants.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\GLReconWidget.cpp" />
+    <ClCompile Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\GLReconWidget.h.moc.cpp" />
+    <ClCompile Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\main.cpp" />
+    <ClCompile Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\radialSenseAppMainWidget.cpp" />
+    <ClCompile Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\radialSenseAppMainWidget.h.moc.cpp" />
+    <ClCompile Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\reconWidget.cpp" />
+    <ClCompile Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\reconWidget.h.moc.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\radialSenseAppBaseMainWidget.ui">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uic.exe %(Identity) -o %(Identity).h</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">uic.exe %(Identity) -o %(Identity).h</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">uic.exe %(Identity) -o %(Identity).h</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">uic.exe %(Identity) -o %(Identity).h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uic %(Identity)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">uic %(Identity)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">uic %(Identity)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">uic %(Identity)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Identity).h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Identity).h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Identity).h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Identity).h</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Identity)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Identity)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Identity)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Identity)</AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\reconBaseWidget.ui">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uic.exe %(Identity) -o %(Identity).h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uic %(Identity)</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">uic.exe %(Identity) -o %(Identity).h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">uic %(Identity)</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">uic.exe %(Identity) -o %(Identity).h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">uic %(Identity)</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">uic.exe %(Identity) -o %(Identity).h</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">uic %(Identity)</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Identity).h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Identity).h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Identity).h</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Identity).h</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Identity)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Identity)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Identity)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Identity)</AdditionalInputs>
+    </CustomBuild>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 4.0.targets" />
+  </ImportGroup>
+</Project>

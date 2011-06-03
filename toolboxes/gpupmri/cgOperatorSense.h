@@ -16,7 +16,8 @@ public:
   typedef typename complext<REAL>::Type _complext;
   
   cgOperatorSense() : cuCGMatrixOperator<REAL,_complext>(), ncoils_(0) {}
-  
+  virtual ~cgOperatorSense() {}
+
   virtual int set_csm( boost::shared_ptr< cuNDArray<_complext> > csm );
 
   virtual int mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false ) = 0;

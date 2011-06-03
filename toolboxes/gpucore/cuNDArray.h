@@ -21,16 +21,6 @@ template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
     
  public:
 
- 	void* operator new (size_t bytes)
-	{
-		return ::new char[bytes];
-	}
-
-	void operator delete (void *ptr)
-	{
-		delete [] static_cast <char *> (ptr);
-	} 
-
   cuNDArray () : NDArray<T>::NDArray() { cudaGetDevice(&this->device_); }
   
   virtual ~cuNDArray() 

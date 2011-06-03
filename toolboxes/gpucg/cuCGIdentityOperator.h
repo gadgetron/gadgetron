@@ -10,11 +10,10 @@ class cuCGIdentityOperator : public cuCGMatrixOperator<REAL,T>
 {
  public:
 
- cuCGIdentityOperator( cublasHandle_t handle ) : handle_(handle) {}
+  cuCGIdentityOperator( cublasHandle_t handle ) : handle_(handle) {}
   virtual ~cuCGIdentityOperator() {}
   
   virtual int mult_M(cuNDArray<T>* in, cuNDArray<T>* out, bool accumulate = false){
-
 
     if( accumulate ) 
       cuNDA_axpy( get_one<T>(), in, out, handle_ );

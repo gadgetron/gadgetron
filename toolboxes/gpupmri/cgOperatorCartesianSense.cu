@@ -64,7 +64,7 @@ cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_c
     ft_dims.push_back(i);
   }
 
-  ft.fft((cuNDArray<cuFloatComplex>*)&tmp, ft_dims); // TODO: fix FFT interface
+  ft.fft((cuNDArray<cuFloatComplex>*)&tmp, &ft_dims); // TODO: fix FFT interface
 
   if (!accumulate) 
     cuNDA_clear<_complext>(out);
@@ -121,7 +121,7 @@ cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_c
     ft_dims.push_back(i);
   }
 
-  ft.ifft((cuNDArray<cuFloatComplex>*)&tmp, ft_dims); // TODO: fix FFT interface
+  ft.ifft((cuNDArray<cuFloatComplex>*)&tmp, &ft_dims); // TODO: fix FFT interface
 
   if (!accumulate) 
     cuNDA_clear<_complext>(out);

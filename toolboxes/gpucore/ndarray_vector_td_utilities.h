@@ -4,8 +4,6 @@
 #include "cuNDArray.h"
 #include "vector_td.h"
 
-#include <vector>
-
 #include <cublas_v2.h>
 #include <boost/smart_ptr.hpp>
 
