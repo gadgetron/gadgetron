@@ -4,8 +4,7 @@ include $(GADGETRONHOME)/Makefile.inc
 DLLNAME=hostutils
 
 LIBHEADERS=\
-	parameterparser.h \
-	declspec.h
+	parameterparser.h
 
 LIBSOURCES=\
 	parameterparser.cpp

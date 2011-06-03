@@ -67,6 +67,7 @@ public:
   // Custom operators new/delete for windows memory handling across dll boundaries
   void* operator new (size_t bytes) { return ::new char[bytes]; }
   void operator delete (void *ptr) { delete [] static_cast <char *> (ptr); } 
+  void * operator new(size_t s, void * p) { return p; }
 
 private:
 

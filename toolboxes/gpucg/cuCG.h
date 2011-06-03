@@ -61,6 +61,7 @@ template<class REAL, class T> class EXPORTGPUCG cuCG
 
   void* operator new (size_t bytes) { return ::new char[bytes]; }
   void operator delete (void *ptr) { delete [] static_cast <char *> (ptr); } 
+  void * operator new(size_t s, void * p) { return p; }
 
 protected:
   boost::shared_ptr< std::vector< boost::shared_ptr< cuCGMatrixOperator<REAL,T> > > > operators_;

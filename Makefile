@@ -3,8 +3,8 @@ include $(GADGETRONHOME)/Makefile.inc
 
 DIRS=\
 	toolboxes/gadgettools \
-	toolboxes/hostutils \
 	toolboxes/ndarray \
+	toolboxes/hostutils \
 	toolboxes/gpucore \
 	toolboxes/gpunfft \
 	toolboxes/gpucg \

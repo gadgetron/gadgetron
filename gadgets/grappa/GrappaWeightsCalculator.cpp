@@ -64,13 +64,13 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)
      cuNDFFT ft;
 
      //Go to image space
-     ft.ifft(reinterpret_cast< cuNDArray<cuFloatComplex>* >(&device_data),ftdims);
+     ft.ifft(reinterpret_cast< cuNDArray<cuFloatComplex>* >(&device_data), &ftdims);
 
      // Compute CSM
      boost::shared_ptr< cuNDArray<float_complext::Type> > csm = estimate_b1_map<float,2>( &device_data );
 
      //Go back to kspace
-     ft.fft(reinterpret_cast< cuNDArray<cuFloatComplex>* >(&device_data),ftdims);
+     ft.fft(reinterpret_cast< cuNDArray<cuFloatComplex>* >(&device_data), &ftdims);
 
 
      //TODO: Change dimensions of this to deal with uncombinex channels
@@ -90,7 +90,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)
        if ( htgrappa_calculate_grappa_unmixing(reinterpret_cast< cuNDArray<cuFloatComplex>* >(&device_data), 
 					       reinterpret_cast< cuNDArray<cuFloatComplex>* >(csm.get()),
 					       mb1->getObjectPtr()->acceleration_factor,
-					       kernel_size,
+					       &kernel_size,
 					       &unmixing_dev) < 0) {
 	 GADGET_DEBUG1("GRAPPA unmixing coefficients calculation failed\n");
 	 return GADGET_FAIL;

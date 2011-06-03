@@ -21,6 +21,11 @@ template <class T> class NDArray
     delete [] static_cast <char *> (ptr);
   } 
 
+  void * operator new(size_t s, void * p)
+  {
+    return p;
+  }
+  
   NDArray () : data_(0), elements_(0), delete_data_on_destruct_(true){
     dimensions_ = boost::shared_ptr< std::vector<unsigned int> >( new std::vector<unsigned int> );
   }
