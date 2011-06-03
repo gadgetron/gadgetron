@@ -29,6 +29,8 @@ $(EXECUTABLE): $(EXEOBJECTS) Makefile
 	mkdir -p $(GADGETRONHOME)/bin
 	cp $(HEADERS) $(GADGETRONHOME)/inc/
 	cp $(EXECUTABLE) $(GADGETRONHOME)/bin/
+	cp gadgetron_start.pl $(GADGETRONHOME)/bin/
+	chmod +x $(GADGETRONHOME)/bin/gadgetron_start.pl
 
 .cpp.o:
 	$(CXX) $(CXXFLAGS) $< -o $@
