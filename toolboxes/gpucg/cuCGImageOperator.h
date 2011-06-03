@@ -20,7 +20,7 @@ class cuCGImageOperator : public cuCGMatrixOperator<REAL,T>
     return 0;
   }
   
-  inline int compute( cuNDArray<T> *encoded_image, const std::vector<unsigned int> &decoded_image_dimensions, cublasHandle_t handle ) 
+  inline int compute( cuNDArray<T> *encoded_image, std::vector<unsigned int> *decoded_image_dimensions, cublasHandle_t handle ) 
   { 
     if( !encoding_operator_.get() ){
       std::cout << std::endl << "cuCGImageOperator::compute: encoding operator not set" << std::endl;

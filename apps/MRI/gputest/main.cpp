@@ -15,34 +15,34 @@ int main(int argc, char** argv)
 {
   std::cout << "Simple GPU Test program" << std::endl;
   
-  hoNDArray<float_complext::Type> phantom = read_nd_array<float_complext::Type>("phantom.cplx");
-  hoNDArray<float_complext::Type> csm = read_nd_array<float_complext::Type>("csm.cplx");
-  hoNDArray<float_complext::Type> D = read_nd_array<float_complext::Type>("D.cplx");
-  hoNDArray<float>  idxf = read_nd_array<float>("idx.real");  
-  hoNDArray<floatd2::Type>  co = read_nd_array<floatd2::Type>("co.cplx");
-  hoNDArray<float>   w = read_nd_array<float>("w.real");
+  boost::shared_ptr< hoNDArray<float_complext::Type> > phantom = read_nd_array<float_complext::Type>("phantom.cplx");
+  boost::shared_ptr< hoNDArray<float_complext::Type> > csm = read_nd_array<float_complext::Type>("csm.cplx");
+  boost::shared_ptr< hoNDArray<float_complext::Type> > D = read_nd_array<float_complext::Type>("D.cplx");
+  boost::shared_ptr< hoNDArray<float> > idxf = read_nd_array<float>("idx.real");  
+  boost::shared_ptr< hoNDArray<floatd2::Type> > co = read_nd_array<floatd2::Type>("co.cplx");
+  boost::shared_ptr< hoNDArray<float> > w = read_nd_array<float>("w.real");
   
-  if (csm.get_number_of_dimensions() == 2) {
-    std::vector<unsigned int> tmp_reshape_dim = csm.get_dimensions();
+  if (csm->get_number_of_dimensions() == 2) {
+    std::vector<unsigned int> tmp_reshape_dim = *csm->get_dimensions();
     tmp_reshape_dim.push_back(1);
-    csm.reshape(tmp_reshape_dim);
+    csm->reshape(&tmp_reshape_dim);
   }
 
   std::cout << "Done reading input data" << std::endl;
 
   hoNDArray<unsigned int> idx;
-  idx.create(idxf.get_dimensions());
+  idx.create(idxf->get_dimensions().get());
 
-  for (unsigned int i = 0; i < idxf.get_number_of_elements(); i++) {
-    idx.get_data_ptr()[i] = static_cast<unsigned int>(idxf.get_data_ptr()[i]);
+  for (unsigned int i = 0; i < idxf->get_number_of_elements(); i++) {
+    idx.get_data_ptr()[i] = static_cast<unsigned int>(idxf->get_data_ptr()[i]);
   }
 
-  cuNDArray<float_complext::Type> phantom_dev(phantom);
-  cuNDArray<float_complext::Type> *csm_dev = new cuNDArray<float_complext::Type>(csm);
-  cuNDArray<unsigned int> *idx_dev = new cuNDArray<unsigned int>(idx);
+  cuNDArray<float_complext::Type> phantom_dev(phantom.get());
+  cuNDArray<float_complext::Type> *csm_dev = new cuNDArray<float_complext::Type>(csm.get());
+  cuNDArray<unsigned int> *idx_dev = new cuNDArray<unsigned int>(&idx);
   cgOperatorCartesianSense<float,2> *E = new cgOperatorCartesianSense<float,2>();
-  cuNDArray<floatd2::Type> co_dev(co); co_dev.squeeze();
-  cuNDArray<float> *w_dev = new cuNDArray<float>(w);
+  cuNDArray<floatd2::Type> co_dev(co.get()); co_dev.squeeze();
+  cuNDArray<float> *w_dev = new cuNDArray<float>(w.get());
 
   E->set_csm(boost::shared_ptr< cuNDArray<float_complext::Type> >(csm_dev));
   E->set_sampling_indices( boost::shared_ptr< cuNDArray<unsigned int> >(idx_dev));
@@ -62,29 +62,29 @@ int main(int argc, char** argv)
 
   std::vector<unsigned int> dims_out;
   dims_out.push_back(idx.get_number_of_elements());
-  dims_out.push_back(csm.get_size(csm.get_number_of_dimensions()-1));
+  dims_out.push_back(csm->get_size(csm->get_number_of_dimensions()-1));
 
   cuNDArray<float_complext::Type> tmp_out_dev;
-  tmp_out_dev.create(dims_out);
+  tmp_out_dev.create(&dims_out);
 
   if (E->mult_M(&phantom_dev,&tmp_out_dev,false) < 0) {
     std::cerr << "Failed to multiply with system matrix E" << std::endl;
   }
 
-  hoNDArray<float_complext::Type> tmp_out = tmp_out_dev.to_host();
-  write_nd_array<float_complext::Type>(tmp_out,"tmp_out.cplx");
+  boost::shared_ptr< hoNDArray<float_complext::Type> > tmp_out = tmp_out_dev.to_host();
+  write_nd_array<float_complext::Type>(tmp_out.get(),"tmp_out.cplx");
 
   cuNDArray<float_complext::Type> tmp2_out_dev;
-  tmp2_out_dev.create(phantom.get_dimensions());
+  tmp2_out_dev.create(phantom->get_dimensions().get());
   
   if (E->mult_MH(&tmp_out_dev,&tmp2_out_dev,false) < 0) {
     std::cerr << "Failed to multiply with system matrix EH" << std::endl;
   }
 
-  hoNDArray<float_complext::Type> tmp2_out = tmp2_out_dev.to_host();
+  boost::shared_ptr< hoNDArray<float_complext::Type> > tmp2_out = tmp2_out_dev.to_host();
   //write_nd_array<float_complext::Type>(tmp2_out,"tmp2_out.cplx");
   
-  cuNDArray<float_complext::Type> *D_dev = new cuNDArray<float_complext::Type>(D);
+  cuNDArray<float_complext::Type> *D_dev = new cuNDArray<float_complext::Type>(D.get());
   
   cuCGPrecondWeight<float_complext::Type> *Dm = new cuCGPrecondWeight<float_complext::Type>();
   Dm->set_weights(boost::shared_ptr< cuNDArray<float_complext::Type> >(D_dev));
@@ -102,32 +102,33 @@ int main(int argc, char** argv)
     cgresult = cg.solve(&tmp2_out_dev);
   }
   
-  hoNDArray<float_complext::Type> rho_out = cgresult->to_host();
-  write_nd_array<float_complext::Type>(rho_out,"rho_out.cplx");
+  boost::shared_ptr< hoNDArray<float_complext::Type> > rho_out = cgresult->to_host();
+  write_nd_array<float_complext::Type>(rho_out.get(),"rho_out.cplx");
   
   std::vector<unsigned int> dims_out_nc;
-  dims_out_nc.push_back(co.get_number_of_elements());
-  dims_out_nc.push_back(csm.get_size(csm.get_number_of_dimensions()-1));
+  dims_out_nc.push_back(co->get_number_of_elements());
+  dims_out_nc.push_back(csm->get_size(csm->get_number_of_dimensions()-1));
 
   cuNDArray<float_complext::Type> tmp_out_nc_dev;
-  tmp_out_nc_dev.create(dims_out_nc);
+  tmp_out_nc_dev.create(&dims_out_nc);
 
   if (E_noncart->mult_M(&phantom_dev,&tmp_out_nc_dev,false) < 0) {
     std::cerr << "Failed to multiply with system matrix non-cartE" << std::endl;
   }
 
-  hoNDArray<float_complext::Type> tmp_out_nc = tmp_out_nc_dev.to_host();
-  write_nd_array<float_complext::Type>(tmp_out_nc,"tmp_out_nc.cplx");
+  boost::shared_ptr< hoNDArray<float_complext::Type> > tmp_out_nc = tmp_out_nc_dev.to_host();
+  write_nd_array<float_complext::Type>(tmp_out_nc.get(),"tmp_out_nc.cplx");
 
   cuNDArray<float_complext::Type> tmp2_out_nc_dev;
-  tmp2_out_nc_dev.create(phantom.get_dimensions());
+  tmp2_out_nc_dev.create(phantom->get_dimensions().get());
   
 
   if (E_noncart->mult_MH(&tmp_out_nc_dev,&tmp2_out_nc_dev,false) < 0) {
     std::cerr << "Failed to multiply with system matrix EH (non cartesian)" << std::endl;
   }
-  hoNDArray<float_complext::Type> tmp2_out_nc = tmp2_out_nc_dev.to_host();
-  write_nd_array<float_complext::Type>(tmp2_out_nc,"tmp2_out_nc.cplx");
+  
+  boost::shared_ptr< hoNDArray<float_complext::Type> > tmp2_out_nc = tmp2_out_nc_dev.to_host();
+  write_nd_array<float_complext::Type>(tmp2_out_nc.get(),"tmp2_out_nc.cplx");
 
   cuCG<float, float_complext::Type> cg_nc;
   cg_nc.add_matrix_operator( boost::shared_ptr< cuCGMatrixOperator<float,float_complext::Type> >(E_noncart) );
@@ -141,8 +142,9 @@ int main(int argc, char** argv)
     GPUTimer timer("GPU Conjugate Gradient solve");
     cgresult_nc = cg_nc.solve(&tmp2_out_nc_dev);
   }
-  hoNDArray<float_complext::Type> rho_out_nc = cgresult_nc->to_host();
-  write_nd_array<float_complext::Type>(rho_out_nc,"rho_out_nc.cplx");
+  
+  boost::shared_ptr< hoNDArray<float_complext::Type> > rho_out_nc = cgresult_nc->to_host();
+  write_nd_array<float_complext::Type>(rho_out_nc.get(),"rho_out_nc.cplx");
 
 
   std::cout << "Reconstruction done" << std::endl;

@@ -181,8 +181,8 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 							  cuNDArray<T>* out_mixing_coeff)
 {
 
-  if (!ref_data->dimensions_equal(*b1) ||
-      !ref_data->dimensions_equal(*out_mixing_coeff)) {
+  if (!ref_data->dimensions_equal(b1) ||
+      !ref_data->dimensions_equal(out_mixing_coeff)) {
     std::cerr << "htgrappa_calculate_grappa_unmixing: Dimensions mismatch" << std::endl;
     return -1;
   }
@@ -198,7 +198,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
   }
     
   //Calculate region of support + offsets
-  std::vector<unsigned int> ros = ref_data->get_dimensions();
+  std::vector<unsigned int> ros = *ref_data->get_dimensions();
   ros.pop_back(); //Remove the number of coils
 
   std::vector<unsigned int> ros_offset(ref_data->get_number_of_dimensions(),0);
@@ -224,7 +224,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
   b_size.push_back(coils);
 
   cuNDArray<T> system_matrix;
-  if (!system_matrix.create(sys_matrix_size)) {
+  if (!system_matrix.create(&sys_matrix_size)) {
     std::cout << "htgrappa_calculate_grappa_unmixing: Unable to allocate device memory for system matrix" << std::endl;
     return -1;
   }
@@ -232,12 +232,12 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
   clear(&system_matrix);
 
   cuNDArray<T> b;
-  if (!b.create(b_size)) {
+  if (!b.create(&b_size)) {
     std::cout << "htgrappa_calculate_grappa_unmixing: Unable to allocate device memory for right hand sides" << std::endl;
     return -1;
   }
 
-  int2 dims = vec_to_int2(ref_data->get_dimensions());
+  int2 dims = vec_to_int2(*ref_data->get_dimensions());
   int2 dros = vec_to_int2(ros);
   int2 dros_offset = vec_to_int2(ros_offset);
   int2 dkernel_size = vec_to_int2(kernel_size);
@@ -247,7 +247,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 
   std::vector<unsigned int> AHA_dims(2,n);
   cuNDArray<T> AHA;
-  if (!AHA.create(AHA_dims)) {
+  if (!AHA.create(&AHA_dims)) {
     std::cout << "htgrappa_calculate_grappa_unmixing: Unable to allocate device memory for AHA" << std::endl;
     return -1;
   }
@@ -257,7 +257,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
   AHrhs_dims.push_back(coils);
 
   cuNDArray<T> AHrhs;
-  if (!AHrhs.create(AHrhs_dims)) {
+  if (!AHrhs.create(&AHrhs_dims)) {
     std::cout << "htgrappa_calculate_grappa_unmixing: Unable to allocate device memory for AHrhs" << std::endl;
     return -1;
   }
@@ -276,7 +276,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
   gkernel_dims.push_back(coils);
   gkernel_dims.push_back(coils);
   cuNDArray<T> gkernel;
-  if (!gkernel.create(gkernel_dims)) {
+  if (!gkernel.create(&gkernel_dims)) {
     std::cerr << "htgrappa_calculate_grappa_unmixing: Unable to allocate array for GRAPPA kernel" << std::endl;
     return -1;
   }
@@ -389,7 +389,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
   }
 
   cuNDArray<T> tmp_mixing;
-  if (!tmp_mixing.create(out_mixing_coeff->get_dimensions())) {
+  if (!tmp_mixing.create(out_mixing_coeff->get_dimensions().get())) {
     std::cerr << "htgrappa_calculate_grappa_unmixing: Unable to create temp mixing storage on device." << std::endl;
     return -1;
   }

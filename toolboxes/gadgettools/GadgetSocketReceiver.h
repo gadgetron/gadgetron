@@ -37,7 +37,7 @@ class GadgetAcquisitionMessageReader : public GadgetMessageReader
     GadgetContainerMessage< hoNDArray< std::complex<float> > >* data = 
       new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
 
-    if (!data->getObjectPtr()->create(dims)) {
+    if (!data->getObjectPtr()->create(&dims)) {
       ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetAcquisitionMessageReader, failed to allocate memory\n")) );
       acqh->release();
       return 0;
@@ -83,7 +83,7 @@ class GadgetImageMessageReader : public GadgetMessageReader
     GadgetContainerMessage< hoNDArray< std::complex<float> > >* data = 
       new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
 
-    if (!data->getObjectPtr()->create(dims)) {
+    if (!data->getObjectPtr()->create(&dims)) {
       ACE_DEBUG( (LM_ERROR, 
 		  ACE_TEXT("%P, %l, GadgetImageMessageReader, failed to allocate memory\n")) );
       imgh->release();

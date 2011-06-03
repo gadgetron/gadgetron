@@ -57,7 +57,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)
 
 
      // Copy the image data to the device
-     cuNDArray<float_complext::Type> device_data(*host_data);
+     cuNDArray<float_complext::Type> device_data(host_data);
      device_data.squeeze();
      
      std::vector<unsigned int> ftdims(2,0); ftdims[1] = 1;
@@ -75,7 +75,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)
 
      //TODO: Change dimensions of this to deal with uncombinex channels
      cuNDArray<cuFloatComplex> unmixing_dev;
-     if (!unmixing_dev.create(csm.get()->get_dimensions())) {
+     if (!unmixing_dev.create(csm.get()->get_dimensions().get())) {
        GADGET_DEBUG1("Unable to allocate device memory for unmixing coeffcients\n");
        return GADGET_FAIL;
      }
@@ -98,15 +98,15 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)
      }
 
      if (mb1->getObjectPtr()->destination) {
-       hoNDArray<cuFloatComplex> unmixing_host = unmixing_dev.to_host();
+       boost::shared_ptr< hoNDArray<cuFloatComplex> > unmixing_host = unmixing_dev.to_host();
 
        //TODO: This reshaping needs to take uncombined channels into account
-       if (unmixing_host.reshape(mb2->getObjectPtr()->get_dimensions()) < 0) {
+       if (unmixing_host->reshape(mb2->getObjectPtr()->get_dimensions().get()) < 0) {
 	 GADGET_DEBUG1("Failed to reshape GRAPPA weights\n");
 	 return GADGET_FAIL;
        }
 
-       if (mb1->getObjectPtr()->destination->update(reinterpret_cast<hoNDArray<std::complex<float> >* >(&unmixing_host)) < 0) {
+       if (mb1->getObjectPtr()->destination->update(reinterpret_cast<hoNDArray<std::complex<float> >* >(unmixing_host.get())) < 0) {
 	 GADGET_DEBUG1("Update of GRAPPA weights failed\n");
 	 return GADGET_FAIL;
        }
@@ -177,7 +177,7 @@ add_job( hoNDArray< std::complex<T> >* ref_data,
 
   mb1->cont(mb2);
 
-  if (!mb2->getObjectPtr()->create(ref_data->get_dimensions())) {
+  if (!mb2->getObjectPtr()->create(ref_data->get_dimensions().get())) {
     mb1->release();
     return -3;
   }

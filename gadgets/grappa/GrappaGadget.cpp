@@ -47,7 +47,7 @@ int GrappaGadget::process_config(ACE_Message_Block* mb)
     //TODO: push back any additional dimensions for uncombined channels
 
     hoNDArray< std::complex<float> > tmp_w;
-    if (!tmp_w.create(wdims)) {
+    if (!tmp_w.create(&wdims)) {
       GADGET_DEBUG1("Unable to create temporary array with dimensions\n");
       return GADGET_FAIL;
     }
@@ -139,7 +139,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     combined_dims[1] = image_dimensions_[1];
     combined_dims[2] = image_dimensions_[2];
  
-    if (!cm2->getObjectPtr()->create(combined_dims)) {
+    if (!cm2->getObjectPtr()->create(&combined_dims)) {
       GADGET_DEBUG1("Unable to create combined image array\n");
       return GADGET_FAIL;
     }
@@ -202,7 +202,7 @@ int GrappaGadget::create_image_buffer(unsigned int slice)
   }
 
   image_data_[slice] = new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
-  if (!image_data_[slice]->getObjectPtr()->create(image_dimensions_)) {
+  if (!image_data_[slice]->getObjectPtr()->create(&image_dimensions_)) {
     GADGET_DEBUG1("Unable to create image buffers");
     return GADGET_FAIL;
   } 

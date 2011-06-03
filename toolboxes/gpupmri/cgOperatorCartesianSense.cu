@@ -37,7 +37,7 @@ insert_samples_kernel( typename complext<REAL>::Type* in, typename complext<REAL
 template<class REAL, unsigned int D> int 
 cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {
-  if (!(in->dimensions_equal(this->dimensionsI_)) || !(out->dimensions_equal(this->dimensionsK_)) ) {
+  if (!(in->dimensions_equal(&this->dimensionsI_)) || !(out->dimensions_equal(&this->dimensionsK_)) ) {
 
     std::cerr << "cgOperatorCartesianSense::mult_M dimensions mismatch" << std::endl;
 
@@ -48,7 +48,7 @@ cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_c
   std::vector<unsigned int> full_dimensions = this->dimensionsI_;
   full_dimensions.push_back(this->ncoils_);
 
-  if (!tmp.create(full_dimensions)) {
+  if (!tmp.create(&full_dimensions)) {
     std::cerr << "cgOperatorCartesianSense::mult_M unable to allocate temp array" << std::endl;
     return -1;    
   }
@@ -86,7 +86,7 @@ cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_c
 template<class REAL, unsigned int D> int 
 cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate)
 {
-  if (!(out->dimensions_equal(this->dimensionsI_)) || !(in->dimensions_equal(this->dimensionsK_)) ) {
+  if (!(out->dimensions_equal(&this->dimensionsI_)) || !(in->dimensions_equal(&this->dimensionsK_)) ) {
     std::cerr << "cgOperatorCartesianSense::mult_MH dimensions mismatch" << std::endl;
     return -1;
   }
@@ -95,7 +95,7 @@ cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_c
   tmp_dimensions.push_back(this->ncoils_);
 
   cuNDArray<_complext> tmp;
-  if (!tmp.create(tmp_dimensions)) {
+  if (!tmp.create(&tmp_dimensions)) {
     std::cerr << "cgOperatorCartesianSense::mult_MH: Unable to create temp storage" << std::endl;
     return -1;
   }
