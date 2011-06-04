@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gadgetron_export.h"
 #include "cuCGMatrixOperator.h"
 #include "cuNDArray.h"
 #include "vector_td.h"
@@ -7,7 +8,7 @@
 #include <boost/smart_ptr.hpp>
 
 template<class REAL, unsigned int D>
-class cgOperatorSense : public cuCGMatrixOperator<REAL,typename complext<REAL>::Type>
+class EXPORTGPUPMRI cgOperatorSense : public cuCGMatrixOperator<REAL,typename complext<REAL>::Type>
 {
 
 public:
@@ -15,7 +16,8 @@ public:
   typedef typename complext<REAL>::Type _complext;
   
   cgOperatorSense() : cuCGMatrixOperator<REAL,_complext>(), ncoils_(0) {}
-  
+  virtual ~cgOperatorSense() {}
+
   virtual int set_csm( boost::shared_ptr< cuNDArray<_complext> > csm );
 
   virtual int mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false ) = 0;

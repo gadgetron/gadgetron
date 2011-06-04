@@ -1,15 +1,17 @@
 #pragma once
 
+#include "gadgetron_export.h"
 #include "cgOperatorSense.h"
 #include "NFFT.h"
 
 template<class REAL, unsigned int D>
-class cgOperatorNonCartesianSense : public cgOperatorSense<REAL,D>
+class EXPORTGPUPMRI cgOperatorNonCartesianSense : public cgOperatorSense<REAL,D>
 {
 
  public:
   
   cgOperatorNonCartesianSense() : cgOperatorSense<REAL,D>() {}
+  virtual ~cgOperatorNonCartesianSense() {}
 
   typedef typename cgOperatorSense<REAL,D>::_complext _complext;
   typedef typename uintd<D>::Type _uintd;

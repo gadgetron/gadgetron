@@ -24,7 +24,7 @@ cgOperatorNonCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray
   std::vector<unsigned int> full_dimensions = this->dimensionsI_;
   full_dimensions.push_back(this->ncoils_);
 
-  if( !tmp.create(full_dimensions) ) {
+  if( !tmp.create(&full_dimensions) ) {
     std::cerr << "cgOperatorNonCartesianSense::mult_M unable to allocate temp array" << std::endl;
     return -2;    
   }
@@ -55,7 +55,7 @@ cgOperatorNonCartesianSense<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArra
   tmp_dimensions.push_back(this->ncoils_);
 
   cuNDArray<_complext> tmp;
-  if( !tmp.create(tmp_dimensions) ) {
+  if( !tmp.create(&tmp_dimensions) ) {
     std::cerr << "cgOperatorNonCartesianSense::mult_MH: Unable to create temp storage" << std::endl;
     return -2;
   }
@@ -100,11 +100,11 @@ cgOperatorNonCartesianSense<REAL,D>::preprocess( cuNDArray<_reald> *trajectory )
 
     unsigned int num_frames = trajectory->get_number_of_elements()/trajectory->get_size(0);
     this->dimensionsK_.clear();
-    this->dimensionsK_ = trajectory->get_dimensions();
+    this->dimensionsK_ = *trajectory->get_dimensions();
     this->dimensionsK_.push_back(this->ncoils_);
     
     this->dimensionsI_.clear();
-    this->dimensionsI_ = this->csm_->get_dimensions();
+    this->dimensionsI_ = *this->csm_->get_dimensions();
     this->dimensionsI_.pop_back();
     this->dimensionsI_.push_back(num_frames);
     
@@ -133,4 +133,4 @@ cgOperatorNonCartesianSense<REAL,D>::set_dcw( boost::shared_ptr< cuNDArray<REAL>
 // Instantiations
 //
 
-template class cgOperatorNonCartesianSense<float,2>;
+template class EXPORTGPUPMRI cgOperatorNonCartesianSense<float,2>;

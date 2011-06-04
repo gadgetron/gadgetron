@@ -9,6 +9,10 @@ CUDAINCLUDES=\
 	-I$(CUDASDK)/shared/inc \
 	-I/usr/local/cula/include 
 
+ifeq ($(KERNEL), Darwin)
+BOOSTINCLUDE = -I/usr/local/boost
+endif
+
 DLLEXTENSION=so
 
 ifeq ($(KERNEL), Darwin)
@@ -35,14 +39,14 @@ ifeq ($(KERNEL), Darwin)
 GENCODE_SM=$(GENCODE_SM10)
 endif
 
-NVCCFLAGS= $(GENCODE_SM) -g --compiler-options -fno-strict-aliasing -Xcompiler -fPIC -I$(GADGETRONHOME)/inc $(CUDAINCLUDES) -c
+  NVCCFLAGS= $(GENCODE_SM) -g --compiler-options -fno-strict-aliasing -Xcompiler -fPIC -I$(GADGETRONHOME)/inc $(CUDAINCLUDES) $(BOOSTINCLUDE) -c
 ifeq ($(KERNEL), Darwin)
 NVCCFLAGS += -m32
 endif
 
 CXXFLAGS=-c -fPIC -Wall -I. \
 	-I$(GADGETRONHOME)/inc \
-	$(CUDAINCLUDES)
+        $(CUDAINCLUDES) $(BOOSTINCLUDE)
 
 
 CUDALIBRARIES=-L$(CUDAHOME)/lib64 -L$(CUDASDK)/shared/lib -L$(CUDASDK)/C/lib -L$(CUDASDK)/C/common/lib/linux -L/usr/local/cula/lib64 -lcula -lshrutil_$(MACHINE) -lcutil_$(MACHINE)  -lcudart -lcublas -lcufft

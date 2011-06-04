@@ -14,13 +14,15 @@
 
 #pragma once
 
+#include "gadgetron_export.h"
+
 #include "vector_td.h"
 #include "cuNDArray.h"
 
 #include <thrust/device_vector.h>
 #include <boost/shared_ptr.hpp>
 
-template< class REAL, unsigned int D > class NFFT_plan
+template< class REAL, unsigned int D > class EXPORTGPUNFFT NFFT_plan
 {
   
 public: // Main interface
@@ -31,7 +33,7 @@ public: // Main interface
   NFFT_plan( NFFT_plan<REAL,D> *plan );
 
   // Destructor
-  ~NFFT_plan();
+  virtual ~NFFT_plan();
 
   // Clear internal storage in plan
   enum NFFT_wipe_mode { NFFT_WIPE_ALL, NFFT_WIPE_PREPROCESSING };
@@ -59,6 +61,13 @@ public: // Utilities
   
   // NFFT deapodization
   bool deapodize( cuNDArray<typename complext<REAL>::Type> *image );
+
+public: 
+
+  // Custom operators new/delete for windows memory handling across dll boundaries
+  void* operator new (size_t bytes) { return ::new char[bytes]; }
+  void operator delete (void *ptr) { delete [] static_cast <char *> (ptr); } 
+  void * operator new(size_t s, void * p) { return p; }
 
 private:
 

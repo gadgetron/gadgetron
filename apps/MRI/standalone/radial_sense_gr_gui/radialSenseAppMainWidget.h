@@ -126,9 +126,12 @@ private:
   boost::shared_ptr< cuNDArray<float> > dcw;	
 
   // Host data array
-  hoNDArray<float_complext::Type> host_samples;
+  boost::shared_ptr< hoNDArray<float_complext::Type> > host_samples;
   
   // Label for the status bar
   QLabel *statusLabel;
+
+  // Are we set up for reconstruction?
+  bool ready;
 };
 

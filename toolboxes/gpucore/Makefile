@@ -14,7 +14,6 @@ LIBHEADERS=\
 	real_utilities.h
 
 LIBSOURCES=\
-	GPUTimer.cpp \
 	cuNDArray.cpp \
 	cuNDFFT.cpp
 

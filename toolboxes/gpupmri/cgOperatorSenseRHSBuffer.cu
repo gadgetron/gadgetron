@@ -27,8 +27,8 @@ cgOperatorSenseRHSBuffer<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_
     return -2;
   }
   
-  typename uintd<D>::Type image_size_in = vector_to_uintd<D>(in->get_dimensions());
-  typename uintd<D>::Type image_size_out = vector_to_uintd<D>(out->get_dimensions());
+  typename uintd<D>::Type image_size_in = vector_to_uintd<D>(*in->get_dimensions());
+  typename uintd<D>::Type image_size_out = vector_to_uintd<D>(*out->get_dimensions());
   
   if( prod(image_size_in) != prod(image_size_out) ){
     std::cerr << "cgOperatorSenseRHSBuffer::mult_MH image dimensions mismatch" << std::endl;
@@ -50,4 +50,4 @@ cgOperatorSenseRHSBuffer<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_
 // Instantiations
 //
 
-template class cgOperatorSenseRHSBuffer<float,2>;
+template class EXPORTGPUPMRI cgOperatorSenseRHSBuffer<float,2>;

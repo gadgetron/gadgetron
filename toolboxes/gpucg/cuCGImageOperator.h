@@ -1,5 +1,5 @@
 #pragma once
-
+#include "gadgetron_export.h"
 #include "cuCGMatrixOperator.h"
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
@@ -14,13 +14,14 @@ class cuCGImageOperator : public cuCGMatrixOperator<REAL,T>
  public:
 
   cuCGImageOperator() {}
+  virtual ~cuCGImageOperator() {}
 
   inline int set_encoding_operator( boost::shared_ptr< cuCGMatrixOperator<REAL,T> > encoding_operator ){
     encoding_operator_ = encoding_operator;
     return 0;
   }
   
-  inline int compute( cuNDArray<T> *encoded_image, const std::vector<unsigned int> &decoded_image_dimensions, cublasHandle_t handle ) 
+  inline int compute( cuNDArray<T> *encoded_image, std::vector<unsigned int> *decoded_image_dimensions, cublasHandle_t handle ) 
   { 
     if( !encoding_operator_.get() ){
       std::cout << std::endl << "cuCGImageOperator::compute: encoding operator not set" << std::endl;
@@ -42,9 +43,7 @@ class cuCGImageOperator : public cuCGMatrixOperator<REAL,T>
     
     return 0;
   }
-  
-  virtual ~cuCGImageOperator() {}
-  
+    
   virtual int mult_M(cuNDArray<T>* in, cuNDArray<T>* out, bool accumulate = false){
     std::cout << std::endl << "cuCGImageOperator::mult_M not defined." << std::endl;
     return -1;

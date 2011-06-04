@@ -7,7 +7,7 @@ cgOperatorSense<REAL,D>::set_csm( boost::shared_ptr< cuNDArray<_complext> > csm 
   if( csm->get_number_of_dimensions() == D+1 ) {
     csm_ = csm;
     ncoils_ = csm_->get_size(D);
-    dimensionsI_ = csm->get_dimensions();
+    dimensionsI_ = *csm->get_dimensions();
     dimensionsI_.pop_back();
     return 0;
   }
@@ -103,7 +103,7 @@ cgOperatorSense<REAL,D>::mult_MH_M( cuNDArray<_complext>* in, cuNDArray<_complex
   // Leave it to the inherited classes to validate the input
 
   cuNDArray<_complext> tmp;
-  if( !tmp.create(dimensionsK_) ) {
+  if( !tmp.create(&dimensionsK_) ) {
     std::cerr << "cgOperatorSense::mult_MH_M: Unable to create temporary storage" << std::endl;
     return -1;
   }
@@ -125,4 +125,4 @@ cgOperatorSense<REAL,D>::mult_MH_M( cuNDArray<_complext>* in, cuNDArray<_complex
 // Instantiations
 //
 
-template class cgOperatorSense<float,2>;
+template class EXPORTGPUPMRI cgOperatorSense<float,2>;

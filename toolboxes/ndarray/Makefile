@@ -5,7 +5,8 @@ LIBHEADERS=\
 	NDArray.h \
 	hoNDArray.h \
 	hoNDArray_fileio.h \
-	FFT.h
+	FFT.h \
+	gadgetron_export.h
 
 install: $(LIBHEADERS)
 	mkdir -p $(GADGETRONHOME)/inc

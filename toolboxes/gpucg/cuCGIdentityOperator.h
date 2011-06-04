@@ -1,5 +1,5 @@
 #pragma once
-
+#include "gadgetron_export.h"
 #include "cuCGMatrixOperator.h"
 #include "ndarray_vector_td_utilities.h"
 
@@ -10,7 +10,7 @@ class cuCGIdentityOperator : public cuCGMatrixOperator<REAL,T>
 {
  public:
 
- cuCGIdentityOperator( cublasHandle_t handle ) : handle_(handle) {}
+  cuCGIdentityOperator( cublasHandle_t handle ) : handle_(handle) {}
   virtual ~cuCGIdentityOperator() {}
   
   virtual int mult_M(cuNDArray<T>* in, cuNDArray<T>* out, bool accumulate = false){

@@ -54,17 +54,17 @@ boost::shared_ptr< cuNDArray<T> > cuNDA_sum( cuNDArray<T> *in, unsigned int dim 
       stride *= in->get_size(i);
   }
 
-  cuNDArray<T> *out = cuNDArray<T>::allocate(dims);
+  boost::shared_ptr< cuNDArray<T> > out = cuNDArray<T>::allocate(&dims);
  
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  if( out != 0x0 )
+  if( out.get() != 0x0 )
     cuNDA_sum_kernel<T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
 
-  return boost::shared_ptr< cuNDArray<T> >(out);
+  return out;
 }
 
 // Norm
@@ -100,15 +100,15 @@ boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<typename reald<REAL,D
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(in->get_dimensions());
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(in->get_dimensions().get());
  
   // Make modulus image
-  if( out != 0x0 )
+  if( out.get() != 0x0 )
     cuNDA_norm_kernel<REAL,D><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<REAL> >(out);
+  return out;
 }
 
 // Norm
@@ -120,15 +120,15 @@ boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<T> *in )
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(in->get_dimensions());
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(in->get_dimensions().get());
  
   // Make modulus image
-  if( out != 0x0 )
+  if( out.get() != 0x0 )
     cuNDA_norm_kernel<REAL,T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<REAL> >(out);
+  return out;
 }
 
 // Norm squared
@@ -164,15 +164,15 @@ boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<typename real
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(in->get_dimensions());
- 
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(in->get_dimensions().get());
+  
   // Make modulus image
-  if( out != 0x0 )
+  if( out.get() != 0x0 )
     cuNDA_norm_squared_kernel<REAL,D><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<REAL> >(out);
+  return out;
 }
 
 // Norm Squared
@@ -184,15 +184,15 @@ boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<T> *in )
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(in->get_dimensions());
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(in->get_dimensions().get());
  
   // Make modulus image
-  if( out != 0x0 )
+  if( out.get() != 0x0 )
     cuNDA_norm_squared_kernel<REAL,T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_elements );
- 
+  
   CHECK_FOR_CUDA_ERROR();
- 
-  return boost::shared_ptr< cuNDArray<REAL> >(out);
+  
+  return out;
 }
 
 // SS
@@ -245,38 +245,38 @@ boost::shared_ptr< cuNDArray<REAL> > _cuNDA_ss( cuNDArray<T> *in, unsigned int d
       stride *= in->get_size(i);
   }
 
-  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(dims);
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(&dims);
  
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  if ( out != 0x0 )
+  if ( out.get() != 0x0 )
     cuNDA_ss_kernel<REAL,T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<REAL> >(out);
+  return out;
 }
 
-template<>  
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float> > cuNDA_ss<float,float>( cuNDArray<float> *in, unsigned int dim )
 {
   return _cuNDA_ss<float, float>(in,dim);
 }
 
-template<>  
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double> > cuNDA_ss<double,double>( cuNDArray<double> *in, unsigned int dim )
 {
   return _cuNDA_ss<double, double>(in,dim);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float> > cuNDA_ss<float,float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_ss<float, float_complext::Type>(in,dim);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double> > cuNDA_ss<double,double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_ss<double, double_complext::Type>(in,dim);
@@ -323,26 +323,27 @@ boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_css( cuNDArr
       stride *= in->get_size(i);
   }
 
-  cuNDArray<typename complext<REAL>::Type> *out = cuNDArray<typename complext<REAL>::Type>::allocate(dims);
+  boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > out = cuNDArray<typename complext<REAL>::Type>::allocate(&dims);
  
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
-  if ( out != 0x0 ){
+
+  if ( out.get() != 0x0 ){
     cuNDA_css_kernel<REAL, typename complext<REAL>::Type><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
   }
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
+  return out;
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_ss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_css<float>( in, dim );
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_ss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_css<double>( in, dim );
@@ -400,38 +401,38 @@ boost::shared_ptr< cuNDArray<REAL> > _cuNDA_rss( cuNDArray<T> *in, unsigned int 
       stride *= in->get_size(i);
   }
 
-  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(dims);
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(&dims);
  
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  if ( out != 0x0 )
+  if ( out.get() != 0x0 )
     cuNDA_rss_kernel<REAL,T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
- 
+  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<REAL> >(out);
+  return out;
 }
 
-template<>  
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float> > cuNDA_rss<float,float>( cuNDArray<float> *in, unsigned int dim )
 {
   return _cuNDA_rss<float, float>(in,dim);
 }
 
-template<>  
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double> > cuNDA_rss<double,double>( cuNDArray<double> *in, unsigned int dim )
 {
   return _cuNDA_rss<double, double>(in,dim);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float> > cuNDA_rss<float,float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_rss<float, float_complext::Type>(in,dim);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double> > cuNDA_rss<double,double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_rss<double, double_complext::Type>(in,dim);
@@ -478,26 +479,27 @@ boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_crss( cuNDAr
       stride *= in->get_size(i);
   }
 
-  cuNDArray<typename complext<REAL>::Type> *out = cuNDArray<typename complext<REAL>::Type>::allocate(dims);
- 
+  boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > out = cuNDArray<typename complext<REAL>::Type>::allocate(&dims);
+  
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
-  if ( out != 0x0 ){
+  
+  if ( out.get() != 0x0 ){
     cuNDA_crss_kernel<REAL, typename complext<REAL>::Type><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
   }
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
+  return out;
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_crss<float>( in, dim );
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_crss<double>( in, dim );
@@ -540,38 +542,38 @@ boost::shared_ptr< cuNDArray<REAL> > _cuNDA_reciprocal_rss( cuNDArray<T> *in, un
       stride *= in->get_size(i);
   }
 
-  cuNDArray<REAL> *out = cuNDArray<REAL>::allocate(dims);
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(&dims);
  
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  if ( out != 0x0 )
+  if ( out.get() != 0x0 )
     cuNDA_reciprocal_rss_kernel<REAL,T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<REAL> >(out);
+  return out;
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float>( cuNDArray<float> *in, unsigned int dim )
 {
   return _cuNDA_reciprocal_rss<float, float>(in,dim);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double>( cuNDArray<double> *in, unsigned int dim )
 {
   return _cuNDA_reciprocal_rss<double, double>(in,dim);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_reciprocal_rss<float, float_complext::Type>(in,dim);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return _cuNDA_reciprocal_rss<double, double_complext::Type>(in,dim);
@@ -618,26 +620,26 @@ boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_creciprocal_
       stride *= in->get_size(i);
   }
 
-  cuNDArray<typename complext<REAL>::Type> *out = cuNDArray<typename complext<REAL>::Type>::allocate(dims);
+  boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > out = cuNDArray<typename complext<REAL>::Type>::allocate(&dims);
  
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  if ( out != 0x0 )
+  if ( out.get() != 0x0 )
     cuNDA_creciprocal_rss_kernel<REAL, typename complext<REAL>::Type><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
+  return out;
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_reciprocal_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_creciprocal_rss<float>( in, dim );
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_reciprocal_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type> *in, unsigned int dim )
 {
   return cuNDA_creciprocal_rss<double>( in, dim );
@@ -673,10 +675,10 @@ boost::shared_ptr< cuNDArray<T> > _cuNDA_correlation( cuNDArray<T> *in )
   unsigned int number_of_batches = in->get_size(in->get_number_of_dimensions()-1);
   unsigned int number_of_elements = in->get_number_of_elements()/number_of_batches;
 
-  vector<unsigned int> dims = in->get_dimensions();
+  vector<unsigned int> dims = *in->get_dimensions();
   dims.push_back(number_of_batches);
 
-  cuNDArray<T> *out = cuNDArray<T>::allocate(dims);
+  boost::shared_ptr< cuNDArray<T> > out = cuNDArray<T>::allocate(&dims);
  
   int device; cudaGetDevice( &device );
   cudaDeviceProp deviceProp; cudaGetDeviceProperties( &deviceProp, device );
@@ -689,13 +691,13 @@ boost::shared_ptr< cuNDArray<T> > _cuNDA_correlation( cuNDArray<T> *in )
     cout << endl << "cuNDA_correlation:: correlation dimension exceeds capacity." << endl; 
     return boost::shared_ptr< cuNDArray<T> >();
   }
-
-  if( out != 0x0 )
+  
+  if( out.get() != 0x0 )
     cuNDA_correlation_kernel<REAL,T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
  
-  return boost::shared_ptr< cuNDArray<T> >(out);
+  return out;
 }
 
 // Build correlation matrix
@@ -712,42 +714,43 @@ cuNDA_real_to_complext_kernel( REAL *in, typename complext<REAL>::Type *out, uns
   }
 }
 
-// Build correlation matrix
+// Convert real to complext
 template<class REAL>  
 boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_real_to_complext( cuNDArray<REAL> *in )
 {
-  cuNDArray<typename complext<REAL>::Type> *out = cuNDArray<typename complext<REAL>::Type>::allocate(in->get_dimensions());
+  boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > out 
+    = cuNDArray<typename complext<REAL>::Type>::allocate(in->get_dimensions().get());
 
   dim3 blockDim( 256 );
   dim3 gridDim((unsigned int) ceil((double)in->get_number_of_elements()/blockDim.x));
   
-  if( out != 0x0 )
+  if( out.get() != 0x0 )
     cuNDA_real_to_complext_kernel<REAL><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), in->get_number_of_elements());
   
   CHECK_FOR_CUDA_ERROR();
   
-  return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(out);
+  return out;
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float> > cuNDA_correlation<float>( cuNDArray<float> *data )
 {
   return _cuNDA_correlation<float,float>(data);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double> > cuNDA_correlation<double>( cuNDArray<double> *data )
 {
   return _cuNDA_correlation<double,double>(data);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_correlation<float_complext::Type>( cuNDArray<float_complext::Type> *data )
 {
   return _cuNDA_correlation<float,float_complext::Type>(data);
 }
 
-template<>
+template<> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_correlation<double_complext::Type>( cuNDArray<double_complext::Type> *data )
 {
   return _cuNDA_correlation<double,double_complext::Type>(data);
@@ -886,7 +889,8 @@ void cuNDA_reciprocal_sqrt( cuNDArray<T> *in_out )
 }
 
 // Normalize (float)
-template<> void cuNDA_normalize<float>( cuNDArray<float> *data, float new_max, cublasHandle_t handle )
+template<> EXPORTGPUCORE
+void cuNDA_normalize<float>( cuNDArray<float> *data, float new_max, cublasHandle_t handle )
 {
   unsigned int number_of_elements = data->get_number_of_elements();
 
@@ -906,7 +910,8 @@ template<> void cuNDA_normalize<float>( cuNDArray<float> *data, float new_max, c
 }
 
 // Normalize (double)
-template<> void cuNDA_normalize<double>( cuNDArray<double> *data, double new_max, cublasHandle_t handle )
+template<> EXPORTGPUCORE
+void cuNDA_normalize<double>( cuNDArray<double> *data, double new_max, cublasHandle_t handle )
 {
   unsigned int number_of_elements = data->get_number_of_elements();
 
@@ -1165,8 +1170,8 @@ bool cuNDA_crop( typename uintd<D>::Type offset, cuNDArray<T> *in, cuNDArray<T> 
     return false;
   }
 
-  typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( in->get_dimensions() );
-  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( out->get_dimensions() );
+  typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
+  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( *out->get_dimensions() );
  
   unsigned int number_of_batches = 1;
   for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ )
@@ -1220,8 +1225,8 @@ bool cuNDA_expand_with_zero_fill( cuNDArray<T> *in, cuNDArray<T> *out )
     return false;
   }
  
-  typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( in->get_dimensions() );
-  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( out->get_dimensions() );
+  typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
+  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( *out->get_dimensions() );
  
   unsigned int number_of_batches = 1;
   for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ )
@@ -1269,7 +1274,7 @@ cuNDA_zero_fill_border_kernel( typename uintd<D>::Type matrix_size_in, typename 
 template<class T, unsigned int D> 
 bool cuNDA_zero_fill_border( typename uintd<D>::Type matrix_size_in, cuNDArray<T> *out )
 { 
-  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( out->get_dimensions() );
+  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( *out->get_dimensions() );
  
   if( weak_greater(matrix_size_in, matrix_size_out) ){
     cout << endl << "Size mismatch, cannot zero fill" << endl;
@@ -1328,7 +1333,7 @@ bool cuNDA_zero_fill_border( typename reald<REAL,D>::Type radius, cuNDArray<T> *
     return false;
   }
  
-  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( out->get_dimensions() );
+  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( *out->get_dimensions() );
   typename reald<REAL,D>::Type matrix_size_out_real = to_reald<REAL,unsigned int,D>( matrix_size_out );
 
   if( weak_greater(radius, matrix_size_out_real) ){
@@ -1503,7 +1508,7 @@ _axpy( float_complext::Type a, cuNDArray<float_complext::Type>* x, cuNDArray<flo
 		   (cuComplex*) x->get_data_ptr(), 1, 
 		   (cuComplex*) y->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
-      cout << "cuNDA_axpy: axpy calculating using cublas failed" << std::endl;
+      cout << "cuNDA_axpy: axpy calculation using cublas failed" << std::endl;
       return false;
     }
   
@@ -1517,7 +1522,7 @@ _axpy( float a, cuNDArray<float>* x, cuNDArray<float>* y, cublasHandle_t handle 
 		   x->get_data_ptr(), 1, 
 		   y->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
-      cout << "cuNDA_axpy: axpy calculating using cublas failed" << std::endl;
+      cout << "cuNDA_axpy: axpy calculation using cublas failed" << std::endl;
       return false;
     }
   
@@ -1531,7 +1536,7 @@ _axpy( double_complext::Type a, cuNDArray<double_complext::Type>* x, cuNDArray<d
 		   (cuDoubleComplex*) x->get_data_ptr(), 1, 
 		   (cuDoubleComplex*) y->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
-      cout << "cuNDA_axpy: axpy calculating using cublas failed" << std::endl;
+      cout << "cuNDA_axpy: axpy calculation using cublas failed" << std::endl;
       return false;
     }
   
@@ -1545,7 +1550,7 @@ _axpy( double a, cuNDArray<double>* x, cuNDArray<double>* y, cublasHandle_t hand
 		   x->get_data_ptr(), 1, 
 		   y->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
-      cout << "cuNDA_axpy: axpy calculating using cublas failed" << std::endl;
+      cout << "cuNDA_axpy: axpy calculation using cublas failed" << std::endl;
       return false;
     }
   
@@ -1572,7 +1577,7 @@ _scal( float_complext::Type a, cuNDArray<float_complext::Type>* x, cublasHandle_
   if( cublasCscal( handle, x->get_number_of_elements(), (cuComplex*) &a,
 		   (cuComplex*) x->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
-      cout << "ccuNDA_scal: calculating using cublas failed" << std::endl;
+      cout << "cuNDA_scal: calculation using cublas failed" << std::endl;
       return false;
     }
 
@@ -1585,7 +1590,7 @@ _scal( float a, cuNDArray<float>* x, cublasHandle_t handle )
   if( cublasSscal( handle, x->get_number_of_elements(), &a,
 		   x->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
-      cout << "ccuNDA_scal: calculating using cublas failed" << std::endl;
+      cout << "cuNDA_scal: calculation using cublas failed" << std::endl;
       return false;
     }
 
@@ -1598,7 +1603,7 @@ _scal( double_complext::Type a, cuNDArray<double_complext::Type>* x, cublasHandl
   if( cublasZscal( handle, x->get_number_of_elements(), (cuDoubleComplex*) &a,
 		   (cuDoubleComplex*) x->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
-      cout << "ccuNDA_scal: calculating using cublas failed" << std::endl;
+      cout << "cuNDA_scal: calculation using cublas failed" << std::endl;
       return false;
     }
 
@@ -1611,7 +1616,7 @@ _scal( double a, cuNDArray<double>* x, cublasHandle_t handle )
   if( cublasDscal( handle, x->get_number_of_elements(), &a,
 		   x->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
-      cout << "ccuNDA_scal: calculating using cublas failed" << std::endl;
+      cout << "cuNDA_scal: calculation using cublas failed" << std::endl;
       return false;
     }
 
@@ -1628,321 +1633,320 @@ cuNDA_scal( T a, cuNDArray<T>* x, cublasHandle_t handle )
 // Instantiation
 //
 
-template boost::shared_ptr< cuNDArray<int> > cuNDA_sum<int>( cuNDArray<int>*, unsigned int);
-template boost::shared_ptr< cuNDArray<intd<1>::Type> > cuNDA_sum<intd<1>::Type >( cuNDArray<intd<1>::Type >*, unsigned int );
-template boost::shared_ptr< cuNDArray<intd<2>::Type> > cuNDA_sum<intd<2>::Type >( cuNDArray<intd<2>::Type >*, unsigned int );
-template boost::shared_ptr< cuNDArray<intd<3>::Type> > cuNDA_sum<intd<3>::Type >( cuNDArray<intd<3>::Type >*, unsigned int );
-template boost::shared_ptr< cuNDArray<intd<4>::Type> > cuNDA_sum<intd<4>::Type >( cuNDArray<intd<4>::Type >*, unsigned int );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<int> > cuNDA_sum<int>( cuNDArray<int>*, unsigned int);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<intd<1>::Type> > cuNDA_sum<intd<1>::Type >( cuNDArray<intd<1>::Type >*, unsigned int );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<intd<2>::Type> > cuNDA_sum<intd<2>::Type >( cuNDArray<intd<2>::Type >*, unsigned int );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<intd<3>::Type> > cuNDA_sum<intd<3>::Type >( cuNDArray<intd<3>::Type >*, unsigned int );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<intd<4>::Type> > cuNDA_sum<intd<4>::Type >( cuNDArray<intd<4>::Type >*, unsigned int );
 
-template boost::shared_ptr< cuNDArray<unsigned int> > cuNDA_sum<unsigned int>( cuNDArray<unsigned int>*, unsigned int);
-template boost::shared_ptr< cuNDArray<uintd<1>::Type> > cuNDA_sum<uintd<1>::Type>( cuNDArray<uintd<1>::Type>*, unsigned int );
-template boost::shared_ptr< cuNDArray<uintd<2>::Type> > cuNDA_sum<uintd<2>::Type>( cuNDArray<uintd<2>::Type>*, unsigned int );
-template boost::shared_ptr< cuNDArray<uintd<3>::Type> > cuNDA_sum<uintd<3>::Type>( cuNDArray<uintd<3>::Type>*, unsigned int );
-template boost::shared_ptr< cuNDArray<uintd<4>::Type> > cuNDA_sum<uintd<4>::Type>( cuNDArray<uintd<4>::Type>*, unsigned int );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<unsigned int> > cuNDA_sum<unsigned int>( cuNDArray<unsigned int>*, unsigned int);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<uintd<1>::Type> > cuNDA_sum<uintd<1>::Type>( cuNDArray<uintd<1>::Type>*, unsigned int );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<uintd<2>::Type> > cuNDA_sum<uintd<2>::Type>( cuNDArray<uintd<2>::Type>*, unsigned int );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<uintd<3>::Type> > cuNDA_sum<uintd<3>::Type>( cuNDArray<uintd<3>::Type>*, unsigned int );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<uintd<4>::Type> > cuNDA_sum<uintd<4>::Type>( cuNDArray<uintd<4>::Type>*, unsigned int );
 
 // Instanciation -- single precision
 
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_sum<float>( cuNDArray<float>*, unsigned int);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<floatd<1>::Type> > cuNDA_sum<floatd<1>::Type>( cuNDArray<floatd<1>::Type>*, unsigned int );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<floatd<2>::Type> > cuNDA_sum<floatd<2>::Type>( cuNDArray<floatd<2>::Type>*, unsigned int );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<floatd<3>::Type> > cuNDA_sum<floatd<3>::Type>( cuNDArray<floatd<3>::Type>*, unsigned int );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<floatd<4>::Type> > cuNDA_sum<floatd<4>::Type>( cuNDArray<floatd<4>::Type>*, unsigned int );
 
-template boost::shared_ptr< cuNDArray<float> > cuNDA_sum<float>( cuNDArray<float>*, unsigned int);
-template boost::shared_ptr< cuNDArray<floatd<1>::Type> > cuNDA_sum<floatd<1>::Type>( cuNDArray<floatd<1>::Type>*, unsigned int );
-template boost::shared_ptr< cuNDArray<floatd<2>::Type> > cuNDA_sum<floatd<2>::Type>( cuNDArray<floatd<2>::Type>*, unsigned int );
-template boost::shared_ptr< cuNDArray<floatd<3>::Type> > cuNDA_sum<floatd<3>::Type>( cuNDArray<floatd<3>::Type>*, unsigned int );
-template boost::shared_ptr< cuNDArray<floatd<4>::Type> > cuNDA_sum<floatd<4>::Type>( cuNDArray<floatd<4>::Type>*, unsigned int );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,float>( cuNDArray<float>*);
 
-template boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,float>( cuNDArray<float>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,float_complext::Type>( cuNDArray<float_complext::Type>* );
 
-template boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,float_complext::Type>( cuNDArray<float_complext::Type>* );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,1>( cuNDArray<floatd<1>::Type>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,2>( cuNDArray<floatd<2>::Type>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,3>( cuNDArray<floatd<3>::Type>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,4>( cuNDArray<floatd<4>::Type>*);
 
-template boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,1>( cuNDArray<floatd<1>::Type>*);
-template boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,2>( cuNDArray<floatd<2>::Type>*);
-template boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,3>( cuNDArray<floatd<3>::Type>*);
-template boost::shared_ptr< cuNDArray<float> > cuNDA_norm<float,4>( cuNDArray<floatd<4>::Type>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,float>( cuNDArray<float>*);
 
-template boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,float>( cuNDArray<float>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,float_complext::Type>( cuNDArray<float_complext::Type>* );
 
-template boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,float_complext::Type>( cuNDArray<float_complext::Type>* );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,1>( cuNDArray<floatd<1>::Type>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,2>( cuNDArray<floatd<2>::Type>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,3>( cuNDArray<floatd<3>::Type>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,4>( cuNDArray<floatd<4>::Type>*);
 
-template boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,1>( cuNDArray<floatd<1>::Type>*);
-template boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,2>( cuNDArray<floatd<2>::Type>*);
-template boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,3>( cuNDArray<floatd<3>::Type>*);
-template boost::shared_ptr< cuNDArray<float> > cuNDA_norm_squared<float,4>( cuNDArray<floatd<4>::Type>*);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_ss<float,float>( cuNDArray<float>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<float> > cuNDA_ss<float,float>( cuNDArray<float>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_ss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<float> > cuNDA_ss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_ss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_ss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_rss<float,float>( cuNDArray<float>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<float> > cuNDA_rss<float,float>( cuNDArray<float>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_rss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<float> > cuNDA_rss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float>( cuNDArray<float>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float>( cuNDArray<float>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<float> > cuNDA_reciprocal_rss<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_reciprocal_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_reciprocal_rss<float_complext::Type, float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > cuNDA_correlation<float>( cuNDArray<float>*);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_correlation<float_complext::Type>( cuNDArray<float_complext::Type>*);
 
-template<> boost::shared_ptr< cuNDArray<float> > cuNDA_correlation<float>( cuNDArray<float>*);
-template<> boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_correlation<float_complext::Type>( cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_real_to_complext<float>( cuNDArray<float>*);
 
-template boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_real_to_complext<float>( cuNDArray<float>*);
+template EXPORTGPUCORE void cuNDA_clear<float>(cuNDArray<float>*);
+template EXPORTGPUCORE void cuNDA_clear<float_complext::Type>(cuNDArray<float_complext::Type>*);
 
-template void cuNDA_clear<float>(cuNDArray<float>*);
-template void cuNDA_clear<float_complext::Type>(cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE void cuNDA_reciprocal<float>(cuNDArray<float>*);
+template EXPORTGPUCORE void cuNDA_reciprocal<float_complext::Type>(cuNDArray<float_complext::Type>*);
 
-template void cuNDA_reciprocal<float>(cuNDArray<float>*);
-template void cuNDA_reciprocal<float_complext::Type>(cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE void cuNDA_sqrt<float>(cuNDArray<float>*);
 
-template void cuNDA_sqrt<float>(cuNDArray<float>*);
+template EXPORTGPUCORE void cuNDA_reciprocal_sqrt<float>(cuNDArray<float>*);
 
-template void cuNDA_reciprocal_sqrt<float>(cuNDArray<float>*);
+template EXPORTGPUCORE void cuNDA_abs<float>(cuNDArray<float>*);
+template EXPORTGPUCORE void cuNDA_abs<floatd1::Type>(cuNDArray<floatd1::Type>*);
+template EXPORTGPUCORE void cuNDA_abs<floatd2::Type>(cuNDArray<floatd2::Type>*);
+template EXPORTGPUCORE void cuNDA_abs<floatd3::Type>(cuNDArray<floatd3::Type>*);
+template EXPORTGPUCORE void cuNDA_abs<floatd4::Type>(cuNDArray<floatd4::Type>*);
 
-template void cuNDA_abs<float>(cuNDArray<float>*);
-template void cuNDA_abs<floatd1::Type>(cuNDArray<floatd1::Type>*);
-template void cuNDA_abs<floatd2::Type>(cuNDArray<floatd2::Type>*);
-template void cuNDA_abs<floatd3::Type>(cuNDArray<floatd3::Type>*);
-template void cuNDA_abs<floatd4::Type>(cuNDArray<floatd4::Type>*);
+template EXPORTGPUCORE bool cuNDA_rss_normalize<float,float>(cuNDArray<float>*, unsigned int);
+template EXPORTGPUCORE bool cuNDA_rss_normalize<float,float_complext::Type>(cuNDArray<float_complext::Type>*, unsigned int);
 
-template bool cuNDA_rss_normalize<float,float>(cuNDArray<float>*, unsigned int);
-template bool cuNDA_rss_normalize<float,float_complext::Type>(cuNDArray<float_complext::Type>*, unsigned int);
+template EXPORTGPUCORE void cuNDA_scale<float>(float, cuNDArray<float_complext::Type>*);
 
-template void cuNDA_scale<float>(float, cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_scale<float>(cuNDArray<float>*, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_scale<float_complext::Type>(cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*);
 
-template bool cuNDA_scale<float>(cuNDArray<float>*, cuNDArray<float>*);
-template bool cuNDA_scale<float_complext::Type>(cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_scale<float>(cuNDArray<float>*, cuNDArray<float_complext::Type>*);
 
-template bool cuNDA_scale<float>(cuNDArray<float>*, cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_axpy<float>( cuNDArray<float>*, cuNDArray<float>*, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_axpy<float_complext::Type>( cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*);
 
-template bool cuNDA_axpy<float>( cuNDArray<float>*, cuNDArray<float>*, cuNDArray<float>*);
-template bool cuNDA_axpy<float_complext::Type>( cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_axpy<float>( cuNDArray<float>*, cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*);
 
-template bool cuNDA_axpy<float>( cuNDArray<float>*, cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_crop<float,1>( uintd1::Type, cuNDArray<float>*, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<float,1>,1>( uintd1::Type, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<float,2>,1>( uintd1::Type, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<float,3>,1>( uintd1::Type, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<float,4>,1>( uintd1::Type, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*);
 
-template bool cuNDA_crop<float,1>( uintd1::Type, cuNDArray<float>*, cuNDArray<float>*);
-template bool cuNDA_crop<vector_td<float,1>,1>( uintd1::Type, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*);
-template bool cuNDA_crop<vector_td<float,2>,1>( uintd1::Type, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*);
-template bool cuNDA_crop<vector_td<float,3>,1>( uintd1::Type, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*);
-template bool cuNDA_crop<vector_td<float,4>,1>( uintd1::Type, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*);
+template EXPORTGPUCORE bool cuNDA_crop<float,2>( uintd2::Type, cuNDArray<float>*, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<float,1>,2>( uintd2::Type, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<float,2>,2>( uintd2::Type, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<float,3>,2>( uintd2::Type, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<float,4>,2>( uintd2::Type, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*);
 
-template bool cuNDA_crop<float,2>( uintd2::Type, cuNDArray<float>*, cuNDArray<float>*);
-template bool cuNDA_crop<vector_td<float,1>,2>( uintd2::Type, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*);
-template bool cuNDA_crop<vector_td<float,2>,2>( uintd2::Type, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*);
-template bool cuNDA_crop<vector_td<float,3>,2>( uintd2::Type, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*);
-template bool cuNDA_crop<vector_td<float,4>,2>( uintd2::Type, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*);
+template EXPORTGPUCORE bool cuNDA_crop<float,3>( uintd3::Type, cuNDArray<float>*, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<float,1>,3>( uintd3::Type, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<float,2>,3>( uintd3::Type, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<float,3>,3>( uintd3::Type, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<float,4>,3>( uintd3::Type, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*);
 
-template bool cuNDA_crop<float,3>( uintd3::Type, cuNDArray<float>*, cuNDArray<float>*);
-template bool cuNDA_crop<vector_td<float,1>,3>( uintd3::Type, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*);
-template bool cuNDA_crop<vector_td<float,2>,3>( uintd3::Type, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*);
-template bool cuNDA_crop<vector_td<float,3>,3>( uintd3::Type, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*);
-template bool cuNDA_crop<vector_td<float,4>,3>( uintd3::Type, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*);
+template EXPORTGPUCORE bool cuNDA_crop<float,4>( uintd4::Type, cuNDArray<float>*, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<float,1>,4>( uintd4::Type, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<float,2>,4>( uintd4::Type, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<float,3>,4>( uintd4::Type, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<float,4>,4>( uintd4::Type, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*);
 
-template bool cuNDA_crop<float,4>( uintd4::Type, cuNDArray<float>*, cuNDArray<float>*);
-template bool cuNDA_crop<vector_td<float,1>,4>( uintd4::Type, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*);
-template bool cuNDA_crop<vector_td<float,2>,4>( uintd4::Type, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*);
-template bool cuNDA_crop<vector_td<float,3>,4>( uintd4::Type, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*);
-template bool cuNDA_crop<vector_td<float,4>,4>( uintd4::Type, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*);
+template EXPORTGPUCORE bool cuNDA_expand_with_zero_fill<float,1>( cuNDArray<float>*, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_expand_with_zero_fill<float_complext::Type,1>( cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*);
 
-template bool cuNDA_expand_with_zero_fill<float,1>( cuNDArray<float>*, cuNDArray<float>*);
-template bool cuNDA_expand_with_zero_fill<float_complext::Type,1>( cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_expand_with_zero_fill<float,2>( cuNDArray<float>*, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_expand_with_zero_fill<float_complext::Type,2>( cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*);
 
-template bool cuNDA_expand_with_zero_fill<float,2>( cuNDArray<float>*, cuNDArray<float>*);
-template bool cuNDA_expand_with_zero_fill<float_complext::Type,2>( cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_expand_with_zero_fill<float,3>( cuNDArray<float>*, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_expand_with_zero_fill<float_complext::Type,3>( cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*);
 
-template bool cuNDA_expand_with_zero_fill<float,3>( cuNDArray<float>*, cuNDArray<float>*);
-template bool cuNDA_expand_with_zero_fill<float_complext::Type,3>( cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_expand_with_zero_fill<float,4>( cuNDArray<float>*, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_expand_with_zero_fill<float_complext::Type,4>( cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*);
 
-template bool cuNDA_expand_with_zero_fill<float,4>( cuNDArray<float>*, cuNDArray<float>*);
-template bool cuNDA_expand_with_zero_fill<float_complext::Type,4>( cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,1>(uintd1::Type, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float_complext::Type,1>(uintd1::Type, cuNDArray<float_complext::Type>*);
 
-template bool cuNDA_zero_fill_border<float,1>(uintd1::Type, cuNDArray<float>*);
-template bool cuNDA_zero_fill_border<float_complext::Type,1>(uintd1::Type, cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,2>(uintd2::Type, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float_complext::Type,2>(uintd2::Type, cuNDArray<float_complext::Type>*);
 
-template bool cuNDA_zero_fill_border<float,2>(uintd2::Type, cuNDArray<float>*);
-template bool cuNDA_zero_fill_border<float_complext::Type,2>(uintd2::Type, cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,3>(uintd3::Type, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float_complext::Type,3>(uintd3::Type, cuNDArray<float_complext::Type>*);
 
-template bool cuNDA_zero_fill_border<float,3>(uintd3::Type, cuNDArray<float>*);
-template bool cuNDA_zero_fill_border<float_complext::Type,3>(uintd3::Type, cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,4>(uintd4::Type, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float_complext::Type,4>(uintd4::Type, cuNDArray<float_complext::Type>*);
 
-template bool cuNDA_zero_fill_border<float,4>(uintd4::Type, cuNDArray<float>*);
-template bool cuNDA_zero_fill_border<float_complext::Type,4>(uintd4::Type, cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,1>(floatd1::Type, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext::Type,1>(floatd1::Type, cuNDArray<float_complext::Type>*);
 
-template bool cuNDA_zero_fill_border<float,float,1>(floatd1::Type, cuNDArray<float>*);
-template bool cuNDA_zero_fill_border<float,float_complext::Type,1>(floatd1::Type, cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,2>(floatd2::Type, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext::Type,2>(floatd2::Type, cuNDArray<float_complext::Type>*);
 
-template bool cuNDA_zero_fill_border<float,float,2>(floatd2::Type, cuNDArray<float>*);
-template bool cuNDA_zero_fill_border<float,float_complext::Type,2>(floatd2::Type, cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,3>(floatd3::Type, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext::Type,3>(floatd3::Type, cuNDArray<float_complext::Type>*);
 
-template bool cuNDA_zero_fill_border<float,float,3>(floatd3::Type, cuNDArray<float>*);
-template bool cuNDA_zero_fill_border<float,float_complext::Type,3>(floatd3::Type, cuNDArray<float_complext::Type>*);
-
-template bool cuNDA_zero_fill_border<float,float,4>(floatd4::Type, cuNDArray<float>*);
-template bool cuNDA_zero_fill_border<float,float_complext::Type,4>(floatd4::Type, cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,4>(floatd4::Type, cuNDArray<float>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext::Type,4>(floatd4::Type, cuNDArray<float_complext::Type>*);
 
 
-template float cuNDA_dot<float>( cuNDArray<float>*, cuNDArray<float>*, cublasHandle_t );
-template float_complext::Type cuNDA_dot<float_complext::Type>( cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, cublasHandle_t );
+template EXPORTGPUCORE float cuNDA_dot<float>( cuNDArray<float>*, cuNDArray<float>*, cublasHandle_t );
+template EXPORTGPUCORE float_complext::Type cuNDA_dot<float_complext::Type>( cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, cublasHandle_t );
 
-template float cuNDA_asum<float,float>( cuNDArray<float>*, cublasHandle_t );
-template float cuNDA_asum<float,float_complext::Type>( cuNDArray<float_complext::Type>*, cublasHandle_t );
+template EXPORTGPUCORE float cuNDA_asum<float,float>( cuNDArray<float>*, cublasHandle_t );
+template EXPORTGPUCORE float cuNDA_asum<float,float_complext::Type>( cuNDArray<float_complext::Type>*, cublasHandle_t );
 
-template bool cuNDA_axpy<float>( float, cuNDArray<float>*, cuNDArray<float>*, cublasHandle_t );
-template bool cuNDA_axpy<float_complext::Type>( float_complext::Type, cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, cublasHandle_t );
+template EXPORTGPUCORE bool cuNDA_axpy<float>( float, cuNDArray<float>*, cuNDArray<float>*, cublasHandle_t );
+template EXPORTGPUCORE bool cuNDA_axpy<float_complext::Type>( float_complext::Type, cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, cublasHandle_t );
 
-template bool cuNDA_scal<float>( float, cuNDArray<float>*, cublasHandle_t );
-template bool cuNDA_scal<float_complext::Type>( float_complext::Type, cuNDArray<float_complext::Type>*, cublasHandle_t );
+template EXPORTGPUCORE bool cuNDA_scal<float>( float, cuNDArray<float>*, cublasHandle_t );
+template EXPORTGPUCORE bool cuNDA_scal<float_complext::Type>( float_complext::Type, cuNDArray<float_complext::Type>*, cublasHandle_t );
 
 // Instanciation -- double precision
 
-template boost::shared_ptr< cuNDArray<double> > cuNDA_sum<double>( cuNDArray<double>*, unsigned int);
-template boost::shared_ptr< cuNDArray<doubled<1>::Type> > cuNDA_sum<doubled<1>::Type>( cuNDArray<doubled<1>::Type>*, unsigned int );
-template boost::shared_ptr< cuNDArray<doubled<2>::Type> > cuNDA_sum<doubled<2>::Type>( cuNDArray<doubled<2>::Type>*, unsigned int );
-template boost::shared_ptr< cuNDArray<doubled<3>::Type> > cuNDA_sum<doubled<3>::Type>( cuNDArray<doubled<3>::Type>*, unsigned int );
-template boost::shared_ptr< cuNDArray<doubled<4>::Type> > cuNDA_sum<doubled<4>::Type>( cuNDArray<doubled<4>::Type>*, unsigned int );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_sum<double>( cuNDArray<double>*, unsigned int);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<doubled<1>::Type> > cuNDA_sum<doubled<1>::Type>( cuNDArray<doubled<1>::Type>*, unsigned int );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<doubled<2>::Type> > cuNDA_sum<doubled<2>::Type>( cuNDArray<doubled<2>::Type>*, unsigned int );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<doubled<3>::Type> > cuNDA_sum<doubled<3>::Type>( cuNDArray<doubled<3>::Type>*, unsigned int );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<doubled<4>::Type> > cuNDA_sum<doubled<4>::Type>( cuNDArray<doubled<4>::Type>*, unsigned int );
 
-template boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,double>( cuNDArray<double>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,double>( cuNDArray<double>*);
 
-template boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,double_complext::Type>( cuNDArray<double_complext::Type>* );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,double_complext::Type>( cuNDArray<double_complext::Type>* );
 
-template boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,1>( cuNDArray<doubled<1>::Type>*);
-template boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,2>( cuNDArray<doubled<2>::Type>*);
-template boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,3>( cuNDArray<doubled<3>::Type>*);
-template boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,4>( cuNDArray<doubled<4>::Type>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,1>( cuNDArray<doubled<1>::Type>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,2>( cuNDArray<doubled<2>::Type>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,3>( cuNDArray<doubled<3>::Type>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_norm<double,4>( cuNDArray<doubled<4>::Type>*);
 
-template boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,double>( cuNDArray<double>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,double>( cuNDArray<double>*);
 
-template boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,double_complext::Type>( cuNDArray<double_complext::Type>* );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,double_complext::Type>( cuNDArray<double_complext::Type>* );
 
-template boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,1>( cuNDArray<doubled<1>::Type>*);
-template boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,2>( cuNDArray<doubled<2>::Type>*);
-template boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,3>( cuNDArray<doubled<3>::Type>*);
-template boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,4>( cuNDArray<doubled<4>::Type>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,1>( cuNDArray<doubled<1>::Type>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,2>( cuNDArray<doubled<2>::Type>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,3>( cuNDArray<doubled<3>::Type>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_norm_squared<double,4>( cuNDArray<doubled<4>::Type>*);
 
-template<> boost::shared_ptr< cuNDArray<double> > cuNDA_ss<double,double>( cuNDArray<double>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_ss<double,double>( cuNDArray<double>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<double> > cuNDA_ss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_ss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_ss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_ss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<double> > cuNDA_rss<double,double>( cuNDArray<double>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_rss<double,double>( cuNDArray<double>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<double> > cuNDA_rss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_rss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double>( cuNDArray<double>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double>( cuNDArray<double>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_reciprocal_rss<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_reciprocal_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_reciprocal_rss<double_complext::Type, double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int);
 
-template<> boost::shared_ptr< cuNDArray<double> > cuNDA_correlation<double>( cuNDArray<double>*);
-template<> boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_correlation<double_complext::Type>( cuNDArray<double_complext::Type>*);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > cuNDA_correlation<double>( cuNDArray<double>*);
+template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_correlation<double_complext::Type>( cuNDArray<double_complext::Type>*);
 
-template boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_real_to_complext<double>( cuNDArray<double>*);
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_real_to_complext<double>( cuNDArray<double>*);
 
-template void cuNDA_clear<double>(cuNDArray<double>*);
-template void cuNDA_clear<double_complext::Type>(cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE void cuNDA_clear<double>(cuNDArray<double>*);
+template EXPORTGPUCORE void cuNDA_clear<double_complext::Type>(cuNDArray<double_complext::Type>*);
 
-template void cuNDA_reciprocal<double>(cuNDArray<double>*);
-template void cuNDA_reciprocal<double_complext::Type>(cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE void cuNDA_reciprocal<double>(cuNDArray<double>*);
+template EXPORTGPUCORE void cuNDA_reciprocal<double_complext::Type>(cuNDArray<double_complext::Type>*);
 
-template void cuNDA_sqrt<double>(cuNDArray<double>*);
+template EXPORTGPUCORE void cuNDA_sqrt<double>(cuNDArray<double>*);
 
-template void cuNDA_reciprocal_sqrt<double>(cuNDArray<double>*);
+template EXPORTGPUCORE void cuNDA_reciprocal_sqrt<double>(cuNDArray<double>*);
 
-template void cuNDA_abs<double>(cuNDArray<double>*);
-template void cuNDA_abs<doubled1::Type>(cuNDArray<doubled1::Type>*);
-template void cuNDA_abs<doubled2::Type>(cuNDArray<doubled2::Type>*);
-template void cuNDA_abs<doubled3::Type>(cuNDArray<doubled3::Type>*);
-template void cuNDA_abs<doubled4::Type>(cuNDArray<doubled4::Type>*);
+template EXPORTGPUCORE void cuNDA_abs<double>(cuNDArray<double>*);
+template EXPORTGPUCORE void cuNDA_abs<doubled1::Type>(cuNDArray<doubled1::Type>*);
+template EXPORTGPUCORE void cuNDA_abs<doubled2::Type>(cuNDArray<doubled2::Type>*);
+template EXPORTGPUCORE void cuNDA_abs<doubled3::Type>(cuNDArray<doubled3::Type>*);
+template EXPORTGPUCORE void cuNDA_abs<doubled4::Type>(cuNDArray<doubled4::Type>*);
 
-template bool cuNDA_rss_normalize<double,double>(cuNDArray<double>*, unsigned int);
-template bool cuNDA_rss_normalize<double,double_complext::Type>(cuNDArray<double_complext::Type>*, unsigned int);
+template EXPORTGPUCORE bool cuNDA_rss_normalize<double,double>(cuNDArray<double>*, unsigned int);
+template EXPORTGPUCORE bool cuNDA_rss_normalize<double,double_complext::Type>(cuNDArray<double_complext::Type>*, unsigned int);
 
-template void cuNDA_scale<double>(double, cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE void cuNDA_scale<double>(double, cuNDArray<double_complext::Type>*);
 
-template bool cuNDA_scale<double>(cuNDArray<double>*, cuNDArray<double>*);
-template bool cuNDA_scale<double_complext::Type>(cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_scale<double>(cuNDArray<double>*, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_scale<double_complext::Type>(cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*);
 
-template bool cuNDA_scale<double>(cuNDArray<double>*, cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_scale<double>(cuNDArray<double>*, cuNDArray<double_complext::Type>*);
 
-template bool cuNDA_axpy<double>( cuNDArray<double>*, cuNDArray<double>*, cuNDArray<double>*);
-template bool cuNDA_axpy<double_complext::Type>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_axpy<double>( cuNDArray<double>*, cuNDArray<double>*, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_axpy<double_complext::Type>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*);
 
-template bool cuNDA_axpy<double>( cuNDArray<double>*, cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_axpy<double>( cuNDArray<double>*, cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*);
 
-template bool cuNDA_crop<double,1>( uintd1::Type, cuNDArray<double>*, cuNDArray<double>*);
-template bool cuNDA_crop<vector_td<double,1>,1>( uintd1::Type, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*);
-template bool cuNDA_crop<vector_td<double,2>,1>( uintd1::Type, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*);
-template bool cuNDA_crop<vector_td<double,3>,1>( uintd1::Type, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*);
-template bool cuNDA_crop<vector_td<double,4>,1>( uintd1::Type, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*);
+template EXPORTGPUCORE bool cuNDA_crop<double,1>( uintd1::Type, cuNDArray<double>*, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<double,1>,1>( uintd1::Type, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<double,2>,1>( uintd1::Type, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<double,3>,1>( uintd1::Type, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<double,4>,1>( uintd1::Type, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*);
 
-template bool cuNDA_crop<double,2>( uintd2::Type, cuNDArray<double>*, cuNDArray<double>*);
-template bool cuNDA_crop<vector_td<double,1>,2>( uintd2::Type, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*);
-template bool cuNDA_crop<vector_td<double,2>,2>( uintd2::Type, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*);
-template bool cuNDA_crop<vector_td<double,3>,2>( uintd2::Type, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*);
-template bool cuNDA_crop<vector_td<double,4>,2>( uintd2::Type, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*);
+template EXPORTGPUCORE bool cuNDA_crop<double,2>( uintd2::Type, cuNDArray<double>*, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<double,1>,2>( uintd2::Type, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<double,2>,2>( uintd2::Type, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<double,3>,2>( uintd2::Type, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<double,4>,2>( uintd2::Type, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*);
 
-template bool cuNDA_crop<double,3>( uintd3::Type, cuNDArray<double>*, cuNDArray<double>*);
-template bool cuNDA_crop<vector_td<double,1>,3>( uintd3::Type, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*);
-template bool cuNDA_crop<vector_td<double,2>,3>( uintd3::Type, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*);
-template bool cuNDA_crop<vector_td<double,3>,3>( uintd3::Type, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*);
-template bool cuNDA_crop<vector_td<double,4>,3>( uintd3::Type, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*);
+template EXPORTGPUCORE bool cuNDA_crop<double,3>( uintd3::Type, cuNDArray<double>*, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<double,1>,3>( uintd3::Type, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<double,2>,3>( uintd3::Type, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<double,3>,3>( uintd3::Type, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<double,4>,3>( uintd3::Type, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*);
 
-template bool cuNDA_crop<double,4>( uintd4::Type, cuNDArray<double>*, cuNDArray<double>*);
-template bool cuNDA_crop<vector_td<double,1>,4>( uintd4::Type, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*);
-template bool cuNDA_crop<vector_td<double,2>,4>( uintd4::Type, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*);
-template bool cuNDA_crop<vector_td<double,3>,4>( uintd4::Type, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*);
-template bool cuNDA_crop<vector_td<double,4>,4>( uintd4::Type, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*);
+template EXPORTGPUCORE bool cuNDA_crop<double,4>( uintd4::Type, cuNDArray<double>*, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<double,1>,4>( uintd4::Type, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<double,2>,4>( uintd4::Type, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<double,3>,4>( uintd4::Type, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*);
+template EXPORTGPUCORE bool cuNDA_crop<vector_td<double,4>,4>( uintd4::Type, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*);
 
-template bool cuNDA_expand_with_zero_fill<double,1>( cuNDArray<double>*, cuNDArray<double>*);
-template bool cuNDA_expand_with_zero_fill<double_complext::Type,1>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_expand_with_zero_fill<double,1>( cuNDArray<double>*, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_expand_with_zero_fill<double_complext::Type,1>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*);
 
-template bool cuNDA_expand_with_zero_fill<double,2>( cuNDArray<double>*, cuNDArray<double>*);
-template bool cuNDA_expand_with_zero_fill<double_complext::Type,2>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_expand_with_zero_fill<double,2>( cuNDArray<double>*, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_expand_with_zero_fill<double_complext::Type,2>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*);
 
-template bool cuNDA_expand_with_zero_fill<double,3>( cuNDArray<double>*, cuNDArray<double>*);
-template bool cuNDA_expand_with_zero_fill<double_complext::Type,3>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_expand_with_zero_fill<double,3>( cuNDArray<double>*, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_expand_with_zero_fill<double_complext::Type,3>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*);
 
-template bool cuNDA_expand_with_zero_fill<double,4>( cuNDArray<double>*, cuNDArray<double>*);
-template bool cuNDA_expand_with_zero_fill<double_complext::Type,4>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_expand_with_zero_fill<double,4>( cuNDArray<double>*, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_expand_with_zero_fill<double_complext::Type,4>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*);
 
-template bool cuNDA_zero_fill_border<double,1>(uintd1::Type, cuNDArray<double>*);
-template bool cuNDA_zero_fill_border<double_complext::Type,1>(uintd1::Type, cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,1>(uintd1::Type, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double_complext::Type,1>(uintd1::Type, cuNDArray<double_complext::Type>*);
 
-template bool cuNDA_zero_fill_border<double,2>(uintd2::Type, cuNDArray<double>*);
-template bool cuNDA_zero_fill_border<double_complext::Type,2>(uintd2::Type, cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,2>(uintd2::Type, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double_complext::Type,2>(uintd2::Type, cuNDArray<double_complext::Type>*);
 
-template bool cuNDA_zero_fill_border<double,3>(uintd3::Type, cuNDArray<double>*);
-template bool cuNDA_zero_fill_border<double_complext::Type,3>(uintd3::Type, cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,3>(uintd3::Type, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double_complext::Type,3>(uintd3::Type, cuNDArray<double_complext::Type>*);
 
-template bool cuNDA_zero_fill_border<double,4>(uintd4::Type, cuNDArray<double>*);
-template bool cuNDA_zero_fill_border<double_complext::Type,4>(uintd4::Type, cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,4>(uintd4::Type, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double_complext::Type,4>(uintd4::Type, cuNDArray<double_complext::Type>*);
 
-template bool cuNDA_zero_fill_border<double,double,1>(doubled1::Type, cuNDArray<double>*);
-template bool cuNDA_zero_fill_border<double,double_complext::Type,1>(doubled1::Type, cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,1>(doubled1::Type, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext::Type,1>(doubled1::Type, cuNDArray<double_complext::Type>*);
 
-template bool cuNDA_zero_fill_border<double,double,2>(doubled2::Type, cuNDArray<double>*);
-template bool cuNDA_zero_fill_border<double,double_complext::Type,2>(doubled2::Type, cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,2>(doubled2::Type, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext::Type,2>(doubled2::Type, cuNDArray<double_complext::Type>*);
 
-template bool cuNDA_zero_fill_border<double,double,3>(doubled3::Type, cuNDArray<double>*);
-template bool cuNDA_zero_fill_border<double,double_complext::Type,3>(doubled3::Type, cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,3>(doubled3::Type, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext::Type,3>(doubled3::Type, cuNDArray<double_complext::Type>*);
 
-template bool cuNDA_zero_fill_border<double,double,4>(doubled4::Type, cuNDArray<double>*);
-template bool cuNDA_zero_fill_border<double,double_complext::Type,4>(doubled4::Type, cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,4>(doubled4::Type, cuNDArray<double>*);
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext::Type,4>(doubled4::Type, cuNDArray<double_complext::Type>*);
 
 
-template double cuNDA_dot<double>( cuNDArray<double>*, cuNDArray<double>*, cublasHandle_t );
-template double_complext::Type cuNDA_dot<double_complext::Type>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, cublasHandle_t );
+template EXPORTGPUCORE double cuNDA_dot<double>( cuNDArray<double>*, cuNDArray<double>*, cublasHandle_t );
+template EXPORTGPUCORE double_complext::Type cuNDA_dot<double_complext::Type>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, cublasHandle_t );
 
-template double cuNDA_asum<double,double>( cuNDArray<double>*, cublasHandle_t );
-template double cuNDA_asum<double,double_complext::Type>( cuNDArray<double_complext::Type>*, cublasHandle_t );
+template EXPORTGPUCORE double cuNDA_asum<double,double>( cuNDArray<double>*, cublasHandle_t );
+template EXPORTGPUCORE double cuNDA_asum<double,double_complext::Type>( cuNDArray<double_complext::Type>*, cublasHandle_t );
 
-template bool cuNDA_axpy<double>( double, cuNDArray<double>*, cuNDArray<double>*, cublasHandle_t );
-template bool cuNDA_axpy<double_complext::Type>( double_complext::Type, cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, cublasHandle_t );
+template EXPORTGPUCORE bool cuNDA_axpy<double>( double, cuNDArray<double>*, cuNDArray<double>*, cublasHandle_t );
+template EXPORTGPUCORE bool cuNDA_axpy<double_complext::Type>( double_complext::Type, cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, cublasHandle_t );
 
-template bool cuNDA_scal<double>( double, cuNDArray<double>*, cublasHandle_t );
-template bool cuNDA_scal<double_complext::Type>( double_complext::Type, cuNDArray<double_complext::Type>*, cublasHandle_t );
+template EXPORTGPUCORE bool cuNDA_scal<double>( double, cuNDArray<double>*, cublasHandle_t );
+template EXPORTGPUCORE bool cuNDA_scal<double_complext::Type>( double_complext::Type, cuNDArray<double_complext::Type>*, cublasHandle_t );

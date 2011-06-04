@@ -3,8 +3,7 @@
 #include <cufft.h>
 #include <cublas.h>
 
-int cuNDFFT::fft_int(cuNDArray< cuFloatComplex >* input, std::vector<unsigned int> dims_to_transform, 
-		     int direction, bool do_scale)
+int cuNDFFT::fft_int(cuNDArray< cuFloatComplex > *input, std::vector<unsigned int> *dims_to_transform, int direction, bool do_scale)
 {
   std::vector<unsigned int> new_dim_order;
   std::vector<unsigned int> reverse_dim_order;
@@ -12,23 +11,23 @@ int cuNDFFT::fft_int(cuNDArray< cuFloatComplex >* input, std::vector<unsigned in
   std::vector<unsigned int> dim_count(input->get_number_of_dimensions(),0);
   
   unsigned int array_ndim = input->get_number_of_dimensions();
-  std::vector<unsigned int> array_dims = input->get_dimensions();
+  boost::shared_ptr< std::vector<unsigned int> > array_dims = input->get_dimensions();
   
-  dims = std::vector<int>(dims_to_transform.size(),0);
-  for (unsigned int i = 0; i < dims_to_transform.size(); i++) {
-    if (dims_to_transform[i] >= array_ndim) {
-      std::cerr << "cuNDFFT::fft Invalid dimensions specified for transform " << dims_to_transform[i] << "max " << array_ndim << std::endl;
+  dims = std::vector<int>(dims_to_transform->size(),0);
+  for (unsigned int i = 0; i < dims_to_transform->size(); i++) {
+    if ((*dims_to_transform)[i] >= array_ndim) {
+      std::cerr << "cuNDFFT::fft Invalid dimensions specified for transform " << (*dims_to_transform)[i] << "max " << array_ndim << std::endl;
       return -1;
     }
-    if (dim_count[dims_to_transform[i]] > 0) {
+    if (dim_count[(*dims_to_transform)[i]] > 0) {
       std::cerr << "cuNDFFT::fft Invalid dimensions (duplicates) specified for transform" << std::endl;
       return -1;
     }
-    dim_count[dims_to_transform[i]]++;
-    dims[dims_to_transform.size()-1-i] = array_dims[dims_to_transform[i]];
+    dim_count[(*dims_to_transform)[i]]++;
+    dims[dims_to_transform->size()-1-i] = (*array_dims)[(*dims_to_transform)[i]];
   }
   
-  new_dim_order = dims_to_transform;
+  new_dim_order = *dims_to_transform;
   for (unsigned int i = 0; i < array_ndim; i++) {
     if (!dim_count[i]) new_dim_order.push_back(i);
   }
@@ -44,7 +43,6 @@ int cuNDFFT::fft_int(cuNDArray< cuFloatComplex >* input, std::vector<unsigned in
   for (unsigned int i = 0; i < dims.size(); i++) elements_in_ft *= dims[i];
   batches = input->get_number_of_elements() / elements_in_ft;
 
-
   cufftHandle plan;
   cufftResult ftres;
 
@@ -55,7 +53,7 @@ int cuNDFFT::fft_int(cuNDArray< cuFloatComplex >* input, std::vector<unsigned in
   }
 
   //IFFTSHIFT
-  if (input->permute(new_dim_order,0,-1) < 0) {
+  if (input->permute(&new_dim_order,0,-1) < 0) {
     std::cerr << "cuNDFFT error permuting before FFT" << std::endl;
     return -1;
   }
@@ -80,7 +78,7 @@ int cuNDFFT::fft_int(cuNDArray< cuFloatComplex >* input, std::vector<unsigned in
   }
 
   //FFTSHIFT 
-  if (input->permute(reverse_dim_order,0,1) < 0) {
+  if (input->permute(&reverse_dim_order,0,1) < 0) {
     std::cerr << "cuNDFFT error permuting after FFT" << std::endl;
     return -1;
   }
@@ -88,41 +86,41 @@ int cuNDFFT::fft_int(cuNDArray< cuFloatComplex >* input, std::vector<unsigned in
   return 0;
 }
 
-int cuNDFFT::fft(cuNDArray< cuFloatComplex >* input, std::vector<unsigned int> dims_to_transform)
+int cuNDFFT::fft(cuNDArray< cuFloatComplex > *input, std::vector<unsigned int> *dims_to_transform)
 {
-  return fft_int(input,dims_to_transform, CUFFT_FORWARD, false);
+  return fft_int(input, dims_to_transform, CUFFT_FORWARD, false);
 }
 
-int cuNDFFT::ifft(cuNDArray< cuFloatComplex >* input, std::vector<unsigned int> dims_to_transform, bool do_scale)
+int cuNDFFT::ifft(cuNDArray< cuFloatComplex > *input, std::vector<unsigned int> *dims_to_transform, bool do_scale)
 {
-  return fft_int(input,dims_to_transform, CUFFT_INVERSE, do_scale);
+  return fft_int(input, dims_to_transform, CUFFT_INVERSE, do_scale);
 }
 
 
-int cuNDFFT::fft(cuNDArray< cuFloatComplex >* input, unsigned int dim_to_transform)
+int cuNDFFT::fft(cuNDArray< cuFloatComplex > *input, unsigned int dim_to_transform)
 {
   std::vector<unsigned int> dims(1,dim_to_transform);
-  return fft_int(input,dims, CUFFT_FORWARD, false);
+  return fft_int(input, &dims, CUFFT_FORWARD, false);
 }
   
-int cuNDFFT::ifft(cuNDArray< cuFloatComplex >* input, unsigned int dim_to_transform, bool do_scale)
+int cuNDFFT::ifft(cuNDArray< cuFloatComplex > *input, unsigned int dim_to_transform, bool do_scale)
 {
   std::vector<unsigned int> dims(1,dim_to_transform);
-  return fft_int(input,dims, CUFFT_INVERSE, do_scale);
+  return fft_int(input, &dims, CUFFT_INVERSE, do_scale);
 }
 
-int cuNDFFT::fft(cuNDArray< cuFloatComplex >* input)
+int cuNDFFT::fft(cuNDArray< cuFloatComplex > *input)
 {
   std::vector<unsigned int> dims(input->get_number_of_dimensions(),0);
   for (unsigned int i = 0; i < dims.size(); i++) dims[i] = i;
 
-  return fft_int(input,dims, CUFFT_FORWARD, false);
+  return fft_int(input, &dims, CUFFT_FORWARD, false);
 }
 
-int cuNDFFT::ifft(cuNDArray< cuFloatComplex >* input, bool do_scale)
+int cuNDFFT::ifft(cuNDArray< cuFloatComplex > *input, bool do_scale)
 {
   std::vector<unsigned int> dims(input->get_number_of_dimensions(),0);
   for (unsigned int i = 0; i < dims.size(); i++) dims[i] = i;
-  return fft_int(input,dims, CUFFT_INVERSE, do_scale);
+  return fft_int(input, &dims, CUFFT_INVERSE, do_scale);
 }
 
