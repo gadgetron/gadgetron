@@ -71,7 +71,6 @@ class CalibrationBufferCounter
  protected:
   float           position_[3];
   float           quarternion_[4];   
-  std::vector<unsigned int> lines_sampled_;
 
   bool position_equal(float* position) {
     for (unsigned int i = 0; i < 3; i++) {
@@ -87,6 +86,9 @@ class CalibrationBufferCounter
     return true;
   }
 
+ private:
+  std::vector<unsigned int> lines_sampled_;
+
 };
 
 class GrappaCalibrationBuffer
@@ -100,7 +102,7 @@ class GrappaCalibrationBuffer
 
   int add_data(GadgetMessageAcquisition* m1, hoNDArray< std::complex<float> >* m2);
 
- protected:
+ private:
   hoNDArray< std::complex<float> > buffer_;
   std::vector<unsigned int> dimensions_;
   GrappaWeights<float>* weights_;

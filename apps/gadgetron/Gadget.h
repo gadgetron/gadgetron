@@ -8,6 +8,7 @@
 #include <ace/OS_Memory.h>
 
 #include <map>
+#include <boost/shared_ptr.hpp>
 
 #include "GadgetContainerMessage.h"
 #include "GadgetronExport.h"
@@ -158,34 +159,35 @@ public:
     return 0;
   }
 
-  int set_parameter(std::string name, std::string val) {
-    parameters_[name] = val;
+  int set_parameter(const char* name, const char* val) {
+
+    parameters_[std::string(name)] = std::string(val);
     return 0;
   }
 
 
-  int get_bool_value(std::string name) {
-    return (0 == ACE_OS::strcmp(get_string_value(name).c_str(), "true"));
+  int get_bool_value(const char* name) {
+    return (0 == ACE_OS::strcmp(get_string_value(name)->c_str(), "true"));
   }
 
-  int get_int_value(std::string name) {
-    return ACE_OS::atoi(get_string_value(name).c_str());
+  int get_int_value(const char* name) {
+    return ACE_OS::atoi(get_string_value(name)->c_str());
   }
 
-  double get_double_value(std::string name) {
-    return ACE_OS::atof(get_string_value(name).c_str());
+  double get_double_value(const char* name) {
+    return ACE_OS::atof(get_string_value(name)->c_str());
   }
 
-  std::string get_string_value(std::string name) {
+  boost::shared_ptr<std::string> get_string_value(const char* name) {
     std::map<std::string,std::string>::iterator it;
     
-    it = parameters_.find(name);
+    it = parameters_.find(std::string(name));
     
     if (it != parameters_.end()) {
-      return it->second;
+      return boost::shared_ptr<std::string>(new std::string(it->second));
     }
 
-    return std::string("");
+    return boost::shared_ptr<std::string>(new std::string(""));
   }
 
 
@@ -204,6 +206,8 @@ protected:
   unsigned int desired_threads_;
   bool pass_on_undesired_data_;
   GadgetStreamController* controller_;
+
+ private:
   std::map<std::string, std::string> parameters_;
 };
 

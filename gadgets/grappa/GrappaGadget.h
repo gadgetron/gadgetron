@@ -32,6 +32,7 @@ public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
 
   virtual int create_image_buffer(unsigned int slice);
 
+ private:
   std::vector< GrappaCalibrationBuffer* > buffers_;
   std::vector<unsigned int> dimensions_;
   std::vector<unsigned int> image_dimensions_;

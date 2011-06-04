@@ -304,7 +304,7 @@ int GadgetStreamController::configure(char* init_filename)
 		std::string propertyname(child_param->ToElement()->Attribute("name"));
 		std::string propertyvalue(child_param->ToElement()->Attribute("value"));
 		
-		g->set_parameter(propertyname, propertyvalue);
+		g->set_parameter(propertyname.c_str(), propertyvalue.c_str());
 	      }
 	    
 	  }

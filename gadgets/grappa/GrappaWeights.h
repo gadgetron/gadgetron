@@ -18,7 +18,7 @@ template <class T> class GrappaWeights
 	    hoNDArray< std::complex<T> >* data_out, 
 	    T scale = 1.0);
 
- protected:
+ private:
   ACE_Thread_Mutex mutex_;
   hoNDArray< std::complex<T> > weights_;
 
