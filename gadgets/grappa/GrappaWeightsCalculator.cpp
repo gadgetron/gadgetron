@@ -8,7 +8,7 @@
 #include "htgrappa.h"
 #include "GPUTimer.h"
 
-template <class T> class GrappaWeightsDescription
+template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsDescription
 {
 
 public:
@@ -190,5 +190,8 @@ add_job( hoNDArray< std::complex<T> >* ref_data,
   return 0;
 }
 
-template class GrappaWeightsCalculator<float>;
+template class EXPORTGADGETSGRAPPA GrappaWeightsDescription<float>;
+template class EXPORTGADGETSGRAPPA GrappaWeightsCalculator<float>;
+//template class EXPORTGADGETSGRAPPA GrappaWeightsCalculator<double>; //TOFO
+//template class EXPORTGADGETSGRAPPA GrappaWeightsDescription<double>;
 

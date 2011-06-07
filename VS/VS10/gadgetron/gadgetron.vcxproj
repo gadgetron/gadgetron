@@ -105,16 +105,19 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;_USRDLL;__BUILD_GADGETRON_HOSTUTILS__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\inc;$(ACEDIR);$(BOOST_ROOT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;TIXML_USE_STL;_DEBUG;_USRDLL;__BUILD_GADGETRON_HOSTUTILS__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\inc;$(ACEDIR);$(BOOST_ROOT_DIR);$(TINYXML_INCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(TargetDir)gadgetron.exe</OutputFile>
+      <AdditionalLibraryDirectories>$(ACEDIR)/lib;$(TINYXML_LIBDIR);..\..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>tinyxmlSTL.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /i $(TargetDir)gadgetron.exe ..\..\..\bin\</Command>
+      <Command>copy /y $(TargetDir)gadgetron.exe $(TargetDir)apps_gadgetron.exe
+xcopy /y /i $(TargetDir)gadgetron.exe ..\..\..\bin\</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>xcopy /y /i ..\..\..\apps\gadgetron\*.h ..\..\..\inc\</Command>
@@ -126,16 +129,19 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;_USRDLL;__BUILD_GADGETRON_HOSTUTILS__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\inc;$(ACEDIR);$(BOOST_ROOT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;TIXML_USE_STL;_DEBUG;_USRDLL;__BUILD_GADGETRON_HOSTUTILS__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\inc;$(ACEDIR);$(BOOST_ROOT_DIR);$(TINYXML_INCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(TargetDir)gadgetron.exe</OutputFile>
+      <AdditionalLibraryDirectories>$(ACEDIR)/lib;$(TINYXML_LIBDIR);..\..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>tinyxmlSTL.lib;ACEd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /i $(TargetDir)gadgetron.exe ..\..\..\bin\</Command>
+      <Command>copy /y $(TargetDir)gadgetron.exe $(TargetDir)apps_gadgetron.exe
+xcopy /y /i $(TargetDir)gadgetron.exe ..\..\..\bin\</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>xcopy /y /i ..\..\..\apps\gadgetron\*.h ..\..\..\inc\</Command>
@@ -149,18 +155,21 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;NDEBUG;_USRDLL;__BUILD_GADGETRON_HOSTUTILS__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\inc;$(ACEDIR);$(BOOST_ROOT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;TIXML_USE_STL;NDEBUG;_USRDLL;__BUILD_GADGETRON_HOSTUTILS__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\inc;$(ACEDIR);$(BOOST_ROOT_DIR);$(TINYXML_INCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <OutputFile>$(TargetDir)gadgetron.exe</OutputFile>
+      <AdditionalLibraryDirectories>$(ACEDIR)/lib;$(TINYXML_LIBDIR);..\..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>tinyxmlSTL.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /i $(TargetDir)gadgetron.exe ..\..\..\bin\</Command>
+      <Command>copy /y $(TargetDir)gadgetron.exe $(TargetDir)apps_gadgetron.exe
+xcopy /y /i $(TargetDir)gadgetron.exe ..\..\..\bin\</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>xcopy /y /i ..\..\..\apps\gadgetron\*.h ..\..\..\inc\</Command>
@@ -174,18 +183,21 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;NDEBUG;_USRDLL;__BUILD_GADGETRON_HOSTUTILS__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\..\inc;$(ACEDIR);$(BOOST_ROOT_DIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;TIXML_USE_STL;NDEBUG;_USRDLL;__BUILD_GADGETRON_HOSTUTILS__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\inc;$(ACEDIR);$(BOOST_ROOT_DIR);$(TINYXML_INCDIR);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <OutputFile>$(TargetDir)gadgetron.exe</OutputFile>
+      <AdditionalLibraryDirectories>$(ACEDIR)/lib;$(TINYXML_LIBDIR);..\..\..\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>tinyxmlSTL.lib;ACE.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /i $(TargetDir)gadgetron.exe ..\..\..\bin\</Command>
+      <Command>copy /y $(TargetDir)gadgetron.exe $(TargetDir)apps_gadgetron.exe
+xcopy /y /i $(TargetDir)gadgetron.exe ..\..\..\bin\</Command>
     </PostBuildEvent>
     <PreBuildEvent>
       <Command>xcopy /y /i ..\..\..\apps\gadgetron\*.h ..\..\..\inc\</Command>

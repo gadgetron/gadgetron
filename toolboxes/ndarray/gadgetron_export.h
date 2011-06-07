@@ -49,3 +49,23 @@
 #else
 #define EXPORTHOSTUTILS
 #endif
+
+#if defined (WIN32)
+#ifdef __BUILD_GADGETRON_CORE__
+#define EXPORTGADGETSCORE __declspec(dllexport)
+#else
+#define EXPORTGADGETSCORE __declspec(dllimport)
+#endif
+#else
+#define EXPORTGADGETSCORE
+#endif
+
+#if defined (WIN32)
+#ifdef __BUILD_GADGETRON_GRAPPA__
+#define EXPORTGADGETSGRAPPA __declspec(dllexport)
+#else
+#define EXPORTGADGETSGRAPPA __declspec(dllimport)
+#endif
+#else
+#define EXPORTGADGETSGRAPPA
+#endif

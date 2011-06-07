@@ -93,5 +93,5 @@ apply(hoNDArray< std::complex<T> >* data_in,
 }
 
 //Template instanciation
-template class GrappaWeights<float>;
-template class GrappaWeights<double>;
+template class EXPORTGADGETSGRAPPA GrappaWeights<float>;
+template class EXPORTGADGETSGRAPPA GrappaWeights<double>;

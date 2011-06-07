@@ -2,9 +2,10 @@
 
 #include <ace/Task.h>
 
+#include "gadgetron_export.h"
 #include "GrappaWeights.h"
 
-template <class T> class GrappaWeightsCalculator : public ACE_Task<ACE_MT_SYNCH>
+template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsCalculator : public ACE_Task<ACE_MT_SYNCH>
 {
   typedef ACE_Task<ACE_MT_SYNCH> inherited;
 

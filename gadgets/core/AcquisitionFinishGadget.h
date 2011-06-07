@@ -1,13 +1,14 @@
 #ifndef ACQUISITIONFINISHGADGET_H
 #define ACQUISITIONFINISHGADGET_H
 
+#include "gadgetron_export.h"
 #include "Gadget.h"
 #include "NDArray.h"
 #include "GadgetMRIHeaders.h"
 
 #include <complex>
 
-class AcquisitionFinishGadget : 
+class EXPORTGADGETSCORE AcquisitionFinishGadget : 
 public Gadget2<GadgetMessageAcquisition,NDArray< std::complex<float> > >
 {
  public:

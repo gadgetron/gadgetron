@@ -3,19 +3,20 @@
 
 #include <complex>
 
+#include "gadgetron_export.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
 #include "GrappaCalibrationBuffer.h"
 
-struct GrappaBufferInfo
+struct EXPORTGADGETSGRAPPA GrappaBufferInfo
 {
   float           position[3];
   float           quarternion[4];   
   unsigned int    acceleration_factor;
 };
 
-class GrappaGadget : 
+class EXPORTGADGETSGRAPPA GrappaGadget : 
 public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
 {
   

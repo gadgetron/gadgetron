@@ -1,10 +1,11 @@
 #ifndef MRIIMAGEWRITER_H
 #define MRIIMAGEWRITER_H
 
+#include "gadgetron_export.h"
 #include "GadgetMessageInterface.h"
 #include "GadgetMRIHeaders.h"
 
-class MRIImageWriter : public GadgetMessageWriter
+class EXPORTGADGETSCORE MRIImageWriter : public GadgetMessageWriter
 {
  public:
   GADGETRON_WRITER_DECLARE(GadgetMessageWriter);

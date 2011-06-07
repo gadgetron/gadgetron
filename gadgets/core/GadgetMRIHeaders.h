@@ -1,6 +1,7 @@
 #ifndef GADGETMRIHEADERS_H
 #define GADGETMRIHEADERS_H
 
+#include "gadgetron_export.h"
 #include <ace/Basic_Types.h>
 
 //Data flags
@@ -12,7 +13,7 @@
 #define GADGET_FLAG_FIRST_ACQ_IN_MEAS         (1 << 5) /* 0x04 */
 #define GADGET_FLAG_FIRST_ACQ_IN_CONCAT       (1 << 6) /* 0x08 */
 
-enum GadgetMessageID {
+EXPORTGADGETSCORE enum GadgetMessageID {
   GADGET_MESSAGE_EXT_ID_MIN        = 1000,
   GADGET_MESSAGE_ACQUISITION       = 1001,
   GADGET_MESSAGE_NEW_MEASUREMENT   = 1002,
@@ -22,7 +23,7 @@ enum GadgetMessageID {
   GADGET_MESSAGE_EXT_ID_MAX        = 4096
 };
   
-struct LoopCounters {
+struct EXPORTGADGETSCORE LoopCounters {
   ACE_UINT16 line;
   ACE_UINT16 acquisition;
   ACE_UINT16 slice;
@@ -35,7 +36,7 @@ struct LoopCounters {
   ACE_UINT16 channel;
 };
 
-struct GadgetMessageAcquisition
+struct EXPORTGADGETSCORE GadgetMessageAcquisition
 {
   ACE_UINT32     flags;
   ACE_UINT32     meas_uid;
@@ -50,7 +51,7 @@ struct GadgetMessageAcquisition
   LoopCounters   max_idx;
 };
 
-struct GadgetMessageImage
+struct EXPORTGADGETSCORE GadgetMessageImage
 {
   ACE_UINT16     matrix_size[3];
   ACE_UINT16     channels;

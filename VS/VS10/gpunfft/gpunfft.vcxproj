@@ -130,7 +130,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;gpucore.lib;cutil32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(CudaToolkitLibDir);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\Win32</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CUDA_LIB_PATH);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\Win32</AdditionalLibraryDirectories>
       <OutputFile>$(TargetDir)gpunfft.dll</OutputFile>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
@@ -161,7 +161,7 @@ xcopy /y /i $(TargetDir)gpunfft.lib ..\..\..\lib\</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;gpucore.lib;cutil64.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(CudaToolkitLibDir);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CUDA_LIB_PATH);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\x64</AdditionalLibraryDirectories>
       <OutputFile>$(TargetDir)gpunfft.dll</OutputFile>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
@@ -197,7 +197,7 @@ xcopy /y /i $(TargetDir)gpunfft.lib ..\..\..\lib\</Command>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;gpucore.lib;cutil32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(CudaToolkitLibDir);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\Win32</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CUDA_LIB_PATH);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\Win32</AdditionalLibraryDirectories>
       <OutputFile>$(TargetDir)gpunfft.dll</OutputFile>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
@@ -232,7 +232,7 @@ xcopy /y /i $(TargetDir)gpunfft.lib ..\..\..\lib\</Command>
       <OptimizeReferences>true</OptimizeReferences>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;gpucore.lib;cutil64.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(CudaToolkitLibDir);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(CUDA_LIB_PATH);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\x64</AdditionalLibraryDirectories>
       <OutputFile>$(TargetDir)gpunfft.dll</OutputFile>
     </Link>
     <PostBuildEvent>

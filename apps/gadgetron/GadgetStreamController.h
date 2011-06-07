@@ -9,7 +9,6 @@
 #include "ace/Svc_Handler.h"
 #include "ace/Reactor_Notification_Strategy.h"
 
-
 #include <complex>
 
 #include "Gadgetron.h"
@@ -31,8 +30,6 @@ public:
     { 
       //ACE_DEBUG( (LM_INFO, ACE_TEXT("~GadgetStreamController() called\n")) );
     }
-
-
 
   //ACE_SOCK_Stream &peer (void) { return this->sock_; }
 

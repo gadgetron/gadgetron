@@ -1,17 +1,15 @@
 #ifndef GADGETRONEXPORT_H
 #define GADGETRONEXPORT_H
+#pragma once
 
-#if defined (WIN32) || defined (_WIN32)
-
-#ifdef GADGETS_BUILD_DLL
-#define DLLEXPORT __declspec(dllexport)
+#if defined (WIN32)
+#ifdef __BUILD_GADGETS__
+#define GADGETEXPORT __declspec(dllexport)
 #else
-#define DLLEXPORT __declspec(dllimport)
+#define GADGETEXPORT __declspec(dllimport)
 #endif
-
 #else
-/* In Linux, DLLEXPORT is ignored */
-#define DLLEXPORT
+#define GADGETEXPORT
 #endif
 
 
@@ -23,7 +21,7 @@
 
 //In CPP file add this macro add the end
 #define GADGETRON_LOADABLE_FACTORY_DECLARE(CLASS, COMPONENT)	\
-extern "C" DLLEXPORT CLASS * make_##COMPONENT (void);           \
+extern "C" GADGETEXPORT CLASS * make_##COMPONENT (void);           \
 CLASS * make_##COMPONENT (void)       				\
 {							       	\
   return new COMPONENT;                                         \

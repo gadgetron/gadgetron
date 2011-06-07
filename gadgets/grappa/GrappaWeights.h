@@ -4,9 +4,10 @@
 
 #include <complex>
 
+#include "gadgetron_export.h"
 #include "hoNDArray.h"
 
-template <class T> class GrappaWeights
+template <class T> class EXPORTGADGETSGRAPPA GrappaWeights
 {
  public:
   GrappaWeights() {}

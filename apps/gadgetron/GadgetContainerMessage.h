@@ -1,5 +1,6 @@
 #ifndef GADGETCONTAINERMESSAGE_H
 #define GADGETCONTAINERMESSAGE_H
+#pragma once
 
 #include <ace/Message_Block.h>
 
@@ -14,21 +15,26 @@ class GadgetContainerMessageBase : public ACE_Message_Block
 {
   typedef ACE_Message_Block base;
   
-  enum
-  {
-    CONTAINER_MESSAGE_BLOCK = (ACE_Message_Block::USER_FLAGS << 2)
-  };
-
  public:
-  GadgetContainerMessageBase(size_t size)
-    : base(size)
+
+  enum { CONTAINER_MESSAGE_BLOCK = (ACE_Message_Block::USER_FLAGS << 2) };
+
+  GadgetContainerMessageBase(size_t size) : base(size)
   {
     set_flags(CONTAINER_MESSAGE_BLOCK); //Mark this message block as a container, so that we know it is safe to type cast it.
   }
 
-  int getTypeID() {
-    return type_magic_id_;
-  }
+#ifdef WIN32
+
+  std::string getTypeID() { return type_magic_id_; }
+  template <class T> static std::string magic_number_for_type() { return std::string(typeid(T).name()); } 
+
+protected:
+  std::string type_magic_id_;
+
+#else
+
+  int getTypeID() { return type_magic_id_; }
 
   template <class T> static int magic_number_for_type(){
     //Will only get set once for each instanciation of this function
@@ -45,8 +51,7 @@ class GadgetContainerMessageBase : public ACE_Message_Block
     static int magic(0);
     return magic++;
   }	 
-
-  
+#endif  
 };
 
 template <class T> class GadgetContainerMessage : public GadgetContainerMessageBase

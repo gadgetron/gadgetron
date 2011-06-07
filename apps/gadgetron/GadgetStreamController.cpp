@@ -3,6 +3,7 @@
 #include "ace/OS_NS_stdio.h"
 #include "ace/DLL.h"
 #include "ace/DLL_Manager.h"
+#include "ace/OS_NS_netdb.h"
 
 #include <tinyxml.h>
 

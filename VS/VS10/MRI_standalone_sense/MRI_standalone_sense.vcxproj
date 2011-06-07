@@ -109,7 +109,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;cula.lib;cutil64.lib;gpucore.lib;gpucg.lib;gpunfft.lib;gpupmri.lib;hostutils.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(CUDA_LIB_PATH);$(CULA_LIB_PATH_64);C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\x64;..\..\..\lib</AdditionalLibraryDirectories>
-      <OutputFile>$(TargetDir)standalone_sense_gui.exe</OutputFile>
+      <OutputFile>$(TargetDir)standalone_sense.exe</OutputFile>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /i $(TargetDir)standalone_sense.exe ..\..\..\bin\</Command>
@@ -157,7 +157,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;cula.lib;cutil64.lib;gpucore.lib;gpucg.lib;gpunfft.lib;gpupmri.lib;hostutils.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(CUDA_LIB_PATH);$(CULA_LIB_PATH_64);C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\x64;..\..\..\lib</AdditionalLibraryDirectories>
-      <OutputFile>$(TargetDir)standalone_sense_gui.exe</OutputFile>
+      <OutputFile>$(TargetDir)standalone_sense.exe</OutputFile>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /i $(TargetDir)standalone_sense.exe ..\..\..\bin\</Command>

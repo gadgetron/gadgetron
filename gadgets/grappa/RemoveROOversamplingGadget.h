@@ -6,7 +6,7 @@
 
 #include <complex>
 
-class RemoveROOversamplingGadget : 
+class EXPORTGADGETSGRAPPA RemoveROOversamplingGadget : 
 public Gadget2<GadgetMessageAcquisition,hoNDArray< std::complex<float> > >
 {
  public:

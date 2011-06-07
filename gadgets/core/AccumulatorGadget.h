@@ -3,11 +3,12 @@
 
 #include <complex>
 
+#include "gadgetron_export.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
 
-class AccumulatorGadget : 
+class EXPORTGADGETSCORE AccumulatorGadget : 
 public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
 {
   

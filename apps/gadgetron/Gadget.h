@@ -1,5 +1,6 @@
 #ifndef GADGET_H
 #define GADGET_H
+#pragma once
 
 #include <ace/OS_NS_stdlib.h>
 #include <ace/Task.h>

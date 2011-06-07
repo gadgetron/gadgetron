@@ -3,11 +3,12 @@
 
 #include <complex>
 
+#include "gadgetron_export.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
 
-class CropAndCombineGadget : 
+class EXPORTGADGETSCORE CropAndCombineGadget : 
 public Gadget2<GadgetMessageImage, hoNDArray< std::complex<float> > >
 {
  public:

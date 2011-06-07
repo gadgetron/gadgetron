@@ -6,12 +6,13 @@
 #include <memory>
 #include <complex>
 
+#include "gadgetron_export.h"
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
 #include "GrappaWeights.h"
 #include "GrappaWeightsCalculator.h"
 
-class CalibrationBufferCounter
+class EXPORTGADGETSGRAPPA CalibrationBufferCounter
 {
 
  public:
@@ -51,12 +52,12 @@ class CalibrationBufferCounter
     unsigned int current_start_line = 0;
     min_ky_index = 0;
     max_ky_index = 0;
-    while (current_start_line < lines_sampled_.size()) {
-      while (lines_sampled_[current_start_line] == 0) {	
+    while (current_start_line < lines_sampled_.size() ) {
+      while (current_start_line < lines_sampled_.size() && lines_sampled_[current_start_line] == 0 ) {	
        	current_start_line++;
       }
       unsigned int region_start = current_start_line;
-      while (lines_sampled_[current_start_line] > 0) {	
+      while (current_start_line < lines_sampled_.size() && lines_sampled_[current_start_line] > 0) {	
        	current_start_line++;
       }
       unsigned int region_end = current_start_line-1;
@@ -91,7 +92,7 @@ class CalibrationBufferCounter
 
 };
 
-class GrappaCalibrationBuffer
+class EXPORTGADGETSGRAPPA GrappaCalibrationBuffer
 {
 
  public:
