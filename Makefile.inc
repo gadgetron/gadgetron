@@ -39,6 +39,10 @@ ifeq ($(KERNEL), Darwin)
 GENCODE_SM=$(GENCODE_SM10)
 endif
 
+ifeq ($(FORCE_SM10), 1)
+GENCODE_SM=$(GENCODE_SM10)
+endif
+
   NVCCFLAGS= $(GENCODE_SM) -g --compiler-options -fno-strict-aliasing -Xcompiler -fPIC -I$(GADGETRONHOME)/inc $(CUDAINCLUDES) $(BOOSTINCLUDE) -c
 ifeq ($(KERNEL), Darwin)
 NVCCFLAGS += -m32
