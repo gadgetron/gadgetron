@@ -69,3 +69,13 @@
 #else
 #define EXPORTGADGETSGRAPPA
 #endif
+
+#if defined (WIN32)
+#ifdef __BUILD_GADGETRON_CGSENSE__
+#define EXPORTGADGETSCGSENSE __declspec(dllexport)
+#else
+#define EXPORTGADGETSCGSENSE __declspec(dllimport)
+#endif
+#else
+#define EXPORTGADGETSCGSENSE
+#endif

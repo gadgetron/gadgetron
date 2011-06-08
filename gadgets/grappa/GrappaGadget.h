@@ -24,7 +24,7 @@ public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
   GADGET_DECLARE(AccumulatorGadget);
 
   GrappaGadget();
-  ~GrappaGadget();
+  virtual ~GrappaGadget();
 
  protected:
   virtual int process_config(ACE_Message_Block* mb);

@@ -3,6 +3,7 @@
 
 #include "cuNDArray.h"
 #include "vector_td.h"
+#include "vector_td_utilities.h"
 
 #include <cublas_v2.h>
 #include <boost/smart_ptr.hpp>
@@ -16,7 +17,7 @@
 template<class T> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<T> > cuNDA_sum( cuNDArray<T> *data, unsigned int dim );
 
-// Norm (float/double/complext arrays)
+// Norm (float/double/complext arrays) TODO: wrap CUBLAS for this call
 template<class REAL, class T> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<T> *data );
 
@@ -58,7 +59,7 @@ boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_real_to_comp
 
 // Clear (real and complex types)
 template<class T> EXPORTGPUCORE
-void cuNDA_clear( cuNDArray<T> *in_out );
+void cuNDA_clear( cuNDArray<T> *in_out, T val = get_zero<T>() );
 
 // Reciprocal (real and complex types)
 template<class T> EXPORTGPUCORE

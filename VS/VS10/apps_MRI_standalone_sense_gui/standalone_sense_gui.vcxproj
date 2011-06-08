@@ -97,7 +97,7 @@
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;OpenGL32.lib;glew32.lib;Qtcore4.lib;QtGui4.lib;QtOpenGL4.lib;gpucore.lib;gpucg.lib;gpunfft.lib;gpupmri.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(CudaToolkitLibDir);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\Win32;$(QTDIR)\lib</AdditionalLibraryDirectories>
-      <OutputFile>$(TargetDir)standalone_sense.exe</OutputFile>
+      <OutputFile>$(TargetDir)standalone_sense_gui.exe</OutputFile>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
@@ -123,7 +123,7 @@
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;OpenGL32.lib;glew64.lib;Qtcore4.lib;QtGui4.lib;QtOpenGL4.lib;gpucore.lib;gpucg.lib;gpunfft.lib;gpupmri.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(CudaToolkitLibDir);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\x64;$(QTDIR)\lib</AdditionalLibraryDirectories>
-      <OutputFile>$(TargetDir)standalone_sense.exe</OutputFile>
+      <OutputFile>$(TargetDir)standalone_sense_gui.exe</OutputFile>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <ForceFileOutput>MultiplyDefinedSymbolOnly</ForceFileOutput>
     </Link>
@@ -155,7 +155,7 @@
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;OpenGL32.lib;glew32.lib;Qtcore4.lib;QtGui4.lib;QtOpenGL4.lib;gpucore.lib;gpucg.lib;gpunfft.lib;gpupmri.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(CudaToolkitLibDir);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\Win32;$(QTDIR)\lib</AdditionalLibraryDirectories>
-      <OutputFile>$(TargetDir)standalone_sense.exe</OutputFile>
+      <OutputFile>$(TargetDir)standalone_sense_gui.exe</OutputFile>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
@@ -185,7 +185,7 @@
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;OpenGL32.lib;glew64.lib;Qtcore4.lib;QtGui4.lib;QtOpenGL4.lib;gpucore.lib;gpucg.lib;gpunfft.lib;gpupmri.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(CudaToolkitLibDir);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\x64;$(QTDIR)\lib</AdditionalLibraryDirectories>
-      <OutputFile>$(TargetDir)standalone_sense.exe</OutputFile>
+      <OutputFile>$(TargetDir)standalone_sense_gui.exe</OutputFile>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /y /i $(TargetDir)standalone_sense_gui.exe ..\..\..\bin\</Command>

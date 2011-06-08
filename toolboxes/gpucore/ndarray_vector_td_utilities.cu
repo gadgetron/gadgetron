@@ -1,6 +1,4 @@
 #include "ndarray_vector_td_utilities.h"
-#include "vector_td_operators.h"
-#include "vector_td_utilities.h"
 #include "real_utilities.h"
 #include "check_CUDA.h"
 
@@ -758,27 +756,26 @@ boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_correlation<double_c
 
 // Clear
 template<class T> __global__ 
-void cuNDA_clear_kernel( T *in_out, unsigned int number_of_elements )
+void cuNDA_clear_kernel( T *in_out, T val, unsigned int number_of_elements )
 {
   int idx = blockIdx.x*blockDim.x+threadIdx.x;
  
   if( idx<number_of_elements ){
-    T zero = get_zero<T>();
-    in_out[idx] = zero;
+    in_out[idx] = val;
   }
 }
 
 // Clear
 template<class T> 
-void cuNDA_clear( cuNDArray<T> *in_out )
+void cuNDA_clear( cuNDArray<T> *in_out, T val )
 {
   unsigned int number_of_elements = in_out->get_number_of_elements();
 
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
-  // Make clear image
-  cuNDA_clear_kernel<T><<< gridDim, blockDim >>>( in_out->get_data_ptr(), number_of_elements );
+  // Clear array
+  cuNDA_clear_kernel<T><<< gridDim, blockDim >>>( in_out->get_data_ptr(), val, number_of_elements );
  
   CHECK_FOR_CUDA_ERROR();
 }
@@ -1694,8 +1691,8 @@ template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext::Type> > cu
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext::Type> > cuNDA_real_to_complext<float>( cuNDArray<float>*);
 
-template EXPORTGPUCORE void cuNDA_clear<float>(cuNDArray<float>*);
-template EXPORTGPUCORE void cuNDA_clear<float_complext::Type>(cuNDArray<float_complext::Type>*);
+template EXPORTGPUCORE void cuNDA_clear<float>(cuNDArray<float>*,float);
+template EXPORTGPUCORE void cuNDA_clear<float_complext::Type>(cuNDArray<float_complext::Type>*,float_complext::Type);
 
 template EXPORTGPUCORE void cuNDA_reciprocal<float>(cuNDArray<float>*);
 template EXPORTGPUCORE void cuNDA_reciprocal<float_complext::Type>(cuNDArray<float_complext::Type>*);
@@ -1847,8 +1844,8 @@ template<> EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext::Type> > c
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext::Type> > cuNDA_real_to_complext<double>( cuNDArray<double>*);
 
-template EXPORTGPUCORE void cuNDA_clear<double>(cuNDArray<double>*);
-template EXPORTGPUCORE void cuNDA_clear<double_complext::Type>(cuNDArray<double_complext::Type>*);
+template EXPORTGPUCORE void cuNDA_clear<double>(cuNDArray<double>*,double);
+template EXPORTGPUCORE void cuNDA_clear<double_complext::Type>(cuNDArray<double_complext::Type>*,double_complext::Type);
 
 template EXPORTGPUCORE void cuNDA_reciprocal<double>(cuNDArray<double>*);
 template EXPORTGPUCORE void cuNDA_reciprocal<double_complext::Type>(cuNDArray<double_complext::Type>*);
