@@ -21,7 +21,7 @@ public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
 {
   
  public:
-  GADGET_DECLARE(AccumulatorGadget);
+  GADGET_DECLARE(GrappaGadget);
 
   GrappaGadget();
   virtual ~GrappaGadget();
