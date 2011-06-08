@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
-$gadgetron_home = "/home/hansenms/mrprogs/gadgetron";
+$home_dir = $ENV{"HOME"};
+$gadgetron_home = $home_dir . "/mrprogs/gadgetron";
 
 my $executable = "$gadgetron_home/bin/gadgetron";
 my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst)=localtime(time);
@@ -10,13 +11,18 @@ print "Time string: $timestring\n";
 
 
 $ENV{'GADGETRON_HOME'} = $gadgetron_home;
-$ENV{'LD_LIBRARY_PATH'} = "/usr/local/cuda/lib64:/usr/local/cula/lib64:" . $gadgetron_home . "/lib";
+$ENV{'LD_LIBRARY_PATH'} = "/usr/local/lib:/usr/local/cuda/lib64:/usr/local/cula/lib64:" . $gadgetron_home . "/lib";
 
-$exe_command = "killall gadgetron";
+$exe_command = "killall -9 gadgetron";
 system($exe_command);
+sleep(1);
 
 $exe_command = "mkdir -p log";
 system($exe_command);
 
-$exe_command = "nohup $executable > log/gadgetron_log_$timestring" . ".txt &" ;
+$logfilename = "log/gadgetron_log_$timestring" . ".txt";
+$exe_command = "nohup $executable > $logfilename 2> $logfilename < /dev/null &" ;
 system($exe_command);
+
+sleep(1);
+
