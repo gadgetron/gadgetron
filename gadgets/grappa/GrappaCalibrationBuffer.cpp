@@ -81,7 +81,7 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
   if (is_last_scan_in_slice) { 
     unsigned int min_ky, max_ky;
 
-    if (biggest_gap_current_ > acceleration_factor_) {
+    if (biggest_gap_current_ != acceleration_factor_) {
       acceleration_factor_ = biggest_gap_current_;
       weights_invalid_ = true;
     }
@@ -112,7 +112,6 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
 
       weights_invalid_ = false;
     }
-
   }
 
 

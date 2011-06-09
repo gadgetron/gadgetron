@@ -160,7 +160,8 @@ __global__ void scale_and_add_unmixing_coeffs(cuFloatComplex* unmixing,
 					      cuFloatComplex* csm,
 					      cuFloatComplex* out,
 					      int elements,
-					      int coils)
+					      int coils,
+					      float scale_factor)
 {
   unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
 
@@ -168,8 +169,8 @@ __global__ void scale_and_add_unmixing_coeffs(cuFloatComplex* unmixing,
   if (idx_in < elements) {
     for (int c = 0; c < coils; c++) {
       tmp = cuCmulf(unmixing[c*elements + idx_in],cuConjf(csm[idx_in])); 
-      out[c*elements + idx_in].x += tmp.x;
-      out[c*elements + idx_in].y += tmp.y;
+      out[c*elements + idx_in].x += scale_factor*tmp.x;
+      out[c*elements + idx_in].y += scale_factor*tmp.y;
     }
   }
 }
@@ -443,12 +444,15 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 
     ft.ifft(&tmp_mixing, &ft_dims);
 
+    float scale_factor = total_elements;
+
     gridDim = dim3((unsigned int) ceil(1.0f*total_elements/blockDim.x), 1, 1 ); 
     scale_and_add_unmixing_coeffs<<< gridDim, blockDim >>>(tmp_mixing.get_data_ptr(),
 							   (b1->get_data_ptr()+ c*total_elements),
 							   out_mixing_coeff->get_data_ptr(),
 							   total_elements,
-							   coils);
+							   coils,
+							   scale_factor);
     err = cudaGetLastError();
     if( err != cudaSuccess ){
       std::cerr << "htgrappa_calculate_grappa_unmixing: scale and add mixing coeffs: " << 
