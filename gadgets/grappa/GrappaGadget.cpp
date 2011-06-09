@@ -39,6 +39,8 @@ int GrappaGadget::process_config(ACE_Message_Block* mb)
 
   weights_ = std::vector< GrappaWeights<float>* >(dimensions_[4],0);
   buffers_ = std::vector<GrappaCalibrationBuffer* >(dimensions_[4],0);
+  time_stamps_ = std::vector<ACE_UINT32>(dimensions_[4],0);
+
   for (unsigned int i = 0; i < buffers_.size(); i++) {
     weights_[i] = new GrappaWeights<float>();
 
@@ -125,6 +127,13 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
   bool is_last_scan_in_slice =
     (m1->getObjectPtr()->flags & GADGET_FLAG_LAST_ACQ_IN_SLICE);
   
+  bool is_first_scan_in_slice =
+    (m1->getObjectPtr()->flags & GADGET_FLAG_FIRST_ACQ_IN_SLICE);
+
+  if (is_first_scan_in_slice) {
+    time_stamps_[slice] = m1->getObjectPtr()->time_stamp;
+  }
+
   if (is_last_scan_in_slice) {
 
     GadgetContainerMessage<GadgetMessageImage>* cm1 = 
@@ -154,6 +163,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     cm1->getObjectPtr()->data_idx_min       = m1->getObjectPtr()->min_idx;
     cm1->getObjectPtr()->data_idx_max       = m1->getObjectPtr()->max_idx;
     cm1->getObjectPtr()->data_idx_current   = m1->getObjectPtr()->idx;	
+    cm1->getObjectPtr()->time_stamp         = time_stamps_[slice];
 
     memcpy(cm1->getObjectPtr()->position,m1->getObjectPtr()->position,
 	   sizeof(float)*3);
