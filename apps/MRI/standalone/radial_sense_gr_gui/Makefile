@@ -20,20 +20,25 @@ CUDAOBJECTS = $(CUDASOURCES:.cu=.cuo)
 APPOBJECTS = $(APPSOURCES:.cpp=.o)
 MOCSOBJECTS = $(MOC_SOURCES:.cpp=.o)
 
-# gadgetron libs
-APPLDFLAGS += -lgpucore -lgpunfft -lgpucg -lgpuparallelmri -lglew
+# cuda sdk root
+CUDA_SDK_DIR ?= $(HOME)/NVIDIA_GPU_Computing_SDK
 
 # automagically find cuda libs on osx (without setting DYLD_LIBRARY_PATH)
 ifeq ($(KERNEL), Darwin)
 CUDA_INSTALL_PATH ?= /usr/local/cuda
-CUDA_SDK_DIR ?= $(HOME)/NVIDIA_GPU_Computing_SDK
 APPLDFLAGS += -Xlinker -rpath $(CUDA_INSTALL_PATH)/lib
 endif
 
 # Qt libs
 ifeq ($(KERNEL), Darwin)
-APPLDFLAGS += -framework QtGui -framework QtCore -framework QtOpenGL -framework OpenGL
+APPLDFLAGS += -framework QtGui -framework QtCore -framework QtOpenGL -framework OpenGL -lglew
+else
+CXXFLAGS += -I/usr/include/qt4
+APPLDFLAGS += -L$(CUDA_SDK_DIR)/C/common/lib/linux -lGLEW_x86_64 -lQtGui -lQtCore -lQtOpenGL
 endif
+
+# gadgetron libs
+APPLDFLAGS += -lgpucore -lgpunfft -lgpucg -lgpuparallelmri
 
 %.h: %.ui
 	uic $< -o ui_$@
