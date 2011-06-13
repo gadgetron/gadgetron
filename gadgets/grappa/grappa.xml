@@ -24,7 +24,12 @@
 <gadget name="FFT" dll="gadgetroncore" class="FFTGadget" />
 -->
 
-<gadget name="Grappa" dll="gadgetrongrappa" class="GrappaGadget" /> 
+<gadget name="Grappa" dll="gadgetrongrappa" class="GrappaGadget"> 
+<!--
+<property name="uncombined_channels" value="0,3" />
+-->
+</gadget>
+
 <gadget name="RemoveROOversampling" dll="gadgetrongrappa" class="RemoveROOversamplingGadget" />
 </stream>
 

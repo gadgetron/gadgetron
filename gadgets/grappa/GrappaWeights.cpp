@@ -47,7 +47,7 @@ apply(hoNDArray< std::complex<T> >* data_in,
 
   unsigned int sets = weights_.get_number_of_elements()/data_in->get_number_of_elements();
   
-  if (sets > 1) {
+  if (sets < 1) {
     return -4;
   }
 
