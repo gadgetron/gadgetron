@@ -25,9 +25,7 @@
 -->
 
 <gadget name="Grappa" dll="gadgetrongrappa" class="GrappaGadget"> 
-<!--
-<property name="uncombined_channels" value="0,3" />
--->
+<property name="uncombined_channels" value="15" />
 </gadget>
 
 <gadget name="RemoveROOversampling" dll="gadgetrongrappa" class="RemoveROOversamplingGadget" />

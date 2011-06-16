@@ -185,8 +185,8 @@ __global__ void scale_and_copy_unmixing_coeffs(cuFloatComplex* unmixing,
 
   if (idx_in < elements) {
     for (int c = 0; c < coils; c++) {
-      out[c*elements + idx_in].x += scale_factor*unmixing[c*elements + idx_in].x;
-      out[c*elements + idx_in].y += scale_factor*unmixing[c*elements + idx_in].y;
+      out[c*elements + idx_in].x = scale_factor*unmixing[c*elements + idx_in].x;
+      out[c*elements + idx_in].y = scale_factor*unmixing[c*elements + idx_in].y;
     }
   }
 }
@@ -447,7 +447,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
   }
 
   cuNDArray<T> tmp_mixing;
-  if (!tmp_mixing.create(out_mixing_coeff->get_dimensions().get())) {
+  if (!tmp_mixing.create(b1->get_dimensions().get())) {
     std::cerr << "htgrappa_calculate_grappa_unmixing: Unable to create temp mixing storage on device." << std::endl;
     return -1;
   }
@@ -481,7 +481,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
     ft.ifft(&tmp_mixing, &ft_dims);
 
     float scale_factor = total_elements;
-
+    
     gridDim = dim3((unsigned int) ceil(1.0f*total_elements/blockDim.x), 1, 1 ); 
     scale_and_add_unmixing_coeffs<<< gridDim, blockDim >>>(tmp_mixing.get_data_ptr(),
 							   (b1->get_data_ptr()+ c*total_elements),

@@ -12,6 +12,7 @@
 #include "Gadget.h"
 
 #include <complex>
+#include <fstream>
 
 int GadgetStreamController::open (void)
 {
@@ -31,6 +32,9 @@ int GadgetStreamController::open (void)
   //We have to have these basic types to be able to receive configuration file for stream
   readers_.insert(GADGET_MESSAGE_CONFIG_FILE, 
 		  new GadgetMessageConfigFileReader());
+
+  readers_.insert(GADGET_MESSAGE_CONFIG_SCRIPT, 
+		  new GadgetMessageScriptReader());
 
   readers_.insert(GADGET_MESSAGE_PARAMETER_SCRIPT, 
 		  new GadgetMessageScriptReader());
@@ -89,18 +93,27 @@ int GadgetStreamController::handle_input (ACE_HANDLE)
       mb->release();
       return GADGET_FAIL;
     } else {
-      if (this->configure(cfgm->getObjectPtr()->configuration_file) != GADGET_OK) {
+      if (this->configure_from_file(std::string(cfgm->getObjectPtr()->configuration_file)) != GADGET_OK) {
 	GADGET_DEBUG1("GadgetStream configuration failed\n");
 	mb->release();
 	return GADGET_FAIL;
       } else {
+	mb->release();
 	return GADGET_OK;
       }
     }
-
+  } else if (id.id == GADGET_MESSAGE_CONFIG_SCRIPT) {
+    std::string xml_config(mb->rd_ptr(), mb->length());
+    if (this->configure(xml_config) != GADGET_OK) {
+      GADGET_DEBUG1("GadgetStream configuration failed\n");
+      mb->release();
+      return GADGET_FAIL;
+    } else {
+      mb->release();
+      return GADGET_OK;
+    }    
   }
     
- 
   ACE_Time_Value wait = ACE_OS::gettimeofday() + ACE_Time_Value(0,10000); //10ms from now
   if (stream_.put(mb) == -1) {
     GADGET_DEBUG2("Failed to put stuff on stream, too long wait, %d\n",  ACE_OS::last_error () ==  EWOULDBLOCK);
@@ -184,8 +197,43 @@ int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
   return 0;
 }
 
-int GadgetStreamController::configure(char* init_filename)
+int GadgetStreamController::configure_from_file(std::string config_xml_filename)
 {
+
+  char * gadgetron_home = ACE_OS::getenv("GADGETRON_HOME");
+  ACE_TCHAR config_file_name[4096];
+  ACE_OS::sprintf(config_file_name, "%s/config/%s", gadgetron_home, config_xml_filename.c_str());
+
+  GADGET_DEBUG2("Running configuration: %s\n", config_file_name);
+  
+  std::ifstream file (config_file_name, std::ios::in|std::ios::binary|std::ios::ate);
+  if (file.is_open())
+  {
+    size_t size = file.tellg();
+    char* buffer = new char [size];
+    if (!buffer) {
+      GADGET_DEBUG1("Unable to create temporary buffer for configuration file\n");
+      return GADGET_FAIL;
+    }
+    file.seekg (0, std::ios::beg);
+    file.read (buffer, size);
+    file.close();
+    std::string xml_file_contents(buffer,size);
+    delete[] buffer;
+
+    return configure(xml_file_contents);
+
+  } else {
+    GADGET_DEBUG2("Unable to open configuation file: %s\n", config_file_name);
+    return GADGET_FAIL;
+  }
+
+  return GADGET_OK;
+}
+
+int GadgetStreamController::configure(std::string config_xml_string)
+{
+  /*
   char * gadgetron_home = ACE_OS::getenv("GADGETRON_HOME");
 
   if (!gadgetron_home) {
@@ -197,9 +245,10 @@ int GadgetStreamController::configure(char* init_filename)
   ACE_OS::sprintf(config_file_name, "%s/config/%s", gadgetron_home, init_filename);
 
   GADGET_DEBUG2("Running configuration: %s\n", config_file_name);
+  */
 
-  TiXmlDocument doc( config_file_name );
-  doc.LoadFile();
+  TiXmlDocument doc;//( config_file_name );
+  doc.Parse(config_xml_string.c_str());
 
   //Configuration of readers
   TiXmlNode* child = 0;

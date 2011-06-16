@@ -48,7 +48,7 @@ public:
 
   virtual int output_ready(ACE_Message_Block* mb);
 
-protected:
+private:
   //ACE_SOCK_Stream sock_;
   ACE_Stream<ACE_MT_SYNCH> stream_;
   bool stream_configured_;
@@ -65,7 +65,8 @@ protected:
   //virtual int write_image(GadgetMessageImage* imageh, NDArray< std::complex<float> >* data);
   //virtual int write_acquisition(GadgetMessageAcquisition* imgh, NDArray< std::complex<float> >* data);
 
-  virtual int configure(char* init_filename);
+  virtual int configure(std::string config_xml_string);
+  virtual int configure_from_file(std::string config_xml_filename);
   
 
   virtual GadgetModule * create_gadget_module(const char* DLL, const char* gadget, const char* gadget_module_name);
