@@ -202,6 +202,17 @@ __global__ void conj_csm_coeffs(cuFloatComplex* csm,
   }
 }
 
+__global__ void single_channel_coeffs(cuFloatComplex* out,
+				      int channel_no,
+				      int elements_per_channel)
+{
+  unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
+
+  if (idx_in < elements_per_channel) {
+    out[idx_in + channel_no*elements_per_channel] = make_float2(1.0,0.0);
+  }
+}
+
 
 template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data, 
 							  cuNDArray<T>* b1,
@@ -217,6 +228,8 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
     return -1;
   }
 
+  unsigned int coils = ref_data->get_size(ref_data->get_number_of_dimensions()-1);
+
   if (acceleration_factor == 1) {
     dim3 blockDim(512,1,1);
     dim3 gridDim((unsigned int) ceil((1.0f*b1->get_number_of_elements())/blockDim.x), 1, 1 );
@@ -224,6 +237,15 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 					      out_mixing_coeff->get_data_ptr(), 
 					      b1->get_number_of_elements());
     
+    std::list<unsigned int>::iterator it;
+    gridDim = dim3((unsigned int) ceil((1.0f*(b1->get_number_of_elements()/coils))/blockDim.x), 1, 1 );
+    int uncombined_channel_no = 0;
+    for ( it = uncombined_channels->begin(); it != uncombined_channels->end(); it++ ) {
+      uncombined_channel_no++;
+      single_channel_coeffs<<< gridDim, blockDim >>>( out_mixing_coeff->get_data_ptr() + uncombined_channel_no*b1->get_number_of_elements(),
+						      *it,
+						      (b1->get_number_of_elements()/coils));
+    }
     return 0;
   }
 
@@ -271,7 +293,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
   }
   */
 
-  unsigned int coils = ref_data->get_size(ref_data->get_number_of_dimensions()-1);
+ 
 
   std::vector<unsigned int> sys_matrix_size; 
   sys_matrix_size.push_back(kspace_locations);
