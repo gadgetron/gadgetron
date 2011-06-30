@@ -3,14 +3,80 @@
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
 
-template<class REAL, class T> 
-boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
+template<class REAL, class T> bool 
+cuCG<REAL,T>::set_device( int device )
+{ 
+  static bool handle_set = false;
+  
+  device_ = device;
+
+  if ( handle_set && cublasDestroy(cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
+    std::cerr << "cuCG::set_device unable to destroy existing cublas handle" << std::endl;
+    return false;
+  }
+
+  handle_set = false;
+  
+  int old_device;  
+  if( cudaGetDevice( &old_device ) != cudaSuccess ){
+    std::cerr << "cuCG::set_device: unable to get current device." << std::endl ;
+    return false;
+  }
+    
+  if( device<0 )
+    device_ = old_device;
+
+  if( device_ != old_device && cudaSetDevice(device_) != cudaSuccess) {
+    std::cerr << "cuCG:set_device: unable to set device " << device_ << std::endl;
+    return false;
+  }
+          
+  if (cublasCreate(&cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
+    std::cerr << "cuCG::set_device: unable to create cublas handle" << std::endl;
+    return false;
+  }
+
+  handle_set = true;
+  
+  cublasSetPointerMode( cublas_handle_, CUBLAS_POINTER_MODE_HOST );
+  
+  if( device_ != old_device && cudaSetDevice(old_device) != cudaSuccess) {
+    std::cerr << "cuCG::set_device: unable to restore device no" << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+
+template<class REAL, class T> boost::shared_ptr< cuNDArray<T> > 
+cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
 {
+  int old_device;
+  
+  if( cudaGetDevice( &old_device ) != cudaSuccess ){
+    std::cerr << "cuCG::solve: unable to get current device." << std::endl;
+    return boost::shared_ptr< cuNDArray<T> >();
+  }
+  
+  if( device_ != old_device && cudaSetDevice(device_) != cudaSuccess) {
+    std::cerr << "cuCG:solve: unable to set device " << device_ << std::endl;
+    return boost::shared_ptr< cuNDArray<T> >();
+  }
+  
+  // Transfer arrays to compute device if necessary
+  cuNDArray<T> *rhs;
+  if( device_ != _rhs->get_device() )
+    rhs = new cuNDArray<T>(*_rhs);
+  else
+    rhs = _rhs;
+  
   // Result, rho
   cuNDArray<T> *rho = new cuNDArray<T>();
   
   if (!rho->create(rhs->get_dimensions().get())) {
-    std::cerr << "cuCG<T>::solve : Unable to allocate temp storage (rho)" << std::endl;
+    std::cerr << "cuCG::solve : Unable to allocate temp storage (rho)" << std::endl;
+    cudaSetDevice(old_device);
     return boost::shared_ptr< cuNDArray<T> >(rho);
   }
 
@@ -20,11 +86,13 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
   cuNDArray<T> r;
   if (precond_.get()) {
     if (!r.create(rhs->get_dimensions().get())) {
-      std::cerr << "cuCG<T>::solve : Unable to allocate storage (r)" << std::endl;
+      std::cerr << "cuCG::solve : Unable to allocate storage (r)" << std::endl;
+      cudaSetDevice(old_device);
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
     if (precond_->apply(rhs,&r) < 0) {
-      std::cerr << "cuCG<T>::solve : Unable to apply preconditioning to rhs" << std::endl;
+      std::cerr << "cuCG::solve : Unable to apply preconditioning to rhs" << std::endl;
+      cudaSetDevice(old_device);
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
   } else {
@@ -38,27 +106,31 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
 
   cuNDArray<T> p;
   if (!p.create(rhs->get_dimensions().get())) {
-    std::cerr << "cuCG<T>::solve : Unable to allocate temp storage (p)" << std::endl;
+    std::cerr << "cuCG::solve : Unable to allocate temp storage (p)" << std::endl;
+    cudaSetDevice(old_device);
     return boost::shared_ptr< cuNDArray<T> >(rho);
   }
 
   cuNDArray<T> p_precond;
   if (precond_.get()) { // We only need this additional storage if we are using a preconditioner
     if (!p_precond.create(rhs->get_dimensions().get())) {
-      std::cerr << "cuCG<T>::solve : Unable to allocate temp storage (p_precond)" << std::endl;
+      std::cerr << "cuCG::solve : Unable to allocate temp storage (p_precond)" << std::endl;
+      cudaSetDevice(old_device);
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
   }
 
   cuNDArray<T> q;
   if (!q.create(rhs->get_dimensions().get())) {
-    std::cerr << "cuCG<T>::solve : Unable to allocate temp storage (q)" << std::endl;
+    std::cerr << "cuCG::solve : Unable to allocate temp storage (q)" << std::endl;
+    cudaSetDevice(old_device);
     return boost::shared_ptr< cuNDArray<T> >(rho);
   }
 
   cuNDArray<T> q2;
   if (!q2.create(rhs->get_dimensions().get())) {
-    std::cerr << "cuCG<T>::solve : Unable to allocate temp storage (q2)" << std::endl;
+    std::cerr << "cuCG::solve : Unable to allocate temp storage (q2)" << std::endl;
+    cudaSetDevice(old_device);
     return boost::shared_ptr< cuNDArray<T> >(rho);
   }
 
@@ -79,11 +151,13 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
     } else {        
       T beta = mul<REAL>(rr/rr_1, get_one<T>());
       if (!cuNDA_scal<T>(beta,&p,cublas_handle_)) {
-	std::cerr << "cuCG<T>::solve : failed to scale p" << std::endl;
+	std::cerr << "cuCG::solve : failed to scale p" << std::endl;
+	cudaSetDevice(old_device);
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
       if (!cuNDA_axpy<T>(get_one<T>(),&r,&p,cublas_handle_)) {
-	std::cerr << "cuCG<T>::solve : failed to add r to scaled p" << std::endl;
+	std::cerr << "cuCG::solve : failed to add r to scaled p" << std::endl;
+	cudaSetDevice(old_device);
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
     }
@@ -95,7 +169,8 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
     cuNDArray<T>* cur_p = &p;
     if (precond_.get()) {
       if (precond_->apply(&p,&p_precond) < 0) {
-	std::cerr << "cuCG<T>::solve : failed to apply preconditioner to p" << std::endl;
+	std::cerr << "cuCG::solve : failed to apply preconditioner to p" << std::endl;
+	cudaSetDevice(old_device);
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
       cur_p = &p_precond;
@@ -104,19 +179,22 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
     for (unsigned int i = 0; i < operators_->size(); i++) {
 
       if ((*operators_)[i]->mult_MH_M(cur_p, &q2, false) < 0) {
-	std::cerr << "cuCG<T>::solve : failed to apply operator number " << i << std::endl;
+	std::cerr << "cuCG::solve : failed to apply operator number " << i << std::endl;
+	cudaSetDevice(old_device);
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
 
       if (!cuNDA_axpy<T>(mul<REAL>((*operators_)[i]->get_weight(), get_one<T>()),&q2,&q,cublas_handle_)) {
-	std::cerr << "cuCG<T>::solve : failed to add q1 to q" << std::endl;
+	std::cerr << "cuCG::solve : failed to add q1 to q" << std::endl;
+	cudaSetDevice(old_device);
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
     }
     
     if (precond_.get()) {
       if (precond_->apply(&q,&q) < 0) {
-	std::cerr << "cuCG<T>::solve : failed to apply preconditioner to q" << std::endl;
+	std::cerr << "cuCG::solve : failed to apply preconditioner to q" << std::endl;
+	cudaSetDevice(old_device);
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
     }
@@ -125,13 +203,15 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
     
     // Update solution
     if (!cuNDA_axpy<T>(alpha,&p,rho,cublas_handle_)) {
-      std::cerr << "cuCG<T>::solve : failed to update solution" << std::endl;
+      std::cerr << "cuCG::solve : failed to update solution" << std::endl;
+      cudaSetDevice(old_device);
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
     
     // Update residual
     if (!cuNDA_axpy<T>(mul<REAL>(-get_one<REAL>(),alpha),&q,&r,cublas_handle_)) {
-      std::cerr << "cuCG<T>::solve : failed to update residual" << std::endl;
+      std::cerr << "cuCG::solve : failed to update residual" << std::endl;
+      cudaSetDevice(old_device);
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
 
@@ -156,9 +236,19 @@ boost::shared_ptr< cuNDArray<T> > cuCG<REAL, T>::solve(cuNDArray<T>* rhs)
 
   if (precond_.get()) {
     if (precond_->apply(rho,rho) < 0) {
-      std::cerr << "cuCG<T>::solve : failed to apply preconditioner to rho" << std::endl;
+      std::cerr << "cuCG::solve : failed to apply preconditioner to rho" << std::endl;
+      cudaSetDevice(old_device);
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
+  }
+
+  // Free allocated array (if necessary)
+  if( device_ != _rhs->get_device() )
+    delete rhs;
+  
+  if( device_ != old_device && cudaSetDevice(old_device) != cudaSuccess) {
+    std::cerr << "cuCG::solve: unable to restore device no" << std::endl;
+    return boost::shared_ptr< cuNDArray<T> >(rho);
   }
 
   return boost::shared_ptr< cuNDArray<T> >(rho);

@@ -56,7 +56,7 @@ template <class T> boost::shared_ptr< hoNDArray<T> > read_nd_array(const char* f
   }
 
   boost::shared_ptr< hoNDArray<T> > out( new hoNDArray<T> );
-  if( out->create(&dim_array) < 0 ){
+  if( out->create(&dim_array) == 0x0 ){
     std::cout << "ERROR: cannot create hoNDArray from file " << filename << std::endl;
     return boost::shared_ptr< hoNDArray<T> >();
   }

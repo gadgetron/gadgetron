@@ -59,15 +59,15 @@ NFFT_iterate_body( REAL alpha, REAL beta, REAL W, vector_td<unsigned int, D> mat
   vector_td<REAL,D> half_W_vec =to_vector_td<REAL,D>(half_W );
   
   // If cell too distant from sample then move on to the next cell
-  //if( weak_greater(delta, half_W_vec ))
-  //return;
+  if( weak_greater(delta, half_W_vec ))
+    return;
 
   // Compute convolution weight.
   REAL weight = KaiserBessel<REAL>( delta, matrix_size_os_real, one_over_W, beta );
 
   // Safety measure. We have occationally observed a NaN from the KaiserBessel computation
-  //if( !isfinite(weight) )
-  //return;
+  if( !isfinite(weight) )
+    return;
 
   // Resolve wrapping of grid position
   resolve_wrap<D>( grid_position, *((vector_td<int,D>*)&matrix_size_os) );

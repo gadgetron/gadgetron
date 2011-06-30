@@ -30,14 +30,13 @@ public: // Main interface
   // Constructors
   NFFT_plan();
   NFFT_plan( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int device = -1 );
-  NFFT_plan( NFFT_plan<REAL,D> *plan );
 
   // Destructor
   virtual ~NFFT_plan();
 
   // Clear internal storage in plan
   enum NFFT_wipe_mode { NFFT_WIPE_ALL, NFFT_WIPE_PREPROCESSING };
-  void wipe( NFFT_wipe_mode mode );
+  bool wipe( NFFT_wipe_mode mode );
 
   // Replan 
   bool setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int device = -1 );
@@ -105,9 +104,9 @@ private:
   REAL W;                                       // Kernel width in oversampled grid
 
   unsigned int number_of_samples;               // Number of samples per frame per coil
-  unsigned int number_of_frames;                 // Number of frames per reconstruction
+  unsigned int number_of_frames;                // Number of frames per reconstruction
     
-  int device;                                    // Associated device id
+  int device;                                   // Associated device id
 
   //
   // Internal data structures for convolution and deapodization

@@ -13,45 +13,77 @@
 // Component-wise operations.
 //
 
-// Sum over dimension dim (scalar and vector_td arrays)
-template<class T> EXPORTGPUCORE
-boost::shared_ptr< cuNDArray<T> > cuNDA_sum( cuNDArray<T> *data, unsigned int dim );
+EXPORTGPUCORE enum cuNDA_device { CUNDA_CURRENT_DEVICE, CUNDA_NDARRAY_DEVICE };
 
-// Norm (float/double/complext arrays) TODO: wrap CUBLAS for this call
-template<class REAL, class T> EXPORTGPUCORE
-boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray<T> *data );
+// Norm (float/double/complext arrays)
+template<class REAL, class T> EXPORTGPUCORE 
+boost::shared_ptr< cuNDArray<REAL> > 
+cuNDA_norm( cuNDArray<T> *data, 
+	    cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
+	    cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
 // Norm (reald arrays)
 template<class REAL, unsigned int D> EXPORTGPUCORE
-boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm( cuNDArray< typename reald<REAL,D>::Type > *data );
+boost::shared_ptr< cuNDArray<REAL> > 
+cuNDA_norm( cuNDArray< typename reald<REAL,D>::Type > *data,
+	    cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
+	    cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
 // Norm squared (float/double/complext arrays)
 template<class REAL, class T> EXPORTGPUCORE
-boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray<T> *data );
+boost::shared_ptr< cuNDArray<REAL> > 
+cuNDA_norm_squared( cuNDArray<T> *data,
+		    cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
+		    cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
 // Norm squared (reald arrays)
 template<class REAL, unsigned int D> EXPORTGPUCORE
-boost::shared_ptr< cuNDArray<REAL> > cuNDA_norm_squared( cuNDArray< typename reald<REAL,D>::Type > *data );
+boost::shared_ptr< cuNDArray<REAL> > 
+cuNDA_norm_squared( cuNDArray< typename reald<REAL,D>::Type > *data,
+		    cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
+		    cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
+
+// Sum over dimension (scalar and vector_td arrays)
+template<class T> EXPORTGPUCORE 
+boost::shared_ptr< cuNDArray<T> >  
+cuNDA_sum( cuNDArray<T> *data, unsigned int dim, 
+	   cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
+	   cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
 // Sum of Squares (float/double/complext array)
 template<class S, class T> EXPORTGPUCORE
-boost::shared_ptr< cuNDArray<S> > cuNDA_ss( cuNDArray<T> *data, unsigned int dim );
+boost::shared_ptr< cuNDArray<S> > 
+cuNDA_ss( cuNDArray<T> *data, unsigned int dim,
+	  cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
+	  cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
 // Root Sum of Squares (float/double/complext array)
 template<class S, class T> EXPORTGPUCORE
-boost::shared_ptr< cuNDArray<S> > cuNDA_rss( cuNDArray<T> *data, unsigned int dim );
+boost::shared_ptr< cuNDArray<S> > 
+cuNDA_rss( cuNDArray<T> *data, unsigned int dim,
+	   cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
+	   cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
-// Reciprocal RSS (float/double/complext array)
+// Reciprocal Root Sum of Squares (float/double/complext array)
 template<class S, class T> EXPORTGPUCORE
-boost::shared_ptr< cuNDArray<S> > cuNDA_reciprocal_rss( cuNDArray<T> *data, unsigned int dim );
+boost::shared_ptr< cuNDArray<S> > 
+cuNDA_reciprocal_rss( cuNDArray<T> *data, unsigned int dim,
+		      cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
+		      cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
-// Correlation matrix (float/double/complext array)
+// Correlation matrix over the last dimension in the input array (float/double/complext array)
 template<class T> EXPORTGPUCORE
-boost::shared_ptr< cuNDArray<T> > cuNDA_correlation( cuNDArray<T> *data );
+boost::shared_ptr< cuNDArray<T> > 
+cuNDA_correlation( cuNDArray<T> *data,
+		   cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
+		   cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
 // Real to complext
-template<class REAL> EXPORTGPUCORE
-boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_real_to_complext( cuNDArray<REAL> *data );
+template<class REAL> EXPORTGPUCORE 
+boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > 
+cuNDA_real_to_complext( cuNDArray<REAL> *data,
+			cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
+			cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
 //
 // Utilities overwriting the input
@@ -59,67 +91,58 @@ boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuNDA_real_to_comp
 
 // Clear (real and complex types)
 template<class T> EXPORTGPUCORE
-void cuNDA_clear( cuNDArray<T> *in_out, T val = get_zero<T>() );
+bool cuNDA_clear( cuNDArray<T> *in_out, T val = get_zero<T>(), 
+		  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 // Reciprocal (real and complex types)
 template<class T> EXPORTGPUCORE
-void cuNDA_reciprocal( cuNDArray<T> *in_out );
+bool cuNDA_reciprocal( cuNDArray<T> *in_out,
+		       cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 // Square root (float/double for now)
 template<class T> EXPORTGPUCORE
-void cuNDA_sqrt( cuNDArray<T> *in_out );
+bool cuNDA_sqrt( cuNDArray<T> *in_out,
+		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 // Reciprocal square root (float/double for now)
 template<class T> EXPORTGPUCORE
-void cuNDA_reciprocal_sqrt( cuNDArray<T> *in_out );
-
-// Normalize (float/double arrays)
-template<class REAL> EXPORTGPUCORE
-void cuNDA_normalize( cuNDArray<REAL> *in_out, REAL new_max, cublasHandle_t handle );
+bool cuNDA_reciprocal_sqrt( cuNDArray<T> *in_out,
+			    cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 // Abs (floatd types supported, hence component-wise operation also for arrays of complex types!)
 template<class T> EXPORTGPUCORE
-void cuNDA_abs( cuNDArray<T> *in_out );
+bool cuNDA_abs( cuNDArray<T> *in_out,
+		cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 // Normalize by RSS (float/double/complext arrays)
 template<class REAL, class T> EXPORTGPUCORE
-bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim );
+bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim,
+			  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 // Scale (with constant)
 template<class REAL> EXPORTGPUCORE
-void cuNDA_scale( REAL a, cuNDArray<typename complext<REAL>::Type> *x );
+bool cuNDA_scale( REAL a, cuNDArray<typename complext<REAL>::Type> *x,
+		  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 // Scale (component-wise)
 template<class T> EXPORTGPUCORE
-bool cuNDA_scale( cuNDArray<T> *a, cuNDArray<T> *x );
+bool cuNDA_scale( cuNDArray<T> *a, cuNDArray<T> *x,
+		  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 // Scale (component-wise)
 template<class REAL> EXPORTGPUCORE
-bool cuNDA_scale( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *x );
+bool cuNDA_scale( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *x,
+		  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 // 'axpy' - component-wise
 template<class T> EXPORTGPUCORE
-bool cuNDA_axpy( cuNDArray<T> *a, cuNDArray<T> *x, cuNDArray<T> *y );
+bool cuNDA_axpy( cuNDArray<T> *a, cuNDArray<T> *x, cuNDArray<T> *y,
+		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 // 'axpy' - component-wise
 template<class REAL> EXPORTGPUCORE
-bool cuNDA_axpy( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *x, cuNDArray<typename complext<REAL>::Type> *y );
-
-// Crop
-template<class T, unsigned int D> EXPORTGPUCORE
-bool cuNDA_crop( typename uintd<D>::Type offset, cuNDArray<T> *in, cuNDArray<T> *out );
-
-// Expand with zero filling (real and complex types)
-template<class T, unsigned int D> EXPORTGPUCORE
-bool cuNDA_expand_with_zero_fill( cuNDArray<T> *in, cuNDArray<T> *out );
-
-// Zero fill border (rectangular) - (real and complex types)
-template<class T, unsigned int D> EXPORTGPUCORE
-bool cuNDA_zero_fill_border( typename uintd<D>::Type matrix_size, cuNDArray<T> *image );
-
-// Border fill (circular) - (real and complex types)
-template<class REAL, class T, unsigned int D> EXPORTGPUCORE
-bool cuNDA_zero_fill_border( typename reald<REAL,D>::Type radius, cuNDArray<T> *image );
+bool cuNDA_axpy( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *x, cuNDArray<typename complext<REAL>::Type> *y,
+		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 //
 // cublas wrappers (real and complex types)
@@ -136,3 +159,32 @@ bool cuNDA_axpy( T a, cuNDArray<T>* x, cuNDArray<T>* y, cublasHandle_t handle );
 
 template<class T> EXPORTGPUCORE
 bool cuNDA_scal( T a, cuNDArray<T>* x, cublasHandle_t handle );
+
+// Normalize (float/double arrays only)
+template<class REAL> EXPORTGPUCORE
+bool cuNDA_normalize( cuNDArray<REAL> *in_out, REAL new_max, cublasHandle_t handle );
+
+//
+// Some image utilities (with an interface fitting the NNFT)
+//
+
+// Crop (scalar and vector_td arrays)
+template<class T, unsigned int D> EXPORTGPUCORE
+bool cuNDA_crop( typename uintd<D>::Type crop_offset, 
+		 cuNDArray<T> *in, cuNDArray<T> *out,
+		 cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
+
+// Expand with zero filling (real and complex types)
+template<class T, unsigned int D> EXPORTGPUCORE
+bool cuNDA_expand_with_zero_fill( cuNDArray<T> *in, cuNDArray<T> *out,
+				  cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
+
+// Zero fill border (rectangular) - (real and complex types)
+template<class T, unsigned int D> EXPORTGPUCORE
+bool cuNDA_zero_fill_border( typename uintd<D>::Type matrix_size, cuNDArray<T> *image,
+			     cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+
+// Border fill (circular) - (real and complex types)
+template<class REAL, class T, unsigned int D> EXPORTGPUCORE
+bool cuNDA_zero_fill_border( typename reald<REAL,D>::Type radius, cuNDArray<T> *image,
+			     cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );

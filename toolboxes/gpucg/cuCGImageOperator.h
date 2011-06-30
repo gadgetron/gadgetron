@@ -13,7 +13,8 @@ class cuCGImageOperator : public cuCGMatrixOperator<REAL,T>
 {
  public:
 
-  cuCGImageOperator() {}
+  cuCGImageOperator() : cuCGMatrixOperator<REAL,T>() {}
+
   virtual ~cuCGImageOperator() {}
 
   inline int set_encoding_operator( boost::shared_ptr< cuCGMatrixOperator<REAL,T> > encoding_operator ){

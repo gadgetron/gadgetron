@@ -1,8 +1,6 @@
 // Gadgetron includes
 #include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
-#include "vector_td_operators.h"
-#include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
 #include "radial_utilities.h"
 #include "cgOperatorNonCartesianSense.h"
@@ -49,7 +47,7 @@ int main(int argc, char** argv)
   parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Sample data file name", true );
   parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Result file name", true, "result.cplx" );
   parms.add_parameter( 'm', COMMAND_LINE_INT,    1, "Matrix size", true );
-  parms.add_parameter( 'o', COMMAND_LINE_INT,    1, "Oversampled Matrix size", true );
+  parms.add_parameter( 'o', COMMAND_LINE_INT,    1, "Oversampled matrix size", true );
   parms.add_parameter( 'p', COMMAND_LINE_INT,    1, "Profiles per frame", true );
   parms.add_parameter( 'f', COMMAND_LINE_INT,    1, "Frames per reconstruction (negative meaning all)", true, "-1" );
   parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of iterations", true, "10" );
@@ -146,7 +144,7 @@ int main(int argc, char** argv)
     plan.convolve( csm_data.get(), image_os, dcw.get(), NFFT_plan<_real,2>::NFFT_BACKWARDS, (iteration==0) ? false : true );
     csm_data.reset();
   }
- 
+  
   // We now have 'frames_per_reconstruction' k-space images of each coil. Add these up.
   boost::shared_ptr< cuNDArray<_complext> > acc_image_os = cuNDA_sum<_complext>( image_os, 2 );    
   delete image_os;
@@ -213,7 +211,7 @@ int main(int argc, char** argv)
   cg.add_matrix_operator( R );  // regularization matrix
   cg.set_preconditioner ( D );         // preconditioning matrix
   cg.set_iterations( num_iterations );
-  cg.set_limit( 1e-5 );
+  cg.set_limit( 1e-6 );
   cg.set_output_mode( cuCG<_real, _complext>::OUTPUT_VERBOSE );
       
   // Reconstruct all SENSE frames iteratively
@@ -249,7 +247,7 @@ int main(int argc, char** argv)
     vector<unsigned int> rhs_dims = uintd_to_vector<2>(matrix_size); rhs_dims.push_back(frames_per_reconstruction);
     cuNDArray<_complext> rhs; rhs.create(&rhs_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );    
     E->mult_MH( data.get(), &rhs );
-    
+
     //
     // Conjugate gradient solver
     //
