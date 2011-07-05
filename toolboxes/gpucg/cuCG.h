@@ -7,7 +7,6 @@
 #include <vector>
 #include <iostream>
 
-#include <cublas_v2.h>
 #include <boost/smart_ptr.hpp>
 
 template<class REAL, class T> class EXPORTGPUCG cuCG
@@ -27,11 +26,7 @@ template<class REAL, class T> class EXPORTGPUCG cuCG
     return set_device(device);
   }
   
-  virtual ~cuCG() {
-    if (cublasDestroy(cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
-      std::cerr << "~cuCG: unable to destroy cublas handle" << std::endl;
-    }
-  }
+  virtual ~cuCG() {}
   
   int add_matrix_operator( boost::shared_ptr< cuCGMatrixOperator<REAL,T> > op ) {
     operators_->push_back(op);
@@ -59,10 +54,6 @@ template<class REAL, class T> class EXPORTGPUCG cuCG
   
   bool set_device(int device);
 
-  cublasHandle_t get_cublas_handle() {
-    return cublas_handle_; 
-  }
-
   boost::shared_ptr< cuNDArray<T> > solve(cuNDArray<T> *rhs);
 
   void* operator new (size_t bytes) { return ::new char[bytes]; }
@@ -72,7 +63,6 @@ template<class REAL, class T> class EXPORTGPUCG cuCG
 protected:
   boost::shared_ptr< std::vector< boost::shared_ptr< cuCGMatrixOperator<REAL,T> > > > operators_;
   boost::shared_ptr< cuCGPreconditioner<T> > precond_;
-  cublasHandle_t cublas_handle_;
   unsigned int iterations_;
   REAL limit_;
   int output_mode_;

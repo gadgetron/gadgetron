@@ -94,18 +94,11 @@ int main( int argc, char** argv)
     cout << endl << "For this samples application we only allow square input images. "
 	 << endl << "The only reason being that only one oversampled matrix size is specified and the oversampling ratio must be consistent." << endl;
   }
-  
-  // Get cublas handle (for normalization)
-  cublasHandle_t cublas_handle;
-  if( cublasCreate(&cublas_handle) != CUBLAS_STATUS_SUCCESS ) {
-    cerr << "Unable to create cublas handle" << std::endl;
-    return 1;
-  }
-  
+    
   // Upload host image to device, normalize, and convert to complex type
   timer = new GPUTimer("Uploading, normalizing and converting to complex");
   cuNDArray<_real> _image(host_image.get());
-  cuNDA_normalize( &_image, 1.0f, cublas_handle );
+  cuNDA_normalize( &_image, 1.0f );
   boost::shared_ptr< cuNDArray<_complext> > image = cuNDA_real_to_complext<_real>( &_image );
   delete timer;
   

@@ -6,48 +6,22 @@
 template<class REAL, class T> bool 
 cuCG<REAL,T>::set_device( int device )
 { 
-  static bool handle_set = false;
-  
   device_ = device;
-
-  if ( handle_set && cublasDestroy(cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
-    std::cerr << "cuCG::set_device unable to destroy existing cublas handle" << std::endl;
-    return false;
-  }
-
-  handle_set = false;
   
-  int old_device;  
-  if( cudaGetDevice( &old_device ) != cudaSuccess ){
-    std::cerr << "cuCG::set_device: unable to get current device." << std::endl ;
-    return false;
-  }
+  if( device<0 ){
+
+    int old_device;  
+
+    if( cudaGetDevice( &old_device ) != cudaSuccess ){
+      std::cerr << "cuCG::set_device: unable to get current device." << std::endl ;
+      return false;
+    }
     
-  if( device<0 )
     device_ = old_device;
-
-  if( device_ != old_device && cudaSetDevice(device_) != cudaSuccess) {
-    std::cerr << "cuCG:set_device: unable to set device " << device_ << std::endl;
-    return false;
   }
-          
-  if (cublasCreate(&cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
-    std::cerr << "cuCG::set_device: unable to create cublas handle" << std::endl;
-    return false;
-  }
-
-  handle_set = true;
   
-  cublasSetPointerMode( cublas_handle_, CUBLAS_POINTER_MODE_HOST );
-  
-  if( device_ != old_device && cudaSetDevice(old_device) != cudaSuccess) {
-    std::cerr << "cuCG::set_device: unable to restore device no" << std::endl;
-    return false;
-  }
-
   return true;
 }
-
 
 template<class REAL, class T> boost::shared_ptr< cuNDArray<T> > 
 cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
@@ -99,7 +73,7 @@ cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
     r =  *rhs;
   }
   
-  REAL rr_0    = real<REAL>(cuNDA_dot<T>(&r, &r, cublas_handle_));
+  REAL rr_0    = real<REAL>(cuNDA_dot<T>(&r, &r));
   REAL rr_1    = rr_0;
   REAL rr      = get_zero<REAL>();
   REAL rr_last = get_max<REAL>();
@@ -143,19 +117,19 @@ cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
   for (unsigned int it = 0; it < iterations_; it++) { //iterations_; it++) {
 
     rr_1 = rr;
-    rr = real<REAL,T>(cuNDA_dot<T>(&r, &r, cublas_handle_));
+    rr = real<REAL,T>(cuNDA_dot<T>(&r, &r));
     
     // Update p
     if (it == 0){
       p = r;
     } else {        
       T beta = mul<REAL>(rr/rr_1, get_one<T>());
-      if (!cuNDA_scal<T>(beta,&p,cublas_handle_)) {
+      if (!cuNDA_scal<T>(beta,&p)) {
 	std::cerr << "cuCG::solve : failed to scale p" << std::endl;
 	cudaSetDevice(old_device);
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
-      if (!cuNDA_axpy<T>(get_one<T>(),&r,&p,cublas_handle_)) {
+      if (!cuNDA_axpy<T>(get_one<T>(),&r,&p)) {
 	std::cerr << "cuCG::solve : failed to add r to scaled p" << std::endl;
 	cudaSetDevice(old_device);
 	return boost::shared_ptr< cuNDArray<T> >(rho);
@@ -184,7 +158,7 @@ cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
 
-      if (!cuNDA_axpy<T>(mul<REAL>((*operators_)[i]->get_weight(), get_one<T>()),&q2,&q,cublas_handle_)) {
+      if (!cuNDA_axpy<T>(mul<REAL>((*operators_)[i]->get_weight(), get_one<T>()),&q2,&q)) {
 	std::cerr << "cuCG::solve : failed to add q1 to q" << std::endl;
 	cudaSetDevice(old_device);
 	return boost::shared_ptr< cuNDArray<T> >(rho);
@@ -199,17 +173,17 @@ cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
       }
     }
 
-    T alpha = mul<REAL>(rr, reciprocal<T>(cuNDA_dot<T>(&p,&q,cublas_handle_)));
+    T alpha = mul<REAL>(rr, reciprocal<T>(cuNDA_dot<T>(&p,&q)));
     
     // Update solution
-    if (!cuNDA_axpy<T>(alpha,&p,rho,cublas_handle_)) {
+    if (!cuNDA_axpy<T>(alpha,&p,rho)) {
       std::cerr << "cuCG::solve : failed to update solution" << std::endl;
       cudaSetDevice(old_device);
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
     
     // Update residual
-    if (!cuNDA_axpy<T>(mul<REAL>(-get_one<REAL>(),alpha),&q,&r,cublas_handle_)) {
+    if (!cuNDA_axpy<T>(mul<REAL>(-get_one<REAL>(),alpha),&q,&r)) {
       std::cerr << "cuCG::solve : failed to update residual" << std::endl;
       cudaSetDevice(old_device);
       return boost::shared_ptr< cuNDArray<T> >(rho);

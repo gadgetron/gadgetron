@@ -100,17 +100,10 @@ int main( int argc, char** argv)
   if( frames_per_reconstruction < 0 ) frames_per_reconstruction = num_frames;
   if( (unsigned int)frames_per_reconstruction > num_frames ) frames_per_reconstruction = num_frames;
   
-  // Get cublas handle (for normalization)
-  cublasHandle_t cublas_handle;
-  if( cublasCreate(&cublas_handle) != CUBLAS_STATUS_SUCCESS ) {
-    cerr << "Unable to create cublas handle" << std::endl;
-    return 1;
-  }
-  
   // Upload host image to device, normalize, and convert to complex type
   timer = new GPUTimer("Uploading, normalizing and converting to complex");
   cuNDArray<_real> _image(host_image.get());
-  cuNDA_normalize( &_image, 1.0f, cublas_handle );
+  cuNDA_normalize( &_image, 1.0f );
   boost::shared_ptr< cuNDArray<_complext> > image = cuNDA_real_to_complext<_real>( &_image );
   delete timer;
   

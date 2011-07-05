@@ -16,15 +16,25 @@ weight_multiplication( T* in, T* out, T* weight, unsigned long elements )
 template <class T> int cuCGPrecondWeight<T>::apply(cuNDArray<T>* in, cuNDArray<T>* out)
 {
   if (in->get_number_of_elements() != out->get_number_of_elements()) {
-    std::cerr << "cuCGPreconWeight::apply : input and output dimensions mismatch" << std::endl;
+    std::cerr << "cuCGPreconWeight::apply: input and output dimensions mismatch" << std::endl;
     return -1;
   }
 
   if (in->get_number_of_elements() % weights_->get_number_of_elements()) {
-    std::cerr << "cuCGPreconWeight::apply : input dimensions don't match weights dimensions" << std::endl;
+    std::cerr << "cuCGPreconWeight::apply: input dimensions don't match weights dimensions" << std::endl;
     return -1;
   }
-
+  
+  int old_device;
+  if( cudaGetDevice( &old_device ) != cudaSuccess ){
+    std::cerr << "cuCGPreconWeight::apply: unable to get current device." << std::endl ;
+    return -1;
+  }
+  if( device_ != old_device && cudaSetDevice(device_) != cudaSuccess) {
+    std::cerr << "cuCGPreconWeight::apply: unable to set device " << device_ << std::endl;
+    return -1;
+  }
+  
   unsigned int num_frames = in->get_number_of_elements() / weights_->get_number_of_elements();
 
   dim3 blockDim(256);
@@ -34,9 +44,14 @@ template <class T> int cuCGPrecondWeight<T>::apply(cuNDArray<T>* in, cuNDArray<T
 
   cudaError_t err = cudaGetLastError();
   if( err != cudaSuccess ){
-    std::cerr << "cuCGPreconWeight::apply : Unable to apply weights: " << 
+    std::cerr << "cuCGPreconWeight::apply: Unable to apply weights: " << 
       cudaGetErrorString(err) << std::endl;
     return -2;
+  }
+  
+  if( device_ != old_device && cudaSetDevice(old_device) != cudaSuccess) {
+    std::cerr << "cuCGPreconWeight::apply: unable to restore device " << old_device << std::endl;
+    return -3;
   }
   
   return 0;

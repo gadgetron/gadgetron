@@ -7,6 +7,7 @@ LIBHEADERS=\
 	cuCG.h \
 	cuCGPreconditioner.h \
 	cuCGMatrixOperator.h \
+	cuCGMatrixOperatorDevice.h \
 	cuCGIdentityOperator.h \
 	cuCGImageOperator.h
 

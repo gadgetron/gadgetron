@@ -260,7 +260,7 @@ void radialSenseAppMainWindow::replan()
   image_dims = uintd_to_vector<2>(get_matrix_size());
   rhs_buffer->set_csm(csm);
   E->setup( get_matrix_size(), get_matrix_size_os(), get_kernel_width() ); 
-  R->compute( image, &image_dims, cg.get_cublas_handle() );
+  R->compute( image, &image_dims );
   delete image; image = 0x0; 
 
   // Define preconditioning weights
@@ -286,7 +286,7 @@ void radialSenseAppMainWindow::replan()
 void radialSenseAppMainWindow::update_preconditioning_weights()
 {
   boost::shared_ptr< cuNDArray<float> > _precon_weights = cuNDA_ss<float,float_complext::Type>( csm.get(), 2 );
-  cuNDA_axpy<float>( get_kappa(), R->get(), _precon_weights.get(), cg.get_cublas_handle() );  
+  cuNDA_axpy<float>( get_kappa(), R->get(), _precon_weights.get() );  
   cuNDA_reciprocal_sqrt<float>( _precon_weights.get() );
   boost::shared_ptr< cuNDArray<float_complext::Type> > precon_weights = cuNDA_real_to_complext<float>( _precon_weights.get() );
   D->set_weights( precon_weights );
@@ -539,7 +539,7 @@ void radialSenseAppMainWindow::reconstruct()
 
     // Magnitudes image for visualization
     boost::shared_ptr< cuNDArray<float> > tmp_res = cuNDA_norm<float,float_complext::Type>(cgresult.get());
-    cuNDA_normalize( tmp_res.get(), get_window_scale(), cg.get_cublas_handle() );
+    cuNDA_normalize( tmp_res.get(), get_window_scale() );
 
     // Copy to OpenGL/pbo
     cudaMemcpy( reconWidget->openglCanvas->getDevPtr(),

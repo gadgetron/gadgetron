@@ -1,8 +1,7 @@
 #ifndef CUCGMATRIXOPERATOR_H
 #define CUCGMATRIXOPERATOR_H
-
 #pragma once
-#include "gadgetron_export.h"
+
 #include "cuNDArray.h"
 #include "vector_td_utilities.h"
 

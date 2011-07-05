@@ -22,7 +22,18 @@ template <class T> class EXPORTGPUCG cuCGPreconditioner
 template <class T> class EXPORTGPUCG cuCGPrecondWeight : public cuCGPreconditioner<T>
 {
  public:
-  cuCGPrecondWeight() {}
+  cuCGPrecondWeight( int device = -1 )
+  {
+    if( device<0 ){
+      if( cudaGetDevice( &device_ ) != cudaSuccess ){
+	std::cerr << "cuCGMatrixOperatorDevice: unable to get current device." << std::endl ;
+	device_ = 0;
+      }      
+    }
+    else
+      device_ = device;    
+  }
+
   virtual ~cuCGPrecondWeight() {}
 
   virtual int set_weights( boost::shared_ptr< cuNDArray<T> > w ) {
@@ -34,6 +45,7 @@ template <class T> class EXPORTGPUCG cuCGPrecondWeight : public cuCGPrecondition
 
  protected:
   boost::shared_ptr< cuNDArray<T> > weights_;
+  int device_;
 };
 
 #endif //CUCGPRECONDITIONER_H

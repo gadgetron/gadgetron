@@ -2,6 +2,8 @@
 #include "real_utilities.h"
 #include "check_CUDA.h"
 
+#include <cublas_v2.h>
+
 #include <vector>
 #include <cmath>
 
@@ -13,6 +15,7 @@ static int num_devices = 0;
 static int *warp_size = 0x0;
 static int *max_blockdim = 0x0;
 static int *max_griddim = 0x0;
+static cublasHandle_t *handle = 0x0;
 
 // Default template arguments seems to require c++-0x. 
 typedef float dummy;
@@ -27,7 +30,7 @@ typedef float dummy;
 // If compute mode is CUNDA_NDARRAY_DEVICE the mandatory array 'in1' determines the compute device
 //
 template< unsigned int D, typename I1, typename I2, typename I3 > 
-static bool prepare( cuNDA_device compute_device, int *old_device,
+static bool prepare( cuNDA_device compute_device, int *cur_device, int *old_device,
 		     cuNDArray<I1> *in1,       cuNDArray<I1> **in1_int, 
 		     cuNDArray<I2> *in2 = 0x0, cuNDArray<I2> **in2_int = 0x0, 
 		     cuNDArray<I3> *in3 = 0x0, cuNDArray<I3> **in3_int = 0x0 ) 
@@ -35,6 +38,11 @@ static bool prepare( cuNDA_device compute_device, int *old_device,
   // Test validity of D
   if( D==0 || D>3 ){
     cerr << endl << ">>>Internal error<<< :prepare: D out of range" << endl;
+    return false;
+  }
+
+  if( !cur_device || !old_device ){
+    cerr << endl << ">>>Internal error<<< :prepare: device ids 0x0" << endl;
     return false;
   }
 
@@ -59,45 +67,44 @@ static bool prepare( cuNDA_device compute_device, int *old_device,
   }
 
   // Set the cuda device to use for computation
-  int device;
   if( compute_device == CUNDA_CURRENT_DEVICE ){
-    device = *old_device; 
+    *cur_device = *old_device; 
   }
   else if( compute_device == CUNDA_NDARRAY_DEVICE ){
     // Let D indicate which ndarray that determines the device
     // D denotes the output array (the latter ndarray in the list), if any, otherwise a sole input ndarray
     if( D == 1)
-      device = in1->get_device();
+      *cur_device = in1->get_device();
     else if( D == 2 )
-      device = in2->get_device();
+      *cur_device = in2->get_device();
     else if( D == 3 )
-      device = in3->get_device();
+      *cur_device = in3->get_device();
   }
   else{
     cerr << endl << ">>>Internal error<<< :prepare: unknown compute mode" << endl;
     return false;
   }
 
-  if( device != *old_device && cudaSetDevice(device) != cudaSuccess) {
+  if( *cur_device != *old_device && cudaSetDevice(*cur_device) != cudaSuccess) {
     cerr << endl << "unable to set device no";
     return false;
   }
   
   // Transfer arrays to compute device if necessary
-  if( device != in1->get_device() )
+  if( *cur_device != in1->get_device() )
     *in1_int = new cuNDArray<I1>(*in1); // device transfer
   else
     *in1_int = in1;
   
   if( D>1 ){
-    if( device != in2->get_device() )
+    if( *cur_device != in2->get_device() )
       *in2_int = new cuNDArray<I2>(*in2); // device transfer
     else
       *in2_int = in2;
   }
   
   if( D>2 ){
-    if( device != in3->get_device() )
+    if( *cur_device != in3->get_device() )
       *in3_int = new cuNDArray<I3>(*in3); // device transfer
     else
       *in3_int = in3;
@@ -227,14 +234,20 @@ static bool initialize_static_variables()
   warp_size = new int[num_devices];
   max_blockdim = new int[num_devices];
   max_griddim = new int[num_devices];
+  handle = new cublasHandle_t[num_devices];
 
-  if( !warp_size || !max_blockdim || !max_griddim ) {
+  if( !warp_size || !max_blockdim || !max_griddim || !handle ) {
     cout << endl << "Error: trivial malloc failed!" << endl ;
     return false;
   }
 
   for( int device=0; device<num_devices; device++ ){
 
+    if( cudaSetDevice(device) != cudaSuccess ) {
+      cerr << endl << "Error: unable to set device no";
+      return false;
+    }
+    
     cudaDeviceProp deviceProp; 
     
     if( cudaGetDeviceProperties( &deviceProp, device ) != cudaSuccess) {
@@ -245,8 +258,16 @@ static bool initialize_static_variables()
     warp_size[device] = deviceProp.warpSize;
     max_blockdim[device] = deviceProp.maxThreadsDim[0];
     max_griddim[device] = deviceProp.maxGridSize[0];
-  }
 
+    if (cublasCreate(&handle[device]) != CUBLAS_STATUS_SUCCESS) {
+      std::cerr << "Error: unable to create cublas handle for device " << device << std::endl;
+      return false;
+    }
+
+    cublasSetPointerMode( handle[device], CUBLAS_POINTER_MODE_HOST );
+
+  }
+  
   if( cudaSetDevice(old_device) != cudaSuccess ) {
     cerr << endl << "Error: unable to restore device no";
     return false;
@@ -341,18 +362,18 @@ boost::shared_ptr< cuNDArray<REAL> >
 cuNDA_norm( cuNDArray<typename reald<REAL,D>::Type> *in,
 	    cuNDA_device alloc_device, cuNDA_device compute_device )
 {
-  int old_device; 
+  int cur_device, old_device; 
   cuNDArray< typename reald<REAL,D>::Type > *in_int;
 
   // Prepare
-  if( !prepare<1,typename reald<REAL,D>::Type,dummy,dummy>( compute_device, &old_device, in, &in_int ) ){
+  if( !prepare<1,typename reald<REAL,D>::Type,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
     cerr << endl << "cuNDA_norm: unable to prepare device(s)" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_norm: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
@@ -379,18 +400,18 @@ boost::shared_ptr< cuNDArray<REAL> >
 cuNDA_norm( cuNDArray<T> *in,
 	    cuNDA_device alloc_device, cuNDA_device compute_device )
 {
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *in_int;
 
   // Prepare 
-  if( !prepare<1,T,dummy,dummy>( compute_device, &old_device, in, &in_int ) ){
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
     cerr << endl << "cuNDA_norm: unable to prepare device(s)" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_norm: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
@@ -443,18 +464,18 @@ boost::shared_ptr< cuNDArray<REAL> >
 cuNDA_norm_squared( cuNDArray<typename reald<REAL,D>::Type> *in,
 		    cuNDA_device alloc_device, cuNDA_device compute_device )
 {
-  int old_device;
+  int cur_device, old_device;
   cuNDArray< typename reald<REAL,D>::Type > *in_int;
 
   // Prepare
-  if( !prepare<1,typename reald<REAL,D>::Type,dummy,dummy>( compute_device, &old_device, in, &in_int ) ){
+  if( !prepare<1,typename reald<REAL,D>::Type,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
     cerr << endl << "cuNDA_norm_squared: unable to prepare device(s)" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_norm_squared: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
@@ -481,18 +502,18 @@ boost::shared_ptr< cuNDArray<REAL> >
 cuNDA_norm_squared( cuNDArray<T> *in,
 		    cuNDA_device alloc_device, cuNDA_device compute_device )
 {
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *in_int;
 
   // Prepare
-  if( !prepare<1,T,dummy,dummy>( compute_device, &old_device, in, &in_int ) ){
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
     cerr << endl << "cuNDA_norm_squared: unable to prepare device(s)" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_norm_squared: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
@@ -543,11 +564,11 @@ cuNDA_sum( cuNDArray<T> *in, unsigned int dim,
 	   cuNDA_device alloc_device, cuNDA_device compute_device )
 {
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *in_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,T,dummy,dummy>( compute_device, &old_device, in, &in_int ) ){
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
     cerr << endl << "cuNDA_sum: unable to prepare device(s)" << endl;
     return boost::shared_ptr< cuNDArray<T> >();
   }
@@ -568,7 +589,7 @@ cuNDA_sum( cuNDArray<T> *in, unsigned int dim,
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, number_of_elements, &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_sum: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<T> >();
   }
@@ -623,11 +644,11 @@ _cuNDA_ss( cuNDArray<T> *in, unsigned int dim,
 	   cuNDA_device alloc_device, cuNDA_device compute_device )
 {
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *in_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,T,dummy,dummy>( compute_device, &old_device, in, &in_int ) ){
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
     cerr << endl << "cuNDA_ss: unable to prepare device(s)" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
@@ -648,7 +669,7 @@ _cuNDA_ss( cuNDArray<T> *in, unsigned int dim,
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, number_of_elements, &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_ss: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
@@ -726,11 +747,11 @@ cuNDA_css( cuNDArray<typename complext<REAL>::Type> *in, unsigned int dim,
 	   cuNDA_device alloc_device, cuNDA_device compute_device )
 {
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<typename complext<REAL>::Type> *in_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,typename complext<REAL>::Type,dummy,dummy>( compute_device, &old_device, in, &in_int ) ){
+  if( !prepare<1,typename complext<REAL>::Type,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
     cerr << endl << "cuNDA_css: unable to prepare device(s)" << endl;
     return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >();
   }
@@ -751,7 +772,7 @@ cuNDA_css( cuNDArray<typename complext<REAL>::Type> *in, unsigned int dim,
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, number_of_elements, &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_css: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >();
   }
@@ -824,11 +845,11 @@ _cuNDA_rss( cuNDArray<T> *in, unsigned int dim,
 	    cuNDA_device alloc_device, cuNDA_device compute_device )
 {
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *in_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,T,dummy,dummy>( compute_device, &old_device, in, &in_int ) ){
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
     cerr << endl << "cuNDA_rss: unable to prepare device(s)" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
@@ -849,7 +870,7 @@ _cuNDA_rss( cuNDArray<T> *in, unsigned int dim,
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, number_of_elements, &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_rss: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
@@ -927,11 +948,11 @@ cuNDA_crss( cuNDArray<typename complext<REAL>::Type> *in, unsigned int dim,
 	    cuNDA_device alloc_device, cuNDA_device compute_device )
 {
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<typename complext<REAL>::Type> *in_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,typename complext<REAL>::Type,dummy,dummy>( compute_device, &old_device, in, &in_int ) ){
+  if( !prepare<1,typename complext<REAL>::Type,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
     cerr << endl << "cuNDA_crss: unable to prepare device(s)" << endl;
     return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >();
   }
@@ -952,7 +973,7 @@ cuNDA_crss( cuNDArray<typename complext<REAL>::Type> *in, unsigned int dim,
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, number_of_elements, &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_crss: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >();
   }
@@ -1010,11 +1031,11 @@ _cuNDA_reciprocal_rss( cuNDArray<T> *in, unsigned int dim,
 		       cuNDA_device alloc_device, cuNDA_device compute_device )
 {
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *in_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,T,dummy,dummy>( compute_device, &old_device, in, &in_int ) ){
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
     cerr << endl << "cuNDA_reciprocal_rss: unable to prepare device(s)" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
@@ -1035,7 +1056,7 @@ _cuNDA_reciprocal_rss( cuNDArray<T> *in, unsigned int dim,
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, number_of_elements, &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_reciprocal_rss: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
@@ -1113,11 +1134,11 @@ cuNDA_creciprocal_rss( cuNDArray<typename complext<REAL>::Type> *in, unsigned in
 		       cuNDA_device alloc_device, cuNDA_device compute_device )
 {
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<typename complext<REAL>::Type> *in_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,typename complext<REAL>::Type,dummy,dummy>( compute_device, &old_device, in, &in_int ) ){
+  if( !prepare<1,typename complext<REAL>::Type,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
     cerr << endl << "cuNDA_creciprocal_rss: unable to prepare device(s)" << endl;
     return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >();
   }
@@ -1138,7 +1159,7 @@ cuNDA_creciprocal_rss( cuNDArray<typename complext<REAL>::Type> *in, unsigned in
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, number_of_elements, &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_creciprocal_rss: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >();
   }
@@ -1203,11 +1224,11 @@ _cuNDA_correlation( cuNDArray<T> *in,
 		    cuNDA_device alloc_device, cuNDA_device compute_device )
 {
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *in_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,T,dummy,dummy>( compute_device, &old_device, in, &in_int ) ){
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
     cerr << endl << "cuNDA_correlation: unable to prepare device(s)" << endl;
     return boost::shared_ptr< cuNDArray<T> >();
   }
@@ -1298,18 +1319,18 @@ cuNDA_real_to_complext( cuNDArray<REAL> *in,
 			cuNDA_device alloc_device, cuNDA_device compute_device )
 {
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<REAL> *in_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,REAL,dummy,dummy>( compute_device, &old_device, in, &in_int ) ){
+  if( !prepare<1,REAL,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
     cerr << endl << "cuNDA_real_to_complext: unable to prepare device(s)" << endl;
     return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >();
   }
  
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_real_to_complext: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >();
   }
@@ -1346,18 +1367,18 @@ bool cuNDA_clear( cuNDArray<T> *in_out, T val,
 		  cuNDA_device compute_device )
 {
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *in_out_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,T,dummy,dummy>( compute_device, &old_device, in_out, &in_out_int ) ){
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in_out, &in_out_int ) ){
     cerr << endl << "cuNDA_clear: unable to prepare device(s)" << endl;
     return false;
   }
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, in_out->get_number_of_elements(), &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, in_out->get_number_of_elements(), &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_clear: block/grid configuration out of range" << endl;
     return false;
   }
@@ -1394,18 +1415,18 @@ bool cuNDA_abs( cuNDArray<T> *in_out,
 		cuNDA_device compute_device )
 {
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *in_out_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,T,dummy,dummy>( compute_device, &old_device, in_out, &in_out_int ) ){
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in_out, &in_out_int ) ){
     cerr << endl << "cuNDA_abs: unable to prepare device(s)" << endl;
     return false;
   }
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, in_out->get_number_of_elements(), &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, in_out->get_number_of_elements(), &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_abs: block/grid configuration out of range" << endl;
     return false;
   }
@@ -1441,18 +1462,18 @@ bool cuNDA_reciprocal( cuNDArray<T> *in_out,
 		       cuNDA_device compute_device )
 {
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *in_out_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,T,dummy,dummy>( compute_device, &old_device, in_out, &in_out_int ) ){
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in_out, &in_out_int ) ){
     cerr << endl << "cuNDA_reciprocal: unable to prepare device(s)" << endl;
     return false;
   }
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, in_out->get_number_of_elements(), &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, in_out->get_number_of_elements(), &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_reciprocal: block/grid configuration out of range" << endl;
     return false;
   }
@@ -1488,18 +1509,18 @@ bool cuNDA_sqrt( cuNDArray<T> *in_out,
 		 cuNDA_device compute_device )
 {
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *in_out_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,T,dummy,dummy>( compute_device, &old_device, in_out, &in_out_int ) ){
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in_out, &in_out_int ) ){
     cerr << endl << "cuNDA_sqrt: unable to prepare device(s)" << endl;
     return false;
   }
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, in_out->get_number_of_elements(), &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, in_out->get_number_of_elements(), &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_sqrt: block/grid configuration out of range" << endl;
     return false;
   }
@@ -1535,18 +1556,18 @@ bool cuNDA_reciprocal_sqrt( cuNDArray<T> *in_out,
 			    cuNDA_device compute_device )
 {
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *in_out_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,T,dummy,dummy>( compute_device, &old_device, in_out, &in_out_int ) ){
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in_out, &in_out_int ) ){
     cerr << endl << "cuNDA_reciprocal_sqrt: unable to prepare device(s)" << endl;
     return false;
   }
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, in_out->get_number_of_elements(), &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, in_out->get_number_of_elements(), &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_reciprocal_sqrt: block/grid configuration out of range" << endl;
     return false;
   }
@@ -1591,11 +1612,11 @@ bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim,
 			  cuNDA_device compute_device )
 {
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *in_out_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,T,dummy,dummy>( compute_device, &old_device, in_out, &in_out_int ) ){
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in_out, &in_out_int ) ){
     cerr << endl << "cuNDA_rss_normalize: unable to prepare device(s)" << endl;
     return false;
   }
@@ -1616,7 +1637,7 @@ bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim,
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, number_of_elements, &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_rss_normalize: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
@@ -1658,18 +1679,18 @@ bool cuNDA_scale( REAL a, cuNDArray<typename complext<REAL>::Type> *in_out,
 		  cuNDA_device compute_device )
 {
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<typename complext<REAL>::Type> *in_out_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,typename complext<REAL>::Type,dummy,dummy>( compute_device, &old_device, in_out, &in_out_int ) ){
+  if( !prepare<1,typename complext<REAL>::Type,dummy,dummy>( compute_device, &cur_device, &old_device, in_out, &in_out_int ) ){
     cerr << endl << "cuNDA_scale: unable to prepare device(s)" << endl;
     return false;
   }
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, in_out->get_number_of_elements(), &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, in_out->get_number_of_elements(), &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_scale: block/grid configuration out of range" << endl;
     return false;
   }
@@ -1714,11 +1735,11 @@ bool cuNDA_scale( cuNDArray<T> *a, cuNDArray<T> *x,
   }
  
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *a_int, *x_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<2,T,T,dummy>( compute_device, &old_device, a, &a_int, x, &x_int ) ){
+  if( !prepare<2,T,T,dummy>( compute_device, &cur_device, &old_device, a, &a_int, x, &x_int ) ){
     cerr << endl << "cuNDA_scale: unable to prepare device(s)" << endl;
     return false;
   }
@@ -1728,7 +1749,7 @@ bool cuNDA_scale( cuNDArray<T> *a, cuNDArray<T> *x,
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, number_of_elements, &blockDim, &gridDim, num_batches ) ){
+  if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim, num_batches ) ){
     cerr << endl << "cuNDA_scale: block/grid configuration out of range" << endl;
     return false;
   }
@@ -1759,11 +1780,11 @@ bool cuNDA_scale( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *
   }
  
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<REAL> *a_int; cuNDArray<typename complext<REAL>::Type> *x_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<2,REAL,typename complext<REAL>::Type,dummy>( compute_device, &old_device, a, &a_int, x, &x_int ) ){
+  if( !prepare<2,REAL,typename complext<REAL>::Type,dummy>( compute_device, &cur_device, &old_device, a, &a_int, x, &x_int ) ){
     cerr << endl << "cuNDA_scale: unable to prepare device(s)" << endl;
     return false;
   }
@@ -1773,7 +1794,7 @@ bool cuNDA_scale( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, number_of_elements, &blockDim, &gridDim, num_batches ) ){
+  if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim, num_batches ) ){
     cerr << endl << "cuNDA_scale: block/grid configuration out of range" << endl;
     return false;
   }
@@ -1827,11 +1848,11 @@ bool cuNDA_axpy( cuNDArray<T> *a, cuNDArray<T> *x, cuNDArray<T> *y,
   }
  
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *a_int, *x_int, *y_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<3,T,T,T>( compute_device, &old_device, a, &a_int, x, &x_int, y, &y_int ) ){
+  if( !prepare<3,T,T,T>( compute_device, &cur_device, &old_device, a, &a_int, x, &x_int, y, &y_int ) ){
     cerr << endl << "cuNDA_axpy: unable to prepare device(s)" << endl;
     return false;
   }
@@ -1841,7 +1862,7 @@ bool cuNDA_axpy( cuNDArray<T> *a, cuNDArray<T> *x, cuNDArray<T> *y,
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, number_of_elements, &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_axpy: block/grid configuration out of range" << endl;
     return false;
   }
@@ -1877,11 +1898,11 @@ bool cuNDA_axpy( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *x
   }
  
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<REAL> *a_int; cuNDArray<typename complext<REAL>::Type> *x_int, *y_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<3,REAL,typename complext<REAL>::Type,typename complext<REAL>::Type>( compute_device, &old_device, a, &a_int, x, &x_int, y, &y_int ) ){
+  if( !prepare<3,REAL,typename complext<REAL>::Type,typename complext<REAL>::Type>( compute_device, &cur_device, &old_device, a, &a_int, x, &x_int, y, &y_int ) ){
     cerr << endl << "cuNDA_axpy: unable to prepare device(s)" << endl;
     return false;
   }
@@ -1891,7 +1912,7 @@ bool cuNDA_axpy( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *x
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, number_of_elements, &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_axpy: block/grid configuration out of range" << endl;
     return false;
   }
@@ -1910,14 +1931,14 @@ bool cuNDA_axpy( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *x
   return true;
 }
 
-template<class T> T _dot( cuNDArray<T>* arr1, cuNDArray<T>* arr2, cublasHandle_t handle );
+template<class T> T _dot( cuNDArray<T>* arr1, cuNDArray<T>* arr2, int device );
 
 template<> float_complext::Type
-_dot<float_complext::Type>( cuNDArray<float_complext::Type>* arr1, cuNDArray<float_complext::Type>* arr2, cublasHandle_t handle )
+_dot<float_complext::Type>( cuNDArray<float_complext::Type>* arr1, cuNDArray<float_complext::Type>* arr2, int device )
 {
   float_complext::Type ret;
   
-  if (cublasCdotc( handle, arr1->get_number_of_elements(),
+  if (cublasCdotc( handle[device], arr1->get_number_of_elements(),
 		   (const cuComplex*) arr1->get_data_ptr(), 1, 
 		   (const cuComplex*) arr2->get_data_ptr(), 1,
 		   (cuComplex*) &ret) != CUBLAS_STATUS_SUCCESS ) 
@@ -1925,15 +1946,16 @@ _dot<float_complext::Type>( cuNDArray<float_complext::Type>* arr1, cuNDArray<flo
       cout << "cuNDA_dot: inner product calculation using cublas failed" << std::endl;
     }
   
-  cudaThreadSynchronize();
+  cudaThreadSynchronize();  
   return ret;
 }
 
 template<> float 
-_dot<float>( cuNDArray<float>* arr1, cuNDArray<float>* arr2, cublasHandle_t handle )
+_dot<float>( cuNDArray<float>* arr1, cuNDArray<float>* arr2, int device )
 {
   float ret;
-  if( cublasSdot(handle, arr1->get_number_of_elements(),
+
+  if( cublasSdot(handle[device], arr1->get_number_of_elements(),
 		 arr1->get_data_ptr(), 1, 
 		 arr2->get_data_ptr(), 1,
 		 &ret) != CUBLAS_STATUS_SUCCESS ) 
@@ -1946,11 +1968,11 @@ _dot<float>( cuNDArray<float>* arr1, cuNDArray<float>* arr2, cublasHandle_t hand
 }
 
 template<> double_complext::Type
-_dot<double_complext::Type>( cuNDArray<double_complext::Type>* arr1, cuNDArray<double_complext::Type>* arr2, cublasHandle_t handle )
+_dot<double_complext::Type>( cuNDArray<double_complext::Type>* arr1, cuNDArray<double_complext::Type>* arr2, int device )
 {
   double_complext::Type ret;
   
-  if( cublasZdotc(handle, arr1->get_number_of_elements(),
+  if( cublasZdotc(handle[device], arr1->get_number_of_elements(),
 		  (const cuDoubleComplex*) arr1->get_data_ptr(), 1, 
 		  (const cuDoubleComplex*) arr2->get_data_ptr(), 1,
 		  (cuDoubleComplex*) &ret) != CUBLAS_STATUS_SUCCESS ) 
@@ -1963,10 +1985,11 @@ _dot<double_complext::Type>( cuNDArray<double_complext::Type>* arr1, cuNDArray<d
 }
 
 template<> double 
-_dot<double>( cuNDArray<double>* arr1, cuNDArray<double>* arr2, cublasHandle_t handle )
+_dot<double>( cuNDArray<double>* arr1, cuNDArray<double>* arr2, int device )
 {
   double ret;
-  if( cublasDdot(handle, arr1->get_number_of_elements(),
+
+  if( cublasDdot(handle[device], arr1->get_number_of_elements(),
 		 arr1->get_data_ptr(), 1, 
 		 arr2->get_data_ptr(), 1,
 		 &ret) != CUBLAS_STATUS_SUCCESS ) 
@@ -1979,28 +2002,52 @@ _dot<double>( cuNDArray<double>* arr1, cuNDArray<double>* arr2, cublasHandle_t h
 }
 
 template<class T> T
-cuNDA_dot( cuNDArray<T>* arr1, cuNDArray<T>* arr2, cublasHandle_t handle )
+cuNDA_dot( cuNDArray<T>* arr1, cuNDArray<T>* arr2, cuNDA_device compute_device )
 {
   if (arr1->get_number_of_elements() != arr2->get_number_of_elements()) {
     cout << "cuNDA_dot: array dimensions mismatch" << std::endl;
     return get_zero<T>();
   }
 
-  return _dot<T>( arr1, arr2, handle );  
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_dot: initialization failed" << std::endl;
+    return get_zero<T>();
+  }
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<T> *arr1_int, *arr2_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<2,T,T,dummy>( compute_device, &cur_device, &old_device, arr1, &arr1_int, arr2, &arr2_int ) ){
+    cerr << endl << "cuNDA_dot: unable to prepare device(s)" << endl;
+    return get_zero<T>();
+  }
+
+  T ret = _dot<T>( arr1_int, arr2_int, cur_device );  
+
+  // Restore
+  if( !restore<2,T,dummy,T,dummy>( old_device, arr1, arr1_int, 0, compute_device, 0x0, arr2, arr2_int ) ){
+    cerr << endl << "cuNDA_dot: unable to restore device" << endl;
+    return get_zero<T>();
+  }
+
+  return ret;
 }
 
-template<class REAL, class T> REAL _sum( cuNDArray<T>* arr, cublasHandle_t handle );
+template<class REAL, class T> REAL _sum( cuNDArray<T>* arr, int device );
 
 template<> float
-_sum<float,float_complext::Type>( cuNDArray<float_complext::Type>* arr, cublasHandle_t handle )
+_sum<float,float_complext::Type>( cuNDArray<float_complext::Type>* arr, int device )
 {
   float ret;
   
-  if (cublasScasum( handle, arr->get_number_of_elements(),
+  if (cublasScasum( handle[device], arr->get_number_of_elements(),
 		   (const cuComplex*) arr->get_data_ptr(), 1,
 		   &ret) != CUBLAS_STATUS_SUCCESS ) 
     {
       cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+      return get_zero<float>();
     }
   
   cudaThreadSynchronize();
@@ -2008,14 +2055,15 @@ _sum<float,float_complext::Type>( cuNDArray<float_complext::Type>* arr, cublasHa
 }
 
 template<> float 
-_sum<float,float>( cuNDArray<float>* arr, cublasHandle_t handle )
+_sum<float,float>( cuNDArray<float>* arr, int device )
 {
   float ret;
-  if( cublasSasum(handle, arr->get_number_of_elements(),
+  if( cublasSasum(handle[device], arr->get_number_of_elements(),
 		 arr->get_data_ptr(), 1, 
 		 &ret) != CUBLAS_STATUS_SUCCESS ) 
     {
       cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+      return get_zero<float>();
     }
   
   cudaThreadSynchronize();
@@ -2023,15 +2071,16 @@ _sum<float,float>( cuNDArray<float>* arr, cublasHandle_t handle )
 }
 
 template<> double
-_sum<double,double_complext::Type>( cuNDArray<double_complext::Type>* arr, cublasHandle_t handle )
+_sum<double,double_complext::Type>( cuNDArray<double_complext::Type>* arr, int device )
 {
   double ret;
   
-  if( cublasDzasum(handle, arr->get_number_of_elements(),
+  if( cublasDzasum(handle[device], arr->get_number_of_elements(),
 		  (const cuDoubleComplex*) arr->get_data_ptr(), 1, 
 		  &ret) != CUBLAS_STATUS_SUCCESS ) 
     {
       cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+      return get_zero<double>();
     }
   
   cudaThreadSynchronize();
@@ -2039,14 +2088,15 @@ _sum<double,double_complext::Type>( cuNDArray<double_complext::Type>* arr, cubla
 }
 
 template<> double 
-_sum<double,double>( cuNDArray<double>* arr, cublasHandle_t handle )
+_sum<double,double>( cuNDArray<double>* arr, int device )
 {
   double ret;
-  if( cublasDasum(handle, arr->get_number_of_elements(),
+  if( cublasDasum(handle[device], arr->get_number_of_elements(),
 		 arr->get_data_ptr(), 1, 
 		 &ret) != CUBLAS_STATUS_SUCCESS ) 
     {
       cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+      return get_zero<double>();
     }
   
   cudaThreadSynchronize();
@@ -2054,18 +2104,41 @@ _sum<double,double>( cuNDArray<double>* arr, cublasHandle_t handle )
 }
 
 template<class REAL, class T> REAL
-cuNDA_asum( cuNDArray<T>* arr, cublasHandle_t handle )
+cuNDA_asum( cuNDArray<T>* arr, cuNDA_device compute_device )
 {
-  return _sum<REAL,T>( arr, handle );  
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_asum: initialization failed" << std::endl;
+    return get_zero<REAL>();
+  }
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<T> *arr_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, arr, &arr_int ) ){
+    cerr << endl << "cuNDA_asum: unable to prepare device(s)" << endl;
+    return get_zero<REAL>();
+  }
+
+  REAL ret = _sum<REAL,T>( arr_int, cur_device );  
+
+  // Restore
+  if( !restore<1,T,dummy,dummy,dummy>( old_device, arr, arr_int, 0, compute_device ) ){
+    cerr << endl << "cuNDA_asum: unable to restore device" << endl;
+    return get_zero<REAL>();
+  }
+
+  return ret;
 }
 
 template<class T> bool 
-_axpy( T a, cuNDArray<T>* x, cuNDArray<T>* y, cublasHandle_t handle );
+_axpy( T a, cuNDArray<T>* x, cuNDArray<T>* y, int device );
 
 template<> bool 
-_axpy( float_complext::Type a, cuNDArray<float_complext::Type>* x, cuNDArray<float_complext::Type>* y, cublasHandle_t handle )
+_axpy( float_complext::Type a, cuNDArray<float_complext::Type>* x, cuNDArray<float_complext::Type>* y, int device )
 {
-  if( cublasCaxpy( handle, x->get_number_of_elements(), (cuComplex*) &a,
+  if( cublasCaxpy( handle[device], x->get_number_of_elements(), (cuComplex*) &a,
 		   (cuComplex*) x->get_data_ptr(), 1, 
 		   (cuComplex*) y->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
@@ -2073,14 +2146,13 @@ _axpy( float_complext::Type a, cuNDArray<float_complext::Type>* x, cuNDArray<flo
       return false;
     }
   
-  cudaThreadSynchronize();
   return true;
 } 
 
 template<> bool
-_axpy( float a, cuNDArray<float>* x, cuNDArray<float>* y, cublasHandle_t handle )
+_axpy( float a, cuNDArray<float>* x, cuNDArray<float>* y, int device )
 {
-  if( cublasSaxpy( handle, x->get_number_of_elements(), &a,
+  if( cublasSaxpy( handle[device], x->get_number_of_elements(), &a,
 		   x->get_data_ptr(), 1, 
 		   y->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
@@ -2088,14 +2160,13 @@ _axpy( float a, cuNDArray<float>* x, cuNDArray<float>* y, cublasHandle_t handle 
       return false;
     }
   
-  cudaThreadSynchronize();
   return true;
 } 
 
 template<> bool 
-_axpy( double_complext::Type a, cuNDArray<double_complext::Type>* x, cuNDArray<double_complext::Type>* y, cublasHandle_t handle )
+_axpy( double_complext::Type a, cuNDArray<double_complext::Type>* x, cuNDArray<double_complext::Type>* y, int device )
 {
-  if( cublasZaxpy( handle, x->get_number_of_elements(), (cuDoubleComplex*) &a,
+  if( cublasZaxpy( handle[device], x->get_number_of_elements(), (cuDoubleComplex*) &a,
 		   (cuDoubleComplex*) x->get_data_ptr(), 1, 
 		   (cuDoubleComplex*) y->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
@@ -2103,14 +2174,13 @@ _axpy( double_complext::Type a, cuNDArray<double_complext::Type>* x, cuNDArray<d
       return false;
     }
   
-  cudaThreadSynchronize();
   return true;
 } 
 
 template<> bool
-_axpy( double a, cuNDArray<double>* x, cuNDArray<double>* y, cublasHandle_t handle )
+_axpy( double a, cuNDArray<double>* x, cuNDArray<double>* y, int device )
 {
-  if( cublasDaxpy( handle, x->get_number_of_elements(), &a,
+  if( cublasDaxpy( handle[device], x->get_number_of_elements(), &a,
 		   x->get_data_ptr(), 1, 
 		   y->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
@@ -2118,105 +2188,161 @@ _axpy( double a, cuNDArray<double>* x, cuNDArray<double>* y, cublasHandle_t hand
       return false;
     }
   
-  cudaThreadSynchronize();
   return true;
 } 
 
 template<class T> bool
-cuNDA_axpy( T a, cuNDArray<T>* x, cuNDArray<T>* y, cublasHandle_t handle )
+cuNDA_axpy( T a, cuNDArray<T>* x, cuNDArray<T>* y, cuNDA_device compute_device )
 {
   if (x->get_number_of_elements() != y->get_number_of_elements()) {
     cout << "cuNDA_axpy: axpy array dimensions mismatch" << std::endl;
     return false;
   }
   
-  return _axpy<T>( a, x, y, handle );
+   if( !initialize_static_variables() ){
+    cout << "cuNDA_axpy: initialization failed" << std::endl;
+    return false;
+  }
+
+ // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<T> *x_int, *y_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<2,T,T,dummy>( compute_device, &cur_device, &old_device, x, &x_int, y, &y_int ) ){
+    cerr << endl << "cuNDA_axpy: unable to prepare device(s)" << endl;
+    return false;
+  }
+
+  bool ret = _axpy<T>( a, x_int, y_int, cur_device );
+
+  // Restore
+  if( !restore<2,T,dummy,T,dummy>( old_device, x, x_int, 2, compute_device, 0x0, y, y_int ) ){
+    cerr << endl << "cuNDA_axpy: unable to restore device" << endl;
+    return false;
+  }
+  
+  return ret;
 }
 
 template<class T> bool 
-_scal( T a, cuNDArray<T>* x, cublasHandle_t handle );
+_scal( T a, cuNDArray<T>* x, int device );
 
 template<> bool
-_scal( float_complext::Type a, cuNDArray<float_complext::Type>* x, cublasHandle_t handle) 
+_scal( float_complext::Type a, cuNDArray<float_complext::Type>* x, int device) 
 {
-  if( cublasCscal( handle, x->get_number_of_elements(), (cuComplex*) &a,
+  if( cublasCscal( handle[device], x->get_number_of_elements(), (cuComplex*) &a,
 		   (cuComplex*) x->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
       cout << "cuNDA_scal: calculation using cublas failed" << std::endl;
       return false;
     }
 
-  cudaThreadSynchronize();
   return true;
 }
 
 template<> bool
-_scal( float a, cuNDArray<float>* x, cublasHandle_t handle ) 
+_scal( float a, cuNDArray<float>* x, int device ) 
 {
-  if( cublasSscal( handle, x->get_number_of_elements(), &a,
+  if( cublasSscal( handle[device], x->get_number_of_elements(), &a,
 		   x->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
       cout << "cuNDA_scal: calculation using cublas failed" << std::endl;
       return false;
     }
 
-  cudaThreadSynchronize();
   return true;
 }
 
 template<> bool
-_scal( double_complext::Type a, cuNDArray<double_complext::Type>* x, cublasHandle_t handle) 
+_scal( double_complext::Type a, cuNDArray<double_complext::Type>* x, int device) 
 {
-  if( cublasZscal( handle, x->get_number_of_elements(), (cuDoubleComplex*) &a,
+  if( cublasZscal( handle[device], x->get_number_of_elements(), (cuDoubleComplex*) &a,
 		   (cuDoubleComplex*) x->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
       cout << "cuNDA_scal: calculation using cublas failed" << std::endl;
       return false;
     }
 
-  cudaThreadSynchronize();
   return true;
 }
 
 template<> bool
-_scal( double a, cuNDArray<double>* x, cublasHandle_t handle ) 
+_scal( double a, cuNDArray<double>* x, int device ) 
 {
-  if( cublasDscal( handle, x->get_number_of_elements(), &a,
+  if( cublasDscal( handle[device], x->get_number_of_elements(), &a,
 		   x->get_data_ptr(), 1) != CUBLAS_STATUS_SUCCESS ) 
     {
       cout << "cuNDA_scal: calculation using cublas failed" << std::endl;
       return false;
     }
 
-  cudaThreadSynchronize();
   return true;
 }
 
 template<class T> bool
-cuNDA_scal( T a, cuNDArray<T>* x, cublasHandle_t handle )
+cuNDA_scal( T a, cuNDArray<T>* x, cuNDA_device compute_device )
 {
-  return _scal<T>( a, x, handle );
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_scal: initialization failed" << std::endl;
+    return false;
+  }
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<T> *x_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, x, &x_int ) ){
+    cerr << endl << "cuNDA_scal: unable to prepare device(s)" << endl;
+    return false;
+  }
+
+  bool ret = _scal<T>( a, x_int, cur_device );
+
+  // Restore
+  if( !restore<1,T,dummy,dummy,dummy>( old_device, x, x_int, 1, compute_device ) ){
+    cerr << endl << "cuNDA_scal: unable to restore device" << endl;
+    return false;
+  }
+
+  return ret;
 }
 
 // Normalize (float)
 template<> EXPORTGPUCORE
-bool cuNDA_normalize<float>( cuNDArray<float> *data, float new_max, cublasHandle_t handle )
+bool cuNDA_normalize<float>( cuNDArray<float> *data, float new_max, cuNDA_device compute_device )
 {
   unsigned int number_of_elements = data->get_number_of_elements();
 
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<float> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,float,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_normalize: unable to prepare device(s)" << endl;
+    return false;
+  }
+
   // Find the maximum value in the array
   int max_idx;
-  cublasIsamax( handle, number_of_elements, data->get_data_ptr(), 1, &max_idx );
+  cublasIsamax( handle[cur_device], number_of_elements, data_int->get_data_ptr(), 1, &max_idx );
   cudaThreadSynchronize();
   
   // Copy that value back to host memory
   float max_val;
-  cudaMemcpy(&max_val, (data->get_data_ptr()+max_idx-1), sizeof(float), cudaMemcpyDeviceToHost);
+  cudaMemcpy(&max_val, (data_int->get_data_ptr()+max_idx-1), sizeof(float), cudaMemcpyDeviceToHost);
 
   // Scale the array
   float scale = new_max/max_val;
-  cublasSscal( handle, number_of_elements, &scale, data->get_data_ptr(), 1 );
-  cudaThreadSynchronize();
+  cublasSscal( handle[cur_device], number_of_elements, &scale, data_int->get_data_ptr(), 1 );
+
+  // Restore
+  if( !restore<1,float,dummy,dummy,dummy>( old_device, data, data_int, 1, compute_device ) ){
+    cerr << endl << "cuNDA_normalize: unable to restore device" << endl;
+    return false;
+  }
 
   CHECK_FOR_CUDA_ERROR();
   return true;
@@ -2224,24 +2350,39 @@ bool cuNDA_normalize<float>( cuNDArray<float> *data, float new_max, cublasHandle
 
 // Normalize (double)
 template<> EXPORTGPUCORE
-bool cuNDA_normalize<double>( cuNDArray<double> *data, double new_max, cublasHandle_t handle )
+bool cuNDA_normalize<double>( cuNDArray<double> *data, double new_max, cuNDA_device compute_device )
 {
   unsigned int number_of_elements = data->get_number_of_elements();
 
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<double> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,double,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_normalize: unable to prepare device(s)" << endl;
+    return false;
+  }
+
   // Find the maximum value in the array
   int max_idx;
-  cublasIdamax( handle, number_of_elements, data->get_data_ptr(), 1, &max_idx );
+  cublasIdamax( handle[cur_device], number_of_elements, data_int->get_data_ptr(), 1, &max_idx );
   cudaThreadSynchronize();
 
   // Copy that value back to host memory
   double max_val;
-  cudaMemcpy(&max_val, (data->get_data_ptr()+max_idx-1), sizeof(double), cudaMemcpyDeviceToHost);
+  cudaMemcpy(&max_val, (data_int->get_data_ptr()+max_idx-1), sizeof(double), cudaMemcpyDeviceToHost);
 
   // Scale the array
   double scale = new_max/max_val;
-  cublasDscal( handle, number_of_elements, &scale, data->get_data_ptr(), 1 );
-  cudaThreadSynchronize();
- 
+  cublasDscal( handle[cur_device], number_of_elements, &scale, data_int->get_data_ptr(), 1 );
+  
+  // Restore
+  if( !restore<1,double,dummy,dummy,dummy>( old_device, data, data_int, 1, compute_device ) ){
+    cerr << endl << "cuNDA_normalize: unable to restore device" << endl;
+    return false;
+  }
+  
   CHECK_FOR_CUDA_ERROR();
   return true;
 }
@@ -2296,18 +2437,18 @@ bool cuNDA_crop( typename uintd<D>::Type offset,
   }
 
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *in_int, *out_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<2,T,T,dummy>( compute_device, &old_device, in, &in_int, out, &out_int ) ){
+  if( !prepare<2,T,T,dummy>( compute_device, &cur_device, &old_device, in, &in_int, out, &out_int ) ){
     cerr << endl << "cuNDA_crop: unable to prepare device(s)" << endl;
     return false;
   }
   
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, prod(matrix_size_out), &blockDim, &gridDim, number_of_batches ) ){
+  if( !setup_grid( cur_device, prod(matrix_size_out), &blockDim, &gridDim, number_of_batches ) ){
     cerr << endl << "cuNDA_crop: block/grid configuration out of range" << endl;
     return false;
   }
@@ -2383,18 +2524,18 @@ bool cuNDA_expand_with_zero_fill( cuNDArray<T> *in, cuNDArray<T> *out,
   }
  
   // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *in_int, *out_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<2,T,T,dummy>( compute_device, &old_device, in, &in_int, out, &out_int ) ){
+  if( !prepare<2,T,T,dummy>( compute_device, &cur_device, &old_device, in, &in_int, out, &out_int ) ){
     cerr << endl << "cuNDA_expand: unable to prepare device(s)" << endl;
     return false;
   }
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, prod(matrix_size_out), &blockDim, &gridDim, number_of_batches ) ){
+  if( !setup_grid( cur_device, prod(matrix_size_out), &blockDim, &gridDim, number_of_batches ) ){
     cerr << endl << "cuNDA_expand: block/grid configuration out of range" << endl;
     return false;
   }
@@ -2450,18 +2591,18 @@ bool cuNDA_zero_fill_border( typename uintd<D>::Type matrix_size_in, cuNDArray<T
     (in_out->get_number_of_dimensions() == D ) ? 1 : in_out->get_size(in_out->get_number_of_dimensions()-1);
 
  // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *in_out_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,T,dummy,dummy>( compute_device, &old_device, in_out, &in_out_int ) ){
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in_out, &in_out_int ) ){
     cerr << endl << "cuNDA_zero_fill: unable to prepare device(s)" << endl;
     return false;
   }
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, prod(matrix_size_out), &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, prod(matrix_size_out), &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_zero_fill: block/grid configuration out of range" << endl;
     return false;
   }
@@ -2529,18 +2670,18 @@ bool cuNDA_zero_fill_border( typename reald<REAL,D>::Type radius, cuNDArray<T> *
     (in_out->get_number_of_dimensions() == D ) ? 1 : in_out->get_size(in_out->get_number_of_dimensions()-1);
 
  // Prepare internal array
-  int old_device;
+  int cur_device, old_device;
   cuNDArray<T> *in_out_int;
 
   // Perform device copy if array is not residing on the current device
-  if( !prepare<1,T,dummy,dummy>( compute_device, &old_device, in_out, &in_out_int ) ){
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in_out, &in_out_int ) ){
     cerr << endl << "cuNDA_zero_fill: unable to prepare device(s)" << endl;
     return false;
   }
 
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( old_device, prod(matrix_size_out), &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, prod(matrix_size_out), &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_zero_fill: block/grid configuration out of range" << endl;
     return false;
   }
@@ -2859,17 +3000,17 @@ template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,4>(floatd4::Type,
 template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext::Type,4>(floatd4::Type, cuNDArray<float_complext::Type>*, cuNDA_device );
 
 
-template EXPORTGPUCORE float cuNDA_dot<float>( cuNDArray<float>*, cuNDArray<float>*, cublasHandle_t );
-template EXPORTGPUCORE float_complext::Type cuNDA_dot<float_complext::Type>( cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, cublasHandle_t );
+template EXPORTGPUCORE float cuNDA_dot<float>( cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE float_complext::Type cuNDA_dot<float_complext::Type>( cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, cuNDA_device );
 
-template EXPORTGPUCORE float cuNDA_asum<float,float>( cuNDArray<float>*, cublasHandle_t );
-template EXPORTGPUCORE float cuNDA_asum<float,float_complext::Type>( cuNDArray<float_complext::Type>*, cublasHandle_t );
+template EXPORTGPUCORE float cuNDA_asum<float,float>( cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE float cuNDA_asum<float,float_complext::Type>( cuNDArray<float_complext::Type>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_axpy<float>( float, cuNDArray<float>*, cuNDArray<float>*, cublasHandle_t );
-template EXPORTGPUCORE bool cuNDA_axpy<float_complext::Type>( float_complext::Type, cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, cublasHandle_t );
+template EXPORTGPUCORE bool cuNDA_axpy<float>( float, cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_axpy<float_complext::Type>( float_complext::Type, cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_scal<float>( float, cuNDArray<float>*, cublasHandle_t );
-template EXPORTGPUCORE bool cuNDA_scal<float_complext::Type>( float_complext::Type, cuNDArray<float_complext::Type>*, cublasHandle_t );
+template EXPORTGPUCORE bool cuNDA_scal<float>( float, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_scal<float_complext::Type>( float_complext::Type, cuNDArray<float_complext::Type>*, cuNDA_device );
 
 // Instanciation -- double precision
 
@@ -3065,14 +3206,14 @@ template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,4>(doubled4::Ty
 template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext::Type,4>(doubled4::Type, cuNDArray<double_complext::Type>*, cuNDA_device );
 
 
-template EXPORTGPUCORE double cuNDA_dot<double>( cuNDArray<double>*, cuNDArray<double>*, cublasHandle_t );
-template EXPORTGPUCORE double_complext::Type cuNDA_dot<double_complext::Type>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, cublasHandle_t );
+template EXPORTGPUCORE double cuNDA_dot<double>( cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE double_complext::Type cuNDA_dot<double_complext::Type>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, cuNDA_device );
 
-template EXPORTGPUCORE double cuNDA_asum<double,double>( cuNDArray<double>*, cublasHandle_t );
-template EXPORTGPUCORE double cuNDA_asum<double,double_complext::Type>( cuNDArray<double_complext::Type>*, cublasHandle_t );
+template EXPORTGPUCORE double cuNDA_asum<double,double>( cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE double cuNDA_asum<double,double_complext::Type>( cuNDArray<double_complext::Type>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_axpy<double>( double, cuNDArray<double>*, cuNDArray<double>*, cublasHandle_t );
-template EXPORTGPUCORE bool cuNDA_axpy<double_complext::Type>( double_complext::Type, cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, cublasHandle_t );
+template EXPORTGPUCORE bool cuNDA_axpy<double>( double, cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_axpy<double_complext::Type>( double_complext::Type, cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_scal<double>( double, cuNDArray<double>*, cublasHandle_t );
-template EXPORTGPUCORE bool cuNDA_scal<double_complext::Type>( double_complext::Type, cuNDArray<double_complext::Type>*, cublasHandle_t );
+template EXPORTGPUCORE bool cuNDA_scal<double>( double, cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_scal<double_complext::Type>( double_complext::Type, cuNDArray<double_complext::Type>*, cuNDA_device );

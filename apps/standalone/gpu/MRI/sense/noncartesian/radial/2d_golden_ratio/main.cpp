@@ -172,11 +172,11 @@ int main(int argc, char** argv)
   boost::shared_ptr< cuCGImageOperator<_real,_complext> > R( new cuCGImageOperator<_real,_complext>() ); 
   R->set_weight( kappa );
   R->set_encoding_operator( rhs_buffer );
-  R->compute( image, &image_dims, cg.get_cublas_handle() );
+  R->compute( image, &image_dims );
  
   // Define preconditioning weights
   boost::shared_ptr< cuNDArray<_real> > _precon_weights = cuNDA_ss<_real,_complext>( csm.get(), 2 );
-  cuNDA_axpy<_real>( kappa, R->get(), _precon_weights.get(), cg.get_cublas_handle() );  
+  cuNDA_axpy<_real>( kappa, R->get(), _precon_weights.get() );  
   cuNDA_reciprocal_sqrt<_real>( _precon_weights.get() );
   boost::shared_ptr< cuNDArray<_complext> > precon_weights = cuNDA_real_to_complext<_real>( _precon_weights.get() );
   _precon_weights.reset();
