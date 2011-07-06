@@ -5,8 +5,8 @@
 #include "radial_utilities.h"
 #include "cgOperatorNonCartesianSense.h"
 #include "cgOperatorSenseRHSBuffer.h"
-#include "cuCGIdentityOperator.h"
 #include "cuCGImageOperator.h"
+#include "cuCGPrecondWeights.h"
 #include "cuCG.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
@@ -182,7 +182,7 @@ int main(int argc, char** argv)
   _precon_weights.reset();
 
   // Define preconditioning matrix
-  boost::shared_ptr< cuCGPrecondWeight<_complext> > D( new cuCGPrecondWeight<_complext>() );
+  boost::shared_ptr< cuCGPrecondWeights<_complext> > D( new cuCGPrecondWeights<_complext>() );
   D->set_weights( precon_weights );
   precon_weights.reset();
 

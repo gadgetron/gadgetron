@@ -35,9 +35,17 @@ cgOperatorSenseRHSBuffer<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_
     return -3;
   }
 
-  if( !accumulate )
-    cuNDA_clear<_complext>( out );
-  
+  if( !accumulate ){
+    int ret1 = this->set_device();
+    if( ret1 == 0 ) cuNDA_clear<_complext>( out );
+    int ret2 = this->restore_device();
+    
+    if( ret1<0 || ret2<0 ){
+      std::cerr << "cgOperatorSenseRHSBuffer::mult_MH: device error" << std::endl;
+      return -4; 
+    }    
+  }
+    
   if( mult_csm_conj_sum( in, out ) < 0 ) {
     std::cerr << "cgOperatorSenseRHSBuffer::mult_MH: Unable to multiply with conjugate of sensitivity maps and sum" << std::endl;
     return -4; 

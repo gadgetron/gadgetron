@@ -10,7 +10,7 @@ class EXPORTGPUPMRI cgOperatorNonCartesianSense : public cgOperatorSense<REAL,D>
 
  public:
   
-  cgOperatorNonCartesianSense() : cgOperatorSense<REAL,D>() {}
+  cgOperatorNonCartesianSense( int device = -1 ) : cgOperatorSense<REAL,D>(device) {}
   virtual ~cgOperatorNonCartesianSense() {}
 
   typedef typename cgOperatorSense<REAL,D>::_complext _complext;

@@ -71,7 +71,7 @@ radialSenseAppMainWindow::radialSenseAppMainWindow(QWidget *parent) : QMainWindo
   E = boost::shared_ptr< cgOperatorNonCartesianSense<float,2> >( new cgOperatorNonCartesianSense<float,2>() );  
 
   // Allocate preconditioner
-  D = boost::shared_ptr< cuCGPrecondWeight<float_complext::Type> >( new cuCGPrecondWeight<float_complext::Type>() );
+  D = boost::shared_ptr< cuCGPrecondWeights<float_complext::Type> >( new cuCGPrecondWeights<float_complext::Type>() );
 
   // Allocate regularization image operator and corresponding rhs operator
   rhs_buffer = boost::shared_ptr< cgOperatorSenseRHSBuffer<float,2> >( new cgOperatorSenseRHSBuffer<float,2>() );

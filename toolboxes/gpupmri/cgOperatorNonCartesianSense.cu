@@ -15,7 +15,7 @@ template<class REAL, unsigned int D> int
 cgOperatorNonCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {
   if( (in->get_number_of_elements() != prod(this->dimensionsI_)) || (out->get_number_of_elements() != prod(this->dimensionsK_)) ) {
-    std::cerr << "cgOperatorNonCartesianSense::mult_M dimensions mismatch" << std::endl;
+    std::cerr << "cgOperatorNonCartesianSense::mult_M: dimensions mismatch" << std::endl;
     return -1;
   }
 
@@ -23,16 +23,21 @@ cgOperatorNonCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray
   std::vector<unsigned int> full_dimensions = this->dimensionsI_;
   full_dimensions.push_back(this->ncoils_);
 
-  if( !tmp.create(&full_dimensions) ) {
-    std::cerr << "cgOperatorNonCartesianSense::mult_M unable to allocate temp array" << std::endl;
+  if( !tmp.create( &full_dimensions, this->device_ ) ) {
+    std::cerr << "cgOperatorNonCartesianSense::mult_M: unable to allocate temp array" << std::endl;
     return -2;    
   }
   
   if( mult_csm( in, &tmp ) < 0 ) {
-    std::cerr << "cgOperatorNonCartesianSense::mult_M : Unable to multiply with coil sensitivities" << std::endl;
+    std::cerr << "cgOperatorNonCartesianSense::mult_M: unable to multiply with coil sensitivities" << std::endl;
     return -3;
   }
 
+  if( accumulate ){
+    std::cerr << "cgOperatorNonCartesianSense::mult_M: accumulation mode not (yet) supported" << std::endl;
+    return -4; 
+  }
+  
   // Forwards NFFT
   if( !plan_.compute( out, &tmp, dcw_.get(), NFFT_plan<REAL,D>::NFFT_FORWARDS )) {
     std::cerr << "cgOperatorNonCartesianSense::mult_M : failed during NFFT" << std::endl;
@@ -54,23 +59,31 @@ cgOperatorNonCartesianSense<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArra
   tmp_dimensions.push_back(this->ncoils_);
 
   cuNDArray<_complext> tmp;
-  if( !tmp.create(&tmp_dimensions) ) {
+  if( !tmp.create( &tmp_dimensions, this->device_ ) ) {
     std::cerr << "cgOperatorNonCartesianSense::mult_MH: Unable to create temp storage" << std::endl;
     return -2;
   }
-
+  
   // Do the NFFT
   if( !plan_.compute( in, &tmp, dcw_.get(), NFFT_plan<REAL,D>::NFFT_BACKWARDS )) {
-    std::cerr << "cgOperatorNonCartesianSense::mult_MH : failed during NFFT" << std::endl;
+    std::cerr << "cgOperatorNonCartesianSense::mult_MH: NFFT failed" << std::endl;
     return -3;
   }
 
-  if( !accumulate )
-    cuNDA_clear<_complext>( out );
+  if( !accumulate ){
+    int ret1 = this->set_device();
+    if( ret1 == 0 ) cuNDA_clear<_complext>( out );
+    int ret2 = this->restore_device();
+    
+    if( ret1<0 || ret2<0 ){
+      std::cerr << "cgOperatorNonCartesianSense::mult_MH: device error" << std::endl;
+      return -4; 
+    }    
+  }
   
   if( mult_csm_conj_sum( &tmp, out ) < 0 ) {
-    std::cerr << "cgOperatorNonCartesianSense::mult_MH: Unable to multiply with conjugate of sensitivity maps and sum" << std::endl;
-    return -4; 
+    std::cerr << "cgOperatorNonCartesianSense::mult_MH: unable to multiply with conjugate of sensitivity maps and sum" << std::endl;
+    return -5; 
   }
   
   return 0;
@@ -123,9 +136,22 @@ cgOperatorNonCartesianSense<REAL,D>::preprocess( cuNDArray<_reald> *trajectory )
 template<class REAL, unsigned int D> int 
 cgOperatorNonCartesianSense<REAL,D>::set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw ) 
 {
-  dcw_ = dcw;
+  int ret1 = 0, ret2 = 0;
   
-  return 0;
+  if( dcw->get_device() != this->device_ ){
+    ret1 = this->set_device();
+    if( ret1 == 0 ) dcw_ = boost::shared_ptr< cuNDArray<REAL> >(new cuNDArray<REAL>(*dcw.get()));
+    ret2 = this->restore_device();
+  }
+  else    
+    dcw_ = dcw;
+  
+  if( ret1 == 0 && ret2 == 0 )
+    return 0;
+  else{
+    std::cout << std::endl << "cgOperatorNonCartesianSense::set_dcw failed" << std::endl;
+    return -1;
+  }
 }
 
 //

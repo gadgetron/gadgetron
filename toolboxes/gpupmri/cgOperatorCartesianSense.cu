@@ -37,6 +37,13 @@ insert_samples_kernel( typename complext<REAL>::Type* in, typename complext<REAL
 template<class REAL, unsigned int D> int 
 cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {
+
+  int ret = this->set_device();
+  if( ret<0 ){
+    std::cerr << "cgOperatorCartesianSense::mult_M: unable to set device" << std::endl;
+    return -1;
+  }
+  
   if (!(in->dimensions_equal(&this->dimensionsI_)) || !(out->dimensions_equal(&this->dimensionsK_)) ) {
 
     std::cerr << "cgOperatorCartesianSense::mult_M dimensions mismatch" << std::endl;
@@ -80,12 +87,24 @@ cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_c
     return -1;
   }
 
+  ret = this->restore_device();
+  if( ret<0 ){
+    std::cerr << "cgOperatorCartesianSense::mult_M: unable to restore device" << std::endl;
+    return -1;
+  }
+  
   return 0;
 }
 
 template<class REAL, unsigned int D> int 
 cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate)
 {
+  int ret = this->set_device();
+  if( ret<0 ){
+    std::cerr << "cgOperatorCartesianSense::mult_MH: unable to set device" << std::endl;
+    return -1;
+  }
+
   if (!(out->dimensions_equal(&this->dimensionsI_)) || !(in->dimensions_equal(&this->dimensionsK_)) ) {
     std::cerr << "cgOperatorCartesianSense::mult_MH dimensions mismatch" << std::endl;
     return -1;
@@ -132,6 +151,12 @@ cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_c
  
   }
 
+  ret = this->restore_device();
+  if( ret<0 ){
+    std::cerr << "cgOperatorCartesianSense::mult_MH: unable to restore device" << std::endl;
+    return -1;
+  }
+  
   return 0;
 }
 

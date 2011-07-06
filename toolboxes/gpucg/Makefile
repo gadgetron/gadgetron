@@ -6,8 +6,8 @@ DLLNAME=gpucg
 LIBHEADERS=\
 	cuCG.h \
 	cuCGPreconditioner.h \
+	cuCGPrecondWeights.h \
 	cuCGMatrixOperator.h \
-	cuCGMatrixOperatorDevice.h \
 	cuCGIdentityOperator.h \
 	cuCGImageOperator.h
 
@@ -15,7 +15,7 @@ LIBSOURCES=
 
 CUDASOURCES=\
 	cuCG.cu \
-	cuCGPreconditioner.cu
+	cuCGPrecondWeights.cu
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)

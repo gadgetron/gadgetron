@@ -16,6 +16,7 @@
 #include "cgOperatorNonCartesianSense.h"
 #include "cgOperatorSenseRHSBuffer.h"
 #include "cuCGImageOperator.h"
+#include "cuCGPrecondWeights.h"
 
 #include <boost/smart_ptr.hpp>
 
@@ -111,7 +112,7 @@ private:
   boost::shared_ptr< cgOperatorNonCartesianSense<float,2> > E;
 
   // Define preconditioner
-  boost::shared_ptr< cuCGPrecondWeight<float_complext::Type> > D;
+  boost::shared_ptr< cuCGPrecondWeights<float_complext::Type> > D;
 
   // Define rhs operator (for regularization)
   boost::shared_ptr< cgOperatorSenseRHSBuffer<float,2> > rhs_buffer;
