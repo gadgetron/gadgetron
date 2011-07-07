@@ -65,13 +65,13 @@ cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_c
     return -1;
   }
 
-  cuNDFFT ft;
+  cuNDFFT<_complext> ft;
   std::vector<unsigned int> ft_dims;
   for (unsigned int i = 0; i < this->dimensionsI_.size(); i++) {
     ft_dims.push_back(i);
   }
 
-  ft.fft((cuNDArray<cuFloatComplex>*)&tmp, &ft_dims); // TODO: fix FFT interface
+  ft.fft(&tmp, &ft_dims);
 
   if (!accumulate) 
     cuNDA_clear<_complext>(out);
@@ -134,13 +134,13 @@ cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_c
     return -1;
   }
 
-  cuNDFFT ft;
+  cuNDFFT<_complext> ft;
   std::vector<unsigned int> ft_dims;
   for (unsigned int i = 0; i < this->dimensionsI_.size(); i++) {
     ft_dims.push_back(i);
   }
 
-  ft.ifft((cuNDArray<cuFloatComplex>*)&tmp, &ft_dims); // TODO: fix FFT interface
+  ft.ifft(&tmp, &ft_dims);
 
   if (!accumulate) 
     cuNDA_clear<_complext>(out);

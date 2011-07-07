@@ -422,16 +422,6 @@ template<> __inline__ __host__ __device__ double norm<double,double_complext::Ty
   return norm<double,2>(z);
 }
 
-template<> __inline__ __host__ __device__ float reciprocal<float>( const float real )
-{
-  return 1.0f/real;
-}
-
-template<> __inline__ __host__ __device__ double reciprocal<double>( const double real )
-{
-  return 1.0/real;
-}
-
 template<> __inline__ __host__ __device__ float conj<float>( const float r ){
   return r;
 }
@@ -452,6 +442,16 @@ template<> __inline__ __host__ __device__ double_complext::Type conj<double_comp
   res.vec[0] = z.vec[0]; 
   res.vec[1] = -z.vec[1];
   return res;
+}
+
+template<> __inline__ __host__ __device__ float reciprocal<float>( const float real )
+{
+  return 1.0f/real;
+}
+
+template<> __inline__ __host__ __device__ double reciprocal<double>( const double real )
+{
+  return 1.0/real;
 }
 
 template<> __inline__ __host__ __device__ float_complext::Type reciprocal<float_complext::Type>( const float_complext::Type z )

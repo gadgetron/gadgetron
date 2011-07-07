@@ -8,6 +8,8 @@
 #include "htgrappa.h"
 #include "GPUTimer.h"
 
+#include <cuComplex.h>
+
 template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsDescription
 {
 
@@ -61,16 +63,16 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)
      device_data.squeeze();
      
      std::vector<unsigned int> ftdims(2,0); ftdims[1] = 1;
-     cuNDFFT ft;
+     cuNDFFT<float_complext::Type> ft;
 
      //Go to image space
-     ft.ifft(reinterpret_cast< cuNDArray<cuFloatComplex>* >(&device_data), &ftdims);
+     ft.ifft( &device_data, &ftdims);
 
      // Compute CSM
      boost::shared_ptr< cuNDArray<float_complext::Type> > csm = estimate_b1_map<float,2>( &device_data );
 
      //Go back to kspace
-     ft.fft(reinterpret_cast< cuNDArray<cuFloatComplex>* >(&device_data), &ftdims);
+     ft.fft(&device_data, &ftdims);
 
 
      //TODO: Change dimensions of this to deal with uncombinex channels

@@ -420,7 +420,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
   int kernel_elements = gkernel.get_number_of_elements()/coils;
   int total_elements = tmp_mixing.get_number_of_elements()/coils;
   dkernel_size.y *= acceleration_factor;
-  cuNDFFT ft;
+  cuNDFFT<T> ft;
   std::vector<unsigned int> ft_dims(2,0);ft_dims[1] = 1;
   clear(out_mixing_coeff);
   for (unsigned int c = 0; c < coils; c++) {
