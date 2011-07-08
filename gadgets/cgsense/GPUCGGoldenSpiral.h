@@ -4,6 +4,8 @@
 
 #include "GPUCGGadget.h"
 
+#include <tinyxml.h>
+
 class EXPORTGADGETSCGSENSE GPUCGGoldenSpiralGadget : public GPUCGGadget
 {
 

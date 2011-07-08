@@ -24,10 +24,11 @@
     <ClInclude Include="..\..\..\toolboxes\gpucg\cuCGImageOperator.h" />
     <ClInclude Include="..\..\..\toolboxes\gpucg\cuCGMatrixOperator.h" />
     <ClInclude Include="..\..\..\toolboxes\gpucg\cuCGPreconditioner.h" />
+    <ClInclude Include="..\..\..\toolboxes\gpucg\cuCGPrecondWeights.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\..\..\toolboxes\gpucg\cuCG.cu" />
-    <CudaCompile Include="..\..\..\toolboxes\gpucg\cuCGPreconditioner.cu" />
+    <CudaCompile Include="..\..\..\toolboxes\gpucg\cuCGPrecondWeights.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4858588E-4B4B-4C7E-B3DD-3E63CAE4CED4}</ProjectGuid>
