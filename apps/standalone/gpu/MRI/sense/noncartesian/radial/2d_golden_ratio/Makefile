@@ -1,16 +1,19 @@
-GADGETRONHOME=../../..
+GADGETRONHOME=../../../../../../../..
 include $(GADGETRONHOME)/Makefile.inc
 
-EXECUTABLE=gputestapp
+EXECUTABLE=radial_sense
+
+HEADERFILES=
 
 APPSOURCES=\
 	main.cpp
+
 CUDASOURCES=
 
 APPOBJECTS=$(APPSOURCES:.cpp=.o)
 CUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
-APPLDFLAGS += -lgpucore -lgpunfft -lgpucg -lgpuparallelmri
+APPLDFLAGS += -lhostutils -lgpucore -lgpunfft -lgpucg -lgpuparallelmri
 
 test: main.o $(LIBCUDAOBJECTS)
 	$(CXX) $(APPOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) $(APPLDFLAGS) -o $(EXECUTABLE) 
@@ -28,7 +31,3 @@ clean:
 	rm -rf $(EXECUTABLE)
 	rm -rf $(APPOBJECTS)
 	rm -rf $(CUDAOBJECTS)
-#	rm -rf *.cplx
-#	rm -rf *.real
-
-

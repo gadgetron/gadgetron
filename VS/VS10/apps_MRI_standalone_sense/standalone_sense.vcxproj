@@ -172,7 +172,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\apps\MRI\standalone\radial_sense\main.cpp" />
+    <ClCompile Include="..\..\..\apps\standalone\gpu\MRI\sense\noncartesian\radial\2d_golden_ratio\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

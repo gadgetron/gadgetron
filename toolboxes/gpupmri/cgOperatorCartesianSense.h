@@ -8,7 +8,7 @@ class EXPORTGPUPMRI cgOperatorCartesianSense : public cgOperatorSense<REAL,D>
 {
  public:
 
-  cgOperatorCartesianSense() : cgOperatorSense<REAL,D>() {}
+  cgOperatorCartesianSense( int device = -1 ) : cgOperatorSense<REAL,D>(device) {}
   virtual ~cgOperatorCartesianSense() {}
 
   typedef typename cgOperatorSense<REAL,D>::_complext _complext;

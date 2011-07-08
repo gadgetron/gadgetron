@@ -64,15 +64,15 @@ NFFT_H_convolve( REAL alpha, REAL beta, REAL W, unsigned int number_of_samples, 
       vector_td<REAL,D> half_W_vec = to_vector_td<REAL,D>( half_W );
   
       // Check if sample will contribute
-      //if( weak_greater(delta, half_W_vec ))
-      //continue;
+      if( weak_greater(delta, half_W_vec ))
+	continue;
       
       // Compute convolution weights
       float weight = KaiserBessel<REAL>( delta, matrix_size_os_real, one_over_W, beta );
       
-      // Safety measure. We have occationally observed a NaN from the KaiserBessel computation
-      //if( !isfinite(weight) )
-      //continue;
+      // Safety measure
+      if( !isfinite(weight) )
+      	continue;
       
       // Apply Kaiser-Bessel filter to input images
       for( unsigned int batch=0; batch<number_of_batches; batch++ ){

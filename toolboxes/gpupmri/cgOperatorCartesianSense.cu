@@ -37,6 +37,13 @@ insert_samples_kernel( typename complext<REAL>::Type* in, typename complext<REAL
 template<class REAL, unsigned int D> int 
 cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {
+
+  int ret = this->set_device();
+  if( ret<0 ){
+    std::cerr << "cgOperatorCartesianSense::mult_M: unable to set device" << std::endl;
+    return -1;
+  }
+  
   if (!(in->dimensions_equal(&this->dimensionsI_)) || !(out->dimensions_equal(&this->dimensionsK_)) ) {
 
     std::cerr << "cgOperatorCartesianSense::mult_M dimensions mismatch" << std::endl;
@@ -58,13 +65,13 @@ cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_c
     return -1;
   }
 
-  cuNDFFT ft;
+  cuNDFFT<_complext> ft;
   std::vector<unsigned int> ft_dims;
   for (unsigned int i = 0; i < this->dimensionsI_.size(); i++) {
     ft_dims.push_back(i);
   }
 
-  ft.fft((cuNDArray<cuFloatComplex>*)&tmp, &ft_dims); // TODO: fix FFT interface
+  ft.fft(&tmp, &ft_dims);
 
   if (!accumulate) 
     cuNDA_clear<_complext>(out);
@@ -80,12 +87,24 @@ cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_c
     return -1;
   }
 
+  ret = this->restore_device();
+  if( ret<0 ){
+    std::cerr << "cgOperatorCartesianSense::mult_M: unable to restore device" << std::endl;
+    return -1;
+  }
+  
   return 0;
 }
 
 template<class REAL, unsigned int D> int 
 cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate)
 {
+  int ret = this->set_device();
+  if( ret<0 ){
+    std::cerr << "cgOperatorCartesianSense::mult_MH: unable to set device" << std::endl;
+    return -1;
+  }
+
   if (!(out->dimensions_equal(&this->dimensionsI_)) || !(in->dimensions_equal(&this->dimensionsK_)) ) {
     std::cerr << "cgOperatorCartesianSense::mult_MH dimensions mismatch" << std::endl;
     return -1;
@@ -115,13 +134,13 @@ cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_c
     return -1;
   }
 
-  cuNDFFT ft;
+  cuNDFFT<_complext> ft;
   std::vector<unsigned int> ft_dims;
   for (unsigned int i = 0; i < this->dimensionsI_.size(); i++) {
     ft_dims.push_back(i);
   }
 
-  ft.ifft((cuNDArray<cuFloatComplex>*)&tmp, &ft_dims); // TODO: fix FFT interface
+  ft.ifft(&tmp, &ft_dims);
 
   if (!accumulate) 
     cuNDA_clear<_complext>(out);
@@ -132,6 +151,12 @@ cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_c
  
   }
 
+  ret = this->restore_device();
+  if( ret<0 ){
+    std::cerr << "cgOperatorCartesianSense::mult_MH: unable to restore device" << std::endl;
+    return -1;
+  }
+  
   return 0;
 }
 

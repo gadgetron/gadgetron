@@ -15,7 +15,7 @@ public:
 
   typedef typename complext<REAL>::Type _complext;
   
-  cgOperatorSense() : cuCGMatrixOperator<REAL,_complext>(), ncoils_(0) {}
+  cgOperatorSense( int device = -1 ) : cuCGMatrixOperator<REAL,_complext>(device), ncoils_(0) {}
   virtual ~cgOperatorSense() {}
 
   virtual int set_csm( boost::shared_ptr< cuNDArray<_complext> > csm );
@@ -23,6 +23,11 @@ public:
   virtual int mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false ) = 0;
   virtual int mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false ) = 0;
   virtual int mult_MH_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
+
+  virtual void set_device( int device ){
+    std::cerr << "cgOperatorSense::set_device: device needs to be set in the constructor (for now)." << std::endl; }
+
+  virtual int set_device(){ return cuCGMatrixOperator<REAL,_complext>::set_device(); }
 
 protected:
 

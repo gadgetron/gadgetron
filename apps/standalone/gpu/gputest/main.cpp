@@ -5,6 +5,7 @@
 #include "cuNDFFT.h"
 #include "cgOperatorCartesianSense.h"
 #include "cgOperatorNonCartesianSense.h"
+#include "cuCGPrecondWeights.h"
 #include "cuCG.h"
 #include "GPUTimer.h"
 #include "vector_td.h"
@@ -86,7 +87,7 @@ int main(int argc, char** argv)
   
   cuNDArray<float_complext::Type> *D_dev = new cuNDArray<float_complext::Type>(D.get());
   
-  cuCGPrecondWeight<float_complext::Type> *Dm = new cuCGPrecondWeight<float_complext::Type>();
+  cuCGPrecondWeights<float_complext::Type> *Dm = new cuCGPrecondWeights<float_complext::Type>();
   Dm->set_weights(boost::shared_ptr< cuNDArray<float_complext::Type> >(D_dev));
 
   cuCG<float,float_complext::Type> cg;

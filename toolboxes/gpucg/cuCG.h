@@ -7,7 +7,6 @@
 #include <vector>
 #include <iostream>
 
-#include <cublas_v2.h>
 #include <boost/smart_ptr.hpp>
 
 template<class REAL, class T> class EXPORTGPUCG cuCG
@@ -16,18 +15,18 @@ template<class REAL, class T> class EXPORTGPUCG cuCG
 
   enum cuCGOutputModes { OUTPUT_SILENT = 0, OUTPUT_WARNINGS = 1, OUTPUT_VERBOSE = 2, OUTPUT_MAX = 3 };
 
-  cuCG() : iterations_(10), limit_(1e-3), output_mode_(OUTPUT_SILENT) {
-    operators_ = boost::shared_ptr< std::vector< boost::shared_ptr< cuCGMatrixOperator<REAL,T> > > >(new std::vector< boost::shared_ptr< cuCGMatrixOperator<REAL,T> > >);
-    if (cublasCreate(&cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
-      std::cerr << "cuCG unable to create cublas handle" << std::endl;
-    }
+  //  cuCG() { common_construct(); }  
+  cuCG(int device=-1){ common_construct(device); }
+  
+  bool common_construct( int device = -1, unsigned int iterations = 10, REAL limit = (REAL)1e-3, int output_mode = OUTPUT_SILENT ) {
+    iterations_ = iterations; limit_ = limit; output_mode_ = output_mode;    
+    operators_ = boost::shared_ptr< std::vector< boost::shared_ptr< cuCGMatrixOperator<REAL,T> > > >
+      (new std::vector< boost::shared_ptr< cuCGMatrixOperator<REAL,T> > >);
+    
+    return set_device(device);
   }
-
-  virtual ~cuCG() {
-    if (cublasDestroy(cublas_handle_) != CUBLAS_STATUS_SUCCESS) {
-      std::cerr << "cuCG unable to create cublas handle" << std::endl;
-    }
-  }
+  
+  virtual ~cuCG() {}
   
   int add_matrix_operator( boost::shared_ptr< cuCGMatrixOperator<REAL,T> > op ) {
     operators_->push_back(op);
@@ -53,9 +52,7 @@ template<class REAL, class T> class EXPORTGPUCG cuCG
     iterations_ = iterations;
   }
   
-  cublasHandle_t get_cublas_handle() {
-    return cublas_handle_; 
-  }
+  bool set_device(int device);
 
   boost::shared_ptr< cuNDArray<T> > solve(cuNDArray<T> *rhs);
 
@@ -66,8 +63,8 @@ template<class REAL, class T> class EXPORTGPUCG cuCG
 protected:
   boost::shared_ptr< std::vector< boost::shared_ptr< cuCGMatrixOperator<REAL,T> > > > operators_;
   boost::shared_ptr< cuCGPreconditioner<T> > precond_;
-  cublasHandle_t cublas_handle_;
   unsigned int iterations_;
   REAL limit_;
   int output_mode_;
+  int device_;
 };

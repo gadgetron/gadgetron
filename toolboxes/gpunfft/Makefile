@@ -13,7 +13,7 @@ LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
-APPLDFLAGS += -lgpucore -lgpuNFFT
+APPLDFLAGS += -lgpucore -lgpunfft
 LIBLDFLAGS += -lgpucore
 
 all: $(LIBFILE)
