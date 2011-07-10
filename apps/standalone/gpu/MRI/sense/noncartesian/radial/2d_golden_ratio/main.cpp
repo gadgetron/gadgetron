@@ -162,9 +162,6 @@ int main(int argc, char** argv)
   // Estimate CSM
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( image );
 
-  // Define conjugate gradient solver
-  cuCG<_real, _complext> cg;
-
   // Define regularization image operator
   boost::shared_ptr< cgOperatorSenseRHSBuffer<_real,2> > rhs_buffer( new cgOperatorSenseRHSBuffer<_real,2>() );
   rhs_buffer->set_csm(csm);
@@ -206,10 +203,11 @@ int main(int argc, char** argv)
   }
   csm.reset();
     
-  // Setup solver
-  cg.add_matrix_operator( E );   // encoding matrix
+  // Setup conjugate gradient solver
+  cuCG<_real, _complext> cg;
+  cg.add_matrix_operator( E );  // encoding matrix
   cg.add_matrix_operator( R );  // regularization matrix
-  cg.set_preconditioner ( D );         // preconditioning matrix
+  cg.set_preconditioner ( D );  // preconditioning matrix
   cg.set_iterations( num_iterations );
   cg.set_limit( 1e-6 );
   cg.set_output_mode( cuCG<_real, _complext>::OUTPUT_VERBOSE );

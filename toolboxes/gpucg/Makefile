@@ -15,7 +15,8 @@ LIBSOURCES=
 
 CUDASOURCES=\
 	cuCG.cu \
-	cuCGPrecondWeights.cu
+	cuCGPrecondWeights.cu \
+	cuCGImageOperator.cu
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)

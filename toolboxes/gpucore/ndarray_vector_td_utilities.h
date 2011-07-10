@@ -49,6 +49,13 @@ cuNDA_sum( cuNDArray<T> *data, unsigned int dim,
 	   cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
 	   cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
+// Sum over dimension (scalar and vector_td arrays)
+template<class T> EXPORTGPUCORE 
+boost::shared_ptr< cuNDArray<T> >  
+cuNDA_expand( cuNDArray<T> *data, unsigned int added_dim_size, 
+	      cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
+	      cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
+
 // Sum of Squares (float/double/complext array)
 template<class S, class T> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<S> > 
