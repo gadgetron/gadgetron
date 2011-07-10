@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -199,7 +199,7 @@
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\GLReconWidget.h">
+    <CustomBuild Include="..\..\..\apps\standalone\gpu\MRI\sense\noncartesian\radial\2d_golden_ratio_gui\GLReconWidget.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
@@ -217,8 +217,8 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Identity)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Identity)</AdditionalInputs>
     </CustomBuild>
-    <ClInclude Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\radialSenseAppBaseMainWidget.ui.h" />
-    <CustomBuild Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\radialSenseAppMainWidget.h">
+    <ClInclude Include="..\..\..\apps\standalone\gpu\MRI\sense\noncartesian\radial\2d_golden_ratio_gui\radialSenseAppBaseMainWidget.ui.h" />
+    <CustomBuild Include="..\..\..\apps\standalone\gpu\MRI\sense\noncartesian\radial\2d_golden_ratio_gui\radialSenseAppMainWidget.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">moc %(Identity)</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
@@ -236,8 +236,8 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Identity)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Identity)</AdditionalInputs>
     </CustomBuild>
-    <ClInclude Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\reconBaseWidget.ui.h" />
-    <CustomBuild Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\reconWidget.h">
+    <ClInclude Include="..\..\..\apps\standalone\gpu\MRI\sense\noncartesian\radial\2d_golden_ratio_gui\reconBaseWidget.ui.h" />
+    <CustomBuild Include="..\..\..\apps\standalone\gpu\MRI\sense\noncartesian\radial\2d_golden_ratio_gui\reconWidget.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">moc.exe  -DUNICODE -DWIN32 -DQT_LARGEFILE_SUPPORT -DQT_GUI_LIB -DQT_CORE_LIB -DQT_THREAD_SUPPORT %(Identity) -o %(Identity).moc.cpp</Command>
@@ -255,19 +255,19 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Identity)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Identity)</AdditionalInputs>
     </CustomBuild>
-    <ClInclude Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\UIconstants.h" />
+    <ClInclude Include="..\..\..\apps\standalone\gpu\MRI\sense\noncartesian\radial\2d_golden_ratio_gui\UIconstants.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\GLReconWidget.cpp" />
-    <ClCompile Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\GLReconWidget.h.moc.cpp" />
-    <ClCompile Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\main.cpp" />
-    <ClCompile Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\radialSenseAppMainWidget.cpp" />
-    <ClCompile Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\radialSenseAppMainWidget.h.moc.cpp" />
-    <ClCompile Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\reconWidget.cpp" />
-    <ClCompile Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\reconWidget.h.moc.cpp" />
+    <ClCompile Include="..\..\..\apps\standalone\gpu\MRI\sense\noncartesian\radial\2d_golden_ratio_gui\GLReconWidget.cpp" />
+    <ClCompile Include="..\..\..\apps\standalone\gpu\MRI\sense\noncartesian\radial\2d_golden_ratio_gui\GLReconWidget.h.moc.cpp" />
+    <ClCompile Include="..\..\..\apps\standalone\gpu\MRI\sense\noncartesian\radial\2d_golden_ratio_gui\main.cpp" />
+    <ClCompile Include="..\..\..\apps\standalone\gpu\MRI\sense\noncartesian\radial\2d_golden_ratio_gui\radialSenseAppMainWidget.cpp" />
+    <ClCompile Include="..\..\..\apps\standalone\gpu\MRI\sense\noncartesian\radial\2d_golden_ratio_gui\radialSenseAppMainWidget.h.moc.cpp" />
+    <ClCompile Include="..\..\..\apps\standalone\gpu\MRI\sense\noncartesian\radial\2d_golden_ratio_gui\reconWidget.cpp" />
+    <ClCompile Include="..\..\..\apps\standalone\gpu\MRI\sense\noncartesian\radial\2d_golden_ratio_gui\reconWidget.h.moc.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\radialSenseAppBaseMainWidget.ui">
+    <CustomBuild Include="..\..\..\apps\standalone\gpu\MRI\sense\noncartesian\radial\2d_golden_ratio_gui\radialSenseAppBaseMainWidget.ui">
       <FileType>Document</FileType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uic.exe %(Identity) -o %(Identity).h</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">uic.exe %(Identity) -o %(Identity).h</Command>
@@ -286,7 +286,7 @@
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Identity)</AdditionalInputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Identity)</AdditionalInputs>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\apps\MRI\standalone\radial_sense_gr_gui\reconBaseWidget.ui">
+    <CustomBuild Include="..\..\..\apps\standalone\gpu\MRI\sense\noncartesian\radial\2d_golden_ratio_gui\reconBaseWidget.ui">
       <FileType>Document</FileType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uic.exe %(Identity) -o %(Identity).h</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">uic %(Identity)</Message>

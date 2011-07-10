@@ -160,7 +160,8 @@ __global__ void scale_and_add_unmixing_coeffs(cuFloatComplex* unmixing,
 					      cuFloatComplex* csm,
 					      cuFloatComplex* out,
 					      int elements,
-					      int coils)
+					      int coils,
+					      float scale_factor)
 {
   unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
 
@@ -168,8 +169,24 @@ __global__ void scale_and_add_unmixing_coeffs(cuFloatComplex* unmixing,
   if (idx_in < elements) {
     for (int c = 0; c < coils; c++) {
       tmp = cuCmulf(unmixing[c*elements + idx_in],cuConjf(csm[idx_in])); 
-      out[c*elements + idx_in].x += tmp.x;
-      out[c*elements + idx_in].y += tmp.y;
+      out[c*elements + idx_in].x += scale_factor*tmp.x;
+      out[c*elements + idx_in].y += scale_factor*tmp.y;
+    }
+  }
+}
+
+__global__ void scale_and_copy_unmixing_coeffs(cuFloatComplex* unmixing,
+					      cuFloatComplex* out,
+					      int elements,
+					      int coils,
+					      float scale_factor)
+{
+  unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
+
+  if (idx_in < elements) {
+    for (int c = 0; c < coils; c++) {
+      out[c*elements + idx_in].x = scale_factor*unmixing[c*elements + idx_in].x;
+      out[c*elements + idx_in].y = scale_factor*unmixing[c*elements + idx_in].y;
     }
   }
 }
@@ -185,19 +202,33 @@ __global__ void conj_csm_coeffs(cuFloatComplex* csm,
   }
 }
 
+__global__ void single_channel_coeffs(cuFloatComplex* out,
+				      int channel_no,
+				      int elements_per_channel)
+{
+  unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
+
+  if (idx_in < elements_per_channel) {
+    out[idx_in + channel_no*elements_per_channel] = make_float2(1.0,0.0);
+  }
+}
+
 
 template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data, 
 							  cuNDArray<T>* b1,
 							  unsigned int acceleration_factor,
 							  std::vector<unsigned int>* kernel_size,
-							  cuNDArray<T>* out_mixing_coeff)
+							  cuNDArray<T>* out_mixing_coeff,
+							  std::vector< std::pair<unsigned int, unsigned int> >* sampled_region,
+							  std::list< unsigned int >* uncombined_channels)
 {
 
-  if (!ref_data->dimensions_equal(b1) ||
-      !ref_data->dimensions_equal(out_mixing_coeff)) {
+  if (!ref_data->dimensions_equal(b1)) {
     std::cerr << "htgrappa_calculate_grappa_unmixing: Dimensions mismatch" << std::endl;
     return -1;
   }
+
+  unsigned int coils = ref_data->get_size(ref_data->get_number_of_dimensions()-1);
 
   if (acceleration_factor == 1) {
     dim3 blockDim(512,1,1);
@@ -206,6 +237,15 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 					      out_mixing_coeff->get_data_ptr(), 
 					      b1->get_number_of_elements());
     
+    std::list<unsigned int>::iterator it;
+    gridDim = dim3((unsigned int) ceil((1.0f*(b1->get_number_of_elements()/coils))/blockDim.x), 1, 1 );
+    int uncombined_channel_no = 0;
+    for ( it = uncombined_channels->begin(); it != uncombined_channels->end(); it++ ) {
+      uncombined_channel_no++;
+      single_channel_coeffs<<< gridDim, blockDim >>>( out_mixing_coeff->get_data_ptr() + uncombined_channel_no*b1->get_number_of_elements(),
+						      *it,
+						      (b1->get_number_of_elements()/coils));
+    }
     return 0;
   }
 
@@ -222,20 +262,38 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
   //Calculate region of support + offsets
   std::vector<unsigned int> ros = *ref_data->get_dimensions();
   ros.pop_back(); //Remove the number of coils
-
   std::vector<unsigned int> ros_offset(ref_data->get_number_of_dimensions(),0);
   unsigned long int kspace_locations = 1;
-  for (unsigned int i = 0; i < ros.size(); i++) {
-    if (i > 0) {
-      ros[i] -= ((*kernel_size)[i]*acceleration_factor);
-    } else {
-      ros[i] -= (*kernel_size)[i];
-    }
-    ros_offset[i] = (ref_data->get_size(i)-ros[i])>>1;
-    kspace_locations *= ros[i];
-  } 
 
-  unsigned int coils = ref_data->get_size(ref_data->get_number_of_dimensions()-1);
+  if (sampled_region) {
+    for (unsigned int i = 0; i < ros.size(); i++) {
+      if (i > 0) {
+	ros[i] = (*sampled_region)[i].second-(*sampled_region)[i].first-((*kernel_size)[i]*acceleration_factor);
+      } else {
+	ros[i] = (*sampled_region)[i].second-(*sampled_region)[i].first-(*kernel_size)[i];
+      }
+      ros_offset[i] = (*sampled_region)[i].first+(((*sampled_region)[i].second-(*sampled_region)[i].first-ros[i])>>1);
+      kspace_locations *= ros[i];
+    }
+  } else {
+    for (unsigned int i = 0; i < ros.size(); i++) {
+      if (i > 0) {
+	ros[i] -= ((*kernel_size)[i]*acceleration_factor);
+      } else {
+	ros[i] -= (*kernel_size)[i];
+      }
+      ros_offset[i] = (ref_data->get_size(i)-ros[i])>>1;
+      kspace_locations *= ros[i];
+    } 
+  }
+  
+  /*
+  for (unsigned int i = 0; i < ros.size(); i++) {
+    std::cout << "ROS[" << i << "] = " << ros[i] << " + " << ros_offset[i] << std::endl;
+  }
+  */
+
+ 
 
   std::vector<unsigned int> sys_matrix_size; 
   sys_matrix_size.push_back(kspace_locations);
@@ -411,7 +469,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
   }
 
   cuNDArray<T> tmp_mixing;
-  if (!tmp_mixing.create(out_mixing_coeff->get_dimensions().get())) {
+  if (!tmp_mixing.create(b1->get_dimensions().get())) {
     std::cerr << "htgrappa_calculate_grappa_unmixing: Unable to create temp mixing storage on device." << std::endl;
     return -1;
   }
@@ -423,6 +481,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
   cuNDFFT<T> ft;
   std::vector<unsigned int> ft_dims(2,0);ft_dims[1] = 1;
   clear(out_mixing_coeff);
+  unsigned int current_uncombined_index = 0;
   for (unsigned int c = 0; c < coils; c++) {
     clear(&tmp_mixing);
 
@@ -443,18 +502,34 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 
     ft.ifft(&tmp_mixing, &ft_dims);
 
+    float scale_factor = total_elements;
+    
     gridDim = dim3((unsigned int) ceil(1.0f*total_elements/blockDim.x), 1, 1 ); 
     scale_and_add_unmixing_coeffs<<< gridDim, blockDim >>>(tmp_mixing.get_data_ptr(),
 							   (b1->get_data_ptr()+ c*total_elements),
 							   out_mixing_coeff->get_data_ptr(),
 							   total_elements,
-							   coils);
+							   coils,
+							   scale_factor);
     err = cudaGetLastError();
     if( err != cudaSuccess ){
       std::cerr << "htgrappa_calculate_grappa_unmixing: scale and add mixing coeffs: " << 
 	cudaGetErrorString(err) << std::endl;
       return -1;
     }
+
+    if (uncombined_channels) {
+      std::list<unsigned int>::iterator it = std::find((*uncombined_channels).begin(),(*uncombined_channels).end(),c);
+      if (it != (*uncombined_channels).end()) {
+	current_uncombined_index++;
+	scale_and_copy_unmixing_coeffs<<< gridDim, blockDim >>>(tmp_mixing.get_data_ptr(),
+								(out_mixing_coeff->get_data_ptr()+current_uncombined_index*total_elements*coils),
+								total_elements,
+								coils,
+								scale_factor);	
+      }
+    }
+
   }
 
   cublasDestroy(handle);
@@ -466,7 +541,9 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 
 //Template instanciation
 template EXPORTGPUPMRI int htgrappa_calculate_grappa_unmixing(cuNDArray<float2>* ref_data, 
-						cuNDArray<float2>* b1,
-						unsigned int acceleration_factor,
-						std::vector<unsigned int> *kernel_size,
-						cuNDArray<float2>* out_mixing_coeff);
+							      cuNDArray<float2>* b1,
+							      unsigned int acceleration_factor,
+							      std::vector<unsigned int> *kernel_size,
+							      cuNDArray<float2>* out_mixing_coeff,
+							      std::vector< std::pair<unsigned int, unsigned int> >* sampled_region,
+							      std::list< unsigned int >* uncombined_channels);

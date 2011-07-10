@@ -77,7 +77,13 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)
 
      //TODO: Change dimensions of this to deal with uncombinex channels
      cuNDArray<cuFloatComplex> unmixing_dev;
-     if (!unmixing_dev.create(csm.get()->get_dimensions().get())) {
+     boost::shared_ptr< std::vector<unsigned int> > csm_dimensions = csm->get_dimensions();
+
+     if (uncombined_channels_.size() > 0) {
+       csm_dimensions->push_back(uncombined_channels_.size()+1);
+     }
+
+     if (!unmixing_dev.create(csm_dimensions.get())) {
        GADGET_DEBUG1("Unable to allocate device memory for unmixing coeffcients\n");
        return GADGET_FAIL;
      }
@@ -93,7 +99,9 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)
 					       reinterpret_cast< cuNDArray<cuFloatComplex>* >(csm.get()),
 					       mb1->getObjectPtr()->acceleration_factor,
 					       &kernel_size,
-					       &unmixing_dev) < 0) {
+					       &unmixing_dev,
+					       &(mb1->getObjectPtr()->sampled_region),
+					       &uncombined_channels_) < 0) {
 	 GADGET_DEBUG1("GRAPPA unmixing coefficients calculation failed\n");
 	 return GADGET_FAIL;
        }
@@ -103,7 +111,9 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)
        boost::shared_ptr< hoNDArray<cuFloatComplex> > unmixing_host = unmixing_dev.to_host();
 
        //TODO: This reshaping needs to take uncombined channels into account
-       if (unmixing_host->reshape(mb2->getObjectPtr()->get_dimensions().get()) < 0) {
+       boost::shared_ptr< std::vector<unsigned int> > tmp_dims = mb2->getObjectPtr()->get_dimensions();
+       if (uncombined_channels_.size()) tmp_dims->push_back(uncombined_channels_.size()+1);
+       if (unmixing_host->reshape(tmp_dims.get()) < 0) {
 	 GADGET_DEBUG1("Failed to reshape GRAPPA weights\n");
 	 return GADGET_FAIL;
        }
@@ -191,6 +201,21 @@ add_job( hoNDArray< std::complex<T> >* ref_data,
 
   return 0;
 }
+
+template <class T> int GrappaWeightsCalculator<T>::add_uncombined_channel(unsigned int channel_id)
+{
+  remove_uncombined_channel(channel_id);
+  uncombined_channels_.push_back(channel_id);
+  return 0;
+}
+
+template <class T> int GrappaWeightsCalculator<T>::remove_uncombined_channel(unsigned int channel_id)
+{
+  uncombined_channels_.remove(channel_id);
+  return 0;
+}
+
+
 
 template class EXPORTGADGETSGRAPPA GrappaWeightsDescription<float>;
 template class EXPORTGADGETSGRAPPA GrappaWeightsCalculator<float>;

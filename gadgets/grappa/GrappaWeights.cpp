@@ -1,4 +1,6 @@
+#include "Gadgetron.h"
 #include "GrappaWeights.h"
+#include "hoNDArray_fileio.h"
 
 template <class T> int GrappaWeights<T>::
 update(hoNDArray< std::complex<T> >* new_weights)
@@ -20,7 +22,7 @@ update(hoNDArray< std::complex<T> >* new_weights)
 
   memcpy(weights_.get_data_ptr(), new_weights->get_data_ptr(),
 	 weights_.get_number_of_elements()*sizeof(T)*2);
-  
+
   mutex_.release();
 
   return 0;
@@ -47,7 +49,7 @@ apply(hoNDArray< std::complex<T> >* data_in,
 
   unsigned int sets = weights_.get_number_of_elements()/data_in->get_number_of_elements();
   
-  if (sets > 1) {
+  if (sets < 1) {
     return -4;
   }
 

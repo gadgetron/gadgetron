@@ -15,6 +15,7 @@
 #include "cgOperatorNonCartesianSense.h"
 #include "cgOperatorSenseRHSBuffer.h"
 #include "cuCGImageOperator.h"
+#include "cuCGPrecondWeights.h"
 
 class EXPORTGADGETSCGSENSE GPUCGGadget : 
 public Gadget2<GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
@@ -79,7 +80,7 @@ public:
   boost::shared_ptr< cgOperatorNonCartesianSense<float,2> > E_;
 
   // Define preconditioner
-  boost::shared_ptr< cuCGPrecondWeight<float_complext::Type> > D_;
+  boost::shared_ptr< cuCGPrecondWeights<float_complext::Type> > D_;
 
   // Define regularization image operator
   boost::shared_ptr< cuCGImageOperator<float,float_complext::Type> > R_;

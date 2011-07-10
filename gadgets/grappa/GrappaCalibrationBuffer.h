@@ -53,15 +53,17 @@ class EXPORTGADGETSGRAPPA CalibrationBufferCounter
     min_ky_index = 0;
     max_ky_index = 0;
     while (current_start_line < lines_sampled_.size() ) {
-      while (current_start_line < lines_sampled_.size() && lines_sampled_[current_start_line] == 0 ) {	
+      while ((current_start_line < lines_sampled_.size()) && (lines_sampled_[current_start_line] == 0) ) {	
        	current_start_line++;
       }
+      if (current_start_line >= lines_sampled_.size()) continue;
+
       unsigned int region_start = current_start_line;
-      while (current_start_line < lines_sampled_.size() && lines_sampled_[current_start_line] > 0) {	
+      while ((current_start_line < lines_sampled_.size()) && (lines_sampled_[current_start_line] > 0)) {	
        	current_start_line++;
       }
       unsigned int region_end = current_start_line-1;
-      if ((region_end-region_start) > (max_ky_index-min_ky_index)) {
+      if ((region_start < region_end) && ((region_end-region_start) > (max_ky_index-min_ky_index))) {
 	min_ky_index = region_start;
 	max_ky_index = region_end;
       }

@@ -1,7 +1,12 @@
+#include <ace/OS_NS_stdlib.h>
+
 #include "Gadgetron.h"
 #include "GrappaGadget.h"
 #include "GadgetXml.h"
 #include "FFT.h"
+
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 GrappaGadget::GrappaGadget()
 {
@@ -39,12 +44,29 @@ int GrappaGadget::process_config(ACE_Message_Block* mb)
 
   weights_ = std::vector< GrappaWeights<float>* >(dimensions_[4],0);
   buffers_ = std::vector<GrappaCalibrationBuffer* >(dimensions_[4],0);
+  time_stamps_ = std::vector<ACE_UINT32>(dimensions_[4],0);
+
+ 
+ //Let's figure out if we have channels that are supposed to be uncombined
+  boost::shared_ptr<std::string> uncomb_str = this->get_string_value("uncombined_channels");
+  std::vector<std::string> uncomb;
+  boost::split(uncomb, *uncomb_str, boost::is_any_of(","));
+  for (unsigned int i = 0; i < uncomb.size(); i++) {
+    std::string ch = boost::algorithm::trim_copy(uncomb[i]);
+    if (ch.size() > 0) {
+      unsigned int channel_id = static_cast<unsigned int>(ACE_OS::atoi(ch.c_str()));
+      weights_calculator_.add_uncombined_channel(channel_id);
+    }
+  }
+
   for (unsigned int i = 0; i < buffers_.size(); i++) {
     weights_[i] = new GrappaWeights<float>();
 
     //Let's set some default GRAPPA weights, so that we have something to work with the first couple of frames.
     std::vector<unsigned int> wdims = image_dimensions_;
-    //TODO: push back any additional dimensions for uncombined channels
+    if (weights_calculator_.get_number_of_uncombined_channels()) {
+      wdims.push_back(weights_calculator_.get_number_of_uncombined_channels()+1);
+    }
 
     hoNDArray< std::complex<float> > tmp_w;
     if (!tmp_w.create(&wdims)) {
@@ -60,6 +82,7 @@ int GrappaGadget::process_config(ACE_Message_Block* mb)
 					      &weights_calculator_);
   }
 
+ 
   if (weights_calculator_.open() < 0) {
     GADGET_DEBUG1("Failed to open GrappaWeightsCalculator\n");
     return GADGET_FAIL;
@@ -125,6 +148,13 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
   bool is_last_scan_in_slice =
     (m1->getObjectPtr()->flags & GADGET_FLAG_LAST_ACQ_IN_SLICE);
   
+  bool is_first_scan_in_slice =
+    (m1->getObjectPtr()->flags & GADGET_FLAG_FIRST_ACQ_IN_SLICE);
+
+  if (is_first_scan_in_slice) {
+    time_stamps_[slice] = m1->getObjectPtr()->time_stamp;
+  }
+
   if (is_last_scan_in_slice) {
 
     GadgetContainerMessage<GadgetMessageImage>* cm1 = 
@@ -138,6 +168,10 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     combined_dims[0] = image_dimensions_[0];
     combined_dims[1] = image_dimensions_[1];
     combined_dims[2] = image_dimensions_[2];
+
+    if (weights_calculator_.get_number_of_uncombined_channels()) {
+      combined_dims.push_back(weights_calculator_.get_number_of_uncombined_channels()+1); 
+    }
  
     if (!cm2->getObjectPtr()->create(&combined_dims)) {
       GADGET_DEBUG1("Unable to create combined image array\n");
@@ -150,10 +184,11 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     cm1->getObjectPtr()->matrix_size[0] = image_dimensions_[0];
     cm1->getObjectPtr()->matrix_size[1] = image_dimensions_[1];
     cm1->getObjectPtr()->matrix_size[2] = image_dimensions_[2];
-    cm1->getObjectPtr()->channels       = 1;//image_dimensions_[3]; This should be fixed when we know what channels to preserve
+    cm1->getObjectPtr()->channels       = 1+weights_calculator_.get_number_of_uncombined_channels();
     cm1->getObjectPtr()->data_idx_min       = m1->getObjectPtr()->min_idx;
     cm1->getObjectPtr()->data_idx_max       = m1->getObjectPtr()->max_idx;
     cm1->getObjectPtr()->data_idx_current   = m1->getObjectPtr()->idx;	
+    cm1->getObjectPtr()->time_stamp         = time_stamps_[slice];
 
     memcpy(cm1->getObjectPtr()->position,m1->getObjectPtr()->position,
 	   sizeof(float)*3);
@@ -169,8 +204,9 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     //apply weights
     float scale_factor = dimensions_[0]*dimensions_[1];
 
-    if (weights_[slice]->apply(image_data_[slice]->getObjectPtr(), cm2->getObjectPtr(), scale_factor*scale_factor) < 0) {
-      GADGET_DEBUG1("Failed to apply GRAPPA weights\n");
+    int appl_result = weights_[slice]->apply(image_data_[slice]->getObjectPtr(), cm2->getObjectPtr(), scale_factor);
+    if (appl_result < 0) {
+      GADGET_DEBUG2("Failed to apply GRAPPA weights: error code %d\n", appl_result);
       return GADGET_FAIL;
     }
 

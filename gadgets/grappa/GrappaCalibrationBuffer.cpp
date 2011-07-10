@@ -81,7 +81,7 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
   if (is_last_scan_in_slice) { 
     unsigned int min_ky, max_ky;
 
-    if (biggest_gap_current_ > acceleration_factor_) {
+    if (biggest_gap_current_ != acceleration_factor_) {
       acceleration_factor_ = biggest_gap_current_;
       weights_invalid_ = true;
     }
@@ -91,6 +91,14 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
       return GADGET_FAIL;
     }
     
+    //If there is nothing on the queue, we might as well recalculate
+    if (weights_calculator_->msg_queue()->message_count() < 1) {
+      //GADGET_DEBUG1("Queue is empty, invalidating weights\n");
+      weights_invalid_ = true;
+    } else {
+      //GADGET_DEBUG1("Queue is NOT EMPTY, calculation not triggered\n");
+    }
+
     if (weights_invalid_ && ((max_ky-min_ky) > acceleration_factor_)) {
       std::vector< std::pair<unsigned int, unsigned int> > sampled_region;
       sampled_region.push_back(std::pair<unsigned int, unsigned int>(0, samples-1));
@@ -112,7 +120,6 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
 
       weights_invalid_ = false;
     }
-
   }
 
 

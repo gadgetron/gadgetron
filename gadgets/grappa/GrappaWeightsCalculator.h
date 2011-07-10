@@ -5,6 +5,8 @@
 #include "gadgetron_export.h"
 #include "GrappaWeights.h"
 
+#include <list>
+
 template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsCalculator : public ACE_Task<ACE_MT_SYNCH>
 {
   typedef ACE_Task<ACE_MT_SYNCH> inherited;
@@ -39,4 +41,13 @@ template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsCalculator : public AC
 		       GrappaWeights<T>* destination,
 		       std::vector<unsigned int> uncombined_channel_weights,
 		       bool include_uncombined_channels_in_combined_weights = true);
+
+  virtual int add_uncombined_channel(unsigned int channel_id);
+  virtual int remove_uncombined_channel(unsigned int channel_id);
+  virtual int get_number_of_uncombined_channels() {
+    return uncombined_channels_.size();
+  }
+
+ private:
+  std::list<unsigned int> uncombined_channels_;
 };

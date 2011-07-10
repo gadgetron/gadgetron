@@ -60,6 +60,7 @@ struct EXPORTGADGETSCORE GadgetMessageImage
   LoopCounters   data_idx_min;
   LoopCounters   data_idx_max;
   LoopCounters   data_idx_current;
+  ACE_UINT32     time_stamp;
 }; 
 
 #endif  //GADGETMRIHEADERS_H

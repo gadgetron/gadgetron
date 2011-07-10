@@ -80,6 +80,10 @@ class GadgetImageMessageReader : public GadgetMessageReader
     dims[1] = imgh->getObjectPtr()->matrix_size[1];
     dims[2] = imgh->getObjectPtr()->matrix_size[2];
 
+    if (imgh->getObjectPtr()->channels > 1) {
+      dims.push_back(imgh->getObjectPtr()->channels);
+    } 
+
     GadgetContainerMessage< hoNDArray< std::complex<float> > >* data = 
       new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
 
