@@ -2372,6 +2372,11 @@ cuNDA_scal( T a, cuNDArray<T>* x, cuNDA_device compute_device )
 template<> EXPORTGPUCORE
 bool cuNDA_normalize<float>( cuNDArray<float> *data, float new_max, cuNDA_device compute_device )
 {
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_normalize: initialization failed" << std::endl;
+    return false;
+  }
+
   unsigned int number_of_elements = data->get_number_of_elements();
 
   // Prepare internal array
@@ -2411,6 +2416,11 @@ bool cuNDA_normalize<float>( cuNDArray<float> *data, float new_max, cuNDA_device
 template<> EXPORTGPUCORE
 bool cuNDA_normalize<double>( cuNDArray<double> *data, double new_max, cuNDA_device compute_device )
 {
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_normalize: initialization failed" << std::endl;
+    return false;
+  }
+
   unsigned int number_of_elements = data->get_number_of_elements();
 
   // Prepare internal array
