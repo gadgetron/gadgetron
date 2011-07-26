@@ -18,6 +18,6 @@
 <gadget name="CropCombine" dll="gadgetroncore" class="CropAndCombineGadget" />
 <gadget name="FFT" dll="gadgetroncore" class="FFTGadget" />
 <gadget name="Acc" dll="gadgetroncore" class="AccumulatorGadget" /> 
-<gadget name="PassThrough" dll="gadgetroncore" class="AcquisitionPassthroughGadget" />
+<gadget name="NoiseAdjust" dll="gadgetroncore" class="NoiseAdjustGadget" />
 </stream>
 

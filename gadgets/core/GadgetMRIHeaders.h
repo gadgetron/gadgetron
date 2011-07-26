@@ -5,13 +5,14 @@
 #include <ace/Basic_Types.h>
 
 //Data flags
-#define GADGET_FLAG_ACQ_END                   (1 << 0) /* 0x01 */
-#define GADGET_FLAG_LAST_ACQ_IN_SLICE         (1 << 1) /* 0x02 */
-#define GADGET_FLAG_LAST_ACQ_IN_MEAS          (1 << 2) /* 0x04 */
-#define GADGET_FLAG_LAST_ACQ_IN_CONCAT        (1 << 3) /* 0x08 */
-#define GADGET_FLAG_FIRST_ACQ_IN_SLICE        (1 << 4) /* 0x02 */
-#define GADGET_FLAG_FIRST_ACQ_IN_MEAS         (1 << 5) /* 0x04 */
-#define GADGET_FLAG_FIRST_ACQ_IN_CONCAT       (1 << 6) /* 0x08 */
+#define GADGET_FLAG_ACQ_END                   (1 << 0)
+#define GADGET_FLAG_LAST_ACQ_IN_SLICE         (1 << 1)
+#define GADGET_FLAG_LAST_ACQ_IN_MEAS          (1 << 2)
+#define GADGET_FLAG_LAST_ACQ_IN_CONCAT        (1 << 3)
+#define GADGET_FLAG_FIRST_ACQ_IN_SLICE        (1 << 4)
+#define GADGET_FLAG_FIRST_ACQ_IN_MEAS         (1 << 5)
+#define GADGET_FLAG_FIRST_ACQ_IN_CONCAT       (1 << 6)
+#define GADGET_FLAG_IS_NOISE_SCAN             (1 << 7)
 
 EXPORTGADGETSCORE enum GadgetMessageID {
   GADGET_MESSAGE_EXT_ID_MIN        = 1000,

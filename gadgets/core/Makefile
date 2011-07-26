@@ -15,7 +15,8 @@ LIBSOURCES=\
 	CropAndCombineGadget.cpp \
 	ImageWriterGadget.cpp \
 	MRIAcquisitionReader.cpp \
-	MRIImageWriter.cpp 
+	MRIImageWriter.cpp \
+	NoiseAdjustGadget.cpp
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 
