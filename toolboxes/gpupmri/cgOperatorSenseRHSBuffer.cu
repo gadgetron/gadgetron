@@ -16,25 +16,34 @@ cgOperatorSenseRHSBuffer<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_
     std::cerr << "cgOperatorSenseRHSBuffer::mult_MH: csm not set" << std::endl;
     return -1;
   }
+
+  if( out->get_number_of_dimensions() < D || out->get_number_of_dimensions() > D+1 ){
+    std::cerr << "cgOperatorSenseRHSBuffer::mult_MH: unexpected output array dimensions" << std::endl;
+    return -1;
+  }
+
+  if( out->get_number_of_dimensions() > in->get_number_of_dimensions() ){
+    std::cerr << "cgOperatorSenseRHSBuffer::mult_MH: array dimensions mismatch" << std::endl;
+    return -1;
+  }
+    
+  for( unsigned int d=0; d<out->get_number_of_dimensions(); d++ ){
+    if( out->get_size(d) != in->get_size(d) ){
+      std::cerr << "cgOperatorSenseRHSBuffer::mult_MH: array dimensions mismatch" << std::endl;
+      return -3;
+    }
+    if( d<D && in->get_size(d) != this->csm_->get_size(d) ){
+      std::cerr << "cgOperatorSenseRHSBuffer::mult_MH: input array dimensions mismatch the csm" << std::endl;
+      return -3;
+    }
+  }
   
-  if( out->get_number_of_dimensions() != D && in->get_number_of_dimensions() != D+1 ){
-    std::cerr << "cgOperatorSenseRHSBuffer::mult_MH array dimensions mismatch" << std::endl;
+  if( in->get_size(in->get_number_of_dimensions()-1) != 
+      this->csm_->get_size(this->csm_->get_number_of_dimensions()-1 )){
+    std::cerr << "cgOperatorSenseRHSBuffer::mult_MH: the number of coils cannot differ between the input array and the csm" << std::endl;
     return -1;
   }
   
-  if( in->get_number_of_elements() != this->csm_->get_number_of_elements() ){
-    std::cerr << "cgOperatorSenseRHSBuffer::mult_MH input array dimensions mismatch csm" << std::endl;
-    return -2;
-  }
-  
-  typename uintd<D>::Type image_size_in = vector_to_uintd<D>(*in->get_dimensions());
-  typename uintd<D>::Type image_size_out = vector_to_uintd<D>(*out->get_dimensions());
-  
-  if( prod(image_size_in) != prod(image_size_out) ){
-    std::cerr << "cgOperatorSenseRHSBuffer::mult_MH image dimensions mismatch" << std::endl;
-    return -3;
-  }
-
   if( !accumulate ){
     int ret1 = this->set_device();
     if( ret1 == 0 ) cuNDA_clear<_complext>( out );
@@ -43,9 +52,9 @@ cgOperatorSenseRHSBuffer<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_
     if( ret1<0 || ret2<0 ){
       std::cerr << "cgOperatorSenseRHSBuffer::mult_MH: device error" << std::endl;
       return -4; 
-    }    
+    }
   }
-    
+ 
   if( mult_csm_conj_sum( in, out ) < 0 ) {
     std::cerr << "cgOperatorSenseRHSBuffer::mult_MH: Unable to multiply with conjugate of sensitivity maps and sum" << std::endl;
     return -4; 

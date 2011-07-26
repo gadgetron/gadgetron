@@ -11,14 +11,18 @@ HEADERFILES=\
 	cgOperatorSense.h \
 	cgOperatorCartesianSense.h \
 	cgOperatorNonCartesianSense.h \
-	cgOperatorSenseRHSBuffer.h
+	cgOperatorNonCartesianKtSense.h \
+	cgOperatorSenseRHSBuffer.h \
+	cgOperatorKtSenseRHSBuffer.h
 
 CUDASOURCES=\
 	b1_map.cu \
 	cgOperatorSense.cu \
 	cgOperatorCartesianSense.cu \
 	cgOperatorNonCartesianSense.cu \
+	cgOperatorNonCartesianKtSense.cu \
 	cgOperatorSenseRHSBuffer.cu \
+	cgOperatorKtSenseRHSBuffer.cu \
 	htgrappa.cu
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)

@@ -9,7 +9,7 @@
 
 #include <boost/smart_ptr.hpp>
 
-template<class REAL, class T> class EXPORTGPUCG cuCG
+template <class REAL, class T> class EXPORTGPUCG cuCG
 {
  public:
 

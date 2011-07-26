@@ -34,10 +34,11 @@ cgOperatorSense<REAL,D>::set_csm( boost::shared_ptr< cuNDArray<_complext> > csm 
 }
 
 template<class REAL> __global__ void 
-mult_csm_kernel( typename complext<REAL>::Type* in, typename complext<REAL>::Type* out, typename complext<REAL>::Type* csm, 
-		 unsigned long image_elements, unsigned int nframes, unsigned int ncoils )
+mult_csm_kernel( typename complext<REAL>::Type* in, typename complext<REAL>::Type* out, 
+		 typename complext<REAL>::Type* csm, 
+		 unsigned int image_elements, unsigned int nframes, unsigned int ncoils )
 {
-  unsigned long idx = blockIdx.x*blockDim.x+threadIdx.x;
+  unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
   if( idx < image_elements) {
     typedef typename complext<REAL>::Type T;
     T _in = in[idx+blockIdx.y*image_elements];
@@ -50,7 +51,15 @@ mult_csm_kernel( typename complext<REAL>::Type* in, typename complext<REAL>::Typ
 template<class REAL, unsigned int D> int 
 cgOperatorSense<REAL,D>::mult_csm( cuNDArray<_complext>* in, cuNDArray<_complext>* out )
 {  
-  // protected method: we skip dimensionality checks and trust the caller
+  if( in->get_number_of_dimensions() < D  || in->get_number_of_dimensions() > D+1 ){
+    std::cerr << "cgOperatorSense::mult_csm: unexpected input dimensionality" << std::endl;
+    return -1;
+  }
+
+  if( in->get_number_of_dimensions() > out->get_number_of_dimensions() ){
+    std::cerr << "cgOperatorSense::mult_csm: input dimensionality cannot exceed output dimensionality" << std::endl;
+    return -1;
+  }
 
   int ret = this->set_device();
   if( ret<0 ){
@@ -77,9 +86,9 @@ cgOperatorSense<REAL,D>::mult_csm( cuNDArray<_complext>* in, cuNDArray<_complext
   unsigned int num_frames = in->get_number_of_elements() / num_image_elements;
 
   dim3 blockDim(256);
-  dim3 gridDim((unsigned int) ceil((double)num_image_elements/blockDim.x), num_frames);
-  mult_csm_kernel<REAL><<< gridDim, blockDim >>>( in_int->get_data_ptr(), out_int->get_data_ptr(), csm_->get_data_ptr(), 
-						  num_image_elements, num_frames, ncoils_ );
+  dim3 gridDim((num_image_elements+blockDim.x-1)/blockDim.x, num_frames);
+  mult_csm_kernel<REAL><<< gridDim, blockDim >>>
+    ( in_int->get_data_ptr(), out_int->get_data_ptr(), csm_->get_data_ptr(), num_image_elements, num_frames, ncoils_ );
 
   cudaError_t err = cudaGetLastError();
   if( err != cudaSuccess ){
@@ -106,7 +115,8 @@ cgOperatorSense<REAL,D>::mult_csm( cuNDArray<_complext>* in, cuNDArray<_complext
 }
 
 template <class REAL> __global__ void 
-mult_csm_conj_sum_kernel( typename complext<REAL>::Type *in, typename complext<REAL>::Type *out, typename complext<REAL>::Type *csm, 
+mult_csm_conj_sum_kernel( typename complext<REAL>::Type *in, typename complext<REAL>::Type *out, 
+			  typename complext<REAL>::Type *csm, 
 			  unsigned int image_elements, unsigned int nframes, unsigned int ncoils )
 {
   unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
@@ -123,7 +133,15 @@ mult_csm_conj_sum_kernel( typename complext<REAL>::Type *in, typename complext<R
 template<class REAL, unsigned int D> int 
 cgOperatorSense<REAL,D>:: mult_csm_conj_sum( cuNDArray<_complext>* in, cuNDArray<_complext>* out )
 {
-  // protected method: we skip dimensionality checks and trust the caller
+  if( out->get_number_of_dimensions() < D  || out->get_number_of_dimensions() > D+1 ){
+    std::cerr << "cgOperatorSense::mult_csm_conj_sum: unexpected output dimensionality" << std::endl;
+    return -1;
+  }
+
+  if( out->get_number_of_dimensions() > in->get_number_of_dimensions() ){
+    std::cerr << "cgOperatorSense::mult_csm_conj_sum: output dimensionality cannot exceed input dimensionality" << std::endl;
+    return -1;
+  }
 
   int ret = this->set_device();
   if( ret<0 ){
@@ -150,11 +168,11 @@ cgOperatorSense<REAL,D>:: mult_csm_conj_sum( cuNDArray<_complext>* in, cuNDArray
   unsigned int num_frames = out->get_number_of_elements() / num_image_elements;
 
   dim3 blockDim(256);
-  dim3 gridDim((unsigned int) ceil((double)num_image_elements/blockDim.x), num_frames);
+  dim3 gridDim((num_image_elements+blockDim.x-1)/blockDim.x, num_frames);
 
-  mult_csm_conj_sum_kernel<REAL><<< gridDim, blockDim >>>( in_int->get_data_ptr(), out_int->get_data_ptr(), csm_->get_data_ptr(),
-							   num_image_elements, num_frames, ncoils_ );
-    
+  mult_csm_conj_sum_kernel<REAL><<< gridDim, blockDim >>>
+    ( in_int->get_data_ptr(), out_int->get_data_ptr(), csm_->get_data_ptr(), num_image_elements, num_frames, ncoils_ );
+
   cudaError_t err = cudaGetLastError();
   if( err != cudaSuccess ){
     std::cerr << "cgOperatorSense::mult_csm_conj_sum: unable to combine coils " << 

@@ -135,13 +135,21 @@ template <class T> int cuNDArray_permute(cuNDArray<T>* in,
       new_dims.push_back((*in->dimensions_)[(*order)[i]]);
     }
     *in->dimensions_ = new_dims;
-    if (cudaFree(in->data_) != cudaSuccess) {
+    if( in->delete_data_on_destruct() ){
+      if (cudaFree(in->data_) != cudaSuccess) {
 	std::cerr << "cuNDArray_permute: failed to delete device memory" << std::endl;
 	return -1;
+      }
+      in->data_ = out_ptr;
     }
-    in->data_ = out_ptr;
+    else{
+      if( cudaMemcpy( in->data_, out_ptr, in->elements_*sizeof(T),  cudaMemcpyDeviceToDevice) != cudaSuccess ) {
+   	std::cerr << "cuNDArray_permute: failed to copy device memory" << std::endl;
+	return -1;
+      }
+    }
   }
-
+  
   return 0;
 }
 

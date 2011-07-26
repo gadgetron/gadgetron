@@ -65,7 +65,7 @@ cuCGPrecondWeights<T>::apply(cuNDArray<T>* in, cuNDArray<T>* out)
   unsigned int num_frames = in->get_number_of_elements() / weights_->get_number_of_elements();
 
   dim3 blockDim(256);
-  dim3 gridDim((unsigned int) ceil((double)weights_->get_number_of_elements()/blockDim.x), num_frames );
+  dim3 gridDim((weights_->get_number_of_elements()+blockDim.x-1)/blockDim.x, num_frames );
   weight_multiplication<<< gridDim, blockDim >>>( in_int->get_data_ptr(), out_int->get_data_ptr(),
 						  weights_->get_data_ptr(), weights_->get_number_of_elements());
 

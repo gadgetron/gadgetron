@@ -158,8 +158,8 @@ cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
 
-      if (!cuNDA_axpy<T>(mul<REAL>((*operators_)[i]->get_weight(), get_one<T>()),&q2,&q)) {
-	std::cerr << "cuCG::solve : failed to add q1 to q" << std::endl;
+      if (!cuNDA_axpy<T>(mul<REAL>((*operators_)[i]->get_weight(), get_one<T>()), &q2, &q)) {
+	std::cerr << "cuCG::solve : failed to add result from operator number " << i << std::endl;
 	cudaSetDevice(old_device);
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }

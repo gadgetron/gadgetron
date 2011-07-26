@@ -9,10 +9,14 @@ DIRS=\
 	toolboxes/gpunfft \
 	toolboxes/gpucg \
 	toolboxes/gpupmri \
+	toolboxes/gpuct \
 	apps/standalone/gpu/gputest \
 	apps/standalone/gpu/MRI/nfft/2d \
 	apps/standalone/gpu/MRI/nfft/ms2d \
 	apps/standalone/gpu/MRI/sense/noncartesian/radial/2d_golden_ratio \
+	apps/standalone/gpu/MRI/sense/noncartesian/radial/2d_golden_ratio_kt \
+	apps/standalone/gpu/CT/parallel_beam/2d \
+	apps/standalone/gpu/CT/parallel_beam/2d+t \
 	apps/gadgetron \
 	apps/gadgetdatasender \
 	gadgets/core \
