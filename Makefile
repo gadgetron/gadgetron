@@ -7,7 +7,7 @@ DIRS=\
 	toolboxes/hostutils \
 	toolboxes/gpucore \
 	toolboxes/gpunfft \
-	toolboxes/gpucg \
+	toolboxes/solvers \
 	toolboxes/gpupmri \
 	toolboxes/gpuct \
 	apps/standalone/gpu/gputest \
