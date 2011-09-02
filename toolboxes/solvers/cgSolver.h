@@ -42,8 +42,8 @@ public:
     iterations_ = iterations;
   }
 
-  virtual bool pre_solve( ARRAY_TYPE *rhs ) { return true; }
-  virtual bool post_solve( ARRAY_TYPE *rho ) { return true; }
+  virtual bool pre_solve( ARRAY_TYPE **rhs ) { return true; }
+  virtual bool post_solve( ARRAY_TYPE **rho ) { return true; }
   virtual void solver_error( std::string err ) { std::cerr << err << std::endl; }
 
   virtual ELEMENT_TYPE solver_dot( ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
@@ -51,10 +51,13 @@ public:
   virtual bool solver_scal( ELEMENT_TYPE, ARRAY_TYPE* ) = 0;
   virtual bool solver_axpy( ELEMENT_TYPE, ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
 
-  virtual boost::shared_ptr<ARRAY_TYPE> solve( ARRAY_TYPE *rhs )
+  virtual boost::shared_ptr<ARRAY_TYPE> solve( ARRAY_TYPE *_rhs )
   {
+    // Make copy of the input pointer for the pre_solve callback
+    ARRAY_TYPE *rhs = _rhs;
+
     // Custom initialization
-    if( !pre_solve(rhs) ){
+    if( !pre_solve(&rhs) ){
       solver_error( "cgSolver::solve : error in pre_solve" );
       return boost::shared_ptr<ARRAY_TYPE>();
     }
@@ -215,7 +218,7 @@ public:
       }
     }
 
-    if( !post_solve(rho) ){
+    if( !post_solve(&rho) ){
       solver_error( "cgSolver::solve : error in post_solve" );
       return boost::shared_ptr<ARRAY_TYPE>(rho);
     }
