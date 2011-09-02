@@ -1,10 +1,12 @@
-#include "cuCG.h"
+#include "cuCGSolver.h"
 #include "real_utilities.h"
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
 
+#include <iostream>
+
 template<class REAL, class T> bool 
-cuCG<REAL,T>::set_device( int device )
+cuCGSolver<REAL,T>::set_device( int device )
 { 
   device_ = device;
   
@@ -13,7 +15,7 @@ cuCG<REAL,T>::set_device( int device )
     int old_device;  
 
     if( cudaGetDevice( &old_device ) != cudaSuccess ){
-      std::cerr << "cuCG::set_device: unable to get current device." << std::endl ;
+      std::cerr << "cuCGSolver::set_device: unable to get current device." << std::endl ;
       return false;
     }
     
@@ -23,18 +25,73 @@ cuCG<REAL,T>::set_device( int device )
   return true;
 }
 
+template<class REAL, class T> bool cuCGSolver<REAL,T>::pre_solve(cuNDArray<T> *rhs)
+{
+	if( device_ != rhs->get_device() ){
+		solver_error( "cuCGSolver::pre_solve: rhs is not residing on the specified compute device." );
+		return false;
+	}
+
+	if( cudaGetDevice( &old_device_ ) != cudaSuccess ){
+		solver_error( "cuCGSolver::pre_solve: unable to get current device." );
+		return false;
+	}
+
+	if( device_ != old_device_ && cudaSetDevice(device_) != cudaSuccess) {
+		solver_error( "cuCGSolver:solve: unable to set specified device" );
+		return false;
+	}
+	return true;
+}
+
+template<class REAL, class T> bool cuCGSolver<REAL,T>::post_solve(cuNDArray<T>*)
+{
+	if( device_ != old_device_ && cudaSetDevice(old_device_) != cudaSuccess) {
+		solver_error( "cuCGSolver::solve: unable to restore device no" );
+		return false;
+	}
+	return true;
+}
+
+template<class REAL, class T> void cuCGSolver<REAL,T>::solver_error( std::string err )
+{
+	cgSolver< REAL, T, cuNDArray<T> >::solver_error(err);
+	cudaSetDevice(old_device_);
+}
+
+template<class REAL, class T> T cuCGSolver<REAL,T>::solver_dot( cuNDArray<T> *x, cuNDArray<T> *y )
+{
+	return cuNDA_dot<T>(x,y);
+}
+
+template<class REAL, class T> bool cuCGSolver<REAL,T>::solver_clear( cuNDArray<T> *x )
+{
+	return cuNDA_clear<T>(x);
+}
+
+template<class REAL, class T> bool cuCGSolver<REAL,T>::solver_scal( T a, cuNDArray<T> *x )
+{
+	return cuNDA_scal<T>(a,x);
+}
+
+template<class REAL, class T> bool cuCGSolver<REAL,T>::solver_axpy( T a, cuNDArray<T> *x, cuNDArray<T> *y )
+{
+	return cuNDA_axpy<T>(a,x,y);
+}
+
+/*
 template<class REAL, class T> boost::shared_ptr< cuNDArray<T> > 
-cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
+cuCGSolver<REAL,T>::solve(cuNDArray<T> *_rhs)
 {
   int old_device;
   
   if( cudaGetDevice( &old_device ) != cudaSuccess ){
-    std::cerr << "cuCG::solve: unable to get current device." << std::endl;
+    std::cerr << "cuCGSolver::solve: unable to get current device." << std::endl;
     return boost::shared_ptr< cuNDArray<T> >();
   }
   
   if( device_ != old_device && cudaSetDevice(device_) != cudaSuccess) {
-    std::cerr << "cuCG:solve: unable to set device " << device_ << std::endl;
+    std::cerr << "cuCGSolver:solve: unable to set device " << device_ << std::endl;
     return boost::shared_ptr< cuNDArray<T> >();
   }
   
@@ -49,7 +106,7 @@ cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
   cuNDArray<T> *rho = new cuNDArray<T>();
   
   if (!rho->create(rhs->get_dimensions().get())) {
-    std::cerr << "cuCG::solve : Unable to allocate temp storage (rho)" << std::endl;
+    std::cerr << "cuCGSolver::solve : Unable to allocate temp storage (rho)" << std::endl;
     cudaSetDevice(old_device);
     return boost::shared_ptr< cuNDArray<T> >(rho);
   }
@@ -60,12 +117,12 @@ cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
   cuNDArray<T> r;
   if (precond_.get()) {
     if (!r.create(rhs->get_dimensions().get())) {
-      std::cerr << "cuCG::solve : Unable to allocate storage (r)" << std::endl;
+      std::cerr << "cuCGSolver::solve : Unable to allocate storage (r)" << std::endl;
       cudaSetDevice(old_device);
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
     if (precond_->apply(rhs,&r) < 0) {
-      std::cerr << "cuCG::solve : Unable to apply preconditioning to rhs" << std::endl;
+      std::cerr << "cuCGSolver::solve : Unable to apply preconditioning to rhs" << std::endl;
       cudaSetDevice(old_device);
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
@@ -80,7 +137,7 @@ cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
 
   cuNDArray<T> p;
   if (!p.create(rhs->get_dimensions().get())) {
-    std::cerr << "cuCG::solve : Unable to allocate temp storage (p)" << std::endl;
+    std::cerr << "cuCGSolver::solve : Unable to allocate temp storage (p)" << std::endl;
     cudaSetDevice(old_device);
     return boost::shared_ptr< cuNDArray<T> >(rho);
   }
@@ -88,7 +145,7 @@ cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
   cuNDArray<T> p_precond;
   if (precond_.get()) { // We only need this additional storage if we are using a preconditioner
     if (!p_precond.create(rhs->get_dimensions().get())) {
-      std::cerr << "cuCG::solve : Unable to allocate temp storage (p_precond)" << std::endl;
+      std::cerr << "cuCGSolver::solve : Unable to allocate temp storage (p_precond)" << std::endl;
       cudaSetDevice(old_device);
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
@@ -96,14 +153,14 @@ cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
 
   cuNDArray<T> q;
   if (!q.create(rhs->get_dimensions().get())) {
-    std::cerr << "cuCG::solve : Unable to allocate temp storage (q)" << std::endl;
+    std::cerr << "cuCGSolver::solve : Unable to allocate temp storage (q)" << std::endl;
     cudaSetDevice(old_device);
     return boost::shared_ptr< cuNDArray<T> >(rho);
   }
 
   cuNDArray<T> q2;
   if (!q2.create(rhs->get_dimensions().get())) {
-    std::cerr << "cuCG::solve : Unable to allocate temp storage (q2)" << std::endl;
+    std::cerr << "cuCGSolver::solve : Unable to allocate temp storage (q2)" << std::endl;
     cudaSetDevice(old_device);
     return boost::shared_ptr< cuNDArray<T> >(rho);
   }
@@ -125,12 +182,12 @@ cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
     } else {        
       T beta = mul<REAL>(rr/rr_1, get_one<T>());
       if (!cuNDA_scal<T>(beta,&p)) {
-	std::cerr << "cuCG::solve : failed to scale p" << std::endl;
+	std::cerr << "cuCGSolver::solve : failed to scale p" << std::endl;
 	cudaSetDevice(old_device);
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
       if (!cuNDA_axpy<T>(get_one<T>(),&r,&p)) {
-	std::cerr << "cuCG::solve : failed to add r to scaled p" << std::endl;
+	std::cerr << "cuCGSolver::solve : failed to add r to scaled p" << std::endl;
 	cudaSetDevice(old_device);
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
@@ -143,7 +200,7 @@ cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
     cuNDArray<T>* cur_p = &p;
     if (precond_.get()) {
       if (precond_->apply(&p,&p_precond) < 0) {
-	std::cerr << "cuCG::solve : failed to apply preconditioner to p" << std::endl;
+	std::cerr << "cuCGSolver::solve : failed to apply preconditioner to p" << std::endl;
 	cudaSetDevice(old_device);
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
@@ -153,13 +210,13 @@ cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
     for (unsigned int i = 0; i < operators_->size(); i++) {
 
       if ((*operators_)[i]->mult_MH_M(cur_p, &q2, false) < 0) {
-	std::cerr << "cuCG::solve : failed to apply operator number " << i << std::endl;
+	std::cerr << "cuCGSolver::solve : failed to apply operator number " << i << std::endl;
 	cudaSetDevice(old_device);
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
 
       if (!cuNDA_axpy<T>(mul<REAL>((*operators_)[i]->get_weight(), get_one<T>()), &q2, &q)) {
-	std::cerr << "cuCG::solve : failed to add result from operator number " << i << std::endl;
+	std::cerr << "cuCGSolver::solve : failed to add result from operator number " << i << std::endl;
 	cudaSetDevice(old_device);
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
@@ -167,7 +224,7 @@ cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
     
     if (precond_.get()) {
       if (precond_->apply(&q,&q) < 0) {
-	std::cerr << "cuCG::solve : failed to apply preconditioner to q" << std::endl;
+	std::cerr << "cuCGSolver::solve : failed to apply preconditioner to q" << std::endl;
 	cudaSetDevice(old_device);
 	return boost::shared_ptr< cuNDArray<T> >(rho);
       }
@@ -177,14 +234,14 @@ cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
     
     // Update solution
     if (!cuNDA_axpy<T>(alpha,&p,rho)) {
-      std::cerr << "cuCG::solve : failed to update solution" << std::endl;
+      std::cerr << "cuCGSolver::solve : failed to update solution" << std::endl;
       cudaSetDevice(old_device);
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
     
     // Update residual
     if (!cuNDA_axpy<T>(mul<REAL>(-get_one<REAL>(),alpha),&q,&r)) {
-      std::cerr << "cuCG::solve : failed to update residual" << std::endl;
+      std::cerr << "cuCGSolver::solve : failed to update residual" << std::endl;
       cudaSetDevice(old_device);
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
@@ -210,7 +267,7 @@ cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
 
   if (precond_.get()) {
     if (precond_->apply(rho,rho) < 0) {
-      std::cerr << "cuCG::solve : failed to apply preconditioner to rho" << std::endl;
+      std::cerr << "cuCGSolver::solve : failed to apply preconditioner to rho" << std::endl;
       cudaSetDevice(old_device);
       return boost::shared_ptr< cuNDArray<T> >(rho);
     }
@@ -221,19 +278,19 @@ cuCG<REAL,T>::solve(cuNDArray<T> *_rhs)
     delete rhs;
   
   if( device_ != old_device && cudaSetDevice(old_device) != cudaSuccess) {
-    std::cerr << "cuCG::solve: unable to restore device no" << std::endl;
+    std::cerr << "cuCGSolver::solve: unable to restore device no" << std::endl;
     return boost::shared_ptr< cuNDArray<T> >(rho);
   }
 
   return boost::shared_ptr< cuNDArray<T> >(rho);
 }
-
+*/
 //
 // Instantiation
 //
 
-template class EXPORTGPUCG cuCG<float, float>;
-template class EXPORTGPUCG cuCG<float, float_complext::Type>;
+template class EXPORTSOLVERS cuCGSolver<float, float>;
+template class EXPORTSOLVERS cuCGSolver<float, float_complext::Type>;
 
-template class EXPORTGPUCG cuCG<double, double>;
-template class EXPORTGPUCG cuCG<double, double_complext::Type>;
+template class EXPORTSOLVERS cuCGSolver<double, double>;
+template class EXPORTSOLVERS cuCGSolver<double, double_complext::Type>;

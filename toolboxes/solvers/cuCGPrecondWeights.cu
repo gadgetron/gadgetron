@@ -98,14 +98,14 @@ cuCGPrecondWeights<T>::apply(cuNDArray<T>* in, cuNDArray<T>* out)
 // Instantiation
 //
 
-//template class EXPORTGPUCG cuCGPreconditioner<float>;
-//template class EXPORTGPUCG cuCGPreconditioner<float_complext::Type>;
+//template class EXPORTSOLVERS cuCGPreconditioner<float>;
+//template class EXPORTSOLVERS cuCGPreconditioner<float_complext::Type>;
 
-//template class EXPORTGPUCG cuCGPreconditioner<double>;
-//template class EXPORTGPUCG cuCGPreconditioner<double_complext::Type>;
+//template class EXPORTSOLVERS cuCGPreconditioner<double>;
+//template class EXPORTSOLVERS cuCGPreconditioner<double_complext::Type>;
 
-template class EXPORTGPUCG cuCGPrecondWeights<float>;
-template class EXPORTGPUCG cuCGPrecondWeights<float_complext::Type>;
+template class EXPORTSOLVERS cuCGPrecondWeights<float>;
+template class EXPORTSOLVERS cuCGPrecondWeights<float_complext::Type>;
 
-template class EXPORTGPUCG cuCGPrecondWeights<double>;
-template class EXPORTGPUCG cuCGPrecondWeights<double_complext::Type>;
+template class EXPORTSOLVERS cuCGPrecondWeights<double>;
+template class EXPORTSOLVERS cuCGPrecondWeights<double_complext::Type>;

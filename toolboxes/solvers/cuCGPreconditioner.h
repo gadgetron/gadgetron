@@ -2,29 +2,25 @@
 #define CUCGPRECONDITIONER_H
 #pragma once
 
+#include "cgPreconditioner.h"
 #include "cuNDArray.h"
 
-template <class T> class cuCGPreconditioner
+template <class T> class cuCGPreconditioner : public cgPreconditioner< cuNDArray<T> >
 {
  public:
-  cuCGPreconditioner( int device = -1 )
+  cuCGPreconditioner( int device = -1 ) : cgPreconditioner< cuNDArray<T> >()
   {
     if( device<0 ){
       if( cudaGetDevice( &device_ ) != cudaSuccess ){
 	std::cerr << "cuCGPreconditioner: unable to get current device." << std::endl ;
 	device_ = 0;
-      }      
+      }
     }
     else
-      device_ = device;    
+      device_ = device;
   }
-  
-  virtual ~cuCGPreconditioner() {}
-  virtual int apply(cuNDArray<T>* in, cuNDArray<T>* out) = 0;
 
-  void* operator new (size_t bytes) { return ::new char[bytes]; }
-  void operator delete (void *ptr) { delete [] static_cast <char *> (ptr); } 
-  void * operator new(size_t s, void * p) { return p; }
+  virtual ~cuCGPreconditioner() {}
 
 protected:
   virtual int set_device()
