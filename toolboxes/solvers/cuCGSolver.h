@@ -14,8 +14,8 @@ template <class REAL, class T> class EXPORTSOLVERS cuCGSolver : public cgSolver<
 
   virtual ~cuCGSolver() {}
 
-  virtual bool pre_solve(cuNDArray<T>*);
-  virtual bool post_solve(cuNDArray<T>*);
+  virtual bool pre_solve(cuNDArray<T>**);
+  virtual bool post_solve(cuNDArray<T>**);
   virtual void solver_error( std::string err );
 
   virtual T solver_dot( cuNDArray<T>*, cuNDArray<T>* );
@@ -28,4 +28,5 @@ template <class REAL, class T> class EXPORTSOLVERS cuCGSolver : public cgSolver<
 protected:
   int device_;
   int old_device_;
+  cuNDArray<T> *new_rhs;
 };

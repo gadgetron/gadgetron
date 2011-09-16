@@ -7,7 +7,7 @@
 #include "cgOperatorKtSenseRHSBuffer.h"
 #include "cuCGImageOperator.h"
 #include "cuCGPrecondWeights.h"
-#include "cuCG.h"
+#include "cuCGSolver.h"
 #include "cuNDFFT.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
@@ -199,13 +199,13 @@ int main(int argc, char** argv)
   ___precon_weights.reset();
 
   // Setup conjugate gradient solver
-  cuCG<_real, _complext> cg;
+  cuCGSolver<_real, _complext> cg;
   cg.add_matrix_operator( E );  // encoding matrix
   cg.add_matrix_operator( R );  // regularization matrix
   cg.set_preconditioner ( D );  // preconditioning matrix
   cg.set_iterations( num_iterations );
   cg.set_limit( 1e-6 );
-  cg.set_output_mode( cuCG<_real, _complext>::OUTPUT_VERBOSE );
+  cg.set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_VERBOSE );
       
   // Reconstruct all SENSE frames iteratively
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;

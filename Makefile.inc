@@ -34,7 +34,7 @@ NVCC=$(CUDAHOME)/bin/nvcc
 GENCODE_SM10=-gencode=arch=compute_10,code=\"sm_10,compute_10\"
 GENCODE_SM20=-gencode=arch=compute_20,code=\"sm_20,compute_20\"
 
-GENCODE_SM=$(GENCODE_SM20)
+GENCODE_SM=$(GENCODE_SM10) $(GENCODE_SM20)
 ifeq ($(KERNEL), Darwin)
 GENCODE_SM=$(GENCODE_SM10)
 endif
