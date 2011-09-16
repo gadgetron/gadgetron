@@ -2,6 +2,9 @@
 
 #include "vector_td.h"
 
+// This code needs to compile outside nvcc
+#include "host_defines.h"
+
 //
 // Operators are defined as component wise operations.
 //

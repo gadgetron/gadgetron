@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -36,7 +36,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{473510A7-189D-4BA7-A463-4F18C231493C}</ProjectGuid>
-    <RootNamespace>imageDenoising_vs2010</RootNamespace>
+    <RootNamespace>toolboxes_gpupmri</RootNamespace>
     <ProjectName>toolboxes_gpupmri</ProjectName>
     <CudaToolkitCustomDir>$(CUDA_PATH)</CudaToolkitCustomDir>
   </PropertyGroup>

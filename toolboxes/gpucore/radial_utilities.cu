@@ -132,7 +132,7 @@ compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL 
   
   // Run through all projections to find the closests neighbors
   
-  for( unsigned int i=0; i<gridDim.x; i++ ){
+  for( unsigned int i=0; i<gridDim.y; i++ ){ // iterate over num_profiles 
     
     if( i == blockIdx.x )
       continue;
@@ -212,17 +212,17 @@ compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL 
 template<class REAL> __global__ void
 compute_radial_dcw_golden_ratio_2d_kernel( REAL alpha, REAL one_over_radial_oversampling_factor, REAL angular_offset, REAL *dcw )
 {
-  const unsigned int index = blockIdx.x*blockDim.x + threadIdx.x;
-
-  const REAL samples_per_profile = (REAL) blockDim.x;
-  const REAL num_profiles = (REAL)gridDim.x;
+  const REAL samples_per_profile = (REAL) (blockDim.x<<1);
+  const REAL sample_idx_on_profile = (REAL)(blockIdx.x*blockDim.x+threadIdx.x);
+  const REAL num_profiles = (REAL)gridDim.y;
+  const REAL profile = (REAL)blockIdx.y;
   const REAL bias = samples_per_profile * get_half<REAL>();
-  const REAL sample_idx_on_profile = (REAL)threadIdx.x;
-  const REAL profile = (REAL)blockIdx.x;
+
+  const unsigned int index = blockIdx.y*samples_per_profile + sample_idx_on_profile;
   
   REAL weight;
   
-  if( threadIdx.x == (blockDim.x>>1) ){
+  if( sample_idx_on_profile == blockDim.x ){
 
     // Special case - center of profile/k-space
     const REAL radius = (alpha*one_over_radial_oversampling_factor)*get_half<REAL>();
@@ -285,6 +285,11 @@ compute_radial_dcw_golden_ratio_2d( unsigned int samples_per_profile, unsigned i
   cudaDeviceProp deviceProp; cudaGetDeviceProperties( &deviceProp, device );
   const unsigned int warp_size = deviceProp.warpSize;
   
+  if( samples_per_profile%2 ){
+    cout << endl << "compute_radial_dcw_golden_ratio_2d: samples/profile must be even." << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+
   if( samples_per_profile%warp_size ){
     cout << endl << "compute_radial_dcw_golden_ratio_2d: samples/profile number a multiple of the device's warp size." << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
@@ -301,9 +306,9 @@ compute_radial_dcw_golden_ratio_2d( unsigned int samples_per_profile, unsigned i
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
-  // Set dimensions of grid/blocks.
-  dim3 dimBlock( samples_per_profile );
-  dim3 dimGrid( num_profiles );
+  // Set dimensions of grid/blocks. (division by two due to resource limitations)
+  dim3 dimBlock( samples_per_profile>>1 );
+  dim3 dimGrid( 2, num_profiles );
   
   // Invoke kernel
   compute_radial_dcw_golden_ratio_2d_kernel<REAL><<< dimGrid, dimBlock >>> ( alpha, one_over_radial_oversampling_factor, (REAL)profile_offset, dcw->get_data_ptr() );

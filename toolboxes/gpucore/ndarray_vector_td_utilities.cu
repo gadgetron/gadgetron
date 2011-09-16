@@ -2253,7 +2253,7 @@ _axpy( double a, cuNDArray<double>* x, cuNDArray<double>* y, int device )
 template<class T> bool
 cuNDA_axpy( T a, cuNDArray<T>* x, cuNDArray<T>* y, cuNDA_device compute_device )
 {
-  if (x->get_number_of_elements() != y->get_number_of_elements()) {
+  if ( !x || !y || x->get_number_of_elements() != y->get_number_of_elements()) {
     cout << "cuNDA_axpy: axpy array dimensions mismatch" << std::endl;
     return false;
   }

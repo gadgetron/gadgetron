@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -37,7 +37,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{15D26770-7BC2-4EF5-93E3-08D25A39F012}</ProjectGuid>
-    <RootNamespace>imageDenoising_vs2010</RootNamespace>
+    <RootNamespace>toolboxes_solvers</RootNamespace>
     <ProjectName>toolboxes_solvers</ProjectName>
     <CudaToolkitCustomDir>$(CUDA_PATH)</CudaToolkitCustomDir>
   </PropertyGroup>

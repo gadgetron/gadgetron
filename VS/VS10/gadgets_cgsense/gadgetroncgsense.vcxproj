@@ -19,40 +19,28 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\gadgets\cgsense\GPUCGGadget.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="..\..\..\gadgets\cgsense\GPUCGGadget.cpp" />
     <ClCompile Include="..\..\..\gadgets\cgsense\GPUCGGoldenRadial.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\..\gadgets\cgsense\GPUCGGoldenSpiral.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\gadgets\cgsense\GPUCGGadget.h" />
     <ClInclude Include="..\..\..\gadgets\cgsense\GPUCGGoldenRadial.h" />
-    <ClInclude Include="..\..\..\gadgets\cgsense\GPUCGGoldenSpiral.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\gadgets\cgsense\radial_single.xml">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FACB5456-AA5B-441B-A3B4-C44349913C9A}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>hostutils</RootNamespace>
+    <RootNamespace>gadgets_cgsense</RootNamespace>
     <ProjectName>gadgets_cgsense</ProjectName>
+    <CudaToolkitCustomDir>$(CUDA_PATH)</CudaToolkitCustomDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -79,6 +67,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 4.0.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -129,7 +118,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(TargetDir)gadgetroncgsense.dll</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\lib;$(CUDA_LIB_PATH);$(CULA_LIB_PATH_32);$(ACEDIR)/lib;$(TINYXML_LIBDIR);$(FFTWDIR);..\..\..\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;cula.lib;gpucore.lib;gpunfft.lib;gpupmri.lib;ACEd.lib;tinyxmlSTL.lib;libfftw3f-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;cula.lib;gpucore.lib;gpunfft.lib;gpupmri.lib;solvers.lib;ACEd.lib;tinyxmlSTL.lib;libfftw3f-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>move /y $(TargetDir)gadgets_cgsense.dll $(TargetDir)gadgetroncgsense.dll
@@ -137,6 +126,12 @@ xcopy /y /i $(TargetDir)gadgetroncgsense.dll ..\..\..\bin\
 move /y $(TargetDir)gadgets_cgsense.lib $(TargetDir)gadgetroncgsense.lib
 xcopy /y /i $(TargetDir)gadgetroncgsense.lib ..\..\..\lib\</Command>
     </PostBuildEvent>
+    <CudaCompile>
+      <CodeGeneration>compute_10,sm_10;compute_20,sm_20</CodeGeneration>
+      <Include>$(BOOST_ROOT_DIR);..\..\..\inc</Include>
+      <Runtime>MTd</Runtime>
+      <Defines>WIN32;_WINDOWS;_DEBUG;_USRDLL;__BUILD_GADGETRON_SOLVERS__</Defines>
+    </CudaCompile>
     <PreBuildEvent>
       <Command>xcopy /y /i ..\..\..\gadgets\cgsense\*.h ..\..\..\inc\
 xcopy /y /i ..\..\..\gadgets\cgsense\*.xml ..\..\..\config\</Command>
@@ -156,7 +151,7 @@ xcopy /y /i ..\..\..\gadgets\cgsense\*.xml ..\..\..\config\</Command>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <OutputFile>$(TargetDir)gadgetroncgsense.dll</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\lib;$(CUDA_LIB_PATH);$(CULA_LIB_PATH_64);$(ACEDIR)/lib;$(TINYXML_LIBDIR);$(FFTWDIR);..\..\..\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;cula.lib;gpucore.lib;gpunfft.lib;gpupmri.lib;ACEd.lib;tinyxmlSTL.lib;libfftw3f-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;cula.lib;gpucore.lib;gpunfft.lib;gpupmri.lib;solvers.lib;ACEd.lib;tinyxmlSTL.lib;libfftw3f-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>move /y $(TargetDir)gadgets_cgsense.dll $(TargetDir)gadgetroncgsense.dll
@@ -164,6 +159,13 @@ xcopy /y /i $(TargetDir)gadgetroncgsense.dll ..\..\..\bin\
 move /y $(TargetDir)gadgets_cgsense.lib $(TargetDir)gadgetroncgsense.lib
 xcopy /y /i $(TargetDir)gadgetroncgsense.lib ..\..\..\lib\</Command>
     </PostBuildEvent>
+    <CudaCompile>
+      <CodeGeneration>compute_10,sm_10;compute_20,sm_20</CodeGeneration>
+      <Include>$(BOOST_ROOT_DIR);$(ACEDIR);$(TINYXML_INCDIR);..\..\..\inc</Include>
+      <Defines>WIN32;_WINDOWS;_DEBUG;_USRDLL;__BUILD_GADGETRON_SOLVERS__</Defines>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <Runtime>MTd</Runtime>
+    </CudaCompile>
     <PreBuildEvent>
       <Command>xcopy /y /i ..\..\..\gadgets\cgsense\*.h ..\..\..\inc\
 xcopy /y /i ..\..\..\gadgets\cgsense\*.xml ..\..\..\config\</Command>
@@ -187,7 +189,7 @@ xcopy /y /i ..\..\..\gadgets\cgsense\*.xml ..\..\..\config\</Command>
       <OptimizeReferences>true</OptimizeReferences>
       <OutputFile>$(TargetDir)gadgetroncgsense.dll</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\lib;$(CUDA_LIB_PATH);$(CULA_LIB_PATH_32);$(CULA_LIB_PATH_64);$(ACEDIR)/lib;$(TINYXML_LIBDIR);$(FFTWDIR);..\..\..\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;cula.lib;gpucore.lib;gpunfft.lib;gpupmri.lib;ACE.lib;tinyxmlSTL.lib;libfftw3f-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;cula.lib;gpucore.lib;gpunfft.lib;gpupmri.lib;solvers.lib;ACE.lib;tinyxmlSTL.lib;libfftw3f-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>move /y $(TargetDir)gadgets_cgsense.dll $(TargetDir)gadgetroncgsense.dll
@@ -195,6 +197,12 @@ xcopy /y /i $(TargetDir)gadgetroncgsense.dll ..\..\..\bin\
 move /y $(TargetDir)gadgets_cgsense.lib $(TargetDir)gadgetroncgsense.lib
 xcopy /y /i $(TargetDir)gadgetroncgsense.lib ..\..\..\lib\</Command>
     </PostBuildEvent>
+    <CudaCompile>
+      <CodeGeneration>compute_10,sm_10;compute_20,sm_20</CodeGeneration>
+      <Runtime>MT</Runtime>
+      <Include>$(BOOST_ROOT_DIR);..\..\..\inc</Include>
+      <Defines>_USE_MATH_DEFINES;__BUILD_GADGETRON_SOLVERS__</Defines>
+    </CudaCompile>
     <PreBuildEvent>
       <Command>xcopy /y /i ..\..\..\gadgets\cgsense\*.h ..\..\..\inc\
 xcopy /y /i ..\..\..\gadgets\cgsense\*.xml ..\..\..\config\</Command>
@@ -218,7 +226,7 @@ xcopy /y /i ..\..\..\gadgets\cgsense\*.xml ..\..\..\config\</Command>
       <OptimizeReferences>true</OptimizeReferences>
       <OutputFile>$(TargetDir)gadgetroncgsense.dll</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\lib;$(CUDA_LIB_PATH);$(CULA_LIB_PATH_64);$(CULA_LIB_PATH_64);$(ACEDIR)/lib;$(TINYXML_LIBDIR);$(FFTWDIR);..\..\..\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;cula.lib;gpucore.lib;gpunfft.lib;gpupmri.lib;ACE.lib;tinyxmlSTL.lib;libfftw3f-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;cula.lib;gpucore.lib;gpunfft.lib;gpupmri.lib;solvers.lib;ACE.lib;tinyxmlSTL.lib;libfftw3f-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>move /y $(TargetDir)gadgets_cgsense.dll $(TargetDir)gadgetroncgsense.dll
@@ -226,6 +234,13 @@ xcopy /y /i $(TargetDir)gadgetroncgsense.dll ..\..\..\bin\
 move /y $(TargetDir)gadgets_cgsense.lib $(TargetDir)gadgetroncgsense.lib
 xcopy /y /i $(TargetDir)gadgetroncgsense.lib ..\..\..\lib\</Command>
     </PostBuildEvent>
+    <CudaCompile>
+      <TargetMachinePlatform>64</TargetMachinePlatform>
+      <Runtime>MT</Runtime>
+      <CodeGeneration>compute_10,sm_10;compute_20,sm_20</CodeGeneration>
+      <Include>$(BOOST_ROOT_DIR);..\..\..\inc</Include>
+      <Defines>WIN32;_WINDOWS;NDEBUG;__BUILD_GADGETRON_SOLVERS__</Defines>
+    </CudaCompile>
     <PreBuildEvent>
       <Command>xcopy /y /i ..\..\..\gadgets\cgsense\*.h ..\..\..\inc\
 xcopy /y /i ..\..\..\gadgets\cgsense\*.xml ..\..\..\config\</Command>
@@ -233,5 +248,6 @@ xcopy /y /i ..\..\..\gadgets\cgsense\*.xml ..\..\..\config\</Command>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\CUDA 4.0.targets" />
   </ImportGroup>
 </Project>
