@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -19,21 +19,26 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\toolboxes\gpucg\cuCG.h" />
-    <ClInclude Include="..\..\..\toolboxes\gpucg\cuCGIdentityOperator.h" />
-    <ClInclude Include="..\..\..\toolboxes\gpucg\cuCGImageOperator.h" />
-    <ClInclude Include="..\..\..\toolboxes\gpucg\cuCGMatrixOperator.h" />
-    <ClInclude Include="..\..\..\toolboxes\gpucg\cuCGPreconditioner.h" />
-    <ClInclude Include="..\..\..\toolboxes\gpucg\cuCGPrecondWeights.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\cgMatrixOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\cgPreconditioner.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\cgSolver.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\cuCGIdentityOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\cuCGImageOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\cuCGMatrixOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\cuCGPreconditioner.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\cuCGPrecondWeights.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\cuCGSolver.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\solver.h" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="..\..\..\toolboxes\gpucg\cuCG.cu" />
-    <CudaCompile Include="..\..\..\toolboxes\gpucg\cuCGPrecondWeights.cu" />
+    <CudaCompile Include="..\..\..\toolboxes\solvers\cuCGImageOperator.cu" />
+    <CudaCompile Include="..\..\..\toolboxes\solvers\cuCGPrecondWeights.cu" />
+    <CudaCompile Include="..\..\..\toolboxes\solvers\cuCGSolver.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{4858588E-4B4B-4C7E-B3DD-3E63CAE4CED4}</ProjectGuid>
-    <RootNamespace>imageDenoising_vs2010</RootNamespace>
-    <ProjectName>toolboxes_gpucg</ProjectName>
+    <ProjectGuid>{15D26770-7BC2-4EF5-93E3-08D25A39F012}</ProjectGuid>
+    <RootNamespace>toolboxes_solvers</RootNamespace>
+    <ProjectName>toolboxes_solvers</ProjectName>
     <CudaToolkitCustomDir>$(CUDA_PATH)</CudaToolkitCustomDir>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -113,22 +118,22 @@
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;gpucore.lib;cutil32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(CUDA_LIB_PATH);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\Win32</AdditionalLibraryDirectories>
-      <OutputFile>$(TargetDir)gpucg.dll</OutputFile>
+      <OutputFile>$(TargetDir)solvers.dll</OutputFile>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /i $(TargetDir)gpucg.dll ..\..\..\bin\
-move /y $(TargetDir)toolboxes_gpucg.lib $(TargetDir)gpucg.lib
-xcopy /y /i $(TargetDir)gpucg.lib ..\..\..\lib\</Command>
+      <Command>xcopy /y /i $(TargetDir)solvers.dll ..\..\..\bin\
+move /y $(TargetDir)toolboxes_solvers.lib $(TargetDir)solvers.lib
+xcopy /y /i $(TargetDir)solvers.lib ..\..\..\lib\</Command>
     </PostBuildEvent>
     <CudaCompile>
       <CodeGeneration>compute_10,sm_10;compute_20,sm_20</CodeGeneration>
       <Include>$(BOOST_ROOT_DIR);..\..\..\inc</Include>
       <Runtime>MTd</Runtime>
-      <Defines>WIN32;_WINDOWS;_DEBUG;_USRDLL;__BUILD_GADGETRON_GPUCG__</Defines>
+      <Defines>WIN32;_WINDOWS;_DEBUG;_USRDLL;__BUILD_GADGETRON_SOLVERS__</Defines>
     </CudaCompile>
     <PreBuildEvent>
-      <Command>xcopy /y /i ..\..\..\toolboxes\gpucg\*.h ..\..\..\inc\</Command>
+      <Command>xcopy /y /i ..\..\..\toolboxes\solvers\*.h ..\..\..\inc\</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -144,23 +149,23 @@ xcopy /y /i $(TargetDir)gpucg.lib ..\..\..\lib\</Command>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;gpucore.lib;cutil64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(CUDA_LIB_PATH);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\x64</AdditionalLibraryDirectories>
-      <OutputFile>$(TargetDir)gpucg.dll</OutputFile>
+      <OutputFile>$(TargetDir)solvers.dll</OutputFile>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /i $(TargetDir)gpucg.dll ..\..\..\bin\
-move /y $(TargetDir)toolboxes_gpucg.lib $(TargetDir)gpucg.lib
-xcopy /y /i $(TargetDir)gpucg.lib ..\..\..\lib\</Command>
+      <Command>xcopy /y /i $(TargetDir)solvers.dll ..\..\..\bin\
+move /y $(TargetDir)toolboxes_solvers.lib $(TargetDir)solvers.lib
+xcopy /y /i $(TargetDir)solvers.lib ..\..\..\lib\</Command>
     </PostBuildEvent>
     <CudaCompile>
       <CodeGeneration>compute_10,sm_10;compute_20,sm_20</CodeGeneration>
       <Include>$(BOOST_ROOT_DIR);..\..\..\inc</Include>
-      <Defines>WIN32;_WINDOWS;_DEBUG;_USRDLL;__BUILD_GADGETRON_GPUCG__</Defines>
+      <Defines>WIN32;_WINDOWS;_DEBUG;_USRDLL;__BUILD_GADGETRON_SOLVERS__</Defines>
       <TargetMachinePlatform>64</TargetMachinePlatform>
       <Runtime>MTd</Runtime>
     </CudaCompile>
     <PreBuildEvent>
-      <Command>xcopy /y /i ..\..\..\toolboxes\gpucg\*.h ..\..\..\inc\</Command>
+      <Command>xcopy /y /i ..\..\..\toolboxes\solvers\*.h ..\..\..\inc\</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -180,22 +185,22 @@ xcopy /y /i $(TargetDir)gpucg.lib ..\..\..\lib\</Command>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;gpucore.lib;cutil32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(CUDA_LIB_PATH);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\Win32</AdditionalLibraryDirectories>
-      <OutputFile>$(TargetDir)gpucg.dll</OutputFile>
+      <OutputFile>$(TargetDir)solvers.dll</OutputFile>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /i $(TargetDir)gpucg.dll ..\..\..\bin\
-move /y $(TargetDir)toolboxes_gpucg.lib $(TargetDir)gpucg.lib
-xcopy /y /i $(TargetDir)gpucg.lib ..\..\..\lib\</Command>
+      <Command>xcopy /y /i $(TargetDir)solvers.dll ..\..\..\bin\
+move /y $(TargetDir)toolboxes_solvers.lib $(TargetDir)solvers.lib
+xcopy /y /i $(TargetDir)solvers.lib ..\..\..\lib\</Command>
     </PostBuildEvent>
     <CudaCompile>
       <CodeGeneration>compute_10,sm_10;compute_20,sm_20</CodeGeneration>
       <Runtime>MT</Runtime>
       <Include>$(BOOST_ROOT_DIR);..\..\..\inc</Include>
-      <Defines>_USE_MATH_DEFINES;__BUILD_GADGETRON_GPUCG__</Defines>
+      <Defines>_USE_MATH_DEFINES;__BUILD_GADGETRON_SOLVERS__</Defines>
     </CudaCompile>
     <PreBuildEvent>
-      <Command>xcopy /y /i ..\..\..\toolboxes\gpucg\*.h ..\..\..\inc\</Command>
+      <Command>xcopy /y /i ..\..\..\toolboxes\solvers\*.h ..\..\..\inc\</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -215,22 +220,22 @@ xcopy /y /i $(TargetDir)gpucg.lib ..\..\..\lib\</Command>
       <SubSystem>Console</SubSystem>
       <AdditionalDependencies>cuda.lib;cudart.lib;cublas.lib;cufft.lib;gpucore.lib;cutil64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(CUDA_LIB_PATH);..\..\..\lib;C:\ProgramData\NVIDIA Corporation\NVIDIA GPU Computing SDK 4.0\C\common\lib\x64</AdditionalLibraryDirectories>
-      <OutputFile>$(TargetDir)gpucg.dll</OutputFile>
+      <OutputFile>$(TargetDir)solvers.dll</OutputFile>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /y /i $(TargetDir)gpucg.dll ..\..\..\bin\
-move /y $(TargetDir)toolboxes_gpucg.lib $(TargetDir)gpucg.lib
-xcopy /y /i $(TargetDir)gpucg.lib ..\..\..\lib\</Command>
+      <Command>xcopy /y /i $(TargetDir)solvers.dll ..\..\..\bin\
+move /y $(TargetDir)toolboxes_solvers.lib $(TargetDir)solvers.lib
+xcopy /y /i $(TargetDir)solvers.lib ..\..\..\lib\</Command>
     </PostBuildEvent>
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
       <Runtime>MT</Runtime>
       <CodeGeneration>compute_10,sm_10;compute_20,sm_20</CodeGeneration>
       <Include>$(BOOST_ROOT_DIR);..\..\..\inc</Include>
-      <Defines>WIN32;_WINDOWS;NDEBUG;__BUILD_GADGETRON_GPUCG__</Defines>
+      <Defines>WIN32;_WINDOWS;NDEBUG;__BUILD_GADGETRON_SOLVERS__</Defines>
     </CudaCompile>
     <PreBuildEvent>
-      <Command>xcopy /y /i ..\..\..\toolboxes\gpucg\*.h ..\..\..\inc\</Command>
+      <Command>xcopy /y /i ..\..\..\toolboxes\solvers\*.h ..\..\..\inc\</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

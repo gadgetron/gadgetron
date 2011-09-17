@@ -9,7 +9,7 @@
 #include "radial_utilities.h"
 #include "cgOperatorNonCartesianSense.h"
 #include "cuCGIdentityOperator.h"
-#include "cuCG.h"
+#include "cuCGSolver.h"
 #include "b1_map.h"
 
 #include "UIconstants.h"
@@ -85,7 +85,7 @@ radialSenseAppMainWindow::radialSenseAppMainWindow(QWidget *parent) : QMainWindo
   cg.set_preconditioner ( D );  // preconditioning matrix
   cg.set_iterations( get_num_iterations() );
   cg.set_limit( 1e-6 );
-  cg.set_output_mode( cuCG<float, float_complext::Type>::OUTPUT_SILENT );
+  cg.set_output_mode( cuCGSolver<float, float_complext::Type>::OUTPUT_SILENT );
 }
 
 /*

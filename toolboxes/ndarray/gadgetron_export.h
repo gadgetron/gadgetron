@@ -11,13 +11,13 @@
 #endif
 
 #if defined (WIN32)
-#ifdef __BUILD_GADGETRON_GPUCG__
-#define EXPORTGPUCG __declspec(dllexport)
+#ifdef __BUILD_GADGETRON_SOLVERS__
+#define EXPORTSOLVERS __declspec(dllexport)
 #else
-#define EXPORTGPUCG __declspec(dllimport)
+#define EXPORTSOLVERS __declspec(dllimport)
 #endif
 #else
-#define EXPORTGPUCG
+#define EXPORTSOLVERS
 #endif
 
 #if defined (WIN32)

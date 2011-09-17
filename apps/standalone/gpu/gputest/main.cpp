@@ -6,7 +6,7 @@
 #include "cgOperatorCartesianSense.h"
 #include "cgOperatorNonCartesianSense.h"
 #include "cuCGPrecondWeights.h"
-#include "cuCG.h"
+#include "cuCGSolver.h"
 #include "GPUTimer.h"
 #include "vector_td.h"
 
@@ -90,12 +90,12 @@ int main(int argc, char** argv)
   cuCGPrecondWeights<float_complext::Type> *Dm = new cuCGPrecondWeights<float_complext::Type>();
   Dm->set_weights(boost::shared_ptr< cuNDArray<float_complext::Type> >(D_dev));
 
-  cuCG<float,float_complext::Type> cg;
+  cuCGSolver<float,float_complext::Type> cg;
   cg.add_matrix_operator( boost::shared_ptr< cuCGMatrixOperator<float,float_complext::Type> >(E) );
   cg.set_preconditioner( boost::shared_ptr< cuCGPreconditioner<float_complext::Type> >(Dm) );
   cg.set_iterations(10);
   cg.set_limit(1e-5);
-  cg.set_output_mode(cuCG<float, float_complext::Type>::OUTPUT_VERBOSE);
+  cg.set_output_mode(cuCGSolver<float, float_complext::Type>::OUTPUT_VERBOSE);
 
   boost::shared_ptr< cuNDArray<float_complext::Type> > cgresult;
   {
@@ -131,12 +131,12 @@ int main(int argc, char** argv)
   boost::shared_ptr< hoNDArray<float_complext::Type> > tmp2_out_nc = tmp2_out_nc_dev.to_host();
   write_nd_array<float_complext::Type>(tmp2_out_nc.get(),"tmp2_out_nc.cplx");
 
-  cuCG<float, float_complext::Type> cg_nc;
+  cuCGSolver<float, float_complext::Type> cg_nc;
   cg_nc.add_matrix_operator( boost::shared_ptr< cuCGMatrixOperator<float,float_complext::Type> >(E_noncart) );
   cg_nc.set_preconditioner(  boost::shared_ptr< cuCGPreconditioner<float_complext::Type> >(Dm) );
   cg_nc.set_iterations(5);
   cg_nc.set_limit(1e-5);
-  cg_nc.set_output_mode(cuCG<float, float_complext::Type>::OUTPUT_VERBOSE);
+  cg_nc.set_output_mode(cuCGSolver<float, float_complext::Type>::OUTPUT_VERBOSE);
 
   boost::shared_ptr< cuNDArray<float_complext::Type> > cgresult_nc;
   {

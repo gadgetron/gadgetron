@@ -57,8 +57,8 @@ int cuCGImageOperator<REAL,T>::mult_MH_M( cuNDArray<T>* in, cuNDArray<T>* out, b
 
 // Instantiation
 
-template class cuCGImageOperator<float,float>;
-template class cuCGImageOperator<float,float_complext::Type>;
+template class EXPORTSOLVERS cuCGImageOperator<float,float>;
+template class EXPORTSOLVERS cuCGImageOperator<float,float_complext::Type>;
 
-template class cuCGImageOperator<double,double>;
-template class cuCGImageOperator<double,double_complext::Type>;
+template class EXPORTSOLVERS cuCGImageOperator<double,double>;
+template class EXPORTSOLVERS cuCGImageOperator<double,double_complext::Type>;

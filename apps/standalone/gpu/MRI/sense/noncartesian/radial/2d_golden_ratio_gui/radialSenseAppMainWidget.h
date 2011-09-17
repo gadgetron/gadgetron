@@ -12,7 +12,7 @@
 #include "hoNDArray.h"
 #include "cuNDArray.h"
 #include "NFFT.h"
-#include "cuCG.h"
+#include "cuCGSolver.h"
 #include "cgOperatorNonCartesianSense.h"
 #include "cgOperatorSenseRHSBuffer.h"
 #include "cuCGImageOperator.h"
@@ -106,7 +106,7 @@ private:
   NFFT_plan<float,2> plan;
 
   // Define conjugate gradient solver
-  cuCG<float, float_complext::Type> cg;
+  cuCGSolver<float, float_complext::Type> cg;
 
   // Define non-Cartesian Sense solver
   boost::shared_ptr< cgOperatorNonCartesianSense<float,2> > E;

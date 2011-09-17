@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -50,7 +50,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FBB6E1FA-DC75-4F3F-8662-52A3C6159527}</ProjectGuid>
-    <RootNamespace>imageDenoising_vs2010</RootNamespace>
+    <RootNamespace>toolboxes_gpunfft</RootNamespace>
     <ProjectName>toolboxes_gpunfft</ProjectName>
     <CudaToolkitCustomDir>$(CUDA_PATH)</CudaToolkitCustomDir>
   </PropertyGroup>

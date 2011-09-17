@@ -2,23 +2,15 @@
 #define CUCGMATRIXOPERATOR_H
 #pragma once
 
+#include "cgMatrixOperator.h"
 #include "cuNDArray.h"
-#include "vector_td_utilities.h"
 
-template <class REAL, class T> class cuCGMatrixOperator
+template <class REAL, class T> class cuCGMatrixOperator : public cgMatrixOperator< REAL, cuNDArray<T> >
 {
  public:
 
-  cuCGMatrixOperator( int device = -1 ) 
-  { 
-    weight_ = get_one<REAL>(); 
-    set_device(device);
-  }
-  
+  cuCGMatrixOperator( int device = -1 ) : cgMatrixOperator< REAL, cuNDArray<T> >() { set_device(device); }  
   virtual ~cuCGMatrixOperator() {}
-
-  inline void set_weight( REAL weight ){ weight_ = weight; }
-  inline REAL get_weight(){ return weight_; }
 
   virtual void set_device( int device )
   {
@@ -31,14 +23,6 @@ template <class REAL, class T> class cuCGMatrixOperator
     else
       device_ = device;
   }
-
-  virtual int mult_M(cuNDArray<T>* in, cuNDArray<T>* out, bool accumulate = false) = 0;
-  virtual int mult_MH(cuNDArray<T>* in, cuNDArray<T>* out, bool accumulate = false) = 0;
-  virtual int mult_MH_M(cuNDArray<T>* in, cuNDArray<T>* out, bool accumulate = false) = 0;
-  
-  void* operator new (size_t bytes) { return ::new char[bytes]; }
-  void operator delete (void *ptr) { delete [] static_cast <char *> (ptr); } 
-  void * operator new(size_t s, void * p) { return p; }
 
 protected:
   virtual int set_device()
@@ -67,7 +51,6 @@ protected:
   int device_;
 
 private:
-  REAL weight_;
   int old_device_;
 
 };

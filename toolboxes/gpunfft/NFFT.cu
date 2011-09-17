@@ -51,23 +51,23 @@ using namespace thrust;
 
 #define NFFT_MAX_COILS_2D_COMPUTE_1x	                                          8
 #define NFFT_MAX_COILS_2D_COMPUTE_2x	                                         16
-#define NFFT_THREADS_PER_2D_KERNEL_1x						256
-#define NFFT_THREADS_PER_2D_KERNEL_2x						256
+#define NFFT_THREADS_PER_2D_KERNEL_1x						192
+#define NFFT_THREADS_PER_2D_KERNEL_2x						192
 
 #define NFFT_H_MAX_COILS_2D_COMPUTE_1x	                                          8
 #define NFFT_H_MAX_COILS_2D_COMPUTE_2x	                                         16
-#define NFFT_H_THREADS_PER_2D_KERNEL_1x						256
-#define NFFT_H_THREADS_PER_2D_KERNEL_2x						256
+#define NFFT_H_THREADS_PER_2D_KERNEL_1x						192
+#define NFFT_H_THREADS_PER_2D_KERNEL_2x						192
 
 #define NFFT_MAX_COILS_3D_COMPUTE_1x	                                          8
 #define NFFT_MAX_COILS_3D_COMPUTE_2x	                                         16
-#define NFFT_THREADS_PER_3D_KERNEL_1x						256
-#define NFFT_THREADS_PER_3D_KERNEL_2x						256
+#define NFFT_THREADS_PER_3D_KERNEL_1x						192
+#define NFFT_THREADS_PER_3D_KERNEL_2x						192
 
 #define NFFT_H_MAX_COILS_3D_COMPUTE_1x	                                          8
 #define NFFT_H_MAX_COILS_3D_COMPUTE_2x	                                         16
-#define NFFT_H_THREADS_PER_3D_KERNEL_1x						256
-#define NFFT_H_THREADS_PER_3D_KERNEL_2x						256
+#define NFFT_H_THREADS_PER_3D_KERNEL_1x						192
+#define NFFT_H_THREADS_PER_3D_KERNEL_2x						192
 
 #define NFFT_MAX_COILS_4D_COMPUTE_1x	                                          8
 #define NFFT_MAX_COILS_4D_COMPUTE_2x	                                         16

@@ -12,7 +12,6 @@
 #define GADGETEXPORT
 #endif
 
-
 //In header file add this macro
 #define GADGETRON_LOADABLE_DECLARE(COMPONENT)                   \
   void *operator new (size_t bytes);                            \

@@ -4,7 +4,7 @@
 #include <boost/smart_ptr.hpp>
 #include "gadgetron_export.h"
 
-template<class T> class EXPORTGPUCG cuCGPrecondWeights : public cuCGPreconditioner<T>
+template<class T> class EXPORTSOLVERS cuCGPrecondWeights : public cuCGPreconditioner<T>
 {
  public:
 

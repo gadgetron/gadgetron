@@ -4,9 +4,13 @@ include $(GADGETRONHOME)/Makefile.inc
 DLLNAME=gpucg
 
 LIBHEADERS=\
-	cuCG.h \
+	solver.h \
+	cgSolver.h \
+	cuCGSolver.h \
+	cgPreconditioner.h \
 	cuCGPreconditioner.h \
 	cuCGPrecondWeights.h \
+	cgMatrixOperator.h \
 	cuCGMatrixOperator.h \
 	cuCGIdentityOperator.h \
 	cuCGImageOperator.h
@@ -14,7 +18,7 @@ LIBHEADERS=\
 LIBSOURCES=
 
 CUDASOURCES=\
-	cuCG.cu \
+	cuCGSolver.cu \
 	cuCGPrecondWeights.cu \
 	cuCGImageOperator.cu
 
