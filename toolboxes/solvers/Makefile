@@ -10,17 +10,17 @@ LIBHEADERS=\
 	cgPreconditioner.h \
 	cuCGPreconditioner.h \
 	cuCGPrecondWeights.h \
-	cgMatrixOperator.h \
-	cuCGMatrixOperator.h \
-	cuCGIdentityOperator.h \
-	cuCGImageOperator.h
+	matrixOperator.h \
+	cuMatrixOperator_macros.h \
+	identityOperator.h \
+	cuIdentityOperator.h \
+	imageOperator.h \
+	cuImageOperator.h
 
 LIBSOURCES=
 
 CUDASOURCES=\
-	cuCGSolver.cu \
 	cuCGPrecondWeights.cu \
-	cuCGImageOperator.cu
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)

@@ -1,5 +1,6 @@
 #include "ndarray_vector_td_utilities.h"
 #include "real_utilities.h"
+#include "real_utilities_device.h"
 #include "check_CUDA.h"
 
 #include <cublas_v2.h>

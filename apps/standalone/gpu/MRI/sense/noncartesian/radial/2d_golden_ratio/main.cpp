@@ -3,9 +3,9 @@
 #include "hoNDArray_fileio.h"
 #include "ndarray_vector_td_utilities.h"
 #include "radial_utilities.h"
-#include "cgOperatorNonCartesianSense.h"
-#include "cgOperatorSenseRHSBuffer.h"
-#include "cuCGImageOperator.h"
+#include "cuNonCartesianSenseOperator.h"
+#include "cuSenseRHSBuffer.h"
+#include "cuImageOperator.h"
 #include "cuCGPrecondWeights.h"
 #include "cuCGSolver.h"
 #include "b1_map.h"
@@ -162,14 +162,15 @@ int main(int argc, char** argv)
   // Estimate CSM
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( image );
 
-  // Define regularization image operator
-  boost::shared_ptr< cgOperatorSenseRHSBuffer<_real,2> > rhs_buffer( new cgOperatorSenseRHSBuffer<_real,2>() );
+  // Define regularization image operator 
+  boost::shared_ptr< cuSenseRHSBuffer<_real,2> > rhs_buffer( new cuSenseRHSBuffer<_real,2>() );
   rhs_buffer->set_csm(csm);
   image_dims = uintd_to_vector<2>(matrix_size);
-  boost::shared_ptr< cuCGImageOperator<_real,_complext> > R( new cuCGImageOperator<_real,_complext>() ); 
+  cuNDArray<_complext> *reg_image = new cuNDArray<_complext>(); reg_image->create(&image_dims);
+  rhs_buffer->mult_MH( image, reg_image );
+  boost::shared_ptr< cuImageOperator<_real,_complext> > R( new cuImageOperator<_real,_complext>() ); 
   R->set_weight( kappa );
-  R->set_encoding_operator( rhs_buffer );
-  R->compute( image, &image_dims );
+  R->compute( reg_image );
  
   // Define preconditioning weights
   boost::shared_ptr< cuNDArray<_real> > _precon_weights = cuNDA_ss<_real,_complext>( csm.get(), 2 );
@@ -183,6 +184,7 @@ int main(int argc, char** argv)
   D->set_weights( precon_weights );
   precon_weights.reset();
 
+  delete reg_image;
   delete image;
   delete timer;
   
@@ -194,7 +196,7 @@ int main(int argc, char** argv)
   //
 
   // Define encoding matrix for non-Cartesian SENSE
-  boost::shared_ptr< cgOperatorNonCartesianSense<_real,2> > E( new cgOperatorNonCartesianSense<_real,2>() );
+  boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );
   
   E->setup( matrix_size, matrix_size_os, kernel_width );
 

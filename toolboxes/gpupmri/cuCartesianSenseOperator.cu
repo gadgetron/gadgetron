@@ -1,10 +1,10 @@
-#include "cgOperatorCartesianSense.h"
+#include "cuCartesianSenseOperator.h"
 #include "cuNDFFT.h"
 #include "ndarray_vector_td_utilities.h"
 
 template<class REAL> __global__ void 
-sample_array_kernel( typename complext<REAL>::Type* in, typename complext<REAL>::Type* out, 
-		     unsigned int* idx, 
+sample_array_kernel( typename complext<REAL>::Type *in, typename complext<REAL>::Type *out, 
+		     unsigned int *idx, 
 		     unsigned long image_elements,
 		     unsigned long int samples,
 		     unsigned int coils )
@@ -19,8 +19,8 @@ sample_array_kernel( typename complext<REAL>::Type* in, typename complext<REAL>:
 }
 
 template<class REAL> __global__ void 
-insert_samples_kernel( typename complext<REAL>::Type* in, typename complext<REAL>::Type* out, 
-				       unsigned int* idx, 
+insert_samples_kernel( typename complext<REAL>::Type *in, typename complext<REAL>::Type *out, 
+				       unsigned int *idx, 
 				       unsigned long image_elements,
 				       unsigned long int samples,
 				       unsigned int coils )
@@ -35,18 +35,18 @@ insert_samples_kernel( typename complext<REAL>::Type* in, typename complext<REAL
 }
 
 template<class REAL, unsigned int D> int 
-cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
+cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate )
 {
 
   int ret = this->set_device();
   if( ret<0 ){
-    std::cerr << "cgOperatorCartesianSense::mult_M: unable to set device" << std::endl;
+    std::cerr << "cuCartesianSenseOperator::mult_M: unable to set device" << std::endl;
     return -1;
   }
   
   if (!(in->dimensions_equal(&this->dimensionsI_)) || !(out->dimensions_equal(&this->dimensionsK_)) ) {
 
-    std::cerr << "cgOperatorCartesianSense::mult_M dimensions mismatch" << std::endl;
+    std::cerr << "cuCartesianSenseOperator::mult_M dimensions mismatch" << std::endl;
 
     return -1;
   }
@@ -56,12 +56,12 @@ cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_c
   full_dimensions.push_back(this->ncoils_);
 
   if (!tmp.create(&full_dimensions)) {
-    std::cerr << "cgOperatorCartesianSense::mult_M unable to allocate temp array" << std::endl;
+    std::cerr << "cuCartesianSenseOperator::mult_M unable to allocate temp array" << std::endl;
     return -1;    
   }
 
   if (mult_csm(in,&tmp) < 0) {
-    std::cerr << "cgOperatorCartesianSense::mult_M : Unable to multiply with coil sensitivities" << std::endl;
+    std::cerr << "cuCartesianSenseOperator::mult_M : Unable to multiply with coil sensitivities" << std::endl;
     return -1;
   }
 
@@ -82,14 +82,14 @@ cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_c
 						      in->get_number_of_elements(), idx_->get_number_of_elements(), this->ncoils_);
   cudaError_t err = cudaGetLastError();
   if( err != cudaSuccess ){
-    std::cerr << "cgOperatorCartesianSense::mult_M : Unable to sample data: " << 
+    std::cerr << "cuCartesianSenseOperator::mult_M : Unable to sample data: " << 
       cudaGetErrorString(err) << std::endl;
     return -1;
   }
 
   ret = this->restore_device();
   if( ret<0 ){
-    std::cerr << "cgOperatorCartesianSense::mult_M: unable to restore device" << std::endl;
+    std::cerr << "cuCartesianSenseOperator::mult_M: unable to restore device" << std::endl;
     return -1;
   }
   
@@ -97,16 +97,16 @@ cgOperatorCartesianSense<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_c
 }
 
 template<class REAL, unsigned int D> int 
-cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate)
+cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate)
 {
   int ret = this->set_device();
   if( ret<0 ){
-    std::cerr << "cgOperatorCartesianSense::mult_MH: unable to set device" << std::endl;
+    std::cerr << "cuCartesianSenseOperator::mult_MH: unable to set device" << std::endl;
     return -1;
   }
 
   if (!(out->dimensions_equal(&this->dimensionsI_)) || !(in->dimensions_equal(&this->dimensionsK_)) ) {
-    std::cerr << "cgOperatorCartesianSense::mult_MH dimensions mismatch" << std::endl;
+    std::cerr << "cuCartesianSenseOperator::mult_MH dimensions mismatch" << std::endl;
     return -1;
   }
 
@@ -115,7 +115,7 @@ cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_c
 
   cuNDArray<_complext> tmp;
   if (!tmp.create(&tmp_dimensions)) {
-    std::cerr << "cgOperatorCartesianSense::mult_MH: Unable to create temp storage" << std::endl;
+    std::cerr << "cuCartesianSenseOperator::mult_MH: Unable to create temp storage" << std::endl;
     return -1;
   }
 
@@ -129,7 +129,7 @@ cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_c
   
   cudaError_t err = cudaGetLastError();
   if( err != cudaSuccess ){
-    std::cerr << "cgOperatorCartesianSense::mult_EM : Unable to insert samples into array: " << 
+    std::cerr << "cuCartesianSenseOperator::mult_EM : Unable to insert samples into array: " << 
       cudaGetErrorString(err) << std::endl;
     return -1;
   }
@@ -146,14 +146,14 @@ cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_c
     cuNDA_clear<_complext>(out);
   
   if (mult_csm_conj_sum(&tmp,out) < 0) {
-    std::cerr << "cgOperatorCartesianSense::mult_MH: Unable to multiply with conjugate of sensitivity maps and sum" << std::endl;
+    std::cerr << "cuCartesianSenseOperator::mult_MH: Unable to multiply with conjugate of sensitivity maps and sum" << std::endl;
     return -1;
  
   }
 
   ret = this->restore_device();
   if( ret<0 ){
-    std::cerr << "cgOperatorCartesianSense::mult_MH: unable to restore device" << std::endl;
+    std::cerr << "cuCartesianSenseOperator::mult_MH: unable to restore device" << std::endl;
     return -1;
   }
   
@@ -164,4 +164,11 @@ cgOperatorCartesianSense<REAL,D>::mult_MH(cuNDArray<_complext>* in, cuNDArray<_c
 // Instantiations
 //
 
-template class EXPORTGPUPMRI cgOperatorCartesianSense<float,2>;
+template class EXPORTGPUPMRI cuCartesianSenseOperator<float,2>;
+template class EXPORTGPUPMRI cuCartesianSenseOperator<float,3>;
+template class EXPORTGPUPMRI cuCartesianSenseOperator<float,4>;
+
+template class EXPORTGPUPMRI cuCartesianSenseOperator<double,2>;
+template class EXPORTGPUPMRI cuCartesianSenseOperator<double,3>;
+template class EXPORTGPUPMRI cuCartesianSenseOperator<double,4>;
+

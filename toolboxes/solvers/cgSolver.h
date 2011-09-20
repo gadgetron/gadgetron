@@ -1,11 +1,9 @@
 #pragma once
 
 #include "solver.h"
-#include "cgMatrixOperator.h"
+#include "matrixOperator.h"
 #include "cgPreconditioner.h"
-
-//#include "real_utilities.h" // This produces an internal cuda header compile error. Why?!?
-template<class T> __inline__ __host__ __device__ T get_max(); // Really we should include "real_utilities.h"
+#include "real_utilities.h"
 
 #include <vector>
 #include <string>
@@ -18,13 +16,13 @@ public:
   cgSolver( int output_mode = solver<ARRAY_TYPE>::OUTPUT_SILENT ) : solver<ARRAY_TYPE>( output_mode ) { 
     iterations_ = 10;
     limit_ = (REAL)1e-3;
-    operators_ = boost::shared_ptr< std::vector< boost::shared_ptr< cgMatrixOperator<REAL, ARRAY_TYPE> > > >
-      (new std::vector< boost::shared_ptr< cgMatrixOperator<REAL, ARRAY_TYPE> > >);
+    operators_ = boost::shared_ptr< std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE> > > >
+      (new std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE> > >);
   }
 
   virtual ~cgSolver() {}
 
-  virtual int add_matrix_operator( boost::shared_ptr< cgMatrixOperator<REAL, ARRAY_TYPE> > op ) {
+  virtual int add_matrix_operator( boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE> > op ) {
     operators_->push_back(op);
     return 0;
   }
@@ -227,7 +225,7 @@ public:
   }
 
 protected:
-  boost::shared_ptr< std::vector< boost::shared_ptr< cgMatrixOperator<REAL, ARRAY_TYPE> > > > operators_;
+  boost::shared_ptr< std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE> > > > operators_;
   boost::shared_ptr< cgPreconditioner<ARRAY_TYPE> > precond_;
   unsigned int iterations_;
   REAL limit_;
