@@ -34,7 +34,12 @@ cuCGPrecondWeights<T>::set_weights( boost::shared_ptr< cuNDArray<T> > w )
 template <class T> int 
 cuCGPrecondWeights<T>::apply(cuNDArray<T>* in, cuNDArray<T>* out)
 {
-  if (in->get_number_of_elements() != out->get_number_of_elements()) {
+	if( !weights_.get() ){
+    std::cerr << "cuCGPreconWeight::apply: weights not set" << std::endl;
+    return -1;
+  }
+ 
+  if ( !in || in->get_number_of_elements() != out->get_number_of_elements()) {
     std::cerr << "cuCGPreconWeight::apply: input and output dimensions mismatch" << std::endl;
     return -1;
   }
@@ -97,12 +102,6 @@ cuCGPrecondWeights<T>::apply(cuNDArray<T>* in, cuNDArray<T>* out)
 //
 // Instantiation
 //
-
-//template class EXPORTSOLVERS cuCGPreconditioner<float>;
-//template class EXPORTSOLVERS cuCGPreconditioner<float_complext::Type>;
-
-//template class EXPORTSOLVERS cuCGPreconditioner<double>;
-//template class EXPORTSOLVERS cuCGPreconditioner<double_complext::Type>;
 
 template class EXPORTSOLVERS cuCGPrecondWeights<float>;
 template class EXPORTSOLVERS cuCGPrecondWeights<float_complext::Type>;

@@ -17,7 +17,7 @@ template <class ARRAY_TYPE> class solver
     }
   }
 
-  virtual boost::shared_ptr<ARRAY_TYPE> solve( ARRAY_TYPE *rhs ) = 0;
+  virtual boost::shared_ptr<ARRAY_TYPE> solve( ARRAY_TYPE* ) = 0;
 
   void* operator new (size_t bytes) { return ::new char[bytes]; }
   void operator delete (void *ptr) { delete [] static_cast <char *> (ptr); } 

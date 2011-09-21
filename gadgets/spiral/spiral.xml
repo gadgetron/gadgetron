@@ -24,15 +24,7 @@
 <gadget name="FFT" dll="gadgetroncore" class="FFTGadget" />
 -->
 
-<gadget name="Grappa" dll="gadgetrongrappa" class="GrappaGadget"> 
-<!--
-<property name="uncombined_channels" value="15" />
--->
-</gadget>
-
-<gadget name="RemoveROOversampling" dll="gadgetrongrappa" class="RemoveROOversamplingGadget" />
-
-<gadget name="NoiseAdjust" dll="gadgetroncore" class="NoiseAdjustGadget" />
+<gadget name="SpiralRecon" dll="gadgetronspiral" class="SpiralGadget" />
 
 </stream>
 

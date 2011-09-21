@@ -3,8 +3,8 @@
 #include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
 #include "cuNDFFT.h"
-#include "cgOperatorCartesianSense.h"
-#include "cgOperatorNonCartesianSense.h"
+#include "cuCartesianSenseOperator.h"
+#include "cuNonCartesianSenseOperator.h"
 #include "cuCGPrecondWeights.h"
 #include "cuCGSolver.h"
 #include "GPUTimer.h"
@@ -41,14 +41,14 @@ int main(int argc, char** argv)
   cuNDArray<float_complext::Type> phantom_dev(phantom.get());
   cuNDArray<float_complext::Type> *csm_dev = new cuNDArray<float_complext::Type>(csm.get());
   cuNDArray<unsigned int> *idx_dev = new cuNDArray<unsigned int>(&idx);
-  cgOperatorCartesianSense<float,2> *E = new cgOperatorCartesianSense<float,2>();
+  cuCartesianSenseOperator<float,2> *E = new cuCartesianSenseOperator<float,2>();
   cuNDArray<floatd2::Type> co_dev(co.get()); co_dev.squeeze();
   cuNDArray<float> *w_dev = new cuNDArray<float>(w.get());
 
   E->set_csm(boost::shared_ptr< cuNDArray<float_complext::Type> >(csm_dev));
   E->set_sampling_indices( boost::shared_ptr< cuNDArray<unsigned int> >(idx_dev));
 
-  cgOperatorNonCartesianSense<float,2> *E_noncart = new cgOperatorNonCartesianSense<float,2>();
+  cuNonCartesianSenseOperator<float,2> *E_noncart = new cuNonCartesianSenseOperator<float,2>();
   uintd2 matrix_size(128,128);
   uintd2 matrix_size_os(256,256);
   float kernel_width = 5.5f;
@@ -91,7 +91,7 @@ int main(int argc, char** argv)
   Dm->set_weights(boost::shared_ptr< cuNDArray<float_complext::Type> >(D_dev));
 
   cuCGSolver<float,float_complext::Type> cg;
-  cg.add_matrix_operator( boost::shared_ptr< cuCGMatrixOperator<float,float_complext::Type> >(E) );
+  cg.add_matrix_operator( boost::shared_ptr< matrixOperator<float, cuNDArray<float_complext::Type> > >(E) );
   cg.set_preconditioner( boost::shared_ptr< cuCGPreconditioner<float_complext::Type> >(Dm) );
   cg.set_iterations(10);
   cg.set_limit(1e-5);
@@ -132,7 +132,7 @@ int main(int argc, char** argv)
   write_nd_array<float_complext::Type>(tmp2_out_nc.get(),"tmp2_out_nc.cplx");
 
   cuCGSolver<float, float_complext::Type> cg_nc;
-  cg_nc.add_matrix_operator( boost::shared_ptr< cuCGMatrixOperator<float,float_complext::Type> >(E_noncart) );
+  cg_nc.add_matrix_operator( boost::shared_ptr< matrixOperator< float, cuNDArray<float_complext::Type> > >(E_noncart) );
   cg_nc.set_preconditioner(  boost::shared_ptr< cuCGPreconditioner<float_complext::Type> >(Dm) );
   cg_nc.set_iterations(5);
   cg_nc.set_limit(1e-5);

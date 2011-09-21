@@ -1,42 +1,33 @@
 GADGETRONHOME=../..
 include $(GADGETRONHOME)/Makefile.inc
 
-LIBHEADERS=\
-	GPUTimer.h \
-	check_CUDA.h \
-	vector_td.h \
-	vector_td_operators.h \
-	vector_td_utilities.h \
-	ndarray_vector_td_utilities.h \
-	cuNDArray.h \
-	cuNDFFT.h \
-	radial_utilities.h \
-	real_utilities.h \
-	real_utilities_device.h
+CONFIG_FILES=\
+	spiral.xml
 
 LIBSOURCES=\
-	cuNDArray.cpp \
-	cuNDFFT.cpp
+	SpiralGadget.cpp \
+	vds.cpp \
 
-CUDASOURCES= \
-	ndarray_vector_td_utilities.cu \
-	cuNDArray_kernels.cu \
-	radial_utilities.cu
+CUDASOURCES=
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
-DLLNAME=gpucore
+
+DLLNAME=gadgetronspiral
+
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
-LIBLDFLAGS +=
+LIBLDFLAGS += -lfftw3 -lfftw3f -lgpucore -lACE -ltinyxml -lgpunfft
+
+CXXFLAGS += -I../core
 
 all: $(LIBFILE)
 
-$(LIBFILE): $(LIBOBJECTS) $(LIBCUDAOBJECTS) Makefile
+$(LIBFILE): $(LIBOBJECTS) $(LIBCUDAOBJECTS) $(CONFIG_FILES) Makefile
 	$(CXX) $(LIBLDFLAGS) $(LIBOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) -o $@
 	mkdir -p $(GADGETRONHOME)/lib
-	mkdir -p $(GADGETRONHOME)/inc
+	mkdir -p $(GADGETRONHOME)/config
 	cp $(LIBFILE) $(GADGETRONHOME)/lib/
-	cp $(LIBHEADERS) $(GADGETRONHOME)/inc/
+	cp $(CONFIG_FILES) $(GADGETRONHOME)/config/
 
 %.cpp.o: %.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
@@ -51,5 +42,3 @@ clean:
 	rm -rf $(LIBCUDAOBJECTS)
 	rm -rf *.cplx
 	rm -rf *.real
-
-
