@@ -135,6 +135,10 @@ template<class T> EXPORTGPUCORE
 bool cuNDA_scale( cuNDArray<T> *a, cuNDArray<T> *x,
 		  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
+template<class T> EXPORTGPUCORE
+bool cuNDA_scale_conj( cuNDArray<T> *a, cuNDArray<T> *x,
+		  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+
 // Scale (component-wise)
 template<class REAL> EXPORTGPUCORE
 bool cuNDA_scale( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *x,
