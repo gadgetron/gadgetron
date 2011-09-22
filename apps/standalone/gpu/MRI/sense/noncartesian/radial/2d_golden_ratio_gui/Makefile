@@ -38,7 +38,7 @@ APPLDFLAGS += -L$(CUDA_SDK_DIR)/C/common/lib/linux -lGLEW_x86_64 -lQtGui -lQtCor
 endif
 
 # gadgetron libs
-APPLDFLAGS += -lgpucore -lgpunfft -lgpucg -lgpuparallelmri
+APPLDFLAGS += -lgpucore -lgpunfft -lsolvers -lgpuparallelmri
 
 %.h: %.ui
 	uic $< -o ui_$@
