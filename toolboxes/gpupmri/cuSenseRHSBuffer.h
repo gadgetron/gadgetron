@@ -1,17 +1,17 @@
 #pragma once
 
 #include "gadgetron_export.h"
-#include "cgOperatorSense.h"
+#include "cuSenseOperator.h"
 
 template<class REAL, unsigned int D>
-class EXPORTGPUPMRI cgOperatorSenseRHSBuffer : public cgOperatorSense<REAL,D>
+class EXPORTGPUPMRI cuSenseRHSBuffer : public cuSenseOperator<REAL,D>
 {
  public:
   
-  typedef typename cgOperatorSense<REAL,D>::_complext _complext;
+  typedef typename cuSenseOperator<REAL,D>::_complext _complext;
   
-  cgOperatorSenseRHSBuffer( int device = -1 ) : cgOperatorSense<REAL,D>(device) {}
-  virtual ~cgOperatorSenseRHSBuffer() {}
+  cuSenseRHSBuffer( int device = -1 ) : cuSenseOperator<REAL,D>(device) {}
+  virtual ~cuSenseRHSBuffer() {}
 
   virtual int mult_M( cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate = false );
   virtual int mult_MH( cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate = false );

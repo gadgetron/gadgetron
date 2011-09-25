@@ -1,15 +1,15 @@
-#ifndef CGMATRIXOPERATOR_H
-#define CGMATRIXOPERATOR_H
+#ifndef MATRIXOPERATOR_H
+#define MATRIXOPERATOR_H
 #pragma once
 
 #include "vector_td_utilities.h"
 
-template <class REAL, class ARRAY_TYPE> class cgMatrixOperator
+template <class REAL, class ARRAY_TYPE> class matrixOperator
 {
  public:
 
-  cgMatrixOperator() { weight_ = get_one<REAL>(); }
-  virtual ~cgMatrixOperator() {}
+  matrixOperator() { weight_ = get_one<REAL>(); }
+  virtual ~matrixOperator() {}
 
   inline void set_weight( REAL weight ){ weight_ = weight; }
   inline REAL get_weight(){ return weight_; }
@@ -26,4 +26,4 @@ private:
   REAL weight_;
 };
 
-#endif //CGMATRIXOPERATOR_H
+#endif //MATRIXOPERATOR_H
