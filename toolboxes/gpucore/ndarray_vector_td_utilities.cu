@@ -2837,6 +2837,64 @@ bool cuNDA_zero_fill_border( typename reald<REAL,D>::Type radius, cuNDArray<T> *
   return true;
 }
 
+// Shrinkage
+//
+
+template<class REAL, class T> __global__ void 
+cuNDA_shrink_kernel( REAL gamma, T *in, T *out, unsigned int number_of_elements )
+{
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+ 
+  if( idx<number_of_elements ){
+    T in_val = in[idx]; 
+    REAL in_norm = norm<REAL>(in_val);
+    T _res = mul<REAL>( reciprocal<REAL>(in_norm), in_val );
+    REAL maximum = max( in_norm-gamma, get_zero<REAL>() );
+    T res = mul<REAL>( maximum, _res );
+
+    out[idx] = res;
+  }
+}
+
+template<class REAL, class T> EXPORTGPUCORE
+bool cuNDA_shrink( REAL gamma, cuNDArray<T> *in, cuNDArray<T> *out )
+{
+  // TODO: multi-device handling
+
+  if( !in || !out ){
+    cerr << endl << "cuNDA_shrink: 0x0 arrays not accepted" << endl;
+    return false;
+  }
+
+  if( in->get_number_of_elements() != out->get_number_of_elements() ){
+    cerr << endl << "cuNDA_shrink: i/o arrays must have an identical number of elements" << endl;
+    return false;
+  }
+  
+  // Get current Cuda device
+  int cur_device;
+  if( cudaGetDevice(&cur_device) != cudaSuccess ) {
+    cerr << endl << "cuNDA_shrink : unable to get device no";
+    return false;
+  }
+
+
+  // Setup block/grid dimensions
+  dim3 blockDim; dim3 gridDim;
+  if( !setup_grid( cur_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
+    cerr << endl << "cuNDA_shrink: block/grid configuration out of range" << endl;
+    return false;
+  }
+  
+  // Invoke kernel
+  cuNDA_shrink_kernel<REAL,T><<< gridDim, blockDim >>>( gamma, in->get_data_ptr(), out->get_data_ptr(), in->get_number_of_elements() );
+  
+  CHECK_FOR_CUDA_ERROR();
+  
+  return true;
+}
+
+
 //
 // Instantiation
 //
@@ -3155,6 +3213,9 @@ template EXPORTGPUCORE bool cuNDA_axpy<float_complext::Type>( float_complext::Ty
 template EXPORTGPUCORE bool cuNDA_scal<float>( float, cuNDArray<float>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_scal<float_complext::Type>( float_complext::Type, cuNDArray<float_complext::Type>*, cuNDA_device );
 
+template EXPORTGPUCORE bool cuNDA_shrink<float,float>( float gamma, cuNDArray<float> *in, cuNDArray<float> *out );
+template EXPORTGPUCORE bool cuNDA_shrink<float,float_complext::Type>( float gamma, cuNDArray<float_complext::Type> *in, cuNDArray<float_complext::Type> *out );
+
 // Instanciation -- double precision
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > 
@@ -3370,3 +3431,6 @@ template EXPORTGPUCORE bool cuNDA_axpy<double_complext::Type>( double_complext::
 
 template EXPORTGPUCORE bool cuNDA_scal<double>( double, cuNDArray<double>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_scal<double_complext::Type>( double_complext::Type, cuNDArray<double_complext::Type>*, cuNDA_device );
+
+template EXPORTGPUCORE bool cuNDA_shrink<double,double>( double gamma, cuNDArray<double> *in, cuNDArray<double> *out );
+template EXPORTGPUCORE bool cuNDA_shrink<double,double_complext::Type>( double gamma, cuNDArray<double_complext::Type> *in, cuNDArray<double_complext::Type> *out );

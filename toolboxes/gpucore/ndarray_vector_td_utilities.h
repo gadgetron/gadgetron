@@ -203,3 +203,7 @@ bool cuNDA_zero_fill_border( typename uintd<D>::Type matrix_size, cuNDArray<T> *
 template<class REAL, class T, unsigned int D> EXPORTGPUCORE
 bool cuNDA_zero_fill_border( typename reald<REAL,D>::Type radius, cuNDArray<T> *image,
 			     cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+
+// Shrinkage operators
+template<class REAL, class T> EXPORTGPUCORE
+bool cuNDA_shrink( REAL gamma, cuNDArray<T> *in, cuNDArray<T> *out );

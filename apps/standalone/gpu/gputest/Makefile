@@ -10,7 +10,7 @@ CUDASOURCES=
 APPOBJECTS=$(APPSOURCES:.cpp=.o)
 CUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 
-APPLDFLAGS += -lgpucore -lgpunfft -lgpucg -lgpuparallelmri
+APPLDFLAGS += -lgpucore -lgpunfft -lsolvers -lgpuparallelmri
 
 test: main.o $(LIBCUDAOBJECTS)
 	$(CXX) $(APPOBJECTS) $(LIBCUDAOBJECTS)  $(CUDALIBRARIES) $(APPLDFLAGS) -o $(EXECUTABLE) 
