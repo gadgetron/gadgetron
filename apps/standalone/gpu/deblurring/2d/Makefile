@@ -16,7 +16,6 @@ default: blur.o cg_deblur.o sb_deblur.o
 
 clean:
 	rm -rf *~
-	rm -rf *.cuo
 	rm -rf *.o
 	rm blur
 	rm cg_deblur
