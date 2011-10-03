@@ -17,8 +17,8 @@
 
 using namespace std;
 
-// Define desired precision
-typedef float _real; 
+// Define desired precision (note that decent deblurring of noisy images requires double precision)
+typedef double _real; 
 typedef complext<_real>::Type _complext;
 
 int main(int argc, char** argv)
@@ -74,7 +74,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,2> > Ry( new cuPartialDerivativeOperator<_real,_complext,2>(1) ); 
   Rx->set_weight( kappa );
   Ry->set_weight( kappa );
-     
+
   //
   // Setup conjugate gradients solver
   //
@@ -86,19 +86,21 @@ int main(int argc, char** argv)
 
   // Setup conjugate gradient solver
   cuCGSolver<_real, _complext> cg;
-  cg.add_matrix_operator( E );                  // encoding matrix
+  cg.add_matrix_operator( E );                   // encoding matrix
   if( kappa>0.0 ) cg.add_matrix_operator( Rx );  // regularization matrix
   if( kappa>0.0 ) cg.add_matrix_operator( Ry );  // regularization matrix
   cg.set_iterations( num_cg_iterations );
-  cg.set_limit( 1e-8 );
+  cg.set_limit( 1e-12 );
   cg.set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_VERBOSE );  
 
   // Setup split-Bregman solver
   cuSBSolver<_real, _complext> sb;
   sb.set_solver( boost::shared_ptr< cuCGSolver<_real, _complext> >(&cg) );
   sb.set_encoding_operator( E );
-  sb.add_regularization_operator( Rx );
-  sb.add_regularization_operator( Ry );
+  //sb.add_regularization_operator( Rx );
+  //sb.add_regularization_operator( Ry );
+  sb.add_regularization_group_operator( Rx ); 
+  sb.add_regularization_group_operator( Ry ); 
   sb.set_outer_iterations(num_outer_iterations);
   sb.set_inner_iterations(num_inner_iterations);
   sb.set_image_dimensions(data.get_dimensions());

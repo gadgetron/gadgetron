@@ -13,8 +13,8 @@
 
 using namespace std;
 
-// Define desired precision
-typedef float _real; 
+// Define desired precision (note that decent deblurring of noisy images requires double precision)
+typedef double _real; 
 typedef complext<_real>::Type _complext;
 
 int main( int argc, char** argv) 
@@ -41,7 +41,7 @@ int main( int argc, char** argv)
     return 1;
   }
   
-  // Load image from disk
+  // Load image from disk (single precision assumed)
   boost::shared_ptr< hoNDArray<float> > _host_image = 
     read_nd_array<float>((char*)parms.get_parameter('d')->get_string_value());
 
