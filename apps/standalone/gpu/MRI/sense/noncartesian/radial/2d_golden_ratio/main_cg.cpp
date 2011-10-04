@@ -191,9 +191,6 @@ int main(int argc, char** argv)
   delete image;
   delete timer;
   
-  //hoNDArray<_complext> out_csm = csm->to_host();
-  //write_nd_array<_complext>(out_csm,"csm.cplx");
-  
   // 
   // Setup radial SENSE reconstructions
   //

@@ -18,6 +18,8 @@ LIBHEADERS=\
 	cuIdentityOperator.h \
 	imageOperator.h \
 	cuImageOperator.h \
+	encodedImageOperator.h \
+	cuEncodedImageOperator.h \
 	partialDerivativeOperator.h \
 	cuPartialDerivativeOperator.h \
 	convolutionOperator.h \

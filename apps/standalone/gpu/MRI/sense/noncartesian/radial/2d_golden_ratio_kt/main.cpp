@@ -168,9 +168,6 @@ int main(int argc, char** argv)
   delete image;image = 0x0;
   delete timer;
 
-  //boost::shared_ptr< hoNDArray<_complext> > out_csm = csm->to_host();
-  //write_nd_array<_complext>(out_csm.get(),"csm.cplx");
-    
   // 
   // Setup radial kt-SENSE reconstructions
   //
@@ -262,7 +259,6 @@ int main(int argc, char** argv)
 
     delete reg_image; reg_image = 0x0;
     delete image; image = 0x0;
-    csm.reset();
     
     // Define preconditioning weights
     cuNDArray<_real> _precon_weights(*__precon_weights.get());
@@ -319,6 +315,7 @@ int main(int argc, char** argv)
   
   delete timer;
   delete image_os; image_os = 0x0;
+  csm.reset();
 
   // All done, write out the result
 
