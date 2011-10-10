@@ -3,8 +3,8 @@
 
 #include "ace/Log_Msg.h"
 
-#include "Gadget.h"
-#include "GadgetContainerMessage.h"
+//#include "Gadget.h"
+//#include "GadgetContainerMessage.h"
 
 //Return messages
 #define GADGET_FAIL -1

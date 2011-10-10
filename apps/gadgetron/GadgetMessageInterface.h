@@ -9,6 +9,7 @@
 #include "GadgetContainerMessage.h"
 #include "Gadgetron.h"
 #include "GadgetronExport.h"
+#include "Gadget.h"
 
 enum GadgetronMessageID {
   GADGET_MESSAGE_INT_ID_MIN       =   0,

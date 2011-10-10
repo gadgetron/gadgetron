@@ -185,7 +185,7 @@ int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
   if (mask == ACE_Event_Handler::WRITE_MASK)
     return 0;
 
-  GADGET_DEBUG1("Shutting down stream and closing up shop\n");
+  GADGET_DEBUG1("Shutting down stream and closing up shop...\n");
 
   mask = ACE_Event_Handler::ALL_EVENTS_MASK |
          ACE_Event_Handler::DONT_CALL;
@@ -193,6 +193,10 @@ int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
 
 
   this->stream_.close();
+
+  GADGET_DEBUG1("Stream is closed\n");
+
+
   delete this;
   return 0;
 }

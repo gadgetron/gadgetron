@@ -8,6 +8,9 @@ def set_GadgetReference(gadref):
     global myGadgetReference
     myGadgetReference = gadref
 
+def simple_config(conf):
+    print "Configuration received"
+    print str(conf)
 
 def simple_function(acq, data):
     global myVariable
@@ -15,7 +18,7 @@ def simple_function(acq, data):
 
     #print "Received line: " + str(acq.idx.line)
     #print "Received types: " + str(type(data))
-    #print "Hello"
+    print "Hello"
 
     myVariable = myVariable + 1
 

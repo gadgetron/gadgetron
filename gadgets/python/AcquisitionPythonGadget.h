@@ -28,6 +28,8 @@ public Gadget2<GadgetMessageAcquisition,hoNDArray< std::complex<float> > >
   boost::python::object python_module_;
   boost::python::object python_set_gadget_reference_function_;
   boost::python::object python_input_function_;
+  boost::python::object python_config_function_;
+
   GadgetReference gadget_reference_;
 };
 

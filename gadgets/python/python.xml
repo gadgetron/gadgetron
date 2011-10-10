@@ -24,6 +24,7 @@
 <property name="python_module" value="test_embedmod" />
 <property name="gadget_reference_function" value="set_GadgetReference" />
 <property name="input_function" value="simple_function" />
+<property name="config_function" value="simple_config" />
 </gadget>
 
 

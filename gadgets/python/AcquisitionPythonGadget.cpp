@@ -6,7 +6,8 @@
 
 AcquisitionPythonGadget::~AcquisitionPythonGadget()
 {
-  Py_Finalize();
+  //GADGET_DEBUG1("Running Py_Finalize()\n");
+  //Py_Finalize();
 }
 
 int AcquisitionPythonGadget::process_config(ACE_Message_Block* mb)
@@ -14,13 +15,15 @@ int AcquisitionPythonGadget::process_config(ACE_Message_Block* mb)
   Py_Initialize();
   _import_array();
 
-  boost::shared_ptr<std::string> pymod       = get_string_value("python_module");
-  boost::shared_ptr<std::string> pyreffunc   = get_string_value("gadget_reference_function");
-  boost::shared_ptr<std::string> pydatafunc  = get_string_value("input_function");
+  boost::shared_ptr<std::string> pymod         = get_string_value("python_module");
+  boost::shared_ptr<std::string> pyreffunc     = get_string_value("gadget_reference_function");
+  boost::shared_ptr<std::string> pydatafunc    = get_string_value("input_function");
+  boost::shared_ptr<std::string> pyconfigfunc  = get_string_value("config_function");
 
-  GADGET_DEBUG2("Python Module        : %s\n", pymod.get()->c_str());
-  GADGET_DEBUG2("Python Ref Function  : %s\n", pyreffunc.get()->c_str());
-  GADGET_DEBUG2("Python Data Function : %s\n", pydatafunc.get()->c_str());
+  GADGET_DEBUG2("Python Module          : %s\n", pymod.get()->c_str());
+  GADGET_DEBUG2("Python Ref Function    : %s\n", pyreffunc.get()->c_str());
+  GADGET_DEBUG2("Python Data Function   : %s\n", pydatafunc.get()->c_str());
+  GADGET_DEBUG2("Python Config Function : %s\n", pyconfigfunc.get()->c_str());
 
   try {
     
@@ -31,7 +34,12 @@ int AcquisitionPythonGadget::process_config(ACE_Message_Block* mb)
     python_set_gadget_reference_function_(gadget_reference_);
     
     python_input_function_ =  python_module_.attr(pydatafunc.get()->c_str());
+    
+    if (pyconfigfunc.get()->size() > 0) {
+      python_config_function_ =  python_module_.attr(pyconfigfunc.get()->c_str());
 
+      python_config_function_(boost::python::handle<>(PyString_FromString(mb->rd_ptr())));
+    }
   } catch(boost::python::error_already_set const &) { 
     GADGET_DEBUG1("Error loading python modules\n");
     PyErr_Print();

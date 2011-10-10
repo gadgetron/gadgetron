@@ -13,6 +13,7 @@
 
 #include "GadgetContainerMessage.h"
 #include "GadgetronExport.h"
+#include "Gadgetron.h"
 
 class GadgetStreamController;
 
@@ -35,6 +36,13 @@ public:
   {
     ACE_TRACE(( ACE_TEXT("Gadget::Gadget") ));
   }
+
+  virtual ~Gadget() 
+  {
+    GADGET_DEBUG2("Shutting down Gadget (%s)\n", this->module()->name());
+    //ACE_TRACE(( ACE_TEXT(), this->module()->name() ));
+  }
+  
 
   virtual int init(void)
   {
