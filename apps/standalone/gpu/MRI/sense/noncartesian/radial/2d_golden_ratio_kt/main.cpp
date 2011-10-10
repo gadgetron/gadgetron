@@ -252,9 +252,9 @@ int main(int argc, char** argv)
     // Compute regularization image
     training_dims.pop_back();
     boost::shared_ptr< cuKtSenseRHSBuffer<_real,2> > rhs_buffer( new cuKtSenseRHSBuffer<_real,2>() );
-    rhs_buffer->set_csm(csm);
+    //rhs_buffer->set_csm(csm); // TODO
     cuNDArray<_complext> *reg_image = new cuNDArray<_complext>(); reg_image->create(&training_dims);
-    rhs_buffer->mult_MH( image, reg_image );
+    //rhs_buffer->mult_MH( image, reg_image ); //TODO
     R->compute( reg_image );
 
     delete reg_image; reg_image = 0x0;

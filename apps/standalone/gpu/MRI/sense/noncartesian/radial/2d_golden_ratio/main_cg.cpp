@@ -167,10 +167,10 @@ int main(int argc, char** argv)
 
   // Define regularization image operator 
   boost::shared_ptr< cuSenseRHSBuffer<_real,2> > rhs_buffer( new cuSenseRHSBuffer<_real,2>() );
-  rhs_buffer->set_csm(csm);
+  //rhs_buffer->set_csm(csm);//TODO
   image_dims = uintd_to_vector<2>(matrix_size);
   cuNDArray<_complext> *reg_image = new cuNDArray<_complext>(); reg_image->create(&image_dims);
-  rhs_buffer->mult_MH( image, reg_image );
+  //rhs_buffer->mult_MH( image, reg_image ); // TODO
   boost::shared_ptr< cuImageOperator<_real,_complext> > R( new cuImageOperator<_real,_complext>() ); 
   R->set_weight( kappa );
   R->compute( reg_image );
