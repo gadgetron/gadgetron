@@ -7,8 +7,7 @@
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
 #include "radial_utilities.h"
-#include "cgOperatorNonCartesianSense.h"
-#include "cuCGIdentityOperator.h"
+#include "cuNonCartesianSenseOperator.h"
 #include "cuCGSolver.h"
 #include "b1_map.h"
 
@@ -68,16 +67,15 @@ radialSenseAppMainWindow::radialSenseAppMainWindow(QWidget *parent) : QMainWindo
   connect(signalMapper2, SIGNAL(mapped(int)), this, SLOT(projectionsPerFrameChanged(int)));
 
   // Allocate encoding operator for non-Cartesian Sense
-  E = boost::shared_ptr< cgOperatorNonCartesianSense<float,2> >( new cgOperatorNonCartesianSense<float,2>() );  
+  E = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );  
 
   // Allocate preconditioner
   D = boost::shared_ptr< cuCGPrecondWeights<float_complext::Type> >( new cuCGPrecondWeights<float_complext::Type>() );
 
   // Allocate regularization image operator and corresponding rhs operator
-  rhs_buffer = boost::shared_ptr< cgOperatorSenseRHSBuffer<float,2> >( new cgOperatorSenseRHSBuffer<float,2>() );
-  R = boost::shared_ptr< cuCGImageOperator<float,float_complext::Type> >( new cuCGImageOperator<float,float_complext::Type>() );  
+  rhs_buffer = boost::shared_ptr< cuSenseRHSBuffer<float,2> >( new cuSenseRHSBuffer<float,2>() );
+  R = boost::shared_ptr< cuImageOperator<float,float_complext::Type> >( new cuImageOperator<float,float_complext::Type>() );  
   R->set_weight( 1.0f );
-  R->set_encoding_operator( rhs_buffer );
 
   // Setup solver
   cg.add_matrix_operator( E );  // encoding matrix
@@ -259,9 +257,14 @@ void radialSenseAppMainWindow::replan()
   // Setup encoding and regularization operators
   image_dims = uintd_to_vector<2>(get_matrix_size());
   rhs_buffer->set_csm(csm);
-  E->setup( get_matrix_size(), get_matrix_size_os(), get_kernel_width() ); 
-  R->compute( image, &image_dims );
+  cuNDArray<float_complext::Type> *reg_image = new cuNDArray<float_complext::Type>(); 
+  reg_image->create( &image_dims );
+  rhs_buffer->mult_MH( image, reg_image );
+  R->compute( reg_image );
   delete image; image = 0x0; 
+  delete reg_image; reg_image = 0x0; 
+
+  E->setup( get_matrix_size(), get_matrix_size_os(), get_kernel_width() ); 
 
   // Define preconditioning weights
   update_preconditioning_weights();

@@ -103,12 +103,6 @@ cuCGPrecondWeights<T>::apply(cuNDArray<T>* in, cuNDArray<T>* out)
 // Instantiation
 //
 
-//template class EXPORTSOLVERS cuCGPreconditioner<float>;
-//template class EXPORTSOLVERS cuCGPreconditioner<float_complext::Type>;
-
-//template class EXPORTSOLVERS cuCGPreconditioner<double>;
-//template class EXPORTSOLVERS cuCGPreconditioner<double_complext::Type>;
-
 template class EXPORTSOLVERS cuCGPrecondWeights<float>;
 template class EXPORTSOLVERS cuCGPrecondWeights<float_complext::Type>;
 

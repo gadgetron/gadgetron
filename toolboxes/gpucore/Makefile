@@ -11,7 +11,8 @@ LIBHEADERS=\
 	cuNDArray.h \
 	cuNDFFT.h \
 	radial_utilities.h \
-	real_utilities.h
+	real_utilities.h \
+	real_utilities_device.h
 
 LIBSOURCES=\
 	cuNDArray.cpp \

@@ -3,9 +3,9 @@
 #include "hoNDArray_fileio.h"
 #include "ndarray_vector_td_utilities.h"
 #include "radial_utilities.h"
-#include "cgOperatorNonCartesianKtSense.h"
-#include "cgOperatorKtSenseRHSBuffer.h"
-#include "cuCGImageOperator.h"
+#include "cuNonCartesianKtSenseOperator.h"
+#include "cuKtSenseRHSBuffer.h"
+#include "cuImageOperator.h"
 #include "cuCGPrecondWeights.h"
 #include "cuCGSolver.h"
 #include "cuNDFFT.h"
@@ -176,7 +176,7 @@ int main(int argc, char** argv)
   //
 
   // Define encoding matrix operator for non-Cartesian kt-SENSE
-  boost::shared_ptr< cgOperatorNonCartesianSense<_real,2> > E( new cgOperatorNonCartesianKtSense<_real,2>() );
+  boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianKtSenseOperator<_real,2>() );
   E->setup( matrix_size, matrix_size_os, kernel_width );
 
   if( E->set_csm(csm) < 0 ) {
@@ -184,17 +184,12 @@ int main(int argc, char** argv)
   }
     
   // Define regularization image operator
-  boost::shared_ptr< cgOperatorKtSenseRHSBuffer<_real,2> > rhs_buffer( new cgOperatorKtSenseRHSBuffer<_real,2>() );
-  rhs_buffer->set_csm(csm);
-  image_dims = uintd_to_vector<2>(matrix_size);
-  boost::shared_ptr< cuCGImageOperator<_real,_complext> > R( new cuCGImageOperator<_real,_complext>() ); 
+  boost::shared_ptr< cuImageOperator<_real,_complext> > R( new cuImageOperator<_real,_complext>() ); 
   R->set_weight( kappa );
-  R->set_encoding_operator( rhs_buffer );
 
   // Define preconditioning operator
   boost::shared_ptr< cuCGPrecondWeights<_complext> > D( new cuCGPrecondWeights<_complext>() );
   boost::shared_ptr< cuNDArray<_real> > ___precon_weights = cuNDA_ss<_real,_complext>( csm.get(), 2 ); 
-  csm.reset();
   boost::shared_ptr< cuNDArray<_real> > __precon_weights = cuNDA_expand<_real>( ___precon_weights.get(), frames_per_reconstruction );
   ___precon_weights.reset();
 
@@ -259,8 +254,15 @@ int main(int argc, char** argv)
     
     // Compute regularization image
     training_dims.pop_back();
-    R->compute( image, &training_dims );
+    boost::shared_ptr< cuKtSenseRHSBuffer<_real,2> > rhs_buffer( new cuKtSenseRHSBuffer<_real,2>() );
+    rhs_buffer->set_csm(csm);
+    cuNDArray<_complext> *reg_image = new cuNDArray<_complext>(); reg_image->create(&training_dims);
+    rhs_buffer->mult_MH( image, reg_image );
+    R->compute( reg_image );
+
+    delete reg_image; reg_image = 0x0;
     delete image; image = 0x0;
+    csm.reset();
     
     // Define preconditioning weights
     cuNDArray<_real> _precon_weights(*__precon_weights.get());

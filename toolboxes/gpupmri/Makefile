@@ -8,21 +8,22 @@ LIBSOURCES=
 HEADERFILES=\
 	b1_map.h \
 	htgrappa.h \
-	cgOperatorSense.h \
-	cgOperatorCartesianSense.h \
-	cgOperatorNonCartesianSense.h \
-	cgOperatorNonCartesianKtSense.h \
-	cgOperatorSenseRHSBuffer.h \
-	cgOperatorKtSenseRHSBuffer.h
+	senseOperator.h \
+	cuSenseOperator.h \
+	cuCartesianSenseOperator.h \
+	cuNonCartesianSenseOperator.h \
+	cuNonCartesianKtSenseOperator.h \
+	cuSenseRHSBuffer.h \
+	cuKtSenseRHSBuffer.h
 
 CUDASOURCES=\
 	b1_map.cu \
-	cgOperatorSense.cu \
-	cgOperatorCartesianSense.cu \
-	cgOperatorNonCartesianSense.cu \
-	cgOperatorNonCartesianKtSense.cu \
-	cgOperatorSenseRHSBuffer.cu \
-	cgOperatorKtSenseRHSBuffer.cu \
+	cuSenseOperator.cu \
+	cuCartesianSenseOperator.cu \
+	cuNonCartesianSenseOperator.cu \
+	cuNonCartesianKtSenseOperator.cu \
+	cuSenseRHSBuffer.cu \
+	cuKtSenseRHSBuffer.cu \
 	htgrappa.cu
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)

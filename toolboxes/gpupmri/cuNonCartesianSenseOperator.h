@@ -1,19 +1,18 @@
 #pragma once
 
-#include "gadgetron_export.h"
-#include "cgOperatorSense.h"
+#include "cuSenseOperator.h"
 #include "NFFT.h"
 
 template<class REAL, unsigned int D>
-class EXPORTGPUPMRI cgOperatorNonCartesianSense : public cgOperatorSense<REAL,D>
+class EXPORTGPUPMRI cuNonCartesianSenseOperator : public cuSenseOperator<REAL,D>
 {
 
  public:
   
-  cgOperatorNonCartesianSense( int device = -1 ) : cgOperatorSense<REAL,D>(device) {}
-  virtual ~cgOperatorNonCartesianSense() {}
+  cuNonCartesianSenseOperator( int device = -1 ) : cuSenseOperator<REAL,D>(device) {}
+  virtual ~cuNonCartesianSenseOperator() {}
 
-  typedef typename cgOperatorSense<REAL,D>::_complext _complext;
+  typedef typename cuSenseOperator<REAL,D>::_complext _complext;
   typedef typename uintd<D>::Type _uintd;
   typedef typename reald<REAL,D>::Type _reald;
   
@@ -27,5 +26,5 @@ class EXPORTGPUPMRI cgOperatorNonCartesianSense : public cgOperatorSense<REAL,D>
  protected:
 
   NFFT_plan<REAL, D> plan_;
-  boost::shared_ptr< cuNDArray<float> > dcw_;
+  boost::shared_ptr< cuNDArray<REAL> > dcw_;
 };

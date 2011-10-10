@@ -13,9 +13,9 @@
 #include "cuNDArray.h"
 #include "NFFT.h"
 #include "cuCGSolver.h"
-#include "cgOperatorNonCartesianSense.h"
-#include "cgOperatorSenseRHSBuffer.h"
-#include "cuCGImageOperator.h"
+#include "cuNonCartesianSenseOperator.h"
+#include "cuSenseRHSBuffer.h"
+#include "cuImageOperator.h"
 #include "cuCGPrecondWeights.h"
 
 #include <boost/smart_ptr.hpp>
@@ -109,16 +109,16 @@ private:
   cuCGSolver<float, float_complext::Type> cg;
 
   // Define non-Cartesian Sense solver
-  boost::shared_ptr< cgOperatorNonCartesianSense<float,2> > E;
+  boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E;
 
   // Define preconditioner
   boost::shared_ptr< cuCGPrecondWeights<float_complext::Type> > D;
 
   // Define rhs operator (for regularization)
-  boost::shared_ptr< cgOperatorSenseRHSBuffer<float,2> > rhs_buffer;
+  boost::shared_ptr< cuSenseRHSBuffer<float,2> > rhs_buffer;
   
   // Define regularization image operator
-  boost::shared_ptr< cuCGImageOperator<float,float_complext::Type> > R;
+  boost::shared_ptr< cuImageOperator<float,float_complext::Type> > R;
   
   // CSM
   boost::shared_ptr< cuNDArray<float_complext::Type> > csm;
