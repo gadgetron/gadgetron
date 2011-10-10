@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>  
+
+<readers>
+<reader slot="1001" dll="gadgetroncore" class="MRIAcquisitionReader" />
+</readers>
+
+<writers>
+<writer slot="1004" dll="gadgetroncore" class="MRIImageWriter" />
+</writers>
+
+<stream>
+<gadget name="ImageFinish" dll="gadgetroncore" class="ImageFinishGadget" />
+
+<!--
+<gadget name="ImageWrite" dll="gadgetroncore" class="ImageWriterGadget" />
+-->
+
+<gadget name="CropCombine" dll="gadgetroncore" class="CropAndCombineGadget" />
+<gadget name="FFT" dll="gadgetroncore" class="FFTGadget" />
+<gadget name="Acc" dll="gadgetroncore" class="AccumulatorGadget" /> 
+<gadget name="NoiseAdjust" dll="gadgetroncore" class="NoiseAdjustGadget" />
+
+<gadget name="AcquisitionPython" dll="gadgetronpython" class="AcquisitionPythonGadget">
+<property name="python_module" value="test_embedmod" />
+<property name="gadget_reference_function" value="set_GadgetReference" />
+<property name="input_function" value="simple_function" />
+</gadget>
+
+
+</stream>
+

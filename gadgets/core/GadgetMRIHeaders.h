@@ -14,7 +14,7 @@
 #define GADGET_FLAG_FIRST_ACQ_IN_CONCAT       (1 << 6)
 #define GADGET_FLAG_IS_NOISE_SCAN             (1 << 7)
 
-EXPORTGADGETSCORE enum GadgetMessageID {
+enum GadgetMessageID {
   GADGET_MESSAGE_EXT_ID_MIN        = 1000,
   GADGET_MESSAGE_ACQUISITION       = 1001,
   GADGET_MESSAGE_NEW_MEASUREMENT   = 1002,
@@ -50,6 +50,37 @@ struct EXPORTGADGETSCORE GadgetMessageAcquisition
   LoopCounters   idx;
   LoopCounters   min_idx;
   LoopCounters   max_idx;
+  
+  float get_position(unsigned int index) {
+    if (index < 3) {
+      return position[index];
+    } else {
+      return 0.0f;
+    }
+  }
+
+  void set_position(unsigned int index, float pos)
+  {
+    if (index < 3) {
+      position[index] = pos;
+    }
+  }
+
+  float get_quarternion(unsigned int index) {
+    if (index < 4) {
+      return quarternion[index];
+    } else {
+      return 0.0f;
+    }
+  }
+
+  void set_quarternion(unsigned int index, float quar)
+  {
+    if (index < 4) {
+      quarternion[index] = quar;
+    }
+  }
+
 };
 
 struct EXPORTGADGETSCORE GadgetMessageImage
@@ -62,6 +93,51 @@ struct EXPORTGADGETSCORE GadgetMessageImage
   LoopCounters   data_idx_max;
   LoopCounters   data_idx_current;
   ACE_UINT32     time_stamp;
+
+  ACE_UINT16 get_matrix_size(unsigned int index) {
+    if (index < 3) {
+      return matrix_size[index];
+    } else {
+      return 0;
+    }
+  }
+
+  void set_matrix_size(unsigned int index, ACE_UINT16 size) {
+    if (index < 3) {
+      matrix_size[index] = size;
+    }
+  }
+
+  float get_position(unsigned int index) {
+    if (index < 3) {
+      return position[index];
+    } else {
+      return 0.0f;
+    }
+  }
+
+  void set_position(unsigned int index, float pos)
+  {
+    if (index < 3) {
+      position[index] = pos;
+    }
+  }
+
+  float get_quarternion(unsigned int index) {
+    if (index < 4) {
+      return quarternion[index];
+    } else {
+      return 0.0f;
+    }
+  }
+
+  void set_quarternion(unsigned int index, float quar)
+  {
+    if (index < 4) {
+      quarternion[index] = quar;
+    }
+  }
+
 }; 
 
 #endif  //GADGETMRIHEADERS_H

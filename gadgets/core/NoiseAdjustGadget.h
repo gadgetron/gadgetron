@@ -22,6 +22,7 @@ public Gadget2<GadgetMessageAcquisition,hoNDArray< std::complex<float> > >
   float noise_dwell_time_us_;
   float acquisition_dwell_time_us_;
   float noise_bw_scale_factor_;
+  float receiver_noise_bandwidth_;
 
   virtual int process_config(ACE_Message_Block* mb);
   virtual int process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
