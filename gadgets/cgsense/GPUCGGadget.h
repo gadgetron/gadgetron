@@ -8,39 +8,29 @@
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "cuCGSolver.h"
-#include "cgOperatorNonCartesianSense.h"
+#include "cuNonCartesianSenseOperator.h"
 #include "cuCGPrecondWeights.h"
 #include "NFFT.h"
-#include "cgOperatorSenseRHSBuffer.h"
-#include "cuCGImageOperator.h"
+#include "cuSenseRHSBuffer.h"
+#include "cuImageOperator.h"
 
-class EXPORTGADGETSCGSENSE GPUCGGadget : 
-	public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
+class EXPORTGADGETSCGSENSE GPUCGGadget : public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
 {
 
 public:
-//	GADGET_DECLARE(GPUCGGadget);
-
 	GPUCGGadget();
 	virtual ~GPUCGGadget();
 
 protected:
 
+	virtual int process( GadgetContainerMessage< GadgetMessageAcquisition >* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2 );
 	virtual int process_config( ACE_Message_Block* mb );
-	virtual int process(
-		GadgetContainerMessage< GadgetMessageAcquisition >* m1,
-		GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2 );
 
-	virtual int copy_samples_for_profile(
-		float* host_base_ptr,
-		std::complex<float>* data_base_ptr,
-		int profile_no,
-		int channel_no );
+	virtual boost::shared_ptr< cuNDArray<floatd2::Type> > calculate_trajectory() = 0;
+	virtual boost::shared_ptr< cuNDArray<float> > calculate_density_compensation() = 0;
 
-	virtual int calculate_trajectory() = 0;
-	virtual int calculate_density_compensation() = 0;
-	virtual int upload_samples();
-	virtual int allocate_csm_buffer();
+	virtual int copy_samples_for_profile( float* host_base_ptr, std::complex<float>* data_base_ptr, int profile_no, int channel_no );
+	virtual boost::shared_ptr< cuNDArray<float_complext::Type> > upload_samples();
 
 	ACE_Message_Queue<ACE_MT_SYNCH> buffer_;
 	int slice_no_;
@@ -52,57 +42,34 @@ protected:
 	uintd2::Type matrix_size_;
 	uintd2::Type matrix_size_os_;
 	unsigned int number_of_iterations_;
-	float oversampling_;
-	float kernel_width_;
-	float kappa_;
-
-	bool is_configured_;
+	double cg_limit_;
+	double oversampling_;
+	double kernel_width_;
+	double kappa_;
 
 	int current_profile_offset_;
-	int current_frame_number_;
-
 	int allocated_samples_;
-	float *data_host_ptr_; // REMOVEME
+	float *data_host_ptr_;
 
-	unsigned int kspace_acc_coil_images_os_size_;
-	unsigned int csm_buffer_length_;
-
-	// This one is a legacy name from the previous implementation
-	// TODO: implement CSM buffer in new design
-	cuNDArray<float_complext::Type> csm_acc_coil_image_os_dev_ptr_; 
-
-	NFFT_plan< float, 2 > plan_; // used only for csm and regularization estimation, the CG solver holds its own.
+	bool is_configured_;
 
 	// Define conjugate gradient solver
 	cuCGSolver<float, float_complext::Type> cg_;
 
 	// Define non-Cartesian Sense Encofing operator
-	boost::shared_ptr< cgOperatorNonCartesianSense<float,2> > E_;
+	boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E_;
 
 	// Define preconditioner
 	boost::shared_ptr< cuCGPrecondWeights<float_complext::Type> > D_;
 
 	// Define regularization image operator
-	boost::shared_ptr< cuCGImageOperator<float,float_complext::Type> > R_;
+	boost::shared_ptr< cuImageOperator<float,float_complext::Type> > R_;
 
 	// Define rhs operator (for regularization)
-	boost::shared_ptr< cgOperatorSenseRHSBuffer<float,2> > rhs_buffer_;
-
-	// CSM
-	boost::shared_ptr< cuNDArray<float_complext::Type> > csm_;
-
-	// Trajectory
-	boost::shared_ptr< cuNDArray<floatd2::Type> > traj_;
+	boost::shared_ptr< cuSenseRHSBuffer<float,2> > rhs_buffer_;
 
 	// Density compensation weights
-	boost::shared_ptr< cuNDArray<float> > dcw_;	
-
-	// Host data array TODO: do we nee dto store this?
-	boost::shared_ptr< hoNDArray<float_complext::Type> > host_samples_;
-
-	// Device data array
-	boost::shared_ptr< cuNDArray<float_complext::Type> > device_samples_;
-
+	bool dcw_computed_;
 };
 
 #endif //GPUCGGADGET

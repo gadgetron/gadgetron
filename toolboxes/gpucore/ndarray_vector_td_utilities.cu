@@ -1303,13 +1303,14 @@ _cuNDA_correlation( cuNDArray<T> *in,
   unsigned int number_of_elements = in->get_number_of_elements()/number_of_batches;
 
   dim3 blockDim(((max_blockdim[old_device]/number_of_batches)/warp_size[old_device])*warp_size[old_device], number_of_batches);
-  dim3 gridDim((number_of_elements+blockDim.x-1)/blockDim.x);
 
   if( blockDim.x == 0 ){
-    cout << endl << "cuNDA_correlation: correlation dimension exceeds capacity." << endl; 
+    cout << endl << "cuNDA_correlation: correlation dimension exceeds device capacity." << endl; 
     return boost::shared_ptr< cuNDArray<T> >();
   }
   
+  dim3 gridDim((number_of_elements+blockDim.x-1)/blockDim.x);
+
   // Invoke kernel
   vector<unsigned int> dims = *in->get_dimensions(); dims.push_back(number_of_batches);
   boost::shared_ptr< cuNDArray<T> > out = cuNDArray<T>::allocate(&dims);
