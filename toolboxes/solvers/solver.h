@@ -2,6 +2,7 @@
 
 #include <boost/smart_ptr.hpp>
 #include <string>
+#include <iostream>
 
 template <class ARRAY_TYPE> class solver
 {

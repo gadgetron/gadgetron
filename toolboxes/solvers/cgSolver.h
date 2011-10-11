@@ -184,7 +184,7 @@ public:
       }
 
     if( !solver_dump(rho) ) {
-        solver_error( "cgSolver::solve : failed to dump" );
+        this->solver_error( "cgSolver::solve : failed to dump" );
         return boost::shared_ptr<ARRAY_TYPE>(rho);
     }
 
