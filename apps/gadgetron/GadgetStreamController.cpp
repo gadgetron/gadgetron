@@ -187,12 +187,30 @@ int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
 
   GADGET_DEBUG1("Shutting down stream and closing up shop...\n");
 
+  this->stream_.close();
+
   mask = ACE_Event_Handler::ALL_EVENTS_MASK |
          ACE_Event_Handler::DONT_CALL;
+
   this->reactor ()->remove_handler (this, mask);
 
+   //Empty output queue in case there is something on it.
+  int messages_dropped = this->msg_queue ()->flush();
+  
+  if (messages_dropped) {
+    GADGET_DEBUG2("Flushed %d messages from output queue\n", messages_dropped);
+    this->reactor ()->handle_events(); //Flush any remaining events before we delete this Stream Controller
+  }
+  
+  // Remove all readers and writers
+  writers_.clear();
+  readers_.clear();
 
-  this->stream_.close();
+  //Clear DLL handles (to make DLLs unload if needed)
+  for (unsigned int i = 0; i < dll_handles_.size(); i++) {
+    dll_handles_[i]->close(1);
+  }
+  dll_handles_.clear();
 
   GADGET_DEBUG1("Stream is closed\n");
 
@@ -427,6 +445,8 @@ T* GadgetStreamController::load_dll_component(const char* DLL, const char* compo
     GADGET_DEBUG1("   * Path of DLL is not in your DLL search path (LD_LIBRARY_PATH on Unix)\n");
     GADGET_DEBUG1("   * Path of other DLLs that this DLL depends on is not in the search path\n");
     return 0;
+  } else {
+    dll_handles_.push_back(dll);
   }
 
   //Function pointer

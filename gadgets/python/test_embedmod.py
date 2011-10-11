@@ -18,7 +18,7 @@ def simple_function(acq, data):
 
     #print "Received line: " + str(acq.idx.line)
     #print "Received types: " + str(type(data))
-    print "Hello"
+    #print "Hello"
 
     myVariable = myVariable + 1
 

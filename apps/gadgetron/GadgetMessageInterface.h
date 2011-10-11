@@ -67,12 +67,7 @@ class GadgetMessageWriterContainer
 {
  public:
   virtual ~GadgetMessageWriterContainer() {
-    std::map< ACE_UINT16, GadgetMessageWriter* >::iterator it;
-
-    for (it = map_.begin(); it != map_.end(); it++) {
-      delete it->second;
-     }
-    map_.clear();
+    clear();
   }
 
 
@@ -100,6 +95,16 @@ class GadgetMessageWriterContainer
     return GADGET_OK;
   }
 
+  int clear()
+  {
+    std::map< ACE_UINT16, GadgetMessageWriter* >::iterator it;
+    for (it = map_.begin(); it != map_.end(); it++) {
+      delete it->second;
+     }
+    map_.clear();
+    return 0;
+  }
+
  protected:
   std::map<ACE_UINT16, GadgetMessageWriter*> map_;
 };
@@ -109,12 +114,7 @@ class GadgetMessageReaderContainer
 {
  public:
   virtual ~GadgetMessageReaderContainer() {
-    std::map< ACE_UINT16, GadgetMessageReader* >::iterator it;
-
-    for (it = map_.begin(); it != map_.end(); it++) {
-      delete it->second;
-     }
-    map_.clear();
+    clear();
   }
 
 
@@ -142,6 +142,16 @@ class GadgetMessageReaderContainer
     return GADGET_OK;
   }
 
+  int clear()
+  {
+    std::map< ACE_UINT16, GadgetMessageReader* >::iterator it;
+
+    for (it = map_.begin(); it != map_.end(); it++) {
+      delete it->second;
+     }
+    map_.clear();
+    return 0;
+  }
  protected:
   std::map<ACE_UINT16, GadgetMessageReader*> map_;
 };

@@ -8,6 +8,27 @@ AcquisitionPythonGadget::~AcquisitionPythonGadget()
 {
   //GADGET_DEBUG1("Running Py_Finalize()\n");
   //Py_Finalize();
+  boost::shared_ptr<std::string> pymod         = get_string_value("python_module");
+  boost::shared_ptr<std::string> pyreffunc     = get_string_value("gadget_reference_function");
+  boost::shared_ptr<std::string> pydatafunc    = get_string_value("input_function");
+  boost::shared_ptr<std::string> pyconfigfunc  = get_string_value("config_function");
+
+  /*
+  GADGET_DEBUG2("Python Module          : %s\n", pymod.get()->c_str());
+  GADGET_DEBUG2("Python Ref Function    : %s\n", pyreffunc.get()->c_str());
+  GADGET_DEBUG2("Python Data Function   : %s\n", pydatafunc.get()->c_str());
+  GADGET_DEBUG2("Python Config Function : %s\n", pyconfigfunc.get()->c_str());
+
+  try {
+    boost::python::exec(
+  } catch(boost::python::error_already_set const &) { 
+    GADGET_DEBUG1("Error loading python modules\n");
+    PyErr_Print();
+    return GADGET_FAIL;
+  }
+  */
+  
+ 
 }
 
 int AcquisitionPythonGadget::process_config(ACE_Message_Block* mb)
@@ -28,7 +49,13 @@ int AcquisitionPythonGadget::process_config(ACE_Message_Block* mb)
   try {
     
     python_module_ = boost::python::import(pymod.get()->c_str());
-    
+
+    /* We will try t force a reload of the module */
+    boost::python::import("__main__").attr("__dict__")[pymod.get()->c_str()] = python_module_;
+    std::string tmp = std::string("reload(") + std::string(pymod.get()->c_str()) + std::string(")\n");
+    //GADGET_DEBUG2("Reloading with command: %s\n", tmp.c_str());
+    boost::python::exec(tmp.c_str(),boost::python::import("__main__").attr("__dict__"));
+
     python_set_gadget_reference_function_ = python_module_.attr(pyreffunc.get()->c_str());
     gadget_reference_.set_gadget(this);
     python_set_gadget_reference_function_(gadget_reference_);

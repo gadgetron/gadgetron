@@ -10,6 +10,7 @@
 #include "ace/Reactor_Notification_Strategy.h"
 
 #include <complex>
+#include <vector>
 
 #include "Gadgetron.h"
 #include "Gadget.h"
@@ -57,6 +58,8 @@ private:
 
   GadgetMessageReaderContainer readers_;
   GadgetMessageWriterContainer writers_;
+  
+  std::vector<ACE_DLL_Handle*> dll_handles_;
 
   //virtual int read_configuration();
   //virtual int read_acquisition();
