@@ -1,5 +1,16 @@
-- Remove ConfigParser
-- Make common.mk Makefile for including into all projects
+--Stuff to fix before first release:
+
+* Ensure that streams shut down gracefully and that the Gadgetron is ready to start a new stream at all times. Sometimes it hangs after shutting down a stream.
+
+* Add functionality for specifying the number of execution threads in the XML configuration. 
+
+* Add Gadget3, Gadget4, Gadget5
+
+* Make it possible for a reader to access an arbitrary Gadget in the chain
+
+* Divide the archive into basics (gadgetron and examples) and development gadgets and apps that will not be distributed with the Gadgetron.
+
+-- Stuff for later
 - Add Event_Handler to Reactor to deal with key strokes and SIGINT to ensure graceful shutdown
 - Logging server
 - Data display

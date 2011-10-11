@@ -135,6 +135,10 @@ template<class T> EXPORTGPUCORE
 bool cuNDA_scale( cuNDArray<T> *a, cuNDArray<T> *x,
 		  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
+template<class T> EXPORTGPUCORE
+bool cuNDA_scale_conj( cuNDArray<T> *a, cuNDArray<T> *x,
+		  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+
 // Scale (component-wise)
 template<class REAL> EXPORTGPUCORE
 bool cuNDA_scale( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *x,
@@ -170,9 +174,14 @@ template<class T> EXPORTGPUCORE
 bool cuNDA_scal( T a, cuNDArray<T>* x,
 		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
+template<class T> EXPORTGPUCORE
+bool cuNDA_add( T a, cuNDArray<T>* x,
+		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+
+
 // Normalize (float/double arrays only)
 template<class REAL> EXPORTGPUCORE
-bool cuNDA_normalize( cuNDArray<REAL> *in_out, REAL new_max,
+REAL cuNDA_normalize( cuNDArray<REAL> *in_out, REAL new_max,
 		      cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 //
@@ -199,3 +208,10 @@ bool cuNDA_zero_fill_border( typename uintd<D>::Type matrix_size, cuNDArray<T> *
 template<class REAL, class T, unsigned int D> EXPORTGPUCORE
 bool cuNDA_zero_fill_border( typename reald<REAL,D>::Type radius, cuNDArray<T> *image,
 			     cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+
+// Shrinkage operators
+template<class REAL, class T> EXPORTGPUCORE
+bool cuNDA_shrink1( REAL gamma, cuNDArray<T> *in, cuNDArray<T> *out );
+
+template<class REAL, class T> EXPORTGPUCORE
+bool cuNDA_shrinkd( REAL gamma, cuNDArray<REAL> *s_k, cuNDArray<T> *in, cuNDArray<T> *out );

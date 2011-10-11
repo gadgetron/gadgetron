@@ -13,6 +13,9 @@ public:
   senseOperator() : matrixOperator<REAL, ARRAY_TYPE>(), ncoils_(0) {}
   virtual ~senseOperator() {}
 
+  inline unsigned int get_number_of_coils() { return ncoils_; }
+  inline boost::shared_ptr<ARRAY_TYPE> get_csm() { return csm_; }
+
   virtual int set_csm( boost::shared_ptr<ARRAY_TYPE> csm )
   {
     if( csm.get() && csm->get_number_of_dimensions() == D+1 ) {
@@ -52,10 +55,10 @@ public:
     return 0;
   }
     
-protected:
-
   virtual int mult_csm( ARRAY_TYPE* in, ARRAY_TYPE* out ) = 0;
   virtual int mult_csm_conj_sum( ARRAY_TYPE* in, ARRAY_TYPE* out) = 0;
+
+protected:
 
   unsigned int ncoils_;
   boost::shared_ptr< ARRAY_TYPE > csm_;

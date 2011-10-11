@@ -19,8 +19,6 @@ public:
   virtual int mult_M( cuNDArray< _complext>* in, cuNDArray< _complext>* out, bool accumulate = false ) = 0;
   virtual int mult_MH( cuNDArray< _complext>* in, cuNDArray< _complext>* out, bool accumulate = false ) = 0;
     
-protected:
-
   virtual int mult_csm( cuNDArray< _complext>* in, cuNDArray< _complext>* out );
   virtual int mult_csm_conj_sum( cuNDArray< _complext>* in, cuNDArray< _complext>* out);
 

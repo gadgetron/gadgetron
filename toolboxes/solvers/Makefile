@@ -1,12 +1,14 @@
 GADGETRONHOME=../..
 include $(GADGETRONHOME)/Makefile.inc
 
-DLLNAME=gpucg
+DLLNAME=solvers
 
 LIBHEADERS=\
 	solver.h \
 	cgSolver.h \
 	cuCGSolver.h \
+	sbSolver.h \
+	cuSBSolver.h \
 	cgPreconditioner.h \
 	cuCGPreconditioner.h \
 	cuCGPrecondWeights.h \
@@ -15,12 +17,25 @@ LIBHEADERS=\
 	identityOperator.h \
 	cuIdentityOperator.h \
 	imageOperator.h \
-	cuImageOperator.h
+	cuImageOperator.h \
+	encodedImageOperator.h \
+	cuEncodedImageOperator.h \
+	partialDerivativeOperator.h \
+	cuPartialDerivativeOperator.h \
+	convolutionOperator.h \
+	cuConvolutionOperator.h \
+	laplaceOperator.h \
+	cuLaplaceOperator.h \
+	cuVariableGaussOperator.h
+
 
 LIBSOURCES=
 
 CUDASOURCES=\
 	cuCGPrecondWeights.cu \
+	cuPartialDerivativeOperator.cu \
+	cuLaplaceOperator.cu \
+	cuVariableGaussOperator.cu 
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)

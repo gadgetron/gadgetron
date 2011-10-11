@@ -16,7 +16,6 @@ public:
 
   //  cuCGSolver() : cgSolver< REAL, T, cuNDArray<T> >() { set_device(); }  
   cuCGSolver( int device=-1 ) : cgSolver< REAL, T, cuNDArray<T> >() { set_device(device); }
-
   virtual ~cuCGSolver() {}
 
   virtual bool pre_solve(cuNDArray<T> **rhs)

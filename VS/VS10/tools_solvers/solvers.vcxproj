@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -19,21 +19,30 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\toolboxes\solvers\cgMatrixOperator.h" />
     <ClInclude Include="..\..\..\toolboxes\solvers\cgPreconditioner.h" />
     <ClInclude Include="..\..\..\toolboxes\solvers\cgSolver.h" />
-    <ClInclude Include="..\..\..\toolboxes\solvers\cuCGIdentityOperator.h" />
-    <ClInclude Include="..\..\..\toolboxes\solvers\cuCGImageOperator.h" />
-    <ClInclude Include="..\..\..\toolboxes\solvers\cuCGMatrixOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\convolutionOperator.h" />
     <ClInclude Include="..\..\..\toolboxes\solvers\cuCGPreconditioner.h" />
     <ClInclude Include="..\..\..\toolboxes\solvers\cuCGPrecondWeights.h" />
     <ClInclude Include="..\..\..\toolboxes\solvers\cuCGSolver.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\cuConvolutionOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\cuEncodedImageOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\cuIdentityOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\cuImageOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\cuMatrixOperator_macros.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\cuPartialDerivativeOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\cuSBSolver.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\encodedImageOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\identityOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\imageOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\matrixOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\partialDerivativeOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\solvers\sbSolver.h" />
     <ClInclude Include="..\..\..\toolboxes\solvers\solver.h" />
   </ItemGroup>
   <ItemGroup>
-    <CudaCompile Include="..\..\..\toolboxes\solvers\cuCGImageOperator.cu" />
     <CudaCompile Include="..\..\..\toolboxes\solvers\cuCGPrecondWeights.cu" />
-    <CudaCompile Include="..\..\..\toolboxes\solvers\cuCGSolver.cu" />
+    <CudaCompile Include="..\..\..\toolboxes\solvers\cuPartialDerivativeOperator.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{15D26770-7BC2-4EF5-93E3-08D25A39F012}</ProjectGuid>

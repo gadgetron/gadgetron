@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/smart_ptr.hpp>
+#include <string>
 
 template <class ARRAY_TYPE> class solver
 {
@@ -11,6 +12,8 @@ template <class ARRAY_TYPE> class solver
   solver( int output_mode = OUTPUT_SILENT ) { output_mode_ = output_mode; }
   virtual ~solver() {}
   
+  virtual void solver_error( std::string err ) { std::cerr << err << std::endl; }
+
   virtual void set_output_mode( int output_mode ) {
     if( !(output_mode >= OUTPUT_MAX || output_mode < 0 )) {
       output_mode_ = output_mode;

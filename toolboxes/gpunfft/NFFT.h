@@ -61,6 +61,12 @@ public: // Utilities
   // NFFT deapodization
   bool deapodize( cuNDArray<typename complext<REAL>::Type> *image );
 
+public: // Setup queries
+	typename uintd<D>::Type get_matrix_size();
+	typename uintd<D>::Type get_matrix_size_os();
+	REAL get_W();
+	unsigned int get_device();
+
 public: 
 
   // Custom operators new/delete for windows memory handling across dll boundaries
