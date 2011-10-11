@@ -168,9 +168,6 @@ int main(int argc, char** argv)
   delete image;image = 0x0;
   delete timer;
 
-  //boost::shared_ptr< hoNDArray<_complext> > out_csm = csm->to_host();
-  //write_nd_array<_complext>(out_csm.get(),"csm.cplx");
-    
   // 
   // Setup radial kt-SENSE reconstructions
   //
@@ -255,14 +252,13 @@ int main(int argc, char** argv)
     // Compute regularization image
     training_dims.pop_back();
     boost::shared_ptr< cuKtSenseRHSBuffer<_real,2> > rhs_buffer( new cuKtSenseRHSBuffer<_real,2>() );
-    rhs_buffer->set_csm(csm);
+    //rhs_buffer->set_csm(csm); // TODO
     cuNDArray<_complext> *reg_image = new cuNDArray<_complext>(); reg_image->create(&training_dims);
-    rhs_buffer->mult_MH( image, reg_image );
+    //rhs_buffer->mult_MH( image, reg_image ); //TODO
     R->compute( reg_image );
 
     delete reg_image; reg_image = 0x0;
     delete image; image = 0x0;
-    csm.reset();
     
     // Define preconditioning weights
     cuNDArray<_real> _precon_weights(*__precon_weights.get());
@@ -319,6 +315,7 @@ int main(int argc, char** argv)
   
   delete timer;
   delete image_os; image_os = 0x0;
+  csm.reset();
 
   // All done, write out the result
 

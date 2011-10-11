@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -20,18 +20,23 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\toolboxes\gpupmri\b1_map.h" />
-    <ClInclude Include="..\..\..\toolboxes\gpupmri\cgOperatorCartesianSense.h" />
-    <ClInclude Include="..\..\..\toolboxes\gpupmri\cgOperatorNonCartesianSense.h" />
-    <ClInclude Include="..\..\..\toolboxes\gpupmri\cgOperatorSense.h" />
-    <ClInclude Include="..\..\..\toolboxes\gpupmri\cgOperatorSenseRHSBuffer.h" />
+    <ClInclude Include="..\..\..\toolboxes\gpupmri\cuCartesianSenseOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\gpupmri\cuKtSenseRHSBuffer.h" />
+    <ClInclude Include="..\..\..\toolboxes\gpupmri\cuNonCartesianKtSenseOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\gpupmri\cuNonCartesianSenseOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\gpupmri\cuSenseOperator.h" />
+    <ClInclude Include="..\..\..\toolboxes\gpupmri\cuSenseRHSBuffer.h" />
     <ClInclude Include="..\..\..\toolboxes\gpupmri\htgrappa.h" />
+    <ClInclude Include="..\..\..\toolboxes\gpupmri\senseOperator.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="..\..\..\toolboxes\gpupmri\b1_map.cu" />
-    <CudaCompile Include="..\..\..\toolboxes\gpupmri\cgOperatorCartesianSense.cu" />
-    <CudaCompile Include="..\..\..\toolboxes\gpupmri\cgOperatorNonCartesianSense.cu" />
-    <CudaCompile Include="..\..\..\toolboxes\gpupmri\cgOperatorSense.cu" />
-    <CudaCompile Include="..\..\..\toolboxes\gpupmri\cgOperatorSenseRHSBuffer.cu" />
+    <CudaCompile Include="..\..\..\toolboxes\gpupmri\cuCartesianSenseOperator.cu" />
+    <CudaCompile Include="..\..\..\toolboxes\gpupmri\cuKtSenseRHSBuffer.cu" />
+    <CudaCompile Include="..\..\..\toolboxes\gpupmri\cuNonCartesianKtSenseOperator.cu" />
+    <CudaCompile Include="..\..\..\toolboxes\gpupmri\cuNonCartesianSenseOperator.cu" />
+    <CudaCompile Include="..\..\..\toolboxes\gpupmri\cuSenseOperator.cu" />
+    <CudaCompile Include="..\..\..\toolboxes\gpupmri\cuSenseRHSBuffer.cu" />
     <CudaCompile Include="..\..\..\toolboxes\gpupmri\htgrappa.cu" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

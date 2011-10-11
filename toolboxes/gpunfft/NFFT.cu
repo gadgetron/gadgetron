@@ -1485,6 +1485,31 @@ NFFT_plan<REAL,D>::image_wrap( cuNDArray<typename complext<REAL>::Type> *source,
   return true;
 }	
 
+
+template<class REAL, unsigned int D> typename uintd<D>::Type
+NFFT_plan<REAL,D>::get_matrix_size()
+{
+  return matrix_size;
+}
+
+template<class REAL, unsigned int D> typename uintd<D>::Type
+NFFT_plan<REAL,D>::get_matrix_size_os()
+{
+  return matrix_size_os;
+}
+
+template<class REAL, unsigned int D> REAL 
+NFFT_plan<REAL,D>::get_W()
+{
+  return W;
+}
+
+template<class REAL, unsigned int D> unsigned int 
+NFFT_plan<REAL,D>::get_device()
+{
+  return device;
+}
+
 //
 // Template instantion
 //

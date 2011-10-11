@@ -3,7 +3,7 @@
 
 template<class REAL, unsigned int D> int 
 cuKtSenseRHSBuffer<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
-{
+{/*
   if( out->get_number_of_dimensions() != D+1 ){
     std::cerr << "cuKtSenseRHSBuffer::mult_MH: unexpected dimensionality of output array: " << std::endl;
     return -1;
@@ -14,7 +14,7 @@ cuKtSenseRHSBuffer<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_comple
   if( ret == 0 )
     return cuNDFFT<_complext>().ifft( out, D ); // TODO: multi-device support
   else
-    return ret;
+    return ret;*/ return 0;
 }
 
 //
