@@ -174,6 +174,11 @@ template<class T> EXPORTGPUCORE
 bool cuNDA_scal( T a, cuNDArray<T>* x,
 		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
+template<class T> EXPORTGPUCORE
+bool cuNDA_add( T a, cuNDArray<T>* x,
+		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+
+
 // Normalize (float/double arrays only)
 template<class REAL> EXPORTGPUCORE
 REAL cuNDA_normalize( cuNDArray<REAL> *in_out, REAL new_max,
