@@ -48,6 +48,7 @@ public:
   virtual bool solver_clear( ARRAY_TYPE* ) = 0;
   virtual bool solver_scal( ELEMENT_TYPE, ARRAY_TYPE* ) = 0;
   virtual bool solver_axpy( ELEMENT_TYPE, ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
+  virtual bool solver_dump( ARRAY_TYPE *rho ) { return true; }
 
   virtual boost::shared_ptr<ARRAY_TYPE> solve( ARRAY_TYPE *_rhs )
   {
@@ -183,6 +184,11 @@ public:
 	solver_error( "cgSolver::solve : failed to update solution" );
 	return boost::shared_ptr<ARRAY_TYPE>(rho);
       }
+
+    if( !solver_dump(rho) ) {
+        solver_error( "cgSolver::solve : failed to dump" );
+        return boost::shared_ptr<ARRAY_TYPE>(rho);
+    }
 
       // Update residual
       if( !solver_axpy(mul<REAL>(-get_one<REAL>(),alpha),&q,&r) ) {

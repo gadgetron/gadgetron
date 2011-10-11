@@ -73,6 +73,6 @@ public:
     return -1;
   }
   
-private:
+protected:
   boost::shared_ptr< ARRAY_TYPE_REAL > image_;
 };
