@@ -21,7 +21,7 @@ template <class T> class PythonGadget :
 public Gadget2<T, hoNDArray< std::complex<float> > >
 {
  public:
-  GADGET_DECLARE(PythonGadget);
+  //GADGET_DECLARE(PythonGadget);
   //virtual ~PythonGadget();
 
  protected:

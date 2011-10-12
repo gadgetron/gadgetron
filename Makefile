@@ -22,8 +22,8 @@ DIRS=\
 	gadgets/core \
 	gadgets/grappa \
 	gadgets/python \
-	gadgets/gpucg \
 	gadgets/cgsense
+#	gadgets/gpucg \
 
 all: $(DIRS)
 

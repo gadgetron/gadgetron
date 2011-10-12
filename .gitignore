@@ -24,5 +24,8 @@ apps/standalone/gpu/MRI/nfft/2d/nffth
 apps/standalone/gpu/MRI/nfft/ms2d/nfft
 apps/standalone/gpu/MRI/nfft/ms2d/nffth
 apps/standalone/gpu/MRI/sense/noncartesian/radial/2d_golden_ratio_kt/radial_ktsense
+apps/standalone/gpu/MRI/sense/noncartesian/radial/2d_golden_ratio/radial_sense_cg
+apps/standalone/gpu/MRI/sense/noncartesian/radial/2d_golden_ratio/radial_sense_sb
 lib/*.py
 lib/*.pyc
+.DS_Store
