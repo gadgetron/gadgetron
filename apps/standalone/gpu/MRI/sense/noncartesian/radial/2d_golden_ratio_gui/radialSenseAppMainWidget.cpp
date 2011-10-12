@@ -72,8 +72,7 @@ radialSenseAppMainWindow::radialSenseAppMainWindow(QWidget *parent) : QMainWindo
   // Allocate preconditioner
   D = boost::shared_ptr< cuCGPrecondWeights<float_complext::Type> >( new cuCGPrecondWeights<float_complext::Type>() );
 
-  // Allocate regularization image operator and corresponding rhs operator
-  rhs_buffer = boost::shared_ptr< cuSenseRHSBuffer<float,2> >( new cuSenseRHSBuffer<float,2>() );
+  // Allocate regularization image operator
   R = boost::shared_ptr< cuImageOperator<float,float_complext::Type> >( new cuImageOperator<float,float_complext::Type>() );  
   R->set_weight( 1.0f );
 
@@ -254,27 +253,31 @@ void radialSenseAppMainWindow::replan()
   // Estimate CSM
   csm = estimate_b1_map<float,2>( image );
 
-  // Setup encoding and regularization operators
-  image_dims = uintd_to_vector<2>(get_matrix_size());
-  rhs_buffer->set_csm(csm);
-  cuNDArray<float_complext::Type> *reg_image = new cuNDArray<float_complext::Type>(); 
-  reg_image->create( &image_dims );
-  rhs_buffer->mult_MH( image, reg_image );
-  R->compute( reg_image );
-  delete image; image = 0x0; 
-  delete reg_image; reg_image = 0x0; 
+  progress.setValue(4);
 
   E->setup( get_matrix_size(), get_matrix_size_os(), get_kernel_width() ); 
-
-  // Define preconditioning weights
-  update_preconditioning_weights();
-  
-  progress.setValue(4);
 
   if( E->set_csm(csm) < 0 ) {
     cout << "Failed to set csm on encoding matrix" << endl;
   }
-  
+
+  // Setup regularization operator
+  image_dims = uintd_to_vector<2>(get_matrix_size());
+  cuNDArray<float_complext::Type> *reg_image = new cuNDArray<float_complext::Type>(); 
+
+  if( reg_image->create( &image_dims ) == 0x0 ){
+    cout << "Failed to allocate regularization image" << endl;
+  }
+
+  E->mult_csm_conj_sum( image, reg_image );
+  R->compute( reg_image );
+
+  delete image; image = 0x0; 
+  delete reg_image; reg_image = 0x0; 
+
+  // Define preconditioning weights
+  update_preconditioning_weights();
+    
   progress.setValue(5);
 
   ready = true;

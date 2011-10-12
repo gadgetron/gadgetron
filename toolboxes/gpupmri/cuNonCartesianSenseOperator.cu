@@ -55,6 +55,7 @@ cuNonCartesianSenseOperator<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray
 template<class REAL, unsigned int D> int 
 cuNonCartesianSenseOperator<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {
+
   if( (out->get_number_of_elements() != prod(this->dimensionsI_)) || 
       (in->get_number_of_elements() != prod(this->dimensionsK_)) ) {
     std::cerr << "cuNonCartesianSenseOperator::mult_MH: dimensions mismatch" << std::endl;

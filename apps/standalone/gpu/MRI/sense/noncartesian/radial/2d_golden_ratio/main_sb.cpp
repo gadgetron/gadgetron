@@ -118,57 +118,64 @@ int main(int argc, char** argv)
     ( samples_per_profile, profiles_per_frame, (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0], 
       get_one<_real>()/((_real)samples_per_profile/(_real)max(matrix_size.vec[0],matrix_size.vec[1])) );
   
+  // Define encoding matrix for non-Cartesian SENSE
+  boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );  
+
+  if( E->setup( matrix_size, matrix_size_os, kernel_width ) < 0 ){
+    cout << "Failed to setup non-Cartesian Sense operator" << endl;
+    return 1;
+  }
+
+  // Notify encoding operator of dcw
+  if( E->set_dcw(dcw) < 0 ) {
+    cout << "Failed to set density compensation weights on encoding matrix" << endl;
+    return 1;
+  }
+  dcw.reset();
+
+  // Define rhs buffer
   //
-  // Compute CSM, preconditioner, and regularization image
+
+  boost::shared_ptr< cuSenseRHSBuffer<_real,2> > rhs_buffer( new cuSenseRHSBuffer<_real,2>() );
+
+  rhs_buffer->set_num_coils(num_coils);
+
+  if( rhs_buffer->set_sense_operator(E) < 0 ){
+    cout << "Failed to set sense operator on rhs buffer" << endl;
+  }
+
+  //
+  // Compute CSM using accumulation in the rhs buffer
   // 
  
   timer = new GPUTimer("CSM estimation and preconditioning computation");
-  
-  vector<unsigned int> image_os_dims = uintd_to_vector<2>(matrix_size_os); 
-  image_os_dims.push_back(frames_per_reconstruction); image_os_dims.push_back(num_coils);
-  cuNDArray<_complext> *image_os = new cuNDArray<_complext>(); image_os->create(&image_os_dims);
     
-  NFFT_plan<_real, 2> plan( matrix_size, matrix_size_os, kernel_width );
-  
   // Go through all the data...
   for( unsigned int iteration = 0; iteration < num_profiles/profiles_per_reconstruction; iteration++ ) {
 
     // Define trajectories
     boost::shared_ptr< cuNDArray<_reald2> > traj = compute_radial_trajectory_golden_ratio_2d<_real>
       ( samples_per_profile, profiles_per_frame, frames_per_reconstruction, iteration*profiles_per_reconstruction );
-    
-    // Preprocess
-    plan.preprocess( traj.get(), NFFT_plan<_real,2>::NFFT_PREP_BACKWARDS );
-    traj.reset();
-    
+        
     // Upload data
     boost::shared_ptr< cuNDArray<_complext> > csm_data = upload_data
       ( iteration, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, host_data.get() );
     
-    // Accumulate k-space for CSM estimation
-    plan.convolve( csm_data.get(), image_os, dcw.get(), NFFT_plan<_real,2>::NFFT_BACKWARDS, (iteration==0) ? false : true );
-    csm_data.reset();
+    // Add frame to rhs buffer
+    rhs_buffer->add_frame_data( csm_data.get(), traj.get() );
   }
   
-  // We now have 'frames_per_reconstruction' k-space images of each coil. Add these up.
-  boost::shared_ptr< cuNDArray<_complext> > acc_image_os = cuNDA_sum<_complext>( image_os, 2 );    
-  delete image_os;
+  // Estimate csm
+  boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_acc_coil_images();
+  boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );
 
-  // Complete gridding of k-space CSM image
-  plan.fft( acc_image_os.get(), NFFT_plan<_real,2>::NFFT_BACKWARDS );
-  plan.deapodize( acc_image_os.get() );
-  
-  // Remove oversampling
-  vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size); image_dims.push_back(num_coils);
-  cuNDArray<_complext> *image = new cuNDArray<_complext>(); image->create(&image_dims);
-  cuNDA_crop<_complext,2>( (matrix_size_os-matrix_size)>>1, acc_image_os.get(), image );
-  acc_image_os.reset();
-  
-  // Estimate CSM
-  boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( image );
+  if( E->set_csm(csm) < 0 ) {
+    cout << "Failed to set csm on encoding matrix" << endl;
+    return 1;
+  }
 
-  //boost::shared_ptr< hoNDArray<_complext> > host_csm = read_nd_array<_complext>("csm.cplx");
-  //boost::shared_ptr< cuNDArray<_complext> > csm( new cuNDArray<_complext>(host_csm.get()) );
+  acc_images.reset();
+  csm.reset();
 
   // Define regularization operators 
   boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Rx( new cuPartialDerivativeOperator<_real,_complext,3>(0) ); 
@@ -176,42 +183,15 @@ int main(int argc, char** argv)
   Rx->set_weight( kappa );
   Ry->set_weight( kappa );
  
-  // Define preconditioning weights
-  //boost::shared_ptr< cuNDArray<_real> > _precon_weights = cuNDA_ss<_real,_complext>( csm.get(), 2 );
-  //  cuNDA_axpy<_real>( kappa, Rx->get(), _precon_weights.get() );  
-  //cuNDA_axpy<_real>( kappa, Rx->get(), _precon_weights.get() );  
-  //cuNDA_reciprocal_sqrt<_real>( _precon_weights.get() );
-  //boost::shared_ptr< cuNDArray<_complext> > precon_weights = cuNDA_real_to_complext<_real>( _precon_weights.get() );
-  //_precon_weights.reset();
-
-  // Define preconditioning matrix
-  //boost::shared_ptr< cuCGPrecondWeights<_complext> > D( new cuCGPrecondWeights<_complext>() );
-  //D->set_weights( precon_weights );
-  //precon_weights.reset();
-
-  delete image;
   delete timer;
-  
-  //hoNDArray<_complext> out_csm = csm->to_host();
-  //write_nd_array<_complext>(out_csm,"csm.cplx");
-  
+    
   // 
   // Setup radial SENSE reconstructions
   //
-
-  // Define encoding matrix for non-Cartesian SENSE
-  boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );
-  
-  E->setup( matrix_size, matrix_size_os, kernel_width );
-
-  if( E->set_csm(csm) < 0 ) {
-    cout << "Failed to set csm on encoding matrix" << endl;
-  }
-  csm.reset();
     
   // Setup conjugate gradient solver
   boost::shared_ptr< cuCGSolver<_real, _complext> > cg(new  cuCGSolver<_real, _complext>);
-  cg->add_matrix_operator( E );  // encoding matrix
+  cg->add_matrix_operator( E );   // encoding matrix
   cg->add_matrix_operator( Rx );  // regularization matrix
   cg->add_matrix_operator( Ry );  // regularization matrix
   //  cg->set_preconditioner ( D );  // preconditioning matrix
@@ -221,11 +201,14 @@ int main(int argc, char** argv)
       
   // Allocate space for result
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
-  image_dims = uintd_to_vector<2>(matrix_size); image_dims.push_back(frames_per_reconstruction*num_reconstructions); 
-  boost::shared_ptr< std::vector<unsigned int> > _image_dims( new std::vector<unsigned int> );
-  *_image_dims = image_dims;
+  boost::shared_ptr< std::vector<unsigned int> > image_dims( new std::vector<unsigned int> );
+  *image_dims = uintd_to_vector<2>(matrix_size); image_dims->push_back(frames_per_reconstruction*num_reconstructions); 
   
-  cuNDArray<_complext> result; result.create(&image_dims);
+  cuNDArray<_complext> result; 
+  if( result.create(image_dims.get()) == 0x0 ){
+    cout << "Failed allocate result image" << endl;
+    return 1;
+  }
 
   // Setup split-Bregman solver
   cuSBSolver<_real, _complext> sb;
@@ -235,9 +218,9 @@ int main(int argc, char** argv)
   sb.add_regularization_group_operator( Ry ); 
   sb.set_outer_iterations(num_sb_outer_iterations);
   sb.set_inner_iterations(num_sb_inner_iterations);
-  sb.set_image_dimensions(_image_dims);
+  sb.set_image_dimensions(image_dims);
   
-  timer = new GPUTimer("Full SENSE reconstruction.");
+  timer = new GPUTimer("Full SENSE reconstruction with TV regularization.");
 
   for( unsigned int reconstruction = 0; reconstruction<num_reconstructions; reconstruction++ ){
 
@@ -253,12 +236,7 @@ int main(int argc, char** argv)
     if( E->preprocess(traj.get()) < 0 ) {
       cout << "Failed to set trajectory on encoding matrix" << endl;
     }
-    
-    // Set density compensation weights
-    if( E->set_dcw(dcw) < 0 ) {
-      cout << "Failed to set density compensation weights on encoding matrix" << endl;
-    }
-    
+        
     //
     // Split-Bregman solver
     //

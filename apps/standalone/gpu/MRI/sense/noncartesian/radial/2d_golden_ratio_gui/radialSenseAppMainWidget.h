@@ -14,7 +14,6 @@
 #include "NFFT.h"
 #include "cuCGSolver.h"
 #include "cuNonCartesianSenseOperator.h"
-#include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
 #include "cuCGPrecondWeights.h"
 
@@ -113,9 +112,6 @@ private:
 
   // Define preconditioner
   boost::shared_ptr< cuCGPrecondWeights<float_complext::Type> > D;
-
-  // Define rhs operator (for regularization)
-  boost::shared_ptr< cuSenseRHSBuffer<float,2> > rhs_buffer;
   
   // Define regularization image operator
   boost::shared_ptr< cuImageOperator<float,float_complext::Type> > R;

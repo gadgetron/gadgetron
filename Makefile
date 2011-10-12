@@ -20,8 +20,8 @@ DIRS=\
 	apps/gadgetron \
 	apps/gadgetdatasender \
 	gadgets/core \
-	gadgets/grappa
-#	gadgets/gpucg \
+	gadgets/grappa \
+	gadgets/cgsense
 
 all: $(DIRS)
 
