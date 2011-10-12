@@ -21,10 +21,10 @@ GPUCGGadget::GPUCGGadget()
 	, oversampling_(1.25)
 	, kernel_width_(5.5)
 	, kappa_(0.1)
-	, is_configured_(false)
 	, current_profile_offset_(0)
 	, allocated_samples_(0)
 	, data_host_ptr_(0x0)
+	, is_configured_(false)
 	, dcw_computed_(false)
 {
 	matrix_size_    = uintd2(0,0);
@@ -122,7 +122,8 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
 
 		// Allocate rhs buffer
 		rhs_buffer_ = boost::shared_ptr< cuSenseRHSBuffer<float,2> >( new cuSenseRHSBuffer<float,2>() );
-		rhs_buffer_ ->set_sense_operator( E_ );
+		rhs_buffer_->set_num_coils( channels_ );
+		rhs_buffer_->set_sense_operator( E_ );
 
 		is_configured_ = true;
 	}

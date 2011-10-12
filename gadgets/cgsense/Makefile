@@ -16,7 +16,7 @@ LIBCUDAOBJECTS=$(CUDASOURCES:.cu=.cuo)
 DLLNAME=gadgetroncgsense
 
 LIBFILE=lib$(DLLNAME).$(DLLEXTENSION)
-LIBLDFLAGS += -lgpuparallelmri -lgpucore -lgpunfft -lACE -ltinyxml
+LIBLDFLAGS += -lgpuparallelmri -lgpucore -lgpunfft -lsolvers -lACE -ltinyxml
 
 CXXFLAGS += -I../core
 
