@@ -7,6 +7,8 @@
 #include <ace/Stream.h>
 #include <ace/Module.h>
 #include <ace/OS_Memory.h>
+#include <ace/Svc_Handler.h>
+#include <ace/SOCK_Stream.h>
 
 #include <map>
 #include <boost/shared_ptr.hpp>
@@ -40,7 +42,6 @@ public:
   virtual ~Gadget() 
   {
     GADGET_DEBUG2("Shutting down Gadget (%s)\n", this->module()->name());
-    //ACE_TRACE(( ACE_TEXT(), this->module()->name() ));
   }
   
 
@@ -91,17 +92,15 @@ public:
   virtual int close(unsigned long flags)
   {
     ACE_TRACE(( ACE_TEXT("Gadget::close") ));
-
+    GADGET_DEBUG2("Gadget (%s) Close Called with flags = %d\n", this->module()->name(), flags);
     int rval = 0;
     if (flags == 1) {
       ACE_Message_Block *hangup = new ACE_Message_Block();
       hangup->msg_type( ACE_Message_Block::MB_HANGUP );
       if (this->putq(hangup) == -1) {
 	hangup->release();
-	ACE_ERROR_RETURN( (LM_ERROR,
-			   ACE_TEXT("%p\n"),
-			   ACE_TEXT("Gadget::close, putq")),
-			  -1);
+	GADGET_DEBUG2("Gadget (%s) failed to out hang up message on queue\n", this->module()->name());
+	return GADGET_FAIL;	  
       }
       rval = this->wait();
     }
@@ -115,18 +114,15 @@ public:
     for (ACE_Message_Block *m = 0; ;) {
 
       if (this->getq(m) == -1) {
-	ACE_ERROR_RETURN( (LM_ERROR, ACE_TEXT("%p\n"),
-			   ACE_TEXT("Gadget::getq")),
-			  -1);
+	GADGET_DEBUG2("Gadget (%s) failed to get message from queue\n", this->module()->name());
+	return GADGET_FAIL;	  
       }
 
       //If this is a hangup message, we are done, put the message back on the queue before breaking
       if (m->msg_type() == ACE_Message_Block::MB_HANGUP) {
 	if (this->putq(m) == -1) {
-	  ACE_ERROR_RETURN( (LM_ERROR,
-			     ACE_TEXT("%p\n"),
-			     ACE_TEXT("Gadget::svc, putq")),
-			    -1);
+	  GADGET_DEBUG2("Gadget (%s) failed to put hang up message on queue (for other threads)\n", this->module()->name());
+	  return GADGET_FAIL;	  
 	}
 	break;
       }
@@ -136,21 +132,18 @@ public:
       if (m->flags() & GADGET_MESSAGE_CONFIG) {
 	if (this->process_config(m) == -1) {
 	  m->release();
-	  ACE_ERROR_RETURN( (LM_ERROR,
-			     ACE_TEXT("%p\n"),
-			     ACE_TEXT("Gadget::svc, process_config")),
-			    -1);
-	  
+
+	  GADGET_DEBUG2("Gadget (%s) process config failed\n", this->module()->name());
+	  return GADGET_FAIL;
+
 	}
 
 	//Push this onto next gadgets queue, other gadgets may need this configuration information
 	if (this->next()) {
 	  if (this->next()->putq(m) == -1) {
 	    m->release();
-	    ACE_ERROR_RETURN( (LM_ERROR,
-			       ACE_TEXT("%p\n"),
-			       ACE_TEXT("Gadget::svc, passing config on to next gadget")),
-			      -1);
+	    GADGET_DEBUG2("Gadget (%s) process config failed to put config on dowstream gadget\n", this->module()->name());
+	    return GADGET_FAIL;
 	  }
 	}
 	continue;
@@ -158,10 +151,8 @@ public:
 
       if (this->process(m) == -1) {
 	m->release();
-	ACE_ERROR_RETURN( (LM_ERROR,
-			   ACE_TEXT("%p\n"),
-			   ACE_TEXT("Gadget::svc, process")),
-			  -1);
+	GADGET_DEBUG2("Gadget (%s) process failed\n", this->module()->name());
+	return GADGET_FAIL;
       }
 
     }

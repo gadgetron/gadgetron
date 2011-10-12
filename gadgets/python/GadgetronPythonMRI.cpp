@@ -21,7 +21,6 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
    .def_readwrite("set",&LoopCounters::set)
    .def_readwrite("segment",&LoopCounters::segment)
    .def_readwrite("channel",&LoopCounters::channel)
-
     ;
 
   class_<GadgetMessageAcquisition>("GadgetMessageAcquisition")

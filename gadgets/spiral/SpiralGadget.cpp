@@ -211,7 +211,6 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     bool  success = plan_.compute( &data, &image, &gpu_weights_, NFFT_plan<float,2>::NFFT_BACKWARDS );
     if (!success) {
       GADGET_DEBUG1("NFFT compute failed\n");
-      m1->release();	    
       return GADGET_FAIL;
     }
 
@@ -222,7 +221,6 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 
     if (!m4->getObjectPtr()->create(&image_dimensions_)) {
       GADGET_DEBUG1("Unable to allocate memory for combined image\n"); 
-      m1->release();
       m4->release();
       return GADGET_FAIL;
     }
@@ -264,7 +262,6 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
  
     if (this->next()->putq(m3) < 0) {
       m3->release();
-      m1->release();
       return GADGET_FAIL;
     }
 

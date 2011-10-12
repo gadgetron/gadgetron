@@ -28,7 +28,7 @@ int GadgetReference::return_data(T header, boost::python::numeric::array arr)
   int ndims = PyArray_NDIM(arr.ptr());
   npy_intp* dims = PyArray_DIMS(arr.ptr());
   std::vector<unsigned int> dimensions(ndims);
-  for (int i = 0; i < ndims; i++) dimensions[i] = static_cast<unsigned int>(dims[i]);
+  for (int i = 0; i < ndims; i++) dimensions[ndims-i-1] = static_cast<unsigned int>(dims[i]);
 
   GadgetContainerMessage< T >*         m1 = new GadgetContainerMessage< T >;
   memcpy(m1->getObjectPtr(), &header, sizeof(T));
@@ -65,4 +65,5 @@ int GadgetReference::return_image(GadgetMessageImage img, boost::python::numeric
 {
   return return_data<GadgetMessageImage>(img, arr);
 }
+
 

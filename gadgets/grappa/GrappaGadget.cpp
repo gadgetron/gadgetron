@@ -113,13 +113,11 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 
   if (samples != image_dimensions_[0]) {
     GADGET_DEBUG1("GrappaGadget: wrong number of samples received\n");
-    m1->release();
     return GADGET_FAIL;    
   }
 
   if (slice >= image_data_.size()) {
     GADGET_DEBUG1("Invalid slice number received\n");
-    m1->release();
     return GADGET_FAIL;
   }
 

@@ -15,18 +15,28 @@
 <gadget name="ImageWrite" dll="gadgetroncore" class="ImageWriterGadget" />
 -->
 
+<gadget name="ImagePython" dll="gadgetronpython" class="ImagePythonGadget">
+<property name="python_path" value="/home/hansenms/mrprogs/python;/home/hansenms/mrprogs/python/gadgetron" />
+<property name="python_module" value="test_fft_itok" />
+<property name="gadget_reference_function" value="set_gadget_reference" />
+<property name="input_function" value="itok_function" />
+<property name="config_function" value="config_function" />
+</gadget>
+
 <gadget name="CropCombine" dll="gadgetroncore" class="CropAndCombineGadget" />
 <gadget name="FFT" dll="gadgetroncore" class="FFTGadget" />
 <gadget name="Acc" dll="gadgetroncore" class="AccumulatorGadget" /> 
 <gadget name="NoiseAdjust" dll="gadgetroncore" class="NoiseAdjustGadget" />
 
+<!--
 <gadget name="AcquisitionPython" dll="gadgetronpython" class="AcquisitionPythonGadget">
+<property name="python_path" value="/home/hansenms/mrprogs/python;/home/hansenms/mrprogs/python/gadgetron" />
 <property name="python_module" value="test_embedmod" />
 <property name="gadget_reference_function" value="set_GadgetReference" />
 <property name="input_function" value="simple_function" />
 <property name="config_function" value="simple_config" />
 </gadget>
-
+-->
 
 </stream>
 

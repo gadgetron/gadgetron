@@ -44,7 +44,6 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 
   if (!buffer_) {
     ACE_DEBUG( (LM_ERROR, ACE_TEXT("Accumulator: Buffer array not allocated")) );
-    m1->release();
     return -1;    
   }
 
@@ -60,7 +59,6 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 
   if (samples != static_cast<int>(dimensions_[0])) {
     ACE_DEBUG( (LM_ERROR, ACE_TEXT("Accumulator: wrong number of samples received")) );
-    m1->release();
     return -1;    
   }
 
@@ -96,7 +94,6 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     
     if (!cm2->getObjectPtr()->create(&img_dims)) {
       ACE_DEBUG( (LM_ERROR, ACE_TEXT("Unable to allocate new image array")) );
-      m1->release();
       cm1->release();
       return -1;
     }

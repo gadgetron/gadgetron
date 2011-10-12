@@ -18,7 +18,6 @@ process( GadgetContainerMessage<GadgetMessageImage>* m1,
   if (!m3->getObjectPtr()->create(&new_dimensions)) {
     ACE_DEBUG( (LM_ERROR, 
 		ACE_TEXT("CropAndCombineGadget, failed to allocate new array\n")) );
-    m1->release();
     return -1;
   }
 

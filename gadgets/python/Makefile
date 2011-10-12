@@ -10,7 +10,7 @@ PYTHON_FILES=\
 	test_embedmod.py
 
 LIBSOURCES=\
-	AcquisitionPythonGadget.cpp \
+	PythonGadget.cpp \
 	GadgetReference.cpp \
 	GadgetronPythonMRI.cpp	 
 
