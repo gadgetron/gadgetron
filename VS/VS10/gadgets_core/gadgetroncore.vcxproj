@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -40,6 +40,7 @@
     <ClCompile Include="..\..\..\gadgets\core\ImageWriterGadget.cpp" />
     <ClCompile Include="..\..\..\gadgets\core\MRIAcquisitionReader.cpp" />
     <ClCompile Include="..\..\..\gadgets\core\MRIImageWriter.cpp" />
+    <ClCompile Include="..\..\..\gadgets\core\NoiseAdjustGadget.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{45AF3104-CD12-4D18-9E1B-83485CDCB983}</ProjectGuid>

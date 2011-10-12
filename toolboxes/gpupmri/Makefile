@@ -13,8 +13,7 @@ HEADERFILES=\
 	cuCartesianSenseOperator.h \
 	cuNonCartesianSenseOperator.h \
 	cuNonCartesianKtSenseOperator.h \
-	cuSenseRHSBuffer.h \
-	cuKtSenseRHSBuffer.h
+	cuSenseRHSBuffer.h
 
 CUDASOURCES=\
 	b1_map.cu \
@@ -23,7 +22,6 @@ CUDASOURCES=\
 	cuNonCartesianSenseOperator.cu \
 	cuNonCartesianKtSenseOperator.cu \
 	cuSenseRHSBuffer.cu \
-	cuKtSenseRHSBuffer.cu \
 	htgrappa.cu
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)

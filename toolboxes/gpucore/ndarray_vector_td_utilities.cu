@@ -1303,13 +1303,14 @@ _cuNDA_correlation( cuNDArray<T> *in,
   unsigned int number_of_elements = in->get_number_of_elements()/number_of_batches;
 
   dim3 blockDim(((max_blockdim[old_device]/number_of_batches)/warp_size[old_device])*warp_size[old_device], number_of_batches);
-  dim3 gridDim((number_of_elements+blockDim.x-1)/blockDim.x);
 
   if( blockDim.x == 0 ){
-    cout << endl << "cuNDA_correlation: correlation dimension exceeds capacity." << endl; 
+    cout << endl << "cuNDA_correlation: correlation dimension exceeds device capacity." << endl; 
     return boost::shared_ptr< cuNDArray<T> >();
   }
   
+  dim3 gridDim((number_of_elements+blockDim.x-1)/blockDim.x);
+
   // Invoke kernel
   vector<unsigned int> dims = *in->get_dimensions(); dims.push_back(number_of_batches);
   boost::shared_ptr< cuNDArray<T> > out = cuNDArray<T>::allocate(&dims);
@@ -1720,6 +1721,56 @@ bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim,
   return true;
 }
 
+
+
+// Add
+template<class REAL> __global__ 
+void cuNDA_add_kernel( REAL a, typename complext<REAL>::Type *x, unsigned int number_of_elements )
+{
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+
+  if( idx < number_of_elements ){
+
+    x[idx] += a*get_one<typename complext<REAL>::Type >();
+  }
+}
+
+// Add
+template<class REAL> 
+bool cuNDA_add( REAL a, cuNDArray<typename complext<REAL>::Type> *in_out,
+		  cuNDA_device compute_device )
+{
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<typename complext<REAL>::Type> *in_out_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,typename complext<REAL>::Type,dummy,dummy>( compute_device, &cur_device, &old_device, in_out, &in_out_int ) ){
+    cerr << endl << "cuNDA_add: unable to prepare device(s)" << endl;
+    return false;
+  }
+
+  // Setup block/grid dimensions
+  dim3 blockDim; dim3 gridDim;
+  if( !setup_grid( cur_device, in_out->get_number_of_elements(), &blockDim, &gridDim ) ){
+    cerr << endl << "cuNDA_add: block/grid configuration out of range" << endl;
+    return false;
+  }
+
+  // Invoke kernel
+  cuNDA_add_kernel<REAL><<< gridDim, blockDim >>> ( a, in_out_int->get_data_ptr(), in_out->get_number_of_elements() );
+ 
+  CHECK_FOR_CUDA_ERROR();
+
+  // Restore
+  if( !restore<1,typename complext<REAL>::Type,dummy,dummy,dummy>( old_device, in_out, in_out_int, 1 ) ){
+    cerr << endl << "cuNDA_add: unable to restore device" << endl;
+    return false;
+  }
+
+  return true;
+}
+
 // Scale
 template<class REAL> __global__ 
 void cuNDA_scale1_kernel( REAL a, typename complext<REAL>::Type *x, unsigned int number_of_elements )
@@ -1768,6 +1819,9 @@ bool cuNDA_scale( REAL a, cuNDArray<typename complext<REAL>::Type> *in_out,
 
   return true;
 }
+
+
+
 
 // Scale
 template<class S, class T> __global__ 
@@ -1890,6 +1944,7 @@ void cuNDA_axpy_kernel( S *a, T *x, T *y, unsigned int number_of_batches, unsign
     }
   }
 }
+
 
 
 // Scale conjugate w. non conjugate
@@ -2434,11 +2489,11 @@ cuNDA_scal( T a, cuNDArray<T>* x, cuNDA_device compute_device )
 
 // Normalize (float)
 template<> EXPORTGPUCORE
-bool cuNDA_normalize<float>( cuNDArray<float> *data, float new_max, cuNDA_device compute_device )
+float cuNDA_normalize<float>( cuNDArray<float> *data, float new_max, cuNDA_device compute_device )
 {
   if( !initialize_static_variables() ){
     cout << "cuNDA_normalize: initialization failed" << std::endl;
-    return false;
+    return get_zero<float>();
   }
 
   unsigned int number_of_elements = data->get_number_of_elements();
@@ -2450,7 +2505,7 @@ bool cuNDA_normalize<float>( cuNDArray<float> *data, float new_max, cuNDA_device
   // Perform device copy if array is not residing on the current device
   if( !prepare<1,float,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
     cerr << endl << "cuNDA_normalize: unable to prepare device(s)" << endl;
-    return false;
+    return get_zero<float>();
   }
 
   // Find the maximum value in the array
@@ -2463,26 +2518,26 @@ bool cuNDA_normalize<float>( cuNDArray<float> *data, float new_max, cuNDA_device
   cudaMemcpy(&max_val, (data_int->get_data_ptr()+max_idx-1), sizeof(float), cudaMemcpyDeviceToHost);
 
   // Scale the array
-  float scale = new_max/max_val;
+  float scale = abs(new_max/max_val);
   cublasSscal( handle[cur_device], number_of_elements, &scale, data_int->get_data_ptr(), 1 );
 
   // Restore
   if( !restore<1,float,dummy,dummy,dummy>( old_device, data, data_int, 1, compute_device ) ){
     cerr << endl << "cuNDA_normalize: unable to restore device" << endl;
-    return false;
+    return get_zero<float>();
   }
 
   CHECK_FOR_CUDA_ERROR();
-  return true;
+  return scale;
 }
 
 // Normalize (double)
 template<> EXPORTGPUCORE
-bool cuNDA_normalize<double>( cuNDArray<double> *data, double new_max, cuNDA_device compute_device )
+double cuNDA_normalize<double>( cuNDArray<double> *data, double new_max, cuNDA_device compute_device )
 {
   if( !initialize_static_variables() ){
     cout << "cuNDA_normalize: initialization failed" << std::endl;
-    return false;
+    return get_zero<double>();
   }
 
   unsigned int number_of_elements = data->get_number_of_elements();
@@ -2494,7 +2549,7 @@ bool cuNDA_normalize<double>( cuNDArray<double> *data, double new_max, cuNDA_dev
   // Perform device copy if array is not residing on the current device
   if( !prepare<1,double,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
     cerr << endl << "cuNDA_normalize: unable to prepare device(s)" << endl;
-    return false;
+    return get_zero<double>();
   }
 
   // Find the maximum value in the array
@@ -2507,17 +2562,17 @@ bool cuNDA_normalize<double>( cuNDArray<double> *data, double new_max, cuNDA_dev
   cudaMemcpy(&max_val, (data_int->get_data_ptr()+max_idx-1), sizeof(double), cudaMemcpyDeviceToHost);
 
   // Scale the array
-  double scale = new_max/max_val;
+  double scale = abs(new_max/max_val);
   cublasDscal( handle[cur_device], number_of_elements, &scale, data_int->get_data_ptr(), 1 );
   
   // Restore
   if( !restore<1,double,dummy,dummy,dummy>( old_device, data, data_int, 1, compute_device ) ){
     cerr << endl << "cuNDA_normalize: unable to restore device" << endl;
-    return false;
+    return get_zero<double>();
   }
   
   CHECK_FOR_CUDA_ERROR();
-  return true;
+  return scale;
 }
 
 // Crop
@@ -2841,14 +2896,18 @@ bool cuNDA_zero_fill_border( typename reald<REAL,D>::Type radius, cuNDArray<T> *
 //
 
 template<class REAL, class T> __global__ void 
-cuNDA_shrink_kernel( REAL gamma, T *in, T *out, unsigned int number_of_elements )
+cuNDA_shrink1_kernel( REAL gamma, T *in, T *out, unsigned int number_of_elements )
 {
   const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
  
   if( idx<number_of_elements ){
     T in_val = in[idx]; 
     REAL in_norm = norm<REAL>(in_val);
-    T _res = mul<REAL>( reciprocal<REAL>(in_norm), in_val );
+    T _res;
+    if( in_norm > get_zero<REAL>() ) 
+      _res = mul<REAL>( reciprocal<REAL>(in_norm), in_val );
+    else
+      _res = get_zero<T>();
     REAL maximum = max( in_norm-gamma, get_zero<REAL>() );
     T res = mul<REAL>( maximum, _res );
 
@@ -2857,24 +2916,24 @@ cuNDA_shrink_kernel( REAL gamma, T *in, T *out, unsigned int number_of_elements 
 }
 
 template<class REAL, class T> EXPORTGPUCORE
-bool cuNDA_shrink( REAL gamma, cuNDArray<T> *in, cuNDArray<T> *out )
+bool cuNDA_shrink1( REAL gamma, cuNDArray<T> *in, cuNDArray<T> *out )
 {
   // TODO: multi-device handling
 
   if( !in || !out ){
-    cerr << endl << "cuNDA_shrink: 0x0 arrays not accepted" << endl;
+    cerr << endl << "cuNDA_shrink1: 0x0 arrays not accepted" << endl;
     return false;
   }
 
   if( in->get_number_of_elements() != out->get_number_of_elements() ){
-    cerr << endl << "cuNDA_shrink: i/o arrays must have an identical number of elements" << endl;
+    cerr << endl << "cuNDA_shrink1: i/o arrays must have an identical number of elements" << endl;
     return false;
   }
   
   // Get current Cuda device
   int cur_device;
   if( cudaGetDevice(&cur_device) != cudaSuccess ) {
-    cerr << endl << "cuNDA_shrink : unable to get device no";
+    cerr << endl << "cuNDA_shrink1 : unable to get device no";
     return false;
   }
 
@@ -2882,12 +2941,74 @@ bool cuNDA_shrink( REAL gamma, cuNDArray<T> *in, cuNDArray<T> *out )
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
   if( !setup_grid( cur_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
-    cerr << endl << "cuNDA_shrink: block/grid configuration out of range" << endl;
+    cerr << endl << "cuNDA_shrink1: block/grid configuration out of range" << endl;
     return false;
   }
   
   // Invoke kernel
-  cuNDA_shrink_kernel<REAL,T><<< gridDim, blockDim >>>( gamma, in->get_data_ptr(), out->get_data_ptr(), in->get_number_of_elements() );
+  cuNDA_shrink1_kernel<REAL,T><<< gridDim, blockDim >>>( gamma, in->get_data_ptr(), out->get_data_ptr(), in->get_number_of_elements() );
+  
+  CHECK_FOR_CUDA_ERROR();
+  
+  return true;
+}
+
+template<class REAL, class T> __global__ void 
+cuNDA_shrinkd_kernel( REAL gamma, REAL *s_k, T *in, T *out, unsigned int number_of_elements )
+{
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+ 
+  if( idx<number_of_elements ){
+    T in_val = in[idx]; 
+    REAL s_k_val = s_k[idx];
+    T _res;
+    if( s_k_val > 0 )
+      _res = mul<REAL>( reciprocal<REAL>(s_k_val), in_val );
+    else
+      _res = get_zero<T>();
+    REAL maximum = max( s_k_val-gamma, get_zero<REAL>() );
+    T res = mul<REAL>( maximum, _res );
+
+    out[idx] = res;
+  }
+}
+
+template<class REAL, class T> EXPORTGPUCORE
+bool cuNDA_shrinkd( REAL gamma, cuNDArray<REAL> *s_k, cuNDArray<T> *in, cuNDArray<T> *out )
+{
+  // TODO: multi-device handling
+
+  if( !in || !out || !s_k ){
+    cerr << endl << "cuNDA_shrinkd: 0x0 arrays not accepted" << endl;
+    return false;
+  }
+
+  if( in->get_number_of_elements() != out->get_number_of_elements() ){
+    cerr << endl << "cuNDA_shrinkd: i/o arrays must have an identical number of elements" << endl;
+    return false;
+  }
+
+  if( in->get_number_of_elements() != s_k->get_number_of_elements() ){
+    cerr << endl << "cuNDA_shrinkd: i/o arrays must have an identical number of elements" << endl;
+    return false;
+  }
+  
+  // Get current Cuda device
+  int cur_device;
+  if( cudaGetDevice(&cur_device) != cudaSuccess ) {
+    cerr << endl << "cuNDA_shrinkd : unable to get device no";
+    return false;
+  }
+
+  // Setup block/grid dimensions
+  dim3 blockDim; dim3 gridDim;
+  if( !setup_grid( cur_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
+    cerr << endl << "cuNDA_shrinkd: block/grid configuration out of range" << endl;
+    return false;
+  }
+  
+  // Invoke kernel
+  cuNDA_shrinkd_kernel<REAL,T><<< gridDim, blockDim >>>( gamma, s_k->get_data_ptr(), in->get_data_ptr(), out->get_data_ptr(), in->get_number_of_elements() );
   
   CHECK_FOR_CUDA_ERROR();
   
@@ -3165,6 +3286,8 @@ template EXPORTGPUCORE bool cuNDA_abs<floatd4::Type>( cuNDArray<floatd4::Type>*,
 template EXPORTGPUCORE bool cuNDA_rss_normalize<float,float>( cuNDArray<float>*, unsigned int, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_rss_normalize<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int, cuNDA_device );
 
+template EXPORTGPUCORE bool cuNDA_add<float>( float, cuNDArray<float_complext::Type>*, cuNDA_device );
+
 template EXPORTGPUCORE bool cuNDA_scale<float>( float, cuNDArray<float_complext::Type>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_scale<float>( cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
@@ -3213,8 +3336,12 @@ template EXPORTGPUCORE bool cuNDA_axpy<float_complext::Type>( float_complext::Ty
 template EXPORTGPUCORE bool cuNDA_scal<float>( float, cuNDArray<float>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_scal<float_complext::Type>( float_complext::Type, cuNDArray<float_complext::Type>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_shrink<float,float>( float gamma, cuNDArray<float> *in, cuNDArray<float> *out );
-template EXPORTGPUCORE bool cuNDA_shrink<float,float_complext::Type>( float gamma, cuNDArray<float_complext::Type> *in, cuNDArray<float_complext::Type> *out );
+template EXPORTGPUCORE bool cuNDA_shrink1<float,float>( float, cuNDArray<float>*, cuNDArray<float>* );
+template EXPORTGPUCORE bool cuNDA_shrink1<float,float_complext::Type>( float, cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>* );
+
+template EXPORTGPUCORE bool cuNDA_shrinkd<float,float>( float, cuNDArray<float>*, cuNDArray<float>*, cuNDArray<float>* );
+template EXPORTGPUCORE bool cuNDA_shrinkd<float,float_complext::Type>( float, cuNDArray<float>*, cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>* );
+
 
 // Instanciation -- double precision
 
@@ -3380,6 +3507,8 @@ template EXPORTGPUCORE bool cuNDA_abs<doubled4::Type>( cuNDArray<doubled4::Type>
 template EXPORTGPUCORE bool cuNDA_rss_normalize<double,double>( cuNDArray<double>*, unsigned int, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_rss_normalize<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int, cuNDA_device );
 
+template EXPORTGPUCORE bool cuNDA_add<double>( double, cuNDArray<double_complext::Type>*, cuNDA_device );
+
 template EXPORTGPUCORE bool cuNDA_scale<double>( double, cuNDArray<double_complext::Type>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_scale<double>( cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
@@ -3432,5 +3561,8 @@ template EXPORTGPUCORE bool cuNDA_axpy<double_complext::Type>( double_complext::
 template EXPORTGPUCORE bool cuNDA_scal<double>( double, cuNDArray<double>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_scal<double_complext::Type>( double_complext::Type, cuNDArray<double_complext::Type>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_shrink<double,double>( double gamma, cuNDArray<double> *in, cuNDArray<double> *out );
-template EXPORTGPUCORE bool cuNDA_shrink<double,double_complext::Type>( double gamma, cuNDArray<double_complext::Type> *in, cuNDArray<double_complext::Type> *out );
+template EXPORTGPUCORE bool cuNDA_shrink1<double,double>( double, cuNDArray<double>*, cuNDArray<double>* );
+template EXPORTGPUCORE bool cuNDA_shrink1<double,double_complext::Type>( double, cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>* );
+
+template EXPORTGPUCORE bool cuNDA_shrinkd<double,double>( double, cuNDArray<double>*, cuNDArray<double>*, cuNDArray<double>* );
+template EXPORTGPUCORE bool cuNDA_shrinkd<double,double_complext::Type>( double, cuNDArray<double>*, cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>* );

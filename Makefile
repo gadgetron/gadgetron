@@ -21,8 +21,9 @@ DIRS=\
 	apps/gadgetdatasender \
 	gadgets/core \
 	gadgets/grappa \
-	gadgets/python
-#	gadgets/gpucg \
+	gadgets/python \
+	gadgets/gpucg \
+	gadgets/cgsense
 
 all: $(DIRS)
 

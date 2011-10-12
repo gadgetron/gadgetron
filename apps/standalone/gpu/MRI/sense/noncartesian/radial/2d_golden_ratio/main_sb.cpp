@@ -5,9 +5,10 @@
 #include "radial_utilities.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "cuSenseRHSBuffer.h"
-#include "cuImageOperator.h"
+#include "cuPartialDerivativeOperator.h"
 #include "cuCGPrecondWeights.h"
 #include "cuCGSolver.h"
+#include "cuSBSolver.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "parameterparser.h"
@@ -42,7 +43,7 @@ int main(int argc, char** argv)
   //
   // Parse command line
   //
-
+ 
   ParameterParser parms;
   parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Sample data file name", true );
   parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Result file name", true, "result.cplx" );
@@ -50,7 +51,9 @@ int main(int argc, char** argv)
   parms.add_parameter( 'o', COMMAND_LINE_INT,    1, "Oversampled matrix size", true );
   parms.add_parameter( 'p', COMMAND_LINE_INT,    1, "Profiles per frame", true );
   parms.add_parameter( 'f', COMMAND_LINE_INT,    1, "Frames per reconstruction (negative meaning all)", true, "-1" );
-  parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of iterations", true, "10" );
+  parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of cg iterations", true, "10" );
+  parms.add_parameter( 'I', COMMAND_LINE_INT,    1, "Number of sb inner iterations", true, "10" );
+  parms.add_parameter( 'O', COMMAND_LINE_INT,    1, "Number of sb outer iterations", true, "10" );
   parms.add_parameter( 'k', COMMAND_LINE_FLOAT,  1, "Kernel width", true, "5.5" );
   parms.add_parameter( 'K', COMMAND_LINE_FLOAT,  1, "Kappa", true, "0.1" );
 
@@ -88,7 +91,9 @@ int main(int argc, char** argv)
   uintd2 matrix_size_os = uintd2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
   _real kernel_width = parms.get_parameter('k')->get_float_value();
   _real kappa = parms.get_parameter('K')->get_float_value();
-  unsigned int num_iterations = parms.get_parameter('i')->get_int_value();
+  unsigned int num_cg_iterations = parms.get_parameter('i')->get_int_value();
+  unsigned int num_sb_inner_iterations = parms.get_parameter('I')->get_int_value();
+  unsigned int num_sb_outer_iterations = parms.get_parameter('O')->get_int_value();
   unsigned int profiles_per_frame = parms.get_parameter('p')->get_int_value();
   unsigned int frames_per_reconstruction = parms.get_parameter('f')->get_int_value();
 
@@ -113,115 +118,109 @@ int main(int argc, char** argv)
     ( samples_per_profile, profiles_per_frame, (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0], 
       get_one<_real>()/((_real)samples_per_profile/(_real)max(matrix_size.vec[0],matrix_size.vec[1])) );
   
+  // Define encoding matrix for non-Cartesian SENSE
+  boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );  
+
+  if( E->setup( matrix_size, matrix_size_os, kernel_width ) < 0 ){
+    cout << "Failed to setup non-Cartesian Sense operator" << endl;
+    return 1;
+  }
+
+  // Notify encoding operator of dcw
+  if( E->set_dcw(dcw) < 0 ) {
+    cout << "Failed to set density compensation weights on encoding matrix" << endl;
+    return 1;
+  }
+  dcw.reset();
+
+  // Define rhs buffer
   //
-  // Compute CSM, preconditioner, and regularization image
+
+  boost::shared_ptr< cuSenseRHSBuffer<_real,2> > rhs_buffer( new cuSenseRHSBuffer<_real,2>() );
+
+  rhs_buffer->set_num_coils(num_coils);
+
+  if( rhs_buffer->set_sense_operator(E) < 0 ){
+    cout << "Failed to set sense operator on rhs buffer" << endl;
+  }
+
+  //
+  // Compute CSM using accumulation in the rhs buffer
   // 
  
-  timer = new GPUTimer("CSM estimation, regularization and preconditioning computation");
-  
-  vector<unsigned int> image_os_dims = uintd_to_vector<2>(matrix_size_os); 
-  image_os_dims.push_back(frames_per_reconstruction); image_os_dims.push_back(num_coils);    
-  cuNDArray<_complext> *image_os = new cuNDArray<_complext>(); image_os->create(&image_os_dims);
+  timer = new GPUTimer("CSM estimation and preconditioning computation");
     
-  NFFT_plan<_real, 2> plan( matrix_size, matrix_size_os, kernel_width );
-  
   // Go through all the data...
   for( unsigned int iteration = 0; iteration < num_profiles/profiles_per_reconstruction; iteration++ ) {
 
     // Define trajectories
     boost::shared_ptr< cuNDArray<_reald2> > traj = compute_radial_trajectory_golden_ratio_2d<_real>
       ( samples_per_profile, profiles_per_frame, frames_per_reconstruction, iteration*profiles_per_reconstruction );
-    
-    // Preprocess
-    plan.preprocess( traj.get(), NFFT_plan<_real,2>::NFFT_PREP_BACKWARDS );
-    traj.reset();
-    
+        
     // Upload data
     boost::shared_ptr< cuNDArray<_complext> > csm_data = upload_data
       ( iteration, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, host_data.get() );
     
-    // Accumulate k-space for CSM estimation
-    plan.convolve( csm_data.get(), image_os, dcw.get(), NFFT_plan<_real,2>::NFFT_BACKWARDS, (iteration==0) ? false : true );
-    csm_data.reset();
+    // Add frame to rhs buffer
+    rhs_buffer->add_frame_data( csm_data.get(), traj.get() );
   }
   
-  // We now have 'frames_per_reconstruction' k-space images of each coil. Add these up.
-  boost::shared_ptr< cuNDArray<_complext> > acc_image_os = cuNDA_sum<_complext>( image_os, 2 );    
-  delete image_os;
-
-  // Complete gridding of k-space CSM image
-  plan.fft( acc_image_os.get(), NFFT_plan<_real,2>::NFFT_BACKWARDS );
-  plan.deapodize( acc_image_os.get() );
-  
-  // Remove oversampling
-  vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size); image_dims.push_back(num_coils);
-  cuNDArray<_complext> *image = new cuNDArray<_complext>(); image->create(&image_dims);
-  cuNDA_crop<_complext,2>( (matrix_size_os-matrix_size)>>1, acc_image_os.get(), image );
-  acc_image_os.reset();
-  
-  // Estimate CSM
-  boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( image );
-
-  // Define regularization image operator 
-  boost::shared_ptr< cuSenseRHSBuffer<_real,2> > rhs_buffer( new cuSenseRHSBuffer<_real,2>() );
-  rhs_buffer->set_csm(csm);
-  image_dims = uintd_to_vector<2>(matrix_size);
-  cuNDArray<_complext> *reg_image = new cuNDArray<_complext>(); reg_image->create(&image_dims);
-  rhs_buffer->mult_MH( image, reg_image );
-  boost::shared_ptr< cuImageOperator<_real,_complext> > R( new cuImageOperator<_real,_complext>() ); 
-  R->set_weight( kappa );
-  R->compute( reg_image );
- 
-  // Define preconditioning weights
-  boost::shared_ptr< cuNDArray<_real> > _precon_weights = cuNDA_ss<_real,_complext>( csm.get(), 2 );
-  cuNDA_axpy<_real>( kappa, R->get(), _precon_weights.get() );  
-  cuNDA_reciprocal_sqrt<_real>( _precon_weights.get() );
-  boost::shared_ptr< cuNDArray<_complext> > precon_weights = cuNDA_real_to_complext<_real>( _precon_weights.get() );
-  _precon_weights.reset();
-
-  // Define preconditioning matrix
-  boost::shared_ptr< cuCGPrecondWeights<_complext> > D( new cuCGPrecondWeights<_complext>() );
-  D->set_weights( precon_weights );
-  precon_weights.reset();
-
-  delete reg_image;
-  delete image;
-  delete timer;
-  
-  //hoNDArray<_complext> out_csm = csm->to_host();
-  //write_nd_array<_complext>(out_csm,"csm.cplx");
-  
-  // 
-  // Setup radial SENSE reconstructions
-  //
-
-  // Define encoding matrix for non-Cartesian SENSE
-  boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );
-  
-  E->setup( matrix_size, matrix_size_os, kernel_width );
+  // Estimate csm
+  boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_acc_coil_images();
+  boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );
 
   if( E->set_csm(csm) < 0 ) {
     cout << "Failed to set csm on encoding matrix" << endl;
+    return 1;
   }
+
+  acc_images.reset();
   csm.reset();
+
+  // Define regularization operators 
+  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Rx( new cuPartialDerivativeOperator<_real,_complext,3>(0) ); 
+  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Ry( new cuPartialDerivativeOperator<_real,_complext,3>(1) ); 
+  Rx->set_weight( kappa );
+  Ry->set_weight( kappa );
+ 
+  delete timer;
+    
+  // 
+  // Setup radial SENSE reconstructions
+  //
     
   // Setup conjugate gradient solver
-  cuCGSolver<_real, _complext> cg;
-  cg.add_matrix_operator( E );  // encoding matrix
-  cg.add_matrix_operator( R );  // regularization matrix
-  cg.set_preconditioner ( D );  // preconditioning matrix
-  cg.set_iterations( num_iterations );
-  cg.set_limit( 1e-6 );
-  cg.set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_VERBOSE );
+  boost::shared_ptr< cuCGSolver<_real, _complext> > cg(new  cuCGSolver<_real, _complext>);
+  cg->add_matrix_operator( E );   // encoding matrix
+  cg->add_matrix_operator( Rx );  // regularization matrix
+  cg->add_matrix_operator( Ry );  // regularization matrix
+  //  cg->set_preconditioner ( D );  // preconditioning matrix
+  cg->set_iterations( num_cg_iterations );
+  cg->set_limit( 1e-8 );
+  cg->set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_VERBOSE );
       
-  // Reconstruct all SENSE frames iteratively
-  unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
-  
   // Allocate space for result
-  image_dims = uintd_to_vector<2>(matrix_size); image_dims.push_back(frames_per_reconstruction*num_reconstructions); 
-  cuNDArray<_complext> result; result.create(&image_dims);
+  unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
+  boost::shared_ptr< std::vector<unsigned int> > image_dims( new std::vector<unsigned int> );
+  *image_dims = uintd_to_vector<2>(matrix_size); image_dims->push_back(frames_per_reconstruction*num_reconstructions); 
+  
+  cuNDArray<_complext> result; 
+  if( result.create(image_dims.get()) == 0x0 ){
+    cout << "Failed allocate result image" << endl;
+    return 1;
+  }
 
-  timer = new GPUTimer("Full SENSE reconstruction.");
+  // Setup split-Bregman solver
+  cuSBSolver<_real, _complext> sb;
+  sb.set_solver( cg );
+  sb.set_encoding_operator( E );
+  sb.add_regularization_group_operator( Rx ); 
+  sb.add_regularization_group_operator( Ry ); 
+  sb.set_outer_iterations(num_sb_outer_iterations);
+  sb.set_inner_iterations(num_sb_inner_iterations);
+  sb.set_image_dimensions(image_dims);
+  
+  timer = new GPUTimer("Full SENSE reconstruction with TV regularization.");
 
   for( unsigned int reconstruction = 0; reconstruction<num_reconstructions; reconstruction++ ){
 
@@ -237,29 +236,22 @@ int main(int argc, char** argv)
     if( E->preprocess(traj.get()) < 0 ) {
       cout << "Failed to set trajectory on encoding matrix" << endl;
     }
-    
-    // Set density compensation weights
-    if( E->set_dcw(dcw) < 0 ) {
-      cout << "Failed to set density compensation weights on encoding matrix" << endl;
-    }
-    
-    // Form rhs (use result array to save memory)
-    vector<unsigned int> rhs_dims = uintd_to_vector<2>(matrix_size); rhs_dims.push_back(frames_per_reconstruction);
-    cuNDArray<_complext> rhs; rhs.create(&rhs_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );    
-    E->mult_MH( data.get(), &rhs );
-
+        
     //
-    // Conjugate gradient solver
+    // Split-Bregman solver
     //
 
-    boost::shared_ptr< cuNDArray<_complext> > cgresult;
+    boost::shared_ptr< cuNDArray<_complext> > sbresult;
     {
       GPUTimer timer("GPU Conjugate Gradient solve");
-      cgresult = cg.solve(&rhs);
+      sbresult = sb.solve(data.get());
     }
 
-    // Copy cgresult to result (pointed to by rhs)
-    rhs = *(cgresult.get());
+    vector<unsigned int> tmp_dims = uintd_to_vector<2>(matrix_size); tmp_dims.push_back(frames_per_reconstruction);
+    cuNDArray<_complext> tmp; tmp.create(&tmp_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );    
+
+    // Copy sbresult to result (pointed to by tmp)
+    tmp = *(sbresult.get());
   }
   
   delete timer;
@@ -267,7 +259,7 @@ int main(int argc, char** argv)
   // All done, write out the result
 
   timer = new GPUTimer("Writing out result");
-  
+			 
   boost::shared_ptr< hoNDArray<_complext> > host_result = result.to_host();
   write_nd_array<_complext>(host_result.get(), (char*)parms.get_parameter('r')->get_string_value());
     

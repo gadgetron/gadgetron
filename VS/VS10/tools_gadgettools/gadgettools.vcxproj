@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -21,7 +21,11 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\toolboxes\gadgettools\GadgetSocketReceiver.h" />
     <ClInclude Include="..\..\..\toolboxes\gadgettools\GadgetSocketSender.h" />
-    <ClInclude Include="..\..\..\toolboxes\gadgettools\GadgetXml.h" />
+    <ClInclude Include="..\..\..\toolboxes\gadgettools\GadgetXml.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{87DDA0F7-917C-4343-A4EE-D1F07B9B2D53}</ProjectGuid>

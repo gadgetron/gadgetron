@@ -59,5 +59,7 @@ class cuEncodedImageOperator : public encodedImageOperator< REAL, cuNDArray<REAL
     return cuNDA_axpy( a, x, y );
   }
 
+
+
   DECLARE_MATRIX_OPERATOR_DEVICE_SUPPORT(cuEncodedImageOperator)
 };

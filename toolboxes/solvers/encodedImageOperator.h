@@ -2,16 +2,17 @@
 
 #include "imageOperator.h"
 
-template <class REAL, class ARRAY_TYPE_REAL, class ARRAY_TYPE_OPERATOR> class encodedImageOperator : public imageOperator<REAL, ARRAY_TYPE_OPERATOR>
+template <class REAL, class ARRAY_TYPE_REAL, class ARRAY_TYPE_OPERATOR> class encodedImageOperator : public imageOperator<REAL, ARRAY_TYPE_REAL, ARRAY_TYPE_OPERATOR>
 {
   
 public:
   
   encodedImageOperator() : imageOperator<REAL, ARRAY_TYPE_REAL, ARRAY_TYPE_OPERATOR>() {}
   virtual ~encodedImageOperator() {}
-  
+ 
   // Set encoding operator for the regularization image
   inline void set_encoding_operator( boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_OPERATOR> > encoding_operator )				     
+
   {
     encoding_operator_ = encoding_operator;
   }
@@ -34,13 +35,17 @@ public:
       std::cout << std::endl << "encodedImageOperator::mult_MH_M : forwards encoding operator failed." << std::endl;
       return -1;	
     }
-
-    if( imageOperator<REAL, ARRAY_TYPE_REAL, ARRAY_TYPE_OPERATOR>::mult_MH_M( &tmp, &tmp ) < 0 ){
+    ARRAY_TYPE_OPERATOR tmp2; 
+    if( tmp2.create( in->get_dimensions().get() ) < 0 ) {
+      std::cout << std::endl << "encodedImageOperator::mult_MH_M : decoded image allocation failed." << std::endl;
+      return -1;	
+    }
+    if( imageOperator<REAL, ARRAY_TYPE_REAL, ARRAY_TYPE_OPERATOR>::mult_MH_M( &tmp, &tmp2 ) < 0 ){
       std::cout << std::endl << "encodedImageOperator::mult_MH_M : error from inherited class" << std::endl;
       return -1;	
     }
     
-    if( encoding_operator_->mult_MH( &tmp, out, accumulate ) < 0 ){
+    if( encoding_operator_->mult_MH( &tmp2, out, accumulate ) < 0 ){
       std::cout << std::endl << "encodedImageOperator::mult_MH_M : backwards encoding operator failed." << std::endl;
       return -1;	
     }

@@ -1,19 +1,26 @@
 <?xml version="1.0" ?>  
 
 <readers>
-<reader slot="1001" dll="gadgetroncore" class="MRIAcquisitionReader" />
+  <reader slot="1001" dll="gadgetroncore" class="MRIAcquisitionReader" />
 </readers>
 
 <writers>
-<writer slot="1004" dll="gadgetroncore" class="MRIImageWriter" />
+  <writer slot="1004" dll="gadgetroncore" class="MRIImageWriter" />
 </writers>
 
 <stream>
-<gadget name="ImageFinish" dll="gadgetroncore" class="ImageFinishGadget" />
-<gadget name="GPUCGRadial0" dll="gadgetroncgsense" class="GPUCGGoldenRadialGadget">
-<property name="sliceno" value="0" />
-<property name="pass_on_undesired_data" value="true" />
-</gadget>
-
+  <gadget name="ImageFinish" dll="gadgetroncore" class="ImageFinishGadget" />
+  <gadget name="GPUCGRadial0" dll="gadgetroncgsense" class="GPUCGGoldenRadialGadget">
+    <property name="deviceno" value="0" />
+    <property name="sliceno" value="0" />
+    <property name="profiles_per_frame" value="32" />
+    <property name="shared_profiles" value="16" />
+    <property name="number_of_iterations" value="25" />
+    <property name="cg_limit" value="1e-6" />
+    <property name="oversampling" value="1.25" />
+    <property name="kernel_width" value="5.5" />
+    <property name="kappa" value="0.1" />
+    <property name="pass_on_undesired_data" value="true" />
+  </gadget>
+  <gadget name="NoiseAdjust" dll="gadgetroncore" class="NoiseAdjustGadget" />
 </stream>
-

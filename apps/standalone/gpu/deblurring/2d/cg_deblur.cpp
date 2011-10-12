@@ -16,8 +16,8 @@
 
 using namespace std;
 
-// Define desired precision
-typedef float _real; 
+// Define desired precision (note that decent deblurring of noisy images requires double precision)
+typedef double _real; 
 typedef complext<_real>::Type _complext;
 
 int main(int argc, char** argv)
@@ -85,7 +85,7 @@ int main(int argc, char** argv)
   if( kappa>0.0 ) cg.add_matrix_operator( Rx );  // regularization matrix
   if( kappa>0.0 ) cg.add_matrix_operator( Ry );  // regularization matrix
   cg.set_iterations( num_iterations );
-  cg.set_limit( 1e-8 );
+  cg.set_limit( 1e-12 );
   cg.set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_VERBOSE );
                 
   // Form right hand side
@@ -105,6 +105,9 @@ int main(int argc, char** argv)
     
   boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_norm<_real,2>(cgresult.get())->to_host();
   write_nd_array<_real>( host_norm.get(), "cg_deblurred_image.real" );  
+
+  boost::shared_ptr< hoNDArray<_real> > host_rhs = cuNDA_norm<_real,2>(&rhs)->to_host();
+  write_nd_array<_real>( host_rhs.get(), "rhs.real" );  
 
   return 0;
 }
