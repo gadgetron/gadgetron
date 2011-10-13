@@ -14,8 +14,8 @@
     <property name="deviceno" value="0" />
     <property name="sliceno" value="0" />
     <property name="profiles_per_frame" value="32" />
-    <property name="shared_profiles" value="16" />
-    <property name="number_of_iterations" value="25" />
+    <property name="shared_profiles" value="0" />
+    <property name="number_of_iterations" value="10" />
     <property name="cg_limit" value="1e-6" />
     <property name="oversampling" value="1.25" />
     <property name="kernel_width" value="5.5" />
