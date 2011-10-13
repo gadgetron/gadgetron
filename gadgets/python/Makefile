@@ -7,7 +7,10 @@ CONFIG_FILES=\
 	python.xml
 
 PYTHON_FILES=\
-	test_embedmod.py
+	rms_coil_combine.py \
+	kspaceandimage.py \
+	remove_2x_oversampling.py \
+	accumulate_and_recon.py 
 
 LIBSOURCES=\
 	PythonGadget.cpp \

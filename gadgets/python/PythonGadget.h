@@ -26,11 +26,26 @@ public Gadget2<T, hoNDArray< std::complex<float> > >
 
  protected:
   bool last_python_call_success_;
+  PyThreadState* py_interpreter_state_;
+
 
   int process_config(ACE_Message_Block* mb)
   {
-    Py_Initialize();
+    GADGET_DEBUG2("Initializing Threads (%s)\n", this->module()->name());
+
+    if (PyEval_ThreadsInitialized()) {
+      GADGET_DEBUG2("Acquire Lock (%s)\n", this->module()->name());
+      PyEval_AcquireLock();
+    } else {
+      PyEval_InitThreads();
+      GADGET_DEBUG2("Initialize (%s)\n", this->module()->name());
+      Py_Initialize();
+    }
+
     _import_array();
+
+    GADGET_DEBUG2("New Interpreter (%s)\n", this->module()->name());
+
     
     boost::shared_ptr<std::string> pypath        = this->get_string_value("python_path");
     boost::shared_ptr<std::string> pymod         = this->get_string_value("python_module");
@@ -88,7 +103,12 @@ public Gadget2<T, hoNDArray< std::complex<float> > >
 	
 	python_config_function_(boost::python::handle<>(PyString_FromString(mb->rd_ptr())));
       }
-    } catch(boost::python::error_already_set const &) { 
+
+      py_interpreter_state_ = PyEval_SaveThread();//
+      //PyEval_ReleaseLock(); //Release Python Lock
+
+    } catch(boost::python::error_already_set const &) {
+      py_interpreter_state_ = PyEval_SaveThread();//PyEval_ReleaseLock();
       GADGET_DEBUG1("Error loading python modules\n");
       PyErr_Print();
       return GADGET_FAIL;
@@ -110,6 +130,8 @@ public Gadget2<T, hoNDArray< std::complex<float> > >
     }
  
     try {
+      PyEval_RestoreThread(py_interpreter_state_);
+
       std::vector<unsigned int> dims = (*(m2->getObjectPtr()->get_dimensions().get()));
       std::vector<int> dims2(dims.size());
       for (unsigned int i = 0; i < dims.size(); i++) dims2[dims.size()-i-1] = static_cast<int>(dims[i]);
@@ -126,9 +148,11 @@ public Gadget2<T, hoNDArray< std::complex<float> > >
      
       python_input_function_(acq, data);
 
+      py_interpreter_state_ = PyEval_SaveThread();//PyEval_ReleaseLock();
 
     } catch(boost::python::error_already_set const &) { 
-      GADGET_DEBUG1("Passing data on to python module failed\n");
+      py_interpreter_state_ = PyEval_SaveThread();//PyEval_ReleaseLock();
+      GADGET_DEBUG2("Passing data on to python module failed  (Gadget: %s)\n", this->module()->name());
       PyErr_Print();
       last_python_call_success_ = false;
       return GADGET_OK;//We will bail out next time we enter
