@@ -30,6 +30,7 @@ protected:
   virtual boost::shared_ptr< cuNDArray<float> > calculate_density_compensation() = 0;
 
   virtual int copy_samples_for_profile( float* host_base_ptr, std::complex<float>* data_base_ptr, int profile_no, int channel_no );
+  virtual int configure_channels();
   virtual boost::shared_ptr< cuNDArray<float_complext::Type> > upload_samples();
 
   ACE_Message_Queue<ACE_MT_SYNCH> buffer_;
