@@ -22,7 +22,7 @@ def recon_function(acq, data):
     data2 = ki.itok(ki.ktoi(data2,[1])[:,(0+(new_length>>1)):(new_length+(new_length>>1))],[1])
     orig_size[data.ndim-1] = new_length
     data2.reshape(tuple(orig_size))
-    acq.sample = new_length
-    myGadgetReference.return_acquisition(acq,data2)
+    acq.samples = new_length
+    myGadgetReference.return_acquisition(acq,data2.astype('complex64'))
 
 

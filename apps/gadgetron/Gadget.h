@@ -102,7 +102,9 @@ public:
 	GADGET_DEBUG2("Gadget (%s) failed to out hang up message on queue\n", this->module()->name());
 	return GADGET_FAIL;	  
       }
+      GADGET_DEBUG2("Gadget (%s) waiting for thread to finish\n", this->module()->name());
       rval = this->wait();
+      GADGET_DEBUG2("Gadget (%s) thread finished\n", this->module()->name());
     }
     return rval;
   }
@@ -113,17 +115,21 @@ public:
     
     for (ACE_Message_Block *m = 0; ;) {
 
+      //GADGET_DEBUG2("Waiting for message in Gadget (%s)\n", this->module()->name());
       if (this->getq(m) == -1) {
 	GADGET_DEBUG2("Gadget (%s) failed to get message from queue\n", this->module()->name());
 	return GADGET_FAIL;	  
       }
+      //GADGET_DEBUG2("Message Received in Gadget (%s)\n", this->module()->name());
 
       //If this is a hangup message, we are done, put the message back on the queue before breaking
       if (m->msg_type() == ACE_Message_Block::MB_HANGUP) {
+	//GADGET_DEBUG2("Gadget (%s) Hangup message encountered\n", this->module()->name());
 	if (this->putq(m) == -1) {
 	  GADGET_DEBUG2("Gadget (%s) failed to put hang up message on queue (for other threads)\n", this->module()->name());
 	  return GADGET_FAIL;	  
 	}
+	//GADGET_DEBUG2("Gadget (%s) breaking loop\n", this->module()->name());
 	break;
       }
 

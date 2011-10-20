@@ -1,4 +1,5 @@
 #include <boost/python.hpp>
+#include <numpy/arrayobject.h>
 
 #include "../core/GadgetMRIHeaders.h"
 #include "GadgetReference.h"
@@ -8,9 +9,10 @@ using namespace boost::python;
 BOOST_PYTHON_MODULE(GadgetronPythonMRI)
 {
 
+  //import_array();
   boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
- 
- class_<LoopCounters>("LoopCounters")
+
+  class_<LoopCounters>("LoopCounters")
    .def_readwrite("line", &LoopCounters::line)
    .def_readwrite("acquisition",&LoopCounters::acquisition)
    .def_readwrite("slice",&LoopCounters::slice)

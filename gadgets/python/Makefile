@@ -10,12 +10,15 @@ PYTHON_FILES=\
 	rms_coil_combine.py \
 	kspaceandimage.py \
 	remove_2x_oversampling.py \
-	accumulate_and_recon.py 
+	accumulate_and_recon.py \
+	GadgetronXML.py \
+	image_viewer.py 
 
 LIBSOURCES=\
 	PythonGadget.cpp \
 	GadgetReference.cpp \
-	GadgetronPythonMRI.cpp	 
+	GadgetronPythonMRI.cpp \
+	PythonCommunicator.cpp 
 
 LIBOBJECTS=$(LIBSOURCES:.cpp=.o)
 
