@@ -98,33 +98,9 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
     cg_.set_limit( cg_limit_ ); 
     cg_.set_output_mode( cuCGSolver<float, float_complext::Type>::OUTPUT_VERBOSE ); // TODO: once it is all working, change to silent output
 
-    // We do not have a csm yet, so initialize a dummy one to purely ones
-    boost::shared_ptr< cuNDArray<float_complext::Type> > csm = boost::shared_ptr< cuNDArray<float_complext::Type> >( new cuNDArray<float_complext::Type> );
-    std::vector<unsigned int> csm_dims = uintd_to_vector<2>(matrix_size_); csm_dims.push_back( channels_ );
-
-    if( csm->create( &csm_dims ) == 0x0 ) {
-      GADGET_DEBUG1( "Error: unable to create csm.\n" );
+    if( configure_channels() == GADGET_FAIL )
       return GADGET_FAIL;
-    }
-
-    if( !cuNDA_clear<float_complext::Type>( csm.get(), get_one<float_complext::Type>() ) ){
-      GADGET_DEBUG1( "Error: unable to clear csm.\n" );
-      return GADGET_FAIL;
-    }
-
-    // Setup matrix operator
-    E_->set_csm(csm);
-
-    if( E_->setup( matrix_size_, matrix_size_os_, kernel_width_ ) < 0 ){
-      GADGET_DEBUG1( "Error: unable to setup encoding operator.\n" );
-      return GADGET_FAIL;
-    }
-
-    // Allocate rhs buffer
-    rhs_buffer_ = boost::shared_ptr< cuSenseRHSBuffer<float,2> >( new cuSenseRHSBuffer<float,2>() );
-    rhs_buffer_->set_num_coils( channels_ );
-    rhs_buffer_->set_sense_operator( E_ );
-
+    
     is_configured_ = true;
   }
 
@@ -132,7 +108,39 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
 }
 
 
-int  GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
+int GPUCGGadget::configure_channels()
+{
+  // We do not have a csm yet, so initialize a dummy one to purely ones
+  boost::shared_ptr< cuNDArray<float_complext::Type> > csm = boost::shared_ptr< cuNDArray<float_complext::Type> >( new cuNDArray<float_complext::Type> );
+  std::vector<unsigned int> csm_dims = uintd_to_vector<2>(matrix_size_); csm_dims.push_back( channels_ );
+  
+  if( csm->create( &csm_dims ) == 0x0 ) {
+    GADGET_DEBUG1( "Error: unable to create csm.\n" );
+    return GADGET_FAIL;
+  }
+  
+  if( !cuNDA_clear<float_complext::Type>( csm.get(), get_one<float_complext::Type>() ) ){
+    GADGET_DEBUG1( "Error: unable to clear csm.\n" );
+    return GADGET_FAIL;
+  }
+  
+  // Setup matrix operator
+  E_->set_csm(csm);
+  
+  if( E_->setup( matrix_size_, matrix_size_os_, kernel_width_ ) < 0 ){
+    GADGET_DEBUG1( "Error: unable to setup encoding operator.\n" );
+    return GADGET_FAIL;
+  }
+  
+  // Allocate rhs buffer
+  rhs_buffer_ = boost::shared_ptr< cuSenseRHSBuffer<float,2> >( new cuSenseRHSBuffer<float,2>() );
+  rhs_buffer_->set_num_coils( channels_ );
+  rhs_buffer_->set_sense_operator( E_ );
+
+  return GADGET_OK;
+}
+
+int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
   if (!is_configured_) {
     GADGET_DEBUG1("Data received before configuration complete\n");
@@ -150,6 +158,24 @@ int  GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, 
       m1->release();
     }
     return GADGET_OK;
+  }
+
+  // Check if some upstream gadget has modified the number of channels or samples per profile 
+  // since the global configuration is no longer valid then...
+  //
+
+  if( m1->getObjectPtr()->samples != samples_per_profile_ ) {
+    GADGET_DEBUG2("Adjusting #samples per profile from %d to %d", samples_per_profile_,  m1->getObjectPtr()->samples );
+    samples_per_profile_ = m1->getObjectPtr()->samples;
+    allocated_samples_ = 0; // the samples buffers are freed and re-allocated in 'upload_samples()'
+  }
+
+  if( m1->getObjectPtr()->channels != channels_ ) {
+    GADGET_DEBUG2("Adjusting #channels from %d to %d", channels_,  m1->getObjectPtr()->channels );
+    channels_ = m1->getObjectPtr()->channels;
+    allocated_samples_ = 0; // the samples buffers are freed and re-allocated in 'upload_samples()'
+    if( configure_channels() == GADGET_FAIL ) // Update buffers dependant on #channels
+      return GADGET_FAIL;    
   }
 
   buffer_.enqueue_tail(m1);
