@@ -12,6 +12,7 @@ gadgetrondatasender
 inc/
 *.d
 *.txt
+!CMakeLists.txt
 config/
 bin/
 apps/standalone/gpu/CT/parallel_beam/2d+t/cgbackprojection_spatial_reg
@@ -29,3 +30,4 @@ apps/standalone/gpu/MRI/sense/noncartesian/radial/2d_golden_ratio/radial_sense_s
 lib/*.py
 lib/*.pyc
 .DS_Store
+build/

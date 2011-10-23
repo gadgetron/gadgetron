@@ -16,6 +16,7 @@
 <gadget name="ImageWrite" dll="gadgetroncore" class="ImageWriterGadget" />
 -->
 
+<!--
 <gadget name="ImageViewPython" dll="gadgetronpython" class="ImagePythonGadget">
 <property name="python_path" value="/home/myuser/scripts/python" />
 <property name="python_module" value="image_viewer" />
@@ -23,6 +24,7 @@
 <property name="input_function" value="recon_function" />
 <property name="config_function" value="config_function" />
 </gadget>
+-->
 
 <gadget name="CoilCombinePython" dll="gadgetronpython" class="ImagePythonGadget">
 <property name="python_path" value="/home/myuser/scripts/python" />
