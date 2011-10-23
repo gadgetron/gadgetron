@@ -2,52 +2,28 @@
 
 -Prerequisites for building:
 
-gadgetron
-  ACE (tested with versions 5.6 and 6.0)
-  (See instructions for MAC below)
-
-  TinyXML version >= 2.6.1
-  (Included in depedencies/, make; make install)
-
-gadgetron/gadgets/core
-  FFTW3
-  (See instructions for MAC below)
-
-gadgetron/gadgets/gpucg
-  CUDA (in /usr/local/cuda)
-  thrust (in /usr/local/cuda/include)
-  NVIDIA Cuda SDK (in ~/NVIDIA_GPU_Computing_SDK/)
-  CUDPP (recompiled with -fPIC)
-     Normally distributed with NVIDIA SDK (but not PIC)
+CMake
+ACE (tested with versions 5.6 and 6.0)
+FFTW3
+Boost 
+TinyXML version >= 2.6.1
+(Included in depedencies/, cmake; make; sudo make install)
+  
+Optional
+CUDA (and CULA)
+Qt4
+OpenGL
+GLEW
 
 -------------------------------------
 Building instructions
 
-Because the layout of the various libraries is not quite set yet.
-There are some (counter intuitive) steps to build.
+mkdir build
+cd build
+cmake ../
+make
+sudo make install
 
-1.  Checkout source code: 
-    git clone ssh://username@137.187.134.61/home/gitrepos/gadgetron.git
-
-2.  cd gadgetron/
-3.  make; make install
-4.  cd toolboxes/gadgettools/
-5.  make; make install
-6.  cd ../ndarray/
-7.  make; make install
-8.  cd ../../gadgets/core/
-9.  make;make install
-10.  cd ../../gpucg/
-11. make; make install
-
-To run the gadgetron
-1.  cd lib/
-2.  ./gadgetron
-
-To feed data into the gadgetron
-1.  cd gadgetron/gadgetdatasender/
-2.  make
-3.  ./gadgetdatasender -f filname.dat -c configuration_file.xml
 
 ------------------------------------
 ACE Install instructions on Mac (Snow Leopard)
@@ -91,6 +67,4 @@ Tools for Mac:
 - gfortran:
 http://gcc.gnu.org/wiki/GFortranBinaries#MacOS
 
--on MAGMA
-in make.inc, change to Tesla architecture
-remove "-zmuldefs"
+
