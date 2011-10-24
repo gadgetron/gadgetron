@@ -16,7 +16,7 @@ FIND_PATH( CULA_INCLUDE_DIR "cula.h"
 
 FIND_LIBRARY( CULA_LIBRARIES
               NAMES "cula"
-              PATH_SUFFIXES "cula/lib" "cula/lib64" )
+              PATH_SUFFIXES "cula/lib64" )
 
 # handle the QUIETLY and REQUIRED arguments and set CULA_FOUND to TRUE if
 # all listed variables are TRUE
