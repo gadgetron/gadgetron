@@ -44,4 +44,4 @@ class PythonCommunicator
 
 };
 
-typedef ACE_Singleton<PythonCommunicator, ACE_Null_Mutex> PythonCommunicatorSingleton;
+typedef ACE_Singleton<PythonCommunicator, ACE_Thread_Mutex> PythonCommunicatorSingleton;

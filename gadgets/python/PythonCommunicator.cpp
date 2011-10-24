@@ -36,6 +36,7 @@ PythonCommunicator::~PythonCommunicator()
 
 int PythonCommunicator::addPath(std::string path)
 {
+
   PyGILState_STATE gstate;
   gstate = PyGILState_Ensure();
 
@@ -59,6 +60,7 @@ int PythonCommunicator::registerGadget(Gadget* g, std::string mod,
 				       std::string ref, std::string conf,
 				       std::string process)
 {
+
   PyGILState_STATE gstate;
  
   if (!g) {
@@ -114,6 +116,7 @@ int PythonCommunicator::registerGadget(Gadget* g, std::string mod,
 
 int PythonCommunicator::processConfig(Gadget* g, ACE_Message_Block* mb)
 {
+
   PyGILState_STATE gstate;
   std::map< Gadget*, boost::python::object >::iterator it;
 
@@ -146,6 +149,7 @@ template<class T> int PythonCommunicator::process(Gadget* g,
 						  GadgetContainerMessage<T>* m1,
 						  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
+
   PyGILState_STATE gstate;
 
   std::map< Gadget*, boost::python::object >::iterator it;
@@ -163,17 +167,18 @@ template<class T> int PythonCommunicator::process(Gadget* g,
       std::vector<unsigned int> dims = (*(m2->getObjectPtr()->get_dimensions().get()));
       std::vector<int> dims2(dims.size());
       for (unsigned int i = 0; i < dims.size(); i++) dims2[dims.size()-i-1] = static_cast<int>(dims[i]);
-      
+
       boost::python::object obj(boost::python::handle<>(PyArray_FromDims(dims2.size(), &dims2[0], PyArray_CFLOAT)));
       boost::python::object data = boost::python::extract<boost::python::numeric::array>(obj);
-      
+
       //Copy data
       memcpy(PyArray_DATA(data.ptr()), m2->getObjectPtr()->get_data_ptr(), m2->getObjectPtr()->get_number_of_elements()*sizeof(float)*2);
       
       //Get Header
       T acq = *m1->getObjectPtr();      
       m1->release(); 
-      boost::python::object ignored = it->second(acq, data);    
+
+      boost::python::object ignored = it->second(acq, data);
     } catch(boost::python::error_already_set const &) { 
       GADGET_DEBUG1("Passing data on to python module failed\n");
       PyErr_Print();

@@ -45,7 +45,18 @@ int GadgetReference::return_data(T header, boost::python::numeric::array arr)
   memcpy(m2->getObjectPtr()->get_data_ptr(), PyArray_DATA(arr.ptr()), m2->getObjectPtr()->get_number_of_elements()*2*sizeof(float));
 
   if (gadget_) {
-    return gadget_->next()->putq(m1);
+    //ACE_Time_Value wait = ACE_OS::gettimeofday() + ACE_Time_Value(0,1000); //1ms from now
+    ACE_Time_Value nowait (ACE_OS::gettimeofday ());
+    if (gadget_->next()->putq(m1,&nowait) == -1) {
+      GADGET_DEBUG2("Putting message on Queue failed (%s)\n", gadget_->module()->name());
+      GADGET_DEBUG2("Message Q: low mark %d, high mark %d, message bytes %d, message count %d\n",
+		    gadget_->next()->msg_queue()->low_water_mark(), gadget_->next()->msg_queue()->high_water_mark(),
+		    gadget_->next()->msg_queue()->message_bytes(),gadget_->next()->msg_queue()->message_count()); 
+      return GADGET_FAIL;
+    } else {
+      return GADGET_OK;
+    }
+    //return gadget_->next()->putq(m1);
   } else {
     GADGET_DEBUG1("Data received from python, but no Gadget registered for output\n");
     m1->release();

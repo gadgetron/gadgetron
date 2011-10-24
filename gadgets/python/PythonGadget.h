@@ -68,6 +68,14 @@ public Gadget2<T, hoNDArray< std::complex<float> > >
   int process(GadgetContainerMessage<T>* m1,
 	      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
   {
+    //We want to avoid a deadlock for the Python GIL if this python call results in an output that the GadgetReference will not be able to get rid of.
+    //This is kind of a nasty busy wait, maybe we should add an event handler to the NotificationStrategy of the Q or something, but for now, this will do it.
+    while (this->next()->msg_queue()->is_full()) {
+      //GADGET_DEBUG2("2 Gadget (%s) sleeping while downstream Gadget (%s) does some work\n", this->module()->name(), this->next()->module()->name());
+      ACE_Time_Value tv(0,10000); //Sleep for 10ms while the downstream Gadget does some work
+      ACE_OS::sleep(tv);
+    }
+
     //GADGET_DEBUG2("Process called in Gadget (%s)\n", this->module()->name());
     if (communicator_->process(this,m1,m2) != GADGET_OK) {
       GADGET_DEBUG2("Failed to process data for Gadget (%s)\n", this->module()->name());
