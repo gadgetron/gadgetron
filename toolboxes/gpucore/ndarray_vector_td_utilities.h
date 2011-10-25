@@ -91,6 +91,13 @@ cuNDA_real_to_complext( cuNDArray<REAL> *data,
 			cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
 			cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
+// complext to real (by discarding the imaginary component)
+template<class REAL> EXPORTGPUCORE 
+boost::shared_ptr< cuNDArray<REAL> > 
+cuNDA_complext_to_real( cuNDArray<typename complext<REAL>::Type> *data,
+			cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
+			cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
+
 //
 // Utilities overwriting the input
 //
