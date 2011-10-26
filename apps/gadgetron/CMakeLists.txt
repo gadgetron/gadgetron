@@ -6,6 +6,8 @@ target_link_libraries(gadgetron ${ACE_LIBRARIES} ${TINYXML_LIBRARIES})
 
 install(TARGETS gadgetron DESTINATION bin)
 
+install(FILES gadgetron_start.pl DESTINATION bin PERMISSIONS OWNER_WRITE OWNER_EXECUTE OWNER_READ GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+
 install(FILES 	
 	GadgetContainerMessage.h
 	Gadget.h
@@ -14,4 +16,5 @@ install(FILES
 	Gadgetron.h
 	GadgetMessageInterface.h
 DESTINATION include)
+
 

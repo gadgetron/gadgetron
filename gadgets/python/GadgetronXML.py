@@ -1,7 +1,7 @@
 import xml.dom.minidom
 
 def getParameterFromSection(XMLstr, section, parameter):
-    ret_val = ""
+    ret_val = "0"
     dom = xml.dom.minidom.parseString(XMLstr)
     sec = dom.getElementsByTagName(section)[0].getElementsByTagName("parameter")
     for i in range(len(sec)):

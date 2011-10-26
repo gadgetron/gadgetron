@@ -104,20 +104,23 @@ int NoiseAdjustGadget::process_config(ACE_Message_Block* mb)
 
   TiXmlDocument doc;
   doc.Parse(mb->rd_ptr());
+
+  GadgetXMLNode n = GadgetXMLNode(&doc).get<GadgetXMLNode>(std::string("gadgetron.encoding"))[0];
   
-  noise_dwell_time_us_ = GetDoubleParameterValueFromXML(&doc, "encoding", "noise_dwell_time_us");
-  acquisition_dwell_time_us_ = GetDoubleParameterValueFromXML(&doc, "encoding", "acquisition_dwell_time_us");
-  receiver_noise_bandwidth_ = GetDoubleParameterValueFromXML(&doc, "encoding", "receiver_noise_bandwidth");
+  noise_dwell_time_us_ = n.get<double>(std::string("noise_dwell_time_us.value"))[0]; //GetDoubleParameterValueFromXML(&doc, "encoding", "noise_dwell_time_us");
+  acquisition_dwell_time_us_ = n.get<double>(std::string("acquisition_dwell_time_us.value"))[0]; //GetDoubleParameterValueFromXML(&doc, "encoding", "acquisition_dwell_time_us");
+  receiver_noise_bandwidth_ = n.get<double>(std::string("receiver_noise_bandwidth.value"))[0];//GetDoubleParameterValueFromXML(&doc, "encoding", "receiver_noise_bandwidth");
+
   if ((noise_dwell_time_us_ == 0.0f) || (acquisition_dwell_time_us_ == 0.0f)) {
     noise_bw_scale_factor_ = 1.0f;
   } else {
     noise_bw_scale_factor_ = sqrt(2*acquisition_dwell_time_us_/noise_dwell_time_us_*receiver_noise_bandwidth_);
   }
 
-  //GADGET_DEBUG2("Noise dwell time: %f\n", noise_dwell_time_us_);
-  //GADGET_DEBUG2("Acquisition dwell time: %f\n", acquisition_dwell_time_us_);
-  //GADGET_DEBUG2("receiver_noise_bandwidth: %f\n", receiver_noise_bandwidth_);
-  //GADGET_DEBUG2("noise_bw_scale_factor: %f\n", noise_bw_scale_factor_);
+  GADGET_DEBUG2("Noise dwell time: %f\n", noise_dwell_time_us_);
+  GADGET_DEBUG2("Acquisition dwell time: %f\n", acquisition_dwell_time_us_);
+  GADGET_DEBUG2("receiver_noise_bandwidth: %f\n", receiver_noise_bandwidth_);
+  GADGET_DEBUG2("noise_bw_scale_factor: %f\n", noise_bw_scale_factor_);
 
 
   return GADGET_OK;

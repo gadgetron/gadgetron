@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 
-$home_dir = $ENV{"HOME"};
-$gadgetron_home = $home_dir . "/mrprogs/gadgetron";
+$gadgetron_home = "/usr/local/gadgetron";
 
 my $executable = "$gadgetron_home/bin/gadgetron";
 my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst)=localtime(time);
