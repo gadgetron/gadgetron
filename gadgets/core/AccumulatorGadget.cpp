@@ -25,6 +25,10 @@ int AccumulatorGadget::process_config(ACE_Message_Block* mb)
     return GADGET_FAIL;
   }
 
+  if (dims[2] == 0) {
+    dims[2] = 1;
+  }
+
   dimensions_.push_back(n.get<long>(std::string("encoding.kspace.readout_length.value"))[0]);
   //  dimensions_.push_back(dims[0]);
   dimensions_.push_back(dims[1]);
@@ -32,17 +36,6 @@ int AccumulatorGadget::process_config(ACE_Message_Block* mb)
   dimensions_.push_back(n.get<long>(std::string("encoding.channels.value"))[0]);
   dimensions_.push_back(n.get<long>(std::string("encoding.slices.value"))[0]);
 
-  for (unsigned int i = 0; i < dimensions_.size(); i++) {
-    std::cout << "Dimensions: " << dimensions_[i] << std::endl;
-  }
-
-  /*
-  dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "readout_length"));
-  dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "matrix_y"));
-  dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "matrix_z"));
-  dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "channels"));
-  dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "slices"));
-  */
 
   if (!(buffer_ = new hoNDArray< std::complex<float> >())) {
     ACE_DEBUG( (LM_ERROR, ACE_TEXT("Failed to allocate buffer array")) );

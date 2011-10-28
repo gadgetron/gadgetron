@@ -1,4 +1,7 @@
-include_directories(${ACE_INCLUDE_DIR} ${TINYXML_INCLUDE_DIR})
+include_directories(
+  ${ACE_INCLUDE_DIR} 
+  ${TINYXML_INCLUDE_DIR}
+  ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools)
 
 add_executable(gadgetron main.cpp GadgetStreamController.cpp GadgetServerAcceptor.cpp)
 

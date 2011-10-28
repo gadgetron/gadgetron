@@ -1,27 +1,64 @@
 <?xml version="1.0" ?>  
+<gadgetron>
+  <readers>
+    <reader>
+      <slot>1001</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIAcquisitionReader</class>
+    </reader>
+  </readers>
+  
+  <writers>
+    <writer>
+      <slot>1004</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIImageWriter</class>
+    </writer>
+  </writers>
+  
+  <stream>
+    <gadget>
+      <name>NoiseAdjust</name>
+      <dll>gadgetroncore</dll>
+      <class>NoiseAdjustGadget</class>
+    </gadget>
 
-<readers>
-  <reader slot="1001" dll="gadgetroncore" class="MRIAcquisitionReader" />
-</readers>
+    <gadget>
+      <name>RemoveROOversampling</name>
+      <dll>gadgetrongrappa</dll>
+      <class>RemoveROOversamplingGadget</class>
+    </gadget>
 
-<writers>
-  <writer slot="1004" dll="gadgetroncore" class="MRIImageWriter" />
-</writers>
+    <gadget>
+      <name>GPUCGRadial0</name>
+      <dll>gadgetroncgsense</dll>
+      <class>GPUCGGoldenRadialGadget</class>
+      <property><name>deviceno</name>                <value>0</value></property>
+      <property><name>sliceno</name>                 <value>0</value></property>
+      <property><name>profiles_per_frame</name>      <value>32</value></property>
+      <property><name>shared_profiles</name>         <value>0</value></property>
+      <property><name>number_of_iterations</name>    <value>10</value></property>
+      <property><name>cg_limit</name>                <value>1e-6</value></property>
+      <property><name>oversampling</name>            <value>1.25</value></property>
+      <property><name>kernel_width</name>            <value>5.5</value></property>
+      <property><name>kappa</name>                   <value>0.1</value></property>
+      <property><name>pass_on_undesired_data</name>  <value>true</value></property>
+    </gadget>
 
-<stream>
-  <gadget name="ImageFinish" dll="gadgetroncore" class="ImageFinishGadget" />
-  <gadget name="GPUCGRadial0" dll="gadgetroncgsense" class="GPUCGGoldenRadialGadget">
-    <property name="deviceno" value="0" />
-    <property name="sliceno" value="0" />
-    <property name="profiles_per_frame" value="32" />
-    <property name="shared_profiles" value="0" />
-    <property name="number_of_iterations" value="10" />
-    <property name="cg_limit" value="1e-6" />
-    <property name="oversampling" value="1.25" />
-    <property name="kernel_width" value="5.5" />
-    <property name="kappa" value="0.1" />
-    <property name="pass_on_undesired_data" value="true" />
-  </gadget>
-  <gadget name="RemoveROOversampling" dll="gadgetrongrappa" class="RemoveROOversamplingGadget" />
-  <gadget name="NoiseAdjust" dll="gadgetroncore" class="NoiseAdjustGadget" />
-</stream>
+    <!--
+    <gadget>
+      <name>ImageWrite</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageWriterGadget</class>
+    </gadget>
+    -->
+
+    <gadget>
+      <name>ImageFinish</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageFinishGadget</class>
+    </gadget>
+  </stream>
+
+</gadgetron>
+

@@ -31,3 +31,4 @@ lib/*.py
 lib/*.pyc
 .DS_Store
 build/
+*.pyc

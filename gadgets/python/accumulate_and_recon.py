@@ -27,6 +27,7 @@ def recon_function(acq, data):
     
     if (acq.flags & (1<<1)): #Is this the last scan in slice
         image = ki.ktoi(myBuffer,(2,3,4))
+        image = image * np.product(image.shape) #Scaling for the scanner
         #Create a new image header and transfer value
         img_head = g.GadgetMessageImage()
         img_head.channels = acq.channels

@@ -9,8 +9,9 @@ def set_gadget_reference(gadref):
     myGadgetReference = gadref
 
 def config_function(conf):
-    print "Configuration received"
-    print str(conf)
+    return
+    #print "Configuration received"
+    #print str(conf)
 
 def recon_function(acq, data):
     global myVariable

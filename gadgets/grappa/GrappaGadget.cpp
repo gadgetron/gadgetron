@@ -30,11 +30,25 @@ int GrappaGadget::process_config(ACE_Message_Block* mb)
   TiXmlDocument doc;
   doc.Parse(mb->rd_ptr());
 
-  dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "readout_length"));
-  dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "matrix_y"));
-  dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "matrix_z"));
-  dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "channels"));
-  dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "slices"));
+  GadgetXMLNode n = GadgetXMLNode(&doc).get<GadgetXMLNode>(std::string("gadgetron"))[0];
+
+  std::vector<long> dims = n.get<long>(std::string("encoding.kspace.matrix_size.value"));
+
+  if (dims.size() < 3) {
+    GADGET_DEBUG2("Matrix dimensions have the wrong length: %d\n", dims.size());
+    return GADGET_FAIL;
+  }
+
+  if (dims[2] == 0) {
+    dims[2] = 1;
+  }
+
+  dimensions_.push_back(n.get<long>(std::string("encoding.kspace.readout_length.value"))[0]);
+  //  dimensions_.push_back(dims[0]);
+  dimensions_.push_back(dims[1]);
+  dimensions_.push_back(dims[2]);
+  dimensions_.push_back(n.get<long>(std::string("encoding.channels.value"))[0]);
+  dimensions_.push_back(n.get<long>(std::string("encoding.slices.value"))[0]);
 
   image_dimensions_.push_back(dimensions_[0] / 2); //TODO: fix this in general
   image_dimensions_.push_back(dimensions_[1]);

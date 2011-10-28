@@ -1,52 +1,81 @@
 <?xml version="1.0" ?>  
+<gadgetron>
+  <readers>
+    <reader>
+      <slot>1001</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIAcquisitionReader</class>
+    </reader>
+  </readers>
+  
+  <writers>
+    <writer>
+      <slot>1004</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIImageWriter</class>
+    </writer>
+  </writers>
+  
+  <stream>
+    <gadget>
+      <name>RemoveOversamplingPython</name>
+      <dll>gadgetronpython</dll>
+      <class>AcquisitionPythonGadget</class>
+      <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
+      <property><name>python_module</name>                <value>remove_2x_oversampling</value></property>
+      <property><name>gadget_reference_function</name>    <value>set_gadget_reference</value></property>
+      <property><name>input_function</name>               <value>recon_function</value></property>
+      <property><name>config_function</name>              <value>config_function</value></property>
+    </gadget>
 
-<readers>
-<reader slot="1001" dll="gadgetroncore" class="MRIAcquisitionReader" />
-</readers>
+    <gadget>
+      <name>AccReconPython</name>
+      <dll>gadgetronpython</dll>
+      <class>AcquisitionPythonGadget</class>
+      <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
+      <property><name>python_module</name>                <value>accumulate_and_recon</value></property>
+      <property><name>gadget_reference_function</name>    <value>set_gadget_reference</value></property>
+      <property><name>input_function</name>               <value>recon_function</value></property>
+      <property><name>config_function</name>              <value>config_function</value></property>
+    </gadget>
 
-<writers>
-<writer slot="1004" dll="gadgetroncore" class="MRIImageWriter" />
-</writers>
+    <gadget>
+      <name>CoilCombinePython</name>
+      <dll>gadgetronpython</dll>
+      <class>ImagePythonGadget</class>
+      <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
+      <property><name>python_module</name>                <value>rms_coil_combine</value></property>
+      <property><name>gadget_reference_function</name>    <value>set_gadget_reference</value></property>
+      <property><name>input_function</name>               <value>recon_function</value></property>
+      <property><name>config_function</name>              <value>config_function</value></property>
+    </gadget>
 
-<stream>
+    <!--
+    <gadget>
+      <name>ImageViewPython</name>
+      <dll>gadgetronpython</dll>
+      <class>ImagePythonGadget</class>
+      <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
+      <property><name>python_module</name>                <value>image_viewer</value></property>
+      <property><name>gadget_reference_function</name>    <value>set_gadget_reference</value></property>
+      <property><name>input_function</name>               <value>recon_function</value></property>
+      <property><name>config_function</name>              <value>config_function</value></property>
+    </gadget>
+    -->
 
-<gadget name="ImageFinish" dll="gadgetroncore" class="ImageFinishGadget" />
+    <!--
+    <gadget>
+      <name>ImageWrite</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageWriterGadget</class>
+    </gadget>
+    -->
 
-<!--
-<gadget name="ImageWrite" dll="gadgetroncore" class="ImageWriterGadget" />
--->
+    <gadget>
+      <name>ImageFinish</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageFinishGadget</class>
+    </gadget>
+  </stream>
 
-<!--
-<gadget name="ImageViewPython" dll="gadgetronpython" class="ImagePythonGadget">
-<property name="python_path" value="/home/myuser/scripts/python" />
-<property name="python_module" value="image_viewer" />
-<property name="gadget_reference_function" value="set_gadget_reference" />
-<property name="input_function" value="recon_function" />
-<property name="config_function" value="config_function" />
-</gadget>
--->
-
-<gadget name="CoilCombinePython" dll="gadgetronpython" class="ImagePythonGadget">
-<property name="python_path" value="/home/myuser/scripts/python" />
-<property name="python_module" value="rms_coil_combine" />
-<property name="gadget_reference_function" value="set_gadget_reference" />
-<property name="input_function" value="recon_function" />
-<property name="config_function" value="config_function" />
-</gadget>
-
-<gadget name="AccReconPython" dll="gadgetronpython" class="AcquisitionPythonGadget">
-<property name="python_module" value="accumulate_and_recon" />
-<property name="gadget_reference_function" value="set_gadget_reference" />
-<property name="input_function" value="recon_function" />
-<property name="config_function" value="config_function" />
-</gadget>
-
-<gadget name="RemoveOversamplingPython" dll="gadgetronpython" class="AcquisitionPythonGadget">
-<property name="python_module" value="remove_2x_oversampling" />
-<property name="gadget_reference_function" value="set_gadget_reference" />
-<property name="input_function" value="recon_function" />
-<property name="config_function" value="config_function" />
-</gadget>
-
-</stream>
-
+</gadgetron>

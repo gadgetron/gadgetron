@@ -57,6 +57,8 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
   TiXmlDocument doc;
   doc.Parse(mb->rd_ptr());
 
+  GadgetXMLNode n(&doc);
+
   if (!is_configured_) {
 
     cudaDeviceProp deviceProp; 
@@ -67,10 +69,12 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
 
     unsigned int warp_size = deviceProp.warpSize;
 
-    samples_per_profile_ = GetIntParameterValueFromXML(&doc, "encoding","readout_length");
-    channels_ = GetIntParameterValueFromXML(&doc,"encoding","channels");
+    samples_per_profile_ = n.get<long>(std::string("gadgetron.encoding.kspace.readout_length.value"))[0];
+    channels_ = n.get<long>(std::string("gadgetron.encoding.channels.value"))[0];
 
-    matrix_size_ = uintd2(GetIntParameterValueFromXML(&doc,"encoding","matrix_x"), GetIntParameterValueFromXML(&doc,"encoding","matrix_y"));
+
+    std::vector<long> dims = n.get<long>(std::string("gadgetron.encoding.kspace.matrix_size.value"));
+    matrix_size_ = uintd2(dims[0], dims[1]);
 
     GADGET_DEBUG2("Matrix size  : [%d,%d] \n", matrix_size_.vec[0], matrix_size_.vec[1]);
 

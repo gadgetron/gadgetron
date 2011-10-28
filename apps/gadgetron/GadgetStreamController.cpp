@@ -5,7 +5,7 @@
 #include "ace/DLL_Manager.h"
 #include "ace/OS_NS_netdb.h"
 
-#include <tinyxml.h>
+#include "GadgetXml.h"
 
 #include "GadgetStreamController.h"
 #include "GadgetContainerMessage.h"
@@ -255,142 +255,145 @@ int GadgetStreamController::configure_from_file(std::string config_xml_filename)
 
 int GadgetStreamController::configure(std::string config_xml_string)
 {
-  /*
-  char * gadgetron_home = ACE_OS::getenv("GADGETRON_HOME");
-
-  if (!gadgetron_home) {
-    GADGET_DEBUG1("GADGETRON_HOME environment variable not set\n");
-    return GADGET_FAIL;
-  }
-
-  ACE_TCHAR config_file_name[4096];
-  ACE_OS::sprintf(config_file_name, "%s/config/%s", gadgetron_home, init_filename);
-
-  GADGET_DEBUG2("Running configuration: %s\n", config_file_name);
-  */
-
-  TiXmlDocument doc;//( config_file_name );
+  TiXmlDocument doc;
   doc.Parse(config_xml_string.c_str());
 
-  //Configuration of readers
-  TiXmlNode* child = 0;
-  TiXmlNode* pElem = doc.FirstChild("readers");
-  if (pElem) {
-    while( (child = pElem->IterateChildren(child)) ) {
-      if ((child->Type() == TiXmlNode::TINYXML_ELEMENT) &&
-	  (ACE_OS::strncmp(child->ToElement()->Value(),"reader",6) == 0)) 
-	{
-	  std::string dllname(child->ToElement()->Attribute("dll"));
-	  std::string classname(child->ToElement()->Attribute("class"));
-	  int slot (ACE_OS::atoi(child->ToElement()->Attribute("slot")));
+  GadgetXMLNode n = GadgetXMLNode(&doc);
 
-	  GADGET_DEBUG1("--Found reader declaration\n");
-	  GADGET_DEBUG2("  Reader dll: %s\n", dllname.c_str());
-	  GADGET_DEBUG2("  Reader class: %s\n", classname.c_str());
-	  GADGET_DEBUG2("  Reader slot: %d\n", slot);
+  std::vector<GadgetXMLNode> readers = n.get<GadgetXMLNode>("gadgetron.readers.reader");
+  std::vector<GadgetXMLNode> writers = n.get<GadgetXMLNode>("gadgetron.writers.writer");
+  std::vector<GadgetXMLNode> gadgets = n.get<GadgetXMLNode>("gadgetron.stream.gadget");
 
-	  GadgetMessageReader* r =
-	    load_dll_component<GadgetMessageReader>(dllname.c_str(),
-						    classname.c_str());
-       
-	  if (!r) {
-	    GADGET_DEBUG1("Failed to load GadgetMessageReader from DLL\n");
-	    return GADGET_FAIL;
-	  }
+  GADGET_DEBUG2("Found %d readers\n", readers.size());
+  GADGET_DEBUG2("Found %d writers\n", writers.size());
+  GADGET_DEBUG2("Found %d gadgets\n", gadgets.size());
+  
+  //Configuration of reader
+  std::vector<std::string> tmps;
+  std::vector<long> tmpl;
 
-	  readers_.insert(slot, r);
-	}
+  for (unsigned int i = 0; i < readers.size(); i++) {
+    long slot = 0;
+    std::string dllname("");
+    std::string classname("");
+
+    tmpl = readers[i].get<long>("slot");
+    if (tmpl.size()) slot = tmpl[0];
+    tmps = readers[i].get<std::string>("dll");
+    if (tmps.size()) dllname = tmps[0];
+    tmps = readers[i].get<std::string>("class");
+    if (tmps.size()) classname = tmps[0];
+
+    GADGET_DEBUG1("--Found reader declaration\n");
+    GADGET_DEBUG2("  Reader dll: %s\n", dllname.c_str());
+    GADGET_DEBUG2("  Reader class: %s\n", classname.c_str());
+    GADGET_DEBUG2("  Reader slot: %d\n", slot);
+
+    GadgetMessageReader* r =
+      load_dll_component<GadgetMessageReader>(dllname.c_str(),
+					      classname.c_str());
+    
+    if (!r) {
+      GADGET_DEBUG1("Failed to load GadgetMessageReader from DLL\n");
+      return GADGET_FAIL;
     }
-  } 
+    
+    readers_.insert(slot, r);
+    
+  }
   //Configuration of readers end
     
 
   //Configuration of writers
-  pElem = doc.FirstChild("writers");
-  child = 0;
-  if (pElem) {
-    while( (child = pElem->IterateChildren(child)) ) {
-      if ((child->Type() == TiXmlNode::TINYXML_ELEMENT) &&
-	  (ACE_OS::strncmp(child->ToElement()->Value(),"writer",6) == 0)) 
-	{
-	  std::string dllname(child->ToElement()->Attribute("dll"));
-	  std::string classname(child->ToElement()->Attribute("class"));
-	  int slot (ACE_OS::atoi(child->ToElement()->Attribute("slot")));
-	  
-	  GADGET_DEBUG1("--Found writer declaration\n");
-	  GADGET_DEBUG2("  Writer dll: %s\n", dllname.c_str());
-	  GADGET_DEBUG2("  Writer class: %s\n", classname.c_str());
-	  GADGET_DEBUG2("  Writer slot: %d\n", slot);
+  for (unsigned int i = 0; i < writers.size(); i++) {
+    long slot = 0;
+    std::string dllname("");
+    std::string classname("");
 
-	  GadgetMessageWriter* w =
-	    load_dll_component<GadgetMessageWriter>(dllname.c_str(),
-						    classname.c_str());
-       
-	  if (!w) {
-	    GADGET_DEBUG1("Failed to load GadgetMessageWriter from DLL\n");
-	    return GADGET_FAIL;
-	  }
+    tmpl = writers[i].get<long>("slot");
+    if (tmpl.size()) slot = tmpl[0];
+    tmps = writers[i].get<std::string>("dll");
+    if (tmps.size()) dllname = tmps[0];
+    tmps = writers[i].get<std::string>("class");
+    if (tmps.size()) classname = tmps[0];
 
-	  writers_.insert(slot, w);
-	}
+    GADGET_DEBUG1("--Found writer declaration\n");
+    GADGET_DEBUG2("  Reader dll: %s\n", dllname.c_str());
+    GADGET_DEBUG2("  Reader class: %s\n", classname.c_str());
+    GADGET_DEBUG2("  Reader slot: %d\n", slot);
+    
+    GadgetMessageWriter* w =
+      load_dll_component<GadgetMessageWriter>(dllname.c_str(),
+					      classname.c_str());
+    
+    if (!w) {
+      GADGET_DEBUG1("Failed to load GadgetMessageWriter from DLL\n");
+      return GADGET_FAIL;
     }
-  } 
+    
+    writers_.insert(slot, w);
+  }
   //Configuration of writers end
 
   //Let's configure the stream
-  pElem = doc.FirstChild("stream");
-  child = 0;
-  if (pElem) {
-    while( (child = pElem->IterateChildren(child)) ) {
-      if ((child->Type() == TiXmlNode::TINYXML_ELEMENT) &&
-	  (ACE_OS::strncmp(child->ToElement()->Value(),"gadget",6) == 0)) 
-	{
-	  std::string gadgetname(child->ToElement()->Attribute("name"));
-	  std::string dllname(child->ToElement()->Attribute("dll"));
-	  std::string classname(child->ToElement()->Attribute("class"));
-	  
-	  GADGET_DEBUG1("--Found gadget declaration\n");
-	  GADGET_DEBUG2("  Gadget Name: %s\n", gadgetname.c_str());
-	  GADGET_DEBUG2("  Gadget dll: %s\n", dllname.c_str());
-	  GADGET_DEBUG2("  Gadget class: %s\n", classname.c_str());
-	  
-	  GadgetModule* m = create_gadget_module(dllname.c_str(),
-						 classname.c_str(),
-						 gadgetname.c_str());
-	  
-	  if (!m) {
-	    GADGET_DEBUG2("Failed to create GadgetModule from %s:%s\n", 
-			  classname.c_str(),
-			  dllname.c_str());
-	    return GADGET_FAIL;
-	  }
+  GADGET_DEBUG2("Processing %d gagets in reverse order\n", gadgets.size());
+  for (int i = (static_cast<int>(gadgets.size())-1); i >= 0; i--) { //We will parse gadgets in reverse order and push them onto stream.
+    GADGET_DEBUG2("Configuring gadget: %d\n",i);
+    std::string dllname("");
+    std::string classname("");
+    std::string gadgetname("");
 
-	  TiXmlNode* child_param = 0;
+    tmps = gadgets[i].get<std::string>("dll");
+    if (tmps.size()) dllname = tmps[0];
 
-	  Gadget* g = dynamic_cast<Gadget*>(m->writer());//Get the gadget out of the module
+    tmps = gadgets[i].get<std::string>("class");
+    if (tmps.size()) classname = tmps[0];
 
-	  while( (child_param = child->IterateChildren(child_param)) ) {
-	    if (child_param->Type() == TiXmlNode::TINYXML_ELEMENT &&
-		(ACE_OS::strncmp(child_param->ToElement()->Value(), "property", 8) == 0)) 
-	      {
-		std::string propertyname(child_param->ToElement()->Attribute("name"));
-		std::string propertyvalue(child_param->ToElement()->Attribute("value"));
-		
-		g->set_parameter(propertyname.c_str(), propertyvalue.c_str());
-	      }
-	    
-	  }
+    tmps = gadgets[i].get<std::string>("name");
+    if (tmps.size()) gadgetname = tmps[0];
 
-	  if (stream_.push(m) < 0) {
-	    GADGET_DEBUG2("Failed to push Gadget %s onto stream\n", gadgetname.c_str());
-	    delete m;
-	    return GADGET_FAIL;
-	  }
+    GADGET_DEBUG1("--Found gadget declaration\n");
+    GADGET_DEBUG2("  Gadget Name: %s\n", gadgetname.c_str());
+    GADGET_DEBUG2("  Gadget dll: %s\n", dllname.c_str());
+    GADGET_DEBUG2("  Gadget class: %s\n", classname.c_str());
 	  
-	}
+    GadgetModule* m = create_gadget_module(dllname.c_str(),
+					   classname.c_str(),
+					   gadgetname.c_str());
+    
+    if (!m) {
+      GADGET_DEBUG2("Failed to create GadgetModule from %s:%s\n", 
+		    classname.c_str(),
+		    dllname.c_str());
+      return GADGET_FAIL;
     }
-  } 
-  
+    
+    Gadget* g = dynamic_cast<Gadget*>(m->writer());//Get the gadget out of the module
+    
+    std::vector<GadgetXMLNode> parms = gadgets[i].get<GadgetXMLNode>("property");
+    
+    GADGET_DEBUG2("  Gadget parameters: %d\n", parms.size());
+    for (unsigned int j = 0; j < parms.size(); j++) {
+      std::string pname("");
+      std::string pval("");
+      
+      tmps = parms[j].get<std::string>("name");
+      if (tmps.size()) pname = tmps[0];
+      tmps = parms[j].get<std::string>("value");
+      if (tmps.size()) pval = tmps[0];
+
+      g->set_parameter(pname.c_str(),pval.c_str());
+    }
+    
+    if (stream_.push(m) < 0) {
+      GADGET_DEBUG2("Failed to push Gadget %s onto stream\n", gadgetname.c_str());
+      delete m;
+      return GADGET_FAIL;
+    }
+
+  }
+
+  GADGET_DEBUG1("Gadget Stream configured\n");
   stream_configured_ = true;
 
   return GADGET_OK;
