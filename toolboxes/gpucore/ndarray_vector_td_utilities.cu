@@ -1411,6 +1411,55 @@ cuNDA_real_to_complext( cuNDArray<REAL> *in,
   return out;
 }
 
+// complext to real by cropping the imaginary component 
+template<class REAL> __global__ void
+cuNDA_complext_to_real_kernel( typename complext<REAL>::Type *in, REAL *out, unsigned int num_elements )
+{
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+
+  if( idx < num_elements ){
+    out[idx] = in[idx].vec[0];
+  }
+}
+
+// Convert complext to real by cropping the imaginary component 
+template<class REAL>  
+boost::shared_ptr< cuNDArray<REAL> > 
+cuNDA_complext_to_real( cuNDArray<typename complext<REAL>::Type> *in, 	    
+			cuNDA_device alloc_device, cuNDA_device compute_device )
+{
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<typename complext<REAL>::Type> *in_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,typename complext<REAL>::Type,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
+    cerr << endl << "cuNDA_complext_to_real: unable to prepare device(s)" << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+ 
+  // Setup block/grid dimensions
+  dim3 blockDim; dim3 gridDim;
+  if( !setup_grid( cur_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
+    cerr << endl << "cuNDA_real_to_complext: block/grid configuration out of range" << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+
+  // Invoke kernel
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(in->get_dimensions().get());  
+  if( out.get() != 0x0 ) cuNDA_complext_to_real_kernel<REAL><<< gridDim, blockDim >>>( in_int->get_data_ptr(), out->get_data_ptr(), in->get_number_of_elements());
+  
+  CHECK_FOR_CUDA_ERROR();
+  
+  // Restore
+  if( !restore<1,typename complext<REAL>::Type,REAL,dummy,dummy>( old_device, in, in_int, 0, alloc_device, out.get() ) ){
+    cerr << endl << "cuNDA_real_to_complext: unable to restore device" << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+
+  return out;
+}
+
 // Clear
 template<class T> __global__ 
 void cuNDA_clear_kernel( T *in_out, T val, unsigned int number_of_elements )
@@ -3267,6 +3316,9 @@ cuNDA_expand_with_zero_fill<float_complext::Type,4>( cuNDArray<float_complext::T
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext::Type> > 
 cuNDA_real_to_complext<float>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
 
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > 
+cuNDA_complext_to_real<float>( cuNDArray<float_complext::Type>*, cuNDA_device, cuNDA_device );
+
 template EXPORTGPUCORE bool cuNDA_clear<float>( cuNDArray<float>*,float, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_clear<float_complext::Type>( cuNDArray<float_complext::Type>*,float_complext::Type, cuNDA_device );
 
@@ -3487,6 +3539,9 @@ cuNDA_expand_with_zero_fill<double_complext::Type,4>( cuNDArray<double_complext:
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext::Type> > 
 cuNDA_real_to_complext<double>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > 
+cuNDA_complext_to_real<double>( cuNDArray<double_complext::Type>*, cuNDA_device, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_clear<double>( cuNDArray<double>*,double, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_clear<double_complext::Type>( cuNDArray<double_complext::Type>*,double_complext::Type, cuNDA_device );
