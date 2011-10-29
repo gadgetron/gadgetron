@@ -21,7 +21,6 @@
 #include "NFFT.h"
 #include "check_CUDA.h"
 
-#include <cutil.h>
 #include <iostream>
 
 using namespace std;

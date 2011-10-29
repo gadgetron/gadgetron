@@ -1,13 +1,8 @@
 
 find_package(CULA REQUIRED)
 
-if (CUDA_SDK_ROOT_DIR MATCHES "CUDA_SDK_ROOT_DIR-NOTFOUND")
-   MESSAGE(FATAL_ERROR "Could not locate CUDA SDK. Try setting environment variable NVSDKCOMPUTE_ROOT")
-endif (CUDA_SDK_ROOT_DIR MATCHES "CUDA_SDK_ROOT_DIR-NOTFOUND")
-
 include_directories(		${ACE_INCLUDE_DIR}
 					${CUDA_INCLUDE_DIRS}
-					${CUDA_SDK_ROOT_DIR}/common/inc 
 					${CULA_INCLUDE_DIR} 
 				       ${TINYXML_INCLUDE_DIR} 
 				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 

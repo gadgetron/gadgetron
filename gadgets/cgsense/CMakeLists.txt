@@ -1,7 +1,6 @@
 
 include_directories(		${ACE_INCLUDE_DIR}
 					${CUDA_INCLUDE_DIRS}
-					${CUDA_SDK_ROOT_DIR}/common/inc 
 				       ${TINYXML_INCLUDE_DIR} 
 				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
 				       ${CMAKE_SOURCE_DIR}/toolboxes/ndarray

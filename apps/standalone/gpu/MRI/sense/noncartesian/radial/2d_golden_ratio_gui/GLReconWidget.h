@@ -6,7 +6,12 @@
 #include <Windows.h>
 #endif
 
+#ifdef __MACH__
+#import <OpenGL/gl.h>
+#else
 #include <GL/gl.h>
+#endif //__MACH__
+
 #include <QtOpenGL/QGLWidget>
 
 class cuGLReconWidget

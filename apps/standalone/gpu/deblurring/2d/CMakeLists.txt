@@ -1,5 +1,4 @@
 include_directories(			${CUDA_INCLUDE_DIRS}
-						${CUDA_SDK_ROOT_DIR}/common/inc
 						${CMAKE_SOURCE_DIR}/toolboxes/gpucore 
 						${CMAKE_SOURCE_DIR}/toolboxes/hostutils
 						${CMAKE_SOURCE_DIR}/toolboxes/solvers

@@ -1,6 +1,5 @@
 include_directories(		${ACE_INCLUDE_DIR}
 					${CUDA_INCLUDE_DIRS}
-					${CUDA_SDK_ROOT_DIR}/common/inc 
 				       ${CMAKE_SOURCE_DIR}/toolboxes/ndarray
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gpucore)
 
