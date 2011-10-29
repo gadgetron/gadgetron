@@ -27,6 +27,7 @@ PythonCommunicator::PythonCommunicator()
       GADGET_DEBUG2("PythonCommunicator (constructor) failed to add path %s\n", path_name.c_str());
     }
   }
+
 }
 
 PythonCommunicator::~PythonCommunicator()
@@ -116,7 +117,6 @@ int PythonCommunicator::registerGadget(Gadget* g, std::string mod,
 
 int PythonCommunicator::processConfig(Gadget* g, ACE_Message_Block* mb)
 {
-
   PyGILState_STATE gstate;
   std::map< Gadget*, boost::python::object >::iterator it;
 
@@ -176,9 +176,14 @@ template<class T> int PythonCommunicator::process(Gadget* g,
       
       //Get Header
       T acq = *m1->getObjectPtr();      
+      
+      if ( boost::python::extract<int>(it->second(acq, data)) != GADGET_OK) {
+	GADGET_DEBUG2("Gadget (%s) Returned from python call with error\n", g->module()->name());
+	PyGILState_Release(gstate);
+	return GADGET_FAIL;
+      }
+      //Else we are done with this now.
       m1->release(); 
-
-      boost::python::object ignored = it->second(acq, data);
     } catch(boost::python::error_already_set const &) { 
       GADGET_DEBUG1("Passing data on to python module failed\n");
       PyErr_Print();

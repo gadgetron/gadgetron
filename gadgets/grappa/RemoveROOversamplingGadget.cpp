@@ -12,7 +12,6 @@ int RemoveROOversamplingGadget
     = new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
 
   if (!m3) {
-    m1->release();
     return GADGET_FAIL;
   }
 
@@ -21,7 +20,6 @@ int RemoveROOversamplingGadget
 
   if (!m3->getObjectPtr()->create(&data_out_dims)) {
     GADGET_DEBUG1("Unable to create new data array for downsampled data\n");
-    m1->release();
     return GADGET_FAIL;
   }
 
@@ -44,7 +42,6 @@ int RemoveROOversamplingGadget
   m1->getObjectPtr()->samples = data_out_dims[0];
 
   if (this->next()->putq(m1) == -1) {
-    m1->release();
     ACE_ERROR_RETURN( (LM_ERROR,
 		       ACE_TEXT("%p\n"),
 		       ACE_TEXT("RemoveROOversamplingGadget::process, passing data on to next gadget")),

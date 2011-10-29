@@ -17,6 +17,7 @@
   </writers>
   
   <stream>
+
     <gadget>
       <name>RemoveOversamplingPython</name>
       <dll>gadgetronpython</dll>

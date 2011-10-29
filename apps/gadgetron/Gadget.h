@@ -99,12 +99,13 @@ public:
       hangup->msg_type( ACE_Message_Block::MB_HANGUP );
       if (this->putq(hangup) == -1) {
 	hangup->release();
-	GADGET_DEBUG2("Gadget (%s) failed to out hang up message on queue\n", this->module()->name());
+	GADGET_DEBUG2("Gadget (%s) failed to put hang up message on queue\n", this->module()->name());
 	return GADGET_FAIL;	  
       }
       GADGET_DEBUG2("Gadget (%s) waiting for thread to finish\n", this->module()->name());
       rval = this->wait();
       GADGET_DEBUG2("Gadget (%s) thread finished\n", this->module()->name());
+      controller_ = 0;
     }
     return rval;
   }
@@ -138,7 +139,7 @@ public:
       if (m->flags() & GADGET_MESSAGE_CONFIG) {
 	if (this->process_config(m) == -1) {
 	  m->release();
-
+	  this->flush();
 	  GADGET_DEBUG2("Gadget (%s) process config failed\n", this->module()->name());
 	  return GADGET_FAIL;
 
@@ -157,6 +158,7 @@ public:
 
       if (this->process(m) == -1) {
 	m->release();
+	this->flush();
 	GADGET_DEBUG2("Gadget (%s) process failed\n", this->module()->name());
 	return GADGET_FAIL;
       }

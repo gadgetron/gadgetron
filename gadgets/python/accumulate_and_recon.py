@@ -14,6 +14,7 @@ def set_gadget_reference(gadref):
 def config_function(conf):
     global myBuffer
     global myParameters
+    #print blahs
     myParameters =  GadgetronXML.getEncodingParameters(conf)
     myBuffer = (np.zeros((myParameters["channels"],myParameters["slices"],myParameters["matrix_z"],myParameters["matrix_y"],myParameters["matrix_x"]))).astype('complex64')
 
@@ -21,6 +22,7 @@ def recon_function(acq, data):
     global myLocalGadgetReference
     global myBuffer
     global myParameters
+
 
     line_offset = (myParameters["matrix_y"]-myParameters["phase_encoding_lines"])>>1;
     myBuffer[:,acq.idx.slice,acq.idx.partition,acq.idx.line+line_offset,:] = data
@@ -47,5 +49,8 @@ def recon_function(acq, data):
         img_head.set_quarternion(3,acq.get_quarternion(3))
         img_head.time_stamp = acq.time_stamp
         #Return image to Gadgetron
-        myLocalGadgetReference.return_image(img_head,image.astype('complex64'))
+        return myLocalGadgetReference.return_image(img_head,image.astype('complex64'))
+
+    #print "Returning to Gadgetron"
+    return 0 #Everythin OK
 

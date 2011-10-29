@@ -14,6 +14,6 @@ def recon_function(h,im):
     global gadget_ref
     combined_image = np.sqrt(np.sum(np.square(np.abs(im)),axis=0))
     h.channels = 1
-    gadget_ref.return_image(h,combined_image.astype('complex64'))
+    return gadget_ref.return_image(h,combined_image.astype('complex64'))
 
 

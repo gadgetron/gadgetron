@@ -33,9 +33,8 @@ class PythonCommunicator
   template<class T> int process(Gadget* g, 
 				GadgetContainerMessage<T>* m1,
 				GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
-    
+
  private:
-  
   std::map<Gadget*, boost::python::object> module_;
   std::map<Gadget*, boost::python::object> gadget_ref_fnc_;
   std::map<Gadget*, boost::python::object> config_fnc_;

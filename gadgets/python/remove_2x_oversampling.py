@@ -24,7 +24,8 @@ def recon_function(acq, data):
     orig_size[data.ndim-1] = new_length
     data2.reshape(tuple(orig_size))
     acq.samples = new_length
-    myGadgetReference.return_acquisition(acq,data2.astype('complex64'))
+
+    return myGadgetReference.return_acquisition(acq,data2.astype('complex64'))
 
     
 

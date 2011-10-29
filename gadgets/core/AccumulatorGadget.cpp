@@ -14,6 +14,9 @@ AccumulatorGadget::~AccumulatorGadget()
 
 int AccumulatorGadget::process_config(ACE_Message_Block* mb)
 {
+
+  return GADGET_FAIL;
+
   TiXmlDocument doc;
   doc.Parse(mb->rd_ptr());
   GadgetXMLNode n = GadgetXMLNode(&doc).get<GadgetXMLNode>(std::string("gadgetron"))[0];
@@ -55,6 +58,8 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 	GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
   ACE_TRACE(( ACE_TEXT("AccumulatorGadget::process") ));
+
+  return GADGET_FAIL;
 
   if (!buffer_) {
     ACE_DEBUG( (LM_ERROR, ACE_TEXT("Accumulator: Buffer array not allocated")) );

@@ -74,6 +74,6 @@ def recon_function(h,im):
     myWindow = ImageViewer(im) 
     myWindow.main()
 
-    gadget_ref.return_image(h,im.astype('complex64'))
+    return gadget_ref.return_image(h,im.astype('complex64'))
 
 
