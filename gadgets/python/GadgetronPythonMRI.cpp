@@ -43,6 +43,7 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
     ;
 
   class_<GadgetMessageImage>("GadgetMessageImage")
+	.def_readwrite("flags", &GadgetMessageImage::flags)
     .def("get_matrix_size", &GadgetMessageImage::get_matrix_size)
     .def("set_matrix_size", &GadgetMessageImage::set_matrix_size)
     .def_readwrite("channels", &GadgetMessageImage::channels)

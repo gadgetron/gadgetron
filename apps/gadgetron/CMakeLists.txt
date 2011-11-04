@@ -18,6 +18,7 @@ install(FILES
 	GadgetStreamController.h
 	Gadgetron.h
 	GadgetMessageInterface.h
+	EndGadget.h
 DESTINATION include)
 
 

@@ -14,6 +14,8 @@
 #define GADGET_FLAG_FIRST_ACQ_IN_CONCAT       (1 << 6)
 #define GADGET_FLAG_IS_NOISE_SCAN             (1 << 7)
 
+#define GADGET_FLAG_LAST_IMAGE                (1 << 0)
+
 enum GadgetMessageID {
   GADGET_MESSAGE_EXT_ID_MIN        = 1000,
   GADGET_MESSAGE_ACQUISITION       = 1001,
@@ -85,6 +87,7 @@ struct EXPORTGADGETSCORE GadgetMessageAcquisition
 
 struct EXPORTGADGETSCORE GadgetMessageImage
 {
+  ACE_UINT32     flags;
   ACE_UINT16     matrix_size[3];
   ACE_UINT16     channels;
   float          position[3];

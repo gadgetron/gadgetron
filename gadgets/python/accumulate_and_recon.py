@@ -22,7 +22,7 @@ def recon_function(acq, data):
     global myLocalGadgetReference
     global myBuffer
     global myParameters
-
+    global myCounter
 
     line_offset = (myParameters["matrix_y"]-myParameters["phase_encoding_lines"])>>1;
     myBuffer[:,acq.idx.slice,acq.idx.partition,acq.idx.line+line_offset,:] = data
@@ -49,8 +49,8 @@ def recon_function(acq, data):
         img_head.set_quarternion(3,acq.get_quarternion(3))
         img_head.time_stamp = acq.time_stamp
         #Return image to Gadgetron
-        return myLocalGadgetReference.return_image(img_head,image.astype('complex64'))
-
+	return myLocalGadgetReference.return_image(img_head,image.astype('complex64'))
+	
     #print "Returning to Gadgetron"
-    return 0 #Everythin OK
+    return 0 #Everything OK
 
