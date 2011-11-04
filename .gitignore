@@ -4,8 +4,6 @@
 *.o
 *.cuo
 *#
-gadgetron
-gadgetrondatasender
 *.dylib
 *.real
 *.cplx
