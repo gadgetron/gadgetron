@@ -31,6 +31,16 @@
 #endif
 
 #if defined (WIN32)
+#ifdef __BUILD_GADGETRON_GPUCT__
+#define EXPORTGPUCT __declspec(dllexport)
+#else
+#define EXPORTGPUCT __declspec(dllimport)
+#endif
+#else
+#define EXPORTGPUCT
+#endif
+
+#if defined (WIN32)
 #ifdef __BUILD_GADGETRON_GPUNFFT__
 #define EXPORTGPUNFFT __declspec(dllexport)
 #else

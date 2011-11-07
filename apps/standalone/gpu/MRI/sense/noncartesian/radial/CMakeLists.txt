@@ -1,5 +1,5 @@
 add_subdirectory(2d_golden_ratio)
 add_subdirectory(2d_golden_ratio_kt)
-if (QT4_FOUND)
+if (QT4_FOUND AND NOT WIN32)
 	add_subdirectory(2d_golden_ratio_gui)
-endif(QT4_FOUND)
+endif(QT4_FOUND AND NOT WIN32)

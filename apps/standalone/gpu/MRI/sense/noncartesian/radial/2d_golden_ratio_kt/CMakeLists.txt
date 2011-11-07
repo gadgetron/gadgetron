@@ -1,4 +1,5 @@
 include_directories(			${CUDA_INCLUDE_DIRS}
+				       ${Boost_INCLUDE_DIR} 
 						${CMAKE_SOURCE_DIR}/toolboxes/gpucore 
 						${CMAKE_SOURCE_DIR}/toolboxes/gpunfft
 						${CMAKE_SOURCE_DIR}/toolboxes/hostutils

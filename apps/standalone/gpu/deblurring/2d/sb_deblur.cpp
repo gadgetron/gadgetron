@@ -85,17 +85,17 @@ int main(int argc, char** argv)
   E->set_kernel( &kernel );
 
   // Setup conjugate gradient solver
-  cuCGSolver<_real, _complext> cg;
-  cg.add_matrix_operator( E );                   // encoding matrix
-  if( kappa>0.0 ) cg.add_matrix_operator( Rx );  // regularization matrix
-  if( kappa>0.0 ) cg.add_matrix_operator( Ry );  // regularization matrix
-  cg.set_iterations( num_cg_iterations );
-  cg.set_limit( 1e-12 );
-  cg.set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_VERBOSE );  
+  boost::shared_ptr< cuCGSolver<_real, _complext> > cg(new cuCGSolver<_real, _complext>());
+  cg->add_matrix_operator( E );                   // encoding matrix
+  if( kappa>0.0 ) cg->add_matrix_operator( Rx );  // regularization matrix
+  if( kappa>0.0 ) cg->add_matrix_operator( Ry );  // regularization matrix
+  cg->set_iterations( num_cg_iterations );
+  cg->set_limit( 1e-12 );
+  cg->set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_VERBOSE );  
 
   // Setup split-Bregman solver
   cuSBSolver<_real, _complext> sb;
-  sb.set_solver( boost::shared_ptr< cuCGSolver<_real, _complext> >(&cg) );
+  sb.set_solver( boost::shared_ptr< cuCGSolver<_real, _complext> >(cg.get()) );
   sb.set_encoding_operator( E );
   //sb.add_regularization_operator( Rx );
   //sb.add_regularization_operator( Ry );

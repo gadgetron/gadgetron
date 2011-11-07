@@ -10,6 +10,7 @@
 #endif
 
 #include <iostream>
+#include <string>
 #include <cuda_runtime_api.h>
 
 class GPUTimer
@@ -34,8 +35,7 @@ class GPUTimer
     double time_in_us = 0.0;
 #ifdef WIN32
     QueryPerformanceCounter(&end_);
-    endTimeInMicroSec = (end_.QuadPart * (1.0e6/ frequency_.QuadPart)) - 
-      start_.QuadPart * (1.0e6 / frequency_.QuadPart);
+    time_in_us = (end_.QuadPart * (1.0e6/ frequency_.QuadPart)) - start_.QuadPart * (1.0e6 / frequency_.QuadPart);
 #else
     gettimeofday(&end_, NULL);
     time_in_us = ((end_.tv_sec * 1e6) + end_.tv_usec) - ((start_.tv_sec * 1e6) + start_.tv_usec);

@@ -1,7 +1,8 @@
 
 include_directories(		${ACE_INCLUDE_DIR}
 					${CUDA_INCLUDE_DIRS}
-				       ${TINYXML_INCLUDE_DIR} 
+				       ${TINYXML_INCLUDE_DIR}
+				       ${Boost_INCLUDE_DIR} 
 				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
 				       ${CMAKE_SOURCE_DIR}/toolboxes/ndarray
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gpunfft

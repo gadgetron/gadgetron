@@ -1,10 +1,14 @@
+if (WIN32)
+ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUPMRI__)
+ADD_DEFINITIONS(-DWIN32_LEAN_AND_MEAN)
+endif (WIN32)
 
 find_package(CULA REQUIRED)
 
 include_directories(		${ACE_INCLUDE_DIR}
 					${CUDA_INCLUDE_DIRS}
 					${CULA_INCLUDE_DIR} 
-				       ${TINYXML_INCLUDE_DIR} 
+				       ${Boost_INCLUDE_DIR} 
 				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
 				       ${CMAKE_SOURCE_DIR}/toolboxes/ndarray
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
@@ -23,7 +27,8 @@ cuda_add_library(gpuparallelmri SHARED 	b1_map.cu
 									htgrappa.cu)
 
 target_link_libraries(gpuparallelmri gpucore gpunfft ${ACE_LIBRARIES}
-${TINYXML_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
+#${TINYXML_LIBRARIES} 
+${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
 ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CULA_LIBRARIES})
 
 install(TARGETS gpuparallelmri DESTINATION lib)
