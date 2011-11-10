@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 
 if (WIN32)
-ADD_DEFINITIONS(-DWIN32)
-ADD_DEFINITIONS(-D_WINDOWS)
+ADD_DEFINITIONS(-DWIN32 -D_WIN32 -D_WINDOWS)
+ADD_DEFINITIONS(-DUNICODE -D_UNICODE)
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
 endif (WIN32)
@@ -16,6 +16,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 project(GADGETRON)
 
 find_package(Boost REQUIRED)
+
 find_package(FFTW3 COMPONENTS single double REQUIRED)
 find_package(ACE REQUIRED)
 find_package(TinyXML REQUIRED)
@@ -31,6 +32,9 @@ endif (CUDA_FOUND)
 find_package(Qt4 4.7)
 
 find_package(PythonLibs)
+find_package(Numpy)
+find_package(Boost COMPONENTS python)
+find_package(PythonLibs)
 
 find_package(Doxygen)
 	if(DOXYGEN_FOUND)
@@ -43,8 +47,6 @@ else(DOXYGEN_FOUND)
 endif(DOXYGEN_FOUND)
 
 find_package(GLEW)
-
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
 
 add_subdirectory(apps)
 add_subdirectory(toolboxes)

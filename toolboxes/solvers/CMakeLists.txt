@@ -2,8 +2,7 @@ if (WIN32)
 ADD_DEFINITIONS(-D__BUILD_GADGETRON_SOLVERS__)
 endif (WIN32)
 
-include_directories(		${ACE_INCLUDE_DIR}
-				${CUDA_INCLUDE_DIRS}
+include_directories(		${CUDA_INCLUDE_DIRS}
 				${Boost_INCLUDE_DIR}
 				${CMAKE_SOURCE_DIR}/toolboxes/ndarray
 				${CMAKE_SOURCE_DIR}/toolboxes/gpucore)

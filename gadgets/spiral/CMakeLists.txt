@@ -12,7 +12,8 @@ include_directories(		${ACE_INCLUDE_DIR}
 
 add_library(gadgetronspiral SHARED SpiralGadget.cpp vds.cpp)
 
-target_link_libraries(gadgetronspiral gpunfft ${ACE_LIBRARIES} ${TINYXML_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES})
+target_link_libraries(gadgetronspiral optimized gpunfft ${ACE_LIBRARIES} ${TINYXML_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES})
+target_link_libraries(gadgetronspiral debug gpunfft ${ACE_DEBUG_LIBRARY} ${TINYXML_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES})
 
 install (TARGETS gadgetronspiral DESTINATION lib)
 install (FILES spiral.xml  DESTINATION config)

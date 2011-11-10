@@ -4,8 +4,7 @@ ADD_DEFINITIONS(-D_USE_MATH_DEFINES)
 endif (WIN32)
 
 
-include_directories(			${ACE_INCLUDE_DIR}
-					${CUDA_INCLUDE_DIRS}
+include_directories(			${CUDA_INCLUDE_DIRS}
 					${Boost_INCLUDE_DIR}
 				       ${CMAKE_SOURCE_DIR}/toolboxes/ndarray
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gpucore)
