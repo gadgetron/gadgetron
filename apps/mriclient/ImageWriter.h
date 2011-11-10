@@ -5,7 +5,7 @@
 
 #include "GadgetSocketReceiver.h"
 
-class ImageWriter : public GadgetImageMessageReader
+template <typename T> class ImageWriter : public GadgetImageMessageReader<T>
 {
 
  public:
@@ -15,7 +15,7 @@ class ImageWriter : public GadgetImageMessageReader
 
 
   virtual ACE_Message_Block* read(ACE_SOCK_Stream* socket) {
-    ACE_Message_Block* mb = GadgetImageMessageReader::read(socket);
+    ACE_Message_Block* mb = GadgetImageMessageReader<T>::read(socket);
 
     if (!mb) {
       GADGET_DEBUG1("Read failed in parent\n");
@@ -33,8 +33,8 @@ class ImageWriter : public GadgetImageMessageReader
 
     //GADGET_DEBUG2("Received image with %d channels\n", img_head_mb->getObjectPtr()->channels);
 
-    GadgetContainerMessage<hoNDArray< std::complex<float> > > * img_data_mb = 
-      dynamic_cast<GadgetContainerMessage<hoNDArray< std::complex<float> > > *>(img_head_mb->cont());
+    GadgetContainerMessage<hoNDArray< T > > * img_data_mb =
+      dynamic_cast<GadgetContainerMessage<hoNDArray< T > > *>(img_head_mb->cont());
 
     if (!img_data_mb) {
       GADGET_DEBUG1("Failed in dynamic cast\n");
@@ -52,12 +52,27 @@ class ImageWriter : public GadgetImageMessageReader
   }
   
   virtual int process_image(GadgetMessageImage* img_head, 
-			    hoNDArray< std::complex<float> >* data)
+			    hoNDArray< T >* data)
   {
     ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Image Writer writing image\n")) );
 
     char filename[1024];
-    sprintf(filename, "out_%05d.cplx", (int)number_of_calls_);
+
+    switch (sizeof(T)) {
+
+    case (8): //Complex float
+    	sprintf(filename, "out_%05d.cplx", (int)number_of_calls_);
+    	break;
+    case (4): //Real floats
+		sprintf(filename, "out_%05d.real", (int)number_of_calls_);
+		break;
+    case (2): //Unsigned short
+		sprintf(filename, "out_%05d.short", (int)number_of_calls_);
+		break;
+    default:
+    	sprintf(filename, "out_%05d.cplx", (int)number_of_calls_);
+    	break;
+    }
 
     std::ofstream outfile;    
     outfile.open (filename, std::ios::out|std::ios::binary);
@@ -72,7 +87,7 @@ class ImageWriter : public GadgetImageMessageReader
 
     outfile.write((char*)&ndim,sizeof(int));
     outfile.write((char*)dims,sizeof(int)*4);
-    outfile.write((char*)data->get_data_ptr(),sizeof(float)*elements*2);
+    outfile.write((char*)data->get_data_ptr(),sizeof(T)*elements);
     outfile.close();
 
     number_of_calls_++;

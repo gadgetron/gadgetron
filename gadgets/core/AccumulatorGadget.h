@@ -26,6 +26,9 @@ public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
   hoNDArray< std::complex<float> >* buffer_;
   std::vector<unsigned int> dimensions_;
 
+  int image_counter_;
+  int image_series_;
+
 };
 
 #endif //ACCUMULATORGADGET_H

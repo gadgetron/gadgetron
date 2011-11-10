@@ -3,6 +3,8 @@
 
 AccumulatorGadget::AccumulatorGadget()
   :buffer_(0)
+  , image_counter_(0)
+  , image_series_(0)
 {
 
 }
@@ -47,6 +49,8 @@ int AccumulatorGadget::process_config(ACE_Message_Block* mb)
     ACE_DEBUG( (LM_ERROR, ACE_TEXT("Failed to create buffer array")) );
     return -1;    
   }
+
+  image_series_ = this->get_int_value("image_series");
 
   return 0;
 }
@@ -135,6 +139,12 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     memcpy(cm1->getObjectPtr()->quarternion,m1->getObjectPtr()->quarternion,
 	   sizeof(float)*4);
  
+    cm1->getObjectPtr()->table_position = m1->getObjectPtr()->table_position;
+
+    cm1->getObjectPtr()->image_format = GADGET_IMAGE_COMPLEX_FLOAT;
+    cm1->getObjectPtr()->image_index = ++image_counter_;
+    cm1->getObjectPtr()->image_series_index = image_series_;
+
     m1->release();
     
     return this->next()->putq(cm1);

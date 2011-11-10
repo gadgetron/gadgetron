@@ -59,7 +59,7 @@ class GadgetAcquisitionMessageReader : public GadgetMessageReader
    Default implementation of GadgetMessageReader for Image messages
 
  */
-class GadgetImageMessageReader : public GadgetMessageReader
+template <typename T> class GadgetImageMessageReader : public GadgetMessageReader
 {
 
  public:
@@ -84,8 +84,8 @@ class GadgetImageMessageReader : public GadgetMessageReader
       dims.push_back(imgh->getObjectPtr()->channels);
     } 
 
-    GadgetContainerMessage< hoNDArray< std::complex<float> > >* data = 
-      new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
+    GadgetContainerMessage< hoNDArray< T > >* data =
+      new GadgetContainerMessage< hoNDArray< T > >();
 
     if (!data->getObjectPtr()->create(&dims)) {
       ACE_DEBUG( (LM_ERROR, 
@@ -96,7 +96,7 @@ class GadgetImageMessageReader : public GadgetMessageReader
 
     imgh->cont(data);
 
-    if ((recv_count = stream->recv_n(data->getObjectPtr()->get_data_ptr(), sizeof(float)*2*data->getObjectPtr()->get_number_of_elements())) <= 0) {
+    if ((recv_count = stream->recv_n(data->getObjectPtr()->get_data_ptr(), sizeof(T)*data->getObjectPtr()->get_number_of_elements())) <= 0) {
       ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageMessageReader, failed to read data from socket\n")) );
       imgh->release();
       return 0;

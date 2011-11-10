@@ -2,7 +2,7 @@
 
 int ImageFinishGadget
 ::process(GadgetContainerMessage<GadgetMessageImage>* m1,
-	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
+	  GadgetContainerMessage< hoNDArray< ACE_UINT16 > >* m2)
 {
   if (!controller_) {
     ACE_DEBUG( (LM_DEBUG, 

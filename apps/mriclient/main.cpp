@@ -73,7 +73,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   GadgetronConnector con;
   
   con.register_writer(GADGET_MESSAGE_ACQUISITION, new GadgetAcquisitionMessageWriter());
-  con.register_reader(GADGET_MESSAGE_IMAGE, new ImageWriter());
+  con.register_reader(GADGET_MESSAGE_IMAGE, new ImageWriter<ACE_UINT16>());
 
   //Open a connection with the gadgetron
   if (con.open(std::string(hostname),std::string(port_no)) != 0) {

@@ -73,6 +73,12 @@
     -->
 
     <gadget>
+      <name>ExtractMagnitude</name>
+      <dll>gadgetroncore</dll>
+      <class>ExtractMagnitudeGadget</class>
+    </gadget>
+
+    <gadget>
       <name>ImageFinish</name>
       <dll>gadgetroncore</dll>
       <class>ImageFinishGadget</class>

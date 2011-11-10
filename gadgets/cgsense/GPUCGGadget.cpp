@@ -26,6 +26,8 @@ GPUCGGadget::GPUCGGadget()
   , data_host_ptr_(0x0)
   , is_configured_(false)
   , dcw_computed_(false)
+  , image_series_(0)
+  , image_counter_(0)
 {
   matrix_size_    = uintd2(0,0);
   matrix_size_os_ = uintd2(0,0);
@@ -48,6 +50,7 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
   kernel_width_ = get_double_value(std::string("kernel_width").c_str());
   kappa_ = get_double_value(std::string("kappa").c_str());
   pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data").c_str());
+  image_series_ = this->get_int_value("image_series");
 
   if( shared_profiles_ > (profiles_per_frame_>>1) ){
     GADGET_DEBUG1("WARNING: GPUCGGadget::process_config: shared_profiles exceeds half the new samples. Setting to half.\n");
@@ -317,6 +320,10 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
 
     memcpy(cm1->getObjectPtr()->position,m1->getObjectPtr()->position, sizeof(float)*3);
     memcpy(cm1->getObjectPtr()->quarternion,m1->getObjectPtr()->quarternion, sizeof(float)*4);
+
+    cm1->getObjectPtr()->table_position = m1->getObjectPtr()->table_position;
+    cm1->getObjectPtr()->image_index = ++image_counter_;
+    cm1->getObjectPtr()->image_series_index = image_series_;
 
     if (this->next()->putq(cm1) < 0) {
       GADGET_DEBUG1("Failed to result image on to Q\n");

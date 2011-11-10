@@ -117,7 +117,8 @@ template<> inline std::vector<GadgetXMLNode> GadgetXMLNode::get<GadgetXMLNode>(s
   
   //We have to make a copy of this string, the strtok function will eat it up
   char* tmp = new char[name.size()+1];
-  memcpy(tmp,name.c_str(),name.size()+1);  
+  memcpy(tmp,name.c_str(),name.size());
+  tmp[name.size()] = '\0';
 
   TiXmlHandle h( anchor_ );
   char* lname = strtok(tmp,".");

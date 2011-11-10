@@ -10,14 +10,14 @@
 #include <complex>
 
 class EXPORTGADGETSCORE ImageFinishGadget : 
-public Gadget2<GadgetMessageImage,hoNDArray< std::complex<float> > >
+public Gadget2<GadgetMessageImage,hoNDArray< ACE_UINT16 > >
 {
  public:
   GADGET_DECLARE(ImageFinishGadget);
 
  protected:
   virtual int process(GadgetContainerMessage<GadgetMessageImage>* m1,
-		      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+		      GadgetContainerMessage< hoNDArray< ACE_UINT16 > >* m2);
   
 };
 

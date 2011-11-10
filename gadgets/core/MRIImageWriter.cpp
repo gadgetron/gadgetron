@@ -6,7 +6,7 @@
 #include "hoNDArray.h"
 
 
-int MRIImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb) 
+int MRIImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 {
   
   GadgetContainerMessage<GadgetMessageImage>* imagemb = 
@@ -17,8 +17,8 @@ int MRIImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
     return -1;    
   }
 
-  GadgetContainerMessage< hoNDArray< std::complex<float> > >* datamb =
-    AsContainerMessage< hoNDArray< std::complex<float> > >(imagemb->cont());
+  GadgetContainerMessage< hoNDArray< ACE_UINT16 > >* datamb =
+    AsContainerMessage< hoNDArray< ACE_UINT16 > >(imagemb->cont());
   
   if (!datamb) {
     ACE_DEBUG( (LM_ERROR, ACE_TEXT("(%P,%l), MRIImageWriter::write, invalid image message objects\n")) );
@@ -44,7 +44,7 @@ int MRIImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
     return -1;
   }
 
-  if ((send_cnt = sock->send_n (datamb->getObjectPtr()->get_data_ptr(), sizeof(std::complex<float>)*datamb->getObjectPtr()->get_number_of_elements())) <= 0) {
+  if ((send_cnt = sock->send_n (datamb->getObjectPtr()->get_data_ptr(), sizeof(ACE_UINT16)*datamb->getObjectPtr()->get_number_of_elements())) <= 0) {
     ACE_DEBUG ((LM_ERROR,
 		ACE_TEXT ("(%P|%t) Unable to send image data\n")));
       

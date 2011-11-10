@@ -9,6 +9,8 @@
 #include <boost/algorithm/string/split.hpp>
 
 GrappaGadget::GrappaGadget()
+	: image_counter_(0)
+	, image_series_(0)
 {
 
 }
@@ -110,6 +112,8 @@ int GrappaGadget::process_config(ACE_Message_Block* mb)
     }
   }
 
+  image_series_ = this->get_int_value("image_series");
+
   return GADGET_OK;
 }
 
@@ -208,13 +212,18 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     memcpy(cm1->getObjectPtr()->quarternion,m1->getObjectPtr()->quarternion,
 	   sizeof(float)*4);
 
+    cm1->getObjectPtr()->table_position = m1->getObjectPtr()->table_position;
+
+    cm1->getObjectPtr()->image_index = ++image_counter_;
+    cm1->getObjectPtr()->image_series_index = image_series_;
+
 
     FFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),0);
     FFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),1);
     FFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),2);
 
     //apply weights
-    float scale_factor = dimensions_[0]*dimensions_[1];
+    float scale_factor = (dimensions_[0]*dimensions_[1]*dimensions_[0]*dimensions_[1])/10;
 
     int appl_result = weights_[slice]->apply(image_data_[slice]->getObjectPtr(), cm2->getObjectPtr(), scale_factor);
     if (appl_result < 0) {

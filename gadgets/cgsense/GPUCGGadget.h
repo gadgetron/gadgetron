@@ -71,6 +71,9 @@ protected:
 
   // Density compensation weights
   bool dcw_computed_;
+
+  int image_series_;
+  int image_counter_;
 };
 
 #endif //GPUCGGADGET

@@ -16,6 +16,20 @@
 
 #define GADGET_FLAG_LAST_IMAGE                (1 << 0)
 
+enum GadgetImageFormats {
+	GADGET_IMAGE_COMPLEX_FLOAT = 0,
+	GADGET_IMAGE_REAL_FLOAT,
+	GADGET_IMAGE_REAL_UNSIGNED_SHORT
+};
+
+enum GadgetImageTypes
+{
+	GADGET_IMAGE_MAGNITUDE = 0,
+	GADGET_IMAGE_PHASE,
+	GADGET_IMAGE_REAL,
+	GADGET_IMAGE_IMAG
+};
+
 enum GadgetMessageID {
   GADGET_MESSAGE_EXT_ID_MIN        = 1000,
   GADGET_MESSAGE_ACQUISITION       = 1001,
@@ -48,7 +62,8 @@ struct EXPORTGADGETSCORE GadgetMessageAcquisition
   ACE_UINT16     samples;
   ACE_UINT16     channels;
   float          position[3];
-  float          quarternion[4];   
+  float          quarternion[4];
+  float			 table_position;
   LoopCounters   idx;
   LoopCounters   min_idx;
   LoopCounters   max_idx;
@@ -92,10 +107,15 @@ struct EXPORTGADGETSCORE GadgetMessageImage
   ACE_UINT16     channels;
   float          position[3];
   float          quarternion[4];
+  float			 table_position;
   LoopCounters   data_idx_min;
   LoopCounters   data_idx_max;
   LoopCounters   data_idx_current;
   ACE_UINT32     time_stamp;
+  ACE_UINT16     image_format;
+  ACE_UINT16     image_type;
+  ACE_UINT16     image_index;
+  ACE_UINT16	 image_series_index;
 
   ACE_UINT16 get_matrix_size(unsigned int index) {
     if (index < 3) {

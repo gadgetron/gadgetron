@@ -13,7 +13,8 @@ add_library(gadgetroncore SHARED       	AcquisitionPassthroughGadget.cpp
 								ImageWriterGadget.cpp
 								MRIAcquisitionReader.cpp
 								MRIImageWriter.cpp
-								NoiseAdjustGadget.cpp)
+								NoiseAdjustGadget.cpp
+								ExtractMagnitudeGadget.cpp)
 
 target_link_libraries(gadgetroncore ${ACE_LIBRARIES} ${TINYXML_LIBRARIES} ${FFTW3_LIBRARIES})
 

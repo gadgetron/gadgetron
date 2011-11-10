@@ -6,6 +6,8 @@ import kspaceandimage as ki
 myLocalGadgetReference = g.GadgetReference()
 myBuffer = 0
 myParameters = 0
+myCounter = 1;
+mySeries = 1;
 
 def set_gadget_reference(gadref):
     global myLocalGadgetReference
@@ -23,13 +25,14 @@ def recon_function(acq, data):
     global myBuffer
     global myParameters
     global myCounter
+    global mySeries
 
     line_offset = (myParameters["matrix_y"]-myParameters["phase_encoding_lines"])>>1;
     myBuffer[:,acq.idx.slice,acq.idx.partition,acq.idx.line+line_offset,:] = data
     
     if (acq.flags & (1<<1)): #Is this the last scan in slice
         image = ki.ktoi(myBuffer,(2,3,4))
-        image = image * np.product(image.shape) #Scaling for the scanner
+        image = image * np.product(image.shape)*100 #Scaling for the scanner
         #Create a new image header and transfer value
         img_head = g.GadgetMessageImage()
         img_head.channels = acq.channels
@@ -47,7 +50,16 @@ def recon_function(acq, data):
         img_head.set_quarternion(1,acq.get_quarternion(1))
         img_head.set_quarternion(2,acq.get_quarternion(2))
         img_head.set_quarternion(3,acq.get_quarternion(3))
+	img_head.table_position = acq.table_position
         img_head.time_stamp = acq.time_stamp
+	img_head.image_index = myCounter;
+	img_head.image_series_index = mySeries;
+
+	myCounter = myCounter + 1
+	if (myCounter > 5):
+		mySeries = mySeries + 1
+		myCounter = 1
+
         #Return image to Gadgetron
 	return myLocalGadgetReference.return_image(img_head,image.astype('complex64'))
 	

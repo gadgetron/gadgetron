@@ -40,13 +40,19 @@
       -->
     </gadget>
 
-    <!--
+	<!--
     <gadget>
       <name>ImageWrite</name>
       <dll>gadgetroncore</dll>
       <class>ImageWriterGadget</class>
     </gadget>
     -->
+    
+    <gadget>
+      <name>ExtractMagnitude</name>
+      <dll>gadgetroncore</dll>
+      <class>ExtractMagnitudeGadget</class>
+    </gadget>
 
     <gadget>
       <name>ImageFinish</name>

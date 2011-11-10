@@ -36,6 +36,7 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
     .def("set_position", &GadgetMessageAcquisition::set_position)
     .def("get_quarternion", &GadgetMessageAcquisition::get_quarternion)
     .def("set_quarternion", &GadgetMessageAcquisition::set_quarternion)
+    .def_readwrite("table_position", &GadgetMessageAcquisition::table_position)
     .def_readwrite("idx", &GadgetMessageAcquisition::idx)
     .def_readwrite("min_idx", &GadgetMessageAcquisition::min_idx)
     .def_readwrite("max_idx", &GadgetMessageAcquisition::max_idx)
@@ -51,10 +52,15 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
     .def("set_position", &GadgetMessageImage::set_position)
     .def("get_quarternion", &GadgetMessageImage::get_quarternion)
     .def("set_quarternion", &GadgetMessageImage::set_quarternion)
+    .def_readwrite("table_position", &GadgetMessageImage::table_position)
     .def_readwrite("data_idx_min", &GadgetMessageImage::data_idx_min)
     .def_readwrite("data_idx_max", &GadgetMessageImage::data_idx_max)
     .def_readwrite("data_idx_current", &GadgetMessageImage::data_idx_current)
     .def_readwrite("time_stamp", &GadgetMessageImage::time_stamp)
+    .def_readwrite("image_format", &GadgetMessageImage::image_format)
+    .def_readwrite("image_type", &GadgetMessageImage::image_type)
+    .def_readwrite("image_index", &GadgetMessageImage::image_index)
+    .def_readwrite("image_series_index", &GadgetMessageImage::image_series_index)
 
     ;
 
@@ -64,4 +70,27 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
 
     ;
 
+  enum_<GadgetImageFormats>("GadgetImageFormats")
+       .value("GADGET_IMAGE_COMPLEX_FLOAT", GADGET_IMAGE_COMPLEX_FLOAT)
+       .value("GADGET_IMAGE_REAL_FLOAT", GADGET_IMAGE_REAL_FLOAT)
+       .value("GADGET_IMAGE_REAL_UNSIGNED_SHORT", GADGET_IMAGE_REAL_UNSIGNED_SHORT)
+       ;
+
+
+  enum_<GadgetImageTypes>("GadgetImageTypes")
+		  .value("GADGET_IMAGE_MAGNITUDE",GADGET_IMAGE_MAGNITUDE)
+		  .value("GADGET_IMAGE_PHASE", GADGET_IMAGE_PHASE)
+		  .value("GADGET_IMAGE_REAL",GADGET_IMAGE_REAL)
+		  .value("GADGET_IMAGE_IMAG",GADGET_IMAGE_IMAG)
+		  ;
+
+  enum_<GadgetMessageID>("GadgetMessageID")
+		  .value("GADGET_MESSAGE_EXT_ID_MIN",GADGET_MESSAGE_EXT_ID_MIN)
+		  .value("GADGET_MESSAGE_ACQUISITION",GADGET_MESSAGE_ACQUISITION)
+		  .value("GADGET_MESSAGE_NEW_MEASUREMENT",GADGET_MESSAGE_NEW_MEASUREMENT)
+		  .value("GADGET_MESSAGE_END_OF_SCAN",GADGET_MESSAGE_END_OF_SCAN)
+		  .value("GADGET_MESSAGE_IMAGE",GADGET_MESSAGE_IMAGE)
+		  .value("GADGET_MESSAGE_EMPTY",GADGET_MESSAGE_EMPTY)
+		  .value("GADGET_MESSAGE_EXT_ID_MAX",GADGET_MESSAGE_EXT_ID_MAX)
+		  ;
 }
