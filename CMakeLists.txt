@@ -29,7 +29,7 @@ else (CUDA_FOUND)
      MESSAGE("CUDA not found. CUDA components will not be compiled")
 endif (CUDA_FOUND)
 
-find_package(Qt4 4.7)
+find_package(Qt4 4.6)
 
 find_package(PythonLibs)
 find_package(Numpy)
