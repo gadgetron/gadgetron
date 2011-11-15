@@ -9,6 +9,6 @@ if (NOT WIN32)
 add_subdirectory(spiral)
 endif (NOT WIN32)
 
-if (PYTHONLIBS_FOUND)
+if (PYTHONLIBS_FOUND AND NOT WIN32)
    add_subdirectory(python)
-endif(PYTHONLIBS_FOUND)
+endif(PYTHONLIBS_FOUND AND NOT WIN32)
