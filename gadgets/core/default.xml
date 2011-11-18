@@ -31,6 +31,7 @@
       <class>AccumulatorGadget</class>
     </gadget>
 
+ 
     <gadget>
       <name>FFT</name>
       <dll>gadgetroncore</dll>
@@ -43,20 +44,20 @@
       <class>CropAndCombineGadget</class>
     </gadget>
 
-    <gadget>
-      <name>ExtractMagnitude</name>
-      <dll>gadgetroncore</dll>
-      <class>ExtractMagnitudeGadget</class>
-    </gadget>
-
-    <!--
+	<!--
     <gadget>
       <name>ImageWrite</name>
       <dll>gadgetroncore</dll>
       <class>ImageWriterGadget</class>
     </gadget>
     -->
+    <gadget>
+      <name>ExtractMagnitude</name>
+      <dll>gadgetroncore</dll>
+      <class>ExtractMagnitudeGadget</class>
+    </gadget>
 
+ 
     <gadget>
       <name>ImageFinish</name>
       <dll>gadgetroncore</dll>
