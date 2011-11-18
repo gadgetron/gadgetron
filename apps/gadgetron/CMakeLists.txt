@@ -1,11 +1,17 @@
+IF (WIN32)
+ADD_DEFINITIONS(-DTIXML_USE_STL)
+ENDIF (WIN32)
+
 include_directories(
   ${ACE_INCLUDE_DIR} 
   ${TINYXML_INCLUDE_DIR}
+  ${Boost_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools)
 
 add_executable(gadgetron main.cpp GadgetStreamController.cpp GadgetServerAcceptor.cpp)
 
-target_link_libraries(gadgetron ${ACE_LIBRARIES} ${TINYXML_LIBRARIES})
+target_link_libraries(gadgetron optimized ${ACE_LIBRARIES} ${TINYXML_LIBRARIES})
+target_link_libraries(gadgetron debug ${ACE_DEBUG_LIBRARY} ${TINYXML_LIBRARIES})
 
 install(TARGETS gadgetron DESTINATION bin)
 
@@ -20,5 +26,3 @@ install(FILES
 	GadgetMessageInterface.h
 	EndGadget.h
 DESTINATION include)
-
-

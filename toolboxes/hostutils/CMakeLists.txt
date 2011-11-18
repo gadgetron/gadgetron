@@ -1,3 +1,7 @@
+if (WIN32)
+ADD_DEFINITIONS(-D__BUILD_GADGETRON_HOSTUTILS__)
+endif (WIN32)
+
 
 include_directories(${CMAKE_SOURCE_DIR}/toolboxes/ndarray)
 

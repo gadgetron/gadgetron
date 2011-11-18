@@ -1,4 +1,9 @@
+if (WIN32)
+ADD_DEFINITIONS(-D_USE_MATH_DEFINES)
+endif (WIN32)
+
 include_directories(			${CUDA_INCLUDE_DIRS}
+					${Boost_INCLUDE_DIR}
 						${CMAKE_SOURCE_DIR}/toolboxes/gpucore 
 						${CMAKE_SOURCE_DIR}/toolboxes/hostutils
 						${CMAKE_SOURCE_DIR}/toolboxes/solvers

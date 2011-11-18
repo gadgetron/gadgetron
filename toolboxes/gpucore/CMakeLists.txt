@@ -1,7 +1,11 @@
 
-include_directories(		${ACE_INCLUDE_DIR}
-					${CUDA_INCLUDE_DIRS}
-				       ${CMAKE_SOURCE_DIR}/toolboxes/ndarray)
+if (WIN32)
+ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUCORE__)
+endif (WIN32)
+
+include_directories(		${CUDA_INCLUDE_DIRS}
+				${CMAKE_SOURCE_DIR}/toolboxes/ndarray
+				${Boost_INCLUDE_DIR})
 
 cuda_add_library(gpucore SHARED ndarray_vector_td_utilities.cu
 							cuNDArray_kernels.cu
@@ -9,8 +13,7 @@ cuda_add_library(gpucore SHARED ndarray_vector_td_utilities.cu
 							cuNDArray.cpp
 							cuNDFFT.cpp)
 
-target_link_libraries(gpucore ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
-${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES})
+target_link_libraries(gpucore ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES})
 
 install(TARGETS gpucore DESTINATION lib)
 

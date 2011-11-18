@@ -331,8 +331,13 @@ public:
 	}
 	
 	unsigned int k = regularization_group_operators_.size();
-	ARRAY_TYPE_ELEMENT sums[k], reg_out[k];
-	
+	ARRAY_TYPE_ELEMENT *sums = new ARRAY_TYPE_ELEMENT[k], *reg_out = new ARRAY_TYPE_ELEMENT[k];
+
+	if( !sums || !reg_out ){
+		this->solver_error( "sbSolver::solve : host memory allocation for temporary arrays failed" );
+	    return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
+	  }
+
 	ARRAY_TYPE_REAL s_k;
 	if( s_k.create(image_dims_.get()) < 0 ){
 	  this->solver_error( "sbSolver::solve : memory allocation for s_k failed" );
@@ -395,6 +400,7 @@ public:
 	  }
 	}
 	operator_idx += k;
+	delete[] sums; delete[] reg_out;
       } // end of inner loop
       
       // Update f_k
