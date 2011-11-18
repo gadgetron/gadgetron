@@ -68,8 +68,6 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   ACE_DEBUG((LM_INFO, ACE_TEXT("  -- conf:            %s\n"), config_file));
 
 
-  for (unsigned int i = 0; i < 2; i++) {
-
   GadgetronConnector con;
   
   con.register_writer(GADGET_MESSAGE_ACQUISITION, new GadgetAcquisitionMessageWriter());
@@ -155,7 +153,6 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 
 
   con.wait();
-  }
 
   return 0;
 }
