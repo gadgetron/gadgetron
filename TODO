@@ -10,6 +10,8 @@
 
 * Divide the archive into basics (gadgetron and examples) and development gadgets and apps that will not be distributed with the Gadgetron.
 
+* Send "recon done" back to client. (Also should be possible to send an error).
+
 -- Stuff for later
 - Add Event_Handler to Reactor to deal with key strokes and SIGINT to ensure graceful shutdown
 - Logging server
