@@ -2,8 +2,6 @@
 #define SPIRALGADGET_H
 
 #include <complex>
-
-#include "gadgetron_export.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
