@@ -24,8 +24,7 @@ int AccumulatorGadget::process_config(ACE_Message_Block* mb)
   std::vector<long> dims = n.get<long>(std::string("encoding.kspace.matrix_size.value"));
 
   if (dims.size() < 3) {
-    GADGET_DEBUG2("Matrix dimensions have the wrong length: %d\n", dims.size());
-    return GADGET_FAIL;
+	dims.push_back(0);
   }
 
   if (dims[2] == 0) {

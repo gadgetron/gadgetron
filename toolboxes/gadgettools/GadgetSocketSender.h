@@ -24,8 +24,8 @@ class GadgetAcquisitionMessageWriter : public GadgetMessageWriter
     GadgetContainerMessage<GadgetMessageAcquisition>* acqmb =
       dynamic_cast< GadgetContainerMessage<GadgetMessageAcquisition>* >(mb);
     
-    GadgetContainerMessage< hoNDArray< ACE_UINT16 > >* datamb =
-      dynamic_cast< GadgetContainerMessage< hoNDArray< ACE_UINT16 > >* >(acqmb->cont());
+    GadgetContainerMessage< hoNDArray< std::complex<float> > >* datamb =
+      dynamic_cast< GadgetContainerMessage< hoNDArray< std::complex<float> > >* >(acqmb->cont());
     
     if (!acqmb || !datamb) {
       ACE_DEBUG( (LM_ERROR, ACE_TEXT("(%P,%l), GadgetAcquisitionMessageWriter, invalid acquisition message objects")) );
@@ -51,7 +51,7 @@ class GadgetAcquisitionMessageWriter : public GadgetMessageWriter
       return -1;
     }
     
-    if ((send_cnt = sock->send_n (datamb->getObjectPtr()->get_data_ptr(), sizeof(ACE_UINT16)*datamb->getObjectPtr()->get_number_of_elements())) <= 0) {
+    if ((send_cnt = sock->send_n (datamb->getObjectPtr()->get_data_ptr(), sizeof(std::complex<float>)*datamb->getObjectPtr()->get_number_of_elements())) <= 0) {
       ACE_DEBUG ((LM_ERROR,
 		  ACE_TEXT ("(%P|%t) Unable to send acquisition data\n")));
       

@@ -13,9 +13,8 @@ int FFTGadget::process( GadgetContainerMessage< GadgetMessageImage>* m1,
        i <  m2->getObjectPtr()->get_number_of_elements(); 
        i++) 
     {
-      d[i] *= m2->getObjectPtr()->get_number_of_elements();
+      d[i] *= 100;//m2->getObjectPtr()->get_number_of_elements();
     } 
-
   return this->next()->putq(m1);
 }
 

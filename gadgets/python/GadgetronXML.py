@@ -1,4 +1,5 @@
 import xml.dom.minidom
+import numpy as np
 
 def getParameter(dom, path):
     ret_value = [];
@@ -37,7 +38,11 @@ def getEncodingParameters(XMLstr):
     enc["trajectory"]                = int(getParameter(dom,"gadgetron.encoding.trajectory.value")[0])
     enc["matrix_x"]                  = int(getParameter(dom,"gadgetron.encoding.kspace.matrix_size.value")[0])
     enc["matrix_y"]                  = int(getParameter(dom,"gadgetron.encoding.kspace.matrix_size.value")[1])
-    enc["matrix_z"]                  = int(getParameter(dom,"gadgetron.encoding.kspace.matrix_size.value")[2])
+    
+    if (np.size(getParameter(dom,"gadgetron.encoding.kspace.matrix_size.value")) < 3):
+	enc["matrix_z"] = 0
+    else:
+    	enc["matrix_z"]                  = int(getParameter(dom,"gadgetron.encoding.kspace.matrix_size.value")[2])
 
     if (enc["matrix_z"] == 0):
         enc["matrix_z"] = 1
