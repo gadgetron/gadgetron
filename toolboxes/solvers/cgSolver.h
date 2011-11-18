@@ -4,6 +4,7 @@
 #include "matrixOperator.h"
 #include "cgPreconditioner.h"
 #include "real_utilities.h"
+#include "solvers_export.h"
 
 #include <vector>
 #include <iostream>

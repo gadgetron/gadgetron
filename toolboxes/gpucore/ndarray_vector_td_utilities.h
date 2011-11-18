@@ -1,5 +1,5 @@
 #pragma once
-#include "gadgetron_export.h"
+#include "gpucore_export.h"
 
 #include "cuNDArray.h"
 #include "vector_td.h"

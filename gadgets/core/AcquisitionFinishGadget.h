@@ -1,7 +1,7 @@
 #ifndef ACQUISITIONFINISHGADGET_H
 #define ACQUISITIONFINISHGADGET_H
 
-#include "gadgetron_export.h"
+#include "gadgetroncore_export.h"
 #include "Gadget.h"
 #include "NDArray.h"
 #include "GadgetMRIHeaders.h"

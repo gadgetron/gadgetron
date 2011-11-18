@@ -41,5 +41,6 @@ install(FILES
 	cuNonCartesianSenseOperator.h
 	cuNonCartesianKtSenseOperator.h
 	cuSenseRHSBuffer.h
+	gpupmri_export.h
 DESTINATION include)
 

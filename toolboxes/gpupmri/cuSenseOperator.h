@@ -2,7 +2,7 @@
 
 #include "senseOperator.h"
 #include "cuMatrixOperator_macros.h"
-#include "gadgetron_export.h"
+#include "gpupmri_export.h"
 #include "cuNDArray.h"
 #include "vector_td.h"
 

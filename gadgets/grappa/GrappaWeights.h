@@ -4,7 +4,7 @@
 
 #include <complex>
 
-#include "gadgetron_export.h"
+#include "gadgetrongrappa_export.h"
 #include "hoNDArray.h"
 
 template <class T> class EXPORTGADGETSGRAPPA GrappaWeights

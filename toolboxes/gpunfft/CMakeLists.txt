@@ -15,6 +15,6 @@ target_link_libraries(gpunfft gpucore ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} ${CUD
 
 install(TARGETS gpunfft DESTINATION lib)
 
-install(FILES NFFT.h DESTINATION include)
+install(FILES NFFT.h gpunfft_export.h DESTINATION include)
 
 

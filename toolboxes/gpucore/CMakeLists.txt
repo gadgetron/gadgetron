@@ -29,4 +29,5 @@ cuNDFFT.h
 radial_utilities.h
 real_utilities.h
 real_utilities_device.h
+gpucore_export.h
 DESTINATION include)

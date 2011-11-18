@@ -3,7 +3,7 @@
 #pragma once
 
 #include "cuNDArray.h"
-#include "gadgetron_export.h"
+#include "gpucore_export.h"
 
 /*
   Wrapper of the CUFFT library for ndarrays of complex type.

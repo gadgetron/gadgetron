@@ -15,7 +15,9 @@
 #include "GadgetContainerMessage.h"
 #include "GadgetReference.h"
 
-class PythonCommunicator
+#include "gadgetronpython_export.h"
+
+class EXPORTGADGETSPYTHON PythonCommunicator
 {
 
  public:

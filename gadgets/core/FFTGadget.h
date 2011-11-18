@@ -1,7 +1,7 @@
 #ifndef FFTGADGET_H
 #define FFTGADGET_H
 
-#include "gadgetron_export.h"
+#include "gadgetroncore_export.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"

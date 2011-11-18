@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gadgetron_export.h"
+#include "gadgetroncore_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"

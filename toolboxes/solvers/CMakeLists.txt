@@ -41,4 +41,5 @@ install(FILES
 	laplaceOperator.h
 	cuLaplaceOperator.h
 	cuVariableGaussOperator.h
+	solvers_export.h
 DESTINATION include)

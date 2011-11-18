@@ -27,7 +27,7 @@
 
     <gadget>
       <name>RemoveROOversampling</name>
-      <dll>gadgetrongrappa</dll>
+      <dll>gadgetroncore</dll>
       <class>RemoveROOversamplingGadget</class>
     </gadget>
 

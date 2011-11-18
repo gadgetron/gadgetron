@@ -3,6 +3,7 @@
 #include "cuNDArray.h"
 #include "matrixOperator.h"
 #include "vector_td_utilities.h"
+#include "solvers_export.h"
 
 #include <boost/smart_ptr.hpp>
 #include <vector>

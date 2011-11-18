@@ -5,7 +5,7 @@
 #include <numpy/arrayobject.h>
 #include <boost/algorithm/string.hpp>
 
-#include "gadgetron_export.h"
+#include "gadgetronpython_export.h"
 #include "Gadget.h"
 #include "Gadgetron.h"
 #include "hoNDArray.h"
@@ -93,7 +93,7 @@ public Gadget2<T, hoNDArray< std::complex<float> > >
 
 
 
-class EXPORTGADGETSCORE AcquisitionPythonGadget : 
+class EXPORTGADGETSPYTHON AcquisitionPythonGadget :
 public PythonGadget<GadgetMessageAcquisition>
 {
  public:
@@ -101,7 +101,7 @@ public PythonGadget<GadgetMessageAcquisition>
   
 };
 
-class EXPORTGADGETSCORE ImagePythonGadget : 
+class EXPORTGADGETSPYTHON ImagePythonGadget :
 public PythonGadget<GadgetMessageImage>
 {
  public:

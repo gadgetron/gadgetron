@@ -3,10 +3,11 @@
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
+#include "gadgetroncore_export.h"
 
 #include <complex>
 
-class EXPORTGADGETSGRAPPA RemoveROOversamplingGadget : 
+class EXPORTGADGETSCORE RemoveROOversamplingGadget :
 public Gadget2<GadgetMessageAcquisition,hoNDArray< std::complex<float> > >
 {
  public:

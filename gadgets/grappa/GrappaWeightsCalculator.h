@@ -2,7 +2,7 @@
 
 #include <ace/Task.h>
 
-#include "gadgetron_export.h"
+#include "gadgetrongrappa_export.h"
 #include "GrappaWeights.h"
 
 #include <list>

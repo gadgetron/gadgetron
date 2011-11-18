@@ -13,12 +13,14 @@
 #include <ace/SOCK_Stream.h>
 #include <ace/Reactor_Notification_Strategy.h>
 
+
 #include <string>
 
 #include "GadgetronSlotContainer.h"
 #include "GadgetMessageInterface.h"
+#include "gadgettools_export.h"
 
-class GadgetronConnector: public ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_MT_SYNCH> {
+class EXPORTGADGETTOOLS GadgetronConnector: public ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_MT_SYNCH> {
 
 public:
 	GadgetronConnector();

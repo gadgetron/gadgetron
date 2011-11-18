@@ -7,8 +7,9 @@
 #include <boost/python.hpp>
 #include <boost/python/numeric.hpp>
 #include <boost/python/tuple.hpp>
+#include "gadgetronpython_export.h"
 
-class GadgetReference
+class EXPORTGADGETSPYTHON GadgetReference
 {
 
  public:

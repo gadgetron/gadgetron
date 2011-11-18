@@ -3,7 +3,7 @@
 
 #include <complex>
 
-#include "gadgetron_export.h"
+#include "gadgetrongrappa_export.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"

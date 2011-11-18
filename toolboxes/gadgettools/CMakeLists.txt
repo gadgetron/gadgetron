@@ -11,4 +11,5 @@ install (FILES	GadgetSocketReceiver.h
 			GadgetSocketSender.h
 			GadgetXml.h
 			GadgetronConnector.h
+			gadgettools_export.h
 			DESTINATION include)

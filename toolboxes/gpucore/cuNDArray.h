@@ -3,7 +3,7 @@
 #pragma once
 
 #pragma once
-#include "gadgetron_export.h"
+#include "gpucore_export.h"
 
 #include "NDArray.h"
 #include "hoNDArray.h"

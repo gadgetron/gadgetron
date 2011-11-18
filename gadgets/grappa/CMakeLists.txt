@@ -18,8 +18,7 @@ include_directories(		       ${ACE_INCLUDE_DIR}
 add_library(gadgetrongrappa SHARED     GrappaGadget.cpp
 								GrappaCalibrationBuffer.cpp
 							 	GrappaWeights.cpp
-							  	GrappaWeightsCalculator.cpp
-								RemoveROOversamplingGadget.cpp)
+							  	GrappaWeightsCalculator.cpp)
 
 target_link_libraries(gadgetrongrappa optimized gpuparallelmri ${ACE_LIBRARIES} ${TINYXML_LIBRARIES} ${FFTW3_LIBRARIES})
 target_link_libraries(gadgetrongrappa debug gpuparallelmri ${ACE_DEBUG_LIBRARY} ${TINYXML_LIBRARIES} ${FFTW3_LIBRARIES})

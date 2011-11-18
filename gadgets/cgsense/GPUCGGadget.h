@@ -4,7 +4,7 @@
 
 #include <complex>
 
-#include "gadgetron_export.h"
+#include "gadgetroncgsense_export.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "cuCGSolver.h"

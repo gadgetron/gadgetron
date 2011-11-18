@@ -1,7 +1,7 @@
 #ifndef MRIIMAGEWRITER_H
 #define MRIIMAGEWRITER_H
 
-#include "gadgetron_export.h"
+#include "gadgetroncore_export.h"
 #include "GadgetMessageInterface.h"
 #include "GadgetMRIHeaders.h"
 

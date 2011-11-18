@@ -3,6 +3,7 @@
 #pragma once
 
 #include "vector_td_utilities.h"
+#include "solvers_export.h"
 
 template <class REAL, class ARRAY_TYPE> class matrixOperator
 {

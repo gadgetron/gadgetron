@@ -6,7 +6,7 @@
 #include <memory>
 #include <complex>
 
-#include "gadgetron_export.h"
+#include "gadgetrongrappa_export.h"
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
 #include "GrappaWeights.h"

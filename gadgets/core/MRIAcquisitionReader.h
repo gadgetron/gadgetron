@@ -1,7 +1,7 @@
 #ifndef MRIACQUISITIONREADER_H
 #define MRIACQUISITIONREADER_H
 
-#include "gadgetron_export.h"
+#include "gadgetroncore_export.h"
 #include "GadgetMessageInterface.h"
 
 class EXPORTGADGETSCORE MRIAcquisitionReader : public GadgetMessageReader

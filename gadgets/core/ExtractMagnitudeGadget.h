@@ -11,7 +11,7 @@
 #include <Gadget.h>
 #include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
-#include "gadgetron_export.h"
+#include "gadgetroncore_export.h"
 
 #include <complex>
 

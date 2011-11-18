@@ -1,7 +1,7 @@
 #ifndef HTGRAPPA_H
 #define HTGRAPPA_H
 
-#include "gadgetron_export.h"
+#include "gpupmri_export.h"
 #include "cuNDArray.h"
 
 #include <list>
