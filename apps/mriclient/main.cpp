@@ -118,10 +118,6 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 	  dimensions[0] = m2->getObjectPtr()->samples;
 	  dimensions[1] = m2->getObjectPtr()->channels;
 
-	  if (counter < 100) {
-		  std::cout << "Data " << counter++ << ", " << m2->getObjectPtr()->idx.line << ", " << m2->getObjectPtr()->idx.partition << std::endl;
-	  }
-
 	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 =
 			  new GadgetContainerMessage< hoNDArray< std::complex< float> > >();
 

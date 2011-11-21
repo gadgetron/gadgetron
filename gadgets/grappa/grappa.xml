@@ -24,7 +24,7 @@
       <property><name>MyTestProperty</name><value>Blah Blah</value></property>
       <property><name>MyTestProperty2</name><value>98776.862187</value></property>
     </gadget>
-
+    
     <gadget>
       <name>RemoveROOversampling</name>
       <dll>gadgetroncore</dll>

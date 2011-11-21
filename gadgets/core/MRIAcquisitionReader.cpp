@@ -31,11 +31,6 @@ ACE_Message_Block* MRIAcquisitionReader::read(ACE_SOCK_Stream* sock)
   adims.push_back(m1->getObjectPtr()->samples);
   adims.push_back(m1->getObjectPtr()->channels);
 
-  static int counter = 0;
-  if (counter < 100) {
-  	std::cout << "Receiving" << counter++ << ", " << m1->getObjectPtr()->idx.line << std::endl;
-  }
-
   if (!m2->getObjectPtr()->create(&adims)) {
     ACE_DEBUG ((LM_ERROR,
 		ACE_TEXT ("(%P|%t) Allocate sample data\n")));

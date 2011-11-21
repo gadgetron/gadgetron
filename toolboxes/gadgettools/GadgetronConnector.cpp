@@ -137,9 +137,6 @@ int GadgetronConnector::handle_output(ACE_HANDLE fd)
 		}
 
 		mb->release();
-	} else {
-		std::cout << "Failed to get package" << std::endl;
-
 	}
 
 	if (this->msg_queue ()->is_empty ()) {

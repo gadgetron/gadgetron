@@ -30,12 +30,6 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
   unsigned int samples =  m1->samples;
   unsigned int line = m1->idx.line;
   unsigned int partition = m1->idx.partition;
-
-  static int counter = 0;
-  if (counter < 100) {
-	  GADGET_DEBUG2("Calibration Buffer, Data Added %d, %d, %d\n",counter++,line,partition);
-  }
-
   //unsigned int slice = m1->idx.slice; //We should probably check this
 
   if (samples != dimensions_[0]) {
@@ -99,10 +93,10 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
     
     //If there is nothing on the queue, we might as well recalculate
     if (weights_calculator_->msg_queue()->message_count() < 1) {
-      GADGET_DEBUG1("Queue is empty, invalidating weights\n");
+      //GADGET_DEBUG1("Queue is empty, invalidating weights\n");
       weights_invalid_ = true;
     } else {
-      GADGET_DEBUG1("Queue is NOT EMPTY, calculation not triggered\n");
+      //GADGET_DEBUG1("Queue is NOT EMPTY, calculation not triggered\n");
     }
 
     if (weights_invalid_ && ((max_ky-min_ky) > acceleration_factor_)) {
