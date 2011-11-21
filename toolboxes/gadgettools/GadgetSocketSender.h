@@ -116,6 +116,7 @@ template <typename T> class GadgetImageMessageWriter : public GadgetMessageWrite
 
 };
 
+/*
 class GadgetSocketSender : public ACE_Task<ACE_MT_SYNCH>
 {
 
@@ -250,5 +251,6 @@ class GadgetSocketSender : public ACE_Task<ACE_MT_SYNCH>
     return ret;
   }
 };
+*/
 
 #endif //GADGETSOCKETSENDER_H
