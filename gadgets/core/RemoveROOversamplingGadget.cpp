@@ -15,6 +15,11 @@ int RemoveROOversamplingGadget
     return GADGET_FAIL;
   }
 
+  static int counter = 0;
+  if (counter < 100) {
+	  GADGET_DEBUG2("Remove oversampling Gadget, Data Added %d, %d\n",counter++,m1->getObjectPtr()->idx.line);
+  }
+
   std::vector<unsigned int> data_out_dims = *m2->getObjectPtr()->get_dimensions();
   data_out_dims[0] = data_out_dims[0]/2;
 

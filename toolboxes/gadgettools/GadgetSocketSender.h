@@ -44,6 +44,10 @@ class GadgetAcquisitionMessageWriter : public GadgetMessageWriter
       return -1;
     }
     
+    static int counter = 0;
+    if (counter < 100) {
+    	std::cout << "Sending " << counter++ << ", " << acqmb->getObjectPtr()->idx.line << std::endl;
+    }
     if ((send_cnt = sock->send_n (acqmb->getObjectPtr(), sizeof(GadgetMessageAcquisition))) <= 0) {
       ACE_DEBUG ((LM_ERROR,
 		  ACE_TEXT ("(%P|%t) Unable to send acquisition header\n")));

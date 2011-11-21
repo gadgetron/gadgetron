@@ -101,6 +101,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   size_t length = is.tellg();
   is.seekg (0, ios::beg);
 
+  static int counter = 0;
   while ((length-is.tellg()) > sizeof(GadgetMessageAcquisition)) {
 	  GadgetContainerMessage<GadgetMessageIdentifier>* m1 =
 			  new GadgetContainerMessage<GadgetMessageIdentifier>();
@@ -116,6 +117,10 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 	  std::vector<unsigned int> dimensions(2);
 	  dimensions[0] = m2->getObjectPtr()->samples;
 	  dimensions[1] = m2->getObjectPtr()->channels;
+
+	  if (counter < 100) {
+		  std::cout << "Data " << counter++ << ", " << m2->getObjectPtr()->idx.line << ", " << m2->getObjectPtr()->idx.partition << std::endl;
+	  }
 
 	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 =
 			  new GadgetContainerMessage< hoNDArray< std::complex< float> > >();

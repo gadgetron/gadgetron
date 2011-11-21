@@ -83,6 +83,8 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)
        csm_dimensions->push_back(uncombined_channels_.size()+1);
      }
 
+     std::cout << "Uncombined channels: " << uncombined_channels_.size() << std::endl;
+
      if (!unmixing_dev.create(csm_dimensions.get())) {
        GADGET_DEBUG1("Unable to allocate device memory for unmixing coeffcients\n");
        return GADGET_FAIL;
@@ -169,6 +171,10 @@ add_job( hoNDArray< std::complex<T> >* ref_data,
 
   if (!mb1) {
     return -1;
+  }
+
+  for (unsigned int i = 0; i < sampled_region.size(); i++) {
+	  GADGET_DEBUG2("Sampled region %d: [%d, %d]\n", i, sampled_region[i].first, sampled_region[i].second);
   }
 
   mb1->getObjectPtr()->sampled_region = sampled_region;

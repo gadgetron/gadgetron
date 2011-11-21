@@ -9,6 +9,8 @@
 
 #include "GadgetronConnector.h"
 
+#include <iostream>
+
 #define MAXHOSTNAMELENGTH 1024
 
 GadgetronConnector::GadgetronConnector()
@@ -57,7 +59,7 @@ int GadgetronConnector::open(std::string hostname, std::string port)
 
 	this->msg_queue ()->notification_strategy (0);
 
-	return this->activate( THR_NEW_LWP | THR_JOINABLE, 1 ); //Run single threaded. TODO: Add multithreaded support
+	return this->activate( THR_NEW_LWP | THR_JOINABLE, 1); //Run single threaded. TODO: Add multithreaded support
 }
 
 
@@ -135,6 +137,9 @@ int GadgetronConnector::handle_output(ACE_HANDLE fd)
 		}
 
 		mb->release();
+	} else {
+		std::cout << "Failed to get package" << std::endl;
+
 	}
 
 	if (this->msg_queue ()->is_empty ()) {

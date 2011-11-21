@@ -38,11 +38,17 @@ int GrappaGadget::process_config(ACE_Message_Block* mb)
 
   if (dims.size() < 3) {
     GADGET_DEBUG2("Matrix dimensions have the wrong length: %d\n", dims.size());
-    return GADGET_FAIL;
+	dims.push_back(0);
   }
 
   if (dims[2] == 0) {
     dims[2] = 1;
+  }
+
+  std::string xml_doc(mb->rd_ptr());
+  std::cout << xml_doc << std::endl;
+  for (unsigned int i = 0; i < dims.size(); i++) {
+	  std::cout << "DIMS[" << i << "]: " << dims[i] << std::endl;
   }
 
   dimensions_.push_back(n.get<long>(std::string("encoding.kspace.readout_length.value"))[0]);
@@ -51,6 +57,8 @@ int GrappaGadget::process_config(ACE_Message_Block* mb)
   dimensions_.push_back(dims[2]);
   dimensions_.push_back(n.get<long>(std::string("encoding.channels.value"))[0]);
   dimensions_.push_back(n.get<long>(std::string("encoding.slices.value"))[0]);
+
+  GADGET_DEBUG2("Dimensions %d, %d, %d, %d, %d\n", dimensions_[0], dimensions_[1], dimensions_[2], dimensions_[3], dimensions_[4]);
 
   image_dimensions_.push_back(dimensions_[0] / 2); //TODO: fix this in general
   image_dimensions_.push_back(dimensions_[1]);
@@ -128,6 +136,11 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
   unsigned int line = acq_head->idx.line;
   unsigned int partition = acq_head->idx.partition;
   unsigned int slice = acq_head->idx.slice;
+
+  static int counter = 0;
+  if (counter < 100) {
+	  GADGET_DEBUG2("Grapppa Gadget, Data Added %d, %d, %d\n",counter++,line,partition);
+  }
 
   if (samples != image_dimensions_[0]) {
     GADGET_DEBUG1("GrappaGadget: wrong number of samples received\n");
@@ -223,7 +236,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     FFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),2);
 
     //apply weights
-    float scale_factor = (dimensions_[0]*dimensions_[1]*dimensions_[0]*dimensions_[1])/10;
+    float scale_factor = (dimensions_[0] *dimensions_[1]);// *dimensions_[0] *dimensions_[1])/10;
 
     int appl_result = weights_[slice]->apply(image_data_[slice]->getObjectPtr(), cm2->getObjectPtr(), scale_factor);
     if (appl_result < 0) {
