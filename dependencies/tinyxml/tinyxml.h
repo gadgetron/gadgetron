@@ -158,7 +158,7 @@ public:
 };
 
 // Only used by Attribute::Query functions
-EXPORTTINYXML EXPORTTINYXML enum 
+EXPORTTINYXML enum 
 { 
 	TIXML_SUCCESS,
 	TIXML_NO_ATTRIBUTE,
