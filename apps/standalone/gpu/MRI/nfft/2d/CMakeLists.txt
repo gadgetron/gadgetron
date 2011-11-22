@@ -4,7 +4,6 @@ include_directories(			${CUDA_INCLUDE_DIRS}
 						${CMAKE_SOURCE_DIR}/toolboxes/gpucore 
 						${CMAKE_SOURCE_DIR}/toolboxes/gpunfft
 						${CMAKE_SOURCE_DIR}/toolboxes/hostutils
-						${CMAKE_SOURCE_DIR}/toolboxes/gpuct
 						${CMAKE_SOURCE_DIR}/toolboxes/ndarray)
 
 add_executable(nfft  nfft_main.cpp)

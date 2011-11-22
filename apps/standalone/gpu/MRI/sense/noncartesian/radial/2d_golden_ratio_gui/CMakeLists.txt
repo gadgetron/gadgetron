@@ -14,7 +14,6 @@ include_directories(			${CMAKE_CURRENT_BINARY_DIR}
 						${CMAKE_SOURCE_DIR}/toolboxes/gpucore 
 						${CMAKE_SOURCE_DIR}/toolboxes/gpunfft
 						${CMAKE_SOURCE_DIR}/toolboxes/hostutils
-						${CMAKE_SOURCE_DIR}/toolboxes/gpuct
 						${CMAKE_SOURCE_DIR}/toolboxes/solvers
 						${CMAKE_SOURCE_DIR}/toolboxes/gpupmri
 						${CMAKE_SOURCE_DIR}/toolboxes/ndarray)
@@ -30,7 +29,7 @@ add_executable(radial_sense_gr_gui main.cpp ${UI_MOC_OUTFILES}
 radialSenseAppMainWidget.cpp reconWidget.cpp GLReconWidget.cpp ${UI_HEADERS} )
 
 target_link_libraries(radial_sense_gr_gui gpucore gpuparallelmri
-gpunfft hostutils gpuct solvers ${CUDA_LIBRARIES} ${QT_QTGUI_LIBRARY} ${GLEW_LIBRARY}
+gpunfft hostutils solvers ${CUDA_LIBRARIES} ${QT_QTGUI_LIBRARY} ${GLEW_LIBRARY}
 ${QT_QTCORE_LIBRARY} ${QT_QTOPENGL_LIBRARY} ${OPENGL_gl_LIBRARY} )
 
 install(TARGETS radial_sense_gr_gui DESTINATION bin)
