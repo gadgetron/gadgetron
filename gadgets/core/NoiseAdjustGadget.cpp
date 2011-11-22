@@ -135,12 +135,6 @@ int NoiseAdjustGadget
 	unsigned int channels = m1->getObjectPtr()->channels;
 	unsigned int samples = m1->getObjectPtr()->samples;
 
-	static int counter = 0;
-	if (counter < 100) {
-		GADGET_DEBUG2("Noise Adjust Gadget, Data Added %d, %d, %d\n",counter++,m1->getObjectPtr()->idx.line, is_noise);
-	}
-
-
 	if (is_noise) {
 		//If noise covariance matrix is not allocated
 		if (noise_covariance_matrix_.get_number_of_elements() != channels*channels) {
