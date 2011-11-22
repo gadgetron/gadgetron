@@ -10,6 +10,6 @@ include_directories(			${CUDA_INCLUDE_DIRS}
 
 add_executable(radial_ktsense  main.cpp)
 
-target_link_libraries(radial_ktsense gpucore gpuparallelmri gpunfft hostutils gpuct solvers ${CUDA_LIBRARIES})
+target_link_libraries(radial_ktsense gpucore gpuparallelmri gpunfft hostutils solvers ${CUDA_LIBRARIES})
 
 install(TARGETS radial_ktsense DESTINATION bin)
