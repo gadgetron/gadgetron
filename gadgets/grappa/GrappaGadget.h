@@ -33,6 +33,9 @@ public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
 
   virtual int create_image_buffer(unsigned int slice);
 
+  //We have to overwrite close in this gadget to make sure we wait for the weights calculator.
+  virtual int close(unsigned long flags);
+
  private:
   std::vector< GrappaCalibrationBuffer* > buffers_;
   std::vector<unsigned int> dimensions_;

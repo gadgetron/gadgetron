@@ -27,6 +27,16 @@ GrappaGadget::~GrappaGadget()
 
 }
 
+int GrappaGadget::close(unsigned long flags) {
+	if (weights_calculator_.close(flags) < 0) {
+		GADGET_DEBUG1("Failed to close down weights calculator\n");
+		return GADGET_FAIL;
+	}
+	GADGET_DEBUG1("Shutting down GRAPPA Gadget\n");
+
+	return Gadget::close(flags);
+}
+
 int GrappaGadget::process_config(ACE_Message_Block* mb)
 {
   TiXmlDocument doc;
