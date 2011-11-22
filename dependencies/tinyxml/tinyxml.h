@@ -37,6 +37,8 @@ distribution.
 #pragma warning( disable : 4786 )
 #endif
 
+#include "gadgetron_tinyxml_export.h"
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,14 +87,14 @@ distribution.
 	#endif
 #endif	
 
-class TiXmlDocument;
-class TiXmlElement;
-class TiXmlComment;
-class TiXmlUnknown;
-class TiXmlAttribute;
-class TiXmlText;
-class TiXmlDeclaration;
-class TiXmlParsingData;
+class EXPORTTINYXML TiXmlDocument;
+class EXPORTTINYXML TiXmlElement;
+class EXPORTTINYXML TiXmlComment;
+class EXPORTTINYXML TiXmlUnknown;
+class EXPORTTINYXML TiXmlAttribute;
+class EXPORTTINYXML TiXmlText;
+class EXPORTTINYXML TiXmlDeclaration;
+class EXPORTTINYXML TiXmlParsingData;
 
 const int TIXML_MAJOR_VERSION = 2;
 const int TIXML_MINOR_VERSION = 6;
@@ -101,7 +103,7 @@ const int TIXML_PATCH_VERSION = 1;
 /*	Internal structure for tracking location of items 
 	in the XML file.
 */
-struct TiXmlCursor
+struct EXPORTTINYXML TiXmlCursor
 {
 	TiXmlCursor()		{ Clear(); }
 	void Clear()		{ row = col = -1; }
@@ -130,7 +132,7 @@ struct TiXmlCursor
 
 	@sa TiXmlNode::Accept()
 */
-class TiXmlVisitor
+class EXPORTTINYXML TiXmlVisitor
 {
 public:
 	virtual ~TiXmlVisitor() {}
@@ -156,7 +158,7 @@ public:
 };
 
 // Only used by Attribute::Query functions
-enum 
+EXPORTTINYXML enum 
 { 
 	TIXML_SUCCESS,
 	TIXML_NO_ATTRIBUTE,
@@ -165,7 +167,7 @@ enum
 
 
 // Used by the parsing routines.
-enum TiXmlEncoding
+EXPORTTINYXML enum TiXmlEncoding
 {
 	TIXML_ENCODING_UNKNOWN,
 	TIXML_ENCODING_UTF8,
@@ -196,11 +198,11 @@ const TiXmlEncoding TIXML_DEFAULT_ENCODING = TIXML_ENCODING_UNKNOWN;
 	A Decleration contains: Attributes (not on tree)
 	@endverbatim
 */
-class TiXmlBase
+class EXPORTTINYXML TiXmlBase
 {
-	friend class TiXmlNode;
-	friend class TiXmlElement;
-	friend class TiXmlDocument;
+	friend class EXPORTTINYXML TiXmlNode;
+	friend class EXPORTTINYXML TiXmlElement;
+	friend class EXPORTTINYXML TiXmlDocument;
 
 public:
 	TiXmlBase()	:	userData(0)		{}
@@ -266,7 +268,7 @@ public:
 	*/
 	static void EncodeString( const TIXML_STRING& str, TIXML_STRING* out );
 
-	enum
+	EXPORTTINYXML enum
 	{
 		TIXML_NO_ERROR = 0,
 		TIXML_ERROR,
@@ -408,7 +410,7 @@ private:
 		unsigned int	strLength;
 		char		    chr;
 	};
-	enum
+	EXPORTTINYXML enum
 	{
 		NUM_ENTITY = 5,
 		MAX_ENTITY_LENGTH = 6
@@ -425,10 +427,10 @@ private:
 	in a document, or stand on its own. The type of a TiXmlNode
 	can be queried, and it can be cast to its more defined type.
 */
-class TiXmlNode : public TiXmlBase
+class EXPORTTINYXML TiXmlNode : public TiXmlBase
 {
-	friend class TiXmlDocument;
-	friend class TiXmlElement;
+	friend class EXPORTTINYXML TiXmlDocument;
+	friend class EXPORTTINYXML TiXmlElement;
 
 public:
 	#ifdef TIXML_USE_STL	
@@ -464,7 +466,7 @@ public:
 	/** The types of XML nodes supported by TinyXml. (All the
 			unsupported types are picked up by UNKNOWN.)
 	*/
-	enum NodeType
+	enum EXPORTTINYXML NodeType
 	{
 		TINYXML_DOCUMENT,
 		TINYXML_ELEMENT,
@@ -781,9 +783,9 @@ private:
 		  part of the tinyXML document object model. There are other
 		  suggested ways to look at this problem.
 */
-class TiXmlAttribute : public TiXmlBase
+class EXPORTTINYXML TiXmlAttribute : public TiXmlBase
 {
-	friend class TiXmlAttributeSet;
+	friend class EXPORTTINYXML TiXmlAttributeSet;
 
 public:
 	/// Construct an empty attribute.
@@ -905,7 +907,7 @@ private:
 		- I like circular lists
 		- it demonstrates some independence from the (typical) doubly linked list.
 */
-class TiXmlAttributeSet
+class EXPORTTINYXML TiXmlAttributeSet
 {
 public:
 	TiXmlAttributeSet();
@@ -942,7 +944,7 @@ private:
 	and can contain other elements, text, comments, and unknowns.
 	Elements also contain an arbitrary number of attributes.
 */
-class TiXmlElement : public TiXmlNode
+class EXPORTTINYXML TiXmlElement : public TiXmlNode
 {
 public:
 	/// Construct an element.
@@ -1157,7 +1159,7 @@ private:
 
 /**	An XML comment.
 */
-class TiXmlComment : public TiXmlNode
+class EXPORTTINYXML TiXmlComment : public TiXmlNode
 {
 public:
 	/// Constructs an empty comment.
@@ -1207,9 +1209,9 @@ private:
 	you generally want to leave it alone, but you can change the output mode with 
 	SetCDATA() and query it with CDATA().
 */
-class TiXmlText : public TiXmlNode
+class EXPORTTINYXML TiXmlText : public TiXmlNode
 {
-	friend class TiXmlElement;
+	friend class EXPORTTINYXML TiXmlElement;
 public:
 	/** Constructor for text element. By default, it is treated as 
 		normal, encoded text. If you want it be output as a CDATA text
@@ -1280,7 +1282,7 @@ private:
 	handled as special cases, not generic attributes, simply
 	because there can only be at most 3 and they are always the same.
 */
-class TiXmlDeclaration : public TiXmlNode
+class EXPORTTINYXML TiXmlDeclaration : public TiXmlNode
 {
 public:
 	/// Construct an empty declaration.
@@ -1349,7 +1351,7 @@ private:
 
 	DTD tags get thrown into TiXmlUnknowns.
 */
-class TiXmlUnknown : public TiXmlNode
+class EXPORTTINYXML TiXmlUnknown : public TiXmlNode
 {
 public:
 	TiXmlUnknown() : TiXmlNode( TiXmlNode::TINYXML_UNKNOWN )	{}
@@ -1388,7 +1390,7 @@ private:
 	XML pieces. It can be saved, loaded, and printed to the screen.
 	The 'value' of a document node is the xml file name.
 */
-class TiXmlDocument : public TiXmlNode
+class EXPORTTINYXML TiXmlDocument : public TiXmlNode
 {
 public:
 	/// Create an empty document, that has no name.
@@ -1633,7 +1635,7 @@ private:
 	}
 	@endverbatim
 */
-class TiXmlHandle
+class EXPORTTINYXML TiXmlHandle
 {
 public:
 	/// Create a handle from any node (at any depth of the tree.) This can be a null pointer.
@@ -1732,7 +1734,7 @@ private:
 	fprintf( stdout, "%s", printer.CStr() );
 	@endverbatim
 */
-class TiXmlPrinter : public TiXmlVisitor
+class EXPORTTINYXML TiXmlPrinter : public TiXmlVisitor
 {
 public:
 	TiXmlPrinter() : depth( 0 ), simpleTextPrint( false ),
