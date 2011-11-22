@@ -19,7 +19,6 @@ find_package(Boost REQUIRED)
 
 find_package(FFTW3 COMPONENTS single double REQUIRED)
 find_package(ACE REQUIRED)
-find_package(TinyXML REQUIRED)
 
 find_package(CUDA 4.0)
 
@@ -48,6 +47,7 @@ endif(DOXYGEN_FOUND)
 
 find_package(GLEW)
 
+add_subdirectory(dependencies)
 add_subdirectory(apps)
 add_subdirectory(toolboxes)
 add_subdirectory(gadgets)

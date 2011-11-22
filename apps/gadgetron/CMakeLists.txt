@@ -4,14 +4,13 @@ ENDIF (WIN32)
 
 include_directories(
   ${ACE_INCLUDE_DIR} 
-  ${TINYXML_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
+  ${CMAKE_SOURCE_DIR}/dependencies/tinyxml
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools)
 
 add_executable(gadgetron main.cpp GadgetStreamController.cpp GadgetServerAcceptor.cpp)
 
-target_link_libraries(gadgetron optimized ${ACE_LIBRARIES} ${TINYXML_LIBRARIES})
-target_link_libraries(gadgetron debug ${ACE_DEBUG_LIBRARY} ${TINYXML_LIBRARIES})
+target_link_libraries(gadgetron tinyxml optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
 install(TARGETS gadgetron DESTINATION bin)
 

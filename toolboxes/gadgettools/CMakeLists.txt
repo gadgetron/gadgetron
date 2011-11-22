@@ -4,8 +4,7 @@ include_directories(${ACE_INCLUDE_DIR}
 
 add_library(gadgettools SHARED GadgetronConnector.cpp)
 
-target_link_libraries(gadgettools optimized ${ACE_LIBRARIES})
-target_link_libraries(gadgettools debug ${ACE_DEBUG_LIBRARY})
+target_link_libraries(gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
 install(TARGETS gadgettools DESTINATION lib)
 
