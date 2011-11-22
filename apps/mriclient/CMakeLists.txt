@@ -1,5 +1,8 @@
-include_directories(${ACE_INCLUDE_DIR} 
-				       ${TINYXML_INCLUDE_DIR}
+IF (WIN32)
+ADD_DEFINITIONS(-DTIXML_USE_STL)
+ENDIF (WIN32)
+
+include_directories(   ${ACE_INCLUDE_DIR} 
 					   ${Boost_INCLUDE_DIR}  
 				       ${CMAKE_SOURCE_DIR}/gadgets/core 
 				       ${CMAKE_SOURCE_DIR}/apps/gadgetron
@@ -9,6 +12,6 @@ include_directories(${ACE_INCLUDE_DIR}
 
 add_executable(mriclient main.cpp)
 
-target_link_libraries(mriclient ${ACE_LIBRARIES} ${TINYXML_LIBRARIES} gadgettools)
+target_link_libraries(mriclient tinyxml gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
 install(TARGETS mriclient DESTINATION bin)

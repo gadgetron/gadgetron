@@ -17,7 +17,6 @@
 
 int GadgetStreamController::open (void)
 {
-
 	//We will set up the controllers message queue such that when a packet is enqueued write will be triggered.
 	this->notifier_.reactor (this->reactor ());
 	this->msg_queue ()->notification_strategy (&this->notifier_);
@@ -39,7 +38,6 @@ int GadgetStreamController::open (void)
 
 	readers_.insert(GADGET_MESSAGE_PARAMETER_SCRIPT,
 			new GadgetMessageScriptReader());
-
 
 	GadgetModule *head = 0;
 	GadgetModule *tail = 0;
@@ -65,7 +63,6 @@ int GadgetStreamController::open (void)
 
 int GadgetStreamController::handle_input (ACE_HANDLE)
 {
-
 	//Reading sequence:
 	GadgetMessageIdentifier id;
 	ssize_t recv_cnt = 0;
@@ -135,12 +132,11 @@ int GadgetStreamController::handle_input (ACE_HANDLE)
 	}
 
 	return GADGET_OK;
-
 }
 
 
-int GadgetStreamController::output_ready(ACE_Message_Block* mb) { 
-
+int GadgetStreamController::output_ready(ACE_Message_Block* mb) 
+{ 
 	int res = this->putq(mb);
 	return res;
 }
@@ -183,7 +179,6 @@ int GadgetStreamController::handle_output (ACE_HANDLE)
 		mb->release();
 	}
 
-
 	if (this->msg_queue ()->is_empty ()) {
 		//No point in coming back to handle_ouput until something is put on the queue,
 		//in which case, the msg queue's notification strategy will tell us
@@ -198,7 +193,6 @@ int GadgetStreamController::handle_output (ACE_HANDLE)
 
 int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
 {
-
 	GADGET_DEBUG1("handle_close called\n");
 
 	if (mask == ACE_Event_Handler::WRITE_MASK)
@@ -232,7 +226,6 @@ int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
 	dll_handles_.clear();
 
 	GADGET_DEBUG1("Stream is closed\n");
-
 
 	delete this;
 	return 0;
@@ -437,7 +430,6 @@ GadgetModule * GadgetStreamController::create_gadget_module(const char* DLL,
 			GadgetModule (gadget_module_name, g),
 			0);
 
-
 	return module;
 }
 
@@ -445,21 +437,22 @@ GadgetModule * GadgetStreamController::create_gadget_module(const char* DLL,
 template <class T>  
 T* GadgetStreamController::load_dll_component(const char* DLL, const char* component_name)
 {
-
 	ACE_DLL_Manager* dllmgr = ACE_DLL_Manager::instance();
 
 	ACE_DLL_Handle* dll = 0;
 	ACE_SHLIB_HANDLE dll_handle = 0;
 
 	ACE_TCHAR dllname[1024];
+#if defined(WIN32) && defined(_DEBUG)
+	ACE_OS::sprintf(dllname, "%s%sd",ACE_DLL_PREFIX, DLL);
+#else
 	ACE_OS::sprintf(dllname, "%s%s",ACE_DLL_PREFIX, DLL);
+#endif
 
 	ACE_TCHAR factoryname[1024];
 	ACE_OS::sprintf(factoryname, "make_%s", component_name);
 
-
 	dll = dllmgr->open_dll (dllname, ACE_DEFAULT_SHLIB_MODE, dll_handle );
-
 
 	if (!dll) {
 		GADGET_DEBUG1("Failed to load DLL, Possible reasons: \n");
@@ -474,7 +467,6 @@ T* GadgetStreamController::load_dll_component(const char* DLL, const char* compo
 	//Function pointer
 	typedef T* (*ComponentCreator) (void);
 
-
 	void *void_ptr = dll->symbol (factoryname);
 	ptrdiff_t tmp = reinterpret_cast<ptrdiff_t> (void_ptr);
 	ComponentCreator cc = reinterpret_cast<ComponentCreator> (tmp);
@@ -483,7 +475,6 @@ T* GadgetStreamController::load_dll_component(const char* DLL, const char* compo
 		GADGET_DEBUG2("Failed to load factory (%s) from DLL (%s)\n", dllname, factoryname);
 		return 0;
 	}
-
 
 	T* c = cc();
 

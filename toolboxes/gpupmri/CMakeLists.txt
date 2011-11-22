@@ -25,10 +25,7 @@ cuda_add_library(gpuparallelmri SHARED 	b1_map.cu
 									cuSenseRHSBuffer.cu
 									htgrappa.cu)
 
-target_link_libraries(gpuparallelmri gpucore gpunfft
-#${TINYXML_LIBRARIES} 
-${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
-${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CULA_LIBRARIES})
+target_link_libraries(gpuparallelmri gpucore gpunfft ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CULA_LIBRARIES})
 
 install(TARGETS gpuparallelmri DESTINATION lib)
 
