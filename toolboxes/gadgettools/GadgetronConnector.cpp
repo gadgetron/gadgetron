@@ -6,7 +6,6 @@
  */
 
 #include <ace/SOCK_Connector.h>
-#include <ace/OS.h>
 
 #include "GadgetronConnector.h"
 
