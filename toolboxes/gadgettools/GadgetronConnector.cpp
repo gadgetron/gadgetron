@@ -6,6 +6,7 @@
  */
 
 #include <ace/SOCK_Connector.h>
+#include <ace/OS.h>
 
 #include "GadgetronConnector.h"
 
@@ -14,14 +15,15 @@
 #define MAXHOSTNAMELENGTH 1024
 
 GadgetronConnector::GadgetronConnector()
-	: notifier_ (0, this, ACE_Event_Handler::WRITE_MASK)
+	//: notifier_ (0, this, ACE_Event_Handler::WRITE_MASK)
+	: writer_task_(&this->peer())
 {
 
 }
 
 GadgetronConnector::~GadgetronConnector() {
 	readers_.clear();
-	writers_.clear();
+	//writers_.clear();
 }
 
 int GadgetronConnector::open(std::string hostname, std::string port)
@@ -36,8 +38,8 @@ int GadgetronConnector::open(std::string hostname, std::string port)
 	}
 
 	//We will add a notification strategy to the message queue to make sure than handle_output gets triggered when packages are on the queue
-	this->notifier_.reactor (this->reactor ());
-	this->msg_queue ()->notification_strategy (&this->notifier_);
+	//this->notifier_.reactor (this->reactor ());
+	//this->msg_queue ()->notification_strategy (&this->notifier_);
 
 	ACE_INET_Addr server(port_.c_str(),hostname_.c_str());
 	ACE_SOCK_Connector connector;
@@ -53,11 +55,13 @@ int GadgetronConnector::open(std::string hostname, std::string port)
 	}
 
 
-	if (this->reactor ()->register_handler(this, ACE_Event_Handler::READ_MASK | ACE_Event_Handler::WRITE_MASK) != 0) {
+	if (this->reactor ()->register_handler(this, ACE_Event_Handler::READ_MASK) != 0) {
 		ACE_ERROR_RETURN(( LM_ERROR, ACE_TEXT("%p\n"), ACE_TEXT("Registering read handler")), -2);;
 	}
 
-	this->msg_queue ()->notification_strategy (0);
+	this->writer_task_.open();
+
+	//this->msg_queue ()->notification_strategy (0);
 
 	return this->activate( THR_NEW_LWP | THR_JOINABLE, 1); //Run single threaded. TODO: Add multithreaded support
 }
@@ -99,13 +103,17 @@ int GadgetronConnector::handle_input(ACE_HANDLE fd)
 	return 0;
 }
 
+/*
 int GadgetronConnector::handle_output(ACE_HANDLE fd)
 {
 	ACE_Message_Block *mb = 0;
 	ACE_Time_Value nowait (ACE_OS::gettimeofday ());
 
+	static int counter = 0;
+	ACE_DEBUG( (LM_INFO, ACE_TEXT("%P, %l, GadgetronConnector, Handle output called, %d\n"), counter++) );
+
 	//Send a package if we have one
-	if (-1 != this->getq (mb, &nowait)) {
+	while (-1 != this->getq (mb, &nowait)) {
 		GadgetContainerMessage<GadgetMessageIdentifier>* mid =
 				AsContainerMessage<GadgetMessageIdentifier>(mb);
 
@@ -131,6 +139,14 @@ int GadgetronConnector::handle_output(ACE_HANDLE fd)
 		}
 
 		if (w->write(&peer(),mb->cont()) < 0) {
+			if (errno == EWOULDBLOCK)
+             {
+			ACE_DEBUG ( (LM_DEBUG, ACE_TEXT ("(%P|%t) Failed to write message to Gadgetron (WOULDBLOCK)\n")) );
+			mb->release ();
+			return 0;
+
+			}
+
 			ACE_DEBUG ( (LM_DEBUG, ACE_TEXT ("(%P|%t) Failed to write message to Gadgetron\n")) );
 			mb->release ();
 			return -1;
@@ -140,6 +156,7 @@ int GadgetronConnector::handle_output(ACE_HANDLE fd)
 	}
 
 	if (this->msg_queue ()->is_empty ()) {
+		ACE_DEBUG( (LM_INFO, ACE_TEXT("%P, %l, GadgetronConnector, Q empty, %d\n"), counter++) );
 		//No point in coming back to handle_ouput until something is put on the queue,
 		//in which case, the msg queue's notification strategy will tell us
 
@@ -149,10 +166,11 @@ int GadgetronConnector::handle_output(ACE_HANDLE fd)
 		//Get a trigger when stuff is on the queue instead
 		this->msg_queue ()->notification_strategy (&this->notifier_);
 	} else {
+		ACE_DEBUG( (LM_INFO, ACE_TEXT("%P, %l, GadgetronConnector, Q has stuff, %d\n"), counter++) );
 		//There is still more on the queue, let's come back when idle
 
 		//Make sure that we get a wake up when it is possible to write
-		this->reactor ()->schedule_wakeup(this, ACE_Event_Handler::WRITE_MASK);
+		//this->reactor ()->schedule_wakeup(this, ACE_Event_Handler::WRITE_MASK);
 
 		//Don't wake up from the queue, it may not be possible to write.
 		this->msg_queue ()->notification_strategy (0);
@@ -162,6 +180,7 @@ int GadgetronConnector::handle_output(ACE_HANDLE fd)
 
 	return 0;
 }
+*/
 
 int GadgetronConnector::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_mask)
 {
@@ -169,6 +188,7 @@ int GadgetronConnector::handle_close(ACE_HANDLE handle, ACE_Reactor_Mask close_m
 	this->reactor()->end_reactor_event_loop();
 	return 0;//this->wait();
 }
+
 
 int GadgetronConnector::svc(void)
 {
@@ -178,6 +198,9 @@ int GadgetronConnector::svc(void)
 	this->reactor()->owner(ACE_Thread::self ());//, &old_owner);
 
 	this->reactor()->reset_event_loop();
+
+	ACE_Time_Value initialDelay (3);
+	ACE_Time_Value interval (0,100);
 
 	//Handle the events
 	this->reactor()->run_reactor_event_loop();
@@ -194,11 +217,13 @@ int GadgetronConnector::register_reader(unsigned int slot, GadgetMessageReader *
 	return readers_.insert(slot,reader);
 }
 
-
+/*
 int GadgetronConnector::register_writer(unsigned int slot, GadgetMessageWriter *writer)
 {
 	return writers_.insert(slot,writer);
 }
+*/
+
 
 int GadgetronConnector::send_gadgetron_configuration(std::string config_xml_name)
 {
