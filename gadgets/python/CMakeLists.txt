@@ -18,11 +18,11 @@ add_library(gadgetronpython SHARED
 	GadgetronPythonMRI.cpp
 	PythonCommunicator.cpp)
 
-target_link_libraries(gadgetronpython tinyxml optimized ${ACE_LIBRARIES} optimized ${PYTHON_LIBRARY} optimized ${Boost_PYTHON_LIBRARY_RELEASE})
-target_link_libraries(gadgetronpython tinyxml debug ${ACE_DEBUG_LIBRARY} debug ${PYTHON_DEBUG_LIBRARY} debug ${Boost_PYTHON_LIBRARY_DEBUG})
+target_link_libraries(gadgetronpython tinyxml optimized ${ACE_LIBRARIES}  debug ${ACE_DEBUG_LIBRARY} ${PYTHON_LIBRARY} ${Boost_PYTHON_LIBRARY_RELEASE})
+#target_link_libraries(gadgetronpython tinyxmldebug  debug ${ACE_DEBUG_LIBRARY} ${PYTHON_DEBUG_LIBRARY} debug ${Boost_PYTHON_LIBRARY_DEBUG})
 
-target_link_libraries(GadgetronPythonMRI tinyxml optimized ${ACE_LIBRARIES} optimized ${PYTHON_LIBRARY} optimized ${Boost_PYTHON_LIBRARY_RELEASE})
-target_link_libraries(GadgetronPythonMRI tinyxml debug ${ACE_DEBUG_LIBRARY} debug ${PYTHON_DEBUG_LIBRARY} debug ${Boost_PYTHON_LIBRARY_DEBUG})
+target_link_libraries(GadgetronPythonMRI tinyxml optimized ${ACE_LIBRARIES}  debug ${ACE_DEBUG_LIBRARY} optimized ${PYTHON_LIBRARY} optimized ${Boost_PYTHON_LIBRARY_RELEASE})
+#target_link_libraries(GadgetronPythonMRI tinyxml debug ${ACE_DEBUG_LIBRARY} debug ${PYTHON_DEBUG_LIBRARY} debug ${Boost_PYTHON_LIBRARY_DEBUG})
 
 install(TARGETS gadgetronpython GadgetronPythonMRI DESTINATION lib)
 
