@@ -24,4 +24,5 @@ install(FILES
 	Gadgetron.h
 	GadgetMessageInterface.h
 	EndGadget.h
+	GadgetronExport.h
 DESTINATION include)

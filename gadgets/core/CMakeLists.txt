@@ -27,5 +27,20 @@ add_library(gadgetroncore SHARED AcquisitionPassthroughGadget.cpp
 
 target_link_libraries(gadgetroncore tinyxml ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
+install (FILES	AccumulatorGadget.h
+			AcquisitionFinishGadget.h
+			AcquisitionPassthroughGadget.h
+			CropAndCombineGadget.h	
+			ExtractMagnitudeGadget.h
+			FFTGadget.h
+			GadgetMRIHeaders.h
+			ImageFinishGadget.h
+			ImageWriterGadget.h
+			MRIAcquisitionReader.h
+			MRIImageWriter.h
+			NoiseAdjustGadget.h
+			RemoveROOversamplingGadget.h
+			DESTINATION include)
+
 install(TARGETS gadgetroncore DESTINATION lib)
 install(FILES default.xml DESTINATION config)
