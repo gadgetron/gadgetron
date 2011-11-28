@@ -1,40 +1,48 @@
 #include "ImageFinishGadget.h"
 
-int ImageFinishGadget
+template <typename T>
+int ImageFinishGadget<T>
 ::process(GadgetContainerMessage<GadgetMessageImage>* m1,
-	  GadgetContainerMessage< hoNDArray< ACE_UINT16 > >* m2)
+	  GadgetContainerMessage< hoNDArray< T > >* m2)
 {
-  if (!controller_) {
+  if (!this->controller_) {
     ACE_DEBUG( (LM_DEBUG, 
 		ACE_TEXT("Cannot return result to controller, no controller set")) );
     return -1;
   }
 
-  bool is_last_image = (m1->getObjectPtr()->flags & GADGET_FLAG_LAST_IMAGE);
-
   GadgetContainerMessage<GadgetMessageIdentifier>* mb =
     new GadgetContainerMessage<GadgetMessageIdentifier>();
 
-  mb->getObjectPtr()->id = GADGET_MESSAGE_IMAGE;
+  switch (sizeof(T)) {
+  case 2: //Unsigned short
+	  mb->getObjectPtr()->id = GADGET_MESSAGE_IMAGE_REAL_USHORT;
+	  break;
+  case 4: //Float
+	  mb->getObjectPtr()->id = GADGET_MESSAGE_IMAGE_REAL_FLOAT;
+	  break;
+  case 8: //Complex float
+	  mb->getObjectPtr()->id = GADGET_MESSAGE_IMAGE_CPLX_FLOAT;
+	  break;
+  default:
+	  GADGET_DEBUG2("Wrong data size detected: %d\n", sizeof(T));
+	  mb->release();
+	  m1->release();
+	  return GADGET_FAIL;
+  }
 
   mb->cont(m1);
 
-  int ret =  controller_->output_ready(mb);
+  int ret =  this->controller_->output_ready(mb);
 
-  int ret2 = GADGET_OK;
-  if (is_last_image) {
-	  GadgetContainerMessage<GadgetMessageIdentifier>* mb2 =
-	     new GadgetContainerMessage<GadgetMessageIdentifier>();
-
-	  mb2->getObjectPtr()->id = GADGET_MESSAGE_CLOSE;
-	  ret2 = controller_->output_ready(mb2);
-  }
-
-  if ( (ret < 0) || (ret2 < 0) ) {
+  if ( (ret < 0) ) {
 	  return GADGET_FAIL;
   }
 
   return GADGET_OK;
 }
 
-GADGET_FACTORY_DECLARE(ImageFinishGadget)
+//Declare factories for the various template instances
+GADGET_FACTORY_DECLARE(ImageFinishGadgetFLOAT)
+GADGET_FACTORY_DECLARE(ImageFinishGadgetUSHORT)
+GADGET_FACTORY_DECLARE(ImageFinishGadgetCPLX)

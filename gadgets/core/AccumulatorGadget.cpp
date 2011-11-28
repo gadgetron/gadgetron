@@ -99,6 +99,8 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     GadgetContainerMessage<GadgetMessageImage>* cm1 = 
       new GadgetContainerMessage<GadgetMessageImage>();
     
+    cm1->getObjectPtr()->flags = 0;
+
     GadgetContainerMessage< hoNDArray< std::complex<float> > >* cm2 = 
       new GadgetContainerMessage<hoNDArray< std::complex<float> > >();
     

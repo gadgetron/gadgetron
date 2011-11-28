@@ -78,6 +78,7 @@ int GadgetronConnector::handle_input(ACE_HANDLE fd)
 
 	//Is this a shutdown message?
 	if (mid.id == GADGET_MESSAGE_CLOSE) {
+		ACE_DEBUG( (LM_INFO, ACE_TEXT("%P, %l, GadgetronConnector, Close Message received\n")) );
 		return close();
 	}
 

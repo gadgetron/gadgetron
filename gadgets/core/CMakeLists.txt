@@ -22,7 +22,8 @@ add_library(gadgetroncore SHARED AcquisitionPassthroughGadget.cpp
 								 MRIAcquisitionReader.cpp
 								 MRIImageWriter.cpp
 								 NoiseAdjustGadget.cpp
-								 ExtractMagnitudeGadget.cpp
+								 ExtractGadget.cpp
+								 FloatToUShortGadget.cpp
 								 RemoveROOversamplingGadget.cpp)
 
 target_link_libraries(gadgetroncore tinyxml ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
@@ -31,7 +32,8 @@ install (FILES	AccumulatorGadget.h
 			AcquisitionFinishGadget.h
 			AcquisitionPassthroughGadget.h
 			CropAndCombineGadget.h	
-			ExtractMagnitudeGadget.h
+			ExtractGadget.h
+			FloatToUShortGadget.h
 			FFTGadget.h
 			GadgetMRIHeaders.h
 			ImageFinishGadget.h

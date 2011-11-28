@@ -12,7 +12,17 @@
     <writer>
       <slot>1004</slot>
       <dll>gadgetroncore</dll>
-      <class>MRIImageWriter</class>
+      <class>MRIImageWriterCPLX</class>
+    </writer>
+    <writer>
+      <slot>1005</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIImageWriterFLOAT</class>
+    </writer>
+    <writer>
+      <slot>1006</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIImageWriterUSHORT</class>
     </writer>
   </writers>
   
@@ -40,26 +50,53 @@
       -->
     </gadget>
 
+     <gadget>
+      <name>Extract</name>
+      <dll>gadgetroncore</dll>
+      <class>ExtractGadget</class>
+      <!--
+      <property><name>extract_mask</name><value>9</value></property>
+      -->
+    </gadget>
+
 	<!--
     <gadget>
       <name>ImageWrite</name>
       <dll>gadgetroncore</dll>
-      <class>ImageWriterGadget</class>
+      <class>ImageWriterGadgetFLOAT</class>
+    </gadget>
+    -->
+    
+    <!--
+    <gadget>
+      <name>FloatToShort</name>
+      <dll>gadgetroncore</dll>
+      <class>FloatToUShortGadget</class>
+    </gadget>
+    -->
+ 
+ 	<!--
+    <gadget>
+      <name>ImageFinishCPLX</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageFinishGadgetCPLX</class>
     </gadget>
     -->
     
     <gadget>
-      <name>ExtractMagnitude</name>
+      <name>ImageFinishFLOAT</name>
       <dll>gadgetroncore</dll>
-      <class>ExtractMagnitudeGadget</class>
+      <class>ImageFinishGadgetFLOAT</class>
     </gadget>
-
+    
+ 	<!--
     <gadget>
-      <name>ImageFinish</name>
+      <name>ImageFinishUSHORT</name>
       <dll>gadgetroncore</dll>
-      <class>ImageFinishGadget</class>
+      <class>ImageFinishGadgetUSHORT</class>
     </gadget>
-  </stream>
+    -->
+   </stream>
 
 </gadgetron>
 

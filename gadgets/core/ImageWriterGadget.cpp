@@ -2,15 +2,29 @@
 
 #include <fstream>
 
-int ImageWriterGadget ::
+template<typename T>
+int ImageWriterGadget<T> ::
 process( GadgetContainerMessage< GadgetMessageImage>* m1,
-	 GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
+	 GadgetContainerMessage< hoNDArray< T > >* m2)
 {
-    ACE_DEBUG( (LM_DEBUG, ACE_TEXT("ImageWriterGadget writing image\n")) );
+    GADGET_DEBUG1("Writing image\n");
 
 
     char filename[1024];
-    sprintf(filename, "out_%05d.cplx", (int)calls_);
+    switch (sizeof(T)) {
+     case (8): //Complex float
+     	sprintf(filename, "out_%05d.cplx", (int)this->calls_);
+     	break;
+     case (4): //Real floats
+ 		sprintf(filename, "out_%05d.real", (int)this->calls_);
+ 		break;
+     case (2): //Unsigned short
+ 		sprintf(filename, "out_%05d.short", (int)this->calls_);
+ 		break;
+     default:
+     	sprintf(filename, "out_%05d.cplx", (int)this->calls_);
+     	break;
+     }
 
     std::ofstream outfile;    
     outfile.open (filename, std::ios::out|std::ios::binary);
@@ -24,12 +38,14 @@ process( GadgetContainerMessage< GadgetMessageImage>* m1,
     }
     outfile.write((char*)&ndim,sizeof(int));
     outfile.write((char*)dims,sizeof(int)*ndim);
-    outfile.write((char*)m2->getObjectPtr()->get_data_ptr(),sizeof(float)*elements*2);
+    outfile.write((char*)m2->getObjectPtr()->get_data_ptr(),sizeof(T)*elements);
     outfile.close();
     delete [] dims;
 
-    calls_++;
+    this->calls_++;
     return this->next()->putq(m1);
 }
 
-GADGET_FACTORY_DECLARE(ImageWriterGadget)
+GADGET_FACTORY_DECLARE(ImageWriterGadgetUSHORT)
+GADGET_FACTORY_DECLARE(ImageWriterGadgetFLOAT)
+GADGET_FACTORY_DECLARE(ImageWriterGadgetCPLX)
