@@ -20,14 +20,11 @@
 
     FFT<float>::instance()
  */
-template <class T> EXPORTNDARRAY class FFT
+template <typename T> class EXPORTNDARRAY FFT
 {
 
 public:
-	static FFT<T>* instance() {
-		if (!instance_) instance_ = new FFT<T>();
-		return instance_;
-	}
+	static FFT<T>* instance(); 
 
 	void fft(hoNDArray< std::complex<T> >* input, unsigned int dim_to_transform)
 	{

@@ -7,6 +7,11 @@
 
 #include "FFT.h"
 
+template <typename T> FFT<T>* FFT<T>::instance()
+{
+		if (!instance_) instance_ = new FFT<T>();
+		return instance_;
+}
 
 template <class T> FFT<T>* FFT<T>::instance_ = NULL;
 
