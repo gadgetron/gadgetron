@@ -91,14 +91,12 @@
     </gadget>
     -->
     
-    <!--
-    <gadget>
+     <gadget>
       <name>FloatToShort</name>
       <dll>gadgetroncore</dll>
       <class>FloatToUShortGadget</class>
     </gadget>
-    -->
- 
+  
  	<!--
     <gadget>
       <name>ImageFinishCPLX</name>
@@ -106,21 +104,20 @@
       <class>ImageFinishGadgetCPLX</class>
     </gadget>
     -->
-    
+
+    <!--
     <gadget>
       <name>ImageFinishFLOAT</name>
       <dll>gadgetroncore</dll>
       <class>ImageFinishGadgetFLOAT</class>
     </gadget>
-    
- 	<!--
+    -->
+
     <gadget>
       <name>ImageFinishUSHORT</name>
       <dll>gadgetroncore</dll>
       <class>ImageFinishGadgetUSHORT</class>
     </gadget>
-    -->
-    
   </stream>
 
 </gadgetron>
