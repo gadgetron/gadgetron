@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
+project(GADGETRON)
 
 if (WIN32)
 ADD_DEFINITIONS(-DWIN32 -D_WIN32 -D_WINDOWS)
@@ -8,17 +9,11 @@ SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
 endif (WIN32)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
-
-#set(CMAKE_OSX_ARCHITECTURES "i386")
-
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-project(GADGETRON)
-
 find_package(Boost REQUIRED)
-
-find_package(FFTW3 COMPONENTS single double REQUIRED)
 find_package(ACE REQUIRED)
+find_package(FFTW3 COMPONENTS single double REQUIRED)
 
 find_package(CUDA 4.0)
 
