@@ -15,3 +15,6 @@ add_executable(mriclient main.cpp)
 target_link_libraries(mriclient tinyxml gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
 install(TARGETS mriclient DESTINATION bin)
+
+install (FILES	ImageWriter.h
+			DESTINATION include)

@@ -11,6 +11,7 @@
 #include <ace/SOCK_Stream.h>
 
 #include <map>
+#include <string>
 #include <boost/shared_ptr.hpp>
 
 #include "GadgetContainerMessage.h"
@@ -173,7 +174,6 @@ public:
 		return 0;
 	}
 
-
 	int get_bool_value(const char* name) {
 		return (0 == ACE_OS::strcmp(get_string_value(name)->c_str(), "true"));
 	}
@@ -188,7 +188,7 @@ public:
 
 	boost::shared_ptr<std::string> get_string_value(const char* name) {
 		std::map<std::string,std::string>::iterator it;
-
+	
 		it = parameters_.find(std::string(name));
 
 		if (it != parameters_.end()) {
@@ -197,7 +197,6 @@ public:
 
 		return boost::shared_ptr<std::string>(new std::string(""));
 	}
-
 
 protected:
 	virtual int next_step(ACE_Message_Block *m)

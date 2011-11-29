@@ -46,3 +46,5 @@ add_subdirectory(dependencies)
 add_subdirectory(apps)
 add_subdirectory(toolboxes)
 add_subdirectory(gadgets)
+add_subdirectory(cmake)
+

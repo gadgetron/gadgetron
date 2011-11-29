@@ -5,8 +5,8 @@
 #include "GadgetContainerMessage.h"
 #include "hoNDArray.h"
 
-
-int MRIImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
+template <typename T>
+int MRIImageWriter<T>::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 {
   
   GadgetContainerMessage<GadgetMessageImage>* imagemb = 
@@ -17,8 +17,8 @@ int MRIImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
     return -1;    
   }
 
-  GadgetContainerMessage< hoNDArray< ACE_UINT16 > >* datamb =
-    AsContainerMessage< hoNDArray< ACE_UINT16 > >(imagemb->cont());
+  GadgetContainerMessage< hoNDArray< T > >* datamb =
+    AsContainerMessage< hoNDArray< T > >(imagemb->cont());
   
   if (!datamb) {
     ACE_DEBUG( (LM_ERROR, ACE_TEXT("(%P,%l), MRIImageWriter::write, invalid image message objects\n")) );
@@ -28,7 +28,21 @@ int MRIImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
   
   ssize_t send_cnt = 0;
   GadgetMessageIdentifier id;
-  id.id = GADGET_MESSAGE_IMAGE;
+  switch (sizeof(T)) {
+  case 2: //Unsigned short
+	  id.id = GADGET_MESSAGE_IMAGE_REAL_USHORT;
+	  break;
+  case 4: //Float
+	  id.id = GADGET_MESSAGE_IMAGE_REAL_FLOAT;
+	  break;
+  case 8: //Complex float
+	  id.id = GADGET_MESSAGE_IMAGE_CPLX_FLOAT;
+	  break;
+  default:
+	    ACE_DEBUG ((LM_ERROR,
+			ACE_TEXT ("(%P|%t) MRIImageWriter Wrong data size detected\n")));
+	  return GADGET_FAIL;
+  }
   
   if ((send_cnt = sock->send_n (&id, sizeof(GadgetMessageIdentifier))) <= 0) {
     ACE_DEBUG ((LM_ERROR,
@@ -44,7 +58,7 @@ int MRIImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
     return -1;
   }
 
-  if ((send_cnt = sock->send_n (datamb->getObjectPtr()->get_data_ptr(), sizeof(ACE_UINT16)*datamb->getObjectPtr()->get_number_of_elements())) <= 0) {
+  if ((send_cnt = sock->send_n (datamb->getObjectPtr()->get_data_ptr(), sizeof(T)*datamb->getObjectPtr()->get_number_of_elements())) <= 0) {
     ACE_DEBUG ((LM_ERROR,
 		ACE_TEXT ("(%P|%t) Unable to send image data\n")));
       
@@ -54,4 +68,6 @@ int MRIImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
   return 0;
 }
 
-GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
+GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriterFLOAT)
+GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriterUSHORT)
+GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriterCPLX)

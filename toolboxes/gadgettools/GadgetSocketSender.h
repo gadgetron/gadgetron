@@ -81,14 +81,28 @@ template <typename T> class GadgetImageMessageWriter : public GadgetMessageWrite
       dynamic_cast< GadgetContainerMessage< hoNDArray< T > >* >(imagemb->cont());
     
     if (!imagemb || !datamb) {
-      ACE_DEBUG( (LM_ERROR, ACE_TEXT("(%P,%l), GadgetStreamController::handle_output, invalid image message objects")) );
+      ACE_DEBUG( (LM_ERROR, ACE_TEXT("(%P,%l), GadgetImageMessageWriter invalid image message objects")) );
       return -1;
     }
     
     
     ssize_t send_cnt = 0;
     GadgetMessageIdentifier id;
-    id.id = GADGET_MESSAGE_IMAGE;
+
+    switch (sizeof(T)) {
+    case 2: //Unsigned short
+  	  id.id = GADGET_MESSAGE_IMAGE_REAL_USHORT;
+  	  break;
+    case 4: //Float
+    	id.id = GADGET_MESSAGE_IMAGE_REAL_FLOAT;
+  	  break;
+    case 8: //Complex float
+    	id.id = GADGET_MESSAGE_IMAGE_CPLX_FLOAT;
+  	  break;
+    default:
+      ACE_DEBUG( (LM_ERROR, ACE_TEXT("(%P,%l), GadgetImageMessageWriter Wrong data size detected:")) );
+  	  return -1;
+    }
     
     if ((send_cnt = sock->send_n (&id, sizeof(GadgetMessageIdentifier))) <= 0) {
       ACE_DEBUG ((LM_ERROR,
