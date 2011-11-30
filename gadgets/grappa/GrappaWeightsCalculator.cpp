@@ -89,7 +89,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 		}
 
 		{
-			//GPUTimer unmix_timer("GRAPPA Unmixing");
+			GPUTimer unmix_timer("GRAPPA Unmixing");
 			std::vector<unsigned int> kernel_size;
 
 			//TODO: Add parameters for kernel size

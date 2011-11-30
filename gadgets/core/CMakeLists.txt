@@ -26,7 +26,7 @@ add_library(gadgetroncore SHARED AcquisitionPassthroughGadget.cpp
 								 FloatToUShortGadget.cpp
 								 RemoveROOversamplingGadget.cpp)
 
-target_link_libraries(gadgetroncore tinyxml ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
+target_link_libraries(gadgetroncore tinyxml hondarray ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
 install (FILES	AccumulatorGadget.h
 			AcquisitionFinishGadget.h
