@@ -10,7 +10,7 @@ include_directories(   ${ACE_INCLUDE_DIR}
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools)
 
 add_library(GadgetronPythonMRI MODULE GadgetronPythonMRI.cpp GadgetReference.cpp)
-set_target_properties(GadgetronPythonMRI PROPERTIES PREFIX "")
+
 
 add_library(gadgetronpython SHARED       		
 	PythonGadget.cpp
@@ -29,6 +29,13 @@ target_link_libraries(GadgetronPythonMRI tinyxml
 	debug ${ACE_DEBUG_LIBRARY} 
 	${PYTHON_LIBRARIES} 
 	${Boost_LIBRARIES})
+
+IF (WIN32)
+    SET_TARGET_PROPERTIES(GadgetronPythonMRI PROPERTIES SUFFIX .pyd)
+	SET_TARGET_PROPERTIES(gadgetronpython PROPERTIES LINK_FLAGS "/LIBPATH:${PYTHON_INCLUDE_DIR}/../libs" )
+ENDIF(WIN32)
+
+set_target_properties(GadgetronPythonMRI PROPERTIES PREFIX "")
 	
 install(TARGETS gadgetronpython GadgetronPythonMRI DESTINATION lib)
 
