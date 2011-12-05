@@ -36,6 +36,9 @@ public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
   //We have to overwrite close in this gadget to make sure we wait for the weights calculator.
   virtual int close(unsigned long flags);
 
+  virtual int initial_setup();
+
+  bool first_call_;
  private:
   std::vector< GrappaCalibrationBuffer* > buffers_;
   std::vector<unsigned int> dimensions_;
