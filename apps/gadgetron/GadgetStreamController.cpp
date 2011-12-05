@@ -221,7 +221,11 @@ int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
 
 	//Clear DLL handles (to make DLLs unload if needed)
 	for (unsigned int i = 0; i < dll_handles_.size(); i++) {
-		dll_handles_[i]->close(1);
+#if defined WIN32
+		dll_handles_[i]->close(0); //On windows we will not unload the DLLs even when there are no more refs
+#else 
+		dll_handles_[i]->close(1); //On Unix/Mac it seems to be OK to do this
+#endif
 	}
 	dll_handles_.clear();
 
