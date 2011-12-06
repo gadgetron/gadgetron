@@ -8,7 +8,6 @@
 template <typename T>
 int MRIImageWriter<T>::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 {
-  
   GadgetContainerMessage<GadgetMessageImage>* imagemb = 
     AsContainerMessage<GadgetMessageImage>(mb);
   
@@ -24,8 +23,7 @@ int MRIImageWriter<T>::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
     ACE_DEBUG( (LM_ERROR, ACE_TEXT("(%P,%l), MRIImageWriter::write, invalid image message objects\n")) );
     return -1;
   }
-  
-  
+   
   ssize_t send_cnt = 0;
   GadgetMessageIdentifier id;
   switch (sizeof(T)) {

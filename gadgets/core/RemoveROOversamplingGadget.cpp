@@ -6,8 +6,6 @@ int RemoveROOversamplingGadget
 ::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
-  
-
   GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 
     = new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
 

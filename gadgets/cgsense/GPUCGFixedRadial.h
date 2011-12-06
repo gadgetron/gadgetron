@@ -1,14 +1,14 @@
-#ifndef GPUCGGOLDENRADIALGADGET_H
-#define GPUCGGOLDENRADIALGADGET_H
+#ifndef GPUCGFIXEDRADIALGADGET_H
+#define GPUCGFIXEDRADIALGADGET_H
 #pragma once
 
 #include "GPUCGGadget.h"
 
-class EXPORTGADGETSCGSENSE GPUCGGoldenRadialGadget : public GPUCGGadget
+class EXPORTGADGETSCGSENSE GPUCGFixedRadialGadget : public GPUCGGadget
 {
 
  public:
-  GADGET_DECLARE(GPUCGGoldenRadialGadget);
+  GADGET_DECLARE(GPUCGFixedRadialGadget);
 
  protected:
   virtual boost::shared_ptr< cuNDArray<floatd2::Type> > calculate_trajectory();

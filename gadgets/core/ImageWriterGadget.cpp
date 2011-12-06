@@ -9,7 +9,6 @@ process( GadgetContainerMessage< GadgetMessageImage>* m1,
 {
     GADGET_DEBUG1("Writing image\n");
 
-
     char filename[1024];
     switch (sizeof(T)) {
      case (8): //Complex float

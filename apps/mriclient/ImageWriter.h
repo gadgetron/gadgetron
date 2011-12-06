@@ -13,8 +13,9 @@ public:
 	: number_of_calls_(0)
 	{}
 
-
-	virtual ACE_Message_Block* read(ACE_SOCK_Stream* socket) {
+	virtual ACE_Message_Block* read(ACE_SOCK_Stream* socket) 
+	{
+		// Invoke parent's read
 		ACE_Message_Block* mb = GadgetImageMessageReader<T>::read(socket);
 
 		if (!mb) {
@@ -95,14 +96,12 @@ public:
 			GADGET_DEBUG1("File is not good for writing\n");
 			return GADGET_FAIL;
 		}
-		return 0;
+
+		return GADGET_OK;
 	}
 
 protected:
 	size_t number_of_calls_;
-
 };
 
 #endif //IMAGE_WRITER
-
-
