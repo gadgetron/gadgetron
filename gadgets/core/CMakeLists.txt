@@ -24,7 +24,8 @@ add_library(gadgetroncore SHARED AcquisitionPassthroughGadget.cpp
 								 NoiseAdjustGadget.cpp
 								 ExtractGadget.cpp
 								 FloatToUShortGadget.cpp
-								 RemoveROOversamplingGadget.cpp)
+								 RemoveROOversamplingGadget.cpp
+								 CoilReductionGadget.cpp)
 
 target_link_libraries(gadgetroncore tinyxml hondarray ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
@@ -42,6 +43,7 @@ install (FILES	AccumulatorGadget.h
 			MRIImageWriter.h
 			NoiseAdjustGadget.h
 			RemoveROOversamplingGadget.h
+			CoilReductionGadget.h
 			DESTINATION include)
 
 install(TARGETS gadgetroncore DESTINATION lib)
