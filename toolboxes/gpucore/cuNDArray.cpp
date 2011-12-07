@@ -173,7 +173,7 @@ T* cuNDArray<T>::create(std::vector<unsigned int> *dimensions, T* data, bool del
     return 0x0;
   }
   
-  if (deviceProp.major >= 2) {
+  if (deviceProp.unifiedAddressing) {
     cudaPointerAttributes attrib;
     if (cudaPointerGetAttributes(&attrib, data) != cudaSuccess) {
       std::cerr << "cuNDArray::create: Unable to determine attributes of pointer" << std::endl;
