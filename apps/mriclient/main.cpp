@@ -124,7 +124,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 
 	  if (!m3->getObjectPtr()->create(&dimensions)) {
 		  ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to create storage for NDArray.\n")));
-  	      ACE_DEBUG((LM_ERROR, ACE_TEXT("Requested dimensions were (%d,%d)", dimensions[0], dimensions[1])));
+  	      ACE_DEBUG((LM_ERROR, ACE_TEXT("Requested dimensions were (%d,%d)"), dimensions[0], dimensions[1]));
 		  return -1;
 	  }
 
