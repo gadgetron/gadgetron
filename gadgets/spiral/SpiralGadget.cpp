@@ -25,7 +25,7 @@ SpiralGadget::SpiralGadget()
   , adcs_per_interleave_(0)
   , host_data_buffer_(0)
 {
-
+  GADGET_DEBUG1("Initializing Spiral\n");
 }
  
 SpiralGadget::~SpiralGadget()
@@ -35,38 +35,36 @@ SpiralGadget::~SpiralGadget()
 
 int SpiralGadget::process_config(ACE_Message_Block* mb)
 {
-
   TiXmlDocument doc;
   doc.Parse(mb->rd_ptr());
 
-  //GADGET_DEBUG1("Calculating trajectory\n");
+  GADGET_DEBUG1("Calculating trajectory\n");
 
-  double  smax = GetDoubleParameterValueFromXML(&doc, "spiral", "MaxSlewRate_Gcms");   /*	Maximum slew rate, G/cm/s		*/
-  double  gmax = GetDoubleParameterValueFromXML(&doc, "spiral", "MaxGradient_Gcm");   /* 	maximum gradient amplitude, G/cm	*/
-  double  Tdsamp = GetIntParameterValueFromXML(&doc, "spiral", "SamplingTime_ns")/(1.0e9);     /*	Data Sample period (s)			*/
-  //double  Tgsamp = 1e-5;     /*	Data Sample period (s)			*/
-  int     Nints = GetIntParameterValueFromXML(&doc, "spiral", "Interleaves");  	/*	Number of interleaves			*/
-  double  fov = GetDoubleParameterValueFromXML(&doc, "spiral", "FOVCoeff_1");	/*	FOV coefficients		*/
-  int     Nfov = 1;       /*	Number of FOV coefficients		*/
-  double  krmax = GetDoubleParameterValueFromXML(&doc, "spiral", "krmax_cm");  	/*	Maximum k-space extent (/cm)		*/
-  int     ngmax = 1e5;      /*	Maximum number of gradient samples	*/
-  double  *xgrad; 	/* 	X-component of gradient.	*/
-  double  *ygrad;     /*	Y-component of gradient.	*/
+  GadgetXMLNode n = GadgetXMLNode(&doc).get<GadgetXMLNode>(std::string("gadgetron"))[0];
+
+  int     Tdsamp = n.get<int>(std::string("wip.long.value"))[4];		//"samplingtime_ns.value"))[0];
+  int     Nints  = n.get<int>(std::string("wip.long.value"))[5];		//"interleaves.value"))[0];
+  double  gmax   = n.get<double>(std::string("wip.double.value"))[0];		//"maxgradient_gcms.value"))[0];
+  double  smax   = n.get<double>(std::string("wip.double.value"))[1];		//"maxslewrate_gcmsi.value"))[0];
+  double  krmax  = n.get<double>(std::string("wip.double.value"))[3];		//"krmax_cm.value"))[0];
+  double  fov    = n.get<double>(std::string("wip.double.value"))[4];		//"fovcoeff_1.value"))[0];
+  int     nfov   = 1;         /*  number of fov coefficients.             */
+  int     ngmax  = 1e5;       /*  maximum number of gradient samples      */
+  double  *xgrad;             /*  x-component of gradient.                */
+  double  *ygrad;             /*  y-component of gradient.                */
   double  *x_trajectory;
   double  *y_trajectory;
   double  *weighting;
   int     ngrad;	
   //int     count;
 
-  samples_to_skip_start_  = GetIntParameterValueFromXML(&doc, "spiral", "SamplesToSkipStart");
-  samples_to_skip_end_    = GetIntParameterValueFromXML(&doc, "spiral", "SamplesToSkipEnd");
-  samples_per_adc_        = GetIntParameterValueFromXML(&doc, "spiral", "SamplesPerADC");
-  adcs_per_interleave_    = GetIntParameterValueFromXML(&doc, "spiral", "ADCsPerInterleave");
 
-  image_dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "matrix_x"));
-  image_dimensions_.push_back(GetIntParameterValueFromXML(&doc, "encoding", "matrix_y"));
+  samples_to_skip_start_  = 0; //n.get<int>(std::string("samplestoskipstart.value"))[0];
+  samples_to_skip_end_    = 0; //n.get<int>(std::string("samplestoskipend.value"))[0];
+//  samples_per_adc_        = 0; //n.get<int>(std::string("samplesperadc.value"))[0];
+//  adcs_per_interleave_    = 1; //n.get<int>(std::string("adcsperinterleave.value"))[0];
+  image_dimensions_.push_back(n.get<int>(std::string("encoding.kspace.matrix_size.value"))[0]);
 
-  /*
   GADGET_DEBUG2("smax:                    %f\n", smax);
   GADGET_DEBUG2("gmax:                    %f\n", gmax);
   GADGET_DEBUG2("Tdsamp:                  %f\n", Tdsamp);
@@ -79,17 +77,16 @@ int SpiralGadget::process_config(ACE_Message_Block* mb)
   GADGET_DEBUG2("adcs_per_interleave_   : %d\n", adcs_per_interleave_);
   GADGET_DEBUG2("matrix_size_x          : %d\n", image_dimensions_[0]);
   GADGET_DEBUG2("matrix_size_y          : %d\n", image_dimensions_[1]);
-  */
 
 
-  /*	Call C-function Here to calculate gradients */
-  calc_vds(smax,gmax,Tdsamp,Tdsamp,Nints,&fov,Nfov,krmax,ngmax,&xgrad,&ygrad,&ngrad);
+  /*	call c-function here to calculate gradients */
+  calc_vds(smax,gmax,Tdsamp,Tdsamp,Nints,&fov,nfov,krmax,ngmax,&xgrad,&ygrad,&ngrad);
 
   //GADGET_DEBUG2("ngrad (before adjust)   : %d\n", ngrad);
-  if ((adcs_per_interleave_*samples_per_adc_-ngrad) != samples_to_skip_end_) {
-    ngrad = (adcs_per_interleave_*samples_per_adc_-samples_to_skip_end_) < ngrad ? adcs_per_interleave_*samples_per_adc_-samples_to_skip_end_ : ngrad;
-    samples_to_skip_end_ = (adcs_per_interleave_*samples_per_adc_-ngrad);
-  }
+  //if ((adcs_per_interleave_*samples_per_adc_-ngrad) != samples_to_skip_end_) {
+  //  ngrad = (adcs_per_interleave_*samples_per_adc_-samples_to_skip_end_) < ngrad ? adcs_per_interleave_*samples_per_adc_-samples_to_skip_end_ : ngrad;
+  //  samples_to_skip_end_ = (adcs_per_interleave_*samples_per_adc_-ngrad);
+  //}
   //GADGET_DEBUG2("ngrad (after adjust)   : %d\n", ngrad);
 
 
@@ -128,11 +125,11 @@ int SpiralGadget::process_config(ACE_Message_Block* mb)
   delete [] y_trajectory;
   delete [] weighting;
 
-  unsigned int slices = GetIntParameterValueFromXML(&doc, "encoding", "slices");
+  unsigned int slices = n.get<int>(std::string("encoding.slices.value"))[0];
 
   std::vector<unsigned int> data_dimensions;
   data_dimensions.push_back(ngrad*Nints);
-  data_dimensions.push_back(GetIntParameterValueFromXML(&doc, "encoding", "channels"));
+  data_dimensions.push_back(n.get<int>(std::string("encoding.channels.value"))[0]);
 
   host_data_buffer_ = new hoNDArray<float_complext::Type>[slices];
   if (!host_data_buffer_) {
