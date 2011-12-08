@@ -325,10 +325,19 @@ compute_radial_dcw_golden_ratio_2d( unsigned int samples_per_profile, unsigned i
 //
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray< typename reald<float,2>::Type > > 
+compute_radial_trajectory_fixed_angle_2d<float>( unsigned int, unsigned int, unsigned int );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray< typename reald<double,2>::Type > > 
+compute_radial_trajectory_fixed_angle_2d<double>( unsigned int, unsigned int, unsigned int );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray< typename reald<float,2>::Type > > 
 compute_radial_trajectory_golden_ratio_2d<float>( unsigned int, unsigned int, unsigned int, unsigned int );
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray< typename reald<double,2>::Type > > 
 compute_radial_trajectory_golden_ratio_2d<double>( unsigned int, unsigned int, unsigned int, unsigned int );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >compute_radial_dcw_fixed_angle_2d<float>( unsigned int, unsigned int, float, float );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >compute_radial_dcw_fixed_angle_2d<double>( unsigned int, unsigned int, double, double );
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >compute_radial_dcw_golden_ratio_2d<float>( unsigned int, unsigned int, float, float, unsigned int );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >compute_radial_dcw_golden_ratio_2d<double>( unsigned int, unsigned int, double, double, unsigned int );

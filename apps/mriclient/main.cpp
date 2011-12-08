@@ -103,7 +103,6 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   size_t length = is.tellg();
   is.seekg (0, ios::beg);
 
-  static int counter = 0;
   while ((length-is.tellg()) > sizeof(GadgetMessageAcquisition)) {
 	  GadgetContainerMessage<GadgetMessageIdentifier>* m1 =
 			  new GadgetContainerMessage<GadgetMessageIdentifier>();
@@ -124,7 +123,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 			  new GadgetContainerMessage< hoNDArray< std::complex< float> > >();
 
 	  if (!m3->getObjectPtr()->create(&dimensions)) {
-		  ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to send Create storage for NDArray")));
+		  ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to create storage for NDArray.\n")));
+  	      ACE_DEBUG((LM_ERROR, ACE_TEXT("Requested dimensions were (%d,%d)", dimensions[0], dimensions[1])));
 		  return -1;
 	  }
 
@@ -139,7 +139,6 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 		  ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to put data package on queue")));
 		  return -1;
 	  }
-
   }
 
   is.close();
@@ -153,7 +152,6 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 	  ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to put CLOSE package on queue")));
 	  return -1;
   }
-
 
   con.wait();
 

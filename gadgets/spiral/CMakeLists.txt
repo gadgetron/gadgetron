@@ -1,13 +1,14 @@
 
 include_directories(   ${ACE_INCLUDE_DIR}
-					   ${CUDA_INCLUDE_DIRS}
-				       ${Boost_INCLUDE_DIR} 
-				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
-				       ${CMAKE_SOURCE_DIR}/toolboxes/ndarray
-				       ${CMAKE_SOURCE_DIR}/toolboxes/gpunfft
-				       ${CMAKE_SOURCE_DIR}/toolboxes/gpucore
-				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-				       ${CMAKE_SOURCE_DIR}/gadgets/core)
+                       ${CUDA_INCLUDE_DIRS}
+                       ${Boost_INCLUDE_DIR}
+                       ${CMAKE_SOURCE_DIR}/dependencies/tinyxml
+                       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
+                       ${CMAKE_SOURCE_DIR}/toolboxes/ndarray
+                       ${CMAKE_SOURCE_DIR}/toolboxes/gpunfft
+                       ${CMAKE_SOURCE_DIR}/toolboxes/gpucore
+                       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+		       ${CMAKE_SOURCE_DIR}/gadgets/core)
 
 add_library(gadgetronspiral SHARED SpiralGadget.cpp vds.cpp)
 

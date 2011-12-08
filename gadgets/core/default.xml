@@ -37,6 +37,23 @@
     </gadget>
 	
     <gadget>
+      <name>CoilReduction</name>
+      <dll>gadgetroncore</dll>
+      <class>CoilReductionGadget</class>
+      <! --
+         Coil reduction gadget can operate in two modes:
+             - Specification of mask (1 0 1 0 1 ...). If a smaller mask than
+               number of coils is specified, it is zeropadded.
+             - Number of coils out. Only the first X coils are kept.
+         If coil mask mode is specified, coils_out is ignored.
+      -->
+      <property><name>coil_mask</name><value>1 0 1 0 1 0 0 0 1 1</value></property>
+      <!--
+      <property><name>coils_out</name><value>10</value></property>
+      -->
+    </gadget>
+
+    <gadget>
       <name>Acc</name>
       <dll>gadgetroncore</dll>
       <class>AccumulatorGadget</class>
@@ -72,13 +89,11 @@
     </gadget>
     -->
     
-    <!--
     <gadget>
       <name>FloatToShort</name>
       <dll>gadgetroncore</dll>
       <class>FloatToUShortGadget</class>
     </gadget>
-    -->
  
  	<!--
     <gadget>
@@ -88,19 +103,18 @@
     </gadget>
     -->
     
+    <!--
     <gadget>
       <name>ImageFinishFLOAT</name>
       <dll>gadgetroncore</dll>
       <class>ImageFinishGadgetFLOAT</class>
     </gadget>
-    
- 	<!--
-    <gadget>
+    -->
+     <gadget>
       <name>ImageFinishUSHORT</name>
       <dll>gadgetroncore</dll>
       <class>ImageFinishGadgetUSHORT</class>
     </gadget>
-    -->
-  </stream>
+   </stream>
 
 </gadgetron>
