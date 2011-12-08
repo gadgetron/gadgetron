@@ -36,10 +36,9 @@ compute_radial_trajectory_golden_ratio_2d_kernel( typename reald<REAL,2>::Type *
   co[index] = sample_pos;
 }
 
-
 template<class REAL> boost::shared_ptr< cuNDArray< typename reald<REAL,2>::Type > > 
 compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile, unsigned int num_profiles_per_frame, 
-					   unsigned int num_frames, unsigned int profile_offset )
+                                           unsigned int num_frames, unsigned int profile_offset )
 {
   typedef typename reald<REAL,2>::Type T;
   
@@ -60,7 +59,7 @@ compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile,
   boost::shared_ptr< cuNDArray<T> > co = cuNDArray<T>::allocate(&dims);
   
   if(!co.get()){
-    cout << endl << "compute_radial_trajectory_golden_ratio_2d: memory allocation failed." << endl;
+    cout << endl << "Error:: compute_radial_trajectory_golden_ratio_2d: memory allocation failed." << endl;
     return boost::shared_ptr< cuNDArray<T> >();
   }
   
@@ -76,11 +75,71 @@ compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile,
   return co;
 }
 
+template<class REAL> __global__ void
+compute_radial_trajectory_fixed_angle_2d_kernel( typename reald<REAL,2>::Type *co, REAL one_over_num_profiles_per_frame, REAL one_over_num_frames )
+{
+  const unsigned int index = blockIdx.x*blockDim.x + threadIdx.x;              
+
+  const REAL samples_per_profile = (REAL) blockDim.x;
+  const REAL bias = samples_per_profile * get_half<REAL>();
+  const REAL sample_idx_on_profile = (REAL)threadIdx.x;
+  const REAL lprofile = (REAL)blockIdx.x;
+  const REAL frame = (REAL)blockIdx.y;
+
+  REAL cos_angle, sin_angle;
+  gad_sincos<REAL>( (lprofile+frame*one_over_num_frames)*one_over_num_profiles_per_frame*get_pi<REAL>(), &sin_angle, &cos_angle );
+
+  typename reald<REAL,2>::Type sample_pos; 
+  sample_pos.vec[0] = (sample_idx_on_profile-bias)*cos_angle/samples_per_profile;
+  sample_pos.vec[1] = (sample_idx_on_profile-bias)*sin_angle/samples_per_profile;
+  
+  co[index] = sample_pos;
+}
+
+template<class REAL> boost::shared_ptr< cuNDArray< typename reald<REAL,2>::Type > > 
+compute_radial_trajectory_fixed_angle_2d( unsigned int num_samples_per_profile, unsigned int num_profiles_per_frame, unsigned int num_frames )
+{
+  typedef typename reald<REAL,2>::Type T;
+  
+  // Get device properties
+  int device; cudaGetDevice( &device );
+  cudaDeviceProp deviceProp; cudaGetDeviceProperties( &deviceProp, device );
+  const unsigned int warp_size = deviceProp.warpSize;
+  
+  if( num_samples_per_profile%warp_size ){
+    cout << endl << "Error:: compute_radial_trajectory_fixed_angle_2d: #samples/profile is not a multiple of the device's warp size." << endl;
+    return boost::shared_ptr< cuNDArray<T> >();
+  }
+
+  unsigned int number_of_samples_per_frame = num_samples_per_profile * num_profiles_per_frame;
+
+  // Allocate space for result
+  vector<unsigned int> dims; dims.push_back( number_of_samples_per_frame ); dims.push_back( num_frames );
+  boost::shared_ptr< cuNDArray<T> > co = cuNDArray<T>::allocate(&dims);
+  
+  if(!co.get()){
+    cout << endl << "Error:: compute_radial_trajectory_fixed_angle_2d: memory allocation failed." << endl;
+    return boost::shared_ptr< cuNDArray<T> >();
+  }
+  
+  // Set dimensions of grid/blocks.
+  dim3 dimBlock( num_samples_per_profile );
+  dim3 dimGrid( num_profiles_per_frame, num_frames );
+  
+  // Invoke kernel
+  compute_radial_trajectory_fixed_angle_2d_kernel<REAL><<< dimGrid, dimBlock >>> ( co->get_data_ptr(), get_one<REAL>()/(REAL)num_profiles_per_frame, get_one<REAL>()/(REAL)num_frames );
+  
+  CHECK_FOR_CUDA_ERROR();
+  
+  return co;
+}
+
 // Find the (eight) neighbors to a given radial sample index
 
 template<class REAL, bool GR> __inline__ __device__ typename reald<REAL,2>::Type
 compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL alpha, 
-			  REAL one_over_radial_oversampling_factor, REAL bias, REAL samples_per_profile, REAL profile, REAL num_profiles,
+			  REAL one_over_radial_oversampling_factor, REAL one_over_num_profiles,
+			  REAL bias, REAL samples_per_profile, REAL profile, REAL num_profiles,
 			  typename reald<REAL,2>::Type *p1, typename reald<REAL,2>::Type *p2, typename reald<REAL,2>::Type *p3, typename reald<REAL,2>::Type *p4, 
 			  typename reald<REAL,2>::Type *p5, typename reald<REAL,2>::Type *p6, typename reald<REAL,2>::Type *p7, typename reald<REAL,2>::Type *p8  )
 {
@@ -103,18 +162,11 @@ compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL 
       const REAL angle_step = get_angle_step_GR<REAL>();
       gad_sincos<REAL>( (profile+angular_offset)*angle_step, &sin_angle, &cos_angle );
     }
-    break;
-    /*	  
-	  case false: // fixed angle
-	  {
-	  const REAL cur_proj = uint2REAL(profile);
-	  const REAL frame = floorf((cur_proj+0.5f)*__one_over_num_profiles);
-	  const REAL cur_proj_local = cur_proj - frame*__num_profiles;
-	  const REAL rotation = fmodf(fmodf(frame+__angular_offset, __frames_per_rotation_cycle)*__rotation_gap, __frames_per_rotation_cycle);
-	  __sincosf( cur_proj_local*CUDART_PI_F*__one_over_num_profiles+rotation*__interframe_rotation, &sin_angle, &cos_angle );
-	  }
-	  break;
-    */
+    break;	  
+  case false: // fixed angle
+	{
+	  gad_sincos<REAL>( profile*one_over_num_profiles*get_pi<REAL>(), &sin_angle, &cos_angle );	}
+	break;
   }
   
   // Find the normal to the current projection direction
@@ -139,28 +191,22 @@ compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL 
       continue;
     
     // Unit circle position projection 'i'
-    switch(GR)
-      {
-	
-      case true:
+	switch(GR)
 	{
-	  const REAL angle_step = get_angle_step_GR<REAL>();
-	  gad_sincos<REAL>( ((REAL)i+angular_offset)*angle_step, &sin_angle, &cos_angle );
+	case true:
+		{
+			const REAL angle_step = get_angle_step_GR<REAL>();
+			gad_sincos<REAL>( ((REAL)i+angular_offset)*angle_step, &sin_angle, &cos_angle );
+		}
+		break;
+
+	case false:
+		{
+			gad_sincos<REAL>( (REAL)i*one_over_num_profiles*get_pi<REAL>(), &sin_angle, &cos_angle );
+		}
+		break;	
 	}
-	break;
-	/*	
-      case false:
-	{
-	  const REAL cur_proj = uint2float(i);
-	  const REAL frame = floorf((cur_proj+0.5f)*__one_over_num_profiles);
-	  const REAL cur_proj_local = cur_proj - frame*__num_profiles;
-	  const REAL rotation = fmodf(fmodf(frame+__angular_offset, __frames_per_rotation_cycle)*__rotation_gap, __frames_per_rotation_cycle);
-	  __sincosf( cur_proj_local*CUDART_PI_F*__one_over_num_profiles+rotation*__interframe_rotation, &sin_angle, &cos_angle );
-	}
-	break;
-	*/
-      }
-    
+
     // Determine sample positions on projection
     typename reald<REAL,2>::Type prev_pos_1;  prev_pos_1.vec[0] = prev_scale*cos_angle;      prev_pos_1.vec[1] = prev_scale*sin_angle;
     typename reald<REAL,2>::Type prev_pos_2;  prev_pos_2.vec[0] = prev_scale_inv*cos_angle;  prev_pos_2.vec[1] = prev_scale_inv*sin_angle;
@@ -209,9 +255,8 @@ compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL 
   return sample_pos;
 }
 
-
-template<class REAL> __global__ void
-compute_radial_dcw_golden_ratio_2d_kernel( REAL alpha, REAL one_over_radial_oversampling_factor, REAL angular_offset, REAL *dcw )
+template<class REAL, bool GR> __global__ void
+compute_radial_dcw_2d_kernel( REAL alpha, REAL one_over_radial_oversampling_factor, REAL one_over_num_profiles, REAL angular_offset, REAL *dcw )
 {
   const REAL samples_per_profile = (REAL) (blockDim.x<<1);
   const REAL sample_idx_on_profile = (REAL)(blockIdx.x*blockDim.x+threadIdx.x);
@@ -240,8 +285,8 @@ compute_radial_dcw_golden_ratio_2d_kernel( REAL alpha, REAL one_over_radial_over
     typename reald<REAL,2>::Type sample_pos;
     typename reald<REAL,2>::Type p1, p2, p3, p4, p5, p6, p7, p8;
     
-    sample_pos = compute_radial_neighbors<REAL,true>( sample_idx_on_profile, angular_offset, alpha, 
-						      one_over_radial_oversampling_factor, bias, samples_per_profile, profile, num_profiles,
+    sample_pos = compute_radial_neighbors<REAL,GR>( sample_idx_on_profile, angular_offset, alpha, 
+						      one_over_radial_oversampling_factor, one_over_num_profiles,bias, samples_per_profile, profile, num_profiles,
 						      &p1, &p5, &p2, &p3, &p4, &p8, &p7, &p6 );
     
     // Find midpoints of lines from sample_pos to all other points.
@@ -271,13 +316,12 @@ compute_radial_dcw_golden_ratio_2d_kernel( REAL alpha, REAL one_over_radial_over
   dcw[index] = weight;
 }
 
-
-template<class REAL> boost::shared_ptr< cuNDArray<REAL> >
-compute_radial_dcw_golden_ratio_2d( unsigned int samples_per_profile, unsigned int num_profiles, 
-				    REAL alpha, REAL one_over_radial_oversampling_factor, unsigned int profile_offset )
+template<class REAL, bool GR> boost::shared_ptr< cuNDArray<REAL> >
+compute_radial_dcw_2d( unsigned int samples_per_profile, unsigned int num_profiles, 
+				    REAL alpha, REAL one_over_radial_oversampling_factor, unsigned int profile_offset = 0 )
 {
   if( num_profiles < 4 ){
-    cout << endl << "compute_radial_dcw_golden_ratio_2d: use at least four profiles" << endl;
+    cout << endl << "Error:: compute_radial_dcw_<*>_2d: use at least four profiles" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
@@ -287,12 +331,12 @@ compute_radial_dcw_golden_ratio_2d( unsigned int samples_per_profile, unsigned i
   const unsigned int warp_size = deviceProp.warpSize;
   
   if( samples_per_profile%2 ){
-    cout << endl << "compute_radial_dcw_golden_ratio_2d: samples/profile must be even." << endl;
+    cout << endl << "Error:: compute_radial_dcw_<*>_2d: samples/profile must be even." << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
 
   if( samples_per_profile%warp_size ){
-    cout << endl << "compute_radial_dcw_golden_ratio_2d: samples/profile number a multiple of the device's warp size." << endl;
+    cout << endl << "Error:: compute_radial_dcw_<*>_2d: samples/profile number a multiple of the device's warp size." << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
 
@@ -303,7 +347,7 @@ compute_radial_dcw_golden_ratio_2d( unsigned int samples_per_profile, unsigned i
   boost::shared_ptr< cuNDArray<REAL> > dcw = cuNDArray<REAL>::allocate(&dims);
   
   if(!dcw.get()){
-    cout << endl << "compute_radial_dcw_golden_ratio_2d: memory allocation failed." << endl;
+    cout << endl << "Error:: compute_radial_dcw_<*>_2d: memory allocation failed." << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
@@ -312,13 +356,26 @@ compute_radial_dcw_golden_ratio_2d( unsigned int samples_per_profile, unsigned i
   dim3 dimGrid( 2, num_profiles );
   
   // Invoke kernel
-  compute_radial_dcw_golden_ratio_2d_kernel<REAL><<< dimGrid, dimBlock >>> ( alpha, one_over_radial_oversampling_factor, (REAL)profile_offset, dcw->get_data_ptr() );
+  compute_radial_dcw_2d_kernel<REAL,GR><<< dimGrid, dimBlock >>> ( alpha, one_over_radial_oversampling_factor, get_one<REAL>()/(REAL)num_profiles, (REAL)profile_offset, dcw->get_data_ptr() );
   
   CHECK_FOR_CUDA_ERROR();
   
   return dcw;
 }
 
+template<class REAL> boost::shared_ptr< cuNDArray<REAL> >
+compute_radial_dcw_golden_ratio_2d( unsigned int samples_per_profile, unsigned int num_profiles, 
+				    REAL alpha, REAL one_over_radial_oversampling_factor, unsigned int profile_offset )
+{
+	return compute_radial_dcw_2d<REAL,true>( samples_per_profile, num_profiles, alpha, one_over_radial_oversampling_factor, profile_offset );
+}
+
+template<class REAL> boost::shared_ptr< cuNDArray<REAL> >
+compute_radial_dcw_fixed_angle_2d( unsigned int samples_per_profile, unsigned int num_profiles, 
+				    REAL alpha, REAL one_over_radial_oversampling_factor )
+{
+	return compute_radial_dcw_2d<REAL,false>( samples_per_profile, num_profiles, alpha, one_over_radial_oversampling_factor );
+}
 
 //
 // Instantiation
