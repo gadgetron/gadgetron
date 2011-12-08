@@ -15,6 +15,26 @@ find_package(Boost REQUIRED)
 find_package(ACE REQUIRED)
 find_package(FFTW3 COMPONENTS single double REQUIRED)
 
+enable_language(Fortran)
+find_package(BLAS)
+find_package(LAPACK) 
+
+if (BLAS_FOUND)
+  MESSAGE("BLAS Found: VENDOR: ${BLA_VENDOR}")
+  MESSAGE("BLAS_LIBRARIES: ${BLAS_LIBRARIES}")
+  MESSAGE("BLAS_LINKER_FLAGS: ${BLAS_LINKER_FLAGS}")
+else(BLAS_FOUND)
+  MESSAGE("BLAS not found")
+endif(BLAS_FOUND)
+
+if (LAPACK_FOUND) 
+  MESSAGE("LAPACK Found: VENDOR: ${BLA_VENDOR}")
+  MESSAGE("LAPACK_LIBRARIES: ${LAPACK_LIBRARIES}")
+  MESSAGE("LAPACK_LINKER_FLAGS: ${LAPACK_LINKER_FLAGS}")
+else(LAPACK_FOUND)
+  MESSAGE("LAPACK not found")
+endif(LAPACK_FOUND)
+
 find_package(CUDA 4.0)
 
 if (CUDA_FOUND)
