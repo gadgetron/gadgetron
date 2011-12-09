@@ -56,6 +56,12 @@ public:
 	{
 		ACE_TRACE(( ACE_TEXT("Gadget::open") ));
 
+		int t = this->get_int_value("threads");
+		if (t > 0) {
+			GADGET_DEBUG2("Setting number of threads of gadget %s to %d\n", this->module()->name(), t);
+			this->desired_threads(t);
+		}
+
 		return this->activate( THR_NEW_LWP | THR_JOINABLE,
 				this->desired_threads() );
 	}

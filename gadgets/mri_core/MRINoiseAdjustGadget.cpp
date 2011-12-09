@@ -4,6 +4,7 @@
 
 #include "hoNDArray_fileio.h"
 #include "matrix_vector_op.h"
+#include "GadgetronTimer.h"
 
 void choldc(std::complex<double> *a, int n)
 {
@@ -96,7 +97,6 @@ MRINoiseAdjustGadget::MRINoiseAdjustGadget()
 , number_of_noise_samples_(0)
 , noise_bw_scale_factor_(1.0f)
 {
-
 }
 
 

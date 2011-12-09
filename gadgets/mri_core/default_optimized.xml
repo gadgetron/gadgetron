@@ -32,6 +32,9 @@
       <name>MRINoiseAdjust</name>
       <dll>gadgetronmricore</dll>
       <class>MRINoiseAdjustGadget</class>
+      <!--
+      <property><name>threads</name><value>2</value></property>
+      -->
     </gadget>
 	
 	<!--

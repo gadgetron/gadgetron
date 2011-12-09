@@ -12,7 +12,8 @@ include_directories(   ${ACE_INCLUDE_DIR}
 				       ${CMAKE_SOURCE_DIR}/toolboxes/ndarray
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
 				       ${CMAKE_SOURCE_DIR}/toolboxes/linalg
-				       ${CMAKE_SOURCE_DIR}/gadgets/core)
+				       ${CMAKE_SOURCE_DIR}/gadgets/core
+				       ${CMAKE_SOURCE_DIR}/toolboxes/gpucore)
 
 add_library(gadgetronmricore SHARED MRINoiseAdjustGadget.cpp)
 
