@@ -16,8 +16,8 @@ find_package(ACE REQUIRED)
 find_package(FFTW3 COMPONENTS single double REQUIRED)
 
 enable_language(Fortran)
-find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED) 
+find_package(BLAS)
+find_package(LAPACK) 
 
 find_package(CUDA 4.0)
 
