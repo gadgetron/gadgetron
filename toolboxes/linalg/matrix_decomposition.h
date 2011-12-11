@@ -12,7 +12,7 @@
 
 #include "linalg_export.h"
 
-//Declaration of lapack routine
+//Declaration of lapack routines
 extern "C" {
 	//Cholesky decomposition of symmetric/hermitian positive definite matrix
 	void spotrf_(char* UPLO, int* N, void* A, int* LDA, int* info);

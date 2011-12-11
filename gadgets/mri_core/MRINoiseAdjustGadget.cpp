@@ -4,6 +4,7 @@
 
 #include "hoNDArray_fileio.h"
 #include "matrix_vector_op.h"
+#include "matrix_decomposition.h"
 #include "GadgetronTimer.h"
 
 void choldc(std::complex<double> *a, int n)
@@ -174,6 +175,7 @@ int MRINoiseAdjustGadget
 				//write_nd_array(&noise_covariance_matrix_, "CC.cplx");
 
 				//2. Cholesky decomposition
+				//hoNDArray_choldc(&noise_covariance_matrix_);
 				choldc(cc_ptr, channels);
 
 				//write_nd_array(&noise_covariance_matrix_, "CC_chol.cplx");

@@ -7,24 +7,32 @@
 
 #include "matrix_vector_op.h"
 
-	/*
-	void cblas_cgemm(const enum CBLAS_ORDER Order, const enum CBLAS_TRANSPOSE TransA,
-	                 const enum CBLAS_TRANSPOSE TransB, const int M, const int N,
-	                 const int K, const void *alpha, const void  *A,
-	                 const int lda, const void  *B, const int ldb,
-	                 const void *beta, void  *C, const int ldc)
-	*/
-
-void cblas_gemm_wrapper(std::complex<float>* A, std::complex<float>* B, std::complex<float>* C,
-		int M, int N, int K, std::complex<float>* alpha, std::complex<float>* beta)
+void cblas_gemm_wrapper(char TRANSA, char TRANSB, float* A, float* B, float* C,
+		int M, int N, int K, float* alpha, float* beta)
 {
-	cblas_cgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, M, N, K, alpha, A, K, B, N, beta, C, N);
+	//We have to flip the arguments here to make it fit with FORTRAN column-major order so that we don't have to transpose
+	sgemm_(&TRANSB, &TRANSA,&N, &M, &K, alpha, B, &N, A, &K, beta, C, &N);
 }
 
-void cblas_gemm_wrapper(std::complex<double>* A, std::complex<double>* B, std::complex<double>* C,
+void cblas_gemm_wrapper(char TRANSA, char TRANSB, double* A, double* B, double* C,
+		int M, int N, int K, double* alpha, double* beta)
+{
+	//We have to flip the arguments here to make it fit with FORTRAN column-major order so that we don't have to transpose
+	dgemm_(&TRANSB, &TRANSA,&N, &M, &K, alpha, B, &N, A, &K, beta, C, &N);
+}
+
+void cblas_gemm_wrapper(char TRANSA, char TRANSB, std::complex<float>* A, std::complex<float>* B, std::complex<float>* C,
+		int M, int N, int K, std::complex<float>* alpha, std::complex<float>* beta)
+{
+	//We have to flip the arguments here to make it fit with FORTRAN column-major order so that we don't have to transpose
+	cgemm_(&TRANSB, &TRANSA,&N, &M, &K, alpha, B, &N, A, &K, beta, C, &N);
+}
+
+void cblas_gemm_wrapper(char TRANSA, char TRANSB, std::complex<double>* A, std::complex<double>* B, std::complex<double>* C,
 		int M, int N, int K, std::complex<double>* alpha, std::complex<double>* beta)
 {
-	cblas_zgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans, M, N, K, alpha, A, K, B, N, beta, C, N);
+	//We have to flip the arguments here to make it fit with FORTRAN column-major order so that we don't have to transpose
+	zgemm_(&TRANSB, &TRANSA,&N, &M, &K, alpha, B, &N, A, &K, beta, C, &N);
 }
 
 template <typename T> int hoNDArray_gemm( hoNDArray<T>* A, hoNDArray<T>* B, T alpha,  hoNDArray<T>* C, T beta)
@@ -71,11 +79,15 @@ template <typename T> int hoNDArray_gemm( hoNDArray<T>* A, hoNDArray<T>* B, T al
 	}
 
 	//Now call appropriate CBLAS routine
-	cblas_gemm_wrapper(A->get_data_ptr(), B->get_data_ptr(), C->get_data_ptr(), M, N, K, &alpha, &beta);
+	char TRANSA = 'N';
+	char TRANSB = 'N';
+	cblas_gemm_wrapper(TRANSA, TRANSB, A->get_data_ptr(), B->get_data_ptr(), C->get_data_ptr(), M, N, K, &alpha, &beta);
 
 	return 0;
 }
 
 //Template instanciations
+template int hoNDArray_gemm( hoNDArray< float>* A, hoNDArray< float >* B, float alpha,  hoNDArray< float >* C, float beta);
+template int hoNDArray_gemm( hoNDArray< double >* A, hoNDArray< double >* B, double alpha,  hoNDArray< double >* C, double beta);
 template int hoNDArray_gemm( hoNDArray< std::complex<float> >* A, hoNDArray< std::complex<float> >* B, std::complex<float> alpha,  hoNDArray< std::complex<float> >* C, std::complex<float> beta);
 template int hoNDArray_gemm( hoNDArray< std::complex<double> >* A, hoNDArray< std::complex<double> >* B, std::complex<double> alpha,  hoNDArray< std::complex<double> >* C, std::complex<double> beta);

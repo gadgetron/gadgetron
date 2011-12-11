@@ -13,12 +13,23 @@
 
 #include "linalg_export.h"
 
-#if defined __APPLE__
-	#include <Accelerate/Accelerate.h>
-#else
-	#include <cblas.h>
-#endif
-
+//Declaration of BLAS routines
+/*
+ * We will opt to not use the easier CBLAS interface to give us the best change of being compatible on all platforms.
+ * We will declare the BLAS (and LAPACK) routines ourselves.
+ *
+ */
+extern "C" {
+	//GEMM
+	void sgemm_(char* TRANSA,char* TRANSB,int* M, int *N, int *K, void* ALPHA,
+				void *A, int* LDA, void* B, int* LDB, void* BETA, void* C, int *LDC);
+	void dgemm_(char* TRANSA,char* TRANSB,int* M, int *N, int *K, void* ALPHA,
+				void *A, int* LDA, void* B, int* LDB, void* BETA, void* C, int *LDC);
+	void cgemm_(char* TRANSA,char* TRANSB,int* M, int *N, int *K, void* ALPHA,
+				void *A, int* LDA, void* B, int* LDB, void* BETA, void* C, int *LDC);
+	void zgemm_(char* TRANSA,char* TRANSB,int* M, int *N, int *K, void* ALPHA,
+				void *A, int* LDA, void* B, int* LDB, void* BETA, void* C, int *LDC);
+}
 
 /**
  *

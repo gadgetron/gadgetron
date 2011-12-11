@@ -31,12 +31,34 @@ void potrf_wrapper(char* UPLO, int* N, std::complex<double>* A, int* LDA, int* i
 
 template <typename T> int hoNDArray_choldc(hoNDArray<T>* A)
 {
-	char UPLO = 'L';
+	const char* fname = "hoNDArray_choldc(hoNDArray<T>* A)";
+	/*
+	 *  We are specifying Upper Triangular,
+	 *  but matrix comes in transposed (row-major) compared to
+	 *  Fortran column-major order. As a result, we will get the lower
+	 *  triangular matrix.
+	 */
+	char UPLO = 'U';
+	if (A->get_number_of_dimensions() != 2) {
+		std::cout << fname << ": This is not a matrix, only two dimensions allowed\n" << std::endl;
+		return -1;
+	}
+
 	int N = A->get_size(0);
+	if (N != A->get_size(1)) {
+		std::cout << fname << ": Matrix is not symmetric.\n" << std::endl;
+		return -1;
+	}
+
 	int LDA = N;
 	int info = 0;
 
 	potrf_wrapper(&UPLO, &N, A->get_data_ptr(), &LDA, &info);
+
+	if (info != 0) {
+		std::cout << fname << ": Error calling _potrf wrapper routine.\n" << std::endl;
+		return -1;
+	}
 
 	return info;
 }
