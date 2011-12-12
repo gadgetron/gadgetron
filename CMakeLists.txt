@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 project(GADGETRON)
 
 if (WIN32)
@@ -15,7 +15,11 @@ find_package(Boost REQUIRED)
 find_package(ACE REQUIRED)
 find_package(FFTW3 COMPONENTS single double REQUIRED)
 
-#enable_language(Fortran)
+if (${CMAKE_VERSION} VERSION_LESS "2.8.4")
+ MESSAGE("You have cmake version less than 2.8.4, FindBLAS requires Fortran compiler")
+ MESSAGE("If you want to avoid Fortran compiler check, upgrade to newer cmake")
+ enable_language(Fortran)
+endif(${CMAKE_VERSION} VERSION_LESS "2.8.4")
 find_package(BLAS)
 find_package(LAPACK) 
 
