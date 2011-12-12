@@ -2,6 +2,7 @@ if (WIN32)
 	ADD_DEFINITIONS(-D__BUILD_GADGETRON_LINALG__)
 endif (WIN32)
 
+
 include_directories(${CMAKE_SOURCE_DIR}/toolboxes/ndarray)
 include_directories(${CMAKE_SOURCE_DIR}/toolboxes/linalg)
 include_directories(${Boost_INCLUDE_DIR})
