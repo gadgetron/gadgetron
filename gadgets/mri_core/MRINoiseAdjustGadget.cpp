@@ -221,7 +221,14 @@ int MRINoiseAdjustGadget
 			if (noise_decorrelation_calculated_) {
 				//static int data_written = 0;
 
+				std::complex<float> alpha(1.0,0);
+				if (hoNDArray_trmm(&noise_covariance_matrixf_, m2->getObjectPtr(), alpha) < 0) {
+					GADGET_DEBUG1("Noise Decorrelation Failed\n");
+					return GADGET_FAIL;
+				}
+
 				//Noise decorrelate
+				/*
 				GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 =
 						new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
 
@@ -236,6 +243,7 @@ int MRINoiseAdjustGadget
 					return GADGET_FAIL;
 				}
 				/*
+				/*
 				if (!data_written) {
 					write_nd_array(&noise_covariance_matrixf_, "noise_decorr_matrix.cplx");
 					write_nd_array(m2->getObjectPtr(), "data_nodcx.cplx");
@@ -244,8 +252,8 @@ int MRINoiseAdjustGadget
 				}
 				*/
 
-				m1->cont(m3);
-				m2->release();
+				//m1->cont(m3);
+				//m2->release();
 
 				/*
 				if (!noise_decorrelation(m2->getObjectPtr()->get_data_ptr(), samples, channels, noise_covariance_matrix_.get_data_ptr())) {

@@ -60,12 +60,14 @@ template <typename T> int hoNDArray_choldc(hoNDArray<T>* A)
 	}
 
 	/* Temp code to zero upper triangular */
+	/*
 	T* d = A->get_data_ptr();
 	for (unsigned int i = 0; i < N; i++) {
 		for (unsigned int j = i+1; j < N; j++) {
 			d[i*N+j] = 0;
 		}
 	}
+	*/
 
 	return info;
 }

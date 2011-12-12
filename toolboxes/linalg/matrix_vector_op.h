@@ -20,7 +20,7 @@
  *
  */
 extern "C" {
-	//GEMM
+	//GEMM - Generalized matrix-matrix multiplication
 	void sgemm_(char* TRANSA,char* TRANSB,int* M, int *N, int *K, void* ALPHA,
 				void *A, int* LDA, void* B, int* LDB, void* BETA, void* C, int *LDC);
 	void dgemm_(char* TRANSA,char* TRANSB,int* M, int *N, int *K, void* ALPHA,
@@ -29,6 +29,16 @@ extern "C" {
 				void *A, int* LDA, void* B, int* LDB, void* BETA, void* C, int *LDC);
 	void zgemm_(char* TRANSA,char* TRANSB,int* M, int *N, int *K, void* ALPHA,
 				void *A, int* LDA, void* B, int* LDB, void* BETA, void* C, int *LDC);
+
+	//TRMM - Multiplication with a triangular matrix
+	void strmm_(char* SIDE, char* UPLO, char* TRANSA, char* DIAG, int* M,int* N,
+			void* ALPHA,void* A,int* LDA,void* B, int* LDB);
+	void dtrmm_(char* SIDE, char* UPLO, char* TRANSA, char* DIAG, int* M,int* N,
+			void* ALPHA,void* A,int* LDA,void* B, int* LDB);
+	void ctrmm_(char* SIDE, char* UPLO, char* TRANSA, char* DIAG, int* M,int* N,
+			void* ALPHA,void* A,int* LDA,void* B, int* LDB);
+	void ztrmm_(char* SIDE, char* UPLO, char* TRANSA, char* DIAG, int* M,int* N,
+			void* ALPHA,void* A,int* LDA,void* B, int* LDB);
 }
 
 /**
@@ -38,5 +48,12 @@ extern "C" {
  */
 template <typename T> EXPORTLINALG int hoNDArray_gemm( hoNDArray<T>* A, hoNDArray<T>* B, T alpha,  hoNDArray<T>* C, T beta);
 
+/**
+ *  Performs B = alpha*A*B
+ *
+ *  A should be lower triangular.
+ *
+ */
+template <typename T> EXPORTLINALG int hoNDArray_trmm( hoNDArray<T>* A, hoNDArray<T>* B, T alpha);
 
 #endif /* MATRIX_VECTOR_OP_H_ */

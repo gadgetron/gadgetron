@@ -91,3 +91,53 @@ template int hoNDArray_gemm( hoNDArray< float>* A, hoNDArray< float >* B, float 
 template int hoNDArray_gemm( hoNDArray< double >* A, hoNDArray< double >* B, double alpha,  hoNDArray< double >* C, double beta);
 template int hoNDArray_gemm( hoNDArray< std::complex<float> >* A, hoNDArray< std::complex<float> >* B, std::complex<float> alpha,  hoNDArray< std::complex<float> >* C, std::complex<float> beta);
 template int hoNDArray_gemm( hoNDArray< std::complex<double> >* A, hoNDArray< std::complex<double> >* B, std::complex<double> alpha,  hoNDArray< std::complex<double> >* C, std::complex<double> beta);
+
+void trmm_wrapper(int* M,int* N, float* ALPHA,float* A, void* B) {
+	char SIDE = 'R'; char UPLO = 'U'; char TRANSA = 'N'; char DIAG = 'N';
+	strmm_(&SIDE, &UPLO, &TRANSA, &DIAG, N, M, ALPHA, B, N, A, M);
+}
+
+void trmm_wrapper(int* M,int* N, double* ALPHA, double* A, void* B) {
+	char SIDE = 'R'; char UPLO = 'U'; char TRANSA = 'N'; char DIAG = 'N';
+	dtrmm_(&SIDE, &UPLO, &TRANSA, &DIAG, N, M, ALPHA, B, N, A, M);
+}
+
+void trmm_wrapper(int* M,int* N, std::complex<float>* ALPHA,std::complex<float>* A, void* B) {
+	char SIDE = 'R'; char UPLO = 'U'; char TRANSA = 'N'; char DIAG = 'N';
+	ctrmm_(&SIDE, &UPLO, &TRANSA, &DIAG, N, M, ALPHA, A, M, B, N);
+}
+
+void trmm_wrapper(int* M,int* N, std::complex<double>* ALPHA,std::complex<double>* A, void* B) {
+	char SIDE = 'R'; char UPLO = 'U'; char TRANSA = 'N'; char DIAG = 'N';
+	ztrmm_(&SIDE, &UPLO, &TRANSA, &DIAG, N, M, ALPHA, B, N, A, M);
+}
+
+template <typename T> int hoNDArray_trmm( hoNDArray<T>* A, hoNDArray<T>* B, T alpha)
+{
+	const char* fname = "hoNDArray_trmm";
+
+	//Let's first check the dimensions A
+	if (A->get_number_of_dimensions() != 2) {
+		std::cout << fname << ": " << "Invalid number of dimensions in matrix A: " << A->get_number_of_dimensions() << std::endl;
+		return -1;
+	}
+
+	//Let's first check the dimensions B
+	if (B->get_number_of_dimensions() != 2) {
+		std::cout << fname << ": " << "Invalid number of dimensions in matrix B: " << B->get_number_of_dimensions() << std::endl;
+		return -1;
+	}
+
+	//Do the dimensions match?
+	int M = A->get_size(1); //Number of rows of A
+	int N = B->get_size(0); //Number of columns of B
+
+	trmm_wrapper(&M, &N, &alpha, A->get_data_ptr(), B->get_data_ptr());
+
+	return 0;
+}
+
+template int hoNDArray_trmm( hoNDArray<float>* A, hoNDArray<float>* B, float alpha);
+template int hoNDArray_trmm( hoNDArray<double>* A, hoNDArray<double>* B, double alpha);
+template int hoNDArray_trmm( hoNDArray< std::complex<float> >* A, hoNDArray< std::complex<float> >* B, std::complex<float> alpha);
+template int hoNDArray_trmm( hoNDArray< std::complex<double> >* A, hoNDArray< std::complex<double> >* B, std::complex<double> alpha);
