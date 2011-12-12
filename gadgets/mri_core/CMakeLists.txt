@@ -22,4 +22,4 @@ target_link_libraries(gadgetronmricore tinyxml hondarray linalg ${FFTW3_LIBRARIE
 install (FILES MRINoiseAdjustGadget.h DESTINATION include)
 
 install(TARGETS gadgetronmricore DESTINATION lib)
-install(FILES default_optimized.xml DESTINATION config)
+install(FILES default_optimized.xml radial_single_optimized.xml DESTINATION config)
