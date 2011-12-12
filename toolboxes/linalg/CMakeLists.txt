@@ -4,6 +4,7 @@ endif (WIN32)
 
 include_directories(${CMAKE_SOURCE_DIR}/toolboxes/ndarray)
 include_directories(${CMAKE_SOURCE_DIR}/toolboxes/linalg)
+include_directories(${Boost_INCLUDE_DIR})
 
 add_library(linalg SHARED matrix_vector_op.cpp matrix_decomposition.cpp)
 add_executable(linalg_test linalg_test.cpp)

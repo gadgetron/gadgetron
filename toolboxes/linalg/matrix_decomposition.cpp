@@ -81,10 +81,10 @@ template <typename T> int hoNDArray_choldc(hoNDArray<T>* A)
 
 
 //Template instanciations
-template int hoNDArray_choldc(hoNDArray< std::complex<float> >* A);
-template int hoNDArray_choldc(hoNDArray< std::complex<double> >* A);
-template int hoNDArray_choldc(hoNDArray< float >* A);
-template int hoNDArray_choldc(hoNDArray< double >* A);
+template EXPORTLINALG int hoNDArray_choldc(hoNDArray< std::complex<float> >* A);
+template EXPORTLINALG int hoNDArray_choldc(hoNDArray< std::complex<double> >* A);
+template EXPORTLINALG int hoNDArray_choldc(hoNDArray< float >* A);
+template EXPORTLINALG int hoNDArray_choldc(hoNDArray< double >* A);
 
 
 void trtri_wrapper(char* UPLO, char* DIAG, int* N, float* A, int* LDA, int* info)
@@ -138,10 +138,10 @@ template <typename T> int hoNDArray_inv_lower_triangular(hoNDArray<T>* A)
 	return 0;
 }
 
-template int hoNDArray_inv_lower_triangular(hoNDArray<float>* A);
-template int hoNDArray_inv_lower_triangular(hoNDArray<double>* A);
-template int hoNDArray_inv_lower_triangular(hoNDArray< std::complex<float> >* A);
-template int hoNDArray_inv_lower_triangular(hoNDArray< std::complex<double> >* A);
+template EXPORTLINALG int hoNDArray_inv_lower_triangular(hoNDArray<float>* A);
+template EXPORTLINALG int hoNDArray_inv_lower_triangular(hoNDArray<double>* A);
+template EXPORTLINALG int hoNDArray_inv_lower_triangular(hoNDArray< std::complex<float> >* A);
+template EXPORTLINALG int hoNDArray_inv_lower_triangular(hoNDArray< std::complex<double> >* A);
 
 
 

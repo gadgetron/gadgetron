@@ -87,10 +87,10 @@ template <typename T> int hoNDArray_gemm( hoNDArray<T>* A, hoNDArray<T>* B, T al
 }
 
 //Template instanciations
-template int hoNDArray_gemm( hoNDArray< float>* A, hoNDArray< float >* B, float alpha,  hoNDArray< float >* C, float beta);
-template int hoNDArray_gemm( hoNDArray< double >* A, hoNDArray< double >* B, double alpha,  hoNDArray< double >* C, double beta);
-template int hoNDArray_gemm( hoNDArray< std::complex<float> >* A, hoNDArray< std::complex<float> >* B, std::complex<float> alpha,  hoNDArray< std::complex<float> >* C, std::complex<float> beta);
-template int hoNDArray_gemm( hoNDArray< std::complex<double> >* A, hoNDArray< std::complex<double> >* B, std::complex<double> alpha,  hoNDArray< std::complex<double> >* C, std::complex<double> beta);
+template EXPORTLINALG int hoNDArray_gemm( hoNDArray< float>* A, hoNDArray< float >* B, float alpha,  hoNDArray< float >* C, float beta);
+template EXPORTLINALG int hoNDArray_gemm( hoNDArray< double >* A, hoNDArray< double >* B, double alpha,  hoNDArray< double >* C, double beta);
+template EXPORTLINALG int hoNDArray_gemm( hoNDArray< std::complex<float> >* A, hoNDArray< std::complex<float> >* B, std::complex<float> alpha,  hoNDArray< std::complex<float> >* C, std::complex<float> beta);
+template EXPORTLINALG int hoNDArray_gemm( hoNDArray< std::complex<double> >* A, hoNDArray< std::complex<double> >* B, std::complex<double> alpha,  hoNDArray< std::complex<double> >* C, std::complex<double> beta);
 
 void trmm_wrapper(int* M,int* N, float* ALPHA,float* A, void* B) {
 	char SIDE = 'R'; char UPLO = 'U'; char TRANSA = 'N'; char DIAG = 'N';
@@ -137,7 +137,7 @@ template <typename T> int hoNDArray_trmm( hoNDArray<T>* A, hoNDArray<T>* B, T al
 	return 0;
 }
 
-template int hoNDArray_trmm( hoNDArray<float>* A, hoNDArray<float>* B, float alpha);
-template int hoNDArray_trmm( hoNDArray<double>* A, hoNDArray<double>* B, double alpha);
-template int hoNDArray_trmm( hoNDArray< std::complex<float> >* A, hoNDArray< std::complex<float> >* B, std::complex<float> alpha);
-template int hoNDArray_trmm( hoNDArray< std::complex<double> >* A, hoNDArray< std::complex<double> >* B, std::complex<double> alpha);
+template EXPORTLINALG int hoNDArray_trmm( hoNDArray<float>* A, hoNDArray<float>* B, float alpha);
+template EXPORTLINALG int hoNDArray_trmm( hoNDArray<double>* A, hoNDArray<double>* B, double alpha);
+template EXPORTLINALG int hoNDArray_trmm( hoNDArray< std::complex<float> >* A, hoNDArray< std::complex<float> >* B, std::complex<float> alpha);
+template EXPORTLINALG int hoNDArray_trmm( hoNDArray< std::complex<double> >* A, hoNDArray< std::complex<double> >* B, std::complex<double> alpha);
