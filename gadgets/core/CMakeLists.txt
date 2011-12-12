@@ -47,4 +47,4 @@ install (FILES	AccumulatorGadget.h
 			DESTINATION include)
 
 install(TARGETS gadgetroncore DESTINATION lib)
-install(FILES default.xml DESTINATION config)
+install(FILES default.xml default_float.xml DESTINATION config)

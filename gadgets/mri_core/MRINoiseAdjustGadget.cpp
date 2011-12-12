@@ -154,6 +154,7 @@ int MRINoiseAdjustGadget
 		std::complex<float>* data_ptr = m2->getObjectPtr()->get_data_ptr();
 
 
+		/*
 		for (unsigned int s = 0; s < samples; s++) {
 			for (unsigned int i = 0; i < channels; i++) {
 				for (unsigned int j = 0; j < channels; j++) {
@@ -162,6 +163,16 @@ int MRINoiseAdjustGadget
 			}
 			number_of_noise_samples_++;
 		}
+		*/
+		for (unsigned int s = 0; s < samples; s++) {
+			for (unsigned int i = 0; i < channels; i++) {
+				for (unsigned int j = 0; j < channels; j++) {
+					cc_ptr[i*channels + j] += (data_ptr[i * samples + s] * conj(data_ptr[j * samples + s]));
+				}
+			}
+			number_of_noise_samples_++;
+		}
+
 	} else {
 		if (number_of_noise_samples_ > 0) {
 			if (!noise_decorrelation_calculated_) {
@@ -175,13 +186,14 @@ int MRINoiseAdjustGadget
 				//write_nd_array(&noise_covariance_matrix_, "CC.cplx");
 
 				//2. Cholesky decomposition
-				//hoNDArray_choldc(&noise_covariance_matrix_);
-				choldc(cc_ptr, channels);
+				hoNDArray_choldc(&noise_covariance_matrix_);
+				//choldc(cc_ptr, channels);
 
 				//write_nd_array(&noise_covariance_matrix_, "CC_chol.cplx");
 
 				//3. Invert lower triangular
-				inv_L(cc_ptr, channels);
+				//inv_L(cc_ptr, channels);
+				hoNDArray_inv_lower_triangular(&noise_covariance_matrix_);
 
 				//write_nd_array(&noise_covariance_matrix_, "CC_chol_inv_L.cplx");
 
@@ -203,11 +215,12 @@ int MRINoiseAdjustGadget
 				for (unsigned int i = 0; i < channels*channels; i++) {
 					ccf_ptr[i] = cc_ptr[i];
 				}
-
 				noise_decorrelation_calculated_ = true;
 			}
 
 			if (noise_decorrelation_calculated_) {
+				//static int data_written = 0;
+
 				//Noise decorrelate
 				GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 =
 						new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
@@ -222,12 +235,27 @@ int MRINoiseAdjustGadget
 					GADGET_DEBUG1("Noise Decorrelation Failed\n");
 					return GADGET_FAIL;
 				}
+				/*
+				if (!data_written) {
+					write_nd_array(&noise_covariance_matrixf_, "noise_decorr_matrix.cplx");
+					write_nd_array(m2->getObjectPtr(), "data_nodcx.cplx");
+					write_nd_array(m3->getObjectPtr(), "data_dcx.cplx");
+					data_written++;
+				}
+				*/
+
 				m1->cont(m3);
 				m2->release();
+
 				/*
 				if (!noise_decorrelation(m2->getObjectPtr()->get_data_ptr(), samples, channels, noise_covariance_matrix_.get_data_ptr())) {
 					GADGET_DEBUG1("Noise Decorrelation Failed\n");
 					return GADGET_FAIL;
+				}
+				if (!data_written) {
+					write_nd_array(&noise_covariance_matrixf_, "noise_decorr_matrix.cplx");
+					write_nd_array(m2->getObjectPtr(), "data_dcx.cplx");
+					data_written++;
 				}
 				*/
 			}

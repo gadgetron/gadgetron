@@ -19,6 +19,13 @@ extern "C" {
 	void dpotrf_(char* UPLO, int* N, void* A, int* LDA, int* info);
 	void cpotrf_(char* UPLO, int* N, void* A, int* LDA, int* info);
 	void zpotrf_(char* UPLO, int* N, void* A, int* LDA, int* info);
+
+
+	//Inverse of triangular matrix
+	void strtri_( char* UPLO, char* DIAG, int* N, void* A, int* LDA, int* INFO );
+	void dtrtri_( char* UPLO, char* DIAG, int* N, void* A, int* LDA, int* INFO );
+	void ctrtri_( char* UPLO, char* DIAG, int* N, void* A, int* LDA, int* INFO );
+	void ztrtri_( char* UPLO, char* DIAG, int* N, void* A, int* LDA, int* INFO );
 }
 
 /**
@@ -29,5 +36,10 @@ extern "C" {
  *
  */
 template <typename T> EXPORTLINALG int hoNDArray_choldc(hoNDArray<T>* A);
+
+/**
+ * Invert matrix assuming it is lower trinagular
+ */
+template <typename T> EXPORTLINALG int hoNDArray_inv_lower_triangular(hoNDArray<T>* A);
 
 #endif /* MATRIX_DECOMPOSITION_H_ */
