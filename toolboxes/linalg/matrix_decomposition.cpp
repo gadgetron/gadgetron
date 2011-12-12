@@ -8,6 +8,13 @@
 #include "matrix_decomposition.h"
 #include <complex>
 
+template <typename T> int hoNDArray_transpose(hoNDArray<T>* A_in, hoNDArray<T>* A_out)
+{
+
+	return 0;
+}
+
+
 void potrf_wrapper(char* UPLO, int* N, float* A, int* LDA, int* info)
 {
 	spotrf_(UPLO, N, A, LDA, info);

@@ -42,4 +42,9 @@ template <typename T> EXPORTLINALG int hoNDArray_choldc(hoNDArray<T>* A);
  */
 template <typename T> EXPORTLINALG int hoNDArray_inv_lower_triangular(hoNDArray<T>* A);
 
+/**
+ * Transpose matrix (if it is indeed a matrix (2 dimensional))
+ */
+template <typename T> EXPORTLINALG int hoNDArray_transpose(hoNDArray<T>* A_in, hoNDArray<T>* A_out);
+
 #endif /* MATRIX_DECOMPOSITION_H_ */

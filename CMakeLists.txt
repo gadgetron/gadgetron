@@ -15,7 +15,7 @@ find_package(Boost REQUIRED)
 find_package(ACE REQUIRED)
 find_package(FFTW3 COMPONENTS single double REQUIRED)
 
-enable_language(Fortran)
+#enable_language(Fortran)
 find_package(BLAS)
 find_package(LAPACK) 
 
