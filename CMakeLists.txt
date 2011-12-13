@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 project(GADGETRON)
 
 if (WIN32)
@@ -15,15 +15,14 @@ find_package(Boost REQUIRED)
 find_package(ACE REQUIRED)
 find_package(FFTW3 COMPONENTS single double REQUIRED)
 
-if (NOT WIN32)
-# Work-around for CMake issue 0009220
-if(DEFINED CMAKE_Fortran_COMPILER AND CMAKE_Fortran_COMPILER MATCHES "^$")
-  set(CMAKE_Fortran_COMPILER CMAKE_Fortran_COMPILER-NOTFOUND)
-endif(DEFINED CMAKE_Fortran_COMPILER AND CMAKE_Fortran_COMPILER MATCHES "^$") 
-enable_language(Fortran OPTIONAL)
+if (${CMAKE_VERSION} VERSION_LESS "2.8.4")
+ MESSAGE("You have cmake version less than 2.8.4, hence FindBLAS requires a Fortran compiler")
+ MESSAGE("Upgrade to a newer version of cmake to avoid this Fortran compiler check")
+ enable_language(Fortran)
+endif(${CMAKE_VERSION} VERSION_LESS "2.8.4")
+
 find_package(BLAS)
 find_package(LAPACK) 
-endif (NOT WIN32)
 
 find_package(CUDA 4.0)
 
@@ -55,6 +54,7 @@ find_package(GLEW)
 add_subdirectory(dependencies)
 add_subdirectory(apps)
 add_subdirectory(toolboxes)
-add_subdirectory(gadgets)
+IF (ACE_FOUND)
+       add_subdirectory(gadgets)
+ENDIF (ACE_FOUND)
 add_subdirectory(cmake)
-

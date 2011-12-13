@@ -26,53 +26,43 @@
     </writer>
   </writers>
   
-
   <stream>
     <gadget>
       <name>NoiseAdjust</name>
-      <dll>gadgetroncore</dll>
-      <class>NoiseAdjustGadget</class>
-      <property><name>MyTestProperty</name><value>Blah Blah</value></property>
-      <property><name>MyTestProperty2</name><value>98776.862187</value></property>
+      <dll>gadgetronmricore</dll>
+      <class>MRINoiseAdjustGadget</class>
     </gadget>
-	
+
     <gadget>
       <name>CoilReduction</name>
       <dll>gadgetroncore</dll>
       <class>CoilReductionGadget</class>
-      <! --
-         Coil reduction gadget can operate in two modes:
-             - Specification of mask (1 0 1 0 1 ...). If a smaller mask than
-               number of coils is specified, it is zeropadded.
-             - Number of coils out. Only the first X coils are kept.
-         If coil mask mode is specified, coils_out is ignored.
-      -->
-      <property><name>coil_mask</name><value>1 0 1 0 1 0 0 0 1 1</value></property>
-      <!--
-      <property><name>coils_out</name><value>10</value></property>
-      -->
+      <property><name>coils_out</name><value>8</value></property>
     </gadget>
     
     <gadget>
-      <name>Acc</name>
+      <name>RemoveROOversampling</name>
       <dll>gadgetroncore</dll>
-      <class>AccumulatorGadget</class>
-    </gadget>
-
- 
-    <gadget>
-      <name>FFT</name>
-      <dll>gadgetroncore</dll>
-      <class>FFTGadget</class>
+      <class>RemoveROOversamplingGadget</class>
     </gadget>
 
     <gadget>
-      <name>CropCombine</name>
-      <dll>gadgetroncore</dll>
-      <class>CropAndCombineGadget</class>
+      <name>GPUCGRadial0</name>
+      <dll>gadgetroncgsense</dll>
+      <class>GPUCGGoldenRadialGadget</class>
+      <property><name>deviceno</name>                <value>0</value></property>
+      <property><name>sliceno</name>                 <value>0</value></property>
+      <property><name>profiles_per_frame</name>      <value>32</value></property>
+      <property><name>shared_profiles</name>         <value>0</value></property>
+      <property><name>number_of_iterations</name>    <value>10</value></property>
+      <property><name>cg_limit</name>                <value>1e-6</value></property>
+      <property><name>oversampling</name>            <value>1.25</value></property>
+      <property><name>kernel_width</name>            <value>5.5</value></property>
+      <property><name>kappa</name>                   <value>0.1</value></property>
+      <property><name>pass_on_undesired_data</name>  <value>true</value></property>
     </gadget>
 
-    <gadget>
+     <gadget>
       <name>Extract</name>
       <dll>gadgetroncore</dll>
       <class>ExtractGadget</class>
@@ -89,11 +79,13 @@
     </gadget>
     -->
     
+    <!--
     <gadget>
       <name>FloatToShort</name>
       <dll>gadgetroncore</dll>
       <class>FloatToUShortGadget</class>
     </gadget>
+    -->
  
  	<!--
     <gadget>
@@ -103,18 +95,20 @@
     </gadget>
     -->
     
-    <!--
     <gadget>
       <name>ImageFinishFLOAT</name>
       <dll>gadgetroncore</dll>
       <class>ImageFinishGadgetFLOAT</class>
     </gadget>
-    -->
-     <gadget>
+    
+ 	<!--
+    <gadget>
       <name>ImageFinishUSHORT</name>
       <dll>gadgetroncore</dll>
       <class>ImageFinishGadgetUSHORT</class>
     </gadget>
-   </stream>
+    -->
+  </stream>
 
 </gadgetron>
+

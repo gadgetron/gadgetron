@@ -9,8 +9,9 @@
 #include <hoNDArray.h>
 #include <hoNDArray_fileio.h>
 #include <matrix_vector_op.h>
+#include <matrix_decomposition.h>
 
-#define DIFF_LIMIT 1e-7
+#define DIFF_LIMIT 1e-6
 
 double mcompare(hoNDArray< std::complex<float> >* A, hoNDArray< std::complex<float> >* B)
 {
@@ -46,11 +47,18 @@ int main(int argc, char** argv)
 	std::string filenameB = std::string(argv[1]) + std::string("/B.cplx");
 	std::string filenameC1 = std::string(argv[1]) + std::string("/C1.cplx");
 	std::string filenameC2 = std::string(argv[1]) + std::string("/C2.cplx");
+	std::string filenameS = std::string(argv[1]) + std::string("/S.cplx");
+	std::string filenameS_chol = std::string(argv[1]) + std::string("/S_chol.cplx");
+	std::string filenameS_chol_inv = std::string(argv[1]) + std::string("/S_chol_inv.cplx");
 
 	boost::shared_ptr< hoNDArray<std::complex<float> > > A = read_nd_array< std::complex<float> >(filenameA.c_str());
 	boost::shared_ptr< hoNDArray<std::complex<float> > > B = read_nd_array< std::complex<float> >(filenameB.c_str());
 	boost::shared_ptr< hoNDArray<std::complex<float> > > C1 = read_nd_array< std::complex<float> >(filenameC1.c_str());
 	boost::shared_ptr< hoNDArray<std::complex<float> > > C2 = read_nd_array< std::complex<float> >(filenameC2.c_str());
+
+	boost::shared_ptr< hoNDArray<std::complex<float> > > S = read_nd_array< std::complex<float> >(filenameS.c_str());
+	boost::shared_ptr< hoNDArray<std::complex<float> > > S_chol = read_nd_array< std::complex<float> >(filenameS_chol.c_str());
+	boost::shared_ptr< hoNDArray<std::complex<float> > > S_chol_inv = read_nd_array< std::complex<float> >(filenameS_chol_inv.c_str());
 
 	std::complex<float> alpha(1.0,0);
 	std::complex<float> beta(1.0,0);
@@ -61,12 +69,43 @@ int main(int argc, char** argv)
 
 	write_nd_array< std::complex<float> >(C1.get(), "C2_calc.cplx");
 
-	double mmdiff = mcompare(C1.get(),C2.get());
-	if (mmdiff > DIFF_LIMIT) {
-		std::cout << "Complex GEMM FAILED with diff: " << mmdiff << std::endl;
+	double diff = mcompare(C1.get(),C2.get());
+	if (diff > DIFF_LIMIT) {
+		std::cout << "Complex GEMM FAILED with diff: " << diff << std::endl;
 		return -1;
 	} else {
-		std::cout << "Complex GEMM SUCCESS with diff: " << mmdiff << std::endl;
+		std::cout << "Complex GEMM SUCCESS with diff: " << diff << std::endl;
+	}
+
+
+	if (hoNDArray_choldc(S.get()) != 0) {
+		std::cout << "Failed to do cholesky decomposition" << std::endl;
+		return -1;
+	}
+
+	write_nd_array< std::complex<float> >(S.get(), "S_chol_calc.cplx");
+
+	diff = mcompare(S.get(),S_chol.get());
+	if (diff > DIFF_LIMIT) {
+		std::cout << "Complex Cholesky decomposition FAILED with diff: " << diff << std::endl;
+		return -1;
+	} else {
+		std::cout << "Complex Cholesky decomposition SUCCESS with diff: " << diff << std::endl;
+	}
+
+	if (hoNDArray_inv_lower_triangular(S.get()) != 0) {
+		std::cout << "Failed to do inversion of lowe triangular" << std::endl;
+		return -1;
+	}
+
+	write_nd_array< std::complex<float> >(S.get(), "S_chol_inv_calc.cplx");
+
+	diff = mcompare(S.get(),S_chol_inv.get());
+	if (diff > DIFF_LIMIT) {
+		std::cout << "Complex Triangular inversion FAILED with diff: " << diff << std::endl;
+		return -1;
+	} else {
+		std::cout << "Complex Triangular inversion SUCCESS with diff: " << diff << std::endl;
 	}
 
 	return 0;
