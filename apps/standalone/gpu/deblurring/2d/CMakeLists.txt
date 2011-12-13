@@ -9,12 +9,12 @@ include_directories(	${CUDA_INCLUDE_DIRS}
 						${CMAKE_SOURCE_DIR}/toolboxes/solvers
 						${CMAKE_SOURCE_DIR}/toolboxes/ndarray)
 
-add_executable(blur  blur.cpp)
-add_executable(cg_deblur cg_deblur.cpp)
-add_executable(sb_deblur sb_deblur.cpp)
+add_executable(blur blur.cpp)
+add_executable(deblur_cg deblur_cg.cpp)
+add_executable(deblur_sb deblur_sb.cpp)
 
-target_link_libraries(cg_deblur gpucore hostutils solvers ${CUDA_LIBRARIES})
-target_link_libraries(sb_deblur gpucore hostutils solvers ${CUDA_LIBRARIES})
+target_link_libraries(deblur_cg gpucore hostutils solvers ${CUDA_LIBRARIES})
+target_link_libraries(deblur_sb gpucore hostutils solvers ${CUDA_LIBRARIES})
 target_link_libraries(blur gpucore hostutils solvers ${CUDA_LIBRARIES})
 
-install(TARGETS blur cg_deblur sb_deblur DESTINATION bin)
+install(TARGETS blur deblur_cg deblur_sb DESTINATION bin)

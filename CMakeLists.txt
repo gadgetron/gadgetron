@@ -15,6 +15,7 @@ find_package(Boost REQUIRED)
 find_package(ACE REQUIRED)
 find_package(FFTW3 COMPONENTS single double REQUIRED)
 
+if (NOT WIN32)
 # Work-around for CMake issue 0009220
 if(DEFINED CMAKE_Fortran_COMPILER AND CMAKE_Fortran_COMPILER MATCHES "^$")
   set(CMAKE_Fortran_COMPILER CMAKE_Fortran_COMPILER-NOTFOUND)
@@ -22,6 +23,7 @@ endif(DEFINED CMAKE_Fortran_COMPILER AND CMAKE_Fortran_COMPILER MATCHES "^$")
 enable_language(Fortran OPTIONAL)
 find_package(BLAS)
 find_package(LAPACK) 
+endif (NOT WIN32)
 
 find_package(CUDA 4.0)
 

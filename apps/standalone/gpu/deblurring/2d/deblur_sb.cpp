@@ -97,10 +97,10 @@ int main(int argc, char** argv)
   cuSBSolver<_real, _complext> sb;
   sb.set_solver( boost::shared_ptr< cuCGSolver<_real, _complext> >(cg.get()) );
   sb.set_encoding_operator( E );
-  //sb.add_regularization_operator( Rx );
-  //sb.add_regularization_operator( Ry );
-  sb.add_regularization_group_operator( Rx ); 
-  sb.add_regularization_group_operator( Ry ); 
+  sb.add_regularization_operator( Rx );
+  sb.add_regularization_operator( Ry );
+  //sb.add_regularization_group_operator( Rx ); 
+  //sb.add_regularization_group_operator( Ry ); 
   sb.set_outer_iterations(num_outer_iterations);
   sb.set_inner_iterations(num_inner_iterations);
   sb.set_image_dimensions(data.get_dimensions());

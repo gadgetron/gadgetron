@@ -19,12 +19,12 @@ public:
     cudaSetDevice(old_device_);
   }
 
-  virtual bool solver_clear( cuNDArray<T> *x )
+  virtual bool solver_clear_element( cuNDArray<T> *x )
   {
     return cuNDA_clear<T>(x);
   }
 
-  virtual bool solver_clear( cuNDArray<REAL> *x )
+  virtual bool solver_clear_real( cuNDArray<REAL> *x )
   {
     return cuNDA_clear<REAL>(x);
   }
@@ -39,12 +39,12 @@ public:
     return cuNDA_sqrt<REAL>(x);
   }
 
-  virtual bool solver_axpy( T a, cuNDArray<T> *x, cuNDArray<T> *y )
+  virtual bool solver_axpy_element( T a, cuNDArray<T> *x, cuNDArray<T> *y )
   {
     return cuNDA_axpy<T>(a,x,y);
   }
 
-  virtual bool solver_axpy( REAL a, cuNDArray<REAL> *x, cuNDArray<REAL> *y )
+  virtual bool solver_axpy_real( REAL a, cuNDArray<REAL> *x, cuNDArray<REAL> *y )
   {
     return cuNDA_axpy<REAL>(a,x,y);
   }
