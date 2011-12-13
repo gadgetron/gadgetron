@@ -8,13 +8,6 @@
 #include "matrix_decomposition.h"
 #include <complex>
 
-template <typename T> int hoNDArray_transpose(hoNDArray<T>* A_in, hoNDArray<T>* A_out)
-{
-
-	return 0;
-}
-
-
 void potrf_wrapper(char* UPLO, int* N, float* A, int* LDA, int* info)
 {
 	spotrf_(UPLO, N, A, LDA, info);
@@ -144,5 +137,62 @@ template EXPORTLINALG int hoNDArray_inv_lower_triangular(hoNDArray< std::complex
 template EXPORTLINALG int hoNDArray_inv_lower_triangular(hoNDArray< std::complex<double> >* A);
 
 
+template<typename T> int hoNDArray_svd(hoNDArray<T> *A, hoNDArray<T> *U, hoNDArray<T> *S, hoNDArray<T> *VT)
+{
+	const char* fname = "hoNDArray_svd(hoNDArray<T> *A, hoNDArray<T> *U, hoNDArray<T> *S, hoNDArray<T> *VT): ";
 
+	if (A->get_number_of_dimensions() != 2) {
+		std::cout << fname << ": Error array is not 2 dimensional.\n" << std::endl;
+		return -1;
+	}
+
+	int M = A->get_size(1);
+	int N = A->get_size(0);
+
+	std::vector<unsigned int> permute_dims(2);
+	permute_dims[0] = 1;permute_dims[1] = 0;
+
+	std::vector<unsigned int> perm_dims(2);
+	perm_dims[0] = M;
+	perm_dims[1] = N;
+
+	hoNDArray< T > A_perm;
+	if (!A_perm.create(&perm_dims)) {
+		std::cout << fname << ": Unable to create storage for transposed array\n" << std::endl;
+		return -1;
+	}
+
+	A->permute(&permute_dims, &A_perm);
+	T* A_ptr = A_perm.get_data_ptr();
+
+	char JOBU, JOBVT;
+	T* U_ptr = 0;
+	T* VT_ptr = 0;
+
+	int U_M = 0;
+	int U_N = 0;
+
+	if (U) {
+		U_M = U->get_size(1);
+		U_N = U->get_size(0);
+
+		//if ((U_M == U_N) && )
+
+	} else {
+		JOBU = 'N';
+	}
+
+	int VT_M = 0;
+	int VT_N = 0;
+	if (VT) {
+
+	} else {
+		JOBVT = 'N';
+	}
+
+	return 0;
+}
+
+
+template int hoNDArray_svd(hoNDArray< std::complex<float> > *A, hoNDArray< std::complex<float> > *U, hoNDArray< std::complex<float> > *S, hoNDArray< std::complex<float> > *VT);
 

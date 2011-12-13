@@ -29,10 +29,14 @@
   <stream>
     <gadget>
       <name>NoiseAdjust</name>
-      <dll>gadgetroncore</dll>
-      <class>NoiseAdjustGadget</class>
-      <property><name>MyTestProperty</name><value>Blah Blah</value></property>
-      <property><name>MyTestProperty2</name><value>98776.862187</value></property>
+      <dll>gadgetronmricore</dll>
+      <class>MRINoiseAdjustGadget</class>
+    </gadget>
+
+   <gadget>
+      <name>PCA</name>
+      <dll>gadgetronmricore</dll>
+      <class>PCACoilGadget</class>
     </gadget>
 
 	<!--    
