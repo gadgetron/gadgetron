@@ -26,7 +26,7 @@ public:
 
 	virtual ~sbSolver() {}
 
-	virtual int set_solver( boost::shared_ptr< solver<ARRAY_TYPE_ELEMENT> > solver ) {
+	virtual int set_inner_solver( boost::shared_ptr< solver<ARRAY_TYPE_ELEMENT> > solver ) {
 		inner_solver_ = solver;
 		return 0;
 	}
@@ -59,8 +59,7 @@ public:
 		inner_iterations_ = iterations;
 	}
 
-	virtual void set_image_dimensions( boost::shared_ptr< std::vector<unsigned int> > dims )
-	{
+	virtual void set_image_dimensions( boost::shared_ptr< std::vector<unsigned int> > dims ){
 		image_dims_ = dims;
 	}
 
@@ -125,20 +124,14 @@ public:
 
 		// Normalize u_k and f
 		//
-		ELEMENT_TYPE image_scale;
+		ELEMENT_TYPE image_scale=get_one<ELEMENT_TYPE>();
 		{
 			// Normalize to an average energy of "one intensity unit per image element"
 			REAL sum = solver_asum( u_k.get() );
 			image_scale = mul<REAL>(( (REAL) (u_k->get_number_of_elements())/sum), get_one<ELEMENT_TYPE>() );
 			solver_scal( image_scale, u_k.get() );
 			solver_scal( image_scale, &f );
-		}
-
-		// Scale u_k with mu
-		//
-		if( !solver_scal( mul<REAL>(encoding_operator_->get_weight(), get_one<ELEMENT_TYPE>()), u_k.get() ) ){
-			this->solver_error( "sbSolver::solve : error scaling u_k with mu" );
-			return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
+//			std::cout << std::endl << image_scale << std::endl;
 		}
 
 		// Keep a copy of E^H f for subsequent rhs computations in the inner solver
@@ -146,6 +139,13 @@ public:
 		ARRAY_TYPE_ELEMENT EHf(*u_k.get());
 		if( !EHf.get_data_ptr() ){
 			this->solver_error( "sbSolver::solve : memory allocation of EHf failed" );
+			return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
+		}
+
+		// Scale EHf with mu
+		//
+		if( !solver_scal( mul<REAL>(encoding_operator_->get_weight(), get_one<ELEMENT_TYPE>()), &EHf ) ){
+			this->solver_error( "sbSolver::solve : error scaling EHf with mu" );
 			return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
 		}
 

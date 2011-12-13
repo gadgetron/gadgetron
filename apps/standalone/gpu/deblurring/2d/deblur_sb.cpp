@@ -95,7 +95,7 @@ int main(int argc, char** argv)
 
   // Setup split-Bregman solver
   cuSBSolver<_real, _complext> sb;
-  sb.set_solver( boost::shared_ptr< cuCGSolver<_real, _complext> >(cg.get()) );
+  sb.set_inner_solver( boost::shared_ptr< cuCGSolver<_real, _complext> >(cg.get()) );
   sb.set_encoding_operator( E );
   sb.add_regularization_operator( Rx );
   sb.add_regularization_operator( Ry );

@@ -212,7 +212,7 @@ int main(int argc, char** argv)
 
   // Setup split-Bregman solver
   cuSBSolver<_real, _complext> sb;
-  sb.set_solver( cg );
+  sb.set_inner_solver( cg );
   sb.set_encoding_operator( E );
   sb.add_regularization_operator( Rx );
   sb.add_regularization_operator( Ry );
