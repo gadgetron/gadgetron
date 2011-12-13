@@ -41,8 +41,14 @@ public:
 		return 0;
 	}
 
-	virtual int add_regularization_group( boost::shared_ptr< std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > > > grp ) {
-		regularization_group_operators_.push_back(grp);
+	virtual int add_regularization_group_operator( boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > op ) {
+		__regularization_group_operators_.push_back(op);
+		return 0;
+	}
+
+	virtual int add_group() {
+		regularization_group_operators_.push_back(__regularization_group_operators_);
+		__regularization_group_operators_.clear();
 		return 0;
 	}
 
@@ -131,7 +137,6 @@ public:
 			image_scale = mul<REAL>(( (REAL) (u_k->get_number_of_elements())/sum), get_one<ELEMENT_TYPE>() );
 			solver_scal( image_scale, u_k.get() );
 			solver_scal( image_scale, &f );
-//			std::cout << std::endl << image_scale << std::endl;
 		}
 
 		// Keep a copy of E^H f for subsequent rhs computations in the inner solver
@@ -166,7 +171,7 @@ public:
 
 		unsigned int num_reg_operators = regularization_operators_.size();
 		for( unsigned int i=0; i<regularization_group_operators_.size(); i++ )
-			num_reg_operators += regularization_group_operators_[i]->size();
+			num_reg_operators += regularization_group_operators_[i].size();
 
 		boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > d_k = 
 			boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> >( new boost::shared_ptr<ARRAY_TYPE_ELEMENT>[num_reg_operators] );
@@ -214,14 +219,14 @@ public:
 		//
 		for( unsigned int outer_iteration=0; outer_iteration<outer_iterations_; outer_iteration++ ) {
 
-			if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
+			if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT>::OUTPUT_MAX )
 				std::cout << std::endl << "SB outer loop iteration " << outer_iteration << std::endl << std::endl;
 
 			// Inner loop
 			//
 			for( unsigned int inner_iteration=0; inner_iteration<inner_iterations_; inner_iteration++ ) {
 
-				if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
+				if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT>::OUTPUT_MAX )
 					std::cout << std::endl << "SB inner loop iteration " << inner_iteration << std::endl << std::endl;
 
 				// Form rhs for inner loop solver (initializes to adjoint encoding operator)
@@ -266,7 +271,7 @@ public:
 				// Add regularization group operators to rhs
 				//
 				for( unsigned int i=0; i<regularization_group_operators_.size(); i++ ){
-					for( unsigned int j=0; j<regularization_group_operators_[i]->size(); j++ ){
+					for( unsigned int j=0; j<regularization_group_operators_[i].size(); j++ ){
 
 						ARRAY_TYPE_ELEMENT tmp_diff, reg_out;
 						if( tmp_diff.create( image_dims_.get() ) < 0 || reg_out.create( image_dims_.get() ) < 0 ){
@@ -281,12 +286,12 @@ public:
 							return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
 						}    
 
-						if( regularization_group_operators_[i]->at(j)->mult_MH( &tmp_diff, &reg_out ) < 0 ){
+						if( regularization_group_operators_[i].at(j)->mult_MH( &tmp_diff, &reg_out ) < 0 ){
 							this->solver_error( "sbSolver::solve : application of group regularization operator failed in rhs computation" );
 							return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
 						}    
 
-						if( !solver_axpy_element( mul<REAL>(regularization_group_operators_[i]->at(j)->get_weight(), get_one<ELEMENT_TYPE>()), &reg_out, &rhs )){
+						if( !solver_axpy_element( mul<REAL>(regularization_group_operators_[i].at(j)->get_weight(), get_one<ELEMENT_TYPE>()), &reg_out, &rhs )){
 							this->solver_error( "sbSolver::solve : accumulation in rhs computation failed (2)" );
 							return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
 						}
@@ -362,7 +367,7 @@ public:
 
 				for( unsigned int i=0; i<regularization_group_operators_.size(); i++ ){
 
-					unsigned int k = regularization_group_operators_[i]->size();
+					unsigned int k = regularization_group_operators_[i].size();
 					ARRAY_TYPE_ELEMENT *sums = new ARRAY_TYPE_ELEMENT[k], *reg_out = new ARRAY_TYPE_ELEMENT[k];
 
 					if( !sums || !reg_out ){
@@ -390,7 +395,7 @@ public:
 
 						sums[j] = *b_k[operator_idx+j];
 
-						if( regularization_group_operators_[i]->at(j)->mult_M( u_k.get(), &reg_out[j] ) < 0 ){
+						if( regularization_group_operators_[i].at(j)->mult_M( u_k.get(), &reg_out[j] ) < 0 ){
 							this->solver_error( "sbSolver::solve : application of regularization operator failed in {d_k,b_k} update" );
 							return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
 						}
@@ -415,7 +420,7 @@ public:
 					for( unsigned int j=0; j<k; j++ ){
 
 						// Update of d_k
-						if( !solver_shrinkd( reciprocal<REAL>(regularization_group_operators_[i]->at(j)->get_weight()), &s_k, &sums[j], d_k[operator_idx+j].get() )){
+						if( !solver_shrinkd( reciprocal<REAL>(regularization_group_operators_[i].at(j)->get_weight()), &s_k, &sums[j], d_k[operator_idx+j].get() )){
 							this->solver_error( "sbSolver::solve : shrinkage_d of d_k failed" );
 							return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
 						}
@@ -481,5 +486,6 @@ protected:
 	boost::shared_ptr< solver<ARRAY_TYPE_ELEMENT> > inner_solver_;
 	boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > encoding_operator_;
 	std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > > regularization_operators_;
-	std::vector< boost::shared_ptr< std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > > > > regularization_group_operators_;
+	std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > > __regularization_group_operators_;
+	std::vector< std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > > > regularization_group_operators_;
 };
