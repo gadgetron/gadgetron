@@ -62,7 +62,7 @@ int PCACoilGadget::process(GadgetContainerMessage<GadgetMessageAcquisition> *m1,
 			int total_samples = samples_to_use*profiles_available;
 
 			std::vector<unsigned int> dims(2);
-			dims[0] = total_samples;dims[1] = channels;
+			dims[0] = channels;dims[1] = total_samples;
 
 			hoNDArray< std::complex<float> > A;
 			if (!A.create(&dims)) {
@@ -86,21 +86,41 @@ int PCACoilGadget::process(GadgetContainerMessage<GadgetMessageAcquisition> *m1,
 
 				for (unsigned s = 0; s < samples_to_use; s++) {
 					for (unsigned int c = 0; c < channels; c++) {
-						A_ptr[c*total_samples + sample_counter] =
+						A_ptr[c + sample_counter*channels] =
 								d[c*samples_per_profile + data_offset + s];
 					}
 					sample_counter++;
-					GADGET_DEBUG2("Sample counter = %d/%d\n", sample_counter, total_samples);
+					//GADGET_DEBUG2("Sample counter = %d/%d\n", sample_counter, total_samples);
 				}
 			}
 
 			//Collected data for temp matrix, now let's calculate SVD coefficients
 
 			write_nd_array(&A,"A.cplx");
-			hoNDArray_svd< std::complex<float> >(&A, 0 , 0 , 0);
-			write_nd_array(&A,"A2.cplx");
 
+			std::vector<unsigned int> S_dims; S_dims.push_back(channels);
+			hoNDArray<float> S;
+			if (!S.create(&S_dims)) {
+				GADGET_DEBUG1("Failed to create array for singular values\n");
+				return GADGET_FAIL;
+			}
 
+			std::vector<unsigned int> VT_dims;
+			VT_dims.push_back(channels);
+			VT_dims.push_back(channels);
+			hoNDArray< std::complex<float> > VT;
+			if (!VT.create(&VT_dims)) {
+				GADGET_DEBUG1("Failed to create array for VT\n");
+				return GADGET_FAIL;
+			}
+
+			if (hoNDArray_svd< float >(&A, 0 , &S , &VT) != 0) {
+				GADGET_DEBUG1("SVD failed\n");
+				return GADGET_FAIL;
+			}
+
+			write_nd_array(&S,"S.real");
+			write_nd_array(&VT,"VT.cplx");
 
 			//Switch off buffering for this slice
 			buffering_mode_[location] = false;

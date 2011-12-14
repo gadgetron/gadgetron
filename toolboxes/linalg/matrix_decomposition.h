@@ -9,6 +9,7 @@
 #define MATRIX_DECOMPOSITION_H_
 
 #include "hoNDArray.h"
+#include <complex>
 
 #include "linalg_export.h"
 
@@ -63,7 +64,7 @@ template <typename T> EXPORTLINALG int hoNDArray_inv_lower_triangular(hoNDArray<
 /**
  *  SVD
  */
-template <typename T> EXPORTLINALG int hoNDArray_svd(hoNDArray<T>* A, hoNDArray<T>* U, hoNDArray<T>* S, hoNDArray<T>* VT);
+template <typename T> EXPORTLINALG int hoNDArray_svd(hoNDArray< std::complex<T> >* A, hoNDArray< std::complex<T> >* U, hoNDArray<T>* S, hoNDArray< std::complex<T> >* VT);
 
 
 
