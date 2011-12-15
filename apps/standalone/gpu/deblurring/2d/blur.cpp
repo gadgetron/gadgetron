@@ -14,7 +14,7 @@
 using namespace std;
 
 // Define desired precision (note that decent deblurring of noisy images requires double precision)
-typedef double _real; 
+typedef float _real; 
 typedef complext<_real>::Type _complext;
 
 int main( int argc, char** argv) 
