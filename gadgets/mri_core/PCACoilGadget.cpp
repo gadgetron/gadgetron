@@ -123,11 +123,8 @@ int PCACoilGadget::process(GadgetContainerMessage<GadgetMessageAcquisition> *m1,
 
 			//Subtract off mean
 			for (unsigned int c = 0; c < channels; c++) {
-				std::complex<float> m = means_ptr[c];
-				real(m) = real(m)/total_samples;
-				imag(m) = imag(m)/total_samples;
 				for (unsigned int s = 0; s < total_samples; s++) {
-					A_ptr[c + s*channels] -= m;
+					A_ptr[c + s*channels] -=  means_ptr[c]/std::complex<float>(total_samples,0);
 				}
 			}
 
