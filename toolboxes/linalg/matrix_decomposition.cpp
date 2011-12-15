@@ -173,9 +173,36 @@ boost::shared_ptr<hoNDArray<T> > hoNDArray_transpose(hoNDArray<T> *A, bool copy_
 	return ret_val;
 }
 
+void gesvd_wrapper(char* JOBU, char* JOBVT, int* M, int* N, float* A,
+		int* LDA, float* S, float* U, int* LDU, float* VT,
+		int* LDVT, float* WORK, int* LWORK, float* RWORK, int* INFO)
+{
+	sgesvd_(JOBU, JOBVT, M, N, A, LDA, S, U, LDU, VT, LDVT, WORK, LWORK, RWORK, INFO);
+}
 
-template<typename T> int hoNDArray_svd(hoNDArray< std::complex<T> > *A,
-		hoNDArray< std::complex<T> > *U, hoNDArray< T > *S, hoNDArray< std::complex<T> > *VT)
+void gesvd_wrapper(char* JOBU, char* JOBVT, int* M, int* N, double* A,
+		int* LDA, double* S, double* U, int* LDU, double* VT,
+		int* LDVT, double* WORK, int* LWORK, double* RWORK, int* INFO)
+{
+	dgesvd_(JOBU, JOBVT, M, N, A, LDA, S, U, LDU, VT, LDVT, WORK, LWORK, RWORK, INFO);
+}
+
+void gesvd_wrapper(char* JOBU, char* JOBVT, int* M, int* N, std::complex<float>* A,
+		int* LDA, float* S, std::complex<float>* U, int* LDU, std::complex<float>* VT,
+		int* LDVT, std::complex<float>* WORK, int* LWORK, float* RWORK, int* INFO)
+{
+	cgesvd_(JOBU, JOBVT, M, N, A, LDA, S, U, LDU, VT, LDVT, WORK, LWORK, RWORK, INFO);
+}
+
+void gesvd_wrapper(char* JOBU, char* JOBVT, int* M, int* N, std::complex<double>* A,
+		int* LDA, double* S, std::complex<double>* U, int* LDU, std::complex<double>* VT,
+		int* LDVT, std::complex<double>* WORK, int* LWORK, double* RWORK, int* INFO)
+{
+	zgesvd_(JOBU, JOBVT, M, N, A, LDA, S, U, LDU, VT, LDVT, WORK, LWORK, RWORK, INFO);
+}
+
+template<typename T, typename Y> int hoNDArray_svd(hoNDArray<T > *A,
+		hoNDArray< T > *U, hoNDArray< Y > *S, hoNDArray< T > *VT)
 {
 	const char* fname = "hoNDArray_svd(hoNDArray *A, hoNDArray *U, hoNDArray *S, hoNDArray *VT)";
 
@@ -184,7 +211,7 @@ template<typename T> int hoNDArray_svd(hoNDArray< std::complex<T> > *A,
 		return -1;
 	}
 
-	boost::shared_ptr< hoNDArray< std::complex<T> > > A_t = hoNDArray_transpose(A);
+	boost::shared_ptr< hoNDArray< T > > A_t = hoNDArray_transpose(A);
 	if (!A_t.get()) {
 		std::cout << fname << ": Transpose of input failed.\n" << std::endl;
 		return -1;
@@ -195,20 +222,20 @@ template<typename T> int hoNDArray_svd(hoNDArray< std::complex<T> > *A,
     int min_M_N = M > N ? N : M;
     int max_M_N = M < N ? N : M;
 
-	std::complex<T>* A_ptr = A_t.get()->get_data_ptr();
+	T* A_ptr = A_t.get()->get_data_ptr();
 	if (!A_ptr) {
 		std::cout << fname << ": Data array pointer is undefined.\n" << std::endl;
 		return -1;
 	}
 
 
-	boost::shared_ptr< hoNDArray< std::complex<T> > > U_t;
-	boost::shared_ptr< hoNDArray< std::complex<T> > > VT_t;
+	boost::shared_ptr< hoNDArray< T > > U_t;
+	boost::shared_ptr< hoNDArray< T > > VT_t;
 
 	char JOBU, JOBVT;
-	std::complex<T>* U_ptr = 0;
-	std::complex<T>* VT_ptr = 0;
-	T* S_ptr = 0;
+	T* U_ptr = 0;
+	T* VT_ptr = 0;
+	Y* S_ptr = 0;
 
 	if (S) {
 		if (S->get_number_of_elements() < min_M_N) {
@@ -280,7 +307,7 @@ template<typename T> int hoNDArray_svd(hoNDArray< std::complex<T> > *A,
 
 	int LWORK = 5*2*min_M_N+max_M_N;
 
-	hoNDArray< std::complex<T> > WORK;
+	hoNDArray< T > WORK;
 	work_dim[0] = LWORK;
 
     if (!WORK.create(&work_dim)) {
@@ -288,7 +315,7 @@ template<typename T> int hoNDArray_svd(hoNDArray< std::complex<T> > *A,
 		return -1;
     }
 
-	hoNDArray< T > RWORK;
+	hoNDArray< Y > RWORK;
 	work_dim[5*min_M_N];
 	if (!RWORK.create(&work_dim)) {
 		std::cout << fname << ": Unable to create temporary RWORK storage\n" << std::endl;
@@ -298,7 +325,7 @@ template<typename T> int hoNDArray_svd(hoNDArray< std::complex<T> > *A,
 	//Now we are finally ready to call the SVD
 	int INFO;
 
-	cgesvd_(&JOBU, &JOBVT, &M, &N, A_ptr,
+	gesvd_wrapper(&JOBU, &JOBVT, &M, &N, A_ptr,
 			&M, S_ptr, U_ptr, &LDU, VT_ptr,
 			&LDVT, WORK.get_data_ptr(),
 			&LWORK, RWORK.get_data_ptr(), &INFO);
@@ -329,6 +356,9 @@ template<typename T> int hoNDArray_svd(hoNDArray< std::complex<T> > *A,
 	return 0;
 }
 
-
-template int hoNDArray_svd(hoNDArray< std::complex<float> > *A, hoNDArray< std::complex<float> > *U, hoNDArray< float > *S, hoNDArray< std::complex<float> > *VT);
+//Template instanciations
+template EXPORTLINALG int hoNDArray_svd(hoNDArray< float > *A, hoNDArray< float > *U, hoNDArray< float > *S, hoNDArray< float > *VT);
+template EXPORTLINALG int hoNDArray_svd(hoNDArray< double > *A, hoNDArray< double > *U, hoNDArray< double > *S, hoNDArray< double > *VT);
+template EXPORTLINALG int hoNDArray_svd(hoNDArray< std::complex<float> > *A, hoNDArray< std::complex<float> > *U, hoNDArray< float > *S, hoNDArray< std::complex<float> > *VT);
+template EXPORTLINALG int hoNDArray_svd(hoNDArray< std::complex<double> > *A, hoNDArray< std::complex<double> > *U, hoNDArray< double > *S, hoNDArray< std::complex<double> > *VT);
 

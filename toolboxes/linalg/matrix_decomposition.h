@@ -64,7 +64,7 @@ template <typename T> EXPORTLINALG int hoNDArray_inv_lower_triangular(hoNDArray<
 /**
  *  SVD
  */
-template <typename T> EXPORTLINALG int hoNDArray_svd(hoNDArray< std::complex<T> >* A, hoNDArray< std::complex<T> >* U, hoNDArray<T>* S, hoNDArray< std::complex<T> >* VT);
+template <typename T, typename Y> EXPORTLINALG int hoNDArray_svd(hoNDArray< T >* A, hoNDArray< T >* U, hoNDArray<Y>* S, hoNDArray< T >* VT);
 
 
 

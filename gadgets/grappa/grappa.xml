@@ -39,15 +39,12 @@
       <class>PCACoilGadget</class>
     </gadget>
 
-	<!--    
     <gadget>
       <name>CoilReduction</name>
       <dll>gadgetroncore</dll>
       <class>CoilReductionGadget</class>
-      <property><name>coil_mask</name><value>0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1</value></property>
-      <property><name>coils_out</name><value>8</value></property>
+      <property><name>coils_out</name><value>4</value></property>
     </gadget>
-    -->
     
     <gadget>
       <name>RemoveROOversampling</name>

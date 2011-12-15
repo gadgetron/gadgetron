@@ -7,6 +7,7 @@
 
 #include "PCACoilGadget.h"
 #include "hoNDArray_fileio.h"
+#include "matrix_vector_op.h"
 #include "matrix_decomposition.h"
 
 PCACoilGadget::PCACoilGadget()
@@ -19,6 +20,15 @@ PCACoilGadget::PCACoilGadget()
 PCACoilGadget::~PCACoilGadget()
 {
 
+	std::map<int, hoNDArray<std::complex<float> >* >::iterator it;
+	it = pca_coefficients_.begin();
+	while (it != pca_coefficients_.end()) {
+		if (it->second) {
+			delete it->second;
+			it->second = 0;
+		}
+		it++;
+	}
 }
 
 
@@ -73,6 +83,17 @@ int PCACoilGadget::process(GadgetContainerMessage<GadgetMessageAcquisition> *m1,
 			unsigned int sample_counter = 0;
 			unsigned int data_offset = (samples_per_profile -samples_to_use)>>1;
 
+			hoNDArray<std::complex<float> > means;
+			std::vector<unsigned int> means_dims; means_dims.push_back(channels);
+
+			if (!means.create(&means_dims)) {
+				GADGET_DEBUG1("Unable to create temporary stoorage for mean values\n");
+				return -1;
+			}
+
+			means.clear(std::complex<float>(0.0f,0.0f));
+
+			std::complex<float>* means_ptr = means.get_data_ptr();
 			for (unsigned int p = 0; p < profiles_available; p++) {
 				GadgetContainerMessage<hoNDArray<std::complex<float> > >* m_tmp =
 						AsContainerMessage<hoNDArray< std::complex<float> > >(buffer_[location][p]->cont());
@@ -85,18 +106,33 @@ int PCACoilGadget::process(GadgetContainerMessage<GadgetMessageAcquisition> *m1,
 				std::complex<float>* d = m_tmp->getObjectPtr()->get_data_ptr();
 
 				for (unsigned s = 0; s < samples_to_use; s++) {
+					std::complex<float> mean(0.0,0.0);
 					for (unsigned int c = 0; c < channels; c++) {
 						A_ptr[c + sample_counter*channels] =
 								d[c*samples_per_profile + data_offset + s];
+
+						means_ptr[c] += d[c*samples_per_profile + data_offset + s];
 					}
+
 					sample_counter++;
 					//GADGET_DEBUG2("Sample counter = %d/%d\n", sample_counter, total_samples);
 				}
 			}
 
+			//Subtract off mean
+			for (unsigned int c = 0; c < channels; c++) {
+				std::complex<float> m = means_ptr[c];
+				real(m) = real(m)/total_samples;
+				imag(m) = imag(m)/total_samples;
+				for (unsigned int s = 0; s < total_samples; s++) {
+					A_ptr[c + s*channels] -= m;
+				}
+			}
+
+
 			//Collected data for temp matrix, now let's calculate SVD coefficients
 
-			write_nd_array(&A,"A.cplx");
+			//write_nd_array(&A,"A.cplx");
 
 			std::vector<unsigned int> S_dims; S_dims.push_back(channels);
 			hoNDArray<float> S;
@@ -108,27 +144,83 @@ int PCACoilGadget::process(GadgetContainerMessage<GadgetMessageAcquisition> *m1,
 			std::vector<unsigned int> VT_dims;
 			VT_dims.push_back(channels);
 			VT_dims.push_back(channels);
-			hoNDArray< std::complex<float> > VT;
-			if (!VT.create(&VT_dims)) {
+			pca_coefficients_[location] = new hoNDArray< std::complex<float> >;
+			hoNDArray< std::complex<float> >* VT = pca_coefficients_[location];
+
+			if (!VT->create(&VT_dims)) {
 				GADGET_DEBUG1("Failed to create array for VT\n");
 				return GADGET_FAIL;
 			}
 
-			if (hoNDArray_svd< float >(&A, 0 , &S , &VT) != 0) {
+			/*
+			std::vector<unsigned int> U_dims;
+			U_dims.push_back(channels);
+			U_dims.push_back(total_samples);
+			hoNDArray< std::complex<float> > U;
+			if (!U.create(&U_dims)) {
+				GADGET_DEBUG1("Failed to create array for U\n");
+				return GADGET_FAIL;
+			}
+			*/
+
+			//We don't need to calculate U in this case.
+			//if (hoNDArray_svd< std::complex<float>, float >(&A, &U , &S , &VT) != 0) {
+			if (hoNDArray_svd< std::complex<float>, float >(&A, 0 , &S , VT) != 0) {
 				GADGET_DEBUG1("SVD failed\n");
 				return GADGET_FAIL;
 			}
 
-			write_nd_array(&S,"S.real");
-			write_nd_array(&VT,"VT.cplx");
+
+
+			//write_nd_array(&S,"S.real");
+			//write_nd_array(&U,"U.cplx");
+			//write_nd_array(VT,"VT.cplx");
 
 			//Switch off buffering for this slice
 			buffering_mode_[location] = false;
+
+			//Now we should pump all the profiles that we have buffered back through the system
+			for (unsigned int p = 0; p < profiles_available; p++) {
+				ACE_Message_Block* mb = buffer_[location][p];
+				if (inherited::process(mb) != GADGET_OK) {
+					GADGET_DEBUG1("Failed to reprocess buffered data\n");
+					return GADGET_FAIL;
+				}
+			}
+			//Remove references in this buffer
+			buffer_[location].clear();
+
+
+		}
+	} else {
+		GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 =
+				new GadgetContainerMessage< hoNDArray< std::complex<float> > >;
+
+		if (!m3->getObjectPtr()->create(m2->getObjectPtr()->get_dimensions().get())) {
+			GADGET_DEBUG1("Unable to create storage for PCA coils\n");
+			m3->release();
+			return GADGET_FAIL;
+		}
+
+		if (pca_coefficients_[location] != 0) {
+			std::complex<float> alpha(1.0,0.0);
+			std::complex<float> beta(0.0,0.0);
+			if (hoNDArray_gemm( pca_coefficients_[location], m2->getObjectPtr(), alpha,  m3->getObjectPtr(), beta) < 0) {
+				GADGET_DEBUG1("Failed to apply PCA coefficients\n");
+				return GADGET_FAIL;
+			}
+		}
+
+		m1->cont(m3);
+		m2->release();
+
+		if (this->next()->putq(m1) < 0) {
+			GADGET_DEBUG1("Unable to put message on Q");
+			return GADGET_FAIL;
 		}
 	}
 
-
-	return GADGET_OK;//this->next()->putq(m1);
+	return GADGET_OK;//
 }
 
 GADGET_FACTORY_DECLARE(PCACoilGadget)

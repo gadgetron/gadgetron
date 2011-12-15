@@ -38,12 +38,19 @@
     </gadget>
 	
 	<!--
+	<gadget>
+      <name>PCA</name>
+      <dll>gadgetronmricore</dll>
+      <class>PCACoilGadget</class>
+    </gadget>
+	-->
+	
+	<!--
     <gadget>
       <name>CoilReduction</name>
       <dll>gadgetroncore</dll>
       <class>CoilReductionGadget</class>
-      <property><name>coil_mask</name><value>1 0 1 0 1 0 0 0 1 1</value></property>
-      <property><name>coils_out</name><value>10</value></property>
+      <property><name>coils_out</name><value>16</value></property>
     </gadget>
     -->
     
@@ -58,6 +65,12 @@
       <name>FFT</name>
       <dll>gadgetroncore</dll>
       <class>FFTGadget</class>
+    </gadget>
+
+    <gadget>
+      <name>ImageWrite</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageWriterGadgetCPLX</class>
     </gadget>
 
     <gadget>

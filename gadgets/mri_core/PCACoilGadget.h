@@ -19,6 +19,7 @@
 class EXPORTGADGETSMRICORE PCACoilGadget :
 public Gadget2<GadgetMessageAcquisition,hoNDArray< std::complex<float> > >
 {
+	typedef Gadget2<GadgetMessageAcquisition,hoNDArray< std::complex<float> > > inherited;
 public:
 	GADGET_DECLARE(PCACoilGadget);
 
@@ -38,7 +39,7 @@ private:
       std::map< int, bool> buffering_mode_;
 
       //Map for storing PCA coefficients for each location
-      std::map<int, hoNDArray<std::complex<float> > > pca_coefficients_;
+      std::map<int, hoNDArray<std::complex<float> >* > pca_coefficients_;
 
       int max_buffered_profiles_;
       int samples_to_use_;
