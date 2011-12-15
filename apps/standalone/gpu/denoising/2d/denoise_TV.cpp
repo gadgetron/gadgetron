@@ -20,7 +20,7 @@
 using namespace std;
 
 // Define desired precision (note that decent deblurring of noisy images requires double precision)
-typedef double _real; 
+typedef float _real; 
 
 int main(int argc, char** argv)
 {
@@ -29,12 +29,12 @@ int main(int argc, char** argv)
   //
 
   ParameterParser parms;
-  parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Noisy image file name (.real)", true, "noisy_image.real" );
+  parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Noisy image file name (.real)", true );
   parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Result file name", true, "denoised_image_TV.real" );
   parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of cg iterations", true, "20" );
   parms.add_parameter( 'I', COMMAND_LINE_INT,    1, "Number of sb inner iterations", true, "1" );
-  parms.add_parameter( 'O', COMMAND_LINE_INT,    1, "Number of sb outer iterations", true, "50" );
-  parms.add_parameter( 'm', COMMAND_LINE_FLOAT,  1, "Regularization weight (mu)", true, "0.1" );
+  parms.add_parameter( 'O', COMMAND_LINE_INT,    1, "Number of sb outer iterations", true, "10" );
+  parms.add_parameter( 'm', COMMAND_LINE_FLOAT,  1, "Regularization weight (mu)", true, "25.0" );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -52,6 +52,11 @@ int main(int argc, char** argv)
   boost::shared_ptr< hoNDArray<_real> > host_data = 
     read_nd_array<_real>((char*)parms.get_parameter('d')->get_string_value());
 
+  if( !host_data.get() ){
+    cout << endl << "Input image not found. Quitting!\n" << endl;
+    return 1;
+  }
+  
   if( host_data->get_number_of_dimensions() != 2 ){
     cout << endl << "Input image is not two-dimensional. Quitting!\n" << endl;
     return 1;
@@ -88,16 +93,17 @@ int main(int argc, char** argv)
   if( lambda>0.0 ) cg->add_matrix_operator( Ry );  // regularization matrix
   cg->set_iterations( num_cg_iterations );
   cg->set_limit( 1e-4 );
-  cg->set_output_mode( cuCGSolver<_real,_real>::OUTPUT_VERBOSE );  
+  cg->set_output_mode( cuCGSolver<_real,_real>::OUTPUT_WARNINGS );  
   
   // Setup split-Bregman solver
   cuSBSolver<_real,_real> sb;
   sb.set_inner_solver( cg );
   sb.set_encoding_operator( E );
-  sb.add_regularization_operator( Rx ); // Anisotropic denoising
-  sb.add_regularization_operator( Ry ); // Anisotropic denoising
-  //sb.add_regularization_group_operator( Rx ); // Isotropic denoising
-  //sb.add_regularization_group_operator( Ry ); // Isotropic denoising
+  //sb.add_regularization_operator( Rx ); // Anisotropic denoising
+  //sb.add_regularization_operator( Ry ); // Anisotropic denoising
+  sb.add_regularization_group_operator( Rx ); // Isotropic denoising
+  sb.add_regularization_group_operator( Ry); // Isotropic denoising
+  sb.add_group();
   sb.set_outer_iterations(num_outer_iterations);
   sb.set_inner_iterations(num_inner_iterations);
   sb.set_image_dimensions(data.get_dimensions());

@@ -7,10 +7,10 @@ include_directories(		${CUDA_INCLUDE_DIRS}
 				${CMAKE_SOURCE_DIR}/toolboxes/ndarray
 				${CMAKE_SOURCE_DIR}/toolboxes/gpucore)
 
-cuda_add_library(solvers SHARED 	cuCGPrecondWeights.cu
-							cuPartialDerivativeOperator.cu
-							cuLaplaceOperator.cu
-							cuVariableGaussOperator.cu)
+cuda_add_library(solvers SHARED cuCGPrecondWeights.cu
+                                cuPartialDerivativeOperator.cu
+                                cuLaplaceOperator.cu
+                                cuVariableGaussOperator.cu)
 
 target_link_libraries(solvers gpucore ${CUDA_LIBRARIES}
 ${CUDA_CUBLAS_LIBRARIES} )
@@ -22,7 +22,10 @@ install(FILES
 	cgSolver.h
 	cuCGSolver.h
 	sbSolver.h
+	sbcSolver.h
 	cuSBSolver.h
+	cuSBCSolver.h
+	cuSBSolver_macros.h
 	cgPreconditioner.h
 	cuCGPreconditioner.h
 	cuCGPrecondWeights.h
