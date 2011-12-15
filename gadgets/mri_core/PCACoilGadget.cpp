@@ -67,7 +67,7 @@ int PCACoilGadget::process(GadgetContainerMessage<GadgetMessageAcquisition> *m1,
 		//Are we ready for calculating PCA
 		if (is_last_scan_in_slice || (profiles_available >= max_buffered_profiles_)) {
 
-			GADGET_DEBUG2("Calculating PCA coefficients with %d profiles for %d coils\n", profiles_available, channels);
+			//GADGET_DEBUG2("Calculating PCA coefficients with %d profiles for %d coils\n", profiles_available, channels);
 			int samples_to_use = samples_per_profile > samples_to_use_ ? samples_to_use_ : samples_per_profile;
 			int total_samples = samples_to_use*profiles_available;
 
@@ -108,10 +108,12 @@ int PCACoilGadget::process(GadgetContainerMessage<GadgetMessageAcquisition> *m1,
 				for (unsigned s = 0; s < samples_to_use; s++) {
 					std::complex<float> mean(0.0,0.0);
 					for (unsigned int c = 0; c < channels; c++) {
-						A_ptr[c + sample_counter*channels] =
-								d[c*samples_per_profile + data_offset + s];
 
-						means_ptr[c] += d[c*samples_per_profile + data_offset + s];
+						//We use the conjugate of the data so that the output VT of the SVD is the actual PCA coefficient matrix\
+						A_ptr[c + sample_counter*channels] =
+								conj(d[c*samples_per_profile + data_offset + s]);
+
+						means_ptr[c] += conj(d[c*samples_per_profile + data_offset + s]);
 					}
 
 					sample_counter++;
