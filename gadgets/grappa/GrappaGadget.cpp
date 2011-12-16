@@ -4,6 +4,7 @@
 #include "GrappaGadget.h"
 #include "GadgetXml.h"
 #include "FFT.h"
+#include "GrappaUnmixingGadget.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -24,7 +25,14 @@ GrappaGadget::~GrappaGadget()
 
 		if (weights_[i]) delete weights_[i];
 		weights_[i] = 0;
+
+		if (image_data_[i]) {
+			image_data_[i]->release();
+			image_data_[i] = 0;
+		}
 	}
+
+
 
 }
 
@@ -106,6 +114,7 @@ int GrappaGadget::initial_setup()
 			wdims.push_back(weights_calculator_.get_number_of_uncombined_channels()+1);
 		}
 
+		/*
 		hoNDArray< std::complex<float> > tmp_w;
 		if (!tmp_w.create(&wdims)) {
 			GADGET_DEBUG1("Unable to create temporary array with dimensions\n");
@@ -113,7 +122,7 @@ int GrappaGadget::initial_setup()
 		}
 		tmp_w.clear(std::complex<float>(1.0,0));
 		weights_[i]->update(&tmp_w);
-
+       */
 
 		buffers_[i] = new GrappaCalibrationBuffer(image_dimensions_,
 				weights_[i],
@@ -210,12 +219,16 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 
 	if (is_last_scan_in_slice) {
 
+		GadgetContainerMessage<GrappaUnmixingJob>* cm0 =
+						new GadgetContainerMessage<GrappaUnmixingJob>();
+
 		GadgetContainerMessage<GadgetMessageImage>* cm1 =
 				new GadgetContainerMessage<GadgetMessageImage>();
 
+
+		/*
 		GadgetContainerMessage< hoNDArray<std::complex<float> > >* cm2 =
 				new GadgetContainerMessage< hoNDArray<std::complex<float> > >();
-
 
 		std::vector<unsigned int> combined_dims(3,0);
 		combined_dims[0] = image_dimensions_[0];
@@ -232,7 +245,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 		}
 
 		cm1->cont(cm2);
-
+        */
 
 		cm1->getObjectPtr()->matrix_size[0] = image_dimensions_[0];
 		cm1->getObjectPtr()->matrix_size[1] = image_dimensions_[1];
@@ -255,6 +268,22 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 		cm1->getObjectPtr()->image_series_index = image_series_;
 
 
+		cm0->getObjectPtr()->weights_ = weights_[slice];
+		cm0->cont(cm1);
+		cm1->cont(image_data_[slice]);
+
+		image_data_[slice] = 0;
+		if (create_image_buffer(slice) != GADGET_OK) {
+			GADGET_DEBUG1("Failed to create image buffer");
+			return GADGET_FAIL;
+		}
+
+		if (this->next()->putq(cm0) < 0) {
+			GADGET_DEBUG1("Failed to pass image on to next Gadget in chain\n");
+			return GADGET_FAIL;
+		}
+
+		/*
 		FFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),0);
 		FFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),1);
 		FFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),2);
@@ -272,8 +301,8 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 			GADGET_DEBUG1("Failed to pass image on to next Gadget in chain\n");
 			return GADGET_FAIL;
 		}
-
 		image_data_[slice]->getObjectPtr()->clear(std::complex<float>(0.0f,0.0f));
+        */
 	}
 
 	if (buffers_[slice]->add_data(m1->getObjectPtr(),m2->getObjectPtr()) < 0) {

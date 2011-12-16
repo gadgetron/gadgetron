@@ -26,6 +26,7 @@ template<class REAL, unsigned int D>
  
       num_coils_ = 0;
       cur_idx_ = cur_sub_idx_ = 0;
+
       cycle_length_ = 5; sub_cycle_length_ = 8;
       acc_buffer_empty_ = true;
     }

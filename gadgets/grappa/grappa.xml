@@ -61,6 +61,12 @@
       -->
     </gadget>
 
+    <gadget>
+      <name>GrappaUnmixing</name>
+      <dll>gadgetrongrappa</dll>
+      <class>GrappaUnmixingGadget</class>
+    </gadget>
+
      <gadget>
       <name>Extract</name>
       <dll>gadgetroncore</dll>
