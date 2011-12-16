@@ -33,7 +33,6 @@
       <class>MRINoiseAdjustGadget</class>
     </gadget>
 
-
     <gadget>
       <name>RemoveROOversampling</name>
       <dll>gadgetroncore</dll>
