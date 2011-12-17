@@ -29,21 +29,22 @@
   <stream>
     <gadget>
       <name>NoiseAdjust</name>
-      <dll>gadgetroncore</dll>
-      <class>NoiseAdjustGadget</class>
-      <property><name>MyTestProperty</name><value>Blah Blah</value></property>
-      <property><name>MyTestProperty2</name><value>98776.862187</value></property>
+      <dll>gadgetronmricore</dll>
+      <class>MRINoiseAdjustGadget</class>
     </gadget>
 
-	<!--    
+   <gadget>
+      <name>PCA</name>
+      <dll>gadgetronmricore</dll>
+      <class>PCACoilGadget</class>
+    </gadget>
+
     <gadget>
       <name>CoilReduction</name>
       <dll>gadgetroncore</dll>
       <class>CoilReductionGadget</class>
-      <property><name>coil_mask</name><value>0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1</value></property>
       <property><name>coils_out</name><value>8</value></property>
     </gadget>
-    -->
     
     <gadget>
       <name>RemoveROOversampling</name>

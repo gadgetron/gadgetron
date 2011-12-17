@@ -42,7 +42,7 @@ int CoilReductionGadget::process_config(ACE_Message_Block *mb)
 			std::string ch = boost::algorithm::trim_copy(chm[i]);
 			if (ch.size() > 0) {
 				unsigned int mv = static_cast<unsigned int>(ACE_OS::atoi(ch.c_str()));
-				GADGET_DEBUG2("Coil mask value: %d\n", mv);
+				//GADGET_DEBUG2("Coil mask value: %d\n", mv);
 				if (mv > 0) {
 					coil_mask_.push_back(1);
 				} else {

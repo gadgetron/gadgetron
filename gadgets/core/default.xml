@@ -61,6 +61,12 @@
 
  
     <gadget>
+      <name>ImageWrite</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageWriterGadgetCPLX</class>
+    </gadget>
+
+    <gadget>
       <name>FFT</name>
       <dll>gadgetroncore</dll>
       <class>FFTGadget</class>
@@ -81,13 +87,6 @@
       -->
     </gadget>
 
-	<!--
-    <gadget>
-      <name>ImageWrite</name>
-      <dll>gadgetroncore</dll>
-      <class>ImageWriterGadgetFLOAT</class>
-    </gadget>
-    -->
     
     <gadget>
       <name>FloatToShort</name>

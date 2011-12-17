@@ -33,6 +33,19 @@
       <class>MRINoiseAdjustGadget</class>
     </gadget>
 
+
+    <gadget>
+      <name>RemoveROOversampling</name>
+      <dll>gadgetroncore</dll>
+      <class>RemoveROOversamplingGadget</class>
+    </gadget>
+
+	<gadget>
+      <name>PCA</name>
+      <dll>gadgetronmricore</dll>
+      <class>PCACoilGadget</class>
+    </gadget>
+
     <gadget>
       <name>CoilReduction</name>
       <dll>gadgetroncore</dll>
@@ -40,12 +53,6 @@
       <property><name>coils_out</name><value>8</value></property>
     </gadget>
     
-    <gadget>
-      <name>RemoveROOversampling</name>
-      <dll>gadgetroncore</dll>
-      <class>RemoveROOversamplingGadget</class>
-    </gadget>
-
     <gadget>
       <name>GPUCGRadial0</name>
       <dll>gadgetroncgsense</dll>
