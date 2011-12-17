@@ -161,7 +161,7 @@ public:
       // Keep a copy of E^H f for subsequent rhs computations in the inner solver
       //             
       if( this->encoding_operator_->mult_MH( &f_k, muEHf.get() ) < 0 ){
-	this->solver_error( "sbcSolver::solve : adjoint encoding operation failed on f" );
+	this->solver_error( "sbcSolver::solve : adjoint encoding operation failed on f_k" );
 	return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
       }
 

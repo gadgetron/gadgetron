@@ -21,7 +21,7 @@ public:
   sbSolver( int output_mode = solver<ARRAY_TYPE_ELEMENT>::OUTPUT_SILENT ) : solver<ARRAY_TYPE_ELEMENT>( output_mode ) { 
     tolerance_ = get_zero<REAL>();
     outer_iterations_ = 10;
-    inner_iterations_ = 3;
+    inner_iterations_ = 1;
   }
 
   virtual ~sbSolver() {}
@@ -36,8 +36,24 @@ public:
     return 0;
   }
 
-  virtual int add_regularization_operator( boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > op ) {
+  virtual int add_regularization_operator( boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > op, ARRAY_TYPE_ELEMENT *prior = 0x0  ) 
+  {
     regularization_operators_.push_back(op);
+    boost::shared_ptr<ARRAY_TYPE_ELEMENT> opp;
+    if( prior ){
+      opp = boost::shared_ptr<ARRAY_TYPE_ELEMENT>( new ARRAY_TYPE_ELEMENT() );
+      if( !opp.get() || opp->create( prior->get_dimensions().get() ) < 0 ){
+	this->solver_error( "sbSolver::add_regularization_operator : allocation failed for prior" );
+	regularization_priors_.push_back( boost::shared_ptr<ARRAY_TYPE_ELEMENT>() );
+	return -1;
+      }
+      if( op->mult_M( prior, opp.get() ) < 0 ){
+	this->solver_error( "sbSolver::add_regularization_operator : could not apply operator to prior" );
+	regularization_priors_.push_back( boost::shared_ptr<ARRAY_TYPE_ELEMENT>() );
+	return -1;
+      }      
+    }
+    regularization_priors_.push_back( opp );
     return 0;
   }
 
@@ -46,12 +62,36 @@ public:
     return 0;
   }
 
-  virtual int add_group() {
+  virtual int add_group( ARRAY_TYPE_ELEMENT *prior = 0x0 )
+  {
     regularization_group_operators_.push_back(_regularization_group_operators_);
     _regularization_group_operators_.clear();
+
+    boost::shared_ptr<ARRAY_TYPE_ELEMENT> opp;
+    std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > _regularization_group_priors_;
+
+    if( prior ){
+      for( unsigned int i=0; i<regularization_group_operators_.back().size(); i++ ){
+
+	opp = boost::shared_ptr<ARRAY_TYPE_ELEMENT>( new ARRAY_TYPE_ELEMENT() );
+	if( !opp.get() || opp->create( prior->get_dimensions().get() ) < 0 ){
+	  this->solver_error( "sbSolver::add_group : allocation failed for prior" );
+	  regularization_group_priors_.push_back( std::vector< boost::shared_ptr< ARRAY_TYPE_ELEMENT > >() );
+	  return -1;
+	}
+	if( regularization_group_operators_.back().at(i)->mult_M( prior, opp.get() ) < 0 ){
+	  this->solver_error( "sbSolver::add_group : could not apply operator to prior" );
+	  regularization_group_priors_.push_back( std::vector< boost::shared_ptr< ARRAY_TYPE_ELEMENT > >() );
+	  return -1;
+	}      
+	_regularization_group_priors_.push_back( opp );
+      }
+    }
+    regularization_group_priors_.push_back( _regularization_group_priors_ );
+    
     return 0;
   }
-
+  
   virtual void set_tolerance( REAL tolerance ) {
     if( tolerance < get_zero<REAL>() ) this->solver_error( "sbSolver::set_tolerence : tolerance cannot be negative" );
     else tolerance_ = tolerance;
@@ -103,6 +143,22 @@ public:
     if( !image_dims_.get() ){
       this->solver_error( "sbSolver::solve : image dimensions have not been set" );
       return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
+    }
+
+    for( unsigned i=0; i< regularization_priors_.size(); i++ ){
+      if( regularization_priors_.at(i) && !regularization_priors_.at(i)->dimensions_equal( image_dims_.get()) ){
+	this->solver_error( "sbSolver::solve : Regularization prior does not match specified image dimensions" );
+	return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
+      }
+    }
+    
+    for( unsigned i=0; i< regularization_group_priors_.size(); i++ ){
+      for( unsigned j=0; j < regularization_group_priors_.at(i).size(); j++ ){
+	if( regularization_group_priors_.at(i).size() > 0 && !regularization_group_priors_.at(i).at(j)->dimensions_equal( image_dims_.get()) ){
+	  this->solver_error( "sbSolver::solve : Regularization group prior does not match specified image dimensions" );
+	  return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
+	}
+      }
     }
 
     // Make a copy of _f - we are going to "normalize" the input shortly
@@ -160,13 +216,13 @@ public:
 
     unsigned int num_reg_operators = regularization_operators_.size();
     for( unsigned int i=0; i<regularization_group_operators_.size(); i++ )
-      num_reg_operators += regularization_group_operators_[i].size();
+      num_reg_operators += regularization_group_operators_.at(i).size();
 
-    boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > d_k = 
-      boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> >( new boost::shared_ptr<ARRAY_TYPE_ELEMENT>[num_reg_operators] );
+    boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > d_k
+      ( new boost::shared_ptr<ARRAY_TYPE_ELEMENT>[num_reg_operators] );
 
-    boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > b_k = 
-      boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> >( new boost::shared_ptr<ARRAY_TYPE_ELEMENT>[num_reg_operators] );
+    boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > b_k
+      ( new boost::shared_ptr<ARRAY_TYPE_ELEMENT>[num_reg_operators] );
 
     if( !d_k.get() || !b_k.get() ){
       this->solver_error( "sbSolver::solve : memory allocation of d_k or b_k failed" );
@@ -226,11 +282,11 @@ protected:
   //
   virtual bool solve_core( REAL tolerance, unsigned int outer_iterations, unsigned int inner_iterations,
 			   ARRAY_TYPE_ELEMENT &f, ARRAY_TYPE_ELEMENT &muEHf,
-			   boost::shared_ptr<ARRAY_TYPE_ELEMENT> u_k,
-			   boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > d_k,
-			   boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > b_k )
+			   boost::shared_ptr<ARRAY_TYPE_ELEMENT> &u_k,
+			   boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > &d_k,
+			   boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > &b_k )
   {
-
+     
     // Keep a copy of the "previous" u_k to compute the outer loop change of u_k
     // 
     ARRAY_TYPE_ELEMENT u_k_prev;
@@ -278,6 +334,13 @@ protected:
 
 	  tmp_diff = *d_k[operator_idx];
 
+	  if( regularization_priors_.at(i).get() ){
+	    if( !solver_axpy_element( get_one<ELEMENT_TYPE>(), regularization_priors_.at(i).get(), &tmp_diff )){
+	      this->solver_error( "sbSolver::solve : could not add regularization prior in rhs computation" );
+	      return false;
+	    }
+	  }
+	  
 	  if( !solver_axpy_element( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), b_k[operator_idx].get(), &tmp_diff )){
 	    this->solver_error( "sbSolver::solve : computation of regularization argument failed in rhs computation" );
 	    return false;
@@ -298,7 +361,7 @@ protected:
 	// Add regularization group operators to rhs
 	//
 	for( unsigned int i=0; i<regularization_group_operators_.size(); i++ ){
-	  for( unsigned int j=0; j<regularization_group_operators_[i].size(); j++ ){
+	  for( unsigned int j=0; j<regularization_group_operators_.at(i).size(); j++ ){
 
 	    ARRAY_TYPE_ELEMENT tmp_diff, reg_out;
 	    if( tmp_diff.create( image_dims_.get() ) < 0 || reg_out.create( image_dims_.get() ) < 0 ){
@@ -308,17 +371,24 @@ protected:
 
 	    tmp_diff = *d_k[operator_idx];
 
+	    if( regularization_group_priors_.at(i).size() > 0 && regularization_group_priors_.at(i).at(j).get() ){
+	      if( !solver_axpy_element( get_one<ELEMENT_TYPE>(), regularization_group_priors_.at(i).at(j).get(), &tmp_diff )){
+		this->solver_error( "sbSolver::solve : could not add regularization group prior in rhs computation" );
+		return false;
+	      }
+	    }
+	    
 	    if( !solver_axpy_element( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), b_k[operator_idx].get(), &tmp_diff )){
 	      this->solver_error( "sbSolver::solve : computation of group regularization argument failed in rhs computation" );
 	      return false;
 	    }    
 
-	    if( regularization_group_operators_[i].at(j)->mult_MH( &tmp_diff, &reg_out ) < 0 ){
+	    if( regularization_group_operators_.at(i).at(j)->mult_MH( &tmp_diff, &reg_out ) < 0 ){
 	      this->solver_error( "sbSolver::solve : application of group regularization operator failed in rhs computation" );
 	      return false;
 	    }    
 
-	    if( !solver_axpy_element( mul<REAL>(regularization_group_operators_[i].at(j)->get_weight(), get_one<ELEMENT_TYPE>()), &reg_out, &rhs )){
+	    if( !solver_axpy_element( mul<REAL>(regularization_group_operators_.at(i).at(j)->get_weight(), get_one<ELEMENT_TYPE>()), &reg_out, &rhs )){
 	      this->solver_error( "sbSolver::solve : accumulation in rhs computation failed (2)" );
 	      return false;
 	    }
@@ -364,6 +434,13 @@ protected:
 	    return false;
 	  }
 
+	  if( regularization_priors_.at(i).get() ) {
+	    if( !solver_axpy_element( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), regularization_priors_.at(i).get(), &reg_out )){
+	      this->solver_error( "sbSolver::solve : application of regularization prior failed in {d_k,b_k} update" );
+	      return false;
+	    }
+	  }
+
 	  if( !solver_axpy_element( get_one<ELEMENT_TYPE>(), &reg_out, &tmp_sum )){
 	    this->solver_error( "sbSolver::solve : computation of shrinkage_1 argument for d_k failed" );
 	    return false;
@@ -394,7 +471,7 @@ protected:
 
 	for( unsigned int i=0; i<regularization_group_operators_.size(); i++ ){
 
-	  unsigned int k = regularization_group_operators_[i].size();
+	  unsigned int k = regularization_group_operators_.at(i).size();
 	  ARRAY_TYPE_ELEMENT *sums = new ARRAY_TYPE_ELEMENT[k], *reg_out = new ARRAY_TYPE_ELEMENT[k];
 
 	  if( !sums || !reg_out ){
@@ -422,11 +499,18 @@ protected:
 
 	    sums[j] = *b_k[operator_idx+j];
 
-	    if( regularization_group_operators_[i].at(j)->mult_M( u_k.get(), &reg_out[j] ) < 0 ){
+	    if( regularization_group_operators_.at(i).at(j)->mult_M( u_k.get(), &reg_out[j] ) < 0 ){
 	      this->solver_error( "sbSolver::solve : application of regularization operator failed in {d_k,b_k} update" );
 	      return false;
 	    }
-
+	    
+	    if( regularization_group_priors_.at(i).size() > 0 && regularization_group_priors_.at(i).at(j).get() ) {
+	      if( !solver_axpy_element( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), regularization_group_priors_.at(i).at(j).get(), &reg_out[j] )){
+		this->solver_error( "sbSolver::solve : application of regularization group prior failed in {d_k,b_k} update" );
+		return false;
+	      }
+	    }
+	    
 	    if( !solver_axpy_element( get_one<ELEMENT_TYPE>(), &reg_out[j], &sums[j] )){
 	      this->solver_error( "sbSolver::solve : computation of shrinkage_d argument for d_k failed" );
 	      return false;
@@ -447,7 +531,7 @@ protected:
 	  for( unsigned int j=0; j<k; j++ ){
 
 	    // Update of d_k
-	    if( !solver_shrinkd( reciprocal<REAL>(regularization_group_operators_[i].at(j)->get_weight()), &s_k, &sums[j], d_k[operator_idx+j].get() )){
+	    if( !solver_shrinkd( reciprocal<REAL>(regularization_group_operators_.at(i).at(j)->get_weight()), &s_k, &sums[j], d_k[operator_idx+j].get() )){
 	      this->solver_error( "sbSolver::solve : shrinkage_d of d_k failed" );
 	      return false;
 	    }
@@ -511,4 +595,6 @@ protected:
   std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > > regularization_operators_;
   std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > > _regularization_group_operators_;
   std::vector< std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > > > regularization_group_operators_;
+  std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > regularization_priors_;
+  std::vector< std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > > regularization_group_priors_;
 };

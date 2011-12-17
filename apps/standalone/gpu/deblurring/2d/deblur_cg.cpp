@@ -17,7 +17,7 @@
 using namespace std;
 
 // Define desired precision (note that decent deblurring of noisy images requires double precision)
-typedef double _real; 
+typedef float _real; 
 typedef complext<_real>::Type _complext;
 
 int main(int argc, char** argv)
@@ -30,7 +30,7 @@ int main(int argc, char** argv)
   parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Blurred image file name (.cplx)", true, "blurred_image.cplx" );
   parms.add_parameter( 'k', COMMAND_LINE_STRING, 1, "Kernel image file name (.cplx)", true, "kernel_image.cplx" );
   parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Result file name", true, "cg_deblurred_image.cplx" );
-  parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of iterations", true, "10" );
+  parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of iterations", true, "25" );
   parms.add_parameter( 'K', COMMAND_LINE_FLOAT,  1, "Regularization weight", true, "0.1" );
 
   parms.parse_parameter_list(argc, argv);
