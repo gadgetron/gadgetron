@@ -50,6 +50,8 @@ public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
   int image_counter_;
   int image_series_;
   int target_coils_;
+  float phase_encoding_resolution_;
+  unsigned int line_offset_;
 };
 
 #endif //GRAPPAGADGET_H

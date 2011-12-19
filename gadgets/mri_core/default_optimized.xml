@@ -108,13 +108,13 @@
       <class>ImageFinishGadgetCPLX</class>
     </gadget>
     -->
-    
+
     <gadget>
       <name>ImageFinishFLOAT</name>
       <dll>gadgetroncore</dll>
       <class>ImageFinishGadgetFLOAT</class>
     </gadget>
-    
+
     <!--
      <gadget>
       <name>ImageFinishUSHORT</name>

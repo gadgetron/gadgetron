@@ -15,6 +15,7 @@
 #include "Gadgetron.h"
 #include "Gadget.h"
 #include "GadgetMessageInterface.h"
+#include "GadgetronConnector.h"
 
 typedef ACE_Module<ACE_MT_SYNCH> GadgetModule;
 
@@ -25,6 +26,7 @@ public:
   GadgetStreamController()
     : stream_configured_(false)
     , notifier_ (0, this, ACE_Event_Handler::WRITE_MASK)
+  	, writer_task_(&this->peer())
     { }
 
   virtual ~GadgetStreamController()
@@ -43,7 +45,7 @@ public:
   */
 
   virtual int handle_input (ACE_HANDLE fd = ACE_INVALID_HANDLE);
-  virtual int handle_output (ACE_HANDLE fd = ACE_INVALID_HANDLE);
+  //virtual int handle_output (ACE_HANDLE fd = ACE_INVALID_HANDLE);
   virtual int handle_close (ACE_HANDLE handle,
                             ACE_Reactor_Mask close_mask);
 
@@ -53,11 +55,13 @@ private:
   //ACE_SOCK_Stream sock_;
   ACE_Stream<ACE_MT_SYNCH> stream_;
   bool stream_configured_;
+  WriterTask writer_task_;
+
   //GadgetSocketSender* output_;
   ACE_Reactor_Notification_Strategy notifier_;
 
   GadgetMessageReaderContainer readers_;
-  GadgetMessageWriterContainer writers_;
+  //GadgetMessageWriterContainer writers_;
   
   std::vector<ACE_DLL_Handle*> dll_handles_;
 

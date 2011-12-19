@@ -63,15 +63,16 @@ int GrappaGadget::process_config(ACE_Message_Block* mb)
 		dims[2] = 1;
 	}
 
+	phase_encoding_resolution_ =n.get<double>(std::string("encoding.kspace.phase_resolution.value"))[0];
 
 	dimensions_.push_back(n.get<long>(std::string("encoding.kspace.readout_length.value"))[0]);
 	//  dimensions_.push_back(dims[0]);
-	dimensions_.push_back(dims[1]);
+	dimensions_.push_back(static_cast<unsigned int>(dims[1]/phase_encoding_resolution_));
 	dimensions_.push_back(dims[2]);
 	dimensions_.push_back(n.get<long>(std::string("encoding.channels.value"))[0]);
 	dimensions_.push_back(n.get<long>(std::string("encoding.slices.value"))[0]);
 
-
+	line_offset_ = (dimensions_[1]-dims[1])>>1;
 	return GADGET_OK;
 }
 
@@ -180,7 +181,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 	GadgetMessageAcquisition* acq_head = m1->getObjectPtr();
 
 	unsigned int samples =  acq_head->samples;
-	unsigned int line = acq_head->idx.line;
+	unsigned int line = acq_head->idx.line + line_offset_;
 	unsigned int partition = acq_head->idx.partition;
 	unsigned int slice = acq_head->idx.slice;
 
