@@ -54,8 +54,8 @@ int main(int argc, char** argv)
   parms.add_parameter( 'I', COMMAND_LINE_INT,    1, "Number of sb inner iterations", true, "1" );
   parms.add_parameter( 'O', COMMAND_LINE_INT,    1, "Number of sb outer iterations", true, "50" );
   parms.add_parameter( 'k', COMMAND_LINE_FLOAT,  1, "Kernel width", true, "5.5" );
-  parms.add_parameter( 'M', COMMAND_LINE_FLOAT,  1, "MU", true, "500000.0" );
-  parms.add_parameter( 'L', COMMAND_LINE_FLOAT,  1, "LAMBDA", true, "500000.0" );
+  parms.add_parameter( 'M', COMMAND_LINE_FLOAT,  1, "Mu", true, "0.5" );
+  parms.add_parameter( 'L', COMMAND_LINE_FLOAT,  1, "Lambda", true, "1.0" );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){

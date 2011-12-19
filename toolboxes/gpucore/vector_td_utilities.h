@@ -182,7 +182,7 @@ typename uintd<D>::Type vector_to_uintd( std::vector<unsigned int> _vector )
   }
   
   for( unsigned int i=0; i<D; i++ ){
-    if( i<_vector.size()-1 )
+    if( i<_vector.size() )
       out.vec[i] = _vector[i];
     else 
       out.vec[i] = 1;

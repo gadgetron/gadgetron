@@ -74,6 +74,11 @@ int main(int argc, char** argv)
   const _real mu = (_real) 100.0;
   const _real lambda = (_real) 1.0 * mu;
 
+  if( mu <= (_real) 0.0 ) {
+    cout << endl << "Regularization parameter mu should be strictly positive. Quitting!\n" << endl;
+    return 1;
+  }
+
   Rx->set_weight( lambda );
   Ry->set_weight( lambda );
 
@@ -88,9 +93,9 @@ int main(int argc, char** argv)
 
   // Setup conjugate gradient solver
   boost::shared_ptr< cuCGSolver<_real, _complext> > cg(new cuCGSolver<_real, _complext>());
-  cg->add_matrix_operator( E );                        // encoding matrix
-  if( lambda>0.0 ) cg->add_matrix_operator( Rx );  // regularization matrix
-  if( lambda>0.0 ) cg->add_matrix_operator( Ry );  // regularization matrix
+  cg->add_matrix_operator( E );   // encoding matrix
+  cg->add_matrix_operator( Rx );  // regularization matrix
+  cg->add_matrix_operator( Ry );  // regularization matrix
   cg->set_iterations( num_cg_iterations );
   cg->set_limit( 1e-4 );
   cg->set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_WARNINGS );
@@ -120,4 +125,3 @@ int main(int argc, char** argv)
 
   return 0;
 }
-

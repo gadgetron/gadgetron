@@ -68,6 +68,11 @@ int main(int argc, char** argv)
   _real mu = (_real) parms.get_parameter('m')->get_float_value();
   _real lambda = (_real)2.0*mu; // This is a good alround setting according to Goldstein et al.
 
+  if( mu <= (_real) 0.0 ) {
+    cout << endl << "Regularization parameter mu should be strictly positive. Quitting!\n" << endl;
+    return 1;
+  }
+
   unsigned int num_cg_iterations = parms.get_parameter('i')->get_int_value();
   unsigned int num_inner_iterations = parms.get_parameter('I')->get_int_value();
   unsigned int num_outer_iterations = parms.get_parameter('O')->get_int_value();
@@ -88,9 +93,9 @@ int main(int argc, char** argv)
   
   // Setup conjugate gradient solver
   boost::shared_ptr< cuCGSolver<_real,_real> > cg(new cuCGSolver<_real,_real>());
-  cg->add_matrix_operator( E );                    // encoding matrix
-  if( lambda>0.0 ) cg->add_matrix_operator( Rx );  // regularization matrix
-  if( lambda>0.0 ) cg->add_matrix_operator( Ry );  // regularization matrix
+  cg->add_matrix_operator( E );   // encoding matrix
+  cg->add_matrix_operator( Rx );  // regularization matrix
+  cg->add_matrix_operator( Ry );  // regularization matrix
   cg->set_iterations( num_cg_iterations );
   cg->set_limit( 1e-4 );
   cg->set_output_mode( cuCGSolver<_real,_real>::OUTPUT_WARNINGS );  
