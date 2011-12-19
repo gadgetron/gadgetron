@@ -99,7 +99,7 @@ class EXPORTGADGETSGRAPPA GrappaCalibrationBuffer
 
  public:
   GrappaCalibrationBuffer(std::vector<unsigned int> dimensions, 
-			  GrappaWeights<float>* w,
+			  boost::shared_ptr< GrappaWeights<float> > w,
 			  GrappaWeightsCalculator<float>* weights_calculator);
   virtual ~GrappaCalibrationBuffer() {}
 
@@ -108,7 +108,7 @@ class EXPORTGADGETSGRAPPA GrappaCalibrationBuffer
  private:
   hoNDArray< std::complex<float> > buffer_;
   std::vector<unsigned int> dimensions_;
-  GrappaWeights<float>* weights_;
+  boost::shared_ptr< GrappaWeights<float> > weights_;
   GrappaWeightsCalculator<float>* weights_calculator_;
   CalibrationBufferCounter buffer_counter_;
 

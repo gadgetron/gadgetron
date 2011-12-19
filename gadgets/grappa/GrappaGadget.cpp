@@ -13,6 +13,7 @@ GrappaGadget::GrappaGadget()
 : image_counter_(0)
 , image_series_(0)
 , first_call_(true)
+, target_coils_(0)
 {
 
 }
@@ -23,8 +24,6 @@ GrappaGadget::~GrappaGadget()
 		if (buffers_[i]) delete buffers_[i];
 		buffers_[i] = 0;
 
-		if (weights_[i]) delete weights_[i];
-		weights_[i] = 0;
 
 		if (image_data_[i]) {
 			image_data_[i]->release();
@@ -88,10 +87,20 @@ int GrappaGadget::initial_setup()
 	image_dimensions_.push_back(dimensions_[3]);
 
 
-	weights_ = std::vector< GrappaWeights<float>* >(dimensions_[4],0);
+	weights_ = std::vector< boost::shared_ptr<GrappaWeights<float> > >(dimensions_[4]);
+
 	buffers_ = std::vector<GrappaCalibrationBuffer* >(dimensions_[4],0);
 	time_stamps_ = std::vector<ACE_UINT32>(dimensions_[4],0);
 
+	//Let's figure out the number of target coils
+	target_coils_ = this->get_int_value("target_coils");
+	if ((target_coils_ <= 0) || (target_coils_ > dimensions_[3])) {
+		target_coils_ = dimensions_[3];
+	}
+
+	GADGET_DEBUG2("Running GRAPPA recon with %d source channels and %d target channels\n", dimensions_[3], target_coils_);
+
+	weights_calculator_.set_number_of_target_coils(target_coils_);
 
 	//Let's figure out if we have channels that are supposed to be uncombined
 	boost::shared_ptr<std::string> uncomb_str = this->get_string_value("uncombined_channels");
@@ -106,15 +115,15 @@ int GrappaGadget::initial_setup()
 	}
 
 	for (unsigned int i = 0; i < buffers_.size(); i++) {
-		weights_[i] = new GrappaWeights<float>();
+		weights_[i] = boost::shared_ptr<GrappaWeights<float> >(new GrappaWeights<float>());
 
 		//Let's set some default GRAPPA weights, so that we have something to work with the first couple of frames.
+		/*
 		std::vector<unsigned int> wdims = image_dimensions_;
 		if (weights_calculator_.get_number_of_uncombined_channels()) {
 			wdims.push_back(weights_calculator_.get_number_of_uncombined_channels()+1);
 		}
 
-		/*
 		hoNDArray< std::complex<float> > tmp_w;
 		if (!tmp_w.create(&wdims)) {
 			GADGET_DEBUG1("Unable to create temporary array with dimensions\n");

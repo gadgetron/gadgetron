@@ -43,7 +43,7 @@
       <name>CoilReduction</name>
       <dll>gadgetroncore</dll>
       <class>CoilReductionGadget</class>
-      <property><name>coils_out</name><value>8</value></property>
+      <property><name>coils_out</name><value>16</value></property>
     </gadget>
     
     <gadget>
@@ -56,6 +56,7 @@
       <name>Grappa</name>
       <dll>gadgetrongrappa</dll>
       <class>GrappaGadget</class>
+      <property><name>target_coils</name><value>8</value></property>
       <!--
       <property><name>uncombined_channels</name><value>15</value></property>
       -->

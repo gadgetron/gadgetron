@@ -3,7 +3,7 @@
 #include "Gadgetron.h"
 
 GrappaCalibrationBuffer::GrappaCalibrationBuffer(std::vector<unsigned int> dimensions,
-						 GrappaWeights<float>* w,
+						 boost::shared_ptr<GrappaWeights<float> > w,
 						 GrappaWeightsCalculator<float>* weights_calculator)
   : weights_(w)
   , weights_calculator_(weights_calculator)

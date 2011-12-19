@@ -17,7 +17,7 @@
 
 struct GrappaUnmixingJob
 {
-	GrappaWeights<float>* weights_;
+	boost::shared_ptr< GrappaWeights<float> > weights_;
 };
 
 class GrappaUnmixingGadget: public Gadget3<GrappaUnmixingJob, GadgetMessageImage, hoNDArray<std::complex<float> > > {

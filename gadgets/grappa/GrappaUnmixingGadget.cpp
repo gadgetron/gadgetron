@@ -21,6 +21,7 @@ int GrappaUnmixingGadget::process(GadgetContainerMessage<GrappaUnmixingJob>* m1,
 		GadgetContainerMessage<GadgetMessageImage>* m2, GadgetContainerMessage<hoNDArray<std::complex<float> > >* m3)
 {
 
+	GADGET_DEBUG1("Unmixing......\n");
 	GadgetContainerMessage< hoNDArray<std::complex<float> > >* cm2 =
 			new GadgetContainerMessage< hoNDArray<std::complex<float> > >();
 
