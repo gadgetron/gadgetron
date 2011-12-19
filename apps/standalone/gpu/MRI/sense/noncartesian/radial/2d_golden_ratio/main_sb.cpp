@@ -8,7 +8,7 @@
 #include "cuPartialDerivativeOperator.h"
 #include "cuCGPrecondWeights.h"
 #include "cuCGSolver.h"
-#include "cuSBSolver.h"
+#include "cuSBCSolver.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "parameterparser.h"
@@ -25,8 +25,7 @@ typedef reald<_real,2>::Type _reald2;
 
 // Upload samples for one reconstruction from host to device
 boost::shared_ptr< cuNDArray<_complext> > 
-upload_data( unsigned int reconstruction, unsigned int samples_per_reconstruction, unsigned int total_samples_per_coil, unsigned int num_coils,
-	     hoNDArray<_complext> *host_data )
+upload_data( unsigned int reconstruction, unsigned int samples_per_reconstruction, unsigned int total_samples_per_coil, unsigned int num_coils, hoNDArray<_complext> *host_data )
 {
   vector<unsigned int> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
   cuNDArray<_complext> *data = new cuNDArray<_complext>(); data->create( &dims );
@@ -51,11 +50,12 @@ int main(int argc, char** argv)
   parms.add_parameter( 'o', COMMAND_LINE_INT,    1, "Oversampled matrix size", true );
   parms.add_parameter( 'p', COMMAND_LINE_INT,    1, "Profiles per frame", true );
   parms.add_parameter( 'f', COMMAND_LINE_INT,    1, "Frames per reconstruction (negative meaning all)", true, "-1" );
-  parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of cg iterations", true, "10" );
-  parms.add_parameter( 'I', COMMAND_LINE_INT,    1, "Number of sb inner iterations", true, "10" );
-  parms.add_parameter( 'O', COMMAND_LINE_INT,    1, "Number of sb outer iterations", true, "10" );
+  parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of cg iterations", true, "20" );
+  parms.add_parameter( 'I', COMMAND_LINE_INT,    1, "Number of sb inner iterations", true, "1" );
+  parms.add_parameter( 'O', COMMAND_LINE_INT,    1, "Number of sb outer iterations", true, "50" );
   parms.add_parameter( 'k', COMMAND_LINE_FLOAT,  1, "Kernel width", true, "5.5" );
-  parms.add_parameter( 'K', COMMAND_LINE_FLOAT,  1, "Kappa", true, "0.1" );
+  parms.add_parameter( 'M', COMMAND_LINE_FLOAT,  1, "Mu", true, "0.5" );
+  parms.add_parameter( 'L', COMMAND_LINE_FLOAT,  1, "Lambda", true, "1.0" );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -90,12 +90,14 @@ int main(int argc, char** argv)
   uintd2 matrix_size = uintd2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
   uintd2 matrix_size_os = uintd2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
   _real kernel_width = parms.get_parameter('k')->get_float_value();
-  _real kappa = parms.get_parameter('K')->get_float_value();
   unsigned int num_cg_iterations = parms.get_parameter('i')->get_int_value();
   unsigned int num_sb_inner_iterations = parms.get_parameter('I')->get_int_value();
   unsigned int num_sb_outer_iterations = parms.get_parameter('O')->get_int_value();
   unsigned int profiles_per_frame = parms.get_parameter('p')->get_int_value();
   unsigned int frames_per_reconstruction = parms.get_parameter('f')->get_int_value();
+
+  _real mu = parms.get_parameter('M')->get_float_value();
+  _real lambda = parms.get_parameter('L')->get_float_value();
 
   // Silent correction of invalid command line parameters (clamp to valid range)
   if( profiles_per_frame > num_profiles ) profiles_per_frame = num_profiles;
@@ -120,7 +122,8 @@ int main(int argc, char** argv)
   
   // Define encoding matrix for non-Cartesian SENSE
   boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );  
-
+  E->set_weight( mu );
+  
   if( E->setup( matrix_size, matrix_size_os, kernel_width ) < 0 ){
     cout << "Failed to setup non-Cartesian Sense operator" << endl;
     return 1;
@@ -174,14 +177,24 @@ int main(int argc, char** argv)
     return 1;
   }
 
+  std::vector<unsigned int> reg_dims = uintd_to_vector<2>(matrix_size);
+  cuNDArray<_complext> reg_image;
+
+  if( reg_image.create(&reg_dims) == 0x0 ){
+    cout << "Failed to allocate regularization image" << endl;
+    return 1;
+  }
+
+  E->mult_csm_conj_sum( acc_images.get(), &reg_image );
+    
   acc_images.reset();
   csm.reset();
 
   // Define regularization operators 
   boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Rx( new cuPartialDerivativeOperator<_real,_complext,3>(0) ); 
   boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Ry( new cuPartialDerivativeOperator<_real,_complext,3>(1) ); 
-  Rx->set_weight( kappa );
-  Ry->set_weight( kappa );
+  Rx->set_weight( lambda );
+  Ry->set_weight( lambda );
  
   delete timer;
     
@@ -196,32 +209,38 @@ int main(int argc, char** argv)
   cg->add_matrix_operator( Ry );  // regularization matrix
   //  cg->set_preconditioner ( D );  // preconditioning matrix
   cg->set_iterations( num_cg_iterations );
-  cg->set_limit( 1e-8 );
-  cg->set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_VERBOSE );
-      
-  // Allocate space for result
-  unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
-  boost::shared_ptr< std::vector<unsigned int> > image_dims( new std::vector<unsigned int> );
-  *image_dims = uintd_to_vector<2>(matrix_size); image_dims->push_back(frames_per_reconstruction*num_reconstructions); 
+  cg->set_limit( 1e-2 );
+  cg->set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_WARNINGS );
   
+  unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
+  
+  boost::shared_ptr< std::vector<unsigned int> > recon_dims( new std::vector<unsigned int> );
+  *recon_dims = uintd_to_vector<2>(matrix_size); recon_dims->push_back(frames_per_reconstruction); 
+    
+  // Setup split-Bregman solver
+  cuSBCSolver<_real, _complext> sb;
+  sb.set_inner_solver( cg );
+  sb.set_encoding_operator( E );
+  sb.add_regularization_group_operator( Rx ); 
+  sb.add_regularization_group_operator( Ry ); 
+  if( sb.add_group( /*&reg_image*/ ) < 0 ){
+    cout << endl << "Failed to add group regularization image" << endl;
+    return 1;
+  }
+  sb.set_outer_iterations(num_sb_outer_iterations);
+  sb.set_inner_iterations(num_sb_inner_iterations);
+  sb.set_image_dimensions(recon_dims);
+  sb.set_output_mode( cuSBCSolver<_real, _complext>::OUTPUT_VERBOSE );
+  
+  // Allocate space for result
+  boost::shared_ptr< std::vector<unsigned int> > res_dims( new std::vector<unsigned int> );
+  *res_dims = uintd_to_vector<2>(matrix_size); res_dims->push_back(frames_per_reconstruction*num_reconstructions); 
   cuNDArray<_complext> result; 
-  if( result.create(image_dims.get()) == 0x0 ){
+  if( result.create(res_dims.get()) == 0x0 ){
     cout << "Failed allocate result image" << endl;
     return 1;
   }
 
-  // Setup split-Bregman solver
-  cuSBSolver<_real, _complext> sb;
-  sb.set_inner_solver( cg );
-  sb.set_encoding_operator( E );
-  sb.add_regularization_operator( Rx );
-  sb.add_regularization_operator( Ry );
-  //sb.add_regularization_group_operator( Rx ); 
-  //sb.add_regularization_group_operator( Ry ); 
-  sb.set_outer_iterations(num_sb_outer_iterations);
-  sb.set_inner_iterations(num_sb_inner_iterations);
-  sb.set_image_dimensions(image_dims);
-  
   timer = new GPUTimer("Full SENSE reconstruction with TV regularization.");
 
   for( unsigned int reconstruction = 0; reconstruction<num_reconstructions; reconstruction++ ){

@@ -66,7 +66,7 @@ int main( int argc, char** argv)
   
   // Generate convolution kernel (just do this on the host for now)
   // TODO: normalize the convolution integral to 1
-  _real sigma = 5.0;
+  _real sigma = 2.5;
   hoNDArray<_real> host_kernel;
   host_kernel.create(image->get_dimensions().get());
   for( unsigned int y=0; y<image->get_size(1); y++ ){

@@ -35,115 +35,48 @@ public:
 
   virtual boost::shared_ptr<ARRAY_TYPE_ELEMENT> solve( ARRAY_TYPE_ELEMENT *_f )
   {
-    // Some tests to see if we are ready to go...
+    // Check if everything is set up right
     //
-    if( !this->inner_solver_.get() ){
-      this->solver_error( "sbcSolver::solve : inner solver has not been set" );
+    if( !this->validate() ){
+      this->solver_error( "sbSolver::solve : setup failed validation");
       return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
     }
-
-    if( !this->encoding_operator_.get() ){
-      this->solver_error( "sbcSolver::solve : encoding operator has not been set" );
-      return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
-    }
-
-    if( this->regularization_operators_.size() == 0 && this->regularization_group_operators_.size() == 0 ){
-      this->solver_error( "sbcSolver::solve : at least one matrix regularizer must be added" );
-      return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
-    }
-
-    if( !this->image_dims_.get() ){
-      this->solver_error( "sbcSolver::solve : image dimensions have not been set" );
-      return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
-    }
-
-    // Make a copy of _f - we are going to "normalize" the input shortly
+    
+    // Initialze d and b
     //
-    ARRAY_TYPE_ELEMENT f(*_f);
-    if( !f.get_data_ptr() ){
-      this->solver_error( "sbcSolver::solve : memory allocation of f failed" );
+    boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > d_k;
+    boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > b_k;
+    if( !this->initialize( d_k, b_k ) ){
+      this->solver_error( "sbSolver::solve : failed to initialize");
+      return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
+    }
+    
+    // Make a copy of _f before normalization
+    //
+    boost::shared_ptr<ARRAY_TYPE_ELEMENT> f( new ARRAY_TYPE_ELEMENT(*_f) );
+    if( !f->get_data_ptr() ){
+      this->solver_error( "sbSolver::solve : memory allocation of f failed" );
       return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
     }
 
-    // Initialize u_k to E^H f 
+    // Define u_k
     //
-    boost::shared_ptr<ARRAY_TYPE_ELEMENT> u_k = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT());
-    if( u_k.get() ) u_k->create( this->image_dims_.get() );
+    boost::shared_ptr<ARRAY_TYPE_ELEMENT> u_k;
 
-    if( !u_k.get() || !u_k->get_data_ptr() ){
-      this->solver_error( "sbcSolver::solve : memory allocation of u_k failed" );
-      return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
-    }    
-
-    if( this->encoding_operator_->mult_MH( &f, u_k.get() ) < 0 ){
-      this->solver_error( "sbcSolver::solve : adjoint encoding operation failed on f" );
+    // Normalize the data
+    //
+    ELEMENT_TYPE image_scale = get_zero<ELEMENT_TYPE>();
+    if( !this->normalize( f, u_k, image_scale ) ){
+      this->solver_error( "sbSolver::solve : normalization failed" );
       return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
     }
-
-    // Normalize u_k and f
-    //
-    ELEMENT_TYPE image_scale=get_one<ELEMENT_TYPE>();
-    /*    {
-      // Normalize to an average energy of "one intensity unit per image element"
-      REAL sum = solver_asum( u_k.get() );
-      image_scale = mul<REAL>(( (REAL) (u_k->get_number_of_elements())/sum), get_one<ELEMENT_TYPE>() );
-      solver_scal( image_scale, u_k.get() );
-      solver_scal( image_scale, &f );
-      }*/
-
+    
     // Initialize f_k
     //
-    ARRAY_TYPE_ELEMENT f_k(f);
-    if( !f_k.get_data_ptr() ){
-      this->solver_error( "sbcSolver::solve : memory allocation of f_k failed" );
+    boost::shared_ptr<ARRAY_TYPE_ELEMENT> f_k( new ARRAY_TYPE_ELEMENT(*f) );
+    if( !f_k->get_data_ptr() ){
+      this->solver_error( "sbSolver::solve : memory allocation of f_k failed" );
       return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
-    }
-
-    // Initialize d_k and b_k arrays to zero images
-    //
-    //
-
-    unsigned int num_reg_operators = this->regularization_operators_.size();
-    for( unsigned int i=0; i<this->regularization_group_operators_.size(); i++ )
-      num_reg_operators += this->regularization_group_operators_[i].size();
-
-    boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > d_k( new boost::shared_ptr<ARRAY_TYPE_ELEMENT>[num_reg_operators] );
-    boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > b_k( new boost::shared_ptr<ARRAY_TYPE_ELEMENT>[num_reg_operators] );
-
-    if( !d_k.get() || !b_k.get() ){
-      this->solver_error( "sbcSolver::solve : memory allocation of d_k or b_k failed" );
-      return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
-    }
-
-    for( unsigned int i=0; i<num_reg_operators; i++ ){
-
-      d_k[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT());
-
-      if( d_k[i] ) d_k[i]->create( this->image_dims_.get() );
-
-      if( !d_k[i]->get_data_ptr() ){
-	this->solver_error( "sbSolver::solve : memory allocation of d_k failed" );
-	return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
-      }
-
-      if( !solver_clear_element( d_k[i].get() )){
-	this->solver_error( "sbSolver::solve : failed to clear internal memory buffer d_k" );
-	return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
-      }
-
-      b_k[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT());
-
-      if( b_k[i] ) b_k[i]->create( this->image_dims_.get() );
-
-      if( !b_k[i]->get_data_ptr() ){
-	this->solver_error( "sbSolver::solve : memory allocation of b_k failed" );
-	return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
-      }
-      
-      if( !solver_clear_element( b_k[i].get() )){
-	this->solver_error( "sbSolver::solve : failed to clear internal memory buffer b_k" );
-	return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
-      } 
     }
 
     boost::shared_ptr<ARRAY_TYPE_ELEMENT> muEHf(new ARRAY_TYPE_ELEMENT());
@@ -160,8 +93,8 @@ public:
 
       // Keep a copy of E^H f for subsequent rhs computations in the inner solver
       //             
-      if( this->encoding_operator_->mult_MH( &f_k, muEHf.get() ) < 0 ){
-	this->solver_error( "sbcSolver::solve : adjoint encoding operation failed on f" );
+      if( this->encoding_operator_->mult_MH( f_k.get(), muEHf.get() ) < 0 ){
+	this->solver_error( "sbcSolver::solve : adjoint encoding operation failed on f_k" );
 	return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
       }
 
@@ -174,15 +107,15 @@ public:
       
       // Invoke the core solver
       //
-      if( !solve_core( this->tolerance_, this->inner_iterations_, 1, f_k, *muEHf.get(), u_k, d_k, b_k ) ){
-	this->solver_error( "sbcSolver::solve : core solver failed" );
-	return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
+      if( !core( this->tolerance_, this->inner_iterations_, 1, f_k, muEHf, u_k, d_k, b_k ) ){
+      	this->solver_error( "sbcSolver::solve : core solver failed" );
+      	return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
       } 
 
       // Update f_k
       //
       ARRAY_TYPE_ELEMENT encoded_image;
-      if( encoded_image.create( f.get_dimensions().get() ) < 0 ){
+      if( encoded_image.create( f->get_dimensions().get() ) < 0 ){
         this->solver_error( "sbcSolver::solve : memory allocation for encoded image failed" );
         return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();      
       }
@@ -192,7 +125,7 @@ public:
         return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
       }
 
-      if( !this->solver_axpy_element( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), &f, &encoded_image )){ // notice the deliberate sign manipulation
+      if( !this->solver_axpy_element( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), f.get(), &encoded_image )){ // notice the deliberate sign manipulation
         this->solver_error( "sbSolver::solve : computation of update argument to f_k failed" );
         return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
       }
@@ -208,20 +141,19 @@ public:
 	  break;
       }
       
-      if( !solver_axpy_element( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), &encoded_image, &f_k )){ // notice the deliberate sign manipulation
+      if( !solver_axpy_element( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), &encoded_image, f_k.get() )){ // notice the deliberate sign manipulation
 	this->solver_error( "sbSolver::solve : computation of update argument to f_k failed" );
 	return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
       }
       
     } // end of outer loop
     
-    // Undo intermediate scaling of u_k ...
+    // Undo the intermediate scaling of u_k ...
+    //
     solver_scal( reciprocal<ELEMENT_TYPE>(image_scale), u_k.get() );
     
     // ... and return the result
-    //
-    
+    //    
     return u_k;
-  }
-
+  }  
 };
