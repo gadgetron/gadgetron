@@ -96,8 +96,8 @@ int main(int argc, char** argv)
   unsigned int profiles_per_frame = parms.get_parameter('p')->get_int_value();
   unsigned int frames_per_reconstruction = parms.get_parameter('f')->get_int_value();
 
-  _real mu = parms.get_parameter('M')->get_float_value();
-  _real lambda = parms.get_parameter('L')->get_float_value();
+  _real mu = (_real) parms.get_parameter('M')->get_float_value();
+  _real lambda = (_real) parms.get_parameter('L')->get_float_value();
 
   // Silent correction of invalid command line parameters (clamp to valid range)
   if( profiles_per_frame > num_profiles ) profiles_per_frame = num_profiles;
@@ -105,6 +105,7 @@ int main(int argc, char** argv)
   if( frames_per_reconstruction*profiles_per_frame > num_profiles ) frames_per_reconstruction = num_profiles / profiles_per_frame;
   
   unsigned int profiles_per_reconstruction = frames_per_reconstruction*profiles_per_frame;
+  unsigned int samples_per_frame = profiles_per_frame*samples_per_profile;
   unsigned int samples_per_reconstruction = profiles_per_reconstruction*samples_per_profile;
 
   cout << endl << "#samples/profile: " << samples_per_profile;
@@ -154,15 +155,15 @@ int main(int argc, char** argv)
   timer = new GPUTimer("CSM estimation and preconditioning computation");
     
   // Go through all the data...
-  for( unsigned int iteration = 0; iteration < num_profiles/profiles_per_reconstruction; iteration++ ) {
+  for( unsigned int iteration = 0; iteration < num_profiles/profiles_per_frame; iteration++ ) {
 
     // Define trajectories
     boost::shared_ptr< cuNDArray<_reald2> > traj = compute_radial_trajectory_golden_ratio_2d<_real>
-      ( samples_per_profile, profiles_per_frame, frames_per_reconstruction, iteration*profiles_per_reconstruction );
-        
+      ( samples_per_profile, profiles_per_frame, 1, iteration*profiles_per_frame );
+    
     // Upload data
     boost::shared_ptr< cuNDArray<_complext> > csm_data = upload_data
-      ( iteration, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, host_data.get() );
+      ( iteration, samples_per_frame, num_profiles*samples_per_profile, num_coils, host_data.get() );
     
     // Add frame to rhs buffer
     rhs_buffer->add_frame_data( csm_data.get(), traj.get() );
@@ -213,7 +214,7 @@ int main(int argc, char** argv)
   cg->set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_WARNINGS );
   
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
-  
+
   boost::shared_ptr< std::vector<unsigned int> > recon_dims( new std::vector<unsigned int> );
   *recon_dims = uintd_to_vector<2>(matrix_size); recon_dims->push_back(frames_per_reconstruction); 
     
