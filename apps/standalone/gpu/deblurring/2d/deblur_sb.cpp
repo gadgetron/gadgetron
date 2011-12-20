@@ -34,6 +34,8 @@ int main(int argc, char** argv)
   parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of cg iterations", true, "20" );
   parms.add_parameter( 'I', COMMAND_LINE_INT,    1, "Number of sb inner iterations", true, "1" );
   parms.add_parameter( 'O', COMMAND_LINE_INT,    1, "Number of sb outer iterations", true, "50" );
+  parms.add_parameter( 'M', COMMAND_LINE_FLOAT,  1, "Mu", true, "100.0" );
+  parms.add_parameter( 'L', COMMAND_LINE_FLOAT,  1, "Lambda", true, "100.0" );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -71,8 +73,8 @@ int main(int argc, char** argv)
   boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,2> > Rx( new cuPartialDerivativeOperator<_real,_complext,2>(0) ); 
   boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,2> > Ry( new cuPartialDerivativeOperator<_real,_complext,2>(1) ); 
   
-  const _real mu = (_real) 100.0;
-  const _real lambda = (_real) 1.0 * mu;
+  _real mu = (_real) parms.get_parameter('M')->get_float_value();
+  _real lambda = (_real) parms.get_parameter('L')->get_float_value();
 
   if( mu <= (_real) 0.0 ) {
     cout << endl << "Regularization parameter mu should be strictly positive. Quitting!\n" << endl;
