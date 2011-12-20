@@ -316,7 +316,7 @@ template<typename T, typename Y> int hoNDArray_svd(hoNDArray<T > *A,
     }
 
 	hoNDArray< Y > RWORK;
-	work_dim[5*min_M_N];
+	work_dim[0] = 5*min_M_N;
 	if (!RWORK.create(&work_dim)) {
 		std::cout << fname << ": Unable to create temporary RWORK storage\n" << std::endl;
 		return -1;
