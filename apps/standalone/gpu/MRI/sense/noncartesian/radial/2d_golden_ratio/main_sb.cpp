@@ -6,7 +6,6 @@
 #include "cuNonCartesianSenseOperator.h"
 #include "cuSenseRHSBuffer.h"
 #include "cuPartialDerivativeOperator.h"
-#include "cuCGPrecondWeights.h"
 #include "cuCGSolver.h"
 #include "cuSBCSolver.h"
 #include "b1_map.h"
@@ -152,7 +151,7 @@ int main(int argc, char** argv)
   // Compute CSM using accumulation in the rhs buffer
   // 
  
-  timer = new GPUTimer("CSM estimation and preconditioning computation");
+  timer = new GPUTimer("CSM and regularization estimation");
     
   // Go through all the data...
   for( unsigned int iteration = 0; iteration < num_profiles/profiles_per_frame; iteration++ ) {
@@ -190,7 +189,7 @@ int main(int argc, char** argv)
   
   // Duplicate the regularization image to 'frames_per_reconstruction' frames
   boost::shared_ptr<cuNDArray<_complext> > reg_image = cuNDA_expand( &_reg_image, frames_per_reconstruction );
-  cuNDA_scale((_real)2.0*get_one<_real>(), reg_image.get());
+  cuNDA_scale((_real)2.0*get_one<_real>(), reg_image.get()); // We need to figure out where this scaling comes from
 
   acc_images.reset();
   csm.reset();
@@ -212,7 +211,6 @@ int main(int argc, char** argv)
   cg->add_matrix_operator( E );   // encoding matrix
   cg->add_matrix_operator( Rx );  // regularization matrix
   cg->add_matrix_operator( Ry );  // regularization matrix
-  //  cg->set_preconditioner ( D );  // preconditioning matrix
   cg->set_iterations( num_cg_iterations );
   cg->set_limit( 1e-2 );
   cg->set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_WARNINGS );
@@ -235,8 +233,7 @@ int main(int argc, char** argv)
   sb.set_image_dimensions(recon_dims);
   sb.set_output_mode( cuSBCSolver<_real, _complext>::OUTPUT_VERBOSE );
   
-//  unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
-  unsigned int num_reconstructions = 6;
+  unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
 
   // Allocate space for result
   boost::shared_ptr< std::vector<unsigned int> > res_dims( new std::vector<unsigned int> );
@@ -286,7 +283,7 @@ int main(int argc, char** argv)
   // All done, write out the result
 
   timer = new GPUTimer("Writing out result");
-			 
+
   boost::shared_ptr< hoNDArray<_complext> > host_result = result.to_host();
   write_nd_array<_complext>(host_result.get(), (char*)parms.get_parameter('r')->get_string_value());
     
