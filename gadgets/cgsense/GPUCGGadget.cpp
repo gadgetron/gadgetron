@@ -29,8 +29,10 @@ GPUCGGadget::GPUCGGadget()
   , image_series_(0)
   , image_counter_(0)
 {
-  matrix_size_    = uintd2(0,0);
+  matrix_size_ = uintd2(0,0);
   matrix_size_os_ = uintd2(0,0);
+  memset(position_, 3*sizeof(float),0);
+  memset(quarternion_, 4*sizeof(float),0);
   pass_on_undesired_data_ = true; // We will make one of these for each slice and so data should be passed on.
 }
 
@@ -182,6 +184,13 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
     allocated_samples_ = 0; // the samples buffers are freed and re-allocated in 'upload_samples()'
     if( configure_channels() == GADGET_FAIL ) // Update buffers dependant on #channels
       return GADGET_FAIL;    
+  }
+
+  // Check to see of the imaging plane has changed
+  if (!quarterion_equal(m1->getObjectPtr()->quarternion) || !position_equal(m1->getObjectPtr()->position)) {
+	  rhs_buffer_->clear();
+      memcpy(position_,m1->getObjectPtr()->position,3*sizeof(float));
+      memcpy(quarternion_,m1->getObjectPtr()->quarternion,4*sizeof(float));
   }
 
   buffer_.enqueue_tail(m1);
