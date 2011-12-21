@@ -7,7 +7,7 @@
 #include "cuSenseRHSBuffer.h"
 #include "cuPartialDerivativeOperator.h"
 #include "cuCGSolver.h"
-#include "cuSBSolver.h"
+#include "cuSBCSolver.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "parameterparser.h"
@@ -53,7 +53,8 @@ int main(int argc, char** argv)
   parms.add_parameter( 'I', COMMAND_LINE_INT,    1, "Number of sb inner iterations", true, "1" );
   parms.add_parameter( 'O', COMMAND_LINE_INT,    1, "Number of sb outer iterations", true, "50" );
   parms.add_parameter( 'k', COMMAND_LINE_FLOAT,  1, "Kernel width", true, "5.5" );
-  parms.add_parameter( 'm', COMMAND_LINE_FLOAT,  1, "Regularization weight (mu)", true, "10.0" );
+  parms.add_parameter( 'M', COMMAND_LINE_FLOAT,  1, "Mu", true, "0.5" );
+  parms.add_parameter( 'L', COMMAND_LINE_FLOAT,  1, "Lambda", true, "1.0" );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -94,8 +95,8 @@ int main(int argc, char** argv)
   unsigned int profiles_per_frame = parms.get_parameter('p')->get_int_value();
   unsigned int frames_per_reconstruction = parms.get_parameter('f')->get_int_value();
 
-  _real mu = (_real) parms.get_parameter('m')->get_float_value();
-  _real lambda = (_real)1.0*mu; 
+  _real mu = (_real) parms.get_parameter('M')->get_float_value();
+  _real lambda = (_real) parms.get_parameter('L')->get_float_value();
 
   // Silent correction of invalid command line parameters (clamp to valid range)
   if( profiles_per_frame > num_profiles ) profiles_per_frame = num_profiles;
@@ -211,14 +212,14 @@ int main(int argc, char** argv)
   cg->add_matrix_operator( Rx );  // regularization matrix
   cg->add_matrix_operator( Ry );  // regularization matrix
   cg->set_iterations( num_cg_iterations );
-  cg->set_limit( 1e-4 );
+  cg->set_limit( 1e-2 );
   cg->set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_WARNINGS );
   
   boost::shared_ptr< std::vector<unsigned int> > recon_dims( new std::vector<unsigned int> );
   *recon_dims = uintd_to_vector<2>(matrix_size); recon_dims->push_back(frames_per_reconstruction); 
     
   // Setup split-Bregman solver
-  cuSBSolver<_real, _complext> sb;
+  cuSBCSolver<_real, _complext> sb;
   sb.set_inner_solver( cg );
   sb.set_encoding_operator( E );
   sb.add_regularization_group_operator( Rx ); 
@@ -230,7 +231,7 @@ int main(int argc, char** argv)
   sb.set_outer_iterations(num_sb_outer_iterations);
   sb.set_inner_iterations(num_sb_inner_iterations);
   sb.set_image_dimensions(recon_dims);
-  sb.set_output_mode( cuSBSolver<_real, _complext>::OUTPUT_VERBOSE );
+  sb.set_output_mode( cuSBCSolver<_real, _complext>::OUTPUT_VERBOSE );
   
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
 
