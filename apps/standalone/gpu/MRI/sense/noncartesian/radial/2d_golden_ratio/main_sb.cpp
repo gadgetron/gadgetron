@@ -53,7 +53,7 @@ int main(int argc, char** argv)
   parms.add_parameter( 'I', COMMAND_LINE_INT,    1, "Number of sb inner iterations", true, "1" );
   parms.add_parameter( 'O', COMMAND_LINE_INT,    1, "Number of sb outer iterations", true, "50" );
   parms.add_parameter( 'k', COMMAND_LINE_FLOAT,  1, "Kernel width", true, "5.5" );
-  parms.add_parameter( 'm', COMMAND_LINE_FLOAT,  1, "Regularization weight (mu)", true, "10.0" );
+  parms.add_parameter( 'M', COMMAND_LINE_FLOAT,  1, "Regularization weight (mu)", true, "25.0" );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -94,7 +94,7 @@ int main(int argc, char** argv)
   unsigned int profiles_per_frame = parms.get_parameter('p')->get_int_value();
   unsigned int frames_per_reconstruction = parms.get_parameter('f')->get_int_value();
 
-  _real mu = (_real) parms.get_parameter('m')->get_float_value();
+  _real mu = (_real) parms.get_parameter('M')->get_float_value();
   _real lambda = (_real)1.0*mu; 
 
   // Silent correction of invalid command line parameters (clamp to valid range)
