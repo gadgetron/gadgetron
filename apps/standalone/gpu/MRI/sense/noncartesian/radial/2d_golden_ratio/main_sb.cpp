@@ -168,9 +168,9 @@ int main(int argc, char** argv)
     // Add frame to rhs buffer
     rhs_buffer->add_frame_data( csm_data.get(), traj.get() );
   }
-  
+    
   // Estimate csm
-  boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_acc_coil_images();
+  boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_acc_coil_images(true);
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );
 
   if( E->set_csm(csm) < 0 ) {
@@ -179,15 +179,19 @@ int main(int argc, char** argv)
   }
 
   std::vector<unsigned int> reg_dims = uintd_to_vector<2>(matrix_size);
-  cuNDArray<_complext> reg_image;
+  cuNDArray<_complext> _reg_image;
 
-  if( reg_image.create(&reg_dims) == 0x0 ){
+  if( _reg_image.create(&reg_dims) == 0x0 ){
     cout << "Failed to allocate regularization image" << endl;
     return 1;
   }
 
-  E->mult_csm_conj_sum( acc_images.get(), &reg_image );
-    
+  E->mult_csm_conj_sum( acc_images.get(), &_reg_image );
+  
+  // Duplicate the regularization image to 'frames_per_reconstruction' frames
+  boost::shared_ptr<cuNDArray<_complext> > reg_image = cuNDA_expand( &_reg_image, frames_per_reconstruction );
+  cuNDA_scale((_real)2.0*get_one<_real>(), reg_image.get());
+
   acc_images.reset();
   csm.reset();
 
@@ -213,8 +217,6 @@ int main(int argc, char** argv)
   cg->set_limit( 1e-2 );
   cg->set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_WARNINGS );
   
-  unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
-
   boost::shared_ptr< std::vector<unsigned int> > recon_dims( new std::vector<unsigned int> );
   *recon_dims = uintd_to_vector<2>(matrix_size); recon_dims->push_back(frames_per_reconstruction); 
     
@@ -224,7 +226,7 @@ int main(int argc, char** argv)
   sb.set_encoding_operator( E );
   sb.add_regularization_group_operator( Rx ); 
   sb.add_regularization_group_operator( Ry ); 
-  if( sb.add_group( /*&reg_image*/ ) < 0 ){
+  if( sb.add_group( reg_image.get() ) < 0 ){
     cout << endl << "Failed to add group regularization image" << endl;
     return 1;
   }
@@ -233,6 +235,9 @@ int main(int argc, char** argv)
   sb.set_image_dimensions(recon_dims);
   sb.set_output_mode( cuSBCSolver<_real, _complext>::OUTPUT_VERBOSE );
   
+//  unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
+  unsigned int num_reconstructions = 6;
+
   // Allocate space for result
   boost::shared_ptr< std::vector<unsigned int> > res_dims( new std::vector<unsigned int> );
   *res_dims = uintd_to_vector<2>(matrix_size); res_dims->push_back(frames_per_reconstruction*num_reconstructions); 
