@@ -70,15 +70,17 @@ int main( int argc, char** argv)
   for( unsigned int i=0; i<host_kernel.get_number_of_elements(); i++ )
     host_kernel.get_data_ptr()[i] = (_real) _host_kernel->get_data_ptr()[i];
 
-  // Upload host image and to device, normalize, and convert to complex type
+  // Upload host image/kernel and convert to complex type
   //
   cuNDArray<_real> _image(&host_image);
-  cuNDA_normalize( &_image, get_one<_real>() );
   boost::shared_ptr< cuNDArray<_complext> > image = cuNDA_real_to_complext<_real>( &_image );
   
   cuNDArray<_real> _kernel(&host_kernel);
-  cuNDA_normalize( &_kernel, get_one<_real>() );
   boost::shared_ptr< cuNDArray<_complext> > kernel = cuNDA_real_to_complext<_real>( &_kernel );
+
+  // Normalize kernel
+  _real scale = cuNDA_asum<_real>(kernel.get());
+  cuNDA_scale<_real>( get_one<_real>()/scale, kernel.get() );
 
   // Setup resulting blurred image
   cuNDArray<_complext> blurred_image;

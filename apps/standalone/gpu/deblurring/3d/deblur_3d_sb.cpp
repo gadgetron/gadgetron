@@ -34,8 +34,8 @@ int main(int argc, char** argv)
   parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of cg iterations", true, "20" );
   parms.add_parameter( 'I', COMMAND_LINE_INT,    1, "Number of sb inner iterations", true, "1" );
   parms.add_parameter( 'O', COMMAND_LINE_INT,    1, "Number of sb outer iterations", true, "50" );
-  parms.add_parameter( 'M', COMMAND_LINE_FLOAT,  1, "Mu", true, "100.0" );
-  parms.add_parameter( 'L', COMMAND_LINE_FLOAT,  1, "Lambda", true, "100.0" );
+  parms.add_parameter( 'M', COMMAND_LINE_FLOAT,  1, "Mu", true, "1.0" );
+  parms.add_parameter( 'L', COMMAND_LINE_FLOAT,  1, "Lambda", true, "1.0" );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -100,9 +100,9 @@ int main(int argc, char** argv)
   cg->add_matrix_operator( E );   // encoding matrix
   cg->add_matrix_operator( Rx );  // regularization matrix
   cg->add_matrix_operator( Ry );  // regularization matrix
-  cg->add_matrix_operator( Rz );  // regularization matrix
+  //  cg->add_matrix_operator( Rz );  // regularization matrix
   cg->set_iterations( num_cg_iterations );
-  cg->set_limit( 1e-4 );
+  cg->set_limit( 1e-8 );
   cg->set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_WARNINGS );
 
   // Setup split-Bregman solver
@@ -111,7 +111,7 @@ int main(int argc, char** argv)
   sb.set_encoding_operator( E );
   sb.add_regularization_group_operator( Rx ); 
   sb.add_regularization_group_operator( Ry ); 
-  sb.add_regularization_group_operator( Rz ); 
+  //  sb.add_regularization_group_operator( Rz ); 
   sb.add_group();
   sb.set_outer_iterations(num_outer_iterations);
   sb.set_inner_iterations(num_inner_iterations);
