@@ -56,7 +56,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > host_kernel = 
     read_nd_array<_complext>((char*)parms.get_parameter('k')->get_string_value());
    
-  if( !(host_data->get_number_of_dimensions() == 2) || !(host_kernel->get_number_of_dimensions() == 2) ){
+  if( !(host_data->get_number_of_dimensions() == 3) || !(host_kernel->get_number_of_dimensions() == 3) ){
     cout << endl << "Input data (image/kernel) is not two-dimensional. Quitting!\n" << endl;
     return 1;
   }
@@ -70,8 +70,9 @@ int main(int argc, char** argv)
   unsigned int num_outer_iterations = parms.get_parameter('O')->get_int_value();
   
   // Setup regularization operators
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,2> > Rx( new cuPartialDerivativeOperator<_real,_complext,2>(0) ); 
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,2> > Ry( new cuPartialDerivativeOperator<_real,_complext,2>(1) ); 
+  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Rx( new cuPartialDerivativeOperator<_real,_complext,3>(0) ); 
+  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Ry( new cuPartialDerivativeOperator<_real,_complext,3>(1) ); 
+  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Rz( new cuPartialDerivativeOperator<_real,_complext,3>(2) ); 
   
   _real mu = (_real) parms.get_parameter('M')->get_float_value();
   _real lambda = (_real) parms.get_parameter('L')->get_float_value();
@@ -83,6 +84,7 @@ int main(int argc, char** argv)
 
   Rx->set_weight( lambda );
   Ry->set_weight( lambda );
+  Rz->set_weight( lambda );
 
   //
   // Setup conjugate gradients solver
@@ -98,6 +100,7 @@ int main(int argc, char** argv)
   cg->add_matrix_operator( E );   // encoding matrix
   cg->add_matrix_operator( Rx );  // regularization matrix
   cg->add_matrix_operator( Ry );  // regularization matrix
+  cg->add_matrix_operator( Rz );  // regularization matrix
   cg->set_iterations( num_cg_iterations );
   cg->set_limit( 1e-4 );
   cg->set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_WARNINGS );
@@ -108,6 +111,7 @@ int main(int argc, char** argv)
   sb.set_encoding_operator( E );
   sb.add_regularization_group_operator( Rx ); 
   sb.add_regularization_group_operator( Ry ); 
+  sb.add_regularization_group_operator( Rz ); 
   sb.add_group();
   sb.set_outer_iterations(num_outer_iterations);
   sb.set_inner_iterations(num_inner_iterations);
@@ -122,7 +126,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > host_result = sbresult->to_host();
   write_nd_array<_complext>(host_result.get(), (char*)parms.get_parameter('r')->get_string_value());
     
-  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_norm<_real,2>(sbresult.get())->to_host();
+  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_norm<_real>(sbresult.get())->to_host();
   write_nd_array<_real>( host_norm.get(), "sb_deblurred_image.real" );  
 
   return 0;

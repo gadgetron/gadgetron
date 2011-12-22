@@ -105,7 +105,7 @@ int main( int argc, char** argv)
   write_nd_array<_complext>( kernel_image_host.get(), (char*)parms.get_parameter('K')->get_string_value());
 
   boost::shared_ptr< hoNDArray<_real> > host_norm_kernel = cuNDA_norm<_real>(kernel.get())->to_host();
-  write_nd_array<_real>( host_norm_kernel.get(), "blurred_image.real" );
+  write_nd_array<_real>( host_norm_kernel.get(), "kernel_image.real" );
 
   return 0;
 }
