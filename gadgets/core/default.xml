@@ -59,13 +59,14 @@
       <class>AccumulatorGadget</class>
     </gadget>
 
- 
+ 	<!--
     <gadget>
       <name>ImageWrite</name>
       <dll>gadgetroncore</dll>
       <class>ImageWriterGadgetCPLX</class>
     </gadget>
-
+    -->
+    
     <gadget>
       <name>FFT</name>
       <dll>gadgetroncore</dll>

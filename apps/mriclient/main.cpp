@@ -8,8 +8,19 @@
 #include "GadgetContainerMessage.h"
 #include "hoNDArray.h"
 #include "ImageWriter.h"
+#include "FileInfo.h"
 
 #include <fstream>
+
+void print_usage()
+{
+  ACE_DEBUG((LM_INFO, ACE_TEXT("Usage: \n") ));
+  ACE_DEBUG((LM_INFO, ACE_TEXT("mriclient -p <PORT>                      (default 9002)\n") ));
+  ACE_DEBUG((LM_INFO, ACE_TEXT("          -h <HOST>                      (default localhost)\n") ));
+  ACE_DEBUG((LM_INFO, ACE_TEXT("          -d <DATA FILE>                 (default ./data.dat)\n") ));
+  ACE_DEBUG((LM_INFO, ACE_TEXT("          -x <PARAMETER FILE (XML)>      (default ./parameters.xml)\n") ));
+  ACE_DEBUG((LM_INFO, ACE_TEXT("          -c <GADGETRON CONFIG>          (default default.xml)\n") ));
+}
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 {
@@ -51,9 +62,11 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
       ACE_OS_String::strncpy(config_file, cmd_opts.opt_arg(), 1024);
       break;
     case ':':
+      print_usage();
       ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("-%c requires an argument.\n"), cmd_opts.opt_opt()),-1);
       break;
     default:
+      print_usage();
       ACE_ERROR_RETURN( (LM_ERROR, ACE_TEXT("Command line parse error\n")), -1);
       break;
     }    
@@ -61,12 +74,24 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
   
   ACE_DEBUG(( LM_INFO, ACE_TEXT("Gadgetron MRI Data Sender\n") ));
   
+  //Let's check if the files exist:
+  if (!FileInfo(std::string(data_file)).exists()) {
+	  ACE_DEBUG((LM_INFO, ACE_TEXT("Data file %s does not exist.\n"), data_file));
+	  print_usage();
+	  return -1;
+  }
+
+  if (!FileInfo(std::string(parameter_file)).exists()) {
+	  ACE_DEBUG((LM_INFO, ACE_TEXT("Parameter file %s does not exist.\n"), parameter_file));
+	  print_usage();
+	  return -1;
+  }
+
   ACE_DEBUG((LM_INFO, ACE_TEXT("  -- host:            %s\n"), hostname));
   ACE_DEBUG((LM_INFO, ACE_TEXT("  -- port:            %s\n"), port_no));
   ACE_DEBUG((LM_INFO, ACE_TEXT("  -- data:            %s\n"), data_file));
   ACE_DEBUG((LM_INFO, ACE_TEXT("  -- parm:            %s\n"), parameter_file));
   ACE_DEBUG((LM_INFO, ACE_TEXT("  -- conf:            %s\n"), config_file));
-
 
   GadgetronConnector con;
   

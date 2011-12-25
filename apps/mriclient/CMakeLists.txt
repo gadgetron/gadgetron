@@ -8,6 +8,7 @@ include_directories(   ${ACE_INCLUDE_DIR}
 				       ${CMAKE_SOURCE_DIR}/apps/gadgetron
 				       ${CMAKE_SOURCE_DIR}/apps/gadgetdatasender  
 				       ${CMAKE_SOURCE_DIR}/toolboxes/ndarray
+				       ${CMAKE_SOURCE_DIR}/toolboxes/hostutils
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools)
 
 add_executable(mriclient main.cpp)
