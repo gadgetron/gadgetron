@@ -49,7 +49,7 @@ cuNDA_sum( cuNDArray<T> *data, unsigned int dim,
 	   cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
 	   cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
-// Sum over dimension (scalar and vector_td arrays)
+// Expand (copy) array to new dimension (scalar and vector_td arrays)
 template<class T> EXPORTGPUCORE 
 boost::shared_ptr< cuNDArray<T> >  
 cuNDA_expand( cuNDArray<T> *data, unsigned int added_dim_size, 

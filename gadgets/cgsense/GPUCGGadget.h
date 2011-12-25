@@ -23,6 +23,20 @@ public:
 
 protected:
 
+   bool position_equal(float* position) {
+     for (unsigned int i = 0; i < 3; i++) {
+       if (position_[i] != position[i]) return false;
+     }
+     return true;
+  }
+
+   bool quarterion_equal(float* quarternion) {
+     for (unsigned int i = 0; i < 4; i++) {
+       if (quarternion_[i] != quarternion[i]) return false;
+     }
+     return true;
+  }
+
   virtual int process( GadgetContainerMessage< GadgetMessageAcquisition >* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2 );
   virtual int process_config( ACE_Message_Block* mb );
 
@@ -47,6 +61,9 @@ protected:
   double oversampling_;
   double kernel_width_;
   double kappa_;
+
+  float position_[3];
+  float quarternion_[4];   
 
   int current_profile_offset_;
   int allocated_samples_;

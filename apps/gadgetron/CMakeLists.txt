@@ -11,7 +11,7 @@ include_directories(
 
 add_executable(gadgetron main.cpp GadgetStreamController.cpp GadgetServerAcceptor.cpp)
 
-target_link_libraries(gadgetron tinyxml optimized gadgettools ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
+target_link_libraries(gadgetron gadgettools tinyxml optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
 install(TARGETS gadgetron DESTINATION bin)
 

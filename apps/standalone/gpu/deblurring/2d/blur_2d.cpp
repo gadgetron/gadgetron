@@ -57,7 +57,7 @@ int main( int argc, char** argv)
     
   // Upload host image to device, normalize, and convert to complex type
   cuNDArray<_real> _image(&host_image);
-  cuNDA_normalize( &_image, (_real)1.0 );
+  cuNDA_normalize( &_image, get_one<_real>() );
   boost::shared_ptr< cuNDArray<_complext> > image = cuNDA_real_to_complext<_real>( &_image );
   
   // Setup resulting blurred image
@@ -65,7 +65,6 @@ int main( int argc, char** argv)
   blurred_image.create(image->get_dimensions().get());
   
   // Generate convolution kernel (just do this on the host for now)
-  // TODO: normalize the convolution integral to 1
   _real sigma = 2.5;
   hoNDArray<_real> host_kernel;
   host_kernel.create(image->get_dimensions().get());
@@ -100,7 +99,7 @@ int main( int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > blurred_image_host = blurred_image.to_host();
   write_nd_array<_complext>( blurred_image_host.get(), (char*)parms.get_parameter('r')->get_string_value());
 
-  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_norm<_real,2>(&blurred_image)->to_host();
+  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_norm<_real>(&blurred_image)->to_host();
   write_nd_array<_real>( host_norm.get(), "blurred_image.real" );
 
   boost::shared_ptr< hoNDArray<_complext> > kernel_image_host = kernel->to_host();
