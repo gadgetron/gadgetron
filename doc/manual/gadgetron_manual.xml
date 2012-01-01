@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<book xmlns="http://docbook.org/ns/docbook" version="5.0">
+<info>
+  <title>Gadgetron - Medical Image Reconstruction Framework</title>
+	<author>
+        <personname>
+        <honorific>Dr</honorific>
+        <firstname>Michael S.</firstname>
+        <surname>Hansen</surname>
+        </personname>
+        <email>michael.hansen@nih.gov</email>
+  </author>
+	<author>
+        <personname>
+        <honorific>Dr</honorific>
+        <firstname>Thomas S.</firstname>
+        <surname>Sørensen</surname>
+        </personname>
+        <email>sangild@cs.au.dk</email>
+  </author>
+ </info>
+  <chapter>
+    <title>Introduction</title>
+    
+    <sect1>
+      <title>The greeting</title>
+      <para>
+	Hello world
+      </para>
+    </sect1>
+  </chapter>
+</book>
+
+

@@ -1,6 +1,5 @@
 --Stuff to fix before first release:
 
-* Minor Issue: Why does siemens_mriclient only work in debug mode with debug versions of gadgetron libraries. 
 * Ensure that streams shut down gracefully and that the Gadgetron is ready to start a new stream at all times. Sometimes it hangs after shutting down a stream.
 * Add Gadget4, Gadget5
 * Make it possible for a reader to access an arbitrary Gadget in the chain
@@ -10,3 +9,6 @@
 * Add Event_Handler to Reactor to deal with key strokes and SIGINT to ensure graceful shutdown
 * Logging server
 * Data display
+* HDF5 Support
+* Branching of pipe
+* Persistent data storage across GadgetStreamController instances
