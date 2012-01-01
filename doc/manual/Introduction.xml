@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter xmlns="http://docbook.org/ns/docbook" xml:id="ch2">
+<title>Introduction</title>
+<para>My first paragraph.</para>
+
+<figure xml:id="ex.pythagorean">
+<title>Gadgetron Architecture</title>
+<mediaobject>
+<imageobject condition="print">
+<imagedata fileref="figs/architecture.pdf"/>
+</imageobject>
+<imageobject condition="web">
+<imagedata fileref="figs/architecture.svg"/>
+</imageobject>
+<textobject><phrase>Gadgetron Architecture</phrase></textobject>
+</mediaobject>
+</figure>
+</chapter>
+    

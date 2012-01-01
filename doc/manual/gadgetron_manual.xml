@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<book xmlns="http://docbook.org/ns/docbook" version="5.0">
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xi="http://www.w3.org/2001/XInclude">
 <info>
   <title>Gadgetron - Medical Image Reconstruction Framework</title>
 	<author>
@@ -19,16 +19,7 @@
         <email>sangild@cs.au.dk</email>
   </author>
  </info>
-  <chapter>
-    <title>Introduction</title>
-    
-    <sect1>
-      <title>The greeting</title>
-      <para>
-	Hello world
-      </para>
-    </sect1>
-  </chapter>
+  <xi:include href="Introduction.xml"/>
 </book>
 
 
