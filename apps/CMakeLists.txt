@@ -1,5 +1,5 @@
 IF (ACE_FOUND)
 add_subdirectory(gadgetron)
-add_subdirectory(mriclient)
+add_subdirectory(clients) 
 ENDIF (ACE_FOUND)
 add_subdirectory(standalone)
