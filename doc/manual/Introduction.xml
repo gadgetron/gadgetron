@@ -6,8 +6,12 @@
 <figure xml:id="ex.pythagorean">
 <title>Gadgetron Architecture</title>
 <mediaobject>
-<imageobject>
-<imagedata align="left" width="5in" format="PNG"
+<imageobject condition="print">
+<imagedata align="left" width="5in" format="PDF"
+    	       fileref="figs/architecture.pdf"/>
+</imageobject>
+<imageobject condition="web">
+<imagedata align="left" width="10in" format="PNG"
     	       fileref="figs/architecture.png"/>
 </imageobject>
 <textobject><phrase>Gadgetron Architecture</phrase></textobject>
