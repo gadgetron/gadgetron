@@ -122,7 +122,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 		}
 
 		//Tell Gadgetron which XML configuration to run.
-		if (con.send_gadgetron_configuration(std::string(config_file)) != 0) {
+		if (con.send_gadgetron_configuration_file(std::string(config_file)) != 0) {
 			ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to send XML configuration to the Gadgetron host")));
 			return -1;
 		}

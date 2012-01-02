@@ -225,7 +225,7 @@ int GadgetronConnector::register_writer(unsigned int slot, GadgetMessageWriter *
 */
 
 
-int GadgetronConnector::send_gadgetron_configuration(std::string config_xml_name)
+int GadgetronConnector::send_gadgetron_configuration_file(std::string config_xml_name)
 {
 	GadgetMessageIdentifier id;
     id.id = GADGET_MESSAGE_CONFIG_FILE;
@@ -240,14 +240,38 @@ int GadgetronConnector::send_gadgetron_configuration(std::string config_xml_name
     }
 
     if (this->peer().send_n(&ini, sizeof(GadgetMessageConfigurationFile)) != sizeof(GadgetMessageConfigurationFile)) {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send GadgetMessageIdentifier\n")));
+        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send GadgetMessageConfigurationFile\n")));
         return -1;
     }
 
     return 0;
 }
 
+int GadgetronConnector::send_gadgetron_configuration_script(std::string config_xml)
+{
+	GadgetMessageIdentifier id;
+    id.id = GADGET_MESSAGE_CONFIG_SCRIPT;
 
+    GadgetMessageScript ini;
+    ini.script_length = config_xml.size()+1;
+
+    if (this->peer().send_n(&id, sizeof(GadgetMessageIdentifier)) != sizeof(GadgetMessageIdentifier)) {
+        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send GadgetMessageIdentifier\n")));
+        return -1;
+    }
+
+    if (this->peer().send_n(&ini, sizeof(GadgetMessageScript)) != sizeof(GadgetMessageScript)) {
+        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send GadgetMessageScript\n")));
+        return -1;
+    }
+
+	if (this->peer().send_n(config_xml.c_str(), ini.script_length) != ini.script_length) {
+		ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send parameter xml\n")));
+		return -1;
+	}
+
+	return 0;
+}
 
 int GadgetronConnector::send_gadgetron_parameters(std::string xml_string)
 {
