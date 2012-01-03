@@ -19,7 +19,208 @@
         <email>sangild@cs.au.dk</email>
   </author>
  </info>
-  <xi:include href="Introduction.xml"/>
+
+<chapter>
+<title>Introduction</title>
+
+<sect1> 
+  <title>What is the Gadgetron</title>
+  <para>
+    The Gadgetron framework is a streaming data processing framework developed for medical image reconstruction. It has been developed as a tool to prototype, test, and deploy novel image reconstruction algorithms. The framework also contains several toolboxes with data structures and algorithm, which can be used within the streaming framework or in standalone applications. This document serves as a very brief introduction to the framework and gives a few examples of using the framework. In addition to this document, source code documentation is provided with the framework.
+  </para>
+  <para>
+    Initially this framework was developed to support the work of the authors in the field of advanced MRI reconstruction, and specifically to support work on fast image reconstruction not only on traditional CPU architecture but also using commodity graphics hardware (GPUs). Over the years we have developed and published several journal papers in this field. Some examples include fast regridding on the GPU  sorensen_accelerating_2008 and parallel Cartesian parallel imaging hansen_cartesian_2008. 
+  </para>
+</sect1>
+
+<sect1>
+  <title>Obtaining Gadgetron</title>
+  <para>
+    The things you need: Gadgetron source code, example datasets 
+  </para>
+  
+  <sect2>
+    <title>Dependencies</title>
+    ACE, Boost, Python, CUDA, CULA, FFTW3, BLAS, LAPACK
+  </sect2>
+  
+</sect1>
+
+<sect1>
+  <title>Compiling and Installing</title>
+  <sect2>
+    <title>Linux Instructions</title>
+    <para>Starting with a blank Ubuntu, what do you do</para>
+  </sect2>
+  
+<sect2>
+  <title>Mac Instructions</title>
+  <para>We have to figure out where we start with the Mac</para>
+</sect2>
+
+<sect2>
+  <title>Windows Instructions</title>
+  <para>Starting with a blank Windows 7, what do you do</para>
+</sect2>
+</sect1>
+
+<sect1>
+  <title>Running a simple example reconstruction</title>
+</sect1>
+
+</chapter>
+
+<chapter>
+<title>Technical Details</title>
+<sect1>
+
+<title>Architecture</title>
+<figure xml:id="fig.gadgetron.architecture">
+  <title>Gadgetron Architecture</title>
+  <mediaobject>
+    <imageobject condition="print">
+      <imagedata align="left" width="5in" format="PDF"
+		 fileref="figs/architecture.pdf"/>
+    </imageobject>
+    <imageobject condition="web">
+      <imagedata align="left" width="10in" format="PNG"
+		 fileref="figs/architecture.png"/>
+    </imageobject>
+    <textobject><phrase>Gadgetron Architecture</phrase></textobject>
+  </mediaobject>
+</figure>
+
+<sect2>
+<title>Gadgets</title>
+</sect2>
+
+<sect2>
+<title>Stream Configuration</title>
+<para>Explanation of the XML config</para>
+</sect2>
+
+<sect2>
+<title>Communication protocol</title>
+</sect2>
+
+</sect1>
+
+<sect1>
+<title>Toolboxes</title>
+
+<sect2>
+<title>Data Structures</title>
+<para>NDArray, etc</para>
+</sect2>
+
+<sect2>
+<title>GPU Support</title>
+</sect2>
+
+<sect2>
+<title>Iterative Solvers</title>
+</sect2>
+
+<sect2>
+<title>Fourier Transform</title>
+</sect2>
+
+</sect1>
+
+<sect1>
+<title>Gadgets</title>
+
+<sect2>
+<title>MRI Gadgets</title>
+<para>List some of the available gadgets</para>
+</sect2>
+
+<sect2>
+<title>Image Processing Gadgets</title>
+<para>Something on the denoising, etc</para>
+</sect2>
+
+<sect2>
+<title>Python Gadgets</title>
+</sect2>
+
+<sect2>
+<title>Making new Gadgets</title>
+<para>Subclassing the templated classes</para>
+</sect2>
+
+</sect1>
+
+<sect1>
+<title>Gadgetron Clients</title>
+
+<sect2>
+<title>Available clients</title>
+<para>List some of the available clients (mriclient, image client)</para>
+</sect2>
+
+<sect2>
+<title>Making a new client</title>
+<para>Using the GadgetronConnector</para>
+</sect2>
+
+</sect1>
+
+<sect1>
+<title>Standalone applications</title>
+
+<sect2>
+<title>MRI Gadgets</title>
+<para>List some of the available gadgets</para>
+</sect2>
+
+<sect2>
+<title>Image Processing Gadgets</title>
+<para>Something on the denoising, etc</para>
+</sect2>
+
+</sect1>
+
+</chapter>
+
+<chapter>
+<title>Example Applications</title>
+<sect1>
+<title>Simple 2D FT MRI</title>
+</sect1>
+
+<sect1>
+<title>Cartesian 2D Parallel MRI</title>
+</sect1>
+
+<sect1>
+<title>Non-Cartesian 2D Parallel MRI</title>
+</sect1>
+
+<sect1>
+<title>Simple 2D FT MRI in Python</title>
+</sect1>
+
+<sect1>
+<title>Image Deblurring/Image Denoising</title>
+</sect1>
+</chapter>
+
+<chapter>
+<title>Frequently Asked Questions (FAQ)</title>
+
+<itemizedlist>
+<listitem>
+<para>
+  <emphasis>Can I make a branching Gadget chain?</emphasis>
+</para>
+<para>
+The short answer is no. We plan on supporting this in a future release, but it is not quite ready yet.
+</para>
+</listitem>
+</itemizedlist>
+</chapter>
+
 </book>
 
 

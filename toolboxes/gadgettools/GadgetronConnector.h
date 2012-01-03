@@ -152,7 +152,8 @@ public:
 		return writer_task_.register_writer(slot,writer);
 	}
 
-	int send_gadgetron_configuration(std::string config_xml_name);
+	int send_gadgetron_configuration_file(std::string config_xml_name);
+	int send_gadgetron_configuration_script(std::string config_xml_name);
 	int send_gadgetron_parameters(std::string xml_string);
 
 protected:
