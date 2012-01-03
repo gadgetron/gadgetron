@@ -1,6 +1,6 @@
-#include "MainWindow.h"
+#include "mainWindow.h"
 
-#include <Qstring>
+#include <QString>
 #include <QFileDialog>
 #include <QMessageBox>
 
