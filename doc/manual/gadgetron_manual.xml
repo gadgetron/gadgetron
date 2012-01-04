@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<book xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xi="http://www.w3.org/2001/XInclude">
+<book xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xi="http://www.w3.org/2001/XInclude" xmlns:xlink="http://www.w3.org/1999/xlink">
 <info>
   <title>Gadgetron - Medical Image Reconstruction Framework</title>
 	<author>
@@ -26,22 +26,121 @@
 <sect1> 
   <title>What is the Gadgetron</title>
   <para>
-    The Gadgetron framework is a streaming data processing framework developed for medical image reconstruction. It has been developed as a tool to prototype, test, and deploy novel image reconstruction algorithms. The framework also contains several toolboxes with data structures and algorithm, which can be used within the streaming framework or in standalone applications. This document serves as a very brief introduction to the framework and gives a few examples of using the framework. In addition to this document, source code documentation is provided with the framework.
+    The Gadgetron framework is a streaming data processing framework developed for medical image reconstruction. It has been developed as a tool to prototype, test, and deploy novel image reconstruction algorithms. The framework also contains several toolboxes with data structures and algorithm, which can be used within the streaming framework or in standalone applications. This document serves as an introduction to the framework and gives a few examples of using the framework.
   </para>
+
   <para>
-    Initially this framework was developed to support the work of the authors in the field of advanced MRI reconstruction, and specifically to support work on fast image reconstruction not only on traditional CPU architecture but also using commodity graphics hardware (GPUs). Over the years we have developed and published several journal papers in this field. Some examples include fast regridding on the GPU  sorensen_accelerating_2008 and parallel Cartesian parallel imaging hansen_cartesian_2008. 
+    Initially this framework was developed to support the work of the authors in the field of advanced MRI reconstruction, and specifically to support work on fast image reconstruction not only on traditional CPU architecture but also using commodity graphics hardware (GPUs).
+    <!--
+ Over the years we have developed and published several journal papers in this field. Some examples include fast regridding on the GPU  sorensen_accelerating_2008 and parallel Cartesian parallel imaging hansen_cartesian_2008. 
+-->
   </para>
 </sect1>
 
 <sect1>
   <title>Obtaining Gadgetron</title>
   <para>
-    The things you need: Gadgetron source code, example datasets 
+    The Gadgetron is available as a cross-platform source code distribution (sorry no binaries), which should compile on Linux, Mac, and Windows. It general it is easier to get your environment set up on Linux since all dependencies are readily available, but look at the compilation instructions for your platform below. If you just want to play with the Gadgetron, you would install Ubuntu (our preferred Linux distribution) in a VirtualBox (<uri type="website" xlink:href="https://www.virtualbox.org/">https://www.virtualbox.org/</uri>) virtual machine and follow the Linux compilation instructions below. 
   </para>
-  
+
+  <para>
+    The Gadgetron is available from the project Sourceforge website:
+  </para>
+
+  <para>
+    <uri type="website" xlink:href="http://sourceforge.net/projects/gadgetron">http://sourceforge.net/projects/gadgetron</uri> 
+  </para>
+
+  <para>
+    This manual is available in HTML form at:
+  </para>  
+  <para>
+    <uri type="website" xlink:href="http://gadgetron.sourceforge.net/manual/gadgetron_manual.html">http://gadgetron.sourceforge.net/manual/gadgetron_manual.html</uri> 
+  </para>
+
+  <para>
+    Or in PDF form at:
+  </para>  
+  <para>
+    <uri type="website" xlink:href="http://gadgetron.sourceforge.net/manual/gadgetron_manual.pdf">http://gadgetron.sourceforge.net/manual/gadgetron_manual.pdf</uri> 
+  </para>
+
+  <para>
+    API documentation (generated with Doxygen) is available from:
+  </para>  
+  <para>
+    <uri type="website" xlink:href="http://gadgetron.sourceforge.net/api/">http://gadgetron.sourceforge.net/api/</uri> 
+  </para>
+
   <sect2>
     <title>Dependencies</title>
-    ACE, Boost, Python, CUDA, CULA, FFTW3, BLAS, LAPACK
+    <para>
+      The Gadgetron depends on a number of libraries that can either be downloaded for free or that may already be part of the installation on your workstation. If you are working on a Linux platform you should be able to install everything you need without compiling anything. Here is a list of the components that you will need. Some are optional.
+    </para>
+    <para>
+      Before trying to install all of these components from scratch, please check the specific installation instructions for your platform of choice. If you are on a Linux workstation, the installation is trivial.
+    </para>
+    <itemizedlist>
+
+      <listitem><para>
+	<emphasis>CMake</emphasis>. The Gadgetron uses <application>cmake</application> for cross platform building. Available from <uri type="website" xlink:href="http://www.cmake.org/cmake/resources/software.html">http://www.cmake.org/cmake/resources/software.html</uri>.
+      </para></listitem>
+
+
+      <listitem><para>
+	<emphasis>ADAPTIVE Computing Environment (ACE)</emphasis>. Available from <uri type="website" xlink:href="http://www.cs.wustl.edu/~schmidt/ACE.html">http://www.cs.wustl.edu/~schmidt/ACE.html</uri>.
+      </para></listitem>
+
+      <listitem><para>
+	<emphasis>Boost C++ Libraries</emphasis>. Available from <uri type="website" xlink:href="http://www.boost.org/">http://www.boost.org/</uri>.
+      </para></listitem>
+
+      <listitem><para>
+	<emphasis>FFT3 Library</emphasis> for Fast Fourier Transforms. Available from <uri type="website" xlink:href="http://www.fftw.org/">http://www.fftw.org/</uri>.
+      </para></listitem>
+
+      <listitem><para>
+	<emphasis>BLAS</emphasis> and <emphasis>LAPACK</emphasis> (optional). Most Linux distributions come with these libraries and they are included on Mac OS X as well, but the vendor depends on your distribution and platform. See specific instructions below for Windows. 
+      </para></listitem>
+
+
+      <listitem><para>
+	<emphasis>Python</emphasis> (optional). Python is included with Mac OS X and Linux but on Windows you will need to install Python if you wish to use Python prototyping. Available from <uri type="website" xlink:href="http://www.python.org/">http://www.python.org/</uri>. Along with Python you need numpy (and you probably want to have SciPy) as well. 
+      </para></listitem>
+
+      <listitem><para>
+	<emphasis>CUDA</emphasis> (optional). For GPU support, you need CUDA from Nvidia which can de downloaded from <uri type="website" xlink:href="http://developer.nvidia.com/cuda-toolkit-40">http://developer.nvidia.com/cuda-toolkit-40</uri>. You will need a CUDA driver for your graphics card too, which is available from the same website. On Ubuntu 11.10 (or newer) the driver is included with your distribution. See the specific installation guide for your platform. 
+      </para></listitem>
+
+      <listitem><para>
+	<emphasis>CULA</emphasis> (optional). For using LAPACK routines on the GPU we use CULA. This is the only dependency which is not Open Source. You can download a free version of CULA from <uri type="website" xlink:href="http://www.culatools.com/downloads/dense/">http://www.culatools.com/downloads/dense/</uri>. A free registration is required.
+      </para></listitem>
+
+      <listitem>
+	<para>
+	  <emphasis>QT4</emphasis> (optional). Some of the standalone and Gadgetron client example applications use QT for creating user interfaces. Again it comes with most Linux distributions, but can also be obtained from <uri type="website" xlink:href="http://qt.nokia.com/">http://qt.nokia.com/</uri>. 
+	</para>
+      </listitem>
+
+      <listitem>
+	<para>
+	<emphasis>Doxygen</emphasis> (Optional). If you would like to build the API documentation, you need Doxygen. It is included in most Linux distributions or you can get it from <uri type="website" xlink:href="http://www.stack.nl/~dimitri/doxygen/">http://www.stack.nl/~dimitri/doxygen/</uri>.
+	</para>
+      </listitem>      
+
+      <listitem>
+	<para>
+	  <emphasis>Docbook</emphasis> (Optional). If you would like to the manual (this document), you need Docbook. There are a number of tools needed like <application>xsltproc</application> and <application>fop</application> (for the PDF version of the library). Additionally, you need the Docbook stylesheets, which can be obtained from It is included in most Linux distributions or you can get it from <uri type="website" xlink:href="http://docbook.sourceforge.net/">http://docbook.sourceforge.net/</uri>, but they are also included with most Linux distributions.
+	</para>
+      </listitem>
+
+      <listitem>
+	<para>
+	  <emphasis>Git (optional)</emphasis>. We generally use <application>git</application> to manage our source code archives. You can use any source code management system you would like (or none at all), but if you would like to stay in line with the Gadgetron team, use <application>git</application>. Available from <uri type="website" xlink:href="http://git-scm.com/">http://git-scm.com/</uri>.
+	</para>
+      </listitem>
+    </itemizedlist>
+
   </sect2>
   
 </sect1>
@@ -50,9 +149,139 @@
   <title>Compiling and Installing</title>
   <sect2>
     <title>Linux Instructions</title>
-    <para>Starting with a blank Ubuntu, what do you do</para>
+    <para>If you want to get started with the Gadgetron quickly, Linux is the way to go. All of the dependencies are included in most major distributions and can be installed quickly without having to compile anything. In the following sections we will walk you through the steps you need to set up a fully loaded Gadgetron installation. We will assume that you are starting with a freshly installed Ubuntu 11.10 available from the Ubuntu website (http://www.ubuntu.com). If you don't have a machine available for installing Ubuntu, you can always try it out in a virtual machine using virtualization software such as VirtualBox (<uri type="website" xlink:href="https://www.virtualbox.org/">https://www.virtualbox.org/</uri>).</para>
+
+    <para>
+      If you would like to use the GPU components included in the Gadgetron and you have a GPU available on your system, please complete the CUDA/CULA installations as described <link linkend='section.linuxgpuinstall'>below</link>.
+    </para>
+
+    
+    <para>First install all dependencies for Gagetron. The following will install everything you need:</para>
+
+    <screen>
+      <prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install doxygen cmake \
+      libqt4-dev libglew1.6-dev \
+      docbook5-xml docbook-xsl-pdf \
+      docbook-xsl-html docbook-xsl-ns xsltproc \
+      fop git-core libboost-dev libboost-python-dev \
+      libfftw3-dev libace-dev python-dev python-numpy \
+      freeglut3-dev libxi-dev liblapack-dev build-essential</userinput>
+    </screen>
+
+    <para>
+      Now download the gadgetron archive and unpack it somewhere. If you have access to a git repository, you can get the code with:
+    </para>
+      
+    <screen>
+      <prompt>user@mycomputer:~$</prompt> <userinput>git clone ssh://user@hostname/path/gadgetron.git</userinput>
+    </screen>
+
+    <para>Now configure and build the Gadgetron</para>
+    <screen>
+      <prompt>user@mycomputer:~$</prompt> <userinput>cd gadgetron</userinput>
+      <prompt>user@mycomputer:~/gadgetron$</prompt> <userinput>mkdir build</userinput>
+      <prompt>user@mycomputer:~/gadgetron$</prompt> <userinput>cd build</userinput>
+      <prompt>user@mycomputer:~/gadgetron/build$</prompt> <userinput>cmake ../</userinput>
+      <prompt>user@mycomputer:~/gadgetron/build$</prompt> <userinput>make</userinput>
+    </screen>
+
+   <para>
+     Finally install (default location is <filename>/usr/local/gadgetron</filename>)
+   </para>
+   <screen>
+      <prompt>user@mycomputer:~/gadgetron/build$</prompt> <userinput>sudo make install</userinput>
+   </screen>
+
+   <para>
+     Final step is to add paths to your <filename>~/.bashrc</filename> file.
+   </para>
+
+       <programlisting>
+export LD_LIBRARY_PATH = $LD_LIBRARY_PATH:/usr/local/gadgetron/lib
+export PATH = $PATH:/usr/local/gadgetron/bin
+export GADGETRON_HOME=/usr/local/gadgetron
+       </programlisting>
+
+    <sect3 xml:id='section.linuxgpuinstall'>
+      <title>Installing GPU components (CUDA and CULA) on Linux</title>
+
+      <para>
+	First install yout Nvidia driver. As of Ubuntu 10.11, it is no longer necessary to install the developers driver from Nvidia. The one included with Ubuntu supports CUDA. To install type:	
+      </para>
+
+      <screen>
+	<prompt>user@mycomputer:~$</prompt> <userinput>sudo ap-get install nvidia-current \
+	nvidia-current-dev nvidia-current-updates \
+	nvidia-current-updates-dev</userinput>
+      </screen>
+      
+      <para>
+	Now we need to install gcc 4.4. Ubuntu comes with gcc 4.6, which is not compatible with the current versions of the CUDA nvcc compiler. 
+      </para>
+
+      <screen>
+	<prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install gcc-4.4 g++-4.4 build-essential</userinput>
+      </screen>
+
+      <para>Setup alternatives system to allow easy switching between the two versions of gcc/g++</para>
+      <screen>
+	<prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives \
+	--install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 \
+	--slave /usr/bin/g++ g++ /usr/bin/g++-4.6</userinput>
+	<prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives \
+	--install /usr/bin/gcc gcc /usr/bin/gcc-4.4 60 \
+	--slave /usr/bin/g++ g++ /usr/bin/g++-4.4</userinput>
+      </screen>
+
+      <para>Check your gcc compiler (should now be version 4.4.6):</para>
+      <screen>
+	<prompt>user@mycomputer:~$</prompt> <userinput>gcc -v</userinput>
+      </screen>
+
+      <para>
+	When you want to switch between the compiler versions:
+      </para>
+      <screen>
+	<prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives --config gcc</userinput>
+      </screen>
+
+      <para>Final step is to actually install CUDA and CULA. Download the following files:</para>
+      
+      <itemizedlist>
+	<listitem><para><filename>cudatoolkit_4.0.17_linux_64_ubuntu10.10.run</filename> from <uri type="website" xlink:href="http://developer.nvidia.com/cuda-toolkit-40">http://developer.nvidia.com/cuda-toolkit-40</uri></para></listitem>
+	<listitem><para><filename>cula_dense_free_R13a-linux64.run</filename> from <uri type="website" xlink:href="http://www.culatools.com/downloads/dense/">http://www.culatools.com/downloads/dense/</uri> (free registration requited)</para></listitem>
+      </itemizedlist>
+      
+      <para>Go to folder where files are downloaded, and type:</para>
+      <screen>
+	<prompt>user@mycomputer:~$</prompt> <userinput>chmod +x cudatoolkit_4.0.17_linux_64_ubuntu10.10.run</userinput>
+	<prompt>user@mycomputer:~$</prompt> <userinput>sudo ./cudatoolkit_4.0.17_linux_64_ubuntu10.10.run</userinput>
+	<prompt>user@mycomputer:~$</prompt> <userinput>chmod +x cula_dense_free_R13a-linux64.run</userinput>
+	<prompt>user@mycomputer:~$</prompt> <userinput>sudo ./cula_dense_free_R13a-linux64.run</userinput>
+      </screen>
+      
+ 
+    <para>Follow the instructions. When you are done with this installation, add necessary paths. In practice, you may want to add the following to your <filename>~/.bashrc</filename> file.
+    </para>
+
+    <programlisting>
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib
+export CULA_ROOT="/usr/local/cula"
+export CULA_INC_PATH="$CULA_ROOT/include"
+export CULA_BIN_PATH_32="$CULA_ROOT/bin"
+export CULA_BIN_PATH_64="$CULA_ROOT/bin64"
+export CULA_LIB_PATH_32="$CULA_ROOT/lib"
+export CULA_LIB_PATH_64="$CULA_ROOT/lib64"
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CULA_LIB_PATH_64
+    </programlisting>
+    </sect3>
+
+    <para>That is it, you should be ready to compile and run CUDA (and CULA) applications. You may want to download the CUDA SDK from Nvidia and check your installation, but it is not required.
+    </para>
   </sect2>
-  
+
+<!--  
 <sect2>
   <title>Mac Instructions</title>
   <para>We have to figure out where we start with the Mac</para>
@@ -62,14 +291,103 @@
   <title>Windows Instructions</title>
   <para>Starting with a blank Windows 7, what do you do</para>
 </sect2>
+-->
 </sect1>
 
 <sect1>
   <title>Running a simple example reconstruction</title>
+  <para>
+    Test datasets are available from the sourceforge website:
+  </para>
+  
+  <para>
+    <uri type="website" xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/">https://sourceforge.net/projects/gadgetron/files/testdata/</uri>
+  </para>
+
+  <para>
+    In this example we will use the <filename>simple_gre.tar.gz</filename> dataset from the <filename>mri</filename> section. 
+  </para>
+  
+  <para>Start by downloading the dataset to a location of your choice and unpack it. On Linux or Mac you would type:</para>
+  <screen>
+    <prompt>user@mycomputer:~/temp/test_data$</prompt> <userinput>tar -xzvf simple_gre.tar.gz</userinput>
+  </screen>
+  <para>
+    There should be two files in the dataset <filename>simple_gre.gmr</filename> and <filename>simple_gre.xml</filename>.
+  </para>
+
+  <para>
+    Next open two different terminal windows. So that you can observe both client and Gadgetron communication. In the Gadgetron terminal window, simply type:
+  </para>
+  
+  <screen>
+    <prompt>user@mycomputer:~/temp/gadgetron_out$</prompt> <userinput>gadgetron</userinput>
+  </screen>
+
+  <para>
+    In the client window (e.g. where you just unpacked your data) type:
+  </para>
+
+  <screen>
+    <prompt>user@mycomputer:~/temp/test_data$</prompt> <userinput>mriclient -d simple_gre.gmr -x simple_gre.xml -c default.xml</userinput>
+  </screen>
+
+  <para>
+    You should see some logging information in the Gadgetron window and in the client window, you should see that images are being returned from the gadgetron:
+  </para>
+
+  <screen>
+user@mycomputer:~/temp/test_data$ mriclient -d simple_gre.gmr -x simple_gre.xml -c default.xml
+Gadgetron MRI Data Sender
+  -- host:            localhost
+  -- port:            9002
+  -- data:            simple_gre.gmr
+  -- parm:            simple_gre.xml
+  -- conf:            default.xml
+  -- loop:            1
+(2815|140119753992000) Connection from 127.0.0.1:9002
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+2815, 81, GadgetronConnector, Close Message received
+(2815|140119714780928) Handling close...
+(2815|140119714780928) svc done...
+(2815|140119714780928) Handling close...
+  </screen>
+
+  <para>
+    The images should be returned to the folder where you started the <application>mriclient</application>. There the case of the <filename>default.xml</filename> configuration the files are images in real, single precision format.
+  </para>
+
+  <para>
+    To read the first image into Matlab. Use the following code:
+  </para>
+
+  <programlisting>
+f = fopen('out_00001.real');
+ndims = fread(f,1,'int32'); 
+dims = fread(f,ndims,'int32'); 
+data = fread(f,prod(dims),'float'); 
+fclose(f); 
+data = reshape(data,dims');
+  </programlisting>
+  
+  <para>
+    The image is now contained in the <varname>data</varname> in Matlab. Please see later section (to be written) on the simple file format that we use for storing arrays.
+  </para>
+
 </sect1>
 
 </chapter>
 
+<!--
 <chapter>
 <title>Technical Details</title>
 <sect1>
@@ -205,6 +523,7 @@
 <title>Image Deblurring/Image Denoising</title>
 </sect1>
 </chapter>
+-->
 
 <chapter>
 <title>Frequently Asked Questions (FAQ)</title>
