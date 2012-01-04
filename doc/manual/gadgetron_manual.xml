@@ -79,8 +79,8 @@
   <title>Gadgetron Architecture</title>
   <mediaobject>
     <imageobject condition="print">
-      <imagedata align="left" width="5in" format="PDF"
-		 fileref="figs/architecture.pdf"/>
+      <imagedata align="left" width="5in" format="PNG"
+		 fileref="figs/architecture.png"/>
     </imageobject>
     <imageobject condition="web">
       <imagedata align="left" width="10in" format="PNG"
