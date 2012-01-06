@@ -1101,6 +1101,7 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
 
       <sect2 xml:id="sect.communicationprotocol">
         <title>Communication protocol</title>
+	<para>Blah</para>
       </sect2>
     </sect1>
 
@@ -1120,14 +1121,19 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
 
       <sect2>
         <title>GPU Support</title>
+	<para>Blah</para>
+
       </sect2>
 
       <sect2>
         <title>Iterative Solvers</title>
+	<para>Blah</para>
+
       </sect2>
 
       <sect2>
         <title>Fourier Transform</title>
+	<para>Blah</para>
       </sect2>
     </sect1>
 
@@ -1148,6 +1154,8 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
 
       <sect2>
         <title>Python Gadgets</title>
+	<para>Blah</para>
+
       </sect2>
 
       <sect2 xml:id="sect.makingnewgadgetlibrary">
@@ -1196,22 +1204,27 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
 
     <sect1>
       <title>Simple 2D FT MRI</title>
+      <para>Blah</para>
     </sect1>
 
     <sect1>
       <title>Cartesian 2D Parallel MRI</title>
+      <para>Blah</para>
     </sect1>
 
     <sect1>
       <title>Non-Cartesian 2D Parallel MRI</title>
+      <para>Blah</para>
     </sect1>
 
     <sect1>
       <title>Simple 2D FT MRI in Python</title>
+      <para>Blah</para>
     </sect1>
 
     <sect1>
       <title>Image Deblurring/Image Denoising</title>
+      <para>Blah</para>
     </sect1>
   </chapter>
 
@@ -1308,8 +1321,8 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
         </textobject>
       </mediaobject>
 
-      <caption>
-        The simple array file format has a header followed by the data. The header consists of one 32-bit integer defining the number of dimensions (N-dimensions) followed by N-dimensions 32-bit unsigned integers each defining the length of each dimensions. In the example, the dataset has 4 dimensions and the size of those dimensions is 128x128x1x1, i.e. 16384 elements.
+      <caption><para>
+        The simple array file format has a header followed by the data. The header consists of one 32-bit integer defining the number of dimensions (N-dimensions) followed by N-dimensions 32-bit unsigned integers each defining the length of each dimensions. In the example, the dataset has 4 dimensions and the size of those dimensions is 128x128x1x1, i.e. 16384 elements.</para>
       </caption>
     </figure>
 
@@ -1404,21 +1417,24 @@ end
       <biblioset role="article">
         <authorgroup>
           <author>
+	    <personname>
             <firstname>M. S.</firstname>
-
             <surname>Hansen</surname>
+	    </personname>
           </author>
 
           <author>
+	    <personname>
             <firstname>D.</firstname>
-
             <surname>Atkinson</surname>
+	    </personname>
           </author>
 
           <author>
+	    <personname>
             <firstname>T. S.</firstname>
-
-            <surname>Sorensen</surname>
+            <surname>Sørensen</surname>
+	    </personname>
           </author>
         </authorgroup>
 
@@ -1441,27 +1457,31 @@ end
       <biblioset role="article">
         <authorgroup>
           <author>
+	    <personname>
             <firstname>T. S.</firstname>
-
             <surname>Sørensen</surname>
+	    </personname>
           </author>
 
           <author>
+	    <personname>
             <firstname>T.</firstname>
-
             <surname>Schaeffter</surname>
+	    </personname>
           </author>
 
           <author>
+	    <personname>
             <firstname>K. O.</firstname>
-
             <surname>Noe</surname>
+	    </personname>
           </author>
 
           <author>
+	    <personname>
             <firstname>M. S.</firstname>
-
             <surname>Hansen</surname>
+	    </personname>
           </author>
         </authorgroup>
 
@@ -1490,27 +1510,31 @@ end
       <biblioset role="article">
         <authorgroup>
           <author>
+	    <personname>
             <firstname>T. S.</firstname>
-
             <surname>Sørensen</surname>
+	    </personname>
           </author>
 
           <author>
+	    <personname>
             <firstname>D.</firstname>
-
             <surname>Atkinson</surname>
+	    </personname>
           </author>
 
           <author>
+	    <personname>
             <firstname>T.</firstname>
-
             <surname>Schaeffter</surname>
+	    </personname>
           </author>
 
           <author>
+	    <personname>
             <firstname>M. S.</firstname>
-
             <surname>Hansen</surname>
+	    </personname>
           </author>
         </authorgroup>
 
