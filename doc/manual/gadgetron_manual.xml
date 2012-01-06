@@ -1095,13 +1095,112 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
  &lt;/stream&gt;
 
 &lt;/gadgetron&gt;
-
 </programlisting>
+
+        <para>The configuration file format contains 3 sections: 1) Readers,
+        2) Writers, 3) Stream (with Gadgets) corresponding to the 3 different
+        types of components that can be assembled in the Gadgetron.</para>
+
+        <para>In the example above, the Readers section contains only one
+        reader, which is the <classname>MRIAcquisitionReader</classname>
+        mentioned previously. The message ID associated with this Reader is
+        1001. Every time a message with ID 1001 arrives on the socket,
+        responsibility for reading thar message will be delegated to the
+        <classname>MRIAcquisitionReader</classname>. When the Gadgetron
+        configuration is loaded, the framework will load the
+        <classname>MRIAcquisitionReader</classname> from the DLL (shared
+        library) <filename>gadgetroncore</filename>. On the Linux platform
+        this would be a shared library called
+        <filename>libgadgetroncore.so</filename> and on the Windows platform
+        it would be called <filename>gadgetroncore.dll</filename>.</para>
+
+        <para>The Gadgetron framework knows how to load the components from
+        the DLLs assuming that they have been declared properly as described
+        in <xref linkend="sect.readerswriters" /> and <xref
+        linkend="sect.gadgets" />.</para>
+
+        <para>The example Gadgetron configuration has two Writers, i.e. it is
+        capable of outputting two different types of data. Again the
+        declarations cause the Gadgetron framework to load specific instances
+        of <classname>GadgetMessageWriter</classname> and associate them with
+        specific ID numbers. </para>
+
+        <para>In addition to the Readers and Writers specified here, there are
+        certain built-in Readers and Writers. As an example, there are Readers
+        for receiving which configuration should be used by the Gadgetron and
+        for receiving the parameters that will be passed to all Gadgets (see
+        <xref linkend="sect.communicationprotocol" />). If the Gadgetron
+        receives a message with an ID for which there is no associated Reader
+        or encounters a message on the output queue for which there is no
+        associated Writer, an error will be generated and the Gadgetron stream
+        will shut down and the connection to the client will be closed.</para>
+
+        <para>The <literal>&lt;stream&gt;</literal> section of the
+        configuration specifies which Gadgets to load. In the example above,
+        we have 4 Gadgets. In this specific case the reconstruction is an MRI
+        reconstruction and the first Gadget is an
+        <classname>AccumulatorGadget</classname>, which collects individual
+        lines and inserts them in a k-space. When the k-space is complete, a
+        k-space image will be sent to the next Gadget in the chain, the
+        <classname>FFTGadget</classname>, which is responsible for Fourier
+        transforming the data into image space. The next Gadget
+        (<classname>ExtractGadget</classname>) will extract the magnitude of
+        the complex image, and finally the last Gadget
+        (<classname>ImageFinishGadgetFLOAT</classname>) sends the
+        reconstructed image back to the Gadgetron framework where it is added
+        to the output queue.</para>
+
+        <para>Using these XML configuration file, it is easy to modify
+        Gadgetron configurations on-the-fly without needing to recompile any
+        source code.</para>
+
+        <para>It is also possible to send parameters to the Gadgets using the
+        XML file. For example, to set a parameter in a Gadget, one could
+        write:</para>
+
+        <programlisting>  &lt;gadget&gt;
+   &lt;name&gt;Accumulator&lt;/name&gt;
+   &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+   &lt;class&gt;AccumulatorGadget&lt;/class&gt;
+   &lt;property&gt;&lt;name&gt;MyTestProperty&lt;/name&gt;&lt;value&gt;Blah Blah&lt;/value&gt;&lt;/property&gt;
+   &lt;property&gt;&lt;name&gt;MyTestProperty2&lt;/name&gt;&lt;value&gt;98776.862187&lt;/value&gt;&lt;/property&gt;
+  &lt;/gadget&gt;
+</programlisting>
+
+        <para>The two properties will now be accessible inside the Gadget
+        using the parameter access functions defined in
+        <filename>Gadget.h</filename>:</para>
+
+        <programlisting>class Gadget : public ACE_Task&lt;ACE_MT_SYNCH&gt;
+{
+
+//Other definitions
+
+int get_bool_value(const char* name);
+int get_int_value(const char* name);
+double get_double_value(const char* name);
+
+};
+</programlisting>
+
+        <para>Additionally it is also possible to specifiy how many active
+        threads there should be in a Gadget. This is specified with:</para>
+
+        <programlisting>  &lt;gadget&gt;
+   &lt;name&gt;Accumulator&lt;/name&gt;
+   &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+   &lt;class&gt;AccumulatorGadget&lt;/class&gt;
+   &lt;property&gt;&lt;name&gt;threads&lt;/name&gt;&lt;value&gt;5&lt;/value&gt;&lt;/property&gt;
+  &lt;/gadget&gt;</programlisting>
+
+        <para>Which would make the <classname>AccumulatorGadget</classname>
+        have 5 threads. </para>
       </sect2>
 
       <sect2 xml:id="sect.communicationprotocol">
         <title>Communication protocol</title>
-	<para>Blah</para>
+
+        <para>Blah</para>
       </sect2>
     </sect1>
 
@@ -1121,19 +1220,20 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
 
       <sect2>
         <title>GPU Support</title>
-	<para>Blah</para>
 
+        <para>Blah</para>
       </sect2>
 
       <sect2>
         <title>Iterative Solvers</title>
-	<para>Blah</para>
 
+        <para>Blah</para>
       </sect2>
 
       <sect2>
         <title>Fourier Transform</title>
-	<para>Blah</para>
+
+        <para>Blah</para>
       </sect2>
     </sect1>
 
@@ -1154,8 +1254,8 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
 
       <sect2>
         <title>Python Gadgets</title>
-	<para>Blah</para>
 
+        <para>Blah</para>
       </sect2>
 
       <sect2 xml:id="sect.makingnewgadgetlibrary">
@@ -1204,26 +1304,31 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
 
     <sect1>
       <title>Simple 2D FT MRI</title>
+
       <para>Blah</para>
     </sect1>
 
     <sect1>
       <title>Cartesian 2D Parallel MRI</title>
+
       <para>Blah</para>
     </sect1>
 
     <sect1>
       <title>Non-Cartesian 2D Parallel MRI</title>
+
       <para>Blah</para>
     </sect1>
 
     <sect1>
       <title>Simple 2D FT MRI in Python</title>
+
       <para>Blah</para>
     </sect1>
 
     <sect1>
       <title>Image Deblurring/Image Denoising</title>
+
       <para>Blah</para>
     </sect1>
   </chapter>
@@ -1321,8 +1426,13 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
         </textobject>
       </mediaobject>
 
-      <caption><para>
-        The simple array file format has a header followed by the data. The header consists of one 32-bit integer defining the number of dimensions (N-dimensions) followed by N-dimensions 32-bit unsigned integers each defining the length of each dimensions. In the example, the dataset has 4 dimensions and the size of those dimensions is 128x128x1x1, i.e. 16384 elements.</para>
+      <caption>
+        <para>The simple array file format has a header followed by the data.
+        The header consists of one 32-bit integer defining the number of
+        dimensions (N-dimensions) followed by N-dimensions 32-bit unsigned
+        integers each defining the length of each dimensions. In the example,
+        the dataset has 4 dimensions and the size of those dimensions is
+        128x128x1x1, i.e. 16384 elements.</para>
       </caption>
     </figure>
 
@@ -1417,24 +1527,18 @@ end
       <biblioset role="article">
         <authorgroup>
           <author>
-	    <personname>
-            <firstname>M. S.</firstname>
-            <surname>Hansen</surname>
-	    </personname>
+            <personname><firstname>M. S.</firstname>
+            <surname>Hansen</surname></personname>
           </author>
 
           <author>
-	    <personname>
-            <firstname>D.</firstname>
-            <surname>Atkinson</surname>
-	    </personname>
+            <personname><firstname>D.</firstname>
+            <surname>Atkinson</surname></personname>
           </author>
 
           <author>
-	    <personname>
-            <firstname>T. S.</firstname>
-            <surname>Sørensen</surname>
-	    </personname>
+            <personname><firstname>T. S.</firstname>
+            <surname>Sørensen</surname></personname>
           </author>
         </authorgroup>
 
@@ -1457,31 +1561,23 @@ end
       <biblioset role="article">
         <authorgroup>
           <author>
-	    <personname>
-            <firstname>T. S.</firstname>
-            <surname>Sørensen</surname>
-	    </personname>
+            <personname><firstname>T. S.</firstname>
+            <surname>Sørensen</surname></personname>
           </author>
 
           <author>
-	    <personname>
-            <firstname>T.</firstname>
-            <surname>Schaeffter</surname>
-	    </personname>
+            <personname><firstname>T.</firstname>
+            <surname>Schaeffter</surname></personname>
           </author>
 
           <author>
-	    <personname>
-            <firstname>K. O.</firstname>
-            <surname>Noe</surname>
-	    </personname>
+            <personname><firstname>K. O.</firstname>
+            <surname>Noe</surname></personname>
           </author>
 
           <author>
-	    <personname>
-            <firstname>M. S.</firstname>
-            <surname>Hansen</surname>
-	    </personname>
+            <personname><firstname>M. S.</firstname>
+            <surname>Hansen</surname></personname>
           </author>
         </authorgroup>
 
@@ -1510,31 +1606,23 @@ end
       <biblioset role="article">
         <authorgroup>
           <author>
-	    <personname>
-            <firstname>T. S.</firstname>
-            <surname>Sørensen</surname>
-	    </personname>
+            <personname><firstname>T. S.</firstname>
+            <surname>Sørensen</surname></personname>
           </author>
 
           <author>
-	    <personname>
-            <firstname>D.</firstname>
-            <surname>Atkinson</surname>
-	    </personname>
+            <personname><firstname>D.</firstname>
+            <surname>Atkinson</surname></personname>
           </author>
 
           <author>
-	    <personname>
-            <firstname>T.</firstname>
-            <surname>Schaeffter</surname>
-	    </personname>
+            <personname><firstname>T.</firstname>
+            <surname>Schaeffter</surname></personname>
           </author>
 
           <author>
-	    <personname>
-            <firstname>M. S.</firstname>
-            <surname>Hansen</surname>
-	    </personname>
+            <personname><firstname>M. S.</firstname>
+            <surname>Hansen</surname></personname>
           </author>
         </authorgroup>
 
