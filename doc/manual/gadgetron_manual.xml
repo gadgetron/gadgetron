@@ -74,18 +74,18 @@
       <para>This manual is available in HTML form at:</para>
 
       <para><uri type="website"
-      xlink:href="http://gadgetron.sourceforge.net/manual/gadgetron_manual.html">http://gadgetron.sourceforge.net/manual/gadgetron_manual.html</uri></para>
+      xlink:href="http://gadgetron.sourceforge.net/1.0/manual/gadgetron_manual.html">http://gadgetron.sourceforge.net/1.0/manual/gadgetron_manual.html</uri></para>
 
       <para>Or in PDF form at:</para>
 
       <para><uri type="website"
-      xlink:href="http://gadgetron.sourceforge.net/manual/gadgetron_manual.pdf">http://gadgetron.sourceforge.net/manual/gadgetron_manual.pdf</uri></para>
+      xlink:href="http://gadgetron.sourceforge.net/1.0/manual/gadgetron_manual.pdf">http://gadgetron.sourceforge.net/1.0/manual/gadgetron_manual.pdf</uri></para>
 
       <para>API documentation (generated with Doxygen) is available
       from:</para>
 
       <para><uri type="website"
-      xlink:href="http://gadgetron.sourceforge.net/api/">http://gadgetron.sourceforge.net/api/</uri></para>
+      xlink:href="http://gadgetron.sourceforge.net/1.0/api/">http://gadgetron.sourceforge.net/1.0/api/</uri></para>
 
       <sect2>
         <title>Dependencies</title>
@@ -1123,7 +1123,7 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
         capable of outputting two different types of data. Again the
         declarations cause the Gadgetron framework to load specific instances
         of <classname>GadgetMessageWriter</classname> and associate them with
-        specific ID numbers. </para>
+        specific ID numbers.</para>
 
         <para>In addition to the Readers and Writers specified here, there are
         certain built-in Readers and Writers. As an example, there are Readers
@@ -1194,7 +1194,7 @@ double get_double_value(const char* name);
   &lt;/gadget&gt;</programlisting>
 
         <para>Which would make the <classname>AccumulatorGadget</classname>
-        have 5 threads. </para>
+        have 5 threads.</para>
       </sect2>
 
       <sect2 xml:id="sect.communicationprotocol">
