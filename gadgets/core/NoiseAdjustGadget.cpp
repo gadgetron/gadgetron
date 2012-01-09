@@ -107,8 +107,15 @@ int NoiseAdjustGadget::process_config(ACE_Message_Block* mb)
 
 	GadgetXMLNode n = GadgetXMLNode(&doc);
 
-	noise_dwell_time_us_ = 7680.0f/(n.get<double>(std::string("gadgetron.encoding.kspace.readout_length.value"))[0]);//n.get<double>(std::string("noise_dwell_time_us.value"))[0]; //GetDoubleParameterValueFromXML(&doc, "encoding", "noise_dwell_time_us");
-	acquisition_dwell_time_us_ = (n.get<double>(std::string("gadgetron.encoding.acquisition_dwell_time_ns.value"))[0])/1000.0f; //GetDoubleParameterValueFromXML(&doc, "encoding", "acquisition_dwell_time_us");
+	std::vector<double> dbls = n.get<double>(std::string("gadgetron.encoding.kspace.readout_length.value"));
+	if( dbls.size() == 0 ) return GADGET_FAIL;
+
+	noise_dwell_time_us_ = 7680.0f/dbls[0];
+	
+	dbls = n.get<double>(std::string("gadgetron.encoding.acquisition_dwell_time_ns.value"));
+	if( dbls.size() == 0 ) return GADGET_FAIL;
+
+	acquisition_dwell_time_us_ = dbls[0]/1000.0f; 
 	receiver_noise_bandwidth_ = 0.79;//n.get<double>(std::string("receiver_noise_bandwidth.value"))[0];//GetDoubleParameterValueFromXML(&doc, "encoding", "receiver_noise_bandwidth");
 
 	if ((noise_dwell_time_us_ == 0.0f) || (acquisition_dwell_time_us_ == 0.0f)) {
@@ -121,7 +128,6 @@ int NoiseAdjustGadget::process_config(ACE_Message_Block* mb)
 	GADGET_DEBUG2("Acquisition dwell time: %f\n", acquisition_dwell_time_us_);
 	GADGET_DEBUG2("receiver_noise_bandwidth: %f\n", receiver_noise_bandwidth_);
 	GADGET_DEBUG2("noise_bw_scale_factor: %f\n", noise_bw_scale_factor_);
-
 
 	return GADGET_OK;
 }
