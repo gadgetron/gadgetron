@@ -1774,13 +1774,24 @@ bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim,
 
 // Add
 template<class REAL> __global__ 
-void cuNDA_add_kernel( REAL a, typename complext<REAL>::Type *x, unsigned int number_of_elements )
+void cuNDA_add_kernel_complex( REAL a, typename complext<REAL>::Type *x, unsigned int number_of_elements )
 {
   const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
 
   if( idx < number_of_elements ){
 
     x[idx] += a*get_one<typename complext<REAL>::Type >();
+  }
+}
+// Add
+template<class REAL> __global__
+void cuNDA_add_kernel( REAL a, REAL *x, unsigned int number_of_elements )
+{
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+
+  if( idx < number_of_elements ){
+
+    x[idx] += a*get_one<REAL>();
   }
 }
 
@@ -1807,7 +1818,7 @@ bool cuNDA_add( REAL a, cuNDArray<typename complext<REAL>::Type> *in_out,
   }
 
   // Invoke kernel
-  cuNDA_add_kernel<REAL><<< gridDim, blockDim >>> ( a, in_out_int->get_data_ptr(), in_out->get_number_of_elements() );
+  cuNDA_add_kernel_complex<REAL><<< gridDim, blockDim >>> ( a, in_out_int->get_data_ptr(), in_out->get_number_of_elements() );
  
   CHECK_FOR_CUDA_ERROR();
 
@@ -1820,6 +1831,42 @@ bool cuNDA_add( REAL a, cuNDArray<typename complext<REAL>::Type> *in_out,
   return true;
 }
 
+
+
+template<class REAL>
+bool cuNDA_add( REAL a, cuNDArray<REAL> *in_out,
+		  cuNDA_device compute_device )
+{
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<REAL> *in_out_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,REAL,dummy,dummy>( compute_device, &cur_device, &old_device, in_out, &in_out_int ) ){
+    cerr << endl << "cuNDA_add: unable to prepare device(s)" << endl;
+    return false;
+  }
+
+  // Setup block/grid dimensions
+  dim3 blockDim; dim3 gridDim;
+  if( !setup_grid( cur_device, in_out->get_number_of_elements(), &blockDim, &gridDim ) ){
+    cerr << endl << "cuNDA_add: block/grid configuration out of range" << endl;
+    return false;
+  }
+
+  // Invoke kernel
+  cuNDA_add_kernel<REAL><<< gridDim, blockDim >>> ( a, in_out_int->get_data_ptr(), in_out->get_number_of_elements() );
+
+  CHECK_FOR_CUDA_ERROR();
+
+  // Restore
+  if( !restore<1,REAL,dummy,dummy,dummy>( old_device, in_out, in_out_int, 1 ) ){
+    cerr << endl << "cuNDA_add: unable to restore device" << endl;
+    return false;
+  }
+
+  return true;
+}
 // Scale
 template<class REAL> __global__ 
 void cuNDA_scale1_kernel( REAL a, typename complext<REAL>::Type *x, unsigned int number_of_elements )
@@ -3339,6 +3386,7 @@ template EXPORTGPUCORE bool cuNDA_rss_normalize<float,float>( cuNDArray<float>*,
 template EXPORTGPUCORE bool cuNDA_rss_normalize<float,float_complext::Type>( cuNDArray<float_complext::Type>*, unsigned int, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_add<float>( float, cuNDArray<float_complext::Type>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_add<float>( float, cuNDArray<float>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_scale<float>( float, cuNDArray<float_complext::Type>*, cuNDA_device );
 
@@ -3563,6 +3611,7 @@ template EXPORTGPUCORE bool cuNDA_rss_normalize<double,double>( cuNDArray<double
 template EXPORTGPUCORE bool cuNDA_rss_normalize<double,double_complext::Type>( cuNDArray<double_complext::Type>*, unsigned int, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_add<double>( double, cuNDArray<double_complext::Type>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_add<double>( double, cuNDArray<double>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_scale<double>( double, cuNDArray<double_complext::Type>*, cuNDA_device );
 

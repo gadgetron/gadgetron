@@ -18,6 +18,11 @@ template< class T, unsigned int D > __inline__ __host__ __device__ void operator
   for(unsigned int i=0; i<D; i++ ) v1.vec[i] += v2.vec[i]; 
 }
 
+template< class T, unsigned int D > __inline__ __host__ __device__ void operator+= ( vector_td<T,D> &v1, const T &v2 )
+{
+  for(unsigned int i=0; i<D; i++ ) v1.vec[i] += v2;
+}
+
 template< class T, unsigned int D > __inline__ __host__ __device__ void operator-= ( vector_td<T,D> &v1, const vector_td<T,D> &v2 ) 
 { 
   for(unsigned int i=0; i<D; i++ ) v1.vec[i] -= v2.vec[i]; 
@@ -28,10 +33,17 @@ template< class T, unsigned int D > __inline__ __host__ __device__ void componen
   for(unsigned int i=0; i<D; i++ ) v1.vec[i] *= v2.vec[i]; 
 }
 
+
 template< class T, unsigned int D > __inline__ __host__ __device__ void operator*= ( vector_td<T,D> &v1, const T &v2 ) 
 { 
   for(unsigned int i=0; i<D; i++ ) v1.vec[i] *= v2;
 }
+
+template< class T, unsigned int D > __inline__ __host__ __device__ void operator /= ( vector_td<T,D> &v1, const T &v2 )
+{
+  for(unsigned int i=0; i<D; i++ ) v1.vec[i] /= v2;
+}
+
 
 template< class T, unsigned int D > __inline__ __host__ __device__ void component_wise_div_eq ( vector_td<T,D> &v1, const vector_td<T,D> &v2 ) 
 { 
@@ -45,12 +57,32 @@ template< class T, unsigned int D > __inline__ __host__ __device__ vector_td<T,D
   return res;
 }
 
+template< class T, unsigned int D > __inline__ __host__ __device__ vector_td<T,D> operator+ ( const vector_td<T,D> &v1, const T &v2 )
+{
+  vector_td<T,D> res = v1;
+  res += v2;
+  return res;
+}
+
+template< class T, unsigned int D > __inline__ __host__ __device__ vector_td<T,D> operator+ (const T &v2, const vector_td<T,D> &v1 )
+{
+	return v1+v2;
+}
+
 template< class T, unsigned int D > __inline__ __host__ __device__ vector_td<T,D> operator- ( const vector_td<T,D> &v1, const vector_td<T,D> &v2 ) 
 { 
   vector_td<T,D> res = v1; 
   res -= v2; 
   return res;
 }
+
+template< class T, unsigned int D > __inline__ __host__ __device__ vector_td<T,D> operator- ( const vector_td<T,D> &v1)
+{
+  vector_td<T,D> res;
+  for(unsigned int i=0; i<D; i++ ) res.vec[i] = -v1.vec[i];
+  return res;
+}
+
 
 template< class T, unsigned int D > __inline__ __host__ __device__ vector_td<T,D> component_wise_mul ( const vector_td<T,D> &v1, const vector_td<T,D> &v2 ) 
 { 
@@ -70,6 +102,16 @@ template< class T, unsigned int D > __inline__ __host__ __device__ vector_td<T,D
 { 
   return v2*v1;
 }
+
+template< class T, unsigned int D > __inline__ __host__ __device__ vector_td<T,D> operator/ ( const vector_td<T,D> &v1, const T &v2 )
+{
+  vector_td<T,D> res = v1;
+  res /= v2;
+  return res;
+}
+
+
+
 
 template< class T, unsigned int D > __inline__ __host__ __device__ vector_td<T,D> component_wise_div ( const vector_td<T,D> &v1, const vector_td<T,D> &v2 ) 
 { 

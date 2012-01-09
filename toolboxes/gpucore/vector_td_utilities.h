@@ -82,7 +82,7 @@ template<class T, unsigned int D> __inline__ __host__ __device__ vector_td<T,D> 
 // Grid <-> index transformations
 //
 
-template<unsigned int D> __inline__ __host__ __device__ typename uintd<D>::Type idx_to_co( unsigned int idx, const typename uintd<D>::Type dims )
+template<unsigned int D> __inline__ __host__ __device__ typename uintd<D>::Type idx_to_co( unsigned int idx, const vector_td<unsigned int,D> dims )
 {
   typename uintd<D>::Type co;
   unsigned int idx_tmp = idx;
@@ -106,7 +106,7 @@ template<unsigned int D> __inline__ __host__ __device__ typename intd<D>::Type i
   return co;
 } 
 
-template<unsigned int D> __inline__ __host__ __device__ unsigned int co_to_idx( const typename uintd<D>::Type co, const typename uintd<D>::Type dims )
+template<unsigned int D> __inline__ __host__ __device__ unsigned int co_to_idx( const vector_td<unsigned int,D> co, const vector_td<unsigned int,D> dims )
 {
   unsigned int idx = 0;
   unsigned long block_size = 1;
@@ -216,11 +216,46 @@ template<class T, unsigned int D> __inline__ __host__ __device__ T dot( const ve
   return res;
 }
 
+
+template<class T, unsigned int D> __inline__ __host__ __device__ T max( const vector_td<T,D> vec ){
+  T res = vec.vec[0];
+  for (unsigned int i=1; i<D; i++){
+    res = max(res,vec.vec[i]);
+  }
+  return res;
+}
+
+template<class T, unsigned int D> __inline__ __host__ __device__ T max_not_nan( const vector_td<T,D> vec ){
+  int i=0;
+  while (isnan(vec.vec[i])) i++;
+  if (i >= D) return 0;
+  T res = vec.vec[i];
+  for (++i; i<D; i++){
+    if (!isnan(vec.vec[i])) res = max(res,vec.vec[i]);
+  }
+  return res;
+}
+template<class T, unsigned int D> __inline__ __host__ __device__ T min_not_nan( const vector_td<T,D> vec ){
+  int i=0;
+  while (isnan(vec.vec[i])) i++;
+  T res = vec.vec[i];
+  for (++i; i<D; i++){
+    if (!isnan(vec.vec[i])) res = min(res,vec.vec[i]);
+  }
+  return res;
+}
+template<class T, unsigned int D> __inline__ __host__ __device__ T min( const vector_td<T,D> vec ){
+  T res = vec.vec[0];
+  for (unsigned int i=1; i<D; i++){
+    res = min(res,vec.vec[i]);
+  }
+  return res;
+}
 //
 // Reductions on reald<REAL,D>
 //
 
-template<class REAL, unsigned int D> __inline__ __host__ __device__ REAL norm_squared( const typename reald<REAL,D>::Type vec ){
+template<class REAL, unsigned int D> __inline__ __host__ __device__ REAL norm_squared( const vector_td<REAL,D> vec ){
   REAL res = get_zero<REAL>();
   for (unsigned int i=0; i<D; i++){
     res += (vec.vec[i]*vec.vec[i]);
@@ -229,7 +264,7 @@ template<class REAL, unsigned int D> __inline__ __host__ __device__ REAL norm_sq
   return res;
 }
 
-template<class REAL, unsigned int D> __inline__ __host__ __device__ REAL norm( const typename reald<REAL,D>::Type vec ){
+template<class REAL, unsigned int D> __inline__ __host__ __device__ REAL norm( const vector_td<REAL,D> vec ){
   return sqrt(norm_squared<REAL,D>(vec));
 }
 
