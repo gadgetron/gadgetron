@@ -760,7 +760,7 @@ public Gadget2&lt;GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &g
 #include "FFT.h"
 
 int FFTGadget::process( GadgetContainerMessage&lt; GadgetMessageImage&gt;* m1,
-			GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2)
+   GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2)
 {
   FFT&lt;float&gt;::instance()-&gt;ifft(m2-&gt;getObjectPtr(),0);
   FFT&lt;float&gt;::instance()-&gt;ifft(m2-&gt;getObjectPtr(),1);
@@ -803,6 +803,23 @@ GADGET_FACTORY_DECLARE(FFTGadget)
         done. This is needed to make sure that we can load the Gadget on all
         platforms. When you create your own gadgets you must use this macro to
         declare the factory function for the Gadget.</para>
+
+        <para>In addition to defining a Gadget's behavior in response to a
+        data package, it is also possible for the Gadgets to receive
+        configuration information or parameters. The user can define the
+        Gadgets behavior in response to configuration information by
+        implementing the <function>process_config</function> function seen in
+        the Gadget header file above. The configuration information or
+        parameters is typically transmitted in the beginning of the
+        reconstruction process from the client (see <xref
+        linkend="sect.communicationprotocol" />). The configuration
+        information can in principle be in any format (a given application can
+        use a binary format or a text format defined for the specific
+        purpose), but conventionally the parameters are transmitted in XML
+        format and the Gadgetron comes with some toolbox functions in the
+        <filename>GadgetXml.h</filename> file which allow easy acces to
+        parameters in XML format (see the examples throughout the source code
+        on how to interpret parameters). </para>
 
         <para>For a tutorial on how to make your own Gadget library see <xref
         linkend="sect.makingnewgadgetlibrary" />.</para>
@@ -1198,9 +1215,110 @@ double get_double_value(const char* name);
       </sect2>
 
       <sect2 xml:id="sect.communicationprotocol">
-        <title>Communication protocol</title>
+        <title>Communication Sequence</title>
 
-        <para>Blah</para>
+        <para>The communication between client and Gadgetron follows a
+        straightforward communication protocol. When the Gadgetron is started
+        it will be expecting a connection on a specific port (port 9002 is the
+        default). The communication sequence is as follows:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>Client makes connection</para>
+          </listitem>
+
+          <listitem>
+            <para>Gadgetron accepts connection and creates a new instance of
+            <classname>GadgetStreamController</classname> (see <xref
+            linkend="fig.gadgetron.architecture" />). After creating the
+            <classname>GadgetStreamController</classname> the Gadgetron
+            returns to accept connections on the socket such that multiple
+            clients can be connected simultanously. </para>
+          </listitem>
+
+          <listitem>
+            <para><classname>GadgetStreamController</classname> takes control
+            of the socket and expects to read a specific type of message,
+            which either contains the filename of a specific stream
+            configuration (see <xref linkend="sect.streamconfiguration" />) or
+            alternatively it can receive the actual XML stream specification
+            directly on the socket. These two types of messages are read with
+            Readers that are always registered for the Gadgetron (see <xref
+            linkend="sect.readerswriters" />). If the Gadgetron receives the
+            filename of a gadet stream, it expects to be able to find that
+            configuration file in the <filename>gadegtron/config</filename>
+            folder (see <xref linkend="sect.fileorganization" />).</para>
+          </listitem>
+
+          <listitem>
+            <para>The <classname>GadgetStreamController</classname> will then
+            be expecting to receive parameters that will be transmitted to
+            each individual Gadget. The parameters are receiver with a special
+            type of Reader, which is always registered with the
+            <classname>GadgetStreamController. </classname>In principle the
+            "parameters" is just a raw buffer of characters that will be
+            transmitted as such to each individual Gadget, but it is the
+            convention to send the parameters in XML format. It is up to each
+            individual Gadget how the parameters are interpetreted. The user
+            can implement any behavior in response to the parameters by
+            implementing the <function>process_config</function> function (see
+            <xref linkend="sect.gadgets" />). The client can send parameters
+            at any time during a reconstruction and they will always be
+            transmitted to all Gadgets through the
+            <function>process_config</function> function.</para>
+          </listitem>
+
+          <listitem>
+            <para>The client will then start transmitting data packages and
+            the Gadgetron will be processing data and returning images to the
+            client. </para>
+          </listitem>
+
+          <listitem>
+            <para>When the client has no more data, it will send a close
+            package. This package will cause all Gadgets (in order) to process
+            all remaining data on their input queue and then shut down.</para>
+          </listitem>
+
+          <listitem>
+            <para>Once the final Gadget has shut down, the connection with the
+            client will be terminated. </para>
+          </listitem>
+        </orderedlist>
+
+        <para>To make it easier to create a new client, the Gadgetron comes
+        with a <classname>GadgetronConnector</classname> class:</para>
+
+        <para></para>
+
+        <programlisting>class GadgetronConnector: public ACE_Svc_Handler&lt;ACE_SOCK_STREAM, ACE_MT_SYNCH&gt; {
+
+public:
+
+   int open (std::string hostname, std::string port);   
+   int putq  (  ACE_Message_Block * mb ,  ACE_Time_Value *  timeout = 0);
+   int register_reader(unsigned int slot, GadgetMessageReader* reader);
+   int register_writer(unsigned int slot, GadgetMessageWriter* writer);
+
+   int send_gadgetron_configuration_file(std::string config_xml_name);   
+   int send_gadgetron_configuration_script(std::string config_xml_name);
+   int send_gadgetron_parameters(std::string xml_string);
+};</programlisting>
+
+        <para>This class can be used to create simple clients that open a
+        connection with the Gadgetron using the <function>open</function>
+        function and then communicate with the Gadgetron through the Readers
+        and Writers registered with the connector. See the
+        <application>mriclient</application> example application
+        (<filename>gagetron/apps/clients/mriclient</filename> in the source
+        code archive) for a simple example of how to build a Gadgetron client.
+        </para>
+      </sect2>
+
+      <sect2>
+        <title xml:id="sect.fileorganization">File Organization</title>
+
+        <para></para>
       </sect2>
     </sect1>
 
