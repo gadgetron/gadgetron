@@ -23,7 +23,9 @@ update(hoNDArray< std::complex<T> >* new_weights)
   memcpy(weights_.get_data_ptr(), new_weights->get_data_ptr(),
 	 weights_.get_number_of_elements()*sizeof(T)*2);
 
+  weights_are_valid_ = true;
   mutex_.release();
+  cond_.broadcast();
 
   return 0;
 }
@@ -33,7 +35,6 @@ apply(hoNDArray< std::complex<T> >* data_in,
       hoNDArray< std::complex<T> >* data_out,
       T scale)
 {
-
   /*
   ACE_Guard<ACE_Thread_Mutex> guard(mutex_);
   if (!guard.locked()) {
@@ -42,6 +43,13 @@ apply(hoNDArray< std::complex<T> >* data_in,
   */
 
   mutex_.acquire();
+  if (!weights_are_valid_) {
+	  GADGET_DEBUG1("Releasing Mutex to Wait for result\n");
+	  mutex_.release();
+	  cond_.wait();
+	  mutex_.acquire();
+ }
+
 
   if (weights_.get_number_of_elements()%data_in->get_number_of_elements()) {
     return -3;

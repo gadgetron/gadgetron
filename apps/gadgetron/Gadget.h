@@ -56,6 +56,12 @@ public:
 	{
 		ACE_TRACE(( ACE_TEXT("Gadget::open") ));
 
+		int t = this->get_int_value("threads");
+		if (t > 0) {
+			GADGET_DEBUG2("Setting number of threads of gadget %s to %d\n", this->module()->name(), t);
+			this->desired_threads(t);
+		}
+
 		return this->activate( THR_NEW_LWP | THR_JOINABLE,
 				this->desired_threads() );
 	}
@@ -324,6 +330,54 @@ protected:
 	}
 
 	virtual int process(GadgetContainerMessage<P1>* m1, GadgetContainerMessage<P2>* m2) = 0;
+
+};
+
+
+template <class P1, class P2, class P3> class Gadget3 : public Gadget
+{
+
+protected:
+	int process(ACE_Message_Block* mb)
+	{
+
+		GadgetContainerMessage<P1>* m1 = AsContainerMessage<P1>(mb);
+
+		GadgetContainerMessage<P2>* m2 = 0;
+		if (m1) {
+			m2 = AsContainerMessage<P2>(m1->cont());
+		}
+
+		GadgetContainerMessage<P3>* m3 = 0;
+		if (m2) {
+			m3 = AsContainerMessage<P3>(m2->cont());
+		}
+
+		if (!m1 || !m2 || !m3) {
+			if (!pass_on_undesired_data_) {
+				ACE_DEBUG( (LM_ERROR, ACE_TEXT("%s -> %s, (%s, %s, %@), (%s, %s, %@), (%s, %s, %@)\n"),
+						this->module()->name(),
+						ACE_TEXT("Gadget3::process, Conversion of Message Block Failed"),
+						typeid(GadgetContainerMessage<P1>*).name(),
+						typeid(m1).name(),
+						m1,
+						typeid(GadgetContainerMessage<P2>*).name(),
+						typeid(m2).name(),
+						m2,
+						typeid(GadgetContainerMessage<P3>*).name(),
+						typeid(m3).name(),
+						m2));
+
+				return -1;
+			} else {
+				return (this->next()->putq(mb));
+			}
+		}
+
+		return this->process(m1,m2,m3);
+	}
+
+	virtual int process(GadgetContainerMessage<P1>* m1, GadgetContainerMessage<P2>* m2, GadgetContainerMessage<P3>* m3) = 0;
 
 };
 

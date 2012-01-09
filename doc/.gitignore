@@ -1,4 +1,4 @@
-*.pdf
+death_row/figures/*.pdf
 *.gz
 *.log
 *.toc

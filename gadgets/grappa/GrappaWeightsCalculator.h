@@ -14,6 +14,7 @@ template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsCalculator : public AC
  public:
   GrappaWeightsCalculator() 
     : inherited()
+  	, target_coils_(0)
    {
     ACE_TRACE(( ACE_TEXT("GrappaWeightsCalculator::GrappaWeightsCalculator") ));
   }
@@ -38,7 +39,7 @@ template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsCalculator : public AC
   virtual int add_job( hoNDArray< std::complex<T> >* ref_data,
 		       std::vector< std::pair<unsigned int, unsigned int> > sampled_region,
 		       unsigned int acceleration_factor,
-		       GrappaWeights<T>* destination,
+		       boost::shared_ptr<GrappaWeights<T> > destination,
 		       std::vector<unsigned int> uncombined_channel_weights,
 		       bool include_uncombined_channels_in_combined_weights = true);
 
@@ -48,6 +49,15 @@ template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsCalculator : public AC
     return uncombined_channels_.size();
   }
 
+  virtual int get_number_of_target_coils() {
+	  return target_coils_;
+  }
+
+  virtual void set_number_of_target_coils(int n) {
+	  target_coils_ = n;
+  }
+
  private:
   std::list<unsigned int> uncombined_channels_;
+  int target_coils_;
 };

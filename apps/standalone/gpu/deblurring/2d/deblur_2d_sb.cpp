@@ -6,7 +6,7 @@
 #include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
 #include "ndarray_vector_td_utilities.h"
-#include "cuSBSolver.h"
+#include "cuSBCSolver.h"
 #include "cuCGSolver.h"
 #include "cuPartialDerivativeOperator.h"
 #include "cuConvolutionOperator.h"
@@ -18,7 +18,7 @@
 using namespace std;
 
 // Define desired precision (note that decent deblurring of noisy images requires double precision)
-typedef double _real; 
+typedef float _real; 
 typedef complext<_real>::Type _complext;
 
 int main(int argc, char** argv)
@@ -31,10 +31,11 @@ int main(int argc, char** argv)
   parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Blurred image file name (.cplx)", true, "blurred_image.cplx" );
   parms.add_parameter( 'k', COMMAND_LINE_STRING, 1, "Kernel image file name (.cplx)", true, "kernel_image.cplx" );
   parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Result file name", true, "sb_deblurred_image.cplx" );
-  parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of cg iterations", true, "10" );
-  parms.add_parameter( 'I', COMMAND_LINE_INT,    1, "Number of sb inner iterations", true, "10" );
-  parms.add_parameter( 'O', COMMAND_LINE_INT,    1, "Number of sb outer iterations", true, "10" );
-  parms.add_parameter( 'K', COMMAND_LINE_FLOAT,  1, "Regularization weight", true, "0.1" );
+  parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of cg iterations", true, "20" );
+  parms.add_parameter( 'I', COMMAND_LINE_INT,    1, "Number of sb inner iterations", true, "1" );
+  parms.add_parameter( 'O', COMMAND_LINE_INT,    1, "Number of sb outer iterations", true, "50" );
+  parms.add_parameter( 'M', COMMAND_LINE_FLOAT,  1, "Mu", true, "100.0" );
+  parms.add_parameter( 'L', COMMAND_LINE_FLOAT,  1, "Lambda", true, "100.0" );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -64,7 +65,6 @@ int main(int argc, char** argv)
   cuNDArray<_complext> data(host_data.get());
   cuNDArray<_complext> kernel(host_kernel.get());
   
-  _real kappa = (_real) parms.get_parameter('K')->get_float_value();
   unsigned int num_cg_iterations = parms.get_parameter('i')->get_int_value();
   unsigned int num_inner_iterations = parms.get_parameter('I')->get_int_value();
   unsigned int num_outer_iterations = parms.get_parameter('O')->get_int_value();
@@ -72,38 +72,47 @@ int main(int argc, char** argv)
   // Setup regularization operators
   boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,2> > Rx( new cuPartialDerivativeOperator<_real,_complext,2>(0) ); 
   boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,2> > Ry( new cuPartialDerivativeOperator<_real,_complext,2>(1) ); 
-  Rx->set_weight( kappa );
-  Ry->set_weight( kappa );
+  
+  _real mu = (_real) parms.get_parameter('M')->get_float_value();
+  _real lambda = (_real) parms.get_parameter('L')->get_float_value();
+
+  if( mu <= (_real) 0.0 ) {
+    cout << endl << "Regularization parameter mu should be strictly positive. Quitting!\n" << endl;
+    return 1;
+  }
+
+  Rx->set_weight( lambda );
+  Ry->set_weight( lambda );
 
   //
   // Setup conjugate gradients solver
   //
 
   // Define encoding matrix
-  boost::shared_ptr< cuConvolutionOperator<_real> > 
-    E( new cuConvolutionOperator<_real>() );
+  boost::shared_ptr< cuConvolutionOperator<_real> > E( new cuConvolutionOperator<_real>() );  
   E->set_kernel( &kernel );
+  E->set_weight( mu );
 
   // Setup conjugate gradient solver
   boost::shared_ptr< cuCGSolver<_real, _complext> > cg(new cuCGSolver<_real, _complext>());
-  cg->add_matrix_operator( E );                   // encoding matrix
-  if( kappa>0.0 ) cg->add_matrix_operator( Rx );  // regularization matrix
-  if( kappa>0.0 ) cg->add_matrix_operator( Ry );  // regularization matrix
+  cg->add_matrix_operator( E );   // encoding matrix
+  cg->add_matrix_operator( Rx );  // regularization matrix
+  cg->add_matrix_operator( Ry );  // regularization matrix
   cg->set_iterations( num_cg_iterations );
-  cg->set_limit( 1e-12 );
-  cg->set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_VERBOSE );  
+  cg->set_limit( 1e-4 );
+  cg->set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_WARNINGS );
 
   // Setup split-Bregman solver
-  cuSBSolver<_real, _complext> sb;
-  sb.set_solver( boost::shared_ptr< cuCGSolver<_real, _complext> >(cg.get()) );
+  cuSBCSolver<_real, _complext> sb;
+  sb.set_inner_solver( cg );
   sb.set_encoding_operator( E );
-  //sb.add_regularization_operator( Rx );
-  //sb.add_regularization_operator( Ry );
   sb.add_regularization_group_operator( Rx ); 
   sb.add_regularization_group_operator( Ry ); 
+  sb.add_group();
   sb.set_outer_iterations(num_outer_iterations);
   sb.set_inner_iterations(num_inner_iterations);
   sb.set_image_dimensions(data.get_dimensions());
+  sb.set_output_mode( cuSBCSolver<_real, _complext>::OUTPUT_VERBOSE );
 
   // Run split-Bregman solver
   boost::shared_ptr< cuNDArray<_complext> > sbresult = sb.solve(&data);
@@ -118,4 +127,3 @@ int main(int argc, char** argv)
 
   return 0;
 }
-

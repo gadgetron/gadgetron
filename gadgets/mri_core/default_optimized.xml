@@ -1,0 +1,127 @@
+<?xml version="1.0" ?>  
+<gadgetron>
+  <readers>
+    <reader>
+      <slot>1001</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIAcquisitionReader</class>
+    </reader>
+  </readers>
+  
+  <writers>
+    <writer>
+      <slot>1004</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIImageWriterCPLX</class>
+    </writer>
+    <writer>
+      <slot>1005</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIImageWriterFLOAT</class>
+    </writer>
+    <writer>
+      <slot>1006</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIImageWriterUSHORT</class>
+    </writer>
+  </writers>
+  
+
+  <stream>
+    <gadget>
+      <name>MRINoiseAdjust</name>
+      <dll>gadgetronmricore</dll>
+      <class>MRINoiseAdjustGadget</class>
+      <!--
+      <property><name>threads</name><value>2</value></property>
+      -->
+    </gadget>
+	
+	<gadget>
+      <name>PCA</name>
+      <dll>gadgetronmricore</dll>
+      <class>PCACoilGadget</class>
+    </gadget>
+	
+    <gadget>
+      <name>CoilReduction</name>
+      <dll>gadgetroncore</dll>
+      <class>CoilReductionGadget</class>
+      <property><name>coils_out</name><value>16</value></property>
+    </gadget>
+    
+    <gadget>
+      <name>Acc</name>
+      <dll>gadgetroncore</dll>
+      <class>AccumulatorGadget</class>
+    </gadget>
+ 
+    <gadget>
+      <name>FFT</name>
+      <dll>gadgetroncore</dll>
+      <class>FFTGadget</class>
+    </gadget>
+
+	<!--
+    <gadget>
+      <name>ImageWrite</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageWriterGadgetCPLX</class>
+    </gadget>
+    -->
+    
+    <gadget>
+      <name>CropCombine</name>
+      <dll>gadgetroncore</dll>
+      <class>CropAndCombineGadget</class>
+    </gadget>
+
+    <gadget>
+      <name>Extract</name>
+      <dll>gadgetroncore</dll>
+      <class>ExtractGadget</class>
+      <!--
+      <property><name>extract_mask</name><value>9</value></property>
+      -->
+    </gadget>
+
+	<!--
+    <gadget>
+      <name>ImageWrite</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageWriterGadgetFLOAT</class>
+    </gadget>
+    -->
+    
+    <!--
+    <gadget>
+      <name>FloatToShort</name>
+      <dll>gadgetroncore</dll>
+      <class>FloatToUShortGadget</class>
+    </gadget>
+    -->
+    
+ 	<!--
+    <gadget>
+      <name>ImageFinishCPLX</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageFinishGadgetCPLX</class>
+    </gadget>
+    -->
+
+    <gadget>
+      <name>ImageFinishFLOAT</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageFinishGadgetFLOAT</class>
+    </gadget>
+
+    <!--
+     <gadget>
+      <name>ImageFinishUSHORT</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageFinishGadgetUSHORT</class>
+    </gadget>
+    -->
+   </stream>
+
+</gadgetron>

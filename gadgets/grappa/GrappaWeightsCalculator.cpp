@@ -16,7 +16,7 @@ template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsDescription
 public:
 	std::vector< std::pair<unsigned int, unsigned int> > sampled_region;
 	unsigned int acceleration_factor;
-	GrappaWeights<T>* destination;
+	boost::shared_ptr<GrappaWeights<T> > destination;
 	std::vector<unsigned int> uncombined_channel_weights;
 	bool include_uncombined_channels_in_combined_weights;
 };
@@ -69,27 +69,30 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 		ft.ifft( &device_data, &ftdims);
 
 		// Compute CSM
-		boost::shared_ptr< cuNDArray<float_complext::Type> > csm = estimate_b1_map<float,2>( &device_data );
-
+		boost::shared_ptr< cuNDArray<float_complext::Type> > csm;
+		{
+			//GPUTimer unmix_timer("GRAPPA CSM");
+			csm = estimate_b1_map<float,2>( &device_data, target_coils_ );
+			//GADGET_DEBUG2("Coils in csm: %d\n", csm->get_size(2));
+		}
 		//Go back to kspace
 		ft.fft(&device_data, &ftdims);
 
 
-		//TODO: Change dimensions of this to deal with uncombinex channels
 		cuNDArray<cuFloatComplex> unmixing_dev;
-		boost::shared_ptr< std::vector<unsigned int> > csm_dimensions = csm->get_dimensions();
+		boost::shared_ptr< std::vector<unsigned int> > data_dimensions = device_data.get_dimensions();
 
 		if (uncombined_channels_.size() > 0) {
-			csm_dimensions->push_back(uncombined_channels_.size()+1);
+			data_dimensions->push_back(uncombined_channels_.size()+1);
 		}
 
-		if (!unmixing_dev.create(csm_dimensions.get())) {
+		if (!unmixing_dev.create(data_dimensions.get())) {
 			GADGET_DEBUG1("Unable to allocate device memory for unmixing coeffcients\n");
 			return GADGET_FAIL;
 		}
 
 		{
-			GPUTimer unmix_timer("GRAPPA Unmixing");
+			//GPUTimer unmix_timer("GRAPPA Unmixing");
 			std::vector<unsigned int> kernel_size;
 
 			//TODO: Add parameters for kernel size
@@ -160,7 +163,7 @@ template <class T> int GrappaWeightsCalculator<T>::
 add_job( hoNDArray< std::complex<T> >* ref_data,
 		std::vector< std::pair<unsigned int, unsigned int> > sampled_region,
 		unsigned int acceleration_factor,
-		GrappaWeights<T>* destination,
+		boost::shared_ptr< GrappaWeights<T> > destination,
 		std::vector<unsigned int> uncombined_channel_weights,
 		bool include_uncombined_channels_in_combined_weights)
 		{

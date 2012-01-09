@@ -29,8 +29,10 @@ GPUCGGadget::GPUCGGadget()
   , image_series_(0)
   , image_counter_(0)
 {
-  matrix_size_    = uintd2(0,0);
+  matrix_size_ = uintd2(0,0);
   matrix_size_os_ = uintd2(0,0);
+  memset(position_, 3*sizeof(float),0);
+  memset(quarternion_, 4*sizeof(float),0);
   pass_on_undesired_data_ = true; // We will make one of these for each slice and so data should be passed on.
 }
 
@@ -38,7 +40,7 @@ GPUCGGadget::~GPUCGGadget() {}
 
 int GPUCGGadget::process_config( ACE_Message_Block* mb )
 {
-  GADGET_DEBUG1("GPUCGGadget::process_config\n");
+  GADGET_DEBUG1("\nGPUCGGadget::process_config\n");
 
   slice_no_ = get_int_value(std::string("sliceno").c_str());	
   device_number_ = get_int_value(std::string("deviceno").c_str());
@@ -53,7 +55,7 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
   image_series_ = this->get_int_value("image_series");
 
   if( shared_profiles_ > (profiles_per_frame_>>1) ){
-    GADGET_DEBUG1("WARNING: GPUCGGadget::process_config: shared_profiles exceeds half the new samples. Setting to half.\n");
+    GADGET_DEBUG1("\nWARNING: GPUCGGadget::process_config: shared_profiles exceeds half the new samples. Setting to half.\n");
     shared_profiles_ = profiles_per_frame_>>1;
   }
 
@@ -66,7 +68,7 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
 
     cudaDeviceProp deviceProp; 
     if( cudaGetDeviceProperties( &deviceProp, device_number_ ) != cudaSuccess) {
-      GADGET_DEBUG1( "Error: unable to query device properties.\n" );
+      GADGET_DEBUG1( "\nError: unable to query device properties.\n" );
       return GADGET_FAIL;
     }
 
@@ -75,17 +77,16 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
     samples_per_profile_ = n.get<long>(std::string("gadgetron.encoding.kspace.readout_length.value"))[0];
     channels_ = n.get<long>(std::string("gadgetron.encoding.channels.value"))[0];
 
-
     std::vector<long> dims = n.get<long>(std::string("gadgetron.encoding.kspace.matrix_size.value"));
     matrix_size_ = uintd2(dims[0], dims[1]);
 
-    GADGET_DEBUG2("Matrix size  : [%d,%d] \n", matrix_size_.vec[0], matrix_size_.vec[1]);
+    GADGET_DEBUG2("\nMatrix size  : [%d,%d] \n", matrix_size_.vec[0], matrix_size_.vec[1]);
 
     matrix_size_os_ = 
       uintd2(static_cast<unsigned int>(ceil((matrix_size_.vec[0]*oversampling_)/warp_size)*warp_size),
 	     static_cast<unsigned int>(ceil((matrix_size_.vec[1]*oversampling_)/warp_size)*warp_size));
 
-    GADGET_DEBUG2("Matrix size OS: [%d,%d] \n", matrix_size_os_.vec[0], matrix_size_os_.vec[1]);
+    GADGET_DEBUG2("\nMatrix size OS: [%d,%d] \n", matrix_size_os_.vec[0], matrix_size_os_.vec[1]);
 
     // Allocate encoding operator for non-Cartesian Sense
     E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );  
@@ -103,7 +104,7 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
     cg_.set_preconditioner ( D_ );  // preconditioning matrix
     cg_.set_iterations( number_of_iterations_ );
     cg_.set_limit( cg_limit_ ); 
-    cg_.set_output_mode( cuCGSolver<float, float_complext::Type>::OUTPUT_VERBOSE ); // TODO: once it is all working, change to silent output
+    cg_.set_output_mode( cuCGSolver<float, float_complext::Type>::OUTPUT_SILENT );
 
     if( configure_channels() == GADGET_FAIL )
       return GADGET_FAIL;
@@ -122,12 +123,12 @@ int GPUCGGadget::configure_channels()
   std::vector<unsigned int> csm_dims = uintd_to_vector<2>(matrix_size_); csm_dims.push_back( channels_ );
   
   if( csm->create( &csm_dims ) == 0x0 ) {
-    GADGET_DEBUG1( "Error: unable to create csm.\n" );
+    GADGET_DEBUG1( "\nError: unable to create csm.\n" );
     return GADGET_FAIL;
   }
   
   if( !cuNDA_clear<float_complext::Type>( csm.get(), get_one<float_complext::Type>() ) ){
-    GADGET_DEBUG1( "Error: unable to clear csm.\n" );
+    GADGET_DEBUG1( "\nError: unable to clear csm.\n" );
     return GADGET_FAIL;
   }
   
@@ -135,7 +136,7 @@ int GPUCGGadget::configure_channels()
   E_->set_csm(csm);
   
   if( E_->setup( matrix_size_, matrix_size_os_, kernel_width_ ) < 0 ){
-    GADGET_DEBUG1( "Error: unable to setup encoding operator.\n" );
+    GADGET_DEBUG1( "\nError: unable to setup encoding operator.\n" );
     return GADGET_FAIL;
   }
   
@@ -150,7 +151,7 @@ int GPUCGGadget::configure_channels()
 int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
   if (!is_configured_) {
-    GADGET_DEBUG1("Data received before configuration complete\n");
+    GADGET_DEBUG1("\nData received before configuration complete\n");
     return GADGET_FAIL;
   }
 
@@ -161,7 +162,7 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
     if (pass_on_undesired_data_) {
       this->next()->putq(m1);
     } else {
-      GADGET_DEBUG2("Dropping slice: %d\n", m1->getObjectPtr()->idx.slice);
+      GADGET_DEBUG2("\nDropping slice: %d\n", m1->getObjectPtr()->idx.slice);
       m1->release();
     }
     return GADGET_OK;
@@ -172,17 +173,24 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
   //
 
   if( m1->getObjectPtr()->samples != samples_per_profile_ ) {
-    GADGET_DEBUG2("Adjusting #samples per profile from %d to %d", samples_per_profile_,  m1->getObjectPtr()->samples );
+    GADGET_DEBUG2("\nAdjusting #samples per profile from %d to %d", samples_per_profile_,  m1->getObjectPtr()->samples );
     samples_per_profile_ = m1->getObjectPtr()->samples;
     allocated_samples_ = 0; // the samples buffers are freed and re-allocated in 'upload_samples()'
   }
 
   if( m1->getObjectPtr()->channels != channels_ ) {
-    GADGET_DEBUG2("Adjusting #channels from %d to %d", channels_,  m1->getObjectPtr()->channels );
+    GADGET_DEBUG2("\nAdjusting #channels from %d to %d", channels_,  m1->getObjectPtr()->channels );
     channels_ = m1->getObjectPtr()->channels;
     allocated_samples_ = 0; // the samples buffers are freed and re-allocated in 'upload_samples()'
     if( configure_channels() == GADGET_FAIL ) // Update buffers dependant on #channels
       return GADGET_FAIL;    
+  }
+
+  // Check to see of the imaging plane has changed
+  if (!quarterion_equal(m1->getObjectPtr()->quarternion) || !position_equal(m1->getObjectPtr()->position)) {
+	  rhs_buffer_->clear();
+      memcpy(position_,m1->getObjectPtr()->position,3*sizeof(float));
+      memcpy(quarternion_,m1->getObjectPtr()->quarternion,4*sizeof(float));
   }
 
   buffer_.enqueue_tail(m1);
@@ -192,7 +200,7 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
     boost::shared_ptr< cuNDArray<floatd2::Type> > traj = calculate_trajectory();
 
     if ( traj.get() == 0x0 ) {
-      GADGET_DEBUG1("Failed to calculate trajectory\n");
+      GADGET_DEBUG1("\nFailed to calculate trajectory\n");
       return GADGET_FAIL;
     }
 
@@ -200,7 +208,7 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
     if( !dcw_computed_){
       dcw = calculate_density_compensation();
       if( dcw.get() == 0x0 ) {
-	GADGET_DEBUG1("Failed to calculate density compensation\n");
+	GADGET_DEBUG1("\nFailed to calculate density compensation\n");
 	return GADGET_FAIL;
       }
       E_->set_dcw(dcw);
@@ -209,12 +217,12 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
 
     boost::shared_ptr< cuNDArray<float_complext::Type> > device_samples = upload_samples();
     if( device_samples == 0x0 ) {
-      GADGET_DEBUG1("Failed to upload samples to the GPU\n");
+      GADGET_DEBUG1("\nFailed to upload samples to the GPU\n");
       return GADGET_FAIL;
     }
 
     if( E_->preprocess(traj.get()) < 0 ) {
-      GADGET_DEBUG1("Error during cgOperatorNonCartesianSense::preprocess()\n");
+      GADGET_DEBUG1("\nError during cgOperatorNonCartesianSense::preprocess()\n");
       return GADGET_FAIL;
     }
 
@@ -222,7 +230,7 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
 
     boost::shared_ptr< cuNDArray<float_complext::Type> > csm_data = rhs_buffer_->get_acc_coil_images();
     if( !csm_data.get() ){
-      GADGET_DEBUG1("Error during accumulation buffer computation\n");
+      GADGET_DEBUG1("\nError during accumulation buffer computation\n");
       return GADGET_FAIL;
     }
 
@@ -235,12 +243,12 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
 
     cuNDArray<float_complext::Type> reg_image;
     if( reg_image.create(reg_dims.get()) == 0x0 ){
-      GADGET_DEBUG1("Error allocating regularization image on device\n");
+      GADGET_DEBUG1("\nError allocating regularization image on device\n");
       return GADGET_FAIL;
     }
 
     if( E_->mult_csm_conj_sum( csm_data.get(), &reg_image ) < 0 ){
-      GADGET_DEBUG1("Error combining coils to regularization image\n");
+      GADGET_DEBUG1("\nError combining coils to regularization image\n");
       return GADGET_FAIL;
     }
 	
@@ -261,19 +269,19 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
     cuNDArray<float_complext::Type> rhs; 
 		
     if( rhs.create(&rhs_dims) == 0x0 ){
-      GADGET_DEBUG1("failed to create rhs\n");
+      GADGET_DEBUG1("\nFailed to create rhs\n");
       return GADGET_FAIL;
     }
 
     if( E_->mult_MH( device_samples.get(), &rhs ) < 0 ){
-      GADGET_DEBUG1("failed to compute rhs\n");
+      GADGET_DEBUG1("\nFailed to compute rhs\n");
       return GADGET_FAIL;
     }
 
     boost::shared_ptr< cuNDArray<float_complext::Type> > cgresult = cg_.solve(&rhs);
 
     if (!cgresult.get()) {
-      GADGET_DEBUG1("iterative_sense_compute failed\n");
+      GADGET_DEBUG1("\nIterative_sense_compute failed\n");
       return GADGET_FAIL;
     }
 	
@@ -291,7 +299,7 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
     img_dims[1] = matrix_size_.vec[1];
 
     if (cm2->getObjectPtr()->create(&img_dims) == 0x0) {
-      GADGET_DEBUG1("Unable to allocate host image array");
+      GADGET_DEBUG1("\nUnable to allocate host image array");
       cm1->release();
       return GADGET_FAIL;
     }
@@ -305,7 +313,7 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
 
     cudaError_t err = cudaGetLastError();
     if( err != cudaSuccess ){
-      GADGET_DEBUG2("Unable to copy result from device to host: %s", cudaGetErrorString(err));
+      GADGET_DEBUG2("\nUnable to copy result from device to host: %s", cudaGetErrorString(err));
       cm1->release();
       return GADGET_FAIL;
     }
@@ -326,7 +334,7 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
     cm1->getObjectPtr()->image_series_index = image_series_;
 
     if (this->next()->putq(cm1) < 0) {
-      GADGET_DEBUG1("Failed to result image on to Q\n");
+      GADGET_DEBUG1("\nFailed to result image on to Q\n");
       cm1->release();
       return GADGET_FAIL;
     }
@@ -376,7 +384,7 @@ boost::shared_ptr< cuNDArray<float_complext::Type> >  GPUCGGadget::upload_sample
     try {
       data_host_ptr_ = new float[channels_*samples_needed*2];
     } catch (...) {
-      GADGET_DEBUG1("Failed to allocate host memory for samples\n");
+      GADGET_DEBUG1("\nFailed to allocate host memory for samples\n");
       return boost::shared_ptr< cuNDArray<float_complext::Type> >();
     }
 
@@ -395,14 +403,14 @@ boost::shared_ptr< cuNDArray<float_complext::Type> >  GPUCGGadget::upload_sample
 
     m1 = dynamic_cast< GadgetContainerMessage< GadgetMessageAcquisition >* >(mb);
     if (!m1) {
-      GADGET_DEBUG1("Failed to dynamic cast message\n");
+      GADGET_DEBUG1("\nFailed to dynamic cast message\n");
       return boost::shared_ptr< cuNDArray<float_complext::Type> >();
     }
 
     m2 = dynamic_cast< GadgetContainerMessage< hoNDArray< std::complex<float> > >* > (m1->cont());
 
     if (!m2) {
-      GADGET_DEBUG1("Failed to dynamic cast message\n");
+      GADGET_DEBUG1("\nFailed to dynamic cast message\n");
       return boost::shared_ptr< cuNDArray<float_complext::Type> >();
     }
 
@@ -420,7 +428,7 @@ boost::shared_ptr< cuNDArray<float_complext::Type> >  GPUCGGadget::upload_sample
   std::vector<unsigned int> dims; dims.push_back(samples_needed); dims.push_back(channels_);
   hoNDArray<float_complext::Type> tmp;
   if( tmp.create( &dims, (float_complext::Type*)data_host_ptr_, false ) == 0x0 ){
-    GADGET_DEBUG1("Failed to create temporary host data array\n");
+    GADGET_DEBUG1("\nFailed to create temporary host data array\n");
     return boost::shared_ptr< cuNDArray<float_complext::Type> >();
   }
 
@@ -428,7 +436,7 @@ boost::shared_ptr< cuNDArray<float_complext::Type> >  GPUCGGadget::upload_sample
 	
   cudaError_t err = cudaGetLastError();
   if( err != cudaSuccess ){
-    GADGET_DEBUG2("Unable to upload samples to GPU memory: %s", cudaGetErrorString(err));
+    GADGET_DEBUG2("\nUnable to upload samples to GPU memory: %s", cudaGetErrorString(err));
     return boost::shared_ptr< cuNDArray<float_complext::Type> >();
   }
   

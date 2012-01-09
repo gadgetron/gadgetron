@@ -1,6 +1,13 @@
 add_subdirectory(ndarray)
-add_subdirectory(gadgettools)
 add_subdirectory(hostutils)
+
+IF (ACE_FOUND)
+        add_subdirectory(gadgettools)
+ENDIF (ACE_FOUND)
+
+if (BLAS_FOUND)
+ 	add_subdirectory(linalg)
+endif(BLAS_FOUND)
 
 if (CUDA_FOUND)
    add_subdirectory(gpucore)

@@ -36,16 +36,22 @@ public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
   //We have to overwrite close in this gadget to make sure we wait for the weights calculator.
   virtual int close(unsigned long flags);
 
+  virtual int initial_setup();
+
+  bool first_call_;
  private:
   std::vector< GrappaCalibrationBuffer* > buffers_;
   std::vector<unsigned int> dimensions_;
   std::vector<unsigned int> image_dimensions_;
   std::vector< GadgetContainerMessage<  hoNDArray< std::complex<float> > >* > image_data_;
-  std::vector< GrappaWeights<float>* > weights_;
+  std::vector< boost::shared_ptr<GrappaWeights<float> > > weights_;
   GrappaWeightsCalculator<float> weights_calculator_;
   std::vector<ACE_UINT32> time_stamps_;
   int image_counter_;
   int image_series_;
+  int target_coils_;
+  float phase_encoding_resolution_;
+  unsigned int line_offset_;
 };
 
 #endif //GRAPPAGADGET_H

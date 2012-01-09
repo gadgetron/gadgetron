@@ -14,19 +14,15 @@ class EXPORTGADGETSCORE ImageFinishGadget :
 public Gadget2<GadgetMessageImage,hoNDArray< T > >
 {
  protected:
-  virtual int process(GadgetContainerMessage<GadgetMessageImage>* m1,
-		      GadgetContainerMessage< hoNDArray< T > >* m2);
-  
+  virtual int process(GadgetContainerMessage<GadgetMessageImage>* m1, 
+                      GadgetContainerMessage< hoNDArray< T > >* m2);
 };
-
-
 
 class EXPORTGADGETSCORE ImageFinishGadgetUSHORT :
 public ImageFinishGadget<ACE_UINT16>
 {
  public:
   GADGET_DECLARE(ImageFinishGadgetUSHORT);
-
 };
 
 class EXPORTGADGETSCORE ImageFinishGadgetFLOAT :
@@ -34,7 +30,6 @@ public ImageFinishGadget<float>
 {
  public:
   GADGET_DECLARE(ImageFinishGadgetFLOAT);
-
 };
 
 class EXPORTGADGETSCORE ImageFinishGadgetCPLX :
@@ -42,6 +37,6 @@ public ImageFinishGadget< std::complex<float> >
 {
  public:
   GADGET_DECLARE(ImageFinishGadgetCPLX);
-
 };
+
 #endif //IMAGEFINISHGADGET_H

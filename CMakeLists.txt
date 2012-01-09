@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
+project(GADGETRON)
 
 if (WIN32)
 ADD_DEFINITIONS(-DWIN32 -D_WIN32 -D_WINDOWS)
@@ -8,17 +9,20 @@ SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
 endif (WIN32)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
-
-#set(CMAKE_OSX_ARCHITECTURES "i386")
-
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-project(GADGETRON)
-
 find_package(Boost REQUIRED)
-
-find_package(FFTW3 COMPONENTS single double REQUIRED)
 find_package(ACE REQUIRED)
+find_package(FFTW3 COMPONENTS single double REQUIRED)
+
+if (${CMAKE_VERSION} VERSION_LESS "2.8.4")
+ MESSAGE("You have cmake version less than 2.8.4, hence FindBLAS requires a Fortran compiler")
+ MESSAGE("Upgrade to a newer version of cmake to avoid this Fortran compiler check")
+ enable_language(Fortran)
+endif(${CMAKE_VERSION} VERSION_LESS "2.8.4")
+
+find_package(BLAS)
+find_package(LAPACK) 
 
 find_package(CUDA 4.0)
 
@@ -35,21 +39,13 @@ find_package(Numpy)
 find_package(Boost COMPONENTS python)
 find_package(PythonLibs)
 
-find_package(Doxygen)
-	if(DOXYGEN_FOUND)
-		configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doc/doxygen/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
-		add_custom_target(doc ${DOXYGEN_EXECUTABLE}
-	${CMAKE_CURRENT_BINARY_DIR}/Doxyfile WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-		COMMENT "Generating API documentation with Doxygen" VERBATIM)
-else(DOXYGEN_FOUND)
-	MESSAGE("Doxygen not found. Will not be able to build documentation")
-endif(DOXYGEN_FOUND)
-
 find_package(GLEW)
 
+add_subdirectory(doc)
 add_subdirectory(dependencies)
 add_subdirectory(apps)
 add_subdirectory(toolboxes)
-add_subdirectory(gadgets)
+IF (ACE_FOUND)
+       add_subdirectory(gadgets)
+ENDIF (ACE_FOUND)
 add_subdirectory(cmake)
-

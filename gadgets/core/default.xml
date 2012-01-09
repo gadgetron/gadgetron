@@ -35,14 +35,21 @@
       <property><name>MyTestProperty</name><value>Blah Blah</value></property>
       <property><name>MyTestProperty2</name><value>98776.862187</value></property>
     </gadget>
-	
+	 
     <gadget>
       <name>Acc</name>
       <dll>gadgetroncore</dll>
       <class>AccumulatorGadget</class>
     </gadget>
 
- 
+ 	<!--
+    <gadget>
+      <name>ImageWrite</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageWriterGadgetCPLX</class>
+    </gadget>
+    -->
+    
     <gadget>
       <name>FFT</name>
       <dll>gadgetroncore</dll>
@@ -64,20 +71,15 @@
       -->
     </gadget>
 
-	<!--
-    <gadget>
-      <name>ImageWrite</name>
-      <dll>gadgetroncore</dll>
-      <class>ImageWriterGadgetFLOAT</class>
-    </gadget>
-    -->
-    
+
+	<!--    
     <gadget>
       <name>FloatToShort</name>
       <dll>gadgetroncore</dll>
       <class>FloatToUShortGadget</class>
     </gadget>
- 
+ 	-->
+ 	
  	<!--
     <gadget>
       <name>ImageFinishCPLX</name>
@@ -86,18 +88,19 @@
     </gadget>
     -->
     
-    <!--
     <gadget>
       <name>ImageFinishFLOAT</name>
       <dll>gadgetroncore</dll>
       <class>ImageFinishGadgetFLOAT</class>
     </gadget>
-    -->
+
+	<!--
      <gadget>
       <name>ImageFinishUSHORT</name>
       <dll>gadgetroncore</dll>
       <class>ImageFinishGadgetUSHORT</class>
     </gadget>
+    -->
    </stream>
 
 </gadgetron>

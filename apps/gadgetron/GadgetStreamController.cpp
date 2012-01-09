@@ -56,6 +56,8 @@ int GadgetStreamController::open (void)
 		stream_.open(0,head,tail);
 	}
 
+	this->writer_task_.open();
+
 	return this->reactor ()->register_handler(this,
 			ACE_Event_Handler::READ_MASK);// | ACE_Event_Handler::WRITE_MASK);
 }
@@ -76,6 +78,9 @@ int GadgetStreamController::handle_input (ACE_HANDLE)
 		GADGET_DEBUG1("Received close signal from client. Closing stream...\n");
 		stream_.close(1); //Shutdown gadgets and wait for them
 		GADGET_DEBUG1("Stream closed\n");
+		GADGET_DEBUG1("Closing writer task\n");
+		this->writer_task_.close(1);
+		GADGET_DEBUG1("Writer task closed\n");
 		return 0;
 	}
 
@@ -137,10 +142,11 @@ int GadgetStreamController::handle_input (ACE_HANDLE)
 
 int GadgetStreamController::output_ready(ACE_Message_Block* mb) 
 { 
-	int res = this->putq(mb);
+	int res = this->writer_task_.putq(mb);
 	return res;
 }
 
+/*
 int GadgetStreamController::handle_output (ACE_HANDLE)
 {
 	ACE_Message_Block *mb = 0;
@@ -170,11 +176,13 @@ int GadgetStreamController::handle_output (ACE_HANDLE)
 			return GADGET_FAIL;
 		}
 
+		GADGET_DEBUG1("Ready to write output....\n");
 		if (w->write(&peer(),mb->cont()) < 0) {
 			GADGET_DEBUG1("Failed to write Message using writer\n");
 			mb->release ();
 			return GADGET_FAIL;
 		}
+		GADGET_DEBUG1("Output written\n");
 
 		mb->release();
 	}
@@ -190,6 +198,7 @@ int GadgetStreamController::handle_output (ACE_HANDLE)
 
 	return 0;
 }
+*/
 
 int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
 {
@@ -216,12 +225,16 @@ int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
 	}
 
 	// Remove all readers and writers
-	writers_.clear();
+	//writers_.clear();
 	readers_.clear();
 
 	//Clear DLL handles (to make DLLs unload if needed)
 	for (unsigned int i = 0; i < dll_handles_.size(); i++) {
-		dll_handles_[i]->close(1);
+#if defined WIN32
+		dll_handles_[i]->close(0); //On windows we will not unload the DLLs even when there are no more refs
+#else 
+		dll_handles_[i]->close(1); //On Unix/Mac it seems to be OK to do this
+#endif
 	}
 	dll_handles_.clear();
 
@@ -343,7 +356,7 @@ int GadgetStreamController::configure(std::string config_xml_string)
 			return GADGET_FAIL;
 		}
 
-		writers_.insert(slot, w);
+		writer_task_.register_writer(slot, w);
 	}
 	//Configuration of writers end
 

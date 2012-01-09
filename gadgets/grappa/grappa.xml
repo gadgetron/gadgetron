@@ -29,10 +29,21 @@
   <stream>
     <gadget>
       <name>NoiseAdjust</name>
+      <dll>gadgetronmricore</dll>
+      <class>MRINoiseAdjustGadget</class>
+    </gadget>
+
+   <gadget>
+      <name>PCA</name>
+      <dll>gadgetronmricore</dll>
+      <class>PCACoilGadget</class>
+    </gadget>
+
+    <gadget>
+      <name>CoilReduction</name>
       <dll>gadgetroncore</dll>
-      <class>NoiseAdjustGadget</class>
-      <property><name>MyTestProperty</name><value>Blah Blah</value></property>
-      <property><name>MyTestProperty2</name><value>98776.862187</value></property>
+      <class>CoilReductionGadget</class>
+      <property><name>coils_out</name><value>16</value></property>
     </gadget>
     
     <gadget>
@@ -45,9 +56,16 @@
       <name>Grappa</name>
       <dll>gadgetrongrappa</dll>
       <class>GrappaGadget</class>
+      <property><name>target_coils</name><value>8</value></property>
       <!--
       <property><name>uncombined_channels</name><value>15</value></property>
       -->
+    </gadget>
+
+    <gadget>
+      <name>GrappaUnmixing</name>
+      <dll>gadgetrongrappa</dll>
+      <class>GrappaUnmixingGadget</class>
     </gadget>
 
      <gadget>
@@ -66,14 +84,19 @@
       <class>ImageWriterGadgetFLOAT</class>
     </gadget>
     -->
+
+    <gadget>
+      <name>AutoScale</name>
+      <dll>gadgetronmricore</dll>
+      <class>AutoScaleGadget</class>
+    </gadget>
+
     
-    <!--
     <gadget>
       <name>FloatToShort</name>
       <dll>gadgetroncore</dll>
       <class>FloatToUShortGadget</class>
     </gadget>
-    -->
  
  	<!--
     <gadget>
@@ -82,20 +105,20 @@
       <class>ImageFinishGadgetCPLX</class>
     </gadget>
     -->
-    
+
+	<!--    
     <gadget>
       <name>ImageFinishFLOAT</name>
       <dll>gadgetroncore</dll>
       <class>ImageFinishGadgetFLOAT</class>
     </gadget>
-    
- 	<!--
+    -->
+
     <gadget>
       <name>ImageFinishUSHORT</name>
       <dll>gadgetroncore</dll>
       <class>ImageFinishGadgetUSHORT</class>
     </gadget>
-    -->
    </stream>
 
 </gadgetron>

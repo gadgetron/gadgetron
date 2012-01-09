@@ -320,12 +320,12 @@ bool NFFT_plan<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uin
 
   this->W = W;
 
-  unsigned int fracX = matrix_size_os.vec[0] / matrix_size.vec[0];
-  unsigned int moduX = matrix_size_os.vec[0] % matrix_size.vec[0];
+  REAL frac = (REAL)matrix_size_os.vec[0]/(REAL)matrix_size.vec[0];
+  const REAL frac_limit = (REAL)0.0000001;
 
-  for( unsigned int dim=0; dim<D; dim++){
+  for( unsigned int dim=1; dim<D; dim++){
     
-    if( ((matrix_size_os.vec[dim]/(matrix_size.vec[dim])) != fracX || (matrix_size_os.vec[dim]%(matrix_size.vec[dim]) != moduX) )){
+    if( std::abs((REAL)matrix_size_os.vec[dim]/(REAL)matrix_size.vec[dim]-frac)>frac_limit ){
       cout << endl << "Oversampling ratio is not constant between dimensions" << endl;
       return false;
     }

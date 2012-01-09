@@ -11,4 +11,4 @@
 //
 
 template<class REAL, unsigned int D> EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >
-estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data );
+estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data, int target_coils = -1);

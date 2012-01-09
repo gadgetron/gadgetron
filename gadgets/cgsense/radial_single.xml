@@ -29,15 +29,33 @@
   <stream>
     <gadget>
       <name>NoiseAdjust</name>
-      <dll>gadgetroncore</dll>
-      <class>NoiseAdjustGadget</class>
+      <dll>gadgetronmricore</dll>
+      <class>MRINoiseAdjustGadget</class>
     </gadget>
 
+    <gadget>
+      <name>PCA</name>
+      <dll>gadgetronmricore</dll>
+      <class>PCACoilGadget</class>
+    </gadget>
+
+    <gadget>
+      <name>CoilReduction</name>
+      <dll>gadgetroncore</dll>
+      <class>CoilReductionGadget</class>
+      <property>
+        <name>coils_out</name>
+        <value>16</value>
+      </property>
+    </gadget>
+  
+    <!--
     <gadget>
       <name>RemoveROOversampling</name>
       <dll>gadgetroncore</dll>
       <class>RemoveROOversamplingGadget</class>
     </gadget>
+      -->
 
     <gadget>
       <name>GPUCGRadial0</name>
@@ -49,7 +67,7 @@
       <property><name>shared_profiles</name>         <value>0</value></property>
       <property><name>number_of_iterations</name>    <value>10</value></property>
       <property><name>cg_limit</name>                <value>1e-6</value></property>
-      <property><name>oversampling</name>            <value>1.25</value></property>
+      <property><name>oversampling</name>            <value>1.5</value></property>
       <property><name>kernel_width</name>            <value>5.5</value></property>
       <property><name>kappa</name>                   <value>0.1</value></property>
       <property><name>pass_on_undesired_data</name>  <value>true</value></property>

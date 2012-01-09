@@ -38,7 +38,7 @@ second_order_partial_derivative_kernel( typename intd<D>::Type forwards_stride, 
     valN2 = in[co_to_idx<D>(coN2, dims)];
     valC = in[co_to_idx<D>(co, dims)];
     
-    T val = get_zero<T>()-valN1-valN2+valC+valC;
+    T val = valC+valC-valN1-valN2;
     
     out[idx] = val;
   }

@@ -15,7 +15,12 @@ int FFTGadget::process( GadgetContainerMessage< GadgetMessageImage>* m1,
     {
       d[i] *= m2->getObjectPtr()->get_number_of_elements();
     } 
-  return this->next()->putq(m1);
+  if (this->next()->putq(m1) < 0) {
+     return GADGET_FAIL;
+  }
+
+  return GADGET_OK;
+
 }
 
 GADGET_FACTORY_DECLARE(FFTGadget)

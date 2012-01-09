@@ -26,8 +26,9 @@ void set_phase_reference( cuNDArray<typename complext<REAL>::Type> *csm, unsigne
 //
 
 template<class REAL, unsigned int D> boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >
-estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data_in )
+estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data_in, int target_coils)
 {
+
   if( data_in->get_number_of_dimensions() < 2 ){
     cout << endl << "estimate_b1_map:: dimensionality mismatch." << endl; 
     return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type > >();
@@ -36,6 +37,13 @@ estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data_in )
   if( data_in->get_number_of_dimensions()-1 != D ){
     cout << endl << "estimate_b1_map:: dimensionality mismatch." << endl; 
     return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type > >();
+  }
+
+  int target_coils_int = 0;
+  if ((target_coils <= 0) || (target_coils > data_in->get_size(D))) {
+	  target_coils_int = data_in->get_size(D);
+  } else {
+	  target_coils_int = target_coils;
   }
 
   vector<unsigned int> image_dims, dims_to_xform;
@@ -49,9 +57,31 @@ estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data_in )
   
   unsigned int ncoils = data_in->get_size(D);
 
-  // Make a copy of input data
-  cuNDArray<typename complext<REAL>::Type > *_data_out = new cuNDArray<typename complext<REAL>::Type>(*data_in);
-  boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > data_out(_data_out);
+  // Make a copy of input data, but only the target coils
+  boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > data_out;
+  if (0 && target_coils_int == ncoils) {
+	  cuNDArray<typename complext<REAL>::Type > *_data_out = new cuNDArray<typename complext<REAL>::Type>(*data_in);
+      data_out = boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(_data_out);
+  } else {
+	  std::vector<unsigned int> odims = *(data_in->get_dimensions().get());
+	  odims[D] = target_coils_int;
+	  cuNDArray<typename complext<REAL>::Type > *_data_out = new cuNDArray<typename complext<REAL>::Type>;
+	  data_out = boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(_data_out);
+	  if (!_data_out->create(&odims)) {
+		  std::cout << "Failed to create internal storage for CSM" << std::endl;
+		  return data_out;
+	  }
+
+	  //Now copy one coil at a time
+	  unsigned long elements_per_coil = data_in->get_number_of_elements()/ncoils;
+	  for (unsigned int i = 0; i < target_coils_int; i++) {
+		  cudaMemcpy(data_out.get()->get_data_ptr()+i*elements_per_coil,
+				  	 data_in->get_data_ptr()+i*elements_per_coil,
+				  	 elements_per_coil*sizeof(typename complext<REAL>::Type),
+				  	cudaMemcpyDeviceToDevice);
+	  }
+	  ncoils = target_coils_int;
+  }
   
   // Normalize by the RSS of the coils
   if( !cuNDA_rss_normalize<REAL>( data_out.get(), D ) ){
@@ -571,12 +601,12 @@ void set_phase_reference(cuNDArray<typename complext<REAL>::Type> *csm, unsigned
 // Template instantiation
 //
 
-//template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,1>(cuNDArray<typename complext<float>::Type >*);
-template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,2>(cuNDArray<typename complext<float>::Type >*);
-//template boost::shared_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,3>(cuNDArray<typename complext<float>::Type >*);
-//template boost::shared_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,4>(cuNDArray<typename complext<float>::Type >*);
+//template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,1>(cuNDArray<typename complext<float>::Type >*, int);
+template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,2>(cuNDArray<typename complext<float>::Type >*, int);
+//template boost::shared_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,3>(cuNDArray<typename complext<float>::Type >*, int);
+//template boost::shared_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,4>(cuNDArray<typename complext<float>::Type >*, int);
 
-//template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,1>(cuNDArray<typename complext<double>::Type >*);
-template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,2>(cuNDArray<typename complext<double>::Type >*);
-//template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,3>(cuNDArray<typename complext<double>::Type >*);
-//template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,4>(cuNDArray<typename complext<double>::Type >*);
+//template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,1>(cuNDArray<typename complext<double>::Type >*, int);
+template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,2>(cuNDArray<typename complext<double>::Type >*, int);
+//template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,3>(cuNDArray<typename complext<double>::Type >*, int);
+//template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,4>(cuNDArray<typename complext<double>::Type >*, int);
