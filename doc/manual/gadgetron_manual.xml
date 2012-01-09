@@ -1,226 +1,1648 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<book xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xi="http://www.w3.org/2001/XInclude">
-<info>
-  <title>Gadgetron - Medical Image Reconstruction Framework</title>
-	<author>
-        <personname>
-        <honorific>Dr</honorific>
-        <firstname>Michael S.</firstname>
-        <surname>Hansen</surname>
-        </personname>
-        <email>michael.hansen@nih.gov</email>
-  </author>
-	<author>
-        <personname>
-        <honorific>Dr</honorific>
-        <firstname>Thomas S.</firstname>
-        <surname>Sørensen</surname>
-        </personname>
-        <email>sangild@cs.au.dk</email>
-  </author>
- </info>
+<book version="5.0" xmlns="http://docbook.org/ns/docbook"
+      xmlns:xlink="http://www.w3.org/1999/xlink"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:ns5="http://www.w3.org/2000/svg"
+      xmlns:ns4="http://www.w3.org/1998/Math/MathML"
+      xmlns:ns3="http://www.w3.org/1999/xhtml"
+      xmlns:ns="http://docbook.org/ns/docbook">
+  <info>
+    <title>Gadgetron - Medical Image Reconstruction Framework</title>
 
-<chapter>
-<title>Introduction</title>
+    <author>
+      <personname><honorific>Dr</honorific> <firstname>Michael S.</firstname>
+      <surname>Hansen</surname></personname>
 
-<sect1> 
-  <title>What is the Gadgetron</title>
-  <para>
-    The Gadgetron framework is a streaming data processing framework developed for medical image reconstruction. It has been developed as a tool to prototype, test, and deploy novel image reconstruction algorithms. The framework also contains several toolboxes with data structures and algorithm, which can be used within the streaming framework or in standalone applications. This document serves as a very brief introduction to the framework and gives a few examples of using the framework. In addition to this document, source code documentation is provided with the framework.
-  </para>
-  <para>
-    Initially this framework was developed to support the work of the authors in the field of advanced MRI reconstruction, and specifically to support work on fast image reconstruction not only on traditional CPU architecture but also using commodity graphics hardware (GPUs). Over the years we have developed and published several journal papers in this field. Some examples include fast regridding on the GPU  sorensen_accelerating_2008 and parallel Cartesian parallel imaging hansen_cartesian_2008. 
-  </para>
-</sect1>
+      <email>michael.hansen@nih.gov</email>
+    </author>
 
-<sect1>
-  <title>Obtaining Gadgetron</title>
-  <para>
-    The things you need: Gadgetron source code, example datasets 
-  </para>
+    <author>
+      <personname><honorific>Dr</honorific> <firstname>Thomas S.</firstname>
+      <surname>Sørensen</surname></personname>
+
+      <email>sangild@cs.au.dk</email>
+    </author>
+  </info>
+
+  <chapter>
+    <title>Introduction</title>
+
+    <sect1>
+      <title>What is the Gadgetron</title>
+
+      <para>The Gadgetron framework is a streaming data processing framework
+      developed for medical image reconstruction. It has been developed as a
+      tool to prototype, test, and deploy novel image reconstruction
+      algorithms. The framework also contains several toolboxes with data
+      structures and algorithm, which can be used within the streaming
+      framework or in standalone applications. This document serves as an
+      introduction to the framework and gives a few examples of using the
+      framework.</para>
+
+      <para>Initially this framework was developed to support the work of the
+      authors in the field of advanced MRI reconstruction, and specifically to
+      support work on fast image reconstruction not only on traditional CPU
+      architecture but also using commodity graphics hardware (GPUs). Over the
+      years we have developed and published several journal papers in this
+      field. Some examples include fast regridding on the GPU <citation><xref
+      linkend="sorensen08" /></citation>, Cartesian parallel on the GPU
+      <citation><xref linkend="hansen08" /></citation>, and non-Cartesian
+      parallel imaging on the GPU <citation><xref
+      linkend="sorensen09" /></citation>.</para>
+    </sect1>
+
+    <sect1>
+      <title>Obtaining Gadgetron</title>
+
+      <para>The Gadgetron is available as a cross-platform source code
+      distribution (sorry no binaries), which should compile on Linux, Mac,
+      and Windows. It general it is easier to get your environment set up on
+      Linux since all dependencies are readily available, but look at the
+      compilation instructions for your platform below. If you just want to
+      play with the Gadgetron, you would install Ubuntu (our preferred Linux
+      distribution) in a VirtualBox (<uri type="website"
+      xlink:href="https://www.virtualbox.org/">https://www.virtualbox.org/</uri>)
+      virtual machine and follow the Linux compilation instructions
+      below.</para>
+
+      <para>The Gadgetron is available from the project Sourceforge
+      website:</para>
+
+      <para><uri type="website"
+      xlink:href="http://sourceforge.net/projects/gadgetron">http://sourceforge.net/projects/gadgetron</uri></para>
+
+      <para>This manual is available in HTML form at:</para>
+
+      <para><uri type="website"
+      xlink:href="http://gadgetron.sourceforge.net/1.0/manual/gadgetron_manual.html">http://gadgetron.sourceforge.net/1.0/manual/gadgetron_manual.html</uri></para>
+
+      <para>Or in PDF form at:</para>
+
+      <para><uri type="website"
+      xlink:href="http://gadgetron.sourceforge.net/1.0/manual/gadgetron_manual.pdf">http://gadgetron.sourceforge.net/1.0/manual/gadgetron_manual.pdf</uri></para>
+
+      <para>API documentation (generated with Doxygen) is available
+      from:</para>
+
+      <para><uri type="website"
+      xlink:href="http://gadgetron.sourceforge.net/1.0/api/">http://gadgetron.sourceforge.net/1.0/api/</uri></para>
+
+      <sect2>
+        <title>Dependencies</title>
+
+        <para>The Gadgetron depends on a number of libraries that can either
+        be downloaded for free or that may already be part of the installation
+        on your workstation. If you are working on a Linux platform you should
+        be able to install everything you need without compiling anything.
+        Here is a list of the components that you will need. Some are
+        optional.</para>
+
+        <para>Before trying to install all of these components from scratch,
+        please check the specific installation instructions for your platform
+        of choice. If you are on a Linux workstation, the installation is
+        trivial.</para>
+
+        <itemizedlist>
+          <listitem>
+            <para><emphasis>CMake</emphasis>. The Gadgetron uses
+            <application>cmake</application> for cross platform building.
+            Available from <uri type="website"
+            xlink:href="http://www.cmake.org/cmake/resources/software.html">http://www.cmake.org/cmake/resources/software.html</uri>.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>ADAPTIVE Computing Environment (ACE)</emphasis>.
+            Available from <uri type="website"
+            xlink:href="http://www.cs.wustl.edu/~schmidt/ACE.html">http://www.cs.wustl.edu/~schmidt/ACE.html</uri>.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>Boost C++ Libraries</emphasis>. Available from
+            <uri type="website"
+            xlink:href="http://www.boost.org/">http://www.boost.org/</uri>.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>FFT3 Library</emphasis> for Fast Fourier
+            Transforms. Available from <uri type="website"
+            xlink:href="http://www.fftw.org/">http://www.fftw.org/</uri>.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>BLAS</emphasis> and <emphasis>LAPACK</emphasis>
+            (optional). Most Linux distributions come with these libraries and
+            they are included on Mac OS X as well, but the vendor depends on
+            your distribution and platform. See specific instructions below
+            for Windows.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>Python</emphasis> (optional). Python is included
+            with Mac OS X and Linux but on Windows you will need to install
+            Python if you wish to use Python prototyping. Available from <uri
+            type="website"
+            xlink:href="http://www.python.org/">http://www.python.org/</uri>.
+            Along with Python you need numpy (and you probably want to have
+            SciPy) as well.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>CUDA</emphasis> (optional). For GPU support, you
+            need CUDA from Nvidia which can de downloaded from <uri
+            type="website"
+            xlink:href="http://developer.nvidia.com/cuda-toolkit-40">http://developer.nvidia.com/cuda-toolkit-40</uri>.
+            You will need a CUDA driver for your graphics card too, which is
+            available from the same website. On Ubuntu 11.10 (or newer) the
+            driver is included with your distribution. See the specific
+            installation guide for your platform.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>CULA</emphasis> (optional). For using LAPACK
+            routines on the GPU we use CULA. This is the only dependency which
+            is not Open Source. You can download a free version of CULA from
+            <uri type="website"
+            xlink:href="http://www.culatools.com/downloads/dense/">http://www.culatools.com/downloads/dense/</uri>.
+            A free registration is required.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>QT4</emphasis> (optional). Some of the standalone
+            and Gadgetron client example applications use QT for creating user
+            interfaces. Again it comes with most Linux distributions, but can
+            also be obtained from <uri type="website"
+            xlink:href="http://qt.nokia.com/">http://qt.nokia.com/</uri>.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>Doxygen</emphasis> (Optional). If you would like
+            to build the API documentation, you need Doxygen. It is included
+            in most Linux distributions or you can get it from <uri
+            type="website"
+            xlink:href="http://www.stack.nl/~dimitri/doxygen/">http://www.stack.nl/~dimitri/doxygen/</uri>.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>Docbook</emphasis> (Optional). If you would like
+            to the manual (this document), you need Docbook. There are a
+            number of tools needed like <application>xsltproc</application>
+            and <application>fop</application> (for the PDF version of the
+            library). Additionally, you need the Docbook stylesheets, which
+            can be obtained from It is included in most Linux distributions or
+            you can get it from <uri type="website"
+            xlink:href="http://docbook.sourceforge.net/">http://docbook.sourceforge.net/</uri>,
+            but they are also included with most Linux distributions.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>Git (optional)</emphasis>. We generally use
+            <application>git</application> to manage our source code archives.
+            You can use any source code management system you would like (or
+            none at all), but if you would like to stay in line with the
+            Gadgetron team, use <application>git</application>. Available from
+            <uri type="website"
+            xlink:href="http://git-scm.com/">http://git-scm.com/</uri>.</para>
+          </listitem>
+        </itemizedlist>
+      </sect2>
+    </sect1>
+
+    <sect1>
+      <title>Compiling and Installing</title>
+
+      <sect2>
+        <title>Linux Instructions</title>
+
+        <para>If you want to get started with the Gadgetron quickly, Linux is
+        the way to go. All of the dependencies are included in most major
+        distributions and can be installed quickly without having to compile
+        anything. In the following sections we will walk you through the steps
+        you need to set up a fully loaded Gadgetron installation. We will
+        assume that you are starting with a freshly installed Ubuntu 11.10
+        available from the Ubuntu website (http://www.ubuntu.com). If you
+        don't have a machine available for installing Ubuntu, you can always
+        try it out in a virtual machine using virtualization software such as
+        VirtualBox (<uri type="website"
+        xlink:href="https://www.virtualbox.org/">https://www.virtualbox.org/</uri>).</para>
+
+        <para>If you would like to use the GPU components included in the
+        Gadgetron and you have a GPU available on your system, please complete
+        the CUDA/CULA installations as described in <xref
+        linkend="section.linuxgpuinstall" />.</para>
+
+        <para>First install all dependencies for Gadgetron. The following will
+        install everything you need:</para>
+
+        <screen>
+      <prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install doxygen cmake \
+      libqt4-dev libglew1.6-dev \
+      docbook5-xml docbook-xsl-doc-pdf \
+      docbook-xsl-doc-html docbook-xsl-ns xsltproc \
+      fop git-core libboost-dev libboost-python-dev \
+      libfftw3-dev libace-dev python-dev python-numpy \
+      freeglut3-dev libxi-dev liblapack-dev build-essential</userinput>
+    </screen>
+
+        <para>Now download the Gadgetron archive and unpack it somewhere. If
+        you have access to a git repository, you can get the code with:</para>
+
+        <screen>
+      <prompt>user@mycomputer:~$</prompt> <userinput>git clone ssh://user@hostname/path/gadgetron.git</userinput>
+    </screen>
+
+        <para>Now configure and build the Gadgetron</para>
+
+        <screen>
+      <prompt>user@mycomputer:~$</prompt> <userinput>cd gadgetron</userinput>
+      <prompt>user@mycomputer:~/gadgetron$</prompt> <userinput>mkdir build</userinput>
+      <prompt>user@mycomputer:~/gadgetron$</prompt> <userinput>cd build</userinput>
+      <prompt>user@mycomputer:~/gadgetron/build$</prompt> <userinput>cmake ../</userinput>
+      <prompt>user@mycomputer:~/gadgetron/build$</prompt> <userinput>make</userinput>
+    </screen>
+
+        <para>Finally install (default location is
+        <filename>/usr/local/gadgetron</filename>)</para>
+
+        <screen>
+      <prompt>user@mycomputer:~/gadgetron/build$</prompt> <userinput>sudo make install</userinput>
+   </screen>
+
+        <para>Final step is to add paths to your
+        <filename>~/.bashrc</filename> file.</para>
+
+        <programlisting>
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gadgetron/lib
+export PATH=$PATH:/usr/local/gadgetron/bin
+export GADGETRON_HOME=/usr/local/gadgetron
+       </programlisting>
+
+        <para>Next step is to run a simple example reconstruction as outlined
+        in <xref linkend="simpleexample" />.</para>
+
+        <sect3 xml:id="section.linuxgpuinstall">
+          <title>Installing GPU components (CUDA and CULA) on Linux</title>
+
+          <para>First install your Nvidia driver. As of Ubuntu 10.11, it is no
+          longer necessary to install the developers driver from Nvidia. The
+          one included with Ubuntu supports CUDA. To install type:</para>
+
+          <screen>
+	<prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install nvidia-current \
+	nvidia-current-dev nvidia-current-updates \
+	nvidia-current-updates-dev</userinput>
+      </screen>
+
+          <para>Now we need to install gcc 4.4. Ubuntu comes with gcc 4.6,
+          which is not compatible with the current versions of the CUDA nvcc
+          compiler.</para>
+
+          <screen>
+	<prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install gcc-4.4 g++-4.4 build-essential</userinput>
+      </screen>
+
+          <para>Setup alternatives system to allow easy switching between the
+          two versions of gcc/g++</para>
+
+          <screen>
+	<prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives \
+	--install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 \
+	--slave /usr/bin/g++ g++ /usr/bin/g++-4.6</userinput>
+	<prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives \
+	--install /usr/bin/gcc gcc /usr/bin/gcc-4.4 60 \
+	--slave /usr/bin/g++ g++ /usr/bin/g++-4.4</userinput>
+      </screen>
+
+          <para>Check your gcc compiler (should now be version 4.4.6):</para>
+
+          <screen>
+	<prompt>user@mycomputer:~$</prompt> <userinput>gcc -v</userinput>
+      </screen>
+
+          <para>When you want to switch between the compiler versions:</para>
+
+          <screen>
+	<prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives --config gcc</userinput>
+      </screen>
+
+          <para>Final step is to actually install CUDA and CULA. Download the
+          following files:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para><filename>cudatoolkit_4.0.17_linux_64_ubuntu10.10.run</filename>
+              from <uri type="website"
+              xlink:href="http://developer.nvidia.com/cuda-toolkit-40">http://developer.nvidia.com/cuda-toolkit-40</uri></para>
+            </listitem>
+
+            <listitem>
+              <para><filename>cula_dense_free_R13a-linux64.run</filename> from
+              <uri type="website"
+              xlink:href="http://www.culatools.com/downloads/dense/">http://www.culatools.com/downloads/dense/</uri>
+              (free registration requited)</para>
+            </listitem>
+          </itemizedlist>
+
+          <para>Go to folder where files are downloaded, and type:</para>
+
+          <screen>
+	<prompt>user@mycomputer:~$</prompt> <userinput>chmod +x cudatoolkit_4.0.17_linux_64_ubuntu10.10.run</userinput>
+	<prompt>user@mycomputer:~$</prompt> <userinput>sudo ./cudatoolkit_4.0.17_linux_64_ubuntu10.10.run</userinput>
+	<prompt>user@mycomputer:~$</prompt> <userinput>chmod +x cula_dense_free_R13a-linux64.run</userinput>
+	<prompt>user@mycomputer:~$</prompt> <userinput>sudo ./cula_dense_free_R13a-linux64.run</userinput>
+      </screen>
+
+          <para>Follow the instructions. When you are done with this
+          installation, add necessary paths. In practice, you may want to add
+          the following to your <filename>~/.bashrc</filename> file.</para>
+
+          <programlisting>
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib
+export CULA_ROOT="/usr/local/cula"
+export CULA_INC_PATH="$CULA_ROOT/include"
+export CULA_BIN_PATH_32="$CULA_ROOT/bin"
+export CULA_BIN_PATH_64="$CULA_ROOT/bin64"
+export CULA_LIB_PATH_32="$CULA_ROOT/lib"
+export CULA_LIB_PATH_64="$CULA_ROOT/lib64"
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CULA_LIB_PATH_64
+    </programlisting>
+
+          <para>That is it, you should be ready to compile and run CUDA (and
+          CULA) applications. You may want to download the CUDA SDK from
+          Nvidia and check your installation, but it is not required.</para>
+        </sect3>
+      </sect2>
+    </sect1>
+
+    <sect1 xml:id="simpleexample">
+      <title>Running a simple example reconstruction</title>
+
+      <para>Test datasets are available from the Sourceforge website:</para>
+
+      <para><uri type="website"
+      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/">https://sourceforge.net/projects/gadgetron/files/testdata/</uri></para>
+
+      <para>In this example we will use the
+      <filename>simple_gre.tar.gz</filename> dataset from the
+      <filename>mri</filename> section.</para>
+
+      <para>Start by downloading the dataset to a location of your choice and
+      unpack it. On Linux or Mac you would type:</para>
+
+      <screen>
+    <prompt>user@mycomputer:~/temp/test_data$</prompt> <userinput>tar -xzvf simple_gre.tar.gz</userinput>
+  </screen>
+
+      <para>There should be two files in the dataset
+      <filename>simple_gre.gmr</filename> and
+      <filename>simple_gre.xml</filename>.</para>
+
+      <para>Next open two different terminal windows. So that you can observe
+      both client and Gadgetron communication. In the Gadgetron terminal
+      window, simply type:</para>
+
+      <screen>
+    <prompt>user@mycomputer:~/temp/gadgetron_out$</prompt> <userinput>gadgetron</userinput>
+  </screen>
+
+      <para>In the client window (e.g. where you just unpacked your data)
+      type:</para>
+
+      <screen>
+    <prompt>user@mycomputer:~/temp/test_data$</prompt> <userinput>mriclient -d simple_gre.gmr -x simple_gre.xml -c default.xml</userinput>
+  </screen>
+
+      <para>You should see some logging information in the Gadgetron window
+      and in the client window, you should see that images are being returned
+      from the Gadgetron:</para>
+
+      <screen>
+user@mycomputer:~/temp/test_data$ mriclient -d simple_gre.gmr -x simple_gre.xml -c default.xml
+Gadgetron MRI Data Sender
+  -- host:            localhost
+  -- port:            9002
+  -- data:            simple_gre.gmr
+  -- parm:            simple_gre.xml
+  -- conf:            default.xml
+  -- loop:            1
+(2815|140119753992000) Connection from 127.0.0.1:9002
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+2815, 81, GadgetronConnector, Close Message received
+(2815|140119714780928) Handling close...
+(2815|140119714780928) svc done...
+(2815|140119714780928) Handling close...
+  </screen>
+
+      <para>The images should be returned to the folder where you started the
+      <application>mriclient</application>. There the case of the
+      <filename>default.xml</filename> configuration the files are images in
+      real, single precision format.</para>
+
+      <para>The output files are a simplified array format which is used as
+      output for many Gadgetron components. See <xref
+      linkend="simplearrayfiles" /> for details on this file format. To simply
+      read the first image into Matlab. Use the following code:</para>
+
+      <programlisting>
+f = fopen('out_00000.real');
+ndims = fread(f,1,'int32'); 
+dims = fread(f,ndims,'int32'); 
+data = fread(f,prod(dims),'float'); 
+fclose(f); 
+data = reshape(data,dims');
+  </programlisting>
+
+      <para>The image is now contained in the <varname>data</varname> variable
+      in Matlab.</para>
+    </sect1>
+  </chapter>
+
+  <chapter>
+    <title>Technical Details</title>
+
+    <sect1>
+      <title>Architecture</title>
+
+      <para>The Gadgetron consists of a streaming processing architecture and
+      a set of toolboxes, which can be included in the streaming components or
+      used for building standalone applications. The architecture is outlined
+      in <xref linkend="fig.gadgetron.architecture" />.</para>
+
+      <figure xml:id="fig.gadgetron.architecture">
+        <title>Gadgetron Architecture</title>
+
+        <mediaobject>
+          <imageobject role="html">
+            <imagedata align="left" fileref="figs/architecture.png"
+                       format="PNG" width="10in"></imagedata>
+          </imageobject>
+
+          <imageobject role="fo">
+            <imagedata align="left" fileref="figs/architecture.png"
+                       format="PNG" width="5in"></imagedata>
+          </imageobject>
+
+          <textobject>
+            <phrase>Gadgetron Architecture</phrase>
+          </textobject>
+        </mediaobject>
+      </figure>
+
+      <para>The Gadgetron received connections from clients through a TCP/IP
+      connection. You can send data from any application where you can open a
+      socket. Once a connection to a client has been established (see <xref
+      linkend="sect.communicationprotocol" />), the Gadgetron will read data
+      from the socket and pass it on down a chain of processing steps. The
+      responsibility of reading and writing packages on the socket is
+      dispatched to a set of Readers and Writers (see <xref
+      linkend="sect.readerswriters" />). Each step in the processing chain is
+      implemented in a module or Gadget (see <xref linkend="sect.gadgets" />).
+      The create a reconstruction with a specific behavior multiple Gadgets
+      are chained together. This assembly of Gadgets is done dynamically at
+      run-time (see <xref linkend="sect.streamconfiguration" />).</para>
+
+      <sect2 xml:id="sect.gadgets">
+        <title>Gadgets</title>
+
+        <para>A Gadget is the functional unit of the Gadgetron. You can think
+        of the Gadget as a device with an input and output. Data passes
+        through the device and is modified and/or transformed. By wiring
+        multiple Gadgets together you can create a reconstruction program. A
+        schematic outline of a Gadget is seen in <xref
+        linkend="fig.gadgetron.gadget" /></para>
+
+        <figure xml:id="fig.gadgetron.gadget">
+          <title>Gadget</title>
+
+          <mediaobject>
+            <imageobject role="html">
+              <imagedata align="left" fileref="figs/gadget.png" format="PNG"
+                         width="6in"></imagedata>
+            </imageobject>
+
+            <imageobject role="fo">
+              <imagedata align="left" fileref="figs/gadget.png" format="PNG"
+                         width="3in"></imagedata>
+            </imageobject>
+
+            <textobject>
+              <phrase>Gadget</phrase>
+            </textobject>
+          </mediaobject>
+        </figure>
+
+        <para>The Gadget is an active object. It has its own thread (or
+        threads) of execution and an input queue where data is placed for
+        processing by either the Gadgetron framework or an upstream Gadget.
+        Gadgets are based on the <classname>ACE_Task</classname> from the ACE
+        library.</para>
+
+        <para>The active thread(s) in the Gadget will pick up a data package
+        from the queue, and then pass it on to a virtual
+        <function>process</function>. An abbreviated version of the header
+        <filename>Gadget.h</filename> is seen below:</para>
+
+        <programlisting>
+
+class Gadget : public ACE_Task&lt;ACE_MT_SYNCH&gt;
+{
+
+public:
+   virtual int svc(void)
+   {
+      //Pick up package from queue
+	     
+      //Call process
+      if (this-&gt;process(m) == -1) {
+         //Handle error
+      }
+      return 0;
+   }
+
+   //More function (left out for simplicity)
+
+protected:
+   virtual int process(ACE_Message_Block * m) = 0;
+
+   virtual int process_config(ACE_Message_Block * m) {
+      return 0;
+   }
+
+};
+
+</programlisting>
+
+        <para>The data package used by the <classname>ACE_Task</classname> is
+        the <classname>ACE_Message_Block</classname>, which is a very basic
+        block of data (essentially just a byte array). To make it possible for
+        the Gadgets to check if the data blocks on the message queue are of
+        the type of data that the Gadget expects, the Gadgetron uses a
+        modified <classname>ACE_Message_Block</classname> called
+        <classname>GadgetContainerMessage</classname>, which can contain any
+        class with a no-argument constructor. It is then possible to check if
+        the <classname>GadgetContainerMessage</classname> contains a specific
+        type of data and if so, access that object. Supposed I wanted to store
+        a class named <classname>MyClass</classname>:</para>
+
+        <programlisting>
+
+GadgetContainerMessage&lt;MyClass&gt;* m = 
+  new GadgetContainerMessage&lt;MyClass&gt;();
+
+MyClass* mc = m-&gt;getObjectPtr();
+
+//Do something with mc
+
+m-&gt;release(); //Delete the message block and containing data
+
+</programlisting>
+
+        <para>Now if a function received an
+        <classname>ACE_Message_Block</classname> it is possible to check if it
+        is of a certain type:</para>
+
+        <programlisting>
+
+int process(ACE_Message_Block* mb)
+{
   
-  <sect2>
-    <title>Dependencies</title>
-    ACE, Boost, Python, CUDA, CULA, FFTW3, BLAS, LAPACK
-  </sect2>
+  GadgetContainerMessage&lt;MyClass&gt;* m = 
+    AsContainerMessage&lt;MyClass&gt;(mb);
+
+  if (m) {
+    MyClass* mc = m-&gt;getObjectPtr();
+    
+    //Do something with mc
+
+  } else {
+    //Something went wrong, deal with error
+    return -1;
+  }
+
+  mb-&gt;release();
+
+  return 0;
+}
+
+</programlisting>
+
+        <para>It is possible to chain more than one
+        <classname>ACE_Message_Block</classname> together using the
+        <function>cont</function> function and this effectively gives us a way
+        to pass multiple arguments into a Gadget and checking if they have the
+        appropriate types:</para>
+
+        <programlisting>
+
+int process(ACE_Message_Block* mb)
+{
   
-</sect1>
+  GadgetContainerMessage&lt;MyClass&gt;* m1 = 
+    AsContainerMessage&lt;MyClass&gt;(mb);
 
-<sect1>
-  <title>Compiling and Installing</title>
-  <sect2>
-    <title>Linux Instructions</title>
-    <para>Starting with a blank Ubuntu, what do you do</para>
-  </sect2>
+  GadgetContainerMessage&lt;MyOtherClass&gt;* m2 = 
+    AsContainerMessage&lt;MyOtherClass&gt;(mb-&gt;cont());
+
+  if (m1 &amp;&amp; m2) {
+    MyClass* mc = m1-&gt;getObjectPtr();
+    MyOtherClass* moc = m2-&gt;getObjectPtr();
+    
+    //Do something with mc
+
+  } else {
+    //Something went wrong, deal with error
+    return -1;
+  }
+
+  mb-&gt;release(); //This deletes both message blocks
+
+  return 0;
+}
+
+</programlisting>
+
+        <para>This gives the Gadget a flexible way of picking up a package
+        from the input queue and checking if it has the right data type, and
+        if so start processing. It gets a bit tedious and error prone to
+        repeat checking code like that in every Gadget. To overcome this, the
+        Gadget comes with a set of templated classes to automate it. Say you
+        would like to make a Gadget which takes a single input argument, you
+        could inherit from <classname>Gadget1</classname>. If you need two
+        arguments, you inherit from <classname>Gadget2</classname>:</para>
+
+        <programlisting>
+
+template &lt;class P1, class P2&gt; class Gadget2 : public Gadget
+{
+protected:
+   int process(ACE_Message_Block* mb)
+   {
+     //Do type checking 
+   }
+
+   virtual int process(GadgetContainerMessage&lt;P1&gt;* m1, GadgetContainerMessage&lt;P2&gt;* m2) = 0;
+};
+
+</programlisting>
+
+        <para>This Gadget does the type checking for you and when the
+        arguments have been checked, it will call the virtual
+        <function>process</function> above. So all you need to do in order to
+        implement a Gadget that takes two arguments is to implement this
+        function. As an example, let's look at a very simple Gadget, which
+        receives an image header and some image data and does a Fourier
+        transform of the first 3 dimensions. First the header file
+        <filename>FFTGadget.h</filename></para>
+
+        <programlisting>
+
+#include "gadgetroncore_export.h"
+#include "Gadget.h"
+#include "GadgetMRIHeaders.h"
+#include "hoNDArray.h"
+#include &lt;complex&gt;
+
+class EXPORTGADGETSCORE FFTGadget : 
+public Gadget2&lt;GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;
+{
+ public:
+  GADGET_DECLARE(FFTGadget)
+
+ protected:
+  virtual int process( GadgetContainerMessage&lt; GadgetMessageImage&gt;* m1,
+		       GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2);
+
+};
+
+</programlisting>
+
+        <para>There is a lot going on here, so let's walk through it step by
+        step. The Gadget takes two arguments: 1)
+        <classname>GadgetMessageImage</classname>, which is just a struct with
+        some image header information (it is defined in
+        <filename>GadgetMRIHeaders.h</filename>), and 2) a
+        <classname>hoNDArray</classname>, which is a multidimensional array
+        (see <xref linkend="sect.ndarray" />) storage container. In this case
+        the <classname>hoNDArray</classname> contains complex floating point
+        data.</para>
+
+        <para>There are a couple of other things to notice. One is the
+        <function>EXPORTGADGETSCORE</function> macro in the class definition.
+        This is needed to make things work properly on Windows. It is defined
+        in <filename>gadgetroncore_export.h</filename> and is used on Windows
+        to indicate if the class is being imported or exported from a DLL, it
+        translates into <function>__declspec(dllexport)</function> or
+        <function>__declspec(dllimport)</function>. It is beyond the scope of
+        this manual to into why that is needed, but keep in mind that you need
+        something like that if you are creating your own Gadgets. Each shared
+        library (DLL) has its own export declaration macro.</para>
+
+        <para>The other thing to notice is the
+        <function>GADGET_DECLARE(FFTGadget)</function> macro. This is again
+        something which is needed to keep Windows happy. Whenever you create a
+        new Gadget, you need this macro in your Gadget to make things work
+        properly on Windows.</para>
+
+        <para>The actual implementation looks like this:</para>
+
+        <programlisting>
+
+#include "FFTGadget.h"
+#include "FFT.h"
+
+int FFTGadget::process( GadgetContainerMessage&lt; GadgetMessageImage&gt;* m1,
+			GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2)
+{
+  FFT&lt;float&gt;::instance()-&gt;ifft(m2-&gt;getObjectPtr(),0);
+  FFT&lt;float&gt;::instance()-&gt;ifft(m2-&gt;getObjectPtr(),1);
+  FFT&lt;float&gt;::instance()-&gt;ifft(m2-&gt;getObjectPtr(),2);
+
+  if (this-&gt;next()-&gt;putq(m1) &lt; 0) {
+     return GADGET_FAIL;
+  }
+
+  return GADGET_OK;
+}
+
+GADGET_FACTORY_DECLARE(FFTGadget)
+
+</programlisting>
+
+        <para>As you can see, once we are inside the
+        <function>process</function> function, the data has already been
+        converted to the appropriate container messages and we can start
+        processing the data. This function uses an FFT toolbox (more on
+        toolboxes in <xref linkend="sect.toolboxes" />). After the data has
+        been Fourier transformed along the first 3 dimensions, it is placed on
+        the next Gadgets queue. Remember the two
+        <classname>GadgetContainerMessage</classname> objects were originally
+        picked up from the message queue as a chain of
+        <classname>ACE_Message_Block</classname> objects and they are still
+        chained together, i.e. when passing <varname>m1</varname> on to the
+        next Gadget we are effectively passing both arguments on.</para>
+
+        <para>Another couple of things to notice the
+        <varname>GADGET_OK</varname> and <varname>GADGET_FAIL</varname>
+        macros. They are defined as 0 and -1 respectively. The convention in
+        the Gadgetron is to return 0 when a function succeeds and &lt; 0 when
+        it fails, unless the function returns a pointer.</para>
+
+        <para>Last thing to notice is the
+        <function>GADGET_FACTORY_DECLARE(FFTGadget)</function> statement. This
+        is a macro which declares functions for loading a Gadget of this type
+        out of a shared library (DLL) and destroying it again when we are
+        done. This is needed to make sure that we can load the Gadget on all
+        platforms. When you create your own gadgets you must use this macro to
+        declare the factory function for the Gadget.</para>
+
+        <para>For a tutorial on how to make your own Gadget library see <xref
+        linkend="sect.makingnewgadgetlibrary" />.</para>
+      </sect2>
+
+      <sect2 xml:id="sect.readerswriters">
+        <title>Readers and Writers</title>
+
+        <para>As illustrated in <xref linkend="fig.gadgetron.architecture" />
+        the Gadgetron uses a set of Readers and Writers to deal with the
+        incoming communication on the TCP/IP socket. Readers are responsible
+        for deserialization of packages and Writers are responsible for
+        serialization of packages. All packages that arrive on the socket will
+        start with a message ID. Based on this ID, the Gadgetron delegates the
+        responsibility of reading the package of the socket to a particular
+        instance of a <classname>GadgetMessageReader</classname> defined by
+        the following abstract class:</para>
+
+        <programlisting>
+
+class GadgetMessageReader
+{
+ public:
+  virtual ACE_Message_Block* read(ACE_SOCK_Stream* stream) = 0;
+};
+
+</programlisting>
+
+        <para>In order to be able to read a specific type of data, the
+        <function>read</function> function must be implemented for that data
+        type. As an example here is the
+        <classname>GadgetMessageReader</classname>, which reads an MRI data
+        acquisition from the socket.</para>
+
+        <programlisting>
+
+class EXPORTGADGETSCORE MRIAcquisitionReader : public GadgetMessageReader
+{
+ public:
+  GADGETRON_READER_DECLARE(MRIAcquisitionReader);
+  virtual ACE_Message_Block* read(ACE_SOCK_Stream* socket);
+};
+
+</programlisting>
+
+        <para>Note the
+        <function>GADGETRON_READER_DECLARE(MRIAcquisitionReader)</function>
+        declaration. This is equivalent to the declaration needed for the
+        Gadgets (see <xref linkend="sect.gadgets" />) in order to make them
+        load properly from shared libraries.</para>
+
+        <para>The implementation of this particular reader is as follows (this
+        is an abbreviated version without error checking, etc.):</para>
+
+        <programlisting>
+
+ACE_Message_Block* MRIAcquisitionReader::read(ACE_SOCK_Stream* sock)
+{
+
+   GadgetContainerMessage&lt;GadgetMessageAcquisition&gt;* m1 = 
+      new GadgetContainerMessage&lt;GadgetMessageAcquisition&gt;();
   
-<sect2>
-  <title>Mac Instructions</title>
-  <para>We have to figure out where we start with the Mac</para>
-</sect2>
+   GadgetContainerMessage&lt;hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2 = 
+      new GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;();
+  
+   m1-&gt;cont(m2);
 
-<sect2>
-  <title>Windows Instructions</title>
-  <para>Starting with a blank Windows 7, what do you do</para>
-</sect2>
-</sect1>
+   sock-&gt;recv_n(m1-&gt;getObjectPtr(), sizeof(GadgetMessageAcquisition);
 
-<sect1>
-  <title>Running a simple example reconstruction</title>
-</sect1>
+   std::vector&lt;unsigned int&gt; adims;
+   adims.push_back(m1-&gt;getObjectPtr()-&gt;samples);
+   adims.push_back(m1-&gt;getObjectPtr()-&gt;channels);
 
-</chapter>
+   m2-&gt;getObjectPtr()-&gt;create(&amp;adims)
+  
+   long data_length = sizeof(std::complex&lt;float&gt;)*
+      m1-&gt;getObjectPtr()-&gt;samples*m1-&gt;getObjectPtr()-&gt;channels;
+      
+   sock-&gt;recv_n (m2-&gt;getObjectPtr()-&gt;get_data_ptr(), data_length);
+   
+   return m1;
+}
 
-<chapter>
-<title>Technical Details</title>
-<sect1>
+GADGETRON_READER_FACTORY_DECLARE(MRIAcquisitionReader)
 
-<title>Architecture</title>
-<figure xml:id="fig.gadgetron.architecture">
-  <title>Gadgetron Architecture</title>
-  <mediaobject>
-    <imageobject condition="print">
-      <imagedata align="left" width="5in" format="PDF"
-		 fileref="figs/architecture.pdf"/>
-    </imageobject>
-    <imageobject condition="web">
-      <imagedata align="left" width="10in" format="PNG"
-		 fileref="figs/architecture.png"/>
-    </imageobject>
-    <textobject><phrase>Gadgetron Architecture</phrase></textobject>
-  </mediaobject>
-</figure>
+</programlisting>
 
-<sect2>
-<title>Gadgets</title>
-</sect2>
+        <para>This Reader allocates two
+        <classname>GadgetContainerMessage</classname> data blocks to contain
+        the incoming data. First an MRI acquisition header (defined in
+        <filename>GadgetMRIHeaders.h</filename>is read. Based on this the
+        length of each acquisition (number of samples) and the number of
+        acquisition channels are determined. Then the
+        <classname>hoNDArray</classname> is allocated to store the data and
+        the data is read from the socket and into this
+        <classname>hoNDArray</classname>. Notice that the two
+        <classname>GadgetContainerMessage</classname> are chained together
+        using the <function>cont</function> function.</para>
 
-<sect2>
-<title>Stream Configuration</title>
-<para>Explanation of the XML config</para>
-</sect2>
+        <para>Final important thing to notice in this file is the
+        <function>GADGETRON_READER_FACTORY_DECLARE(MRIAcquisitionReader)</function>
+        statement. This macro is again responsible for declaring create and
+        destroy functions for the Reader to make it possible to load the
+        reader from a shared library on all platforms.</para>
 
-<sect2>
-<title>Communication protocol</title>
-</sect2>
+        <para>Whereas the Readers are responsible for deserialization, The
+        <classname>GadgetMessageWriter</classname> is responsible for the
+        opposite operation (serialization). In practice, Gadgets that produce
+        an output for the client application can hand that data back to the
+        Gadgetron framework where it is placed on the output queue along with
+        a message ID. This is for instance done in this (abbreviated) code
+        from an <classname>ImageFinishGadget</classname>:</para>
 
-</sect1>
+        <programlisting>
 
-<sect1>
-<title>Toolboxes</title>
+int ImageFinishGadget
+::process(GadgetContainerMessage&lt;GadgetMessageImage&gt;* m1,
+	  GadgetContainerMessage&lt; hoNDArray&lt; float &gt; &gt;* m2)
+{
+   GadgetContainerMessage&lt;GadgetMessageIdentifier&gt;* mb =
+      new GadgetContainerMessage&lt;GadgetMessageIdentifier&gt;();
 
-<sect2>
-<title>Data Structures</title>
-<para>NDArray, etc</para>
-</sect2>
+   mb-&gt;getObjectPtr()-&gt;id = GADGET_MESSAGE_IMAGE_REAL_FLOAT;
 
-<sect2>
-<title>GPU Support</title>
-</sect2>
+   mb-&gt;cont(m1);
 
-<sect2>
-<title>Iterative Solvers</title>
-</sect2>
+   int ret =  this-&gt;controller_-&gt;output_ready(mb);
 
-<sect2>
-<title>Fourier Transform</title>
-</sect2>
+   if ( (ret &lt; 0) ) {
+      return GADGET_FAIL;
+   }
 
-</sect1>
+  return GADGET_OK;
+}
 
-<sect1>
-<title>Gadgets</title>
+</programlisting>
 
-<sect2>
-<title>MRI Gadgets</title>
-<para>List some of the available gadgets</para>
-</sect2>
+        <para>Notice that the Gadget has a reference to the Gadgetron
+        framework through the <varname>controller_</varname> member variable,
+        which is set during initialization.</para>
 
-<sect2>
-<title>Image Processing Gadgets</title>
-<para>Something on the denoising, etc</para>
-</sect2>
+        <para>In the framework (more specifically in the
+        <classname>GadgetStreamController</classname>, there is a active
+        thread, which is responsible for writing messages that are put on to
+        the output queue. In practice this is done by investigating the
+        message ID and then picking the
+        <classname>GadgetMessageWriter</classname> associated with this ID. A
+        Writer must implement the following abstract class:</para>
 
-<sect2>
-<title>Python Gadgets</title>
-</sect2>
+        <programlisting>
 
-<sect2>
-<title>Making new Gadgets</title>
-<para>Subclassing the templated classes</para>
-</sect2>
+class GadgetMessageWriter
+{
+ public:
+  virtual int write(ACE_SOCK_Stream* stream, ACE_Message_Block* mb) = 0;
+};
 
-</sect1>
+</programlisting>
 
-<sect1>
-<title>Gadgetron Clients</title>
+        <para>The Writer is handed control of the socket along with the
+        message block. A Writer declaration could look like:</para>
 
-<sect2>
-<title>Available clients</title>
-<para>List some of the available clients (mriclient, image client)</para>
-</sect2>
+        <programlisting>
 
-<sect2>
-<title>Making a new client</title>
-<para>Using the GadgetronConnector</para>
-</sect2>
+class MRIImageWriter : public GadgetMessageWriter
+{
 
-</sect1>
+public:
+   GADGETRON_WRITER_DECLARE(GadgetMessageWriter);
+   virtual int write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb);
+};
 
-<sect1>
-<title>Standalone applications</title>
+</programlisting>
 
-<sect2>
-<title>MRI Gadgets</title>
-<para>List some of the available gadgets</para>
-</sect2>
+        <para>Again notice the
+        <function>GADGETRON_WRITER_DECLARE(GadgetMessageWriterFLOAT)</function>
+        to ensure proper run-time linking behavior. The implementation could
+        look like (abbreviated with no error checking, etc.):</para>
 
-<sect2>
-<title>Image Processing Gadgets</title>
-<para>Something on the denoising, etc</para>
-</sect2>
+        <programlisting>
 
-</sect1>
+int MRIImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
+{
 
-</chapter>
+   GadgetContainerMessage&lt;GadgetMessageImage&gt;* imagemb = 
+      AsContainerMessage&lt;GadgetMessageImage&gt;(mb);
+  
+   GadgetContainerMessage&lt; hoNDArray&lt; float &gt; &gt;* datamb =
+      AsContainerMessage&lt; hoNDArray&lt; float &gt; &gt;(imagemb-&gt;cont());
+  
+   if (!datamb || !imagemb) {
+      //Deal with errors
+   }
+   
+   GadgetMessageIdentifier id;
+   id.id = GADGET_MESSAGE_IMAGE_REAL_FLOAT;
+ 
+   sock-&gt;send_n (&amp;id, sizeof(GadgetMessageIdentifier));
 
-<chapter>
-<title>Example Applications</title>
-<sect1>
-<title>Simple 2D FT MRI</title>
-</sect1>
+   sock-&gt;send_n (imagemb-&gt;getObjectPtr(), sizeof(GadgetMessageImage));
 
-<sect1>
-<title>Cartesian 2D Parallel MRI</title>
-</sect1>
+   sock-&gt;send_n (datamb-&gt;getObjectPtr()-&gt;get_data_ptr(), 
+      sizeof(float)*datamb-&gt;getObjectPtr()-&gt;get_number_of_elements());
 
-<sect1>
-<title>Non-Cartesian 2D Parallel MRI</title>
-</sect1>
+   return 0;
+}
 
-<sect1>
-<title>Simple 2D FT MRI in Python</title>
-</sect1>
+GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
 
-<sect1>
-<title>Image Deblurring/Image Denoising</title>
-</sect1>
-</chapter>
+</programlisting>
 
-<chapter>
-<title>Frequently Asked Questions (FAQ)</title>
+        <para>Notice again the
+        <function>GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)</function>
+        statement to ensure proper loading from shared libraries. Also notice
+        that the message ID is transmitted to the client (although th Writer
+        could change it to a different ID) in this, i.e. the client is
+        expected to follow the same communication model, but is is really
+        entirely determinded by the Writer how the message is
+        transmitted.</para>
 
-<itemizedlist>
-<listitem>
-<para>
-  <emphasis>Can I make a branching Gadget chain?</emphasis>
-</para>
-<para>
-The short answer is no. We plan on supporting this in a future release, but it is not quite ready yet.
-</para>
-</listitem>
-</itemizedlist>
-</chapter>
+        <para>Readers and Writer are loaded dynamically at run-time along with
+        the Gadgets (see <xref linkend="sect.streamconfiguration" />) and it
+        is possible to change the input and output behaviour entirely by
+        manipulating which Readers and Writers are associated with which
+        message IDs.</para>
+      </sect2>
 
+      <sect2 xml:id="sect.streamconfiguration">
+        <title>Stream Configuration</title>
+
+        <para>A Gadgetron reconstruction is made up of modules, i.e. Readers,
+        Writers, and Gadgets. New reconstruction programs can be created by
+        simply assembling existing components in a new way. The configuration
+        of the Gadgetron stream is done at run-time and new configurations can
+        be created without recompiling any components. More specifically the
+        configuration is specified in an XML file, which the Gadgetron will
+        read before receiving data. The best way to explain the format is by
+        looking it at (simplified) example:</para>
+
+        <programlisting>
+
+&lt;?xml version="1.0" ?&gt;  
+&lt;gadgetron&gt;
+ 
+ &lt;readers&gt;
+   &lt;reader&gt;
+    &lt;slot&gt;1001&lt;/slot&gt;
+    &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+    &lt;class&gt;MRIAcquisitionReader&lt;/class&gt;
+   &lt;/reader&gt;
+ &lt;/readers&gt;
+  
+ &lt;writers&gt;
+  &lt;writer&gt;
+   &lt;slot&gt;1005&lt;/slot&gt;
+   &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+   &lt;class&gt;MRIImageWriterFLOAT&lt;/class&gt;
+  &lt;/writer&gt;
+  &lt;writer&gt;
+   &lt;slot&gt;1006&lt;/slot&gt;
+   &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+   &lt;class&gt;MRIImageWriterUSHORT&lt;/class&gt;
+  &lt;/writer&gt;
+ &lt;/writers&gt;
+
+ &lt;stream&gt;
+  &lt;gadget&gt;
+   &lt;name&gt;Accumulator&lt;/name&gt;
+   &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+   &lt;class&gt;AccumulatorGadget&lt;/class&gt;
+  &lt;/gadget&gt;
+
+  &lt;gadget&gt;
+   &lt;name&gt;FFT&lt;/name&gt;
+   &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+   &lt;class&gt;FFTGadget&lt;/class&gt;
+  &lt;/gadget&gt;
+
+  &lt;gadget&gt;
+    &lt;name&gt;ExtractMAG&lt;/name&gt;
+    &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+    &lt;class&gt;ExtractGadget&lt;/class&gt;
+  &lt;/gadget&gt;
+
+  &lt;gadget&gt;
+   &lt;name&gt;ImageFinishFLOAT&lt;/name&gt;
+   &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+   &lt;class&gt;ImageFinishGadgetFLOAT&lt;/class&gt;
+  &lt;/gadget&gt;
+ &lt;/stream&gt;
+
+&lt;/gadgetron&gt;
+</programlisting>
+
+        <para>The configuration file format contains 3 sections: 1) Readers,
+        2) Writers, 3) Stream (with Gadgets) corresponding to the 3 different
+        types of components that can be assembled in the Gadgetron.</para>
+
+        <para>In the example above, the Readers section contains only one
+        reader, which is the <classname>MRIAcquisitionReader</classname>
+        mentioned previously. The message ID associated with this Reader is
+        1001. Every time a message with ID 1001 arrives on the socket,
+        responsibility for reading thar message will be delegated to the
+        <classname>MRIAcquisitionReader</classname>. When the Gadgetron
+        configuration is loaded, the framework will load the
+        <classname>MRIAcquisitionReader</classname> from the DLL (shared
+        library) <filename>gadgetroncore</filename>. On the Linux platform
+        this would be a shared library called
+        <filename>libgadgetroncore.so</filename> and on the Windows platform
+        it would be called <filename>gadgetroncore.dll</filename>.</para>
+
+        <para>The Gadgetron framework knows how to load the components from
+        the DLLs assuming that they have been declared properly as described
+        in <xref linkend="sect.readerswriters" /> and <xref
+        linkend="sect.gadgets" />.</para>
+
+        <para>The example Gadgetron configuration has two Writers, i.e. it is
+        capable of outputting two different types of data. Again the
+        declarations cause the Gadgetron framework to load specific instances
+        of <classname>GadgetMessageWriter</classname> and associate them with
+        specific ID numbers.</para>
+
+        <para>In addition to the Readers and Writers specified here, there are
+        certain built-in Readers and Writers. As an example, there are Readers
+        for receiving which configuration should be used by the Gadgetron and
+        for receiving the parameters that will be passed to all Gadgets (see
+        <xref linkend="sect.communicationprotocol" />). If the Gadgetron
+        receives a message with an ID for which there is no associated Reader
+        or encounters a message on the output queue for which there is no
+        associated Writer, an error will be generated and the Gadgetron stream
+        will shut down and the connection to the client will be closed.</para>
+
+        <para>The <literal>&lt;stream&gt;</literal> section of the
+        configuration specifies which Gadgets to load. In the example above,
+        we have 4 Gadgets. In this specific case the reconstruction is an MRI
+        reconstruction and the first Gadget is an
+        <classname>AccumulatorGadget</classname>, which collects individual
+        lines and inserts them in a k-space. When the k-space is complete, a
+        k-space image will be sent to the next Gadget in the chain, the
+        <classname>FFTGadget</classname>, which is responsible for Fourier
+        transforming the data into image space. The next Gadget
+        (<classname>ExtractGadget</classname>) will extract the magnitude of
+        the complex image, and finally the last Gadget
+        (<classname>ImageFinishGadgetFLOAT</classname>) sends the
+        reconstructed image back to the Gadgetron framework where it is added
+        to the output queue.</para>
+
+        <para>Using these XML configuration file, it is easy to modify
+        Gadgetron configurations on-the-fly without needing to recompile any
+        source code.</para>
+
+        <para>It is also possible to send parameters to the Gadgets using the
+        XML file. For example, to set a parameter in a Gadget, one could
+        write:</para>
+
+        <programlisting>  &lt;gadget&gt;
+   &lt;name&gt;Accumulator&lt;/name&gt;
+   &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+   &lt;class&gt;AccumulatorGadget&lt;/class&gt;
+   &lt;property&gt;&lt;name&gt;MyTestProperty&lt;/name&gt;&lt;value&gt;Blah Blah&lt;/value&gt;&lt;/property&gt;
+   &lt;property&gt;&lt;name&gt;MyTestProperty2&lt;/name&gt;&lt;value&gt;98776.862187&lt;/value&gt;&lt;/property&gt;
+  &lt;/gadget&gt;
+</programlisting>
+
+        <para>The two properties will now be accessible inside the Gadget
+        using the parameter access functions defined in
+        <filename>Gadget.h</filename>:</para>
+
+        <programlisting>class Gadget : public ACE_Task&lt;ACE_MT_SYNCH&gt;
+{
+
+//Other definitions
+
+int get_bool_value(const char* name);
+int get_int_value(const char* name);
+double get_double_value(const char* name);
+
+};
+</programlisting>
+
+        <para>Additionally it is also possible to specifiy how many active
+        threads there should be in a Gadget. This is specified with:</para>
+
+        <programlisting>  &lt;gadget&gt;
+   &lt;name&gt;Accumulator&lt;/name&gt;
+   &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+   &lt;class&gt;AccumulatorGadget&lt;/class&gt;
+   &lt;property&gt;&lt;name&gt;threads&lt;/name&gt;&lt;value&gt;5&lt;/value&gt;&lt;/property&gt;
+  &lt;/gadget&gt;</programlisting>
+
+        <para>Which would make the <classname>AccumulatorGadget</classname>
+        have 5 threads.</para>
+      </sect2>
+
+      <sect2 xml:id="sect.communicationprotocol">
+        <title>Communication protocol</title>
+
+        <para>Blah</para>
+      </sect2>
+    </sect1>
+
+    <sect1 xml:id="sect.toolboxes">
+      <title>Toolboxes</title>
+
+      <sect2>
+        <title>Data Structures</title>
+
+        <sect3 xml:id="sect.ndarray">
+          <title>Multidimensional Array:
+          <classname>NDArray</classname></title>
+
+          <para>NDArray, etc</para>
+        </sect3>
+      </sect2>
+
+      <sect2>
+        <title>GPU Support</title>
+
+        <para>Blah</para>
+      </sect2>
+
+      <sect2>
+        <title>Iterative Solvers</title>
+
+        <para>Blah</para>
+      </sect2>
+
+      <sect2>
+        <title>Fourier Transform</title>
+
+        <para>Blah</para>
+      </sect2>
+    </sect1>
+
+    <sect1>
+      <title>Gadgets</title>
+
+      <sect2>
+        <title>MRI Gadgets</title>
+
+        <para>List some of the available gadgets</para>
+      </sect2>
+
+      <sect2>
+        <title>Image Processing Gadgets</title>
+
+        <para>Something on the denoising, etc</para>
+      </sect2>
+
+      <sect2>
+        <title>Python Gadgets</title>
+
+        <para>Blah</para>
+      </sect2>
+
+      <sect2 xml:id="sect.makingnewgadgetlibrary">
+        <title>Making a new Gadget library</title>
+
+        <para>Subclassing the templated classes</para>
+      </sect2>
+    </sect1>
+
+    <sect1>
+      <title>Gadgetron Clients</title>
+
+      <sect2>
+        <title>Available clients</title>
+
+        <para>List some of the available clients (mriclient, image
+        client)</para>
+      </sect2>
+
+      <sect2>
+        <title>Making a new client</title>
+
+        <para>Using the GadgetronConnector</para>
+      </sect2>
+    </sect1>
+
+    <sect1>
+      <title>Standalone applications</title>
+
+      <sect2>
+        <title>MRI Gadgets</title>
+
+        <para>List some of the available gadgets</para>
+      </sect2>
+
+      <sect2>
+        <title>Image Processing Gadgets</title>
+
+        <para>Something on the denoising, etc</para>
+      </sect2>
+    </sect1>
+  </chapter>
+
+  <chapter>
+    <title>Example Applications</title>
+
+    <sect1>
+      <title>Simple 2D FT MRI</title>
+
+      <para>Blah</para>
+    </sect1>
+
+    <sect1>
+      <title>Cartesian 2D Parallel MRI</title>
+
+      <para>Blah</para>
+    </sect1>
+
+    <sect1>
+      <title>Non-Cartesian 2D Parallel MRI</title>
+
+      <para>Blah</para>
+    </sect1>
+
+    <sect1>
+      <title>Simple 2D FT MRI in Python</title>
+
+      <para>Blah</para>
+    </sect1>
+
+    <sect1>
+      <title>Image Deblurring/Image Denoising</title>
+
+      <para>Blah</para>
+    </sect1>
+  </chapter>
+
+  <chapter>
+    <title>Frequently Asked Questions (FAQ)</title>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis>Can I make a branching Gadget chain?</emphasis></para>
+
+        <para>The short answer is no. We plan on supporting this in a future
+        release, but it is not quite ready yet.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>How can I help?</emphasis></para>
+
+        <para>We are always looking for people who are interested in helping
+        with the continuing development of the Gadgetron. There are many
+        things you can do:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Use it.</para>
+          </listitem>
+
+          <listitem>
+            <para>When you develop new Gadgets or Toolboxes, please consider
+            submitting them to us so that we can include them in the
+            archive.</para>
+          </listitem>
+
+          <listitem>
+            <para>Help us implement some of the future features in <xref
+            linkend="futurefeatures" />. It is probably a good idea to get in
+            touch with us before you start coding, just in case somebody is
+            already working on it.</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </chapter>
+
+  <appendix xml:id="simplearrayfiles">
+    <title>Simple Array File Format</title>
+
+    <para>When working with the Gadgetron it is often necessary to write files
+    with reconstructed images to disk, either as part of debugging or as the
+    final reconstruction result. We have adopted a very simple
+    multidimensional array file format for this purpose. The main advantage of
+    this file format is its simplicity but there are a number of disadvantages
+    and caveats as well as described in this section.</para>
+
+    <para>The simple array files are made up of a) a header followed by b) the
+    data itself. This layout of data and header is illustrated in <xref
+    linkend="fig.gadgetron.fileformat" />. The header has a single 32-bit
+    integer to indicate the number of dimensions of the dataset followed by
+    one integer for each dimension to indicate the length of that dimension.
+    The data follows immediately after the header. The data is stored such
+    that the first dimension is the fastest moving dimension, second dimension
+    is second fastest, etc. The header contains no information about the size
+    of each individual data element and consequently the user needs to know
+    what type of data is contained in the array. In general, the Gadgetron
+    uses 3 different types of data and the convention is to use the file
+    extension to indicate the data type in the file:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>16-bit unsigned short. File extension:
+        <filename>*.short</filename></para>
+      </listitem>
+
+      <listitem>
+        <para>32-bit float. File extension: <filename>*.real</filename></para>
+      </listitem>
+
+      <listitem>
+        <para>32-bit complex float. Two 32-bit floating point values per data
+        element. File extension: <filename>*.cplx</filename></para>
+      </listitem>
+    </itemizedlist>
+
+    <figure xml:id="fig.gadgetron.fileformat">
+      <title>Simple Array File Format</title>
+
+      <mediaobject>
+        <imageobject condition="print">
+          <imagedata align="left" fileref="figs/arrayfileformat.png"
+                     format="PNG" width="2in"></imagedata>
+        </imageobject>
+
+        <textobject>
+          <phrase>Simple Array</phrase>
+        </textobject>
+      </mediaobject>
+
+      <caption>
+        <para>The simple array file format has a header followed by the data.
+        The header consists of one 32-bit integer defining the number of
+        dimensions (N-dimensions) followed by N-dimensions 32-bit unsigned
+        integers each defining the length of each dimensions. In the example,
+        the dataset has 4 dimensions and the size of those dimensions is
+        128x128x1x1, i.e. 16384 elements.</para>
+      </caption>
+    </figure>
+
+    <para>The Gadgetron framework provides function for reading these files in
+    C++. The functions are located in
+    <filename>toolboxes/ndarray/hoNDArray_fileio.h</filename> in the Gadgetron
+    source code distribution.</para>
+
+    <para>It is also trivial to read the files into Matlab. Below is a
+    function which detects the data type based on the file extension and reads
+    the file into Matlab.</para>
+
+    <programlisting>
+
+function data = read_gadgetron_array(filename)
+%  data = read_gadgetron_array(filename)
+%  
+%  Reads simplified array format output from the Gadgetron
+%
+%  The datatype is determined by the file extension.
+%     - *.short : 16-bit unsigned integer
+%     - *.real  : 32-bit float
+%     - *.cplx  : 32-bit complex (two 32-bit values per data element)
+%
+%
+if (~exist(filename,'file')),
+    error('File not found.');
+end
+
+[path,name,ext] = fileparts(filename);
+
+ext = lower(ext);
+
+if (~strcmp(ext,'.short') &amp;&amp; ~strcmp(ext,'.real') &amp;&amp; ~strcmp(ext,'.cplx')),
+   error('Unknown file extension'); 
+end
+
+f = fopen(filename);
+ndims = fread(f,1,'int32'); 
+dims = fread(f,ndims,'int32'); 
+
+switch ext
+    case '.short'
+        data = fread(f,prod(dims),'uint16'); 
+    case '.real'
+        data = fread(f,prod(dims),'float32'); 
+    case '.cplx'
+        data = fread(f,2*prod(dims),'float32'); 
+        data = complex(data(1:2:end),data(2:2:end));
+    otherwise     
+end
+
+fclose(f);
+
+data = reshape(data,dims');
+
+end
+
+  </programlisting>
+  </appendix>
+
+  <appendix xml:id="futurefeatures">
+    <title>Future Features</title>
+
+    <para>The Gagdetron is evolving all the time and there are many things
+    that we would like to put in, but we have not yet had the time. This
+    appendix serves as a todo list of features that we will implement along
+    the way.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>HDF5 Fileformat support. We have been using our simplified
+        multidimensional array file format for a while, but there are many
+        shortcomings with this format and we plan to replace it with a better
+        approach in the future. More specifically we aim to use the HDF5
+        Fileformat (<uri type="website"
+        xlink:href="http://www.hdfgroup.org/HDF5/">http://www.hdfgroup.org/HDF5/</uri>)
+        throughout the Gadgetron.</para>
+      </listitem>
+
+      <listitem>
+        <para>Branching Gadget chains. There is currently no ability to branch
+        and collect in the Gadgetron.</para>
+      </listitem>
+    </itemizedlist>
+  </appendix>
+
+  <bibliography>
+    <biblioentry role="article" xml:id="hansen08">
+      <abbrev>HANSEN08</abbrev>
+
+      <biblioset role="article">
+        <authorgroup>
+          <author>
+            <personname><firstname>M. S.</firstname>
+            <surname>Hansen</surname></personname>
+          </author>
+
+          <author>
+            <personname><firstname>D.</firstname>
+            <surname>Atkinson</surname></personname>
+          </author>
+
+          <author>
+            <personname><firstname>T. S.</firstname>
+            <surname>Sørensen</surname></personname>
+          </author>
+        </authorgroup>
+
+        <title>Cartesian SENSE and k-t SENSE reconstruction using commodity
+        graphics hardware</title>
+      </biblioset>
+
+      <biblioset role="journal">
+        <title>Magn Reson Imaging</title>
+
+        <volumenum>In Press</volumenum>
+
+        <pubdate>2008</pubdate>
+      </biblioset>
+    </biblioentry>
+
+    <biblioentry role="article" xml:id="sorensen08">
+      <abbrev>SANGILD08</abbrev>
+
+      <biblioset role="article">
+        <authorgroup>
+          <author>
+            <personname><firstname>T. S.</firstname>
+            <surname>Sørensen</surname></personname>
+          </author>
+
+          <author>
+            <personname><firstname>T.</firstname>
+            <surname>Schaeffter</surname></personname>
+          </author>
+
+          <author>
+            <personname><firstname>K. O.</firstname>
+            <surname>Noe</surname></personname>
+          </author>
+
+          <author>
+            <personname><firstname>M. S.</firstname>
+            <surname>Hansen</surname></personname>
+          </author>
+        </authorgroup>
+
+        <title>Accelerating the nonequispaced fast fourier transform on
+        commodity graphics hardware</title>
+
+        <pagenums>538--47</pagenums>
+
+        <bibliosource class="doi">10.1109/TMI.2007.909834</bibliosource>
+      </biblioset>
+
+      <biblioset role="journal">
+        <title>IEEE Trans Med Imaging</title>
+
+        <volumenum>27</volumenum>
+
+        <issuenum>4</issuenum>
+
+        <pubdate>Apr 2008</pubdate>
+      </biblioset>
+    </biblioentry>
+
+    <biblioentry role="article" xml:id="sorensen09">
+      <abbrev>SANGILD09</abbrev>
+
+      <biblioset role="article">
+        <authorgroup>
+          <author>
+            <personname><firstname>T. S.</firstname>
+            <surname>Sørensen</surname></personname>
+          </author>
+
+          <author>
+            <personname><firstname>D.</firstname>
+            <surname>Atkinson</surname></personname>
+          </author>
+
+          <author>
+            <personname><firstname>T.</firstname>
+            <surname>Schaeffter</surname></personname>
+          </author>
+
+          <author>
+            <personname><firstname>M. S.</firstname>
+            <surname>Hansen</surname></personname>
+          </author>
+        </authorgroup>
+
+        <title>Real-time reconstruction of sensitivity encoded radial magnetic
+        resonance imaging using a graphics processing unit</title>
+
+        <pagenums>1974--85</pagenums>
+
+        <bibliosource class="doi">10.1109/TMI.2009.2027118</bibliosource>
+      </biblioset>
+
+      <biblioset role="journal">
+        <title>IEEE Trans Med Imaging</title>
+
+        <volumenum>28</volumenum>
+
+        <issuenum>12</issuenum>
+
+        <pubdate>Dec 2009</pubdate>
+      </biblioset>
+    </biblioentry>
+  </bibliography>
 </book>
-
-

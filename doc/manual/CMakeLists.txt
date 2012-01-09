@@ -4,8 +4,9 @@
 
 #file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/figs DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
+set(XSLTPROC_PARAMS --xinclude --stringparam use.role.for.mediaobject 1 --stringparam section.autolabel 1 --stringparam section.label.includes.component.label 1)
 
-add_custom_target(htmlmanual ${XSLTPROCEXE} --xinclude -o ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_manual.html
+add_custom_target(htmlmanual ${XSLTPROCEXE} ${XSLTPROC_PARAMS} -o ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_manual.html
 ${DOCBOOK_XSL_DIR}/html/docbook.xsl ${CMAKE_CURRENT_SOURCE_DIR}/gadgetron_manual.xml  
 DEPENDS manualfigs 
 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
@@ -25,7 +26,7 @@ if (FOPEXE)
 	add_custom_target(pdfmanual ${FOPEXE} ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_manual.fo ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_manual.pdf  DEPENDS fomanual manualfigs
 	COMMENT "Generating PDF docbook manual" VERBATIM)
 	
-	add_custom_command(OUTPUT fomanual COMMAND ${XSLTPROCEXE} --xinclude -o ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_manual.fo
+	add_custom_command(OUTPUT fomanual COMMAND ${XSLTPROCEXE} ${XSLTPROC_PARAMS} -o ${CMAKE_CURRENT_BINARY_DIR}/gadgetron_manual.fo
 	${DOCBOOK_XSL_DIR}/fo/docbook.xsl ${CMAKE_CURRENT_SOURCE_DIR}/gadgetron_manual.xml  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	COMMENT "Generating FO file for PDF docbook manual" VERBATIM)
 	
