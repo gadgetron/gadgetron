@@ -7,7 +7,7 @@
       xmlns:ns3="http://www.w3.org/1999/xhtml"
       xmlns:ns="http://docbook.org/ns/docbook">
   <info>
-    <title>Gadgetron - Medical Image Reconstruction Framework</title>
+    <title>Gadgetron</title>
 
     <author>
       <personname><honorific>Dr</honorific> <firstname>Michael S.</firstname>
@@ -22,6 +22,8 @@
 
       <email>sangild@cs.au.dk</email>
     </author>
+
+    <subtitle>Medical Image Reconstruction Framework</subtitle>
   </info>
 
   <chapter>
@@ -88,7 +90,7 @@
       xlink:href="http://gadgetron.sourceforge.net/1.0/api/">http://gadgetron.sourceforge.net/1.0/api/</uri></para>
 
       <sect2>
-        <title>Dependencies</title>
+        <title xml:id="sect.dependencies">Dependencies</title>
 
         <para>The Gadgetron depends on a number of libraries that can either
         be downloaded for free or that may already be part of the installation
@@ -208,10 +210,10 @@
     </sect1>
 
     <sect1>
-      <title>Compiling and Installing</title>
+      <title xml:id="sect.installation">Compiling and Installing</title>
 
       <sect2>
-        <title>Linux Instructions</title>
+        <title xml:id="sect.linuxinstall">Linux Instructions</title>
 
         <para>If you want to get started with the Gadgetron quickly, Linux is
         the way to go. All of the dependencies are included in most major
@@ -277,7 +279,7 @@ export GADGETRON_HOME=/usr/local/gadgetron
        </programlisting>
 
         <para>Next step is to run a simple example reconstruction as outlined
-        in <xref linkend="simpleexample" />.</para>
+        in <xref linkend="sect.simpleexample" />.</para>
 
         <sect3 xml:id="section.linuxgpuinstall">
           <title>Installing GPU components (CUDA and CULA) on Linux</title>
@@ -287,9 +289,9 @@ export GADGETRON_HOME=/usr/local/gadgetron
           one included with Ubuntu supports CUDA. To install type:</para>
 
           <screen>
-	<prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install nvidia-current \
-	nvidia-current-dev nvidia-current-updates \
-	nvidia-current-updates-dev</userinput>
+<prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install nvidia-current \
+nvidia-current-dev nvidia-current-updates \
+nvidia-current-updates-dev</userinput>
       </screen>
 
           <para>Now we need to install gcc 4.4. Ubuntu comes with gcc 4.6,
@@ -297,31 +299,31 @@ export GADGETRON_HOME=/usr/local/gadgetron
           compiler.</para>
 
           <screen>
-	<prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install gcc-4.4 g++-4.4 build-essential</userinput>
+<prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install gcc-4.4 g++-4.4 build-essential</userinput>
       </screen>
 
           <para>Setup alternatives system to allow easy switching between the
           two versions of gcc/g++</para>
 
           <screen>
-	<prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives \
-	--install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 \
-	--slave /usr/bin/g++ g++ /usr/bin/g++-4.6</userinput>
-	<prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives \
-	--install /usr/bin/gcc gcc /usr/bin/gcc-4.4 60 \
-	--slave /usr/bin/g++ g++ /usr/bin/g++-4.4</userinput>
+<prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives \
+ --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 \
+ --slave /usr/bin/g++ g++ /usr/bin/g++-4.6</userinput>
+<prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives \
+ --install /usr/bin/gcc gcc /usr/bin/gcc-4.4 60 \
+ --slave /usr/bin/g++ g++ /usr/bin/g++-4.4</userinput>
       </screen>
 
           <para>Check your gcc compiler (should now be version 4.4.6):</para>
 
           <screen>
-	<prompt>user@mycomputer:~$</prompt> <userinput>gcc -v</userinput>
+<prompt>user@mycomputer:~$</prompt> <userinput>gcc -v</userinput>
       </screen>
 
           <para>When you want to switch between the compiler versions:</para>
 
           <screen>
-	<prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives --config gcc</userinput>
+<prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives --config gcc</userinput>
       </screen>
 
           <para>Final step is to actually install CUDA and CULA. Download the
@@ -345,10 +347,10 @@ export GADGETRON_HOME=/usr/local/gadgetron
           <para>Go to folder where files are downloaded, and type:</para>
 
           <screen>
-	<prompt>user@mycomputer:~$</prompt> <userinput>chmod +x cudatoolkit_4.0.17_linux_64_ubuntu10.10.run</userinput>
-	<prompt>user@mycomputer:~$</prompt> <userinput>sudo ./cudatoolkit_4.0.17_linux_64_ubuntu10.10.run</userinput>
-	<prompt>user@mycomputer:~$</prompt> <userinput>chmod +x cula_dense_free_R13a-linux64.run</userinput>
-	<prompt>user@mycomputer:~$</prompt> <userinput>sudo ./cula_dense_free_R13a-linux64.run</userinput>
+<prompt>user@mycomputer:~$</prompt> <userinput>chmod +x cudatoolkit_4.0.17_linux_64_ubuntu10.10.run</userinput>
+<prompt>user@mycomputer:~$</prompt> <userinput>sudo ./cudatoolkit_4.0.17_linux_64_ubuntu10.10.run</userinput>
+<prompt>user@mycomputer:~$</prompt> <userinput>chmod +x cula_dense_free_R13a-linux64.run</userinput>
+<prompt>user@mycomputer:~$</prompt> <userinput>sudo ./cula_dense_free_R13a-linux64.run</userinput>
       </screen>
 
           <para>Follow the instructions. When you are done with this
@@ -372,9 +374,256 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CULA_LIB_PATH_64
           Nvidia and check your installation, but it is not required.</para>
         </sect3>
       </sect2>
+
+      <sect2>
+        <title>Windows Installation Instructions</title>
+
+        <para>It is probably appropriate to start this section with a warning.
+        Windows is not the easiest environment to work with when it comes to
+        setting up a development environment for image reconstruction. As
+        indicated in <xref linkend="sect.dependencies" />, the Gadgetron
+        relies on multiple external libraries. Many of those libraries are not
+        available as easy install packages and must be compiled seperately. If
+        you are uncomfortable setting up development tools on Windows or if
+        you are just looking for a fast way to get started with the Gadgetron,
+        we recommend installing on Ubuntu Linux (see <xref
+        linkend="sect.linuxinstall" />).</para>
+
+        <para>Below is listed the steps used to install on a clean Windows 7
+        (64-bit) machine:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Install Visual Studio 2010 (with Service Pack 1)</para>
+          </listitem>
+
+          <listitem>
+            <para>Install CUDA/CULA (If applicable) (download from <uri
+            xlink:href="http://developer.nvidia.com/cuda-toolkit-40">http://developer.nvidia.com/cuda-toolkit-40</uri>):</para>
+
+            <para>Install Nvidia Developer Driver (Version 270.81)</para>
+
+            <para>Install Nvdia Toolkit (4.0)</para>
+
+            <para>Install gpucomputingsdk (Install ad Asministrator)</para>
+
+            <para>Install CUDA4_0BuildCustomizationFix</para>
+
+            <para>Install <filename>cula_R12-win64.exe</filename> (as
+            Administrator). Download from
+            <uri>http://www.culatools.com/downloads/dense/</uri>. R13 (dense)
+            should work too, but has not been tested on Windows. Assuming CULA
+            was installed in <filename>C:\Program Files\CULA\R12</filename>,
+            add <filename>C:\Program Files\CULA\R12\bin64</filename> to your
+            <varname>PATH</varname> environment variable.</para>
+          </listitem>
+
+          <listitem>
+            <para>Create a folder for external libraries, say
+            <filename>C:\Libraries</filename>.</para>
+          </listitem>
+
+          <listitem>
+            <para>Install FFTW3 (<uri
+            xlink:href="http://www.fftw.org/install/windows.html">http://www.fftw.org/install/windows.html</uri>)</para>
+
+            <para>Copy FFTW3 binaries to
+            <filename>C:\Libraries\FFTW3</filename></para>
+
+            <para>Create *.lib files, on the command line type:</para>
+
+            <programlisting>c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3f-3.def
+c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3-3.def
+c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
+</programlisting>
+
+            <para>Add <filename>C:\Libraries\FFTW3</filename> to path.</para>
+          </listitem>
+
+          <listitem>
+            <para>Install ACE (<uri
+            xlink:href="http://download.dre.vanderbilt.edu/">http://download.dre.vanderbilt.edu/</uri>)</para>
+
+            <para>Unpack ACE into C:\Libraries\ACE-6.0.5\ACE_wrappers</para>
+
+            <para>Add <filename>config.h</filename> in
+            <filename>ACE_ROOT/ace/</filename> with the following
+            content:</para>
+
+            <programlisting>#include "ace/config-win32.h" //We are on Windows
+#define ACE_NO_INLINE //This ensured that INLINE settings do not vary between Debug and Release modes</programlisting>
+
+            <para>Open VS 2010 project in source code archive</para>
+
+            <para>Set build type to Release/x64</para>
+
+            <para>Build (this takes a while)</para>
+
+            <para>Add to <varname>PATH</varname>:
+            <filename>C:\Libraries\ACE-6.0.5\ACE_wrappers\lib</filename></para>
+          </listitem>
+
+          <listitem>
+            <para>Install Python</para>
+
+            <para>Install python-2.7.2.amd64 (<uri
+            xlink:href="http://www.python.org">http://www.python.org</uri>)</para>
+
+            <para>Add install folder (e.g. <filename>C:\Python27</filename>)
+            to PATH environment variable</para>
+
+            <para>Add <varname>PYTHON_ROOT</varname> environment
+            variable</para>
+
+            <para>From<uri
+            xlink:href="http://www.lfd.uci.edu/~gohlke/pythonlibs/">
+            http://www.lfd.uci.edu/~gohlke/pythonlibs/</uri> download and
+            install the following:</para>
+
+            <para><itemizedlist>
+                <listitem>
+                  <para><filename>numpy-MKL-1.6.1.win-amd64-py2.7</filename></para>
+                </listitem>
+
+                <listitem>
+                  <para><filename>scipy-0.10.0.win-amd64-py2.7</filename></para>
+                </listitem>
+
+                <listitem>
+                  <para><filename>matplotlib-1.1.0.win-amd64-py2.7</filename>
+                  (not strictly necessary)</para>
+                </listitem>
+
+                <listitem>
+                  <para><filename>ipython-0.11.win-amd64-py2.7</filename> (not
+                  strictly necessary)</para>
+                </listitem>
+              </itemizedlist></para>
+          </listitem>
+
+          <listitem>
+            <para>Install ACML (BLAS and LAPACK)</para>
+
+            <para>Download <filename>acml4.4.0-win64.exe</filename> From: <uri
+            xlink:href="http://developer.amd.com/libraries/acml/downloads/pages/">http://developer.amd.com/libraries/acml/downloads/pages/</uri></para>
+
+            <para>Install Library in say
+            C:\Libraries\C:\Libraries\acml4.4.0</para>
+
+            <para>Add
+            <filename>C:\Libraries\acml4.4.0\win64\lib;C:\Libraries\acml4.4.0\win64_mp\lib</filename>
+            to <varname>PATH</varname></para>
+          </listitem>
+
+          <listitem>
+            <para>Install Boost (<uri
+            xlink:href="http://www.boost.org">http://www.boost.org</uri>)</para>
+
+            <para>Unpack boost to
+            <filename>C:\Libraries\boost_1_48_0</filename></para>
+
+            <para>Open a command line as Administrator (type cmd and hit
+            "shift+ctrl + enter")</para>
+
+            <para>From <filename>C:\Libraries\boost_1_48_0</filename> type
+            "<command>bootstrap</command>" (not bootstrap.bat)</para>
+
+            <para>Type <command>.\b2 --with-python --build-type=complete
+            address-model=64</command> (This only builds the boost_python
+            library add others as needed)</para>
+
+            <para>Add <filename>C:\Libraries\boost_1_48_0\stage\lib</filename>
+            to <varname>PATH</varname></para>
+          </listitem>
+
+          <listitem>
+            <para>Install <application>git</application> (if you are using
+            source code management):</para>
+
+            <para>Run installation package Git-1.7.7.1-preview20111027 (As
+            Administrator), download from <uri
+            xlink:href="http://code.google.com/p/msysgit/">http://code.google.com/p/msysgit/</uri></para>
+
+            <para>Use run in git bash only option</para>
+
+            <para>Use checkout Windows LF and commit Unix Line feeds</para>
+          </listitem>
+
+          <listitem>
+            <para>Install CMake (<uri
+            xlink:href="http://www.cmake.org/cmake/resources/software.html">http://www.cmake.org/cmake/resources/software.html</uri>)</para>
+
+            <para>Run cmake-2.8.6-win32-x86 (As Administrator)</para>
+          </listitem>
+
+          <listitem>
+            <para>Download and unpack Gadgetron source code.</para>
+          </listitem>
+
+          <listitem>
+            <para>Create Visual Studio project (your process may vary):
+            </para>
+
+            <para>Start <application>cmake-gui</application></para>
+
+            <para>Select source and target directories</para>
+
+            <para>Hit configure (first time) </para>
+
+            <para>Add variable BOOST_ROOT to point to BOOST folder</para>
+
+            <para>Hit configure (again) </para>
+
+            <para>Speficify location of FFTW and FFTWf libraries</para>
+
+            <para>Hit configure (again)</para>
+
+            <para>Specify location of CULA (include and library)</para>
+
+            <para>Specify location of ACE include dir</para>
+
+            <para>Hit configure (again)</para>
+
+            <para>Specify <varname>PYTHON_NUMPY_INCLUDE_DIR</varname> =
+            <filename>C:/Python27/Lib/site-packages/numpy/core/include</filename></para>
+
+            <para>Hit configure (again)</para>
+
+            <para>Specify the following environment variables: </para>
+
+            <para><varname>BLAS_CALBLAS</varname> =
+            <filename>C:/Libraries/acml4.4.0/win64/lib/libacml.lib</filename></para>
+
+            <para><varname>BLAS_acml_LIBRARY</varname> =
+            <filename>C:/Libraries/acml4.4.0/win64/lib/libacml_dll.lib</filename></para>
+
+            <para><varname>BLAS_acml_mp_LIBRARY</varname> =
+            <filename>C:/Libraries/acml4.4.0/win64_mp/lib/libacml_mp_dll.lib</filename>
+            </para>
+
+            <para><varname>BLAS_acml_mv_LIBRARY</varname> =
+            <filename>C:/Libraries/acml4.4.0/win64/lib/libacml_mv_dll.lib</filename>
+            </para>
+
+            <para>Hit configure</para>
+
+            <para>Hit "generate"</para>
+          </listitem>
+
+          <listitem>
+            <para>You should now have a visual studio project that you can
+            open and build (try Release/x64 mode and try the install
+            target).</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>By the end of all of this you should have a working installation
+        on Windows. Follow the instructions for running a simple example below
+        (<xref linkend="sect.simpleexample" />).</para>
+      </sect2>
     </sect1>
 
-    <sect1 xml:id="simpleexample">
+    <sect1 xml:id="sect.simpleexample">
       <title>Running a simple example reconstruction</title>
 
       <para>Test datasets are available from the Sourceforge website:</para>
@@ -819,7 +1068,7 @@ GADGET_FACTORY_DECLARE(FFTGadget)
         format and the Gadgetron comes with some toolbox functions in the
         <filename>GadgetXml.h</filename> file which allow easy acces to
         parameters in XML format (see the examples throughout the source code
-        on how to interpret parameters). </para>
+        on how to interpret parameters).</para>
 
         <para>For a tutorial on how to make your own Gadget library see <xref
         linkend="sect.makingnewgadgetlibrary" />.</para>
@@ -1233,7 +1482,7 @@ double get_double_value(const char* name);
             linkend="fig.gadgetron.architecture" />). After creating the
             <classname>GadgetStreamController</classname> the Gadgetron
             returns to accept connections on the socket such that multiple
-            clients can be connected simultanously. </para>
+            clients can be connected simultanously.</para>
           </listitem>
 
           <listitem>
@@ -1271,7 +1520,7 @@ double get_double_value(const char* name);
           <listitem>
             <para>The client will then start transmitting data packages and
             the Gadgetron will be processing data and returning images to the
-            client. </para>
+            client.</para>
           </listitem>
 
           <listitem>
@@ -1282,7 +1531,7 @@ double get_double_value(const char* name);
 
           <listitem>
             <para>Once the final Gadget has shut down, the connection with the
-            client will be terminated. </para>
+            client will be terminated.</para>
           </listitem>
         </orderedlist>
 
@@ -1311,14 +1560,64 @@ public:
         and Writers registered with the connector. See the
         <application>mriclient</application> example application
         (<filename>gagetron/apps/clients/mriclient</filename> in the source
-        code archive) for a simple example of how to build a Gadgetron client.
-        </para>
+        code archive) for a simple example of how to build a Gadgetron
+        client.</para>
       </sect2>
 
-      <sect2>
-        <title xml:id="sect.fileorganization">File Organization</title>
+      <sect2 xml:id="sect.fileorganization">
+        <title>File Organization</title>
 
-        <para></para>
+        <para>This section provides a brief overview of the file organization
+        in the Gadgetron installation. Once you have compiled the Gadgetron
+        and installed it (see <xref linkend="sect.installation" />), it will
+        reside in its designated installation folder
+        (<varname>GADGETRON_HOME</varname>). For the purposes of this this
+        description, we will assume that the Gadgetron was installed in
+        <filename>/usr/local/gadgetron</filename>.</para>
+
+        <para>In <varname>GADGETRON_HOME</varname> you should find the
+        following folders:</para>
+
+        <para><itemizedlist>
+            <listitem>
+              <para><filename>bin</filename>: Contains all executables from
+              the Gadgetron framework including the
+              <application>gadgetron</application> executable itself and all
+              clients and standalone applications.</para>
+            </listitem>
+
+            <listitem>
+              <para><filename>config</filename>: Contains valid Gadgetron XML
+              configuration files (see <xref
+              linkend="sect.streamconfiguration" />). This is where the
+              Gadgetron will search for a specific configuration requested by
+              the client during the initialization of the Gaget chain (see
+              <xref linkend="sect.communicationprotocol" />).</para>
+            </listitem>
+
+            <listitem>
+              <para><filename>lib:</filename>Contains all shared libraries
+              with Gadgets and toolboxes. Additionally, this is the default
+              path where Python Gadgets look for Python modules.</para>
+            </listitem>
+
+            <listitem>
+              <para><filename>include</filename>: Contains any header files
+              for Gadget libraries and Toolboxes so that they can be linked
+              into external applications and Gadget libraries compiled outside
+              the Gadgetron source tree. </para>
+            </listitem>
+
+            <listitem>
+              <para><filename>cmake:</filename> Contains a set of helpful
+              CMake scripts that can be used when you would like to build
+              applications or Gadget libraries outside the Gadgetron source
+              tree. Among other things it contains a
+              <filename>FindGadgetron.cmake</filename> script, which can be
+              used to localize and set paths for the Gadgetron using
+              CMake.</para>
+            </listitem>
+          </itemizedlist></para>
       </sect2>
     </sect1>
 
@@ -1332,14 +1631,185 @@ public:
           <title>Multidimensional Array:
           <classname>NDArray</classname></title>
 
-          <para>NDArray, etc</para>
+          <para>Most image processing operations involve multi-dimensional
+          arrays. Although the Gadgetron framework does not impose any
+          specific array structure on the user, it does come with an abstract
+          multi-dimensional array: <classname>NDArray</classname>, which has a
+          specific implementation for the CPU
+          (<classname>hoNDArray</classname>) and GPU
+          (<classname>cuNDArray</classname>). The abstract class definition
+          looks like (abbreviated version):</para>
+
+          <programlisting>template &lt;class T&gt; class NDArray
+{
+ public:
+  
+  NDArray ();
+
+  virtual ~NDArray();
+  
+  virtual T* create(std::vector&lt;unsigned int&gt; *dimensions); 
+
+  virtual T* create(std::vector&lt;unsigned int&gt; *dimensions, 
+                    T* data, bool delete_data_on_destruct = false);
+
+  virtual int permute(std::vector&lt;unsigned int&gt; *dim_order,
+                      NDArray&lt;T&gt; *out = 0, int shift_mode = 0);
+  
+  inline unsigned int get_number_of_dimensions() const {
+    return dimensions_-&gt;size();
+  }
+
+  unsigned int get_size(unsigned int dimension);
+
+  boost::shared_ptr&lt; std::vector&lt;unsigned int&gt; &gt; get_dimensions();
+  
+  inline T* get_data_ptr() const { 
+    return data_; 
+  }
+  
+  inline unsigned long int get_number_of_elements() const {
+    return elements_;
+  }
+
+  //Other public functions....such as permute, etc.
+
+protected:
+
+  virtual int allocate_memory() = 0;
+  virtual int deallocate_memory() = 0;
+
+  //Other private functions
+  
+};
+</programlisting>
+
+          <para>The CPU (host) definition would look like
+          (abbreviated):</para>
+
+          <programlisting>template &lt;class T&gt; class hoNDArray : public NDArray&lt;T&gt;
+{
+
+public:
+   //Public functions...
+
+protected:
+   virtual int allocate_memory();
+   virtual int deallocate_memory();
+};</programlisting>
+
+          <para>As is seen from the <classname>NDArray</classname> header
+          file, this class has a no-argument constructor, which makes it
+          suited for encapsulating in the
+          <classname>GadgetContainerMessage</classname> mentioned in <xref
+          linkend="sect.gadgets" />. The procedure for creating an array with
+          complex float values would look something like this:</para>
+
+          <programlisting>#include &lt;hoNDArray.h&gt;
+#include &lt;complex&gt;
+
+hoNDArray&lt; std::complex&lt;float&gt; &gt; myArray;
+
+
+std::vector&lt;unsigned int&gt; dimensions;
+dimensions.push_back(128);
+dimensions.push_back(128);
+
+if(!myArray.create(&amp;dimensions)) {
+   //Deal with errors
+}
+
+//process data</programlisting>
+
+          <para>And to create an <classname>NDArray</classname> contained in a
+          <classname>GadgetContainerMessage</classname> would look something
+          like this:</para>
+
+          <programlisting>GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m = 
+  new GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;();
+
+std::vector&lt;unsigned int&gt; dimensions;
+dimensions.push_back(128);
+dimensions.push_back(128);
+
+if(!m-&gt;getObjectPtr()-&gt;create(&amp;dimensions)) {
+   //Deal with errors
+}
+
+//Process data or pass on to other Gadget, etc. 
+
+m-&gt;release(); //Delete the message block and containing data
+</programlisting>
+
+          <para>As mentioned in <xref linkend="sect.gadgets" />, the
+          <classname>GadgetContainerMessage</classname> is a specialized
+          version of the <classname>ACE_Message_Block</classname> class from
+          the ACE framework. Data is passed between Gadgets in the form of
+          <classname>ACE_Message_Block</classname>s and Gadgets have access to
+          utility functions that allow them to test if a given
+          <classname>ACE_Message_Block</classname> is in fact a partcular type
+          of <classname>GagetContainerMessage</classname>.</para>
         </sect3>
       </sect2>
 
       <sect2>
         <title>GPU Support</title>
 
-        <para>Blah</para>
+        <para>As mentioned in <xref linkend="sect.ndarray" /> the Gadgetron
+        framework comes with a generic multi-dimensional array:
+        <classname>NDArray</classname>. This array structure also has a GPU
+        implementation (abbreviated version of header below):</para>
+
+        <programlisting>template &lt;class T&gt; class cuNDArray : public NDArray&lt;T&gt;
+{
+ public:
+  cuNDArray();
+
+  cuNDArray(const cuNDArray&lt;T&gt;&amp; a);
+
+  // Constructor from hoNDArray
+  cuNDArray(hoNDArray&lt;T&gt; *a);
+
+  // Assignment operator
+  cuNDArray&amp; operator=(const cuNDArray&lt;T&gt;&amp; rhs);
+  
+  virtual ~cuNDArray();
+
+  virtual T* create(std::vector&lt;unsigned int&gt; *dimensions);
+
+  virtual T* create(std::vector&lt;unsigned int&gt; *dimensions, 
+                    int device_no);
+
+  virtual T* create(std::vector&lt;unsigned int&gt; *dimensions, 
+                    T* data, bool delete_data_on_destruct = false);
+
+  virtual boost::shared_ptr&lt; hoNDArray&lt;T&gt; &gt; to_host() const;
+  
+  virtual int set_device(int device_no);
+  inline int get_device() { return device_; }
+  
+ protected:
+  
+  int device_; 
+  virtual int allocate_memory();
+  virtual int deallocate_memory();
+  
+};
+</programlisting>
+
+        <para>Compared to the host (CPU) version of this array, it has a few
+        extra <function>create</function> functions. Specifically, it is
+        possible to provide the array with the device number that the array
+        should be allocated on. This is important when working on systems with
+        multiple GPU processors. The default is to allocate it on the first
+        GPU device (device 0). It is of course possible to query which device
+        the data is allocated on and it is also possible to effectively move
+        the data from one device to another by assigning the device
+        number.</para>
+
+        <para>It is also possible to use the copy constructor, which takes a
+        <classname>hoNDArray</classname> to conveniently copy host data to the
+        GPU.</para>
       </sect2>
 
       <sect2>
