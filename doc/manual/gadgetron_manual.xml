@@ -1812,13 +1812,13 @@ m-&gt;release(); //Delete the message block and containing data
       <sect2>
         <title>Iterative Solvers</title>
 
-        <para>Blah</para>
+        <para>TSS, please write</para>
       </sect2>
 
       <sect2>
         <title>Fourier Transform</title>
 
-        <para>Blah</para>
+        <para>MSH, please write</para>
       </sect2>
     </sect1>
 
@@ -1837,24 +1837,577 @@ m-&gt;release(); //Delete the message block and containing data
         MRI Gadgets that are available. These Gadgets are used in several of
         the example applications in <xref
         linkend="sect.exampleapplications" />.</para>
+
+        <sect3>
+          <title>MRI Data Structures</title>
+
+          <para>MRI data is processed in two different phases. First phase is
+          when processing individual data (k-space) acquisitions and second
+          phase is when these acquisitions have been combined into images
+          (which may still be in k-space). There are correspondingly two
+          different types of Gadgets that dominate the MRI Gadgets, ones that
+          operate on individual acquisitions and ones that operate on images.
+          Of course, there have to be transitional Gadgets that operate on
+          acquisitions but output images. </para>
+
+          <para>All MRI Gadgets inherit from <classname>Gadget2</classname> as
+          described in <xref linkend="sect.gadgets" />, i.e. they operate on
+          two argument types, the main two base classes used are:</para>
+
+          <programlisting>Gadget2&lt; GadgetMessageAcquisition, hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;
+Gadget2&lt; GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;
+</programlisting>
+
+          <para>As seen, they take a data array (which is typically of complex
+          float type) and then a header describing either the acquisition or
+          the image. These headers are defined in
+          <filename>GadgetMRIHeaders.h</filename>. The definition of
+          <classname>GadgetMessageAcquisition</classname> looks like
+          (abbreviated):</para>
+
+          <programlisting>struct LoopCounters {
+  ACE_UINT16 acquisition;
+  ACE_UINT16 slice;
+  ACE_UINT16 partition;
+  ACE_UINT16 echo;
+  ACE_UINT16 phase;
+  ACE_UINT16 repetition;
+  ACE_UINT16 set;
+  ACE_UINT16 segment;
+  ACE_UINT16 channel;
+};
+
+
+struct GadgetMessageAcquisition
+{
+  ACE_UINT32     flags;
+  ACE_UINT32     meas_uid;
+  ACE_UINT32     scan_counter;
+  ACE_UINT32     time_stamp;
+  ACE_UINT16     samples;
+  ACE_UINT16     channels;
+  float          position[3];
+  float          quarternion[4];
+  float          table_position;
+  LoopCounters   idx;
+  LoopCounters   min_idx;
+  LoopCounters   max_idx;
+};</programlisting>
+
+          <para>It is a simple struct, which mainly serves the purpose of
+          keeping track of a) the encoding properties of a given acquisition
+          (phase ending number, etc.) and b) the spatial position and
+          orientation that the data was acquired from. Different MRI systems
+          have different conventions for how to label data, but in most cases
+          one would be able to convert to this format.</para>
+
+          <para>The <classname>GadgetMessageImage</classname> data structure
+          is also just a struct for keeping track of image labels, position,
+          and orientation:</para>
+
+          <programlisting>struct GadgetMessageImage
+{
+  ACE_UINT32     flags;
+  ACE_UINT16     matrix_size[3];
+  ACE_UINT16     channels;
+  float          position[3];
+  float          quarternion[4];
+  float          table_position;
+  LoopCounters   data_idx_min;
+  LoopCounters   data_idx_max;
+  LoopCounters   data_idx_current;
+  ACE_UINT32     time_stamp;
+  ACE_UINT16     image_format;
+  ACE_UINT16     image_type;
+  ACE_UINT16     image_index;
+  ACE_UINT16	    image_series_index;
+}; </programlisting>
+
+          <para></para>
+        </sect3>
+
+        <sect3>
+          <title>List of available MRI Gadgets</title>
+
+          <para>This section contains a non-exhaustive list of the available
+          MRI Gadgets with a few brief comments about their function. The
+          purpose is to make it easier to read the XML configuration files
+          provided with the Gadgetron and to give some ideas of what modules
+          can be reused in new reconstruction programs. </para>
+
+          <itemizedlist>
+            <listitem>
+              <para><classname>AccumulatorGadget</classname>
+              (<filename>gadgetroncore</filename>):</para>
+
+              <para>Simple Gadget for accumulating k-space profiles in an
+              array and passing it on to next Gadget. Used for simple
+              Cartesian FT MRI reconstructions. </para>
+            </listitem>
+
+            <listitem>
+              <para><classname>AccumulatorGadget</classname>
+              (<filename>gadgetroncore</filename>):</para>
+
+              <para>Does simple histogram analysis of floating point images
+              passing through and scales them. This is typically used upstream
+              of conversion from floating point to unsigned short images.
+              </para>
+            </listitem>
+
+            <listitem>
+              <para><classname>CoilReductionGadget</classname>
+              (<filename>gadgetroncore</filename>):</para>
+
+              <para>Used to reduce the number of coils in a dataset. Typically
+              used to tune the performance of a given reconstruction by
+              eliminating data. This Gadget is commonly used in conjunction
+              with the <classname>PCACoilGadget</classname> which generates
+              virtual coils based on principal component analysis. The coil
+              reduction can be specified with either a mask or the number of
+              target coils as illustrated below</para>
+
+              <programlisting>&lt;gadget&gt;
+ &lt;name&gt;CoilReduction&lt;/name&gt;
+ &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+ &lt;class&gt;CoilReductionGadget&lt;/class&gt;
+ &lt;!-- Keep a max of 16 coils --&gt;
+ &lt;property&gt;&lt;name&gt;coils_out&lt;/name&gt;&lt;value&gt;16&lt;/value&gt;&lt;/property&gt;
+&lt;/gadget&gt;
+
+&lt;gadget&gt;
+ &lt;name&gt;CoilReduction&lt;/name&gt;
+ &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+ &lt;class&gt;CoilReductionGadget&lt;/class&gt;
+ &lt;!-- Keep only coil 2,3,4,5 and discard the rest--&gt;
+ &lt;property&gt;
+  &lt;name&gt;coil_mask&lt;/name&gt;
+  &lt;value&gt;0 1 1 1 0 0 0 0&lt;/value&gt;
+ &lt;/property&gt;
+&lt;/gadget&gt;
+</programlisting>
+            </listitem>
+
+            <listitem>
+              <para><classname>CropAndCombineGadget</classname>
+              (<filename>gadgetroncore</filename>):</para>
+
+              <para>This Gadget is used to do a simple RMS coil combination in
+              the image domain and remove 2x oversampling in the first
+              dimension of the image as is commonly used in MRI. This Gadget
+              is intented to be used after FFT of the data. </para>
+            </listitem>
+
+            <listitem>
+              <para><classname>ExtractGadget</classname>
+              (<filename>gadgetroncore</filename>):</para>
+
+              <para>This Gadget is used to extract a given component
+              (magnitude, real, imaginary, phase) from complex images, i.e. it
+              converts complex images to real images containing specific
+              components. The Gadget can be used to extract multiple
+              components using a mask. The bit fields used to define the
+              components are defined as:</para>
+
+              <programlisting>#define GADGET_EXTRACT_MAGNITUDE              (1 &lt;&lt; 0) //1
+#define GADGET_EXTRACT_REAL                   (1 &lt;&lt; 1) //2
+#define GADGET_EXTRACT_IMAG                   (1 &lt;&lt; 2) //4
+#define GADGET_EXTRACT_PHASE                  (1 &lt;&lt; 3) //8
+</programlisting>
+
+              <para>To specify the componts, you just specify the mask, for
+              example, the following specification would extract magnitude (1)
+              and phase (8):</para>
+
+              <programlisting>&lt;gadget&gt;
+ &lt;name&gt;Extract&lt;/name&gt;
+ &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+ &lt;class&gt;ExtractGadget&lt;/class&gt;
+ &lt;property&gt;&lt;name&gt;extract_mask&lt;/name&gt;&lt;value&gt;9&lt;/value&gt;&lt;/property&gt;
+&lt;/gadget&gt;
+</programlisting>
+
+              <para>Default behavior is to extract magnitude.</para>
+            </listitem>
+
+            <listitem>
+              <para><classname>FFTGadget</classname>
+              (<filename>gadgetroncore</filename>):</para>
+
+              <para>This Gadget Fourier transforms alonfg the first 3
+              dimensions of the dataset (frequence, phase, partition encoding
+              directions) and passes on the data to the next Gadget.</para>
+            </listitem>
+
+            <listitem>
+              <para><classname>FloatToUShortGadget</classname>
+              (<filename>gadgetroncore</filename>):</para>
+
+              <para>Converts floating point images to unsigned short images.
+              This Gadget would often be used in conjunction with a scaling
+              step (e.g. <classname>AutoScaleGadget</classname>) upstream to
+              ensure that the values will not get clipped or overflow during
+              the conversion to unsigned short. This Gadget does not make any
+              attempt to scale the data, it is assumed to be scaled on entry.
+              </para>
+            </listitem>
+
+            <listitem>
+              <para><classname>GPUCGGoldenRadial</classname>,
+              <classname>GPUCGFixedRadial</classname>
+              (<filename>gadgetroncgsense</filename>):</para>
+
+              <para>These Gadgets perform conjugate gradient based
+              non-Cartesian SENSE reconstruction (<xref
+              linkend="sect.cgsense" />). They the reconstruction behavior can
+              be controlled with number of properties:</para>
+
+              <programlisting>&lt;gadget&gt;
+ &lt;name&gt;GPUCGRadial0&lt;/name&gt;
+ &lt;dll&gt;gadgetroncgsense&lt;/dll&gt;
+ &lt;class&gt;GPUCGGoldenRadialGadget&lt;/class&gt;
+
+ &lt;property&gt;
+  &lt;name&gt;deviceno&lt;/name&gt;
+  &lt;value&gt;0&lt;/value&gt;
+ &lt;/property&gt;
+ 
+ &lt;property&gt;
+  &lt;name&gt;sliceno&lt;/name&gt;
+  &lt;value&gt;0&lt;/value&gt;
+ &lt;/property&gt;
+ 
+ &lt;property&gt;
+  &lt;name&gt;profiles_per_frame&lt;/name&gt;
+  &lt;value&gt;32&lt;/value&gt;
+ &lt;/property&gt;
+ 
+ &lt;property&gt;
+  &lt;name&gt;shared_profiles&lt;/name&gt;
+  &lt;value&gt;0&lt;/value&gt;
+ &lt;/property&gt;
+
+ &lt;property&gt;
+  &lt;name&gt;number_of_iterations&lt;/name&gt;
+  &lt;value&gt;10&lt;/value&gt;
+ &lt;/property&gt;
+
+ &lt;property&gt;
+  &lt;name&gt;cg_limit&lt;/name&gt;
+  &lt;value&gt;1e-6&lt;/value&gt;
+ &lt;/property&gt;
+
+ &lt;property&gt;
+  &lt;name&gt;oversampling&lt;/name&gt;
+  &lt;value&gt;1.5&lt;/value&gt;
+ &lt;/property&gt;
+
+ &lt;property&gt;
+  &lt;name&gt;kernel_width&lt;/name&gt;
+  &lt;value&gt;5.5&lt;/value&gt;
+ &lt;/property&gt;
+
+ &lt;property&gt;
+  &lt;name&gt;kappa&lt;/name&gt;
+  &lt;value&gt;0.1&lt;/value&gt;
+ &lt;/property&gt;
+
+ &lt;property&gt;
+  &lt;name&gt;pass_on_undesired_data&lt;/name&gt;
+  &lt;value&gt;true&lt;/value&gt;
+ &lt;/property&gt;
+
+&lt;/gadget&gt;
+</programlisting>
+            </listitem>
+
+            <listitem>
+              <para><classname>GrappaGadget</classname>,
+              <classname>GrappaUnmixingGadget</classname>
+              (<filename>gadgetrongrappa</filename>):</para>
+
+              <para>These Gadgets are used together to perform 2D Cartesian
+              parallel imaging on the GPU. The
+              <classname>GrappaGadget</classname> is responsible for
+              calculating GRAPPA coefficients and the
+              <classname>GrappeUnmixingGadget</classname> Fourier transforms
+              the raw data and applies the coefficients. The
+              <classname>GrappaGadget</classname> has the ability to use
+              target channel compression, i.e. it can reconstruct using fewer
+              target channels than input channels to improve performance. See
+              <xref linkend="sect.grappa" /> for details. The target channel
+              compression is specificied like this:</para>
+
+              <programlisting>&lt;gadget&gt;
+ &lt;name&gt;Grappa&lt;/name&gt;
+ &lt;dll&gt;gadgetrongrappa&lt;/dll&gt;
+ &lt;class&gt;GrappaGadget&lt;/class&gt;
+ &lt;property&gt;&lt;name&gt;target_coils&lt;/name&gt;&lt;value&gt;8&lt;/value&gt;&lt;/property&gt;
+&lt;/gadget&gt;
+</programlisting>
+            </listitem>
+
+            <listitem>
+              <para><classname>ImageFinishGadgetSHORT</classname>,
+              <classname>ImageFinishFLOAT</classname>,
+              <classname>ImageFinishCPLX</classname>
+              (<filename>gadgetroncore</filename>):</para>
+
+              <para>These 3 Gadgets are all template instances of the same
+              <classname>ImageFinishGadget</classname>. The only different
+              between them is that they oprate on different types of image
+              data types as indicated by their names. Their purpose is to
+              return the reconstructed images to the output queue of the
+              Gadgetron so that they can be returned to the client. </para>
+            </listitem>
+
+            <listitem>
+              <para><classname>MRINoiseAdjustGadget</classname>
+              (<filename>gadgetronmricore</filename>):</para>
+
+              <para>The Gadgetron has two noise pre-whitening Gadgets with
+              similar names <classname>MRINoiseAdjustGadget</classname> and
+              <classname>NoiseAdjustGadget</classname>. They both perform the
+              same operation, which is a) to collect noise adjust data when
+              present, calculate the noise decorrelation matrix, and perform
+              noise decorrelation (when the noise adjustment data is
+              available). The difference between the two Gadgets is that
+              <classname>MRINoiseAdjustGadget</classname> uses BLAS and LAPACK
+              routines to perform the operation, which makes it much faster
+              than the <classname>NoiseAdjustGadget</classname>. The latter
+              Gadget is provided to enable reconstruction on systems where
+              those libraries are not available. </para>
+            </listitem>
+
+            <listitem>
+              <para><classname>NoiseAdjustGadget</classname>
+              (<filename>gadgetroncore</filename>):</para>
+
+              <para>See description of
+              <classname>MRINoiseAdjustGadget</classname>. This Gadget
+              performs noise pre-whitening without using the BLAS and LAPACK
+              libraries. </para>
+            </listitem>
+
+            <listitem>
+              <para><classname>PCACoilGadget</classname>
+              (<filename>gadgetronmricore</filename>):</para>
+
+              <para>This Gadget is used to create virtual channels based on
+              principal component analysis of a portion of the data.
+              Specifically, data is accumulated for the first frame (for each
+              locattion, i.e. slice) and a principal component analysis is
+              done of this data. Once the PCA coefficients are available, all
+              subsequent data will be transformed into the virtual channel
+              domain and passed on down the Gadget chain. This Gadget is often
+              combined with the
+              <classname>CoilReductionGadget</classname>.</para>
+            </listitem>
+
+            <listitem>
+              <para><classname>RemoveROOversamplingGadget</classname>
+              (<filename>gadgetroncore</filename>):</para>
+
+              <para>Simple Gadget to remove the 2x oversampling often used in
+              the readout direction for Cartesian MRI. </para>
+            </listitem>
+          </itemizedlist>
+        </sect3>
       </sect2>
 
       <sect2>
         <title>Image Processing Gadgets</title>
 
-        <para>Something on the denoising, etc</para>
+        <para>TSS, please add some description</para>
       </sect2>
 
       <sect2>
         <title>Python Gadgets</title>
 
-        <para>Blah</para>
+        <para>The Gadgetron provides a way to do prototype development in
+        Python. So far this has only been applied to simple MRI
+        reconstructions and in this section, we will be using MRI as an
+        example application. Further descrription of a simple Python MRI
+        reconstruction can be found in <xref
+        linkend="sect.pythonexamplerecon" />.</para>
+
+        <para>The Python layer is provided with a set of Python Gadgets that
+        encapsulate a Python module. This is illustrated in <xref
+        linkend="fig.pythonoverview" />, which illustrates a part of a Gadget
+        chain with two Python Gadgets and one C/C++ Gadget. A Gadget chain can
+        have any number of Python Gadgets and Python Gadgets can be mixed with
+        C++ Gadgets. </para>
+
+        <figure xml:id="fig.pythonoverview">
+          <title>Overview of Python Prototyping</title>
+
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="figs/python.png" format="PNG" width="5in"></imagedata>
+            </imageobject>
+          </mediaobject>
+        </figure>
+
+        <para>The Python modules that can be encapsulated in the Python
+        Gadgets are expected to have certain characteristics. Specifically,
+        the Gadgets must have at least 3 functions and these functions will be
+        called by the Gadgetron framework at certain specific times:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>Gadget reference function. A specific function will be
+            called when the Python Gadget is created. This function is
+            expected to receive a <classname>GadgetReference</classname> which
+            is a class (wrapped in a Python module), which holds a reference
+            to the Gadget, which owns the Python module. The purpose of
+            passing this reference is to allow the Python module to return
+            data to the Gadget when reconstruction outputs are ready. </para>
+          </listitem>
+
+          <listitem>
+            <para>Configuration function. This function passed the
+            configuration (usually in XML format) on when it is passed to the
+            Gadget, i.e. it is the Python counterpart of
+            <function>process_config</function> in the Gadget (see <xref
+            linkend="sect.gadgets" />).</para>
+          </listitem>
+
+          <listitem>
+            <para>Reconstruction function: This function is called when the
+            Gadget receives data, i.e. it is the Python counterpart of the
+            <function>process</function> function in the Gadget (see <xref
+            linkend="sect.gadgets" />).</para>
+          </listitem>
+        </orderedlist>
+
+        <para>The user can chose the names of these functions freely in the
+        Python module, but the function names must be specified when the
+        Gadget is inserted in the XML configuration:</para>
+
+        <programlisting>&lt;gadget&gt;
+ &lt;name&gt;AccReconPython&lt;/name&gt;
+ &lt;dll&gt;gadgetronpython&lt;/dll&gt;
+ &lt;class&gt;AcquisitionPythonGadget&lt;/class&gt;
+
+ &lt;property&gt;
+  &lt;name&gt;python_path&lt;/name&gt;
+  &lt;value&gt;/home/myuser/scripts/python&lt;/value&gt;
+ &lt;/property&gt;
+
+ &lt;property&gt;
+  &lt;name&gt;python_module&lt;/name&gt;
+  &lt;value&gt;accumulate_and_recon&lt;/value&gt;
+ &lt;/property&gt;
+
+ &lt;property&gt;
+  &lt;name&gt;gadget_reference_function&lt;/name&gt;
+  &lt;value&gt;set_gadget_reference&lt;/value&gt;
+ &lt;/property&gt;
+
+ &lt;property&gt;
+  &lt;name&gt;input_function&lt;/name&gt;
+  &lt;value&gt;recon_function&lt;/value&gt;
+ &lt;/property&gt;
+
+ &lt;property&gt;
+  &lt;name&gt;config_function&lt;/name&gt;
+  &lt;value&gt;config_function&lt;/value&gt;
+ &lt;/property&gt;
+&lt;/gadget&gt;
+
+</programlisting>
+
+        <para>Notice how the 3 function names are specified through the
+        <varname>gadget_reference_function</varname>,
+        <varname>input_function</varname>, and
+        <varname>config_function</varname> parameter names. Also notice that
+        it is possible to specify a <varname>python_path</varname> to let the
+        Python interpreter know where to search for script. By default, the
+        <filename>gadgetron/lib</filename> is added to the search path.
+        Multiple pathnames can be added by seperating the paths with
+        ";".</para>
+
+        <para>The Python script referenced in the XML configuration above
+        could look like:</para>
+
+        <programlisting>import numpy as np
+import GadgetronPythonMRI as g
+import GadgetronXML
+import kspaceandimage as ki
+
+myRef = g.GadgetReference()
+myBuffer = 0
+myParameters = 0
+myCounter = 1;
+mySeries = 1;
+
+def set_gadget_reference(gadref):
+    global myLocalGadgetReference
+    myLocalGadgetReference = gadref
+
+def config_function(conf):
+    global myBuffer
+    global myParameters
+    myParameters =  GadgetronXML.getEncodingParameters(conf)
+    myBuffer = (np.zeros((myParameters["channels"], \
+                myParameters["slices"], \
+                myParameters["matrix_z"], \
+                myParameters["matrix_y"], \
+                myParameters["matrix_x"]))).astype('complex64')
+
+def recon_function(acq, data):
+    global myLocalGadgetReference
+    global myBuffer
+    global myParameters
+    global myCounter
+    global mySeries
+
+    line_offset = (myParameters["matrix_y"] - \
+                   myParameters["phase_encoding_lines"])&gt;&gt;1
+  
+    myBuffer[:,acq.idx.slice, \
+             acq.idx.partition,acq.idx.line+line_offset,:] = data
+    
+    if (acq.flags &amp; (1&lt;&lt;1)): #Is this the last scan in slice
+        #FFT
+        image = ki.ktoi(myBuffer,(2,3,4))
+
+        #Create a new image header and transfer value
+        img_head = g.GadgetMessageImage()
+        img_head.channels = acq.channels
+        img_head.data_idx_curent = acq.idx
+        img_head.data_idx_max = acq.max_idx
+        img_head.data_idx_min = acq.min_idx
+        img_head.set_matrix_size(0,myBuffer.shape[4])
+        img_head.set_matrix_size(1,myBuffer.shape[3])
+        img_head.set_matrix_size(2,myBuffer.shape[2])
+        img_head.set_matrix_size(3,myBuffer.shape[1])
+        img_head.set_position(0,acq.get_position(0))
+        img_head.set_position(1,acq.get_position(1))
+        img_head.set_position(2,acq.get_position(2))
+        img_head.set_quarternion(0,acq.get_quarternion(0))
+        img_head.set_quarternion(1,acq.get_quarternion(1))
+        img_head.set_quarternion(2,acq.get_quarternion(2))
+        img_head.set_quarternion(3,acq.get_quarternion(3))
+        img_head.table_position = acq.table_position
+        img_head.time_stamp = acq.time_stamp
+        img_head.image_index = myCounter;
+        img_head.image_series_index = mySeries;
+
+
+        #Return image to Gadgetron
+        return myRef.return_image(img_head,image.astype('complex64'))
+
+        #print "Returning to Gadgetron"
+        return 0 #Everything OK
+
+</programlisting>
       </sect2>
 
       <sect2 xml:id="sect.makingnewgadgetlibrary">
         <title>Making a new Gadget library</title>
 
-        <para>Subclassing the templated classes</para>
+        <para>MSH, please write</para>
       </sect2>
     </sect1>
 
@@ -1864,14 +2417,13 @@ m-&gt;release(); //Delete the message block and containing data
       <sect2>
         <title>Available clients</title>
 
-        <para>List some of the available clients (mriclient, image
-        client)</para>
+        <para>MSH, please write</para>
       </sect2>
 
       <sect2>
         <title>Making a new client</title>
 
-        <para>Using the GadgetronConnector</para>
+        <para>MSH, please write</para>
       </sect2>
     </sect1>
 
@@ -1879,15 +2431,15 @@ m-&gt;release(); //Delete the message block and containing data
       <title>Standalone applications</title>
 
       <sect2>
-        <title>MRI Gadgets</title>
+        <title>MRI Applications</title>
 
-        <para>List some of the available gadgets</para>
+        <para>TSS, please add some description</para>
       </sect2>
 
       <sect2>
-        <title>Image Processing Gadgets</title>
+        <title>Image Processing Applications</title>
 
-        <para>Something on the denoising, etc</para>
+        <para>TSS, please add some description</para>
       </sect2>
     </sect1>
   </chapter>
@@ -1898,31 +2450,31 @@ m-&gt;release(); //Delete the message block and containing data
     <sect1>
       <title>Simple 2D FT MRI</title>
 
-      <para>Blah</para>
+      <para>MSH, please write</para>
     </sect1>
 
-    <sect1>
+    <sect1 xml:id="sect.grappa">
       <title>Cartesian 2D Parallel MRI</title>
 
-      <para>Blah</para>
+      <para>MSH, please write</para>
     </sect1>
 
-    <sect1>
+    <sect1 xml:id="sect.cgsense">
       <title>Non-Cartesian 2D Parallel MRI</title>
 
-      <para>Blah</para>
+      <para>TSS, please add some description</para>
     </sect1>
 
-    <sect1>
+    <sect1 xml:id="sect.pythonexamplerecon">
       <title>Simple 2D FT MRI in Python</title>
 
-      <para>Blah</para>
+      <para>MSH, please write</para>
     </sect1>
 
     <sect1>
       <title>Image Deblurring/Image Denoising</title>
 
-      <para>Blah</para>
+      <para>TSS, please add some description</para>
     </sect1>
   </chapter>
 
@@ -2113,6 +2665,12 @@ end
 
       <listitem>
         <para>Persistent memory storage across Gadget chains. </para>
+      </listitem>
+
+      <listitem>
+        <para>Matlab Gadgets. It would be great to have a way to encapsulate
+        Matlab code in a Gadget similar to the way that the Python Gadgets
+        work.</para>
       </listitem>
     </itemizedlist>
   </appendix>
