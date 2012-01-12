@@ -30,8 +30,7 @@ public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
  private:
   int samples_to_skip_start_;
   int samples_to_skip_end_;
-  int samples_per_adc_;
-  int adcs_per_interleave_;
+  int samples_per_interleave_;
   boost::shared_ptr< hoNDArray<floatd2::Type> > host_traj_;
   boost::shared_ptr< hoNDArray<float> > host_weights_;
   cuNDArray<float> gpu_weights_;
