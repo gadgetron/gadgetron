@@ -561,18 +561,17 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
           </listitem>
 
           <listitem>
-            <para>Create Visual Studio project (your process may vary):
-            </para>
+            <para>Create Visual Studio project (your process may vary):</para>
 
             <para>Start <application>cmake-gui</application></para>
 
             <para>Select source and target directories</para>
 
-            <para>Hit configure (first time) </para>
+            <para>Hit configure (first time)</para>
 
             <para>Add variable BOOST_ROOT to point to BOOST folder</para>
 
-            <para>Hit configure (again) </para>
+            <para>Hit configure (again)</para>
 
             <para>Speficify location of FFTW and FFTWf libraries</para>
 
@@ -589,7 +588,7 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
 
             <para>Hit configure (again)</para>
 
-            <para>Specify the following environment variables: </para>
+            <para>Specify the following environment variables:</para>
 
             <para><varname>BLAS_CALBLAS</varname> =
             <filename>C:/Libraries/acml4.4.0/win64/lib/libacml.lib</filename></para>
@@ -598,12 +597,10 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
             <filename>C:/Libraries/acml4.4.0/win64/lib/libacml_dll.lib</filename></para>
 
             <para><varname>BLAS_acml_mp_LIBRARY</varname> =
-            <filename>C:/Libraries/acml4.4.0/win64_mp/lib/libacml_mp_dll.lib</filename>
-            </para>
+            <filename>C:/Libraries/acml4.4.0/win64_mp/lib/libacml_mp_dll.lib</filename></para>
 
             <para><varname>BLAS_acml_mv_LIBRARY</varname> =
-            <filename>C:/Libraries/acml4.4.0/win64/lib/libacml_mv_dll.lib</filename>
-            </para>
+            <filename>C:/Libraries/acml4.4.0/win64/lib/libacml_mv_dll.lib</filename></para>
 
             <para>Hit configure</para>
 
@@ -1605,7 +1602,7 @@ public:
               <para><filename>include</filename>: Contains any header files
               for Gadget libraries and Toolboxes so that they can be linked
               into external applications and Gadget libraries compiled outside
-              the Gadgetron source tree. </para>
+              the Gadgetron source tree.</para>
             </listitem>
 
             <listitem>
@@ -1831,7 +1828,15 @@ m-&gt;release(); //Delete the message block and containing data
       <sect2>
         <title>MRI Gadgets</title>
 
-        <para>List some of the available gadgets</para>
+        <para>One of the original motivations for creating the Gadgetron was
+        to make a high throughput MRI reconstruction engine that could be
+        interfaced to different MRI vendor systems. Consequently, a lot of the
+        functionality in toolboxes and Gadgets is focused on MRI
+        reconstruction. In this section we will first review the basic data
+        structures that are used to desribe MRI data and then list some of the
+        MRI Gadgets that are available. These Gadgets are used in several of
+        the example applications in <xref
+        linkend="sect.exampleapplications" />.</para>
       </sect2>
 
       <sect2>
@@ -1887,7 +1892,7 @@ m-&gt;release(); //Delete the message block and containing data
     </sect1>
   </chapter>
 
-  <chapter>
+  <chapter xml:id="sect.exampleapplications">
     <title>Example Applications</title>
 
     <sect1>
@@ -2104,6 +2109,10 @@ end
       <listitem>
         <para>Branching Gadget chains. There is currently no ability to branch
         and collect in the Gadgetron.</para>
+      </listitem>
+
+      <listitem>
+        <para>Persistent memory storage across Gadget chains. </para>
       </listitem>
     </itemizedlist>
   </appendix>
