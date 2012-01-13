@@ -655,7 +655,10 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
       type:</para>
 
       <screen>
-    <prompt>user@mycomputer:~/temp/test_data$</prompt> <userinput>mriclient -d simple_gre.gmr -x simple_gre.xml -c default.xml</userinput>
+    <prompt>user@mycomputer:~/temp/test_data$</prompt> <userinput>mriclient \
+        -d simple_gre.gmr \
+        -x simple_gre.xml \
+        -c default.xml</userinput>
   </screen>
 
       <para>You should see some logging information in the Gadgetron window
@@ -663,7 +666,11 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
       from the Gadgetron:</para>
 
       <screen>
-user@mycomputer:~/temp/test_data$ mriclient -d simple_gre.gmr -x simple_gre.xml -c default.xml
+user@mycomputer:~/temp/test_data$ mriclient \
+   -d simple_gre.gmr \
+   -x simple_gre.xml \
+   -c default.xml
+
 Gadgetron MRI Data Sender
   -- host:            localhost
   -- port:            9002
@@ -935,7 +942,8 @@ protected:
      //Do type checking 
    }
 
-   virtual int process(GadgetContainerMessage&lt;P1&gt;* m1, GadgetContainerMessage&lt;P2&gt;* m2) = 0;
+   virtual int process(GadgetContainerMessage&lt;P1&gt;* m1, 
+     GadgetContainerMessage&lt;P2&gt;* m2) = 0;
 };
 
 </programlisting>
@@ -964,8 +972,9 @@ public Gadget2&lt;GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &g
   GADGET_DECLARE(FFTGadget)
 
  protected:
-  virtual int process( GadgetContainerMessage&lt; GadgetMessageImage&gt;* m1,
-		       GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2);
+  virtual int process( 
+     GadgetContainerMessage&lt; GadgetMessageImage&gt;* m1,
+     GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2);
 
 };
 
@@ -1005,7 +1014,8 @@ public Gadget2&lt;GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &g
 #include "FFTGadget.h"
 #include "FFT.h"
 
-int FFTGadget::process( GadgetContainerMessage&lt; GadgetMessageImage&gt;* m1,
+int FFTGadget::process( 
+   GadgetContainerMessage&lt; GadgetMessageImage&gt;* m1,
    GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2)
 {
   FFT&lt;float&gt;::instance()-&gt;ifft(m2-&gt;getObjectPtr(),0);
@@ -1050,25 +1060,133 @@ GADGET_FACTORY_DECLARE(FFTGadget)
         platforms. When you create your own gadgets you must use this macro to
         declare the factory function for the Gadget.</para>
 
-        <para>In addition to defining a Gadget's behavior in response to a
-        data package, it is also possible for the Gadgets to receive
-        configuration information or parameters. The user can define the
-        Gadgets behavior in response to configuration information by
-        implementing the <function>process_config</function> function seen in
-        the Gadget header file above. The configuration information or
-        parameters is typically transmitted in the beginning of the
-        reconstruction process from the client (see <xref
-        linkend="sect.communicationprotocol" />). The configuration
-        information can in principle be in any format (a given application can
-        use a binary format or a text format defined for the specific
-        purpose), but conventionally the parameters are transmitted in XML
-        format and the Gadgetron comes with some toolbox functions in the
-        <filename>GadgetXml.h</filename> file which allow easy acces to
-        parameters in XML format (see the examples throughout the source code
-        on how to interpret parameters).</para>
-
         <para>For a tutorial on how to make your own Gadget library see <xref
         linkend="sect.makingnewgadgetlibrary" />.</para>
+
+        <sect3>
+          <title>Gadget XML Configuration</title>
+
+          <para>In addition to defining a Gadget's behavior in response to a
+          data package, it is also possible for the Gadgets to receive
+          configuration information or parameters. The user can define the
+          Gadgets behavior in response to configuration information by
+          implementing the <function>process_config</function> function seen
+          in the Gadget header file above. The configuration information or
+          parameters is typically transmitted in the beginning of the
+          reconstruction process from the client (see <xref
+          linkend="sect.communicationprotocol" />). The configuration
+          information can in principle be in any format (a given application
+          can use a binary format or a text format defined for the specific
+          purpose), but conventionally the parameters are transmitted in XML
+          format and the Gadgetron comes with some toolbox functions in the
+          <filename>GadgetXml.h</filename> file which allow easy acces to
+          parameters in XML format (see the examples throughout the source
+          code on how to interpret parameters).</para>
+
+          <para>An example of a parameter XML file for an MRI reconstruction
+          is shown here:</para>
+
+          <programlisting>&lt;?xml version="1.0" ?&gt;
+&lt;gadgetron&gt;
+    &lt;encoding&gt;
+        &lt;kspace&gt;
+            &lt;base_resolution&gt;
+                &lt;value&gt;128&lt;/value&gt;
+            &lt;/base_resolution&gt;
+            &lt;readout_length&gt;
+                &lt;value&gt;256&lt;/value&gt;
+            &lt;/readout_length&gt;
+            &lt;phase_encoding_lines&gt;
+                &lt;value&gt;128&lt;/value&gt;
+            &lt;/phase_encoding_lines&gt;
+            &lt;partitions&gt;
+                &lt;value&gt;64&lt;/value&gt;
+            &lt;/partitions&gt;
+            &lt;phase_resolution&gt;
+                &lt;value&gt;1&lt;/value&gt;
+            &lt;/phase_resolution&gt;
+            &lt;slice_resolution&gt;
+                &lt;value&gt;1&lt;/value&gt;
+            &lt;/slice_resolution&gt;
+            &lt;matrix_size&gt;
+                &lt;value&gt;128&lt;/value&gt;
+                &lt;value&gt;128&lt;/value&gt;
+            &lt;/matrix_size&gt;
+        &lt;/kspace&gt;
+        &lt;trajectory&gt;
+            &lt;value&gt;1&lt;/value&gt;
+        &lt;/trajectory&gt;
+        &lt;slices&gt;
+            &lt;value&gt;1&lt;/value&gt;
+        &lt;/slices&gt;
+        &lt;acquisition_dwell_time_ns&gt;
+            &lt;value&gt;7800&lt;/value&gt;
+        &lt;/acquisition_dwell_time_ns&gt;
+        &lt;channels&gt;
+            &lt;value&gt;32&lt;/value&gt;
+        &lt;/channels&gt;
+    &lt;/encoding&gt;
+    &lt;timing&gt;
+        &lt;TR&gt;
+            &lt;value&gt;5860&lt;/value&gt;
+        &lt;/TR&gt;
+        &lt;TE&gt;
+            &lt;value&gt;2960&lt;/value&gt;
+        &lt;/TE&gt;
+    &lt;/timing&gt;
+&lt;/gadgetron&gt;
+</programlisting>
+
+          <para>The parameter scripts can really have any format, but the
+          convention is to have one root element called
+          <varname>gadgetron</varname> and the enclose all parameters in there
+          in a hierarchical structure. The Gadgetron comes with some functions
+          and classes for parsing this format. Firstly, the
+          <filename>TinyXML</filename> library is included with the Gadgetron
+          and can be used to parse the XML script, but we also include some
+          wrapper classes to make the parsing easier, the file
+          <filename>GadgetXml.h</filename> includes the
+          <classname>GadgetXMLNode</classname>:</para>
+
+          <programlisting>class GadgetXMLNode
+{
+ public:
+  GadgetXMLNode(TiXmlNode* anchor);
+
+  //Other functions
+ 
+  template&lt;typename T&gt; std::vector&lt;T&gt; get(std::string name);
+}
+</programlisting>
+
+          <para>This class can be used to access the XML parameters in a
+          convenient way. There are multiple examples of this throughout the
+          Gadgetron archive, but one example is give here:</para>
+
+          <programlisting>int MyGadget::process_config(ACE_Message_Block* mb)
+{
+
+  //Use TinyXML to parse the doucment
+  TiXmlDocument doc;
+  doc.Parse(mb-&gt;rd_ptr());
+ 
+  std::string path(""gadgetron.encoding.kspace.matrix_size.value");
+
+  //Get a vector with all the values 
+  std::vector&lt;long&gt; dims = 
+    n.get&lt;long&gt;(path);
+
+  //Do something with the dimensions
+
+
+  return GADGET_OK;
+}
+</programlisting>
+
+          <para>In the case of parsing the XML parameters listed above,
+          <varname>dims</varname> would contain two values ([128,
+          128]).</para>
+        </sect3>
       </sect2>
 
       <sect2 xml:id="sect.readerswriters">
@@ -1425,8 +1543,10 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
    &lt;name&gt;Accumulator&lt;/name&gt;
    &lt;dll&gt;gadgetroncore&lt;/dll&gt;
    &lt;class&gt;AccumulatorGadget&lt;/class&gt;
-   &lt;property&gt;&lt;name&gt;MyTestProperty&lt;/name&gt;&lt;value&gt;Blah Blah&lt;/value&gt;&lt;/property&gt;
-   &lt;property&gt;&lt;name&gt;MyTestProperty2&lt;/name&gt;&lt;value&gt;98776.862187&lt;/value&gt;&lt;/property&gt;
+   &lt;property&gt;&lt;name&gt;MyTestProperty&lt;/name&gt;
+   &lt;value&gt;Blah Blah&lt;/value&gt;&lt;/property&gt;
+   &lt;property&gt;&lt;name&gt;MyTestProperty2&lt;/name&gt;
+   &lt;value&gt;98776.862187&lt;/value&gt;&lt;/property&gt;
   &lt;/gadget&gt;
 </programlisting>
 
@@ -1537,7 +1657,8 @@ double get_double_value(const char* name);
 
         <para></para>
 
-        <programlisting>class GadgetronConnector: public ACE_Svc_Handler&lt;ACE_SOCK_STREAM, ACE_MT_SYNCH&gt; {
+        <programlisting>class GadgetronConnector: 
+  public ACE_Svc_Handler&lt;ACE_SOCK_STREAM, ACE_MT_SYNCH&gt; {
 
 public:
 
@@ -2437,9 +2558,14 @@ import kspaceandimage as ki</programlisting>
     return 0;
   }
 
-  template&lt;class T&gt; int return_data(T header, boost::python::numeric::array arr);
-  int return_acquisition(GadgetMessageAcquisition acq, boost::python::numeric::array arr);
-  int return_image(GadgetMessageImage img, boost::python::numeric::array arr);
+  template&lt;class T&gt; int return_data(T header, 
+          boost::python::numeric::array arr);
+
+  int return_acquisition(GadgetMessageAcquisition acq, 
+          boost::python::numeric::array arr);
+
+  int return_image(GadgetMessageImage img, 
+          boost::python::numeric::array arr);
 
  protected:
   Gadget* gadget_;
@@ -2513,7 +2639,378 @@ mySeries = 1;</programlisting>
       <sect2 xml:id="sect.makingnewgadgetlibrary">
         <title>Making a new Gadget library</title>
 
-        <para>MSH, please write</para>
+        <para>The easiest way to get started with making a new Gadget library
+        is to follow an example. In this example we will create a new Gadget
+        library which contains a single Gadget. We will call this Gadget
+        <classname>ThresholdGadget</classname> and the purpose of the Gadget
+        will be to set all values below a certain fraction of the max value to
+        zero.</para>
+
+        <para>New Gadget libraries can either be created in the Gadgetron
+        source tree, which make it easy to have access to all the other files
+        in the Gadgetron or they can be made as external libraries that link
+        against an installed Gadgetron system. In this example we will do the
+        latter since this allows you to create a new library that doesn't
+        "taint" your Gadgetron source tree. It is trivial to move the library
+        inside the Gadgetron source tree at some later point in time. We will
+        assume that you have already installed the Gadgetron on the machine
+        that you are working on. Also the command line entries, etc. are from
+        a Linux machine, if you are on Windows, you may have to adjust a
+        bit.</para>
+
+        <para>Start by creating a new folder for the library:</para>
+
+        <screen><prompt>user@mycomputer:~/temp$</prompt> <userinput>mkdir gadgetron_examplelib; cd gadgetron_examplelib</userinput></screen>
+
+        <para>Let us start by creating the class
+        <classname>ThresholdGadget</classname>. Create the following 3 files:
+        <filename>ThresholdGadget.h</filename>,
+        <filename>ThresholdGadget.cpp</filename>,
+        <filename>examplelib_export.h</filename> (the last file is just to
+        help us make sure that things work on Windows) with the following
+        content:</para>
+
+        <programlisting>//ThresholdGadget.h
+
+#ifndef THRESHOLDGADGET_H
+#define THRESHOLDGADGET_H
+
+#include "examplelib_export.h"
+#include "Gadget.h"
+#include "GadgetMRIHeaders.h"
+#include "hoNDArray.h"
+#include &lt;complex&gt;
+
+class EXPORTGADGETSEXAMPLE ThresholdGadget : 
+public Gadget2&lt;GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;
+{
+ public:
+  GADGET_DECLARE(ThresholdGadget)
+
+ protected:
+  virtual int process( GadgetContainerMessage&lt; GadgetMessageImage&gt;* m1,
+       GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2);
+
+  virtual int process_config(ACE_Message_Block* mb);
+
+  float threshold_level_;
+
+};
+
+#endif //THRESHOLDGADGET_H</programlisting>
+
+        <para></para>
+
+        <programlisting>//ThresholdGadget.cpp
+
+#include "ThresholdGadget.h"
+
+int ThresholdGadget::process_config(ACE_Message_Block* mb) 
+{
+  threshold_level_ = get_double_value("level");
+  if (threshold_level_ == 0.0) {
+    threshold_level_ = 1.0;
+  }
+
+  return GADGET_OK;
+}
+
+int ThresholdGadget::process( 
+   GadgetContainerMessage&lt; GadgetMessageImage&gt;* m1,
+   GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2)
+{
+
+  std::complex&lt;float&gt;* d = m2-&gt;getObjectPtr()-&gt;get_data_ptr();
+  unsigned long int elements =  m2-&gt;getObjectPtr()-&gt;get_number_of_elements();
+
+  //First find max
+  float max = 0.0;
+  for (unsigned long int i = 0; i &lt; elements; i++) {
+    if (abs(d[i]) &gt; max) {
+      max = abs(d[i]);
+    }
+  }
+
+  //Now threshold
+  for (unsigned long int i = 0; i &lt; elements; i++) {
+    if (abs(d[i]) &lt; threshold_level_*max) {
+      d[i] = std::complex&lt;float&gt;(0.0,0.0);
+    }
+  }
+
+  //Now pass on image
+  if (this-&gt;next()-&gt;putq(m1) &lt; 0) {
+     return GADGET_FAIL;
+  }
+
+  return GADGET_OK;
+}
+
+GADGET_FACTORY_DECLARE(ThresholdGadget)</programlisting>
+
+        <para></para>
+
+        <programlisting>//examplelib_export.h
+
+#ifndef EXAMPLE_EXPORT_H_
+#define EXAMPLE_EXPORT_H_
+
+
+#if defined (WIN32)
+#if defined (gadgetronexamplelib_EXPORTS)
+#define EXPORTGADGETSEXAMPLE __declspec(dllexport)
+#else
+#define EXPORTGADGETSEXAMPLE __declspec(dllimport)
+#endif
+#else
+#define EXPORTGADGETSEXAMPLE
+#endif
+
+#endif /* EXAMPLE_EXPORT_H_ */
+</programlisting>
+
+        <para>Now that we have the files for the Gadget, we need to set up the
+        build environment. In folder <filename>gadgetron_examplelib</filename>
+        create a file called <filename>CMakeLists.txt</filename> with the
+        following content:</para>
+
+        <programlisting>cmake_minimum_required(VERSION 2.6)
+
+project(examplelib)
+
+if (WIN32)
+ADD_DEFINITIONS(-DWIN32 -D_WIN32 -D_WINDOWS)
+ADD_DEFINITIONS(-DUNICODE -D_UNICODE)
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
+endif (WIN32)
+
+###############################################################
+#Bootstrap search for libraries 
+# (We need to find cmake modules in Gadgetron)
+###############################################################
+find_path(GADGETRON_CMAKE_MODULES FindGadgetron.cmake HINTS
+$ENV{GADGETRON_HOME}/cmake
+/usr/local/gadgetron)
+
+if (NOT GADGETRON_CMAKE_MODULES)
+  MESSAGE(FATAL_ERROR "GADGETRON_CMAKE_MODULES cannot be found. 
+   Try to set GADGETRON_HOME environment variable.")
+endif(NOT GADGETRON_CMAKE_MODULES)
+
+set(CMAKE_MODULE_PATH ${GADGETRON_CMAKE_MODULES})
+###############################################################
+
+find_package(Gadgetron REQUIRED)
+find_package(Boost REQUIRED)
+find_package(ACE REQUIRED)
+
+set(CMAKE_INSTALL_PREFIX ${GADGETRON_HOME})
+
+INCLUDE_DIRECTORIES(${ACE_INCLUDE_DIR} 
+     ${Boost_INCLUDE_DIR}
+     ${GADGETRON_INCLUDE_DIR})
+
+LINK_DIRECTORIES(${GADGETRON_LIB_DIR})
+
+ADD_LIBRARY(gadgetronexamplelib SHARED ThresholdGadget.cpp)
+
+TARGET_LINK_LIBRARIES(gadgetronexamplelib 
+                      hondarray 
+                      optimized ${ACE_LIBRARIES} 
+                      debug ${ACE_DEBUG_LIBRARY})
+
+INSTALL (FILES	ThresholdGadget.h
+         examplelib_export.h
+         DESTINATION include)
+
+INSTALL(TARGETS gadgetronexamplelib DESTINATION lib)
+
+INSTALL(FILES threshold.xml DESTINATION config)
+</programlisting>
+
+        <para>Last thing we need is the configuration XML file that we will
+        use when running with our <classname>ThresholdGadget</classname>. In
+        the same folder create the <filename>threshold.xml</filename>
+        file:</para>
+
+        <programlisting>&lt;?xml version="1.0" ?&gt;  
+&lt;gadgetron&gt;
+  &lt;readers&gt;
+    &lt;reader&gt;
+      &lt;slot&gt;1001&lt;/slot&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;class&gt;MRIAcquisitionReader&lt;/class&gt;
+    &lt;/reader&gt;
+  &lt;/readers&gt;
+  
+  &lt;writers&gt;
+    &lt;writer&gt;
+      &lt;slot&gt;1005&lt;/slot&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;class&gt;MRIImageWriterFLOAT&lt;/class&gt;
+    &lt;/writer&gt;
+  &lt;/writers&gt;
+  
+
+  &lt;stream&gt;
+    &lt;gadget&gt;
+      &lt;name&gt;Acc&lt;/name&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;class&gt;AccumulatorGadget&lt;/class&gt;
+    &lt;/gadget&gt;
+
+    &lt;gadget&gt;
+      &lt;name&gt;FFT&lt;/name&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;class&gt;FFTGadget&lt;/class&gt;
+    &lt;/gadget&gt;
+
+    &lt;gadget&gt;
+      &lt;name&gt;CropCombine&lt;/name&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;class&gt;CropAndCombineGadget&lt;/class&gt;
+    &lt;/gadget&gt;
+
+    &lt;!-- This is where we insert our new Gadget --&gt;
+    &lt;gadget&gt;
+      &lt;name&gt;Threshold&lt;/name&gt;
+      &lt;dll&gt;gadgetronexamplelib&lt;/dll&gt;
+      &lt;class&gt;ThresholdGadget&lt;/class&gt;
+      &lt;property&gt;&lt;name&gt;level&lt;/name&gt;&lt;value&gt;0.25&lt;/value&gt;&lt;/property&gt;
+    &lt;/gadget&gt;
+
+
+    &lt;gadget&gt;
+      &lt;name&gt;Extract&lt;/name&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;class&gt;ExtractGadget&lt;/class&gt;
+    &lt;/gadget&gt;
+
+    &lt;gadget&gt;
+      &lt;name&gt;ImageFinishFLOAT&lt;/name&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;class&gt;ImageFinishGadgetFLOAT&lt;/class&gt;
+    &lt;/gadget&gt;
+
+   &lt;/stream&gt;
+
+&lt;/gadgetron&gt;
+</programlisting>
+
+        <para>Now, let's just check that you have 5 files in your
+        folder:</para>
+
+        <screen><prompt>user@mycomputer:gadgetron_examplelib$</prompt> <userinput>ls</userinput>
+CMakeLists.txt
+ThresholdGadget.cpp
+ThresholdGadget.h
+examplelib_export.h
+threshold.xml
+</screen>
+
+        <para>Next, let's create a <filename>build</filename> director and
+        compile:</para>
+
+        <screen><prompt>user@mycomputer:gadgetron_examplelib$</prompt> <userinput>mkdir build; cd build</userinput></screen>
+
+        <para>In the <filename>build</filename> folder</para>
+
+        <screen><prompt>user@mycomputer:build$</prompt> <userinput>cmake ../</userinput></screen>
+
+        <para>And assuming the <application>cmake</application> process was
+        successfull:</para>
+
+        <screen><prompt>user@mycomputer:build$</prompt> make 
+Scanning dependencies of target gadgetronexamplelib
+
+[100%] Building CXX object \
+    CMakeFiles/gadgetronexamplelib.dir/ThresholdGadget.cpp.o
+
+Linking CXX shared library libgadgetronexamplelib.dylib
+[100%] Built target gadgetronexamplelib
+
+<prompt>user@mycomputer:build$</prompt> make install
+[100%] Built target gadgetronexamplelib
+Install the project...
+-- Install configuration: ""
+-- Up-to-date: /usr/local/gadgetron/include/ThresholdGadget.h
+-- Up-to-date: /usr/local/gadgetron/include/examplelib_export.h
+-- Installing: /usr/local/gadgetron/lib/libgadgetronexamplelib.so
+-- Up-to-date: /usr/local/gadgetron/config/threshold.xml
+</screen>
+
+        <para>You may have to use <application>sudo</application> for the
+        <command>make install</command> commmand depending on your system
+        setup.</para>
+
+        <para>Now you should be able to run a reconstruction with the new
+        reconstruction chain. Follow the instructions in <xref
+        linkend="sect.simpleexample" /> if you have not yet tried to run a
+        simple reconstruction. After having started up the Gadgetron, run the
+        <application>mriclient</application>:</para>
+
+        <screen>user@mycomputer:~/temp/test_data$ mriclient \
+     -d simple_gre.gmr \
+     -x simple_gre.xml \
+     -c threshold.xml
+
+Gadgetron MRI Data Sender
+  -- host:            localhost
+  -- port:            9002
+  -- data:            simple_gre.gmr
+  -- parm:            simple_gre.xml
+  -- conf:            threshold.xml
+  -- loop:            1
+(2815|140119753992000) Connection from 127.0.0.1:9002
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+2815, 81, GadgetronConnector, Close Message received
+(2815|140119714780928) Handling close...
+(2815|140119714780928) svc done...
+(2815|140119714780928) Handling close...</screen>
+
+        <para>Now if you run it again with the <varname>level</varname>
+        parameter set to 0.00000001 (remember to install the
+        <filename>threshold.xml</filename> file in
+        <filename>gadgetron/config</filename> by running <command>make
+        install</command>):</para>
+
+        <programlisting>    &lt;gadget&gt;
+      &lt;name&gt;Threshold&lt;/name&gt;
+      &lt;dll&gt;gadgetronexamplelib&lt;/dll&gt;
+      &lt;class&gt;ThresholdGadget&lt;/class&gt;
+      &lt;property&gt;&lt;name&gt;level&lt;/name&gt;&lt;value&gt;0.00000001&lt;/value&gt;&lt;/property&gt;
+    &lt;/gadget&gt;
+</programlisting>
+
+        <para>You should get two different results that look something like
+        <xref linkend="fig.examplelib" />.</para>
+
+        <figure xml:id="fig.examplelib">
+          <title>Result from <classname>ThresholdGadget</classname>
+          experiment</title>
+
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="figs/examplelibresult.png" format="PNG"
+                         width="6in"></imagedata>
+            </imageobject>
+          </mediaobject>
+        </figure>
+
+        <para>If you create interesting Gadget libraries please consider
+        publishing them online to the benefit of the reconstruction community
+        or please send them to the Gadgetron team so that we can include the
+        library in a future release of the Gadgetron. </para>
       </sect2>
     </sect1>
 
@@ -2523,13 +3020,153 @@ mySeries = 1;</programlisting>
       <sect2>
         <title>Available clients</title>
 
-        <para>MSH, please write</para>
+        <para>The purpose of this section is to maintain a list over the
+        available clients that are included in the Gadgetron distribution. The
+        current available clients are:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para><application>mriclient</application>:</para>
+
+            <para>This is the standard client for sending MRI data to the
+            Gadgetron. Two files are needed to send data to the Gadgetron, a
+            data file and an XML file with parameters. The data file is just a
+            flat file format of
+            <classname>GadgetMessageAcquisition</classname> structs and raw
+            data. In order to get usage information for the client, simply run
+            the client with no arguments. </para>
+          </listitem>
+        </itemizedlist>
       </sect2>
 
       <sect2>
         <title>Making a new client</title>
 
-        <para>MSH, please write</para>
+        <para>The Gadgetron distribution comes with a
+        <classname>GadgetronConnector</classname> class, which can be used to
+        create clients. An example <filename>main.cpp</filename> file for a
+        client could look like:</para>
+
+        <programlisting>
+#include "GadgetMessageInterface.h"
+#include "GadgetronConnector.h"
+
+int main(int argc, char** argv)
+{
+
+  std::string host_name("localhost");
+  std::string port("9002");
+  std::string config_file("threshold.xml");
+  std::string xml_config;
+
+  //Generate some XML configuration in xml_fconfig
+
+  GadgetronConnector con;
+
+  //Register Readers and Writers
+  con.register_writer(....);
+  con.register_reader(....);
+  con.register_reader(....);
+
+  //Open a connection with the gadgetron
+  if (con.open(hostname, port_no) != 0) {
+    //Deal with errors
+  }
+
+  //Tell Gadgetron which XML configuration to run.
+  if (con.send_gadgetron_configuration_file(config_file) != 0) {
+    //Deal with errors
+  }
+
+  if (con.send_gadgetron_parameters(xml_config) != 0) {
+     //Deal with errors
+  }
+
+
+  //Send data
+  while ( .... ) { //some condition
+    GadgetContainerMessage&lt;GadgetMessageIdentifier&gt;* m1 =
+      new GadgetContainerMessage&lt;GadgetMessageIdentifier&gt;();
+      
+      //Create data and add to m1
+
+      if (con.putq(m1) == -1) {
+         //Deal with errors
+      }
+  }
+
+  //Put a close package on the queue
+
+  GadgetContainerMessage&lt;GadgetMessageIdentifier&gt;* m1 =
+    new GadgetContainerMessage&lt;GadgetMessageIdentifier&gt;();
+
+  m1-&gt;getObjectPtr()-&gt;id = GADGET_MESSAGE_CLOSE;
+
+  if (con.putq(m1) == -1) {
+   //Deal with errors
+  }
+
+  con.wait(); //Wait for recon to finish
+
+  return 0;
+}</programlisting>
+
+        <para>To compile this client, create a
+        <application>cmake</application> file:</para>
+
+        <programlisting>cmake_minimum_required(VERSION 2.6)
+
+project(exampleclient)
+
+if (WIN32)
+ADD_DEFINITIONS(-DWIN32 -D_WIN32 -D_WINDOWS)
+ADD_DEFINITIONS(-DUNICODE -D_UNICODE)
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
+SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
+endif (WIN32)
+
+###############################################################
+#Bootstrap search for libraries 
+# (We need to find cmake modules in Gadgetron)
+###############################################################
+find_path(GADGETRON_CMAKE_MODULES FindGadgetron.cmake HINTS
+$ENV{GADGETRON_HOME}/cmake
+/usr/local/gadgetron)
+
+if (NOT GADGETRON_CMAKE_MODULES)
+  MESSAGE(FATAL_ERROR "GADGETRON_CMAKE_MODULES cannot be found. 
+   Try to set GADGETRON_HOME environment variable.")
+endif(NOT GADGETRON_CMAKE_MODULES)
+
+set(CMAKE_MODULE_PATH ${GADGETRON_CMAKE_MODULES})
+###############################################################
+
+find_package(Gadgetron REQUIRED)
+find_package(Boost REQUIRED)
+find_package(ACE REQUIRED)
+
+set(CMAKE_INSTALL_PREFIX ${GADGETRON_HOME})
+
+INCLUDE_DIRECTORIES(${ACE_INCLUDE_DIR} 
+     ${Boost_INCLUDE_DIR}
+     ${GADGETRON_INCLUDE_DIR})
+
+LINK_DIRECTORIES(${GADGETRON_LIB_DIR})
+
+add_executable(mygadgetronclient main.cpp)
+
+target_link_libraries(mygadgetronclient 
+      optimized gadgettools debug gadgettools${CMAKE_DEBUG_SUFFIX}
+      tinyxml 
+      optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
+
+install(TARGETS mygadgetronclient DESTINATION bin)
+</programlisting>
+
+        <para>Run <application>cmake</application> and follow the normal
+        <command>make</command> and <command>make install</command>
+        instructions (see <xref
+        linkend="sect.makingnewgadgetlibrary" />).</para>
       </sect2>
     </sect1>
 
@@ -2551,7 +3188,7 @@ mySeries = 1;</programlisting>
   </chapter>
 
   <chapter xml:id="sect.exampleapplications">
-    <title>Example Applications</title>
+    <title>Examples</title>
 
     <sect1>
       <title>Simple 2D FT MRI</title>

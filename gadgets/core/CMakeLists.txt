@@ -46,6 +46,7 @@ install (FILES	AccumulatorGadget.h
 			RemoveROOversamplingGadget.h
 			CoilReductionGadget.h
 			AutoScaleGadget.h
+			gadgetroncore_export.h
 			DESTINATION include)
 
 install(TARGETS gadgetroncore DESTINATION lib)
