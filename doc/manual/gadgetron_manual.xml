@@ -1825,7 +1825,7 @@ m-&gt;release(); //Delete the message block and containing data
     <sect1>
       <title>Gadgets</title>
 
-      <sect2>
+      <sect2 xml:id="sect.mrigadgets">
         <title>MRI Gadgets</title>
 
         <para>One of the original motivations for creating the Gadgetron was
@@ -2227,11 +2227,9 @@ struct GadgetMessageAcquisition
         <para>The Gadgetron provides a way to do prototype development in
         Python. So far this has only been applied to simple MRI
         reconstructions and in this section, we will be using MRI as an
-        example application. Further descrription of a simple Python MRI
-        reconstruction can be found in <xref
-        linkend="sect.pythonexamplerecon" />.</para>
+        example application. </para>
 
-        <para>The Python layer is provided with a set of Python Gadgets that
+        <para>The Python layer throug a set of Python Gadgets that can
         encapsulate a Python module. This is illustrated in <xref
         linkend="fig.pythonoverview" />, which illustrates a part of a Gadget
         chain with two Python Gadgets and one C/C++ Gadget. A Gadget chain can
@@ -2255,28 +2253,29 @@ struct GadgetMessageAcquisition
 
         <orderedlist>
           <listitem>
-            <para>Gadget reference function. A specific function will be
-            called when the Python Gadget is created. This function is
-            expected to receive a <classname>GadgetReference</classname> which
-            is a class (wrapped in a Python module), which holds a reference
-            to the Gadget, which owns the Python module. The purpose of
-            passing this reference is to allow the Python module to return
-            data to the Gadget when reconstruction outputs are ready. </para>
+            <para><emphasis>Gadget reference function</emphasis>. A specific
+            function will be called when the Python Gadget is created. This
+            function is expected to receive a
+            <classname>GadgetReference</classname> which is a class (wrapped
+            in a Python module), which holds a reference to the Gadget, which
+            owns the Python module. The purpose of passing this reference is
+            to allow the Python module to return data to the Gadget when
+            reconstruction outputs are ready. See below for details.</para>
           </listitem>
 
           <listitem>
-            <para>Configuration function. This function passed the
-            configuration (usually in XML format) on when it is passed to the
-            Gadget, i.e. it is the Python counterpart of
+            <para><emphasis>Configuration function</emphasis>. This function
+            is used to receive the configuration (usually in XML format), when
+            it is passed to the Gadget, i.e. it is the Python equivalent of
             <function>process_config</function> in the Gadget (see <xref
             linkend="sect.gadgets" />).</para>
           </listitem>
 
           <listitem>
-            <para>Reconstruction function: This function is called when the
-            Gadget receives data, i.e. it is the Python counterpart of the
-            <function>process</function> function in the Gadget (see <xref
-            linkend="sect.gadgets" />).</para>
+            <para><emphasis>Reconstruction function</emphasis>. This function
+            is called when the Gadget receives data, i.e. it is the Python
+            equivalent of the <function>process</function> function in the
+            Gadget (see <xref linkend="sect.gadgets" />).</para>
           </listitem>
         </orderedlist>
 
@@ -2325,10 +2324,10 @@ struct GadgetMessageAcquisition
         Python interpreter know where to search for script. By default, the
         <filename>gadgetron/lib</filename> is added to the search path.
         Multiple pathnames can be added by seperating the paths with
-        ";".</para>
+        "<filename>;</filename>".</para>
 
         <para>The Python script referenced in the XML configuration above
-        could look like:</para>
+        could look like this:</para>
 
         <programlisting>import numpy as np
 import GadgetronPythonMRI as g
@@ -2402,6 +2401,113 @@ def recon_function(acq, data):
         return 0 #Everything OK
 
 </programlisting>
+
+        <para>There is a lot going on in this script, we will walk through the
+        different parts and add some explanation. First of all, let's look at
+        the imports:</para>
+
+        <programlisting>import numpy as np
+import GadgetronPythonMRI as g
+import GadgetronXML
+import kspaceandimage as ki</programlisting>
+
+        <para>All the Python Gadget modules must include
+        <filename>numpy</filename>. The arrays
+        (<classname>NDArray</classname>) are passed to the Python module as
+        <filename>numpy</filename> arrays. The second module
+        <filename>GadgetronPythonMRI</filename> is a Python wrapped version of
+        some of the data structures used in the MRI part of the Gadgetron (see
+        <xref linkend="sect.mrigadgets" />). Specifically, the
+        <classname>GadgetMessageAcquisition</classname> and
+        <classname>GadgetMessageImage</classname> headers are wrapped as
+        Python types (using Boost Python). The
+        <filename>GadgetronPythonMRI</filename> also contains a wrapped
+        version of the <classname>GadgetReference</classname> class:</para>
+
+        <programlisting>class GadgetReference
+{
+
+ public:
+  GadgetReference();
+  ~GadgetReference();
+  
+  int set_gadget(Gadget* g)
+  {
+    gadget_ = g;
+    return 0;
+  }
+
+  template&lt;class T&gt; int return_data(T header, boost::python::numeric::array arr);
+  int return_acquisition(GadgetMessageAcquisition acq, boost::python::numeric::array arr);
+  int return_image(GadgetMessageImage img, boost::python::numeric::array arr);
+
+ protected:
+  Gadget* gadget_;
+
+};
+</programlisting>
+
+        <para>Using the return functions in this class interface, it is
+        possible for the Python module to return data to the Gadget.
+        <filename>GadgetronXML</filename> is a Python module provided with the
+        Gadgetron, which contains some XML helper functions that can (it is
+        not a requirement) be used to parse the XML paramaters that the module
+        will receive from <function>process_config</function>.
+        <filename>kspaceandimage</filename> is also a python module provided
+        with the Gadgetron, it contains some simple wrapper functions for
+        performing Fourier transforms (to and from k-space) of MRI data. The
+        following section contains some initialization of global variables in
+        the Python module;</para>
+
+        <programlisting>myRef = g.GadgetReference()
+myBuffer = 0
+myParameters = 0
+myCounter = 1;
+mySeries = 1;</programlisting>
+
+        <para>As described above, each Python module must contain at least 3
+        functions corresponding to the 3 entry points from the Gadgetron
+        framework. The first one of these functions captures the
+        <classname>GadgetReference</classname>:</para>
+
+        <programlisting>def set_gadget_reference(gadref):
+    global myLocalGadgetReference
+    myLocalGadgetReference = gadref
+</programlisting>
+
+        <para>Using this reference, the Python module will be able to return
+        images (or acquisitions) to the Gadget. The next function processes
+        the configuration data:</para>
+
+        <programlisting>def config_function(conf):
+    global myBuffer
+    global myParameters
+    myParameters =  GadgetronXML.getEncodingParameters(conf)
+    myBuffer = (np.zeros((myParameters["channels"], \
+                myParameters["slices"], \
+                myParameters["matrix_z"], \
+                myParameters["matrix_y"], \
+                myParameters["matrix_x"]))).astype('complex64')
+</programlisting>
+
+        <para>The <filename>GadgetronXML</filename> module is used to parse
+        some simple enconding parameters out of the XML configuration and they
+        are stored in a convenient data structure for later reference. The
+        <function>config_function</function> function also initializes a
+        buffer for the data.</para>
+
+        <para>FInially the <function>recon_function</function> (not repeated
+        here) simple takes the data as it comes it and stores it in a buffer.
+        Based on the <varname>flags</varname> field in the header, it is
+        determined when the last acquisition in each slice has arrived and the
+        buffer is Fourier transformed, an image header is populated and the
+        result is returned (via the <classname>GadgetReference</classname>) to
+        the Gadgetron where it will be processed by the next Gadget in the
+        chain. </para>
+
+        <para>The Gadgetron distribution comes with a simple 2D FT MRI
+        reconstruction. The Gadget chain configuration for this reconstruction
+        can be found in <filename>gadgets/python/python.xml</filename>.</para>
       </sect2>
 
       <sect2 xml:id="sect.makingnewgadgetlibrary">
@@ -2463,12 +2569,6 @@ def recon_function(acq, data):
       <title>Non-Cartesian 2D Parallel MRI</title>
 
       <para>TSS, please add some description</para>
-    </sect1>
-
-    <sect1 xml:id="sect.pythonexamplerecon">
-      <title>Simple 2D FT MRI in Python</title>
-
-      <para>MSH, please write</para>
     </sect1>
 
     <sect1>
