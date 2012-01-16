@@ -26,30 +26,13 @@
     </writer>
   </writers>
   
-
   <stream>
-    <gadget>
-      <name>NoiseAdjust</name>
-      <dll>gadgetroncore</dll>
-      <class>NoiseAdjustGadget</class>
-      <property><name>MyTestProperty</name><value>Blah Blah</value></property>
-      <property><name>MyTestProperty2</name><value>98776.862187</value></property>
-    </gadget>
-	 
     <gadget>
       <name>Acc</name>
       <dll>gadgetroncore</dll>
       <class>AccumulatorGadget</class>
     </gadget>
 
- 	<!--
-    <gadget>
-      <name>ImageWrite</name>
-      <dll>gadgetroncore</dll>
-      <class>ImageWriterGadgetCPLX</class>
-    </gadget>
-    -->
-    
     <gadget>
       <name>FFT</name>
       <dll>gadgetroncore</dll>
@@ -66,41 +49,14 @@
       <name>Extract</name>
       <dll>gadgetroncore</dll>
       <class>ExtractGadget</class>
-      <!--
-      <property><name>extract_mask</name><value>9</value></property>
-      -->
     </gadget>
-
-
-	<!--    
-    <gadget>
-      <name>FloatToShort</name>
-      <dll>gadgetroncore</dll>
-      <class>FloatToUShortGadget</class>
-    </gadget>
- 	-->
- 	
- 	<!--
-    <gadget>
-      <name>ImageFinishCPLX</name>
-      <dll>gadgetroncore</dll>
-      <class>ImageFinishGadgetCPLX</class>
-    </gadget>
-    -->
-    
+  
     <gadget>
       <name>ImageFinishFLOAT</name>
       <dll>gadgetroncore</dll>
       <class>ImageFinishGadgetFLOAT</class>
     </gadget>
 
-	<!--
-     <gadget>
-      <name>ImageFinishUSHORT</name>
-      <dll>gadgetroncore</dll>
-      <class>ImageFinishGadgetUSHORT</class>
-    </gadget>
-    -->
    </stream>
 
 </gadgetron>

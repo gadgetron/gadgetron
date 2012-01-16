@@ -49,5 +49,5 @@ install(FILES
 DESTINATION lib)
 
 install(FILES
-	python.xml
+	python.xml python_short.xml
 DESTINATION config)
