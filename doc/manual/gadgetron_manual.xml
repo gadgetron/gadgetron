@@ -1960,8 +1960,8 @@ protected:
         <para>This class provides simple wrapper function to perform FFTs of
         <classname>hoNDArray</classname>s along a specific dimension or along
         all dimensions. The wrapper will perform <emphasis>in place</emphasis>
-        FFTs and works on complex arrays of single and double precision.
-        </para>
+        FFTs and works on complex arrays of single and double
+        precision.</para>
 
         <para>An important feature of this class is that it is a process wide
         singleton for the Gadgetron. As outlined in the definition above, the
@@ -1976,15 +1976,15 @@ FFT&lt;float&gt;::instance()-&gt;fft(...);</programlisting>
         <para>The reason for this is that the FFTW planning routines are not
         thread safe. Multiple Gadgets (that each have their own thread of
         execution) may need to use FFTs and consequently the planning routines
-        need to be protected with a mutex. All of this is handles inside the
+        need to be protected with a mutex. All of this is handled inside the
         <classname>FFT</classname> class and since it is a singleton only one
-        thread can run the planning routines at any given time. </para>
+        thread can run the planning routines at any given time.</para>
 
         <para>As mentioned it is possible for the users to call FFTW routines
         directly, and there may be some performance reasons for doing so (as
         opposed to using this wrapper), but please be aware of this thread
         safety issue when you design your Gadgets. If you want to be on the
-        safe side, use the wrapper. </para>
+        safe side, use the wrapper.</para>
       </sect2>
     </sect1>
 
@@ -3236,15 +3236,14 @@ install(TARGETS mygadgetronclient DESTINATION bin)
       arrays, performs FFT of the data, combines channels (if there are
       multiple), and returns the images to the client. This example is
       included in the Gadgetron for testing and demonstration purposes only.
-      It was not intended to be fast or otherwise optimal in any sense.
-      </para>
+      It was not intended to be fast or otherwise optimal in any sense.</para>
 
       <para>The Gadgets for this reconstruction are in the
       <filename>core</filename> folder and the configuration file to use to
       run this reconstruction is <filename>default.xml</filename>. The section
       <xref linkend="sect.simpleexample" /> describes how to run a simple
       reconstruction using this Gadget chain and how to download data to test
-      it. </para>
+      it.</para>
 
       <para>In this section we will take a closer look at the Gadgets in this
       chain and how they are implemented. The Gadgetron XML configuration file
@@ -3326,9 +3325,9 @@ install(TARGETS mygadgetronclient DESTINATION bin)
       configuration, the only output from this reconstruction will be float
       format images. However, many reconstructions will have all 3 Writers
       registered to make it easy to switch formats, i.e. it would be trivial
-      to turn this reconstruction into one that outputs float images (have a
-      look at the file <filename>default_short.xml</filename>) for an example
-      of how this is done. </para>
+      to turn this reconstruction into one that outputs unsigned short images
+      (have a look at the file <filename>default_short.xml</filename>) for an
+      example of how this is done.</para>
 
       <figure xml:id="fig.simple2dft">
         <title>Simple 2D FT Reconstruction Chain</title>
@@ -3341,12 +3340,12 @@ install(TARGETS mygadgetronclient DESTINATION bin)
       </figure>
 
       <para>As is seen in the <varname>stream</varname> section of the
-      configuration, this reconstruction used 5 Gadgets. The first Gadget is
+      configuration, this reconstruction uses 5 Gadgets. The first Gadget is
       responsible for accumulating MRI acquisitions. To accomplish this, it
       uses an accumulation buffer. When a k-space line arrives at the Gadget,
       it will be inserted into the k-space buffer and when the last
       acquisition in a slice/repetition has arrived, it will copy the entire
-      buffer and pass it on to the next Gadget. </para>
+      buffer and pass it on to the next Gadget.</para>
 
       <para>Let's have a look at the definition of the
       <classname>AccumulatorGadget</classname> class:</para>
@@ -3458,19 +3457,19 @@ public Gadget2&lt; GadgetMessageAcquisition,
    n.get&lt;long&gt;(std::string("encoding.kspace.matrix_size.value")); 
 </programlisting>
 
-      <para>would cause <varname>dims</varname> to become a list vector with
-      two <classname>long</classname> values of 128, 128. In simple example,
-      we have made some assumptions, i.e. our buffer always has the same
-      number of dimensions, which is 5. Specifically the dimensions are [kx,
-      ky, kz, channel, slice], to make sure that works out, we check if the
-      number of dimensions is less than 3 (i.e. it is 2D) in which case we add
-      a dimension.</para>
+      <para>would cause <varname>dims</varname> to become a vector with two
+      <classname>long</classname> values of 128, 128. In simple example, we
+      have made some assumptions, i.e. our buffer always has the same number
+      of dimensions, which is 5. Specifically the dimensions are [kx, ky, kz,
+      channel, slice], to make sure that works out, we check if the number of
+      dimensions is less than 3 (i.e. it is 2D) in which case we add a
+      dimension.</para>
 
       <para>Next we want to create a <classname>hoNDArray</classname> (see
       <xref linkend="sect.ndarray" />) to store the data. In order to be able
       to allocate the array we need a <classname>std::vector&lt;unsigned
-      int&gt;</classname> to hold the dimensions of the array. We will build
-      the dimensions up based on the parameters in the XML file. </para>
+      int&gt;</classname> to hold the dimensions of the array. We build the
+      dimensions up based on the parameters in the XML file.</para>
 
       <para>After creating the dimensions vector, creation of the
       <classname>hoNDArray</classname> is a two-step process, first the class
@@ -3608,7 +3607,7 @@ process(GadgetContainerMessage&lt;GadgetMessageAcquisition&gt;* m1,
 
       <para>This function has two basic tasks: insert data into the buffer and
       when enough data is present, copy the buffer and pass it on to next
-      gadget. </para>
+      gadget.</para>
 
       <para>In this case the copying of data is done with a very simple
       <function>memcpy</function> command. There is a basic check for the
@@ -3666,7 +3665,7 @@ GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2
 
       <para>Now that the images have been Fourier transformed, we need to
       remove the oversampling that is done in the readout dimensions and we
-      need to combined the receiver channels. In this case, we are making some
+      need to combine the receiver channels. In this case, we are making some
       assumptions, i.e. we assume two-fold oversampling in the readout and we
       are doing a simple RMS coil combination to obtain combined magnitude
       images. We will not repeat the source code here, it can be found in
@@ -3687,7 +3686,7 @@ GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2
       imaging reconstruction (GRAPPA) implemented on the GPU. It is beyond the
       scope of this manual to review all the algorithmic details of this
       application, but we will give an overview here as an example of a more
-      complicated reconstruction chain. </para>
+      complicated reconstruction chain.</para>
 
       <para>The Gadget chain is defined in the <filename>grappa.xml</filename>
       and the resulting chain is illustrated in <xref
@@ -3776,12 +3775,12 @@ user@host:~/temp/gadgetron_temp$
       improves the parallel imaging performance, especially in cases where
       there is a large amount of noise in just a few receiver elements. There
       are two versions of this Gadget, one that uses the BLAS/LAPACK routines
-      and one for performance improvements and one that implements the same
+      for performance improvements and one that implements the same
       functionality without these optimizations. When you call the included
       <filename>grappa.xml</filename> configuration, you will use the
       optimized version. If you do not have BLAS and LAPACK on your system,
       you can modify the XML configuration to use the one from the
-      <filename>gadgets/core</filename> library. </para>
+      <filename>gadgets/core</filename> library.</para>
 
       <para>Second step is removing the oversampling. This step could also be
       performed after the reconstruction (as it is done in <xref
@@ -3805,7 +3804,7 @@ user@host:~/temp/gadgetron_temp$
       reconstruction. The <classname>GrappaGadget</classname> calculates the
       GRAPPA coefficients and <classname>GrappaUnmixingGadget</classname>
       performs the Fourier transform of the raw data and applies the GRAPPA
-      coefficients to the aliased imaged to obtain unaliased images. </para>
+      coefficients to the aliased imaged to obtain unaliased images.</para>
 
       <para>In general it is assumed that the data is acquired in such a way
       that a set of neighboring frames can be averaged to yield a fully
@@ -3813,20 +3812,20 @@ user@host:~/temp/gadgetron_temp$
       pattern. When enough calibration data is available to calculate GRAPPA
       coefficients, i.e. when a fully sampled region of k-space is available,
       the calibration data is sent to a grappa coefficient calculation object
-      (<classname>GrappaWeightsCalculator</classname>). </para>
+      (<classname>GrappaWeightsCalculator</classname>).</para>
 
       <para>The <classname>GrappaWeightsCalculator</classname> is an active
       object, which picks up weight calculation jobs from an input queue and
       passes them on to the GPU where it uses toolbox functions to calculate
       GRAPPA unmixing coefficients. These coefficients are Fourier transformed
       to image space where they are combined for all coils and stored in a
-      <classname>GrappaWeights</classname> object. </para>
+      <classname>GrappaWeights</classname> object.</para>
 
       <para>When the <classname>GrappaGadget</classname> passes on the raw
       data to the <classname>GrappaUnmixingGadget</classname> it passes a
       reference to the <classname>GrappaWeights</classname> object which is to
       be used when performing the unmixing operation. Let's have closer look
-      at the <filename>GrappaUnmixingGadget.h</filename> file: </para>
+      at the <filename>GrappaUnmixingGadget.h</filename> file:</para>
 
       <programlisting>struct GrappaUnmixingJob
 {
@@ -3853,8 +3852,8 @@ protected:
 
       <para>We can see that the <classname>GrappaUnmixingGadget</classname> is
       an example of a Gadget, which takes 3 arguments and the additional
-      argument in this case holds a reference to the unmixing coefficients.
-      </para>
+      argument in this case holds a reference to the unmixing
+      coefficients.</para>
 
       <para>The <classname>GrappaWeightsCalculator</classname> will update the
       coefficients as often as it is instructed to do so and the
@@ -3864,14 +3863,14 @@ protected:
       the coefficients. If the slice is not changing, it is in principle OK to
       continue with the current coefficients, but if data is available and the
       <classname>GrappaWeightsCalculator</classname> is idle (the queue is
-      empty) a job will be submitted. </para>
+      empty) a job will be submitted.</para>
 
       <para>With this design, the data passes through the
       <classname>GrappaGadget</classname> very quickly and the
       <classname>GrappaUnmixingGadget</classname> can reconstruction the
       images very quickly, i.e. it is simply a Fourier transform and an
       element wise multiplication and sum over the coils. It is in other words
-      designed for very high throughput. </para>
+      designed for very high throughput.</para>
 
       <para>If the slice orientation changes, new coefficients will be
       calculated, but this calculation will not be done by the time the data
@@ -3879,7 +3878,7 @@ protected:
       consequently, the images will be reconstructed with the "old"
       coefficients until the coefficients are ready. This design ensures low
       latency, but when the slice changes, aliasing may occur for a few frames
-      until coefficients are updated. </para>
+      until coefficients are updated.</para>
 
       <para>After the unmixing, the images are scaled and magnitude is
       extracted before returning images to the client. The
@@ -3892,7 +3891,14 @@ protected:
       calibration data is available and reconstruct SNR scaled images. Based
       on typical SNR values for MRI images, it is fairly trivial to keep the
       images in the appropriate range and perform a proper conversion to
-      unsigned short. </para>
+      unsigned short.</para>
+
+      <para>A final comment about the GRAPPA reconstruction is that it allows
+      a second step of channel compression. More specifically, it is possible
+      to reconstruct to a limited number of target channels to further improve
+      performance. Between the upstream and downstream channel compression
+      steps, it is possible to tune the performance of the reconstruction to
+      enable real-time reconstruction on the available. hardware. </para>
     </sect1>
 
     <sect1 xml:id="sect.cgsense">
