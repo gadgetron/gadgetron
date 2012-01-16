@@ -1770,8 +1770,6 @@ bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim,
   return true;
 }
 
-
-
 // Add
 template<class REAL> __global__ 
 void cuNDA_add_kernel( REAL a, typename complext<REAL>::Type *x, unsigned int number_of_elements )
@@ -3064,6 +3062,87 @@ bool cuNDA_shrinkd( REAL gamma, cuNDArray<REAL> *s_k, cuNDArray<T> *in, cuNDArra
   return true;
 }
 
+// Crop
+template<class T, unsigned int D> __global__ void
+cuNDA_origin_mirror_kernel( typename uintd<D>::Type matrix_size, typename uintd<D>::Type origin, T *in, T *out, bool zero_fill )
+{
+  const unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
+
+  if( idx < prod(matrix_size) ){
+
+    typename uintd<D>::Type in_co = idx_to_co<D>( idx, matrix_size );
+    typename uintd<D>::Type out_co = matrix_size-in_co;
+    
+    bool wrap = false;
+    for( unsigned int d=0; d<D; d++ ){
+      if( out_co.vec[d] == matrix_size.vec[d] ){
+	out_co.vec[d] = 0;
+	wrap = true;
+      }
+    }
+    
+    const unsigned int in_idx = co_to_idx<D>(in_co, matrix_size);
+    const unsigned int out_idx = co_to_idx<D>(out_co, matrix_size);
+
+    if( wrap && zero_fill )
+      out[out_idx] = get_zero<T>();
+    else
+      out[out_idx] = in[in_idx];
+  }
+}
+
+// Mirror around the origin -- !! leaving the origin unchanged !!
+// This creates empty space "on the left" that can be filled by zero (default) or the left-over entry.
+template<class T, unsigned int D> EXPORTGPUCORE
+bool cuNDA_origin_mirror( cuNDArray<T> *in, cuNDArray<T> *out, bool zero_fill, cuNDA_device compute_device )
+{
+  if( in == 0x0 || out == 0x0 ){
+    cout << endl << "cuNDA_origin_mirror: 0x0 ndarray provided" << endl;
+    return false;
+  }
+
+  if( !in->dimensions_equal(out) ){
+    cout << endl << "cuNDA_origin_mirror: image dimensions mismatch" << endl;
+    return false;
+  }
+  
+  if( in->get_number_of_dimensions() != D ){
+    cout << endl << "cuNDA_origin_mirror: number of image dimensions is not " << D << endl;
+    return false;
+  }
+
+  typename uintd<D>::Type matrix_size = vector_to_uintd<D>( *in->get_dimensions() );
+ 
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<T> *in_int, *out_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<2,T,T,dummy>( compute_device, &cur_device, &old_device, in, &in_int, out, &out_int ) ){
+    cerr << endl << "cuNDA_origin_mirror: unable to prepare device(s)" << endl;
+    return false;
+  }
+  
+  // Setup block/grid dimensions
+  dim3 blockDim; dim3 gridDim;
+  if( !setup_grid( cur_device, prod(matrix_size), &blockDim, &gridDim, 1 ) ){
+    cerr << endl << "cuNDA_origin_mirror: block/grid configuration out of range" << endl;
+    return false;
+  }
+
+  // Invoke kernel
+  cuNDA_origin_mirror_kernel<T,D><<< gridDim, blockDim >>> ( matrix_size, matrix_size>>1, in_int->get_data_ptr(), out_int->get_data_ptr(), zero_fill );
+ 
+  CHECK_FOR_CUDA_ERROR();
+
+  // Restore
+  if( !restore<2,T,dummy,T,dummy>( old_device, in, in_int, 2, compute_device, 0x0, out, out_int ) ){
+    cerr << endl << "cuNDA_origin_mirror: unable to restore device" << endl;
+    return false;
+  }
+
+  return out;
+}
 
 //
 // Instantiation
@@ -3394,6 +3473,24 @@ template EXPORTGPUCORE bool cuNDA_shrink1<float,float_complext::Type>( float, cu
 template EXPORTGPUCORE bool cuNDA_shrinkd<float,float>( float, cuNDArray<float>*, cuNDArray<float>*, cuNDArray<float>* );
 template EXPORTGPUCORE bool cuNDA_shrinkd<float,float_complext::Type>( float, cuNDArray<float>*, cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>* );
 
+template EXPORTGPUCORE 
+bool cuNDA_origin_mirror<float,1>(cuNDArray<float>*, cuNDArray<float>*, bool, cuNDA_device);
+template EXPORTGPUCORE
+bool cuNDA_origin_mirror<float,2>(cuNDArray<float>*, cuNDArray<float>*, bool, cuNDA_device);
+template EXPORTGPUCORE
+bool cuNDA_origin_mirror<float,3>(cuNDArray<float>*, cuNDArray<float>*, bool, cuNDA_device);
+template EXPORTGPUCORE 
+bool cuNDA_origin_mirror<float,4>(cuNDArray<float>*, cuNDArray<float>*, bool, cuNDA_device);
+
+template EXPORTGPUCORE bool
+cuNDA_origin_mirror<float_complext::Type,1>(cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, bool, cuNDA_device);
+template EXPORTGPUCORE bool 
+cuNDA_origin_mirror<float_complext::Type,2>(cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, bool, cuNDA_device);
+template EXPORTGPUCORE bool 
+cuNDA_origin_mirror<float_complext::Type,3>(cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, bool, cuNDA_device);
+template EXPORTGPUCORE bool 
+cuNDA_origin_mirror<float_complext::Type,4>(cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, bool, cuNDA_device);
+
 
 // Instanciation -- double precision
 
@@ -3573,9 +3670,6 @@ template EXPORTGPUCORE bool cuNDA_scale<double>( cuNDArray<double>*, cuNDArray<d
 
 template EXPORTGPUCORE bool cuNDA_scale_conj<double_complext::Type>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, cuNDA_device );
 
-
-
-
 template EXPORTGPUCORE bool cuNDA_axpy<double>( cuNDArray<double>*, cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_axpy<double_complext::Type>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, cuNDA_device );
 
@@ -3621,3 +3715,21 @@ template EXPORTGPUCORE bool cuNDA_shrink1<double,double_complext::Type>( double,
 
 template EXPORTGPUCORE bool cuNDA_shrinkd<double,double>( double, cuNDArray<double>*, cuNDArray<double>*, cuNDArray<double>* );
 template EXPORTGPUCORE bool cuNDA_shrinkd<double,double_complext::Type>( double, cuNDArray<double>*, cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>* );
+
+template EXPORTGPUCORE 
+bool cuNDA_origin_mirror<double,1>(cuNDArray<double>*, cuNDArray<double>*, bool, cuNDA_device);
+template EXPORTGPUCORE
+bool cuNDA_origin_mirror<double,2>(cuNDArray<double>*, cuNDArray<double>*, bool, cuNDA_device);
+template EXPORTGPUCORE
+bool cuNDA_origin_mirror<double,3>(cuNDArray<double>*, cuNDArray<double>*, bool, cuNDA_device);
+template EXPORTGPUCORE 
+bool cuNDA_origin_mirror<double,4>(cuNDArray<double>*, cuNDArray<double>*, bool, cuNDA_device);
+
+template EXPORTGPUCORE bool
+cuNDA_origin_mirror<double_complext::Type,1>(cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, bool, cuNDA_device);
+template EXPORTGPUCORE bool 
+cuNDA_origin_mirror<double_complext::Type,2>(cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, bool, cuNDA_device);
+template EXPORTGPUCORE bool 
+cuNDA_origin_mirror<double_complext::Type,3>(cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, bool, cuNDA_device);
+template EXPORTGPUCORE bool 
+cuNDA_origin_mirror<double_complext::Type,4>(cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, bool, cuNDA_device);
