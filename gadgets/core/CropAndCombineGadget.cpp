@@ -42,14 +42,6 @@ process( GadgetContainerMessage<GadgetMessageImage>* m1,
 	size_t offset_1 = z*dimy*dimx_old+y*dimx_old+x+((dimx_old-dimx)>>1);
 	size_t offset_2 = z*dimy*dimx+y*dimx+x;
 	for (int c = 0; c < channels; c++) {
-	  //ACE_DEBUG( (LM_DEBUG, ACE_TEXT("%@, %@\n"), d1,d2) );
-	  //ACE_DEBUG( (LM_DEBUG, ACE_TEXT("%d, %d\n"), 
-	  //	      m2->getObjectPtr()->get_number_of_elements(),
-	  //	      m3->getObjectPtr()->get_number_of_elements()) );
-	  
-	  //ACE_DEBUG( (LM_DEBUG, 
-	  //	      ACE_TEXT("c = %d, offset_1 = %d, dimx = %d, dimy = %d, dimz = %d, dimx_old = %d\n"),
-	  //	      c, offset_1, dimx, dimy, dimz, dimx_old) );
 	  float mag_tmp = norm(d1[offset_1 + c*img_block_old]);
 	  phase += mag_tmp*arg(d1[offset_1 + c*img_block_old]);
 	  mag += mag_tmp;
