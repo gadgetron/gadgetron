@@ -7,6 +7,7 @@
 #pragma once
 
 #include "sbSolver.h"
+//#include "ndarray_vector_td_utilities.h"
 
 template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE_REAL, class ARRAY_TYPE_ELEMENT> 
 class sbcSolver : public sbSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE_REAL, ARRAY_TYPE_ELEMENT>
@@ -136,6 +137,14 @@ public:
 	
 	if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
 	  std::cout << std::endl << "u_k delta (outer loop): " << delta << std::endl << std::endl;
+
+	//static REAL min_delta = (REAL) 1e9;
+	//if( delta < min_delta ){
+	//  min_delta = delta;
+	// boost::shared_ptr<ARRAY_TYPE_REAL > outm = solver_norm( u_k.get() );
+	// boost::shared_ptr<hoNDArray<REAL> > out = outm->to_host();
+	//  write_nd_array( out.get(), "cur_min.real");
+	//}
 
 	if( delta < this->tolerance_ )
 	  break;

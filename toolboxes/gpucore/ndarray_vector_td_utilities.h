@@ -222,3 +222,8 @@ bool cuNDA_shrink1( REAL gamma, cuNDArray<T> *in, cuNDArray<T> *out );
 
 template<class REAL, class T> EXPORTGPUCORE
 bool cuNDA_shrinkd( REAL gamma, cuNDArray<REAL> *s_k, cuNDArray<T> *in, cuNDArray<T> *out );
+
+// Mirror around the origin -- !! leaving the origin unchanged !!
+template<class T, unsigned int D> EXPORTGPUCORE
+bool cuNDA_origin_mirror( cuNDArray<T> *in, cuNDArray<T> *out, bool zero_fill = true,
+			  cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );

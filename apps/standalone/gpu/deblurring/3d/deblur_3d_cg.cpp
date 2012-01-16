@@ -78,8 +78,7 @@ int main(int argc, char** argv)
   //
 
   // Define encoding matrix
-  boost::shared_ptr< cuConvolutionOperator<_real> > 
-    E( new cuConvolutionOperator<_real>() );
+  boost::shared_ptr< cuConvolutionOperator<_real,3> > E( new cuConvolutionOperator<_real,3>() );
   E->set_kernel( &kernel );
     
   // Setup conjugate gradient solver
@@ -87,7 +86,7 @@ int main(int argc, char** argv)
   cg.add_matrix_operator( E );                  // encoding matrix
   if( kappa>0.0 ) cg.add_matrix_operator( Rx );  // regularization matrix
   if( kappa>0.0 ) cg.add_matrix_operator( Ry );  // regularization matrix
-  //  if( kappa>0.0 ) cg.add_matrix_operator( Rz );  // regularization matrix
+  if( kappa>0.0 ) cg.add_matrix_operator( Rz );  // regularization matrix
   cg.set_iterations( num_iterations );
   cg.set_limit( 1e-12 );
   cg.set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_VERBOSE );
@@ -112,4 +111,3 @@ int main(int argc, char** argv)
 
   return 0;
 }
-

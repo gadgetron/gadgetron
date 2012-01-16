@@ -87,7 +87,7 @@ int main( int argc, char** argv)
   blurred_image.create(image->get_dimensions().get());
   
   // Create convolution operator and assign kernel
-  cuConvolutionOperator<_real> conv;
+  cuConvolutionOperator<_real,3> conv;
   conv.set_kernel( kernel.get() );  
 
   // Convolve
