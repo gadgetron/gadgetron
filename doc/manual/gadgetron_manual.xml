@@ -804,7 +804,7 @@ data = reshape(data,dims');
         <classname>ACE_Task</classname> from the ACE library. It has its own
         thread (or threads) of execution and an input queue where data is
         placed for processing by either the Gadgetron framework or an upstream
-        Gadget. </para>
+        Gadget.</para>
 
         <para>The active thread(s) in the Gadget will pick up a data package
         from the queue, and then pass it on to a virtual
@@ -1731,23 +1731,25 @@ public:
     <sect1 xml:id="sect.toolboxes">
       <title>Toolboxes</title>
 
-      <sect2>
-        <title>Data Structures</title>
+      <para>The core reconstruction data structures and algorithms are made
+      available through a set of toolboxes in shared libraries. The toolboxes
+      implement the functionality of the various Gadgets, but they can also be
+      used in standalone applicarions. A non-exhaustive overview of key
+      functionality is covered in the following sections.</para>
 
-        <sect3 xml:id="sect.ndarray">
-          <title>Multidimensional Array:
-          <classname>NDArray</classname></title>
+      <sect2 xml:id="sect.ndarray">
+        <title>Multidimensional Array: <classname>NDArray</classname></title>
 
-          <para>Most image processing operations involve multi-dimensional
-          arrays. Although the Gadgetron framework does not impose any
-          specific array structure on the user, it does come with an abstract
-          multi-dimensional array used throughout, the
-          <classname>NDArray</classname>. It has a specific implementation for
-          the CPU (<classname>hoNDArray</classname>) and GPU
-          (<classname>cuNDArray</classname>). The abstract class definition
-          looks like (abbreviated version):</para>
+        <para>Most image processing operations involve multi-dimensional
+        arrays. Although the Gadgetron framework does not impose any specific
+        array structure on the user, it does come with an abstract
+        multi-dimensional array used throughout, the
+        <classname>NDArray</classname>. It has a specific implementation for
+        the CPU (<classname>hoNDArray</classname>) and GPU
+        (<classname>cuNDArray</classname>). The abstract class definition
+        looks like (abbreviated version):</para>
 
-          <programlisting>template &lt;class T&gt; class NDArray
+        <programlisting>template &lt;class T&gt; class NDArray
 {
  public:
   
@@ -1791,10 +1793,9 @@ protected:
 };
 </programlisting>
 
-          <para>The CPU (host) definition would look like
-          (abbreviated):</para>
+        <para>The CPU (host) definition would look like (abbreviated):</para>
 
-          <programlisting>template &lt;class T&gt; class hoNDArray : public NDArray&lt;T&gt;
+        <programlisting>template &lt;class T&gt; class hoNDArray : public NDArray&lt;T&gt;
 {
 
 public:
@@ -1805,14 +1806,14 @@ protected:
    virtual int deallocate_memory();
 };</programlisting>
 
-          <para>As is seen from the <classname>NDArray</classname> header
-          file, this class has a no-argument constructor, which makes it
-          suited for encapsulating in the
-          <classname>GadgetContainerMessage</classname> mentioned in <xref
-          linkend="sect.gadgets"/>. The procedure for creating an array with
-          complex float values would look something like this:</para>
+        <para>As is seen from the <classname>NDArray</classname> header file,
+        this class has a no-argument constructor, which makes it suited for
+        encapsulating in the <classname>GadgetContainerMessage</classname>
+        mentioned in <xref linkend="sect.gadgets"/>. The procedure for
+        creating an array with complex float values would look something like
+        this:</para>
 
-          <programlisting>#include &lt;hoNDArray.h&gt;
+        <programlisting>#include &lt;hoNDArray.h&gt;
 #include &lt;complex&gt;
 
 hoNDArray&lt; std::complex&lt;float&gt; &gt; myArray;
@@ -1827,11 +1828,11 @@ if(!myArray.create(&amp;dimensions)) {
 
 //process data</programlisting>
 
-          <para>To create an <classname>NDArray</classname> contained in a
-          <classname>GadgetContainerMessage</classname> would look something
-          like this:</para>
+        <para>To create an <classname>NDArray</classname> contained in a
+        <classname>GadgetContainerMessage</classname> would look something
+        like this:</para>
 
-          <programlisting>GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m = 
+        <programlisting>GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m = 
   new GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;();
 
 std::vector&lt;unsigned int&gt; dimensions;
@@ -1847,23 +1848,20 @@ if(!m-&gt;getObjectPtr()-&gt;create(&amp;dimensions)) {
 m-&gt;release(); //Delete the message block and containing data
 </programlisting>
 
-          <para>As mentioned in <xref linkend="sect.gadgets"/>, the
-          <classname>GadgetContainerMessage</classname> is a specialized
-          version of the <classname>ACE_Message_Block</classname> class from
-          the ACE framework. Data is passed between Gadgets in the form of
-          <classname>ACE_Message_Block</classname>s and Gadgets have access to
-          utility functions that allow them to test if a given
-          <classname>ACE_Message_Block</classname> is in fact a partcular type
-          of <classname>GagetContainerMessage</classname>.</para>
-        </sect3>
+        <para>As mentioned in <xref linkend="sect.gadgets"/>, the
+        <classname>GadgetContainerMessage</classname> is a specialized version
+        of the <classname>ACE_Message_Block</classname> class from the ACE
+        framework. Data is passed between Gadgets in the form of
+        <classname>ACE_Message_Block</classname>s and Gadgets have access to
+        utility functions that allow them to test if a given
+        <classname>ACE_Message_Block</classname> is in fact a partcular type
+        of <classname>GagetContainerMessage</classname>.</para>
       </sect2>
 
-      <sect2>
+      <sect3>
         <title>GPU Support</title>
 
-        <para>As mentioned in <xref linkend="sect.ndarray"/> the Gadgetron
-        framework comes with a generic multi-dimensional array:
-        <classname>NDArray</classname>. This array structure also has a GPU
+        <para>The <classname>NDArray</classname> data structure also has a GPU
         implementation (abbreviated version of header below):</para>
 
         <programlisting>template &lt;class T&gt; class cuNDArray : public NDArray&lt;T&gt;
@@ -1913,23 +1911,47 @@ m-&gt;release(); //Delete the message block and containing data
         another through operators. Similarly, the copy constructor takes a
         <classname>hoNDArray</classname> and transparently copies the host
         data to the GPU.</para>
+      </sect3>
+
+      <sect2>
+        <title>Fourier Transforms</title>
+
+        <para>MSH, please write.</para>
+
+        <para>Probably both Cartesian and non-Cartesian should go here</para>
       </sect2>
 
       <sect2>
-        <title>Iterative Solvers</title>
+        <title>Solvers</title>
 
         <para>TSS, please write</para>
-      </sect2>
 
-      <sect2>
-        <title>Fourier Transform</title>
+        <sect3><title>vector_td</title> 
+	<para>Many common operations that takes one of more
+        <classname>cuNDArray</classname> instances with element type
+        <classname>vector_td</classname> are defined in <filename>
+        ndarray_vector_utilities.h</filename>. We leave it for the readers to
+        explore these utilities on their own. </para></sect3>
 
-        <para>MSH, please write</para>
+        <sect3><title>matrix_operator</title></sect3>
+
+        <sect3><title>cg solver</title></sect3>
+
+        <sect3><title>sb solver</title></sect3>
+
+        <para>As you read on, keep in mind that the functionality of the
+        various Gadgets presented below is encompassed by toolboxes. As this
+        will indicate, much more functionality as what has been covered in
+        this brief overview, is contained in the available toolboxes.</para>
       </sect2>
     </sect1>
 
     <sect1>
       <title>Gadgets</title>
+
+      <para>Gadgets wrap the functionality of the toolboxes and provide
+      generic building blocks for configuring the streaming reconstruction in
+      the Gadgetron.</para>
 
       <sect2 xml:id="sect.mrigadgets">
         <title>MRI Gadgets</title>
@@ -2324,6 +2346,8 @@ struct GadgetMessageAcquisition
         <title>Image Processing Gadgets</title>
 
         <para>TSS, please add some description</para>
+        <para>Let us leave these out for the initial submisison. Hopefully I will find the time to finish the implementation during the review...</para>
+
       </sect2>
 
       <sect2>
