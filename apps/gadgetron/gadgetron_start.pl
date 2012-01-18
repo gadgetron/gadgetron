@@ -2,7 +2,7 @@
 
 use Cwd 'abs_path';
 use FindBin '$Bin';
-$gadgetron_home = $Bin . "../";
+$gadgetron_home = $Bin . "/../";
 
 print "gadgetron_home: $gadgetron_home\n";
 

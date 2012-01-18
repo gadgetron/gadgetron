@@ -42,27 +42,27 @@
 
       <para>This document serves as an introduction to the Gadgetron framework
       and provides some "getting started" examples of using it. A scientific
-      paper is also available [<xref linkend="hansen12"/>].</para>
+      paper is also available [<xref linkend="hansen12" />].</para>
 
       <para>Although the Gadgetron is a generic, multi-modality image
       reconstruction framework, it was initially developed to support the work
       of the authors in the field of advanced MRI reconstruction. Specifically
       to support work on fast image reconstruction, not only on traditional
       CPU architectures, but also using commodity graphics hardware (GPUs).
-      Some examples that are made publically available through the Gadgetron
+      Some examples that are made publicly available through the Gadgetron
       release include fast regridding on the GPU <citation><xref
-      linkend="sorensen08"/></citation>, Cartesian parallel on the GPU
-      <citation><xref linkend="hansen08"/></citation>, and non-Cartesian
+      linkend="sorensen08" /></citation>, Cartesian parallel on the GPU
+      <citation><xref linkend="hansen08" /></citation>, and non-Cartesian
       parallel imaging on the GPU <citation><xref
-      linkend="sorensen09"/></citation>.</para>
+      linkend="sorensen09" /></citation>.</para>
     </sect1>
 
     <sect1>
       <title>Obtaining Gadgetron</title>
 
       <para>The Gadgetron is available as a cross-platform source code
-      distribution, which compiles and has been tested to run on Linux, Mac
-      OSX, and Windows 7. Compilation instructions for these platforms are
+      distribution, which compiles and has been tested to run on Linux, Mac OS
+      X, and Windows 7. Compilation instructions for these platforms are
       provided below. Generally speaking, the Gadgetron is easiest set up on
       Linux since all dependencies are readily available. If you want to get
       quickly started with the Gadgetron and happen to not be using Linux, it
@@ -105,7 +105,7 @@
 
         <para>To install these components please follow the platform specific
         installation instructions provided below (<xref
-        linkend="sect.installation"/>).</para>
+        linkend="sect.installation" />).</para>
 
         <itemizedlist>
           <listitem>
@@ -232,7 +232,7 @@
         <para>If you would like to use the GPU components included in the
         Gadgetron and you have a GPU available on your system, please complete
         the CUDA/CULA installations as described in <xref
-        linkend="section.linuxgpuinstall"/>.</para>
+        linkend="section.linuxgpuinstall" />.</para>
 
         <para>First install all dependencies for Gadgetron. The following will
         install everything you need:</para>
@@ -271,7 +271,7 @@
       <prompt>user@mycomputer:~/gadgetron/build$</prompt> <userinput>sudo make install</userinput>
    </screen>
 
-        <para>The final step is to add/modify a few envoronment variables in
+        <para>The final step is to add/modify a few environment variables in
         your <filename>~/.bashrc</filename> file.</para>
 
         <programlisting>
@@ -281,7 +281,7 @@ export GADGETRON_HOME=/usr/local/gadgetron
        </programlisting>
 
         <para>You are now set up to run a simple example reconstruction as
-        outlined in <xref linkend="sect.simpleexample"/>.</para>
+        outlined in <xref linkend="sect.simpleexample" />.</para>
 
         <sect3 xml:id="section.linuxgpuinstall">
           <title>Installing GPU components (CUDA and CULA) on Linux</title>
@@ -384,14 +384,14 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CULA_LIB_PATH_64
 
         <para>It is probably appropriate to start this section with a warning:
         Windows is not the easiest environment in which to work with the
-        Gadgetron. As indicated in <xref linkend="sect.dependencies"/>, the
+        Gadgetron. As indicated in <xref linkend="sect.dependencies" />, the
         Gadgetron relies on multiple external libraries. Many of those
         libraries are not available as easy install packages and must be
-        compiled seperately. If you are uncomfortable setting up development
+        compiled separately. If you are uncomfortable setting up development
         tools on Windows, or if you are just looking for a fast and easy way
         to get started with the Gadgetron, we recommend installing on Ubuntu
         Linux - possibly using a virtual machine inside Windows (see <xref
-        linkend="sect.linuxinstall"/>).</para>
+        linkend="sect.linuxinstall" />).</para>
 
         <para>The following is a list of steps we have used to install the
         Gadgetron on a clean Windows 7 (64-bit) machine:</para>
@@ -469,7 +469,7 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
           </listitem>
 
           <listitem>
-            <para>Install Python (optional). Regretably, the off-the-shelf
+            <para>Install Python (optional). Regrettably, the off-the-shelf
             Python header files cannot be compiled in debug mode on Windows.
             This enforces the Gadgetron to be compiled in release mode.</para>
 
@@ -580,7 +580,7 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
 
             <para>Hit configure (again)</para>
 
-            <para>Speficify location of FFTW and FFTWf libraries</para>
+            <para>Specify location of FFTW and FFTWf libraries</para>
 
             <para>Hit configure (again)</para>
 
@@ -623,7 +623,11 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
 
         <para>You now have a working installation of the Gadgetron in Windows.
         Follow the instructions below to run a simple reconstruction example
-        (<xref linkend="sect.simpleexample"/>).</para>
+        (<xref linkend="sect.simpleexample" />).</para>
+
+        <para>Before attempting to run any reconstructions, please set the
+        environment variable <varname>GADGETRON_HOME</varname> to point to the
+        installation folder of your Gadgetron installation.</para>
       </sect2>
     </sect1>
 
@@ -708,7 +712,7 @@ Image Writer writing image
       precision format as specified by the <filename>default.xml</filename>
       configuration file. The output files are saved in a simple array format
       used throughout the Gadgetron framework (see <xref
-      linkend="simplearrayfiles"/> for details). To read the first image into
+      linkend="simplearrayfiles" /> for details). To read the first image into
       Matlab you can use the following code:</para>
 
       <programlisting>
@@ -735,7 +739,7 @@ data = reshape(data,dims');
       a set of toolboxes. The toolboxes are used within the streaming
       components but comes as individual shared libraries and can thus also be
       used in standalone applications. The architecture is outlined in <xref
-      linkend="fig.gadgetron.architecture"/>.</para>
+      linkend="fig.gadgetron.architecture" />.</para>
 
       <figure xml:id="fig.gadgetron.architecture">
         <title>Gadgetron Architecture</title>
@@ -743,12 +747,12 @@ data = reshape(data,dims');
         <mediaobject>
           <imageobject role="html">
             <imagedata align="left" fileref="figs/architecture.png"
-                       format="PNG" width="10in"/>
+                       format="PNG" width="10in"></imagedata>
           </imageobject>
 
           <imageobject role="fo">
             <imagedata align="left" fileref="figs/architecture.png"
-                       format="PNG" width="5in"/>
+                       format="PNG" width="5in"></imagedata>
           </imageobject>
 
           <textobject>
@@ -760,15 +764,15 @@ data = reshape(data,dims');
       <para>The Gadgetron receives connections from clients through a TCP/IP
       connection. A client can be any application from which you can open a
       TCP/IP socket and send data. Once a connection to a client has been
-      established (see <xref linkend="sect.communicationprotocol"/>), the
+      established (see <xref linkend="sect.communicationprotocol" />), the
       Gadgetron will read data from the socket and pass it on down a chain of
       processing steps. The responsibility of reading and writing packages on
       the socket is dispatched to a set of Readers and Writers (see <xref
-      linkend="sect.readerswriters"/>). Each step in the processing chain is
-      implemented in a module or Gadget (see <xref linkend="sect.gadgets"/>).
+      linkend="sect.readerswriters" />). Each step in the processing chain is
+      implemented in a module or Gadget (see <xref linkend="sect.gadgets" />).
       A reconstruction process is defined by defining a chain of Gadgets. The
       assembly of Gadgets is done dynamically at run-time (see <xref
-      linkend="sect.streamconfiguration"/>).</para>
+      linkend="sect.streamconfiguration" />).</para>
 
       <sect2 xml:id="sect.gadgets">
         <title>Gadgets</title>
@@ -778,7 +782,7 @@ data = reshape(data,dims');
         through the device and is modified and/or transformed between input
         and output. By wiring multiple Gadgets together you create a
         reconstruction program. A schematic outline of a Gadget is seen in
-        <xref linkend="fig.gadgetron.gadget"/></para>
+        <xref linkend="fig.gadgetron.gadget" /></para>
 
         <figure xml:id="fig.gadgetron.gadget">
           <title>Gadget</title>
@@ -786,12 +790,12 @@ data = reshape(data,dims');
           <mediaobject>
             <imageobject role="html">
               <imagedata align="left" fileref="figs/gadget.png" format="PNG"
-                         width="6in"/>
+                         width="6in"></imagedata>
             </imageobject>
 
             <imageobject role="fo">
               <imagedata align="left" fileref="figs/gadget.png" format="PNG"
-                         width="3in"/>
+                         width="3in"></imagedata>
             </imageobject>
 
             <textobject>
@@ -990,7 +994,7 @@ public Gadget2&lt;GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &g
         a struct with some image header information (it is defined in
         <filename>GadgetMRIHeaders.h</filename>), and 2) a
         <classname>hoNDArray</classname>, which is a multidimensional array
-        (see <xref linkend="sect.ndarray"/>) storage container. In this case
+        (see <xref linkend="sect.ndarray" />) storage container. In this case
         the <classname>hoNDArray</classname> contains complex floating point
         data.</para>
 
@@ -1041,7 +1045,7 @@ GADGET_FACTORY_DECLARE(FFTGadget)
         <para>Once we are inside the <function>process</function> function,
         the data has already been converted to the appropriate container
         messages and we can start processing the data. This function uses an
-        FFT toolbox (more on toolboxes in <xref linkend="sect.toolboxes"/>).
+        FFT toolbox (more on toolboxes in <xref linkend="sect.toolboxes" />).
         After the data has been Fourier transformed along the first 3
         dimensions it is placed on the next Gadgets queue. Remember the two
         <classname>GadgetContainerMessage</classname> objects were originally
@@ -1065,9 +1069,9 @@ GADGET_FACTORY_DECLARE(FFTGadget)
         factory function for the Gadget.</para>
 
         <para>For a tutorial on how to make your own Gadget library see <xref
-        linkend="sect.makingnewgadgetlibrary"/>.</para>
+        linkend="sect.makingnewgadgetlibrary" />.</para>
 
-        <sect3>
+        <sect3 xml:id="sect.xmlparameters">
           <title>Gadget XML Configuration</title>
 
           <para>In addition to defining a Gadget's behavior in response to a
@@ -1077,13 +1081,13 @@ GADGET_FACTORY_DECLARE(FFTGadget)
           implementing the <function>process_config</function> function in the
           Gadget header file. The configuration information or parameters is
           typically transmitted in the beginning of the reconstruction process
-          from the client (see <xref linkend="sect.communicationprotocol"/>).
+          from the client (see <xref linkend="sect.communicationprotocol" />).
           The configuration information can in principle be in any format (a
           given application can use a binary format or a text format defined
           for the specific purpose), but conventionally the parameters are
           transmitted in XML format and the Gadgetron comes with toolbox
           functionality in <filename>GadgetXml.h</filename>, which allow easy
-          acces to parameters in XML format (see the examples throughout the
+          access to parameters in XML format (see the examples throughout the
           source code on how to interpret parameters).</para>
 
           <para>An example of a parameter XML file for an MRI reconstruction
@@ -1142,7 +1146,7 @@ GADGET_FACTORY_DECLARE(FFTGadget)
 
           <para>The parameter scripts can have any format, but the convention
           is to have one root element called <varname>gadgetron</varname> and
-          enclose all parameters in in a hierarchical structure. The Gadgetron
+          enclose all parameters in a hierarchical structure. The Gadgetron
           comes with functions and classes for parsing this format. Firstly,
           the <filename>TinyXML</filename> library is included with the
           Gadgetron and can be used to parse the XML script, but we also
@@ -1172,7 +1176,7 @@ GADGET_FACTORY_DECLARE(FFTGadget)
   TiXmlDocument doc;
   doc.Parse(mb-&gt;rd_ptr());
  
-  std::string path(""gadgetron.encoding.kspace.matrix_size.value");
+  std::string path("gadgetron.encoding.kspace.matrix_size.value");
 
   //Get a vector with all the values 
   std::vector&lt;long&gt; dims = 
@@ -1194,7 +1198,7 @@ GADGET_FACTORY_DECLARE(FFTGadget)
       <sect2 xml:id="sect.readerswriters">
         <title>Readers and Writers</title>
 
-        <para>As illustrated in <xref linkend="fig.gadgetron.architecture"/>
+        <para>As illustrated in <xref linkend="fig.gadgetron.architecture" />
         the Gadgetron uses a set of Readers and Writers to deal with the
         incoming communication on the TCP/IP socket. Readers are responsible
         for deserialization of packages and Writers are responsible for
@@ -1234,7 +1238,7 @@ class EXPORTGADGETSCORE MRIAcquisitionReader : public GadgetMessageReader
         <para>Note the
         <function>GADGETRON_READER_DECLARE(MRIAcquisitionReader)</function>
         declaration. This is equivalent to the declaration needed for the
-        Gadgets (see <xref linkend="sect.gadgets"/>) in order to make them
+        Gadgets (see <xref linkend="sect.gadgets" />) in order to make them
         load properly from shared libraries.</para>
 
         <para>The implementation of this particular reader is as follows (this
@@ -1398,12 +1402,12 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
         <function>GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)</function>
         macro. Also notice that the message ID is transmitted to the client.
         The client is expected to follow the same communication model as the
-        Reader, but it is determinded entirely by the Writer implementation
-        how the message is transmitted.</para>
+        Reader, but it is determined entirely by the Writer implementation how
+        the message is transmitted.</para>
 
         <para>Readers and Writers are loaded dynamically at run-time along
-        with the Gadgets (see <xref linkend="sect.streamconfiguration"/>). The
-        input and output behaviour can be adapted by manipulating which
+        with the Gadgets (see <xref linkend="sect.streamconfiguration" />).
+        The input and output behaviour can be adapted by manipulating which
         Readers and Writers are associated with which message IDs.</para>
       </sect2>
 
@@ -1482,7 +1486,7 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
         reader, which is the <classname>MRIAcquisitionReader</classname>
         mentioned previously. The message ID associated with this Reader is
         1001. Every time a message with ID 1001 arrives on the socket,
-        responsibility for reading thar message will be delegated to the
+        responsibility for reading the message will be delegated to the
         <classname>MRIAcquisitionReader</classname>. When the Gadgetron
         configuration is loaded, the framework will load the
         <classname>MRIAcquisitionReader</classname> from the DLL (shared
@@ -1493,8 +1497,8 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
 
         <para>The Gadgetron framework knows how to load the components from
         the DLLs assuming that they have been declared properly as described
-        in <xref linkend="sect.readerswriters"/> and <xref
-        linkend="sect.gadgets"/>.</para>
+        in <xref linkend="sect.readerswriters" /> and <xref
+        linkend="sect.gadgets" />.</para>
 
         <para>The example Gadgetron configuration has two Writers, i.e. it is
         capable of outputting two different types of data. Again the
@@ -1506,7 +1510,7 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
         those specified in the configuration file. As an example, there are
         Readers for receiving configurations to be used by the Gadgetron and
         for receiving the parameters that will be passed to all Gadgets (see
-        <xref linkend="sect.communicationprotocol"/>). If the Gadgetron
+        <xref linkend="sect.communicationprotocol" />). If the Gadgetron
         receives a message with an ID for which there is no associated Reader
         or encounters a message on the output queue for which there is no
         associated Writer an error will be generated, the Gadgetron stream
@@ -1558,7 +1562,7 @@ double get_double_value(const char* name);
 };
 </programlisting>
 
-        <para>Additionally it is also possible to specifiy how many active
+        <para>Additionally it is also possible to specify how many active
         threads there should be in a Gadget. This is specified with:</para>
 
         <programlisting>  &lt;gadget&gt;
@@ -1588,24 +1592,24 @@ double get_double_value(const char* name);
           <listitem>
             <para>The Gadgetron accepts the connection and creates a new
             instance of a<classname>GadgetStreamController</classname> (see
-            <xref linkend="fig.gadgetron.architecture"/>). After creating the
+            <xref linkend="fig.gadgetron.architecture" />). After creating the
             <classname>GadgetStreamController</classname> the Gadgetron
             returns to accept connections on the socket such that multiple
-            clients can be connected simultanously.</para>
+            clients can be connected simultaneously.</para>
           </listitem>
 
           <listitem>
             <para><classname>The GadgetStreamController</classname> takes
             control of the socket and expects to read a specific type of
             message, which either contains the filename of a specific stream
-            configuration (see <xref linkend="sect.streamconfiguration"/>) or
+            configuration (see <xref linkend="sect.streamconfiguration" />) or
             alternatively it can receive the actual XML stream specification
             directly on the socket. These two types of messages are read with
             Readers that are always registered for the Gadgetron (see <xref
-            linkend="sect.readerswriters"/>). If the Gadgetron receives the
-            filename of a gadet stream it expects to be able to find that
+            linkend="sect.readerswriters" />). If the Gadgetron receives the
+            filename of a Gadget stream it expects to be able to find that
             configuration file in the <filename>gadegtron/config</filename>
-            folder (see <xref linkend="sect.fileorganization"/>).</para>
+            folder (see <xref linkend="sect.fileorganization" />).</para>
           </listitem>
 
           <listitem>
@@ -1615,10 +1619,10 @@ double get_double_value(const char* name);
             buffer of characters that will be transmitted as such to each
             individual Gadget. It is the convention however to send the
             parameters in an XML format. It is up to each individual Gadget to
-            interpetrete the parameters. The user can implement any behavior
-            in response to the parameters by implementing the
+            interpret the parameters. The user can implement any behavior in
+            response to the parameters by implementing the
             <function>process_config</function> function (see <xref
-            linkend="sect.gadgets"/>). The client can send parameters at any
+            linkend="sect.gadgets" />). The client can send parameters at any
             time during a reconstruction and they will always be transmitted
             to all Gadgets through the <function>process_config</function>
             function.</para>
@@ -1644,7 +1648,7 @@ double get_double_value(const char* name);
         <para>To make it easier to create a new client, the Gadgetron comes
         with a <classname>GadgetronConnector</classname> class:</para>
 
-        <para/>
+        <para></para>
 
         <programlisting>class GadgetronConnector: 
   public ACE_Svc_Handler&lt;ACE_SOCK_STREAM, ACE_MT_SYNCH&gt; {
@@ -1676,9 +1680,9 @@ public:
 
         <para>This section provides a brief overview of the file organization
         in the Gadgetron installation. Once you have compiled the Gadgetron
-        and installed it (see <xref linkend="sect.installation"/>), it will
+        and installed it (see <xref linkend="sect.installation" />), it will
         reside in its designated installation folder
-        (<varname>GADGETRON_HOME</varname>). For the purposes of this this
+        (<varname>GADGETRON_HOME</varname>). For the purposes of this
         description, we will assume that the Gadgetron was installed in
         <filename>/usr/local/gadgetron</filename>.</para>
 
@@ -1696,10 +1700,10 @@ public:
             <listitem>
               <para><filename>config</filename>: Contains Gadgetron XML
               configuration files (see <xref
-              linkend="sect.streamconfiguration"/>). This is where the
+              linkend="sect.streamconfiguration" />). This is where the
               Gadgetron searches for the configurations requested by the
-              clients during initialization of the Gaget chain (see <xref
-              linkend="sect.communicationprotocol"/>).</para>
+              clients during initialization of the Gadget chain (see <xref
+              linkend="sect.communicationprotocol" />).</para>
             </listitem>
 
             <listitem>
@@ -1856,7 +1860,6 @@ m-&gt;release(); //Delete the message block and containing data
         utility functions that allow them to test if a given
         <classname>ACE_Message_Block</classname> is in fact a partcular type
         of <classname>GagetContainerMessage</classname>.</para>
-      </sect2>
 
       <sect3>
         <title>GPU Support</title>
@@ -1912,38 +1915,233 @@ m-&gt;release(); //Delete the message block and containing data
         <classname>hoNDArray</classname> and transparently copies the host
         data to the GPU.</para>
       </sect3>
-
-      <sect2>
-        <title>Fourier Transforms</title>
-
-        <para>MSH, please write.</para>
-
-        <para>Probably both Cartesian and non-Cartesian should go here</para>
       </sect2>
+ 
+      <sect2><title>vector_td</title> 
+      <para>The class <classname>vector_td</classname> provides a basic representation of complex numbers as well as one-, two-, three-, or four-dimensional vectors (positions). It is templetized with the datatype <varname>T</varname> and dimensionality <varname>D</varname>. Also we provide a set of typedefs to commonly encountered instances. A subset of the definitions provided in <filename>vector_td.h</filename> is provided here:</para>
+      <programlisting>
+template&lt;class T, unsigned int D&gt; struct vector_td
+{
+  T vec[D];
+};
 
-      <sect2>
-        <title>Solvers</title>
+// Some typedefs for convenience
 
-        <para>TSS, please write</para>
+template&lt; class REAL, unsigned int D &gt; struct reald{
+  typedef vector_td&lt; REAL, D &gt; Type;
+};
 
-        <sect3><title>vector_td</title> 
-	<para>Many common operations that takes one of more
+template&lt; unsigned int D &gt; struct intd{
+  typedef vector_td&lt; int, D &gt; Type;
+};
+
+template&lt; unsigned int D &gt; struct uintd{
+  typedef vector_td&lt; unsigned int, D &gt; Type;
+};
+
+template&lt; unsigned int D &gt; struct floatd{
+ typedef typename reald&lt; float, D &gt;::Type Type;
+};
+
+template&lt; unsigned int D &gt; struct doubled{
+  typedef typename reald&lt; double, D &gt;::Type Type;
+};
+
+template&lt; class T &gt; struct complext{
+  typedef vector_td&lt; T, 2 &gt; Type;
+};
+
+struct float_complext : complext&lt;float&gt;::Type {
+  typedef complext&lt;float&gt;::Type Type;
+  float_complext(){}
+  float_complext( float r, float i ) { vec[0] = r; vec[1] = i; }
+};
+
+struct double_complext : complext&lt;double&gt;::Type {
+  typedef complext&lt;double&gt;::Type Type;
+  double_complext(){}
+  double_complext( double r, double i ) { vec[0] = r; vec[1] = i; }
+};
+      </programlisting>
+<para>
+A substancial subset of the C++ arithmetic operators on the <classname>vector_td</classname> are defined in <filename>vector_td_operators.h</filename>. They are convienient when performing algebra on complex numbers or spatial vectors. Similarly, the header <filename>vector_td_utilities.h</filename> wraps common math functionality for the <classname>vector_td</classname> class. Many common operations that takes one of more
         <classname>cuNDArray</classname> instances with element type
         <classname>vector_td</classname> are defined in <filename>
         ndarray_vector_utilities.h</filename>. We leave it for the readers to
-        explore these utilities on their own. </para></sect3>
+        explore these utilities on their own. </para>
+<para>The <classname>vector_td</classname> can be used in both host and device code. As an example of use it is contained in the interface of the non-Cartesian FFT described shortly.</para>
 
-        <sect3><title>matrix_operator</title></sect3>
+      </sect2> 
 
-        <sect3><title>cg solver</title></sect3>
+      <sect2 xml:id="sect.ffttoolbox">
+        <title>Fourier Transforms</title>
 
-        <sect3><title>sb solver</title></sect3>
+      <sect3>
+        <title>Cartesian FFT</title>
+
+      <sect4>
+        <title>FFT of a <classname>hoNDArray</classname></title>
+
+        <para>The Gadgetron uses the FFTW library for Fourier transform of
+        <classname>hoNDArray</classname> structures. The users can call the
+        FFTW directly from their code, but to make things a little easier, we
+        provide a simple wrapper class defined in
+        <filename>toolboxes/ndarray/FFT.h</filename>. This wrapper is defined
+        as (abbreviated):</para>
+
+        <programlisting>template &lt;typename T&gt; class EXPORTNDARRAY FFT
+{
+
+public:
+ static FFT&lt;T&gt;* instance(); 
+
+ void fft(hoNDArray&lt; std::complex&lt;T&gt; &gt;* input, 
+          unsigned int dim_to_transform);
+
+ void ifft(hoNDArray&lt; std::complex&lt;T&gt; &gt;* input, 
+          unsigned int dim_to_transform);
+
+ void fft(hoNDArray&lt; std::complex&lt;T&gt; &gt;* input);
+
+ void ifft(hoNDArray&lt; std::complex&lt;T&gt; &gt;* input);
+
+protected:
+ FFT();
+ virtual ~FFT();
+}
+</programlisting>
+
+        <para>This class provides simple wrapper function to perform FFTs of
+        <classname>hoNDArray</classname>s along a specific dimension or along
+        all dimensions. The wrapper will perform <emphasis>in place</emphasis>
+        FFTs and works on complex arrays of single and double
+        precision.</para>
+
+        <para>An important feature of this class is that it is a process wide
+        singleton for the Gadgetron. As outlined in the definition above, the
+        constructor and destructor are protected and it is not possible to
+        allocate a new <classname>FFT</classname> object. The way to use the
+        class is through the <function>instance </function>function:</para>
+
+        <programlisting>#include "FFT.h"
+
+FFT&lt;float&gt;::instance()-&gt;fft(...);</programlisting>
+
+        <para>The reason for this is that the FFTW planning routines are not
+        thread safe. Multiple Gadgets (that each have their own thread of
+        execution) may need to use FFTs and consequently the planning routines
+        need to be protected with a mutex. All of this is handled inside the
+        <classname>FFT</classname> class and since it is a singleton only one
+        thread can run the planning routines at any given time.</para>
+
+        <para>As mentioned it is possible for the users to call FFTW routines
+        directly, and there may be some performance reasons for doing so (as
+        opposed to using this wrapper), but please be aware of this thread
+        safety issue when you design your Gadgets. If you want to be on the
+        safe side, use the wrapper.</para>
+      </sect4>
+      <sect4>
+        <title>FFT of a <classname>cuNDArray</classname></title>
+	<para>Cartesian Fast Fourier Transform on the GPU is supported by wrapping Cuda's FFT routines and defined in <filename>cuNDFFT.h</filename>.</para>
+	<programlisting>
+template&lt;class T&gt; class EXPORTGPUCORE cuNDFFT
+{
+ public:
+
+  cuNDFFT() {}
+  virtual ~cuNDFFT() {}
+
+  int fft ( cuNDArray&lt;T&gt; *input, std::vector&lt;unsigned int&gt; *dims_to_transform );
+  int ifft( cuNDArray&lt;T&gt; *input, std::vector&lt;unsigned int&gt; *dims_to_transform, bool do_scale = true );
+
+  int fft ( cuNDArray&lt;T&gt; *input, unsigned int dim_to_transform);
+  int ifft( cuNDArray&lt;T&gt; *input, unsigned int dim_to_transform, bool do_scale = true );
+
+  int fft ( cuNDArray&lt;T&gt; *input );
+  int ifft( cuNDArray&lt;T&gt; *input, bool do_scale = true );
+
+ protected:
+  int fft_int( cuNDArray&lt;T&gt; *input, std::vector&lt;unsigned int&gt; *dims_to_transform, int direction, bool do_scale = true );
+};
+ </programlisting>
+<para>
+The interface defines forwards and inverse transforms of a single array dimension, all dimensions of the array, or a subset of dimensions.
+</para>
+      </sect4>
+      </sect3>
+      <sect3>
+        <title>Non-Cartesian FFT</title>
+        <para>A dedicated GPU-implementation of the NUFFT - often referred to a gridding - is provided. The interface is defined in <filename>NFFT.h</filename> provided below in abbreviated form</para>
+	<programlisting>
+template&lt;class REAL, unsigned int D&gt; class EXPORTGPUNFFT NFFT_plan
+{  
+public:
+    
+  // Constructors
+  NFFT_plan();
+  NFFT_plan( typename uintd&lt;D&gt;::Type matrix_size, typename uintd&lt;D&gt;::Type matrix_size_os, REAL W, int device = -1 );
+
+  // Destructor
+  virtual ~NFFT_plan();
+
+  // Replan 
+  bool setup( typename uintd&lt;D&gt;::Type matrix_size, typename uintd&lt;D&gt;::Type matrix_size_os, REAL W, int device = -1 );
+    
+  // Preprocess trajectory
+  enum NFFT_prep_mode { NFFT_PREP_ALL, NFFT_PREP_FORWARDS, NFFT_PREP_BACKWARDS };
+  bool preprocess( cuNDArray&lt;typename reald&lt;REAL,D&gt;::Type&gt; *trajectory, NFFT_prep_mode mode  );
+    
+  // Execute NFFT
+  enum NFFT_comp_mode { NFFT_FORWARDS, NFFT_BACKWARDS };
+  bool compute( cuNDArray&lt;typename complext&lt;REAL&gt;::Type> *samples, 
+                cuNDArray&lt;typename complext&lt;REAL&gt;::Type> *image, 
+                cuNDArray&lt;REAL&gt; *weights, NFFT_comp_mode mode );
+
+  bool compute_iteration( cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *samples, 
+                          cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *image, 
+                          cuNDArray&lt;REAL&gt; *weights, NFFT_comp_mode mode );
+ 
+public: // Access to underlying building blocks
+  
+  // NFFT convolution
+  bool convolve( cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *samples, 
+                 cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *image, 
+                 cuNDArray&lt;REAL&gt; *weights, NFFT_comp_mode mode, bool accumulate = false );
+    
+  // NFFT FFT
+  bool fft( cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *data, NFFT_comp_mode mode, bool do_scale = true );
+  
+  // NFFT deapodization
+  bool deapodize( cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *image );
+
+}
+</programlisting>
+<para>After a <classname>NFFT_plan</classname> is constructed the <function>preprocess</function> function should be called with the desired trajectory. In the special case of radial sampling the header <filename>radial_utilities.h</filename> defines some convienient functions to compute radial trajectories and corresponding density compensation weights. After preprocessing the NFFT can be executed through the <function>compute</function> function. The individial building blocks of the NFFT - convolution, FFT, and deapodization - are exposed in the public interface and hence available for use in custom algorithms.
+</para>
+
+      </sect3>
+      </sect2>
+
+      <sect2>
+        <title>Matrix Operators</title>
+        <para>TSS, please write</para>
+      </sect2>
+
+        <sect2><title>Linear Solvers</title>
+
+        <sect3><title>Conjugate Gradient Method for Linear Least Squares</title></sect3>
+	</sect2>
+
+        <sect2><title>Non-linear Solvers</title>
+
+        <sect3><title>Split Bregman Solver for l1-regularized Problems</title></sect3>
+	</sect2>
 
         <para>As you read on, keep in mind that the functionality of the
-        various Gadgets presented below is encompassed by toolboxes. As this
-        will indicate, much more functionality as what has been covered in
-        this brief overview, is contained in the available toolboxes.</para>
-      </sect2>
+        various Gadgets presented below is encompassed by toolboxes; 
+	a lot more functionality as what has been covered by	
+        this brief overview (section <xref linkend="sect.ffttoolbox"/>)
+	is contained in the available toolboxes.</para>
     </sect1>
 
     <sect1>
@@ -1961,10 +2159,10 @@ m-&gt;release(); //Delete the message block and containing data
         interfaced to different MRI vendor systems. Consequently, a lot of the
         functionality present in the initial release toolboxes and Gadgets is
         focused on MRI reconstruction. In this section we review the basic
-        data structures used to desribe MRI data and list some of the MRI
+        data structures used to describe MRI data and list some of the MRI
         Gadgets that are available. These Gadgets are used in several of the
         example applications in <xref
-        linkend="sect.exampleapplications"/>.</para>
+        linkend="sect.exampleapplications" />.</para>
 
         <sect3>
           <title>MRI Data Structures</title>
@@ -1979,7 +2177,7 @@ m-&gt;release(); //Delete the message block and containing data
           acquisitions but output images.</para>
 
           <para>All MRI Gadgets inherit from <classname>Gadget2</classname> as
-          described in <xref linkend="sect.gadgets"/>, i.e. they operate on
+          described in <xref linkend="sect.gadgets" />, i.e. they operate on
           two argument types, the main two base classes used are:</para>
 
           <programlisting>Gadget2&lt; GadgetMessageAcquisition, hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;
@@ -2050,7 +2248,7 @@ struct GadgetMessageAcquisition
   ACE_UINT16	    image_series_index;
 }; </programlisting>
 
-          <para/>
+          <para></para>
         </sect3>
 
         <sect3>
@@ -2122,7 +2320,7 @@ struct GadgetMessageAcquisition
               <para>This Gadget is used to do a simple RMS coil combination in
               the image domain and remove 2x oversampling in the first
               dimension of the image as is commonly used in MRI. This Gadget
-              is intented to be used after FFT of the data.</para>
+              is intended to be used after FFT of the data.</para>
             </listitem>
 
             <listitem>
@@ -2142,7 +2340,7 @@ struct GadgetMessageAcquisition
 #define GADGET_EXTRACT_PHASE                  (1 &lt;&lt; 3) //8
 </programlisting>
 
-              <para>To specify the componts, you just specify the mask, for
+              <para>To specify the components, you just specify the mask, for
               example, the following specification would extract magnitude (1)
               and phase (8):</para>
 
@@ -2161,7 +2359,7 @@ struct GadgetMessageAcquisition
               <para><classname>FFTGadget</classname>
               (<filename>gadgetroncore</filename>):</para>
 
-              <para>This Gadget Fourier transforms alonfg the first 3
+              <para>This Gadget Fourier transforms along the first 3
               dimensions of the dataset (frequency, phase, partition encoding
               directions) and passes on the data to the next Gadget.</para>
             </listitem>
@@ -2186,7 +2384,7 @@ struct GadgetMessageAcquisition
 
               <para>These Gadgets perform conjugate gradient based
               non-Cartesian SENSE reconstruction (<xref
-              linkend="sect.cgsense"/>). They the reconstruction behavior can
+              linkend="sect.cgsense" />). They the reconstruction behavior can
               be controlled with number of properties:</para>
 
               <programlisting>&lt;gadget&gt;
@@ -2262,7 +2460,7 @@ struct GadgetMessageAcquisition
               <classname>GrappaGadget</classname> has the ability to use
               target channel compression, i.e. it can reconstruct using fewer
               target channels than input channels to improve performance. See
-              <xref linkend="sect.grappa"/> for details. The target channel
+              <xref linkend="sect.grappa" /> for details. The target channel
               compression is specificied like this:</para>
 
               <programlisting>&lt;gadget&gt;
@@ -2282,7 +2480,7 @@ struct GadgetMessageAcquisition
 
               <para>These 3 Gadgets are all template instances of the same
               <classname>ImageFinishGadget</classname>. The only different
-              between them is that they oprate on different types of image
+              between them is that they operate on different types of image
               data types as indicated by their names. Their purpose is to
               return the reconstructed images to the output queue of the
               Gadgetron so that they can be returned to the client.</para>
@@ -2323,8 +2521,8 @@ struct GadgetMessageAcquisition
               <para>This Gadget is used to create virtual channels based on
               principal component analysis of a portion of the data.
               Specifically, data is accumulated for the first frame (for each
-              locattion, i.e. slice) and a principal component analysis is
-              done of this data. Once the PCA coefficients are available, all
+              location, i.e. slice) and a principal component analysis is done
+              of this data. Once the PCA coefficients are available, all
               subsequent data will be transformed into the virtual channel
               domain and passed on down the Gadget chain. This Gadget is often
               combined with the
@@ -2353,12 +2551,12 @@ struct GadgetMessageAcquisition
       <sect2>
         <title>Python Gadgets</title>
 
-        <para>The Gadgetron provides a mechnism to prototype development in
+        <para>The Gadgetron provides a mechanism to prototype development in
         Python. We will again be using MRI as the example application.</para>
 
         <para>The Python layer through a set of Python Gadgets that can
         encapsulate a Python module. This is seen in <xref
-        linkend="fig.pythonoverview"/>, which illustrates a part of a Gadget
+        linkend="fig.pythonoverview" />, which illustrates a part of a Gadget
         chain with two Python Gadgets and one C/C++ Gadget. A Gadget chain can
         have any number of Python Gadgets and Python Gadgets can be mixed with
         C++ Gadgets.</para>
@@ -2368,7 +2566,7 @@ struct GadgetMessageAcquisition
 
           <mediaobject>
             <imageobject>
-              <imagedata fileref="figs/python.png" format="PNG" width="5in"/>
+              <imagedata fileref="figs/python.png" format="PNG" width="5in"></imagedata>
             </imageobject>
           </mediaobject>
         </figure>
@@ -2395,14 +2593,14 @@ struct GadgetMessageAcquisition
             is used to receive the configuration (usually in XML format), when
             it is passed to the Gadget, i.e. it is the Python equivalent of
             <function>process_config</function> in the Gadget (see <xref
-            linkend="sect.gadgets"/>).</para>
+            linkend="sect.gadgets" />).</para>
           </listitem>
 
           <listitem>
             <para><emphasis>Reconstruction function</emphasis>. This function
             is called when the Gadget receives data, i.e. it is the Python
             equivalent of the <function>process</function> function in the
-            Gadget (see <xref linkend="sect.gadgets"/>).</para>
+            Gadget (see <xref linkend="sect.gadgets" />).</para>
           </listitem>
         </orderedlist>
 
@@ -2450,7 +2648,7 @@ struct GadgetMessageAcquisition
         it is possible to specify a <varname>python_path</varname> to let the
         Python interpreter know where to search for script. By default, the
         <filename>gadgetron/lib</filename> is added to the search path.
-        Multiple pathnames can be added by seperating the paths with
+        Multiple pathnames can be added by separating the paths with
         "<filename>;</filename>".</para>
 
         <para>The Python script referenced in the XML configuration above
@@ -2529,7 +2727,7 @@ def recon_function(acq, data):
 
 </programlisting>
 
-        <para>There is a lot going on in this script. Let usl walk through the
+        <para>There is a lot going on in this script. Let us walk through the
         different parts and add some explanation. First look at the
         imports:</para>
 
@@ -2544,7 +2742,7 @@ import kspaceandimage as ki</programlisting>
         <filename>numpy</filename> arrays. The second module
         <filename>GadgetronPythonMRI</filename> is a Python wrapped version of
         some of the data structures used in the MRI part of the Gadgetron (see
-        <xref linkend="sect.mrigadgets"/>). Specifically, the
+        <xref linkend="sect.mrigadgets" />). Specifically, the
         <classname>GadgetMessageAcquisition</classname> and
         <classname>GadgetMessageImage</classname> headers are wrapped as
         Python types (using Boost Python). The
@@ -2583,7 +2781,7 @@ import kspaceandimage as ki</programlisting>
         possible for the Python module to return data to the Gadget.
         <filename>GadgetronXML</filename> is a Python module provided with the
         Gadgetron, which contains some XML helper functions that can (it is
-        not a requirement) be used to parse the XML paramaters that the module
+        not a requirement) be used to parse the XML parameters that the module
         will receive from <function>process_config</function>.
         <filename>kspaceandimage</filename> is also a python module provided
         with the Gadgetron, it contains some simple wrapper functions for
@@ -2623,12 +2821,12 @@ mySeries = 1;</programlisting>
 </programlisting>
 
         <para>The <filename>GadgetronXML</filename> module is used to parse
-        some simple enconding parameters out of the XML configuration and they
+        some simple encoding parameters out of the XML configuration and they
         are stored in a convenient data structure for later reference. The
         <function>config_function</function> function also initializes a
         buffer for the data.</para>
 
-        <para>FInially the <function>recon_function</function> (not repeated
+        <para>Finally the <function>recon_function</function> (not repeated
         here) simply takes the data as it comes it and stores it in a buffer.
         Based on the <varname>flags</varname> field in the header, it is
         determined when the last acquisition in each slice has arrived. As
@@ -2704,7 +2902,7 @@ public Gadget2&lt;GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &g
 
 #endif //THRESHOLDGADGET_H</programlisting>
 
-        <para/>
+        <para></para>
 
         <programlisting>//ThresholdGadget.cpp
 
@@ -2753,7 +2951,7 @@ int ThresholdGadget::process(
 
 GADGET_FACTORY_DECLARE(ThresholdGadget)</programlisting>
 
-        <para/>
+        <para></para>
 
         <programlisting>//examplelib_export.h
 
@@ -2920,7 +3118,7 @@ threshold.xml
         <screen><prompt>user@mycomputer:build$</prompt> <userinput>cmake ../</userinput></screen>
 
         <para>Assuming the <application>cmake</application> process was
-        successfull:</para>
+        successful:</para>
 
         <screen><prompt>user@mycomputer:build$</prompt> make 
 Scanning dependencies of target gadgetronexamplelib
@@ -2942,12 +3140,12 @@ Install the project...
 </screen>
 
         <para>You may have to use <application>sudo</application> for the
-        <command>make install</command> commmand depending on your
+        <command>make install</command> command depending on your
         setup.</para>
 
         <para>You should now be able to run a reconstruction using your new
         reconstruction chain. Follow the instructions in <xref
-        linkend="sect.simpleexample"/> if you have not yet tried to run a
+        linkend="sect.simpleexample" /> if you have not yet tried to run a
         simple reconstruction. After having started up the Gadgetron, run the
         <application>mriclient</application>:</para>
 
@@ -2994,7 +3192,7 @@ Image Writer writing image
 </programlisting>
 
         <para>You should get two different results that look something like
-        <xref linkend="fig.examplelib"/>.</para>
+        <xref linkend="fig.examplelib" />.</para>
 
         <figure xml:id="fig.examplelib">
           <title>Result from <classname>ThresholdGadget</classname>
@@ -3003,7 +3201,7 @@ Image Writer writing image
           <mediaobject>
             <imageobject>
               <imagedata fileref="figs/examplelibresult.png" format="PNG"
-                         width="6in"/>
+                         width="6in"></imagedata>
             </imageobject>
           </mediaobject>
         </figure>
@@ -3168,7 +3366,7 @@ install(TARGETS mygadgetronclient DESTINATION bin)
         <para>Run <application>cmake</application> and follow the normal
         <command>make</command> and <command>make install</command>
         instructions (see <xref
-        linkend="sect.makingnewgadgetlibrary"/>).</para>
+        linkend="sect.makingnewgadgetlibrary" />).</para>
       </sect2>
     </sect1>
 
@@ -3192,16 +3390,677 @@ install(TARGETS mygadgetronclient DESTINATION bin)
   <chapter xml:id="sect.exampleapplications">
     <title>Examples</title>
 
-    <sect1>
+    <sect1 xml:id="sect.2dftexample">
       <title>Simple 2D FT MRI</title>
 
-      <para>MSH, please write</para>
+      <para>The simplest example application in the Gadgetron is a simple 2D
+      FT MRI reconstruction. It receives 2D MRI data, collects it into k-space
+      arrays, performs FFT of the data, combines channels (if there are
+      multiple), and returns the images to the client. This example is
+      included in the Gadgetron for testing and demonstration purposes only.
+      It was not intended to be fast or otherwise optimal in any sense.</para>
+
+      <para>The Gadgets for this reconstruction are in the
+      <filename>core</filename> folder and the configuration file to use to
+      run this reconstruction is <filename>default.xml</filename>. The section
+      <xref linkend="sect.simpleexample" /> describes how to run a simple
+      reconstruction using this Gadget chain and how to download data to test
+      it.</para>
+
+      <para>In this section we will take a closer look at the Gadgets in this
+      chain and how they are implemented. The Gadgetron XML configuration file
+      (<filename>default.xml</filename>) looks like this:</para>
+
+      <programlisting>&lt;?xml version="1.0" ?&gt;  
+&lt;gadgetron&gt;
+  &lt;readers&gt;
+    &lt;reader&gt;
+      &lt;slot&gt;1001&lt;/slot&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;class&gt;MRIAcquisitionReader&lt;/class&gt;
+    &lt;/reader&gt;
+  &lt;/readers&gt;
+  
+  &lt;writers&gt;
+    &lt;writer&gt;
+      &lt;slot&gt;1004&lt;/slot&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;class&gt;MRIImageWriterCPLX&lt;/class&gt;
+    &lt;/writer&gt;
+    &lt;writer&gt;
+      &lt;slot&gt;1005&lt;/slot&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;class&gt;MRIImageWriterFLOAT&lt;/class&gt;
+    &lt;/writer&gt;
+    &lt;writer&gt;
+      &lt;slot&gt;1006&lt;/slot&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;class&gt;MRIImageWriterUSHORT&lt;/class&gt;
+    &lt;/writer&gt;
+  &lt;/writers&gt;
+
+  &lt;stream&gt;
+    &lt;gadget&gt;
+      &lt;name&gt;Acc&lt;/name&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;class&gt;AccumulatorGadget&lt;/class&gt;
+    &lt;/gadget&gt;
+
+    &lt;gadget&gt;
+      &lt;name&gt;FFT&lt;/name&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;class&gt;FFTGadget&lt;/class&gt;
+    &lt;/gadget&gt;
+
+    &lt;gadget&gt;
+      &lt;name&gt;CropCombine&lt;/name&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;class&gt;CropAndCombineGadget&lt;/class&gt;
+    &lt;/gadget&gt;
+
+    &lt;gadget&gt;
+      &lt;name&gt;Extract&lt;/name&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;class&gt;ExtractGadget&lt;/class&gt;
+    &lt;/gadget&gt;
+  
+    &lt;gadget&gt;
+      &lt;name&gt;ImageFinishFLOAT&lt;/name&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;class&gt;ImageFinishGadgetFLOAT&lt;/class&gt;
+    &lt;/gadget&gt;
+   &lt;/stream&gt;
+&lt;/gadgetron&gt;
+</programlisting>
+
+      <para>The resulting Gadget chain is illustrated in <xref
+      linkend="fig.simple2dft" />. As described in <xref
+      linkend="sect.streamconfiguration" /> the Gadgetron configuration
+      contains 3 sections: Readers, Writers, and the Stream. In this
+      particular case, there is only one Reader, which received MRI
+      Acquisitions. This data format is described in <xref
+      linkend="sect.mrigadgets" />. There are 3 Writers registered with this
+      configuration. They are all used to write MRI images, but responsible
+      for the different data types (complex float, float, or unsigned short).
+      In principle this means that this reconstruction is capable of returning
+      3 different types of images, but as is seen from the stream
+      configuration, the only output from this reconstruction will be float
+      format images. However, many reconstructions will have all 3 Writers
+      registered to make it easy to switch formats, i.e. it would be trivial
+      to turn this reconstruction into one that outputs unsigned short images
+      (have a look at the file <filename>default_short.xml</filename>) for an
+      example of how this is done.</para>
+
+      <figure xml:id="fig.simple2dft">
+        <title>Simple 2D FT Reconstruction Chain</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="figs/simple2dft.png" width="4in"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>As is seen in the <varname>stream</varname> section of the
+      configuration, this reconstruction uses 5 Gadgets. The first Gadget is
+      responsible for accumulating MRI acquisitions. To accomplish this, it
+      uses an accumulation buffer. When a k-space line arrives at the Gadget,
+      it will be inserted into the k-space buffer and when the last
+      acquisition in a slice/repetition has arrived, it will copy the entire
+      buffer and pass it on to the next Gadget.</para>
+
+      <para>Let's have a look at the definition of the
+      <classname>AccumulatorGadget</classname> class:</para>
+
+      <programlisting>class EXPORTGADGETSCORE AccumulatorGadget : 
+public Gadget2&lt; GadgetMessageAcquisition, 
+                hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;
+{
+  
+ public:
+  GADGET_DECLARE(AccumulatorGadget);
+
+  AccumulatorGadget();
+  ~AccumulatorGadget();
+
+ protected:
+  virtual int process_config(ACE_Message_Block* mb);
+  virtual int process(
+    GadgetContainerMessage&lt; GadgetMessageAcquisition &gt;* m1,
+    GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt; * m2);
+
+  hoNDArray&lt; std::complex&lt;float&gt; &gt;* buffer_;
+  std::vector&lt;unsigned int&gt; dimensions_;
+
+  int image_counter_;
+  int image_series_;
+
+};
+</programlisting>
+
+      <para>There are a few member variables to help us keep track of the
+      buffer and the data dimensions and the core functionality is implemented
+      in two functions: <function>process_config</function>, is used to set up
+      the buffer, and <function>process</function>, which is responsible for
+      the accumulation of data. Let us examine the
+      <function>process_config</function> function:</para>
+
+      <programlisting linenumbering="numbered">int AccumulatorGadget
+::process_config(ACE_Message_Block* mb)
+{
+
+  TiXmlDocument doc;
+  doc.Parse(mb-&gt;rd_ptr());
+
+  GadgetXMLNode n =
+   GadgetXMLNode(&amp;doc).get&lt;GadgetXMLNode&gt;(std::string("gadgetron"))[0];
+
+  std::vector&lt;long&gt; dims =
+   n.get&lt;long&gt;(std::string("encoding.kspace.matrix_size.value")); 
+
+  if (dims.size() &lt; 3) {
+   dims.push_back(0);
+  }
+
+  if (dims[2] == 0) {
+    dims[2] = 1;
+  }
+
+  dimensions_.push_back(
+   n.get&lt;long&gt;(std::string("encoding.kspace.readout_length.value"))[0]);
+  dimensions_.push_back(dims[1]);
+  dimensions_.push_back(dims[2]);
+  dimensions_.push_back(
+   n.get&lt;long&gt;(std::string("encoding.channels.value"))[0]);
+  dimensions_.push_back(
+   n.get&lt;long&gt;(std::string("encoding.slices.value"))[0]);
+
+
+  if (!(buffer_ = new hoNDArray&lt; std::complex&lt;float&gt; &gt;())) {
+   GADGET_DEBUG1("Failed create buffer\n");
+   return GADGET_FAIL;
+  }
+
+  if (!buffer_-&gt;create(&amp;dimensions_)) {
+   GADGET_DEBUG1("Failed allocate buffer array\n");
+   return GADGET_FAIL;
+  }
+
+  image_series_ = this-&gt;get_int_value("image_series");
+
+  return GADGET_OK;
+}</programlisting>
+
+      <para>The main purpose of this function is to pull parameters out of the
+      XML configuration information in order to set up the buffer. As
+      mentioned in <xref linkend="sect.xmlparameters" />, the convention is to
+      pass parameters into the Gadgets in XML format. To enable convenient
+      parsing of these parameters, the Gadgetron includes the
+      <filename>TinyXML</filename> library which can be used to parse the
+      parameters directly or the <classname>TiXmlDocument</classname> can be
+      used to create a <classname>GadgetXMLNode</classname>, which allows
+      access to the parameters using the path description of the parameters.
+      For example if part of the XML configuration information looks
+      like:</para>
+
+      <programlisting>&lt;gadgetron&gt;
+    &lt;encoding&gt;
+        &lt;kspace&gt;
+            &lt;matrix_size&gt;
+                &lt;value&gt;128&lt;/value&gt;
+                &lt;value&gt;128&lt;/value&gt;
+            &lt;/matrix_size&gt;
+    &lt;/encoding&gt;
+&lt;/gadgetron&gt;</programlisting>
+
+      <para>The line</para>
+
+      <programlisting>  std::vector&lt;long&gt; dims =
+   n.get&lt;long&gt;(std::string("encoding.kspace.matrix_size.value")); 
+</programlisting>
+
+      <para>would cause <varname>dims</varname> to become a vector with two
+      <classname>long</classname> values of 128, 128. In simple example, we
+      have made some assumptions, i.e. our buffer always has the same number
+      of dimensions, which is 5. Specifically the dimensions are [kx, ky, kz,
+      channel, slice], to make sure that works out, we check if the number of
+      dimensions is less than 3 (i.e. it is 2D) in which case we add a
+      dimension.</para>
+
+      <para>Next we want to create a <classname>hoNDArray</classname> (see
+      <xref linkend="sect.ndarray" />) to store the data. In order to be able
+      to allocate the array we need a <classname>std::vector&lt;unsigned
+      int&gt;</classname> to hold the dimensions of the array. We build the
+      dimensions up based on the parameters in the XML file.</para>
+
+      <para>After creating the dimensions vector, creation of the
+      <classname>hoNDArray</classname> is a two-step process, first the class
+      itself is allocated and then the <function>create</function> function is
+      used to allocate the data inside the class.</para>
+
+      <para>Now we are ready to receive and buffer data, which is done by the
+      <function>process</function> function:</para>
+
+      <programlisting>int AccumulatorGadget::
+process(GadgetContainerMessage&lt;GadgetMessageAcquisition&gt;* m1,
+ GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2)
+{
+
+  //Create buffer if it doesn't exist
+  if (!buffer_) {
+   GADGET_DEBUG1("Buffer not allocated\n");
+   return GADGET_FAIL;
+  }
+
+
+  //Grab pointers to buffer and data
+  std::complex&lt;float&gt;* b =
+   buffer_-&gt;get_data_ptr();
+
+  std::complex&lt;float&gt;* d =
+   m2-&gt;getObjectPtr()-&gt;get_data_ptr();
+
+  int samples =  m1-&gt;getObjectPtr()-&gt;samples;
+  int line = m1-&gt;getObjectPtr()-&gt;idx.line;
+  int partition = m1-&gt;getObjectPtr()-&gt;idx.partition;
+  int slice = m1-&gt;getObjectPtr()-&gt;idx.slice;
+
+  //Does the data look OK?
+  if (samples != static_cast&lt;int&gt;(dimensions_[0])) {
+   GADGET_DEBUG1("Wrong number of samples received\n");
+   return GADGET_FAIL;
+  }
+
+  //Copy the data into the buffer.
+  size_t offset= 0;
+  //Copy the data for all the channels
+  for (int c = 0; c &lt; m1-&gt;getObjectPtr()-&gt;channels; c++) {
+    offset = 
+      slice*dimensions_[0]*dimensions_[1]*
+      dimensions_[2]*dimensions_[3] +
+      c*dimensions_[0]*dimensions_[1]*dimensions_[2] +
+      partition*dimensions_[0]*dimensions_[1] +
+      line*dimensions_[0];
+    
+    memcpy(b+offset,
+     d+c*samples,
+     sizeof(std::complex&lt;float&gt;)*samples);
+  }
+  
+  //Use the flags to determine if this is the last acquisition
+  bool is_last_scan_in_slice =
+    (m1-&gt;getObjectPtr()-&gt;flags &amp; GADGET_FLAG_LAST_ACQ_IN_SLICE);
+  
+  if (is_last_scan_in_slice) {
+    //OK, let's send out the k-space
+
+    //Create header
+    GadgetContainerMessage&lt;GadgetMessageImage&gt;* cm1 = 
+      new GadgetContainerMessage&lt;GadgetMessageImage&gt;();
+    
+    cm1-&gt;getObjectPtr()-&gt;flags = 0;
+
+    //Create the data array
+    GadgetContainerMessage&lt; 
+           hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* cm2 = 
+      new GadgetContainerMessage&lt;hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;();
+    
+    cm1-&gt;cont(cm2);
+    
+    std::vector&lt;unsigned int&gt; img_dims(4);
+    img_dims[0] = dimensions_[0];
+    img_dims[1] = dimensions_[1];
+    img_dims[2] = dimensions_[2];
+    img_dims[3] = dimensions_[3];
+    
+
+    //Allocate array
+    if (!cm2-&gt;getObjectPtr()-&gt;create(&amp;img_dims)) {
+      GADGET_DEBUG1("Unable to allocate new image array\n");
+      cm1-&gt;release();
+      return -1;
+    }
+    
+    size_t data_length = dimensions_[0]*dimensions_[1]*
+     dimensions_[2]*dimensions_[3];
+    
+    offset = slice*data_length;
+    
+    //Copy data
+    memcpy(cm2-&gt;getObjectPtr()-&gt;get_data_ptr(),b+offset,
+    sizeof(std::complex&lt;float&gt;)*data_length);
+    
+    //Populate image header
+    cm1-&gt;getObjectPtr()-&gt;matrix_size[0]     = img_dims[0];
+    cm1-&gt;getObjectPtr()-&gt;matrix_size[1]     = img_dims[1];
+    cm1-&gt;getObjectPtr()-&gt;matrix_size[2]     = img_dims[2];
+    cm1-&gt;getObjectPtr()-&gt;channels           = img_dims[3];
+    cm1-&gt;getObjectPtr()-&gt;data_idx_min       = m1-&gt;getObjectPtr()-&gt;min_idx;
+    cm1-&gt;getObjectPtr()-&gt;data_idx_max       = m1-&gt;getObjectPtr()-&gt;max_idx;
+    cm1-&gt;getObjectPtr()-&gt;data_idx_current   = m1-&gt;getObjectPtr()-&gt;idx;	
+
+    memcpy(cm1-&gt;getObjectPtr()-&gt;position,
+     m1-&gt;getObjectPtr()-&gt;position,
+     sizeof(float)*3);
+
+    memcpy(cm1-&gt;getObjectPtr()-&gt;quarternion,
+     m1-&gt;getObjectPtr()-&gt;quarternion,
+     sizeof(float)*4);
+ 
+    cm1-&gt;getObjectPtr()-&gt;table_position =
+     m1-&gt;getObjectPtr()-&gt;table_position;
+
+    cm1-&gt;getObjectPtr()-&gt;image_format = GADGET_IMAGE_COMPLEX_FLOAT;
+    cm1-&gt;getObjectPtr()-&gt;image_index = ++image_counter_;
+    cm1-&gt;getObjectPtr()-&gt;image_series_index = image_series_;
+
+    //OK, pass it on
+    if (this-&gt;next()-&gt;putq(cm1) &lt; 0) {
+     return GADGET_FAIL;
+    }
+  } 
+
+  //We are done with this acquisition
+  m1-&gt;release();
+
+  return GADGET_OK;
+}
+</programlisting>
+
+      <para>This function has two basic tasks: insert data into the buffer and
+      when enough data is present, copy the buffer and pass it on to next
+      gadget.</para>
+
+      <para>In this case the copying of data is done with a very simple
+      <function>memcpy</function> command. There is a basic check for the
+      image dimensions, but a more robust application may have more checks of
+      the incoming data.</para>
+
+      <para>Once the data is in the buffer, we check to see if we should put
+      out an image. This is done with the <varname>flags</varname> field on
+      the acquisition. Specifically we check if a specific bit
+      (<varname>GADGET_FLAG_LAST_ACQ_IN_SLICE</varname>) is set. It is up to
+      the user how the <varname>flags</varname> field should be interpreted,
+      but the <filename>GadgetMRIHeaders.h</filename> file contains some
+      definitions of flags that are used to indicate various events in the
+      acquisition. If you define other flags for other Gadgets it may be a
+      good idea to check that they don't collide with existing flags:</para>
+
+      <programlisting>#define GADGET_FLAG_ACQ_END                   (1 &lt;&lt; 0)
+#define GADGET_FLAG_LAST_ACQ_IN_SLICE         (1 &lt;&lt; 1)
+#define GADGET_FLAG_LAST_ACQ_IN_MEAS          (1 &lt;&lt; 2)
+#define GADGET_FLAG_LAST_ACQ_IN_CONCAT        (1 &lt;&lt; 3)
+#define GADGET_FLAG_FIRST_ACQ_IN_SLICE        (1 &lt;&lt; 4)
+#define GADGET_FLAG_FIRST_ACQ_IN_MEAS         (1 &lt;&lt; 5)
+#define GADGET_FLAG_FIRST_ACQ_IN_CONCAT       (1 &lt;&lt; 6)
+#define GADGET_FLAG_IS_NOISE_SCAN             (1 &lt;&lt; 7)
+</programlisting>
+
+      <para>If it is determined that this is the last acquisition for this
+      slice, we create a copy of the buffer and pass it on to the next Gadget.
+      Instead of a <classname>GadgetMessageAcquisition</classname> header we
+      now need a <classname>GadgetMessageImage</classname> header to pass
+      along with the data. This header structure is created and populated with
+      fields (orientation, etc.) from the acquisition header before it is
+      passed on to the Gadget in the stream.</para>
+
+      <para>Next Gadget is the FFTGadget. Since the k-space buffering has been
+      taken care of, the Fourier transform is a relatively simple task. The
+      <function>process</function> function uses the FFTW wrapper class (<xref
+      linkend="sect.ffttoolbox" />) to perform the FFT along the first 3
+      dimensions of the array:</para>
+
+      <programlisting>int FFTGadget::process( 
+GadgetContainerMessage&lt; GadgetMessageImage&gt;* m1,
+GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2)
+{
+  FFT&lt;float&gt;::instance()-&gt;ifft(m2-&gt;getObjectPtr(),0);
+  FFT&lt;float&gt;::instance()-&gt;ifft(m2-&gt;getObjectPtr(),1);
+  FFT&lt;float&gt;::instance()-&gt;ifft(m2-&gt;getObjectPtr(),2);
+
+  if (this-&gt;next()-&gt;putq(m1) &lt; 0) {
+     return GADGET_FAIL;
+  }
+
+  return GADGET_OK;
+}</programlisting>
+
+      <para>Now that the images have been Fourier transformed, we need to
+      remove the oversampling that is done in the readout dimensions and we
+      need to combine the receiver channels. In this case, we are making some
+      assumptions, i.e. we assume two-fold oversampling in the readout and we
+      are doing a simple RMS coil combination to obtain combined magnitude
+      images. We will not repeat the source code here, it can be found in
+      <filename>gadgets/core/CropAndCombineGadget.cpp</filename>.</para>
+
+      <para>Last two remaining steps after the coil combination is to extract
+      the magnitude of the data and return the floating point images to the
+      Gadgetron so that they can be returned to the client. This is
+      accomplished in the <classname>ExtractGadget</classname> and the
+      <classname>ImageFinishGadgetFLOAT</classname>. Both of these Gadgets are
+      described in <xref linkend="sect.mrigadgets" />.</para>
     </sect1>
 
     <sect1 xml:id="sect.grappa">
       <title>Cartesian 2D Parallel MRI</title>
 
-      <para>MSH, please write</para>
+      <para>The Gadgetron contains a high-throughput 2D Cartesian parallel
+      imaging reconstruction (GRAPPA) implemented on the GPU. It is beyond the
+      scope of this manual to review all the algorithmic details of this
+      application, but we will give an overview here as an example of a more
+      complicated reconstruction chain.</para>
+
+      <para>The Gadget chain is defined in the <filename>grappa.xml</filename>
+      and the resulting chain is illustrated in <xref
+      linkend="fig.grappachain" />.</para>
+
+      <para>To test this configuration, please download the GRAPPA test
+      datasets from <uri type="website"
+      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/">https://sourceforge.net/projects/gadgetron/files/testdata/</uri>.
+      In the MRI section you will find two test datasets
+      <filename>gre_tgrappa_rate2.tar.gz</filename> and
+      <filename>gre_tgrappa_rate4.tar.gz</filename>. They are Cartesian
+      parallel imaging datasets with rate 2 and 4 acceleration respectively.
+      They were acquired with a 32 channel coil.</para>
+
+      <para>In order to run the GRAPPA reconstruction you have to have a CUDA
+      enable GPU on your system and your Gadgetron distribution should be
+      compiled with CUDA and CULA enabled. Please see <xref
+      linkend="sect.installation" /> for details for your specific
+      platform.</para>
+
+      <para>To run the reconstruction, start up your Gadgetron on use the
+      <application>mriclient</application> to send the data:</para>
+
+      <screen>user@host:~/temp/gadgetron_temp$ mriclient \
+         -d gre_tgrappa_rate4.gmr \
+         -x gre_tgrappa_rate4.xml \
+         -c grappa.xml
+
+Gadgetron MRI Data Sender
+  -- host:            localhost
+  -- port:            9002
+  -- data:            gre_tgrappa_rate4.gmr
+  -- parm:            gre_tgrappa_rate4.xml
+  -- conf:            grappa.xml
+  -- loop:            1
+(22460|139802100373312) Connection from 127.0.0.1:9002
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+22460, 81, GadgetronConnector, Close Message received
+(22460|139802061166336) Handling close...
+(22460|139802061166336) svc done...
+(22460|139802061166336) Handling close...
+user@host:~/temp/gadgetron_temp$
+</screen>
+
+      <para>You should get example images that look similar to the ones in
+      <xref linkend="fig.examplegrapparesult" />.</para>
+
+      <figure xml:id="fig.grappachain">
+        <title>GRAPPA Reconstruction Chain</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="figs/grappa.png" width="4in"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <figure xml:id="fig.examplegrapparesult">
+        <title>GRAPPA Reconstruction Results</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="figs/examplegrapparesult.png" format="PNG"
+                       width="5in"></imagedata>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>Let's take a closer look at some of the components of this
+      reconstruction application.</para>
+
+      <para>The first Gadget is the <classname>NoiseAdjustGadget</classname>.
+      As described in <xref linkend="sect.mrigadgets" />, the purpose of this
+      Gadget is to decorrelate the noise in the receiver channels. This
+      improves the parallel imaging performance, especially in cases where
+      there is a large amount of noise in just a few receiver elements. There
+      are two versions of this Gadget, one that uses the BLAS/LAPACK routines
+      for performance improvements and one that implements the same
+      functionality without these optimizations. When you call the included
+      <filename>grappa.xml</filename> configuration, you will use the
+      optimized version. If you do not have BLAS and LAPACK on your system,
+      you can modify the XML configuration to use the one from the
+      <filename>gadgets/core</filename> library.</para>
+
+      <para>Second step is removing the oversampling. This step could also be
+      performed after the reconstruction (as it is done in <xref
+      linkend="sect.2dftexample" />), but here we opt to remove this excess
+      data to improve downstream performance.</para>
+
+      <para>The purpose of the next two Gadgets
+      (<classname>PCAGadget</classname> and
+      <classname>CoilReductionGadget</classname>) is to a) transform the
+      receiver coils into PCA virtual coils ordered by their information
+      content and b) remove some of the coils to improve downstream
+      performance. The first step is achieved by buffering the first frame of
+      data and then performing a principal component analysis (PCA) on the
+      first frame of data. Based on the determined PCA transformation all data
+      is then subsequently transformed into virtual coils. In the coil
+      reduction gadget we can now simple eliminate the channels that are above
+      a certain number. See <xref linkend="sect.mrigadgets" /> for details on
+      how to control the channel compression.</para>
+
+      <para>The next two Gadgets are responsible for the actual GRAPPA
+      reconstruction. The <classname>GrappaGadget</classname> calculates the
+      GRAPPA coefficients and <classname>GrappaUnmixingGadget</classname>
+      performs the Fourier transform of the raw data and applies the GRAPPA
+      coefficients to the aliased imaged to obtain unaliased images.</para>
+
+      <para>In general it is assumed that the data is acquired in such a way
+      that a set of neighboring frames can be averaged to yield a fully
+      sampled k-space; the data is acquired with a time-interleaved sampling
+      pattern. When enough calibration data is available to calculate GRAPPA
+      coefficients, i.e. when a fully sampled region of k-space is available,
+      the calibration data is sent to a grappa coefficient calculation object
+      (<classname>GrappaWeightsCalculator</classname>).</para>
+
+      <para>The <classname>GrappaWeightsCalculator</classname> is an active
+      object, which picks up weight calculation jobs from an input queue and
+      passes them on to the GPU where it uses toolbox functions to calculate
+      GRAPPA unmixing coefficients. These coefficients are Fourier transformed
+      to image space where they are combined for all coils and stored in a
+      <classname>GrappaWeights</classname> object.</para>
+
+      <para>When the <classname>GrappaGadget</classname> passes on the raw
+      data to the <classname>GrappaUnmixingGadget</classname> it passes a
+      reference to the <classname>GrappaWeights</classname> object which is to
+      be used when performing the unmixing operation. Let's have closer look
+      at the <filename>GrappaUnmixingGadget.h</filename> file:</para>
+
+      <programlisting>struct GrappaUnmixingJob
+{
+ boost::shared_ptr&lt; GrappaWeights&lt;float&gt; &gt; weights_;
+};
+
+class GrappaUnmixingGadget: 
+public Gadget3&lt;GrappaUnmixingJob, 
+               GadgetMessageImage, 
+               hoNDArray&lt;std::complex&lt;float&gt; &gt; &gt; 
+{
+public:
+ GADGET_DECLARE(GrappaUnmixingGadget);
+
+ GrappaUnmixingGadget();
+ virtual ~GrappaUnmixingGadget();
+protected:
+ virtual int process(GadgetContainerMessage&lt;GrappaUnmixingJob&gt;* m1,
+   GadgetContainerMessage&lt;GadgetMessageImage&gt;* m2, 
+   GadgetContainerMessage&lt;hoNDArray&lt;std::complex&lt;float&gt; &gt; &gt;* m3);
+
+};
+</programlisting>
+
+      <para>We can see that the <classname>GrappaUnmixingGadget</classname> is
+      an example of a Gadget, which takes 3 arguments and the additional
+      argument in this case holds a reference to the unmixing
+      coefficients.</para>
+
+      <para>The <classname>GrappaWeightsCalculator</classname> will update the
+      coefficients as often as it is instructed to do so and the
+      <classname>GrappaGadget</classname> is in charge of determining when an
+      update should be done. Specifically, it monitors the incoming data and
+      when the slice orientation changes, a job will be submitted to update
+      the coefficients. If the slice is not changing, it is in principle OK to
+      continue with the current coefficients, but if data is available and the
+      <classname>GrappaWeightsCalculator</classname> is idle (the queue is
+      empty) a job will be submitted.</para>
+
+      <para>With this design, the data passes through the
+      <classname>GrappaGadget</classname> very quickly and the
+      <classname>GrappaUnmixingGadget</classname> can reconstruction the
+      images very quickly, i.e. it is simply a Fourier transform and an
+      element wise multiplication and sum over the coils. It is in other words
+      designed for very high throughput.</para>
+
+      <para>If the slice orientation changes, new coefficients will be
+      calculated, but this calculation will not be done by the time the data
+      reaches the <classname>GrappaUnmixingGadget</classname> and
+      consequently, the images will be reconstructed with the "old"
+      coefficients until the coefficients are ready. This design ensures low
+      latency, but when the slice changes, aliasing may occur for a few frames
+      until coefficients are updated.</para>
+
+      <para>After the unmixing, the images are scaled and magnitude is
+      extracted before returning images to the client. The
+      <classname>AutoScaleGadget</classname> has been added in this case to
+      ensure that images are in a reasonable range before converting to
+      unsigned short as the output in this case. Automatic image scaling can
+      be problematic, especially when doing quantitative imaging, but it was
+      added in this case to make the reconstruction more robust to data from
+      different sources. A better solution is to only use data where noise
+      calibration data is available and reconstruct SNR scaled images. Based
+      on typical SNR values for MRI images, it is fairly trivial to keep the
+      images in the appropriate range and perform a proper conversion to
+      unsigned short.</para>
+
+      <para>A final comment about the GRAPPA reconstruction is that it allows
+      a second step of channel compression. More specifically, it is possible
+      to reconstruct to a limited number of target channels to further improve
+      performance. Between the upstream and downstream channel compression
+      steps, it is possible to tune the performance of the reconstruction to
+      enable real-time reconstruction on the available. hardware. </para>
     </sect1>
 
     <sect1 xml:id="sect.cgsense">
@@ -3248,7 +4107,7 @@ install(TARGETS mygadgetronclient DESTINATION bin)
 
           <listitem>
             <para>Help us implement some of the future features in <xref
-            linkend="futurefeatures"/>. It is probably a good idea to get in
+            linkend="futurefeatures" />. It is probably a good idea to get in
             touch with us before you start coding, just in case somebody is
             already working on it.</para>
           </listitem>
@@ -3269,7 +4128,7 @@ install(TARGETS mygadgetronclient DESTINATION bin)
 
     <para>The simple array files are made up of a) a header followed by b) the
     data itself. This layout of data and header is illustrated in <xref
-    linkend="fig.gadgetron.fileformat"/>. The header has a single 32-bit
+    linkend="fig.gadgetron.fileformat" />. The header has a single 32-bit
     integer to indicate the number of dimensions of the dataset followed by
     one integer for each dimension to indicate the length of that dimension.
     The data follows immediately after the header. The data is stored such
@@ -3302,7 +4161,7 @@ install(TARGETS mygadgetronclient DESTINATION bin)
       <mediaobject>
         <imageobject condition="print">
           <imagedata align="left" fileref="figs/arrayfileformat.png"
-                     format="PNG" width="2in"/>
+                     format="PNG" width="2in"></imagedata>
         </imageobject>
 
         <textobject>
@@ -3383,7 +4242,7 @@ end
 
     <para>The Gagdetron is evolving continuously and there are many things
     still that we would like to include but have not yet had the time to do.
-    This appendix serves as a todo list of features to be implement as we go
+    This appendix serves as a to-do list of features to be implement as we go
     along.</para>
 
     <itemizedlist>
