@@ -23,14 +23,14 @@
       <email>sangild@cs.au.dk</email>
     </author>
 
-    <subtitle>Medical Image Reconstruction Framework</subtitle>
+    <subtitle>A Medical Image Reconstruction Framework</subtitle>
   </info>
 
   <chapter>
     <title>Introduction</title>
 
     <sect1>
-      <title>What is the Gadgetron</title>
+      <title>What is Gadgetron</title>
 
       <para>The Gadgetron framework is a streaming data processing framework
       for medical image reconstruction. It has been developed to enable easy
@@ -212,10 +212,12 @@
     </sect1>
 
     <sect1>
-      <title xml:id="sect.installation">Compiling and Installing</title>
+      <title xml:id="sect.installation">Compiling and Installing
+      Gadgetron</title>
 
       <sect2>
-        <title xml:id="sect.linuxinstall">Linux Instructions</title>
+        <title xml:id="sect.linuxinstall">Linux Installation
+        Instructions</title>
 
         <para>Linux is preferred operating system to get started with the
         Gadgetron quickly. All of the required dependencies are included in
@@ -730,10 +732,10 @@ data = reshape(data,dims');
   </chapter>
 
   <chapter>
-    <title>Technical Details</title>
+    <title>Framework Overview</title>
 
     <sect1>
-      <title>Architecture</title>
+      <title>Gadgetron Streaming Architecture</title>
 
       <para>The Gadgetron consists of a streaming processing architecture and
       a set of toolboxes. The toolboxes are used within the streaming
@@ -1733,7 +1735,7 @@ public:
     </sect1>
 
     <sect1 xml:id="sect.toolboxes">
-      <title>Toolboxes</title>
+      <title>Gadgetron Toolboxes</title>
 
       <para>The core reconstruction data structures and algorithms are made
       available through a set of toolboxes in shared libraries. The toolboxes
@@ -1742,7 +1744,7 @@ public:
       functionality is covered in the following sections.</para>
 
       <sect2 xml:id="sect.ndarray">
-        <title>Multidimensional Array: <classname>NDArray</classname></title>
+        <title><classname>NDArray</classname></title>
 
         <para>Most image processing operations involve multi-dimensional
         arrays. Although the Gadgetron framework does not impose any specific
@@ -1918,7 +1920,7 @@ m-&gt;release(); //Delete the message block and containing data
       </sect2>
 
       <sect2>
-        <title>vector_td</title>
+        <title><classname>vector_td</classname></title>
 
         <para>The class <classname>vector_td</classname> provides a basic
         representation of complex numbers as well as one-, two-, three-, or
@@ -2158,6 +2160,12 @@ public: // Access to underlying building blocks
           function. The individial building blocks of the NFFT - convolution,
           FFT, and deapodization - are exposed in the public interface and
           hence available for use in custom algorithms.</para>
+
+          <para><remark>Please note</remark>. The NFFT performs significantly
+          better on GPUs supporting Cuda's shader model 2.0 or newer compared
+          to devices supporting only shader models 1.x. The reason is we rely
+          on the inherent caching of global memory - available only on
+          hardware supporting at least shader model 2.0.</para>
         </sect3>
       </sect2>
 
@@ -2681,7 +2689,7 @@ public:
           the encoding operator used in the inner solver, 3) the
           regularization operators used in the inner solver, and 4) the
           desired image dimensions as these cannot neccesarily be deduced from
-          the measured data. </para>
+          the measured data.</para>
 
           <para>Let us outline the code required to set up the solver for
           TV-based image denoising. The full code can be found in
@@ -2739,7 +2747,7 @@ public:
 
           <para>The constraint Split Bregman solver inherits from the
           unconstaint Split Bregman solver is thus defined with an identical
-          interface. </para>
+          interface.</para>
         </sect3>
       </sect2>
 
@@ -2756,7 +2764,7 @@ public:
     </sect1>
 
     <sect1>
-      <title>Gadgets</title>
+      <title>Gadgetron Gadgets</title>
 
       <para>Gadgets wrap the functionality of the toolboxes and provide
       generic building blocks for configuring the streaming reconstruction in
@@ -3988,7 +3996,7 @@ install(TARGETS mygadgetronclient DESTINATION bin)
     <title>Gadgetron Applications</title>
 
     <sect1 xml:id="sect.2dftexample">
-      <title>Simple 2D FT MRI</title>
+      <title>Basic 2D FFT MRI</title>
 
       <para>The simplest example application in the Gadgetron is a simple 2D
       FT MRI reconstruction. It receives 2D MRI data, collects it into k-space
@@ -4439,7 +4447,7 @@ GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2
     </sect1>
 
     <sect1 xml:id="sect.grappa">
-      <title>Cartesian 2D Parallel MRI</title>
+      <title>Cartesian 2D Parallel MRI (Grappa)</title>
 
       <para>The Gadgetron contains a high-throughput 2D Cartesian parallel
       imaging reconstruction (GRAPPA) implemented on the GPU. It is beyond the
@@ -4466,8 +4474,9 @@ GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2
       linkend="sect.installation"/> for details for your specific
       platform.</para>
 
-      <para>To run the reconstruction, start up your Gadgetron on use the
-      <application>mriclient</application> to send the data:</para>
+      <para>To run the reconstruction, start up your Gadgetron (in its own
+      terminal window) and use the <application>mriclient</application> to
+      send the data from another terminal:</para>
 
       <screen>user@host:~/temp/gadgetron_temp$ mriclient \
          -d gre_tgrappa_rate4.gmr \
@@ -4661,9 +4670,116 @@ protected:
     </sect1>
 
     <sect1 xml:id="sect.cgsense">
-      <title>Non-Cartesian 2D Parallel MRI</title>
+      <title>Non-Cartesian 2D Parallel MRI (Sense)</title>
 
-      <para>TSS, please add some description</para>
+      <para>The Gadgetron includes an implementation of a GPU-based real-time
+      non-Cartesian Sense reconstruction published in <citation
+      linkend="sorensen09"><xref linkend="sorensen09"/></citation>. One of the
+      keys to obtaining real-time performance is an efficient GPU
+      implementation of the non-Cartesian Fast Fourier Transform
+      <citation><xref linkend="sorensen08"/></citation>. The application
+      reuses several of the gadgets we have seen in use already for the
+      Cartesian Grappa implementation above (<xref linkend="sect.grappa"/>).
+      An overview of the non-Cartesian Sense gadget chain is given in figure
+      <xref linkend="fig.cgsense"/>. <figure xml:id="fig.cgsense">
+          <title>Gadgetron chain for non-Cartesian Sense</title>
+
+          <mediaobject>
+            <imageobject role="html">
+              <imagedata align="left" fileref="figs/cgsense.png" format="PNG"
+                         width="5in"/>
+            </imageobject>
+
+            <imageobject role="fo">
+              <imagedata align="left" fileref="figs/cgsense.png" format="PNG"
+                         width="5in"/>
+            </imageobject>
+
+            <textobject>
+              <phrase>Gadgetron chain for non-Cartesian Sense</phrase>
+            </textobject>
+          </mediaobject>
+        </figure></para>
+
+      <para>The <classname>CGSenseGadget</classname> implements the
+      non-Cartesian Sense reconstruction. It contains a conjugate gradient
+      solver (<xref linkend="sect.linear_solvers"/>) set up with a
+      <classname>nonCartesianSense</classname> image encoding matrix and an
+      <classname>imageOperator</classname> for regularization. Internally it
+      maintains a cyclic buffer of a few seconds of imaging data. It uses this
+      buffer to maintain a fully sampled (i.e. unaliased but blurred) k-space
+      image from which coil sensititivities and regularization images are
+      dynamically estiated. The combination of parallel imaging and image
+      regularization operators allows for alias-suppressed image
+      reconstruction using significant undersampling hereby achieving
+      real-time data acquisition rates per frame. The conjugate gradient
+      solver is sufficiently fast to reconstruct e.g. a 192x192 image from 32
+      coils using 10 solver iterations on newer graphics hardware.</para>
+
+      <para>To test this configuration please download the 32 channel radial
+      MRI test dataset from <uri type="website"
+      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/">https://sourceforge.net/projects/gadgetron/files/testdata/mri/gre_golden_angle.tar.gz</uri>.
+      Go to the folder in which you unpacked the data. We assume that you have
+      added <envar>$(GADGETRON_HOME)/bin</envar> to your <envar>PATH</envar>
+      environment variable. You need a CUDA enable GPU on your system and your
+      Gadgetron distribution should be compiled with CUDA and CULA enabled.
+      Please see <xref linkend="sect.installation"/> for details for your
+      specific platform.</para>
+
+      <para>To run the reconstruction; start up
+      <application>gadgetron</application> (in its own terminal window) and
+      use the <application>mriclient</application> to send the data from
+      another terminal. First start
+      <application>gadgetron</application>:</para>
+
+      <screen>user@host$ gadgetron 
+Configuring services
+
+</screen>
+
+      <para>If asked, allow the gadgetron application to allow incoming
+      network connection. Next start the
+      <application>mriclient</application>:</para>
+
+      <screen>user@host$ mriclient \
+         -d gre_golden_angle.gmr \
+         -x gre_golden_angle.xml \
+         -c radial_single.xml
+
+Gadgetron MRI Data Sender
+  -- host:            localhost
+  -- port:            9002
+  -- data:            gre_golden_angle.gmr
+  -- parm:            gre_golden_angle.xml
+  -- conf:            radial_single.xml
+  -- loop:            1
+(23577|140735084973248) Connection from 127.0.0.1:9002
+Image Writer writing image
+Image Writer writing image
+Image Writer writing image
+...
+Image Writer writing image
+23577, 81, GadgetronConnector, Close Message received
+(23577|4300226560) Handling close...
+(23577|4300226560) svc done...
+(23577|4300226560) Handling close...
+user@host$
+
+</screen>
+
+      <para>Your current folder now holds the reconstructed images. They will
+      look something like the one depicted in <xref
+      linkend="fig.examplecgsenseresult"/>. <figure
+          xml:id="fig.examplecgsenseresult">
+          <title>Non-Cartesian Sense Reconstruction Results</title>
+
+          <mediaobject>
+            <imageobject>
+              <imagedata fileref="figs/examplecgsenseresult.png" format="PNG"
+                         width="5in"/>
+            </imageobject>
+          </mediaobject>
+        </figure></para>
     </sect1>
   </chapter>
 
