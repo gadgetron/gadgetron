@@ -1,25 +1,13 @@
+GADGETRON IMAGE RECONSTRUCTION FRAMEWORK
 
+Please read LICENSE file for licensing details.
 
--Prerequisites for building:
+Detailed installation instructions and manual is available at:
 
-CMake
-ACE (tested with versions 5.6 and 6.0)
-FFTW3
-Boost 
-TinyXML version >= 2.6.1
-(Included in depedencies/, cmake; make; sudo make install)
-  
-Optional
-CUDA (and CULA)
-Qt4
-OpenGL
-GLEW
-Python
-BLAS
-LAPACK
+http://gadgetron.sourceforge.net
 
 -------------------------------------
-Building instructions
+General Building Instructions (on Unix platforms)
 
 mkdir build
 cd build
@@ -27,47 +15,5 @@ cmake ../
 make
 sudo make install
 
-
-------------------------------------
-ACE Install instructions on Mac (Snow Leopard)
- - Compiling universal binaries
-
-1. Download ACE-6.0.0.tar.gz
-2. tar -xzvf ACE-6.0.0.tar.gz
-3. cd ACE_wrappers
-4. edit (and create) ace/config.h
-
-   #include "ace/config-macosx-snowleopard.h"
-
-5. edit (and create) include/makeinclude/platform_macros.GNU
-
-   include $(ACE_ROOT)/include/makeinclude/platform_macosx_snowleopard.GNU
-   INSTALL_PREFIX=/usr/local
-   install_rpath=0
-
-6. export ACE_ROOT=/whereever/ACE_wrappers
-7. export buildbits=universal
-8. make (go for coffee)
-9. sudo ACE_ROOT=/whereever/ACE_wrappers make install
-10. sudo cp lib/libACE* /usr/local/lib (don't know why make install doesn't do that)
-
--------------------------------------
-Compiling FFTW as universal library
-
-1. Download fftw-3.2.2.tar.gz
-2. tar -xzvf fftw-3.2.2.tar.gz
-3. cd fftw-3.2.2
-4. ./configure --enable-threads --enable-single CC="gcc -arch i386 -arch x86_64" CXX="g++ -arch i386 -arch x86_64" CPP="gcc -E" CXXCPP="g++ -E"
-5. make
-6. sudo make install
-7. ./configure --enable-threads CC="gcc -arch i386 -arch x86_64" CXX="g++ -arch i386 -arch x86_64" CPP="gcc -E" CXXCPP="g++ -E"
-8. make clean; make
-9. sudo make install
-
--------
-Tools for Mac:
-
-- gfortran:
-http://gcc.gnu.org/wiki/GFortranBinaries#MacOS
-
+Please check manual for detailed instructions for your platform.
 
