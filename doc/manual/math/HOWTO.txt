@@ -1,0 +1,5 @@
+Images converted using this process:
+http://infohost.nmt.edu/tcc/help/pubs/docbook/web/math-procedure.html
+
+Sadly I could not get thr PDF/EPS/SVG accepted in fo. 
+Hence reverting to jpeg for ro also.
