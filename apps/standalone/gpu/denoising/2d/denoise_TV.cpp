@@ -19,7 +19,7 @@
 
 using namespace std;
 
-// Define desired precision (note that decent deblurring of noisy images requires double precision)
+// Define desired precision
 typedef float _real; 
 
 int main(int argc, char** argv)
@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
-    cout << " Running deblurring with the following parameters: " << endl;
+    cout << " Running denoising with the following parameters: " << endl;
     parms.print_parameter_list();
   }
   else{

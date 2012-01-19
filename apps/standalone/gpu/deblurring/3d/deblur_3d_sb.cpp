@@ -17,7 +17,7 @@
 
 using namespace std;
 
-// Define desired precision (note that decent deblurring of noisy images requires double precision)
+// Define desired precision
 typedef float _real; 
 typedef complext<_real>::Type _complext;
 
