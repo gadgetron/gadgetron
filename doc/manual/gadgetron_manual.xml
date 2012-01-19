@@ -4944,24 +4944,212 @@ user@host$
   <chapter xml:id="sect.standalone_applications">
     <title>Standalone Applications</title>
 
-    <para>Thomas</para>
+    <para>This chapter demonstrates how to use the Gadgetron toolboxes (<xref
+    linkend="sect.toolboxes"/>) to build standalone applications. The
+    following non-exhaustive examples are build with the Gadgetron and
+    binaries should consequently be available in
+    <envar>$GADGETRON_HOME/bin</envar>. You need a CUDA enabled GPU on your
+    system and your Gadgetron distribution should be compiled with CUDA and
+    CULA enabled.</para>
 
-    <sect1>
+    <sect1 xml:id="sect.image_denoising">
       <title>Image denoising</title>
 
-      <para>TSS, please add some description</para>
+      <para>This example uses the unconstraint Split Bregman solver for total
+      variation based image denoising. The encoding matrix is defined as an
+      <classname>identityOperator</classname> and a
+      <classname>partialDerivativeOperator</classname> is used for each of the
+      two spatial directions to implement the regularization terms. The full
+      source code for the example can be found at
+      <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/denoising/2d/denoise_TV.cpp</filename>.</para>
+
+      <para>You can download some noisy Shepp-Logan phantom test datasets from
+      <uri type="website"
+      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/">https://sourceforge.net/projects/gadgetron/files/testdata/phantom/shepp_logan/shepp.tar.gz</uri>.
+      </para>
+
+      <para>In a terminal, go to the folder in which you unpacked the data. We
+      assume that you have added <envar>$(GADGETRON_HOME)/bin</envar> to your
+      <envar>PATH</envar> environment variable.</para>
+
+      <para>Try</para>
+
+      <screen>user@host$ denoise_TV -d shepp_logan_256_256_med_noise.real -O 250 -m 1
+Running denoising with the following parameters: 
+---------------------------------------------------- 
+  Noisy image file name (.real)  : shepp_logan_256_256_med_noise.real 
+  Result file name               : denoised_image_TV.real 
+  Number of cg iterations        : 20 
+  Number of sb inner iterations  : 1 
+  Number of sb outer iterations  : 250 
+  Regularization weight (mu)     : 1 
+---------------------------------------------------- 
+...
+user@host$
+
+</screen>
+
+      <para>which runs 250 iterations of the solver with a regularization
+      weight of 1. The output is saved in the current folder in the file
+      <filename>denoised_image_TV.real</filename>. Running
+      <application>denoise_TV</application> with no arguments prints out a
+      brief usage description. We leave it as an exercise to run the algorihm
+      with various settings. The data file you downloaded contains two further
+      dataset (with lower and higher noise levels respectively) to try out as
+      well.</para>
     </sect1>
 
     <sect1>
       <title>Image deblurring</title>
 
-      <para>TSS, please add some description</para>
+      <para>This example uses 1) the linear least squares solver, and 2) the
+      constraint Split Bregman solver for image deblurring. The encoding
+      matrix is defined as an <classname>convolutionOperator</classname> and a
+      <classname>partialDerivativeOperator</classname> is used for each of the
+      two spatial directions to implement the regularization terms. </para>
+
+      <para>We reuse the Shepp-Logan data from the image denoising experiement
+      above (<xref linkend="sect.image_denoising"/>). </para>
+
+      <para>First we generate a blurry Shepp-Logan phantom by convolution with
+      a Gaussian kernel. This is easliy achieved using the function
+      <function>mult_M</function> in the
+      <classname>convolutionOperator</classname>. Soure code is provided at
+      <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/deblurring/2d/blur_2d.cpp</filename></para>
+
+      <para>In a terminal, go to the folder in which you unpacked the Shepp
+      Logan phantom.</para>
+
+      <para>Try</para>
+
+      <screen>user@host$ blur_2d -d shepp_logan_256_256_no_noise.real
+
+</screen>
+
+      <para>which generates two complex images;
+      <filename>blurred_image.cplx</filename> and
+      <filename>kernel_image.cplx</filename>. For convienience a corresponding
+      magnitudes image is also saved as
+      <filename>blurred_image.real</filename>.</para>
+
+      <para>Now run the conjugate gradient solver. The source code for the
+      example can be found in
+      <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/deblurring/2d/deblur_2d_cg.cpp</filename>.</para>
+
+      <screen>user@host$ deblur_2d_cg -K 1e-4
+ Running deblurring with the following parameters: 
+---------------------------------------------------- 
+  Blurred image file name (.cplx)  : blurred_image.cplx 
+  Kernel image file name (.cplx)   : kernel_image.cplx 
+  Result file name                 : cg_deblurred_image.cplx 
+  Number of iterations             : 25 
+  Regularization weight            : 1e-4 
+---------------------------------------------------- 
+Iterating...
+...
+user@host$</screen>
+
+      <para>The result is saved in the current folder in the file
+      <filename>cg_deblurred_image_TV.cplx</filename>. A magnitudes image is
+      also saved as <filename>cg_deblurred_image.real</filename>. We leave it
+      as an exercise to run the algorihm with various settings. Try also to
+      add noise to the blurred image before the deconvolution. </para>
+
+      <para>Next run the constraint Split Bregman solver. The source code for
+      the example can be found in
+      <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/deblurring/2d/deblur_2d_sb.cpp</filename>.
+      </para>
+
+      <screen>user@host$ deblur_2d_sb -O 100 -L 0.5 -M 0.5
+ Running deblurring with the following parameters: 
+---------------------------------------------------- 
+  Blurred image file name (.cplx)  : blurred_image.cplx 
+  Kernel image file name (.cplx)   : kernel_image.cplx 
+  Result file name                 : sb_deblurred_image.cplx 
+  Number of cg iterations          : 20 
+  Number of sb inner iterations    : 1 
+  Number of sb outer iterations    : 100 
+  Mu                               : 0.5 
+  Lambda                           : 0.5 
+---------------------------------------------------- 
+...
+user@host$</screen>
+
+      <para>The result is saved in the current folder in the file
+      <filename>sb_deblurred_image_TV.cplx</filename>. A magnitudes image is
+      also saved as <filename>sb_deblurred_image.real</filename>. Again, try
+      to experiment with the various settings.</para>
+
+      <para><remark>Notice</remark>. If the dimensions of the provided
+      convolution kernel is exactly double that of the provided image, the
+      convolution operator zero-pads the image before the convolution and
+      removes the padding again after. As the convolution operator utilizes
+      FFTs in its implementation, this oversampling is a way of avoiding
+      cyclic boundary conditions during the convolution.</para>
     </sect1>
 
     <sect1>
-      <title>MRI Reconstruction</title>
+      <title>Non-Cartesian FFT </title>
 
-      <para>TSS, please add some description</para>
+      <para>This example shows how to use the forwards and inverse NFFT on a
+      2D image. The source code can be found at
+      <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/MRI/nfft/2d/nfft_main.cpp</filename>
+      and
+      <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/MRI/nfft/2d/nffth_main.cpp</filename>.</para>
+
+      <para>Again we use the Shepp-Logan data downloaded for the image
+      denoising experiement above (<xref
+      linkend="sect.image_denoising"/>).</para>
+
+      <para>Run the NFFT followed by the NFFT<superscript>H</superscript>. We
+      use an oversampled matrix size of 384, 128 profiles in k-space
+      (undersampling) with 384 samples each. The NFFT convolution kernel width
+      is set to 5.5.</para>
+
+      <screen>user@host$ nfft -d shepp_logan_256_256_no_noise.real -o 384 -p 128 -s 384 -k 5.5
+ Running reconstruction with the following parameters: 
+---------------------------------------------------- 
+  Input image file name (.real)  : shepp_logan_256_256_no_noise.real 
+  Result file name               : samples.cplx 
+  Oversampled matrix size        : 384 
+  Number of profiles             : 128 
+  Samples per profiles           : 384 
+  Kernel width                   : 5.5 
+---------------------------------------------------- 
+Loading image from disk
+Uploading, normalizing and converting to complex
+Initializing plan
+Computing golden ratio radial trajectories
+NFFT preprocessing
+Computing density compensation weights
+Computing nfft (inverse gridding)
+Output result to disk
+user@host$</screen>
+
+      <screen>user@host$ nffth -d samples.cplx -m 256 -o 384 -k 5.5
+ Running reconstruction with the following parameters: 
+---------------------------------------------------- 
+  Input samples file name (.cplx)  : samples.cplx 
+  Output image file name (.cplx)   : result.cplx 
+  Matrix size                      : 256 
+  Oversampled matrix size          : 384 
+  Kernel width                     : 5.5 
+---------------------------------------------------- 
+Loading samples from disk
+Uploading samples to device
+Initializing plan
+Computing golden ratio radial trajectories
+NFFT preprocessing
+Computing density compensation weights
+Computing nffth (gridding)
+Output result to disk
+user@host$</screen>
+
+      <para>The result is saved in file <filename>result.cplx</filename>. A
+      magnitudes image is saved as <filename>result.real</filename>. </para>
+
+      <para>Exercise: experiment with the settings to eliminate the
+      aliasing.</para>
     </sect1>
   </chapter>
 

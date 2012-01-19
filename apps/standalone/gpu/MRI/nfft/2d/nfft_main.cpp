@@ -51,7 +51,7 @@ int main( int argc, char** argv)
 
   ParameterParser parms;
   parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Input image file name (.real)", true );
-  parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Result files prefix", true, "result_" );
+  parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Result file name (.cplx)", true, "samples.cplx" );
   parms.add_parameter( 'o', COMMAND_LINE_INT,    1, "Oversampled matrix size", true );
   parms.add_parameter( 'p', COMMAND_LINE_INT,    1, "Number of profiles", true );
   parms.add_parameter( 's', COMMAND_LINE_INT,    1, "Samples per profiles", true );
@@ -138,7 +138,7 @@ int main( int argc, char** argv)
   
   timer = new GPUTimer("Output result to disk");
   boost::shared_ptr< hoNDArray<_complext> > host_samples = samples.to_host();
-  write_nd_array<_complext>( host_samples.get(), "samples.cplx" );
+  write_nd_array<_complext>( host_samples.get(), (char*)parms.get_parameter('r')->get_string_value());
   delete timer;
 
   return 0;
