@@ -42,7 +42,7 @@
 
       <para>This document serves as an introduction to the Gadgetron framework
       and provides some "getting started" examples of using it. A scientific
-      paper is also available <xref linkend="hansen12"/>.</para>
+      paper is also available <xref linkend="hansen12" />.</para>
 
       <para>Although the Gadgetron is a generic, multi-modality image
       reconstruction framework, it was initially developed to support the work
@@ -51,8 +51,8 @@
       CPU architectures, but also using commodity graphics hardware (GPUs).
       Some examples that are made publicly available through the Gadgetron
       release include fast regridding on the GPU <citation><xref
-      linkend="sorensen08"/></citation>, Cartesian parallel imaging on the GPU
-      <citation><xref linkend="hansen08"/></citation>, and non-Cartesian
+      linkend="sorensen08" /></citation>, Cartesian parallel imaging on the
+      GPU <citation><xref linkend="hansen08" /></citation>, and non-Cartesian
       parallel imaging on the GPU <citation><xref
       linkend="sorensen09" /></citation>.</para>
     </sect1>
@@ -80,18 +80,18 @@
       <para>This manual is available in HTML form at:</para>
 
       <para><uri type="website"
-      xlink:href="http://gadgetron.sourceforge.net/1.0/manual/gadgetron_manual.html">http://gadgetron.sourceforge.net/1.0/manual/gadgetron_manual.html</uri></para>
+      xlink:href="http://gadgetron.sourceforge.net/latest/manual/gadgetron_manual.html">http://gadgetron.sourceforge.net/latest/manual/gadgetron_manual.html</uri></para>
 
       <para>Or in PDF form at:</para>
 
       <para><uri type="website"
-      xlink:href="http://gadgetron.sourceforge.net/1.0/manual/gadgetron_manual.pdf">http://gadgetron.sourceforge.net/1.0/manual/gadgetron_manual.pdf</uri></para>
+      xlink:href="http://gadgetron.sourceforge.net/latest/manual/gadgetron_manual.pdf">http://gadgetron.sourceforge.net/latest/manual/gadgetron_manual.pdf</uri></para>
 
       <para>API documentation (generated with Doxygen) is available
       from:</para>
 
       <para><uri type="website"
-      xlink:href="http://gadgetron.sourceforge.net/1.0/api/">http://gadgetron.sourceforge.net/1.0/api/</uri></para>
+      xlink:href="http://gadgetron.sourceforge.net/latest/api/">http://gadgetron.sourceforge.net/latest/api/</uri></para>
 
       <sect2 xml:id="sect.dependencies">
         <title>Dependencies</title>
@@ -211,13 +211,11 @@
       </sect2>
     </sect1>
 
-    <sect1>
-      <title xml:id="sect.installation">Compiling and Installing
-      Gadgetron</title>
+    <sect1 xml:id="sect.installation">
+      <title>Compiling and Installing Gadgetron</title>
 
-      <sect2>
-        <title xml:id="sect.linuxinstall">Linux Installation
-        Instructions</title>
+      <sect2 xml:id="sect.linuxinstall">
+        <title>Linux Installation Instructions</title>
 
         <para>Linux is preferred operating system to get started with the
         Gadgetron quickly. All of the required dependencies are included in
@@ -396,11 +394,11 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CULA_LIB_PATH_64
         management system or prefer to install packages manually. In that
         case, please look at the list of dependencies (<xref
         linkend="sect.dependencies" />) and install the required dependencies
-        for the components you would like to use. </para>
+        for the components you would like to use.</para>
 
         <para>MacPorts is not the fastest way to install packages. We use this
         methods here to make it easier to follow the instructions. Please be
-        patient when running the <command>port</command> commands. </para>
+        patient when running the <command>port</command> commands.</para>
 
         <itemizedlist>
           <listitem>
@@ -468,20 +466,20 @@ fftw-3-single fftw-3 qt4-mac-devel</screen>
             <itemizedlist>
               <listitem>
                 <para>The Nvidia development driver
-                (<filename>devdriver_4.0.50_macos.dmg</filename>) from
-                <uri>http://developer.nvidia.com/cuda-toolkit-40/</uri>.</para>
+                (<filename>devdriver_4.0.50_macos.dmg</filename>) from <uri
+                xlink:href="http://developer.nvidia.com/cuda-toolkit-40/">http://developer.nvidia.com/cuda-toolkit-40/</uri>.</para>
               </listitem>
 
               <listitem>
                 <para>The CUDA Toolkit
-                (<filename>cudatoolkit_4.0.17_macos.pkg</filename>) from
-                <uri>http://developer.nvidia.com/cuda-toolkit-40/</uri>.</para>
+                (<filename>cudatoolkit_4.0.17_macos.pkg</filename>) from <uri
+                xlink:href="http://developer.nvidia.com/cuda-toolkit-40/">http://developer.nvidia.com/cuda-toolkit-40/</uri>.</para>
               </listitem>
 
               <listitem>
                 <para>The CULA Dense Libraries
-                (<filename>cula_dense_free_R13a-osx.dmg</filename>) from
-                <uri>http://www.culatools.com/downloads/dense/</uri>.</para>
+                (<filename>cula_dense_free_R13a-osx.dmg</filename>) from <uri
+                xlink:href="http://www.culatools.com/downloads/dense/">http://www.culatools.com/downloads/dense/</uri>.</para>
               </listitem>
             </itemizedlist>
           </listitem>
@@ -615,8 +613,12 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
             <filename>ACE_ROOT/ace/</filename> with the following
             content:</para>
 
-            <programlisting>#include "ace/config-win32.h" //We are on Windows
-#define ACE_NO_INLINE //This ensured that INLINE settings do not vary between Debug and Release modes</programlisting>
+            <programlisting>//We are on Windows
+#include "ace/config-win32.h" 
+
+//This ensured that INLINE settings 
+//do not vary between Debug and Release modes
+#define ACE_NO_INLINE </programlisting>
 
             <para>Open the VS 2010 project in the source code archive</para>
 
@@ -1448,10 +1450,12 @@ GADGETRON_READER_FACTORY_DECLARE(MRIAcquisitionReader)
         <classname>GadgetContainerMessage</classname> are chained together
         using the <function>cont</function> function.</para>
 
-        <para>A final important statement to notice is the
-        <function>GADGETRON_READER_FACTORY_DECLARE(MRIAcquisitionReader)</function>.
-        This macro declares create and destroy functions to load the reader
-        from a shared library on all platforms supported.</para>
+        <para>A final important statement to notice is: </para>
+
+        <programlisting>GADGETRON_READER_FACTORY_DECLARE(MRIAcquisitionReader)</programlisting>
+
+        <para>This macro declares create and destroy functions to load the
+        reader from a shared library on all platforms supported.</para>
 
         <para>Whereas the Readers are responsible for deserialization, The
         <classname>GadgetMessageWriter</classname> is responsible for the
@@ -2148,7 +2152,7 @@ struct double_complext : complext&lt;double&gt;::Type {
         <para>The <classname>vector_td</classname> can be used in both host
         and device code. As an example of use it is contained in the interface
         of the non-Cartesian FFT described in <xref
-        linkend="sect.NFFT"/>.</para>
+        linkend="sect.NFFT" />.</para>
       </sect2>
 
       <sect2 xml:id="sect.ffttoolbox">
@@ -2236,17 +2240,29 @@ template&lt;class T&gt; class EXPORTGPUCORE cuNDFFT
   cuNDFFT() {}
   virtual ~cuNDFFT() {}
 
-  int fft ( cuNDArray&lt;T&gt; *input, std::vector&lt;unsigned int&gt; *dims_to_transform );
-  int ifft( cuNDArray&lt;T&gt; *input, std::vector&lt;unsigned int&gt; *dims_to_transform, bool do_scale = true );
+  int fft ( cuNDArray&lt;T&gt; *input, 
+    std::vector&lt;unsigned int&gt; *dims_to_transform );
 
-  int fft ( cuNDArray&lt;T&gt; *input, unsigned int dim_to_transform);
-  int ifft( cuNDArray&lt;T&gt; *input, unsigned int dim_to_transform, bool do_scale = true );
+  int ifft( cuNDArray&lt;T&gt; *input, 
+    std::vector&lt;unsigned int&gt; *dims_to_transform, 
+    bool do_scale = true );
+
+  int fft ( cuNDArray&lt;T&gt; *input, 
+    unsigned int dim_to_transform);
+
+  int ifft( cuNDArray&lt;T&gt; *input, 
+    unsigned int dim_to_transform, 
+    bool do_scale = true );
 
   int fft ( cuNDArray&lt;T&gt; *input );
-  int ifft( cuNDArray&lt;T&gt; *input, bool do_scale = true );
+  int ifft( cuNDArray&lt;T&gt; *input, 
+    bool do_scale = true );
 
  protected:
-  int fft_int( cuNDArray&lt;T&gt; *input, std::vector&lt;unsigned int&gt; *dims_to_transform, int direction, bool do_scale = true );
+  int fft_int( cuNDArray&lt;T&gt; *input, 
+    std::vector&lt;unsigned int&gt; *dims_to_transform, 
+    int direction, 
+    bool do_scale = true );
 };
  </programlisting>
 
@@ -2297,9 +2313,10 @@ public:
                 cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *image, 
                 cuNDArray&lt;REAL&gt; *weights, NFFT_comp_mode mode );
 
-  bool compute_iteration( cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *samples, 
-                          cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *image, 
-                          cuNDArray&lt;REAL&gt; *weights, NFFT_comp_mode mode );
+  bool compute_iteration( 
+   cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *samples, 
+   cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *image, 
+   cuNDArray&lt;REAL&gt; *weights, NFFT_comp_mode mode );
  
 public: // Access to underlying building blocks
   
@@ -2338,8 +2355,8 @@ public: // Access to underlying building blocks
         </sect3>
       </sect2>
 
-      <sect2>
-        <title xml:id="sect.matrix_operators">Matrix Operators</title>
+      <sect2 xml:id="sect.matrix_operators">
+        <title>Matrix Operators</title>
 
         <para>A fundamental building block of most image reconstruction
         algorithms is the abstract <classname>matrix_operator</classname>. A
@@ -2472,7 +2489,8 @@ class identityOperator : public matrixOperator&lt;REAL, ARRAY_TYPE&gt;
 // Simplified code without error checking and multi-device support
 
 template &lt;class REAL, class T&gt; 
-class cuIdentityOperator : public identityOperator&lt; REAL, cuNDArray&lt;T&gt; &gt;
+class cuIdentityOperator 
+: public identityOperator&lt; REAL, cuNDArray&lt;T&gt; &gt;
 {
  public:
 
@@ -2542,8 +2560,8 @@ class cuIdentityOperator : public identityOperator&lt; REAL, cuNDArray&lt;T&gt; 
         </sect3>
       </sect2>
 
-      <sect2>
-        <title xml:id="sect.linear_solvers">Linear Solvers</title>
+      <sect2 xml:id="sect.linear_solvers">
+        <title>Linear Solvers</title>
 
         <para>The Gadgetron 'solvers' toolbox contain both a generic conjugate
         gradient solver to solve linear least squares reconstruction problems
@@ -2560,12 +2578,13 @@ class cuIdentityOperator : public identityOperator&lt; REAL, cuNDArray&lt;T&gt; 
           <informalequation>
             <mediaobject>
               <imageobject role="html">
-                <imagedata fileref="math/lls.jpg" format="JPEG" width="3in"/>
+                <imagedata fileref="figs/math/lls.jpg" format="JPEG"
+                           width="3in"></imagedata>
               </imageobject>
 
               <imageobject role="fo">
-                <imagedata fileref="../../../doc/manual/math/lls.jpg"
-                           format="JPEG" width="3in"/>
+                <imagedata fileref="figs/math/lls.jpg" format="JPEG"
+                           width="3in"></imagedata>
               </imageobject>
             </mediaobject>
           </informalequation>
@@ -2589,13 +2608,13 @@ class cuIdentityOperator : public identityOperator&lt; REAL, cuNDArray&lt;T&gt; 
           <informalequation>
             <mediaobject>
               <imageobject role="html">
-                <imagedata fileref="math/lls_form.jpg" format="JPEG"
-                           width="4in"/>
+                <imagedata fileref="figs/math/lls_form.jpg" format="JPEG"
+                           width="3in"></imagedata>
               </imageobject>
 
               <imageobject role="fo">
-                <imagedata fileref="../../../doc/manual/math/lls_form.jpg"
-                           format="JPEG" width="5in"/>
+                <imagedata fileref="figs/math/lls_form.jpg" format="JPEG"
+                           width="3in"></imagedata>
               </imageobject>
             </mediaobject>
           </informalequation>
@@ -2694,13 +2713,26 @@ public:
   cuCGSolver() : cgSolver&lt; REAL, T, cuNDArray&lt;T&gt; &gt;() {}
   virtual ~cuCGSolver() {}
 
-  virtual bool pre_solve(cuNDArray&lt;T&gt; **rhs){ ... }
-  virtual bool post_solve(cuNDArray&lt;T&gt;**){ ... }
-  virtual void solver_error( std::string err ){ ... }
-  virtual T solver_dot( cuNDArray&lt;T&gt; *x, cuNDArray&lt;T&gt; *y ){ ... }
-  virtual bool solver_clear( cuNDArray&lt;T&gt; *x ){ ... }
-  virtual bool solver_scal( T a, cuNDArray&lt;T&gt; *x ){ ... }
-  virtual bool solver_axpy( T a, cuNDArray&lt;T&gt; *x, cuNDArray&lt;T&gt; *y ){ ... }
+  virtual bool pre_solve(cuNDArray&lt;T&gt; **rhs)
+   { ... }
+
+  virtual bool post_solve(cuNDArray&lt;T&gt;**)
+   { ... }
+
+  virtual void solver_error( std::string err )
+   { ... }
+
+  virtual T solver_dot( cuNDArray&lt;T&gt; *x, 
+   cuNDArray&lt;T&gt; *y ){ ... }
+
+  virtual bool solver_clear( cuNDArray&lt;T&gt; *x )
+   { ... }
+
+  virtual bool solver_scal( T a, 
+   cuNDArray&lt;T&gt; *x ){ ... }
+
+  virtual bool solver_axpy( T a, cuNDArray&lt;T&gt; *x, 
+   cuNDArray&lt;T&gt; *y ){ ... }
 };
 
 </programlisting>The overall inheritance hierachy is modelled and implemented
@@ -2792,11 +2824,11 @@ public:
         </sect3>
       </sect2>
 
-      <sect2>
-        <title xml:id="sect.nonlinear_solvers">Non-linear Solvers</title>
+      <sect2 xml:id="sect.nonlinear_solvers">
+        <title>Non-linear Solvers</title>
 
         <sect3>
-          <title>Split Bregman Solver for l1-regularized Problems</title>
+          <title>Split Bregman Solver for L1-regularized Problems</title>
 
           <para>The Gadgetron includes two Split Bregman solvers to solve
           respectively</para>
@@ -2804,12 +2836,13 @@ public:
           <informalequation>
             <mediaobject>
               <imageobject role="html">
-                <imagedata fileref="math/sb.jpg" format="JPEG" width="3in"/>
+                <imagedata fileref="figs/math/sb.jpg" format="JPEG"
+                           width="3in"></imagedata>
               </imageobject>
 
               <imageobject role="fo">
-                <imagedata fileref="../../../doc/manual/math/sb.jpg"
-                           format="JPEG" width=" 3in"/>
+                <imagedata fileref="figs/math/sb.jpg" format="JPEG"
+                           width="3in"></imagedata>
               </imageobject>
             </mediaobject>
           </informalequation>
@@ -2821,7 +2854,7 @@ public:
           <filename>sbcSolver.h</filename>. The Split Bregman formulation to
           solve the above-mentioned minimization problems were chosen as they
           integrate nicely with the linear conjugate solver desribed above
-          (<xref linkend="sect.linear_solvers"/>). In fact, most of the work
+          (<xref linkend="sect.linear_solvers" />). In fact, most of the work
           in the two Split Bregman solvers is performed by a linear inner
           solver (e.g. a conjugate gradient solver), but the input (right hand
           side) to the inner solver varies from iteration to iteration.</para>
@@ -2875,11 +2908,15 @@ public:
 </programlisting><programlisting>// Defined in cuSBSolver.h
 
 template &lt;class REAL, class T&gt; 
-class cuSBSolver : public sbSolver&lt; REAL, T, cuNDArray&lt;REAL&gt;, cuNDArray&lt;T&gt; &gt;
+class cuSBSolver 
+: public sbSolver&lt; REAL, T, cuNDArray&lt;REAL&gt;, cuNDArray&lt;T&gt; &gt;
 {
 public:
   
-  cuSBSolver() : sbSolver&lt; REAL, T, cuNDArray&lt;REAL&gt;, cuNDArray&lt;T&gt; &gt;() { ... }
+  cuSBSolver() 
+   : sbSolver&lt; REAL, T, cuNDArray&lt;REAL&gt;, cuNDArray&lt;T&gt; &gt;() 
+   { ... }
+
   virtual ~cuSBSolver() {}
 
   // Implementation of pure virtual functions
@@ -3372,16 +3409,6 @@ struct GadgetMessageAcquisition
       </sect2>
 
       <sect2>
-        <title>Image Processing Gadgets</title>
-
-        <para>TSS, please add some description</para>
-
-        <para>Let us leave these out for the initial submisison. Hopefully I
-        will find the time to finish the implementation during the
-        review...</para>
-      </sect2>
-
-      <sect2>
         <title>Python Gadgets</title>
 
         <para>The Gadgetron provides a mechanism to prototype development in
@@ -3696,7 +3723,8 @@ mySeries = 1;</programlisting>
 
         <para>Start by creating a new folder for the library:</para>
 
-        <screen><prompt>user@mycomputer:~/temp$</prompt> <userinput>mkdir gadgetron_examplelib; cd gadgetron_examplelib</userinput></screen>
+        <screen><prompt>user@mycomputer:~/temp$</prompt> <userinput>mkdir gadgetron_examplelib
+user@mycomputer:~/temp$ cd gadgetron_examplelib</userinput></screen>
 
         <para>We start by creating the class
         <classname>ThresholdGadget</classname>. Create the following 3 files:
@@ -4893,8 +4921,9 @@ protected:
       reuses several of the gadgets we have seen in use already for the
       Cartesian Grappa implementation above (<xref linkend="sect.grappa" />).
       An overview of the non-Cartesian Sense gadget chain is given in figure
-      <xref linkend="fig.cgsense"/>. <figure xml:id="fig.cgsense">
+      <xref linkend="fig.cgsense" />. <figure xml:id="fig.cgsense">
           <title>Gadgetron Chain for Non-Cartesian Sense</title>
+
           <mediaobject>
             <imageobject role="html">
               <imagedata align="left" fileref="figs/cgsense.png" format="PNG"
@@ -4988,7 +5017,7 @@ user@host$
           <mediaobject>
             <imageobject>
               <imagedata fileref="figs/examplecgsenseresult.png" format="PNG"
-                         width="3in"/>
+                         width="3in"></imagedata>
             </imageobject>
           </mediaobject>
         </figure></para>
@@ -4999,7 +5028,7 @@ user@host$
     <title>Standalone Applications</title>
 
     <para>This chapter demonstrates how to use the Gadgetron toolboxes (<xref
-    linkend="sect.toolboxes"/>) to build standalone applications. The
+    linkend="sect.toolboxes" />) to build standalone applications. The
     following non-exhaustive examples are build with the Gadgetron and
     binaries should consequently be available in
     <envar>$GADGETRON_HOME/bin</envar>. You need a CUDA enabled GPU on your
@@ -5062,7 +5091,7 @@ user@host$
       two spatial directions to implement the regularization terms.</para>
 
       <para>We reuse the Shepp-Logan data from the image denoising experiement
-      above (<xref linkend="sect.image_denoising"/>).</para>
+      above (<xref linkend="sect.image_denoising" />).</para>
 
       <para>First we generate a blurry Shepp-Logan phantom by convolution with
       a Gaussian kernel. This is easily achieved using the function
@@ -5151,14 +5180,16 @@ user@host$</screen>
 
       <para>Again we use the Shepp-Logan data downloaded for the image
       denoising experiement above (<xref
-      linkend="sect.image_denoising"/>).</para>
+      linkend="sect.image_denoising" />).</para>
 
       <para>Run the NFFT followed by the NFFT<superscript>H</superscript>. We
       use an oversampled matrix size of 384, 128 profiles in k-space
       (undersampling) with 384 samples each. The NFFT convolution kernel width
       is set to 5.5.</para>
 
-      <screen>user@host$ nfft -d shepp_logan_256_256_no_noise.real -o 384 -p 128 -s 384 -k 5.5
+      <screen>user@host$ nfft -d shepp_logan_256_256_no_noise.real \ 
+   -o 384 -p 128 -s 384 -k 5.5
+
  Running reconstruction with the following parameters: 
 ---------------------------------------------------- 
   Input image file name (.real)  : shepp_logan_256_256_no_noise.real 
