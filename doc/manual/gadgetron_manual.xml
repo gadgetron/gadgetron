@@ -32,13 +32,12 @@
     <sect1>
       <title>What is Gadgetron</title>
 
-      <para>The Gadgetron framework is a streaming data processing framework
-      for medical image reconstruction. It has been developed to enable easy
-      prototyping, testing, and deployment of new image reconstruction
-      algorithms. The framework contains a wide range of toolboxes with common
-      data structures and algorithms that can be used within the streaming
-      framework itself or as shared libraries in standalone/3rd party
-      applications.</para>
+      <para>The Gadgetron is a streaming data processing framework for medical
+      image reconstruction. It has been developed to enable easy prototyping,
+      testing, and deployment of new image reconstruction algorithms. The
+      framework contains a wide range of toolboxes with common data structures
+      and algorithms that can be used within the streaming framework itself or
+      as shared libraries in standalone/3rd party applications.</para>
 
       <para>This document serves as an introduction to the Gadgetron framework
       and provides some "getting started" examples of using it. A scientific
@@ -65,7 +64,7 @@
       X, and Windows 7. Compilation instructions for these platforms are
       provided below. Generally speaking, the Gadgetron is easiest set up on
       Linux since all dependencies are readily available. If you want to get
-      quickly started with the Gadgetron and happen to not be using Linux, it
+      started quickly with the Gadgetron and happen to not be using Linux, it
       is easy to install Ubuntu (our preferred Linux distribution) in a
       virtual machine (e.g. VirtualBox, <uri type="website"
       xlink:href="https://www.virtualbox.org/">https://www.virtualbox.org/</uri>)
@@ -174,7 +173,7 @@
           <listitem>
             <para><emphasis>QT4</emphasis> (optional). A few standalone and
             Gadgetron client example applications use QT for creating user
-            interfaces. It comes packages with most Linux distributions, but
+            interfaces. It comes packaged with most Linux distributions, but
             can otherwise be obtained from <uri type="website"
             xlink:href="http://qt.nokia.com/">http://qt.nokia.com/</uri> for
             all platforms.</para>
@@ -218,15 +217,16 @@
         <title>Linux Installation Instructions</title>
 
         <para>Linux is preferred operating system to get started with the
-        Gadgetron quickly. All of the required dependencies are included in
-        most major Linux distributions and can be installed easily and without
-        having to compile anything. In the following sections we walk you
-        through the required steps to set up a full Gadgetron installation. We
-        assume that you are starting with a freshly installed Ubuntu 11.10
-        available from the Ubuntu website (http://www.ubuntu.com). If you
-        don't have a machine available for installing Ubuntu, you can always
-        try it out in a virtual machine using virtualization software such as
-        VirtualBox (<uri type="website"
+        Gadgetron. All of the required dependencies are included in most major
+        Linux distributions and can be installed easily and without having to
+        compile anything. In the following sections we walk you through the
+        required steps to set up a full Gadgetron installation. We assume that
+        you are starting with a freshly installed Ubuntu 11.10 available from
+        the Ubuntu website (<uri
+        xlink:href="http://www.ubuntu.com">http://www.ubuntu.com</uri>). If
+        you don't have a machine available for installing Ubuntu, you can
+        always try it out in a virtual machine using virtualization software
+        such as VirtualBox (<uri type="website"
         xlink:href="https://www.virtualbox.org/">https://www.virtualbox.org/</uri>).</para>
 
         <para>If you would like to use the GPU components included in the
@@ -237,48 +237,38 @@
         <para>First install all dependencies for Gadgetron. The following will
         install everything you need:</para>
 
-        <screen>
-      <prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install doxygen cmake \
-      libqt4-dev libglew1.6-dev \
-      docbook5-xml docbook-xsl-doc-pdf \
-      docbook-xsl-doc-html docbook-xsl-ns xsltproc \
-      fop git-core libboost-dev libboost-python-dev \
-      libfftw3-dev libace-dev python-dev python-numpy \
-      freeglut3-dev libxi-dev liblapack-dev build-essential</userinput>
-    </screen>
+        <screen><prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install doxygen cmake \
+ libqt4-dev libglew1.6-dev \
+ docbook5-xml docbook-xsl-doc-pdf \
+ docbook-xsl-doc-html docbook-xsl-ns xsltproc \
+ fop git-core libboost-dev libboost-python-dev \
+ libfftw3-dev libace-dev python-dev python-numpy \
+ freeglut3-dev libxi-dev liblapack-dev build-essential</userinput>   </screen>
 
         <para>Now download the Gadgetron archive and unpack it somewhere. If
         you have access to a git repository, you can get the code with:</para>
 
-        <screen>
-      <prompt>user@mycomputer:~$</prompt> <userinput>git clone ssh://user@hostname/path/gadgetron.git</userinput>
-    </screen>
+        <screen><prompt>user@mycomputer:~$</prompt> <userinput>git clone ssh://user@hostname/path/gadgetron.git</userinput></screen>
 
         <para>Configure and build the Gadgetron:</para>
 
-        <screen>
-      <prompt>user@mycomputer:~$</prompt> <userinput>cd gadgetron</userinput>
-      <prompt>user@mycomputer:~/gadgetron$</prompt> <userinput>mkdir build</userinput>
-      <prompt>user@mycomputer:~/gadgetron$</prompt> <userinput>cd build</userinput>
-      <prompt>user@mycomputer:~/gadgetron/build$</prompt> <userinput>cmake ../</userinput>
-      <prompt>user@mycomputer:~/gadgetron/build$</prompt> <userinput>make</userinput>
-    </screen>
+        <screen><prompt>user@mycomputer:~$</prompt> <userinput>cd gadgetron</userinput>
+<prompt>user@mycomputer:~/gadgetron$</prompt> <userinput>mkdir build</userinput>
+<prompt>user@mycomputer:~/gadgetron$</prompt> <userinput>cd build</userinput>
+<prompt>user@mycomputer:~/gadgetron/build$</prompt> <userinput>cmake ../
+</userinput><prompt>user@mycomputer:~/gadgetron/build$</prompt> <userinput>make</userinput>  </screen>
 
         <para>Install (default location is
         <filename>/usr/local/gadgetron</filename>):</para>
 
-        <screen>
-      <prompt>user@mycomputer:~/gadgetron/build$</prompt> <userinput>sudo make install</userinput>
-   </screen>
+        <screen><prompt>user@mycomputer:~/gadgetron/build$</prompt> <userinput>sudo make install</userinput> </screen>
 
         <para>The final step is to add/modify a few environment variables in
         your <filename>~/.bashrc</filename> file.</para>
 
-        <programlisting>
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gadgetron/lib
+        <programlisting>export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gadgetron/lib
 export PATH=$PATH:/usr/local/gadgetron/bin
-export GADGETRON_HOME=/usr/local/gadgetron
-       </programlisting>
+export GADGETRON_HOME=/usr/local/gadgetron     </programlisting>
 
         <para>You are now set up to run a simple example reconstruction as
         outlined in <xref linkend="sect.simpleexample" />.</para>
@@ -290,44 +280,36 @@ export GADGETRON_HOME=/usr/local/gadgetron
           longer necessary to install the developers driver from Nvidia. The
           one included with Ubuntu supports CUDA. To install type:</para>
 
-          <screen>
-<prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install nvidia-current \
-nvidia-current-dev nvidia-current-updates \
-nvidia-current-updates-dev</userinput>
-      </screen>
+          <screen><prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install nvidia-current \
+  nvidia-current-dev nvidia-current-updates \
+  nvidia-current-updates-dev</userinput>    </screen>
 
           <para>We need to install gcc 4.4 since Ubuntu comes preconfigured
           with gcc 4.6, which is not compatible with the current versions of
           the CUDA nvcc compiler.</para>
 
-          <screen>
-<prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install gcc-4.4 g++-4.4 build-essential</userinput>
-      </screen>
+          <screen><prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install \
+  gcc-4.4 g++-4.4 build-essential</userinput>   </screen>
 
           <para>Set up alternative systems to allow easy switching between the
           two versions of gcc/g++</para>
 
-          <screen>
-<prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives \
+          <screen><prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives \
  --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 \
  --slave /usr/bin/g++ g++ /usr/bin/g++-4.6</userinput>
+
 <prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives \
  --install /usr/bin/gcc gcc /usr/bin/gcc-4.4 60 \
- --slave /usr/bin/g++ g++ /usr/bin/g++-4.4</userinput>
-      </screen>
+ --slave /usr/bin/g++ g++ /usr/bin/g++-4.4</userinput>    </screen>
 
           <para>Check your gcc compiler (should now be version 4.4.6):</para>
 
-          <screen>
-<prompt>user@mycomputer:~$</prompt> <userinput>gcc -v</userinput>
-      </screen>
+          <screen><prompt>user@mycomputer:~$</prompt> <userinput>gcc -v</userinput>      </screen>
 
           <para>When you want to switch between the two compiler
           versions:</para>
 
-          <screen>
-<prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives --config gcc</userinput>
-      </screen>
+          <screen><prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives --config gcc</userinput>      </screen>
 
           <para>The final step is to actually install CUDA and CULA. Download
           the following files:</para>
@@ -350,19 +332,17 @@ nvidia-current-updates-dev</userinput>
           <para>Go to the folder where the files were downloaded and
           type:</para>
 
-          <screen>
-<prompt>user@mycomputer:~$</prompt> <userinput>chmod +x cudatoolkit_4.0.17_linux_64_ubuntu10.10.run</userinput>
-<prompt>user@mycomputer:~$</prompt> <userinput>sudo ./cudatoolkit_4.0.17_linux_64_ubuntu10.10.run</userinput>
-<prompt>user@mycomputer:~$</prompt> <userinput>chmod +x cula_dense_free_R13a-linux64.run</userinput>
-<prompt>user@mycomputer:~$</prompt> <userinput>sudo ./cula_dense_free_R13a-linux64.run</userinput>
-      </screen>
+          <screen><prompt>user@c:~$</prompt> <userinput>chmod +x cudatoolkit_4.0.17_linux_64_ubuntu10.10.run</userinput>
+<prompt>user@c:~$</prompt> <userinput>sudo ./cudatoolkit_4.0.17_linux_64_ubuntu10.10.run</userinput>
+<prompt>user@c:~$</prompt> <userinput>chmod +x cula_dense_free_R13a-linux64.run</userinput>
+<prompt>user@c:~$</prompt> <userinput>sudo ./cula_dense_free_R13a-linux64.run</userinput>
+</screen>
 
           <para>Follow the instructions. When you are done with the
           installation you may want to add the following to your
           <filename>~/.bashrc</filename> file.</para>
 
-          <programlisting>
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64
+          <programlisting>export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib64
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda/lib
 export CULA_ROOT="/usr/local/cula"
 export CULA_INC_PATH="$CULA_ROOT/include"
@@ -370,8 +350,7 @@ export CULA_BIN_PATH_32="$CULA_ROOT/bin"
 export CULA_BIN_PATH_64="$CULA_ROOT/bin64"
 export CULA_LIB_PATH_32="$CULA_ROOT/lib"
 export CULA_LIB_PATH_64="$CULA_ROOT/lib64"
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CULA_LIB_PATH_64
-    </programlisting>
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CULA_LIB_PATH_64    </programlisting>
 
           <para>You are now ready to compile and run CUDA (and CULA)
           applications. You may want to download the CUDA SDK from Nvidia to
@@ -416,25 +395,25 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CULA_LIB_PATH_64
             Python installed, but it is not a complete distribution and if you
             would like to do Python development with the Gadgetron, you need
             to update. If you are already using Python for signal processing,
-            you may already have the installed components installed. If you
+            you may already have the required components installed. If you
             already have <package>numpy</package> and <package>SciPy</package>
             installed, you may be able to skip this step. If you do not wish
             to use Python, you can also skip this step.</para>
 
-            <screen>$ sudo port install python27 py27-numpy py27-scipy</screen>
+            <screen>$ <userinput>sudo port install python27 py27-numpy py27-scipy</userinput></screen>
 
             <para>This should install Python 2.7. Now select Python 2.7 as as
             the active Python installation:</para>
 
-            <screen>$ sudo port select python python27</screen>
+            <screen>$ <userinput>sudo port select python python27</userinput></screen>
 
             <para>Now to make sure the build system finds the right version of
             Python we need to edit a couple of symbolic links manually:</para>
 
-            <screen>$ cd /System/Library/Frameworks/Python.framework/Versions
-$ sudo ln -s /opt/local/Library/Frameworks/Python.framework/Versions/2.7
-$ sudo rm Current
-$ sudo ln -s 2.7 Current</screen>
+            <screen>$ <userinput>cd /System/Library/Frameworks/Python.framework/Versions</userinput>
+$ <userinput>sudo ln -s /opt/local/Library/Frameworks/Python.framework/Versions/2.7</userinput>
+$ <userinput>sudo rm Current</userinput>
+$ <userinput>sudo ln -s 2.7 Current</userinput></screen>
           </listitem>
 
           <listitem>
@@ -443,18 +422,18 @@ $ sudo ln -s 2.7 Current</screen>
             install Boost with or without boost_python. If you would like
             Python:</para>
 
-            <screen>$ sudo port install boost +python27</screen>
+            <screen>$ <userinput>sudo port install boost +python27</userinput></screen>
 
             <para>If you don't need Python support:</para>
 
-            <screen>$ sudo port install boost</screen>
+            <screen>$ <userinput>sudo port install boost</userinput></screen>
           </listitem>
 
           <listitem>
             <para>Now we can install the rest of the packages:</para>
 
-            <screen>$ sudo port install git-core cmake libACE \
-fftw-3-single fftw-3 qt4-mac-devel</screen>
+            <screen>$ <userinput>sudo port install git-core cmake libACE \
+fftw-3-single fftw-3 qt4-mac-devel</userinput></screen>
 
             <para>This may take quite a long time (hours).</para>
           </listitem>
@@ -487,47 +466,47 @@ fftw-3-single fftw-3 qt4-mac-devel</screen>
           <listitem>
             <para>Compiling the Gadgetron:</para>
 
-            <screen><prompt>$</prompt> cd gadgetron
-$ mkdir build
-$ cd build
-$ cmake -DPYTHON_NUMPY_INCLUDE_DIR= \
-/opt/local/Library/Frameworks/Python.framework \
-/Versions/2.7/lib/python2.7/site-packages/numpy/core/include ../
-$ make
-$ sudo make install</screen>
+            <screen><prompt>$</prompt> <userinput>cd gadgetron</userinput>
+$ <userinput>mkdir build</userinput>
+$ <userinput>cd build</userinput>
+$ <userinput>cmake -DPYTHON_NUMPY_INCLUDE_DIR= \
+  /opt/local/Library/Frameworks/Python.framework \
+  /Versions/2.7/lib/python2.7/site-packages/numpy/core/include ../</userinput>
+$ <userinput>make</userinput>
+$ <userinput>sudo make install</userinput></screen>
 
             <para>The long path for the <package>numpy</package> header files
             is only needed if you want Python support. You can avoid this by
             creating a symbolic link:</para>
 
-            <screen>$ cd /opt/local/Library/Frameworks/Python.framework
-$ cd Versions/2.7/include/python2.7
-$ sudo ln -s ../../lib/python2.7/site-packages/numpy/core/include/numpy</screen>
+            <screen>$ <userinput>cd /opt/local/Library/Frameworks/Python.framework</userinput>
+$ <userinput>cd Versions/2.7/include/python2.7</userinput>
+$ <userinput>sudo ln -s ../../lib/python2.7/site-packages/numpy/core/include/numpy</userinput></screen>
 
             <para>After creating this link you should be able to compile with
             the following:</para>
 
-            <screen><prompt>$</prompt> cd gadgetron
-$ mkdir build
-$ cd build
-$ cmake ../
-$ make
-$ sudo make install</screen>
+            <screen><prompt>$</prompt> <userinput>cd gadgetron</userinput>
+$ <userinput>mkdir build</userinput>
+$ <userinput>cd build</userinput>
+$ <userinput>cmake ../</userinput>
+$ <userinput>make</userinput>
+$ <userinput>sudo make install</userinput></screen>
           </listitem>
 
           <listitem>
             <para>Set environment variables:</para>
 
-            <screen>$ export GADGETRON_HOME=/usr/local/gadgetron
-$ export PATH=$PATH:/usr/local/gadgetron/bin
-$ export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/gadgetron/lib</screen>
+            <screen>$ <userinput>export GADGETRON_HOME=/usr/local/gadgetron</userinput>
+$ <userinput>export PATH=$PATH:/usr/local/gadgetron/bin</userinput>
+$ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/gadgetron/lib</userinput></screen>
 
             <para>You may wish to add these lines to
             <filename>~/.bash_profile</filename>, You may also want to add
             paths to CUDA and CULA libraries if you are using those:</para>
 
-            <screen>$ export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/cula/lib64
-$ export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/cuda/lib</screen>
+            <screen>$ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/cula/lib64</userinput>
+$ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/cuda/lib</userinput></screen>
           </listitem>
 
           <listitem>
@@ -644,10 +623,9 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
             <para>Add <varname>PYTHON_ROOT</varname> environment
             variable</para>
 
-            <para>From<uri
-            xlink:href="http://www.lfd.uci.edu/~gohlke/pythonlibs/">
-            http://www.lfd.uci.edu/~gohlke/pythonlibs/</uri> download and
-            install the following:</para>
+            <para>From <uri
+            xlink:href="http://www.lfd.uci.edu/~gohlke/pythonlibs/">http://www.lfd.uci.edu/~gohlke/pythonlibs/</uri>
+            download and install the following:</para>
 
             <para><itemizedlist>
                 <listitem>
@@ -699,7 +677,7 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
 
             <para>Type <command>.\b2 --with-python --build-type=complete
             address-model=64</command> (This only builds the boost_python
-            library add others as needed)</para>
+            library, add others as needed)</para>
 
             <para>Add <filename>C:\Libraries\boost_1_48_0\stage\lib</filename>
             to <varname>PATH</varname></para>
@@ -759,17 +737,17 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
 
             <para>Specify the following environment variables:</para>
 
-            <para><varname>BLAS_CALBLAS</varname> =
-            <filename>C:/Libraries/acml4.4.0/win64/lib/libacml.lib</filename></para>
+            <programlisting>BLAS_CALBLAS= \
+  C:/Libraries/acml4.4.0/win64/lib/libacml.lib
 
-            <para><varname>BLAS_acml_LIBRARY</varname> =
-            <filename>C:/Libraries/acml4.4.0/win64/lib/libacml_dll.lib</filename></para>
+BLAS_acml_LIBRARY= \
+  C:/Libraries/acml4.4.0/win64/lib/libacml_dll.lib
 
-            <para><varname>BLAS_acml_mp_LIBRARY</varname> =
-            <filename>C:/Libraries/acml4.4.0/win64_mp/lib/libacml_mp_dll.lib</filename></para>
+BLAS_acml_mp_LIBRARY= \
+  C:/Libraries/acml4.4.0/win64_mp/lib/libacml_mp_dll.lib
 
-            <para><varname>BLAS_acml_mv_LIBRARY</varname> =
-            <filename>C:/Libraries/acml4.4.0/win64/lib/libacml_mv_dll.lib</filename></para>
+BLAS_acml_mv_LIBRARY= \
+  C:/Libraries/acml4.4.0/win64/lib/libacml_mv_dll.lib</programlisting>
 
             <para>Hit configure</para>
 
@@ -789,7 +767,9 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
 
         <para>Before attempting to run any reconstructions, please set the
         environment variable <varname>GADGETRON_HOME</varname> to point to the
-        installation folder of your Gadgetron installation.</para>
+        installation folder of your Gadgetron installation and make sure that
+        the paths of all dependencies are in your <varname>PATH</varname>
+        environment variable.</para>
       </sect2>
     </sect1>
 
@@ -809,9 +789,7 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
       <para>Start by downloading the dataset and unpacking it. On Linux or Mac
       you would type:</para>
 
-      <screen>
-    <prompt>user@mycomputer:~/temp/test_data$</prompt> <userinput>tar -xzvf simple_gre.tar.gz</userinput>
-  </screen>
+      <screen><prompt>user@mycomputer:~/temp/test_data$</prompt> <userinput>tar -xzvf simple_gre.tar.gz</userinput>  </screen>
 
       <para>There are two files in the dataset;
       <filename>simple_gre.gmr</filename> and
@@ -821,29 +799,25 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
       communication output. In the Gadgetron terminal window simply
       type:</para>
 
-      <screen>
-    <prompt>user@mycomputer:~/temp/gadgetron_out$</prompt> <userinput>gadgetron</userinput>
-  </screen>
+      <screen><prompt>user@mycomputer:~/temp/gadgetron_out$</prompt> <userinput>gadgetron</userinput>  </screen>
 
       <para>In the client window (in the folder where you just unpacked your
       data) type:</para>
 
-      <screen>
-    <prompt>user@mycomputer:~/temp/test_data$</prompt> <userinput>mriclient \
-        -d simple_gre.gmr \
-        -x simple_gre.xml \
-        -c default.xml</userinput>
+      <screen><prompt>user@mycomputer:~/temp/test_data$</prompt> <userinput>mriclient \
+   -d simple_gre.gmr \
+   -x simple_gre.xml \
+   -c default.xml</userinput>
   </screen>
 
       <para>You should now see some logging information both in the Gadgetron
       window and in the client window. Specifically, you should see that
       images are being returned from the Gadgetron:</para>
 
-      <screen>
-user@mycomputer:~/temp/test_data$ mriclient \
+      <screen>user@mycomputer:~/temp/test_data$ <userinput>mriclient \
    -d simple_gre.gmr \
    -x simple_gre.xml \
-   -c default.xml
+   -c default.xml</userinput>
 
 Gadgetron MRI Data Sender
   -- host:            localhost
@@ -866,8 +840,7 @@ Image Writer writing image
 2815, 81, GadgetronConnector, Close Message received
 (2815|140119714780928) Handling close...
 (2815|140119714780928) svc done...
-(2815|140119714780928) Handling close...
-  </screen>
+(2815|140119714780928) Handling close... </screen>
 
       <para>The images are saved in the folder in which you started the
       <application>mriclient</application>. The images are stored in a single
@@ -977,16 +950,14 @@ data = reshape(data,dims');
         <function>process</function>. An abbreviated version of the header
         <filename>Gadget.h</filename> is seen below:</para>
 
-        <programlisting>
-
-class Gadget : public ACE_Task&lt;ACE_MT_SYNCH&gt;
+        <programlisting>class Gadget : public ACE_Task&lt;ACE_MT_SYNCH&gt;
 {
 
 public:
    virtual int svc(void)
    {
       //Pick up package from queue
-	     
+     
       //Call process
       if (this-&gt;process(m) == -1) {
          //Handle error
@@ -1003,9 +974,7 @@ protected:
       return 0;
    }
 
-};
-
-</programlisting>
+};</programlisting>
 
         <para>The data package used by the <classname>ACE_Task</classname> is
         the <classname>ACE_Message_Block</classname>, which is a very basic
@@ -1019,26 +988,20 @@ protected:
         of data, and if so, access that object. Suppose we want to store a
         class named <classname>MyClass</classname>:</para>
 
-        <programlisting>
-
-GadgetContainerMessage&lt;MyClass&gt;* m = 
+        <programlisting>GadgetContainerMessage&lt;MyClass&gt;* m = 
   new GadgetContainerMessage&lt;MyClass&gt;();
 
 MyClass* mc = m-&gt;getObjectPtr();
 
 //Do something with mc
 
-m-&gt;release(); //Delete the message block and containing data
-
-</programlisting>
+m-&gt;release(); //Delete the message block and containing data</programlisting>
 
         <para>When a function receives an
         <classname>ACE_Message_Block</classname> it is possible to check if it
         is of a certain type:</para>
 
-        <programlisting>
-
-int process(ACE_Message_Block* mb)
+        <programlisting>int process(ACE_Message_Block* mb)
 {
   
   GadgetContainerMessage&lt;MyClass&gt;* m = 
@@ -1057,9 +1020,7 @@ int process(ACE_Message_Block* mb)
   mb-&gt;release();
 
   return 0;
-}
-
-</programlisting>
+}</programlisting>
 
         <para>It is possible to chain more than one
         <classname>ACE_Message_Block</classname> together using the
@@ -1067,9 +1028,7 @@ int process(ACE_Message_Block* mb)
         pass multiple arguments into a Gadget and checking if they have the
         appropriate types:</para>
 
-        <programlisting>
-
-int process(ACE_Message_Block* mb)
+        <programlisting>int process(ACE_Message_Block* mb)
 {
   
   GadgetContainerMessage&lt;MyClass&gt;* m1 = 
@@ -1092,9 +1051,7 @@ int process(ACE_Message_Block* mb)
   mb-&gt;release(); //This deletes both message blocks
 
   return 0;
-}
-
-</programlisting>
+}</programlisting>
 
         <para>It gets a bit tedious and error prone to repeat code like the
         above in every Gadget. To overcome this, the Gadgetron comes with a
@@ -1103,9 +1060,7 @@ int process(ACE_Message_Block* mb)
         from <classname>Gadget1</classname>. If you need two arguments, you
         inherit from <classname>Gadget2</classname>:</para>
 
-        <programlisting>
-
-template &lt;class P1, class P2&gt; class Gadget2 : public Gadget
+        <programlisting>template &lt;class P1, class P2&gt; class Gadget2 : public Gadget
 {
 protected:
    int process(ACE_Message_Block* mb)
@@ -1115,9 +1070,7 @@ protected:
 
    virtual int process(GadgetContainerMessage&lt;P1&gt;* m1, 
      GadgetContainerMessage&lt;P2&gt;* m2) = 0;
-};
-
-</programlisting>
+};</programlisting>
 
         <para>The base class performs the type checking for you and only when
         the arguments have been verified, it will call the virtual
@@ -1128,9 +1081,7 @@ protected:
         transform of the first 3 dimensions. First the header file
         <filename>FFTGadget.h</filename></para>
 
-        <programlisting>
-
-#include "gadgetroncore_export.h"
+        <programlisting>#include "gadgetroncore_export.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
@@ -1147,9 +1098,7 @@ public Gadget2&lt;GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &g
      GadgetContainerMessage&lt; GadgetMessageImage&gt;* m1,
      GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2);
 
-};
-
-</programlisting>
+};</programlisting>
 
         <para>Let us walk through the code step by step. The Gadget takes two
         arguments: 1) <classname>GadgetMessageImage</classname>, which is just
@@ -1180,9 +1129,7 @@ public Gadget2&lt;GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &g
 
         <para>The actual implementation looks like this:</para>
 
-        <programlisting>
-
-#include "FFTGadget.h"
+        <programlisting>#include "FFTGadget.h"
 #include "FFT.h"
 
 int FFTGadget::process( 
@@ -1200,9 +1147,7 @@ int FFTGadget::process(
   return GADGET_OK;
 }
 
-GADGET_FACTORY_DECLARE(FFTGadget)
-
-</programlisting>
+GADGET_FACTORY_DECLARE(FFTGadget)</programlisting>
 
         <para>Once we are inside the <function>process</function> function,
         the data has already been converted to the appropriate container
@@ -1303,8 +1248,7 @@ GADGET_FACTORY_DECLARE(FFTGadget)
             &lt;value&gt;2960&lt;/value&gt;
         &lt;/TE&gt;
     &lt;/timing&gt;
-&lt;/gadgetron&gt;
-</programlisting>
+&lt;/gadgetron&gt;</programlisting>
 
           <para>The parameter scripts can have any format, but the convention
           is to have one root element called <varname>gadgetron</varname> and
@@ -1324,12 +1268,11 @@ GADGET_FACTORY_DECLARE(FFTGadget)
   //Other functions
  
   template&lt;typename T&gt; std::vector&lt;T&gt; get(std::string name);
-}
-</programlisting>
+}</programlisting>
 
           <para>This class can be used to access the XML parameters in a
           convenient way. There are multiple examples of this throughout the
-          Gadgetron archive, but one example is give here:</para>
+          Gadgetron archive, but one example is given here:</para>
 
           <programlisting>int MyGadget::process_config(ACE_Message_Block* mb)
 {
@@ -1348,8 +1291,7 @@ GADGET_FACTORY_DECLARE(FFTGadget)
 
 
   return GADGET_OK;
-}
-</programlisting>
+}</programlisting>
 
           <para>In the case of parsing the XML parameters listed above,
           <varname>dims</varname> would contain two values ([128,
@@ -1370,15 +1312,11 @@ GADGET_FACTORY_DECLARE(FFTGadget)
         instance of a <classname>GadgetMessageReader</classname> defined by
         the following abstract class:</para>
 
-        <programlisting>
-
-class GadgetMessageReader
+        <programlisting>class GadgetMessageReader
 {
  public:
   virtual ACE_Message_Block* read(ACE_SOCK_Stream* stream) = 0;
-};
-
-</programlisting>
+};</programlisting>
 
         <para>In order to be able to read a specific type of data, the
         <function>read</function> function must be implemented for that data
@@ -1386,16 +1324,13 @@ class GadgetMessageReader
         <classname>GadgetMessageReader</classname>, which reads an MRI data
         acquisition from the socket.</para>
 
-        <programlisting>
-
-class EXPORTGADGETSCORE MRIAcquisitionReader : public GadgetMessageReader
+        <programlisting>class EXPORTGADGETSCORE MRIAcquisitionReader 
+: public GadgetMessageReader
 {
  public:
   GADGETRON_READER_DECLARE(MRIAcquisitionReader);
   virtual ACE_Message_Block* read(ACE_SOCK_Stream* socket);
-};
-
-</programlisting>
+};</programlisting>
 
         <para>Note the
         <function>GADGETRON_READER_DECLARE(MRIAcquisitionReader)</function>
@@ -1406,9 +1341,7 @@ class EXPORTGADGETSCORE MRIAcquisitionReader : public GadgetMessageReader
         <para>The implementation of this particular reader is as follows (this
         is an abbreviated version without error checking, etc.):</para>
 
-        <programlisting>
-
-ACE_Message_Block* MRIAcquisitionReader::read(ACE_SOCK_Stream* sock)
+        <programlisting>ACE_Message_Block* MRIAcquisitionReader::read(ACE_SOCK_Stream* sock)
 {
 
    GadgetContainerMessage&lt;GadgetMessageAcquisition&gt;* m1 = 
@@ -1435,9 +1368,7 @@ ACE_Message_Block* MRIAcquisitionReader::read(ACE_SOCK_Stream* sock)
    return m1;
 }
 
-GADGETRON_READER_FACTORY_DECLARE(MRIAcquisitionReader)
-
-</programlisting>
+GADGETRON_READER_FACTORY_DECLARE(MRIAcquisitionReader)</programlisting>
 
         <para>The Reader allocates two
         <classname>GadgetContainerMessage</classname> data blocks to contain
@@ -1465,11 +1396,9 @@ GADGETRON_READER_FACTORY_DECLARE(MRIAcquisitionReader)
         a message ID. This is for instance done in this (abbreviated) code
         from an <classname>ImageFinishGadget</classname>:</para>
 
-        <programlisting>
-
-int ImageFinishGadget
+        <programlisting>int ImageFinishGadget
 ::process(GadgetContainerMessage&lt;GadgetMessageImage&gt;* m1,
-	  GadgetContainerMessage&lt; hoNDArray&lt; float &gt; &gt;* m2)
+  GadgetContainerMessage&lt; hoNDArray&lt; float &gt; &gt;* m2)
 {
    GadgetContainerMessage&lt;GadgetMessageIdentifier&gt;* mb =
       new GadgetContainerMessage&lt;GadgetMessageIdentifier&gt;();
@@ -1485,9 +1414,7 @@ int ImageFinishGadget
    }
 
   return GADGET_OK;
-}
-
-</programlisting>
+}</programlisting>
 
         <para>Notice that the Gadget has a reference to the Gadgetron
         framework through the <varname>controller_</varname> member variable,
@@ -1500,39 +1427,32 @@ int ImageFinishGadget
         the <classname>GadgetMessageWriter</classname> associated with this
         ID. A Writer must implement the following abstract class:</para>
 
-        <programlisting>
-
-class GadgetMessageWriter
+        <programlisting>class GadgetMessageWriter
 {
  public:
-  virtual int write(ACE_SOCK_Stream* stream, ACE_Message_Block* mb) = 0;
-};
-
-</programlisting>
+  virtual int write(ACE_SOCK_Stream* stream, 
+                    ACE_Message_Block* mb) = 0;
+};</programlisting>
 
         <para>The Writer is handed control of the socket along with the
         message block. A Writer declaration could look like:</para>
 
-        <programlisting>
-
-class MRIImageWriter : public GadgetMessageWriter
+        <programlisting>class MRIImageWriter : public GadgetMessageWriter
 {
 
 public:
    GADGETRON_WRITER_DECLARE(GadgetMessageWriter);
-   virtual int write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb);
-};
-
-</programlisting>
+   virtual int write(ACE_SOCK_Stream* sock, 
+                     ACE_Message_Block* mb);
+};</programlisting>
 
         <para>Notice again the
         <function>GADGETRON_WRITER_DECLARE(GadgetMessageWriterFLOAT)</function>
         which ensures proper run-time linking behavior. The implementation
         could look like (abbreviated with no error checking, etc.):</para>
 
-        <programlisting>
-
-int MRIImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
+        <programlisting>int MRIImageWriter::write(ACE_SOCK_Stream* sock, 
+                          ACE_Message_Block* mb)
 {
 
    GadgetContainerMessage&lt;GadgetMessageImage&gt;* imagemb = 
@@ -1558,9 +1478,7 @@ int MRIImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
    return 0;
 }
 
-GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
-
-</programlisting>
+GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)</programlisting>
 
         <para>Once again notice the required
         <function>GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)</function>
@@ -1587,9 +1505,7 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
         file that the Gadgetron will read before receiving data. The best way
         to explain the format is by looking at a (simplified) example:</para>
 
-        <programlisting>
-
-&lt;?xml version="1.0" ?&gt;  
+        <programlisting>&lt;?xml version="1.0" ?&gt;  
 &lt;gadgetron&gt;
  
  &lt;readers&gt;
@@ -1639,8 +1555,7 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)
   &lt;/gadget&gt;
  &lt;/stream&gt;
 
-&lt;/gadgetron&gt;
-</programlisting>
+&lt;/gadgetron&gt;</programlisting>
 
         <para>The configuration file format contains 3 sections: 1) Readers,
         2) Writers, 3) Stream (with Gadgets) corresponding to the 3 different
@@ -1723,8 +1638,7 @@ int get_bool_value(const char* name);
 int get_int_value(const char* name);
 double get_double_value(const char* name);
 
-};
-</programlisting>
+};</programlisting>
 
         <para>Additionally it is also possible to specify how many active
         threads there should be in a Gadget. This is specified with:</para>
@@ -1755,7 +1669,7 @@ double get_double_value(const char* name);
 
           <listitem>
             <para>The Gadgetron accepts the connection and creates a new
-            instance of a<classname>GadgetStreamController</classname> (see
+            instance of a <classname>GadgetStreamController</classname> (see
             <xref linkend="fig.gadgetron.architecture" />). After creating the
             <classname>GadgetStreamController</classname> the Gadgetron
             returns to accept connections on the socket such that multiple
@@ -1819,14 +1733,19 @@ double get_double_value(const char* name);
 
 public:
 
-   int open (std::string hostname, std::string port);   
-   int putq  (  ACE_Message_Block * mb ,  ACE_Time_Value *  timeout = 0);
-   int register_reader(unsigned int slot, GadgetMessageReader* reader);
-   int register_writer(unsigned int slot, GadgetMessageWriter* writer);
+ int open (std::string hostname, std::string port);   
+ int putq  (ACE_Message_Block * mb ,  
+     ACE_Time_Value *  timeout = 0);
 
-   int send_gadgetron_configuration_file(std::string config_xml_name);   
-   int send_gadgetron_configuration_script(std::string config_xml_name);
-   int send_gadgetron_parameters(std::string xml_string);
+ int register_reader(unsigned int slot, 
+     GadgetMessageReader* reader);
+
+ int register_writer(unsigned int slot, 
+     GadgetMessageWriter* writer);
+
+ int send_gadgetron_configuration_file(std::string config_xml_name);   
+ int send_gadgetron_configuration_script(std::string config_xml_name);
+ int send_gadgetron_parameters(std::string xml_string);
 };</programlisting>
 
         <para>This class can be used to create simple clients that open a
@@ -1958,8 +1877,7 @@ protected:
 
   //Other private functions
   
-};
-</programlisting>
+};</programlisting>
 
         <para>The CPU (host) definition would look like (abbreviated):</para>
 
@@ -2065,8 +1983,7 @@ m-&gt;release(); //Delete the message block and containing data
   virtual int allocate_memory();
   virtual int deallocate_memory();
   
-};
-</programlisting>
+};</programlisting>
 
           <para>It has a few extra <function>create</function> functions
           compared to the host (CPU) version of this array. Specifically, it
@@ -2134,8 +2051,7 @@ struct double_complext : complext&lt;double&gt;::Type {
   typedef complext&lt;double&gt;::Type Type;
   double_complext(){}
   double_complext( double r, double i ) { vec[0] = r; vec[1] = i; }
-};
-      </programlisting>
+};      </programlisting>
 
         <para>A substancial subset of the C++ arithmetic operators on the
         <classname>vector_td</classname> are defined in
@@ -2145,9 +2061,9 @@ struct double_complext : complext&lt;double&gt;::Type {
         math functionality for the <classname>vector_td</classname> class.
         Many common operations that takes one of more
         <classname>cuNDArray</classname> instances with element type
-        <classname>vector_td</classname> are defined in <filename>
-        ndarray_vector_utilities.h</filename>. We leave it for the readers to
-        explore these utilities on their own.</para>
+        <classname>vector_td</classname> are defined in
+        <filename>ndarray_vector_utilities.h</filename>. We leave it for the
+        readers to explore these utilities on their own.</para>
 
         <para>The <classname>vector_td</classname> can be used in both host
         and device code. As an example of use it is contained in the interface
@@ -2190,8 +2106,7 @@ public:
 protected:
  FFT();
  virtual ~FFT();
-}
-</programlisting>
+};</programlisting>
 
             <para>This class provides simple wrapper function to perform FFTs
             of <classname>hoNDArray</classname>s along a specific dimension or
@@ -2232,8 +2147,7 @@ FFT&lt;float&gt;::instance()-&gt;fft(...);</programlisting>
             wrapping Cuda's FFT routines and defined in
             <filename>cuNDFFT.h</filename>.</para>
 
-            <programlisting>
-template&lt;class T&gt; class EXPORTGPUCORE cuNDFFT
+            <programlisting>template&lt;class T&gt; class EXPORTGPUCORE cuNDFFT
 {
  public:
 
@@ -2280,8 +2194,7 @@ template&lt;class T&gt; class EXPORTGPUCORE cuNDFFT
           <filename>NFFT.h</filename> provided below in abbreviated
           form</para>
 
-          <programlisting>
-template&lt;class REAL, unsigned int D&gt; class EXPORTGPUNFFT NFFT_plan
+          <programlisting>template&lt;class REAL, unsigned int D&gt; class EXPORTGPUNFFT NFFT_plan
 {  
 public:
     
@@ -2333,8 +2246,7 @@ public: // Access to underlying building blocks
   // NFFT deapodization
   bool deapodize( cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *image );
 
-}
-</programlisting>
+}</programlisting>
 
           <para>After a <classname>NFFT_plan</classname> is constructed the
           <function>preprocess</function> function should be called with the
@@ -2382,9 +2294,8 @@ public: // Access to underlying building blocks
   
 private:
   REAL weight_;
-}
-</programlisting>The <classname>MatrixOperator</classname> is templated by two
-        arguments: 1) the basic precision <classname>REAL</classname>
+}</programlisting>The <classname>MatrixOperator</classname> is templated by
+        two arguments: 1) the basic precision <classname>REAL</classname>
         (<classname>e.g. float</classname> or <classname>double</classname>)
         and 2) the <classname>ARRAY_TYPE</classname> (e.g.
         <classname>NDArray</classname>, <classname>hoNDArray</classname>, or
@@ -2423,8 +2334,8 @@ private:
           <para>The section provides a non-exhaustive list of availble matrix
           operators in Gadgetron toolboxes.</para>
 
-          <para>A general implementation strategy for many of the operators
-          the Gadgetron provide is two-fold. We first derive a class, say
+          <para>A general two-level implementation strategy is used for many
+          of the operators the Gadgetron provide. We first derive a class, say
           <classname>IdentityOperator</classname>, from the
           <classname>MatrixOperator</classname> base class. In this derived
           class we implement the pure virtual functions of the base class;
@@ -2513,8 +2424,9 @@ class cuIdentityOperator
               specifies the desired type - which could be identical to
               <classname>REAL</classname> or e.g. a
               <classname>complext&lt;REAL&gt;</classname>. Also notice how the
-              cuIdentitytOperator class definition directly specifies the
-              ARRAY_TYPE of its superclass (in this case to be of type
+              <classname>cuIdentitytOperator</classname> class definition
+              directly specifies the ARRAY_TYPE of its superclass (in this
+              case to be of type
               <classname>cuNDArray&lt;T&gt;</classname>).</para>
             </listitem>
 
@@ -2565,7 +2477,7 @@ class cuIdentityOperator
 
         <para>The Gadgetron 'solvers' toolbox contain both a generic conjugate
         gradient solver to solve linear least squares reconstruction problems
-        (see <xref linkend="sect.linear_solvers" /> ) and a two flavours of a
+        (see <xref linkend="sect.linear_solvers" /> ) and a two flavors of a
         Split Bregman solver for non-linear problems using l1-norms for
         regularization (see <xref linkend="sect.nonlinear_solvers" />).</para>
 
@@ -2602,7 +2514,7 @@ class cuIdentityOperator
           role="bold">p</emphasis> denotes some (possibly blank) prior image
           in the regularization term.</para>
 
-          <para>The closed for solution to the optimization problem is given
+          <para>The closed form solution to the optimization problem is given
           by the linear system of equations:</para>
 
           <informalequation>
@@ -2673,21 +2585,29 @@ public:
   virtual ~cgSolver() {}
 
   virtual int add_matrix_operator( 
-    boost::shared_ptr&lt; matrixOperator&lt;REAL, ARRAY_TYPE&gt; &gt; op ) { ... }
+    boost::shared_ptr&lt; matrixOperator&lt;REAL, ARRAY_TYPE&gt; &gt; op ) 
+    { ... }
 
   virtual int set_preconditioner( 
-    boost::shared_ptr&lt; cgPreconditioner&lt;ARRAY_TYPE&gt; &gt; precond ) { ... }
+    boost::shared_ptr&lt; cgPreconditioner&lt;ARRAY_TYPE&gt; &gt; precond ) 
+    { ... }
 
   virtual void set_limit( REAL limit ) { ... }
-  virtual void set_iterations( unsigned int iterations ) { ... }
+
+  virtual void set_iterations( unsigned int iterations ) 
+    { ... }
 
   virtual bool pre_solve( ARRAY_TYPE **rhs ) { return true; }
   virtual bool post_solve( ARRAY_TYPE **rho ) { return true; }
 
   virtual bool solver_clear( ARRAY_TYPE* ) = 0;
   virtual bool solver_scal( ELEMENT_TYPE, ARRAY_TYPE* ) = 0;
-  virtual bool solver_axpy( ELEMENT_TYPE, ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
+
+  virtual bool solver_axpy( ELEMENT_TYPE, ARRAY_TYPE*, 
+    ARRAY_TYPE* ) = 0;
+
   virtual bool solver_dump( ARRAY_TYPE *rho ) { return true; }
+
   virtual ELEMENT_TYPE solver_dot( ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
 
   virtual boost::shared_ptr&lt;ARRAY_TYPE&gt; solve( ARRAY_TYPE *_rhs )
@@ -2701,9 +2621,7 @@ protected:
   boost::shared_ptr&lt; cgPreconditioner&lt;ARRAY_TYPE&gt; &gt; precond_;
   unsigned int iterations_;
   REAL limit_;
-};
-
-</programlisting><programlisting>// Defined in cuCGSolver.h
+};</programlisting><programlisting>// Defined in cuCGSolver.h
 
 template &lt;class REAL, class T&gt; 
 class cuCGSolver : public cgSolver&lt; REAL, T, cuNDArray&lt;T&gt; &gt;
@@ -2733,11 +2651,9 @@ public:
 
   virtual bool solver_axpy( T a, cuNDArray&lt;T&gt; *x, 
    cuNDArray&lt;T&gt; *y ){ ... }
-};
-
-</programlisting>The overall inheritance hierachy is modelled and implemented
-          similarly to the <classname>matrixOperator</classname> class
-          hierachy described above (see <xref
+};</programlisting>The overall inheritance hierachy is modelled and
+          implemented similarly to the <classname>matrixOperator</classname>
+          class hierachy described above (see <xref
           linkend="sect.matrix_operators" />). To use the solver the user
           creates an instance of the solver for either the host or device
           (e.g. the <classname>cuCGSolver</classname> above for a GPU-based
@@ -2756,7 +2672,7 @@ public:
           <classname>convolutionOperator</classname> to model the blurring and
           a <classname>partialDerivativeOperator</classname> in each spatial
           dimension for regularization. The full code can be found in
-          <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/deblurring/2d/deblur_2d_cg.cpp</filename>.<programlisting>{
+          <envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/deblurring/2d/deblur_2d_cg.cpp</filename>.<programlisting>{
   &lt;&lt; Code that parses the command line 
      and loads the image and kernel from disk &gt;&gt;
 
@@ -2789,9 +2705,15 @@ public:
     
   // Setup conjugate gradient solver
   cuCGSolver&lt;_real, _complext&gt; cg;
-  cg.add_matrix_operator( E );                   // encoding matrix
-  if( kappa&gt;0.0 ) cg.add_matrix_operator( Rx );  // regularization matrix
-  if( kappa&gt;0.0 ) cg.add_matrix_operator( Ry );  // regularization matrix
+
+  // encoding matrix
+  cg.add_matrix_operator( E );
+
+  // regularization matrix                   
+  if( kappa&gt;0.0 ) cg.add_matrix_operator( Rx );
+  
+  // regularization matrix
+  if( kappa&gt;0.0 ) cg.add_matrix_operator( Ry ); 
 
   cg.set_iterations( num_iterations );
   cg.set_limit( 1e-8 );
@@ -2814,9 +2736,7 @@ public:
   
   write_nd_array&lt;_complext&gt;(host_result.get(), 
     (char*)parms.get_parameter('r')-&gt;get_string_value());
-}
-
-</programlisting></para>
+}</programlisting></para>
 
           <para>For an overview of the various standalone applications the
           Gadgetron provides - and instruction on how to run them - we refer
@@ -2870,7 +2790,8 @@ class sbSolver : public solver&lt;ARRAY_TYPE_ELEMENT&gt;
 {
 public:
 
-  sbSolver( int output_mode ) : solver&lt;ARRAY_TYPE_ELEMENT&gt;( output_mode ) 
+  sbSolver( int output_mode ) 
+  : solver&lt;ARRAY_TYPE_ELEMENT&gt;( output_mode ) 
     { ... }
 
   virtual ~sbSolver() {}
@@ -2921,9 +2842,7 @@ public:
 
   // Implementation of pure virtual functions
   ...
-};
-
-</programlisting></para>
+};</programlisting></para>
 
           <para>To run the algorithm on the GPU the user would create an
           instance of a cuSBSolver providing the two template arguments; the
@@ -2938,7 +2857,7 @@ public:
 
           <para>Let us outline the code required to set up the solver for
           TV-based image denoising. The full code can be found in
-          <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/denoising/2d/denoise_TV.cpp</filename>.<programlisting>{
+          <envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/denoising/2d/denoise_TV.cpp</filename>.<programlisting>{
   &lt;&lt; Command line parsing and data loading &gt;&gt;
   
   //
@@ -2979,22 +2898,30 @@ public:
   cuSBSolver&lt;_real,_real&gt; sb;
   sb.set_inner_solver( cg );
   sb.set_encoding_operator( E );
-  //sb.add_regularization_operator( Rx ); // For anisotropic denoising
-  //sb.add_regularization_operator( Ry ); // For anisotropic denoising
-  sb.add_regularization_group_operator( Rx ); // For isotropic denoising
-  sb.add_regularization_group_operator( Ry ); // For isotropic denoising
+  
+  // For anisotropic denoising
+  //sb.add_regularization_operator( Rx ); 
+
+  // For anisotropic denoising
+  //sb.add_regularization_operator( Ry );
+ 
+  // For isotropic denoising
+  sb.add_regularization_group_operator( Rx );
+ 
+  // For isotropic denoising
+  sb.add_regularization_group_operator( Ry );
+ 
   sb.add_group();
   sb.set_image_dimensions(data.get_dimensions());
   
   // Run split-Bregman solver
-  boost::shared_ptr&lt; cuNDArray&lt;_real&gt; &gt; sbresult = sb.solve(&amp;data);
+  boost::shared_ptr&lt; cuNDArray&lt;_real&gt; &gt; sbresult = 
+    sb.solve(&amp;data);
 
   &lt;&lt; do something with the result &gt;&gt;
-}
+}</programlisting></para>
 
-</programlisting></para>
-
-          <para>The constraint Split Bregman solver inherits from the
+          <para>The constrained Split Bregman solver inherits from the
           unconstaint Split Bregman solver is thus defined with an identical
           interface.</para>
         </sect3>
@@ -3036,7 +2963,7 @@ public:
           <title>MRI Data Structures</title>
 
           <para>MRI data is processed in two different phases. In the first
-          phase individual data (k-space) acquisitions is processed while in
+          phase individual data (k-space) acquisitions are processed while in
           the second phase these acquisitions have been combined into images
           (which may still be in k-space). Correspondingly, there are two
           different types of Gadgets that dominate the MRI Gadgets; those who
@@ -3049,8 +2976,7 @@ public:
           two argument types, the main two base classes used are:</para>
 
           <programlisting>Gadget2&lt; GadgetMessageAcquisition, hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;
-Gadget2&lt; GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;
-</programlisting>
+Gadget2&lt; GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;</programlisting>
 
           <para>As seen, they take a data array (which is typically of complex
           float type) and a header describing either the acquisition or the
@@ -3252,8 +3178,8 @@ struct GadgetMessageAcquisition
 
               <para>These Gadgets perform conjugate gradient based
               non-Cartesian SENSE reconstruction (<xref
-              linkend="sect.cgsense" />). They the reconstruction behavior can
-              be controlled with number of properties:</para>
+              linkend="sect.cgsense" />). The reconstruction behavior can be
+              controlled with number of properties:</para>
 
               <programlisting>&lt;gadget&gt;
  &lt;name&gt;GPUCGRadial0&lt;/name&gt;
@@ -3411,11 +3337,12 @@ struct GadgetMessageAcquisition
       <sect2>
         <title>Python Gadgets</title>
 
-        <para>The Gadgetron provides a mechanism to prototype development in
-        Python. We will again be using MRI as the example application.</para>
+        <para>The Gadgetron provides a mechanism to do prototype development
+        in Python. We will again be using MRI as the example
+        application.</para>
 
-        <para>The Python layer through a set of Python Gadgets that can
-        encapsulate a Python module. This is seen in <xref
+        <para>The Python layer is accessed through a set of Python Gadgets
+        that can encapsulate a Python module. This is seen in <xref
         linkend="fig.pythonoverview" />, which illustrates a part of a Gadget
         chain with two Python Gadgets and one C/C++ Gadget. A Gadget chain can
         have any number of Python Gadgets and Python Gadgets can be mixed with
@@ -3706,9 +3633,9 @@ mySeries = 1;</programlisting>
 
         <para>The easiest way to get started making a new Gadget library is to
         follow an example. In this example we create a new Gadget library
-        containing a single Gadget; Gadget
-        <classname>ThresholdGadget</classname>. Its purpose is to set all
-        values below a certain fraction of the max value to zero.</para>
+        containing a single Gadget; <classname>ThresholdGadget</classname>.
+        Its purpose is to set all values below a certain fraction of the max
+        value to zero.</para>
 
         <para>New Gadget libraries can either be created in the Gadgetron
         source tree, which allows easy access to all the other files in the
@@ -3719,12 +3646,12 @@ mySeries = 1;</programlisting>
         tree at some later point in time if desired. We assume that the
         Gadgetron is installed on the machine that you are working on. The
         command line entries, etc. correspond to a Linux console. If you are
-        using Windows you thus may have to adjust a bit.</para>
+        using Windows you have to adjust a bit.</para>
 
         <para>Start by creating a new folder for the library:</para>
 
-        <screen><prompt>user@mycomputer:~/temp$</prompt> <userinput>mkdir gadgetron_examplelib
-user@mycomputer:~/temp$ cd gadgetron_examplelib</userinput></screen>
+        <screen><prompt>user@mycomputer:~/temp$</prompt> <userinput>mkdir gadgetron_examplelib</userinput>
+user@mycomputer:~/temp$ <userinput>cd gadgetron_examplelib</userinput></screen>
 
         <para>We start by creating the class
         <classname>ThresholdGadget</classname>. Create the following 3 files:
@@ -3784,8 +3711,11 @@ int ThresholdGadget::process(
    GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2)
 {
 
-  std::complex&lt;float&gt;* d = m2-&gt;getObjectPtr()-&gt;get_data_ptr();
-  unsigned long int elements =  m2-&gt;getObjectPtr()-&gt;get_number_of_elements();
+  std::complex&lt;float&gt;* d = 
+    m2-&gt;getObjectPtr()-&gt;get_data_ptr();
+
+  unsigned long int elements =  
+    m2-&gt;getObjectPtr()-&gt;get_number_of_elements();
 
   //First find max
   float max = 0.0;
@@ -3981,7 +3911,7 @@ threshold.xml
         <para>Assuming the <application>cmake</application> process was
         successful:</para>
 
-        <screen><prompt>user@mycomputer:build$</prompt> make 
+        <screen><prompt>user@mycomputer:build$</prompt> <userinput>make</userinput> 
 Scanning dependencies of target gadgetronexamplelib
 
 [100%] Building CXX object \
@@ -3990,15 +3920,14 @@ Scanning dependencies of target gadgetronexamplelib
 Linking CXX shared library libgadgetronexamplelib.dylib
 [100%] Built target gadgetronexamplelib
 
-<prompt>user@mycomputer:build$</prompt> make install
+<prompt>user@mycomputer:build$</prompt> <userinput>make install</userinput>
 [100%] Built target gadgetronexamplelib
 Install the project...
 -- Install configuration: ""
 -- Up-to-date: /usr/local/gadgetron/include/ThresholdGadget.h
 -- Up-to-date: /usr/local/gadgetron/include/examplelib_export.h
 -- Installing: /usr/local/gadgetron/lib/libgadgetronexamplelib.so
--- Up-to-date: /usr/local/gadgetron/config/threshold.xml
-</screen>
+-- Up-to-date: /usr/local/gadgetron/config/threshold.xml</screen>
 
         <para>You may have to use <application>sudo</application> for the
         <command>make install</command> command depending on your
@@ -4010,10 +3939,10 @@ Install the project...
         simple reconstruction. After having started up the Gadgetron, run the
         <application>mriclient</application>:</para>
 
-        <screen>user@mycomputer:~/temp/test_data$ mriclient \
+        <screen>user@mycomputer:~/temp/test_data$ <userinput>mriclient \
      -d simple_gre.gmr \
      -x simple_gre.xml \
-     -c threshold.xml
+     -c threshold.xml</userinput>
 
 Gadgetron MRI Data Sender
   -- host:            localhost
@@ -4649,11 +4578,11 @@ process(GadgetContainerMessage&lt;GadgetMessageAcquisition&gt;* m1,
       fields (orientation, etc.) from the acquisition header before it is
       passed on to the Gadget in the stream.</para>
 
-      <para>Next Gadget is the FFTGadget. Since the k-space buffering has been
-      taken care of, the Fourier transform is a relatively simple task. The
-      <function>process</function> function uses the FFTW wrapper class (<xref
-      linkend="sect.ffttoolbox" />) to perform the FFT along the first 3
-      dimensions of the array:</para>
+      <para>Next Gadget is the <classname>FFTGadget</classname>. Since the
+      k-space buffering has been taken care of, the Fourier transform is a
+      relatively simple task. The <function>process</function> function uses
+      the FFTW wrapper class (<xref linkend="sect.ffttoolbox" />) to perform
+      the FFT along the first 3 dimensions of the array:</para>
 
       <programlisting>int FFTGadget::process( 
 GadgetContainerMessage&lt; GadgetMessageImage&gt;* m1,
@@ -4687,7 +4616,7 @@ GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2
     </sect1>
 
     <sect1 xml:id="sect.grappa">
-      <title>Cartesian 2D Parallel MRI (Grappa)</title>
+      <title>Cartesian 2D Parallel MRI (GRAPPA)</title>
 
       <para>The Gadgetron contains a high-throughput 2D Cartesian parallel
       imaging reconstruction (GRAPPA) implemented on the GPU. It is beyond the
@@ -4718,10 +4647,10 @@ GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2
       terminal window) and use the <application>mriclient</application> to
       send the data from another terminal:</para>
 
-      <screen>user@host:~/temp/gadgetron_temp$ mriclient \
+      <screen>user@host:~/temp/gadgetron_temp$ <userinput>mriclient \
          -d gre_tgrappa_rate4.gmr \
          -x gre_tgrappa_rate4.xml \
-         -c grappa.xml
+         -c grappa.xml</userinput>
 
 Gadgetron MRI Data Sender
   -- host:            localhost
@@ -4910,7 +4839,7 @@ protected:
     </sect1>
 
     <sect1 xml:id="sect.cgsense">
-      <title>Non-Cartesian 2D Parallel MRI (Sense)</title>
+      <title>Non-Cartesian 2D Parallel MRI (SENSE)</title>
 
       <para>The Gadgetron includes an implementation of a GPU-based real-time
       non-Cartesian Sense reconstruction published in <citation
@@ -4927,12 +4856,12 @@ protected:
           <mediaobject>
             <imageobject role="html">
               <imagedata align="left" fileref="figs/cgsense.png" format="PNG"
-                         width="5in"></imagedata>
+                         width="3in"></imagedata>
             </imageobject>
 
             <imageobject role="fo">
               <imagedata align="left" fileref="figs/cgsense.png" format="PNG"
-                         width="5in"></imagedata>
+                         width="3in"></imagedata>
             </imageobject>
 
             <textobject>
@@ -4958,8 +4887,9 @@ protected:
       hardware.</para>
 
       <para>To test this configuration please download the 32 channel radial
-      MRI test dataset from <uri type="website"
-      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/">https://sourceforge.net/projects/gadgetron/files/testdata/mri/gre_golden_angle.tar.gz</uri>.
+      MRI test dataset (<filename>gre_golden_angle.tar.gz</filename>) from
+      <uri
+      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/mri/">https://sourceforge.net/projects/gadgetron/files/testdata/mri/</uri>.
       Go to the folder in which you unpacked the data. We assume that you have
       added <envar>$(GADGETRON_HOME)/bin</envar> to your <envar>PATH</envar>
       environment variable. You need a CUDA enable GPU on your system and your
@@ -4973,19 +4903,17 @@ protected:
       another terminal. First start
       <application>gadgetron</application>:</para>
 
-      <screen>user@host$ gadgetron 
-Configuring services
-
-</screen>
+      <screen>user@host$ <userinput>gadgetron</userinput> 
+Configuring services</screen>
 
       <para>If asked, allow the gadgetron application to allow incoming
       network connection. Next start the
       <application>mriclient</application>:</para>
 
-      <screen>user@host$ mriclient \
+      <screen>user@host$ <userinput>mriclient \
          -d gre_golden_angle.gmr \
          -x gre_golden_angle.xml \
-         -c radial_single.xml
+         -c radial_single.xml</userinput>
 
 Gadgetron MRI Data Sender
   -- host:            localhost
@@ -5005,7 +4933,6 @@ Image Writer writing image
 (23577|4300226560) svc done...
 (23577|4300226560) Handling close...
 user@host$
-
 </screen>
 
       <para>Your current folder now holds the reconstructed images. They will
@@ -5044,11 +4971,11 @@ user@host$
       <classname>partialDerivativeOperator</classname> is used for each of the
       two spatial directions to implement the regularization terms. The full
       source code for the example can be found at
-      <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/denoising/2d/denoise_TV.cpp</filename>.</para>
+      <envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/denoising/2d/denoise_TV.cpp</filename>.</para>
 
       <para>You can download some noisy Shepp-Logan phantom test datasets from
-      <uri type="website"
-      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/">https://sourceforge.net/projects/gadgetron/files/testdata/phantom/shepp_logan/shepp.tar.gz</uri>.</para>
+      <uri
+      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/phantom/shepp_logan/shepp.tar.gz">https://sourceforge.net/projects/gadgetron/files/testdata/phantom/shepp_logan/shepp.tar.gz</uri>.</para>
 
       <para>In a terminal, go to the folder in which you unpacked the data. We
       assume that you have added <envar>$(GADGETRON_HOME)/bin</envar> to your
@@ -5056,7 +4983,7 @@ user@host$
 
       <para>Try</para>
 
-      <screen>user@host$ denoise_TV -d shepp_logan_256_256_med_noise.real -O 250 -m 1
+      <screen>user@host$ <userinput>denoise_TV -d shepp_logan_256_256_med_noise.real -O 250 -m 1</userinput>
 Running denoising with the following parameters: 
 ---------------------------------------------------- 
   Noisy image file name (.real)  : shepp_logan_256_256_med_noise.real 
@@ -5067,9 +4994,7 @@ Running denoising with the following parameters:
   Regularization weight (mu)     : 1 
 ---------------------------------------------------- 
 ...
-user@host$
-
-</screen>
+user@host$</screen>
 
       <para>which runs 250 iterations of the solver with a regularization
       weight of 1. The output is saved in the current folder in the file
@@ -5097,16 +5022,14 @@ user@host$
       a Gaussian kernel. This is easily achieved using the function
       <function>mult_M</function> in the
       <classname>convolutionOperator</classname>. Soure code is provided at
-      <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/deblurring/2d/blur_2d.cpp</filename></para>
+      <envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/deblurring/2d/blur_2d.cpp</filename></para>
 
       <para>In a terminal, go to the folder in which you unpacked the Shepp
       Logan phantom.</para>
 
       <para>Try</para>
 
-      <screen>user@host$ blur_2d -d shepp_logan_256_256_no_noise.real
-
-</screen>
+      <screen>user@host$ <userinput>blur_2d -d shepp_logan_256_256_no_noise.real</userinput></screen>
 
       <para>which generates two complex images;
       <filename>blurred_image.cplx</filename> and
@@ -5116,9 +5039,9 @@ user@host$
 
       <para>Now run the conjugate gradient solver. The source code for the
       example can be found in
-      <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/deblurring/2d/deblur_2d_cg.cpp</filename>.</para>
+      <envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/deblurring/2d/deblur_2d_cg.cpp</filename>.</para>
 
-      <screen>user@host$ deblur_2d_cg -K 1e-4
+      <screen>user@host$ <userinput>deblur_2d_cg -K 1e-4</userinput>
  Running deblurring with the following parameters: 
 ---------------------------------------------------- 
   Blurred image file name (.cplx)  : blurred_image.cplx 
@@ -5139,9 +5062,9 @@ user@host$</screen>
 
       <para>Next run the constraint Split Bregman solver. The source code for
       the example can be found in
-      <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/deblurring/2d/deblur_2d_sb.cpp</filename>.</para>
+      <envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/deblurring/2d/deblur_2d_sb.cpp</filename>.</para>
 
-      <screen>user@host$ deblur_2d_sb -O 100 -L 0.5 -M 0.5
+      <screen>user@host$ <userinput>deblur_2d_sb -O 100 -L 0.5 -M 0.5</userinput>
  Running deblurring with the following parameters: 
 ---------------------------------------------------- 
   Blurred image file name (.cplx)  : blurred_image.cplx 
@@ -5174,9 +5097,9 @@ user@host$</screen>
 
       <para>This example shows how to use the forwards and inverse NFFT on a
       2D image. The source code can be found at
-      <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/MRI/nfft/2d/nfft_main.cpp</filename>
+      <envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/MRI/nfft/2d/nfft_main.cpp</filename>
       and
-      <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/MRI/nfft/2d/nffth_main.cpp</filename>.</para>
+      <envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/MRI/nfft/2d/nffth_main.cpp</filename>.</para>
 
       <para>Again we use the Shepp-Logan data downloaded for the image
       denoising experiement above (<xref
@@ -5187,9 +5110,9 @@ user@host$</screen>
       (undersampling) with 384 samples each. The NFFT convolution kernel width
       is set to 5.5.</para>
 
-      <screen>user@host$ nfft -d shepp_logan_256_256_no_noise.real \ 
+      <screen>user@host$ <userinput>nfft -d shepp_logan_256_256_no_noise.real \ 
    -o 384 -p 128 -s 384 -k 5.5
-
+</userinput>
  Running reconstruction with the following parameters: 
 ---------------------------------------------------- 
   Input image file name (.real)  : shepp_logan_256_256_no_noise.real 
@@ -5209,7 +5132,7 @@ Computing nfft (inverse gridding)
 Output result to disk
 user@host$</screen>
 
-      <screen>user@host$ nffth -d samples.cplx -m 256 -o 384 -k 5.5
+      <screen>user@host$ <userinput>nffth -d samples.cplx -m 256 -o 384 -k 5.5</userinput>
  Running reconstruction with the following parameters: 
 ---------------------------------------------------- 
   Input samples file name (.cplx)  : samples.cplx 
