@@ -42,7 +42,7 @@
 
       <para>This document serves as an introduction to the Gadgetron framework
       and provides some "getting started" examples of using it. A scientific
-      paper is also available [<xref linkend="hansen12"/>].</para>
+      paper is also available <xref linkend="hansen12"/>.</para>
 
       <para>Although the Gadgetron is a generic, multi-modality image
       reconstruction framework, it was initially developed to support the work
@@ -51,7 +51,7 @@
       CPU architectures, but also using commodity graphics hardware (GPUs).
       Some examples that are made publicly available through the Gadgetron
       release include fast regridding on the GPU <citation><xref
-      linkend="sorensen08"/></citation>, Cartesian parallel on the GPU
+      linkend="sorensen08"/></citation>, Cartesian parallel imaging on the GPU
       <citation><xref linkend="hansen08"/></citation>, and non-Cartesian
       parallel imaging on the GPU <citation><xref
       linkend="sorensen09"/></citation>.</para>
@@ -99,8 +99,8 @@
         <para>The Gadgetron depends on a number of libraries that can either
         be downloaded for free or that may already be part of the installation
         on your workstation. If you are working on a Linux platform you should
-        be able to install everything you need without compiling anything.
-        Here is a list of the components that you will need. Some are
+        be able to install all dependencies without compiling anything. The
+        following is a list of the components that you will need. Some are
         optional.</para>
 
         <para>To install these components please follow the platform specific
@@ -1989,7 +1989,8 @@ struct double_complext : complext&lt;double&gt;::Type {
 
         <para>The <classname>vector_td</classname> can be used in both host
         and device code. As an example of use it is contained in the interface
-        of the non-Cartesian FFT described shortly.</para>
+        of the non-Cartesian FFT described in <xref
+        linkend="sect.NFFT"/>.</para>
       </sect2>
 
       <sect2 xml:id="sect.ffttoolbox">
@@ -2097,7 +2098,7 @@ template&lt;class T&gt; class EXPORTGPUCORE cuNDFFT
           </sect4>
         </sect3>
 
-        <sect3>
+        <sect3 xml:id="sect.NFFT">
           <title>Non-Cartesian FFT</title>
 
           <para>A dedicated GPU-implementation of the NUFFT - often referred
@@ -2112,17 +2113,25 @@ public:
     
   // Constructors
   NFFT_plan();
-  NFFT_plan( typename uintd&lt;D&gt;::Type matrix_size, typename uintd&lt;D&gt;::Type matrix_size_os, REAL W, int device = -1 );
+  NFFT_plan( typename uintd&lt;D&gt;::Type matrix_size, 
+             typename uintd&lt;D&gt;::Type matrix_size_os, 
+             REAL W, int device = -1 );
 
   // Destructor
   virtual ~NFFT_plan();
 
   // Replan 
-  bool setup( typename uintd&lt;D&gt;::Type matrix_size, typename uintd&lt;D&gt;::Type matrix_size_os, REAL W, int device = -1 );
+  bool setup( typename uintd&lt;D&gt;::Type matrix_size, 
+              typename uintd&lt;D&gt;::Type matrix_size_os, 
+              REAL W, int device = -1 );
     
   // Preprocess trajectory
-  enum NFFT_prep_mode { NFFT_PREP_ALL, NFFT_PREP_FORWARDS, NFFT_PREP_BACKWARDS };
-  bool preprocess( cuNDArray&lt;typename reald&lt;REAL,D&gt;::Type&gt; *trajectory, NFFT_prep_mode mode  );
+  enum NFFT_prep_mode { NFFT_PREP_ALL, 
+                        NFFT_PREP_FORWARDS, 
+                        NFFT_PREP_BACKWARDS };
+  
+  bool preprocess( cuNDArray&lt;typename reald&lt;REAL,D&gt;::Type&gt; *trajectory, 
+                   NFFT_prep_mode mode  );
     
   // Execute NFFT
   enum NFFT_comp_mode { NFFT_FORWARDS, NFFT_BACKWARDS };
@@ -2139,10 +2148,12 @@ public: // Access to underlying building blocks
   // NFFT convolution
   bool convolve( cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *samples, 
                  cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *image, 
-                 cuNDArray&lt;REAL&gt; *weights, NFFT_comp_mode mode, bool accumulate = false );
+                 cuNDArray&lt;REAL&gt; *weights, NFFT_comp_mode mode, 
+                 bool accumulate = false );
     
   // NFFT FFT
-  bool fft( cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *data, NFFT_comp_mode mode, bool do_scale = true );
+  bool fft( cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *data, 
+            NFFT_comp_mode mode, bool do_scale = true );
   
   // NFFT deapodization
   bool deapodize( cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *image );
@@ -2163,8 +2174,8 @@ public: // Access to underlying building blocks
 
           <para><remark>Please note</remark>. The NFFT performs significantly
           better on GPUs supporting Cuda's shader model 2.0 or newer compared
-          to devices supporting only shader models 1.x. The reason is we rely
-          on the inherent caching of global memory - available only on
+          to devices supporting only shader models 1.x. The reason being that
+          we rely on the inherent caching of global memory - available only on
           hardware supporting at least shader model 2.0.</para>
         </sect3>
       </sect2>
@@ -2185,9 +2196,14 @@ public: // Access to underlying building blocks
   inline void set_weight( REAL weight ){ weight_ = weight; }
   inline REAL get_weight(){ return weight_; }
 
-  virtual int mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
-  virtual int mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
-  virtual int mult_MH_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
+  virtual int mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, 
+                      bool accumulate = false) = 0;
+  
+  virtual int mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, 
+                       bool accumulate = false) = 0;
+  
+  virtual int mult_MH_M( ARRAY_TYPE* in, ARRAY_TYPE* out, 
+                         bool accumulate = false) = 0;
   
 private:
   REAL weight_;
@@ -2195,8 +2211,8 @@ private:
 </programlisting>The <classname>MatrixOperator</classname> is templated by two
         arguments: 1) the basic precision <classname>REAL</classname>
         (<classname>e.g. float</classname> or <classname>double</classname>)
-        and 2) the <classname>ARRAY_TYPE</classname> (e.g. <classname>
-        NDArray</classname>, <classname>hoNDArray</classname>, or
+        and 2) the <classname>ARRAY_TYPE</classname> (e.g.
+        <classname>NDArray</classname>, <classname>hoNDArray</classname>, or
         <classname>cuNDArray</classname>) representing the expected vector
         format for the matrix-vector multiplication the operator
         implements.</para>
@@ -2270,28 +2286,32 @@ private:
 
               <para><programlisting>// Notice: simplified code without error-checking
 
-template &lt;class REAL, class ARRAY_TYPE&gt; class identityOperator : public matrixOperator&lt;REAL, ARRAY_TYPE&gt;
+template &lt;class REAL, class ARRAY_TYPE&gt; 
+class identityOperator : public matrixOperator&lt;REAL, ARRAY_TYPE&gt;
 {
  public:
 
   identityOperator() : matrixOperator&lt;REAL,ARRAY_TYPE&gt;() {}
   virtual ~identityOperator() {}
   
-  virtual bool operator_xpy( ARRAY_TYPE *x, ARRAY_TYPE *y ) = 0; // to implement y += x
+  // to implement y += x
+  virtual bool operator_xpy( ARRAY_TYPE *x, ARRAY_TYPE *y ) = 0; 
 
-  virtual int mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
+  virtual int mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, 
+                      bool accumulate = false )
   {
     if( accumulate )
       return operator_xpy( in, out );
     else{ 
-      *out = *in; // The ARRAY_TYPE must have an appropriate assignment operator defined
+      *out = *in;
       return 0;
     }
 
   ... // Similar code for mul_MH and mult_MH_M
 }
 
-</programlisting><programlisting>// Notice: simplified code without error checking and multi-device support
+</programlisting><programlisting>// Notice: 
+// Simplified code without error checking and multi-device support
 
 template &lt;class REAL, class T&gt; 
 class cuIdentityOperator : public identityOperator&lt; REAL, cuNDArray&lt;T&gt; &gt;
@@ -2382,12 +2402,12 @@ class cuIdentityOperator : public identityOperator&lt; REAL, cuNDArray&lt;T&gt; 
           <informalequation>
             <mediaobject>
               <imageobject role="html">
-                <imagedata fileref="math/lls.jpg" format="JPEG"/>
+                <imagedata fileref="math/lls.jpg" format="JPEG" width="3 in"/>
               </imageobject>
 
               <imageobject role="fo">
                 <imagedata fileref="../../../doc/manual/math/lls.jpg"
-                           format="JPEG"/>
+                           format="JPEG" width="3 in"/>
               </imageobject>
             </mediaobject>
           </informalequation>
@@ -2411,12 +2431,13 @@ class cuIdentityOperator : public identityOperator&lt; REAL, cuNDArray&lt;T&gt; 
           <informalequation>
             <mediaobject>
               <imageobject role="html">
-                <imagedata fileref="math/lls_form.jpg" format="JPEG"/>
+                <imagedata fileref="math/lls_form.jpg" format="JPEG"
+                           width="4 in"/>
               </imageobject>
 
               <imageobject role="fo">
                 <imagedata fileref="../../../doc/manual/math/lls_form.jpg"
-                           format="JPEG"/>
+                           format="JPEG" width="5 in"/>
               </imageobject>
             </mediaobject>
           </informalequation>
@@ -2435,12 +2456,18 @@ template &lt;class ARRAY_TYPE&gt; class solver
 {
  public:
 
-  enum solverOutputModes { OUTPUT_SILENT = 0, OUTPUT_WARNINGS = 1, OUTPUT_VERBOSE = 2, OUTPUT_MAX = 3 };
+  enum solverOutputModes { OUTPUT_SILENT = 0, 
+                           OUTPUT_WARNINGS = 1, 
+                           OUTPUT_VERBOSE = 2, 
+                           OUTPUT_MAX = 3 };
 
-  solver( int output_mode = OUTPUT_SILENT ) { output_mode_ = output_mode; }
+  solver( int output_mode = OUTPUT_SILENT ) { 
+    output_mode_ = output_mode; }
+  
   virtual ~solver() {}
   
-  virtual void solver_error( std::string err ) { std::cerr &lt;&lt; err &lt;&lt; std::endl; }
+  virtual void solver_error( std::string err ) { 
+    std::cerr &lt;&lt; err &lt;&lt; std::endl; }
 
   virtual void set_output_mode( int output_mode ) {
     if( !(output_mode &gt;= OUTPUT_MAX || output_mode &lt; 0 )) {
@@ -2456,19 +2483,23 @@ protected:
 
 </programlisting><programlisting>// Defined in cgSolver.h
 
-template &lt;class REAL, class ELEMENT_TYPE, class ARRAY_TYPE&gt; class cgSolver : public solver&lt;ARRAY_TYPE&gt;
+template &lt;class REAL, class ELEMENT_TYPE, class ARRAY_TYPE&gt; 
+class cgSolver : public solver&lt;ARRAY_TYPE&gt;
 {
 public:
 
-  cgSolver( int output_mode = solver&lt;ARRAY_TYPE&gt;::OUTPUT_SILENT ) : solver&lt;ARRAY_TYPE&gt;( output_mode ) { 
+  cgSolver( int output_mode = solver&lt;ARRAY_TYPE&gt;::OUTPUT_SILENT ) 
+    : solver&lt;ARRAY_TYPE&gt;( output_mode ) { 
     // Initialize member variables
   }
 
   virtual ~cgSolver() {}
 
-  virtual int add_matrix_operator( boost::shared_ptr&lt; matrixOperator&lt;REAL, ARRAY_TYPE&gt; &gt; op ) { ... }
+  virtual int add_matrix_operator( 
+    boost::shared_ptr&lt; matrixOperator&lt;REAL, ARRAY_TYPE&gt; &gt; op ) { ... }
 
-  virtual int set_preconditioner( boost::shared_ptr&lt; cgPreconditioner&lt;ARRAY_TYPE&gt; &gt; precond ) { ... }
+  virtual int set_preconditioner( 
+    boost::shared_ptr&lt; cgPreconditioner&lt;ARRAY_TYPE&gt; &gt; precond ) { ... }
 
   virtual void set_limit( REAL limit ) { ... }
   virtual void set_iterations( unsigned int iterations ) { ... }
@@ -2488,7 +2519,8 @@ public:
   }
 
 protected:
-  boost::shared_ptr&lt; std::vector&lt; boost::shared_ptr&lt; matrixOperator&lt;REAL, ARRAY_TYPE&gt; &gt; &gt; &gt; operators_;
+  boost::shared_ptr&lt; std::vector&lt; 
+    boost::shared_ptr&lt; matrixOperator&lt;REAL, ARRAY_TYPE&gt; &gt; &gt; &gt; operators_;
   boost::shared_ptr&lt; cgPreconditioner&lt;ARRAY_TYPE&gt; &gt; precond_;
   unsigned int iterations_;
   REAL limit_;
@@ -2496,7 +2528,8 @@ protected:
 
 </programlisting><programlisting>// Defined in cuCGSolver.h
 
-template &lt;class REAL, class T&gt; class cuCGSolver : public cgSolver&lt; REAL, T, cuNDArray&lt;T&gt; &gt;
+template &lt;class REAL, class T&gt; 
+class cuCGSolver : public cgSolver&lt; REAL, T, cuNDArray&lt;T&gt; &gt;
 {
 public:
 
@@ -2519,7 +2552,7 @@ public:
           creates an instance of the solver for either the host or device
           (e.g. the <classname>cuCGSolver</classname> above for a GPU-based
           solver). The solver is configured using the functions in the
-          <classname>cgSolver base class</classname>. Finally the solve
+          <classname>cgSolver</classname> base class. Finally the solve
           function itself is found in the root of the hierachy; the
           <classname>solver</classname>.</para>
 
@@ -2534,7 +2567,8 @@ public:
           a <classname>partialDerivativeOperator</classname> in each spatial
           dimension for regularization. The full code can be found in
           <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/deblurring/2d/deblur_2d_cg.cpp</filename>.<programlisting>{
-  &lt;&lt; Code that parses the command line and loads the image and kernel from disk &gt;&gt;
+  &lt;&lt; Code that parses the command line 
+     and loads the image and kernel from disk &gt;&gt;
 
   // Define the desired precision
   typedef float _real; 
@@ -2558,7 +2592,9 @@ public:
   //
 
   // Define encoding matrix
-  boost::shared_ptr&lt; cuConvolutionOperator&lt;_real,2&gt; &gt; E( new cuConvolutionOperator&lt;_real,2&gt;() );
+  boost::shared_ptr&lt; cuConvolutionOperator&lt;_real,2&gt; &gt; 
+    E( new cuConvolutionOperator&lt;_real,2&gt;() );
+
   E-&gt;set_kernel( &amp;kernel );
     
   // Setup conjugate gradient solver
@@ -2583,8 +2619,11 @@ public:
 
   // All done, write out the result
   
-  boost::shared_ptr&lt; hoNDArray&lt;_complext&gt; &gt; host_result = cgresult-&gt;to_host();
-  write_nd_array&lt;_complext&gt;(host_result.get(), (char*)parms.get_parameter('r')-&gt;get_string_value());
+  boost::shared_ptr&lt; hoNDArray&lt;_complext&gt; &gt; 
+    host_result = cgresult-&gt;to_host();
+  
+  write_nd_array&lt;_complext&gt;(host_result.get(), 
+    (char*)parms.get_parameter('r')-&gt;get_string_value());
 }
 
 </programlisting></para>
@@ -2607,12 +2646,12 @@ public:
           <informalequation>
             <mediaobject>
               <imageobject role="html">
-                <imagedata fileref="math/sb.jpg" format="JPEG"/>
+                <imagedata fileref="math/sb.jpg" format="JPEG" width="3 in"/>
               </imageobject>
 
               <imageobject role="fo">
                 <imagedata fileref="../../../doc/manual/math/sb.jpg"
-                           format="JPEG"/>
+                           format="JPEG" width=" 3 in"/>
               </imageobject>
             </mediaobject>
           </informalequation>
@@ -2623,7 +2662,7 @@ public:
           latter constraint problem declared in
           <filename>sbcSolver.h</filename>. The Split Bregman formulation to
           solve the above-mentioned minimization problems were chosen as they
-          integrate nicely with the linear conjugat solver desribed above
+          integrate nicely with the linear conjugate solver desribed above
           (<xref linkend="sect.linear_solvers"/>). In fact, most of the work
           in the two Split Bregman solvers is performed by a linear inner
           solver (e.g. a conjugate gradient solver), but the input (right hand
@@ -2634,40 +2673,51 @@ public:
           times already, so it should suffice to provide only very abbreviated
           headers here:<programlisting>// Defined in cgSolver.h
 
-template &lt;class REAL, class ELEMENT_TYPE, class ARRAY_TYPE_REAL, class ARRAY_TYPE_ELEMENT&gt; 
+template &lt;class REAL, class ELEMENT_TYPE, 
+          class ARRAY_TYPE_REAL, class ARRAY_TYPE_ELEMENT&gt; 
 class sbSolver : public solver&lt;ARRAY_TYPE_ELEMENT&gt;
 {
 public:
 
-  sbSolver( int output_mode ) : solver&lt;ARRAY_TYPE_ELEMENT&gt;( output_mode ) { ... }
+  sbSolver( int output_mode ) : solver&lt;ARRAY_TYPE_ELEMENT&gt;( output_mode ) 
+    { ... }
+
   virtual ~sbSolver() {}
 
-  virtual int set_inner_solver( boost::shared_ptr&lt; solver&lt;ARRAY_TYPE_ELEMENT&gt; &gt; solver ) { ... }
+  virtual int set_inner_solver( 
+    boost::shared_ptr&lt; solver&lt;ARRAY_TYPE_ELEMENT&gt; &gt; solver ) { ... }
 
-  virtual int set_encoding_operator( boost::shared_ptr&lt; matrixOperator&lt;REAL, ARRAY_TYPE_ELEMENT&gt; &gt; op ) { ... }
+  virtual int set_encoding_operator( 
+    boost::shared_ptr&lt; matrixOperator&lt;REAL, ARRAY_TYPE_ELEMENT&gt; &gt; op ) 
+    { ... }
 
   virtual int add_regularization_operator( 
     boost::shared_ptr&lt; matrixOperator&lt;REAL, ARRAY_TYPE_ELEMENT&gt; &gt; op, 
     ARRAY_TYPE_ELEMENT *prior = 0x0  ) { ... }
 
   virtual int add_regularization_group_operator( 
-    boost::shared_ptr&lt; matrixOperator&lt;REAL, ARRAY_TYPE_ELEMENT&gt; &gt; op ) { ... }
+    boost::shared_ptr&lt; matrixOperator&lt;REAL, ARRAY_TYPE_ELEMENT&gt; &gt; op ) 
+    { ... }
 
   virtual int add_group( ARRAY_TYPE_ELEMENT *prior = 0x0 ) { ... }
 
   virtual void set_tolerance( REAL tolerance ) { ... }
   virtual void set_outer_iterations( unsigned int iterations ) { ... }
   virtual void set_inner_iterations( unsigned int iterations ) { ... }
-  virtual void set_image_dimensions( boost::shared_ptr&lt; std::vector&lt;unsigned int&gt; &gt; dims ){ ... }
 
-  virtual boost::shared_ptr&lt;ARRAY_TYPE_ELEMENT&gt; solve( ARRAY_TYPE_ELEMENT *_f ) { ... }
+  virtual void set_image_dimensions( 
+    boost::shared_ptr&lt; std::vector&lt;unsigned int&gt; &gt; dims ){ ... }
+
+  virtual boost::shared_ptr&lt;ARRAY_TYPE_ELEMENT&gt; 
+    solve( ARRAY_TYPE_ELEMENT *_f ) { ... }
 
  ...
 };
 
 </programlisting><programlisting>// Defined in cuSBSolver.h
 
-template &lt;class REAL, class T&gt; class cuSBSolver : public sbSolver&lt; REAL, T, cuNDArray&lt;REAL&gt;, cuNDArray&lt;T&gt; &gt;
+template &lt;class REAL, class T&gt; 
+class cuSBSolver : public sbSolver&lt; REAL, T, cuNDArray&lt;REAL&gt;, cuNDArray&lt;T&gt; &gt;
 {
 public:
   
@@ -2714,11 +2764,15 @@ public:
   //
   
   // Define encoding matrix (identity)
-  boost::shared_ptr&lt; cuIdentityOperator&lt;_real,_real&gt; &gt; E( new cuIdentityOperator&lt;_real,_real&gt;() );
+  boost::shared_ptr&lt; cuIdentityOperator&lt;_real,_real&gt; &gt; 
+    E( new cuIdentityOperator&lt;_real,_real&gt;() );
+
   E-&gt;set_weight( mu );
   
   // Setup conjugate gradient solver
-  boost::shared_ptr&lt; cuCGSolver&lt;_real,_real&gt; &gt; cg(new cuCGSolver&lt;_real,_real&gt;());
+  boost::shared_ptr&lt; cuCGSolver&lt;_real,_real&gt; &gt; 
+    cg(new cuCGSolver&lt;_real,_real&gt;());
+
   cg-&gt;add_matrix_operator( E );   // encoding matrix
   cg-&gt;add_matrix_operator( Rx );  // regularization matrix
   cg-&gt;add_matrix_operator( Ry );  // regularization matrix
@@ -3463,7 +3517,7 @@ mySeries = 1;</programlisting>
       </sect2>
 
       <sect2 xml:id="sect.makingnewgadgetlibrary">
-        <title>Making a new Gadget library</title>
+        <title>Making a new Gadget Library</title>
 
         <para>The easiest way to get started making a new Gadget library is to
         follow an example. In this example we create a new Gadget library
@@ -3839,7 +3893,7 @@ Image Writer writing image
       <title>Gadgetron Clients</title>
 
       <sect2>
-        <title>Available clients</title>
+        <title>Available Clients</title>
 
         <para>The purpose of this section is to maintain a list over the
         available clients that are included in the Gadgetron distribution. The
@@ -3861,7 +3915,7 @@ Image Writer writing image
       </sect2>
 
       <sect2>
-        <title>Making a new client</title>
+        <title>Making a new Client</title>
 
         <para>The Gadgetron distribution comes with a
         <classname>GadgetronConnector</classname> class, which can be used to
@@ -4682,7 +4736,7 @@ protected:
       Cartesian Grappa implementation above (<xref linkend="sect.grappa"/>).
       An overview of the non-Cartesian Sense gadget chain is given in figure
       <xref linkend="fig.cgsense"/>. <figure xml:id="fig.cgsense">
-          <title>Gadgetron chain for non-Cartesian Sense</title>
+          <title>Gadgetron Chain for Non-Cartesian Sense</title>
 
           <mediaobject>
             <imageobject role="html">
@@ -4709,12 +4763,13 @@ protected:
       maintains a cyclic buffer of a few seconds of imaging data. It uses this
       buffer to maintain a fully sampled (i.e. unaliased but blurred) k-space
       image from which coil sensititivities and regularization images are
-      dynamically estiated. The combination of parallel imaging and image
+      dynamically estimated. The combination of parallel imaging and image
       regularization operators allows for alias-suppressed image
       reconstruction using significant undersampling hereby achieving
       real-time data acquisition rates per frame. The conjugate gradient
-      solver is sufficiently fast to reconstruct e.g. a 192x192 image from 32
-      coils using 10 solver iterations on newer graphics hardware.</para>
+      solver is able to reconstruct faster than the acquisition time e.g. a
+      192x192 image from 32 coils using 10 solver iterations on newer graphics
+      hardware.</para>
 
       <para>To test this configuration please download the 32 channel radial
       MRI test dataset from <uri type="website"
@@ -4776,7 +4831,7 @@ user@host$
           <mediaobject>
             <imageobject>
               <imagedata fileref="figs/examplecgsenseresult.png" format="PNG"
-                         width="5in"/>
+                         width="3in"/>
             </imageobject>
           </mediaobject>
         </figure></para>
@@ -4795,7 +4850,7 @@ user@host$
     CULA enabled.</para>
 
     <sect1 xml:id="sect.image_denoising">
-      <title>Image denoising</title>
+      <title>Image Denoising</title>
 
       <para>This example uses the unconstraint Split Bregman solver for total
       variation based image denoising. The encoding matrix is defined as an
@@ -4807,8 +4862,7 @@ user@host$
 
       <para>You can download some noisy Shepp-Logan phantom test datasets from
       <uri type="website"
-      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/">https://sourceforge.net/projects/gadgetron/files/testdata/phantom/shepp_logan/shepp.tar.gz</uri>.
-      </para>
+      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/">https://sourceforge.net/projects/gadgetron/files/testdata/phantom/shepp_logan/shepp.tar.gz</uri>.</para>
 
       <para>In a terminal, go to the folder in which you unpacked the data. We
       assume that you have added <envar>$(GADGETRON_HOME)/bin</envar> to your
@@ -4842,19 +4896,19 @@ user@host$
     </sect1>
 
     <sect1>
-      <title>Image deblurring</title>
+      <title>Image Deblurring</title>
 
       <para>This example uses 1) the linear least squares solver, and 2) the
       constraint Split Bregman solver for image deblurring. The encoding
       matrix is defined as an <classname>convolutionOperator</classname> and a
       <classname>partialDerivativeOperator</classname> is used for each of the
-      two spatial directions to implement the regularization terms. </para>
+      two spatial directions to implement the regularization terms.</para>
 
       <para>We reuse the Shepp-Logan data from the image denoising experiement
-      above (<xref linkend="sect.image_denoising"/>). </para>
+      above (<xref linkend="sect.image_denoising"/>).</para>
 
       <para>First we generate a blurry Shepp-Logan phantom by convolution with
-      a Gaussian kernel. This is easliy achieved using the function
+      a Gaussian kernel. This is easily achieved using the function
       <function>mult_M</function> in the
       <classname>convolutionOperator</classname>. Soure code is provided at
       <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/deblurring/2d/blur_2d.cpp</filename></para>
@@ -4895,12 +4949,11 @@ user@host$</screen>
       <filename>cg_deblurred_image_TV.cplx</filename>. A magnitudes image is
       also saved as <filename>cg_deblurred_image.real</filename>. We leave it
       as an exercise to run the algorihm with various settings. Try also to
-      add noise to the blurred image before the deconvolution. </para>
+      add noise to the blurred image before the deconvolution.</para>
 
       <para>Next run the constraint Split Bregman solver. The source code for
       the example can be found in
-      <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/deblurring/2d/deblur_2d_sb.cpp</filename>.
-      </para>
+      <envar>$(GADGETRON_HOME)</envar><filename>/apps/standalone/gpu/deblurring/2d/deblur_2d_sb.cpp</filename>.</para>
 
       <screen>user@host$ deblur_2d_sb -O 100 -L 0.5 -M 0.5
  Running deblurring with the following parameters: 
@@ -4931,7 +4984,7 @@ user@host$</screen>
     </sect1>
 
     <sect1>
-      <title>Non-Cartesian FFT </title>
+      <title>Non-Cartesian FFT</title>
 
       <para>This example shows how to use the forwards and inverse NFFT on a
       2D image. The source code can be found at
@@ -4988,7 +5041,7 @@ Output result to disk
 user@host$</screen>
 
       <para>The result is saved in file <filename>result.cplx</filename>. A
-      magnitudes image is saved as <filename>result.real</filename>. </para>
+      magnitudes image is saved as <filename>result.real</filename>.</para>
 
       <para>Exercise: experiment with the settings to eliminate the
       aliasing.</para>
