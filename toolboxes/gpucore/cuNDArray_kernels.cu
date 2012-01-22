@@ -9,7 +9,7 @@ __global__ void cuNDArray_permute_kernel(T* in, T* out,
 					 unsigned long int elements,
 					 int shift_mode)
 {
-  unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
+  unsigned long idx_in = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
   unsigned long idx_out = 0;
 
   unsigned long idx_in_tmp = idx_in;
@@ -28,13 +28,9 @@ __global__ void cuNDArray_permute_kernel(T* in, T* out,
       }
       idx_in_tmp = idx_in_remainder;
     }
-
     out[idx_in] = in[idx_out];
-
   }
-
 }
-
 
 template <class T> int cuNDArray_permute(cuNDArray<T>* in,
  					 cuNDArray<T>* out,
@@ -101,7 +97,14 @@ template <class T> int cuNDArray_permute(cuNDArray<T>* in,
   }
 
   dim3 blockDim(512,1,1);
-  dim3 gridDim((unsigned int) ceil((double)in->elements_/blockDim.x), 1, 1 );
+  dim3 gridDim;
+  if( in->dimensions_->size() > 2 ){
+    gridDim = dim3((unsigned int) ceil((double)in->get_size(0)*in->get_size(1)/blockDim.x), 1, 1 );
+    for( unsigned int d=2; d<in->dimensions_->size(); d++ )
+      gridDim.y *= in->get_size(d);
+  }
+  else
+    gridDim = dim3(((unsigned int) ceil((double)in->elements_/blockDim.x), 1, 1 ));
 
   cuNDArray_permute_kernel<<< gridDim, blockDim >>>( in_ptr, out_ptr, in->dimensions_->size(), 
 						     dims_dev, strides_out_dev, in->elements_, shift_mode);
