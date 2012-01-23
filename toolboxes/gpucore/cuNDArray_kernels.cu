@@ -104,7 +104,7 @@ template <class T> int cuNDArray_permute(cuNDArray<T>* in,
       gridDim.y *= in->get_size(d);
   }
   else
-    gridDim = dim3(((unsigned int) ceil((double)in->elements_/blockDim.x), 1, 1 ));
+    gridDim = dim3((unsigned int) ceil((double)in->elements_/blockDim.x), 1, 1 );
 
   cuNDArray_permute_kernel<<< gridDim, blockDim >>>( in_ptr, out_ptr, in->dimensions_->size(), 
 						     dims_dev, strides_out_dev, in->elements_, shift_mode);
