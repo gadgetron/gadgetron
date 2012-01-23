@@ -3068,7 +3068,7 @@ bool cuNDA_shrinkd( REAL gamma, cuNDArray<REAL> *s_k, cuNDArray<T> *in, cuNDArra
 template<class T, unsigned int D> __global__ void
 cuNDA_origin_mirror_kernel( typename uintd<D>::Type matrix_size, typename uintd<D>::Type origin, T *in, T *out, bool zero_fill )
 {
-  const unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
 
   if( idx < prod(matrix_size) ){
 
@@ -3127,7 +3127,7 @@ bool cuNDA_origin_mirror( cuNDArray<T> *in, cuNDArray<T> *out, bool zero_fill, c
   
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( cur_device, prod(matrix_size), &blockDim, &gridDim, 1 ) ){
+  if( !setup_grid( cur_device, prod(matrix_size), &blockDim, &gridDim ) ){
     cerr << endl << "cuNDA_origin_mirror: block/grid configuration out of range" << endl;
     return false;
   }
