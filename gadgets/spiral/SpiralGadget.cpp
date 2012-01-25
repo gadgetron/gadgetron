@@ -23,6 +23,8 @@ SpiralGadget::SpiralGadget()
 , samples_to_skip_end_(0)
 , samples_per_interleave_(0)
 , host_data_buffer_(0)
+, image_counter_(0)
+, image_series_(0)
 {
 	GADGET_DEBUG1("Initializing Spiral\n");
 }
@@ -256,6 +258,12 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 
 		memcpy(m3->getObjectPtr()->quarternion,m1->getObjectPtr()->quarternion,
 				sizeof(float)*4);
+
+		m3->getObjectPtr()->table_position = m1->getObjectPtr()->table_position;
+
+		m3->getObjectPtr()->image_format = GADGET_IMAGE_COMPLEX_FLOAT; 
+		m3->getObjectPtr()->image_index = ++image_counter_; 
+		m3->getObjectPtr()->image_series_index = image_series_;
 
 		if (this->next()->putq(m3) < 0) {
 			m3->release();

@@ -50,13 +50,18 @@
     </gadget>
     -->
     
-    <!--
+    
     <gadget>
+      <name>AutoScaleGadget</name>
+      <dll>gadgetroncore</dll>
+      <class>AutoScaleGadget</class>
+   </gadget> 
+
+   <gadget>
       <name>FloatToShort</name>
       <dll>gadgetroncore</dll>
       <class>FloatToUShortGadget</class>
     </gadget>
-    -->
  
  	<!--
     <gadget>
@@ -67,9 +72,9 @@
     -->
     
     <gadget>
-      <name>ImageFinishFLOAT</name>
+      <name>ImageFinishShort</name>
       <dll>gadgetroncore</dll>
-      <class>ImageFinishGadgetFLOAT</class>
+      <class>ImageFinishGadgetUSHORT</class>
     </gadget>
     
  	<!--
