@@ -8,9 +8,11 @@
 #include "GadgetContainerMessage.h"
 #include "hoNDArray.h"
 #include "ImageWriter.h"
+#include "HDF5ImageWriter.h"
 #include "FileInfo.h"
 
 #include <fstream>
+#include <time.h>
 
 void print_usage()
 {
@@ -21,11 +23,13 @@ void print_usage()
 	ACE_DEBUG((LM_INFO, ACE_TEXT("          -x <PARAMETER FILE (XML)>      (default ./parameters.xml)\n") ));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("          -c <GADGETRON CONFIG>          (default default.xml)\n") ));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("          -l <LOOPS>                     (default 1)\n") ));
+	ACE_DEBUG((LM_INFO, ACE_TEXT("          -5 <HDF5 File Name>            (no default)\n") ));
+	ACE_DEBUG((LM_INFO, ACE_TEXT("          -g <HDF5 Group Name>           (default date and time)\n") ));
 }
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 {
-	static const ACE_TCHAR options[] = ACE_TEXT(":p:h:d:x:c:l:");
+	static const ACE_TCHAR options[] = ACE_TEXT(":p:h:d:x:c:l:5:g:");
 
 	ACE_Get_Opt cmd_opts(argc, argv, options);
 
@@ -43,6 +47,17 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 
 	ACE_TCHAR config_file[1024];
 	ACE_OS_String::strncpy(config_file, "default.xml", 1024);
+
+	bool save_hdf5 = false;
+
+	ACE_TCHAR hdf5_file[1024];
+	ACE_TCHAR hdf5_group[1024];
+
+	time_t rawtime;
+	struct tm * timeinfo;
+	time ( &rawtime );
+	timeinfo = localtime ( &rawtime );
+	ACE_OS_String::strncpy(hdf5_group, asctime(timeinfo), 1024);
 
 	int repetition_loops = 1;
 
@@ -66,6 +81,13 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 			break;
 		case 'l':
 			repetition_loops = ACE_OS::atoi(cmd_opts.opt_arg());
+			break;
+		case '5':
+			ACE_OS_String::strncpy(hdf5_file, cmd_opts.opt_arg(), 1024);
+			save_hdf5 = true;
+			break;
+		case 'g':
+			ACE_OS_String::strncpy(hdf5_group, cmd_opts.opt_arg(), 1024);
 			break;
 		case ':':
 			print_usage();
@@ -106,14 +128,26 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 	ACE_DEBUG((LM_INFO, ACE_TEXT("  -- conf:            %s\n"), config_file));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("  -- loop:            %d\n"), repetition_loops));
 
+	if (save_hdf5) {
+		ACE_DEBUG((LM_INFO, ACE_TEXT("  -- hdf5 (file)    :      %s\n"), hdf5_file));
+		ACE_DEBUG((LM_INFO, ACE_TEXT("  -- hdf5 (group)   :      %s\n"), hdf5_group));
+	}
+
 	for (int i = 0; i < repetition_loops; i++) {
 
 		GadgetronConnector con;
 
 		con.register_writer(GADGET_MESSAGE_ACQUISITION, new GadgetAcquisitionMessageWriter());
-		con.register_reader(GADGET_MESSAGE_IMAGE_REAL_USHORT, new ImageWriter<ACE_UINT16>());
-		con.register_reader(GADGET_MESSAGE_IMAGE_REAL_FLOAT, new ImageWriter<float>());
-		con.register_reader(GADGET_MESSAGE_IMAGE_CPLX_FLOAT, new ImageWriter< std::complex<float> >());
+		if (save_hdf5) {
+			con.register_reader(GADGET_MESSAGE_IMAGE_REAL_USHORT, new HDF5ImageWriter<ACE_UINT16>(std::string(hdf5_file), std::string(hdf5_group)));
+			con.register_reader(GADGET_MESSAGE_IMAGE_REAL_FLOAT, new HDF5ImageWriter<float>(std::string(hdf5_file), std::string(hdf5_group)));
+			con.register_reader(GADGET_MESSAGE_IMAGE_CPLX_FLOAT, new HDF5ImageWriter< std::complex<float> >(std::string(hdf5_file), std::string(hdf5_group)));
+
+		} else {
+			con.register_reader(GADGET_MESSAGE_IMAGE_REAL_USHORT, new ImageWriter<ACE_UINT16>());
+			con.register_reader(GADGET_MESSAGE_IMAGE_REAL_FLOAT, new ImageWriter<float>());
+			con.register_reader(GADGET_MESSAGE_IMAGE_CPLX_FLOAT, new ImageWriter< std::complex<float> >());
+		}
 
 		//Open a connection with the gadgetron
 		if (con.open(std::string(hostname),std::string(port_no)) != 0) {
