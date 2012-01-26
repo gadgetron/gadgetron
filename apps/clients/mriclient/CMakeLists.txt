@@ -4,11 +4,12 @@ include_directories(    ${ACE_INCLUDE_DIR}
 				${CMAKE_SOURCE_DIR}/apps/gadgetron
 				${CMAKE_SOURCE_DIR}/toolboxes/ndarray
 				${CMAKE_SOURCE_DIR}/toolboxes/hostutils
-				${CMAKE_SOURCE_DIR}/toolboxes/gadgettools)
+				${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+				${CMAKE_SOURCE_DIR}/toolboxes/hdf5utils)
 
 add_executable(mriclient main.cpp)
 
-target_link_libraries(mriclient tinyxml gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
+target_link_libraries(mriclient tinyxml gadgettools hdf5utils optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
 install(TARGETS mriclient DESTINATION bin)
 install (FILES ImageWriter.h DESTINATION include)
