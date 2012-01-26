@@ -57,7 +57,12 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 	struct tm * timeinfo;
 	time ( &rawtime );
 	timeinfo = localtime ( &rawtime );
-	ACE_OS_String::strncpy(hdf5_group, asctime(timeinfo), 1024);
+
+	std::stringstream str;
+	str << timeinfo->tm_year+1900 << "-" << timeinfo->tm_mon+1 << "-" << timeinfo->tm_mday
+		<< " " << timeinfo->tm_hour << ":" << timeinfo->tm_min << ":" << timeinfo->tm_sec;
+
+	ACE_OS_String::strncpy(hdf5_group, str.str().c_str(), 1024);
 
 	int repetition_loops = 1;
 
