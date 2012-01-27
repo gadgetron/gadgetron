@@ -4,7 +4,7 @@
 #include <string>
 #include <iostream>
 
-template <class ARRAY_TYPE> class solver
+template <class ARRAY_TYPE_IN, class ARRAY_TYPE_OUT> class solver
 {
  public:
 
@@ -21,7 +21,7 @@ template <class ARRAY_TYPE> class solver
     }
   }
 
-  virtual boost::shared_ptr<ARRAY_TYPE> solve( ARRAY_TYPE* ) = 0;
+  virtual boost::shared_ptr<ARRAY_TYPE_OUT> solve( ARRAY_TYPE_IN* ) = 0;
 
   void* operator new (size_t bytes) { return ::new char[bytes]; }
   void operator delete (void *ptr) { delete [] static_cast <char *> (ptr); } 

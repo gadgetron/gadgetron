@@ -14,7 +14,7 @@ class sbcSolver : public sbSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE_REAL, ARRAY_TYP
 {
 public:
 
-  sbcSolver( int output_mode = solver<ARRAY_TYPE_ELEMENT>::OUTPUT_SILENT ) : sbSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE_REAL, ARRAY_TYPE_ELEMENT>( output_mode ) { 
+  sbcSolver( int output_mode = solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_SILENT ) : sbSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE_REAL, ARRAY_TYPE_ELEMENT>( output_mode ) { 
     this->tolerance_ = get_zero<REAL>();
     this->outer_iterations_ = 10;
     this->inner_iterations_ = 5;
@@ -131,11 +131,11 @@ public:
         return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
       }
 
-      if( this->tolerance_ > get_zero<REAL>() || this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
+      if( this->tolerance_ > get_zero<REAL>() || this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
 	
 	REAL delta = cuNDA_asum<REAL>(&encoded_image);
 	
-	if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
+	if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
 	  std::cout << std::endl << "u_k delta (outer loop): " << delta << std::endl << std::endl;
 
 	//static REAL min_delta = (REAL) 1e9;
