@@ -117,6 +117,17 @@ template<unsigned int D> __inline__ __host__ __device__ unsigned int co_to_idx( 
   return idx;
 } 
 
+template<unsigned int D> __inline__ __host__ __device__  int co_to_idx( const vector_td< int,D> co, const vector_td<unsigned int,D> dims )
+{
+  unsigned int idx = 0;
+  unsigned long block_size = 1;
+  for (unsigned int i=0; i<D; i++) {
+    idx += (block_size*co.vec[i]);
+    block_size *= dims.vec[i];
+  }
+  return idx;
+}
+
 template<unsigned int D> __inline__ __host__ __device__ unsigned int co_to_idx( const typename uintd<D>::Type co, const typename uintd<D>::Type dims, const typename uintd<D>::Type &order )
 {
   unsigned int idx = 0;
@@ -251,6 +262,31 @@ template<class T, unsigned int D> __inline__ __host__ __device__ T min( const ve
   T res = vec.vec[0];
   for (unsigned int i=1; i<D; i++){
     res = min(res,vec.vec[i]);
+  }
+  return res;
+}
+
+template<class T, unsigned int D> __inline__ __host__ __device__ unsigned int argmin( const vector_td<T,D> vec ){
+
+  unsigned int res= 0;
+  for (unsigned int i=1; i<D; i++){
+    if (vec.vec[i] < vec.vec[res] )res=i;
+  }
+  return res;
+}
+template<class T, unsigned int D> __inline__ __host__ __device__ unsigned int argmin_not_nan( const vector_td<T,D> vec ){
+
+  unsigned int res= 0;
+  for (unsigned int i=1; i<D; i++){
+    if (vec.vec[i] < vec.vec[res] && !isnan(vec.vec[i]))res=i;
+  }
+  return res;
+}
+template<class T, unsigned int D> __inline__ __host__ __device__ unsigned int argmax( const vector_td<T,D> vec ){
+
+  unsigned int res= 0;
+  for (unsigned int i=1; i<D; i++){
+    if (vec.vec[i] > vec.vec[res] )res=i;
   }
   return res;
 }
