@@ -13,7 +13,7 @@
 
 using namespace std;
 
-// Define desired precision (note that decent deblurring of noisy images requires double precision)
+// Define desired precision
 typedef float _real; 
 typedef complext<_real>::Type _complext;
 
@@ -86,7 +86,7 @@ int main( int argc, char** argv)
   cuNDA_scale<_real>( 1.0/scale, kernel.get() );
 
   // Create convolution operator and assign kernel
-  cuConvolutionOperator<_real> conv;
+  cuConvolutionOperator<_real,2> conv;
   conv.set_kernel( kernel.get() );  
 
   // Convolve

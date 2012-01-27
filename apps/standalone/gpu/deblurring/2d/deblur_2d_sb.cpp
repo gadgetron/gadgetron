@@ -17,7 +17,7 @@
 
 using namespace std;
 
-// Define desired precision (note that decent deblurring of noisy images requires double precision)
+// Define desired precision
 typedef float _real; 
 typedef complext<_real>::Type _complext;
 
@@ -89,7 +89,7 @@ int main(int argc, char** argv)
   //
 
   // Define encoding matrix
-  boost::shared_ptr< cuConvolutionOperator<_real> > E( new cuConvolutionOperator<_real>() );  
+  boost::shared_ptr< cuConvolutionOperator<_real,2> > E( new cuConvolutionOperator<_real,2>() );  
   E->set_kernel( &kernel );
   E->set_weight( mu );
 

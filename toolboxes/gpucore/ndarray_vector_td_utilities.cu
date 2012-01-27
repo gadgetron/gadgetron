@@ -18,7 +18,8 @@ static int *max_blockdim = 0x0;
 static int *max_griddim = 0x0;
 static cublasHandle_t *handle = 0x0;
 
-// Default template arguments seems to require c++-0x. 
+// Default template arguments seems to require c++-0x, which we can't assume. 
+// We use a dummy type instead...
 typedef float dummy;
 
 //
@@ -298,13 +299,12 @@ static bool setup_grid( unsigned int cur_device, unsigned int number_of_elements
     blockDim->x = max_blockdim[cur_device];
     gridDim->x = (number_of_elements+blockDim->x-1)/blockDim->x;
   }
-  if( num_batches == 1 ){
-    if( gridDim->x > max_griddim[cur_device] ){
-      gridDim->x = (unsigned int)sqrt((float)((number_of_elements+blockDim->x-1)/blockDim->x));
-      gridDim->y = (number_of_elements+(blockDim->x*gridDim->x)-1)/(blockDim->x*gridDim->x);
-    }
+
+  if( gridDim->x > max_griddim[cur_device] ){
+    gridDim->x = ((unsigned int)sqrt((float)number_of_elements)+blockDim->x-1)/blockDim->x;
+    gridDim->y *= ((number_of_elements+blockDim->x*gridDim->x-1)/(blockDim->x*gridDim->x));
   }
-  
+   
   if( gridDim->x > max_griddim[cur_device] || gridDim->y > max_griddim[cur_device] )
     return false;
   else 
@@ -1460,6 +1460,198 @@ cuNDA_complext_to_real( cuNDArray<typename complext<REAL>::Type> *in,
   return out;
 }
 
+// Downsample
+template<class REAL, unsigned int D> __global__ void
+cuNDA_downsample_kernel( REAL *in, REAL *out, 
+			 typename uintd<D>::Type matrix_size_in, typename uintd<D>::Type matrix_size_out, 
+			 unsigned int num_elements, unsigned int num_batches )
+{
+  // We have started a thread for each output element
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+  const unsigned int frame_offset = idx/num_elements;
+  
+  if( idx < num_elements*num_batches ){
+
+    const typename uintd<D>::Type co_out = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
+    const typename uintd<D>::Type co_in = co_out << 1;
+
+    const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(get_two<unsigned int>());
+    const unsigned int num_adds = 1 << D;
+
+    REAL res = get_zero<REAL>();
+
+    for( unsigned int i=0; i<num_adds; i++ ){
+      const typename uintd<D>::Type local_co = idx_to_co<D>( i, twos );
+      const unsigned int in_idx = co_to_idx<D>(co_in+local_co, matrix_size_in)+frame_offset*prod(matrix_size_in); 
+      res += in[in_idx];
+    }
+    
+    out[idx] = res/(REAL)num_adds;
+  }
+}
+
+// Downsample
+template<class REAL, unsigned int D>
+boost::shared_ptr< cuNDArray<REAL> > 
+cuNDA_downsample( cuNDArray<REAL> *in,
+		  cuNDA_device alloc_device, cuNDA_device compute_device )
+{
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<REAL> *in_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,REAL,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
+    cerr << endl << "cuNDA_downsample: unable to prepare device(s)" << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+     
+  // A few sanity checks 
+  if( in->get_number_of_dimensions() < D ){
+    cerr << endl << "cuNDA_downsample: the number of array dimensions should be at least D" << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+  
+  for( unsigned int d=0; d<D; d++ ){
+    if( (in->get_size(d)%2) == 1 ){
+      cerr << endl << "cuNDA_downsample: uneven array dimensions not accepted" << endl;
+      return boost::shared_ptr< cuNDArray<REAL> >();
+    }
+  }
+  
+  typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
+  typename uintd<D>::Type matrix_size_out = matrix_size_in >> 1;
+
+  unsigned int number_of_elements = prod(matrix_size_out);
+  unsigned int number_of_batches = 1;
+
+  for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
+    number_of_batches *= in->get_size(d);
+  }
+  
+  // Setup block/grid dimensions
+  dim3 blockDim; dim3 gridDim;
+
+  if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim, number_of_batches ) ){
+    cerr << endl << "cuNDA_scale: block/grid configuration out of range" << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+  
+  // Invoke kernel
+  std::vector<unsigned int> dims = uintd_to_vector<D>(matrix_size_out); dims.push_back(number_of_batches);
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(&dims);
+  if( out.get() != 0x0 ) 
+    cuNDA_downsample_kernel<REAL,D><<< gridDim, blockDim >>>
+      ( in_int->get_data_ptr(), out->get_data_ptr(), matrix_size_in, matrix_size_out, number_of_elements, number_of_batches );
+  
+  CHECK_FOR_CUDA_ERROR();
+
+  // Restore
+  if( !restore<1,REAL,REAL,dummy,dummy>( old_device, in, in_int, 0, alloc_device, out.get() ) ){
+    cerr << endl << "cuNDA_downsample: unable to restore device" << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+
+  return out;
+}
+
+// Upsample
+template<class REAL, unsigned int D> __global__ void
+cuNDA_upsample_kernel( REAL *in, REAL *out, 
+		       typename uintd<D>::Type matrix_size_in, typename uintd<D>::Type matrix_size_out, 
+		       unsigned int num_elements, unsigned int num_batches )
+{
+  // We have started a thread for each output element
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+  const unsigned int frame_offset = idx/num_elements;
+  
+  if( idx < num_elements*num_batches ){
+
+    const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(get_two<unsigned int>());
+    const typename uintd<D>::Type co_out = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
+    const typename uintd<D>::Type local_co_out = co_out%twos;
+    const typename uintd<D>::Type co_in = co_out >> 1;
+
+    const unsigned int num_neighbors = 1 << D;
+
+    REAL res = get_zero<REAL>();
+    unsigned int num_contribs = 0;
+
+    for( unsigned int i=0; i<num_neighbors; i++ ){
+      const typename uintd<D>::Type local_co_iter = idx_to_co<D>( i, twos );
+      if( local_co_out >= local_co_iter ){ // Strong operator (_all_ D entries are greater equal)
+	// This lowres sample influences the hires output
+	const unsigned int in_idx = co_to_idx<D>(co_in+local_co_iter, matrix_size_in)+frame_offset*prod(matrix_size_in); 
+	res += in[in_idx];
+	num_contribs++;
+      }
+    }
+
+    // Now num_contribs should be a power of two greater than zero
+    // All contributions are to be weighted equally (1/num_contribs)
+
+    out[idx] = res/(REAL)num_contribs;
+  }
+}
+
+// Upsample
+template<class REAL, unsigned int D>
+boost::shared_ptr< cuNDArray<REAL> > 
+cuNDA_upsample( cuNDArray<REAL> *in,
+		cuNDA_device alloc_device, cuNDA_device compute_device )
+{
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<REAL> *in_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,REAL,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
+    cerr << endl << "cuNDA_upsample: unable to prepare device(s)" << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+     
+  // A few sanity checks 
+  if( in->get_number_of_dimensions() < D ){
+    cerr << endl << "cuNDA_upsample: the number of array dimensions should be at least D" << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+    
+  typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
+  typename uintd<D>::Type matrix_size_out = matrix_size_in << 1;
+
+  unsigned int number_of_elements = prod(matrix_size_out);
+  unsigned int number_of_batches = 1;
+
+  for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
+    number_of_batches *= in->get_size(d);
+  }
+  
+  // Setup block/grid dimensions
+  dim3 blockDim; dim3 gridDim;
+
+  if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim, number_of_batches ) ){
+    cerr << endl << "cuNDA_scale: block/grid configuration out of range" << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+  
+  // Invoke kernel
+  std::vector<unsigned int> dims = uintd_to_vector<D>(matrix_size_out); dims.push_back(number_of_batches);
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(&dims);
+  if( out.get() != 0x0 ) 
+    cuNDA_upsample_kernel<REAL,D><<< gridDim, blockDim >>>
+      ( in_int->get_data_ptr(), out->get_data_ptr(), matrix_size_in, matrix_size_out, number_of_elements, number_of_batches );
+  
+  CHECK_FOR_CUDA_ERROR();
+
+  // Restore
+  if( !restore<1,REAL,REAL,dummy,dummy>( old_device, in, in_int, 0, alloc_device, out.get() ) ){
+    cerr << endl << "cuNDA_upsample: unable to restore device" << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+
+  return out;
+}
+
 // Clear
 template<class T> __global__ 
 void cuNDA_clear_kernel( T *in_out, T val, unsigned int number_of_elements )
@@ -1770,8 +1962,6 @@ bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim,
   return true;
 }
 
-
-
 // Add
 template<class REAL> __global__ 
 void cuNDA_add_kernel_complex( REAL a, typename complext<REAL>::Type *x, unsigned int number_of_elements )
@@ -1921,15 +2111,15 @@ bool cuNDA_scale( REAL a, cuNDArray<typename complext<REAL>::Type> *in_out,
 
 // Scale
 template<class S, class T> __global__ 
-void cuNDA_scale2_kernel( S *a, T *x, unsigned int number_of_elements )
+void cuNDA_scale2_kernel( S *a, T *x, unsigned int number_of_elements, unsigned int number_of_batches )
 {
-  const unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
+   const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
 
-  if( idx < number_of_elements ){
-    unsigned int frame_offset = blockIdx.y*number_of_elements;
-    S in_a = a[idx];
-    T in_x = x[idx+frame_offset];
-    x[idx+frame_offset] = mul<S>(in_a,in_x);
+  if( idx < number_of_elements*number_of_batches ){
+    unsigned int frame_offset = idx/number_of_elements;
+    S in_a = a[idx-frame_offset*number_of_elements];
+    T in_x = x[idx];
+    x[idx] = mul<S>(in_a,in_x);
   }
 }
 
@@ -1965,7 +2155,7 @@ bool cuNDA_scale( cuNDArray<T> *a, cuNDArray<T> *x,
   }
   
   // Invoke kernel
-  cuNDA_scale2_kernel<T,T><<< gridDim, blockDim >>> ( a_int->get_data_ptr(), x_int->get_data_ptr(), number_of_elements );
+  cuNDA_scale2_kernel<T,T><<< gridDim, blockDim >>> ( a_int->get_data_ptr(), x_int->get_data_ptr(), number_of_elements, num_batches );
  
   CHECK_FOR_CUDA_ERROR();
 
@@ -2010,7 +2200,7 @@ bool cuNDA_scale( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *
   }
  
   // Invoke kernel
-  cuNDA_scale2_kernel<REAL, typename complext<REAL>::Type><<< gridDim, blockDim >>> ( a_int->get_data_ptr(), x_int->get_data_ptr(), number_of_elements );
+  cuNDA_scale2_kernel<REAL, typename complext<REAL>::Type><<< gridDim, blockDim >>> ( a_int->get_data_ptr(), x_int->get_data_ptr(), number_of_elements, num_batches );
  
   CHECK_FOR_CUDA_ERROR();
 
@@ -2045,15 +2235,15 @@ void cuNDA_axpy_kernel( S *a, T *x, T *y, unsigned int number_of_batches, unsign
 
 // Scale conjugate w. non conjugate
 template<class S, class T> __global__ 
-void cuNDA_scale_conj_kernel( S *a, T *x, unsigned int number_of_elements )
+void cuNDA_scale_conj_kernel( S *a, T *x, unsigned int number_of_elements, unsigned int number_of_batches )
 {
-  const unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
 
-  if( idx < number_of_elements ){
-    unsigned int frame_offset = blockIdx.y*number_of_elements;
-    S in_a = a[idx];
-    T in_x = x[idx+frame_offset];
-    x[idx+frame_offset] = mul<S>(conj<S>(in_a),in_x);
+  if( idx < number_of_elements*number_of_batches ){
+    unsigned int frame_offset = idx/number_of_elements;
+    S in_a = a[idx-frame_offset*number_of_elements];
+    T in_x = x[idx];
+    x[idx] = mul<S>(conj<S>(in_a),in_x);
   }
 }
 
@@ -2089,7 +2279,7 @@ bool cuNDA_scale_conj( cuNDArray<T> *a, cuNDArray<T> *x,
   }
   
   // Invoke kernel
-  cuNDA_scale_conj_kernel<T,T><<< gridDim, blockDim >>> ( a_int->get_data_ptr(), x_int->get_data_ptr(), number_of_elements );
+  cuNDA_scale_conj_kernel<T,T><<< gridDim, blockDim >>> ( a_int->get_data_ptr(), x_int->get_data_ptr(), number_of_elements, num_batches );
  
   CHECK_FOR_CUDA_ERROR();
 
@@ -2673,16 +2863,17 @@ double cuNDA_normalize<double>( cuNDArray<double> *data, double new_max, cuNDA_d
 
 // Crop
 template<class T, unsigned int D> __global__ void
-cuNDA_crop_kernel( typename uintd<D>::Type offset, typename uintd<D>::Type matrix_size_in, typename uintd<D>::Type matrix_size_out, T *in, T *out )
+cuNDA_crop_kernel( typename uintd<D>::Type offset, typename uintd<D>::Type matrix_size_in, typename uintd<D>::Type matrix_size_out, 
+		   T *in, T *out, unsigned int num_batches, unsigned int num_elements )
 {
-  const unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+  const unsigned int frame_offset = idx/num_elements;
 
-  if( idx < prod(matrix_size_out) ){
-    const typename uintd<D>::Type co = idx_to_co<D>( idx, matrix_size_out );
+  if( idx < num_elements*num_batches ){
+    const typename uintd<D>::Type co = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
     const typename uintd<D>::Type co_os = offset + co;
-    const unsigned int in_idx = co_to_idx<D>(co_os, matrix_size_in)+blockIdx.y*prod(matrix_size_in);
-    const unsigned int out_idx = idx+blockIdx.y*prod(matrix_size_out);
-    out[out_idx] = in[in_idx];
+    const unsigned int in_idx = co_to_idx<D>(co_os, matrix_size_in)+frame_offset*prod(matrix_size_in); 
+    out[idx] = in[in_idx];
   }
 }
 
@@ -2738,7 +2929,8 @@ bool cuNDA_crop( typename uintd<D>::Type offset,
   }
 
   // Invoke kernel
-  cuNDA_crop_kernel<T,D><<< gridDim, blockDim >>> ( offset, matrix_size_in, matrix_size_out, in_int->get_data_ptr(), out_int->get_data_ptr() );
+  cuNDA_crop_kernel<T,D><<< gridDim, blockDim >>> 
+    ( offset, matrix_size_in, matrix_size_out, in_int->get_data_ptr(), out_int->get_data_ptr(), number_of_batches, prod(matrix_size_out) );
  
   CHECK_FOR_CUDA_ERROR();
 
@@ -2753,24 +2945,26 @@ bool cuNDA_crop( typename uintd<D>::Type offset,
 
 // Expand and zero fill
 template<class T, unsigned int D> __global__ void
-cuNDA_expand_with_zero_fill_kernel( typename uintd<D>::Type matrix_size_in, typename uintd<D>::Type matrix_size_out, T *in, T *out )
+cuNDA_expand_with_zero_fill_kernel( typename uintd<D>::Type matrix_size_in, typename uintd<D>::Type matrix_size_out, 
+				    T *in, T *out, unsigned int number_of_batches, unsigned int num_elements )
 {
-  const unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+  const unsigned int frame_offset = idx/num_elements;
 
-  if( idx < prod(matrix_size_out) ){
+  if( idx < num_elements*number_of_batches ){
 
-    const typename uintd<D>::Type co_out = idx_to_co<D>( idx, matrix_size_out );
+    const typename uintd<D>::Type co_out = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
     const typename uintd<D>::Type offset = (matrix_size_out-matrix_size_in)>>1;
     T _out;
     bool inside = (co_out>=offset) && (co_out<(matrix_size_in+offset));
 
     if( inside )
-      _out = in[co_to_idx<D>(co_out-offset, matrix_size_in)+blockIdx.y*prod(matrix_size_in)];
+      _out = in[co_to_idx<D>(co_out-offset, matrix_size_in)+frame_offset*prod(matrix_size_in)];
     else{      
       _out = get_zero<T>();
     }
 
-    out[idx+blockIdx.y*prod(matrix_size_out)] = _out;
+    out[idx] = _out;
   }
 }
 
@@ -2825,7 +3019,7 @@ bool cuNDA_expand_with_zero_fill( cuNDArray<T> *in, cuNDArray<T> *out,
   }
  
   // Invoke kernel
-  cuNDA_expand_with_zero_fill_kernel<T,D><<< gridDim, blockDim >>> ( matrix_size_in, matrix_size_out, in_int->get_data_ptr(), out_int->get_data_ptr() );
+  cuNDA_expand_with_zero_fill_kernel<T,D><<< gridDim, blockDim >>> ( matrix_size_in, matrix_size_out, in_int->get_data_ptr(), out_int->get_data_ptr(), number_of_batches, prod(matrix_size_out) );
  
   CHECK_FOR_CUDA_ERROR();
 
@@ -3111,6 +3305,87 @@ bool cuNDA_shrinkd( REAL gamma, cuNDArray<REAL> *s_k, cuNDArray<T> *in, cuNDArra
   return true;
 }
 
+// Crop
+template<class T, unsigned int D> __global__ void
+cuNDA_origin_mirror_kernel( typename uintd<D>::Type matrix_size, typename uintd<D>::Type origin, T *in, T *out, bool zero_fill )
+{
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+
+  if( idx < prod(matrix_size) ){
+
+    typename uintd<D>::Type in_co = idx_to_co<D>( idx, matrix_size );
+    typename uintd<D>::Type out_co = matrix_size-in_co;
+    
+    bool wrap = false;
+    for( unsigned int d=0; d<D; d++ ){
+      if( out_co.vec[d] == matrix_size.vec[d] ){
+	out_co.vec[d] = 0;
+	wrap = true;
+      }
+    }
+    
+    const unsigned int in_idx = co_to_idx<D>(in_co, matrix_size);
+    const unsigned int out_idx = co_to_idx<D>(out_co, matrix_size);
+
+    if( wrap && zero_fill )
+      out[out_idx] = get_zero<T>();
+    else
+      out[out_idx] = in[in_idx];
+  }
+}
+
+// Mirror around the origin -- !! leaving the origin unchanged !!
+// This creates empty space "on the left" that can be filled by zero (default) or the left-over entry.
+template<class T, unsigned int D> EXPORTGPUCORE
+bool cuNDA_origin_mirror( cuNDArray<T> *in, cuNDArray<T> *out, bool zero_fill, cuNDA_device compute_device )
+{
+  if( in == 0x0 || out == 0x0 ){
+    cout << endl << "cuNDA_origin_mirror: 0x0 ndarray provided" << endl;
+    return false;
+  }
+
+  if( !in->dimensions_equal(out) ){
+    cout << endl << "cuNDA_origin_mirror: image dimensions mismatch" << endl;
+    return false;
+  }
+  
+  if( in->get_number_of_dimensions() != D ){
+    cout << endl << "cuNDA_origin_mirror: number of image dimensions is not " << D << endl;
+    return false;
+  }
+
+  typename uintd<D>::Type matrix_size = vector_to_uintd<D>( *in->get_dimensions() );
+ 
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<T> *in_int, *out_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<2,T,T,dummy>( compute_device, &cur_device, &old_device, in, &in_int, out, &out_int ) ){
+    cerr << endl << "cuNDA_origin_mirror: unable to prepare device(s)" << endl;
+    return false;
+  }
+  
+  // Setup block/grid dimensions
+  dim3 blockDim; dim3 gridDim;
+  if( !setup_grid( cur_device, prod(matrix_size), &blockDim, &gridDim ) ){
+    cerr << endl << "cuNDA_origin_mirror: block/grid configuration out of range" << endl;
+    return false;
+  }
+
+  // Invoke kernel
+  cuNDA_origin_mirror_kernel<T,D><<< gridDim, blockDim >>> ( matrix_size, matrix_size>>1, in_int->get_data_ptr(), out_int->get_data_ptr(), zero_fill );
+ 
+  CHECK_FOR_CUDA_ERROR();
+
+  // Restore
+  if( !restore<2,T,dummy,T,dummy>( old_device, in, in_int, 2, compute_device, 0x0, out, out_int ) ){
+    cerr << endl << "cuNDA_origin_mirror: unable to restore device" << endl;
+    return false;
+  }
+
+  return out;
+}
 
 //
 // Instantiation
@@ -3366,6 +3641,30 @@ cuNDA_real_to_complext<float>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > 
 cuNDA_complext_to_real<float>( cuNDArray<float_complext::Type>*, cuNDA_device, cuNDA_device );
 
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > 
+cuNDA_downsample<float,1>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > 
+cuNDA_downsample<float,2>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > 
+cuNDA_downsample<float,3>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > 
+cuNDA_downsample<float,4>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > 
+cuNDA_upsample<float,1>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > 
+cuNDA_upsample<float,2>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > 
+cuNDA_upsample<float,3>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > 
+cuNDA_upsample<float,4>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
 template EXPORTGPUCORE bool cuNDA_clear<float>( cuNDArray<float>*,float, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_clear<float_complext::Type>( cuNDArray<float_complext::Type>*,float_complext::Type, cuNDA_device );
 
@@ -3441,6 +3740,24 @@ template EXPORTGPUCORE bool cuNDA_shrink1<float,float_complext::Type>( float, cu
 
 template EXPORTGPUCORE bool cuNDA_shrinkd<float,float>( float, cuNDArray<float>*, cuNDArray<float>*, cuNDArray<float>* );
 template EXPORTGPUCORE bool cuNDA_shrinkd<float,float_complext::Type>( float, cuNDArray<float>*, cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>* );
+
+template EXPORTGPUCORE 
+bool cuNDA_origin_mirror<float,1>(cuNDArray<float>*, cuNDArray<float>*, bool, cuNDA_device);
+template EXPORTGPUCORE
+bool cuNDA_origin_mirror<float,2>(cuNDArray<float>*, cuNDArray<float>*, bool, cuNDA_device);
+template EXPORTGPUCORE
+bool cuNDA_origin_mirror<float,3>(cuNDArray<float>*, cuNDArray<float>*, bool, cuNDA_device);
+template EXPORTGPUCORE 
+bool cuNDA_origin_mirror<float,4>(cuNDArray<float>*, cuNDArray<float>*, bool, cuNDA_device);
+
+template EXPORTGPUCORE bool
+cuNDA_origin_mirror<float_complext::Type,1>(cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, bool, cuNDA_device);
+template EXPORTGPUCORE bool 
+cuNDA_origin_mirror<float_complext::Type,2>(cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, bool, cuNDA_device);
+template EXPORTGPUCORE bool 
+cuNDA_origin_mirror<float_complext::Type,3>(cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, bool, cuNDA_device);
+template EXPORTGPUCORE bool 
+cuNDA_origin_mirror<float_complext::Type,4>(cuNDArray<float_complext::Type>*, cuNDArray<float_complext::Type>*, bool, cuNDA_device);
 
 
 // Instanciation -- double precision
@@ -3591,6 +3908,30 @@ cuNDA_real_to_complext<double>( cuNDArray<double>*, cuNDA_device, cuNDA_device )
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > 
 cuNDA_complext_to_real<double>( cuNDArray<double_complext::Type>*, cuNDA_device, cuNDA_device );
 
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > 
+cuNDA_downsample<double,1>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > 
+cuNDA_downsample<double,2>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > 
+cuNDA_downsample<double,3>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > 
+cuNDA_downsample<double,4>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > 
+cuNDA_upsample<double,1>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > 
+cuNDA_upsample<double,2>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > 
+cuNDA_upsample<double,3>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > 
+cuNDA_upsample<double,4>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+
 template EXPORTGPUCORE bool cuNDA_clear<double>( cuNDArray<double>*,double, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_clear<double_complext::Type>( cuNDArray<double_complext::Type>*,double_complext::Type, cuNDA_device );
 
@@ -3621,9 +3962,6 @@ template EXPORTGPUCORE bool cuNDA_scale<double_complext::Type>( cuNDArray<double
 template EXPORTGPUCORE bool cuNDA_scale<double>( cuNDArray<double>*, cuNDArray<double_complext::Type>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_scale_conj<double_complext::Type>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, cuNDA_device );
-
-
-
 
 template EXPORTGPUCORE bool cuNDA_axpy<double>( cuNDArray<double>*, cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_axpy<double_complext::Type>( cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, cuNDA_device );
@@ -3670,3 +4008,21 @@ template EXPORTGPUCORE bool cuNDA_shrink1<double,double_complext::Type>( double,
 
 template EXPORTGPUCORE bool cuNDA_shrinkd<double,double>( double, cuNDArray<double>*, cuNDArray<double>*, cuNDArray<double>* );
 template EXPORTGPUCORE bool cuNDA_shrinkd<double,double_complext::Type>( double, cuNDArray<double>*, cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>* );
+
+template EXPORTGPUCORE 
+bool cuNDA_origin_mirror<double,1>(cuNDArray<double>*, cuNDArray<double>*, bool, cuNDA_device);
+template EXPORTGPUCORE
+bool cuNDA_origin_mirror<double,2>(cuNDArray<double>*, cuNDArray<double>*, bool, cuNDA_device);
+template EXPORTGPUCORE
+bool cuNDA_origin_mirror<double,3>(cuNDArray<double>*, cuNDArray<double>*, bool, cuNDA_device);
+template EXPORTGPUCORE 
+bool cuNDA_origin_mirror<double,4>(cuNDArray<double>*, cuNDArray<double>*, bool, cuNDA_device);
+
+template EXPORTGPUCORE bool
+cuNDA_origin_mirror<double_complext::Type,1>(cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, bool, cuNDA_device);
+template EXPORTGPUCORE bool 
+cuNDA_origin_mirror<double_complext::Type,2>(cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, bool, cuNDA_device);
+template EXPORTGPUCORE bool 
+cuNDA_origin_mirror<double_complext::Type,3>(cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, bool, cuNDA_device);
+template EXPORTGPUCORE bool 
+cuNDA_origin_mirror<double_complext::Type,4>(cuNDArray<double_complext::Type>*, cuNDArray<double_complext::Type>*, bool, cuNDA_device);

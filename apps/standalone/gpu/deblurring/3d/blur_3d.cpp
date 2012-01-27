@@ -13,7 +13,7 @@
 
 using namespace std;
 
-// Define desired precision (note that decent deblurring of noisy images requires double precision)
+// Define desired precision
 typedef float _real; 
 typedef complext<_real>::Type _complext;
 
@@ -87,7 +87,7 @@ int main( int argc, char** argv)
   blurred_image.create(image->get_dimensions().get());
   
   // Create convolution operator and assign kernel
-  cuConvolutionOperator<_real> conv;
+  cuConvolutionOperator<_real,3> conv;
   conv.set_kernel( kernel.get() );  
 
   // Convolve

@@ -9,11 +9,11 @@
 #include <vector>
 #include <iostream>
 
-template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class cgSolver : public solver<ARRAY_TYPE>
+template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class cgSolver : public solver<ARRAY_TYPE, ARRAY_TYPE>
 {
 public:
 
-  cgSolver( int output_mode = solver<ARRAY_TYPE>::OUTPUT_SILENT ) : solver<ARRAY_TYPE>( output_mode ) { 
+  cgSolver( int output_mode = solver<ARRAY_TYPE, ARRAY_TYPE>::OUTPUT_SILENT ) : solver<ARRAY_TYPE, ARRAY_TYPE>( output_mode ) { 
     iterations_ = 10;
     limit_ = (REAL)1e-3;
     operators_ = boost::shared_ptr< std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE> > > >
@@ -55,6 +55,12 @@ public:
 
   virtual boost::shared_ptr<ARRAY_TYPE> solve( ARRAY_TYPE *_rhs, ARRAY_TYPE * x0 )
   {
+    // Input validity test
+    if( !_rhs || _rhs->get_number_of_elements() == 0 ){
+      this->solver_error( "cgSolver::solve : empty or NULL rhs provided" );
+      return boost::shared_ptr<ARRAY_TYPE>();
+    }
+
     // Make copy of the input pointer for the pre_solve callback
     ARRAY_TYPE *rhs = _rhs;
 
@@ -92,7 +98,7 @@ public:
     	      this->solver_error( "cgSolver::solve : Unable to allocate temp storage (mhmX)" );
     	      return boost::shared_ptr<ARRAY_TYPE>(x);
 		}
-    	 if( this->output_mode_ >= solver<ARRAY_TYPE>::OUTPUT_VERBOSE ) {
+    	 if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
     	      std::cout << "Preparing guess..." << std::endl;
     	    }
     	if(!mult_MH_M(x0,&mhmX)){
@@ -139,7 +145,7 @@ public:
     REAL rq_0 = rq;
     REAL rel_res;
     REAL rq_last =get_max<REAL>();
-    if( this->output_mode_ >= solver<ARRAY_TYPE>::OUTPUT_VERBOSE ) {
+    if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
       std::cout << "Iterating..." << std::endl;
     }
 
@@ -196,8 +202,8 @@ public:
       // Calculate relative residual norm
       rel_res = rq/rq_0;
 
-      if( this->output_mode_ >= solver<ARRAY_TYPE>::OUTPUT_WARNINGS ) {
-    	  if( this->output_mode_ >= solver<ARRAY_TYPE>::OUTPUT_VERBOSE ) {
+      if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_WARNINGS ) {
+    	  if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
     		  std::cout << "Iteration " << it+1 << ". rq/rq_0 = " << rel_res << std::endl;
     	  }
     	  if( rq_last-rel_res < get_zero<REAL>() ) {

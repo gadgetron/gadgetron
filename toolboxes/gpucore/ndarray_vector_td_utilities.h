@@ -98,6 +98,20 @@ cuNDA_complext_to_real( cuNDArray<typename complext<REAL>::Type> *data,
 			cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
 			cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
+// Downsample array to half size (Real arrays only)
+template<class REAL, unsigned int D> EXPORTGPUCORE 
+boost::shared_ptr< cuNDArray<REAL> > 
+cuNDA_downsample( cuNDArray<REAL> *data,
+		  cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
+		  cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
+
+// Upsample array to double size (Real arrays only)
+template<class REAL, unsigned int D> EXPORTGPUCORE 
+boost::shared_ptr< cuNDArray<REAL> > 
+cuNDA_upsample( cuNDArray<REAL> *data,
+		cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
+		cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
+
 //
 // Utilities overwriting the input
 //
@@ -222,3 +236,8 @@ bool cuNDA_shrink1( REAL gamma, cuNDArray<T> *in, cuNDArray<T> *out );
 
 template<class REAL, class T> EXPORTGPUCORE
 bool cuNDA_shrinkd( REAL gamma, cuNDArray<REAL> *s_k, cuNDArray<T> *in, cuNDArray<T> *out );
+
+// Mirror around the origin -- !! leaving the origin unchanged !!
+template<class T, unsigned int D> EXPORTGPUCORE
+bool cuNDA_origin_mirror( cuNDArray<T> *in, cuNDArray<T> *out, bool zero_fill = true,
+			  cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );

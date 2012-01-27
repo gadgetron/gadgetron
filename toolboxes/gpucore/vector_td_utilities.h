@@ -21,6 +21,7 @@ template<class T, unsigned int D> __inline__ __host__ __device__ void set( vecto
 
 template<class T> __inline__ __host__ __device__ T get_zero();
 template<class T> __inline__ __host__ __device__ T get_one();
+template<class T> __inline__ __host__ __device__ T get_two();
 
 //
 // Operations on float/double and complext<REAL>
@@ -435,6 +436,42 @@ template<> __inline__ __host__ __device__ vector_td<double,2> get_one<vector_td<
 {
   vector_td<double,2> res;
   res.vec[0] = 1.0;
+  res.vec[1] = 0.0;
+  return res;
+}
+
+template<> __inline__ __host__ __device__ float get_two<float>()
+{
+  return 2.0f;
+}
+
+template<> __inline__ __host__ __device__ double get_two<double>()
+{
+  return 2.0;
+}
+
+template<> __inline__ __host__ __device__ int get_two<int>()
+{
+  return 2;
+}
+
+template<> __inline__ __host__ __device__ unsigned int get_two<unsigned int>()
+{
+  return 2;
+}
+
+template<> __inline__ __host__ __device__ vector_td<float,2> get_two<vector_td<float,2> >()
+{
+  vector_td<float,2> res;
+  res.vec[0] = 2.0f;
+  res.vec[1] = 0.0f;
+  return res;
+}
+
+template<> __inline__ __host__ __device__ vector_td<double,2> get_two<vector_td<double,2> >()
+{
+  vector_td<double,2> res;
+  res.vec[0] = 2.0;
   res.vec[1] = 0.0;
   return res;
 }
