@@ -10,6 +10,7 @@
 
 #include "ImageWriter.h"
 #include "hoNDArray_hdf5_io.h"
+#include "mri_hdf5_io.h"
 #include <sstream>
 
 template <typename T> class HDF5ImageWriter : public ImageWriter<T>
@@ -29,12 +30,27 @@ public:
 	{
 	    std::stringstream st;
 	    st << img_head->image_series_index;
-		std::string varname = group_name_ + std::string("/") + st.str();
+		std::string varname = group_name_ + std::string("/") + std::string("data_") + st.str();
 
-		if (!hoNDArray_hdf5_append(data, file_name_.c_str(), varname.c_str()) == 0) {
+		if (!(hdf5_append_array(data, file_name_.c_str(), varname.c_str()) == 0)) {
 			GADGET_DEBUG1("File is not good for writing\n");
 			return GADGET_FAIL;
 		}
+
+		varname = group_name_ + std::string("/") + std::string("header_") + st.str();
+
+		if (!(hdf5_append_struct(img_head, file_name_.c_str(), varname.c_str()) == 0)) {
+			GADGET_DEBUG1("File is not good for writing\n");
+			return GADGET_FAIL;
+		}
+
+		varname = group_name_ + std::string("/") + std::string("comb_") + st.str();
+
+		if (!(hdf5_append_struct_with_data(img_head, data, file_name_.c_str(), varname.c_str()) == 0)) {
+			GADGET_DEBUG1("File is not good for writing\n");
+			return GADGET_FAIL;
+		}
+
 		return GADGET_OK;
 	}
 
