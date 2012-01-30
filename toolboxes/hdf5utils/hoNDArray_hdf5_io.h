@@ -197,6 +197,7 @@ template <class T> boost::shared_ptr< hoNDArray<T> > hdf5_read_array_slice(
 	}
 
 	try {
+
 		boost::shared_ptr<H5File> f = OpenHF5File(filename);
 		if (!HDF5LinkExists(f.get(), varname)) {
 			std::cout << "Trying to access non-existing variable in HDF5 file." << std::endl;
@@ -255,7 +256,7 @@ template <class T> boost::shared_ptr< hoNDArray<T> > hdf5_read_array_slice(
 		}
 
 		//OK finally ready, now read the data.
-		d.read(reinterpret_cast<void*>(ret->get_data_ptr()), *datatype, memspace, dataspace);
+		d.read(reinterpret_cast<void*>(ret->get_data_ptr()), *datatype, memspace, dataspace, H5P_DEFAULT);
 
 	} catch (...) {
 		std::cout << "Error caught while attempting to read HDF5 file" << std::endl;

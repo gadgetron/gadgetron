@@ -22,8 +22,6 @@ void print_usage()
 	ACE_DEBUG((LM_INFO, ACE_TEXT("          -h <HOST>                      (default localhost)\n") ));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("          -d <HDF5 DATA FILE>            (default ./data.h5)\n") ));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("          -g <HDF5 Group>                (default /dataset)\n") ));
-	//ACE_DEBUG((LM_INFO, ACE_TEXT("          -d <DATA FILE>                 (default ./data.dat)\n") ));
-	//ACE_DEBUG((LM_INFO, ACE_TEXT("          -x <PARAMETER FILE (XML)>      (default ./parameters.xml)\n") ));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("          -c <GADGETRON CONFIG>          (default default.xml)\n") ));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("          -l <LOOPS>                     (default 1)\n") ));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("          -5 <HDF5 out file name>        (no default)\n") ));
@@ -133,14 +131,6 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 	}
 
 
-	/*
-	if (!FileInfo(std::string(parameter_file)).exists()) {
-		ACE_DEBUG((LM_INFO, ACE_TEXT("Parameter file %s does not exist.\n"), parameter_file));
-		print_usage();
-		return -1;
-	}
-	*/
-
 	if (repetition_loops < 1) {
 		ACE_DEBUG((LM_INFO, ACE_TEXT("Invalid number of repetition loops (%d).\n"), repetition_loops));
 		print_usage();
@@ -151,7 +141,6 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 	ACE_DEBUG((LM_INFO, ACE_TEXT("  -- port:            %s\n"), port_no));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("  -- data (in):       %s\n"), hdf5_in_data_file));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("  -- group (in):      %s\n"), hdf5_in_group));
-	//ACE_DEBUG((LM_INFO, ACE_TEXT("  -- parm:            %s\n"), parameter_file));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("  -- conf:            %s\n"), config_file));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("  -- loop:            %d\n"), repetition_loops));
 
@@ -191,43 +180,25 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 		//Read XML parameter file from disk
 		boost::shared_ptr< hoNDArray<char> > xml_array = hdf5_read_array_slice<char>(hdf5_in_data_file, hdf5_xml_varname.c_str());
 
-		//std::ifstream ifs(parameter_file);
-		std::string xmlstring(xml_array->get_data_ptr());// = std::string(std::istreambuf_iterator<char>(ifs),std::istreambuf_iterator<char>());
-
-		//
-
-		//std::cout << "XML:" << std::endl << xmlstring << std::endl;
-		//return 0;
+		std::string xmlstring(xml_array->get_data_ptr());
 
 		if (con.send_gadgetron_parameters(xmlstring) != 0) {
 			ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to send XML parameters to the Gadgetron host")));
 			return -1;
 		}
 
-		//We are now ready to send data...
-		/*
-		std::ifstream is;
-		is.open (data_file, ios::binary );
-		is.seekg (0, ios::end);
-		size_t length = is.tellg();
-		is.seekg (0, ios::beg);
-		*/
-
 		unsigned long acquisitions = HDF5GetLengthOfFirstDimension(hdf5_in_data_file, hdf5_data_varname.c_str());
 
-		std::cout << "Number of profiles: " << acquisitions << std::endl;
-
-		//while ((length-is.tellg()) > sizeof(GadgetMessageAcquisition)) {
 		for (unsigned long int i = 0; i < acquisitions; i++) {
 
-			header_data_struct<GadgetMessageAcquisition, std::complex<float> > acquisition =
-				hdf5_read_struct_with_data< GadgetMessageAcquisition,
-					std::complex<float> >(hdf5_in_data_file, hdf5_data_varname.c_str(), i);
+			header_data_struct<GadgetMessageAcquisition, std::complex<float> > acquisition;
 
-			/*
-			boost::shared_ptr<GadgetMessageAcquisition> acquisition =
-							hdf5_read_struct< GadgetMessageAcquisition >(hdf5_in_data_file, hdf5_data_varname.c_str(), i);
-            */
+			{
+
+				HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
+				acquisition = hdf5_read_struct_with_data< GadgetMessageAcquisition, std::complex<float> >(hdf5_in_data_file, hdf5_data_varname.c_str(), i);
+			}
+
 
 			GadgetContainerMessage<GadgetMessageIdentifier>* m1 =
 					new GadgetContainerMessage<GadgetMessageIdentifier>();
@@ -237,13 +208,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 			GadgetContainerMessage<GadgetMessageAcquisition>* m2 =
 					new GadgetContainerMessage<GadgetMessageAcquisition>();
 
-			//memcpy(m2->getObjectPtr(), acquisition.get(), sizeof(GadgetMessageAcquisition));
+			//We have to copy this data, because the header_data_struct contains boost::shared_ptr and those objects will get destroyed.
+			//There is no clean way to take the ownership from a boost::shared_ptr and hand it to an ACE_Message_Block
 			memcpy(m2->getObjectPtr(), acquisition.h.get(), sizeof(GadgetMessageAcquisition));
-
-			std::cout << "Scan counter: " << m2->getObjectPtr()->scan_counter << std::endl;
-
-			//Read acquisition header from disk
-			//is.read(reinterpret_cast<char*>(m2->getObjectPtr()), sizeof(GadgetMessageAcquisition));
 
 			std::vector<unsigned int> dimensions(2);
 			dimensions[0] = m2->getObjectPtr()->samples;
@@ -252,22 +219,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 			GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 =
 					new GadgetContainerMessage< hoNDArray< std::complex< float> > >();
 
+			//We have to copy, see above.
 			*m3->getObjectPtr() = *acquisition.d.get();
-
-			std::cout << "elements: " << m3->getObjectPtr()->get_number_of_elements() << std::endl;
-
-			/*
-			if (!m3->getObjectPtr()->create(&dimensions)) {
-				ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to create storage for NDArray.\n")));
-				ACE_DEBUG((LM_ERROR, ACE_TEXT("Requested dimensions were (%d,%d)"), dimensions[0], dimensions[1]));
-				return -1;
-			}
-			*/
-
-			//memcpy(acquisition.d.get()->get_data_ptr(), acquisition.d.get()->get_data_ptr(), acquisition.d.get()->get_number_of_elements()*sizeof(std::complex<float>));
-
-			//Read data from disk
-			//is.read(reinterpret_cast<char*>(m3->getObjectPtr()->get_data_ptr()),sizeof(float)*2*m3->getObjectPtr()->get_number_of_elements());
 
 			//Chain the message block together.
 			m1->cont(m2);
@@ -278,8 +231,6 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 				return -1;
 			}
 		}
-
-		//is.close();
 
 		GadgetContainerMessage<GadgetMessageIdentifier>* m1 =
 				new GadgetContainerMessage<GadgetMessageIdentifier>();

@@ -85,5 +85,24 @@ unsigned long HDF5GetLengthOfFirstDimension(const char* filename, const char* na
 	return dims[0];
 }
 
+HDF5Lock* HDF5Lock::instance()
+{
+		if (!instance_) instance_ = new HDF5Lock();
+		return instance_;
+}
+
+void HDF5Lock::acquire()
+{
+	mutex_.acquire();
+}
+
+void HDF5Lock::release()
+{
+	mutex_.release();
+}
+
+HDF5Lock* HDF5Lock::instance_ = NULL;
+
+
 
 

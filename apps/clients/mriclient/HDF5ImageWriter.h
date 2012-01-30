@@ -28,6 +28,7 @@ public:
 	virtual int process_image(GadgetMessageImage* img_head,
 			hoNDArray< T >* data)
 	{
+		HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
 	    std::stringstream st;
 	    st << img_head->image_series_index;
 		std::string varname = group_name_ + std::string("/") + std::string("data_") + st.str();

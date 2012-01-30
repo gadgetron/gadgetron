@@ -208,12 +208,10 @@ template <class T> boost::shared_ptr<T> hdf5_read_struct(const char* filename, c
 	}
 
 	//We'll take charge of the memory content here:
-	//tmp->delete_data_on_destruct(false);
+	tmp->delete_data_on_destruct(false);
 
-
-	ret = boost::shared_ptr<T>(new T);
-
-	memcpy(ret.get(), tmp->get_data_ptr(), sizeof(T));
+	//Now let the boost::shared_ptr make sure it gets deleted...eventually.
+	ret = boost::shared_ptr<T>(tmp->get_data_ptr());
 
 	return ret;
 }
@@ -233,9 +231,7 @@ template <class STRUCT, class DATATYPE> header_data_struct<STRUCT, DATATYPE>
 
 	boost::shared_ptr<DataType> datatype(ct);
 
-	std::cout << "Reading struct with data...";
 	boost::shared_ptr< hoNDArray<  local_hdf5_append_struct<STRUCT> > > tmp = hdf5_read_array_slice<  local_hdf5_append_struct<STRUCT> >(datatype, filename, varname, index);
-	std::cout << "1...";
 
 	header_data_struct<STRUCT, DATATYPE > ret;
 
@@ -246,30 +242,27 @@ template <class STRUCT, class DATATYPE> header_data_struct<STRUCT, DATATYPE>
 
 	ret.h = boost::shared_ptr<STRUCT>(new STRUCT);
 	memcpy(ret.h.get(), &tmp->get_data_ptr()[0].h, sizeof(STRUCT));
-	std::cout << "2...";
 
 	ret.d = boost::shared_ptr< hoNDArray<DATATYPE> >(new hoNDArray<DATATYPE>());
 	std::vector<unsigned int> ndarray_dims(1, tmp->get_data_ptr()[0].d.len);
-	std::cout << "3...";
 
-	if (!ret.d->create(&ndarray_dims)) {
+	//We are taking control of this pointer from the variable length array here and now the NDArray will become responsible for deleting it
+	if (!ret.d->create(&ndarray_dims, reinterpret_cast<DATATYPE*>(tmp->get_data_ptr()[0].d.p), true)) {
 		std::cout << "Error allocating array for HDF5 read" << std::endl;
 		return ret;
 	}
 
-	std::cout << "4...";
-
+	/*
+	 * This code copies the data from the hvl_t (it was allocated by the HDF5 library) and then reclaims the memory
+	 *
+	 * With the statement above, this is not needed, since we hand control of the data to the hoNDArray thus avoiding a copy operation
+	 *
 	memcpy(ret.d->get_data_ptr(), tmp->get_data_ptr()[0].d.p, tmp->get_data_ptr()[0].d.len*sizeof(DATATYPE));
-
-	std::cout << "5...";
 
 	std::vector<hsize_t> dims(1,1);
 	DataSpace space(1, &dims[0]);
 	H5Dvlen_reclaim (datatype->getId(), space.getId(), H5P_DEFAULT, &tmp->get_data_ptr()[0]);
-
-	std::cout << "6...";
-
-	std::cout << "...done!" << std::endl;
+	*/
 
 	return ret;
 }
