@@ -252,16 +252,17 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 			GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 =
 					new GadgetContainerMessage< hoNDArray< std::complex< float> > >();
 
-			//*m3->getObjectPtr() = *acquisition.d.get();
+			*m3->getObjectPtr() = *acquisition.d.get();
 
 			std::cout << "elements: " << m3->getObjectPtr()->get_number_of_elements() << std::endl;
 
+			/*
 			if (!m3->getObjectPtr()->create(&dimensions)) {
 				ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to create storage for NDArray.\n")));
 				ACE_DEBUG((LM_ERROR, ACE_TEXT("Requested dimensions were (%d,%d)"), dimensions[0], dimensions[1]));
 				return -1;
 			}
-
+			*/
 
 			//memcpy(acquisition.d.get()->get_data_ptr(), acquisition.d.get()->get_data_ptr(), acquisition.d.get()->get_number_of_elements()*sizeof(std::complex<float>));
 

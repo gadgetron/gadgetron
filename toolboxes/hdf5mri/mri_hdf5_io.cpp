@@ -26,16 +26,17 @@ template <class T> boost::shared_ptr<DataType> getHDF5ArrayType(int LENGTH);
 template <> boost::shared_ptr<DataType> getHDF5ArrayType<float>(int LENGTH)
 {
 	std::vector<hsize_t> dims(1,LENGTH);
-	hid_t array_tid = H5Tarray_create(H5T_NATIVE_FLOAT, 1, &dims[0]);
-	boost::shared_ptr<DataType> ret(new DataType(array_tid));
+	//hid_t array_tid = H5Tarray_create(H5T_NATIVE_FLOAT, 1, &dims[0]);
+	boost::shared_ptr<DataType> ret(new ArrayType(PredType::NATIVE_FLOAT, 1, &dims[0]));
 	return ret;
 }
 
 template <> boost::shared_ptr<DataType> getHDF5ArrayType<ACE_UINT16>(int LENGTH)
 {
 	std::vector<hsize_t> dims(1,LENGTH);
-	hid_t array_tid = H5Tarray_create(H5T_NATIVE_USHORT, 1, &dims[0]);
-	boost::shared_ptr<DataType> ret(new DataType(array_tid));
+	//hid_t array_tid = H5Tarray_create(H5T_NATIVE_USHORT, 1, &dims[0]);
+	//boost::shared_ptr<DataType> ret(new DataType(array_tid));
+	boost::shared_ptr<DataType> ret(new ArrayType(PredType::NATIVE_USHORT, 1, &dims[0]));
 	return ret;
 }
 

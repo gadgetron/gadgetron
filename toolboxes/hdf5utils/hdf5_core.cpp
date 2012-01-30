@@ -13,6 +13,7 @@
 #endif
 
 #include <vector>
+#include <iostream>
 
 boost::shared_ptr<H5File> OpenHF5File(const char* filename)
 {
