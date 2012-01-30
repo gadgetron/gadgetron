@@ -140,6 +140,12 @@ template <class T> class NDArray
     return delete_data_on_destruct_;
   }
   
+
+  inline void delete_data_on_destruct(bool d) {
+    delete_data_on_destruct_ = d;
+  }
+
+
 protected:
 
   virtual int allocate_memory() = 0;

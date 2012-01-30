@@ -190,3 +190,92 @@ template int hdf5_append_struct_with_data(GadgetMessageImage* s, hoNDArray< std:
 
 template int hdf5_append_struct_with_data(GadgetMessageAcquisition* s, hoNDArray< std::complex<float> >* a,
 		                                  const char* filename, const char* varname);
+
+
+template <class T> boost::shared_ptr<T> hdf5_read_struct(const char* filename, const char* varname,
+		unsigned int index = 0)
+{
+	boost::shared_ptr< T > ret;
+
+	boost::shared_ptr<DataType> structdatatype = getHDF5CompositeType<T>();
+
+	boost::shared_ptr< hoNDArray<T> > tmp = hdf5_read_array_slice<T>(structdatatype, filename, varname, index);
+
+	if (tmp->get_number_of_elements() != 1) {
+		std::cout << "Error reading struct from HDF5 file. Expexting 1 and only 1 return value." << std::endl;
+		return ret;
+	}
+
+	//We'll take charge of the memory content here:
+	//tmp->delete_data_on_destruct(false);
+
+
+	ret = boost::shared_ptr<T>(new T);
+
+	memcpy(ret.get(), tmp->get_data_ptr(), sizeof(T));
+
+	return ret;
+}
+
+
+template <class STRUCT, class DATATYPE> header_data_struct<STRUCT, DATATYPE>
+	hdf5_read_struct_with_data(const char* filename, const char* varname, unsigned index = 0)
+{
+
+	boost::shared_ptr<DataType> structdatatype = getHDF5CompositeType<STRUCT>();
+	boost::shared_ptr<DataType> vdatatype = getHDF5Type<DATATYPE>();
+	vdatatype = boost::shared_ptr<DataType>(new DataType(H5Tvlen_create (vdatatype->getId())));
+
+	CompType* ct = new CompType(sizeof(local_hdf5_append_struct<STRUCT>));
+	ct->insertMember( "h", HOFFSET(local_hdf5_append_struct<STRUCT>,h),  *structdatatype);
+	ct->insertMember( "d", HOFFSET(local_hdf5_append_struct<STRUCT>,d),  *vdatatype);
+
+	boost::shared_ptr<DataType> datatype(ct);
+
+	std::cout << "Reading struct with data...";
+	boost::shared_ptr< hoNDArray<  local_hdf5_append_struct<STRUCT> > > tmp = hdf5_read_array_slice<  local_hdf5_append_struct<STRUCT> >(datatype, filename, varname, index);
+	std::cout << "1...";
+
+	header_data_struct<STRUCT, DATATYPE > ret;
+
+	if (tmp->get_number_of_elements() != 1) {
+		std::cout << "Error reading struct from HDF5 file. Expexting 1 and only 1 return value." << std::endl;
+		return ret;
+	}
+
+	ret.h = boost::shared_ptr<STRUCT>(new STRUCT);
+	memcpy(ret.h.get(), &tmp->get_data_ptr()[0].h, sizeof(STRUCT));
+	std::cout << "2...";
+
+	ret.d = boost::shared_ptr< hoNDArray<DATATYPE> >(new hoNDArray<DATATYPE>());
+	std::vector<unsigned int> ndarray_dims(1, tmp->get_data_ptr()[0].d.len);
+	std::cout << "3...";
+
+	if (!ret.d->create(&ndarray_dims)) {
+		std::cout << "Error allocating array for HDF5 read" << std::endl;
+		return ret;
+	}
+
+	std::cout << "4...";
+
+	memcpy(ret.d->get_data_ptr(), tmp->get_data_ptr()[0].d.p, tmp->get_data_ptr()[0].d.len*sizeof(DATATYPE));
+
+	std::cout << "5...";
+
+	std::vector<hsize_t> dims(1,1);
+	DataSpace space(1, &dims[0]);
+	H5Dvlen_reclaim (datatype->getId(), space.getId(), H5P_DEFAULT, &tmp->get_data_ptr()[0]);
+
+	std::cout << "6...";
+
+	std::cout << "...done!" << std::endl;
+
+	return ret;
+}
+
+template boost::shared_ptr<GadgetMessageImage> hdf5_read_struct<GadgetMessageImage>(const char* , const char* , unsigned int);
+template boost::shared_ptr<GadgetMessageAcquisition> hdf5_read_struct<GadgetMessageAcquisition>(const char* , const char* , unsigned int);
+
+template header_data_struct<GadgetMessageAcquisition, std::complex<float> >
+	hdf5_read_struct_with_data<GadgetMessageAcquisition, std::complex<float> >(const char*, const char*, unsigned);
+

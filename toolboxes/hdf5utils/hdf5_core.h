@@ -26,4 +26,6 @@ EXPORTHDF5UTILS  bool HDF5LinkExists(H5File* f, const char* name);
 
 EXPORTHDF5UTILS int HDF5CreateGroupForDataset(H5File* f, const char* name);
 
+EXPORTHDF5UTILS unsigned long HDF5GetLengthOfFirstDimension(const char* filename, const char* name);
+
 #endif /* HDF5_CORE_H_ */

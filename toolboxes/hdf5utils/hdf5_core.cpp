@@ -62,6 +62,27 @@ int HDF5CreateGroupForDataset(H5File* f, const char* name)
 	return 0;
 }
 
+unsigned long HDF5GetLengthOfFirstDimension(const char* filename, const char* name)
+{
+	if (!FileInfo(std::string(filename)).exists()) {
+		return 0;
+	}
+
+	boost::shared_ptr<H5File> f = OpenHF5File(filename);
+
+	if (!HDF5LinkExists(f.get(), name)) {
+		std::cout << "Trying to access non-existing variable in HDF5 file." << std::endl;
+		return 0;
+	}
+
+	DataSet d = f->openDataSet(name);
+	DataSpace dataspace = d.getSpace();
+	int rank = dataspace.getSimpleExtentNdims();
+	std::vector<hsize_t> dims(rank,0);
+	dataspace.getSimpleExtentDims(&dims[0]);
+
+	return dims[0];
+}
 
 
 

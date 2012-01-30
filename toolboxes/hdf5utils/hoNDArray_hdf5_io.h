@@ -22,10 +22,6 @@
 	using namespace H5;
 #endif
 
-	/*
-template <class T> EXPORTHDF5UTILS int hoNDArray_hdf5_append(hoNDArray<T>* a,
-		const char* filename, const char* varname);
-*/
 
 /**
  *   Base class template for returning HDF5 data type
@@ -38,6 +34,15 @@ template <class T> boost::shared_ptr<DataType> getHDF5Type();
 template <> boost::shared_ptr<DataType> getHDF5Type<float>()
 {
 	boost::shared_ptr<DataType> ret(new DataType(H5Tcopy(H5T_NATIVE_FLOAT)));
+	return ret;
+}
+
+/**
+ *   Returns HDF5 data type for char
+ */
+template <> boost::shared_ptr<DataType> getHDF5Type<char>()
+{
+	boost::shared_ptr<DataType> ret(new DataType(H5Tcopy(H5T_NATIVE_CHAR)));
 	return ret;
 }
 
@@ -76,7 +81,7 @@ template <> boost::shared_ptr<DataType> getHDF5Type< unsigned short >()
  *  Remember HDF5 uses "C-style" array dimensions, so in the HDF5 file, the variable would have dimensions [2,4,128,128].
  *
  */
-template <class T> EXPORTHDF5UTILS int hdf5_append_array(hoNDArray<T>* a,
+template <class T> int hdf5_append_array(hoNDArray<T>* a,
 		boost::shared_ptr<DataType> datatype,
 		const char* filename, const char* varname)
 {
@@ -177,6 +182,98 @@ template <class T> EXPORTHDF5UTILS int hdf5_append_array(hoNDArray<T>* a,
 	}
 
 	return 0;
+}
+
+
+template <class T> boost::shared_ptr< hoNDArray<T> > hdf5_read_array_slice(
+		boost::shared_ptr<DataType> datatype,
+		const char* filename, const char* varname, unsigned int index = 0)
+{
+	boost::shared_ptr< hoNDArray<T> > ret(new hoNDArray<T>());
+
+	if (!FileInfo(std::string(filename)).exists()) {
+		std::cout << "Trying to open non-existing HDF5 file" << std::endl;
+		return ret;
+	}
+
+	try {
+		boost::shared_ptr<H5File> f = OpenHF5File(filename);
+		if (!HDF5LinkExists(f.get(), varname)) {
+			std::cout << "Trying to access non-existing variable in HDF5 file." << std::endl;
+			return ret;
+		}
+
+		DataSet d = f->openDataSet(varname);
+
+		DataSpace dataspace = d.getSpace();
+
+		DataType dtype = d.getDataType();
+
+		if (!(dtype == *datatype)) {
+			std::cout << "HDF5 datatype for selected variable does not match signature of reading function" << std::endl;
+			return ret;
+		}
+
+		int rank = dataspace.getSimpleExtentNdims();
+		std::vector<hsize_t> dims(rank,0);
+
+		dataspace.getSimpleExtentDims(&dims[0]);
+
+		if (dims[0] <= index) {
+			std::cout << "Attempting to access non-existing hyperslice" << std::endl;
+			return ret;
+		}
+
+		std::vector<hsize_t> slice_dims(rank,0);
+		std::vector<hsize_t> offset(rank,0);
+		std::vector<unsigned int> ndarray_dims(rank-1,0);
+		slice_dims[0] = 1;
+		offset[0] = index;
+
+		for (unsigned int i = 1; i < rank; i++) {
+			slice_dims[i] = dims[i];
+			ndarray_dims[ndarray_dims.size()-i] = dims[i]; //Flip dimensions for NDArray.
+		}
+
+		/*
+		for (unsigned int i = 0; i < slice_dims.size(); i++) {
+			std::cout << "slice_dims[" << i << "] = " << slice_dims[i] << std::endl;
+			std::cout << "offset[" << i << "] = " << offset[i] << std::endl;
+
+		}
+		*/
+
+		dataspace.selectHyperslab( H5S_SELECT_SET, &slice_dims[0], &offset[0] );
+
+		DataSpace memspace(rank,&slice_dims[0]);
+
+		//ret = boost::shared_ptr<  hoNDArray<T>() >( new hoNDArray<T>() );
+
+		if (!ret->create(&ndarray_dims)) {
+			std::cout << "Failed to create NDArray for HDF5 read" << std::endl;
+			return ret;
+		}
+
+		//OK finally ready, now read the data.
+		d.read(reinterpret_cast<void*>(ret->get_data_ptr()), *datatype, memspace, dataspace);
+
+	} catch (...) {
+		std::cout << "Error caught while attempting to read HDF5 file" << std::endl;
+		return ret;
+	}
+
+	return ret;
+
+}
+
+/**
+ * Wrapper function for calling hdf5_read_array_slice
+ */
+template <class T> boost::shared_ptr< hoNDArray<T> > hdf5_read_array_slice(
+		const char* filename, const char* varname, unsigned int index = 0)
+{
+	boost::shared_ptr<DataType> datatype = getHDF5Type<T>();
+	return hdf5_read_array_slice<T>(datatype, filename, varname, index);
 }
 
 /**
