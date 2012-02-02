@@ -293,8 +293,6 @@ static bool setup_grid( unsigned int cur_device, unsigned int number_of_elements
   *gridDim = dim3((number_of_elements+blockDim->x-1)/blockDim->x, num_batches);
 
   // Extend block/grid dimensions for large arrays
-  //  - if num_batches > 1, this might not be sufficiently flexible?
-
   if( gridDim->x > max_griddim[cur_device] ){
     blockDim->x = max_blockdim[cur_device];
     gridDim->x = (number_of_elements+blockDim->x-1)/blockDim->x;
@@ -1567,7 +1565,7 @@ cuNDA_upsample_kernel( REAL *in, REAL *out,
   
   if( idx < num_elements*num_batches ){
 
-    const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(get_two<unsigned int>());
+    const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
     const typename uintd<D>::Type co_out = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
     const typename uintd<D>::Type local_co_out = co_out%twos;
     const typename uintd<D>::Type co_in = co_out >> 1;
