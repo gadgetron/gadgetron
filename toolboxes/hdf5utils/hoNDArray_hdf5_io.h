@@ -287,4 +287,48 @@ template <class T> EXPORTHDF5UTILS int hdf5_append_array(hoNDArray<T>* a,
 	return hdf5_append_array(a, datatype, filename, varname);
 }
 
+/**
+ *  Function for appending some struct to an HDF5 file given the
+ *  HDF5 datatype.
+ *
+ */
+template <class T> int hdf5_append_struct(T* s,
+		boost::shared_ptr<DataType> datatype,
+		const char* filename, const char* varname)
+
+{
+	hoNDArray<T> tmp;
+	std::vector<unsigned int> dims(1,1);
+
+	tmp.create(&dims, s, false); //This is just a dummy container for the data
+
+	return hdf5_append_array(&tmp, datatype, filename, varname);
+
+	return 0;
+}
+
+
+template <class T> boost::shared_ptr<T> hdf5_read_struct(boost::shared_ptr<DataType> structdatatype, const char* filename, const char* varname,
+		unsigned int index = 0)
+{
+	boost::shared_ptr< T > ret;
+
+
+	boost::shared_ptr< hoNDArray<T> > tmp = hdf5_read_array_slice<T>(structdatatype, filename, varname, index);
+
+	if (tmp->get_number_of_elements() != 1) {
+		std::cout << "Error reading struct from HDF5 file. Expexting 1 and only 1 return value." << std::endl;
+		return ret;
+	}
+
+	//We'll take charge of the memory content here:
+	tmp->delete_data_on_destruct(false);
+
+	//Now let the boost::shared_ptr make sure it gets deleted...eventually.
+	ret = boost::shared_ptr<T>(tmp->get_data_ptr());
+
+	return ret;
+}
+
+
 #endif /* HONDARRAY_HDF5_IO_H_ */

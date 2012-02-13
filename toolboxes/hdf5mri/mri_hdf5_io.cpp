@@ -125,27 +125,13 @@ template <> boost::shared_ptr<CompType> getHDF5CompositeType<GadgetMessageImage>
 
 
 template <class T> int hdf5_append_struct(T* s,
-		boost::shared_ptr<DataType> datatype,
-		const char* filename, const char* varname)
-
-{
-	hoNDArray<T> tmp;
-	std::vector<unsigned int> dims(1,1);
-
-	tmp.create(&dims, s, false); //This is just a dummy container for the data
-
-	return hdf5_append_array(&tmp, datatype, filename, varname);
-
-	return 0;
-}
-
-template <class T> int hdf5_append_struct(T* s,
 		const char* filename, const char* varname)
 
 {
 	boost::shared_ptr<DataType> datatype = getHDF5CompositeType<T>();
 	return hdf5_append_struct(s, datatype, filename, varname);
 }
+
 
 template int hdf5_append_struct(GadgetMessageAcquisition* s, const char* filename, const char* varname);
 template int hdf5_append_struct(GadgetMessageImage* s, const char* filename, const char* varname);
@@ -196,22 +182,8 @@ template int hdf5_append_struct_with_data(GadgetMessageAcquisition* s, hoNDArray
 template <class T> boost::shared_ptr<T> hdf5_read_struct(const char* filename, const char* varname,
 		unsigned int index = 0)
 {
-	boost::shared_ptr< T > ret;
-
 	boost::shared_ptr<DataType> structdatatype = getHDF5CompositeType<T>();
-
-	boost::shared_ptr< hoNDArray<T> > tmp = hdf5_read_array_slice<T>(structdatatype, filename, varname, index);
-
-	if (tmp->get_number_of_elements() != 1) {
-		std::cout << "Error reading struct from HDF5 file. Expexting 1 and only 1 return value." << std::endl;
-		return ret;
-	}
-
-	//We'll take charge of the memory content here:
-	tmp->delete_data_on_destruct(false);
-
-	//Now let the boost::shared_ptr make sure it gets deleted...eventually.
-	ret = boost::shared_ptr<T>(tmp->get_data_ptr());
+	boost::shared_ptr< T > ret = hdf5_read_struct<T>(structdatatype, filename,varname, index);
 
 	return ret;
 }

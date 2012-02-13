@@ -45,12 +45,14 @@ public:
 			return GADGET_FAIL;
 		}
 
+		/*
 		varname = group_name_ + std::string("/") + std::string("comb_") + st.str();
 
 		if (!(hdf5_append_struct_with_data(img_head, data, file_name_.c_str(), varname.c_str()) == 0)) {
 			GADGET_DEBUG1("File is not good for writing\n");
 			return GADGET_FAIL;
 		}
+		*/
 
 		return GADGET_OK;
 	}
