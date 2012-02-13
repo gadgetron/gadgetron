@@ -28,6 +28,7 @@ public:
 	virtual int process_image(GadgetMessageImage* img_head,
 			hoNDArray< T >* data)
 	{
+		try {
 		HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
 	    std::stringstream st;
 	    st << img_head->image_series_index;
@@ -53,6 +54,10 @@ public:
 			return GADGET_FAIL;
 		}
 		*/
+		} catch (...) {
+			GADGET_DEBUG1("Error attempting to append images to HDF5 file\n");
+			return GADGET_FAIL;
+		}
 
 		return GADGET_OK;
 	}
