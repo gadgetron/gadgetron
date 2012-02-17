@@ -14,7 +14,8 @@ class sbcSolver : public sbSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE_REAL, ARRAY_TYP
 {
 public:
 
-  sbcSolver( int output_mode = solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_SILENT ) : sbSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE_REAL, ARRAY_TYPE_ELEMENT>( output_mode ) { 
+
+  sbcSolver() : sbSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE_REAL, ARRAY_TYPE_ELEMENT>() { 
     this->tolerance_ = REAL(0);
     this->outer_iterations_ = 10;
     this->inner_iterations_ = 5;

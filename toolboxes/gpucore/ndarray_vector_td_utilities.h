@@ -100,12 +100,19 @@ cuNDA_downsample( cuNDArray<REAL> *data,
 		  cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
 		  cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
-// Upsample array to double size (Real arrays only)
+// Nearest neighbor upsampling of array to double size (Real arrays only)
 template<class REAL, unsigned int D> EXPORTGPUCORE 
 boost::shared_ptr< cuNDArray<REAL> > 
-cuNDA_upsample( cuNDArray<REAL> *data,
-		cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
-		cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
+cuNDA_upsample_nn( cuNDArray<REAL> *data,
+		   cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
+		   cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
+
+// Linear interpolation upsampling of array to double size (Real arrays only)
+template<class REAL, unsigned int D> EXPORTGPUCORE 
+boost::shared_ptr< cuNDArray<REAL> > 
+cuNDA_upsample_lin( cuNDArray<REAL> *data,
+		    cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
+		    cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
 //
 // Utilities overwriting the input

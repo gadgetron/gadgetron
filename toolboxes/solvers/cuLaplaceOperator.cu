@@ -8,7 +8,6 @@
 template<unsigned int i, unsigned int j>
 struct Pow
 {
-
   enum { Value = i*Pow<i,j-1>::Value};
 };
 
@@ -19,11 +18,9 @@ struct Pow<i,1>
 };
 
 
-
 template<class REAL, class T, unsigned int D> __global__ void
-laplace_kernel( typename intd<D>::Type dims, T *in, T *out ){
-
-  
+laplace_kernel( typename intd<D>::Type dims, T *in, T *out )
+{  
   const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
   if( idx < prod(dims) ){
     
@@ -62,8 +59,6 @@ laplace_kernel( typename intd<D>::Type dims, T *in, T *out ){
   }
 }
 
-
-
 template< class REAL, class T, unsigned int D> int 
 cuLaplaceOperator<REAL,T,D>::compute_laplace( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate )
 {
@@ -83,6 +78,8 @@ cuLaplaceOperator<REAL,T,D>::compute_laplace( cuNDArray<T> *in, cuNDArray<T> *ou
     std::cerr << std::endl << "partialDerivativeOperator::compute_laplace : internal error (only D<4 supported for now)." << std::endl;
     return -1;
   }
+
+  _set_device();
   
   dim3 dimBlock( dims.vec[0] );
   dim3 dimGrid( 1, dims.vec[D-1] );
@@ -95,16 +92,18 @@ cuLaplaceOperator<REAL,T,D>::compute_laplace( cuNDArray<T> *in, cuNDArray<T> *ou
   
   CHECK_FOR_CUDA_ERROR();
 
+  _restore_device();
+
   return 0;
 }
 
 
 // Instantiations
 
-
 template class EXPORTSOLVERS cuLaplaceOperator<float, float, 1>;
 template class EXPORTSOLVERS cuLaplaceOperator<float, float, 2>;
 template class EXPORTSOLVERS cuLaplaceOperator<float, float, 3>;
+
 
 
 template class EXPORTSOLVERS cuLaplaceOperator<float, float_complext, 1>;
@@ -116,10 +115,7 @@ template class EXPORTSOLVERS cuLaplaceOperator<double, double, 1>;
 template class EXPORTSOLVERS cuLaplaceOperator<double, double, 2>;
 template class EXPORTSOLVERS cuLaplaceOperator<double, double, 3>;
 
-
 template class EXPORTSOLVERS cuLaplaceOperator<double, double_complext, 1>;
 template class EXPORTSOLVERS cuLaplaceOperator<double, double_complext, 2>;
 template class EXPORTSOLVERS cuLaplaceOperator<double, double_complext, 3>;
-
-
 

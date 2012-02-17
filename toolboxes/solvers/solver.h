@@ -10,7 +10,7 @@ template <class ARRAY_TYPE_IN, class ARRAY_TYPE_OUT> class solver
 
   enum solverOutputModes { OUTPUT_SILENT = 0, OUTPUT_WARNINGS = 1, OUTPUT_VERBOSE = 2, OUTPUT_MAX = 3 };
 
-  solver( int output_mode = OUTPUT_SILENT ) { output_mode_ = output_mode; }
+  solver() { output_mode_ = OUTPUT_SILENT; }
   virtual ~solver() {}
   
   virtual void solver_error( std::string err ) { std::cerr << err << std::endl; }

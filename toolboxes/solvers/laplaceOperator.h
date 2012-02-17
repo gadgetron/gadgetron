@@ -3,7 +3,8 @@
 #include "matrixOperator.h"
 #include "vector_td.h"
 
-template <class REAL, unsigned int D, class ARRAY_TYPE> class laplaceOperator : public matrixOperator<REAL, ARRAY_TYPE>
+template <class REAL, unsigned int D, class ARRAY_TYPE> 
+class laplaceOperator : public matrixOperator<REAL, ARRAY_TYPE>
 {
   
 public:
@@ -13,14 +14,12 @@ public:
     
   virtual int mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
   {
-    return compute_laplace( in, out, accumulate );
-    
+    return compute_laplace( in, out, accumulate );    
   }
   
   virtual int mult_MH( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
   {
     return compute_laplace( in, out, accumulate );
-    
   }
 
   virtual int mult_MH_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
@@ -36,12 +35,10 @@ public:
     if (res < 0) {
       return res;
     }
-
-    return     mult_MH(&tmp,out,accumulate);
+    
+    return mult_MH(&tmp,out,accumulate);
   }
     
 protected:
-  
-  virtual int compute_laplace( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate ) = 0;  
-
+  virtual int compute_laplace( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate ) = 0;    
 };

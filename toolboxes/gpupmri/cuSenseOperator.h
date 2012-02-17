@@ -6,12 +6,13 @@
 #include "cuNDArray.h"
 #include "vector_td.h"
 
+
 template<class REAL, unsigned int D> class EXPORTGPUPMRI cuSenseOperator : public senseOperator<REAL, D, cuNDArray< complext<REAL> > >
 {
 
 public:
 
-  cuSenseOperator( int device = -1 ) : senseOperator<REAL, D, cuNDArray< _complext> >() { set_device(device); }
+  cuSenseOperator() : senseOperator<REAL, D, cuNDArray< _complext> >() { set_device(-1); }
   virtual ~cuSenseOperator() {}
 
   typedef complext<REAL> _complext;

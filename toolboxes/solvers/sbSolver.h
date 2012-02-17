@@ -18,8 +18,10 @@ class sbSolver : public solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>
 {
 public:
 
-  sbSolver( int output_mode = solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_SILENT ) : solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>( output_mode ) { 
+
+  sbSolver() : solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>() { 
     tolerance_ = REAL(0);
+
     outer_iterations_ = 10;
     inner_iterations_ = 1;
   }

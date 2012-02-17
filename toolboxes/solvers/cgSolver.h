@@ -4,7 +4,6 @@
 #include "matrixOperator.h"
 #include "cgPreconditioner.h"
 #include "real_utilities.h"
-#include "solvers_export.h"
 
 #include <vector>
 #include <iostream>
@@ -13,7 +12,7 @@ template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class cgSolver : pub
 {
 public:
 
-  cgSolver( int output_mode = solver<ARRAY_TYPE, ARRAY_TYPE>::OUTPUT_SILENT ) : solver<ARRAY_TYPE, ARRAY_TYPE>( output_mode ) { 
+  cgSolver() : solver<ARRAY_TYPE,ARRAY_TYPE>() { 
     iterations_ = 10;
     limit_ = (REAL)1e-3;
     operators_ = boost::shared_ptr< std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE> > > >
