@@ -2190,8 +2190,8 @@ bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim,
 
 // Add
 
-template<class REAL, class T> __global__ 
-void cuNDA_add_kernel( REAL a, T *x, unsigned int number_of_elements )
+template<class T> __global__ 
+void cuNDA_add_kernel( T a, T *x, unsigned int number_of_elements )
 
 {
   const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
@@ -2203,8 +2203,8 @@ void cuNDA_add_kernel( REAL a, T *x, unsigned int number_of_elements )
 
 // Add
 
-template<class REAL,class T> 
-bool cuNDA_add( REAL a, cuNDArray<T> *in_out,
+template<class T> 
+bool cuNDA_add( T a, cuNDArray<T> *in_out,
 		  cuNDA_device compute_device )
 {
   // Prepare internal array
@@ -2227,7 +2227,7 @@ bool cuNDA_add( REAL a, cuNDArray<T> *in_out,
 
   // Invoke kernel
 
-  cuNDA_add_kernel<REAL,T><<< gridDim, blockDim >>> ( a, in_out_int->get_data_ptr(), in_out->get_number_of_elements() );
+  cuNDA_add_kernel<T><<< gridDim, blockDim >>> ( a, in_out_int->get_data_ptr(), in_out->get_number_of_elements() );
 
  
   CHECK_FOR_CUDA_ERROR();
@@ -3911,8 +3911,8 @@ template EXPORTGPUCORE bool cuNDA_rss_normalize<float,float>( cuNDArray<float>*,
 template EXPORTGPUCORE bool cuNDA_rss_normalize<float,float_complext>( cuNDArray<float_complext>*, unsigned int, cuNDA_device );
 
 
-template EXPORTGPUCORE bool cuNDA_add<float,float_complext>( float, cuNDArray<float_complext>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_add<float,float>( float, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_add<float_complext>( float_complext, cuNDArray<float_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_add<float>( float, cuNDArray<float>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_scale<float>( float, cuNDArray<float_complext>*, cuNDA_device );
 
@@ -4217,8 +4217,8 @@ template EXPORTGPUCORE bool cuNDA_rss_normalize<double,double>( cuNDArray<double
 template EXPORTGPUCORE bool cuNDA_rss_normalize<double,double_complext>( cuNDArray<double_complext>*, unsigned int, cuNDA_device );
 
 
-template EXPORTGPUCORE bool cuNDA_add<double,double_complext>( double, cuNDArray<double_complext>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_add<double,double>( double, cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_add<double_complext>( double_complext, cuNDArray<double_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_add<double>( double, cuNDArray<double>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_scale<double>( double, cuNDArray<double_complext>*, cuNDA_device );
 
