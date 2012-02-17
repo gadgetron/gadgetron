@@ -22,6 +22,9 @@ template <class ARRAY_TYPE_IN, class ARRAY_TYPE_OUT> class solver
   }
 
   virtual boost::shared_ptr<ARRAY_TYPE_OUT> solve( ARRAY_TYPE_IN* ) = 0;
+  virtual boost::shared_ptr<ARRAY_TYPE_OUT> solve( ARRAY_TYPE_IN* rhs,ARRAY_TYPE_OUT* guess ) {
+	  return solve(rhs);
+  }
 
   void* operator new (size_t bytes) { return ::new char[bytes]; }
   void operator delete (void *ptr) { delete [] static_cast <char *> (ptr); } 
