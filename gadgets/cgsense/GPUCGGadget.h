@@ -45,7 +45,7 @@ protected:
 
   virtual int copy_samples_for_profile( float* host_base_ptr, std::complex<float>* data_base_ptr, int profile_no, int channel_no );
   virtual int configure_channels();
-  virtual boost::shared_ptr< cuNDArray<float_complext::Type> > upload_samples();
+  virtual boost::shared_ptr< cuNDArray<float_complext> > upload_samples();
 
   ACE_Message_Queue<ACE_MT_SYNCH> buffer_;
   int slice_no_;
@@ -72,16 +72,16 @@ protected:
   bool is_configured_;
 
   // Define conjugate gradient solver
-  cuCGSolver<float, float_complext::Type> cg_;
+  cuCGSolver<float, float_complext> cg_;
 
   // Define non-Cartesian Sense Encofing operator
   boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E_;
 
   // Define preconditioner
-  boost::shared_ptr< cuCGPrecondWeights<float_complext::Type> > D_;
+  boost::shared_ptr< cuCGPrecondWeights<float_complext> > D_;
 
   // Define regularization image operator
-  boost::shared_ptr< cuImageOperator<float,float_complext::Type> > R_;
+  boost::shared_ptr< cuImageOperator<float,float_complext> > R_;
 
   // Define rhs operator (for regularization)
   boost::shared_ptr< cuSenseRHSBuffer<float,2> > rhs_buffer_;

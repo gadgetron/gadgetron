@@ -21,6 +21,8 @@ class cuImageOperator : public imageOperator< REAL, cuNDArray<REAL>, cuNDArray<T
     return res;
   }
 
+
+
   virtual int mult_MH_M( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate = false )
   {
     set_device();
@@ -31,7 +33,7 @@ class cuImageOperator : public imageOperator< REAL, cuNDArray<REAL>, cuNDArray<T
   
   virtual void operator_scal( REAL scale, cuNDArray<T> *x )
   {
-    cuNDA_scal<T>( scale*get_one<T>(), x );
+    cuNDA_scal<T>( scale*T(1), x );
   }
 
   virtual void operator_reciprocal( cuNDArray<REAL> *x )
@@ -46,7 +48,7 @@ class cuImageOperator : public imageOperator< REAL, cuNDArray<REAL>, cuNDArray<T
 
   virtual boost::shared_ptr< cuNDArray<REAL> > operator_norm_squared( cuNDArray<T> *x )
   {
-    return cuNDA_norm_squared<REAL,T>( x, CUNDA_NDARRAY_DEVICE, CUNDA_NDARRAY_DEVICE);     
+    return cuNDA_cNorm<REAL,T>( x, CUNDA_NDARRAY_DEVICE, CUNDA_NDARRAY_DEVICE);
   }
   
   virtual bool operator_clear(  cuNDArray<T> *x )

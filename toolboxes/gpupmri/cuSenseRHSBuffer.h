@@ -3,13 +3,14 @@
 #include "gpupmri_export.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "vector_td.h"
+#include "complext.h"
 
 template<class REAL, unsigned int D>
 class EXPORTGPUPMRI cuSenseRHSBuffer
 {
 public:
 
-	typedef typename complext<REAL>::Type _complext;
+	typedef complext<REAL> _complext;
 	typedef typename uintd<D>::Type _uintd;
 	typedef typename reald<REAL,D>::Type _reald;
 

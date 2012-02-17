@@ -18,6 +18,7 @@
 
 #include "vector_td.h"
 #include "cuNDArray.h"
+#include "complext.h"
 
 #include <thrust/device_vector.h>
 #include <boost/shared_ptr.hpp>
@@ -47,19 +48,19 @@ public: // Main interface
     
   // Execute NFFT
   enum NFFT_comp_mode { NFFT_FORWARDS, NFFT_BACKWARDS };
-  bool compute( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode );
-  bool compute_iteration( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode );
+  bool compute( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode );
+  bool compute_iteration( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode );
   
 public: // Utilities
   
   // NFFT convolution
-  bool convolve( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode, bool accumulate = false );
+  bool convolve( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode, bool accumulate = false );
     
   // NFFT FFT
-  bool fft( cuNDArray<typename complext<REAL>::Type> *data, NFFT_comp_mode mode, bool do_scale = true );
+  bool fft( cuNDArray<complext<REAL> > *data, NFFT_comp_mode mode, bool do_scale = true );
   
   // NFFT deapodization
-  bool deapodize( cuNDArray<typename complext<REAL>::Type> *image );
+  bool deapodize( cuNDArray<complext<REAL> > *image );
 
 public: // Setup queries
 	typename uintd<D>::Type get_matrix_size();
@@ -77,7 +78,7 @@ public:
 private:
 
   enum NFFT_components { NFFT_CONVOLUTION = 1, NFFT_H_CONVOLUTION = 2, NFFT_FFT = 4, NFFT_DEAPODIZATION = 8 };
-  bool check_consistency( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, cuNDArray<REAL> *weights, unsigned char components );
+  bool check_consistency( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, cuNDArray<REAL> *weights, unsigned char components );
 
   // Shared barebones constructor
   bool barebones();
@@ -89,15 +90,15 @@ private:
   bool compute_deapodization_filter();
 
   // A dedicated compute for each of the two NFFT directions
-  bool compute_NFFT( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image );
-  bool compute_NFFT_H( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image );
+  bool compute_NFFT( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image );
+  bool compute_NFFT_H( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image );
 
   // A dedicated convolution for each of the two NFFT directions
-  bool convolve_NFFT( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, bool accumulate );
-  bool convolve_NFFT_H( cuNDArray<typename complext<REAL>::Type> *samples, cuNDArray<typename complext<REAL>::Type> *image, bool accumulate );
+  bool convolve_NFFT( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, bool accumulate );
+  bool convolve_NFFT_H( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, bool accumulate );
    
   // Internal utility to the NFFT_H convolution
-  bool image_wrap( cuNDArray<typename complext<REAL>::Type> *source, cuNDArray<typename complext<REAL>::Type> *target, bool accumulate );
+  bool image_wrap( cuNDArray<complext<REAL> > *source, cuNDArray<complext<REAL> > *target, bool accumulate );
 
 private:
     
@@ -118,7 +119,7 @@ private:
   // Internal data structures for convolution and deapodization
   //
 
-  boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > deapodization_filter; 
+  boost::shared_ptr< cuNDArray<complext<REAL> > > deapodization_filter;
    
   thrust::device_vector< typename reald<REAL,D>::Type > *trajectory_positions;
   thrust::device_vector<unsigned int> *tuples_last;

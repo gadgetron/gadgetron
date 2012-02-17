@@ -27,7 +27,7 @@ laplace_kernel( typename intd<D>::Type dims, T *in, T *out ){
   const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
   if( idx < prod(dims) ){
     
-    T val = get_zero<T>();
+    T val = T(0);
     typename intd<D>::Type coN;
 
     typename intd<D>::Type co = idx_to_co<D>(idx, dims);
@@ -46,16 +46,16 @@ laplace_kernel( typename intd<D>::Type dims, T *in, T *out ){
 	    for (int d3 = -1; d3 < 2; d3++){
 	      stride.vec[2] = d3;
 	      coN = (co+dims+stride)%dims;
-	      val += get_zero<T>() - in[co_to_idx<D>(coN, dims)];
+	      val -=  in[co_to_idx<D>(coN, dims)];
 	    }
 	  } else { 
 	      coN = (co+dims+stride)%dims;
-	      val += get_zero<T>() - in[co_to_idx<D>(coN, dims)];
+	      val += T(0) - in[co_to_idx<D>(coN, dims)];
 	  }
 	}
       } else {
 	coN = (co+dims+stride)%dims;
-	val += get_zero<T>() - in[co_to_idx<D>(coN, dims)];
+	val -= in[co_to_idx<D>(coN, dims)];
       }
     }
     out[idx] = val+in[co_to_idx<D>(co, dims)]*((REAL) Pow<3,D>::Value);
@@ -107,9 +107,9 @@ template class EXPORTSOLVERS cuLaplaceOperator<float, float, 2>;
 template class EXPORTSOLVERS cuLaplaceOperator<float, float, 3>;
 
 
-template class EXPORTSOLVERS cuLaplaceOperator<float, float_complext::Type, 1>;
-template class EXPORTSOLVERS cuLaplaceOperator<float, float_complext::Type, 2>;
-template class EXPORTSOLVERS cuLaplaceOperator<float, float_complext::Type, 3>;
+template class EXPORTSOLVERS cuLaplaceOperator<float, float_complext, 1>;
+template class EXPORTSOLVERS cuLaplaceOperator<float, float_complext, 2>;
+template class EXPORTSOLVERS cuLaplaceOperator<float, float_complext, 3>;
 
 
 template class EXPORTSOLVERS cuLaplaceOperator<double, double, 1>;
@@ -117,9 +117,9 @@ template class EXPORTSOLVERS cuLaplaceOperator<double, double, 2>;
 template class EXPORTSOLVERS cuLaplaceOperator<double, double, 3>;
 
 
-template class EXPORTSOLVERS cuLaplaceOperator<double, double_complext::Type, 1>;
-template class EXPORTSOLVERS cuLaplaceOperator<double, double_complext::Type, 2>;
-template class EXPORTSOLVERS cuLaplaceOperator<double, double_complext::Type, 3>;
+template class EXPORTSOLVERS cuLaplaceOperator<double, double_complext, 1>;
+template class EXPORTSOLVERS cuLaplaceOperator<double, double_complext, 2>;
+template class EXPORTSOLVERS cuLaplaceOperator<double, double_complext, 3>;
 
 
 

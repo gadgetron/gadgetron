@@ -35,7 +35,7 @@ public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
   boost::shared_ptr< hoNDArray<float> > host_weights_;
   cuNDArray<float> gpu_weights_;
 
-  hoNDArray<float_complext::Type>* host_data_buffer_;
+  hoNDArray<float_complext>* host_data_buffer_;
   std::vector<unsigned int> image_dimensions_;
   NFFT_plan<float, 2> plan_;
 

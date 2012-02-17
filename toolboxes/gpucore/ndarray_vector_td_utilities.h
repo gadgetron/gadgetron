@@ -4,7 +4,7 @@
 #include "cuNDArray.h"
 #include "vector_td.h"
 #include "vector_td_utilities.h"
-
+#include "complext.h"
 #include <boost/smart_ptr.hpp>
 
 //
@@ -14,26 +14,21 @@
 
 EXPORTGPUCORE enum cuNDA_device { CUNDA_CURRENT_DEVICE, CUNDA_NDARRAY_DEVICE };
 
+// Abs (float/double/complext arrays)
+template<class REAL, class T> EXPORTGPUCORE
+boost::shared_ptr< cuNDArray<REAL> >
+cuNDA_cAbs( cuNDArray<T> *data,
+	    cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE,
+	    cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 // Norm (float/double/complext arrays)
 template<class REAL, class T> EXPORTGPUCORE 
 boost::shared_ptr< cuNDArray<REAL> > 
-cuNDA_norm( cuNDArray<T> *data, 
+cuNDA_cNorm( cuNDArray<T> *data,
 	    cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
 	    cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
-// Norm (reald arrays)
-template<class REAL, unsigned int D> EXPORTGPUCORE
-boost::shared_ptr< cuNDArray<REAL> > 
-cuNDA_norm( cuNDArray< typename reald<REAL,D>::Type > *data,
-	    cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
-	    cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
-// Norm squared (float/double/complext arrays)
-template<class REAL, class T> EXPORTGPUCORE
-boost::shared_ptr< cuNDArray<REAL> > 
-cuNDA_norm_squared( cuNDArray<T> *data,
-		    cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
-		    cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
+
 
 // Norm squared (reald arrays)
 template<class REAL, unsigned int D> EXPORTGPUCORE
@@ -86,7 +81,7 @@ cuNDA_correlation( cuNDArray<T> *data,
 
 // Real to complext
 template<class REAL> EXPORTGPUCORE 
-boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > 
+boost::shared_ptr< cuNDArray<complext<REAL> > >
 cuNDA_real_to_complext( cuNDArray<REAL> *data,
 			cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
 			cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
@@ -94,7 +89,7 @@ cuNDA_real_to_complext( cuNDArray<REAL> *data,
 // complext to real (by discarding the imaginary component)
 template<class REAL> EXPORTGPUCORE 
 boost::shared_ptr< cuNDArray<REAL> > 
-cuNDA_complext_to_real( cuNDArray<typename complext<REAL>::Type> *data,
+cuNDA_complext_to_real( cuNDArray<complext<REAL> > *data,
 			cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
 			cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
@@ -118,7 +113,7 @@ cuNDA_upsample( cuNDArray<REAL> *data,
 
 // Clear (real and complex types)
 template<class T> EXPORTGPUCORE
-bool cuNDA_clear( cuNDArray<T> *in_out, T val = get_zero<T>(), 
+bool cuNDA_clear( cuNDArray<T> *in_out, T val = T(0),
 		  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 // Reciprocal (real and complex types)
@@ -141,6 +136,16 @@ template<class T> EXPORTGPUCORE
 bool cuNDA_abs( cuNDArray<T> *in_out,
 		cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
+//Threshold
+template<class T> EXPORTGPUCORE
+bool cuNDA_threshold_min(T min, cuNDArray<T> *in_out,
+		cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+//Threshold
+template<class T> EXPORTGPUCORE
+bool cuNDA_threshold_max(T max, cuNDArray<T> *in_out,
+		cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+
+
 // Normalize by RSS (float/double/complext arrays)
 template<class REAL, class T> EXPORTGPUCORE
 bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim,
@@ -148,7 +153,7 @@ bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim,
 
 // Scale (with constant)
 template<class REAL> EXPORTGPUCORE
-bool cuNDA_scale( REAL a, cuNDArray<typename complext<REAL>::Type> *x,
+bool cuNDA_scale( REAL a, cuNDArray<complext<REAL> > *x,
 		  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 // Scale (component-wise)
@@ -162,7 +167,7 @@ bool cuNDA_scale_conj( cuNDArray<T> *a, cuNDArray<T> *x,
 
 // Scale (component-wise)
 template<class REAL> EXPORTGPUCORE
-bool cuNDA_scale( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *x,
+bool cuNDA_scale( cuNDArray<REAL> *a, cuNDArray<complext<REAL> > *x,
 		  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 // 'axpy' - component-wise
@@ -172,7 +177,7 @@ bool cuNDA_axpy( cuNDArray<T> *a, cuNDArray<T> *x, cuNDArray<T> *y,
 
 // 'axpy' - component-wise
 template<class REAL> EXPORTGPUCORE
-bool cuNDA_axpy( cuNDArray<REAL> *a, cuNDArray<typename complext<REAL>::Type> *x, cuNDArray<typename complext<REAL>::Type> *y,
+bool cuNDA_axpy( cuNDArray<REAL> *a, cuNDArray<complext<REAL> > *x, cuNDArray<complext<REAL> > *y,
 		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 //

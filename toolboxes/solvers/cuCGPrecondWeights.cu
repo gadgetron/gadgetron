@@ -7,7 +7,7 @@ weight_multiplication( T* in, T* out, T* weight, unsigned long elements )
   unsigned long idx = blockIdx.x*blockDim.x+threadIdx.x;
   if (idx < elements) {
     const unsigned int frame_offset = blockIdx.y*elements;
-    out[idx+frame_offset] = mul<T>(in[idx+frame_offset], weight[idx]);
+    out[idx+frame_offset] = in[idx+frame_offset]*weight[idx];
   }
 }
 
@@ -104,7 +104,7 @@ cuCGPrecondWeights<T>::apply(cuNDArray<T>* in, cuNDArray<T>* out)
 //
 
 template class EXPORTSOLVERS cuCGPrecondWeights<float>;
-template class EXPORTSOLVERS cuCGPrecondWeights<float_complext::Type>;
+template class EXPORTSOLVERS cuCGPrecondWeights<float_complext>;
 
 template class EXPORTSOLVERS cuCGPrecondWeights<double>;
-template class EXPORTSOLVERS cuCGPrecondWeights<double_complext::Type>;
+template class EXPORTSOLVERS cuCGPrecondWeights<double_complext>;

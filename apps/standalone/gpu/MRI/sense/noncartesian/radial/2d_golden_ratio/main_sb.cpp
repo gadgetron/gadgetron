@@ -19,7 +19,7 @@ using namespace std;
 
 // Define desired precision
 typedef float _real; 
-typedef complext<_real>::Type _complext;
+typedef complext<_real> _complext;
 typedef reald<_real,2>::Type _reald2;
 
 // Upload samples for one reconstruction from host to device
@@ -117,7 +117,7 @@ int main(int argc, char** argv)
   // Density compensation weights are constant throughout all reconstrutions
   boost::shared_ptr< cuNDArray<_real> > dcw = compute_radial_dcw_golden_ratio_2d
     ( samples_per_profile, profiles_per_frame, (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0], 
-      get_one<_real>()/((_real)samples_per_profile/(_real)max(matrix_size.vec[0],matrix_size.vec[1])) );
+      _real(1)/((_real)samples_per_profile/(_real)max(matrix_size.vec[0],matrix_size.vec[1])) );
   
   // Define encoding matrix for non-Cartesian SENSE
   boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );  
@@ -188,7 +188,7 @@ int main(int argc, char** argv)
   
   // Duplicate the regularization image to 'frames_per_reconstruction' frames
   boost::shared_ptr<cuNDArray<_complext> > reg_image = cuNDA_expand( &_reg_image, frames_per_reconstruction );
-  cuNDA_scale((_real)2.0*get_one<_real>(), reg_image.get()); // We need to figure out where this scaling comes from
+  cuNDA_scale((_real)2.0, reg_image.get()); // We need to figure out where this scaling comes from
 
   acc_images.reset();
   csm.reset();
@@ -286,7 +286,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > host_result = result.to_host();
   write_nd_array<_complext>(host_result.get(), (char*)parms.get_parameter('r')->get_string_value());
     
-  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_norm<_real,2>(&result)->to_host();
+  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_cAbs<_real,_complext>(&result)->to_host();
   write_nd_array<_real>( host_norm.get(), "result.real" );
   
   delete timer;

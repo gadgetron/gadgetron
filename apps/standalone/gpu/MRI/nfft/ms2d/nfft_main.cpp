@@ -37,7 +37,7 @@ using namespace std;
 
 // Define desired precision
 typedef float _real; 
-typedef complext<_real>::Type _complext;
+typedef complext<_real> _complext;
 typedef reald<_real,2>::Type _reald2;
 typedef NFFT_plan<_real,2> plan_type;
 
@@ -130,7 +130,7 @@ int main( int argc, char** argv)
   // Compute density compensation weights
   timer = new GPUTimer("Computing density compensation weights");
   boost::shared_ptr< cuNDArray<_real> > dcw = compute_radial_dcw_golden_ratio_2d
-    ( samples_per_profile, profiles_per_frame, alpha, get_one<_real>()/((_real)samples_per_profile/(_real)matrix_size.vec[0]) );
+    ( samples_per_profile, profiles_per_frame, alpha, _real(1)/((_real)samples_per_profile/(_real)matrix_size.vec[0]) );
   delete timer;
 
   // Gridder

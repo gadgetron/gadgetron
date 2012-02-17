@@ -15,7 +15,7 @@ mult_M_kernel( typename intd<D>::Type dims, T *in, T *out,REAL *sigma, REAL *nor
     __shared__ REAL sSigma[BLOCK_SIZE];
     __shared__ REAL sNorm[BLOCK_SIZE];
 
-    T val = get_zero<T>();
+    T val = T(0);
     //REAL s = 1.0/(2.0*5.0*5.0);
     REAL s;
 
@@ -53,7 +53,7 @@ norm_kernel( typename intd<D>::Type dims, REAL *sigma, REAL *out ){
     
     __shared__ REAL shared[BLOCK_SIZE];
 
-    T val = get_zero<T>();
+    T val = T(0);
     REAL s = sigma[idx];
 
     typename intd<D>::Type co2;
@@ -83,7 +83,7 @@ mult_MH_kernel( typename intd<D>::Type dims, T *in, T *out,REAL *sigma,REAL *nor
     
     __shared__ REAL shared[BLOCK_SIZE];
 
-    T val = get_zero<T>();
+    T val = T(0);
     REAL s = sigma[idx];
 
     typename intd<D>::Type co2;

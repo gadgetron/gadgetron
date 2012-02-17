@@ -88,29 +88,7 @@ public:
     // Calculate residual r
     ARRAY_TYPE r;
 	r =  *rhs;
-    if (x0){
-    	if (!x0->dimensions_equal(rhs)){
-    		  this->solver_error( "cgSolver::solve : RHS and initial guess must have same dimensions" );
-    		  return boost::shared_ptr<ARRAY_TYPE>(x);
-    	}
-    	ARRAY_TYPE mhmX;
-    	if( !mhmX.create(rhs->get_dimensions().get() )) {
-    	      this->solver_error( "cgSolver::solve : Unable to allocate temp storage (mhmX)" );
-    	      return boost::shared_ptr<ARRAY_TYPE>(x);
-		}
-    	 if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
-    	      std::cout << "Preparing guess..." << std::endl;
-    	    }
-    	if(!mult_MH_M(x0,&mhmX)){
-    		  this->solver_error( "cgSolver::solve : Error in performing mult_MH_M for initial guess" );
-    		   return boost::shared_ptr<ARRAY_TYPE>(x);
-    	}
-    	if (!solver_axpy(-get_one<ELEMENT_TYPE>(),&mhmX,&r))
-    	{
-    		this->solver_error( "cgSolver::solve : Error in performing axpy for initial guess" );
-    		  return boost::shared_ptr<ARRAY_TYPE>(x);
-    	}
-    }
+
 
     ARRAY_TYPE q;
     if( !q.create(rhs->get_dimensions().get() )) {
@@ -129,7 +107,44 @@ public:
     	    		  return boost::shared_ptr<ARRAY_TYPE>(x);
     	}
     }
-
+    REAL rq_0 = real(solver_dot(&r, &q));
+    REAL rq = rq_0;
+    if (x0){
+    	if (!x0->dimensions_equal(rhs)){
+    		  this->solver_error( "cgSolver::solve : RHS and initial guess must have same dimensions" );
+    		  return boost::shared_ptr<ARRAY_TYPE>(x);
+    	}
+    	ARRAY_TYPE mhmX;
+    	if( !mhmX.create(rhs->get_dimensions().get() )) {
+    	      this->solver_error( "cgSolver::solve : Unable to allocate temp storage (mhmX)" );
+    	      return boost::shared_ptr<ARRAY_TYPE>(x);
+		}
+    	 if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
+    	      std::cout << "Preparing guess..." << std::endl;
+    	    }
+    	if(!mult_MH_M(x0,&mhmX)){
+    		  this->solver_error( "cgSolver::solve : Error in performing mult_MH_M for initial guess" );
+    		   return boost::shared_ptr<ARRAY_TYPE>(x);
+    	}
+    	if (!solver_axpy(-ELEMENT_TYPE(1),&mhmX,&r))
+    	{
+    		this->solver_error( "cgSolver::solve : Error in performing axpy for initial guess" );
+    		  return boost::shared_ptr<ARRAY_TYPE>(x);
+    	}
+    	q = r;
+		if( precond_.get() ) {
+			//Apply preconditioning, twice. Should change preconditioners to do this
+			if( precond_->apply(&q,&q) < 0 ) {
+				  this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
+				  return boost::shared_ptr<ARRAY_TYPE>(x);
+			}
+			if( precond_->apply(&q,&q) < 0 ) {
+						  this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
+						  return boost::shared_ptr<ARRAY_TYPE>(x);
+			}
+		}
+		rq = real(solver_dot(&r, &q));
+    }
 
     ARRAY_TYPE p;
     if( !p.create( rhs->get_dimensions().get() )) {
@@ -140,9 +155,8 @@ public:
 
 
 
-    REAL rq = real<REAL>(solver_dot(&r, &q));
+
     REAL rq_new = rq;
-    REAL rq_0 = rq;
     REAL rel_res;
     REAL rq_last =get_max<REAL>();
     if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
@@ -155,7 +169,7 @@ public:
     		  this->solver_error( "cgSolver::solve : error in performing mult_MH_M" );
     		  return boost::shared_ptr<ARRAY_TYPE>(x);
     	}
-    	ELEMENT_TYPE alpha = mul<REAL>(rq, reciprocal<ELEMENT_TYPE>(solver_dot(&p,&q)));
+    	ELEMENT_TYPE alpha = rq/solver_dot(&p,&q);
 
 
       // Update solution
@@ -170,7 +184,7 @@ public:
       }
 
       // Update residual
-      if( !solver_axpy(mul<ELEMENT_TYPE>(-get_one<ELEMENT_TYPE>(),alpha),&q,&r) ) {
+      if( !solver_axpy(-alpha,&q,&r) ) {
     	  this->solver_error( "cgSolver::solve : failed to update residual" );
     	  return boost::shared_ptr<ARRAY_TYPE>(x);
       }
@@ -184,16 +198,16 @@ public:
     		  this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
     		  return boost::shared_ptr<ARRAY_TYPE>(x);
     	  }
-    	  rq_new = real<REAL>(solver_dot(&r, &q));
-    	  solver_scal((rq_new/rq)*get_one<ELEMENT_TYPE>(),&p);
-    	  if( !solver_axpy(get_one<ELEMENT_TYPE>(),&q,&p) ) {
+    	  rq_new = real(solver_dot(&r, &q));
+    	  solver_scal((rq_new/rq)*ELEMENT_TYPE(1),&p);
+    	  if( !solver_axpy(ELEMENT_TYPE(1),&q,&p) ) {
     	     	  this->solver_error( "cgSolver::solve : failed to update solution" );
     	     	  return boost::shared_ptr<ARRAY_TYPE>(x);
 		   }
       } else{
-    	  rq_new = real<REAL>(solver_dot(&r, &r));
-    	  solver_scal((rq_new/rq)*get_one<ELEMENT_TYPE>(),&p);
-    	  if( !solver_axpy(get_one<ELEMENT_TYPE>(),&r,&p) ) {
+    	  rq_new = real(solver_dot(&r, &r));
+    	  solver_scal((rq_new/rq)*ELEMENT_TYPE(1),&p);
+    	  if( !solver_axpy(ELEMENT_TYPE(1),&r,&p) ) {
     	      	     	  this->solver_error( "cgSolver::solve : failed to update solution" );
     	      	     	  return boost::shared_ptr<ARRAY_TYPE>(x);
 		   }
@@ -206,7 +220,7 @@ public:
     	  if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
     		  std::cout << "Iteration " << it+1 << ". rq/rq_0 = " << rel_res << std::endl;
     	  }
-    	  if( rq_last-rel_res < get_zero<REAL>() ) {
+    	  if( rq_last-rel_res < REAL(0) ) {
     		  std::cout << "----- Warning: CG residual increase. Stability problem! -----" << std::endl;
     	  }
       }
@@ -248,7 +262,7 @@ protected:
 	 		  return false;
 	 		}
 
-	 		if( !solver_axpy(mul<REAL>((*operators_)[i]->get_weight(), get_one<ELEMENT_TYPE>()), &q2, out) ) {
+	 		if( !solver_axpy((*operators_)[i]->get_weight(), &q2, out) ) {
 	 		  this->solver_error( "cgSolver::solve : failed to add result from operator" );
 	 		  return false;
 	 		}

@@ -17,7 +17,7 @@ class cuIdentityOperator : public identityOperator< REAL, cuNDArray<T> >
     int ret1 = this->set_device();
     bool ret2;
     if( ret1 == 0 )
-      ret2 = cuNDA_axpy( get_one<T>(), x, y, CUNDA_CURRENT_DEVICE );
+      ret2 = cuNDA_axpy( T(1), x, y, CUNDA_CURRENT_DEVICE );
     else 
       ret2 = false;
     ret1 = this->restore_device();

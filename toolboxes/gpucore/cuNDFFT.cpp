@@ -9,39 +9,39 @@
 template<class T> cufftType_t get_transform_type();
 template<> cufftType_t get_transform_type< cuFloatComplex  >() { return CUFFT_C2C; }
 template<> cufftType_t get_transform_type< cuDoubleComplex >() { return CUFFT_Z2Z; }
-template<> cufftType_t get_transform_type< float_complext::Type  >() { return CUFFT_C2C; }
-template<> cufftType_t get_transform_type< double_complext::Type >() { return CUFFT_Z2Z; }
+template<> cufftType_t get_transform_type< float_complext  >() { return CUFFT_C2C; }
+template<> cufftType_t get_transform_type< double_complext >() { return CUFFT_Z2Z; }
 
 template<class T> cufftResult_t cuNDA_FFT_execute( cufftHandle plan, cuNDArray<T> *in_out, int direction );
 template<> cufftResult_t cuNDA_FFT_execute<cuFloatComplex>( cufftHandle plan, cuNDArray<cuFloatComplex> *in_out, int direction ){
   return cufftExecC2C(plan, in_out->get_data_ptr(), in_out->get_data_ptr(), direction); }
 template<> cufftResult_t cuNDA_FFT_execute<cuDoubleComplex>( cufftHandle plan, cuNDArray<cuDoubleComplex> *in_out, int direction ){
   return cufftExecZ2Z(plan, in_out->get_data_ptr(), in_out->get_data_ptr(), direction); }
-template<> cufftResult_t cuNDA_FFT_execute<float_complext::Type>( cufftHandle plan, cuNDArray<float_complext::Type> *in_out, int direction ){
+template<> cufftResult_t cuNDA_FFT_execute<float_complext>( cufftHandle plan, cuNDArray<float_complext> *in_out, int direction ){
   return cufftExecC2C(plan, (cuFloatComplex*)in_out->get_data_ptr(), (cuFloatComplex*)in_out->get_data_ptr(), direction); }
-template<> cufftResult_t cuNDA_FFT_execute<double_complext::Type>( cufftHandle plan, cuNDArray<double_complext::Type> *in_out, int direction ){
+template<> cufftResult_t cuNDA_FFT_execute<double_complext>( cufftHandle plan, cuNDArray<double_complext> *in_out, int direction ){
   return cufftExecZ2Z(plan, (cuDoubleComplex*)in_out->get_data_ptr(), (cuDoubleComplex*)in_out->get_data_ptr(), direction); }
 
 template<class T> bool cuNDA_FFT_scal( T a, cuNDArray<T> *in_out );
-template<> bool cuNDA_FFT_scal( float_complext::Type a, cuNDArray<float_complext::Type> *in_out ){
-  return cuNDA_scal<float_complext::Type>( a, in_out ); }
-template<> bool cuNDA_FFT_scal( double_complext::Type a, cuNDArray<double_complext::Type> *in_out ){
-  return cuNDA_scal<double_complext::Type>( a, in_out ); }
+template<> bool cuNDA_FFT_scal( float_complext a, cuNDArray<float_complext> *in_out ){
+  return cuNDA_scal<float_complext>( a, in_out ); }
+template<> bool cuNDA_FFT_scal( double_complext a, cuNDArray<double_complext> *in_out ){
+  return cuNDA_scal<double_complext>( a, in_out ); }
 template<> bool cuNDA_FFT_scal( cuFloatComplex a, cuNDArray<cuFloatComplex> *in_out ){
-  return cuNDA_scal<float_complext::Type>( *((float_complext::Type*)&a), (cuNDArray<float_complext::Type>*)in_out ); }
+  return cuNDA_scal<float_complext>( *((float_complext*)&a), (cuNDArray<float_complext>*)in_out ); }
 template<> bool cuNDA_FFT_scal( cuDoubleComplex a, cuNDArray<cuDoubleComplex> *in_out ){
-  return cuNDA_scal<double_complext::Type>( *((double_complext::Type*)&a), (cuNDArray<double_complext::Type>*)in_out ); }
+  return cuNDA_scal<double_complext>( *((double_complext*)&a), (cuNDArray<double_complext>*)in_out ); }
 
-template<class T> T operator* ( const T &z, const int &i ); 
-template<> cuFloatComplex operator* ( const cuFloatComplex &z, const int &i ){ 
-  cuFloatComplex res = z; res.x*=(float)i; res.y*=(float)i; return res; }
-template<> cuDoubleComplex operator* ( const cuDoubleComplex &z, const int &i ){ 
-  cuDoubleComplex res = z; res.x*=(double)i; res.y*=(double)i; return res; }
-template<> float_complext::Type operator* ( const float_complext::Type &z, const int &i ){ 
-  float_complext::Type res = z; res.vec[0]*=(float)i; res.vec[1]*=(float)i; return res; }
-template<> double_complext::Type operator* ( const double_complext::Type &z, const int &i ){ 
-  double_complext::Type res = z; res.vec[0]*=(double)i; res.vec[1]*=(double)i; return res; }
-
+//template<class T> T operator* ( const T &z, const int &i );
+//cuFloatComplex operator* ( const cuFloatComplex &z, const int &i ){
+  //cuFloatComplex res = z; res.x*=(float)i; res.y*=(float)i; return res; }
+//cuDoubleComplex operator* ( const cuDoubleComplex &z, const int &i ){
+  //cuDoubleComplex res = z; res.x*=(double)i; res.y*=(double)i; return res; }
+/*template<> float_complext operator* ( const float_complext &z, const int &i ){
+  float_complext res = z; res.vec[0]*=(float)i; res.vec[1]*=(float)i; return res; }
+template<> double_complext operator* ( const double_complext &z, const int &i ){
+  double_complext res = z; res.vec[0]*=(double)i; res.vec[1]*=(double)i; return res; }*/
+/*
 template<> cuFloatComplex get_one<cuFloatComplex>(){
   cuFloatComplex res; res.x = 1.0f; res.y = 0.0f; return res; }
 template<> cuDoubleComplex get_one<cuDoubleComplex>(){
@@ -53,7 +53,7 @@ template<> cuFloatComplex reciprocal<cuFloatComplex>(const cuFloatComplex z){
 template<> cuDoubleComplex reciprocal<cuDoubleComplex>(const cuDoubleComplex z){
   return cuCdiv( make_cuDoubleComplex(1.0,0.0), z );
 }
-
+*/
 
 template<class T> int 
 cuNDFFT<T>::fft_int( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_transform, int direction, bool do_scale )
@@ -124,7 +124,7 @@ cuNDFFT<T>::fft_int( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_tra
   }
 
   if (do_scale) {
-    T scale = reciprocal<T>(get_one<T>()*elements_in_ft);
+    T scale = T(1)/T(elements_in_ft);
     if( !cuNDA_FFT_scal( scale, input ) ){
       std::cerr << "cuNDFFT rescaling failed " << std::endl;
       return -1;
@@ -184,7 +184,7 @@ cuNDFFT<T>::ifft( cuNDArray<T> *input, bool do_scale )
 }
 
 // Instantiation
-template class EXPORTGPUCORE cuNDFFT<cuFloatComplex>;
-template class EXPORTGPUCORE cuNDFFT<cuDoubleComplex>;
-template class EXPORTGPUCORE cuNDFFT<float_complext::Type>;
-template class EXPORTGPUCORE cuNDFFT<double_complext::Type>;
+//template class EXPORTGPUCORE cuNDFFT<cuFloatComplex>;
+//template class EXPORTGPUCORE cuNDFFT<cuDoubleComplex>;
+template class EXPORTGPUCORE cuNDFFT<float_complext>;
+template class EXPORTGPUCORE cuNDFFT<double_complext>;

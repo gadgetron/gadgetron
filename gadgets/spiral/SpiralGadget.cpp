@@ -127,7 +127,7 @@ int SpiralGadget::process_config(ACE_Message_Block* mb)
 	data_dimensions.push_back(ngrad*Nints);
 	data_dimensions.push_back(n.get<long>(std::string("encoding.channels.value"))[0]);
 
-	host_data_buffer_ = new hoNDArray<float_complext::Type>[slices];
+	host_data_buffer_ = new hoNDArray<float_complext>[slices];
 	if (!host_data_buffer_) {
 		GADGET_DEBUG1("Unable to allocate array for host data buffer\n");
 		return GADGET_FAIL;
@@ -196,14 +196,14 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 
 		unsigned int num_batches = m1->getObjectPtr()->channels;
 
-		cuNDArray<float_complext::Type> data(&host_data_buffer_[slice]);
+		cuNDArray<float_complext> data(&host_data_buffer_[slice]);
 
 		// Setup result image
 		std::vector<unsigned int> image_dims;
 		image_dims.push_back(image_dimensions_[0]);
 		image_dims.push_back(image_dimensions_[1]);
 		image_dims.push_back(num_batches);
-		cuNDArray<float_complext::Type> image; image.create(&image_dims);
+		cuNDArray<float_complext> image; image.create(&image_dims);
 
 		bool  success = plan_.compute( &data, &image, &gpu_weights_, NFFT_plan<float,2>::NFFT_BACKWARDS );
 		if (!success) {
@@ -211,7 +211,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 			return GADGET_FAIL;
 		}
 
-		boost::shared_ptr< hoNDArray<float_complext::Type> > image_host = image.to_host();
+		boost::shared_ptr< hoNDArray<float_complext> > image_host = image.to_host();
 
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >* m4 =
 				new GadgetContainerMessage< hoNDArray< std::complex<float> > >();

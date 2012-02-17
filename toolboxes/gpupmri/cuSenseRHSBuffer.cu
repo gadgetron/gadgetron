@@ -10,7 +10,7 @@ int cuSenseRHSBuffer<REAL,D>::clear()
 		return -1;
 	}
 
-	if( !cuNDA_clear(&acc_buffer_, get_zero<_complext>()) || !cuNDA_clear(&cyc_buffer_, get_zero<_complext>() )){
+	if( !cuNDA_clear(&acc_buffer_, _complext(0)) || !cuNDA_clear(&cyc_buffer_, _complext(0) )){
 		std::cerr << "cuSenseRHSBuffer::clear: failed to clear buffers" << std::endl;
 		return -1;
 	}
@@ -107,7 +107,7 @@ int cuSenseRHSBuffer<REAL,D>::add_frame_data( cuNDArray<_complext> *samples, cuN
 
 		// Buffer complete, add to accumulation buffer
 		//
-		if( !cuNDA_axpy( get_one<_complext>(), &cur_buffer, &acc_buffer_ )){
+		if( !cuNDA_axpy( _complext(1), &cur_buffer, &acc_buffer_ )){
 			std::cerr << "cuSenseRHSBuffer::add_frame_data: accumulation failed" << std::endl;
 			return -1;
 		}
@@ -126,7 +126,7 @@ int cuSenseRHSBuffer<REAL,D>::add_frame_data( cuNDArray<_complext> *samples, cuN
 			return -1;
 		}
 
-		if( !cuNDA_axpy( get_zero<_complext>()-get_one<_complext>(), &cur_buffer, &acc_buffer_ )){
+		if( !cuNDA_axpy( _complext(0)-_complext(1), &cur_buffer, &acc_buffer_ )){
 			std::cerr << "cuSenseRHSBuffer::add_frame_data: failed subtracting buffers" << std::endl;
 			return -1;
 		}
@@ -146,11 +146,11 @@ int cuSenseRHSBuffer<REAL,D>::add_frame_data( cuNDArray<_complext> *samples, cuN
 }
 
 template<class REAL, unsigned int D>
-boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuSenseRHSBuffer<REAL,D>::get_acc_coil_images( bool normalize )
+boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseRHSBuffer<REAL,D>::get_acc_coil_images( bool normalize )
 {
 	if( sense_op_.get() == 0x0 ){
 		std::cerr << "cuSenseRHSBuffer::get_acc_coil_images: sense_operator not set" << std::endl;
-		return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >();
+		return boost::shared_ptr< cuNDArray<complext<REAL> > >();
 	}
 
 	// Prepare return image
@@ -168,7 +168,7 @@ boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuSenseRHSBuffer<R
 
 	// Check if we are ready to reconstruct. If not return an image of ones...
 	if( acc_buffer_empty_ ){
-		cuNDA_clear(image, get_one<_complext>());
+		cuNDA_clear(image, _complext(1));
 		return boost::shared_ptr< cuNDArray<_complext> >(image);
 	}
 
@@ -197,7 +197,7 @@ boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > cuSenseRHSBuffer<R
 	}
 
 	if( normalize ){
-		REAL scale = get_one<REAL>()/(((REAL)cycle_length_-get_one<REAL>())*(REAL)sub_cycle_length_);
+		REAL scale = REAL(1)/(((REAL)cycle_length_-REAL(1))*(REAL)sub_cycle_length_);
 		if( !cuNDA_scale( scale, image ) ){
 			std::cerr << "cuSenseRHSBuffer::get_acc_coil_images: normalization failed" << std::endl;
 			return boost::shared_ptr< cuNDArray<_complext> >();

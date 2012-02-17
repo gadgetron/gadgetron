@@ -3,7 +3,7 @@
 #include "ndarray_vector_td_utilities.h"
 
 template<class REAL> __global__ void 
-sample_array_kernel( typename complext<REAL>::Type *in, typename complext<REAL>::Type *out, 
+sample_array_kernel( complext<REAL> *in, complext<REAL> *out,
 		     unsigned int *idx, 
 		     unsigned long image_elements,
 		     unsigned long int samples,
@@ -19,7 +19,7 @@ sample_array_kernel( typename complext<REAL>::Type *in, typename complext<REAL>:
 }
 
 template<class REAL> __global__ void 
-insert_samples_kernel( typename complext<REAL>::Type *in, typename complext<REAL>::Type *out, 
+insert_samples_kernel( complext<REAL> *in, complext<REAL> *out,
 				       unsigned int *idx, 
 				       unsigned long image_elements,
 				       unsigned long int samples,
