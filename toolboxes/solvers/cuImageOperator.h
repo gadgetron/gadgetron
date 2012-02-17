@@ -10,22 +10,22 @@ class cuImageOperator : public imageOperator< REAL, cuNDArray<REAL>, cuNDArray<T
 
  public:
 
-  cuImageOperator( int device = -1 ) : imageOperator< REAL, cuNDArray<REAL>, cuNDArray<T> >() { set_device(device); }
+  cuImageOperator() : imageOperator< REAL, cuNDArray<REAL>, cuNDArray<T> >() { set_device(-1); }
   virtual ~cuImageOperator() {}
      
   virtual int compute( cuNDArray<T> *image )
   {
-    set_device();
+    _set_device();
     int res = imageOperator< REAL, cuNDArray<REAL>, cuNDArray<T> >::compute( image );
-    restore_device();
+    _restore_device();
     return res;
   }
 
   virtual int mult_MH_M( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate = false )
   {
-    set_device();
+    _set_device();
     int res = imageOperator< REAL, cuNDArray<REAL>, cuNDArray<T> >::mult_MH_M( in, out, accumulate );
-    restore_device();
+    _restore_device();
     return res;
   }
   

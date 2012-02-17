@@ -7,35 +7,36 @@
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
 
-template <class REAL, unsigned int D> class cuConvolutionOperator : public convolutionOperator<REAL, cuNDArray<typename complext<REAL>::Type>, D >
+template <class REAL, unsigned int D> 
+class cuConvolutionOperator : public convolutionOperator<REAL, cuNDArray<typename complext<REAL>::Type>, D >
 {
   
 public:
   
-  cuConvolutionOperator( int device = -1 ) : convolutionOperator<REAL, cuNDArray<typename complext<REAL>::Type>, D>() { set_device(device); }
+  cuConvolutionOperator() : convolutionOperator<REAL, cuNDArray<typename complext<REAL>::Type>, D>() { set_device(-1); }
   virtual ~cuConvolutionOperator() {}
   
   virtual int mult_M( cuNDArray<typename complext<REAL>::Type> *in, cuNDArray<typename complext<REAL>::Type> *out, bool accumulate = false )
   {
-    set_device();
+    _set_device();
     int res = convolutionOperator<REAL, cuNDArray<typename complext<REAL>::Type>, D >::mult_M( in, out, accumulate );
-    restore_device();
+    _restore_device();
     return res;
   }
 
   virtual int mult_MH( cuNDArray<typename complext<REAL>::Type> *in, cuNDArray<typename complext<REAL>::Type> *out, bool accumulate = false )
   {
-    set_device();
+    _set_device();
     int res = convolutionOperator<REAL, cuNDArray<typename complext<REAL>::Type>,D>::mult_MH( in, out, accumulate );
-    restore_device();
+    _restore_device();
     return res;
   }
-
+  
   virtual int mult_MH_M( cuNDArray<typename complext<REAL>::Type> *in, cuNDArray<typename complext<REAL>::Type> *out, bool accumulate = false )
   {
-    set_device();
+    _set_device();
     int res = convolutionOperator<REAL, cuNDArray<typename complext<REAL>::Type>, D>::mult_MH_M( in, out, accumulate );
-    restore_device();
+    _restore_device();
     return res;
   }
 

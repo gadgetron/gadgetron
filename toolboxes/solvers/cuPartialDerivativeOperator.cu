@@ -63,6 +63,8 @@ cuPartialDerivativeOperator<REAL,T,D>::compute_partial_derivative( typename intd
     return -1;
   }
   
+  _set_device();
+  
   dim3 dimBlock( dims.vec[0] );
   dim3 dimGrid( 1, dims.vec[D-1] );
   
@@ -74,6 +76,8 @@ cuPartialDerivativeOperator<REAL,T,D>::compute_partial_derivative( typename intd
   
   CHECK_FOR_CUDA_ERROR();
 
+  _restore_device();
+  
   return 0;
 }
 
@@ -98,6 +102,8 @@ cuPartialDerivativeOperator<REAL,T,D>::compute_second_order_partial_derivative( 
     return -1;
   }
   
+  _set_device();
+
   dim3 dimBlock( dims.vec[0] );
   dim3 dimGrid( 1, dims.vec[D-1] );
   
@@ -109,9 +115,10 @@ cuPartialDerivativeOperator<REAL,T,D>::compute_second_order_partial_derivative( 
   
   CHECK_FOR_CUDA_ERROR();
 
+  _restore_device();
+  
   return 0;
 }
-
 
 // Instantiations
 
