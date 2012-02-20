@@ -44,7 +44,7 @@ norm_kernel( typename intd<D>::Type dims, REAL *sigma, REAL *out )
   const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
   if( idx < prod(dims) ){
     
-    __shared__ REAL shared[BLOCK_SIZE];
+//    __shared__ REAL shared[BLOCK_SIZE];
 
     T val = T(0);
     REAL s = sigma[idx];

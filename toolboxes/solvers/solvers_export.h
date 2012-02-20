@@ -8,7 +8,6 @@
 #ifndef SOLVERS_EXPORT_H_
 #define SOLVERS_EXPORT_H_
 
-
 #if defined (WIN32)
 #if defined (__BUILD_GADGETRON_SOLVERS__) || defined (solvers_EXPORTS)
 #define EXPORTSOLVERS __declspec(dllexport)

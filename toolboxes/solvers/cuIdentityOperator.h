@@ -4,8 +4,8 @@
 #include "cuMatrixOperator_macros.h"
 #include "ndarray_vector_td_utilities.h"
 
-template <class REAL, class T> 
-class cuIdentityOperator : public identityOperator< REAL, cuNDArray<T> >
+template <class REAL, class T> class cuIdentityOperator 
+	: public identityOperator< REAL, cuNDArray<T> >
 {
  public:
 

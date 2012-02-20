@@ -3,6 +3,7 @@
 #include "laplaceOperator.h"
 #include "cuMatrixOperator_macros.h"
 #include "cuNDArray.h"
+#include "solvers_export.h"
 
 template <class REAL, class T, unsigned int D> 
 class EXPORTSOLVERS cuLaplaceOperator : public laplaceOperator<REAL, D, cuNDArray<T> >

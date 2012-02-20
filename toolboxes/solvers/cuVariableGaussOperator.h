@@ -9,8 +9,8 @@
 #include <boost/smart_ptr.hpp>
 #include <vector>
 
-template <class REAL, class T, unsigned int D> 
-class cuVariableGaussOperator : public matrixOperator<REAL, cuNDArray<T> >
+template <class REAL, class T, unsigned int D> class EXPORTSOLVERS cuVariableGaussOperator 
+	: public matrixOperator<REAL, cuNDArray<T> >
 {
 
  public:

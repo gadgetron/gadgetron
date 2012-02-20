@@ -3129,7 +3129,7 @@ bool cuNDA_crop( typename uintd<D>::Type offset,
     return false;
   }
 
-  return out;
+  return true;
 }
 
 // Expand and zero fill
@@ -3218,7 +3218,7 @@ bool cuNDA_expand_with_zero_fill( cuNDArray<T> *in, cuNDArray<T> *out,
     return false;
   }
 
-  return out;
+  return true;
 }
 
 // Zero fill border (rectangular)
@@ -3573,7 +3573,7 @@ bool cuNDA_origin_mirror( cuNDArray<T> *in, cuNDArray<T> *out, bool zero_fill, c
     return false;
   }
 
-  return out;
+  return true;
 }
 
 //

@@ -12,7 +12,7 @@
 // Component-wise operations.
 //
 
-EXPORTGPUCORE enum cuNDA_device { CUNDA_CURRENT_DEVICE, CUNDA_NDARRAY_DEVICE };
+enum cuNDA_device { CUNDA_CURRENT_DEVICE, CUNDA_NDARRAY_DEVICE };
 
 // Abs (float/double/complext arrays)
 template<class REAL, class T> EXPORTGPUCORE

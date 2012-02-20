@@ -3,7 +3,8 @@
 #include "matrixOperator.h"
 #include <iostream>
 
-template <class REAL, class ARRAY_TYPE> class identityOperator : public matrixOperator<REAL, ARRAY_TYPE>
+template <class REAL, class ARRAY_TYPE> class identityOperator 
+	: public matrixOperator<REAL, ARRAY_TYPE>
 {
  public:
 

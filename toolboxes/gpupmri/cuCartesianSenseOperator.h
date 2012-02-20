@@ -3,7 +3,8 @@
 #include "cuSenseOperator.h"
 
 template<class REAL, unsigned int D>
-class EXPORTGPUPMRI cuCartesianSenseOperator : public cuSenseOperator<REAL,D>
+class EXPORTGPUPMRI cuCartesianSenseOperator 
+	: public cuSenseOperator<REAL,D>
 {
  public:
 

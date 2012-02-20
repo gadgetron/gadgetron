@@ -5,33 +5,27 @@
 // This code needs to compile outside nvcc
 #include "host_defines.h"
 
-
-
-//Return types
+//
+// Return types
+//
 
 template <class T, class I> struct vectorTDReturnType {};
 template <class T> struct vectorTDReturnType<T,T> { typedef T type;};
-
-
-template<>  struct vectorTDReturnType<unsigned int, int> {typedef int type; };
-
-
-template<>  struct vectorTDReturnType<float, int> {typedef float type; };
-template<>  struct vectorTDReturnType<int, float> {typedef float type; };
-template<>  struct vectorTDReturnType<float, unsigned int> {typedef float type; };
-template<>  struct vectorTDReturnType<unsigned int, float> {typedef float type; };
-template<>  struct vectorTDReturnType<int, double> {typedef double type; };
-template<>  struct vectorTDReturnType<double, int> {typedef double type; };
-template<>  struct vectorTDReturnType<unsigned int, double> {typedef double type; };
-template<>  struct vectorTDReturnType<double, unsigned int> {typedef double type; };
-template<>  struct vectorTDReturnType<double, float> {typedef float type; };
-template<>  struct vectorTDReturnType<float,double> {typedef float type; };
-
+template<> struct vectorTDReturnType<unsigned int, int> {typedef int type; };
+template<> struct vectorTDReturnType<float, int> {typedef float type; };
+template<> struct vectorTDReturnType<int, float> {typedef float type; };
+template<> struct vectorTDReturnType<float, unsigned int> {typedef float type; };
+template<> struct vectorTDReturnType<unsigned int, float> {typedef float type; };
+template<> struct vectorTDReturnType<int, double> {typedef double type; };
+template<> struct vectorTDReturnType<double, int> {typedef double type; };
+template<> struct vectorTDReturnType<unsigned int, double> {typedef double type; };
+template<> struct vectorTDReturnType<double, unsigned int> {typedef double type; };
+template<> struct vectorTDReturnType<double, float> {typedef float type; };
+template<> struct vectorTDReturnType<float,double> {typedef float type; };
 
 //
 // Operators are defined as component wise operations.
 //
-
 
 //
 // Arithmetic operators
@@ -57,7 +51,6 @@ template< class T, class R, unsigned int D > __inline__ __host__ __device__ void
   for(unsigned int i=0; i<D; i++ ) v1.vec[i] *= v2.vec[i]; 
 }
 
-
 template< class T, class R, unsigned int D > __inline__ __host__ __device__ void operator*= ( vector_td<T,D> &v1, const R &v2 )
 { 
   for(unsigned int i=0; i<D; i++ ) v1.vec[i] *= v2;
@@ -67,7 +60,6 @@ template< class T, unsigned int D > __inline__ __host__ __device__ void operator
 {
   for(unsigned int i=0; i<D; i++ ) v1.vec[i] /= v2;
 }
-
 
 template< class T, unsigned int D > __inline__ __host__ __device__ void component_wise_div_eq ( vector_td<T,D> &v1, const vector_td<T,D> &v2 ) 
 { 
@@ -115,7 +107,6 @@ template< class T, unsigned int D > __inline__ __host__ __device__ vector_td<T,D
   return res;
 }
 
-
 template< class T, class R, unsigned int D > __inline__ __host__ __device__ vector_td<typename vectorTDReturnType<T,R>::type,D> component_wise_mul ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
 { 
   vector_td<typename vectorTDReturnType<T,R>::type,D> res;
@@ -149,16 +140,12 @@ template< class T, class R, unsigned int D > __inline__ __host__ __device__ vect
   return res;
 }
 
-
-
-
 template< class T, class R, unsigned int D > __inline__ __host__ __device__ vector_td<typename vectorTDReturnType<T,R>::type,D> component_wise_div ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
 { 
   vector_td<typename vectorTDReturnType<T,R>::type,D> res;
   for(unsigned int i=0; i<D; i++ ) res.vec[i] = v1.vec[i]/v2.vec[i];
   return res;
 }
-
 
 // 
 // "Strong" comparison operators
@@ -363,5 +350,3 @@ template< class T, unsigned int D > __inline__ __host__ __device__ vector_td<T,D
   res %= v2;
   return res;
 }
-
-

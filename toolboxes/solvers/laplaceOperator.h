@@ -3,8 +3,8 @@
 #include "matrixOperator.h"
 #include "vector_td.h"
 
-template <class REAL, unsigned int D, class ARRAY_TYPE> 
-class laplaceOperator : public matrixOperator<REAL, ARRAY_TYPE>
+template <class REAL, unsigned int D, class ARRAY_TYPE> class EXPORTSOLVERS laplaceOperator 
+	: public matrixOperator<REAL, ARRAY_TYPE>
 {
   
 public:

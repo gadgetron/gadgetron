@@ -4,8 +4,8 @@
 #include "cuMatrixOperator_macros.h"
 #include "cuNDArray.h"
 
-template <class REAL, class T> 
-class cuEncodedImageOperator : public encodedImageOperator< REAL, cuNDArray<REAL>, cuNDArray<T> >
+template <class REAL, class T> class cuEncodedImageOperator 
+	: public encodedImageOperator< REAL, cuNDArray<REAL>, cuNDArray<T> >
 {
 
  public:

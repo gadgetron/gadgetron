@@ -5,7 +5,8 @@
 #include "cgPreconditioner.h"
 #include "cuNDArray.h"
 
-template <class T> class cuCGPreconditioner : public cgPreconditioner< cuNDArray<T> >
+template <class T> class cuCGPreconditioner 
+	: public cgPreconditioner< cuNDArray<T> >
 {
  public:
   cuCGPreconditioner( int device = -1 ) : cgPreconditioner< cuNDArray<T> >()

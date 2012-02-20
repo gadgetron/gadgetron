@@ -7,7 +7,8 @@
 #include "vector_td.h"
 
 
-template<class REAL, unsigned int D> class EXPORTGPUPMRI cuSenseOperator : public senseOperator<REAL, D, cuNDArray< complext<REAL> > >
+template<class REAL, unsigned int D> class EXPORTGPUPMRI cuSenseOperator 
+	: public senseOperator<REAL, D, cuNDArray< complext<REAL> > >
 {
 
 public:

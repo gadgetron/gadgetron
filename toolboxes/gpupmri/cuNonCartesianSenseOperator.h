@@ -3,8 +3,8 @@
 #include "cuSenseOperator.h"
 #include "NFFT.h"
 
-template<class REAL, unsigned int D>
-class EXPORTGPUPMRI cuNonCartesianSenseOperator : public cuSenseOperator<REAL,D>
+template<class REAL, unsigned int D> class EXPORTGPUPMRI cuNonCartesianSenseOperator 
+	: public cuSenseOperator<REAL,D>
 {
 
 public:

@@ -2,7 +2,8 @@
 
 #include "imageOperator.h"
 
-template <class REAL, class ARRAY_TYPE_REAL, class ARRAY_TYPE_OPERATOR> class encodedImageOperator : public imageOperator<REAL, ARRAY_TYPE_REAL, ARRAY_TYPE_OPERATOR>
+template <class REAL, class ARRAY_TYPE_REAL, class ARRAY_TYPE_OPERATOR> class encodedImageOperator 
+	: public imageOperator<REAL, ARRAY_TYPE_REAL, ARRAY_TYPE_OPERATOR>
 {
   
 public:
@@ -35,12 +36,14 @@ public:
       std::cout << std::endl << "encodedImageOperator::mult_MH_M : forwards encoding operator failed." << std::endl;
       return -1;	
     }
-    ARRAY_TYPE_OPERATOR tmp2; 
+ 
+	ARRAY_TYPE_OPERATOR tmp2; 
     if( tmp2.create( in->get_dimensions().get() ) < 0 ) {
       std::cout << std::endl << "encodedImageOperator::mult_MH_M : decoded image allocation failed." << std::endl;
       return -1;	
     }
-    if( imageOperator<REAL, ARRAY_TYPE_REAL, ARRAY_TYPE_OPERATOR>::mult_MH_M( &tmp, &tmp2 ) < 0 ){
+
+	if( imageOperator<REAL, ARRAY_TYPE_REAL, ARRAY_TYPE_OPERATOR>::mult_MH_M( &tmp, &tmp2 ) < 0 ){
       std::cout << std::endl << "encodedImageOperator::mult_MH_M : error from inherited class" << std::endl;
       return -1;	
     }

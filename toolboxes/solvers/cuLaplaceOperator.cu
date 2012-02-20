@@ -3,7 +3,6 @@
 #include "vector_td_utilities.h"
 #include "check_CUDA.h"
 
-
 // Template Power function
 template<unsigned int i, unsigned int j>
 struct Pow
@@ -16,7 +15,6 @@ struct Pow<i,1>
 {
   enum { Value = i};
 };
-
 
 template<class REAL, class T, unsigned int D> __global__ void
 laplace_kernel( typename intd<D>::Type dims, T *in, T *out )
@@ -97,14 +95,11 @@ cuLaplaceOperator<REAL,T,D>::compute_laplace( cuNDArray<T> *in, cuNDArray<T> *ou
   return 0;
 }
 
-
 // Instantiations
 
 template class EXPORTSOLVERS cuLaplaceOperator<float, float, 1>;
 template class EXPORTSOLVERS cuLaplaceOperator<float, float, 2>;
 template class EXPORTSOLVERS cuLaplaceOperator<float, float, 3>;
-
-
 
 template class EXPORTSOLVERS cuLaplaceOperator<float, float_complext, 1>;
 template class EXPORTSOLVERS cuLaplaceOperator<float, float_complext, 2>;

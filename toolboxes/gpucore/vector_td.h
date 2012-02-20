@@ -2,11 +2,13 @@
 
 template< class T, unsigned int D > class vector_td
 {
-	public:
-		T vec[D];
+  public:
+	T vec[D];
 };
 
+//
 // Some typedefs for convenience (templated typedefs are not (yet) available in C++)
+//
 
 template< class REAL, unsigned int D > struct reald{
   typedef vector_td< REAL, D > Type;
@@ -28,9 +30,9 @@ template< unsigned int D > struct doubled{
   typedef typename reald< double, D >::Type Type;
 };
 
-
-
+//
 // Inherited structs with convenient constructors
+//
 
 struct intd1 : intd<1>::Type{
   typedef intd<1>::Type Type;
@@ -127,5 +129,3 @@ struct doubled4 : doubled<4>::Type{
   doubled4(){}
   doubled4( double x, double y, double z, double w ) { vec[0] = x; vec[1] = y; vec[2] = z; vec[3] = w; }
 };
-
-

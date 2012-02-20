@@ -8,18 +8,17 @@
 #include "ndarray_vector_td_utilities.h"
 
 
-template <class REAL, unsigned int D> class cuConvolutionOperator : public convolutionOperator<REAL, cuNDArray<complext<REAL> >, D >
+template <class REAL, unsigned int D> class cuConvolutionOperator 
+	: public convolutionOperator<REAL, cuNDArray<complext<REAL> >, D >
 {
   
 public:
   
-
   cuConvolutionOperator( int device = -1 ) : convolutionOperator<REAL, cuNDArray<complext<REAL> >, D>() { set_device(device); }
   virtual ~cuConvolutionOperator() {}
   
   virtual int mult_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate = false )
   {
-
     _set_device();
     int res = convolutionOperator<REAL, cuNDArray<complext<REAL> >, D >::mult_M( in, out, accumulate );
     _restore_device();
@@ -29,7 +28,6 @@ public:
 
   virtual int mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate = false )
   {
-
     _set_device();
     int res = convolutionOperator<REAL, cuNDArray<complext<REAL> >,D>::mult_MH( in, out, accumulate );
     _restore_device();

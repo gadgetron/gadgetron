@@ -4,8 +4,8 @@
 #include "cuMatrixOperator_macros.h"
 #include "cuNDArray.h"
 
-template <class REAL, class T, unsigned int D> 
-class EXPORTSOLVERS cuPartialDerivativeOperator : public partialDerivativeOperator< REAL, D, cuNDArray<T> >
+template <class REAL, class T, unsigned int D> class EXPORTSOLVERS cuPartialDerivativeOperator 
+	: public partialDerivativeOperator< REAL, D, cuNDArray<T> >
 {
   
  public:

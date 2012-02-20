@@ -5,8 +5,7 @@
 #include "vector_td.h"
 #include "complext.h"
 
-template<class REAL, unsigned int D>
-class EXPORTGPUPMRI cuSenseRHSBuffer
+template<class REAL, unsigned int D> class EXPORTGPUPMRI cuSenseRHSBuffer
 {
 public:
 

@@ -6,7 +6,8 @@
 #include <boost/smart_ptr.hpp>
 #include <vector>
 
-template <class REAL, class ARRAY_TYPE_REAL, class ARRAY_TYPE_OPERATOR> class imageOperator : public matrixOperator<REAL, ARRAY_TYPE_OPERATOR>
+template <class REAL, class ARRAY_TYPE_REAL, class ARRAY_TYPE_OPERATOR> class imageOperator 
+	: public matrixOperator<REAL, ARRAY_TYPE_OPERATOR>
 {
   
 public:

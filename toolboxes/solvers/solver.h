@@ -3,6 +3,7 @@
 #include <boost/smart_ptr.hpp>
 #include <string>
 #include <iostream>
+#include "solvers_export.h"
 
 template <class ARRAY_TYPE_IN, class ARRAY_TYPE_OUT> class solver
 {

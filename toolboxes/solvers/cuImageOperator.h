@@ -4,8 +4,8 @@
 #include "cuMatrixOperator_macros.h"
 #include "cuNDArray.h"
 
-template <class REAL, class T> 
-class cuImageOperator : public imageOperator< REAL, cuNDArray<REAL>, cuNDArray<T> >
+template <class REAL, class T> class cuImageOperator 
+	: public imageOperator< REAL, cuNDArray<REAL>, cuNDArray<T> >
 {
 
  public:
@@ -20,8 +20,6 @@ class cuImageOperator : public imageOperator< REAL, cuNDArray<REAL>, cuNDArray<T
     _restore_device();
     return res;
   }
-
-
 
   virtual int mult_MH_M( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate = false )
   {

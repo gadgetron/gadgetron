@@ -2,9 +2,9 @@
 
 #include "matrixOperator.h"
 #include "vector_td.h"
-#include "solvers_export.h"
 
-template <class REAL, unsigned int D, class ARRAY_TYPE> class partialDerivativeOperator : public matrixOperator<REAL, ARRAY_TYPE>
+template <class REAL, unsigned int D, class ARRAY_TYPE> class partialDerivativeOperator 
+	: public matrixOperator<REAL, ARRAY_TYPE>
 {
   
 public:
