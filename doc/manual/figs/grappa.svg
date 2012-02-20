@@ -1,0 +1,594 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="270"
+   height="540"
+   id="svg5199"
+   version="1.1"
+   inkscape:version="0.48.2 r9819"
+   sodipodi:docname="grappa.svg"
+   inkscape:export-filename="/home/hansenms/mrprogs/gadgetron/doc/manual/figs/grappa.png"
+   inkscape:export-xdpi="299.97357"
+   inkscape:export-ydpi="299.97357">
+  <defs
+     id="defs5201">
+    <marker
+       inkscape:stockid="Arrow2Mend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow2Mend"
+       style="overflow:visible;">
+      <path
+         id="path7268"
+         style="font-size:12.0;fill-rule:evenodd;stroke-width:0.62500000;stroke-linejoin:round;"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+         transform="scale(0.6) rotate(180) translate(0,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Mend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Mend"
+       style="overflow:visible;">
+      <path
+         id="path6124"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;marker-start:none;"
+         transform="scale(0.4) rotate(180) translate(10,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow2Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow2Lend"
+       style="overflow:visible;">
+      <path
+         id="path6136"
+         style="font-size:12.0;fill-rule:evenodd;stroke-width:0.62500000;stroke-linejoin:round;"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+         transform="scale(1.1) rotate(180) translate(1,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Lend"
+       style="overflow:visible;">
+      <path
+         id="path6118"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;marker-start:none;"
+         transform="scale(0.8) rotate(180) translate(12.5,0)" />
+    </marker>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="1.979899"
+     inkscape:cx="189.05381"
+     inkscape:cy="284.36943"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     units="in"
+     inkscape:window-width="1629"
+     inkscape:window-height="1147"
+     inkscape:window-x="474"
+     inkscape:window-y="109"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata5204">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-512.35975)">
+    <rect
+       style="fill:#97d2ea;fill-opacity:1;stroke:#dcdcdc;stroke-width:0.21841221000000000;stroke-linecap:butt;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect5207"
+       width="104.11561"
+       height="31.714287"
+       x="19.316126"
+       y="532.71069" />
+    <text
+       xml:space="preserve"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="36.669441"
+       y="542.99646"
+       id="text5209"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan5211"
+         x="36.669441"
+         y="542.99646">NoiseAdjustGadget</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="44.445709"
+       y="558.85358"
+       id="text5721"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan5723"
+         x="44.445709"
+         y="558.85358"
+         style="font-size:6px">Noise Prewitening</tspan></text>
+    <rect
+       y="627.30786"
+       x="19.316126"
+       height="31.714287"
+       width="104.11561"
+       id="rect5725"
+       style="fill:#97d2ea;fill-opacity:1;stroke:#dcdcdc;stroke-width:0.21841221000000000;stroke-linecap:butt;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text5727"
+       y="637.59357"
+       x="50.823345"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       xml:space="preserve"><tspan
+         y="637.59357"
+         x="50.823345"
+         id="tspan5729"
+         sodipodi:role="line">PCAGadget</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text5731"
+       y="647.45068"
+       x="71.22744"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       xml:space="preserve"><tspan
+         style="font-size:6px;text-align:center;text-anchor:middle"
+         y="647.45068"
+         x="71.22744"
+         id="tspan5733"
+         sodipodi:role="line">Virtual Channels</tspan><tspan
+         style="font-size:6px;text-align:center;text-anchor:middle"
+         y="654.95068"
+         x="71.22744"
+         sodipodi:role="line"
+         id="tspan5737">Principal Components</tspan></text>
+    <rect
+       style="fill:#97d2ea;fill-opacity:1;stroke:#dcdcdc;stroke-width:0.21841221000000000;stroke-linecap:butt;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect5768"
+       width="104.11561"
+       height="31.714287"
+       x="19.316126"
+       y="674.99121" />
+    <text
+       xml:space="preserve"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="33.340145"
+       y="683.99121"
+       id="text5770"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan5772"
+         x="33.340145"
+         y="683.99121">CoilReductionGadget</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="71.22744"
+       y="695.13403"
+       id="text5774"
+       sodipodi:linespacing="125%"><tspan
+         id="tspan5778"
+         sodipodi:role="line"
+         x="71.22744"
+         y="695.13403"
+         style="font-size:6px;text-align:center;text-anchor:middle">Reduce Channels</tspan><tspan
+         sodipodi:role="line"
+         x="71.22744"
+         y="702.63403"
+         style="font-size:6px;text-align:center;text-anchor:middle"
+         id="tspan5782">e.g 32 -&gt; 16</tspan></text>
+    <rect
+       y="580.81476"
+       x="19.316126"
+       height="31.714287"
+       width="104.11561"
+       id="rect5830"
+       style="fill:#97d2ea;fill-opacity:1;stroke:#dcdcdc;stroke-width:0.21841221000000000;stroke-linecap:butt;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text5832"
+       y="588.52905"
+       x="27.484425"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       xml:space="preserve"><tspan
+         y="588.52905"
+         x="27.484425"
+         id="tspan5834"
+         sodipodi:role="line"
+         style="font-size:5.4000001px">RemoveROOversamplingGadget</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text5836"
+       y="600.95764"
+       x="71.337303"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       xml:space="preserve"><tspan
+         id="tspan5840"
+         style="font-size:6px;text-align:center;text-anchor:middle"
+         y="600.95764"
+         x="71.337303"
+         sodipodi:role="line">Reduce Readout Length</tspan><tspan
+         style="font-size:6px;text-align:center;text-anchor:middle"
+         y="608.45764"
+         x="71.337303"
+         sodipodi:role="line"
+         id="tspan5895">e.g. 256 -&gt; 128</tspan></text>
+    <rect
+       y="731.96539"
+       x="19.316126"
+       height="31.714287"
+       width="104.11561"
+       id="rect5869"
+       style="fill:#97d2ea;fill-opacity:1;stroke:#dcdcdc;stroke-width:0.21841221000000000;stroke-linecap:butt;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text5871"
+       y="740.10822"
+       x="44.801079"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       xml:space="preserve"><tspan
+         y="740.10822"
+         x="44.801079"
+         id="tspan5873"
+         sodipodi:role="line">GrappaGadget</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text5875"
+       y="752.10822"
+       x="71.353416"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       xml:space="preserve"><tspan
+         id="tspan5879"
+         style="font-size:6px;text-align:center;text-anchor:middle"
+         y="752.10822"
+         x="71.353416"
+         sodipodi:role="line">Calculate Image Space</tspan><tspan
+         style="font-size:6px;text-align:center;text-anchor:middle"
+         y="759.60822"
+         x="71.353416"
+         sodipodi:role="line"
+         id="tspan5899">GRAPPA Unmixing Coefficients</tspan></text>
+    <rect
+       style="fill:#97d2ea;fill-opacity:1;stroke:#dcdcdc;stroke-width:0.21841221000000000;stroke-linecap:butt;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect5881"
+       width="104.11561"
+       height="31.714287"
+       x="19.316126"
+       y="778.66675" />
+    <text
+       xml:space="preserve"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="27.672955"
+       y="787.66675"
+       id="text5883"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan5885"
+         x="27.672955"
+         y="787.66675">GrappaUnmixingGadget</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="71.477928"
+       y="798.80963"
+       id="text5887"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="71.477928"
+         y="798.80963"
+         style="font-size:6px;text-align:center;text-anchor:middle"
+         id="tspan5891">FFT of Raw Data</tspan><tspan
+         sodipodi:role="line"
+         x="71.477928"
+         y="806.30963"
+         style="font-size:6px;text-align:center;text-anchor:middle"
+         id="tspan5903">GRAPPA Unmixing</tspan></text>
+    <rect
+       y="825.3681"
+       x="19.316126"
+       height="31.714287"
+       width="104.11561"
+       id="rect5905"
+       style="fill:#97d2ea;fill-opacity:1;stroke:#dcdcdc;stroke-width:0.21841221000000000;stroke-linecap:butt;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text5907"
+       y="834.3681"
+       x="45.001469"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       xml:space="preserve"><tspan
+         y="834.3681"
+         x="45.001469"
+         id="tspan5909"
+         sodipodi:role="line">ExtractGadget</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text5911"
+       y="850.56177"
+       x="71.177635"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       xml:space="preserve"><tspan
+         id="tspan5915"
+         style="font-size:6px;text-align:center;text-anchor:middle"
+         y="850.56177"
+         x="71.177635"
+         sodipodi:role="line">Extract Magnitude from Complex</tspan></text>
+    <rect
+       style="fill:#97d2ea;fill-opacity:1;stroke:#dcdcdc;stroke-width:0.21841221000000000;stroke-linecap:butt;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect5917"
+       width="104.11561"
+       height="31.714287"
+       x="19.316126"
+       y="872.06946" />
+    <text
+       xml:space="preserve"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="40.186821"
+       y="881.06946"
+       id="text5919"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan5921"
+         x="40.186821"
+         y="881.06946">AutoScaleGadget</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="71.174706"
+       y="892.21234"
+       id="text5923"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="71.174706"
+         y="892.21234"
+         style="font-size:6px;text-align:center;text-anchor:middle"
+         id="tspan5927">Histogram based scaling</tspan><tspan
+         sodipodi:role="line"
+         x="71.174706"
+         y="899.71234"
+         style="font-size:6px;text-align:center;text-anchor:middle"
+         id="tspan5945">prior to conversion to short</tspan></text>
+    <rect
+       y="918.77081"
+       x="19.316126"
+       height="31.714287"
+       width="104.11561"
+       id="rect5929"
+       style="fill:#97d2ea;fill-opacity:1;stroke:#dcdcdc;stroke-width:0.21841221000000000;stroke-linecap:butt;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text5931"
+       y="927.77081"
+       x="35.558502"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       xml:space="preserve"><tspan
+         y="927.77081"
+         x="35.558502"
+         id="tspan5933"
+         sodipodi:role="line">FloatToShortGadget</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text5935"
+       y="940.42896"
+       x="71.353416"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       xml:space="preserve"><tspan
+         id="tspan5939"
+         style="font-size:6px;text-align:center;text-anchor:middle"
+         y="940.42896"
+         x="71.353416"
+         sodipodi:role="line">Generate 16-bit unsigned images</tspan></text>
+    <rect
+       style="fill:#97d2ea;fill-opacity:1;stroke:#dcdcdc;stroke-width:0.21841221000000000;stroke-linecap:butt;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect5975"
+       width="104.11561"
+       height="31.714287"
+       x="19.316126"
+       y="965.47217" />
+    <text
+       xml:space="preserve"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="36.374126"
+       y="974.47217"
+       id="text5977"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan5979"
+         x="36.374126"
+         y="974.47217">ImageFinishGadget</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:7.19999981px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="71.152733"
+       y="987.13031"
+       id="text5981"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         x="71.152733"
+         y="987.13031"
+         style="font-size:6px;text-align:center;text-anchor:middle"
+         id="tspan5985">Return Images to Gadgetron</tspan><tspan
+         sodipodi:role="line"
+         x="71.152733"
+         y="994.63031"
+         style="font-size:6px;text-align:center;text-anchor:middle"
+         id="tspan5989">Images are forwarded to client</tspan></text>
+    <rect
+       style="fill:#97d25d;fill-opacity:1;stroke:#dcdcdc;stroke-width:0.29617276999999997;stroke-linecap:butt;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect6068"
+       width="103.20275"
+       height="42.245083"
+       x="139.32896"
+       y="724.11749" />
+    <text
+       xml:space="preserve"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="146.82634"
+       y="735.22919"
+       id="text6070"
+       sodipodi:linespacing="125%"><tspan
+         style="font-size:10px"
+         sodipodi:role="line"
+         id="tspan6072"
+         x="146.82634"
+         y="735.22919">GrappaCalculator</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text6074"
+       y="751.39166"
+       x="190.89909"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       xml:space="preserve"><tspan
+         style="font-size:8px;text-align:center;text-anchor:middle"
+         y="751.39166"
+         x="190.89909"
+         id="tspan6076"
+         sodipodi:role="line">GPU Based</tspan><tspan
+         id="tspan6104"
+         style="font-size:8px;text-align:center;text-anchor:middle"
+         y="761.39166"
+         x="192.17253"
+         sodipodi:role="line">Active Object </tspan></text>
+    <path
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       id="path6110"
+       d="m 123.92093,746.95015 14.30769,0"
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)" />
+    <path
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       id="path6930"
+       d="m 190.93035,766.96331 0,13.8896"
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)" />
+    <rect
+       y="782.74701"
+       x="137.76913"
+       height="32.324883"
+       width="106.32242"
+       id="rect7118"
+       style="fill:#97d25d;fill-opacity:1;stroke:#dcdcdc;stroke-width:0.28393653000000002;stroke-linecap:butt;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0" />
+    <text
+       sodipodi:linespacing="125%"
+       id="text7120"
+       y="798.90942"
+       x="142.00163"
+       style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       xml:space="preserve"><tspan
+         style="font-size:9px"
+         y="798.90942"
+         x="142.00163"
+         id="tspan7122"
+         sodipodi:role="line">Image Space Weights</tspan></text>
+    <path
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       id="path7515"
+       d="m 71.37393,707.32695 0,22.85714"
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)"
+       d="m 71.37393,763.79886 0,12.85714"
+       id="path7517"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)"
+       d="m 71.37393,810.43664 0,12.85714"
+       id="path7521"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       id="path7523"
+       d="m 71.37393,857.28363 0,12.85714"
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)"
+       d="m 71.37393,903.96474 0,12.85714"
+       id="path7525"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       id="path7527"
+       d="m 71.37393,950.64584 0,12.85714"
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)" />
+    <path
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       id="path4301"
+       d="m 71.37393,565.4261 0,12.85714"
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)"
+       d="m 138.97862,798.95015 -14.30769,0"
+       id="path6496"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)"
+       d="m 71.37393,613.40834 0,12.85714"
+       id="path8376"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="cc" />
+    <path
+       sodipodi:nodetypes="cc"
+       inkscape:connector-curvature="0"
+       id="path8378"
+       d="m 71.37393,660.38044 0,12.85714"
+       style="fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#Arrow1Mend)" />
+    <rect
+       style="fill:none;stroke:#000000;stroke-width:0.92284429;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:1.84568849, 0.92284424;stroke-dashoffset:0"
+       id="rect8981"
+       width="119.12972"
+       height="119.48805"
+       x="131.82491"
+       y="702.52356" />
+    <text
+       xml:space="preserve"
+       style="font-size:6px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
+       x="135.86551"
+       y="713.95862"
+       id="text8983"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan8985"
+         x="135.86551"
+         y="713.95862">Managed by threads outside Gadget</tspan></text>
+  </g>
+</svg>

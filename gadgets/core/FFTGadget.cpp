@@ -8,14 +8,12 @@ int FFTGadget::process( GadgetContainerMessage< GadgetMessageImage>* m1,
   FFT<float>::instance()->ifft(m2->getObjectPtr(),1);
   FFT<float>::instance()->ifft(m2->getObjectPtr(),2);
 
-  std::complex<float>* d = m2->getObjectPtr()->get_data_ptr();
-  for (unsigned int i = 0; 
-       i <  m2->getObjectPtr()->get_number_of_elements(); 
-       i++) 
-    {
-      d[i] *= m2->getObjectPtr()->get_number_of_elements();
-    } 
-  return this->next()->putq(m1);
+  if (this->next()->putq(m1) < 0) {
+     return GADGET_FAIL;
+  }
+
+  return GADGET_OK;
+
 }
 
 GADGET_FACTORY_DECLARE(FFTGadget)

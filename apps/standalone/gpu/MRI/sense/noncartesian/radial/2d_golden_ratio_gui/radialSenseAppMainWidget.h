@@ -12,6 +12,7 @@
 #include "cuNonCartesianSenseOperator.h"
 #include "cuImageOperator.h"
 #include "cuCGPrecondWeights.h"
+#include "complext.h"
 
 #include <boost/smart_ptr.hpp>
 
@@ -62,7 +63,7 @@ class radialSenseAppMainWindow : public QMainWindow, public Ui::radialSenseAppBa
   inline unsigned int get_num_points_per_reconstruction();
 
   // Get host side sample data array
-  inline hoNDArray<floatd2::Type>* get_sample_values_array();
+  inline hoNDArray<complext<float> >* get_sample_values_array();
 
   // Get number of points per coil in data array
   unsigned int get_num_points_per_array_coil();
@@ -73,9 +74,9 @@ class radialSenseAppMainWindow : public QMainWindow, public Ui::radialSenseAppBa
   // Get window scale
   float get_window_scale();
   
-  boost::shared_ptr< cuNDArray<float_complext::Type> > 
+  boost::shared_ptr< cuNDArray<float_complext> >
   upload_data( unsigned int profile_offset, unsigned int samples_per_profile, unsigned int samples_per_reconstruction, 
-	       unsigned int total_samples_per_coil, unsigned int num_coils, hoNDArray<float_complext::Type> *host_data );
+	       unsigned int total_samples_per_coil, unsigned int num_coils, hoNDArray<float_complext> *host_data );
 
 private:
   void resetPrivateData();
@@ -101,25 +102,25 @@ private:
   NFFT_plan<float,2> plan;
 
   // Define conjugate gradient solver
-  cuCGSolver<float, float_complext::Type> cg;
+  cuCGSolver<float, float_complext> cg;
 
   // Define non-Cartesian Sense solver
   boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E;
 
   // Define preconditioner
-  boost::shared_ptr< cuCGPrecondWeights<float_complext::Type> > D;
+  boost::shared_ptr< cuCGPrecondWeights<float_complext> > D;
   
   // Define regularization image operator
-  boost::shared_ptr< cuImageOperator<float,float_complext::Type> > R;
+  boost::shared_ptr< cuImageOperator<float,float_complext> > R;
   
   // CSM
-  boost::shared_ptr< cuNDArray<float_complext::Type> > csm;
+  boost::shared_ptr< cuNDArray<float_complext> > csm;
 
   // Density compensation weights
   boost::shared_ptr< cuNDArray<float> > dcw;	
 
   // Host data array
-  boost::shared_ptr< hoNDArray<float_complext::Type> > host_samples;
+  boost::shared_ptr< hoNDArray<float_complext> > host_samples;
   
   // Label for the status bar
   QLabel *statusLabel;

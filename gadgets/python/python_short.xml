@@ -1,0 +1,102 @@
+<?xml version="1.0" ?>  
+<gadgetron>
+  <readers>
+    <reader>
+      <slot>1001</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIAcquisitionReader</class>
+    </reader>
+  </readers>
+  
+  <writers>
+    <writer>
+      <slot>1004</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIImageWriterCPLX</class>
+    </writer>
+    <writer>
+      <slot>1005</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIImageWriterFLOAT</class>
+    </writer>
+    <writer>
+      <slot>1006</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIImageWriterUSHORT</class>
+    </writer>
+  </writers>
+  
+  <stream>
+
+    <gadget>
+      <name>RemoveOversamplingPython</name>
+      <dll>gadgetronpython</dll>
+      <class>AcquisitionPythonGadget</class>
+      <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
+      <property><name>python_module</name>                <value>remove_2x_oversampling</value></property>
+      <property><name>gadget_reference_function</name>    <value>set_gadget_reference</value></property>
+      <property><name>input_function</name>               <value>recon_function</value></property>
+      <property><name>config_function</name>              <value>config_function</value></property>
+    </gadget>
+
+    <gadget>
+      <name>AccReconPython</name>
+      <dll>gadgetronpython</dll>
+      <class>AcquisitionPythonGadget</class>
+      <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
+      <property><name>python_module</name>                <value>accumulate_and_recon</value></property>
+      <property><name>gadget_reference_function</name>    <value>set_gadget_reference</value></property>
+      <property><name>input_function</name>               <value>recon_function</value></property>
+      <property><name>config_function</name>              <value>config_function</value></property>
+    </gadget>
+
+    <gadget>
+      <name>CoilCombinePython</name>
+      <dll>gadgetronpython</dll>
+      <class>ImagePythonGadget</class>
+      <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
+      <property><name>python_module</name>                <value>rms_coil_combine</value></property>
+      <property><name>gadget_reference_function</name>    <value>set_gadget_reference</value></property>
+      <property><name>input_function</name>               <value>recon_function</value></property>
+      <property><name>config_function</name>              <value>config_function</value></property>
+    </gadget>
+
+    <!--
+    <gadget>
+      <name>ImageViewPython</name>
+      <dll>gadgetronpython</dll>
+      <class>ImagePythonGadget</class>
+      <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
+      <property><name>python_module</name>                <value>image_viewer</value></property>
+      <property><name>gadget_reference_function</name>    <value>set_gadget_reference</value></property>
+      <property><name>input_function</name>               <value>recon_function</value></property>
+      <property><name>config_function</name>              <value>config_function</value></property>
+    </gadget>
+    -->
+
+     <gadget>
+      <name>Extract</name>
+      <dll>gadgetroncore</dll>
+      <class>ExtractGadget</class>
+     </gadget>
+
+     <gadget>
+      <name>Autoscale</name>
+      <dll>gadgetroncore</dll>
+      <class>AutoScaleGadget</class>
+     </gadget>
+    
+     <gadget>
+      <name>FloatToShort</name>
+      <dll>gadgetroncore</dll>
+      <class>FloatToUShortGadget</class>
+    </gadget>
+  
+    <gadget>
+      <name>ImageFinishUSHORT</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageFinishGadgetUSHORT</class>
+    </gadget>
+  </stream>
+
+</gadgetron>

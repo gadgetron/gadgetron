@@ -1,30 +1,84 @@
 <?xml version="1.0" ?>  
+<gadgetron>
+  <readers>
+    <reader>
+      <slot>1001</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIAcquisitionReader</class>
+    </reader>
+  </readers>
+  
+  <writers>
+    <writer>
+      <slot>1004</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIImageWriterCPLX</class>
+    </writer>
+    <writer>
+      <slot>1005</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIImageWriterFLOAT</class>
+    </writer>
+    <writer>
+      <slot>1006</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIImageWriterUSHORT</class>
+    </writer>
+  </writers>
+  
 
-<readers>
-<reader slot="1001" dll="gadgetroncore" class="MRIAcquisitionReader" />
-</readers>
+  <stream>
+    <gadget>
+      <name>SpiralGadget</name>
+      <dll>gadgetronspiral</dll>
+      <class>SpiralGadget</class>
+    </gadget>
+    <gadget>
+      <name>Extract</name>
+      <dll>gadgetroncore</dll>
+      <class>ExtractGadget</class>
+      <!--
+      <property><name>extract_mask</name><value>9</value></property>
+      -->
+    </gadget>
 
-<writers>
-<writer slot="1004" dll="gadgetroncore" class="MRIImageWriter" />
-</writers>
+	<!--
+    <gadget>
+      <name>ImageWrite</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageWriterGadgetFLOAT</class>
+    </gadget>
+    -->
+    
+    <!--
+    <gadget>
+      <name>FloatToShort</name>
+      <dll>gadgetroncore</dll>
+      <class>FloatToUShortGadget</class>
+    </gadget>
+    -->
+ 
+ 	<!--
+    <gadget>
+      <name>ImageFinishCPLX</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageFinishGadgetCPLX</class>
+    </gadget>
+    -->
+    
+    <gadget>
+      <name>ImageFinishFLOAT</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageFinishGadgetFLOAT</class>
+    </gadget>
+    
+ 	<!--
+    <gadget>
+      <name>ImageFinishUSHORT</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageFinishGadgetUSHORT</class>
+    </gadget>
+    -->
+  </stream>
 
-<stream>
-
-<gadget name="ImageFinish" dll="gadgetroncore" class="ImageFinishGadget" />
-
-<!--
-<gadget name="ImageWrite" dll="gadgetroncore" class="ImageWriterGadget" />
--->
-
-<!--
-<gadget name="CropCombine" dll="gadgetroncore" class="CropAndCombineGadget" />
--->
-
-<!--
-<gadget name="FFT" dll="gadgetroncore" class="FFTGadget" />
--->
-
-<gadget name="SpiralRecon" dll="gadgetronspiral" class="SpiralGadget" />
-
-</stream>
-
+</gadgetron>

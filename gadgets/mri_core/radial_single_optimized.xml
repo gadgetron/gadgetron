@@ -87,7 +87,7 @@
     
     <gadget>
       <name>AutoScale</name>
-      <dll>gadgetronmricore</dll>
+      <dll>gadgetroncore</dll>
       <class>AutoScaleGadget</class>
     </gadget>
 

@@ -1,6 +1,10 @@
 #!/usr/bin/perl
 
-$gadgetron_home = "/usr/local/gadgetron";
+use Cwd 'abs_path';
+use FindBin '$Bin';
+$gadgetron_home = $Bin . "/../";
+
+print "gadgetron_home: $gadgetron_home\n";
 
 my $executable = "$gadgetron_home/bin/gadgetron";
 my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst)=localtime(time);

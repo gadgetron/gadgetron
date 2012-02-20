@@ -9,18 +9,18 @@ class cuIdentityOperator : public identityOperator< REAL, cuNDArray<T> >
 {
  public:
 
-  cuIdentityOperator( int device = -1 ) : identityOperator< REAL, cuNDArray<T> >() { set_device(device); }
+  cuIdentityOperator() : identityOperator< REAL, cuNDArray<T> >() { set_device(-1); }
   virtual ~cuIdentityOperator() {}
   
   virtual bool operator_xpy( cuNDArray<T> *x, cuNDArray<T> *y )
   { 
-    int ret1 = this->set_device();
+    int ret1 = _set_device();
     bool ret2;
     if( ret1 == 0 )
-      ret2 = cuNDA_axpy( get_one<T>(), x, y, CUNDA_CURRENT_DEVICE );
+      ret2 = cuNDA_axpy( T(1), x, y, CUNDA_CURRENT_DEVICE );
     else 
       ret2 = false;
-    ret1 = this->restore_device();
+    ret1 = _restore_device();
 
     if( ret1 == 0 && ret2 )      
       return true;

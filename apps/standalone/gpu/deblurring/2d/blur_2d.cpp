@@ -13,9 +13,9 @@
 
 using namespace std;
 
-// Define desired precision (note that decent deblurring of noisy images requires double precision)
+// Define desired precision
 typedef float _real; 
-typedef complext<_real>::Type _complext;
+typedef complext<_real> _complext;
 
 int main( int argc, char** argv) 
 {
@@ -57,7 +57,7 @@ int main( int argc, char** argv)
     
   // Upload host image to device, normalize, and convert to complex type
   cuNDArray<_real> _image(&host_image);
-  cuNDA_normalize( &_image, get_one<_real>() );
+  cuNDA_normalize( &_image, _real(1) );
   boost::shared_ptr< cuNDArray<_complext> > image = cuNDA_real_to_complext<_real>( &_image );
   
   // Setup resulting blurred image
@@ -86,7 +86,7 @@ int main( int argc, char** argv)
   cuNDA_scale<_real>( 1.0/scale, kernel.get() );
 
   // Create convolution operator and assign kernel
-  cuConvolutionOperator<_real> conv;
+  cuConvolutionOperator<_real,2> conv;
   conv.set_kernel( kernel.get() );  
 
   // Convolve
@@ -99,7 +99,7 @@ int main( int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > blurred_image_host = blurred_image.to_host();
   write_nd_array<_complext>( blurred_image_host.get(), (char*)parms.get_parameter('r')->get_string_value());
 
-  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_norm<_real>(&blurred_image)->to_host();
+  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_cAbs<_real,_complext>(&blurred_image)->to_host();
   write_nd_array<_real>( host_norm.get(), "blurred_image.real" );
 
   boost::shared_ptr< hoNDArray<_complext> > kernel_image_host = kernel->to_host();

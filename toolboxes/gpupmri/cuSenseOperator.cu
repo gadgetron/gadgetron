@@ -2,20 +2,20 @@
 #include "vector_td_utilities.h"
 
 template<class REAL> __global__ void 
-mult_csm_kernel( typename complext<REAL>::Type *in, typename complext<REAL>::Type *out, typename complext<REAL>::Type *csm, 
+mult_csm_kernel( complext<REAL> *in, complext<REAL> *out, complext<REAL> *csm,
 		 unsigned int image_elements, unsigned int nframes, unsigned int ncoils )
 {
   unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
   if( idx < image_elements) {
-    typename complext<REAL>::Type _in = in[idx+blockIdx.y*image_elements];
+    complext<REAL> _in = in[idx+blockIdx.y*image_elements];
     for( unsigned int i=0; i<ncoils; i++) {
-      out[idx + blockIdx.y*image_elements + i*image_elements*nframes] = mul<typename complext<REAL>::Type>( _in, csm[idx+i*image_elements] );
+      out[idx + blockIdx.y*image_elements + i*image_elements*nframes] =  _in * csm[idx+i*image_elements];
     }
   }
 }
 
 template<class REAL, unsigned int D> int 
-cuSenseOperator<REAL,D>::mult_csm( cuNDArray<typename complext<REAL>::Type>* in, cuNDArray<typename complext<REAL>::Type>* out )
+cuSenseOperator<REAL,D>::mult_csm( cuNDArray<complext<REAL> >* in, cuNDArray<complext<REAL> >* out )
 {  
   int device;
   if( cudaGetDevice( &device ) != cudaSuccess ){
@@ -66,21 +66,21 @@ cuSenseOperator<REAL,D>::mult_csm( cuNDArray<typename complext<REAL>::Type>* in,
 }
 
 template <class REAL> __global__ void 
-mult_csm_conj_sum_kernel( typename complext<REAL>::Type *in, typename complext<REAL>::Type *out, typename complext<REAL>::Type *csm, 
+mult_csm_conj_sum_kernel( complext<REAL> *in, complext<REAL> *out, complext<REAL> *csm,
 						  unsigned int image_elements, unsigned int nframes, unsigned int ncoils )
 {
   unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
   if( idx < image_elements ) {
-    typename complext<REAL>::Type _out = get_zero<typename complext<REAL>::Type>();
+    complext<REAL> _out =complext<REAL>(0);
     for( unsigned int i = 0; i < ncoils; i++ ) {
-      _out += mul<typename complext<REAL>::Type>( in[idx+blockIdx.y*image_elements+i*nframes*image_elements], conj<typename complext<REAL>::Type>(csm[idx+i*image_elements]) );
+      _out += in[idx+blockIdx.y*image_elements+i*nframes*image_elements] * conj(csm[idx+i*image_elements]);
     }
     out[idx+blockIdx.y*image_elements] = _out;
   }
 }
 
 template<class REAL, unsigned int D> int 
-cuSenseOperator<REAL,D>::mult_csm_conj_sum( cuNDArray<typename complext<REAL>::Type> *in, cuNDArray<typename complext<REAL>::Type> *out )
+cuSenseOperator<REAL,D>::mult_csm_conj_sum( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out )
 {
   int device;
   if( cudaGetDevice( &device ) != cudaSuccess ){

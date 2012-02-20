@@ -7,7 +7,7 @@ class EXPORTGPUPMRI cuCartesianSenseOperator : public cuSenseOperator<REAL,D>
 {
  public:
 
-  cuCartesianSenseOperator( int device = -1 ) : cuSenseOperator<REAL,D>(device) {}
+  cuCartesianSenseOperator() : cuSenseOperator<REAL,D>() {}
   virtual ~cuCartesianSenseOperator() {}
 
   typedef typename cuSenseOperator<REAL,D>::_complext _complext;

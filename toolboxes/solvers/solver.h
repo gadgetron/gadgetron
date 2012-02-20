@@ -4,13 +4,13 @@
 #include <string>
 #include <iostream>
 
-template <class ARRAY_TYPE> class solver
+template <class ARRAY_TYPE_IN, class ARRAY_TYPE_OUT> class solver
 {
  public:
 
   enum solverOutputModes { OUTPUT_SILENT = 0, OUTPUT_WARNINGS = 1, OUTPUT_VERBOSE = 2, OUTPUT_MAX = 3 };
 
-  solver( int output_mode = OUTPUT_SILENT ) { output_mode_ = output_mode; }
+  solver() { output_mode_ = OUTPUT_SILENT; }
   virtual ~solver() {}
   
   virtual void solver_error( std::string err ) { std::cerr << err << std::endl; }
@@ -21,7 +21,10 @@ template <class ARRAY_TYPE> class solver
     }
   }
 
-  virtual boost::shared_ptr<ARRAY_TYPE> solve( ARRAY_TYPE* ) = 0;
+  virtual boost::shared_ptr<ARRAY_TYPE_OUT> solve( ARRAY_TYPE_IN* ) = 0;
+  virtual boost::shared_ptr<ARRAY_TYPE_OUT> solve( ARRAY_TYPE_IN* rhs,ARRAY_TYPE_OUT* guess ) {
+	  return solve(rhs);
+  }
 
   void* operator new (size_t bytes) { return ::new char[bytes]; }
   void operator delete (void *ptr) { delete [] static_cast <char *> (ptr); } 

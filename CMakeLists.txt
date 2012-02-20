@@ -39,18 +39,9 @@ find_package(Numpy)
 find_package(Boost COMPONENTS python)
 find_package(PythonLibs)
 
-find_package(Doxygen)
-	if(DOXYGEN_FOUND)
-		configure_file(${CMAKE_CURRENT_SOURCE_DIR}/doc/doxygen/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
-		add_custom_target(doc ${DOXYGEN_EXECUTABLE}
-	${CMAKE_CURRENT_BINARY_DIR}/Doxyfile WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-		COMMENT "Generating API documentation with Doxygen" VERBATIM)
-else(DOXYGEN_FOUND)
-	MESSAGE("Doxygen not found. Will not be able to build documentation")
-endif(DOXYGEN_FOUND)
-
 find_package(GLEW)
 
+add_subdirectory(doc)
 add_subdirectory(dependencies)
 add_subdirectory(apps)
 add_subdirectory(toolboxes)

@@ -7,11 +7,11 @@
 #include <boost/smart_ptr.hpp>
 
 // Compute fixed angle radial trajectory in the normalized range [-1/2;1/2]
-template<class REAL> EXPORTGPUCORE boost::shared_ptr< cuNDArray< typename reald<REAL,2>::Type > > 
+template<class REAL> EXPORTGPUCORE boost::shared_ptr< cuNDArray< typename reald<REAL,2>::Type > >
 compute_radial_trajectory_fixed_angle_2d( unsigned int num_samples_per_profile, unsigned int num_profiles_per_frame, unsigned int num_frames );
 
 // Compute golden ratio radial trajectory in the normalized range [-1/2;1/2]
-template<class REAL> EXPORTGPUCORE boost::shared_ptr< cuNDArray< typename reald<REAL,2>::Type > > 
+template<class REAL> EXPORTGPUCORE boost::shared_ptr< cuNDArray< typename reald<REAL,2>::Type > >
 compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile, unsigned int num_profiles_per_frame, unsigned int num_frames, unsigned int profile_offset = 0 );
 
 // Compute fixed angle radial density compensation weights (a function of the chose reconstruction settings: matrix_size and oversampling factor)

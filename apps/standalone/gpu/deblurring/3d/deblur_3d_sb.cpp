@@ -17,9 +17,9 @@
 
 using namespace std;
 
-// Define desired precision (note that decent deblurring of noisy images requires double precision)
+// Define desired precision
 typedef float _real; 
-typedef complext<_real>::Type _complext;
+typedef complext<_real> _complext;
 
 int main(int argc, char** argv)
 {
@@ -91,7 +91,7 @@ int main(int argc, char** argv)
   //
 
   // Define encoding matrix
-  boost::shared_ptr< cuConvolutionOperator<_real> > E( new cuConvolutionOperator<_real>() );  
+  boost::shared_ptr< cuConvolutionOperator<_real,3> > E( new cuConvolutionOperator<_real,3>() );  
   E->set_kernel( &kernel );
   E->set_weight( mu );
 
@@ -100,7 +100,7 @@ int main(int argc, char** argv)
   cg->add_matrix_operator( E );   // encoding matrix
   cg->add_matrix_operator( Rx );  // regularization matrix
   cg->add_matrix_operator( Ry );  // regularization matrix
-  //  cg->add_matrix_operator( Rz );  // regularization matrix
+  cg->add_matrix_operator( Rz );  // regularization matrix
   cg->set_iterations( num_cg_iterations );
   cg->set_limit( 1e-8 );
   cg->set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_WARNINGS );
@@ -111,8 +111,8 @@ int main(int argc, char** argv)
   sb.set_encoding_operator( E );
   sb.add_regularization_group_operator( Rx ); 
   sb.add_regularization_group_operator( Ry ); 
-  //  sb.add_regularization_group_operator( Rz ); 
   sb.add_group();
+  sb.add_regularization_operator( Rz ); 
   sb.set_outer_iterations(num_outer_iterations);
   sb.set_inner_iterations(num_inner_iterations);
   sb.set_image_dimensions(data.get_dimensions());
@@ -126,7 +126,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > host_result = sbresult->to_host();
   write_nd_array<_complext>(host_result.get(), (char*)parms.get_parameter('r')->get_string_value());
     
-  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_norm<_real>(sbresult.get())->to_host();
+  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_cAbs<_real,_complext>(sbresult.get())->to_host();
   write_nd_array<_real>( host_norm.get(), "sb_deblurred_image.real" );  
 
   return 0;

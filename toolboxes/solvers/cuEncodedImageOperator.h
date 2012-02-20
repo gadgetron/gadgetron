@@ -10,28 +10,28 @@ class cuEncodedImageOperator : public encodedImageOperator< REAL, cuNDArray<REAL
 
  public:
 
-  cuEncodedImageOperator( int device = -1 ) : encodedImageOperator< REAL, cuNDArray<REAL>, cuNDArray<T> >() { set_device(device); }
+  cuEncodedImageOperator() : encodedImageOperator< REAL, cuNDArray<REAL>, cuNDArray<T> >() { set_device(-1); }
   virtual ~cuEncodedImageOperator() {}
-     
+
   virtual int compute( cuNDArray<T> *image )
   {
-    set_device();
+    _set_device();
     int res = encodedImageOperator< REAL, cuNDArray<REAL>, cuNDArray<T> >::compute( image );
-    restore_device();
+    _restore_device();
     return res;
   }
 
   virtual int mult_MH_M( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate = false )
   {
-    set_device();
+    _set_device();
     int res = encodedImageOperator< REAL, cuNDArray<REAL>, cuNDArray<T> >::mult_MH_M( in, out, accumulate );
-    restore_device();
+    _restore_device();
     return res;
   }
   
   virtual void operator_scal( REAL scale, cuNDArray<T> *x )
   {
-    cuNDA_scal<T>( scale*get_one<T>(), x );
+    cuNDA_scal<T>( T(scale), x );
   }
 
   virtual void operator_reciprocal( cuNDArray<REAL> *x )
@@ -46,7 +46,7 @@ class cuEncodedImageOperator : public encodedImageOperator< REAL, cuNDArray<REAL
 
   virtual boost::shared_ptr< cuNDArray<REAL> > operator_norm_squared( cuNDArray<T> *x )
   {
-    return cuNDA_norm_squared<REAL,T>( x, CUNDA_NDARRAY_DEVICE, CUNDA_NDARRAY_DEVICE);     
+    return cuNDA_cNorm<REAL,T>( x, CUNDA_NDARRAY_DEVICE, CUNDA_NDARRAY_DEVICE);
   }
   
   virtual bool operator_clear(  cuNDArray<T> *x )
@@ -58,8 +58,6 @@ class cuEncodedImageOperator : public encodedImageOperator< REAL, cuNDArray<REAL
   {
     return cuNDA_axpy( a, x, y );
   }
-
-
 
   DECLARE_MATRIX_OPERATOR_DEVICE_SUPPORT(cuEncodedImageOperator)
 };

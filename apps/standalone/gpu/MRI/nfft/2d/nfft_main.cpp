@@ -31,14 +31,16 @@
 #include "cuNDArray.h"
 #include "GPUTimer.h"
 #include "parameterparser.h"
-
 #include <iostream>
+#include "complext.h"
+
 
 using namespace std;
 
+
 // Define desired precision
 typedef float _real; 
-typedef complext<_real>::Type _complext;
+typedef complext<_real> _complext;
 typedef reald<_real,2>::Type _reald2;
 typedef NFFT_plan<_real,2> plan_type;
 
@@ -51,7 +53,7 @@ int main( int argc, char** argv)
 
   ParameterParser parms;
   parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Input image file name (.real)", true );
-  parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Result files prefix", true, "result_" );
+  parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Result file name (.cplx)", true, "samples.cplx" );
   parms.add_parameter( 'o', COMMAND_LINE_INT,    1, "Oversampled matrix size", true );
   parms.add_parameter( 'p', COMMAND_LINE_INT,    1, "Number of profiles", true );
   parms.add_parameter( 's', COMMAND_LINE_INT,    1, "Samples per profiles", true );
@@ -124,7 +126,7 @@ int main( int argc, char** argv)
   // Compute density compensation weights
   timer = new GPUTimer("Computing density compensation weights");
   boost::shared_ptr< cuNDArray<_real> > dcw = compute_radial_dcw_golden_ratio_2d
-    ( samples_per_profile, num_profiles, alpha, get_one<_real>()/((_real)samples_per_profile/(_real)matrix_size.vec[0]) );
+    ( samples_per_profile, num_profiles, alpha,_real(1)/((_real)samples_per_profile/(_real)matrix_size.vec[0]) );
   delete timer;
 
   // Gridder
@@ -138,7 +140,7 @@ int main( int argc, char** argv)
   
   timer = new GPUTimer("Output result to disk");
   boost::shared_ptr< hoNDArray<_complext> > host_samples = samples.to_host();
-  write_nd_array<_complext>( host_samples.get(), "samples.cplx" );
+  write_nd_array<_complext>( host_samples.get(), (char*)parms.get_parameter('r')->get_string_value());
   delete timer;
 
   return 0;

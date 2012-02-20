@@ -78,46 +78,15 @@
       <name>Extract</name>
       <dll>gadgetroncore</dll>
       <class>ExtractGadget</class>
-      <!--
-      <property><name>extract_mask</name><value>9</value></property>
-      -->
-    </gadget>
+     </gadget>
 
-	<!--
-    <gadget>
-      <name>ImageWrite</name>
-      <dll>gadgetroncore</dll>
-      <class>ImageWriterGadgetFLOAT</class>
-    </gadget>
-    -->
-    
-     <gadget>
-      <name>FloatToShort</name>
-      <dll>gadgetroncore</dll>
-      <class>FloatToUShortGadget</class>
-    </gadget>
   
- 	<!--
-    <gadget>
-      <name>ImageFinishCPLX</name>
-      <dll>gadgetroncore</dll>
-      <class>ImageFinishGadgetCPLX</class>
-    </gadget>
-    -->
-
-    <!--
     <gadget>
       <name>ImageFinishFLOAT</name>
       <dll>gadgetroncore</dll>
       <class>ImageFinishGadgetFLOAT</class>
     </gadget>
-    -->
 
-    <gadget>
-      <name>ImageFinishUSHORT</name>
-      <dll>gadgetroncore</dll>
-      <class>ImageFinishGadgetUSHORT</class>
-    </gadget>
   </stream>
 
 </gadgetron>

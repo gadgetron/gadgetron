@@ -13,7 +13,7 @@ public:
   typedef typename uintd<D>::Type _uintd;
   typedef typename reald<REAL,D>::Type _reald;
 
-  cuNonCartesianSenseOperator( int device = -1 ) : cuSenseOperator<REAL,D>(device) 
+  cuNonCartesianSenseOperator() : cuSenseOperator<REAL,D>() 
   { 
     plan_ = boost::shared_ptr< NFFT_plan<REAL, D> >( new NFFT_plan<REAL, D>() );
     ready_ = false; 
