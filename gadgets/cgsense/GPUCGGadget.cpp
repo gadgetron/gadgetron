@@ -31,8 +31,8 @@ GPUCGGadget::GPUCGGadget()
 {
   matrix_size_ = uintd2(0,0);
   matrix_size_os_ = uintd2(0,0);
-  memset(position_, 3*sizeof(float),0);
-  memset(quarternion_, 4*sizeof(float),0);
+  memset(position_, 0, 3*sizeof(float));
+  memset(quarternion_, 0, 4*sizeof(float));
   pass_on_undesired_data_ = true; // We will make one of these for each slice and so data should be passed on.
 }
 
