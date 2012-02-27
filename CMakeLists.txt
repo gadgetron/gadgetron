@@ -38,7 +38,6 @@ find_package(Qt4 4.6)
 find_package(PythonLibs)
 find_package(Numpy)
 find_package(Boost COMPONENTS python)
-find_package(PythonLibs)
 
 find_package(GLEW)
 
