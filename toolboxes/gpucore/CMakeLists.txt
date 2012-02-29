@@ -4,8 +4,9 @@ ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUCORE__)
 endif (WIN32)
 
 include_directories(		${CUDA_INCLUDE_DIRS}
-				${CMAKE_SOURCE_DIR}/toolboxes/ndarray
-				${Boost_INCLUDE_DIR})
+				${Boost_INCLUDE_DIR}
+				${CMAKE_SOURCE_DIR}/toolboxes/cpucore
+				${CMAKE_SOURCE_DIR}/toolboxes/gadgettools )
 
 cuda_add_library(gpucore SHARED ndarray_vector_td_utilities.cu
 							cuNDArray_kernels.cu

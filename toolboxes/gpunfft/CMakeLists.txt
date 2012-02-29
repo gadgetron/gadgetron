@@ -6,7 +6,7 @@ endif (WIN32)
 
 include_directories(			${CUDA_INCLUDE_DIRS}
 					${Boost_INCLUDE_DIR}
-				       ${CMAKE_SOURCE_DIR}/toolboxes/ndarray
+				       ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gpucore)
 
 cuda_add_library(gpunfft SHARED NFFT.cu)

@@ -1,4 +1,4 @@
-add_subdirectory(ndarray)
+add_subdirectory(cpucore)
 add_subdirectory(hostutils)
 
 IF (ACE_FOUND)

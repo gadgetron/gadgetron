@@ -7,7 +7,7 @@ include_directories(	${CUDA_INCLUDE_DIRS}
 						${CMAKE_SOURCE_DIR}/toolboxes/gpucore 
 						${CMAKE_SOURCE_DIR}/toolboxes/hostutils
 						${CMAKE_SOURCE_DIR}/toolboxes/solvers
-						${CMAKE_SOURCE_DIR}/toolboxes/ndarray)
+						${CMAKE_SOURCE_DIR}/toolboxes/cpucore)
 
 add_executable(blur_3d blur_3d.cpp)
 add_executable(deblur_3d_cg deblur_3d_cg.cpp)

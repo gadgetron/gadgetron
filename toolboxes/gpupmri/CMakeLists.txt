@@ -9,7 +9,7 @@ include_directories(		${CUDA_INCLUDE_DIRS}
 				${CULA_INCLUDE_DIR} 
 				       ${Boost_INCLUDE_DIR} 
 				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
-				       ${CMAKE_SOURCE_DIR}/toolboxes/ndarray
+				       ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gpupmri
 				       ${CMAKE_SOURCE_DIR}/toolboxes/solvers
