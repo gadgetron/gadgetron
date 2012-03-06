@@ -7,7 +7,7 @@
 #include <iostream>
 #include <fftw3.h>
 #include "hoNDArray.h"
-#include "ndarray_export.h"
+#include "cpucore_export.h"
 #include <complex>
 
 /** 
@@ -20,7 +20,7 @@
 
     FFT<float>::instance()
  */
-template <typename T> class EXPORTNDARRAY FFT
+template <typename T> class EXPORTCPUCORE FFT
 {
 
 public:

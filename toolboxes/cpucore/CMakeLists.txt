@@ -1,3 +1,7 @@
+if (WIN32)
+ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUCORE__)
+endif (WIN32)
+
 include_directories(${ACE_INCLUDE_DIR} 
 		    ${Boost_INCLUDE_DIR}
 		    ${FFTW3_INCLUDE_DIR})
@@ -12,7 +16,7 @@ install(FILES
 	NDArray.h
 	hoNDArray.h
 	hoNDArray_fileio.h
-	ndarray_export.h
+	cpucore_export.h
 	FFT.h
 	GadgetronTimer.h
 DESTINATION include)
