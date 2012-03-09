@@ -361,7 +361,7 @@ int GadgetStreamController::configure(std::string config_xml_string)
 	//Configuration of writers end
 
 	//Let's configure the stream
-	GADGET_DEBUG2("Processing %d gagets in reverse order\n", gadgets.size());
+	GADGET_DEBUG2("Processing %d gadgets in reverse order\n", gadgets.size());
 	for (int i = (static_cast<int>(gadgets.size())-1); i >= 0; i--) { //We will parse gadgets in reverse order and push them onto stream.
 		GADGET_DEBUG2("Configuring gadget: %d\n",i);
 		std::string dllname("");

@@ -16,4 +16,11 @@ if (CUDA_FOUND)
    add_subdirectory(solvers)
 endif(CUDA_FOUND)
 
+FIND_PACKAGE(HDF5 1.8 COMPONENTS C CXX)
+
+if (HDF5_FOUND)
+   MESSAGE("-- HDF5 Support found, Compiling HDF5 Support") 
+   add_subdirectory(hdf5utils)
+   add_subdirectory(hdf5mri)
+endif(HDF5_FOUND)
 
