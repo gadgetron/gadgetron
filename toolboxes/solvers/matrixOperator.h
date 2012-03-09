@@ -9,7 +9,7 @@ template <class REAL, class ARRAY_TYPE> class matrixOperator
 {
  public:
 
-  matrixOperator() { weight_ = get_one<REAL>(); }
+  matrixOperator() { weight_ = REAL(1); }
   virtual ~matrixOperator() {}
 
   inline void set_weight( REAL weight ){ weight_ = weight; }

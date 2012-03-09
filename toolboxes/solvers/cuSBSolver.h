@@ -6,7 +6,8 @@
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
 
-template <class REAL, class T> class cuSBSolver : public sbSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T> >
+template <class REAL, class T> class cuSBSolver 
+	: public sbSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T> >
 {
 public:
   

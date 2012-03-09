@@ -1,11 +1,14 @@
 #pragma once
 
-template< class T, unsigned int D > struct vector_td
+template< class T, unsigned int D > class vector_td
 {
-  T vec[D];
+  public:
+	T vec[D];
 };
 
+//
 // Some typedefs for convenience (templated typedefs are not (yet) available in C++)
+//
 
 template< class REAL, unsigned int D > struct reald{
   typedef vector_td< REAL, D > Type;
@@ -27,11 +30,9 @@ template< unsigned int D > struct doubled{
   typedef typename reald< double, D >::Type Type;
 };
 
-template< class T > struct complext{
-  typedef vector_td< T, 2 > Type;
-};
-
+//
 // Inherited structs with convenient constructors
+//
 
 struct intd1 : intd<1>::Type{
   typedef intd<1>::Type Type;
@@ -127,16 +128,4 @@ struct doubled4 : doubled<4>::Type{
   typedef doubled<4>::Type Type;
   doubled4(){}
   doubled4( double x, double y, double z, double w ) { vec[0] = x; vec[1] = y; vec[2] = z; vec[3] = w; }
-};
-
-struct float_complext : complext<float>::Type {
-  typedef complext<float>::Type Type;
-  float_complext(){}
-  float_complext( float r, float i ) { vec[0] = r; vec[1] = i; }
-};
-
-struct double_complext : complext<double>::Type {
-  typedef complext<double>::Type Type;
-  double_complext(){}
-  double_complext( double r, double i ) { vec[0] = r; vec[1] = i; }
 };

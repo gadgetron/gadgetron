@@ -7,7 +7,7 @@
 #include "cuNDFFT.h"
 #include "htgrappa.h"
 #include "GPUTimer.h"
-
+#include "complext.h"
 #include <cuComplex.h>
 
 template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsDescription
@@ -54,22 +54,22 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 			return -3;
 		}
 
-		hoNDArray<float_complext::Type>* host_data =
-				reinterpret_cast< hoNDArray<float_complext::Type>* >(mb2->getObjectPtr());
+		hoNDArray<float_complext>* host_data =
+				reinterpret_cast< hoNDArray<float_complext>* >(mb2->getObjectPtr());
 
 
 		// Copy the image data to the device
-		cuNDArray<float_complext::Type> device_data(host_data);
+		cuNDArray<float_complext> device_data(host_data);
 		device_data.squeeze();
 
 		std::vector<unsigned int> ftdims(2,0); ftdims[1] = 1;
-		cuNDFFT<float_complext::Type> ft;
+		cuNDFFT<float_complext> ft;
 
 		//Go to image space
 		ft.ifft( &device_data, &ftdims);
 
 		// Compute CSM
-		boost::shared_ptr< cuNDArray<float_complext::Type> > csm;
+		boost::shared_ptr< cuNDArray<float_complext> > csm;
 		{
 			//GPUTimer unmix_timer("GRAPPA CSM");
 			csm = estimate_b1_map<float,2>( &device_data, target_coils_ );
@@ -79,7 +79,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 		ft.fft(&device_data, &ftdims);
 
 
-		cuNDArray<cuFloatComplex> unmixing_dev;
+		cuNDArray<complext<float> > unmixing_dev;
 		boost::shared_ptr< std::vector<unsigned int> > data_dimensions = device_data.get_dimensions();
 
 		if (uncombined_channels_.size() > 0) {
@@ -98,8 +98,8 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 			//TODO: Add parameters for kernel size
 			kernel_size.push_back(5);
 			kernel_size.push_back(4);
-			if ( htgrappa_calculate_grappa_unmixing(reinterpret_cast< cuNDArray<cuFloatComplex>* >(&device_data),
-					reinterpret_cast< cuNDArray<cuFloatComplex>* >(csm.get()),
+			if ( htgrappa_calculate_grappa_unmixing(reinterpret_cast< cuNDArray<complext<float> >* >(&device_data),
+					reinterpret_cast< cuNDArray<complext<float> >* >(csm.get()),
 					mb1->getObjectPtr()->acceleration_factor,
 					&kernel_size,
 					&unmixing_dev,
@@ -111,7 +111,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 		}
 
 		if (mb1->getObjectPtr()->destination) {
-			boost::shared_ptr< hoNDArray<cuFloatComplex> > unmixing_host = unmixing_dev.to_host();
+			boost::shared_ptr< hoNDArray<complext<float> > > unmixing_host = unmixing_dev.to_host();
 
 			//TODO: This reshaping needs to take uncombined channels into account
 			boost::shared_ptr< std::vector<unsigned int> > tmp_dims = mb2->getObjectPtr()->get_dimensions();

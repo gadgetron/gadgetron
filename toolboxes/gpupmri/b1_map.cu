@@ -13,30 +13,30 @@ using namespace std;
 const int kernel_width = 7;
 
 template<class REAL, unsigned int D> void
-smooth_correlation_matrices( cuNDArray<typename complext<REAL>::Type> *corrm, cuNDArray<typename complext<REAL>::Type> *corrm_smooth );
+smooth_correlation_matrices( cuNDArray<complext<REAL> > *corrm, cuNDArray<complext<REAL> > *corrm_smooth );
 
 template<class REAL> __host__ 
-boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > extract_csm( cuNDArray<typename complext<REAL>::Type> *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements );
+boost::shared_ptr< cuNDArray<complext<REAL> > > extract_csm( cuNDArray<complext<REAL> > *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements );
 
 template<class REAL> __host__ 
-void set_phase_reference( cuNDArray<typename complext<REAL>::Type> *csm, unsigned int number_of_batches, unsigned int number_of_elements );
+void set_phase_reference( cuNDArray<complext<REAL> > *csm, unsigned int number_of_batches, unsigned int number_of_elements );
 
 //
 // Main method
 //
 
-template<class REAL, unsigned int D> boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >
-estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data_in, int target_coils)
+template<class REAL, unsigned int D> boost::shared_ptr< cuNDArray<complext<REAL> > >
+estimate_b1_map( cuNDArray<complext<REAL> > *data_in, int target_coils)
 {
 
   if( data_in->get_number_of_dimensions() < 2 ){
     cout << endl << "estimate_b1_map:: dimensionality mismatch." << endl; 
-    return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type > >();
+    return boost::shared_ptr< cuNDArray<complext<REAL> > >();
   }
 
   if( data_in->get_number_of_dimensions()-1 != D ){
     cout << endl << "estimate_b1_map:: dimensionality mismatch." << endl; 
-    return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type > >();
+    return boost::shared_ptr< cuNDArray<complext<REAL> > >();
   }
 
   int target_coils_int = 0;
@@ -58,15 +58,15 @@ estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data_in, int target_c
   unsigned int ncoils = data_in->get_size(D);
 
   // Make a copy of input data, but only the target coils
-  boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> > data_out;
+  boost::shared_ptr< cuNDArray<complext<REAL> > > data_out;
   if (0 && target_coils_int == ncoils) {
-	  cuNDArray<typename complext<REAL>::Type > *_data_out = new cuNDArray<typename complext<REAL>::Type>(*data_in);
-      data_out = boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(_data_out);
+	  cuNDArray<complext<REAL> > *_data_out = new cuNDArray<complext<REAL> >(*data_in);
+      data_out = boost::shared_ptr< cuNDArray<complext<REAL> > >(_data_out);
   } else {
 	  std::vector<unsigned int> odims = *(data_in->get_dimensions().get());
 	  odims[D] = target_coils_int;
-	  cuNDArray<typename complext<REAL>::Type > *_data_out = new cuNDArray<typename complext<REAL>::Type>;
-	  data_out = boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >(_data_out);
+	  cuNDArray<complext<REAL> > *_data_out = new cuNDArray<complext<REAL> >;
+	  data_out = boost::shared_ptr< cuNDArray<complext<REAL> > >(_data_out);
 	  if (!_data_out->create(&odims)) {
 		  std::cout << "Failed to create internal storage for CSM" << std::endl;
 		  return data_out;
@@ -77,7 +77,7 @@ estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data_in, int target_c
 	  for (unsigned int i = 0; i < target_coils_int; i++) {
 		  cudaMemcpy(data_out.get()->get_data_ptr()+i*elements_per_coil,
 				  	 data_in->get_data_ptr()+i*elements_per_coil,
-				  	 elements_per_coil*sizeof(typename complext<REAL>::Type),
+				  	 elements_per_coil*sizeof(complext<REAL>),
 				  	cudaMemcpyDeviceToDevice);
 	  }
 	  ncoils = target_coils_int;
@@ -86,23 +86,23 @@ estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data_in, int target_c
   // Normalize by the RSS of the coils
   if( !cuNDA_rss_normalize<REAL>( data_out.get(), D ) ){
     cout << endl << "estimate_b1_map:: error in rss_normalize" << endl;
-    return boost::shared_ptr< cuNDArray<typename complext<REAL>::Type> >();
+    return boost::shared_ptr< cuNDArray<complext<REAL> > >();
   }
   
   // Now calculate the correlation matrices
-  boost::shared_ptr<cuNDArray<typename complext<REAL>::Type> > corrm = cuNDA_correlation<typename complext<REAL>::Type>( data_out.get() );
+  boost::shared_ptr<cuNDArray<complext<REAL> > > corrm = cuNDA_correlation<complext<REAL> >( data_out.get() );
   data_out.reset();
   
   // Smooth (onto copy of corrm)
-  cuNDArray<typename complext<REAL>::Type > *_corrm_smooth = new cuNDArray<typename complext<REAL>::Type>();
+  cuNDArray<complext<REAL> > *_corrm_smooth = new cuNDArray<complext<REAL> >();
   _corrm_smooth->create(corrm->get_dimensions().get());
-  boost::shared_ptr<cuNDArray<typename complext<REAL>::Type> > corrm_smooth(_corrm_smooth);
+  boost::shared_ptr<cuNDArray<complext<REAL> > > corrm_smooth(_corrm_smooth);
 
   smooth_correlation_matrices<REAL,D>( corrm.get(), corrm_smooth.get() );
   corrm.reset();
 
   // Get the dominant eigenvector for each correlation matrix.
-  boost::shared_ptr<cuNDArray<typename complext<REAL>::Type> > csm = extract_csm<REAL>( corrm_smooth.get(), ncoils, pixels_per_coil );
+  boost::shared_ptr<cuNDArray<complext<REAL> > > csm = extract_csm<REAL>( corrm_smooth.get(), ncoils, pixels_per_coil );
   corrm_smooth.reset();
   
   // Set phase according to reference (coil 0)
@@ -113,7 +113,7 @@ estimate_b1_map( cuNDArray<typename complext<REAL>::Type> *data_in, int target_c
 
 // Smooth correlation matrices by box filter (1D)
 template<class REAL> __global__ void
-smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL>::Type *corrm_smooth, intd<1>::Type image_dims )
+smooth_correlation_matrices_kernel( complext<REAL> *corrm, complext<REAL> *corrm_smooth, intd<1>::Type image_dims )
 {
   const int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const int batch = blockIdx.y;
@@ -127,9 +127,9 @@ smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, typena
     
     const int size_x = image_dims.vec[0];
     
-    const REAL scale = get_one<REAL>()/((REAL)kernel_width);
+    const REAL scale = REAL(1)/((REAL)kernel_width);
     
-    typename complext<REAL>::Type result = get_zero<typename complext<REAL>::Type>();
+    complext<REAL> result = complext<REAL>(0);
     
     for (int kx = 0; kx < kernel_width; kx++) {
       
@@ -149,7 +149,7 @@ smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, typena
 
 // Smooth correlation matrices by box filter (2D)
 template<class REAL> __global__ void
-smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL>::Type *corrm_smooth, intd<2>::Type image_dims )
+smooth_correlation_matrices_kernel( complext<REAL> *corrm, complext<REAL> *corrm_smooth, intd<2>::Type image_dims )
 {
   const int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const int batch = blockIdx.y;
@@ -173,9 +173,9 @@ smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, typena
     const int yplus = y+half_width;
     const int xplus = x+half_width;
 
-    const REAL scale = get_one<REAL>()/((REAL)(kernel_width*kernel_width));
+    const REAL scale = REAL(1)/((REAL)(kernel_width*kernel_width));
     
-    typename complext<REAL>::Type result = get_zero<typename complext<REAL>::Type>();
+    complext<REAL> result = complext<REAL>(0);
    
     if( (yminus >=0) ){
       if( yplus < size_y ){
@@ -204,7 +204,7 @@ smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, typena
 
 // Smooth correlation matrices by box filter (3D)
 template<class REAL> __global__ void
-smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL>::Type *corrm_smooth, intd<3>::Type image_dims )
+smooth_correlation_matrices_kernel( complext<REAL> *corrm, complext<REAL> *corrm_smooth, intd<3>::Type image_dims )
 {
   const int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const int batch = blockIdx.y;
@@ -223,9 +223,9 @@ smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, typena
     const int size_y = image_dims.vec[1];
     const int size_z = image_dims.vec[2];
     
-    const REAL scale = get_one<REAL>()/((REAL)(kernel_width*kernel_width*kernel_width));
+    const REAL scale = REAL(1)/((REAL)(kernel_width*kernel_width*kernel_width));
     
-    typename complext<REAL>::Type result = get_zero<typename complext<REAL>::Type>();
+    complext<REAL> result = complext<REAL>(0);
     
     for (int kz = 0; kz < kernel_width; kz++) {
       for (int ky = 0; ky < kernel_width; ky++) {
@@ -255,7 +255,7 @@ smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, typena
 
 // Smooth correlation matrices by box filter (3D)
 template<class REAL> __global__ void
-smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL>::Type *corrm_smooth, intd<4>::Type image_dims )
+smooth_correlation_matrices_kernel( complext<REAL> *corrm, complext<REAL> *corrm_smooth, intd<4>::Type image_dims )
 {
   const int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const int batch = blockIdx.y;
@@ -276,9 +276,9 @@ smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, typena
     const int size_z = image_dims.vec[2];    
     const int size_w = image_dims.vec[3];
     
-    const REAL scale = get_one<REAL>()/((REAL)(kernel_width*kernel_width*kernel_width*kernel_width));
+    const REAL scale = REAL(1)/((REAL)(kernel_width*kernel_width*kernel_width*kernel_width));
     
-    typename complext<REAL>::Type result = get_zero<typename complext<REAL>::Type>();
+    complext<REAL> result = complext<REAL>(0);
     
     for (int kw = 0; kw < kernel_width; kw++) {
       for (int kz = 0; kz < kernel_width; kz++) {
@@ -313,7 +313,7 @@ smooth_correlation_matrices_kernel( typename complext<REAL>::Type *corrm, typena
 
 // Smooth correlation matrices border by box filter (2D)
 template<class REAL> __global__ void
-smooth_correlation_matrices_border_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL>::Type *corrm_smooth, intd<2>::Type image_dims, unsigned int number_of_border_threads )
+smooth_correlation_matrices_border_kernel( complext<REAL> *corrm, complext<REAL> *corrm_smooth, intd<2>::Type image_dims, unsigned int number_of_border_threads )
 {
   const int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const int batch = blockIdx.y;
@@ -356,9 +356,9 @@ smooth_correlation_matrices_border_kernel( typename complext<REAL>::Type *corrm,
     const int yminus = y-half_width;
     const int xminus = x-half_width;
 
-    const REAL scale = get_one<REAL>()/((REAL)(kernel_width*kernel_width));
+    const REAL scale = REAL(1)/((REAL)(kernel_width*kernel_width));
     
-    typename complext<REAL>::Type result = get_zero<typename complext<REAL>::Type>();
+    complext<REAL> result = complext<REAL>(0);
  
 #pragma unroll
     for (int ky = 0; ky < kernel_width; ky++) {
@@ -387,7 +387,7 @@ smooth_correlation_matrices_border_kernel( typename complext<REAL>::Type *corrm,
 }
 
 template<class REAL, unsigned int D> void
-smooth_correlation_matrices( cuNDArray<typename complext<REAL>::Type> *corrm, cuNDArray<typename complext<REAL>::Type> *corrm_smooth )
+smooth_correlation_matrices( cuNDArray<complext<REAL> > *corrm, cuNDArray<complext<REAL> > *corrm_smooth )
 {
   typename intd<D>::Type image_dims;
 
@@ -426,7 +426,7 @@ extern __shared__ char shared_mem[];
 
 // Extract CSM
 template<class REAL> __global__ void
-extract_csm_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL>::Type *csm, unsigned int num_batches, unsigned int num_elements )
+extract_csm_kernel( complext<REAL> *corrm, complext<REAL> *csm, unsigned int num_batches, unsigned int num_elements )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const unsigned int i = threadIdx.x;
@@ -437,19 +437,19 @@ extract_csm_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL
     // Copying Peter Kellman's approach we use the power method:
     //  b_k+1 = A*b_k / ||A*b_k||
     
-    typename complext<REAL>::Type *data_out = (typename complext<REAL>::Type*) shared_mem;
-    typename complext<REAL>::Type *tmp_v = &(((typename complext<REAL>::Type*) shared_mem)[num_batches*blockDim.x]);
+    complext<REAL> *data_out = (complext<REAL>*) shared_mem;
+    complext<REAL> *tmp_v = &(((complext<REAL>*) shared_mem)[num_batches*blockDim.x]);
     
     const unsigned int iterations = 2;
     
     for( unsigned int c=0; c<num_batches; c++){
-      data_out[c*blockDim.x+i] = get_one<typename complext<REAL>::Type >();
+      data_out[c*blockDim.x+i] = complext<REAL>(1);
     }
     
     for( unsigned int it=0; it<iterations; it++ ){
       
       for( unsigned int c=0; c<num_batches; c++){
-	tmp_v[c*blockDim.x+i] = get_zero<typename complext<REAL>::Type >();
+	tmp_v[c*blockDim.x+i] = complext<REAL>(0);
       }
       
       for( unsigned j=0; j<num_batches; j++){
@@ -458,17 +458,17 @@ extract_csm_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL
 	}
       }
       
-      REAL tmp = get_zero<REAL>();
+      REAL tmp = REAL(0);
       
       for (unsigned int c=0; c<num_batches; c++){
-	tmp += norm_squared(tmp_v[c*blockDim.x+i]);
+	tmp += norm(tmp_v[c*blockDim.x+i]);
       }
       
-      tmp = sqrt(tmp);
-      tmp = reciprocal(tmp);
+      tmp = 1/sqrt(tmp);
+
       
       for (unsigned int c=0; c<num_batches; c++){
-	typename complext<REAL>::Type res = tmp*tmp_v[c*blockDim.x+i];
+	complext<REAL> res = tmp*tmp_v[c*blockDim.x+i];
 	data_out[c*blockDim.x+i] = res;
       }
     }
@@ -481,7 +481,7 @@ extract_csm_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL
 
 // Extract CSM
 template<class REAL> __global__ void
-extract_csm_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL>::Type *csm, unsigned int num_batches, unsigned int num_elements, typename complext<REAL>::Type *tmp_v )
+extract_csm_kernel( complext<REAL> *corrm, complext<REAL> *csm, unsigned int num_batches, unsigned int num_elements, complext<REAL> *tmp_v )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
 
@@ -494,33 +494,33 @@ extract_csm_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL
     const unsigned int iterations = 2;
 
     for( unsigned int c=0; c<num_batches; c++){
-      csm[c*num_elements+idx] = get_one<typename complext<REAL>::Type >();
+      csm[c*num_elements+idx] = complext<REAL>(1);
     }
     
     for( unsigned int it=0; it<iterations; it++ ){
 
       for( unsigned int c=0; c<num_batches; c++){
-	tmp_v[c*num_elements+idx] = get_zero<typename complext<REAL>::Type >();
+	tmp_v[c*num_elements+idx] = complext<REAL>(0);
       }
       
       for( unsigned j=0; j<num_batches; j++){
 	for( unsigned int k=0; k<num_batches; k++){
-	  typedef typename complext<REAL>::Type T;
-	  tmp_v[j*num_elements+idx] += mul<T>(corrm[(k*num_batches+j)*num_elements+idx],csm[k*num_elements+idx]);
+	  typedef complext<REAL> T;
+	  tmp_v[j*num_elements+idx] += corrm[(k*num_batches+j)*num_elements+idx]*csm[k*num_elements+idx];
 	}
       }
 
-      REAL tmp = get_zero<REAL>();
+      REAL tmp = REAL(0);
       
       for (unsigned int c=0; c<num_batches; c++){
-	tmp += norm_squared<REAL>(tmp_v[c*num_elements+idx]);
+	tmp += norm(tmp_v[c*num_elements+idx]);
       }
       
-      tmp = sqrt(tmp);
-      tmp = reciprocal(tmp);
+      tmp = 1/sqrt(tmp);
+
       
       for (unsigned int c=0; c<num_batches; c++){
-	typename complext<REAL>::Type res = tmp*tmp_v[c*num_elements+idx];
+	complext<REAL> res = tmp*tmp_v[c*num_elements+idx];
 	csm[c*num_elements+idx] = res;
       }
     }
@@ -529,7 +529,7 @@ extract_csm_kernel( typename complext<REAL>::Type *corrm, typename complext<REAL
 
 // Extract CSM
 template<class REAL> __host__ 
-boost::shared_ptr<cuNDArray<typename complext<REAL>::Type> > extract_csm(cuNDArray<typename complext<REAL>::Type> *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements )
+boost::shared_ptr<cuNDArray<complext<REAL> > > extract_csm(cuNDArray<complext<REAL> > *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements )
 {
   vector<unsigned int> image_dims;
 
@@ -538,19 +538,19 @@ boost::shared_ptr<cuNDArray<typename complext<REAL>::Type> > extract_csm(cuNDArr
   }
   
   // Allocate output
-  cuNDArray<typename complext<REAL>::Type> *out = new cuNDArray<typename complext<REAL>::Type>; out->create(&image_dims);
+  cuNDArray<complext<REAL> > *out = new cuNDArray<complext<REAL> >; out->create(&image_dims);
 
   dim3 blockDim(256);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
 
   /*  
       if( out != 0x0 )
-      extract_csm_kernel<REAL><<< gridDim, blockDim, number_of_batches*blockDim.x*2*sizeof(typename complext<REAL>::Type) >>>
+      extract_csm_kernel<REAL><<< gridDim, blockDim, number_of_batches*blockDim.x*2*sizeof(complext<REAL>) >>>
       ( corrm_in->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements );
   */
 
   // Temporary buffer. TODO: use shared memory
-  cuNDArray<typename complext<REAL>::Type> *tmp_v = new cuNDArray<typename complext<REAL>::Type>; tmp_v->create(&image_dims);
+  cuNDArray<complext<REAL> > *tmp_v = new cuNDArray<complext<REAL> >; tmp_v->create(&image_dims);
 
   if( out != 0x0 && tmp_v != 0x0 )
     extract_csm_kernel<REAL><<< gridDim, blockDim >>>
@@ -559,12 +559,12 @@ boost::shared_ptr<cuNDArray<typename complext<REAL>::Type> > extract_csm(cuNDArr
   CHECK_FOR_CUDA_ERROR();
   
   delete tmp_v;
-  return boost::shared_ptr<cuNDArray<typename complext<REAL>::Type> >(out);
+  return boost::shared_ptr<cuNDArray<complext<REAL> > >(out);
 }
 
 // Set refence phase
 template<class REAL> __global__ void
-set_phase_reference_kernel( typename complext<REAL>::Type *csm, unsigned int num_batches, unsigned int num_elements )
+set_phase_reference_kernel( complext<REAL> *csm, unsigned int num_batches, unsigned int num_elements )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
 
@@ -572,14 +572,14 @@ set_phase_reference_kernel( typename complext<REAL>::Type *csm, unsigned int num
     REAL angle = arg<REAL>(csm[idx]); //Phase of the first coil
     REAL sin_a, cos_a; gad_sincos( angle, &sin_a, &cos_a );
 
-    typename complext<REAL>::Type tmp;
+    complext<REAL> tmp;
     tmp.vec[0] = cos_a; tmp.vec[1] = sin_a;
-    tmp = conj<typename complext<REAL>::Type>(tmp);
+    tmp = conj(tmp);
 
     for( unsigned int c=0; c<num_batches; c++ ){
-      typename complext<REAL>::Type val = csm[c*num_elements+idx];
-      typedef typename complext<REAL>::Type T;
-      val = mul<T>( val, tmp );
+      complext<REAL> val = csm[c*num_elements+idx];
+      typedef complext<REAL> T;
+      val = val*tmp;
       csm[c*num_elements+idx] = val;
     }
   }
@@ -587,7 +587,7 @@ set_phase_reference_kernel( typename complext<REAL>::Type *csm, unsigned int num
   
 // Set reference phase
 template<class REAL> __host__ 
-void set_phase_reference(cuNDArray<typename complext<REAL>::Type> *csm, unsigned int number_of_batches, unsigned int number_of_elements )
+void set_phase_reference(cuNDArray<complext<REAL> > *csm, unsigned int number_of_batches, unsigned int number_of_elements )
 {
   dim3 blockDim(128);
   dim3 gridDim((unsigned int) ceil((double)number_of_elements/blockDim.x));
@@ -601,12 +601,12 @@ void set_phase_reference(cuNDArray<typename complext<REAL>::Type> *csm, unsigned
 // Template instantiation
 //
 
-//template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,1>(cuNDArray<typename complext<float>::Type >*, int);
-template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,2>(cuNDArray<typename complext<float>::Type >*, int);
-//template boost::shared_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,3>(cuNDArray<typename complext<float>::Type >*, int);
-//template boost::shared_ptr< cuNDArray<typename complext<float>::Type > > estimate_b1_map<float,4>(cuNDArray<typename complext<float>::Type >*, int);
+//template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,1>(cuNDArray<complext<float> >*, int);
+template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,2>(cuNDArray<complext<float> >*, int);
+//template boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,3>(cuNDArray<complext<float> >*, int);
+//template boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,4>(cuNDArray<complext<float> >*, int);
 
-//template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,1>(cuNDArray<typename complext<double>::Type >*, int);
-template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,2>(cuNDArray<typename complext<double>::Type >*, int);
-//template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,3>(cuNDArray<typename complext<double>::Type >*, int);
-//template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<typename complext<double>::Type > > estimate_b1_map<double,4>(cuNDArray<typename complext<double>::Type >*, int);
+//template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,1>(cuNDArray<complext<double> >*, int);
+template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,2>(cuNDArray<complext<double> >*, int);
+//template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,3>(cuNDArray<complext<double> >*, int);
+//template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,4>(cuNDArray<complext<double> >*, int);

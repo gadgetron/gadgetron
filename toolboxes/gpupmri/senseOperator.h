@@ -1,11 +1,13 @@
 #pragma once
 
 #include "matrixOperator.h"
+#include "gpupmri_export.h"
 
 #include <boost/smart_ptr.hpp>
 #include <iostream>
 
-template<class REAL, unsigned int D, class ARRAY_TYPE> class senseOperator : public matrixOperator<REAL, ARRAY_TYPE>
+template<class REAL, unsigned int D, class ARRAY_TYPE> class EXPORTGPUPMRI senseOperator 
+	: public matrixOperator<REAL, ARRAY_TYPE>
 {
 
 public:

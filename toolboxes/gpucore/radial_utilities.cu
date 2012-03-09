@@ -21,7 +21,7 @@ compute_radial_trajectory_golden_ratio_2d_kernel( typename reald<REAL,2>::Type *
   const unsigned int index = blockIdx.x*blockDim.x + threadIdx.x;              
 
   const REAL samples_per_profile = (REAL) blockDim.x;
-  const REAL bias = samples_per_profile * get_half<REAL>();
+  const REAL bias = samples_per_profile * REAL(0.5);
   const REAL sample_idx_on_profile = (REAL)threadIdx.x;
   const REAL profile = (REAL)blockIdx.x;
   const REAL angle_step = get_angle_step_GR<REAL>();
@@ -36,7 +36,7 @@ compute_radial_trajectory_golden_ratio_2d_kernel( typename reald<REAL,2>::Type *
   co[index] = sample_pos;
 }
 
-template<class REAL> boost::shared_ptr< cuNDArray< typename reald<REAL,2>::Type > > 
+template<class REAL> boost::shared_ptr< cuNDArray< typename reald<REAL,2>::Type > >
 compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile, unsigned int num_profiles_per_frame, 
                                            unsigned int num_frames, unsigned int profile_offset )
 {
@@ -81,7 +81,7 @@ compute_radial_trajectory_fixed_angle_2d_kernel( typename reald<REAL,2>::Type *c
   const unsigned int index = blockIdx.x*blockDim.x + threadIdx.x;              
 
   const REAL samples_per_profile = (REAL) blockDim.x;
-  const REAL bias = samples_per_profile * get_half<REAL>();
+  const REAL bias = samples_per_profile * REAL(0.5);
   const REAL sample_idx_on_profile = (REAL)threadIdx.x;
   const REAL lprofile = (REAL)blockIdx.x;
   const REAL frame = (REAL)blockIdx.y;
@@ -127,7 +127,7 @@ compute_radial_trajectory_fixed_angle_2d( unsigned int num_samples_per_profile, 
   dim3 dimGrid( num_profiles_per_frame, num_frames );
   
   // Invoke kernel
-  compute_radial_trajectory_fixed_angle_2d_kernel<REAL><<< dimGrid, dimBlock >>> ( co->get_data_ptr(), get_one<REAL>()/(REAL)num_profiles_per_frame, get_one<REAL>()/(REAL)num_frames );
+  compute_radial_trajectory_fixed_angle_2d_kernel<REAL><<< dimGrid, dimBlock >>> ( co->get_data_ptr(), REAL(1)/(REAL)num_profiles_per_frame, REAL(1)/(REAL)num_frames );
   
   CHECK_FOR_CUDA_ERROR();
   
@@ -140,7 +140,7 @@ template<class REAL, bool GR> __inline__ __device__ typename reald<REAL,2>::Type
 compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL alpha, 
 			  REAL one_over_radial_oversampling_factor, REAL one_over_num_profiles,
 			  REAL bias, REAL samples_per_profile, REAL profile, REAL num_profiles,
-			  typename reald<REAL,2>::Type *p1, typename reald<REAL,2>::Type *p2, typename reald<REAL,2>::Type *p3, typename reald<REAL,2>::Type *p4, 
+			  typename reald<REAL,2>::Type *p1, typename reald<REAL,2>::Type *p2, typename reald<REAL,2>::Type *p3, typename reald<REAL,2>::Type *p4,
 			  typename reald<REAL,2>::Type *p5, typename reald<REAL,2>::Type *p6, typename reald<REAL,2>::Type *p7, typename reald<REAL,2>::Type *p8  )
 {
   // The sample positions (scales) can be either of the _local_ indices 'sample_idx_on_profile' or 'samples_per_projection'-'sample_idx_on_profile'
@@ -216,7 +216,7 @@ compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL 
     typename reald<REAL,2>::Type next_pos_2;  next_pos_2.vec[0] = next_scale_inv*cos_angle;  next_pos_2.vec[1] = next_scale_inv*sin_angle;
     
     // The dot product is used to ensure we find a neighbor on each side
-    if( dot<REAL,2>(ctr_pos_1-sample_pos, normal) > get_zero<REAL>() ){
+    if( dot<REAL,2>(ctr_pos_1-sample_pos, normal) > REAL(0) ){
     
       if( norm_squared<REAL>(ctr_pos_1-sample_pos) < norm_squared<REAL>(*p4-sample_pos) ){
 	*p3 = prev_pos_1;
@@ -234,7 +234,7 @@ compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL 
    }
   
   // The dot product is used to ensure we find a neighbor on each side
-  if( dot<REAL,2>(ctr_pos_2-sample_pos, normal) > get_zero<REAL>() ){
+  if( dot<REAL,2>(ctr_pos_2-sample_pos, normal) >  REAL(0) ){
   
     if( norm_squared<REAL>(ctr_pos_2-sample_pos) < norm_squared<REAL>(*p4-sample_pos) ){
         *p3 = prev_pos_2;
@@ -262,7 +262,7 @@ compute_radial_dcw_2d_kernel( REAL alpha, REAL one_over_radial_oversampling_fact
   const REAL sample_idx_on_profile = (REAL)(blockIdx.x*blockDim.x+threadIdx.x);
   const REAL num_profiles = (REAL)gridDim.y;
   const REAL profile = (REAL)blockIdx.y;
-  const REAL bias = samples_per_profile * get_half<REAL>();
+  const REAL bias = samples_per_profile *REAL(0.5);
 
   const unsigned int index = blockIdx.y*samples_per_profile + sample_idx_on_profile;
   
@@ -271,7 +271,7 @@ compute_radial_dcw_2d_kernel( REAL alpha, REAL one_over_radial_oversampling_fact
   if( sample_idx_on_profile == blockDim.x ){
 
     // Special case - center of profile/k-space
-    const REAL radius = (alpha*one_over_radial_oversampling_factor)*get_half<REAL>();
+    const REAL radius = (alpha*one_over_radial_oversampling_factor)*REAL(0.5);
     const REAL area = radius*radius*get_pi<REAL>();
     weight = area/num_profiles;
   }
@@ -290,17 +290,17 @@ compute_radial_dcw_2d_kernel( REAL alpha, REAL one_over_radial_oversampling_fact
 						      &p1, &p5, &p2, &p3, &p4, &p8, &p7, &p6 );
     
     // Find midpoints of lines from sample_pos to all other points.
-    p1 = get_half<REAL>()*(sample_pos+p1); // computing "sample_pos+(p1-sample_pos)/2"
-    p2 = get_half<REAL>()*(sample_pos+p2);
-    p3 = get_half<REAL>()*(sample_pos+p3);
-    p4 = get_half<REAL>()*(sample_pos+p4);
-    p5 = get_half<REAL>()*(sample_pos+p5);
-    p6 = get_half<REAL>()*(sample_pos+p6);
-    p7 = get_half<REAL>()*(sample_pos+p7);
-    p8 = get_half<REAL>()*(sample_pos+p8);
+    p1 = REAL(0.5)*(sample_pos+p1); // computing "sample_pos+(p1-sample_pos)/2"
+    p2 = REAL(0.5)*(sample_pos+p2);
+    p3 = REAL(0.5)*(sample_pos+p3);
+    p4 = REAL(0.5)*(sample_pos+p4);
+    p5 = REAL(0.5)*(sample_pos+p5);
+    p6 = REAL(0.5)*(sample_pos+p6);
+    p7 = REAL(0.5)*(sample_pos+p7);
+    p8 = REAL(0.5)*(sample_pos+p8);
     
     // The weight is determined by the area of the polygon (http://local.wasp.uwa.edu.au/~pbourke/geometry/polyarea/)
-    weight = get_half<REAL>()*
+    weight = REAL(0.5)*
       ((p1.vec[0]*p2.vec[1]-p2.vec[0]*p1.vec[1])+
        (p2.vec[0]*p3.vec[1]-p3.vec[0]*p2.vec[1])+
        (p3.vec[0]*p4.vec[1]-p4.vec[0]*p3.vec[1])+
@@ -310,7 +310,7 @@ compute_radial_dcw_2d_kernel( REAL alpha, REAL one_over_radial_oversampling_fact
        (p7.vec[0]*p8.vec[1]-p8.vec[0]*p7.vec[1])+
        (p8.vec[0]*p1.vec[1]-p1.vec[0]*p8.vec[1]));                        
     
-    if( weight<get_zero<REAL>() ) weight *= -get_one<REAL>();
+    if( weight<REAL(0) ) weight *= -REAL(1);
   }
   
   dcw[index] = weight;
@@ -356,7 +356,7 @@ compute_radial_dcw_2d( unsigned int samples_per_profile, unsigned int num_profil
   dim3 dimGrid( 2, num_profiles );
   
   // Invoke kernel
-  compute_radial_dcw_2d_kernel<REAL,GR><<< dimGrid, dimBlock >>> ( alpha, one_over_radial_oversampling_factor, get_one<REAL>()/(REAL)num_profiles, (REAL)profile_offset, dcw->get_data_ptr() );
+  compute_radial_dcw_2d_kernel<REAL,GR><<< dimGrid, dimBlock >>> ( alpha, one_over_radial_oversampling_factor, REAL(1)/(REAL)num_profiles, (REAL)profile_offset, dcw->get_data_ptr() );
   
   CHECK_FOR_CUDA_ERROR();
   

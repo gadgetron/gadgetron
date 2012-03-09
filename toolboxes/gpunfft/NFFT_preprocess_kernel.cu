@@ -144,7 +144,7 @@ write_pairs( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type mat
   dim3 blockDim(256);
   dim3 gridDim((int)ceil((double)num_samples_per_frame/(double)blockDim.x), num_frames);
 
-  REAL half_W = get_half<REAL>()*W;
+  REAL half_W = REAL(0.5)*W;
   write_pairs_kernel<REAL,D><<< gridDim, blockDim >>>
     ( matrix_size_os, matrix_size_wrap, num_samples_per_frame, half_W, traj_positions, write_offsets, tuples_first, tuples_last );
 

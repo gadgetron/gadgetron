@@ -4,7 +4,7 @@ include_directories(   ${ACE_INCLUDE_DIR}
                        ${Boost_INCLUDE_DIR}
                        ${CMAKE_SOURCE_DIR}/dependencies/tinyxml
                        ${CMAKE_SOURCE_DIR}/apps/gadgetron 
-                       ${CMAKE_SOURCE_DIR}/toolboxes/ndarray
+                       ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
                        ${CMAKE_SOURCE_DIR}/toolboxes/gpunfft
                        ${CMAKE_SOURCE_DIR}/toolboxes/gpucore
                        ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools

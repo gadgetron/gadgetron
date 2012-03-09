@@ -2,7 +2,7 @@ include_directories(    ${ACE_INCLUDE_DIR}
 				${Boost_INCLUDE_DIR}  
 				${CMAKE_SOURCE_DIR}/gadgets/core 
 				${CMAKE_SOURCE_DIR}/apps/gadgetron
-				${CMAKE_SOURCE_DIR}/toolboxes/ndarray
+				${CMAKE_SOURCE_DIR}/toolboxes/cpucore
 				${CMAKE_SOURCE_DIR}/toolboxes/hostutils
 				${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
 				${CMAKE_SOURCE_DIR}/toolboxes/hdf5utils

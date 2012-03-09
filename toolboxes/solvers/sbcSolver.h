@@ -1,21 +1,21 @@
 /*
   An implementation of the "Constrained CS Optimization Algorithm" of the paper
   "The Split Bregman Method for L1-Regularized Problems" by Tom Goldstein and Stanley Osher. 
-  Siam J. Imaging Sciences. Vol. 2, No. 2, pp. 323–343.
+  Siam J. Imaging Sciences. Vol. 2, No. 2, pp. 323ï¿½343.
 */
 
 #pragma once
 
 #include "sbSolver.h"
-//#include "ndarray_vector_td_utilities.h"
 
-template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE_REAL, class ARRAY_TYPE_ELEMENT> 
-class sbcSolver : public sbSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE_REAL, ARRAY_TYPE_ELEMENT>
+template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE_REAL, class ARRAY_TYPE_ELEMENT> class sbcSolver 
+	: public sbSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE_REAL, ARRAY_TYPE_ELEMENT>
 {
 public:
 
-  sbcSolver( int output_mode = solver<ARRAY_TYPE_ELEMENT>::OUTPUT_SILENT ) : sbSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE_REAL, ARRAY_TYPE_ELEMENT>( output_mode ) { 
-    this->tolerance_ = get_zero<REAL>();
+  sbcSolver() : sbSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE_REAL, ARRAY_TYPE_ELEMENT>() 
+  { 
+    this->tolerance_ = REAL(0);
     this->outer_iterations_ = 10;
     this->inner_iterations_ = 5;
   }
@@ -29,8 +29,8 @@ public:
   virtual bool solver_axpy_real( REAL, ARRAY_TYPE_REAL*, ARRAY_TYPE_REAL* ) = 0;
   virtual bool solver_axpy_element( ELEMENT_TYPE, ARRAY_TYPE_ELEMENT*, ARRAY_TYPE_ELEMENT* ) = 0;
   virtual REAL solver_asum( ARRAY_TYPE_ELEMENT* ) = 0;
+  virtual boost::shared_ptr<ARRAY_TYPE_REAL> solver_abs( ARRAY_TYPE_ELEMENT* ) = 0;
   virtual boost::shared_ptr<ARRAY_TYPE_REAL> solver_norm( ARRAY_TYPE_ELEMENT* ) = 0;
-  virtual boost::shared_ptr<ARRAY_TYPE_REAL> solver_norm_squared( ARRAY_TYPE_ELEMENT* ) = 0;
   virtual bool solver_shrink1( REAL, ARRAY_TYPE_ELEMENT*, ARRAY_TYPE_ELEMENT* ) = 0;
   virtual bool solver_shrinkd( REAL, ARRAY_TYPE_REAL*, ARRAY_TYPE_ELEMENT*, ARRAY_TYPE_ELEMENT* ) = 0;
 
@@ -66,7 +66,7 @@ public:
 
     // Normalize the data
     //
-    ELEMENT_TYPE image_scale = get_zero<ELEMENT_TYPE>();
+    ELEMENT_TYPE image_scale = ELEMENT_TYPE(0);
     if( !this->normalize( f, u_k, image_scale ) ){
       this->solver_error( "sbcSolver::solve : normalization failed" );
       return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
@@ -101,7 +101,7 @@ public:
 
       // Scale EHf with mu
       //
-      if( !solver_scal( mul<REAL>(this->encoding_operator_->get_weight(), get_one<ELEMENT_TYPE>()), muEHf.get() ) ){
+      if( !solver_scal( REAL(this->encoding_operator_->get_weight()), muEHf.get() ) ){
 	this->solver_error( "sbcSolver::solve : error scaling EHf with mu" );
 	return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
       }
@@ -126,22 +126,22 @@ public:
         return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
       }
 
-      if( !this->solver_axpy_element( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), f.get(), &encoded_image )){ // notice the deliberate sign manipulation
+      if( !this->solver_axpy_element( ELEMENT_TYPE(0)-ELEMENT_TYPE(1), f.get(), &encoded_image )){ // notice the deliberate sign manipulation
         this->solver_error( "sbcSolver::solve : computation of update argument to f_k failed" );
         return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
       }
 
-      if( this->tolerance_ > get_zero<REAL>() || this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
+      if( this->tolerance_ > REAL(0) || this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
 	
 	REAL delta = cuNDA_asum<REAL>(&encoded_image);
 	
-	if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
+	if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
 	  std::cout << std::endl << "u_k delta (outer loop): " << delta << std::endl << std::endl;
 
 	//static REAL min_delta = (REAL) 1e9;
 	//if( delta < min_delta ){
 	//  min_delta = delta;
-	// boost::shared_ptr<ARRAY_TYPE_REAL > outm = solver_norm( u_k.get() );
+	// boost::shared_ptr<ARRAY_TYPE_REAL > outm = solver_abs( u_k.get() );
 	// boost::shared_ptr<hoNDArray<REAL> > out = outm->to_host();
 	//  write_nd_array( out.get(), "cur_min.real");
 	//}
@@ -150,7 +150,7 @@ public:
 	  break;
       }
       
-      if( !solver_axpy_element( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), &encoded_image, f_k.get() )){ // notice the deliberate sign manipulation
+      if( !solver_axpy_element( ELEMENT_TYPE(0)-ELEMENT_TYPE(1), &encoded_image, f_k.get() )){ // notice the deliberate sign manipulation
 	this->solver_error( "sbcSolver::solve : computation of update argument to f_k failed" );
 	return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
       }
@@ -159,7 +159,7 @@ public:
     
     // Undo the intermediate scaling of u_k ...
     //
-    if( !undo_normalization( u_k, reciprocal<ELEMENT_TYPE>(image_scale) )){
+    if( !undo_normalization( u_k, 1/(image_scale) )){
       this->solver_error( "sbcSolver::solve : unable to undo normalization" );
       return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
     } 

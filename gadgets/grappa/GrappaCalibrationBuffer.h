@@ -18,8 +18,8 @@ class EXPORTGADGETSGRAPPA CalibrationBufferCounter
  public:
   CalibrationBufferCounter(unsigned int lines)  {
     lines_sampled_ = std::vector<unsigned int>(lines,0);
-    memset(position_,   3*sizeof(float),0);
-    memset(quarternion_, 4*sizeof(float),0);
+    memset(position_, 0, 3*sizeof(float));
+    memset(quarternion_, 0, 4*sizeof(float));
   }
 
 

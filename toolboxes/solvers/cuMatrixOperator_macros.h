@@ -2,7 +2,8 @@
 
 #define DECLARE_MATRIX_OPERATOR_DEVICE_SUPPORT(COMPONENT)                                  \
                                                                                            \
-  virtual void set_device( int device )                                                    \
+public:									                   \
+  virtual void set_device( int device = -1 )                                               \
   {                                                                                        \
     if( device<0 ){                                                                        \
       if( cudaGetDevice( &device_ ) != cudaSuccess ){                                      \
@@ -15,7 +16,7 @@
   }                                                                                        \
                                                                                            \
 protected:                                                                                 \
-  virtual int set_device()                                                                 \
+  virtual int _set_device()                                                                \
   {                                                                                        \
     if( cudaGetDevice( &old_device_ ) != cudaSuccess ){                                    \
       std::cerr << "##COMPONENT:: unable to get current device." << std::endl ;            \
@@ -28,7 +29,7 @@ protected:                                                                      
     return 0;                                                                              \
   }                                                                                        \
                                                                                            \
-  virtual int restore_device()                                                             \
+  virtual int _restore_device()                                                            \
   {                                                                                        \
     if( device_ != old_device_ && cudaSetDevice(old_device_) != cudaSuccess) {             \
       std::cerr << "##COMPONENT:: unable to restore device " << old_device_ << std::endl;  \

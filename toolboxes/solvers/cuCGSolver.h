@@ -10,7 +10,8 @@
 #include <iostream>
 
 
-template <class REAL, class T> class cuCGSolver : public cgSolver< REAL, T, cuNDArray<T> >
+template <class REAL, class T> class cuCGSolver 
+	: public cgSolver< REAL, T, cuNDArray<T> >
 {
 public:
 
@@ -109,5 +110,4 @@ protected:
   int device_;
   int old_device_;
   cuNDArray<T> *new_rhs;
-  
 };
