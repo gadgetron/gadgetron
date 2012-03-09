@@ -83,9 +83,9 @@ cuNonCartesianSenseOperator<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArra
   }
 
   if( !accumulate ){
-    int ret1 = this->set_device();
+    int ret1 = this->_set_device();
     if( ret1 == 0 ) cuNDA_clear<_complext>( out );
-    int ret2 = this->restore_device();
+    int ret2 = this->_restore_device();
     
     if( ret1<0 || ret2<0 ){
       std::cerr << "cuNonCartesianSenseOperator::mult_MH: device error" << std::endl;
@@ -157,9 +157,9 @@ cuNonCartesianSenseOperator<REAL,D>::set_dcw( boost::shared_ptr< cuNDArray<REAL>
   int ret1 = 0, ret2 = 0;
   
   if( dcw->get_device() != this->device_ ){
-    ret1 = this->set_device();
+    ret1 = this->_set_device();
     if( ret1 == 0 ) dcw_ = boost::shared_ptr< cuNDArray<REAL> >(new cuNDArray<REAL>(*dcw.get()));
-    ret2 = this->restore_device();
+    ret2 = this->_restore_device();
   }
   else    
     dcw_ = dcw;

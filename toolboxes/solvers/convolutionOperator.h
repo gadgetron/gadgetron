@@ -2,12 +2,12 @@
 
 #include "matrixOperator.h"
 #include "vector_td_utilities.h"
-#include "solvers_export.h"
 
 #include <boost/smart_ptr.hpp>
 #include <vector>
 
-template <class REAL, class COMPLEX_ARRAY_TYPE, unsigned int D> class convolutionOperator : public matrixOperator<REAL, COMPLEX_ARRAY_TYPE>
+template <class REAL, class COMPLEX_ARRAY_TYPE, unsigned int D> class convolutionOperator 
+	: public matrixOperator<REAL, COMPLEX_ARRAY_TYPE>
 {  
 public:
   

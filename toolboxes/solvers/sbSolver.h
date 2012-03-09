@@ -1,7 +1,7 @@
 /*
 An implementation of the "Generalized Split Bregman Algorithm" - sec. 3.2. of the paper
 "The Split Bregman Method for L1-Regularized Problems" by Tom Goldstein and Stanley Osher. 
-Siam J. Imaging Sciences. Vol. 2, No. 2, pp. 323–343.
+Siam J. Imaging Sciences. Vol. 2, No. 2, pp. 323ï¿½343.
 */
 
 #pragma once
@@ -13,20 +13,21 @@ Siam J. Imaging Sciences. Vol. 2, No. 2, pp. 323–343.
 #include <vector>
 #include <iostream>
 
-template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE_REAL, class ARRAY_TYPE_ELEMENT> 
-class sbSolver : public solver<ARRAY_TYPE_ELEMENT>
+template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE_REAL, class ARRAY_TYPE_ELEMENT> class sbSolver 
+	: public solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>
 {
 public:
 
-	sbSolver( int output_mode = solver<ARRAY_TYPE_ELEMENT>::OUTPUT_SILENT ) : solver<ARRAY_TYPE_ELEMENT>( output_mode ) { 
-		tolerance_ = get_zero<REAL>();
+	sbSolver() : solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>() 
+	{ 
+		tolerance_ = REAL(0);
 		outer_iterations_ = 10;
 		inner_iterations_ = 1;
 	}
 
 	virtual ~sbSolver() {}
 
-	virtual int set_inner_solver( boost::shared_ptr< solver<ARRAY_TYPE_ELEMENT> > solver ) {
+	virtual int set_inner_solver( boost::shared_ptr< solver<ARRAY_TYPE_ELEMENT,ARRAY_TYPE_ELEMENT> > solver ) {
 		inner_solver_ = solver;
 		return 0;
 	}
@@ -74,16 +75,19 @@ public:
 			for( unsigned int i=0; i<regularization_group_operators_.back().size(); i++ ){
 
 				opp = boost::shared_ptr<ARRAY_TYPE_ELEMENT>( new ARRAY_TYPE_ELEMENT() );
+
 				if( !opp.get() || opp->create( prior->get_dimensions().get() ) < 0 ){
 					this->solver_error( "sbSolver::add_group : allocation failed for prior" );
 					regularization_group_priors_.push_back( std::vector< boost::shared_ptr< ARRAY_TYPE_ELEMENT > >() );
 					return -1;
 				}
+
 				if( regularization_group_operators_.back().at(i)->mult_M( prior, opp.get() ) < 0 ){
 					this->solver_error( "sbSolver::add_group : could not apply operator to prior" );
 					regularization_group_priors_.push_back( std::vector< boost::shared_ptr< ARRAY_TYPE_ELEMENT > >() );
 					return -1;
 				}      
+
 				_regularization_group_priors_.push_back( opp );
 			}
 		}
@@ -93,7 +97,7 @@ public:
 	}
 
 	virtual void set_tolerance( REAL tolerance ) {
-		if( tolerance < get_zero<REAL>() ) this->solver_error( "sbSolver::set_tolerence : tolerance cannot be negative" );
+		if( tolerance < REAL(0) ) this->solver_error( "sbSolver::set_tolerence : tolerance cannot be negative" );
 		else tolerance_ = tolerance;
 	}
 
@@ -116,8 +120,8 @@ public:
 	virtual bool solver_axpy_real( REAL, ARRAY_TYPE_REAL*, ARRAY_TYPE_REAL* ) = 0;
 	virtual bool solver_axpy_element( ELEMENT_TYPE, ARRAY_TYPE_ELEMENT*, ARRAY_TYPE_ELEMENT* ) = 0;
 	virtual REAL solver_asum( ARRAY_TYPE_ELEMENT* ) = 0;
+	virtual boost::shared_ptr<ARRAY_TYPE_REAL> solver_abs( ARRAY_TYPE_ELEMENT* ) = 0;
 	virtual boost::shared_ptr<ARRAY_TYPE_REAL> solver_norm( ARRAY_TYPE_ELEMENT* ) = 0;
-	virtual boost::shared_ptr<ARRAY_TYPE_REAL> solver_norm_squared( ARRAY_TYPE_ELEMENT* ) = 0;
 	virtual bool solver_shrink1( REAL, ARRAY_TYPE_ELEMENT*, ARRAY_TYPE_ELEMENT* ) = 0;
 	virtual bool solver_shrinkd( REAL, ARRAY_TYPE_REAL*, ARRAY_TYPE_ELEMENT*, ARRAY_TYPE_ELEMENT* ) = 0;
 
@@ -153,7 +157,7 @@ public:
 
 		// Normalize the data
 		//
-		ELEMENT_TYPE image_scale = get_zero<ELEMENT_TYPE>();
+		ELEMENT_TYPE image_scale = ELEMENT_TYPE(0);
 		if( !normalize( f, u_k, image_scale ) ){
 			this->solver_error( "sbSolver::solve : normalization failed" );
 			return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
@@ -169,7 +173,7 @@ public:
 
 		// Scale EHf with mu
 		//
-		if( !solver_scal( mul<REAL>(encoding_operator_->get_weight(), get_one<ELEMENT_TYPE>()), muEHf.get() ) ){
+		if( !solver_scal( REAL(encoding_operator_->get_weight()), muEHf.get() ) ){
 			this->solver_error( "sbSolver::solve : error scaling EHf with mu" );
 			return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
 		}
@@ -183,7 +187,7 @@ public:
 
 		// Undo the intermediate scaling of u_k ...
 		//
-		if( !undo_normalization( u_k, reciprocal<ELEMENT_TYPE>(image_scale) )){
+		if( !undo_normalization( u_k, 1/image_scale )){
 			this->solver_error( "sbSolver::solve : unable to undo normalization" );
 			return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
 		} 
@@ -313,7 +317,7 @@ protected:
 		// Normalize to an average energy of "one intensity unit per image element"
 		//
 		REAL sum = solver_asum( u_k.get() );
-		image_scale = mul<REAL>(( (REAL) (u_k->get_number_of_elements())/sum), get_one<ELEMENT_TYPE>() );
+		image_scale =  (REAL) (u_k->get_number_of_elements())/REAL(sum);
 
 		// Normalize u_k and f
 		//
@@ -397,7 +401,7 @@ protected:
 		// Keep a copy of the "previous" u_k to compute the outer loop change of u_k
 		// 
 		ARRAY_TYPE_ELEMENT u_k_prev;
-		if( tolerance > get_zero<REAL>() || this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
+		if( tolerance > REAL(0) || this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
 			u_k_prev = *u_k;
 			if( !u_k_prev.get_data_ptr() ){
 				this->solver_error( "sbSolver::core : memory allocation of u_k_prev failed" );
@@ -409,14 +413,14 @@ protected:
 		//
 		for( unsigned int outer_iteration=0; outer_iteration<outer_iterations; outer_iteration++ ) {
 
-			if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT>::OUTPUT_MAX )
+			if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_MAX )
 				std::cout << std::endl << "SB outer loop iteration " << outer_iteration << std::endl << std::endl;
 
 			// Inner loop
 			//
 			for( unsigned int inner_iteration=0; inner_iteration<inner_iterations; inner_iteration++ ) {
 
-				if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT>::OUTPUT_MAX )
+				if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_MAX )
 					std::cout << std::endl << "SB inner loop iteration " << inner_iteration << std::endl << std::endl;
 
 				// Form rhs for inner loop solver (initializes to adjoint encoding operator)
@@ -442,13 +446,13 @@ protected:
 					tmp_diff = *d_k[operator_idx];
 
 					if( regularization_priors_.at(i).get() ){
-						if( !solver_axpy_element( get_one<ELEMENT_TYPE>(), regularization_priors_.at(i).get(), &tmp_diff )){
+						if( !solver_axpy_element( ELEMENT_TYPE(1), regularization_priors_.at(i).get(), &tmp_diff )){
 							this->solver_error( "sbSolver::core : could not add regularization prior in rhs computation" );
 							return false;
 						}
 					}
 
-					if( !solver_axpy_element( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), b_k[operator_idx].get(), &tmp_diff )){
+					if( !solver_axpy_element( ELEMENT_TYPE(0)-ELEMENT_TYPE(1), b_k[operator_idx].get(), &tmp_diff )){
 						this->solver_error( "sbSolver::core : computation of regularization argument failed in rhs computation" );
 						return false;
 					}    
@@ -458,7 +462,7 @@ protected:
 						return false;
 					}    
 
-					if( !solver_axpy_element( mul<REAL>(regularization_operators_.at(i)->get_weight(), get_one<ELEMENT_TYPE>()), &reg_out, &rhs )){
+					if( !solver_axpy_element( REAL(regularization_operators_.at(i)->get_weight()), &reg_out, &rhs )){
 						this->solver_error( "sbSolver::core : accumulation in rhs computation failed (1)" );
 						return false;
 					}
@@ -479,13 +483,13 @@ protected:
 						tmp_diff = *d_k[operator_idx];
 
 						if( regularization_group_priors_.at(i).size() > 0 && regularization_group_priors_.at(i).at(j).get() ){
-							if( !solver_axpy_element( get_one<ELEMENT_TYPE>(), regularization_group_priors_.at(i).at(j).get(), &tmp_diff )){
+							if( !solver_axpy_element( ELEMENT_TYPE(1), regularization_group_priors_.at(i).at(j).get(), &tmp_diff )){
 								this->solver_error( "sbSolver::core : could not add regularization group prior in rhs computation" );
 								return false;
 							}
 						}
 
-						if( !solver_axpy_element( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), b_k[operator_idx].get(), &tmp_diff )){
+						if( !solver_axpy_element( ELEMENT_TYPE(0)-ELEMENT_TYPE(1), b_k[operator_idx].get(), &tmp_diff )){
 							this->solver_error( "sbSolver::core : computation of group regularization argument failed in rhs computation" );
 							return false;
 						}    
@@ -495,7 +499,7 @@ protected:
 							return false;
 						}    
 
-						if( !solver_axpy_element( mul<REAL>(regularization_group_operators_.at(i).at(j)->get_weight(), get_one<ELEMENT_TYPE>()), &reg_out, &rhs )){
+						if( !solver_axpy_element( REAL(regularization_group_operators_.at(i).at(j)->get_weight()), &reg_out, &rhs )){
 							this->solver_error( "sbSolver::core : accumulation in rhs computation failed (2)" );
 							return false;
 						}
@@ -510,8 +514,8 @@ protected:
 
 					// Compute change in u_k
 					//
-					if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
-						if( !solver_axpy_element( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), tmp.get(), u_k.get() )){
+					if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
+						if( !solver_axpy_element( ELEMENT_TYPE(0)-ELEMENT_TYPE(1), tmp.get(), u_k.get() )){
 							this->solver_error( "sbSolver::core : error computing inner loop u_k delta" );
 							return false;
 						}
@@ -542,19 +546,19 @@ protected:
 					}
 
 					if( regularization_priors_.at(i).get() ) {
-						if( !solver_axpy_element( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), regularization_priors_.at(i).get(), &reg_out )){
+						if( !solver_axpy_element( ELEMENT_TYPE(0)-ELEMENT_TYPE(1), regularization_priors_.at(i).get(), &reg_out )){
 							this->solver_error( "sbSolver::core : application of regularization prior failed in {d_k,b_k} update" );
 							return false;
 						}
 					}
 
-					if( !solver_axpy_element( get_one<ELEMENT_TYPE>(), &reg_out, &tmp_sum )){
+					if( !solver_axpy_element( ELEMENT_TYPE(1), &reg_out, &tmp_sum )){
 						this->solver_error( "sbSolver::core : computation of shrinkage_1 argument for d_k failed" );
 						return false;
 					}
 
 					// Update of d_k
-					if( !solver_shrink1( reciprocal<REAL>(regularization_operators_.at(i)->get_weight()), &tmp_sum, d_k[operator_idx].get() )){
+					if( !solver_shrink1( 1/regularization_operators_.at(i)->get_weight(), &tmp_sum, d_k[operator_idx].get() )){
 						this->solver_error( "sbSolver::core : shrinkage_1 of d_k failed" );
 						return false;
 					}
@@ -562,13 +566,13 @@ protected:
 					// Update of b_k (only in the last inner iteration)
 					if( inner_iteration == inner_iterations-1 ){
 
-						if( !solver_axpy_element( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), d_k[operator_idx].get(), &reg_out )){
+						if( !solver_axpy_element( ELEMENT_TYPE(0)-ELEMENT_TYPE(1), d_k[operator_idx].get(), &reg_out )){
 							this->solver_error( "sbSolver::core : computation of update argument to b_k failed" );
 							return false;
 						}
 
 						// Update of b_k
-						if( !solver_axpy_element( get_one<ELEMENT_TYPE>(), &reg_out, b_k[operator_idx].get() )){
+						if( !solver_axpy_element( ELEMENT_TYPE(1), &reg_out, b_k[operator_idx].get() )){
 							this->solver_error( "sbSolver::core : update of b_k failed" );
 							return false;
 						}
@@ -612,19 +616,19 @@ protected:
 						}
 
 						if( regularization_group_priors_.at(i).size() > 0 && regularization_group_priors_.at(i).at(j).get() ) {
-							if( !solver_axpy_element( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), regularization_group_priors_.at(i).at(j).get(), &reg_out[j] )){
+							if( !solver_axpy_element( ELEMENT_TYPE(0)-ELEMENT_TYPE(1), regularization_group_priors_.at(i).at(j).get(), &reg_out[j] )){
 								this->solver_error( "sbSolver::core : application of regularization group prior failed in {d_k,b_k} update" );
 								return false;
 							}
 						}
 
-						if( !solver_axpy_element( get_one<ELEMENT_TYPE>(), &reg_out[j], &sums[j] )){
+						if( !solver_axpy_element( ELEMENT_TYPE(1), &reg_out[j], &sums[j] )){
 							this->solver_error( "sbSolver::core : computation of shrinkage_d argument for d_k failed" );
 							return false;
 						}
 
-						boost::shared_ptr<ARRAY_TYPE_REAL> tmp_s_k = solver_norm_squared(&sums[j]);
-						if( !solver_axpy_real( get_one<REAL>(), tmp_s_k.get(), &s_k )){
+						boost::shared_ptr<ARRAY_TYPE_REAL> tmp_s_k = solver_norm(&sums[j]);
+						if( !solver_axpy_real( REAL(1), tmp_s_k.get(), &s_k )){
 							this->solver_error( "sbSolver::core : accumulation of s_k failed" );
 							return false;
 						}
@@ -638,7 +642,7 @@ protected:
 					for( unsigned int j=0; j<k; j++ ){
 
 						// Update of d_k
-						if( !solver_shrinkd( reciprocal<REAL>(regularization_group_operators_.at(i).at(j)->get_weight()), &s_k, &sums[j], d_k[operator_idx+j].get() )){
+						if( !solver_shrinkd( 1/(regularization_group_operators_.at(i).at(j)->get_weight()), &s_k, &sums[j], d_k[operator_idx+j].get() )){
 							this->solver_error( "sbSolver::core : shrinkage_d of d_k failed" );
 							return false;
 						}
@@ -646,12 +650,12 @@ protected:
 						// Update of b_k (only in the last inner iteration)
 						if( inner_iteration == inner_iterations-1 ){
 
-							if( !solver_axpy_element( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), d_k[operator_idx+j].get(), &reg_out[j] )){
+							if( !solver_axpy_element( ELEMENT_TYPE(0)-ELEMENT_TYPE(1), d_k[operator_idx+j].get(), &reg_out[j] )){
 								this->solver_error( "sbSolver::core : computation of update argument to b_k failed" );
 								return false;
 							}
 
-							if( !solver_axpy_element( get_one<ELEMENT_TYPE>(), &reg_out[j], b_k[operator_idx+j].get() )){
+							if( !solver_axpy_element( ELEMENT_TYPE(1), &reg_out[j], b_k[operator_idx+j].get() )){
 								this->solver_error( "sbSolver::core : update of b_k failed" );
 								return false;
 							}
@@ -664,21 +668,21 @@ protected:
 			} // end of inner loop
 
 			// Output change in u_k
-			if( tolerance > get_zero<REAL>() || this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
+			if( tolerance > REAL(0) || this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
 
-				if( !solver_scal( get_zero<ELEMENT_TYPE>()-get_one<ELEMENT_TYPE>(), &u_k_prev ) ){
+				if( !solver_scal( ELEMENT_TYPE(0)-ELEMENT_TYPE(1), &u_k_prev ) ){
 					this->solver_error( "sbSolver::core : error computing inner loop u_k delta (scale)" );
 					return false;
 				}
 
-				if( !solver_axpy_element( get_one<ELEMENT_TYPE>(), u_k.get(), &u_k_prev )){
+				if( !solver_axpy_element( ELEMENT_TYPE(1), u_k.get(), &u_k_prev )){
 					this->solver_error( "sbSolver::core : error computing inner loop u_k delta (axpy)" );
 					return false;
 				}
 
 				REAL delta = solver_asum(&u_k_prev);
 
-				if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
+				if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
 					std::cout << std::endl << "u_k delta (outer loop): " << delta << std::endl << std::endl;
 
 				if( delta < tolerance )
@@ -692,12 +696,11 @@ protected:
 		return true;
 	}
 
-
 protected:
 	REAL tolerance_;
 	unsigned int outer_iterations_, inner_iterations_;
 	boost::shared_ptr< std::vector<unsigned int> > image_dims_;
-	boost::shared_ptr< solver<ARRAY_TYPE_ELEMENT> > inner_solver_;
+	boost::shared_ptr< solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT> > inner_solver_;
 	boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > encoding_operator_;
 	std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > > regularization_operators_;
 	std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > > _regularization_group_operators_;

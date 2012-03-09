@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
 
 	if (datatype == 0) {
 		boost::shared_ptr< hoNDArray< float > > A = read_nd_array< float >(arrayfilename.c_str());
-		if (hoNDArray_hdf5_append(A.get(), hdf5filename.c_str(), varname.c_str()) < 0) {
+		if (hdf5_append_array(A.get(), hdf5filename.c_str(), varname.c_str()) < 0) {
 			std::cout << "Error adding array to HDF5 file" << std::endl;
 			return -1;
 		} else {
@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
 
 		boost::shared_ptr< hoNDArray< std::complex<float> > > A = read_nd_array< std::complex<float> >(arrayfilename.c_str());
 
-		if (hoNDArray_hdf5_append(A.get(), hdf5filename.c_str(), varname.c_str()) < 0) {
+		if (hdf5_append_array(A.get(), hdf5filename.c_str(), varname.c_str()) < 0) {
 			std::cout << "Error adding array to HDF5 file" << std::endl;
 			return -1;
 		} else {
@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
 
 		boost::shared_ptr< hoNDArray< unsigned short > > A = read_nd_array< unsigned short >(arrayfilename.c_str());
 
-		if (hoNDArray_hdf5_append(A.get(), hdf5filename.c_str(), varname.c_str()) < 0) {
+		if (hdf5_append_array(A.get(), hdf5filename.c_str(), varname.c_str()) < 0) {
 			std::cout << "Error adding array to HDF5 file" << std::endl;
 			return -1;
 		} else {

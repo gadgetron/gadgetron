@@ -2,7 +2,6 @@
 
 #include "cuCGPreconditioner.h"
 #include <boost/smart_ptr.hpp>
-#include "solvers_export.h"
 
 template<class T> class EXPORTSOLVERS cuCGPrecondWeights : public cuCGPreconditioner<T>
 {

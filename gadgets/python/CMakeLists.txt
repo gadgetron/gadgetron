@@ -6,7 +6,7 @@ include_directories(   ${ACE_INCLUDE_DIR}
 				       ${PYTHON_NUMPY_INCLUDE_DIR}
 				       ${Boost_INCLUDE_DIR} 
 				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
-				       ${CMAKE_SOURCE_DIR}/toolboxes/ndarray
+				       ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools)
 
 add_library(GadgetronPythonMRI MODULE GadgetronPythonMRI.cpp GadgetReference.cpp)

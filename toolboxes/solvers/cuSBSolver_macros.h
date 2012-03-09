@@ -43,14 +43,14 @@
     return cuNDA_asum<REAL,T>(x);
   }
 
-  virtual boost::shared_ptr< cuNDArray<REAL> > solver_norm( cuNDArray<T> *x )
+  virtual boost::shared_ptr< cuNDArray<REAL> > solver_abs( cuNDArray<T> *x )
   {
-    return cuNDA_norm<REAL,T>(x);
+    return cuNDA_cAbs<REAL,T>(x);
   }
 
-  virtual boost::shared_ptr< cuNDArray<REAL> > solver_norm_squared( cuNDArray<T> *x )
+  virtual boost::shared_ptr< cuNDArray<REAL> > solver_norm( cuNDArray<T> *x )
   {
-    return cuNDA_norm_squared<REAL,T>(x);
+    return cuNDA_cNorm<REAL,T>(x);
   }
   
   virtual bool solver_shrink1( REAL reciprocal_scale, cuNDArray<T> *in, cuNDArray<T> *out )

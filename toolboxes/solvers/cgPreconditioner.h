@@ -2,6 +2,8 @@
 #define CGPRECONDITIONER_H
 #pragma once
 
+#include "solvers_export.h"
+
 template <class ARRAY_TYPE> class cgPreconditioner
 {
  public:

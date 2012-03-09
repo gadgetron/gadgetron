@@ -22,16 +22,15 @@ int2 vec_to_int2(std::vector<unsigned int> vec)
 }
 
 
-__global__ void clear_array(float2* in, unsigned long int elements)
+__global__ void clear_array(complext<float> * in, unsigned long int elements)
 {
 	unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
 	if (idx_in < elements) {
-		in[idx_in].x = 0.0;
-		in[idx_in].y = 0.0;
+		in[idx_in] = complext<float>(0);
 	}
 }
 
-int clear(cuNDArray<float2>* in)
+int clear(cuNDArray<complext<float> >* in)
 {
 	dim3 blockDim(512,1,1);
 	dim3 gridDim((unsigned int) ceil((double)in->get_number_of_elements()/blockDim.x), 1, 1 );
@@ -50,7 +49,7 @@ int clear(cuNDArray<float2>* in)
 template <class T> int write_cuNDArray_to_disk(cuNDArray<T>* a, const char* filename)
 {
 	hoNDArray<T> host = a->to_host();
-	write_nd_array<cuFloatComplex>(host, filename);
+	write_nd_array<complext<float> >(host, filename);
 	return 0;
 }
 
@@ -131,7 +130,7 @@ template <class T> __global__ void copy_grappa_coefficients_to_kernel_2d(T* coef
 		if ((coil == coilg) && (kx == 0) && (ky == 0) && (set == 0)) {
 			kernel[coilg*source_coils*(kernel_size.y*acceleration_factor)*kernel_size.x +
 			       coil*(kernel_size.y*acceleration_factor)*kernel_size.x +
-			       ((kernel_size.y>>1)*acceleration_factor)*kernel_size.x + (kernel_size.x>>1) ].x = 1;
+			       ((kernel_size.y>>1)*acceleration_factor)*kernel_size.x + (kernel_size.x>>1) ].vec[0] = 1;
 
 		}
 	}
@@ -163,27 +162,27 @@ template <class T> __global__ void copy_grappa_kernel_to_kspace_2d(T* kernel,
 
 }
 
-__global__ void scale_and_add_unmixing_coeffs(cuFloatComplex* unmixing,
-		cuFloatComplex* csm,
-		cuFloatComplex* out,
+__global__ void scale_and_add_unmixing_coeffs(complext<float> * unmixing,
+		complext<float> * csm,
+		complext<float> * out,
 		int elements,
 		int coils,
 		float scale_factor)
 {
 	unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
 
-	cuFloatComplex tmp;
+	complext<float>  tmp;
 	if (idx_in < elements) {
 		for (int c = 0; c < coils; c++) {
-			tmp = cuCmulf(unmixing[c*elements + idx_in],cuConjf(csm[idx_in]));
-			out[c*elements + idx_in].x += scale_factor*tmp.x;
-			out[c*elements + idx_in].y += scale_factor*tmp.y;
+			tmp = unmixing[c*elements + idx_in]*conj(csm[idx_in]);
+			out[c*elements + idx_in] += scale_factor*tmp;
+
 		}
 	}
 }
 
-__global__ void scale_and_copy_unmixing_coeffs(cuFloatComplex* unmixing,
-		cuFloatComplex* out,
+__global__ void scale_and_copy_unmixing_coeffs(complext<float> * unmixing,
+		complext<float> * out,
 		int elements,
 		int coils,
 		float scale_factor)
@@ -192,14 +191,14 @@ __global__ void scale_and_copy_unmixing_coeffs(cuFloatComplex* unmixing,
 
 	if (idx_in < elements) {
 		for (int c = 0; c < coils; c++) {
-			out[c*elements + idx_in].x = scale_factor*unmixing[c*elements + idx_in].x;
-			out[c*elements + idx_in].y = scale_factor*unmixing[c*elements + idx_in].y;
+			out[c*elements + idx_in] = scale_factor*unmixing[c*elements + idx_in];
+
 		}
 	}
 }
 
-__global__ void conj_csm_coeffs(cuFloatComplex* csm,
-		cuFloatComplex* out,
+__global__ void conj_csm_coeffs(complext<float> * csm,
+		complext<float> * out,
 		int source_elements,
 		int target_elements)
 {
@@ -209,21 +208,21 @@ __global__ void conj_csm_coeffs(cuFloatComplex* csm,
 
 	if (idx_in < source_elements) {
 		if (idx_in >= target_elements) {
-			out[idx_in] = make_cuFloatComplex(0.0,0.0);
+			out[idx_in] = complext<float> (0.0,0.0);
 		} else {
-			out[idx_in] = cuConjf(csm[idx_in]);
+			out[idx_in] = conj(csm[idx_in]);
 		}
 	}
 }
 
-__global__ void single_channel_coeffs(cuFloatComplex* out,
+__global__ void single_channel_coeffs(complext<float> * out,
 		int channel_no,
 		int elements_per_channel)
 {
 	unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
 
 	if (idx_in < elements_per_channel) {
-		out[idx_in + channel_no*elements_per_channel] = make_float2(1.0,0.0);
+		out[idx_in + channel_no*elements_per_channel] = complext<float>(1.0,0.0);
 	}
 }
 
@@ -419,14 +418,14 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 		//write_cuNDArray_to_disk(&system_matrix,"A.cplx");
 		//write_cuNDArray_to_disk(&b,"b.cplx");
 
-		cuFloatComplex alpha = make_float2(1.0,0.0);
-		cuFloatComplex beta = make_float2(0.0, 0.0);
+		complext<float>  alpha = complext<float>(1);
+		complext<float>  beta = complext<float>(0);
 
 		cublasStatus_t stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
-				n,n,m,&alpha,
-				system_matrix.get_data_ptr(), m,
-				system_matrix.get_data_ptr(), m,
-				&beta, AHA.get_data_ptr(), n);
+				n,n,m,(float2*) &alpha,
+				(float2*) system_matrix.get_data_ptr(), m,
+				(float2*) system_matrix.get_data_ptr(), m,
+				(float2*) &beta, (float2*) AHA.get_data_ptr(), n);
 
 		if (stat != CUBLAS_STATUS_SUCCESS) {
 			std::cerr << "htgrappa_calculate_grappa_unmixing: Failed to form AHA product using cublas gemm" << std::endl;
@@ -441,10 +440,10 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 			//GPUTimer timer("GRAPPA cublas gemm");
 			//TODO: Sort out arguments for source and target coils here.
 			stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
-					n,target_coils,m,&alpha,
-					system_matrix.get_data_ptr(), m,
-					b.get_data_ptr(), m,
-					&beta, AHrhs.get_data_ptr(), n);
+					n,target_coils,m,(float2*) &alpha,
+					(float2*) system_matrix.get_data_ptr(), m,
+					(float2*) b.get_data_ptr(), m,
+					(float2*) &beta, (float2*)AHrhs.get_data_ptr(), n);
 
 		}
 		//write_cuNDArray_to_disk(&AHrhs,"AHrhs.cplx");
@@ -582,10 +581,10 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 
 
 //Template instanciation
-template EXPORTGPUPMRI int htgrappa_calculate_grappa_unmixing(cuNDArray<float2>* ref_data, 
-		cuNDArray<float2>* b1,
+template EXPORTGPUPMRI int htgrappa_calculate_grappa_unmixing(cuNDArray<complext<float> >* ref_data,
+		cuNDArray<complext<float> >* b1,
 		unsigned int acceleration_factor,
 		std::vector<unsigned int> *kernel_size,
-		cuNDArray<float2>* out_mixing_coeff,
+		cuNDArray<complext<float> >* out_mixing_coeff,
 		std::vector< std::pair<unsigned int, unsigned int> >* sampled_region,
 		std::list< unsigned int >* uncombined_channels);

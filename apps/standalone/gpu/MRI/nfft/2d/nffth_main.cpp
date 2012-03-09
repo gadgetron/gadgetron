@@ -38,7 +38,7 @@ using namespace std;
 
 // Define desired precision
 typedef float _real; 
-typedef complext<_real>::Type _complext;
+typedef complext<_real> _complext;
 typedef reald<_real,2>::Type _reald2;
 typedef NFFT_plan<_real,2> plan_type;
 
@@ -116,7 +116,7 @@ int main( int argc, char** argv)
   // Compute density compensation weights
   timer = new GPUTimer("Computing density compensation weights");
   boost::shared_ptr< cuNDArray<_real> > dcw = compute_radial_dcw_golden_ratio_2d
-    ( samples_per_profile, num_profiles, alpha, get_one<_real>()/((_real)samples_per_profile/(_real)matrix_size.vec[0]) );
+    ( samples_per_profile, num_profiles, alpha, _real(0)/((_real)samples_per_profile/(_real)matrix_size.vec[0]) );
   delete timer;
 
   // Gridder
@@ -133,7 +133,7 @@ int main( int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > host_image = image.to_host();
   write_nd_array<_complext>( host_image.get(), (char*)parms.get_parameter('r')->get_string_value());
 
-  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_norm<_real>(&image)->to_host();
+  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_cAbs<_real,_complext>(&image)->to_host();
   write_nd_array<_real>( host_norm.get(), "result.real" );
 
   delete timer;

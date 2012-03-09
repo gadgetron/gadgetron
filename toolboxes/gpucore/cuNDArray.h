@@ -11,13 +11,14 @@
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <boost/shared_ptr.hpp>
+#include "complext.h"
 
 template <class T> class EXPORTGPUCORE cuNDArray;
 template <class T> EXPORTGPUCORE int cuNDArray_permute(cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *order, int shift_mode);
 
 template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
 {
-  friend EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *order, int shift_mode);
+  friend int cuNDArray_permute<>(cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *order, int shift_mode);
     
  public:
 

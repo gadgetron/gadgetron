@@ -12,10 +12,9 @@ class EXPORTGPUPMRI cuNonCartesianKtSenseOperator : public cuNonCartesianSenseOp
   typedef typename uintd<D>::Type _uintd;
   typedef typename reald<REAL,D>::Type _reald;
 
-  cuNonCartesianKtSenseOperator( int device = -1 ) : cuNonCartesianSenseOperator<REAL,D>(device) {}
+  cuNonCartesianKtSenseOperator() : cuNonCartesianSenseOperator<REAL,D>() {}
   virtual ~cuNonCartesianKtSenseOperator() {}
   
   virtual int mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
   virtual int mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
-
 };

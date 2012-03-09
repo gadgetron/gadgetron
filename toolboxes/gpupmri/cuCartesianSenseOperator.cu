@@ -3,7 +3,7 @@
 #include "ndarray_vector_td_utilities.h"
 
 template<class REAL> __global__ void 
-sample_array_kernel( typename complext<REAL>::Type *in, typename complext<REAL>::Type *out, 
+sample_array_kernel( complext<REAL> *in, complext<REAL> *out,
 		     unsigned int *idx, 
 		     unsigned long image_elements,
 		     unsigned long int samples,
@@ -19,7 +19,7 @@ sample_array_kernel( typename complext<REAL>::Type *in, typename complext<REAL>:
 }
 
 template<class REAL> __global__ void 
-insert_samples_kernel( typename complext<REAL>::Type *in, typename complext<REAL>::Type *out, 
+insert_samples_kernel( complext<REAL> *in, complext<REAL> *out,
 				       unsigned int *idx, 
 				       unsigned long image_elements,
 				       unsigned long int samples,
@@ -38,7 +38,7 @@ template<class REAL, unsigned int D> int
 cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate )
 {
 
-  int ret = this->set_device();
+  int ret = this->_set_device();
   if( ret<0 ){
     std::cerr << "cuCartesianSenseOperator::mult_M: unable to set device" << std::endl;
     return -1;
@@ -87,7 +87,7 @@ cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray<_complext> *in, cuNDArray<_c
     return -1;
   }
 
-  ret = this->restore_device();
+  ret = this->_restore_device();
   if( ret<0 ){
     std::cerr << "cuCartesianSenseOperator::mult_M: unable to restore device" << std::endl;
     return -1;
@@ -99,7 +99,7 @@ cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray<_complext> *in, cuNDArray<_c
 template<class REAL, unsigned int D> int 
 cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate)
 {
-  int ret = this->set_device();
+  int ret = this->_set_device();
   if( ret<0 ){
     std::cerr << "cuCartesianSenseOperator::mult_MH: unable to set device" << std::endl;
     return -1;
@@ -151,7 +151,7 @@ cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray<_complext> *in, cuNDArray<_c
  
   }
 
-  ret = this->restore_device();
+  ret = this->_restore_device();
   if( ret<0 ){
     std::cerr << "cuCartesianSenseOperator::mult_MH: unable to restore device" << std::endl;
     return -1;
