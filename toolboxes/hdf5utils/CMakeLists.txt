@@ -4,14 +4,14 @@ endif (WIN32)
 
 include_directories(${ACE_INCLUDE_DIR} 
 				    ${Boost_INCLUDE_DIR}  
-					${CMAKE_SOURCE_DIR}/toolboxes/ndarray
+					${CMAKE_SOURCE_DIR}/toolboxes/cpucore
 					${CMAKE_SOURCE_DIR}/toolboxes/hostutils)
 
 add_library(hdf5utils SHARED hdf5_core.cpp)
 add_executable(hdf5_test hdf5_test.cpp)
 
-target_link_libraries(hdf5utils hondarray ${HDF5_LIBRARIES})
-target_link_libraries(hdf5_test hdf5utils hondarray ${HDF5_LIBRARIES})
+target_link_libraries(hdf5utils cpucore ${HDF5_LIBRARIES})
+target_link_libraries(hdf5_test hdf5utils cpucore ${HDF5_LIBRARIES})
 
 install(TARGETS hdf5utils DESTINATION lib)
 install(TARGETS hdf5_test DESTINATION bin)
