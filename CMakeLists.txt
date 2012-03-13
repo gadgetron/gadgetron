@@ -25,7 +25,7 @@ endif(${CMAKE_VERSION} VERSION_LESS "2.8.4")
 find_package(BLAS)
 find_package(LAPACK) 
 
-find_package(CUDA 4.0)
+find_package(CUDA 4.1)
 
 if (CUDA_FOUND)
    MESSAGE("CUDA Found, GPU components will be compiled")

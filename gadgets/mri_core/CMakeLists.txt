@@ -22,4 +22,4 @@ target_link_libraries(gadgetronmricore tinyxml cpucore linalg ${FFTW3_LIBRARIES}
 install (FILES MRINoiseAdjustGadget.h PCACoilGadget.h DESTINATION include)
 
 install(TARGETS gadgetronmricore DESTINATION lib)
-install(FILES default_optimized.xml radial_single_optimized.xml DESTINATION config)
+install(FILES default_optimized.xml radial_single_optimized.xml radial_ms_optimized.xml DESTINATION config)

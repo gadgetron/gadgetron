@@ -162,7 +162,7 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
     if (pass_on_undesired_data_) {
       this->next()->putq(m1);
     } else {
-      GADGET_DEBUG2("\nDropping slice: %d\n", m1->getObjectPtr()->idx.slice);
+      GADGET_DEBUG2("Dropping slice: %d\n", m1->getObjectPtr()->idx.slice);
       m1->release();
     }
     return GADGET_OK;
@@ -173,13 +173,13 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
   //
 
   if( m1->getObjectPtr()->samples != samples_per_profile_ ) {
-    GADGET_DEBUG2("\nAdjusting #samples per profile from %d to %d", samples_per_profile_,  m1->getObjectPtr()->samples );
+    GADGET_DEBUG2("Adjusting #samples per profile from %d to %d\n", samples_per_profile_,  m1->getObjectPtr()->samples );
     samples_per_profile_ = m1->getObjectPtr()->samples;
     allocated_samples_ = 0; // the samples buffers are freed and re-allocated in 'upload_samples()'
   }
 
   if( m1->getObjectPtr()->channels != channels_ ) {
-    GADGET_DEBUG2("\nAdjusting #channels from %d to %d", channels_,  m1->getObjectPtr()->channels );
+    GADGET_DEBUG2("Adjusting #channels from %d to %d\n", channels_,  m1->getObjectPtr()->channels );
     channels_ = m1->getObjectPtr()->channels;
     allocated_samples_ = 0; // the samples buffers are freed and re-allocated in 'upload_samples()'
     if( configure_channels() == GADGET_FAIL ) // Update buffers dependant on #channels

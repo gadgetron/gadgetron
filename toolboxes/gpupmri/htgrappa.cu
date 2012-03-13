@@ -2,7 +2,7 @@
 #include <cublas.h>
 
 #include <cublas_v2.h>
-#include <culapackdevice.h>
+#include <cula_lapack_device.h>
 #include "hoNDArray_fileio.h"
 #include "cuNDFFT.h"
 #include "GPUTimer.h"
