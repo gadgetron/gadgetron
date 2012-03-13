@@ -42,8 +42,26 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
 {
   GADGET_DEBUG1("\nGPUCGGadget::process_config\n");
 
-  slice_no_ = get_int_value(std::string("sliceno").c_str());	
+  slice_no_ = get_int_value(std::string("sliceno").c_str());
+
   device_number_ = get_int_value(std::string("deviceno").c_str());
+
+  int number_of_devices = 0;
+  if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
+      GADGET_DEBUG1( "Error: unable to query number of CUDA devices.\n" );
+      return GADGET_FAIL;
+  }
+
+  if (number_of_devices == 0) {
+      GADGET_DEBUG1( "Error: No available CUDA devices.\n" );
+      return GADGET_FAIL;
+  }
+
+  if (device_number_ >= number_of_devices) {
+      GADGET_DEBUG2("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
+	  device_number_ = (device_number_%number_of_devices);
+  }
+
   profiles_per_frame_ = get_int_value(std::string("profiles_per_frame").c_str());
   shared_profiles_ = get_int_value(std::string("shared_profiles").c_str());
   number_of_iterations_ = get_int_value(std::string("number_of_iterations").c_str());
