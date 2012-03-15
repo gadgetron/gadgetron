@@ -1,5 +1,5 @@
 #include "htgrappa.h"
-#include <cublas.h>
+//#include <cublas.h>
 
 #include <cublas_v2.h>
 #include <cula_lapack_device.h>
@@ -375,7 +375,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 
 
 	cublasHandle_t handle;
-	if (cublasCreate(&handle) != CUBLAS_STATUS_SUCCESS) {
+	if (cublasCreate_v2(&handle) != CUBLAS_STATUS_SUCCESS) {
 		std::cerr << "htgrappa_calculate_grappa_unmixing: unable to create cublas handle" << std::endl;
 		return -1;
 
@@ -573,7 +573,8 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 
 	}
 
-	cublasDestroy(handle);
+	std::cout << "**********cublasDestroy()**************" << std::endl;
+	cublasDestroy_v2(handle);
 
 	return 0;
 }
