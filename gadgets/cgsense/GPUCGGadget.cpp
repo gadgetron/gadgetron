@@ -62,6 +62,11 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
 	  device_number_ = (device_number_%number_of_devices);
   }
 
+  if (cudaSetDevice(device_number_)!= cudaSuccess) {
+      GADGET_DEBUG1( "Error: unable to set CUDA device.\n" );
+      return GADGET_FAIL;
+  }
+
   profiles_per_frame_ = get_int_value(std::string("profiles_per_frame").c_str());
   shared_profiles_ = get_int_value(std::string("shared_profiles").c_str());
   number_of_iterations_ = get_int_value(std::string("number_of_iterations").c_str());
@@ -108,13 +113,18 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
 
     // Allocate encoding operator for non-Cartesian Sense
     E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );  
+    E_->set_device(device_number_);
 
     // Allocate preconditioner
     D_ = boost::shared_ptr< cuCGPrecondWeights<float_complext> >( new cuCGPrecondWeights<float_complext>() );
+    //D_->set_device(device_number_);
 
     // Allocate regularization image operator
     R_ = boost::shared_ptr< cuImageOperator<float,float_complext> >( new cuImageOperator<float,float_complext>() );
+    R_->set_device(device_number_);
     R_->set_weight( kappa_ );
+
+    cg_.set_device(device_number_);
 
     // Setup solver
     cg_.add_matrix_operator( E_ );  // encoding matrix
@@ -152,7 +162,7 @@ int GPUCGGadget::configure_channels()
   
   // Setup matrix operator
   E_->set_csm(csm);
-  
+
   if( E_->setup( matrix_size_, matrix_size_os_, kernel_width_ ) < 0 ){
     GADGET_DEBUG1( "\nError: unable to setup encoding operator.\n" );
     return GADGET_FAIL;
@@ -162,7 +172,6 @@ int GPUCGGadget::configure_channels()
   rhs_buffer_ = boost::shared_ptr< cuSenseRHSBuffer<float,2> >( new cuSenseRHSBuffer<float,2>() );
   rhs_buffer_->set_num_coils( channels_ );
   rhs_buffer_->set_sense_operator( E_ );
-
   return GADGET_OK;
 }
 
