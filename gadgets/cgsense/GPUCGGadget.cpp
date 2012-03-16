@@ -111,6 +111,8 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
 
     GADGET_DEBUG2("\nMatrix size OS: [%d,%d] \n", matrix_size_os_.vec[0], matrix_size_os_.vec[1]);
 
+    GADGET_DEBUG2("Using device number %d for slice %d\n", device_number_, slice_no_);
+
     // Allocate encoding operator for non-Cartesian Sense
     E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );  
     E_->set_device(device_number_);
