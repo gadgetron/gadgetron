@@ -244,6 +244,20 @@ int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
 	return 0;
 }
 
+Gadget* GadgetStreamController::find_gadget(std::string gadget_name)
+{
+	GadgetModule* gm = stream_.find(gadget_name.c_str());
+
+	if (gm) {
+		Gadget* g = dynamic_cast<Gadget*>(gm->writer());
+		return g;
+	} else {
+		GADGET_DEBUG2("Gadget with name %s not found! Returning null pointer\n", gadget_name.c_str());
+	}
+
+	return 0;
+}
+
 int GadgetStreamController::configure_from_file(std::string config_xml_filename)
 {
 
@@ -407,7 +421,7 @@ int GadgetStreamController::configure(std::string config_xml_string)
 			tmps = parms[j].get<std::string>("value");
 			if (tmps.size()) pval = tmps[0];
 
-			g->set_parameter(pname.c_str(),pval.c_str());
+			g->set_parameter(pname.c_str(),pval.c_str(),false);
 		}
 
 		if (stream_.push(m) < 0) {
