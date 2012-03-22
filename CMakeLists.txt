@@ -10,7 +10,7 @@ SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
 endif (WIN32)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 find_package(Boost REQUIRED)
 find_package(ACE REQUIRED)
@@ -25,7 +25,7 @@ endif(${CMAKE_VERSION} VERSION_LESS "2.8.4")
 find_package(BLAS)
 find_package(LAPACK) 
 
-find_package(CUDA 4.0)
+find_package(CUDA 4.1)
 
 if (CUDA_FOUND)
    MESSAGE("CUDA Found, GPU components will be compiled")
