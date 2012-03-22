@@ -18,5 +18,12 @@ target_link_libraries(gadgetronwebinterface tinyxml optimized ${ACE_LIBRARIES} d
 install (FILES	WebInterfaceGadget.h
 			gadgetronwebinterface_export.h
 			DESTINATION include)
+			
+install (FILES	gca.html
+			DESTINATION html)
+			
+install (FILES	radial_ms_webinterface.xml
+			DESTINATION config)
+			
 
 install(TARGETS gadgetronwebinterface DESTINATION lib)

@@ -37,6 +37,7 @@
       <name>WebInterface</name>
       <dll>gadgetronwebinterface</dll>
       <class>WebInterfaceGadget</class>
+      <property><name>port</name>                <value>8889</value></property>
     </gadget>
 
     <gadget>
