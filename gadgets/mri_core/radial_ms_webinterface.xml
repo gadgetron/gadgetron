@@ -51,14 +51,12 @@
       <class>PCACoilGadget</class>
     </gadget>
 
-	<!--
-    <gadget>
+\    <gadget>
       <name>CoilReduction</name>
       <dll>gadgetroncore</dll>
       <class>CoilReductionGadget</class>
       <property><name>coils_out</name><value>8</value></property>
     </gadget>
-    -->
     
     <gadget>
       <name>GPUCGRadial0</name>

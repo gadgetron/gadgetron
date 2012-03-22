@@ -28,6 +28,7 @@ GPUCGGadget::GPUCGGadget()
   , dcw_computed_(false)
   , image_series_(0)
   , image_counter_(0)
+  , mutex_("GPUCGMutex")
 {
   matrix_size_ = uintd2(0,0);
   matrix_size_os_ = uintd2(0,0);
@@ -179,6 +180,7 @@ int GPUCGGadget::configure_channels()
 
 int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
+
   if (!is_configured_) {
     GADGET_DEBUG1("\nData received before configuration complete\n");
     return GADGET_FAIL;
@@ -196,6 +198,8 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
     }
     return GADGET_OK;
   }
+
+  mutex_.acquire();
 
   // Check if some upstream gadget has modified the number of channels or samples per profile 
   // since the global configuration is no longer valid then...
@@ -377,6 +381,8 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
     }
   }
 
+	mutex_.release();
+
   return GADGET_OK;
 }
 
@@ -474,12 +480,13 @@ boost::shared_ptr< cuNDArray<float_complext> >  GPUCGGadget::upload_samples()
 
 int GPUCGGadget::parameter_changed(std::string name, std::string new_value, std::string old_value)
 {
-	//!!!ADD MUTEX!!!
+	mutex_.acquire();
 	GADGET_DEBUG2("GPUCGGadget, changing parameter %s: %s -> %s\n", name.c_str(), old_value.c_str(), new_value.c_str());
 
 	if (name.compare("profiles_per_frame") == 0) {
 		profiles_per_frame_ = get_int_value(std::string("profiles_per_frame").c_str());
 	}
+	mutex_.release();
 
 	return GADGET_OK;
 }

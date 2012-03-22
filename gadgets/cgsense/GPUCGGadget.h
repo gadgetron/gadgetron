@@ -2,6 +2,9 @@
 #define GPUCGGADGET_H
 #pragma once
 
+#include <ace/Synch.h>
+#include <ace/Mutex.h>
+
 #include <complex>
 
 #include "gadgetroncgsense_export.h"
@@ -92,6 +95,8 @@ protected:
 
 	int image_series_;
 	int image_counter_;
+
+	ACE_Thread_Mutex mutex_;
 };
 
 #endif //GPUCGGADGET
