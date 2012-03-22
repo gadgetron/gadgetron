@@ -354,6 +354,7 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
     cm1->getObjectPtr()->data_idx_min       = m1->getObjectPtr()->min_idx;
     cm1->getObjectPtr()->data_idx_max       = m1->getObjectPtr()->max_idx;
     cm1->getObjectPtr()->data_idx_current   = m1->getObjectPtr()->idx;	
+    cm1->getObjectPtr()->time_stamp         = m1->getObjectPtr()->time_stamp;
 
     memcpy(cm1->getObjectPtr()->position,m1->getObjectPtr()->position, sizeof(float)*3);
     memcpy(cm1->getObjectPtr()->quarternion,m1->getObjectPtr()->quarternion, sizeof(float)*4);
