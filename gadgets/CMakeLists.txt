@@ -1,4 +1,5 @@
 add_subdirectory(core)
+add_subdirectory(webinterface)
 
 if (CUDA_FOUND)
 add_subdirectory(grappa)

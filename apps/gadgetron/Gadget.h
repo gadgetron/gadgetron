@@ -174,9 +174,15 @@ public:
 		return 0;
 	}
 
-	int set_parameter(const char* name, const char* val) {
+	int set_parameter(const char* name, const char* val, bool trigger = true) {
+		boost::shared_ptr<std::string> old_value = get_string_value(name);
 
 		parameters_[std::string(name)] = std::string(val);
+
+		if (trigger) {
+			return parameter_changed(std::string(name), std::string(val), *old_value);
+		}
+
 		return 0;
 	}
 
@@ -202,6 +208,14 @@ public:
 		}
 
 		return boost::shared_ptr<std::string>(new std::string(""));
+	}
+
+	/**
+	 *  This trigger function is called whenever set_parameter is called with the trigger = true;
+	 */
+	virtual int parameter_changed(std::string name, std::string new_value, std::string old_value)
+	{
+		return GADGET_OK;
 	}
 
 protected:

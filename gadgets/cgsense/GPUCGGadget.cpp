@@ -12,7 +12,7 @@
 GPUCGGadget::GPUCGGadget()
   : slice_no_(0)
   , profiles_per_frame_(32)
-  , shared_profiles_(16)
+  , shared_profiles_(0)
   , channels_(0)
   , samples_per_profile_(0)
   , device_number_(0)
@@ -77,9 +77,9 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
   pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data").c_str());
   image_series_ = this->get_int_value("image_series");
 
-  if( shared_profiles_ > (profiles_per_frame_>>1) ){
-    GADGET_DEBUG1("\nWARNING: GPUCGGadget::process_config: shared_profiles exceeds half the new samples. Setting to half.\n");
-    shared_profiles_ = profiles_per_frame_>>1;
+  if( shared_profiles_ > (profiles_per_frame_-1) ){
+    GADGET_DEBUG1("\nWARNING: GPUCGGadget::process_config: shared_profiles exceeds profiles_per_frame-1.\n");
+    shared_profiles_ = profiles_per_frame_-1;
   }
 
   TiXmlDocument doc;
@@ -241,7 +241,7 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
 	return GADGET_FAIL;
       }
       E_->set_dcw(dcw);
-      dcw_computed_ = true;
+      dcw_computed_ = false;
     }
 
     boost::shared_ptr< cuNDArray<float_complext> > device_samples = upload_samples();
@@ -471,4 +471,16 @@ boost::shared_ptr< cuNDArray<float_complext> >  GPUCGGadget::upload_samples()
   }
   
   return device_samples;
+}
+
+int GPUCGGadget::parameter_changed(std::string name, std::string new_value, std::string old_value)
+{
+	//!!!ADD MUTEX!!!
+	GADGET_DEBUG2("GPUCGGadget, changing parameter %s: %s -> %s\n", name.c_str(), old_value.c_str(), new_value.c_str());
+
+	if (name.compare("profiles_per_frame") == 0) {
+		profiles_per_frame_ = get_int_value(std::string("profiles_per_frame").c_str());
+	}
+
+	return GADGET_OK;
 }

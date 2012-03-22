@@ -51,6 +51,8 @@ public:
 
   virtual int output_ready(ACE_Message_Block* mb);
 
+  virtual Gadget* find_gadget(std::string gadget_name);
+
 private:
   //ACE_SOCK_Stream sock_;
   ACE_Stream<ACE_MT_SYNCH> stream_;

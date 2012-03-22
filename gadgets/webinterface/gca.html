@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript">
+function getParameterValue(gadget,parameter,targetElement)
+{
+var xmlhttp;
+if (window.XMLHttpRequest)
+  {// code for IE7+, Firefox, Chrome, Opera, Safari
+  xmlhttp=new XMLHttpRequest();
+  }
+else
+  {// code for IE6, IE5
+  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  }
+xmlhttp.onreadystatechange=function()
+  {
+  if (xmlhttp.readyState==4 && xmlhttp.status==200)
+    {
+       xmlDoc=xmlhttp.responseXML;
+       x=xmlDoc.getElementsByTagName("response");
+       if (x.length == 0) {
+          alert("No response received");
+       }
+       values = x[0].getElementsByTagName("value");
+       if (values.length == 0) {
+          alert("No values found");
+       } else {
+         value_txt = values[0].firstChild.nodeValue;
+         document.getElementById(targetElement).innerHTML=value_txt;
+       }
+    }
+  }
+
+xmlhttp.open("GET","/query/?type=get&gadget=" + gadget + "&parameter=" + parameter,true);
+xmlhttp.send();
+}
+
+function setParameterValue(gadget,parameter,value)
+{
+var xmlhttp;
+if (window.XMLHttpRequest)
+  {// code for IE7+, Firefox, Chrome, Opera, Safari
+  xmlhttp=new XMLHttpRequest();
+  }
+else
+  {// code for IE6, IE5
+  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  }
+
+xmlhttp.open("GET","/query/?type=set&gadget=" + gadget + "&parameter=" + parameter + "&value=" + value,true);
+xmlhttp.send();
+}
+</script>
+<title>Gadgetron</title>
+</head>
+<body>
+<h1>Gadgetron Golden Angle Web Interface</h1>
+
+<h2>Slice 0</h2>
+<form method="get" action="/query/">
+<div>Profiles per frame</div>
+<input id="prof_per_frame_slide0" type="range" value="32" min="8" max="96" onchange="setParameterValue('GPUCGRadial0','profiles_per_frame',this.value);getParameterValue('GPUCGRadial0','profiles_per_frame','prof_per_frame0');"><span id="prof_per_frame0">32</span>
+</form>
+
+<h2>Slice 1</h2>
+<form method="get" action="/query/">
+<div>Profiles per frame</div>
+<input id="prof_per_frame_slide1" type="range" value="32" min="8" max="96" onchange="setParameterValue('GPUCGRadial1','profiles_per_frame',this.value);getParameterValue('GPUCGRadial1','profiles_per_frame','prof_per_frame1');"><span id="prof_per_frame1">32</span>
+</form>
+
+<h2>Slice 2</h2>
+<form method="get" action="/query/">
+<div>Profiles per frame</div>
+<input id="prof_per_frame_slide2" type="range" value="32" min="8" max="96" onchange="setParameterValue('GPUCGRadial2','profiles_per_frame',this.value);getParameterValue('GPUCGRadial2','profiles_per_frame','prof_per_frame2');"><span id="prof_per_frame2">32</span>
+</form>
+
+</body>
+</html>
