@@ -4,7 +4,7 @@
 #pragma once
 
 #include <cuda_runtime_api.h>
-#include "../gadgettools/GadgetronTimer.h"
+#include "GadgetronTimer.h"
 
 class GPUTimer : public GadgetronTimer
 {

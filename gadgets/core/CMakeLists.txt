@@ -9,7 +9,7 @@ include_directories(   ${ACE_INCLUDE_DIR}
 				       ${FFTW3_INCLUDE_DIR}
 					   ${CMAKE_SOURCE_DIR}/dependencies/tinyxml
 				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
-				       ${CMAKE_SOURCE_DIR}/toolboxes/ndarray
+				       ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools)
 
 add_library(gadgetroncore SHARED AcquisitionPassthroughGadget.cpp
@@ -28,7 +28,7 @@ add_library(gadgetroncore SHARED AcquisitionPassthroughGadget.cpp
 								 CoilReductionGadget.cpp
 								 AutoScaleGadget.cpp)
 
-target_link_libraries(gadgetroncore tinyxml hondarray ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
+target_link_libraries(gadgetroncore tinyxml cpucore ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
 install (FILES	AccumulatorGadget.h
 			AcquisitionFinishGadget.h

@@ -3,7 +3,7 @@ if (WIN32)
 endif (WIN32)
 
 
-include_directories(${CMAKE_SOURCE_DIR}/toolboxes/ndarray)
+include_directories(${CMAKE_SOURCE_DIR}/toolboxes/cpucore)
 include_directories(${CMAKE_SOURCE_DIR}/toolboxes/linalg)
 include_directories(${Boost_INCLUDE_DIR})
 

@@ -16,7 +16,7 @@ include_directories(	${CMAKE_CURRENT_BINARY_DIR}
 						${CMAKE_SOURCE_DIR}/toolboxes/hostutils
 						${CMAKE_SOURCE_DIR}/toolboxes/solvers
 						${CMAKE_SOURCE_DIR}/toolboxes/gpupmri
-						${CMAKE_SOURCE_DIR}/toolboxes/ndarray)
+						${CMAKE_SOURCE_DIR}/toolboxes/cpucore)
 
 set(UI_UIFILES reconBaseWidget.ui radialSenseAppBaseMainWidget.ui)
 qt4_wrap_ui( UI_HEADERS ${UI_UIFILES} )

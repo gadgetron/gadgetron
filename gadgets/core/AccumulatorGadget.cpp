@@ -14,6 +14,13 @@ AccumulatorGadget::~AccumulatorGadget()
   if (buffer_) delete buffer_;
 }
 
+/**
+ *   Expects XML configuration
+ *
+ *   List of parameters:
+ *      - gadgetron.encoding.kspace.matrix_size.value [matrix sizes]
+ *      - gadgetron.encoding.kspace.readout_length.value
+ */
 int AccumulatorGadget::process_config(ACE_Message_Block* mb)
 {
 

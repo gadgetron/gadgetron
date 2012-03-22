@@ -7,7 +7,7 @@ include_directories( ${CUDA_INCLUDE_DIRS}
                      ${CMAKE_SOURCE_DIR}/toolboxes/gpucore 
                      ${CMAKE_SOURCE_DIR}/toolboxes/hostutils
                      ${CMAKE_SOURCE_DIR}/toolboxes/solvers
-                     ${CMAKE_SOURCE_DIR}/toolboxes/ndarray)
+                     ${CMAKE_SOURCE_DIR}/toolboxes/cpucore)
 
 add_executable(denoise_TV denoise_TV.cpp)
 

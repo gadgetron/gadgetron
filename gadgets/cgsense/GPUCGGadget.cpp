@@ -42,8 +42,26 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
 {
   GADGET_DEBUG1("\nGPUCGGadget::process_config\n");
 
-  slice_no_ = get_int_value(std::string("sliceno").c_str());	
+  slice_no_ = get_int_value(std::string("sliceno").c_str());
+
   device_number_ = get_int_value(std::string("deviceno").c_str());
+
+  int number_of_devices = 0;
+  if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
+      GADGET_DEBUG1( "Error: unable to query number of CUDA devices.\n" );
+      return GADGET_FAIL;
+  }
+
+  if (number_of_devices == 0) {
+      GADGET_DEBUG1( "Error: No available CUDA devices.\n" );
+      return GADGET_FAIL;
+  }
+
+  if (device_number_ >= number_of_devices) {
+      GADGET_DEBUG2("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
+	  device_number_ = (device_number_%number_of_devices);
+  }
+
   profiles_per_frame_ = get_int_value(std::string("profiles_per_frame").c_str());
   shared_profiles_ = get_int_value(std::string("shared_profiles").c_str());
   number_of_iterations_ = get_int_value(std::string("number_of_iterations").c_str());
@@ -162,7 +180,7 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
     if (pass_on_undesired_data_) {
       this->next()->putq(m1);
     } else {
-      GADGET_DEBUG2("\nDropping slice: %d\n", m1->getObjectPtr()->idx.slice);
+      GADGET_DEBUG2("Dropping slice: %d\n", m1->getObjectPtr()->idx.slice);
       m1->release();
     }
     return GADGET_OK;
@@ -173,13 +191,13 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
   //
 
   if( m1->getObjectPtr()->samples != samples_per_profile_ ) {
-    GADGET_DEBUG2("\nAdjusting #samples per profile from %d to %d", samples_per_profile_,  m1->getObjectPtr()->samples );
+    GADGET_DEBUG2("Adjusting #samples per profile from %d to %d\n", samples_per_profile_,  m1->getObjectPtr()->samples );
     samples_per_profile_ = m1->getObjectPtr()->samples;
     allocated_samples_ = 0; // the samples buffers are freed and re-allocated in 'upload_samples()'
   }
 
   if( m1->getObjectPtr()->channels != channels_ ) {
-    GADGET_DEBUG2("\nAdjusting #channels from %d to %d", channels_,  m1->getObjectPtr()->channels );
+    GADGET_DEBUG2("Adjusting #channels from %d to %d\n", channels_,  m1->getObjectPtr()->channels );
     channels_ = m1->getObjectPtr()->channels;
     allocated_samples_ = 0; // the samples buffers are freed and re-allocated in 'upload_samples()'
     if( configure_channels() == GADGET_FAIL ) // Update buffers dependant on #channels
