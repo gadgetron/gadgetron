@@ -12,7 +12,7 @@
 GPUCGGadget::GPUCGGadget()
   : slice_no_(0)
   , profiles_per_frame_(32)
-  , shared_profiles_(16)
+  , shared_profiles_(0)
   , channels_(0)
   , samples_per_profile_(0)
   , device_number_(0)
@@ -28,6 +28,7 @@ GPUCGGadget::GPUCGGadget()
   , dcw_computed_(false)
   , image_series_(0)
   , image_counter_(0)
+  , mutex_("GPUCGMutex")
 {
   matrix_size_ = uintd2(0,0);
   matrix_size_os_ = uintd2(0,0);
@@ -62,6 +63,11 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
 	  device_number_ = (device_number_%number_of_devices);
   }
 
+  if (cudaSetDevice(device_number_)!= cudaSuccess) {
+      GADGET_DEBUG1( "Error: unable to set CUDA device.\n" );
+      return GADGET_FAIL;
+  }
+
   profiles_per_frame_ = get_int_value(std::string("profiles_per_frame").c_str());
   shared_profiles_ = get_int_value(std::string("shared_profiles").c_str());
   number_of_iterations_ = get_int_value(std::string("number_of_iterations").c_str());
@@ -72,9 +78,9 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
   pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data").c_str());
   image_series_ = this->get_int_value("image_series");
 
-  if( shared_profiles_ > (profiles_per_frame_>>1) ){
-    GADGET_DEBUG1("\nWARNING: GPUCGGadget::process_config: shared_profiles exceeds half the new samples. Setting to half.\n");
-    shared_profiles_ = profiles_per_frame_>>1;
+  if( shared_profiles_ > (profiles_per_frame_-1) ){
+    GADGET_DEBUG1("\nWARNING: GPUCGGadget::process_config: shared_profiles exceeds profiles_per_frame-1.\n");
+    shared_profiles_ = profiles_per_frame_-1;
   }
 
   TiXmlDocument doc;
@@ -106,15 +112,22 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
 
     GADGET_DEBUG2("\nMatrix size OS: [%d,%d] \n", matrix_size_os_.vec[0], matrix_size_os_.vec[1]);
 
+    GADGET_DEBUG2("Using device number %d for slice %d\n", device_number_, slice_no_);
+
     // Allocate encoding operator for non-Cartesian Sense
     E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );  
+    E_->set_device(device_number_);
 
     // Allocate preconditioner
     D_ = boost::shared_ptr< cuCGPrecondWeights<float_complext> >( new cuCGPrecondWeights<float_complext>() );
+    //D_->set_device(device_number_);
 
     // Allocate regularization image operator
     R_ = boost::shared_ptr< cuImageOperator<float,float_complext> >( new cuImageOperator<float,float_complext>() );
+    R_->set_device(device_number_);
     R_->set_weight( kappa_ );
+
+    cg_.set_device(device_number_);
 
     // Setup solver
     cg_.add_matrix_operator( E_ );  // encoding matrix
@@ -152,7 +165,7 @@ int GPUCGGadget::configure_channels()
   
   // Setup matrix operator
   E_->set_csm(csm);
-  
+
   if( E_->setup( matrix_size_, matrix_size_os_, kernel_width_ ) < 0 ){
     GADGET_DEBUG1( "\nError: unable to setup encoding operator.\n" );
     return GADGET_FAIL;
@@ -162,12 +175,12 @@ int GPUCGGadget::configure_channels()
   rhs_buffer_ = boost::shared_ptr< cuSenseRHSBuffer<float,2> >( new cuSenseRHSBuffer<float,2>() );
   rhs_buffer_->set_num_coils( channels_ );
   rhs_buffer_->set_sense_operator( E_ );
-
   return GADGET_OK;
 }
 
 int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
+
   if (!is_configured_) {
     GADGET_DEBUG1("\nData received before configuration complete\n");
     return GADGET_FAIL;
@@ -185,6 +198,8 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
     }
     return GADGET_OK;
   }
+
+  mutex_.acquire();
 
   // Check if some upstream gadget has modified the number of channels or samples per profile 
   // since the global configuration is no longer valid then...
@@ -230,7 +245,7 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
 	return GADGET_FAIL;
       }
       E_->set_dcw(dcw);
-      dcw_computed_ = true;
+      dcw_computed_ = false;
     }
 
     boost::shared_ptr< cuNDArray<float_complext> > device_samples = upload_samples();
@@ -343,6 +358,7 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
     cm1->getObjectPtr()->data_idx_min       = m1->getObjectPtr()->min_idx;
     cm1->getObjectPtr()->data_idx_max       = m1->getObjectPtr()->max_idx;
     cm1->getObjectPtr()->data_idx_current   = m1->getObjectPtr()->idx;	
+    cm1->getObjectPtr()->time_stamp         = m1->getObjectPtr()->time_stamp;
 
     memcpy(cm1->getObjectPtr()->position,m1->getObjectPtr()->position, sizeof(float)*3);
     memcpy(cm1->getObjectPtr()->quarternion,m1->getObjectPtr()->quarternion, sizeof(float)*4);
@@ -365,6 +381,8 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
       current_profile_offset_++; 
     }
   }
+
+	mutex_.release();
 
   return GADGET_OK;
 }
@@ -459,4 +477,17 @@ boost::shared_ptr< cuNDArray<float_complext> >  GPUCGGadget::upload_samples()
   }
   
   return device_samples;
+}
+
+int GPUCGGadget::parameter_changed(std::string name, std::string new_value, std::string old_value)
+{
+	mutex_.acquire();
+	GADGET_DEBUG2("GPUCGGadget, changing parameter %s: %s -> %s\n", name.c_str(), old_value.c_str(), new_value.c_str());
+
+	if (name.compare("profiles_per_frame") == 0) {
+		profiles_per_frame_ = get_int_value(std::string("profiles_per_frame").c_str());
+	}
+	mutex_.release();
+
+	return GADGET_OK;
 }

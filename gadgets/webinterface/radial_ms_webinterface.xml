@@ -1,0 +1,164 @@
+<?xml version="1.0" ?>  
+<gadgetron>
+  <readers>
+    <reader>
+      <slot>1001</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIAcquisitionReader</class>
+    </reader>
+  </readers>
+  
+  <writers>
+    <writer>
+      <slot>1004</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIImageWriterCPLX</class>
+    </writer>
+    <writer>
+      <slot>1005</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIImageWriterFLOAT</class>
+    </writer>
+    <writer>
+      <slot>1006</slot>
+      <dll>gadgetroncore</dll>
+      <class>MRIImageWriterUSHORT</class>
+    </writer>
+  </writers>
+  
+  <stream>
+    <gadget>
+      <name>NoiseAdjust</name>
+      <dll>gadgetronmricore</dll>
+      <class>MRINoiseAdjustGadget</class>
+    </gadget>
+
+    <gadget>
+      <name>WebInterface</name>
+      <dll>gadgetronwebinterface</dll>
+      <class>WebInterfaceGadget</class>
+      <property><name>port</name>                <value>8889</value></property>
+    </gadget>
+
+    <gadget>
+      <name>RemoveROOversampling</name>
+      <dll>gadgetroncore</dll>
+      <class>RemoveROOversamplingGadget</class>
+    </gadget>
+
+	<gadget>
+      <name>PCA</name>
+      <dll>gadgetronmricore</dll>
+      <class>PCACoilGadget</class>
+    </gadget>
+
+\    <gadget>
+      <name>CoilReduction</name>
+      <dll>gadgetroncore</dll>
+      <class>CoilReductionGadget</class>
+      <property><name>coils_out</name><value>8</value></property>
+    </gadget>
+    
+    <gadget>
+      <name>GPUCGRadial0</name>
+      <dll>gadgetroncgsense</dll>
+      <class>GPUCGGoldenRadialGadget</class>
+      <property><name>deviceno</name>                <value>0</value></property>
+      <property><name>sliceno</name>                 <value>0</value></property>
+      <property><name>profiles_per_frame</name>      <value>32</value></property>
+      <property><name>shared_profiles</name>         <value>0</value></property>
+      <property><name>number_of_iterations</name>    <value>5</value></property>
+      <property><name>cg_limit</name>                <value>1e-6</value></property>
+      <property><name>oversampling</name>            <value>1.25</value></property>
+      <property><name>kernel_width</name>            <value>5.5</value></property>
+      <property><name>kappa</name>                   <value>0.1</value></property>
+      <property><name>pass_on_undesired_data</name>  <value>true</value></property>
+    </gadget>
+
+    <gadget>
+      <name>GPUCGRadial1</name>
+      <dll>gadgetroncgsense</dll>
+      <class>GPUCGGoldenRadialGadget</class>
+      <property><name>deviceno</name>                <value>1</value></property>
+      <property><name>sliceno</name>                 <value>1</value></property>
+      <property><name>profiles_per_frame</name>      <value>32</value></property>
+      <property><name>shared_profiles</name>         <value>0</value></property>
+      <property><name>number_of_iterations</name>    <value>5</value></property>
+      <property><name>cg_limit</name>                <value>1e-6</value></property>
+      <property><name>oversampling</name>            <value>1.25</value></property>
+      <property><name>kernel_width</name>            <value>5.5</value></property>
+      <property><name>kappa</name>                   <value>0.1</value></property>
+      <property><name>pass_on_undesired_data</name>  <value>true</value></property>
+    </gadget>
+
+     <gadget>
+      <name>GPUCGRadial2</name>
+      <dll>gadgetroncgsense</dll>
+      <class>GPUCGGoldenRadialGadget</class>
+      <property><name>deviceno</name>                <value>2</value></property>
+      <property><name>sliceno</name>                 <value>2</value></property>
+      <property><name>profiles_per_frame</name>      <value>32</value></property>
+      <property><name>shared_profiles</name>         <value>0</value></property>
+      <property><name>number_of_iterations</name>    <value>5</value></property>
+      <property><name>cg_limit</name>                <value>1e-6</value></property>
+      <property><name>oversampling</name>            <value>1.25</value></property>
+      <property><name>kernel_width</name>            <value>5.5</value></property>
+      <property><name>kappa</name>                   <value>0.1</value></property>
+      <property><name>pass_on_undesired_data</name>  <value>true</value></property>
+    </gadget>
+ 
+     <gadget>
+      <name>Extract</name>
+      <dll>gadgetroncore</dll>
+      <class>ExtractGadget</class>
+      <!--
+      <property><name>extract_mask</name><value>9</value></property>
+      -->
+    </gadget>
+
+	<!--
+    <gadget>
+      <name>ImageWrite</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageWriterGadgetFLOAT</class>
+    </gadget>
+    -->
+    
+    <gadget>
+      <name>AutoScale</name>
+      <dll>gadgetroncore</dll>
+      <class>AutoScaleGadget</class>
+    </gadget>
+
+  
+    <gadget>
+      <name>FloatToShort</name>
+      <dll>gadgetroncore</dll>
+      <class>FloatToUShortGadget</class>
+    </gadget>
+ 
+ 	<!--
+    <gadget>
+      <name>ImageFinishCPLX</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageFinishGadgetCPLX</class>
+    </gadget>
+    -->
+
+    <!--
+    <gadget>
+      <name>ImageFinishFLOAT</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageFinishGadgetFLOAT</class>
+    </gadget>
+    -->
+    
+    <gadget>
+      <name>ImageFinishUSHORT</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageFinishGadgetUSHORT</class>
+    </gadget>
+  </stream>
+
+</gadgetron>
+
