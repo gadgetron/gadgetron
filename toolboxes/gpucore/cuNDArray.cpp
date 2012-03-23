@@ -361,6 +361,14 @@ int cuNDArray<T>::allocate_memory()
   
   if (cudaMalloc((void**) &this->data_,size) != cudaSuccess) {
     std::cerr << "cuNDArray::allocate_memory() : Error allocating CUDA memory" << std::endl;
+    size_t free = 0, total = 0;
+    cudaMemGetInfo(&free, &total);
+    std::cerr << "CUDA Memory: " << free << " (" << total << ")" << std::endl;
+    std::cerr << "   memory requested: " << size << "( " << std::endl;
+    for (unsigned int i = 0; i < this->dimensions_->size(); i++) {
+      std::cerr << (*this->dimensions_)[i] << " ";
+    } 
+    std::cerr << " )" << std::endl;
     this->data_ = 0;
     return -1;
   }
