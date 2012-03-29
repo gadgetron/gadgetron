@@ -1,6 +1,7 @@
 #include "cuPartialDerivativeOperator.h"
 #include "vector_td_utilities.h"
 #include "check_CUDA.h"
+#include "ndarray_vector_td_utilities.h"
 
 template<class T, unsigned int D> __global__ void
 first_order_partial_derivative_kernel( typename intd<D>::Type stride, typename intd<D>::Type dims, T *in, T *out )
@@ -18,7 +19,7 @@ first_order_partial_derivative_kernel( typename intd<D>::Type stride, typename i
     
     T val = valN-valC;
     
-    out[idx] = val;
+    out[idx] += val;
   }
 }
 
@@ -40,7 +41,7 @@ second_order_partial_derivative_kernel( typename intd<D>::Type forwards_stride, 
     
     T val = valC+valC-valN1-valN2;
     
-    out[idx] = val;
+    out[idx] += val;
   }
 }
 
@@ -51,6 +52,7 @@ cuPartialDerivativeOperator<REAL,T,D>::compute_partial_derivative( typename intd
     std::cerr << std::endl << "partialDerivativeOperator::compute_partial_derivative : array dimensions mismatch." << std::endl;
     return -1;
   }
+  if (!accumulate) cuNDA_clear(out);
   
   typename uintd<D>::Type _dims = vector_to_uintd<D>( *(in->get_dimensions().get()) );
   typename intd<D>::Type dims;
@@ -90,7 +92,7 @@ cuPartialDerivativeOperator<REAL,T,D>::compute_second_order_partial_derivative( 
     std::cerr << std::endl << "partialDerivativeOperator::compute_second_order_partial_derivative : array dimensions mismatch." << std::endl;
     return -1;
   }
-  
+  if (!accumulate) cuNDA_clear(out);
   typename uintd<D>::Type _dims = vector_to_uintd<D>( *(in->get_dimensions().get()) );
   typename intd<D>::Type dims;
   for( unsigned int i=0; i<D; i++ ){
