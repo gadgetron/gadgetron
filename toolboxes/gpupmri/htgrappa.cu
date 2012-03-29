@@ -7,6 +7,8 @@
 #include "cuNDFFT.h"
 #include "GPUTimer.h"
 
+#include "CUBLASContextProvider.h"
+
 #include <iostream>
 
 int2 vec_to_int2(std::vector<unsigned int> vec)
@@ -374,12 +376,14 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 	}
 
 
-	cublasHandle_t handle;
+	cublasHandle_t handle = *CUBLASContextProvider::instance()->getCublasHandle();
+	/*
 	if (cublasCreate_v2(&handle) != CUBLAS_STATUS_SUCCESS) {
 		std::cerr << "htgrappa_calculate_grappa_unmixing: unable to create cublas handle" << std::endl;
 		return -1;
 
 	}
+	*/
 
 	std::vector<unsigned int> gkernel_dims;
 	gkernel_dims.push_back((*kernel_size)[0]);
@@ -456,28 +460,36 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 
 
 		culaStatus s;
+		/*
 		s = culaInitialize();
 		if(s != culaNoError) {
 			std::cerr << "htgrappa: failed to initialize CULA" << std::endl;
 			return -1;
 		}
+		*/
 
 		s = culaDeviceCgels( 'N', n, n, target_coils,
 				(culaDeviceFloatComplex*)AHA.get_data_ptr(), n,
 				(culaDeviceFloatComplex*)AHrhs.get_data_ptr(), n);
+
 
 		if (s != culaNoError) {
 			std::cout << "htgrappa_calculate_grappa_unmixing: linear solve failed" << std::endl;
 			return -1;
 		}
 
-		culaShutdown();
+#if 0
+	    size_t free = 0, total = 0;
+	    cudaMemGetInfo(&free, &total);
+	    std::cout << "CUDA Memory: " << free << " (" << total << ")" << std::endl;
+#endif
+		//culaShutdown();
 
 		/*
-    if (cposv_wrapper(&AHA, &AHrhs) < 0) {
-      std::cerr << "htgrappa_calculate_grappa_unmixing: Error calling cgels" << std::endl;
-      return -1;
-    }
+			if (cposv_wrapper(&AHA, &AHrhs) < 0) {
+			  std::cerr << "htgrappa_calculate_grappa_unmixing: Error calling cgels" << std::endl;
+			  return -1;
+			}
 		 */
 
 		//write_cuNDArray_to_disk(&AHrhs,"AHrhs_solution.cplx");
@@ -573,8 +585,8 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 
 	}
 
-	std::cout << "**********cublasDestroy()**************" << std::endl;
-	cublasDestroy_v2(handle);
+	//std::cout << "**********cublasDestroy()**************" << std::endl;
+	//cublasDestroy_v2(handle);
 
 	return 0;
 }
