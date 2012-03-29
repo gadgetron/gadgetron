@@ -2688,6 +2688,107 @@ cuNDA_dot( cuNDArray<T>* arr1, cuNDArray<T>* arr2, cuNDA_device compute_device )
   return ret;
 }
 
+
+template<class REAL, class T> REAL _nrm2( cuNDArray<T>* arr, int device );
+
+template<> float
+_nrm2<float,float_complext>( cuNDArray<float_complext>* arr, int device )
+{
+  float ret;
+
+  if (cublasScnrm2( handle[device], arr->get_number_of_elements(),
+		   (const cuComplex*) arr->get_data_ptr(), 1,
+		   &ret) != CUBLAS_STATUS_SUCCESS )
+    {
+      cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+      return 0;
+    }
+
+  cudaThreadSynchronize();
+  return ret;
+}
+
+template<> float
+_nrm2<float,float>( cuNDArray<float>* arr, int device )
+{
+  float ret;
+  if( cublasSnrm2(handle[device], arr->get_number_of_elements(),
+		 arr->get_data_ptr(), 1,
+		 &ret) != CUBLAS_STATUS_SUCCESS )
+    {
+      cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+      return 0;
+    }
+
+  cudaThreadSynchronize();
+  return ret;
+}
+
+template<> double
+_nrm2<double,double_complext>( cuNDArray<double_complext>* arr, int device )
+{
+  double ret;
+
+  if( cublasDznrm2(handle[device], arr->get_number_of_elements(),
+		  (const cuDoubleComplex*) arr->get_data_ptr(), 1,
+		  &ret) != CUBLAS_STATUS_SUCCESS )
+    {
+      cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+      return 0;
+    }
+
+  cudaThreadSynchronize();
+  return ret;
+}
+
+template<> double
+_nrm2<double,double>( cuNDArray<double>* arr, int device )
+{
+  double ret;
+  if( cublasDnrm2(handle[device], arr->get_number_of_elements(),
+		 arr->get_data_ptr(), 1,
+		 &ret) != CUBLAS_STATUS_SUCCESS )
+    {
+      cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+      return 0;
+    }
+
+  cudaThreadSynchronize();
+  return ret;
+}
+
+
+template<class REAL, class T>
+REAL cuNDA_nrm2( cuNDArray<T>* arr,
+		 cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_nrm2: initialization failed" << std::endl;
+    return REAL(0);
+  }
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<T> *arr_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, arr, &arr_int ) ){
+    cerr << endl << "cuNDA_nrm2: unable to prepare device(s)" << endl;
+    return REAL(0);
+  }
+
+  REAL ret = _nrm2<REAL,T>( arr_int, cur_device );
+
+  // Restore
+  if( !restore<1,T,dummy,dummy,dummy>( old_device, arr, arr_int, 0, compute_device ) ){
+    cerr << endl << "cuNDA_nrm2: unable to restore device" << endl;
+    return REAL(0);
+  }
+
+  return ret;
+}
+
+
 template<class REAL, class T> REAL _sum( cuNDArray<T>* arr, int device );
 
 template<> float
@@ -2774,7 +2875,7 @@ cuNDA_asum( cuNDArray<T>* arr, cuNDA_device compute_device )
     return REAL(0);
   }
 
-  REAL ret = _sum<REAL,T>( arr_int, cur_device );  
+  REAL ret = _sum<REAL,T>( arr_int, cur_device );
 
   // Restore
   if( !restore<1,T,dummy,dummy,dummy>( old_device, arr, arr_int, 0, compute_device ) ){
@@ -3699,7 +3800,7 @@ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<floatd<3>::Type> >
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<floatd<4>::Type> >
  cuNDA_sum<floatd<4>::Type>( cuNDArray<floatd<4>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
 
-template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > 
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
 cuNDA_expand<float>( cuNDArray<float>*, unsigned int, cuNDA_device, cuNDA_device);
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> >
 cuNDA_expand<float_complext>( cuNDArray<float_complext>*, unsigned int, cuNDA_device, cuNDA_device);
@@ -3956,6 +4057,9 @@ template EXPORTGPUCORE float_complext cuNDA_dot<float_complext>( cuNDArray<float
 template EXPORTGPUCORE float cuNDA_asum<float,float>( cuNDArray<float>*, cuNDA_device );
 template EXPORTGPUCORE float cuNDA_asum<float,float_complext>( cuNDArray<float_complext>*, cuNDA_device );
 
+template EXPORTGPUCORE float cuNDA_nrm2<float,float>( cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE float cuNDA_nrm2<float,float_complext>( cuNDArray<float_complext>*, cuNDA_device );
+
 template EXPORTGPUCORE bool cuNDA_axpy<float>( float, cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_axpy<float_complext>( float_complext, cuNDArray<float_complext>*, cuNDArray<float_complext>*, cuNDA_device );
 
@@ -4006,7 +4110,9 @@ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<doubled<3>::Type> >
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<doubled<4>::Type> >
  cuNDA_sum<doubled<4>::Type>( cuNDArray<doubled<4>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
 
-template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > 
+
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
 cuNDA_expand<double>( cuNDArray<double>*, unsigned int, cuNDA_device, cuNDA_device);
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> >
 cuNDA_expand<double_complext>( cuNDArray<double_complext>*, unsigned int, cuNDA_device, cuNDA_device);
@@ -4262,6 +4368,9 @@ template EXPORTGPUCORE double_complext cuNDA_dot<double_complext>( cuNDArray<dou
 
 template EXPORTGPUCORE double cuNDA_asum<double,double>( cuNDArray<double>*, cuNDA_device );
 template EXPORTGPUCORE double cuNDA_asum<double,double_complext>( cuNDArray<double_complext>*, cuNDA_device );
+
+template EXPORTGPUCORE double cuNDA_nrm2<double,double>( cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE double cuNDA_nrm2<double,double_complext>( cuNDArray<double_complext>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_axpy<double>( double, cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_axpy<double_complext>( double_complext, cuNDArray<double_complext>*, cuNDArray<double_complext>*, cuNDA_device );

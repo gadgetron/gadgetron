@@ -199,6 +199,10 @@ template<class REAL, class T> EXPORTGPUCORE
 REAL cuNDA_asum( cuNDArray<T>* arr,
 		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
+template<class REAL, class T> EXPORTGPUCORE
+REAL cuNDA_nrm2( cuNDArray<T>* arr,
+		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+
 template<class T> EXPORTGPUCORE
 bool cuNDA_axpy( T a, cuNDArray<T>* x, cuNDArray<T>* y,
 		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
