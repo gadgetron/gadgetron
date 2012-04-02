@@ -53,12 +53,15 @@ public:
     return solve(_rhs,0);
   }
 
-  virtual boost::shared_ptr<ARRAY_TYPE> solve( ARRAY_TYPE *_rhs, ARRAY_TYPE * x0 )
-  {
+  virtual std::vector<REAL> get_convergence_list() {
+      return ccList;
+  }
+
+  virtual bool prepare_for_iterating( ARRAY_TYPE *_rhs, ARRAY_TYPE * x0 ) {
     // Input validity test
     if( !_rhs || _rhs->get_number_of_elements() == 0 ){
       this->solver_error( "cgSolver::solve : empty or NULL rhs provided" );
-      return boost::shared_ptr<ARRAY_TYPE>();
+      return false;
     }
 
     // Make copy of the input pointer for the pre_solve callback
@@ -67,15 +70,15 @@ public:
     // Custom initialization
     if( !pre_solve(&rhs) ){
       this->solver_error( "cgSolver::solve : error in pre_solve" );
-      return boost::shared_ptr<ARRAY_TYPE>(rhs);
+      return false;
     }
 
     // Result, rho
-    ARRAY_TYPE *x = new ARRAY_TYPE();
+    x = new ARRAY_TYPE();
 
     if( !x->create(rhs->get_dimensions().get() )) {
       this->solver_error( "cgSolver::solve : Unable to allocate temp storage (x)" );
-      return boost::shared_ptr<ARRAY_TYPE>(x);
+      return false;
     }
 
     if (x0){
@@ -86,179 +89,184 @@ public:
     }
 
     // Calculate residual r
-    ARRAY_TYPE r;
     r =  *rhs;
 
-    ARRAY_TYPE q;
     if( !q.create(rhs->get_dimensions().get() )) {
       this->solver_error( "cgSolver::solve : Unable to allocate temp storage (q)" );
-      return boost::shared_ptr<ARRAY_TYPE>(x);
+      return false;
     }
 
     q = r;
 
     if( precond_.get() ) {
+        // Apply preconditioning, twice. Should change preconditioners to do this
+        if( precond_->apply(&q,&q) < 0 ) {
+            this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
+            return false;
+        }
 
-      // Apply preconditioning, twice. Should change preconditioners to do this
-
-      if( precond_->apply(&q,&q) < 0 ) {
-	this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
-	return boost::shared_ptr<ARRAY_TYPE>(x);
-      }
-
-      if( precond_->apply(&q,&q) < 0 ) {
-	this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
-	return boost::shared_ptr<ARRAY_TYPE>(x);
-      }
+        if( precond_->apply(&q,&q) < 0 ) {
+            this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
+            return false;
+        }
     }
 
-    REAL rq_0 = real(solver_dot(&r, &q));
-    REAL rq = rq_0;
+    rq_0 = real(solver_dot(&r, &q));
+    rq = rq_0;
 
-    if (x0){
-      if (!x0->dimensions_equal(rhs)){
-	this->solver_error( "cgSolver::solve : RHS and initial guess must have same dimensions" );
-	return boost::shared_ptr<ARRAY_TYPE>(x);
-      }
+    if (x0) {
+        if (!x0->dimensions_equal(rhs)){
+            this->solver_error( "cgSolver::solve : RHS and initial guess must have same dimensions" );
+            return false;
+        }
 
-      ARRAY_TYPE mhmX;
-      if( !mhmX.create(rhs->get_dimensions().get() )) {
-	this->solver_error( "cgSolver::solve : Unable to allocate temp storage (mhmX)" );
-	return boost::shared_ptr<ARRAY_TYPE>(x);
-      }
+        ARRAY_TYPE mhmX;
+        if( !mhmX.create(rhs->get_dimensions().get() )) {
+            this->solver_error( "cgSolver::solve : Unable to allocate temp storage (mhmX)" );
+            return false;
+        }
 
-      if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
-	std::cout << "Preparing guess..." << std::endl;
-      }
+        if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
+            std::cout << "Preparing guess..." << std::endl;
+        }
 
-      if(!mult_MH_M(x0,&mhmX)){
-	this->solver_error( "cgSolver::solve : Error in performing mult_MH_M for initial guess" );
-	return boost::shared_ptr<ARRAY_TYPE>(x);
-      }
+        if(!mult_MH_M(x0,&mhmX)){
+            this->solver_error( "cgSolver::solve : Error in performing mult_MH_M for initial guess" );
+            return false;
+        }
 
-      if (!solver_axpy(-ELEMENT_TYPE(1),&mhmX,&r))
-	{
-	  this->solver_error( "cgSolver::solve : Error in performing axpy for initial guess" );
-	  return boost::shared_ptr<ARRAY_TYPE>(x);
-	}
+        if (!solver_axpy(-ELEMENT_TYPE(1),&mhmX,&r)) {
+            this->solver_error( "cgSolver::solve : Error in performing axpy for initial guess" );
+            return false;
+        }
 
-      q = r;
+        q = r;
 
-      if( precond_.get() ) {
+        if( precond_.get() ) {
+            // Apply preconditioning, twice. Should change preconditioners to do this
+            if( precond_->apply(&q,&q) < 0 ) {
+                this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
+                return false;
+            }
 
-	//Apply preconditioning, twice. Should change preconditioners to do this
+            if( precond_->apply(&q,&q) < 0 ) {
+                this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
+                return false;
+            }
+        }
 
-	if( precond_->apply(&q,&q) < 0 ) {
-	  this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
-	  return boost::shared_ptr<ARRAY_TYPE>(x);
-	}
-
-	if( precond_->apply(&q,&q) < 0 ) {
-	  this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
-	  return boost::shared_ptr<ARRAY_TYPE>(x);
-	}
-      }
-
-      rq = real(solver_dot(&r, &q));
+        rq = real(solver_dot(&r, &q));
     }
 
-    ARRAY_TYPE p;
     if( !p.create( rhs->get_dimensions().get() )) {
-      this->solver_error( "cgSolver::solve : Unable to allocate temp storage (p)" );
-      return boost::shared_ptr<ARRAY_TYPE>(x);
+        this->solver_error( "cgSolver::solve : Unable to allocate temp storage (p)" );
+        return false;
     }
 
     p = q;
 
-    REAL rq_new = rq;
-    REAL rel_res;
-    REAL rq_last =get_max<REAL>();
+    rq_new = rq;
 
-    if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
-      std::cout << "Iterating..." << std::endl;
-    }
+    return true;
+  }
 
-    for( unsigned int it = 0; it < iterations_; it++ ) {
-
+  virtual bool iterate(REAL* convergence_criteria) {
       if (!mult_MH_M(&p,&q)){
-	this->solver_error( "cgSolver::solve : error in performing mult_MH_M" );
-	return boost::shared_ptr<ARRAY_TYPE>(x);
+          this->solver_error( "cgSolver::solve : error in performing mult_MH_M" );
+          return false;
       }
-      ELEMENT_TYPE alpha = rq/solver_dot(&p,&q);
+      alpha = rq/solver_dot(&p,&q);
 
       // Update solution
       if( !solver_axpy(alpha,&p,x) ) {
-	this->solver_error( "cgSolver::solve : failed to update solution" );
-	return boost::shared_ptr<ARRAY_TYPE>(x);
+          this->solver_error( "cgSolver::solve : failed to update solution" );
+          return false;
       }
 
       if( !solver_dump(x) ) {
-	this->solver_error( "cgSolver::solve : failed to dump" );
-	return boost::shared_ptr<ARRAY_TYPE>(x);
+          this->solver_error( "cgSolver::solve : failed to dump" );
+          return false;
       }
 
       // Update residual
       if( !solver_axpy(-alpha,&q,&r) ) {
-	this->solver_error( "cgSolver::solve : failed to update residual" );
-	return boost::shared_ptr<ARRAY_TYPE>(x);
+          this->solver_error( "cgSolver::solve : failed to update residual" );
+          return false;
       }
 
       if (precond_.get()){
-	if( precond_->apply(&r,&q) < 0 ) {
-	  this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
-	  return boost::shared_ptr<ARRAY_TYPE>(x);
-	}
+          if( precond_->apply(&r,&q) < 0 ) {
+              this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
+              return false;
+          }
+          if( precond_->apply(&q,&q) < 0 ) {
+              this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
+              return false;
+          }
 
-	if( precond_->apply(&q,&q) < 0 ) {
-	  this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
-	  return boost::shared_ptr<ARRAY_TYPE>(x);
-	}
+          rq_new = real(solver_dot(&r, &q));
+          solver_scal((rq_new/rq)*ELEMENT_TYPE(1),&p);
 
-	rq_new = real(solver_dot(&r, &q));
-	solver_scal((rq_new/rq)*ELEMENT_TYPE(1),&p);
-
-	if( !solver_axpy(ELEMENT_TYPE(1),&q,&p) ) {
-	  this->solver_error( "cgSolver::solve : failed to update solution" );
-	  return boost::shared_ptr<ARRAY_TYPE>(x);
-	}
+          if( !solver_axpy(ELEMENT_TYPE(1),&q,&p) ) {
+              this->solver_error( "cgSolver::solve : failed to update solution" );
+              return false;
+          }
       } else{
-	rq_new = real(solver_dot(&r, &r));
-	solver_scal((rq_new/rq)*ELEMENT_TYPE(1),&p);
-	if( !solver_axpy(ELEMENT_TYPE(1),&r,&p) ) {
-	  this->solver_error( "cgSolver::solve : failed to update solution" );
-	  return boost::shared_ptr<ARRAY_TYPE>(x);
-	}
+          rq_new = real(solver_dot(&r, &r));
+          solver_scal((rq_new/rq)*ELEMENT_TYPE(1),&p);
+          if( !solver_axpy(ELEMENT_TYPE(1),&r,&p) ) {
+              this->solver_error( "cgSolver::solve : failed to update solution" );
+              return false;
+          }
       }
 
       rq = rq_new;
 
       // Calculate relative residual norm
-      rel_res = rq/rq_0;
+      *convergence_criteria = rq/rq_0;
 
-      if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_WARNINGS ) {
+      return true;
+  }
 
-	if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
-	  std::cout << "Iteration " << it+1 << ". rq/rq_0 = " << rel_res << std::endl;
-	}
+  virtual boost::shared_ptr<ARRAY_TYPE> solve( ARRAY_TYPE *_rhs, ARRAY_TYPE * x0 ) {
+      bool status = this->prepare_for_iterating(_rhs, x0);
+      if (status == false)
+          return boost::shared_ptr<ARRAY_TYPE>();
 
-	if( rq_last-rel_res < REAL(0) ) {
-	  std::cout << "----- Warning: CG residual increase. Stability problem! -----" << std::endl;
-	}
+      if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
+          std::cout << "Iterating..." << std::endl;
       }
 
-      if( rel_res < limit_ ) {
-	break;
-      } else {
-	rq_last = rel_res;
-      }
-    }
+      REAL cc_last =get_max<REAL>();
+      for (unsigned int it=0; it< iterations_; it++ ) {
+          REAL convergence_criteria;
+          status = this->iterate(&convergence_criteria);
+          if (status == false)
+              return boost::shared_ptr<ARRAY_TYPE>(x);
+          
+          
+          if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_WARNINGS ) {
+              if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
+                  std::cout << "Iteration " << it+1 << ". rq/rq_0 = " << convergence_criteria << std::endl;
+              }
+              ccList.push_back(convergence_criteria);
+              if( cc_last-convergence_criteria < REAL(0) ) {
+                  std::cout << "----- Warning: CG residual increase. Stability problem! -----" << std::endl;
+              }
+          }
 
-    if( !post_solve(&x) ){
-      this->solver_error( "cgSolver::solve : error in post_solve" );
+          if( convergence_criteria < limit_ ) {
+              break;
+          } else {
+              cc_last = convergence_criteria;
+          }
+      }
+
+      if( !post_solve(&x) ){
+          this->solver_error( "cgSolver::solve : error in post_solve" );
+      }
+
       return boost::shared_ptr<ARRAY_TYPE>(x);
-    }
-
-    return boost::shared_ptr<ARRAY_TYPE>(x);
   }
 
 protected:
@@ -273,18 +281,15 @@ protected:
     }
 
     for (unsigned int i = 0; i < operators_->size(); i++) {
-
       if( (*operators_)[i]->mult_MH_M(in, &q2, false) < 0 ) {
-	this->solver_error( "cgSolver::solve : failed to apply matrix operator" );
-	return false;
+          this->solver_error( "cgSolver::solve : failed to apply matrix operator" );
+          return false;
       }
-
       if( !solver_axpy((*operators_)[i]->get_weight(), &q2, out) ) {
-	this->solver_error( "cgSolver::solve : failed to add result from operator" );
-	return false;
+          this->solver_error( "cgSolver::solve : failed to add result from operator" );
+          return false;
       }
     }
-
     return true;
   }
 
@@ -293,4 +298,10 @@ protected:
   boost::shared_ptr< cgPreconditioner<ARRAY_TYPE> > precond_;
   unsigned int iterations_;
   REAL limit_;
+  std::vector<REAL> ccList;
+
+  REAL rq_new, rq, rq_0;
+  ELEMENT_TYPE alpha;
+  ARRAY_TYPE p, r, q;
+  ARRAY_TYPE *x;
 };
