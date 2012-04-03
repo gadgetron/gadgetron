@@ -69,6 +69,12 @@ public:
     // Make copy of the input pointer for the pre_solve callback
     ARRAY_TYPE *rhs = _rhs;
 
+
+    if( !q2.create( rhs->get_dimensions().get() )) {
+      this->solver_error( "cgSolver::initialize : Unable to allocate temp storage (q2)" );
+      return false;
+    }
+
     // Custom initialization
     if( !pre_solve(&rhs) ){
       this->solver_error( "cgSolver::solve : error in pre_solve" );
@@ -169,10 +175,7 @@ public:
 
     rq_new = rq;
 
-    if( !q2.create( rhs->get_dimensions().get() )) {
-      this->solver_error( "cgSolver::initialize : Unable to allocate temp storage (q2)" );
-      return false;
-    }
+
 
     return true;
   }
