@@ -56,8 +56,10 @@ public:
   virtual std::vector<REAL> get_convergence_list() {
       return ccList;
   }
-
-  virtual bool prepare_for_iterating( ARRAY_TYPE *_rhs, ARRAY_TYPE * x0 ) {
+  virtual bool reinitialize( ARRAY_TYPE *_rhs, ARRAY_TYPE * x0 ){
+	  return initialize(_rhs,x0);
+  }
+  virtual bool initialize( ARRAY_TYPE *_rhs, ARRAY_TYPE * x0 ) {
     // Input validity test
     if( !_rhs || _rhs->get_number_of_elements() == 0 ){
       this->solver_error( "cgSolver::solve : empty or NULL rhs provided" );
@@ -145,12 +147,12 @@ public:
         if( precond_.get() ) {
             // Apply preconditioning, twice. Should change preconditioners to do this
             if( precond_->apply(&q,&q) < 0 ) {
-                this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
+                this->solver_error( "cgSolver::initialize : failed to apply preconditioner to q" );
                 return false;
             }
 
             if( precond_->apply(&q,&q) < 0 ) {
-                this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
+                this->solver_error( "cgSolver::initialize : failed to apply preconditioner to q" );
                 return false;
             }
         }
@@ -159,13 +161,18 @@ public:
     }
 
     if( !p.create( rhs->get_dimensions().get() )) {
-        this->solver_error( "cgSolver::solve : Unable to allocate temp storage (p)" );
+        this->solver_error( "cgSolver::initialize : Unable to allocate temp storage (p)" );
         return false;
     }
 
     p = q;
 
     rq_new = rq;
+
+    if( !q2.create( rhs->get_dimensions().get() )) {
+      this->solver_error( "cgSolver::initialize : Unable to allocate temp storage (q2)" );
+      return false;
+    }
 
     return true;
   }
@@ -229,7 +236,7 @@ public:
   }
 
   virtual boost::shared_ptr<ARRAY_TYPE> solve( ARRAY_TYPE *_rhs, ARRAY_TYPE * x0 ) {
-      bool status = this->prepare_for_iterating(_rhs, x0);
+      bool status = this->initialize(_rhs, x0);
       if (status == false)
           return boost::shared_ptr<ARRAY_TYPE>();
 
@@ -273,12 +280,7 @@ protected:
   bool mult_MH_M( ARRAY_TYPE *in, ARRAY_TYPE *out ){
 
     solver_clear(out);
-    ARRAY_TYPE q2;
 
-    if( !q2.create( in->get_dimensions().get() )) {
-      this->solver_error( "cgSolver::solve : Unable to allocate temp storage (q2)" );
-      return false;
-    }
 
     for (unsigned int i = 0; i < operators_->size(); i++) {
       if( (*operators_)[i]->mult_MH_M(in, &q2, false) < 0 ) {
@@ -302,6 +304,7 @@ protected:
 
   REAL rq_new, rq, rq_0;
   ELEMENT_TYPE alpha;
-  ARRAY_TYPE p, r, q;
+  ARRAY_TYPE p, r, q, q2;
   ARRAY_TYPE *x;
+
 };
