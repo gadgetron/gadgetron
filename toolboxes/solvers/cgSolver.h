@@ -49,16 +49,22 @@ public:
   virtual bool solver_axpy( ELEMENT_TYPE, ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
   virtual bool solver_dump( ARRAY_TYPE *rho ) { return true; }
 
-  virtual boost::shared_ptr<ARRAY_TYPE> solve( ARRAY_TYPE *_rhs ){
-    return solve(_rhs,0);
+  virtual boost::shared_ptr<ARRAY_TYPE> solve( ARRAY_TYPE *_rhs ) {
+      return solve(_rhs,0);
   }
 
   virtual std::vector<REAL> get_convergence_list() {
       return ccList;
   }
-  virtual bool reinitialize( ARRAY_TYPE *_rhs, ARRAY_TYPE * x0 ){
+
+  virtual bool reinitialize( ARRAY_TYPE *_rhs, ARRAY_TYPE * x0 ) {
 	  return initialize(_rhs,x0);
   }
+
+  virtual boost::shared_ptr<ARRAY_TYPE> get_result() {
+	  return x;
+  }
+
   virtual bool initialize( ARRAY_TYPE *_rhs, ARRAY_TYPE * x0 ) {
     // Input validity test
     if( !_rhs || _rhs->get_number_of_elements() == 0 ){
@@ -70,7 +76,8 @@ public:
     ARRAY_TYPE *rhs = _rhs;
 
 
-    if( !q2.create( rhs->get_dimensions().get() )) {
+    q2 = new ARRAY_TYPE();
+    if( !q2->create( rhs->get_dimensions().get() )) {
       this->solver_error( "cgSolver::initialize : Unable to allocate temp storage (q2)" );
       return false;
     }
@@ -82,7 +89,7 @@ public:
     }
 
     // Result, rho
-    x = new ARRAY_TYPE();
+    x = boost::shared_ptr<ARRAY_TYPE>( new ARRAY_TYPE() );
 
     if( !x->create(rhs->get_dimensions().get() )) {
       this->solver_error( "cgSolver::solve : Unable to allocate temp storage (x)" );
@@ -90,36 +97,38 @@ public:
     }
 
     if (x0){
-      *x = *x0;
+        x = boost::shared_ptr<ARRAY_TYPE>( new ARRAY_TYPE(*x0) );
     } else{
       // Clear rho
-      solver_clear(x);
+        solver_clear(x.get());
     }
 
     // Calculate residual r
-    r =  *rhs;
+    r = new ARRAY_TYPE(*rhs);
+    //r =  *rhs;
 
-    if( !q.create(rhs->get_dimensions().get() )) {
+    q = new ARRAY_TYPE();
+    if( !q->create(rhs->get_dimensions().get() )) {
       this->solver_error( "cgSolver::solve : Unable to allocate temp storage (q)" );
       return false;
     }
 
-    q = r;
+    *q = *r;
 
     if( precond_.get() ) {
         // Apply preconditioning, twice. Should change preconditioners to do this
-        if( precond_->apply(&q,&q) < 0 ) {
+        if( precond_->apply(q,q) < 0 ) {
             this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
             return false;
         }
 
-        if( precond_->apply(&q,&q) < 0 ) {
+        if( precond_->apply(q,q) < 0 ) {
             this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
             return false;
         }
     }
 
-    rq_0 = real(solver_dot(&r, &q));
+    rq_0 = real(solver_dot(r, q));
     rq = rq_0;
 
     if (x0) {
@@ -143,88 +152,89 @@ public:
             return false;
         }
 
-        if (!solver_axpy(-ELEMENT_TYPE(1),&mhmX,&r)) {
+        if (!solver_axpy(-ELEMENT_TYPE(1),&mhmX,r)) {
             this->solver_error( "cgSolver::solve : Error in performing axpy for initial guess" );
             return false;
         }
 
-        q = r;
+        *q = *r;
 
         if( precond_.get() ) {
             // Apply preconditioning, twice. Should change preconditioners to do this
-            if( precond_->apply(&q,&q) < 0 ) {
+            if( precond_->apply(q,q) < 0 ) {
                 this->solver_error( "cgSolver::initialize : failed to apply preconditioner to q" );
                 return false;
             }
 
-            if( precond_->apply(&q,&q) < 0 ) {
+            if( precond_->apply(q,q) < 0 ) {
                 this->solver_error( "cgSolver::initialize : failed to apply preconditioner to q" );
                 return false;
             }
         }
 
-        rq = real(solver_dot(&r, &q));
+        rq = real(solver_dot(r, q));
     }
 
-    if( !p.create( rhs->get_dimensions().get() )) {
+    p = new ARRAY_TYPE();
+    if( !p->create( rhs->get_dimensions().get() )) {
         this->solver_error( "cgSolver::initialize : Unable to allocate temp storage (p)" );
         return false;
     }
 
-    p = q;
-
+    *p = *q;
     rq_new = rq;
-
-
-
     return true;
   }
 
+  virtual bool deinitialize() {
+      delete p;
+      delete r;
+      delete q;
+      delete q2;
+      x = boost::shared_ptr<ARRAY_TYPE>();
+      return true;
+  }
+
   virtual bool iterate(REAL* convergence_criteria) {
-      if (!mult_MH_M(&p,&q)){
+      if (!mult_MH_M(p,q)){
           this->solver_error( "cgSolver::solve : error in performing mult_MH_M" );
           return false;
       }
-      alpha = rq/solver_dot(&p,&q);
+      alpha = rq/solver_dot(p,q);
 
       // Update solution
-      if( !solver_axpy(alpha,&p,x) ) {
+      if( !solver_axpy(alpha,p,x.get()) ) {
           this->solver_error( "cgSolver::solve : failed to update solution" );
           return false;
       }
 
-      if( !solver_dump(x) ) {
-          this->solver_error( "cgSolver::solve : failed to dump" );
-          return false;
-      }
-
       // Update residual
-      if( !solver_axpy(-alpha,&q,&r) ) {
+      if( !solver_axpy(-alpha,q,r) ) {
           this->solver_error( "cgSolver::solve : failed to update residual" );
           return false;
       }
 
       if (precond_.get()){
-          if( precond_->apply(&r,&q) < 0 ) {
+          if( precond_->apply(r,q) < 0 ) {
               this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
               return false;
           }
-          if( precond_->apply(&q,&q) < 0 ) {
+          if( precond_->apply(q,q) < 0 ) {
               this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
               return false;
           }
 
-          rq_new = real(solver_dot(&r, &q));
-          solver_scal((rq_new/rq)*ELEMENT_TYPE(1),&p);
+          rq_new = real(solver_dot(r, q));
+          solver_scal((rq_new/rq)*ELEMENT_TYPE(1),p);
 
-          if( !solver_axpy(ELEMENT_TYPE(1),&q,&p) ) {
+          if( !solver_axpy(ELEMENT_TYPE(1),q,p) ) {
               this->solver_error( "cgSolver::solve : failed to update solution" );
               return false;
           }
       } else{
-          rq_new = real(solver_dot(&r, &r));
-          solver_scal((rq_new/rq)*ELEMENT_TYPE(1),&p);
-          if( !solver_axpy(ELEMENT_TYPE(1),&r,&p) ) {
+          rq_new = real(solver_dot(r, r));
+          solver_scal((rq_new/rq)*ELEMENT_TYPE(1),p);
+          if( !solver_axpy(ELEMENT_TYPE(1),r,p) ) {
               this->solver_error( "cgSolver::solve : failed to update solution" );
               return false;
           }
@@ -247,22 +257,31 @@ public:
           std::cout << "Iterating..." << std::endl;
       }
 
-      REAL cc_last =get_max<REAL>();
-      for (unsigned int it=0; it< iterations_; it++ ) {
+      REAL cc_last = get_max<REAL>();
+      for (unsigned int it=0; it < iterations_; it++ ) {
           REAL convergence_criteria;
           status = this->iterate(&convergence_criteria);
-          if (status == false)
-              return boost::shared_ptr<ARRAY_TYPE>(x);
-          
-          
+          if (status == false) {
+              boost::shared_ptr<ARRAY_TYPE> tmpx = x;
+              deinitialize();
+              return tmpx;
+          }
+          ccList.push_back(convergence_criteria);
+
           if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_WARNINGS ) {
               if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
                   std::cout << "Iteration " << it+1 << ". rq/rq_0 = " << convergence_criteria << std::endl;
               }
-              ccList.push_back(convergence_criteria);
               if( cc_last-convergence_criteria < REAL(0) ) {
                   std::cout << "----- Warning: CG residual increase. Stability problem! -----" << std::endl;
               }
+          }
+
+          if( !solver_dump(x.get()) ) {
+              this->solver_error( "cgSolver::solve : failed to dump" );
+              boost::shared_ptr<ARRAY_TYPE> tmpx = x;
+              deinitialize();
+              return tmpx;
           }
 
           if( convergence_criteria < limit_ ) {
@@ -272,11 +291,14 @@ public:
           }
       }
 
-      if( !post_solve(&x) ){
+      ARRAY_TYPE* xp = x.get();
+      if( !post_solve( &xp ) ){
           this->solver_error( "cgSolver::solve : error in post_solve" );
       }
 
-      return boost::shared_ptr<ARRAY_TYPE>(x);
+      boost::shared_ptr<ARRAY_TYPE> tmpx = x;
+      deinitialize();
+      return tmpx;
   }
 
 protected:
@@ -286,11 +308,11 @@ protected:
 
 
     for (unsigned int i = 0; i < operators_->size(); i++) {
-      if( (*operators_)[i]->mult_MH_M(in, &q2, false) < 0 ) {
+      if( (*operators_)[i]->mult_MH_M(in, q2, false) < 0 ) {
           this->solver_error( "cgSolver::solve : failed to apply matrix operator" );
           return false;
       }
-      if( !solver_axpy((*operators_)[i]->get_weight(), &q2, out) ) {
+      if( !solver_axpy((*operators_)[i]->get_weight(), q2, out) ) {
           this->solver_error( "cgSolver::solve : failed to add result from operator" );
           return false;
       }
@@ -307,7 +329,7 @@ protected:
 
   REAL rq_new, rq, rq_0;
   ELEMENT_TYPE alpha;
-  ARRAY_TYPE p, r, q, q2;
-  ARRAY_TYPE *x;
+  ARRAY_TYPE *p, *r, *q, *q2;
+  boost::shared_ptr<ARRAY_TYPE> x;
 
 };
