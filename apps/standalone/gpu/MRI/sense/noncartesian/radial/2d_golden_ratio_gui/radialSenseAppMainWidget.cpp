@@ -215,7 +215,7 @@ void radialSenseAppMainWindow::replan()
   for( unsigned int iteration = 0; iteration < num_profiles/profiles_per_reconstruction; iteration++ ) {
     
     // Define trajectories
-    boost::shared_ptr< cuNDArray<floatd2::Type> > traj = compute_radial_trajectory_golden_ratio_2d<float>
+    boost::shared_ptr< cuNDArray<floatd2> > traj = compute_radial_trajectory_golden_ratio_2d<float>
       ( samples_per_profile, profiles_per_frame, frames_per_reconstruction, iteration*profiles_per_reconstruction );
     
     // Preprocess
@@ -513,13 +513,13 @@ void radialSenseAppMainWindow::reconstruct()
   const unsigned int profiles_per_frame = get_num_projections_per_frame();
   const unsigned int frames_per_reconstruction = 1; 
   const unsigned int profiles_per_reconstruction = get_num_projections_per_frame()*frames_per_reconstruction;
-  const uintd2::Type matrix_size = get_matrix_size();
-  const uintd2::Type matrix_size_os = get_matrix_size_os();
+  const uintd2 matrix_size = get_matrix_size();
+  const uintd2 matrix_size_os = get_matrix_size_os();
   const unsigned int num_coils = get_num_coils();
   const unsigned int samples_per_reconstruction = profiles_per_reconstruction*samples_per_profile;
 
   // Determine trajectories
-  boost::shared_ptr< cuNDArray<floatd2::Type> > traj = compute_radial_trajectory_golden_ratio_2d<float>
+  boost::shared_ptr< cuNDArray<floatd2> > traj = compute_radial_trajectory_golden_ratio_2d<float>
     ( samples_per_profile, profiles_per_frame, frames_per_reconstruction,  get_first_projection() );
   
   // Upload data
@@ -574,13 +574,13 @@ void radialSenseAppMainWindow::reconstruct()
   "Gets..."
 */
 
-uintd2::Type radialSenseAppMainWindow::get_matrix_size()
+uintd2 radialSenseAppMainWindow::get_matrix_size()
 {
   int value = matrixSizeSpinBox->value();
   return uintd2( value, value );
 }
 
-uintd2::Type radialSenseAppMainWindow::get_matrix_size_os()
+uintd2 radialSenseAppMainWindow::get_matrix_size_os()
 {
   int value = oversampledMatrixSizeSpinBox->value();
   return uintd2( value, value );

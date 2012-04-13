@@ -91,7 +91,7 @@ int SpiralGadget::process_config(ACE_Message_Block* mb)
 	/* Calcualte the trajectory and weights*/
 	calc_traj(xgrad, ygrad, ngrad, Nints, sample_time, krmax, &x_trajectory, &y_trajectory, &weighting);
 
-	host_traj_ = boost::shared_ptr< hoNDArray<floatd2::Type> >(new hoNDArray<floatd2::Type>);
+	host_traj_ = boost::shared_ptr< hoNDArray<floatd2> >(new hoNDArray<floatd2>);
 	host_weights_ = boost::shared_ptr< hoNDArray<float> >(new hoNDArray<float>);
 
 	std::vector<unsigned int> trajectory_dimensions;
@@ -152,7 +152,7 @@ int SpiralGadget::process_config(ACE_Message_Block* mb)
 	float W = 5.5f;
 
 	// Upload host arrays to device arrays
-	cuNDArray<floatd2::Type> traj(host_traj_.get());
+	cuNDArray<floatd2> traj(host_traj_.get());
 	gpu_weights_ = cuNDArray<float>(host_weights_.get());
 
 	// Initialize plan

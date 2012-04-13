@@ -11,11 +11,11 @@
   General principles of the implementation can be found in:
 
   Accelerating the Non-equispaced Fast Fourier Transform on Commodity Graphics Hardware.
-  T.S. Sørensen, T. Schaeffter, K.Ø. Noe, M.S. Hansen. 
+  T.S. S��rensen, T. Schaeffter, K.��. Noe, M.S. Hansen. 
   IEEE Transactions on Medical Imaging 2008; 27(4):538-547.
 
   Real-time Reconstruction of Sensitivity Encoded Radial Magnetic Resonance Imaging Using a Graphics Processing Unit.
-  T.S. Sørensen, D. Atkinson, T. Schaeffter, M.S. Hansen.
+  T.S. S��rensen, D. Atkinson, T. Schaeffter, M.S. Hansen.
   IEEE Transactions on Medical Imaging 2009; 28(12):1974-1985. 
 
   This example programme of the nnft utilizes golden ratio based radial trajectories 
@@ -88,7 +88,7 @@ int main( int argc, char** argv)
   int frames_per_reconstruction = parms.get_parameter('f')->get_int_value();  
   _real kernel_width = parms.get_parameter('k')->get_float_value();
 
-  uintd2::Type matrix_size = vector_to_uintd<2>(*(host_image->get_dimensions().get()));
+  uintd2 matrix_size = vector_to_uintd<2>(*(host_image->get_dimensions().get()));
   unsigned int num_frames = host_image->get_size(2);
   _real alpha = (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0];
 

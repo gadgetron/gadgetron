@@ -97,7 +97,7 @@ public:
     }
 
     if (x0){
-        x = boost::shared_ptr<ARRAY_TYPE>( new ARRAY_TYPE(*x0) );
+        *(x.get()) = *x0;
     } else{
       // Clear rho
         solver_clear(x.get());

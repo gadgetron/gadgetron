@@ -30,10 +30,10 @@ class radialSenseAppMainWindow : public QMainWindow, public Ui::radialSenseAppBa
   void reconstruct();
 
   // Get matrix size
-  inline uintd2::Type get_matrix_size();
+  inline uintd2 get_matrix_size();
 
   // Get oversampled matrix size
-  inline uintd2::Type get_matrix_size_os();
+  inline uintd2 get_matrix_size_os();
 
   // Get number of coils
   inline unsigned int get_num_coils();

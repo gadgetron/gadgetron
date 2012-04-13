@@ -106,7 +106,7 @@ int main(int argc, char** argv)
   write_nd_array<_real>( host_norm.get(), "cg_deblurred_image.real" );  
 
   boost::shared_ptr< hoNDArray<_real> > host_rhs = cuNDA_cAbs<_real,_complext>(&rhs)->to_host();
-  write_nd_array<_real>( host_rhs.get(), "rhs.real" );  
+  write_nd_array<_real>( host_rhs.get(), "rhs.real" );
 
   return 0;
 }

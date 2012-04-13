@@ -33,7 +33,7 @@ public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
   int samples_per_interleave_;
   int image_counter_;
   int image_series_;
-  boost::shared_ptr< hoNDArray<floatd2::Type> > host_traj_;
+  boost::shared_ptr< hoNDArray<floatd2> > host_traj_;
   boost::shared_ptr< hoNDArray<float> > host_weights_;
   cuNDArray<float> gpu_weights_;
 

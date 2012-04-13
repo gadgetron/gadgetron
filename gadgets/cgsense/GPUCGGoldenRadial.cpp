@@ -2,16 +2,16 @@
 #include "radial_utilities.h"
 #include "Gadgetron.h"
 
-boost::shared_ptr< cuNDArray<floatd2::Type> > 
+boost::shared_ptr< cuNDArray<floatd2> >
 GPUCGGoldenRadialGadget::calculate_trajectory()
 {
 	// Define trajectories
-	boost::shared_ptr< cuNDArray<floatd2::Type> > traj = compute_radial_trajectory_golden_ratio_2d<float>
+	boost::shared_ptr< cuNDArray<floatd2> > traj = compute_radial_trajectory_golden_ratio_2d<float>
 		( samples_per_profile_, profiles_per_frame_, 1, current_profile_offset_ );
 
   if (!traj.get()) {
     GADGET_DEBUG1("Failed to allocate trajectory");
-    return boost::shared_ptr< cuNDArray<floatd2::Type> >();
+    return boost::shared_ptr< cuNDArray<floatd2> >();
   }
 
   return traj;

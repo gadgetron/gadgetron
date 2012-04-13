@@ -230,7 +230,7 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
 
   if ((int)buffer_.message_count() >= profiles_per_frame_) {
 
-    boost::shared_ptr< cuNDArray<floatd2::Type> > traj = calculate_trajectory();
+    boost::shared_ptr< cuNDArray<floatd2> > traj = calculate_trajectory();
 
     if ( traj.get() == 0x0 ) {
       GADGET_DEBUG1("\nFailed to calculate trajectory\n");

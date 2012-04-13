@@ -60,3 +60,9 @@ template<> __inline__ __host__ __device__ double get_epsilon<double>()
 
 template<> __inline__ __device__ float get_pi(){ return (float)M_PI; }
 template<> __inline__ __device__ double get_pi(){ return M_PI; }
+
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
+
