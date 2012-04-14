@@ -133,7 +133,7 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
     cg_.add_matrix_operator( E_ );  // encoding matrix
     cg_.add_matrix_operator( R_ );  // regularization matrix
     cg_.set_preconditioner ( D_ );  // preconditioning matrix
-    cg_.set_iterations( number_of_iterations_ );
+    cg_.set_max_iterations( number_of_iterations_ );
     cg_.set_limit( cg_limit_ ); 
     cg_.set_output_mode( cuCGSolver<float, float_complext>::OUTPUT_SILENT );
 
@@ -311,7 +311,7 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
       return GADGET_FAIL;
     }
 
-    boost::shared_ptr< cuNDArray<float_complext> > cgresult = cg_.solve(&rhs);
+    boost::shared_ptr< cuNDArray<float_complext> > cgresult = cg_.solve_from_rhs(&rhs);
 
     if (!cgresult.get()) {
       GADGET_DEBUG1("\nIterative_sense_compute failed\n");

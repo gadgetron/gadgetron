@@ -83,7 +83,7 @@ int main(int argc, char** argv)
   cg.add_matrix_operator( E );                  // encoding matrix
   if( kappa>0.0 ) cg.add_matrix_operator( Rx );  // regularization matrix
   if( kappa>0.0 ) cg.add_matrix_operator( Ry );  // regularization matrix
-  cg.set_iterations( num_iterations );
+  cg.set_max_iterations( num_iterations );
   cg.set_limit( 1e-12 );
   cg.set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_VERBOSE );
                 
@@ -95,7 +95,7 @@ int main(int argc, char** argv)
   // Conjugate gradient solver
   //
   
-  boost::shared_ptr< cuNDArray<_complext> > cgresult = cg.solve(&rhs);
+  boost::shared_ptr< cuNDArray<_complext> > cgresult = cg.solve_from_rhs(&rhs);
 
   // All done, write out the result
   

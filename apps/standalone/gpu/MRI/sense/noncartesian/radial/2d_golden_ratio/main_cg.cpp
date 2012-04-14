@@ -226,10 +226,8 @@ int main(int argc, char** argv)
       
   // Setup conjugate gradient solver
   cuCGSolver<_real, _complext> cg;
-  cg.add_matrix_operator( E );  // encoding matrix
-  cg.add_matrix_operator( R );  // regularization matrix
   cg.set_preconditioner ( D );  // preconditioning matrix
-  cg.set_iterations( num_iterations );
+  cg.set_max_iterations( num_iterations );
   cg.set_limit( 1e-6 );
   cg.set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_VERBOSE );
 
@@ -262,7 +260,17 @@ int main(int argc, char** argv)
       cout << "Failed to set trajectory on encoding matrix" << endl;
       return 1;
     }
+
+    // 
+    // Demonstration of how to use the 'cgSolver::solve_from_rhs' interface
+    // 
+
+    /*
     
+    // Add operators to solver
+    cg.add_matrix_operator( E );  // encoding matrix
+    cg.add_matrix_operator( R );  // regularization matrix
+
     // Form rhs (use result array to save memory)
     vector<unsigned int> rhs_dims = uintd_to_vector<2>(matrix_size); 
     rhs_dims.push_back(frames_per_reconstruction);
@@ -276,17 +284,55 @@ int main(int argc, char** argv)
     E->mult_MH( data.get(), &rhs );
 
     //
-    // Conjugate gradient solver
+    // Invoke conjugate gradient solver
     //
 
     boost::shared_ptr< cuNDArray<_complext> > cgresult;
     {
       GPUTimer timer("GPU Conjugate Gradient solve");
-      cgresult = cg.solve(&rhs);
+      cgresult = cg.solve_from_rhs(&rhs);
     }
 
-    // Copy cgresult to result (pointed to by rhs)
-    rhs = *(cgresult.get());
+    */
+
+    // 
+    // Demonstration of how to use the 'cgSolver::solve' interface
+    // 
+    
+    // Define image dimensions
+    vector<unsigned int> image_dims;
+    image_dims = uintd_to_vector<2>(matrix_size); 
+    image_dims.push_back(frames_per_reconstruction);
+    
+    if( reconstruction == 0 ){
+      
+      // Pass image dimensions to encoding operator
+      E->set_domain_dimensions(image_dims);
+
+      // Add operators to solver
+      cg.add_matrix_operator( E, true );  // encoding matrix
+      cg.add_matrix_operator( R );        // regularization matrix    
+    }
+    
+    //
+    // Invoke conjugate gradient solver
+    //
+
+    boost::shared_ptr< cuNDArray<_complext> > cgresult;
+    {
+      GPUTimer timer("GPU Conjugate Gradient solve");
+      cgresult = cg.solve(data.get());
+    }
+
+    // Copy cgresult to overall result
+    cuNDArray<_complext> out;     
+    if( out.create( &image_dims, 
+		    result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction ) == 0x0 ){
+      cout << "Failed to allocate output" << endl;
+      return 1;
+    }
+    
+    out = *(cgresult.get());
   }
   
   delete timer;

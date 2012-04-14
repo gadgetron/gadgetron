@@ -80,7 +80,7 @@ radialSenseAppMainWindow::radialSenseAppMainWindow(QWidget *parent) : QMainWindo
   cg.add_matrix_operator( E );  // encoding matrix
   cg.add_matrix_operator( R );  // regularization matrix
   cg.set_preconditioner ( D );  // preconditioning matrix
-  cg.set_iterations( get_num_iterations() );
+  cg.set_max_iterations( get_num_iterations() );
   cg.set_limit( 1e-6 );
   cg.set_output_mode( cuCGSolver<float, float_complext>::OUTPUT_SILENT );
 }
@@ -447,7 +447,7 @@ void radialSenseAppMainWindow::numIterationsChanged()
   else 
     lastValue = value;
 
-  cg.set_iterations( get_num_iterations() );
+  cg.set_max_iterations( get_num_iterations() );
 
   if(!ready) return;
 
@@ -541,7 +541,7 @@ void radialSenseAppMainWindow::reconstruct()
     // Conjugate gradient solver
     //
 
-    boost::shared_ptr< cuNDArray<float_complext> > cgresult = cg.solve(&rhs);
+    boost::shared_ptr< cuNDArray<float_complext> > cgresult = cg.solve_from_rhs(&rhs);
 
     // Magnitudes image for visualization
     boost::shared_ptr< cuNDArray<float> > tmp_res = cuNDA_cAbs<float,float_complext>(cgresult.get());

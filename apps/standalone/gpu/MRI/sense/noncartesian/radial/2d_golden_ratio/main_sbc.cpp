@@ -211,7 +211,7 @@ int main(int argc, char** argv)
   cg->add_matrix_operator( E );   // encoding matrix
   cg->add_matrix_operator( Rx );  // regularization matrix
   cg->add_matrix_operator( Ry );  // regularization matrix
-  cg->set_iterations( num_cg_iterations );
+  cg->set_max_iterations( num_cg_iterations );
   cg->set_limit( 1e-2 );
   cg->set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_WARNINGS );
   

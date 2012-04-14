@@ -194,7 +194,7 @@ int main(int argc, char** argv)
   cg.add_matrix_operator( E );  // encoding matrix
   cg.add_matrix_operator( R );  // regularization matrix
   cg.set_preconditioner ( D );  // preconditioning matrix
-  cg.set_iterations( num_iterations );
+  cg.set_max_iterations( num_iterations );
   cg.set_limit( 1e-6 );
   cg.set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_VERBOSE );
       
@@ -306,7 +306,7 @@ int main(int argc, char** argv)
     boost::shared_ptr< cuNDArray<_complext> > cgresult;
     {
       GPUTimer timer("GPU Conjugate Gradient solve");
-      cgresult = cg.solve(&rhs);
+      cgresult = cg.solve_from_rhs(&rhs);
     }
 
     // Goto from x-f to x-t space
