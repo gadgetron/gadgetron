@@ -2,6 +2,7 @@
 
 #include "solver.h"
 #include "matrixOperator.h"
+#include "cgCallback.h"
 #include "cgPreconditioner.h"
 #include "real_utilities.h"
 
@@ -11,6 +12,7 @@
 template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class cgSolver 
   : public solver<ARRAY_TYPE, ARRAY_TYPE>
 {
+
 public:
 
   // Constructor
@@ -18,8 +20,10 @@ public:
     iterations_ = 10;
     limit_ = (REAL)1e-3;
     tc_history_enabled_ = false;
+    cb_ = boost::shared_ptr< relativeResidualTCB<REAL,ELEMENT_TYPE,ARRAY_TYPE> >
+      ( new relativeResidualTCB<REAL,ELEMENT_TYPE,ARRAY_TYPE>() );
   }
-
+  
   // Destructor
   virtual ~cgSolver() {}
 
@@ -33,51 +37,55 @@ public:
   // - if true, the adjoint matrix operator (op.mult_MH) is computed on 'rhs_prior' during the rhs computation
   // - if true and 'rhs_prior' is 0x0, (op.mult_MH) is computed on the input data to the 'solve' method 
 
-  inline int add_matrix_operator( boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE> > op,
-				  bool contributes_to_rhs = false, 
-				  boost::shared_ptr<ARRAY_TYPE> rhs_prior = boost::shared_ptr<ARRAY_TYPE>() ) 
+  inline void add_matrix_operator( boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE> > op,
+				   bool contributes_to_rhs = false, 
+				   boost::shared_ptr<ARRAY_TYPE> rhs_prior = boost::shared_ptr<ARRAY_TYPE>() ) 
   {
+    if( !op.get() ) return;
     operators_.push_back(op);
     indicators_.push_back(contributes_to_rhs);
     rhs_priors_.push_back(rhs_prior);
-    return 0;
   }
 
-  // Set preconditioner (optional)
-  inline int set_preconditioner( boost::shared_ptr< cgPreconditioner<ARRAY_TYPE> > precond ) {
+  // Set preconditioner
+  inline void set_preconditioner( boost::shared_ptr< cgPreconditioner<ARRAY_TYPE> > precond ) {
     precond_ = precond;
-    return 0;
-  }
-
-  // Set termination threshold for convergence criterium
-  inline void set_limit( REAL limit ) {
-    limit_ = limit;
   }
   
-  // Set maximally allowed number of iterations
-  inline void set_max_iterations( unsigned int iterations ) {
-    iterations_ = iterations;
+  // Set termination callback
+  inline void set_termination_callback( boost::shared_ptr< cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE> > cb ){
+    cb_ = cb;
   }
+  
+  // Set/get termination threshold for termination criterium
+  inline void set_limit( REAL limit ) { limit_ = limit; }
+  inline REAL get_limit() { return limit_; }
+  
+  // Set/get maximally allowed number of iterations
+  inline void set_max_iterations( unsigned int iterations ) { iterations_ = iterations; }
+  inline unsigned int get_max_iterations() { return iterations_; }  
 
   // Toggle (on/off) record keeping of termination criterium (tc) evaluations
-  void enable_tc_history( bool b ) {
-    tc_history_enabled_ = b;
-  }
+  void enable_tc_history( bool b ) { tc_history_enabled_ = b; }
+  
+  // Get history of the termination criterium evaluations
+  inline std::vector<REAL> get_tc_history() { return tc_values_; }
 
-  // Return history of the termination criterium evaluations
-  inline std::vector<REAL> get_tc_history() {
-    return tc_values_;
-  }
+  // Access to internal solver data (e.g. for termination callbacks)
+  inline boost::shared_ptr<ARRAY_TYPE> get_x() { return x_; }
+  inline boost::shared_ptr<ARRAY_TYPE> get_p() { return p_; }
+  inline boost::shared_ptr<ARRAY_TYPE> get_r() { return r_; }
+  inline REAL get_rq() { return rq_; }
 
   // Pre/post solver callbacks
   //
   // 'pre_solve' is invoked _both_ by 'solve' and 'solve_from_rhs'. 
   // - and since 'solve' itself invokes 'solve_from_rhs' the callback is triggered twice in 'solve'
   //
-  // 'post_solve' is invoked right before the image is returned
+  // 'post_solve' is invoked on the resulting image right before it is returned
 
   virtual bool pre_solve( ARRAY_TYPE** ) { return true; }
-  virtual bool post_solve( ARRAY_TYPE** ) { return true; }
+  virtual bool post_solve( boost::shared_ptr<ARRAY_TYPE>& ) { return true; }
 
   // Pure virtual functions defining core solver functionality
   // Implemented on the host/device respectively in a derived class
@@ -86,7 +94,7 @@ public:
   virtual bool solver_clear( ARRAY_TYPE* ) = 0;
   virtual bool solver_scal( ELEMENT_TYPE, ARRAY_TYPE* ) = 0;
   virtual bool solver_axpy( ELEMENT_TYPE, ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
-  virtual bool solver_dump( ARRAY_TYPE *x ) { return true; }
+  virtual bool solver_dump( ARRAY_TYPE* ) { return true; }
 
   // Inherited solver interface
   virtual boost::shared_ptr<ARRAY_TYPE> solve( ARRAY_TYPE *_d )
@@ -95,12 +103,11 @@ public:
     ARRAY_TYPE *d = _d;
     
     // Custom initialization
-    if( !pre_solve(&d) ){
-      this->solver_error( "Warning: cgSolver::solve : pre_solve callback failed" );
-    }
+    if( !pre_solve( &d ))
+      this->solver_warning( "Warning: cgSolver::solve : pre_solve callback failed" );
     
     // Compute right hand side
-    boost::shared_ptr<ARRAY_TYPE> rhs = compute_rhs(d);
+    boost::shared_ptr<ARRAY_TYPE> rhs = compute_rhs( d );
     if( !rhs.get() ){
       this->solver_error( "Error: cgSolver::solve : compute_rhs failed" );
       return boost::shared_ptr<ARRAY_TYPE>();
@@ -124,16 +131,15 @@ public:
     ARRAY_TYPE *rhs = _rhs;
     
     // Custom initialization
-    if( !pre_solve(&rhs) ){
-      this->solver_error( "Warning: cgSolver::solve_from_rhs : pre_solve callback failed" );
-    }
+    if( !pre_solve( &rhs ))
+      this->solver_warning( "Warning: cgSolver::solve_from_rhs : pre_solve callback failed" );
 
     // Initialize
-    if( !this->initialize(rhs, this->x0_.get()) ){
+    if( !this->initialize( rhs )){
       this->solver_error( "Error: cgSolver::solve_from_rhs : initialization failed" );
       return boost::shared_ptr<ARRAY_TYPE>();
     }
-
+    
     // Iterate
     //
 
@@ -141,46 +147,33 @@ public:
       std::cout << "Iterating..." << std::endl;
     }
     
-    REAL cc_last = get_max<REAL>();
-    for (unsigned int it=0; it < iterations_; it++ ){
-      REAL convergence_criteria;
+    for( unsigned int it=0; it<iterations_; it++ ){
 
-      if( !this->iterate(&convergence_criteria) ){
-	boost::shared_ptr<ARRAY_TYPE> tmpx = x;
+      REAL tc_metric;
+      bool tc_terminate;
+      
+      if( !this->iterate( it, &tc_metric, &tc_terminate )){
+	this->solver_error( "Error: cgSolver::solve_from_rhs : iteration failed" );
 	deinitialize();
-	return tmpx;
-      }
-      tc_values_.push_back(convergence_criteria);
-
-      if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_WARNINGS ) {
-	if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
-	  std::cout << "Iteration " << it+1 << ". rq/rq_0 = " << convergence_criteria << std::endl;
-	}
-	if( cc_last-convergence_criteria < REAL(0) ) {
-	  std::cout << "----- Warning: CG residual increase. Stability problem! -----" << std::endl;
-	}
+	return boost::shared_ptr<ARRAY_TYPE>();
       }
 
-      if( !solver_dump(x.get()) ) {
-	this->solver_error( "Warning: cgSolver::solve_from_rhs : image dump callback failed" );
-	boost::shared_ptr<ARRAY_TYPE> tmpx = x;
-	deinitialize();
-	return tmpx;
-      }
+      if( tc_history_enabled_ )
+	tc_values_.push_back( tc_metric );
 
-      if( convergence_criteria < limit_ ) {
+      if( !solver_dump( x_.get()) )
+	this->solver_warning( "Warning: cgSolver::solve_from_rhs : image dump callback failed" );
+      
+      if( tc_terminate )
 	break;
-      } else {
-	cc_last = convergence_criteria;
-      }
     }
 
-    ARRAY_TYPE* xp = x.get();
-    if( !post_solve( &xp ) ){
-      this->solver_error( "Warning : cgSolver::solve_from_rhs : post_solve callback failed" );
-    }
+    // Invoke post solve callback
+    if( !post_solve( x_ ) )
+      this->solver_warning( "Warning : cgSolver::solve_from_rhs : post_solve callback failed" );
 
-    boost::shared_ptr<ARRAY_TYPE> tmpx = x;
+    // Clean up and we are done
+    boost::shared_ptr<ARRAY_TYPE> tmpx = x_;
     deinitialize();
     return tmpx;
   }
@@ -194,7 +187,7 @@ protected:
     // We also fetch the image dimensions from a suitable operator
 
     int first_idx = -1;
-    for( int i=0; i<operators_.size(); i++){
+    for( int i=0; i<operators_.size(); i++ ){
       if( indicators_[i] ){ 
 	if( operators_[i]->get_domain_dimensions().size() == 0 ){
 	  first_idx--;
@@ -228,7 +221,11 @@ protected:
       this->solver_error( "Error: cgSolver::compute_rhs : memory allocation failed (1)" );
       return boost::shared_ptr<ARRAY_TYPE>();
     }
-    solver_clear( result.get() );
+    
+    if( !solver_clear( result.get() )){
+      this->solver_error( "Error: cgSolver::compute_rhs : failed to clear result" );
+      return boost::shared_ptr<ARRAY_TYPE>();
+    }
     
     // Create temporary array
     boost::shared_ptr<ARRAY_TYPE> tmp = boost::shared_ptr<ARRAY_TYPE>(new ARRAY_TYPE());
@@ -239,16 +236,16 @@ protected:
     
     // Iterate over operators to compute rhs
     //
-
+    
     for( unsigned int i=0; i<operators_.size(); i++){
       if( indicators_[i] ) {
-
+	
 	// Compute operator adjoint
 	if( operators_[i]->mult_MH( (rhs_priors_[i].get()) ? rhs_priors_[i].get() : d, tmp.get() ) < 0 ) {
 	  this->solver_error( "Error: cgSolver::compute_rhs : failed to apply matrix operator" );
 	  return boost::shared_ptr<ARRAY_TYPE>();
 	}
-
+	
 	// Accumulate
 	if( !solver_axpy(operators_[i]->get_weight(), tmp.get(), result.get() )) {
 	  this->solver_error( "Error: cgSolver::compute_rhs : failed to accumulate result" );
@@ -258,73 +255,60 @@ protected:
     }
     return result;
   }
-
-  virtual bool initialize( ARRAY_TYPE *rhs, ARRAY_TYPE *x0 ) 
+    
+  virtual bool initialize( ARRAY_TYPE *rhs ) 
   {
     // Input validity test
     if( !rhs || rhs->get_number_of_elements() == 0 ){
-      this->solver_error( "cgSolver::solve : empty or NULL rhs provided" );
+      this->solver_error( "Error: cgSolver::initialize : empty or NULL rhs provided" );
       return false;
     }
-  
-    q2 = new ARRAY_TYPE();
-    if( !q2->create( rhs->get_dimensions().get() )) {
-      this->solver_error( "cgSolver::initialize : Unable to allocate temp storage (q2)" );
+    
+    // Result, x
+    x_ = boost::shared_ptr<ARRAY_TYPE>( new ARRAY_TYPE() );
+    
+    if( !x_->create( rhs->get_dimensions().get() )) {
+      this->solver_error( "Error: cgSolver::initialize : Unable to allocate temporary storage (1)" );
       return false;
     }
-
-    // Result, rho
-    x = boost::shared_ptr<ARRAY_TYPE>( new ARRAY_TYPE() );
-
-    if( !x->create(rhs->get_dimensions().get() )) {
-      this->solver_error( "cgSolver::solve : Unable to allocate temp storage (x)" );
-      return false;
-    }
-
-    if (x0){
-      *(x.get()) = *x0;
-    } else{
-      // Clear rho
-      solver_clear(x.get());
-    }
-
-    // Calculate residual r
-    r = new ARRAY_TYPE(*rhs);
-    //r =  *rhs;
-
-    q = new ARRAY_TYPE();
-    if( !q->create(rhs->get_dimensions().get() )) {
-      this->solver_error( "cgSolver::solve : Unable to allocate temp storage (q)" );
-      return false;
-    }
-
-    *q = *r;
-
-    if( precond_.get() ) {
-      // Apply preconditioning, twice. Should change preconditioners to do this
-      if( precond_->apply(q,q) < 0 ) {
-	this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
+    
+    // Initialize r
+    r_ = boost::shared_ptr<ARRAY_TYPE>( new ARRAY_TYPE(*rhs) );
+    
+    // Initialize x,p
+    if( !this->x0_.get() ){ // no starting image provided      
+      
+      if( !solver_clear( x_.get()) ){ // set x to zero
+	this->solver_error( "Error: cgSolver::initialize : Unable to clear result" );
 	return false;
       }
 
-      if( precond_->apply(q,q) < 0 ) {
-	this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
-	return false;
+      p_ = boost::shared_ptr<ARRAY_TYPE>( new ARRAY_TYPE(*r_) );
+
+      // Apply preconditioning, twice (should change preconditioners to do this)
+      if( precond_.get() ) {	
+	if( precond_->apply( p_.get(), p_.get() ) < 0 ) {
+	  this->solver_error( "Error: cgSolver::initialize : failed to apply preconditioner to p (1)" );
+	  return false;
+	}
+	if( precond_->apply( p_.get(), p_.get() ) < 0 ) {
+	  this->solver_error( "Error: cgSolver::initialize : failed to apply preconditioner to p (2)" );
+	  return false;
+	}
       }
     }
-
-    rq_0 = real(solver_dot(r, q));
-    rq = rq_0;
-
-    if (x0) {
-      if (!x0->dimensions_equal(rhs)){
-	this->solver_error( "cgSolver::solve : RHS and initial guess must have same dimensions" );
+    else{ // starting image provided
+      
+      if( !this->x0_->dimensions_equal( rhs )){
+	this->solver_error( "Error: cgSolver::initialize : RHS and initial guess must have same dimensions" );
 	return false;
       }
 
+      *x_ = *(this->x0_);
+      
       ARRAY_TYPE mhmX;
-      if( !mhmX.create(rhs->get_dimensions().get() )) {
-	this->solver_error( "cgSolver::solve : Unable to allocate temp storage (mhmX)" );
+      if( !mhmX.create( rhs->get_dimensions().get() )) {
+	this->solver_error( "Error: cgSolver::initialize : Unable to allocate temporary storage (2)" );
 	return false;
       }
 
@@ -332,122 +316,169 @@ protected:
 	std::cout << "Preparing guess..." << std::endl;
       }
 
-      if(!mult_MH_M(x0,&mhmX)){
-	this->solver_error( "cgSolver::solve : Error in performing mult_MH_M for initial guess" );
+      if( !mult_MH_M( this->x0_.get(), &mhmX )){
+	this->solver_error( "Error: cgSolver::initialize : Error in performing mult_MH_M for initial guess" );
 	return false;
       }
 
-      if (!solver_axpy(-ELEMENT_TYPE(1),&mhmX,r)) {
-	this->solver_error( "cgSolver::solve : Error in performing axpy for initial guess" );
+      if( !solver_axpy( -ELEMENT_TYPE(1), &mhmX, r_.get() )){
+	this->solver_error( "Error: cgSolver::initialize : Error in performing axpy for initial guess" );
 	return false;
       }
 
-      *q = *r;
+      p_ = boost::shared_ptr<ARRAY_TYPE>( new ARRAY_TYPE(*r_) );
 
+      // Apply preconditioning, twice (should change preconditioners to do this)
       if( precond_.get() ) {
-	// Apply preconditioning, twice. Should change preconditioners to do this
-	if( precond_->apply(q,q) < 0 ) {
-	  this->solver_error( "cgSolver::initialize : failed to apply preconditioner to q" );
+	if( precond_->apply( p_.get(), p_.get() ) < 0 ) {
+	  this->solver_error( "Error: cgSolver::initialize : failed to apply preconditioner to p (3)" );
 	  return false;
 	}
-
-	if( precond_->apply(q,q) < 0 ) {
-	  this->solver_error( "cgSolver::initialize : failed to apply preconditioner to q" );
+	if( precond_->apply( p_.get(), p_.get() ) < 0 ) {
+	  this->solver_error( "Error: cgSolver::initialize : failed to apply preconditioner to p (4)" );
 	  return false;
 	}
       }
-
-      rq = real(solver_dot(r, q));
     }
 
-    p = new ARRAY_TYPE();
-    if( !p->create( rhs->get_dimensions().get() )) {
-      this->solver_error( "cgSolver::initialize : Unable to allocate temp storage (p)" );
+    rq_ = real( solver_dot( r_.get(), p_.get() ));
+
+    // Invoke termination callback initialization
+    if( !cb_->initialize(this) ){
+      this->solver_error( "Error: cgSolver::initialize : termination callback initialization failed" );
       return false;
-    }
+    }    
 
-    *p = *q;
-    rq_new = rq;
     return true;
   }
 
-  virtual bool deinitialize() {
-    delete p;
-    delete r;
-    delete q;
-    delete q2;
-    x = boost::shared_ptr<ARRAY_TYPE>();
+  virtual bool deinitialize() 
+  {
+    p_ = boost::shared_ptr<ARRAY_TYPE>();
+    r_ = boost::shared_ptr<ARRAY_TYPE>();
+    x_ = boost::shared_ptr<ARRAY_TYPE>();
     return true;
   }
-
-  virtual bool iterate(REAL* convergence_criteria) {
-    if (!mult_MH_M(p,q)){
-      this->solver_error( "cgSolver::solve : error in performing mult_MH_M" );
+  
+  virtual bool iterate( unsigned int iteration, REAL *tc_metric, bool *tc_terminate )
+  {
+    ARRAY_TYPE q;
+    if( !q.create( x_->get_dimensions().get() )) {
+      this->solver_error( "Error: cgSolver::mult_MH_M : memory allocation failed for temporary image" );
       return false;
     }
-    alpha = rq/solver_dot(p,q);
+
+    // Perform one iteration of the solver
+    if( !mult_MH_M( p_.get(), &q )){
+      this->solver_error( "Error: cgSolver::iterate : mult_MH_M failed" );
+      return false;
+    }
+    
+    ELEMENT_TYPE alpha = rq_/solver_dot( p_.get(), &q );
 
     // Update solution
-    if( !solver_axpy(alpha,p,x.get()) ) {
-      this->solver_error( "cgSolver::solve : failed to update solution" );
+    if( !solver_axpy( alpha, p_.get(), x_.get()) ) {
+      this->solver_error( "Error: cgSolver::iterate : failed to update solution" );
       return false;
     }
 
     // Update residual
-    if( !solver_axpy(-alpha,q,r) ) {
-      this->solver_error( "cgSolver::solve : failed to update residual" );
+    if( !solver_axpy( -alpha, &q, r_.get() )) {
+      this->solver_error( "Error: cgSolver::iterate : failed to update residual" );
       return false;
     }
 
-    if (precond_.get()){
-      if( precond_->apply(r,q) < 0 ) {
-	this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
+    // Apply preconditioning
+    if( precond_.get() ){
+
+      if( precond_->apply( r_.get(), &q ) < 0 ) {
+	this->solver_error( "Error: cgSolver::iterate : failed to apply preconditioner to q (1)" );
 	return false;
       }
-      if( precond_->apply(q,q) < 0 ) {
-	this->solver_error( "cgSolver::solve : failed to apply preconditioner to q" );
+      if( precond_->apply( &q, &q ) < 0 ) {
+	this->solver_error( "Error: cgSolver::iterate : failed to apply preconditioner to q (2)" );
+	return false;
+      }
+      
+      REAL tmp_rq = real(solver_dot( r_.get(), &q ));
+      
+      if( !solver_scal( (tmp_rq/rq_)*ELEMENT_TYPE(1), p_.get() )){
+	this->solver_error( "Error: cgSolver::iterate : failed to scale p (1)" );
 	return false;
       }
 
-      rq_new = real(solver_dot(r, q));
-      solver_scal((rq_new/rq)*ELEMENT_TYPE(1),p);
+      if( !solver_axpy( ELEMENT_TYPE(1), &q, p_.get() )) {
+	this->solver_error( "Error: cgSolver::iterate : failed to update p (1)" );
+	return false;
+      }
 
-      if( !solver_axpy(ELEMENT_TYPE(1),q,p) ) {
-	this->solver_error( "cgSolver::solve : failed to update solution" );
+      rq_ = tmp_rq;
+    } 
+    else{
+
+      REAL tmp_rq = real(solver_dot( r_.get(), r_.get()) );
+      
+      if( !solver_scal( (tmp_rq/rq_)*ELEMENT_TYPE(1), p_.get() )){
+	this->solver_error( "cgSolver::iterate : failed to scale p (2)" );
 	return false;
       }
-    } else{
-      rq_new = real(solver_dot(r, r));
-      solver_scal((rq_new/rq)*ELEMENT_TYPE(1),p);
-      if( !solver_axpy(ELEMENT_TYPE(1),r,p) ) {
-	this->solver_error( "cgSolver::solve : failed to update solution" );
+      
+      if( !solver_axpy( ELEMENT_TYPE(1), r_.get(), p_.get() )) {
+	this->solver_error( "cgSolver::iterate : failed to update p (2)" );
 	return false;
       }
+
+      rq_ = tmp_rq;      
     }
-
-    rq = rq_new;
-
-    // Calculate relative residual norm
-    *convergence_criteria = rq/rq_0;
+    
+    // Invoke termination callback iteration
+    if( !cb_->iterate( this, iteration, tc_metric, tc_terminate ) ){
+      this->solver_error( "Error: cgSolver::iterate : termination callback iteration failed" );
+      return false;
+    }    
 
     return true;
   }
 
-  bool mult_MH_M( ARRAY_TYPE *in, ARRAY_TYPE *out ){
+  bool mult_MH_M( ARRAY_TYPE *in, ARRAY_TYPE *out )
+  {
+    // Basic validity checks
+    if( !in || !out ){
+      this->solver_error( "Error: cgSolver::mult_MH_M : invalid input pointer(s)" );
+      return false;
+    }
+    if( in->get_number_of_elements() != out->get_number_of_elements() ){
+      this->solver_error( "Error: cgSolver::mult_MH_M : array dimensionality mismatch" );
+      return false;
+    }
+    
+    // Intermediate storage
+    ARRAY_TYPE q;
+    if( !q.create( in->get_dimensions().get() )) {
+      this->solver_error( "Error: cgSolver::mult_MH_M : memory allocation failed for temporary image" );
+      return false;
+    }
 
-    solver_clear(out);
+    // Start by clearing the output
+    if( !solver_clear( out )){
+      this->solver_error( "Error: cgSolver::mult_MH_M : failed to clear output" );
+      return false;
+    }
 
-
-    for (unsigned int i = 0; i < operators_.size(); i++) {
-      if( operators_[i]->mult_MH_M(in, q2, false) < 0 ) {
-	this->solver_error( "cgSolver::solve : failed to apply matrix operator" );
+    // Iterate over operators
+    for( unsigned int i=0; i<operators_.size(); i++ ){
+      
+      if( operators_[i]->mult_MH_M( in, &q, false ) < 0 ) {
+	this->solver_error( "Error: cgSolver::mult_MH_M : failed to apply matrix operator" );
 	return false;
       }
-      if( !solver_axpy(operators_[i]->get_weight(), q2, out) ) {
-	this->solver_error( "cgSolver::solve : failed to add result from operator" );
+      
+      if( !solver_axpy( operators_[i]->get_weight(), &q, out )) {
+	this->solver_error( "Error: cgSolver::mult_MH_M : failed to add result from operator" );
 	return false;
       }
     }
+
     return true;
   }
 
@@ -465,8 +496,8 @@ protected:
   // Preconditioner
   boost::shared_ptr< cgPreconditioner<ARRAY_TYPE> > precond_;
 
-  // Maximum number of iterations
-  unsigned int iterations_;
+  // Termination criterium callback
+  boost::shared_ptr< cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE> > cb_;
 
   // Termination criterium threshold
   REAL limit_;
@@ -477,9 +508,9 @@ protected:
   // History of termination criterium values
   std::vector<REAL> tc_values_;
 
-  REAL rq_new, rq, rq_0;
-  ELEMENT_TYPE alpha;
-  ARRAY_TYPE *p, *r, *q, *q2;
-  boost::shared_ptr<ARRAY_TYPE> x;
+  // Maximum number of iterations
+  unsigned int iterations_;
 
+  REAL rq_;
+  boost::shared_ptr<ARRAY_TYPE> x_, p_, r_;
 };
