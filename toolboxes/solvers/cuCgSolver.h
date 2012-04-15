@@ -2,7 +2,7 @@
 
 #include "cgSolver.h"
 #include "cuNDArray.h"
-#include "cuCGPreconditioner.h"
+#include "cuCgPreconditioner.h"
 #include "real_utilities.h"
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
@@ -10,26 +10,25 @@
 #include <iostream>
 
 
-template <class REAL, class T> class cuCGSolver 
+template <class REAL, class T> class cuCgSolver 
 	: public cgSolver< REAL, T, cuNDArray<T> >
 {
 public:
 
-  //  cuCGSolver() : cgSolver< REAL, T, cuNDArray<T> >() { set_device(); }  
-  cuCGSolver( int device=-1 ) : cgSolver< REAL, T, cuNDArray<T> >() { set_device(device); }
-  virtual ~cuCGSolver() {}
+  cuCgSolver() : cgSolver< REAL, T, cuNDArray<T> >() { set_device(-1); }
+  virtual ~cuCgSolver() {}
 
   virtual bool pre_solve(cuNDArray<T> **rhs)
   {
     // Query and set device no
     //
     if( cudaGetDevice( &old_device_ ) != cudaSuccess ){
-      solver_error( "cuCGSolver::pre_solve: unable to get current device." );
+      solver_error( "cuCgSolver::pre_solve: unable to get current device." );
       return false;
     }
     //
     if( device_ != old_device_ && cudaSetDevice(device_) != cudaSuccess) {
-      solver_error( "cuCGSolver:solve: unable to set specified device" );
+      solver_error( "cuCgSolver:solve: unable to set specified device" );
       return false;
     }
   
@@ -37,7 +36,7 @@ public:
     if( device_ != (*rhs)->get_device() ){
       new_rhs = new cuNDArray<T>(*(*rhs));    
       if( !new_rhs ){
-	solver_error( "cuCGSolver::pre_solve: failed to copy rhs to the specified compute device." );
+	solver_error( "cuCgSolver::pre_solve: failed to copy rhs to the specified compute device." );
 	return false;
       }    
       *rhs = new_rhs;
@@ -55,7 +54,7 @@ public:
       delete new_rhs;
   
     if( device_ != old_device_ && cudaSetDevice(old_device_) != cudaSuccess) {
-      solver_error( "cuCGSolver::solve: unable to restore device no" );
+      solver_error( "cuCgSolver::solve: unable to restore device no" );
       return false;
     }
     return true;
@@ -96,7 +95,7 @@ public:
       int old_device;  
       
       if( cudaGetDevice( &old_device ) != cudaSuccess ){
-	std::cerr << "cuCGSolver::set_device: unable to get current device." << std::endl ;
+	std::cerr << "cuCgSolver::set_device: unable to get current device." << std::endl ;
 	return false;
       }
       

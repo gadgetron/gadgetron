@@ -119,7 +119,7 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
     E_->set_device(device_number_);
 
     // Allocate preconditioner
-    D_ = boost::shared_ptr< cuCGPrecondWeights<float_complext> >( new cuCGPrecondWeights<float_complext>() );
+    D_ = boost::shared_ptr< cuCgPrecondWeights<float_complext> >( new cuCgPrecondWeights<float_complext>() );
     //D_->set_device(device_number_);
 
     // Allocate regularization image operator
@@ -134,8 +134,8 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
     cg_.add_matrix_operator( R_ );  // regularization matrix
     cg_.set_preconditioner ( D_ );  // preconditioning matrix
     cg_.set_max_iterations( number_of_iterations_ );
-    cg_.set_limit( cg_limit_ ); 
-    cg_.set_output_mode( cuCGSolver<float, float_complext>::OUTPUT_SILENT );
+    cg_.set_tc_tolerance( cg_limit_ ); 
+    cg_.set_output_mode( cuCgSolver<float, float_complext>::OUTPUT_SILENT );
 
     if( configure_channels() == GADGET_FAIL )
       return GADGET_FAIL;

@@ -6,15 +6,15 @@
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
 
-template <class REAL, class T> class cuSBCSolver 
+template <class REAL, class T> class cuSbcSolver 
 	: public sbcSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T> >
 {
 public:
   
-  cuSBCSolver( int device=-1 ) : sbcSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T> >() { set_device(device); }
-  virtual ~cuSBCSolver() {}
+  cuSbcSolver() : sbcSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T> >() { set_device(-1); }
+  virtual ~cuSbcSolver() {}
 
-#include "cuSBSolver_macros.h"
+#include "cuSbSolver_macros.h"
 
 protected:
   int device_;

@@ -6,8 +6,8 @@
 #include "cuNonCartesianSenseOperator.h"
 #include "cuSenseRHSBuffer.h"
 #include "cuPartialDerivativeOperator.h"
-#include "cuCGSolver.h"
-#include "cuSBCSolver.h"
+#include "cuCgSolver.h"
+#include "cuSbcCgSolver.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "parameterparser.h"
@@ -205,22 +205,23 @@ int main(int argc, char** argv)
   // 
   // Setup radial SENSE reconstructions
   //
-    
+  /*    
   // Setup conjugate gradient solver
-  boost::shared_ptr< cuCGSolver<_real, _complext> > cg(new  cuCGSolver<_real, _complext>);
+  boost::shared_ptr< cuCgSolver<_real, _complext> > cg(new  cuCgSolver<_real, _complext>);
   cg->add_matrix_operator( E );   // encoding matrix
   cg->add_matrix_operator( Rx );  // regularization matrix
   cg->add_matrix_operator( Ry );  // regularization matrix
   cg->set_max_iterations( num_cg_iterations );
-  cg->set_limit( 1e-2 );
-  cg->set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_WARNINGS );
-  
+  cg->set_tc_tolerance( 1e-2 );
+  cg->set_output_mode( cuCgSolver<_real, _complext>::OUTPUT_WARNINGS );
+  */
   boost::shared_ptr< std::vector<unsigned int> > recon_dims( new std::vector<unsigned int> );
   *recon_dims = uintd_to_vector<2>(matrix_size); recon_dims->push_back(frames_per_reconstruction); 
-    
+
+  E->set_domain_dimensions(*recon_dims);
+
   // Setup split-Bregman solver
-  cuSBCSolver<_real, _complext> sb;
-  sb.set_inner_solver( cg );
+  cuSbcCgSolver<_real, _complext> sb;
   sb.set_encoding_operator( E );
   sb.add_regularization_group_operator( Rx ); 
   sb.add_regularization_group_operator( Ry ); 
@@ -231,9 +232,10 @@ int main(int argc, char** argv)
   sb.set_outer_iterations(num_sb_outer_iterations);
   sb.set_inner_iterations(num_sb_inner_iterations);
   sb.set_image_dimensions(recon_dims);
-  sb.set_output_mode( cuSBCSolver<_real, _complext>::OUTPUT_VERBOSE );
+  sb.set_output_mode( cuSbcCgSolver<_real, _complext>::OUTPUT_VERBOSE );
   
-  unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
+  //unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
+  unsigned int num_reconstructions = 1;
 
   // Allocate space for result
   boost::shared_ptr< std::vector<unsigned int> > res_dims( new std::vector<unsigned int> );

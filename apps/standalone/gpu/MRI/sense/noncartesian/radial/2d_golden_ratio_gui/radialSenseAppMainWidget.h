@@ -5,10 +5,10 @@
 #include "hoNDArray.h"
 #include "cuNDArray.h"
 #include "NFFT.h"
-#include "cuCGSolver.h"
+#include "cuCgSolver.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "cuImageOperator.h"
-#include "cuCGPrecondWeights.h"
+#include "cuCgPrecondWeights.h"
 #include "complext.h"
 
 #include <boost/smart_ptr.hpp>
@@ -102,13 +102,13 @@ private:
   NFFT_plan<float,2> plan;
 
   // Define conjugate gradient solver
-  cuCGSolver<float, float_complext> cg;
+  cuCgSolver<float, float_complext> cg;
 
   // Define non-Cartesian Sense solver
   boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E;
 
   // Define preconditioner
-  boost::shared_ptr< cuCGPrecondWeights<float_complext> > D;
+  boost::shared_ptr< cuCgPrecondWeights<float_complext> > D;
   
   // Define regularization image operator
   boost::shared_ptr< cuImageOperator<float,float_complext> > R;

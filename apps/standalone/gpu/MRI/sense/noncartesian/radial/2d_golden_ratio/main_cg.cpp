@@ -6,8 +6,8 @@
 #include "cuNonCartesianSenseOperator.h"
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
-#include "cuCGPrecondWeights.h"
-#include "cuCGSolver.h"
+#include "cuCgPrecondWeights.h"
+#include "cuCgSolver.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "parameterparser.h"
@@ -213,7 +213,7 @@ int main(int argc, char** argv)
   _precon_weights.reset();
 
   // Define preconditioning matrix
-  boost::shared_ptr< cuCGPrecondWeights<_complext> > D( new cuCGPrecondWeights<_complext>() );
+  boost::shared_ptr< cuCgPrecondWeights<_complext> > D( new cuCgPrecondWeights<_complext>() );
   D->set_weights( precon_weights );
   precon_weights.reset();
   csm.reset();
@@ -225,11 +225,11 @@ int main(int argc, char** argv)
   //
       
   // Setup conjugate gradient solver
-  cuCGSolver<_real, _complext> cg;
+  cuCgSolver<_real, _complext> cg;
   cg.set_preconditioner ( D );  // preconditioning matrix
   cg.set_max_iterations( num_iterations );
-  cg.set_limit( 1e-6 );
-  cg.set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_VERBOSE );
+  cg.set_tc_tolerance( 1e-6 );
+  cg.set_output_mode( cuCgSolver<_real, _complext>::OUTPUT_VERBOSE );
 
   // Reconstruct all SENSE frames iteratively
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;

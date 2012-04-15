@@ -29,6 +29,7 @@ public:
   
   virtual bool initialize( cgSolver<REAL,ELEMENT_TYPE,ARRAY_TYPE> *cg )
   {
+    tc_last_ = get_max<REAL>();
     rq_0_ = real( cg->solver_dot( cg->get_r().get(), cg->get_p().get() ));
     return true;
   }
@@ -47,7 +48,7 @@ public:
       }
     }
     
-    *tc_terminate = ( *tc_metric < cg->get_limit() );    
+    *tc_terminate = ( *tc_metric < cg->get_tc_tolerance() );    
     tc_last_ = *tc_metric;
     return true;
   }

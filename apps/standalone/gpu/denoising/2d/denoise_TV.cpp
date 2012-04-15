@@ -8,8 +8,8 @@
 #include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
 #include "ndarray_vector_td_utilities.h"
-#include "cuSBSolver.h"
-#include "cuCGSolver.h"
+#include "cuSbSolver.h"
+#include "cuCgSolver.h"
 #include "cuIdentityOperator.h"
 #include "cuPartialDerivativeOperator.h"
 #include "parameterparser.h"
@@ -92,16 +92,16 @@ int main(int argc, char** argv)
   E->set_weight( mu );
   
   // Setup conjugate gradient solver
-  boost::shared_ptr< cuCGSolver<_real,_real> > cg(new cuCGSolver<_real,_real>());
+  boost::shared_ptr< cuCgSolver<_real,_real> > cg(new cuCgSolver<_real,_real>());
   cg->add_matrix_operator( E );   // encoding matrix
   cg->add_matrix_operator( Rx );  // regularization matrix
   cg->add_matrix_operator( Ry );  // regularization matrix
   cg->set_max_iterations( num_cg_iterations );
-  cg->set_limit( 1e-4 );
-  cg->set_output_mode( cuCGSolver<_real,_real>::OUTPUT_WARNINGS );  
+  cg->set_tc_tolerance( 1e-4 );
+  cg->set_output_mode( cuCgSolver<_real,_real>::OUTPUT_WARNINGS );  
   
   // Setup split-Bregman solver
-  cuSBSolver<_real,_real> sb;
+  cuSbSolver<_real,_real> sb;
   sb.set_inner_solver( cg );
   sb.set_encoding_operator( E );
   //sb.add_regularization_operator( Rx ); // Anisotropic denoising
@@ -112,7 +112,7 @@ int main(int argc, char** argv)
   sb.set_outer_iterations(num_outer_iterations);
   sb.set_inner_iterations(num_inner_iterations);
   sb.set_image_dimensions(data.get_dimensions());
-  sb.set_output_mode( cuCGSolver<_real,_real>::OUTPUT_VERBOSE );
+  sb.set_output_mode( cuCgSolver<_real,_real>::OUTPUT_VERBOSE );
   
   // Run split-Bregman solver
   boost::shared_ptr< cuNDArray<_real> > sbresult = sb.solve(&data);

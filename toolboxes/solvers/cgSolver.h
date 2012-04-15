@@ -1,7 +1,6 @@
 #pragma once
 
-#include "solver.h"
-#include "matrixOperator.h"
+#include "matrixOpSolver.h"
 #include "cgCallback.h"
 #include "cgPreconditioner.h"
 #include "real_utilities.h"
@@ -10,42 +9,22 @@
 #include <iostream>
 
 template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class cgSolver 
-  : public solver<ARRAY_TYPE, ARRAY_TYPE>
+  : public matrixOpSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE>
 {
-
+  
 public:
 
   // Constructor
-  cgSolver() : solver<ARRAY_TYPE,ARRAY_TYPE>() { 
+  cgSolver() : matrixOpSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE>() { 
     iterations_ = 10;
-    limit_ = (REAL)1e-3;
+    tc_tolerance_ = (REAL)1e-3;
     tc_history_enabled_ = false;
-    cb_ = boost::shared_ptr< relativeResidualTCB<REAL,ELEMENT_TYPE,ARRAY_TYPE> >
-      ( new relativeResidualTCB<REAL,ELEMENT_TYPE,ARRAY_TYPE>() );
+    cb_ = boost::shared_ptr< relativeResidualTCB<REAL, ELEMENT_TYPE, ARRAY_TYPE> >
+      ( new relativeResidualTCB<REAL, ELEMENT_TYPE, ARRAY_TYPE>() );
   }
   
   // Destructor
   virtual ~cgSolver() {}
-
-  // Add matrix operator to the solver
-  // ---------------------------------
-  // The latter two arguments are used during subsequent calls to 'solve' and 'solve_from_rhs'
-  //
-  // When using the 'solve_from_rhs' interface, 'contributes_to_rhs' and 'rhs_prior' are ignored.
-  // When using the 'solve' interface
-  // - 'contributions_to_rhs' indicates if this operator contributes to the right hand side (rhs):
-  // - if true, the adjoint matrix operator (op.mult_MH) is computed on 'rhs_prior' during the rhs computation
-  // - if true and 'rhs_prior' is 0x0, (op.mult_MH) is computed on the input data to the 'solve' method 
-
-  inline void add_matrix_operator( boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE> > op,
-				   bool contributes_to_rhs = false, 
-				   boost::shared_ptr<ARRAY_TYPE> rhs_prior = boost::shared_ptr<ARRAY_TYPE>() ) 
-  {
-    if( !op.get() ) return;
-    operators_.push_back(op);
-    indicators_.push_back(contributes_to_rhs);
-    rhs_priors_.push_back(rhs_prior);
-  }
 
   // Set preconditioner
   inline void set_preconditioner( boost::shared_ptr< cgPreconditioner<ARRAY_TYPE> > precond ) {
@@ -53,18 +32,18 @@ public:
   }
   
   // Set termination callback
-  inline void set_termination_callback( boost::shared_ptr< cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE> > cb ){
+  inline void set_termination_callback( boost::shared_ptr< cgTerminationCallback<REAL, ELEMENT_TYPE, ARRAY_TYPE> > cb ){
     cb_ = cb;
   }
-  
-  // Set/get termination threshold for termination criterium
-  inline void set_limit( REAL limit ) { limit_ = limit; }
-  inline REAL get_limit() { return limit_; }
   
   // Set/get maximally allowed number of iterations
   inline void set_max_iterations( unsigned int iterations ) { iterations_ = iterations; }
   inline unsigned int get_max_iterations() { return iterations_; }  
 
+  // Set/get tolerance threshold for termination criterium
+  inline void set_tc_tolerance( REAL tolerance ) { tc_tolerance_ = tolerance; }
+  inline REAL get_tc_tolerance() { return tc_tolerance_; }
+  
   // Toggle (on/off) record keeping of termination criterium (tc) evaluations
   void enable_tc_history( bool b ) { tc_history_enabled_ = b; }
   
@@ -187,9 +166,9 @@ protected:
     // We also fetch the image dimensions from a suitable operator
 
     int first_idx = -1;
-    for( int i=0; i<operators_.size(); i++ ){
-      if( indicators_[i] ){ 
-	if( operators_[i]->get_domain_dimensions().size() == 0 ){
+    for( int i=0; i<this->operators_.size(); i++ ){
+      if( this->indicators_[i] ){ 
+	if( this->operators_[i]->get_domain_dimensions().size() == 0 ){
 	  first_idx--;
 	  continue;	  
 	}
@@ -209,7 +188,7 @@ protected:
     }
     
     // We can take the image space dimensions from the first operator
-    std::vector<unsigned int> image_dims = operators_[first_idx]->get_domain_dimensions();
+    std::vector<unsigned int> image_dims = this->operators_[first_idx]->get_domain_dimensions();
     if( image_dims.size() == 0 ){
       this->solver_error( "Error: cgSolver::compute_rhs : " );
       return boost::shared_ptr<ARRAY_TYPE>();
@@ -237,17 +216,17 @@ protected:
     // Iterate over operators to compute rhs
     //
     
-    for( unsigned int i=0; i<operators_.size(); i++){
-      if( indicators_[i] ) {
+    for( unsigned int i=0; i<this->operators_.size(); i++){
+      if( this->indicators_[i] ) {
 	
 	// Compute operator adjoint
-	if( operators_[i]->mult_MH( (rhs_priors_[i].get()) ? rhs_priors_[i].get() : d, tmp.get() ) < 0 ) {
+	if( this->operators_[i]->mult_MH( (this->rhs_data_[i].get()) ? this->rhs_data_[i].get() : d, tmp.get() ) < 0 ) {
 	  this->solver_error( "Error: cgSolver::compute_rhs : failed to apply matrix operator" );
 	  return boost::shared_ptr<ARRAY_TYPE>();
 	}
 	
 	// Accumulate
-	if( !solver_axpy(operators_[i]->get_weight(), tmp.get(), result.get() )) {
+	if( !solver_axpy(this->operators_[i]->get_weight(), tmp.get(), result.get() )) {
 	  this->solver_error( "Error: cgSolver::compute_rhs : failed to accumulate result" );
 	  return boost::shared_ptr<ARRAY_TYPE>();
 	}
@@ -466,14 +445,14 @@ protected:
     }
 
     // Iterate over operators
-    for( unsigned int i=0; i<operators_.size(); i++ ){
+    for( unsigned int i=0; i<this->operators_.size(); i++ ){
       
-      if( operators_[i]->mult_MH_M( in, &q, false ) < 0 ) {
+      if( this->operators_[i]->mult_MH_M( in, &q, false ) < 0 ) {
 	this->solver_error( "Error: cgSolver::mult_MH_M : failed to apply matrix operator" );
 	return false;
       }
       
-      if( !solver_axpy( operators_[i]->get_weight(), &q, out )) {
+      if( !solver_axpy( this->operators_[i]->get_weight(), &q, out )) {
 	this->solver_error( "Error: cgSolver::mult_MH_M : failed to add result from operator" );
 	return false;
       }
@@ -484,23 +463,14 @@ protected:
 
 protected:
 
-  // Vector of matrix operators
-  std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE> > > operators_;
-  
-  // Vector of boolean rhs indicators for the operators
-  std::vector<bool> indicators_;
-  
-  // Vector of rhs priors for the operators
-  std::vector< boost::shared_ptr<ARRAY_TYPE> > rhs_priors_;
-  
   // Preconditioner
   boost::shared_ptr< cgPreconditioner<ARRAY_TYPE> > precond_;
 
   // Termination criterium callback
-  boost::shared_ptr< cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE> > cb_;
+  boost::shared_ptr< cgTerminationCallback<REAL, ELEMENT_TYPE, ARRAY_TYPE> > cb_;
 
   // Termination criterium threshold
-  REAL limit_;
+  REAL tc_tolerance_;
 
   // Toogle record keeping of termination criterium
   bool tc_history_enabled_;

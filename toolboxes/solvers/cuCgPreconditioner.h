@@ -5,15 +5,15 @@
 #include "cgPreconditioner.h"
 #include "cuNDArray.h"
 
-template <class T> class cuCGPreconditioner 
+template <class T> class cuCgPreconditioner 
 	: public cgPreconditioner< cuNDArray<T> >
 {
  public:
-  cuCGPreconditioner( int device = -1 ) : cgPreconditioner< cuNDArray<T> >()
+  cuCgPreconditioner( int device = -1 ) : cgPreconditioner< cuNDArray<T> >()
   {
     if( device<0 ){
       if( cudaGetDevice( &device_ ) != cudaSuccess ){
-	std::cerr << "cuCGPreconditioner: unable to get current device." << std::endl ;
+	std::cerr << "cuCgPreconditioner: unable to get current device." << std::endl ;
 	device_ = 0;
       }
     }
@@ -21,17 +21,17 @@ template <class T> class cuCGPreconditioner
       device_ = device;
   }
 
-  virtual ~cuCGPreconditioner() {}
+  virtual ~cuCgPreconditioner() {}
 
 protected:
   virtual int set_device()
   {
     if( cudaGetDevice( &old_device_ ) != cudaSuccess ){
-      std::cerr << "cuCGPreconditioner::set_device: unable to get current device." << std::endl ;
+      std::cerr << "cuCgPreconditioner::set_device: unable to get current device." << std::endl ;
       return -1;
     }
     if( device_ != old_device_ && cudaSetDevice(device_) != cudaSuccess) {
-      std::cerr << "cuCGPreconditioner::set_device: unable to set device " << device_ << std::endl;
+      std::cerr << "cuCgPreconditioner::set_device: unable to set device " << device_ << std::endl;
       return -1;
     }
     return 0;

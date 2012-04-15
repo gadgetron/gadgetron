@@ -10,9 +10,9 @@
 #include "gadgetroncgsense_export.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
-#include "cuCGSolver.h"
+#include "cuCgSolver.h"
 #include "cuNonCartesianSenseOperator.h"
-#include "cuCGPrecondWeights.h"
+#include "cuCgPrecondWeights.h"
 #include "NFFT.h"
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
@@ -76,13 +76,13 @@ protected:
 	bool is_configured_;
 
 	// Define conjugate gradient solver
-	cuCGSolver<float, float_complext> cg_;
+	cuCgSolver<float, float_complext> cg_;
 
 	// Define non-Cartesian Sense Encofing operator
 	boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E_;
 
 	// Define preconditioner
-	boost::shared_ptr< cuCGPrecondWeights<float_complext> > D_;
+	boost::shared_ptr< cuCgPrecondWeights<float_complext> > D_;
 
 	// Define regularization image operator
 	boost::shared_ptr< cuImageOperator<float,float_complext> > R_;

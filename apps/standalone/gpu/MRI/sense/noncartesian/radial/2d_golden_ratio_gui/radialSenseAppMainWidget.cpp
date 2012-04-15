@@ -8,7 +8,7 @@
 #include "ndarray_vector_td_utilities.h"
 #include "radial_utilities.h"
 #include "cuNonCartesianSenseOperator.h"
-#include "cuCGSolver.h"
+#include "cuCgSolver.h"
 #include "b1_map.h"
 
 #include "UIconstants.h"
@@ -70,7 +70,7 @@ radialSenseAppMainWindow::radialSenseAppMainWindow(QWidget *parent) : QMainWindo
   E = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );  
 
   // Allocate preconditioner
-  D = boost::shared_ptr< cuCGPrecondWeights<float_complext> >( new cuCGPrecondWeights<float_complext>() );
+  D = boost::shared_ptr< cuCgPrecondWeights<float_complext> >( new cuCgPrecondWeights<float_complext>() );
 
   // Allocate regularization image operator
   R = boost::shared_ptr< cuImageOperator<float,float_complext> >( new cuImageOperator<float,float_complext>() );
@@ -81,8 +81,8 @@ radialSenseAppMainWindow::radialSenseAppMainWindow(QWidget *parent) : QMainWindo
   cg.add_matrix_operator( R );  // regularization matrix
   cg.set_preconditioner ( D );  // preconditioning matrix
   cg.set_max_iterations( get_num_iterations() );
-  cg.set_limit( 1e-6 );
-  cg.set_output_mode( cuCGSolver<float, float_complext>::OUTPUT_SILENT );
+  cg.set_tc_tolerance( 1e-6 );
+  cg.set_output_mode( cuCgSolver<float, float_complext>::OUTPUT_SILENT );
 }
 
 /*
