@@ -7,7 +7,7 @@
 #pragma once
 
 #include "solver.h"
-#include "matrixOperator.h"
+#include "linearOperator.h"
 #include "vector_td_utilities.h"
 
 #include <vector>
@@ -32,12 +32,12 @@ public:
     return 0;
   }
 
-  virtual bool set_encoding_operator( boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > op ) {
+  virtual bool set_encoding_operator( boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > op ) {
     encoding_operator_ = op;
     return true;
   }
 
-  virtual bool add_regularization_operator( boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > op, ARRAY_TYPE_ELEMENT *prior = 0x0  ) 
+  virtual bool add_regularization_operator( boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > op, ARRAY_TYPE_ELEMENT *prior = 0x0  )
   {
     regularization_operators_.push_back(op);
     boost::shared_ptr<ARRAY_TYPE_ELEMENT> opp;
@@ -58,7 +58,7 @@ public:
     return true;
   }
 
-  virtual bool add_regularization_group_operator( boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > op ) {
+  virtual bool add_regularization_group_operator( boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > op ) {
     _regularization_group_operators_.push_back(op);
     return true;
   }
@@ -701,10 +701,10 @@ protected:
   unsigned int outer_iterations_, inner_iterations_;
   boost::shared_ptr< std::vector<unsigned int> > image_dims_;
   boost::shared_ptr< solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT> > inner_solver_;
-  boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > encoding_operator_;
-  std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > > regularization_operators_;
-  std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > > _regularization_group_operators_;
-  std::vector< std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > > > regularization_group_operators_;
+  boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > encoding_operator_;
+  std::vector< boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > > regularization_operators_;
+  std::vector< boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > > _regularization_group_operators_;
+  std::vector< std::vector< boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > > > regularization_group_operators_;
   std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > regularization_priors_;
   std::vector< std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > > regularization_group_priors_;
 };

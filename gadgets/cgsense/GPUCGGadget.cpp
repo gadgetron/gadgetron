@@ -130,8 +130,8 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
     cg_.set_device(device_number_);
 
     // Setup solver
-    cg_.add_matrix_operator( E_ );  // encoding matrix
-    cg_.add_matrix_operator( R_ );  // regularization matrix
+    cg_.add_encoding_operator( E_ );  // encoding matrix
+    cg_.add_encoding_operator( R_ );  // regularization matrix
     cg_.set_preconditioner ( D_ );  // preconditioning matrix
     cg_.set_max_iterations( number_of_iterations_ );
     cg_.set_tc_tolerance( cg_limit_ ); 

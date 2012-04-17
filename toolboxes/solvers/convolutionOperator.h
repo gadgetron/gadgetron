@@ -1,17 +1,17 @@
 #pragma once
 
-#include "matrixOperator.h"
+#include "linearOperator.h"
 #include "vector_td_utilities.h"
 
 #include <boost/smart_ptr.hpp>
 #include <vector>
 
 template <class REAL, class COMPLEX_ARRAY_TYPE, unsigned int D> class convolutionOperator 
-	: public matrixOperator<REAL, COMPLEX_ARRAY_TYPE>
+	: public linearOperator<REAL, COMPLEX_ARRAY_TYPE>
 {  
 public:
   
-  convolutionOperator() : matrixOperator<REAL,COMPLEX_ARRAY_TYPE>() {}
+  convolutionOperator() : linearOperator<REAL,COMPLEX_ARRAY_TYPE>() {}
   virtual ~convolutionOperator() {}
 
   // The functionality of these pure virtual functions must be provided in a derived class

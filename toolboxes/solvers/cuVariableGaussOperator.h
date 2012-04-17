@@ -1,7 +1,7 @@
 #pragma once
 
 #include "cuNDArray.h"
-#include "matrixOperator.h"
+#include "linearOperator.h"
 #include "cuMatrixOperator_macros.h"
 #include "vector_td_utilities.h"
 #include "solvers_export.h"
@@ -10,11 +10,11 @@
 #include <vector>
 
 template <class REAL, class T, unsigned int D> class EXPORTSOLVERS cuVariableGaussOperator 
-	: public matrixOperator<REAL, cuNDArray<T> >
+	: public linearOperator<REAL, cuNDArray<T> >
 {
 
  public:
-  cuVariableGaussOperator() : matrixOperator<REAL, cuNDArray<T> >() { set_device(-1); }
+  cuVariableGaussOperator() : linearOperator<REAL, cuNDArray<T> >() { set_device(-1); }
   virtual ~cuVariableGaussOperator() {}
 
   void set_sigma(cuNDArray<REAL> * sigma);

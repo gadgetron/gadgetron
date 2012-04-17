@@ -33,7 +33,7 @@ public:
     return 0;
   }
   */
-  virtual bool set_encoding_operator( boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > op ) 
+  virtual bool set_encoding_operator( boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > op )
   {
     if( !op.get() ){
       this->solver_error( "Error: sbCgSolver::set_encoding_operator : NULL operator provided" );
@@ -45,7 +45,7 @@ public:
       return false;
     }
     
-    if( !inner_solver_->add_matrix_operator( op ) ){
+    if( !inner_solver_->add_encoding_operator( op ) ){
       this->solver_error( "Error: sbCgSolver::set_encoding_operator : failed to add encoding operator to inner solver" );
       return false;
     }
@@ -54,7 +54,7 @@ public:
     return true;
   }
   
-  virtual bool add_regularization_operator( boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > op, 
+  virtual bool add_regularization_operator( boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > op,
 					    ARRAY_TYPE_ELEMENT *prior = 0x0  ) 
   {
     if( !op.get() ){
@@ -79,7 +79,7 @@ public:
       }      
     }
 
-    if( !inner_solver_->add_matrix_operator( op ) ){
+    if( !inner_solver_->add_linear_operator( op ) ){
       this->solver_error( "Error: sbCgSolver::add_regularization_operator : failed to add regularization operator to inner solver" );
       return false;
     }
@@ -90,7 +90,7 @@ public:
     return true;
   }
 
-  virtual bool add_regularization_group_operator( boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > op ) {
+  virtual bool add_regularization_group_operator( boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > op ) {
     _regularization_group_operators_.push_back(op);
     return true;
   }
@@ -121,7 +121,7 @@ public:
     }
 
     for( unsigned int i=0; i<_regularization_group_operators_.size(); i++ ){
-      if( !inner_solver_->add_matrix_operator( _regularization_group_operators_.at(i) ) ){
+      if( !inner_solver_->add_linear_operator( _regularization_group_operators_.at(i) ) ){
 	this->solver_error( "Error: sbCgSolver::add_group : failed to add regularization operator to inner solver" );
 	return false;
       }
@@ -745,10 +745,10 @@ protected:
   unsigned int outer_iterations_, inner_iterations_;
   //boost::shared_ptr< std::vector<unsigned int> > image_dims_;
   boost::shared_ptr<INNER_SOLVER> inner_solver_;
-  boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > encoding_operator_;
-  std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > > regularization_operators_;
-  std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > > _regularization_group_operators_;
-  std::vector< std::vector< boost::shared_ptr< matrixOperator<REAL, ARRAY_TYPE_ELEMENT> > > > regularization_group_operators_;
+  boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > encoding_operator_;
+  std::vector< boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > > regularization_operators_;
+  std::vector< boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > > _regularization_group_operators_;
+  std::vector< std::vector< boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > > > regularization_group_operators_;
   std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > regularization_priors_;
   std::vector< std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > > regularization_group_priors_;
 };

@@ -1,16 +1,14 @@
-#ifndef MATRIXOPERATOR_H
-#define MATRIXOPERATOR_H
 #pragma once
 
 #include "vector_td_utilities.h"
 #include "solvers_export.h"
 
-template <class REAL, class ARRAY_TYPE> class matrixOperator
+template <class REAL, class ARRAY_TYPE> class linearOperator
 {
  public:
 
-  matrixOperator() { weight_ = REAL(1); }
-  virtual ~matrixOperator() {}
+  linearOperator() { weight_ = REAL(1); }
+  virtual ~linearOperator() {}
 
   inline void set_weight( REAL weight ){ weight_ = weight; }
   inline REAL get_weight(){ return weight_; }
@@ -35,4 +33,4 @@ private:
   std::vector<unsigned int> codomain_dims_; 
 };
 
-#endif //MATRIXOPERATOR_H
+

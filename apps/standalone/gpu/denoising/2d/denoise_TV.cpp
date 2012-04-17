@@ -1,7 +1,7 @@
 /*
 	Total variation denoising based on the paper 
 	"The Split Bregman Method for L1-Regularized Problems" by Tom Goldstein and Stanley Osher. 
-	Siam J. Imaging Sciences. Vol. 2, No. 2, pp. 323–343.
+	Siam J. Imaging Sciences. Vol. 2, No. 2, pp. 323ï¿½343.
 */
 
 // Gadgetron includes
@@ -93,9 +93,9 @@ int main(int argc, char** argv)
   
   // Setup conjugate gradient solver
   boost::shared_ptr< cuCgSolver<_real,_real> > cg(new cuCgSolver<_real,_real>());
-  cg->add_matrix_operator( E );   // encoding matrix
-  cg->add_matrix_operator( Rx );  // regularization matrix
-  cg->add_matrix_operator( Ry );  // regularization matrix
+  cg->add_encoding_operator( E );   // encoding matrix
+  cg->add_linear_operator( Rx );  // regularization matrix
+  cg->add_linear_operator( Ry );  // regularization matrix
   cg->set_max_iterations( num_cg_iterations );
   cg->set_tc_tolerance( 1e-4 );
   cg->set_output_mode( cuCgSolver<_real,_real>::OUTPUT_WARNINGS );  

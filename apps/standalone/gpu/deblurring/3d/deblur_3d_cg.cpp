@@ -83,10 +83,10 @@ int main(int argc, char** argv)
     
   // Setup conjugate gradient solver
   cuCgSolver<_real, _complext> cg;
-  cg.add_matrix_operator( E );                  // encoding matrix
-  if( kappa>0.0 ) cg.add_matrix_operator( Rx );  // regularization matrix
-  if( kappa>0.0 ) cg.add_matrix_operator( Ry );  // regularization matrix
-  if( kappa>0.0 ) cg.add_matrix_operator( Rz );  // regularization matrix
+  cg.add_encoding_operator( E );                  // encoding matrix
+  if( kappa>0.0 ) cg.add_linear_operator( Rx );  // regularization matrix
+  if( kappa>0.0 ) cg.add_linear_operator( Ry );  // regularization matrix
+  if( kappa>0.0 ) cg.add_linear_operator( Rz );  // regularization matrix
   cg.set_max_iterations( num_iterations );
   cg.set_tc_tolerance( 1e-12 );
   cg.set_output_mode( cuCgSolver<_real, _complext>::OUTPUT_VERBOSE );

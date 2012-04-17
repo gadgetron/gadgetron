@@ -1,6 +1,6 @@
 #pragma once
 
-#include "matrixOpSolver.h"
+#include "linearSolver.h"
 #include "cgCallback.h"
 #include "cgPreconditioner.h"
 #include "real_utilities.h"
@@ -9,13 +9,13 @@
 #include <iostream>
 
 template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class cgSolver 
-  : public matrixOpSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE>
+  : public linearSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE>
 {
   
 public:
 
   // Constructor
-  cgSolver() : matrixOpSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE>() { 
+  cgSolver() : linearSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE>() {
     iterations_ = 10;
     tc_tolerance_ = (REAL)1e-3;
     tc_history_enabled_ = false;
@@ -165,32 +165,19 @@ protected:
     // Make sure we have at least one operator on which to compute the adjoint
     // We also fetch the image dimensions from a suitable operator
 
-    int first_idx = -1;
-    for( int i=0; i<this->operators_.size(); i++ ){
-      if( this->indicators_[i] ){ 
-	if( this->operators_[i]->get_domain_dimensions().size() == 0 ){
-	  first_idx--;
-	  continue;	  
-	}
-	first_idx = i;
-	break;
-      }
-    }
+
     
-    if( first_idx == -1 ){
-      this->solver_error( "Error: cgSolver::compute_rhs : no matrix operators are configured to contribute to rhs" );
+    if( this->encoding_op.get() == 0 ){
+      this->solver_error( "Error: cgSolver::compute_rhs : no encoding operator is configured to contribute to rhs" );
       return boost::shared_ptr<ARRAY_TYPE>();
     }
     
-    if( first_idx < -1 ){
-      this->solver_error( "Error: cgSolver::compute_rhs : no matrix operators contributing to rhs has defined domain dimensions" );
-      return boost::shared_ptr<ARRAY_TYPE>();
-    }
+
     
     // We can take the image space dimensions from the first operator
-    std::vector<unsigned int> image_dims = this->operators_[first_idx]->get_domain_dimensions();
+    std::vector<unsigned int> image_dims = this->encoding_op->get_domain_dimensions();
     if( image_dims.size() == 0 ){
-      this->solver_error( "Error: cgSolver::compute_rhs : " );
+      this->solver_error( "Error: cgSolver::compute_rhs : encoding operator has not set domain dimension" );
       return boost::shared_ptr<ARRAY_TYPE>();
     }
 
@@ -216,22 +203,20 @@ protected:
     // Iterate over operators to compute rhs
     //
     
-    for( unsigned int i=0; i<this->operators_.size(); i++){
-      if( this->indicators_[i] ) {
+
 	
 	// Compute operator adjoint
-	if( this->operators_[i]->mult_MH( (this->rhs_data_[i].get()) ? this->rhs_data_[i].get() : d, tmp.get() ) < 0 ) {
+	if( this->encoding_op->mult_MH( d, tmp.get() ) < 0 ) {
 	  this->solver_error( "Error: cgSolver::compute_rhs : failed to apply matrix operator" );
 	  return boost::shared_ptr<ARRAY_TYPE>();
 	}
 	
 	// Accumulate
-	if( !solver_axpy(this->operators_[i]->get_weight(), tmp.get(), result.get() )) {
+	if( !solver_axpy(this->encoding_op->get_weight(), tmp.get(), result.get() )) {
 	  this->solver_error( "Error: cgSolver::compute_rhs : failed to accumulate result" );
 	  return boost::shared_ptr<ARRAY_TYPE>();
 	}
-      }
-    }
+
     return result;
   }
     
@@ -444,17 +429,28 @@ protected:
       return false;
     }
 
-    // Iterate over operators
+    //Use encoding operator
+
+    if( this->encoding_op->mult_MH_M( in, &q, false ) < 0 ) {
+    	this->solver_error( "Error: cgSolver::mult_MH_M : failed to apply encoding operator" );
+    	return false;
+	}
+    if( !solver_axpy( this->encoding_op->get_weight(), &q, out )) {
+        	  this->solver_error( "Error: cgSolver::mult_MH_M : failed to add result from  encoding operator" );
+        	  return false;
+    }
+
+    // Iterate over regularization operators
     for( unsigned int i=0; i<this->operators_.size(); i++ ){
       
-      if( this->operators_[i]->mult_MH_M( in, &q, false ) < 0 ) {
-	this->solver_error( "Error: cgSolver::mult_MH_M : failed to apply matrix operator" );
-	return false;
-      }
+	  if( this->operators_[i]->mult_MH_M( in, &q, false ) < 0 ) {
+		this->solver_error( "Error: cgSolver::mult_MH_M : failed to apply linear operator" );
+		return false;
+	  }
       
       if( !solver_axpy( this->operators_[i]->get_weight(), &q, out )) {
-	this->solver_error( "Error: cgSolver::mult_MH_M : failed to add result from operator" );
-	return false;
+    	  this->solver_error( "Error: cgSolver::mult_MH_M : failed to add result from linear operator" );
+    	  return false;
       }
     }
 

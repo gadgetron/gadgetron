@@ -1,14 +1,14 @@
 #pragma once
 
-#include "matrixOperator.h"
+#include "linearOperator.h"
 #include <iostream>
 
 template <class REAL, class ARRAY_TYPE> class identityOperator 
-	: public matrixOperator<REAL, ARRAY_TYPE>
+	: public linearOperator<REAL, ARRAY_TYPE>
 {
  public:
 
-  identityOperator() : matrixOperator<REAL,ARRAY_TYPE>() {}
+  identityOperator() : linearOperator<REAL,ARRAY_TYPE>() {}
   virtual ~identityOperator() {}
   
   virtual bool operator_xpy( ARRAY_TYPE*, ARRAY_TYPE* ) = 0;

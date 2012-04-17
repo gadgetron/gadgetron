@@ -121,10 +121,10 @@ template< class T, unsigned int D > __inline__ __host__ __device__ vector_td<T,D
   return res;
 }
 
-template< class T, unsigned int D > __inline__ __host__ __device__ vector_td<T,D> operator* ( const vector_td<T,D> &v1, const vector_td<T,D> &v2 )
+template< class T, class R, unsigned int D > __inline__ __host__ __device__ vector_td<typename vectorTDReturnType<T,R>::type,D> operator* ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
 {
-  vector_td<T,D> res;
-  for(unsigned int i=0; i<D; i++ ) res.vec[i] = v1.vec[i]*v2.vec[i];
+  vector_td<typename vectorTDReturnType<T,R>::type,D> res;
+  for(unsigned int i=0; i<D; i++ )  res.vec[i]=v1.vec[i]*v2.vec[i];
   return res;
 }
 
