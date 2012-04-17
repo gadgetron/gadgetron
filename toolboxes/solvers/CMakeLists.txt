@@ -35,6 +35,8 @@ install(FILES
 	cgPreconditioner.h
 	cuCgPreconditioner.h
 	cuCgPrecondWeights.h
+	lwSolver.h
+	cuLwSolver.h
 	matrixOperator.h
 	cuMatrixOperator_macros.h
 	identityOperator.h

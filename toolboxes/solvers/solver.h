@@ -23,10 +23,9 @@ public:
       output_mode_ = output_mode;
   }
   
-  // Set starting solution/estimate for solver
-  inline void set_x0( boost::shared_ptr<ARRAY_TYPE_OUT> x0 ){
-    x0_ = x0;
-  }
+  // Set/get starting solution/estimate for solver
+  inline void set_x0( boost::shared_ptr<ARRAY_TYPE_OUT> x0 ){ x0_ = x0; }
+  inline boost::shared_ptr<ARRAY_TYPE_OUT> get_x0(){ return x0_; }
 
   // Default error output
   virtual void solver_error( std::string msg ) { std::cerr << msg << std::endl; }

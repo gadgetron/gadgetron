@@ -18,28 +18,7 @@ public:
   // Destructor
   virtual ~linearSolver() {}
 
-  // Add matrix operator to the solver
-  // ---------------------------------
-  // The latter two arguments are used during subsequent calls to 'solve' and 'solve_from_rhs'
-  //
-  // When using the 'solve_from_rhs' interface, 'contributes_to_rhs' and 'rhs_data' are ignored.
-  // When using the 'solve' interface
-  // - 'contributions_to_rhs' indicates if this operator contributes to the right hand side (rhs):
-  // - if true, the adjoint matrix operator (op.mult_MH) is computed on 'rhs_data' during the rhs computation
-  // - if true and 'rhs_data' is 0x0, (op.mult_MH) is computed on the input data to the 'solve' method 
-
-  inline bool add_linear_operator( boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> > op)
-    {
-      if( !op.get() ){
-        this->solver_error( "Error: linearSolver::add_matrix_operator : NULL operator provided" );
-        return false;
-      }
-
-      operators_.push_back(op);
-
-      return true;
-    }
-
+  // Add encoding operator to solver (only one allowed)
   inline bool add_encoding_operator( boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> > op)
   {
     if( !op.get() ){
@@ -47,16 +26,29 @@ public:
       return false;
     } 
     
-    encoding_op = op;
+    encoding_operator_ = op;
 
     return true;
   }
 
+  // Add linear operator to solver (in addition to the encoding operator)
+  inline bool add_linear_operator( boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> > op)
+    {
+      if( !op.get() ){
+        this->solver_error( "Error: linearSolver::add_matrix_operator : NULL operator provided" );
+        return false;
+      }
+
+      regularization_operators_.push_back(op);
+
+      return true;
+    }
+
 protected:
   
-  // Vector of matrix operators
-  std::vector< boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> > > operators_;
-  boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> > encoding_op;
-  
-  
+  // Single encoding operator
+  boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> > encoding_operator_;
+
+  // Vector of linear regularization operators
+  std::vector< boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> > > regularization_operators_;
 };

@@ -167,7 +167,7 @@ protected:
 
 
     
-    if( this->encoding_op.get() == 0 ){
+    if( this->encoding_operator_.get() == 0 ){
       this->solver_error( "Error: cgSolver::compute_rhs : no encoding operator is configured to contribute to rhs" );
       return boost::shared_ptr<ARRAY_TYPE>();
     }
@@ -175,7 +175,7 @@ protected:
 
     
     // We can take the image space dimensions from the first operator
-    std::vector<unsigned int> image_dims = this->encoding_op->get_domain_dimensions();
+    std::vector<unsigned int> image_dims = this->encoding_operator_->get_domain_dimensions();
     if( image_dims.size() == 0 ){
       this->solver_error( "Error: cgSolver::compute_rhs : encoding operator has not set domain dimension" );
       return boost::shared_ptr<ARRAY_TYPE>();
@@ -206,13 +206,13 @@ protected:
 
 	
 	// Compute operator adjoint
-	if( this->encoding_op->mult_MH( d, tmp.get() ) < 0 ) {
+	if( this->encoding_operator_->mult_MH( d, tmp.get() ) < 0 ) {
 	  this->solver_error( "Error: cgSolver::compute_rhs : failed to apply matrix operator" );
 	  return boost::shared_ptr<ARRAY_TYPE>();
 	}
 	
 	// Accumulate
-	if( !solver_axpy(this->encoding_op->get_weight(), tmp.get(), result.get() )) {
+	if( !solver_axpy(this->encoding_operator_->get_weight(), tmp.get(), result.get() )) {
 	  this->solver_error( "Error: cgSolver::compute_rhs : failed to accumulate result" );
 	  return boost::shared_ptr<ARRAY_TYPE>();
 	}
@@ -431,24 +431,24 @@ protected:
 
     //Use encoding operator
 
-    if( this->encoding_op->mult_MH_M( in, &q, false ) < 0 ) {
+    if( this->encoding_operator_->mult_MH_M( in, &q, false ) < 0 ) {
     	this->solver_error( "Error: cgSolver::mult_MH_M : failed to apply encoding operator" );
     	return false;
 	}
-    if( !solver_axpy( this->encoding_op->get_weight(), &q, out )) {
+    if( !solver_axpy( this->encoding_operator_->get_weight(), &q, out )) {
         	  this->solver_error( "Error: cgSolver::mult_MH_M : failed to add result from  encoding operator" );
         	  return false;
     }
 
     // Iterate over regularization operators
-    for( unsigned int i=0; i<this->operators_.size(); i++ ){
+    for( unsigned int i=0; i<this->regularization_operators_.size(); i++ ){
       
-	  if( this->operators_[i]->mult_MH_M( in, &q, false ) < 0 ) {
+	  if( this->regularization_operators_[i]->mult_MH_M( in, &q, false ) < 0 ) {
 		this->solver_error( "Error: cgSolver::mult_MH_M : failed to apply linear operator" );
 		return false;
 	  }
       
-      if( !solver_axpy( this->operators_[i]->get_weight(), &q, out )) {
+      if( !solver_axpy( this->regularization_operators_[i]->get_weight(), &q, out )) {
     	  this->solver_error( "Error: cgSolver::mult_MH_M : failed to add result from linear operator" );
     	  return false;
       }
