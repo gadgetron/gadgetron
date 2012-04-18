@@ -16,6 +16,7 @@ public:
 
   // Constructor
   cgSolver() : linearSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE>() {
+    alpha = ELEMENT_TYPE(NAN);
     iterations_ = 10;
     tc_tolerance_ = (REAL)1e-3;
     tc_history_enabled_ = false;
@@ -54,6 +55,7 @@ public:
   inline boost::shared_ptr<ARRAY_TYPE> get_x() { return x_; }
   inline boost::shared_ptr<ARRAY_TYPE> get_p() { return p_; }
   inline boost::shared_ptr<ARRAY_TYPE> get_r() { return r_; }
+  inline ELEMENT_TYPE get_alpha() { return alpha; }
   inline REAL get_rq() { return rq_; }
 
   // Pre/post solver callbacks
@@ -338,7 +340,7 @@ protected:
       return false;
     }
     
-    ELEMENT_TYPE alpha = rq_/solver_dot( p_.get(), &q );
+    alpha = rq_/solver_dot( p_.get(), &q );
 
     // Update solution
     if( !solver_axpy( alpha, p_.get(), x_.get()) ) {
@@ -478,5 +480,6 @@ protected:
   unsigned int iterations_;
 
   REAL rq_;
+  ELEMENT_TYPE alpha;
   boost::shared_ptr<ARRAY_TYPE> x_, p_, r_;
 };
