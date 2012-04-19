@@ -16,7 +16,7 @@ public:
   virtual ~imageOperator() {}
   
   // Get regularization image
-  inline ARRAY_TYPE_REAL* get() { return image_.get(); }
+  virtual ARRAY_TYPE_REAL* get() { return image_.get(); }
     
   virtual void operator_scal( REAL, ARRAY_TYPE_OPERATOR* ) = 0;
   virtual void operator_reciprocal( ARRAY_TYPE_REAL* ) = 0;

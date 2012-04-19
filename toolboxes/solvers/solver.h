@@ -17,15 +17,15 @@ public:
   enum solverOutputModes { OUTPUT_SILENT = 0, OUTPUT_WARNINGS = 1, OUTPUT_VERBOSE = 2, OUTPUT_MAX = 3 };
   
   // Set/get output mode
-  inline int get_output_mode() { return output_mode_; }
-  inline void set_output_mode( int output_mode ) {
+  virtual int get_output_mode() { return output_mode_; }
+  virtual void set_output_mode( int output_mode ) {
     if( !(output_mode >= OUTPUT_MAX || output_mode < 0 )) 
       output_mode_ = output_mode;
   }
   
   // Set/get starting solution/estimate for solver
-  inline void set_x0( boost::shared_ptr<ARRAY_TYPE_OUT> x0 ){ x0_ = x0; }
-  inline boost::shared_ptr<ARRAY_TYPE_OUT> get_x0(){ return x0_; }
+  virtual void set_x0( boost::shared_ptr<ARRAY_TYPE_OUT> x0 ){ x0_ = x0; }
+  virtual boost::shared_ptr<ARRAY_TYPE_OUT> get_x0(){ return x0_; }
 
   // Default error output
   virtual void solver_error( std::string msg ) { std::cerr << msg << std::endl; }

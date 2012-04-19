@@ -4,7 +4,7 @@
 
   virtual void solver_error( std::string err )
   {
-    sbSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T> >::solver_error(err);
+    sbSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T>, cuCgSolver<REAL,T> >::solver_error(err);
     cudaSetDevice(old_device_);
   }
 

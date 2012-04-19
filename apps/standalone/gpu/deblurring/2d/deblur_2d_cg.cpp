@@ -80,22 +80,18 @@ int main(int argc, char** argv)
     
   // Setup conjugate gradient solver
   cuCgSolver<_real, _complext> cg;
-  cg.add_encoding_operator( E );                  // encoding matrix
-  if( kappa>0.0 ) cg.add_linear_operator( Rx );  // regularization matrix
-  if( kappa>0.0 ) cg.add_linear_operator( Ry );  // regularization matrix
+  cg.set_encoding_operator( E );                         // encoding matrix
+  if( kappa>0.0 ) cg.add_regularization_operator( Rx );  // regularization matrix
+  if( kappa>0.0 ) cg.add_regularization_operator( Ry );  // regularization matrix
   cg.set_max_iterations( num_iterations );
   cg.set_tc_tolerance( 1e-12 );
   cg.set_output_mode( cuCgSolver<_real, _complext>::OUTPUT_VERBOSE );
-                
-  // Form right hand side
-  cuNDArray<_complext> rhs; rhs.create(data.get_dimensions().get());
-  E->mult_MH( &data, &rhs );
-  
+                  
   //
   // Conjugate gradient solver
   //
   
-  boost::shared_ptr< cuNDArray<_complext> > cgresult = cg.solve_from_rhs(&rhs);
+  boost::shared_ptr< cuNDArray<_complext> > cgresult = cg.solve( &data );
 
   // All done, write out the result
   
@@ -104,9 +100,6 @@ int main(int argc, char** argv)
     
   boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_cAbs<_real,_complext>(cgresult.get())->to_host();
   write_nd_array<_real>( host_norm.get(), "cg_deblurred_image.real" );  
-
-  boost::shared_ptr< hoNDArray<_real> > host_rhs = cuNDA_cAbs<_real,_complext>(&rhs)->to_host();
-  write_nd_array<_real>( host_rhs.get(), "rhs.real" );
 
   return 0;
 }

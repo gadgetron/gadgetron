@@ -268,8 +268,8 @@ int main(int argc, char** argv)
     /*
     
     // Add operators to solver
-    cg.add_matrix_operator( E );  // encoding matrix
-    cg.add_matrix_operator( R );  // regularization matrix
+    cg.add_encoding_operator( E );        // encoding matrix
+    cg.add_regularization_operator( R );  // regularization matrix
 
     // Form rhs (use result array to save memory)
     vector<unsigned int> rhs_dims = uintd_to_vector<2>(matrix_size); 
@@ -307,11 +307,11 @@ int main(int argc, char** argv)
     if( reconstruction == 0 ){
       
       // Pass image dimensions to encoding operator
-      E->set_domain_dimensions(image_dims);
+      E->set_domain_dimensions(&image_dims);
 
       // Add operators to solver
-      cg.add_encoding_operator( E);  // encoding matrix
-      cg.add_linear_operator( R );        // regularization matrix
+      cg.set_encoding_operator( E);         // encoding matrix
+      cg.add_regularization_operator( R );  // regularization matrix
     }
     
     //

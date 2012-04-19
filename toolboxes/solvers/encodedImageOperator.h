@@ -12,7 +12,7 @@ public:
   virtual ~encodedImageOperator() {}
  
   // Set encoding operator for the regularization image
-  inline void set_encoding_operator( boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_OPERATOR> > encoding_operator )
+  virtual void set_encoding_operator( boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_OPERATOR> > encoding_operator )
 
   {
     encoding_operator_ = encoding_operator;

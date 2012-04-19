@@ -194,45 +194,45 @@ int main(int argc, char** argv)
   acc_images.reset();
   csm.reset();
 
+  boost::shared_ptr< std::vector<unsigned int> > recon_dims( new std::vector<unsigned int> );
+  *recon_dims = uintd_to_vector<2>(matrix_size); recon_dims->push_back(frames_per_reconstruction); 
+
   // Define regularization operators 
   boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Rx( new cuPartialDerivativeOperator<_real,_complext,3>(0) ); 
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Ry( new cuPartialDerivativeOperator<_real,_complext,3>(1) ); 
   Rx->set_weight( lambda );
+  Rx->set_domain_dimensions(recon_dims.get());
+  Rx->set_codomain_dimensions(recon_dims.get());
+
+  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Ry( new cuPartialDerivativeOperator<_real,_complext,3>(1) ); 
   Ry->set_weight( lambda );
+  Ry->set_domain_dimensions(recon_dims.get());
+  Ry->set_codomain_dimensions(recon_dims.get());
  
   delete timer;
     
   // 
   // Setup radial SENSE reconstructions
   //
-  /*    
-  // Setup conjugate gradient solver
-  boost::shared_ptr< cuCgSolver<_real, _complext> > cg(new  cuCgSolver<_real, _complext>);
-  cg->add_matrix_operator( E );   // encoding matrix
-  cg->add_matrix_operator( Rx );  // regularization matrix
-  cg->add_matrix_operator( Ry );  // regularization matrix
-  cg->set_max_iterations( num_cg_iterations );
-  cg->set_tc_tolerance( 1e-2 );
-  cg->set_output_mode( cuCgSolver<_real, _complext>::OUTPUT_WARNINGS );
-  */
-  boost::shared_ptr< std::vector<unsigned int> > recon_dims( new std::vector<unsigned int> );
-  *recon_dims = uintd_to_vector<2>(matrix_size); recon_dims->push_back(frames_per_reconstruction); 
 
-  E->set_domain_dimensions(*recon_dims);
+  vector<unsigned int> data_dims; 
+  data_dims.push_back(samples_per_reconstruction); data_dims.push_back(num_coils);
+
+  E->set_domain_dimensions(recon_dims.get());
+  E->set_codomain_dimensions(&data_dims);
 
   // Setup split-Bregman solver
   cuSbcCgSolver<_real, _complext> sb;
   sb.set_encoding_operator( E );
   sb.add_regularization_group_operator( Rx ); 
   sb.add_regularization_group_operator( Ry ); 
-  if( sb.add_group( reg_image.get() ) < 0 ){
-    cout << endl << "Failed to add group regularization image" << endl;
-    return 1;
-  }
-  sb.set_outer_iterations(num_sb_outer_iterations);
-  sb.set_inner_iterations(num_sb_inner_iterations);
-  sb.set_image_dimensions(recon_dims);
+  sb.add_group( reg_image.get() );
+  sb.set_max_outer_iterations(num_sb_outer_iterations);
+  sb.set_max_inner_iterations(num_sb_inner_iterations);
   sb.set_output_mode( cuSbcCgSolver<_real, _complext>::OUTPUT_VERBOSE );
+
+  sb.get_inner_solver()->set_max_iterations( num_cg_iterations );
+  sb.get_inner_solver()->set_tc_tolerance( 1e-4 );
+  sb.get_inner_solver()->set_output_mode( cuCgSolver<_real, _complext>::OUTPUT_WARNINGS );
   
   //unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
   unsigned int num_reconstructions = 1;

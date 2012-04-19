@@ -77,9 +77,9 @@ radialSenseAppMainWindow::radialSenseAppMainWindow(QWidget *parent) : QMainWindo
   R->set_weight( 1.0f );
 
   // Setup solver
-  cg.add_encoding_operator( E );  // encoding matrix
-  cg.add_linear_operator( R );  // regularization matrix
-  cg.set_preconditioner ( D );  // preconditioning matrix
+  cg.set_encoding_operator( E );        // encoding matrix
+  cg.add_regularization_operator( R );  // regularization matrix
+  cg.set_preconditioner ( D );          // preconditioning matrix
   cg.set_max_iterations( get_num_iterations() );
   cg.set_tc_tolerance( 1e-6 );
   cg.set_output_mode( cuCgSolver<float, float_complext>::OUTPUT_SILENT );

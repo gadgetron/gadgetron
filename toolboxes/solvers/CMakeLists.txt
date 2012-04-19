@@ -19,16 +19,12 @@ install(TARGETS solvers DESTINATION lib)
 
 install(FILES 	
 	solver.h
-	matrixOpSolver.h
+	linearSolver.h
 	cgSolver.h
 	cuCgSolver.h
 	sbSolver.h
 	sbcSolver.h
-	cuSbSolver.h
-	cuSbcSolver.h	
 	cuSbSolver_macros.h
-	sbCgSolver.h
-	sbcCgSolver.h
 	cuSbCgSolver.h
 	cuSbcCgSolver.h
 	cgCallback.h	
@@ -37,7 +33,7 @@ install(FILES
 	cuCgPrecondWeights.h
 	lwSolver.h
 	cuLwSolver.h
-	matrixOperator.h
+	linearOperator.h
 	cuMatrixOperator_macros.h
 	identityOperator.h
 	cuIdentityOperator.h
@@ -52,6 +48,6 @@ install(FILES
 	laplaceOperator.h
 	cuLaplaceOperator.h
 	cuVariableGaussOperator.h
+	encodingOperatorContainer.h
 	solvers_export.h
-	encodingOperator.h
 DESTINATION include)

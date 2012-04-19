@@ -3,6 +3,8 @@
 #include "vector_td_utilities.h"
 #include "solvers_export.h"
 
+#include <boost/shared_ptr.hpp>
+
 template <class REAL, class ARRAY_TYPE> class linearOperator
 {
  public:
@@ -10,14 +12,36 @@ template <class REAL, class ARRAY_TYPE> class linearOperator
   linearOperator() { weight_ = REAL(1); }
   virtual ~linearOperator() {}
 
-  inline void set_weight( REAL weight ){ weight_ = weight; }
-  inline REAL get_weight(){ return weight_; }
+  virtual void set_weight( REAL weight ){ weight_ = weight; }
+  virtual REAL get_weight(){ return weight_; }
 
-  inline void set_domain_dimensions( std::vector<unsigned int> dims ) { domain_dims_ = dims; }  
-  inline void set_codomain_dimensions( std::vector<unsigned int> dims ) { codomain_dims_ = dims; }
+  virtual bool set_domain_dimensions( std::vector<unsigned int> *dims ) 
+  { 
+    if( dims == 0x0 ) return false;
+    domain_dims_ = *dims; 
+    return true;
+  }  
+
+  virtual bool set_codomain_dimensions( std::vector<unsigned int> *dims ) 
+  { 
+    if( dims == 0x0 ) return false;
+    codomain_dims_ = *dims; 
+    return true;
+  }
   
-  inline std::vector<unsigned int> get_domain_dimensions() { return domain_dims_; }
-  inline std::vector<unsigned int> get_codomain_dimensions() { return codomain_dims_; }
+  virtual boost::shared_ptr< std::vector<unsigned int> > get_domain_dimensions() 
+  { 
+    std::vector<unsigned int> *dims = new std::vector<unsigned int>();
+    *dims = domain_dims_; 
+    return boost::shared_ptr< std::vector<unsigned int> >(dims);
+  }
+
+  virtual boost::shared_ptr< std::vector<unsigned int> > get_codomain_dimensions() 
+  { 
+    std::vector<unsigned int> *dims = new std::vector<unsigned int>();
+    *dims = codomain_dims_; 
+    return boost::shared_ptr< std::vector<unsigned int> >(dims);
+  }
 
   virtual int mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
   virtual int mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
