@@ -3878,6 +3878,8 @@ template EXPORTGPUCORE bool cuNDA_axpy<float>( cuNDArray<float>*, cuNDArray<floa
 
 template EXPORTGPUCORE bool
 cuNDA_crop<float,1>( uintd1, cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool
+cuNDA_crop<float,2>( uintd2, cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
 
 template EXPORTGPUCORE bool
 cuNDA_crop<complext<float>,1>( uintd1, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
