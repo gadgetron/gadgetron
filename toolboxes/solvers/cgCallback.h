@@ -1,6 +1,7 @@
 #pragma once
 
 #include "real_utilities.h"
+#include "cgSolver.h"
 
 template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class cgSolver;
 
@@ -10,14 +11,40 @@ public:
   cgTerminationCallback() {}
   virtual ~cgTerminationCallback() {}
   
-  virtual bool initialize( cgSolver<REAL,ELEMENT_TYPE,ARRAY_TYPE> *cg ) = 0;
-  virtual bool iterate( cgSolver<REAL,ELEMENT_TYPE,ARRAY_TYPE> *cg, 
-  			unsigned int iteration, REAL *tc_metric, bool *tc_terminate ) = 0;
+  virtual bool initialize( cgSolver<REAL,ELEMENT_TYPE,ARRAY_TYPE> *cg ){cg_ = cg; return true;}
+  virtual bool iterate( unsigned int iteration, REAL *tc_metric, bool *tc_terminate ) = 0;
+
+
+protected:
+  cgSolver<REAL,ELEMENT_TYPE,ARRAY_TYPE> *cg_;
+  REAL get_rq(){
+	  return cg_->rq_;
+  }
+  REAL get_rq0(){
+  	  return cg_->rq0_;
+  }
+  REAL get_alpha(){
+    	  return cg_->alpha_;
+  }
+  boost::shared_ptr<ARRAY_TYPE> get_x(){
+	  return cg_->x_;
+
+  }
+  boost::shared_ptr<ARRAY_TYPE> get_p(){
+  	  return cg_->p_;
+  }
+  boost::shared_ptr<ARRAY_TYPE> get_r(){
+	  return cg_->r_;
+  }
 };
+
+
 
 template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class relativeResidualTCB 
   : public cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE>
 {
+	protected:
+	  typedef cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE> cgTC;
 public:
 
   relativeResidualTCB() : cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE>() { 
@@ -29,18 +56,18 @@ public:
   
   virtual bool initialize( cgSolver<REAL,ELEMENT_TYPE,ARRAY_TYPE> *cg )
   {
+	cgTC::initialize(cg);
     tc_last_ = get_max<REAL>();
-    rq_0_ = real( cg->solver_dot( cg->get_r().get(), cg->get_p().get() ));
+    rq_0_ = cgTC::get_rq0();
     return true;
   }
   
-  virtual bool iterate( cgSolver<REAL,ELEMENT_TYPE,ARRAY_TYPE> *cg, 
-			unsigned int iteration, REAL *tc_metric, bool *tc_terminate )
+  virtual bool iterate( unsigned int iteration, REAL *tc_metric, bool *tc_terminate )
   {
-    *tc_metric = cg->get_rq()/rq_0_;
+    *tc_metric = cgTC::get_rq()/rq_0_;
     
-    if( cg->get_output_mode() >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_WARNINGS ) {
-      if( cg->get_output_mode() >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
+    if( cgTC::cg_->get_output_mode() >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_WARNINGS ) {
+      if( cgTC::cg_->get_output_mode() >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
 	std::cout << "Iteration " << iteration << ". rq/rq_0 = " << *tc_metric << std::endl;
       }
       if( (tc_last_-(*tc_metric)) < REAL(0) ){
@@ -48,7 +75,7 @@ public:
       }
     }
     
-    *tc_terminate = ( *tc_metric < cg->get_tc_tolerance() );    
+    *tc_terminate = ( *tc_metric < cgTC::cg_->get_tc_tolerance() );
     tc_last_ = *tc_metric;
     return true;
   }

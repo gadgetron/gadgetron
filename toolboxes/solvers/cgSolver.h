@@ -4,7 +4,7 @@
 #include "cgCallback.h"
 #include "cgPreconditioner.h"
 #include "real_utilities.h"
-
+#include "cgCallback.h"
 #include <vector>
 #include <iostream>
 
@@ -13,7 +13,7 @@ template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class cgSolver
 {
   
 public:
-
+  friend class cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE>;
   // Constructor
   //
   cgSolver() : linearSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE>() {
@@ -64,11 +64,7 @@ public:
 
   // Access to internal solver data (e.g. for termination callbacks)
   //
-  virtual boost::shared_ptr<ARRAY_TYPE> get_x() { return x_; }
-  virtual boost::shared_ptr<ARRAY_TYPE> get_p() { return p_; }
-  virtual boost::shared_ptr<ARRAY_TYPE> get_r() { return r_; }
-  virtual ELEMENT_TYPE get_alpha() { return alpha_; }
-  virtual REAL get_rq() { return rq_; }
+
 
   // Pre/post solver callbacks
   //
@@ -302,7 +298,7 @@ protected:
 	this->solver_error( "Error: cgSolver::initialize : Unable to clear result" );
 	return false;
       }
-
+    }
       p_ = boost::shared_ptr<ARRAY_TYPE>( new ARRAY_TYPE(*r_) );
 
       // Apply preconditioning, twice (should change preconditioners to do this)
@@ -318,8 +314,9 @@ protected:
 	  return false;
 	}
       }
-    }
-    else{ // starting image provided
+      rq0_ = real( solver_dot( r_.get(), p_.get() ));
+
+    if (this->x0_.get()){
       
       if( !this->x0_->dimensions_equal( rhs )){
 	this->solver_error( "Error: cgSolver::initialize : RHS and initial guess must have same dimensions" );
@@ -472,7 +469,7 @@ protected:
     // Invoke termination callback iteration
     //
 
-    if( !cb_->iterate( this, iteration, tc_metric, tc_terminate ) ){
+    if( !cb_->iterate( iteration, tc_metric, tc_terminate ) ){
       this->solver_error( "Error: cgSolver::iterate : termination callback iteration failed" );
       return false;
     }    
@@ -570,6 +567,7 @@ protected:
   // Exposed by member functions to allow access for the termination criterium callbacks.
 
   REAL rq_;
+  REAL rq0_;
   ELEMENT_TYPE alpha_;
   boost::shared_ptr<ARRAY_TYPE> x_, p_, r_;
 };
