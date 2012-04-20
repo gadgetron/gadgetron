@@ -52,6 +52,7 @@ public:
       return false;
     }
     
+    // The domain is constant for all operators (the image dimensions)
     enc_op_container_->set_domain_dimensions( op->get_domain_dimensions().get() );
 
     encoding_operator_ = op;
@@ -152,15 +153,6 @@ public:
       return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
     }
     
-    // Initialze d and b
-    //
-    boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > d_k, b_k;
-    
-    if( !initialize( d_k, b_k ) ){
-      this->solver_error( "Error: sbSolver::solve : solver initialization failed");
-      return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
-    }
-
     // Define u_k
     //
     boost::shared_ptr<ARRAY_TYPE_ELEMENT> u_k( new ARRAY_TYPE_ELEMENT() );
@@ -169,6 +161,15 @@ public:
       this->solver_error( "Error: sbSolver::solve : memory allocation of u_k failed" );
       return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
     }        
+
+    // Initialze d and b
+    //
+    boost::shared_array< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > d_k, b_k;
+    
+    if( !initialize( d_k, b_k ) ){
+      this->solver_error( "Error: sbSolver::solve : solver initialization failed");
+      return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
+    }
 
     // Normalize (a copy of) the input data
     //
@@ -404,7 +405,7 @@ protected:
     // 
 
     ARRAY_TYPE_ELEMENT u_k_prev;
-    if( tolerance > REAL(0) ){
+    if( tolerance > REAL(0) || this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
       u_k_prev = *u_k;
       if( !u_k_prev.get_data_ptr() ){
 	this->solver_error( "Error: sbSolver::core : memory allocation of u_k_prev failed" );
@@ -472,7 +473,7 @@ protected:
 	  
 	  {
 	    boost::shared_ptr<ARRAY_TYPE_ELEMENT> tmp_u_k = inner_solver_->solve( &data );
-	    
+
 	    // Compute change in u_k
 	    if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
 	      if( !solver_axpy_element( ELEMENT_TYPE(-1), tmp_u_k.get(), u_k.get() )){
@@ -482,8 +483,8 @@ protected:
 	      std::cout << std::endl << "u_k delta (inner loop): " << solver_asum(u_k.get()) << std::endl;
 	    }
 	    
-	    // Update u_k	  
-	    u_k = tmp_u_k;
+	    // Update u_k 
+	    *u_k = *tmp_u_k;
 	  }
 	}
 
@@ -616,7 +617,7 @@ protected:
       } // end of inner loop
 
       // Output change in u_k
-      if( tolerance > REAL(0) ){
+      if( tolerance > REAL(0) || this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
 
 	if( !solver_scal( ELEMENT_TYPE(-1), &u_k_prev ) ){
 	  this->solver_error( "Error: sbSolver::core : error computing inner loop u_k delta (scale)" );

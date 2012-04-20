@@ -117,7 +117,7 @@ public:
         return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
       }
 
-      if( this->tolerance_ > REAL(0) ){
+      if( this->tolerance_ > REAL(0) || this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
 	
 	REAL delta = solver_asum(&encoded_image);
 	
