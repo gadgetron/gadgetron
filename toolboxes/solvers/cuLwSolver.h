@@ -19,9 +19,19 @@ public:
     return cuNDA_clear<T>(x);
   }
 
+  virtual bool solver_scale( REAL a, cuNDArray<T> *x )
+  {
+    return cuNDA_scale<REAL>(a,x);
+  }
+  
   virtual bool solver_axpy( T a, cuNDArray<T> *x, cuNDArray<T> *y )
   {
     return cuNDA_axpy<T>(a,x,y);
+  }
+
+  virtual REAL solver_asum( cuNDArray<T> *x )
+  {
+    return cuNDA_asum<REAL,T>(x);
   }
 
   virtual bool set_device( int device )
