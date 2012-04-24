@@ -21,7 +21,7 @@ public:
 
   virtual bool solver_scale( REAL a, cuNDArray<T> *x )
   {
-    return cuNDA_scale<REAL>(a,x);
+    return cuNDA_scal<REAL>(a,x);
   }
   
   virtual bool solver_axpy( T a, cuNDArray<T> *x, cuNDArray<T> *y )

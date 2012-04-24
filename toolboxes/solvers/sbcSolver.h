@@ -40,6 +40,24 @@ public:
       return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
     }
     
+    // Define u_k
+    //
+    boost::shared_ptr<ARRAY_TYPE_ELEMENT> u_k( new ARRAY_TYPE_ELEMENT() );
+    
+    if( !u_k->create( this->encoding_operator_->get_domain_dimensions().get() )){
+      this->solver_error( "Error: sbSolver::solve : memory allocation of u_k failed" );
+      return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
+    }        
+
+    // Use x0 (if provided) as starting estimate
+    if( this->get_x0().get() )
+      *u_k = *(this->get_x0());
+    else if( !solver_clear_element( u_k.get() )){
+      this->solver_error( "Error: sbSolver::solve : failed to clear u_k" );
+      return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
+    }
+    this->get_inner_solver()->set_x0( u_k );
+
     // Initialze d and b
     //
 
@@ -49,17 +67,7 @@ public:
       this->solver_error( "Error: sbSolver::solve : solver initialization failed");
       return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
     }
-
-    // Define u_k
-    //
-
-    boost::shared_ptr<ARRAY_TYPE_ELEMENT> u_k( new ARRAY_TYPE_ELEMENT() );
     
-    if( !u_k->create( this->enc_op_container_->get_domain_dimensions().get() )){
-      this->solver_error( "Error: sbSolver::solve : memory allocation of u_k failed" );
-      return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
-    }        
-
     // Normalize (a copy of) the input data
     //
 
@@ -123,14 +131,6 @@ public:
 	
 	if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
 	  std::cout << std::endl << "u_k delta (outer loop): " << delta << std::endl << std::endl;
-
-	//static REAL min_delta = (REAL) 1e9;
-	//if( delta < min_delta ){
-	//  min_delta = delta;
-	// boost::shared_ptr<ARRAY_TYPE_REAL > outm = solver_abs( u_k.get() );
-	// boost::shared_ptr<hoNDArray<REAL> > out = outm->to_host();
-	//  write_nd_array( out.get(), "cur_min.real");
-	//}
 
 	if( delta < this->tolerance_ )
 	  break;

@@ -160,8 +160,8 @@ bool cuNDA_rss_normalize( cuNDArray<T> *in_out, unsigned int dim,
 
 // Scale (with constant)
 template<class REAL> EXPORTGPUCORE
-bool cuNDA_scale( REAL a, cuNDArray<complext<REAL> > *x,
-		  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+bool cuNDA_scal( REAL a, cuNDArray<complext<REAL> > *x,
+		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 // Scale (component-wise)
 template<class T> EXPORTGPUCORE

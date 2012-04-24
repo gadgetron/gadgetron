@@ -292,39 +292,39 @@ protected:
     // Initialize x,p
     //
 
-    if( !this->x0_.get() ){ // no starting image provided      
+    if( !this->get_x0().get() ){ // no starting image provided      
       
       if( !solver_clear( x_.get()) ){ // set x to zero
 	this->solver_error( "Error: cgSolver::initialize : Unable to clear result" );
 	return false;
       }
     }
-      p_ = boost::shared_ptr<ARRAY_TYPE>( new ARRAY_TYPE(*r_) );
+    p_ = boost::shared_ptr<ARRAY_TYPE>( new ARRAY_TYPE(*r_) );
 
-      // Apply preconditioning, twice (should change preconditioners to do this)
-      //
+    // Apply preconditioning, twice (should change preconditioners to do this)
+    //
       
-      if( precond_.get() ) {	
-	if( precond_->apply( p_.get(), p_.get() ) < 0 ) {
-	  this->solver_error( "Error: cgSolver::initialize : failed to apply preconditioner to p (1)" );
-	  return false;
-	}
-	if( precond_->apply( p_.get(), p_.get() ) < 0 ) {
-	  this->solver_error( "Error: cgSolver::initialize : failed to apply preconditioner to p (2)" );
-	  return false;
-	}
+    if( precond_.get() ) {	
+      if( precond_->apply( p_.get(), p_.get() ) < 0 ) {
+	this->solver_error( "Error: cgSolver::initialize : failed to apply preconditioner to p (1)" );
+	return false;
       }
-      rq0_ = real( solver_dot( r_.get(), p_.get() ));
+      if( precond_->apply( p_.get(), p_.get() ) < 0 ) {
+	this->solver_error( "Error: cgSolver::initialize : failed to apply preconditioner to p (2)" );
+	return false;
+      }
+    }
+    rq0_ = real( solver_dot( r_.get(), p_.get() ));
 
-    if (this->x0_.get()){
-      
-      if( !this->x0_->dimensions_equal( rhs )){
+    if (this->get_x0().get()){
+	
+      if( !this->get_x0()->dimensions_equal( rhs )){
 	this->solver_error( "Error: cgSolver::initialize : RHS and initial guess must have same dimensions" );
 	return false;
       }
-
-      *x_ = *(this->x0_);
-      
+	
+      *x_ = *(this->get_x0());
+	
       ARRAY_TYPE mhmX;
       if( !mhmX.create( rhs->get_dimensions().get() )) {
 	this->solver_error( "Error: cgSolver::initialize : Unable to allocate temporary storage (2)" );
@@ -335,7 +335,7 @@ protected:
 	std::cout << "Preparing guess..." << std::endl;
       }
 
-      if( !mult_MH_M( this->x0_.get(), &mhmX )){
+      if( !mult_MH_M( this->get_x0().get(), &mhmX )){
 	this->solver_error( "Error: cgSolver::initialize : Error in performing mult_MH_M for initial guess" );
 	return false;
       }

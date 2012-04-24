@@ -188,8 +188,8 @@ int main(int argc, char** argv)
   E->mult_csm_conj_sum( acc_images.get(), &_reg_image );
   
   // Duplicate the regularization image to 'frames_per_reconstruction' frames
-  boost::shared_ptr<cuNDArray<_complext> > reg_image = cuNDA_expand( &_reg_image, frames_per_reconstruction );
-  cuNDA_scale((_real)2.0*_real(1), reg_image.get()); // We need to figure out where this scaling comes from
+  //boost::shared_ptr<cuNDArray<_complext> > reg_image = cuNDA_expand( &_reg_image, frames_per_reconstruction );
+  //cuNDA_scal((_real)2.0*_real(1), reg_image.get()); // We need to figure out where this scaling comes from
 
   acc_images.reset();
   csm.reset();
@@ -198,12 +198,14 @@ int main(int argc, char** argv)
   *recon_dims = uintd_to_vector<2>(matrix_size); recon_dims->push_back(frames_per_reconstruction); 
 
   // Define regularization operators 
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Rx( new cuPartialDerivativeOperator<_real,_complext,3>(0) ); 
+  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > 
+    Rx( new cuPartialDerivativeOperator<_real,_complext,3>(0) ); 
   Rx->set_weight( lambda );
   Rx->set_domain_dimensions(recon_dims.get());
   Rx->set_codomain_dimensions(recon_dims.get());
 
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Ry( new cuPartialDerivativeOperator<_real,_complext,3>(1) ); 
+  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > 
+    Ry( new cuPartialDerivativeOperator<_real,_complext,3>(1) ); 
   Ry->set_weight( lambda );
   Ry->set_domain_dimensions(recon_dims.get());
   Ry->set_codomain_dimensions(recon_dims.get());
@@ -225,7 +227,7 @@ int main(int argc, char** argv)
   sb.set_encoding_operator( E );
   sb.add_regularization_group_operator( Rx ); 
   sb.add_regularization_group_operator( Ry ); 
-  sb.add_group( reg_image.get() );
+  sb.add_group();
   sb.set_max_outer_iterations(num_sb_outer_iterations);
   sb.set_max_inner_iterations(num_sb_inner_iterations);
   sb.set_output_mode( cuSbcCgSolver<_real, _complext>::OUTPUT_VERBOSE );

@@ -198,7 +198,7 @@ boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseRHSBuffer<REAL,D>::get_ac
 
 	if( normalize ){
 		REAL scale = REAL(1)/(((REAL)cycle_length_-REAL(1))*(REAL)sub_cycle_length_);
-		if( !cuNDA_scale( scale, image ) ){
+		if( !cuNDA_scal( scale, image ) ){
 			std::cerr << "cuSenseRHSBuffer::get_acc_coil_images: normalization failed" << std::endl;
 			return boost::shared_ptr< cuNDArray<_complext> >();
 		}

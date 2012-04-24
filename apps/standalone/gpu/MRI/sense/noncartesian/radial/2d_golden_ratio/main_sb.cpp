@@ -188,7 +188,7 @@ int main(int argc, char** argv)
   
   // Duplicate the regularization image to 'frames_per_reconstruction' frames
   boost::shared_ptr<cuNDArray<_complext> > reg_image = cuNDA_expand( &_reg_image, frames_per_reconstruction );
-  cuNDA_scale((_real)2.0, reg_image.get()); // We need to figure out where this scaling comes from
+  cuNDA_scal((_real)2.0, reg_image.get()); // We need to figure out where this scaling comes from
 
   acc_images.reset();
   csm.reset();
@@ -225,7 +225,7 @@ int main(int argc, char** argv)
   sb.set_encoding_operator( E );
   sb.add_regularization_group_operator( Rx ); 
   sb.add_regularization_group_operator( Ry ); 
-  sb.add_group( reg_image.get() );
+  sb.add_group();
   sb.set_max_outer_iterations(num_sb_outer_iterations);
   sb.set_max_inner_iterations(num_sb_inner_iterations);
   sb.set_output_mode( cuSbCgSolver<_real, _complext>::OUTPUT_VERBOSE );

@@ -90,8 +90,8 @@ public:
     return true;
   }
   
-  // Add isotroic regularization group with optional solution prior (multiple groups allowed)
-  virtual bool add_group( ARRAY_TYPE_ELEMENT *solution_prior = 0x0 )
+  // Add isotroic regularization group (multiple groups allowed)
+  virtual bool add_group()
   {
     if( _regularization_group_operators_.size() == 0 ){
       this->solver_error( "Error: sbSolver::add_group : no regularization group operators added" );
@@ -161,6 +161,15 @@ public:
       this->solver_error( "Error: sbSolver::solve : memory allocation of u_k failed" );
       return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
     }        
+
+    // Use x0 (if provided) as starting estimate
+    if( this->get_x0().get() )
+      *u_k = *(this->get_x0());
+    else if( !solver_clear_element( u_k.get() )){
+      this->solver_error( "Error: sbSolver::solve : failed to clear u_k" );
+      return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
+    }
+    get_inner_solver()->set_x0( u_k );
 
     // Initialze d and b
     //
@@ -472,7 +481,7 @@ protected:
 	  //
 	  
 	  {
-	    boost::shared_ptr<ARRAY_TYPE_ELEMENT> tmp_u_k = inner_solver_->solve( &data );
+	    boost::shared_ptr<ARRAY_TYPE_ELEMENT> tmp_u_k = get_inner_solver()->solve( &data );
 
 	    // Compute change in u_k
 	    if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){

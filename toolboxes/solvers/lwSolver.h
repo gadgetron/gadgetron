@@ -61,8 +61,9 @@ public:
     //
 
     boost::shared_ptr<ARRAY_TYPE> x( new ARRAY_TYPE() );
-    if( this->get_x0().get() )
+    if( this->get_x0().get() ){
       *x = *(this->get_x0());
+    }
     else{
       if( !x->create( &image_dims )){
 	this->solver_error( "Error: lwSolver::solve : failed to allocate solution" );

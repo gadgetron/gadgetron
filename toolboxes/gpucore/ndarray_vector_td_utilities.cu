@@ -32,6 +32,7 @@ typedef float dummy;
 // Sets the device context to the denoted compute device and makes device copies if necessary.
 // If compute mode is CUNDA_NDARRAY_DEVICE the mandatory array 'in1' determines the compute device
 //
+
 template< unsigned int D, typename I1, typename I2, typename I3 > 
 static bool prepare( cuNDA_device compute_device, int *cur_device, int *old_device,
 		     cuNDArray<I1> *in1,       cuNDArray<I1> **in1_int, 
@@ -342,8 +343,6 @@ cuNDA_norm_kernel( typename reald<REAL,D>::Type *in, REAL *out,
   }
 }
 
-
-
 // Norm
 //
 template<class REAL, unsigned int D>  
@@ -381,6 +380,7 @@ cuNDA_norm( cuNDArray<typename reald<REAL,D>::Type> *in,
  
   return out;
 }
+
 // cAbs
 //
 template<class REAL, class T> __global__ void
@@ -497,7 +497,6 @@ void cuNDA_norm_squared_kernel( typename reald<REAL,D>::Type *in, REAL *out, uns
   }
 }
 
-
 // Norm Squared
 //
 template<class REAL, unsigned int D>  
@@ -535,7 +534,6 @@ cuNDA_norm_squared( cuNDArray<typename reald<REAL,D>::Type> *in,
 
   return out;
 }
-
 
 // Sum
 //
@@ -1536,7 +1534,7 @@ cuNDA_downsample( cuNDArray<REAL> *in,
   dim3 blockDim; dim3 gridDim;
 
   if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim, number_of_batches ) ){
-    cerr << endl << "cuNDA_scale: block/grid configuration out of range" << endl;
+    cerr << endl << "cuNDA_downsample: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
@@ -1615,7 +1613,7 @@ cuNDA_upsample_nn( cuNDArray<REAL> *in,
   dim3 blockDim; dim3 gridDim;
 
   if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim, number_of_batches ) ){
-    cerr << endl << "cuNDA_scale: block/grid configuration out of range" << endl;
+    cerr << endl << "cuNDA_upsample: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
@@ -1757,7 +1755,7 @@ cuNDA_upsample_lin( cuNDArray<REAL> *in,
   dim3 blockDim; dim3 gridDim;
 
   if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim, number_of_batches ) ){
-    cerr << endl << "cuNDA_scale: block/grid configuration out of range" << endl;
+    cerr << endl << "cuNDA_upsample: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
@@ -2243,9 +2241,6 @@ bool cuNDA_add( T a, cuNDArray<T> *in_out,
   return true;
 }
 
-
-
-
 // Scale
 template<class REAL> __global__ 
 void cuNDA_scale1_kernel( REAL a, complext<REAL> *x, unsigned int number_of_elements )
@@ -2261,8 +2256,8 @@ void cuNDA_scale1_kernel( REAL a, complext<REAL> *x, unsigned int number_of_elem
 
 // Scale 
 template<class REAL> 
-bool cuNDA_scale( REAL a, cuNDArray<complext<REAL> > *in_out,
-		  cuNDA_device compute_device )
+bool cuNDA_scal( REAL a, cuNDArray<complext<REAL> > *in_out,
+		 cuNDA_device compute_device )
 {
   // Prepare internal array
   int cur_device, old_device;
@@ -2294,9 +2289,6 @@ bool cuNDA_scale( REAL a, cuNDArray<complext<REAL> > *in_out,
 
   return true;
 }
-
-
-
 
 // Scale
 template<class S, class T> __global__ 
@@ -4326,7 +4318,7 @@ template EXPORTGPUCORE bool cuNDA_rss_normalize<float,float_complext>( cuNDArray
 template EXPORTGPUCORE bool cuNDA_add<float_complext>( float_complext, cuNDArray<float_complext>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_add<float>( float, cuNDArray<float>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_scale<float>( float, cuNDArray<float_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_scal<float>( float, cuNDArray<float_complext>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_scale<float>( cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_scale<float_complext>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, cuNDA_device );
@@ -4637,7 +4629,7 @@ template EXPORTGPUCORE bool cuNDA_rss_normalize<double,double_complext>( cuNDArr
 template EXPORTGPUCORE bool cuNDA_add<double_complext>( double_complext, cuNDArray<double_complext>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_add<double>( double, cuNDArray<double>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_scale<double>( double, cuNDArray<double_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_scal<double>( double, cuNDArray<double_complext>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_scale<double>( cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_scale<double_complext>( cuNDArray<double_complext>*, cuNDArray<double_complext>*, cuNDA_device );

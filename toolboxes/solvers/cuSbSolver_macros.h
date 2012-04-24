@@ -1,12 +1,6 @@
 //
-// Included from cuSBSolver.h and cuSBCSolver.h
+// "Macros" included from cuSb*Solver.h
 //
-
-  virtual void solver_error( std::string err )
-  {
-    sbSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T>, cuCgSolver<REAL,T> >::solver_error(err);
-    cudaSetDevice(old_device_);
-  }
 
   virtual bool solver_clear_element( cuNDArray<T> *x )
   {

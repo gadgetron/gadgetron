@@ -83,7 +83,7 @@ int main( int argc, char** argv)
 
   // Normalize kernel
   _real scale = cuNDA_asum<_real>(kernel.get());
-  cuNDA_scale<_real>( 1.0/scale, kernel.get() );
+  cuNDA_scal<_real>( 1.0/scale, kernel.get() );
 
   // Create convolution operator and assign kernel
   cuConvolutionOperator<_real,2> conv;
