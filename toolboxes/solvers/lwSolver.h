@@ -81,7 +81,7 @@ public:
     
     for( unsigned int iteration=0; iteration<iterations_; iteration++ ){
       
-      // Keep previous x for cinvergence reporting
+      // Keep previous x for convergence reporting
       // 
 
       if( this->output_mode_ >= solver<ARRAY_TYPE, ARRAY_TYPE>::OUTPUT_VERBOSE ){
@@ -96,7 +96,7 @@ public:
       //
       
       boost::shared_ptr<ARRAY_TYPE> r = compute_residual_image( x.get(), b );
-      
+
       if( !r.get() ){
 	this->solver_error( "Error: lwSolver::solve : failed to compute residual image" );
 	return boost::shared_ptr<ARRAY_TYPE>();	
@@ -210,8 +210,8 @@ protected:
     if( !apply_shape_matrix_mult_MH_M( r, res.get(), REAL(1443.75) )){
       this->solver_error( "Error: lwSolver::apply_shaping_matrix : 2th order computation failed" );
       return boost::shared_ptr<ARRAY_TYPE>();
-    }
-    
+    }    
+
     // Handle 3th order
     if( !apply_shape_matrix_mult_MH_M( r, res.get(), REAL(-3465) )){
       this->solver_error( "Error: lwSolver::apply_shaping_matrix : 3th order computation failed" );
@@ -264,7 +264,8 @@ protected:
     }
 
     // Accumulate for intermediate (MH_M)^i
-    if( !solver_axpy(get_alpha()*this->encoding_operator_->get_weight(), &tmp_MH_M, &tmp_acc )) {
+    tmp_acc = tmp_MH_M;
+    if( !solver_scale(get_alpha()*this->encoding_operator_->get_weight(), &tmp_acc )) {
       this->solver_error( "Error: lwSolver::apply_shaping_matrix_mult_MH_M : failed to accumulate (1)" );
       return false;
     }
