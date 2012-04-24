@@ -198,7 +198,12 @@ T cuNDA_dot( cuNDArray<T>* arr1, cuNDArray<T>* arr2,
 template<class REAL, class T> EXPORTGPUCORE
 REAL cuNDA_asum( cuNDArray<T>* arr,
 		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
-
+template<class T> EXPORTGPUCORE
+T cuNDA_amax( cuNDArray<T>* arr,
+		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+template<class T> EXPORTGPUCORE
+T cuNDA_amin( cuNDArray<T>* arr,
+		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 template<class REAL, class T> EXPORTGPUCORE
 REAL cuNDA_nrm2( cuNDArray<T>* arr,
 		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
@@ -220,6 +225,7 @@ bool cuNDA_add( T a, cuNDArray<T>* x,
 template<class REAL> EXPORTGPUCORE
 REAL cuNDA_normalize( cuNDArray<REAL> *in_out, REAL new_max,
 		      cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+
 
 //
 // Some image utilities (with an interface fitting the NNFT)

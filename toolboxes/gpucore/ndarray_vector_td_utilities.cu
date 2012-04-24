@@ -3151,6 +3151,315 @@ double cuNDA_normalize<double>( cuNDArray<double> *data, double new_max, cuNDA_d
   return scale;
 }
 
+
+// Normalize (float)
+template<> EXPORTGPUCORE
+float cuNDA_amax<float>( cuNDArray<float> *data, cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_amax: initialization failed" << std::endl;
+    return 0;
+  }
+
+  unsigned int number_of_elements = data->get_number_of_elements();
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<float> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,float,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_normalize: unable to prepare device(s)" << endl;
+    return 0;
+  }
+
+  // Find the maximum value in the array
+  int max_idx;
+  cublasIsamax( handle[cur_device], number_of_elements, data_int->get_data_ptr(), 1, &max_idx );
+  cudaThreadSynchronize();
+
+  // Copy that value back to host memory
+  float max_val;
+  cudaMemcpy(&max_val, (data_int->get_data_ptr()+max_idx-1), sizeof(float), cudaMemcpyDeviceToHost);
+
+  // Restore
+  if( !restore<1,float,dummy,dummy,dummy>( old_device, data, data_int, 1, compute_device ) ){
+    cerr << endl << "cuNDA_normalize: unable to restore device" << endl;
+    return 0;
+  }
+
+  CHECK_FOR_CUDA_ERROR();
+  return max_val;
+}
+
+
+// Normalize (float)
+template<> EXPORTGPUCORE
+float_complext cuNDA_amax<float_complext>( cuNDArray<float_complext> *data, cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_amax: initialization failed" << std::endl;
+    return 0;
+  }
+
+  unsigned int number_of_elements = data->get_number_of_elements();
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<float_complext> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,float_complext,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_normalize: unable to prepare device(s)" << endl;
+    return 0;
+  }
+
+  // Find the maximum value in the array
+  int max_idx;
+  cublasIcamax( handle[cur_device], number_of_elements, (float2*) data_int->get_data_ptr(), 1, &max_idx );
+  cudaThreadSynchronize();
+
+  // Copy that value back to host memory
+  float_complext max_val;
+  cudaMemcpy(&max_val, (data_int->get_data_ptr()+max_idx-1), sizeof(float_complext), cudaMemcpyDeviceToHost);
+
+  // Restore
+  if( !restore<1,float_complext,dummy,dummy,dummy>( old_device, data, data_int, 1, compute_device ) ){
+    cerr << endl << "cuNDA_normalize: unable to restore device" << endl;
+    return 0;
+  }
+
+  CHECK_FOR_CUDA_ERROR();
+  return max_val;
+}
+
+// Normalize (float)
+template<> EXPORTGPUCORE
+double_complext cuNDA_amax<double_complext>( cuNDArray<double_complext> *data, cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_amax: initialization failed" << std::endl;
+    return 0;
+  }
+
+  unsigned int number_of_elements = data->get_number_of_elements();
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<double_complext> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,double_complext,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_normalize: unable to prepare device(s)" << endl;
+    return 0;
+  }
+
+  // Find the maximum value in the array
+  int max_idx;
+  cublasIzamax( handle[cur_device], number_of_elements, (double2*) data_int->get_data_ptr(), 1, &max_idx );
+  cudaThreadSynchronize();
+
+  // Copy that value back to host memory
+  double_complext max_val;
+  cudaMemcpy(&max_val, (data_int->get_data_ptr()+max_idx-1), sizeof(double_complext), cudaMemcpyDeviceToHost);
+
+  // Restore
+  if( !restore<1,double_complext,dummy,dummy,dummy>( old_device, data, data_int, 1, compute_device ) ){
+    cerr << endl << "cuNDA_normalize: unable to restore device" << endl;
+    return 0;
+  }
+
+  CHECK_FOR_CUDA_ERROR();
+  return max_val;
+}
+// Normalize (double)
+template<> EXPORTGPUCORE
+double cuNDA_amax<double>( cuNDArray<double> *data, cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_amax: initialization failed" << std::endl;
+    return 0;
+  }
+
+  unsigned int number_of_elements = data->get_number_of_elements();
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<double> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,double,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_amax: unable to prepare device(s)" << endl;
+    return 0;
+  }
+
+  // Find the maximum value in the array
+  int max_idx;
+  cublasIdamax( handle[cur_device], number_of_elements, data_int->get_data_ptr(), 1, &max_idx );
+  cudaThreadSynchronize();
+
+  // Copy that value back to host memory
+  double max_val;
+  cudaMemcpy(&max_val, (data_int->get_data_ptr()+max_idx-1), sizeof(double), cudaMemcpyDeviceToHost);
+
+
+
+  CHECK_FOR_CUDA_ERROR();
+  return max_val;
+}
+
+
+template<> EXPORTGPUCORE
+float cuNDA_amin<float>( cuNDArray<float> *data,  cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_amax: initialization failed" << std::endl;
+    return 0;
+  }
+
+  unsigned int number_of_elements = data->get_number_of_elements();
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<float> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,float,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_normalize: unable to prepare device(s)" << endl;
+    return 0;
+  }
+
+  // Find the maximum value in the array
+  int min_idx;
+  cublasIsamin( handle[cur_device], number_of_elements, data_int->get_data_ptr(), 1, &min_idx );
+  cudaThreadSynchronize();
+
+  // Copy that value back to host memory
+  float min_val;
+  cudaMemcpy(&min_val, (data_int->get_data_ptr()+min_idx-1), sizeof(float), cudaMemcpyDeviceToHost);
+
+  // Restore
+  if( !restore<1,float,dummy,dummy,dummy>( old_device, data, data_int, 1, compute_device ) ){
+    cerr << endl << "cuNDA_normalize: unable to restore device" << endl;
+    return 0;
+  }
+
+  CHECK_FOR_CUDA_ERROR();
+  return min_val;
+}
+
+
+template<> EXPORTGPUCORE
+float_complext cuNDA_amin<float_complext>( cuNDArray<float_complext> *data,  cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_amax: initialization failed" << std::endl;
+    return 0;
+  }
+
+  unsigned int number_of_elements = data->get_number_of_elements();
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<float_complext> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,float_complext,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_normalize: unable to prepare device(s)" << endl;
+    return 0;
+  }
+
+  // Find the maximum value in the array
+  int min_idx;
+  cublasIcamin( handle[cur_device], number_of_elements, (float2*)data_int->get_data_ptr(), 1, &min_idx );
+  cudaThreadSynchronize();
+
+  // Copy that value back to host memory
+  float_complext min_val;
+  cudaMemcpy(&min_val, (data_int->get_data_ptr()+min_idx-1), sizeof(float_complext), cudaMemcpyDeviceToHost);
+
+  // Restore
+  if( !restore<1,float_complext,dummy,dummy,dummy>( old_device, data, data_int, 1, compute_device ) ){
+    cerr << endl << "cuNDA_normalize: unable to restore device" << endl;
+    return 0;
+  }
+
+  CHECK_FOR_CUDA_ERROR();
+  return min_val;
+}
+
+// Normalize (double)
+template<> EXPORTGPUCORE
+double cuNDA_amin<double>( cuNDArray<double> *data,cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_amax: initialization failed" << std::endl;
+    return 0;
+  }
+
+  unsigned int number_of_elements = data->get_number_of_elements();
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<double> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,double,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_amax: unable to prepare device(s)" << endl;
+    return 0;
+  }
+
+  // Find the maximum value in the array
+  int min_idx;
+  cublasIdamax( handle[cur_device], number_of_elements, data_int->get_data_ptr(), 1, &min_idx );
+  cudaThreadSynchronize();
+
+  // Copy that value back to host memory
+  double min_val;
+  cudaMemcpy(&min_val, (data_int->get_data_ptr()+min_idx-1), sizeof(double), cudaMemcpyDeviceToHost);
+
+
+
+  CHECK_FOR_CUDA_ERROR();
+  return min_val;
+}
+
+
+// Normalize (double)
+template<> EXPORTGPUCORE
+double_complext cuNDA_amin<double_complext>( cuNDArray<double_complext> *data,cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_amax: initialization failed" << std::endl;
+    return 0;
+  }
+
+  unsigned int number_of_elements = data->get_number_of_elements();
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<double_complext> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,double_complext,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_amax: unable to prepare device(s)" << endl;
+    return 0;
+  }
+
+  // Find the maximum value in the array
+  int min_idx;
+  cublasIzamax( handle[cur_device], number_of_elements, (double2*)data_int->get_data_ptr(), 1, &min_idx );
+  cudaThreadSynchronize();
+
+  // Copy that value back to host memory
+  double_complext min_val;
+  cudaMemcpy(&min_val, (data_int->get_data_ptr()+min_idx-1), sizeof(double_complext), cudaMemcpyDeviceToHost);
+
+
+
+  CHECK_FOR_CUDA_ERROR();
+  return min_val;
+}
 // Crop
 template<class T, unsigned int D> __global__ void
 cuNDA_crop_kernel( typename uintd<D>::Type offset, typename uintd<D>::Type matrix_size_in, typename uintd<D>::Type matrix_size_out, 
