@@ -33,6 +33,8 @@ install(FILES
 	cuCgPrecondWeights.h
 	lwSolver.h
 	cuLwSolver.h
+	cuSbLwSolver.h
+	cuSbcLwSolver.h
 	linearOperator.h
 	cuMatrixOperator_macros.h
 	identityOperator.h
@@ -49,5 +51,6 @@ install(FILES
 	cuLaplaceOperator.h
 	cuVariableGaussOperator.h
 	encodingOperatorContainer.h
+	cuEncodingOperatorContainer.h
 	solvers_export.h
 DESTINATION include)

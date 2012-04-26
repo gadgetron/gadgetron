@@ -47,14 +47,29 @@ template <class REAL, class ARRAY_TYPE> class linearOperator
   virtual int mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
   virtual int mult_MH_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
   
+  virtual boost::shared_ptr< linearOperator< REAL, ARRAY_TYPE > > clone() = 0;
+
   void* operator new (size_t bytes) { return ::new char[bytes]; }
   void operator delete (void *ptr) { delete [] static_cast <char *> (ptr); } 
   void * operator new(size_t s, void * p) { return p; }
 
+protected:
+
+  // The template below is useful for implementing the pure virtual 'clone' method 
+  // To be used in _all_ classes that can be instantiated (i.e. non-abstract classes).
+  //
+  
+  template <class T>
+  boost::shared_ptr<T> clone( T *orig )
+  {
+    boost::shared_ptr<T> copy( new T() );
+    if( !copy.get() ) return boost::shared_ptr<T>();
+    *copy = *orig;
+    return copy;
+  } 
+  
 private:
   REAL weight_;
   std::vector<unsigned int> domain_dims_;
   std::vector<unsigned int> codomain_dims_; 
 };
-
-

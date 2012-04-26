@@ -172,6 +172,7 @@ cuNonCartesianSenseOperator<REAL,D>::set_dcw( boost::shared_ptr< cuNDArray<REAL>
   }
 }
 
+
 //
 // Instantiations
 //

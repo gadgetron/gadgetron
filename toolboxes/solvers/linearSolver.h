@@ -22,7 +22,7 @@ public:
   virtual bool set_encoding_operator( boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> > op)
   {
     if( !op.get() ){
-      this->solver_error( "Error: linearSolver::add_matrix_operator : NULL operator provided" );
+      this->solver_error( "Error: linearSolver::set_encoding_operator : NULL operator provided" );
       return false;
     } 
     
@@ -31,11 +31,17 @@ public:
     return true;
   }
   
+  virtual boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> > 
+  get_encoding_operator()
+  {
+    return encoding_operator_;
+  }  
+  
   // Add linear operator to solver (in addition to the encoding operator)
   virtual bool add_regularization_operator( boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> > op)
   {
     if( !op.get() ){
-      this->solver_error( "Error: linearSolver::add_matrix_operator : NULL operator provided" );
+      this->solver_error( "Error: linearSolver::add_regularization_operator : NULL operator provided" );
       return false;
     }
     
@@ -44,6 +50,22 @@ public:
     return true;
   }
   
+  virtual boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> > 
+  get_regularization_operator( unsigned int i )
+  {
+    if( i >= get_number_of_regularization_operators() ){
+      this->solver_error( "Error: linearSolver::get_regularization_operator : index out of range" );
+      return boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> >();
+    }
+    
+    return regularization_operators_[i];
+  }  
+
+  virtual unsigned int get_number_of_regularization_operators()
+  {
+    return regularization_operators_.size();
+  }
+    
 protected:
   
   // Single encoding operator
