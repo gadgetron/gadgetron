@@ -569,34 +569,43 @@ protected:
     for( unsigned int i=0; i<regularization_group_operators_.size(); i++ ){
       for( unsigned int p=0; p<((get_prior_image().get()) ? 2 : 1); p++ ){
 	for( unsigned int j=0; j<regularization_group_operators_[i].size(); j++ ){
-	
+	  
 	  boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > op = 
 	    this->get_regularization_group_operator(i,j);
 	  
-	  // Make shallow copy of the operator
-	  boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > op_cpy = op->clone();
-	  regularization_group_prior_operators_.push_back(op_cpy);
-	  
-	  // Modify weight by alpha. Store the original values.
-	  REAL w = op->get_weight();
-	  weights_backup_.push_back(w);
-	  REAL w1 = w*(REAL(1)-get_prior_alpha());
-	  REAL w2 = w*get_prior_alpha();
-	  op->set_weight(w1);
-	  op_cpy->set_weight(w2);
-
-	  if( !enc_op_container_->add_operator( op_cpy ) ){
-	    this->solver_error( "Error: sbSolver::initialize : failed to add regularization group operator to the inner solver" );
-	    return false;
+	  if( p==0 ){
+	    if( !enc_op_container_->add_operator( op ) ){
+	      this->solver_error( "Error: sbSolver::initialize : failed to add regularization group operator to the inner solver" );		
+	      return false;
+	    }
 	  }
-	}     
-      }
-    }    
+	  
+	  if( p==1 ){
+	    
+	    // Make shallow copy of the operator
+	    boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > op_cpy = op->clone();
+	    regularization_group_prior_operators_.push_back(op_cpy);
+	    
+	    // Modify weight by alpha. Store the original values.
+	    REAL w = op->get_weight();
+	    weights_backup_.push_back(w);
+	    REAL w1 = w*(REAL(1)-get_prior_alpha());
+	    REAL w2 = w*get_prior_alpha();
+	    op->set_weight(w1);
+	    op_cpy->set_weight(w2);	  
+	    
+	    if( !enc_op_container_->add_operator( op_cpy ) ){
+	      this->solver_error( "Error: sbSolver::initialize : failed to add regularization group operator to the inner solver" );
+	      return false;
+	    }
+	  }
+	}
+      }     
+    }
     
     return true;
   }
-
-
+  
   // Clean up operator memory in the inner solver
   // Also restore the weights we temporarily changed
 
@@ -868,8 +877,6 @@ protected:
 	    
 	    // Update of d_k
 
-	    std::cout << "1/L: " << REAL(1)/op->get_weight() << std:: endl;
-
 	    if( !solver_shrink1( REAL(1)/op->get_weight(), &tmp_sum, d_k[operator_idx].get() )){
 	      this->solver_error( "Error: sbSolver::core : shrinkage_1 of d_k failed" );
 	      return false;
@@ -892,6 +899,8 @@ protected:
 	    operator_idx++;
 	  }
 	}
+	
+	unsigned int group_idx = 0;
 	  
 	for( unsigned int i=0; i<regularization_group_operators_.size(); i++ ){
 
@@ -925,7 +934,7 @@ protected:
 
 	      boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > op = 
 		(p==0 ) ? this->regularization_group_operators_.at(i).at(j) : 
-		this->regularization_group_prior_operators_.at(operator_idx+idx);	      
+		this->regularization_group_prior_operators_.at(group_idx+j);	      
 	      
 	      if( sums[idx].create( image_dims.get() ) < 0 || reg_out[idx].create( image_dims.get() ) < 0 ){
 		this->solver_error( "Error: sbSolver::core : memory allocation for regularization operator failed in {d_k,b_k} update" );
@@ -961,8 +970,8 @@ protected:
 	    if( !solver_sqrt( &s_k[p] )){
 	      this->solver_error( "Error: sbSolver::core : sqrt of s_k failed" );
 	      return false;
-	    }	    
-	  }	  
+	    }
+	  }
 
 	  for( unsigned int p=0; p<((get_prior_image().get()) ? 2 : 1); p++ ){
 	    for( unsigned int j=0; j<k; j++ ){
@@ -971,7 +980,7 @@ protected:
 
 	      boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE_ELEMENT> > op = 
 		(p==0 ) ? this->regularization_group_operators_.at(i).at(j) : 
-		this->regularization_group_prior_operators_.at(operator_idx+idx);	      
+		this->regularization_group_prior_operators_.at(group_idx+j);
 	      
 	      // Update of d_k
 	      if( !solver_shrinkd( REAL(1)/op->get_weight(), &s_k[p], &sums[idx], d_k[operator_idx+idx].get() )){
@@ -994,7 +1003,7 @@ protected:
 	      }
 	    }
 	  }
-	  operator_idx += k;
+	  operator_idx += (k*((get_prior_image().get()) ? 2 : 1)); group_idx += k;
 	  delete[] sums; delete[] reg_out; delete[] s_k;
 	}
 

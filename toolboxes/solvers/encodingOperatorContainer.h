@@ -25,8 +25,11 @@ public:
 
   // Get domain and codomain for the individual operators
   //
-  virtual boost::shared_ptr< std::vector<unsigned int> > get_domain_dimensions(int i) { return operators_[i]->get_domain_dimensions(); }
-  virtual boost::shared_ptr< std::vector<unsigned int> > get_codomain_dimensions(int i) { return operators_[i]->get_codomain_dimensions(); }
+  virtual boost::shared_ptr< std::vector<unsigned int> > get_domain_dimensions(int i) { 
+    return operators_[i]->get_domain_dimensions(); }
+  
+  virtual boost::shared_ptr< std::vector<unsigned int> > get_codomain_dimensions(int i) { 
+    return operators_[i]->get_codomain_dimensions(); }
   
   // Allocate an array of the codomain dimensions
   //
@@ -72,17 +75,17 @@ public:
     return true;
   }
   
-  virtual int mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false)
+  virtual int mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false )
   {
     for (int i =0; i < operators_.size(); i++){
 
-      ARRAY_TYPE tmp;
-      if( !tmp.create(operators_[i]->get_codomain_dimensions().get(), out->get_data_ptr()+offsets_[i]) ){
-	std::cout << std::endl << "Error: encodingOperatorContainer : failed to create working array" << std::endl;
+      ARRAY_TYPE tmp_data;
+      if( !tmp_data.create(operators_[i]->get_codomain_dimensions().get(), out->get_data_ptr()+offsets_[i]) ){
+	std::cout << std::endl << "Error: encodingOperatorContainer : mult_M failed to create working array" << std::endl;
 	return -1;
       }
 
-      if( operators_[i]->mult_M( in, &tmp, accumulate ) < 0 ){
+      if( operators_[i]->mult_M( in, &tmp_data, accumulate ) < 0 ){
 	std::cout << std::endl << "Error: encodingOperatorContainer : mult_M failed on sub-operator" << std::endl;
 	return -1;
       }
@@ -90,25 +93,45 @@ public:
     return 0;
   }
 
-  virtual int mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false)
+  virtual int mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false )
   {
+    
+    ARRAY_TYPE tmp_image;
+    if( !tmp_image.create(get_domain_dimensions().get() )){
+      std::cout << std::endl << "Error: encodingOperatorContainer::Mult_MH : failed to create working image array" << std::endl;
+      return -1;
+    }      
+        
     for (int i=0; i < operators_.size(); i++){
+      
+      boost::shared_ptr<linearOperator<REAL, ARRAY_TYPE> > op = operators_[i];
 
-      ARRAY_TYPE tmp;
-      if( !tmp.create(operators_[i]->get_codomain_dimensions().get(), in->get_data_ptr()+offsets_[i]) ){
-	std::cout << std::endl << "Error: encodingOperatorContainer : failed to create working array" << std::endl;
+      ARRAY_TYPE tmp_data;
+      if( !tmp_data.create(op->get_codomain_dimensions().get(), in->get_data_ptr()+offsets_[i]) ){
+	std::cout << std::endl << "Error: encodingOperatorContainer::mult_MH : failed to create working data array" << std::endl;
 	return -1;
       }
       
-      int res;
-      if (!accumulate && i == 0){
-	res=operators_[i]->mult_MH( &tmp, out, false );
-      } else {
-	res=operators_[i]->mult_MH( &tmp, out, true );
-      }
-      if (res < 0){
-	std::cout << std::endl << "Error: encodingOperatorContainer : mult_MH failed on sub-operator" << std::endl;
+      // This operator is special in that it needs to apply the "internal" operator weights
+      //
+
+      if( op->mult_MH( &tmp_data, &tmp_image ) < 0 ){
+	std::cout << std::endl << "Error: encodingOperatorContainer::mult_MH : sub-operator failed" << std::endl;
 	return -1;
+      }
+
+      if( i == 0 && !accumulate ){
+	*out = tmp_image;
+	if( !operator_scal( op->get_weight(), out ) ){
+	  std::cout << std::endl << "Error: encodingOperatorContainer::mult_MH : scale failed on sub-operator" << std::endl;
+	  return -1;
+	}
+      }
+      else {
+	if( !operator_axpy( op->get_weight(), &tmp_image, out ) ){
+	  std::cout << std::endl << "Error: encodingOperatorContainer::mult_MH : axpy failed on sub-operator" << std::endl;
+	  return -1;
+	}	
       }
     }
     return 0;
@@ -116,20 +139,44 @@ public:
   
   virtual int mult_MH_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false)
   {
+
+    ARRAY_TYPE tmp_image;
+    if( !tmp_image.create(get_domain_dimensions().get() )){
+      std::cout << std::endl << "Error: encodingOperatorContainer::Mult_MH_M : failed to create working image array" << std::endl;
+      return -1;
+    }      
+    
     for (int i=0; i < operators_.size(); i++){
-      int res;
-      if (!accumulate && i == 0){
-	res = operators_[i]->mult_MH_M( in, out, false );
-      } else {
-	res= operators_[i]->mult_MH_M( in, out, true );
-      }
-      if (res < 0){
-	std::cout << std::endl << "Error: encodingOperatorContainer : mult_MH_M failed on sub-operator" << std::endl;
+      
+      boost::shared_ptr<linearOperator<REAL, ARRAY_TYPE> > op = operators_[i];      
+      
+      // This operator is special in that it needs to apply the "internal" operator weights
+      //
+      
+      if( op->mult_MH_M( in, &tmp_image ) < 0 ){
+	std::cout << std::endl << "Error: encodingOperatorContainer::mult_MH_M : sub-operator failed" << std::endl;
 	return -1;
+      }
+      
+      if( i == 0 && !accumulate ){
+	*out = tmp_image;
+	if( !operator_scal( op->get_weight(), out ) ){
+	  std::cout << std::endl << "Error: encodingOperatorContainer::mult_MH_m : scale failed on sub-operator" << std::endl;
+	  return -1;
+	} 
+      }
+      else {
+	if( !operator_axpy( op->get_weight(), &tmp_image, out ) ){
+	  std::cout << std::endl << "Error: encodingOperatorContainer::mult_MH_M : axpy failed on sub-operator" << std::endl;
+	  return -1;
+	}	
       }
     }
     return 0;
   }
+
+  virtual bool operator_scal( REAL, ARRAY_TYPE* ) = 0;
+  virtual bool operator_axpy( REAL, ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
   
 protected:
   std::vector< boost::shared_ptr<linearOperator<REAL, ARRAY_TYPE> > > operators_;

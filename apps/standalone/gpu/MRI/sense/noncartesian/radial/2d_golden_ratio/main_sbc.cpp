@@ -225,12 +225,12 @@ int main(int argc, char** argv)
   // Setup split-Bregman solver
   cuSbcCgSolver<_real, _complext> sb;
   sb.set_encoding_operator( E );
-  sb.add_regularization_operator( Rx ); 
-  sb.add_regularization_operator( Ry ); 
-  //sb.add_regularization_group_operator( Rx ); 
-  //sb.add_regularization_group_operator( Ry ); 
-  //sb.add_group();
-  sb.set_prior_image( reg_image, _real(.001) );
+  //sb.add_regularization_operator( Rx ); 
+  //sb.add_regularization_operator( Ry ); 
+  sb.add_regularization_group_operator( Rx ); 
+  sb.add_regularization_group_operator( Ry ); 
+  sb.add_group();
+  sb.set_prior_image( reg_image, _real(0.2) );
   sb.set_max_outer_iterations(num_sb_outer_iterations);
   sb.set_max_inner_iterations(num_sb_inner_iterations);
   sb.set_output_mode( cuSbcCgSolver<_real, _complext>::OUTPUT_VERBOSE );
