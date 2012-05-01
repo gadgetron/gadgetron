@@ -243,7 +243,7 @@ int main(int argc, char** argv)
       ( reconstruction, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, host_data.get() );
     
     // Convolve to Cartesian k-space
-    E->get_plan()->convolve( data.get(), image_os, dcw.get(), NFFT_plan<_real,2>::NFFT_BACKWARDS );
+    E->get_plan()->convolve( data.get(), image_os, dcw.get(), NFFT_plan<_real,2>::NFFT_CONV_NC2C );
 
     // Apply shutter
     cuNDA_zero_fill_border<_real,_complext,2>( shutter_radius, image_os );

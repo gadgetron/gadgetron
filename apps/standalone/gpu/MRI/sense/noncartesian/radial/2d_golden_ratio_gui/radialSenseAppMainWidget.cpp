@@ -219,7 +219,7 @@ void radialSenseAppMainWindow::replan()
       ( samples_per_profile, profiles_per_frame, frames_per_reconstruction, iteration*profiles_per_reconstruction );
     
     // Preprocess
-    plan.preprocess( traj.get(), NFFT_plan<float,2>::NFFT_PREP_BACKWARDS );
+    plan.preprocess( traj.get(), NFFT_plan<float,2>::NFFT_PREP_NC2C );
     traj.reset();
     
     // Upload data
@@ -228,7 +228,7 @@ void radialSenseAppMainWindow::replan()
 		   num_profiles*samples_per_profile, get_num_coils(), host_samples.get() );
     
     // Accumulate k-space for CSM estimation
-    plan.convolve( csm_data.get(), image_os, dcw.get(), NFFT_plan<float,2>::NFFT_BACKWARDS, (iteration==0) ? false : true );
+    plan.convolve( csm_data.get(), image_os, dcw.get(), NFFT_plan<float,2>::NFFT_CONV_NC2C, (iteration==0) ? false : true );
     csm_data.reset();
   }
   

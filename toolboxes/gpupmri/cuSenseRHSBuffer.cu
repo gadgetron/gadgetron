@@ -89,14 +89,14 @@ int cuSenseRHSBuffer<REAL,D>::add_frame_data( cuNDArray<_complext> *samples, cuN
 
 	// Preprocess frame
 	//
-	if( sense_op_->get_plan()->preprocess( trajectory, NFFT_plan<REAL,D>::NFFT_PREP_BACKWARDS ) < 0 ){
+	if( sense_op_->get_plan()->preprocess( trajectory, NFFT_plan<REAL,D>::NFFT_PREP_NC2C ) < 0 ){
 		std::cerr << "cuSenseRHSBuffer::add_frame_data: NFFT preprocessing failed" << std::endl;
 		return -1;	
 	}
 
 	// Convolve to form k-space frame (accumulation mode)
 	//
-	if( !sense_op_->get_plan()->convolve( samples, &cur_buffer, sense_op_->get_dcw().get(), NFFT_plan<REAL,D>::NFFT_BACKWARDS, true ) ){
+	if( !sense_op_->get_plan()->convolve( samples, &cur_buffer, sense_op_->get_dcw().get(), NFFT_plan<REAL,D>::NFFT_CONV_NC2C, true ) ){
 		std::cerr << "cuSenseRHSBuffer::add_frame_data: NFFT convolution failed" << std::endl;
 		return -1;	
 	}

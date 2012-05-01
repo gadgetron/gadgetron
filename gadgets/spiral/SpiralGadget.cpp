@@ -207,7 +207,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 		image_dims.push_back(num_batches);
 		cuNDArray<float_complext> image; image.create(&image_dims);
 
-		bool  success = plan_.compute( &data, &image, &gpu_weights_, NFFT_plan<float,2>::NFFT_BACKWARDS );
+		bool  success = plan_.compute( &data, &image, &gpu_weights_, NFFT_plan<float,2>::NFFT_BACKWARDS_NC2C );
 		if (!success) {
 			GADGET_DEBUG1("NFFT compute failed\n");
 			return GADGET_FAIL;

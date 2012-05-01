@@ -6,7 +6,7 @@
 
   The nfft is written generically and templetized to
   - transform arbitrary trajectories
-  - transform an arbitrary number of dimensions (currently instantiated for 2d/3d/4d)
+  - transform an arbitrary number of dimensions (currently instantiated for 1d/2d/3d/4d)
   - support both single and double precision
 
   General principles of the implementation can be found in:
@@ -138,7 +138,7 @@ int main( int argc, char** argv)
     
     // Preprocess
     timer = new GPUTimer("NFFT preprocessing");
-    bool success = plan.preprocess( traj.get(), plan_type::NFFT_PREP_BACKWARDS );
+    bool success = plan.preprocess( traj.get(), plan_type::NFFT_PREP_NC2C );
     delete timer;
     
     // Upload data
@@ -150,8 +150,8 @@ int main( int argc, char** argv)
     cuNDArray<_complext> tmp_image; tmp_image.create(&image_dims, image.get_data_ptr()+iteration*prod(matrix_size)*frames_per_reconstruction);
 
     // Gridder
-    timer = new GPUTimer("Computing nffth (gridding)");
-    success = plan.compute( data.get(), &tmp_image, dcw.get(), plan_type::NFFT_BACKWARDS );
+    timer = new GPUTimer("Computing adjoint nfft (gridding)");
+    success = plan.compute( data.get(), &tmp_image, dcw.get(), plan_type::NFFT_BACKWARDS_NC2C );
     delete timer;
   }
   
