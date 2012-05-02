@@ -423,7 +423,6 @@ template<class REAL, unsigned int D> bool
 NFFT_plan<REAL,D>::compute( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
 			    cuNDArray<REAL> *dcw, NFFT_comp_mode mode )
 {  
-
   // Validity checks
   
   unsigned char components;
@@ -447,7 +446,7 @@ NFFT_plan<REAL,D>::compute( cuNDArray<complext<REAL> > *in, cuNDArray<complext<R
   {
     cuNDArray<complext<REAL> > *samples, *image;
 
-    if( mode == NFFT_FORWARDS_C2NC || mode == NFFT_FORWARDS_NC2C ){
+    if( mode == NFFT_FORWARDS_C2NC || mode == NFFT_BACKWARDS_C2NC ){
       image = in; samples = out;
     } else{
       image = out; samples = in;
@@ -547,7 +546,7 @@ NFFT_plan<REAL,D>::compute( cuNDArray<complext<REAL> > *in, cuNDArray<complext<R
     if( dcw_int ){
       working_samples = new cuNDArray<complext<REAL> >(*in_int);
       success = working_samples->get_data_ptr();
-      if( success ) success = cuNDA_scale( dcw_int, working_samples );
+      if( success ) success = cuNDA_scale( dcw_int, working_samples );      
     }
     else{
       working_samples = in_int;
@@ -627,7 +626,15 @@ NFFT_plan<REAL,D>::mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext
     return false;
   }
   
-  if( !check_consistency( 0x0, in, dcw, components ) ){
+  cuNDArray<complext<REAL> > *working_samples = new cuNDArray<complext<REAL> >; 
+  bool success = working_samples->create(&halfway_dims);
+
+  if( !success ){
+    cerr << "Error: NFFT_plan::mult_MH_M: failed to allocate samples array" << endl;
+    return false;
+  }
+  
+  if( !check_consistency( working_samples, in, dcw, components ) ){
     cerr << "Error: NFFT_plan::mult_MH_M: data consistency check failed" << endl;
     return false;
   }
@@ -643,8 +650,7 @@ NFFT_plan<REAL,D>::mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext
     return false;
   }
   
-  bool success = true;
-  cuNDArray<complext<REAL> > *working_image = 0x0, *working_samples = 0x0;
+  cuNDArray<complext<REAL> > *working_image = 0x0;
 
   typename uintd<D>::Type image_dims = vector_to_uintd<D>(*in->get_dimensions()); 
   bool oversampled_image = (image_dims==matrix_size_os); 
@@ -661,8 +667,6 @@ NFFT_plan<REAL,D>::mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext
   else{
     working_image = in_int;
   }
-  
-  if(success) success = working_samples->create(&halfway_dims);
   
   if( success ) success = compute_NFFT_C2NC( working_image, working_samples );
   
@@ -1108,7 +1112,7 @@ NFFT_plan<REAL,D>::compute_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDArr
 
   bool success = true;
 
-  // Convolution
+  // Deapodization
   if( success )
     success = deapodize( image );
     
@@ -1116,7 +1120,7 @@ NFFT_plan<REAL,D>::compute_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDArr
   if( success )
     success = fft( image, NFFT_FORWARDS ); 
 
-  // Deapodization
+  // Convolution
   if( success )
     success = convolve( image, samples, 0x0, NFFT_CONV_C2NC );
   
@@ -1127,13 +1131,12 @@ template<class REAL, unsigned int D> bool
 NFFT_plan<REAL,D>::compute_NFFTH_NC2C( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image )
 {
   // private method - no consistency check. We trust in ourselves.
-
   bool success = true;
 
   // Convolution
   if( success )
     success = convolve( samples, image, 0x0, NFFT_CONV_NC2C );
-  
+
   // FFT
   if( success )
     success = fft( image, NFFT_BACKWARDS );
@@ -1152,7 +1155,7 @@ NFFT_plan<REAL,D>::compute_NFFTH_C2NC( cuNDArray<complext<REAL> > *image, cuNDAr
 
   bool success = true;
 
-  // Convolution
+  // Deapodization
   if( success )
     success = deapodize( image );
     
@@ -1160,7 +1163,7 @@ NFFT_plan<REAL,D>::compute_NFFTH_C2NC( cuNDArray<complext<REAL> > *image, cuNDAr
   if( success )
     success = fft( image, NFFT_BACKWARDS ); 
 
-  // Deapodization
+  // Convolution
   if( success )
     success = convolve( image, samples, 0x0, NFFT_CONV_C2NC );
   
@@ -1272,7 +1275,6 @@ NFFT_plan<REAL,D>::convolve_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDAr
 template<class REAL, unsigned int D> bool
 NFFT_plan<REAL,D>::convolve_NFFT_NC2C( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, bool accumulate )
 {
-
   // private method - no consistency check. We trust in ourselves.
 
   if( !initialize_static_variables() ){
@@ -1369,7 +1371,7 @@ NFFT_plan<REAL,D>::convolve_NFFT_NC2C( cuNDArray<complext<REAL> > *samples, cuND
 
 template<class REAL, unsigned int D> __global__ void
 image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type matrix_size_wrap, bool accumulate,
-		  complext<REAL> *in,complext<REAL> *out )
+		  complext<REAL> *in, complext<REAL> *out )
 {
   const unsigned int number_of_images = blockDim.z;
   const unsigned int num_elements_per_image_src = prod(matrix_size_os+matrix_size_wrap);

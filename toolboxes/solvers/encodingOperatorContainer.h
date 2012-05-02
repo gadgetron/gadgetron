@@ -81,12 +81,12 @@ public:
 
       ARRAY_TYPE tmp_data;
       if( !tmp_data.create(operators_[i]->get_codomain_dimensions().get(), out->get_data_ptr()+offsets_[i]) ){
-	std::cout << std::endl << "Error: encodingOperatorContainer : mult_M failed to create working array" << std::endl;
+	std::cerr << "Error: encodingOperatorContainer : mult_M failed to create working array" << std::endl;
 	return -1;
       }
 
       if( operators_[i]->mult_M( in, &tmp_data, accumulate ) < 0 ){
-	std::cout << std::endl << "Error: encodingOperatorContainer : mult_M failed on sub-operator" << std::endl;
+	std::cerr << "Error: encodingOperatorContainer : mult_M failed on sub-operator" << std::endl;
 	return -1;
       }
     }
@@ -98,7 +98,7 @@ public:
     
     ARRAY_TYPE tmp_image;
     if( !tmp_image.create(get_domain_dimensions().get() )){
-      std::cout << std::endl << "Error: encodingOperatorContainer::Mult_MH : failed to create working image array" << std::endl;
+      std::cerr << "Error: encodingOperatorContainer::Mult_MH : failed to create working image array" << std::endl;
       return -1;
     }      
         
@@ -108,7 +108,7 @@ public:
 
       ARRAY_TYPE tmp_data;
       if( !tmp_data.create(op->get_codomain_dimensions().get(), in->get_data_ptr()+offsets_[i]) ){
-	std::cout << std::endl << "Error: encodingOperatorContainer::mult_MH : failed to create working data array" << std::endl;
+	std::cerr << "Error: encodingOperatorContainer::mult_MH : failed to create working data array" << std::endl;
 	return -1;
       }
       
@@ -116,20 +116,20 @@ public:
       //
 
       if( op->mult_MH( &tmp_data, &tmp_image ) < 0 ){
-	std::cout << std::endl << "Error: encodingOperatorContainer::mult_MH : sub-operator failed" << std::endl;
+	std::cerr << "Error: encodingOperatorContainer::mult_MH : sub-operator failed" << std::endl;
 	return -1;
       }
 
       if( i == 0 && !accumulate ){
 	*out = tmp_image;
 	if( !operator_scal( op->get_weight(), out ) ){
-	  std::cout << std::endl << "Error: encodingOperatorContainer::mult_MH : scale failed on sub-operator" << std::endl;
+	  std::cerr << "Error: encodingOperatorContainer::mult_MH : scale failed on sub-operator" << std::endl;
 	  return -1;
 	}
       }
       else {
 	if( !operator_axpy( op->get_weight(), &tmp_image, out ) ){
-	  std::cout << std::endl << "Error: encodingOperatorContainer::mult_MH : axpy failed on sub-operator" << std::endl;
+	  std::cerr << "Error: encodingOperatorContainer::mult_MH : axpy failed on sub-operator" << std::endl;
 	  return -1;
 	}	
       }
@@ -142,7 +142,7 @@ public:
 
     ARRAY_TYPE tmp_image;
     if( !tmp_image.create(get_domain_dimensions().get() )){
-      std::cout << std::endl << "Error: encodingOperatorContainer::Mult_MH_M : failed to create working image array" << std::endl;
+      std::cerr << "Error: encodingOperatorContainer::Mult_MH_M : failed to create working image array" << std::endl;
       return -1;
     }      
     
@@ -154,20 +154,20 @@ public:
       //
       
       if( op->mult_MH_M( in, &tmp_image ) < 0 ){
-	std::cout << std::endl << "Error: encodingOperatorContainer::mult_MH_M : sub-operator failed" << std::endl;
+	std::cerr << "Error: encodingOperatorContainer::mult_MH_M : sub-operator failed" << std::endl;
 	return -1;
       }
       
       if( i == 0 && !accumulate ){
 	*out = tmp_image;
 	if( !operator_scal( op->get_weight(), out ) ){
-	  std::cout << std::endl << "Error: encodingOperatorContainer::mult_MH_m : scale failed on sub-operator" << std::endl;
+	  std::cerr << "Error: encodingOperatorContainer::mult_MH_m : scale failed on sub-operator" << std::endl;
 	  return -1;
 	} 
       }
       else {
 	if( !operator_axpy( op->get_weight(), &tmp_image, out ) ){
-	  std::cout << std::endl << "Error: encodingOperatorContainer::mult_MH_M : axpy failed on sub-operator" << std::endl;
+	  std::cerr << "Error: encodingOperatorContainer::mult_MH_M : axpy failed on sub-operator" << std::endl;
 	  return -1;
 	}	
       }

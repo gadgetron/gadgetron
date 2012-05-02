@@ -164,9 +164,9 @@ compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL 
     }
     break;	  
   case false: // fixed angle
-	{
-	  gad_sincos<REAL>( profile*one_over_num_profiles*get_pi<REAL>(), &sin_angle, &cos_angle );	}
-	break;
+    {
+      gad_sincos<REAL>( profile*one_over_num_profiles*get_pi<REAL>(), &sin_angle, &cos_angle );	}
+    break;
   }
   
   // Find the normal to the current projection direction
@@ -191,21 +191,21 @@ compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL 
       continue;
     
     // Unit circle position projection 'i'
-	switch(GR)
+    switch(GR)
+      {
+      case true:
 	{
-	case true:
-		{
-			const REAL angle_step = get_angle_step_GR<REAL>();
-			gad_sincos<REAL>( ((REAL)i+angular_offset)*angle_step, &sin_angle, &cos_angle );
-		}
-		break;
-
-	case false:
-		{
-			gad_sincos<REAL>( (REAL)i*one_over_num_profiles*get_pi<REAL>(), &sin_angle, &cos_angle );
-		}
-		break;	
+	  const REAL angle_step = get_angle_step_GR<REAL>();
+	  gad_sincos<REAL>( ((REAL)i+angular_offset)*angle_step, &sin_angle, &cos_angle );
 	}
+	break;
+
+      case false:
+	{
+	  gad_sincos<REAL>( (REAL)i*one_over_num_profiles*get_pi<REAL>(), &sin_angle, &cos_angle );
+	}
+	break;	
+      }
 
     // Determine sample positions on projection
     typename reald<REAL,2>::Type prev_pos_1;  prev_pos_1.vec[0] = prev_scale*cos_angle;      prev_pos_1.vec[1] = prev_scale*sin_angle;
@@ -223,20 +223,20 @@ compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL 
 	*p4 = ctr_pos_1;
 	*p5 = next_pos_1;
       }
-   }
-   else{
+    }
+    else{
      
-     if( norm_squared<REAL>(ctr_pos_1-sample_pos) < norm_squared<REAL>(*p7-sample_pos) ){
-       *p6 = prev_pos_1;
-       *p7 = ctr_pos_1;
-       *p8 = next_pos_1;
-     }
-   }
+      if( norm_squared<REAL>(ctr_pos_1-sample_pos) < norm_squared<REAL>(*p7-sample_pos) ){
+	*p6 = prev_pos_1;
+	*p7 = ctr_pos_1;
+	*p8 = next_pos_1;
+      }
+    }
   
-  // The dot product is used to ensure we find a neighbor on each side
-  if( dot<REAL,2>(ctr_pos_2-sample_pos, normal) >  REAL(0) ){
+    // The dot product is used to ensure we find a neighbor on each side
+    if( dot<REAL,2>(ctr_pos_2-sample_pos, normal) >  REAL(0) ){
   
-    if( norm_squared<REAL>(ctr_pos_2-sample_pos) < norm_squared<REAL>(*p4-sample_pos) ){
+      if( norm_squared<REAL>(ctr_pos_2-sample_pos) < norm_squared<REAL>(*p4-sample_pos) ){
         *p3 = prev_pos_2;
 	*p4 = ctr_pos_2;
 	*p5 = next_pos_2;
@@ -286,8 +286,8 @@ compute_radial_dcw_2d_kernel( REAL alpha, REAL one_over_radial_oversampling_fact
     typename reald<REAL,2>::Type p1, p2, p3, p4, p5, p6, p7, p8;
     
     sample_pos = compute_radial_neighbors<REAL,GR>( sample_idx_on_profile, angular_offset, alpha, 
-						      one_over_radial_oversampling_factor, one_over_num_profiles,bias, samples_per_profile, profile, num_profiles,
-						      &p1, &p5, &p2, &p3, &p4, &p8, &p7, &p6 );
+						    one_over_radial_oversampling_factor, one_over_num_profiles,bias, samples_per_profile, profile, num_profiles,
+						    &p1, &p5, &p2, &p3, &p4, &p8, &p7, &p6 );
     
     // Find midpoints of lines from sample_pos to all other points.
     p1 = REAL(0.5)*(sample_pos+p1); // computing "sample_pos+(p1-sample_pos)/2"
@@ -318,7 +318,7 @@ compute_radial_dcw_2d_kernel( REAL alpha, REAL one_over_radial_oversampling_fact
 
 template<class REAL, bool GR> boost::shared_ptr< cuNDArray<REAL> >
 compute_radial_dcw_2d( unsigned int samples_per_profile, unsigned int num_profiles, 
-				    REAL alpha, REAL one_over_radial_oversampling_factor, unsigned int profile_offset = 0 )
+		       REAL alpha, REAL one_over_radial_oversampling_factor, unsigned int profile_offset = 0 )
 {
   if( num_profiles < 4 ){
     cout << endl << "Error:: compute_radial_dcw_<*>_2d: use at least four profiles" << endl;
@@ -367,14 +367,14 @@ template<class REAL> boost::shared_ptr< cuNDArray<REAL> >
 compute_radial_dcw_golden_ratio_2d( unsigned int samples_per_profile, unsigned int num_profiles, 
 				    REAL alpha, REAL one_over_radial_oversampling_factor, unsigned int profile_offset )
 {
-	return compute_radial_dcw_2d<REAL,true>( samples_per_profile, num_profiles, alpha, one_over_radial_oversampling_factor, profile_offset );
+  return compute_radial_dcw_2d<REAL,true>( samples_per_profile, num_profiles, alpha, one_over_radial_oversampling_factor, profile_offset );
 }
 
 template<class REAL> boost::shared_ptr< cuNDArray<REAL> >
 compute_radial_dcw_fixed_angle_2d( unsigned int samples_per_profile, unsigned int num_profiles, 
-				    REAL alpha, REAL one_over_radial_oversampling_factor )
+				   REAL alpha, REAL one_over_radial_oversampling_factor )
 {
-	return compute_radial_dcw_2d<REAL,false>( samples_per_profile, num_profiles, alpha, one_over_radial_oversampling_factor );
+  return compute_radial_dcw_2d<REAL,false>( samples_per_profile, num_profiles, alpha, one_over_radial_oversampling_factor );
 }
 
 //

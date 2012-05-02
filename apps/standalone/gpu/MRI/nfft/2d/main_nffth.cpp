@@ -116,12 +116,12 @@ int main( int argc, char** argv)
   // Compute density compensation weights
   timer = new GPUTimer("Computing density compensation weights");
   boost::shared_ptr< cuNDArray<_real> > dcw = compute_radial_dcw_golden_ratio_2d
-    ( samples_per_profile, num_profiles, alpha, _real(0)/((_real)samples_per_profile/(_real)matrix_size.vec[0]) );
+    ( samples_per_profile, num_profiles, alpha, _real(1)/((_real)samples_per_profile/(_real)matrix_size.vec[0]) );
   delete timer;
 
   // Gridder
   timer = new GPUTimer("Computing adjoint nfft (gridding)");
-  success = plan.compute( &image, &samples, dcw.get(), plan_type::NFFT_BACKWARDS_NC2C );
+  success = plan.compute( &samples, &image, dcw.get(), plan_type::NFFT_BACKWARDS_NC2C );
   delete timer;
 
   //

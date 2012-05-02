@@ -307,10 +307,12 @@ protected:
       }
       
       if( *(op->get_domain_dimensions()) != *image_dims ){
+	op->set_domain_dimensions(image_dims);
 	this->solver_warning( "Warning: sbSolver::validate_regularization_operators : operator domain dimensions set to match the image dimensions" );
       }
       
       if( *(op->get_codomain_dimensions()) != *image_dims ){
+	op->set_codomain_dimensions(image_dims);
 	this->solver_warning( "Warning: sbSolver::validate_regularization_operators : operator codomain dimensions set to match the image dimensions" );
       }
     }
@@ -327,10 +329,12 @@ protected:
 	}
 	
 	if( *(op->get_domain_dimensions()) != *image_dims ){
+	  op->set_domain_dimensions(image_dims);
 	  this->solver_warning( "Warning: sbSolver::validate_regularization_operators : operator domain dimensions set to match the image dimensions" );
 	}
 	
 	if( *(op->get_codomain_dimensions()) != *image_dims ){
+	  op->set_codomain_dimensions(image_dims);		
 	  this->solver_warning( "Warning: sbSolver::validate_regularization_operators : operator codomain dimensions set to match the image dimensions" );
 	}
       }

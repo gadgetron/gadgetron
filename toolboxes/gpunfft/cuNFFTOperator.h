@@ -17,7 +17,7 @@ template<class REAL, unsigned int D> class EXPORTGPUNFFT cuNFFTOperator
   
   virtual ~cuNFFTOperator() {}
   
-  virtual int set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw ) { dcw_ = dcw; }
+  virtual void set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw ) { dcw_ = dcw; }
   inline boost::shared_ptr< cuNDArray<REAL> > get_dcw() { return dcw_; }
 
   inline boost::shared_ptr< NFFT_plan<REAL, D> > get_plan() { return plan_; }

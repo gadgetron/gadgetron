@@ -65,9 +65,11 @@ int main(int argc, char** argv)
   unsigned int num_iterations = parms.get_parameter('i')->get_int_value();
   
   // Setup regularization operators
+  //
   boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,2> > Rx( new cuPartialDerivativeOperator<_real,_complext,2>(0) ); 
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,2> > Ry( new cuPartialDerivativeOperator<_real,_complext,2>(1) ); 
   Rx->set_weight( kappa );
+
+  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,2> > Ry( new cuPartialDerivativeOperator<_real,_complext,2>(1) ); 
   Ry->set_weight( kappa );
      
   //
@@ -77,7 +79,8 @@ int main(int argc, char** argv)
   // Define encoding matrix
   boost::shared_ptr< cuConvolutionOperator<_real,2> > E( new cuConvolutionOperator<_real,2>() );
   E->set_kernel( &kernel );
-    
+  E->set_domain_dimensions(data.get_dimensions().get());
+
   // Setup conjugate gradient solver
   cuCgSolver<_real, _complext> cg;
   cg.set_encoding_operator( E );                         // encoding matrix
