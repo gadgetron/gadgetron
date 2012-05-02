@@ -23,6 +23,10 @@ template <class REAL, class T, unsigned int D> class EXPORTSOLVERS cuVariableGau
   virtual int mult_MH( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate = false );
   virtual int mult_M( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate = false );
 
+  virtual boost::shared_ptr< linearOperator< REAL, cuNDArray<T> > > clone(){
+    return linearOperator< REAL, cuNDArray<T> >::clone(this);
+  }
+  
  protected:
   cuNDArray<REAL>* _sigma;
   boost::shared_ptr<cuNDArray<REAL> > _norm;

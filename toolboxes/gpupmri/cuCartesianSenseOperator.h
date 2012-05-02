@@ -26,6 +26,10 @@ class EXPORTGPUPMRI cuCartesianSenseOperator
     return 0;
   }
 
+  virtual boost::shared_ptr< linearOperator< REAL, cuNDArray< complext<REAL>  > > > clone(){
+    return linearOperator< REAL, cuNDArray<complext<REAL> > >::clone(this);
+  }
+  
  protected:
   boost::shared_ptr< cuNDArray<unsigned int> > idx_;
 };

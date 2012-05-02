@@ -17,4 +17,8 @@ class EXPORTGPUPMRI cuNonCartesianKtSenseOperator : public cuNonCartesianSenseOp
   
   virtual int mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
   virtual int mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
+
+  virtual boost::shared_ptr< linearOperator< REAL, cuNDArray< complext<REAL>  > > > clone(){
+    return linearOperator< REAL, cuNDArray<complext<REAL> > >::clone(this);
+  }  
 };
