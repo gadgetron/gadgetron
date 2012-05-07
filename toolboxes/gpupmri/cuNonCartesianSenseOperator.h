@@ -32,6 +32,10 @@ public:
   virtual int preprocess( cuNDArray<_reald> *trajectory );
   virtual int set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw );
 
+  virtual boost::shared_ptr< linearOperator< REAL, cuNDArray< complext<REAL>  > > > clone(){
+    return linearOperator< REAL, cuNDArray<complext<REAL> > >::clone(this);
+  }
+  
 protected:
   boost::shared_ptr< NFFT_plan<REAL, D> > plan_;
   boost::shared_ptr< cuNDArray<REAL> > dcw_;

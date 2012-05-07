@@ -4,18 +4,19 @@
   -----------
 
   The nfft is written generically and templetized to
+
   - transform arbitrary trajectories
-  - transform an arbitrary number of dimensions (currently instantiated for 2d/3d/4d)
+  - transform an arbitrary number of dimensions (currently instantiated for 1d/2d/3d/4d)
   - support both single and double precision
 
   General principles of the implementation can be found in:
 
   Accelerating the Non-equispaced Fast Fourier Transform on Commodity Graphics Hardware.
-  T.S. S��rensen, T. Schaeffter, K.��. Noe, M.S. Hansen. 
+  T.S. Sørensen, T. Schaeffter, K.Ø. Noe, M.S. Hansen. 
   IEEE Transactions on Medical Imaging 2008; 27(4):538-547.
 
   Real-time Reconstruction of Sensitivity Encoded Radial Magnetic Resonance Imaging Using a Graphics Processing Unit.
-  T.S. S��rensen, D. Atkinson, T. Schaeffter, M.S. Hansen.
+  T.S. Sørensen, D. Atkinson, T. Schaeffter, M.S. Hansen.
   IEEE Transactions on Medical Imaging 2009; 28(12):1974-1985. 
 
   This example programme of the nnft utilizes golden ratio based radial trajectories 
@@ -124,7 +125,7 @@ int main( int argc, char** argv)
   
   // Preprocess
   timer = new GPUTimer("NFFT preprocessing");
-  bool success = plan.preprocess( traj.get(), plan_type::NFFT_PREP_FORWARDS );
+  bool success = plan.preprocess( traj.get(), plan_type::NFFT_PREP_C2NC );
   delete timer;
 
   // Compute density compensation weights
@@ -134,8 +135,8 @@ int main( int argc, char** argv)
   delete timer;
 
   // Gridder
-  timer = new GPUTimer("Computing nfft (inverse gridding)");
-  success = plan.compute( &samples, image.get(), dcw.get(), plan_type::NFFT_FORWARDS );
+  timer = new GPUTimer("Computing nfft");
+  success = plan.compute( &samples, image.get(), dcw.get(), plan_type::NFFT_FORWARDS_C2NC );
   delete timer;
 
   //

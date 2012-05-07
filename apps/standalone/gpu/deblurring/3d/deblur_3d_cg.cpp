@@ -80,6 +80,7 @@ int main(int argc, char** argv)
   // Define encoding matrix
   boost::shared_ptr< cuConvolutionOperator<_real,3> > E( new cuConvolutionOperator<_real,3>() );
   E->set_kernel( &kernel );
+  E->set_domain_dimensions(data.get_dimensions().get());
     
   // Setup conjugate gradient solver
   cuCgSolver<_real, _complext> cg;

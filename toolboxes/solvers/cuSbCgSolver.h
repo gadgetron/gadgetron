@@ -6,15 +6,19 @@
 #include "real_utilities.h"
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
+#include "cuEncodingOperatorContainer.h"
 
 template <class REAL, class T> class cuSbCgSolver 
-  : public sbSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T>, cuCgSolver<REAL,T> >
+  : public sbSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T>, cuCgSolver<REAL,T>, cuEncodingOperatorContainer<REAL,T> >
 {
 public:
   
-  cuSbCgSolver() : sbSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T>, cuCgSolver<REAL,T> >() { set_device(-1); }
-  virtual ~cuSbCgSolver() {}
+  cuSbCgSolver() : sbSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T>, cuCgSolver<REAL,T>, cuEncodingOperatorContainer<REAL,T> >() {
+    set_device(-1); 
+  }
   
+  virtual ~cuSbCgSolver() {}
+
 #include "cuSbSolver_macros.h"
   
 protected:

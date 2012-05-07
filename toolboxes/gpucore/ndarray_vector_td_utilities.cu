@@ -3818,7 +3818,6 @@ bool cuNDA_shrink1( REAL gamma, cuNDArray<T> *in, cuNDArray<T> *out )
     return false;
   }
 
-
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
   if( !setup_grid( cur_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){

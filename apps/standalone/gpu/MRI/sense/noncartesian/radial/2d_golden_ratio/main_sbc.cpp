@@ -188,8 +188,8 @@ int main(int argc, char** argv)
   E->mult_csm_conj_sum( acc_images.get(), &_reg_image );
   
   // Duplicate the regularization image to 'frames_per_reconstruction' frames
-  //boost::shared_ptr<cuNDArray<_complext> > reg_image = cuNDA_expand( &_reg_image, frames_per_reconstruction );
-  //cuNDA_scal((_real)2.0*_real(1), reg_image.get()); // We need to figure out where this scaling comes from
+  boost::shared_ptr<cuNDArray<_complext> > reg_image = cuNDA_expand( &_reg_image, frames_per_reconstruction );
+  cuNDA_scal((_real)2.0*_real(1), reg_image.get()); // We need to figure out where this scaling comes from
 
   acc_images.reset();
   csm.reset();
@@ -225,9 +225,12 @@ int main(int argc, char** argv)
   // Setup split-Bregman solver
   cuSbcCgSolver<_real, _complext> sb;
   sb.set_encoding_operator( E );
+  //sb.add_regularization_operator( Rx ); 
+  //sb.add_regularization_operator( Ry ); 
   sb.add_regularization_group_operator( Rx ); 
   sb.add_regularization_group_operator( Ry ); 
   sb.add_group();
+  sb.set_prior_image( reg_image, _real(0.2) );
   sb.set_max_outer_iterations(num_sb_outer_iterations);
   sb.set_max_inner_iterations(num_sb_inner_iterations);
   sb.set_output_mode( cuSbcCgSolver<_real, _complext>::OUTPUT_VERBOSE );

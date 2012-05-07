@@ -1,5 +1,5 @@
 /*
-  CUDA implementation of the NFFT.
+  CUDA/GPU implementation of the NFFT.
 
   -----------
 
@@ -26,7 +26,7 @@
 template< class REAL, unsigned int D > class EXPORTGPUNFFT NFFT_plan
 {
   
-public: // Main interface
+ public: // Main interface
     
   // Constructors
   NFFT_plan();
@@ -42,43 +42,52 @@ public: // Main interface
   // Replan 
   bool setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int device = -1 );
     
-  // Preproces trajectory
-  enum NFFT_prep_mode { NFFT_PREP_ALL, NFFT_PREP_FORWARDS, NFFT_PREP_BACKWARDS };
-  bool preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory, NFFT_prep_mode mode  );
+  // Preproces trajectory ( Cartesian to non-Cartesian / non-Cartesian to Cartesian / both )
+  enum NFFT_prep_mode { NFFT_PREP_C2NC, NFFT_PREP_NC2C, NFFT_PREP_ALL };
+  bool preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory, NFFT_prep_mode mode );
     
-  // Execute NFFT
-  enum NFFT_comp_mode { NFFT_FORWARDS, NFFT_BACKWARDS };
-  bool compute( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode );
-  bool compute_iteration( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode );
+  // Execute NFFT (forwards/backwards; modes: Cartesian to non-Cartesian or non-Cartesian to Cartesian)
+  enum NFFT_comp_mode { NFFT_FORWARDS_C2NC, NFFT_FORWARDS_NC2C, NFFT_BACKWARDS_C2NC, NFFT_BACKWARDS_NC2C };
+  bool compute( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, cuNDArray<REAL> *dcw, NFFT_comp_mode mode );
+
+  // Execute NFFT iteration (from Cartesian image space to non-Cartesian Fourier space and back to Cartesian image space)
+  bool mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, 
+		  cuNDArray<REAL> *dcw, std::vector<unsigned int> halfway_dims );
   
-public: // Utilities
+ public: // Utilities
   
-  // NFFT convolution
-  bool convolve( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, cuNDArray<REAL> *weights, NFFT_comp_mode mode, bool accumulate = false );
+  // NFFT convolution (Cartesian to non-Cartesian or non-Cartesian to Cartesian)
+  enum NFFT_conv_mode { NFFT_CONV_C2NC, NFFT_CONV_NC2C };
+  bool convolve( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, cuNDArray<REAL> *dcw, 
+		 NFFT_conv_mode mode, bool accumulate = false );
     
   // NFFT FFT
-  bool fft( cuNDArray<complext<REAL> > *data, NFFT_comp_mode mode, bool do_scale = true );
+  enum NFFT_fft_mode { NFFT_FORWARDS, NFFT_BACKWARDS };
+  bool fft( cuNDArray<complext<REAL> > *data, NFFT_fft_mode mode, bool do_scale = true );
   
   // NFFT deapodization
   bool deapodize( cuNDArray<complext<REAL> > *image );
 
-public: // Setup queries
-	typename uintd<D>::Type get_matrix_size();
-	typename uintd<D>::Type get_matrix_size_os();
-	REAL get_W();
-	unsigned int get_device();
+ public: // Setup queries
 
-public: 
+  typename uintd<D>::Type get_matrix_size();
+  typename uintd<D>::Type get_matrix_size_os();
+  REAL get_W();
+  unsigned int get_device();
+  
+ public: 
 
   // Custom operators new/delete for windows memory handling across dll boundaries
   void* operator new (size_t bytes) { return ::new char[bytes]; }
   void operator delete (void *ptr) { delete [] static_cast <char *> (ptr); } 
   void * operator new(size_t s, void * p) { return p; }
 
-private:
+ private: // Internal to the implementation
 
-  enum NFFT_components { NFFT_CONVOLUTION = 1, NFFT_H_CONVOLUTION = 2, NFFT_FFT = 4, NFFT_DEAPODIZATION = 8 };
-  bool check_consistency( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, cuNDArray<REAL> *weights, unsigned char components );
+  // Validate setup / arguments
+  enum NFFT_components { _NFFT_CONV_C2NC = 1, _NFFT_CONV_NC2C = 2, _NFFT_FFT = 4, _NFFT_DEAPODIZATION = 8 };
+  bool check_consistency( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, 
+			  cuNDArray<REAL> *dcw, unsigned char components );
 
   // Shared barebones constructor
   bool barebones();
@@ -89,18 +98,20 @@ private:
   // Compute deapodization filter
   bool compute_deapodization_filter();
 
-  // A dedicated compute for each of the two NFFT directions
-  bool compute_NFFT( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image );
-  bool compute_NFFT_H( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image );
+  // Dedicated computes
+  bool compute_NFFT_C2NC( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out );
+  bool compute_NFFT_NC2C( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out );
+  bool compute_NFFTH_NC2C( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out );
+  bool compute_NFFTH_C2NC( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out );
 
-  // A dedicated convolution for each of the two NFFT directions
-  bool convolve_NFFT( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, bool accumulate );
-  bool convolve_NFFT_H( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, bool accumulate );
+  // Dedicated convolutions
+  bool convolve_NFFT_C2NC( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate );
+  bool convolve_NFFT_NC2C( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate );
    
-  // Internal utility to the NFFT_H convolution
-  bool image_wrap( cuNDArray<complext<REAL> > *source, cuNDArray<complext<REAL> > *target, bool accumulate );
+  // Internal utility
+  bool image_wrap( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate );
 
-private:
+ private:
     
   typename uintd<D>::Type matrix_size;          // Matrix size
   typename uintd<D>::Type matrix_size_os;       // Oversampled matrix size
@@ -129,6 +140,6 @@ private:
   // State variables
   //
 
-  bool preprocessed_NFFT, preprocessed_NFFT_H;
+  bool preprocessed_C2NC, preprocessed_NC2C;
   bool initialized;
 };

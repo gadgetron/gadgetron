@@ -85,6 +85,11 @@ public:
     typename uintd<D>::Type offset = vector_to_uintd<D>(*(in->get_dimensions().get()))>>2;
     return cuNDA_crop<complext<REAL>,D>( offset, in, out );
   }
-  
+    
+  virtual boost::shared_ptr< linearOperator< REAL, cuNDArray< complext<REAL> > > > clone()
+  {
+    return linearOperator< REAL, cuNDArray< complext<REAL> > >::clone(this);
+  }
+
   DECLARE_MATRIX_OPERATOR_DEVICE_SUPPORT(cuConvolutionOperator)
 };

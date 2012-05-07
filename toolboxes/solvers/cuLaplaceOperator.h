@@ -14,6 +14,10 @@ public:
   cuLaplaceOperator() : laplaceOperator< REAL, D, cuNDArray<T> >() { set_device(-1); }
   virtual ~cuLaplaceOperator() {}
 
+  virtual boost::shared_ptr< linearOperator< REAL, cuNDArray<T> > > clone(){
+    return linearOperator< REAL, cuNDArray<T> >::clone(this);
+  }
+
  protected:
   virtual int compute_laplace( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate );  
 

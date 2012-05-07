@@ -42,6 +42,25 @@ struct compute_num_cells_per_sample
 
 template<class REAL> __inline__ __device__ void
 output_pairs( unsigned int sample_idx, unsigned int frame, 
+	      typename reald<REAL,1>::Type &p, typename uintd<1>::Type &matrix_size_os, typename uintd<1>::Type &matrix_size_wrap, 
+	      REAL half_W, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
+{
+  unsigned int lower_limit_x = (unsigned int)ceil(p.vec[0]-half_W);
+  unsigned int upper_limit_x = (unsigned int)floor(p.vec[0]+half_W);
+
+  unsigned int pair_idx = 0;
+  unsigned int write_offset = (sample_idx==0) ? 0 : write_offsets[sample_idx-1];
+  unsigned int frame_offset = frame*prod(matrix_size_os+matrix_size_wrap);
+  for( unsigned int x=lower_limit_x; x<=upper_limit_x; x++ ){
+    typename uintd<1>::Type co; co.vec[0] = x;
+    tuples_first[write_offset+pair_idx] = co_to_idx<1>(co, matrix_size_os+matrix_size_wrap)+frame_offset;
+    tuples_last[write_offset+pair_idx] = sample_idx;
+    pair_idx++;
+  }
+}
+
+template<class REAL> __inline__ __device__ void
+output_pairs( unsigned int sample_idx, unsigned int frame, 
 	      typename reald<REAL,2>::Type &p, typename uintd<2>::Type &matrix_size_os, typename uintd<2>::Type &matrix_size_wrap, 
 	      REAL half_W, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
 {

@@ -90,6 +90,22 @@ NFFT_iterate_body( REAL alpha, REAL beta, REAL W, vector_td<unsigned int, D> mat
 //
 
 template<class REAL> __inline__ __device__ void
+NFFT_iterate( REAL alpha, REAL beta, REAL W, vector_td<unsigned int,1> matrix_size_os, unsigned int number_of_batches, complext<REAL>* image,
+	      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vector_td<REAL,1> matrix_size_os_real, unsigned int sharedMemFirstSampleIdx,
+	      vector_td<REAL,1> sample_position, vector_td<int,1> lower_limit, vector_td<int,1> upper_limit )
+{
+  // Iterate through all grid cells influencing the corresponding sample
+  for( int x = lower_limit.vec[0]; x<=upper_limit.vec[0]; x++ ){
+    
+    intd<1>::Type grid_position;
+    grid_position.vec[0] = x;
+    
+    NFFT_iterate_body<REAL,1>( alpha, beta, W, matrix_size_os, number_of_batches, image, double_warp_size_power, half_W, 
+			       one_over_W, matrix_size_os_real, sharedMemFirstSampleIdx, sample_position, grid_position );
+  }
+}
+
+template<class REAL> __inline__ __device__ void
 NFFT_iterate( REAL alpha, REAL beta, REAL W, vector_td<unsigned int,2> matrix_size_os, unsigned int number_of_batches, complext<REAL>* image,
 	      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vector_td<REAL,2> matrix_size_os_real, unsigned int sharedMemFirstSampleIdx,
 	      vector_td<REAL,2> sample_position, vector_td<int,2> lower_limit, vector_td<int,2> upper_limit )

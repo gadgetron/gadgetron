@@ -13,14 +13,16 @@ template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class cgSolver
 {
   
 public:
+
   friend class cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE>;
+
   // Constructor
   //
+
   cgSolver() : linearSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE>() {
     alpha_ = ELEMENT_TYPE(NAN);
     iterations_ = 10;
     tc_tolerance_ = (REAL)1e-3;
-    tc_history_enabled_ = false;
     cb_ = boost::shared_ptr< relativeResidualTCB<REAL, ELEMENT_TYPE, ARRAY_TYPE> >
       ( new relativeResidualTCB<REAL, ELEMENT_TYPE, ARRAY_TYPE>() );
   }
@@ -28,11 +30,13 @@ public:
 
   // Destructor
   //
+
   virtual ~cgSolver() {}
 
 
   // Set preconditioner
   //
+
   virtual void set_preconditioner( boost::shared_ptr< cgPreconditioner<ARRAY_TYPE> > precond ) {
     precond_ = precond;
   }
@@ -40,31 +44,25 @@ public:
 
   // Set termination callback
   //
+
   virtual void set_termination_callback( boost::shared_ptr< cgTerminationCallback<REAL, ELEMENT_TYPE, ARRAY_TYPE> > cb ){
     cb_ = cb;
   }
   
+
   // Set/get maximally allowed number of iterations
   //
+
   virtual void set_max_iterations( unsigned int iterations ) { iterations_ = iterations; }
   virtual unsigned int get_max_iterations() { return iterations_; }  
 
+
   // Set/get tolerance threshold for termination criterium
   //
+
   virtual void set_tc_tolerance( REAL tolerance ) { tc_tolerance_ = tolerance; }
   virtual REAL get_tc_tolerance() { return tc_tolerance_; }
   
-  // Toggle (on/off) record keeping of termination criterium (tc) evaluations
-  //
-  void enable_tc_history( bool b ) { tc_history_enabled_ = b; }
-  
-  // Get history of the termination criterium evaluations
-  //
-  virtual std::vector<REAL> get_tc_history() { return tc_values_; }
-
-  // Access to internal solver data (e.g. for termination callbacks)
-  //
-
 
   // Pre/post solver callbacks
   //
@@ -72,12 +70,15 @@ public:
   // - and since 'solve' itself invokes 'solve_from_rhs' the callback is triggered twice in 'solve'
   //
   // 'post_solve' is invoked on the resulting image right before it is returned
+  //
 
   virtual bool pre_solve( ARRAY_TYPE** ) { return true; }
   virtual bool post_solve( boost::shared_ptr<ARRAY_TYPE>& ) { return true; }
 
+
   // Pure virtual functions defining core solver functionality
   // Implemented on the host/device respectively in a derived class
+  //
 
   virtual ELEMENT_TYPE solver_dot( ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
   virtual bool solver_clear( ARRAY_TYPE* ) = 0;
@@ -85,8 +86,11 @@ public:
   virtual bool solver_axpy( ELEMENT_TYPE, ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
   virtual bool solver_dump( ARRAY_TYPE* ) { return true; }
 
-  // Inherited solver interface
+
   //
+  // Main solver interface
+  //
+
   virtual boost::shared_ptr<ARRAY_TYPE> solve( ARRAY_TYPE *_d )
   {
     
@@ -126,9 +130,12 @@ public:
     
     return result;
   }
-  
-  // Solver interface given the right hand side
-  //  
+
+
+  //
+  // Alternative solver interface when given the right hand side
+  //
+
   virtual boost::shared_ptr<ARRAY_TYPE> solve_from_rhs( ARRAY_TYPE *_rhs ) 
   {
     // Make copy of the input pointer for the pre_solve callback
@@ -172,9 +179,6 @@ public:
 	return boost::shared_ptr<ARRAY_TYPE>();
       }
 
-      if( tc_history_enabled_ )
-	tc_values_.push_back( tc_metric );
-
       if( !solver_dump( x_.get()) )
 	this->solver_warning( "Warning: cgSolver::solve_from_rhs : image dump callback failed" );
       
@@ -195,18 +199,18 @@ public:
     deinitialize();
     return tmpx;
   }
-  
-protected:
+
 
   // Compute right hand side
   //
+
   virtual boost::shared_ptr<ARRAY_TYPE> compute_rhs( ARRAY_TYPE *d )
   {
     
     if( this->encoding_operator_.get() == 0 ){
       this->solver_error( "Error: cgSolver::compute_rhs : no encoding operator is set" );
       return boost::shared_ptr<ARRAY_TYPE>();
-    }
+    } 
         
     // Get image space dimensions from the encoding operator
     //
@@ -262,8 +266,16 @@ protected:
     return result;
   }
 
+protected:
+  
+  //
+  // Everything beyond this point is internal to the implementation
+  // and not intended to be exposed as a public interface
+  //
+
   // Initialize solver
   //
+
   virtual bool initialize( ARRAY_TYPE *rhs ) 
   {
     // Input validity test
@@ -375,8 +387,10 @@ protected:
     return true;
   }
   
+
   // Clean up
   //
+
   virtual bool deinitialize() 
   {
     p_ = boost::shared_ptr<ARRAY_TYPE>();
@@ -385,8 +399,10 @@ protected:
     return true;
   }
 
+
   // Perform full cg iteration
   //
+
   virtual bool iterate( unsigned int iteration, REAL *tc_metric, bool *tc_terminate )
   {
     ARRAY_TYPE q;
@@ -477,8 +493,10 @@ protected:
     return true;
   }
 
+
   // Perform mult_MH_M of the encoding and regularization matrices
   //
+
   bool mult_MH_M( ARRAY_TYPE *in, ARRAY_TYPE *out )
   {
     // Basic validity checks
@@ -553,12 +571,6 @@ protected:
 
   // Termination criterium threshold
   REAL tc_tolerance_;
-
-  // Toogle record keeping of termination criterium
-  bool tc_history_enabled_;
-
-  // History of termination criterium values
-  std::vector<REAL> tc_values_;
 
   // Maximum number of iterations
   unsigned int iterations_;

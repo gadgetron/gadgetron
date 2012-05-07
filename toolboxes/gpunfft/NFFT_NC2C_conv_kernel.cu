@@ -78,10 +78,10 @@ NFFT_H_convolve( REAL alpha, REAL beta, REAL W, unsigned int number_of_samples, 
       for( unsigned int batch=0; batch<number_of_batches; batch++ ){
 	
 	complext<REAL>sample_val = samples[sampleIdx+batch*gridDim.y*number_of_samples];
-	
+
 	// Apply filter to shared memory domain. 
-	shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)] += weight*sample_val.vec[0];
-	shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)+warpSize] += weight*sample_val.vec[1];
+	shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)] += (weight*sample_val.vec[0]);
+	shared_mem[sharedMemFirstCellIdx+(batch<<double_warp_size_power)+warpSize] += (weight*sample_val.vec[1]);
       }
     }
 }

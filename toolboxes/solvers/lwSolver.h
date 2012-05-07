@@ -173,7 +173,14 @@ protected:
       this->solver_error( "Error: lwSolvercompute_residual_image : failed to apply adjoint encoding operator" );
       return boost::shared_ptr<ARRAY_TYPE>();
     }
- 
+
+    // Apply encoding operator weight
+    unsigned int w = this->encoding_operator_->get_weight();
+    if( w != REAL(1) && !solver_scale( w, res.get() )) {
+      this->solver_error( "Error: lwSolvercompute_residual_image : failed to apply encoding operator weight" );
+      return boost::shared_ptr<ARRAY_TYPE>();
+    }
+    
     return res;
   }
   

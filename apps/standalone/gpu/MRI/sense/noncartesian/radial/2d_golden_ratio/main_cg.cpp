@@ -324,6 +324,9 @@ int main(int argc, char** argv)
       cgresult = cg.solve(data.get());
     }
 
+    if( !cgresult.get() )
+      return 1;
+
     // Copy cgresult to overall result
     cuNDArray<_complext> out;     
     if( out.create( &image_dims, 

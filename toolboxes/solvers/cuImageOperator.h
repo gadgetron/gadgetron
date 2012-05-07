@@ -59,5 +59,10 @@ template <class REAL, class T> class cuImageOperator
     return cuNDA_axpy( a, x, y );
   }
 
+  virtual boost::shared_ptr< linearOperator< REAL, cuNDArray<T> > > clone()
+  {
+    return linearOperator< REAL, cuNDArray<T> >::clone(this);
+  }
+  
   DECLARE_MATRIX_OPERATOR_DEVICE_SUPPORT(cuImageOperator)
 };
