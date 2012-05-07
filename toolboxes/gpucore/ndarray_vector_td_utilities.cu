@@ -2692,7 +2692,7 @@ _nrm2<float,float_complext>( cuNDArray<float_complext>* arr, int device )
 		   (const cuComplex*) arr->get_data_ptr(), 1,
 		   &ret) != CUBLAS_STATUS_SUCCESS )
     {
-      cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+      cout << "cuNDA_nrm2: nrm2 calculation using cublas failed" << std::endl;
       return 0;
     }
 
@@ -2708,7 +2708,7 @@ _nrm2<float,float>( cuNDArray<float>* arr, int device )
 		 arr->get_data_ptr(), 1,
 		 &ret) != CUBLAS_STATUS_SUCCESS )
     {
-      cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+	  cout << "cuNDA_nrm2: nrm2 calculation using cublas failed" << std::endl;
       return 0;
     }
 
@@ -2725,7 +2725,7 @@ _nrm2<double,double_complext>( cuNDArray<double_complext>* arr, int device )
 		  (const cuDoubleComplex*) arr->get_data_ptr(), 1,
 		  &ret) != CUBLAS_STATUS_SUCCESS )
     {
-      cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+	  cout << "cuNDA_nrm2: nrm2 calculation using cublas failed" << std::endl;
       return 0;
     }
 
@@ -2741,7 +2741,7 @@ _nrm2<double,double>( cuNDArray<double>* arr, int device )
 		 arr->get_data_ptr(), 1,
 		 &ret) != CUBLAS_STATUS_SUCCESS )
     {
-      cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+	  cout << "cuNDA_nrm2: nrm2 calculation using cublas failed" << std::endl;
       return 0;
     }
 
