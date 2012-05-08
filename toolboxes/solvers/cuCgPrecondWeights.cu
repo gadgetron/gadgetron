@@ -1,4 +1,4 @@
-#include "cuCGPrecondWeights.h"
+#include "cuCgPrecondWeights.h"
 #include "vector_td_utilities.h"
 
 template<class T> __global__ void 
@@ -12,7 +12,7 @@ weight_multiplication( T* in, T* out, T* weight, unsigned long elements )
 }
 
 template <class T> int 
-cuCGPrecondWeights<T>::set_weights( boost::shared_ptr< cuNDArray<T> > w ) 
+cuCgPrecondWeights<T>::set_weights( boost::shared_ptr< cuNDArray<T> > w ) 
 {
   int ret1 = 0, ret2 = 0;
   if( w->get_device() != this->device_ ){
@@ -32,7 +32,7 @@ cuCGPrecondWeights<T>::set_weights( boost::shared_ptr< cuNDArray<T> > w )
 }
 
 template <class T> int 
-cuCGPrecondWeights<T>::apply(cuNDArray<T>* in, cuNDArray<T>* out)
+cuCgPrecondWeights<T>::apply(cuNDArray<T>* in, cuNDArray<T>* out)
 {
 	if( !weights_.get() ){
     std::cerr << "cuCGPreconWeight::apply: weights not set" << std::endl;
@@ -103,8 +103,8 @@ cuCGPrecondWeights<T>::apply(cuNDArray<T>* in, cuNDArray<T>* out)
 // Instantiation
 //
 
-template class EXPORTSOLVERS cuCGPrecondWeights<float>;
-template class EXPORTSOLVERS cuCGPrecondWeights<float_complext>;
+template class EXPORTSOLVERS cuCgPrecondWeights<float>;
+template class EXPORTSOLVERS cuCgPrecondWeights<float_complext>;
 
-template class EXPORTSOLVERS cuCGPrecondWeights<double>;
-template class EXPORTSOLVERS cuCGPrecondWeights<double_complext>;
+template class EXPORTSOLVERS cuCgPrecondWeights<double>;
+template class EXPORTSOLVERS cuCgPrecondWeights<double_complext>;

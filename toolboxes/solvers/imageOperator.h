@@ -1,22 +1,22 @@
 #pragma once
 
-#include "matrixOperator.h"
+#include "linearOperator.h"
 #include "vector_td_utilities.h"
 
 #include <boost/smart_ptr.hpp>
 #include <vector>
 
 template <class REAL, class ARRAY_TYPE_REAL, class ARRAY_TYPE_OPERATOR> class imageOperator 
-	: public matrixOperator<REAL, ARRAY_TYPE_OPERATOR>
+	: public linearOperator<REAL, ARRAY_TYPE_OPERATOR>
 {
   
 public:
   
-  imageOperator() : matrixOperator<REAL,ARRAY_TYPE_OPERATOR>() {}
+  imageOperator() : linearOperator<REAL,ARRAY_TYPE_OPERATOR>() {}
   virtual ~imageOperator() {}
   
   // Get regularization image
-  inline ARRAY_TYPE_REAL* get() { return image_.get(); }
+  virtual ARRAY_TYPE_REAL* get() { return image_.get(); }
     
   virtual void operator_scal( REAL, ARRAY_TYPE_OPERATOR* ) = 0;
   virtual void operator_reciprocal( ARRAY_TYPE_REAL* ) = 0;

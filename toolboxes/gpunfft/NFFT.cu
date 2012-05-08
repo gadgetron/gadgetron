@@ -12,21 +12,18 @@
   IEEE Transactions on Medical Imaging 2009; 28(12): 1974-1985. 
 */
 
-// Includes - our own code
+// Includes - Gadgetron
 #include "NFFT.h"
 #include "cuNDFFT.h"
-
 #include "cuNDArray.h"
 #include "ndarray_vector_td_utilities.h"
-
-
 #include "check_CUDA.h"
 
 // Includes - CUDA
 #include <math_constants.h>
 #include <cufft.h>
 
-// Includes - CUDA thrust
+// Includes - Thrust
 #include <thrust/scan.h>
 #include <thrust/sort.h>
 #include <thrust/binary_search.h>
@@ -40,67 +37,26 @@
 using namespace std;
 using namespace thrust;
 
-//
-// Some defines used to configure our kernels
-//
+// Kernel configuration  
+#define NFFT_MAX_COILS_COMPUTE_1x    8
+#define NFFT_MAX_COILS_COMPUTE_2x   16
+#define NFFT_THREADS_PER_KERNEL    192
 
-// TODO: make "d x generation"-dimensional struct to contain MAX_COILS and THREADS_PER_KERNEL for the NFFT and NFFT_H respectively
-
-// Block configuration for kernel
-// ------------------------------
-
-#define NFFT_MAX_COILS_2D_COMPUTE_1x	                                          8
-#define NFFT_MAX_COILS_2D_COMPUTE_2x	                                         16
-#define NFFT_THREADS_PER_2D_KERNEL_1x						192
-#define NFFT_THREADS_PER_2D_KERNEL_2x						192
-
-#define NFFT_H_MAX_COILS_2D_COMPUTE_1x	                                          8
-#define NFFT_H_MAX_COILS_2D_COMPUTE_2x	                                         16
-#define NFFT_H_THREADS_PER_2D_KERNEL_1x						192
-#define NFFT_H_THREADS_PER_2D_KERNEL_2x						192
-
-#define NFFT_MAX_COILS_3D_COMPUTE_1x	                                          8
-#define NFFT_MAX_COILS_3D_COMPUTE_2x	                                         16
-#define NFFT_THREADS_PER_3D_KERNEL_1x						192
-#define NFFT_THREADS_PER_3D_KERNEL_2x						192
-
-#define NFFT_H_MAX_COILS_3D_COMPUTE_1x	                                          8
-#define NFFT_H_MAX_COILS_3D_COMPUTE_2x	                                         16
-#define NFFT_H_THREADS_PER_3D_KERNEL_1x						192
-#define NFFT_H_THREADS_PER_3D_KERNEL_2x						192
-
-#define NFFT_MAX_COILS_4D_COMPUTE_1x	                                          8
-#define NFFT_MAX_COILS_4D_COMPUTE_2x	                                         16
-#define NFFT_THREADS_PER_4D_KERNEL_1x						256
-#define NFFT_THREADS_PER_4D_KERNEL_2x						256
-
-#define NFFT_H_MAX_COILS_4D_COMPUTE_1x	                                          8
-#define NFFT_H_MAX_COILS_4D_COMPUTE_2x	                                         16
-#define NFFT_H_THREADS_PER_4D_KERNEL_1x						256
-#define NFFT_H_THREADS_PER_4D_KERNEL_2x						256
-  
-//
 // Reference to shared memory
-//
-
 extern __shared__ char _shared_mem[];
 
-// 
 // Includes containing the NFFT convolution implementation
-// 
-
 #include "KaiserBessel_kernel.cu"
-#include "NFFT_kernel.cu"
-#include "NFFT_H_kernel.cu"
+#include "NFFT_C2NC_conv_kernel.cu"
+#include "NFFT_NC2C_conv_kernel.cu"
 #include "NFFT_preprocess_kernel.cu"
 
 // Some device properties we query once to eliminate runtime overhead
-//
 static int num_devices = 0;
 static int *warp_size = 0x0;
 static int *major = 0x0;
 
-// Default template arguments seems to require c++-0x. 
+// Default template arguments requires c++-0x ?
 typedef float dummy;
 
 // Initialize static variables
@@ -111,14 +67,14 @@ static bool initialize_static_variables()
   if( num_devices ) return true;
 
   if( cudaGetDeviceCount( &num_devices ) != cudaSuccess) {
-    cout << endl << "Error: no Cuda devices present.";
+    cerr << "Error: NFFT : no Cuda devices present" << endl;
     num_devices = 0;
     return false;
   }
 
   int old_device;
   if( cudaGetDevice(&old_device) != cudaSuccess ) {
-    cerr << endl << "Error: unable to get device no";
+    cerr << "Error: NFFT : unable to get device no" << endl;
     return false;
   }
 
@@ -126,7 +82,7 @@ static bool initialize_static_variables()
   major = new int[num_devices];
 
   if( !warp_size || !major ) {
-    cout << endl << "Error: trivial malloc failed!" << endl ;
+    cerr << "Error: NFFT : memory allocation failed" << endl;
     return false;
   }
 
@@ -135,7 +91,7 @@ static bool initialize_static_variables()
     cudaDeviceProp deviceProp; 
     
     if( cudaGetDeviceProperties( &deviceProp, device ) != cudaSuccess) {
-      cout << endl << "Error: unable to determine device properties." << endl ;
+      cerr << "Error: NFFT : unable to determine device properties" << endl;
       return false;
     }
 
@@ -144,7 +100,7 @@ static bool initialize_static_variables()
   }
 
   if( cudaSetDevice(old_device) != cudaSuccess ) {
-    cerr << endl << "Error: unable to restore device no";
+    cerr << "Error: NFFT : unable to restore device no" << endl;
     return false;
   }
 
@@ -162,12 +118,12 @@ static bool prepare( int device, int *old_device,
 {
   // Get current Cuda device
   if( cudaGetDevice(old_device) != cudaSuccess ) {
-    cerr << endl << "unable to get device no";
+    cerr << "Error: NFFT : unable to get device no" << endl;
     return false;
   }
 
   if( device != *old_device && cudaSetDevice(device) != cudaSuccess) {
-    cerr << endl << "unable to set device no";
+    cerr << "Error : NFFT : unable to set device no" << endl;
     return false;
   }
   
@@ -205,7 +161,8 @@ static bool restore( int old_device, cuNDArray<I1> *out,
 		     cuNDArray<I3> *in3 = 0x0, cuNDArray<I3> *in3_int = 0x0 )
 {
   if( in1 && out && out->get_device() != in1_int->get_device() ){ 
-    *out = *in1_int; } // device transfer by assignment
+    *out = *in1_int; // device transfer by assignment
+  } 
   
   // Check if internal array needs deletion (they do only if they were created in ::prepare()
   //
@@ -222,13 +179,13 @@ static bool restore( int old_device, cuNDArray<I1> *out,
   // Get current Cuda device
   int device;
   if( cudaGetDevice(&device) != cudaSuccess ) {
-    cerr << endl << "unable to get device no";
+    cerr << "Error: NFFT : unable to get device no" << endl;
     return false;
   }
   
   // Restore old device
   if( device != old_device && cudaSetDevice(old_device) != cudaSuccess) {
-    cerr << endl << "unable to restore device no";
+    cerr << "Error: NFFT : unable to restore device no" << endl;
     return false;
   }
   
@@ -274,7 +231,7 @@ bool NFFT_plan<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uin
 
   if( _device<0 ){
     if( cudaGetDevice( &device ) != cudaSuccess ){
-      cout << endl << "NFFT_plan::setup: unable to determine device properties." << endl ;
+      cerr << "Error: NFFT_plan::setup: unable to determine device properties." << endl;
       return false;
     }
   }
@@ -282,7 +239,7 @@ bool NFFT_plan<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uin
     device = _device;
   
   if( !initialize_static_variables() ){
-    cout << endl << "NFFT_plan::setup: unable to query device properties." << endl ;
+    cerr << "Error: NFFT_plan::setup: unable to query device properties." << endl;
     return false;
   }
 
@@ -293,7 +250,7 @@ bool NFFT_plan<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uin
   //
   
   if( sum(matrix_size%vec_warp_size) || sum(matrix_size_os%vec_warp_size) ){
-    cout << endl << "Illegal matrix size for the NFFT plan (not a multiple of the warp size)" << endl;
+    cerr << "Error: Illegal matrix size for the NFFT plan (not a multiple of the warp size)" << endl;
     return false;
   }
 
@@ -307,14 +264,14 @@ bool NFFT_plan<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uin
   REAL W_half = REAL(0.5)*W;
   vector_td<REAL,D> W_vec = to_vector_td<REAL,D>(W_half);
 
-  matrix_size_wrap = to_uintd<REAL,D>( ceil(W_vec));
+  matrix_size_wrap = to_uintd<REAL,D>( ceil(W_vec) );
   matrix_size_wrap<<=1; 
   
   alpha = (REAL) matrix_size_os.vec[0] / (REAL) matrix_size.vec[0];
   
   REAL one = REAL(1);
   if( alpha < one ){
-    cout << endl << "Illegal oversampling ratio suggested" << endl;
+    cerr << "Error: NFFT : Illegal oversampling ratio suggested" << endl;
     return false;
   }
 
@@ -326,21 +283,20 @@ bool NFFT_plan<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uin
   for( unsigned int dim=1; dim<D; dim++){
     
     if( std::abs((REAL)matrix_size_os.vec[dim]/(REAL)matrix_size.vec[dim]-frac)>frac_limit ){
-      cout << endl << "Oversampling ratio is not constant between dimensions" << endl;
+      cerr << "Error: NFFT : Oversampling ratio is not constant between dimensions" << endl;
       return false;
     }
   }
   
   // Compute Kaiser-Bessel beta
-  bool success = 
-    compute_beta();
+  bool success = compute_beta();
   
   int device_no_old;
   if (cudaGetDevice(&device_no_old) != cudaSuccess) {
-    cerr << "NFFT_plan::setup: unable to get device no" << endl;
+    cerr << "Error: NFFT_plan::setup: unable to get device no" << endl;
   }  
   if( device != device_no_old && cudaSetDevice(device) != cudaSuccess) {
-    cerr << "NFFT_plan::setup: unable to set device" << endl;
+    cerr << "Error: NFFT_plan::setup: unable to set device" << endl;
   }  
 
   initialized = success;  
@@ -351,7 +307,7 @@ bool NFFT_plan<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uin
   initialized = success;  
 
   if( device != device_no_old && cudaSetDevice(device_no_old) != cudaSuccess) {
-    cerr << "NFFT_plan::setup: unable to restore device" << endl;
+    cerr << "Error: NFFT_plan::setup: unable to restore device" << endl;
   }
   
   return success;
@@ -361,17 +317,17 @@ template<class REAL, unsigned int D>
 bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory, NFFT_prep_mode mode )
 {
   if( !trajectory || trajectory->get_number_of_elements()==0 ){
-    cout << endl << "NFFT_plan::preprocess: 0x0 or empty trajectory provided." << endl;
+    cerr << "Error: NFFT_plan::preprocess: invalid trajectory" << endl;
     return false;
   }
   
   if( !initialized ){
-    cout << endl << "NFFT_plan::preprocess: NFFT_plan::setup must be invoked prior to preprocessing." << endl;
+    cerr << "Error: NFFT_plan::preprocess: NFFT_plan::setup must be invoked prior to preprocessing." << endl;
     return false;
   }
 
   if( !wipe(NFFT_WIPE_PREPROCESSING) ){
-    cout << endl << "NFFT_plan::preprocess: unable to clean plan." << endl;
+    cerr << "Error: NFFT_plan::preprocess: failed to pre-wipe plan." << endl;
     return false;
   }
 
@@ -379,7 +335,7 @@ bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *tra
   int old_device;
 
   if( !prepare<typename reald<REAL,D>::Type,dummy,dummy>(device, &old_device, trajectory, &trajectory_int ) ){
-    cout << endl << "NFFT_plan::preprocess: device preparation error." << endl;
+    cerr << "Error: NFFT_plan::preprocess: device preparation error." << endl;
     return false;
   }
     
@@ -391,16 +347,17 @@ bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *tra
 							      device_pointer_cast< vector_td<REAL,D> >(trajectory_int->get_data_ptr()+trajectory_int->get_number_of_elements() ));
 
   trajectory_positions = new device_vector< vector_td<REAL,D> >( trajectory_int->get_number_of_elements() );
-    
+
   CHECK_FOR_CUDA_ERROR();
 
   vector_td<REAL,D> matrix_size_os_real = to_reald<REAL,unsigned int,D>( matrix_size_os );
   vector_td<REAL,D> matrix_size_os_plus_wrap_real = to_reald<REAL,unsigned int,D>( (matrix_size_os+matrix_size_wrap)>>1 );
 
   // convert input trajectory in [-1/2;1/2] to [0;matrix_size_os]
-  thrust::transform( trajectory_positions_in.begin(), trajectory_positions_in.end(), trajectory_positions->begin(), trajectory_scale<REAL,D>(matrix_size_os_real, matrix_size_os_plus_wrap_real) );
+  thrust::transform( trajectory_positions_in.begin(), trajectory_positions_in.end(), trajectory_positions->begin(), 
+		     trajectory_scale<REAL,D>(matrix_size_os_real, matrix_size_os_plus_wrap_real) );
   
-  if( mode != NFFT_PREP_FORWARDS ){
+  if( mode != NFFT_PREP_C2NC ){
     
     // allocate storage for and compute temporary prefix-sum variable (#cells influenced per sample)
     device_vector<unsigned int> c_p_s(trajectory_int->get_number_of_elements());
@@ -449,13 +406,13 @@ bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *tra
     delete tuples_first;
   }
     
-  preprocessed_NFFT = true;
+  preprocessed_C2NC = true;
 
-  if( mode != NFFT_PREP_FORWARDS )
-    preprocessed_NFFT_H = true;
+  if( mode != NFFT_PREP_C2NC )
+    preprocessed_NC2C = true;
 
   if( !restore<typename reald<REAL,D>::Type,dummy,dummy>(old_device, trajectory, trajectory, trajectory_int) ){
-    cout << endl << "NFFT_plan::preprocess: unable to restore compute device." << endl;
+    cerr << "Error: NFFT_plan::preprocess: unable to restore compute device." << endl;
     return false;
   }
   
@@ -463,58 +420,81 @@ bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *tra
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::compute( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image,
-			    cuNDArray<REAL> *weights, NFFT_comp_mode mode )
+NFFT_plan<REAL,D>::compute( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
+			    cuNDArray<REAL> *dcw, NFFT_comp_mode mode )
 {  
-
   // Validity checks
   
   unsigned char components;
 
-  if( mode == NFFT_FORWARDS ) 
-    components = NFFT_CONVOLUTION + NFFT_FFT + NFFT_DEAPODIZATION;
+  if( mode == NFFT_FORWARDS_C2NC ) 
+    components = _NFFT_CONV_C2NC + _NFFT_FFT + _NFFT_DEAPODIZATION;
 
-  else // backwards
-    components = NFFT_H_CONVOLUTION + NFFT_FFT + NFFT_DEAPODIZATION;
+  else if( mode == NFFT_FORWARDS_NC2C ) 
+    components = _NFFT_CONV_NC2C + _NFFT_FFT + _NFFT_DEAPODIZATION;
 
-  if( !check_consistency( samples, image, weights, components ) ){
-    cout << endl << "NFFT_plan::compute: input consistency check failed." << endl;
+  else if( mode == NFFT_BACKWARDS_NC2C ) 
+    components = _NFFT_CONV_NC2C + _NFFT_FFT + _NFFT_DEAPODIZATION;
+
+  else if( mode == NFFT_BACKWARDS_C2NC ) 
+    components = _NFFT_CONV_C2NC + _NFFT_FFT + _NFFT_DEAPODIZATION;
+  else{
+    cerr << "Error: NFFT_plan::compute: unknown mode" << endl;
     return false;
   }
   
-  cuNDArray<complext<REAL> > *samples_int = 0x0, *image_int = 0x0;
-  cuNDArray<REAL> *weights_int = 0x0;
+  {
+    cuNDArray<complext<REAL> > *samples, *image;
+
+    if( mode == NFFT_FORWARDS_C2NC || mode == NFFT_BACKWARDS_C2NC ){
+      image = in; samples = out;
+    } else{
+      image = out; samples = in;
+    }
+    
+    if( !check_consistency( samples, image, dcw, components ) ){
+      cerr << "Error: NFFT_plan::compute: input consistency check failed." << endl;
+      return false;
+    }
+  }
+  
+  cuNDArray<complext<REAL> > *in_int = 0x0, *out_int = 0x0;
+  cuNDArray<REAL> *dcw_int = 0x0;
   int old_device;
 
-  if( !prepare<complext<REAL> ,complext<REAL> ,REAL>
-      (device, &old_device, samples, &samples_int, image, &image_int, weights, &weights_int ) ){
-    cout << endl << "NFFT_plan::compute: device preparation error." << endl;
+  if( !prepare<complext<REAL>, complext<REAL>, REAL>
+      (device, &old_device, in, &in_int, out, &out_int, dcw, &dcw_int ) ){
+    cerr << "Error: NFFT_plan::compute: device preparation error." << endl;
     return false;
   }
 
-  bool success;  
-  cuNDArray<complext<REAL> > *working_image = 0x0, *working_samples = 0x0;
+  typename uintd<D>::Type image_dims = vector_to_uintd<D>( (mode == NFFT_FORWARDS_C2NC || mode == NFFT_BACKWARDS_C2NC ) ? *in->get_dimensions() : *out->get_dimensions() );
+  bool oversampled_image = (image_dims==matrix_size_os);
   
-  typename uintd<D>::Type image_dims = vector_to_uintd<D>(*image->get_dimensions()); 
-  bool oversampled_image = (image_dims==matrix_size_os); 
+  vector<unsigned int> vec_dims = uintd_to_vector<D>(matrix_size_os);
+  {
+    cuNDArray<complext<REAL> > *image = ((mode == NFFT_FORWARDS_C2NC || mode == NFFT_BACKWARDS_C2NC ) ? in : out );
+    for( unsigned int d=D; d<image->get_number_of_dimensions(); d++ )
+      vec_dims.push_back(image->get_size(d));
+  }
 
-  vector<unsigned int> vec_dims = uintd_to_vector<D>(matrix_size_os); 
-  for( unsigned int d=D; d<image->get_number_of_dimensions(); d++ )
-    vec_dims.push_back(image->get_size(d));
-  
+  bool success = true;
+  cuNDArray<complext<REAL> > *working_image = 0x0, *working_samples = 0x0;
+
   switch(mode){
 
-  case NFFT_FORWARDS:
+  case NFFT_FORWARDS_C2NC:
     
     if( !oversampled_image ){
-      working_image = new cuNDArray<complext<REAL> >; working_image->create(&vec_dims);
-      cuNDA_expand_with_zero_fill<complext<REAL> ,D>( image_int, working_image );
+      working_image = new cuNDArray<complext<REAL> >; 
+      success = working_image->create(&vec_dims);
+      if( success ) success  = cuNDA_expand_with_zero_fill<complext<REAL>, D>( in_int, working_image );
     }
     else{
-      working_image = image_int;
+      working_image = in_int;
     }
     
-    success = compute_NFFT( samples_int, working_image );
+    if( success ) success = compute_NFFT_C2NC( working_image, out_int );
 
     if( !oversampled_image ){
       delete working_image; working_image = 0x0;
@@ -522,29 +502,31 @@ NFFT_plan<REAL,D>::compute( cuNDArray<complext<REAL> > *samples, cuNDArray<compl
     
     break;
     
-  case NFFT_BACKWARDS:
+  case NFFT_FORWARDS_NC2C:
 
     // Density compensation
-    if( weights_int ){
-      working_samples = new cuNDArray<complext<REAL> >(*samples_int);
-      cuNDA_scale( weights_int, working_samples );
+    if( dcw_int ){
+      working_samples = new cuNDArray<complext<REAL> >(*in_int);
+      success = working_samples->get_data_ptr();
+      if( success ) success = cuNDA_scale( dcw_int, working_samples );
     }
     else{
-      working_samples = samples_int;
+      working_samples = in_int;
     }
     
     if( !oversampled_image ){
-      working_image = new cuNDArray<complext<REAL> >; working_image->create(&vec_dims);
+      working_image = new cuNDArray<complext<REAL> >; 
+      if( success ) success = working_image->create(&vec_dims);
     }
     else{
-      working_image = image_int;
+      working_image = out_int;
     }
 
-    success = compute_NFFT_H( working_samples, working_image );
+    if( success ) success = compute_NFFT_NC2C( working_samples, working_image );
 
     if( success ){
       if( !oversampled_image ){
-	cuNDA_crop<complext<REAL> ,D>( (matrix_size_os-matrix_size)>>1, working_image, image_int );
+	success = cuNDA_crop<complext<REAL>, D>( (matrix_size_os-matrix_size)>>1, working_image, out_int );
       }
     }
     
@@ -552,19 +534,78 @@ NFFT_plan<REAL,D>::compute( cuNDArray<complext<REAL> > *samples, cuNDArray<compl
       delete working_image; working_image = 0x0;
     }
     
-    if( weights ){
+    if( dcw_int ){
       delete working_samples; working_samples = 0x0;
+    }
+    
+    break;
+
+  case NFFT_BACKWARDS_NC2C:
+
+    // Density compensation
+    if( dcw_int ){
+      working_samples = new cuNDArray<complext<REAL> >(*in_int);
+      success = working_samples->get_data_ptr();
+      if( success ) success = cuNDA_scale( dcw_int, working_samples );      
+    }
+    else{
+      working_samples = in_int;
+    }
+    
+    if( !oversampled_image ){
+      working_image = new cuNDArray<complext<REAL> >; 
+      if( success ) success = working_image->create(&vec_dims);
+    }
+    else{
+      working_image = out_int;
+    }
+
+    if( success ) success = compute_NFFTH_NC2C( working_samples, working_image );
+
+    if( success ){
+      if( !oversampled_image ){
+	success = cuNDA_crop<complext<REAL> ,D>( (matrix_size_os-matrix_size)>>1, working_image, out_int );
+      }
+    }
+    
+    if( !oversampled_image ){
+      delete working_image; working_image = 0x0;
+    }
+    
+    if( dcw_int ){
+      delete working_samples; working_samples = 0x0;
+    }
+    
+    break;
+
+  case NFFT_BACKWARDS_C2NC:
+    
+    if( !oversampled_image ){
+      working_image = new cuNDArray<complext<REAL> >; 
+      success = working_image->create(&vec_dims);
+      if( success ) success  = cuNDA_expand_with_zero_fill<complext<REAL>, D>( in_int, working_image );
+    }
+    else{
+      working_image = in_int;
+    }
+    
+    if( success ) success = compute_NFFTH_C2NC( working_image, out_int );
+
+    if( !oversampled_image ){
+      delete working_image; working_image = 0x0;
     }
     
     break;
   };
 
   if( !restore<complext<REAL> ,complext<REAL> ,REAL>
-      (old_device, (mode==NFFT_FORWARDS)?samples:image, 
-       (mode==NFFT_FORWARDS)?samples:image, (mode==NFFT_FORWARDS)?samples_int:image_int,
-       (mode!=NFFT_FORWARDS)?samples:image, (mode!=NFFT_FORWARDS)?samples_int:image_int,
-       weights, weights_int ) ){
-    cout << endl << "NFFT_plan::compute: unable to restore compute device." << endl;
+      (old_device, out, out, out_int, in, in_int, dcw, dcw_int ) ){
+    cerr << "Error: NFFT_plan::compute: unable to restore compute device." << endl;
+    return false;
+  }
+  
+  if( !success ){
+    cerr << "Error: NFFT_plan::compute: failed to compute NFFT" << endl;
     return false;
   }
   
@@ -573,112 +614,91 @@ NFFT_plan<REAL,D>::compute( cuNDArray<complext<REAL> > *samples, cuNDArray<compl
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::compute_iteration( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image,
-				      cuNDArray<REAL> *weights, NFFT_comp_mode mode )
-{  
+NFFT_plan<REAL,D>::mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, 
+			      cuNDArray<REAL> *dcw, std::vector<unsigned int> halfway_dims )
+{
   // Validity checks
   
-  unsigned char components = NFFT_CONVOLUTION + NFFT_H_CONVOLUTION + NFFT_FFT + NFFT_DEAPODIZATION;
+  unsigned char components = _NFFT_CONV_C2NC + _NFFT_CONV_NC2C + _NFFT_FFT + _NFFT_DEAPODIZATION;
   
-  if( !check_consistency( samples, image, weights, components ) )
-    return false;
-  
-  cuNDArray<complext<REAL> > *samples_int = 0x0, *image_int = 0x0;
-  cuNDArray<REAL> *weights_int = 0x0;
-  int old_device;
-
-  if( !prepare<complext<REAL> ,complext<REAL> ,REAL>
-      (device, &old_device, samples, &samples_int, image, &image_int, weights, &weights_int ) ){
-    cout << endl << "NFFT_plan::compute_iteration: device preparation error." << endl;
+  if( in->get_number_of_elements() != out->get_number_of_elements() ){
+    cerr << "Error: NFFT_plan::mult_MH_M: in/out image sizes mismatch" << endl;
     return false;
   }
+  
+  cuNDArray<complext<REAL> > *working_samples = new cuNDArray<complext<REAL> >; 
+  bool success = working_samples->create(&halfway_dims);
 
-  bool success;  
-  cuNDArray<complext<REAL> > *working_image = 0x0, *working_samples = 0x0;
+  if( !success ){
+    cerr << "Error: NFFT_plan::mult_MH_M: failed to allocate samples array" << endl;
+    return false;
+  }
+  
+  if( !check_consistency( working_samples, in, dcw, components ) ){
+    cerr << "Error: NFFT_plan::mult_MH_M: data consistency check failed" << endl;
+    return false;
+  }
+  
+  cuNDArray<complext<REAL> > *in_int = 0x0;
+  cuNDArray<complext<REAL> > *out_int = 0x0;
+  cuNDArray<REAL> *dcw_int = 0x0;
+  int old_device;
+  
+  if( !prepare<complext<REAL>, complext<REAL>, REAL>
+      (device, &old_device, in, &in_int, out, &out_int, dcw, &dcw_int ) ){
+    cerr << "Error: NFFT_plan::mult_MH_M: device preparation error." << endl;
+    return false;
+  }
+  
+  cuNDArray<complext<REAL> > *working_image = 0x0;
 
-  typename uintd<D>::Type image_dims = vector_to_uintd<D>(*image->get_dimensions()); 
+  typename uintd<D>::Type image_dims = vector_to_uintd<D>(*in->get_dimensions()); 
   bool oversampled_image = (image_dims==matrix_size_os); 
  
   vector<unsigned int> vec_dims = uintd_to_vector<D>(matrix_size_os); 
-  for( unsigned int d=D; d<image->get_number_of_dimensions(); d++ )
-    vec_dims.push_back(image->get_size(d));
+  for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ )
+    vec_dims.push_back(in->get_size(d));
   
-  switch(mode){
-
-  case NFFT_FORWARDS: // iteration from image
+  if( !oversampled_image ){
+    working_image = new cuNDArray<complext<REAL> >; 
+    success = working_image->create(&vec_dims);
+    if( success ) success = cuNDA_expand_with_zero_fill<complext<REAL>, D>( in_int, working_image );
+  }
+  else{
+    working_image = in_int;
+  }
+  
+  if( success ) success = compute_NFFT_C2NC( working_image, working_samples );
+  
+  if( success ){
     
-    if( !oversampled_image ){
-      working_image = new cuNDArray<complext<REAL> >; working_image->create(&vec_dims);
-      cuNDA_expand_with_zero_fill<complext<REAL> ,D>( image_int, working_image );
-    }
-    else{
-      working_image = image_int;
-    }
-    
-    working_samples = samples;
-
-    success = compute_NFFT( working_samples, working_image );
-    
-    if( success ){
-      
-      // Density compensation
-      if( weights ){
-	cuNDA_scale( weights_int, working_samples );
-      }
-      
-      success = compute_NFFT_H( working_samples, working_image ); 
-    }      
-    
-    if( success ){
-      if( !oversampled_image ){
-	cuNDA_crop<complext<REAL> ,D>( (matrix_size_os-matrix_size)>>1, working_image, image_int );
-	delete working_image; working_image = 0x0;
-      }
-    }
-    
-    break;
-
-  case NFFT_BACKWARDS: // iteration from samples
-
     // Density compensation
-    if( weights ){
-      working_samples = new cuNDArray<complext<REAL> >(*samples_int);
-      cuNDA_scale( weights_int, working_samples );
-    }
-    else{
-      working_samples = samples_int;
+    if( dcw ){
+      success = cuNDA_scale( dcw_int, working_samples );
     }
     
-    if( !oversampled_image ){  
-      working_image = new cuNDArray<complext<REAL> >; working_image->create(&vec_dims);
-    } 
-    else
-      working_image = image_int;
+    if( success ) success = compute_NFFTH_NC2C( working_samples, working_image );
+  }      
 
-    success = compute_NFFT_H( working_samples, working_image );
-    
-    if( success ){
-      cuNDA_zero_fill_border<complext<REAL> ,D>( matrix_size, working_image );
-      success = compute_NFFT( samples_int, working_image );
-    }
+  if( success ){
+    delete working_samples; working_samples = 0x0;
+  }
   
+  if( success ){
     if( !oversampled_image ){
+      success = cuNDA_crop<complext<REAL>, D>( (matrix_size_os-matrix_size)>>1, working_image, out_int );
       delete working_image; working_image = 0x0;
     }
-    
-    if( weights ){
-      delete working_samples; working_samples = 0x0;
-    }
-    
-    break;
-  };
-
+  }
+  
   if( !restore<complext<REAL> ,complext<REAL> ,REAL>
-      (old_device, (mode==NFFT_FORWARDS)?samples:image, 
-       (mode==NFFT_FORWARDS)?samples:image, (mode==NFFT_FORWARDS)?samples_int:image_int,
-       (mode!=NFFT_FORWARDS)?samples:image, (mode!=NFFT_FORWARDS)?samples_int:image_int,
-       weights, weights_int ) ){
-    cout << endl << "NFFT_plan::compute_iteration: unable to restore compute device." << endl;
+      (old_device, out, out, out_int, in, in_int, dcw, dcw_int ) ){
+    cerr << "Error: NFFT_plan::mult_MH_M: unable to restore compute device." << endl;
+    return false;
+  }
+  
+  if( !success ){
+    cerr << "Error: NFFT_plan::mult_MH_M: failed to compute NFFT iteration" << endl;
     return false;
   }
 
@@ -687,90 +707,111 @@ NFFT_plan<REAL,D>::compute_iteration( cuNDArray<complext<REAL> > *samples, cuNDA
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::convolve( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image,
-			     cuNDArray<REAL> *weights, NFFT_comp_mode mode, bool accumulate )
+NFFT_plan<REAL,D>::convolve( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
+			     cuNDArray<REAL> *dcw, NFFT_conv_mode mode, bool accumulate )
 {
   unsigned char components;
 
-  if( mode == NFFT_FORWARDS ) 
-    components = NFFT_CONVOLUTION;
+  if( mode == NFFT_CONV_C2NC ) 
+    components = _NFFT_CONV_C2NC;
   else
-    components = NFFT_H_CONVOLUTION;
+    components = _NFFT_CONV_NC2C;
   
-  if( !check_consistency( samples, image, weights, components ) )
-    return false;
+  {
+    cuNDArray<complext<REAL> > *samples, *image;
+    
+    if( mode == NFFT_CONV_C2NC ){
+      image = in; samples = out;
+    } else{
+      image = out; samples = in;
+    }
+    
+    if( !check_consistency( samples, image, dcw, components ) ){
+      cerr << "Error: NFFT_plan::convolve: data consistency check failed" << endl;
+      return false;
+    }
+  }
   
-  cuNDArray<complext<REAL> > *samples_int = 0x0, *image_int = 0x0;
-  cuNDArray<REAL> *weights_int = 0x0;
+  cuNDArray<complext<REAL> > *in_int = 0x0, *out_int = 0x0;
+  cuNDArray<REAL> *dcw_int = 0x0;
   int old_device;
-
-  if( !prepare<complext<REAL> ,complext<REAL> ,REAL>
-      (device, &old_device, samples, &samples_int, image, &image_int, weights, &weights_int ) ){
-    cout << endl << "NFFT_plan::convolve: device preparation error." << endl;
+  
+  if( !prepare<complext<REAL>, complext<REAL>, REAL>
+      (device, &old_device, in, &in_int, out, &out_int, dcw, &dcw_int ) ){
+    cerr << "Error: NFFT_plan::convolve: device preparation error." << endl;
     return false;
   }
-
-  bool success;  
+  
+  bool success = true;
   cuNDArray<complext<REAL> > *working_samples = 0x0;
   
-  typename uintd<D>::Type image_dims = vector_to_uintd<D>(*image->get_dimensions()); 
+  typename uintd<D>::Type image_dims = vector_to_uintd<D>(*(((mode == NFFT_CONV_C2NC) ? in : out )->get_dimensions())); 
   bool oversampled_image = (image_dims==matrix_size_os); 
- 
+  
   if( !oversampled_image ){
-    cout << endl << "NFFT_plan::convolve: ERROR: oversampled image not provided as input." << endl;
+    cerr << "Error: NFFT_plan::convolve: ERROR: oversampled image not provided as input." << endl;
     return false;
   }
 
   vector<unsigned int> vec_dims = uintd_to_vector<D>(matrix_size_os); 
-  for( unsigned int d=D; d<image->get_number_of_dimensions(); d++ )
-    vec_dims.push_back(image->get_size(d));
-  
-  switch(mode){
-
-  case NFFT_FORWARDS:
-    success = convolve_NFFT( samples_int, image_int, accumulate );
-    break;
-    
-  case NFFT_BACKWARDS:
-
-    // Density compensation
-    if( weights ){
-      working_samples = new cuNDArray<complext<REAL> >(*samples_int);
-      cuNDA_scale( weights_int, working_samples );
-    }
-    else{
-      working_samples = samples_int;
-    }
-    
-    success = convolve_NFFT_H( working_samples, image_int, accumulate );
-
-    if( weights ){
-      delete working_samples; working_samples = 0x0;
-    }
-    
-    break;
+  {
+    cuNDArray<complext<REAL> > *image = ((mode == NFFT_CONV_C2NC) ? in : out );
+    for( unsigned int d=D; d<image->get_number_of_dimensions(); d++ )
+      vec_dims.push_back(image->get_size(d));
   }
 
-  if( !restore<complext<REAL> ,complext<REAL> ,REAL>
-      (old_device, (mode==NFFT_FORWARDS)?samples:image, 
-       (mode==NFFT_FORWARDS)?samples:image, (mode==NFFT_FORWARDS)?samples_int:image_int,
-       (mode!=NFFT_FORWARDS)?samples:image, (mode!=NFFT_FORWARDS)?samples_int:image_int,
-       weights, weights_int ) ){
-    cout << endl << "NFFT_plan::convolve: unable to restore compute device." << endl;
+  switch(mode){
+
+  case NFFT_CONV_C2NC:
+    success = convolve_NFFT_C2NC( in_int, out_int, accumulate );
+    break;
+    
+  case NFFT_CONV_NC2C:
+
+    // Density compensation
+    if( dcw_int ){
+      working_samples = new cuNDArray<complext<REAL> >(*in_int);
+      success = working_samples->get_data_ptr();
+      if(success) success = cuNDA_scale( dcw_int, working_samples );
+    }
+    else{
+      working_samples = in_int;
+    }
+    
+    if(success) success = convolve_NFFT_NC2C( working_samples, out_int, accumulate );
+
+    if( dcw_int ){
+      delete working_samples; working_samples = 0x0;
+    }    
+    break;
+
+  default:
+    cerr << "Error: NFFT_plan::convolve: unknown mode." << endl;
     return false;
   }
 
+  if( !restore<complext<REAL>, complext<REAL>, REAL>
+      (old_device, out, out, out_int, in, in_int, dcw, dcw_int ) ){
+    cerr << "Error: NFFT_plan::convolve: unable to restore compute device." << endl;
+    return false;
+  }
+
+  if( !success ){
+    cerr << "Error: NFFT_plan::convolve: convolution failed" << endl;
+    return false;
+  }
+  
   return success;
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::fft(cuNDArray<complext<REAL> > *data, NFFT_comp_mode mode, bool do_scale )
+NFFT_plan<REAL,D>::fft(cuNDArray<complext<REAL> > *data, NFFT_fft_mode mode, bool do_scale )
 {
   cuNDArray<complext<REAL> > *data_int = 0x0;
   int old_device;
   
-  if( !prepare<complext<REAL> ,dummy,dummy>(device, &old_device, data, &data_int ) ){
-    cout << endl << "NFFT_plan::fft: device preparation error." << endl;
+  if( !prepare<complext<REAL>,dummy,dummy>( device, &old_device, data, &data_int ) ){
+    cerr << "Error: NFFT_plan::fft: device preparation error." << endl;
     return false;
   }
   
@@ -786,7 +827,7 @@ NFFT_plan<REAL,D>::fft(cuNDArray<complext<REAL> > *data, NFFT_comp_mode mode, bo
   }
 
   if( !restore<complext<REAL> ,dummy,dummy>(old_device, data, data, data_int) ){
-    cout << endl << "NFFT_plan::fft: unable to restore compute device." << endl;
+    cerr << "Error: NFFT_plan::fft: unable to restore compute device." << endl;
     return false;
   }
 
@@ -801,7 +842,7 @@ NFFT_plan<REAL,D>::deapodize( cuNDArray<complext<REAL> > *image )
 {
   unsigned char components;
   
-  components = NFFT_FFT;
+  components = _NFFT_FFT;
   
   if( !check_consistency( 0x0, image, 0x0, components ) )
     return false;
@@ -809,8 +850,8 @@ NFFT_plan<REAL,D>::deapodize( cuNDArray<complext<REAL> > *image )
   cuNDArray<complext<REAL> > *image_int = 0x0;
   int old_device;
   
-  if( !prepare<complext<REAL> ,dummy,dummy>(device, &old_device, image, &image_int ) ){
-    cout << endl << "NFFT_plan::deapodize: device preparation error." << endl;
+  if( !prepare<complext<REAL>,dummy,dummy>(device, &old_device, image, &image_int ) ){
+    cerr << "Error: NFFT_plan::deapodize: device preparation error." << endl;
     return false;
   }
 
@@ -818,14 +859,17 @@ NFFT_plan<REAL,D>::deapodize( cuNDArray<complext<REAL> > *image )
   bool oversampled_image = (image_dims==matrix_size_os); 
   
   if( !oversampled_image ){
-    cout << endl << "NFFT_plan::deapodize: ERROR: oversampled image not provided as input." << endl;
+    cerr << "Error: NFFT_plan::deapodize: ERROR: oversampled image not provided as input." << endl;
     return false;
   }
   
-  cuNDA_scale( deapodization_filter.get(), image_int );
+  if( !cuNDA_scale( deapodization_filter.get(), image_int )){
+    cerr << "Error: NFFT_plan::deapodize: failed to apply filter" << endl;
+    return false;
+  }
   
   if( !restore<complext<REAL> ,dummy,dummy>(old_device, image, image, image_int) ){
-    cout << endl << "NFFT_plan::deapodize: unable to restore compute device." << endl;
+    cerr << "Error: NFFT_plan::deapodize: unable to restore compute device." << endl;
     return false;
   }
 
@@ -840,32 +884,32 @@ template<class REAL, unsigned int D> bool
 NFFT_plan<REAL,D>::check_consistency( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, cuNDArray<REAL> *weights, unsigned char components )
 {
   if( !initialized ){
-    cout << endl << "NFFT_plan: Unable to proceed without setup." << endl;
+    cerr << "Error: NFFT_plan: Unable to proceed without setup." << endl;
     return false;
   }
   
-  if( (components & NFFT_CONVOLUTION ) && !preprocessed_NFFT ){
-    cout << endl << "NFFT_plan: Unable to compute NFFT before preprocessing." << endl;
+  if( (components & _NFFT_CONV_C2NC ) && !preprocessed_C2NC ){
+    cerr << "Error: NFFT_plan: Unable to compute NFFT before preprocessing." << endl;
     return false;
   }
   
-  if( (components & NFFT_H_CONVOLUTION ) && !preprocessed_NFFT_H ){
-    cout << endl << "NFFT_plan: Unable to compute NFFT before preprocessing." << endl;
+  if( (components & _NFFT_CONV_NC2C ) && !preprocessed_NC2C ){
+    cerr << "Error: NFFT_plan: Unable to compute NFFT before preprocessing." << endl;
     return false;
   }
   
-  if( ((components & NFFT_CONVOLUTION ) || (components & NFFT_H_CONVOLUTION )) && !(image && samples) ){
-    cout << endl << "NFFT_plan: Unable to process 0x0 input/output." << endl;
+  if( ((components & _NFFT_CONV_C2NC ) || (components & _NFFT_CONV_NC2C )) && !(image && samples) ){
+    cerr << "Error: NFFT_plan: Unable to process 0x0 input/output." << endl;
     return false;
   }
   
-  if( ((components & NFFT_FFT) || (components & NFFT_DEAPODIZATION )) && !image ){
-    cout << endl << "NFFT_plan: Unable to process 0x0 input." << endl;
+  if( ((components & _NFFT_FFT) || (components & _NFFT_DEAPODIZATION )) && !image ){
+    cerr << "Error: NFFT_plan: Unable to process 0x0 input." << endl;
     return false;
   }
 
   if( image->get_number_of_dimensions() < D ){
-    cout << endl << "NFFT_plan: Number of image dimensions mismatch the plan." << endl;
+    cerr << "Error: NFFT_plan: Number of image dimensions mismatch the plan." << endl;
     return false;
   }    
 
@@ -873,14 +917,14 @@ NFFT_plan<REAL,D>::check_consistency( cuNDArray<complext<REAL> > *samples, cuNDA
   bool oversampled_image = (image_dims==matrix_size_os);
   
   if( !((oversampled_image) ? (image_dims == matrix_size_os) : (image_dims == matrix_size) )){
-    cout << endl << "NFFT_plan: Image dimensions mismatch." << endl;
+    cerr << "Error: NFFT_plan: Image dimensions mismatch." << endl;
     return false;
   }
   
-  if( (components & NFFT_CONVOLUTION ) || (components & NFFT_H_CONVOLUTION ) ){
+  if( (components & _NFFT_CONV_C2NC ) || (components & _NFFT_CONV_NC2C )){
     
     if( (samples->get_number_of_elements() == 0) || (samples->get_number_of_elements() % (number_of_frames*number_of_samples)) ){
-      cout << endl << "NFFT_plan: The number of samples is not a multiple of #samples/frame x #frames as requested through preprocessing" << endl;
+      cerr << "Error: NFFT_plan: The number of samples is not a multiple of #samples/frame x #frames as requested through preprocessing" << endl;
       return false;
     }
     
@@ -893,19 +937,18 @@ NFFT_plan<REAL,D>::check_consistency( cuNDArray<complext<REAL> > *samples, cuNDA
     num_batches_in_image_array /= number_of_frames;
 
     if( num_batches_in_samples_array != num_batches_in_image_array ){
-      cout << endl << "NFFT_plan: Number of batches mismatch between samples and image arrays" << endl;
+      cerr << "Error: NFFT_plan: Number of batches mismatch between samples and image arrays" << endl;
       return false;
     }
   }
   
-  if( components & NFFT_H_CONVOLUTION ){
-    if( weights ){
- 
+  if( components & _NFFT_CONV_NC2C ){
+    if( weights ){ 
       if( weights->get_number_of_elements() == 0 ||
 	  !( weights->get_number_of_elements() == number_of_samples || 
 	     weights->get_number_of_elements() == number_of_frames*number_of_samples) ){
 
-	cout << endl << "NFFT_plan: The number of weights should match #samples/frame x #frames as requested through preprocessing" << endl;
+	cerr << "Error: NFFT_plan: The number of weights should match #samples/frame x #frames as requested through preprocessing" << endl;
 	return false;
       }
     }
@@ -918,11 +961,11 @@ template<class REAL, unsigned int D>
 bool NFFT_plan<REAL,D>::barebones()
 {	
   // These are the fundamental booleans checked before accessing the various member pointers
-  initialized = preprocessed_NFFT = preprocessed_NFFT_H = false;
+  initialized = preprocessed_C2NC = preprocessed_NC2C = false;
   
   // and specify the device
   if (cudaGetDevice(&device) != cudaSuccess) {
-    cerr << "NFFT_plan::barebones:: unable to get device no" << endl;
+    cerr << "Error: NFFT_plan::barebones:: unable to get device no" << endl;
     return false;
   }
 
@@ -935,12 +978,12 @@ bool NFFT_plan<REAL,D>::wipe( NFFT_wipe_mode mode )
   // Get current Cuda device
   int old_device;
   if( cudaGetDevice(&old_device) != cudaSuccess ) {
-    cerr << endl << "NFFT_plan::wipe: unable to get device no";
+    cerr << "Error: NFFT_plan::wipe: unable to get device no" << endl;
     return false;
   }
 
   if( device != old_device && cudaSetDevice(device) != cudaSuccess) {
-    cerr << endl << "NFFT_plan::wipe: unable to set device no";
+    cerr << "Error: NFFT_plan::wipe: unable to set device no" << endl;
     return false;
   }
 
@@ -949,19 +992,19 @@ bool NFFT_plan<REAL,D>::wipe( NFFT_wipe_mode mode )
     initialized = false;
   }
     
-  if( preprocessed_NFFT_H ){
+  if( preprocessed_NC2C ){
     delete tuples_last;
     delete bucket_begin;
     delete bucket_end;
   }
 
-  if( preprocessed_NFFT || preprocessed_NFFT_H ){
+  if( preprocessed_C2NC || preprocessed_NC2C ){
     delete trajectory_positions;
-    preprocessed_NFFT = preprocessed_NFFT_H = false;
+    preprocessed_C2NC = preprocessed_NC2C = false;
   }
 
   if( device != old_device && cudaSetDevice(old_device) != cudaSuccess) {
-    cerr << endl << "NFFT_plan::wipe: unable to restore device no";
+    cerr << "Error: NFFT_plan::wipe: unable to restore device no" << endl;
     return false;
   }
 
@@ -1063,13 +1106,13 @@ NFFT_plan<REAL,D>::compute_deapodization_filter()
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::compute_NFFT( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image )
+NFFT_plan<REAL,D>::compute_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples )
 {
   // private method - no consistency check. We trust in ourselves.
 
   bool success = true;
 
-  // Convolution
+  // Deapodization
   if( success )
     success = deapodize( image );
     
@@ -1077,24 +1120,23 @@ NFFT_plan<REAL,D>::compute_NFFT( cuNDArray<complext<REAL> > *samples, cuNDArray<
   if( success )
     success = fft( image, NFFT_FORWARDS ); 
 
-  // Deapodization
+  // Convolution
   if( success )
-    success = convolve( samples, image, 0x0, NFFT_FORWARDS );
+    success = convolve( image, samples, 0x0, NFFT_CONV_C2NC );
   
   return success;
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::compute_NFFT_H( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image )
+NFFT_plan<REAL,D>::compute_NFFTH_NC2C( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image )
 {
   // private method - no consistency check. We trust in ourselves.
-
   bool success = true;
 
   // Convolution
   if( success )
-    success = convolve( samples, image, 0x0, NFFT_BACKWARDS );
-  
+    success = convolve( samples, image, 0x0, NFFT_CONV_NC2C );
+
   // FFT
   if( success )
     success = fft( image, NFFT_BACKWARDS );
@@ -1107,12 +1149,56 @@ NFFT_plan<REAL,D>::compute_NFFT_H( cuNDArray<complext<REAL> > *samples, cuNDArra
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::convolve_NFFT( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, bool accumulate )
+NFFT_plan<REAL,D>::compute_NFFTH_C2NC( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples )
+{
+  // private method - no consistency check. We trust in ourselves.
+
+  bool success = true;
+
+  // Deapodization
+  if( success )
+    success = deapodize( image );
+    
+  // FFT
+  if( success )
+    success = fft( image, NFFT_BACKWARDS ); 
+
+  // Convolution
+  if( success )
+    success = convolve( image, samples, 0x0, NFFT_CONV_C2NC );
+  
+  return success;
+}
+
+template<class REAL, unsigned int D> bool
+NFFT_plan<REAL,D>::compute_NFFT_NC2C( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image )
+{
+  // private method - no consistency check. We trust in ourselves.
+
+  bool success = true;
+
+  // Convolution
+  if( success )
+    success = convolve( samples, image, 0x0, NFFT_CONV_NC2C );
+  
+  // FFT
+  if( success )
+    success = fft( image, NFFT_FORWARDS );
+  
+  // Deapodization
+  if( success )
+    success = deapodize( image );
+  
+  return success;
+}
+
+template<class REAL, unsigned int D> bool
+NFFT_plan<REAL,D>::convolve_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples, bool accumulate )
 {
   // private method - no consistency check. We trust in ourselves.
 
   if( !initialize_static_variables() ){
-    cout << endl << "NFFT_plan::convolve_NFFT: unable to query device properties." << endl ;
+    cerr << "Error: NFFT_plan::convolve_NFFT: unable to query device properties" << endl;
     return false;
   }
 
@@ -1133,45 +1219,14 @@ NFFT_plan<REAL,D>::convolve_NFFT( cuNDArray<complext<REAL> > *samples, cuNDArray
 
   size_t threads_per_block;
   unsigned int max_coils;
-
-  switch(D){
     
-  case 2:
-    if( major[device] == 1 ){
-      threads_per_block = NFFT_THREADS_PER_2D_KERNEL_1x;
-      max_coils = NFFT_MAX_COILS_2D_COMPUTE_1x;
-    }
-    else{
-      threads_per_block = NFFT_THREADS_PER_2D_KERNEL_2x;
-      max_coils = NFFT_MAX_COILS_2D_COMPUTE_2x;
-    }
-    break;
-    
-  case 3:
-    if( major[device] == 1 ){
-      threads_per_block = NFFT_THREADS_PER_3D_KERNEL_1x;
-      max_coils = NFFT_MAX_COILS_3D_COMPUTE_1x;
-    }
-    else{
-      threads_per_block = NFFT_THREADS_PER_3D_KERNEL_2x;
-      max_coils = NFFT_MAX_COILS_3D_COMPUTE_2x;
-    }
-    break;
-    
-  case 4:
-    if( major[device] == 1 ){
-      threads_per_block = NFFT_THREADS_PER_4D_KERNEL_1x;
-      max_coils = NFFT_MAX_COILS_4D_COMPUTE_1x;
-    }
-    else{
-      threads_per_block = NFFT_THREADS_PER_4D_KERNEL_2x;
-      max_coils = NFFT_MAX_COILS_4D_COMPUTE_2x;
-    }
-    break;
-    
-  default:
-    printf("\nNFFT Convolution: Dimensionality not supported!\n");
-    return false;
+  threads_per_block = NFFT_THREADS_PER_KERNEL;
+  
+  if( major[device] == 1 ){
+    max_coils = NFFT_MAX_COILS_COMPUTE_1x;
+  }
+  else{
+    max_coils = NFFT_MAX_COILS_COMPUTE_2x;
   }
   
   // We can (only) convolve max_coils batches per run due to shared memory issues. 
@@ -1218,13 +1273,12 @@ NFFT_plan<REAL,D>::convolve_NFFT( cuNDArray<complext<REAL> > *samples, cuNDArray
 }
 
 template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, bool accumulate )
+NFFT_plan<REAL,D>::convolve_NFFT_NC2C( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, bool accumulate )
 {
-
   // private method - no consistency check. We trust in ourselves.
 
   if( !initialize_static_variables() ){
-    cout << endl << "NFFT_plan::convolve_NFFT: unable to query device properties." << endl ;
+    cerr << "Error: NFFT_plan::convolve_NFFT: unable to query device properties" << endl;
     return false;
   }
 
@@ -1246,44 +1300,13 @@ NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray<complext<REAL> > *samples, cuNDArr
   size_t threads_per_block;
   unsigned int max_coils;
 
-  switch(D){
-
-  case 2:
-    if( major[device] == 1 ){
-      threads_per_block = NFFT_H_THREADS_PER_2D_KERNEL_1x;
-      max_coils = NFFT_H_MAX_COILS_2D_COMPUTE_1x;
-    }
-    else{
-      threads_per_block = NFFT_H_THREADS_PER_2D_KERNEL_2x;
-      max_coils = NFFT_H_MAX_COILS_2D_COMPUTE_2x;
-    }
-    break;
-      
-  case 3:
-    if( major[device] == 1 ){
-      threads_per_block = NFFT_H_THREADS_PER_3D_KERNEL_1x;
-      max_coils = NFFT_H_MAX_COILS_3D_COMPUTE_1x;
-    }
-    else{
-      threads_per_block = NFFT_H_THREADS_PER_3D_KERNEL_2x;
-      max_coils = NFFT_H_MAX_COILS_3D_COMPUTE_2x;
-    }
-    break;
-    
-  case 4:
-    if( major[device] == 1 ){
-      threads_per_block = NFFT_H_THREADS_PER_4D_KERNEL_1x;
-      max_coils = NFFT_H_MAX_COILS_4D_COMPUTE_1x;
-    }
-    else{
-      threads_per_block = NFFT_H_THREADS_PER_4D_KERNEL_2x;
-      max_coils = NFFT_H_MAX_COILS_4D_COMPUTE_2x;
-    }
-    break;
-    
-  default:
-    printf("\nNFFT Convolution: Dimensionality not supported!\n");
-    return false;
+  threads_per_block = NFFT_THREADS_PER_KERNEL;
+  
+  if( major[device] == 1 ){
+    max_coils = NFFT_MAX_COILS_COMPUTE_1x;
+  }
+  else{
+    max_coils = NFFT_MAX_COILS_COMPUTE_2x;
   }
   
   // We can (only) convolve domain_size_coils batches per run due to shared memory issues. 
@@ -1310,7 +1333,7 @@ NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray<complext<REAL> > *samples, cuNDArr
   cuNDArray<complext<REAL> > *_tmp = new cuNDArray<complext<REAL> >; _tmp->create(&vec_dims);
   
   if( !_tmp ){
-    cout << endl << "Memory allocation failed before convolution." << endl;
+    cerr << "Error: NFFT memory allocation failed before convolution." << endl;
     return false;
   }
   
@@ -1348,7 +1371,7 @@ NFFT_plan<REAL,D>::convolve_NFFT_H( cuNDArray<complext<REAL> > *samples, cuNDArr
 
 template<class REAL, unsigned int D> __global__ void
 image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type matrix_size_wrap, bool accumulate,
-		  complext<REAL> *in,complext<REAL> *out )
+		  complext<REAL> *in, complext<REAL> *out )
 {
   const unsigned int number_of_images = blockDim.z;
   const unsigned int num_elements_per_image_src = prod(matrix_size_os+matrix_size_wrap);
@@ -1473,7 +1496,7 @@ NFFT_plan<REAL,D>::image_wrap( cuNDArray<complext<REAL> > *source, cuNDArray<com
 
   // Safety check
   if( (matrix_size_os.vec[0]%bdim) || (num_batches==1 && (matrix_size_os.vec[1]%bdim)) ) {
-    cout << endl << "dimensions mismatch in wrapping setup." << endl;
+    cerr << "Error: NFFT : dimensions mismatch in wrapping setup." << endl;
     return false;
   }
 
@@ -1513,6 +1536,9 @@ NFFT_plan<REAL,D>::get_device()
 //
 // Template instantion
 //
+
+template class EXPORTGPUNFFT NFFT_plan< float, 1 >;
+template class EXPORTGPUNFFT NFFT_plan< double, 1 >;
 
 template class EXPORTGPUNFFT NFFT_plan< float, 2 >;
 template class EXPORTGPUNFFT NFFT_plan< double, 2 >;

@@ -10,9 +10,9 @@
 #include "gadgetroncgsense_export.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
-#include "cuCGSolver.h"
+#include "cuCgSolver.h"
 #include "cuNonCartesianSenseOperator.h"
-#include "cuCGPrecondWeights.h"
+#include "cuCgPrecondWeights.h"
 #include "NFFT.h"
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
@@ -44,7 +44,7 @@ protected:
 	virtual int process( GadgetContainerMessage< GadgetMessageAcquisition >* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2 );
 	virtual int process_config( ACE_Message_Block* mb );
 
-	virtual boost::shared_ptr< cuNDArray<floatd2::Type> > calculate_trajectory() = 0;
+	virtual boost::shared_ptr< cuNDArray<floatd2> > calculate_trajectory() = 0;
 	virtual boost::shared_ptr< cuNDArray<float> > calculate_density_compensation() = 0;
 
 	virtual int copy_samples_for_profile( float* host_base_ptr, std::complex<float>* data_base_ptr, int profile_no, int channel_no );
@@ -58,8 +58,8 @@ protected:
 	int channels_;
 	int samples_per_profile_;
 	int device_number_;
-	uintd2::Type matrix_size_;
-	uintd2::Type matrix_size_os_;
+	uintd2 matrix_size_;
+	uintd2 matrix_size_os_;
 	unsigned int number_of_iterations_;
 	double cg_limit_;
 	double oversampling_;
@@ -76,13 +76,13 @@ protected:
 	bool is_configured_;
 
 	// Define conjugate gradient solver
-	cuCGSolver<float, float_complext> cg_;
+	cuCgSolver<float, float_complext> cg_;
 
 	// Define non-Cartesian Sense Encofing operator
 	boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E_;
 
 	// Define preconditioner
-	boost::shared_ptr< cuCGPrecondWeights<float_complext> > D_;
+	boost::shared_ptr< cuCgPrecondWeights<float_complext> > D_;
 
 	// Define regularization image operator
 	boost::shared_ptr< cuImageOperator<float,float_complext> > R_;

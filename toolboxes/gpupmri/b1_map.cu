@@ -158,7 +158,7 @@ smooth_correlation_matrices_kernel( complext<REAL> *corrm, complext<REAL> *corrm
 
   if( idx < num_image_elements ){
     
-    const intd2::Type co = idx_to_co<2>(idx, image_dims);
+    const intd2 co = idx_to_co<2>(idx, image_dims);
     
     const int x = co.vec[0];
     const int y = co.vec[1];
@@ -213,7 +213,7 @@ smooth_correlation_matrices_kernel( complext<REAL> *corrm, complext<REAL> *corrm
 
   if( idx < num_image_elements ){
     
-    const intd3::Type co = idx_to_co<3>(idx, image_dims);
+    const intd3 co = idx_to_co<3>(idx, image_dims);
     
     const int x = co.vec[0];
     const int y = co.vec[1];
@@ -264,7 +264,7 @@ smooth_correlation_matrices_kernel( complext<REAL> *corrm, complext<REAL> *corrm
 
   if( idx < num_image_elements ){
     
-    const intd4::Type co = idx_to_co<4>(idx, image_dims);
+    const intd4 co = idx_to_co<4>(idx, image_dims);
     
     const int x = co.vec[0];
     const int y = co.vec[1];
@@ -322,7 +322,7 @@ smooth_correlation_matrices_border_kernel( complext<REAL> *corrm, complext<REAL>
 
   if( idx < number_of_border_threads ){
     
-    intd<2>::Type co;
+    intd2 co;
     const int half_width = kernel_width>>1;
 
     co.vec[1] = idx/image_dims.vec[0];

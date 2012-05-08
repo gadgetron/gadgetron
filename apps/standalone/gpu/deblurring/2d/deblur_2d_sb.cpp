@@ -6,8 +6,8 @@
 #include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
 #include "ndarray_vector_td_utilities.h"
-#include "cuSBCSolver.h"
-#include "cuCGSolver.h"
+#include "cuSbcCgSolver.h"
+#include "cuCgSolver.h"
 #include "cuPartialDerivativeOperator.h"
 #include "cuConvolutionOperator.h"
 #include "parameterparser.h"
@@ -82,7 +82,12 @@ int main(int argc, char** argv)
   }
 
   Rx->set_weight( lambda );
+  Rx->set_domain_dimensions(data.get_dimensions().get());
+  Rx->set_codomain_dimensions(data.get_dimensions().get());
+
   Ry->set_weight( lambda );
+  Ry->set_domain_dimensions(data.get_dimensions().get());
+  Ry->set_codomain_dimensions(data.get_dimensions().get());
 
   //
   // Setup conjugate gradients solver
@@ -92,27 +97,22 @@ int main(int argc, char** argv)
   boost::shared_ptr< cuConvolutionOperator<_real,2> > E( new cuConvolutionOperator<_real,2>() );  
   E->set_kernel( &kernel );
   E->set_weight( mu );
-
-  // Setup conjugate gradient solver
-  boost::shared_ptr< cuCGSolver<_real, _complext> > cg(new cuCGSolver<_real, _complext>());
-  cg->add_matrix_operator( E );   // encoding matrix
-  cg->add_matrix_operator( Rx );  // regularization matrix
-  cg->add_matrix_operator( Ry );  // regularization matrix
-  cg->set_iterations( num_cg_iterations );
-  cg->set_limit( 1e-4 );
-  cg->set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_WARNINGS );
+  E->set_domain_dimensions(data.get_dimensions().get());
+  E->set_codomain_dimensions(data.get_dimensions().get());
 
   // Setup split-Bregman solver
-  cuSBCSolver<_real, _complext> sb;
-  sb.set_inner_solver( cg );
+  cuSbcCgSolver<_real, _complext> sb;
   sb.set_encoding_operator( E );
   sb.add_regularization_group_operator( Rx ); 
   sb.add_regularization_group_operator( Ry ); 
   sb.add_group();
-  sb.set_outer_iterations(num_outer_iterations);
-  sb.set_inner_iterations(num_inner_iterations);
-  sb.set_image_dimensions(data.get_dimensions());
-  sb.set_output_mode( cuSBCSolver<_real, _complext>::OUTPUT_VERBOSE );
+  sb.set_max_outer_iterations(num_outer_iterations);
+  sb.set_max_inner_iterations(num_inner_iterations);
+  sb.set_output_mode( cuSbcCgSolver<_real, _complext>::OUTPUT_VERBOSE );
+
+  sb.get_inner_solver()->set_max_iterations( num_cg_iterations );
+  sb.get_inner_solver()->set_tc_tolerance( 1e-4 );
+  sb.get_inner_solver()->set_output_mode( cuCgSolver<_real, _complext>::OUTPUT_WARNINGS );
 
   // Run split-Bregman solver
   boost::shared_ptr< cuNDArray<_complext> > sbresult = sb.solve(&data);

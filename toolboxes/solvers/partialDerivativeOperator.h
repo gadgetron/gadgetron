@@ -1,15 +1,15 @@
 #pragma once
 
-#include "matrixOperator.h"
+#include "linearOperator.h"
 #include "vector_td.h"
 
 template <class REAL, unsigned int D, class ARRAY_TYPE> class partialDerivativeOperator 
-	: public matrixOperator<REAL, ARRAY_TYPE>
+	: public linearOperator<REAL, ARRAY_TYPE>
 {
   
 public:
   
-  partialDerivativeOperator( unsigned int dimension ) : matrixOperator<REAL,ARRAY_TYPE>() { compute_stride(dimension); }
+  partialDerivativeOperator( unsigned int dimension ) : linearOperator<REAL,ARRAY_TYPE>() { compute_stride(dimension); }
   virtual ~partialDerivativeOperator() {}
     
   virtual int mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )

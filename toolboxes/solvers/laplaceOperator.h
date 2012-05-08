@@ -1,15 +1,15 @@
 #pragma once
 
-#include "matrixOperator.h"
+#include "linearOperator.h"
 #include "vector_td.h"
 
 template <class REAL, unsigned int D, class ARRAY_TYPE> class EXPORTSOLVERS laplaceOperator 
-	: public matrixOperator<REAL, ARRAY_TYPE>
+	: public linearOperator<REAL, ARRAY_TYPE>
 {
   
 public:
   
-  laplaceOperator( ) : matrixOperator<REAL,ARRAY_TYPE>() { }
+  laplaceOperator( ) : linearOperator<REAL,ARRAY_TYPE>() { }
   virtual ~laplaceOperator() {}
     
   virtual int mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )

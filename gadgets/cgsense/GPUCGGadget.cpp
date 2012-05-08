@@ -115,11 +115,13 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
     GADGET_DEBUG2("Using device number %d for slice %d\n", device_number_, slice_no_);
 
     // Allocate encoding operator for non-Cartesian Sense
+    std::vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size_);
     E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );  
     E_->set_device(device_number_);
+    E_->set_domain_dimensions(&image_dims);
 
     // Allocate preconditioner
-    D_ = boost::shared_ptr< cuCGPrecondWeights<float_complext> >( new cuCGPrecondWeights<float_complext>() );
+    D_ = boost::shared_ptr< cuCgPrecondWeights<float_complext> >( new cuCgPrecondWeights<float_complext>() );
     //D_->set_device(device_number_);
 
     // Allocate regularization image operator
@@ -130,12 +132,12 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
     cg_.set_device(device_number_);
 
     // Setup solver
-    cg_.add_matrix_operator( E_ );  // encoding matrix
-    cg_.add_matrix_operator( R_ );  // regularization matrix
-    cg_.set_preconditioner ( D_ );  // preconditioning matrix
-    cg_.set_iterations( number_of_iterations_ );
-    cg_.set_limit( cg_limit_ ); 
-    cg_.set_output_mode( cuCGSolver<float, float_complext>::OUTPUT_SILENT );
+    cg_.set_encoding_operator( E_ );        // encoding matrix
+    cg_.add_regularization_operator( R_ );  // regularization matrix
+    cg_.set_preconditioner( D_ );           // preconditioning matrix
+    cg_.set_max_iterations( number_of_iterations_ );
+    cg_.set_tc_tolerance( cg_limit_ ); 
+    cg_.set_output_mode( cuCgSolver<float, float_complext>::OUTPUT_SILENT );
 
     if( configure_channels() == GADGET_FAIL )
       return GADGET_FAIL;
@@ -230,7 +232,7 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
 
   if ((int)buffer_.message_count() >= profiles_per_frame_) {
 
-    boost::shared_ptr< cuNDArray<floatd2::Type> > traj = calculate_trajectory();
+    boost::shared_ptr< cuNDArray<floatd2> > traj = calculate_trajectory();
 
     if ( traj.get() == 0x0 ) {
       GADGET_DEBUG1("\nFailed to calculate trajectory\n");
@@ -297,22 +299,9 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
     _precon_weights.reset();
     D_->set_weights( precon_weights );
 
-    // Form rhs
-    std::vector<unsigned int> rhs_dims = uintd_to_vector<2>(matrix_size_);
-    cuNDArray<float_complext> rhs;
-		
-    if( rhs.create(&rhs_dims) == 0x0 ){
-      GADGET_DEBUG1("\nFailed to create rhs\n");
-      return GADGET_FAIL;
-    }
-
-    if( E_->mult_MH( device_samples.get(), &rhs ) < 0 ){
-      GADGET_DEBUG1("\nFailed to compute rhs\n");
-      return GADGET_FAIL;
-    }
-
-    boost::shared_ptr< cuNDArray<float_complext> > cgresult = cg_.solve(&rhs);
-
+    // Invoke solver   
+    boost::shared_ptr< cuNDArray<float_complext> > cgresult = cg_.solve(device_samples.get());
+    
     if (!cgresult.get()) {
       GADGET_DEBUG1("\nIterative_sense_compute failed\n");
       return GADGET_FAIL;

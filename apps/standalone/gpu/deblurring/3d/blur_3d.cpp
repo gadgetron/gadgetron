@@ -80,7 +80,7 @@ int main( int argc, char** argv)
 
   // Normalize kernel
   _real scale = cuNDA_asum<_real>(kernel.get());
-  cuNDA_scale<_real>( _real(1)/scale, kernel.get() );
+  cuNDA_scal<_real>( _real(1)/scale, kernel.get() );
 
   // Setup resulting blurred image
   cuNDArray<_complext> blurred_image;

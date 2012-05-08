@@ -10,9 +10,12 @@ template <class REAL, class T, unsigned int D> class EXPORTSOLVERS cuPartialDeri
   
  public:
   
+  cuPartialDerivativeOperator() : 
+    partialDerivativeOperator< REAL, D, cuNDArray<T> >(0) { set_device(-1); }
+
   cuPartialDerivativeOperator( unsigned int dimension ) : 
     partialDerivativeOperator< REAL, D, cuNDArray<T> >( dimension ) { set_device(-1); }
-
+  
   virtual ~cuPartialDerivativeOperator() {}
       
   virtual int compute_partial_derivative( typename intd<D>::Type stride, cuNDArray<T> *in, 
@@ -22,5 +25,10 @@ template <class REAL, class T, unsigned int D> class EXPORTSOLVERS cuPartialDeri
 						       typename intd<D>::Type adjoint_stride, 
 						       cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate );  
   
+  virtual boost::shared_ptr< linearOperator< REAL, cuNDArray<T> > > clone()
+  {
+    return linearOperator< REAL, cuNDArray<T> >::clone(this);
+  }
+
   DECLARE_MATRIX_OPERATOR_DEVICE_SUPPORT(cuPartialDerivativeOperator)
 };

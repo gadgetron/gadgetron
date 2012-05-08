@@ -1,18 +1,18 @@
 #pragma once
 
-#include "matrixOperator.h"
+#include "linearOperator.h"
 #include "gpupmri_export.h"
 
 #include <boost/smart_ptr.hpp>
 #include <iostream>
 
 template<class REAL, unsigned int D, class ARRAY_TYPE> class EXPORTGPUPMRI senseOperator 
-	: public matrixOperator<REAL, ARRAY_TYPE>
+	: public linearOperator<REAL, ARRAY_TYPE>
 {
 
 public:
 
-  senseOperator() : matrixOperator<REAL, ARRAY_TYPE>(), ncoils_(0) {}
+  senseOperator() : linearOperator<REAL, ARRAY_TYPE>(), ncoils_(0) {}
   virtual ~senseOperator() {}
 
   inline unsigned int get_number_of_coils() { return ncoils_; }

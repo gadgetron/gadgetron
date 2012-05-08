@@ -6,7 +6,7 @@
 #include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
 #include "ndarray_vector_td_utilities.h"
-#include "cuCGSolver.h"
+#include "cuCgSolver.h"
 #include "cuPartialDerivativeOperator.h"
 #include "cuConvolutionOperator.h"
 #include "parameterparser.h"
@@ -80,16 +80,17 @@ int main(int argc, char** argv)
   // Define encoding matrix
   boost::shared_ptr< cuConvolutionOperator<_real,3> > E( new cuConvolutionOperator<_real,3>() );
   E->set_kernel( &kernel );
+  E->set_domain_dimensions(data.get_dimensions().get());
     
   // Setup conjugate gradient solver
-  cuCGSolver<_real, _complext> cg;
-  cg.add_matrix_operator( E );                  // encoding matrix
-  if( kappa>0.0 ) cg.add_matrix_operator( Rx );  // regularization matrix
-  if( kappa>0.0 ) cg.add_matrix_operator( Ry );  // regularization matrix
-  if( kappa>0.0 ) cg.add_matrix_operator( Rz );  // regularization matrix
-  cg.set_iterations( num_iterations );
-  cg.set_limit( 1e-12 );
-  cg.set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_VERBOSE );
+  cuCgSolver<_real, _complext> cg;
+  cg.set_encoding_operator( E );                         // encoding matrix
+  if( kappa>0.0 ) cg.add_regularization_operator( Rx );  // regularization matrix
+  if( kappa>0.0 ) cg.add_regularization_operator( Ry );  // regularization matrix
+  if( kappa>0.0 ) cg.add_regularization_operator( Rz );  // regularization matrix
+  cg.set_max_iterations( num_iterations );
+  cg.set_tc_tolerance( 1e-12 );
+  cg.set_output_mode( cuCgSolver<_real, _complext>::OUTPUT_VERBOSE );
                 
   // Form right hand side
   cuNDArray<_complext> rhs; rhs.create(data.get_dimensions().get());
@@ -99,7 +100,7 @@ int main(int argc, char** argv)
   // Conjugate gradient solver
   //
   
-  boost::shared_ptr< cuNDArray<_complext> > cgresult = cg.solve(&rhs);
+  boost::shared_ptr< cuNDArray<_complext> > cgresult = cg.solve_from_rhs(&rhs);
 
   // All done, write out the result
   

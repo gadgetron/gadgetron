@@ -441,25 +441,7 @@ template EXPORTGPUCORE class cuNDArray< double2 >;
 template EXPORTGPUCORE class cuNDArray< double3 >;
 template EXPORTGPUCORE class cuNDArray< double4 >;
 
-template EXPORTGPUCORE class cuNDArray< intd<1>::Type >;
-template EXPORTGPUCORE class cuNDArray< intd<2>::Type >;
-template EXPORTGPUCORE class cuNDArray< intd<3>::Type >;
-template EXPORTGPUCORE class cuNDArray< intd<4>::Type >;
 
-template EXPORTGPUCORE class cuNDArray< uintd<1>::Type >;
-template EXPORTGPUCORE class cuNDArray< uintd<2>::Type >;
-template EXPORTGPUCORE class cuNDArray< uintd<3>::Type >;
-template EXPORTGPUCORE class cuNDArray< uintd<4>::Type >;
-
-template EXPORTGPUCORE class cuNDArray< floatd<1>::Type >;
-template EXPORTGPUCORE class cuNDArray< floatd<2>::Type >;
-template EXPORTGPUCORE class cuNDArray< floatd<3>::Type >;
-template EXPORTGPUCORE class cuNDArray< floatd<4>::Type >;
-
-template EXPORTGPUCORE class cuNDArray< doubled<1>::Type >;
-template EXPORTGPUCORE class cuNDArray< doubled<2>::Type >;
-template EXPORTGPUCORE class cuNDArray< doubled<3>::Type >;
-template EXPORTGPUCORE class cuNDArray< doubled<4>::Type >;
 
 template EXPORTGPUCORE class cuNDArray< intd1 >;
 template EXPORTGPUCORE class cuNDArray< intd2 >;

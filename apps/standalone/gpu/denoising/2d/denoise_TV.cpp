@@ -1,15 +1,15 @@
 /*
-	Total variation denoising based on the paper 
-	"The Split Bregman Method for L1-Regularized Problems" by Tom Goldstein and Stanley Osher. 
-	Siam J. Imaging Sciences. Vol. 2, No. 2, pp. 323–343.
+  Total variation denoising based on the paper 
+  "The Split Bregman Method for L1-Regularized Problems" by Tom Goldstein and Stanley Osher. 
+  Siam J. Imaging Sciences. Vol. 2, No. 2, pp. 323-343.
 */
 
 // Gadgetron includes
 #include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
 #include "ndarray_vector_td_utilities.h"
-#include "cuSBSolver.h"
-#include "cuCGSolver.h"
+#include "cuSbCgSolver.h"
+#include "cuCgSolver.h"
 #include "cuIdentityOperator.h"
 #include "cuPartialDerivativeOperator.h"
 #include "parameterparser.h"
@@ -79,9 +79,14 @@ int main(int argc, char** argv)
   
   // Setup regularization operators
   boost::shared_ptr< cuPartialDerivativeOperator<_real,_real,2> > Rx( new cuPartialDerivativeOperator<_real,_real,2>(0) ); 
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_real,2> > Ry( new cuPartialDerivativeOperator<_real,_real,2>(1) ); 
   Rx->set_weight( lambda );
+  Rx->set_domain_dimensions(data.get_dimensions().get());
+  Rx->set_codomain_dimensions(data.get_dimensions().get());
+
+  boost::shared_ptr< cuPartialDerivativeOperator<_real,_real,2> > Ry( new cuPartialDerivativeOperator<_real,_real,2>(1) ); 
   Ry->set_weight( lambda );
+  Ry->set_domain_dimensions(data.get_dimensions().get());
+  Ry->set_codomain_dimensions(data.get_dimensions().get());
 
   //
   // Setup conjugate gradient solver
@@ -90,30 +95,26 @@ int main(int argc, char** argv)
   // Define encoding matrix (identity)
   boost::shared_ptr< cuIdentityOperator<_real,_real> > E( new cuIdentityOperator<_real,_real>() );
   E->set_weight( mu );
-  
-  // Setup conjugate gradient solver
-  boost::shared_ptr< cuCGSolver<_real,_real> > cg(new cuCGSolver<_real,_real>());
-  cg->add_matrix_operator( E );   // encoding matrix
-  cg->add_matrix_operator( Rx );  // regularization matrix
-  cg->add_matrix_operator( Ry );  // regularization matrix
-  cg->set_iterations( num_cg_iterations );
-  cg->set_limit( 1e-4 );
-  cg->set_output_mode( cuCGSolver<_real,_real>::OUTPUT_WARNINGS );  
-  
+  E->set_domain_dimensions(data.get_dimensions().get());
+  E->set_codomain_dimensions(data.get_dimensions().get());
+    
   // Setup split-Bregman solver
-  cuSBSolver<_real,_real> sb;
-  sb.set_inner_solver( cg );
+  cuSbCgSolver<_real,_real> sb;
   sb.set_encoding_operator( E );
-  //sb.add_regularization_operator( Rx ); // Anisotropic denoising
-  //sb.add_regularization_operator( Ry ); // Anisotropic denoising
-  sb.add_regularization_group_operator( Rx ); // Isotropic denoising
-  sb.add_regularization_group_operator( Ry); // Isotropic denoising
-  sb.add_group();
-  sb.set_outer_iterations(num_outer_iterations);
-  sb.set_inner_iterations(num_inner_iterations);
-  sb.set_image_dimensions(data.get_dimensions());
-  sb.set_output_mode( cuCGSolver<_real,_real>::OUTPUT_VERBOSE );
+  sb.add_regularization_operator( Rx ); // Anisotropic denoising
+  sb.add_regularization_operator( Ry ); // Anisotropic denoising
+  //sb.add_regularization_group_operator( Rx ); // Isotropic denoising
+  //sb.add_regularization_group_operator( Ry); // Isotropic denoising
+  //sb.add_group();
+  sb.set_max_outer_iterations(num_outer_iterations);
+  sb.set_max_inner_iterations(num_inner_iterations);
+  sb.set_output_mode( cuCgSolver<_real,_real>::OUTPUT_VERBOSE );
   
+  // Setup inner conjugate gradient solver
+  sb.get_inner_solver()->set_max_iterations( num_cg_iterations );
+  sb.get_inner_solver()->set_tc_tolerance( 1e-4 );
+  sb.get_inner_solver()->set_output_mode( cuCgSolver<_real,_real>::OUTPUT_WARNINGS );  
+
   // Run split-Bregman solver
   boost::shared_ptr< cuNDArray<_real> > sbresult = sb.solve(&data);
 

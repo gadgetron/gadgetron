@@ -7,7 +7,7 @@ include_directories(		${CUDA_INCLUDE_DIRS}
 				${CMAKE_SOURCE_DIR}/toolboxes/cpucore
 				${CMAKE_SOURCE_DIR}/toolboxes/gpucore)
 
-cuda_add_library(solvers SHARED cuCGPrecondWeights.cu
+cuda_add_library(solvers SHARED cuCgPrecondWeights.cu
                                 cuPartialDerivativeOperator.cu
                                 cuLaplaceOperator.cu
                                 cuVariableGaussOperator.cu)
@@ -19,17 +19,23 @@ install(TARGETS solvers DESTINATION lib)
 
 install(FILES 	
 	solver.h
+	linearSolver.h
 	cgSolver.h
-	cuCGSolver.h
+	cuCgSolver.h
 	sbSolver.h
 	sbcSolver.h
-	cuSBSolver.h
-	cuSBCSolver.h
-	cuSBSolver_macros.h
+	cuSbSolver_macros.h
+	cuSbCgSolver.h
+	cuSbcCgSolver.h
+	cgCallback.h	
 	cgPreconditioner.h
-	cuCGPreconditioner.h
-	cuCGPrecondWeights.h
-	matrixOperator.h
+	cuCgPreconditioner.h
+	cuCgPrecondWeights.h
+	lwSolver.h
+	cuLwSolver.h
+	cuSbLwSolver.h
+	cuSbcLwSolver.h
+	linearOperator.h
 	cuMatrixOperator_macros.h
 	identityOperator.h
 	cuIdentityOperator.h
@@ -44,5 +50,7 @@ install(FILES
 	laplaceOperator.h
 	cuLaplaceOperator.h
 	cuVariableGaussOperator.h
+	encodingOperatorContainer.h
+	cuEncodingOperatorContainer.h
 	solvers_export.h
 DESTINATION include)

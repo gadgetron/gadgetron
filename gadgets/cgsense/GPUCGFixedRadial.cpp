@@ -2,16 +2,16 @@
 #include "radial_utilities.h"
 #include "Gadgetron.h"
 
-boost::shared_ptr< cuNDArray<floatd2::Type> > 
+boost::shared_ptr< cuNDArray<floatd2> >
 GPUCGFixedRadialGadget::calculate_trajectory()
 {
 	// Define trajectories
-	boost::shared_ptr< cuNDArray<floatd2::Type> > traj = compute_radial_trajectory_fixed_angle_2d<float>
+	boost::shared_ptr< cuNDArray<floatd2> > traj = compute_radial_trajectory_fixed_angle_2d<float>
 		( samples_per_profile_, profiles_per_frame_, 1 );
 
   if (!traj.get()) {
     GADGET_DEBUG1("Failed to allocate trajectory");
-    return boost::shared_ptr< cuNDArray<floatd2::Type> >();
+    return boost::shared_ptr< cuNDArray<floatd2> >();
   }
 
   return traj;

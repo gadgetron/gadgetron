@@ -44,7 +44,7 @@ cuNonCartesianSenseOperator<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray
   }
   
   // Forwards NFFT
-  if( !plan_->compute( out, &tmp, dcw_.get(), NFFT_plan<REAL,D>::NFFT_FORWARDS )) {
+  if( !plan_->compute( &tmp, out, dcw_.get(), NFFT_plan<REAL,D>::NFFT_FORWARDS_C2NC )) {
     std::cerr << "cuNonCartesianSenseOperator::mult_M : failed during NFFT" << std::endl;
     return -4;
   }
@@ -77,7 +77,7 @@ cuNonCartesianSenseOperator<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArra
   }
   
   // Do the NFFT
-  if( !plan_->compute( in, &tmp, dcw_.get(), NFFT_plan<REAL,D>::NFFT_BACKWARDS )) {
+  if( !plan_->compute( in, &tmp, dcw_.get(), NFFT_plan<REAL,D>::NFFT_BACKWARDS_NC2C )) {
     std::cerr << "cuNonCartesianSenseOperator::mult_MH: NFFT failed" << std::endl;
     return -3;
   }
@@ -171,6 +171,7 @@ cuNonCartesianSenseOperator<REAL,D>::set_dcw( boost::shared_ptr< cuNDArray<REAL>
     return -1;
   }
 }
+
 
 //
 // Instantiations

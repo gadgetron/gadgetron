@@ -11,7 +11,7 @@ class EXPORTGADGETSCGSENSE GPUCGGoldenRadialGadget : public GPUCGGadget
   GADGET_DECLARE(GPUCGGoldenRadialGadget);
 
  protected:
-  virtual boost::shared_ptr< cuNDArray<floatd2::Type> > calculate_trajectory();
+  virtual boost::shared_ptr< cuNDArray<floatd2> > calculate_trajectory();
   virtual boost::shared_ptr< cuNDArray<float> > calculate_density_compensation();
 };
 

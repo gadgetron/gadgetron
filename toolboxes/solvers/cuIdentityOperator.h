@@ -30,5 +30,11 @@ template <class REAL, class T> class cuIdentityOperator
     }
   }
 
+  
+  virtual boost::shared_ptr< linearOperator< REAL, cuNDArray<T> > > clone()
+  {
+    return linearOperator< REAL, cuNDArray<T> >::clone(this);
+  }
+
   DECLARE_MATRIX_OPERATOR_DEVICE_SUPPORT(cuIdentityOperator);
 };

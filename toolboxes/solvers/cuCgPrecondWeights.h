@@ -1,14 +1,14 @@
 #pragma once
 
-#include "cuCGPreconditioner.h"
+#include "cuCgPreconditioner.h"
 #include <boost/smart_ptr.hpp>
 
-template<class T> class EXPORTSOLVERS cuCGPrecondWeights : public cuCGPreconditioner<T>
+template<class T> class EXPORTSOLVERS cuCgPrecondWeights : public cuCgPreconditioner<T>
 {
  public:
 
-  cuCGPrecondWeights( int device = -1 ) : cuCGPreconditioner<T>(device) {}
-  virtual ~cuCGPrecondWeights() {}
+  cuCgPrecondWeights( int device = -1 ) : cuCgPreconditioner<T>(device) {}
+  virtual ~cuCgPrecondWeights() {}
   
   virtual int set_weights( boost::shared_ptr< cuNDArray<T> > w );
   virtual int apply(cuNDArray<T>* in, cuNDArray<T>* out);

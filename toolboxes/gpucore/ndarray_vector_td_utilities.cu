@@ -32,6 +32,7 @@ typedef float dummy;
 // Sets the device context to the denoted compute device and makes device copies if necessary.
 // If compute mode is CUNDA_NDARRAY_DEVICE the mandatory array 'in1' determines the compute device
 //
+
 template< unsigned int D, typename I1, typename I2, typename I3 > 
 static bool prepare( cuNDA_device compute_device, int *cur_device, int *old_device,
 		     cuNDArray<I1> *in1,       cuNDArray<I1> **in1_int, 
@@ -342,8 +343,6 @@ cuNDA_norm_kernel( typename reald<REAL,D>::Type *in, REAL *out,
   }
 }
 
-
-
 // Norm
 //
 template<class REAL, unsigned int D>  
@@ -381,6 +380,7 @@ cuNDA_norm( cuNDArray<typename reald<REAL,D>::Type> *in,
  
   return out;
 }
+
 // cAbs
 //
 template<class REAL, class T> __global__ void
@@ -497,7 +497,6 @@ void cuNDA_norm_squared_kernel( typename reald<REAL,D>::Type *in, REAL *out, uns
   }
 }
 
-
 // Norm Squared
 //
 template<class REAL, unsigned int D>  
@@ -535,7 +534,6 @@ cuNDA_norm_squared( cuNDArray<typename reald<REAL,D>::Type> *in,
 
   return out;
 }
-
 
 // Sum
 //
@@ -1536,7 +1534,7 @@ cuNDA_downsample( cuNDArray<REAL> *in,
   dim3 blockDim; dim3 gridDim;
 
   if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim, number_of_batches ) ){
-    cerr << endl << "cuNDA_scale: block/grid configuration out of range" << endl;
+    cerr << endl << "cuNDA_downsample: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
@@ -1615,7 +1613,7 @@ cuNDA_upsample_nn( cuNDArray<REAL> *in,
   dim3 blockDim; dim3 gridDim;
 
   if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim, number_of_batches ) ){
-    cerr << endl << "cuNDA_scale: block/grid configuration out of range" << endl;
+    cerr << endl << "cuNDA_upsample: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
@@ -1757,7 +1755,7 @@ cuNDA_upsample_lin( cuNDArray<REAL> *in,
   dim3 blockDim; dim3 gridDim;
 
   if( !setup_grid( cur_device, number_of_elements, &blockDim, &gridDim, number_of_batches ) ){
-    cerr << endl << "cuNDA_scale: block/grid configuration out of range" << endl;
+    cerr << endl << "cuNDA_upsample: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
@@ -2243,9 +2241,6 @@ bool cuNDA_add( T a, cuNDArray<T> *in_out,
   return true;
 }
 
-
-
-
 // Scale
 template<class REAL> __global__ 
 void cuNDA_scale1_kernel( REAL a, complext<REAL> *x, unsigned int number_of_elements )
@@ -2261,8 +2256,8 @@ void cuNDA_scale1_kernel( REAL a, complext<REAL> *x, unsigned int number_of_elem
 
 // Scale 
 template<class REAL> 
-bool cuNDA_scale( REAL a, cuNDArray<complext<REAL> > *in_out,
-		  cuNDA_device compute_device )
+bool cuNDA_scal( REAL a, cuNDArray<complext<REAL> > *in_out,
+		 cuNDA_device compute_device )
 {
   // Prepare internal array
   int cur_device, old_device;
@@ -2294,9 +2289,6 @@ bool cuNDA_scale( REAL a, cuNDArray<complext<REAL> > *in_out,
 
   return true;
 }
-
-
-
 
 // Scale
 template<class S, class T> __global__ 
@@ -2688,6 +2680,107 @@ cuNDA_dot( cuNDArray<T>* arr1, cuNDArray<T>* arr2, cuNDA_device compute_device )
   return ret;
 }
 
+
+template<class REAL, class T> REAL _nrm2( cuNDArray<T>* arr, int device );
+
+template<> float
+_nrm2<float,float_complext>( cuNDArray<float_complext>* arr, int device )
+{
+  float ret;
+
+  if (cublasScnrm2( handle[device], arr->get_number_of_elements(),
+		   (const cuComplex*) arr->get_data_ptr(), 1,
+		   &ret) != CUBLAS_STATUS_SUCCESS )
+    {
+      cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+      return 0;
+    }
+
+  cudaThreadSynchronize();
+  return ret;
+}
+
+template<> float
+_nrm2<float,float>( cuNDArray<float>* arr, int device )
+{
+  float ret;
+  if( cublasSnrm2(handle[device], arr->get_number_of_elements(),
+		 arr->get_data_ptr(), 1,
+		 &ret) != CUBLAS_STATUS_SUCCESS )
+    {
+      cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+      return 0;
+    }
+
+  cudaThreadSynchronize();
+  return ret;
+}
+
+template<> double
+_nrm2<double,double_complext>( cuNDArray<double_complext>* arr, int device )
+{
+  double ret;
+
+  if( cublasDznrm2(handle[device], arr->get_number_of_elements(),
+		  (const cuDoubleComplex*) arr->get_data_ptr(), 1,
+		  &ret) != CUBLAS_STATUS_SUCCESS )
+    {
+      cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+      return 0;
+    }
+
+  cudaThreadSynchronize();
+  return ret;
+}
+
+template<> double
+_nrm2<double,double>( cuNDArray<double>* arr, int device )
+{
+  double ret;
+  if( cublasDnrm2(handle[device], arr->get_number_of_elements(),
+		 arr->get_data_ptr(), 1,
+		 &ret) != CUBLAS_STATUS_SUCCESS )
+    {
+      cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+      return 0;
+    }
+
+  cudaThreadSynchronize();
+  return ret;
+}
+
+
+template<class REAL, class T>
+REAL cuNDA_nrm2( cuNDArray<T>* arr,
+		 cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_nrm2: initialization failed" << std::endl;
+    return REAL(0);
+  }
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<T> *arr_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, arr, &arr_int ) ){
+    cerr << endl << "cuNDA_nrm2: unable to prepare device(s)" << endl;
+    return REAL(0);
+  }
+
+  REAL ret = _nrm2<REAL,T>( arr_int, cur_device );
+
+  // Restore
+  if( !restore<1,T,dummy,dummy,dummy>( old_device, arr, arr_int, 0, compute_device ) ){
+    cerr << endl << "cuNDA_nrm2: unable to restore device" << endl;
+    return REAL(0);
+  }
+
+  return ret;
+}
+
+
 template<class REAL, class T> REAL _sum( cuNDArray<T>* arr, int device );
 
 template<> float
@@ -2774,7 +2867,7 @@ cuNDA_asum( cuNDArray<T>* arr, cuNDA_device compute_device )
     return REAL(0);
   }
 
-  REAL ret = _sum<REAL,T>( arr_int, cur_device );  
+  REAL ret = _sum<REAL,T>( arr_int, cur_device );
 
   // Restore
   if( !restore<1,T,dummy,dummy,dummy>( old_device, arr, arr_int, 0, compute_device ) ){
@@ -3050,6 +3143,315 @@ double cuNDA_normalize<double>( cuNDArray<double> *data, double new_max, cuNDA_d
   return scale;
 }
 
+
+// Normalize (float)
+template<> EXPORTGPUCORE
+float cuNDA_amax<float>( cuNDArray<float> *data, cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_amax: initialization failed" << std::endl;
+    return 0;
+  }
+
+  unsigned int number_of_elements = data->get_number_of_elements();
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<float> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,float,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_normalize: unable to prepare device(s)" << endl;
+    return 0;
+  }
+
+  // Find the maximum value in the array
+  int max_idx;
+  cublasIsamax( handle[cur_device], number_of_elements, data_int->get_data_ptr(), 1, &max_idx );
+  cudaThreadSynchronize();
+
+  // Copy that value back to host memory
+  float max_val;
+  cudaMemcpy(&max_val, (data_int->get_data_ptr()+max_idx-1), sizeof(float), cudaMemcpyDeviceToHost);
+
+  // Restore
+  if( !restore<1,float,dummy,dummy,dummy>( old_device, data, data_int, 1, compute_device ) ){
+    cerr << endl << "cuNDA_normalize: unable to restore device" << endl;
+    return 0;
+  }
+
+  CHECK_FOR_CUDA_ERROR();
+  return max_val;
+}
+
+
+// Normalize (float)
+template<> EXPORTGPUCORE
+float_complext cuNDA_amax<float_complext>( cuNDArray<float_complext> *data, cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_amax: initialization failed" << std::endl;
+    return 0;
+  }
+
+  unsigned int number_of_elements = data->get_number_of_elements();
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<float_complext> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,float_complext,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_normalize: unable to prepare device(s)" << endl;
+    return 0;
+  }
+
+  // Find the maximum value in the array
+  int max_idx;
+  cublasIcamax( handle[cur_device], number_of_elements, (float2*) data_int->get_data_ptr(), 1, &max_idx );
+  cudaThreadSynchronize();
+
+  // Copy that value back to host memory
+  float_complext max_val;
+  cudaMemcpy(&max_val, (data_int->get_data_ptr()+max_idx-1), sizeof(float_complext), cudaMemcpyDeviceToHost);
+
+  // Restore
+  if( !restore<1,float_complext,dummy,dummy,dummy>( old_device, data, data_int, 1, compute_device ) ){
+    cerr << endl << "cuNDA_normalize: unable to restore device" << endl;
+    return 0;
+  }
+
+  CHECK_FOR_CUDA_ERROR();
+  return max_val;
+}
+
+// Normalize (float)
+template<> EXPORTGPUCORE
+double_complext cuNDA_amax<double_complext>( cuNDArray<double_complext> *data, cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_amax: initialization failed" << std::endl;
+    return 0;
+  }
+
+  unsigned int number_of_elements = data->get_number_of_elements();
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<double_complext> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,double_complext,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_normalize: unable to prepare device(s)" << endl;
+    return 0;
+  }
+
+  // Find the maximum value in the array
+  int max_idx;
+  cublasIzamax( handle[cur_device], number_of_elements, (double2*) data_int->get_data_ptr(), 1, &max_idx );
+  cudaThreadSynchronize();
+
+  // Copy that value back to host memory
+  double_complext max_val;
+  cudaMemcpy(&max_val, (data_int->get_data_ptr()+max_idx-1), sizeof(double_complext), cudaMemcpyDeviceToHost);
+
+  // Restore
+  if( !restore<1,double_complext,dummy,dummy,dummy>( old_device, data, data_int, 1, compute_device ) ){
+    cerr << endl << "cuNDA_normalize: unable to restore device" << endl;
+    return 0;
+  }
+
+  CHECK_FOR_CUDA_ERROR();
+  return max_val;
+}
+// Normalize (double)
+template<> EXPORTGPUCORE
+double cuNDA_amax<double>( cuNDArray<double> *data, cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_amax: initialization failed" << std::endl;
+    return 0;
+  }
+
+  unsigned int number_of_elements = data->get_number_of_elements();
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<double> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,double,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_amax: unable to prepare device(s)" << endl;
+    return 0;
+  }
+
+  // Find the maximum value in the array
+  int max_idx;
+  cublasIdamax( handle[cur_device], number_of_elements, data_int->get_data_ptr(), 1, &max_idx );
+  cudaThreadSynchronize();
+
+  // Copy that value back to host memory
+  double max_val;
+  cudaMemcpy(&max_val, (data_int->get_data_ptr()+max_idx-1), sizeof(double), cudaMemcpyDeviceToHost);
+
+
+
+  CHECK_FOR_CUDA_ERROR();
+  return max_val;
+}
+
+
+template<> EXPORTGPUCORE
+float cuNDA_amin<float>( cuNDArray<float> *data,  cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_amax: initialization failed" << std::endl;
+    return 0;
+  }
+
+  unsigned int number_of_elements = data->get_number_of_elements();
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<float> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,float,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_normalize: unable to prepare device(s)" << endl;
+    return 0;
+  }
+
+  // Find the maximum value in the array
+  int min_idx;
+  cublasIsamin( handle[cur_device], number_of_elements, data_int->get_data_ptr(), 1, &min_idx );
+  cudaThreadSynchronize();
+
+  // Copy that value back to host memory
+  float min_val;
+  cudaMemcpy(&min_val, (data_int->get_data_ptr()+min_idx-1), sizeof(float), cudaMemcpyDeviceToHost);
+
+  // Restore
+  if( !restore<1,float,dummy,dummy,dummy>( old_device, data, data_int, 1, compute_device ) ){
+    cerr << endl << "cuNDA_normalize: unable to restore device" << endl;
+    return 0;
+  }
+
+  CHECK_FOR_CUDA_ERROR();
+  return min_val;
+}
+
+
+template<> EXPORTGPUCORE
+float_complext cuNDA_amin<float_complext>( cuNDArray<float_complext> *data,  cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_amax: initialization failed" << std::endl;
+    return 0;
+  }
+
+  unsigned int number_of_elements = data->get_number_of_elements();
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<float_complext> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,float_complext,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_normalize: unable to prepare device(s)" << endl;
+    return 0;
+  }
+
+  // Find the maximum value in the array
+  int min_idx;
+  cublasIcamin( handle[cur_device], number_of_elements, (float2*)data_int->get_data_ptr(), 1, &min_idx );
+  cudaThreadSynchronize();
+
+  // Copy that value back to host memory
+  float_complext min_val;
+  cudaMemcpy(&min_val, (data_int->get_data_ptr()+min_idx-1), sizeof(float_complext), cudaMemcpyDeviceToHost);
+
+  // Restore
+  if( !restore<1,float_complext,dummy,dummy,dummy>( old_device, data, data_int, 1, compute_device ) ){
+    cerr << endl << "cuNDA_normalize: unable to restore device" << endl;
+    return 0;
+  }
+
+  CHECK_FOR_CUDA_ERROR();
+  return min_val;
+}
+
+// Normalize (double)
+template<> EXPORTGPUCORE
+double cuNDA_amin<double>( cuNDArray<double> *data,cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_amax: initialization failed" << std::endl;
+    return 0;
+  }
+
+  unsigned int number_of_elements = data->get_number_of_elements();
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<double> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,double,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_amax: unable to prepare device(s)" << endl;
+    return 0;
+  }
+
+  // Find the maximum value in the array
+  int min_idx;
+  cublasIdamax( handle[cur_device], number_of_elements, data_int->get_data_ptr(), 1, &min_idx );
+  cudaThreadSynchronize();
+
+  // Copy that value back to host memory
+  double min_val;
+  cudaMemcpy(&min_val, (data_int->get_data_ptr()+min_idx-1), sizeof(double), cudaMemcpyDeviceToHost);
+
+
+
+  CHECK_FOR_CUDA_ERROR();
+  return min_val;
+}
+
+
+// Normalize (double)
+template<> EXPORTGPUCORE
+double_complext cuNDA_amin<double_complext>( cuNDArray<double_complext> *data,cuNDA_device compute_device )
+{
+  if( !initialize_static_variables() ){
+    cout << "cuNDA_amax: initialization failed" << std::endl;
+    return 0;
+  }
+
+  unsigned int number_of_elements = data->get_number_of_elements();
+
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<double_complext> *data_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<1,double_complext,dummy,dummy>( compute_device, &cur_device, &old_device, data, &data_int ) ){
+    cerr << endl << "cuNDA_amax: unable to prepare device(s)" << endl;
+    return 0;
+  }
+
+  // Find the maximum value in the array
+  int min_idx;
+  cublasIzamax( handle[cur_device], number_of_elements, (double2*)data_int->get_data_ptr(), 1, &min_idx );
+  cudaThreadSynchronize();
+
+  // Copy that value back to host memory
+  double_complext min_val;
+  cudaMemcpy(&min_val, (data_int->get_data_ptr()+min_idx-1), sizeof(double_complext), cudaMemcpyDeviceToHost);
+
+
+
+  CHECK_FOR_CUDA_ERROR();
+  return min_val;
+}
 // Crop
 template<class T, unsigned int D> __global__ void
 cuNDA_crop_kernel( typename uintd<D>::Type offset, typename uintd<D>::Type matrix_size_in, typename uintd<D>::Type matrix_size_out, 
@@ -3416,7 +3818,6 @@ bool cuNDA_shrink1( REAL gamma, cuNDArray<T> *in, cuNDArray<T> *out )
     return false;
   }
 
-
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
   if( !setup_grid( cur_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
@@ -3605,82 +4006,82 @@ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<uintd<4>::Type> >
 cuNDA_sum<uintd<4>::Type>( cuNDArray<uintd<4>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<int,1>( uintd1::Type, cuNDArray<int>*, cuNDArray<int>*, cuNDA_device );
+cuNDA_crop<int,1>( uintd1, cuNDArray<int>*, cuNDArray<int>*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<int,1>,1>( uintd1::Type, cuNDArray<vector_td<int,1> >*, cuNDArray<vector_td<int,1> >*, cuNDA_device );
+cuNDA_crop<vector_td<int,1>,1>( uintd1, cuNDArray<vector_td<int,1> >*, cuNDArray<vector_td<int,1> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<int,2>,1>( uintd1::Type, cuNDArray<vector_td<int,2> >*, cuNDArray<vector_td<int,2> >*, cuNDA_device );
+cuNDA_crop<vector_td<int,2>,1>( uintd1, cuNDArray<vector_td<int,2> >*, cuNDArray<vector_td<int,2> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<int,3>,1>( uintd1::Type, cuNDArray<vector_td<int,3> >*, cuNDArray<vector_td<int,3> >*, cuNDA_device );
+cuNDA_crop<vector_td<int,3>,1>( uintd1, cuNDArray<vector_td<int,3> >*, cuNDArray<vector_td<int,3> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<int,4>,1>( uintd1::Type, cuNDArray<vector_td<int,4> >*, cuNDArray<vector_td<int,4> >*, cuNDA_device );
+cuNDA_crop<vector_td<int,4>,1>( uintd1, cuNDArray<vector_td<int,4> >*, cuNDArray<vector_td<int,4> >*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<int,1>,2>( uintd2::Type, cuNDArray<vector_td<int,1> >*, cuNDArray<vector_td<int,1> >*, cuNDA_device );
+cuNDA_crop<vector_td<int,1>,2>( uintd2, cuNDArray<vector_td<int,1> >*, cuNDArray<vector_td<int,1> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<int,2>,2>( uintd2::Type, cuNDArray<vector_td<int,2> >*, cuNDArray<vector_td<int,2> >*, cuNDA_device );
+cuNDA_crop<vector_td<int,2>,2>( uintd2, cuNDArray<vector_td<int,2> >*, cuNDArray<vector_td<int,2> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<int,3>,2>( uintd2::Type, cuNDArray<vector_td<int,3> >*, cuNDArray<vector_td<int,3> >*, cuNDA_device );
+cuNDA_crop<vector_td<int,3>,2>( uintd2, cuNDArray<vector_td<int,3> >*, cuNDArray<vector_td<int,3> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<int,4>,2>( uintd2::Type, cuNDArray<vector_td<int,4> >*, cuNDArray<vector_td<int,4> >*, cuNDA_device );
+cuNDA_crop<vector_td<int,4>,2>( uintd2, cuNDArray<vector_td<int,4> >*, cuNDArray<vector_td<int,4> >*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<int,1>,3>( uintd3::Type, cuNDArray<vector_td<int,1> >*, cuNDArray<vector_td<int,1> >*, cuNDA_device );
+cuNDA_crop<vector_td<int,1>,3>( uintd3, cuNDArray<vector_td<int,1> >*, cuNDArray<vector_td<int,1> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<int,2>,3>( uintd3::Type, cuNDArray<vector_td<int,2> >*, cuNDArray<vector_td<int,2> >*, cuNDA_device );
+cuNDA_crop<vector_td<int,2>,3>( uintd3, cuNDArray<vector_td<int,2> >*, cuNDArray<vector_td<int,2> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<int,3>,3>( uintd3::Type, cuNDArray<vector_td<int,3> >*, cuNDArray<vector_td<int,3> >*, cuNDA_device );
+cuNDA_crop<vector_td<int,3>,3>( uintd3, cuNDArray<vector_td<int,3> >*, cuNDArray<vector_td<int,3> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<int,4>,3>( uintd3::Type, cuNDArray<vector_td<int,4> >*, cuNDArray<vector_td<int,4> >*, cuNDA_device );
+cuNDA_crop<vector_td<int,4>,3>( uintd3, cuNDArray<vector_td<int,4> >*, cuNDArray<vector_td<int,4> >*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<int,1>,4>( uintd4::Type, cuNDArray<vector_td<int,1> >*, cuNDArray<vector_td<int,1> >*, cuNDA_device );
+cuNDA_crop<vector_td<int,1>,4>( uintd4, cuNDArray<vector_td<int,1> >*, cuNDArray<vector_td<int,1> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<int,2>,4>( uintd4::Type, cuNDArray<vector_td<int,2> >*, cuNDArray<vector_td<int,2> >*, cuNDA_device );
+cuNDA_crop<vector_td<int,2>,4>( uintd4, cuNDArray<vector_td<int,2> >*, cuNDArray<vector_td<int,2> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<int,3>,4>( uintd4::Type, cuNDArray<vector_td<int,3> >*, cuNDArray<vector_td<int,3> >*, cuNDA_device );
+cuNDA_crop<vector_td<int,3>,4>( uintd4, cuNDArray<vector_td<int,3> >*, cuNDArray<vector_td<int,3> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<int,4>,4>( uintd4::Type, cuNDArray<vector_td<int,4> >*, cuNDArray<vector_td<int,4> >*, cuNDA_device );
+cuNDA_crop<vector_td<int,4>,4>( uintd4, cuNDArray<vector_td<int,4> >*, cuNDArray<vector_td<int,4> >*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<unsigned int,1>( uintd1::Type, cuNDArray<unsigned int>*, cuNDArray<unsigned int>*, cuNDA_device );
+cuNDA_crop<unsigned int,1>( uintd1, cuNDArray<unsigned int>*, cuNDArray<unsigned int>*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<unsigned int,1>,1>( uintd1::Type, cuNDArray<vector_td<unsigned int,1> >*, cuNDArray<vector_td<unsigned int,1> >*, cuNDA_device );
+cuNDA_crop<vector_td<unsigned int,1>,1>( uintd1, cuNDArray<vector_td<unsigned int,1> >*, cuNDArray<vector_td<unsigned int,1> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<unsigned int,2>,1>( uintd1::Type, cuNDArray<vector_td<unsigned int,2> >*, cuNDArray<vector_td<unsigned int,2> >*, cuNDA_device );
+cuNDA_crop<vector_td<unsigned int,2>,1>( uintd1, cuNDArray<vector_td<unsigned int,2> >*, cuNDArray<vector_td<unsigned int,2> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<unsigned int,3>,1>( uintd1::Type, cuNDArray<vector_td<unsigned int,3> >*, cuNDArray<vector_td<unsigned int,3> >*, cuNDA_device );
+cuNDA_crop<vector_td<unsigned int,3>,1>( uintd1, cuNDArray<vector_td<unsigned int,3> >*, cuNDArray<vector_td<unsigned int,3> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<unsigned int,4>,1>( uintd1::Type, cuNDArray<vector_td<unsigned int,4> >*, cuNDArray<vector_td<unsigned int,4> >*, cuNDA_device );
+cuNDA_crop<vector_td<unsigned int,4>,1>( uintd1, cuNDArray<vector_td<unsigned int,4> >*, cuNDArray<vector_td<unsigned int,4> >*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<unsigned int,1>,2>( uintd2::Type, cuNDArray<vector_td<unsigned int,1> >*, cuNDArray<vector_td<unsigned int,1> >*, cuNDA_device );
+cuNDA_crop<vector_td<unsigned int,1>,2>( uintd2, cuNDArray<vector_td<unsigned int,1> >*, cuNDArray<vector_td<unsigned int,1> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<unsigned int,2>,2>( uintd2::Type, cuNDArray<vector_td<unsigned int,2> >*, cuNDArray<vector_td<unsigned int,2> >*, cuNDA_device );
+cuNDA_crop<vector_td<unsigned int,2>,2>( uintd2, cuNDArray<vector_td<unsigned int,2> >*, cuNDArray<vector_td<unsigned int,2> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<unsigned int,3>,2>( uintd2::Type, cuNDArray<vector_td<unsigned int,3> >*, cuNDArray<vector_td<unsigned int,3> >*, cuNDA_device );
+cuNDA_crop<vector_td<unsigned int,3>,2>( uintd2, cuNDArray<vector_td<unsigned int,3> >*, cuNDArray<vector_td<unsigned int,3> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<unsigned int,4>,2>( uintd2::Type, cuNDArray<vector_td<unsigned int,4> >*, cuNDArray<vector_td<unsigned int,4> >*, cuNDA_device );
+cuNDA_crop<vector_td<unsigned int,4>,2>( uintd2, cuNDArray<vector_td<unsigned int,4> >*, cuNDArray<vector_td<unsigned int,4> >*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<unsigned int,1>,3>( uintd3::Type, cuNDArray<vector_td<unsigned int,1> >*, cuNDArray<vector_td<unsigned int,1> >*, cuNDA_device );
+cuNDA_crop<vector_td<unsigned int,1>,3>( uintd3, cuNDArray<vector_td<unsigned int,1> >*, cuNDArray<vector_td<unsigned int,1> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<unsigned int,2>,3>( uintd3::Type, cuNDArray<vector_td<unsigned int,2> >*, cuNDArray<vector_td<unsigned int,2> >*, cuNDA_device );
+cuNDA_crop<vector_td<unsigned int,2>,3>( uintd3, cuNDArray<vector_td<unsigned int,2> >*, cuNDArray<vector_td<unsigned int,2> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<unsigned int,3>,3>( uintd3::Type, cuNDArray<vector_td<unsigned int,3> >*, cuNDArray<vector_td<unsigned int,3> >*, cuNDA_device );
+cuNDA_crop<vector_td<unsigned int,3>,3>( uintd3, cuNDArray<vector_td<unsigned int,3> >*, cuNDArray<vector_td<unsigned int,3> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<unsigned int,4>,3>( uintd3::Type, cuNDArray<vector_td<unsigned int,4> >*, cuNDArray<vector_td<unsigned int,4> >*, cuNDA_device );
+cuNDA_crop<vector_td<unsigned int,4>,3>( uintd3, cuNDArray<vector_td<unsigned int,4> >*, cuNDArray<vector_td<unsigned int,4> >*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<unsigned int,1>,4>( uintd4::Type, cuNDArray<vector_td<unsigned int,1> >*, cuNDArray<vector_td<unsigned int,1> >*, cuNDA_device );
+cuNDA_crop<vector_td<unsigned int,1>,4>( uintd4, cuNDArray<vector_td<unsigned int,1> >*, cuNDArray<vector_td<unsigned int,1> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<unsigned int,2>,4>( uintd4::Type, cuNDArray<vector_td<unsigned int,2> >*, cuNDArray<vector_td<unsigned int,2> >*, cuNDA_device );
+cuNDA_crop<vector_td<unsigned int,2>,4>( uintd4, cuNDArray<vector_td<unsigned int,2> >*, cuNDArray<vector_td<unsigned int,2> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<unsigned int,3>,4>( uintd4::Type, cuNDArray<vector_td<unsigned int,3> >*, cuNDArray<vector_td<unsigned int,3> >*, cuNDA_device );
+cuNDA_crop<vector_td<unsigned int,3>,4>( uintd4, cuNDArray<vector_td<unsigned int,3> >*, cuNDArray<vector_td<unsigned int,3> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<unsigned int,4>,4>( uintd4::Type, cuNDArray<vector_td<unsigned int,4> >*, cuNDArray<vector_td<unsigned int,4> >*, cuNDA_device );
+cuNDA_crop<vector_td<unsigned int,4>,4>( uintd4, cuNDArray<vector_td<unsigned int,4> >*, cuNDArray<vector_td<unsigned int,4> >*, cuNDA_device );
 
 // Instanciation -- single precision
 
@@ -3699,7 +4100,7 @@ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<floatd<3>::Type> >
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<floatd<4>::Type> >
  cuNDA_sum<floatd<4>::Type>( cuNDArray<floatd<4>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
 
-template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > 
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
 cuNDA_expand<float>( cuNDArray<float>*, unsigned int, cuNDA_device, cuNDA_device);
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> >
 cuNDA_expand<float_complext>( cuNDArray<float_complext>*, unsigned int, cuNDA_device, cuNDA_device);
@@ -3776,52 +4177,54 @@ cuNDA_correlation<float_complext>( cuNDArray<float_complext>*, cuNDA_device, cuN
 template EXPORTGPUCORE bool cuNDA_axpy<float>( cuNDArray<float>*, cuNDArray<float_complext>*, cuNDArray<float_complext>*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<float,1>( uintd1::Type, cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
+cuNDA_crop<float,1>( uintd1, cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool
+cuNDA_crop<float,2>( uintd2, cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<complext<float>,1>( uintd1::Type, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
+cuNDA_crop<complext<float>,1>( uintd1, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<complext<float>,2>( uintd2::Type, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
+cuNDA_crop<complext<float>,2>( uintd2, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<complext<float>,3>( uintd3::Type, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
+cuNDA_crop<complext<float>,3>( uintd3, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<complext<float>,4>( uintd4::Type, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
+cuNDA_crop<complext<float>,4>( uintd4, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<float,1>,1>( uintd1::Type, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*, cuNDA_device );
+cuNDA_crop<vector_td<float,1>,1>( uintd1, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<float,2>,1>( uintd1::Type, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*, cuNDA_device );
+cuNDA_crop<vector_td<float,2>,1>( uintd1, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<float,3>,1>( uintd1::Type, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*, cuNDA_device );
+cuNDA_crop<vector_td<float,3>,1>( uintd1, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<float,4>,1>( uintd1::Type, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*, cuNDA_device );
+cuNDA_crop<vector_td<float,4>,1>( uintd1, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<float,1>,2>( uintd2::Type, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*, cuNDA_device );
+cuNDA_crop<vector_td<float,1>,2>( uintd2, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<float,2>,2>( uintd2::Type, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*, cuNDA_device );
+cuNDA_crop<vector_td<float,2>,2>( uintd2, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<float,3>,2>( uintd2::Type, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*, cuNDA_device );
+cuNDA_crop<vector_td<float,3>,2>( uintd2, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<float,4>,2>( uintd2::Type, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*, cuNDA_device );
+cuNDA_crop<vector_td<float,4>,2>( uintd2, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<float,1>,3>( uintd3::Type, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*, cuNDA_device );
+cuNDA_crop<vector_td<float,1>,3>( uintd3, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<float,2>,3>( uintd3::Type, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*, cuNDA_device );
+cuNDA_crop<vector_td<float,2>,3>( uintd3, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<float,3>,3>( uintd3::Type, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*, cuNDA_device );
+cuNDA_crop<vector_td<float,3>,3>( uintd3, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<float,4>,3>( uintd3::Type, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*, cuNDA_device );
+cuNDA_crop<vector_td<float,4>,3>( uintd3, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<float,1>,4>( uintd4::Type, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*, cuNDA_device );
+cuNDA_crop<vector_td<float,1>,4>( uintd4, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<float,2>,4>( uintd4::Type, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*, cuNDA_device );
+cuNDA_crop<vector_td<float,2>,4>( uintd4, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<float,3>,4>( uintd4::Type, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*, cuNDA_device );
+cuNDA_crop<vector_td<float,3>,4>( uintd4, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<float,4>,4>( uintd4::Type, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*, cuNDA_device );
+cuNDA_crop<vector_td<float,4>,4>( uintd4, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*, cuNDA_device );
 
 template EXPORTGPUCORE bool
 cuNDA_expand_with_zero_fill<float,1>( cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
@@ -3899,10 +4302,10 @@ template EXPORTGPUCORE bool cuNDA_reciprocal_sqrt<float>( cuNDArray<float>*, cuN
 
 template EXPORTGPUCORE bool cuNDA_abs<float>( cuNDArray<float>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_abs<floatd1::Type>( cuNDArray<floatd1::Type>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_abs<floatd2::Type>( cuNDArray<floatd2::Type>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_abs<floatd3::Type>( cuNDArray<floatd3::Type>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_abs<floatd4::Type>( cuNDArray<floatd4::Type>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_abs<floatd1>( cuNDArray<floatd1>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_abs<floatd2>( cuNDArray<floatd2>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_abs<floatd3>( cuNDArray<floatd3>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_abs<floatd4>( cuNDArray<floatd4>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_threshold_min<float>(float, cuNDArray<float>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_threshold_max<float>(float, cuNDArray<float>*, cuNDA_device );
@@ -3914,7 +4317,7 @@ template EXPORTGPUCORE bool cuNDA_rss_normalize<float,float_complext>( cuNDArray
 template EXPORTGPUCORE bool cuNDA_add<float_complext>( float_complext, cuNDArray<float_complext>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_add<float>( float, cuNDArray<float>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_scale<float>( float, cuNDArray<float_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_scal<float>( float, cuNDArray<float_complext>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_scale<float>( cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_scale<float_complext>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, cuNDA_device );
@@ -3925,29 +4328,29 @@ template EXPORTGPUCORE bool cuNDA_scale<float>( cuNDArray<float>*, cuNDArray<flo
 template EXPORTGPUCORE bool cuNDA_axpy<float>( cuNDArray<float>*, cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_axpy<float_complext>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, cuNDArray<float_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,1>(uintd1::Type, cuNDArray<float>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float_complext,1>(uintd1::Type, cuNDArray<float_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,1>(uintd1, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float_complext,1>(uintd1, cuNDArray<float_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,2>(uintd2::Type, cuNDArray<float>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float_complext,2>(uintd2::Type, cuNDArray<float_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,2>(uintd2, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float_complext,2>(uintd2, cuNDArray<float_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,3>(uintd3::Type, cuNDArray<float>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float_complext,3>(uintd3::Type, cuNDArray<float_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,3>(uintd3, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float_complext,3>(uintd3, cuNDArray<float_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,4>(uintd4::Type, cuNDArray<float>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float_complext,4>(uintd4::Type, cuNDArray<float_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,4>(uintd4, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float_complext,4>(uintd4, cuNDArray<float_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,1>(floatd1::Type, cuNDArray<float>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext,1>(floatd1::Type, cuNDArray<float_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,1>(floatd1, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext,1>(floatd1, cuNDArray<float_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,2>(floatd2::Type, cuNDArray<float>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext,2>(floatd2::Type, cuNDArray<float_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,2>(floatd2, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext,2>(floatd2, cuNDArray<float_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,3>(floatd3::Type, cuNDArray<float>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext,3>(floatd3::Type, cuNDArray<float_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,3>(floatd3, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext,3>(floatd3, cuNDArray<float_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,4>(floatd4::Type, cuNDArray<float>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext,4>(floatd4::Type, cuNDArray<float_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,4>(floatd4, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext,4>(floatd4, cuNDArray<float_complext>*, cuNDA_device );
 
 
 template EXPORTGPUCORE float cuNDA_dot<float>( cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
@@ -3955,6 +4358,9 @@ template EXPORTGPUCORE float_complext cuNDA_dot<float_complext>( cuNDArray<float
 
 template EXPORTGPUCORE float cuNDA_asum<float,float>( cuNDArray<float>*, cuNDA_device );
 template EXPORTGPUCORE float cuNDA_asum<float,float_complext>( cuNDArray<float_complext>*, cuNDA_device );
+
+template EXPORTGPUCORE float cuNDA_nrm2<float,float>( cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE float cuNDA_nrm2<float,float_complext>( cuNDArray<float_complext>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_axpy<float>( float, cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_axpy<float_complext>( float_complext, cuNDArray<float_complext>*, cuNDArray<float_complext>*, cuNDA_device );
@@ -4006,7 +4412,9 @@ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<doubled<3>::Type> >
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<doubled<4>::Type> >
  cuNDA_sum<doubled<4>::Type>( cuNDArray<doubled<4>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
 
-template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > 
+
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
 cuNDA_expand<double>( cuNDArray<double>*, unsigned int, cuNDA_device, cuNDA_device);
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> >
 cuNDA_expand<double_complext>( cuNDArray<double_complext>*, unsigned int, cuNDA_device, cuNDA_device);
@@ -4082,53 +4490,53 @@ cuNDA_correlation<double_complext>( cuNDArray<double_complext>*, cuNDA_device, c
 template EXPORTGPUCORE bool cuNDA_axpy<double>( cuNDArray<double>*, cuNDArray<double_complext>*, cuNDArray<double_complext>*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<double,1>( uintd1::Type, cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
+cuNDA_crop<double,1>( uintd1, cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<complext<double> ,1>( uintd1::Type, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*, cuNDA_device );
+cuNDA_crop<complext<double> ,1>( uintd1, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<complext<double> ,2>( uintd2::Type, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*, cuNDA_device );
+cuNDA_crop<complext<double> ,2>( uintd2, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<complext<double> ,3>( uintd3::Type, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*, cuNDA_device );
+cuNDA_crop<complext<double> ,3>( uintd3, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<complext<double> ,4>( uintd4::Type, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*, cuNDA_device );
+cuNDA_crop<complext<double> ,4>( uintd4, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*, cuNDA_device );
 
 
 
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<double,1>,1>( uintd1::Type, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*, cuNDA_device );
+cuNDA_crop<vector_td<double,1>,1>( uintd1, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<double,2>,1>( uintd1::Type, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*, cuNDA_device );
+cuNDA_crop<vector_td<double,2>,1>( uintd1, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<double,3>,1>( uintd1::Type, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*, cuNDA_device );
+cuNDA_crop<vector_td<double,3>,1>( uintd1, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<double,4>,1>( uintd1::Type, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*, cuNDA_device );
+cuNDA_crop<vector_td<double,4>,1>( uintd1, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<double,1>,2>( uintd2::Type, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*, cuNDA_device );
+cuNDA_crop<vector_td<double,1>,2>( uintd2, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<double,2>,2>( uintd2::Type, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*, cuNDA_device );
+cuNDA_crop<vector_td<double,2>,2>( uintd2, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<double,3>,2>( uintd2::Type, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*, cuNDA_device );
+cuNDA_crop<vector_td<double,3>,2>( uintd2, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<double,4>,2>( uintd2::Type, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*, cuNDA_device );
+cuNDA_crop<vector_td<double,4>,2>( uintd2, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<double,1>,3>( uintd3::Type, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*, cuNDA_device );
+cuNDA_crop<vector_td<double,1>,3>( uintd3, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<double,2>,3>( uintd3::Type, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*, cuNDA_device );
+cuNDA_crop<vector_td<double,2>,3>( uintd3, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<double,3>,3>( uintd3::Type, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*, cuNDA_device );
+cuNDA_crop<vector_td<double,3>,3>( uintd3, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<double,4>,3>( uintd3::Type, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*, cuNDA_device );
+cuNDA_crop<vector_td<double,4>,3>( uintd3, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*, cuNDA_device );
 
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<double,1>,4>( uintd4::Type, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*, cuNDA_device );
+cuNDA_crop<vector_td<double,1>,4>( uintd4, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<double,2>,4>( uintd4::Type, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*, cuNDA_device );
+cuNDA_crop<vector_td<double,2>,4>( uintd4, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<double,3>,4>( uintd4::Type, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*, cuNDA_device );
+cuNDA_crop<vector_td<double,3>,4>( uintd4, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*, cuNDA_device );
 template EXPORTGPUCORE bool
-cuNDA_crop<vector_td<double,4>,4>( uintd4::Type, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*, cuNDA_device );
+cuNDA_crop<vector_td<double,4>,4>( uintd4, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*, cuNDA_device );
 
 template EXPORTGPUCORE bool
 cuNDA_expand_with_zero_fill<double,1>( cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
@@ -4205,10 +4613,10 @@ template EXPORTGPUCORE bool cuNDA_reciprocal_sqrt<double>( cuNDArray<double>*, c
 template EXPORTGPUCORE bool cuNDA_abs<double>( cuNDArray<double>*, cuNDA_device );
 
 
-template EXPORTGPUCORE bool cuNDA_abs<doubled1::Type>( cuNDArray<doubled1::Type>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_abs<doubled2::Type>( cuNDArray<doubled2::Type>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_abs<doubled3::Type>( cuNDArray<doubled3::Type>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_abs<doubled4::Type>( cuNDArray<doubled4::Type>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_abs<doubled1>( cuNDArray<doubled1>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_abs<doubled2>( cuNDArray<doubled2>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_abs<doubled3>( cuNDArray<doubled3>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_abs<doubled4>( cuNDArray<doubled4>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_threshold_min<double>(double, cuNDArray<double>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_threshold_max<double>(double, cuNDArray<double>*, cuNDA_device );
@@ -4220,7 +4628,7 @@ template EXPORTGPUCORE bool cuNDA_rss_normalize<double,double_complext>( cuNDArr
 template EXPORTGPUCORE bool cuNDA_add<double_complext>( double_complext, cuNDArray<double_complext>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_add<double>( double, cuNDArray<double>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_scale<double>( double, cuNDArray<double_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_scal<double>( double, cuNDArray<double_complext>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_scale<double>( cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_scale<double_complext>( cuNDArray<double_complext>*, cuNDArray<double_complext>*, cuNDA_device );
@@ -4232,29 +4640,29 @@ template EXPORTGPUCORE bool cuNDA_scale_conj<double_complext>( cuNDArray<double_
 template EXPORTGPUCORE bool cuNDA_axpy<double>( cuNDArray<double>*, cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_axpy<double_complext>( cuNDArray<double_complext>*, cuNDArray<double_complext>*, cuNDArray<double_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,1>(uintd1::Type, cuNDArray<double>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double_complext,1>(uintd1::Type, cuNDArray<double_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,1>(uintd1, cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double_complext,1>(uintd1, cuNDArray<double_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,2>(uintd2::Type, cuNDArray<double>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double_complext,2>(uintd2::Type, cuNDArray<double_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,2>(uintd2, cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double_complext,2>(uintd2, cuNDArray<double_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,3>(uintd3::Type, cuNDArray<double>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double_complext,3>(uintd3::Type, cuNDArray<double_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,3>(uintd3, cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double_complext,3>(uintd3, cuNDArray<double_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,4>(uintd4::Type, cuNDArray<double>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double_complext,4>(uintd4::Type, cuNDArray<double_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,4>(uintd4, cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double_complext,4>(uintd4, cuNDArray<double_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,1>(doubled1::Type, cuNDArray<double>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext,1>(doubled1::Type, cuNDArray<double_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,1>(doubled1, cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext,1>(doubled1, cuNDArray<double_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,2>(doubled2::Type, cuNDArray<double>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext,2>(doubled2::Type, cuNDArray<double_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,2>(doubled2, cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext,2>(doubled2, cuNDArray<double_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,3>(doubled3::Type, cuNDArray<double>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext,3>(doubled3::Type, cuNDArray<double_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,3>(doubled3, cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext,3>(doubled3, cuNDArray<double_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,4>(doubled4::Type, cuNDArray<double>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext,4>(doubled4::Type, cuNDArray<double_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,4>(doubled4, cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext,4>(doubled4, cuNDArray<double_complext>*, cuNDA_device );
 
 
 template EXPORTGPUCORE double cuNDA_dot<double>( cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
@@ -4262,6 +4670,9 @@ template EXPORTGPUCORE double_complext cuNDA_dot<double_complext>( cuNDArray<dou
 
 template EXPORTGPUCORE double cuNDA_asum<double,double>( cuNDArray<double>*, cuNDA_device );
 template EXPORTGPUCORE double cuNDA_asum<double,double_complext>( cuNDArray<double_complext>*, cuNDA_device );
+
+template EXPORTGPUCORE double cuNDA_nrm2<double,double>( cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE double cuNDA_nrm2<double,double_complext>( cuNDArray<double_complext>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_axpy<double>( double, cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_axpy<double_complext>( double_complext, cuNDArray<double_complext>*, cuNDArray<double_complext>*, cuNDA_device );

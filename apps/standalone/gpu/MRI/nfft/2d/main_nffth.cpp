@@ -1,12 +1,12 @@
 /*
 
-  Sample application of the NFFT toolbox: standalone "inverse gridding" example.
+  Sample application of the NFFT toolbox: standalone "gridding" example.
 
   -----------
 
   The nfft is written generically and templetized to
   - transform arbitrary trajectories
-  - transform an arbitrary number of dimensions (currently instantiated for 2d/3d/4d)
+  - transform an arbitrary number of dimensions (currently instantiated for 1d/2d/3d/4d)
   - support both single and double precision
 
   General principles of the implementation can be found in:
@@ -20,7 +20,7 @@
   IEEE Transactions on Medical Imaging 2009; 28(12):1974-1985. 
 
   This example programme of the nnft utilizes golden ratio based radial trajectories 
-  and outputs from an single precision input image ndarrays of the corresponding samples, trajectory, and density compensation weights.
+  and outputs a gridded image from input ndarrays of the corresponding samples, trajectory, and density compensation weights.
 
 */
 
@@ -31,12 +31,10 @@
 #include "cuNDArray.h"
 #include "GPUTimer.h"
 #include "parameterparser.h"
-#include <iostream>
-#include "complext.h"
 
+#include <iostream>
 
 using namespace std;
-
 
 // Define desired precision
 typedef float _real; 
@@ -52,11 +50,10 @@ int main( int argc, char** argv)
   //
 
   ParameterParser parms;
-  parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Input image file name (.real)", true );
-  parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Result file name (.cplx)", true, "samples.cplx" );
+  parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Input samples file name (.cplx)", true );
+  parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Output image file name (.cplx)", true, "result.cplx" );
+  parms.add_parameter( 'm', COMMAND_LINE_INT,    1, "Matrix size", true );
   parms.add_parameter( 'o', COMMAND_LINE_INT,    1, "Oversampled matrix size", true );
-  parms.add_parameter( 'p', COMMAND_LINE_INT,    1, "Number of profiles", true );
-  parms.add_parameter( 's', COMMAND_LINE_INT,    1, "Samples per profiles", true );
   parms.add_parameter( 'k', COMMAND_LINE_FLOAT,  1, "Kernel width", true, "5.5" );
 
   parms.parse_parameter_list(argc, argv);
@@ -73,40 +70,33 @@ int main( int argc, char** argv)
   
   GPUTimer *timer;
   
-  // Load image from disk
-  timer = new GPUTimer("Loading image from disk");
-  boost::shared_ptr< hoNDArray<_real> > host_image = read_nd_array<_real>((char*)parms.get_parameter('d')->get_string_value());
+  // Load sample data from disk
+  timer = new GPUTimer("Loading samples from disk");
+  boost::shared_ptr< hoNDArray<_complext> > host_samples = read_nd_array<_complext>((char*)parms.get_parameter('d')->get_string_value());
   delete timer;
    
-  if( !(host_image->get_number_of_dimensions() == 2) ){
-    cout << endl << "Input image is not two-dimensional. Quitting.\n" << endl;
+  if( !(host_samples->get_number_of_dimensions() == 2) ){
+    cout << endl << "Samples ndarray is not two-dimensional (samples/profile x #profiles). Quitting.\n" << endl;
     return 1;
   }
   
   // Configuration from the command line
+  uintd2 matrix_size = uintd2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
   uintd2 matrix_size_os = uintd2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
-  unsigned int num_profiles = parms.get_parameter('p')->get_int_value();
-  unsigned int samples_per_profile = parms.get_parameter('s')->get_int_value();  
   _real kernel_width = parms.get_parameter('k')->get_float_value();
 
-  uintd2::Type matrix_size = vector_to_uintd<2>(*(host_image->get_dimensions().get()));
+  unsigned int num_profiles = host_samples->get_size(1);
+  unsigned int samples_per_profile = host_samples->get_size(0);  
   _real alpha = (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0];
 
-  if( matrix_size.vec[0] != matrix_size.vec[1] ){
-    cout << endl << "For this samples application we only allow square input images. "
-	 << endl << "The only reason being that only one oversampled matrix size is specified and the oversampling ratio must be consistent." << endl;
-  }
-    
-  // Upload host image to device, normalize, and convert to complex type
-  timer = new GPUTimer("Uploading, normalizing and converting to complex");
-  cuNDArray<_real> _image(host_image.get());
-  cuNDA_normalize( &_image, 1.0f );
-  boost::shared_ptr< cuNDArray<_complext> > image = cuNDA_real_to_complext<_real>( &_image );
+  // Upload host data to device
+  timer = new GPUTimer("Uploading samples to device");
+  cuNDArray<_complext> samples(host_samples.get());
   delete timer;
   
-  // Setup resulting samples array
-  vector<unsigned int> samples_dims; samples_dims.push_back( samples_per_profile ); samples_dims.push_back( num_profiles );
-  cuNDArray<_complext> samples; samples.create(&samples_dims);
+  // Setup resulting image array
+  vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size);
+  cuNDArray<_complext> image; image.create(&image_dims);
   
   // Initialize plan
   timer = new GPUTimer("Initializing plan");
@@ -120,18 +110,18 @@ int main( int argc, char** argv)
   
   // Preprocess
   timer = new GPUTimer("NFFT preprocessing");
-  bool success = plan.preprocess( traj.get(), plan_type::NFFT_PREP_FORWARDS );
+  bool success = plan.preprocess( traj.get(), plan_type::NFFT_PREP_NC2C );
   delete timer;
 
   // Compute density compensation weights
   timer = new GPUTimer("Computing density compensation weights");
   boost::shared_ptr< cuNDArray<_real> > dcw = compute_radial_dcw_golden_ratio_2d
-    ( samples_per_profile, num_profiles, alpha,_real(1)/((_real)samples_per_profile/(_real)matrix_size.vec[0]) );
+    ( samples_per_profile, num_profiles, alpha, _real(1)/((_real)samples_per_profile/(_real)matrix_size.vec[0]) );
   delete timer;
 
   // Gridder
-  timer = new GPUTimer("Computing nfft (inverse gridding)");
-  success = plan.compute( &samples, image.get(), dcw.get(), plan_type::NFFT_FORWARDS );
+  timer = new GPUTimer("Computing adjoint nfft (gridding)");
+  success = plan.compute( &samples, &image, dcw.get(), plan_type::NFFT_BACKWARDS_NC2C );
   delete timer;
 
   //
@@ -139,8 +129,13 @@ int main( int argc, char** argv)
   //
   
   timer = new GPUTimer("Output result to disk");
-  boost::shared_ptr< hoNDArray<_complext> > host_samples = samples.to_host();
-  write_nd_array<_complext>( host_samples.get(), (char*)parms.get_parameter('r')->get_string_value());
+
+  boost::shared_ptr< hoNDArray<_complext> > host_image = image.to_host();
+  write_nd_array<_complext>( host_image.get(), (char*)parms.get_parameter('r')->get_string_value());
+
+  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_cAbs<_real,_complext>(&image)->to_host();
+  write_nd_array<_real>( host_norm.get(), "result.real" );
+
   delete timer;
 
   return 0;

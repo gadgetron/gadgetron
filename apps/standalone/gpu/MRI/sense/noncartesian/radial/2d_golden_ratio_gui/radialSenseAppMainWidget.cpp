@@ -8,7 +8,7 @@
 #include "ndarray_vector_td_utilities.h"
 #include "radial_utilities.h"
 #include "cuNonCartesianSenseOperator.h"
-#include "cuCGSolver.h"
+#include "cuCgSolver.h"
 #include "b1_map.h"
 
 #include "UIconstants.h"
@@ -70,19 +70,19 @@ radialSenseAppMainWindow::radialSenseAppMainWindow(QWidget *parent) : QMainWindo
   E = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );  
 
   // Allocate preconditioner
-  D = boost::shared_ptr< cuCGPrecondWeights<float_complext> >( new cuCGPrecondWeights<float_complext>() );
+  D = boost::shared_ptr< cuCgPrecondWeights<float_complext> >( new cuCgPrecondWeights<float_complext>() );
 
   // Allocate regularization image operator
   R = boost::shared_ptr< cuImageOperator<float,float_complext> >( new cuImageOperator<float,float_complext>() );
   R->set_weight( 1.0f );
 
   // Setup solver
-  cg.add_matrix_operator( E );  // encoding matrix
-  cg.add_matrix_operator( R );  // regularization matrix
-  cg.set_preconditioner ( D );  // preconditioning matrix
-  cg.set_iterations( get_num_iterations() );
-  cg.set_limit( 1e-6 );
-  cg.set_output_mode( cuCGSolver<float, float_complext>::OUTPUT_SILENT );
+  cg.set_encoding_operator( E );        // encoding matrix
+  cg.add_regularization_operator( R );  // regularization matrix
+  cg.set_preconditioner ( D );          // preconditioning matrix
+  cg.set_max_iterations( get_num_iterations() );
+  cg.set_tc_tolerance( 1e-6 );
+  cg.set_output_mode( cuCgSolver<float, float_complext>::OUTPUT_SILENT );
 }
 
 /*
@@ -215,11 +215,11 @@ void radialSenseAppMainWindow::replan()
   for( unsigned int iteration = 0; iteration < num_profiles/profiles_per_reconstruction; iteration++ ) {
     
     // Define trajectories
-    boost::shared_ptr< cuNDArray<floatd2::Type> > traj = compute_radial_trajectory_golden_ratio_2d<float>
+    boost::shared_ptr< cuNDArray<floatd2> > traj = compute_radial_trajectory_golden_ratio_2d<float>
       ( samples_per_profile, profiles_per_frame, frames_per_reconstruction, iteration*profiles_per_reconstruction );
     
     // Preprocess
-    plan.preprocess( traj.get(), NFFT_plan<float,2>::NFFT_PREP_BACKWARDS );
+    plan.preprocess( traj.get(), NFFT_plan<float,2>::NFFT_PREP_NC2C );
     traj.reset();
     
     // Upload data
@@ -228,7 +228,7 @@ void radialSenseAppMainWindow::replan()
 		   num_profiles*samples_per_profile, get_num_coils(), host_samples.get() );
     
     // Accumulate k-space for CSM estimation
-    plan.convolve( csm_data.get(), image_os, dcw.get(), NFFT_plan<float,2>::NFFT_BACKWARDS, (iteration==0) ? false : true );
+    plan.convolve( csm_data.get(), image_os, dcw.get(), NFFT_plan<float,2>::NFFT_CONV_NC2C, (iteration==0) ? false : true );
     csm_data.reset();
   }
   
@@ -447,7 +447,7 @@ void radialSenseAppMainWindow::numIterationsChanged()
   else 
     lastValue = value;
 
-  cg.set_iterations( get_num_iterations() );
+  cg.set_max_iterations( get_num_iterations() );
 
   if(!ready) return;
 
@@ -513,13 +513,13 @@ void radialSenseAppMainWindow::reconstruct()
   const unsigned int profiles_per_frame = get_num_projections_per_frame();
   const unsigned int frames_per_reconstruction = 1; 
   const unsigned int profiles_per_reconstruction = get_num_projections_per_frame()*frames_per_reconstruction;
-  const uintd2::Type matrix_size = get_matrix_size();
-  const uintd2::Type matrix_size_os = get_matrix_size_os();
+  const uintd2 matrix_size = get_matrix_size();
+  const uintd2 matrix_size_os = get_matrix_size_os();
   const unsigned int num_coils = get_num_coils();
   const unsigned int samples_per_reconstruction = profiles_per_reconstruction*samples_per_profile;
 
   // Determine trajectories
-  boost::shared_ptr< cuNDArray<floatd2::Type> > traj = compute_radial_trajectory_golden_ratio_2d<float>
+  boost::shared_ptr< cuNDArray<floatd2> > traj = compute_radial_trajectory_golden_ratio_2d<float>
     ( samples_per_profile, profiles_per_frame, frames_per_reconstruction,  get_first_projection() );
   
   // Upload data
@@ -541,7 +541,7 @@ void radialSenseAppMainWindow::reconstruct()
     // Conjugate gradient solver
     //
 
-    boost::shared_ptr< cuNDArray<float_complext> > cgresult = cg.solve(&rhs);
+    boost::shared_ptr< cuNDArray<float_complext> > cgresult = cg.solve_from_rhs(&rhs);
 
     // Magnitudes image for visualization
     boost::shared_ptr< cuNDArray<float> > tmp_res = cuNDA_cAbs<float,float_complext>(cgresult.get());
@@ -574,13 +574,13 @@ void radialSenseAppMainWindow::reconstruct()
   "Gets..."
 */
 
-uintd2::Type radialSenseAppMainWindow::get_matrix_size()
+uintd2 radialSenseAppMainWindow::get_matrix_size()
 {
   int value = matrixSizeSpinBox->value();
   return uintd2( value, value );
 }
 
-uintd2::Type radialSenseAppMainWindow::get_matrix_size_os()
+uintd2 radialSenseAppMainWindow::get_matrix_size_os()
 {
   int value = oversampledMatrixSizeSpinBox->value();
   return uintd2( value, value );

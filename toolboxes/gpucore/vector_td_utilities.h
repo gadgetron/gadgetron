@@ -7,7 +7,7 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
-
+#include "host_defines.h"
 //
 // Get/set operations on vector_td<T,D>
 //
@@ -189,8 +189,8 @@ typename uintd<D>::Type vector_to_uintd( std::vector<unsigned int> _vector )
 
 template<class T, unsigned int D> __inline__ __host__ __device__ T prod( const vector_td<T,D> vec )
 {
-  T res = T(1);
-  for (unsigned int i=0; i<D; i++){
+  T res = vec.vec[0];
+  for (unsigned int i=1; i<D; i++){
     res *= vec.vec[i];
   }
   return res;

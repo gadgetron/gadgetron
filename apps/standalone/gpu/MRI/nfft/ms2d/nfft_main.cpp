@@ -4,8 +4,9 @@
   -----------
 
   The nfft is written generically and templetized to
+
   - transform arbitrary trajectories
-  - transform an arbitrary number of dimensions (currently instantiated for 2d/3d/4d)
+  - transform an arbitrary number of dimensions (currently instantiated for 1d/2d/3d/4d)
   - support both single and double precision
 
   General principles of the implementation can be found in:
@@ -88,7 +89,7 @@ int main( int argc, char** argv)
   int frames_per_reconstruction = parms.get_parameter('f')->get_int_value();  
   _real kernel_width = parms.get_parameter('k')->get_float_value();
 
-  uintd2::Type matrix_size = vector_to_uintd<2>(*(host_image->get_dimensions().get()));
+  uintd2 matrix_size = vector_to_uintd<2>(*(host_image->get_dimensions().get()));
   unsigned int num_frames = host_image->get_size(2);
   _real alpha = (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0];
 
@@ -124,7 +125,7 @@ int main( int argc, char** argv)
   
   // Preprocess
   timer = new GPUTimer("NFFT preprocessing");
-  bool success = plan.preprocess( traj.get(), plan_type::NFFT_PREP_FORWARDS );
+  bool success = plan.preprocess( traj.get(), plan_type::NFFT_PREP_C2NC );
   delete timer;
 
   // Compute density compensation weights
@@ -134,8 +135,8 @@ int main( int argc, char** argv)
   delete timer;
 
   // Gridder
-  timer = new GPUTimer("Computing nfft (inverse gridding)");
-  success = plan.compute( &samples, image.get(), dcw.get(), plan_type::NFFT_FORWARDS );
+  timer = new GPUTimer("Computing nfft");
+  success = plan.compute( &samples, image.get(), dcw.get(), plan_type::NFFT_FORWARDS_C2NC );
   delete timer;
 
   //

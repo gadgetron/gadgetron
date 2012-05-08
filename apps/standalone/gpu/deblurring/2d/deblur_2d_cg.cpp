@@ -6,7 +6,7 @@
 #include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
 #include "ndarray_vector_td_utilities.h"
-#include "cuCGSolver.h"
+#include "cuCgSolver.h"
 #include "cuPartialDerivativeOperator.h"
 #include "cuConvolutionOperator.h"
 #include "parameterparser.h"
@@ -65,9 +65,11 @@ int main(int argc, char** argv)
   unsigned int num_iterations = parms.get_parameter('i')->get_int_value();
   
   // Setup regularization operators
+  //
   boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,2> > Rx( new cuPartialDerivativeOperator<_real,_complext,2>(0) ); 
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,2> > Ry( new cuPartialDerivativeOperator<_real,_complext,2>(1) ); 
   Rx->set_weight( kappa );
+
+  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,2> > Ry( new cuPartialDerivativeOperator<_real,_complext,2>(1) ); 
   Ry->set_weight( kappa );
      
   //
@@ -77,25 +79,22 @@ int main(int argc, char** argv)
   // Define encoding matrix
   boost::shared_ptr< cuConvolutionOperator<_real,2> > E( new cuConvolutionOperator<_real,2>() );
   E->set_kernel( &kernel );
-    
+  E->set_domain_dimensions(data.get_dimensions().get());
+
   // Setup conjugate gradient solver
-  cuCGSolver<_real, _complext> cg;
-  cg.add_matrix_operator( E );                  // encoding matrix
-  if( kappa>0.0 ) cg.add_matrix_operator( Rx );  // regularization matrix
-  if( kappa>0.0 ) cg.add_matrix_operator( Ry );  // regularization matrix
-  cg.set_iterations( num_iterations );
-  cg.set_limit( 1e-12 );
-  cg.set_output_mode( cuCGSolver<_real, _complext>::OUTPUT_VERBOSE );
-                
-  // Form right hand side
-  cuNDArray<_complext> rhs; rhs.create(data.get_dimensions().get());
-  E->mult_MH( &data, &rhs );
-  
+  cuCgSolver<_real, _complext> cg;
+  cg.set_encoding_operator( E );                         // encoding matrix
+  if( kappa>0.0 ) cg.add_regularization_operator( Rx );  // regularization matrix
+  if( kappa>0.0 ) cg.add_regularization_operator( Ry );  // regularization matrix
+  cg.set_max_iterations( num_iterations );
+  cg.set_tc_tolerance( 1e-12 );
+  cg.set_output_mode( cuCgSolver<_real, _complext>::OUTPUT_VERBOSE );
+                  
   //
   // Conjugate gradient solver
   //
   
-  boost::shared_ptr< cuNDArray<_complext> > cgresult = cg.solve(&rhs);
+  boost::shared_ptr< cuNDArray<_complext> > cgresult = cg.solve( &data );
 
   // All done, write out the result
   
@@ -104,9 +103,6 @@ int main(int argc, char** argv)
     
   boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_cAbs<_real,_complext>(cgresult.get())->to_host();
   write_nd_array<_real>( host_norm.get(), "cg_deblurred_image.real" );  
-
-  boost::shared_ptr< hoNDArray<_real> > host_rhs = cuNDA_cAbs<_real,_complext>(&rhs)->to_host();
-  write_nd_array<_real>( host_rhs.get(), "rhs.real" );  
 
   return 0;
 }
