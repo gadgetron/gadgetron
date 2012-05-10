@@ -183,6 +183,24 @@ typename uintd<D>::Type vector_to_uintd( std::vector<unsigned int> _vector )
   return out;
 }
 
+template<unsigned int D>
+typename intd<D>::Type vector_to_intd( std::vector<unsigned int> _vector )
+{
+  typename intd<D>::Type out;
+  /*  if( _vector.size() < D ){
+    std::cout << "Warning :: cannot convert vector to typename uintd<D>, dimensionality is less D" << std::endl;
+    std::cout << "Filling in ones..." << std::endl;
+    }*/
+
+  for( unsigned int i=0; i<D; i++ ){
+    if( i<_vector.size() )
+      out.vec[i] = _vector[i];
+    else
+      out.vec[i] = 1;
+  }
+
+  return out;
+}
 //
 // Reductions on vector_td<T,D>
 //
