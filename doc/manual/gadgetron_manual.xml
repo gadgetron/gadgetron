@@ -4057,32 +4057,24 @@ Install the project...
         <application>mriclient</application>:</para>
 
         <screen>user@mycomputer:~/temp/test_data$ <userinput>mriclient \
-     -d simple_gre.gmr \
-     -x simple_gre.xml \
-     -c threshold.xml</userinput>
+    -d gadgetron_testdata.h5 \ 
+    -g simple_gre \ 
+    -c threshold.xml</userinput>
 
 Gadgetron MRI Data Sender
-  -- host:            localhost
-  -- port:            9002
-  -- data:            simple_gre.gmr
-  -- parm:            simple_gre.xml
-  -- conf:            threshold.xml
-  -- loop:            1
-(2815|140119753992000) Connection from 127.0.0.1:9002
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-2815, 81, GadgetronConnector, Close Message received
-(2815|140119714780928) Handling close...
-(2815|140119714780928) svc done...
-(2815|140119714780928) Handling close...</screen>
+  -- host            :      localhost
+  -- port            :      9002
+  -- hdf5 file  in   :      gadgetron_testdata.h5
+  -- hdf5 group in   :      simple_gre
+  -- conf            :      theshold.xml
+  -- loop            :      1
+  -- hdf5 file out   :      ./out.h5
+  -- hdf5 group out  :      2012-05-11 12:52:14
+(31540|140170355443520) Connection from 127.0.0.1:9002
+31540, 81, GadgetronConnector, Close Message received
+(31540|140170283570944) Handling close...
+(31540|140170283570944) svc done...
+(31540|140170283570944) Handling close...</screen>
 
         <para>If you run it again with the <varname>level</varname> parameter
         set to 0.00000001 (remember to re-install the
@@ -4748,11 +4740,11 @@ GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2
       <para>To test this configuration, please download the GRAPPA test
       datasets from <uri type="website"
       xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/">https://sourceforge.net/projects/gadgetron/files/testdata/</uri>.
-      In the MRI section you will find two test datasets
-      <filename>gre_tgrappa_rate2.tar.gz</filename> and
-      <filename>gre_tgrappa_rate4.tar.gz</filename>. They are Cartesian
-      parallel imaging datasets with rate 2 and 4 acceleration respectively.
-      They were acquired with a 32 channel coil.</para>
+      In the MRI test data file <filename>gadgetron_testdata.h4</filename> you
+      will find two test datasets <filename>gre_tgrappa_rate2</filename> and
+      <filename>gre_tgrappa_rate4</filename>. They are Cartesian parallel
+      imaging datasets with rate 2 and 4 acceleration respectively. They were
+      acquired with a 32 channel coil.</para>
 
       <para>In order to run the GRAPPA reconstruction you have to have a CUDA
       enable GPU on your system and your Gadgetron distribution should be
@@ -4764,36 +4756,24 @@ GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2
       terminal window) and use the <application>mriclient</application> to
       send the data from another terminal:</para>
 
-      <screen>user@host:~/temp/gadgetron_temp$ <userinput>mriclient \
-         -d gre_tgrappa_rate4.gmr \
-         -x gre_tgrappa_rate4.xml \
-         -c grappa.xml</userinput>
-
+      <screen>user@host:~/temp$ mriclient \
+    -d gadgetron_testdata.h5 \
+    -g gre_tgrappa_rate4 \
+    -c grappa.xml
 Gadgetron MRI Data Sender
-  -- host:            localhost
-  -- port:            9002
-  -- data:            gre_tgrappa_rate4.gmr
-  -- parm:            gre_tgrappa_rate4.xml
-  -- conf:            grappa.xml
-  -- loop:            1
-(22460|139802100373312) Connection from 127.0.0.1:9002
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-22460, 81, GadgetronConnector, Close Message received
-(22460|139802061166336) Handling close...
-(22460|139802061166336) svc done...
-(22460|139802061166336) Handling close...
-user@host:~/temp/gadgetron_temp$
+  -- host            :      localhost
+  -- port            :      9002
+  -- hdf5 file  in   :      gadgetron_testdata.h5
+  -- hdf5 group in   :      gre_tgrappa_rate4
+  -- conf            :      grappa.xml
+  -- loop            :      1
+  -- hdf5 file out   :      ./out.h5
+  -- hdf5 group out  :      2012-05-11 15:43:03
+(32580|140398140757824) Connection from 127.0.0.1:9002
+32580, 81, GadgetronConnector, Close Message received
+(32580|140398068885248) Handling close...
+(32580|140398068885248) svc done...
+(32580|140398068885248) Handling close...
 </screen>
 
       <para>You should get example images that look similar to the ones in
@@ -5003,16 +4983,17 @@ protected:
       192x192 image from 32 coils using 10 solver iterations on newer graphics
       hardware.</para>
 
-      <para>To test this configuration please download the 32 channel radial
-      MRI test dataset (<filename>gre_golden_angle.tar.gz</filename>) from
+      <para>To test this configuration use the 32 channel radial MRI test
+      dataset (<filename>gre_golden_angle</filename>) from
+      <filename>gadgetron_testdata.h5</filename>, which you can download from
       <uri
-      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/mri/">https://sourceforge.net/projects/gadgetron/files/testdata/mri/</uri>.
-      Go to the folder in which you unpacked the data. We assume that you have
-      added <envar>$(GADGETRON_HOME)/bin</envar> to your <envar>PATH</envar>
-      environment variable. You need a CUDA enable GPU on your system and your
-      Gadgetron distribution should be compiled with CUDA and CULA enabled.
-      Please see <xref linkend="sect.installation"/> for details for your
-      specific platform.</para>
+      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/mri/">
+      https://sourceforge.net/projects/gadgetron/files/testdata/mri/</uri>. We
+      assume that you have added <envar>$(GADGETRON_HOME)/bin</envar> to your
+      <envar>PATH</envar> environment variable. You need a CUDA enable GPU on
+      your system and your Gadgetron distribution should be compiled with CUDA
+      and CULA enabled. Please see <xref linkend="sect.installation"/> for
+      details for your specific platform.</para>
 
       <para>To run the reconstruction; start up
       <application>gadgetron</application> (in its own terminal window) and
@@ -5027,34 +5008,31 @@ Configuring services</screen>
       network connection. Next start the
       <application>mriclient</application>:</para>
 
-      <screen>user@host$ <userinput>mriclient \
-         -d gre_golden_angle.gmr \
-         -x gre_golden_angle.xml \
-         -c radial_single.xml</userinput>
+      <screen>user@host:~/temp$ mriclient \
+       -d gadgetron_testdata.h5 \
+       -g gre_golden_angle \
+       -c radial_single.xml
 
 Gadgetron MRI Data Sender
-  -- host:            localhost
-  -- port:            9002
-  -- data:            gre_golden_angle.gmr
-  -- parm:            gre_golden_angle.xml
-  -- conf:            radial_single.xml
-  -- loop:            1
-(23577|140735084973248) Connection from 127.0.0.1:9002
-Image Writer writing image
-Image Writer writing image
-Image Writer writing image
-...
-Image Writer writing image
-23577, 81, GadgetronConnector, Close Message received
-(23577|4300226560) Handling close...
-(23577|4300226560) svc done...
-(23577|4300226560) Handling close...
-user@host$
+  -- host            :      localhost
+  -- port            :      9002
+  -- hdf5 file  in   :      gadgetron_testdata.h5
+  -- hdf5 group in   :      gre_golden_angle
+  -- conf            :      radial_single.xml
+  -- loop            :      1
+  -- hdf5 file out   :      ./out.h5
+  -- hdf5 group out  :      2012-05-11 15:47:22
+(32608|139797448419136) Connection from 127.0.0.1:9002
+32608, 81, GadgetronConnector, Close Message received
+(32608|139797376546560) Handling close...
+(32608|139797376546560) svc done...
+(32608|139797376546560) Handling close...
+
 </screen>
 
-      <para>Your current folder now holds the reconstructed images. They will
-      look something like the one depicted in <xref
-      linkend="fig.examplecgsenseresult"/>. <figure
+      <para>Your current folder now holds the reconstructed images in the
+      <filename>out.h5</filename> HDF5 file. They will look something like the
+      one depicted in <xref linkend="fig.examplecgsenseresult"/>. <figure
           xml:id="fig.examplecgsenseresult">
           <title>Non-Cartesian Sense Reconstruction Results</title>
 
