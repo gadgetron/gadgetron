@@ -1,7 +1,7 @@
 #pragma once
 
 #include "imageOperator.h"
-#include "cuMatrixOperator_macros.h"
+#include "cuLinearOperator_macros.h"
 #include "cuNDArray.h"
 
 template <class REAL, class T> class cuImageOperator 
@@ -66,5 +66,5 @@ template <class REAL, class T> class cuImageOperator
     return linearOperator< REAL, cuNDArray<T> >::clone(this);
   }
   
-  DECLARE_MATRIX_OPERATOR_DEVICE_SUPPORT(cuImageOperator)
+  DECLARE_LINEAR_OPERATOR_DEVICE_SUPPORT(cuImageOperator)
 };

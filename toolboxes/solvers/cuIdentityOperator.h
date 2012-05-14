@@ -1,7 +1,7 @@
 #pragma once
 
 #include "identityOperator.h"
-#include "cuMatrixOperator_macros.h"
+#include "cuLinearOperator_macros.h"
 #include "ndarray_vector_td_utilities.h"
 
 template <class REAL, class T> class cuIdentityOperator 
@@ -29,12 +29,11 @@ template <class REAL, class T> class cuIdentityOperator
       return false;
     }
   }
-
   
   virtual boost::shared_ptr< linearOperator< REAL, cuNDArray<T> > > clone()
   {
     return linearOperator< REAL, cuNDArray<T> >::clone(this);
   }
 
-  DECLARE_MATRIX_OPERATOR_DEVICE_SUPPORT(cuIdentityOperator);
+  DECLARE_LINEAR_OPERATOR_DEVICE_SUPPORT(cuIdentityOperator);
 };

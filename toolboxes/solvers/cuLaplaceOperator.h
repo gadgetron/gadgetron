@@ -1,7 +1,7 @@
 #pragma once
 
 #include "laplaceOperator.h"
-#include "cuMatrixOperator_macros.h"
+#include "cuLinearOperator_macros.h"
 #include "cuNDArray.h"
 #include "solvers_export.h"
 
@@ -21,5 +21,5 @@ public:
  protected:
   virtual int compute_laplace( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate );  
 
-  DECLARE_MATRIX_OPERATOR_DEVICE_SUPPORT(cuLaplaceOperator)
+  DECLARE_LINEAR_OPERATOR_DEVICE_SUPPORT(cuLaplaceOperator)
 };
