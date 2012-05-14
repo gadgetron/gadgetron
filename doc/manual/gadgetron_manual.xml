@@ -37,7 +37,7 @@
       testing, and deployment of new image reconstruction algorithms. The
       framework contains a wide range of toolboxes with common data structures
       and algorithms that can be used within the streaming framework itself or
-      as shared libraries in standalone/3rd party applications.</para>
+      as shared libraries in standalone (or third party) applications.</para>
 
       <para>This document serves as an introduction to the Gadgetron framework
       and provides some "getting started" examples of using it. A scientific
@@ -217,7 +217,7 @@
         Linux distributions and can be installed easily and without having to
         compile anything. In the following sections we walk you through the
         required steps to set up a full Gadgetron installation. We assume that
-        you are starting with a freshly installed Ubuntu 11.10 available from
+        you are starting with a freshly installed Ubuntu 12.04 available from
         the Ubuntu website (<uri
         xlink:href="http://www.ubuntu.com">http://www.ubuntu.com</uri>). If
         you don't have a machine available for installing Ubuntu, you can
@@ -240,7 +240,7 @@
  fop git-core libboost-dev libboost-python-dev \
  libfftw3-dev libace-dev python-dev python-numpy \
  freeglut3-dev libxi-dev liblapack-dev build-essential \
- hdf5-serial-dev h5utils hdf5-tools hdf5hdf5view </userinput>   </screen>
+ libhdf5-serial-dev h5utils hdf5-tools hdfview </userinput>   </screen>
 
         <para>Now download the Gadgetron archive and unpack it somewhere. If
         you have access to a git repository, you can get the code with:</para>
@@ -283,19 +283,18 @@ export GADGETRON_HOME=/usr/local/gadgetron     </programlisting>
           xlink:href="http://developer.nvidia.com/cuda-toolkit-41">http://developer.nvidia.com/cuda-toolkit-41</uri>
           and install the driver:</para>
 
-          <para><screen><prompt>user@mycomputer:~$</prompt> <userinput>c<userinput>hmod +x devdriver_4.1_linux_64_285.05.32.run</userinput>
-<prompt>user@mycomputer:~$</prompt> sudo ./<userinput>devdriver_4.1_linux_64_285.05.32.run</userinput>
-</userinput></screen></para>
+          <para><screen><prompt>user@mycomputer:~$</prompt> <userinput>chmod +x devdriver_4.1_linux_64_285.05.32.run
+</userinput><prompt>user@mycomputer:~$</prompt><userinput> sudo ./devdriver_4.1_linux_64_285.05.32.run</userinput></screen></para>
 
           <para>The process of getting this driver installed may vary from
           installation to installation. Specifically, you may need to remove
-          any existing Nvidia driver before installing and you will to shut
-          down the display manager before installing. </para>
+          any existing Nvidia driver before installing and you will have to
+          shut down the display manager before installing. </para>
 
           <para>The display manager can be shut down with:</para>
 
-          <para><screen><userinput><prompt>user@mycomputer:~$</prompt> sudo service lightdm stop
-</userinput></screen></para>
+          <para><screen><prompt>user@mycomputer:~$</prompt> <userinput>sudo service lightdm stop</userinput>
+</screen></para>
 
           <para>We need to install gcc 4.4 since Ubuntu comes preconfigured
           with gcc 4.6, which is not compatible with the current versions of
@@ -315,7 +314,7 @@ export GADGETRON_HOME=/usr/local/gadgetron     </programlisting>
  --install /usr/bin/gcc gcc /usr/bin/gcc-4.4 60 \
  --slave /usr/bin/g++ g++ /usr/bin/g++-4.4</userinput>    </screen>
 
-          <para>Check your gcc compiler (should now be version 4.4.6):</para>
+          <para>Check your gcc compiler (should now be version 4.4.7):</para>
 
           <screen><prompt>user@mycomputer:~$</prompt> <userinput>gcc -v</userinput>      </screen>
 
@@ -395,7 +394,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CULA_LIB_PATH_64    </programlisting>
           <listitem>
             <para>Install MacPorts.</para>
 
-            <para>Download <filename>MacPorts-2.0.3.pkg</filename> from <uri
+            <para>Download <filename>MacPorts-2.0.4.pkg</filename> from <uri
             xlink:href="http://www.macports.org/">http://www.macports.org/</uri>.</para>
 
             <para>Run <command>sudo port -v selfupdate</command> to make sure
@@ -445,9 +444,17 @@ $ <userinput>sudo ln -s 2.7 Current</userinput></screen>
             <para>Now we can install the rest of the packages:</para>
 
             <screen>$ <userinput>sudo port install git-core cmake libACE \
-fftw-3-single fftw-3 qt4-mac-devel</userinput></screen>
+fftw-3-single fftw-3 qt4-mac-devel hdf5-18
+</userinput></screen>
 
             <para>This may take quite a long time (hours).</para>
+          </listitem>
+
+          <listitem>
+            <para
+            xlink:href="http://www.hdfgroup.org/ftp/HDF5/hdf-java/hdfview/hdfview_install_macosx_intel64.zip">To
+            visualize HDF5 files you may also want to install HDFView from
+            http://www.hdfgroup.org/ftp/HDF5/hdf-java/hdfview/hdfview_install_macosx_intel64.zip</para>
           </listitem>
 
           <listitem>
@@ -457,19 +464,19 @@ fftw-3-single fftw-3 qt4-mac-devel</userinput></screen>
             <itemizedlist>
               <listitem>
                 <para>The Nvidia development driver
-                (<filename>devdriver_4.0.50_macos.dmg</filename>) from <uri
-                xlink:href="http://developer.nvidia.com/cuda-toolkit-40/">http://developer.nvidia.com/cuda-toolkit-40/</uri>.</para>
+                (<filename>devdriver_4.1.28_macos.dmg</filename>) from <uri
+                xlink:href="http://developer.nvidia.com/cuda-toolkit-40/">http://developer.nvidia.com/cuda-toolkit-41/</uri>.</para>
               </listitem>
 
               <listitem>
                 <para>The CUDA Toolkit
-                (<filename>cudatoolkit_4.0.17_macos.pkg</filename>) from <uri
-                xlink:href="http://developer.nvidia.com/cuda-toolkit-40/">http://developer.nvidia.com/cuda-toolkit-40/</uri>.</para>
+                (<filename>cudatoolkit_4.1.28_macos.pkg</filename>) from <uri
+                xlink:href="http://developer.nvidia.com/cuda-toolkit-40/">http://developer.nvidia.com/cuda-toolkit-41/</uri>.</para>
               </listitem>
 
               <listitem>
                 <para>The CULA Dense Libraries
-                (<filename>cula_dense_free_R13a-osx.dmg</filename>) from <uri
+                (<filename>cula_dense_free_R14-osx.dmg</filename>) from <uri
                 xlink:href="http://www.culatools.com/downloads/dense/">http://www.culatools.com/downloads/dense/</uri>.</para>
               </listitem>
             </itemizedlist>
@@ -859,7 +866,7 @@ Gadgetron MRI Data Sender
       details on how to read the output file. Briefly you could read and
       display the data in Matlab with:</para>
 
-      <programlisting>images = h5read('out.h5','/012-05-11 12:52:14/data_0');
+      <programlisting>images = h5read('out.h5','/2012-05-11 12:52:14/data_0');
 imagesc(images(:,:,1,1));colormap(gray);</programlisting>
     </sect1>
   </chapter>
@@ -2936,10 +2943,11 @@ public:
 
         <para xlink:href="http://www.hdfgroup.org/HDF5/">The HDF5 file format
         has a well described C/C++ interface as described on the HDF5 website:
-        http://www.hdfgroup.org/HDF5/. The Gadgetron has two toolboxes
-        (<filename>hdf5utils</filename> and <filename>hdf5mri</filename>) that
-        wrap this C/C++ interface and make it easy to add different types of
-        data to datasets.</para>
+        <uri
+        xlink:href="http://www.hdfgroup.org/HDF5/">http://www.hdfgroup.org/HDF5/</uri>.
+        The Gadgetron has two toolboxes (<filename>hdf5utils</filename> and
+        <filename>hdf5mri</filename>) that wrap this C/C++ interface and make
+        it easy to add different types of data to datasets.</para>
 
         <para xlink:href="http://www.hdfgroup.org/HDF5/">The main functions
         for accessing HDF5 files are:</para>
@@ -3003,8 +3011,8 @@ template &lt;&gt; boost::shared_ptr&lt;DataType&gt; getHDF5Type&lt;float&gt;()
         specific template specializations in a similar fashing to the types
         for the <classname>hoNDArray</classname>. Additionally the MRI
         specific toolbox has wrapper functions that will append a struct and
-        an <classname>hoNDArray</classname> simultaneously. This is it will
-        create a new struct which contains both the struct (typically a
+        an <classname>hoNDArray</classname> simultaneously. Specifically, it
+        will create a new struct which contains both the struct (typically a
         header) and the array and then append that new struct to the file. The
         functions for using this functionality are defined as:</para>
 
@@ -3051,7 +3059,7 @@ acquisition.h.get();
 
 //To access data (hoNDArray)
 acquisition.d.get();</programlisting>For examples of how to write images to an
-        HDF5 file, see HDF5ImageWriter.h in
+        HDF5 file, see <filename>HDF5ImageWriter.h</filename> in
         <filename>apps/clients/mriclient</filename>.</para>
       </sect2>
     </sect1>
