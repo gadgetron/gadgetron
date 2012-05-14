@@ -310,7 +310,7 @@ int main(int argc, char** argv)
       E->set_domain_dimensions(&image_dims);
 
       // Add operators to solver
-      cg.set_encoding_operator( E);         // encoding matrix
+      cg.set_encoding_operator( E );        // encoding matrix
       cg.add_regularization_operator( R );  // regularization matrix
     }
     

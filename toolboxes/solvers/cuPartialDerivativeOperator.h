@@ -1,7 +1,7 @@
 #pragma once
 
 #include "partialDerivativeOperator.h"
-#include "cuMatrixOperator_macros.h"
+#include "cuLinearOperator_macros.h"
 #include "cuNDArray.h"
 
 template <class REAL, class T, unsigned int D> class EXPORTSOLVERS cuPartialDerivativeOperator 
@@ -30,5 +30,5 @@ template <class REAL, class T, unsigned int D> class EXPORTSOLVERS cuPartialDeri
     return linearOperator< REAL, cuNDArray<T> >::clone(this);
   }
 
-  DECLARE_MATRIX_OPERATOR_DEVICE_SUPPORT(cuPartialDerivativeOperator)
+  DECLARE_LINEAR_OPERATOR_DEVICE_SUPPORT(cuPartialDerivativeOperator)
 };

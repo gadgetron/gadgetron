@@ -1,6 +1,6 @@
 #pragma once
 
-#define DECLARE_MATRIX_OPERATOR_DEVICE_SUPPORT(COMPONENT)                                  \
+#define DECLARE_LINEAR_OPERATOR_DEVICE_SUPPORT(COMPONENT)                                  \
                                                                                            \
 public:									                   \
   virtual void set_device( int device = -1 )                                               \

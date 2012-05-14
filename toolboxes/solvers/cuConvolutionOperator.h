@@ -1,7 +1,7 @@
 #pragma once
 
 #include "convolutionOperator.h"
-#include "cuMatrixOperator_macros.h"
+#include "cuLinearOperator_macros.h"
 #include "cuNDArray.h"
 #include "cuNDFFT.h"
 #include "vector_td_utilities.h"
@@ -91,5 +91,5 @@ public:
     return linearOperator< REAL, cuNDArray< complext<REAL> > >::clone(this);
   }
 
-  DECLARE_MATRIX_OPERATOR_DEVICE_SUPPORT(cuConvolutionOperator)
+  DECLARE_LINEAR_OPERATOR_DEVICE_SUPPORT(cuConvolutionOperator)
 };

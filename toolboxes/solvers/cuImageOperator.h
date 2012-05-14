@@ -1,7 +1,7 @@
 #pragma once
 
 #include "imageOperator.h"
-#include "cuMatrixOperator_macros.h"
+#include "cuLinearOperator_macros.h"
 #include "cuNDArray.h"
 
 template <class REAL, class T> class cuImageOperator 
@@ -44,9 +44,11 @@ template <class REAL, class T> class cuImageOperator
     return cuNDA_asum<REAL,T>(x);
   }
 
-  virtual boost::shared_ptr< cuNDArray<REAL> > operator_norm_squared( cuNDArray<T> *x )
+  virtual boost::shared_ptr< cuNDArray<REAL> > operator_abs( cuNDArray<T> *x )
   {
-    return cuNDA_cNorm<REAL,T>( x, CUNDA_NDARRAY_DEVICE, CUNDA_NDARRAY_DEVICE);
+	  boost::shared_ptr< cuNDArray<REAL> > res =cuNDA_cNorm<REAL,T>( x, CUNDA_NDARRAY_DEVICE, CUNDA_NDARRAY_DEVICE);
+	  cuNDA_sqrt(res.get());
+	  return res;
   }
   
   virtual bool operator_clear(  cuNDArray<T> *x )
@@ -64,5 +66,5 @@ template <class REAL, class T> class cuImageOperator
     return linearOperator< REAL, cuNDArray<T> >::clone(this);
   }
   
-  DECLARE_MATRIX_OPERATOR_DEVICE_SUPPORT(cuImageOperator)
+  DECLARE_LINEAR_OPERATOR_DEVICE_SUPPORT(cuImageOperator)
 };

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "senseOperator.h"
-#include "cuMatrixOperator_macros.h"
+#include "cuLinearOperator_macros.h"
 #include "gpupmri_export.h"
 #include "cuNDArray.h"
 #include "vector_td.h"
@@ -24,5 +24,5 @@ public:
   virtual int mult_csm( cuNDArray< _complext>* in, cuNDArray< _complext>* out );
   virtual int mult_csm_conj_sum( cuNDArray< _complext>* in, cuNDArray< _complext>* out);
 
-  DECLARE_MATRIX_OPERATOR_DEVICE_SUPPORT(cuSenseOperator)
+  DECLARE_LINEAR_OPERATOR_DEVICE_SUPPORT(cuSenseOperator)
 };

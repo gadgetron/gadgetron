@@ -1881,7 +1881,7 @@ void cuNDA_threshold_min_kernel(T min,  T *in_out, unsigned int number_of_elemen
   const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
 
   if( idx<number_of_elements ){
-    if (in_out[idx] < min) in_out[idx] = T(0);
+    if (real(in_out[idx]) < real(min)) in_out[idx] = T(0);
   }
 }
 
@@ -2692,7 +2692,7 @@ _nrm2<float,float_complext>( cuNDArray<float_complext>* arr, int device )
 		   (const cuComplex*) arr->get_data_ptr(), 1,
 		   &ret) != CUBLAS_STATUS_SUCCESS )
     {
-      cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+      cout << "cuNDA_nrm2: nrm2 calculation using cublas failed" << std::endl;
       return 0;
     }
 
@@ -2708,7 +2708,7 @@ _nrm2<float,float>( cuNDArray<float>* arr, int device )
 		 arr->get_data_ptr(), 1,
 		 &ret) != CUBLAS_STATUS_SUCCESS )
     {
-      cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+	  cout << "cuNDA_nrm2: nrm2 calculation using cublas failed" << std::endl;
       return 0;
     }
 
@@ -2725,7 +2725,7 @@ _nrm2<double,double_complext>( cuNDArray<double_complext>* arr, int device )
 		  (const cuDoubleComplex*) arr->get_data_ptr(), 1,
 		  &ret) != CUBLAS_STATUS_SUCCESS )
     {
-      cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+	  cout << "cuNDA_nrm2: nrm2 calculation using cublas failed" << std::endl;
       return 0;
     }
 
@@ -2741,7 +2741,7 @@ _nrm2<double,double>( cuNDArray<double>* arr, int device )
 		 arr->get_data_ptr(), 1,
 		 &ret) != CUBLAS_STATUS_SUCCESS )
     {
-      cout << "cuNDA_sum: sum calculation using cublas failed" << std::endl;
+	  cout << "cuNDA_nrm2: nrm2 calculation using cublas failed" << std::endl;
       return 0;
     }
 
@@ -4308,6 +4308,7 @@ template EXPORTGPUCORE bool cuNDA_abs<floatd3>( cuNDArray<floatd3>*, cuNDA_devic
 template EXPORTGPUCORE bool cuNDA_abs<floatd4>( cuNDArray<floatd4>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_threshold_min<float>(float, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_threshold_min<float_complext>(float_complext, cuNDArray<float_complext>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_threshold_max<float>(float, cuNDArray<float>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_rss_normalize<float,float>( cuNDArray<float>*, unsigned int, cuNDA_device );
@@ -4619,6 +4620,7 @@ template EXPORTGPUCORE bool cuNDA_abs<doubled3>( cuNDArray<doubled3>*, cuNDA_dev
 template EXPORTGPUCORE bool cuNDA_abs<doubled4>( cuNDArray<doubled4>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_threshold_min<double>(double, cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_threshold_min<double_complext>(double_complext, cuNDArray<double_complext>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_threshold_max<double>(double, cuNDArray<double>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_rss_normalize<double,double>( cuNDArray<double>*, unsigned int, cuNDA_device );

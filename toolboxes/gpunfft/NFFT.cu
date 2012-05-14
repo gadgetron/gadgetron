@@ -1231,12 +1231,13 @@ NFFT_plan<REAL,D>::convolve_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDAr
   
   // We can (only) convolve max_coils batches per run due to shared memory issues. 
   unsigned int domain_size_coils_desired = num_batches;
-  unsigned int num_repetitions = domain_size_coils_desired/(max_coils+1) + 1;
+  unsigned int num_repetitions = domain_size_coils_desired/max_coils + 
+    ( ((domain_size_coils_desired%max_coils)==0) ? 0 : 1 );
   unsigned int domain_size_coils = (num_repetitions==1) ? domain_size_coils_desired : max_coils;
   unsigned int domain_size_coils_tail = (num_repetitions==1) ? domain_size_coils_desired : domain_size_coils_desired - (num_repetitions-1)*domain_size_coils;
 
   // Block and Grid dimensions
-  dim3 dimBlock( (unsigned int)threads_per_block ); 
+  dim3 dimBlock( (unsigned int)threads_per_block );
   dim3 dimGrid( (number_of_samples+dimBlock.x-1)/dimBlock.x, number_of_frames );
 
   // Calculate how much shared memory to use per thread
@@ -1265,10 +1266,10 @@ NFFT_plan<REAL,D>::convolve_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDAr
 	image->get_data_ptr()+repetition*prod(matrix_size_os)*number_of_frames*domain_size_coils,
 	samples->get_data_ptr()+repetition*number_of_samples*number_of_frames*domain_size_coils, 
 	double_warp_size_power, REAL(0.5)*W, REAL(1)/(W), accumulate, matrix_size_os_real );
+
+    CHECK_FOR_CUDA_ERROR();    
   }
   
-  CHECK_FOR_CUDA_ERROR();
-
   return true;
 }
 
@@ -1311,7 +1312,8 @@ NFFT_plan<REAL,D>::convolve_NFFT_NC2C( cuNDArray<complext<REAL> > *samples, cuND
   
   // We can (only) convolve domain_size_coils batches per run due to shared memory issues. 
   unsigned int domain_size_coils_desired = num_batches;
-  unsigned int num_repetitions = domain_size_coils_desired/(max_coils+1) + 1;
+  unsigned int num_repetitions = domain_size_coils_desired/max_coils + 
+    ( ((domain_size_coils_desired%max_coils)==0) ? 0 : 1 );
   unsigned int domain_size_coils = (num_repetitions==1) ? domain_size_coils_desired : max_coils;
   unsigned int domain_size_coils_tail = (num_repetitions==1) ? domain_size_coils_desired : domain_size_coils_desired - (num_repetitions-1)*domain_size_coils;
   
@@ -1373,18 +1375,9 @@ template<class REAL, unsigned int D> __global__ void
 image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type matrix_size_wrap, bool accumulate,
 		  complext<REAL> *in, complext<REAL> *out )
 {
-  const unsigned int number_of_images = blockDim.z;
+  unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const unsigned int num_elements_per_image_src = prod(matrix_size_os+matrix_size_wrap);
-
-  unsigned int idx;
-
-  if( number_of_images == 1 )
-    idx = (blockIdx.x/(matrix_size_os.vec[0]/blockDim.x))*blockDim.y*matrix_size_os.vec[0] + 
-      (blockIdx.x%(matrix_size_os.vec[0]/blockDim.x))*blockDim.x + threadIdx.y*matrix_size_os.vec[0] + threadIdx.x;
-  else
-    idx = blockIdx.x*blockDim.x + threadIdx.x;
-
-  const unsigned int image_offset_src = (threadIdx.z*gridDim.y+blockIdx.y)*num_elements_per_image_src;
+  const unsigned int image_offset_src = blockIdx.y*num_elements_per_image_src;
   
   const typename uintd<D>::Type co = idx_to_co<D>(idx, matrix_size_os);
   const typename uintd<D>::Type half_wrap = matrix_size_wrap>>1;
@@ -1476,7 +1469,7 @@ image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Ty
   }
   
   // Output
-  const unsigned int image_offset_tgt = (threadIdx.z*gridDim.y+blockIdx.y)*prod(matrix_size_os);
+  const unsigned int image_offset_tgt = blockIdx.y*prod(matrix_size_os);
   if( accumulate ) result += out[idx+image_offset_tgt];
   out[idx+image_offset_tgt] = result;
 }
@@ -1490,13 +1483,13 @@ NFFT_plan<REAL,D>::image_wrap( cuNDArray<complext<REAL> > *source, cuNDArray<com
   num_batches /= number_of_frames;
 
   // Set dimensions of grid/blocks.
-  unsigned int bdim = 16;
-  dim3 dimBlock( bdim, (num_batches==1) ? bdim : 1, num_batches );
-  dim3 dimGrid( prod(matrix_size_os)/(dimBlock.x*dimBlock.y), number_of_frames );
+  unsigned int bdim = 256;
+  dim3 dimBlock( bdim );
+  dim3 dimGrid( prod(matrix_size_os)/bdim, number_of_frames*num_batches );
 
   // Safety check
-  if( (matrix_size_os.vec[0]%bdim) || (num_batches==1 && (matrix_size_os.vec[1]%bdim)) ) {
-    cerr << "Error: NFFT : dimensions mismatch in wrapping setup." << endl;
+  if( (prod(matrix_size_os)%bdim) != 0 ) {
+    cerr << "Error: NFFT : the number of oversampled image elements must be a multiplum of the block size: " << bdim << endl;
     return false;
   }
 

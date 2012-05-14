@@ -21,7 +21,7 @@ public:
   virtual void operator_scal( REAL, ARRAY_TYPE_OPERATOR* ) = 0;
   virtual void operator_reciprocal( ARRAY_TYPE_REAL* ) = 0;
   virtual REAL operator_asum( ARRAY_TYPE_OPERATOR* ) = 0;
-  virtual boost::shared_ptr< ARRAY_TYPE_REAL > operator_norm_squared( ARRAY_TYPE_OPERATOR* ) = 0;
+  virtual boost::shared_ptr< ARRAY_TYPE_REAL > operator_abs( ARRAY_TYPE_OPERATOR* ) = 0;
   virtual bool operator_clear( ARRAY_TYPE_OPERATOR* ) = 0;
   virtual bool operator_axpy( ARRAY_TYPE_REAL*, ARRAY_TYPE_OPERATOR*, ARRAY_TYPE_OPERATOR* ) = 0;
 
@@ -29,7 +29,7 @@ public:
   virtual int compute( ARRAY_TYPE_OPERATOR *image )
   {     
     // Make temporary copy of input
-    ARRAY_TYPE_OPERATOR tmp(*image); 
+    ARRAY_TYPE_OPERATOR tmp(*image);
 
     // Normalize to an average energy of "one intensity unit per image element"
     REAL sum = operator_asum( &tmp );
@@ -37,7 +37,7 @@ public:
     operator_scal( scale, &tmp );
     
     // Square and reciprocalize image
-    image_ = operator_norm_squared(&tmp);
+    image_ = operator_abs(&tmp);
     operator_reciprocal(image_.get());
     
     return 0;
@@ -51,9 +51,10 @@ public:
     if( !accumulate ) 
       ret2 = operator_clear( out );
     
-    if( ret2 )
+    if( ret2 ){
       ret2 = operator_axpy( image_.get(), in, out );
-    else 
+    	ret2 &= operator_axpy( image_.get(), in, out );
+    }else
       ret2 = false;
         
     if( ret2 )
@@ -70,8 +71,23 @@ public:
   }
   
   virtual int mult_MH( ARRAY_TYPE_OPERATOR *in, ARRAY_TYPE_OPERATOR *out, bool accumulate = false ){
-    std::cout << std::endl << "imageOperator::mult_MH not defined." << std::endl;
-    return -1;
+	    bool ret2 = true;
+
+	    if( !accumulate )
+	      ret2 = operator_clear( out );
+
+	    if( ret2 ){
+	      ret2 = operator_axpy( image_.get(), in, out );
+
+	    }else
+	      ret2 = false;
+
+	    if( ret2 )
+	      return 0;
+	    else{
+	      std::cout << std::endl << "imageOperator::mult_MH_M failed" << std::endl;
+	      return -1;
+	    }
   }
   
 protected:

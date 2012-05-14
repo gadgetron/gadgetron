@@ -2,7 +2,7 @@
 
 #include "cuNDArray.h"
 #include "linearOperator.h"
-#include "cuMatrixOperator_macros.h"
+#include "cuLinearOperator_macros.h"
 #include "vector_td_utilities.h"
 #include "solvers_export.h"
 
@@ -31,5 +31,5 @@ template <class REAL, class T, unsigned int D> class EXPORTSOLVERS cuVariableGau
   cuNDArray<REAL>* _sigma;
   boost::shared_ptr<cuNDArray<REAL> > _norm;
 
-  DECLARE_MATRIX_OPERATOR_DEVICE_SUPPORT(cuVariableGaussOperator)
+  DECLARE_LINEAR_OPERATOR_DEVICE_SUPPORT(cuVariableGaussOperator)
 };

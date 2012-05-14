@@ -36,7 +36,7 @@ install(FILES
 	cuSbLwSolver.h
 	cuSbcLwSolver.h
 	linearOperator.h
-	cuMatrixOperator_macros.h
+	cuLinearOperator_macros.h
 	identityOperator.h
 	cuIdentityOperator.h
 	imageOperator.h

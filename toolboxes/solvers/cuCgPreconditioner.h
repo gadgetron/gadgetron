@@ -40,7 +40,7 @@ protected:
   virtual int restore_device()
   {
     if( device_ != old_device_ && cudaSetDevice(old_device_) != cudaSuccess) {
-      std::cerr << "cuCGMatrixOperator::restore_device: unable to set device " << old_device_ << std::endl;
+      std::cerr << "cuCgPreconditioner::restore_device: unable to set device " << old_device_ << std::endl;
       return -1;
     }
     return 0;
