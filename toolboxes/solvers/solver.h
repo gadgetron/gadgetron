@@ -30,7 +30,7 @@ public:
   // Default error output
   virtual void solver_error( std::string msg ) { std::cerr << msg << std::endl; }
 
-  // Default error output
+  // Default warning output
   virtual void solver_warning( std::string msg ) { std::cerr << msg << std::endl; }
 
   // Invoke solver

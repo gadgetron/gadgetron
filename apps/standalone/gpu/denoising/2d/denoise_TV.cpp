@@ -88,11 +88,7 @@ int main(int argc, char** argv)
   Ry->set_domain_dimensions(data.get_dimensions().get());
   Ry->set_codomain_dimensions(data.get_dimensions().get());
 
-  //
-  // Setup conjugate gradient solver
-  //
-  
-  // Define encoding matrix (identity)
+  // Define encoding operator (identity)
   boost::shared_ptr< cuIdentityOperator<_real,_real> > E( new cuIdentityOperator<_real,_real>() );
   E->set_weight( mu );
   E->set_domain_dimensions(data.get_dimensions().get());
@@ -101,11 +97,11 @@ int main(int argc, char** argv)
   // Setup split-Bregman solver
   cuSbCgSolver<_real,_real> sb;
   sb.set_encoding_operator( E );
-  sb.add_regularization_operator( Rx ); // Anisotropic denoising
-  sb.add_regularization_operator( Ry ); // Anisotropic denoising
-  //sb.add_regularization_group_operator( Rx ); // Isotropic denoising
-  //sb.add_regularization_group_operator( Ry); // Isotropic denoising
-  //sb.add_group();
+  //sb.add_regularization_operator( Rx ); // Anisotropic denoising
+  //sb.add_regularization_operator( Ry ); // Anisotropic denoising
+  sb.add_regularization_group_operator( Rx ); // Isotropic denoising
+  sb.add_regularization_group_operator( Ry); // Isotropic denoising
+  sb.add_group();
   sb.set_max_outer_iterations(num_outer_iterations);
   sb.set_max_inner_iterations(num_inner_iterations);
   sb.set_output_mode( cuCgSolver<_real,_real>::OUTPUT_VERBOSE );

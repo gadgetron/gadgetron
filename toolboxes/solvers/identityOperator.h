@@ -13,7 +13,7 @@ template <class REAL, class ARRAY_TYPE> class identityOperator
   
   virtual bool operator_xpy( ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
 
-  virtual int mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false)
+  virtual int mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
   {
     // We will do only the most basic dimensionality checking
     if( in->get_number_of_elements() != out->get_number_of_elements() ){

@@ -33,11 +33,15 @@
       <title>What is Gadgetron</title>
 
       <para>The Gadgetron is a streaming data processing framework for medical
-      image reconstruction. It has been developed to enable easy prototyping,
-      testing, and deployment of new image reconstruction algorithms. The
-      framework contains a wide range of toolboxes with common data structures
-      and algorithms that can be used within the streaming framework itself or
-      as shared libraries in standalone (or third party) applications.</para>
+      image reconstruction. It has been developed to make it easier to
+      prototype, test, and deploy new image reconstruction algorithms.</para>
+
+      <para>The framework features a number of reconstruction applications
+      that can be employed directly. Moreover, it contains a wide range of
+      toolboxes with common data structures and algorithms designed for a much
+      broader use. These toolboxes can be used within the streaming framework
+      to create new dedicated reconstruction components or used as shared
+      libraries in standalone (or third party) applications.</para>
 
       <para>This document serves as an introduction to the Gadgetron framework
       and provides some "getting started" examples of using it. A scientific
@@ -49,7 +53,7 @@
       to support work on fast image reconstruction, not only on traditional
       CPU architectures, but also using commodity graphics hardware (GPUs).
       Some examples that are made publicly available through the Gadgetron
-      release include fast regridding on the GPU <citation><xref
+      framework include fast (re)gridding on the GPU <citation><xref
       linkend="sorensen08"/></citation>, Cartesian parallel imaging on the GPU
       <citation><xref linkend="hansen08"/></citation>, and non-Cartesian
       parallel imaging on the GPU <citation><xref
@@ -59,14 +63,16 @@
     <sect1>
       <title>Obtaining Gadgetron</title>
 
-      <para>The Gadgetron is available as a cross-platform source code
+      <para>The Gadgetron is made available as a cross-platform source code
       distribution, which compiles and has been tested to run on Linux, Mac OS
       X, and Windows 7. Compilation instructions for these platforms are
-      provided below. Generally speaking, the Gadgetron is easiest set up on
-      Linux since all dependencies are readily available. If you want to get
-      started quickly with the Gadgetron and happen to not be using Linux, it
-      is easy to install Ubuntu (our preferred Linux distribution) in a
-      virtual machine (e.g. VirtualBox, <uri type="website"
+      provided below. </para>
+
+      <para>Generally speaking, the Gadgetron is easiest set up on Linux since
+      all dependencies are readily available. If you want to get started
+      quickly with the Gadgetron and happen to not be using Linux, it is easy
+      to install Ubuntu (our preferred Linux distribution) in a virtual
+      machine (e.g. VirtualBox, <uri type="website"
       xlink:href="https://www.virtualbox.org/">https://www.virtualbox.org/</uri>)
       and follow the Linux compilation instructions below.</para>
 
@@ -144,17 +150,18 @@
             <para><emphasis>HDF5</emphasis> (optional). Some of the the
             Gadgetron clients use the HDF5 file format for storing raw data
             and images. The libraries are available with most Linux
-            distributions, but they can also be downloaded from <uri
+            distributions, and can be downloaded for Windows and Mac OS X from
+            <uri
             xlink:href="http://www.hdfgroup.org/HDF5/">http://www.hdfgroup.org/HDF5/</uri>.</para>
           </listitem>
 
           <listitem>
             <para><emphasis>CUDA</emphasis> (optional). For GPU support, you
-            need CUDA from Nvidia which can de downloaded from <uri
+            need CUDA from Nvidia, which can de downloaded from <uri
             type="website"
             xlink:href="http://developer.nvidia.com/cuda-toolkit-40">http://developer.nvidia.com/cuda-downloads</uri>.
             You will need a CUDA driver for your graphics card too, which is
-            available from the same website. </para>
+            available from the same website.</para>
           </listitem>
 
           <listitem>
@@ -177,18 +184,17 @@
 
           <listitem>
             <para><emphasis>Doxygen</emphasis> (optional). If you would like
-            to build the API documentation you need Doxygen. It is included in
-            most Linux distributions. It is available from <uri type="website"
+            to build the API documentation you need Doxygen. It is available
+            from <uri type="website"
             xlink:href="http://www.stack.nl/~dimitri/doxygen/">http://www.stack.nl/~dimitri/doxygen/</uri>.</para>
           </listitem>
 
           <listitem>
             <para><emphasis>Docbook</emphasis> (optional). If you would like
-            to build the manual (this document), you need Docbook. A number of
+            to build the manual (this document) you need Docbook. A number of
             tools are needed such as <application>xsltproc</application> and
             <application>fop</application> (for the PDF version of the
-            library). Additionally, you need the Docbook stylesheets, which
-            are included in most Linux distributions and otherwise available
+            library). Additionally you need the Docbook stylesheets, available
             at <uri type="website"
             xlink:href="http://docbook.sourceforge.net/">http://docbook.sourceforge.net/</uri>.</para>
           </listitem>
@@ -212,7 +218,7 @@
       <sect2 xml:id="sect.linuxinstall">
         <title>Linux Installation Instructions</title>
 
-        <para>Linux is preferred operating system to get started with the
+        <para>Linux is the preferred operating system to get started using the
         Gadgetron. All of the required dependencies are included in most major
         Linux distributions and can be installed easily and without having to
         compile anything. In the following sections we walk you through the
@@ -226,8 +232,8 @@
         xlink:href="https://www.virtualbox.org/">https://www.virtualbox.org/</uri>).</para>
 
         <para>If you would like to use the GPU components included in the
-        Gadgetron and you have a GPU available on your system, please complete
-        the CUDA/CULA installations as described in <xref
+        Gadgetron and you have an Nvidia GPU available on your system, please
+        complete the CUDA/CULA installations as described in <xref
         linkend="section.linuxgpuinstall"/>.</para>
 
         <para>First install all dependencies for Gadgetron. The following will
@@ -273,23 +279,22 @@ export GADGETRON_HOME=/usr/local/gadgetron     </programlisting>
         <sect3 xml:id="section.linuxgpuinstall">
           <title>Installing GPU components (CUDA and CULA) on Linux</title>
 
-          <para>First install your Nvidia driver. The Ubuntu distribution
-          comes with a driver that will work with CUDA in some instances, but
-          we recommend that you install the latest developer driver from the
+          <para>First install the Nvidia driver. The Ubuntu distribution comes
+          with a driver that will work with CUDA in some instances, but we
+          recommend that you install the latest developer driver from the
           Nvidia website.</para>
 
-          <para>Download
+          <para>Download (to the current directory)
           <filename>devdriver_4.1_linux_64_285.05.32.run</filename> from <uri
           xlink:href="http://developer.nvidia.com/cuda-toolkit-41">http://developer.nvidia.com/cuda-toolkit-41</uri>
           and install the driver:</para>
 
-          <para><screen><prompt>user@mycomputer:~$</prompt> <userinput>chmod +x devdriver_4.1_linux_64_285.05.32.run
-</userinput><prompt>user@mycomputer:~$</prompt><userinput> sudo ./devdriver_4.1_linux_64_285.05.32.run</userinput></screen></para>
+          <para><screen><prompt>user@mycomputer:~$</prompt><userinput> sudo sh ./devdriver_4.1_linux_64_285.05.32.run</userinput></screen></para>
 
           <para>The process of getting this driver installed may vary from
           installation to installation. Specifically, you may need to remove
           any existing Nvidia driver before installing and you will have to
-          shut down the display manager before installing. </para>
+          shut down the display manager before installing.</para>
 
           <para>The display manager can be shut down with:</para>
 
@@ -343,11 +348,9 @@ export GADGETRON_HOME=/usr/local/gadgetron     </programlisting>
           <para>Go to the folder where the files were downloaded and
           type:</para>
 
-          <screen><prompt>user@c:~$</prompt> <userinput>chmod +x </userinput>cudatoolkit_4.1.28_linux_64_ubuntu11.04.run
-<prompt>user@c:~$</prompt> <userinput>sudo ./</userinput>cudatoolkit_4.1.28_linux_64_ubuntu11.04.run
-<prompt>user@c:~$</prompt> <userinput>chmod +x cula_dense_free_R14-linux64.run</userinput>
-<prompt>user@c:~$</prompt> <userinput>sudo ./</userinput>cula_dense_free_R14-linux64.run
-</screen>
+          <screen><prompt>user@mycomputer:~$</prompt> <userinput>sudo sh ./cudatoolkit_4.1.28_linux_64_ubuntu11.04.run
+</userinput><prompt>user@mycomputer:~$</prompt> <userinput>sudo sh ./cula_dense_free_R14-linux64.run
+</userinput></screen>
 
           <para>Follow the instructions. When you are done with the
           installation you may want to add the following to your
@@ -378,7 +381,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CULA_LIB_PATH_64    </programlisting>
         are on an older release, you should still be able to make it all
         compile, but you may have to make some adjustments.</para>
 
-        <para>We will use MacPorts (<uri
+        <para>We use MacPorts (<uri
         xlink:href="http://www.macports.org/">http://www.macports.org/</uri>)
         to install the required dependencies. You may use a different package
         management system or prefer to install packages manually. In that
@@ -386,9 +389,10 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CULA_LIB_PATH_64    </programlisting>
         linkend="sect.dependencies"/>) and install the required dependencies
         for the components you would like to use.</para>
 
-        <para>MacPorts is not the fastest way to install packages. We use this
-        methods here to make it easier to follow the instructions. Please be
-        patient when running the <command>port</command> commands.</para>
+        <para>MacPorts is not the fastest way to install packages as they are
+        compiled locally. We use this method here nonetheless to make it
+        easier to follow the instructions. Please be patient when running the
+        <command>port</command> commands.</para>
 
         <itemizedlist>
           <listitem>
@@ -403,13 +407,12 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CULA_LIB_PATH_64    </programlisting>
 
           <listitem>
             <para>Get your Python installation up to date. Mac OS X ships with
-            Python installed, but it is not a complete distribution and if you
-            would like to do Python development with the Gadgetron, you need
-            to update. If you are already using Python for signal processing,
-            you may already have the required components installed. If you
-            already have <package>numpy</package> and <package>SciPy</package>
-            installed, you may be able to skip this step. If you do not wish
-            to use Python, you can also skip this step.</para>
+            Python installed, but it is not a complete distribution. You need
+            to update it if you would like to do Python development with the
+            Gadgetron. If you already have <package>numpy</package> and
+            <package>SciPy</package> installed, you may be able to skip this
+            step. If you do not wish to use Python, you can also skip this
+            step.</para>
 
             <screen>$ <userinput>sudo port install python27 py27-numpy py27-scipy</userinput></screen>
 
@@ -418,7 +421,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CULA_LIB_PATH_64    </programlisting>
 
             <screen>$ <userinput>sudo port select python python27</userinput></screen>
 
-            <para>Now to make sure the build system finds the right version of
+            <para>To make sure the build system finds the right version of
             Python we need to edit a couple of symbolic links manually:</para>
 
             <screen>$ <userinput>cd /System/Library/Frameworks/Python.framework/Versions</userinput>
@@ -560,23 +563,21 @@ $ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/cuda/lib</us
           <listitem>
             <para>Install CUDA/CULA (optional, but required for GPU support).
             Download from <uri
-            xlink:href="http://developer.nvidia.com/cuda-toolkit-40">http://developer.nvidia.com/cuda-toolkit-40</uri>):</para>
+            xlink:href="http://developer.nvidia.com/cuda-toolkit-40">http://developer.nvidia.com/cuda-toolkit-41</uri>):</para>
 
-            <para>Install Nvidia Developer Driver (Version 270.81)</para>
+            <para>Install Nvidia Developer Driver (Version 286.19)</para>
 
-            <para>Install Nvdia Toolkit (4.0)</para>
+            <para>Install Nvdia Toolkit (4.1)</para>
 
-            <para>Install gpucomputingsdk (Install ad Asministrator)</para>
+            <para>Install gpucomputingsdk (Install as Asministrator)</para>
 
-            <para>Install CUDA4_0BuildCustomizationFix</para>
-
-            <para>Install <filename>cula_R12-win64.exe</filename> (as
-            Administrator). Download from
-            <uri>http://www.culatools.com/downloads/dense/</uri>. R13 (dense)
-            should work too, but has not been tested on Windows. Assuming CULA
-            was installed in <filename>C:\Program Files\CULA\R12</filename>,
-            add <filename>C:\Program Files\CULA\R12\bin64</filename> to your
-            <varname>PATH</varname> environment variable.</para>
+            <para>Install <filename>cula_dense_free_R14-win64.exe</filename>
+            (as Administrator). Download from
+            <uri>http://www.culatools.com/downloads/dense/</uri>. Assuming
+            CULA was installed in <filename>C:\Program
+            Files\CULA\R14</filename>, add <filename>C:\Program
+            Files\CULA\R14\bin64</filename> to your <varname>PATH</varname>
+            environment variable.</para>
           </listitem>
 
           <listitem>
@@ -780,15 +781,15 @@ BLAS_acml_mv_LIBRARY= \
           </listitem>
         </itemizedlist>
 
-        <para>You now have a working installation of the Gadgetron in Windows.
-        Follow the instructions below to run a simple reconstruction example
-        (<xref linkend="sect.simpleexample"/>).</para>
-
         <para>Before attempting to run any reconstructions, please set the
         environment variable <varname>GADGETRON_HOME</varname> to point to the
         installation folder of your Gadgetron installation and make sure that
         the paths of all dependencies are in your <varname>PATH</varname>
         environment variable.</para>
+
+        <para>You now have a working installation of the Gadgetron in Windows.
+        Follow the instructions below to run a simple reconstruction example
+        (<xref linkend="sect.simpleexample"/>).</para>
       </sect2>
     </sect1>
 
@@ -810,7 +811,7 @@ BLAS_acml_mv_LIBRARY= \
 
       <para>Download the file <filename>gadgetron_testdata.h5</filename> from
       the website. In this example we will work with the dataset called
-      "simple_gre" in the HDF5 file. </para>
+      "simple_gre" in the HDF5 file.</para>
 
       <para>Open two terminal windows to observe both client and Gadgetron
       communication output. In the Gadgetron terminal window simply
@@ -879,7 +880,7 @@ imagesc(images(:,:,1,1));colormap(gray);</programlisting>
 
       <para>The Gadgetron consists of a streaming processing architecture and
       a set of toolboxes. The toolboxes are used within the streaming
-      components but comes as individual shared libraries and can thus also be
+      components but come as individual shared libraries and can thus also be
       used in standalone applications. The architecture is outlined in <xref
       linkend="fig.gadgetron.architecture"/>.</para>
 
@@ -1119,9 +1120,9 @@ public Gadget2&lt;GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &g
         <para>There are a couple of other things to notice. One is the
         <function>EXPORTGADGETSCORE</function> macro in the class definition.
         This is needed to make things work properly on Windows. It is defined
-        in <filename>gadgetroncore_export.h</filename> and is used on Windows
-        to indicate if the class is being imported or exported from a DLL. It
-        translates into <function>__declspec(dllexport)</function> or
+        in <filename>gadgetroncore_export.h</filename> and is used (on
+        Windows) to indicate if the class is being imported or exported from a
+        DLL. It translates into <function>__declspec(dllexport)</function> or
         <function>__declspec(dllimport)</function> in Windows and is empty in
         Linux/OSX. It is beyond the scope of this manual to go into why such a
         declaration is needed, but keep this in mind when you start creating
@@ -1177,10 +1178,10 @@ GADGET_FACTORY_DECLARE(FFTGadget)</programlisting>
         <para>Last thing to notice is the
         <function>GADGET_FACTORY_DECLARE(FFTGadget)</function> statement. This
         is a macro which declares functions for loading a Gadget of this type
-        out of a shared library (DLL) and destroying it again when we are
-        done. It ensures that we can load the Gadget on all platforms. When
-        you create your own gadgets you should use this macro to declare the
-        factory function for the Gadget.</para>
+        out of a shared library and destroying it again when we are done. It
+        ensures that we can load the Gadget on all platforms. When you create
+        your own gadgets you should use this macro to declare the factory
+        function for the Gadget.</para>
 
         <para>For a tutorial on how to make your own Gadget library see <xref
         linkend="sect.makingnewgadgetlibrary"/>.</para>
@@ -1395,7 +1396,7 @@ GADGETRON_READER_FACTORY_DECLARE(MRIAcquisitionReader)</programlisting>
         <para>This macro declares create and destroy functions to load the
         reader from a shared library on all platforms supported.</para>
 
-        <para>Whereas the Readers are responsible for deserialization, The
+        <para>Whereas the Readers are responsible for deserialization, the
         <classname>GadgetMessageWriter</classname> is responsible for the
         opposite operation (serialization). In practice, Gadgets that produce
         an output for the client application can hand that data back to the
@@ -1605,7 +1606,7 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)</programlisting>
         <para>The <literal>&lt;stream&gt;</literal> section of the
         configuration specifies which Gadgets to load. In the example above,
         we have 4 Gadgets. In this specific case the reconstruction is an MRI
-        reconstruction and the first Gadget is an
+        reconstruction. The first Gadget is an
         <classname>AccumulatorGadget</classname>, which collects individual
         lines and inserts them in k-space. When the k-space image is complete
         it is sent to the next Gadget in the chain, the
@@ -1714,8 +1715,8 @@ double get_double_value(const char* name);
           </listitem>
 
           <listitem>
-            <para>The client will then start transmitting data packages that
-            the Gadgetron processes. Images are returned to the client.</para>
+            <para>The client then starts transmitting data packages that the
+            Gadgetron processes. Images are returned to the client.</para>
           </listitem>
 
           <listitem>
@@ -1732,8 +1733,6 @@ double get_double_value(const char* name);
 
         <para>To make it easier to create a new client, the Gadgetron comes
         with a <classname>GadgetronConnector</classname> class:</para>
-
-        <para/>
 
         <programlisting>class GadgetronConnector: 
   public ACE_Svc_Handler&lt;ACE_SOCK_STREAM, ACE_MT_SYNCH&gt; {
@@ -1837,7 +1836,7 @@ public:
         <para>Most image processing operations involve multi-dimensional
         arrays. Although the Gadgetron framework does not impose any specific
         array structure on the user, it does come with an abstract
-        multi-dimensional array used throughout, the
+        multi-dimensional array used throughout: the
         <classname>NDArray</classname>. It has a specific implementation for
         the CPU (<classname>hoNDArray</classname>) and GPU
         (<classname>cuNDArray</classname>). The abstract class definition
@@ -1875,7 +1874,7 @@ public:
     return elements_;
   }
 
-  //Other public functions....such as permute, etc.
+  //Other public functions...
 
 protected:
 
@@ -1997,11 +1996,12 @@ m-&gt;release(); //Delete the message block and containing data
           is possible to provide the array with the device number that the
           array should be allocated on. This is important when working on
           systems with multiple GPU processors. The default is to allocate it
-          on the first GPU device (device 0). It is possible to query which
-          device the data is allocated and to effectively move the data from
-          one device to another through operators. Similarly, the copy
-          constructor takes a <classname>hoNDArray</classname> and
-          transparently copies the host data to the GPU.</para>
+          on the current device (device 0 unless specifically set otherwise).
+          It is possible to query on which device the data is allocated and to
+          effectively move the data from one device to another through
+          operators. Similarly, one copy constructor takes a
+          <classname>hoNDArray</classname> and transparently copies the host
+          data to the GPU.</para>
         </sect3>
       </sect2>
 
@@ -2009,18 +2009,30 @@ m-&gt;release(); //Delete the message block and containing data
         <title><classname>vector_td</classname></title>
 
         <para>The class <classname>vector_td</classname> provides a basic
-        representation of complex numbers as well as one-, two-, three-, or
-        four-dimensional vectors (positions). It is templetized with the
-        datatype <varname>T</varname> and dimensionality <varname>D</varname>.
-        Also we provide a set of typedefs to commonly encountered instances. A
-        subset of the definitions provided in <filename>vector_td.h</filename>
-        is provided here:</para>
+        representation of one-, two-, three-, or four-dimensional vectors
+        (positions). It is templetized with the datatype <varname>T</varname>
+        and dimensionality <varname>D</varname>. For convenience we provide a
+        set of typedefs to commonly encountered instances. A subset of the
+        definitions provided in <filename>vector_td.h</filename> is provided
+        here (users should check the actual file e.g. for additional often
+        used constructors):</para>
 
         <programlisting>
-template&lt;class T, unsigned int D&gt; struct vector_td
+template&lt; class T, unsigned int D &gt; class vector_td
 {
+public:
+
   T vec[D];
+
+  __inline__ __host__ __device__ T&amp; operator[](const int i){
+    return vec[i];
+  }
+
+  __inline__ __host__ __device__ const T&amp; operator[](const int i) const {
+    return vec[i];
+  }
 };
+
 
 // Some typedefs for convenience
 
@@ -2048,34 +2060,31 @@ template&lt; class T &gt; struct complext{
   typedef vector_td&lt; T, 2 &gt; Type;
 };
 
-struct float_complext : complext&lt;float&gt;::Type {
-  typedef complext&lt;float&gt;::Type Type;
-  float_complext(){}
-  float_complext( float r, float i ) { vec[0] = r; vec[1] = i; }
-};
+</programlisting>
 
-struct double_complext : complext&lt;double&gt;::Type {
-  typedef complext&lt;double&gt;::Type Type;
-  double_complext(){}
-  double_complext( double r, double i ) { vec[0] = r; vec[1] = i; }
-};      </programlisting>
-
-        <para>A substancial subset of the C++ arithmetic operators on the
+        <para>A number of arithmetic and conditional operators on the
         <classname>vector_td</classname> are defined in
-        <filename>vector_td_operators.h</filename>. They are convienient when
-        performing algebra on complex numbers or spatial vectors. Similarly,
-        the header <filename>vector_td_utilities.h</filename> wraps common
-        math functionality for the <classname>vector_td</classname> class.
-        Many common operations that takes one of more
+        <filename>vector_td_operators.h</filename>. Similarly, the header
+        <filename>vector_td_utilities.h</filename> wraps common math
+        functionality for the <classname>vector_td</classname> class. Many
+        common operations that take one of more
         <classname>cuNDArray</classname> instances with element type
         <classname>vector_td</classname> are defined in
-        <filename>ndarray_vector_utilities.h</filename>. We leave it for the
-        readers to explore these utilities on their own.</para>
+        <filename>ndarray_vector_utilities.h</filename>. We encourage the
+        reader to explore these utilities on his own.</para>
 
         <para>The <classname>vector_td</classname> can be used in both host
         and device code. As an example of use it is contained in the interface
         of the non-Cartesian FFT described in <xref
         linkend="sect.NFFT"/>.</para>
+      </sect2>
+
+      <sect2>
+        <title>complext</title>
+
+        <para>A complex number class that can be used in both host and device
+        code is found in <filename>complext.h</filename>. It contains a
+        substantial set of useful operators and functions.</para>
       </sect2>
 
       <sect2 xml:id="sect.ffttoolbox">
@@ -2088,11 +2097,11 @@ struct double_complext : complext&lt;double&gt;::Type {
             <title>FFT of a <classname>hoNDArray</classname></title>
 
             <para>The Gadgetron uses the FFTW library for Fourier transform of
-            <classname>hoNDArray</classname> structures. The users can call
-            the FFTW directly from their code, but to make things a little
-            easier, we provide a simple wrapper class defined in
-            <filename>toolboxes/ndarray/FFT.h</filename>. This wrapper is
-            defined as (abbreviated):</para>
+            <classname>hoNDArray</classname> structures. Users can call the
+            FFTW directly from their code, but to make things a little easier,
+            we provide a simple wrapper class defined in
+            <filename>toolboxes/ndarray/FFT.h</filename>. Here is an
+            abbreviated version:</para>
 
             <programlisting>template &lt;typename T&gt; class EXPORTNDARRAY FFT
 {
@@ -2115,11 +2124,11 @@ protected:
  virtual ~FFT();
 };</programlisting>
 
-            <para>This class provides simple wrapper function to perform FFTs
-            of <classname>hoNDArray</classname>s along a specific dimension or
-            along all dimensions. The wrapper will perform <emphasis>in
-            place</emphasis> FFTs and works on complex arrays of single and
-            double precision.</para>
+            <para>The <classname>FFT</classname> class provides simple wrapper
+            functionality to perform FFTs of <classname>hoNDArray</classname>s
+            along a specific dimension or along all dimensions. It performs
+            <emphasis>in place</emphasis> FFTs and works on complex arrays of
+            single or double precision.</para>
 
             <para>An important feature of this class is that it is a process
             wide singleton for the Gadgetron. As outlined in the definition
@@ -2151,7 +2160,7 @@ FFT&lt;float&gt;::instance()-&gt;fft(...);</programlisting>
             <title>FFT of a <classname>cuNDArray</classname></title>
 
             <para>Cartesian Fast Fourier Transform on the GPU is supported by
-            wrapping Cuda's FFT routines and defined in
+            wrapping Cuda's FFT routines as defined in
             <filename>cuNDFFT.h</filename>.</para>
 
             <programlisting>template&lt;class T&gt; class EXPORTGPUCORE cuNDFFT
@@ -2201,9 +2210,9 @@ FFT&lt;float&gt;::instance()-&gt;fft(...);</programlisting>
           <filename>NFFT.h</filename> provided below in abbreviated
           form</para>
 
-          <programlisting>template&lt;class REAL, unsigned int D&gt; class EXPORTGPUNFFT NFFT_plan
-{  
-public:
+          <programlisting>template&lt; class REAL, unsigned int D &gt; class EXPORTGPUNFFT NFFT_plan
+{
+ public: // Main interface
     
   // Constructors
   NFFT_plan();
@@ -2214,46 +2223,63 @@ public:
   // Destructor
   virtual ~NFFT_plan();
 
+  // Clear internal storage in plan
+  enum NFFT_wipe_mode { NFFT_WIPE_ALL, NFFT_WIPE_PREPROCESSING };
+  bool wipe( NFFT_wipe_mode mode );
+
   // Replan 
   bool setup( typename uintd&lt;D&gt;::Type matrix_size, 
               typename uintd&lt;D&gt;::Type matrix_size_os, 
               REAL W, int device = -1 );
     
-  // Preprocess trajectory
-  enum NFFT_prep_mode { NFFT_PREP_ALL, 
-                        NFFT_PREP_FORWARDS, 
-                        NFFT_PREP_BACKWARDS };
-  
+  // Preproces trajectory 
+  // ( Cartesian to non-Cartesian / non-Cartesian to Cartesian / both )
+  enum NFFT_prep_mode { NFFT_PREP_C2NC, NFFT_PREP_NC2C, NFFT_PREP_ALL };
   bool preprocess( cuNDArray&lt;typename reald&lt;REAL,D&gt;::Type&gt; *trajectory, 
-                   NFFT_prep_mode mode  );
+                   NFFT_prep_mode mode );
     
-  // Execute NFFT
-  enum NFFT_comp_mode { NFFT_FORWARDS, NFFT_BACKWARDS };
-  bool compute( cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *samples, 
-                cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *image, 
-                cuNDArray&lt;REAL&gt; *weights, NFFT_comp_mode mode );
+  // Execute NFFT 
+  // ( Cartesian to non-Cartesian or non-Cartesian to Cartesian)  
+  enum NFFT_comp_mode { NFFT_FORWARDS_C2NC, NFFT_FORWARDS_NC2C, 
+                        NFFT_BACKWARDS_C2NC, NFFT_BACKWARDS_NC2C };
+  bool compute( cuNDArray&lt;complext&lt;REAL&gt; &gt; *in, 
+                cuNDArray&lt;complext&lt;REAL&gt; &gt; *out, 
+                cuNDArray&lt;REAL&gt; *dcw, NFFT_comp_mode mode );
 
-  bool compute_iteration( 
-   cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *samples, 
-   cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *image, 
-   cuNDArray&lt;REAL&gt; *weights, NFFT_comp_mode mode );
- 
-public: // Access to underlying building blocks
+  // Execute NFFT iteration 
+  // (Cartesian to non-Cartesian and back to Cartesian space)
+  bool mult_MH_M( cuNDArray&lt;complext&lt;REAL&gt; &gt; *in, 
+                  cuNDArray&lt;complext&lt;REAL&gt; &gt; *out, 
+                  cuNDArray&lt;REAL&gt; *dcw, 
+                  std::vector&lt;unsigned int&gt; halfway_dims );
   
-  // NFFT convolution
-  bool convolve( cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *samples, 
-                 cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *image, 
-                 cuNDArray&lt;REAL&gt; *weights, NFFT_comp_mode mode, 
-                 bool accumulate = false );
+ public: // Utilities
+  
+  // NFFT convolution 
+  // (Cartesian to non-Cartesian or non-Cartesian to Cartesian)
+  enum NFFT_conv_mode { NFFT_CONV_C2NC, NFFT_CONV_NC2C };
+  bool convolve( cuNDArray&lt;complext&lt;REAL&gt; &gt; *in, 
+                 cuNDArray&lt;complext&lt;REAL&gt; &gt; *out, 
+                 cuNDArray&lt;REAL&gt; *dcw, 
+                 NFFT_conv_mode mode, bool accumulate = false );
     
   // NFFT FFT
-  bool fft( cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *data, 
-            NFFT_comp_mode mode, bool do_scale = true );
+  enum NFFT_fft_mode { NFFT_FORWARDS, NFFT_BACKWARDS };
+  bool fft( cuNDArray&lt;complext&lt;REAL&gt; &gt; *data, 
+            NFFT_fft_mode mode, bool do_scale = true );
   
   // NFFT deapodization
-  bool deapodize( cuNDArray&lt;typename complext&lt;REAL&gt;::Type&gt; *image );
+  bool deapodize( cuNDArray&lt;complext&lt;REAL&gt; &gt; *image );
 
-}</programlisting>
+ public: // Setup queries
+
+  typename uintd&lt;D&gt;::Type get_matrix_size();
+  typename uintd&lt;D&gt;::Type get_matrix_size_os();
+  REAL get_W();
+  unsigned int get_device();
+  
+...
+};</programlisting>
 
           <para>After a <classname>NFFT_plan</classname> is constructed the
           <function>preprocess</function> function should be called with the
@@ -2266,6 +2292,34 @@ public: // Access to underlying building blocks
           FFT, and deapodization - are exposed in the public interface and
           hence available for use in custom algorithms.</para>
 
+          <para>It is often required to perform the NFFT on a number of
+          different inputs. Particularly in 1D and 2D the best performance is
+          obtained if many transforms are executed concurrently in order to
+          keep the device fully occupied. Two strategies can be
+          combined:<itemizedlist>
+              <listitem>
+                <para>The trajectory passed to the preprocess method is
+                normally a one-dimension cuNDArray containing normalized (to
+                the range [-0.5;0.5]) non-Cartesian positions as
+                <classname>reald&lt;REAL,D&gt;</classname> elements of
+                precision <classname>REAL</classname> and dimensionality
+                <classname>D</classname>. However, if the cuNDArray is
+                two-dimensional, the latter dimension specifies that we wish
+                to transform a number of frames with different trajectories
+                concurrently.</para>
+              </listitem>
+
+              <listitem>
+                <para>If a number of transformations with identical
+                trajectories are to be transformed, the input and output
+                arrays to the compute methods can be any multiplum of the
+                Cartesian and non-Cartesian dimensions configured from the
+                <classname>setup</classname> and
+                <classname>preprocess</classname> methods. The images provided
+                are consequently batch transformed.</para>
+              </listitem>
+            </itemizedlist></para>
+
           <para><remark>Please note</remark>. The NFFT performs significantly
           better on GPUs supporting Cuda's shader model 2.0 or newer compared
           to devices supporting only shader models 1.x. The reason being that
@@ -2275,39 +2329,47 @@ public: // Access to underlying building blocks
       </sect2>
 
       <sect2 xml:id="sect.matrix_operators">
-        <title>Matrix Operators</title>
+        <title>Linear (Matrix) Operators</title>
 
         <para>A fundamental building block of most image reconstruction
-        algorithms is the abstract <classname>matrix_operator</classname>. A
-        range of linear imaging and regularization operators are inherited
-        from this pure virtual base class:<programlisting>template &lt;class REAL, class ARRAY_TYPE&gt; class matrixOperator
+        algorithms is the abstract class
+        <classname>linearOperator</classname>. A range of linear imaging and
+        regularization operators are inherited from this pure virtual base
+        class (abbreviated):<programlisting>template &lt; class REAL, class ARRAY_TYPE &gt; class linearOperator
 {
  public:
 
-  matrixOperator() { weight_ = get_one&lt;REAL&gt;(); }
-  virtual ~matrixOperator() {}
+  linearOperator() { weight_ = REAL(1); }
 
-  inline void set_weight( REAL weight ){ weight_ = weight; }
-  inline REAL get_weight(){ return weight_; }
+  virtual ~linearOperator() {}
 
-  virtual int mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, 
-                      bool accumulate = false) = 0;
+  virtual void set_weight( REAL weight ){ weight_ = weight; }
+  virtual REAL get_weight(){ return weight_; }
+
+  virtual bool set_domain_dimensions( std::vector&lt;unsigned int&gt; *dims ) { ... }
+  virtual bool set_codomain_dimensions( std::vector&lt;unsigned int&gt; *dims ) { ... }
+
+  virtual boost::shared_ptr&lt; std::vector&lt;unsigned int&gt; &gt; 
+    get_domain_dimensions() { ... }
+
+  virtual boost::shared_ptr&lt; std::vector&lt;unsigned int&gt; &gt; 
+    get_codomain_dimensions() { ... }
+
+  virtual int mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
+  virtual int mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
+  virtual int mult_MH_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
   
-  virtual int mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, 
-                       bool accumulate = false) = 0;
-  
-  virtual int mult_MH_M( ARRAY_TYPE* in, ARRAY_TYPE* out, 
-                         bool accumulate = false) = 0;
-  
-private:
-  REAL weight_;
-}</programlisting>The <classname>MatrixOperator</classname> is templated by
+  virtual boost::shared_ptr&lt; linearOperator&lt; REAL, ARRAY_TYPE &gt; &gt; clone() = 0;
+
+  ...
+};</programlisting>The <classname>linearOperator</classname> is templated by
         two arguments: 1) the basic precision <classname>REAL</classname>
         (<classname>e.g. float</classname> or <classname>double</classname>)
         and 2) the <classname>ARRAY_TYPE</classname> (e.g.
-        <classname>NDArray</classname>, <classname>hoNDArray</classname>, or
-        <classname>cuNDArray</classname>) representing the expected vector
-        format for the matrix-vector multiplication the operator
+        <classname>NDArray&lt;T&gt;</classname>,
+        <classname>hoNDArray&lt;T&gt;</classname>, or
+        <classname>cuNDArray&lt;T&gt;</classname>) representing the expected
+        vector format for the matrix-vector multiplication the operator
         implements.</para>
 
         <para>Every <classname>MatrixOperator</classname> has an associated
@@ -2323,52 +2385,65 @@ private:
         of the two respectively
         (<varname>M<superscript>H</superscript>M</varname>).</para>
 
-        <para>The <classname>MatrixOperator</classname> is used to model a
+        <para>The <classname>clone</classname> method is required by some
+        solvers to make a clone (copy) of a given
+        <classname>linearOperator</classname>. Similarly, some solvers require
+        knowledge of the <varname>domain</varname> and
+        <varname>codomain</varname> dimensions on which the operator can be
+        applied. The <classname>mult_M</classname> method converts the input
+        vector of <varname>domain_size</varname> to one of
+        <varname>codomain_size</varname> - and vice versa for
+        <classname>mult_MH</classname>.</para>
+
+        <para>The <classname>linearOperator</classname> is used to model a
         linear imaging modality's encodig operation (Fourier transform for
         MRI, Radon transform for CT, convolution for Microscopy etc.) but also
-        to common regularization operators such the identity matrix, the
-        partial derivatives etc.</para>
+        common regularization operators such the identity matrix, the partial
+        derivatives etc.</para>
 
-        <para>Here follows a list that briefly describes the matrix operators
-        in Gadgetron that have been used for the reconstruction examples
-        provided later in this document (<xref
-        linkend="sect.exampleapplications"/>, <xref
+        <para>Here follows a list that briefly describes the linear operators
+        that are used for the reconstruction examples discussed later in this
+        document (<xref linkend="sect.exampleapplications"/>, <xref
         linkend="sect.standalone_applications"/>).</para>
 
         <sect3>
-          <title>List of matrix operators</title>
+          <title>List of linear operators</title>
 
-          <para>The section provides a non-exhaustive list of availble matrix
+          <para>The section provides a non-exhaustive list of availble linear
           operators in Gadgetron toolboxes.</para>
 
-          <para>A general two-level implementation strategy is used for many
-          of the operators the Gadgetron provide. We first derive a class, say
-          <classname>IdentityOperator</classname>, from the
-          <classname>MatrixOperator</classname> base class. In this derived
-          class we implement the pure virtual functions of the base class;
+          <para>A two-level implementation strategy is used for most of the
+          operators the Gadgetron provide. We first derive a class, say
+          <classname>identityOperator</classname>, from the
+          <classname>linearOperator</classname> base class. In this derived
+          class we implement the pure virtual functions of the base class,
+          e.g. <function>mult_M</function>, <function>mult_MH</function>, and
+          <function>mult_MH_M</function>. The overall algorithm and
+          functionality of the operator is implemented at this level. Like its
+          superclass, the <classname>identityOperator</classname> is however
+          templated on the underlying <classname>ARRAY_TYPE</classname> and
+          thus cannot contain dedicated implementation code to a specific
+          array implementation. The implementation of
           <function>mult_M</function>, <function>mult_MH</function>, and
-          <function>mult_MH_M</function>. The overall algorithm of the
-          operator is implemented at this level. Like its superclass, the
-          IdentityOperator is however templated on the underlying
-          <classname>ARRAY_TYPE</classname> and thus cannot contain dedicated
-          implementation code to a specific array implementation. The
-          implementation of <function>mult_M</function>,
-          <function>mult_MH</function>, and <function>mult_MH_M</function> is
-          consequently based on a new set of pure virtual functions of the
-          templated <classname>ARRAY_TYPE</classname>. We provide another
-          level of inheritance, e.g.
-          <classname>cuIdentityOperator</classname>, which in this case
-          provides the <classname>cuNDArray</classname>-specific
+          <function>mult_MH_M</function> is consequently based on a new set of
+          pure virtual functions of the templated
+          <classname>ARRAY_TYPE</classname>. We provide another level of
+          inheritance, e.g. <classname>cuIdentityOperator</classname>, which
+          in this case provides the <classname>cuNDArray</classname>-specific
           implementation of the pure virtual function in
           <classname>identityOperator</classname>. This hierachy has the
-          desired design goal that the core algorithm implementation is shared
-          in the base class of the operator while host/device specific
-          sub-components only are defined individually.</para>
+          desired design goal, that the core algorithm implementation is
+          shared in the base class of the operator. Only the host/device
+          specific sub-components are defined individually. It is thus fairly
+          straightforward to derive both an <classname>cuNDArray</classname>
+          and an <classname>hoNDArray</classname> version of an
+          operator.</para>
 
           <para>As an example we provide a simplified declaration of the
-          <classname>identityOperator</classname>/<classname>cuIdentityOperator</classname>
-          below. Without specific mentioning for the subsequent operators,
-          many follow a similar inheritance hierachy.</para>
+          <classname>identityOperator</classname> and
+          <classname>cuIdentityOperator</classname> below. Without specific
+          mentioning for the subsequent operators, many follow a similar
+          inheritance hierachy.</para>
 
           <itemizedlist>
             <listitem>
@@ -2379,29 +2454,28 @@ private:
 
               <para><programlisting>// Notice: simplified code without error-checking
 
-template &lt;class REAL, class ARRAY_TYPE&gt; 
-class identityOperator : public matrixOperator&lt;REAL, ARRAY_TYPE&gt;
+template &lt;class REAL, class ARRAY_TYPE&gt; class identityOperator
+ : public linearOperator&lt;REAL, ARRAY_TYPE&gt;
 {
  public:
 
-  identityOperator() : matrixOperator&lt;REAL,ARRAY_TYPE&gt;() {}
+  identityOperator() : linearOperator&lt;REAL, ARRAY_TYPE&gt;() {}
   virtual ~identityOperator() {}
   
-  // to implement y += x
-  virtual bool operator_xpy( ARRAY_TYPE *x, ARRAY_TYPE *y ) = 0; 
+  // operator_xpy implements the sum x+y and stores the result in y
+  virtual bool operator_xpy( ARRAY_TYPE *x, ARRAY_TYPE *y ) = 0;
 
   virtual int mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, 
                       bool accumulate = false )
   {
     if( accumulate )
-      return operator_xpy( in, out );
-    else{ 
+      operator_xpy( in, out );
+    else 
       *out = *in;
-      return 0;
-    }
+  }
 
   ... // Similar code for mul_MH and mult_MH_M
-}
+};
 
 </programlisting><programlisting>// Notice: 
 // Simplified code without error checking and multi-device support
@@ -2417,11 +2491,11 @@ class cuIdentityOperator
   
   virtual bool operator_xpy( cuNDArray&lt;T&gt; *x, cuNDArray&lt;T&gt; *y )
   { 
-    return cuNDA_axpy( get_one&lt;T&gt;(), x, y );
+    return cuNDA_axpy( T(1), x, y );
   }
 
-  DECLARE_MATRIX_OPERATOR_DEVICE_SUPPORT(cuIdentityOperator);
-}
+ ...
+};
 
 </programlisting>Notice that the template arguments to the
               <classname>cuIdentitytOperator</classname> differ from its base
@@ -2460,8 +2534,14 @@ class cuIdentityOperator
             <listitem>
               <para><classname>convolutionOperator</classname></para>
 
-              <para>Performs convolution of a given image with a given
+              <para>Performs convolution of an image with a given
               kernel.</para>
+            </listitem>
+
+            <listitem>
+              <para><classname>nfftOperator</classname></para>
+
+              <para>Implements the non-Cartesian Fast Fourier Transform</para>
             </listitem>
 
             <listitem>
@@ -2471,24 +2551,46 @@ class cuIdentityOperator
               imaging technique Sense. Comes in two flavours for 1) Cartesian
               and 2) non-Cartesian reconstruction.</para>
             </listitem>
-          </itemizedlist>
 
-          <para>Other toolbox provided functionality such as Cartesian and
-          non-Cartesian Fourier transforms can easily be added as new
-          operators as needed.</para>
+            <listitem>
+              <para><classname>encodingOperatorContainer</classname></para>
+
+              <para>As we require exactly one encoding operator (but allow
+              multiple regularization operators) to be added to our solvers
+              (see <xref linkend="sect.linear_solvers"/> below), this operator
+              acts as a container when multiple encoding operators are
+              desired. For example: The cost function right below (<xref
+              linkend="sect.cg_solver"/>) has two terms in its general form.
+              Most often the vector <emphasis role="bold">p</emphasis> is
+              <emphasis role="bold">0</emphasis> and consequently the operator
+              <emphasis role="bold">R</emphasis> is considered a
+              regularization operator while the operator <emphasis
+              role="bold">E</emphasis> the single encoding operator. However,
+              if <emphasis role="bold">p</emphasis> is non-zero, both
+              <emphasis role="bold">E</emphasis> and <emphasis
+              role="bold">R</emphasis> must be added to an
+              <classname>encodingOperatorContainer</classname> that takes in
+              both <emphasis role="bold">m</emphasis> and <emphasis
+              role="bold">p</emphasis> during multiplication. A single
+              <classname>encodingOperatorContainer</classname> is then added
+              to the solver.</para>
+            </listitem>
+          </itemizedlist>
         </sect3>
       </sect2>
 
       <sect2 xml:id="sect.linear_solvers">
         <title>Linear Solvers</title>
 
-        <para>The Gadgetron 'solvers' toolbox contain both a generic conjugate
-        gradient solver to solve linear least squares reconstruction problems
-        (see <xref linkend="sect.linear_solvers"/> ) and a two flavors of a
-        Split Bregman solver for non-linear problems using l1-norms for
-        regularization (see <xref linkend="sect.nonlinear_solvers"/>).</para>
+        <para>The Gadgetron's solvers toolbox contains both a generic
+        conjugate gradient solver to solve linear least squares reconstruction
+        problems (see <xref linkend="sect.linear_solvers"/> ) and a two
+        flavors of a Split Bregman solver for non-linear problems using
+        l1-norms for regularization (see <xref
+        linkend="sect.nonlinear_solvers"/>). More solvers can be expected in
+        upcoming releases.</para>
 
-        <sect3>
+        <sect3 xml:id="sect.cg_solver">
           <title>Conjugate Gradient Method for Linear Least Squares</title>
 
           <para>The conjugate gradient solver is used to reconstruct an image
@@ -2519,7 +2621,7 @@ class cuIdentityOperator
           associated to each matrix operator and used to balance the various
           terms in the cost function. Finally <emphasis
           role="bold">p</emphasis> denotes some (possibly blank) prior image
-          in the regularization term.</para>
+          in the regularization term. Any number of terms can be added.</para>
 
           <para>The closed form solution to the optimization problem is given
           by the linear system of equations:</para>
@@ -2538,107 +2640,155 @@ class cuIdentityOperator
             </mediaobject>
           </informalequation>
 
-          <para>Put extremely short you set up and run a solver by 1) adding
-          the corresponding matrix operators to the solver, 2) computing the
-          right hand side of the equation above (probably using the
-          <function>mult_MH</function> function in the matrix operators), and
-          3) running the <function>solve</function> function in the solver
-          providing the right hand side as input argument.</para>
+          <para>Put extremely short; you set up and run a solver by 1) adding
+          the corresponding linear operators to the solver, and 2) invoking
+          the <function>solve</function> function in the solver providing
+          <emphasis role="bold">m</emphasis> (and <emphasis
+          role="bold">p</emphasis> if non-zero) as input arguments.</para>
 
           <para>An abbreviated version of the interface to the conjugate
           gradient solver is shown here<programlisting>// Defined in solver.h
 
-template &lt;class ARRAY_TYPE&gt; class solver
+template &lt;class ARRAY_TYPE_IN, class ARRAY_TYPE_OUT&gt; class solver
 {
- public:
+public:
+
+  // Constructor/destructor
+  //
+
+  solver() { output_mode_ = OUTPUT_SILENT; }
+  virtual ~solver() {}
+  
+  // Output modes
+  //
 
   enum solverOutputModes { OUTPUT_SILENT = 0, 
                            OUTPUT_WARNINGS = 1, 
                            OUTPUT_VERBOSE = 2, 
                            OUTPUT_MAX = 3 };
+  
+  // Set/get output mode
+  //
 
-  solver( int output_mode = OUTPUT_SILENT ) { 
-    output_mode_ = output_mode; }
-  
-  virtual ~solver() {}
-  
-  virtual void solver_error( std::string err ) { 
-    std::cerr &lt;&lt; err &lt;&lt; std::endl; }
+  virtual int get_output_mode() { return output_mode_; }
 
   virtual void set_output_mode( int output_mode ) {
-    if( !(output_mode &gt;= OUTPUT_MAX || output_mode &lt; 0 )) {
       output_mode_ = output_mode;
-    }
   }
+  
+  // Set/get starting solution/estimate for solver
+  //
 
-  virtual boost::shared_ptr&lt;ARRAY_TYPE&gt; solve( ARRAY_TYPE* ) = 0;
+  virtual void set_x0( boost::shared_ptr&lt;ARRAY_TYPE_OUT&gt; x0 ){ x0_ = x0; }
 
+  virtual boost::shared_ptr&lt;ARRAY_TYPE_OUT&gt; get_x0(){ return x0_; }
+
+  // Default error output
+  //
+
+  virtual void solver_error( std::string msg ) { ... }
+
+  // Default warning output
+  //
+
+  virtual void solver_warning( std::string msg ) { ... }
+
+  // Invoke solver
+  //
+
+  virtual boost::shared_ptr&lt;ARRAY_TYPE_OUT&gt; solve( ARRAY_TYPE_IN* ) = 0;
+ 
 protected:
   int output_mode_;
+  boost::shared_ptr&lt;ARRAY_TYPE_OUT&gt; x0_;
 };
-
 </programlisting><programlisting>// Defined in cgSolver.h
 
-template &lt;class REAL, class ELEMENT_TYPE, class ARRAY_TYPE&gt; 
-class cgSolver : public solver&lt;ARRAY_TYPE&gt;
+template &lt;class REAL, class ELEMENT_TYPE, class ARRAY_TYPE&gt; class cgSolver 
+  : public linearSolver&lt;REAL, ELEMENT_TYPE, ARRAY_TYPE&gt;
 {
 public:
 
-  cgSolver( int output_mode = solver&lt;ARRAY_TYPE&gt;::OUTPUT_SILENT ) 
-    : solver&lt;ARRAY_TYPE&gt;( output_mode ) { 
-    // Initialize member variables
-  }
+  // Class defining the termination criterium
+  //
 
+  friend class cgTerminationCallback&lt;REAL,ELEMENT_TYPE,ARRAY_TYPE&gt;;
+
+  // Constructor / destructor
+  //
+
+  cgSolver() : linearSolver&lt;REAL, ELEMENT_TYPE, ARRAY_TYPE&gt;() {...}
   virtual ~cgSolver() {}
 
-  virtual int add_matrix_operator( 
-    boost::shared_ptr&lt; matrixOperator&lt;REAL, ARRAY_TYPE&gt; &gt; op ) 
-    { ... }
+  // Set preconditioner
+  //
 
-  virtual int set_preconditioner( 
-    boost::shared_ptr&lt; cgPreconditioner&lt;ARRAY_TYPE&gt; &gt; precond ) 
-    { ... }
+  virtual void set_preconditioner( 
+    boost::shared_ptr&lt; cgPreconditioner&lt;ARRAY_TYPE&gt; &gt; precond ) {
+      precond_ = precond;
+  }
+  
+  // Set termination callback
+  //
 
-  virtual void set_limit( REAL limit ) { ... }
-
-  virtual void set_iterations( unsigned int iterations ) 
-    { ... }
-
-  virtual bool pre_solve( ARRAY_TYPE **rhs ) { return true; }
-  virtual bool post_solve( ARRAY_TYPE **rho ) { return true; }
-
-  virtual bool solver_clear( ARRAY_TYPE* ) = 0;
-  virtual bool solver_scal( ELEMENT_TYPE, ARRAY_TYPE* ) = 0;
-
-  virtual bool solver_axpy( ELEMENT_TYPE, ARRAY_TYPE*, 
-    ARRAY_TYPE* ) = 0;
-
-  virtual bool solver_dump( ARRAY_TYPE *rho ) { return true; }
-
-  virtual ELEMENT_TYPE solver_dot( ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
-
-  virtual boost::shared_ptr&lt;ARRAY_TYPE&gt; solve( ARRAY_TYPE *_rhs )
-  {
-     // The conjugate gradient solver code is found here...
+  virtual void set_termination_callback(
+    boost::shared_ptr&lt; cgTerminationCallback&lt;REAL, ELEMENT_TYPE, ARRAY_TYPE&gt; &gt; cb ){
+      cb_ = cb;
   }
 
-protected:
-  boost::shared_ptr&lt; std::vector&lt; 
-    boost::shared_ptr&lt; matrixOperator&lt;REAL, ARRAY_TYPE&gt; &gt; &gt; &gt; operators_;
-  boost::shared_ptr&lt; cgPreconditioner&lt;ARRAY_TYPE&gt; &gt; precond_;
-  unsigned int iterations_;
-  REAL limit_;
-};</programlisting><programlisting>// Defined in cuCGSolver.h
+  // Set/get maximally allowed number of iterations
+  //
 
-template &lt;class REAL, class T&gt; 
-class cuCGSolver : public cgSolver&lt; REAL, T, cuNDArray&lt;T&gt; &gt;
+  virtual void set_max_iterations( unsigned int iterations ) { 
+    iterations_ = iterations; }
+
+  virtual unsigned int get_max_iterations() { return iterations_; }  
+
+  // Set/get tolerance threshold for termination criterium
+  //
+
+  virtual void set_tc_tolerance( REAL tolerance ) { tc_tolerance_ = tolerance; }
+  virtual REAL get_tc_tolerance() { return tc_tolerance_; }
+  
+  // Pre/post solver callbacks
+  //
+
+  virtual bool pre_solve( ARRAY_TYPE** ) { return true; }
+  virtual bool post_solve( boost::shared_ptr&lt;ARRAY_TYPE&gt;&amp; ) { return true; }
+
+  // Pure virtual functions defining core solver functionality
+  // Implemented on the host/device respectively in a derived class
+  //
+
+  virtual ELEMENT_TYPE solver_dot( ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
+  virtual bool solver_clear( ARRAY_TYPE* ) = 0;
+  virtual bool solver_scal( ELEMENT_TYPE, ARRAY_TYPE* ) = 0;
+  virtual bool solver_axpy( ELEMENT_TYPE, ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
+  virtual bool solver_dump( ARRAY_TYPE* ) { return true; }
+
+  //
+  // Main solver interfaces
+  //
+
+  virtual boost::shared_ptr&lt;ARRAY_TYPE&gt; solve( ARRAY_TYPE *_d ) { ... }
+  virtual boost::shared_ptr&lt;ARRAY_TYPE&gt; solve_from_rhs( ARRAY_TYPE *_rhs ) { ... }
+
+  ...
+};
+</programlisting><programlisting>// Defined in cuCGSolver.h
+
+template &lt;class REAL, class T&gt; class cuCgSolver 
+  : public cgSolver&lt; REAL, T, cuNDArray&lt;T&gt; &gt;
 {
 public:
+
+  cuCgSolver() : cgSolver&lt; REAL, T, cuNDArray&lt;T&gt; &gt;() { ... }
+  virtual ~cuCgSolver() {}
 
   cuCGSolver() : cgSolver&lt; REAL, T, cuNDArray&lt;T&gt; &gt;() {}
   virtual ~cuCGSolver() {}
 
-  virtual bool pre_solve(cuNDArray&lt;T&gt; **rhs)
+  virtual bool pre_solve(cuNDArray&lt;T&gt;**)
    { ... }
 
   virtual bool post_solve(cuNDArray&lt;T&gt;**)
@@ -2658,18 +2808,20 @@ public:
 
   virtual bool solver_axpy( T a, cuNDArray&lt;T&gt; *x, 
    cuNDArray&lt;T&gt; *y ){ ... }
+
+  ...
 };</programlisting>The overall inheritance hierachy is modelled and
-          implemented similarly to the <classname>matrixOperator</classname>
+          implemented similarly to the <classname>linearOperator</classname>
           class hierachy described above (see <xref
           linkend="sect.matrix_operators"/>). To use the solver the user
           creates an instance of the solver for either the host or device
           (e.g. the <classname>cuCGSolver</classname> above for a GPU-based
           solver). The solver is configured using the functions in the
-          <classname>cgSolver</classname> base class. Finally the solve
-          function itself is found in the root of the hierachy; the
+          <classname>cgSolver</classname> base class. The core solve function
+          itself is found in the root of the hierachy; the
           <classname>solver</classname>.</para>
 
-          <para>Note that any number of terms (matrix operators) can be added
+          <para>Note that any number of terms (linear operators) can be added
           to the solver (or cost function).</para>
 
           <para>The following code listing provides a short example of how to
@@ -2692,8 +2844,10 @@ public:
   cuNDArray&lt;_complext&gt; kernel(host_kernel.get());
     
   // Setup regularization operators
+
   boost::shared_ptr&lt; cuPartialDerivativeOperator&lt;_real,_complext,2&gt; &gt; 
     Rx( new cuPartialDerivativeOperator&lt;_real,_complext,2&gt;(0) ); 
+
   boost::shared_ptr&lt; cuPartialDerivativeOperator&lt;_real,_complext,2&gt; &gt; 
     Ry( new cuPartialDerivativeOperator&lt;_real,_complext,2&gt;(1) ); 
 
@@ -2709,32 +2863,29 @@ public:
     E( new cuConvolutionOperator&lt;_real,2&gt;() );
 
   E-&gt;set_kernel( &amp;kernel );
+  E-&gt;set_domain_dimensions(data.get_dimensions().get());
     
   // Setup conjugate gradient solver
   cuCGSolver&lt;_real, _complext&gt; cg;
 
   // encoding matrix
-  cg.add_matrix_operator( E );
+  cg.set_encoding_operator( E );
 
   // regularization matrix                   
-  if( kappa&gt;0.0 ) cg.add_matrix_operator( Rx );
+  if( kappa&gt;0.0 ) cg.add_reuglarization_operator( Rx );
   
   // regularization matrix
-  if( kappa&gt;0.0 ) cg.add_matrix_operator( Ry ); 
+  if( kappa&gt;0.0 ) cg.add_regularization_operator( Ry ); 
 
-  cg.set_iterations( num_iterations );
-  cg.set_limit( 1e-8 );
+  cg.set_max_iterations( num_iterations );
+  cg.set_tc_tolerance( 1e-8 );
   cg.set_output_mode( cuCGSolver&lt;_real, _complext&gt;::OUTPUT_VERBOSE );
                 
-  // Form right hand side
-  cuNDArray&lt;_complext&gt; rhs; rhs.create(data.get_dimensions().get());
-  E-&gt;mult_MH( &amp;data, &amp;rhs );
-
   //
   // Conjugate gradient solver
   //
   
-  boost::shared_ptr&lt; cuNDArray&lt;_complext&gt; &gt; cgresult = cg.solve(&amp;rhs);
+  boost::shared_ptr&lt; cuNDArray&lt;_complext&gt; &gt; cgresult = cg.solve(&amp;data);
 
   // All done, write out the result
   
@@ -2778,92 +2929,185 @@ public:
           norm. The solver to the upper (unconstraint) optimization problem is
           defined in <filename>sbSolver.h</filename> while the solver to the
           latter constraint problem declared in
-          <filename>sbcSolver.h</filename>. The Split Bregman formulation to
-          solve the above-mentioned minimization problems were chosen as they
-          integrate nicely with the linear conjugate solver desribed above
-          (<xref linkend="sect.linear_solvers"/>). In fact, most of the work
-          in the two Split Bregman solvers is performed by a linear inner
-          solver (e.g. a conjugate gradient solver), but the input (right hand
-          side) to the inner solver varies from iteration to iteration.</para>
+          <filename>sbcSolver.h</filename>. The Split Bregman solver was
+          chosen as it integrates nicely with the linear conjugate solver
+          desribed above (<xref linkend="sect.linear_solvers"/>). In fact,
+          most of the work in the two Split Bregman solvers is performed by a
+          linear inner solver (e.g. a conjugate gradient solver), but the
+          input (right hand side) to the inner solver varies from iteration to
+          iteration.</para>
 
           <para>The interface to the unconstraint Split Bregman solver is
           given here. We have seen the overall inheritance hierachy several
           times already, so it should suffice to provide only very abbreviated
-          headers here:<programlisting>// Defined in cgSolver.h
+          headers here:<programlisting>// Defined in sbSolver.h
 
-template &lt;class REAL, class ELEMENT_TYPE, 
-          class ARRAY_TYPE_REAL, class ARRAY_TYPE_ELEMENT&gt; 
-class sbSolver : public solver&lt;ARRAY_TYPE_ELEMENT&gt;
+
+template&lt; class REAL, 
+          class ELEMENT_TYPE, 
+          class ARRAY_TYPE_REAL, 
+          class ARRAY_TYPE_ELEMENT, 
+          class INNER_SOLVER,
+          class OPERATOR_CONTAINER &gt; class sbSolver 
+
+ : public linearSolver&lt;REAL, ELEMENT_TYPE, ARRAY_TYPE_ELEMENT&gt;
 {
 public:
 
-  sbSolver( int output_mode ) 
-  : solver&lt;ARRAY_TYPE_ELEMENT&gt;( output_mode ) 
-    { ... }
+  // Constructor
+  //
+
+  sbSolver() : linearSolver&lt;REAL, ELEMENT_TYPE, ARRAY_TYPE_ELEMENT&gt;() 
+   { ... }
+  
+  // Destructor
+  //
 
   virtual ~sbSolver() {}
+   
 
-  virtual int set_inner_solver( 
-    boost::shared_ptr&lt; solver&lt;ARRAY_TYPE_ELEMENT&gt; &gt; solver ) { ... }
+  // Add regularization group operator 
+  // (isotropic, multiple operators per group allowed)
+  //
 
-  virtual int set_encoding_operator( 
-    boost::shared_ptr&lt; matrixOperator&lt;REAL, ARRAY_TYPE_ELEMENT&gt; &gt; op ) 
-    { ... }
+  virtual bool add_regularization_group_operator( 
+    boost::shared_ptr&lt; linearOperator&lt;REAL, ARRAY_TYPE_ELEMENT&gt; &gt; op ) 
+  { ... }
 
-  virtual int add_regularization_operator( 
-    boost::shared_ptr&lt; matrixOperator&lt;REAL, ARRAY_TYPE_ELEMENT&gt; &gt; op, 
-    ARRAY_TYPE_ELEMENT *prior = 0x0  ) { ... }
+  // Add isotroic regularization group (multiple groups allowed)
+  //
 
-  virtual int add_regularization_group_operator( 
-    boost::shared_ptr&lt; matrixOperator&lt;REAL, ARRAY_TYPE_ELEMENT&gt; &gt; op ) 
-    { ... }
+  virtual bool add_group() { ... }
 
-  virtual int add_group( ARRAY_TYPE_ELEMENT *prior = 0x0 ) { ... }
+  // Get regularization group operator
+  //
+ 
+  &lt; omitted for brevity&gt;
+  
+  // Set/get prior image (PICCS style). 
+  // I.e. for every regularization operator (group) R that is added we minimize:
+  // alpha|R(x-prior)|_{l1} + (1-alpha)|R(x)|_{l1}
+  //
 
-  virtual void set_tolerance( REAL tolerance ) { ... }
-  virtual void set_outer_iterations( unsigned int iterations ) { ... }
-  virtual void set_inner_iterations( unsigned int iterations ) { ... }
+  virtual bool set_prior_image( 
+    boost::shared_ptr&lt;ARRAY_TYPE_ELEMENT&gt; prior, REAL alpha )
+  { ... }
+ 
+  // Get the prior image and corresponding weighing factor
+  //
+  
+  virtual boost::shared_ptr&lt;ARRAY_TYPE_ELEMENT&gt; get_prior_image() 
+    { return prior_; }
 
-  virtual void set_image_dimensions( 
-    boost::shared_ptr&lt; std::vector&lt;unsigned int&gt; &gt; dims ){ ... }
+  virtual REAL get_prior_alpha() { return alpha_; }
 
-  virtual boost::shared_ptr&lt;ARRAY_TYPE_ELEMENT&gt; 
-    solve( ARRAY_TYPE_ELEMENT *_f ) { ... }
+
+  // Set termination criterium tolerance
+  //
+
+  virtual void set_tc_tolerance( REAL tolerance ) 
+  { ... }
+
+  // Set/get maximum number of outer Split-Bregman iterations
+  //
+
+  virtual void set_max_outer_iterations( 
+    unsigned int iterations ) { outer_iterations_ = iterations; }
+ 
+  virtual unsigned int get_max_outer_iterations() { 
+    return outer_iterations_; }
+
+  // Set/get maximum number of inner Split-Bregman iterations
+  //
+
+  virtual void set_max_inner_iterations( 
+    unsigned int iterations ) { inner_iterations_ = iterations; }
+
+  virtual unsigned int get_max_inner_iterations() 
+   { return inner_iterations_; }
+
+  // Get the inner solver
+  //
+
+  virtual boost::shared_ptr&lt;INNER_SOLVER&gt; get_inner_solver() 
+   { return inner_solver_; }
+  
+
+  // Core solver functionality to be implemented
+  // in a derived class (host/device specific implementations)
+  //
+
+  virtual bool solver_clear_real( ARRAY_TYPE_REAL* ) = 0;
+
+  virtual bool solver_clear_element( ARRAY_TYPE_ELEMENT* ) = 0;
+
+  virtual bool solver_sqrt( ARRAY_TYPE_REAL* ) = 0;
+
+  virtual bool solver_scal( ELEMENT_TYPE, 
+                            ARRAY_TYPE_ELEMENT* ) = 0;
+
+  virtual bool solver_axpy_real( REAL, ARRAY_TYPE_REAL*, 
+                                 ARRAY_TYPE_REAL* ) = 0;
+
+  virtual bool solver_axpy_element( ELEMENT_TYPE, 
+                                    ARRAY_TYPE_ELEMENT*, 
+                                    ARRAY_TYPE_ELEMENT* ) = 0;
+
+  virtual REAL solver_asum( ARRAY_TYPE_ELEMENT* ) = 0;
+
+  virtual boost::shared_ptr&lt;ARRAY_TYPE_REAL&gt; solver_abs
+    ( ARRAY_TYPE_ELEMENT* ) = 0;
+
+  virtual boost::shared_ptr&lt;ARRAY_TYPE_REAL&gt; solver_norm
+    ( ARRAY_TYPE_ELEMENT* ) = 0;
+
+  virtual bool solver_shrink1( REAL, ARRAY_TYPE_ELEMENT*, 
+                               ARRAY_TYPE_ELEMENT* ) = 0;
+
+  virtual bool solver_shrinkd( REAL, ARRAY_TYPE_REAL*, 
+                               ARRAY_TYPE_ELEMENT*, 
+                               ARRAY_TYPE_ELEMENT* ) = 0;
+
+  //
+  // Main solver interface
+  //
+
+  virtual boost::shared_ptr&lt;ARRAY_TYPE_ELEMENT&gt; solve
+   ( ARRAY_TYPE_ELEMENT *f ) { ... }
 
  ...
 };
+</programlisting><programlisting>// Defined in cuSbCgSolver.h
 
-</programlisting><programlisting>// Defined in cuSBSolver.h
-
-template &lt;class REAL, class T&gt; 
-class cuSBSolver 
-: public sbSolver&lt; REAL, T, cuNDArray&lt;REAL&gt;, cuNDArray&lt;T&gt; &gt;
+template &lt;class REAL, class T&gt; class cuSbCgSolver 
+  : public sbSolver&lt; REAL, T, cuNDArray&lt;REAL&gt;, 
+                     cuNDArray&lt;T&gt;, cuCgSolver&lt;REAL,T&gt;, 
+                     cuEncodingOperatorContainer&lt;REAL,T&gt; &gt;
 {
 public:
   
-  cuSBSolver() 
-   : sbSolver&lt; REAL, T, cuNDArray&lt;REAL&gt;, cuNDArray&lt;T&gt; &gt;() 
-   { ... }
-
-  virtual ~cuSBSolver() {}
+  cuSbCgSolver() : sbSolver&lt; REAL, T, cuNDArray&lt;REAL&gt;, 
+                             cuNDArray&lt;T&gt;, cuCgSolver&lt;REAL,T&gt;, 
+                             cuEncodingOperatorContainer&lt;REAL,T&gt; &gt;() 
+  { ... }
+  
+  virtual ~cuSbCgSolver() {}
 
   // Implementation of pure virtual functions
   ...
 };</programlisting></para>
 
           <para>To run the algorithm on the GPU the user would create an
-          instance of a cuSBSolver providing the two template arguments; the
-          desired precision and data type. Prior to running the
-          <function>solve</function> function with the measured data <emphasis
-          role="bold">m</emphasis>, the user should provide 1) an configured
-          inner solver (e.g. an instance of a conjugate gradient solver), 2)
-          the encoding operator used in the inner solver, 3) the
-          regularization operators used in the inner solver, and 4) the
-          desired image dimensions as these cannot neccesarily be deduced from
-          the measured data.</para>
+          instance of a <classname>cuSbCgSolver</classname> providing the two
+          template arguments; the desired precision and data type. Prior to
+          running the <function>solve</function> function with the measured
+          data <emphasis role="bold">m</emphasis>, the user should provide 1)
+          the encoding operator, 2) the regularization operators, and 3) the
+          desired domain and codomain dimensions as these cannot in general be
+          deduced from the measured data.</para>
 
-          <para>Let us outline the code required to set up the solver for
-          TV-based image denoising. The full code can be found in
+          <para>We outline the code required to set up the solver for TV-based
+          image denoising. The full code can be found in
           <envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/denoising/2d/denoise_TV.cpp</filename>.<programlisting>{
   &lt;&lt; Command line parsing and data loading &gt;&gt;
   
@@ -2878,52 +3122,52 @@ public:
     Ry( new cuPartialDerivativeOperator&lt;_real,_real,2&gt;(1) ); 
 
   Rx-&gt;set_weight( lambda );
-  Ry-&gt;set_weight( lambda );
+  Rx-&gt;set_domain_dimensions(data.get_dimensions().get());
+  Rx-&gt;set_codomain_dimensions(data.get_dimensions().get());
 
-  //
-  // Setup inner conjugate gradient solver
-  //
-  
-  // Define encoding matrix (identity)
+  Ry-&gt;set_weight( lambda );
+  Ry-&gt;set_domain_dimensions(data.get_dimensions().get());
+  Ry-&gt;set_codomain_dimensions(data.get_dimensions().get());
+
+  // Define encoding operator (identity)
   boost::shared_ptr&lt; cuIdentityOperator&lt;_real,_real&gt; &gt; 
     E( new cuIdentityOperator&lt;_real,_real&gt;() );
 
   E-&gt;set_weight( mu );
-  
-  // Setup conjugate gradient solver
-  boost::shared_ptr&lt; cuCGSolver&lt;_real,_real&gt; &gt; 
-    cg(new cuCGSolver&lt;_real,_real&gt;());
+  E-&gt;set_domain_dimensions(data.get_dimensions().get());
+  E-&gt;set_codomain_dimensions(data.get_dimensions().get());
 
-  cg-&gt;add_matrix_operator( E );   // encoding matrix
-  cg-&gt;add_matrix_operator( Rx );  // regularization matrix
-  cg-&gt;add_matrix_operator( Ry );  // regularization matrix
+  // Setup split-Bregman solver
+  //
+
+  cuSbCgSolver&lt;_real,_real&gt; sb;
+
+  sb.set_encoding_operator( E );
+
+  sb.add_regularization_group_operator( Rx );
+  sb.add_regularization_group_operator( Ry);
+  sb.add_group();
+
+  sb.set_max_outer_iterations(num_outer_iterations);
+  sb.set_max_inner_iterations(num_inner_iterations);
+
+  sb.set_output_mode( cuCgSolver&lt;_real,_real&gt;::OUTPUT_VERBOSE );
+  
+  // Setup inner conjugate gradient solver
+  //
+
+  sb.get_inner_solver()-&gt;set_max_iterations
+   ( num_cg_iterations );
+  sb.get_inner_solver()-&gt;set_tc_tolerance( 1e-4 );
+  sb.get_inner_solver()-&gt;set_output_mode
+   ( cuCgSolver&lt;_real,_real&gt;::OUTPUT_WARNINGS );  
 
   //
-  // Setup unconstraint Split Bregman solver
-  // 
-
-  cuSBSolver&lt;_real,_real&gt; sb;
-  sb.set_inner_solver( cg );
-  sb.set_encoding_operator( E );
-  
-  // For anisotropic denoising
-  //sb.add_regularization_operator( Rx ); 
-
-  // For anisotropic denoising
-  //sb.add_regularization_operator( Ry );
- 
-  // For isotropic denoising
-  sb.add_regularization_group_operator( Rx );
- 
-  // For isotropic denoising
-  sb.add_regularization_group_operator( Ry );
- 
-  sb.add_group();
-  sb.set_image_dimensions(data.get_dimensions());
-  
   // Run split-Bregman solver
-  boost::shared_ptr&lt; cuNDArray&lt;_real&gt; &gt; sbresult = 
-    sb.solve(&amp;data);
+  //
+
+  boost::shared_ptr&lt; cuNDArray&lt;_real&gt; &gt; 
+   sbresult = sb.solve(&amp;data);
 
   &lt;&lt; do something with the result &gt;&gt;
 }</programlisting></para>
@@ -2939,10 +3183,10 @@ public:
 
         <para>The Gadgetron framework uses HDF5 files for storing raw data and
         reconstructed images. Please see <xref linkend="section.hdf5"/> for a
-        simple overview of the HDF5 file format. </para>
+        simple overview of the HDF5 file format.</para>
 
         <para xlink:href="http://www.hdfgroup.org/HDF5/">The HDF5 file format
-        has a well described C/C++ interface as described on the HDF5 website:
+        has a well defined C/C++ interface as described on the HDF5 website:
         <uri
         xlink:href="http://www.hdfgroup.org/HDF5/">http://www.hdfgroup.org/HDF5/</uri>.
         The Gadgetron has two toolboxes (<filename>hdf5utils</filename> and
@@ -3002,7 +3246,7 @@ template &lt;&gt; boost::shared_ptr&lt;DataType&gt; getHDF5Type&lt;float&gt;()
         directly to the file with the standard HDF5 function, i.e. it cannot
         be a class with dynamically allocate members, etc. Typically this
         function is used to read and write image and data headers to the HDF5
-        files. </para>
+        files.</para>
 
         <para xlink:href="http://www.hdfgroup.org/HDF5/">The
         <filename>hdf5mri</filename> toolbox contains some specializations for
@@ -3428,9 +3672,7 @@ struct GadgetMessageAcquisition
               (<filename>gadgetroncore</filename>):</para>
 
               <para>See description of
-              <classname>MRINoiseAdjustGadget</classname>. This Gadget
-              performs noise pre-whitening without using the BLAS and LAPACK
-              libraries.</para>
+              <classname>MRINoiseAdjustGadget</classname>. </para>
             </listitem>
 
             <listitem>
@@ -3452,8 +3694,8 @@ struct GadgetMessageAcquisition
               <para><classname>RemoveROOversamplingGadget</classname>
               (<filename>gadgetroncore</filename>):</para>
 
-              <para>Simple Gadget to remove the 2x oversampling often used in
-              the readout direction for Cartesian MRI.</para>
+              <para>Removes the 2x oversampling often used in the readout
+              direction for (Cartesian) MRI.</para>
             </listitem>
           </itemizedlist>
         </sect3>
@@ -3463,8 +3705,7 @@ struct GadgetMessageAcquisition
         <title>Python Gadgets</title>
 
         <para>The Gadgetron provides a mechanism to do prototype development
-        in Python. We will again be using MRI as the example
-        application.</para>
+        in Python. Again, we use MRI as the example application.</para>
 
         <para>The Python layer is accessed through a set of Python Gadgets
         that can encapsulate a Python module. This is seen in <xref
@@ -3815,8 +4056,6 @@ public Gadget2&lt;GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &g
 
 #endif //THRESHOLDGADGET_H</programlisting>
 
-        <para/>
-
         <programlisting>//ThresholdGadget.cpp
 
 #include "ThresholdGadget.h"
@@ -3866,8 +4105,6 @@ int ThresholdGadget::process(
 }
 
 GADGET_FACTORY_DECLARE(ThresholdGadget)</programlisting>
-
-        <para/>
 
         <programlisting>//examplelib_export.h
 
@@ -4284,8 +4521,8 @@ install(TARGETS mygadgetronclient DESTINATION bin)
     <sect1 xml:id="sect.2dftexample">
       <title>Basic 2D FFT MRI</title>
 
-      <para>The simplest example application in the Gadgetron is a simple 2D
-      FT MRI reconstruction. It receives 2D MRI data, collects it into k-space
+      <para>A basic example application in the Gadgetron is a simple 2D FT MRI
+      reconstruction. It receives 2D MRI data, collects it into k-space
       arrays, performs FFT of the data, combines channels (if there are
       multiple), and returns the images to the client. This example is
       included in the Gadgetron for testing and demonstration purposes only.
@@ -4735,11 +4972,11 @@ GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2
     <sect1 xml:id="sect.grappa">
       <title>Cartesian 2D Parallel MRI (GRAPPA)</title>
 
-      <para>The Gadgetron contains a high-throughput 2D Cartesian parallel
-      imaging reconstruction (GRAPPA) implemented on the GPU. It is beyond the
-      scope of this manual to review all the algorithmic details of this
-      application, but we will give an overview here as an example of a more
-      complicated reconstruction chain.</para>
+      <para>The Gadgetron contains a high-throughput real-time 2D Cartesian
+      parallel imaging reconstruction (GRAPPA) implemented on the GPU. It is
+      beyond the scope of this manual to review all the algorithmic details of
+      this application, but we will give an overview here as an example of a
+      more complicated reconstruction chain.</para>
 
       <para>The Gadget chain is defined in the <filename>grappa.xml</filename>
       and the resulting chain is illustrated in <xref
@@ -4946,8 +5183,8 @@ protected:
     <sect1 xml:id="sect.cgsense">
       <title>Non-Cartesian 2D Parallel MRI (SENSE)</title>
 
-      <para>The Gadgetron includes an implementation of a GPU-based real-time
-      non-Cartesian Sense reconstruction published in <citation
+      <para>The Gadgetron includes a real-time implementation of a GPU-based
+      real-time non-Cartesian Sense reconstruction published in <citation
       linkend="sorensen09"><xref linkend="sorensen09"/></citation>. One of the
       keys to obtaining real-time performance is an efficient GPU
       implementation of the non-Cartesian Fast Fourier Transform
@@ -5114,9 +5351,9 @@ user@host$</screen>
 
       <para>This example uses 1) the linear least squares solver, and 2) the
       constraint Split Bregman solver for image deblurring. The encoding
-      matrix is defined as an <classname>convolutionOperator</classname> and a
-      <classname>partialDerivativeOperator</classname> is used for each of the
-      two spatial directions to implement the regularization terms.</para>
+      matrix is defined as a <classname>convolutionOperator</classname>. A
+      <classname>partialDerivativeOperator</classname> is added for each of
+      the two spatial directions to implement the regularization terms.</para>
 
       <para>We reuse the Shepp-Logan data from the image denoising experiement
       above (<xref linkend="sect.image_denoising"/>).</para>
@@ -5255,7 +5492,12 @@ Output result to disk
 user@host$</screen>
 
       <para>The result is saved in file <filename>result.cplx</filename>. A
-      magnitudes image is saved as <filename>result.real</filename>.</para>
+      magnitudes image is saved as <filename>result.real</filename>. The
+      <envar>
+      $(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/MRI/nfft/2d/</filename>
+      folder also contains examples of using the
+      <classname>nfftOperator</classname> in a conjugate gradient an Split
+      Bregman solver respectively.</para>
 
       <para>Exercise: experiment with the settings to eliminate the
       aliasing.</para>
@@ -5438,7 +5680,7 @@ end
     array of any type, e.g. an array of images. There is a generic tool
     <command>hdfview</command> which can be used to view the files. It is
     available on all the platforms supported by the Gadgetron framework. HDF5
-    files can also be read easily in newer versions of Matlab. </para>
+    files can also be read easily in newer versions of Matlab.</para>
 
     <para>As an example of a HDF5 file with MRI raw data can be found at <uri
     type="website"
@@ -5447,7 +5689,7 @@ end
     with <command>hdfview</command>, it should look like <xref
     linkend="fig.hdfview_testdata"/>. As seen, the file contains 4 groups of
     data. Each group consists of some data and an XML configuration for the
-    Gadgetron. </para>
+    Gadgetron.</para>
 
     <figure xml:id="fig.hdfview_testdata">
       <title>Examining Data with HDFView</title>
@@ -5556,7 +5798,7 @@ ans =
       </biblioset>
 
       <biblioset role="journal">
-        <title>To be published</title>
+        <title>Magnetic Resonance in Medicine</title>
 
         <volumenum>Submitted</volumenum>
 
@@ -5590,9 +5832,9 @@ ans =
       </biblioset>
 
       <biblioset role="journal">
-        <title>Magn Reson Imaging</title>
+        <title>Magnetic Resonance in Medicine</title>
 
-        <volumenum>In Press</volumenum>
+        <volumenum>59 (3), 463-468</volumenum>
 
         <pubdate>2008</pubdate>
       </biblioset>

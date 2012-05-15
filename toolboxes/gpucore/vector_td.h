@@ -1,25 +1,25 @@
 #pragma once
 
 #include "host_defines.h"
+
 template< class T, unsigned int D > class vector_td
 {
-  public:
-	T vec[D];
+public:
 
-	__inline__ __host__ __device__ T& operator[](const int i){
-		return vec[i];
-	}
-	__inline__ __host__ __device__ const T& operator[](const int i) const {
-		return vec[i];
-	}
+  T vec[D];
 
+  __inline__ __host__ __device__ T& operator[](const int i){
+    return vec[i];
+  }
+
+  __inline__ __host__ __device__ const T& operator[](const int i) const {
+    return vec[i];
+  }
 };
-
 
 //
 // Some typedefs for convenience (templated typedefs are not (yet) available in C++)
 //
-
 
 template< class REAL, unsigned int D > struct reald{
   typedef vector_td< REAL, D > Type;
@@ -43,92 +43,92 @@ template< unsigned int D > struct doubled{
 
 template<class T> class vector_td<T,1>
 {
-  public:
-	T vec[1];
+public:
 
-	__inline__ __host__ __device__ T& operator[](const int i){
-		return vec[i];
-	}
-	__inline__ __host__ __device__ const T& operator[](const int i) const {
-		return vec[i];
-	}
+  T vec[1];
 
+  __inline__ __host__ __device__ vector_td(){}
 
-	__inline__ __host__ __device__ vector_td(){}
-	__inline__ __host__ __device__ vector_td(T x){
-		vec[0]=x;
+  __inline__ __host__ __device__ vector_td(T x){
+    vec[0]=x;
+  }
 
-	}
+  __inline__ __host__ __device__ T& operator[](const int i){
+    return vec[i];
+  }
 
+  __inline__ __host__ __device__ const T& operator[](const int i) const {
+    return vec[i];
+  }
 };
+
 template<class T> class vector_td<T,2>
 {
-  public:
-	T vec[2];
+public:
 
-	__inline__ __host__ __device__ T& operator[](const int i){
-		return vec[i];
-	}
-	__inline__ __host__ __device__ const T& operator[](const int i) const {
-		return vec[i];
-	}
+  T vec[2];
 
+  __inline__ __host__ __device__ vector_td(){}
 
+  __inline__ __host__ __device__ vector_td(T x, T y){
+    vec[0]=x;
+    vec[1]=y;
+  }
 
-	__inline__ __host__ __device__ vector_td(){}
-	__inline__ __host__ __device__ vector_td(T x, T y){
-		vec[0]=x;
-		vec[1]=y;
+  __inline__ __host__ __device__ T& operator[](const int i){
+    return vec[i];
+  }
 
-	}
-
+  __inline__ __host__ __device__ const T& operator[](const int i) const {
+    return vec[i];
+  }
 };
 
 template<class T> class vector_td<T,3>
 {
-  public:
-	T vec[3];
+public:
 
-	__inline__ __host__ __device__ T& operator[](const int i){
-		return vec[i];
-	}
-	__inline__ __host__ __device__ const T& operator[](const int i) const {
-		return vec[i];
-	}
+  T vec[3];
 
+  __inline__ __host__ __device__ vector_td(){}
 
-	__inline__ __host__ __device__ vector_td(){}
-	__inline__ __host__ __device__ vector_td(T x, T y,T z){
-		vec[0]=x;
-		vec[1]=y;
-		vec[2]=z;
-	}
+  __inline__ __host__ __device__ vector_td(T x, T y,T z){
+    vec[0]=x;
+    vec[1]=y;
+    vec[2]=z;
+  }
 
+  __inline__ __host__ __device__ T& operator[](const int i){
+    return vec[i];
+  }
 
+  __inline__ __host__ __device__ const T& operator[](const int i) const {
+    return vec[i];
+  }
 };
+
 template<class T> class vector_td<T,4>
 {
-  public:
+public:
 
-	T vec[4];
+  T vec[4];
 
-	__inline__ __host__ __device__ T& operator[](const int i){
-		return vec[i];
-	}
-	__inline__ __host__ __device__ const T& operator[](const int i) const {
-		return vec[i];
-	}
+  __inline__ __host__ __device__ vector_td(){}
 
+  __inline__ __host__ __device__ vector_td(T x, T y,T z,T w){
+    vec[0]=x;
+    vec[1]=y;
+    vec[2]=z;
+    vec[3]=w;
+  }
 
+  __inline__ __host__ __device__ T& operator[](const int i){
+    return vec[i];
+  }
 
-	__inline__ __host__ __device__ vector_td(){}
-	__inline__ __host__ __device__ vector_td(T x, T y,T z,T w){
-		vec[0]=x;
-		vec[1]=y;
-		vec[2]=z;
-		vec[3]=w;
-
-	}
+  __inline__ __host__ __device__ const T& operator[](const int i) const {
+    return vec[i];
+  }
 };
 
 typedef vector_td<double,1> doubled1;
