@@ -4,7 +4,9 @@
 #include "ndarray_vector_td_utilities.h"
 
 template<class T, unsigned int D> __global__ void
-first_order_partial_derivative_kernel( typename intd<D>::Type stride, typename intd<D>::Type dims, T *in, T *out )
+first_order_partial_derivative_kernel( typename intd<D>::Type stride, 
+				       typename intd<D>::Type dims, 
+				       T *in, T *out )
 {
   const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
   if( idx < prod(dims) ){
@@ -24,7 +26,10 @@ first_order_partial_derivative_kernel( typename intd<D>::Type stride, typename i
 }
 
 template<class T, unsigned int D> __global__ void
-second_order_partial_derivative_kernel( typename intd<D>::Type forwards_stride, typename intd<D>::Type adjoint_stride, typename intd<D>::Type dims, T *in, T *out )
+second_order_partial_derivative_kernel( typename intd<D>::Type forwards_stride, 
+					typename intd<D>::Type adjoint_stride, 
+					typename intd<D>::Type dims, 
+					T *in, T *out )
 {
   const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
   if( idx < prod(dims) ){
@@ -46,14 +51,21 @@ second_order_partial_derivative_kernel( typename intd<D>::Type forwards_stride, 
 }
 
 template< class REAL, class T, unsigned int D> int 
-cuPartialDerivativeOperator<REAL,T,D>::compute_partial_derivative( typename intd<D>::Type stride, cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate )
+cuPartialDerivativeOperator<REAL,T,D>::compute_partial_derivative( typename intd<D>::Type stride, 
+								   cuNDArray<T> *in, 
+								   cuNDArray<T> *out, 
+								   bool accumulate )
 {
   if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
     std::cerr << std::endl << "partialDerivativeOperator::compute_partial_derivative : array dimensions mismatch." << std::endl;
     return -1;
   }
-  if (!accumulate) cuNDA_clear(out);
-  
+
+  if( in->get_number_of_dimensions() != D || out->get_number_of_dimensions() != D ){
+    std::cerr << std::endl << "partialDerivativeOperator::compute_partial_derivative : dimensionality mismatch" << std::endl;
+    return -1;
+  }
+
   typename uintd<D>::Type _dims = vector_to_uintd<D>( *(in->get_dimensions().get()) );
   typename intd<D>::Type dims;
   for( unsigned int i=0; i<D; i++ ){
@@ -66,6 +78,8 @@ cuPartialDerivativeOperator<REAL,T,D>::compute_partial_derivative( typename intd
   }
   
   _set_device();
+  
+  if (!accumulate) cuNDA_clear(out);
   
   dim3 dimBlock( dims.vec[0] );
   dim3 dimGrid( 1, dims.vec[D-1] );
@@ -84,15 +98,21 @@ cuPartialDerivativeOperator<REAL,T,D>::compute_partial_derivative( typename intd
 }
 
 template< class REAL, class T, unsigned int D> int 
-cuPartialDerivativeOperator<REAL,T,D>::compute_second_order_partial_derivative( typename intd<D>::Type forwards_stride, typename intd<D>::Type adjoint_stride, 
-								      cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate )
-{
-  
+cuPartialDerivativeOperator<REAL,T,D>::compute_second_order_partial_derivative( typename intd<D>::Type forwards_stride, 
+										typename intd<D>::Type adjoint_stride, 
+										cuNDArray<T> *in, cuNDArray<T> *out, 
+										bool accumulate )
+{  
   if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
     std::cerr << std::endl << "partialDerivativeOperator::compute_second_order_partial_derivative : array dimensions mismatch." << std::endl;
     return -1;
   }
-  if (!accumulate) cuNDA_clear(out);
+
+  if( in->get_number_of_dimensions() != D || out->get_number_of_dimensions() != D ){
+    std::cerr << std::endl << "partialDerivativeOperator::compute_second_order_partial_derivative : dimensionality mismatch" << std::endl;
+    return -1;
+  }
+
   typename uintd<D>::Type _dims = vector_to_uintd<D>( *(in->get_dimensions().get()) );
   typename intd<D>::Type dims;
   for( unsigned int i=0; i<D; i++ ){
@@ -105,6 +125,8 @@ cuPartialDerivativeOperator<REAL,T,D>::compute_second_order_partial_derivative( 
   }
   
   _set_device();
+
+  if (!accumulate) cuNDA_clear(out);
 
   dim3 dimBlock( dims.vec[0] );
   dim3 dimGrid( 1, dims.vec[D-1] );
