@@ -185,9 +185,9 @@ compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL 
   
   // Run through all projections to find the closests neighbors
   
-  for( unsigned int i=0; i<gridDim.y; i++ ){ // iterate over num_profiles 
+  for( unsigned int i=0; i<num_profiles; i++ ){
     
-    if( i == blockIdx.x )
+    if( i == profile )
       continue;
     
     // Unit circle position projection 'i'
@@ -262,7 +262,7 @@ compute_radial_dcw_2d_kernel( REAL alpha, REAL one_over_radial_oversampling_fact
   const REAL sample_idx_on_profile = (REAL)(blockIdx.x*blockDim.x+threadIdx.x);
   const REAL num_profiles = (REAL)gridDim.y;
   const REAL profile = (REAL)blockIdx.y;
-  const REAL bias = samples_per_profile *REAL(0.5);
+  const REAL bias = samples_per_profile*REAL(0.5);
 
   const unsigned int index = blockIdx.y*samples_per_profile + sample_idx_on_profile;
   
@@ -286,7 +286,7 @@ compute_radial_dcw_2d_kernel( REAL alpha, REAL one_over_radial_oversampling_fact
     typename reald<REAL,2>::Type p1, p2, p3, p4, p5, p6, p7, p8;
     
     sample_pos = compute_radial_neighbors<REAL,GR>( sample_idx_on_profile, angular_offset, alpha, 
-						    one_over_radial_oversampling_factor, one_over_num_profiles,bias, samples_per_profile, profile, num_profiles,
+						    one_over_radial_oversampling_factor, one_over_num_profiles, bias, samples_per_profile, profile, num_profiles,
 						    &p1, &p5, &p2, &p3, &p4, &p8, &p7, &p6 );
     
     // Find midpoints of lines from sample_pos to all other points.
