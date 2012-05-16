@@ -21,8 +21,6 @@ template <class REAL, class T, unsigned int D> class EXPORTSOLVERS cuPartialDeri
     return linearOperator< REAL, cuNDArray<T> >::clone(this);
   }
   
- protected:
-      
   virtual int compute_partial_derivative( typename intd<D>::Type stride, cuNDArray<T> *in, 
 					  cuNDArray<T> *out, bool accumulate );  
 
