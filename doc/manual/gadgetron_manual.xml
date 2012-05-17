@@ -5345,7 +5345,7 @@ Gadgetron MRI Data Sender
     on your system and your Gadgetron distribution should be compiled with
     CUDA (and CULA) enabled. Then the examples are automatically build with
     the Gadgetron and binaries should consequently be available in
-    <envar>$GADGETRON_HOME/bin</envar>. </para>
+    <envar>$GADGETRON_HOME/bin</envar>.</para>
 
     <sect1 xml:id="sect.image_denoising">
       <title>Image Denoising</title>
@@ -5389,7 +5389,7 @@ user@host$</screen>
 
       <para>which runs 250 iterations of the solver with a regularization
       weight of 1. The output is saved in the current folder in the file
-      <filename>denoised_image_TV.real</filename>. </para>
+      <filename>denoised_image_TV.real</filename>.</para>
 
       <para>The noisy and denoised phantom is depicted below.</para>
 
@@ -5471,7 +5471,7 @@ user@host$</screen>
 
       <para>The result is saved in the current folder in the file
       <filename>cg_deblurred_image.cplx</filename>. A magnitudes image is also
-      saved as <filename>cg_deblurred_image.real</filename>. </para>
+      saved as <filename>cg_deblurred_image.real</filename>.</para>
 
       <para>Next run the constraint Split Bregman solver. The source code for
       the example can be found in
@@ -5494,7 +5494,7 @@ user@host$</screen>
 
       <para>The result is saved as
       <filename>sb_deblurred_image.cplx</filename>. A magnitudes image is also
-      saved as <filename>sb_deblurred_image.real</filename>. </para>
+      saved as <filename>sb_deblurred_image.real</filename>.</para>
 
       <para>The blurred and deblurred phantoms are depicted below.</para>
 
@@ -5653,7 +5653,8 @@ user@host$</screen>
       <para>This section demonstrates how to run a standalone non-Cartesian
       parallel MRI reconstruction similar to the one that was previously shown
       using the streaming framework infrastructure in section<xref
-      linkend="sect.cgsense"/>.</para>
+      linkend="sect.cgsense"/>. More details can be found in <xref
+      linkend="sorensen09"/>.</para>
 
       <para>In addition to a regularized linear least squares solution to the
       reconstruction problem, we furthermore use the Split Bregman solver to
@@ -5664,7 +5665,7 @@ user@host$</screen>
       xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/phantom/shepp_logan/shepp.tar.gz">http://sourceforge.net/projects/gadgetron/files/testdata/mri/fb_data.zip</uri></para>
 
       <para>Source code is found in the files <filename>main_cg.cpp</filename>
-      and <filename>main_sbc.cpp</filename>. </para>
+      and <filename>main_sbc.cpp</filename>.</para>
 
       <para>Both command lines below produce a 2D image sequence, each image
       with a matrix size of 192<superscript>2</superscript>
