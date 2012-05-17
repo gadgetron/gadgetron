@@ -53,6 +53,7 @@ int CoilReductionGadget::process_config(ACE_Message_Block *mb)
 	}
 
 	while (coil_mask_.size() < coils_in_) coil_mask_.push_back(0);
+	while (coil_mask_.size() > coils_in_) coil_mask_.pop_back();
 
 	if (coil_mask_.size() != coils_in_) {
 		GADGET_DEBUG1("Error configuring coils for coil reduction\n");
