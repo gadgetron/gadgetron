@@ -86,7 +86,7 @@ template <class T> int hdf5_append_array(hoNDArray<T>* a,
 		const char* filename, const char* varname)
 {
 
-	boost::shared_ptr<H5File> f = OpenHF5File(filename);
+	boost::shared_ptr<H5File> f = OpenHDF5File(filename);
 	boost::shared_ptr<DataSet> dataset;
 
 	std::vector<hsize_t> dims;
@@ -198,7 +198,7 @@ template <class T> boost::shared_ptr< hoNDArray<T> > hdf5_read_array_slice(
 
 	try {
 
-		boost::shared_ptr<H5File> f = OpenHF5File(filename);
+		boost::shared_ptr<H5File> f = OpenHDF5File(filename);
 		if (!HDF5LinkExists(f.get(), varname)) {
 			std::cout << "Trying to access non-existing variable in HDF5 file." << std::endl;
 			return ret;

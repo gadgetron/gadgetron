@@ -23,7 +23,7 @@
 #endif
 
 
-EXPORTHDF5UTILS boost::shared_ptr<H5File> OpenHF5File(const char* filename);
+EXPORTHDF5UTILS boost::shared_ptr<H5File> OpenHDF5File(const char* filename);
 
 EXPORTHDF5UTILS bool HDF5LinkExists(H5File* f, const char* name);
 
