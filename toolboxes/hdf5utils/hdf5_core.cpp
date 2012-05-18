@@ -101,7 +101,7 @@ void HDF5Lock::release()
 	mutex_.release();
 }
 
-HDF5Lock* HDF5Lock::instance_ = NULL;
+EXPORTHDF5UTILS HDF5Lock* HDF5Lock::instance_ = NULL;
 
 
 

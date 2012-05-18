@@ -22,8 +22,16 @@ if (${CMAKE_VERSION} VERSION_LESS "2.8.4")
  enable_language(Fortran)
 endif(${CMAKE_VERSION} VERSION_LESS "2.8.4")
 
+if (WIN32)
+# We modified findBlas to make it compatible with ACML5.1.0.
+# Soon hopefully, we can return to the native findBLAS again?
+find_package(GBLAS)
+find_package(GLAPACK) 
+else (WIN32)
 find_package(BLAS)
 find_package(LAPACK) 
+endif (WIN32)
+
 
 find_package(CUDA 4.1)
 
@@ -38,7 +46,7 @@ find_package(Qt4 4.6)
 find_package(PythonLibs)
 find_package(Numpy)
 find_package(Boost COMPONENTS python)
-FIND_PACKAGE(HDF5 1.8 COMPONENTS C CXX)
+find_package(HDF5 1.8 COMPONENTS C CXX HL)
 find_package(GLEW)
 
 add_subdirectory(doc)

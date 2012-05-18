@@ -270,7 +270,7 @@ template <class T> boost::shared_ptr< hoNDArray<T> > hdf5_read_array_slice(
 /**
  * Wrapper function for calling hdf5_read_array_slice
  */
-template <class T>  EXPORTHDF5UTILS boost::shared_ptr< hoNDArray<T> > hdf5_read_array_slice(
+template <class T> boost::shared_ptr< hoNDArray<T> > hdf5_read_array_slice(
 		const char* filename, const char* varname, unsigned int index = 0)
 {
 	boost::shared_ptr<DataType> datatype = getHDF5Type<T>();
@@ -280,7 +280,7 @@ template <class T>  EXPORTHDF5UTILS boost::shared_ptr< hoNDArray<T> > hdf5_read_
 /**
  * Wrapper function for calling hdf5_append_array
  */
-template <class T> EXPORTHDF5UTILS int hdf5_append_array(hoNDArray<T>* a,
+template <class T> int hdf5_append_array(hoNDArray<T>* a,
 		const char* filename, const char* varname)
 {
 	boost::shared_ptr<DataType> datatype = getHDF5Type<T>();
@@ -292,7 +292,7 @@ template <class T> EXPORTHDF5UTILS int hdf5_append_array(hoNDArray<T>* a,
  *  HDF5 datatype.
  *
  */
-template <class T>  EXPORTHDF5UTILS int hdf5_append_struct(T* s,
+template <class T> int hdf5_append_struct(T* s,
 		boost::shared_ptr<DataType> datatype,
 		const char* filename, const char* varname)
 
@@ -308,7 +308,7 @@ template <class T>  EXPORTHDF5UTILS int hdf5_append_struct(T* s,
 }
 
 
-template <class T>  EXPORTHDF5UTILS boost::shared_ptr<T> hdf5_read_struct(boost::shared_ptr<DataType> structdatatype, const char* filename, const char* varname,
+template <class T> boost::shared_ptr<T> hdf5_read_struct(boost::shared_ptr<DataType> structdatatype, const char* filename, const char* varname,
 		unsigned int index = 0)
 {
 	boost::shared_ptr< T > ret;

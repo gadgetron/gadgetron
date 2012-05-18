@@ -112,6 +112,7 @@ public:
       this->solver_warning( "Warning: sbSolver::set_prior_image : alpha cannot exceed 1. Clamped." );
       alpha_ = REAL(1);
     }
+	return true;
   }
  
 

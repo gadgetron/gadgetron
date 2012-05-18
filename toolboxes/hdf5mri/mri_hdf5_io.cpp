@@ -133,8 +133,8 @@ template <class T> int hdf5_append_struct(T* s,
 }
 
 
-template int hdf5_append_struct(GadgetMessageAcquisition* s, const char* filename, const char* varname);
-template int hdf5_append_struct(GadgetMessageImage* s, const char* filename, const char* varname);
+template EXPORTHDF5MRI int hdf5_append_struct(GadgetMessageAcquisition* s, const char* filename, const char* varname);
+template EXPORTHDF5MRI int hdf5_append_struct(GadgetMessageImage* s, const char* filename, const char* varname);
 
 template <class T> struct local_hdf5_append_struct
 {
@@ -180,7 +180,7 @@ template int hdf5_append_struct_with_data(GadgetMessageAcquisition* s, hoNDArray
 
 
 template <class T> boost::shared_ptr<T> hdf5_read_struct(const char* filename, const char* varname,
-		unsigned int index = 0)
+		unsigned int index )
 {
 	boost::shared_ptr<DataType> structdatatype = getHDF5CompositeType<T>();
 	boost::shared_ptr< T > ret = hdf5_read_struct<T>(structdatatype, filename,varname, index);
@@ -190,7 +190,7 @@ template <class T> boost::shared_ptr<T> hdf5_read_struct(const char* filename, c
 
 
 template <class STRUCT, class DATATYPE> header_data_struct<STRUCT, DATATYPE>
-	hdf5_read_struct_with_data(const char* filename, const char* varname, unsigned index = 0)
+	hdf5_read_struct_with_data(const char* filename, const char* varname, unsigned index )
 {
 
 	boost::shared_ptr<DataType> structdatatype = getHDF5CompositeType<STRUCT>();
@@ -239,9 +239,9 @@ template <class STRUCT, class DATATYPE> header_data_struct<STRUCT, DATATYPE>
 	return ret;
 }
 
-template boost::shared_ptr<GadgetMessageImage> hdf5_read_struct<GadgetMessageImage>(const char* , const char* , unsigned int);
-template boost::shared_ptr<GadgetMessageAcquisition> hdf5_read_struct<GadgetMessageAcquisition>(const char* , const char* , unsigned int);
+template EXPORTHDF5MRI boost::shared_ptr<GadgetMessageImage> hdf5_read_struct<GadgetMessageImage>(const char* , const char* , unsigned int);
+template EXPORTHDF5MRI boost::shared_ptr<GadgetMessageAcquisition> hdf5_read_struct<GadgetMessageAcquisition>(const char* , const char* , unsigned int);
 
-template header_data_struct<GadgetMessageAcquisition, std::complex<float> >
+template EXPORTHDF5MRI header_data_struct<GadgetMessageAcquisition, std::complex<float> >
 	hdf5_read_struct_with_data<GadgetMessageAcquisition, std::complex<float> >(const char*, const char*, unsigned);
 

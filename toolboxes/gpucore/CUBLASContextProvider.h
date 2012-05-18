@@ -7,13 +7,16 @@
 
 #ifndef CUBLASCONTEXTPROVIDER_H_
 #define CUBLASCONTEXTPROVIDER_H_
+#pragma once
+
+#include "gpucore_export.h"
 
 #include <cublas_v2.h>
 
 #include <map>
 #include <iostream>
 
-class CUBLASContextProvider
+class EXPORTGPUCORE CUBLASContextProvider
 {
 
 public:
