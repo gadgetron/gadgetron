@@ -204,10 +204,8 @@ template <class T> boost::shared_ptr< hoNDArray<T> > hdf5_read_array_slice(
 			return ret;
 		}
 
-		DataSet d = f->openDataSet(varname);
-
+		DataSet d = f->openDataSet(H5std_string(varname));
 		DataSpace dataspace = d.getSpace();
-
 		DataType dtype = d.getDataType();
 
 		if (!(dtype == *datatype)) {
@@ -217,7 +215,6 @@ template <class T> boost::shared_ptr< hoNDArray<T> > hdf5_read_array_slice(
 
 		int rank = dataspace.getSimpleExtentNdims();
 		std::vector<hsize_t> dims(rank,0);
-
 		dataspace.getSimpleExtentDims(&dims[0]);
 
 		if (dims[0] <= index) {

@@ -32,7 +32,6 @@ find_package(BLAS)
 find_package(LAPACK) 
 endif (WIN32)
 
-
 find_package(CUDA 4.1)
 
 if (CUDA_FOUND)
