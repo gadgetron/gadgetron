@@ -584,10 +584,10 @@ $ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/cuda/lib</us
           </listitem>
 
           <listitem>
-            <para>Install CUDA/CULA (optional, but required for GPU support).
-            </para>
+            <para>Install CUDA/CULA (optional, but required for GPU
+            support).</para>
 
-            <para>Download Cuda drivers/toolkit from from </para>
+            <para>Download Cuda drivers/toolkit from from</para>
 
             <para><uri
             xlink:href="http://developer.nvidia.com/cuda-toolkit-40">http://developer.nvidia.com/cuda-toolkit-41-archive</uri>:</para>
@@ -600,10 +600,10 @@ $ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/cuda/lib</us
 
             <para>Install <filename>cula_dense_free_R14-win64.exe</filename>
             (as Administrator). Download from
-            <uri>http://www.culatools.com/downloads/dense/</uri>. </para>
+            <uri>http://www.culatools.com/downloads/dense/</uri>.</para>
 
             <para>Assuming CULA was installed in <filename>C:\Program
-            Files\CULA\R14</filename>, add </para>
+            Files\CULA\R14</filename>, add</para>
 
             <para><filename>C:\Program Files\CULA\R14\bin64</filename> to your
             <varname>PATH</varname> environment variable.</para>
@@ -785,7 +785,7 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
             directories
             (<envar>$GADGETRON_HOME</envar><filename>/build</filename>)</para>
 
-            <para>Hit configure (first time) -- "ok" the dialogue box. </para>
+            <para>Hit configure (first time) -- "ok" the dialogue box.</para>
 
             <para>Add PATH variable BOOST_ROOT to point to BOOST folder (use
             GUI button "+Add Entry" to do this)</para>
@@ -6197,8 +6197,8 @@ ans =
           </author>
 
           <author>
-            <personname><firstname>T. S.</firstname>
-            <surname>Sørensen</surname></personname>
+            <personname><firstname>T.
+            S.</firstname><surname>Sørensen</surname></personname>
           </author>
         </authorgroup>
 
@@ -6209,7 +6209,11 @@ ans =
       <biblioset role="journal">
         <title>Magnetic Resonance in Medicine</title>
 
-        <volumenum>59 (3), 463-468</volumenum>
+        <volumenum>59 </volumenum>
+
+        <issuenum>3</issuenum>
+
+        <pagenums>463-468</pagenums>
 
         <pubdate>2008</pubdate>
       </biblioset>
@@ -6243,10 +6247,6 @@ ans =
 
         <title>Accelerating the nonequispaced fast fourier transform on
         commodity graphics hardware</title>
-
-        <pagenums>538--47</pagenums>
-
-        <bibliosource class="doi">10.1109/TMI.2007.909834</bibliosource>
       </biblioset>
 
       <biblioset role="journal">
@@ -6256,7 +6256,8 @@ ans =
 
         <issuenum>4</issuenum>
 
-        <pubdate>Apr 2008</pubdate>
+        <pagenums>538-47</pagenums>
+        <pubdate>2008</pubdate>
       </biblioset>
     </biblioentry>
 
@@ -6289,9 +6290,6 @@ ans =
         <title>Real-time reconstruction of sensitivity encoded radial magnetic
         resonance imaging using a graphics processing unit</title>
 
-        <pagenums>1974--85</pagenums>
-
-        <bibliosource class="doi">10.1109/TMI.2009.2027118</bibliosource>
       </biblioset>
 
       <biblioset role="journal">
@@ -6301,7 +6299,8 @@ ans =
 
         <issuenum>12</issuenum>
 
-        <pubdate>Dec 2009</pubdate>
+        <pagenums>1974-85</pagenums>
+        <pubdate>2009</pubdate>
       </biblioset>
     </biblioentry>
   </bibliography>
