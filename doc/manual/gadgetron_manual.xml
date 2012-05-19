@@ -9,12 +9,17 @@
   <info>
     <title>Gadgetron Users Guide</title>
 
+    <subtitle>A Medical Image Reconstruction Framework</subtitle>
+
     <author>
       <personname><honorific>Dr</honorific> <firstname>Michael
       Schacht</firstname> <surname>Hansen</surname></personname>
 
       <email>michael.hansen@nih.gov</email>
     </author>
+
+    <address>National Heart, Lung, and Blood Institute
+National Institutes of Health, Bethesda, MD, USA</address>
 
     <author>
       <personname><honorific>Dr</honorific> <firstname>Thomas
@@ -23,7 +28,10 @@
       <email>sangild@cs.au.dk</email>
     </author>
 
-    <subtitle>A Medical Image Reconstruction Framework</subtitle>
+    <address>Department of Computer Science and Department of Clinical Medicine
+Aarhus University, Denmark</address>
+
+    <edition>1.0</edition>
   </info>
 
   <chapter>
@@ -66,7 +74,7 @@
       <para>The Gadgetron is made available as a cross-platform source code
       distribution, which compiles and has been tested to run on Linux, Mac OS
       X, and Windows 7. Compilation instructions for these platforms are
-      provided below. </para>
+      provided below.</para>
 
       <para>Generally speaking, the Gadgetron is easiest set up on Linux since
       all dependencies are readily available. If you want to get started
@@ -301,9 +309,24 @@ export GADGETRON_HOME=/usr/local/gadgetron     </programlisting>
           <para><screen><prompt>user@mycomputer:~$</prompt> <userinput>sudo service lightdm stop</userinput>
 </screen></para>
 
-          <para>We need to install gcc 4.4 since Ubuntu comes preconfigured
-          with gcc 4.6, which is not compatible with the current versions of
-          the CUDA nvcc compiler.</para>
+          <para><remark>Important notice</remark>: Unfortunately we have
+          experienced on several Ubuntu installations that the machine hangs
+          at the splash screen after installation of the Nvidia graphics
+          driver. If you experience this problem, or if you just want to be on
+          the safe side before rebooting, open a terminal (boot in recovery
+          mode) and edit <filename>/etc/default/grub</filename>. Locate the
+          line defining <varname>GRUB_CMDLINE_LINUX_DEFAULT</varname> and
+          change <envar>splash</envar> to <envar>nosplash</envar> (or add
+          <envar>nosplash</envar> if <envar>splash</envar> is not present).
+          Furthermore add <envar>nomodeset</envar>. E.g.
+          <code>GRUB_CMDLINE_LINUX_DEFAULT="quiet nosplash nomodeset"</code>.
+          Finally update the boot manager with the new settings:
+          <prompt>user@mycomputer:~$</prompt> <userinput>sudo
+          update-grub</userinput></para>
+
+          <para>Next we need to install gcc 4.4 since Ubuntu comes
+          preconfigured with gcc 4.6, which is not compatible with the current
+          versions of the CUDA nvcc compiler.</para>
 
           <screen><prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install \
   gcc-4.4 g++-4.4 build-essential</userinput>   </screen>
@@ -561,9 +584,13 @@ $ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/cuda/lib</us
           </listitem>
 
           <listitem>
-            <para>Install CUDA/CULA (optional, but required for GPU support).
-            Download from <uri
-            xlink:href="http://developer.nvidia.com/cuda-toolkit-40">http://developer.nvidia.com/cuda-toolkit-41</uri>):</para>
+            <para>Install CUDA/CULA (optional, but required for GPU
+            support).</para>
+
+            <para>Download Cuda drivers/toolkit from from</para>
+
+            <para><uri
+            xlink:href="http://developer.nvidia.com/cuda-toolkit-40">http://developer.nvidia.com/cuda-toolkit-41-archive</uri>:</para>
 
             <para>Install Nvidia Developer Driver (Version 286.19)</para>
 
@@ -573,11 +600,13 @@ $ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/cuda/lib</us
 
             <para>Install <filename>cula_dense_free_R14-win64.exe</filename>
             (as Administrator). Download from
-            <uri>http://www.culatools.com/downloads/dense/</uri>. Assuming
-            CULA was installed in <filename>C:\Program
-            Files\CULA\R14</filename>, add <filename>C:\Program
-            Files\CULA\R14\bin64</filename> to your <varname>PATH</varname>
-            environment variable.</para>
+            <uri>http://www.culatools.com/downloads/dense/</uri>.</para>
+
+            <para>Assuming CULA was installed in <filename>C:\Program
+            Files\CULA\R14</filename>, add</para>
+
+            <para><filename>C:\Program Files\CULA\R14\bin64</filename> to your
+            <varname>PATH</varname> environment variable.</para>
           </listitem>
 
           <listitem>
@@ -606,7 +635,7 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
             <para>Install ACE (<uri
             xlink:href="http://download.dre.vanderbilt.edu/">http://download.dre.vanderbilt.edu/</uri>)</para>
 
-            <para>Unpack ACE into C:\Libraries\ACE-6.0.5\ACE_wrappers</para>
+            <para>Unpack ACE into C:\Libraries\ACE-6.1.0\ACE_wrappers</para>
 
             <para>Add <filename>config.h</filename> in
             <filename>ACE_ROOT/ace/</filename> with the following
@@ -634,7 +663,7 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
             Python header files cannot be compiled in debug mode on Windows.
             This enforces the Gadgetron to be compiled in release mode.</para>
 
-            <para>Install python-2.7.2.amd64 (<uri
+            <para>Install python-2.7.3.amd64 (<uri
             xlink:href="http://www.python.org">http://www.python.org</uri>)</para>
 
             <para>Add install folder (e.g. <filename>C:\Python27</filename>)
@@ -653,7 +682,7 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
                 </listitem>
 
                 <listitem>
-                  <para><filename>scipy-0.10.0.win-amd64-py2.7</filename></para>
+                  <para><filename>scipy-0.10.1.win-amd64-py2.7</filename></para>
                 </listitem>
 
                 <listitem>
@@ -662,8 +691,8 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
                 </listitem>
 
                 <listitem>
-                  <para><filename>ipython-0.11.win-amd64-py2.7</filename> (not
-                  strictly necessary)</para>
+                  <para><filename>ipython-0.12.1.win-amd64-py2.7</filename>
+                  (not strictly necessary)</para>
                 </listitem>
               </itemizedlist></para>
           </listitem>
@@ -671,8 +700,8 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
           <listitem>
             <para>Install ACML (BLAS and LAPACK)</para>
 
-            <para>Download <filename>acml4.4.0-win64.exe</filename> From: <uri
-            xlink:href="http://developer.amd.com/libraries/acml/downloads/pages/">http://developer.amd.com/libraries/acml/downloads/pages/</uri></para>
+            <para>Download <filename>acml4.4.0-win64.exe</filename> from: <uri
+            xlink:href="http://developer.amd.com/libraries/acml/downloads/pages/">http://developer.amd.com/libraries/acml/downloads/pages/acmlarchivedownloads.aspx</uri></para>
 
             <para>Install Library in say
             C:\Libraries\C:\Libraries\acml4.4.0</para>
@@ -707,8 +736,8 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
             <para>Install <application>git</application> (if you are using
             source code management):</para>
 
-            <para>Run installation package Git-1.7.7.1-preview20111027 (As
-            Administrator), download from <uri
+            <para>Run the newest installation package named something like
+            Git-*-preview*.exe (As Administrator) from: <uri
             xlink:href="http://code.google.com/p/msysgit/">http://code.google.com/p/msysgit/</uri></para>
 
             <para>Use run in git bash only option</para>
@@ -720,7 +749,27 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
             <para>Install CMake (<uri
             xlink:href="http://www.cmake.org/cmake/resources/software.html">http://www.cmake.org/cmake/resources/software.html</uri>)</para>
 
-            <para>Run cmake-2.8.6-win32-x86 (As Administrator)</para>
+            <para>Install the latest release (e.g.
+            cmake-2.8.8-win32-x86)</para>
+          </listitem>
+
+          <listitem>
+            <para>Install <application>HDF5</application>:</para>
+
+            <para>From <uri>http://www.hdfgroup.org/HDF5/</uri> install HDF5
+            and HDFView.</para>
+
+            <para>Get the newwest releases, e.g.</para>
+
+            <para><filename>HDF5189-win64-vs10-static.zip</filename></para>
+
+            <para><filename>hdfview_install_win64.exe</filename></para>
+
+            <para>Run the install executables (one is inside the zip archive).
+            At this point we have only managed to succesfully link to the
+            static version of the HDF5 library in Windows.</para>
+
+            <para>CMAKE BESKRIVELSE AF HDF5 MANGLERtssu9</para>
           </listitem>
 
           <listitem>
@@ -732,11 +781,14 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
 
             <para>Start <application>cmake-gui</application></para>
 
-            <para>Select source and target directories</para>
+            <para>Select source (<envar>$GADGETRON_HOME</envar>) and target
+            directories
+            (<envar>$GADGETRON_HOME</envar><filename>/build</filename>)</para>
 
-            <para>Hit configure (first time)</para>
+            <para>Hit configure (first time) -- "ok" the dialogue box.</para>
 
-            <para>Add variable BOOST_ROOT to point to BOOST folder</para>
+            <para>Add PATH variable BOOST_ROOT to point to BOOST folder (use
+            GUI button "+Add Entry" to do this)</para>
 
             <para>Hit configure (again)</para>
 
@@ -744,7 +796,17 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
 
             <para>Hit configure (again)</para>
 
-            <para>Specify location of CULA (include and library)</para>
+            <para>Specify the locations of GLEW and GLUT:</para>
+
+            <para>Header files in <filename>C:\ProgramData\NVIDIA
+            Corporation\NVIDIA GPU COMPUTING SDK
+            4.1\shared\inc</filename></para>
+
+            <para>Library files in <filename>C:\ProgramData\NVIDIA
+            Corporation\NVIDIA GPU COMPUTING SDK 4.1\lib/x64</filename></para>
+
+            <para>Specify location of CULA (include path and core/lapack
+            library filepaths)</para>
 
             <para>Specify location of ACE include dir</para>
 
@@ -755,29 +817,37 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
 
             <para>Hit configure (again)</para>
 
-            <para>Specify the following environment variables:</para>
+            <para>Specify the following <envar>CMAKE </envar>FILEPATH
+            variables:</para>
 
-            <programlisting>BLAS_CALBLAS= \
-  C:/Libraries/acml4.4.0/win64/lib/libacml.lib
-
+            <programlisting>
 BLAS_acml_LIBRARY= \
   C:/Libraries/acml4.4.0/win64/lib/libacml_dll.lib
 
 BLAS_acml_mp_LIBRARY= \
   C:/Libraries/acml4.4.0/win64_mp/lib/libacml_mp_dll.lib
 
-BLAS_acml_mv_LIBRARY= \
-  C:/Libraries/acml4.4.0/win64/lib/libacml_mv_dll.lib</programlisting>
+</programlisting>
 
             <para>Hit configure</para>
 
-            <para>Hit "generate"</para>
+            <para>Make sure that the <envar>HDF5_C_LIBRARY</envar> and
+            <envar>HDF5_CXX_LIBRARY</envar> FILEPATH variables are set
+            correctly (to the release versions).</para>
+
+            <para>Hit configure</para>
+
+            <para>Hit generate</para>
           </listitem>
 
           <listitem>
             <para>You should now have a visual studio project that you can
-            open and build (try Release/x64 mode and try the install
-            target).</para>
+            open and build (try Release/x64 mode and try the install target).
+            If you are lacking sufficient write permission to install in the
+            default location, run Visual Studio as Administrator or change
+            <envar>CMAKE_INSTALL_PREFIX</envar> to a folder to which you have
+            write permissions. Notice that /gadgetron is automatically
+            appended to the path you specify.</para>
           </listitem>
         </itemizedlist>
 
@@ -2024,11 +2094,13 @@ public:
 
   T vec[D];
 
-  __inline__ __host__ __device__ T&amp; operator[](const int i){
+  __inline__ __host__ __device__ T&amp; operator[](const int i) 
+  {
     return vec[i];
   }
 
-  __inline__ __host__ __device__ const T&amp; operator[](const int i) const {
+  __inline__ __host__ __device__ const T&amp; operator[](const int i) const
+  { 
     return vec[i];
   }
 };
@@ -2210,7 +2282,8 @@ FFT&lt;float&gt;::instance()-&gt;fft(...);</programlisting>
           <filename>NFFT.h</filename> provided below in abbreviated
           form</para>
 
-          <programlisting>template&lt; class REAL, unsigned int D &gt; class EXPORTGPUNFFT NFFT_plan
+          <programlisting>template&lt; class REAL, unsigned int D &gt; 
+class EXPORTGPUNFFT NFFT_plan
 {
  public: // Main interface
     
@@ -2233,15 +2306,20 @@ FFT&lt;float&gt;::instance()-&gt;fft(...);</programlisting>
               REAL W, int device = -1 );
     
   // Preproces trajectory 
-  // ( Cartesian to non-Cartesian / non-Cartesian to Cartesian / both )
-  enum NFFT_prep_mode { NFFT_PREP_C2NC, NFFT_PREP_NC2C, NFFT_PREP_ALL };
-  bool preprocess( cuNDArray&lt;typename reald&lt;REAL,D&gt;::Type&gt; *trajectory, 
-                   NFFT_prep_mode mode );
+  // Cartesian to non-Cartesian / non-Cartesian to Cartesian / both
+  enum NFFT_prep_mode { NFFT_PREP_C2NC, 
+                        NFFT_PREP_NC2C, 
+                        NFFT_PREP_ALL };
+  bool preprocess
+    ( cuNDArray&lt;typename reald&lt;REAL,D&gt;::Type&gt; *trajectory, 
+      NFFT_prep_mode mode );
     
   // Execute NFFT 
   // ( Cartesian to non-Cartesian or non-Cartesian to Cartesian)  
-  enum NFFT_comp_mode { NFFT_FORWARDS_C2NC, NFFT_FORWARDS_NC2C, 
-                        NFFT_BACKWARDS_C2NC, NFFT_BACKWARDS_NC2C };
+  enum NFFT_comp_mode { NFFT_FORWARDS_C2NC, 
+                        NFFT_FORWARDS_NC2C, 
+                        NFFT_BACKWARDS_C2NC, 
+                        NFFT_BACKWARDS_NC2C };
   bool compute( cuNDArray&lt;complext&lt;REAL&gt; &gt; *in, 
                 cuNDArray&lt;complext&lt;REAL&gt; &gt; *out, 
                 cuNDArray&lt;REAL&gt; *dcw, NFFT_comp_mode mode );
@@ -2346,8 +2424,10 @@ FFT&lt;float&gt;::instance()-&gt;fft(...);</programlisting>
   virtual void set_weight( REAL weight ){ weight_ = weight; }
   virtual REAL get_weight(){ return weight_; }
 
-  virtual bool set_domain_dimensions( std::vector&lt;unsigned int&gt; *dims ) { ... }
-  virtual bool set_codomain_dimensions( std::vector&lt;unsigned int&gt; *dims ) { ... }
+  virtual bool set_domain_dimensions
+    ( std::vector&lt;unsigned int&gt; *dims ) { ... }
+  virtual bool set_codomain_dimensions
+    ( std::vector&lt;unsigned int&gt; *dims ) { ... }
 
   virtual boost::shared_ptr&lt; std::vector&lt;unsigned int&gt; &gt; 
     get_domain_dimensions() { ... }
@@ -2355,11 +2435,15 @@ FFT&lt;float&gt;::instance()-&gt;fft(...);</programlisting>
   virtual boost::shared_ptr&lt; std::vector&lt;unsigned int&gt; &gt; 
     get_codomain_dimensions() { ... }
 
-  virtual int mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
-  virtual int mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
-  virtual int mult_MH_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
+  virtual int mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, 
+                      bool accumulate = false) = 0;
+  virtual int mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, 
+                       bool accumulate = false) = 0;
+  virtual int mult_MH_M( ARRAY_TYPE* in, ARRAY_TYPE* out, 
+                       bool accumulate = false) = 0;
   
-  virtual boost::shared_ptr&lt; linearOperator&lt; REAL, ARRAY_TYPE &gt; &gt; clone() = 0;
+  virtual boost::shared_ptr&lt; 
+    linearOperator&lt; REAL, ARRAY_TYPE &gt; &gt; clone() = 0;
 
   ...
 };</programlisting>The <classname>linearOperator</classname> is templated by
@@ -2462,7 +2546,7 @@ template &lt;class REAL, class ARRAY_TYPE&gt; class identityOperator
   identityOperator() : linearOperator&lt;REAL, ARRAY_TYPE&gt;() {}
   virtual ~identityOperator() {}
   
-  // operator_xpy implements the sum x+y and stores the result in y
+  // operator_xpy computes "x+y" and stores the result in y
   virtual bool operator_xpy( ARRAY_TYPE *x, ARRAY_TYPE *y ) = 0;
 
   virtual int mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, 
@@ -2477,7 +2561,8 @@ template &lt;class REAL, class ARRAY_TYPE&gt; class identityOperator
   ... // Similar code for mul_MH and mult_MH_M
 };
 
-</programlisting><programlisting>// Notice: 
+</programlisting><parameter>The Cuda specific
+              implementation:</parameter><programlisting>// Notice: 
 // Simplified code without error checking and multi-device support
 
 template &lt;class REAL, class T&gt; 
@@ -2486,7 +2571,9 @@ class cuIdentityOperator
 {
  public:
 
-  cuIdentityOperator() : identityOperator&lt; REAL, cuNDArray&lt;T&gt; &gt;() {}
+  cuIdentityOperator() : 
+    identityOperator&lt; REAL, cuNDArray&lt;T&gt; &gt;() {}
+  
   virtual ~cuIdentityOperator() {}
   
   virtual bool operator_xpy( cuNDArray&lt;T&gt; *x, cuNDArray&lt;T&gt; *y )
@@ -2647,9 +2734,12 @@ class cuIdentityOperator
           role="bold">p</emphasis> if non-zero) as input arguments.</para>
 
           <para>An abbreviated version of the interface to the conjugate
-          gradient solver is shown here<programlisting>// Defined in solver.h
+          gradient solver is shown here</para>
 
-template &lt;class ARRAY_TYPE_IN, class ARRAY_TYPE_OUT&gt; class solver
+          <para><programlisting>// Defined in solver.h
+
+template &lt;class ARRAY_TYPE_IN, class ARRAY_TYPE_OUT&gt; 
+class solver
 {
 public:
 
@@ -2679,9 +2769,11 @@ public:
   // Set/get starting solution/estimate for solver
   //
 
-  virtual void set_x0( boost::shared_ptr&lt;ARRAY_TYPE_OUT&gt; x0 ){ x0_ = x0; }
+  virtual void set_x0( boost::shared_ptr&lt;ARRAY_TYPE_OUT&gt; x0 )
+    { x0_ = x0; }
 
-  virtual boost::shared_ptr&lt;ARRAY_TYPE_OUT&gt; get_x0(){ return x0_; }
+  virtual boost::shared_ptr&lt;ARRAY_TYPE_OUT&gt; get_x0()
+    { return x0_; }
 
   // Default error output
   //
@@ -2696,28 +2788,38 @@ public:
   // Invoke solver
   //
 
-  virtual boost::shared_ptr&lt;ARRAY_TYPE_OUT&gt; solve( ARRAY_TYPE_IN* ) = 0;
+  virtual boost::shared_ptr&lt;ARRAY_TYPE_OUT&gt; solve
+    ( ARRAY_TYPE_IN* ) = 0;
  
 protected:
   int output_mode_;
   boost::shared_ptr&lt;ARRAY_TYPE_OUT&gt; x0_;
-};
-</programlisting><programlisting>// Defined in cgSolver.h
+};</programlisting></para>
 
-template &lt;class REAL, class ELEMENT_TYPE, class ARRAY_TYPE&gt; class cgSolver 
-  : public linearSolver&lt;REAL, ELEMENT_TYPE, ARRAY_TYPE&gt;
+          <para>The abstract <classname>cgSolver</classname> class:</para>
+
+          <para><programlisting>// Defined in cgSolver.h
+
+template &lt;class REAL, 
+          class ELEMENT_TYPE, 
+          class ARRAY_TYPE&gt; 
+class cgSolver : public linearSolver
+  &lt;REAL, ELEMENT_TYPE, ARRAY_TYPE&gt;
 {
 public:
 
   // Class defining the termination criterium
   //
 
-  friend class cgTerminationCallback&lt;REAL,ELEMENT_TYPE,ARRAY_TYPE&gt;;
+  friend class cgTerminationCallback
+    &lt;REAL, ELEMENT_TYPE, ARRAY_TYPE&gt;;
 
   // Constructor / destructor
   //
 
-  cgSolver() : linearSolver&lt;REAL, ELEMENT_TYPE, ARRAY_TYPE&gt;() {...}
+  cgSolver() : linearSolver&lt;REAL, ELEMENT_TYPE, ARRAY_TYPE&gt;() 
+   {...}
+ 
   virtual ~cgSolver() {}
 
   // Set preconditioner
@@ -2732,7 +2834,8 @@ public:
   //
 
   virtual void set_termination_callback(
-    boost::shared_ptr&lt; cgTerminationCallback&lt;REAL, ELEMENT_TYPE, ARRAY_TYPE&gt; &gt; cb ){
+    boost::shared_ptr&lt; cgTerminationCallback
+      &lt;REAL, ELEMENT_TYPE, ARRAY_TYPE&gt; &gt; cb ){
       cb_ = cb;
   }
 
@@ -2747,14 +2850,17 @@ public:
   // Set/get tolerance threshold for termination criterium
   //
 
-  virtual void set_tc_tolerance( REAL tolerance ) { tc_tolerance_ = tolerance; }
+  virtual void set_tc_tolerance( REAL tolerance ) 
+    { tc_tolerance_ = tolerance; }
+
   virtual REAL get_tc_tolerance() { return tc_tolerance_; }
   
   // Pre/post solver callbacks
   //
 
   virtual bool pre_solve( ARRAY_TYPE** ) { return true; }
-  virtual bool post_solve( boost::shared_ptr&lt;ARRAY_TYPE&gt;&amp; ) { return true; }
+  virtual bool post_solve( boost::shared_ptr&lt;ARRAY_TYPE&gt;&amp; ) 
+    { return true; }
 
   // Pure virtual functions defining core solver functionality
   // Implemented on the host/device respectively in a derived class
@@ -2763,19 +2869,24 @@ public:
   virtual ELEMENT_TYPE solver_dot( ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
   virtual bool solver_clear( ARRAY_TYPE* ) = 0;
   virtual bool solver_scal( ELEMENT_TYPE, ARRAY_TYPE* ) = 0;
-  virtual bool solver_axpy( ELEMENT_TYPE, ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
   virtual bool solver_dump( ARRAY_TYPE* ) { return true; }
+  virtual bool solver_axpy
+    ( ELEMENT_TYPE, ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
 
   //
   // Main solver interfaces
   //
 
-  virtual boost::shared_ptr&lt;ARRAY_TYPE&gt; solve( ARRAY_TYPE *_d ) { ... }
-  virtual boost::shared_ptr&lt;ARRAY_TYPE&gt; solve_from_rhs( ARRAY_TYPE *_rhs ) { ... }
+  virtual boost::shared_ptr&lt;ARRAY_TYPE&gt; solve( ARRAY_TYPE *_d ) 
+    { ... }
+
+  virtual boost::shared_ptr&lt;ARRAY_TYPE&gt; solve_from_rhs
+    ( ARRAY_TYPE *_rhs ) { ... }
 
   ...
 };
-</programlisting><programlisting>// Defined in cuCGSolver.h
+</programlisting><parameter>The Cuda specific
+          implementation:</parameter><programlisting>// Defined in cuCGSolver.h
 
 template &lt;class REAL, class T&gt; class cuCgSolver 
   : public cgSolver&lt; REAL, T, cuNDArray&lt;T&gt; &gt;
@@ -2845,11 +2956,13 @@ public:
     
   // Setup regularization operators
 
-  boost::shared_ptr&lt; cuPartialDerivativeOperator&lt;_real,_complext,2&gt; &gt; 
-    Rx( new cuPartialDerivativeOperator&lt;_real,_complext,2&gt;(0) ); 
+  boost::shared_ptr
+    &lt; cuPartialDerivativeOperator&lt;_real,_complext,2&gt; &gt; 
+      Rx( new cuPartialDerivativeOperator&lt;_real,_complext,2&gt;(0) ); 
 
-  boost::shared_ptr&lt; cuPartialDerivativeOperator&lt;_real,_complext,2&gt; &gt; 
-    Ry( new cuPartialDerivativeOperator&lt;_real,_complext,2&gt;(1) ); 
+  boost::shared_ptr
+    &lt; cuPartialDerivativeOperator&lt;_real,_complext,2&gt; &gt; 
+      Ry( new cuPartialDerivativeOperator&lt;_real,_complext,2&gt;(1) ); 
 
   Rx-&gt;set_weight( lambda );
   Ry-&gt;set_weight( lambda );
@@ -2885,7 +2998,8 @@ public:
   // Conjugate gradient solver
   //
   
-  boost::shared_ptr&lt; cuNDArray&lt;_complext&gt; &gt; cgresult = cg.solve(&amp;data);
+  boost::shared_ptr&lt; cuNDArray&lt;_complext&gt; &gt; 
+    cgresult = cg.solve(&amp;data);
 
   // All done, write out the result
   
@@ -2985,7 +3099,8 @@ public:
   &lt; omitted for brevity&gt;
   
   // Set/get prior image (PICCS style). 
-  // I.e. for every regularization operator (group) R that is added we minimize:
+  // I.e. for every regularization operator (group) 
+  // R that is added we minimize:
   // alpha|R(x-prior)|_{l1} + (1-alpha)|R(x)|_{l1}
   //
 
@@ -3672,7 +3787,7 @@ struct GadgetMessageAcquisition
               (<filename>gadgetroncore</filename>):</para>
 
               <para>See description of
-              <classname>MRINoiseAdjustGadget</classname>. </para>
+              <classname>MRINoiseAdjustGadget</classname>.</para>
             </listitem>
 
             <listitem>
@@ -4985,7 +5100,7 @@ GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2
       <para>To test this configuration, please download the GRAPPA test
       datasets from <uri type="website"
       xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/">https://sourceforge.net/projects/gadgetron/files/testdata/</uri>.
-      In the MRI test data file <filename>gadgetron_testdata.h4</filename> you
+      In the MRI test data file <filename>gadgetron_testdata.h5</filename> you
       will find two test datasets <filename>gre_tgrappa_rate2</filename> and
       <filename>gre_tgrappa_rate4</filename>. They are Cartesian parallel
       imaging datasets with rate 2 and 4 acceleration respectively. They were
@@ -5177,7 +5292,7 @@ protected:
       to reconstruct to a limited number of target channels to further improve
       performance. Between the upstream and downstream channel compression
       steps, it is possible to tune the performance of the reconstruction to
-      enable real-time reconstruction on the available. hardware.</para>
+      enable real-time reconstruction on the available hardware.</para>
     </sect1>
 
     <sect1 xml:id="sect.cgsense">
@@ -5294,28 +5409,34 @@ Gadgetron MRI Data Sender
   <chapter xml:id="sect.standalone_applications">
     <title>Standalone Applications</title>
 
-    <para>This chapter demonstrates how to use the Gadgetron toolboxes (<xref
-    linkend="sect.toolboxes"/>) to build standalone applications. The
-    following non-exhaustive examples are build with the Gadgetron and
-    binaries should consequently be available in
-    <envar>$GADGETRON_HOME/bin</envar>. You need a CUDA enabled GPU on your
-    system and your Gadgetron distribution should be compiled with CUDA and
-    CULA enabled.</para>
+    <para>This chapter demonstrates through a few examples how to use the
+    Gadgetron toolboxes (<xref linkend="sect.toolboxes"/>) to build standalone
+    applications outside the streaming framework. You need a CUDA enabled GPU
+    on your system and your Gadgetron distribution should be compiled with
+    CUDA (and CULA) enabled. Then the examples are automatically build with
+    the Gadgetron and binaries should consequently be available in
+    <envar>$GADGETRON_HOME/bin</envar>.</para>
 
     <sect1 xml:id="sect.image_denoising">
       <title>Image Denoising</title>
 
       <para>This example uses the unconstraint Split Bregman solver for total
-      variation based image denoising. The encoding matrix is defined as an
+      variation based 2D image denoising. The encoding matrix is defined as an
       <classname>identityOperator</classname> and a
       <classname>partialDerivativeOperator</classname> is used for each of the
-      two spatial directions to implement the regularization terms. The full
-      source code for the example can be found at
+      two spatial directions to implement the total variation regularization
+      term. The two partial derivatives are added as a "group" of
+      regularization operators to implement isotropic denoising.
+      Alternatively, by changing a few lines of code they can be added as
+      individual regularization operators instead to implement anisotropic
+      denoising.</para>
+
+      <para>The full source code for the example can be found at
       <envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/denoising/2d/denoise_TV.cpp</filename>.</para>
 
       <para>You can download some noisy Shepp-Logan phantom test datasets from
       <uri
-      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/phantom/shepp_logan/shepp.tar.gz">https://sourceforge.net/projects/gadgetron/files/testdata/phantom/shepp_logan/shepp.tar.gz</uri>.</para>
+      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/phantom/shepp_logan/shepp.tar.gz">https://sourceforge.net/projects/gadgetron/files/testdata/phantom/shepp.tar.gz</uri></para>
 
       <para>In a terminal, go to the folder in which you unpacked the data. We
       assume that you have added <envar>$(GADGETRON_HOME)/bin</envar> to your
@@ -5338,12 +5459,36 @@ user@host$</screen>
 
       <para>which runs 250 iterations of the solver with a regularization
       weight of 1. The output is saved in the current folder in the file
-      <filename>denoised_image_TV.real</filename>. Running
-      <application>denoise_TV</application> with no arguments prints out a
-      brief usage description. We leave it as an exercise to run the algorihm
-      with various settings. The data file you downloaded contains two further
-      dataset (with lower and higher noise levels respectively) to try out as
-      well.</para>
+      <filename>denoised_image_TV.real</filename>.</para>
+
+      <para>The noisy and denoised phantom is depicted below.</para>
+
+      <figure xml:id="fig.noisy2d">
+        <title>A noisy version of the Shepp-Logan phantom</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="figs/shepp_noisy.png" format="PNG" width="2in"/>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <figure>
+        <title>Result after total variation denoising</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="figs/shepp_denoised.png" format="PNG"
+                       width="2in"/>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>Running <application>denoise_TV</application> with no arguments
+      prints out a brief usage description. We leave it as an exercise to run
+      the algorithm with various settings. The data file you downloaded
+      contains two further dataset (with lower and higher noise levels
+      respectively) to try out as well.</para>
     </sect1>
 
     <sect1>
@@ -5353,19 +5498,19 @@ user@host$</screen>
       constraint Split Bregman solver for image deblurring. The encoding
       matrix is defined as a <classname>convolutionOperator</classname>. A
       <classname>partialDerivativeOperator</classname> is added for each of
-      the two spatial directions to implement the regularization terms.</para>
+      the two spatial directions as regularization terms.</para>
 
-      <para>We reuse the Shepp-Logan data from the image denoising experiement
+      <para>We reuse the Shepp-Logan data from the image denoising experiment
       above (<xref linkend="sect.image_denoising"/>).</para>
 
       <para>First we generate a blurry Shepp-Logan phantom by convolution with
-      a Gaussian kernel. This is easily achieved using the function
+      a Gaussian kernel. This is easily achieved using the method
       <function>mult_M</function> in the
-      <classname>convolutionOperator</classname>. Soure code is provided at
+      <classname>convolutionOperator</classname>. Source code is provided at
       <envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/deblurring/2d/blur_2d.cpp</filename></para>
 
-      <para>In a terminal, go to the folder in which you unpacked the Shepp
-      Logan phantom.</para>
+      <para>In a terminal, go to the folder in which you unpacked the
+      Shepp-Logan phantom.</para>
 
       <para>Try</para>
 
@@ -5373,11 +5518,11 @@ user@host$</screen>
 
       <para>which generates two complex images;
       <filename>blurred_image.cplx</filename> and
-      <filename>kernel_image.cplx</filename>. For convienience a corresponding
+      <filename>kernel_image.cplx</filename>. For convenience a corresponding
       magnitudes image is also saved as
       <filename>blurred_image.real</filename>.</para>
 
-      <para>Now run the conjugate gradient solver. The source code for the
+      <para>Next run the conjugate gradient solver. The source code for the
       example can be found in
       <envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/deblurring/2d/deblur_2d_cg.cpp</filename>.</para>
 
@@ -5395,10 +5540,8 @@ Iterating...
 user@host$</screen>
 
       <para>The result is saved in the current folder in the file
-      <filename>cg_deblurred_image_TV.cplx</filename>. A magnitudes image is
-      also saved as <filename>cg_deblurred_image.real</filename>. We leave it
-      as an exercise to run the algorihm with various settings. Try also to
-      add noise to the blurred image before the deconvolution.</para>
+      <filename>cg_deblurred_image.cplx</filename>. A magnitudes image is also
+      saved as <filename>cg_deblurred_image.real</filename>.</para>
 
       <para>Next run the constraint Split Bregman solver. The source code for
       the example can be found in
@@ -5419,10 +5562,53 @@ user@host$</screen>
 ...
 user@host$</screen>
 
-      <para>The result is saved in the current folder in the file
-      <filename>sb_deblurred_image_TV.cplx</filename>. A magnitudes image is
-      also saved as <filename>sb_deblurred_image.real</filename>. Again, try
-      to experiment with the various settings.</para>
+      <para>The result is saved as
+      <filename>sb_deblurred_image.cplx</filename>. A magnitudes image is also
+      saved as <filename>sb_deblurred_image.real</filename>.</para>
+
+      <para>The blurred and deblurred phantoms are depicted below.</para>
+
+      <figure>
+        <title>Blurry Shepp-Logan phantom</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="figs/shepp_blurred.png" format="PNG"
+                       width="2in"/>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <figure>
+        <title>Deblurred phantom from the Conjugate Gradient solver</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="figs/shepp_deblurred_cg.png" format="PNG"
+                       width="2in"/>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <figure>
+        <title>Deblurred phantom from the constrained Split Bregman
+        solver</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="figs/shepp_deblurred_sb.png" format="PNG"
+                       width="2in"/>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>In the present examples no noise was added to the blurred images
+      before the deconvolution. Consequently for the conjugate gradient
+      solver, a very low weight of the regularization term was "sufficient".
+      We leave it as an exercise to run the algorithms with various settings.
+      In particular, try to add noise to the blurred image before the
+      deconvolution to observe the very ill-posed nature of the
+      problem.</para>
 
       <para><remark>Notice</remark>. If the dimensions of the provided
       convolution kernel is exactly double that of the provided image, the
@@ -5435,20 +5621,25 @@ user@host$</screen>
     <sect1>
       <title>Non-Cartesian FFT</title>
 
-      <para>This example shows how to use the forwards and inverse NFFT on a
-      2D image. The source code can be found at
-      <envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/MRI/nfft/2d/nfft_main.cpp</filename>
+      <para>This example shows how to use the forwards and adjoint
+      non-Cartesian Fast Fourier Transform (NFFT and
+      NFFT<superscript>H</superscript> respectively) on a 2D image. The source
+      code can be found at
+      <envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/MRI/nfft/2d/main_nfft.cpp</filename>
       and
-      <envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/MRI/nfft/2d/nffth_main.cpp</filename>.</para>
+      <envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/MRI/nfft/2d/main_nffth.cpp</filename>.</para>
 
-      <para>Again we use the Shepp-Logan data downloaded for the image
-      denoising experiement above (<xref
-      linkend="sect.image_denoising"/>).</para>
+      <para>We reuse the Shepp-Logan data downloaded for the previous
+      experiments (<xref linkend="sect.image_denoising"/>).</para>
 
-      <para>Run the NFFT followed by the NFFT<superscript>H</superscript>. We
-      use an oversampled matrix size of 384, 128 profiles in k-space
-      (undersampling) with 384 samples each. The NFFT convolution kernel width
-      is set to 5.5.</para>
+      <para>In the following we run the NFFT followed by the
+      NFFT<superscript>H</superscript>. The image matrix size is
+      256<superscript>2</superscript>. We use an oversampled matrix size of
+      384<superscript>2</superscript>, 128 profiles in k-space (<emphasis
+      role="underline">undersampling</emphasis>) with 384 samples each. The
+      NFFT Kaiser-Bessel convolution kernel width is set to
+      5.5<superscript>2</superscript> (see <xref
+      linkend="sorensen08"/>).</para>
 
       <screen>user@host$ <userinput>nfft -d shepp_logan_256_256_no_noise.real \ 
    -o 384 -p 128 -s 384 -k 5.5
@@ -5493,14 +5684,198 @@ user@host$</screen>
 
       <para>The result is saved in file <filename>result.cplx</filename>. A
       magnitudes image is saved as <filename>result.real</filename>. The
-      <envar>
+      result is shown below. As an exercise, experiment with the settings to
+      reduce (or increase) the aliasing.</para>
+
+      <figure>
+        <title>Shepp-Logan phantom</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="figs/shepp.png" format="PNG" width="2in"/>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <figure>
+        <title>Shepp-Logan phantom after application of a ("two-fold")
+        undersampled golden ratio based radial NFFT followed by the
+        NFFT<superscript>H</superscript></title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="figs/shepp_iteration.png" format="PNG"
+                       width="2in"/>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>The <envar>
       $(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/MRI/nfft/2d/</filename>
       folder also contains examples of using the
-      <classname>nfftOperator</classname> in a conjugate gradient an Split
-      Bregman solver respectively.</para>
+      <classname>nfftOperator</classname> in a Conjugate Gradient solver and a
+      Split Bregman solver respectively.</para>
+    </sect1>
 
-      <para>Exercise: experiment with the settings to eliminate the
-      aliasing.</para>
+    <sect1>
+      <title>Non-Cartesian parallel MRI (SENSE)</title>
+
+      <para>This section demonstrates how to run a standalone non-Cartesian
+      parallel MRI reconstruction similar to the one that was previously shown
+      using the streaming framework infrastructure in section<xref
+      linkend="sect.cgsense"/>. More details can be found in <xref
+      linkend="sorensen09"/>.</para>
+
+      <para>In addition to a regularized linear least squares solution to the
+      reconstruction problem, we furthermore use the Split Bregman solver to
+      obtain the solution with minimum total variation subject to the
+      constraint of the encoding operator (compressed sensing).</para>
+
+      <para>Download a free-breathing cardiac MRI sample dataset from <uri
+      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/phantom/shepp_logan/shepp.tar.gz">http://sourceforge.net/projects/gadgetron/files/testdata/mri/fb_data.zip</uri></para>
+
+      <para>Source code is found in the files <filename>main_cg.cpp</filename>
+      and <filename>main_sbc.cpp</filename>.</para>
+
+      <para>Both command lines below produce a 2D image sequence, each image
+      with a matrix size of 192<superscript>2</superscript>
+      (<varname>-m</varname>). 32 projections are used for each frame
+      (<varname>-p</varname>) for a frame rate of roughly 32 profiles/frame *
+      2.5 ms/profile = 80 ms ms/frame or 12.5 frames/s. The reconstruction
+      results are written out in both complex and magnitude data as
+      <filename>result.cplx</filename> and <filename>result.real</filename>
+      respectively.</para>
+
+      <para>If sufficient device memory is available on your GPU (i.e. you are
+      in possession of a high-end card) all frames in the sequence can be
+      reconstructed concurrently (as a 3D volume). On systems that do not hold
+      enough device memory to reconstruct all frames in parallel, they can
+      instead be reconstructed in several batches. The <varname>-f</varname>
+      option to the command lines below indicate the number of frames that are
+      reconstructed per batch. A negative value indicates "all". If the
+      command below fails to complete due to lack of device memory, try
+      running with argument <varname>-f 8</varname> (or an even smaller
+      number) instead.</para>
+
+      <para>The following output was obtained on a Geforce GTX 480 GPU.</para>
+
+      <screen>user@host$ radial_sense_cg -d fb_data.cplx -m 192 -o 256 -p 32 -K 0.01
+
+  Running reconstruction with the following parameters: 
+---------------------------------------------------- 
+  Sample data file name                             : fb_data.cplx 
+  Result file name                                  : result.cplx 
+  Matrix size                                       : 192 
+  Oversampled matrix size                           : 256 
+  Profiles per frame                                : 32 
+  Frames per reconstruction (negative meaning all)  : -1 
+  Number of iterations                              : 10 
+  Kernel width                                      : 5.5 
+  Kappa                                             : 0.01 
+---------------------------------------------------- 
+
+Loading data: 18.339 ms
+
+#samples/profile: 256
+#profiles/frame: 32
+#profiles: 2560
+#coils: 4
+#frames/reconstruction: 80
+#profiles/reconstruction: 2560
+#samples/reconstruction: 655360
+
+Filling rhs buffer: 283.675 ms
+Estimating csm: 3.435 ms
+Computing regularization: 0.319 ms
+Computing preconditioning weights: 0.081 ms
+Iterating...
+Iteration 0. rq/rq_0 = 0.453177
+Iteration 1. rq/rq_0 = 0.132643
+Iteration 2. rq/rq_0 = 0.0413432
+Iteration 3. rq/rq_0 = 0.0144378
+Iteration 4. rq/rq_0 = 0.00681063
+Iteration 5. rq/rq_0 = 0.00450857
+Iteration 6. rq/rq_0 = 0.00342872
+Iteration 7. rq/rq_0 = 0.00240418
+Iteration 8. rq/rq_0 = 0.00146108
+Iteration 9. rq/rq_0 = 0.000903398
+GPU Conjugate Gradient solve: 2115.7 ms
+Full SENSE reconstruction.: 2188.68 ms
+Writing out result: 50.111 ms
+
+user@host$</screen>
+
+      <screen>user@host$ 2d_golden_ratio/radial_sense_sbc \
+           -d fb_data.cplx -m 192 -o 256 -p 32 
+
+  Running reconstruction with the following parameters: 
+---------------------------------------------------- 
+  Sample data file name                             : fb_data.cplx 
+  Result file name                                  : result.cplx 
+  Matrix size                                       : 192 
+  Oversampled matrix size                           : 256 
+  Profiles per frame                                : 32 
+  Frames per reconstruction (negative meaning all)  : -1 
+  Number of cg iterations                           : 20 
+  Number of sb inner iterations                     : 1 
+  Number of sb outer iterations                     : 50 
+  Kernel width                                      : 5.5 
+  Mu                                                : 0.5 
+  Lambda                                            : 1.0 
+---------------------------------------------------- 
+
+Loading data: 16.082 ms
+
+#samples/profile: 256
+#profiles/frame: 32
+#profiles: 2560
+#coils: 4
+#frames/reconstruction 80
+#profiles/reconstruction 2560
+#samples/reconstruction 655360
+
+CSM and regularization estimation: 288.983 ms
+
+u_k delta (outer loop): 2.39644e+08
+u_k delta (outer loop): 2.28771e+08
+.
+.
+.
+u_k delta (outer loop): 1.94375e+08
+
+GPU constrained Split Bregman solve: 57257.4 ms
+Full SENSE reconstruction with TV regularization.: 57330.3 ms
+Writing out result: 50.421 ms
+
+user@host$</screen>
+
+      <para>A single frame from the reconstructions are shown below.</para>
+
+      <figure>
+        <title>Non-Cartesian radial SENSE from conjugate gradient
+        solver</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="figs/sense_cg.png" format="PNG" width="3in"/>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <figure>
+        <title>Non-Cartesian radial SENSE from constrained Split Bregman
+        solver</title>
+
+        <mediaobject>
+          <imageobject>
+            <imagedata fileref="figs/sense_sbc.png" format="PNG" width="3in"/>
+          </imageobject>
+        </mediaobject>
+      </figure>
+
+      <para>As all 80 frames are reconstructed in parallel it is
+      straightforward to add temporal regularization to the reconstructions.
+      We leave this as a suggested exercise for the reader.</para>
     </sect1>
   </chapter>
 
@@ -5668,7 +6043,7 @@ end
   <appendix xml:id="section.hdf5">
     <title>HDF5 Files</title>
 
-    <para>The Gadgetron framework is used to procress many different types of
+    <para>The Gadgetron framework is used to process many different types of
     data and it is cumbersome to add specific read and write routines for all
     these different kinds of data. Consequently we have chosen to use the
     generic HDF5 file format. A detailed description of this format can be
@@ -5721,7 +6096,7 @@ end
     <para>Images saved by Gadgetron clients are saved as arrays in the HDF5
     files. Due to the array storage conventions in the Gadgetron environment,
     the first dimension is the slowest varying dimension in the arrays and the
-    last dimention is the fastest varying dimention. That means that an array
+    last dimension is the fastest varying dimension. That means that an array
     with 10 images with dimensions 128x128 would be stored in a variable in
     the HDF5 file with dimensions 10x1x128x128 as seen in <xref
     linkend="fig.hdfview_image"/>. To display the images, right click on the
@@ -5753,7 +6128,7 @@ ans =
   <appendix xml:id="futurefeatures">
     <title>Future Features</title>
 
-    <para>The Gagdetron is evolving continuously and there are many things
+    <para>The Gadgetron is evolving continuously and there are many things
     still that we would like to include but have not yet had the time to do.
     This appendix serves as a to-do list of features to be implement as we go
     along.</para>
@@ -5822,8 +6197,8 @@ ans =
           </author>
 
           <author>
-            <personname><firstname>T. S.</firstname>
-            <surname>Sørensen</surname></personname>
+            <personname><firstname>T.
+            S.</firstname><surname>Sørensen</surname></personname>
           </author>
         </authorgroup>
 
@@ -5834,7 +6209,11 @@ ans =
       <biblioset role="journal">
         <title>Magnetic Resonance in Medicine</title>
 
-        <volumenum>59 (3), 463-468</volumenum>
+        <volumenum>59 </volumenum>
+
+        <issuenum>3</issuenum>
+
+        <pagenums>463-468</pagenums>
 
         <pubdate>2008</pubdate>
       </biblioset>
@@ -5868,10 +6247,6 @@ ans =
 
         <title>Accelerating the nonequispaced fast fourier transform on
         commodity graphics hardware</title>
-
-        <pagenums>538--47</pagenums>
-
-        <bibliosource class="doi">10.1109/TMI.2007.909834</bibliosource>
       </biblioset>
 
       <biblioset role="journal">
@@ -5881,7 +6256,8 @@ ans =
 
         <issuenum>4</issuenum>
 
-        <pubdate>Apr 2008</pubdate>
+        <pagenums>538-47</pagenums>
+        <pubdate>2008</pubdate>
       </biblioset>
     </biblioentry>
 
@@ -5914,9 +6290,6 @@ ans =
         <title>Real-time reconstruction of sensitivity encoded radial magnetic
         resonance imaging using a graphics processing unit</title>
 
-        <pagenums>1974--85</pagenums>
-
-        <bibliosource class="doi">10.1109/TMI.2009.2027118</bibliosource>
       </biblioset>
 
       <biblioset role="journal">
@@ -5926,7 +6299,8 @@ ans =
 
         <issuenum>12</issuenum>
 
-        <pubdate>Dec 2009</pubdate>
+        <pagenums>1974-85</pagenums>
+        <pubdate>2009</pubdate>
       </biblioset>
     </biblioentry>
   </bibliography>

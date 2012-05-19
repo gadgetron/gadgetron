@@ -20,7 +20,7 @@ void print_usage()
 {
 	ACE_DEBUG((LM_INFO, ACE_TEXT("Usage: \n") ));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("mriclient -p <PORT>                      (default 9002)\n") ));
-	ACE_DEBUG((LM_INFO, ACE_TEXT("          -h <HOST>                      (default localhost)\n") ));
+	ACE_DEBUG((LM_INFO, ACE_TEXT("      sa    -h <HOST>                      (default localhost)\n") ));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("          -d <HDF5 DATA FILE>            (default ./data.h5)\n") ));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("          -g <HDF5 DATA GROUP>           (default /dataset)\n") ));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("          -c <GADGETRON CONFIG>          (default default.xml)\n") ));
@@ -138,7 +138,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 		print_usage();
 		return -1;
 	} else {
-		boost::shared_ptr<H5File> f = OpenHF5File(hdf5_in_data_file);
+		boost::shared_ptr<H5File> f = OpenHDF5File(hdf5_in_data_file);
 		if (!HDF5LinkExists(f.get(), hdf5_xml_varname.c_str())) {
 			ACE_DEBUG((LM_INFO, ACE_TEXT("HDF5 variable \"%s\" does not exists.\n"), hdf5_xml_varname.c_str()));
 			print_usage();

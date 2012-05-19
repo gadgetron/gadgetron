@@ -2,7 +2,6 @@
 #define CUNDARRAY_H
 #pragma once
 
-#pragma once
 #include "gpucore_export.h"
 
 #include "NDArray.h"

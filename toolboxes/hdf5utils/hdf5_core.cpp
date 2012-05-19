@@ -15,7 +15,7 @@
 #include <vector>
 #include <iostream>
 
-boost::shared_ptr<H5File> OpenHF5File(const char* filename)
+boost::shared_ptr<H5File> OpenHDF5File(const char* filename)
 {
 	boost::shared_ptr<H5File> ret;
 
@@ -69,7 +69,7 @@ unsigned long HDF5GetLengthOfFirstDimension(const char* filename, const char* na
 		return 0;
 	}
 
-	boost::shared_ptr<H5File> f = OpenHF5File(filename);
+	boost::shared_ptr<H5File> f = OpenHDF5File(filename);
 
 	if (!HDF5LinkExists(f.get(), name)) {
 		std::cout << "Trying to access non-existing variable in HDF5 file." << std::endl;
@@ -101,7 +101,7 @@ void HDF5Lock::release()
 	mutex_.release();
 }
 
-HDF5Lock* HDF5Lock::instance_ = NULL;
+EXPORTHDF5UTILS HDF5Lock* HDF5Lock::instance_ = NULL;
 
 
 

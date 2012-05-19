@@ -5,8 +5,11 @@
 #include "cgPreconditioner.h"
 #include "real_utilities.h"
 #include "cgCallback.h"
+
 #include <vector>
 #include <iostream>
+
+#include <limits>
 
 template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class cgSolver 
   : public linearSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE>
@@ -20,7 +23,7 @@ public:
   //
 
   cgSolver() : linearSolver<REAL, ELEMENT_TYPE, ARRAY_TYPE>() {
-    alpha_ = ELEMENT_TYPE(NAN);
+    alpha_ = std::numeric_limits<ELEMENT_TYPE>::quiet_NaN();
     iterations_ = 10;
     tc_tolerance_ = (REAL)1e-3;
     cb_ = boost::shared_ptr< relativeResidualTCB<REAL, ELEMENT_TYPE, ARRAY_TYPE> >
