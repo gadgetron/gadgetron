@@ -14,23 +14,27 @@
 
 enum cuNDA_device { CUNDA_CURRENT_DEVICE, CUNDA_NDARRAY_DEVICE };
 
-// Abs (float/double/complext arrays)
+// Abs "complex style" (float/double/complext arrays)
 template<class REAL, class T> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<REAL> >
 cuNDA_cAbs( cuNDArray<T> *data,
 	    cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE,
 	    cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
-// Norm (float/double/complext arrays)
+// Norm "complex style" (float/double/complext arrays)
 template<class REAL, class T> EXPORTGPUCORE 
 boost::shared_ptr< cuNDArray<REAL> > 
 cuNDA_cNorm( cuNDArray<T> *data,
 	    cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
 	    cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
+// Norm squared (reald arrays) -- element-wise length
+template<class REAL, unsigned int D>  EXPORTGPUCORE
+boost::shared_ptr< cuNDArray<REAL> > 
+cuNDA_norm( cuNDArray<typename reald<REAL,D>::Type> *data,
+	    cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
+	    cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
-
-
-// Norm squared (reald arrays)
+// Norm squared (reald arrays) -- element-wise length squared
 template<class REAL, unsigned int D> EXPORTGPUCORE
 boost::shared_ptr< cuNDArray<REAL> > 
 cuNDA_norm_squared( cuNDArray< typename reald<REAL,D>::Type > *data,
@@ -138,7 +142,7 @@ template<class T> EXPORTGPUCORE
 bool cuNDA_reciprocal_sqrt( cuNDArray<T> *in_out,
 			    cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
-// Abs (floatd types supported, hence component-wise operation also for arrays of complex types!)
+// Abs. -- element-wise on reald types 
 template<class T> EXPORTGPUCORE
 bool cuNDA_abs( cuNDArray<T> *in_out,
 		cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );

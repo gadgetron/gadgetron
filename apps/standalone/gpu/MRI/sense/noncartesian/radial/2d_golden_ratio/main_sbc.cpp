@@ -274,7 +274,7 @@ int main(int argc, char** argv)
 
     boost::shared_ptr< cuNDArray<_complext> > sbresult;
     {
-      GPUTimer timer("GPU Conjugate Gradient solve");
+      GPUTimer timer("GPU constrained Split Bregman solve");
       sbresult = sb.solve(data.get());
     }
 

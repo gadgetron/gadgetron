@@ -104,9 +104,9 @@ int main(int argc, char** argv)
   cout << endl << "#profiles/frame: " << profiles_per_frame;
   cout << endl << "#profiles: " << num_profiles;
   cout << endl << "#coils: " << num_coils;
-  cout << endl << "#frames/reconstruction " << frames_per_reconstruction;
-  cout << endl << "#profiles/reconstruction " << profiles_per_reconstruction;
-  cout << endl << "#samples/reconstruction " << samples_per_reconstruction << endl << endl;
+  cout << endl << "#frames/reconstruction: " << frames_per_reconstruction;
+  cout << endl << "#profiles/reconstruction: " << profiles_per_reconstruction;
+  cout << endl << "#samples/reconstruction: " << samples_per_reconstruction << endl << endl;
 
   // Set density compensation weights
   boost::shared_ptr< cuNDArray<_real> > dcw = compute_radial_dcw_golden_ratio_2d
