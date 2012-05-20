@@ -32,7 +32,12 @@ virtual bool solver_axpy_real( REAL a, cuNDArray<REAL> *x, cuNDArray<REAL> *y )
   return cuNDA_axpy<REAL>(a,x,y);
 }
 
-virtual REAL solver_asum( cuNDArray<T> *x )
+virtual REAL solver_asum_real( cuNDArray<REAL> *x )
+{
+  return cuNDA_asum<REAL,REAL>(x);
+}
+
+virtual REAL solver_asum_element( cuNDArray<T> *x )
 {
   return cuNDA_asum<REAL,T>(x);
 }
