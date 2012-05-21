@@ -163,8 +163,7 @@ public:
   virtual bool solver_scal( ELEMENT_TYPE, ARRAY_TYPE_ELEMENT* ) = 0;
   virtual bool solver_axpy_real( REAL, ARRAY_TYPE_REAL*, ARRAY_TYPE_REAL* ) = 0;
   virtual bool solver_axpy_element( ELEMENT_TYPE, ARRAY_TYPE_ELEMENT*, ARRAY_TYPE_ELEMENT* ) = 0;
-  virtual REAL solver_asum( ARRAY_TYPE_ELEMENT* ) = 0;
-  virtual boost::shared_ptr<ARRAY_TYPE_REAL> solver_abs( ARRAY_TYPE_ELEMENT* ) = 0;
+  virtual REAL solver_asum_element( ARRAY_TYPE_ELEMENT* ) = 0;
   virtual boost::shared_ptr<ARRAY_TYPE_REAL> solver_norm( ARRAY_TYPE_ELEMENT* ) = 0;
   virtual bool solver_shrink1( REAL, ARRAY_TYPE_ELEMENT*, ARRAY_TYPE_ELEMENT* ) = 0;
   virtual bool solver_shrinkd( REAL, ARRAY_TYPE_REAL*, ARRAY_TYPE_ELEMENT*, ARRAY_TYPE_ELEMENT* ) = 0;
@@ -200,7 +199,7 @@ public:
       this->solver_error( "Error: sbSolver::solve : failed to clear u_k" );
       return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
     }
-    get_inner_solver()->set_x0( u_k );
+    //    get_inner_solver()->set_x0( u_k );
 
     // Normalize (a copy of) the input data
     //
@@ -674,7 +673,7 @@ protected:
     // Normalize to an average energy of "one intensity unit per image element"
     //
 
-    REAL sum = solver_asum( &tmp );
+    REAL sum = solver_asum_element( &tmp );
     image_scale = (REAL) (tmp.get_number_of_elements())/REAL(sum);
 
     if(	!solver_scal( image_scale, f.get() )){
@@ -836,7 +835,7 @@ protected:
 		this->solver_error( "Error: sbSolver::core : error computing inner loop u_k delta" );
 		return false;
 	      }
-	      std::cout << std::endl << "u_k delta (inner loop): " << solver_asum(u_k.get()) << std::endl;
+	      std::cout << std::endl << "u_k delta (inner loop): " << solver_asum_element(u_k.get()) << std::endl;
 	    }
 	    
 	    // Update u_k 
@@ -1027,7 +1026,7 @@ protected:
 	  return false;
 	}
 
-	REAL delta = solver_asum(&u_k_prev);
+	REAL delta = solver_asum_element(&u_k_prev);
 
 	if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
 	  std::cout << std::endl << "u_k delta (outer loop): " << delta << std::endl << std::endl;

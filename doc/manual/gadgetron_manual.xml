@@ -9,12 +9,17 @@
   <info>
     <title>Gadgetron Users Guide</title>
 
+    <subtitle>A Medical Image Reconstruction Framework</subtitle>
+
     <author>
       <personname><honorific>Dr</honorific> <firstname>Michael
       Schacht</firstname> <surname>Hansen</surname></personname>
 
       <email>michael.hansen@nih.gov</email>
     </author>
+
+    <address>National Heart, Lung, and Blood Institute
+National Institutes of Health, Bethesda, MD, USA</address>
 
     <author>
       <personname><honorific>Dr</honorific> <firstname>Thomas
@@ -23,7 +28,10 @@
       <email>sangild@cs.au.dk</email>
     </author>
 
-    <subtitle>A Medical Image Reconstruction Framework</subtitle>
+    <address>Department of Computer Science and Department of Clinical Medicine
+Aarhus University, Denmark</address>
+
+    <edition>1.0</edition>
   </info>
 
   <chapter>
@@ -301,9 +309,24 @@ export GADGETRON_HOME=/usr/local/gadgetron     </programlisting>
           <para><screen><prompt>user@mycomputer:~$</prompt> <userinput>sudo service lightdm stop</userinput>
 </screen></para>
 
-          <para>We need to install gcc 4.4 since Ubuntu comes preconfigured
-          with gcc 4.6, which is not compatible with the current versions of
-          the CUDA nvcc compiler.</para>
+          <para><remark>Important notice</remark>: Unfortunately we have
+          experienced on several Ubuntu installations that the machine hangs
+          at the splash screen after installation of the Nvidia graphics
+          driver. If you experience this problem, or if you just want to be on
+          the safe side before rebooting, open a terminal (boot in recovery
+          mode) and edit <filename>/etc/default/grub</filename>. Locate the
+          line defining <varname>GRUB_CMDLINE_LINUX_DEFAULT</varname> and
+          change <envar>splash</envar> to <envar>nosplash</envar> (or add
+          <envar>nosplash</envar> if <envar>splash</envar> is not present).
+          Furthermore add <envar>nomodeset</envar>. E.g.
+          <code>GRUB_CMDLINE_LINUX_DEFAULT="quiet nosplash nomodeset"</code>.
+          Finally update the boot manager with the new settings:
+          <prompt>user@mycomputer:~$</prompt> <userinput>sudo
+          update-grub</userinput></para>
+
+          <para>Next we need to install gcc 4.4 since Ubuntu comes
+          preconfigured with gcc 4.6, which is not compatible with the current
+          versions of the CUDA nvcc compiler.</para>
 
           <screen><prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install \
   gcc-4.4 g++-4.4 build-essential</userinput>   </screen>
@@ -561,9 +584,13 @@ $ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/cuda/lib</us
           </listitem>
 
           <listitem>
-            <para>Install CUDA/CULA (optional, but required for GPU support).
-            Download from <uri
-            xlink:href="http://developer.nvidia.com/cuda-toolkit-40">http://developer.nvidia.com/cuda-toolkit-41</uri>):</para>
+            <para>Install CUDA/CULA (optional, but required for GPU
+            support).</para>
+
+            <para>Download Cuda drivers/toolkit from from</para>
+
+            <para><uri
+            xlink:href="http://developer.nvidia.com/cuda-toolkit-40">http://developer.nvidia.com/cuda-toolkit-41-archive</uri>:</para>
 
             <para>Install Nvidia Developer Driver (Version 286.19)</para>
 
@@ -573,11 +600,13 @@ $ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/cuda/lib</us
 
             <para>Install <filename>cula_dense_free_R14-win64.exe</filename>
             (as Administrator). Download from
-            <uri>http://www.culatools.com/downloads/dense/</uri>. Assuming
-            CULA was installed in <filename>C:\Program
-            Files\CULA\R14</filename>, add <filename>C:\Program
-            Files\CULA\R14\bin64</filename> to your <varname>PATH</varname>
-            environment variable.</para>
+            <uri>http://www.culatools.com/downloads/dense/</uri>.</para>
+
+            <para>Assuming CULA was installed in <filename>C:\Program
+            Files\CULA\R14</filename>, add</para>
+
+            <para><filename>C:\Program Files\CULA\R14\bin64</filename> to your
+            <varname>PATH</varname> environment variable.</para>
           </listitem>
 
           <listitem>
@@ -606,7 +635,7 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
             <para>Install ACE (<uri
             xlink:href="http://download.dre.vanderbilt.edu/">http://download.dre.vanderbilt.edu/</uri>)</para>
 
-            <para>Unpack ACE into C:\Libraries\ACE-6.0.5\ACE_wrappers</para>
+            <para>Unpack ACE into C:\Libraries\ACE-6.1.0\ACE_wrappers</para>
 
             <para>Add <filename>config.h</filename> in
             <filename>ACE_ROOT/ace/</filename> with the following
@@ -634,7 +663,7 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
             Python header files cannot be compiled in debug mode on Windows.
             This enforces the Gadgetron to be compiled in release mode.</para>
 
-            <para>Install python-2.7.2.amd64 (<uri
+            <para>Install python-2.7.3.amd64 (<uri
             xlink:href="http://www.python.org">http://www.python.org</uri>)</para>
 
             <para>Add install folder (e.g. <filename>C:\Python27</filename>)
@@ -653,7 +682,7 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
                 </listitem>
 
                 <listitem>
-                  <para><filename>scipy-0.10.0.win-amd64-py2.7</filename></para>
+                  <para><filename>scipy-0.10.1.win-amd64-py2.7</filename></para>
                 </listitem>
 
                 <listitem>
@@ -662,8 +691,8 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
                 </listitem>
 
                 <listitem>
-                  <para><filename>ipython-0.11.win-amd64-py2.7</filename> (not
-                  strictly necessary)</para>
+                  <para><filename>ipython-0.12.1.win-amd64-py2.7</filename>
+                  (not strictly necessary)</para>
                 </listitem>
               </itemizedlist></para>
           </listitem>
@@ -671,8 +700,8 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
           <listitem>
             <para>Install ACML (BLAS and LAPACK)</para>
 
-            <para>Download <filename>acml4.4.0-win64.exe</filename> From: <uri
-            xlink:href="http://developer.amd.com/libraries/acml/downloads/pages/">http://developer.amd.com/libraries/acml/downloads/pages/</uri></para>
+            <para>Download <filename>acml4.4.0-win64.exe</filename> from: <uri
+            xlink:href="http://developer.amd.com/libraries/acml/downloads/pages/">http://developer.amd.com/libraries/acml/downloads/pages/acmlarchivedownloads.aspx</uri></para>
 
             <para>Install Library in say
             C:\Libraries\C:\Libraries\acml4.4.0</para>
@@ -707,8 +736,8 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
             <para>Install <application>git</application> (if you are using
             source code management):</para>
 
-            <para>Run installation package Git-1.7.7.1-preview20111027 (As
-            Administrator), download from <uri
+            <para>Run the newest installation package named something like
+            Git-*-preview*.exe (As Administrator) from: <uri
             xlink:href="http://code.google.com/p/msysgit/">http://code.google.com/p/msysgit/</uri></para>
 
             <para>Use run in git bash only option</para>
@@ -720,7 +749,27 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
             <para>Install CMake (<uri
             xlink:href="http://www.cmake.org/cmake/resources/software.html">http://www.cmake.org/cmake/resources/software.html</uri>)</para>
 
-            <para>Run cmake-2.8.6-win32-x86 (As Administrator)</para>
+            <para>Install the latest release (e.g.
+            cmake-2.8.8-win32-x86)</para>
+          </listitem>
+
+          <listitem>
+            <para>Install <application>HDF5</application>:</para>
+
+            <para>From <uri>http://www.hdfgroup.org/HDF5/</uri> install HDF5
+            and HDFView.</para>
+
+            <para>Get the newwest releases, e.g.</para>
+
+            <para><filename>HDF5189-win64-vs10-static.zip</filename></para>
+
+            <para><filename>hdfview_install_win64.exe</filename></para>
+
+            <para>Run the install executables (one is inside the zip archive).
+            At this point we have only managed to succesfully link to the
+            static version of the HDF5 library in Windows.</para>
+
+            <para>CMAKE BESKRIVELSE AF HDF5 MANGLERtssu9</para>
           </listitem>
 
           <listitem>
@@ -732,11 +781,14 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
 
             <para>Start <application>cmake-gui</application></para>
 
-            <para>Select source and target directories</para>
+            <para>Select source (<envar>$GADGETRON_HOME</envar>) and target
+            directories
+            (<envar>$GADGETRON_HOME</envar><filename>/build</filename>)</para>
 
-            <para>Hit configure (first time)</para>
+            <para>Hit configure (first time) -- "ok" the dialogue box.</para>
 
-            <para>Add variable BOOST_ROOT to point to BOOST folder</para>
+            <para>Add PATH variable BOOST_ROOT to point to BOOST folder (use
+            GUI button "+Add Entry" to do this)</para>
 
             <para>Hit configure (again)</para>
 
@@ -744,7 +796,17 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
 
             <para>Hit configure (again)</para>
 
-            <para>Specify location of CULA (include and library)</para>
+            <para>Specify the locations of GLEW and GLUT:</para>
+
+            <para>Header files in <filename>C:\ProgramData\NVIDIA
+            Corporation\NVIDIA GPU COMPUTING SDK
+            4.1\shared\inc</filename></para>
+
+            <para>Library files in <filename>C:\ProgramData\NVIDIA
+            Corporation\NVIDIA GPU COMPUTING SDK 4.1\lib/x64</filename></para>
+
+            <para>Specify location of CULA (include path and core/lapack
+            library filepaths)</para>
 
             <para>Specify location of ACE include dir</para>
 
@@ -755,29 +817,37 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
 
             <para>Hit configure (again)</para>
 
-            <para>Specify the following environment variables:</para>
+            <para>Specify the following <envar>CMAKE </envar>FILEPATH
+            variables:</para>
 
-            <programlisting>BLAS_CALBLAS= \
-  C:/Libraries/acml4.4.0/win64/lib/libacml.lib
-
+            <programlisting>
 BLAS_acml_LIBRARY= \
   C:/Libraries/acml4.4.0/win64/lib/libacml_dll.lib
 
 BLAS_acml_mp_LIBRARY= \
   C:/Libraries/acml4.4.0/win64_mp/lib/libacml_mp_dll.lib
 
-BLAS_acml_mv_LIBRARY= \
-  C:/Libraries/acml4.4.0/win64/lib/libacml_mv_dll.lib</programlisting>
+</programlisting>
 
             <para>Hit configure</para>
 
-            <para>Hit "generate"</para>
+            <para>Make sure that the <envar>HDF5_C_LIBRARY</envar> and
+            <envar>HDF5_CXX_LIBRARY</envar> FILEPATH variables are set
+            correctly (to the release versions).</para>
+
+            <para>Hit configure</para>
+
+            <para>Hit generate</para>
           </listitem>
 
           <listitem>
             <para>You should now have a visual studio project that you can
-            open and build (try Release/x64 mode and try the install
-            target).</para>
+            open and build (try Release/x64 mode and try the install target).
+            If you are lacking sufficient write permission to install in the
+            default location, run Visual Studio as Administrator or change
+            <envar>CMAKE_INSTALL_PREFIX</envar> to a folder to which you have
+            write permissions. Notice that /gadgetron is automatically
+            appended to the path you specify.</para>
           </listitem>
         </itemizedlist>
 
@@ -5030,7 +5100,7 @@ GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2
       <para>To test this configuration, please download the GRAPPA test
       datasets from <uri type="website"
       xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/">https://sourceforge.net/projects/gadgetron/files/testdata/</uri>.
-      In the MRI test data file <filename>gadgetron_testdata.h4</filename> you
+      In the MRI test data file <filename>gadgetron_testdata.h5</filename> you
       will find two test datasets <filename>gre_tgrappa_rate2</filename> and
       <filename>gre_tgrappa_rate4</filename>. They are Cartesian parallel
       imaging datasets with rate 2 and 4 acceleration respectively. They were
@@ -6127,8 +6197,8 @@ ans =
           </author>
 
           <author>
-            <personname><firstname>T. S.</firstname>
-            <surname>Sørensen</surname></personname>
+            <personname><firstname>T.
+            S.</firstname><surname>Sørensen</surname></personname>
           </author>
         </authorgroup>
 
@@ -6139,7 +6209,11 @@ ans =
       <biblioset role="journal">
         <title>Magnetic Resonance in Medicine</title>
 
-        <volumenum>59 (3), 463-468</volumenum>
+        <volumenum>59 </volumenum>
+
+        <issuenum>3</issuenum>
+
+        <pagenums>463-468</pagenums>
 
         <pubdate>2008</pubdate>
       </biblioset>
@@ -6173,10 +6247,6 @@ ans =
 
         <title>Accelerating the nonequispaced fast fourier transform on
         commodity graphics hardware</title>
-
-        <pagenums>538--47</pagenums>
-
-        <bibliosource class="doi">10.1109/TMI.2007.909834</bibliosource>
       </biblioset>
 
       <biblioset role="journal">
@@ -6186,7 +6256,8 @@ ans =
 
         <issuenum>4</issuenum>
 
-        <pubdate>Apr 2008</pubdate>
+        <pagenums>538-47</pagenums>
+        <pubdate>2008</pubdate>
       </biblioset>
     </biblioentry>
 
@@ -6219,9 +6290,6 @@ ans =
         <title>Real-time reconstruction of sensitivity encoded radial magnetic
         resonance imaging using a graphics processing unit</title>
 
-        <pagenums>1974--85</pagenums>
-
-        <bibliosource class="doi">10.1109/TMI.2009.2027118</bibliosource>
       </biblioset>
 
       <biblioset role="journal">
@@ -6231,7 +6299,8 @@ ans =
 
         <issuenum>12</issuenum>
 
-        <pubdate>Dec 2009</pubdate>
+        <pagenums>1974-85</pagenums>
+        <pubdate>2009</pubdate>
       </biblioset>
     </biblioentry>
   </bibliography>

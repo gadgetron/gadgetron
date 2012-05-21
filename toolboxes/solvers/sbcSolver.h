@@ -29,8 +29,8 @@ public:
   virtual bool solver_scal( ELEMENT_TYPE, ARRAY_TYPE_ELEMENT* ) = 0;
   virtual bool solver_axpy_real( REAL, ARRAY_TYPE_REAL*, ARRAY_TYPE_REAL* ) = 0;
   virtual bool solver_axpy_element( ELEMENT_TYPE, ARRAY_TYPE_ELEMENT*, ARRAY_TYPE_ELEMENT* ) = 0;
-  virtual REAL solver_asum( ARRAY_TYPE_ELEMENT* ) = 0;
-  virtual boost::shared_ptr<ARRAY_TYPE_REAL> solver_abs( ARRAY_TYPE_ELEMENT* ) = 0;
+  virtual REAL solver_asum_real( ARRAY_TYPE_REAL* ) = 0;
+  virtual REAL solver_asum_element( ARRAY_TYPE_ELEMENT* ) = 0;
   virtual boost::shared_ptr<ARRAY_TYPE_REAL> solver_norm( ARRAY_TYPE_ELEMENT* ) = 0;
   virtual bool solver_shrink1( REAL, ARRAY_TYPE_ELEMENT*, ARRAY_TYPE_ELEMENT* ) = 0;
   virtual bool solver_shrinkd( REAL, ARRAY_TYPE_REAL*, ARRAY_TYPE_ELEMENT*, ARRAY_TYPE_ELEMENT* ) = 0;
@@ -62,7 +62,7 @@ public:
       this->solver_error( "Error: sbSolver::solve : failed to clear u_k" );
       return boost::shared_ptr<ARRAY_TYPE_ELEMENT>();
     }
-    this->get_inner_solver()->set_x0( u_k );
+    //this->get_inner_solver()->set_x0( u_k );
 
     // Normalize (a copy of) the input data
     //
@@ -140,10 +140,10 @@ public:
 
       if( this->tolerance_ > REAL(0) || this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
 	
-	REAL delta = solver_asum(&encoded_image);
+	REAL delta = solver_asum_real(solver_norm(&encoded_image).get());
 	
 	if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
-	  std::cout << std::endl << "u_k delta (outer loop): " << delta << std::endl << std::endl;
+	  std::cout << std::endl << "Residual (outer loop): " << delta << std::endl << std::endl;
 
 	if( delta < this->tolerance_ )
 	  break;

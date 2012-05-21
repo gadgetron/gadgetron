@@ -8,7 +8,6 @@
 #include <vector>
 #include <cmath>
 
-
 using namespace std;
 
 // Some device properties we query once to eliminate runtime overhead
@@ -457,14 +456,14 @@ cuNDA_cNorm( cuNDArray<T> *in,
 
   // Prepare
   if( !prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
-    cerr << endl << "cuNDA_abs: unable to prepare device(s)" << endl;
+    cerr << endl << "cuNDA_cNorm: unable to prepare device(s)" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
   if( !setup_grid( cur_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
-    cerr << endl << "cuNDA_abs: block/grid configuration out of range" << endl;
+    cerr << endl << "cuNDA_cNorm: block/grid configuration out of range" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
 
@@ -476,7 +475,7 @@ cuNDA_cNorm( cuNDArray<T> *in,
  
   // Restore 
   if( !restore<1,T,REAL,dummy,dummy>( old_device, in, in_int, 0, alloc_device, out.get() ) ){
-    cerr << endl << "cuNDA_abs: unable to restore device" << endl;
+    cerr << endl << "cuNDA_cNorm: unable to restore device" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
 
