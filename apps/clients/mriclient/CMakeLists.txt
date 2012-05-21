@@ -17,7 +17,7 @@ add_executable(mriclient main.cpp)
 target_link_libraries(mriclient tinyxml gadgettools hdf5utils hdf5mri optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${HDF5_LIBRARIES})
 
 if (WIN32)
-target_link_libraries(mriclient ${HDF5_LIB_DIR}/libszip.lib ${HDF5_LIB_DIR}/libzlib.lib)
+target_link_libraries(mriclient ${HDF5_LIB_DIR}/zlib_dynamic.lib ${HDF5_LIB_DIR}/szip_dynamic.lib)
 endif (WIN32)
 
 install(TARGETS mriclient DESTINATION bin)
