@@ -599,7 +599,7 @@ $ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/cuda/lib</us
             <para>Install gpucomputingsdk</para>
 
             <para>Install <filename>cula_dense_free_R14-win64.exe</filename>
-            from </para>
+            from</para>
 
             <para><uri>http://www.culatools.com/downloads/dense/</uri>.</para>
 
@@ -661,7 +661,7 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
           </listitem>
 
           <listitem>
-            <para>Install Python (optional). </para>
+            <para>Install Python (optional).</para>
 
             <para>Regrettably, the off-the-shelf Python header files cannot be
             compiled in debug mode on Windows. This enforces the Gadgetron
@@ -5738,32 +5738,9 @@ Output result to disk
 user@host$</screen>
 
       <para>The result is saved in file <filename>result.cplx</filename>. A
-      magnitudes image is saved as <filename>result.real</filename>. The
-      result is shown below. As an exercise, experiment with the settings to
-      reduce (or increase) the aliasing.</para>
-
-      <figure>
-        <title>Shepp-Logan phantom</title>
-
-        <mediaobject>
-          <imageobject>
-            <imagedata fileref="figs/shepp.png" format="PNG" width="2in"/>
-          </imageobject>
-        </mediaobject>
-      </figure>
-
-      <figure>
-        <title>Shepp-Logan phantom after application of a ("two-fold")
-        undersampled golden ratio based radial NFFT followed by the
-        NFFT<superscript>H</superscript></title>
-
-        <mediaobject>
-          <imageobject>
-            <imagedata fileref="figs/shepp_iteration.png" format="PNG"
-                       width="2in"/>
-          </imageobject>
-        </mediaobject>
-      </figure>
+      magnitudes image is saved as <filename>result.real</filename>. As an
+      exercise, experiment with the settings to reduce (or increase) the
+      aliasing.</para>
 
       <para>The <envar>
       $(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/MRI/nfft/2d/</filename>
@@ -5860,8 +5837,7 @@ Writing out result: 50.111 ms
 
 user@host$</screen>
 
-      <screen>user@host$ 2d_golden_ratio/radial_sense_sbc \
-           -d fb_data.cplx -m 192 -o 256 -p 32 
+      <screen>user@host$ radial_sense_sbc -d fb_data.cplx -m 192 -o 256 -p 32 
 
   Running reconstruction with the following parameters: 
 ---------------------------------------------------- 
@@ -5891,42 +5867,13 @@ Loading data: 16.082 ms
 
 CSM and regularization estimation: 288.983 ms
 
-u_k delta (outer loop): 2.39644e+08
-u_k delta (outer loop): 2.28771e+08
-.
-.
-.
-u_k delta (outer loop): 1.94375e+08
+...
 
 GPU constrained Split Bregman solve: 57257.4 ms
 Full SENSE reconstruction with TV regularization.: 57330.3 ms
 Writing out result: 50.421 ms
 
 user@host$</screen>
-
-      <para>A single frame from the reconstructions are shown below.</para>
-
-      <figure>
-        <title>Non-Cartesian radial SENSE from conjugate gradient
-        solver</title>
-
-        <mediaobject>
-          <imageobject>
-            <imagedata fileref="figs/sense_cg.png" format="PNG" width="3in"/>
-          </imageobject>
-        </mediaobject>
-      </figure>
-
-      <figure>
-        <title>Non-Cartesian radial SENSE from constrained Split Bregman
-        solver</title>
-
-        <mediaobject>
-          <imageobject>
-            <imagedata fileref="figs/sense_sbc.png" format="PNG" width="3in"/>
-          </imageobject>
-        </mediaobject>
-      </figure>
 
       <para>As all 80 frames are reconstructed in parallel it is
       straightforward to add temporal regularization to the reconstructions.
