@@ -766,20 +766,22 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
           <listitem>
             <para>Install <application>HDF5</application>:</para>
 
-            <para>From <uri>http://www.hdfgroup.org/HDF5/</uri> install
-            HDFView : <filename>hdfview_install_win64.exe</filename></para>
+            <para>From <uri
+            xlink:href="http://www.hdfgroup.org/HDF5/">http://www.hdfgroup.org/HDF5/</uri>
+            install HDFView :
+            <filename>hdfview_install_win64.exe</filename></para>
 
             <para><filename>As the precompiled HDF5 binaries off the HDF5 web
             page fail to link to the Gadgetron we need to compile HDF5
             ourselves. </filename></para>
 
             <para>Download (e.g. to C:\Libraries\hdf5-1.8.9\) the HDF5
-            <emphasis>source code</emphasis> from
-            <filename>http://www.hdfgroup.org/ftp/HDF5/current/src/</filename>.</para>
+            <emphasis>source code</emphasis> from <uri
+            xlink:href="http://www.hdfgroup.org/ftp/HDF5/current/src/">http://www.hdfgroup.org/ftp/HDF5/current/src/</uri>.</para>
 
             <para>Download the <emphasis>source code</emphasis> to
-            <filename>szip</filename> and <filename>zlib</filename> from
-            <filename>www.hdfgroup.org/ftp/lib-external/</filename></para>
+            <filename>szip</filename> and <filename>zlib</filename> from <uri
+            xlink:href="http://www.hdfgroup.org/ftp/lib-external/">http://www.hdfgroup.org/ftp/lib-external/</uri></para>
 
             <para>Go to the <filename>zlib</filename> source folder and
             compile the Visual Studio project found under subfolder
