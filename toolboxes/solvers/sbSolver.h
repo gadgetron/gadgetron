@@ -168,6 +168,10 @@ public:
   virtual bool solver_shrink1( REAL, ARRAY_TYPE_ELEMENT*, ARRAY_TYPE_ELEMENT* ) = 0;
   virtual bool solver_shrinkd( REAL, ARRAY_TYPE_REAL*, ARRAY_TYPE_ELEMENT*, ARRAY_TYPE_ELEMENT* ) = 0;
 
+  // Provide the user an option to access u_k right after its update. 
+  //
+
+  virtual bool post_linear_solver_callback( ARRAY_TYPE_ELEMENT* ) { return true; }
 
   //
   // Main solver interface
@@ -829,6 +833,12 @@ protected:
 	  {
 	    boost::shared_ptr<ARRAY_TYPE_ELEMENT> tmp_u_k = get_inner_solver()->solve( &data );
 
+	    // Invoke the post inner solver callback
+	    if( !post_linear_solver_callback( tmp_u_k.get() ) ){
+	      this->solver_error( "Error: sbSolver::core : error computing inner loop u_k delta" );
+	      return false;
+	    }
+	    
 	    // Compute change in u_k
 	    if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
 	      if( !solver_axpy_element( ELEMENT_TYPE(-1), tmp_u_k.get(), u_k.get() )){
