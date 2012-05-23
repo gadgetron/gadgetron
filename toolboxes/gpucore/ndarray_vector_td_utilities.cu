@@ -3693,55 +3693,35 @@ bool cuNDA_zero_fill_border( typename uintd<D>::Type matrix_size_in, cuNDArray<T
 
 // Zero fill border (circular)
 template<class REAL, class T, unsigned int D> __global__ void
-cuNDA_zero_fill_border_kernel( typename reald<REAL,D>::Type radius, typename uintd<D>::Type matrix_size_out, 
-			       T *image, unsigned int number_of_batches, unsigned int number_of_elements )
+cuNDA_zero_fill_border_kernel( REAL radius, typename intd<D>::Type dims, T *image, 
+			       unsigned int num_batches, unsigned int num_elements )
 {
   const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
- 
-  if( idx < number_of_elements ){
-    
-    typename reald<REAL,D>::Type half_matrix_size_out_real = to_reald<REAL,unsigned int,D>( matrix_size_out>>1 );
-
-    const typename uintd<D>::Type co_out = idx_to_co<D>( idx, matrix_size_out );
-    typename reald<REAL,D>::Type co_out_real = to_reald<REAL,unsigned int,D>( co_out );
-    
-    typename reald<REAL,D>::Type co_f = abs( co_out_real - half_matrix_size_out_real );
-    
-    if( co_f<radius )
-      ; // do nothing
-    else{
-      T zero = T(0);
-      for( unsigned int batch=0; batch<number_of_batches; batch++ ){
-	image[idx+batch*number_of_elements] = zero;
-      }
-    } 
+  const unsigned int frame_offset = idx/num_elements;
+  
+  if( idx < num_elements*num_batches ){
+    const typename intd<D>::Type co = idx_to_co<D>( idx-frame_offset*num_elements, dims ) - (dims>>1);
+    if( REAL(norm_squared(co)) > radius*radius )
+      image[idx] = T(0);
   }
 }
 
-// Zero fill border (circular)
+// Zero fill border (circular, 2D)
 template<class REAL, class T, unsigned int D> 
-bool cuNDA_zero_fill_border( typename reald<REAL,D>::Type radius, cuNDArray<T> *in_out,
+bool cuNDA_zero_fill_border( REAL radius, cuNDArray<T> *in_out,
 			     cuNDA_device compute_device )
 {
-  if( in_out->get_number_of_dimensions() < D ){
-    cout << endl << "Image dimensions mismatch, cannot zero fill" << endl;
+  if( D < 2 ){
+    cerr << endl << "cuNDA_zero_fill_border: array should be at least two-dimensional" << endl;
     return false;
-  }
- 
-  typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( *in_out->get_dimensions() );
-  typename reald<REAL,D>::Type matrix_size_out_real = to_reald<REAL,unsigned int,D>( matrix_size_out );
-
-  if( weak_greater(radius, matrix_size_out_real) ){
-    cout << endl << "cuNDA_zero_fillborder:: radius extends matrix size, cannot zero fill" << endl;
-    return false;
-  }
- 
+  } 
+  
   unsigned int number_of_batches = 1;
-  for( unsigned int d=D; d<in_out->get_number_of_dimensions(); d++ ){
+  for( unsigned int d=2; d<in_out->get_number_of_dimensions(); d++ ){
     number_of_batches *= in_out->get_size(d);
   }
 
- // Prepare internal array
+  // Prepare internal array
   int cur_device, old_device;
   cuNDArray<T> *in_out_int;
 
@@ -3751,15 +3731,18 @@ bool cuNDA_zero_fill_border( typename reald<REAL,D>::Type radius, cuNDArray<T> *
     return false;
   }
 
+  typename intd<D>::Type dims = vector_to_intd<D>(*in_out->get_dimensions());
+
   // Setup block/grid dimensions
   dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( cur_device, prod(matrix_size_out), &blockDim, &gridDim ) ){
+  if( !setup_grid( cur_device, in_out->get_number_of_elements(), &blockDim, &gridDim, number_of_batches ) ){
     cerr << endl << "cuNDA_zero_fill: block/grid configuration out of range" << endl;
     return false;
   }
  
   // Invoke kernel
-  cuNDA_zero_fill_border_kernel<REAL,T,D><<< gridDim, blockDim >>> ( radius, matrix_size_out, in_out_int->get_data_ptr(), number_of_batches, prod(matrix_size_out) );
+  cuNDA_zero_fill_border_kernel<REAL,T,D><<< gridDim, blockDim >>> 
+    ( radius, dims, in_out_int->get_data_ptr(), number_of_batches, prod(dims) );
  
   CHECK_FOR_CUDA_ERROR();
 
@@ -4341,18 +4324,14 @@ template EXPORTGPUCORE bool cuNDA_zero_fill_border<float_complext,3>(uintd3, cuN
 template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,4>(uintd4, cuNDArray<float>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_zero_fill_border<float_complext,4>(uintd4, cuNDArray<float_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,1>(floatd1, cuNDArray<float>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext,1>(floatd1, cuNDArray<float_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,2>(float, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext,2>(float, cuNDArray<float_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,2>(floatd2, cuNDArray<float>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext,2>(floatd2, cuNDArray<float_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,3>(float, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext,3>(float, cuNDArray<float_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,3>(floatd3, cuNDArray<float>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext,3>(floatd3, cuNDArray<float_complext>*, cuNDA_device );
-
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,4>(floatd4, cuNDArray<float>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext,4>(floatd4, cuNDArray<float_complext>*, cuNDA_device );
-
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float,4>(float, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<float,float_complext,4>(float, cuNDArray<float_complext>*, cuNDA_device );
 
 template EXPORTGPUCORE float cuNDA_dot<float>( cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
 template EXPORTGPUCORE float_complext cuNDA_dot<float_complext>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, cuNDA_device );
@@ -4655,18 +4634,14 @@ template EXPORTGPUCORE bool cuNDA_zero_fill_border<double_complext,3>(uintd3, cu
 template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,4>(uintd4, cuNDArray<double>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_zero_fill_border<double_complext,4>(uintd4, cuNDArray<double_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,1>(doubled1, cuNDArray<double>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext,1>(doubled1, cuNDArray<double_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,2>(double, cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext,2>(double, cuNDArray<double_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,2>(doubled2, cuNDArray<double>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext,2>(doubled2, cuNDArray<double_complext>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,3>(double, cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext,3>(double, cuNDArray<double_complext>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,3>(doubled3, cuNDArray<double>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext,3>(doubled3, cuNDArray<double_complext>*, cuNDA_device );
-
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,4>(doubled4, cuNDArray<double>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext,4>(doubled4, cuNDArray<double_complext>*, cuNDA_device );
-
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double,4>(double, cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_zero_fill_border<double,double_complext,4>(double, cuNDArray<double_complext>*, cuNDA_device );
 
 template EXPORTGPUCORE double cuNDA_dot<double>( cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
 template EXPORTGPUCORE double_complext cuNDA_dot<double_complext>( cuNDArray<double_complext>*, cuNDArray<double_complext>*, cuNDA_device );

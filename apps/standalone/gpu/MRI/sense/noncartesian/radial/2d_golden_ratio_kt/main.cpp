@@ -212,7 +212,7 @@ int main(int argc, char** argv)
   }
   
   // Define shutter for training data
-  _reald2 shutter_radius = to_vector_td<_real,2>(((_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0])*(_real)profiles_per_frame/(_real)M_PI);
+  _real shutter_radius = ((_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0])*(_real)profiles_per_frame/(_real)M_PI;
   
   vector<unsigned int> image_os_dims = uintd_to_vector<2>(matrix_size_os); 
   image_os_dims.push_back(frames_per_reconstruction); image_os_dims.push_back(num_coils);    
