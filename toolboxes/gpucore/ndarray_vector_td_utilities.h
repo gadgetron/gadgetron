@@ -147,15 +147,15 @@ template<class T> EXPORTGPUCORE
 bool cuNDA_abs( cuNDArray<T> *in_out,
 		cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
-//Threshold
+// Threshold
 template<class T> EXPORTGPUCORE
-bool cuNDA_threshold_min(T min, cuNDArray<T> *in_out,
-		cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
-//Threshold
-template<class T> EXPORTGPUCORE
-bool cuNDA_threshold_max(T max, cuNDArray<T> *in_out,
-		cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+bool cuNDA_threshold_min( T min, cuNDArray<T> *in_out, T to_value = T(0), 
+			  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
+// Threshold
+template<class T> EXPORTGPUCORE
+bool cuNDA_threshold_max( T max, cuNDArray<T> *in_out, T to_value = T(0),
+			  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 // Normalize by RSS (float/double/complext arrays)
 template<class REAL, class T> EXPORTGPUCORE

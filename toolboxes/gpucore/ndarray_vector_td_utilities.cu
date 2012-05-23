@@ -1873,22 +1873,22 @@ bool cuNDA_abs( cuNDArray<T> *in_out,
 
   return true;
 }
+
 // threshold
 template<class T> __global__
-void cuNDA_threshold_min_kernel(T min,  T *in_out, unsigned int number_of_elements )
+void cuNDA_threshold_min_kernel( T min, T value, T *in_out, unsigned int number_of_elements )
 {
   const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
-
+  
   if( idx<number_of_elements ){
-    if (real(in_out[idx]) < real(min)) in_out[idx] = T(0);
+    if( real(in_out[idx]) < real(min) ) 
+      in_out[idx] = value;
   }
 }
 
-
 //Threshold
 template<class T>
-bool cuNDA_threshold_min(T min, cuNDArray<T> *in_out,
-		cuNDA_device compute_device )
+bool cuNDA_threshold_min( T min, cuNDArray<T> *in_out, T value, cuNDA_device compute_device )
 {
   // Prepare internal array
   int cur_device, old_device;
@@ -1908,7 +1908,7 @@ bool cuNDA_threshold_min(T min, cuNDArray<T> *in_out,
   }
 
   // Invoke kernel
-  cuNDA_threshold_min_kernel<T><<< gridDim, blockDim >>>(min, in_out_int->get_data_ptr(), in_out->get_number_of_elements() );
+  cuNDA_threshold_min_kernel<T><<< gridDim, blockDim >>>(min, value, in_out_int->get_data_ptr(), in_out->get_number_of_elements() );
 
   CHECK_FOR_CUDA_ERROR();
 
@@ -1923,20 +1923,20 @@ bool cuNDA_threshold_min(T min, cuNDArray<T> *in_out,
 
 // threshold
 template<class T> __global__
-void cuNDA_threshold_max_kernel(T max,  T *in_out, unsigned int number_of_elements )
+void cuNDA_threshold_max_kernel( T max, T value, T *in_out, unsigned int number_of_elements )
 {
   const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
 
   if( idx<number_of_elements ){
-    if (in_out[idx] > max) in_out[idx] = T(0);
+    if( real(in_out[idx]) > real(max) ) 
+      in_out[idx] = value;
   }
 }
 
 
 //Threshold
 template<class T>
-bool cuNDA_threshold_max(T max, cuNDArray<T> *in_out,
-		cuNDA_device compute_device )
+bool cuNDA_threshold_max( T max, cuNDArray<T> *in_out, T value, cuNDA_device compute_device )
 {
   // Prepare internal array
   int cur_device, old_device;
@@ -1956,7 +1956,7 @@ bool cuNDA_threshold_max(T max, cuNDArray<T> *in_out,
   }
 
   // Invoke kernel
-  cuNDA_threshold_max_kernel<T><<< gridDim, blockDim >>>(max, in_out_int->get_data_ptr(), in_out->get_number_of_elements() );
+  cuNDA_threshold_max_kernel<T><<< gridDim, blockDim >>>(max, value, in_out_int->get_data_ptr(), in_out->get_number_of_elements() );
 
   CHECK_FOR_CUDA_ERROR();
 
@@ -4306,9 +4306,10 @@ template EXPORTGPUCORE bool cuNDA_abs<floatd2>( cuNDArray<floatd2>*, cuNDA_devic
 template EXPORTGPUCORE bool cuNDA_abs<floatd3>( cuNDArray<floatd3>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_abs<floatd4>( cuNDArray<floatd4>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_threshold_min<float>(float, cuNDArray<float>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_threshold_min<float_complext>(float_complext, cuNDArray<float_complext>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_threshold_max<float>(float, cuNDArray<float>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_threshold_min<float>(float, cuNDArray<float>*, float, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_threshold_min<float_complext>(float_complext, cuNDArray<float_complext>*, float_complext, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_threshold_max<float>(float, cuNDArray<float>*, float, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_threshold_max<float_complext>(float_complext, cuNDArray<float_complext>*, float_complext, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_rss_normalize<float,float>( cuNDArray<float>*, unsigned int, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_rss_normalize<float,float_complext>( cuNDArray<float_complext>*, unsigned int, cuNDA_device );
@@ -4618,9 +4619,10 @@ template EXPORTGPUCORE bool cuNDA_abs<doubled2>( cuNDArray<doubled2>*, cuNDA_dev
 template EXPORTGPUCORE bool cuNDA_abs<doubled3>( cuNDArray<doubled3>*, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_abs<doubled4>( cuNDArray<doubled4>*, cuNDA_device );
 
-template EXPORTGPUCORE bool cuNDA_threshold_min<double>(double, cuNDArray<double>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_threshold_min<double_complext>(double_complext, cuNDArray<double_complext>*, cuNDA_device );
-template EXPORTGPUCORE bool cuNDA_threshold_max<double>(double, cuNDArray<double>*, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_threshold_min<double>(double, cuNDArray<double>*, double, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_threshold_min<double_complext>(double_complext, cuNDArray<double_complext>*, double_complext, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_threshold_max<double>(double, cuNDArray<double>*, double, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_threshold_max<double_complext>(double_complext, cuNDArray<double_complext>*, double_complext, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_rss_normalize<double,double>( cuNDArray<double>*, unsigned int, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_rss_normalize<double,double_complext>( cuNDArray<double_complext>*, unsigned int, cuNDA_device );

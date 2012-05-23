@@ -150,8 +150,3 @@ typedef vector_td<unsigned int,1> uintd1;
 typedef vector_td<unsigned int,2> uintd2;
 typedef vector_td<unsigned int,3> uintd3;
 typedef vector_td<unsigned int,4> uintd4;
-
-
-
-
-
