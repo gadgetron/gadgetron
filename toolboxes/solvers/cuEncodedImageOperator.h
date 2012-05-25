@@ -1,7 +1,7 @@
 #pragma once
 
 #include "encodedImageOperator.h"
-#include "cuMLinearOperator_macros.h"
+#include "cuLinearOperator_macros.h"
 #include "cuNDArray.h"
 
 template <class REAL, class T> class cuEncodedImageOperator 
