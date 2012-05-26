@@ -519,11 +519,6 @@ protected:
     // Set up inner solver
     //
 
-    if( inner_solver_->get_encoding_operator().get() ){
-      this->solver_warning( "Warning: sbSolver::initialize : overriding inner solver's encoding operator" );
-      this->solver_warning( "Warning: sbSolver::initialize : the encoding operator cannot be set from outside" );
-    }
-    
     enc_op_container_ = boost::shared_ptr<OPERATOR_CONTAINER>( new OPERATOR_CONTAINER() );
     inner_solver_->set_encoding_operator( enc_op_container_ );
     
@@ -845,7 +840,7 @@ protected:
 		this->solver_error( "Error: sbSolver::core : error computing inner loop u_k delta" );
 		return false;
 	      }
-	      std::cout << std::endl << "u_k delta (inner loop): " << solver_asum_element(u_k.get()) << std::endl;
+	      std::cout << "u_k delta (inner loop): " << solver_asum_element(u_k.get()) << std::endl;
 	    }
 	    
 	    // Update u_k 
@@ -1039,7 +1034,7 @@ protected:
 	REAL delta = solver_asum_element(&u_k_prev);
 
 	if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
-	  std::cout << std::endl << "u_k delta (outer loop): " << delta << std::endl << std::endl;
+	  std::cout << "u_k delta (outer loop): " << delta << std::endl << std::endl;
 
 	if( delta < tolerance )
 	  break;

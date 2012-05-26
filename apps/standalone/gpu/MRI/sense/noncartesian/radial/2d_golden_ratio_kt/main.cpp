@@ -51,7 +51,7 @@ int main(int argc, char** argv)
   parms.add_parameter( 'm', COMMAND_LINE_INT,    1, "Matrix size", true );
   parms.add_parameter( 'o', COMMAND_LINE_INT,    1, "Oversampled matrix size", true );
   parms.add_parameter( 'p', COMMAND_LINE_INT,    1, "Profiles per frame", true );
-  parms.add_parameter( 'f', COMMAND_LINE_INT,    1, "Frames per reconstruction (negative meaning all)", true, "-1" );
+  parms.add_parameter( 'f', COMMAND_LINE_INT,    1, "Frames per reconstruction", true, "32" );
   parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of iterations", true, "10" );
   parms.add_parameter( 'k', COMMAND_LINE_FLOAT,  1, "Kernel width", true, "5.5" );
   parms.add_parameter( 'K', COMMAND_LINE_FLOAT,  1, "Kappa", true, "0.1" );
@@ -213,7 +213,9 @@ int main(int argc, char** argv)
   
   // Define shutter for training data
   _real shutter_radius = ((_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0])*(_real)profiles_per_frame/(_real)M_PI;
-  
+  shutter_radius /= _real(2);
+  std::cout << "Shutter radius: " << shutter_radius << std::endl;
+
   vector<unsigned int> image_os_dims = uintd_to_vector<2>(matrix_size_os); 
   image_os_dims.push_back(frames_per_reconstruction); image_os_dims.push_back(num_coils);    
   cuNDArray<_complext> *image_os = new cuNDArray<_complext>(); 

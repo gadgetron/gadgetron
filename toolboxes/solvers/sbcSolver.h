@@ -143,7 +143,7 @@ public:
 	REAL delta = solver_asum_real(solver_norm(&encoded_image).get());
 	
 	if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
-	  std::cout << std::endl << "Residual (outer loop): " << delta << std::endl << std::endl;
+	  std::cout << "Residual (outer loop): " << delta << std::endl << std::endl;
 
 	if( delta < this->tolerance_ )
 	  break;

@@ -136,7 +136,7 @@ int main( int argc, char** argv)
 
   // Gridder
   timer = new GPUTimer("Computing nfft");
-  success = plan.compute( &samples, image.get(), dcw.get(), plan_type::NFFT_FORWARDS_C2NC );
+  success = plan.compute( image.get(), &samples, dcw.get(), plan_type::NFFT_FORWARDS_C2NC );
   delete timer;
 
   //

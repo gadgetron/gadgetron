@@ -115,12 +115,14 @@ int main( int argc, char** argv)
   E->set_codomain_dimensions(&sample_dims);
 
   // Setup regularization operators
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Rx( new cuPartialDerivativeOperator<_real,_complext,3>(0) ); 
+  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,2> > 
+    Rx( new cuPartialDerivativeOperator<_real,_complext,2>(0) ); 
   Rx->set_weight( lambda );
   Rx->set_domain_dimensions(&image_dims);
   Rx->set_codomain_dimensions(&image_dims);
 
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Ry( new cuPartialDerivativeOperator<_real,_complext,3>(1) ); 
+  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,2> > 
+    Ry( new cuPartialDerivativeOperator<_real,_complext,2>(1) ); 
   Ry->set_weight( lambda );
   Ry->set_domain_dimensions(&image_dims);
   Ry->set_codomain_dimensions(&image_dims);
