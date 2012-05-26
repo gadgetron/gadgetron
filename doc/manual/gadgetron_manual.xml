@@ -5769,7 +5769,9 @@ user@host$</screen>
       xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/phantom/shepp_logan/shepp.tar.gz">http://sourceforge.net/projects/gadgetron/files/testdata/mri/fb_data.zip</uri></para>
 
       <para>Source code is found in the files <filename>main_cg.cpp</filename>
-      and <filename>main_sbc.cpp</filename>.</para>
+      and <filename>main_sbc.cpp</filename> in directory</para>
+
+      <para><envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/MRI/sense/noncartesian/radial/2d_golden_ratio</filename>.</para>
 
       <para>Both command lines below produce a 2D image sequence, each image
       with a matrix size of 192<superscript>2</superscript>
@@ -5851,10 +5853,10 @@ user@host$</screen>
   Frames per reconstruction (negative meaning all)  : -1 
   Number of cg iterations                           : 20 
   Number of sb inner iterations                     : 1 
-  Number of sb outer iterations                     : 50 
+  Number of sb outer iterations                     : 20 
   Kernel width                                      : 5.5 
-  Mu                                                : 0.5 
-  Lambda                                            : 1.0 
+  Mu                                                : 1.0 
+  Lambda                                            : 2.0 
 ---------------------------------------------------- 
 
 Loading data: 16.082 ms
@@ -5880,6 +5882,11 @@ user@host$</screen>
       <para>As all 80 frames are reconstructed in parallel it is
       straightforward to add temporal regularization to the reconstructions.
       We leave this as a suggested exercise for the reader.</para>
+
+      <para>For the interested reader, an implementation of
+      <emphasis>kt</emphasis>-Sense can be found in directory </para>
+
+      <para><envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/MRI/sense/noncartesian/radial/2d_golden_ratio_kt</filename>.</para>
     </sect1>
   </chapter>
 
