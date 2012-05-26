@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "gpucore_defines.h"
+#include "cpucore_defines.h"
 
 template< class T > class complext
 {

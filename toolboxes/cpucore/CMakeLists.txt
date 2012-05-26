@@ -19,4 +19,10 @@ install(FILES
 	cpucore_export.h
 	FFT.h
 	GadgetronTimer.h
-DESTINATION include)
+	complext.h
+	vector_td.h
+	vector_td_operators.h
+	vector_td_utilities.h
+	real_utilities.h
+	cpucore_defines.h
+	DESTINATION include)

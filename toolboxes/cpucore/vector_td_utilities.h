@@ -2,24 +2,29 @@
 
 #include "vector_td.h"
 #include "vector_td_operators.h"
+#include "cpucore_defines.h"
 
 #include <float.h>
 #include <cmath>
 #include <vector>
 #include <iostream>
-#include "host_defines.h"
+
 //
 // Get/set operations on vector_td<T,D>
 //
 
-template<class T, unsigned int D> __inline__ __host__ __device__ T get( const vector_td<T,D> vec, unsigned int dim ) { return vec.vec[dim]; }
-template<class T, unsigned int D> __inline__ __host__ __device__ void set( vector_td<T,D> &vec, unsigned int dim, T val ) { vec.vec[dim] = val; }
+template<class T, unsigned int D> __inline__ __gad_host__ __gad_device__ T 
+get( const vector_td<T,D> vec, unsigned int dim ) { return vec.vec[dim]; }
+
+template<class T, unsigned int D> __inline__ __gad_host__ __gad_device__ void 
+set( vector_td<T,D> &vec, unsigned int dim, T val ) { vec.vec[dim] = val; }
 
 //
 // Component-wise math operations
 //
 
-template<class T, unsigned int D> __inline__ __host__ __device__ vector_td<T,D> abs( const vector_td<T,D> vec )
+template<class T, unsigned int D> __inline__ __gad_host__ __gad_device__ 
+vector_td<T,D> abs( const vector_td<T,D> vec )
 {
   vector_td<T,D> res;
   for (unsigned int i=0; i<D; i++) {
@@ -28,7 +33,8 @@ template<class T, unsigned int D> __inline__ __host__ __device__ vector_td<T,D> 
   return res;
 }
 
-template<class REAL, unsigned int D> __inline__ __host__ __device__ vector_td<REAL,D> ceil( const vector_td<REAL,D> vec )
+template<class REAL, unsigned int D> __inline__ __gad_host__ __gad_device__ 
+vector_td<REAL,D> ceil( const vector_td<REAL,D> vec )
 {
   vector_td<REAL,D> res;
   for (unsigned int i=0; i<D; i++) {
@@ -37,7 +43,8 @@ template<class REAL, unsigned int D> __inline__ __host__ __device__ vector_td<RE
   return res;
 }
 
-template<class REAL, unsigned int D> __inline__ __host__ __device__ vector_td<REAL,D> floor( const vector_td<REAL,D> vec )
+template<class REAL, unsigned int D> __inline__ __gad_host__ __gad_device__ 
+vector_td<REAL,D> floor( const vector_td<REAL,D> vec )
 {
   vector_td<REAL,D> res;
   for (unsigned int i=0; i<D; i++) {
@@ -50,7 +57,8 @@ template<class REAL, unsigned int D> __inline__ __host__ __device__ vector_td<RE
 // Vectorize a scalar value
 //
 
-template<class T, unsigned int D> __inline__ __host__ __device__ vector_td<T,D> to_vector_td( const T scalar )
+template<class T, unsigned int D> __inline__ __gad_host__ __gad_device__ 
+vector_td<T,D> to_vector_td( const T scalar )
 {
   vector_td<T,D> res;
   for (unsigned int i=0; i<D; i++) {
@@ -63,7 +71,8 @@ template<class T, unsigned int D> __inline__ __host__ __device__ vector_td<T,D> 
 // Grid <-> index transformations
 //
 
-template<unsigned int D> __inline__ __host__ __device__ typename uintd<D>::Type idx_to_co( unsigned int idx, const vector_td<unsigned int,D> dims )
+template<unsigned int D> __inline__ __gad_host__ __gad_device__ 
+typename uintd<D>::Type idx_to_co( unsigned int idx, const vector_td<unsigned int,D> dims )
 {
   typename uintd<D>::Type co;
   unsigned int idx_tmp = idx;
@@ -75,7 +84,8 @@ template<unsigned int D> __inline__ __host__ __device__ typename uintd<D>::Type 
   return co;
 } 
 
-template<unsigned int D> __inline__ __host__ __device__ typename intd<D>::Type idx_to_co( int idx, const typename intd<D>::Type dims )
+template<unsigned int D> __inline__ __gad_host__ __gad_device__ 
+typename intd<D>::Type idx_to_co( int idx, const typename intd<D>::Type dims )
 {
   typename intd<D>::Type co;
   int idx_tmp = idx;
@@ -87,7 +97,8 @@ template<unsigned int D> __inline__ __host__ __device__ typename intd<D>::Type i
   return co;
 } 
 
-template<unsigned int D> __inline__ __host__ __device__ unsigned int co_to_idx( const vector_td<unsigned int,D> co, const vector_td<unsigned int,D> dims )
+template<unsigned int D> __inline__ __gad_host__ __gad_device__ 
+unsigned int co_to_idx( const vector_td<unsigned int,D> co, const vector_td<unsigned int,D> dims )
 {
   unsigned int idx = 0;
   unsigned long block_size = 1;
@@ -98,7 +109,8 @@ template<unsigned int D> __inline__ __host__ __device__ unsigned int co_to_idx( 
   return idx;
 } 
 
-template<unsigned int D> __inline__ __host__ __device__  int co_to_idx( const vector_td< int,D> co, const vector_td<unsigned int,D> dims )
+template<unsigned int D> __inline__ __gad_host__ __gad_device__  
+int co_to_idx( const vector_td< int,D> co, const vector_td<unsigned int,D> dims )
 {
   unsigned int idx = 0;
   unsigned long block_size = 1;
@@ -109,7 +121,8 @@ template<unsigned int D> __inline__ __host__ __device__  int co_to_idx( const ve
   return idx;
 }
 
-template<unsigned int D> __inline__ __host__ __device__ unsigned int co_to_idx( const typename uintd<D>::Type co, const typename uintd<D>::Type dims, const typename uintd<D>::Type &order )
+template<unsigned int D> __inline__ __gad_host__ __gad_device__ 
+unsigned int co_to_idx( const typename uintd<D>::Type co, const typename uintd<D>::Type dims, const typename uintd<D>::Type &order )
 {
   unsigned int idx = 0;
   unsigned long block_size = 1;
@@ -120,7 +133,8 @@ template<unsigned int D> __inline__ __host__ __device__ unsigned int co_to_idx( 
   return idx;
 } 
 
-template<unsigned int D> __inline__ __host__ __device__ int co_to_idx( const typename intd<D>::Type co, const typename intd<D>::Type dims )
+template<unsigned int D> __inline__ __gad_host__ __gad_device__ 
+int co_to_idx( const typename intd<D>::Type co, const typename intd<D>::Type dims )
 {
   int idx = 0;
   unsigned long block_size = 1;
@@ -131,7 +145,8 @@ template<unsigned int D> __inline__ __host__ __device__ int co_to_idx( const typ
   return idx;
 } 
 
-template<unsigned int D> __inline__ __host__ __device__ int co_to_idx( const typename intd<D>::Type co, const typename intd<D>::Type dims, const typename intd<D>::Type order )
+template<unsigned int D> __inline__ __gad_host__ __gad_device__ 
+int co_to_idx( const typename intd<D>::Type co, const typename intd<D>::Type dims, const typename intd<D>::Type order )
 {
   int idx = 0;
   unsigned long block_size = 1;
@@ -142,7 +157,8 @@ template<unsigned int D> __inline__ __host__ __device__ int co_to_idx( const typ
   return idx;
 } 
 
-template<unsigned int D> __inline__ __host__ __device__ typename uintd<D>::Type counting_vec()
+template<unsigned int D> __inline__ __gad_host__ __gad_device__ 
+typename uintd<D>::Type counting_vec()
 {
   typename uintd<D>::Type res;
   for(unsigned int i=0; i<D; i++) {
@@ -168,11 +184,6 @@ template<unsigned int D>
 typename uintd<D>::Type vector_to_uintd( std::vector<unsigned int> _vector )
 {
   typename uintd<D>::Type out;
-  /*  if( _vector.size() < D ){
-    std::cout << "Warning :: cannot convert vector to typename uintd<D>, dimensionality is less D" << std::endl;
-    std::cout << "Filling in ones..." << std::endl;
-    }*/
-  
   for( unsigned int i=0; i<D; i++ ){
     if( i<_vector.size() )
       out.vec[i] = _vector[i];
@@ -187,11 +198,6 @@ template<unsigned int D>
 typename intd<D>::Type vector_to_intd( std::vector<unsigned int> _vector )
 {
   typename intd<D>::Type out;
-  /*  if( _vector.size() < D ){
-    std::cout << "Warning :: cannot convert vector to typename uintd<D>, dimensionality is less D" << std::endl;
-    std::cout << "Filling in ones..." << std::endl;
-    }*/
-
   for( unsigned int i=0; i<D; i++ ){
     if( i<_vector.size() )
       out.vec[i] = _vector[i];
@@ -201,11 +207,13 @@ typename intd<D>::Type vector_to_intd( std::vector<unsigned int> _vector )
 
   return out;
 }
+
 //
 // Reductions on vector_td<T,D>
 //
 
-template<class T, unsigned int D> __inline__ __host__ __device__ T prod( const vector_td<T,D> vec )
+template<class T, unsigned int D> __inline__ __gad_host__ __gad_device__ 
+T prod( const vector_td<T,D> vec )
 {
   T res = vec.vec[0];
   for (unsigned int i=1; i<D; i++){
@@ -214,7 +222,8 @@ template<class T, unsigned int D> __inline__ __host__ __device__ T prod( const v
   return res;
 }
 
-template<class T, unsigned int D> __inline__ __host__ __device__ T sum( const vector_td<T,D> vec )
+template<class T, unsigned int D> __inline__ __gad_host__ __gad_device__ 
+T sum( const vector_td<T,D> vec )
 {
   T res = vec.vec[0];
   for (unsigned int i=1; i<D; i++){
@@ -223,7 +232,8 @@ template<class T, unsigned int D> __inline__ __host__ __device__ T sum( const ve
   return res;
 }
 
-template<class T, unsigned int D> __inline__ __host__ __device__ T dot( const vector_td<T,D> vec1, const vector_td<T,D> vec2 )
+template<class T, unsigned int D> __inline__ __gad_host__ __gad_device__ 
+T dot( const vector_td<T,D> vec1, const vector_td<T,D> vec2 )
 {
   T res = (vec1.vec[0]*vec2.vec[0]);
   for (unsigned int i=1; i<D; i++){
@@ -232,8 +242,8 @@ template<class T, unsigned int D> __inline__ __host__ __device__ T dot( const ve
   return res;
 }
 
-
-template<class T, unsigned int D> __inline__ __host__ __device__ T max( const vector_td<T,D> vec )
+template<class T, unsigned int D> __inline__ __gad_host__ __gad_device__ 
+T max( const vector_td<T,D> vec )
 {
   T res = vec.vec[0];
   for (unsigned int i=1; i<D; i++){
@@ -242,7 +252,8 @@ template<class T, unsigned int D> __inline__ __host__ __device__ T max( const ve
   return res;
 }
 
-template<class T, unsigned int D> __inline__ __host__ __device__ T max_not_nan( const vector_td<T,D> vec )
+template<class T, unsigned int D> __inline__ __gad_host__ __gad_device__
+T max_not_nan( const vector_td<T,D> vec )
 {
   int i=0;
   while (isnan(vec.vec[i])) i++;
@@ -254,7 +265,8 @@ template<class T, unsigned int D> __inline__ __host__ __device__ T max_not_nan( 
   return res;
 }
 
-template<class T, unsigned int D> __inline__ __host__ __device__ T min_not_nan( const vector_td<T,D> vec )
+template<class T, unsigned int D> __inline__ __gad_host__ __gad_device__
+T min_not_nan( const vector_td<T,D> vec )
 {
   int i=0;
   while (isnan(vec.vec[i])) i++;
@@ -265,7 +277,8 @@ template<class T, unsigned int D> __inline__ __host__ __device__ T min_not_nan( 
   return res;
 }
 
-template<class T, unsigned int D> __inline__ __host__ __device__ T min( const vector_td<T,D> vec )
+template<class T, unsigned int D> __inline__ __gad_host__ __gad_device__ 
+T min( const vector_td<T,D> vec )
 {
   T res = vec.vec[0];
   for (unsigned int i=1; i<D; i++){
@@ -274,7 +287,8 @@ template<class T, unsigned int D> __inline__ __host__ __device__ T min( const ve
   return res;
 }
 
-template<class T, unsigned int D> __inline__ __host__ __device__ unsigned int argmin( const vector_td<T,D> vec )
+template<class T, unsigned int D> __inline__ __gad_host__ __gad_device__ 
+unsigned int argmin( const vector_td<T,D> vec )
 {
   unsigned int res= 0;
   for (unsigned int i=1; i<D; i++){
@@ -283,7 +297,8 @@ template<class T, unsigned int D> __inline__ __host__ __device__ unsigned int ar
   return res;
 }
 
-template<class T, unsigned int D> __inline__ __host__ __device__ unsigned int argmin_not_nan( const vector_td<T,D> vec )
+template<class T, unsigned int D> __inline__ __gad_host__ __gad_device__ 
+unsigned int argmin_not_nan( const vector_td<T,D> vec )
 {
   unsigned int res= 0;
   for (unsigned int i=1; i<D; i++){
@@ -292,7 +307,8 @@ template<class T, unsigned int D> __inline__ __host__ __device__ unsigned int ar
   return res;
 }
 
-template<class T, unsigned int D> __inline__ __host__ __device__ unsigned int argmax( const vector_td<T,D> vec )
+template<class T, unsigned int D> __inline__ __gad_host__ __gad_device__ 
+unsigned int argmax( const vector_td<T,D> vec )
 {
   unsigned int res= 0;
   for (unsigned int i=1; i<D; i++){
@@ -305,7 +321,8 @@ template<class T, unsigned int D> __inline__ __host__ __device__ unsigned int ar
 // Reductions on reald<REAL,D>
 //
 
-template<class REAL, unsigned int D> __inline__ __host__ __device__ REAL norm_squared( const vector_td<REAL,D> vec )
+template<class REAL, unsigned int D> __inline__ __gad_host__ __gad_device__ 
+REAL norm_squared( const vector_td<REAL,D> vec )
 {
   REAL res = REAL(0);
   for (unsigned int i=0; i<D; i++){
@@ -315,7 +332,8 @@ template<class REAL, unsigned int D> __inline__ __host__ __device__ REAL norm_sq
   return res;
 }
 
-template<class REAL, unsigned int D> __inline__ __host__ __device__ REAL norm( const vector_td<REAL,D> vec )
+template<class REAL, unsigned int D> __inline__ __gad_host__ __gad_device__ 
+REAL norm( const vector_td<REAL,D> vec )
 {
   return sqrt(norm_squared<REAL,D>(vec));
 }
@@ -324,7 +342,8 @@ template<class REAL, unsigned int D> __inline__ __host__ __device__ REAL norm( c
 // Type conversion
 //
 
-template<class T, unsigned int D> __inline__ __host__ __device__ vector_td<int,D> to_intd( const vector_td<T,D> vec )
+template<class T, unsigned int D> __inline__ __gad_host__ __gad_device__ 
+vector_td<int,D> to_intd( const vector_td<T,D> vec )
 {
   vector_td<int,D> res;
   for (unsigned int i=0; i<D; i++){
@@ -333,7 +352,8 @@ template<class T, unsigned int D> __inline__ __host__ __device__ vector_td<int,D
   return res;
 }
 
-template<class T, unsigned int D> __inline__ __host__ __device__ vector_td<unsigned int,D> to_uintd( const vector_td<T,D> vec )
+template<class T, unsigned int D> __inline__ __gad_host__ __gad_device__ 
+vector_td<unsigned int,D> to_uintd( const vector_td<T,D> vec )
 {
   vector_td<unsigned int,D> res;
   for (unsigned int i=0; i<D; i++){
@@ -342,7 +362,8 @@ template<class T, unsigned int D> __inline__ __host__ __device__ vector_td<unsig
   return res;
 }
 
-template<class REAL, class T, unsigned int D> __inline__ __host__ __device__ vector_td<REAL,D> to_reald( const vector_td<T,D> vec )
+template<class REAL, class T, unsigned int D> __inline__ __gad_host__ __gad_device__ 
+vector_td<REAL,D> to_reald( const vector_td<T,D> vec )
 {
   vector_td<REAL,D> res;
   for (unsigned int i=0; i<D; i++){

@@ -27,17 +27,11 @@ install(TARGETS gpucore DESTINATION lib)
 install(FILES
 GPUTimer.h				
 check_CUDA.h
-complext.h
-vector_td.h
-vector_td_operators.h
-vector_td_utilities.h
 ndarray_vector_td_utilities.h
 cuNDArray.h
 cuNDFFT.h
 radial_utilities.h
-real_utilities.h
 real_utilities_device.h
 gpucore_export.h
-gpucore_defines.h
 CUBLASContextProvider.h
 DESTINATION include)

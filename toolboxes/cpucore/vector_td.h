@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gpucore_defines.h"
+#include "cpucore_defines.h"
 
 template< class T, unsigned int D > class vector_td
 {
