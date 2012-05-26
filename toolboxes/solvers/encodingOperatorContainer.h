@@ -41,6 +41,33 @@ public:
     return boost::shared_ptr<ARRAY_TYPE>(codomain);
   }
 
+  // Concatenate a vector of codomains into a single array
+  //
+  boost::shared_ptr< ARRAY_TYPE> create_codomain(std::vector<ARRAY_TYPE* > codoms)
+  {
+
+    std::vector<unsigned int> dims = *get_codomain_dimensions();
+    boost::shared_ptr<ARRAY_TYPE> codomain(new ARRAY_TYPE);
+    if (codoms.size() != operators_.size()){
+	  std::cerr << "encodingOperatorContainter::create_codomain: number of operators and number of codomains do no match" << std::endl;
+	  return codomain;
+    }
+    codomain->create(&dims);
+    int offset = 0;
+    for (int i = 0; i < operators_.size(); i++){
+    	if (!codoms[i]->dimensions_equal(get_codomain_dimensions(i).get())){
+    		std::cerr << "encodingOperatorContainter::create_codomain: input codomain " << i << "does not match corresponding operator codomain" << std::endl;
+    		return boost::shared_ptr<ARRAY_TYPE>(new ARRAY_TYPE);
+    	}
+    	ARRAY_TYPE slice;
+    	slice.create(codoms[i]->get_dimensions().get(),codomain->get_data_ptr()+offset);
+    	slice = *codoms[i];
+    	offset += slice.get_number_of_elements();
+    }
+    return codomain;
+
+  }
+
   // Get individual operators
   //
   boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE > > get_operator(int i){
