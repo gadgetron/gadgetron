@@ -8,7 +8,7 @@ cuNDArray<T>::cuNDArray() : NDArray<T>::NDArray()
 }
 
 template <class T> 
-cuNDArray<T>::cuNDArray(hoNDArray<T>  *a) : NDArray<T>::NDArray() 
+cuNDArray<T>::cuNDArray(hoNDArray<T> *a) : NDArray<T>::NDArray() 
 {
   cudaGetDevice(&this->device_);
   this->dimensions_ = a->get_dimensions();
