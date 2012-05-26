@@ -5766,7 +5766,7 @@ user@host$</screen>
       constraint of the encoding operator (compressed sensing).</para>
 
       <para>Download a free-breathing cardiac MRI sample dataset from <uri
-      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/phantom/shepp_logan/shepp.tar.gz">http://sourceforge.net/projects/gadgetron/files/testdata/mri/fb_data.zip</uri></para>
+      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/mri/fb_data.zip">http://sourceforge.net/projects/gadgetron/files/testdata/mri/fb_data.zip</uri></para>
 
       <para>Source code is found in the files <filename>main_cg.cpp</filename>
       and <filename>main_sbc.cpp</filename> in directory</para>
@@ -5889,9 +5889,11 @@ user@host$</screen>
       <para><envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/MRI/sense/noncartesian/radial/2d_golden_ratio_kt</filename>.</para>
 
       <para>Additionally, the source code for the user interface demonstrated
-      in the <uri>movie</uri> accompanying <xref linkend="sorensen09"/> can be
-      found (if you configured <command>cmake</command> to inlude Qt support)
-      in direcotry</para>
+      in the <uri
+      xlink:href="http://www.cs.au.dk/~sangild/non-Cartesian_interactive_reconstruction.wmv">movie</uri>
+      accompanying <xref linkend="sorensen09"/> can be found (if you
+      configured <command>cmake</command> to inlude Qt support) in
+      direcotry</para>
 
       <para><envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/MRI/sense/noncartesian/radial/2d_golden_ratio_gui</filename>.</para>
     </sect1>
