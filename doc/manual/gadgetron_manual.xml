@@ -5887,6 +5887,13 @@ user@host$</screen>
       <emphasis>kt</emphasis>-Sense can be found in directory </para>
 
       <para><envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/MRI/sense/noncartesian/radial/2d_golden_ratio_kt</filename>.</para>
+
+      <para>Additionally, the source code for the user interface demonstrated
+      in the <uri>movie</uri> accompanying <xref linkend="sorensen09"/> can be
+      found (if you configured <command>cmake</command> to inlude Qt support)
+      in direcotry</para>
+
+      <para><envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/MRI/sense/noncartesian/radial/2d_golden_ratio_gui</filename>.</para>
     </sect1>
   </chapter>
 
