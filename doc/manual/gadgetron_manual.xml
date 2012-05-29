@@ -32,7 +32,8 @@ National Institutes of Health, Bethesda, MD, USA</address>
 Aarhus University, Denmark</address>
 
     <author>
-      <personname><firstname>Revision</firstname> <surname>1.0</surname></personname>
+      <personname><firstname>Revision</firstname>
+      <surname>1.0</surname></personname>
 
       <email>sangild@cs.au.dk</email>
     </author>
@@ -582,7 +583,9 @@ $ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/cuda/lib</us
         linkend="sect.linuxinstall"/>).</para>
 
         <para>The following is a list of steps we have used to install the
-        Gadgetron on a clean Windows 7 (64-bit) machine:</para>
+        Gadgetron on a clean Windows 7 (64-bit) machine. It has also been
+        tested sucessfully on a 32 bit machine (but in this case you choose 32
+        bit packages/configuration where appropriate).</para>
 
         <itemizedlist>
           <listitem>
@@ -637,6 +640,9 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
 
             <para>Add <filename>C:\Libraries\FFTW3</filename> to <envar>your
             PATH environment variable</envar>.</para>
+
+            <para>On 32 bit Windows remember to remove the /machine:x64
+            argument, the default is 32 bit.</para>
           </listitem>
 
           <listitem>
@@ -728,10 +734,10 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
           </listitem>
 
           <listitem>
-            <para>Install Boost (<uri
+            <para>Install the newest Boost release (<uri
             xlink:href="http://www.boost.org">http://www.boost.org</uri>)</para>
 
-            <para>Unpack boost to
+            <para>Unpack boost to e.g.
             <filename>C:\Libraries\boost_1_48_0</filename></para>
 
             <para>Open a command line as Administrator (type cmd and hit
@@ -777,9 +783,8 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
             install HDFView :
             <filename>hdfview_install_win64.exe</filename></para>
 
-            <para><filename>As the precompiled HDF5 binaries off the HDF5 web
-            page fail to link to the Gadgetron we need to compile HDF5
-            ourselves. </filename></para>
+            <para>As the precompiled HDF5 binaries off the HDF5 web page fail
+            to link to the Gadgetron we need to compile HDF5 ourselves:</para>
 
             <para>Download (e.g. to C:\Libraries\hdf5-1.8.9\) the HDF5
             <emphasis>source code</emphasis> from <uri
@@ -789,10 +794,20 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
             <filename>szip</filename> and <filename>zlib</filename> from <uri
             xlink:href="http://www.hdfgroup.org/ftp/lib-external/">http://www.hdfgroup.org/ftp/lib-external/</uri></para>
 
-            <para>Go to the <filename>zlib</filename> source folder and
-            compile the Visual Studio project found under subfolder
-            windows/dynamic in x64/Release mode. Repeat the same steps for
-            <filename>szip</filename>.</para>
+            <para>Start <application>cmake-gui</application></para>
+
+            <para>Select source directory (your <filename>szip</filename> and
+            <filename>zlib</filename> source code root respectively) and
+            target directory (create a build folder under the source
+            directory). Press configure. Check BUILD_SHARED_LIBS. Press
+            configure. Press generate. Repeat for both
+            <filename>szip</filename> and <filename>zlib</filename>.</para>
+
+            <para>Open the Visual Studio solution files for
+            <filename>zlib</filename> and <filename>szip</filename> located in
+            the respective build directories. Build project ALL_BUILD. Build
+            project INSTALL (you might need to run Visual Studio as
+            administrator for this).</para>
 
             <para>Start <application>cmake-gui</application></para>
 
@@ -809,12 +824,13 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
 
             <para>Hit configure</para>
 
-            <para>Specify the ZLIB include and library directories</para>
+            <para>Specify the ZLIB include and library directories (the
+            include folder in the zlib install folder should work).</para>
 
             <para>Hit configure</para>
 
-            <para>Specify the SZIP include path and library. Check
-            HDF5_ENABLE_SZIP_ENCODING.</para>
+            <para>Specify the SZIP include path (choose the source code tree
+            root!) and library. Check HDF5_ENABLE_SZIP_ENCODING.</para>
 
             <para>Hit configure</para>
 
@@ -5890,7 +5906,7 @@ user@host$</screen>
       We leave this as a suggested exercise for the reader.</para>
 
       <para>For the interested reader, an implementation of
-      <emphasis>kt</emphasis>-Sense can be found in directory </para>
+      <emphasis>kt</emphasis>-Sense can be found in directory</para>
 
       <para><envar>$(GADGETRON_SOURCE)</envar><filename>/apps/standalone/gpu/MRI/sense/noncartesian/radial/2d_golden_ratio_kt</filename>.</para>
 
