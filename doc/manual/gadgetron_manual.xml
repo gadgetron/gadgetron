@@ -847,8 +847,11 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
 
             <para>Copy the <filename>zlib</filename> and
             <filename>szip</filename> libraries (.lib and .dll files) to the
-            lib and bin folders respecitvely of the <filename>HDF5</filename>
-            install directory.</para>
+            <filename>lib</filename> and <filename>bin</filename> folders
+            respecitvely of the <filename>HDF5</filename> install directory.
+            Add the <application>HDF5</application> install folder containing
+            the generated dll files to your <envar>PATH</envar> environment
+            variable.</para>
           </listitem>
 
           <listitem>
@@ -912,7 +915,8 @@ BLAS_acml_mp_LIBRARY= \
 
             <para>Make sure that the <envar>HDF5_C_LIBRARY</envar> and
             <envar>HDF5_CXX_LIBRARY</envar> FILEPATH variables are set
-            correctly.</para>
+            correctly (we have observed that they might be incorrectly set to
+            point to the dll instead of the lib files by default).</para>
 
             <para>Hit configure</para>
 
