@@ -20,7 +20,7 @@ add_library(hdf5mri SHARED mri_hdf5_io.cpp)
 target_link_libraries(hdf5mri hdf5utils cpucore ${HDF5_LIBRARIES})
 
 if (WIN32)
-target_link_libraries(hdf5mri ${HDF5_LIB_DIR}/zlib_dynamic.lib ${HDF5_LIB_DIR}/szip_dynamic.lib)
+target_link_libraries(hdf5mri ${HDF5_LIB_DIR}/zlib.lib ${HDF5_LIB_DIR}/szip.lib)
 endif (WIN32)
 
 install(TARGETS hdf5mri DESTINATION lib)

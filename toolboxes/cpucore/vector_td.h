@@ -8,11 +8,11 @@ public:
 
   T vec[D];
 
-  __inline__ __gad_host__ __gad_device__ T& operator[](const int i){
+  __inline__ __host__ __device__ T& operator[](const int i){
     return vec[i];
   }
 
-  __inline__ __gad_host__ __gad_device__ const T& operator[](const int i) const {
+  __inline__ __host__ __device__ const T& operator[](const int i) const {
     return vec[i];
   }
 };
@@ -47,17 +47,17 @@ public:
 
   T vec[1];
 
-  __inline__ __gad_host__ __gad_device__ vector_td(){}
+  __inline__ __host__ __device__ vector_td(){}
 
-  __inline__ __gad_host__ __gad_device__ vector_td(T x){
+  __inline__ __host__ __device__ vector_td(T x){
     vec[0]=x;
   }
 
-  __inline__ __gad_host__ __gad_device__ T& operator[](const int i){
+  __inline__ __host__ __device__ T& operator[](const int i){
     return vec[i];
   }
 
-  __inline__ __gad_host__ __gad_device__ const T& operator[](const int i) const {
+  __inline__ __host__ __device__ const T& operator[](const int i) const {
     return vec[i];
   }
 };
@@ -68,18 +68,18 @@ public:
 
   T vec[2];
 
-  __inline__ __gad_host__ __gad_device__ vector_td(){}
+  __inline__ __host__ __device__ vector_td(){}
 
-  __inline__ __gad_host__ __gad_device__ vector_td(T x, T y){
+  __inline__ __host__ __device__ vector_td(T x, T y){
     vec[0]=x;
     vec[1]=y;
   }
 
-  __inline__ __gad_host__ __gad_device__ T& operator[](const int i){
+  __inline__ __host__ __device__ T& operator[](const int i){
     return vec[i];
   }
 
-  __inline__ __gad_host__ __gad_device__ const T& operator[](const int i) const {
+  __inline__ __host__ __device__ const T& operator[](const int i) const {
     return vec[i];
   }
 };
@@ -90,19 +90,19 @@ public:
 
   T vec[3];
 
-  __inline__ __gad_host__ __gad_device__ vector_td(){}
+  __inline__ __host__ __device__ vector_td(){}
 
-  __inline__ __gad_host__ __gad_device__ vector_td(T x, T y,T z){
+  __inline__ __host__ __device__ vector_td(T x, T y,T z){
     vec[0]=x;
     vec[1]=y;
     vec[2]=z;
   }
 
-  __inline__ __gad_host__ __gad_device__ T& operator[](const int i){
+  __inline__ __host__ __device__ T& operator[](const int i){
     return vec[i];
   }
 
-  __inline__ __gad_host__ __gad_device__ const T& operator[](const int i) const {
+  __inline__ __host__ __device__ const T& operator[](const int i) const {
     return vec[i];
   }
 };
@@ -113,20 +113,20 @@ public:
 
   T vec[4];
 
-  __inline__ __gad_host__ __gad_device__ vector_td(){}
+  __inline__ __host__ __device__ vector_td(){}
 
-  __inline__ __gad_host__ __gad_device__ vector_td(T x, T y,T z,T w){
+  __inline__ __host__ __device__ vector_td(T x, T y,T z,T w){
     vec[0]=x;
     vec[1]=y;
     vec[2]=z;
     vec[3]=w;
   }
 
-  __inline__ __gad_host__ __gad_device__ T& operator[](const int i){
+  __inline__ __host__ __device__ T& operator[](const int i){
     return vec[i];
   }
 
-  __inline__ __gad_host__ __gad_device__ const T& operator[](const int i) const {
+  __inline__ __host__ __device__ const T& operator[](const int i) const {
     return vec[i];
   }
 };
