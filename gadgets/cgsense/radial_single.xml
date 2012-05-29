@@ -34,6 +34,12 @@
     </gadget>
 
     <gadget>
+      <name>RemoveROOversampling</name>
+      <dll>gadgetroncore</dll>
+      <class>RemoveROOversamplingGadget</class>
+    </gadget>
+
+   <gadget>
       <name>PCA</name>
       <dll>gadgetronmricore</dll>
       <class>PCACoilGadget</class>
@@ -45,14 +51,8 @@
       <class>CoilReductionGadget</class>
       <property>
         <name>coils_out</name>
-        <value>16</value>
+        <value>8</value>
       </property>
-    </gadget>
-  
-    <gadget>
-      <name>RemoveROOversampling</name>
-      <dll>gadgetroncore</dll>
-      <class>RemoveROOversamplingGadget</class>
     </gadget>
 
     <gadget>
@@ -65,7 +65,7 @@
       <property><name>shared_profiles</name>         <value>0</value></property>
       <property><name>number_of_iterations</name>    <value>10</value></property>
       <property><name>cg_limit</name>                <value>1e-6</value></property>
-      <property><name>oversampling</name>            <value>1.5</value></property>
+      <property><name>oversampling</name>            <value>1.25</value></property>
       <property><name>kernel_width</name>            <value>5.5</value></property>
       <property><name>kappa</name>                   <value>0.1</value></property>
       <property><name>pass_on_undesired_data</name>  <value>true</value></property>
@@ -84,13 +84,26 @@
       <class>ImageWriterGadgetFLOAT</class>
     </gadget>
     -->
-    
+
     <gadget>
-      <name>ImageFinishFLOAT</name>
+      <name>AutoScale</name>
       <dll>gadgetroncore</dll>
-      <class>ImageFinishGadgetFLOAT</class>
+      <class>AutoScaleGadget</class>
     </gadget>
-    
+
+
+    <gadget>
+      <name>FloatToShort</name>
+      <dll>gadgetroncore</dll>
+      <class>FloatToUShortGadget</class>
+    </gadget>
+
+    <gadget>
+      <name>ImageFinishUSHORT</name>
+      <dll>gadgetroncore</dll>
+      <class>ImageFinishGadgetUSHORT</class>
+    </gadget>
+
   </stream>
 
 </gadgetron>

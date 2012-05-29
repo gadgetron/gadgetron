@@ -79,16 +79,16 @@ cublasHandle_t* CUBLASContextProvider::getCublasHandle(int device_no)
 		}
 	}
 
-	cublasHandle_t handle;
-
-	handles_[device_no] = handle;
+	cublasHandle_t handle; // this is a struct pointer
 
 	//std::cout << "*********   CREATING NEW CONTEXT ************" << std::endl;
 
-	if (cublasCreate_v2(&handles_[device_no]) != CUBLAS_STATUS_SUCCESS) {
+	if (cublasCreate_v2(&handle) != CUBLAS_STATUS_SUCCESS) {
 		std::cerr << "CUBLASContextProvider: unable to create cublas handle\n" << std::endl;
 		return 0;
 	}
+
+	handles_[device_no] = handle;
 
 	culaStatus s;
 	s = culaInitialize();

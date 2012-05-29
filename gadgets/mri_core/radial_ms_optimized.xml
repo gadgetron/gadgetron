@@ -45,14 +45,12 @@
       <class>PCACoilGadget</class>
     </gadget>
 
-	<!--
     <gadget>
       <name>CoilReduction</name>
       <dll>gadgetroncore</dll>
       <class>CoilReductionGadget</class>
       <property><name>coils_out</name><value>8</value></property>
     </gadget>
-    -->
     
     <gadget>
       <name>GPUCGRadial0</name>
@@ -106,9 +104,6 @@
       <name>Extract</name>
       <dll>gadgetroncore</dll>
       <class>ExtractGadget</class>
-      <!--
-      <property><name>extract_mask</name><value>9</value></property>
-      -->
     </gadget>
 
 	<!--
