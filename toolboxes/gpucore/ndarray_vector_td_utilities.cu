@@ -328,58 +328,6 @@ template<class T> static void find_stride( cuNDArray<T> *in, unsigned int dim,
 // Implementation of public utilities
 //
 
-// Norm
-//
-template<class REAL, unsigned int D> __global__ void 
-cuNDA_norm_kernel( typename reald<REAL,D>::Type *in, REAL *out, 
-		   unsigned int number_of_elements )
-{
-  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
- 
-  if( idx<number_of_elements ){
-    typename reald<REAL,D>::Type val = in[idx]; 
-    out[idx] = norm<REAL,D>(val);
-  }
-}
-
-// Norm
-//
-template<class REAL, unsigned int D>  
-boost::shared_ptr< cuNDArray<REAL> > 
-cuNDA_norm( cuNDArray<typename reald<REAL,D>::Type> *in,
-	    cuNDA_device alloc_device, cuNDA_device compute_device )
-{
-  int cur_device, old_device; 
-  cuNDArray< typename reald<REAL,D>::Type > *in_int;
-
-  // Prepare
-  if( !prepare<1,typename reald<REAL,D>::Type,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
-    cerr << endl << "cuNDA_norm: unable to prepare device(s)" << endl;
-    return boost::shared_ptr< cuNDArray<REAL> >();
-  }
-  
-  // Setup block/grid dimensions
-  dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( cur_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
-    cerr << endl << "cuNDA_norm: block/grid configuration out of range" << endl;
-    return boost::shared_ptr< cuNDArray<REAL> >();
-  }
-
-  // Invoke kernel
-  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(in->get_dimensions().get());
-  if( out.get() != 0x0 ) cuNDA_norm_kernel<REAL,D><<< gridDim, blockDim >>>( in_int->get_data_ptr(), out->get_data_ptr(), in_int->get_number_of_elements() );
-  
-  CHECK_FOR_CUDA_ERROR();
-
-  // Restore
-  if( !restore<1,typename reald<REAL,D>::Type,REAL,dummy,dummy>( old_device, in, in_int, 0, alloc_device, out.get() ) ){
-    cerr << endl << "cuNDA_norm: unable to restore device" << endl;
-    return boost::shared_ptr< cuNDArray<REAL> >();
-  }
- 
-  return out;
-}
-
 // cAbs
 //
 template<class REAL, class T> __global__ void
@@ -482,6 +430,57 @@ cuNDA_cNorm( cuNDArray<T> *in,
   return out;
 }
 
+// Norm
+//
+template<class REAL, unsigned int D> __global__ void 
+cuNDA_norm_kernel( typename reald<REAL,D>::Type *in, REAL *out, 
+		   unsigned int number_of_elements )
+{
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+ 
+  if( idx<number_of_elements ){
+    typename reald<REAL,D>::Type val = in[idx]; 
+    out[idx] = norm<REAL,D>(val);
+  }
+}
+
+// Norm
+//
+template<class REAL, unsigned int D>  
+boost::shared_ptr< cuNDArray<REAL> > 
+cuNDA_norm( cuNDArray<typename reald<REAL,D>::Type> *in,
+	    cuNDA_device alloc_device, cuNDA_device compute_device )
+{
+  int cur_device, old_device; 
+  cuNDArray< typename reald<REAL,D>::Type > *in_int;
+
+  // Prepare
+  if( !prepare<1,typename reald<REAL,D>::Type,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
+    cerr << endl << "cuNDA_norm: unable to prepare device(s)" << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+  
+  // Setup block/grid dimensions
+  dim3 blockDim; dim3 gridDim;
+  if( !setup_grid( cur_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
+    cerr << endl << "cuNDA_norm: block/grid configuration out of range" << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+
+  // Invoke kernel
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(in->get_dimensions().get());
+  if( out.get() != 0x0 ) cuNDA_norm_kernel<REAL,D><<< gridDim, blockDim >>>( in_int->get_data_ptr(), out->get_data_ptr(), in_int->get_number_of_elements() );
+  
+  CHECK_FOR_CUDA_ERROR();
+
+  // Restore
+  if( !restore<1,typename reald<REAL,D>::Type,REAL,dummy,dummy>( old_device, in, in_int, 0, alloc_device, out.get() ) ){
+    cerr << endl << "cuNDA_norm: unable to restore device" << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+ 
+  return out;
+}
 
 // Norm squared
 //
@@ -3765,7 +3764,7 @@ cuNDA_shrink1_kernel( REAL gamma, T *in, T *out, unsigned int number_of_elements
  
   if( idx<number_of_elements ){
     T in_val = in[idx]; 
-    REAL in_norm = norm<REAL>(in_val);
+    REAL in_norm = abs<REAL>(in_val);
     T _res;
     if( in_norm > REAL(0) )
       _res =  in_val/in_norm;
