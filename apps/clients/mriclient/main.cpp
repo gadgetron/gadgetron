@@ -20,7 +20,7 @@ void print_usage()
 {
 	ACE_DEBUG((LM_INFO, ACE_TEXT("Usage: \n") ));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("mriclient -p <PORT>                      (default 9002)\n") ));
-	ACE_DEBUG((LM_INFO, ACE_TEXT("      sa    -h <HOST>                      (default localhost)\n") ));
+	ACE_DEBUG((LM_INFO, ACE_TEXT("          -h <HOST>                      (default localhost)\n") ));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("          -d <HDF5 DATA FILE>            (default ./data.h5)\n") ));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("          -g <HDF5 DATA GROUP>           (default /dataset)\n") ));
 	ACE_DEBUG((LM_INFO, ACE_TEXT("          -c <GADGETRON CONFIG>          (default default.xml)\n") ));
