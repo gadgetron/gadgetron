@@ -36,6 +36,7 @@ int ImageFinishGadget<T>
   int ret =  this->controller_->output_ready(mb);
 
   if ( (ret < 0) ) {
+	  GADGET_DEBUG1("Failed to return massage to controller\n");
 	  return GADGET_FAIL;
   }
 
