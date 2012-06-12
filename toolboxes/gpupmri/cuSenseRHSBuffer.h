@@ -34,7 +34,10 @@ template<class REAL, unsigned int D> class EXPORTGPUPMRI cuSenseRHSBuffer
   virtual ~cuSenseRHSBuffer() {}
   
   inline void set_num_coils( unsigned int num_coils ){ num_coils_ = num_coils; }
-
+  inline void set_cycle_lengths( unsigned int num_cycles, unsigned int num_sub_cycles ){
+    cycle_length_ = num_cycles; sub_cycle_length_ = num_sub_cycles;
+  }
+  
   virtual int clear();
   virtual int set_sense_operator( boost::shared_ptr< cuNonCartesianSenseOperator<REAL,D> > op ); // Implicitly calls clear()
   virtual int add_frame_data( cuNDArray<_complext> *samples, cuNDArray<_reald> *trajectory );

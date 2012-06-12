@@ -243,5 +243,7 @@ template EXPORTHDF5MRI boost::shared_ptr<GadgetMessageImage> hdf5_read_struct<Ga
 template EXPORTHDF5MRI boost::shared_ptr<GadgetMessageAcquisition> hdf5_read_struct<GadgetMessageAcquisition>(const char* , const char* , unsigned int);
 
 template EXPORTHDF5MRI header_data_struct<GadgetMessageAcquisition, std::complex<float> >
-	hdf5_read_struct_with_data<GadgetMessageAcquisition, std::complex<float> >(const char*, const char*, unsigned);
+	hdf5_read_struct_with_data<GadgetMessageAcquisition, std::complex<float> >(const char*, const char*, unsigned int);
 
+template EXPORTHDF5MRI header_data_struct<GadgetMessageAcquisition, complext<float> >
+	hdf5_read_struct_with_data<GadgetMessageAcquisition, complext<float> >(const char*, const char*, unsigned int);

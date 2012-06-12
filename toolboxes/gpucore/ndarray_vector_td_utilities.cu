@@ -3876,7 +3876,7 @@ bool cuNDA_shrinkd( REAL gamma, cuNDArray<REAL> *s_k, cuNDArray<T> *in, cuNDArra
   return true;
 }
 
-// Crop
+// Mirror, but keep the origin unchanged
 template<class T, unsigned int D> __global__ void
 cuNDA_origin_mirror_kernel( typename uintd<D>::Type matrix_size, typename uintd<D>::Type origin, T *in, T *out, bool zero_fill )
 {
