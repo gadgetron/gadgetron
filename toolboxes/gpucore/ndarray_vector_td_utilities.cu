@@ -1476,16 +1476,19 @@ cuNDA_downsample_kernel( REAL *in, REAL *out,
 
     const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
     const unsigned int num_adds = 1 << D;
+    unsigned int actual_adds = 0;
 
     REAL res = REAL(0);
 
     for( unsigned int i=0; i<num_adds; i++ ){
       const typename uintd<D>::Type local_co = idx_to_co<D>( i, twos );
+      if( weak_greater_equal( local_co, matrix_size_out ) ) continue; // To allow array dimensions of 1
       const unsigned int in_idx = co_to_idx<D>(co_in+local_co, matrix_size_in)+frame_offset*prod(matrix_size_in); 
+      actual_adds++;
       res += in[in_idx];
     }
     
-    out[idx] = res/(REAL)num_adds;
+    out[idx] = res/REAL(actual_adds);
   }
 }
 
@@ -1512,8 +1515,8 @@ cuNDA_downsample( cuNDArray<REAL> *in,
   }
   
   for( unsigned int d=0; d<D; d++ ){
-    if( (in->get_size(d)%2) == 1 ){
-      cerr << endl << "cuNDA_downsample: uneven array dimensions not accepted" << endl;
+    if( (in->get_size(d)%2) == 1 && in->get_size(d) != 1 ){
+      cerr << endl << "cuNDA_downsample: uneven array dimensions larger than one not accepted" << endl;
       return boost::shared_ptr< cuNDArray<REAL> >();
     }
   }
@@ -1521,6 +1524,11 @@ cuNDA_downsample( cuNDArray<REAL> *in,
   typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
   typename uintd<D>::Type matrix_size_out = matrix_size_in >> 1;
 
+  for( unsigned int d=0; d<D; d++ ){
+    if( matrix_size_out[d] == 0 ) 
+      matrix_size_out[d] = 1;
+  }
+  
   unsigned int number_of_elements = prod(matrix_size_out);
   unsigned int number_of_batches = 1;
 
@@ -1637,13 +1645,13 @@ cuNDA_upsample_nn( cuNDArray<REAL> *in,
 }
 
 // Utility to check if all neighbors required for the linear interpolation exists
-// 
+// ... do not include dimensions of size 1
 
 template<class REAL, unsigned int D> __device__ 
 bool is_border_pixel( typename uintd<D>::Type co, typename uintd<D>::Type dims )
 {
   for( unsigned int dim=0; dim<D; dim++ ){
-    if( co.vec[dim] == 0 || co.vec[dim] == (dims.vec[dim]-1) )
+    if( dims[dim] > 1 && ( co[dim] == 0 || co[dim] == (dims[dim]-1) ) )
       return true;
   }
   return false;
@@ -1660,14 +1668,11 @@ cuNDA_upsample_lin_kernel( REAL *in, REAL *out,
   
   if( idx < num_elements*num_batches ){
 
-
     REAL res = REAL(0);
-
 
     const unsigned int num_neighbors = 1 << D;
     const unsigned int frame_idx = idx/num_elements;
     const typename uintd<D>::Type co_out = idx_to_co<D>( idx-frame_idx*num_elements, matrix_size_out );
-
 
     // We will only proceed if all neighbours exist (this adds a zero-boundary to the upsampled image/vector field)
     //
@@ -1679,10 +1684,17 @@ cuNDA_upsample_lin_kernel( REAL *in, REAL *out,
 	// Determine coordinate of neighbor in input
 	//
 
-	const typename uintd<D>::Type ones = to_vector_td<unsigned int,D>(1);
 	const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
 	const typename uintd<D>::Type stride = idx_to_co<D>( i, twos );
 
+	if( weak_greater_equal( stride, matrix_size_out ) ) continue; // To allow array dimensions of 1
+
+	// Be careful about dimensions of size 1
+	typename uintd<D>::Type ones = to_vector_td<unsigned int,D>(1);
+	for( unsigned int d=0; d<D; d++ ){
+	  if( matrix_size_out[d] == 1 )
+	    ones[d] = 0;
+	}
 	typename uintd<D>::Type co_in = ((co_out-ones)>>1)+stride;
 	
 	// Read corresponding pixel value
@@ -1696,13 +1708,14 @@ cuNDA_upsample_lin_kernel( REAL *in, REAL *out,
 	
 	REAL weight = REAL(1);
 	
-	for( unsigned int dim=0; dim<D; dim++ ){
-	  
-	  if( stride.vec[dim] == (co_out.vec[dim]%2) ) {
-	    weight *= REAL(0.25);
-	  }
-	  else{
-	    weight *= REAL(0.75);
+	for( unsigned int dim=0; dim<D; dim++ ){	  
+	  if( matrix_size_in[dim] > 1 ){
+	    if( stride.vec[dim] == (co_out.vec[dim]%2) ) {
+	      weight *= REAL(0.25);
+	    }
+	    else{
+	      weight *= REAL(0.75);
+	    }
 	  }
 	}
 	
@@ -1710,7 +1723,6 @@ cuNDA_upsample_lin_kernel( REAL *in, REAL *out,
 	//
 	
 	res += weight*value;
-
       }
     }
     out[idx] = res;
@@ -1742,6 +1754,11 @@ cuNDA_upsample_lin( cuNDArray<REAL> *in,
   typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
   typename uintd<D>::Type matrix_size_out = matrix_size_in << 1;
 
+  for( unsigned int d=0; d<D; d++ ){
+    if( matrix_size_in[d] == 1 )
+      matrix_size_out[d] = 1;
+  }
+  
   unsigned int number_of_elements = prod(matrix_size_out);
   unsigned int number_of_batches = 1;
 
