@@ -5,7 +5,7 @@
 #include "vector_td.h"
 #include "complext.h"
 
-template<class REAL, unsigned int D> class EXPORTGPUPMRI cuSenseRHSBuffer
+template<class REAL, unsigned int D, bool ATOMICS = false> class EXPORTGPUPMRI cuSenseRHSBuffer
 {
  public:
 
@@ -39,7 +39,7 @@ template<class REAL, unsigned int D> class EXPORTGPUPMRI cuSenseRHSBuffer
   }
   
   virtual int clear();
-  virtual int set_sense_operator( boost::shared_ptr< cuNonCartesianSenseOperator<REAL,D> > op ); // Implicitly calls clear()
+  virtual int set_sense_operator( boost::shared_ptr< cuNonCartesianSenseOperator<REAL,D,ATOMICS> > op );
   virtual int add_frame_data( cuNDArray<_complext> *samples, cuNDArray<_reald> *trajectory );
   virtual boost::shared_ptr< cuNDArray<_complext> > get_acc_coil_images( bool normalize = false );
 
@@ -50,5 +50,5 @@ template<class REAL, unsigned int D> class EXPORTGPUPMRI cuSenseRHSBuffer
   bool acc_buffer_empty_;
   int device_;
   cuNDArray<_complext> acc_buffer_, cyc_buffer_;
-  boost::shared_ptr< cuNonCartesianSenseOperator<REAL,D> > sense_op_;
+  boost::shared_ptr< cuNonCartesianSenseOperator<REAL,D,ATOMICS> > sense_op_;
 };

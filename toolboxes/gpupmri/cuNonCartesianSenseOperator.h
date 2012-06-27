@@ -3,11 +3,11 @@
 #include "cuSenseOperator.h"
 #include "NFFT.h"
 
-template<class REAL, unsigned int D> class EXPORTGPUPMRI cuNonCartesianSenseOperator 
-	: public cuSenseOperator<REAL,D>
+template<class REAL, unsigned int D, bool ATOMICS = false> class EXPORTGPUPMRI cuNonCartesianSenseOperator 
+  : public cuSenseOperator<REAL,D>
 {
-
-public:
+  
+ public:
   
   typedef typename cuSenseOperator<REAL,D>::_complext _complext;
   typedef typename uintd<D>::Type _uintd;
@@ -15,13 +15,13 @@ public:
 
   cuNonCartesianSenseOperator() : cuSenseOperator<REAL,D>() 
   { 
-    plan_ = boost::shared_ptr< NFFT_plan<REAL, D> >( new NFFT_plan<REAL, D>() );
+    plan_ = boost::shared_ptr< NFFT_plan<REAL, D, ATOMICS> >( new NFFT_plan<REAL, D, ATOMICS>() );
     ready_ = false; 
   }
     
   virtual ~cuNonCartesianSenseOperator() {}
     
-  inline boost::shared_ptr< NFFT_plan<REAL, D> > get_plan() { return plan_; }
+  inline boost::shared_ptr< NFFT_plan<REAL, D, ATOMICS> > get_plan() { return plan_; }
   inline boost::shared_ptr< cuNDArray<REAL> > get_dcw() { return dcw_; }
   inline bool is_setup() { return ready_; }
   
@@ -37,7 +37,7 @@ public:
   }
   
 protected:
-  boost::shared_ptr< NFFT_plan<REAL, D> > plan_;
+  boost::shared_ptr< NFFT_plan<REAL, D, ATOMICS> > plan_;
   boost::shared_ptr< cuNDArray<REAL> > dcw_;
   bool ready_;
 };

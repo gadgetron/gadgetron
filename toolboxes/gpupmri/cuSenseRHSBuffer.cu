@@ -2,8 +2,8 @@
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
 
-template<class REAL, unsigned int D> 
-int cuSenseRHSBuffer<REAL,D>::clear()
+template<class REAL, unsigned int D, bool ATOMICS>
+ int cuSenseRHSBuffer<REAL,D,ATOMICS>::clear()
 {
   if( sense_op_.get() == 0x0 ){
     std::cerr << "cuSenseRHSBuffer::clear: nothing to clear; sense operator not yet set." << std::endl;
@@ -21,8 +21,8 @@ int cuSenseRHSBuffer<REAL,D>::clear()
   return 0;
 }
 
-template<class REAL, unsigned int D> 
-int cuSenseRHSBuffer<REAL,D>::set_sense_operator( boost::shared_ptr< cuNonCartesianSenseOperator<REAL,D> > op )
+template<class REAL, unsigned int D, bool ATOMICS>
+int cuSenseRHSBuffer<REAL,D,ATOMICS>::set_sense_operator( boost::shared_ptr< cuNonCartesianSenseOperator<REAL,D,ATOMICS> > op )
 {
   if( op.get() == 0x0 ){
     std::cerr << "cuSenseRHSBuffer::set_sense_operator: invalid array pointer" << std::endl;
@@ -66,8 +66,8 @@ int cuSenseRHSBuffer<REAL,D>::set_sense_operator( boost::shared_ptr< cuNonCartes
   return 0;
 }
 
-template<class REAL, unsigned int D> 
-int cuSenseRHSBuffer<REAL,D>::add_frame_data( cuNDArray<_complext> *samples, cuNDArray<_reald> *trajectory )
+template<class REAL, unsigned int D, bool ATOMICS> 
+int cuSenseRHSBuffer<REAL,D,ATOMICS>::add_frame_data( cuNDArray<_complext> *samples, cuNDArray<_reald> *trajectory )
 {
   if( sense_op_.get() == 0x0 ){
     std::cerr << "cuSenseRHSBuffer::add_frame_data: sense_operator not set" << std::endl;
@@ -90,14 +90,14 @@ int cuSenseRHSBuffer<REAL,D>::add_frame_data( cuNDArray<_complext> *samples, cuN
 
   // Preprocess frame
   //
-  if( sense_op_->get_plan()->preprocess( trajectory, NFFT_plan<REAL,D>::NFFT_PREP_NC2C ) < 0 ){
+  if( sense_op_->get_plan()->preprocess( trajectory, NFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_NC2C ) < 0 ){
     std::cerr << "cuSenseRHSBuffer::add_frame_data: NFFT preprocessing failed" << std::endl;
     return -1;	
   }
 
   // Convolve to form k-space frame (accumulation mode)
   //
-  if( !sense_op_->get_plan()->convolve( samples, &cur_buffer, sense_op_->get_dcw().get(), NFFT_plan<REAL,D>::NFFT_CONV_NC2C, true ) ){
+  if( !sense_op_->get_plan()->convolve( samples, &cur_buffer, sense_op_->get_dcw().get(), NFFT_plan<REAL,D,ATOMICS>::NFFT_CONV_NC2C, true ) ){
     std::cerr << "cuSenseRHSBuffer::add_frame_data: NFFT convolution failed" << std::endl;
     return -1;	
   }
@@ -146,8 +146,8 @@ int cuSenseRHSBuffer<REAL,D>::add_frame_data( cuNDArray<_complext> *samples, cuN
   return 0;
 }
 
-template<class REAL, unsigned int D>
-boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseRHSBuffer<REAL,D>::get_acc_coil_images( bool normalize )
+template<class REAL, unsigned int D, bool ATOMICS>
+boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseRHSBuffer<REAL,D,ATOMICS>::get_acc_coil_images( bool normalize )
 {
   if( sense_op_.get() == 0x0 ){
     std::cerr << "cuSenseRHSBuffer::get_acc_coil_images: sense_operator not set" << std::endl;
@@ -180,7 +180,7 @@ boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseRHSBuffer<REAL,D>::get_ac
   cuNDArray<_complext> acc_copy = acc_buffer_;
 
   // FFT
-  if( !sense_op_->get_plan()->fft( &acc_copy, NFFT_plan<REAL,D>::NFFT_BACKWARDS )){
+  if( !sense_op_->get_plan()->fft( &acc_copy, NFFT_plan<REAL,D,ATOMICS>::NFFT_BACKWARDS )){
     std::cerr << "cuSenseRHSBuffer::get_acc_coil_images: fft failed" << std::endl;
     return boost::shared_ptr< cuNDArray<_complext> >();
   }
@@ -213,10 +213,20 @@ boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseRHSBuffer<REAL,D>::get_ac
 // Instantiations
 //
 
-template class EXPORTGPUPMRI cuSenseRHSBuffer<float,2>;
-template class EXPORTGPUPMRI cuSenseRHSBuffer<float,3>;
-template class EXPORTGPUPMRI cuSenseRHSBuffer<float,4>;
+template class EXPORTGPUPMRI cuSenseRHSBuffer<float,2,true>;
+template class EXPORTGPUPMRI cuSenseRHSBuffer<float,2,false>;
 
-template class EXPORTGPUPMRI cuSenseRHSBuffer<double,2>;
-template class EXPORTGPUPMRI cuSenseRHSBuffer<double,3>;
-template class EXPORTGPUPMRI cuSenseRHSBuffer<double,4>;
+template class EXPORTGPUPMRI cuSenseRHSBuffer<float,3,true>;
+template class EXPORTGPUPMRI cuSenseRHSBuffer<float,3,false>;
+
+template class EXPORTGPUPMRI cuSenseRHSBuffer<float,4,true>;
+template class EXPORTGPUPMRI cuSenseRHSBuffer<float,4,false>;
+
+template class EXPORTGPUPMRI cuSenseRHSBuffer<double,2,true>;
+template class EXPORTGPUPMRI cuSenseRHSBuffer<double,2,false>;
+
+template class EXPORTGPUPMRI cuSenseRHSBuffer<double,3,true>;
+template class EXPORTGPUPMRI cuSenseRHSBuffer<double,3,false>;
+
+template class EXPORTGPUPMRI cuSenseRHSBuffer<double,4,true>;
+template class EXPORTGPUPMRI cuSenseRHSBuffer<double,4,false>;
