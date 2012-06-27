@@ -22,7 +22,7 @@ typedef float _real;
 typedef complext<_real> _complext;
 typedef reald<_real,2>::Type _reald2;
 
-const bool use_atomics = true;;
+const bool use_atomics = false;
 
 // Upload samples for one reconstruction from host to device
 boost::shared_ptr< cuNDArray<_complext> > 
