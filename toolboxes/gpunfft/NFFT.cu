@@ -975,6 +975,10 @@ bool NFFT_plan<REAL,D,ATOMICS>::barebones()
   // These are the fundamental booleans checked before accessing the various member pointers
   initialized = preprocessed_C2NC = preprocessed_NC2C = false;
 
+  // Clear pointers
+  trajectory_positions = 0x0;
+  tuples_last = bucket_begin = bucket_end = 0x0;
+
   // and specify the device
   if (cudaGetDevice(&device) != cudaSuccess) {
     cerr << "Error: NFFT_plan::barebones:: unable to get device no" << endl;
