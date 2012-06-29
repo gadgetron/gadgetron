@@ -1301,8 +1301,8 @@ _convolve_NFFT_NC2C<float,D,true>{ // True: use atomic operations variant
 		     cuNDArray<complext<float> > *samples, 
 		     cuNDArray<complext<float> > *image, 
 		     bool accumulate )
-  {
-
+  {   
+    //
     // Bring in some variables from the plan
     
     unsigned int device = plan->device;
@@ -1319,6 +1319,15 @@ _convolve_NFFT_NC2C<float,D,true>{ // True: use atomic operations variant
     
     if( !initialize_static_variables() ){
       cerr << "Error: NFFT_plan::convolve_NFFT: unable to query device properties" << endl;
+      return false;
+    }
+    
+    //
+    // Atomic operations are only supported in compute model 2.0 and up
+    //
+
+    if( major[device] == 1 ){
+      cerr << "Error: Atomic NC2C NFFT only supported on device with compute model 2.0 or higher" << endl;
       return false;
     }
     
@@ -1341,13 +1350,7 @@ _convolve_NFFT_NC2C<float,D,true>{ // True: use atomic operations variant
     unsigned int max_coils;
     
     threads_per_block = NFFT_THREADS_PER_KERNEL;
-    
-    if( major[device] == 1 ){
-      max_coils = NFFT_MAX_COILS_COMPUTE_1x;
-    }
-    else{
-      max_coils = NFFT_MAX_COILS_COMPUTE_2x;
-    }
+    max_coils = NFFT_MAX_COILS_COMPUTE_2x;
     
     // We can (only) convolve domain_size_coils batches per run due to shared memory issues. 
     unsigned int domain_size_coils_desired = num_batches;

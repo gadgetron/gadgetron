@@ -31,7 +31,6 @@ NFFT_iterate_body( REAL alpha, REAL beta, REAL W, vector_td<unsigned int, D> mat
 		   unsigned int num_samples_per_batch, unsigned int sample_idx_in_batch, 
 		   vector_td<REAL,D> sample_position, vector_td<int,D> grid_position )
 {
-      
   // Calculate the distance between current sample and the grid cell
   vector_td<REAL,D> grid_position_real = to_reald<REAL,int,D>(grid_position);
   const vector_td<REAL,D> delta = abs(sample_position-grid_position_real);
@@ -187,6 +186,11 @@ NFFT_H_atomic_convolve_kernel( REAL alpha, REAL beta, REAL W,
 			       vector_td<REAL,D> matrix_size_os_real )
 {
   
+  // A runtime check will prevent this kernel from being run for compute models 1.x.
+  //
+  
+#if(__CUDA_ARCH__>=200)
+    
   const unsigned int sample_idx_in_frame = (blockIdx.x*blockDim.x+threadIdx.x);
 
   // Check if we are within bounds
@@ -214,4 +218,5 @@ NFFT_H_atomic_convolve_kernel( REAL alpha, REAL beta, REAL W,
 		      half_W, one_over_W, matrix_size_os_real, 
 		      frame, num_frames, num_samples_per_batch, sample_idx_in_batch, 
 		      sample_position, lower_limit, upper_limit );
+#endif
 }
