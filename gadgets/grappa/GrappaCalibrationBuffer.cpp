@@ -30,7 +30,9 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
   unsigned int samples =  m1->samples;
   unsigned int line = m1->idx.line;
   unsigned int partition = m1->idx.partition;
-  //unsigned int slice = m1->idx.slice; //We should probably check this
+  unsigned int slice = m1->idx.slice; //We should probably check this
+
+
 
   if (samples != dimensions_[0]) {
     GADGET_DEBUG1("Wrong number of samples received\n");
@@ -66,19 +68,25 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
   bool is_first_scan_in_slice =
     (m1->flags & GADGET_FLAG_FIRST_ACQ_IN_SLICE);
 
+
+  //Depending on the sequence used, we could get into trouble if the sequence switches slice acquisition scheme before finishing a slice.
+  bool acquiring_sequentially = line > last_line_;
+
   if (is_first_scan_in_slice) {
     biggest_gap_current_ = 0;
-  } else {
+  } else if (acquiring_sequentially){
     unsigned int gap = abs(static_cast<int>(last_line_) - static_cast<int>(line));
-    if (gap > biggest_gap_current_) biggest_gap_current_ = gap;
+    if (gap != biggest_gap_current_) biggest_gap_current_ = gap;
+  } else {
+	biggest_gap_current_ = 0;
   }
   last_line_ = line;
 
-  bool is_last_scan_in_slice =
-    (m1->flags & GADGET_FLAG_LAST_ACQ_IN_SLICE);
 
-  
-  if (is_last_scan_in_slice) { 
+  bool is_last_scan_in_slice =
+    ((m1->flags & GADGET_FLAG_LAST_ACQ_IN_SLICE) > 0);
+
+  if (is_last_scan_in_slice && acquiring_sequentially) {
     unsigned int min_ky, max_ky;
 
     if (biggest_gap_current_ != acceleration_factor_) {
@@ -105,6 +113,9 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
       sampled_region.push_back(std::pair<unsigned int, unsigned int>(min_ky, max_ky));
 
       std::vector<unsigned int> uncombined_channel_weights;
+
+      //GADGET_DEBUG2("sampled_region[0] = %d,%d\n", sampled_region[0].first, sampled_region[0].second);
+      //GADGET_DEBUG2("sampled_region[1] = %d,%d\n", sampled_region[1].first, sampled_region[1].second);
 
       if (!weights_calculator_) {
 	GADGET_DEBUG1("Weights calculator not defined\n");
