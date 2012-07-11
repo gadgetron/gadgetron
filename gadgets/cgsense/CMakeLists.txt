@@ -17,7 +17,7 @@ include_directories(   ${ACE_INCLUDE_DIR}
 				       ${CMAKE_SOURCE_DIR}/toolboxes/solvers
 				       ${CMAKE_SOURCE_DIR}/gadgets/core)
 
-add_library(gadgetroncgsense SHARED GPUCGGadget.cpp GPUCGGoldenRadial.cpp GPUCGFixedRadial.cpp)
+add_library(gadgetroncgsense SHARED GPUCGGadget.cpp GPUCGGoldenRadial.cpp GPUCGFixedRadial.cpp GPUCGGadgetGeneric.cpp)
 
 target_link_libraries(gadgetroncgsense solvers gpuparallelmri tinyxml ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
