@@ -28,7 +28,6 @@
   
 
   <stream>
-  
    <gadget>
       <name>NoiseAdjust</name>
       <dll>gadgetronmricore</dll>
@@ -108,15 +107,7 @@
       <name>ImageFinishShort</name>
       <dll>gadgetroncore</dll>
       <class>ImageFinishGadgetUSHORT</class>
-    </gadget>
-    
- 	<!--
-    <gadget>
-      <name>ImageFinishUSHORT</name>
-      <dll>gadgetroncore</dll>
-      <class>ImageFinishGadgetUSHORT</class>
-    </gadget>
-    -->
+    </gadget>    
   </stream>
 
 </gadgetron>

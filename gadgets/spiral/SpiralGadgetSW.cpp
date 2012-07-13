@@ -9,7 +9,8 @@
 #include "b1_map.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "GPUCGGadgetGeneric.h"
-
+#include "GPUTimer.h"
+#include <algorithm>
 #include <vector>
 
 void calc_vds(double slewmax,double gradmax,double Tgsample,double Tdsample,int Ninterleaves,
@@ -41,6 +42,7 @@ SpiralGadgetSW::SpiralGadgetSW()
 , host_data_buffer_(0)
 , image_counter_(0)
 , image_series_(0)
+, prepared_(false)
 {
 	GADGET_DEBUG1("Initializing Spiral\n");
 }
@@ -81,53 +83,34 @@ int SpiralGadgetSW::process_config(ACE_Message_Block* mb)
 	doc.Parse(mb->rd_ptr());
 
 
-	GADGET_DEBUG1("Calculating trajectory\n");
 
 	GadgetXMLNode n = GadgetXMLNode(&doc).get<GadgetXMLNode>(std::string("gadgetron"))[0];
 
-	long     Tsamp_ns;
-	if (get_gadget_xml_parameter(n,std::string("encoding.acquisition_dwell_time_ns.value"),Tsamp_ns) != GADGET_OK) {
+	if (get_gadget_xml_parameter(n,std::string("encoding.acquisition_dwell_time_ns.value"),Tsamp_ns_) != GADGET_OK) {
 		return GADGET_FAIL;
 	}
 
-	long     Nints;
-	if (get_gadget_xml_parameter(n,std::string("spirals.Interleaves.value"),Nints) != GADGET_OK) {
+	if (get_gadget_xml_parameter(n,std::string("spirals.Interleaves.value"),Nints_) != GADGET_OK) {
 		return GADGET_FAIL;
 	}
 
-	interleaves_ = static_cast<int>(Nints);
+	interleaves_ = static_cast<int>(Nints_);
 
-	double  gmax;
-	if (get_gadget_xml_parameter(n,std::string("spirals.MaxGradient_Gcms.value"),gmax) != GADGET_OK) {
+	if (get_gadget_xml_parameter(n,std::string("spirals.MaxGradient_Gcms.value"),gmax_) != GADGET_OK) {
 		return GADGET_FAIL;
 	}
 
-	double  smax;
-	if (get_gadget_xml_parameter(n,std::string("spirals.MaxSlewRate_Gcmsi.value"),smax) != GADGET_OK) {
+	if (get_gadget_xml_parameter(n,std::string("spirals.MaxSlewRate_Gcmsi.value"),smax_) != GADGET_OK) {
 		return GADGET_FAIL;
 	}
 
-	double  krmax;
-	if (get_gadget_xml_parameter(n,std::string("spirals.krmax_cm.value"),krmax) != GADGET_OK) {
+	if (get_gadget_xml_parameter(n,std::string("spirals.krmax_cm.value"),krmax_) != GADGET_OK) {
 		return GADGET_FAIL;
 	}
 
-	double  fov;
-	if (get_gadget_xml_parameter(n,std::string("spirals.FOVCoeff_1.value"),fov) != GADGET_OK) {
+	if (get_gadget_xml_parameter(n,std::string("spirals.FOVCoeff_1.value"),fov_) != GADGET_OK) {
 		return GADGET_FAIL;
 	}
-
-	int     nfov   = 1;         /*  number of fov coefficients.             */
-	int     ngmax  = 1e5;       /*  maximum number of gradient samples      */
-	double  *xgrad;             /*  x-component of gradient.                */
-	double  *ygrad;             /*  y-component of gradient.                */
-	double  *x_trajectory;
-	double  *y_trajectory;
-	double  *weighting;
-	int     ngrad;
-	//int     count;
-	double sample_time = (1.0*Tsamp_ns) * 1e-9;
-
 
 	samples_to_skip_start_  = 0; //n.get<int>(std::string("samplestoskipstart.value"))[0];
 	samples_to_skip_end_    = -1; //n.get<int>(std::string("samplestoskipend.value"))[0];
@@ -137,85 +120,19 @@ int SpiralGadgetSW::process_config(ACE_Message_Block* mb)
 	image_dimensions_.push_back(n.get<long>(std::string("encoding.kspace.matrix_size.value"))[0]);
 	image_dimensions_.push_back(n.get<long>(std::string("encoding.kspace.matrix_size.value"))[1]);
 
-	GADGET_DEBUG2("smax:                    %f\n", smax);
-	GADGET_DEBUG2("gmax:                    %f\n", gmax);
-	GADGET_DEBUG2("Tsamp_ns:                %d\n", Tsamp_ns);
-	GADGET_DEBUG2("sample_time:             %f\n", sample_time);
-	GADGET_DEBUG2("Nints:                   %d\n", Nints);
-	GADGET_DEBUG2("fov:                     %f\n", fov);
-	GADGET_DEBUG2("krmax:                   %f\n", krmax);
+	slices_ = static_cast<int>(n.get<long>(std::string("encoding.slices.value"))[0]);
+
+	GADGET_DEBUG2("smax:                    %f\n", smax_);
+	GADGET_DEBUG2("gmax:                    %f\n", gmax_);
+	GADGET_DEBUG2("Tsamp_ns:                %d\n", Tsamp_ns_);
+	GADGET_DEBUG2("Nints:                   %d\n", Nints_);
+	GADGET_DEBUG2("fov:                     %f\n", fov_);
+	GADGET_DEBUG2("krmax:                   %f\n", krmax_);
 	GADGET_DEBUG2("samples_to_skip_start_ : %d\n", samples_to_skip_start_);
 	GADGET_DEBUG2("samples_to_skip_end_   : %d\n", samples_to_skip_end_);
 	GADGET_DEBUG2("matrix_size_x          : %d\n", image_dimensions_[0]);
 	GADGET_DEBUG2("matrix_size_y          : %d\n", image_dimensions_[1]);
 
-
-	/*	call c-function here to calculate gradients */
-	calc_vds(smax,gmax,sample_time,sample_time,Nints,&fov,nfov,krmax,ngmax,&xgrad,&ygrad,&ngrad);
-	samples_per_interleave_ = ngrad;
-
-
-	/* Calcualte the trajectory and weights*/
-	calc_traj(xgrad, ygrad, ngrad, Nints, sample_time, krmax, &x_trajectory, &y_trajectory, &weighting);
-
-	host_traj_ = boost::shared_ptr< hoNDArray<floatd2> >(new hoNDArray<floatd2>);
-	host_weights_ = boost::shared_ptr< hoNDArray<float> >(new hoNDArray<float>);
-
-	std::vector<unsigned int> trajectory_dimensions;
-	trajectory_dimensions.push_back(samples_per_interleave_*Nints);
-
-	if (!host_traj_->create(&trajectory_dimensions)) {
-		GADGET_DEBUG1("Unable to allocate memory for trajectory\n");
-		return GADGET_FAIL;
-	}
-
-	if (!host_weights_->create(&trajectory_dimensions)) {
-		GADGET_DEBUG1("Unable to allocate memory for weights\n");
-		return GADGET_FAIL;
-	}
-
-
-	float* co_ptr = reinterpret_cast<float*>(host_traj_->get_data_ptr());
-	float* we_ptr =  reinterpret_cast<float*>(host_weights_->get_data_ptr());
-
-	for (int i = 0; i < (ngrad*Nints); i++) {
-		co_ptr[i*2]   = -x_trajectory[i]/2;
-		co_ptr[i*2+1] = -y_trajectory[i]/2;
-		we_ptr[i] = weighting[i];
-	}
-
-	delete [] xgrad;
-	delete [] ygrad;
-	delete [] x_trajectory;
-	delete [] y_trajectory;
-	delete [] weighting;
-
-	slices_ = static_cast<int>(n.get<long>(std::string("encoding.slices.value"))[0]);
-
-
-	//Make NFFT plan
-	// Matrix sizes
-	uintd2 matrix_size = uintd2(image_dimensions_[0],image_dimensions_[1]);
-	uintd2 matrix_size_os = uintd2(image_dimensions_[0]*2,image_dimensions_[1]*2);
-
-	// Kernel width
-	float W = 5.5f;
-
-	// Upload host arrays to device arrays
-	cuNDArray<floatd2> traj(host_traj_.get());
-	gpu_weights_ = cuNDArray<float>(host_weights_.get());
-
-	// Initialize plan
-	// NFFT_plan<float, 2> plan( matrix_size, matrix_size_os, W );
-	plan_ = NFFT_plan<float, 2>( matrix_size, matrix_size_os, W );
-
-	// Preprocess
-	bool success = plan_.preprocess( &traj, NFFT_plan<float,2>::NFFT_PREP_ALL );
-
-	if (!success) {
-		GADGET_DEBUG1("NFFT preprocess failed\n");
-		return GADGET_FAIL;
-	}
 
 	return GADGET_OK;
 }
@@ -225,6 +142,89 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
+	if (!prepared_) {
+		int     nfov   = 1;         /*  number of fov coefficients.             */
+		int     ngmax  = 1e5;       /*  maximum number of gradient samples      */
+		double  *xgrad;             /*  x-component of gradient.                */
+		double  *ygrad;             /*  y-component of gradient.                */
+		double  *x_trajectory;
+		double  *y_trajectory;
+		double  *weighting;
+		int     ngrad;
+		//int     count;
+		double sample_time = (1.0*Tsamp_ns_) * 1e-9;
+
+
+
+
+		/*	call c-function here to calculate gradients */
+		calc_vds(smax_,gmax_,sample_time,sample_time,Nints_,&fov_,nfov,krmax_,ngmax,&xgrad,&ygrad,&ngrad);
+		samples_per_interleave_ = std::min(ngrad,static_cast<int>(m1->getObjectPtr()->samples));
+
+		GADGET_DEBUG2("Using %d samples per interleave\n", samples_per_interleave_);
+
+		/* Calcualte the trajectory and weights*/
+		calc_traj(xgrad, ygrad, samples_per_interleave_, Nints_, sample_time, krmax_, &x_trajectory, &y_trajectory, &weighting);
+
+		host_traj_ = boost::shared_ptr< hoNDArray<floatd2> >(new hoNDArray<floatd2>);
+		host_weights_ = boost::shared_ptr< hoNDArray<float> >(new hoNDArray<float>);
+
+		std::vector<unsigned int> trajectory_dimensions;
+		trajectory_dimensions.push_back(samples_per_interleave_*Nints_);
+
+		if (!host_traj_->create(&trajectory_dimensions)) {
+			GADGET_DEBUG1("Unable to allocate memory for trajectory\n");
+			return GADGET_FAIL;
+		}
+
+		if (!host_weights_->create(&trajectory_dimensions)) {
+			GADGET_DEBUG1("Unable to allocate memory for weights\n");
+			return GADGET_FAIL;
+		}
+
+
+		float* co_ptr = reinterpret_cast<float*>(host_traj_->get_data_ptr());
+		float* we_ptr =  reinterpret_cast<float*>(host_weights_->get_data_ptr());
+
+		for (int i = 0; i < (samples_per_interleave_*Nints_); i++) {
+			co_ptr[i*2]   = -x_trajectory[i]/2;
+			co_ptr[i*2+1] = -y_trajectory[i]/2;
+			we_ptr[i] = weighting[i];
+		}
+
+		delete [] xgrad;
+		delete [] ygrad;
+		delete [] x_trajectory;
+		delete [] y_trajectory;
+		delete [] weighting;
+
+
+		//Make NFFT plan
+		// Matrix sizes
+		uintd2 matrix_size = uintd2(image_dimensions_[0],image_dimensions_[1]);
+		uintd2 matrix_size_os = uintd2(image_dimensions_[0]*2,image_dimensions_[1]*2);
+
+		// Kernel width
+		float W = 5.5f;
+
+		// Upload host arrays to device arrays
+		cuNDArray<floatd2> traj(host_traj_.get());
+		gpu_weights_ = cuNDArray<float>(host_weights_.get());
+
+		// Initialize plan
+		// NFFT_plan<float, 2> plan( matrix_size, matrix_size_os, W );
+		plan_ = NFFT_plan<float, 2>( matrix_size, matrix_size_os, W );
+
+		// Preprocess
+		bool success = plan_.preprocess( &traj, NFFT_plan<float,2>::NFFT_PREP_ALL );
+
+		if (!success) {
+			GADGET_DEBUG1("NFFT preprocess failed\n");
+			return GADGET_FAIL;
+		}
+
+		prepared_ = true;
+	}
 
 	if (!host_data_buffer_) {
 		std::vector<unsigned int> data_dimensions;
@@ -244,6 +244,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 			}
 		}
 	}
+
 
 
 	buffer_.enqueue_tail(m1);
@@ -268,6 +269,8 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 	}
 
 	if (m1->getObjectPtr()->flags & GADGET_FLAG_LAST_ACQ_IN_SLICE) {
+
+		//GPUTimer timer("Spiral SW Gridding and CSM calc...");
 
 		unsigned int num_batches = m1->getObjectPtr()->channels;
 
