@@ -104,6 +104,15 @@ public:
     vec[0]=tmp.vec[0];
     vec[1]=tmp.vec[1];
   }
+
+ __inline__ __host__ __device__  bool operator==(const complext<T>& comp2){
+
+    return vec[0]==comp2.vec[0] && vec[1]==comp2.vec[1];
+  }
+  __inline__ __host__ __device__  bool operator!=(const complext<T>& comp2){
+
+    return not(*this==comp2);
+  }
 };
 
 template<class T>  __inline__ __host__ __device__ complext<T> polar(const T& rho, const T& theta = 0){
@@ -162,14 +171,7 @@ template<class REAL, class T> __inline__ __host__ __device__  complext<T> operat
 
   return complext<T>(comp.vec[0]/real,comp.vec[1]/real);
 }
-template<class T> __inline__ __host__ __device__  complext<T> operator==(const complext<T>& comp1,const complext<T>& comp2){
 
-  return comp1.vec[0]==comp2.vec[0] && comp1.vec[1]==comp2.vec[1];
-}
-template<class T> __inline__ __host__ __device__  complext<T> operator!=(const complext<T>& comp1,const complext<T>& comp2){
-
-  return not(comp1==comp2);
-}
 
 __inline__ __host__ __device__ float norm(const float& r){
   return r*r;
