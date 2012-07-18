@@ -208,6 +208,32 @@ typename intd<D>::Type vector_to_intd( std::vector<unsigned int> _vector )
   return out;
 }
 
+
+template<class T, unsigned int D>
+std::vector<T> to_std_vector( vector_td<T,D> vec )
+{
+  std::vector<T> out(D);
+  for(int i=0; i<D; i++ )
+    out[i] = vec[i];
+  return out;
+}
+
+
+template<class T, unsigned int D>
+vector_td<T,D> from_std_vector( std::vector<T> _vector )
+{
+  vector_td<T,D> out;
+  for( unsigned int i=0; i<D; i++ ){
+    if( i<_vector.size() )
+      out[i] = _vector[i];
+    else
+      out[i] = T(1);
+  }
+
+  return out;
+}
+
+
 //
 // Reductions on vector_td<T,D>
 //

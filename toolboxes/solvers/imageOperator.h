@@ -66,8 +66,23 @@ public:
   }
   
   virtual int mult_M( ARRAY_TYPE_OPERATOR *in, ARRAY_TYPE_OPERATOR *out, bool accumulate = false ){
-    std::cout << std::endl << "imageOperator::mult_M not defined." << std::endl;
-    return -1;
+	  bool ret2 = true;
+
+	    if( !accumulate )
+	      ret2 = operator_clear( out );
+
+	    if( ret2 ){
+	      ret2 = operator_axpy( image_.get(), in, out );
+
+	    }else
+	      ret2 = false;
+
+	    if( ret2 )
+	      return 0;
+	    else{
+	      std::cout << std::endl << "imageOperator::mult_M failed" << std::endl;
+	      return -1;
+	    }
   }
   
   virtual int mult_MH( ARRAY_TYPE_OPERATOR *in, ARRAY_TYPE_OPERATOR *out, bool accumulate = false ){
@@ -85,7 +100,7 @@ public:
 	    if( ret2 )
 	      return 0;
 	    else{
-	      std::cout << std::endl << "imageOperator::mult_MH_M failed" << std::endl;
+	      std::cout << std::endl << "imageOperator::mult_MH failed" << std::endl;
 	      return -1;
 	    }
   }
