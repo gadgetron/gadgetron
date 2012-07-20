@@ -5,12 +5,12 @@
 #include "ace/DLL_Manager.h"
 #include "ace/OS_NS_netdb.h"
 
-#include "GadgetXml.h"
-
 #include "GadgetStreamController.h"
 #include "GadgetContainerMessage.h"
 #include "Gadget.h"
 #include "EndGadget.h"
+
+#include "gadgetron.hxx" //Auto generated class representation of gadgetron XML configuration
 
 #include <complex>
 #include <fstream>
@@ -146,59 +146,7 @@ int GadgetStreamController::output_ready(ACE_Message_Block* mb)
 	return res;
 }
 
-/*
-int GadgetStreamController::handle_output (ACE_HANDLE)
-{
-	ACE_Message_Block *mb = 0;
-	ACE_Time_Value nowait (ACE_OS::gettimeofday ());
 
-	//Send packages as long as we have them
-	while (-1 != this->getq (mb, &nowait)) {
-		GadgetContainerMessage<GadgetMessageIdentifier>* mid =
-				AsContainerMessage<GadgetMessageIdentifier>(mb);
-
-		if (!mid) {
-			GADGET_DEBUG1("Invalid message on output queue\n");
-			mb->release();
-			return GADGET_FAIL;
-		}
-
-		//Is this a shutdown message?
-		if (mid->getObjectPtr()->id == GADGET_MESSAGE_CLOSE) {
-			peer().send_n(mid->getObjectPtr(),sizeof(GadgetMessageIdentifier));
-			return 0;
-		}
-
-		GadgetMessageWriter* w = writers_.find(mid->getObjectPtr()->id);
-
-		if (!w) {
-			GADGET_DEBUG2("Unrecognized Message ID received: %d\n", mid->getObjectPtr()->id);
-			return GADGET_FAIL;
-		}
-
-		GADGET_DEBUG1("Ready to write output....\n");
-		if (w->write(&peer(),mb->cont()) < 0) {
-			GADGET_DEBUG1("Failed to write Message using writer\n");
-			mb->release ();
-			return GADGET_FAIL;
-		}
-		GADGET_DEBUG1("Output written\n");
-
-		mb->release();
-	}
-
-	if (this->msg_queue ()->is_empty ()) {
-		//No point in coming back to handle_ouput until something is put on the queue,
-		//in which case, the msg queue's notification strategy will tell us
-		this->reactor ()->cancel_wakeup(this, ACE_Event_Handler::WRITE_MASK);
-	} else {
-		//There is still more on the queue, let's come back when idle
-		this->reactor ()->schedule_wakeup(this, ACE_Event_Handler::WRITE_MASK);
-	}
-
-	return 0;
-}
-*/
 
 int GadgetStreamController::handle_close (ACE_HANDLE, ACE_Reactor_Mask mask)
 {
@@ -280,9 +228,9 @@ int GadgetStreamController::configure_from_file(std::string config_xml_filename)
 		file.read (buffer, size);
 		file.close();
 		std::string xml_file_contents(buffer,size);
-		delete[] buffer;
 
 		return configure(xml_file_contents);
+		delete[] buffer;
 
 	} else {
 		GADGET_DEBUG2("Unable to open configuation file: %s\n", config_file_name);
@@ -294,34 +242,40 @@ int GadgetStreamController::configure_from_file(std::string config_xml_filename)
 
 int GadgetStreamController::configure(std::string config_xml_string)
 {
-	TiXmlDocument doc;
-	doc.Parse(config_xml_string.c_str());
 
-	GadgetXMLNode n = GadgetXMLNode(&doc);
+	char * gadgetron_home = ACE_OS::getenv("GADGETRON_HOME");
+	ACE_TCHAR schema_file_name[4096];
+	ACE_OS::sprintf(schema_file_name, "%s/config/gadgetron.xsd", gadgetron_home);
 
-	std::vector<GadgetXMLNode> readers = n.get<GadgetXMLNode>("gadgetron.readers.reader");
-	std::vector<GadgetXMLNode> writers = n.get<GadgetXMLNode>("gadgetron.writers.writer");
-	std::vector<GadgetXMLNode> gadgets = n.get<GadgetXMLNode>("gadgetron.stream.gadget");
+	xml_schema::properties props;
+	props.schema_location (
+	  "http://gadgetron.sf.net/gadgetron",
+	  std::string (schema_file_name));
 
-	GADGET_DEBUG2("Found %d readers\n", readers.size());
-	GADGET_DEBUG2("Found %d writers\n", writers.size());
-	GADGET_DEBUG2("Found %d gadgets\n", gadgets.size());
+	std::istringstream str_stream(config_xml_string, std::stringstream::in);
+	std::auto_ptr<gadgetron::gadgetronStreamConfiguration> cfg;
 
-	//Configuration of reader
-	std::vector<std::string> tmps;
-	std::vector<long> tmpl;
+	ACE_TCHAR port_no[1024];
+	try {
+		cfg = std::auto_ptr<gadgetron::gadgetronStreamConfiguration>(gadgetron::gadgetronStreamConfiguration_(str_stream,0,props));
+		//cfg = std::auto_ptr<gadgetron::gadgetronStreamConfiguration>(gadgetron::gadgetronStreamConfiguration_(std::string(config_file_name)));
+	}  catch (const xml_schema::exception& e) {
+		GADGET_DEBUG2("Failed to parse Gadget Stream Configuration: %s\n", e.what());
+		return GADGET_FAIL;
+	}
 
-	for (unsigned int i = 0; i < readers.size(); i++) {
+	GADGET_DEBUG2("Found %d readers\n", cfg->reader().size());
+	GADGET_DEBUG2("Found %d writers\n", cfg->writer().size());
+	GADGET_DEBUG2("Found %d gadgets\n", cfg->gadget().size());
+
+	for (gadgetron::gadgetronStreamConfiguration::reader_sequence::iterator i (cfg->reader().begin ()); i != cfg->reader().end(); ++i) {
 		long slot = 0;
 		std::string dllname("");
 		std::string classname("");
 
-		tmpl = readers[i].get<long>("slot");
-		if (tmpl.size()) slot = tmpl[0];
-		tmps = readers[i].get<std::string>("dll");
-		if (tmps.size()) dllname = tmps[0];
-		tmps = readers[i].get<std::string>("class");
-		if (tmps.size()) classname = tmps[0];
+		slot = i->slot();
+		dllname = i->dll();
+		classname = i->classname();
 
 		GADGET_DEBUG1("--Found reader declaration\n");
 		GADGET_DEBUG2("  Reader dll: %s\n", dllname.c_str());
@@ -344,17 +298,14 @@ int GadgetStreamController::configure(std::string config_xml_string)
 
 
 	//Configuration of writers
-	for (unsigned int i = 0; i < writers.size(); i++) {
+	for (gadgetron::gadgetronStreamConfiguration::writer_sequence::iterator i (cfg->writer().begin ()); i != cfg->writer().end(); ++i) {
 		long slot = 0;
 		std::string dllname("");
 		std::string classname("");
 
-		tmpl = writers[i].get<long>("slot");
-		if (tmpl.size()) slot = tmpl[0];
-		tmps = writers[i].get<std::string>("dll");
-		if (tmps.size()) dllname = tmps[0];
-		tmps = writers[i].get<std::string>("class");
-		if (tmps.size()) classname = tmps[0];
+		slot = i->slot();
+		dllname = i->dll();
+		classname = i->classname();
 
 		GADGET_DEBUG1("--Found writer declaration\n");
 		GADGET_DEBUG2("  Reader dll: %s\n", dllname.c_str());
@@ -375,21 +326,15 @@ int GadgetStreamController::configure(std::string config_xml_string)
 	//Configuration of writers end
 
 	//Let's configure the stream
-	GADGET_DEBUG2("Processing %d gadgets in reverse order\n", gadgets.size());
-	for (int i = (static_cast<int>(gadgets.size())-1); i >= 0; i--) { //We will parse gadgets in reverse order and push them onto stream.
-		GADGET_DEBUG2("Configuring gadget: %d\n",i);
+	GADGET_DEBUG2("Processing %d gadgets in reverse order\n",cfg->gadget().size());
+	for (gadgetron::gadgetronStreamConfiguration::gadget_sequence::reverse_iterator i (cfg->gadget().rbegin ()); i != cfg->gadget().rend(); ++i) {
+		std::string gadgetname("");
 		std::string dllname("");
 		std::string classname("");
-		std::string gadgetname("");
 
-		tmps = gadgets[i].get<std::string>("dll");
-		if (tmps.size()) dllname = tmps[0];
-
-		tmps = gadgets[i].get<std::string>("class");
-		if (tmps.size()) classname = tmps[0];
-
-		tmps = gadgets[i].get<std::string>("name");
-		if (tmps.size()) gadgetname = tmps[0];
+		gadgetname = i->name();
+		dllname = i->dll();
+		classname = i->classname();
 
 		GADGET_DEBUG1("--Found gadget declaration\n");
 		GADGET_DEBUG2("  Gadget Name: %s\n", gadgetname.c_str());
@@ -409,18 +354,11 @@ int GadgetStreamController::configure(std::string config_xml_string)
 
 		Gadget* g = dynamic_cast<Gadget*>(m->writer());//Get the gadget out of the module
 
-		std::vector<GadgetXMLNode> parms = gadgets[i].get<GadgetXMLNode>("property");
-
-		GADGET_DEBUG2("  Gadget parameters: %d\n", parms.size());
-		for (unsigned int j = 0; j < parms.size(); j++) {
-			std::string pname("");
-			std::string pval("");
-
-			tmps = parms[j].get<std::string>("name");
-			if (tmps.size()) pname = tmps[0];
-			tmps = parms[j].get<std::string>("value");
-			if (tmps.size()) pval = tmps[0];
-
+		GADGET_DEBUG2("  Gadget parameters: %d\n", i->property().size());
+		for (gadgetron::gadget::property_sequence::iterator p (i->property().begin()); p != i->property().end(); ++p) {
+			std::string pname(p->name());
+			std::string pval(p->value());
+			GADGET_DEBUG2("Setting parameter %s = %s\n", pname.c_str(),pval.c_str());
 			g->set_parameter(pname.c_str(),pval.c_str(),false);
 		}
 

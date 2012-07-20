@@ -5,6 +5,9 @@
 #include <ace/OS_NS_string.h>
 
 #include "GadgetServerAcceptor.h"
+#include "FileInfo.h"
+
+#include "gadgetron.hxx" //Generated header file for XML configuration
 
 void print_usage()
 {
@@ -19,8 +22,26 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 	ACE_LOG_MSG->priority_mask( LM_INFO | LM_NOTICE | LM_ERROR| LM_DEBUG,
 			ACE_Log_Msg::PROCESS);
 
+	char * gadgetron_home = ACE_OS::getenv("GADGETRON_HOME");
+
+	if (std::string(gadgetron_home).size() == 0) {
+		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("GADGETRON_HOME variable not set.\n")),-1);
+	}
+
+	std::string gcfg = std::string(gadgetron_home) + std::string("/config/gadgetron.xml");
+
+	if (!FileInfo(gcfg).exists()) {
+		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Gadgetron configuration file %s not found.\n"), gcfg.c_str()),-1);
+	}
+
 	ACE_TCHAR port_no[1024];
-	ACE_OS_String::strncpy(port_no, "9002", 1024);
+	try {
+		std::auto_ptr<gadgetron::gadgetronConfiguration> cfg(gadgetron::gadgetronConfiguration_(gcfg));
+		ACE_OS_String::strncpy(port_no, cfg->port().c_str(), 1024);
+	}  catch (const xml_schema::exception& e) {
+		ACE_DEBUG(( LM_DEBUG, ACE_TEXT("XML Parse Error: %s\n"), e.what() ));
+		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Error parsing configuration file %s.\n"), gcfg.c_str()),-1);
+	}
 
 	static const ACE_TCHAR options[] = ACE_TEXT(":p:");
 	ACE_Get_Opt cmd_opts(argc, argv, options);
