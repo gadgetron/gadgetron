@@ -7,4 +7,6 @@ FindNumpy.cmake
 FindTinyXML.cmake
 FindGadgetron.cmake
 FindXSD.cmake
+FindXercesC.cmake
+FindXalanC.cmake
 DESTINATION cmake)
