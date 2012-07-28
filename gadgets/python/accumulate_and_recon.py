@@ -42,7 +42,6 @@ def recon_function(acq, data):
         img_head.set_matrix_size(0,myBuffer.shape[4])
         img_head.set_matrix_size(1,myBuffer.shape[3])
         img_head.set_matrix_size(2,myBuffer.shape[2])
-        img_head.set_matrix_size(3,myBuffer.shape[1])
         img_head.set_position(0,acq.get_position(0))
         img_head.set_position(1,acq.get_position(1))
         img_head.set_position(2,acq.get_position(2))

@@ -245,7 +245,7 @@ int GadgetStreamController::configure(std::string config_xml_string)
 
 	char * gadgetron_home = ACE_OS::getenv("GADGETRON_HOME");
 	ACE_TCHAR schema_file_name[4096];
-	ACE_OS::sprintf(schema_file_name, "%s/config/gadgetron.xsd", gadgetron_home);
+	ACE_OS::sprintf(schema_file_name, "%s/schema/gadgetron.xsd", gadgetron_home);
 
 	xml_schema::properties props;
 	props.schema_location (

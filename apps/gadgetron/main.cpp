@@ -34,9 +34,17 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 		ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Gadgetron configuration file %s not found.\n"), gcfg.c_str()),-1);
 	}
 
+	ACE_TCHAR schema_file_name[4096];
+	ACE_OS::sprintf(schema_file_name, "%s/schema/gadgetron.xsd", gadgetron_home);
+
+	xml_schema::properties props;
+	props.schema_location (
+	  "http://gadgetron.sf.net/gadgetron",
+	  std::string (schema_file_name));
+
 	ACE_TCHAR port_no[1024];
 	try {
-		std::auto_ptr<gadgetron::gadgetronConfiguration> cfg(gadgetron::gadgetronConfiguration_(gcfg));
+		std::auto_ptr<gadgetron::gadgetronConfiguration> cfg(gadgetron::gadgetronConfiguration_(gcfg,0,props));
 		ACE_OS_String::strncpy(port_no, cfg->port().c_str(), 1024);
 	}  catch (const xml_schema::exception& e) {
 		ACE_DEBUG(( LM_DEBUG, ACE_TEXT("XML Parse Error: %s\n"), e.what() ));

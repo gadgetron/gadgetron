@@ -38,7 +38,9 @@ install(FILES
 DESTINATION include)
 
 install(FILES 	
-	schema/gadgetron.xsd
 	gadgetron.xml.example
 DESTINATION config)
 
+install(FILES 	
+	schema/gadgetron.xsd
+DESTINATION schema)
