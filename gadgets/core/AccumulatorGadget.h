@@ -7,9 +7,10 @@
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
+#include "ismrmrd.h"
 
 class EXPORTGADGETSCORE AccumulatorGadget : 
-public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
+public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 {
   
  public:
@@ -20,11 +21,12 @@ public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
 
  protected:
   virtual int process_config(ACE_Message_Block* mb);
-  virtual int process(GadgetContainerMessage< GadgetMessageAcquisition >* m1,
+  virtual int process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader >* m1,
 		      GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2);
 
   hoNDArray< std::complex<float> >* buffer_;
   std::vector<unsigned int> dimensions_;
+  unsigned int slices_;
 
   int image_counter_;
   int image_series_;
