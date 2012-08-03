@@ -3,14 +3,14 @@
 #include "ace/OS_NS_string.h"
 
 #include "GadgetronConnector.h"
-#include "GadgetSocketSender.h" //We need this for now for the GadgetAcquisitionWriter
 #include "GadgetMRIHeaders.h"
 #include "GadgetContainerMessage.h"
 #include "hoNDArray.h"
 #include "ImageWriter.h"
 #include "HDF5ImageWriter.h"
 #include "FileInfo.h"
-#include "mri_hdf5_io.h"
+#include "ismrmrd_hdf5.h"
+#include "GadgetIsmrmrdReadWrite.h"
 
 #include <fstream>
 #include <time.h>
@@ -137,20 +137,10 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 		ACE_DEBUG((LM_INFO, ACE_TEXT("Data file %s does not exist.\n"), hdf5_in_data_file));
 		print_usage();
 		return -1;
-	} else {
-		boost::shared_ptr<H5File> f = OpenHDF5File(hdf5_in_data_file);
-		if (!HDF5LinkExists(f.get(), hdf5_xml_varname.c_str())) {
-			ACE_DEBUG((LM_INFO, ACE_TEXT("HDF5 variable \"%s\" does not exists.\n"), hdf5_xml_varname.c_str()));
-			print_usage();
-			return -1;
-		}
-		if (!HDF5LinkExists(f.get(), hdf5_data_varname.c_str())) {
-			ACE_DEBUG((LM_INFO, ACE_TEXT("HDF5 variable \"%s\" does not exists.\n"), hdf5_data_varname.c_str()));
-			print_usage();
-			return -1;
-		}
 	}
 
+	boost::shared_ptr<ISMRMRD::IsmrmrdDataset> ismrmrd_dataset(new ISMRMRD::IsmrmrdDataset(hdf5_in_data_file,hdf5_in_group));
+	boost::shared_ptr<std::string> xml_config = ismrmrd_dataset->readHeader();
 
 	if (repetition_loops < 1) {
 		ACE_DEBUG((LM_INFO, ACE_TEXT("Invalid number of repetition loops (%d).\n"), repetition_loops));
@@ -171,7 +161,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 
 		GadgetronConnector con;
 
-		con.register_writer(GADGET_MESSAGE_ACQUISITION, new GadgetAcquisitionMessageWriter());
+		//con.register_writer(GADGET_MESSAGE_ACQUISITION, new GadgetAcquisitionMessageWriter());
+		con.register_writer(GADGET_MESSAGE_ISMRMRD_ACQUISITION, new GadgetIsmrmrdAcquisitionMessageWriter());
 		con.register_reader(GADGET_MESSAGE_IMAGE_REAL_USHORT, new HDF5ImageWriter<ACE_UINT16>(std::string(hdf5_out_file), std::string(hdf5_out_group)));
 		con.register_reader(GADGET_MESSAGE_IMAGE_REAL_FLOAT, new HDF5ImageWriter<float>(std::string(hdf5_out_file), std::string(hdf5_out_group)));
 		con.register_reader(GADGET_MESSAGE_IMAGE_CPLX_FLOAT, new HDF5ImageWriter< std::complex<float> >(std::string(hdf5_out_file), std::string(hdf5_out_group)));
@@ -188,54 +179,28 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 			return -1;
 		}
 
-		//Read XML parameter file from disk
-		boost::shared_ptr< hoNDArray<char> > xml_array = hdf5_read_array_slice<char>(hdf5_in_data_file, hdf5_xml_varname.c_str());
-
-		std::string xmlstring(xml_array->get_data_ptr());
-
-		if (con.send_gadgetron_parameters(xmlstring) != 0) {
+		if (con.send_gadgetron_parameters(*xml_config) != 0) {
 			ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to send XML parameters to the Gadgetron host")));
 			return -1;
 		}
 
-		unsigned long acquisitions = HDF5GetLengthOfFirstDimension(hdf5_in_data_file, hdf5_data_varname.c_str());
+		unsigned long acquisitions = ismrmrd_dataset->getNumberOfAcquisitions();//HDF5GetLengthOfFirstDimension(hdf5_in_data_file, hdf5_data_varname.c_str());
 
 		for (unsigned long int i = 0; i < acquisitions; i++) {
-
-			header_data_struct<GadgetMessageAcquisition, std::complex<float> > acquisition;
-
+			GadgetContainerMessage<ISMRMRD::Acquisition>* acq = new GadgetContainerMessage<ISMRMRD::Acquisition>();
 			{
-
-				HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
-				acquisition = hdf5_read_struct_with_data< GadgetMessageAcquisition, std::complex<float> >(hdf5_in_data_file, hdf5_data_varname.c_str(), i);
+				HDF5Exclusive lock; //This will ensure thread-safe access to HDF5
+				boost::shared_ptr<ISMRMRD::Acquisition> acq_tmp = ismrmrd_dataset->readAcquisition(i);
+				*(acq->getObjectPtr()) = *acq_tmp; //We are copying the data into the container message
 			}
 
 
 			GadgetContainerMessage<GadgetMessageIdentifier>* m1 =
 					new GadgetContainerMessage<GadgetMessageIdentifier>();
 
-			m1->getObjectPtr()->id = GADGET_MESSAGE_ACQUISITION;
+			m1->getObjectPtr()->id = GADGET_MESSAGE_ISMRMRD_ACQUISITION;
 
-			GadgetContainerMessage<GadgetMessageAcquisition>* m2 =
-					new GadgetContainerMessage<GadgetMessageAcquisition>();
-
-			//We have to copy this data, because the header_data_struct contains boost::shared_ptr and those objects will get destroyed.
-			//There is no clean way to take the ownership from a boost::shared_ptr and hand it to an ACE_Message_Block
-			memcpy(m2->getObjectPtr(), acquisition.h.get(), sizeof(GadgetMessageAcquisition));
-
-			std::vector<unsigned int> dimensions(2);
-			dimensions[0] = m2->getObjectPtr()->samples;
-			dimensions[1] = m2->getObjectPtr()->channels;
-
-			GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 =
-					new GadgetContainerMessage< hoNDArray< std::complex< float> > >();
-
-			//We have to copy, see above.
-			*m3->getObjectPtr() = *acquisition.d.get();
-
-			//Chain the message block together.
-			m1->cont(m2);
-			m2->cont(m3);
+			m1->cont(acq);
 
 			if (con.putq(m1) == -1) {
 				ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to put data package on queue")));

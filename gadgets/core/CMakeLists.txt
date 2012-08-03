@@ -4,18 +4,6 @@ ADD_DEFINITIONS(-D__BUILD_GADGETRON_CORE__)
 ADD_DEFINITIONS(-D__BUILD_GADGETS__)
 ENDIF (WIN32)
 
-find_path(GADGETRON_CMAKE_MODULES FindGadgetron.cmake HINTS
-$ENV{GADGETRON_HOME}/cmake
-/usr/local/gadgetron/cmake)
-
-if (NOT GADGETRON_CMAKE_MODULES)
-   #TODO: Check if path found otherwise create error
-   MESSAGE(FATAL_ERROR "GADGETRON_CMAKE_MODULES cannot be found. 
-   Try to set GADGETRON_HOME environment variable.")
-endif(NOT GADGETRON_CMAKE_MODULES)
-
-set(CMAKE_MODULE_PATH ${GADGETRON_CMAKE_MODULES})
-
 find_package(Ismrmrd REQUIRED)
 
 include_directories(   ${ACE_INCLUDE_DIR} 
@@ -68,3 +56,7 @@ install (FILES	AccumulatorGadget.h
 
 install(TARGETS gadgetroncore DESTINATION lib)
 install(FILES default.xml default_short.xml DESTINATION config)
+
+install(FILES ${ISMRMRD_SCHEMA_DIR}/ismrmrd.xsd DESTINATION schema)
+install(FILES ${ISMRMRD_LIBRARIES} DESTINATION lib)
+
