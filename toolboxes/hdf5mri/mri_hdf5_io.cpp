@@ -76,11 +76,11 @@ template <> boost::shared_ptr<CompType> getHDF5CompositeType<GadgetMessageAcquis
 	ret->insertMember( "centre_column",      HOFFSET(GadgetMessageAcquisition, centre_column),           PredType::NATIVE_USHORT);
 
 	boost::shared_ptr<DataType> position_type = getHDF5ArrayType<float>(3);
-	boost::shared_ptr<DataType> quarterion_type = getHDF5ArrayType<float>(4);
+	boost::shared_ptr<DataType> quaternion_type = getHDF5ArrayType<float>(4);
 	boost::shared_ptr<CompType> loopcounters_type = getHDF5CompositeType<LoopCounters>();
 
 	ret->insertMember( "position",           HOFFSET(GadgetMessageAcquisition, position),       *position_type);
-	ret->insertMember( "quarternion",        HOFFSET(GadgetMessageAcquisition, quarternion),        *quarterion_type);
+	ret->insertMember( "quaternion",         HOFFSET(GadgetMessageAcquisition, quaternion),        *quaternion_type);
 	ret->insertMember( "table_position",     HOFFSET(GadgetMessageAcquisition, table_position),     PredType::NATIVE_FLOAT);
 	ret->insertMember( "idx",                HOFFSET(GadgetMessageAcquisition, idx),                *loopcounters_type);
 	ret->insertMember( "min_idx",            HOFFSET(GadgetMessageAcquisition, min_idx),            *loopcounters_type);
@@ -101,13 +101,13 @@ template <> boost::shared_ptr<CompType> getHDF5CompositeType<GadgetMessageImage>
 		boost::shared_ptr<DataType> matrix_size_type = getHDF5ArrayType<ACE_UINT16>(3);
 		boost::shared_ptr<CompType> loopcounters_type = getHDF5CompositeType<LoopCounters>();
 		boost::shared_ptr<DataType> position_type = getHDF5ArrayType<float>(3);
-		boost::shared_ptr<DataType> quarterion_type = getHDF5ArrayType<float>(4);
+		boost::shared_ptr<DataType> quaterion_type = getHDF5ArrayType<float>(4);
 
 		ret->insertMember( "flags",              HOFFSET(GadgetMessageImage,flags),                PredType::NATIVE_UINT);
 		ret->insertMember( "matrix_size",        HOFFSET(GadgetMessageImage, matrix_size),         *matrix_size_type);
 		ret->insertMember( "channels",           HOFFSET(GadgetMessageImage, channels),            PredType::NATIVE_USHORT);
 		ret->insertMember( "position",           HOFFSET(GadgetMessageImage, position),            *position_type);
-		ret->insertMember( "quarternion",        HOFFSET(GadgetMessageImage, quarternion),         *quarterion_type);
+		ret->insertMember( "quaternion",         HOFFSET(GadgetMessageImage, quaternion),          *quaterion_type);
 		ret->insertMember( "table_position",     HOFFSET(GadgetMessageImage, table_position),      PredType::NATIVE_FLOAT);
 		ret->insertMember( "data_idx_min",       HOFFSET(GadgetMessageImage, data_idx_min),        *loopcounters_type);
 		ret->insertMember( "data_idx_max",       HOFFSET(GadgetMessageImage, data_idx_max),        *loopcounters_type);

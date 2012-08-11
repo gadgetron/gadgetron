@@ -34,9 +34,9 @@ protected:
 		return true;
 	}
 
-	bool quarterion_equal(float* quarternion) {
+	bool quaternion_equal(float* quaternion) {
 		for (unsigned int i = 0; i < 4; i++) {
-			if (quarternion_[i] != quarternion[i]) return false;
+			if (quaternion_[i] != quaternion[i]) return false;
 		}
 		return true;
 	}
@@ -67,7 +67,7 @@ protected:
 	double kappa_;
 
 	float position_[3];
-	float quarternion_[4];
+	float quaternion_[4];
 
 	int current_profile_offset_;
 	int allocated_samples_;

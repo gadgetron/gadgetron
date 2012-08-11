@@ -33,7 +33,7 @@ GPUCGGadget::GPUCGGadget()
   matrix_size_ = uintd2(0,0);
   matrix_size_os_ = uintd2(0,0);
   memset(position_, 0, 3*sizeof(float));
-  memset(quarternion_, 0, 4*sizeof(float));
+  memset(quaternion_, 0, 4*sizeof(float));
   pass_on_undesired_data_ = true; // We will make one of these for each slice and so data should be passed on.
 }
 
@@ -222,10 +222,10 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
   }
 
   // Check to see of the imaging plane has changed
-  if (!quarterion_equal(m1->getObjectPtr()->quarternion) || !position_equal(m1->getObjectPtr()->position)) {
+  if (!quaternion_equal(m1->getObjectPtr()->quaternion) || !position_equal(m1->getObjectPtr()->position)) {
 	  rhs_buffer_->clear();
       memcpy(position_,m1->getObjectPtr()->position,3*sizeof(float));
-      memcpy(quarternion_,m1->getObjectPtr()->quarternion,4*sizeof(float));
+      memcpy(quaternion_,m1->getObjectPtr()->quaternion,4*sizeof(float));
   }
 
   buffer_.enqueue_tail(m1);
@@ -350,7 +350,7 @@ int GPUCGGadget::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1, G
     cm1->getObjectPtr()->time_stamp         = m1->getObjectPtr()->time_stamp;
 
     memcpy(cm1->getObjectPtr()->position,m1->getObjectPtr()->position, sizeof(float)*3);
-    memcpy(cm1->getObjectPtr()->quarternion,m1->getObjectPtr()->quarternion, sizeof(float)*4);
+    memcpy(cm1->getObjectPtr()->quaternion,m1->getObjectPtr()->quaternion, sizeof(float)*4);
 
     cm1->getObjectPtr()->table_position = m1->getObjectPtr()->table_position;
     cm1->getObjectPtr()->image_index = ++image_counter_;

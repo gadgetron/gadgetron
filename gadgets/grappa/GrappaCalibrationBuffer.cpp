@@ -52,7 +52,7 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
     memcpy(b+offset,d+c*samples,sizeof(std::complex<float>)*samples);
   }
 
-  int buf_update  = buffer_counter_.update_line(line,m1->position,m1->quarternion);
+  int buf_update  = buffer_counter_.update_line(line,m1->position,m1->quaternion);
   if ( buf_update < 0) {
     GADGET_DEBUG2("Unable to update buffer counter for line %d\n", line);
     return GADGET_FAIL;

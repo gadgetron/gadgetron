@@ -256,7 +256,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 		memcpy(m3->getObjectPtr()->position,m1->getObjectPtr()->position,
 				sizeof(float)*3);
 
-		memcpy(m3->getObjectPtr()->quarternion,m1->getObjectPtr()->quarternion,
+		memcpy(m3->getObjectPtr()->quaternion,m1->getObjectPtr()->quaternion,
 				sizeof(float)*4);
 
 		m3->getObjectPtr()->table_position = m1->getObjectPtr()->table_position;

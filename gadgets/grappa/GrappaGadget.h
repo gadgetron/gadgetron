@@ -12,7 +12,7 @@
 struct EXPORTGADGETSGRAPPA GrappaBufferInfo
 {
   float           position[3];
-  float           quarternion[4];   
+  float           quaternion[4];
   unsigned int    acceleration_factor;
 };
 

@@ -69,7 +69,7 @@ struct EXPORTGADGETSCORE GadgetMessageAcquisition
   ACE_UINT16     channels;
   ACE_UINT16     centre_column;
   float          position[3];
-  float          quarternion[4];
+  float          quaternion[4];
   float			 table_position;
   LoopCounters   idx;
   LoopCounters   min_idx;
@@ -90,18 +90,18 @@ struct EXPORTGADGETSCORE GadgetMessageAcquisition
     }
   }
 
-  float get_quarternion(unsigned int index) {
+  float get_quaternion(unsigned int index) {
     if (index < 4) {
-      return quarternion[index];
+      return quaternion[index];
     } else {
       return 0.0f;
     }
   }
 
-  void set_quarternion(unsigned int index, float quar)
+  void set_quaternion(unsigned int index, float quar)
   {
     if (index < 4) {
-      quarternion[index] = quar;
+      quaternion[index] = quar;
     }
   }
 
@@ -113,7 +113,7 @@ struct EXPORTGADGETSCORE GadgetMessageImage
   ACE_UINT16     matrix_size[3];
   ACE_UINT16     channels;
   float          position[3];
-  float          quarternion[4];
+  float          quaternion[4];
   float			 table_position;
   LoopCounters   data_idx_min;
   LoopCounters   data_idx_max;
@@ -154,18 +154,18 @@ struct EXPORTGADGETSCORE GadgetMessageImage
     }
   }
 
-  float get_quarternion(unsigned int index) {
+  float get_quaternion(unsigned int index) {
     if (index < 4) {
-      return quarternion[index];
+      return quaternion[index];
     } else {
       return 0.0f;
     }
   }
 
-  void set_quarternion(unsigned int index, float quar)
+  void set_quaternion(unsigned int index, float quar)
   {
     if (index < 4) {
-      quarternion[index] = quar;
+      quaternion[index] = quar;
     }
   }
 

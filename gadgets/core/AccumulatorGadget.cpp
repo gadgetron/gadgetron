@@ -143,8 +143,8 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     		m1->getObjectPtr()->position,
 	   sizeof(float)*3);
 
-    memcpy(cm1->getObjectPtr()->quarternion,
-    		m1->getObjectPtr()->quarternion,
+    memcpy(cm1->getObjectPtr()->quaternion,
+    		m1->getObjectPtr()->quaternion,
 	   sizeof(float)*4);
  
     cm1->getObjectPtr()->table_position =
