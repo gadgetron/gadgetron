@@ -1,7 +1,7 @@
 import numpy as np
 import GadgetronPythonMRI as g
 import kspaceandimage as ki
-
+import libxml2
 myGadgetReference = g.GadgetReference()
 
 def set_gadget_reference(gadref):
@@ -9,9 +9,16 @@ def set_gadget_reference(gadref):
     myGadgetReference = gadref
 
 def config_function(conf):
-    return
-    #print "Configuration received"
+    doc = libxml2.parseDoc(str(conf))
+    context = doc.xpathNewContext()
+
+    context.xpathRegisterNs("ismrm", "http://www.ismrm.org/ISMRMRD")
+    vendor = context.xpathEval("//ismrm:ismrmrdHeader")
+    #vendor = doc.xpathEval('//ismrmrdHeader')
+    print vendor
+    #print "remove 2x oversampling: Configuration received"
     #print str(conf)
+    return 
 
 def recon_function(acq, data):
     global myVariable

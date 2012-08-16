@@ -4,11 +4,11 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
          
     <reader>
-      <slot>1001</slot>
+      <slot>1008</slot>
       <dll>gadgetroncore</dll>
-      <classname>MRIAcquisitionReader</classname>
+      <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
     </reader>
-
+ 
     <writer>
       <slot>1004</slot>
       <dll>gadgetroncore</dll>
@@ -25,6 +25,7 @@
       <classname>MRIImageWriterUSHORT</classname>
     </writer>
 
+  <!--
    <gadget>
       <name>NoiseAdjust</name>
       <dll>gadgetronmricore</dll>
@@ -43,7 +44,7 @@
       <classname>CoilReductionGadget</classname>
       <property><name>coils_out</name><value>8</value></property>
     </gadget>
-  
+  -->
     <gadget>
       <name>SpiralGadgetSW</name>
       <dll>gadgetronspiral</dll>

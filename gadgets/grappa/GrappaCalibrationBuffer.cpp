@@ -20,16 +20,16 @@ GrappaCalibrationBuffer::GrappaCalibrationBuffer(std::vector<unsigned int> dimen
   
 }
 
-int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< std::complex<float> >* m2)
+int GrappaCalibrationBuffer::add_data(ISMRMRD::AcquisitionHeader* m1, hoNDArray< std::complex<float> >* m2)
 {
   if (!buffer_.get_data_ptr()) {
     GADGET_DEBUG1("Buffer not allocated, cannot add data");
     return GADGET_FAIL;
   }
   
-  unsigned int samples =  m1->samples;
-  unsigned int line = m1->idx.line;
-  unsigned int partition = m1->idx.partition;
+  unsigned int samples =  m1->number_of_samples;
+  unsigned int line = m1->idx.kspace_encode_step_1;
+  unsigned int partition = m1->idx.kspace_encode_step_2;
   unsigned int slice = m1->idx.slice; //We should probably check this
 
 
@@ -44,7 +44,7 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
 
   size_t offset= 0;
   //Copy the data for all the channels
-  for (int c = 0; c < m1->channels; c++) {
+  for (int c = 0; c < m1->active_channels; c++) {
     offset = 
       c*dimensions_[0]*dimensions_[1]*dimensions_[2] +
       partition*dimensions_[0]*dimensions_[1] +
@@ -65,8 +65,7 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
     weights_invalid_ = true;
   }
 
-  bool is_first_scan_in_slice =
-    (m1->flags & GADGET_FLAG_FIRST_ACQ_IN_SLICE);
+  bool is_first_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::FIRST_IN_SLICE).isSet(m1->flags);
 
 
   //Depending on the sequence used, we could get into trouble if the sequence switches slice acquisition scheme before finishing a slice.
@@ -83,8 +82,7 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
   last_line_ = line;
 
 
-  bool is_last_scan_in_slice =
-    ((m1->flags & GADGET_FLAG_LAST_ACQ_IN_SLICE) > 0);
+  bool is_last_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::LAST_IN_SLICE).isSet(m1->flags);
 
   if (is_last_scan_in_slice && acquiring_sequentially) {
     unsigned int min_ky, max_ky;

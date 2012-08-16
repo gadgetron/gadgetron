@@ -1,10 +1,10 @@
 #include "GPUCGGadgetGeneric.h"
 #include "Gadgetron.h"
 #include "GadgetMRIHeaders.h"
-#include "GadgetXml.h"
 #include "ndarray_vector_td_utilities.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
+#include "GadgetIsmrmrdReadWrite.h"
 
 #include "hoNDArray_fileio.h"
 
@@ -64,10 +64,19 @@ int GPUCGGadgetGeneric::process_config( ACE_Message_Block* mb )
 	pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data").c_str());
 	image_series_ = this->get_int_value("image_series");
 
-	TiXmlDocument doc;
-	doc.Parse(mb->rd_ptr());
+	boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
-	GadgetXMLNode n(&doc);
+	std::vector<long> dims;
+	ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
+	if (e_seq.size() != 1) {
+		GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
+		GADGET_DEBUG1("This Gadget only supports one encoding space\n");
+		return GADGET_FAIL;
+	}
+
+	ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
+	ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
+	ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
 
 	if (!is_configured_) {
 
@@ -79,10 +88,10 @@ int GPUCGGadgetGeneric::process_config( ACE_Message_Block* mb )
 
 		unsigned int warp_size = deviceProp.warpSize;
 
-		channels_ = n.get<long>(std::string("gadgetron.encoding.channels.value"))[0];
+		channels_ = cfg->acquisitionSystemInformation().present() ?
+					(cfg->acquisitionSystemInformation().get().receiverChannels().present() ? cfg->acquisitionSystemInformation().get().receiverChannels().get() : 1) : 1;
 
-		std::vector<long> dims = n.get<long>(std::string("gadgetron.encoding.kspace.matrix_size.value"));
-		matrix_size_ = uintd2(dims[0], dims[1]);
+		matrix_size_ = uintd2(e_space.matrixSize().x(), e_space.matrixSize().y());
 
 		GADGET_DEBUG2("Matrix size  : [%d,%d] \n", matrix_size_.vec[0], matrix_size_.vec[1]);
 

@@ -12,6 +12,7 @@
 #include "../core/GadgetMRIHeaders.h"
 //#include "GadgetReference.h"
 #include "PythonCommunicator.h"
+#include "ismrmrd.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -94,7 +95,7 @@ public Gadget2<T, hoNDArray< std::complex<float> > >
 
 
 class EXPORTGADGETSPYTHON AcquisitionPythonGadget :
-public PythonGadget<GadgetMessageAcquisition>
+public PythonGadget<ISMRMRD::AcquisitionHeader>
 {
  public:
   GADGET_DECLARE(AcquisitionPythonGadget);

@@ -4,10 +4,13 @@ ADD_DEFINITIONS(-D__BUILD_GADGETRON_GRAPPA__)
 ADD_DEFINITIONS(-D__BUILD_GADGETS__)
 endif (WIN32)
 
+find_package(Ismrmrd REQUIRED)
+
 include_directories(   ${ACE_INCLUDE_DIR}
 				       ${CUDA_INCLUDE_DIRS}
 				       ${Boost_INCLUDE_DIR}
 				       ${FFTW3_INCLUDE_DIR}
+				       ${ISMRMRD_INCLUDE_DIR}
 				       ${CMAKE_SOURCE_DIR}/dependencies/tinyxml
 				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
 				       ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
@@ -22,7 +25,7 @@ add_library(gadgetrongrappa SHARED GrappaGadget.cpp
 							  	   GrappaWeightsCalculator.cpp
 							  	   GrappaUnmixingGadget.cpp)
 
-target_link_libraries(gadgetrongrappa gpuparallelmri cpucore tinyxml ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
+target_link_libraries(gadgetrongrappa gpuparallelmri cpucore tinyxml ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
 
 install (TARGETS gadgetrongrappa DESTINATION lib)
 install (FILES grappa.xml DESTINATION config)

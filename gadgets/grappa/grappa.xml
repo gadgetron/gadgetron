@@ -4,11 +4,12 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
          
     <reader>
-      <slot>1001</slot>
+      <slot>1008</slot>
       <dll>gadgetroncore</dll>
-      <classname>MRIAcquisitionReader</classname>
+      <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
     </reader>
-    <writer>
+ 
+     <writer>
       <slot>1004</slot>
       <dll>gadgetroncore</dll>
       <classname>MRIImageWriterCPLX</classname>

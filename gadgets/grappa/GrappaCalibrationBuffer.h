@@ -7,7 +7,7 @@
 #include <complex>
 
 #include "gadgetrongrappa_export.h"
-#include "GadgetMRIHeaders.h"
+#include "ismrmrd.h"
 #include "hoNDArray.h"
 #include "GrappaWeights.h"
 #include "GrappaWeightsCalculator.h"
@@ -103,7 +103,7 @@ class EXPORTGADGETSGRAPPA GrappaCalibrationBuffer
 			  GrappaWeightsCalculator<float>* weights_calculator);
   virtual ~GrappaCalibrationBuffer() {}
 
-  int add_data(GadgetMessageAcquisition* m1, hoNDArray< std::complex<float> >* m2);
+  int add_data(ISMRMRD::AcquisitionHeader* m1, hoNDArray< std::complex<float> >* m2);
 
  private:
   hoNDArray< std::complex<float> > buffer_;

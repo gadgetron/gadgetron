@@ -8,6 +8,7 @@
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
 #include "GrappaCalibrationBuffer.h"
+#include "ismrmrd.h"
 
 struct EXPORTGADGETSGRAPPA GrappaBufferInfo
 {
@@ -17,7 +18,7 @@ struct EXPORTGADGETSGRAPPA GrappaBufferInfo
 };
 
 class EXPORTGADGETSGRAPPA GrappaGadget : 
-public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
+public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 {
   
  public:
@@ -28,8 +29,8 @@ public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
 
  protected:
   virtual int process_config(ACE_Message_Block* mb);
-  virtual int process(GadgetContainerMessage< GadgetMessageAcquisition >* m1,
-		      GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2);
+  virtual int process( GadgetContainerMessage< ISMRMRD::AcquisitionHeader >* m1,
+		  GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2 );
 
   virtual int create_image_buffer(unsigned int slice);
 

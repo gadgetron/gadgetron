@@ -3,7 +3,7 @@
 #include "FFT.h"
 
 int RemoveROOversamplingGadget
-::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
+::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
   GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 
@@ -37,7 +37,7 @@ int RemoveROOversamplingGadget
   m2->release(); //We are done with this data
 
   m1->cont(m3);
-  m1->getObjectPtr()->samples = data_out_dims[0];
+  m1->getObjectPtr()->number_of_samples = data_out_dims[0];
 
   if (this->next()->putq(m1) == -1) {
     ACE_ERROR_RETURN( (LM_ERROR,

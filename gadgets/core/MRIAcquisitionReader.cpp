@@ -7,7 +7,7 @@
 ACE_Message_Block* MRIAcquisitionReader::read(ACE_SOCK_Stream* sock)
 {
   
-  GadgetContainerMessage<GadgetMessageAcquisition>* m1 = 
+  GadgetContainerMessage<GadgetMessageAcquisition>* m1 =
     new GadgetContainerMessage<GadgetMessageAcquisition>();
   
   GadgetContainerMessage<hoNDArray< std::complex<float> > >* m2 = 

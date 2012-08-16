@@ -16,6 +16,7 @@
 #include "NFFT.h"
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
+#include "ismrmrd.h"
 
 class CGSenseJob
 {

@@ -1,6 +1,5 @@
 #include "Gadgetron.h"
 #include "SpiralGadgetSW.h"
-#include "GadgetXml.h"
 #include "hoNDArray_fileio.h"
 #include "cuNDArray.h"
 #include "vector_td.h"
@@ -12,6 +11,8 @@
 #include "GPUTimer.h"
 #include <algorithm>
 #include <vector>
+#include "GadgetIsmrmrdReadWrite.h"
+
 
 void calc_vds(double slewmax,double gradmax,double Tgsample,double Tdsample,int Ninterleaves,
 		double* fov, int numfov,double krmax,
@@ -21,19 +22,6 @@ void calc_traj(double* xgrad, double* ygrad, int ngrad, int Nints, double Tgsamp
 		double** x_trajectory, double** y_trajectory,
 		double** weights);
 
-
-template <class T> int get_gadget_xml_parameter(GadgetXMLNode& n, std::string p, T& result, unsigned int index = 0)
-{
-	std::vector<T> parms = n.get<T>(p);
-	if (parms.size() <= index) {
-		GADGET_DEBUG2("Tried to get parameter %s from node and failed!.\n", p.c_str());
-		return GADGET_FAIL;
-	}
-
-	result = parms[index];
-
-	return GADGET_OK;
-}
 
 SpiralGadgetSW::SpiralGadgetSW()
 : samples_to_skip_start_(0)
@@ -78,49 +66,88 @@ int SpiralGadgetSW::process_config(ACE_Message_Block* mb)
 		return GADGET_FAIL;
 	}
 
+	boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
-	TiXmlDocument doc;
-	doc.Parse(mb->rd_ptr());
-
-
-
-	GadgetXMLNode n = GadgetXMLNode(&doc).get<GadgetXMLNode>(std::string("gadgetron"))[0];
-
-	if (get_gadget_xml_parameter(n,std::string("encoding.acquisition_dwell_time_ns.value"),Tsamp_ns_) != GADGET_OK) {
+	std::vector<long> dims;
+	ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
+	if (e_seq.size() != 1) {
+		GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
+		GADGET_DEBUG1("This Gadget only supports one encoding space\n");
 		return GADGET_FAIL;
 	}
 
-	if (get_gadget_xml_parameter(n,std::string("spirals.Interleaves.value"),Nints_) != GADGET_OK) {
+	ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
+	ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
+	ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
+
+	if (!(*e_seq.begin()).trajectoryDescription().present()) {
+		GADGET_DEBUG1("Trajectory description needed to calculate trajectory");
 		return GADGET_FAIL;
 	}
 
+	ISMRMRD::trajectoryDescriptionType traj_desc = (*e_seq.begin()).trajectoryDescription().get();
+
+	if (std::strcmp(traj_desc.identifier().c_str(), "HargreavesVDS2000")) {
+		GADGET_DEBUG1("Expected trajectory description identifier 'HargreavesVDS2000', not found.");
+		return GADGET_FAIL;
+	}
+
+
+
+    long interleaves = -1;
+    long fov_coefficients = -1;
+    long sampling_time_ns = -1;
+    double max_grad = -1.0;
+    double max_slew = -1.0;
+    double fov_coeff = -1.0;
+    double kr_max = -1.0;
+
+    for (ISMRMRD::trajectoryDescriptionType::userParameterLong_sequence::iterator i (traj_desc.userParameterLong().begin ()); i != traj_desc.userParameterLong().end(); ++i) {
+    	if (std::strcmp(i->name().c_str(),"interleaves") == 0) {
+    		interleaves = i->value();
+    	} else if (std::strcmp(i->name().c_str(),"fov_coefficients") == 0) {
+    		fov_coefficients = i->value();
+    	} else if (std::strcmp(i->name().c_str(),"SamplingTime_ns") == 0) {
+    		sampling_time_ns = i->value();
+    	} else {
+    		GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name().c_str());
+    	}
+    }
+
+    for (ISMRMRD::trajectoryDescriptionType::userParameterDouble_sequence::iterator i (traj_desc.userParameterDouble().begin ()); i != traj_desc.userParameterDouble().end(); ++i) {
+    	if (std::strcmp(i->name().c_str(),"MaxGradient_G_per_cm") == 0) {
+    		max_grad = i->value();
+    	} else if (std::strcmp(i->name().c_str(),"MaxSlewRate_G_per_cm_per_s") == 0) {
+    		max_slew = i->value();
+    	} else if (std::strcmp(i->name().c_str(),"FOVCoeff_1_cm") == 0) {
+    		fov_coeff = i->value();
+    	} else if (std::strcmp(i->name().c_str(),"krmax_per_cm") == 0) {
+    		kr_max= i->value();
+    	} else {
+    		GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name().c_str());
+    	}
+    }
+
+    if ((interleaves < 0) || (fov_coefficients < 0) || (sampling_time_ns < 0) || (max_grad < 0) || (max_slew < 0) || (fov_coeff < 0) || (kr_max < 0)) {
+    	GADGET_DEBUG1("Appropriate parameters for calculating spiral trajectory not found in XML configuration\n");
+    	return GADGET_FAIL;
+    }
+
+	Tsamp_ns_ = sampling_time_ns;
+	Nints_ = interleaves;
 	interleaves_ = static_cast<int>(Nints_);
 
-	if (get_gadget_xml_parameter(n,std::string("spirals.MaxGradient_Gcms.value"),gmax_) != GADGET_OK) {
-		return GADGET_FAIL;
-	}
-
-	if (get_gadget_xml_parameter(n,std::string("spirals.MaxSlewRate_Gcmsi.value"),smax_) != GADGET_OK) {
-		return GADGET_FAIL;
-	}
-
-	if (get_gadget_xml_parameter(n,std::string("spirals.krmax_cm.value"),krmax_) != GADGET_OK) {
-		return GADGET_FAIL;
-	}
-
-	if (get_gadget_xml_parameter(n,std::string("spirals.FOVCoeff_1.value"),fov_) != GADGET_OK) {
-		return GADGET_FAIL;
-	}
+	gmax_ = max_grad;
+	smax_ = max_slew;
+	krmax_ = kr_max;
+	fov_ = fov_coeff;
 
 	samples_to_skip_start_  = 0; //n.get<int>(std::string("samplestoskipstart.value"))[0];
 	samples_to_skip_end_    = -1; //n.get<int>(std::string("samplestoskipend.value"))[0];
-	//  samples_per_adc_        = 0; //n.get<int>(std::string("samplesperadc.value"))[0];
-	//  adcs_per_interleave_    = 1; //n.get<int>(std::string("adcsperinterleave.value"))[0];
+	image_dimensions_.push_back(e_space.matrixSize().x());
+	image_dimensions_.push_back(e_space.matrixSize().y());
 
-	image_dimensions_.push_back(n.get<long>(std::string("encoding.kspace.matrix_size.value"))[0]);
-	image_dimensions_.push_back(n.get<long>(std::string("encoding.kspace.matrix_size.value"))[1]);
-
-	slices_ = static_cast<int>(n.get<long>(std::string("encoding.slices.value"))[0]);
+	slices_ = e_limits.slice().present() ? e_limits.slice().get().maximum() + 1 : 1;
 
 	GADGET_DEBUG2("smax:                    %f\n", smax_);
 	GADGET_DEBUG2("gmax:                    %f\n", gmax_);
@@ -138,7 +165,7 @@ int SpiralGadgetSW::process_config(ACE_Message_Block* mb)
 }
 
 int SpiralGadgetSW::
-process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
+process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
@@ -159,7 +186,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 
 		/*	call c-function here to calculate gradients */
 		calc_vds(smax_,gmax_,sample_time,sample_time,Nints_,&fov_,nfov,krmax_,ngmax,&xgrad,&ygrad,&ngrad);
-		samples_per_interleave_ = std::min(ngrad,static_cast<int>(m1->getObjectPtr()->samples));
+		samples_per_interleave_ = std::min(ngrad,static_cast<int>(m1->getObjectPtr()->number_of_samples));
 
 		GADGET_DEBUG2("Using %d samples per interleave\n", samples_per_interleave_);
 
@@ -229,7 +256,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 	if (!host_data_buffer_) {
 		std::vector<unsigned int> data_dimensions;
 		data_dimensions.push_back(samples_per_interleave_*interleaves_);
-		data_dimensions.push_back(m1->getObjectPtr()->channels);
+		data_dimensions.push_back(m1->getObjectPtr()->active_channels);
 
 		host_data_buffer_ = new hoNDArray<float_complext>[slices_];
 		if (!host_data_buffer_) {
@@ -250,12 +277,12 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 	buffer_.enqueue_tail(m1);
 
 	if (samples_to_skip_end_ == -1) {
-		samples_to_skip_end_ = m1->getObjectPtr()->samples-samples_per_interleave_;
+		samples_to_skip_end_ = m1->getObjectPtr()->number_of_samples-samples_per_interleave_;
 		GADGET_DEBUG2("Adjusting samples_to_skip_end_ = %d\n", samples_to_skip_end_);
 	}
 
-	unsigned int samples_to_copy = m1->getObjectPtr()->samples-samples_to_skip_end_;
-	unsigned int interleave = m1->getObjectPtr()->idx.line;
+	unsigned int samples_to_copy = m1->getObjectPtr()->number_of_samples-samples_to_skip_end_;
+	unsigned int interleave = m1->getObjectPtr()->idx.kspace_encode_step_1;
 	unsigned int slice = m1->getObjectPtr()->idx.slice;
 
 	unsigned int samples_per_channel =  host_data_buffer_->get_size(0);
@@ -263,16 +290,17 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 	std::complex<float>* data_ptr    = reinterpret_cast< std::complex<float>* >(host_data_buffer_[slice].get_data_ptr());
 	std::complex<float>* profile_ptr = m2->getObjectPtr()->get_data_ptr();
 
-	for (unsigned int c = 0; c < m1->getObjectPtr()->channels; c++) {
+	for (unsigned int c = 0; c < m1->getObjectPtr()->active_channels; c++) {
 		memcpy(data_ptr+c*samples_per_channel+interleave*samples_to_copy,
-				profile_ptr+c*m1->getObjectPtr()->samples, samples_to_copy*sizeof(std::complex<float>));
+				profile_ptr+c*m1->getObjectPtr()->number_of_samples, samples_to_copy*sizeof(std::complex<float>));
 	}
 
+	bool is_last_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
 	if (m1->getObjectPtr()->flags & GADGET_FLAG_LAST_ACQ_IN_SLICE) {
 
 		//GPUTimer timer("Spiral SW Gridding and CSM calc...");
 
-		unsigned int num_batches = m1->getObjectPtr()->channels;
+		unsigned int num_batches = m1->getObjectPtr()->active_channels;
 
 		cuNDArray<float_complext> data(&host_data_buffer_[slice]);
 
@@ -348,7 +376,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 				return GADGET_FAIL;
 			}
 
-			GadgetContainerMessage<GadgetMessageAcquisition>* acq = AsContainerMessage<GadgetMessageAcquisition>(mbq);
+			GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* acq = AsContainerMessage<ISMRMRD::AcquisitionHeader>(mbq);
 			GadgetContainerMessage< hoNDArray< std::complex<float> > >* daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq->cont());
 
 			if (!acq || !daq) {
@@ -370,7 +398,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 			traj_ptr += p*samples_per_interleave_;
 
 			floatd2* t_ptr = host_traj_->get_data_ptr();
-			t_ptr += acq->getObjectPtr()->idx.line*samples_per_interleave_;
+			t_ptr += acq->getObjectPtr()->idx.kspace_encode_step_1*samples_per_interleave_;
 
 			memcpy(traj_ptr,t_ptr,samples_per_interleave_*sizeof(floatd2));
 
@@ -378,7 +406,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 			dcw_ptr += p*samples_per_interleave_;
 
 			float* d_ptr = host_weights_->get_data_ptr();
-			d_ptr += acq->getObjectPtr()->idx.line*samples_per_interleave_;
+			d_ptr += acq->getObjectPtr()->idx.kspace_encode_step_1*samples_per_interleave_;
 
 			memcpy(dcw_ptr,d_ptr,samples_per_interleave_*sizeof(float));
 
@@ -426,9 +454,9 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 		m3->getObjectPtr()->matrix_size[1] = image_dimensions_[1];
 		m3->getObjectPtr()->matrix_size[2] = 1;
 		m3->getObjectPtr()->channels       = 1;
-		m3->getObjectPtr()->data_idx_min       = m1->getObjectPtr()->min_idx;
-		m3->getObjectPtr()->data_idx_max       = m1->getObjectPtr()->max_idx;
-		m3->getObjectPtr()->data_idx_current   = m1->getObjectPtr()->idx;
+		//m3->getObjectPtr()->data_idx_min       = m1->getObjectPtr()->min_idx;
+		//m3->getObjectPtr()->data_idx_max       = m1->getObjectPtr()->max_idx;
+		//m3->getObjectPtr()->data_idx_current   = m1->getObjectPtr()->idx;
 
 		memcpy(m3->getObjectPtr()->position,m1->getObjectPtr()->position,
 				sizeof(float)*3);
@@ -436,7 +464,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 		memcpy(m3->getObjectPtr()->quaternion,m1->getObjectPtr()->quaternion,
 				sizeof(float)*4);
 
-		m3->getObjectPtr()->table_position = m1->getObjectPtr()->table_position;
+		m3->getObjectPtr()->table_position = m1->getObjectPtr()->patient_table_position[0];
 
 		m3->getObjectPtr()->image_format = GADGET_IMAGE_COMPLEX_FLOAT; 
 		m3->getObjectPtr()->image_index = ++image_counter_; 

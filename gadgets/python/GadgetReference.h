@@ -8,6 +8,7 @@
 #include <boost/python/numeric.hpp>
 #include <boost/python/tuple.hpp>
 #include "gadgetronpython_export.h"
+#include "ismrmrd.h"
 
 class EXPORTGADGETSPYTHON GadgetReference
 {
@@ -23,7 +24,7 @@ class EXPORTGADGETSPYTHON GadgetReference
   }
 
   template<class T> int return_data(T header, boost::python::numeric::array arr);
-  int return_acquisition(GadgetMessageAcquisition acq, boost::python::numeric::array arr);
+  int return_acquisition(ISMRMRD::AcquisitionHeader acq, boost::python::numeric::array arr);
   int return_image(GadgetMessageImage img, boost::python::numeric::array arr);
 
  protected:

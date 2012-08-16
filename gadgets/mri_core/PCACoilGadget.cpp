@@ -39,14 +39,14 @@ int PCACoilGadget::process_config(ACE_Message_Block *mb)
 
 
 
-int PCACoilGadget::process(GadgetContainerMessage<GadgetMessageAcquisition> *m1, GadgetContainerMessage<hoNDArray<std::complex<float> > > *m2)
+int PCACoilGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1, GadgetContainerMessage<hoNDArray<std::complex<float> > > *m2)
 {
 	std::map<int, bool>::iterator it;
 
 	int location = m1->getObjectPtr()->idx.slice;
-	bool is_last_scan_in_slice = (m1->getObjectPtr()->flags & GADGET_FLAG_LAST_ACQ_IN_SLICE);
-	int samples_per_profile = m1->getObjectPtr()->samples;
-	int channels = m1->getObjectPtr()->channels;
+	bool is_last_scan_in_slice = (ISMRMRD::FlagBit(ISMRMRD::LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags));
+	int samples_per_profile = m1->getObjectPtr()->number_of_samples;
+	int channels = m1->getObjectPtr()->active_channels;
 
 	it = buffering_mode_.find(location);
 

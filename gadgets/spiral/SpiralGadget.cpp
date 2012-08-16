@@ -171,17 +171,17 @@ int SpiralGadget::process_config(ACE_Message_Block* mb)
 }
 
 int SpiralGadget::
-process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
+process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
 	if (samples_to_skip_end_ == -1) {
-		samples_to_skip_end_ = m1->getObjectPtr()->samples-samples_per_interleave_;
+		samples_to_skip_end_ = m1->getObjectPtr()->number_of_samples-samples_per_interleave_;
 		GADGET_DEBUG2("Adjusting samples_to_skip_end_ = %d\n", samples_to_skip_end_);
 	}
 
-	unsigned int samples_to_copy = m1->getObjectPtr()->samples-samples_to_skip_end_;
-	unsigned int interleave = m1->getObjectPtr()->idx.line;
+	unsigned int samples_to_copy = m1->getObjectPtr()->number_of_samples-samples_to_skip_end_;
+	unsigned int interleave = m1->getObjectPtr()->idx.kspace_encode_step_1;
 	unsigned int slice = m1->getObjectPtr()->idx.slice;
 
 	unsigned int samples_per_channel =  host_data_buffer_->get_size(0);
@@ -189,14 +189,14 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 	std::complex<float>* data_ptr    = reinterpret_cast< std::complex<float>* >(host_data_buffer_[slice].get_data_ptr());
 	std::complex<float>* profile_ptr = m2->getObjectPtr()->get_data_ptr();
 
-	for (unsigned int c = 0; c < m1->getObjectPtr()->channels; c++) {
+	for (unsigned int c = 0; c < m1->getObjectPtr()->active_channels; c++) {
 		memcpy(data_ptr+c*samples_per_channel+interleave*samples_to_copy,
-				profile_ptr+c*m1->getObjectPtr()->samples, samples_to_copy*sizeof(std::complex<float>));
+				profile_ptr+c*m1->getObjectPtr()->number_of_samples, samples_to_copy*sizeof(std::complex<float>));
 	}
 
-	if (m1->getObjectPtr()->flags & GADGET_FLAG_LAST_ACQ_IN_SLICE) {
+	if (ISMRMRD::FlagBit(ISMRMRD::LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags)) {
 
-		unsigned int num_batches = m1->getObjectPtr()->channels;
+		unsigned int num_batches = m1->getObjectPtr()->active_channels;
 
 		cuNDArray<float_complext> data(&host_data_buffer_[slice]);
 
@@ -249,9 +249,9 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 		m3->getObjectPtr()->matrix_size[1] = image_dimensions_[1];
 		m3->getObjectPtr()->matrix_size[2] = 1;
 		m3->getObjectPtr()->channels       = 1;
-		m3->getObjectPtr()->data_idx_min       = m1->getObjectPtr()->min_idx;
-		m3->getObjectPtr()->data_idx_max       = m1->getObjectPtr()->max_idx;
-		m3->getObjectPtr()->data_idx_current   = m1->getObjectPtr()->idx;
+		//m3->getObjectPtr()->data_idx_min       = m1->getObjectPtr()->min_idx;
+		//m3->getObjectPtr()->data_idx_max       = m1->getObjectPtr()->max_idx;
+		//m3->getObjectPtr()->data_idx_current   = m1->getObjectPtr()->idx;
 
 		memcpy(m3->getObjectPtr()->position,m1->getObjectPtr()->position,
 				sizeof(float)*3);
@@ -259,7 +259,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 		memcpy(m3->getObjectPtr()->quaternion,m1->getObjectPtr()->quaternion,
 				sizeof(float)*4);
 
-		m3->getObjectPtr()->table_position = m1->getObjectPtr()->table_position;
+		m3->getObjectPtr()->table_position = m1->getObjectPtr()->patient_table_position[0];
 
 		m3->getObjectPtr()->image_format = GADGET_IMAGE_COMPLEX_FLOAT; 
 		m3->getObjectPtr()->image_index = ++image_counter_; 
