@@ -109,9 +109,12 @@ template <> boost::shared_ptr<CompType> getHDF5CompositeType<GadgetMessageImage>
 		ret->insertMember( "position",           HOFFSET(GadgetMessageImage, position),            *position_type);
 		ret->insertMember( "quaternion",         HOFFSET(GadgetMessageImage, quaternion),          *quaterion_type);
 		ret->insertMember( "table_position",     HOFFSET(GadgetMessageImage, table_position),      PredType::NATIVE_FLOAT);
-		ret->insertMember( "data_idx_min",       HOFFSET(GadgetMessageImage, data_idx_min),        *loopcounters_type);
-		ret->insertMember( "data_idx_max",       HOFFSET(GadgetMessageImage, data_idx_max),        *loopcounters_type);
-		ret->insertMember( "data_idx_current",   HOFFSET(GadgetMessageImage, data_idx_current),    *loopcounters_type);
+		ret->insertMember( "slice",              HOFFSET(GadgetMessageImage, slice),               PredType::NATIVE_USHORT);
+		ret->insertMember( "contrast",           HOFFSET(GadgetMessageImage, contrast),            PredType::NATIVE_USHORT);
+		ret->insertMember( "set",                HOFFSET(GadgetMessageImage, set),                 PredType::NATIVE_USHORT);
+		ret->insertMember( "phase",              HOFFSET(GadgetMessageImage, phase),               PredType::NATIVE_USHORT);
+		ret->insertMember( "average",            HOFFSET(GadgetMessageImage, average),             PredType::NATIVE_USHORT);
+		ret->insertMember( "repetion",           HOFFSET(GadgetMessageImage, repetion),            PredType::NATIVE_USHORT);
 		ret->insertMember( "time_stamp",         HOFFSET(GadgetMessageImage, time_stamp),          PredType::NATIVE_UINT);
 		ret->insertMember( "pmu_time_stamp",     HOFFSET(GadgetMessageImage, pmu_time_stamp),      PredType::NATIVE_UINT);
 		ret->insertMember( "image_format",       HOFFSET(GadgetMessageImage, image_format),        PredType::NATIVE_USHORT);

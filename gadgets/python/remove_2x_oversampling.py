@@ -9,13 +9,6 @@ def set_gadget_reference(gadref):
     myGadgetReference = gadref
 
 def config_function(conf):
-    doc = libxml2.parseDoc(str(conf))
-    context = doc.xpathNewContext()
-
-    context.xpathRegisterNs("ismrm", "http://www.ismrm.org/ISMRMRD")
-    vendor = context.xpathEval("//ismrm:ismrmrdHeader")
-    #vendor = doc.xpathEval('//ismrmrdHeader')
-    print vendor
     #print "remove 2x oversampling: Configuration received"
     #print str(conf)
     return 

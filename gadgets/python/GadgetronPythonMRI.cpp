@@ -166,6 +166,17 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
 
     ;
 
+  class_<ISMRMRD::EncodingCounters>("EncodingCounters")
+	.def_readwrite("kspace_encode_step_1",   &ISMRMRD::EncodingCounters::kspace_encode_step_1)
+	.def_readwrite("kspace_encode_step_2",   &ISMRMRD::EncodingCounters::kspace_encode_step_2)
+	.def_readwrite("average",                &ISMRMRD::EncodingCounters::average)
+	.def_readwrite("slice",                  &ISMRMRD::EncodingCounters::slice)
+	.def_readwrite("contrast",               &ISMRMRD::EncodingCounters::contrast)
+	.def_readwrite("phase",                  &ISMRMRD::EncodingCounters::phase)
+	.def_readwrite("repetition",             &ISMRMRD::EncodingCounters::repetition)
+	.def_readwrite("segment",                &ISMRMRD::EncodingCounters::segment)
+    ;
+
   def("set_physiology_time_stamp", set_physiology_time_stamp);
   def("get_physiology_time_stamp", get_physiology_time_stamp);
   def("set_channel_mask", set_channel_mask);
@@ -212,16 +223,18 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
     .def("get_quaternion", &GadgetMessageImage::get_quaternion)
     .def("set_quaternion", &GadgetMessageImage::set_quaternion)
     .def_readwrite("table_position", &GadgetMessageImage::table_position)
-    .def_readwrite("data_idx_min", &GadgetMessageImage::data_idx_min)
-    .def_readwrite("data_idx_max", &GadgetMessageImage::data_idx_max)
-    .def_readwrite("data_idx_current", &GadgetMessageImage::data_idx_current)
+    .def_readwrite("slice", &GadgetMessageImage::slice)
+    .def_readwrite("contrast", &GadgetMessageImage::contrast)
+    .def_readwrite("set", &GadgetMessageImage::set)
+    .def_readwrite("phase", &GadgetMessageImage::phase)
+    .def_readwrite("average", &GadgetMessageImage::average)
+    .def_readwrite("repetion", &GadgetMessageImage::repetion)
     .def_readwrite("time_stamp", &GadgetMessageImage::time_stamp)
     .def_readwrite("pmu_time_stamp", &GadgetMessageImage::pmu_time_stamp)
     .def_readwrite("image_format", &GadgetMessageImage::image_format)
     .def_readwrite("image_type", &GadgetMessageImage::image_type)
     .def_readwrite("image_index", &GadgetMessageImage::image_index)
     .def_readwrite("image_series_index", &GadgetMessageImage::image_series_index)
-
     ;
 
   class_<GadgetReference>("GadgetReference")

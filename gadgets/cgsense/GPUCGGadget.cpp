@@ -353,10 +353,8 @@ int GPUCGGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		cm1->getObjectPtr()->matrix_size[1] = img_dims[1];
 		cm1->getObjectPtr()->matrix_size[2] = 1;
 		cm1->getObjectPtr()->channels       = 1;
-		//cm1->getObjectPtr()->data_idx_min       = m1->getObjectPtr()->min_idx;
-		//cm1->getObjectPtr()->data_idx_max       = m1->getObjectPtr()->max_idx;
-		// cm1->getObjectPtr()->data_idx_current   = m1->getObjectPtr()->idx;
-		cm1->getObjectPtr()->time_stamp         = m1->getObjectPtr()->acquisition_time_stamp;
+		cm1->getObjectPtr()->slice          = m1->getObjectPtr()->idx.slice;
+		cm1->getObjectPtr()->time_stamp     = m1->getObjectPtr()->acquisition_time_stamp;
 
 		memcpy(cm1->getObjectPtr()->position,m1->getObjectPtr()->position, sizeof(float)*3);
 		memcpy(cm1->getObjectPtr()->quaternion,m1->getObjectPtr()->quaternion, sizeof(float)*4);

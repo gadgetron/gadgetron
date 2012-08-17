@@ -454,9 +454,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		m3->getObjectPtr()->matrix_size[1] = image_dimensions_[1];
 		m3->getObjectPtr()->matrix_size[2] = 1;
 		m3->getObjectPtr()->channels       = 1;
-		//m3->getObjectPtr()->data_idx_min       = m1->getObjectPtr()->min_idx;
-		//m3->getObjectPtr()->data_idx_max       = m1->getObjectPtr()->max_idx;
-		//m3->getObjectPtr()->data_idx_current   = m1->getObjectPtr()->idx;
+		m3->getObjectPtr()->slice          = m1->getObjectPtr()->idx.slice;
 
 		memcpy(m3->getObjectPtr()->position,m1->getObjectPtr()->position,
 				sizeof(float)*3);

@@ -258,9 +258,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		cm1->getObjectPtr()->matrix_size[1] = image_dimensions_[1];
 		cm1->getObjectPtr()->matrix_size[2] = image_dimensions_[2];
 		cm1->getObjectPtr()->channels       = 1+weights_calculator_.get_number_of_uncombined_channels();
-		//cm1->getObjectPtr()->data_idx_min       = m1->getObjectPtr()->min_idx;
-		//cm1->getObjectPtr()->data_idx_max       = m1->getObjectPtr()->max_idx;
-		//cm1->getObjectPtr()->data_idx_current   = m1->getObjectPtr()->idx;
+		cm1->getObjectPtr()->slice              = m1->getObjectPtr()->idx.slice;
 		cm1->getObjectPtr()->time_stamp         = time_stamps_[slice];
 
 		memcpy(cm1->getObjectPtr()->position,m1->getObjectPtr()->position,

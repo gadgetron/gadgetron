@@ -2,7 +2,6 @@
 #define GADGETMRIHEADERS_H
 
 #include <ace/Basic_Types.h>
-#include "gadgetroncore_export.h"
 
 //Data flags
 #define GADGET_FLAG_ACQ_END                   (1 << 0)
@@ -45,7 +44,7 @@ enum GadgetMessageID {
   GADGET_MESSAGE_EXT_ID_MAX          = 4096
 };
   
-struct EXPORTGADGETSCORE LoopCounters {
+struct LoopCounters {
   ACE_UINT16 line;
   ACE_UINT16 acquisition;
   ACE_UINT16 slice;
@@ -58,7 +57,7 @@ struct EXPORTGADGETSCORE LoopCounters {
   ACE_UINT16 channel;
 };
 
-struct EXPORTGADGETSCORE GadgetMessageAcquisition
+struct GadgetMessageAcquisition
 {
   ACE_UINT32     flags;
   ACE_UINT32     meas_uid;
@@ -107,7 +106,7 @@ struct EXPORTGADGETSCORE GadgetMessageAcquisition
 
 };
 
-struct EXPORTGADGETSCORE GadgetMessageImage
+struct GadgetMessageImage
 {
   ACE_UINT32     flags;
   ACE_UINT16     matrix_size[3];
@@ -115,9 +114,12 @@ struct EXPORTGADGETSCORE GadgetMessageImage
   float          position[3];
   float          quaternion[4];
   float			 table_position;
-  LoopCounters   data_idx_min;
-  LoopCounters   data_idx_max;
-  LoopCounters   data_idx_current;
+  ACE_UINT16     slice;
+  ACE_UINT16     contrast;
+  ACE_UINT16     set;
+  ACE_UINT16     phase;
+  ACE_UINT16     average;
+  ACE_UINT16     repetion;
   ACE_UINT32     time_stamp;
   ACE_UINT32     pmu_time_stamp;
   ACE_UINT16     image_format;
