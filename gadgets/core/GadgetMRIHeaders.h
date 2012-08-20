@@ -119,7 +119,7 @@ struct GadgetMessageImage
   ACE_UINT16     set;
   ACE_UINT16     phase;
   ACE_UINT16     average;
-  ACE_UINT16     repetion;
+  ACE_UINT16     repetition;
   ACE_UINT32     time_stamp;
   ACE_UINT32     pmu_time_stamp;
   ACE_UINT16     image_format;

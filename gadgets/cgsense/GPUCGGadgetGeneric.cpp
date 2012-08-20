@@ -164,7 +164,7 @@ int GPUCGGadgetGeneric::configure_channels()
 int GPUCGGadgetGeneric::process(GadgetContainerMessage<GadgetMessageImage>* m1, GadgetContainerMessage< CGSenseJob > * m2)
 {
 
-	//GPUTimer timer("GPUCGGadgetGeneric::process");
+	GPUTimer timer("GPUCGGadgetGeneric::process");
 
 	if (!is_configured_) {
 		GADGET_DEBUG1("\nData received before configuration complete\n");

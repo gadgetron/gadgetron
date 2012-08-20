@@ -296,9 +296,9 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 	}
 
 	bool is_last_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
-	if (m1->getObjectPtr()->flags & GADGET_FLAG_LAST_ACQ_IN_SLICE) {
+	if (is_last_scan_in_slice) {
 
-		//GPUTimer timer("Spiral SW Gridding and CSM calc...");
+		GPUTimer timer("Spiral SW Gridding and CSM calc...");
 
 		unsigned int num_batches = m1->getObjectPtr()->active_channels;
 

@@ -47,9 +47,7 @@ def recon_function(acq, data):
         #Create a new image header and transfer value
         img_head = g.GadgetMessageImage()
         img_head.channels = acq.active_channels
-        img_head.data_idx_curent.slice = acq.idx.slice
-        #img_head.data_idx_max = acq.max_idx
-        #img_head.data_idx_min = acq.min_idx
+        img_head.slice = acq.idx.slice
         img_head.set_matrix_size(0,myBuffer.shape[4])
         img_head.set_matrix_size(1,myBuffer.shape[3])
         img_head.set_matrix_size(2,myBuffer.shape[2])
