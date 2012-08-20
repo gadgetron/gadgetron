@@ -25,7 +25,6 @@
       <classname>MRIImageWriterUSHORT</classname>
     </writer>
 
-  <!--
    <gadget>
       <name>NoiseAdjust</name>
       <dll>gadgetronmricore</dll>
@@ -44,7 +43,7 @@
       <classname>CoilReductionGadget</classname>
       <property><name>coils_out</name><value>8</value></property>
     </gadget>
-  -->
+
     <gadget>
       <name>SpiralGadgetSW</name>
       <dll>gadgetronspiral</dll>

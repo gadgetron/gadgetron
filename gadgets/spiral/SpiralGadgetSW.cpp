@@ -169,6 +169,12 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
+	bool is_noise = ISMRMRD::FlagBit(ISMRMRD::IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
+	if (is_noise) { //Noise should have been consumed by the noise adjust, but just in case.
+		m1->release();
+		return GADGET_OK;
+	}
+
 	if (!prepared_) {
 		int     nfov   = 1;         /*  number of fov coefficients.             */
 		int     ngmax  = 1e5;       /*  maximum number of gradient samples      */
