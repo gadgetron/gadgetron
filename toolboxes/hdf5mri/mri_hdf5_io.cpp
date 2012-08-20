@@ -114,7 +114,7 @@ template <> boost::shared_ptr<CompType> getHDF5CompositeType<GadgetMessageImage>
 		ret->insertMember( "set",                HOFFSET(GadgetMessageImage, set),                 PredType::NATIVE_USHORT);
 		ret->insertMember( "phase",              HOFFSET(GadgetMessageImage, phase),               PredType::NATIVE_USHORT);
 		ret->insertMember( "average",            HOFFSET(GadgetMessageImage, average),             PredType::NATIVE_USHORT);
-		ret->insertMember( "repetion",           HOFFSET(GadgetMessageImage, repetion),            PredType::NATIVE_USHORT);
+		ret->insertMember( "repetition",         HOFFSET(GadgetMessageImage, repetition),            PredType::NATIVE_USHORT);
 		ret->insertMember( "time_stamp",         HOFFSET(GadgetMessageImage, time_stamp),          PredType::NATIVE_UINT);
 		ret->insertMember( "pmu_time_stamp",     HOFFSET(GadgetMessageImage, pmu_time_stamp),      PredType::NATIVE_UINT);
 		ret->insertMember( "image_format",       HOFFSET(GadgetMessageImage, image_format),        PredType::NATIVE_USHORT);
