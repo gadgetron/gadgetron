@@ -148,6 +148,9 @@ int SpiralGadgetSW::process_config(ACE_Message_Block* mb)
 	image_dimensions_.push_back(e_space.matrixSize().y());
 
 	slices_ = e_limits.slice().present() ? e_limits.slice().get().maximum() + 1 : 1;
+	sets_ = e_limits.set().present() ? e_limits.set().get().maximum() + 1 : 1;
+
+	buffer_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new  ACE_Message_Queue<ACE_MT_SYNCH>[slices_*sets_]);
 
 	GADGET_DEBUG2("smax:                    %f\n", smax_);
 	GADGET_DEBUG2("gmax:                    %f\n", gmax_);
@@ -264,13 +267,13 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		data_dimensions.push_back(samples_per_interleave_*interleaves_);
 		data_dimensions.push_back(m1->getObjectPtr()->active_channels);
 
-		host_data_buffer_ = new hoNDArray<float_complext>[slices_];
+		host_data_buffer_ = new hoNDArray<float_complext>[slices_*sets_];
 		if (!host_data_buffer_) {
 			GADGET_DEBUG1("Unable to allocate array for host data buffer\n");
 			return GADGET_FAIL;
 		}
 
-		for (unsigned int i = 0; i < slices_; i++) {
+		for (unsigned int i = 0; i < slices_*sets_; i++) {
 			if (!host_data_buffer_[i].create(&data_dimensions)) {
 				GADGET_DEBUG1("Unable to allocate memory for data buffer\n");
 				return GADGET_FAIL;
@@ -280,20 +283,22 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 
 
 
-	buffer_.enqueue_tail(m1);
+
+	unsigned int samples_to_copy = m1->getObjectPtr()->number_of_samples-samples_to_skip_end_;
+	unsigned int interleave = m1->getObjectPtr()->idx.kspace_encode_step_1;
+	unsigned int slice = m1->getObjectPtr()->idx.slice;
+	unsigned int set = m1->getObjectPtr()->idx.set;
+
+	unsigned int samples_per_channel =  host_data_buffer_->get_size(0);
+
+	buffer_[set*slices_+slice].enqueue_tail(m1);
 
 	if (samples_to_skip_end_ == -1) {
 		samples_to_skip_end_ = m1->getObjectPtr()->number_of_samples-samples_per_interleave_;
 		GADGET_DEBUG2("Adjusting samples_to_skip_end_ = %d\n", samples_to_skip_end_);
 	}
 
-	unsigned int samples_to_copy = m1->getObjectPtr()->number_of_samples-samples_to_skip_end_;
-	unsigned int interleave = m1->getObjectPtr()->idx.kspace_encode_step_1;
-	unsigned int slice = m1->getObjectPtr()->idx.slice;
-
-	unsigned int samples_per_channel =  host_data_buffer_->get_size(0);
-
-	std::complex<float>* data_ptr    = reinterpret_cast< std::complex<float>* >(host_data_buffer_[slice].get_data_ptr());
+	std::complex<float>* data_ptr    = reinterpret_cast< std::complex<float>* >(host_data_buffer_[set*slices_+slice].get_data_ptr());
 	std::complex<float>* profile_ptr = m2->getObjectPtr()->get_data_ptr();
 
 	for (unsigned int c = 0; c < m1->getObjectPtr()->active_channels; c++) {
@@ -308,7 +313,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 
 		unsigned int num_batches = m1->getObjectPtr()->active_channels;
 
-		cuNDArray<float_complext> data(&host_data_buffer_[slice]);
+		cuNDArray<float_complext> data(&host_data_buffer_[set*slices_+slice]);
 
 		// Setup result image
 		std::vector<unsigned int> image_dims;
@@ -349,7 +354,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		boost::shared_ptr< hoNDArray<float_complext> > reg_host = reg_image.to_host();
 
 
-		unsigned int profiles_buffered = buffer_.message_count();
+		unsigned int profiles_buffered = buffer_[set*slices_+slice].message_count();
 		boost::shared_ptr< hoNDArray<float_complext> > data_host(new hoNDArray<float_complext>());
 
 		std::vector<unsigned int> ddimensions(2,0);
@@ -377,7 +382,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 
 		for (unsigned int p = 0; p < profiles_buffered; p++) {
 			ACE_Message_Block* mbq;
-			if (buffer_.dequeue_head(mbq) < 0) {
+			if (buffer_[set*slices_+slice].dequeue_head(mbq) < 0) {
 				GADGET_DEBUG1("Message dequeue failed\n");
 				return GADGET_FAIL;
 			}
@@ -420,7 +425,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		}
 
 
-		if (buffer_.message_count()) {
+		if (buffer_[set*slices_+slice].message_count()) {
 			GADGET_DEBUG1("Error occured, all messages should have been cleared off the buffer by now.\n");
 			return GADGET_FAIL;
 		}
@@ -461,6 +466,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		m3->getObjectPtr()->matrix_size[2] = 1;
 		m3->getObjectPtr()->channels       = 1;
 		m3->getObjectPtr()->slice          = m1->getObjectPtr()->idx.slice;
+		m3->getObjectPtr()->set            = m1->getObjectPtr()->idx.set;
 
 		memcpy(m3->getObjectPtr()->position,m1->getObjectPtr()->position,
 				sizeof(float)*3);

@@ -62,15 +62,20 @@
       <property><name>kernel_width</name>            <value>5.5</value></property>
       <property><name>kappa</name>                   <value>0.1</value></property>
     </gadget>
+
+
+	  <gadget>
+      <name>PhaseSubtraction</name>
+      <dll>gadgetronspiral</dll>
+      <classname>FlowPhaseSubtractionGadget</classname>
+      </gadget>
     
 	  <gadget>
       <name>Extract</name>
       <dll>gadgetroncore</dll>
       <classname>ExtractGadget</classname>
-      <!--
       <property><name>extract_mask</name><value>9</value></property>
-      -->
-    </gadget>
+      </gadget>
 
 	<!--
     <gadget>
