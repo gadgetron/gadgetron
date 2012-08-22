@@ -13,16 +13,16 @@ template<class REAL, unsigned int D> class EXPORTGPUPMRI cuSenseOperator
 
 public:
 
-  cuSenseOperator() : senseOperator<REAL, D, cuNDArray< _complext> >() { set_device(-1); }
+  cuSenseOperator() : senseOperator<REAL,D,cuNDArray< _complext> >() { set_device(-1); }
   virtual ~cuSenseOperator() {}
 
   typedef complext<REAL> _complext;
 
-  virtual int mult_M( cuNDArray< _complext>* in, cuNDArray< _complext>* out, bool accumulate = false ) = 0;
-  virtual int mult_MH( cuNDArray< _complext>* in, cuNDArray< _complext>* out, bool accumulate = false ) = 0;
+  virtual int mult_M( cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate = false ) = 0;
+  virtual int mult_MH( cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate = false ) = 0;
     
-  virtual int mult_csm( cuNDArray< _complext>* in, cuNDArray< _complext>* out );
-  virtual int mult_csm_conj_sum( cuNDArray< _complext>* in, cuNDArray< _complext>* out);
-
+  virtual int mult_csm( cuNDArray<_complext> *in, cuNDArray< _complext> *out );
+  virtual int mult_csm_conj_sum( cuNDArray<_complext> *in, cuNDArray<_complext> *out );
+  
   DECLARE_LINEAR_OPERATOR_DEVICE_SUPPORT(cuSenseOperator)
 };

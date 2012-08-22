@@ -11,8 +11,8 @@ static unsigned int prod( std::vector<unsigned int> &vec )
   return result;
 }
 
-template<class REAL, unsigned int D> int 
-cuNonCartesianSenseOperator<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
+template<class REAL, unsigned int D, bool ATOMICS> int 
+cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {
   if( (in->get_number_of_elements() != prod(this->dimensionsI_)) || (out->get_number_of_elements() != prod(this->dimensionsK_)) ) {
     std::cerr << "cuNonCartesianSenseOperator::mult_M: dimensions mismatch" << std::endl;
@@ -44,7 +44,7 @@ cuNonCartesianSenseOperator<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray
   }
   
   // Forwards NFFT
-  if( !plan_->compute( &tmp, out, dcw_.get(), NFFT_plan<REAL,D>::NFFT_FORWARDS_C2NC )) {
+  if( !plan_->compute( &tmp, out, dcw_.get(), NFFT_plan<REAL,D,ATOMICS>::NFFT_FORWARDS_C2NC )) {
     std::cerr << "cuNonCartesianSenseOperator::mult_M : failed during NFFT" << std::endl;
     return -4;
   }
@@ -52,8 +52,8 @@ cuNonCartesianSenseOperator<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray
   return 0;
 }
 
-template<class REAL, unsigned int D> int 
-cuNonCartesianSenseOperator<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
+template<class REAL, unsigned int D, bool ATOMICS> int 
+cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {
 
   if( (out->get_number_of_elements() != prod(this->dimensionsI_)) || 
@@ -77,7 +77,7 @@ cuNonCartesianSenseOperator<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArra
   }
   
   // Do the NFFT
-  if( !plan_->compute( in, &tmp, dcw_.get(), NFFT_plan<REAL,D>::NFFT_BACKWARDS_NC2C )) {
+  if( !plan_->compute( in, &tmp, dcw_.get(), NFFT_plan<REAL,D,ATOMICS>::NFFT_BACKWARDS_NC2C )) {
     std::cerr << "cuNonCartesianSenseOperator::mult_MH: NFFT failed" << std::endl;
     return -3;
   }
@@ -101,8 +101,8 @@ cuNonCartesianSenseOperator<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDArra
   return 0;
 }
 
-template<class REAL, unsigned int D> int 
-cuNonCartesianSenseOperator<REAL,D>::setup( _uintd matrix_size, _uintd matrix_size_os, REAL W )
+template<class REAL, unsigned int D, bool ATOMICS> int 
+cuNonCartesianSenseOperator<REAL,D,ATOMICS>::setup( _uintd matrix_size, _uintd matrix_size_os, REAL W )
 {  
   if( !plan_->setup( matrix_size, matrix_size_os, W )) {
     std::cerr << "cuNonCartesianSenseOperator: failed to setup plan" << std::endl;
@@ -113,8 +113,8 @@ cuNonCartesianSenseOperator<REAL,D>::setup( _uintd matrix_size, _uintd matrix_si
   return 0;
 }
 
-template<class REAL, unsigned int D> int 
-cuNonCartesianSenseOperator<REAL,D>::preprocess( cuNDArray<_reald> *trajectory ) 
+template<class REAL, unsigned int D, bool ATOMICS> int 
+cuNonCartesianSenseOperator<REAL,D,ATOMICS>::preprocess( cuNDArray<_reald> *trajectory ) 
 {
   if( !this->csm_.get() || this->csm_->get_number_of_elements() == 0 ) {
     std::cerr << "cuNonCartesianSenseOperator::set_trajectory : Error setting trajectory, csm not set" << std::endl;
@@ -138,7 +138,7 @@ cuNonCartesianSenseOperator<REAL,D>::preprocess( cuNDArray<_reald> *trajectory )
     this->dimensionsI_.pop_back();
     this->dimensionsI_.push_back(num_frames);
     
-    if( !plan_->preprocess( trajectory, NFFT_plan<REAL,D>::NFFT_PREP_ALL )) {
+    if( !plan_->preprocess( trajectory, NFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_ALL )) {
       std::cerr << "cuNonCartesianSenseOperator: failed to run preprocess" << std::endl;
       return -2;
     }
@@ -151,8 +151,8 @@ cuNonCartesianSenseOperator<REAL,D>::preprocess( cuNDArray<_reald> *trajectory )
   return 0;
 }
 
-template<class REAL, unsigned int D> int 
-cuNonCartesianSenseOperator<REAL,D>::set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw ) 
+template<class REAL, unsigned int D, bool ATOMICS> int 
+cuNonCartesianSenseOperator<REAL,D,ATOMICS>::set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw ) 
 {
   int ret1 = 0, ret2 = 0;
   
@@ -177,10 +177,20 @@ cuNonCartesianSenseOperator<REAL,D>::set_dcw( boost::shared_ptr< cuNDArray<REAL>
 // Instantiations
 //
 
-template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,2>;
-template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,3>;
-template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,4>;
+template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,2,true>;
+template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,2,false>;
 
-template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,2>;
-template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,3>;
-template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,4>;
+template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,3,true>;
+template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,3,false>;
+
+template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,4,true>;
+template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,4,false>;
+
+template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,2,true>;
+template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,2,false>;
+
+template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,3,true>;
+template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,3,false>;
+
+template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,4,true>;
+template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,4,false>;

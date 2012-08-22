@@ -328,58 +328,6 @@ template<class T> static void find_stride( cuNDArray<T> *in, unsigned int dim,
 // Implementation of public utilities
 //
 
-// Norm
-//
-template<class REAL, unsigned int D> __global__ void 
-cuNDA_norm_kernel( typename reald<REAL,D>::Type *in, REAL *out, 
-		   unsigned int number_of_elements )
-{
-  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
- 
-  if( idx<number_of_elements ){
-    typename reald<REAL,D>::Type val = in[idx]; 
-    out[idx] = norm<REAL,D>(val);
-  }
-}
-
-// Norm
-//
-template<class REAL, unsigned int D>  
-boost::shared_ptr< cuNDArray<REAL> > 
-cuNDA_norm( cuNDArray<typename reald<REAL,D>::Type> *in,
-	    cuNDA_device alloc_device, cuNDA_device compute_device )
-{
-  int cur_device, old_device; 
-  cuNDArray< typename reald<REAL,D>::Type > *in_int;
-
-  // Prepare
-  if( !prepare<1,typename reald<REAL,D>::Type,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
-    cerr << endl << "cuNDA_norm: unable to prepare device(s)" << endl;
-    return boost::shared_ptr< cuNDArray<REAL> >();
-  }
-  
-  // Setup block/grid dimensions
-  dim3 blockDim; dim3 gridDim;
-  if( !setup_grid( cur_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
-    cerr << endl << "cuNDA_norm: block/grid configuration out of range" << endl;
-    return boost::shared_ptr< cuNDArray<REAL> >();
-  }
-
-  // Invoke kernel
-  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(in->get_dimensions().get());
-  if( out.get() != 0x0 ) cuNDA_norm_kernel<REAL,D><<< gridDim, blockDim >>>( in_int->get_data_ptr(), out->get_data_ptr(), in_int->get_number_of_elements() );
-  
-  CHECK_FOR_CUDA_ERROR();
-
-  // Restore
-  if( !restore<1,typename reald<REAL,D>::Type,REAL,dummy,dummy>( old_device, in, in_int, 0, alloc_device, out.get() ) ){
-    cerr << endl << "cuNDA_norm: unable to restore device" << endl;
-    return boost::shared_ptr< cuNDArray<REAL> >();
-  }
- 
-  return out;
-}
-
 // cAbs
 //
 template<class REAL, class T> __global__ void
@@ -482,6 +430,57 @@ cuNDA_cNorm( cuNDArray<T> *in,
   return out;
 }
 
+// Norm
+//
+template<class REAL, unsigned int D> __global__ void 
+cuNDA_norm_kernel( typename reald<REAL,D>::Type *in, REAL *out, 
+		   unsigned int number_of_elements )
+{
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+ 
+  if( idx<number_of_elements ){
+    typename reald<REAL,D>::Type val = in[idx]; 
+    out[idx] = norm<REAL,D>(val);
+  }
+}
+
+// Norm
+//
+template<class REAL, unsigned int D>  
+boost::shared_ptr< cuNDArray<REAL> > 
+cuNDA_norm( cuNDArray<typename reald<REAL,D>::Type> *in,
+	    cuNDA_device alloc_device, cuNDA_device compute_device )
+{
+  int cur_device, old_device; 
+  cuNDArray< typename reald<REAL,D>::Type > *in_int;
+
+  // Prepare
+  if( !prepare<1,typename reald<REAL,D>::Type,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
+    cerr << endl << "cuNDA_norm: unable to prepare device(s)" << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+  
+  // Setup block/grid dimensions
+  dim3 blockDim; dim3 gridDim;
+  if( !setup_grid( cur_device, in->get_number_of_elements(), &blockDim, &gridDim ) ){
+    cerr << endl << "cuNDA_norm: block/grid configuration out of range" << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+
+  // Invoke kernel
+  boost::shared_ptr< cuNDArray<REAL> > out = cuNDArray<REAL>::allocate(in->get_dimensions().get());
+  if( out.get() != 0x0 ) cuNDA_norm_kernel<REAL,D><<< gridDim, blockDim >>>( in_int->get_data_ptr(), out->get_data_ptr(), in_int->get_number_of_elements() );
+  
+  CHECK_FOR_CUDA_ERROR();
+
+  // Restore
+  if( !restore<1,typename reald<REAL,D>::Type,REAL,dummy,dummy>( old_device, in, in_int, 0, alloc_device, out.get() ) ){
+    cerr << endl << "cuNDA_norm: unable to restore device" << endl;
+    return boost::shared_ptr< cuNDArray<REAL> >();
+  }
+ 
+  return out;
+}
 
 // Norm squared
 //
@@ -1477,16 +1476,19 @@ cuNDA_downsample_kernel( REAL *in, REAL *out,
 
     const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
     const unsigned int num_adds = 1 << D;
+    unsigned int actual_adds = 0;
 
     REAL res = REAL(0);
 
     for( unsigned int i=0; i<num_adds; i++ ){
       const typename uintd<D>::Type local_co = idx_to_co<D>( i, twos );
+      if( weak_greater_equal( local_co, matrix_size_out ) ) continue; // To allow array dimensions of 1
       const unsigned int in_idx = co_to_idx<D>(co_in+local_co, matrix_size_in)+frame_offset*prod(matrix_size_in); 
+      actual_adds++;
       res += in[in_idx];
     }
     
-    out[idx] = res/(REAL)num_adds;
+    out[idx] = res/REAL(actual_adds);
   }
 }
 
@@ -1513,8 +1515,8 @@ cuNDA_downsample( cuNDArray<REAL> *in,
   }
   
   for( unsigned int d=0; d<D; d++ ){
-    if( (in->get_size(d)%2) == 1 ){
-      cerr << endl << "cuNDA_downsample: uneven array dimensions not accepted" << endl;
+    if( (in->get_size(d)%2) == 1 && in->get_size(d) != 1 ){
+      cerr << endl << "cuNDA_downsample: uneven array dimensions larger than one not accepted" << endl;
       return boost::shared_ptr< cuNDArray<REAL> >();
     }
   }
@@ -1522,6 +1524,11 @@ cuNDA_downsample( cuNDArray<REAL> *in,
   typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
   typename uintd<D>::Type matrix_size_out = matrix_size_in >> 1;
 
+  for( unsigned int d=0; d<D; d++ ){
+    if( matrix_size_out[d] == 0 ) 
+      matrix_size_out[d] = 1;
+  }
+  
   unsigned int number_of_elements = prod(matrix_size_out);
   unsigned int number_of_batches = 1;
 
@@ -1638,13 +1645,13 @@ cuNDA_upsample_nn( cuNDArray<REAL> *in,
 }
 
 // Utility to check if all neighbors required for the linear interpolation exists
-// 
+// ... do not include dimensions of size 1
 
 template<class REAL, unsigned int D> __device__ 
 bool is_border_pixel( typename uintd<D>::Type co, typename uintd<D>::Type dims )
 {
   for( unsigned int dim=0; dim<D; dim++ ){
-    if( co.vec[dim] == 0 || co.vec[dim] == (dims.vec[dim]-1) )
+    if( dims[dim] > 1 && ( co[dim] == 0 || co[dim] == (dims[dim]-1) ) )
       return true;
   }
   return false;
@@ -1661,14 +1668,11 @@ cuNDA_upsample_lin_kernel( REAL *in, REAL *out,
   
   if( idx < num_elements*num_batches ){
 
-
     REAL res = REAL(0);
-
 
     const unsigned int num_neighbors = 1 << D;
     const unsigned int frame_idx = idx/num_elements;
     const typename uintd<D>::Type co_out = idx_to_co<D>( idx-frame_idx*num_elements, matrix_size_out );
-
 
     // We will only proceed if all neighbours exist (this adds a zero-boundary to the upsampled image/vector field)
     //
@@ -1680,10 +1684,17 @@ cuNDA_upsample_lin_kernel( REAL *in, REAL *out,
 	// Determine coordinate of neighbor in input
 	//
 
-	const typename uintd<D>::Type ones = to_vector_td<unsigned int,D>(1);
 	const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
 	const typename uintd<D>::Type stride = idx_to_co<D>( i, twos );
 
+	if( weak_greater_equal( stride, matrix_size_out ) ) continue; // To allow array dimensions of 1
+
+	// Be careful about dimensions of size 1
+	typename uintd<D>::Type ones = to_vector_td<unsigned int,D>(1);
+	for( unsigned int d=0; d<D; d++ ){
+	  if( matrix_size_out[d] == 1 )
+	    ones[d] = 0;
+	}
 	typename uintd<D>::Type co_in = ((co_out-ones)>>1)+stride;
 	
 	// Read corresponding pixel value
@@ -1697,13 +1708,14 @@ cuNDA_upsample_lin_kernel( REAL *in, REAL *out,
 	
 	REAL weight = REAL(1);
 	
-	for( unsigned int dim=0; dim<D; dim++ ){
-	  
-	  if( stride.vec[dim] == (co_out.vec[dim]%2) ) {
-	    weight *= REAL(0.25);
-	  }
-	  else{
-	    weight *= REAL(0.75);
+	for( unsigned int dim=0; dim<D; dim++ ){	  
+	  if( matrix_size_in[dim] > 1 ){
+	    if( stride.vec[dim] == (co_out.vec[dim]%2) ) {
+	      weight *= REAL(0.25);
+	    }
+	    else{
+	      weight *= REAL(0.75);
+	    }
 	  }
 	}
 	
@@ -1711,7 +1723,6 @@ cuNDA_upsample_lin_kernel( REAL *in, REAL *out,
 	//
 	
 	res += weight*value;
-
       }
     }
     out[idx] = res;
@@ -1743,6 +1754,11 @@ cuNDA_upsample_lin( cuNDArray<REAL> *in,
   typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
   typename uintd<D>::Type matrix_size_out = matrix_size_in << 1;
 
+  for( unsigned int d=0; d<D; d++ ){
+    if( matrix_size_in[d] == 1 )
+      matrix_size_out[d] = 1;
+  }
+  
   unsigned int number_of_elements = prod(matrix_size_out);
   unsigned int number_of_batches = 1;
 
@@ -3765,7 +3781,7 @@ cuNDA_shrink1_kernel( REAL gamma, T *in, T *out, unsigned int number_of_elements
  
   if( idx<number_of_elements ){
     T in_val = in[idx]; 
-    REAL in_norm = norm<REAL>(in_val);
+    REAL in_norm = abs<REAL>(in_val);
     T _res;
     if( in_norm > REAL(0) )
       _res =  in_val/in_norm;
@@ -3877,7 +3893,7 @@ bool cuNDA_shrinkd( REAL gamma, cuNDArray<REAL> *s_k, cuNDArray<T> *in, cuNDArra
   return true;
 }
 
-// Crop
+// Mirror, but keep the origin unchanged
 template<class T, unsigned int D> __global__ void
 cuNDA_origin_mirror_kernel( typename uintd<D>::Type matrix_size, typename uintd<D>::Type origin, T *in, T *out, bool zero_fill )
 {

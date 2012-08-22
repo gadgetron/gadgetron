@@ -20,6 +20,7 @@
 #include "check_CUDA.h"
 
 // Includes - CUDA
+#include <device_functions.h>
 #include <math_constants.h>
 #include <cufft.h>
 
@@ -49,6 +50,7 @@ extern __shared__ char _shared_mem[];
 #include "KaiserBessel_kernel.cu"
 #include "NFFT_C2NC_conv_kernel.cu"
 #include "NFFT_NC2C_conv_kernel.cu"
+#include "NFFT_NC2C_atomic_conv_kernel.cu"
 #include "NFFT_preprocess_kernel.cu"
 
 // Some device properties we query once to eliminate runtime overhead
@@ -58,6 +60,16 @@ static int *major = 0x0;
 
 // Default template arguments requires c++-0x ?
 typedef float dummy;
+
+// The declaration of atomic/non-atomic NC2C convolution
+// We would love to hide this inside the class, but the compiler core dumps on us when we try...
+//
+template<class REAL, unsigned int D, bool ATOMICS> struct _convolve_NFFT_NC2C{
+  static bool apply( NFFT_plan<REAL,D,ATOMICS> *plan, 
+		     cuNDArray<complext<REAL> > *in, 
+		     cuNDArray<complext<REAL> > *out, 
+		     bool accumulate );
+};
 
 // Initialize static variables
 //
@@ -196,15 +208,15 @@ static bool restore( int old_device, cuNDArray<I1> *out,
 // Public class methods
 //
 
-template<class REAL, unsigned int D> 
-NFFT_plan<REAL,D>::NFFT_plan()
+template<class REAL, unsigned int D, bool ATOMICS> 
+NFFT_plan<REAL,D,ATOMICS>::NFFT_plan()
 {
   // Minimal initialization
   barebones();
 }
 
-template<class REAL, unsigned int D> 
-NFFT_plan<REAL,D>::NFFT_plan( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int device )
+template<class REAL, unsigned int D, bool ATOMICS> 
+NFFT_plan<REAL,D,ATOMICS>::NFFT_plan( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int device )
 {
   // Minimal initialization
   barebones();
@@ -213,14 +225,14 @@ NFFT_plan<REAL,D>::NFFT_plan( typename uintd<D>::Type matrix_size, typename uint
   setup( matrix_size, matrix_size_os, W, device );
 }
 
-template<class REAL, unsigned int D> 
-NFFT_plan<REAL,D>::~NFFT_plan()
+template<class REAL, unsigned int D, bool ATOMICS> 
+NFFT_plan<REAL,D,ATOMICS>::~NFFT_plan()
 {
   wipe(NFFT_WIPE_ALL);
 }
 
-template<class REAL, unsigned int D> 
-bool NFFT_plan<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int _device )
+template<class REAL, unsigned int D, bool ATOMICS> 
+bool NFFT_plan<REAL,D,ATOMICS>::setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int _device )
 {
   // Free memory
   wipe(NFFT_WIPE_ALL);
@@ -299,8 +311,6 @@ bool NFFT_plan<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uin
     cerr << "Error: NFFT_plan::setup: unable to set device" << endl;
   }  
 
-  initialized = success;  
-
   // Calculate deapodization filter
   if( success ) success = compute_deapodization_filter();
   
@@ -313,8 +323,8 @@ bool NFFT_plan<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uin
   return success;
 }
 
-template<class REAL, unsigned int D> 
-bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory, NFFT_prep_mode mode )
+template<class REAL, unsigned int D, bool ATOMICS> 
+bool NFFT_plan<REAL,D,ATOMICS>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory, NFFT_prep_mode mode )
 {
   if( !trajectory || trajectory->get_number_of_elements()==0 ){
     cerr << "Error: NFFT_plan::preprocess: invalid trajectory" << endl;
@@ -343,9 +353,10 @@ bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *tra
   number_of_frames = trajectory_int->get_number_of_elements()/number_of_samples;
   
   // Make Thrust device vector of trajectory and samples
-  device_vector< vector_td<REAL,D> > trajectory_positions_in( device_pointer_cast< vector_td<REAL,D> >(trajectory_int->get_data_ptr()), 
-							      device_pointer_cast< vector_td<REAL,D> >(trajectory_int->get_data_ptr()+trajectory_int->get_number_of_elements() ));
-
+  device_vector< vector_td<REAL,D> > trajectory_positions_in
+    ( device_pointer_cast< vector_td<REAL,D> >(trajectory_int->get_data_ptr()), 
+      device_pointer_cast< vector_td<REAL,D> >(trajectory_int->get_data_ptr()+trajectory_int->get_number_of_elements() ));
+  
   trajectory_positions = new device_vector< vector_td<REAL,D> >( trajectory_int->get_number_of_elements() );
 
   CHECK_FOR_CUDA_ERROR();
@@ -357,7 +368,7 @@ bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *tra
   thrust::transform( trajectory_positions_in.begin(), trajectory_positions_in.end(), trajectory_positions->begin(), 
 		     trajectory_scale<REAL,D>(matrix_size_os_real, matrix_size_os_plus_wrap_real) );
   
-  if( mode != NFFT_PREP_C2NC ){
+  if( !( mode == NFFT_PREP_C2NC || ATOMICS )){
     
     // allocate storage for and compute temporary prefix-sum variable (#cells influenced per sample)
     device_vector<unsigned int> c_p_s(trajectory_int->get_number_of_elements());
@@ -405,7 +416,7 @@ bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *tra
   
     delete tuples_first;
   }
-    
+
   preprocessed_C2NC = true;
 
   if( mode != NFFT_PREP_C2NC )
@@ -419,8 +430,8 @@ bool NFFT_plan<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *tra
   return true;
 }
 
-template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::compute( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
+template<class REAL, unsigned int D, bool ATOMICS> bool
+NFFT_plan<REAL,D,ATOMICS>::compute( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
 			    cuNDArray<REAL> *dcw, NFFT_comp_mode mode )
 {  
   // Validity checks
@@ -613,8 +624,8 @@ NFFT_plan<REAL,D>::compute( cuNDArray<complext<REAL> > *in, cuNDArray<complext<R
   return success;
 }
 
-template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, 
+template<class REAL, unsigned int D, bool ATOMICS> bool
+NFFT_plan<REAL,D,ATOMICS>::mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, 
 			      cuNDArray<REAL> *dcw, std::vector<unsigned int> halfway_dims )
 {
   // Validity checks
@@ -706,8 +717,8 @@ NFFT_plan<REAL,D>::mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext
   return success;
 }
 
-template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::convolve( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
+template<class REAL, unsigned int D, bool ATOMICS> bool
+NFFT_plan<REAL,D,ATOMICS>::convolve( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
 			     cuNDArray<REAL> *dcw, NFFT_conv_mode mode, bool accumulate )
 {
   unsigned char components;
@@ -778,8 +789,8 @@ NFFT_plan<REAL,D>::convolve( cuNDArray<complext<REAL> > *in, cuNDArray<complext<
       working_samples = in_int;
     }
     
-    if(success) success = convolve_NFFT_NC2C( working_samples, out_int, accumulate );
-
+    if(success) success = _convolve_NFFT_NC2C<REAL,D,ATOMICS>::apply( this, working_samples, out_int, accumulate );
+    
     if( dcw_int ){
       delete working_samples; working_samples = 0x0;
     }    
@@ -804,8 +815,8 @@ NFFT_plan<REAL,D>::convolve( cuNDArray<complext<REAL> > *in, cuNDArray<complext<
   return success;
 }
 
-template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::fft(cuNDArray<complext<REAL> > *data, NFFT_fft_mode mode, bool do_scale )
+template<class REAL, unsigned int D, bool ATOMICS> bool
+NFFT_plan<REAL,D,ATOMICS>::fft(cuNDArray<complext<REAL> > *data, NFFT_fft_mode mode, bool do_scale )
 {
   cuNDArray<complext<REAL> > *data_int = 0x0;
   int old_device;
@@ -837,8 +848,8 @@ NFFT_plan<REAL,D>::fft(cuNDArray<complext<REAL> > *data, NFFT_fft_mode mode, boo
     return false;
 }
 
-template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::deapodize( cuNDArray<complext<REAL> > *image )
+template<class REAL, unsigned int D, bool ATOMICS> bool
+NFFT_plan<REAL,D,ATOMICS>::deapodize( cuNDArray<complext<REAL> > *image )
 {
   unsigned char components;
   
@@ -880,8 +891,9 @@ NFFT_plan<REAL,D>::deapodize( cuNDArray<complext<REAL> > *image )
 // Private class methods
 //
 
-template<class REAL, unsigned int D> bool 
-NFFT_plan<REAL,D>::check_consistency( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, cuNDArray<REAL> *weights, unsigned char components )
+template<class REAL, unsigned int D, bool ATOMICS> bool 
+NFFT_plan<REAL,D,ATOMICS>::check_consistency( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, 
+				      cuNDArray<REAL> *weights, unsigned char components )
 {
   if( !initialized ){
     cerr << "Error: NFFT_plan: Unable to proceed without setup." << endl;
@@ -893,7 +905,7 @@ NFFT_plan<REAL,D>::check_consistency( cuNDArray<complext<REAL> > *samples, cuNDA
     return false;
   }
   
-  if( (components & _NFFT_CONV_NC2C ) && !preprocessed_NC2C ){
+  if( (components & _NFFT_CONV_NC2C ) && !(preprocessed_NC2C || (preprocessed_C2NC && ATOMICS ) ) ){
     cerr << "Error: NFFT_plan: Unable to compute NFFT before preprocessing." << endl;
     return false;
   }
@@ -957,12 +969,16 @@ NFFT_plan<REAL,D>::check_consistency( cuNDArray<complext<REAL> > *samples, cuNDA
   return true;
 }
 
-template<class REAL, unsigned int D> 
-bool NFFT_plan<REAL,D>::barebones()
+template<class REAL, unsigned int D, bool ATOMICS> 
+bool NFFT_plan<REAL,D,ATOMICS>::barebones()
 {	
   // These are the fundamental booleans checked before accessing the various member pointers
   initialized = preprocessed_C2NC = preprocessed_NC2C = false;
-  
+
+  // Clear pointers
+  trajectory_positions = 0x0;
+  tuples_last = bucket_begin = bucket_end = 0x0;
+
   // and specify the device
   if (cudaGetDevice(&device) != cudaSuccess) {
     cerr << "Error: NFFT_plan::barebones:: unable to get device no" << endl;
@@ -972,8 +988,8 @@ bool NFFT_plan<REAL,D>::barebones()
   return true;
 }
 
-template<class REAL, unsigned int D> 
-bool NFFT_plan<REAL,D>::wipe( NFFT_wipe_mode mode )
+template<class REAL, unsigned int D, bool ATOMICS> 
+bool NFFT_plan<REAL,D,ATOMICS>::wipe( NFFT_wipe_mode mode )
 {
   // Get current Cuda device
   int old_device;
@@ -993,9 +1009,9 @@ bool NFFT_plan<REAL,D>::wipe( NFFT_wipe_mode mode )
   }
     
   if( preprocessed_NC2C ){
-    delete tuples_last;
-    delete bucket_begin;
-    delete bucket_end;
+    if( tuples_last )  delete tuples_last;
+    if( bucket_begin ) delete bucket_begin;
+    if( bucket_end )   delete bucket_end;
   }
 
   if( preprocessed_C2NC || preprocessed_NC2C ){
@@ -1011,8 +1027,8 @@ bool NFFT_plan<REAL,D>::wipe( NFFT_wipe_mode mode )
   return true;
 }
 
-template<class REAL, unsigned int D> 
-bool NFFT_plan<REAL,D>::compute_beta()
+template<class REAL, unsigned int D, bool ATOMICS> 
+bool NFFT_plan<REAL,D,ATOMICS>::compute_beta()
 {	
   // Compute Kaiser-Bessel beta paramter according to the formula provided in 
   // Beatty et. al. IEEE TMI 2005;24(6):799-808.
@@ -1051,7 +1067,7 @@ compute_deapodization_filter_kernel( typename uintd<D>::Type matrix_size_os, typ
     REAL zero = REAL(0);
     vector_td<REAL,D> half_W_vec = to_vector_td<REAL,D>( half_W );
 
-    if( weak_greater(delta, half_W_vec ) )
+    if( weak_greater( delta, half_W_vec ) )
       weight = zero;
     else{ 
       weight = KaiserBessel<REAL>( delta, matrix_size_os_real, one_over_W, beta );
@@ -1071,8 +1087,8 @@ compute_deapodization_filter_kernel( typename uintd<D>::Type matrix_size_os, typ
 // Function to calculate the deapodization filter
 //
 
-template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::compute_deapodization_filter()
+template<class REAL, unsigned int D, bool ATOMICS> bool
+NFFT_plan<REAL,D,ATOMICS>::compute_deapodization_filter()
 {
   std::vector<unsigned int> tmp_vec_os = uintd_to_vector<D>(matrix_size_os);
   deapodization_filter = boost::shared_ptr< cuNDArray<complext<REAL> > >
@@ -1105,8 +1121,8 @@ NFFT_plan<REAL,D>::compute_deapodization_filter()
   return success;
 }
 
-template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::compute_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples )
+template<class REAL, unsigned int D, bool ATOMICS> bool
+NFFT_plan<REAL,D,ATOMICS>::compute_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples )
 {
   // private method - no consistency check. We trust in ourselves.
 
@@ -1127,8 +1143,8 @@ NFFT_plan<REAL,D>::compute_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDArr
   return success;
 }
 
-template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::compute_NFFTH_NC2C( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image )
+template<class REAL, unsigned int D, bool ATOMICS> bool
+NFFT_plan<REAL,D,ATOMICS>::compute_NFFTH_NC2C( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image )
 {
   // private method - no consistency check. We trust in ourselves.
   bool success = true;
@@ -1148,8 +1164,8 @@ NFFT_plan<REAL,D>::compute_NFFTH_NC2C( cuNDArray<complext<REAL> > *samples, cuND
   return success;
 }
 
-template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::compute_NFFTH_C2NC( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples )
+template<class REAL, unsigned int D, bool ATOMICS> bool
+NFFT_plan<REAL,D,ATOMICS>::compute_NFFTH_C2NC( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples )
 {
   // private method - no consistency check. We trust in ourselves.
 
@@ -1170,8 +1186,8 @@ NFFT_plan<REAL,D>::compute_NFFTH_C2NC( cuNDArray<complext<REAL> > *image, cuNDAr
   return success;
 }
 
-template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::compute_NFFT_NC2C( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image )
+template<class REAL, unsigned int D, bool ATOMICS> bool
+NFFT_plan<REAL,D,ATOMICS>::compute_NFFT_NC2C( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image )
 {
   // private method - no consistency check. We trust in ourselves.
 
@@ -1192,8 +1208,8 @@ NFFT_plan<REAL,D>::compute_NFFT_NC2C( cuNDArray<complext<REAL> > *samples, cuNDA
   return success;
 }
 
-template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::convolve_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples, bool accumulate )
+template<class REAL, unsigned int D, bool ATOMICS> bool
+NFFT_plan<REAL,D,ATOMICS>::convolve_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples, bool accumulate )
 {
   // private method - no consistency check. We trust in ourselves.
 
@@ -1244,10 +1260,6 @@ NFFT_plan<REAL,D>::convolve_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDAr
   size_t bytes_per_thread = domain_size_coils * sizeof( vector_td<REAL,D> );
   size_t bytes_per_thread_tail = domain_size_coils_tail * sizeof( vector_td<REAL,D> );
 
-  /*
-    Invoke kernel
-  */
-
   unsigned int double_warp_size_power=0;
   unsigned int __tmp = warp_size[device]<<1;
   while(__tmp!=1){
@@ -1256,6 +1268,10 @@ NFFT_plan<REAL,D>::convolve_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDAr
   }
   
   vector_td<REAL,D> matrix_size_os_real = to_reald<REAL,unsigned int,D>( matrix_size_os );
+
+  /*
+    Invoke kernel
+  */
 
   for( unsigned int repetition = 0; repetition<num_repetitions; repetition++ ){
     NFFT_convolve_kernel<REAL,D>
@@ -1273,107 +1289,251 @@ NFFT_plan<REAL,D>::convolve_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDAr
   return true;
 }
 
-template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::convolve_NFFT_NC2C( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, bool accumulate )
+template<class REAL, unsigned int D, bool ATOMICS> bool
+NFFT_plan<REAL,D,ATOMICS>::convolve_NFFT_NC2C( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples, bool accumulate )
 {
-  // private method - no consistency check. We trust in ourselves.
-
-  if( !initialize_static_variables() ){
-    cerr << "Error: NFFT_plan::convolve_NFFT: unable to query device properties" << endl;
-    return false;
-  }
-
-  // Check if warp_size is a power of two. We do some modulus tricks in the kernels that depend on this...
-  if( !((warp_size[device] & (warp_size[device]-1)) == 0 ) ){
-    printf("\nError: on unsupported hardware (warpSize is not a power of two).\n");
-    return false;
-  }
-  
-  unsigned int num_batches = 1;
-  for( unsigned int d=D; d<image->get_number_of_dimensions(); d++ )
-    num_batches *= image->get_size(d);
-  num_batches /= number_of_frames;
-
-  /*
-    Setup grid and threads
-  */
-
-  size_t threads_per_block;
-  unsigned int max_coils;
-
-  threads_per_block = NFFT_THREADS_PER_KERNEL;
-  
-  if( major[device] == 1 ){
-    max_coils = NFFT_MAX_COILS_COMPUTE_1x;
-  }
-  else{
-    max_coils = NFFT_MAX_COILS_COMPUTE_2x;
-  }
-  
-  // We can (only) convolve domain_size_coils batches per run due to shared memory issues. 
-  unsigned int domain_size_coils_desired = num_batches;
-  unsigned int num_repetitions = domain_size_coils_desired/max_coils + 
-    ( ((domain_size_coils_desired%max_coils)==0) ? 0 : 1 );
-  unsigned int domain_size_coils = (num_repetitions==1) ? domain_size_coils_desired : max_coils;
-  unsigned int domain_size_coils_tail = (num_repetitions==1) ? domain_size_coils_desired : domain_size_coils_desired - (num_repetitions-1)*domain_size_coils;
-  
-  // Block and Grid dimensions
-  dim3 dimBlock( (unsigned int)threads_per_block ); 
-  dim3 dimGrid((prod(matrix_size_os+matrix_size_wrap)+dimBlock.x-1)/dimBlock.x, number_of_frames );
-  
-  // Calculate how much shared memory to use per thread
-  size_t bytes_per_thread = domain_size_coils * sizeof( vector_td<REAL,D> );
-  size_t bytes_per_thread_tail = domain_size_coils_tail * sizeof( vector_td<REAL,D> );
-
-  vector<unsigned int> vec_dims = uintd_to_vector<D>(matrix_size_os+matrix_size_wrap); 
-  if( number_of_frames > 1 )
-    vec_dims.push_back(number_of_frames);
-  if( num_batches > 1 ) 
-    vec_dims.push_back(num_batches);
-  
-  // Allocate and clear temporary image that includes a wrapping zone
-  cuNDArray<complext<REAL> > *_tmp = new cuNDArray<complext<REAL> >; _tmp->create(&vec_dims);
-  
-  if( !_tmp ){
-    cerr << "Error: NFFT memory allocation failed before convolution." << endl;
-    return false;
-  }
-  
-  unsigned int double_warp_size_power=0, __tmp = warp_size[device]<<1;
-  while(__tmp!=1){
-    __tmp>>=1;
-    double_warp_size_power++;
-  }
-
-  vector_td<REAL,D> matrix_size_os_real = to_reald<REAL,unsigned int,D>( matrix_size_os );
-
-  for( unsigned int i = 0; i<num_repetitions; i++ ){
-    NFFT_H_convolve_kernel<REAL,D>
-      <<<dimGrid, dimBlock, (i==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
-      ( alpha, beta, W, matrix_size_os+matrix_size_wrap, number_of_samples, 
-	(i==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils, 
-	raw_pointer_cast(&(*trajectory_positions)[0]), 
-	_tmp->get_data_ptr()+i*prod(matrix_size_os+matrix_size_wrap)*number_of_frames*domain_size_coils,
-	samples->get_data_ptr()+i*number_of_samples*number_of_frames*domain_size_coils, 
-	raw_pointer_cast(&(*tuples_last)[0]), raw_pointer_cast(&(*bucket_begin)[0]), raw_pointer_cast(&(*bucket_end)[0]),
-	double_warp_size_power, REAL(0.5)*W, REAL(1)/(W), matrix_size_os_real );
-  }
-  
-  CHECK_FOR_CUDA_ERROR();
-  
-  bool success = image_wrap( _tmp, image, accumulate );
- 
-  delete _tmp;
-
-  return success;
+  return _convolve_NFFT_NC2C<REAL,D,ATOMICS>::apply( this, image, samples, accumulate );
 }
 
+template<unsigned int D> struct
+_convolve_NFFT_NC2C<float,D,true>{ // True: use atomic operations variant
+  static bool apply( NFFT_plan<float,D,true> *plan, 
+		     cuNDArray<complext<float> > *samples, 
+		     cuNDArray<complext<float> > *image, 
+		     bool accumulate )
+  {   
+    //
+    // Bring in some variables from the plan
+    
+    unsigned int device = plan->device;
+    unsigned int number_of_frames = plan->number_of_frames;
+    unsigned int number_of_samples = plan->number_of_samples;
+    typename uintd<D>::Type matrix_size_os = plan->matrix_size_os;
+    typename uintd<D>::Type matrix_size_wrap = plan->matrix_size_wrap;
+    float alpha = plan->alpha;
+    float beta = plan->beta;
+    float W = plan->W;
+    thrust::device_vector< typename reald<float,D>::Type > *trajectory_positions = plan->trajectory_positions;    
+
+    // private method - no consistency check. We trust in ourselves.
+    
+    if( !initialize_static_variables() ){
+      cerr << "Error: NFFT_plan::convolve_NFFT: unable to query device properties" << endl;
+      return false;
+    }
+    
+    //
+    // Atomic operations are only supported in compute model 2.0 and up
+    //
+
+    if( major[device] == 1 ){
+      cerr << "Error: Atomic NC2C NFFT only supported on device with compute model 2.0 or higher" << endl;
+      return false;
+    }
+    
+    // Check if warp_size is a power of two. We do some modulus tricks in the kernels that depend on this...
+    if( !((warp_size[device] & (warp_size[device]-1)) == 0 ) ){
+      printf("\nError: on unsupported hardware (warpSize is not a power of two).\n");
+      return false;
+    }
+    
+    unsigned int num_batches = 1;
+    for( unsigned int d=D; d<image->get_number_of_dimensions(); d++ )
+      num_batches *= image->get_size(d);
+    num_batches /= number_of_frames;
+    
+    //
+    //  Setup grid and threads
+    //
+    
+    size_t threads_per_block;
+    unsigned int max_coils;
+    
+    threads_per_block = NFFT_THREADS_PER_KERNEL;
+    max_coils = NFFT_MAX_COILS_COMPUTE_2x;
+    
+    // We can (only) convolve domain_size_coils batches per run due to shared memory issues. 
+    unsigned int domain_size_coils_desired = num_batches;
+    unsigned int num_repetitions = domain_size_coils_desired/max_coils + 
+      ( ((domain_size_coils_desired%max_coils)==0) ? 0 : 1 );
+    unsigned int domain_size_coils = (num_repetitions==1) ? domain_size_coils_desired : max_coils;
+    unsigned int domain_size_coils_tail = (num_repetitions==1) ? domain_size_coils_desired : domain_size_coils_desired - (num_repetitions-1)*domain_size_coils;
+    
+    // Block and Grid dimensions
+    dim3 dimBlock( (unsigned int)threads_per_block ); 
+    dim3 dimGrid( (number_of_samples+dimBlock.x-1)/dimBlock.x, number_of_frames );
+    
+    // Calculate how much shared memory to use per thread
+    size_t bytes_per_thread = domain_size_coils * sizeof( vector_td<float,D> );
+    size_t bytes_per_thread_tail = domain_size_coils_tail * sizeof( vector_td<float,D> );
+    
+    unsigned int double_warp_size_power=0, __tmp = warp_size[device]<<1;
+    while(__tmp!=1){
+      __tmp>>=1;
+      double_warp_size_power++;
+    }
+    
+    vector_td<float,D> matrix_size_os_real = to_reald<float,unsigned int,D>( matrix_size_os );
+    
+    if( !accumulate ){
+      cuNDA_clear( image );
+    }
+    
+    //
+    // Invoke kernel
+    //
+    
+    for( unsigned int repetition = 0; repetition<num_repetitions; repetition++ ){
+      
+      NFFT_H_atomic_convolve_kernel<float,D>
+	<<<dimGrid, dimBlock, (repetition==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
+	( alpha, beta, W, matrix_size_os, matrix_size_wrap, number_of_samples,
+	  (repetition==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils,
+	  raw_pointer_cast(&(*trajectory_positions)[0]), 
+	  samples->get_data_ptr()+repetition*number_of_samples*number_of_frames*domain_size_coils,
+	  image->get_data_ptr()+repetition*prod(matrix_size_os)*number_of_frames*domain_size_coils,
+	  double_warp_size_power, float(0.5)*W, float(1)/(W), matrix_size_os_real );
+    }
+    
+    CHECK_FOR_CUDA_ERROR();
+   
+    return true;
+  }
+};
+
+template<unsigned int D> struct
+_convolve_NFFT_NC2C<double,D,true>{ // True: use atomic operations variant
+  static bool apply( NFFT_plan<double,D,true> *plan, 
+		     cuNDArray<complext<double> > *samples, 
+		     cuNDArray<complext<double> > *image, 
+		     bool accumulate )
+  {
+    std::cout << std::endl << "Error: atomic version of NFFT is only supported in single precision due to hardware limitations" << std::endl;
+    return false;
+  }
+};
+
+template<class REAL, unsigned int D> struct
+_convolve_NFFT_NC2C<REAL,D,false>{ // False: use non-atomic operations variant
+  static bool apply( NFFT_plan<REAL,D,false> *plan, 
+		     cuNDArray<complext<REAL> > *samples, 
+		     cuNDArray<complext<REAL> > *image, 
+		     bool accumulate )
+  {
+    // Bring in some variables from the plan
+    
+    unsigned int device = plan->device;
+    unsigned int number_of_frames = plan->number_of_frames;
+    unsigned int number_of_samples = plan->number_of_samples;
+    typename uintd<D>::Type matrix_size_os = plan->matrix_size_os;
+    typename uintd<D>::Type matrix_size_wrap = plan->matrix_size_wrap;
+    REAL alpha = plan->alpha;
+    REAL beta = plan->beta;
+    REAL W = plan->W;
+    thrust::device_vector< typename reald<REAL,D>::Type > *trajectory_positions = plan->trajectory_positions;    
+    thrust::device_vector<unsigned int> *tuples_last = plan->tuples_last;
+    thrust::device_vector<unsigned int> *bucket_begin = plan->bucket_begin;
+    thrust::device_vector<unsigned int> *bucket_end = plan->bucket_end;
+
+     // private method - no consistency check. We trust in ourselves.
+    
+    if( !initialize_static_variables() ){
+      cerr << "Error: NFFT_planq::convolve_NFFT: unable to query device properties" << endl;
+      return false;
+    }
+    
+    // Check if warp_size is a power of two. We do some modulus tricks in the kernels that depend on this...
+    if( !((warp_size[device] & (warp_size[device]-1)) == 0 ) ){
+      printf("\nError: on unsupported hardware (warpSize is not a power of two).\n");
+      return false;
+    }
+    
+    unsigned int num_batches = 1;
+    for( unsigned int d=D; d<image->get_number_of_dimensions(); d++ )
+      num_batches *= image->get_size(d);
+    num_batches /= number_of_frames;
+    
+    //
+    // Setup grid and threads
+    //
+    
+    size_t threads_per_block;
+    unsigned int max_coils;
+    
+    threads_per_block = NFFT_THREADS_PER_KERNEL;
+    
+    if( major[device] == 1 ){
+      max_coils = NFFT_MAX_COILS_COMPUTE_1x;
+    }
+    else{
+      max_coils = NFFT_MAX_COILS_COMPUTE_2x;
+    }
+    
+    // We can (only) convolve domain_size_coils batches per run due to shared memory issues. 
+    unsigned int domain_size_coils_desired = num_batches;
+    unsigned int num_repetitions = domain_size_coils_desired/max_coils + 
+      ( ((domain_size_coils_desired%max_coils)==0) ? 0 : 1 );
+    unsigned int domain_size_coils = (num_repetitions==1) ? domain_size_coils_desired : max_coils;
+    unsigned int domain_size_coils_tail = (num_repetitions==1) ? domain_size_coils_desired : domain_size_coils_desired - (num_repetitions-1)*domain_size_coils;
+    
+    // Block and Grid dimensions
+    dim3 dimBlock( (unsigned int)threads_per_block ); 
+    dim3 dimGrid( (prod(matrix_size_os+matrix_size_wrap)+dimBlock.x-1)/dimBlock.x, number_of_frames );
+    
+    // Calculate how much shared memory to use per thread
+    size_t bytes_per_thread = domain_size_coils * sizeof( vector_td<REAL,D> );
+    size_t bytes_per_thread_tail = domain_size_coils_tail * sizeof( vector_td<REAL,D> );
+    
+    unsigned int double_warp_size_power=0, __tmp = warp_size[device]<<1;
+    while(__tmp!=1){
+      __tmp>>=1;
+      double_warp_size_power++;
+    }
+    
+    vector_td<REAL,D> matrix_size_os_real = to_reald<REAL,unsigned int,D>( matrix_size_os );
+    
+    // Define temporary image that includes a wrapping zone
+    cuNDArray<complext<REAL> > _tmp;
+    
+    vector<unsigned int> vec_dims = uintd_to_vector<D>(matrix_size_os+matrix_size_wrap); 
+    if( number_of_frames > 1 )
+      vec_dims.push_back(number_of_frames);
+    if( num_batches > 1 ) 
+      vec_dims.push_back(num_batches);
+    
+    if( !_tmp.create(&vec_dims) ){
+      cerr << "Error: NFFT memory allocation failed before convolution." << endl;
+      return false;
+    }    
+    
+    //
+    // Invoke kernel
+    //
+    
+    for( unsigned int repetition = 0; repetition<num_repetitions; repetition++ ){
+      
+      NFFT_H_convolve_kernel<REAL,D>
+	<<<dimGrid, dimBlock, (repetition==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
+	( alpha, beta, W, matrix_size_os+matrix_size_wrap, number_of_samples, 
+	  (repetition==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils, 
+	  raw_pointer_cast(&(*trajectory_positions)[0]), 
+	  _tmp.get_data_ptr()+repetition*prod(matrix_size_os+matrix_size_wrap)*number_of_frames*domain_size_coils,
+	  samples->get_data_ptr()+repetition*number_of_samples*number_of_frames*domain_size_coils, 
+	  raw_pointer_cast(&(*tuples_last)[0]), raw_pointer_cast(&(*bucket_begin)[0]), raw_pointer_cast(&(*bucket_end)[0]),
+	  double_warp_size_power, REAL(0.5)*W, REAL(1)/(W), matrix_size_os_real );
+    }
+    
+    CHECK_FOR_CUDA_ERROR();
+    
+    return plan->image_wrap( &_tmp, image, accumulate );
+  };
+};
 
 // Image wrap kernels
 
 template<class REAL, unsigned int D> __global__ void
 image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type matrix_size_wrap, bool accumulate,
-		  complext<REAL> *in, complext<REAL> *out )
+		   complext<REAL> *in, complext<REAL> *out )
 {
   unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const unsigned int num_elements_per_image_src = prod(matrix_size_os+matrix_size_wrap);
@@ -1474,8 +1634,8 @@ image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Ty
   out[idx+image_offset_tgt] = result;
 }
 
-template<class REAL, unsigned int D> bool
-NFFT_plan<REAL,D>::image_wrap( cuNDArray<complext<REAL> > *source, cuNDArray<complext<REAL> > *target, bool accumulate )
+template<class REAL, unsigned int D, bool ATOMICS> bool
+NFFT_plan<REAL,D,ATOMICS>::image_wrap( cuNDArray<complext<REAL> > *source, cuNDArray<complext<REAL> > *target, bool accumulate )
 {
   unsigned int num_batches = 1;
   for( unsigned int d=D; d<source->get_number_of_dimensions(); d++ )
@@ -1502,42 +1662,51 @@ NFFT_plan<REAL,D>::image_wrap( cuNDArray<complext<REAL> > *source, cuNDArray<com
 }	
 
 
-template<class REAL, unsigned int D> typename uintd<D>::Type
-NFFT_plan<REAL,D>::get_matrix_size()
+template<class REAL, unsigned int D, bool ATOMICS> typename uintd<D>::Type
+NFFT_plan<REAL,D,ATOMICS>::get_matrix_size()
 {
   return matrix_size;
 }
 
-template<class REAL, unsigned int D> typename uintd<D>::Type
-NFFT_plan<REAL,D>::get_matrix_size_os()
+template<class REAL, unsigned int D, bool ATOMICS> typename uintd<D>::Type
+NFFT_plan<REAL,D,ATOMICS>::get_matrix_size_os()
 {
   return matrix_size_os;
 }
 
-template<class REAL, unsigned int D> REAL 
-NFFT_plan<REAL,D>::get_W()
+template<class REAL, unsigned int D, bool ATOMICS> REAL 
+NFFT_plan<REAL,D,ATOMICS>::get_W()
 {
   return W;
 }
 
-template<class REAL, unsigned int D> unsigned int 
-NFFT_plan<REAL,D>::get_device()
+template<class REAL, unsigned int D, bool ATOMICS> unsigned int 
+NFFT_plan<REAL,D,ATOMICS>::get_device()
 {
   return device;
 }
+
 
 //
 // Template instantion
 //
 
-template class EXPORTGPUNFFT NFFT_plan< float, 1 >;
-template class EXPORTGPUNFFT NFFT_plan< double, 1 >;
+template class EXPORTGPUNFFT NFFT_plan< float, 1, true >;
+template class EXPORTGPUNFFT NFFT_plan< float, 1, false >;
+template class EXPORTGPUNFFT NFFT_plan< double, 1, true >;
+template class EXPORTGPUNFFT NFFT_plan< double, 1, false >;
 
-template class EXPORTGPUNFFT NFFT_plan< float, 2 >;
-template class EXPORTGPUNFFT NFFT_plan< double, 2 >;
+template class EXPORTGPUNFFT NFFT_plan< float, 2, true >;
+template class EXPORTGPUNFFT NFFT_plan< float, 2, false >;
+template class EXPORTGPUNFFT NFFT_plan< double, 2, true >;
+template class EXPORTGPUNFFT NFFT_plan< double, 2, false >;
 
-template class EXPORTGPUNFFT NFFT_plan< float, 3 >;
-template class EXPORTGPUNFFT NFFT_plan< double, 3 >;
+template class EXPORTGPUNFFT NFFT_plan< float, 3, true >;
+template class EXPORTGPUNFFT NFFT_plan< float, 3, false >;
+template class EXPORTGPUNFFT NFFT_plan< double, 3, true >;
+template class EXPORTGPUNFFT NFFT_plan< double, 3, false >;
 
-template class EXPORTGPUNFFT NFFT_plan< float, 4 >;
-template class EXPORTGPUNFFT NFFT_plan< double, 4 >;
+template class EXPORTGPUNFFT NFFT_plan< float, 4, true >;
+template class EXPORTGPUNFFT NFFT_plan< float, 4, false >;
+template class EXPORTGPUNFFT NFFT_plan< double, 4, true >;
+template class EXPORTGPUNFFT NFFT_plan< double, 4, false >;

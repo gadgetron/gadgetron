@@ -3,6 +3,7 @@
 #include "vector_td.h"
 #include "vector_td_operators.h"
 #include "cpucore_defines.h"
+#include "real_utilities.h"
 
 #include <float.h>
 #include <cmath>
@@ -29,6 +30,17 @@ vector_td<T,D> abs( const vector_td<T,D> vec )
   vector_td<T,D> res;
   for (unsigned int i=0; i<D; i++) {
     res.vec[i] = abs(vec.vec[i]);
+  }
+  return res;
+}
+
+
+template<class T, unsigned int D> __inline__ __host__ __device__
+vector_td<int,D> sgn( const vector_td<T,D> vec )
+{
+  vector_td<int,D> res;
+  for (unsigned int i=0; i<D; i++) {
+    res.vec[i] = sgn(vec.vec[i]);
   }
   return res;
 }
@@ -112,9 +124,21 @@ unsigned int co_to_idx( const vector_td<unsigned int,D> co, const vector_td<unsi
 template<unsigned int D> __inline__ __host__ __device__  
 int co_to_idx( const vector_td< int,D> co, const vector_td<unsigned int,D> dims )
 {
-  unsigned int idx = 0;
-  unsigned long block_size = 1;
-  for (unsigned int i=0; i<D; i++) {
+  int idx = 0;
+  long block_size = 1;
+  for (int i=0; i<D; i++) {
+    idx += (block_size*co.vec[i]);
+    block_size *= dims.vec[i];
+  }
+  return idx;
+}
+
+template<unsigned int D> __inline__ __host__ __device__
+int co_to_idx( const vector_td< int,D> co, const vector_td<int,D> dims )
+{
+  int idx = 0;
+  long block_size = 1;
+  for (int i=0; i<D; i++) {
     idx += (block_size*co.vec[i]);
     block_size *= dims.vec[i];
   }
@@ -208,6 +232,32 @@ typename intd<D>::Type vector_to_intd( std::vector<unsigned int> _vector )
   return out;
 }
 
+
+template<class T, unsigned int D>
+std::vector<T> to_std_vector( vector_td<T,D> vec )
+{
+  std::vector<T> out(D);
+  for(int i=0; i<D; i++ )
+    out[i] = vec[i];
+  return out;
+}
+
+
+template<class T, unsigned int D>
+vector_td<T,D> from_std_vector( std::vector<T> _vector )
+{
+  vector_td<T,D> out;
+  for( unsigned int i=0; i<D; i++ ){
+    if( i<_vector.size() )
+      out[i] = _vector[i];
+    else
+      out[i] = T(1);
+  }
+
+  return out;
+}
+
+
 //
 // Reductions on vector_td<T,D>
 //
@@ -287,6 +337,29 @@ T min( const vector_td<T,D> vec )
   return res;
 }
 
+
+template<class T, unsigned int D> __inline__ __host__ __device__
+vector_td<T,D> amin( const vector_td<T,D> vec1, const vector_td<T,D> vec2)
+{
+	vector_td<T,D> res;
+  for (unsigned int i=0; i<D; i++){
+    res[i] = vec1[i] < vec2[i] ? vec1[i] : vec2[i];
+  }
+  return res;
+}
+
+template<class T, unsigned int D> __inline__ __host__ __device__
+vector_td<T,D> amax( const vector_td<T,D> vec1, const vector_td<T,D> vec2)
+{
+	vector_td<T,D> res;
+  for (unsigned int i=0; i<D; i++){
+	  res[i] = vec1[i] > vec2[i] ? vec1[i] : vec2[i];
+  }
+  return res;
+}
+
+
+
 template<class T, unsigned int D> __inline__ __host__ __device__ 
 unsigned int argmin( const vector_td<T,D> vec )
 {
@@ -347,7 +420,7 @@ vector_td<int,D> to_intd( const vector_td<T,D> vec )
 {
   vector_td<int,D> res;
   for (unsigned int i=0; i<D; i++){
-    res.vec[i] = (int) vec.vec[i];
+    res.vec[i] = int(vec.vec[i]);
   }
   return res;
 }
