@@ -7,7 +7,7 @@ find_package(CULA REQUIRED)
 
 include_directories(
                 ${CUDA_INCLUDE_DIRS}
-				${CULA_INCLUDE_DIR} 
+		${CULA_INCLUDE_DIR} 
                 ${Boost_INCLUDE_DIR} 
                 ${CMAKE_SOURCE_DIR}/apps/gadgetron 
                 ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
@@ -19,21 +19,24 @@ include_directories(
                 ${CMAKE_SOURCE_DIR}/gadgets/core)
 
 cuda_add_library(gpuparallelmri SHARED 	
-                                    b1_map.cu
-                                    cuSenseOperator.cu
-                                    cuCartesianSenseOperator.cu
-                                    cuNonCartesianSenseOperator.cu
-                                    cuNonCartesianKtSenseOperator.cu
-                                    cuSenseRHSBuffer.cu
-                                    htgrappa.cu
-									)
+  b1_map.cu
+  sense_utilities.cu
+  cuSenseOperator.cu
+  cuCartesianSenseOperator.cu
+  cuNonCartesianSenseOperator.cu
+  cuNonCartesianKtSenseOperator.cu
+  cuSenseRHSBuffer.cu
+  htgrappa.cu
+  )
 
-target_link_libraries(gpuparallelmri gpucore gpunfft ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CULA_LIBRARIES})
+target_link_libraries(gpuparallelmri gpucore gpunfft 
+  ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CULA_LIBRARIES})
 
 install(TARGETS gpuparallelmri DESTINATION lib)
 
 install(FILES 
 	b1_map.h
+	sense_utilities.h
 	htgrappa.h
 	senseOperator.h
 	cuSenseOperator.h
@@ -43,4 +46,3 @@ install(FILES
 	cuSenseRHSBuffer.h
 	gpupmri_export.h
 DESTINATION include)
-

@@ -40,6 +40,9 @@ else (CUDA_FOUND)
      MESSAGE("CUDA not found. CUDA components will not be compiled")
 endif (CUDA_FOUND)
 
+# Compile kernels for shader models 1.0 and 2.0 as default
+set(CUDA_NVCC_FLAGS "-gencode=arch=compute_10,code=\"sm_10,compute_10\" -gencode=arch=compute_20,code=\"sm_20,compute_20\"")
+
 find_package(Qt4 4.6)
 
 find_package(PythonLibs)
