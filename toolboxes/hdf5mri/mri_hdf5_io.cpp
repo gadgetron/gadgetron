@@ -70,8 +70,10 @@ template <> boost::shared_ptr<CompType> getHDF5CompositeType<GadgetMessageAcquis
 	ret->insertMember( "meas_uid",           HOFFSET(GadgetMessageAcquisition,meas_uid),            PredType::NATIVE_UINT);
 	ret->insertMember( "scan_counter",       HOFFSET(GadgetMessageAcquisition, scan_counter),       PredType::NATIVE_UINT);
 	ret->insertMember( "time_stamp",         HOFFSET(GadgetMessageAcquisition, time_stamp),         PredType::NATIVE_UINT);
+	ret->insertMember( "pmu_time_stamp",     HOFFSET(GadgetMessageAcquisition, pmu_time_stamp),         PredType::NATIVE_UINT);
 	ret->insertMember( "samples",            HOFFSET(GadgetMessageAcquisition, samples),            PredType::NATIVE_USHORT);
 	ret->insertMember( "channels",           HOFFSET(GadgetMessageAcquisition, channels),           PredType::NATIVE_USHORT);
+	ret->insertMember( "centre_column",      HOFFSET(GadgetMessageAcquisition, centre_column),           PredType::NATIVE_USHORT);
 
 	boost::shared_ptr<DataType> position_type = getHDF5ArrayType<float>(3);
 	boost::shared_ptr<DataType> quarterion_type = getHDF5ArrayType<float>(4);
@@ -111,6 +113,7 @@ template <> boost::shared_ptr<CompType> getHDF5CompositeType<GadgetMessageImage>
 		ret->insertMember( "data_idx_max",       HOFFSET(GadgetMessageImage, data_idx_max),        *loopcounters_type);
 		ret->insertMember( "data_idx_current",   HOFFSET(GadgetMessageImage, data_idx_current),    *loopcounters_type);
 		ret->insertMember( "time_stamp",         HOFFSET(GadgetMessageImage, time_stamp),          PredType::NATIVE_UINT);
+		ret->insertMember( "pmu_time_stamp",     HOFFSET(GadgetMessageImage, pmu_time_stamp),      PredType::NATIVE_UINT);
 		ret->insertMember( "image_format",       HOFFSET(GadgetMessageImage, image_format),        PredType::NATIVE_USHORT);
 		ret->insertMember( "image_type",         HOFFSET(GadgetMessageImage, image_type),          PredType::NATIVE_USHORT);
 		ret->insertMember( "image_index",        HOFFSET(GadgetMessageImage, image_index),         PredType::NATIVE_USHORT);

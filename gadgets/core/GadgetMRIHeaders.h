@@ -60,8 +60,10 @@ struct GadgetMessageAcquisition
   ACE_UINT32     meas_uid;
   ACE_UINT32     scan_counter;
   ACE_UINT32     time_stamp;
+  ACE_UINT32     pmu_time_stamp;
   ACE_UINT16     samples;
   ACE_UINT16     channels;
+  ACE_UINT16     centre_column;
   float          position[3];
   float          quarternion[4];
   float			 table_position;
@@ -113,6 +115,7 @@ struct GadgetMessageImage
   LoopCounters   data_idx_max;
   LoopCounters   data_idx_current;
   ACE_UINT32     time_stamp;
+  ACE_UINT32     pmu_time_stamp;
   ACE_UINT16     image_format;
   ACE_UINT16     image_type;
   ACE_UINT16     image_index;
