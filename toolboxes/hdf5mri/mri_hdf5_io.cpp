@@ -124,7 +124,7 @@ template <> boost::shared_ptr<CompType> getHDF5CompositeType<GadgetMessageImage>
 }
 
 
-template <class T> int hdf5_append_struct(T* s,
+template <class T> EXPORTHDF5MRI int hdf5_append_struct(T* s,
 		const char* filename, const char* varname)
 
 {
@@ -142,7 +142,7 @@ template <class T> struct local_hdf5_append_struct
 	hvl_t d;
 };
 
-template <class STRUCT, class DATATYPE> int hdf5_append_struct_with_data(STRUCT* s,
+template <class STRUCT, class DATATYPE> EXPORTHDF5MRI int hdf5_append_struct_with_data(STRUCT* s,
 		hoNDArray<DATATYPE>* a, const char* filename, const char* varname)
 {
 
@@ -166,20 +166,20 @@ template <class STRUCT, class DATATYPE> int hdf5_append_struct_with_data(STRUCT*
 	return hdf5_append_struct(&tmp, datatype, filename, varname);
 }
 
-template int hdf5_append_struct_with_data(GadgetMessageImage* s, hoNDArray<unsigned short>* a,
+template EXPORTHDF5MRI int hdf5_append_struct_with_data(GadgetMessageImage* s, hoNDArray<unsigned short>* a,
 		                                  const char* filename, const char* varname);
 
-template int hdf5_append_struct_with_data(GadgetMessageImage* s, hoNDArray<float>* a,
+template EXPORTHDF5MRI int hdf5_append_struct_with_data(GadgetMessageImage* s, hoNDArray<float>* a,
 		                                  const char* filename, const char* varname);
 
-template int hdf5_append_struct_with_data(GadgetMessageImage* s, hoNDArray< std::complex<float> >* a,
+template EXPORTHDF5MRI int hdf5_append_struct_with_data(GadgetMessageImage* s, hoNDArray< std::complex<float> >* a,
 		                                  const char* filename, const char* varname);
 
-template int hdf5_append_struct_with_data(GadgetMessageAcquisition* s, hoNDArray< std::complex<float> >* a,
+template EXPORTHDF5MRI int hdf5_append_struct_with_data(GadgetMessageAcquisition* s, hoNDArray< std::complex<float> >* a,
 		                                  const char* filename, const char* varname);
 
 
-template <class T> boost::shared_ptr<T> hdf5_read_struct(const char* filename, const char* varname,
+template <class T> EXPORTHDF5MRI boost::shared_ptr<T> hdf5_read_struct(const char* filename, const char* varname,
 		unsigned int index )
 {
 	boost::shared_ptr<DataType> structdatatype = getHDF5CompositeType<T>();
@@ -189,7 +189,7 @@ template <class T> boost::shared_ptr<T> hdf5_read_struct(const char* filename, c
 }
 
 
-template <class STRUCT, class DATATYPE> header_data_struct<STRUCT, DATATYPE>
+template <class STRUCT, class DATATYPE> EXPORTHDF5MRI header_data_struct<STRUCT, DATATYPE>
 	hdf5_read_struct_with_data(const char* filename, const char* varname, unsigned index )
 {
 
