@@ -43,68 +43,8 @@ enum GadgetMessageID {
   GADGET_MESSAGE_ISMRMRD_ACQUISITION = 1008,
   GADGET_MESSAGE_EXT_ID_MAX          = 4096
 };
-  
-struct LoopCounters {
-  ACE_UINT16 line;
-  ACE_UINT16 acquisition;
-  ACE_UINT16 slice;
-  ACE_UINT16 partition;
-  ACE_UINT16 echo;
-  ACE_UINT16 phase;
-  ACE_UINT16 repetition;
-  ACE_UINT16 set;
-  ACE_UINT16 segment;
-  ACE_UINT16 channel;
-};
 
-struct GadgetMessageAcquisition
-{
-  ACE_UINT32     flags;
-  ACE_UINT32     meas_uid;
-  ACE_UINT32     scan_counter;
-  ACE_UINT32     time_stamp;
-  ACE_UINT32     pmu_time_stamp;
-  ACE_UINT16     samples;
-  ACE_UINT16     channels;
-  ACE_UINT16     centre_column;
-  float          position[3];
-  float          quaternion[4];
-  float			 table_position;
-  LoopCounters   idx;
-  LoopCounters   min_idx;
-  LoopCounters   max_idx;
-  
-  float get_position(unsigned int index) {
-    if (index < 3) {
-      return position[index];
-    } else {
-      return 0.0f;
-    }
-  }
 
-  void set_position(unsigned int index, float pos)
-  {
-    if (index < 3) {
-      position[index] = pos;
-    }
-  }
-
-  float get_quaternion(unsigned int index) {
-    if (index < 4) {
-      return quaternion[index];
-    } else {
-      return 0.0f;
-    }
-  }
-
-  void set_quaternion(unsigned int index, float quar)
-  {
-    if (index < 4) {
-      quaternion[index] = quar;
-    }
-  }
-
-};
 
 struct GadgetMessageImage
 {

@@ -130,142 +130,110 @@ uint16_t get_encoding_user(ISMRMRD::EncodingCounters&e, unsigned short i)
 BOOST_PYTHON_MODULE(GadgetronPythonMRI)
 {
 
-  //import_array();
-  boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
-
-  class_<LoopCounters>("LoopCounters")
-   .def_readwrite("line", &LoopCounters::line)
-   .def_readwrite("acquisition",&LoopCounters::acquisition)
-   .def_readwrite("slice",&LoopCounters::slice)
-   .def_readwrite("partition",&LoopCounters::partition)
-   .def_readwrite("echo",&LoopCounters::echo)
-   .def_readwrite("phase",&LoopCounters::phase)
-   .def_readwrite("repetition",&LoopCounters::repetition)
-   .def_readwrite("set",&LoopCounters::set)
-   .def_readwrite("segment",&LoopCounters::segment)
-   .def_readwrite("channel",&LoopCounters::channel)
-    ;
-
-  class_<GadgetMessageAcquisition>("GadgetMessageAcquisition")
-    .def_readwrite("flags", &GadgetMessageAcquisition::flags)
-    .def_readwrite("meas_uid", &GadgetMessageAcquisition::meas_uid)
-    .def_readwrite("scan_counter", &GadgetMessageAcquisition::scan_counter)
-    .def_readwrite("time_stamp", &GadgetMessageAcquisition::time_stamp)
-    .def_readwrite("pmu_time_stamp", &GadgetMessageAcquisition::pmu_time_stamp)
-    .def_readwrite("samples", &GadgetMessageAcquisition::samples)
-    .def_readwrite("channels", &GadgetMessageAcquisition::channels)
-    .def_readwrite("centre_column", &GadgetMessageAcquisition::centre_column)
-    .def("get_position", &GadgetMessageAcquisition::get_position)
-    .def("set_position", &GadgetMessageAcquisition::set_position)
-    .def("get_quaternion", &GadgetMessageAcquisition::get_quaternion)
-    .def("set_quaternion", &GadgetMessageAcquisition::set_quaternion)
-    .def_readwrite("table_position", &GadgetMessageAcquisition::table_position)
-    .def_readwrite("idx", &GadgetMessageAcquisition::idx)
-    .def_readwrite("min_idx", &GadgetMessageAcquisition::min_idx)
-    .def_readwrite("max_idx", &GadgetMessageAcquisition::max_idx)
-
-    ;
-
-  class_<ISMRMRD::EncodingCounters>("EncodingCounters")
-	.def_readwrite("kspace_encode_step_1",   &ISMRMRD::EncodingCounters::kspace_encode_step_1)
-	.def_readwrite("kspace_encode_step_2",   &ISMRMRD::EncodingCounters::kspace_encode_step_2)
-	.def_readwrite("average",                &ISMRMRD::EncodingCounters::average)
-	.def_readwrite("slice",                  &ISMRMRD::EncodingCounters::slice)
-	.def_readwrite("contrast",               &ISMRMRD::EncodingCounters::contrast)
-	.def_readwrite("phase",                  &ISMRMRD::EncodingCounters::phase)
-	.def_readwrite("repetition",             &ISMRMRD::EncodingCounters::repetition)
-	.def_readwrite("segment",                &ISMRMRD::EncodingCounters::segment)
-    ;
-
-  def("set_physiology_time_stamp", set_physiology_time_stamp);
-  def("get_physiology_time_stamp", get_physiology_time_stamp);
-  def("set_channel_mask", set_channel_mask);
-  def("get_channel_mask", get_channel_mask);
-  def("set_position",set_position);
-  def("get_position",get_position);
-  def("set_quaternion",set_quaternion);
-  def("get_quaternion",get_quaternion);
-  def("set_patient_table_position", set_patient_table_position);
-  def("get_patient_table_position", get_patient_table_position);
-  def("set_user_int", set_user_int);
-  def("get_user_int", get_user_int);
-  def("set_user_float", set_user_float);
-  def("get_user_float", get_user_float);
-  def("set_encoding_user", set_encoding_user);
-  def("get_encoding_user", get_encoding_user);
-
-  class_<ISMRMRD::AcquisitionHeader>("AcquisitionHeader")
-	.def_readwrite("version",                &ISMRMRD::AcquisitionHeader::version)
-    .def_readwrite("flags",                  &ISMRMRD::AcquisitionHeader::flags)
-    .def_readwrite("measurement_uid",        &ISMRMRD::AcquisitionHeader::measurement_uid)
-    .def_readwrite("scan_counter",           &ISMRMRD::AcquisitionHeader::scan_counter)
-    .def_readwrite("acquisition_time_stamp", &ISMRMRD::AcquisitionHeader::acquisition_time_stamp)
-    .def_readwrite("number_of_samples",      &ISMRMRD::AcquisitionHeader::number_of_samples)
-    .def_readwrite("available_channels",     &ISMRMRD::AcquisitionHeader::available_channels)
-    .def_readwrite("active_channels",        &ISMRMRD::AcquisitionHeader::active_channels)
-    .def_readwrite("discard_pre",            &ISMRMRD::AcquisitionHeader::discard_pre)
-    .def_readwrite("discard_post",           &ISMRMRD::AcquisitionHeader::discard_post)
-    .def_readwrite("centre_sample",          &ISMRMRD::AcquisitionHeader::center_sample)
-    .def_readwrite("encoding_space_ref",     &ISMRMRD::AcquisitionHeader::encoding_space_ref)
-    .def_readwrite("trajectory_dimensions",  &ISMRMRD::AcquisitionHeader::trajectory_dimensions)
-    .def_readwrite("sample_time_us",         &ISMRMRD::AcquisitionHeader::sample_time_us)
-    .def_readwrite("idx",                    &ISMRMRD::AcquisitionHeader::idx)
-    ;
+	//import_array();
+	boost::python::numeric::array::set_module_and_type("numpy", "ndarray");
 
 
-  class_<GadgetMessageImage>("GadgetMessageImage")
-	.def_readwrite("flags", &GadgetMessageImage::flags)
-    .def("get_matrix_size", &GadgetMessageImage::get_matrix_size)
-    .def("set_matrix_size", &GadgetMessageImage::set_matrix_size)
-    .def_readwrite("channels", &GadgetMessageImage::channels)
-    .def("get_position", &GadgetMessageImage::get_position)
-    .def("set_position", &GadgetMessageImage::set_position)
-    .def("get_quaternion", &GadgetMessageImage::get_quaternion)
-    .def("set_quaternion", &GadgetMessageImage::set_quaternion)
-    .def_readwrite("table_position", &GadgetMessageImage::table_position)
-    .def_readwrite("slice", &GadgetMessageImage::slice)
-    .def_readwrite("contrast", &GadgetMessageImage::contrast)
-    .def_readwrite("set", &GadgetMessageImage::set)
-    .def_readwrite("phase", &GadgetMessageImage::phase)
-    .def_readwrite("average", &GadgetMessageImage::average)
-    .def_readwrite("repetition", &GadgetMessageImage::repetition)
-    .def_readwrite("time_stamp", &GadgetMessageImage::time_stamp)
-    .def_readwrite("pmu_time_stamp", &GadgetMessageImage::pmu_time_stamp)
-    .def_readwrite("image_format", &GadgetMessageImage::image_format)
-    .def_readwrite("image_type", &GadgetMessageImage::image_type)
-    .def_readwrite("image_index", &GadgetMessageImage::image_index)
-    .def_readwrite("image_series_index", &GadgetMessageImage::image_series_index)
-    ;
+	class_<ISMRMRD::EncodingCounters>("EncodingCounters")
+			.def_readwrite("kspace_encode_step_1",   &ISMRMRD::EncodingCounters::kspace_encode_step_1)
+			.def_readwrite("kspace_encode_step_2",   &ISMRMRD::EncodingCounters::kspace_encode_step_2)
+			.def_readwrite("average",                &ISMRMRD::EncodingCounters::average)
+			.def_readwrite("slice",                  &ISMRMRD::EncodingCounters::slice)
+			.def_readwrite("contrast",               &ISMRMRD::EncodingCounters::contrast)
+			.def_readwrite("phase",                  &ISMRMRD::EncodingCounters::phase)
+			.def_readwrite("repetition",             &ISMRMRD::EncodingCounters::repetition)
+			.def_readwrite("segment",                &ISMRMRD::EncodingCounters::segment)
+			;
 
-  class_<GadgetReference>("GadgetReference")
-    .def("return_acquisition", &GadgetReference::return_data<ISMRMRD::AcquisitionHeader>)
-    .def("return_image", &GadgetReference::return_data<GadgetMessageImage>)
+	def("set_physiology_time_stamp", set_physiology_time_stamp);
+	def("get_physiology_time_stamp", get_physiology_time_stamp);
+	def("set_channel_mask", set_channel_mask);
+	def("get_channel_mask", get_channel_mask);
+	def("set_position",set_position);
+	def("get_position",get_position);
+	def("set_quaternion",set_quaternion);
+	def("get_quaternion",get_quaternion);
+	def("set_patient_table_position", set_patient_table_position);
+	def("get_patient_table_position", get_patient_table_position);
+	def("set_user_int", set_user_int);
+	def("get_user_int", get_user_int);
+	def("set_user_float", set_user_float);
+	def("get_user_float", get_user_float);
+	def("set_encoding_user", set_encoding_user);
+	def("get_encoding_user", get_encoding_user);
 
-    ;
+	class_<ISMRMRD::AcquisitionHeader>("AcquisitionHeader")
+			.def_readwrite("version",                &ISMRMRD::AcquisitionHeader::version)
+			.def_readwrite("flags",                  &ISMRMRD::AcquisitionHeader::flags)
+			.def_readwrite("measurement_uid",        &ISMRMRD::AcquisitionHeader::measurement_uid)
+			.def_readwrite("scan_counter",           &ISMRMRD::AcquisitionHeader::scan_counter)
+			.def_readwrite("acquisition_time_stamp", &ISMRMRD::AcquisitionHeader::acquisition_time_stamp)
+			.def_readwrite("number_of_samples",      &ISMRMRD::AcquisitionHeader::number_of_samples)
+			.def_readwrite("available_channels",     &ISMRMRD::AcquisitionHeader::available_channels)
+			.def_readwrite("active_channels",        &ISMRMRD::AcquisitionHeader::active_channels)
+			.def_readwrite("discard_pre",            &ISMRMRD::AcquisitionHeader::discard_pre)
+			.def_readwrite("discard_post",           &ISMRMRD::AcquisitionHeader::discard_post)
+			.def_readwrite("centre_sample",          &ISMRMRD::AcquisitionHeader::center_sample)
+			.def_readwrite("encoding_space_ref",     &ISMRMRD::AcquisitionHeader::encoding_space_ref)
+			.def_readwrite("trajectory_dimensions",  &ISMRMRD::AcquisitionHeader::trajectory_dimensions)
+			.def_readwrite("sample_time_us",         &ISMRMRD::AcquisitionHeader::sample_time_us)
+			.def_readwrite("idx",                    &ISMRMRD::AcquisitionHeader::idx)
+			;
 
-  enum_<GadgetImageFormats>("GadgetImageFormats")
-       .value("GADGET_IMAGE_COMPLEX_FLOAT", GADGET_IMAGE_COMPLEX_FLOAT)
-       .value("GADGET_IMAGE_REAL_FLOAT", GADGET_IMAGE_REAL_FLOAT)
-       .value("GADGET_IMAGE_REAL_UNSIGNED_SHORT", GADGET_IMAGE_REAL_UNSIGNED_SHORT)
-       ;
+
+	class_<GadgetMessageImage>("GadgetMessageImage")
+			.def_readwrite("flags", &GadgetMessageImage::flags)
+			.def("get_matrix_size", &GadgetMessageImage::get_matrix_size)
+			.def("set_matrix_size", &GadgetMessageImage::set_matrix_size)
+			.def_readwrite("channels", &GadgetMessageImage::channels)
+			.def("get_position", &GadgetMessageImage::get_position)
+			.def("set_position", &GadgetMessageImage::set_position)
+			.def("get_quaternion", &GadgetMessageImage::get_quaternion)
+			.def("set_quaternion", &GadgetMessageImage::set_quaternion)
+			.def_readwrite("table_position", &GadgetMessageImage::table_position)
+			.def_readwrite("slice", &GadgetMessageImage::slice)
+			.def_readwrite("contrast", &GadgetMessageImage::contrast)
+			.def_readwrite("set", &GadgetMessageImage::set)
+			.def_readwrite("phase", &GadgetMessageImage::phase)
+			.def_readwrite("average", &GadgetMessageImage::average)
+			.def_readwrite("repetition", &GadgetMessageImage::repetition)
+			.def_readwrite("time_stamp", &GadgetMessageImage::time_stamp)
+			.def_readwrite("pmu_time_stamp", &GadgetMessageImage::pmu_time_stamp)
+			.def_readwrite("image_format", &GadgetMessageImage::image_format)
+			.def_readwrite("image_type", &GadgetMessageImage::image_type)
+			.def_readwrite("image_index", &GadgetMessageImage::image_index)
+			.def_readwrite("image_series_index", &GadgetMessageImage::image_series_index)
+			;
+
+	class_<GadgetReference>("GadgetReference")
+    		.def("return_acquisition", &GadgetReference::return_data<ISMRMRD::AcquisitionHeader>)
+    		.def("return_image", &GadgetReference::return_data<GadgetMessageImage>)
+
+    		;
+
+	enum_<GadgetImageFormats>("GadgetImageFormats")
+    		   .value("GADGET_IMAGE_COMPLEX_FLOAT", GADGET_IMAGE_COMPLEX_FLOAT)
+    		   .value("GADGET_IMAGE_REAL_FLOAT", GADGET_IMAGE_REAL_FLOAT)
+    		   .value("GADGET_IMAGE_REAL_UNSIGNED_SHORT", GADGET_IMAGE_REAL_UNSIGNED_SHORT)
+    		   ;
 
 
-  enum_<GadgetImageTypes>("GadgetImageTypes")
-		  .value("GADGET_IMAGE_MAGNITUDE",GADGET_IMAGE_MAGNITUDE)
-		  .value("GADGET_IMAGE_PHASE", GADGET_IMAGE_PHASE)
-		  .value("GADGET_IMAGE_REAL",GADGET_IMAGE_REAL)
-		  .value("GADGET_IMAGE_IMAG",GADGET_IMAGE_IMAG)
-		  ;
+	enum_<GadgetImageTypes>("GadgetImageTypes")
+				  .value("GADGET_IMAGE_MAGNITUDE",GADGET_IMAGE_MAGNITUDE)
+				  .value("GADGET_IMAGE_PHASE", GADGET_IMAGE_PHASE)
+				  .value("GADGET_IMAGE_REAL",GADGET_IMAGE_REAL)
+				  .value("GADGET_IMAGE_IMAG",GADGET_IMAGE_IMAG)
+				  ;
 
-  enum_<GadgetMessageID>("GadgetMessageID")
-		  .value("GADGET_MESSAGE_EXT_ID_MIN",GADGET_MESSAGE_EXT_ID_MIN)
-		  .value("GADGET_MESSAGE_ACQUISITION",GADGET_MESSAGE_ACQUISITION)
-		  .value("GADGET_MESSAGE_NEW_MEASUREMENT",GADGET_MESSAGE_NEW_MEASUREMENT)
-		  .value("GADGET_MESSAGE_END_OF_SCAN",GADGET_MESSAGE_END_OF_SCAN)
-		  .value("GADGET_MESSAGE_IMAGE_CPLX_FLOAT",GADGET_MESSAGE_IMAGE_CPLX_FLOAT)
-		  .value("GADGET_MESSAGE_IMAGE_REAL_FLOAT",GADGET_MESSAGE_IMAGE_REAL_FLOAT)
-		  .value("GADGET_MESSAGE_IMAGE_REAL_USHORT",GADGET_MESSAGE_IMAGE_REAL_USHORT)
-		  .value("GADGET_MESSAGE_EMPTY",GADGET_MESSAGE_EMPTY)
-		  .value("GADGET_MESSAGE_EXT_ID_MAX",GADGET_MESSAGE_EXT_ID_MAX)
-		  ;
+	enum_<GadgetMessageID>("GadgetMessageID")
+				  .value("GADGET_MESSAGE_EXT_ID_MIN",GADGET_MESSAGE_EXT_ID_MIN)
+				  .value("GADGET_MESSAGE_ACQUISITION",GADGET_MESSAGE_ACQUISITION)
+				  .value("GADGET_MESSAGE_NEW_MEASUREMENT",GADGET_MESSAGE_NEW_MEASUREMENT)
+				  .value("GADGET_MESSAGE_END_OF_SCAN",GADGET_MESSAGE_END_OF_SCAN)
+				  .value("GADGET_MESSAGE_IMAGE_CPLX_FLOAT",GADGET_MESSAGE_IMAGE_CPLX_FLOAT)
+				  .value("GADGET_MESSAGE_IMAGE_REAL_FLOAT",GADGET_MESSAGE_IMAGE_REAL_FLOAT)
+				  .value("GADGET_MESSAGE_IMAGE_REAL_USHORT",GADGET_MESSAGE_IMAGE_REAL_USHORT)
+				  .value("GADGET_MESSAGE_EMPTY",GADGET_MESSAGE_EMPTY)
+				  .value("GADGET_MESSAGE_EXT_ID_MAX",GADGET_MESSAGE_EXT_ID_MAX)
+				  ;
 }

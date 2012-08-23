@@ -40,54 +40,6 @@ template <> boost::shared_ptr<DataType> getHDF5ArrayType<ACE_UINT16>(int LENGTH)
 	return ret;
 }
 
-template <> boost::shared_ptr<CompType> getHDF5CompositeType<LoopCounters>()
-{
-	boost::shared_ptr<CompType> ret;
-
-	try {
-		ret = boost::shared_ptr<CompType>(new CompType(sizeof(LoopCounters)));
-
-		ret->insertMember( "line",        HOFFSET(LoopCounters,line),        PredType::NATIVE_USHORT);
-		ret->insertMember( "acquisition", HOFFSET(LoopCounters,acquisition), PredType::NATIVE_USHORT);
-		ret->insertMember( "slice",       HOFFSET(LoopCounters,slice),       PredType::NATIVE_USHORT);
-		ret->insertMember( "partition",   HOFFSET(LoopCounters,partition),   PredType::NATIVE_USHORT);
-		ret->insertMember( "echo",        HOFFSET(LoopCounters,echo),        PredType::NATIVE_USHORT);
-		ret->insertMember( "phase",       HOFFSET(LoopCounters,phase),       PredType::NATIVE_USHORT);
-		ret->insertMember( "repetition",  HOFFSET(LoopCounters,repetition),  PredType::NATIVE_USHORT);
-		ret->insertMember( "set",         HOFFSET(LoopCounters,set),         PredType::NATIVE_USHORT);
-		ret->insertMember( "segment",     HOFFSET(LoopCounters,segment),     PredType::NATIVE_USHORT);
-		ret->insertMember( "channel",     HOFFSET(LoopCounters,channel),     PredType::NATIVE_USHORT);
-	} catch ( ... ) {
-		std::cout << "Exception caught while creating HDF5 compound datatype for LoopCounter" << std::endl;
-	}
-	return ret;
-}
-
-template <> boost::shared_ptr<CompType> getHDF5CompositeType<GadgetMessageAcquisition>()
-{
-	boost::shared_ptr<CompType> ret(new CompType(sizeof(GadgetMessageAcquisition)));
-	ret->insertMember( "flags",              HOFFSET(GadgetMessageAcquisition,flags),               PredType::NATIVE_UINT);
-	ret->insertMember( "meas_uid",           HOFFSET(GadgetMessageAcquisition,meas_uid),            PredType::NATIVE_UINT);
-	ret->insertMember( "scan_counter",       HOFFSET(GadgetMessageAcquisition, scan_counter),       PredType::NATIVE_UINT);
-	ret->insertMember( "time_stamp",         HOFFSET(GadgetMessageAcquisition, time_stamp),         PredType::NATIVE_UINT);
-	ret->insertMember( "pmu_time_stamp",     HOFFSET(GadgetMessageAcquisition, pmu_time_stamp),         PredType::NATIVE_UINT);
-	ret->insertMember( "samples",            HOFFSET(GadgetMessageAcquisition, samples),            PredType::NATIVE_USHORT);
-	ret->insertMember( "channels",           HOFFSET(GadgetMessageAcquisition, channels),           PredType::NATIVE_USHORT);
-	ret->insertMember( "centre_column",      HOFFSET(GadgetMessageAcquisition, centre_column),           PredType::NATIVE_USHORT);
-
-	boost::shared_ptr<DataType> position_type = getHDF5ArrayType<float>(3);
-	boost::shared_ptr<DataType> quaternion_type = getHDF5ArrayType<float>(4);
-	boost::shared_ptr<CompType> loopcounters_type = getHDF5CompositeType<LoopCounters>();
-
-	ret->insertMember( "position",           HOFFSET(GadgetMessageAcquisition, position),       *position_type);
-	ret->insertMember( "quaternion",         HOFFSET(GadgetMessageAcquisition, quaternion),        *quaternion_type);
-	ret->insertMember( "table_position",     HOFFSET(GadgetMessageAcquisition, table_position),     PredType::NATIVE_FLOAT);
-	ret->insertMember( "idx",                HOFFSET(GadgetMessageAcquisition, idx),                *loopcounters_type);
-	ret->insertMember( "min_idx",            HOFFSET(GadgetMessageAcquisition, min_idx),            *loopcounters_type);
-	ret->insertMember( "max_idx",            HOFFSET(GadgetMessageAcquisition, max_idx),            *loopcounters_type);
-
-	return ret;
-}
 
 
 template <> boost::shared_ptr<CompType> getHDF5CompositeType<GadgetMessageImage>()
@@ -99,7 +51,6 @@ template <> boost::shared_ptr<CompType> getHDF5CompositeType<GadgetMessageImage>
 		ret = boost::shared_ptr<CompType>(new CompType(sizeof(GadgetMessageImage)));
 
 		boost::shared_ptr<DataType> matrix_size_type = getHDF5ArrayType<ACE_UINT16>(3);
-		boost::shared_ptr<CompType> loopcounters_type = getHDF5CompositeType<LoopCounters>();
 		boost::shared_ptr<DataType> position_type = getHDF5ArrayType<float>(3);
 		boost::shared_ptr<DataType> quaterion_type = getHDF5ArrayType<float>(4);
 
@@ -138,8 +89,6 @@ template <class T> EXPORTHDF5MRI int hdf5_append_struct(T* s,
 	return hdf5_append_struct(s, datatype, filename, varname);
 }
 
-
-template EXPORTHDF5MRI int hdf5_append_struct(GadgetMessageAcquisition* s, const char* filename, const char* varname);
 template EXPORTHDF5MRI int hdf5_append_struct(GadgetMessageImage* s, const char* filename, const char* varname);
 
 template <class T> struct local_hdf5_append_struct
@@ -180,10 +129,6 @@ template EXPORTHDF5MRI int hdf5_append_struct_with_data(GadgetMessageImage* s, h
 
 template EXPORTHDF5MRI int hdf5_append_struct_with_data(GadgetMessageImage* s, hoNDArray< std::complex<float> >* a,
 		                                  const char* filename, const char* varname);
-
-template EXPORTHDF5MRI int hdf5_append_struct_with_data(GadgetMessageAcquisition* s, hoNDArray< std::complex<float> >* a,
-		                                  const char* filename, const char* varname);
-
 
 template <class T> EXPORTHDF5MRI boost::shared_ptr<T> hdf5_read_struct(const char* filename, const char* varname,
 		unsigned int index )
@@ -246,10 +191,3 @@ template <class STRUCT, class DATATYPE> EXPORTHDF5MRI header_data_struct<STRUCT,
 }
 
 template EXPORTHDF5MRI boost::shared_ptr<GadgetMessageImage> hdf5_read_struct<GadgetMessageImage>(const char* , const char* , unsigned int);
-template EXPORTHDF5MRI boost::shared_ptr<GadgetMessageAcquisition> hdf5_read_struct<GadgetMessageAcquisition>(const char* , const char* , unsigned int);
-
-template EXPORTHDF5MRI header_data_struct<GadgetMessageAcquisition, std::complex<float> >
-	hdf5_read_struct_with_data<GadgetMessageAcquisition, std::complex<float> >(const char*, const char*, unsigned int);
-
-template EXPORTHDF5MRI header_data_struct<GadgetMessageAcquisition, complext<float> >
-	hdf5_read_struct_with_data<GadgetMessageAcquisition, complext<float> >(const char*, const char*, unsigned int);

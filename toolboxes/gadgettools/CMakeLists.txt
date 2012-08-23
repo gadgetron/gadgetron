@@ -8,8 +8,8 @@ target_link_libraries(gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_L
 
 install(TARGETS gadgettools DESTINATION lib)
 
-install (FILES	GadgetSocketReceiver.h 
-			GadgetSocketSender.h
+install (FILES	GadgetImageMessageReader.h 
+			GadgetImageMessageWriter.h
 			GadgetXml.h
 			GadgetronConnector.h
 			gadgettools_export.h

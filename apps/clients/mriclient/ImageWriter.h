@@ -3,7 +3,7 @@
 
 #include <fstream>
 
-#include "GadgetSocketReceiver.h"
+#include "GadgetImageMessageReader.h"
 
 template <typename T> class ImageWriter : public GadgetImageMessageReader<T>
 {
@@ -12,6 +12,8 @@ public:
 	ImageWriter()
 	: number_of_calls_(0)
 	{}
+
+	virtual ~ImageWriter() {};
 
 	virtual ACE_Message_Block* read(ACE_SOCK_Stream* socket) 
 	{
