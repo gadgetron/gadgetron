@@ -42,6 +42,13 @@ process(GadgetContainerMessage<GadgetMessageImage>* m1,
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
+	if (sets_ < 2) {
+		if (this->next()->putq(m1) < 0) {
+			m1->release();
+			return GADGET_FAIL;
+		}
+		return GADGET_OK;
+	}
 
 	if (buffer_.message_count() < (sets_-1)) {
 		buffer_.enqueue_tail(m1);

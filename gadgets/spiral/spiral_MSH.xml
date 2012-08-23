@@ -63,13 +63,13 @@
       <property><name>kappa</name>                   <value>0.1</value></property>
     </gadget>
 
-
 	  <gadget>
       <name>PhaseSubtraction</name>
       <dll>gadgetronspiral</dll>
       <classname>FlowPhaseSubtractionGadget</classname>
       </gadget>
-    
+
+
 	  <gadget>
       <name>Extract</name>
       <dll>gadgetroncore</dll>
@@ -89,7 +89,7 @@
       <name>AutoScaleGadget</name>
       <dll>gadgetroncore</dll>
       <classname>AutoScaleGadget</classname>
-   </gadget> 
+    </gadget> 
 
    <gadget>
       <name>FloatToShort</name>
