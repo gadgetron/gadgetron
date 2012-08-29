@@ -163,9 +163,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 
 		//con.register_writer(GADGET_MESSAGE_ACQUISITION, new GadgetAcquisitionMessageWriter());
 		con.register_writer(GADGET_MESSAGE_ISMRMRD_ACQUISITION, new GadgetIsmrmrdAcquisitionMessageWriter());
-		con.register_reader(GADGET_MESSAGE_IMAGE_REAL_USHORT, new HDF5ImageWriter<ACE_UINT16>(std::string(hdf5_out_file), std::string(hdf5_out_group)));
-		con.register_reader(GADGET_MESSAGE_IMAGE_REAL_FLOAT, new HDF5ImageWriter<float>(std::string(hdf5_out_file), std::string(hdf5_out_group)));
-		con.register_reader(GADGET_MESSAGE_IMAGE_CPLX_FLOAT, new HDF5ImageWriter< std::complex<float> >(std::string(hdf5_out_file), std::string(hdf5_out_group)));
+		con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT, new HDF5ImageWriter<ACE_UINT16>(std::string(hdf5_out_file), std::string(hdf5_out_group)));
+		con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT, new HDF5ImageWriter<float>(std::string(hdf5_out_file), std::string(hdf5_out_group)));
+		con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT, new HDF5ImageWriter< std::complex<float> >(std::string(hdf5_out_file), std::string(hdf5_out_group)));
 
 		//Open a connection with the gadgetron
 		if (con.open(std::string(hostname),std::string(port_no)) != 0) {
@@ -189,7 +189,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 		for (unsigned long int i = 0; i < acquisitions; i++) {
 			GadgetContainerMessage<ISMRMRD::Acquisition>* acq = new GadgetContainerMessage<ISMRMRD::Acquisition>();
 			{
-				HDF5Exclusive lock; //This will ensure thread-safe access to HDF5
+				ISMRMRD::HDF5Exclusive lock; //This will ensure thread-safe access to HDF5
 				boost::shared_ptr<ISMRMRD::Acquisition> acq_tmp = ismrmrd_dataset->readAcquisition(i);
 				*(acq->getObjectPtr()) = *acq_tmp; //We are copying the data into the container message
 			}
