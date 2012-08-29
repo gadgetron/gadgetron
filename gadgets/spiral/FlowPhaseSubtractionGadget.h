@@ -10,7 +10,7 @@
 
 
 class EXPORTGADGETSSPIRAL FlowPhaseSubtractionGadget :
-public Gadget2< GadgetMessageImage, hoNDArray< std::complex<float> > >
+public Gadget2< ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
 {
   
  public:
@@ -21,7 +21,7 @@ public Gadget2< GadgetMessageImage, hoNDArray< std::complex<float> > >
 
  protected:
   virtual int process_config(ACE_Message_Block* mb);
-  virtual int process(GadgetContainerMessage< GadgetMessageImage >* m1,
+  virtual int process(GadgetContainerMessage< ISMRMRD::ImageHeader >* m1,
 		      GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2);
 
  private:

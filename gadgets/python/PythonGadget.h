@@ -103,7 +103,7 @@ public PythonGadget<ISMRMRD::AcquisitionHeader>
 };
 
 class EXPORTGADGETSPYTHON ImagePythonGadget :
-public PythonGadget<GadgetMessageImage>
+public PythonGadget<ISMRMRD::ImageHeader>
 {
  public:
   GADGET_DECLARE(ImagePythonGadget);

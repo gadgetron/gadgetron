@@ -6,11 +6,11 @@
 #include "gadgetroncore_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "GadgetMRIHeaders.h"
+#include "ismrmrd.h"
 
 
 template <typename T> class ImageWriterGadget :
-public Gadget2<GadgetMessageImage, hoNDArray< T > >
+public Gadget2<ISMRMRD::ImageHeader, hoNDArray< T > >
 {
  public:
 
@@ -19,7 +19,7 @@ public Gadget2<GadgetMessageImage, hoNDArray< T > >
     {}
 
  protected:
-  virtual int process( GadgetContainerMessage< GadgetMessageImage>* m1,
+  virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader>* m1,
 		       GadgetContainerMessage< hoNDArray< T > >* m2);
 
   long calls_;

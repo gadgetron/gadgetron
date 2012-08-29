@@ -38,7 +38,7 @@ int FlowPhaseSubtractionGadget::process_config(ACE_Message_Block* mb)
 }
 
 int FlowPhaseSubtractionGadget::
-process(GadgetContainerMessage<GadgetMessageImage>* m1,
+process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
@@ -60,7 +60,7 @@ process(GadgetContainerMessage<GadgetMessageImage>* m1,
 			return GADGET_FAIL;
 		}
 
-		GadgetContainerMessage<GadgetMessageImage>* pm1 = AsContainerMessage<GadgetMessageImage>(mbq);
+		GadgetContainerMessage<ISMRMRD::ImageHeader>* pm1 = AsContainerMessage<ISMRMRD::ImageHeader>(mbq);
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >* pm2 = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq->cont());
 
 		if (pm1->getObjectPtr()->set == m1->getObjectPtr()->set) {

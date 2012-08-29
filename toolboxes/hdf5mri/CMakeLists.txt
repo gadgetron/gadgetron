@@ -6,10 +6,13 @@ ADD_DEFINITIONS(-D_HDF5USEHLDLL_)
 ADD_DEFINITIONS(-DHDF5USE_HLCPPDLL)
 endif (WIN32)
 
+find_package(Ismrmrd REQUIRED)
+
 include_directories(${ACE_INCLUDE_DIR} 
 				    ${Boost_INCLUDE_DIR}
 					${HDF5_INCLUDE_DIRS}
 					${HDF5_INCLUDE_DIRS}/cpp
+					${ISMRMRD_INCLUDE_DIR}
 					${CMAKE_SOURCE_DIR}/toolboxes/cpucore
 					${CMAKE_SOURCE_DIR}/toolboxes/hostutils
 					${CMAKE_SOURCE_DIR}/toolboxes/hdf5utils

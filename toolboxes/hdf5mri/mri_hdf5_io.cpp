@@ -11,7 +11,7 @@
 #include "hdf5_core.h"
 #include "hoNDArray_hdf5_io.h"
 
-#include "GadgetMRIHeaders.h"
+#include "ismrmrd.h"
 
 #include <vector>
 #include <complex>
@@ -42,38 +42,38 @@ template <> boost::shared_ptr<DataType> getHDF5ArrayType<ACE_UINT16>(int LENGTH)
 
 
 
-template <> boost::shared_ptr<CompType> getHDF5CompositeType<GadgetMessageImage>()
+template <> boost::shared_ptr<CompType> getHDF5CompositeType<ISMRMRD::ImageHeader>()
 {
 
 	boost::shared_ptr<CompType> ret;
 
 	try {
-		ret = boost::shared_ptr<CompType>(new CompType(sizeof(GadgetMessageImage)));
+		ret = boost::shared_ptr<CompType>(new CompType(sizeof(ISMRMRD::ImageHeader)));
 
 		boost::shared_ptr<DataType> matrix_size_type = getHDF5ArrayType<ACE_UINT16>(3);
 		boost::shared_ptr<DataType> position_type = getHDF5ArrayType<float>(3);
 		boost::shared_ptr<DataType> quaterion_type = getHDF5ArrayType<float>(4);
 
-		ret->insertMember( "flags",              HOFFSET(GadgetMessageImage,flags),                PredType::NATIVE_UINT);
-		ret->insertMember( "matrix_size",        HOFFSET(GadgetMessageImage, matrix_size),         *matrix_size_type);
-		ret->insertMember( "channels",           HOFFSET(GadgetMessageImage, channels),            PredType::NATIVE_USHORT);
-		ret->insertMember( "position",           HOFFSET(GadgetMessageImage, position),            *position_type);
-		ret->insertMember( "quaternion",         HOFFSET(GadgetMessageImage, quaternion),          *quaterion_type);
-		ret->insertMember( "table_position",     HOFFSET(GadgetMessageImage, table_position),      PredType::NATIVE_FLOAT);
-		ret->insertMember( "slice",              HOFFSET(GadgetMessageImage, slice),               PredType::NATIVE_USHORT);
-		ret->insertMember( "contrast",           HOFFSET(GadgetMessageImage, contrast),            PredType::NATIVE_USHORT);
-		ret->insertMember( "set",                HOFFSET(GadgetMessageImage, set),                 PredType::NATIVE_USHORT);
-		ret->insertMember( "phase",              HOFFSET(GadgetMessageImage, phase),               PredType::NATIVE_USHORT);
-		ret->insertMember( "average",            HOFFSET(GadgetMessageImage, average),             PredType::NATIVE_USHORT);
-		ret->insertMember( "repetition",         HOFFSET(GadgetMessageImage, repetition),            PredType::NATIVE_USHORT);
-		ret->insertMember( "time_stamp",         HOFFSET(GadgetMessageImage, time_stamp),          PredType::NATIVE_UINT);
-		ret->insertMember( "pmu_time_stamp",     HOFFSET(GadgetMessageImage, pmu_time_stamp),      PredType::NATIVE_UINT);
-		ret->insertMember( "image_format",       HOFFSET(GadgetMessageImage, image_format),        PredType::NATIVE_USHORT);
-		ret->insertMember( "image_type",         HOFFSET(GadgetMessageImage, image_type),          PredType::NATIVE_USHORT);
-		ret->insertMember( "image_index",        HOFFSET(GadgetMessageImage, image_index),         PredType::NATIVE_USHORT);
-		ret->insertMember( "image_series_index", HOFFSET(GadgetMessageImage, image_series_index),  PredType::NATIVE_USHORT);
+		ret->insertMember( "flags",              HOFFSET(ISMRMRD::ImageHeader,flags),                PredType::NATIVE_UINT);
+		ret->insertMember( "matrix_size",        HOFFSET(ISMRMRD::ImageHeader, matrix_size),         *matrix_size_type);
+		ret->insertMember( "channels",           HOFFSET(ISMRMRD::ImageHeader, channels),            PredType::NATIVE_USHORT);
+		ret->insertMember( "position",           HOFFSET(ISMRMRD::ImageHeader, position),            *position_type);
+		ret->insertMember( "quaternion",         HOFFSET(ISMRMRD::ImageHeader, quaternion),          *quaterion_type);
+		ret->insertMember( "table_position",     HOFFSET(ISMRMRD::ImageHeader, patient_table_position),      PredType::NATIVE_FLOAT);
+		ret->insertMember( "slice",              HOFFSET(ISMRMRD::ImageHeader, slice),               PredType::NATIVE_USHORT);
+		ret->insertMember( "contrast",           HOFFSET(ISMRMRD::ImageHeader, contrast),            PredType::NATIVE_USHORT);
+		ret->insertMember( "set",                HOFFSET(ISMRMRD::ImageHeader, set),                 PredType::NATIVE_USHORT);
+		ret->insertMember( "phase",              HOFFSET(ISMRMRD::ImageHeader, phase),               PredType::NATIVE_USHORT);
+		ret->insertMember( "average",            HOFFSET(ISMRMRD::ImageHeader, average),             PredType::NATIVE_USHORT);
+		ret->insertMember( "repetition",         HOFFSET(ISMRMRD::ImageHeader, repetition),            PredType::NATIVE_USHORT);
+		ret->insertMember( "time_stamp",         HOFFSET(ISMRMRD::ImageHeader, acquisition_time_stamp),          PredType::NATIVE_UINT);
+		ret->insertMember( "pmu_time_stamp",     HOFFSET(ISMRMRD::ImageHeader, physiology_time_stamp),      PredType::NATIVE_UINT);
+		ret->insertMember( "image_format",       HOFFSET(ISMRMRD::ImageHeader, image_data_type),        PredType::NATIVE_USHORT);
+		ret->insertMember( "image_type",         HOFFSET(ISMRMRD::ImageHeader, image_type),          PredType::NATIVE_USHORT);
+		ret->insertMember( "image_index",        HOFFSET(ISMRMRD::ImageHeader, image_index),         PredType::NATIVE_USHORT);
+		ret->insertMember( "image_series_index", HOFFSET(ISMRMRD::ImageHeader, image_series_index),  PredType::NATIVE_USHORT);
 	} catch ( ... ) {
-		std::cout << "Exception caught while creating HDF5 compound datatype for GadgetMessageImage" << std::endl;
+		std::cout << "Exception caught while creating HDF5 compound datatype for ISMRMRD::ImageHeader" << std::endl;
 	}
 
 
@@ -89,7 +89,7 @@ template <class T> EXPORTHDF5MRI int hdf5_append_struct(T* s,
 	return hdf5_append_struct(s, datatype, filename, varname);
 }
 
-template EXPORTHDF5MRI int hdf5_append_struct(GadgetMessageImage* s, const char* filename, const char* varname);
+template EXPORTHDF5MRI int hdf5_append_struct(ISMRMRD::ImageHeader* s, const char* filename, const char* varname);
 
 template <class T> struct local_hdf5_append_struct
 {
@@ -121,13 +121,13 @@ template <class STRUCT, class DATATYPE> EXPORTHDF5MRI int hdf5_append_struct_wit
 	return hdf5_append_struct(&tmp, datatype, filename, varname);
 }
 
-template EXPORTHDF5MRI int hdf5_append_struct_with_data(GadgetMessageImage* s, hoNDArray<unsigned short>* a,
+template EXPORTHDF5MRI int hdf5_append_struct_with_data(ISMRMRD::ImageHeader* s, hoNDArray<unsigned short>* a,
 		                                  const char* filename, const char* varname);
 
-template EXPORTHDF5MRI int hdf5_append_struct_with_data(GadgetMessageImage* s, hoNDArray<float>* a,
+template EXPORTHDF5MRI int hdf5_append_struct_with_data(ISMRMRD::ImageHeader* s, hoNDArray<float>* a,
 		                                  const char* filename, const char* varname);
 
-template EXPORTHDF5MRI int hdf5_append_struct_with_data(GadgetMessageImage* s, hoNDArray< std::complex<float> >* a,
+template EXPORTHDF5MRI int hdf5_append_struct_with_data(ISMRMRD::ImageHeader* s, hoNDArray< std::complex<float> >* a,
 		                                  const char* filename, const char* varname);
 
 template <class T> EXPORTHDF5MRI boost::shared_ptr<T> hdf5_read_struct(const char* filename, const char* varname,
@@ -190,4 +190,4 @@ template <class STRUCT, class DATATYPE> EXPORTHDF5MRI header_data_struct<STRUCT,
 	return ret;
 }
 
-template EXPORTHDF5MRI boost::shared_ptr<GadgetMessageImage> hdf5_read_struct<GadgetMessageImage>(const char* , const char* , unsigned int);
+template EXPORTHDF5MRI boost::shared_ptr<ISMRMRD::ImageHeader> hdf5_read_struct<ISMRMRD::ImageHeader>(const char* , const char* , unsigned int);

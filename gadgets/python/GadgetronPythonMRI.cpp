@@ -7,14 +7,14 @@
 
 using namespace boost::python;
 
-void set_physiology_time_stamp(ISMRMRD::AcquisitionHeader &h, unsigned short i, uint32_t v)
+void acq_set_physiology_time_stamp(ISMRMRD::AcquisitionHeader &h, unsigned short i, uint32_t v)
 {
 	if (i < 3) {
 		h.physiology_time_stamp[i] = v;
 	}
 }
 
-uint32_t get_physiology_time_stamp(ISMRMRD::AcquisitionHeader &h, unsigned short i)
+uint32_t acq_get_physiology_time_stamp(ISMRMRD::AcquisitionHeader &h, unsigned short i)
 {
 	if (i < 3) {
 		return h.physiology_time_stamp[i];
@@ -22,14 +22,14 @@ uint32_t get_physiology_time_stamp(ISMRMRD::AcquisitionHeader &h, unsigned short
 	return 0;
 }
 
-void set_channel_mask(ISMRMRD::AcquisitionHeader &h, unsigned short i, uint64_t v)
+void acq_set_channel_mask(ISMRMRD::AcquisitionHeader &h, unsigned short i, uint64_t v)
 {
 	if (i < 16) {
 		h.channel_mask[i] = v;
 	}
 }
 
-uint64_t get_channel_mask(ISMRMRD::AcquisitionHeader &h, unsigned short i)
+uint64_t acq_get_channel_mask(ISMRMRD::AcquisitionHeader &h, unsigned short i)
 {
 	if (i < 16) {
 		return h.channel_mask[i];
@@ -37,14 +37,14 @@ uint64_t get_channel_mask(ISMRMRD::AcquisitionHeader &h, unsigned short i)
 	return 0;
 }
 
-void set_position(ISMRMRD::AcquisitionHeader &h, unsigned short i, float v)
+void acq_set_position(ISMRMRD::AcquisitionHeader &h, unsigned short i, float v)
 {
 	if (i < 3) {
 		h.position[i] = v;
 	}
 }
 
-float get_position(ISMRMRD::AcquisitionHeader &h, unsigned short i)
+float acq_get_position(ISMRMRD::AcquisitionHeader &h, unsigned short i)
 {
 	if (i < 3) {
 		return h.position[i];
@@ -52,14 +52,14 @@ float get_position(ISMRMRD::AcquisitionHeader &h, unsigned short i)
 	return 0.0f;
 }
 
-void set_quaternion(ISMRMRD::AcquisitionHeader &h, unsigned short i, float v)
+void acq_set_quaternion(ISMRMRD::AcquisitionHeader &h, unsigned short i, float v)
 {
 	if (i < 4) {
 		h.quaternion[i] = v;
 	}
 }
 
-float get_quaternion(ISMRMRD::AcquisitionHeader &h, unsigned short i)
+float acq_get_quaternion(ISMRMRD::AcquisitionHeader &h, unsigned short i)
 {
 	if (i < 4) {
 		return h.quaternion[i];
@@ -67,14 +67,14 @@ float get_quaternion(ISMRMRD::AcquisitionHeader &h, unsigned short i)
 	return 0.0f;
 }
 
-void set_patient_table_position(ISMRMRD::AcquisitionHeader &h, unsigned short i, float v)
+void acq_set_patient_table_position(ISMRMRD::AcquisitionHeader &h, unsigned short i, float v)
 {
 	if (i < 3) {
 		h.patient_table_position[i] = v;
 	}
 }
 
-float get_patient_table_position(ISMRMRD::AcquisitionHeader &h, unsigned short i)
+float acq_get_patient_table_position(ISMRMRD::AcquisitionHeader &h, unsigned short i)
 {
 	if (i < 3) {
 		return h.patient_table_position[i];
@@ -82,14 +82,14 @@ float get_patient_table_position(ISMRMRD::AcquisitionHeader &h, unsigned short i
 	return 0.0f;
 }
 
-void set_user_int(ISMRMRD::AcquisitionHeader &h, unsigned short i, int32_t v)
+void acq_set_user_int(ISMRMRD::AcquisitionHeader &h, unsigned short i, int32_t v)
 {
 	if (i < 8) {
 		h.user_int[i] = v;
 	}
 }
 
-int32_t get_user_int(ISMRMRD::AcquisitionHeader &h, unsigned short i)
+int32_t acq_get_user_int(ISMRMRD::AcquisitionHeader &h, unsigned short i)
 {
 	if (i < 8) {
 		return h.user_int[i];
@@ -97,14 +97,14 @@ int32_t get_user_int(ISMRMRD::AcquisitionHeader &h, unsigned short i)
 	return 0;
 }
 
-void set_user_float(ISMRMRD::AcquisitionHeader &h, unsigned short i, float v)
+void acq_set_user_float(ISMRMRD::AcquisitionHeader &h, unsigned short i, float v)
 {
 	if (i < 8) {
 		h.user_float[i] = v;
 	}
 }
 
-float get_user_float(ISMRMRD::AcquisitionHeader &h, unsigned short i)
+float acq_get_user_float(ISMRMRD::AcquisitionHeader &h, unsigned short i)
 {
 	if (i < 8) {
 		return h.user_float[i];
@@ -112,19 +112,126 @@ float get_user_float(ISMRMRD::AcquisitionHeader &h, unsigned short i)
 	return 0.0f;
 }
 
-void set_encoding_user(ISMRMRD::EncodingCounters&e, unsigned short i, uint16_t v)
+void acq_set_encoding_user(ISMRMRD::EncodingCounters&e, unsigned short i, uint16_t v)
 {
 	if (i < 8) {
 		e.user[i] = v;
 	}
 }
 
-uint16_t get_encoding_user(ISMRMRD::EncodingCounters&e, unsigned short i)
+uint16_t acq_get_encoding_user(ISMRMRD::EncodingCounters&e, unsigned short i)
 {
 	if (i < 8) {
 		return e.user[i];
 	}
 	return 0;
+}
+
+
+void img_set_physiology_time_stamp(ISMRMRD::ImageHeader &h, unsigned short i, uint32_t v)
+{
+	if (i < 3) {
+		h.physiology_time_stamp[i] = v;
+	}
+}
+
+uint32_t img_get_physiology_time_stamp(ISMRMRD::ImageHeader &h, unsigned short i)
+{
+	if (i < 3) {
+		return h.physiology_time_stamp[i];
+	}
+	return 0;
+}
+
+void img_set_position(ISMRMRD::ImageHeader &h, unsigned short i, float v)
+{
+	if (i < 3) {
+		h.position[i] = v;
+	}
+}
+
+float img_get_position(ISMRMRD::ImageHeader &h, unsigned short i)
+{
+	if (i < 3) {
+		return h.position[i];
+	}
+	return 0.0f;
+}
+
+void img_set_quaternion(ISMRMRD::ImageHeader &h, unsigned short i, float v)
+{
+	if (i < 4) {
+		h.quaternion[i] = v;
+	}
+}
+
+float img_get_quaternion(ISMRMRD::ImageHeader &h, unsigned short i)
+{
+	if (i < 4) {
+		return h.quaternion[i];
+	}
+	return 0.0f;
+}
+
+void img_set_patient_table_position(ISMRMRD::ImageHeader &h, unsigned short i, float v)
+{
+	if (i < 3) {
+		h.patient_table_position[i] = v;
+	}
+}
+
+float img_get_patient_table_position(ISMRMRD::ImageHeader &h, unsigned short i)
+{
+	if (i < 3) {
+		return h.patient_table_position[i];
+	}
+	return 0.0f;
+}
+
+
+void img_set_user_int(ISMRMRD::ImageHeader &h, unsigned short i, int32_t v)
+{
+	if (i < 8) {
+		h.user_int[i] = v;
+	}
+}
+
+int32_t img_get_user_int(ISMRMRD::ImageHeader &h, unsigned short i)
+{
+	if (i < 8) {
+		return h.user_int[i];
+	}
+	return 0;
+}
+
+void img_set_user_float(ISMRMRD::ImageHeader &h, unsigned short i, float v)
+{
+	if (i < 8) {
+		h.user_float[i] = v;
+	}
+}
+
+float img_get_user_float(ISMRMRD::ImageHeader &h, unsigned short i)
+{
+	if (i < 8) {
+		return h.user_float[i];
+	}
+	return 0.0f;
+}
+
+void img_set_field_of_view(ISMRMRD::ImageHeader &h, unsigned short i, float v)
+{
+	if (i < 3) {
+		h.field_of_view[i] = v;
+	}
+}
+
+float img_get_field_of_view(ISMRMRD::ImageHeader &h, unsigned short i)
+{
+	if (i < 3) {
+		return h.field_of_view[i];
+	}
+	return 0.0f;
 }
 
 BOOST_PYTHON_MODULE(GadgetronPythonMRI)
@@ -145,22 +252,37 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
 			.def_readwrite("segment",                &ISMRMRD::EncodingCounters::segment)
 			;
 
-	def("set_physiology_time_stamp", set_physiology_time_stamp);
-	def("get_physiology_time_stamp", get_physiology_time_stamp);
-	def("set_channel_mask", set_channel_mask);
-	def("get_channel_mask", get_channel_mask);
-	def("set_position",set_position);
-	def("get_position",get_position);
-	def("set_quaternion",set_quaternion);
-	def("get_quaternion",get_quaternion);
-	def("set_patient_table_position", set_patient_table_position);
-	def("get_patient_table_position", get_patient_table_position);
-	def("set_user_int", set_user_int);
-	def("get_user_int", get_user_int);
-	def("set_user_float", set_user_float);
-	def("get_user_float", get_user_float);
-	def("set_encoding_user", set_encoding_user);
-	def("get_encoding_user", get_encoding_user);
+	def("acq_set_physiology_time_stamp", acq_set_physiology_time_stamp);
+	def("acq_get_physiology_time_stamp", acq_get_physiology_time_stamp);
+	def("acq_set_channel_mask", acq_set_channel_mask);
+	def("acq_get_channel_mask", acq_get_channel_mask);
+	def("acq_set_position",acq_set_position);
+	def("acq_get_position",acq_get_position);
+	def("acq_set_quaternion",acq_set_quaternion);
+	def("acq_get_quaternion",acq_get_quaternion);
+	def("acq_set_patient_table_position", acq_set_patient_table_position);
+	def("acq_get_patient_table_position", acq_get_patient_table_position);
+	def("acq_set_user_int", acq_set_user_int);
+	def("acq_get_user_int", acq_get_user_int);
+	def("acq_set_user_float", acq_set_user_float);
+	def("acq_get_user_float", acq_get_user_float);
+	def("acq_set_encoding_user", acq_set_encoding_user);
+	def("acq_get_encoding_user", acq_get_encoding_user);
+
+	def("img_set_physiology_time_stamp", img_set_physiology_time_stamp);
+	def("img_get_physiology_time_stamp", img_get_physiology_time_stamp);
+	def("img_set_position",img_set_position);
+	def("img_get_position",img_get_position);
+	def("img_set_quaternion",img_set_quaternion);
+	def("img_get_quaternion",img_get_quaternion);
+	def("img_set_patient_table_position", img_set_patient_table_position);
+	def("img_get_patient_table_position", img_get_patient_table_position);
+	def("img_set_user_int", img_set_user_int);
+	def("img_get_user_int", img_get_user_int);
+	def("img_set_user_float", img_set_user_float);
+	def("img_get_user_float", img_get_user_float);
+	def("img_get_field_of_view", img_get_field_of_view);
+	def("img_set_field_of_view", img_set_field_of_view);
 
 	class_<ISMRMRD::AcquisitionHeader>("AcquisitionHeader")
 			.def_readwrite("version",                &ISMRMRD::AcquisitionHeader::version)
@@ -181,48 +303,40 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
 			;
 
 
-	class_<GadgetMessageImage>("GadgetMessageImage")
-			.def_readwrite("flags", &GadgetMessageImage::flags)
-			.def("get_matrix_size", &GadgetMessageImage::get_matrix_size)
-			.def("set_matrix_size", &GadgetMessageImage::set_matrix_size)
-			.def_readwrite("channels", &GadgetMessageImage::channels)
-			.def("get_position", &GadgetMessageImage::get_position)
-			.def("set_position", &GadgetMessageImage::set_position)
-			.def("get_quaternion", &GadgetMessageImage::get_quaternion)
-			.def("set_quaternion", &GadgetMessageImage::set_quaternion)
-			.def_readwrite("table_position", &GadgetMessageImage::table_position)
-			.def_readwrite("slice", &GadgetMessageImage::slice)
-			.def_readwrite("contrast", &GadgetMessageImage::contrast)
-			.def_readwrite("set", &GadgetMessageImage::set)
-			.def_readwrite("phase", &GadgetMessageImage::phase)
-			.def_readwrite("average", &GadgetMessageImage::average)
-			.def_readwrite("repetition", &GadgetMessageImage::repetition)
-			.def_readwrite("time_stamp", &GadgetMessageImage::time_stamp)
-			.def_readwrite("pmu_time_stamp", &GadgetMessageImage::pmu_time_stamp)
-			.def_readwrite("image_format", &GadgetMessageImage::image_format)
-			.def_readwrite("image_type", &GadgetMessageImage::image_type)
-			.def_readwrite("image_index", &GadgetMessageImage::image_index)
-			.def_readwrite("image_series_index", &GadgetMessageImage::image_series_index)
+	class_<ISMRMRD::ImageHeader>("ImageHeader")
+			.def_readwrite("flags", &ISMRMRD::ImageHeader::flags)
+			.def_readwrite("channels", &ISMRMRD::ImageHeader::channels)
+			.def_readwrite("slice", &ISMRMRD::ImageHeader::slice)
+			.def_readwrite("contrast", &ISMRMRD::ImageHeader::contrast)
+			.def_readwrite("set", &ISMRMRD::ImageHeader::set)
+			.def_readwrite("phase", &ISMRMRD::ImageHeader::phase)
+			.def_readwrite("average", &ISMRMRD::ImageHeader::average)
+			.def_readwrite("repetition", &ISMRMRD::ImageHeader::repetition)
+			.def_readwrite("acquisition_time_stamp", &ISMRMRD::ImageHeader::acquisition_time_stamp)
+			.def_readwrite("image_data_type", &ISMRMRD::ImageHeader::image_data_type)
+			.def_readwrite("image_type", &ISMRMRD::ImageHeader::image_type)
+			.def_readwrite("image_index", &ISMRMRD::ImageHeader::image_index)
+			.def_readwrite("image_series_index", &ISMRMRD::ImageHeader::image_series_index)
 			;
 
 	class_<GadgetReference>("GadgetReference")
     		.def("return_acquisition", &GadgetReference::return_data<ISMRMRD::AcquisitionHeader>)
-    		.def("return_image", &GadgetReference::return_data<GadgetMessageImage>)
+    		.def("return_image", &GadgetReference::return_data<ISMRMRD::ImageHeader>)
 
     		;
 
-	enum_<GadgetImageFormats>("GadgetImageFormats")
-    		   .value("GADGET_IMAGE_COMPLEX_FLOAT", GADGET_IMAGE_COMPLEX_FLOAT)
-    		   .value("GADGET_IMAGE_REAL_FLOAT", GADGET_IMAGE_REAL_FLOAT)
-    		   .value("GADGET_IMAGE_REAL_UNSIGNED_SHORT", GADGET_IMAGE_REAL_UNSIGNED_SHORT)
+	enum_<ISMRMRD::ImageDataType>("ImageDataType")
+    		   .value("DATA_COMPLEX_FLOAT", ISMRMRD::DATA_COMPLEX_FLOAT)
+    		   .value("DATA_FLOAT", ISMRMRD::DATA_FLOAT)
+    		   .value("DATA_UNSIGNED_SHORT", ISMRMRD::DATA_UNSIGNED_SHORT)
     		   ;
 
 
-	enum_<GadgetImageTypes>("GadgetImageTypes")
-				  .value("GADGET_IMAGE_MAGNITUDE",GADGET_IMAGE_MAGNITUDE)
-				  .value("GADGET_IMAGE_PHASE", GADGET_IMAGE_PHASE)
-				  .value("GADGET_IMAGE_REAL",GADGET_IMAGE_REAL)
-				  .value("GADGET_IMAGE_IMAG",GADGET_IMAGE_IMAG)
+	enum_<ISMRMRD::ImageType>("ImageType")
+				  .value("TYPE_MAGNITUDE",ISMRMRD::TYPE_MAGNITUDE)
+				  .value("TYPE_PHASE", ISMRMRD::TYPE_PHASE)
+				  .value("TYPE_REAL",ISMRMRD::TYPE_REAL)
+				  .value("TYPE_IMAG",ISMRMRD::TYPE_IMAG)
 				  ;
 
 	enum_<GadgetMessageID>("GadgetMessageID")
@@ -233,6 +347,10 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
 				  .value("GADGET_MESSAGE_IMAGE_CPLX_FLOAT",GADGET_MESSAGE_IMAGE_CPLX_FLOAT)
 				  .value("GADGET_MESSAGE_IMAGE_REAL_FLOAT",GADGET_MESSAGE_IMAGE_REAL_FLOAT)
 				  .value("GADGET_MESSAGE_IMAGE_REAL_USHORT",GADGET_MESSAGE_IMAGE_REAL_USHORT)
+				  .value("GADGET_MESSAGE_ISMRMRD_ACQUISITION", GADGET_MESSAGE_ISMRMRD_ACQUISITION)
+				  .value("GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT", GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT)
+				  .value("GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT", GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT)
+				  .value("GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT", GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT)
 				  .value("GADGET_MESSAGE_EMPTY",GADGET_MESSAGE_EMPTY)
 				  .value("GADGET_MESSAGE_EXT_ID_MAX",GADGET_MESSAGE_EXT_ID_MAX)
 				  ;

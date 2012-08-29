@@ -5,7 +5,6 @@
 
 #include "gadgetroncore_export.h"
 #include "Gadget.h"
-#include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
 #include "ismrmrd.h"
 

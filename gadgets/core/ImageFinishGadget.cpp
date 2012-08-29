@@ -2,7 +2,7 @@
 
 template <typename T>
 int ImageFinishGadget<T>
-::process(GadgetContainerMessage<GadgetMessageImage>* m1,
+::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 	  GadgetContainerMessage< hoNDArray< T > >* m2)
 {
   if (!this->controller_) {

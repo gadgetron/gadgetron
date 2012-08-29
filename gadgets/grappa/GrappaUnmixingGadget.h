@@ -12,7 +12,7 @@
 
 #include "hoNDArray.h"
 #include <complex>
-#include "GadgetMRIHeaders.h"
+#include "ismrmrd.h"
 #include "GrappaWeights.h"
 
 struct GrappaUnmixingJob
@@ -20,7 +20,7 @@ struct GrappaUnmixingJob
 	boost::shared_ptr< GrappaWeights<float> > weights_;
 };
 
-class GrappaUnmixingGadget: public Gadget3<GrappaUnmixingJob, GadgetMessageImage, hoNDArray<std::complex<float> > > {
+class GrappaUnmixingGadget: public Gadget3<GrappaUnmixingJob, ISMRMRD::ImageHeader, hoNDArray<std::complex<float> > > {
 public:
 	GADGET_DECLARE(GrappaUnmixingGadget);
 
@@ -28,7 +28,7 @@ public:
 	virtual ~GrappaUnmixingGadget();
 protected:
 	virtual int process(GadgetContainerMessage<GrappaUnmixingJob>* m1,
-			GadgetContainerMessage<GadgetMessageImage>* m2, GadgetContainerMessage<hoNDArray<std::complex<float> > >* m3);
+			GadgetContainerMessage<ISMRMRD::ImageHeader>* m2, GadgetContainerMessage<hoNDArray<std::complex<float> > >* m3);
 
 };
 

@@ -204,5 +204,5 @@ template<class T> int PythonCommunicator::process(Gadget* g,
 template int PythonCommunicator::process(Gadget*, GadgetContainerMessage<ISMRMRD::AcquisitionHeader>*,
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >*);
 
-template int PythonCommunicator::process(Gadget*, GadgetContainerMessage<GadgetMessageImage>*,
+template int PythonCommunicator::process(Gadget*, GadgetContainerMessage<ISMRMRD::ImageHeader>*,
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >*);

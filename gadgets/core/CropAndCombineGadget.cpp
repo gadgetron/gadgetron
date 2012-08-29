@@ -2,7 +2,7 @@
 
 
 int CropAndCombineGadget::
-process( GadgetContainerMessage<GadgetMessageImage>* m1,
+process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 	 GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 

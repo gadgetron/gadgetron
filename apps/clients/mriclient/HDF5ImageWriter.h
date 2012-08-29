@@ -25,7 +25,7 @@ public:
 
 	}
 
-	virtual int process_image(GadgetMessageImage* img_head,
+	virtual int process_image(ISMRMRD::ImageHeader* img_head,
 			hoNDArray< T >* data)
 	{
 		try {

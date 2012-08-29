@@ -8,6 +8,7 @@
 #include <iostream>
 
 #include "GadgetMRIHeaders.h"
+#include "ismrmrd.h"
 #include "hoNDArray.h"
 #include "GadgetMessageInterface.h"
 
@@ -22,11 +23,11 @@ template <typename T> class GadgetImageMessageReader : public GadgetMessageReade
  public:
   virtual ACE_Message_Block* read(ACE_SOCK_Stream* stream) 
   {
-    GadgetContainerMessage<GadgetMessageImage>* imgh = 
-      new GadgetContainerMessage<GadgetMessageImage>();
+    GadgetContainerMessage<ISMRMRD::ImageHeader>* imgh = 
+      new GadgetContainerMessage<ISMRMRD::ImageHeader>();
 
     ssize_t recv_count = 0;
-    if ((recv_count = stream->recv_n(imgh->getObjectPtr(), sizeof(GadgetMessageImage))) <= 0) {
+    if ((recv_count = stream->recv_n(imgh->getObjectPtr(), sizeof(ISMRMRD::ImageHeader))) <= 0) {
       ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageMessageReader, failed to read IMAGE Header\n")) );
       imgh->release();
       return 0;

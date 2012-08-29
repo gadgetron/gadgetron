@@ -161,7 +161,7 @@ int GPUCGGadgetGeneric::configure_channels()
 	return GADGET_OK;
 }
 
-int GPUCGGadgetGeneric::process(GadgetContainerMessage<GadgetMessageImage>* m1, GadgetContainerMessage< CGSenseJob > * m2)
+int GPUCGGadgetGeneric::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< CGSenseJob > * m2)
 {
 
 	GPUTimer timer("GPUCGGadgetGeneric::process");

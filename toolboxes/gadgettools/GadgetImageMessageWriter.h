@@ -22,8 +22,8 @@ template <typename T> class GadgetImageMessageWriter : public GadgetMessageWrite
   virtual int write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb) 
   {
 
-    GadgetContainerMessage<GadgetMessageImage>* imagemb = 
-      dynamic_cast< GadgetContainerMessage<GadgetMessageImage>* >(mb);
+    GadgetContainerMessage<ISMRMRD::ImageHeader>* imagemb = 
+      dynamic_cast< GadgetContainerMessage<ISMRMRD::ImageHeader>* >(mb);
     
     GadgetContainerMessage< hoNDArray< T > >* datamb =
       dynamic_cast< GadgetContainerMessage< hoNDArray< T > >* >(imagemb->cont());
@@ -59,7 +59,7 @@ template <typename T> class GadgetImageMessageWriter : public GadgetMessageWrite
       return -1;
     }
     
-    if ((send_cnt = sock->send_n (imagemb->getObjectPtr(), sizeof(GadgetMessageImage))) <= 0) {
+    if ((send_cnt = sock->send_n (imagemb->getObjectPtr(), sizeof(ISMRMRD::ImageHeader))) <= 0) {
       ACE_DEBUG ((LM_ERROR,
 		  ACE_TEXT ("(%P|%t) Unable to send image header\n")));
       

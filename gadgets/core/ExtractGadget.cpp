@@ -20,7 +20,7 @@ ExtractGadget::~ExtractGadget()
 
 }
 
-int ExtractGadget::process(GadgetContainerMessage<GadgetMessageImage> *m1, GadgetContainerMessage<hoNDArray<std::complex<float> > > *m2)
+int ExtractGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<hoNDArray<std::complex<float> > > *m2)
 {
 	int em = this->get_int_value("extract_mask");
 	if (em > 0) {
@@ -32,8 +32,8 @@ int ExtractGadget::process(GadgetContainerMessage<GadgetMessageImage> *m1, Gadge
 	static int counter = 0;
 	for (unsigned int m = GADGET_EXTRACT_MAGNITUDE; m < GADGET_EXTRACT_MAX; m = m<<1) {
 		if (extract_mask_ & m) {
-			GadgetContainerMessage<GadgetMessageImage>* cm1 =
-					new GadgetContainerMessage<GadgetMessageImage>();
+			GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 =
+					new GadgetContainerMessage<ISMRMRD::ImageHeader>();
 
 			//Copy the header
 			*cm1->getObjectPtr() = *m1->getObjectPtr();
@@ -74,22 +74,22 @@ int ExtractGadget::process(GadgetContainerMessage<GadgetMessageImage> *m1, Gadge
 			}
 
 			cm1->cont(cm2);
-			cm1->getObjectPtr()->image_format = GADGET_IMAGE_REAL_FLOAT;
+			cm1->getObjectPtr()->image_data_type = ISMRMRD::DATA_FLOAT;//GADGET_IMAGE_REAL_FLOAT;
 
 			switch (m) {
 			case GADGET_EXTRACT_MAGNITUDE:
-				cm1->getObjectPtr()->image_type = GADGET_IMAGE_MAGNITUDE;
+				cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;//GADGET_IMAGE_MAGNITUDE;
 				break;
 			case GADGET_EXTRACT_REAL:
-				cm1->getObjectPtr()->image_type = GADGET_IMAGE_REAL;
+				cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_REAL;
 				cm1->getObjectPtr()->image_series_index += 1000; //Ensure that this will go in a different series
 				break;
 			case GADGET_EXTRACT_IMAG:
-				cm1->getObjectPtr()->image_type = GADGET_IMAGE_IMAG;
+				cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_IMAG;
 				cm1->getObjectPtr()->image_series_index += 2000; //Ensure that this will go in a different series
 				break;
 			case GADGET_EXTRACT_PHASE:
-				cm1->getObjectPtr()->image_type = GADGET_IMAGE_PHASE;
+				cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_PHASE;
 				cm1->getObjectPtr()->image_series_index += 3000; //Ensure that this will go in a different series
 				break;
 			default:

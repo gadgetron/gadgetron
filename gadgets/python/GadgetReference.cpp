@@ -81,9 +81,9 @@ int GadgetReference::return_acquisition(ISMRMRD::AcquisitionHeader acq, boost::p
   return return_data<ISMRMRD::AcquisitionHeader>(acq, arr);
 }
 
-int GadgetReference::return_image(GadgetMessageImage img, boost::python::numeric::array arr)
+int GadgetReference::return_image(ISMRMRD::ImageHeader img, boost::python::numeric::array arr)
 {
-  return return_data<GadgetMessageImage>(img, arr);
+  return return_data<ISMRMRD::ImageHeader>(img, arr);
 }
 
 

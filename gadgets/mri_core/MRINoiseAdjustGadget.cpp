@@ -37,7 +37,7 @@ int MRINoiseAdjustGadget
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
-	bool is_noise = ISMRMRD::FlagBit(ISMRMRD::IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
+	bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
 	unsigned int channels = m1->getObjectPtr()->active_channels;
 	unsigned int samples = m1->getObjectPtr()->number_of_samples;
 

@@ -216,9 +216,9 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 	}
 
 
-	bool is_last_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
+	bool is_last_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
 
-	bool is_first_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::FIRST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
+	bool is_first_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_FIRST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
 
 	if (is_first_scan_in_slice) {
 		time_stamps_[slice] = m1->getObjectPtr()->acquisition_time_stamp;
@@ -229,8 +229,8 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		GadgetContainerMessage<GrappaUnmixingJob>* cm0 =
 						new GadgetContainerMessage<GrappaUnmixingJob>();
 
-		GadgetContainerMessage<GadgetMessageImage>* cm1 =
-				new GadgetContainerMessage<GadgetMessageImage>();
+		GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 =
+				new GadgetContainerMessage<ISMRMRD::ImageHeader>();
 
 
 		/*
@@ -259,7 +259,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		cm1->getObjectPtr()->matrix_size[2] = image_dimensions_[2];
 		cm1->getObjectPtr()->channels       = 1+weights_calculator_.get_number_of_uncombined_channels();
 		cm1->getObjectPtr()->slice              = m1->getObjectPtr()->idx.slice;
-		cm1->getObjectPtr()->time_stamp         = time_stamps_[slice];
+		cm1->getObjectPtr()->acquisition_time_stamp         = time_stamps_[slice];
 
 		memcpy(cm1->getObjectPtr()->position,m1->getObjectPtr()->position,
 				sizeof(float)*3);
@@ -267,7 +267,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		memcpy(cm1->getObjectPtr()->quaternion,m1->getObjectPtr()->quaternion,
 				sizeof(float)*4);
 
-		cm1->getObjectPtr()->table_position = m1->getObjectPtr()->patient_table_position[0];
+		memcpy(cm1->getObjectPtr()->patient_table_position,m1->getObjectPtr()->patient_table_position, sizeof(float)*3);
 
 		cm1->getObjectPtr()->image_index = ++image_counter_;
 		cm1->getObjectPtr()->image_series_index = image_series_;

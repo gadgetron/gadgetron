@@ -48,18 +48,20 @@ def recon_function(acq, data):
         img_head = g.GadgetMessageImage()
         img_head.channels = acq.active_channels
         img_head.slice = acq.idx.slice
-        img_head.set_matrix_size(0,myBuffer.shape[4])
-        img_head.set_matrix_size(1,myBuffer.shape[3])
-        img_head.set_matrix_size(2,myBuffer.shape[2])
-        img_head.set_position(0,g.get_position(acq,0))
-        img_head.set_position(1,g.get_position(acq,1))
-        img_head.set_position(2,g.get_position(acq,2))
-        img_head.set_quaternion(0,g.get_quaternion(acq, 0))
-        img_head.set_quaternion(1,g.get_quaternion(acq, 1))
-        img_head.set_quaternion(2,g.get_quaternion(acq, 2))
-        img_head.set_quaternion(3,g.get_quaternion(acq, 3))
-	img_head.table_position = g.get_patient_table_position(acq,1)
-        img_head.time_stamp = acq.acquisition_time_stamp
+        g.img_set_matrix_size(img_head, 0,myBuffer.shape[4])
+        g.img_set_matrix_size(img_head,1,myBuffer.shape[3])
+        g.img_set_matrix_size(img_head,2,myBuffer.shape[2])
+        g.img_set_position(img_head, 0,g.get_position(acq,0))
+        g.img_set_position(img_head, 1,g.get_position(acq,1))
+        g.img_set_position(img_head, 2,g.get_position(acq,2))
+        g.img_set_quaternion(img_head, 0,g.get_quaternion(acq, 0))
+        g.img_set_quaternion(img_head, 1,g.get_quaternion(acq, 1))
+        g.img_set_quaternion(img_head, 2,g.get_quaternion(acq, 2))
+        g.img_set_quaternion(img_head, 3,g.get_quaternion(acq, 3))
+	g.img_set_patient_table_position(img_head, 0, g.get_patient_table_position(acq,0)
+	g.img_set_patient_table_position(img_head, 1, g.get_patient_table_position(acq,1)
+	g.img_set_patient_table_position(img_head, 2, g.get_patient_table_position(acq,2)
+        img_head.acquisition_time_stamp = acq.acquisition_time_stamp
 	img_head.image_index = myCounter;
 	img_head.image_series_index = mySeries;
 

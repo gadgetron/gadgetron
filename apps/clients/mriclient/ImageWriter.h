@@ -25,8 +25,8 @@ public:
 			return 0;
 		}
 
-		GadgetContainerMessage<GadgetMessageImage> * img_head_mb =
-				dynamic_cast<GadgetContainerMessage<GadgetMessageImage> *>(mb);
+		GadgetContainerMessage<ISMRMRD::ImageHeader> * img_head_mb =
+				dynamic_cast<GadgetContainerMessage<ISMRMRD::ImageHeader> *>(mb);
 
 		if (!img_head_mb) {
 			GADGET_DEBUG1("Failed in dynamic cast\n");
@@ -54,7 +54,7 @@ public:
 		return mb;
 	}
 
-	virtual int process_image(GadgetMessageImage* img_head,
+	virtual int process_image(ISMRMRD::ImageHeader* img_head,
 			hoNDArray< T >* data)
 	{
 		ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Image Writer writing image\n")) );
