@@ -23,7 +23,18 @@
 #include <thrust/device_vector.h>
 #include <boost/shared_ptr.hpp>
 
-template< class REAL, unsigned int D > class EXPORTGPUNFFT NFFT_plan
+template<class REAL, unsigned int D, bool ATOMICS> struct _convolve_NFFT_NC2C;
+
+//  ------------------------------
+//  --- NFFT class declaration ---
+//  ------------------------------
+//
+//     REAL:  Desired precision : float or double
+//        D:  Dimensionality : { 1,2,3,4 }
+//  ATOMICS:  NC2C convolution using atomic device memory transactions : { true, false }
+//
+
+template< class REAL, unsigned int D, bool ATOMICS = false > class EXPORTGPUNFFT NFFT_plan
 {
   
  public: // Main interface
@@ -41,7 +52,7 @@ template< class REAL, unsigned int D > class EXPORTGPUNFFT NFFT_plan
 
   // Replan 
   bool setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int device = -1 );
-    
+  
   // Preproces trajectory ( Cartesian to non-Cartesian / non-Cartesian to Cartesian / both )
   enum NFFT_prep_mode { NFFT_PREP_C2NC, NFFT_PREP_NC2C, NFFT_PREP_ALL };
   bool preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory, NFFT_prep_mode mode );
@@ -82,6 +93,8 @@ template< class REAL, unsigned int D > class EXPORTGPUNFFT NFFT_plan
   void operator delete (void *ptr) { delete [] static_cast <char *> (ptr); } 
   void * operator new(size_t s, void * p) { return p; }
 
+  friend struct _convolve_NFFT_NC2C<REAL,D,ATOMICS>;
+  
  private: // Internal to the implementation
 
   // Validate setup / arguments
@@ -107,7 +120,7 @@ template< class REAL, unsigned int D > class EXPORTGPUNFFT NFFT_plan
   // Dedicated convolutions
   bool convolve_NFFT_C2NC( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate );
   bool convolve_NFFT_NC2C( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate );
-   
+  
   // Internal utility
   bool image_wrap( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate );
 

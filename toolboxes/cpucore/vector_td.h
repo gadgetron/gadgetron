@@ -75,6 +75,10 @@ public:
     vec[1]=y;
   }
 
+  __inline__ __host__ __device__ vector_td(T x){
+     vec[0]=x;
+     vec[1]=x;
+   }
   __inline__ __host__ __device__ T& operator[](const int i){
     return vec[i];
   }
@@ -97,6 +101,12 @@ public:
     vec[1]=y;
     vec[2]=z;
   }
+
+  __inline__ __host__ __device__ vector_td(T x){
+       vec[0]=x;
+       vec[1]=x;
+       vec[2]=x;
+     }
 
   __inline__ __host__ __device__ T& operator[](const int i){
     return vec[i];
@@ -121,6 +131,13 @@ public:
     vec[2]=z;
     vec[3]=w;
   }
+
+  __inline__ __host__ __device__ vector_td(T x){
+         vec[0]=x;
+         vec[1]=x;
+         vec[2]=x;
+         vec[3]=x;
+   }
 
   __inline__ __host__ __device__ T& operator[](const int i){
     return vec[i];

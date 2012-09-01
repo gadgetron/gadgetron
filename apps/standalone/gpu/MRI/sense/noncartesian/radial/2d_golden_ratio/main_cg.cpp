@@ -22,6 +22,8 @@ typedef float _real;
 typedef complext<_real> _complext;
 typedef reald<_real,2>::Type _reald2;
 
+const bool use_atomics = false;
+
 // Upload samples for one reconstruction from host to device
 boost::shared_ptr< cuNDArray<_complext> > 
 upload_data( unsigned int reconstruction, unsigned int samples_per_reconstruction, unsigned int total_samples_per_coil, unsigned int num_coils, hoNDArray<_complext> *host_data )
@@ -114,7 +116,8 @@ int main(int argc, char** argv)
       _real(1)/((_real)samples_per_profile/(_real)max(matrix_size.vec[0],matrix_size.vec[1])) );
 
   // Define encoding matrix for non-Cartesian SENSE
-  boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );  
+  boost::shared_ptr< cuNonCartesianSenseOperator<_real,2,use_atomics> > E
+    ( new cuNonCartesianSenseOperator<_real,2,use_atomics>() );  
 
   if( E->setup( matrix_size, matrix_size_os, kernel_width ) < 0 ){
     cout << "Failed to setup non-Cartesian Sense operator" << endl;
@@ -131,7 +134,8 @@ int main(int argc, char** argv)
   // Define rhs buffer
   //
 
-  boost::shared_ptr< cuSenseRHSBuffer<_real,2> > rhs_buffer( new cuSenseRHSBuffer<_real,2>() );
+  boost::shared_ptr< cuSenseRHSBuffer<_real,2,use_atomics> > rhs_buffer
+    ( new cuSenseRHSBuffer<_real,2,use_atomics>() );
 
   rhs_buffer->set_num_coils(num_coils);
 

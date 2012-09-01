@@ -12,6 +12,7 @@
 #include "hdf5utils_export.h"
 
 #include <complex>
+#include <complext.h>
 #include <FileInfo.h>
 #include <H5Cpp.h>
 #include <boost/shared_ptr.hpp>
@@ -29,11 +30,20 @@
 template <class T> boost::shared_ptr<DataType> getHDF5Type();
 
 /**
- *   Returns HDF5 data type for single precision float
+ *   Returns HDF5 data type for single precision floating point
  */
 template <> boost::shared_ptr<DataType> getHDF5Type<float>()
 {
 	boost::shared_ptr<DataType> ret(new DataType(H5Tcopy(H5T_NATIVE_FLOAT)));
+	return ret;
+}
+
+/**
+ *   Returns HDF5 data type for double precision floating point
+ */
+template <> boost::shared_ptr<DataType> getHDF5Type<double>()
+{
+	boost::shared_ptr<DataType> ret(new DataType(H5Tcopy(H5T_NATIVE_DOUBLE)));
 	return ret;
 }
 
@@ -47,7 +57,7 @@ template <> boost::shared_ptr<DataType> getHDF5Type<char>()
 }
 
 /**
- *   Returns HDF5 compound data type for single precision complex float
+ *   Returns HDF5 compound data type for single precision std::complex
  */
 template <> boost::shared_ptr<DataType> getHDF5Type< std::complex<float> >()
 {
@@ -56,6 +66,34 @@ template <> boost::shared_ptr<DataType> getHDF5Type< std::complex<float> >()
 	ct->insertMember( "imag",  sizeof(float),  PredType::NATIVE_FLOAT);
 	boost::shared_ptr<DataType> ret(ct);
 	return ret;
+}
+
+/**
+ *   Returns HDF5 compound data type for double precision std::complex
+ */
+template <> boost::shared_ptr<DataType> getHDF5Type< std::complex<double> >()
+{
+	CompType* ct = new CompType(sizeof( std::complex<double> ));
+	ct->insertMember( "real",  0,              PredType::NATIVE_DOUBLE);
+	ct->insertMember( "imag",  sizeof(double), PredType::NATIVE_DOUBLE);
+	boost::shared_ptr<DataType> ret(ct);
+	return ret;
+}
+
+/**
+ *   Returns HDF5 compound data type for single precision complext
+ */
+template <> boost::shared_ptr<DataType> getHDF5Type< complext<float> >()
+{
+  return getHDF5Type< std::complex<float> >();
+}
+
+/**
+ *   Returns HDF5 compound data type for double precision complext
+ */
+template <> boost::shared_ptr<DataType> getHDF5Type< complext<double> >()
+{
+  return getHDF5Type< std::complex<double> >();
 }
 
 /**

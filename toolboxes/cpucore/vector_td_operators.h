@@ -10,6 +10,7 @@
 template <class T, class I> struct vectorTDReturnType {};
 template <class T> struct vectorTDReturnType<T,T> { typedef T type;};
 template<> struct vectorTDReturnType<unsigned int, int> {typedef int type; };
+template<> struct vectorTDReturnType<float, float> {typedef float type; };
 template<> struct vectorTDReturnType<float, int> {typedef float type; };
 template<> struct vectorTDReturnType<int, float> {typedef float type; };
 template<> struct vectorTDReturnType<float, unsigned int> {typedef float type; };
@@ -64,6 +65,14 @@ void operator /= ( vector_td<T,D> &v1, const T &v2 )
 {
   for(unsigned int i=0; i<D; i++ ) v1.vec[i] /= v2;
 }
+
+
+template< class T, unsigned int D > __inline__ __host__ __device__
+void operator /=  ( vector_td<T,D> &v1, const vector_td<T,D> &v2 )
+{
+  for(unsigned int i=0; i<D; i++ ) v1.vec[i] /= v2.vec[i];
+}
+
 
 template< class T, unsigned int D > __inline__ __host__ __device__ 
 void component_wise_div_eq ( vector_td<T,D> &v1, const vector_td<T,D> &v2 ) 
@@ -167,17 +176,16 @@ vector_td<typename vectorTDReturnType<T,R>::type,D> operator/ ( const vector_td<
 template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
 vector_td<typename vectorTDReturnType<T,R>::type,D> operator/ ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
 {
-  vector_td<typename vectorTDReturnType<T,R>::type,D> res;
-  for(unsigned int i=0; i<D; i++ ) res.vec[i] = v1.vec[i]/v2.vec[i];
+  vector_td<typename vectorTDReturnType<T,R>::type,D> res = v1;
+  for(unsigned int i=0; i<D; i++ ) res[i] /= v2[i];
   return res;
 }
 
 template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
 vector_td<typename vectorTDReturnType<T,R>::type,D> component_wise_div ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
 { 
-  vector_td<typename vectorTDReturnType<T,R>::type,D> res;
-  for(unsigned int i=0; i<D; i++ ) res.vec[i] = v1.vec[i]/v2.vec[i];
-  return res;
+
+  return v1/v2;
 }
 
 // 
