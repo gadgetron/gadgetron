@@ -48,13 +48,7 @@ find_package(Qt4 4.6)
 find_package(PythonLibs)
 find_package(Numpy)
 find_package(Boost COMPONENTS python)
-find_package(HDF5 1.8 COMPONENTS C CXX HL)
 find_package(GLEW)
-
-if (HDF5_FOUND)
-   set(HDF5_LIB_DIR ${HDF5_DIR}/../../../lib CACHE STRING "Where the HDF5 libs are installed")
-   MESSAGE("-- HDF5 lib directory : " ${HDF5_LIB_DIR})
-endif(HDF5_FOUND)
 
 add_subdirectory(doc)
 add_subdirectory(dependencies)

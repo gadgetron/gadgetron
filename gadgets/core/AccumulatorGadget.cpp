@@ -98,11 +98,11 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     	sizeof(std::complex<float>)*samples);
   }
   
-  bool is_last_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
+  bool is_last_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
   
   if (is_last_scan_in_slice) {
-    GadgetContainerMessage<GadgetMessageImage>* cm1 = 
-      new GadgetContainerMessage<GadgetMessageImage>();
+    GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = 
+      new GadgetContainerMessage<ISMRMRD::ImageHeader>();
     
     cm1->getObjectPtr()->flags = 0;
 
@@ -145,10 +145,10 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     		m1->getObjectPtr()->quaternion,
 	   sizeof(float)*4);
  
-    cm1->getObjectPtr()->table_position =
-    		m1->getObjectPtr()->patient_table_position[0];
+    memcpy(cm1->getObjectPtr()->patient_table_position,
+    		m1->getObjectPtr()->patient_table_position, sizeof(float)*3);
 
-    cm1->getObjectPtr()->image_format = GADGET_IMAGE_COMPLEX_FLOAT;
+    cm1->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
     cm1->getObjectPtr()->image_index = ++image_counter_;
     cm1->getObjectPtr()->image_series_index = image_series_;
 

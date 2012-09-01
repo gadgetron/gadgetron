@@ -11,6 +11,7 @@
 #include <Gadget.h>
 #include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
+#include "ismrmrd.h"
 #include "gadgetroncore_export.h"
 
 #include <complex>
@@ -26,7 +27,7 @@
 #define GADGET_EXTRACT_MAX                    (1 << 4) //16
 
 class EXPORTGADGETSCORE ExtractGadget:
-public Gadget2<GadgetMessageImage,hoNDArray< std::complex<float> > >
+public Gadget2<ISMRMRD::ImageHeader,hoNDArray< std::complex<float> > >
 {
 
 public:
@@ -56,7 +57,7 @@ public:
   }
 
 protected:
-	virtual int process(GadgetContainerMessage<GadgetMessageImage>* m1,
+	virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 			GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
 	unsigned short extract_mask_;

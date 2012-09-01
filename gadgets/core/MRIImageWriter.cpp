@@ -8,8 +8,8 @@
 template <typename T>
 int MRIImageWriter<T>::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 {
-	GadgetContainerMessage<GadgetMessageImage>* imagemb =
-			AsContainerMessage<GadgetMessageImage>(mb);
+	GadgetContainerMessage<ISMRMRD::ImageHeader>* imagemb =
+			AsContainerMessage<ISMRMRD::ImageHeader>(mb);
 
 	if (!imagemb) {
 		ACE_DEBUG( (LM_ERROR, ACE_TEXT("(%P,%l), MRIImageWriter::write, invalid image message objects, 1\n")) );
@@ -28,13 +28,13 @@ int MRIImageWriter<T>::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 	GadgetMessageIdentifier id;
 	switch (sizeof(T)) {
 	case 2: //Unsigned short
-		id.id = GADGET_MESSAGE_IMAGE_REAL_USHORT;
+		id.id = GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT;
 		break;
 	case 4: //Float
-		id.id = GADGET_MESSAGE_IMAGE_REAL_FLOAT;
+		id.id = GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT;
 		break;
 	case 8: //Complex float
-		id.id = GADGET_MESSAGE_IMAGE_CPLX_FLOAT;
+		id.id = GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT;
 		break;
 	default:
 		ACE_DEBUG ((LM_ERROR,
@@ -64,7 +64,7 @@ int MRIImageWriter<T>::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 		return -1;
 	}
 
-	if ((send_cnt = sock->send_n (imagemb->getObjectPtr(), sizeof(GadgetMessageImage))) <= 0) {
+	if ((send_cnt = sock->send_n (imagemb->getObjectPtr(), sizeof(ISMRMRD::ImageHeader))) <= 0) {
 		ACE_DEBUG ((LM_ERROR,
 				ACE_TEXT ("(%P|%t) Unable to send image header\n")));
 

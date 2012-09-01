@@ -1,7 +1,7 @@
 #include "FFTGadget.h"
 #include "FFT.h"
 
-int FFTGadget::process( GadgetContainerMessage< GadgetMessageImage>* m1,
+int FFTGadget::process( GadgetContainerMessage< ISMRMRD::ImageHeader>* m1,
 			GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
   FFT<float>::instance()->ifft(m2->getObjectPtr(),0);

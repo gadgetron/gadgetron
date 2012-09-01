@@ -9,8 +9,7 @@
 #define HDF5IMAGEWRITER_H_
 
 #include "ImageWriter.h"
-#include "hoNDArray_hdf5_io.h"
-#include "mri_hdf5_io.h"
+#include "ismrmrd_hdf5.h"
 #include <sstream>
 
 template <typename T> class HDF5ImageWriter : public ImageWriter<T>
@@ -21,39 +20,33 @@ public:
 	: ImageWriter<T>()
 	, file_name_(filename)
 	, group_name_(groupname)
+	, dataset_(filename.c_str(), groupname.c_str())
 	{
 
 	}
 
-	virtual int process_image(GadgetMessageImage* img_head,
+	virtual int process_image(ISMRMRD::ImageHeader* img_head,
 			hoNDArray< T >* data)
 	{
 		try {
-		HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
-	    std::stringstream st;
-	    st << img_head->image_series_index;
-		std::string varname = group_name_ + std::string("/") + std::string("data_") + st.str();
+			ISMRMRD::HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
+			std::stringstream st1;
+			st1 << "image_" << img_head->image_series_index << ".head";
+			std::string head_varname = st1.str();
 
-		if (!(hdf5_append_array(data, file_name_.c_str(), varname.c_str()) == 0)) {
-			GADGET_DEBUG1("File is not good for writing\n");
-			return GADGET_FAIL;
-		}
+			std::stringstream st2;
+			st2 << "image_" << img_head->image_series_index << ".img";
+			std::string img_varname = st2.str();
 
-		varname = group_name_ + std::string("/") + std::string("header_") + st.str();
+			if (dataset_.appendImageHeader(*img_head, head_varname.c_str()) < 0) {
+				GADGET_DEBUG1("Failed to write image header\n");
+				return GADGET_FAIL;
+			}
 
-		if (!(hdf5_append_struct(img_head, file_name_.c_str(), varname.c_str()) == 0)) {
-			GADGET_DEBUG1("File is not good for writing\n");
-			return GADGET_FAIL;
-		}
-
-		/*
-		varname = group_name_ + std::string("/") + std::string("comb_") + st.str();
-
-		if (!(hdf5_append_struct_with_data(img_head, data, file_name_.c_str(), varname.c_str()) == 0)) {
-			GADGET_DEBUG1("File is not good for writing\n");
-			return GADGET_FAIL;
-		}
-		*/
+			if (dataset_.appendArray(*data->get_dimensions(),data->get_data_ptr(), img_varname.c_str())  < 0) {
+				GADGET_DEBUG1("Failed to write image data\n");
+				return GADGET_FAIL;
+			};
 		} catch (...) {
 			GADGET_DEBUG1("Error attempting to append images to HDF5 file\n");
 			return GADGET_FAIL;
@@ -65,6 +58,7 @@ public:
 protected:
 	std::string group_name_;
 	std::string file_name_;
+	ISMRMRD::IsmrmrdDataset dataset_;
 };
 
 

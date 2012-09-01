@@ -36,7 +36,7 @@ public:
 };
 
 
-class EXPORTGADGETSCGSENSE GPUCGGadgetGeneric : public Gadget2< GadgetMessageImage, CGSenseJob >
+class EXPORTGADGETSCGSENSE GPUCGGadgetGeneric : public Gadget2< ISMRMRD::ImageHeader, CGSenseJob >
 {
 
 public:
@@ -47,7 +47,7 @@ public:
 
 protected:
 
-	virtual int process( GadgetContainerMessage< GadgetMessageImage >* m1, GadgetContainerMessage< CGSenseJob > * m2 );
+	virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader >* m1, GadgetContainerMessage< CGSenseJob > * m2 );
 	virtual int process_config( ACE_Message_Block* mb );
 
 	virtual int configure_channels();

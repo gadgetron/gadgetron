@@ -22,7 +22,6 @@ add_library(gadgetroncore SHARED AcquisitionPassthroughGadget.cpp
 								 ImageFinishGadget.cpp
 								 CropAndCombineGadget.cpp
 								 ImageWriterGadget.cpp
-								 MRIAcquisitionReader.cpp
 								 MRIImageWriter.cpp
 								 NoiseAdjustGadget.cpp
 								 ExtractGadget.cpp
@@ -44,7 +43,6 @@ install (FILES	AccumulatorGadget.h
 			GadgetMRIHeaders.h
 			ImageFinishGadget.h
 			ImageWriterGadget.h
-			MRIAcquisitionReader.h
 			MRIImageWriter.h
 			NoiseAdjustGadget.h
 			RemoveROOversamplingGadget.h

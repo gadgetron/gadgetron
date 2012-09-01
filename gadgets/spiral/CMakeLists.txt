@@ -15,7 +15,7 @@ include_directories(   ${ACE_INCLUDE_DIR}
                        ${CMAKE_SOURCE_DIR}/gadgets/cgsense
 		       ${CMAKE_SOURCE_DIR}/gadgets/core)
 
-add_library(gadgetronspiral SHARED SpiralGadget.cpp SpiralGadgetSW.cpp vds.cpp)
+add_library(gadgetronspiral SHARED SpiralGadget.cpp SpiralGadgetSW.cpp FlowPhaseSubtractionGadget.cpp vds.cpp)
 
 target_link_libraries(gadgetronspiral gpunfft tinyxml solvers gpuparallelmri ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 

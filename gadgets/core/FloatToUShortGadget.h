@@ -10,7 +10,7 @@
 
 #include <Gadget.h>
 #include <hoNDArray.h>
-#include "GadgetMRIHeaders.h"
+#include "ismrmrd.h"
 #include "gadgetroncore_export.h"
 
 /**
@@ -23,7 +23,7 @@
  *
  */
 class EXPORTGADGETSCORE FloatToUShortGadget:
-public Gadget2<GadgetMessageImage,hoNDArray< float > >
+public Gadget2<ISMRMRD::ImageHeader,hoNDArray< float > >
 {
 public:
 	GADGET_DECLARE(FloatToUShortGadget);
@@ -31,7 +31,7 @@ public:
 	virtual ~FloatToUShortGadget();
 
 protected:
-	virtual int process(GadgetContainerMessage<GadgetMessageImage>* m1,
+	virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 			GadgetContainerMessage< hoNDArray< float > >* m2);
 
 };

@@ -16,9 +16,4 @@ if (CUDA_FOUND)
    add_subdirectory(solvers)
 endif(CUDA_FOUND)
 
-if (HDF5_FOUND)
-   MESSAGE("-- HDF5 Support found, Compiling HDF5 Support") 
-   add_subdirectory(hdf5utils)
-   add_subdirectory(hdf5mri)
-endif(HDF5_FOUND)
 

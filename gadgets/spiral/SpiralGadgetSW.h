@@ -13,6 +13,7 @@
 #include "ismrmrd.h"
 
 #include <boost/shared_ptr.hpp>
+#include <boost/shared_array.hpp>
 
 
 class EXPORTGADGETSSPIRAL SpiralGadgetSW :
@@ -36,6 +37,7 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   int samples_per_interleave_;
   int interleaves_;
   int slices_;
+  int sets_;
   int image_counter_;
   int image_series_;
   int device_number_;
@@ -57,7 +59,7 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   std::vector<unsigned int> image_dimensions_;
   NFFT_plan<float, 2> plan_;
 
-  ACE_Message_Queue<ACE_MT_SYNCH> buffer_;
+  boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > buffer_;
 
 };
 

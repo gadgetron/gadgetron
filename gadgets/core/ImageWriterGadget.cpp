@@ -4,7 +4,7 @@
 
 template<typename T>
 int ImageWriterGadget<T> ::
-process( GadgetContainerMessage< GadgetMessageImage>* m1,
+process( GadgetContainerMessage< ISMRMRD::ImageHeader>* m1,
 	 GadgetContainerMessage< hoNDArray< T > >* m2)
 {
     GADGET_DEBUG1("Writing image\n");

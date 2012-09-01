@@ -317,8 +317,8 @@ int GPUCGGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		}
 
 		//Now pass the reconstructed image on
-		GadgetContainerMessage<GadgetMessageImage>* cm1 =
-				new GadgetContainerMessage<GadgetMessageImage>();
+		GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 =
+				new GadgetContainerMessage<ISMRMRD::ImageHeader>();
 
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >* cm2 =
 				new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
@@ -354,12 +354,12 @@ int GPUCGGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		cm1->getObjectPtr()->matrix_size[2] = 1;
 		cm1->getObjectPtr()->channels       = 1;
 		cm1->getObjectPtr()->slice          = m1->getObjectPtr()->idx.slice;
-		cm1->getObjectPtr()->time_stamp     = m1->getObjectPtr()->acquisition_time_stamp;
+		cm1->getObjectPtr()->acquisition_time_stamp     = m1->getObjectPtr()->acquisition_time_stamp;
 
 		memcpy(cm1->getObjectPtr()->position,m1->getObjectPtr()->position, sizeof(float)*3);
 		memcpy(cm1->getObjectPtr()->quaternion,m1->getObjectPtr()->quaternion, sizeof(float)*4);
+		memcpy(cm1->getObjectPtr()->patient_table_position, m1->getObjectPtr()->patient_table_position, sizeof(float)*3);
 
-		cm1->getObjectPtr()->table_position = m1->getObjectPtr()->patient_table_position[0];
 		cm1->getObjectPtr()->image_index = ++image_counter_;
 		cm1->getObjectPtr()->image_series_index = image_series_;
 

@@ -5,16 +5,17 @@
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
+#include "ismrmrd.h"
 #include "GadgetStreamController.h"
 
 #include <complex>
 
 template <typename T>
 class EXPORTGADGETSCORE ImageFinishGadget : 
-public Gadget2<GadgetMessageImage,hoNDArray< T > >
+public Gadget2<ISMRMRD::ImageHeader,hoNDArray< T > >
 {
  protected:
-  virtual int process(GadgetContainerMessage<GadgetMessageImage>* m1, 
+  virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, 
                       GadgetContainerMessage< hoNDArray< T > >* m2);
 };
 
