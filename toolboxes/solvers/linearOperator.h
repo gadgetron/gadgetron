@@ -45,7 +45,32 @@ template <class REAL, class ARRAY_TYPE> class linearOperator
 
   virtual int mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
   virtual int mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
-  virtual int mult_MH_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
+
+  virtual int mult_MH_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false )
+  {    
+    if( codomain_dims_.size() == 0 ){
+      std::cerr << "Error: linearOperator::mult_MH_M : codomain dimensions not set" << std::endl;
+      return -1;
+    }
+
+    ARRAY_TYPE tmp;
+    if( !tmp.create(&codomain_dims_) ) {
+      std::cerr << "Error: linearOperator::mult_MH_M : unable to create intermediate codomain array" << std::endl;
+      return -2;
+    }
+    
+    if( mult_M( in, &tmp, false ) < 0 ) {
+      std::cerr << "Error: linearOperator::mult_MH_M : Unable to perform mult_M" << std::endl;
+      return -3;
+    }
+    
+    if( mult_MH( &tmp, out, accumulate ) < 0 ) {
+      std::cerr << "Error: linearOperator::mult_MH_M : Unable to perform mult_MH" << std::endl;
+      return -4;
+    }
+    
+    return 0;
+  }
   
   virtual boost::shared_ptr< linearOperator< REAL, ARRAY_TYPE > > clone() = 0;
 
@@ -56,7 +81,6 @@ template <class REAL, class ARRAY_TYPE> class linearOperator
 protected:
 
   // The template below is useful for implementing the pure virtual 'clone' method 
-  // To be used in _all_ classes that can be instantiated (i.e. non-abstract classes).
   //
   
   template <class T>

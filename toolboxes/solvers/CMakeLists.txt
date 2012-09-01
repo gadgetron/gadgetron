@@ -41,6 +41,8 @@ install(FILES
 	cuIdentityOperator.h
 	imageOperator.h
 	cuImageOperator.h
+	diagonalOperator.h
+	cuDiagonalOperator.h
 	encodedImageOperator.h
 	cuEncodedImageOperator.h
 	partialDerivativeOperator.h

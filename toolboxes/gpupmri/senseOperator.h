@@ -23,12 +23,13 @@ public:
     if( csm.get() && csm->get_number_of_dimensions() == D+1 ) {
       csm_ = csm;      
       ncoils_ = csm_->get_size(D);
-      dimensionsI_ = *csm_->get_dimensions();
-      dimensionsI_.pop_back();
+      std::vector<unsigned int> tmp_dims = *csm_->get_dimensions();
+      tmp_dims.pop_back();
+      this->set_domain_dimensions(&tmp_dims);
       return 0;
     }
     else{
-      std::cerr << "senseOperator::set_csm: dimensionality mismatch " << std::endl;
+      std::cerr << "Error: senseOperator::set_csm : unexpected csm dimensionality" << std::endl;
       return -1;
     }    
   }
@@ -36,27 +37,6 @@ public:
   virtual int mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false ) = 0;
   virtual int mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false ) = 0;
 
-  virtual int mult_MH_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false )
-  {    
-    ARRAY_TYPE tmp;
-    if( !tmp.create(&dimensionsK_) ) {
-      std::cerr << "senseOperator::mult_MH_M: Unable to create temporary storage" << std::endl;
-      return -1;
-    }
-    
-    if( mult_M( in, &tmp, false ) < 0 ) {
-      std::cerr << "senseOperator::mult_MH_M: Unable to perform mult_M" << std::endl;
-      return -2;
-    }
-    
-    if( mult_MH( &tmp, out, accumulate ) < 0 ) {
-      std::cerr << "senseOperator::mult_MH_M: Unable to perform mult_MH" << std::endl;
-      return -3;
-    }
-    
-    return 0;
-  }
-    
   virtual int mult_csm( ARRAY_TYPE* in, ARRAY_TYPE* out ) = 0;
   virtual int mult_csm_conj_sum( ARRAY_TYPE* in, ARRAY_TYPE* out) = 0;
 
@@ -64,6 +44,4 @@ protected:
 
   unsigned int ncoils_;
   boost::shared_ptr< ARRAY_TYPE > csm_;
-  std::vector<unsigned int> dimensionsI_;
-  std::vector<unsigned int> dimensionsK_;
 };

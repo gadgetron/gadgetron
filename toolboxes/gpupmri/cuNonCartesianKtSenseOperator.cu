@@ -53,7 +53,6 @@ cuNonCartesianKtSenseOperator<REAL,D>::mult_MH( cuNDArray<_complext>* in, cuNDAr
   return ret;
 }
 
-
 //
 // Instantiations
 //
