@@ -12,6 +12,7 @@ endif (WIN32)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
+set(Boost_NO_BOOST_CMAKE ON)
 find_package(Boost REQUIRED)
 find_package(ACE REQUIRED)
 find_package(FFTW3 COMPONENTS single double REQUIRED)
