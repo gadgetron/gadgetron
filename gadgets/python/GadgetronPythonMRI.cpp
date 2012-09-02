@@ -127,6 +127,20 @@ uint16_t acq_get_encoding_user(ISMRMRD::EncodingCounters&e, unsigned short i)
 	return 0;
 }
 
+void img_set_matrix_size(ISMRMRD::ImageHeader &h, unsigned short i, uint16_t v)
+{
+	if (i < 3) {
+		h.matrix_size[i] = v;
+	}
+}
+
+uint16_t img_get_matrix_size(ISMRMRD::ImageHeader &h, unsigned short i)
+{
+	if (i < 3) {
+		return h.matrix_size[i];
+	}
+	return 0;
+}
 
 void img_set_physiology_time_stamp(ISMRMRD::ImageHeader &h, unsigned short i, uint32_t v)
 {
@@ -283,6 +297,8 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
 	def("img_get_user_float", img_get_user_float);
 	def("img_get_field_of_view", img_get_field_of_view);
 	def("img_set_field_of_view", img_set_field_of_view);
+	def("img_get_matrix_size", img_get_matrix_size);
+	def("img_set_matrix_size", img_set_matrix_size);
 
 	class_<ISMRMRD::AcquisitionHeader>("AcquisitionHeader")
 			.def_readwrite("version",                &ISMRMRD::AcquisitionHeader::version)

@@ -1,5 +1,7 @@
 find_package(Ismrmrd REQUIRED)
 find_package(HDF5 1.8 COMPONENTS C CXX REQUIRED)
+set(Boost_NO_BOOST_CMAKE ON)
+find_package(Boost COMPONENTS thread system REQUIRED)
 
 include_directories(    
   ${ACE_INCLUDE_DIR} 
@@ -16,7 +18,7 @@ include_directories(
 
 add_executable(mriclient main.cpp)
 
-target_link_libraries(mriclient tinyxml gadgettools  ${HDF5_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES})
+target_link_libraries(mriclient tinyxml gadgettools  ${HDF5_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
 
 
 install(TARGETS mriclient DESTINATION bin)

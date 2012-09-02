@@ -42,7 +42,9 @@ else (CUDA_FOUND)
 endif (CUDA_FOUND)
 
 # Compile kernels for shader models 1.0 and 2.0 as default
+IF (${CMAKE_VERSION} VERSION_GREATER "2.8.7")
 set(CUDA_NVCC_FLAGS "-gencode=arch=compute_10,code=\"sm_10,compute_10\" -gencode=arch=compute_20,code=\"sm_20,compute_20\"")
+ENDIF (${CMAKE_VERSION} VERSION_GREATER "2.8.7")
 
 find_package(Qt4 4.6)
 
