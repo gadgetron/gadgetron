@@ -92,7 +92,7 @@ protected:
     return copy;
   } 
   
-private:
+protected:
   REAL weight_;
   std::vector<unsigned int> domain_dims_;
   std::vector<unsigned int> codomain_dims_; 

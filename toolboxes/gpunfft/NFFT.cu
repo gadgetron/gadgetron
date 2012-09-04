@@ -34,6 +34,7 @@
 #include <assert.h>
 #include <limits.h>
 #include <math.h>
+#include <cmath>
 
 using namespace std;
 using namespace thrust;

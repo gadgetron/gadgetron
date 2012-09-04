@@ -29,7 +29,7 @@ vector_td<T,D> abs( const vector_td<T,D> vec )
 {
   vector_td<T,D> res;
   for (unsigned int i=0; i<D; i++) {
-    res.vec[i] = abs(vec.vec[i]);
+    res.vec[i] = std::abs(vec.vec[i]);
   }
   return res;
 }
@@ -50,7 +50,7 @@ vector_td<REAL,D> ceil( const vector_td<REAL,D> vec )
 {
   vector_td<REAL,D> res;
   for (unsigned int i=0; i<D; i++) {
-    res.vec[i] = ceil(vec.vec[i]);
+    res.vec[i] = std::ceil(vec.vec[i]);
   }
   return res;
 }
@@ -60,7 +60,7 @@ vector_td<REAL,D> floor( const vector_td<REAL,D> vec )
 {
   vector_td<REAL,D> res;
   for (unsigned int i=0; i<D; i++) {
-    res.vec[i] = floor(vec.vec[i]);
+    res.vec[i] = std::floor(vec.vec[i]);
   }
   return res;
 }
@@ -257,7 +257,6 @@ vector_td<T,D> from_std_vector( std::vector<T> _vector )
   return out;
 }
 
-
 //
 // Reductions on vector_td<T,D>
 //
@@ -297,7 +296,37 @@ T max( const vector_td<T,D> vec )
 {
   T res = vec.vec[0];
   for (unsigned int i=1; i<D; i++){
-    res = max(res,vec.vec[i]);
+    res = std::max(res,vec.vec[i]);
+  }
+  return res;
+}
+
+template<class T, unsigned int D> __inline__ __host__ __device__ 
+T min( const vector_td<T,D> vec )
+{
+  T res = vec.vec[0];
+  for (unsigned int i=1; i<D; i++){
+    res = std::min(res,vec.vec[i]);
+  }
+  return res;
+}
+
+template<class T, unsigned int D> __inline__ __host__ __device__
+vector_td<T,D> amin( const vector_td<T,D> vec1, const vector_td<T,D> vec2)
+{
+  vector_td<T,D> res;
+  for (unsigned int i=0; i<D; i++){
+    res[i] = vec1[i] < vec2[i] ? vec1[i] : vec2[i];
+  }
+  return res;
+}
+
+template<class T, unsigned int D> __inline__ __host__ __device__
+vector_td<T,D> amax( const vector_td<T,D> vec1, const vector_td<T,D> vec2)
+{
+  vector_td<T,D> res;
+  for (unsigned int i=0; i<D; i++){
+    res[i] = vec1[i] > vec2[i] ? vec1[i] : vec2[i];
   }
   return res;
 }
@@ -310,7 +339,7 @@ T max_not_nan( const vector_td<T,D> vec )
   if (i >= D) return 0;
   T res = vec.vec[i];
   for (++i; i<D; i++){
-    if (!isnan(vec.vec[i])) res = max(res,vec.vec[i]);
+    if (!isnan(vec.vec[i])) res = std::max(res,vec.vec[i]);
   }
   return res;
 }
@@ -322,50 +351,17 @@ T min_not_nan( const vector_td<T,D> vec )
   while (isnan(vec.vec[i])) i++;
   T res = vec.vec[i];
   for (++i; i<D; i++){
-    if (!isnan(vec.vec[i])) res = min(res,vec.vec[i]);
+    if (!isnan(vec.vec[i])) res = std::min(res,vec.vec[i]);
   }
   return res;
 }
-
-template<class T, unsigned int D> __inline__ __host__ __device__ 
-T min( const vector_td<T,D> vec )
-{
-  T res = vec.vec[0];
-  for (unsigned int i=1; i<D; i++){
-    res = min(res,vec.vec[i]);
-  }
-  return res;
-}
-
-
-template<class T, unsigned int D> __inline__ __host__ __device__
-vector_td<T,D> amin( const vector_td<T,D> vec1, const vector_td<T,D> vec2)
-{
-	vector_td<T,D> res;
-  for (unsigned int i=0; i<D; i++){
-    res[i] = vec1[i] < vec2[i] ? vec1[i] : vec2[i];
-  }
-  return res;
-}
-
-template<class T, unsigned int D> __inline__ __host__ __device__
-vector_td<T,D> amax( const vector_td<T,D> vec1, const vector_td<T,D> vec2)
-{
-	vector_td<T,D> res;
-  for (unsigned int i=0; i<D; i++){
-	  res[i] = vec1[i] > vec2[i] ? vec1[i] : vec2[i];
-  }
-  return res;
-}
-
-
 
 template<class T, unsigned int D> __inline__ __host__ __device__ 
 unsigned int argmin( const vector_td<T,D> vec )
 {
   unsigned int res= 0;
   for (unsigned int i=1; i<D; i++){
-    if (vec.vec[i] < vec.vec[res] )res=i;
+    if (vec.vec[i] < vec.vec[res] ) res = i;
   }
   return res;
 }
@@ -375,7 +371,7 @@ unsigned int argmin_not_nan( const vector_td<T,D> vec )
 {
   unsigned int res= 0;
   for (unsigned int i=1; i<D; i++){
-    if (vec.vec[i] < vec.vec[res] && !isnan(vec.vec[i]))res=i;
+    if (vec.vec[i] < vec.vec[res] && !isnan(vec.vec[i])) res = i;
   }
   return res;
 }
@@ -385,7 +381,7 @@ unsigned int argmax( const vector_td<T,D> vec )
 {
   unsigned int res= 0;
   for (unsigned int i=1; i<D; i++){
-    if (vec.vec[i] > vec.vec[res] )res=i;
+    if (vec.vec[i] > vec.vec[res] ) res = i;
   }
   return res;
 }
@@ -408,7 +404,7 @@ REAL norm_squared( const vector_td<REAL,D> vec )
 template<class REAL, unsigned int D> __inline__ __host__ __device__ 
 REAL norm( const vector_td<REAL,D> vec )
 {
-  return sqrt(norm_squared<REAL,D>(vec));
+  return std::sqrt(norm_squared<REAL,D>(vec));
 }
 
 //

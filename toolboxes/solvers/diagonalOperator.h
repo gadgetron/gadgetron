@@ -6,13 +6,13 @@
 #include <boost/smart_ptr.hpp>
 #include <vector>
 
-template <class T, class ARRAY_TYPE> class diagonalOperator 
-  : public linearOperator<T, ARRAY_TYPE>
+template <class REAL, class ARRAY_TYPE> class diagonalOperator 
+  : public linearOperator<REAL, ARRAY_TYPE>
 {
   
 public:
   
-  diagonalOperator() : linearOperator<T, ARRAY_TYPE>() {}
+  diagonalOperator() : linearOperator<REAL, ARRAY_TYPE>() {}
   virtual ~diagonalOperator() {}
   
   // Set/get diagonal
