@@ -48,7 +48,8 @@ find_path(PYTHON_NUMPY_INCLUDE_DIR arrayobject.h
           /usr/include/python2.5/numpy/
           /usr/include/python2.4/numpy/
           /usr/include/python2.3/numpy/
-          DOC "Directory where the arrayobject.h header file can be found. This file is part of the numpy package"
+          /usr/include/numpy/
+DOC "Directory where the arrayobject.h header file can be found. This file is part of the numpy package"
     )
 
 if(PYTHON_NUMPY_INCLUDE_DIR)
