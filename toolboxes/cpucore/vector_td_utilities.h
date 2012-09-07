@@ -9,6 +9,7 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 //
 // Get/set operations on vector_td<T,D>
@@ -296,7 +297,7 @@ T max( const vector_td<T,D> vec )
 {
   T res = vec.vec[0];
   for (unsigned int i=1; i<D; i++){
-    res = std::max(res,vec.vec[i]);
+    res = max(res,vec.vec[i]);
   }
   return res;
 }
@@ -306,7 +307,7 @@ T min( const vector_td<T,D> vec )
 {
   T res = vec.vec[0];
   for (unsigned int i=1; i<D; i++){
-    res = std::min(res,vec.vec[i]);
+    res = min(res,vec.vec[i]);
   }
   return res;
 }
@@ -339,7 +340,7 @@ T max_not_nan( const vector_td<T,D> vec )
   if (i >= D) return 0;
   T res = vec.vec[i];
   for (++i; i<D; i++){
-    if (!isnan(vec.vec[i])) res = std::max(res,vec.vec[i]);
+    if (!isnan(vec.vec[i])) res = max(res,vec.vec[i]);
   }
   return res;
 }
@@ -351,7 +352,7 @@ T min_not_nan( const vector_td<T,D> vec )
   while (isnan(vec.vec[i])) i++;
   T res = vec.vec[i];
   for (++i; i<D; i++){
-    if (!isnan(vec.vec[i])) res = std::min(res,vec.vec[i]);
+    if (!isnan(vec.vec[i])) res = min(res,vec.vec[i]);
   }
   return res;
 }
