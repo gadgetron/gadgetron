@@ -41,7 +41,7 @@ int AccumulatorGadget::process_config(ACE_Message_Block* mb)
 	dimensions_.push_back(e_space.matrixSize().y());
 	dimensions_.push_back(e_space.matrixSize().z());
 
-	slices_ = e_limits.slice().present() ? e_limits.slice().get().maximum()+1 : 0;
+	slices_ = e_limits.slice().present() ? e_limits.slice().get().maximum()+1 : 1;
 
   return GADGET_OK;
 }
