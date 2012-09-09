@@ -21,7 +21,9 @@ AccumulatorGadget::~AccumulatorGadget()
 int AccumulatorGadget::process_config(ACE_Message_Block* mb)
 {
 
+	GADGET_DEBUG1("Processing config in accumulator\n");
 	boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
+	GADGET_DEBUG1("Done Processing config in accumulator\n");
 
 	ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
 	if (e_seq.size() != 1) {
@@ -34,7 +36,7 @@ int AccumulatorGadget::process_config(ACE_Message_Block* mb)
 	ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
 	ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
 
-
+	GADGET_DEBUG2("Matrix size: %d, %d, %d\n", e_space.matrixSize().x(), e_space.matrixSize().y(), e_space.matrixSize().z());
 	dimensions_.push_back(e_space.matrixSize().x());
 	dimensions_.push_back(e_space.matrixSize().y());
 	dimensions_.push_back(e_space.matrixSize().z());

@@ -1,3 +1,4 @@
+#include "GadgetIsmrmrdReadWrite.h"
 #include "ImageWriterGadget.h"
 
 #include <fstream>

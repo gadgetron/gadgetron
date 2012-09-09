@@ -1,3 +1,4 @@
+#include "GadgetIsmrmrdReadWrite.h"
 #include "ImageFinishGadget.h"
 
 template <typename T>

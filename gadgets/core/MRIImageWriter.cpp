@@ -1,3 +1,4 @@
+#include "GadgetIsmrmrdReadWrite.h"
 #include "MRIImageWriter.h"
 
 #include <complex>

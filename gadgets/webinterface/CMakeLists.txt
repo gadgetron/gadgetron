@@ -8,6 +8,7 @@ include_directories(   ${ACE_INCLUDE_DIR}
 				       ${Boost_INCLUDE_DIR}
 					   ${CMAKE_SOURCE_DIR}/dependencies/tinyxml
 				       ${CMAKE_SOURCE_DIR}/apps/gadgetron
+					   ${CMAKE_SOURCE_DIR}/toolboxes/hostutils
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools)
 
 add_library(gadgetronwebinterface SHARED WebInterfaceGadget.cpp

@@ -14,7 +14,7 @@
 #include "GadgetContainerMessage.h"
 #include "GadgetMessageInterface.h"
 #include "gadgetroncore_export.h"
-
+#include "url_encode.h"
 
 class GadgetIsmrmrdAcquisitionMessageWriter : public GadgetMessageWriter
 {
@@ -175,6 +175,10 @@ inline boost::shared_ptr<ISMRMRD::ismrmrdHeader> parseIsmrmrdXMLHeader(std::stri
 	ACE_TCHAR schema_file_name[4096];
 	ACE_OS::sprintf(schema_file_name, "%s/schema/ismrmrd.xsd", gadgetron_home);
 
+	std::string tmp(schema_file_name);
+	tmp = url_encode(tmp);
+	ACE_OS_String::strncpy(schema_file_name,tmp.c_str(), 4096);
+
 	xml_schema::properties props;
 	props.schema_location (
 			"http://www.ismrm.org/ISMRMRD",
@@ -194,7 +198,5 @@ inline boost::shared_ptr<ISMRMRD::ismrmrdHeader> parseIsmrmrdXMLHeader(std::stri
 
 	return cfg;
 }
-
-
 
 #endif //GADGETISMRMRDREADWRITE_H

@@ -5,6 +5,7 @@
  *      Author: hansenms
  */
 
+#include "GadgetIsmrmrdReadWrite.h"
 #include "FloatToUShortGadget.h"
 
 FloatToUShortGadget::FloatToUShortGadget()
