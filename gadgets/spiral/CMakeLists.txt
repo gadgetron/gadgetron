@@ -12,6 +12,7 @@ include_directories(   ${ACE_INCLUDE_DIR}
                        ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
                        ${CMAKE_SOURCE_DIR}/toolboxes/gpupmri
                        ${CMAKE_SOURCE_DIR}/toolboxes/solvers
+                       ${CMAKE_SOURCE_DIR}/toolboxes/hostutils
                        ${CMAKE_SOURCE_DIR}/gadgets/cgsense
 		       ${CMAKE_SOURCE_DIR}/gadgets/core)
 
