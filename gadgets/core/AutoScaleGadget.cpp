@@ -5,6 +5,7 @@
  *      Author: Michael S. Hansen
  */
 
+#include "GadgetIsmrmrdReadWrite.h"
 #include "AutoScaleGadget.h"
 
 AutoScaleGadget::AutoScaleGadget()

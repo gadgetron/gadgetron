@@ -10,9 +10,11 @@ include_directories(   ${ACE_INCLUDE_DIR}
 				       ${Boost_INCLUDE_DIR}
 				       ${FFTW3_INCLUDE_DIR}
 				       ${ISMRMRD_INCLUDE_DIR}
+					   ${XSD_INCLUDE_DIR}
 					   ${CMAKE_SOURCE_DIR}/dependencies/tinyxml
 				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
 				       ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
+				       ${CMAKE_SOURCE_DIR}/toolboxes/hostutils
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools)
 
 add_library(gadgetroncore SHARED AcquisitionPassthroughGadget.cpp

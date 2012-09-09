@@ -1,3 +1,4 @@
+#include "GadgetIsmrmrdReadWrite.h"
 #include "AcquisitionPassthroughGadget.h"
 #include "Gadgetron.h"
 

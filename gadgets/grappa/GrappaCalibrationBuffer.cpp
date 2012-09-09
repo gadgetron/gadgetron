@@ -1,5 +1,6 @@
 #include "GrappaCalibrationBuffer.h"
 
+#include "GadgetIsmrmrdReadWrite.h"
 #include "Gadgetron.h"
 
 GrappaCalibrationBuffer::GrappaCalibrationBuffer(std::vector<unsigned int> dimensions,

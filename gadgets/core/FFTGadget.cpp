@@ -1,3 +1,4 @@
+#include "GadgetIsmrmrdReadWrite.h"
 #include "FFTGadget.h"
 #include "FFT.h"
 

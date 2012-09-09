@@ -14,7 +14,10 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/hostutils
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   ${ISMRMRD_INCLUDE_DIR}
+  ${XSD_INCLUDE_DIR}
   )
+
+LINK_DIRECTORIES(${BOOST_ROOT}/lib)
 
 add_executable(mriclient main.cpp)
 

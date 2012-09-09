@@ -14,6 +14,7 @@ find_path(DOCBOOK_XSL_DIR html/docbook.xsl
   		/usr/share/xml/xls/docbook-xsl-ns
   		/usr/share/xml/docbook 
  		/usr/share/xml/docbook/stylesheet/docbook-xsl-ns/
+  		/usr/share/sgml/docbook/xsl-ns-stylesheets
        $ENV{DOCBOOKDIR}
   NO_DEFAULT_PATH)
 

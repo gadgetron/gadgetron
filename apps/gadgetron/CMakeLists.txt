@@ -8,6 +8,7 @@ find_package(XercesC REQUIRED)
 include_directories(
   ${ACE_INCLUDE_DIR} 
   ${Boost_INCLUDE_DIR}
+  ${XSD_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/apps/gadgetron
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   ${CMAKE_SOURCE_DIR}/toolboxes/hostutils)

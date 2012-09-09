@@ -11,6 +11,7 @@
 #include "EndGadget.h"
 
 #include "gadgetron.hxx" //Auto generated class representation of gadgetron XML configuration
+#include "url_encode.h"
 
 #include <complex>
 #include <fstream>
@@ -246,6 +247,11 @@ int GadgetStreamController::configure(std::string config_xml_string)
 	char * gadgetron_home = ACE_OS::getenv("GADGETRON_HOME");
 	ACE_TCHAR schema_file_name[4096];
 	ACE_OS::sprintf(schema_file_name, "%s/schema/gadgetron.xsd", gadgetron_home);
+
+	std::string tmp(schema_file_name);
+	tmp = url_encode(tmp);
+	ACE_OS_String::strncpy(schema_file_name,tmp.c_str(), 4096);
+
 
 	xml_schema::properties props;
 	props.schema_location (

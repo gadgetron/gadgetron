@@ -1,5 +1,6 @@
 #include <ace/OS_NS_stdlib.h>
 
+#include "GadgetIsmrmrdReadWrite.h"
 #include "Gadgetron.h"
 #include "GrappaGadget.h"
 #include "FFT.h"
