@@ -19,9 +19,10 @@ class EXPORTGPUPMRI cuCartesianSenseOperator
   virtual int set_sampling_indices( boost::shared_ptr< cuNDArray<unsigned int> > idx) {
     if (idx.get()) {
       idx_ = idx;
-      this->dimensionsK_.clear();
-      this->dimensionsK_.push_back(idx_->get_number_of_elements());
-      this->dimensionsK_.push_back(this->ncoils_);
+      std::vector<unsigned int> tmp_dims;
+      tmp_dims.push_back(idx_->get_number_of_elements());
+      tmp_dims.push_back(this->ncoils_);
+      this->set_codomain_dimensions(&tmp_dims);
     }
     return 0;
   }

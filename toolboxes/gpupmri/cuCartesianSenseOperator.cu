@@ -44,7 +44,7 @@ cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray<_complext> *in, cuNDArray<_c
     return -1;
   }
   
-  if (!(in->dimensions_equal(&this->dimensionsI_)) || !(out->dimensions_equal(&this->dimensionsK_)) ) {
+  if (!(in->dimensions_equal(this->get_domain_dimensions().get())) || !(out->dimensions_equal(this->get_codomain_dimensions().get())) ) {
 
     std::cerr << "cuCartesianSenseOperator::mult_M dimensions mismatch" << std::endl;
 
@@ -52,7 +52,7 @@ cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray<_complext> *in, cuNDArray<_c
   }
 
   cuNDArray<_complext> tmp;
-  std::vector<unsigned int> full_dimensions = this->dimensionsI_;
+  std::vector<unsigned int> full_dimensions = *this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
 
   if (!tmp.create(&full_dimensions)) {
@@ -67,7 +67,7 @@ cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray<_complext> *in, cuNDArray<_c
 
   cuNDFFT<_complext> ft;
   std::vector<unsigned int> ft_dims;
-  for (unsigned int i = 0; i < this->dimensionsI_.size(); i++) {
+  for (unsigned int i = 0; i < this->get_domain_dimensions()->size(); i++) {
     ft_dims.push_back(i);
   }
 
@@ -105,12 +105,13 @@ cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray<_complext> *in, cuNDArray<_c
     return -1;
   }
 
-  if (!(out->dimensions_equal(&this->dimensionsI_)) || !(in->dimensions_equal(&this->dimensionsK_)) ) {
+  if (!(out->dimensions_equal(this->get_domain_dimensions().get())) || 
+      !(in->dimensions_equal(this->get_codomain_dimensions().get())) ) {
     std::cerr << "cuCartesianSenseOperator::mult_MH dimensions mismatch" << std::endl;
     return -1;
   }
 
-  std::vector<unsigned int> tmp_dimensions = this->dimensionsI_;
+  std::vector<unsigned int> tmp_dimensions = *this->get_domain_dimensions();
   tmp_dimensions.push_back(this->ncoils_);
 
   cuNDArray<_complext> tmp;
@@ -136,7 +137,7 @@ cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray<_complext> *in, cuNDArray<_c
 
   cuNDFFT<_complext> ft;
   std::vector<unsigned int> ft_dims;
-  for (unsigned int i = 0; i < this->dimensionsI_.size(); i++) {
+  for (unsigned int i = 0; i < this->get_domain_dimensions()->size(); i++) {
     ft_dims.push_back(i);
   }
 

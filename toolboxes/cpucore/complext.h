@@ -8,6 +8,7 @@
 #pragma once
 
 #include "cpucore_defines.h"
+#include <cmath>
 
 template< class T > class complext
 {
@@ -116,19 +117,19 @@ public:
 };
 
 template<class T>  __inline__ __host__ __device__ complext<T> polar(const T& rho, const T& theta = 0){
-  return complext<T>(rho*cos(theta),rho*sin(theta));
+  return complext<T>(rho*std::cos(theta),rho*std::sin(theta));
 }
 
 template<class T> __inline__ __host__ __device__ T abs(complext<T> comp){
-  return sqrt(comp.vec[0]*comp.vec[0]+comp.vec[1]*comp.vec[1]);
+  return std::sqrt(comp.vec[0]*comp.vec[0]+comp.vec[1]*comp.vec[1]);
 }
 
 template<class T> __inline__ __host__ __device__ complext<T> sin(complext<T> comp){
-  return complext<T>(sin(comp.vec[0])*cosh(comp.vec[1]),cos(comp.vec[0])*sinh(comp.vec[1]));
+  return complext<T>(std::sin(comp.vec[0])*std::cosh(comp.vec[1]),std::cos(comp.vec[0])*std::sinh(comp.vec[1]));
 }
 
 template<class T> __inline__ __host__ __device__ complext<T> cos(complext<T> comp){
-  return complext<T>(cos(comp.vec[0])*cosh(comp.vec[1]),-sin(comp.vec[0])*sinh(comp.vec[1]));
+  return complext<T>(std::cos(comp.vec[0])*std::cosh(comp.vec[1]),-std::sin(comp.vec[0])*std::sinh(comp.vec[1]));
 }
 
 template<class T> __inline__ __host__ __device__ T imag(complext<T> comp){
@@ -156,7 +157,7 @@ template<class T> __inline__ __host__ __device__ T real(complext<T> comp){
 }
 
 template<class T> __inline__ __host__ __device__ T arg(complext<T> comp){
-  return atan2(comp.vec[1],comp.vec[0]);
+  return std::atan2(comp.vec[1],comp.vec[0]);
 }
 
 template<class T> __inline__ __host__ __device__  complext<T> operator*(const T& r,const complext<T>& z){

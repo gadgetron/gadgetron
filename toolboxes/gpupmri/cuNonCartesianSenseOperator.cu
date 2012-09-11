@@ -14,7 +14,8 @@ static unsigned int prod( std::vector<unsigned int> &vec )
 template<class REAL, unsigned int D, bool ATOMICS> int 
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {
-  if( (in->get_number_of_elements() != prod(this->dimensionsI_)) || (out->get_number_of_elements() != prod(this->dimensionsK_)) ) {
+  if( (in->get_number_of_elements() != prod(*this->get_domain_dimensions())) || 
+      (out->get_number_of_elements() != prod(*this->get_codomain_dimensions())) ) {
     std::cerr << "cuNonCartesianSenseOperator::mult_M: dimensions mismatch" << std::endl;
     return -1;
   }
@@ -25,7 +26,7 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray<_complext>* in, c
   }
 
   cuNDArray<_complext> tmp;
-  std::vector<unsigned int> full_dimensions = this->dimensionsI_;
+  std::vector<unsigned int> full_dimensions = *this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
 
   if( !tmp.create( &full_dimensions, this->device_ ) ) {
@@ -55,9 +56,8 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray<_complext>* in, c
 template<class REAL, unsigned int D, bool ATOMICS> int 
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {
-
-  if( (out->get_number_of_elements() != prod(this->dimensionsI_)) || 
-      (in->get_number_of_elements() != prod(this->dimensionsK_)) ) {
+  if( (out->get_number_of_elements() != prod(*this->get_domain_dimensions())) || 
+      (in->get_number_of_elements() != prod(*this->get_codomain_dimensions())) ) {
     std::cerr << "cuNonCartesianSenseOperator::mult_MH: dimensions mismatch" << std::endl;
     return -1;
   }
@@ -67,7 +67,7 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray<_complext>* in, 
     return -1;
   }
 
-  std::vector<unsigned int> tmp_dimensions = this->dimensionsI_;
+  std::vector<unsigned int> tmp_dimensions = *this->get_domain_dimensions();
   tmp_dimensions.push_back(this->ncoils_);
 
   cuNDArray<_complext> tmp;
@@ -129,14 +129,16 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::preprocess( cuNDArray<_reald> *traj
   if( trajectory ){
 
     unsigned int num_frames = trajectory->get_number_of_elements()/trajectory->get_size(0);
-    this->dimensionsK_.clear();
-    this->dimensionsK_ = *trajectory->get_dimensions();
-    this->dimensionsK_.push_back(this->ncoils_);
+    std::vector<unsigned int> tmp_dims;
+    tmp_dims = *trajectory->get_dimensions();
+    tmp_dims.push_back(this->ncoils_);
+    this->set_codomain_dimensions(&tmp_dims);
     
-    this->dimensionsI_.clear();
-    this->dimensionsI_ = *this->csm_->get_dimensions();
-    this->dimensionsI_.pop_back();
-    this->dimensionsI_.push_back(num_frames);
+    tmp_dims.clear();
+    tmp_dims = *this->csm_->get_dimensions();
+    tmp_dims.pop_back();
+    tmp_dims.push_back(num_frames);
+    this->set_domain_dimensions(&tmp_dims);
     
     if( !plan_->preprocess( trajectory, NFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_ALL )) {
       std::cerr << "cuNonCartesianSenseOperator: failed to run preprocess" << std::endl;
@@ -171,7 +173,6 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::set_dcw( boost::shared_ptr< cuNDArr
     return -1;
   }
 }
-
 
 //
 // Instantiations
