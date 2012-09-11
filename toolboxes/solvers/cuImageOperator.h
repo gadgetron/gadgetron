@@ -51,7 +51,7 @@ template <class REAL, class T> class cuImageOperator
 	  return res;
   }
   
-  virtual bool operator_clear(  cuNDArray<T> *x )
+  virtual bool operator_clear( cuNDArray<T> *x )
   {
     return cuNDA_clear(x);
   }

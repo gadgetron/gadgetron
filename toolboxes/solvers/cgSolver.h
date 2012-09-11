@@ -8,7 +8,6 @@
 
 #include <vector>
 #include <iostream>
-
 #include <limits>
 
 template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class cgSolver 
@@ -120,7 +119,7 @@ public:
       this->solver_error( "Error: cgSolver::solve : compute_rhs failed" );
       return boost::shared_ptr<ARRAY_TYPE>();
     }
-    
+
     // Solve for the given rhs
     //
 
