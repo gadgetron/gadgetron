@@ -9,6 +9,7 @@
 #include "hoNDArray_fileio.h"
 #include "matrix_vector_op.h"
 #include "matrix_decomposition.h"
+#include "GadgetIsmrmrdReadWrite.h"
 
 PCACoilGadget::PCACoilGadget()
  : max_buffered_profiles_(100)

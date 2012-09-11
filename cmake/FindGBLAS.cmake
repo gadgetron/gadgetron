@@ -79,7 +79,7 @@ set(${LIBRARIES})
 set(_combined_name)
 if (NOT _libdir)
   if (WIN32)
-    set(_libdir ENV LIB)
+    set(_libdir ENV LIB ENV PATH)
   elseif (APPLE)
     set(_libdir /usr/local/lib /usr/lib /usr/local/lib64 /usr/lib64 ENV DYLD_LIBRARY_PATH)
   else ()
@@ -89,6 +89,7 @@ endif ()
 
 foreach(_library ${_list})
   set(_combined_name ${_combined_name}_${_library})
+  #message("DEBUG: _library = ${_library}")
 
   if(_libraries_work)
     if (BLA_STATIC)
@@ -286,13 +287,14 @@ if (BLA_VENDOR MATCHES "ACML.*" OR BLA_VENDOR STREQUAL "All")
    else()
     file( GLOB _ACML_ROOT "/opt/acml*/ACML-EULA.txt" )
    endif()
+   #MESSAGE("_ACML_ROOT = ${_ACML_ROOT}")
    if( WIN32 )
     file( GLOB _ACML_GPU_ROOT "C:/AMD/acml*/GPGPUexamples" )
    else()
     file( GLOB _ACML_GPU_ROOT "/opt/acml*/GPGPUexamples" )
    endif()
    list(GET _ACML_ROOT 0 _ACML_ROOT)
-   list(GET _ACML_GPU_ROOT 0 _ACML_GPU_ROOT)
+   #list(GET _ACML_GPU_ROOT 0 _ACML_GPU_ROOT)
    if( _ACML_ROOT )
     get_filename_component( _ACML_ROOT ${_ACML_ROOT} PATH )
     if( SIZEOF_INTEGER EQUAL 8 )
@@ -325,7 +327,7 @@ if (BLA_VENDOR MATCHES "ACML.*" OR BLA_VENDOR STREQUAL "All")
     set( _ACML_COMPILER32 "gfortran32" )
     set( _ACML_COMPILER64 "gfortran64" )
    endif()
-
+   #MESSAGE("DEBUG: ${_ACML_ROOT}/${_ACML_COMPILER64}_mp${_ACML_PATH_SUFFIX}/lib")
    if( BLA_VENDOR STREQUAL "ACML_MP" )
     set(_ACML_MP_LIB_DIRS
      "${_ACML_ROOT}/${_ACML_COMPILER32}_mp${_ACML_PATH_SUFFIX}/lib"
@@ -346,7 +348,7 @@ if (BLA_VENDOR MATCHES "ACML.*" OR BLA_VENDOR STREQUAL "All")
      BLAS_LIBRARIES
      BLAS
      sgemm
-     "" "acml_mp" "" ${BLAS_ACML_MP_LIB_DIRS}
+     "" "libacml_mp_dll" "" ${BLAS_ACML_MP_LIB_DIRS}
    )
    if( BLAS_LIBRARIES )
     break()
@@ -358,7 +360,7 @@ if (BLA_VENDOR MATCHES "ACML.*" OR BLA_VENDOR STREQUAL "All")
      BLAS_LIBRARIES
      BLAS
      sgemm
-     "" "acml;CALBLAS" "" ${BLAS_ACML_GPU_LIB_DIRS}
+     "" "libacml_dll;CALBLAS" "" ${BLAS_ACML_GPU_LIB_DIRS}
    )
    if( BLAS_LIBRARIES )
     break()
@@ -370,7 +372,7 @@ if (BLA_VENDOR MATCHES "ACML.*" OR BLA_VENDOR STREQUAL "All")
      BLAS_LIBRARIES
      BLAS
      sgemm
-     "" "acml" "" ${BLAS_ACML_LIB_DIRS}
+     "" "libacml_dll" "" ${BLAS_ACML_LIB_DIRS}
    )
    if( BLAS_LIBRARIES )
     break()
