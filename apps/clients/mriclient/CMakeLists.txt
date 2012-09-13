@@ -36,9 +36,9 @@ IF(WIN32)
 	target_link_libraries(mriclient debug ${HDF5_LIB_DIR}/zlib_D.lib)
 	target_link_libraries(mriclient debug ${HDF5_LIB_DIR}/szip_D.lib)
 
-	target_link_libraries(mriclient tinyxml gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
+	target_link_libraries(mriclient tinyxml gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES}  ${ISMRMRD_XSD_LIBRARIES} ${Boost_LIBRARIES})
 ELSE (WIN32)
-	target_link_libraries(mriclient tinyxml gadgettools  ${HDF5_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
+	target_link_libraries(mriclient tinyxml gadgettools  ${HDF5_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES}  ${ISMRMRD_XSD_LIBRARIES} ${Boost_LIBRARIES})
 ENDIF(WIN32)
 
 

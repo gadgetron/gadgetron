@@ -7,7 +7,11 @@
 #include <complex>
 
 #include "ismrmrd.h"
-#include "ismrmrd.hxx"
+
+#ifndef EXCLUDE_ISMRMRD_XSD
+	#include "ismrmrd.hxx"
+#endif
+
 #include "GadgetMRIHeaders.h"
 
 #include "hoNDArray.h"
@@ -169,7 +173,7 @@ public:
 
 };
 
-
+#ifndef EXCLUDE_ISMRMRD_XSD
 inline boost::shared_ptr<ISMRMRD::ismrmrdHeader> parseIsmrmrdXMLHeader(std::string xml) {
 	char * gadgetron_home = ACE_OS::getenv("GADGETRON_HOME");
 	ACE_TCHAR schema_file_name[4096];
@@ -198,5 +202,5 @@ inline boost::shared_ptr<ISMRMRD::ismrmrdHeader> parseIsmrmrdXMLHeader(std::stri
 
 	return cfg;
 }
-
+#endif
 #endif //GADGETISMRMRDREADWRITE_H
