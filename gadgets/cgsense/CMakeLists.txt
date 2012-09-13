@@ -24,7 +24,7 @@ include_directories(   ${ACE_INCLUDE_DIR}
 
 add_library(gadgetroncgsense SHARED GPUCGGadget.cpp GPUCGGoldenRadial.cpp GPUCGFixedRadial.cpp GPUCGGadgetGeneric.cpp)
 
-target_link_libraries(gadgetroncgsense solvers gpuparallelmri tinyxml ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
+target_link_libraries(gadgetroncgsense solvers gpuparallelmri tinyxml ${ISMRMRD_LIBRARIES} ${ISMRMRD_XSD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
 install (TARGETS gadgetroncgsense DESTINATION lib)
 install (FILES radial_single.xml  DESTINATION config)

@@ -27,7 +27,7 @@ add_library(gadgetrongrappa SHARED GrappaGadget.cpp
 							  	   GrappaWeightsCalculator.cpp
 							  	   GrappaUnmixingGadget.cpp)
 
-target_link_libraries(gadgetrongrappa gpuparallelmri cpucore tinyxml ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
+target_link_libraries(gadgetrongrappa gpuparallelmri cpucore tinyxml ${ISMRMRD_LIBRARIES} ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
 
 install (TARGETS gadgetrongrappa DESTINATION lib)
 install (FILES grappa.xml DESTINATION config)

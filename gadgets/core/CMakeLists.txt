@@ -33,7 +33,7 @@ add_library(gadgetroncore SHARED AcquisitionPassthroughGadget.cpp
 								 AutoScaleGadget.cpp
 								 GadgetIsmrmrdReadWrite.cpp)
 
-target_link_libraries(gadgetroncore tinyxml cpucore ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
+target_link_libraries(gadgetroncore tinyxml cpucore ${ISMRMRD_LIBRARIES} ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
 install (FILES	AccumulatorGadget.h
 			AcquisitionFinishGadget.h
