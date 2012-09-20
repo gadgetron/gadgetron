@@ -1,4 +1,4 @@
-find_package(Ismrmrd)
+
 IF (ACE_FOUND)
 	add_subdirectory(gadgetron)
 	IF (ISMRMRD_FOUND)

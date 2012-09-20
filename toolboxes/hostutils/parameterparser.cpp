@@ -199,7 +199,7 @@ int ParameterParser::add_parameter(char com_switch,CommandLineParameterType type
     {
       if (m_parameter_list[i]->is_switch_equal_to(com_switch))
 	{
-	  std::cout << "ParameterParser: Attempt to parameter twice" << std::endl;
+	  std::cout << "ParameterParser: Attempt to parameter twice " << com_switch << std::endl;
 	  delete p;
 	  return -1;
 	}

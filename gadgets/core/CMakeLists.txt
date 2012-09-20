@@ -4,7 +4,7 @@ ADD_DEFINITIONS(-D__BUILD_GADGETRON_CORE__)
 ADD_DEFINITIONS(-D__BUILD_GADGETS__)
 ENDIF (WIN32)
 
-find_package(Ismrmrd REQUIRED)
+
 
 include_directories(   ${ACE_INCLUDE_DIR} 
 				       ${Boost_INCLUDE_DIR}
