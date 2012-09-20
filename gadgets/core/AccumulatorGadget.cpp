@@ -21,9 +21,7 @@ AccumulatorGadget::~AccumulatorGadget()
 int AccumulatorGadget::process_config(ACE_Message_Block* mb)
 {
 
-	GADGET_DEBUG1("Processing config in accumulator\n");
 	boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
-	GADGET_DEBUG1("Done Processing config in accumulator\n");
 
 	ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
 	if (e_seq.size() != 1) {
