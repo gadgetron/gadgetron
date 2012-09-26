@@ -3,12 +3,12 @@
 #include "gadgetronmricore_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "GadgetMRIHeaders.h"
+#include "ismrmrd.h"
 
 #include <complex>
 
 class EXPORTGADGETSMRICORE MRINoiseAdjustGadget :
-public Gadget2<GadgetMessageAcquisition,hoNDArray< std::complex<float> > >
+public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
 {
  public:
   GADGET_DECLARE(MRINoiseAdjustGadget);
@@ -24,9 +24,10 @@ public Gadget2<GadgetMessageAcquisition,hoNDArray< std::complex<float> > >
   float acquisition_dwell_time_us_;
   float noise_bw_scale_factor_;
   float receiver_noise_bandwidth_;
+  bool is_configured_;
 
   virtual int process_config(ACE_Message_Block* mb);
-  virtual int process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
+  virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
   

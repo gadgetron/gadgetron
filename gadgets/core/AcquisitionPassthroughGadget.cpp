@@ -1,8 +1,9 @@
+#include "GadgetIsmrmrdReadWrite.h"
 #include "AcquisitionPassthroughGadget.h"
 #include "Gadgetron.h"
 
 int AcquisitionPassthroughGadget
-::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
+::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
   //It is enough to put the first one, since they are linked

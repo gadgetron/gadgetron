@@ -4,20 +4,25 @@ IF (WIN32)
 	ADD_DEFINITIONS(-D__BUILD_GADGETS__)
 ENDIF (WIN32)
 
+find_package(Ismrmrd REQUIRED)
+
 include_directories(   ${ACE_INCLUDE_DIR} 
 				       ${Boost_INCLUDE_DIR}
 				       ${FFTW3_INCLUDE_DIR}
+				       ${ISMRMRD_INCLUDE_DIR}
+					   ${XSD_INCLUDE_DIR}
 					   ${CMAKE_SOURCE_DIR}/dependencies/tinyxml
 				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
 				       ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
 				       ${CMAKE_SOURCE_DIR}/toolboxes/linalg
 				       ${CMAKE_SOURCE_DIR}/gadgets/core
+				       ${CMAKE_SOURCE_DIR}/toolboxes/hostutils
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gpucore)
 
 add_library(gadgetronmricore SHARED MRINoiseAdjustGadget.cpp PCACoilGadget.cpp)
 
-target_link_libraries(gadgetronmricore tinyxml cpucore linalg ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
+target_link_libraries(gadgetronmricore tinyxml cpucore linalg ${ISMRMRD_LIBRARIES}  ${ISMRMRD_XSD_LIBRARIES} ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
 install (FILES MRINoiseAdjustGadget.h PCACoilGadget.h DESTINATION include)
 

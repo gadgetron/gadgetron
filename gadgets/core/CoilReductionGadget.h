@@ -10,13 +10,13 @@
 
 #include "gadgetroncore_export.h"
 #include "Gadget.h"
-#include "GadgetMRIHeaders.h"
+#include "ismrmrd.h"
 #include "hoNDArray.h"
 
 #include <complex>
 
 class EXPORTGADGETSCORE CoilReductionGadget :
-public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
+public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 {
 public:
 	GADGET_DECLARE(CoilReductionGadget);
@@ -25,7 +25,7 @@ public:
 	virtual ~CoilReductionGadget();
 
 	virtual int process_config(ACE_Message_Block* mb);
-	virtual int process(GadgetContainerMessage< GadgetMessageAcquisition >* m1,
+	virtual int process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader >* m1,
 			GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2);
 
 protected:

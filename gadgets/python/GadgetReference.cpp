@@ -3,6 +3,7 @@
 #include "GadgetReference.h"
 #include "GadgetContainerMessage.h"
 #include "hoNDArray.h"
+#include "ismrmrd.h"
 
 #include <boost/python.hpp>
 #include <numpy/arrayobject.h>
@@ -75,14 +76,14 @@ int GadgetReference::return_data(T header, boost::python::numeric::array arr)
 
 }
 
-int GadgetReference::return_acquisition(GadgetMessageAcquisition acq, boost::python::numeric::array arr)
+int GadgetReference::return_acquisition(ISMRMRD::AcquisitionHeader acq, boost::python::numeric::array arr)
 {
-  return return_data<GadgetMessageAcquisition>(acq, arr);
+  return return_data<ISMRMRD::AcquisitionHeader>(acq, arr);
 }
 
-int GadgetReference::return_image(GadgetMessageImage img, boost::python::numeric::array arr)
+int GadgetReference::return_image(ISMRMRD::ImageHeader img, boost::python::numeric::array arr)
 {
-  return return_data<GadgetMessageImage>(img, arr);
+  return return_data<ISMRMRD::ImageHeader>(img, arr);
 }
 
 

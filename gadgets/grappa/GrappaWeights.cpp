@@ -1,3 +1,4 @@
+#include "GadgetIsmrmrdReadWrite.h"
 #include "Gadgetron.h"
 #include "GrappaWeights.h"
 #include "hoNDArray_fileio.h"

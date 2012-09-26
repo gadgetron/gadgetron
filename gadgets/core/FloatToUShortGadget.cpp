@@ -5,6 +5,7 @@
  *      Author: hansenms
  */
 
+#include "GadgetIsmrmrdReadWrite.h"
 #include "FloatToUShortGadget.h"
 
 FloatToUShortGadget::FloatToUShortGadget()
@@ -19,7 +20,7 @@ FloatToUShortGadget::~FloatToUShortGadget()
 
 
 
-int FloatToUShortGadget::process(GadgetContainerMessage<GadgetMessageImage> *m1, GadgetContainerMessage<hoNDArray<float> > *m2)
+int FloatToUShortGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<hoNDArray<float> > *m2)
 {
 
 	GadgetContainerMessage<hoNDArray< ACE_UINT16 > > *cm2 =
@@ -38,18 +39,19 @@ int FloatToUShortGadget::process(GadgetContainerMessage<GadgetMessageImage> *m1,
 	for (unsigned long i = 0; i < cm2->getObjectPtr()->get_number_of_elements(); i++) {
 		float pix_val = src[i];
 		switch (m1->getObjectPtr()->image_type) {
-		case GADGET_IMAGE_MAGNITUDE:
+		case ISMRMRD::TYPE_MAGNITUDE:
 			pix_val = abs(pix_val);
 			if (pix_val > 4095) pix_val = 4095;
 			break;
-		case GADGET_IMAGE_REAL:
-		case GADGET_IMAGE_IMAG:
+		case ISMRMRD::TYPE_REAL:
+		case ISMRMRD::TYPE_IMAG:
 			pix_val = pix_val + 2048;
 			if (pix_val < 0) pix_val = 0;
 			if (pix_val > 4095) pix_val = 4095;
 			break;
-		case GADGET_IMAGE_PHASE:
+		case ISMRMRD::TYPE_PHASE:
 			pix_val *= 2048.0/3.14159265;
+			pix_val += 2048;
 			if (pix_val < 0) pix_val = 0;
 			if (pix_val > 4095) pix_val = 4095;
 			break;
@@ -64,7 +66,7 @@ int FloatToUShortGadget::process(GadgetContainerMessage<GadgetMessageImage> *m1,
 
 	m1->cont(cm2);
 	m2->release();
-	m1->getObjectPtr()->image_format = GADGET_IMAGE_REAL_UNSIGNED_SHORT;
+	m1->getObjectPtr()->image_data_type = ISMRMRD::DATA_UNSIGNED_SHORT;
 
 	if (this->next()->putq(m1) == -1) {
 		m1->release();

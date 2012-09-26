@@ -4,6 +4,7 @@
 #include "gadgetroncore_export.h"
 #include "GadgetMessageInterface.h"
 #include "GadgetMRIHeaders.h"
+#include "ismrmrd.h"
 
 #include <complex>
 

@@ -54,29 +54,18 @@ public:
   virtual Gadget* find_gadget(std::string gadget_name);
 
 private:
-  //ACE_SOCK_Stream sock_;
   ACE_Stream<ACE_MT_SYNCH> stream_;
   bool stream_configured_;
   WriterTask writer_task_;
 
-  //GadgetSocketSender* output_;
   ACE_Reactor_Notification_Strategy notifier_;
 
   GadgetMessageReaderContainer readers_;
-  //GadgetMessageWriterContainer writers_;
   
   std::vector<ACE_DLL_Handle*> dll_handles_;
 
-  //virtual int read_configuration();
-  //virtual int read_acquisition();
-  //virtual int read_initialization();
-
-  //virtual int write_image(GadgetMessageImage* imageh, NDArray< std::complex<float> >* data);
-  //virtual int write_acquisition(GadgetMessageAcquisition* imgh, NDArray< std::complex<float> >* data);
-
   virtual int configure(std::string config_xml_string);
   virtual int configure_from_file(std::string config_xml_filename);
-  
 
   virtual GadgetModule * create_gadget_module(const char* DLL, const char* gadget, const char* gadget_module_name);
 

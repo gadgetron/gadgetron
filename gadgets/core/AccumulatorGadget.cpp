@@ -1,5 +1,5 @@
 #include "AccumulatorGadget.h"
-#include "GadgetXml.h"
+#include "GadgetIsmrmrdReadWrite.h"
 
 AccumulatorGadget::AccumulatorGadget()
   :buffer_(0)
@@ -15,65 +15,56 @@ AccumulatorGadget::~AccumulatorGadget()
 }
 
 /**
- *   Expects XML configuration
+ *   Expects ISMRMRD XML configuration
  *
- *   List of parameters:
- *      - gadgetron.encoding.kspace.matrix_size.value [matrix sizes]
- *      - gadgetron.encoding.kspace.readout_length.value
  */
 int AccumulatorGadget::process_config(ACE_Message_Block* mb)
 {
 
-  TiXmlDocument doc;
-  doc.Parse(mb->rd_ptr());
+	boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
-  GadgetXMLNode n =
-		  GadgetXMLNode(&doc).get<GadgetXMLNode>(std::string("gadgetron"))[0];
+	ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
+	if (e_seq.size() != 1) {
+		GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
+		GADGET_DEBUG1("This simple AccumulatorGadget only supports one encoding space\n");
+		return GADGET_FAIL;
+	}
 
-  std::vector<long> dims =
-		  n.get<long>(std::string("encoding.kspace.matrix_size.value"));
+	ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
+	ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
+	ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
 
-  if (dims.size() < 3) {
-	dims.push_back(0);
-  }
+	GADGET_DEBUG2("Matrix size: %d, %d, %d\n", e_space.matrixSize().x(), e_space.matrixSize().y(), e_space.matrixSize().z());
+	dimensions_.push_back(e_space.matrixSize().x());
+	dimensions_.push_back(e_space.matrixSize().y());
+	dimensions_.push_back(e_space.matrixSize().z());
 
-  if (dims[2] == 0) {
-    dims[2] = 1;
-  }
-
-  dimensions_.push_back(
-		  n.get<long>(std::string("encoding.kspace.readout_length.value"))[0]);
-  dimensions_.push_back(dims[1]);
-  dimensions_.push_back(dims[2]);
-  dimensions_.push_back(
-		  n.get<long>(std::string("encoding.channels.value"))[0]);
-  dimensions_.push_back(
-		  n.get<long>(std::string("encoding.slices.value"))[0]);
-
-
-  if (!(buffer_ = new hoNDArray< std::complex<float> >())) {
-	  GADGET_DEBUG1("Failed create buffer\n");
-	  return GADGET_FAIL;
-  }
-
-  if (!buffer_->create(&dimensions_)) {
-	  GADGET_DEBUG1("Failed allocate buffer array\n");
-	  return GADGET_FAIL;
-  }
-
-  image_series_ = this->get_int_value("image_series");
+	slices_ = e_limits.slice().present() ? e_limits.slice().get().maximum()+1 : 1;
 
   return GADGET_OK;
 }
 
 int AccumulatorGadget::
-process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
+process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 	GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
   if (!buffer_) {
-	  GADGET_DEBUG1("Buffer not allocated\n");
-	  return GADGET_FAIL;
+	  dimensions_.push_back(m1->getObjectPtr()->active_channels);
+	  dimensions_.push_back(slices_);
+
+	  if (!(buffer_ = new hoNDArray< std::complex<float> >())) {
+		  GADGET_DEBUG1("Failed create buffer\n");
+		  return GADGET_FAIL;
+	  }
+
+	  if (!buffer_->create(&dimensions_)) {
+		  GADGET_DEBUG1("Failed allocate buffer array\n");
+		  return GADGET_FAIL;
+	  }
+
+	  image_series_ = this->get_int_value("image_series");
+
   }
 
 
@@ -83,36 +74,35 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
   std::complex<float>* d =
 		  m2->getObjectPtr()->get_data_ptr();
 
-  int samples =  m1->getObjectPtr()->samples;
-  int line = m1->getObjectPtr()->idx.line;
-  int partition = m1->getObjectPtr()->idx.partition;
+  int samples =  m1->getObjectPtr()->number_of_samples;
+  int line = m1->getObjectPtr()->idx.kspace_encode_step_1;
+  int partition = m1->getObjectPtr()->idx.kspace_encode_step_2;
   int slice = m1->getObjectPtr()->idx.slice;
 
-  if (samples != static_cast<int>(dimensions_[0])) {
+  if (samples > static_cast<int>(dimensions_[0])) {
 	  GADGET_DEBUG1("Wrong number of samples received\n");
 	  return GADGET_FAIL;
   }
 
   size_t offset= 0;
   //Copy the data for all the channels
-  for (int c = 0; c < m1->getObjectPtr()->channels; c++) {
+  for (int c = 0; c < m1->getObjectPtr()->active_channels; c++) {
     offset = 
       slice*dimensions_[0]*dimensions_[1]*dimensions_[2]*dimensions_[3] +
       c*dimensions_[0]*dimensions_[1]*dimensions_[2] +
       partition*dimensions_[0]*dimensions_[1] +
-      line*dimensions_[0];
+      line*dimensions_[0] + (dimensions_[0]>>1)-m1->getObjectPtr()->center_sample;
     
     memcpy(b+offset,
     	d+c*samples,
     	sizeof(std::complex<float>)*samples);
   }
   
-  bool is_last_scan_in_slice =
-    (m1->getObjectPtr()->flags & GADGET_FLAG_LAST_ACQ_IN_SLICE);
+  bool is_last_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
   
   if (is_last_scan_in_slice) {
-    GadgetContainerMessage<GadgetMessageImage>* cm1 = 
-      new GadgetContainerMessage<GadgetMessageImage>();
+    GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = 
+      new GadgetContainerMessage<ISMRMRD::ImageHeader>();
     
     cm1->getObjectPtr()->flags = 0;
 
@@ -145,22 +135,20 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
     cm1->getObjectPtr()->matrix_size[1]     = img_dims[1];
     cm1->getObjectPtr()->matrix_size[2]     = img_dims[2];
     cm1->getObjectPtr()->channels           = img_dims[3];
-    cm1->getObjectPtr()->data_idx_min       = m1->getObjectPtr()->min_idx;
-    cm1->getObjectPtr()->data_idx_max       = m1->getObjectPtr()->max_idx;
-    cm1->getObjectPtr()->data_idx_current   = m1->getObjectPtr()->idx;	
+    cm1->getObjectPtr()->slice   = m1->getObjectPtr()->idx.slice;
 
     memcpy(cm1->getObjectPtr()->position,
     		m1->getObjectPtr()->position,
 	   sizeof(float)*3);
 
-    memcpy(cm1->getObjectPtr()->quarternion,
-    		m1->getObjectPtr()->quarternion,
+    memcpy(cm1->getObjectPtr()->quaternion,
+    		m1->getObjectPtr()->quaternion,
 	   sizeof(float)*4);
  
-    cm1->getObjectPtr()->table_position =
-    		m1->getObjectPtr()->table_position;
+    memcpy(cm1->getObjectPtr()->patient_table_position,
+    		m1->getObjectPtr()->patient_table_position, sizeof(float)*3);
 
-    cm1->getObjectPtr()->image_format = GADGET_IMAGE_COMPLEX_FLOAT;
+    cm1->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
     cm1->getObjectPtr()->image_index = ++image_counter_;
     cm1->getObjectPtr()->image_series_index = image_series_;
 
