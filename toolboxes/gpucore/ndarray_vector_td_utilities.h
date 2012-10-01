@@ -20,6 +20,7 @@ boost::shared_ptr< cuNDArray<REAL> >
 cuNDA_cAbs( cuNDArray<T> *data,
 	    cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE,
 	    cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
+
 // Norm "complex style" (float/double/complext arrays)
 template<class REAL, class T> EXPORTGPUCORE 
 boost::shared_ptr< cuNDArray<REAL> > 
