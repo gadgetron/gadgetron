@@ -98,7 +98,7 @@ typename uintd<D>::Type idx_to_co( unsigned int idx, const vector_td<unsigned in
 } 
 
 template<unsigned int D> __inline__ __host__ __device__ 
-typename intd<D>::Type idx_to_co( int idx, const typename intd<D>::Type dims )
+typename intd<D>::Type idx_to_co( int idx, const vector_td<int,D> dims )
 {
   typename intd<D>::Type co;
   int idx_tmp = idx;
