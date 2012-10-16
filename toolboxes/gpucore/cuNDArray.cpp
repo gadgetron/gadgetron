@@ -8,6 +8,28 @@ cuNDArray<T>::cuNDArray() : NDArray<T>::NDArray()
 }
 
 template <class T> 
+cuNDArray<T>::cuNDArray(std::vector<unsigned int> *dimensions) : NDArray<T>::NDArray()
+{
+  cudaGetDevice(&this->device_);
+  create(dimensions);
+}
+
+template <class T>
+cuNDArray<T>::cuNDArray(std::vector<unsigned int> *dimensions, int device_no) : NDArray<T>::NDArray()
+{
+  cudaGetDevice(&this->device_);
+  create(dimensions,device_no);
+}
+
+template <class T>
+cuNDArray<T>::cuNDArray(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct) : NDArray<T>::NDArray()
+{
+  cudaGetDevice(&this->device_);
+  create(dimensions,data,delete_data_on_destruct);
+}
+
+
+template <class T>
 cuNDArray<T>::cuNDArray(hoNDArray<T> *a) : NDArray<T>::NDArray() 
 {
   cudaGetDevice(&this->device_);
