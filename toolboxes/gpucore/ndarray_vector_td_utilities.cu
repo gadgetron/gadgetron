@@ -493,7 +493,7 @@ void cuNDA_norm_squared_kernel( typename reald<REAL,D>::Type *in, REAL *out, uns
     typename reald<REAL,D>::Type val = in[idx]; 
     out[idx] = norm_squared<REAL,D>(val);
   }
-}
+} 
 
 // Norm Squared
 //
@@ -1979,6 +1979,151 @@ bool cuNDA_threshold_max( T max, cuNDArray<T> *in_out, T value, cuNDA_device com
   // Restore
   if( !restore<1,T,dummy,dummy,dummy>( old_device, in_out, in_out_int, 1 ) ){
     cerr << endl << "cuNDA_threshold_min: unable to restore device" << endl;
+    return false;
+  }
+
+  return true;
+}
+
+// threshold
+template<class T> __global__
+void cuNDA_threshold_min_kernel2( T * min, T value, T *in_out, unsigned int number_of_elements )
+{
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+   
+  if( idx<number_of_elements ){
+    if( real(in_out[idx]) < real(min[idx]) ) 
+      in_out[idx] = value;
+  }
+}
+
+//Threshold
+template<class T>
+bool cuNDA_threshold_min( cuNDArray<T> * min, cuNDArray<T> *in_out, T value, cuNDA_device compute_device )
+{
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<T> *in_out_int;
+  cuNDArray<T> *min_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<2,T,T,dummy>( compute_device, &cur_device, &old_device, in_out, &in_out_int, min, &min_int ) ){
+    cerr << endl << "cuNDA_threshold_min: unable to prepare device(s)" << endl;
+    return false;
+  }
+
+  // Setup block/grid dimensions
+  dim3 blockDim; dim3 gridDim;
+  if( !setup_grid( cur_device, in_out->get_number_of_elements(), &blockDim, &gridDim ) ){
+    cerr << endl << "cuNDA_threshold_min: block/grid configuration out of range" << endl;
+    return false;
+  }
+
+  // Invoke kernel
+  cuNDA_threshold_min_kernel2<T><<< gridDim, blockDim >>>(min_int->get_data_ptr(), value, in_out_int->get_data_ptr(), in_out->get_number_of_elements() );
+
+  CHECK_FOR_CUDA_ERROR();
+
+  // Restore
+  if( !restore<2,T,dummy,T,dummy>( old_device, in_out, in_out_int, 1,compute_device,0x0,min,min_int ) ){
+    cerr << endl << "cuNDA_threshold_min: unable to restore device" << endl;
+    return false;
+  }
+
+  return true;
+}
+
+// threshold
+template<class T> __global__
+void cuNDA_threshold_max_kernel2( T * min, T value, T *in_out, unsigned int number_of_elements )
+{
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+  
+  if( idx<number_of_elements ){
+    if( real(in_out[idx]) > real(min[idx]) ) 
+      in_out[idx] = value;
+  }
+}
+
+//Threshold
+template<class T>
+bool cuNDA_threshold_max( cuNDArray<T> * max, cuNDArray<T> *in_out, T value, cuNDA_device compute_device )
+{
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<T> *in_out_int;
+  cuNDArray<T> *max_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<2,T,T,dummy>( compute_device, &cur_device, &old_device, in_out, &in_out_int, max, &max_int ) ){
+    cerr << endl << "cuNDA_threshold_max: unable to prepare device(s)" << endl;
+    return false;
+  }
+
+  // Setup block/grid dimensions
+  dim3 blockDim; dim3 gridDim;
+  if( !setup_grid( cur_device, in_out->get_number_of_elements(), &blockDim, &gridDim ) ){
+    cerr << endl << "cuNDA_threshold_max: block/grid configuration out of range" << endl;
+    return false;
+  }
+
+  // Invoke kernel
+  cuNDA_threshold_max_kernel2<T><<< gridDim, blockDim >>>(max_int->get_data_ptr(), value, in_out_int->get_data_ptr(), in_out->get_number_of_elements() );
+
+  CHECK_FOR_CUDA_ERROR();
+
+  // Restore
+  if( !restore<2,T,dummy,T,dummy>( old_device, in_out, in_out_int, 1,compute_device,0,max,max_int ) ){
+    cerr << endl << "cuNDA_threshold_max: unable to restore device" << endl;
+    return false;
+  }
+
+  return true;
+}
+
+
+// threshold
+template<class T> __global__
+void cuNDA_threshold_amin_kernel( T * min, T value, T *in_out, unsigned int number_of_elements )
+{
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+   
+  if( idx<number_of_elements ){
+    if( abs(in_out[idx]) < real(min[idx]) ) 
+      in_out[idx] = value;
+  }
+}
+
+//Threshold
+template<class T>
+bool cuNDA_threshold_amin( cuNDArray<T> * min, cuNDArray<T> *in_out, T value, cuNDA_device compute_device )
+{
+  // Prepare internal array
+  int cur_device, old_device;
+  cuNDArray<T> *in_out_int;
+  cuNDArray<T> *min_int;
+
+  // Perform device copy if array is not residing on the current device
+  if( !prepare<2,T,T,dummy>( compute_device, &cur_device, &old_device, in_out, &in_out_int, min, &min_int ) ){
+    cerr << endl << "cuNDA_threshold_amin: unable to prepare device(s)" << endl;
+    return false;
+  }
+
+  // Setup block/grid dimensions
+  dim3 blockDim; dim3 gridDim;
+  if( !setup_grid( cur_device, in_out->get_number_of_elements(), &blockDim, &gridDim ) ){
+    cerr << endl << "cuNDA_threshold_amin: block/grid configuration out of range" << endl;
+    return false;
+  }
+
+  // Invoke kernel
+  cuNDA_threshold_amin_kernel<T><<< gridDim, blockDim >>>(min_int->get_data_ptr(), value, in_out_int->get_data_ptr(), in_out->get_number_of_elements() );
+
+  CHECK_FOR_CUDA_ERROR();
+
+  // Restore
+  if( !restore<2,T,dummy,T,dummy>( old_device, in_out, in_out_int, 1,compute_device,0,min,min_int ) ){
+    cerr << endl << "cuNDA_threshold_amin: unable to restore device" << endl;
     return false;
   }
 
@@ -3975,6 +4120,127 @@ bool cuNDA_origin_mirror( cuNDArray<T> *in, cuNDArray<T> *out, bool zero_fill, c
   return true;
 }
 
+
+
+// Minimum
+//
+template<class T> __global__ 
+void cuNDA_minimum_kernel( T* in1,T* in2, T* out, unsigned int number_of_elements )
+{
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+ 
+  if( idx<number_of_elements ){
+    out[idx]=min(in1[idx],in2[idx]);
+  }
+} 
+
+
+// Minimum
+//
+template<class T>  
+boost::shared_ptr< cuNDArray<T> > 
+cuNDA_minimum( cuNDArray<T> *in1,cuNDArray<T> *in2,
+	    cuNDA_device alloc_device, cuNDA_device compute_device )
+{
+  int cur_device, old_device;
+  cuNDArray<T> *in1_int;
+  cuNDArray<T> *in2_int;
+
+
+  if ( in1->get_number_of_elements() !=  in2->get_number_of_elements()){
+    cerr << endl << "cuNDA_minimum: input arrays have different number of elements" << endl;
+    return boost::shared_ptr< cuNDArray<T> >();
+  }
+  // Prepare 
+  if( !prepare<2,T,T,dummy>( compute_device, &cur_device, &old_device, in1, &in1_int, in2, &in2_int  ) ){
+    cerr << endl << "cuNDA_minimum: unable to prepare device(s)" << endl;
+    return boost::shared_ptr< cuNDArray<T> >();
+  }
+
+  // Setup block/grid dimensions
+  dim3 blockDim; dim3 gridDim;
+  if( !setup_grid( cur_device, in1->get_number_of_elements(), &blockDim, &gridDim ) ){
+    cerr << endl << "cuNDA_minimum: block/grid configuration out of range" << endl;
+    return boost::shared_ptr< cuNDArray<T> >();
+  }
+
+  // Invoke kernel
+  boost::shared_ptr< cuNDArray<T> > out = cuNDArray<T>::allocate(in1->get_dimensions().get());
+  if( out.get() != 0x0 ) cuNDA_minimum_kernel<T><<< gridDim, blockDim >>>( in1_int->get_data_ptr(), in2_int->get_data_ptr(),out->get_data_ptr(), in1->get_number_of_elements() );
+
+  CHECK_FOR_CUDA_ERROR();
+
+  // Restore 
+  // Restore
+  if( !restore<2,T,T,T,dummy>( old_device, in1, in1_int, 0, compute_device, out.get(), in2, in2_int ) ){
+    cerr << endl << "cuNDA_minimum: unable to restore device" << endl;
+    return boost::shared_ptr< cuNDArray<T> >();
+  }
+
+  return out;
+}
+
+
+
+// Maximum
+//
+template<class T> __global__ 
+void cuNDA_maximum_kernel( T* in1,T* in2, T* out, unsigned int number_of_elements )
+{
+  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+ 
+  if( idx<number_of_elements ){
+    out[idx]=max(in1[idx],in2[idx]);
+  }
+} 
+
+
+// Minimum
+//
+template<class T>  
+boost::shared_ptr< cuNDArray<T> > 
+cuNDA_maximum( cuNDArray<T> *in1,cuNDArray<T> *in2,
+	    cuNDA_device alloc_device, cuNDA_device compute_device )
+{
+  int cur_device, old_device;
+  cuNDArray<T> *in1_int;
+  cuNDArray<T> *in2_int;
+
+
+  if ( in1->get_number_of_elements() !=  in2->get_number_of_elements()){
+    cerr << endl << "cuNDA_maximum: input arrays have different number of elements" << endl;
+    return boost::shared_ptr< cuNDArray<T> >();
+  }
+  // Prepare 
+  if( !prepare<2,T,T,dummy>( compute_device, &cur_device, &old_device, in1, &in1_int, in2, &in2_int  ) ){
+    cerr << endl << "cuNDA_maximum: unable to prepare device(s)" << endl;
+    return boost::shared_ptr< cuNDArray<T> >();
+  }
+
+  // Setup block/grid dimensions
+  dim3 blockDim; dim3 gridDim;
+  if( !setup_grid( cur_device, in1->get_number_of_elements(), &blockDim, &gridDim ) ){
+    cerr << endl << "cuNDA_maximum: block/grid configuration out of range" << endl;
+    return boost::shared_ptr< cuNDArray<T> >();
+  }
+
+  // Invoke kernel
+  boost::shared_ptr< cuNDArray<T> > out = cuNDArray<T>::allocate(in1->get_dimensions().get());
+  if( out.get() != 0x0 ) cuNDA_maximum_kernel<T><<< gridDim, blockDim >>>( in1_int->get_data_ptr(), in2_int->get_data_ptr(),out->get_data_ptr(), in1->get_number_of_elements() );
+
+  CHECK_FOR_CUDA_ERROR();
+
+  // Restore 
+  // Restore
+  if( !restore<2,T,T,T,dummy>( old_device, in1, in1_int, 0, compute_device, out.get(), in2, in2_int ) ){
+    cerr << endl << "cuNDA_maximum: unable to restore device" << endl;
+    return boost::shared_ptr< cuNDArray<T> >();
+  }
+
+  return out;
+}
+
+
 //
 // Instantiation
 //
@@ -4114,6 +4380,11 @@ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
 cuNDA_cNorm<float,float_complext>( cuNDArray<float_complext>*, cuNDA_device, cuNDA_device );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
 cuNDA_cNorm<float,float>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > 
+cuNDA_minimum<float>( cuNDArray<float>*, cuNDArray<float>*,cuNDA_device, cuNDA_device );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > 
+cuNDA_maximum<float>( cuNDArray<float>*, cuNDArray<float>*,cuNDA_device, cuNDA_device );
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > 
 cuNDA_norm<float,1>( cuNDArray<floatd<1>::Type>*, cuNDA_device, cuNDA_device );
@@ -4306,9 +4577,13 @@ template EXPORTGPUCORE bool cuNDA_abs<floatd3>( cuNDArray<floatd3>*, cuNDA_devic
 template EXPORTGPUCORE bool cuNDA_abs<floatd4>( cuNDArray<floatd4>*, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_threshold_min<float>(float, cuNDArray<float>*, float, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_threshold_min<float>(cuNDArray<float>*, cuNDArray<float>*, float, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_threshold_amin<float>(cuNDArray<float>*, cuNDArray<float>*, float, cuNDA_device );
+
 template EXPORTGPUCORE bool cuNDA_threshold_min<float_complext>(float_complext, cuNDArray<float_complext>*, float_complext, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_threshold_max<float>(float, cuNDArray<float>*, float, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_threshold_max<float_complext>(float_complext, cuNDArray<float_complext>*, float_complext, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_threshold_max<float>(cuNDArray<float>*, cuNDArray<float>*, float, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_rss_normalize<float,float>( cuNDArray<float>*, unsigned int, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_rss_normalize<float,float_complext>( cuNDArray<float_complext>*, unsigned int, cuNDA_device );
@@ -4424,6 +4699,12 @@ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
 cuNDA_cNorm<double,double_complext>( cuNDArray<double_complext>*, cuNDA_device, cuNDA_device );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
 cuNDA_cNorm<double,double>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+
+
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > 
+cuNDA_minimum<double>( cuNDArray<double>*, cuNDArray<double>*,cuNDA_device, cuNDA_device );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > 
+cuNDA_maximum<double>( cuNDArray<double>*, cuNDArray<double>*,cuNDA_device, cuNDA_device );
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > 
 cuNDA_norm<double,1>( cuNDArray<doubled<1>::Type>*, cuNDA_device, cuNDA_device );
@@ -4616,8 +4897,11 @@ template EXPORTGPUCORE bool cuNDA_abs<doubled4>( cuNDArray<doubled4>*, cuNDA_dev
 
 template EXPORTGPUCORE bool cuNDA_threshold_min<double>(double, cuNDArray<double>*, double, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_threshold_min<double_complext>(double_complext, cuNDArray<double_complext>*, double_complext, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_threshold_min<double>(cuNDArray<double>*, cuNDArray<double>*, double, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_threshold_amin<double>(cuNDArray<double>*, cuNDArray<double>*, double, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_threshold_max<double>(double, cuNDArray<double>*, double, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_threshold_max<double_complext>(double_complext, cuNDArray<double_complext>*, double_complext, cuNDA_device );
+template EXPORTGPUCORE bool cuNDA_threshold_max<double>(cuNDArray<double>*, cuNDArray<double>*, double, cuNDA_device );
 
 template EXPORTGPUCORE bool cuNDA_rss_normalize<double,double>( cuNDArray<double>*, unsigned int, cuNDA_device );
 template EXPORTGPUCORE bool cuNDA_rss_normalize<double,double_complext>( cuNDArray<double_complext>*, unsigned int, cuNDA_device );

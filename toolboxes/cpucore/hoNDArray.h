@@ -76,12 +76,18 @@ public:
   hoNDArray() : NDArray<T>::NDArray() {}
 
   hoNDArray(std::vector<unsigned int> *dimensions) : NDArray<T>::NDArray() {
-	  create(dimensions);
+	  this->create(dimensions);
   }
   hoNDArray(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct) : NDArray<T>::NDArray() {
-  	  create(dimensions,data,delete_data_on_destruct);
+  	  this->create(dimensions,data,delete_data_on_destruct);
     }
 
+  hoNDArray(boost::shared_ptr< std::vector<unsigned int> > dimensions) : NDArray<T>::NDArray() {
+	  this->create(dimensions.get());
+  }
+  hoNDArray(boost::shared_ptr< std::vector<unsigned int> > dimensions, T* data, bool delete_data_on_destruct) : NDArray<T>::NDArray() {
+  	  this->create(dimensions.get(),data,delete_data_on_destruct);
+    }
   virtual ~hoNDArray() {
     if (this->delete_data_on_destruct_) {
       deallocate_memory();
