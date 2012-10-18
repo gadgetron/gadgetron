@@ -1,6 +1,6 @@
-#include "GadgetIsmrmrdReadWrite.h"
 #include "GPUCGFixedRadial.h"
 #include "radial_utilities.h"
+#include "GadgetIsmrmrdReadWrite.h"
 #include "Gadgetron.h"
 
 boost::shared_ptr< cuNDArray<floatd2> >

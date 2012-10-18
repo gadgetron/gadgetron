@@ -1,7 +1,7 @@
 #pragma once
 
-#include "cgSolver.h"
 #include "cuNDArray.h"
+#include "cgSolver.h"
 #include "cuCgPreconditioner.h"
 #include "real_utilities.h"
 #include "vector_td_utilities.h"
