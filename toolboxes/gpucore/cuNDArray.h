@@ -30,6 +30,9 @@ template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
   // Constructor from hoNDArray
   cuNDArray(hoNDArray<T> *a);
 
+  cuNDArray(std::vector<unsigned int> *dimensions);
+  cuNDArray(std::vector<unsigned int> *dimensions, int device_no);
+  cuNDArray(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct = false);
   // Assignment operator
   cuNDArray& operator=(const cuNDArray<T>& rhs);
   
