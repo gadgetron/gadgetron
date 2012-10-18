@@ -1,3 +1,4 @@
+#include "GadgetIsmrmrdReadWrite.h"
 #include "GPUCGFixedRadial.h"
 #include "radial_utilities.h"
 #include "Gadgetron.h"

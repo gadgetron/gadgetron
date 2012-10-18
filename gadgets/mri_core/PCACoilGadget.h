@@ -11,15 +11,15 @@
 #include "gadgetronmricore_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "GadgetMRIHeaders.h"
+#include "ismrmrd.h"
 
 #include <complex>
 #include <map>
 
 class EXPORTGADGETSMRICORE PCACoilGadget :
-public Gadget2<GadgetMessageAcquisition,hoNDArray< std::complex<float> > >
+public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
 {
-	typedef Gadget2<GadgetMessageAcquisition,hoNDArray< std::complex<float> > > inherited;
+	typedef Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > > inherited;
 public:
 	GADGET_DECLARE(PCACoilGadget);
 
@@ -28,7 +28,7 @@ public:
 
 protected:
 	  virtual int process_config(ACE_Message_Block* mb);
-	  virtual int process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
+	  virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 			      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
 private:

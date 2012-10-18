@@ -2,6 +2,7 @@
 #include "../core/GadgetMRIHeaders.h"
 #include <numpy/arrayobject.h>
 #include <boost/algorithm/string.hpp>
+#include "ismrmrd.h"
 
 PythonCommunicator::PythonCommunicator()
 {
@@ -200,8 +201,8 @@ template<class T> int PythonCommunicator::process(Gadget* g,
 
 
 //Template Instanciations
-template int PythonCommunicator::process(Gadget*, GadgetContainerMessage<GadgetMessageAcquisition>*,
+template int PythonCommunicator::process(Gadget*, GadgetContainerMessage<ISMRMRD::AcquisitionHeader>*,
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >*);
 
-template int PythonCommunicator::process(Gadget*, GadgetContainerMessage<GadgetMessageImage>*,
+template int PythonCommunicator::process(Gadget*, GadgetContainerMessage<ISMRMRD::ImageHeader>*,
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >*);

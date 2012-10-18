@@ -1,8 +1,9 @@
+#include "GadgetIsmrmrdReadWrite.h"
 #include "ImageFinishGadget.h"
 
 template <typename T>
 int ImageFinishGadget<T>
-::process(GadgetContainerMessage<GadgetMessageImage>* m1,
+::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 	  GadgetContainerMessage< hoNDArray< T > >* m2)
 {
   if (!this->controller_) {
@@ -36,6 +37,7 @@ int ImageFinishGadget<T>
   int ret =  this->controller_->output_ready(mb);
 
   if ( (ret < 0) ) {
+	  GADGET_DEBUG1("Failed to return massage to controller\n");
 	  return GADGET_FAIL;
   }
 

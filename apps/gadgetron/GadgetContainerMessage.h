@@ -25,7 +25,6 @@ class GadgetContainerMessageBase : public ACE_Message_Block
   }
 
 #ifdef WIN32
-
   std::string getTypeID() { return type_magic_id_; }
   template <class T> static std::string magic_number_for_type() { return std::string(typeid(T).name()); } 
 

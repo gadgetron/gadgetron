@@ -1,7 +1,7 @@
 import numpy as np
 import GadgetronPythonMRI as g
-import GadgetronXML
 import kspaceandimage as ki
+import libxml2
 
 myLocalGadgetReference = g.GadgetReference()
 myBuffer = 0
@@ -16,9 +16,20 @@ def set_gadget_reference(gadref):
 def config_function(conf):
     global myBuffer
     global myParameters
-    #print blahs
-    myParameters =  GadgetronXML.getEncodingParameters(conf)
-    myBuffer = (np.zeros((myParameters["channels"],myParameters["slices"],myParameters["matrix_z"],myParameters["matrix_y"],myParameters["matrix_x"]))).astype('complex64')
+
+    myParameters = dict()
+
+    doc = libxml2.parseDoc(str(conf))
+    context = doc.xpathNewContext()
+    context.xpathRegisterNs("ismrm", "http://www.ismrm.org/ISMRMRD")
+    myParameters["matrix_x"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:encoding/ismrm:encodedSpace/ismrm:matrixSize/ismrm:x")[0]).content)
+    myParameters["matrix_y"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:encoding/ismrm:encodedSpace/ismrm:matrixSize/ismrm:y")[0]).content)
+    myParameters["matrix_z"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:encoding/ismrm:encodedSpace/ismrm:matrixSize/ismrm:z")[0]).content)
+    myParameters["channels"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:acquisitionSystemInformation/ismrm:receiverChannels")[0]).content)
+    myParameters["slices"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:encoding/ismrm:encodingLimits/ismrm:slice/ismrm:maximum")[0]).content)+1
+    myParameters["center_line"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:encoding/ismrm:encodingLimits/ismrm:kspace_encoding_step_1/ismrm:center")[0]).content)
+
+    myBuffer = (np.zeros((myParameters["channels"],myParameters["slices"],myParameters["matrix_z"],myParameters["matrix_y"],(myParameters["matrix_x"]>>1)))).astype('complex64')
 
 def recon_function(acq, data):
     global myLocalGadgetReference
@@ -27,31 +38,30 @@ def recon_function(acq, data):
     global myCounter
     global mySeries
 
-    line_offset = (myParameters["matrix_y"]-myParameters["phase_encoding_lines"])>>1;
-    myBuffer[:,acq.idx.slice,acq.idx.partition,acq.idx.line+line_offset,:] = data
+    line_offset = (myParameters["matrix_y"]>>1)-myParameters["center_line"];
+    myBuffer[:,acq.idx.slice,acq.idx.kspace_encode_step_2,acq.idx.kspace_encode_step_1+line_offset,:] = data
     
-    if (acq.flags & (1<<1)): #Is this the last scan in slice
+    if (acq.flags & (1<<7)): #Is this the last scan in slice
         image = ki.ktoi(myBuffer,(2,3,4))
         image = image * np.product(image.shape)*100 #Scaling for the scanner
         #Create a new image header and transfer value
-        img_head = g.GadgetMessageImage()
-        img_head.channels = acq.channels
-        img_head.data_idx_curent = acq.idx
-        img_head.data_idx_max = acq.max_idx
-        img_head.data_idx_min = acq.min_idx
-        img_head.set_matrix_size(0,myBuffer.shape[4])
-        img_head.set_matrix_size(1,myBuffer.shape[3])
-        img_head.set_matrix_size(2,myBuffer.shape[2])
-        img_head.set_matrix_size(3,myBuffer.shape[1])
-        img_head.set_position(0,acq.get_position(0))
-        img_head.set_position(1,acq.get_position(1))
-        img_head.set_position(2,acq.get_position(2))
-        img_head.set_quarternion(0,acq.get_quarternion(0))
-        img_head.set_quarternion(1,acq.get_quarternion(1))
-        img_head.set_quarternion(2,acq.get_quarternion(2))
-        img_head.set_quarternion(3,acq.get_quarternion(3))
-	img_head.table_position = acq.table_position
-        img_head.time_stamp = acq.time_stamp
+        img_head = g.ImageHeader()
+        img_head.channels = acq.active_channels
+        img_head.slice = acq.idx.slice
+        g.img_set_matrix_size(img_head, 0, myBuffer.shape[4])
+        g.img_set_matrix_size(img_head, 1, myBuffer.shape[3])
+        g.img_set_matrix_size(img_head, 2, myBuffer.shape[2])
+        g.img_set_position(img_head, 0,g.acq_get_position(acq,0))
+        g.img_set_position(img_head, 1,g.acq_get_position(acq,1))
+        g.img_set_position(img_head, 2,g.acq_get_position(acq,2))
+        g.img_set_quaternion(img_head, 0,g.acq_get_quaternion(acq, 0))
+        g.img_set_quaternion(img_head, 1,g.acq_get_quaternion(acq, 1))
+        g.img_set_quaternion(img_head, 2,g.acq_get_quaternion(acq, 2))
+        g.img_set_quaternion(img_head, 3,g.acq_get_quaternion(acq, 3))
+	g.img_set_patient_table_position(img_head, 0, g.acq_get_patient_table_position(acq,0))
+	g.img_set_patient_table_position(img_head, 1, g.acq_get_patient_table_position(acq,1))
+	g.img_set_patient_table_position(img_head, 2, g.acq_get_patient_table_position(acq,2))
+        img_head.acquisition_time_stamp = acq.acquisition_time_stamp
 	img_head.image_index = myCounter;
 	img_head.image_series_index = mySeries;
 

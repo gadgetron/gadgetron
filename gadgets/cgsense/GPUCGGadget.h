@@ -16,8 +16,9 @@
 #include "NFFT.h"
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
+#include "ismrmrd.h"
 
-class EXPORTGADGETSCGSENSE GPUCGGadget : public Gadget2< GadgetMessageAcquisition, hoNDArray< std::complex<float> > >
+class EXPORTGADGETSCGSENSE GPUCGGadget : public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 {
 
 public:
@@ -34,14 +35,14 @@ protected:
 		return true;
 	}
 
-	bool quarterion_equal(float* quarternion) {
+	bool quaternion_equal(float* quaternion) {
 		for (unsigned int i = 0; i < 4; i++) {
-			if (quarternion_[i] != quarternion[i]) return false;
+			if (quaternion_[i] != quaternion[i]) return false;
 		}
 		return true;
 	}
 
-	virtual int process( GadgetContainerMessage< GadgetMessageAcquisition >* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2 );
+	virtual int process( GadgetContainerMessage< ISMRMRD::AcquisitionHeader >* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2 );
 	virtual int process_config( ACE_Message_Block* mb );
 
 	virtual boost::shared_ptr< cuNDArray<floatd2> > calculate_trajectory() = 0;
@@ -67,7 +68,7 @@ protected:
 	double kappa_;
 
 	float position_[3];
-	float quarternion_[4];
+	float quaternion_[4];
 
 	int current_profile_offset_;
 	int allocated_samples_;

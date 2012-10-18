@@ -5,6 +5,7 @@
  *      Author: Michael S. Hansen
  */
 
+#include "GadgetIsmrmrdReadWrite.h"
 #include "AutoScaleGadget.h"
 
 AutoScaleGadget::AutoScaleGadget()
@@ -20,9 +21,9 @@ AutoScaleGadget::~AutoScaleGadget() {
 }
 
 
-int AutoScaleGadget::process(GadgetContainerMessage<GadgetMessageImage> *m1, GadgetContainerMessage<hoNDArray<float> > *m2)
+int AutoScaleGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<hoNDArray<float> > *m2)
 {
-	if (m1->getObjectPtr()->image_type == GADGET_IMAGE_MAGNITUDE) { //Only scale magnitude images for now
+	if (m1->getObjectPtr()->image_type == ISMRMRD::TYPE_MAGNITUDE) { //Only scale magnitude images for now
 		float max = 0.0f;
 		float* d = m2->getObjectPtr()->get_data_ptr();
 		for (unsigned long int i = 0; i < m2->getObjectPtr()->get_number_of_elements(); i++) {

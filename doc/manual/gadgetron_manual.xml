@@ -33,19 +33,19 @@ Aarhus University, Denmark</address>
 
     <author>
       <personname><firstname>Revision</firstname>
-      <surname>1.0</surname></personname>
+      <surname>1.1</surname></personname>
 
-      <email>sangild@cs.au.dk</email>
+      <email/>
     </author>
 
-    <edition>1.0</edition>
+    <edition>1.1</edition>
   </info>
 
   <chapter>
     <title>Introduction</title>
 
     <sect1>
-      <title>What is Gadgetron</title>
+      <title>What is the Gadgetron</title>
 
       <para>The Gadgetron is a streaming data processing framework for medical
       image reconstruction. It has been developed to make it easier to
@@ -73,6 +73,63 @@ Aarhus University, Denmark</address>
       <citation><xref linkend="hansen08"/></citation>, and non-Cartesian
       parallel imaging on the GPU <citation><xref
       linkend="sorensen09"/></citation>.</para>
+    </sect1>
+
+    <sect1>
+      <title>Revision History</title>
+
+      <sect2>
+        <title>Version 1.1</title>
+
+        <para>Version 1.1 contains multiple bug fixes, optimizations and some
+        structural changes. Most notably, the Gadgetron now uses the proposed
+        ISMRM Raw Data format (<uri>http://ismrmrd.sourceforge.net</uri>)
+        throughout the MRI specific Gadgets. A non-exhaustive list of changes
+        can be found below:</para>
+
+        <para><itemizedlist>
+            <listitem>
+              <para>The <classname>GadgetMessageAcquisition</classname>,
+              <classname>GadgetMessageImage</classname>, etc. (previously used
+              to describe MRI raw data and images) have been replaced with the
+              corresponding classes from the ISMRMRD library.</para>
+            </listitem>
+
+            <listitem>
+              <para>There is now a Gadgetron configuration file
+              (<filename>gadgetron.xml</filename>) used to control the port
+              number of the Gadgetron when starting. That makes it easier to
+              maintain the same port for a given installation without
+              supplying it on the command line.</para>
+            </listitem>
+
+            <listitem>
+              <para>The dependency on TinyXML has been almost entirely
+              removed. We are now using a class representations of headers and
+              configuration generated with CodeSynthesis XSD
+              (<uri>http://www.codesynthesis.com/products/xsd/</uri>).</para>
+            </listitem>
+
+            <listitem>
+              <para>All XML representations now have schema definitions to
+              make it easier to validate configuration files etc.</para>
+            </listitem>
+
+            <listitem>
+              <para>New toolbox functionality.</para>
+            </listitem>
+
+            <listitem>
+              <para>Various bug fixes.</para>
+            </listitem>
+          </itemizedlist></para>
+      </sect2>
+
+      <sect2>
+        <title>Version 1.0</title>
+
+        <para>First release of the Gadgetron</para>
+      </sect2>
     </sect1>
 
     <sect1>
@@ -127,103 +184,121 @@ Aarhus University, Denmark</address>
         installation instructions provided below (<xref
         linkend="sect.installation"/>).</para>
 
-        <itemizedlist>
-          <listitem>
-            <para><emphasis>CMake</emphasis>. The Gadgetron uses
-            <application>cmake</application> for cross platform building.
-            Available from <uri type="website"
-            xlink:href="http://www.cmake.org/cmake/resources/software.html">http://www.cmake.org/cmake/resources/software.html</uri>.</para>
-          </listitem>
+        <sect3 xml:id="sect.required">
+          <title>Required libraries</title>
 
-          <listitem>
-            <para><emphasis>ADAPTIVE Computing Environment (ACE)</emphasis>.
-            Available from <uri type="website"
-            xlink:href="http://www.cs.wustl.edu/~schmidt/ACE.html">http://www.cs.wustl.edu/~schmidt/ACE.html</uri>.</para>
-          </listitem>
+          <itemizedlist>
+            <listitem>
+              <para><emphasis>CMake</emphasis>. Available from <uri
+              type="website"
+              xlink:href="http://www.cmake.org/cmake/resources/software.html">http://www.cmake.org/cmake/resources/software.html</uri>.</para>
+            </listitem>
 
-          <listitem>
-            <para><emphasis>Boost C++ Libraries</emphasis>. Available from
-            <uri type="website"
-            xlink:href="http://www.boost.org/">http://www.boost.org/</uri>.</para>
-          </listitem>
+            <listitem>
+              <para><emphasis>ADAPTIVE Computing Environment (ACE)</emphasis>.
+              Available from <uri type="website"
+              xlink:href="http://www.cs.wustl.edu/~schmidt/ACE.html">http://www.cs.wustl.edu/~schmidt/ACE.html</uri>.</para>
+            </listitem>
 
-          <listitem>
-            <para><emphasis>FFT3W Library</emphasis> for Fast Fourier
-            Transforms. Available from <uri type="website"
-            xlink:href="http://www.fftw.org/">http://www.fftw.org/</uri>.</para>
-          </listitem>
+            <listitem>
+              <para><emphasis>Boost</emphasis>. Available from <uri
+              type="website"
+              xlink:href="http://www.boost.org">http://www.boost.org</uri>.</para>
+            </listitem>
 
-          <listitem>
-            <para><emphasis>BLAS</emphasis> and <emphasis>LAPACK</emphasis>
-            (optional). Most Linux distributions come with these libraries and
-            they are included on Mac OS X as well, but the vendor depends on
-            your distribution and platform. See specific instructions below
-            for Windows.</para>
-          </listitem>
+            <listitem>
+              <para><emphasis>FFT3W</emphasis>. Available from <uri
+              type="website"
+              xlink:href="http://www.fftw.org">http://www.fftw.org</uri>.</para>
+            </listitem>
 
-          <listitem>
-            <para><emphasis>HDF5</emphasis> (optional). Some of the the
-            Gadgetron clients use the HDF5 file format for storing raw data
-            and images. The libraries are available with most Linux
-            distributions, and can be downloaded for Windows and Mac OS X from
-            <uri
-            xlink:href="http://www.hdfgroup.org/HDF5/">http://www.hdfgroup.org/HDF5/</uri>.</para>
-          </listitem>
+            <listitem>
+              <para><emphasis>CodeSynthesis XSD</emphasis>. Available from
+              <uri type="website"
+              xlink:href="http://www.codesynthesis.com/products/xsd">http://www.codesynthesis.com/products/xsd</uri>.</para>
+            </listitem>
+          </itemizedlist>
+        </sect3>
 
-          <listitem>
-            <para><emphasis>CUDA</emphasis> (optional). For GPU support, you
-            need CUDA from Nvidia, which can de downloaded from <uri
-            type="website"
-            xlink:href="http://developer.nvidia.com/cuda-toolkit-40">http://developer.nvidia.com/cuda-downloads</uri>.
-            You will need a CUDA driver for your graphics card too, which is
-            available from the same website.</para>
-          </listitem>
+        <sect3 xml:id="sect.optional">
+          <title>Optional libraries</title>
 
-          <listitem>
-            <para><emphasis>CULA</emphasis> (optional). We use CULA for LAPACK
-            routines on the GPU. This is the only dependency which is not Open
-            Source. You can however download a free version of CULA from <uri
-            type="website"
-            xlink:href="http://www.culatools.com/downloads/dense/">http://www.culatools.com/downloads/dense/</uri>.
-            Registration is required.</para>
-          </listitem>
+          <itemizedlist>
+            <listitem>
+              <para><emphasis>ISMRM Raw Data format</emphasis> (optional).
+              This is the MRI raw data format used in the streaming framework.
+              Without this library installed you will not be able to
+              reconstruct the provided MRI examples. The toolboxes can however
+              still be used. Available from <uri type="website"
+              xlink:href="http://ismrmrd.sourceforge.net">http://ismrmrd.sourceforge.net</uri>.</para>
+            </listitem>
 
-          <listitem>
-            <para><emphasis>QT4</emphasis> (optional). A few standalone and
-            Gadgetron client example applications use QT for creating user
-            interfaces. It comes packaged with most Linux distributions, but
-            can otherwise be obtained from <uri type="website"
-            xlink:href="http://qt.nokia.com/">http://qt.nokia.com/</uri> for
-            all platforms.</para>
-          </listitem>
+            <listitem>
+              <para><emphasis>HDF5</emphasis> (optional). The ISMRM Raw Data
+              Format (see above) uses the HDF5 file format for storing raw
+              data and images. Available from <uri
+              xlink:href="http://www.hdfgroup.org/HDF5">http://www.hdfgroup.org/HDF5</uri>.</para>
+            </listitem>
 
-          <listitem>
-            <para><emphasis>Doxygen</emphasis> (optional). If you would like
-            to build the API documentation you need Doxygen. It is available
-            from <uri type="website"
-            xlink:href="http://www.stack.nl/~dimitri/doxygen/">http://www.stack.nl/~dimitri/doxygen/</uri>.</para>
-          </listitem>
+            <listitem>
+              <para><emphasis>BLAS</emphasis> and <emphasis>LAPACK</emphasis>
+              (optional). Most Linux distributions come with these libraries
+              and they are included on Mac OS X as well, but the vendor
+              depends on your distribution and platform. See specific
+              instructions below for Windows. Without these libraries present
+              some gadgets and toolbox functionality are disabled.</para>
+            </listitem>
 
-          <listitem>
-            <para><emphasis>Docbook</emphasis> (optional). If you would like
-            to build the manual (this document) you need Docbook. A number of
-            tools are needed such as <application>xsltproc</application> and
-            <application>fop</application> (for the PDF version of the
-            library). Additionally you need the Docbook stylesheets, available
-            at <uri type="website"
-            xlink:href="http://docbook.sourceforge.net/">http://docbook.sourceforge.net/</uri>.</para>
-          </listitem>
+            <listitem>
+              <para><emphasis>CUDA</emphasis> (optional). For GPU support you
+              need to install CUDA from Nvidia. You will need a CUDA driver
+              for your graphics card too. Available from <uri type="website"
+              xlink:href="http://developer.nvidia.com/cuda-downloads">http://developer.nvidia.com/cuda-downloads</uri>.</para>
+            </listitem>
 
-          <listitem>
-            <para><emphasis>Git (optional)</emphasis>. We use
-            <application>git</application> to manage our source code archives.
-            You can use any source code management system you prefer (or none
-            at all), but if you would like to stay in line with the Gadgetron
-            team, use <application>git</application>. Available from <uri
-            type="website"
-            xlink:href="http://git-scm.com/">http://git-scm.com/</uri>.</para>
-          </listitem>
-        </itemizedlist>
+            <listitem>
+              <para><emphasis>CULA</emphasis> (optional). We use CULA for
+              LAPACK routines on the GPU. This is the only dependency which is
+              not Open Source. You can however download a free (registration
+              required) version of CULA. Available from <uri type="website"
+              xlink:href="http://www.culatools.com/downloads/dense">http://www.culatools.com/downloads/dense</uri>.</para>
+            </listitem>
+
+            <listitem>
+              <para><emphasis>QT4</emphasis> (optional). A few standalone
+              applications use QT for creating user interfaces. Available from
+              <uri type="website"
+              xlink:href="http://qt.nokia.com">http://qt.nokia.com</uri>.</para>
+            </listitem>
+
+            <listitem>
+              <para><emphasis>Doxygen</emphasis> (optional). Required if you
+              would like to build the API documentation. Available from <uri
+              type="website"
+              xlink:href="http://www.stack.nl/~dimitri/doxygen">http://www.stack.nl/~dimitri/doxygen</uri>.</para>
+            </listitem>
+
+            <listitem>
+              <para><emphasis>Docbook</emphasis> (optional). Required if you
+              would like to build the manual (this document). A number of
+              corresponding tools such as <application>xsltproc</application>
+              and <application>fop</application> (for the PDF version of the
+              library) are also needed. Additionally you need the Docbook
+              stylesheets. Available from <uri type="website"
+              xlink:href="http://docbook.sourceforge.net">http://docbook.sourceforge.net</uri>.</para>
+            </listitem>
+
+            <listitem>
+              <para><emphasis>Git (optional)</emphasis>. We use
+              <application>git</application> to manage our source code
+              archives. You can use any source code management system you
+              prefer (or none at all), but if you would like to stay in line
+              with the Gadgetron team, use <application>git</application>.
+              Available from <uri type="website"
+              xlink:href="http://git-scm.com">http://git-scm.com</uri>.</para>
+            </listitem>
+          </itemizedlist>
+        </sect3>
       </sect2>
     </sect1>
 
@@ -244,7 +319,7 @@ Aarhus University, Denmark</address>
         you don't have a machine available for installing Ubuntu, you can
         always try it out in a virtual machine using virtualization software
         such as VirtualBox (<uri type="website"
-        xlink:href="https://www.virtualbox.org/">https://www.virtualbox.org/</uri>).</para>
+        xlink:href="https://www.virtualbox.org">https://www.virtualbox.org</uri>).</para>
 
         <para>If you would like to use the GPU components included in the
         Gadgetron and you have an Nvidia GPU available on your system, please
@@ -261,20 +336,37 @@ Aarhus University, Denmark</address>
  fop git-core libboost-dev libboost-python-dev \
  libfftw3-dev libace-dev python-dev python-numpy \
  freeglut3-dev libxi-dev liblapack-dev build-essential \
- libhdf5-serial-dev h5utils hdf5-tools hdfview </userinput>   </screen>
+ libhdf5-serial-dev h5utils hdf5-tools hdfview \
+ libboost-system-dev libboost-thread-dev xsdcxx \
+ libxerces-c-dev </userinput></screen>
 
-        <para>Now download the Gadgetron archive and unpack it somewhere. If
-        you have access to a git repository, you can get the code with:</para>
+        <para>Next (optional but recommended) download, compile, and install
+        ISMRMRD (there are more detailed instructions on the
+        <uri>http://ismrmrd.sourceforge.net</uri> website):</para>
 
-        <screen><prompt>user@mycomputer:~$</prompt> <userinput>git clone ssh://user@hostname/path/gadgetron.git</userinput></screen>
+        <screen>  git clone git://git.code.sf.net/p/ismrmrd/code ismrmrd-code
+  cd ismrmrd-code/
+  mkdir build
+  cd build
+  cmake ../
+  make
+  sudo make install</screen>
+
+        <para>Last command will install the library in
+        <filename>/usr/local/ismrmrd</filename>.</para>
+
+        <para>Now download the Gadgetron archive and compile it. If you have
+        access to a git repository, you can get the code with:</para>
+
+        <screen><userinput>  git clone git://git.code.sf.net/p/gadgetron/gadgetron gadgetron</userinput></screen>
 
         <para>Configure and build the Gadgetron:</para>
 
-        <screen><prompt>user@mycomputer:~$</prompt> <userinput>cd gadgetron</userinput>
-<prompt>user@mycomputer:~/gadgetron$</prompt> <userinput>mkdir build</userinput>
-<prompt>user@mycomputer:~/gadgetron$</prompt> <userinput>cd build</userinput>
-<prompt>user@mycomputer:~/gadgetron/build$</prompt> <userinput>cmake ../
-</userinput><prompt>user@mycomputer:~/gadgetron/build$</prompt> <userinput>make</userinput>  </screen>
+        <screen>  cd gadgetron/
+  mkdir build
+  cd build
+  cmake ../
+  make  </screen>
 
         <para>Install (default location is
         <filename>/usr/local/gadgetron</filename>):</para>
@@ -284,9 +376,13 @@ Aarhus University, Denmark</address>
         <para>The final step is to add/modify a few environment variables in
         your <filename>~/.bashrc</filename> file.</para>
 
-        <programlisting>export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gadgetron/lib
-export PATH=$PATH:/usr/local/gadgetron/bin
+        <programlisting>export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/gadgetron/lib:/usr/local/ismrmrd/lib
+export PATH=$PATH:/usr/local/gadgetron/bin:/usr/local/ismrmrd/bin
 export GADGETRON_HOME=/usr/local/gadgetron     </programlisting>
+
+        <para>Rename the example configuration file
+        <filename>GADGETRON_HOME/config/gadgetron.xml.example</filename> to
+        <filename>GADGETRON_HOME/config/gadgetron.xml</filename></para>
 
         <para>You are now set up to run a simple example reconstruction as
         outlined in <xref linkend="sect.simpleexample"/>.</para>
@@ -297,14 +393,14 @@ export GADGETRON_HOME=/usr/local/gadgetron     </programlisting>
           <para>First install the Nvidia driver. The Ubuntu distribution comes
           with a driver that will work with CUDA in some instances, but we
           recommend that you install the latest developer driver from the
-          Nvidia website.</para>
+          Nvidia website, e.g.:</para>
 
           <para>Download (to the current directory)
-          <filename>devdriver_4.1_linux_64_285.05.32.run</filename> from <uri
-          xlink:href="http://developer.nvidia.com/cuda-toolkit-41">http://developer.nvidia.com/cuda-toolkit-41</uri>
+          <filename>devdriver_4.2_linux_64_295.41.run</filename> from <uri
+          xlink:href="http://developer.nvidia.com/cuda/cuda-downloads">http://developer.nvidia.com/cuda/cuda-downloads</uri>
           and install the driver:</para>
 
-          <para><screen><prompt>user@mycomputer:~$</prompt><userinput> sudo sh ./devdriver_4.1_linux_64_285.05.32.run</userinput></screen></para>
+          <para><screen><userinput>sudo sh ./devdriver_4.2_linux_64_295.41.run</userinput></screen></para>
 
           <para>The process of getting this driver installed may vary from
           installation to installation. Specifically, you may need to remove
@@ -313,8 +409,8 @@ export GADGETRON_HOME=/usr/local/gadgetron     </programlisting>
 
           <para>The display manager can be shut down with:</para>
 
-          <para><screen><prompt>user@mycomputer:~$</prompt> <userinput>sudo service lightdm stop</userinput>
-</screen></para>
+          <para><screen><userinput>sudo service lightdm stop
+	  </userinput></screen></para>
 
           <para><remark>Important notice</remark>: Unfortunately we have
           experienced on several Ubuntu installations that the machine hangs
@@ -328,59 +424,55 @@ export GADGETRON_HOME=/usr/local/gadgetron     </programlisting>
           Furthermore add <envar>nomodeset</envar>. E.g.
           <code>GRUB_CMDLINE_LINUX_DEFAULT="quiet nosplash nomodeset"</code>.
           Finally update the boot manager with the new settings:
-          <prompt>user@mycomputer:~$</prompt> <userinput>sudo
-          update-grub</userinput></para>
+          <userinput>sudo update-grub</userinput></para>
 
           <para>Next we need to install gcc 4.4 since Ubuntu comes
           preconfigured with gcc 4.6, which is not compatible with the current
           versions of the CUDA nvcc compiler.</para>
 
-          <screen><prompt>user@mycomputer:~$</prompt> <userinput>sudo apt-get install \
-  gcc-4.4 g++-4.4 build-essential</userinput>   </screen>
+          <screen><userinput>sudo apt-get install gcc-4.4 g++-4.4 build-essential</userinput></screen>
 
           <para>Set up alternative systems to allow easy switching between the
           two versions of gcc/g++</para>
 
-          <screen><prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives \
- --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 \
- --slave /usr/bin/g++ g++ /usr/bin/g++-4.6</userinput>
+          <screen><userinput>sudo update-alternatives --install /usr/bin/gcc gcc \
+ /usr/bin/gcc-4.6 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.6
 
-<prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives \
- --install /usr/bin/gcc gcc /usr/bin/gcc-4.4 60 \
- --slave /usr/bin/g++ g++ /usr/bin/g++-4.4</userinput>    </screen>
+sudo update-alternatives --install /usr/bin/gcc \
+ gcc /usr/bin/gcc-4.4 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.4</userinput></screen>
 
           <para>Check your gcc compiler (should now be version 4.4.7):</para>
 
-          <screen><prompt>user@mycomputer:~$</prompt> <userinput>gcc -v</userinput>      </screen>
+          <screen><userinput>gcc -v</userinput></screen>
 
           <para>When you want to switch between the two compiler
           versions:</para>
 
-          <screen><prompt>user@mycomputer:~$</prompt> <userinput>sudo update-alternatives --config gcc</userinput>      </screen>
+          <screen><userinput>sudo update-alternatives --config gcc</userinput></screen>
 
           <para>The final step is to actually install CUDA and CULA. Download
-          the following files:</para>
+          the following files (for CUDA release 4.2):</para>
 
           <itemizedlist>
             <listitem>
-              <para><filename>cudatoolkit_4.1.28_linux_64_ubuntu11.04.run</filename>
+              <para><filename>cudatoolkit_4.2.9_linux_64_ubuntu11.04.run</filename>
               from <uri type="website"
-              xlink:href="http://developer.nvidia.com/cuda-toolkit-41">http://developer.nvidia.com/cuda-toolkit-41</uri></para>
+              xlink:href="http://developer.nvidia.com/cuda/cuda-downloads">http://developer.nvidia.com/cuda/cuda-downloads</uri></para>
             </listitem>
 
             <listitem>
-              <para>cula_dense_free_R14-linux64.run from <uri type="website"
-              xlink:href="http://www.culatools.com/downloads/dense/">http://www.culatools.com/downloads/dense/</uri>
-              (free registration requited)</para>
+              <para>cula_dense_free_R15-linux64.run from <uri type="website"
+              xlink:href="http://www.culatools.com/downloads/dense">http://www.culatools.com/downloads/dense</uri>
+              (free registration required)</para>
             </listitem>
           </itemizedlist>
 
           <para>Go to the folder where the files were downloaded and
           type:</para>
 
-          <screen><prompt>user@mycomputer:~$</prompt> <userinput>sudo sh ./cudatoolkit_4.1.28_linux_64_ubuntu11.04.run
-</userinput><prompt>user@mycomputer:~$</prompt> <userinput>sudo sh ./cula_dense_free_R14-linux64.run
-</userinput></screen>
+          <screen><prompt>user@mycomputer:</prompt><userinput>sudo sh ./cudatoolkit_4.2.9_linux_64_ubuntu11.04.run
+sudo sh ./cula_dense_free_R15-linux64.run
+	  </userinput></screen>
 
           <para>Follow the instructions. When you are done with the
           installation you may want to add the following to your
@@ -406,7 +498,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CULA_LIB_PATH_64    </programlisting>
         <title>Mac OS X Installation Instructions</title>
 
         <para>The following instructions assume that you are starting on a Mac
-        with OS X 10.6.8 (Snow Leopard) Installed. Additionally it assumes
+        with OS X 10.6.8 (Snow Leopard) installed. Additionally it assumes
         that you have Xcode (3.2.6) installed. If you have upgraded to Lion or
         are on an older release, you should still be able to make it all
         compile, but you may have to make some adjustments.</para>
@@ -428,11 +520,12 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CULA_LIB_PATH_64    </programlisting>
           <listitem>
             <para>Install MacPorts.</para>
 
-            <para>Download <filename>MacPorts-2.0.4.pkg</filename> from <uri
+            <para>Download <filename>MacPorts-2.1.2.pkg</filename> from <uri
             xlink:href="http://www.macports.org/">http://www.macports.org/</uri>.</para>
 
-            <para>Run <command>sudo port -v selfupdate</command> to make sure
-            you up to date.</para>
+            <para>Run <command><userinput>sudo port -v
+            selfupdate</userinput></command> to make sure you are up to
+            date.</para>
           </listitem>
 
           <listitem>
@@ -444,20 +537,20 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CULA_LIB_PATH_64    </programlisting>
             step. If you do not wish to use Python, you can also skip this
             step.</para>
 
-            <screen>$ <userinput>sudo port install python27 py27-numpy py27-scipy</userinput></screen>
+            <screen><userinput>sudo port install python27 py27-numpy py27-scipy py27-libxml2</userinput></screen>
 
             <para>This should install Python 2.7. Now select Python 2.7 as as
             the active Python installation:</para>
 
-            <screen>$ <userinput>sudo port select python python27</userinput></screen>
+            <screen><userinput>sudo port select python python27</userinput></screen>
 
             <para>To make sure the build system finds the right version of
             Python we need to edit a couple of symbolic links manually:</para>
 
-            <screen>$ <userinput>cd /System/Library/Frameworks/Python.framework/Versions</userinput>
-$ <userinput>sudo ln -s /opt/local/Library/Frameworks/Python.framework/Versions/2.7</userinput>
-$ <userinput>sudo rm Current</userinput>
-$ <userinput>sudo ln -s 2.7 Current</userinput></screen>
+            <screen><userinput>cd /System/Library/Frameworks/Python.framework/Versions
+sudo ln -s /opt/local/Library/Frameworks/Python.framework/Versions/2.7
+sudo rm Current
+sudo ln -s 2.7 Current</userinput></screen>
           </listitem>
 
           <listitem>
@@ -466,28 +559,57 @@ $ <userinput>sudo ln -s 2.7 Current</userinput></screen>
             install Boost with or without boost_python. If you would like
             Python:</para>
 
-            <screen>$ <userinput>sudo port install boost +python27</userinput></screen>
+            <screen><userinput>sudo port install boost +python27</userinput></screen>
 
             <para>If you don't need Python support:</para>
 
-            <screen>$ <userinput>sudo port install boost</userinput></screen>
+            <screen><userinput>sudo port install boost</userinput></screen>
           </listitem>
 
           <listitem>
             <para>Now we can install the rest of the packages:</para>
 
-            <screen>$ <userinput>sudo port install git-core cmake libACE \
-fftw-3-single fftw-3 qt4-mac-devel hdf5-18
-</userinput></screen>
+            <screen><userinput>sudo port install git-core cmake libACE \
+fftw-3-single fftw-3 qt4-mac-devel hdf5-18 \
+libxml2 xercesc3
+	    </userinput></screen>
 
             <para>This may take quite a long time (hours).</para>
           </listitem>
 
           <listitem>
-            <para
-            xlink:href="http://www.hdfgroup.org/ftp/HDF5/hdf-java/hdfview/hdfview_install_macosx_intel64.zip">To
-            visualize HDF5 files you may also want to install HDFView from
-            http://www.hdfgroup.org/ftp/HDF5/hdf-java/hdfview/hdfview_install_macosx_intel64.zip</para>
+            <para>Install CodeSynthesis XSD</para>
+
+            <para><screen><userinput>wget http://www.codesynthesis.com/download/xsd/3.3/macosx/i686/xsd-3.3.0-i686-macosx.tar.bz2
+tar -xzf xsd-3.3.0-i686-macosx.tar.bz2
+cd xsd-3.3.0-i686-macosx
+sudo cp bin/xsd /usr/local/bin/
+sudo cp -r libxsd/xsd /usr/local/include/</userinput></screen></para>
+          </listitem>
+
+          <listitem>
+            <para>Download, compile, and install ISMRMRD. Detailed
+            instructions can be found at <uri
+            xlink:href="http://ismrmrd.sourceforge.net">http://ismrmrd.sourceforge.net</uri>.</para>
+
+            <para><screen><userinput>git clone git://git.code.sf.net/p/ismrmrd/code ismrmrd-code
+cd ismrmrd-code/
+mkdir build
+cd build/
+cmake ../
+make
+sudo make install</userinput></screen>Last command will install the library in
+            <filename>/usr/local/ismrmrd</filename>.</para>
+
+            <para>Make sure that <filename>/usr/local/ismrmrd/lib</filename>
+            is in your <varname>DYLD_LIBRARY_PATH</varname> environment
+            variable (see below).</para>
+          </listitem>
+
+          <listitem>
+            <para>To visualize HDF5 files you may also want to install HDFView
+            from <uri
+            xlink:href="http://www.hdfgroup.org/ftp/HDF5/hdf-java/hdfview/hdfview_install_macosx_intel64.zip">http://www.hdfgroup.org/ftp/HDF5/hdf-java/hdfview/hdfview_install_macosx_intel64.zip</uri></para>
           </listitem>
 
           <listitem>
@@ -497,20 +619,20 @@ fftw-3-single fftw-3 qt4-mac-devel hdf5-18
             <itemizedlist>
               <listitem>
                 <para>The Nvidia development driver
-                (<filename>devdriver_4.1.28_macos.dmg</filename>) from <uri
-                xlink:href="http://developer.nvidia.com/cuda-toolkit-40/">http://developer.nvidia.com/cuda-toolkit-41/</uri>.</para>
+                (<filename>devdriver_4.2.10_macos.dmg</filename>) from <uri
+                xlink:href="http://developer.nvidia.com/cuda/cuda-downloads">http://developer.nvidia.com/cuda/cuda-downloads</uri>.</para>
               </listitem>
 
               <listitem>
                 <para>The CUDA Toolkit
-                (<filename>cudatoolkit_4.1.28_macos.pkg</filename>) from <uri
-                xlink:href="http://developer.nvidia.com/cuda-toolkit-40/">http://developer.nvidia.com/cuda-toolkit-41/</uri>.</para>
+                (<filename>cudatoolkit_4.2.9_macos.pkg</filename>) from <uri
+                xlink:href="http://developer.nvidia.com/cuda/cuda-downloads">http://developer.nvidia.com/cuda/cuda-downloads</uri>.</para>
               </listitem>
 
               <listitem>
                 <para>The CULA Dense Libraries
-                (<filename>cula_dense_free_R14-osx.dmg</filename>) from <uri
-                xlink:href="http://www.culatools.com/downloads/dense/">http://www.culatools.com/downloads/dense/</uri>.</para>
+                (<filename>cula_dense_free_R15-osx.dmg</filename>) from <uri
+                xlink:href="http://www.culatools.com/downloads/dense">http://www.culatools.com/downloads/dense</uri>.</para>
               </listitem>
             </itemizedlist>
           </listitem>
@@ -550,8 +672,9 @@ $ <userinput>sudo make install</userinput></screen>
             <para>Set environment variables:</para>
 
             <screen>$ <userinput>export GADGETRON_HOME=/usr/local/gadgetron</userinput>
-$ <userinput>export PATH=$PATH:/usr/local/gadgetron/bin</userinput>
-$ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/gadgetron/lib</userinput></screen>
+$ <userinput>export PATH=$PATH:/usr/local/gadgetron/bin:/usr/local/ismrmrd/bin</userinput>
+$ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:
+/usr/local/gadgetron/lib:/usr/local/ismrmrd/lib</userinput></screen>
 
             <para>You may wish to add these lines to
             <filename>~/.bash_profile</filename>, You may also want to add
@@ -559,6 +682,12 @@ $ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/gadgetron/li
 
             <screen>$ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/cula/lib64</userinput>
 $ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/cuda/lib</userinput></screen>
+          </listitem>
+
+          <listitem>
+            <para>After compiling and installing, please rename the file
+            <filename>GADGETRON_HOME/config/gadgetron.xml.example</filename>
+            to <filename>GADGETRON_HOME/config/gadgetron.xml</filename></para>
           </listitem>
 
           <listitem>
@@ -584,8 +713,23 @@ $ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/cuda/lib</us
 
         <para>The following is a list of steps we have used to install the
         Gadgetron on a clean Windows 7 (64-bit) machine. It has also been
-        tested sucessfully on a 32 bit machine (but in this case you choose 32
-        bit packages/configuration where appropriate).</para>
+        tested successfully on a 32 bit machine (but in this case you choose
+        32 bit packages/configuration where appropriate).</para>
+
+        <para>The Gadgetron distribution also includes a Windows Powershell
+        Script in
+        <uri>doc/windows_installation/GadgetronWindowsInstallation.ps1</uri>,
+        which describes the command line steps for installing the
+        dependencies. You cannot complete the installation by simply running
+        the script. Most likely your Windows machine will not allow you to run
+        the script the directly without changing security settings and the
+        download of some of the dependencies cannot be automated since you
+        have to log in (or provide an email address) when downloading. The
+        script can serve as a guide and we recommend (if you would like to use
+        the script) to open it in the Powershell ISE and execute it
+        line-by-line (or section by section). The general installation steps
+        are written out here too, you may need to make some adjustments for
+        your particular setup.</para>
 
         <itemizedlist>
           <listitem>
@@ -599,23 +743,24 @@ $ <userinput>export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:/usr/local/cuda/lib</us
             <para>Download Cuda drivers/toolkit from from</para>
 
             <para><uri
-            xlink:href="http://developer.nvidia.com/cuda-toolkit-40">http://developer.nvidia.com/cuda-toolkit-41-archive</uri>:</para>
+            xlink:href="http://developer.nvidia.com/cuda/cuda-downloads">http://developer.nvidia.com/cuda/cuda-downloads</uri>.</para>
 
-            <para>Install Nvidia Developer Driver (Version 286.19)</para>
+            <para>Install Nvidia Developer Driver (Version 301.32)</para>
 
-            <para>Install Nvdia Toolkit (4.1)</para>
+            <para>Install Nvdia Toolkit (4.2)</para>
 
             <para>Install gpucomputingsdk</para>
 
-            <para>Install <filename>cula_dense_free_R14-win64.exe</filename>
+            <para>Install <filename>cula_dense_free_R15-win64.exe</filename>
             from</para>
 
-            <para><uri>http://www.culatools.com/downloads/dense/</uri>.</para>
+            <para><uri
+            xlink:href="http://www.culatools.com/downloads/dense">http://www.culatools.com/downloads/dense</uri>.</para>
 
             <para>Assuming CULA was installed in <filename>C:\Program
-            Files\CULA\R14</filename>, add</para>
+            Files\CULA\R145</filename>, add</para>
 
-            <para><filename>C:\Program Files\CULA\R14\bin64</filename> to your
+            <para><filename>C:\Program Files\CULA\R15\bin64</filename> to your
             <varname>PATH</varname> environment variable.</para>
           </listitem>
 
@@ -668,7 +813,7 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
 
             <para>Build (this takes a while)</para>
 
-            <para>Add to <varname>PATH</varname> envoronment variable:
+            <para>Add to <varname>PATH</varname> environment variable:
             <filename>C:\Libraries\ACE-6.0.5\ACE_wrappers\lib</filename></para>
           </listitem>
 
@@ -691,11 +836,12 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
 
             <para>From <uri
             xlink:href="http://www.lfd.uci.edu/~gohlke/pythonlibs/">http://www.lfd.uci.edu/~gohlke/pythonlibs/</uri>
-            download and install the following:</para>
+            download and install the following (+ additional libraries that
+            you may need for your Python development):</para>
 
             <para><itemizedlist>
                 <listitem>
-                  <para><filename>numpy-MKL-1.6.1.win-amd64-py2.7</filename></para>
+                  <para><filename>numpy-MKL-1.6.2.win-amd64-py2.7</filename></para>
                 </listitem>
 
                 <listitem>
@@ -703,13 +849,7 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
                 </listitem>
 
                 <listitem>
-                  <para><filename>matplotlib-1.1.0.win-amd64-py2.7</filename>
-                  (not strictly necessary)</para>
-                </listitem>
-
-                <listitem>
-                  <para><filename>ipython-0.12.1.win-amd64-py2.7</filename>
-                  (not strictly necessary)</para>
+                  <para><filename>libxml2-python-2.7.8.win-amd64-py2.7</filename></para>
                 </listitem>
               </itemizedlist></para>
           </listitem>
@@ -718,40 +858,32 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
             <para>Install ACML (BLAS and LAPACK)</para>
 
             <para>Download <filename>acml4.4.0-win64.exe</filename> from: <uri
-            xlink:href="http://developer.amd.com/libraries/acml/downloads/pages/">http://developer.amd.com/libraries/acml/downloads/pages/acmlarchivedownloads.aspx</uri></para>
+            xlink:href="http://developer.amd.com/downloads/acml4.4.0-win64.exe">http://developer.amd.com/downloads/acml4.4.0-win64.exe</uri></para>
 
             <para>Install Library in say
-            C:\Libraries\C:\Libraries\acml4.4.0</para>
+            <filename>C:\Libraries\acml4.4.0</filename></para>
 
             <para>Add
             <filename>C:\Libraries\acml4.4.0\win64\lib;C:\Libraries\acml4.4.0\win64_mp\lib</filename>
             to <varname>your PATH environment variable.</varname></para>
 
-            <para><varname><remark>Notice</remark>. Newer versions of the
-            ACML-library are available (version 5.1.0 at the time of preparing
-            this manual) - however, we have been unable to successfully link
-            release 5.1.0 to the Gadgetron binaries.</varname></para>
+            <para>Notice. Newer versions of the ACML-library are available
+            (version 5.2.0 at the time of preparing this manual) - however,
+            these libraries are distributed without required dependencies and
+            will not work out of the box. We recommend sticking to the earlier
+            version 4.4.0 until these issues have been resolved.</para>
           </listitem>
 
           <listitem>
             <para>Install the newest Boost release (<uri
             xlink:href="http://www.boost.org">http://www.boost.org</uri>)</para>
 
-            <para>Unpack boost to e.g.
-            <filename>C:\Libraries\boost_1_48_0</filename></para>
+            <para>We recommend using the precompiled binaries from BoostPro
+            (e.g. <uri
+            xlink:href="http://boostpro.com/download/x64/boost_1_51_setup.exe">http://boostpro.com/download/x64/boost_1_51_setup.exe</uri>)</para>
 
-            <para>Open a command line as Administrator (type cmd and hit
-            "shift+ctrl + enter")</para>
-
-            <para>From <filename>C:\Libraries\boost_1_48_0</filename> type
-            "<command>bootstrap</command>" (not bootstrap.bat)</para>
-
-            <para>Type <command>.\b2 --with-python --build-type=complete
-            address-model=64</command> (This only builds the boost_python
-            library, add others as needed)</para>
-
-            <para>Add <filename>C:\Libraries\boost_1_48_0\stage\lib</filename>
-            to <varname>PATH</varname></para>
+            <para>Just install everything, you might need other components
+            later.</para>
           </listitem>
 
           <listitem>
@@ -771,87 +903,56 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
             <para>Install CMake (<uri
             xlink:href="http://www.cmake.org/cmake/resources/software.html">http://www.cmake.org/cmake/resources/software.html</uri>)</para>
 
-            <para>Install the latest release (e.g.
-            cmake-2.8.8-win32-x86)</para>
+            <para>Install the latest release (e.g. <uri
+            xlink:href="http://www.cmake.org/files/v2.8/cmake-2.8.9-win32-x86.exe">http://www.cmake.org/files/v2.8/cmake-2.8.9-win32-x86.exe</uri>)</para>
           </listitem>
 
           <listitem>
             <para>Install <application>HDF5</application>:</para>
 
-            <para>From <uri
+            <para>You will need the HDFView application to view data files
+            used by the Gadgetron, it can be downloaded rom <uri
             xlink:href="http://www.hdfgroup.org/HDF5/">http://www.hdfgroup.org/HDF5/</uri>
             install HDFView :
             <filename>hdfview_install_win64.exe</filename></para>
 
-            <para>As the precompiled HDF5 binaries off the HDF5 web page fail
-            to link to the Gadgetron we need to compile HDF5 ourselves:</para>
+            <para>The precompiled binaries (e.g. <uri
+            xlink:href="http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/HDF5189-win64-vs10-shared.zip">http://www.hdfgroup.org/ftp/HDF5/current/bin/windows/HDF5189-win64-vs10-shared.zip</uri>)
+            should work fine with the Gadgetron. Remember to add the path
+            (e.g. <filename>C:\Program Files\HDF
+            Group\HDF5\1.8.9\bin</filename>) to the HDF libraries to your
+            <varname>PATH</varname> environment library.</para>
+          </listitem>
 
-            <para>Download (e.g. to C:\Libraries\hdf5-1.8.9\) the HDF5
-            <emphasis>source code</emphasis> from <uri
-            xlink:href="http://www.hdfgroup.org/ftp/HDF5/current/src/">http://www.hdfgroup.org/ftp/HDF5/current/src/</uri>.</para>
+          <listitem>
+            <para>Install CodeSynthesis XSD (<uri
+            xlink:href="http://www.codesynthesis.com/download/xsd/3.3/windows/i686/xsd-3.3.msi">http://www.codesynthesis.com/download/xsd/3.3/windows/i686/xsd-3.3.msi</uri>).</para>
 
-            <para>Download the <emphasis>source code</emphasis> to
-            <filename>szip</filename> and <filename>zlib</filename> from <uri
-            xlink:href="http://www.hdfgroup.org/ftp/lib-external/">http://www.hdfgroup.org/ftp/lib-external/</uri></para>
+            <para>Remember to add the path to the XSD binaries to your
+            <varname>PATH</varname> environment variable. E.g.
+            <filename>C:\Program Files (x86)\CodeSynthesis XSD
+            3.3\bin\</filename> and <filename>C:\Program Files
+            (x86)\CodeSynthesis XSD 3.3\bin64\.</filename></para>
+          </listitem>
 
-            <para>Start <application>cmake-gui</application></para>
+          <listitem>
+            <para>Download, compile, and install the ISMRM Raw Data format.
+            Detailed instructions are available at (<uri
+            xlink:href="http://ismrmrd.sourceforge.net">http://ismrmrd.sourceforge.net</uri>).</para>
 
-            <para>Select source directory (your <filename>szip</filename> and
-            <filename>zlib</filename> source code root respectively) and
-            target directory (create a build folder under the source
-            directory). Press configure. Check BUILD_SHARED_LIBS. Press
-            configure. Press generate. Repeat for both
-            <filename>szip</filename> and <filename>zlib</filename>.</para>
+            <para>From a git bash shell:</para>
 
-            <para>Open the Visual Studio solution files for
-            <filename>zlib</filename> and <filename>szip</filename> located in
-            the respective build directories. Build project ALL_BUILD. Build
-            project INSTALL (you might need to run Visual Studio as
-            administrator for this).</para>
-
-            <para>Start <application>cmake-gui</application></para>
-
-            <para>Select source (<filename>C:\Libraries\hdf5-1.8.9</filename>)
-            and target directories
-            (<filename>C:\Libraries\hdf5-1.8.9\build</filename>)</para>
-
-            <para>Hit configure</para>
-
-            <para>Make sure that the following checkboxes are checked:</para>
-
-            <para>BUILD_SHARED_LIBS, HDF5_BUILD_CP_LIB,
-            HDF5_ENABLE_SZIP_SUPPORT, HDF5_ENABLE_Z_LIB_SUPPORT</para>
-
-            <para>Hit configure</para>
-
-            <para>Specify the ZLIB include and library directories (the
-            include folder in the zlib install folder should work).</para>
-
-            <para>Hit configure</para>
-
-            <para>Specify the SZIP include path (choose the source code tree
-            root!) and library. Check HDF5_ENABLE_SZIP_ENCODING.</para>
-
-            <para>Hit configure</para>
-
-            <para>Hit configure</para>
-
-            <para>Hit generate</para>
-
-            <para>Open HDF5.sln in the build directory of the HDF5 source
-            code. Build the project ALL_BUILD in x64/Release mode.</para>
-
-            <para>To install the HDF5 binaries (by building the INSTALL
-            project) you may need to start Visual Studio as
-            Administator.</para>
-
-            <para>Copy the <filename>zlib</filename> and
-            <filename>szip</filename> libraries (.lib and .dll files) to the
-            <filename>lib</filename> and <filename>bin</filename> folders
-            respecitvely of the <filename>HDF5</filename> install directory.
-            Add the <application>HDF5</application> install folder containing
-            the generated dll files to your <envar>PATH</envar> environment
-            variable.</para>
+            <para><screen>git clone git://git.code.sf.net/p/ismrmrd/code ismrmrd-code
+cd ismrmrd-code/
+mkdir build
+cd build/
+cmake-gui.exe
+</screen>Last command will open CMake's graphical user interface. Hit the
+            configure button and deal with the dependencies that CMake is
+            unable to find. Hit configure again and repeat the process until
+            CMake has enough information to configure. Once the configuration
+            is complete, you can hit generate to generate a Visual Studio
+            project, which you can open and use to build ISMRMRD.</para>
           </listitem>
 
           <listitem>
@@ -890,7 +991,7 @@ c:\Libraries\FFTW3&gt;lib /machine:x64 /def:libfftw3l-3.def
             <para>Specify location of CULA (include path and core/lapack
             library filepaths)</para>
 
-            <para>Specify location of ACE include dir</para>
+            <para>Specify location of ACE include directory</para>
 
             <para>Hit configure (again)</para>
 
@@ -932,6 +1033,12 @@ BLAS_acml_mp_LIBRARY= \
             write permissions. Notice that /gadgetron is automatically
             appended to the path you specify.</para>
           </listitem>
+
+          <listitem>
+            <para>After compiling and installing, please rename the file
+            <filename>GADGETRON_HOME/config/gadgetron.xml.example</filename>
+            to <filename>GADGETRON_HOME/config/gadgetron.xml</filename></para>
+          </listitem>
         </itemizedlist>
 
         <para>Before attempting to run any reconstructions, please set the
@@ -957,14 +1064,17 @@ BLAS_acml_mp_LIBRARY= \
 
       <para>You will generally encounter two types of data in this manual: a)
       Simple array format described in <xref linkend="simplearrayfiles"/> and
-      b) HDF5 files which are a generic format for storing many different
-      kinds of data and images. It is beyond the scope of this manual to
-      explain the HDF5 file format, but we have added a small introductory
-      section in the appendix (<xref linkend="section.hdf5"/>).</para>
+      b) ISMRMRD HDF5 files which are described in more detail at <uri
+      xlink:href="http://ismrmrd.sourceforge.net">http://ismrmrd.sourceforge.net</uri>.
+      It is beyond the scope of this manual to explain the HDF5 file format,
+      but we have added a small introductory section in the appendix (<xref
+      linkend="section.hdf5"/>).</para>
 
-      <para>Download the file <filename>gadgetron_testdata.h5</filename> from
-      the website. In this example we will work with the dataset called
-      "simple_gre" in the HDF5 file.</para>
+      <para>Download the file <filename>simple_gre.h5</filename> from the
+      website (on Linux simply type):</para>
+
+      <screen>wget http://sourceforge.net/projects/gadgetron/files/
+      testdata/ismrmrd/simple_gre.h5</screen>
 
       <para>Open two terminal windows to observe both client and Gadgetron
       communication output. In the Gadgetron terminal window simply
@@ -976,8 +1086,7 @@ BLAS_acml_mp_LIBRARY= \
       data) type:</para>
 
       <screen><prompt>user@mycomputer:~/temp/test_data$</prompt> <userinput><command>mriclient \
-    -d gadgetron_testdata.h5 \
-    -g simple_gre \
+    -d simple_gre.h5 \
     -c default.xml</command></userinput>
 </screen>
 
@@ -987,8 +1096,7 @@ BLAS_acml_mp_LIBRARY= \
       should shut down:</para>
 
       <screen><prompt>user@mycomputer:~/temp/test_data$</prompt> <userinput>mriclient \
-    -d gadgetron_testdata.h5 \ 
-    -g simple_gre \ 
+    -d simple_gre.h5 \  
     -c default.xml</userinput>
 
 Gadgetron MRI Data Sender
@@ -1020,7 +1128,7 @@ Gadgetron MRI Data Sender
       details on how to read the output file. Briefly you could read and
       display the data in Matlab with:</para>
 
-      <programlisting>images = h5read('out.h5','/2012-05-11 12:52:14/data_0');
+      <programlisting>images = h5read('out.h5','/&lt;INSERT CORRECT DATE HERE&gt;/image_0.img');
 imagesc(images(:,:,1,1));colormap(gray);</programlisting>
     </sect1>
   </chapter>
@@ -1238,25 +1346,25 @@ protected:
         <function>process</function> above. So, all you need to do in order to
         implement a Gadget that takes two arguments is to implement this
         function. As an example, let's look at a very simple Gadget, which
-        receives an image header and some image data and does a Fourier
-        transform of the first 3 dimensions. First the header file
-        <filename>FFTGadget.h</filename></para>
+        receives an image header (in ISMRM Raw Data format) and some image
+        data and does a Fourier transform of the first 3 dimensions. First the
+        header file <filename>FFTGadget.h</filename></para>
 
         <programlisting>#include "gadgetroncore_export.h"
 #include "Gadget.h"
-#include "GadgetMRIHeaders.h"
+#include "ismrmrd.h"
 #include "hoNDArray.h"
 #include &lt;complex&gt;
 
 class EXPORTGADGETSCORE FFTGadget : 
-public Gadget2&lt;GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;
+public Gadget2&lt;ISMRMRD::ImageHeader, hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;
 {
  public:
   GADGET_DECLARE(FFTGadget)
 
  protected:
   virtual int process( 
-     GadgetContainerMessage&lt; GadgetMessageImage&gt;* m1,
+     GadgetContainerMessage&lt; ISMRMRD::ImageHeader &gt;* m1,
      GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2);
 
 };</programlisting>
@@ -1294,7 +1402,7 @@ public Gadget2&lt;GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &g
 #include "FFT.h"
 
 int FFTGadget::process( 
-   GadgetContainerMessage&lt; GadgetMessageImage&gt;* m1,
+   GadgetContainerMessage&lt; ISMRMRD::ImageHeader &gt;* m1,
    GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2)
 {
   FFT&lt;float&gt;::instance()-&gt;ifft(m2-&gt;getObjectPtr(),0);
@@ -1353,110 +1461,128 @@ GADGET_FACTORY_DECLARE(FFTGadget)</programlisting>
           The configuration information can in principle be in any format (a
           given application can use a binary format or a text format defined
           for the specific purpose), but conventionally the parameters are
-          transmitted in XML format and the Gadgetron comes with toolbox
-          functionality in <filename>GadgetXml.h</filename>, which allow easy
-          access to parameters in XML format (see the examples throughout the
-          source code on how to interpret parameters).</para>
+          transmitted in XML format and for the MRI Gadgets, the XML
+          configuration is the XML header from the ISMRM Raw Data file. More
+          details on this format and how to easily parse it with the included
+          C++ XML data binding classes can be found at
+          <uri>http://ismrmrd.sourceforge.net</uri>.</para>
 
-          <para>An example of a parameter XML file for an MRI reconstruction
-          is shown here:</para>
+          <para>An example of a parameter XML file for an MRI data set is
+          shown here:</para>
 
-          <programlisting>&lt;?xml version="1.0" ?&gt;
-&lt;gadgetron&gt;
-    &lt;encoding&gt;
-        &lt;kspace&gt;
-            &lt;base_resolution&gt;
-                &lt;value&gt;128&lt;/value&gt;
-            &lt;/base_resolution&gt;
-            &lt;readout_length&gt;
-                &lt;value&gt;256&lt;/value&gt;
-            &lt;/readout_length&gt;
-            &lt;phase_encoding_lines&gt;
-                &lt;value&gt;128&lt;/value&gt;
-            &lt;/phase_encoding_lines&gt;
-            &lt;partitions&gt;
-                &lt;value&gt;64&lt;/value&gt;
-            &lt;/partitions&gt;
-            &lt;phase_resolution&gt;
-                &lt;value&gt;1&lt;/value&gt;
-            &lt;/phase_resolution&gt;
-            &lt;slice_resolution&gt;
-                &lt;value&gt;1&lt;/value&gt;
-            &lt;/slice_resolution&gt;
-            &lt;matrix_size&gt;
-                &lt;value&gt;128&lt;/value&gt;
-                &lt;value&gt;128&lt;/value&gt;
-            &lt;/matrix_size&gt;
-        &lt;/kspace&gt;
-        &lt;trajectory&gt;
-            &lt;value&gt;1&lt;/value&gt;
-        &lt;/trajectory&gt;
-        &lt;slices&gt;
-            &lt;value&gt;1&lt;/value&gt;
-        &lt;/slices&gt;
-        &lt;acquisition_dwell_time_ns&gt;
-            &lt;value&gt;7800&lt;/value&gt;
-        &lt;/acquisition_dwell_time_ns&gt;
-        &lt;channels&gt;
-            &lt;value&gt;32&lt;/value&gt;
-        &lt;/channels&gt;
-    &lt;/encoding&gt;
-    &lt;timing&gt;
-        &lt;TR&gt;
-            &lt;value&gt;5860&lt;/value&gt;
-        &lt;/TR&gt;
-        &lt;TE&gt;
-            &lt;value&gt;2960&lt;/value&gt;
-        &lt;/TE&gt;
-    &lt;/timing&gt;
-&lt;/gadgetron&gt;</programlisting>
+          <programlisting>&lt;?xml version="1.0"?&gt;
 
-          <para>The parameter scripts can have any format, but the convention
-          is to have one root element called <varname>gadgetron</varname> and
-          enclose all parameters in a hierarchical structure. The Gadgetron
-          comes with functions and classes for parsing this format. Firstly,
-          the <filename>TinyXML</filename> library is included with the
-          Gadgetron and can be used to parse the XML script, but we also
-          include some wrapper classes to make the parsing easier, the file
-          <filename>GadgetXml.h</filename> includes the
-          <classname>GadgetXMLNode</classname>:</para>
+&lt;ismrmrdHeader xmlns="http://www.ismrm.org/ISMRMRD" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+  xsi:schemaLocation="http://www.ismrm.org/ISMRMRD ismrmrd.xsd"&gt;
 
-          <programlisting>class GadgetXMLNode
+  &lt;subjectInformation&gt;
+    &lt;patientName&gt;phantom&lt;/patientName&gt;
+    &lt;patientWeight_kg&gt;72.5748&lt;/patientWeight_kg&gt;
+  &lt;/subjectInformation&gt;
+  &lt;acquisitionSystemInformation&gt;
+    &lt;systemVendor&gt;SIEMENS&lt;/systemVendor&gt;
+    &lt;systemModel&gt;Avanto&lt;/systemModel&gt;
+    &lt;systemFieldStrength_T&gt;1.494&lt;/systemFieldStrength_T&gt;
+    &lt;receiverChannels&gt;32&lt;/receiverChannels&gt;
+    &lt;relativeReceiverNoiseBandwidth&gt;0.79&lt;/relativeReceiverNoiseBandwidth&gt;
+  &lt;/acquisitionSystemInformation&gt;
+  &lt;experimentalConditions&gt;
+    &lt;H1resonanceFrequency_Hz&gt;63620740&lt;/H1resonanceFrequency_Hz&gt;
+  &lt;/experimentalConditions&gt;
+  &lt;encoding&gt;
+    &lt;trajectory&gt;cartesian&lt;/trajectory&gt;
+    &lt;encodedSpace&gt;
+      &lt;matrixSize&gt;
+        &lt;x&gt;256&lt;/x&gt;
+        &lt;y&gt;128&lt;/y&gt;
+        &lt;z&gt;1&lt;/z&gt;
+      &lt;/matrixSize&gt;
+      &lt;fieldOfView_mm&gt;
+        &lt;x&gt;600&lt;/x&gt;
+        &lt;y&gt;300&lt;/y&gt;
+        &lt;z&gt;5&lt;/z&gt;
+      &lt;/fieldOfView_mm&gt;
+    &lt;/encodedSpace&gt;
+    &lt;reconSpace&gt;
+      &lt;matrixSize&gt;
+        &lt;x&gt;128&lt;/x&gt;
+        &lt;y&gt;128&lt;/y&gt;
+        &lt;z&gt;1&lt;/z&gt;
+      &lt;/matrixSize&gt;
+      &lt;fieldOfView_mm&gt;
+        &lt;x&gt;300&lt;/x&gt;
+        &lt;y&gt;300&lt;/y&gt;
+        &lt;z&gt;5&lt;/z&gt;
+      &lt;/fieldOfView_mm&gt;
+    &lt;/reconSpace&gt;
+    &lt;encodingLimits&gt;
+      &lt;kspace_encoding_step_1&gt;
+        &lt;minimum&gt;0&lt;/minimum&gt;
+        &lt;maximum&gt;127&lt;/maximum&gt;
+        &lt;center&gt;64&lt;/center&gt;
+      &lt;/kspace_encoding_step_1&gt;
+      &lt;kspace_encoding_step_2&gt;
+        &lt;minimum&gt;0&lt;/minimum&gt;
+        &lt;maximum&gt;0&lt;/maximum&gt;
+        &lt;center&gt;0&lt;/center&gt;
+      &lt;/kspace_encoding_step_2&gt;
+      &lt;slice&gt;
+        &lt;minimum&gt;0&lt;/minimum&gt;
+        &lt;maximum&gt;0&lt;/maximum&gt;
+        &lt;center&gt;0&lt;/center&gt;
+      &lt;/slice&gt;
+      &lt;set&gt;
+        &lt;minimum&gt;0&lt;/minimum&gt;
+        &lt;maximum&gt;0&lt;/maximum&gt;
+        &lt;center&gt;0&lt;/center&gt;
+      &lt;/set&gt;
+    &lt;/encodingLimits&gt;
+  &lt;/encoding&gt;
+  &lt;sequenceTiming&gt;
+    &lt;TR&gt;5.86&lt;/TR&gt;
+    &lt;TE&gt;2.96&lt;/TE&gt;
+  &lt;/sequenceTiming&gt;
+&lt;/ismrmrdHeader&gt;</programlisting>
+
+          <para>The user/developer can use any XML parsing technique to
+          extract parameters from this XML header, but we encourage developers
+          to use the C++ XML Data Binding classes that are included with the
+          ISMRM Raw Data C++ library. For example, to parse encoding limits
+          (example from <filename>AccumulatorGadget.cpp</filename>):</para>
+
+          <programlisting>int AccumulatorGadget::process_config(ACE_Message_Block* mb)
 {
- public:
-  GadgetXMLNode(TiXmlNode* anchor);
-
-  //Other functions
  
-  template&lt;typename T&gt; std::vector&lt;T&gt; get(std::string name);
-}</programlisting>
+ //Calling parsing convenience function found in GadgetIsmrmrdReadWrite.cpp
+ boost::shared_ptr&lt;ISMRMRD::ismrmrdHeader&gt; cfg = parseIsmrmrdXMLHeader(std::string(mb-&gt;rd_ptr()));
 
-          <para>This class can be used to access the XML parameters in a
-          convenient way. There are multiple examples of this throughout the
-          Gadgetron archive, but one example is given here:</para>
+ ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg-&gt;encoding(); 
+ if (e_seq.size() != 1) {
+  GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
+  GADGET_DEBUG1("Only supports one encoding space supported\n");
+  return GADGET_FAIL;
+ }
 
-          <programlisting>int MyGadget::process_config(ACE_Message_Block* mb)
-{
+ ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
+ ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
+ ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
 
-  //Use TinyXML to parse the doucment
-  TiXmlDocument doc;
-  doc.Parse(mb-&gt;rd_ptr());
- 
-  std::string path("gadgetron.encoding.kspace.matrix_size.value");
+ GADGET_DEBUG2("Matrix size: %d, %d, %d\n", 
+   e_space.matrixSize().x(), 
+   e_space.matrixSize().y(), 
+   e_space.matrixSize().z());
 
-  //Get a vector with all the values 
-  std::vector&lt;long&gt; dims = 
-    n.get&lt;long&gt;(path);
+ dimensions_.push_back(e_space.matrixSize().x());
+ dimensions_.push_back(e_space.matrixSize().y());
+ dimensions_.push_back(e_space.matrixSize().z());
 
-  //Do something with the dimensions
-
+ slices_ = e_limits.slice().present() ? 
+   e_limits.slice().get().maximum()+1 : 1;
 
   return GADGET_OK;
 }</programlisting>
-
-          <para>In the case of parsing the XML parameters listed above,
-          <varname>dims</varname> would contain two values ([128,
-          128]).</para>
         </sect3>
       </sect2>
 
@@ -1482,19 +1608,19 @@ GADGET_FACTORY_DECLARE(FFTGadget)</programlisting>
         <para>In order to be able to read a specific type of data, the
         <function>read</function> function must be implemented for that data
         type. As an example here is the
-        <classname>GadgetMessageReader</classname>, which reads an MRI data
-        acquisition from the socket.</para>
+        <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>, which
+        reads an MRI data acquisition from the socket.</para>
 
-        <programlisting>class EXPORTGADGETSCORE MRIAcquisitionReader 
+        <programlisting>class GadgetIsmrmrdAcquisitionMessageReader 
 : public GadgetMessageReader
 {
  public:
-  GADGETRON_READER_DECLARE(MRIAcquisitionReader);
+  GADGETRON_READER_DECLARE(GadgetIsmrmrdAcquisitionMessageReader);
   virtual ACE_Message_Block* read(ACE_SOCK_Stream* socket);
 };</programlisting>
 
         <para>Note the
-        <function>GADGETRON_READER_DECLARE(MRIAcquisitionReader)</function>
+        <function>GADGETRON_READER_DECLARE(GadgetIsmrmrdAcquisitionMessageReader)</function>
         declaration. This is equivalent to the declaration needed for the
         Gadgets (see <xref linkend="sect.gadgets"/>) in order to make them
         load properly from shared libraries.</para>
@@ -1502,34 +1628,71 @@ GADGET_FACTORY_DECLARE(FFTGadget)</programlisting>
         <para>The implementation of this particular reader is as follows (this
         is an abbreviated version without error checking, etc.):</para>
 
-        <programlisting>ACE_Message_Block* MRIAcquisitionReader::read(ACE_SOCK_Stream* sock)
+        <programlisting>ACE_Message_Block* GadgetIsmrmrdAcquisitionMessageReader::read(ACE_SOCK_Stream* sock)
 {
+ GadgetContainerMessage&lt;ISMRMRD::AcquisitionHeader&gt;* m1 =
+   new GadgetContainerMessage&lt;ISMRMRD::AcquisitionHeader&gt;();
 
-   GadgetContainerMessage&lt;GadgetMessageAcquisition&gt;* m1 = 
-      new GadgetContainerMessage&lt;GadgetMessageAcquisition&gt;();
-  
-   GadgetContainerMessage&lt;hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2 = 
-      new GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;();
-  
-   m1-&gt;cont(m2);
+ GadgetContainerMessage&lt;hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2 =
+   new GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;();
 
-   sock-&gt;recv_n(m1-&gt;getObjectPtr(), sizeof(GadgetMessageAcquisition);
+ m1-&gt;cont(m2);
 
-   std::vector&lt;unsigned int&gt; adims;
-   adims.push_back(m1-&gt;getObjectPtr()-&gt;samples);
-   adims.push_back(m1-&gt;getObjectPtr()-&gt;channels);
+ ssize_t recv_count = 0;
 
-   m2-&gt;getObjectPtr()-&gt;create(&amp;adims)
-  
-   long data_length = sizeof(std::complex&lt;float&gt;)*
-      m1-&gt;getObjectPtr()-&gt;samples*m1-&gt;getObjectPtr()-&gt;channels;
-      
-   sock-&gt;recv_n (m2-&gt;getObjectPtr()-&gt;get_data_ptr(), data_length);
-   
-   return m1;
+ if ((recv_count = stream-&gt;recv_n(m1-&gt;getObjectPtr(), sizeof(ISMRMRD::AcquisitionHeader))) &lt;= 0) {
+  m1-&gt;release();
+  return 0;
+ }
+
+ if (m1-&gt;getObjectPtr()-&gt;trajectory_dimensions) {
+  GadgetContainerMessage&lt;hoNDArray&lt; float &gt; &gt;* m3 =
+    new GadgetContainerMessage&lt; hoNDArray&lt; float &gt; &gt;();
+
+ m2-&gt;cont(m3);
+
+ std::vector&lt;unsigned int&gt; tdims;
+ tdims.push_back(m1-&gt;getObjectPtr()-&gt;trajectory_dimensions);
+ tdims.push_back(m1-&gt;getObjectPtr()-&gt;number_of_samples);
+
+ if (!m3-&gt;getObjectPtr()-&gt;create(&amp;tdims)) {
+  m1-&gt;release();
+  return 0;
+ }
+
+ if ((recv_count =
+   stream-&gt;recv_n
+    (m3-&gt;getObjectPtr()-&gt;get_data_ptr(),
+     sizeof(float)*tdims[0]*tdims[1])) &lt;= 0) {
+
+     m1-&gt;release();
+
+   return 0;
+ }
+
+ std::vector&lt;unsigned int&gt; adims;
+ adims.push_back(m1-&gt;getObjectPtr()-&gt;number_of_samples);
+ adims.push_back(m1-&gt;getObjectPtr()-&gt;active_channels);
+
+ if (!m2-&gt;getObjectPtr()-&gt;create(&amp;adims)) {
+   m1-&gt;release();
+   return 0;
+ }
+
+ if ((recv_count =
+      stream-&gt;recv_n
+      (m2-&gt;getObjectPtr()-&gt;get_data_ptr(),
+      sizeof(std::complex&lt;float&gt;)*adims[0]*adims[1])) &lt;= 0) {
+
+    m1-&gt;release();
+
+    return 0;
+ }
+
+return m1;
 }
 
-GADGETRON_READER_FACTORY_DECLARE(MRIAcquisitionReader)</programlisting>
+GADGETRON_READER_FACTORY_DECLARE(GadgetIsmrmrdAcquisitionMessageReader)</programlisting>
 
         <para>The Reader allocates two
         <classname>GadgetContainerMessage</classname> data blocks to contain
@@ -1544,7 +1707,7 @@ GADGETRON_READER_FACTORY_DECLARE(MRIAcquisitionReader)</programlisting>
 
         <para>A final important statement to notice is:</para>
 
-        <programlisting>GADGETRON_READER_FACTORY_DECLARE(MRIAcquisitionReader)</programlisting>
+        <programlisting>GADGETRON_READER_FACTORY_DECLARE(GadgetIsmrmrdAcquisitionMessageReader)</programlisting>
 
         <para>This macro declares create and destroy functions to load the
         reader from a shared library on all platforms supported.</para>
@@ -1557,22 +1720,46 @@ GADGETRON_READER_FACTORY_DECLARE(MRIAcquisitionReader)</programlisting>
         a message ID. This is for instance done in this (abbreviated) code
         from an <classname>ImageFinishGadget</classname>:</para>
 
-        <programlisting>int ImageFinishGadget
-::process(GadgetContainerMessage&lt;GadgetMessageImage&gt;* m1,
-  GadgetContainerMessage&lt; hoNDArray&lt; float &gt; &gt;* m2)
+        <programlisting>template &lt;typename T&gt;
+int ImageFinishGadget&lt;T&gt;
+::process(GadgetContainerMessage&lt;ISMRMRD::ImageHeader&gt;* m1,
+   GadgetContainerMessage&lt; hoNDArray&lt; T &gt; &gt;* m2)
 {
-   GadgetContainerMessage&lt;GadgetMessageIdentifier&gt;* mb =
-      new GadgetContainerMessage&lt;GadgetMessageIdentifier&gt;();
+  if (!this-&gt;controller_) {
+    return -1;
+  }
 
-   mb-&gt;getObjectPtr()-&gt;id = GADGET_MESSAGE_IMAGE_REAL_FLOAT;
+  GadgetContainerMessage&lt;GadgetMessageIdentifier&gt;* mb =
+    new GadgetContainerMessage&lt;GadgetMessageIdentifier&gt;();
 
-   mb-&gt;cont(m1);
+  switch (sizeof(T)) {
+  case 2: //Unsigned short
+   mb-&gt;getObjectPtr()-&gt;id = 
+      GADGET_MESSAGE_IMAGE_REAL_USHORT;
+   break;
+  case 4: //Float
+   mb-&gt;getObjectPtr()-&gt;id = 
+      GADGET_MESSAGE_IMAGE_REAL_FLOAT;
+   break;
+  case 8: //Complex float
+   mb-&gt;getObjectPtr()-&gt;id = 
+      GADGET_MESSAGE_IMAGE_CPLX_FLOAT;
+   break;
+  default:
+   GADGET_DEBUG2("Wrong data size detected: %d\n", sizeof(T));
+   mb-&gt;release();
+   m1-&gt;release();
+   return GADGET_FAIL;
+  }
 
-   int ret =  this-&gt;controller_-&gt;output_ready(mb);
+  mb-&gt;cont(m1);
 
-   if ( (ret &lt; 0) ) {
-      return GADGET_FAIL;
-   }
+  int ret =  this-&gt;controller_-&gt;output_ready(mb);
+
+  if ( (ret &lt; 0) ) {
+   GADGET_DEBUG1("Failed to return massage to controller\n");
+   return GADGET_FAIL;
+  }
 
   return GADGET_OK;
 }</programlisting>
@@ -1598,26 +1785,28 @@ GADGETRON_READER_FACTORY_DECLARE(MRIAcquisitionReader)</programlisting>
         <para>The Writer is handed control of the socket along with the
         message block. A Writer declaration could look like:</para>
 
-        <programlisting>class MRIImageWriter : public GadgetMessageWriter
+        <programlisting>class MRIImageWriter 
+  : public GadgetMessageWriter
 {
 
 public:
-   GADGETRON_WRITER_DECLARE(GadgetMessageWriter);
+   GADGETRON_WRITER_DECLARE(MRIImageWriter);
    virtual int write(ACE_SOCK_Stream* sock, 
                      ACE_Message_Block* mb);
 };</programlisting>
 
         <para>Notice again the
-        <function>GADGETRON_WRITER_DECLARE(GadgetMessageWriterFLOAT)</function>
-        which ensures proper run-time linking behavior. The implementation
-        could look like (abbreviated with no error checking, etc.):</para>
+        <function>GADGETRON_WRITER_DECLARE(MRIImageWriter)</function> which
+        ensures proper run-time linking behavior. The implementation could
+        look like (abbreviated with no error checking, etc.):</para>
 
-        <programlisting>int MRIImageWriter::write(ACE_SOCK_Stream* sock, 
-                          ACE_Message_Block* mb)
+        <programlisting>int MRIImageWriter
+     ::write(ACE_SOCK_Stream* sock, 
+             ACE_Message_Block* mb)
 {
 
-   GadgetContainerMessage&lt;GadgetMessageImage&gt;* imagemb = 
-      AsContainerMessage&lt;GadgetMessageImage&gt;(mb);
+   GadgetContainerMessage&lt;ISMRMRD::ImageHeader&gt;* imagemb = 
+      AsContainerMessage&lt;ISMRMRD::ImageHeader&gt;(mb);
   
    GadgetContainerMessage&lt; hoNDArray&lt; float &gt; &gt;* datamb =
       AsContainerMessage&lt; hoNDArray&lt; float &gt; &gt;(imagemb-&gt;cont());
@@ -1627,11 +1816,12 @@ public:
    }
    
    GadgetMessageIdentifier id;
-   id.id = GADGET_MESSAGE_IMAGE_REAL_FLOAT;
+   //Example for real flow image.
+   id.id = GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT; 
  
    sock-&gt;send_n (&amp;id, sizeof(GadgetMessageIdentifier));
 
-   sock-&gt;send_n (imagemb-&gt;getObjectPtr(), sizeof(GadgetMessageImage));
+   sock-&gt;send_n (imagemb-&gt;getObjectPtr(), sizeof(ISMRMRD::ImageHeader));
 
    sock-&gt;send_n (datamb-&gt;getObjectPtr()-&gt;get_data_ptr(), 
       sizeof(float)*datamb-&gt;getObjectPtr()-&gt;get_number_of_elements());
@@ -1666,72 +1856,78 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)</programlisting>
         file that the Gadgetron will read before receiving data. The best way
         to explain the format is by looking at a (simplified) example:</para>
 
-        <programlisting>&lt;?xml version="1.0" ?&gt;  
-&lt;gadgetron&gt;
- 
- &lt;readers&gt;
-   &lt;reader&gt;
-    &lt;slot&gt;1001&lt;/slot&gt;
-    &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-    &lt;class&gt;MRIAcquisitionReader&lt;/class&gt;
-   &lt;/reader&gt;
- &lt;/readers&gt;
+        <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;gadgetronStreamConfiguration 
+  xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
+  xmlns="http://gadgetron.sf.net/gadgetron"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+        
+    &lt;reader&gt;
+      &lt;slot&gt;1008&lt;/slot&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;classname&gt;GadgetIsmrmrdAcquisitionMessageReader&lt;/classname&gt;
+    &lt;/reader&gt;
   
- &lt;writers&gt;
-  &lt;writer&gt;
-   &lt;slot&gt;1005&lt;/slot&gt;
-   &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-   &lt;class&gt;MRIImageWriterFLOAT&lt;/class&gt;
-  &lt;/writer&gt;
-  &lt;writer&gt;
-   &lt;slot&gt;1006&lt;/slot&gt;
-   &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-   &lt;class&gt;MRIImageWriterUSHORT&lt;/class&gt;
-  &lt;/writer&gt;
- &lt;/writers&gt;
+    &lt;writer&gt;
+      &lt;slot&gt;1004&lt;/slot&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;classname&gt;MRIImageWriterCPLX&lt;/classname&gt;
+    &lt;/writer&gt;
+    &lt;writer&gt;
+      &lt;slot&gt;1005&lt;/slot&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;classname&gt;MRIImageWriterFLOAT&lt;/classname&gt;
+    &lt;/writer&gt;
+    &lt;writer&gt;
+      &lt;slot&gt;1006&lt;/slot&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;classname&gt;MRIImageWriterUSHORT&lt;/classname&gt;
+    &lt;/writer&gt;
+  
+    &lt;gadget&gt;
+      &lt;name&gt;Acc&lt;/name&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;classname&gt;AccumulatorGadget&lt;/classname&gt;
+    &lt;/gadget&gt;
+    &lt;gadget&gt;
+      &lt;name&gt;FFT&lt;/name&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;classname&gt;FFTGadget&lt;/classname&gt;
+    &lt;/gadget&gt;
+    &lt;gadget&gt;
+      &lt;name&gt;Extract&lt;/name&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;classname&gt;ExtractGadget&lt;/classname&gt;
+    &lt;/gadget&gt;  
+    &lt;gadget&gt;
+      &lt;name&gt;ImageFinishFLOAT&lt;/name&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;classname&gt;ImageFinishGadgetFLOAT&lt;/classname&gt;
+    &lt;/gadget&gt;
 
- &lt;stream&gt;
-  &lt;gadget&gt;
-   &lt;name&gt;Accumulator&lt;/name&gt;
-   &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-   &lt;class&gt;AccumulatorGadget&lt;/class&gt;
-  &lt;/gadget&gt;
+&lt;/gadgetronStreamConfiguration&gt;</programlisting>
 
-  &lt;gadget&gt;
-   &lt;name&gt;FFT&lt;/name&gt;
-   &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-   &lt;class&gt;FFTGadget&lt;/class&gt;
-  &lt;/gadget&gt;
-
-  &lt;gadget&gt;
-    &lt;name&gt;ExtractMAG&lt;/name&gt;
-    &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-    &lt;class&gt;ExtractGadget&lt;/class&gt;
-  &lt;/gadget&gt;
-
-  &lt;gadget&gt;
-   &lt;name&gt;ImageFinishFLOAT&lt;/name&gt;
-   &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-   &lt;class&gt;ImageFinishGadgetFLOAT&lt;/class&gt;
-  &lt;/gadget&gt;
- &lt;/stream&gt;
-
-&lt;/gadgetron&gt;</programlisting>
+        <para>The stream configuration XML layout is defined in the
+        <filename>GADGETRON_HOME/schema/gadgetron.xsd</filename>. A stream
+        configuration must conform to this schema definition or an error will
+        be generated when the Gadgetron attempts to load the
+        configuration.</para>
 
         <para>The configuration file format contains 3 sections: 1) Readers,
         2) Writers, 3) Stream (with Gadgets) corresponding to the 3 different
         types of components that can be assembled in the Gadgetron.</para>
 
         <para>In the example above, the Readers section contains only one
-        reader, which is the <classname>MRIAcquisitionReader</classname>
-        mentioned previously. The message ID associated with this Reader is
-        1001. Every time a message with ID 1001 arrives on the socket,
-        responsibility for reading the message will be delegated to the
-        <classname>MRIAcquisitionReader</classname>. When the Gadgetron
-        configuration is loaded, the framework will load the
-        <classname>MRIAcquisitionReader</classname> from the DLL (shared
-        library) <filename>gadgetroncore</filename>. On the Linux platform
-        this would be a shared library called
+        reader, which is the
+        <classname>GadgetIsmrmrdAcquisitionMessageReader</classname> mentioned
+        previously. The message ID associated with this Reader is 1008. Every
+        time a message with ID 1008 arrives on the socket, responsibility for
+        reading the message will be delegated to the
+        <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>. When the
+        Gadgetron configuration is loaded, the framework will load the
+        <classname>GadgetIsmrmrdAcquisitionMessageReader</classname> from the
+        DLL (shared library) <filename>gadgetroncore</filename>. On the Linux
+        platform this would be a shared library called
         <filename>libgadgetroncore.so</filename> and on the Windows platform
         it would be called <filename>gadgetroncore.dll</filename>.</para>
 
@@ -1756,10 +1952,8 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)</programlisting>
         associated Writer an error will be generated, the Gadgetron stream
         shuts down, and the connection to the client will be closed.</para>
 
-        <para>The <literal>&lt;stream&gt;</literal> section of the
-        configuration specifies which Gadgets to load. In the example above,
-        we have 4 Gadgets. In this specific case the reconstruction is an MRI
-        reconstruction. The first Gadget is an
+        <para>In the example above, we have 4 Gadgets in the reconstruction
+        chain. The first Gadget is an
         <classname>AccumulatorGadget</classname>, which collects individual
         lines and inserts them in k-space. When the k-space image is complete
         it is sent to the next Gadget in the chain, the
@@ -1778,7 +1972,7 @@ GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriter)</programlisting>
         <programlisting>  &lt;gadget&gt;
    &lt;name&gt;Accumulator&lt;/name&gt;
    &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-   &lt;class&gt;AccumulatorGadget&lt;/class&gt;
+   &lt;classname&gt;AccumulatorGadget&lt;/classname&gt;
    &lt;property&gt;&lt;name&gt;MyTestProperty&lt;/name&gt;
    &lt;value&gt;Blah Blah&lt;/value&gt;&lt;/property&gt;
    &lt;property&gt;&lt;name&gt;MyTestProperty2&lt;/name&gt;
@@ -1807,7 +2001,7 @@ double get_double_value(const char* name);
         <programlisting>  &lt;gadget&gt;
    &lt;name&gt;Accumulator&lt;/name&gt;
    &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-   &lt;class&gt;AccumulatorGadget&lt;/class&gt;
+   &lt;classname&gt;AccumulatorGadget&lt;/classname&gt;
    &lt;property&gt;&lt;name&gt;threads&lt;/name&gt;&lt;value&gt;5&lt;/value&gt;&lt;/property&gt;
   &lt;/gadget&gt;</programlisting>
 
@@ -1945,11 +2139,14 @@ public:
               linkend="sect.streamconfiguration"/>). This is where the
               Gadgetron searches for the configurations requested by the
               clients during initialization of the Gadget chain (see <xref
-              linkend="sect.communicationprotocol"/>).</para>
+              linkend="sect.communicationprotocol"/>). It also contains the
+              global <filename>gadgetron.xml</filename> configuration file,
+              which is used to set global configuration parameters such as the
+              port number for the Gadgetron.</para>
             </listitem>
 
             <listitem>
-              <para><filename>lib:</filename>Contains all shared libraries
+              <para><filename>lib:</filename> Contains all shared libraries
               (Gadgets and toolboxes). Additionally, this is the default path
               where Python Gadgets look for Python modules.</para>
             </listitem>
@@ -1959,6 +2156,14 @@ public:
               for the Gadgets and Toolboxes in order that they can be linked
               into external applications and Gadget libraries compiled outside
               the Gadgetron source tree.</para>
+            </listitem>
+
+            <listitem>
+              <para><filename>schema</filename>: Contains all the XML schema
+              definitions used by the Gadgetron (e.g.
+              <filename>gadgetron.xsd</filename>) and also serves as a
+              container for schema files used by client applications and
+              copied to this folder during installation.</para>
             </listitem>
 
             <listitem>
@@ -2099,7 +2304,7 @@ m-&gt;release(); //Delete the message block and containing data
         framework. Data is passed between Gadgets in the form of
         <classname>ACE_Message_Block</classname>s and Gadgets have access to
         utility functions that allow them to test if a given
-        <classname>ACE_Message_Block</classname> is in fact a partcular type
+        <classname>ACE_Message_Block</classname> is in fact a particular type
         of <classname>GagetContainerMessage</classname>.</para>
 
         <sect3>
@@ -2365,7 +2570,7 @@ FFT&lt;float&gt;::instance()-&gt;fft(...);</programlisting>
           <filename>NFFT.h</filename> provided below in abbreviated
           form</para>
 
-          <programlisting>template&lt; class REAL, unsigned int D &gt; 
+          <programlisting>template&lt; class REAL, unsigned int D, bool ATOMICS=false &gt; 
 class EXPORTGPUNFFT NFFT_plan
 {
  public: // Main interface
@@ -2393,6 +2598,7 @@ class EXPORTGPUNFFT NFFT_plan
   enum NFFT_prep_mode { NFFT_PREP_C2NC, 
                         NFFT_PREP_NC2C, 
                         NFFT_PREP_ALL };
+
   bool preprocess
     ( cuNDArray&lt;typename reald&lt;REAL,D&gt;::Type&gt; *trajectory, 
       NFFT_prep_mode mode );
@@ -2403,6 +2609,7 @@ class EXPORTGPUNFFT NFFT_plan
                         NFFT_FORWARDS_NC2C, 
                         NFFT_BACKWARDS_C2NC, 
                         NFFT_BACKWARDS_NC2C };
+
   bool compute( cuNDArray&lt;complext&lt;REAL&gt; &gt; *in, 
                 cuNDArray&lt;complext&lt;REAL&gt; &gt; *out, 
                 cuNDArray&lt;REAL&gt; *dcw, NFFT_comp_mode mode );
@@ -2446,10 +2653,10 @@ class EXPORTGPUNFFT NFFT_plan
           <function>preprocess</function> function should be called with the
           desired trajectory. In the special case of radial sampling the
           header <filename>radial_utilities.h</filename> defines some
-          convienient functions to compute radial trajectories and
+          convenient functions to compute radial trajectories and
           corresponding density compensation weights. After preprocessing the
           NFFT can be executed through the <function>compute</function>
-          function. The individial building blocks of the NFFT - convolution,
+          function. The individual building blocks of the NFFT - convolution,
           FFT, and deapodization - are exposed in the public interface and
           hence available for use in custom algorithms.</para>
 
@@ -2486,6 +2693,17 @@ class EXPORTGPUNFFT NFFT_plan
           to devices supporting only shader models 1.x. The reason being that
           we rely on the inherent caching of global memory - available only on
           hardware supporting at least shader model 2.0.</para>
+
+          <para>As of the Gadgetron release 1.1 a version of the NFFT
+          implemented using atomic operations is available. It is enabled
+          through the ATOMICS booloean template arguments (and defaults to
+          false, i.e. disabled). At the time of the Gadgetron 1.1 release the
+          current generation hardware showed inferior performed using the
+          atomic version over the non-atomic version. However, using the
+          atomic version significantly reduces the memory requirements, and
+          could thus be the only viable option, particularly for three- or
+          four-dimensional reconstructions, on GPUs lacking sufficient
+          memory.</para>
         </sect3>
       </sect2>
 
@@ -2523,7 +2741,11 @@ class EXPORTGPUNFFT NFFT_plan
   virtual int mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, 
                        bool accumulate = false) = 0;
   virtual int mult_MH_M( ARRAY_TYPE* in, ARRAY_TYPE* out, 
-                       bool accumulate = false) = 0;
+                       bool accumulate = false)
+  {
+    // Perform mult_M followed by mult_MH
+    ...
+  }
   
   virtual boost::shared_ptr&lt; 
     linearOperator&lt; REAL, ARRAY_TYPE &gt; &gt; clone() = 0;
@@ -2533,8 +2755,7 @@ class EXPORTGPUNFFT NFFT_plan
         two arguments: 1) the basic precision <classname>REAL</classname>
         (<classname>e.g. float</classname> or <classname>double</classname>)
         and 2) the <classname>ARRAY_TYPE</classname> (e.g.
-        <classname>NDArray&lt;T&gt;</classname>,
-        <classname>hoNDArray&lt;T&gt;</classname>, or
+        <classname>hoNDArray&lt;T&gt;</classname> or
         <classname>cuNDArray&lt;T&gt;</classname>) representing the expected
         vector format for the matrix-vector multiplication the operator
         implements.</para>
@@ -2543,14 +2764,19 @@ class EXPORTGPUNFFT NFFT_plan
         weight that is used to balance multiple matrix terms when added to a
         cost function (see <xref linkend="sect.linear_solvers"/>).</para>
 
-        <para>The main functionality is provided in the three pure virtual
-        functions, <function>mult_M</function>, <function>mult_MH</function>,
-        and <function>mult_MH_M</function>, denoting multiplication with the
-        matrix operator (<varname>M</varname>), multiplication with the
-        adjoint (i.e. conjugate transpose) of the matrix operator
-        (<varname>M<superscript>H</superscript></varname>), and an "iteration"
-        of the two respectively
-        (<varname>M<superscript>H</superscript>M</varname>).</para>
+        <para>The main functionality is provided in the two pure virtual
+        functions <function>mult_M</function> and <function>mult_MH</function>
+        denoting multiplication with the matrix operator
+        (<varname>M</varname>) and multiplication with the adjoint (i.e.
+        conjugate transpose) of the matrix operator
+        (<varname>M<superscript>H</superscript></varname>) respectively. The
+        default implementation of <function>mult_MH_M</function> computes an
+        "iteration" of the two
+        (<varname>M<superscript>H</superscript>M</varname>) by invoking
+        <function>mult_M</function> and <function>mult_MH</function> in turn.
+        Specialized operators can redefine the virtual
+        <function>mult_MH_M</function> to increase performance when
+        appropriate.</para>
 
         <para>The <classname>clone</classname> method is required by some
         solvers to make a clone (copy) of a given
@@ -2576,7 +2802,7 @@ class EXPORTGPUNFFT NFFT_plan
         <sect3>
           <title>List of linear operators</title>
 
-          <para>The section provides a non-exhaustive list of availble linear
+          <para>The section provides a non-exhaustive list of available linear
           operators in Gadgetron toolboxes.</para>
 
           <para>A two-level implementation strategy is used for most of the
@@ -2598,7 +2824,7 @@ class EXPORTGPUNFFT NFFT_plan
           inheritance, e.g. <classname>cuIdentityOperator</classname>, which
           in this case provides the <classname>cuNDArray</classname>-specific
           implementation of the pure virtual function in
-          <classname>identityOperator</classname>. This hierachy has the
+          <classname>identityOperator</classname>. This hierarchy has the
           desired design goal, that the core algorithm implementation is
           shared in the base class of the operator. Only the host/device
           specific sub-components are defined individually. It is thus fairly
@@ -2610,7 +2836,7 @@ class EXPORTGPUNFFT NFFT_plan
           <classname>identityOperator</classname> and
           <classname>cuIdentityOperator</classname> below. Without specific
           mentioning for the subsequent operators, many follow a similar
-          inheritance hierachy.</para>
+          inheritance hierarchy.</para>
 
           <itemizedlist>
             <listitem>
@@ -2720,6 +2946,17 @@ class cuIdentityOperator
               <para>Implements the encoding operator for the parallel MRI
               imaging technique Sense. Comes in two flavours for 1) Cartesian
               and 2) non-Cartesian reconstruction.</para>
+            </listitem>
+
+            <listitem>
+              <para><classname>multiplicationOperatorContainer</classname></para>
+
+              <para>An operator can often be considered the result of
+              multiplicative concatenation of a sequence of simpler linear
+              operators. The
+              <classname>multiplicationOperatorContainer</classname> defines a
+              convenient interface to ease the construction of such
+              concatenations.</para>
             </listitem>
 
             <listitem>
@@ -3004,15 +3241,15 @@ public:
    cuNDArray&lt;T&gt; *y ){ ... }
 
   ...
-};</programlisting>The overall inheritance hierachy is modelled and
+};</programlisting>The overall inheritance hierarchy is modelled and
           implemented similarly to the <classname>linearOperator</classname>
-          class hierachy described above (see <xref
+          class hierarchy described above (see <xref
           linkend="sect.matrix_operators"/>). To use the solver the user
           creates an instance of the solver for either the host or device
           (e.g. the <classname>cuCGSolver</classname> above for a GPU-based
           solver). The solver is configured using the functions in the
           <classname>cgSolver</classname> base class. The core solve function
-          itself is found in the root of the hierachy; the
+          itself is found in the root of the hierarchy; the
           <classname>solver</classname>.</para>
 
           <para>Note that any number of terms (linear operators) can be added
@@ -3128,14 +3365,14 @@ public:
           latter constraint problem declared in
           <filename>sbcSolver.h</filename>. The Split Bregman solver was
           chosen as it integrates nicely with the linear conjugate solver
-          desribed above (<xref linkend="sect.linear_solvers"/>). In fact,
+          described above (<xref linkend="sect.linear_solvers"/>). In fact,
           most of the work in the two Split Bregman solvers is performed by a
           linear inner solver (e.g. a conjugate gradient solver), but the
           input (right hand side) to the inner solver varies from iteration to
           iteration.</para>
 
           <para>The interface to the unconstraint Split Bregman solver is
-          given here. We have seen the overall inheritance hierachy several
+          given here. We have seen the overall inheritance hierarchy several
           times already, so it should suffice to provide only very abbreviated
           headers here:<programlisting>// Defined in sbSolver.h
 
@@ -3375,135 +3612,6 @@ public:
           interface.</para>
         </sect3>
       </sect2>
-
-      <sect2>
-        <title>HDF5</title>
-
-        <para>The Gadgetron framework uses HDF5 files for storing raw data and
-        reconstructed images. Please see <xref linkend="section.hdf5"/> for a
-        simple overview of the HDF5 file format.</para>
-
-        <para xlink:href="http://www.hdfgroup.org/HDF5/">The HDF5 file format
-        has a well defined C/C++ interface as described on the HDF5 website:
-        <uri
-        xlink:href="http://www.hdfgroup.org/HDF5/">http://www.hdfgroup.org/HDF5/</uri>.
-        The Gadgetron has two toolboxes (<filename>hdf5utils</filename> and
-        <filename>hdf5mri</filename>) that wrap this C/C++ interface and make
-        it easy to add different types of data to datasets.</para>
-
-        <para xlink:href="http://www.hdfgroup.org/HDF5/">The main functions
-        for accessing HDF5 files are:</para>
-
-        <para xlink:href="http://www.hdfgroup.org/HDF5/"><programlisting>template &lt;class T&gt; int hdf5_append_array(hoNDArray&lt;T&gt;* a,
-              const char* filename, const char* varname);
-
-template &lt;class T&gt; boost::shared_ptr&lt; hoNDArray&lt;T&gt; &gt; 
-              hdf5_read_array_slice(
-              const char* filename, const char* varname, 
-              unsigned int index = 0);
-
-template &lt;class T&gt; int hdf5_append_struct(T* s,
-              boost::shared_ptr&lt;DataType&gt; datatype,
-              const char* filename, const char* varname);
-
-template &lt;class T&gt; boost::shared_ptr&lt;T&gt; hdf5_read_struct(
-              boost::shared_ptr&lt;DataType&gt; structdatatype, 
-              const char* filename, const char* varname,
-              unsigned int index = 0);</programlisting>The first two functions
-        are used to append and read <classname>hoNDArray</classname>
-        structures. The templated functions are implemented for
-        <classname>hoNDArrray</classname>s with types
-        <classname>float</classname>, <classname>char</classname>,
-        <classname>std::complex&lt;float&gt;</classname>, and
-        <classname>unsigned short</classname>. The functions rely on templated
-        functions to define the HDF5 datatypes corresponding to a given
-        datatype in the <classname>hoNDArray</classname>. In order to add
-        support for an additional type, the user must implement a template
-        specialization of a function, which returns the HDF5 datatype for a
-        given type in the C++ code. For example, to implement support for
-        <classname>float</classname>, the following code is used:</para>
-
-        <para xlink:href="http://www.hdfgroup.org/HDF5/"><programlisting>
-/**
- *   Base class template for returning HDF5 data type
- */
-template &lt;class T&gt; boost::shared_ptr&lt;DataType&gt; getHDF5Type();
-
-//Specialization
-template &lt;&gt; boost::shared_ptr&lt;DataType&gt; getHDF5Type&lt;float&gt;()
-{
-  boost::shared_ptr&lt;DataType&gt; 
-      ret(new DataType(H5Tcopy(H5T_NATIVE_FLOAT)));
-
-  return ret;
-}
-</programlisting>The last two of the interface functions are used for adding
-        and reading generic structs. The word struct in the function name is a
-        reminder that the object supllied with the pointer <parameter>T*
-        s</parameter> should be layed out in memory so that it can be written
-        directly to the file with the standard HDF5 function, i.e. it cannot
-        be a class with dynamically allocate members, etc. Typically this
-        function is used to read and write image and data headers to the HDF5
-        files.</para>
-
-        <para xlink:href="http://www.hdfgroup.org/HDF5/">The
-        <filename>hdf5mri</filename> toolbox contains some specializations for
-        the MRI specific datatypes (<xref linkend="sect.mridatastructures"/>).
-        The specific MRI datatypes are defined in the HDF5 format using
-        specific template specializations in a similar fashing to the types
-        for the <classname>hoNDArray</classname>. Additionally the MRI
-        specific toolbox has wrapper functions that will append a struct and
-        an <classname>hoNDArray</classname> simultaneously. Specifically, it
-        will create a new struct which contains both the struct (typically a
-        header) and the array and then append that new struct to the file. The
-        functions for using this functionality are defined as:</para>
-
-        <para xlink:href="http://www.hdfgroup.org/HDF5/"><programlisting>
-template &lt;class STRUCT, class DATATYPE&gt; 
-int hdf5_append_struct_with_data(STRUCT* s,
-hoNDArray&lt;DATATYPE&gt;* a, const char* filename, const char* varname);
-
-
-template &lt;class STRUCT, class DATATYPE&gt; struct header_data_struct
-{
-  boost::shared_ptr&lt;STRUCT&gt; h;
-  boost::shared_ptr&lt; hoNDArray&lt;DATATYPE&gt; &gt; d;
-};
-
-template &lt;class STRUCT, class DATATYPE&gt; 
- header_data_struct&lt;STRUCT, DATATYPE&gt;
- hdf5_read_struct_with_data(const char* filename, 
-                            const char* varname, 
-                            unsigned index = 0);
-</programlisting>There are several usage examples in the
-        <command>mriclient</command> code. For example, to read an MRI
-        acquisiton (header and data) from a HDF5 file, the client uses the
-        following code:</para>
-
-        <para xlink:href="http://www.hdfgroup.org/HDF5/"><programlisting>
-header_data_struct&lt;GadgetMessageAcquisition, 
-                  std::complex&lt;float&gt; &gt; acquisition;
-
-{
-  HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
-
-  acquisition = 
-    hdf5_read_struct_with_data&lt; GadgetMessageAcquisition, 
-                                std::complex&lt;float&gt; &gt;
-         (hdf5_in_data_file, hdf5_data_varname.c_str(), i); 
-         //i is a loop variable over MRI acquisitions
-}
-
-....
-
-//To access header struct (GadgetMessageAcquisition):
-acquisition.h.get();
-
-//To access data (hoNDArray)
-acquisition.d.get();</programlisting>For examples of how to write images to an
-        HDF5 file, see <filename>HDF5ImageWriter.h</filename> in
-        <filename>apps/clients/mriclient</filename>.</para>
-      </sect2>
     </sect1>
 
     <sect1>
@@ -3538,46 +3646,61 @@ acquisition.d.get();</programlisting>For examples of how to write images to an
           Naturally, there are also transitional Gadgets that operate on
           acquisitions but output images.</para>
 
-          <para>All MRI Gadgets inherit from <classname>Gadget2</classname> as
-          described in <xref linkend="sect.gadgets"/>, i.e. they operate on
+          <para>The data header structures used by these MRI Gadgets are
+          defined by the ISMRM Raw Data format (<uri
+          xlink:href="http://ismrmrd.sourceforge.net">http://ismrmrd.sourceforge.net</uri>).</para>
+
+          <para>Most MRI Gadgets inherit from <classname>Gadget2</classname>
+          as described in <xref linkend="sect.gadgets"/>, i.e. they operate on
           two argument types, the main two base classes used are:</para>
 
-          <programlisting>Gadget2&lt; GadgetMessageAcquisition, hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;
-Gadget2&lt; GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;</programlisting>
+          <programlisting>Gadget2&lt; ISMRMRD::AcquisitionHeader, hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;
+Gadget2&lt; ISMRMRD::ImageHeader, hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;</programlisting>
 
           <para>As seen, they take a data array (which is typically of complex
           float type) and a header describing either the acquisition or the
-          image. These headers are defined in
-          <filename>GadgetMRIHeaders.h</filename>. The definition of
-          <classname>GadgetMessageAcquisition</classname> looks like
+          image. These headers are defined in <filename>ismrmrd.h</filename>
+          (from the ISMRM Raw Data format). The definition of
+          <classname>ISMRMRD::AcquisitionHeader</classname> looks like
           (abbreviated):</para>
 
-          <programlisting>struct LoopCounters {
-  ACE_UINT16 acquisition;
-  ACE_UINT16 slice;
-  ACE_UINT16 partition;
-  ACE_UINT16 echo;
-  ACE_UINT16 phase;
-  ACE_UINT16 repetition;
-  ACE_UINT16 set;
-  ACE_UINT16 segment;
-  ACE_UINT16 channel;
+          <programlisting>struct EncodingCounters {
+ uint16_t kspace_encode_step_1; 
+ uint16_t kspace_encode_step_2; 
+ uint16_t average;              
+ uint16_t slice;                
+ uint16_t contrast;             
+ uint16_t phase;                
+ uint16_t repetition;           
+ uint16_t set;                  
+ uint16_t segment;              
+ uint16_t user[8];              
 };
 
-struct GadgetMessageAcquisition
+struct AcquisitionHeader
 {
-  ACE_UINT32     flags;
-  ACE_UINT32     meas_uid;
-  ACE_UINT32     scan_counter;
-  ACE_UINT32     time_stamp;
-  ACE_UINT16     samples;
-  ACE_UINT16     channels;
-  float          position[3];
-  float          quarternion[4];
-  float          table_position;
-  LoopCounters   idx;
-  LoopCounters   min_idx;
-  LoopCounters   max_idx;
+ uint16_t           version;                        
+ uint64_t           flags;                          
+ uint32_t           measurement_uid;                
+ uint32_t           scan_counter;                   
+ uint32_t           acquisition_time_stamp;         
+ uint32_t           physiology_time_stamp[3];       
+ uint16_t           number_of_samples;              
+ uint16_t           available_channels;             
+ uint16_t           active_channels;                
+ uint64_t           channel_mask[16];               
+ uint16_t           discard_pre;                    
+ uint16_t           discard_post;                   
+ uint16_t           center_sample;                  
+ uint16_t           encoding_space_ref;             
+ uint16_t           trajectory_dimensions;          
+ float              sample_time_us;                 
+ float              position[3];                    
+ float              quaternion[4];                  
+ float              patient_table_position[3];      
+ EncodingCounters   idx;                            
+ int32_t            user_int[8];                    
+ float              user_float[8];                 
 };</programlisting>
 
           <para>It is a simple struct, which mainly serves the purpose of
@@ -3587,27 +3710,36 @@ struct GadgetMessageAcquisition
           have different conventions for how to label data, but in most cases
           one would be able to convert to this format.</para>
 
-          <para>The <classname>GadgetMessageImage</classname> data structure
+          <para>The <classname>ISMRMRD::ImageHeader</classname> data structure
           is also just a struct for keeping track of image labels, position,
           and orientation:</para>
 
-          <programlisting>struct GadgetMessageImage
+          <programlisting>struct ImageHeader
 {
-  ACE_UINT32     flags;
-  ACE_UINT16     matrix_size[3];
-  ACE_UINT16     channels;
-  float          position[3];
-  float          quarternion[4];
-  float          table_position;
-  LoopCounters   data_idx_min;
-  LoopCounters   data_idx_max;
-  LoopCounters   data_idx_current;
-  ACE_UINT32     time_stamp;
-  ACE_UINT16     image_format;
-  ACE_UINT16     image_type;
-  ACE_UINT16     image_index;
-  ACE_UINT16	    image_series_index;
-}; </programlisting>
+uint16_t            version;                        
+ uint64_t            flags;                         
+ uint32_t            measurement_uid;               
+ uint16_t            matrix_size[3];                
+ float               field_of_view[3];              
+ uint16_t            channels;                      
+ float               position[3];                   
+ float               quaternion[4];                 
+ float               patient_table_position[3];     
+ uint16_t            average;                       
+ uint16_t            slice;                         
+ uint16_t            contrast;                      
+ uint16_t            phase;                         
+ uint16_t            repetition;                    
+ uint16_t            set;                           
+ uint32_t            acquisition_time_stamp;        
+ uint32_t            physiology_time_stamp[3];      
+ uint16_t            image_data_type;               
+ uint16_t            image_type;                    
+ uint16_t            image_index;  
+ uint16_t            image_series_index;
+ int32_t             user_int[8];       
+ float               user_float[8];     
+};</programlisting>
 
           <para/>
         </sect3>
@@ -3751,7 +3883,7 @@ struct GadgetMessageAcquisition
               <programlisting>&lt;gadget&gt;
  &lt;name&gt;GPUCGRadial0&lt;/name&gt;
  &lt;dll&gt;gadgetroncgsense&lt;/dll&gt;
- &lt;class&gt;GPUCGGoldenRadialGadget&lt;/class&gt;
+ &lt;classname&gt;GPUCGGoldenRadialGadget&lt;/classname&gt;
 
  &lt;property&gt;
   &lt;name&gt;deviceno&lt;/name&gt;
@@ -4007,10 +4139,10 @@ struct GadgetMessageAcquisition
 
         <programlisting>import numpy as np
 import GadgetronPythonMRI as g
-import GadgetronXML
 import kspaceandimage as ki
+import libxml2
 
-myRef = g.GadgetReference()
+myLocalGadgetReference = g.GadgetReference()
 myBuffer = 0
 myParameters = 0
 myCounter = 1;
@@ -4023,12 +4155,20 @@ def set_gadget_reference(gadref):
 def config_function(conf):
     global myBuffer
     global myParameters
-    myParameters =  GadgetronXML.getEncodingParameters(conf)
-    myBuffer = (np.zeros((myParameters["channels"], \
-                myParameters["slices"], \
-                myParameters["matrix_z"], \
-                myParameters["matrix_y"], \
-                myParameters["matrix_x"]))).astype('complex64')
+
+    myParameters = dict()
+
+    doc = libxml2.parseDoc(str(conf))
+    context = doc.xpathNewContext()
+    context.xpathRegisterNs("ismrm", "http://www.ismrm.org/ISMRMRD")
+    myParameters["matrix_x"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:encoding/ismrm:encodedSpace/ismrm:matrixSize/ismrm:x")[0]).content)
+    myParameters["matrix_y"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:encoding/ismrm:encodedSpace/ismrm:matrixSize/ismrm:y")[0]).content)
+    myParameters["matrix_z"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:encoding/ismrm:encodedSpace/ismrm:matrixSize/ismrm:z")[0]).content)
+    myParameters["channels"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:acquisitionSystemInformation/ismrm:receiverChannels")[0]).content)
+    myParameters["slices"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:encoding/ismrm:encodingLimits/ismrm:slice/ismrm:maximum")[0]).content)+1
+    myParameters["center_line"] = int((context.xpathEval("/ismrm:ismrmrdHeader/ismrm:encoding/ismrm:encodingLimits/ismrm:kspace_encoding_step_1/ismrm:center")[0]).content)
+
+    myBuffer = (np.zeros((myParameters["channels"],myParameters["slices"],myParameters["matrix_z"],myParameters["matrix_y"],(myParameters["matrix_x"]&gt;&gt;1)))).astype('complex64')
 
 def recon_function(acq, data):
     global myLocalGadgetReference
@@ -4037,41 +4177,40 @@ def recon_function(acq, data):
     global myCounter
     global mySeries
 
-    line_offset = (myParameters["matrix_y"] - \
-                   myParameters["phase_encoding_lines"])&gt;&gt;1
-  
-    myBuffer[:,acq.idx.slice, \
-             acq.idx.partition,acq.idx.line+line_offset,:] = data
+    line_offset = (myParameters["matrix_y"]&gt;&gt;1)-myParameters["center_line"];
+    myBuffer[:,acq.idx.slice,acq.idx.kspace_encode_step_2,acq.idx.kspace_encode_step_1+line_offset,:] = data
     
-    if (acq.flags &amp; (1&lt;&lt;1)): #Is this the last scan in slice
-        #FFT
+    if (acq.flags &amp; (1&lt;&lt;7)): #Is this the last scan in slice
         image = ki.ktoi(myBuffer,(2,3,4))
-
+        image = image * np.product(image.shape)*100 #Scaling for the scanner
         #Create a new image header and transfer value
-        img_head = g.GadgetMessageImage()
-        img_head.channels = acq.channels
-        img_head.data_idx_curent = acq.idx
-        img_head.data_idx_max = acq.max_idx
-        img_head.data_idx_min = acq.min_idx
-        img_head.set_matrix_size(0,myBuffer.shape[4])
-        img_head.set_matrix_size(1,myBuffer.shape[3])
-        img_head.set_matrix_size(2,myBuffer.shape[2])
-        img_head.set_matrix_size(3,myBuffer.shape[1])
-        img_head.set_position(0,acq.get_position(0))
-        img_head.set_position(1,acq.get_position(1))
-        img_head.set_position(2,acq.get_position(2))
-        img_head.set_quarternion(0,acq.get_quarternion(0))
-        img_head.set_quarternion(1,acq.get_quarternion(1))
-        img_head.set_quarternion(2,acq.get_quarternion(2))
-        img_head.set_quarternion(3,acq.get_quarternion(3))
-        img_head.table_position = acq.table_position
-        img_head.time_stamp = acq.time_stamp
+        img_head = g.ImageHeader()
+        img_head.channels = acq.active_channels
+        img_head.slice = acq.idx.slice
+        g.img_set_matrix_size(img_head, 0, myBuffer.shape[4])
+        g.img_set_matrix_size(img_head, 1, myBuffer.shape[3])
+        g.img_set_matrix_size(img_head, 2, myBuffer.shape[2])
+        g.img_set_position(img_head, 0,g.acq_get_position(acq,0))
+        g.img_set_position(img_head, 1,g.acq_get_position(acq,1))
+        g.img_set_position(img_head, 2,g.acq_get_position(acq,2))
+        g.img_set_quaternion(img_head, 0,g.acq_get_quaternion(acq, 0))
+        g.img_set_quaternion(img_head, 1,g.acq_get_quaternion(acq, 1))
+        g.img_set_quaternion(img_head, 2,g.acq_get_quaternion(acq, 2))
+        g.img_set_quaternion(img_head, 3,g.acq_get_quaternion(acq, 3))
+        g.img_set_patient_table_position(img_head, 0, g.acq_get_patient_table_position(acq,0))
+        g.img_set_patient_table_position(img_head, 1, g.acq_get_patient_table_position(acq,1))
+        g.img_set_patient_table_position(img_head, 2, g.acq_get_patient_table_position(acq,2))
+        img_head.acquisition_time_stamp = acq.acquisition_time_stamp
         img_head.image_index = myCounter;
         img_head.image_series_index = mySeries;
 
+        myCounter = myCounter + 1
+        if (myCounter &gt; 5):
+            mySeries = mySeries + 1
+            myCounter = 1
 
         #Return image to Gadgetron
-        return myRef.return_image(img_head,image.astype('complex64'))
+        return myLocalGadgetReference.return_image(img_head,image.astype('complex64'))
 
         #print "Returning to Gadgetron"
         return 0 #Everything OK
@@ -4094,8 +4233,8 @@ import kspaceandimage as ki</programlisting>
         <filename>GadgetronPythonMRI</filename> is a Python wrapped version of
         some of the data structures used in the MRI part of the Gadgetron (see
         <xref linkend="sect.mrigadgets"/>). Specifically, the
-        <classname>GadgetMessageAcquisition</classname> and
-        <classname>GadgetMessageImage</classname> headers are wrapped as
+        <classname>IMRMRD::AcquisitionHeader</classname> and
+        <classname>ISMRMRD::ImageHeader</classname> headers are wrapped as
         Python types (using Boost Python). The
         <filename>GadgetronPythonMRI</filename> also contains a wrapped
         version of the <classname>GadgetReference</classname> class:</para>
@@ -4116,10 +4255,10 @@ import kspaceandimage as ki</programlisting>
   template&lt;class T&gt; int return_data(T header, 
           boost::python::numeric::array arr);
 
-  int return_acquisition(GadgetMessageAcquisition acq, 
+  int return_acquisition(ISMRMRD::AcquisitionHeader acq, 
           boost::python::numeric::array arr);
 
-  int return_image(GadgetMessageImage img, 
+  int return_image(ISMRMRD::ImageHeader img, 
           boost::python::numeric::array arr);
 
  protected:
@@ -4157,34 +4296,16 @@ mySeries = 1;</programlisting>
 </programlisting>
 
         <para>Using this reference, the Python module will be able to return
-        images (or acquisitions) to the Gadget. The next function processes
-        the configuration data:</para>
-
-        <programlisting>def config_function(conf):
-    global myBuffer
-    global myParameters
-    myParameters =  GadgetronXML.getEncodingParameters(conf)
-    myBuffer = (np.zeros((myParameters["channels"], \
-                myParameters["slices"], \
-                myParameters["matrix_z"], \
-                myParameters["matrix_y"], \
-                myParameters["matrix_x"]))).astype('complex64')
-</programlisting>
-
-        <para>The <filename>GadgetronXML</filename> module is used to parse
-        some simple encoding parameters out of the XML configuration and they
-        are stored in a convenient data structure for later reference. The
-        <function>config_function</function> function also initializes a
-        buffer for the data.</para>
-
-        <para>Finally the <function>recon_function</function> (not repeated
-        here) simply takes the data as it comes it and stores it in a buffer.
-        Based on the <varname>flags</varname> field in the header, it is
-        determined when the last acquisition in each slice has arrived. As
-        this happens the buffer is Fourier transformed, an image header is
-        populated, and the result is returned (via the
-        <classname>GadgetReference</classname>) to the Gadgetron where it will
-        be processed by the next Gadget in the chain.</para>
+        images (or acquisitions) to the Gadget. The next function
+        (<function>config_function</function> processes the configuration data
+        and finally, the <function>recon_function</function> simply takes the
+        data as it comes it and stores it in a buffer. Based on the
+        <varname>flags</varname> field in the header, it is determined when
+        the last acquisition in each slice has arrived. As this happens the
+        buffer is Fourier transformed, an image header is populated, and the
+        result is returned (via the <classname>GadgetReference</classname>) to
+        the Gadgetron where it will be processed by the next Gadget in the
+        chain.</para>
 
         <para>The Gadgetron distribution comes with a simple Python-based 2D
         FT MRI reconstruction. The Gadget chain configuration for this
@@ -4237,13 +4358,13 @@ user@mycomputer:~/temp$ <userinput>cd gadgetron_examplelib</userinput></screen>
 #include &lt;complex&gt;
 
 class EXPORTGADGETSEXAMPLE ThresholdGadget : 
-public Gadget2&lt;GadgetMessageImage, hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;
+public Gadget2&lt;ISMRMRD::ImageHeader, hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;
 {
  public:
   GADGET_DECLARE(ThresholdGadget)
 
  protected:
-  virtual int process( GadgetContainerMessage&lt; GadgetMessageImage&gt;* m1,
+  virtual int process( GadgetContainerMessage&lt; ISMRMRD::ImageHeader&gt;* m1,
        GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2);
 
   virtual int process_config(ACE_Message_Block* mb);
@@ -4269,7 +4390,7 @@ int ThresholdGadget::process_config(ACE_Message_Block* mb)
 }
 
 int ThresholdGadget::process( 
-   GadgetContainerMessage&lt; GadgetMessageImage&gt;* m1,
+   GadgetContainerMessage&lt; ISMRMRD::ImageHeader&gt;* m1,
    GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2)
 {
 
@@ -4374,7 +4495,7 @@ TARGET_LINK_LIBRARIES(gadgetronexamplelib
                       optimized ${ACE_LIBRARIES} 
                       debug ${ACE_DEBUG_LIBRARY})
 
-INSTALL (FILES	ThresholdGadget.h
+INSTALL (FILES ThresholdGadget.h
          examplelib_export.h
          DESTINATION include)
 
@@ -4387,66 +4508,71 @@ INSTALL(FILES threshold.xml DESTINATION config)
         running our new <classname>ThresholdGadget</classname>. In the same
         folder create the <filename>threshold.xml</filename> file:</para>
 
-        <programlisting>&lt;?xml version="1.0" ?&gt;  
-&lt;gadgetron&gt;
-  &lt;readers&gt;
+        <programlisting>&lt;?xml version="1.0" ?&gt;
+&lt;gadgetronStreamConfiguration 
+  xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
+  xmlns="http://gadgetron.sf.net/gadgetron"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+        
     &lt;reader&gt;
-      &lt;slot&gt;1001&lt;/slot&gt;
+      &lt;slot&gt;1008&lt;/slot&gt;
       &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-      &lt;class&gt;MRIAcquisitionReader&lt;/class&gt;
+      &lt;classname&gt;GadgetIsmrmrdAcquisitionMessageReader&lt;/classname&gt;
     &lt;/reader&gt;
-  &lt;/readers&gt;
   
-  &lt;writers&gt;
+    &lt;writer&gt;
+      &lt;slot&gt;1004&lt;/slot&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;classname&gt;MRIImageWriterCPLX&lt;/classname&gt;
+    &lt;/writer&gt;
     &lt;writer&gt;
       &lt;slot&gt;1005&lt;/slot&gt;
       &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-      &lt;class&gt;MRIImageWriterFLOAT&lt;/class&gt;
+      &lt;classname&gt;MRIImageWriterFLOAT&lt;/classname&gt;
     &lt;/writer&gt;
-  &lt;/writers&gt;
+    &lt;writer&gt;
+      &lt;slot&gt;1006&lt;/slot&gt;
+      &lt;dll&gt;gadgetroncore&lt;/dll&gt;
+      &lt;classname&gt;MRIImageWriterUSHORT&lt;/classname&gt;
+    &lt;/writer&gt;
   
-  &lt;stream&gt;
     &lt;gadget&gt;
       &lt;name&gt;Acc&lt;/name&gt;
       &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-      &lt;class&gt;AccumulatorGadget&lt;/class&gt;
+      &lt;classname&gt;AccumulatorGadget&lt;/classname&gt;
     &lt;/gadget&gt;
-
     &lt;gadget&gt;
       &lt;name&gt;FFT&lt;/name&gt;
       &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-      &lt;class&gt;FFTGadget&lt;/class&gt;
+      &lt;classname&gt;FFTGadget&lt;/classname&gt;
     &lt;/gadget&gt;
 
     &lt;gadget&gt;
       &lt;name&gt;CropCombine&lt;/name&gt;
       &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-      &lt;class&gt;CropAndCombineGadget&lt;/class&gt;
+      &lt;classname&gt;CropAndCombineGadget&lt;/classname&gt;
     &lt;/gadget&gt;
 
     &lt;!-- This is where we insert our new Gadget --&gt;
     &lt;gadget&gt;
       &lt;name&gt;Threshold&lt;/name&gt;
       &lt;dll&gt;gadgetronexamplelib&lt;/dll&gt;
-      &lt;class&gt;ThresholdGadget&lt;/class&gt;
+      &lt;classname&gt;ThresholdGadget&lt;/classname&gt;
       &lt;property&gt;&lt;name&gt;level&lt;/name&gt;&lt;value&gt;0.25&lt;/value&gt;&lt;/property&gt;
     &lt;/gadget&gt;
 
     &lt;gadget&gt;
       &lt;name&gt;Extract&lt;/name&gt;
       &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-      &lt;class&gt;ExtractGadget&lt;/class&gt;
-    &lt;/gadget&gt;
-
+      &lt;classname&gt;ExtractGadget&lt;/classname&gt;
+    &lt;/gadget&gt;  
     &lt;gadget&gt;
       &lt;name&gt;ImageFinishFLOAT&lt;/name&gt;
       &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-      &lt;class&gt;ImageFinishGadgetFLOAT&lt;/class&gt;
+      &lt;classname&gt;ImageFinishGadgetFLOAT&lt;/classname&gt;
     &lt;/gadget&gt;
 
-   &lt;/stream&gt;
-
-&lt;/gadgetron&gt;
+&lt;/gadgetronStreamConfiguration&gt;
 </programlisting>
 
         <para>Check that you have 5 files in your folder:</para>
@@ -4501,7 +4627,6 @@ Install the project...
 
         <screen>user@mycomputer:~/temp/test_data$ <userinput>mriclient \
     -d gadgetron_testdata.h5 \ 
-    -g simple_gre \ 
     -c threshold.xml</userinput>
 
 Gadgetron MRI Data Sender
@@ -4571,12 +4696,9 @@ Gadgetron MRI Data Sender
             <para><application>mriclient</application>:</para>
 
             <para>This is the standard client for sending MRI data to the
-            Gadgetron. Two files are needed to send data to the Gadgetron; a
-            data file and an XML file with parameters. The data file is just a
-            flat file format of
-            <classname>GadgetMessageAcquisition</classname> structs and raw
-            data. In order to get usage information for the client, simply run
-            the client with no arguments.</para>
+            Gadgetron using the ISMRM Raw Data format. In order to get usage
+            information for the client, simply run the client with no
+            arguments.</para>
           </listitem>
         </itemizedlist>
       </sect2>
@@ -4738,65 +4860,63 @@ install(TARGETS mygadgetronclient DESTINATION bin)
       (<filename>default.xml</filename>) looks like this:</para>
 
       <programlisting>&lt;?xml version="1.0" ?&gt;  
-&lt;gadgetron&gt;
-  &lt;readers&gt;
+&lt;gadgetronStreamConfiguration 
+  xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
+  xmlns="http://gadgetron.sf.net/gadgetron"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+        
     &lt;reader&gt;
-      &lt;slot&gt;1001&lt;/slot&gt;
+      &lt;slot&gt;1008&lt;/slot&gt;
       &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-      &lt;class&gt;MRIAcquisitionReader&lt;/class&gt;
+      &lt;classname&gt;GadgetIsmrmrdAcquisitionMessageReader&lt;/classname&gt;
     &lt;/reader&gt;
-  &lt;/readers&gt;
   
-  &lt;writers&gt;
     &lt;writer&gt;
       &lt;slot&gt;1004&lt;/slot&gt;
       &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-      &lt;class&gt;MRIImageWriterCPLX&lt;/class&gt;
+      &lt;classname&gt;MRIImageWriterCPLX&lt;/classname&gt;
     &lt;/writer&gt;
     &lt;writer&gt;
       &lt;slot&gt;1005&lt;/slot&gt;
       &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-      &lt;class&gt;MRIImageWriterFLOAT&lt;/class&gt;
+      &lt;classname&gt;MRIImageWriterFLOAT&lt;/classname&gt;
     &lt;/writer&gt;
     &lt;writer&gt;
       &lt;slot&gt;1006&lt;/slot&gt;
       &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-      &lt;class&gt;MRIImageWriterUSHORT&lt;/class&gt;
+      &lt;classname&gt;MRIImageWriterUSHORT&lt;/classname&gt;
     &lt;/writer&gt;
-  &lt;/writers&gt;
-
-  &lt;stream&gt;
+  
     &lt;gadget&gt;
       &lt;name&gt;Acc&lt;/name&gt;
       &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-      &lt;class&gt;AccumulatorGadget&lt;/class&gt;
+      &lt;classname&gt;AccumulatorGadget&lt;/classname&gt;
     &lt;/gadget&gt;
-
     &lt;gadget&gt;
       &lt;name&gt;FFT&lt;/name&gt;
       &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-      &lt;class&gt;FFTGadget&lt;/class&gt;
+      &lt;classname&gt;FFTGadget&lt;/classname&gt;
     &lt;/gadget&gt;
 
     &lt;gadget&gt;
       &lt;name&gt;CropCombine&lt;/name&gt;
       &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-      &lt;class&gt;CropAndCombineGadget&lt;/class&gt;
+      &lt;classname&gt;CropAndCombineGadget&lt;/classname&gt;
     &lt;/gadget&gt;
 
     &lt;gadget&gt;
       &lt;name&gt;Extract&lt;/name&gt;
       &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-      &lt;class&gt;ExtractGadget&lt;/class&gt;
+      &lt;classname&gt;ExtractGadget&lt;/classname&gt;
     &lt;/gadget&gt;
   
     &lt;gadget&gt;
       &lt;name&gt;ImageFinishFLOAT&lt;/name&gt;
       &lt;dll&gt;gadgetroncore&lt;/dll&gt;
-      &lt;class&gt;ImageFinishGadgetFLOAT&lt;/class&gt;
+      &lt;classname&gt;ImageFinishGadgetFLOAT&lt;/classname&gt;
     &lt;/gadget&gt;
-   &lt;/stream&gt;
-&lt;/gadgetron&gt;
+
+&lt;/gadgetronStreamConfiguration&gt;
 </programlisting>
 
       <para>The resulting Gadget chain is illustrated in <xref
@@ -4827,19 +4947,19 @@ install(TARGETS mygadgetronclient DESTINATION bin)
         </mediaobject>
       </figure>
 
-      <para>As is seen in the <varname>stream</varname> section of the
-      configuration, this reconstruction uses 5 Gadgets. The first Gadget is
-      responsible for accumulating MRI acquisitions. To accomplish this, it
-      uses an accumulation buffer. When a k-space line arrives at the Gadget,
-      it will be inserted into the k-space buffer and when the last
-      acquisition in a slice/repetition has arrived, it will copy the entire
-      buffer and pass it on to the next Gadget.</para>
+      <para>As is seen in the Gadgets section of the configuration, this
+      reconstruction uses 5 Gadgets. The first Gadget is responsible for
+      accumulating MRI acquisitions. To accomplish this, it uses an
+      accumulation buffer. When a k-space line arrives at the Gadget, it will
+      be inserted into the k-space buffer and when the last acquisition in a
+      slice/repetition has arrived, it will copy the entire buffer and pass it
+      on to the next Gadget.</para>
 
       <para>Let's have a look at the definition of the
       <classname>AccumulatorGadget</classname> class:</para>
 
       <programlisting>class EXPORTGADGETSCORE AccumulatorGadget : 
-public Gadget2&lt; GadgetMessageAcquisition, 
+public Gadget2&lt; ISMRMRD::AcquisitionHeader, 
                 hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;
 {
   
@@ -4852,7 +4972,7 @@ public Gadget2&lt; GadgetMessageAcquisition,
  protected:
   virtual int process_config(ACE_Message_Block* mb);
   virtual int process(
-    GadgetContainerMessage&lt; GadgetMessageAcquisition &gt;* m1,
+    GadgetContainerMessage&lt; ISMRMRD::AcquisitionHeader &gt;* m1,
     GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt; * m2);
 
   hoNDArray&lt; std::complex&lt;float&gt; &gt;* buffer_;
@@ -4869,166 +4989,109 @@ public Gadget2&lt; GadgetMessageAcquisition,
       in two functions: <function>process_config</function>, is used to set up
       the buffer, and <function>process</function>, which is responsible for
       the accumulation of data. Let us examine the
-      <function>process_config</function> function:</para>
+      <function>process_config</function> function (abbreviated):</para>
 
-      <programlisting linenumbering="numbered">int AccumulatorGadget
-::process_config(ACE_Message_Block* mb)
+      <programlisting linenumbering="numbered">int AccumulatorGadget::process_config(ACE_Message_Block* mb)
 {
+ boost::shared_ptr&lt;ISMRMRD::ismrmrdHeader&gt; cfg = 
+    parseIsmrmrdXMLHeader(std::string(mb-&gt;rd_ptr()));
 
-  TiXmlDocument doc;
-  doc.Parse(mb-&gt;rd_ptr());
+ ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg-&gt;encoding();
 
-  GadgetXMLNode n =
-   GadgetXMLNode(&amp;doc).get&lt;GadgetXMLNode&gt;(std::string("gadgetron"))[0];
+ ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
+ ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
+ ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
 
-  std::vector&lt;long&gt; dims =
-   n.get&lt;long&gt;(std::string("encoding.kspace.matrix_size.value")); 
+ GADGET_DEBUG2("Matrix size: %d, %d, %d\n", 
+                e_space.matrixSize().x(), 
+                e_space.matrixSize().y(), 
+                e_space.matrixSize().z());
 
-  if (dims.size() &lt; 3) {
-   dims.push_back(0);
-  }
+ dimensions_.push_back(e_space.matrixSize().x());
+ dimensions_.push_back(e_space.matrixSize().y());
+ dimensions_.push_back(e_space.matrixSize().z());
 
-  if (dims[2] == 0) {
-    dims[2] = 1;
-  }
-
-  dimensions_.push_back(
-   n.get&lt;long&gt;(std::string("encoding.kspace.readout_length.value"))[0]);
-  dimensions_.push_back(dims[1]);
-  dimensions_.push_back(dims[2]);
-  dimensions_.push_back(
-   n.get&lt;long&gt;(std::string("encoding.channels.value"))[0]);
-  dimensions_.push_back(
-   n.get&lt;long&gt;(std::string("encoding.slices.value"))[0]);
-
-
-  if (!(buffer_ = new hoNDArray&lt; std::complex&lt;float&gt; &gt;())) {
-   GADGET_DEBUG1("Failed create buffer\n");
-   return GADGET_FAIL;
-  }
-
-  if (!buffer_-&gt;create(&amp;dimensions_)) {
-   GADGET_DEBUG1("Failed allocate buffer array\n");
-   return GADGET_FAIL;
-  }
-
-  image_series_ = this-&gt;get_int_value("image_series");
+ slices_ = e_limits.slice().present() ? 
+             e_limits.slice().get().maximum()+1 : 1;
 
   return GADGET_OK;
 }</programlisting>
 
       <para>The main purpose of this function is to pull parameters out of the
-      XML configuration information in order to set up the buffer. As
-      mentioned in <xref linkend="sect.xmlparameters"/>, the convention is to
-      pass parameters into the Gadgets in XML format. To enable convenient
-      parsing of these parameters, the Gadgetron includes the
-      <filename>TinyXML</filename> library which can be used to parse the
-      parameters directly or the <classname>TiXmlDocument</classname> can be
-      used to create a <classname>GadgetXMLNode</classname>, which allows
-      access to the parameters using the path description of the parameters.
-      For example if part of the XML configuration information looks
-      like:</para>
-
-      <programlisting>&lt;gadgetron&gt;
-    &lt;encoding&gt;
-        &lt;kspace&gt;
-            &lt;matrix_size&gt;
-                &lt;value&gt;128&lt;/value&gt;
-                &lt;value&gt;128&lt;/value&gt;
-            &lt;/matrix_size&gt;
-    &lt;/encoding&gt;
-&lt;/gadgetron&gt;</programlisting>
-
-      <para>The line</para>
-
-      <programlisting>  std::vector&lt;long&gt; dims =
-   n.get&lt;long&gt;(std::string("encoding.kspace.matrix_size.value")); 
-</programlisting>
-
-      <para>would cause <varname>dims</varname> to become a vector with two
-      <classname>long</classname> values of 128, 128. In simple example, we
-      have made some assumptions, i.e. our buffer always has the same number
-      of dimensions, which is 5. Specifically the dimensions are [kx, ky, kz,
-      channel, slice], to make sure that works out, we check if the number of
-      dimensions is less than 3 (i.e. it is 2D) in which case we add a
-      dimension.</para>
-
-      <para>Next we want to create a <classname>hoNDArray</classname> (see
-      <xref linkend="sect.ndarray"/>) to store the data. In order to be able
-      to allocate the array we need a <classname>std::vector&lt;unsigned
-      int&gt;</classname> to hold the dimensions of the array. We build the
-      dimensions up based on the parameters in the XML file.</para>
-
-      <para>After creating the dimensions vector, creation of the
-      <classname>hoNDArray</classname> is a two-step process, first the class
-      itself is allocated and then the <function>create</function> function is
-      used to allocate the data inside the class.</para>
+      XML portion of the ISMRM Raw Data header in order to set up the buffer.
+      As mentioned in <xref linkend="sect.xmlparameters"/>, the convention is
+      to pass parameters into the Gadgets in XML format. To enable convenient
+      parsing of these parameters, the ISMRMRD library includes a C++ class
+      representation of the header. See
+      <uri>http://ismrmrd.sourceforge.net</uri> for more details.</para>
 
       <para>Now we are ready to receive and buffer data, which is done by the
       <function>process</function> function:</para>
 
       <programlisting>int AccumulatorGadget::
-process(GadgetContainerMessage&lt;GadgetMessageAcquisition&gt;* m1,
+process(GadgetContainerMessage&lt;ISMRMRD::AcquisitionHeader&gt;* m1,
  GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2)
 {
 
-  //Create buffer if it doesn't exist
   if (!buffer_) {
-   GADGET_DEBUG1("Buffer not allocated\n");
-   return GADGET_FAIL;
+   dimensions_.push_back(m1-&gt;getObjectPtr()-&gt;active_channels);
+   dimensions_.push_back(slices_);
+
+   if (!(buffer_ = new hoNDArray&lt; std::complex&lt;float&gt; &gt;())) {
+    GADGET_DEBUG1("Failed create buffer\n");
+    return GADGET_FAIL;
+   }
+
+   if (!buffer_-&gt;create(&amp;dimensions_)) {
+    GADGET_DEBUG1("Failed allocate buffer array\n");
+    return GADGET_FAIL;
+   }
+
+   image_series_ = this-&gt;get_int_value("image_series");
+
   }
 
 
-  //Grab pointers to buffer and data
   std::complex&lt;float&gt;* b =
-   buffer_-&gt;get_data_ptr();
+    buffer_-&gt;get_data_ptr();
 
   std::complex&lt;float&gt;* d =
-   m2-&gt;getObjectPtr()-&gt;get_data_ptr();
+    m2-&gt;getObjectPtr()-&gt;get_data_ptr();
 
-  int samples =  m1-&gt;getObjectPtr()-&gt;samples;
-  int line = m1-&gt;getObjectPtr()-&gt;idx.line;
-  int partition = m1-&gt;getObjectPtr()-&gt;idx.partition;
+  int samples =  m1-&gt;getObjectPtr()-&gt;number_of_samples;
+  int line = m1-&gt;getObjectPtr()-&gt;idx.kspace_encode_step_1;
+  int partition = m1-&gt;getObjectPtr()-&gt;idx.kspace_encode_step_2;
   int slice = m1-&gt;getObjectPtr()-&gt;idx.slice;
 
-  //Does the data look OK?
-  if (samples != static_cast&lt;int&gt;(dimensions_[0])) {
+  if (samples &gt; static_cast&lt;int&gt;(dimensions_[0])) {
    GADGET_DEBUG1("Wrong number of samples received\n");
    return GADGET_FAIL;
   }
 
-  //Copy the data into the buffer.
   size_t offset= 0;
   //Copy the data for all the channels
-  for (int c = 0; c &lt; m1-&gt;getObjectPtr()-&gt;channels; c++) {
+  for (int c = 0; c &lt; m1-&gt;getObjectPtr()-&gt;active_channels; c++) {
     offset = 
-      slice*dimensions_[0]*dimensions_[1]*
-      dimensions_[2]*dimensions_[3] +
+      slice*dimensions_[0]*dimensions_[1]*dimensions_[2]*dimensions_[3] +
       c*dimensions_[0]*dimensions_[1]*dimensions_[2] +
       partition*dimensions_[0]*dimensions_[1] +
-      line*dimensions_[0];
+      line*dimensions_[0] + (dimensions_[0]&gt;&gt;1)-m1-&gt;getObjectPtr()-&gt;center_sample;
     
     memcpy(b+offset,
      d+c*samples,
      sizeof(std::complex&lt;float&gt;)*samples);
   }
   
-  //Use the flags to determine if this is the last acquisition
-  bool is_last_scan_in_slice =
-    (m1-&gt;getObjectPtr()-&gt;flags &amp; GADGET_FLAG_LAST_ACQ_IN_SLICE);
+  bool is_last_scan_in_slice = 
+     ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_SLICE).isSet(m1-&gt;getObjectPtr()-&gt;flags);
   
   if (is_last_scan_in_slice) {
-    //OK, let's send out the k-space
-
-    //Create header
-    GadgetContainerMessage&lt;GadgetMessageImage&gt;* cm1 = 
-      new GadgetContainerMessage&lt;GadgetMessageImage&gt;();
+    GadgetContainerMessage&lt;ISMRMRD::ImageHeader&gt;* cm1 = 
+      new GadgetContainerMessage&lt;ISMRMRD::ImageHeader&gt;();
     
     cm1-&gt;getObjectPtr()-&gt;flags = 0;
 
-    //Create the data array
-    GadgetContainerMessage&lt; 
-           hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* cm2 = 
+    GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* cm2 = 
       new GadgetContainerMessage&lt;hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;();
     
     cm1-&gt;cont(cm2);
@@ -5039,8 +5102,6 @@ process(GadgetContainerMessage&lt;GadgetMessageAcquisition&gt;* m1,
     img_dims[2] = dimensions_[2];
     img_dims[3] = dimensions_[3];
     
-
-    //Allocate array
     if (!cm2-&gt;getObjectPtr()-&gt;create(&amp;img_dims)) {
       GADGET_DEBUG1("Unable to allocate new image array\n");
       cm1-&gt;release();
@@ -5048,54 +5109,51 @@ process(GadgetContainerMessage&lt;GadgetMessageAcquisition&gt;* m1,
     }
     
     size_t data_length = dimensions_[0]*dimensions_[1]*
-     dimensions_[2]*dimensions_[3];
+      dimensions_[2]*dimensions_[3];
     
     offset = slice*data_length;
     
-    //Copy data
     memcpy(cm2-&gt;getObjectPtr()-&gt;get_data_ptr(),b+offset,
     sizeof(std::complex&lt;float&gt;)*data_length);
     
-    //Populate image header
     cm1-&gt;getObjectPtr()-&gt;matrix_size[0]     = img_dims[0];
     cm1-&gt;getObjectPtr()-&gt;matrix_size[1]     = img_dims[1];
     cm1-&gt;getObjectPtr()-&gt;matrix_size[2]     = img_dims[2];
     cm1-&gt;getObjectPtr()-&gt;channels           = img_dims[3];
-    cm1-&gt;getObjectPtr()-&gt;data_idx_min       = m1-&gt;getObjectPtr()-&gt;min_idx;
-    cm1-&gt;getObjectPtr()-&gt;data_idx_max       = m1-&gt;getObjectPtr()-&gt;max_idx;
-    cm1-&gt;getObjectPtr()-&gt;data_idx_current   = m1-&gt;getObjectPtr()-&gt;idx;	
+    cm1-&gt;getObjectPtr()-&gt;slice   = m1-&gt;getObjectPtr()-&gt;idx.slice;
 
     memcpy(cm1-&gt;getObjectPtr()-&gt;position,
-     m1-&gt;getObjectPtr()-&gt;position,
-     sizeof(float)*3);
+      m1-&gt;getObjectPtr()-&gt;position,
+    sizeof(float)*3);
 
-    memcpy(cm1-&gt;getObjectPtr()-&gt;quarternion,
-     m1-&gt;getObjectPtr()-&gt;quarternion,
-     sizeof(float)*4);
+    memcpy(cm1-&gt;getObjectPtr()-&gt;quaternion,
+      m1-&gt;getObjectPtr()-&gt;quaternion,
+    sizeof(float)*4);
  
-    cm1-&gt;getObjectPtr()-&gt;table_position =
-     m1-&gt;getObjectPtr()-&gt;table_position;
+    memcpy(cm1-&gt;getObjectPtr()-&gt;patient_table_position,
+      m1-&gt;getObjectPtr()-&gt;patient_table_position, sizeof(float)*3);
 
-    cm1-&gt;getObjectPtr()-&gt;image_format = GADGET_IMAGE_COMPLEX_FLOAT;
+    cm1-&gt;getObjectPtr()-&gt;image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
     cm1-&gt;getObjectPtr()-&gt;image_index = ++image_counter_;
     cm1-&gt;getObjectPtr()-&gt;image_series_index = image_series_;
 
-    //OK, pass it on
     if (this-&gt;next()-&gt;putq(cm1) &lt; 0) {
      return GADGET_FAIL;
     }
   } 
 
-  //We are done with this acquisition
   m1-&gt;release();
-
   return GADGET_OK;
 }
 </programlisting>
 
       <para>This function has two basic tasks: insert data into the buffer and
       when enough data is present, copy the buffer and pass it on to next
-      gadget.</para>
+      gadget. Additionally, the data buffer is created in this function if it
+      is not already allocated. In this example we choose to allocate the
+      buffer after the first data elements arrive. This allows us to respond
+      to changes in data sizes introduced by upstream Gadgets, e.g. readout
+      downsampling, coil reduction, etc.</para>
 
       <para>In this case the copying of data is done with a very simple
       <function>memcpy</function> command. There is a basic check for the
@@ -5105,30 +5163,15 @@ process(GadgetContainerMessage&lt;GadgetMessageAcquisition&gt;* m1,
       <para>Once the data is in the buffer, we check to see if we should put
       out an image. This is done with the <varname>flags</varname> field on
       the acquisition. Specifically we check if a specific bit
-      (<varname>GADGET_FLAG_LAST_ACQ_IN_SLICE</varname>) is set. It is up to
-      the user how the <varname>flags</varname> field should be interpreted,
-      but the <filename>GadgetMRIHeaders.h</filename> file contains some
-      definitions of flags that are used to indicate various events in the
-      acquisition. If you define other flags for other Gadgets it may be a
-      good idea to check that they don't collide with existing flags:</para>
-
-      <programlisting>#define GADGET_FLAG_ACQ_END                   (1 &lt;&lt; 0)
-#define GADGET_FLAG_LAST_ACQ_IN_SLICE         (1 &lt;&lt; 1)
-#define GADGET_FLAG_LAST_ACQ_IN_MEAS          (1 &lt;&lt; 2)
-#define GADGET_FLAG_LAST_ACQ_IN_CONCAT        (1 &lt;&lt; 3)
-#define GADGET_FLAG_FIRST_ACQ_IN_SLICE        (1 &lt;&lt; 4)
-#define GADGET_FLAG_FIRST_ACQ_IN_MEAS         (1 &lt;&lt; 5)
-#define GADGET_FLAG_FIRST_ACQ_IN_CONCAT       (1 &lt;&lt; 6)
-#define GADGET_FLAG_IS_NOISE_SCAN             (1 &lt;&lt; 7)
-</programlisting>
+      (<varname>ISMRMRD::ACQ_LAST_IN_SLICE</varname>) is set.</para>
 
       <para>If it is determined that this is the last acquisition for this
       slice, we create a copy of the buffer and pass it on to the next Gadget.
-      Instead of a <classname>GadgetMessageAcquisition</classname> header we
-      now need a <classname>GadgetMessageImage</classname> header to pass
-      along with the data. This header structure is created and populated with
-      fields (orientation, etc.) from the acquisition header before it is
-      passed on to the Gadget in the stream.</para>
+      Instead of a <classname>ISMRMRD::AcquisitionHeader</classname> we now
+      need an ISMRMRD::ImageHeader to pass along with the data. This header
+      structure is created and populated with fields (orientation, etc.) from
+      the acquisition header before it is passed on to the Gadget in the
+      stream.</para>
 
       <para>Next Gadget is the <classname>FFTGadget</classname>. Since the
       k-space buffering has been taken care of, the Fourier transform is a
@@ -5137,7 +5180,7 @@ process(GadgetContainerMessage&lt;GadgetMessageAcquisition&gt;* m1,
       the FFT along the first 3 dimensions of the array:</para>
 
       <programlisting>int FFTGadget::process( 
-GadgetContainerMessage&lt; GadgetMessageImage&gt;* m1,
+GadgetContainerMessage&lt; ISMRMRD::ImageHeader&gt;* m1,
 GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2)
 {
   FFT&lt;float&gt;::instance()-&gt;ifft(m2-&gt;getObjectPtr(),0);
@@ -5182,12 +5225,10 @@ GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2
 
       <para>To test this configuration, please download the GRAPPA test
       datasets from <uri type="website"
-      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/">https://sourceforge.net/projects/gadgetron/files/testdata/</uri>.
-      In the MRI test data file <filename>gadgetron_testdata.h5</filename> you
-      will find two test datasets <filename>gre_tgrappa_rate2</filename> and
-      <filename>gre_tgrappa_rate4</filename>. They are Cartesian parallel
-      imaging datasets with rate 2 and 4 acceleration respectively. They were
-      acquired with a 32 channel coil.</para>
+      xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/">https://sourceforge.net/projects/gadgetron/files/testdata/ismrmrd</uri>,
+      where you will find the dataset <filename>grappa_rate2</filename> It is
+      a Cartesian parallel imaging datasets with rate 2 TSENSE type
+      acquisition. Data were acquired with a 32 channel coil.</para>
 
       <para>In order to run the GRAPPA reconstruction you have to have a CUDA
       enable GPU on your system and your Gadgetron distribution should be
@@ -5199,9 +5240,10 @@ GadgetContainerMessage&lt; hoNDArray&lt; std::complex&lt;float&gt; &gt; &gt;* m2
       terminal window) and use the <application>mriclient</application> to
       send the data from another terminal:</para>
 
-      <screen>user@host:~/temp$ mriclient \
-    -d gadgetron_testdata.h5 \
-    -g gre_tgrappa_rate4 \
+      <screen>user@host:~/temp$ wget http://sourceforge.net/projects/gadgetron/files/testdata/ismrmrd/grappa_rate2.h5
+
+user@host:~/temp$ mriclient \
+    -d grappa_rate2.h5 \
     -c grappa.xml
 Gadgetron MRI Data Sender
   -- host            :      localhost
@@ -5311,7 +5353,7 @@ Gadgetron MRI Data Sender
 
 class GrappaUnmixingGadget: 
 public Gadget3&lt;GrappaUnmixingJob, 
-               GadgetMessageImage, 
+               ISMRMRD::ImageHeader, 
                hoNDArray&lt;std::complex&lt;float&gt; &gt; &gt; 
 {
 public:
@@ -5321,7 +5363,7 @@ public:
  virtual ~GrappaUnmixingGadget();
 protected:
  virtual int process(GadgetContainerMessage&lt;GrappaUnmixingJob&gt;* m1,
-   GadgetContainerMessage&lt;GadgetMessageImage&gt;* m2, 
+   GadgetContainerMessage&lt;ISMRMRD::ImageHeader&gt;* m2, 
    GadgetContainerMessage&lt;hoNDArray&lt;std::complex&lt;float&gt; &gt; &gt;* m3);
 
 };
@@ -5427,16 +5469,16 @@ protected:
       hardware.</para>
 
       <para>To test this configuration use the 32 channel radial MRI test
-      dataset (<filename>gre_golden_angle</filename>) from
-      <filename>gadgetron_testdata.h5</filename>, which you can download from
-      <uri
+      dataset (<filename>golden_angle.h5</filename>), which you can download
+      from <uri
       xlink:href="https://sourceforge.net/projects/gadgetron/files/testdata/mri/">
-      https://sourceforge.net/projects/gadgetron/files/testdata/mri/</uri>. We
-      assume that you have added <envar>$(GADGETRON_HOME)/bin</envar> to your
-      <envar>PATH</envar> environment variable. You need a CUDA enable GPU on
-      your system and your Gadgetron distribution should be compiled with CUDA
-      and CULA enabled. Please see <xref linkend="sect.installation"/> for
-      details for your specific platform.</para>
+      https://sourceforge.net/projects/gadgetron/files/testdata/ismrmrd/</uri>.
+      We assume that you have added <envar>$(GADGETRON_HOME)/bin</envar> to
+      your <envar>PATH</envar> environment variable. You need a CUDA enable
+      GPU on your system and your Gadgetron distribution should be compiled
+      with CUDA and CULA enabled. Please see <xref
+      linkend="sect.installation"/> for details for your specific
+      platform.</para>
 
       <para>To run the reconstruction; start up
       <application>gadgetron</application> (in its own terminal window) and
@@ -5451,9 +5493,10 @@ Configuring services</screen>
       network connection. Next start the
       <application>mriclient</application>:</para>
 
-      <screen>user@host:~/temp$ mriclient \
-       -d gadgetron_testdata.h5 \
-       -g gre_golden_angle \
+      <screen>user@host:~/temp$ wget http://sourceforge.net/projects/gadgetron/files/testdata/ismrmrd/golden_angle.h5
+
+user@host:~/temp$ mriclient \
+       -d golden_angle.h5 \
        -c radial_single.xml
 
 Gadgetron MRI Data Sender

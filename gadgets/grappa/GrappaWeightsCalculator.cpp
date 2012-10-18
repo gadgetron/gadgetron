@@ -1,6 +1,7 @@
 #include "GrappaWeightsCalculator.h"
 #include "GadgetContainerMessage.h"
 
+#include "GadgetIsmrmrdReadWrite.h"
 #include "Gadgetron.h"
 #include "b1_map.h"
 #include "hoNDArray_fileio.h"

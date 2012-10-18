@@ -5,6 +5,7 @@
  *      Author: Michael S. Hansen
  */
 
+#include "GadgetIsmrmrdReadWrite.h"
 #include "GrappaUnmixingGadget.h"
 #include "FFT.h"
 
@@ -18,7 +19,7 @@ GrappaUnmixingGadget::~GrappaUnmixingGadget() {
 }
 
 int GrappaUnmixingGadget::process(GadgetContainerMessage<GrappaUnmixingJob>* m1,
-		GadgetContainerMessage<GadgetMessageImage>* m2, GadgetContainerMessage<hoNDArray<std::complex<float> > >* m3)
+		GadgetContainerMessage<ISMRMRD::ImageHeader>* m2, GadgetContainerMessage<hoNDArray<std::complex<float> > >* m3)
 {
 	GadgetContainerMessage< hoNDArray<std::complex<float> > >* cm2 =
 			new GadgetContainerMessage< hoNDArray<std::complex<float> > >();

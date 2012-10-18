@@ -1,10 +1,11 @@
 #include <ace/OS_NS_stdlib.h>
 
+#include "GadgetIsmrmrdReadWrite.h"
 #include "Gadgetron.h"
 #include "GrappaGadget.h"
-#include "GadgetXml.h"
 #include "FFT.h"
 #include "GrappaUnmixingGadget.h"
+#include "GadgetIsmrmrdReadWrite.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -36,43 +37,42 @@ GrappaGadget::~GrappaGadget()
 }
 
 int GrappaGadget::close(unsigned long flags) {
+	int ret = Gadget::close(flags);
+	GADGET_DEBUG1("Shutting down GRAPPA Gadget\n");
+
 	if (weights_calculator_.close(flags) < 0) {
 		GADGET_DEBUG1("Failed to close down weights calculator\n");
 		return GADGET_FAIL;
 	}
-	GADGET_DEBUG1("Shutting down GRAPPA Gadget\n");
 
-	return Gadget::close(flags);
+	return ret;
 }
 
 int GrappaGadget::process_config(ACE_Message_Block* mb)
 {
-	TiXmlDocument doc;
-	doc.Parse(mb->rd_ptr());
+	boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
-	GadgetXMLNode n = GadgetXMLNode(&doc).get<GadgetXMLNode>(std::string("gadgetron"))[0];
-
-	std::vector<long> dims = n.get<long>(std::string("encoding.kspace.matrix_size.value"));
-
-	if (dims.size() < 3) {
-		GADGET_DEBUG2("Matrix dimensions have the wrong length: %d\n", dims.size());
-		dims.push_back(0);
+	ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
+	if (e_seq.size() != 1) {
+		GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
+		GADGET_DEBUG1("This Gadget only supports one encoding space\n");
+		return GADGET_FAIL;
 	}
 
-	if (dims[2] == 0) {
-		dims[2] = 1;
-	}
+	ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
+	ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
+	ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
 
-	phase_encoding_resolution_ =n.get<double>(std::string("encoding.kspace.phase_resolution.value"))[0];
+	unsigned int slices = e_limits.slice().present() ? e_limits.slice().get().maximum() + 1 : 1;
+	dimensions_.push_back(e_space.matrixSize().x());
+	dimensions_.push_back(e_space.matrixSize().y());
+	dimensions_.push_back(e_space.matrixSize().z());
+	dimensions_.push_back((cfg->acquisitionSystemInformation().present() && cfg->acquisitionSystemInformation().get().receiverChannels().present()) ?
+			cfg->acquisitionSystemInformation().get().receiverChannels().get() : 1);
+	dimensions_.push_back(slices);
 
-	dimensions_.push_back(n.get<long>(std::string("encoding.kspace.readout_length.value"))[0]);
-	//  dimensions_.push_back(dims[0]);
-	dimensions_.push_back(static_cast<unsigned int>(dims[1]/phase_encoding_resolution_));
-	dimensions_.push_back(dims[2]);
-	dimensions_.push_back(n.get<long>(std::string("encoding.channels.value"))[0]);
-	dimensions_.push_back(n.get<long>(std::string("encoding.slices.value"))[0]);
+	line_offset_ = (dimensions_[1]>>1)-e_limits.kspace_encoding_step_1().get().center();
 
-	line_offset_ = (dimensions_[1]-dims[1])>>1;
 	return GADGET_OK;
 }
 
@@ -160,14 +160,14 @@ int GrappaGadget::initial_setup()
 
 
 int GrappaGadget::
-process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
+process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
 	if (first_call_) {
-		if (m1->getObjectPtr()->channels != dimensions_[3]) {
+		if (m1->getObjectPtr()->active_channels != dimensions_[3]) {
 			GADGET_DEBUG1("Detected coil number change. Maybe due to upstream channel reduction\n");
-			dimensions_[3] = m1->getObjectPtr()->channels;
+			dimensions_[3] = m1->getObjectPtr()->active_channels;
 		}
 
 		if (initial_setup() != GADGET_OK) {
@@ -178,11 +178,11 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 		first_call_ = false;
 	}
 
-	GadgetMessageAcquisition* acq_head = m1->getObjectPtr();
+	ISMRMRD::AcquisitionHeader* acq_head = m1->getObjectPtr();
 
-	unsigned int samples =  acq_head->samples;
-	unsigned int line = acq_head->idx.line + line_offset_;
-	unsigned int partition = acq_head->idx.partition;
+	unsigned int samples =  acq_head->number_of_samples;
+	unsigned int line = acq_head->idx.kspace_encode_step_1 + line_offset_;
+	unsigned int partition = acq_head->idx.kspace_encode_step_2;
 	unsigned int slice = acq_head->idx.slice;
 
 	if (samples != image_dimensions_[0]) {
@@ -207,7 +207,7 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 
 	size_t offset= 0;
 	//Copy the data for all the channels
-	for (int c = 0; c < m1->getObjectPtr()->channels; c++) {
+	for (int c = 0; c < m1->getObjectPtr()->active_channels; c++) {
 		offset =
 				c*image_dimensions_[0]*image_dimensions_[1]*image_dimensions_[2] +
 				partition*image_dimensions_[0]*image_dimensions_[1] +
@@ -217,14 +217,12 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 	}
 
 
-	bool is_last_scan_in_slice =
-			(m1->getObjectPtr()->flags & GADGET_FLAG_LAST_ACQ_IN_SLICE);
+	bool is_last_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
 
-	bool is_first_scan_in_slice =
-			(m1->getObjectPtr()->flags & GADGET_FLAG_FIRST_ACQ_IN_SLICE);
+	bool is_first_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_FIRST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
 
 	if (is_first_scan_in_slice) {
-		time_stamps_[slice] = m1->getObjectPtr()->time_stamp;
+		time_stamps_[slice] = m1->getObjectPtr()->acquisition_time_stamp;
 	}
 
 	if (is_last_scan_in_slice) {
@@ -232,8 +230,8 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 		GadgetContainerMessage<GrappaUnmixingJob>* cm0 =
 						new GadgetContainerMessage<GrappaUnmixingJob>();
 
-		GadgetContainerMessage<GadgetMessageImage>* cm1 =
-				new GadgetContainerMessage<GadgetMessageImage>();
+		GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 =
+				new GadgetContainerMessage<ISMRMRD::ImageHeader>();
 
 
 		/*
@@ -261,18 +259,16 @@ process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
 		cm1->getObjectPtr()->matrix_size[1] = image_dimensions_[1];
 		cm1->getObjectPtr()->matrix_size[2] = image_dimensions_[2];
 		cm1->getObjectPtr()->channels       = 1+weights_calculator_.get_number_of_uncombined_channels();
-		cm1->getObjectPtr()->data_idx_min       = m1->getObjectPtr()->min_idx;
-		cm1->getObjectPtr()->data_idx_max       = m1->getObjectPtr()->max_idx;
-		cm1->getObjectPtr()->data_idx_current   = m1->getObjectPtr()->idx;
-		cm1->getObjectPtr()->time_stamp         = time_stamps_[slice];
+		cm1->getObjectPtr()->slice              = m1->getObjectPtr()->idx.slice;
+		cm1->getObjectPtr()->acquisition_time_stamp         = time_stamps_[slice];
 
 		memcpy(cm1->getObjectPtr()->position,m1->getObjectPtr()->position,
 				sizeof(float)*3);
 
-		memcpy(cm1->getObjectPtr()->quarternion,m1->getObjectPtr()->quarternion,
+		memcpy(cm1->getObjectPtr()->quaternion,m1->getObjectPtr()->quaternion,
 				sizeof(float)*4);
 
-		cm1->getObjectPtr()->table_position = m1->getObjectPtr()->table_position;
+		memcpy(cm1->getObjectPtr()->patient_table_position,m1->getObjectPtr()->patient_table_position, sizeof(float)*3);
 
 		cm1->getObjectPtr()->image_index = ++image_counter_;
 		cm1->getObjectPtr()->image_series_index = image_series_;

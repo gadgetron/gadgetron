@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
+        xmlns="http://gadgetron.sf.net/gadgetron"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+         
+    <reader>
+      <slot>1008</slot>
+      <dll>gadgetroncore</dll>
+      <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
+    </reader>
+ 
+    <writer>
+      <slot>1004</slot>
+      <dll>gadgetroncore</dll>
+      <classname>MRIImageWriterCPLX</classname>
+    </writer>
+    <writer>
+      <slot>1005</slot>
+      <dll>gadgetroncore</dll>
+      <classname>MRIImageWriterFLOAT</classname>
+    </writer>
+    <writer>
+      <slot>1006</slot>
+      <dll>gadgetroncore</dll>
+      <classname>MRIImageWriterUSHORT</classname>
+    </writer>
+
+   <gadget>
+      <name>NoiseAdjust</name>
+      <dll>gadgetronmricore</dll>
+      <classname>MRINoiseAdjustGadget</classname>
+    </gadget>
+  
+  	<gadget>
+      <name>PCA</name>
+      <dll>gadgetronmricore</dll>
+      <classname>PCACoilGadget</classname>
+    </gadget>
+  
+    <gadget>
+      <name>CoilReduction</name>
+      <dll>gadgetroncore</dll>
+      <classname>CoilReductionGadget</classname>
+      <property><name>coils_out</name><value>8</value></property>
+    </gadget>
+
+    <gadget>
+      <name>SpiralGadgetSW</name>
+      <dll>gadgetronspiral</dll>
+      <classname>SpiralGadgetSW</classname>
+      <property><name>deviceno</name>                <value>0</value></property>
+    </gadget>
+    
+    <gadget>
+      <name>GPUCGGadgetGeneric</name>
+      <dll>gadgetroncgsense</dll>
+      <classname>GPUCGGadgetGeneric</classname>
+      <property><name>deviceno</name>                <value>1</value></property>
+      <property><name>number_of_iterations</name>    <value>10</value></property>
+      <property><name>cg_limit</name>                <value>1e-6</value></property>
+      <property><name>oversampling</name>            <value>1.25</value></property>
+      <property><name>kernel_width</name>            <value>5.5</value></property>
+      <property><name>kappa</name>                   <value>0.1</value></property>
+    </gadget>
+
+	  <gadget>
+      <name>PhaseSubtraction</name>
+      <dll>gadgetronspiral</dll>
+      <classname>FlowPhaseSubtractionGadget</classname>
+      </gadget>
+
+
+	  <gadget>
+      <name>Extract</name>
+      <dll>gadgetroncore</dll>
+      <classname>ExtractGadget</classname>
+      <property><name>extract_mask</name><value>9</value></property>
+      </gadget>
+
+	<!--
+    <gadget>
+      <name>ImageWrite</name>
+      <dll>gadgetroncore</dll>
+      <classname>ImageWriterGadgetFLOAT</classname>
+    </gadget>
+    -->    
+    
+    <gadget>
+      <name>AutoScaleGadget</name>
+      <dll>gadgetroncore</dll>
+      <classname>AutoScaleGadget</classname>
+    </gadget> 
+
+   <gadget>
+      <name>FloatToShort</name>
+      <dll>gadgetroncore</dll>
+      <classname>FloatToUShortGadget</classname>
+    </gadget>
+ 
+ 	<!--
+    <gadget>
+      <name>ImageFinishCPLX</name>
+      <dll>gadgetroncore</dll>
+      <classname>ImageFinishGadgetCPLX</classname>
+    </gadget>
+    -->
+    
+    <gadget>
+      <name>ImageFinishShort</name>
+      <dll>gadgetroncore</dll>
+      <classname>ImageFinishGadgetUSHORT</classname>
+    </gadget>    
+
+</gadgetronStreamConfiguration>

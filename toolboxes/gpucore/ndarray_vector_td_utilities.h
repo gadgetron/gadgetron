@@ -20,6 +20,7 @@ boost::shared_ptr< cuNDArray<REAL> >
 cuNDA_cAbs( cuNDArray<T> *data,
 	    cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE,
 	    cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
+
 // Norm "complex style" (float/double/complext arrays)
 template<class REAL, class T> EXPORTGPUCORE 
 boost::shared_ptr< cuNDArray<REAL> > 
@@ -216,12 +217,15 @@ T cuNDA_dot( cuNDArray<T>* arr1, cuNDArray<T>* arr2,
 template<class REAL, class T> EXPORTGPUCORE
 REAL cuNDA_asum( cuNDArray<T>* arr,
 		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+
 template<class T> EXPORTGPUCORE
 T cuNDA_amax( cuNDArray<T>* arr,
 		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+
 template<class T> EXPORTGPUCORE
 T cuNDA_amin( cuNDArray<T>* arr,
 		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+
 template<class REAL, class T> EXPORTGPUCORE
 REAL cuNDA_nrm2( cuNDArray<T>* arr,
 		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
@@ -238,7 +242,6 @@ template<class T> EXPORTGPUCORE
 bool cuNDA_add( T a, cuNDArray<T>* x,
 		 cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
-
 // Normalize (float/double arrays only)
 template<class REAL> EXPORTGPUCORE
 REAL cuNDA_normalize( cuNDArray<REAL> *in_out, REAL new_max,
@@ -250,7 +253,6 @@ template< class T> EXPORTGPUCORE
 boost::shared_ptr<cuNDArray<T> > cuNDA_minimum( cuNDArray<T>* arr1, cuNDArray<T>* arr2,
 						cuNDA_device alloc_device = CUNDA_NDARRAY_DEVICE,
 						cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
-
 template< class T> EXPORTGPUCORE
 boost::shared_ptr<cuNDArray<T> > cuNDA_maximum( cuNDArray<T>* arr1, cuNDArray<T>* arr2,
 						cuNDA_device alloc_device = CUNDA_NDARRAY_DEVICE,

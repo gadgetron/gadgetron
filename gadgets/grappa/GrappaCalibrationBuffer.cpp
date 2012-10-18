@@ -1,5 +1,6 @@
 #include "GrappaCalibrationBuffer.h"
 
+#include "GadgetIsmrmrdReadWrite.h"
 #include "Gadgetron.h"
 
 GrappaCalibrationBuffer::GrappaCalibrationBuffer(std::vector<unsigned int> dimensions,
@@ -20,17 +21,19 @@ GrappaCalibrationBuffer::GrappaCalibrationBuffer(std::vector<unsigned int> dimen
   
 }
 
-int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< std::complex<float> >* m2)
+int GrappaCalibrationBuffer::add_data(ISMRMRD::AcquisitionHeader* m1, hoNDArray< std::complex<float> >* m2)
 {
   if (!buffer_.get_data_ptr()) {
     GADGET_DEBUG1("Buffer not allocated, cannot add data");
     return GADGET_FAIL;
   }
   
-  unsigned int samples =  m1->samples;
-  unsigned int line = m1->idx.line;
-  unsigned int partition = m1->idx.partition;
-  //unsigned int slice = m1->idx.slice; //We should probably check this
+  unsigned int samples =  m1->number_of_samples;
+  unsigned int line = m1->idx.kspace_encode_step_1;
+  unsigned int partition = m1->idx.kspace_encode_step_2;
+  unsigned int slice = m1->idx.slice; //We should probably check this
+
+
 
   if (samples != dimensions_[0]) {
     GADGET_DEBUG1("Wrong number of samples received\n");
@@ -42,7 +45,7 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
 
   size_t offset= 0;
   //Copy the data for all the channels
-  for (int c = 0; c < m1->channels; c++) {
+  for (int c = 0; c < m1->active_channels; c++) {
     offset = 
       c*dimensions_[0]*dimensions_[1]*dimensions_[2] +
       partition*dimensions_[0]*dimensions_[1] +
@@ -50,7 +53,7 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
     memcpy(b+offset,d+c*samples,sizeof(std::complex<float>)*samples);
   }
 
-  int buf_update  = buffer_counter_.update_line(line,m1->position,m1->quarternion);
+  int buf_update  = buffer_counter_.update_line(line,m1->position,m1->quaternion);
   if ( buf_update < 0) {
     GADGET_DEBUG2("Unable to update buffer counter for line %d\n", line);
     return GADGET_FAIL;
@@ -63,22 +66,26 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
     weights_invalid_ = true;
   }
 
-  bool is_first_scan_in_slice =
-    (m1->flags & GADGET_FLAG_FIRST_ACQ_IN_SLICE);
+  bool is_first_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_FIRST_IN_SLICE).isSet(m1->flags);
+
+
+  //Depending on the sequence used, we could get into trouble if the sequence switches slice acquisition scheme before finishing a slice.
+  bool acquiring_sequentially = line > last_line_;
 
   if (is_first_scan_in_slice) {
     biggest_gap_current_ = 0;
-  } else {
+  } else if (acquiring_sequentially){
     unsigned int gap = abs(static_cast<int>(last_line_) - static_cast<int>(line));
-    if (gap > biggest_gap_current_) biggest_gap_current_ = gap;
+    if (gap != biggest_gap_current_) biggest_gap_current_ = gap;
+  } else {
+	biggest_gap_current_ = 0;
   }
   last_line_ = line;
 
-  bool is_last_scan_in_slice =
-    (m1->flags & GADGET_FLAG_LAST_ACQ_IN_SLICE);
 
-  
-  if (is_last_scan_in_slice) { 
+  bool is_last_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_SLICE).isSet(m1->flags);
+
+  if (is_last_scan_in_slice && acquiring_sequentially) {
     unsigned int min_ky, max_ky;
 
     if (biggest_gap_current_ != acceleration_factor_) {
@@ -105,6 +112,9 @@ int GrappaCalibrationBuffer::add_data(GadgetMessageAcquisition* m1, hoNDArray< s
       sampled_region.push_back(std::pair<unsigned int, unsigned int>(min_ky, max_ky));
 
       std::vector<unsigned int> uncombined_channel_weights;
+
+      //GADGET_DEBUG2("sampled_region[0] = %d,%d\n", sampled_region[0].first, sampled_region[0].second);
+      //GADGET_DEBUG2("sampled_region[1] = %d,%d\n", sampled_region[1].first, sampled_region[1].second);
 
       if (!weights_calculator_) {
 	GADGET_DEBUG1("Weights calculator not defined\n");

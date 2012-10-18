@@ -6,7 +6,7 @@
  */
 
 #include "CoilReductionGadget.h"
-#include "GadgetXml.h"
+#include "GadgetIsmrmrdReadWrite.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -19,12 +19,9 @@ CoilReductionGadget::~CoilReductionGadget() {
 
 int CoilReductionGadget::process_config(ACE_Message_Block *mb)
 {
-	TiXmlDocument doc;
-	doc.Parse(mb->rd_ptr());
-	GadgetXMLNode n = GadgetXMLNode(&doc).get<GadgetXMLNode>(std::string("gadgetron"))[0];
+	boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
-
-	coils_in_ = static_cast<unsigned int>(n.get<long>(std::string("encoding.channels.value"))[0]);
+	coils_in_ = cfg->acquisitionSystemInformation().get().receiverChannels().get();
 
 	boost::shared_ptr<std::string> coil_mask = this->get_string_value("coil_mask");
 
@@ -71,10 +68,10 @@ int CoilReductionGadget::process_config(ACE_Message_Block *mb)
 }
 
 
-int CoilReductionGadget::process(GadgetContainerMessage<GadgetMessageAcquisition> *m1, GadgetContainerMessage<hoNDArray<std::complex<float> > > *m2)
+int CoilReductionGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1, GadgetContainerMessage<hoNDArray<std::complex<float> > > *m2)
 {
 	std::vector<unsigned int> dims_out(2);
-	dims_out[0] = m1->getObjectPtr()->samples;
+	dims_out[0] = m1->getObjectPtr()->number_of_samples;
 	dims_out[1] = coils_out_;
 
 	GadgetContainerMessage< hoNDArray<std::complex<float> > >* m3 =
@@ -87,9 +84,9 @@ int CoilReductionGadget::process(GadgetContainerMessage<GadgetMessageAcquisition
 
 	std::complex<float>* s = m2->getObjectPtr()->get_data_ptr();
 	std::complex<float>* d = m3->getObjectPtr()->get_data_ptr();
-	unsigned int samples =  m1->getObjectPtr()->samples;
+	unsigned int samples =  m1->getObjectPtr()->number_of_samples;
 	unsigned int coils_copied = 0;
-	for (int c = 0; c < m1->getObjectPtr()->channels; c++) {
+	for (int c = 0; c < m1->getObjectPtr()->active_channels; c++) {
 		if (c > coil_mask_.size()) {
 			GADGET_DEBUG1("Fatal error, too many coils for coil mask\n");
 			m1->release();
@@ -104,7 +101,7 @@ int CoilReductionGadget::process(GadgetContainerMessage<GadgetMessageAcquisition
 
 	m2->release();
 	m1->cont(m3);
-	m1->getObjectPtr()->channels = coils_out_;
+	m1->getObjectPtr()->active_channels = coils_out_;
 
 	return this->next()->putq(m1);
 }

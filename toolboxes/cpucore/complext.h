@@ -173,7 +173,6 @@ template<class REAL, class T> __inline__ __host__ __device__  complext<T> operat
   return complext<T>(comp.vec[0]/real,comp.vec[1]/real);
 }
 
-
 __inline__ __host__ __device__ float norm(const float& r){
   return r*r;
 }

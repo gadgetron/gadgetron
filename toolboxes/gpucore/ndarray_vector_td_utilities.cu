@@ -3659,7 +3659,7 @@ bool cuNDA_crop( typename uintd<D>::Type offset,
 
   if( weak_greater(offset+matrix_size_out, matrix_size_in) ){
     cout << endl << "cuNDA_crop: cropping size mismatch" << endl;
-    return boost::shared_ptr< cuNDArray<T> >();
+    return false;
   }
 
   // Prepare internal array

@@ -1,10 +1,13 @@
 
 add_definitions(-DNPY_NO_DEPRECATED_API)
 
+find_package(Ismrmrd REQUIRED)
+
 include_directories(   ${ACE_INCLUDE_DIR} 
 				       ${PYTHON_INCLUDE_PATH}
 				       ${PYTHON_NUMPY_INCLUDE_DIR}
 				       ${Boost_INCLUDE_DIR} 
+				       ${ISMRMRD_INCLUDE_DIR}
 				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
 				       ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools)
@@ -18,7 +21,8 @@ add_library(gadgetronpython SHARED
 	GadgetronPythonMRI.cpp
 	PythonCommunicator.cpp)
 
-target_link_libraries(gadgetronpython tinyxml 
+target_link_libraries(gadgetronpython tinyxml
+	${ISMRMRD_LIBRARIES} 
 	optimized ${ACE_LIBRARIES}  
 	debug ${ACE_DEBUG_LIBRARY} 
 	${PYTHON_LIBRARIES}

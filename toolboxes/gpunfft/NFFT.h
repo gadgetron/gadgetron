@@ -41,7 +41,8 @@ template< class REAL, unsigned int D, bool ATOMICS = false > class EXPORTGPUNFFT
     
   // Constructors
   NFFT_plan();
-  NFFT_plan( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int device = -1 );
+  NFFT_plan( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os,
+	     REAL W, int device = -1 );
 
   // Destructor
   virtual ~NFFT_plan();
@@ -51,15 +52,18 @@ template< class REAL, unsigned int D, bool ATOMICS = false > class EXPORTGPUNFFT
   bool wipe( NFFT_wipe_mode mode );
 
   // Replan 
-  bool setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int device = -1 );
+  bool setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, 
+	      REAL W, int device = -1 );
   
   // Preproces trajectory ( Cartesian to non-Cartesian / non-Cartesian to Cartesian / both )
   enum NFFT_prep_mode { NFFT_PREP_C2NC, NFFT_PREP_NC2C, NFFT_PREP_ALL };
   bool preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory, NFFT_prep_mode mode );
     
   // Execute NFFT (forwards/backwards; modes: Cartesian to non-Cartesian or non-Cartesian to Cartesian)
-  enum NFFT_comp_mode { NFFT_FORWARDS_C2NC, NFFT_FORWARDS_NC2C, NFFT_BACKWARDS_C2NC, NFFT_BACKWARDS_NC2C };
-  bool compute( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, cuNDArray<REAL> *dcw, NFFT_comp_mode mode );
+  enum NFFT_comp_mode { NFFT_FORWARDS_C2NC, NFFT_FORWARDS_NC2C, 
+			NFFT_BACKWARDS_C2NC, NFFT_BACKWARDS_NC2C };
+  bool compute( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, 
+		cuNDArray<REAL> *dcw, NFFT_comp_mode mode );
 
   // Execute NFFT iteration (from Cartesian image space to non-Cartesian Fourier space and back to Cartesian image space)
   bool mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, 

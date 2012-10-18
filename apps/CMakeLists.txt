@@ -1,7 +1,8 @@
+
 IF (ACE_FOUND)
 	add_subdirectory(gadgetron)
-	IF (HDF5_FOUND)
-		add_subdirectory(clients) 
-	ENDIF (HDF5_FOUND)
+	IF (ISMRMRD_FOUND)
+		add_subdirectory(clients)
+	ENDIF (ISMRMRD_FOUND)	 
 ENDIF (ACE_FOUND)
 add_subdirectory(standalone)

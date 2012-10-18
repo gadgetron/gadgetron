@@ -9,18 +9,18 @@
 #define AUTOSCALEGADGET_H_
 
 #include <Gadget.h>
-#include "GadgetMRIHeaders.h"
+#include "ismrmrd.h"
 #include "hoNDArray.h"
 
 class AutoScaleGadget:
-public Gadget2<GadgetMessageImage,hoNDArray< float > >
+public Gadget2<ISMRMRD::ImageHeader,hoNDArray< float > >
 {
 public:
 	GADGET_DECLARE(AutoScaleGadget);
 	AutoScaleGadget();
 	virtual ~AutoScaleGadget();
 protected:
-	virtual int process(GadgetContainerMessage<GadgetMessageImage>* m1,
+	virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 			GadgetContainerMessage< hoNDArray< float > >* m2);
 
 	unsigned int histogram_bins_;

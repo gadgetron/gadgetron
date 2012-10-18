@@ -1,6 +1,6 @@
 #include "NoiseAdjustGadget.h"
 #include "Gadgetron.h"
-#include "GadgetXml.h"
+#include "GadgetIsmrmrdReadWrite.h"
 
 #include "hoNDArray_fileio.h"
 
@@ -94,6 +94,7 @@ NoiseAdjustGadget::NoiseAdjustGadget()
 : noise_decorrelation_calculated_(false)
 , number_of_noise_samples_(0)
 , noise_bw_scale_factor_(1.0f)
+, is_configured_(false)
 {
 
 }
@@ -102,46 +103,27 @@ NoiseAdjustGadget::NoiseAdjustGadget()
 int NoiseAdjustGadget::process_config(ACE_Message_Block* mb)
 {
 
-	TiXmlDocument doc;
-	doc.Parse(mb->rd_ptr());
+	boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
-	GadgetXMLNode n = GadgetXMLNode(&doc);
 
-	std::vector<double> dbls = n.get<double>(std::string("gadgetron.encoding.kspace.readout_length.value"));
-	if( dbls.size() == 0 ) return GADGET_FAIL;
+	receiver_noise_bandwidth_ = cfg->acquisitionSystemInformation().get().relativeReceiverNoiseBandwidth().present() ?
+								cfg->acquisitionSystemInformation().get().relativeReceiverNoiseBandwidth().get() : 1.0;
 
-	noise_dwell_time_us_ = 7680.0f/dbls[0];
-	
-	dbls = n.get<double>(std::string("gadgetron.encoding.acquisition_dwell_time_ns.value"));
-	if( dbls.size() == 0 ) return GADGET_FAIL;
-
-	acquisition_dwell_time_us_ = dbls[0]/1000.0f; 
-	receiver_noise_bandwidth_ = 0.79;//n.get<double>(std::string("receiver_noise_bandwidth.value"))[0];//GetDoubleParameterValueFromXML(&doc, "encoding", "receiver_noise_bandwidth");
-
-	if ((noise_dwell_time_us_ == 0.0f) || (acquisition_dwell_time_us_ == 0.0f)) {
-		noise_bw_scale_factor_ = 1.0f;
-	} else {
-		noise_bw_scale_factor_ = sqrt(2*acquisition_dwell_time_us_/noise_dwell_time_us_*receiver_noise_bandwidth_);
-	}
-
-	GADGET_DEBUG2("Noise dwell time: %f\n", noise_dwell_time_us_);
-	GADGET_DEBUG2("Acquisition dwell time: %f\n", acquisition_dwell_time_us_);
-	GADGET_DEBUG2("receiver_noise_bandwidth: %f\n", receiver_noise_bandwidth_);
-	GADGET_DEBUG2("noise_bw_scale_factor: %f\n", noise_bw_scale_factor_);
 
 	return GADGET_OK;
 }
 
 int NoiseAdjustGadget
-::process(GadgetContainerMessage<GadgetMessageAcquisition>* m1,
+::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
-	bool is_noise = m1->getObjectPtr()->flags & GADGET_FLAG_IS_NOISE_SCAN;
-	unsigned int channels = m1->getObjectPtr()->channels;
-	unsigned int samples = m1->getObjectPtr()->samples;
+	bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
+	unsigned int channels = m1->getObjectPtr()->active_channels;
+	unsigned int samples = m1->getObjectPtr()->number_of_samples;
 
 	if (is_noise) {
+		noise_dwell_time_us_ = m1->getObjectPtr()->sample_time_us;
 		//If noise covariance matrix is not allocated
 		if (noise_covariance_matrix_.get_number_of_elements() != channels*channels) {
 			std::vector<unsigned int> dims(2, channels);
@@ -167,6 +149,20 @@ int NoiseAdjustGadget
 			number_of_noise_samples_++;
 		}
 	} else {
+		acquisition_dwell_time_us_ = m1->getObjectPtr()->sample_time_us;
+		if (!is_configured_) {
+			if ((noise_dwell_time_us_ == 0.0f) || (acquisition_dwell_time_us_ == 0.0f)) {
+				noise_bw_scale_factor_ = 1.0f;
+			} else {
+				noise_bw_scale_factor_ = sqrt(2*acquisition_dwell_time_us_/noise_dwell_time_us_*receiver_noise_bandwidth_);
+			}
+
+			GADGET_DEBUG2("Noise dwell time: %f\n", noise_dwell_time_us_);
+			GADGET_DEBUG2("Acquisition dwell time: %f\n", acquisition_dwell_time_us_);
+			GADGET_DEBUG2("receiver_noise_bandwidth: %f\n", receiver_noise_bandwidth_);
+			GADGET_DEBUG2("noise_bw_scale_factor: %f\n", noise_bw_scale_factor_);
+			is_configured_ = true;
+		}
 		if (number_of_noise_samples_ > 0) {
 			if (!noise_decorrelation_calculated_) {
 				GADGET_DEBUG1("Calculating noise decorrelation\n");

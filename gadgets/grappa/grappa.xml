@@ -1,61 +1,59 @@
-<?xml version="1.0" ?>  
-<gadgetron>
-  <readers>
+<?xml version="1.0" encoding="UTF-8"?>
+<gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
+        xmlns="http://gadgetron.sf.net/gadgetron"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+         
     <reader>
-      <slot>1001</slot>
+      <slot>1008</slot>
       <dll>gadgetroncore</dll>
-      <class>MRIAcquisitionReader</class>
+      <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
     </reader>
-  </readers>
-  
-  <writers>
-    <writer>
+ 
+     <writer>
       <slot>1004</slot>
       <dll>gadgetroncore</dll>
-      <class>MRIImageWriterCPLX</class>
+      <classname>MRIImageWriterCPLX</classname>
     </writer>
     <writer>
       <slot>1005</slot>
       <dll>gadgetroncore</dll>
-      <class>MRIImageWriterFLOAT</class>
+      <classname>MRIImageWriterFLOAT</classname>
     </writer>
     <writer>
       <slot>1006</slot>
       <dll>gadgetroncore</dll>
-      <class>MRIImageWriterUSHORT</class>
+      <classname>MRIImageWriterUSHORT</classname>
     </writer>
-  </writers>
   
-  <stream>
     <gadget>
       <name>NoiseAdjust</name>
       <dll>gadgetronmricore</dll>
-      <class>MRINoiseAdjustGadget</class>
+      <classname>MRINoiseAdjustGadget</classname>
     </gadget>
 
    <gadget>
       <name>PCA</name>
       <dll>gadgetronmricore</dll>
-      <class>PCACoilGadget</class>
+      <classname>PCACoilGadget</classname>
     </gadget>
 
     <gadget>
       <name>CoilReduction</name>
       <dll>gadgetroncore</dll>
-      <class>CoilReductionGadget</class>
+      <classname>CoilReductionGadget</classname>
       <property><name>coils_out</name><value>16</value></property>
     </gadget>
     
     <gadget>
       <name>RemoveROOversampling</name>
       <dll>gadgetroncore</dll>
-      <class>RemoveROOversamplingGadget</class>
+      <classname>RemoveROOversamplingGadget</classname>
     </gadget>
 
     <gadget>
       <name>Grappa</name>
       <dll>gadgetrongrappa</dll>
-      <class>GrappaGadget</class>
+      <classname>GrappaGadget</classname>
       <property><name>target_coils</name><value>8</value></property>
       <!--
       <property><name>uncombined_channels</name><value>15</value></property>
@@ -65,13 +63,13 @@
     <gadget>
       <name>GrappaUnmixing</name>
       <dll>gadgetrongrappa</dll>
-      <class>GrappaUnmixingGadget</class>
+      <classname>GrappaUnmixingGadget</classname>
     </gadget>
 
      <gadget>
       <name>Extract</name>
       <dll>gadgetroncore</dll>
-      <class>ExtractGadget</class>
+      <classname>ExtractGadget</classname>
       <!--
       <property><name>extract_mask</name><value>9</value></property>
       -->
@@ -81,28 +79,28 @@
     <gadget>
       <name>ImageWrite</name>
       <dll>gadgetroncore</dll>
-      <class>ImageWriterGadgetFLOAT</class>
+      <classname>ImageWriterGadgetFLOAT</classname>
     </gadget>
     -->
 
     <gadget>
       <name>AutoScale</name>
       <dll>gadgetroncore</dll>
-      <class>AutoScaleGadget</class>
+      <classname>AutoScaleGadget</classname>
     </gadget>
 
     
     <gadget>
       <name>FloatToShort</name>
       <dll>gadgetroncore</dll>
-      <class>FloatToUShortGadget</class>
+      <classname>FloatToUShortGadget</classname>
     </gadget>
  
  	<!--
     <gadget>
       <name>ImageFinishCPLX</name>
       <dll>gadgetroncore</dll>
-      <class>ImageFinishGadgetCPLX</class>
+      <classname>ImageFinishGadgetCPLX</classname>
     </gadget>
     -->
 
@@ -110,17 +108,16 @@
     <gadget>
       <name>ImageFinishFLOAT</name>
       <dll>gadgetroncore</dll>
-      <class>ImageFinishGadgetFLOAT</class>
+      <classname>ImageFinishGadgetFLOAT</classname>
     </gadget>
     -->
 
     <gadget>
       <name>ImageFinishUSHORT</name>
       <dll>gadgetroncore</dll>
-      <class>ImageFinishGadgetUSHORT</class>
+      <classname>ImageFinishGadgetUSHORT</classname>
     </gadget>
-   </stream>
 
-</gadgetron>
+</gadgetronStreamConfiguration>
 
 

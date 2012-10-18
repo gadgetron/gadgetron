@@ -35,9 +35,9 @@ def getEncodingParameters(XMLstr):
     dom = xml.dom.minidom.parseString(XMLstr)
     enc = dict();
 
-    enc["trajectory"]                = int(getParameter(dom,"gadgetron.encoding.trajectory.value")[0])
-    enc["matrix_x"]                  = int(getParameter(dom,"gadgetron.encoding.kspace.matrix_size.value")[0])
-    enc["matrix_y"]                  = int(getParameter(dom,"gadgetron.encoding.kspace.matrix_size.value")[1])
+    enc["trajectory"]                = int(getParameter(dom,"ismrmrdHeader.encoding.trajectory")[0])
+    enc["matrix_x"]                  = int(getParameter(dom,"ismrmrdHeader.encoding.encoded_space.matrix_size.x")[0])
+    enc["matrix_y"]                  = int(getParameter(dom,"ismrmrdHeader.encoding.encoded_space.matrix_size.x")[0])
     
     if (np.size(getParameter(dom,"gadgetron.encoding.kspace.matrix_size.value")) < 3):
 	enc["matrix_z"] = 0
