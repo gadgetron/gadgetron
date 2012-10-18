@@ -44,14 +44,14 @@ cuNDA_norm_squared( cuNDArray< typename reald<REAL,D>::Type > *data,
 // Sum over dimension (scalar and vector_td arrays)
 template<class T> EXPORTGPUCORE 
 boost::shared_ptr< cuNDArray<T> >  
-cuNDA_sum( cuNDArray<T> *data, unsigned int dim, 
+cuNDA_sum( cuNDArray<T> *data, unsigned int dim,
 	   cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
 	   cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
 // Expand (copy) array to new dimension (scalar and vector_td arrays)
 template<class T> EXPORTGPUCORE 
 boost::shared_ptr< cuNDArray<T> >  
-cuNDA_expand( cuNDArray<T> *data, unsigned int added_dim_size, 
+cuNDA_expand( cuNDArray<T> *data, unsigned int added_dim_size,
 	      cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
 	      cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 
@@ -113,7 +113,7 @@ cuNDA_upsample_nn( cuNDArray<REAL> *data,
 
 // Linear interpolation upsampling of array to double size (Real arrays only)
 template<class REAL, unsigned int D> EXPORTGPUCORE 
-boost::shared_ptr< cuNDArray<REAL> > 
+boost::shared_ptr< cuNDArray<REAL> >
 cuNDA_upsample_lin( cuNDArray<REAL> *data,
 		    cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE, 
 		    cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
@@ -149,12 +149,26 @@ bool cuNDA_abs( cuNDArray<T> *in_out,
 
 // Threshold
 template<class T> EXPORTGPUCORE
-bool cuNDA_threshold_min( T min, cuNDArray<T> *in_out, T to_value = T(0), 
+bool cuNDA_threshold_min( T min, cuNDArray<T> *in_out, T to_value = T(0),
 			  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 // Threshold
 template<class T> EXPORTGPUCORE
 bool cuNDA_threshold_max( T max, cuNDArray<T> *in_out, T to_value = T(0),
+			  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+
+
+// Threshold
+template<class T> EXPORTGPUCORE
+bool cuNDA_threshold_min( cuNDArray<T> * min, cuNDArray<T> *in_out, T to_value = T(0),
+			  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+
+// Threshold
+template<class T> EXPORTGPUCORE
+bool cuNDA_threshold_max( cuNDArray<T> * max, cuNDArray<T> *in_out, T to_value = T(0),
+			  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+template<class T> EXPORTGPUCORE
+bool cuNDA_threshold_amin( cuNDArray<T> * min, cuNDArray<T> *in_out, T to_value = T(0),
 			  cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
 // Normalize by RSS (float/double/complext arrays)
@@ -230,14 +244,24 @@ template<class REAL> EXPORTGPUCORE
 REAL cuNDA_normalize( cuNDArray<REAL> *in_out, REAL new_max,
 		      cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 
+//Elementwise minimum and maximum functions
 
+template< class T> EXPORTGPUCORE
+boost::shared_ptr<cuNDArray<T> > cuNDA_minimum( cuNDArray<T>* arr1, cuNDArray<T>* arr2,
+						cuNDA_device alloc_device = CUNDA_NDARRAY_DEVICE,
+						cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
+
+template< class T> EXPORTGPUCORE
+boost::shared_ptr<cuNDArray<T> > cuNDA_maximum( cuNDArray<T>* arr1, cuNDArray<T>* arr2,
+						cuNDA_device alloc_device = CUNDA_NDARRAY_DEVICE,
+						cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE );
 //
 // Some image utilities (with an interface fitting the NNFT)
 //
 
 // Crop (scalar and vector_td arrays)
 template<class T, unsigned int D> EXPORTGPUCORE
-bool cuNDA_crop( typename uintd<D>::Type crop_offset, 
+bool cuNDA_crop( typename uintd<D>::Type crop_offset,
 		 cuNDArray<T> *in, cuNDArray<T> *out,
 		 cuNDA_device compute_device = CUNDA_CURRENT_DEVICE );
 

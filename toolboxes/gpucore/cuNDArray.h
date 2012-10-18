@@ -33,6 +33,9 @@ template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
   cuNDArray(std::vector<unsigned int> *dimensions);
   cuNDArray(std::vector<unsigned int> *dimensions, int device_no);
   cuNDArray(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct = false);
+  cuNDArray(boost::shared_ptr<std::vector<unsigned int>  > dimensions);
+  cuNDArray(boost::shared_ptr<std::vector<unsigned int>  > dimensions, int device_no);
+  cuNDArray(boost::shared_ptr<std::vector<unsigned int>  > dimensions, T* data, bool delete_data_on_destruct = false);
   // Assignment operator
   cuNDArray& operator=(const cuNDArray<T>& rhs);
   
