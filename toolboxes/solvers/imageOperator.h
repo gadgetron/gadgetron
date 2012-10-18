@@ -29,7 +29,7 @@ public:
     REAL scale = ( (REAL) tmp.get_number_of_elements()/sum );
     operator_scal( scale, &tmp );
     
-    // Square and reciprocalize image
+    // Reciprocalize image
     image_ = operator_abs(&tmp);
     operator_reciprocal(image_.get());
     

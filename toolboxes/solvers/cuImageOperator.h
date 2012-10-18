@@ -5,10 +5,10 @@
 #include "cuNDArray.h"
 
 template <class REAL, class T> class cuImageOperator 
-	: public imageOperator< REAL, cuNDArray<REAL>, cuNDArray<T> >
+  : public imageOperator< REAL, cuNDArray<REAL>, cuNDArray<T> >
 {
 
- public:
+public:
 
   cuImageOperator() : imageOperator< REAL, cuNDArray<REAL>, cuNDArray<T> >() { set_device(-1); }
   virtual ~cuImageOperator() {}
@@ -46,9 +46,7 @@ template <class REAL, class T> class cuImageOperator
 
   virtual boost::shared_ptr< cuNDArray<REAL> > operator_abs( cuNDArray<T> *x )
   {
-	  boost::shared_ptr< cuNDArray<REAL> > res =cuNDA_cNorm<REAL,T>( x, CUNDA_NDARRAY_DEVICE, CUNDA_NDARRAY_DEVICE);
-	  cuNDA_sqrt(res.get());
-	  return res;
+    return cuNDA_cAbs<REAL,T>(x);
   }
   
   virtual bool operator_clear( cuNDArray<T> *x )

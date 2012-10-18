@@ -18,7 +18,7 @@ include_directories(   ${ACE_INCLUDE_DIR}
 
 add_library(gadgetronspiral SHARED SpiralGadget.cpp SpiralGadgetSW.cpp FlowPhaseSubtractionGadget.cpp vds.cpp)
 
-target_link_libraries(gadgetronspiral gpunfft tinyxml solvers gpuparallelmri ${ISMRMRD_LIBRARIES} ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
+target_link_libraries(gadgetronspiral gpunfft tinyxml solvers gpuparallelmri ${ISMRMRD_LIBRARIES} ${ISMRMRD_XSD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
 install (TARGETS gadgetronspiral DESTINATION lib)
 install (FILES spiral.xml  spiral_MSH.xml DESTINATION config)
