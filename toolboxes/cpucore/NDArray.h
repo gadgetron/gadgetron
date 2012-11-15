@@ -6,10 +6,13 @@
 #include <vector>
 #include <iostream>
 #include <boost/shared_ptr.hpp>
+#include <stdexcept>
+#include <new>
 
 template <class T> class NDArray
 {
  public:
+	typedef T element_type;
 
   void* operator new (size_t bytes)
   {
@@ -38,6 +41,9 @@ template <class T> class NDArray
     *tmp = *dimensions;
     dimensions_ = boost::shared_ptr< std::vector<unsigned int> >(tmp);
     allocate_memory();
+    if (!(this->get_data_ptr())){
+    	throw std::bad_alloc();
+    }
     return this->get_data_ptr();
   }
 
@@ -61,14 +67,14 @@ template <class T> class NDArray
     return this->get_data_ptr();
   }
 
-  virtual int permute(std::vector<unsigned int> *dim_order, NDArray<T> *out = 0, int shift_mode = 0) = 0;
+  virtual void permute(std::vector<unsigned int> *dim_order, NDArray<T> *out = 0, int shift_mode = 0) = 0;
   
-  inline int shift_dim(int shift, NDArray<T> *out = 0) {
+  inline void shift_dim(int shift, NDArray<T> *out = 0) {
     std::vector<unsigned int> order;
     for (unsigned int i = 0; i < dimensions_->size(); i++) {
       order.push_back(static_cast<unsigned int>((i+shift)%dimensions_->size()));
     }
-    return permute(&order,out);
+    permute(&order,out);
   }
 
   inline void squeeze(){
@@ -81,22 +87,22 @@ template <class T> class NDArray
     dimensions_ = new_dimensions;
   }
 
-  inline int reshape(std::vector<unsigned int> *dims) {
+  inline void reshape(std::vector<unsigned int> *dims) {
     unsigned long int new_elements = 1;
     for (unsigned int i = 0; i < dims->size(); i++) {
       new_elements *= (*dims)[i];
     }
     
     if (new_elements != elements_) {
-      std::cerr << "NDArray<T>::reshape : Number of elements cannot change during reshape" << std::endl;
-      return -1;
+      std::runtime_error("NDArray<T>::reshape : Number of elements cannot change during reshape");
+
     }
 
     // Copy the input dimensions array
     std::vector<unsigned int> *tmp = new std::vector<unsigned int>;
     *tmp = *dims;
     dimensions_ = boost::shared_ptr< std::vector<unsigned int> >(tmp);
-    return 0;
+
   }
 
   inline bool dimensions_equal(std::vector<unsigned int> *d) {
@@ -148,8 +154,8 @@ template <class T> class NDArray
 
 protected:
 
-  virtual int allocate_memory() = 0;
-  virtual int deallocate_memory() = 0;
+  virtual void allocate_memory() = 0;
+  virtual void deallocate_memory() = 0;
 
   boost::shared_ptr< std::vector<unsigned int> > dimensions_;
   T* data_;

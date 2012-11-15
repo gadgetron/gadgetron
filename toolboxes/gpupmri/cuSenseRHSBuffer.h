@@ -38,9 +38,9 @@ template<class REAL, unsigned int D, bool ATOMICS = false> class EXPORTGPUPMRI c
     cycle_length_ = num_cycles; sub_cycle_length_ = num_sub_cycles;
   }
   
-  virtual int clear();
-  virtual int set_sense_operator( boost::shared_ptr< cuNonCartesianSenseOperator<REAL,D,ATOMICS> > op );
-  virtual int add_frame_data( cuNDArray<_complext> *samples, cuNDArray<_reald> *trajectory );
+  virtual void clear();
+  virtual void set_sense_operator( boost::shared_ptr< cuNonCartesianSenseOperator<REAL,D,ATOMICS> > op );
+  virtual void add_frame_data( cuNDArray<_complext> *samples, cuNDArray<_reald> *trajectory );
   virtual boost::shared_ptr< cuNDArray<_complext> > get_acc_coil_images( bool normalize = false );
 
  private:
@@ -52,3 +52,6 @@ template<class REAL, unsigned int D, bool ATOMICS = false> class EXPORTGPUPMRI c
   cuNDArray<_complext> acc_buffer_, cyc_buffer_;
   boost::shared_ptr< cuNonCartesianSenseOperator<REAL,D,ATOMICS> > sense_op_;
 };
+
+//To prevent the use of Atomics with doubles.
+template<unsigned int D> class EXPORTGPUPMRI cuSenseRHSBuffer<double,D,true>{};

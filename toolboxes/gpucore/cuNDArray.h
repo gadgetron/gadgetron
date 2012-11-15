@@ -11,13 +11,15 @@
 #include <cuda_runtime_api.h>
 #include <boost/shared_ptr.hpp>
 #include "complext.h"
+#include "thrust/device_vector.h"
+#include "gadgetronException.h"
 
 template <class T> class EXPORTGPUCORE cuNDArray;
-template <class T> EXPORTGPUCORE int cuNDArray_permute(cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *order, int shift_mode);
+template <class T> EXPORTGPUCORE void cuNDArray_permute(cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *order, int shift_mode);
 
 template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
 {
-  friend int cuNDArray_permute<>(cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *order, int shift_mode);
+  friend void cuNDArray_permute<>(cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *order, int shift_mode);
     
  public:
 
@@ -50,17 +52,68 @@ template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
 
   virtual boost::shared_ptr< hoNDArray<T> > to_host() const;
 
-  virtual int permute(std::vector<unsigned int> *dim_order, NDArray<T> *out = 0, int shift_mode = 0);
+  virtual void permute(std::vector<unsigned int> *dim_order, NDArray<T> *out = 0, int shift_mode = 0);
   
-  virtual int set_device(int device_no);
+  virtual void set_device(int device_no);
   inline int get_device() { return device_; }
   
+  //Elementwise operations
+  void abs();
+  void sqrt();
+  void clear();
+  void fill(T );
+  void reciprocal();
+
+
+  thrust::device_ptr<T> get_device_ptr(){
+	  return thrust::device_ptr<T>(this->data_);
+  }
+
+  thrust::device_ptr<T> begin(){
+  	  return thrust::device_ptr<T>(this->data_);
+  }
+  thrust::device_ptr<T> end(){
+  	  return thrust::device_ptr<T>(this->data_)+this->get_number_of_elements();
+  }
+
+
  protected:
   
   int device_; 
-  virtual int allocate_memory();
-  virtual int deallocate_memory();
+  virtual void allocate_memory();
+  virtual void deallocate_memory();
   
 };
+
+//Operators
+
+ template<class T> void operator+= (cuNDArray<T> &, cuNDArray<T> &);
+ template<class T> void operator+= (cuNDArray<T> &, T );
+
+ template<class T> void operator*= (cuNDArray<T> &, cuNDArray<T> &);
+ template<class T> void operator*= (cuNDArray<T> &, T );
+
+ template<class T> void operator-= (cuNDArray<T> &, cuNDArray<T> &);
+ template<class T> void operator-= (cuNDArray<T> & ,T );
+
+ template<class T> void operator/= (cuNDArray<T> &, cuNDArray<T> &);
+ template<class T> void operator/= (cuNDArray<T> &, T );
+
+ template<class T> void operator+= (cuNDArray<complext<T> > &, cuNDArray<T> &);
+template<class T> void operator+= (cuNDArray<complext<T> > &, T );
+
+template<class T> void operator*= (cuNDArray<complext<T> > &, cuNDArray<T> &);
+template<class T> void operator*= (cuNDArray<complext<T> > &, T );
+
+template<class T> void operator-= (cuNDArray<complext<T> > &, cuNDArray<T> &);
+template<class T> void operator-= (cuNDArray<complext<T> > & ,T );
+
+template<class T> void operator/= (cuNDArray<complext<T> > &, cuNDArray<T> &);
+template<class T> void operator/= (cuNDArray<complext<T> > &, T );
+
+
+
+
+
 
 #endif //CUNDARRAY_H

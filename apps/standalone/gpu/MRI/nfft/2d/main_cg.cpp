@@ -91,10 +91,7 @@ int main( int argc, char** argv)
   // Define and setup NFFT encoding operator
   boost::shared_ptr< cuNFFTOperator<_real,2> > E( new cuNFFTOperator<_real,2>() );
   
-  if( E->setup( matrix_size, matrix_size_os, kernel_width ) < 0 ){
-    cout << "Failed to setup non-Cartesian Sense operator" << endl;
-    return 1;
-  }
+  E->setup( matrix_size, matrix_size_os, kernel_width );
 
   // Notify encoding operator of dcw
   E->set_dcw(dcw);
@@ -105,14 +102,14 @@ int main( int argc, char** argv)
   
   // Preprocess
   timer = new GPUTimer("NFFT preprocessing");
-  bool success = E->preprocess( traj.get() );
+  E->preprocess( traj.get() );
   delete timer;
 
   // Setup conjugate gradient solver
-  cuCgSolver<_real, _complext> cg;
+  cuCgSolver< _complext> cg;
   cg.set_max_iterations( num_iterations );
   cg.set_tc_tolerance( 1e-6 );
-  cg.set_output_mode( cuCgSolver<_real, _complext>::OUTPUT_VERBOSE );
+  cg.set_output_mode( cuCgSolver<_complext>::OUTPUT_VERBOSE );
   cg.set_encoding_operator( E); 
 
   // Solve
@@ -131,7 +128,7 @@ int main( int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > host_image = cgresult->to_host();
   write_nd_array<_complext>( host_image.get(), (char*)parms.get_parameter('r')->get_string_value());
 
-  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_cAbs<_real,_complext>(cgresult.get())->to_host();
+  boost::shared_ptr< hoNDArray<_real> > host_norm = abs(cgresult.get())->to_host();
   write_nd_array<_real>( host_norm.get(), "result.real" );
 
   delete timer;

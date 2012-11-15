@@ -101,10 +101,7 @@ int main( int argc, char** argv)
   boost::shared_ptr< cuNFFTOperator<_real,2> > E( new cuNFFTOperator<_real,2>() );
   E->set_weight(lambda);
 
-  if( E->setup( matrix_size, matrix_size_os, kernel_width ) < 0 ){
-    cout << "Failed to setup non-Cartesian Sense operator" << endl;
-    return 1;
-  }
+   E->setup( matrix_size, matrix_size_os, kernel_width );
 
   // Notify encoding operator of dcw
   E->set_dcw(dcw);
@@ -115,28 +112,28 @@ int main( int argc, char** argv)
   E->set_codomain_dimensions(&sample_dims);
 
   // Setup regularization operators
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,2> > 
-    Rx( new cuPartialDerivativeOperator<_real,_complext,2>(0) ); 
+  boost::shared_ptr< cuPartialDerivativeOperator<_complext,2> >
+    Rx( new cuPartialDerivativeOperator<_complext,2>(0) );
   Rx->set_weight( lambda );
   Rx->set_domain_dimensions(&image_dims);
   Rx->set_codomain_dimensions(&image_dims);
 
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,2> > 
-    Ry( new cuPartialDerivativeOperator<_real,_complext,2>(1) ); 
+  boost::shared_ptr< cuPartialDerivativeOperator<_complext,2> >
+    Ry( new cuPartialDerivativeOperator<_complext,2>(1) );
   Ry->set_weight( lambda );
   Ry->set_domain_dimensions(&image_dims);
   Ry->set_codomain_dimensions(&image_dims);
   
   // Preprocess
   timer = new GPUTimer("NFFT preprocessing");
-  bool success = E->preprocess( traj.get() );
+  E->preprocess( traj.get() );
   delete timer;
 
   // Setup split bregman solver
-  cuSbcCgSolver<_real, _complext> sb;
+  cuSbcCgSolver<_complext> sb;
   sb.set_max_outer_iterations( num_sb_iterations );
   sb.set_max_inner_iterations( 1 );
-  sb.set_output_mode( cuCgSolver<_real, _complext>::OUTPUT_VERBOSE );
+  sb.set_output_mode( cuCgSolver< _complext>::OUTPUT_VERBOSE );
 
   sb.set_encoding_operator( E); 
   sb.add_regularization_group_operator( Rx ); 
@@ -144,7 +141,7 @@ int main( int argc, char** argv)
   sb.add_group();
 
   // Setup inner conjugate gradient solver
-  sb.get_inner_solver()->set_output_mode( cuCgSolver<_real, _complext>::OUTPUT_WARNINGS );
+  sb.get_inner_solver()->set_output_mode( cuCgSolver<_complext>::OUTPUT_WARNINGS );
   sb.get_inner_solver()->set_max_iterations( num_cg_iterations );
   
   // Solve
@@ -163,7 +160,7 @@ int main( int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > host_image = cgresult->to_host();
   write_nd_array<_complext>( host_image.get(), (char*)parms.get_parameter('r')->get_string_value());
 
-  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_cAbs<_real,_complext>(cgresult.get())->to_host();
+  boost::shared_ptr< hoNDArray<_real> > host_norm = abs(cgresult.get())->to_host();
   write_nd_array<_real>( host_norm.get(), "result.real" );
 
   delete timer;

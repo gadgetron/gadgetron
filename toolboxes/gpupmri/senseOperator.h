@@ -7,12 +7,12 @@
 #include <iostream>
 
 template<class REAL, unsigned int D, class ARRAY_TYPE> class EXPORTGPUPMRI senseOperator 
-	: public linearOperator<REAL, ARRAY_TYPE>
+	: public linearOperator<ARRAY_TYPE>
 {
 
 public:
 
-  senseOperator() : linearOperator<REAL, ARRAY_TYPE>(), ncoils_(0) {}
+  senseOperator() : linearOperator<ARRAY_TYPE>(), ncoils_(0) {}
   virtual ~senseOperator() {}
 
   inline unsigned int get_number_of_coils() { return ncoils_; }
@@ -34,11 +34,11 @@ public:
     }    
   }
 
-  virtual int mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false ) = 0;
-  virtual int mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false ) = 0;
+  virtual void mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false ) = 0;
+  virtual void mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false ) = 0;
 
-  virtual int mult_csm( ARRAY_TYPE* in, ARRAY_TYPE* out ) = 0;
-  virtual int mult_csm_conj_sum( ARRAY_TYPE* in, ARRAY_TYPE* out) = 0;
+  virtual void mult_csm( ARRAY_TYPE* in, ARRAY_TYPE* out ) = 0;
+  virtual void mult_csm_conj_sum( ARRAY_TYPE* in, ARRAY_TYPE* out) = 0;
 
 protected:
 

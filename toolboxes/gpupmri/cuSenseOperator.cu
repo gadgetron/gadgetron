@@ -2,17 +2,17 @@
 #include "sense_utilities.h"
 #include "vector_td_utilities.h"
 
-template<class REAL, unsigned int D> int 
+template<class REAL, unsigned int D> void
 cuSenseOperator<REAL,D>::mult_csm( cuNDArray<complext<REAL> >* in, cuNDArray<complext<REAL> >* out )
 {  
-  return csm_mult_M<REAL,D>( in, out, this->csm_.get() );
+  csm_mult_M<REAL,D>( in, out, this->csm_.get() );
 }
 
 
-template<class REAL, unsigned int D> int 
+template<class REAL, unsigned int D> void
 cuSenseOperator<REAL,D>::mult_csm_conj_sum( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out )
 {
-  return csm_mult_MH<REAL,D>( in, out, this->csm_.get() );
+  csm_mult_MH<REAL,D>( in, out, this->csm_.get() );
 }
 
 //

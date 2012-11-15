@@ -1,6 +1,7 @@
 #include "cuCartesianSenseOperator.h"
 #include "cuNDFFT.h"
 #include "ndarray_vector_td_utilities.h"
+#include <sstream>
 
 template<class REAL> __global__ void 
 sample_array_kernel( complext<REAL> *in, complext<REAL> *out,
@@ -34,36 +35,30 @@ insert_samples_kernel( complext<REAL> *in, complext<REAL> *out,
   }
 }
 
-template<class REAL, unsigned int D> int 
+template<class REAL, unsigned int D> void
 cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate )
 {
 
   int ret = this->_set_device();
   if( ret<0 ){
-    std::cerr << "cuCartesianSenseOperator::mult_M: unable to set device" << std::endl;
-    return -1;
+    throw cuda_error("cuCartesianSenseOperator::mult_M: unable to set device");
+
   }
   
   if (!(in->dimensions_equal(this->get_domain_dimensions().get())) || !(out->dimensions_equal(this->get_codomain_dimensions().get())) ) {
 
-    std::cerr << "cuCartesianSenseOperator::mult_M dimensions mismatch" << std::endl;
+    throw std::runtime_error("cuCartesianSenseOperator::mult_M dimensions mismatch");
 
-    return -1;
   }
 
-  cuNDArray<_complext> tmp;
+
   std::vector<unsigned int> full_dimensions = *this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
+  cuNDArray<_complext> tmp(&full_dimensions);
 
-  if (!tmp.create(&full_dimensions)) {
-    std::cerr << "cuCartesianSenseOperator::mult_M unable to allocate temp array" << std::endl;
-    return -1;    
-  }
 
-  if (mult_csm(in,&tmp) < 0) {
-    std::cerr << "cuCartesianSenseOperator::mult_M : Unable to multiply with coil sensitivities" << std::endl;
-    return -1;
-  }
+
+  mult_csm(in,&tmp);
 
   cuNDFFT<_complext> ft;
   std::vector<unsigned int> ft_dims;
@@ -74,7 +69,8 @@ cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray<_complext> *in, cuNDArray<_c
   ft.fft(&tmp, &ft_dims);
 
   if (!accumulate) 
-    cuNDA_clear<_complext>(out);
+  	out->clear();
+
 
   dim3 blockDim(512,1,1);
   dim3 gridDim((unsigned int) ceil((double)idx_->get_number_of_elements()/blockDim.x), 1, 1 );
@@ -82,45 +78,35 @@ cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray<_complext> *in, cuNDArray<_c
 						      in->get_number_of_elements(), idx_->get_number_of_elements(), this->ncoils_);
   cudaError_t err = cudaGetLastError();
   if( err != cudaSuccess ){
-    std::cerr << "cuCartesianSenseOperator::mult_M : Unable to sample data: " << 
-      cudaGetErrorString(err) << std::endl;
-    return -1;
+     std::stringstream ss;
+     ss <<"cuCartesianSenseOperator::mult_M : Unable to sample data: " <<
+      cudaGetErrorString(err);
+     throw cuda_error(ss.str());
+
   }
 
-  ret = this->_restore_device();
-  if( ret<0 ){
-    std::cerr << "cuCartesianSenseOperator::mult_M: unable to restore device" << std::endl;
-    return -1;
-  }
+  this->_restore_device();
   
-  return 0;
 }
 
-template<class REAL, unsigned int D> int 
+template<class REAL, unsigned int D> void
 cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate)
 {
-  int ret = this->_set_device();
-  if( ret<0 ){
-    std::cerr << "cuCartesianSenseOperator::mult_MH: unable to set device" << std::endl;
-    return -1;
-  }
+  this->_set_device();
+
 
   if (!(out->dimensions_equal(this->get_domain_dimensions().get())) || 
       !(in->dimensions_equal(this->get_codomain_dimensions().get())) ) {
-    std::cerr << "cuCartesianSenseOperator::mult_MH dimensions mismatch" << std::endl;
-    return -1;
+    throw std::runtime_error( "cuCartesianSenseOperator::mult_MH dimensions mismatch");
+
   }
 
   std::vector<unsigned int> tmp_dimensions = *this->get_domain_dimensions();
   tmp_dimensions.push_back(this->ncoils_);
 
-  cuNDArray<_complext> tmp;
-  if (!tmp.create(&tmp_dimensions)) {
-    std::cerr << "cuCartesianSenseOperator::mult_MH: Unable to create temp storage" << std::endl;
-    return -1;
-  }
+  cuNDArray<_complext> tmp(&tmp_dimensions);
 
-  cuNDA_clear<_complext>(&tmp);
+  tmp.clear();
 
   dim3 blockDim(512,1,1);
   dim3 gridDim((unsigned int) ceil((double)idx_->get_number_of_elements()/blockDim.x), 1, 1 );
@@ -130,9 +116,10 @@ cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray<_complext> *in, cuNDArray<_c
   
   cudaError_t err = cudaGetLastError();
   if( err != cudaSuccess ){
-    std::cerr << "cuCartesianSenseOperator::mult_EM : Unable to insert samples into array: " << 
-      cudaGetErrorString(err) << std::endl;
-    return -1;
+  	std::stringstream ss;
+    ss << "cuCartesianSenseOperator::mult_EM : Unable to insert samples into array: " <<
+      cudaGetErrorString(err);
+    throw cuda_error(ss.str());
   }
 
   cuNDFFT<_complext> ft;
@@ -144,21 +131,12 @@ cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray<_complext> *in, cuNDArray<_c
   ft.ifft(&tmp, &ft_dims);
 
   if (!accumulate) 
-    cuNDA_clear<_complext>(out);
+    out->clear();
   
-  if (mult_csm_conj_sum(&tmp,out) < 0) {
-    std::cerr << "cuCartesianSenseOperator::mult_MH: Unable to multiply with conjugate of sensitivity maps and sum" << std::endl;
-    return -1;
- 
-  }
+  mult_csm_conj_sum(&tmp,out);
 
-  ret = this->_restore_device();
-  if( ret<0 ){
-    std::cerr << "cuCartesianSenseOperator::mult_MH: unable to restore device" << std::endl;
-    return -1;
-  }
-  
-  return 0;
+  this->_restore_device();
+
 }
 
 //

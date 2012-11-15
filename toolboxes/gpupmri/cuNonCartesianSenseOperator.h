@@ -25,15 +25,15 @@ template<class REAL, unsigned int D, bool ATOMICS = false> class EXPORTGPUPMRI c
   inline boost::shared_ptr< cuNDArray<REAL> > get_dcw() { return dcw_; }
   inline bool is_setup() { return ready_; }
   
-  virtual int mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
-  virtual int mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
+  virtual void mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
+  virtual void mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
 
-  virtual int setup( _uintd matrix_size, _uintd matrix_size_os, REAL W );
-  virtual int preprocess( cuNDArray<_reald> *trajectory );
-  virtual int set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw );
+  virtual void setup( _uintd matrix_size, _uintd matrix_size_os, REAL W );
+  virtual void preprocess( cuNDArray<_reald> *trajectory );
+  virtual void set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw );
 
-  virtual boost::shared_ptr< linearOperator< REAL, cuNDArray< complext<REAL>  > > > clone(){
-    return linearOperator< REAL, cuNDArray<complext<REAL> > >::clone(this);
+  virtual boost::shared_ptr< linearOperator<cuNDArray< complext<REAL>  > > > clone(){
+    return linearOperator< cuNDArray<complext<REAL> > >::clone(this);
   }
   
 protected:
@@ -41,3 +41,6 @@ protected:
   boost::shared_ptr< cuNDArray<REAL> > dcw_;
   bool ready_;
 };
+
+ //Atomics can't be used with doubles
+template<unsigned int D> class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,D,true>{};

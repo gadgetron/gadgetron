@@ -10,7 +10,7 @@
 #include "ndarray_vector_td_utilities.h"
 #include "cuSbCgSolver.h"
 #include "cuCgSolver.h"
-#include "cuIdentityOperator.h"
+#include "identityOperator.h"
 #include "cuPartialDerivativeOperator.h"
 #include "parameterparser.h"
 
@@ -78,24 +78,24 @@ int main(int argc, char** argv)
   unsigned int num_outer_iterations = parms.get_parameter('O')->get_int_value();
   
   // Setup regularization operators
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_real,2> > Rx( new cuPartialDerivativeOperator<_real,_real,2>(0) ); 
+  boost::shared_ptr< cuPartialDerivativeOperator<_real,2> > Rx( new cuPartialDerivativeOperator<_real,2>(0) );
   Rx->set_weight( lambda );
   Rx->set_domain_dimensions(data.get_dimensions().get());
   Rx->set_codomain_dimensions(data.get_dimensions().get());
 
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_real,2> > Ry( new cuPartialDerivativeOperator<_real,_real,2>(1) ); 
+  boost::shared_ptr< cuPartialDerivativeOperator<_real,2> > Ry( new cuPartialDerivativeOperator<_real,2>(1) );
   Ry->set_weight( lambda );
   Ry->set_domain_dimensions(data.get_dimensions().get());
   Ry->set_codomain_dimensions(data.get_dimensions().get());
 
   // Define encoding operator (identity)
-  boost::shared_ptr< cuIdentityOperator<_real,_real> > E( new cuIdentityOperator<_real,_real>() );
+  boost::shared_ptr< identityOperator<cuNDArray<_real> > > E( new identityOperator<cuNDArray<_real> >() );
   E->set_weight( mu );
   E->set_domain_dimensions(data.get_dimensions().get());
   E->set_codomain_dimensions(data.get_dimensions().get());
     
   // Setup split-Bregman solver
-  cuSbCgSolver<_real,_real> sb;
+  cuSbCgSolver<_real> sb;
   sb.set_encoding_operator( E );
   //sb.add_regularization_operator( Rx ); // Anisotropic denoising
   //sb.add_regularization_operator( Ry ); // Anisotropic denoising
@@ -104,12 +104,12 @@ int main(int argc, char** argv)
   sb.add_group();
   sb.set_max_outer_iterations(num_outer_iterations);
   sb.set_max_inner_iterations(num_inner_iterations);
-  sb.set_output_mode( cuCgSolver<_real,_real>::OUTPUT_VERBOSE );
+  sb.set_output_mode( cuCgSolver<_real>::OUTPUT_VERBOSE );
   
   // Setup inner conjugate gradient solver
   sb.get_inner_solver()->set_max_iterations( num_cg_iterations );
   sb.get_inner_solver()->set_tc_tolerance( 1e-4 );
-  sb.get_inner_solver()->set_output_mode( cuCgSolver<_real,_real>::OUTPUT_WARNINGS );  
+  sb.get_inner_solver()->set_output_mode( cuCgSolver<_real>::OUTPUT_WARNINGS );
 
   // Run split-Bregman solver
   boost::shared_ptr< cuNDArray<_real> > sbresult = sb.solve(&data);

@@ -89,8 +89,8 @@ mult_MH_kernel( typename intd<D>::Type dims, T *in, T *out,REAL *sigma,REAL *nor
   }    
 }
 
-template< class REAL, class T, unsigned int D> void
-cuVariableGaussOperator<REAL,T,D>::set_sigma( cuNDArray<REAL> *sigma )
+template< class T, unsigned int D> void
+cuVariableGaussOperator<T,D>::set_sigma( cuNDArray<typename realType<T>::type> *sigma )
 {
   _sigma = sigma;
   
@@ -112,12 +112,12 @@ cuVariableGaussOperator<REAL,T,D>::set_sigma( cuNDArray<REAL> *sigma )
   CHECK_FOR_CUDA_ERROR();
 }
 
-template< class REAL, class T, unsigned int D> int
-cuVariableGaussOperator<REAL,T,D>::mult_M( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate )
+template< class T, unsigned int D> void
+cuVariableGaussOperator<T,D>::mult_M( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate )
 {
   if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
-    std::cerr << std::endl << "laplaceOperator::compute_laplace : array dimensions mismatch." << std::endl;
-    return -1;
+  	throw std::runtime_error( "laplaceOperator::compute_laplace : array dimensions mismatch.");
+
   }
   
   typename uintd<D>::Type _dims = vector_to_uintd<D>( *(in->get_dimensions().get()) );
@@ -126,11 +126,6 @@ cuVariableGaussOperator<REAL,T,D>::mult_M( cuNDArray<T> *in, cuNDArray<T> *out, 
     dims.vec[i] = (int)_dims.vec[i];
   }  
   
-  if( D>3 ){
-    std::cerr << std::endl << "partialDerivativeOperator::compute_laplace : internal error (only D<4 supported for now)." << std::endl;
-    return -1;
-  }
-
   _set_device();
   
   dim3 dimBlock( BLOCK_SIZE );
@@ -143,15 +138,15 @@ cuVariableGaussOperator<REAL,T,D>::mult_M( cuNDArray<T> *in, cuNDArray<T> *out, 
 
   _restore_device();
 
-  return 0;
+
 }
 
-template< class REAL, class T, unsigned int D> int
-cuVariableGaussOperator<REAL,T,D>::mult_MH( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate)
+template< class T, unsigned int D> void
+cuVariableGaussOperator<T,D>::mult_MH( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate)
 {
   if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
-    std::cerr << std::endl << "laplaceOperator::compute_laplace : array dimensions mismatch." << std::endl;
-    return -1;
+    throw std::runtime_error("laplaceOperator::compute_laplace : array dimensions mismatch.");
+
   }
   
   typename uintd<D>::Type _dims = vector_to_uintd<D>( *(in->get_dimensions().get()) );
@@ -159,11 +154,7 @@ cuVariableGaussOperator<REAL,T,D>::mult_MH( cuNDArray<T> *in, cuNDArray<T> *out,
   for( unsigned int i=0; i<D; i++ ){
     dims.vec[i] = (int)_dims.vec[i];
   }  
-  
-  if( D>3 ){
-    std::cerr << std::endl << "partialDerivativeOperator::compute_laplace : internal error (only D<4 supported for now)." << std::endl;
-    return -1;
-  }
+
 
   _set_device();
 
@@ -178,30 +169,17 @@ cuVariableGaussOperator<REAL,T,D>::mult_MH( cuNDArray<T> *in, cuNDArray<T> *out,
 
   _restore_device();
   
-  return 0;
+
 }
 
-template< class REAL, class T, unsigned int D> int
-cuVariableGaussOperator<REAL,T,D>::mult_MH_M( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate)
-{
-  cuNDArray<T> tmp;
-  tmp.create(out->get_dimensions().get());
 
-  int res = mult_M(in,&tmp);
-
-  if (res < 0){
-    return -1;
-  }
-
-  return mult_MH(&tmp,out,accumulate);
-}
 
 // Instantiations
 
 
-template class EXPORTSOLVERS cuVariableGaussOperator<float, float, 1>;
-template class EXPORTSOLVERS cuVariableGaussOperator<float, float, 2>;
-template class EXPORTSOLVERS cuVariableGaussOperator<float, float, 3>;
+template class EXPORTSOLVERS cuVariableGaussOperator<float, 1>;
+template class EXPORTSOLVERS cuVariableGaussOperator<float, 2>;
+template class EXPORTSOLVERS cuVariableGaussOperator<float, 3>;
 
 /*
 template class EXPORTSOLVERS cuVariableGaussOperator<float, float_complext::Type, 1>;
@@ -209,9 +187,9 @@ template class EXPORTSOLVERS cuVariableGaussOperator<float, float_complext::Type
 template class EXPORTSOLVERS cuVariableGaussOperator<float, float_complext::Type, 3>;
 */
 
-template class EXPORTSOLVERS cuVariableGaussOperator<double, double, 1>;
-template class EXPORTSOLVERS cuVariableGaussOperator<double, double, 2>;
-template class EXPORTSOLVERS cuVariableGaussOperator<double, double, 3>;
+template class EXPORTSOLVERS cuVariableGaussOperator<double, 1>;
+template class EXPORTSOLVERS cuVariableGaussOperator<double, 2>;
+template class EXPORTSOLVERS cuVariableGaussOperator<double, 3>;
 
 /*
 template class EXPORTSOLVERS cuVariableGaussOperator<double, double_complext::Type, 1>;

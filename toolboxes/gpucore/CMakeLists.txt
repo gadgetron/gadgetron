@@ -15,8 +15,9 @@ cuda_add_library(gpucore SHARED
                             ndarray_vector_td_utilities.cu
                             cuNDArray_kernels.cu
                             radial_utilities.cu
-                            cuNDArray.cpp
+                            cuNDArray.cu
                             cuNDFFT.cpp
+                            cuGTBLAS.cu
                             CUBLASContextProvider.cpp
 							)
 
@@ -30,6 +31,7 @@ check_CUDA.h
 ndarray_vector_td_utilities.h
 cuNDArray.h
 cuNDFFT.h
+cuGTBLAS.h
 radial_utilities.h
 real_utilities_device.h
 gpucore_export.h

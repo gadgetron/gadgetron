@@ -9,22 +9,24 @@
 #include <boost/smart_ptr.hpp>
 #include <vector>
 
-template <class REAL, class T, unsigned int D> class EXPORTSOLVERS cuVariableGaussOperator 
-	: public linearOperator<REAL, cuNDArray<T> >
+template < class T, unsigned int D> class EXPORTSOLVERS cuVariableGaussOperator
+	: public linearOperator< cuNDArray<T> >
 {
 
+
  public:
-  cuVariableGaussOperator() : linearOperator<REAL, cuNDArray<T> >() { set_device(-1); }
+	typedef typename realType<T>::type REAL;
+  cuVariableGaussOperator() : linearOperator<cuNDArray<T> >() { set_device(-1); }
   virtual ~cuVariableGaussOperator() {}
 
   void set_sigma(cuNDArray<REAL> * sigma);
   
-  virtual int mult_MH_M( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate = false );
-  virtual int mult_MH( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate = false );
-  virtual int mult_M( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate = false );
 
-  virtual boost::shared_ptr< linearOperator< REAL, cuNDArray<T> > > clone(){
-    return linearOperator< REAL, cuNDArray<T> >::clone(this);
+  virtual void mult_MH( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate = false );
+  virtual void mult_M( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate = false );
+
+  virtual boost::shared_ptr< linearOperator<  cuNDArray<T> > > clone(){
+    return linearOperator<cuNDArray<T> >::clone(this);
   }
   
  protected:

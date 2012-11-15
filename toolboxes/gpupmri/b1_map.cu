@@ -84,13 +84,10 @@ estimate_b1_map( cuNDArray<complext<REAL> > *data_in, int target_coils)
   }
   
   // Normalize by the RSS of the coils
-  if( !cuNDA_rss_normalize<REAL>( data_out.get(), D ) ){
-    cout << endl << "estimate_b1_map:: error in rss_normalize" << endl;
-    return boost::shared_ptr< cuNDArray<complext<REAL> > >();
-  }
+  rss_normalize( data_out.get(), D );
   
   // Now calculate the correlation matrices
-  boost::shared_ptr<cuNDArray<complext<REAL> > > corrm = cuNDA_correlation<complext<REAL> >( data_out.get() );
+  boost::shared_ptr<cuNDArray<complext<REAL> > > corrm = correlation( data_out.get() );
   data_out.reset();
   
   // Smooth (onto copy of corrm)

@@ -11,119 +11,86 @@ static unsigned int prod( std::vector<unsigned int> &vec )
   return result;
 }
 
-template<class REAL, unsigned int D, bool ATOMICS> int 
+template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {
   if( (in->get_number_of_elements() != prod(*this->get_domain_dimensions())) || 
       (out->get_number_of_elements() != prod(*this->get_codomain_dimensions())) ) {
-    std::cerr << "cuNonCartesianSenseOperator::mult_M: dimensions mismatch" << std::endl;
-    return -1;
+    throw std::runtime_error( "cuNonCartesianSenseOperator::mult_M: dimensions mismatch");
   }
 
   if( !ready_ ) {
-    std::cerr << "cuNonCartesianSenseOperator::mult_M: plan has not been set up" << std::endl;
-    return -1;
+  	throw std::runtime_error( "cuNonCartesianSenseOperator::mult_M: plan has not been set up");
+
   }
 
-  cuNDArray<_complext> tmp;
+
   std::vector<unsigned int> full_dimensions = *this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
+  cuNDArray<_complext> tmp(&full_dimensions, this->device_);
 
-  if( !tmp.create( &full_dimensions, this->device_ ) ) {
-    std::cerr << "cuNonCartesianSenseOperator::mult_M: unable to allocate temp array" << std::endl;
-    return -2;    
-  }
-  
-  if( mult_csm( in, &tmp ) < 0 ) {
-    std::cerr << "cuNonCartesianSenseOperator::mult_M: unable to multiply with coil sensitivities" << std::endl;
-    return -3;
-  }
+  mult_csm( in, &tmp );
 
   if( accumulate ){
-    std::cerr << "cuNonCartesianSenseOperator::mult_M: accumulation mode not (yet) supported" << std::endl;
-    return -4; 
+    throw std::runtime_error( "cuNonCartesianSenseOperator::mult_M: accumulation mode not (yet) supported");
   }
   
   // Forwards NFFT
-  if( !plan_->compute( &tmp, out, dcw_.get(), NFFT_plan<REAL,D,ATOMICS>::NFFT_FORWARDS_C2NC )) {
-    std::cerr << "cuNonCartesianSenseOperator::mult_M : failed during NFFT" << std::endl;
-    return -4;
-  }
+  plan_->compute( &tmp, out, dcw_.get(), NFFT_plan<REAL,D,ATOMICS>::NFFT_FORWARDS_C2NC );
 
-  return 0;
+
 }
 
-template<class REAL, unsigned int D, bool ATOMICS> int 
+template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {
   if( (out->get_number_of_elements() != prod(*this->get_domain_dimensions())) || 
       (in->get_number_of_elements() != prod(*this->get_codomain_dimensions())) ) {
-    std::cerr << "cuNonCartesianSenseOperator::mult_MH: dimensions mismatch" << std::endl;
-    return -1;
+  	throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH: dimensions mismatch");
   }
 
   if( !ready_ ) {
-    std::cerr << "cuNonCartesianSenseOperator::mult_MH: plan has not been set up" << std::endl;
-    return -1;
+  	throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH: plan has not been set up" );
   }
 
   std::vector<unsigned int> tmp_dimensions = *this->get_domain_dimensions();
   tmp_dimensions.push_back(this->ncoils_);
 
-  cuNDArray<_complext> tmp;
-  if( !tmp.create( &tmp_dimensions, this->device_ ) ) {
-    std::cerr << "cuNonCartesianSenseOperator::mult_MH: Unable to create temp storage" << std::endl;
-    return -2;
-  }
+  cuNDArray<_complext> tmp(&tmp_dimensions, this->device_);
   
   // Do the NFFT
-  if( !plan_->compute( in, &tmp, dcw_.get(), NFFT_plan<REAL,D,ATOMICS>::NFFT_BACKWARDS_NC2C )) {
-    std::cerr << "cuNonCartesianSenseOperator::mult_MH: NFFT failed" << std::endl;
-    return -3;
-  }
+  plan_->compute( in, &tmp, dcw_.get(), NFFT_plan<REAL,D,ATOMICS>::NFFT_BACKWARDS_NC2C );
 
   if( !accumulate ){
-    int ret1 = this->_set_device();
-    if( ret1 == 0 ) cuNDA_clear<_complext>( out );
-    int ret2 = this->_restore_device();
+    this->_set_device();
+    out->clear();
+
+    this->_restore_device();
     
-    if( ret1<0 || ret2<0 ){
-      std::cerr << "cuNonCartesianSenseOperator::mult_MH: device error" << std::endl;
-      return -4; 
-    }    
   }
   
-  if( mult_csm_conj_sum( &tmp, out ) < 0 ) {
-    std::cerr << "cuNonCartesianSenseOperator::mult_MH: unable to multiply with conjugate of sensitivity maps and sum" << std::endl;
-    return -5; 
-  }
+  mult_csm_conj_sum( &tmp, out );
   
-  return 0;
 }
 
-template<class REAL, unsigned int D, bool ATOMICS> int 
+template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::setup( _uintd matrix_size, _uintd matrix_size_os, REAL W )
 {  
-  if( !plan_->setup( matrix_size, matrix_size_os, W )) {
-    std::cerr << "cuNonCartesianSenseOperator: failed to setup plan" << std::endl;
-    return -1;
-  }
+  plan_->setup( matrix_size, matrix_size_os, W );
   
   ready_ = true;
-  return 0;
 }
 
-template<class REAL, unsigned int D, bool ATOMICS> int 
+template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::preprocess( cuNDArray<_reald> *trajectory ) 
 {
   if( !this->csm_.get() || this->csm_->get_number_of_elements() == 0 ) {
-    std::cerr << "cuNonCartesianSenseOperator::set_trajectory : Error setting trajectory, csm not set" << std::endl;
-    return -1;
+    throw std::runtime_error( "cuNonCartesianSenseOperator::set_trajectory : Error setting trajectory, csm not set");
   }
   
   if( !ready_ ) {
-    std::cerr << "cuNonCartesianSenseOperator::preprocess: plan has not been set up" << std::endl;
-    return -1;
+  	throw std::runtime_error( "cuNonCartesianSenseOperator::preprocess: plan has not been set up");
+
   }
 
   if( trajectory ){
@@ -140,38 +107,26 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::preprocess( cuNDArray<_reald> *traj
     tmp_dims.push_back(num_frames);
     this->set_domain_dimensions(&tmp_dims);
     
-    if( !plan_->preprocess( trajectory, NFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_ALL )) {
-      std::cerr << "cuNonCartesianSenseOperator: failed to run preprocess" << std::endl;
-      return -2;
-    }
+    plan_->preprocess( trajectory, NFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_ALL );
   }
   else {
-    std::cerr << "cuNonCartesianSenseOperator: cannot set trajectory to 0x0." << std::endl;
-    return -3;
+    throw std::runtime_error( "cuNonCartesianSenseOperator: cannot set trajectory to 0x0.");
+
   }
   
-  return 0;
 }
 
-template<class REAL, unsigned int D, bool ATOMICS> int 
+template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw ) 
 {
-  int ret1 = 0, ret2 = 0;
-  
   if( dcw->get_device() != this->device_ ){
-    ret1 = this->_set_device();
-    if( ret1 == 0 ) dcw_ = boost::shared_ptr< cuNDArray<REAL> >(new cuNDArray<REAL>(*dcw.get()));
-    ret2 = this->_restore_device();
+    this->_set_device();
+    dcw_ = boost::shared_ptr< cuNDArray<REAL> >(new cuNDArray<REAL>(*dcw.get()));
+    this->_restore_device();
   }
   else    
     dcw_ = dcw;
   
-  if( ret1 == 0 && ret2 == 0 )
-    return 0;
-  else{
-    std::cout << std::endl << "cuNonCartesianSenseOperator::set_dcw failed" << std::endl;
-    return -1;
-  }
 }
 
 //
@@ -187,11 +142,7 @@ template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,3,false>;
 template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,4,true>;
 template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,4,false>;
 
-template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,2,true>;
+
 template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,2,false>;
-
-template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,3,true>;
 template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,3,false>;
-
-template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,4,true>;
 template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,4,false>;

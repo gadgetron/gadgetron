@@ -3,36 +3,36 @@
 #include "linearOperator.h"
 #include "vector_td.h"
 
-template <class REAL, unsigned int D, class ARRAY_TYPE> class partialDerivativeOperator 
-	: public linearOperator<REAL, ARRAY_TYPE>
+template < unsigned int D, class ARRAY_TYPE> class partialDerivativeOperator
+	: public linearOperator<ARRAY_TYPE>
 {
   
 public:
   
   partialDerivativeOperator( unsigned int dimension ) : 
-    linearOperator<REAL,ARRAY_TYPE>() { compute_stride(dimension); }
+    linearOperator<ARRAY_TYPE>() { compute_stride(dimension); }
 
   virtual ~partialDerivativeOperator() {}
     
-  virtual int mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
+  virtual void mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
   {
-    return compute_partial_derivative( forwards_stride_, in, out, accumulate );
+    compute_partial_derivative( forwards_stride_, in, out, accumulate );
   }
   
-  virtual int mult_MH( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
+  virtual void mult_MH( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
   {
-    return compute_partial_derivative( adjoint_stride_, in, out, accumulate );
+    compute_partial_derivative( adjoint_stride_, in, out, accumulate );
   }
 
-  virtual int mult_MH_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
+  virtual void mult_MH_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
   {    
-    return compute_second_order_partial_derivative( forwards_stride_, adjoint_stride_, in, out, accumulate );   
+    compute_second_order_partial_derivative( forwards_stride_, adjoint_stride_, in, out, accumulate );
   }
 
-  virtual int compute_partial_derivative
+  virtual void compute_partial_derivative
   ( typename intd<D>::Type stride, ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate ) = 0;  
 
-  virtual int compute_second_order_partial_derivative
+  virtual void compute_second_order_partial_derivative
   ( typename intd<D>::Type forwards_stride, typename intd<D>::Type adjoint_stride, 
     ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate ) = 0;    
 

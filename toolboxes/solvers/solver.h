@@ -27,11 +27,9 @@ public:
   virtual void set_x0( boost::shared_ptr<ARRAY_TYPE_OUT> x0 ){ x0_ = x0; }
   virtual boost::shared_ptr<ARRAY_TYPE_OUT> get_x0(){ return x0_; }
 
-  // Default error output
-  virtual void solver_error( std::string msg ) { std::cerr << msg << std::endl; }
-
-  // Default warning output
-  virtual void solver_warning( std::string msg ) { std::cerr << msg << std::endl; }
+  virtual void solver_warning(std::string warn){
+  	std::cout << warn << std::endl;
+  }
 
   // Invoke solver
   virtual boost::shared_ptr<ARRAY_TYPE_OUT> solve( ARRAY_TYPE_IN* ) = 0;

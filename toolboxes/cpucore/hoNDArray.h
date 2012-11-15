@@ -9,6 +9,7 @@
 
 #include <string.h>
 #include <boost/shared_ptr.hpp>
+#include <stdexcept>
 
 class ArrayIterator
 {
@@ -101,9 +102,9 @@ public:
   {
     this->data_ = 0;
     this->dimensions_ = a.dimensions_;
-    if (allocate_memory() == 0) {
-      memcpy( this->data_, a.data_, this->elements_*sizeof(T) );
-    }
+    allocate_memory();
+    memcpy( this->data_, a.data_, this->elements_*sizeof(T) );
+
   }
 
   // Assignment operator
@@ -115,9 +116,9 @@ public:
       deallocate_memory();
       this->data_ = 0;
       this->dimensions_ = rhs.dimensions_;
-      if (allocate_memory() == 0) {
-	memcpy( this->data_, rhs.data_, this->elements_*sizeof(T) );
-      }
+      allocate_memory();
+      memcpy( this->data_, rhs.data_, this->elements_*sizeof(T) );
+
     }
     return *this;
   }
@@ -139,21 +140,20 @@ public:
     std::fill(this->get_data_ptr(), this->get_data_ptr()+this->get_number_of_elements(), value);
   }
 
-  virtual int permute(std::vector<unsigned int> *dim_order, NDArray<T>* out = 0, int shift_mode = 0)
+  virtual void permute(std::vector<unsigned int> *dim_order, NDArray<T>* out = 0, int shift_mode = 0)
   {
     hoNDArray<T>* out_int = 0;
 
     // Check ordering array
     if (dim_order->size() > this->dimensions_->size()) {
-      std::cerr << "hoNDArray::permute - Invalid length of dimension ordering array" << std::endl;
-      return -1;
+      std::runtime_error("hoNDArray::permute - Invalid length of dimension ordering array");
     }
 
     std::vector<unsigned int> dim_count(this->dimensions_->size(),0);
     for (unsigned int i = 0; i < dim_order->size(); i++) {
       if ((*dim_order)[i] >= this->dimensions_->size()) {
-	std::cerr << "hoNDArray::permute - Invalid dimension order array" << std::endl;
-	return -1;
+	std::runtime_error("hoNDArray::permute - Invalid dimension order array");
+
       }
       dim_count[(*dim_order)[i]]++;
     }
@@ -164,8 +164,8 @@ public:
     // Check that there are no duplicate dimensions
     for (unsigned int i = 0; i < dim_order->size(); i++) {
       if (dim_count[(*dim_order)[i]] != 1) {
-	std::cerr << "hoNDArray::permute - Invalid dimension order array (duplicates)" << std::endl;
-	return -1;
+	std::runtime_error("hoNDArray::permute - Invalid dimension order array (duplicates)");
+
       }
       dim_order_int.push_back((*dim_order)[i]);
     }
@@ -182,13 +182,12 @@ public:
     if (out) {
       out_int = dynamic_cast< hoNDArray<T>* >(out);
       if (!out_int) {
-	std::cerr << "hoNDArray::permute: failed to dynamic cast out array pointer" << std::endl;
-	return -1;
+    	  std::runtime_error("hoNDArray::permute: failed to dynamic cast out array pointer");
+
       }
       for (unsigned int i = 0; i < dim_order_int.size(); i++) {
 	if ((*this->dimensions_)[dim_order_int[i]] != out_int->get_size(i)) {
-	  std::cerr << "hoNDArray::permute: Dimensions of output array do not match the input array" << std::endl;
-	  return -1;
+	  std::runtime_error("hoNDArray::permute: Dimensions of output array do not match the input array");
 	}
       }
     }
@@ -217,12 +216,12 @@ public:
       this->data_ = o;
     }
 
-    return 0;
+
   }
 
 protected:
   
-  virtual int allocate_memory()
+  virtual void allocate_memory()
   {
     deallocate_memory();
 
@@ -234,20 +233,17 @@ protected:
     _allocate_memory(this->elements_, &this->data_);
     
     if( this->data_ == 0x0 ){
-      std::cout << "hoNDArray<>::allocate memory failed" << std::endl;
-      return -1;
+      std::runtime_error("hoNDArray<>::allocate memory failed");
     }
     
-    return 0;
   }
 
-  virtual int deallocate_memory() {
+  virtual void deallocate_memory() {
     if( this->data_ ) {
       _deallocate_memory( this->data_ );
       this->data_ = 0x0;
     }
 
-    return 0;
   }
 
   // Generic allocator / deallocator

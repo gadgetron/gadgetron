@@ -57,13 +57,13 @@ laplace_kernel( typename intd<D>::Type dims, T *in, T *out )
   }
 }
 
-template< class REAL, class T, unsigned int D> int 
-cuLaplaceOperator<REAL,T,D>::compute_laplace( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate )
+template< class T, unsigned int D> void
+cuLaplaceOperator<T,D>::compute_laplace( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate )
 {
   
   if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
-    std::cerr << std::endl << "laplaceOperator::compute_laplace : array dimensions mismatch." << std::endl;
-    return -1;
+  	throw std::runtime_error("laplaceOperator::compute_laplace : array dimensions mismatch.");
+
   }
   
   typename uintd<D>::Type _dims = vector_to_uintd<D>( *(in->get_dimensions().get()) );
@@ -72,10 +72,7 @@ cuLaplaceOperator<REAL,T,D>::compute_laplace( cuNDArray<T> *in, cuNDArray<T> *ou
     dims.vec[i] = (int)_dims.vec[i];
   }  
   
-  if( D>3 ){
-    std::cerr << std::endl << "partialDerivativeOperator::compute_laplace : internal error (only D<4 supported for now)." << std::endl;
-    return -1;
-  }
+
 
   _set_device();
   
@@ -86,31 +83,31 @@ cuLaplaceOperator<REAL,T,D>::compute_laplace( cuNDArray<T> *in, cuNDArray<T> *ou
     dimGrid.x *= dims.vec[d];
   
   // Invoke kernel
-  laplace_kernel<REAL,T,D><<< dimGrid, dimBlock >>> (dims, in->get_data_ptr(), out->get_data_ptr() );
+  laplace_kernel<typename realType<T>::type ,T,D><<< dimGrid, dimBlock >>> (dims, in->get_data_ptr(), out->get_data_ptr() );
   
   CHECK_FOR_CUDA_ERROR();
 
   _restore_device();
 
-  return 0;
+
 }
 
 // Instantiations
 
-template class EXPORTSOLVERS cuLaplaceOperator<float, float, 1>;
-template class EXPORTSOLVERS cuLaplaceOperator<float, float, 2>;
-template class EXPORTSOLVERS cuLaplaceOperator<float, float, 3>;
+template class EXPORTSOLVERS cuLaplaceOperator<float, 1>;
+template class EXPORTSOLVERS cuLaplaceOperator<float, 2>;
+template class EXPORTSOLVERS cuLaplaceOperator<float, 3>;
 
-template class EXPORTSOLVERS cuLaplaceOperator<float, float_complext, 1>;
-template class EXPORTSOLVERS cuLaplaceOperator<float, float_complext, 2>;
-template class EXPORTSOLVERS cuLaplaceOperator<float, float_complext, 3>;
+template class EXPORTSOLVERS cuLaplaceOperator<float_complext, 1>;
+template class EXPORTSOLVERS cuLaplaceOperator<float_complext, 2>;
+template class EXPORTSOLVERS cuLaplaceOperator<float_complext, 3>;
 
 
-template class EXPORTSOLVERS cuLaplaceOperator<double, double, 1>;
-template class EXPORTSOLVERS cuLaplaceOperator<double, double, 2>;
-template class EXPORTSOLVERS cuLaplaceOperator<double, double, 3>;
+template class EXPORTSOLVERS cuLaplaceOperator<double, 1>;
+template class EXPORTSOLVERS cuLaplaceOperator<double, 2>;
+template class EXPORTSOLVERS cuLaplaceOperator<double, 3>;
 
-template class EXPORTSOLVERS cuLaplaceOperator<double, double_complext, 1>;
-template class EXPORTSOLVERS cuLaplaceOperator<double, double_complext, 2>;
-template class EXPORTSOLVERS cuLaplaceOperator<double, double_complext, 3>;
+template class EXPORTSOLVERS cuLaplaceOperator<double_complext, 1>;
+template class EXPORTSOLVERS cuLaplaceOperator<double_complext, 2>;
+template class EXPORTSOLVERS cuLaplaceOperator<double_complext, 3>;
 

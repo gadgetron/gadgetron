@@ -4,9 +4,13 @@
 #include "solvers_export.h"
 
 #include <boost/shared_ptr.hpp>
-
-template <class REAL, class ARRAY_TYPE> class linearOperator
+#include <stdexcept>
+#include "complext.h"
+template < class ARRAY_TYPE> class linearOperator
 {
+private:
+		typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
+	  typedef typename realType<ELEMENT_TYPE>::type REAL;
  public:
 
   linearOperator() { weight_ = REAL(1); }
@@ -52,36 +56,24 @@ template <class REAL, class ARRAY_TYPE> class linearOperator
     return boost::shared_ptr< std::vector<unsigned int> >(dims);
   }
 
-  virtual int mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
-  virtual int mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
+  virtual void mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
+  virtual void mult_MH( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false) = 0;
 
-  virtual int mult_MH_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false )
+  virtual void mult_MH_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false )
   {    
     if( codomain_dims_.size() == 0 ){
-      std::cerr << "Error: linearOperator::mult_MH_M : codomain dimensions not set" << std::endl;
-      return -1;
+      throw std::runtime_error("Error: linearOperator::mult_MH_M : codomain dimensions not set");
+
     }
 
     ARRAY_TYPE tmp;
-    if( !tmp.create(&codomain_dims_) ) {
-      std::cerr << "Error: linearOperator::mult_MH_M : unable to create intermediate codomain array" << std::endl;
-      return -2;
-    }
-    
-    if( mult_M( in, &tmp, false ) < 0 ) {
-      std::cerr << "Error: linearOperator::mult_MH_M : Unable to perform mult_M" << std::endl;
-      return -3;
-    }
-    
-    if( mult_MH( &tmp, out, accumulate ) < 0 ) {
-      std::cerr << "Error: linearOperator::mult_MH_M : Unable to perform mult_MH" << std::endl;
-      return -4;
-    }
-    
-    return 0;
+    tmp.create(&codomain_dims_);
+    mult_M( in, &tmp, false );
+    mult_MH( &tmp, out, accumulate );
+
   }
   
-  virtual boost::shared_ptr< linearOperator< REAL, ARRAY_TYPE > > clone() = 0;
+  virtual boost::shared_ptr< linearOperator<ARRAY_TYPE > > clone() = 0;
 
   void* operator new (size_t bytes) { return ::new char[bytes]; }
   void operator delete (void *ptr) { delete [] static_cast <char *> (ptr); } 

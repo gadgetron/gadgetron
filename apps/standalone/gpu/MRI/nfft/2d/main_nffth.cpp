@@ -110,7 +110,7 @@ int main( int argc, char** argv)
   
   // Preprocess
   timer = new GPUTimer("NFFT preprocessing");
-  bool success = plan.preprocess( traj.get(), plan_type::NFFT_PREP_NC2C );
+  plan.preprocess( traj.get(), plan_type::NFFT_PREP_NC2C );
   delete timer;
 
   // Compute density compensation weights
@@ -121,7 +121,7 @@ int main( int argc, char** argv)
 
   // Gridder
   timer = new GPUTimer("Computing adjoint nfft (gridding)");
-  success = plan.compute( &samples, &image, dcw.get(), plan_type::NFFT_BACKWARDS_NC2C );
+  plan.compute( &samples, &image, dcw.get(), plan_type::NFFT_BACKWARDS_NC2C );
   delete timer;
 
   //
@@ -133,7 +133,8 @@ int main( int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > host_image = image.to_host();
   write_nd_array<_complext>( host_image.get(), (char*)parms.get_parameter('r')->get_string_value());
 
-  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_cAbs<_real,_complext>(&image)->to_host();
+
+  boost::shared_ptr< hoNDArray<_real> > host_norm = abs(&image)->to_host();
   write_nd_array<_real>( host_norm.get(), "result.real" );
 
   delete timer;

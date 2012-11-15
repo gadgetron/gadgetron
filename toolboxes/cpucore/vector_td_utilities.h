@@ -11,6 +11,7 @@
 #include <iostream>
 #include <algorithm>
 
+
 //
 // Get/set operations on vector_td<T,D>
 //

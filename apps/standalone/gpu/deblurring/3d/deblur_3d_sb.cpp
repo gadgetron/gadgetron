@@ -70,9 +70,9 @@ int main(int argc, char** argv)
   unsigned int num_outer_iterations = parms.get_parameter('O')->get_int_value();
   
   // Setup regularization operators
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Rx( new cuPartialDerivativeOperator<_real,_complext,3>(0) ); 
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Ry( new cuPartialDerivativeOperator<_real,_complext,3>(1) ); 
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Rz( new cuPartialDerivativeOperator<_real,_complext,3>(2) ); 
+  boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> > Rx( new cuPartialDerivativeOperator<_complext,3>(0) );
+  boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> > Ry( new cuPartialDerivativeOperator<_complext,3>(1) );
+  boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> > Rz( new cuPartialDerivativeOperator<_complext,3>(2) );
   
   _real mu = (_real) parms.get_parameter('M')->get_float_value();
   _real lambda = (_real) parms.get_parameter('L')->get_float_value();
@@ -106,7 +106,7 @@ int main(int argc, char** argv)
   E->set_codomain_dimensions(data.get_dimensions().get());
   
   // Setup split-Bregman solver
-  cuSbcCgSolver<_real, _complext> sb;
+  cuSbcCgSolver<_complext> sb;
   sb.set_encoding_operator( E );
   sb.add_regularization_group_operator( Rx ); 
   sb.add_regularization_group_operator( Ry ); 
@@ -114,11 +114,11 @@ int main(int argc, char** argv)
   sb.add_regularization_operator( Rz ); 
   sb.set_max_outer_iterations(num_outer_iterations);
   sb.set_max_inner_iterations(num_inner_iterations);
-  sb.set_output_mode( cuSbcCgSolver<_real, _complext>::OUTPUT_VERBOSE );
+  sb.set_output_mode( cuSbcCgSolver< _complext>::OUTPUT_VERBOSE );
 
   sb.get_inner_solver()->set_max_iterations( num_cg_iterations );
   sb.get_inner_solver()->set_tc_tolerance( 1e-8 );
-  sb.get_inner_solver()->set_output_mode( cuCgSolver<_real, _complext>::OUTPUT_WARNINGS );
+  sb.get_inner_solver()->set_output_mode( cuCgSolver<_complext>::OUTPUT_WARNINGS );
 
   // Run split-Bregman solver
   boost::shared_ptr< cuNDArray<_complext> > sbresult = sb.solve(&data);
@@ -128,7 +128,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > host_result = sbresult->to_host();
   write_nd_array<_complext>(host_result.get(), (char*)parms.get_parameter('r')->get_string_value());
     
-  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_cAbs<_real,_complext>(sbresult.get())->to_host();
+  boost::shared_ptr< hoNDArray<_real> > host_norm = abs(sbresult.get())->to_host();
   write_nd_array<_real>( host_norm.get(), "sb_deblurred_image.real" );  
 
   return 0;
