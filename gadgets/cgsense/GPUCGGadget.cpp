@@ -29,6 +29,7 @@ GPUCGGadget::GPUCGGadget()
 , image_series_(0)
 , image_counter_(0)
 , mutex_("GPUCGMutex")
+, buffer_(ACE_Message_Queue_Base::DEFAULT_HWM * 10, ACE_Message_Queue_Base::DEFAULT_LWM * 10)
 {
 	matrix_size_ = uintd2(0,0);
 	matrix_size_os_ = uintd2(0,0);
