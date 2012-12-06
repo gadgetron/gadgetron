@@ -1,3 +1,4 @@
+#include "cuNDFFT.h"
 #include "GrappaWeightsCalculator.h"
 #include "GadgetContainerMessage.h"
 
@@ -5,7 +6,6 @@
 #include "Gadgetron.h"
 #include "b1_map.h"
 #include "hoNDArray_fileio.h"
-#include "cuNDFFT.h"
 #include "htgrappa.h"
 #include "GPUTimer.h"
 #include "complext.h"

@@ -8,12 +8,12 @@
 #include <complex>
 
 #include "gadgetroncgsense_export.h"
+#include "NFFT.h"
+#include "cuCgSolver.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
-#include "cuCgSolver.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "cuCgPrecondWeights.h"
-#include "NFFT.h"
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
 #include "ismrmrd.h"

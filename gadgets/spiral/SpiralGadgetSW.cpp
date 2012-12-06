@@ -1,7 +1,7 @@
+#include "cuNDArray.h"
 #include "Gadgetron.h"
 #include "SpiralGadgetSW.h"
 #include "hoNDArray_fileio.h"
-#include "cuNDArray.h"
 #include "vector_td.h"
 #include "vector_td_operators.h"
 #include "check_CUDA.h"

@@ -16,8 +16,8 @@
 
 #include "gpunfft_export.h"
 
-#include "vector_td.h"
 #include "cuNDArray.h"
+#include "vector_td.h"
 #include "complext.h"
 
 #include <thrust/device_vector.h>

@@ -3,12 +3,12 @@
 #pragma once
 
 #include "gpucore_export.h"
+#include <cuda.h>
+#include <cuda_runtime_api.h>
 
 #include "NDArray.h"
 #include "hoNDArray.h"
 
-#include <cuda.h>
-#include <cuda_runtime_api.h>
 #include <boost/shared_ptr.hpp>
 #include "complext.h"
 #include "thrust/device_vector.h"

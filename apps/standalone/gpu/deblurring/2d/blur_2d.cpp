@@ -2,8 +2,8 @@
   Example code to blur an image and generate input data for the deblurring apps.
 */
 
-#include "hoNDArray_fileio.h"
 #include "cuNDArray.h"
+#include "hoNDArray_fileio.h"
 #include "parameterparser.h"
 
 #include "ndarray_vector_td_utilities.h"

@@ -1,8 +1,8 @@
+#include "b1_map.h"
 #include "GPUCGGadget.h"
 #include "Gadgetron.h"
 #include "GadgetMRIHeaders.h"
 #include "ndarray_vector_td_utilities.h"
-#include "b1_map.h"
 #include "GadgetIsmrmrdReadWrite.h"
 
 #include "hoNDArray_fileio.h"
