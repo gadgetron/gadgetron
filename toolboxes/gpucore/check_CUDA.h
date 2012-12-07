@@ -1,6 +1,8 @@
 #pragma once
 
 #include <stdio.h>
+#include <boost/exception/detail/attribute_noreturn.hpp>
+#include "GadgetronCuException.h"
 
 inline void THROW_ERROR(const char* file, const int line,
                         const char* errorString) {
@@ -21,17 +23,15 @@ inline void THROW_ERROR(const char* file, const int line,
  *  Should never be used in the code, use CHECK_FOR_CUDA_ERROR(); instead
  *  inspired by cutil.h: CUT_CHECK_ERROR
  */
-inline void CHECK_FOR_CUDA_ERROR(const char* file, const int line) {
+inline void CHECK_FOR_CUDA_ERROR(char const * cur_fun, const char* file, const int line) {
     cudaError_t errorCode = cudaGetLastError();
     if (errorCode != cudaSuccess) {
-        const char* errorString = cudaGetErrorString(errorCode);
-        THROW_ERROR(file, line, errorString);
+    	boost::exception_detail::throw_exception_(cuda_error(errorCode),cur_fun,file,line);
     }
 #ifdef DEBUG
     errorCode = cudaThreadSynchronize();
     if (errorCode != cudaSuccess) {
-        const char* errorString = cudaGetErrorString(errorCode);
-        THROW_ERROR(file, line, errorString);
+    	boost::exception_detail::throw_exception_(cuda_error(errorCode),cur_fun,file,line);
     }
 #endif
 }
@@ -41,7 +41,7 @@ inline void CHECK_FOR_CUDA_ERROR(const char* file, const int line) {
  *  an error was detected, is only available in debug mode.
  */
 //#if DEBUG
-#define CHECK_FOR_CUDA_ERROR(); CHECK_FOR_CUDA_ERROR(__FILE__,__LINE__);
+#define CHECK_FOR_CUDA_ERROR(); CHECK_FOR_CUDA_ERROR(BOOST_CURRENT_FUNCTION,__FILE__,__LINE__);
 //#else
 //#define CHECK_FOR_CUDA_ERROR();
 //#endif

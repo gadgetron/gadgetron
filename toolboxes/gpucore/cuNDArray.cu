@@ -81,7 +81,7 @@ cuNDArray<T>::cuNDArray(const cuNDArray<T>& a)
 	if (a.device_ == this->device_) {
 	  if (cudaMemcpy(this->data_, a.data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice) !=
 	  cudaSuccess) {
-		  throw cuda_error("cuNDArray: Unable to copy data in copy constructor");
+		  BOOST_THROW_EXCEPTION( cuda_error("cuNDArray: Unable to copy data in copy constructor"));
 	  }
 	} else {
 	  //This memory is on a different device, we must move it.
@@ -103,7 +103,7 @@ cuNDArray<T>& cuNDArray<T>::operator=(const cuNDArray<T>& rhs)
 {
   int cur_device; 
   if( cudaGetDevice(&cur_device) != cudaSuccess) {
-    throw cuda_error("cuNDArray::operator=: unable to get device no");
+    BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::operator=: unable to get device no"));
 
   }
   
@@ -113,14 +113,14 @@ cuNDArray<T>& cuNDArray<T>::operator=(const cuNDArray<T>& rhs)
     
     if (cudaMemcpy(this->data_, rhs.data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice) !=
 	cudaSuccess) {
-      throw cuda_error("cuNDArray& operator= failed to copy data");
+      BOOST_THROW_EXCEPTION( cuda_error("cuNDArray& operator= failed to copy data"));
 
     }
   } 
   else {
     
     if (cudaSetDevice(this->device_) != cudaSuccess) {
-      throw cuda_error("cuNDArray::operator=: unable to set device no");
+      BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::operator=: unable to set device no"));
 
     }
     
@@ -140,7 +140,7 @@ cuNDArray<T>& cuNDArray<T>::operator=(const cuNDArray<T>& rhs)
 	  cudaSuccess) {
 
 	cudaSetDevice(cur_device);
-	throw cuda_error("cuNDArray::operator=: failed to copy data (2)");
+	BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::operator=: failed to copy data (2)"));
 
       }
     } else {
@@ -148,7 +148,7 @@ cuNDArray<T>& cuNDArray<T>::operator=(const cuNDArray<T>& rhs)
       if( cudaSetDevice(rhs.device_) != cudaSuccess) {
 
 	cudaSetDevice(cur_device);
-	throw cuda_error("cuNDArray::operator=: unable to set device no (2)");
+	BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::operator=: unable to set device no (2)"));
 
       }
 
@@ -156,20 +156,20 @@ cuNDArray<T>& cuNDArray<T>::operator=(const cuNDArray<T>& rhs)
       if( cudaSetDevice(this->device_) != cudaSuccess) {
 
 	cudaSetDevice(cur_device);
-	throw cuda_error("cuNDArray::operator=: unable to set device no (3)");
+	BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::operator=: unable to set device no (3)"));
 
       }
       
       if (cudaMemcpy(this->data_, tmp->get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) != cudaSuccess) {
 
 	cudaSetDevice(cur_device);
-	throw cuda_error("cuNDArray::operator=: failed to copy data (3)");
+	BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::operator=: failed to copy data (3)"));
 
       }
     }
 
     if( cudaSetDevice(cur_device) != cudaSuccess) {
-      throw cuda_error("cuNDArray::operator=: unable to restore to current device");
+      BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::operator=: unable to restore to current device"));
 
     }
   }
@@ -194,7 +194,7 @@ template <class T>
 T* cuNDArray<T>::create(std::vector<unsigned int> *dimensions, int device_no)
 {
   if (device_no < 0){
-    throw cuda_error("cuNDArray::create: illegal device no");
+    BOOST_THROW_EXCEPTION(cuda_error("cuNDArray::create: illegal device no"));
 
   }
   
@@ -211,20 +211,20 @@ T* cuNDArray<T>::create(std::vector<unsigned int> *dimensions, T* data, bool del
   
   int tmp_device; 
   if( cudaGetDevice(&tmp_device) != cudaSuccess) {
-    throw cuda_error("cuNDArray::create: Unable to query for device");
+    BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::create: Unable to query for device"));
 
   }
   
   cudaDeviceProp deviceProp; 
   if( cudaGetDeviceProperties( &deviceProp, tmp_device) != cudaSuccess) {
-    throw cuda_error("cuNDArray::create: Unable to query device properties");
+    BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::create: Unable to query device properties"));
 
   }
   
   if (deviceProp.unifiedAddressing) {
     cudaPointerAttributes attrib;
     if (cudaPointerGetAttributes(&attrib, data) != cudaSuccess) {
-      throw cuda_error("cuNDArray::create: Unable to determine attributes of pointer");
+      BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::create: Unable to determine attributes of pointer"));
 
     }
     this->device_ = attrib.device;
@@ -248,7 +248,7 @@ boost::shared_ptr< cuNDArray<T> > cuNDArray<T>::allocate(std::vector<unsigned in
   boost::shared_ptr< cuNDArray<T> > ret( new cuNDArray<T> );
   
   if( ret->create(dimensions, device_no) == 0x0 ) {
-    throw cuda_error("cuNDArray<T>::allocate failed to create array on device ");
+    BOOST_THROW_EXCEPTION( cuda_error("cuNDArray<T>::allocate failed to create array on device "));
 
   }
   
@@ -261,7 +261,7 @@ boost::shared_ptr< hoNDArray<T> > cuNDArray<T>::to_host() const
   boost::shared_ptr< hoNDArray<T> > ret = boost::shared_ptr< hoNDArray<T> >(new hoNDArray<T>);
   ret->create(this->dimensions_.get());
     if (cudaMemcpy(ret->get_data_ptr(), this->data_, this->elements_*sizeof(T), cudaMemcpyDeviceToHost) != cudaSuccess) {
-      throw cuda_error("cuNDArray::to_host(): failed to copy memory from device");
+      BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::to_host(): failed to copy memory from device"));
     }
 
   return ret;
@@ -329,12 +329,12 @@ void cuNDArray<T>::set_device(int device)
 
   int cur_device; 
   if( cudaGetDevice(&cur_device) != cudaSuccess) {
-    throw cuda_error("cuNDArray::set_device: unable to get device no");
+    BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::set_device: unable to get device no"));
 
   }
 
   if( cur_device != device_ && cudaSetDevice(device_) != cudaSuccess) {
-    throw cuda_error("cuNDArray::set_device: unable to set device no");
+    BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::set_device: unable to set device no"));
 
   }
   
@@ -345,7 +345,7 @@ void cuNDArray<T>::set_device(int device)
   
   if( cudaSetDevice(device) != cudaSuccess) {
 	  cudaSetDevice(cur_device);
-	  throw cuda_error("cuNDArray::set_device: unable to set device no (2)");
+	  BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::set_device: unable to set device no (2)"));
   }
  
   device_ = device;
@@ -353,11 +353,11 @@ void cuNDArray<T>::set_device(int device)
   allocate_memory();
   if (cudaMemcpy(this->data_, tmp->get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) != cudaSuccess) {
 	  cudaSetDevice(cur_device);
-    throw cuda_error("cuNDArray::set_device: failed to copy data");
+    BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::set_device: failed to copy data"));
   }
 
   if( cudaSetDevice(cur_device) != cudaSuccess) {
-    throw cuda_error("cuNDArray::set_device: unable to restore device to current device");
+    BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::set_device: unable to restore device to current device"));
   }
 
 }
@@ -369,7 +369,7 @@ void cuNDArray<T>::allocate_memory()
   
   this->elements_ = 1;
   if (this->dimensions_->empty())
-  	throw std::runtime_error("cuNDArray::allocate_memory() : dimensions is empty.");
+  	BOOST_THROW_EXCEPTION( gt_runtime_error("cuNDArray::allocate_memory() : dimensions is empty."));
   for (unsigned int i = 0; i < this->dimensions_->size(); i++) {
     this->elements_ *= (*this->dimensions_)[i];
   } 
@@ -378,12 +378,12 @@ void cuNDArray<T>::allocate_memory()
   
   int device_no_old;
   if (cudaGetDevice(&device_no_old) != cudaSuccess) {
-    throw cuda_error("cuNDArray::allocate_memory: unable to get device no");
+    BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::allocate_memory: unable to get device no"));
   }
   
   if (device_ != device_no_old) {
     if (cudaSetDevice(device_) != cudaSuccess) {
-      throw cuda_error("cuNDArray::allocate_memory: unable to set device no");
+      BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::allocate_memory: unable to set device no"));
     }
   }
   
@@ -399,13 +399,13 @@ void cuNDArray<T>::allocate_memory()
     } 
     err << ")";
     this->data_ = 0;
-    throw cuda_error(err.str());
+    BOOST_THROW_EXCEPTION( gt_bad_alloc(err.str()));
 
   }
   
   if (device_ != device_no_old) {
     if (cudaSetDevice(device_no_old) != cudaSuccess) {
-      throw cuda_error("cuNDArray::allocate_memory: unable to restore device no");
+      BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::allocate_memory: unable to restore device no"));
     }
   }
 
@@ -418,25 +418,25 @@ void cuNDArray<T>::deallocate_memory()
     
     int device_no_old;
     if (cudaGetDevice(&device_no_old) != cudaSuccess) {
-      throw cuda_error("cuNDArray::deallocate_memory: unable to get device no");
+      BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::deallocate_memory: unable to get device no"));
 
     }
     
     if (device_ != device_no_old) {
       if (cudaSetDevice(device_) != cudaSuccess) {
-	throw cuda_error("cuNDArray::deallocate_memory: unable to set device no");
+	BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::deallocate_memory: unable to set device no"));
 
       }
     }
     
     if (cudaFree(this->data_) != cudaSuccess) {
-      throw cuda_error("cuNDArray::deallocate_memory(): failed to delete device memory");
+      BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::deallocate_memory(): failed to delete device memory"));
 
     }
     
     if (device_ != device_no_old) {
       if (cudaSetDevice(device_no_old) != cudaSuccess) {
-    	  throw cuda_error("cuNDArray::allocate_memory: unable to restore device no");
+    	  BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::allocate_memory: unable to restore device no"));
       }
     }
     
@@ -530,6 +530,27 @@ void cuNDArray<T>::reciprocal()
 	thrust::transform(devPtr,devPtr+this->get_number_of_elements(),devPtr,cuNDA_reciprocal<T>());
 }
 
+template<typename T>
+struct cuNDA_reciprocal_sqrt : public thrust::unary_function<T,T>
+{
+ __host__ __device__ T operator()(const T &x) const {return 1/sqrt(x);}
+};
+
+template<typename T, unsigned int D>
+struct cuNDA_reciprocal_sqrt<vector_td<T,D> > : public thrust::unary_function<vector_td<T,D>, vector_td<T,D> >
+{
+ __host__ __device__ vector_td<T,D> operator()(const vector_td<T,D> &x) const {
+	 vector_td<T,D> res;
+	 for (int i = 0; i < D; i++) res[i] = 1/sqrt((x[i]));
+	 return res;
+ 	 }
+};
+template <class T>
+void cuNDArray<T>::reciprocal_sqrt()
+{
+	thrust::device_ptr<T> devPtr = this->get_device_ptr();
+	thrust::transform(devPtr,devPtr+this->get_number_of_elements(),devPtr,cuNDA_reciprocal_sqrt<T>());
+}
 
 
 template<class T> void operator+= (cuNDArray<T> & x , cuNDArray<T> & y){

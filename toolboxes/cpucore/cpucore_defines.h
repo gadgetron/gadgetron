@@ -1,12 +1,3 @@
-//
-// This is a copy of <host_defines.h> from the Nvidia Cuda toolkit.
-//
-// We need to be able to compile our basic data structures when 
-// the Gadgetron has not been configured with Cuda support.
-//
-// This is basically just definining __host__ and __device__
-//
-
 /*
  * Copyright 1993-2012 NVIDIA Corporation.  All rights reserved.
  *
@@ -92,7 +83,7 @@
         __annotate__(a)
 #define CUDARTAPI
 
-#elif defined(_WIN32)
+#elif defined(_MSC_VER)
 
 #if _MSC_VER >= 1400
 
@@ -196,6 +187,7 @@
 #define __device_builtin__
 #define __device_builtin_texture_type__
 #define __device_builtin_surface_type__
+#define __cudart_builtin__
 #else /* __CUDABE__  || !__CUDACC__ */
 #define __device_builtin__ \
         __location__(device_builtin)
@@ -203,6 +195,8 @@
         __location__(device_builtin_texture_type)
 #define __device_builtin_surface_type__ \
         __location__(device_builtin_surface_type)
+#define __cudart_builtin__ \
+        __location__(cudart_builtin)
 #endif /* __CUDABE__ || !__CUDACC__ */
 
 

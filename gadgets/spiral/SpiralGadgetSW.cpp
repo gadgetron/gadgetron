@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <vector>
 #include "GadgetIsmrmrdReadWrite.h"
+#include <boost/shared_ptr.hpp>
 
 
 void calc_vds(double slewmax,double gradmax,double Tgsample,double Tdsample,int Ninterleaves,
@@ -208,13 +209,15 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		std::vector<unsigned int> trajectory_dimensions;
 		trajectory_dimensions.push_back(samples_per_interleave_*Nints_);
 
-		if (!host_traj_->create(&trajectory_dimensions)) {
-			GADGET_DEBUG1("Unable to allocate memory for trajectory\n");
+		try{host_traj_->create(&trajectory_dimensions);}
+		catch (gt_runtime_error &err){
+			GADGET_DEBUG3(err,"Unable to allocate memory for trajectory\n");
 			return GADGET_FAIL;
 		}
 
-		if (!host_weights_->create(&trajectory_dimensions)) {
-			GADGET_DEBUG1("Unable to allocate memory for weights\n");
+		try{host_weights_->create(&trajectory_dimensions);}
+		catch (gt_runtime_error& err ){
+			GADGET_DEBUG3(err,"Unable to allocate memory for weights\n");
 			return GADGET_FAIL;
 		}
 
@@ -252,10 +255,9 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		plan_ = NFFT_plan<float, 2>( matrix_size, matrix_size_os, W );
 
 		// Preprocess
-		bool success = plan_.preprocess( &traj, NFFT_plan<float,2>::NFFT_PREP_ALL );
-
-		if (!success) {
-			GADGET_DEBUG1("NFFT preprocess failed\n");
+		try{plan_.preprocess( &traj, NFFT_plan<float,2>::NFFT_PREP_ALL );}
+		catch (gt_runtime_error& err){
+			GADGET_DEBUG3(err,"NFFT preprocess failed\n");
 			return GADGET_FAIL;
 		}
 
@@ -274,7 +276,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		}
 
 		for (unsigned int i = 0; i < slices_*sets_; i++) {
-			if (!host_data_buffer_[i].create(&data_dimensions)) {
+			try{ host_data_buffer_[i].create(&data_dimensions); }catch (std::exception & err) {
 				GADGET_DEBUG1("Unable to allocate memory for data buffer\n");
 				return GADGET_FAIL;
 			}
@@ -322,9 +324,9 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		image_dims.push_back(num_batches);
 		cuNDArray<float_complext> image; image.create(&image_dims);
 
-		bool  success = plan_.compute( &data, &image, &gpu_weights_, NFFT_plan<float,2>::NFFT_BACKWARDS_NC2C );
-		if (!success) {
-			GADGET_DEBUG1("NFFT compute failed\n");
+		try {plan_.compute( &data, &image, &gpu_weights_, NFFT_plan<float,2>::NFFT_BACKWARDS_NC2C );}
+		catch (gt_runtime_error& err){
+			GADGET_DEBUG3(err,"NFFT compute failed\n");
 			return GADGET_FAIL;
 		}
 
@@ -345,8 +347,9 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 			return GADGET_FAIL;
 		}
 
-		if( E_->mult_csm_conj_sum( &image, &reg_image ) < 0 ){
-			GADGET_DEBUG1("\nError combining coils to regularization image\n");
+		try {E_->mult_csm_conj_sum( &image, &reg_image ); }
+		catch (gt_runtime_error& err){
+			GADGET_DEBUG3(err,"\nError combining coils to regularization image\n");
 			return GADGET_FAIL;
 		}
 
@@ -360,8 +363,9 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		std::vector<unsigned int> ddimensions(2,0);
 		ddimensions[0] = samples_per_interleave_*profiles_buffered;
 		ddimensions[1] = num_batches; //Channels
-		if (!data_host->create(&ddimensions)) {
-			GADGET_DEBUG1("Unable to allocate host data array\n");
+		try{data_host->create(&ddimensions);}
+		catch (gt_runtime_error& err){
+			GADGET_DEBUG3(err,"Unable to allocate host data array\n");
 			return GADGET_FAIL;
 		}
 
@@ -369,14 +373,16 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 
 
 		boost::shared_ptr< hoNDArray<floatd2> > traj_host(new hoNDArray<floatd2>());
-		if (!traj_host->create(&ddimensions)) {
-			GADGET_DEBUG1("Unable to allocate host trajectory array\n");
+		try {traj_host->create(&ddimensions);}
+		catch (gt_runtime_error& err){
+			GADGET_DEBUG3(err, "Unable to allocate host trajectory array\n");
 			return GADGET_FAIL;
 		}
 
 		boost::shared_ptr< hoNDArray<float> > dcw_host(new hoNDArray<float>());
-		if (!dcw_host->create(&ddimensions)) {
-			GADGET_DEBUG1("Unable to allocate host density compensation array\n");
+		try {dcw_host->create(&ddimensions);}
+		catch (gt_runtime_error& err){
+			GADGET_DEBUG3(err, "Unable to allocate host density compensation array\n");
 			return GADGET_FAIL;
 		}
 

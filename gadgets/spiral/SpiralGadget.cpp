@@ -160,10 +160,9 @@ int SpiralGadget::process_config(ACE_Message_Block* mb)
 	plan_ = NFFT_plan<float, 2>( matrix_size, matrix_size_os, W );
 
 	// Preprocess
-	bool success = plan_.preprocess( &traj, NFFT_plan<float,2>::NFFT_PREP_ALL );
-
-	if (!success) {
-		GADGET_DEBUG1("NFFT preprocess failed\n");
+	try { 	plan_.preprocess( &traj, NFFT_plan<float,2>::NFFT_PREP_ALL ); }
+	catch (gt_runtime_error& err){
+		GADGET_DEBUG3(err,"NFFT preprocess failed\n");
 		return GADGET_FAIL;
 	}
 
@@ -207,9 +206,9 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		image_dims.push_back(num_batches);
 		cuNDArray<float_complext> image; image.create(&image_dims);
 
-		bool  success = plan_.compute( &data, &image, &gpu_weights_, NFFT_plan<float,2>::NFFT_BACKWARDS_NC2C );
-		if (!success) {
-			GADGET_DEBUG1("NFFT compute failed\n");
+		try{ plan_.compute( &data, &image, &gpu_weights_, NFFT_plan<float,2>::NFFT_BACKWARDS_NC2C ); }
+		catch (gt_runtime_error& err){
+			GADGET_DEBUG3(err, "NFFT compute failed\n");
 			return GADGET_FAIL;
 		}
 
@@ -218,8 +217,9 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >* m4 =
 				new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
 
-		if (!m4->getObjectPtr()->create(&image_dimensions_)) {
-			GADGET_DEBUG1("Unable to allocate memory for combined image\n");
+		try{ m4->getObjectPtr()->create(&image_dimensions_);}
+		catch (gt_runtime_error& err){
+			GADGET_DEBUG3(err,"Unable to allocate memory for combined image\n");
 			m4->release();
 			return GADGET_FAIL;
 		}

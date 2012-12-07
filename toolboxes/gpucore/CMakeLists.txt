@@ -37,6 +37,7 @@ ndarray_vector_td_utilities.h
 cuNDArray.h
 cuNDFFT.h
 cuGTBLAS.h
+GadgetronCuException.h
 radial_utilities.h
 real_utilities_device.h
 gpucore_export.h

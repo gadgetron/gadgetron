@@ -77,7 +77,7 @@ protected:
 	bool is_configured_;
 
 	// Define conjugate gradient solver
-	cuCgSolver<float, float_complext> cg_;
+	cuCgSolver<float_complext> cg_;
 
 	// Define non-Cartesian Sense Encofing operator
 	boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E_;
@@ -86,7 +86,7 @@ protected:
 	boost::shared_ptr< cuCgPrecondWeights<float_complext> > D_;
 
 	// Define regularization image operator
-	boost::shared_ptr< cuImageOperator<float,float_complext> > R_;
+	boost::shared_ptr< cuImageOperator<float_complext> > R_;
 
 	// Define rhs operator (for regularization)
 	boost::shared_ptr< cuSenseRHSBuffer<float,2> > rhs_buffer_;

@@ -112,10 +112,11 @@ int GPUCGGadgetGeneric::process_config( ACE_Message_Block* mb )
 		//D_->set_device(device_number_);
 
 		// Allocate regularization image operator
-		R_ = boost::shared_ptr< cuImageOperator<float,float_complext> >( new cuImageOperator<float,float_complext>() );
-		R_->set_device(device_number_);
+		R_ = boost::shared_ptr< cuImageOperator<float_complext> >( new cuImageOperator<float_complext>() );
+		//R_->set_device(device_number_);
 		R_->set_weight( kappa_ );
-		cg_.set_device(device_number_);
+		//cg_.set_device(device_number_);
+		cudaSetDevice(device_number_);
 
 		// Setup solver
 		cg_.set_encoding_operator( E_ );        // encoding matrix
@@ -123,7 +124,7 @@ int GPUCGGadgetGeneric::process_config( ACE_Message_Block* mb )
 		cg_.set_preconditioner( D_ );           // preconditioning matrix
 		cg_.set_max_iterations( number_of_iterations_ );
 		cg_.set_tc_tolerance( cg_limit_ );
-		cg_.set_output_mode( cuCgSolver<float, float_complext>::OUTPUT_WARNINGS);
+		cg_.set_output_mode( cuCgSolver<float_complext>::OUTPUT_WARNINGS);
 
 		if( configure_channels() == GADGET_FAIL )
 			return GADGET_FAIL;
@@ -140,21 +141,24 @@ int GPUCGGadgetGeneric::configure_channels()
 	boost::shared_ptr< cuNDArray<float_complext> > csm = boost::shared_ptr< cuNDArray<float_complext> >( new cuNDArray<float_complext> );
 	std::vector<unsigned int> csm_dims = uintd_to_vector<2>(matrix_size_); csm_dims.push_back( channels_ );
 
-	if( csm->create( &csm_dims ) == 0x0 ) {
-		GADGET_DEBUG1( "\nError: unable to create csm.\n" );
+	try {csm->create( &csm_dims ); }
+	catch (cuda_error& err){
+		GADGET_DEBUG3(err, "\nError: unable to create csm.\n" );
 		return GADGET_FAIL;
 	}
 
-	if( !cuNDA_clear<float_complext>( csm.get(), float_complext(1) ) ){
-		GADGET_DEBUG1( "\nError: unable to clear csm.\n" );
+	try {csm->fill(float_complext(1) );}
+	catch (cuda_error & err){
+		GADGET_DEBUG3(err, "\nError: unable to clear csm.\n" );
 		return GADGET_FAIL;
 	}
 
 	// Setup matrix operator
 	E_->set_csm(csm);
 
-	if( E_->setup( matrix_size_, matrix_size_os_, static_cast<float>(kernel_width_) ) < 0 ){
-		GADGET_DEBUG1( "\nError: unable to setup encoding operator.\n" );
+	try{ E_->setup( matrix_size_, matrix_size_os_, static_cast<float>(kernel_width_) );}
+	catch (gt_runtime_error& err){
+		GADGET_DEBUG3(err, "\nError: unable to setup encoding operator.\n" );
 		return GADGET_FAIL;
 	}
 
@@ -204,8 +208,9 @@ int GPUCGGadgetGeneric::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1
 
 	E_->set_dcw(dcw);
 	E_->set_csm(csm);
-	if( E_->preprocess(traj.get()) < 0 ) {
-		GADGET_DEBUG1("\nError during cgOperatorNonCartesianSense::preprocess()\n");
+	try{ E_->preprocess(traj.get());}
+	catch (gt_runtime_error& err){
+		GADGET_DEBUG3(err,"\nError during cgOperatorNonCartesianSense::preprocess()\n");
 		return GADGET_FAIL;
 	}
 
@@ -217,10 +222,10 @@ int GPUCGGadgetGeneric::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1
 	// TODO: error check these computations
 
 	// Define preconditioning weights
-	boost::shared_ptr< cuNDArray<float> > _precon_weights = cuNDA_ss<float,float_complext>( csm.get(), 2 );
-	cuNDA_axpy<float>( kappa_, R_->get(), _precon_weights.get() );
-	cuNDA_reciprocal_sqrt<float>( _precon_weights.get() );
-	boost::shared_ptr< cuNDArray<float_complext> > precon_weights = cuNDA_real_to_complext<float>( _precon_weights.get() );
+	boost::shared_ptr< cuNDArray<float> > _precon_weights = squaredNorm( csm.get(), 2 );
+	axpy<float>( kappa_, R_->get(), _precon_weights.get() );
+	_precon_weights->reciprocal_sqrt();
+	boost::shared_ptr< cuNDArray<float_complext> > precon_weights = real_to_complext( _precon_weights.get() );
 	_precon_weights.reset();
 	D_->set_weights( precon_weights );
 

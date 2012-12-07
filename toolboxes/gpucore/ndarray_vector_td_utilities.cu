@@ -8,7 +8,8 @@
 #include <vector>
 #include <cmath>
 #include <sstream>
-
+#include <boost/throw_exception.hpp>
+#include "GadgetronCuException.h"
 using namespace std;
 
 // Some device properties we query once to eliminate runtime overhead
@@ -41,32 +42,32 @@ static void prepare( int compute_device, int *cur_device, int *old_device,
 {
   // Test validity of D
   if( D==0 || D>3 ){
-    throw std::runtime_error( ">>>Internal error<<< :prepare: D out of range");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( ">>>Internal error<<< :prepare: D out of range"));
 
   }
 
   if( !cur_device || !old_device ){
-    throw std::runtime_error( ">>>Internal error<<< :prepare: device ids 0x0");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( ">>>Internal error<<< :prepare: device ids 0x0"));
 
   }
 
   // Test validity of input pointer
   if( !in1 || !in1_int ){
-    throw std::runtime_error( "unable to process 0x0 input");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "unable to process 0x0 input"));
 
   }
   if( D>1 && (!in2 || !in2_int) ){
-    throw std::runtime_error( "unable to process 0x0 input");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "unable to process 0x0 input"));
 
   }
   if( D>2 && (!in3 || !in3_int) ){
-    throw std::runtime_error( "unable to process 0x0 input");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "unable to process 0x0 input"));
 
   }
   
   // Get current Cuda device
   if( cudaGetDevice(old_device) != cudaSuccess ) {
-    throw std::runtime_error( "unable to get device no");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "unable to get device no"));
 
   }
 
@@ -85,12 +86,12 @@ static void prepare( int compute_device, int *cur_device, int *old_device,
       *cur_device = in3->get_device();
   }
   else{
-    throw std::runtime_error( ">>>Internal error<<< :prepare: unknown compute mode");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( ">>>Internal error<<< :prepare: unknown compute mode"));
 
   }
 
   if( *cur_device != *old_device && cudaSetDevice(*cur_device) != cudaSuccess) {
-    throw std::runtime_error( "unable to set device no");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "unable to set device no"));
 
   }
   
@@ -128,21 +129,21 @@ static void restore( int old_device,
 {
   // Test validity of D
   if( D==0 || D>3 ){
-    throw std::runtime_error( ">>>Internal error<<< :prepare: D out of range");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( ">>>Internal error<<< :prepare: D out of range"));
 
   }
 
   // Test validity of input pointer
   if( !in1 || !in1_int ){
-    throw std::runtime_error( "unable to process 0x0 input");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "unable to process 0x0 input"));
 
   }
   if( D>1 && (!in2 || !in2_int) ){
-    throw std::runtime_error( "unable to process 0x0 input");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "unable to process 0x0 input"));
 
   }
   if( D>2 && (!in3 || !in3_int) ){
-    throw std::runtime_error( "unable to process 0x0 input");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "unable to process 0x0 input"));
 
   }
 
@@ -160,7 +161,7 @@ static void restore( int old_device,
   if( out_idx > 0 && out_idx < 4 ){ 
 
    if( out_idx > D ){
-      throw std::runtime_error( ">>>Internal error<<< :restore: array index out of range");
+      BOOST_THROW_EXCEPTION(gt_runtime_error( ">>>Internal error<<< :restore: array index out of range"));
 
     }
    
@@ -184,7 +185,7 @@ static void restore( int old_device,
    }
   }
   else if( out_idx != 0 ){
-    throw std::runtime_error( ">>>Internal error<<< :restore: illegal device specified");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( ">>>Internal error<<< :restore: illegal device specified"));
 
   }
 
@@ -203,13 +204,13 @@ static void restore( int old_device,
   // Get current Cuda device
   int device;
   if( cudaGetDevice(&device) != cudaSuccess ) {
-    throw cuda_error( "unable to get device no");
+    BOOST_THROW_EXCEPTION(cuda_error( "unable to get device no"));
 
   }
 
   // Restore old device
   if( device != old_device && cudaSetDevice(old_device) != cudaSuccess) {
-    throw cuda_error( "unable to restore device no");
+    BOOST_THROW_EXCEPTION(cuda_error( "unable to restore device no"));
 
   }
     
@@ -224,12 +225,12 @@ static void initialize_static_variables()
 
   if( cudaGetDeviceCount( &num_devices ) != cudaSuccess) {
   	num_devices = 0;
-    throw cuda_error( "Error: no Cuda devices present.");
+    BOOST_THROW_EXCEPTION(cuda_error( "Error: no Cuda devices present."));
   }
 
   int old_device;
   if( cudaGetDevice(&old_device) != cudaSuccess ) {
-    throw std::runtime_error( "Error: unable to get device no");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "Error: unable to get device no"));
 
   }
 
@@ -245,14 +246,14 @@ static void initialize_static_variables()
   for( int device=0; device<num_devices; device++ ){
 
     if( cudaSetDevice(device) != cudaSuccess ) {
-      throw cuda_error( "Error: unable to set device no");
+      BOOST_THROW_EXCEPTION(cuda_error( "Error: unable to set device no"));
 
     }
     
     cudaDeviceProp deviceProp; 
     
     if( cudaGetDeviceProperties( &deviceProp, device ) != cudaSuccess) {
-    	throw cuda_error("Error: unable to determine device properties.");
+    	BOOST_THROW_EXCEPTION(cuda_error("Error: unable to determine device properties."));
 
     }
 
@@ -263,7 +264,7 @@ static void initialize_static_variables()
     if (cublasCreate(&handle[device]) != CUBLAS_STATUS_SUCCESS) {
     	std::stringstream ss;
     	ss << "Error: unable to create cublas handle for device " << device << std::endl;
-      throw cuda_error(ss.str());
+      BOOST_THROW_EXCEPTION(cuda_error(ss.str()));
 
     }
 
@@ -272,7 +273,7 @@ static void initialize_static_variables()
   }
   
   if( cudaSetDevice(old_device) != cudaSuccess ) {
-    throw cuda_error( "Error: unable to restore device no");
+    BOOST_THROW_EXCEPTION(cuda_error( "Error: unable to restore device no"));
 
   }
 
@@ -285,7 +286,7 @@ static void setup_grid( unsigned int cur_device, unsigned int number_of_elements
 {
 	initialize_static_variables();
   if( num_devices==0 ){
-    throw cuda_error( "system device error");
+    BOOST_THROW_EXCEPTION(cuda_error( "system device error"));
 
   }
 
@@ -306,7 +307,7 @@ static void setup_grid( unsigned int cur_device, unsigned int number_of_elements
    
   if( gridDim->x > max_griddim[cur_device] || gridDim->y > max_griddim[cur_device] ){
 
-    throw cuda_error("Grid dimension larger than supported by device");
+    BOOST_THROW_EXCEPTION(cuda_error("Grid dimension larger than supported by device"));
   }
 
 
@@ -447,7 +448,7 @@ norm( cuNDArray<typename reald<REAL,D>::Type> *in,
 
   // Prepare
   prepare<1,typename reald<REAL,D>::Type,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
-    throw std::runtime_error( "norm: unable to prepare device(s)" << endl;
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "norm: unable to prepare device(s))" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
@@ -498,7 +499,7 @@ norm_squared( cuNDArray<typename reald<REAL,D>::Type> *in,
 
   // Prepare
   prepare<1,typename reald<REAL,D>::Type,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
-    throw std::runtime_error( "norm_squared: unable to prepare device(s)" << endl;
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "norm_squared: unable to prepare device(s))" << endl;
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
   
@@ -565,11 +566,11 @@ sum( cuNDArray<T> *in, unsigned int dim,
   
   // Some validity checks
   if( !(in->get_number_of_dimensions()>1) ){
-    throw std::runtime_error("sum: underdimensioned.");
+    BOOST_THROW_EXCEPTION(gt_runtime_error("sum: underdimensioned."));
   }
  
   if( dim > in->get_number_of_dimensions()-1 ){
-    throw std::runtime_error( "sum: dimension out of range.");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "sum: dimension out of range."));
   }
 
   unsigned int number_of_batches = in->get_size(dim);
@@ -684,12 +685,12 @@ _ss( cuNDArray<T> *in, unsigned int dim,
 
   // Validity checks
   if( !(in->get_number_of_dimensions()>1) ){
-    throw std::runtime_error( "ss: underdimensioned.");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "ss: underdimensioned."));
 
   }
 
   if( dim > in->get_number_of_dimensions()-1 ){
-    throw std::runtime_error( "ss: dimension out of range.");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "ss: dimension out of range."));
 
   }
 
@@ -852,12 +853,12 @@ _rss( cuNDArray<T> *in, unsigned int dim,
 
   // Validity checks
   if( !(in->get_number_of_dimensions()>1) ){
-    throw std::runtime_error( "rss: underdimensioned.");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "rss: underdimensioned."));
 
   }
  
   if( dim > in->get_number_of_dimensions()-1 ){
-    throw std::runtime_error( "rss: dimension out of range.");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "rss: dimension out of range."));
   }
 
   unsigned int number_of_batches = in->get_size(dim);
@@ -1096,7 +1097,7 @@ creciprocal_rss( cuNDArray<complext<REAL> > *in, unsigned int dim,
 
   // Perform device copy if array is not residing on the current device
   prepare<1,complext<REAL>,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int ) ){
-    throw std::runtime_error( "creciprocal_rss: unable to prepare device(s)" << endl;
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "creciprocal_rss: unable to prepare device(s))" << endl;
     return boost::shared_ptr< cuNDArray<complext<REAL> > >();
   }
 
@@ -1382,13 +1383,13 @@ downsample( cuNDArray<REAL> *in,
      
   // A few sanity checks 
   if( in->get_number_of_dimensions() < D ){
-    throw std::runtime_error( "downsample: the number of array dimensions should be at least D");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "downsample: the number of array dimensions should be at least D"));
 
   }
   
   for( unsigned int d=0; d<D; d++ ){
     if( (in->get_size(d)%2) == 1 && in->get_size(d) != 1 ){
-      throw std::runtime_error( "downsample: uneven array dimensions larger than one not accepted");
+      BOOST_THROW_EXCEPTION(gt_runtime_error( "downsample: uneven array dimensions larger than one not accepted"));
     }
   }
   
@@ -1463,7 +1464,7 @@ upsample_nn( cuNDArray<REAL> *in,
      
   // A few sanity checks 
   if( in->get_number_of_dimensions() < D ){
-    throw std::runtime_error( "upsample: the number of array dimensions should be at least D" );
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "upsample: the number of array dimensions should be at least D" ));
 
   }
     
@@ -1600,7 +1601,7 @@ upsample_lin( cuNDArray<REAL> *in,
      
   // A few sanity checks 
   if( in->get_number_of_dimensions() < D ){
-    throw std::runtime_error( "upsample: the number of array dimensions should be at least D");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "upsample: the number of array dimensions should be at least D"));
   }
     
   typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
@@ -1910,12 +1911,12 @@ void rss_normalize( cuNDArray<T> *in_out, unsigned int dim,
 
   // Validity checks
   if( !(in_out->get_number_of_dimensions()>1) ){
-    throw std::runtime_error( "rss_normalize: underdimensioned.");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "rss_normalize: underdimensioned."));
 
   }
  
   if( dim > in_out->get_number_of_dimensions()-1 ){
-  	throw std::runtime_error("rss_normalize: dimension out of range.");
+  	BOOST_THROW_EXCEPTION(gt_runtime_error("rss_normalize: dimension out of range."));
 
   }
 
@@ -2090,11 +2091,11 @@ void crop( typename uintd<D>::Type offset,
 {
   if( in == 0x0 || out == 0x0 ){
 
-    throw std::runtime_error("crop: 0x0 ndarray provided");
+    BOOST_THROW_EXCEPTION(gt_runtime_error("crop: 0x0 ndarray provided"));
   }
 
   if( in->get_number_of_dimensions() != out->get_number_of_dimensions() ){
-  	throw std::runtime_error("crop: image dimensions mismatch");
+  	BOOST_THROW_EXCEPTION(gt_runtime_error("crop: image dimensions mismatch"));
 
   }
 
@@ -2102,7 +2103,7 @@ void crop( typename uintd<D>::Type offset,
     std::stringstream ss;
     ss << "crop: number of image dimensions should be at least " << D;
 
-    throw std::runtime_error(ss.str());
+    BOOST_THROW_EXCEPTION(gt_runtime_error(ss.str()));
   }
 
   typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
@@ -2114,7 +2115,7 @@ void crop( typename uintd<D>::Type offset,
   }
 
   if( weak_greater(offset+matrix_size_out, matrix_size_in) ){
-    throw std::runtime_error( "crop: cropping size mismatch");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "crop: cropping size mismatch"));
 
   }
 
@@ -2171,19 +2172,19 @@ void expand_with_zero_fill( cuNDArray<T> *in, cuNDArray<T> *out,
 				  cuNDA_device compute_device )
 { 
   if( in == 0x0 || out == 0x0 ){
-  	throw std::runtime_error("zero_fill: 0x0 ndarray provided");
+  	BOOST_THROW_EXCEPTION(gt_runtime_error("zero_fill: 0x0 ndarray provided"));
 
   }
 
   if( in->get_number_of_dimensions() != out->get_number_of_dimensions() ){
-  	throw std::runtime_error("zero_fill: image dimensions mismatch");
+  	BOOST_THROW_EXCEPTION(gt_runtime_error("zero_fill: image dimensions mismatch"));
 
   }
 
   if( in->get_number_of_dimensions() < D ){
   	std::stringstream ss;
     ss << "zero_fill: number of image dimensions should be at least " << D;
-    throw std::runtime_error(ss.str());
+    BOOST_THROW_EXCEPTION(gt_runtime_error(ss.str()));
 
   }
 
@@ -2363,18 +2364,18 @@ void shrink1( REAL gamma, cuNDArray<T> *in, cuNDArray<T> *out )
   // TODO: multi-device handling
 
   if( !in || !out ){
-    throw std::runtime_error( "shrink1: 0x0 arrays not accepted" );
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "shrink1: 0x0 arrays not accepted" ));
 
   }
 
   if( in->get_number_of_elements() != out->get_number_of_elements() ){
-    throw std::runtime_error( "shrink1: i/o arrays must have an identical number of elements");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "shrink1: i/o arrays must have an identical number of elements"));
   }
   
   // Get current Cuda device
   int cur_device;
   if( cudaGetDevice(&cur_device) != cudaSuccess ) {
-    throw std::runtime_error( "shrink1 : unable to get device no");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "shrink1 : unable to get device no"));
   }
 
   // Setup block/grid dimensions
@@ -2415,24 +2416,24 @@ void shrinkd( REAL gamma, cuNDArray<REAL> *s_k, cuNDArray<T> *in, cuNDArray<T> *
   // TODO: multi-device handling
 
   if( !in || !out || !s_k ){
-    throw std::runtime_error( "shrinkd: 0x0 arrays not accepted");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "shrinkd: 0x0 arrays not accepted"));
 
   }
 
   if( in->get_number_of_elements() != out->get_number_of_elements() ){
-    throw std::runtime_error( "shrinkd: i/o arrays must have an identical number of elements");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "shrinkd: i/o arrays must have an identical number of elements"));
 
   }
 
   if( in->get_number_of_elements() != s_k->get_number_of_elements() ){
-    throw std::runtime_error( "shrinkd: i/o arrays must have an identical number of elements");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "shrinkd: i/o arrays must have an identical number of elements"));
 
   }
   
   // Get current Cuda device
   int cur_device;
   if( cudaGetDevice(&cur_device) != cudaSuccess ) {
-    throw std::runtime_error( "shrinkd : unable to get device no");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "shrinkd : unable to get device no"));
 
   }
 
@@ -2482,19 +2483,19 @@ template<class T, unsigned int D> EXPORTGPUCORE
 void origin_mirror( cuNDArray<T> *in, cuNDArray<T> *out, bool zero_fill, cuNDA_device compute_device )
 {
   if( in == 0x0 || out == 0x0 ){
-  	throw std::runtime_error( "origin_mirror: 0x0 ndarray provided");
+  	BOOST_THROW_EXCEPTION(gt_runtime_error( "origin_mirror: 0x0 ndarray provided"));
 
   }
 
   if( !in->dimensions_equal(out) ){
-  	throw std::runtime_error("origin_mirror: image dimensions mismatch");
+  	BOOST_THROW_EXCEPTION(gt_runtime_error("origin_mirror: image dimensions mismatch"));
 
   }
   
   if( in->get_number_of_dimensions() != D ){
   	std::stringstream ss;
     ss << "origin_mirror: number of image dimensions is not " << D;
-    throw std::runtime_error(ss.str());
+    BOOST_THROW_EXCEPTION(gt_runtime_error(ss.str()));
   }
 
   typename uintd<D>::Type matrix_size = vector_to_uintd<D>( *in->get_dimensions() );
@@ -2548,7 +2549,7 @@ minimum( cuNDArray<T> *in1,cuNDArray<T> *in2,
 
 
   if ( in1->get_number_of_elements() !=  in2->get_number_of_elements()){
-    throw std::runtime_error( "minimum: input arrays have different number of elements");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "minimum: input arrays have different number of elements"));
 
   }
   // Prepare 
@@ -2599,7 +2600,7 @@ maximum( cuNDArray<T> *in1,cuNDArray<T> *in2,
 
 
   if ( in1->get_number_of_elements() !=  in2->get_number_of_elements()){
-    throw std::runtime_error( "maximum: input arrays have different number of elements");
+    BOOST_THROW_EXCEPTION(gt_runtime_error( "maximum: input arrays have different number of elements"));
   }
   // Prepare 
   prepare<2,T,T,dummy>( compute_device, &cur_device, &old_device, in1, &in1_int, in2, &in2_int  ) ;

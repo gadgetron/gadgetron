@@ -41,9 +41,6 @@ template <class T> class NDArray
     *tmp = *dimensions;
     dimensions_ = boost::shared_ptr< std::vector<unsigned int> >(tmp);
     allocate_memory();
-    if (!(this->get_data_ptr())){
-    	throw std::bad_alloc();
-    }
     return this->get_data_ptr();
   }
 

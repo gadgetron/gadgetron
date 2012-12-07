@@ -10,7 +10,7 @@
 #include <string.h>
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
-
+#include "GadgetronException.h"
 class ArrayIterator
 {
 public:
@@ -233,7 +233,7 @@ protected:
     _allocate_memory(this->elements_, &this->data_);
     
     if( this->data_ == 0x0 ){
-      std::runtime_error("hoNDArray<>::allocate memory failed");
+      BOOST_THROW_EXCEPTION( gt_bad_alloc("hoNDArray<>::allocate memory failed"));
     }
     
   }
@@ -248,7 +248,7 @@ protected:
 
   // Generic allocator / deallocator
   template<class X> inline void _allocate_memory( unsigned int size, X** data ){
-    *data = new X[size];
+    *data = new (std::nothrow) X[size];
   }
   template<class X> inline void _deallocate_memory( X* data ){
     delete [] data;

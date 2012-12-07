@@ -40,7 +40,7 @@ int FloatToUShortGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m
 		float pix_val = src[i];
 		switch (m1->getObjectPtr()->image_type) {
 		case ISMRMRD::TYPE_MAGNITUDE:
-			pix_val = abs(pix_val);
+			pix_val = std::abs(pix_val);
 			if (pix_val > 4095) pix_val = 4095;
 			break;
 		case ISMRMRD::TYPE_REAL:

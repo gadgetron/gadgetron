@@ -117,9 +117,12 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 			//TODO: This reshaping needs to take uncombined channels into account
 			boost::shared_ptr< std::vector<unsigned int> > tmp_dims = mb2->getObjectPtr()->get_dimensions();
 			if (uncombined_channels_.size()) tmp_dims->push_back(uncombined_channels_.size()+1);
-			if (unmixing_host->reshape(tmp_dims.get()) < 0) {
-				GADGET_DEBUG1("Failed to reshape GRAPPA weights\n");
-				return GADGET_FAIL;
+
+			try {
+				unmixing_host->reshape(tmp_dims.get());
+			} catch (gt_runtime_error &err){
+				GADGET_DEBUG3( err, "Reshaping of GRAPPA weights failed \n" );
+
 			}
 
 			if (mb1->getObjectPtr()->destination->update(reinterpret_cast<hoNDArray<std::complex<float> >* >(unmixing_host.get())) < 0) {

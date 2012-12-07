@@ -1,6 +1,6 @@
 #include <cublas_v2.h>
 #include "cuGTBLAS.h"
-#include "gadgetronException.h"
+#include "GadgetronCuException.h"
 #include "complext.h"
 
 // Some device properties we query once to eliminate runtime overhead

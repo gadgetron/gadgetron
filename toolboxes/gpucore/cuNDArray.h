@@ -12,7 +12,7 @@
 #include <boost/shared_ptr.hpp>
 #include "complext.h"
 #include "thrust/device_vector.h"
-#include "gadgetronException.h"
+#include "GadgetronCuException.h"
 
 template <class T> class EXPORTGPUCORE cuNDArray;
 template <class T> EXPORTGPUCORE void cuNDArray_permute(cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *order, int shift_mode);
@@ -63,6 +63,7 @@ template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
   void clear();
   void fill(T );
   void reciprocal();
+  void reciprocal_sqrt();
 
 
   thrust::device_ptr<T> get_device_ptr(){
