@@ -38,7 +38,6 @@ install(FILES
 	linearOperator.h
 	cuLinearOperator_macros.h
 	identityOperator.h
-	cuIdentityOperator.h
 	imageOperator.h
 	cuImageOperator.h
 	diagonalOperator.h
@@ -53,6 +52,5 @@ install(FILES
 	cuLaplaceOperator.h
 	cuVariableGaussOperator.h
 	encodingOperatorContainer.h
-	cuEncodingOperatorContainer.h
 	solvers_export.h
 DESTINATION include)

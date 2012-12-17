@@ -45,9 +45,9 @@ template <typename T> class GadgetImageMessageReader : public GadgetMessageReade
     GadgetContainerMessage< hoNDArray< T > >* data =
       new GadgetContainerMessage< hoNDArray< T > >();
 
-    if (!data->getObjectPtr()->create(&dims)) {
-      ACE_DEBUG( (LM_ERROR, 
-		  ACE_TEXT("%P, %l, GadgetImageMessageReader, failed to allocate memory\n")) );
+    try{ data->getObjectPtr()->create(&dims);}
+    catch (gt_runtime_error &err){
+    	GADGET_DEBUG_EXCEPTION(err,"GadgetImageMessageReader, failed to allocate memory\n");
       imgh->release();
       return 0;
     }

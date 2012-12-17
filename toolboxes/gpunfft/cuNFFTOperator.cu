@@ -22,11 +22,7 @@ cuNFFTOperator<REAL,D>::mult_M( cuNDArray<complext<REAL> > *in, cuNDArray<comple
   cuNDArray<complext<REAL> > *tmp_out;
 
   if( accumulate ){
-    tmp_out = new cuNDArray<complext<REAL> >();    
-    if( !tmp_out->create(out->get_dimensions().get()) ){
-      throw std::runtime_error("Error: cuNFFTOperator::mult_M : memory allocation failed");
-
-    }
+    tmp_out = new cuNDArray<complext<REAL> >(out->get_dimensions());
   }
   else{
     tmp_out = out;
@@ -63,11 +59,7 @@ cuNFFTOperator<REAL,D>::mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<compl
   cuNDArray<complext<REAL> > *tmp_out;
 
   if( accumulate ){
-    tmp_out = new cuNDArray<complext<REAL> >();
-    if( !tmp_out->create(out->get_dimensions().get()) ){
-      throw std::runtime_error("Error: cuNFFTOperator::mult_MH : memory allocation failed");
-
-    }
+    tmp_out = new cuNDArray<complext<REAL> >(out->get_dimensions());
   }
   else{
     tmp_out = out;
@@ -103,11 +95,7 @@ cuNFFTOperator<REAL,D>::mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<com
   cuNDArray<complext<REAL> > *tmp_out;
 
   if( accumulate ){
-    tmp_out = new cuNDArray<complext<REAL> >();
-    if( !tmp_out->create(out->get_dimensions().get()) ){
-      throw std::runtime_error("Error: cuNFFTOperator::mult_MH_M : memory allocation failed (2)");
-
-    }
+    tmp_out = new cuNDArray<complext<REAL> >(out->get_dimensions());
   }
   else{
     tmp_out = out;

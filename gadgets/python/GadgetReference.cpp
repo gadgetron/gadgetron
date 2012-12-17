@@ -37,8 +37,9 @@ int GadgetReference::return_data(T header, boost::python::numeric::array arr)
   GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2 = new GadgetContainerMessage< hoNDArray< std::complex<float> > >;
   m1->cont(m2);
 
-  if (!m2->getObjectPtr()->create(&dimensions)) {
-    GADGET_DEBUG1("Failed to create data storage for data returning from Python");
+  try{m2->getObjectPtr()->create(&dimensions);}
+  catch (gt_runtime_error &err){
+    GADGET_DEBUG_EXCEPTION(err,"Failed to create data storage for data returning from Python");
     return GADGET_FAIL;
     
   }

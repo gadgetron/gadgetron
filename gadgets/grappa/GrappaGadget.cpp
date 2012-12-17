@@ -333,8 +333,9 @@ int GrappaGadget::create_image_buffer(unsigned int slice)
 	}
 
 	image_data_[slice] = new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
-	if (!image_data_[slice]->getObjectPtr()->create(&image_dimensions_)) {
-		GADGET_DEBUG1("Unable to create image buffers");
+	try{ image_data_[slice]->getObjectPtr()->create(&image_dimensions_);}
+	catch (gt_runtime_error &err){
+		GADGET_DEBUG_EXCEPTION(err,"Unable to create image buffers");
 		return GADGET_FAIL;
 	}
 

@@ -185,13 +185,13 @@ cuNDArray<T>::~cuNDArray()
 }
 
 template <class T>
-T* cuNDArray<T>::create(std::vector<unsigned int> *dimensions)
+void cuNDArray<T>::create(std::vector<unsigned int> *dimensions)
 {
-  return NDArray<T>::create(dimensions);
+  NDArray<T>::create(dimensions);
 }
 
 template <class T>
-T* cuNDArray<T>::create(std::vector<unsigned int> *dimensions, int device_no)
+void cuNDArray<T>::create(std::vector<unsigned int> *dimensions, int device_no)
 {
   if (device_no < 0){
     BOOST_THROW_EXCEPTION(cuda_error("cuNDArray::create: illegal device no"));
@@ -199,14 +199,14 @@ T* cuNDArray<T>::create(std::vector<unsigned int> *dimensions, int device_no)
   }
   
   this->device_ = device_no; 
-  return NDArray<T>::create(dimensions);
+  NDArray<T>::create(dimensions);
 }
 
 template <class T>
-T* cuNDArray<T>::create(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct) 
+void cuNDArray<T>::create(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct)
 {
   if (!data) {
-    throw std::logic_error("cuNDArray::create: 0x0 pointer provided");
+    BOOST_THROW_EXCEPTION(gt_runtime_error("cuNDArray::create: 0x0 pointer provided"));
   }
   
   int tmp_device; 
@@ -232,7 +232,7 @@ T* cuNDArray<T>::create(std::vector<unsigned int> *dimensions, T* data, bool del
     this->device_ = tmp_device;
   }
   
-  return NDArray<T>::create(dimensions, data, delete_data_on_destruct);
+  NDArray<T>::create(dimensions, data, delete_data_on_destruct);
 }
 
 template <class T>
@@ -247,10 +247,7 @@ boost::shared_ptr< cuNDArray<T> > cuNDArray<T>::allocate(std::vector<unsigned in
 {
   boost::shared_ptr< cuNDArray<T> > ret( new cuNDArray<T> );
   
-  if( ret->create(dimensions, device_no) == 0x0 ) {
-    BOOST_THROW_EXCEPTION( cuda_error("cuNDArray<T>::allocate failed to create array on device "));
-
-  }
+  ret->create(dimensions, device_no);
   
   return ret;
 }
@@ -275,24 +272,24 @@ void cuNDArray<T>::permute(std::vector<unsigned int> *dim_order, NDArray<T> *out
   
   //Check ordering array
   if (dim_order->size() > this->dimensions_->size()) {
-    throw std::logic_error("hoNDArray::permute - Invalid length of dimension ordering array");
+    BOOST_THROW_EXCEPTION(gt_runtime_error("hoNDArray::permute - Invalid length of dimension ordering array"));
   }
   
   std::vector<unsigned int> dim_count(this->dimensions_->size(),0);
   for (unsigned int i = 0; i < dim_order->size(); i++) {
     if ((*dim_order)[i] >= this->dimensions_->size()) {
-      throw std::logic_error("hoNDArray::permute - Invalid dimension order array");
+      BOOST_THROW_EXCEPTION(gt_runtime_error("hoNDArray::permute - Invalid dimension order array"));
     }
     dim_count[(*dim_order)[i]]++;
   }
-  
+
   //Create an internal array to store the dimensions
   std::vector<unsigned int> dim_order_int;
   
   //Check that there are no duplicate dimensions
   for (unsigned int i = 0; i < dim_order->size(); i++) {
     if (dim_count[(*dim_order)[i]] != 1) {
-      std::logic_error("hoNDArray::permute - Invalid dimension order array (duplicates)");
+    	BOOST_THROW_EXCEPTION(gt_runtime_error("hoNDArray::permute - Invalid dimension order array (duplicates)"));
     }
     dim_order_int.push_back((*dim_order)[i]);
   }
@@ -309,11 +306,11 @@ void cuNDArray<T>::permute(std::vector<unsigned int> *dim_order, NDArray<T> *out
   if (out) {
     out_int = dynamic_cast< cuNDArray<T>* >(out);
     if (!out_int) {
-      std::runtime_error("cuNDArray::permute: failed to dynamic cast out array pointer");
+      BOOST_THROW_EXCEPTION(gt_runtime_error("cuNDArray::permute: failed to dynamic cast out array pointer"));
     }
     for (unsigned int i = 0; i < dim_order_int.size(); i++) {
       if ((*this->dimensions_)[dim_order_int[i]] != out_int->get_size(i)) {
-	std::logic_error("cuNDArray::permute: Dimensions of output array do not match the input array");
+	BOOST_THROW_EXCEPTION(gt_runtime_error("cuNDArray::permute: Dimensions of output array do not match the input array"));
       }
     }
   }

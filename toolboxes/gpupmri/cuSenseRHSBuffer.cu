@@ -117,11 +117,7 @@ boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseRHSBuffer<REAL,D,ATOMICS>
   std::vector<unsigned int> dims = uintd_to_vector<D>( image_dims );
   dims.push_back(num_coils_);
 
-  cuNDArray<_complext> *image = new cuNDArray<_complext>(); 
-  if( image->create(&dims) == 0x0 ){
-    throw std::runtime_error("cuSenseRHSBuffer::get_acc_coil_images: device memory allocation failed");
-  }
-
+  cuNDArray<_complext> *image = new cuNDArray<_complext>(&dims);
   // Check if we are ready to reconstruct. If not return an image of ones...
   if( acc_buffer_empty_ ){
   	image->fill(_complext(1));

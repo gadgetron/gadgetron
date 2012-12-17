@@ -16,7 +16,8 @@ update(hoNDArray< std::complex<T> >* new_weights)
   mutex_.acquire();
 
   if (!weights_.dimensions_equal(new_weights)) {
-    if (!weights_.create(new_weights->get_dimensions().get())) {
+    try{weights_.create(new_weights->get_dimensions());}
+    catch (gt_runtime_error & err){
       return -2;
     }
   }

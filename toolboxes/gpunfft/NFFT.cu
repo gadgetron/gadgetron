@@ -1419,10 +1419,7 @@ _convolve_NFFT_NC2C<REAL,D,false>{ // False: use non-atomic operations variant
     if( num_batches > 1 ) 
       vec_dims.push_back(num_batches);
     
-    if( !_tmp.create(&vec_dims) ){
-      BOOST_THROW_EXCEPTION( cuda_error("Error: NFFT memory allocation failed before convolution."));
-
-    }    
+    _tmp.create(&vec_dims);
     
     //
     // Invoke kernel

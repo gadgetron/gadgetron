@@ -143,13 +143,13 @@ int GPUCGGadgetGeneric::configure_channels()
 
 	try {csm->create( &csm_dims ); }
 	catch (cuda_error& err){
-		GADGET_DEBUG3(err, "\nError: unable to create csm.\n" );
+		GADGET_DEBUG_EXCEPTION(err, "\nError: unable to create csm.\n" );
 		return GADGET_FAIL;
 	}
 
 	try {csm->fill(float_complext(1) );}
 	catch (cuda_error & err){
-		GADGET_DEBUG3(err, "\nError: unable to clear csm.\n" );
+		GADGET_DEBUG_EXCEPTION(err, "\nError: unable to clear csm.\n" );
 		return GADGET_FAIL;
 	}
 
@@ -158,7 +158,7 @@ int GPUCGGadgetGeneric::configure_channels()
 
 	try{ E_->setup( matrix_size_, matrix_size_os_, static_cast<float>(kernel_width_) );}
 	catch (gt_runtime_error& err){
-		GADGET_DEBUG3(err, "\nError: unable to setup encoding operator.\n" );
+		GADGET_DEBUG_EXCEPTION(err, "\nError: unable to setup encoding operator.\n" );
 		return GADGET_FAIL;
 	}
 
@@ -210,7 +210,7 @@ int GPUCGGadgetGeneric::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1
 	E_->set_csm(csm);
 	try{ E_->preprocess(traj.get());}
 	catch (gt_runtime_error& err){
-		GADGET_DEBUG3(err,"\nError during cgOperatorNonCartesianSense::preprocess()\n");
+		GADGET_DEBUG_EXCEPTION(err,"\nError during cgOperatorNonCartesianSense::preprocess()\n");
 		return GADGET_FAIL;
 	}
 
@@ -250,8 +250,9 @@ int GPUCGGadgetGeneric::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1
 	img_dims[0] = matrix_size_.vec[0];
 	img_dims[1] = matrix_size_.vec[1];
 
-	if (cm2->getObjectPtr()->create(&img_dims) == 0x0) {
-		GADGET_DEBUG1("\nUnable to allocate host image array");
+	try{cm2->getObjectPtr()->create(&img_dims);}
+	catch (gt_runtime_error &err){
+		GADGET_DEBUG_EXCEPTION(err,"\nUnable to allocate host image array");
 		m1->release();
 		return GADGET_FAIL;
 	}

@@ -21,7 +21,7 @@
 	      ACE_TEXT("[file %N, line %l] " _fmt),	\
 	      __VA_ARGS__) )
 //MACROS FOR LOGGING
-#define GADGET_DEBUG3(err, message); \
+#define GADGET_DEBUG_EXCEPTION(err, message); \
 	{std::string gdb ("[file %N, line %l] "); \
 	gdb += message; \
 	gdb += diagnostic_information(err); \

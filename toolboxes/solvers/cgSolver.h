@@ -310,12 +310,7 @@ protected:
 
   virtual void iterate( unsigned int iteration, REAL *tc_metric, bool *tc_terminate )
   {
-    ARRAY_TYPE q;
-    if( !q.create( x_->get_dimensions().get() )) {
-      throw std::runtime_error( "Error: cgSolver::iterate : memory allocation failed for temporary image" );
-
-    }
-
+    ARRAY_TYPE q=ARRAY_TYPE(x_->get_dimensions());
     // Perform one iteration of the solver
     //
 
@@ -393,12 +388,7 @@ protected:
     // Intermediate storage
     //
 
-    ARRAY_TYPE q;
-    if( !q.create( in->get_dimensions().get() )) {
-      throw std::runtime_error( "Error: cgSolver::mult_MH_M : memory allocation failed for temporary image" );
-
-    }
-
+    ARRAY_TYPE q = ARRAY_TYPE(in->get_dimensions());
     // Start by clearing the output
     //
     out->clear();

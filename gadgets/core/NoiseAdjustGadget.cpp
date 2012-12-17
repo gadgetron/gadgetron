@@ -127,12 +127,13 @@ int NoiseAdjustGadget
 		//If noise covariance matrix is not allocated
 		if (noise_covariance_matrix_.get_number_of_elements() != channels*channels) {
 			std::vector<unsigned int> dims(2, channels);
-			if (!noise_covariance_matrix_.create(&dims)) {
-				GADGET_DEBUG1("Unable to allocate storage for noise covariance matrix\n");
+			try{ noise_covariance_matrix_.create(&dims);}
+			catch (gt_runtime_error &err){
+				GADGET_DEBUG_EXCEPTION(err,"Unable to allocate storage for noise covariance matrix\n");
 				return GADGET_FAIL;
-			} else {
-				noise_covariance_matrix_.clear(std::complex<double>(0.0,0.0));
 			}
+			noise_covariance_matrix_.clear(std::complex<double>(0.0,0.0));
+
 			number_of_noise_samples_ = 0;
 		}
 

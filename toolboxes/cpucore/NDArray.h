@@ -8,6 +8,7 @@
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
 #include <new>
+#include "GadgetronException.h"
 
 template <class T> class NDArray
 {
@@ -34,21 +35,25 @@ template <class T> class NDArray
   }
   
   virtual ~NDArray() {}
+  virtual void create(boost::shared_ptr<std::vector<unsigned int>  > dimensions){
+  	this->create(dimensions.get());
+  }
   
-  virtual T* create(std::vector<unsigned int> *dimensions) 
+  virtual void create(std::vector<unsigned int> *dimensions)
   {
     std::vector<unsigned int> *tmp = new std::vector<unsigned int>;
     *tmp = *dimensions;
     dimensions_ = boost::shared_ptr< std::vector<unsigned int> >(tmp);
     allocate_memory();
-    return this->get_data_ptr();
   }
+  virtual void create(boost::shared_ptr<std::vector<unsigned int>  > dimensions, T* data, bool delete_data_on_destruct = false){
+    	this->create(dimensions.get(), data, delete_data_on_destruct);
+	}
 
-  virtual T* create(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct = false) 
+  virtual void create(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct = false)
   {
     if (!data) {
-      std::cerr << "NDArray<T>::create: 0x0 pointer provided" << std::endl;
-      return 0x0;
+    	BOOST_THROW_EXCEPTION(gt_runtime_error("NDArray<T>::create: 0x0 pointer provided"));
     }
     
     std::vector<unsigned int> *tmp = new std::vector<unsigned int>;
@@ -60,8 +65,6 @@ template <class T> class NDArray
     for (unsigned int i = 0; i < this->dimensions_->size(); i++) {
       this->elements_ *= (*this->dimensions_)[i];
     }
-    
-    return this->get_data_ptr();
   }
 
   virtual void permute(std::vector<unsigned int> *dim_order, NDArray<T> *out = 0, int shift_mode = 0) = 0;

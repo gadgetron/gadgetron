@@ -65,12 +65,8 @@ estimate_b1_map( cuNDArray<complext<REAL> > *data_in, int target_coils)
   } else {
 	  std::vector<unsigned int> odims = *(data_in->get_dimensions().get());
 	  odims[D] = target_coils_int;
-	  cuNDArray<complext<REAL> > *_data_out = new cuNDArray<complext<REAL> >;
+	  cuNDArray<complext<REAL> > *_data_out = new cuNDArray<complext<REAL> >(&odims);
 	  data_out = boost::shared_ptr< cuNDArray<complext<REAL> > >(_data_out);
-	  if (!_data_out->create(&odims)) {
-		  std::cout << "Failed to create internal storage for CSM" << std::endl;
-		  return data_out;
-	  }
 
 	  //Now copy one coil at a time
 	  unsigned long elements_per_coil = data_in->get_number_of_elements()/ncoils;

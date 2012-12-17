@@ -170,12 +170,7 @@ int main(int argc, char** argv)
   }
 
   std::vector<unsigned int> reg_dims = uintd_to_vector<2>(matrix_size);
-  cuNDArray<_complext> _reg_image;
-
-  if( _reg_image.create(&reg_dims) == 0x0 ){
-    cout << "Failed to allocate regularization image" << endl;
-    return 1;
-  }
+  cuNDArray<_complext> _reg_image = cuNDArray<_complext>(&reg_dims);
 
   E->mult_csm_conj_sum( acc_images.get(), &_reg_image );
   
@@ -238,11 +233,7 @@ int main(int argc, char** argv)
   // Allocate space for result
   boost::shared_ptr< std::vector<unsigned int> > res_dims( new std::vector<unsigned int> );
   *res_dims = uintd_to_vector<2>(matrix_size); res_dims->push_back(frames_per_reconstruction*num_reconstructions); 
-  cuNDArray<_complext> result; 
-  if( result.create(res_dims.get()) == 0x0 ){
-    cout << "Failed allocate result image" << endl;
-    return 1;
-  }
+  cuNDArray<_complext> result = cuNDArray<_complext>(res_dims);
 
   timer = new GPUTimer("Full SENSE reconstruction with TV regularization.");
 

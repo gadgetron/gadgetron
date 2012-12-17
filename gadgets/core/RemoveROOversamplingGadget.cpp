@@ -17,8 +17,9 @@ int RemoveROOversamplingGadget
   std::vector<unsigned int> data_out_dims = *m2->getObjectPtr()->get_dimensions();
   data_out_dims[0] = data_out_dims[0]/2;
 
-  if (!m3->getObjectPtr()->create(&data_out_dims)) {
-    GADGET_DEBUG1("Unable to create new data array for downsampled data\n");
+  try{ m3->getObjectPtr()->create(&data_out_dims);}
+  catch (gt_runtime_error &err){
+    GADGET_DEBUG_EXCEPTION(err,"Unable to create new data array for downsampled data\n");
     return GADGET_FAIL;
   }
 

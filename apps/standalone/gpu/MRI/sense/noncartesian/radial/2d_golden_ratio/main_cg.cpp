@@ -181,12 +181,7 @@ int main(int argc, char** argv)
   timer = new GPUTimer("Computing regularization");
 
   std::vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size);
-  cuNDArray<_complext> reg_image;
-
-  if( reg_image.create(&image_dims) == 0x0 ){
-    cout << "Failed to allocate regularization image" << endl;
-    return 1;
-  }
+  cuNDArray<_complext> reg_image = cuNDArray<_complext>(&image_dims);
 
   E->mult_csm_conj_sum( acc_images.get(), &reg_image );
   acc_images.reset();
@@ -235,11 +230,7 @@ int main(int argc, char** argv)
   // Allocate space for result
   image_dims = uintd_to_vector<2>(matrix_size); 
   image_dims.push_back(frames_per_reconstruction*num_reconstructions); 
-  cuNDArray<_complext> result; 
-  if( result.create(&image_dims) == 0x0 ){
-    cout << "Failed to allocate result image" << endl;
-    return 1;
-  }
+  cuNDArray<_complext> result = cuNDArray<_complext>(&image_dims);
 
   timer = new GPUTimer("Full SENSE reconstruction.");
 

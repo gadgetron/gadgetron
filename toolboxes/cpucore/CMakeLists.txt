@@ -16,6 +16,7 @@ install(FILES
 	NDArray.h
 	hoNDArray.h
 	hoNDArray_fileio.h
+	GadgetronException.h
 	cpucore_export.h
 	FFT.h
 	GadgetronTimer.h

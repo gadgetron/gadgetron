@@ -168,13 +168,13 @@ int GPUCGGadget::configure_channels()
 
 	try { csm->create( &csm_dims ); }
 	catch ( cuda_error &err){
-		GADGET_DEBUG3(err, "Failed to create csm array \n" );
+		GADGET_DEBUG_EXCEPTION(err, "Failed to create csm array \n" );
 		return GADGET_FAIL;
 	}
 
 	try { csm->fill(float_complext(1));}
 	catch ( cuda_error &err){
-		GADGET_DEBUG3( err, "Failed to fill csm array \n" );
+		GADGET_DEBUG_EXCEPTION(err, "Failed to fill csm array \n" );
 		return GADGET_FAIL;
 	}
 
@@ -183,7 +183,7 @@ int GPUCGGadget::configure_channels()
 
 	try {E_->setup( matrix_size_, matrix_size_os_, kernel_width_ );}
 	catch (cuda_error &err){
-		GADGET_DEBUG3(err, "\nError: unable to setup encoding operator.\n" );
+		GADGET_DEBUG_EXCEPTION(err, "\nError: unable to setup encoding operator.\n" );
 		return GADGET_FAIL;
 	}
 
@@ -272,7 +272,7 @@ int GPUCGGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 
 		try{ E_->preprocess(traj.get());}
 		catch (gt_runtime_error& err){
-			GADGET_DEBUG3(err, "\nError during cgOperatorNonCartesianSense::preprocess()\n");
+			GADGET_DEBUG_EXCEPTION(err, "\nError during cgOperatorNonCartesianSense::preprocess()\n");
 			return GADGET_FAIL;
 		}
 
@@ -294,13 +294,13 @@ int GPUCGGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		cuNDArray<float_complext> reg_image;
 		try {reg_image.create(reg_dims.get()); }
 		catch (cuda_error& err){
-			GADGET_DEBUG3(err,"\nError allocating regularization image on device\n");
+			GADGET_DEBUG_EXCEPTION(err,"\nError allocating regularization image on device\n");
 			return GADGET_FAIL;
 		}
 
 		try{ E_->mult_csm_conj_sum( csm_data.get(), &reg_image );}
 		catch (gt_runtime_error& err){
-			GADGET_DEBUG3(err,"\nError combining coils to regularization image\n");
+			GADGET_DEBUG_EXCEPTION(err,"\nError combining coils to regularization image\n");
 			return GADGET_FAIL;
 		}
 
@@ -337,8 +337,9 @@ int GPUCGGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		img_dims[0] = matrix_size_.vec[0];
 		img_dims[1] = matrix_size_.vec[1];
 
-		if (cm2->getObjectPtr()->create(&img_dims) == 0x0) {
-			GADGET_DEBUG1("\nUnable to allocate host image array");
+		try{cm2->getObjectPtr()->create(&img_dims);}
+		catch (gt_runtime_error &err){
+			GADGET_DEBUG_EXCEPTION(err,"\nUnable to allocate host image array");
 			cm1->release();
 			return GADGET_FAIL;
 		}
@@ -467,7 +468,8 @@ boost::shared_ptr< cuNDArray<float_complext> >  GPUCGGadget::upload_samples()
 
 	std::vector<unsigned int> dims; dims.push_back(samples_needed); dims.push_back(channels_);
 	hoNDArray<float_complext> tmp;
-	if( tmp.create( &dims, (float_complext*)data_host_ptr_, false ) == 0x0 ){
+	try{ tmp.create( &dims, (float_complext*)data_host_ptr_, false );}
+	catch (gt_runtime_error &err){
 		GADGET_DEBUG1("\nFailed to create temporary host data array\n");
 		return boost::shared_ptr< cuNDArray<float_complext> >();
 	}

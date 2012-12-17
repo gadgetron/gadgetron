@@ -55,12 +55,7 @@ template <class T> boost::shared_ptr< hoNDArray<T> > read_nd_array(const char* f
     dim_array.push_back(static_cast<unsigned int>(tmp));
   }
 
-  boost::shared_ptr< hoNDArray<T> > out( new hoNDArray<T> );
-  if( out->create(&dim_array) == 0x0 ){
-    std::cout << "ERROR: cannot create hoNDArray from file " << filename << std::endl;
-    return boost::shared_ptr< hoNDArray<T> >();
-  }
-  
+  boost::shared_ptr< hoNDArray<T> > out( new hoNDArray<T>(&dim_array) );
   f.read(reinterpret_cast<char*>(out->get_data_ptr()),sizeof(T)*out->get_number_of_elements());
   
   return out;

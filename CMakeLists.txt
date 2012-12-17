@@ -37,6 +37,8 @@ find_package(CUDA 4.1)
 
 if (CUDA_FOUND)
    MESSAGE("CUDA Found, GPU components will be compiled")
+   ADD_DEFINITIONS(-DGTCUDA_FOUND)
+   include_directories( ${CUDA_INCLUDE_DIRS})
 else (CUDA_FOUND)
      MESSAGE("CUDA not found. CUDA components will not be compiled")
 endif (CUDA_FOUND)

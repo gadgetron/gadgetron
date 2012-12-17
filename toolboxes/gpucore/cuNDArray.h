@@ -43,9 +43,18 @@ template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
   
   virtual ~cuNDArray();
 
-  virtual T* create(std::vector<unsigned int> *dimensions);
-  virtual T* create(std::vector<unsigned int> *dimensions, int device_no);
-  virtual T* create(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct = false);
+  virtual void create(std::vector<unsigned int> *dimensions);
+  virtual void create(std::vector<unsigned int> *dimensions, int device_no);
+  virtual void create(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct = false);
+  virtual void create(boost::shared_ptr<std::vector<unsigned int>  > dimensions){
+  	this->create(dimensions.get());
+  }
+	virtual void create(boost::shared_ptr<std::vector<unsigned int>  > dimensions, int device_no){
+		this->create(dimensions.get(),device_no);
+	}
+	virtual void create(boost::shared_ptr<std::vector<unsigned int>  > dimensions, T* data, bool delete_data_on_destruct = false){
+		this->create(dimensions.get(), data, delete_data_on_destruct);
+	}
 
   static boost::shared_ptr< cuNDArray<T> > allocate(std::vector<unsigned int> *dimensions);
   static boost::shared_ptr< cuNDArray<T> > allocate(std::vector<unsigned int> *dimensions, int device_no);  

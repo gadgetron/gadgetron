@@ -77,8 +77,9 @@ int CoilReductionGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHead
 	GadgetContainerMessage< hoNDArray<std::complex<float> > >* m3 =
 			new GadgetContainerMessage< hoNDArray<std::complex<float> > >();
 
-	if (!m3->getObjectPtr()->create(&dims_out)) {
-		GADGET_DEBUG1("Unable to create storage for reduced dataset size\n");
+	try{ m3->getObjectPtr()->create(&dims_out);}
+	catch (gt_runtime_error &err){
+		GADGET_DEBUG_EXCEPTION(err,"Unable to create storage for reduced dataset size\n");
 		return GADGET_FAIL;
 	}
 

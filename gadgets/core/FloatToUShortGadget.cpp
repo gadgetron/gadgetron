@@ -28,8 +28,9 @@ int FloatToUShortGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m
 
 	boost::shared_ptr< std::vector<unsigned int> > dims = m2->getObjectPtr()->get_dimensions();
 
-	if (!cm2->getObjectPtr()->create(dims.get())) {
-		GADGET_DEBUG1("Unable to create unsigned short storage in Extract Magnitude Gadget");
+	try {cm2->getObjectPtr()->create(dims);}
+	catch (gt_runtime_error &err){
+		GADGET_DEBUG_EXCEPTION(err,"Unable to create unsigned short storage in Extract Magnitude Gadget");
 		return GADGET_FAIL;
 	}
 

@@ -97,13 +97,15 @@ int SpiralGadget::process_config(ACE_Message_Block* mb)
 	std::vector<unsigned int> trajectory_dimensions;
 	trajectory_dimensions.push_back(samples_per_interleave_*Nints);
 
-	if (!host_traj_->create(&trajectory_dimensions)) {
-		GADGET_DEBUG1("Unable to allocate memory for trajectory\n");
+	try{host_traj_->create(&trajectory_dimensions);}
+	catch (gt_runtime_error &err ){
+		GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for trajectory\n");
 		return GADGET_FAIL;
 	}
 
-	if (!host_weights_->create(&trajectory_dimensions)) {
-		GADGET_DEBUG1("Unable to allocate memory for weights\n");
+	try{host_weights_->create(&trajectory_dimensions);}
+	catch (gt_runtime_error &err ){
+		GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for weights\n");
 		return GADGET_FAIL;
 	}
 
@@ -136,8 +138,9 @@ int SpiralGadget::process_config(ACE_Message_Block* mb)
 	}
 
 	for (unsigned int i = 0; i < slices; i++) {
-		if (!host_data_buffer_[i].create(&data_dimensions)) {
-			GADGET_DEBUG1("Unable to allocate memory for data buffer\n");
+		try{host_data_buffer_[i].create(&data_dimensions);}
+		catch (gt_runtime_error &err){
+			GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for data buffer\n");
 			return GADGET_FAIL;
 		}
 	}
@@ -162,7 +165,7 @@ int SpiralGadget::process_config(ACE_Message_Block* mb)
 	// Preprocess
 	try { 	plan_.preprocess( &traj, NFFT_plan<float,2>::NFFT_PREP_ALL ); }
 	catch (gt_runtime_error& err){
-		GADGET_DEBUG3(err,"NFFT preprocess failed\n");
+		GADGET_DEBUG_EXCEPTION(err,"NFFT preprocess failed\n");
 		return GADGET_FAIL;
 	}
 
@@ -208,7 +211,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 
 		try{ plan_.compute( &data, &image, &gpu_weights_, NFFT_plan<float,2>::NFFT_BACKWARDS_NC2C ); }
 		catch (gt_runtime_error& err){
-			GADGET_DEBUG3(err, "NFFT compute failed\n");
+			GADGET_DEBUG_EXCEPTION(err, "NFFT compute failed\n");
 			return GADGET_FAIL;
 		}
 
@@ -219,7 +222,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 
 		try{ m4->getObjectPtr()->create(&image_dimensions_);}
 		catch (gt_runtime_error& err){
-			GADGET_DEBUG3(err,"Unable to allocate memory for combined image\n");
+			GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for combined image\n");
 			m4->release();
 			return GADGET_FAIL;
 		}

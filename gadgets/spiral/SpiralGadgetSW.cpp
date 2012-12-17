@@ -211,13 +211,13 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 
 		try{host_traj_->create(&trajectory_dimensions);}
 		catch (gt_runtime_error &err){
-			GADGET_DEBUG3(err,"Unable to allocate memory for trajectory\n");
+			GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for trajectory\n");
 			return GADGET_FAIL;
 		}
 
 		try{host_weights_->create(&trajectory_dimensions);}
 		catch (gt_runtime_error& err ){
-			GADGET_DEBUG3(err,"Unable to allocate memory for weights\n");
+			GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for weights\n");
 			return GADGET_FAIL;
 		}
 
@@ -257,7 +257,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		// Preprocess
 		try{plan_.preprocess( &traj, NFFT_plan<float,2>::NFFT_PREP_ALL );}
 		catch (gt_runtime_error& err){
-			GADGET_DEBUG3(err,"NFFT preprocess failed\n");
+			GADGET_DEBUG_EXCEPTION(err,"NFFT preprocess failed\n");
 			return GADGET_FAIL;
 		}
 
@@ -326,7 +326,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 
 		try {plan_.compute( &data, &image, &gpu_weights_, NFFT_plan<float,2>::NFFT_BACKWARDS_NC2C );}
 		catch (gt_runtime_error& err){
-			GADGET_DEBUG3(err,"NFFT compute failed\n");
+			GADGET_DEBUG_EXCEPTION(err,"NFFT compute failed\n");
 			return GADGET_FAIL;
 		}
 
@@ -342,14 +342,15 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		reg_dims->pop_back();
 
 		cuNDArray<float_complext> reg_image;
-		if( reg_image.create(reg_dims.get()) == 0x0 ){
-			GADGET_DEBUG1("\nError allocating regularization image on device\n");
+		try{reg_image.create(reg_dims.get());}
+		catch (gt_runtime_error &err){
+			GADGET_DEBUG_EXCEPTION(err,"\nError allocating regularization image on device\n");
 			return GADGET_FAIL;
 		}
 
 		try {E_->mult_csm_conj_sum( &image, &reg_image ); }
 		catch (gt_runtime_error& err){
-			GADGET_DEBUG3(err,"\nError combining coils to regularization image\n");
+			GADGET_DEBUG_EXCEPTION(err,"\nError combining coils to regularization image\n");
 			return GADGET_FAIL;
 		}
 
@@ -365,7 +366,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		ddimensions[1] = num_batches; //Channels
 		try{data_host->create(&ddimensions);}
 		catch (gt_runtime_error& err){
-			GADGET_DEBUG3(err,"Unable to allocate host data array\n");
+			GADGET_DEBUG_EXCEPTION(err,"Unable to allocate host data array\n");
 			return GADGET_FAIL;
 		}
 
@@ -375,14 +376,14 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		boost::shared_ptr< hoNDArray<floatd2> > traj_host(new hoNDArray<floatd2>());
 		try {traj_host->create(&ddimensions);}
 		catch (gt_runtime_error& err){
-			GADGET_DEBUG3(err, "Unable to allocate host trajectory array\n");
+			GADGET_DEBUG_EXCEPTION(err, "Unable to allocate host trajectory array\n");
 			return GADGET_FAIL;
 		}
 
 		boost::shared_ptr< hoNDArray<float> > dcw_host(new hoNDArray<float>());
 		try {dcw_host->create(&ddimensions);}
 		catch (gt_runtime_error& err){
-			GADGET_DEBUG3(err, "Unable to allocate host density compensation array\n");
+			GADGET_DEBUG_EXCEPTION(err, "Unable to allocate host density compensation array\n");
 			return GADGET_FAIL;
 		}
 
