@@ -3,10 +3,17 @@
 #   ISMRMRD_INCLUDE_DIR  - where to find ismrmrd.h, etc.
 #   ISMRMRD_LIBRARIES    - libismrmrd.so.
 #   ISMRMRD_XSD_LIBRARIES    - libismrmrd.so.
-#   ISMRMRD_SCHEMA_DIR   - Where to find ismrmrd.xsd       
+#   ISMRMRD_SCHEMA_DIR   - Where to find ismrmrd.xsd
 
-FIND_PATH( ISMRMRD_INCLUDE_DIR ismrmrd.h PATHS /usr/local/ /usr/include /usr/local/include PATH_SUFFIXES ismrmrd ismrmrd/include)
-FIND_PATH( ISMRMRD_SCHEMA_DIR  ismrmrd.xsd PATHS /usr/local/ /usr/include /usr/local/include PATH_SUFFIXES ismrmrd ismrmrd/schema)
+FIND_PATH( ISMRMRD_INCLUDE_DIR ismrmrd.h
+    HINTS $ENV{ISMRMRD_HOME}
+    PATHS /usr/local/ /usr/include /usr/local/include
+    PATH_SUFFIXES ismrmrd ismrmrd/include include)
+
+FIND_PATH( ISMRMRD_SCHEMA_DIR ismrmrd.xsd
+    HINTS $ENV{ISMRMRD_HOME}
+    PATHS /usr/local/ /usr/include /usr/local/include
+    PATH_SUFFIXES ismrmrd ismrmrd/schema schema)
 
 FIND_LIBRARY( ISMRMRD_LIBRARIES
               NAMES "ismrmrd"
