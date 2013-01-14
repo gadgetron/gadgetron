@@ -11,6 +11,7 @@
 
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 template< class REAL, 
 	  class ELEMENT_TYPE, 
@@ -674,7 +675,16 @@ protected:
 
     REAL sum = solver_asum_element( &tmp );
     //image_scale = (REAL) (tmp.get_number_of_elements())/REAL(sum);
-    image_scale = std::max( REAL(tmp.get_number_of_elements()), REAL(1e6) )/REAL(sum);
+
+    // image_scale = std::max( REAL(tmp.get_number_of_elements()), REAL(1e6) )/REAL(sum);
+    if ( REAL(tmp.get_number_of_elements()) > REAL(1e6) )
+    {
+        image_scale = REAL(tmp.get_number_of_elements())/REAL(sum);
+    }
+    else
+    {
+        image_scale = REAL(1e6)/REAL(sum);
+    }
 
     if(	!solver_scal( image_scale, f.get() )){
       this->solver_error( "Error: sbSolver::normalize : unable to scale f" );
