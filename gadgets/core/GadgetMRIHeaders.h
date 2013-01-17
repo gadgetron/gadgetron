@@ -46,6 +46,7 @@ enum GadgetMessageID {
   GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT  = 1009,
   GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT  = 1010,
   GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT = 1011,
+  GADGET_MESSAGE_DICOM                     = 1012,
   GADGET_MESSAGE_EXT_ID_MAX                = 4096
 };
 
@@ -116,7 +117,7 @@ struct ISMRMRD::ImageHeader
     }
   }
 
-}; 
+};
 */
 
 #endif  //GADGETMRIHEADERS_H

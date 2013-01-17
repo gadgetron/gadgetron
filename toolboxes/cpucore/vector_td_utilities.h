@@ -281,22 +281,30 @@ T dot( const vector_td<T,D> vec1, const vector_td<T,D> vec2 )
   return res;
 }
 
+#ifdef max
+#undef max
+#endif // max
+
 template<class T, unsigned int D> __inline__ __host__ __device__ 
-T max( const vector_td<T,D> vec )
+T max( const vector_td<T,D> vecUsed )
 {
-  T res = vec.vec[0];
+  T res = vecUsed.vec[0];
   for (unsigned int i=1; i<D; i++){
-    res = max(res,vec.vec[i]);
+    res = max(res,vecUsed.vec[i]);
   }
   return res;
 }
 
+#ifdef min
+#undef min
+#endif // min
+
 template<class T, unsigned int D> __inline__ __host__ __device__ 
-T min( const vector_td<T,D> vec )
+T min( const vector_td<T,D> vecUsed )
 {
-  T res = vec.vec[0];
+  T res = vecUsed.vec[0];
   for (unsigned int i=1; i<D; i++){
-    res = min(res,vec.vec[i]);
+    res = min(res,vecUsed.vec[i]);
   }
   return res;
 }
