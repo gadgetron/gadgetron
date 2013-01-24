@@ -35,26 +35,22 @@ void cblas_gemm_wrapper(char TRANSA, char TRANSB, std::complex<double>* A, std::
 	zgemm_(&TRANSB, &TRANSA,&N, &M, &K, alpha, B, &N, A, &K, beta, C, &N);
 }
 
-template <typename T> int hoNDArray_gemm( hoNDArray<T>* A, hoNDArray<T>* B, T alpha,  hoNDArray<T>* C, T beta)
+template <typename T> void hoNDArray_gemm( hoNDArray<T>* A, hoNDArray<T>* B, T alpha,  hoNDArray<T>* C, T beta)
 {
-	const char* fname = "hoNDArray_gemm";
 
 	//Let's first check the dimensions A
 	if (A->get_number_of_dimensions() != 2) {
-		std::cout << fname << ": " << "Invalid number of dimensions in matrix A: " << A->get_number_of_dimensions() << std::endl;
-		return -1;
+		BOOST_THROW_EXCEPTION(gt_runtime_error("Invalid number of dimensions in matrix A: "));
 	}
 
 	//Let's first check the dimensions B
 	if (B->get_number_of_dimensions() != 2) {
-		std::cout << fname << ": " << "Invalid number of dimensions in matrix B: " << B->get_number_of_dimensions() << std::endl;
-		return -1;
+		BOOST_THROW_EXCEPTION(gt_runtime_error("Invalid number of dimensions in matrix B: "));
 	}
 
 	//Let's first check the dimensions C
 	if (C->get_number_of_dimensions() != 2) {
-		std::cout << fname << ": " << "Invalid number of dimensions in matrix C: " << C->get_number_of_dimensions() << std::endl;
-		return -1;
+		BOOST_THROW_EXCEPTION(gt_runtime_error("Invalid number of dimensions in matrix C: "));
 	}
 
 	//Do the dimensions match?
@@ -63,18 +59,20 @@ template <typename T> int hoNDArray_gemm( hoNDArray<T>* A, hoNDArray<T>* B, T al
 	int K = A->get_size(0); //Number of columns of A
 
 	if (K != static_cast<int>(B->get_size(1))) {
-		std::cout << fname << ": " << "Number of columns of A (" << K << ") does not match rows of B("
-				<< B->get_size(1) << ")" << std::endl;
-		return -1;
+		std::stringstream ss;
+		ss <<"Number of columns of A (" << K << ") does not match rows of B(" << B->get_size(1) << ")" << std::endl;
+		BOOST_THROW_EXCEPTION(gt_runtime_error(ss.str()));
 	}
 
 
 	//Is the output matric the right size?
 	if ((C->get_size(0) != N) || (C->get_size(1) != M) ) {
-		std::cout << fname << ": " << "Size of output matrix C (" << C->get_size(0) << " (cols), "
-				<< C->get_size(1) << " (rows))" << " does not match the expected" <<
-				N << "(cols), " << M << "(rows)" << std::endl;
-		return -1;
+		std::stringstream ss;
+		ss << "Size of output matrix C (" << C->get_size(0) << " (cols), " <<
+		C->get_size(1) << " (rows))" << " does not match the expected" <<
+		N << "(cols), " << M << "(rows)" << std::endl;
+		BOOST_THROW_EXCEPTION(gt_runtime_error(ss.str()));
+
 
 	}
 
@@ -83,14 +81,13 @@ template <typename T> int hoNDArray_gemm( hoNDArray<T>* A, hoNDArray<T>* B, T al
 	char TRANSB = 'N';
 	cblas_gemm_wrapper(TRANSA, TRANSB, A->get_data_ptr(), B->get_data_ptr(), C->get_data_ptr(), M, N, K, &alpha, &beta);
 
-	return 0;
 }
 
 //Template instanciations
-template EXPORTLINALG int hoNDArray_gemm( hoNDArray< float>* A, hoNDArray< float >* B, float alpha,  hoNDArray< float >* C, float beta);
-template EXPORTLINALG int hoNDArray_gemm( hoNDArray< double >* A, hoNDArray< double >* B, double alpha,  hoNDArray< double >* C, double beta);
-template EXPORTLINALG int hoNDArray_gemm( hoNDArray< std::complex<float> >* A, hoNDArray< std::complex<float> >* B, std::complex<float> alpha,  hoNDArray< std::complex<float> >* C, std::complex<float> beta);
-template EXPORTLINALG int hoNDArray_gemm( hoNDArray< std::complex<double> >* A, hoNDArray< std::complex<double> >* B, std::complex<double> alpha,  hoNDArray< std::complex<double> >* C, std::complex<double> beta);
+template EXPORTLINALG void hoNDArray_gemm( hoNDArray< float>* A, hoNDArray< float >* B, float alpha,  hoNDArray< float >* C, float beta);
+template EXPORTLINALG void hoNDArray_gemm( hoNDArray< double >* A, hoNDArray< double >* B, double alpha,  hoNDArray< double >* C, double beta);
+template EXPORTLINALG void hoNDArray_gemm( hoNDArray< std::complex<float> >* A, hoNDArray< std::complex<float> >* B, std::complex<float> alpha,  hoNDArray< std::complex<float> >* C, std::complex<float> beta);
+template EXPORTLINALG void hoNDArray_gemm( hoNDArray< std::complex<double> >* A, hoNDArray< std::complex<double> >* B, std::complex<double> alpha,  hoNDArray< std::complex<double> >* C, std::complex<double> beta);
 
 void trmm_wrapper(int* M,int* N, float* ALPHA,float* A, void* B) {
 	char SIDE = 'R'; char UPLO = 'U'; char TRANSA = 'N'; char DIAG = 'N';
@@ -112,20 +109,16 @@ void trmm_wrapper(int* M,int* N, std::complex<double>* ALPHA,std::complex<double
 	ztrmm_(&SIDE, &UPLO, &TRANSA, &DIAG, N, M, ALPHA, B, N, A, M);
 }
 
-template <typename T> int hoNDArray_trmm( hoNDArray<T>* A, hoNDArray<T>* B, T alpha)
+template <typename T> void hoNDArray_trmm( hoNDArray<T>* A, hoNDArray<T>* B, T alpha)
 {
-	const char* fname = "hoNDArray_trmm";
-
 	//Let's first check the dimensions A
 	if (A->get_number_of_dimensions() != 2) {
-		std::cout << fname << ": " << "Invalid number of dimensions in matrix A: " << A->get_number_of_dimensions() << std::endl;
-		return -1;
+		BOOST_THROW_EXCEPTION(gt_runtime_error("Invalid number of dimensions in matrix A: "));
 	}
 
 	//Let's first check the dimensions B
 	if (B->get_number_of_dimensions() != 2) {
-		std::cout << fname << ": " << "Invalid number of dimensions in matrix B: " << B->get_number_of_dimensions() << std::endl;
-		return -1;
+		BOOST_THROW_EXCEPTION(gt_runtime_error("Invalid number of dimensions in matrix B: "));
 	}
 
 	//Do the dimensions match?
@@ -134,10 +127,9 @@ template <typename T> int hoNDArray_trmm( hoNDArray<T>* A, hoNDArray<T>* B, T al
 
 	trmm_wrapper(&M, &N, &alpha, A->get_data_ptr(), B->get_data_ptr());
 
-	return 0;
 }
 
-template EXPORTLINALG int hoNDArray_trmm( hoNDArray<float>* A, hoNDArray<float>* B, float alpha);
-template EXPORTLINALG int hoNDArray_trmm( hoNDArray<double>* A, hoNDArray<double>* B, double alpha);
-template EXPORTLINALG int hoNDArray_trmm( hoNDArray< std::complex<float> >* A, hoNDArray< std::complex<float> >* B, std::complex<float> alpha);
-template EXPORTLINALG int hoNDArray_trmm( hoNDArray< std::complex<double> >* A, hoNDArray< std::complex<double> >* B, std::complex<double> alpha);
+template EXPORTLINALG void hoNDArray_trmm( hoNDArray<float>* A, hoNDArray<float>* B, float alpha);
+template EXPORTLINALG void hoNDArray_trmm( hoNDArray<double>* A, hoNDArray<double>* B, double alpha);
+template EXPORTLINALG void hoNDArray_trmm( hoNDArray< std::complex<float> >* A, hoNDArray< std::complex<float> >* B, std::complex<float> alpha);
+template EXPORTLINALG void hoNDArray_trmm( hoNDArray< std::complex<double> >* A, hoNDArray< std::complex<double> >* B, std::complex<double> alpha);

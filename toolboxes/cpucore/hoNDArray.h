@@ -146,13 +146,13 @@ public:
 
     // Check ordering array
     if (dim_order->size() > this->dimensions_->size()) {
-      std::runtime_error("hoNDArray::permute - Invalid length of dimension ordering array");
+      BOOST_THROW_EXCEPTION(gt_runtime_error("hoNDArray::permute - Invalid length of dimension ordering array"));
     }
 
     std::vector<unsigned int> dim_count(this->dimensions_->size(),0);
     for (unsigned int i = 0; i < dim_order->size(); i++) {
       if ((*dim_order)[i] >= this->dimensions_->size()) {
-	std::runtime_error("hoNDArray::permute - Invalid dimension order array");
+	BOOST_THROW_EXCEPTION(gt_runtime_error("hoNDArray::permute - Invalid dimension order array"));
 
       }
       dim_count[(*dim_order)[i]]++;
@@ -164,7 +164,7 @@ public:
     // Check that there are no duplicate dimensions
     for (unsigned int i = 0; i < dim_order->size(); i++) {
       if (dim_count[(*dim_order)[i]] != 1) {
-	std::runtime_error("hoNDArray::permute - Invalid dimension order array (duplicates)");
+	BOOST_THROW_EXCEPTION(gt_runtime_error("hoNDArray::permute - Invalid dimension order array (duplicates)"));
 
       }
       dim_order_int.push_back((*dim_order)[i]);
@@ -182,12 +182,12 @@ public:
     if (out) {
       out_int = dynamic_cast< hoNDArray<T>* >(out);
       if (!out_int) {
-    	  std::runtime_error("hoNDArray::permute: failed to dynamic cast out array pointer");
+    	  BOOST_THROW_EXCEPTION(gt_runtime_error("hoNDArray::permute: failed to dynamic cast out array pointer"));
 
       }
       for (unsigned int i = 0; i < dim_order_int.size(); i++) {
 	if ((*this->dimensions_)[dim_order_int[i]] != out_int->get_size(i)) {
-	  std::runtime_error("hoNDArray::permute: Dimensions of output array do not match the input array");
+	  BOOST_THROW_EXCEPTION(gt_runtime_error("hoNDArray::permute: Dimensions of output array do not match the input array"));
 	}
       }
     }

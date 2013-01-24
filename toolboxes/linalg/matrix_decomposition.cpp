@@ -28,9 +28,8 @@ void potrf_wrapper(char* UPLO, int* N, std::complex<double>* A, int* LDA, int* i
 	zpotrf_(UPLO, N, A, LDA, info);
 }
 
-template <typename T> int hoNDArray_choldc(hoNDArray<T>* A)
+template <typename T> void hoNDArray_choldc(hoNDArray<T>* A)
 {
-	const char* fname = "hoNDArray_choldc(hoNDArray<T>* A)";
 	/*
 	 *  We are specifying Upper Triangular,
 	 *  but matrix comes in transposed (row-major) compared to
@@ -39,14 +38,12 @@ template <typename T> int hoNDArray_choldc(hoNDArray<T>* A)
 	 */
 	char UPLO = 'U';
 	if (A->get_number_of_dimensions() != 2) {
-		std::cout << fname << ": This is not a matrix, only two dimensions allowed\n" << std::endl;
-		return -1;
+		BOOST_THROW_EXCEPTION(gt_runtime_error("This is not a matrix, only two dimensions allowed"));
 	}
 
 	int N = A->get_size(0);
 	if (N != A->get_size(1)) {
-		std::cout << fname << ": Matrix is not symmetric.\n" << std::endl;
-		return -1;
+		BOOST_THROW_EXCEPTION(gt_runtime_error("Matrix is not symmetric."));
 	}
 
 	int LDA = N;
@@ -55,8 +52,7 @@ template <typename T> int hoNDArray_choldc(hoNDArray<T>* A)
 	potrf_wrapper(&UPLO, &N, A->get_data_ptr(), &LDA, &info);
 
 	if (info != 0) {
-		std::cout << fname << ": Error calling _potrf wrapper routine.\n" << std::endl;
-		return -1;
+		BOOST_THROW_EXCEPTION(gt_runtime_error("Error calling _potrf wrapper routine."));
 	}
 
 	/* Temp code to zero upper triangular */
@@ -69,15 +65,14 @@ template <typename T> int hoNDArray_choldc(hoNDArray<T>* A)
 	}
 	*/
 
-	return info;
 }
 
 
 //Template instanciations
-template EXPORTLINALG int hoNDArray_choldc(hoNDArray< std::complex<float> >* A);
-template EXPORTLINALG int hoNDArray_choldc(hoNDArray< std::complex<double> >* A);
-template EXPORTLINALG int hoNDArray_choldc(hoNDArray< float >* A);
-template EXPORTLINALG int hoNDArray_choldc(hoNDArray< double >* A);
+template EXPORTLINALG void hoNDArray_choldc(hoNDArray< std::complex<float> >* A);
+template EXPORTLINALG void hoNDArray_choldc(hoNDArray< std::complex<double> >* A);
+template EXPORTLINALG void hoNDArray_choldc(hoNDArray< float >* A);
+template EXPORTLINALG void hoNDArray_choldc(hoNDArray< double >* A);
 
 
 void trtri_wrapper(char* UPLO, char* DIAG, int* N, float* A, int* LDA, int* info)
@@ -100,20 +95,18 @@ void trtri_wrapper(char* UPLO, char* DIAG, int* N, std::complex<double>* A, int*
 	ztrtri_(UPLO, DIAG, N, A, LDA, info);
 }
 
-template <typename T> int hoNDArray_inv_lower_triangular(hoNDArray<T>* A)
+template <typename T> void hoNDArray_inv_lower_triangular(hoNDArray<T>* A)
 {
 	const char* fname = "hoNDArray_inv_lower_triangular(hoNDArray<T>* A)";
 
 	if (A->get_number_of_dimensions() != 2) {
-		std::cout << fname << ": Error array is not 2 dimensional.\n" << std::endl;
-		return -1;
+		BOOST_THROW_EXCEPTION(gt_runtime_error("Error array is not 2 dimensional."));
 	}
 
 	int N = A->get_size(0);
 
 	if (N != A->get_size(1)) {
-		std::cout << fname << ": Error array is not 2 dimensional.\n" << std::endl;
-		return -1;
+		BOOST_THROW_EXCEPTION(gt_runtime_error("Error array is not 2 dimensional."));
 	}
 
 	int LDA = N;
@@ -124,17 +117,15 @@ template <typename T> int hoNDArray_inv_lower_triangular(hoNDArray<T>* A)
 	trtri_wrapper(&UPLO, &DIAG, &N, A->get_data_ptr(), &LDA, &info);
 
 	if (info != 0) {
-		std::cout << fname << ": Error inverting triangular matrix.\n" << std::endl;
-		return -1;
+		BOOST_THROW_EXCEPTION(gt_runtime_error("Error inverting triangular matrix."));
 	}
 
-	return 0;
 }
 
-template EXPORTLINALG int hoNDArray_inv_lower_triangular(hoNDArray<float>* A);
-template EXPORTLINALG int hoNDArray_inv_lower_triangular(hoNDArray<double>* A);
-template EXPORTLINALG int hoNDArray_inv_lower_triangular(hoNDArray< std::complex<float> >* A);
-template EXPORTLINALG int hoNDArray_inv_lower_triangular(hoNDArray< std::complex<double> >* A);
+template EXPORTLINALG void hoNDArray_inv_lower_triangular(hoNDArray<float>* A);
+template EXPORTLINALG void hoNDArray_inv_lower_triangular(hoNDArray<double>* A);
+template EXPORTLINALG void hoNDArray_inv_lower_triangular(hoNDArray< std::complex<float> >* A);
+template EXPORTLINALG void hoNDArray_inv_lower_triangular(hoNDArray< std::complex<double> >* A);
 
 
 template<typename T>
@@ -145,7 +136,7 @@ boost::shared_ptr<hoNDArray<T> > hoNDArray_transpose(hoNDArray<T> *A, bool copy_
 	boost::shared_ptr<hoNDArray<T> > ret_val;
 
 	if (A->get_number_of_dimensions() != 2) {
-		std::cout << fname << ": Error array is not 2 dimensional.\n" << std::endl;
+		BOOST_THROW_EXCEPTION(gt_runtime_error("Error array is not 2 dimensional."));
 		return ret_val;
 	}
 
@@ -157,18 +148,10 @@ boost::shared_ptr<hoNDArray<T> > hoNDArray_transpose(hoNDArray<T> *A, bool copy_
 	perm_dims[1] = A->get_size(0);
 
 	ret_val.reset(new hoNDArray<T>);
-	if (!ret_val.get()->create(&perm_dims)) {
-		std::cout << fname << ": Unable to allocate transposed array.\n" << std::endl;
-		ret_val.reset();
-		return ret_val;
-	}
+	ret_val.get()->create(&perm_dims);
 
 	if (copy_data) {
-		if (A->permute(&permute_order, ret_val.get()) != 0) {
-			std::cout << fname << ": Unable to transpose array.\n" << std::endl;
-			ret_val.reset();
-			return ret_val;
-		}
+		A->permute(&permute_order, ret_val.get());
 	}
 	return ret_val;
 }
@@ -201,20 +184,18 @@ void gesvd_wrapper(char* JOBU, char* JOBVT, int* M, int* N, std::complex<double>
 	zgesvd_(JOBU, JOBVT, M, N, A, LDA, S, U, LDU, VT, LDVT, WORK, LWORK, RWORK, INFO);
 }
 
-template<typename T, typename Y> int hoNDArray_svd(hoNDArray<T > *A,
-		hoNDArray< T > *U, hoNDArray< Y > *S, hoNDArray< T > *VT)
+template<typename T> void hoNDArray_svd(hoNDArray<T > *A,
+		hoNDArray< T > *U, hoNDArray< typename realType<T>::type > *S, hoNDArray< T > *VT)
 {
-	const char* fname = "hoNDArray_svd(hoNDArray *A, hoNDArray *U, hoNDArray *S, hoNDArray *VT)";
+
 
 	if (A->get_number_of_dimensions() != 2) {
-		std::cout << fname << ": Error array A is not 2 dimensional.\n" << std::endl;
-		return -1;
+		BOOST_THROW_EXCEPTION(gt_runtime_error(" Error array A is not 2 dimensional."));
 	}
 
 	boost::shared_ptr< hoNDArray< T > > A_t = hoNDArray_transpose(A);
 	if (!A_t.get()) {
-		std::cout << fname << ": Transpose of input failed.\n" << std::endl;
-		return -1;
+		BOOST_THROW_EXCEPTION(gt_runtime_error("Transpose of input failed."));
 	}
 
 	int M = A_t->get_size(0);
@@ -224,8 +205,8 @@ template<typename T, typename Y> int hoNDArray_svd(hoNDArray<T > *A,
 
 	T* A_ptr = A_t.get()->get_data_ptr();
 	if (!A_ptr) {
-		std::cout << fname << ": Data array pointer is undefined.\n" << std::endl;
-		return -1;
+		BOOST_THROW_EXCEPTION(gt_runtime_error( "Data array pointer is undefined."));
+
 	}
 
 
@@ -235,31 +216,30 @@ template<typename T, typename Y> int hoNDArray_svd(hoNDArray<T > *A,
 	char JOBU, JOBVT;
 	T* U_ptr = 0;
 	T* VT_ptr = 0;
-	Y* S_ptr = 0;
+	typename realType<T>::type * S_ptr = 0;
 
 	if (S) {
 		if (S->get_number_of_elements() < min_M_N) {
-			std::cout << fname << ": S is too small.\n" << std::endl;
-			return -1;
+			BOOST_THROW_EXCEPTION(gt_runtime_error("S is too small."));
+
 		}
 		S_ptr = S->get_data_ptr();
 	} else {
-		std::cout << fname << ": Null pointer detected for S.\n" << std::endl;
-		return -1;
+		BOOST_THROW_EXCEPTION(gt_runtime_error("Null pointer detected for S."));
+
 	}
 
 	int LDU = 1;
 	if (U) {
 		if (U->get_number_of_dimensions() != 2) {
-			std::cout << fname << ": Error array U is not 2 dimensional.\n" << std::endl;
-			return -1;
+			BOOST_THROW_EXCEPTION(gt_runtime_error("Error array U is not 2 dimensional."));
+
 		}
 
 		U_t = hoNDArray_transpose(U, false);
 
 		if (U_t.get()->get_size(0) != M) {
-			std::cout << fname << ": Number of rows in U is not equal to number of rows in A\n" << std::endl;
-			return -1;
+			BOOST_THROW_EXCEPTION(gt_runtime_error("Number of rows in U is not equal to number of rows in A"));
 		}
 
 		if (U_t.get()->get_size(1) == M) {
@@ -267,8 +247,7 @@ template<typename T, typename Y> int hoNDArray_svd(hoNDArray<T > *A,
 		} else if (U_t.get()->get_size(1) == min_M_N) {
 			JOBU = 'S';
 		} else {
-			std::cout << fname << ": Invalid number of columns of U\n" << std::endl;
-			return -1;
+			BOOST_THROW_EXCEPTION(gt_runtime_error("Invalid number of columns of U"));
 		}
 
 		U_ptr = U_t.get()->get_data_ptr();
@@ -280,8 +259,7 @@ template<typename T, typename Y> int hoNDArray_svd(hoNDArray<T > *A,
 	int LDVT = 1;
 	if (VT) {
 		if (VT->get_number_of_dimensions() != 2) {
-			std::cout << fname << ": Error array VT is not 2 dimensional.\n" << std::endl;
-			return -1;
+			BOOST_THROW_EXCEPTION(gt_runtime_error("Error array VT is not 2 dimensional."));
 		}
 
 		VT_t = hoNDArray_transpose(VT, false);
@@ -291,8 +269,7 @@ template<typename T, typename Y> int hoNDArray_svd(hoNDArray<T > *A,
 		} else if (VT_t.get()->get_size(0) == min_M_N) {
 			JOBVT = 'S';
 		} else {
-			std::cout << fname << ": Invalid number of rows of VT\n" << std::endl;
-			return -1;
+			BOOST_THROW_EXCEPTION(gt_runtime_error("Invalid number of rows of VT"));
 		}
 
 		VT_ptr = VT_t.get()->get_data_ptr();
@@ -306,21 +283,11 @@ template<typename T, typename Y> int hoNDArray_svd(hoNDArray<T > *A,
 	std::vector<unsigned int> work_dim(1);
 
 	int LWORK = 5*2*min_M_N+max_M_N;
-
-	hoNDArray< T > WORK;
 	work_dim[0] = LWORK;
 
-    if (!WORK.create(&work_dim)) {
-		std::cout << fname << ": Unable to create temporary WORK storage\n" << std::endl;
-		return -1;
-    }
-
-	hoNDArray< Y > RWORK;
+	hoNDArray< T > WORK(&work_dim);
 	work_dim[0] = 5*min_M_N;
-	if (!RWORK.create(&work_dim)) {
-		std::cout << fname << ": Unable to create temporary RWORK storage\n" << std::endl;
-		return -1;
-	}
+	hoNDArray< typename realType<T>::type > RWORK(&work_dim);
 
 	//Now we are finally ready to call the SVD
 	int INFO;
@@ -331,34 +298,26 @@ template<typename T, typename Y> int hoNDArray_svd(hoNDArray<T > *A,
 			&LWORK, RWORK.get_data_ptr(), &INFO);
 
 	if (INFO != 0) {
-		std::cout << fname << ": Call to gesvd failed, INFO = " << INFO << "\n" << std::endl;
-		return -1;
+		std::stringstream ss;
+		ss << "Call to gesvd failed, INFO = " << INFO << "";
+		BOOST_THROW_EXCEPTION(gt_runtime_error(ss.str()));
 	}
 
 	std::vector<unsigned int> permute_order(2);
 	permute_order[0] = 1;permute_order[1] = 0;
 
 	if (U) {
-		if (U_t.get()->permute(&permute_order,U) != 0) {
-			std::cout << fname << ": Failed to permute result (U)\n" << std::endl;
-			return -1;
-		}
+		U_t.get()->permute(&permute_order,U);
 	}
 
 	if (VT) {
-		if (VT_t.get()->permute(&permute_order,VT) != 0) {
-			std::cout << fname << ": Failed to permute result (VT)\n" << std::endl;
-			return -1;
-		}
+		VT_t.get()->permute(&permute_order,VT);
 	}
-
-
-	return 0;
 }
 
 //Template instanciations
-template EXPORTLINALG int hoNDArray_svd(hoNDArray< float > *A, hoNDArray< float > *U, hoNDArray< float > *S, hoNDArray< float > *VT);
-template EXPORTLINALG int hoNDArray_svd(hoNDArray< double > *A, hoNDArray< double > *U, hoNDArray< double > *S, hoNDArray< double > *VT);
-template EXPORTLINALG int hoNDArray_svd(hoNDArray< std::complex<float> > *A, hoNDArray< std::complex<float> > *U, hoNDArray< float > *S, hoNDArray< std::complex<float> > *VT);
-template EXPORTLINALG int hoNDArray_svd(hoNDArray< std::complex<double> > *A, hoNDArray< std::complex<double> > *U, hoNDArray< double > *S, hoNDArray< std::complex<double> > *VT);
+template EXPORTLINALG void hoNDArray_svd(hoNDArray< float > *A, hoNDArray< float > *U, hoNDArray< float > *S, hoNDArray< float > *VT);
+template EXPORTLINALG void hoNDArray_svd(hoNDArray< double > *A, hoNDArray< double > *U, hoNDArray< double > *S, hoNDArray< double > *VT);
+template EXPORTLINALG void hoNDArray_svd(hoNDArray< std::complex<float> > *A, hoNDArray< std::complex<float> > *U, hoNDArray< float > *S, hoNDArray< std::complex<float> > *VT);
+template EXPORTLINALG void hoNDArray_svd(hoNDArray< std::complex<double> > *A, hoNDArray< std::complex<double> > *U, hoNDArray< double > *S, hoNDArray< std::complex<double> > *VT);
 

@@ -8,6 +8,7 @@
 #pragma once
 
 #include "cpucore_defines.h"
+#include <complex>
 #include <cmath>
 
 
@@ -125,6 +126,8 @@ template<> struct realType<float_complext> {typedef float type; };
 template<> struct realType<double_complext> {typedef double type; };
 template<> struct realType<float> {typedef float type; };
 template<> struct realType<double> {typedef double type; };
+template<> struct realType<std::complex<float> > {typedef float type; };
+template<> struct realType<std::complex<double> > {typedef double type; };
 
 
 

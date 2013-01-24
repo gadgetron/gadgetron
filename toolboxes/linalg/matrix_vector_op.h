@@ -9,7 +9,7 @@
 #define MATRIX_VECTOR_OP_H_
 
 #include <hoNDArray.h>
-#include <complex>
+#include "complext.h"
 
 #include "linalg_export.h"
 
@@ -46,7 +46,7 @@ extern "C" {
  *  Performs C = alpha*(A*B) + beta*C
  *
  */
-template <typename T> EXPORTLINALG int hoNDArray_gemm( hoNDArray<T>* A, hoNDArray<T>* B, T alpha,  hoNDArray<T>* C, T beta);
+template <typename T> EXPORTLINALG void hoNDArray_gemm( hoNDArray<T>* A, hoNDArray<T>* B, T alpha,  hoNDArray<T>* C, T beta);
 
 /**
  *  Performs B = alpha*A*B
@@ -54,6 +54,6 @@ template <typename T> EXPORTLINALG int hoNDArray_gemm( hoNDArray<T>* A, hoNDArra
  *  A should be lower triangular.
  *
  */
-template <typename T> EXPORTLINALG int hoNDArray_trmm( hoNDArray<T>* A, hoNDArray<T>* B, T alpha);
+template <typename T> EXPORTLINALG void hoNDArray_trmm( hoNDArray<T>* A, hoNDArray<T>* B, T alpha);
 
 #endif /* MATRIX_VECTOR_OP_H_ */

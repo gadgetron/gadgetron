@@ -47,12 +47,12 @@ int MRINoiseAdjustGadget
 		//If noise covariance matrix is not allocated
 		if (noise_covariance_matrix_.get_number_of_elements() != channels*channels) {
 			std::vector<unsigned int> dims(2, channels);
-			if (!noise_covariance_matrix_.create(&dims)) {
-				GADGET_DEBUG1("Unable to allocate storage for noise covariance matrix\n");
+			try{noise_covariance_matrix_.create(&dims);}
+			catch (gt_bad_alloc& err)	{
+				GADGET_DEBUG_EXCEPTION(err, "Unable to allocate storage for noise covariance matrix\n" );
 				return GADGET_FAIL;
-			} else {
-				noise_covariance_matrix_.clear(std::complex<double>(0.0,0.0));
 			}
+			noise_covariance_matrix_.clear(std::complex<double>(0.0,0.0));
 			number_of_noise_samples_ = 0;
 		}
 
@@ -125,12 +125,12 @@ int MRINoiseAdjustGadget
 
 				/* Copy to float precision */
 				std::vector<unsigned int> dims(2, channels);
-				if (!noise_covariance_matrixf_.create(&dims)) {
-					GADGET_DEBUG1("Unable to allocate storage for noise covariance matrix (float)\n");
+				try{noise_covariance_matrixf_.create(&dims);}
+				catch (gt_bad_alloc& err){
+					GADGET_DEBUG_EXCEPTION(err,"Unable to allocate storage for noise covariance matrix (float)\n");
 					return GADGET_FAIL;
-				} else {
-					noise_covariance_matrixf_.clear(std::complex<float>(0.0,0.0));
 				}
+				noise_covariance_matrixf_.clear(std::complex<float>(0.0,0.0));
 
 				std::complex<float>* ccf_ptr = noise_covariance_matrixf_.get_data_ptr();
 				for (unsigned int i = 0; i < channels*channels; i++) {
@@ -143,8 +143,9 @@ int MRINoiseAdjustGadget
 				//static int data_written = 0;
 
 				std::complex<float> alpha(1.0,0);
-				if (hoNDArray_trmm(&noise_covariance_matrixf_, m2->getObjectPtr(), alpha) < 0) {
-					GADGET_DEBUG1("Noise Decorrelation Failed\n");
+				try {hoNDArray_trmm(&noise_covariance_matrixf_, m2->getObjectPtr(), alpha);}
+				catch (gt_runtime_error& err){
+					GADGET_DEBUG_EXCEPTION(err,"Noise Decorrelation Failed\n");
 					return GADGET_FAIL;
 				}
 

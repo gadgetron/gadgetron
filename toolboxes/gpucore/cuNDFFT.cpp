@@ -63,11 +63,11 @@ cuNDFFT<T>::fft_int( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_tra
     if ((*dims_to_transform)[i] >= array_ndim) {
     	std::stringstream ss;
     	ss << "cuNDFFT::fft Invalid dimensions specified for transform " << (*dims_to_transform)[i] << "max " << array_ndim;
-      std::runtime_error(ss.str());
+      BOOST_THROW_EXCEPTION(gt_runtime_error(ss.str()));
 
     }
     if (dim_count[(*dims_to_transform)[i]] > 0) {
-      std::runtime_error("cuNDFFT::fft Invalid dimensions (duplicates) specified for transform");
+      BOOST_THROW_EXCEPTION(gt_runtime_error("cuNDFFT::fft Invalid dimensions (duplicates) specified for transform"));
 
     }
     dim_count[(*dims_to_transform)[i]]++;
@@ -98,7 +98,7 @@ cuNDFFT<T>::fft_int( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_tra
   if (ftres != CUFFT_SUCCESS) {
 	  std::stringstream ss;
 	  ss << "cuNDFFT FFT plan failed: " << ftres;
-    std::runtime_error(ss.str());
+    BOOST_THROW_EXCEPTION(gt_runtime_error(ss.str()));
 
   }
 
@@ -106,7 +106,7 @@ cuNDFFT<T>::fft_int( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_tra
   input->permute(&new_dim_order,0,-1);
 
   if( cuNDA_FFT_execute<T>( plan, input, direction ) != CUFFT_SUCCESS ) {
-    std::runtime_error("cuNDFFT FFT execute failed");
+    BOOST_THROW_EXCEPTION(gt_runtime_error("cuNDFFT FFT execute failed"));
 
   }
 
@@ -114,7 +114,7 @@ cuNDFFT<T>::fft_int( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_tra
   if (ftres != CUFFT_SUCCESS) {
 	  std::stringstream ss;
 	  ss << "cuNDFFT FFT plan destroy failed: " << ftres;
-    std::runtime_error(ss.str());
+    BOOST_THROW_EXCEPTION(gt_runtime_error(ss.str()));
 
   }
 

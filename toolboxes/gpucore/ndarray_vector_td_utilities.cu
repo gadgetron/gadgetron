@@ -10,7 +10,7 @@
 #include <sstream>
 #include <boost/throw_exception.hpp>
 #include "GadgetronCuException.h"
-using namespace std;
+
 
 // Some device properties we query once to eliminate runtime overhead
 //
@@ -240,7 +240,7 @@ static void initialize_static_variables()
   handle = new cublasHandle_t[num_devices];
 
   if( !warp_size || !max_blockdim || !max_griddim || !handle ) {
-    std::runtime_error( "Error: trivial malloc failed!"); // Do we really need to check this?? -DCHansen
+    BOOST_THROW_EXCEPTION(gt_runtime_error("Error: trivial malloc failed!")); // Do we really need to check this?? -DCHansen
   }
 
   for( int device=0; device<num_devices; device++ ){
@@ -316,7 +316,7 @@ static void setup_grid( unsigned int cur_device, unsigned int number_of_elements
 // Common stride setup utility
 //
 template<class T> static void find_stride( cuNDArray<T> *in, unsigned int dim, 
-					   unsigned int *stride, vector<unsigned int> *dims )
+					   unsigned int *stride, std::vector<unsigned int> *dims )
 {
   *stride = 1;
   for( unsigned int i=0; i<in->get_number_of_dimensions(); i++ ){
@@ -581,7 +581,7 @@ sum( cuNDArray<T> *in, unsigned int dim,
   setup_grid( cur_device, number_of_elements, &blockDim, &gridDim );
  
   // Find element stride
-  unsigned int stride; vector<unsigned int> dims;
+  unsigned int stride; std::vector<unsigned int> dims;
   find_stride<T>( in, dim, &stride, &dims );
 
   // Invoke kernel
@@ -631,7 +631,7 @@ expand( cuNDArray<T> *in, unsigned int new_dim_size,
   setup_grid( cur_device, number_of_elements, &blockDim, &gridDim );
  
   // Find element stride
-  vector<unsigned int> dims = *in->get_dimensions(); 
+  std::vector<unsigned int> dims = *in->get_dimensions();
   dims.push_back(new_dim_size);
 
   // Invoke kernel
@@ -702,7 +702,7 @@ _ss( cuNDArray<T> *in, unsigned int dim,
   setup_grid( cur_device, number_of_elements, &blockDim, &gridDim );
 
   // Find element stride
-  unsigned int stride; vector<unsigned int> dims;
+  unsigned int stride; std::vector<unsigned int> dims;
   find_stride<T>( in, dim, &stride, &dims );
 
   // Invoke kernel
@@ -779,13 +779,12 @@ css( cuNDArray<complext<REAL> > *in, unsigned int dim,
 
   // Validity checks
   if( !(in->get_number_of_dimensions()>1) ){
-    std::runtime_error( "css: underdimensioned.");
-    return boost::shared_ptr< cuNDArray<complext<REAL> > >();
+    BOOST_THROW_EXCEPTION(gt_runtime_error("css: underdimensioned."));
+
   }
  
   if( dim > in->get_number_of_dimensions()-1 ){
-    cout << endl << "css: dimension out of range." << endl;
-    return boost::shared_ptr< cuNDArray<complext<REAL> > >();
+  	BOOST_THROW_EXCEPTION(gt_runtime_error("css: dimension out of range."));
   }
 
   unsigned int number_of_batches = in->get_size(dim);
@@ -796,7 +795,7 @@ css( cuNDArray<complext<REAL> > *in, unsigned int dim,
   setup_grid( cur_device, number_of_elements, &blockDim, &gridDim );
 
   // Find element stride
-  unsigned int stride; vector<unsigned int> dims;
+  unsigned int stride; std::vector<unsigned int> dims;
   find_stride<complext<REAL> >( in, dim, &stride, &dims );
 
   // Invoke kernel
@@ -869,7 +868,7 @@ _rss( cuNDArray<T> *in, unsigned int dim,
   setup_grid( cur_device, number_of_elements, &blockDim, &gridDim );
 
   // Find element stride
-  unsigned int stride; vector<unsigned int> dims;
+  unsigned int stride; std::vector<unsigned int> dims;
   find_stride<T>( in, dim, &stride, &dims );
 
   // Invoke kernel
@@ -946,12 +945,12 @@ crss( cuNDArray<complext<REAL> > *in, unsigned int dim,
 
   // Validity checks
   if( !(in->get_number_of_dimensions()>1) ){
-    cout << endl << "crss: underdimensioned." << endl;
+    BOOST_THROW_EXCEPTION(gt_runtime_error("crss: underdimensioned."));
     return boost::shared_ptr< cuNDArray<complext<REAL> > >();
   }
  
   if( dim > in->get_number_of_dimensions()-1 ){
-    cout << endl << "crss: dimension out of range." << endl;
+    BOOST_THROW_EXCEPTION(gt_runtime_error("crss: dimension out of range."));
     return boost::shared_ptr< cuNDArray<complext<REAL> > >();
   }
 
@@ -963,7 +962,7 @@ crss( cuNDArray<complext<REAL> > *in, unsigned int dim,
   setup_grid( cur_device, number_of_elements, &blockDim, &gridDim ) ;
 
   // Find element stride
-  unsigned int stride; vector<unsigned int> dims;
+  unsigned int stride; std::vector<unsigned int> dims;
   find_stride<complext<REAL> >( in, dim, &stride, &dims );
 
   // Invoke kernel
@@ -1006,12 +1005,12 @@ _reciprocal_rss( cuNDArray<T> *in, unsigned int dim,
 
   // Validity checks
   if( !(in->get_number_of_dimensions()>1) ){
-    cout << endl << "reciprocal_rss: underdimensioned." << endl;
+    BOOST_THROW_EXCEPTION(gt_runtime_error("reciprocal_rss: underdimensioned."));
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
  
   if( dim > in->get_number_of_dimensions()-1 ){
-    cout << endl << "reciprocal_rss: dimension out of range." << endl;
+    BOOST_THROW_EXCEPTION(gt_runtime_error("reciprocal_rss: dimension out of range."));
     return boost::shared_ptr< cuNDArray<REAL> >();
   }
 
@@ -1023,7 +1022,7 @@ _reciprocal_rss( cuNDArray<T> *in, unsigned int dim,
   setup_grid( cur_device, number_of_elements, &blockDim, &gridDim );
 
   // Find element stride
-  unsigned int stride; vector<unsigned int> dims;
+  unsigned int stride; std::vector<unsigned int> dims;
   find_stride<T>( in, dim, &stride, &dims );
 
   // Invoke kernel
@@ -1103,12 +1102,12 @@ creciprocal_rss( cuNDArray<complext<REAL> > *in, unsigned int dim,
 
   // Validity checks
   if( !(in->get_number_of_dimensions()>1) ){
-    cout << endl << "creciprocal_rss: underdimensioned." << endl;
+    BOOST_THROW_EXCEPTION(gt_runtime_error("creciprocal_rss: underdimensioned."));
     return boost::shared_ptr< cuNDArray<complext<REAL> > >();
   }
  
   if( dim > in->get_number_of_dimensions()-1 ){
-    cout << endl << "creciprocal_rss: dimension out of range." << endl;
+    BOOST_THROW_EXCEPTION(gt_runtime_error("creciprocal_rss: dimension out of range."));
     return boost::shared_ptr< cuNDArray<complext<REAL> > >();
   }
 
@@ -1123,7 +1122,7 @@ creciprocal_rss( cuNDArray<complext<REAL> > *in, unsigned int dim,
   }
 
   // Find element stride
-  unsigned int stride; vector<unsigned int> dims;
+  unsigned int stride; std::vector<unsigned int> dims;
   find_stride<complext<REAL> >( in, dim, &stride, &dims );
 
   // Invoke kernel
@@ -1191,8 +1190,7 @@ _correlation( cuNDArray<T> *in,
 
   // Validity checks
   if( !(in->get_number_of_dimensions()>1) ){
-    cout << endl << "correlation: underdimensioned." << endl;
-    return boost::shared_ptr< cuNDArray<T> >();
+  	BOOST_THROW_EXCEPTION(gt_runtime_error("correlation: underdimensioned."));
   }
  
   unsigned int number_of_batches = in->get_size(in->get_number_of_dimensions()-1);
@@ -1201,14 +1199,13 @@ _correlation( cuNDArray<T> *in,
   dim3 blockDim(((max_blockdim[old_device]/number_of_batches)/warp_size[old_device])*warp_size[old_device], number_of_batches);
 
   if( blockDim.x == 0 ){
-    cout << endl << "correlation: correlation dimension exceeds device capacity." << endl;
-    return boost::shared_ptr< cuNDArray<T> >();
+  	BOOST_THROW_EXCEPTION(gt_runtime_error("correlation: correlation dimension exceeds device capacity."));
   }
   
   dim3 gridDim((number_of_elements+blockDim.x-1)/blockDim.x);
 
   // Invoke kernel
-  vector<unsigned int> dims = *in->get_dimensions(); dims.push_back(number_of_batches);
+  std::vector<unsigned int> dims = *in->get_dimensions(); dims.push_back(number_of_batches);
   boost::shared_ptr< cuNDArray<T> > out = cuNDArray<T>::allocate(&dims);
   if( out.get() != 0x0 ) correlation_kernel<REAL,T><<< gridDim, blockDim >>>( in_int->get_data_ptr(), out->get_data_ptr(), number_of_batches, number_of_elements );
  
@@ -1414,7 +1411,7 @@ downsample( cuNDArray<REAL> *in,
   setup_grid( cur_device, number_of_elements, &blockDim, &gridDim, number_of_batches ) ;
   
   // Invoke kernel
-  std::vector<unsigned int> dims = uintd_to_vector<D>(matrix_size_out); 
+  std::vector<unsigned int> dims = uintd_to_vector<D>(matrix_size_out);
   for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
     dims.push_back(in->get_size(d));
   }
@@ -1484,7 +1481,7 @@ upsample_nn( cuNDArray<REAL> *in,
   setup_grid( cur_device, number_of_elements, &blockDim, &gridDim, number_of_batches );
   
   // Invoke kernel
-  std::vector<unsigned int> dims = uintd_to_vector<D>(matrix_size_out); 
+  std::vector<unsigned int> dims = uintd_to_vector<D>(matrix_size_out);
   for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
     dims.push_back(in->get_size(d));
   }
@@ -1625,7 +1622,7 @@ upsample_lin( cuNDArray<REAL> *in,
   setup_grid( cur_device, number_of_elements, &blockDim, &gridDim, number_of_batches );
   
   // Invoke kernel
-  std::vector<unsigned int> dims = uintd_to_vector<D>(matrix_size_out); 
+  std::vector<unsigned int> dims = uintd_to_vector<D>(matrix_size_out);
   for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
     dims.push_back(in->get_size(d));
   }
@@ -1927,7 +1924,7 @@ void rss_normalize( cuNDArray<T> *in_out, unsigned int dim,
   dim3 blockDim; dim3 gridDim;
   setup_grid( cur_device, number_of_elements, &blockDim, &gridDim );
   // Find element stride
-  unsigned int stride; vector<unsigned int> dims;
+  unsigned int stride; std::vector<unsigned int> dims;
   find_stride<T>( in_out, dim, &stride, &dims );
 
   // Invoke kernel
@@ -1964,8 +1961,8 @@ bool scale_conj( cuNDArray<T> *a, cuNDArray<T> *x,
 {
   if( x->get_number_of_elements() < a->get_number_of_elements() ||
       x->get_number_of_elements() % a->get_number_of_elements() ){
-    cout << endl << "image dimensions mismatch, cannot scale" << endl;
-    return false;
+    BOOST_THROW_EXCEPTION(gt_runtime_error("image dimensions mismatch, cannot scale"));
+
   }
  
   // Prepare internal array
@@ -2251,7 +2248,7 @@ void zero_fill_border( typename uintd<D>::Type matrix_size_in, cuNDArray<T> *in_
   typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( *in_out->get_dimensions() );
  
   if( weak_greater(matrix_size_in, matrix_size_out) ){
-    std::runtime_error( "zero_fill: size mismatch, cannot zero fill");
+    BOOST_THROW_EXCEPTION(gt_runtime_error("zero_fill: size mismatch, cannot zero fill"));
 
   }
  

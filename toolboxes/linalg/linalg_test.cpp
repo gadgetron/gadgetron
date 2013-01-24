@@ -62,10 +62,7 @@ int main(int argc, char** argv)
 
 	std::complex<float> alpha(1.0,0);
 	std::complex<float> beta(1.0,0);
-	if (hoNDArray_gemm( A.get(), B.get(), alpha,  C1.get(), beta) !=0) {
-		std::cout << "Failed to perform matrix-matrix multiplication" << std::endl;
-		return -1;
-	}
+	hoNDArray_gemm( A.get(), B.get(), alpha,  C1.get(), beta);
 
 	write_nd_array< std::complex<float> >(C1.get(), "C2_calc.cplx");
 
@@ -78,10 +75,7 @@ int main(int argc, char** argv)
 	}
 
 
-	if (hoNDArray_choldc(S.get()) != 0) {
-		std::cout << "Failed to do cholesky decomposition" << std::endl;
-		return -1;
-	}
+	hoNDArray_choldc(S.get());
 
 	write_nd_array< std::complex<float> >(S.get(), "S_chol_calc.cplx");
 
@@ -93,10 +87,7 @@ int main(int argc, char** argv)
 		std::cout << "Complex Cholesky decomposition SUCCESS with diff: " << diff << std::endl;
 	}
 
-	if (hoNDArray_inv_lower_triangular(S.get()) != 0) {
-		std::cout << "Failed to do inversion of lowe triangular" << std::endl;
-		return -1;
-	}
+	hoNDArray_inv_lower_triangular(S.get());
 
 	write_nd_array< std::complex<float> >(S.get(), "S_chol_inv_calc.cplx");
 

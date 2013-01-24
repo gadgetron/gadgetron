@@ -54,17 +54,17 @@ void zgesvd_(char* JOBU, char* JOBVT, int* M, int* N, void* A,
  *   Calls LAPACK subroutine _POTRF
  *
  */
-template <typename T> EXPORTLINALG int hoNDArray_choldc(hoNDArray<T>* A);
+template <typename T> EXPORTLINALG void hoNDArray_choldc(hoNDArray<T>* A);
 
 /**
  * Invert matrix assuming it is lower trinagular
  */
-template <typename T> EXPORTLINALG int hoNDArray_inv_lower_triangular(hoNDArray<T>* A);
+template <typename T> EXPORTLINALG void hoNDArray_inv_lower_triangular(hoNDArray<T>* A);
 
 /**
  *  SVD
  */
-template <typename T, typename Y> EXPORTLINALG int hoNDArray_svd(hoNDArray< T >* A, hoNDArray< T >* U, hoNDArray<Y>* S, hoNDArray< T >* VT);
+template <typename T> EXPORTLINALG void hoNDArray_svd(hoNDArray< T >* A, hoNDArray< T >* U, hoNDArray<typename realType<T>::type>* S, hoNDArray< T >* VT);
 
 
 
