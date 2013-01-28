@@ -22,6 +22,7 @@ cuda_add_library(gpucore SHARED
                             cuNDFFT.cpp
                             cuGTBLAS.cu
                             CUBLASContextProvider.cpp
+                            cudaDeviceManager.cpp
 							)
 
 target_link_libraries(gpucore ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CULA_LIBRARIES})
@@ -42,4 +43,5 @@ radial_utilities.h
 real_utilities_device.h
 gpucore_export.h
 CUBLASContextProvider.h
+cudaDeviceManager.h
 DESTINATION include)

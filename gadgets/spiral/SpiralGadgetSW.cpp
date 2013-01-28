@@ -221,7 +221,6 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 			return GADGET_FAIL;
 		}
 
-
 		float* co_ptr = reinterpret_cast<float*>(host_traj_->get_data_ptr());
 		float* we_ptr =  reinterpret_cast<float*>(host_weights_->get_data_ptr());
 
@@ -247,8 +246,19 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		float W = 5.5f;
 
 		// Upload host arrays to device arrays
-		cuNDArray<floatd2> traj(host_traj_.get());
-		gpu_weights_ = cuNDArray<float>(host_weights_.get());
+		cuNDArray<floatd2> traj;
+		try {traj= cuNDArray<floatd2>(*host_traj_);}
+		catch (gt_runtime_error& err){
+			GADGET_DEBUG_EXCEPTION(err,"Failed to allocate device array\n");
+			return GADGET_FAIL;
+		}
+
+
+		try{gpu_weights_ = cuNDArray<float>(*host_weights_);}
+		catch (gt_runtime_error& err){
+				GADGET_DEBUG_EXCEPTION(err,"Failed to allocate device array\n");
+				return GADGET_FAIL;
+		};
 
 		// Initialize plan
 		// NFFT_plan<float, 2> plan( matrix_size, matrix_size_os, W );

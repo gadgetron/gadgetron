@@ -31,6 +31,7 @@ template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
 
   // Constructor from hoNDArray
   cuNDArray(hoNDArray<T> *a);
+  cuNDArray(const hoNDArray<T>& a);
 
   cuNDArray(std::vector<unsigned int> *dimensions);
   cuNDArray(std::vector<unsigned int> *dimensions, int device_no);
@@ -92,6 +93,7 @@ template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
   int device_; 
   virtual void allocate_memory();
   virtual void deallocate_memory();
+
   
 };
 

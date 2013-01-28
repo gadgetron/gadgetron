@@ -8,17 +8,21 @@
 #include <boost/exception/info.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 
-typedef boost::error_info<struct err_message,std::string> error_message;
 
 class gt_runtime_error: virtual public boost::exception, virtual public std::exception {
 public:
-	gt_runtime_error() : boost::exception(), std::exception(){}
-	gt_runtime_error(std::string msg) : boost::exception(), std::exception(){
-		(*this) << error_message(msg);
+	gt_runtime_error() : boost::exception(), std::exception(), msg(0){}
+	gt_runtime_error(std::string _msg) : boost::exception(), std::exception(), msg(_msg.c_str()){
 	}
+ virtual const  char * what() const throw(){
+	 if (msg) return msg;
+	 else return std::exception::what();
+ }
+protected:
+ const char * msg;
 }; //(2)
 
-class gt_bad_alloc : virtual public gt_runtime_error {
+class gt_bad_alloc : public gt_runtime_error {
 	public:
 		gt_bad_alloc(std::string msg) : gt_runtime_error(msg){}
 		gt_bad_alloc() : gt_runtime_error(){}

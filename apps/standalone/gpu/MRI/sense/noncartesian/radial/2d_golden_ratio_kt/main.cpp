@@ -157,10 +157,7 @@ int main(int argc, char** argv)
 
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );
 
-  if( E->set_csm(csm) < 0 ) {
-    cout << "Failed to set csm on encoding matrix" << endl;
-    return 1;
-  }
+  E->set_csm(csm);
 
   acc_images.reset();
   rhs_buffer.reset();

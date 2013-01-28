@@ -45,3 +45,5 @@ inline void CHECK_FOR_CUDA_ERROR(char const * cur_fun, const char* file, const i
 //#else
 //#define CHECK_FOR_CUDA_ERROR();
 //#endif
+
+#define CUDA_CALL(res) {cudaError_t errorCode = res; if (errorCode != cudaSuccess) { boost::exception_detail::throw_exception_(cuda_error(errorCode),BOOST_CURRENT_FUNCTION,__FILE__,__LINE__); } }

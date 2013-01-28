@@ -10,15 +10,8 @@
 #include <sstream>
 #include <boost/throw_exception.hpp>
 #include "GadgetronCuException.h"
-
-
-// Some device properties we query once to eliminate runtime overhead
-//
-static int num_devices = 0;
-static int *warp_size = 0x0;
-static int *max_blockdim = 0x0;
-static int *max_griddim = 0x0;
-static cublasHandle_t *handle = 0x0;
+#include "cuGTBLAS.h"
+#include "cudaDeviceManager.h"
 
 // Default template arguments seems to require c++-0x, which we can't assume. 
 // We use a dummy type instead...
@@ -217,95 +210,28 @@ static void restore( int old_device,
 
 }
 
-// Initialize static variables
-//
-static void initialize_static_variables()
-{
-  // This function is executed only once
-
-  if( cudaGetDeviceCount( &num_devices ) != cudaSuccess) {
-  	num_devices = 0;
-    BOOST_THROW_EXCEPTION(cuda_error( "Error: no Cuda devices present."));
-  }
-
-  int old_device;
-  if( cudaGetDevice(&old_device) != cudaSuccess ) {
-    BOOST_THROW_EXCEPTION(gt_runtime_error( "Error: unable to get device no"));
-
-  }
-
-  warp_size = new int[num_devices];
-  max_blockdim = new int[num_devices];
-  max_griddim = new int[num_devices];
-  handle = new cublasHandle_t[num_devices];
-
-  if( !warp_size || !max_blockdim || !max_griddim || !handle ) {
-    BOOST_THROW_EXCEPTION(gt_runtime_error("Error: trivial malloc failed!")); // Do we really need to check this?? -DCHansen
-  }
-
-  for( int device=0; device<num_devices; device++ ){
-
-    if( cudaSetDevice(device) != cudaSuccess ) {
-      BOOST_THROW_EXCEPTION(cuda_error( "Error: unable to set device no"));
-
-    }
-    
-    cudaDeviceProp deviceProp; 
-    
-    if( cudaGetDeviceProperties( &deviceProp, device ) != cudaSuccess) {
-    	BOOST_THROW_EXCEPTION(cuda_error("Error: unable to determine device properties."));
-
-    }
-
-    warp_size[device] = deviceProp.warpSize;
-    max_blockdim[device] = deviceProp.maxThreadsDim[0];
-    max_griddim[device] = deviceProp.maxGridSize[0];
-
-    if (cublasCreate(&handle[device]) != CUBLAS_STATUS_SUCCESS) {
-    	std::stringstream ss;
-    	ss << "Error: unable to create cublas handle for device " << device << std::endl;
-      BOOST_THROW_EXCEPTION(cuda_error(ss.str()));
-
-    }
-
-    cublasSetPointerMode( handle[device], CUBLAS_POINTER_MODE_HOST );
-
-  }
-  
-  if( cudaSetDevice(old_device) != cudaSuccess ) {
-    BOOST_THROW_EXCEPTION(cuda_error( "Error: unable to restore device no"));
-
-  }
-
-}
-
 // Common block/grid configuration utility
 //
 static void setup_grid( unsigned int cur_device, unsigned int number_of_elements,
 			dim3 *blockDim, dim3* gridDim, unsigned int num_batches=1 )
 {
-	initialize_static_variables();
-  if( num_devices==0 ){
-    BOOST_THROW_EXCEPTION(cuda_error( "system device error"));
-
-  }
 
   // For small arrays we keep the block dimension fairly small
   *blockDim = dim3(256);
   *gridDim = dim3((number_of_elements+blockDim->x-1)/blockDim->x, num_batches);
-
+  int maxGridDim = cudaDeviceManager::Instance()->max_griddim(cur_device);
   // Extend block/grid dimensions for large arrays
-  if( gridDim->x > max_griddim[cur_device] ){
-    blockDim->x = max_blockdim[cur_device];
+  if( gridDim->x > maxGridDim){
+    blockDim->x = maxGridDim;
     gridDim->x = (number_of_elements+blockDim->x-1)/blockDim->x;
   }
 
-  if( gridDim->x > max_griddim[cur_device] ){
+  if( gridDim->x > maxGridDim ){
     gridDim->x = ((unsigned int)sqrt((float)number_of_elements)+blockDim->x-1)/blockDim->x;
     gridDim->y *= ((number_of_elements+blockDim->x*gridDim->x-1)/(blockDim->x*gridDim->x));
   }
    
-  if( gridDim->x > max_griddim[cur_device] || gridDim->y > max_griddim[cur_device] ){
+  if( gridDim->x >maxGridDim || gridDim->y >maxGridDim){
 
     BOOST_THROW_EXCEPTION(cuda_error("Grid dimension larger than supported by device"));
   }
@@ -1196,7 +1122,9 @@ _correlation( cuNDArray<T> *in,
   unsigned int number_of_batches = in->get_size(in->get_number_of_dimensions()-1);
   unsigned int number_of_elements = in->get_number_of_elements()/number_of_batches;
 
-  dim3 blockDim(((max_blockdim[old_device]/number_of_batches)/warp_size[old_device])*warp_size[old_device], number_of_batches);
+  int warp_size = cudaDeviceManager::Instance()->warp_size(old_device);
+  int max_blockdim = cudaDeviceManager::Instance()->max_blockdim(old_device);
+  dim3 blockDim(((max_blockdim/number_of_batches)/warp_size)*warp_size, number_of_batches);
 
   if( blockDim.x == 0 ){
   	BOOST_THROW_EXCEPTION(gt_runtime_error("correlation: correlation dimension exceeds device capacity."));
@@ -1996,8 +1924,6 @@ bool scale_conj( cuNDArray<T> *a, cuNDArray<T> *x,
 template<> EXPORTGPUCORE
 float normalize<float>( cuNDArray<float> *data, float new_max, cuNDA_device compute_device )
 {
-  initialize_static_variables();
-
 
   unsigned int number_of_elements = data->get_number_of_elements();
 
@@ -2010,7 +1936,7 @@ float normalize<float>( cuNDArray<float> *data, float new_max, cuNDA_device comp
 
   // Find the maximum value in the array
   int max_idx;
-  cublasIsamax( handle[cur_device], number_of_elements, data_int->get_data_ptr(), 1, &max_idx );
+  cublasIsamax( cudaDeviceManager::Instance()->getHandle(), number_of_elements, data_int->get_data_ptr(), 1, &max_idx );
   cudaThreadSynchronize();
   
   // Copy that value back to host memory
@@ -2018,8 +1944,8 @@ float normalize<float>( cuNDArray<float> *data, float new_max, cuNDA_device comp
   cudaMemcpy(&max_val, (data_int->get_data_ptr()+max_idx-1), sizeof(float), cudaMemcpyDeviceToHost);
 
   // Scale the array
-  float scale = abs(new_max/max_val);
-  cublasSscal( handle[cur_device], number_of_elements, &scale, data_int->get_data_ptr(), 1 );
+  float scale = std::abs(new_max/max_val);
+  cublasSscal( cudaDeviceManager::Instance()->getHandle(), number_of_elements, &scale, data_int->get_data_ptr(), 1 );
 
   // Restore
   restore<1,float,dummy,dummy,dummy>( old_device, data, data_int, 1, compute_device );
@@ -2032,7 +1958,6 @@ float normalize<float>( cuNDArray<float> *data, float new_max, cuNDA_device comp
 template<> EXPORTGPUCORE
 double normalize<double>( cuNDArray<double> *data, double new_max, cuNDA_device compute_device )
 {
-  initialize_static_variables();
 
   unsigned int number_of_elements = data->get_number_of_elements();
 
@@ -2045,7 +1970,7 @@ double normalize<double>( cuNDArray<double> *data, double new_max, cuNDA_device 
 
   // Find the maximum value in the array
   int max_idx;
-  cublasIdamax( handle[cur_device], number_of_elements, data_int->get_data_ptr(), 1, &max_idx );
+  cublasIdamax( cudaDeviceManager::Instance()->getHandle(), number_of_elements, data_int->get_data_ptr(), 1, &max_idx );
   cudaThreadSynchronize();
 
   // Copy that value back to host memory
@@ -2053,8 +1978,8 @@ double normalize<double>( cuNDArray<double> *data, double new_max, cuNDA_device 
   cudaMemcpy(&max_val, (data_int->get_data_ptr()+max_idx-1), sizeof(double), cudaMemcpyDeviceToHost);
 
   // Scale the array
-  double scale = abs(new_max/max_val);
-  cublasDscal( handle[cur_device], number_of_elements, &scale, data_int->get_data_ptr(), 1 );
+  double scale = std::abs(new_max/max_val);
+  cublasDscal( cudaDeviceManager::Instance()->getHandle(), number_of_elements, &scale, data_int->get_data_ptr(), 1 );
   
   // Restore
   restore<1,double,dummy,dummy,dummy>( old_device, data, data_int, 1, compute_device );

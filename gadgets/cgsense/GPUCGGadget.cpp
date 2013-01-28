@@ -310,7 +310,7 @@ int GPUCGGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 
 		// Define preconditioning weights
 		boost::shared_ptr< cuNDArray<float> > _precon_weights = squaredNorm( csm.get(), 2 );
-		axpy( kappa_, R_->get(), _precon_weights.get() );
+		axpy( float(kappa_), R_->get(), _precon_weights.get() );
 		_precon_weights->reciprocal_sqrt();
 		boost::shared_ptr< cuNDArray<float_complext> > precon_weights = real_to_complext( _precon_weights.get() );
 		_precon_weights.reset();

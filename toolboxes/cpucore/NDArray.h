@@ -110,10 +110,14 @@ template <class T> class NDArray
 	    std::equal(this->dimensions_->begin(), this->dimensions_->end(), d->begin()));
   }
   
-  inline bool dimensions_equal(const NDArray<T> *a) {
-    return ((this->dimensions_->size() == a->dimensions_->size()) &&
-	    std::equal(this->dimensions_->begin(), this->dimensions_->end(), a->dimensions_->begin()));
+  template<class S> bool dimensions_equal(const NDArray<S> *a) {
+    size_t size = this->dimensions_->size();
+    bool retVal = true;
+    retVal &= (size == a->get_number_of_dimensions());
+    for (size_t i = 0; i < size; i++) retVal &= (this->dimensions_->at(i) == a->get_size(i));
+    return retVal;
   }
+
   
   inline unsigned int get_number_of_dimensions() const {
     return dimensions_->size();

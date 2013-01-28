@@ -5,6 +5,7 @@
 
 #include <boost/smart_ptr.hpp>
 #include <iostream>
+#include "GadgetronException.h"
 
 template<class REAL, unsigned int D, class ARRAY_TYPE> class EXPORTGPUPMRI senseOperator 
 	: public linearOperator<ARRAY_TYPE>
@@ -18,7 +19,7 @@ public:
   inline unsigned int get_number_of_coils() { return ncoils_; }
   inline boost::shared_ptr<ARRAY_TYPE> get_csm() { return csm_; }
 
-  virtual int set_csm( boost::shared_ptr<ARRAY_TYPE> csm )
+  virtual void set_csm( boost::shared_ptr<ARRAY_TYPE> csm )
   {
     if( csm.get() && csm->get_number_of_dimensions() == D+1 ) {
       csm_ = csm;      
@@ -26,11 +27,9 @@ public:
       std::vector<unsigned int> tmp_dims = *csm_->get_dimensions();
       tmp_dims.pop_back();
       this->set_domain_dimensions(&tmp_dims);
-      return 0;
     }
     else{
-      std::cerr << "Error: senseOperator::set_csm : unexpected csm dimensionality" << std::endl;
-      return -1;
+      BOOST_THROW_EXCEPTION(gt_runtime_error("Error: senseOperator::set_csm : unexpected csm dimensionality"));
     }    
   }
 

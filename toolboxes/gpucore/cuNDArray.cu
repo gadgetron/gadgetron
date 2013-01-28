@@ -6,6 +6,33 @@
 #include "vector_td_utilities.h"
 #include "check_CUDA.h"
 
+
+
+template<typename T>
+class cuNDA_modulus : public thrust::unary_function<T,T>
+{
+public:
+	cuNDA_modulus(int x):mod(x) {};
+	 __host__ __device__ T operator()(const T &y) const {return y%mod;}
+private:
+	const int mod;
+};
+
+
+template<class T,class S, class F>  void equals_transform(cuNDArray<T> & x,cuNDArray<S> & y){
+	if (x.dimensions_equal(&y)){
+			thrust::transform(x.begin(), x.end(), y.begin(), x.begin(), F());
+		} else if (compatible_dimensions(x,y))
+		{
+			typedef thrust::transform_iterator<cuNDA_modulus<int>,thrust::counting_iterator<int>, int> transform_it;
+			transform_it indices = thrust::make_transform_iterator(thrust::make_counting_iterator(0),cuNDA_modulus<int>(y.get_number_of_elements()));
+			thrust::permutation_iterator<thrust::device_ptr<S>,transform_it> p = thrust::make_permutation_iterator(y.begin(),indices);
+			thrust::transform(x.begin(),x.end(),p,x.begin(),F());
+		} else {
+			BOOST_THROW_EXCEPTION(gt_runtime_error("cuNDArrays have incompatible dimensions"));
+		}
+}
+
 template <class T> 
 cuNDArray<T>::cuNDArray() : NDArray<T>::NDArray() 
 { 
@@ -69,6 +96,20 @@ cuNDArray<T>::cuNDArray(hoNDArray<T> *a) : NDArray<T>::NDArray()
 
   }
 }
+template <class T>
+cuNDArray<T>::cuNDArray(const hoNDArray<T>& a) : NDArray<T>::NDArray()
+{
+  cudaGetDevice(&this->device_);
+  this->dimensions_ = a.get_dimensions();
+
+  allocate_memory();
+	if (cudaMemcpy(this->data_, a.get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) != cudaSuccess) {
+	  deallocate_memory();
+	  this->data_ = 0;
+	  this->dimensions_->clear();
+
+  }
+}
 
 template <class T> 
 cuNDArray<T>::cuNDArray(const cuNDArray<T>& a) 
@@ -79,20 +120,19 @@ cuNDArray<T>::cuNDArray(const cuNDArray<T>& a)
 
   allocate_memory();
 	if (a.device_ == this->device_) {
-	  if (cudaMemcpy(this->data_, a.data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice) !=
-	  cudaSuccess) {
-		  BOOST_THROW_EXCEPTION( cuda_error("cuNDArray: Unable to copy data in copy constructor"));
-	  }
+	  CUDA_CALL(cudaMemcpy(this->data_, a.data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice));
 	} else {
 	  //This memory is on a different device, we must move it.
 	  cudaSetDevice(a.device_);
 	  boost::shared_ptr< hoNDArray<T> > tmp = a.to_host();
 	  cudaSetDevice(this->device_);
 
-	  if (cudaMemcpy(this->data_, tmp->get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) !=cudaSuccess) {
-	deallocate_memory();
-	this->data_ = 0;
-	this->dimensions_->clear();
+	  cudaError_t err = cudaMemcpy(this->data_, tmp->get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice);
+	  if (err !=cudaSuccess) {
+			deallocate_memory();
+			this->data_ = 0;
+			this->dimensions_->clear();
+			BOOST_THROW_EXCEPTION(cuda_error(err));
 	  }
 	}
 
@@ -102,28 +142,17 @@ template <class T>
 cuNDArray<T>& cuNDArray<T>::operator=(const cuNDArray<T>& rhs)
 {
   int cur_device; 
-  if( cudaGetDevice(&cur_device) != cudaSuccess) {
-    BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::operator=: unable to get device no"));
-
-  }
+  CUDA_CALL(cudaGetDevice(&cur_device));
   
   bool dimensions_match = this->dimensions_equal(&rhs);
   
   if (dimensions_match && (rhs.device_ == cur_device) && (cur_device == this->device_)) {
     
-    if (cudaMemcpy(this->data_, rhs.data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice) !=
-	cudaSuccess) {
-      BOOST_THROW_EXCEPTION( cuda_error("cuNDArray& operator= failed to copy data"));
-
-    }
+    CUDA_CALL(cudaMemcpy(this->data_, rhs.data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice));
   } 
   else {
     
-    if (cudaSetDevice(this->device_) != cudaSuccess) {
-      BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::operator=: unable to set device no"));
-
-    }
-    
+    CUDA_CALL(cudaSetDevice(this->device_));
     if( !dimensions_match ){
       
       deallocate_memory();
@@ -414,27 +443,14 @@ void cuNDArray<T>::deallocate_memory()
   if (this->data_) {
     
     int device_no_old;
-    if (cudaGetDevice(&device_no_old) != cudaSuccess) {
-      BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::deallocate_memory: unable to get device no"));
-
-    }
-    
+    CUDA_CALL(cudaGetDevice(&device_no_old));
     if (device_ != device_no_old) {
-      if (cudaSetDevice(device_) != cudaSuccess) {
-	BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::deallocate_memory: unable to set device no"));
-
-      }
+      CUDA_CALL(cudaSetDevice(device_));
     }
     
-    if (cudaFree(this->data_) != cudaSuccess) {
-      BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::deallocate_memory(): failed to delete device memory"));
-
-    }
-    
+    CUDA_CALL(cudaFree(this->data_));
     if (device_ != device_no_old) {
-      if (cudaSetDevice(device_no_old) != cudaSuccess) {
-    	  BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::allocate_memory: unable to restore device no"));
-      }
+      CUDA_CALL(cudaSetDevice(device_no_old));
     }
     
     this->data_ = 0;
@@ -551,7 +567,7 @@ void cuNDArray<T>::reciprocal_sqrt()
 
 
 template<class T> void operator+= (cuNDArray<T> & x , cuNDArray<T> & y){
-	thrust::transform(x.begin(), x.end(), y.begin(), x.begin(), thrust::plus<T>());
+	equals_transform< T,T,thrust::plus<T> >(x,y);
 }
 
 template<class T> void operator+= (cuNDArray<T> & x , T y){
@@ -560,7 +576,7 @@ template<class T> void operator+= (cuNDArray<T> & x , T y){
 }
 
 template<class T> void operator*= (cuNDArray<T> & x , cuNDArray<T> & y){
-	thrust::transform(x.begin(), x.end(), y.begin(), x.begin(), thrust::multiplies<T>());
+	equals_transform< T,T,thrust::multiplies<T> >(x,y);
 }
 
 template<class T> void operator*= (cuNDArray<T> & x , T y){
@@ -569,7 +585,7 @@ template<class T> void operator*= (cuNDArray<T> & x , T y){
 }
 
 template<class T> void operator-= (cuNDArray<T> & x , cuNDArray<T> & y){
-	thrust::transform(x.begin(), x.end(), y.begin(), x.begin(), thrust::minus<T>());
+	equals_transform< T,T,thrust::minus<T> >(x,y);
 }
 
 template<class T> void operator-= (cuNDArray<T> & x , T y){
@@ -577,7 +593,7 @@ template<class T> void operator-= (cuNDArray<T> & x , T y){
 	thrust::transform(x.begin(), x.end(), iter, x.begin(), thrust::minus<T>());
 }
 template<class T> void operator/= (cuNDArray<T> & x , cuNDArray<T> & y){
-	thrust::transform(x.begin(), x.end(), y.begin(), x.begin(), thrust::divides<T>());
+	equals_transform< T,T,thrust::divides<T> >(x,y);
 }
 
 template<class T> void operator/= (cuNDArray<T> & x , T y){
@@ -610,8 +626,18 @@ struct cuNDA_divides : public thrust::binary_function<complext<T> ,T,complext<T>
  __host__ __device__ complext<T> operator()(const complext<T> &x, const T &y) const {return x/y;}
 };
 
+template<class T,class S> static bool compatible_dimensions(cuNDArray<T> & x, cuNDArray<S> & y){
+	bool retVal = true;
+	for (int i = 0; i < y.get_number_of_dimensions(); i++){
+		retVal &= (x.get_size(i) == y.get_size(i));
+	}
+	return retVal;
+}
+
+
 template<class T> void operator+= (cuNDArray< complext<T> > & x , cuNDArray<T> & y){
-	thrust::transform(x.begin(), x.end(), y.begin(), x.begin(), cuNDA_plus<T>());
+	equals_transform< complext<T>,T,cuNDA_plus<T> >(x,y);
+
 }
 
 template<class T> void operator+= (cuNDArray<complext<T> > & x , T y){
@@ -620,7 +646,7 @@ template<class T> void operator+= (cuNDArray<complext<T> > & x , T y){
 }
 
 template<class T> void operator*= (cuNDArray< complext<T> > & x , cuNDArray<T> & y){
-	thrust::transform(x.begin(), x.end(), y.begin(), x.begin(), cuNDA_multiplies<T>());
+	equals_transform< complext<T>,T,cuNDA_multiplies<T> >(x,y);
 }
 
 template<class T> void operator*= (cuNDArray<complext<T> > & x , T y){
@@ -629,7 +655,7 @@ template<class T> void operator*= (cuNDArray<complext<T> > & x , T y){
 }
 
 template<class T> void operator-= (cuNDArray< complext<T> > & x , cuNDArray<T> & y){
-	thrust::transform(x.begin(), x.end(), y.begin(), x.begin(), cuNDA_minus<T>());
+	equals_transform< complext<T>,T,cuNDA_minus<T> >(x,y);
 }
 
 template<class T> void operator-= (cuNDArray<complext<T> > & x , T y){
@@ -637,11 +663,12 @@ template<class T> void operator-= (cuNDArray<complext<T> > & x , T y){
 	thrust::transform(x.begin(), x.end(), iter, x.begin(), cuNDA_minus<T>());
 }
 template<class T> void operator/= (cuNDArray< complext<T> > & x , cuNDArray<T> & y){
-	thrust::transform(x.begin(), x.end(), y.begin(), x.begin(), cuNDA_divides<T>());
+	equals_transform< complext<T>,T,cuNDA_divides<T> >(x,y);
 }
 
 template<class T> void operator/= (cuNDArray<complext<T> > & x , T y){
 	thrust::constant_iterator<T> iter(y);
+
 	thrust::transform(x.begin(), x.end(), iter, x.begin(), cuNDA_divides<T>());
 }
 
