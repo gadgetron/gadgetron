@@ -1,6 +1,8 @@
 #include "cuNDArray.h"
 #include "vector_td.h"
 
+using namespace GADGETRON;
+
 template <class T> 
 cuNDArray<T>::cuNDArray() : NDArray<T>::NDArray() 
 { 

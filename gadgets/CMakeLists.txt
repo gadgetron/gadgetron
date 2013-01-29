@@ -6,6 +6,7 @@ add_subdirectory(grappa)
 add_subdirectory(cgsense)
 if (NOT WIN32)
 	add_subdirectory(spiral)
+	add_subdirectory(octave)
 endif (NOT WIN32)
 endif(CUDA_FOUND)
 

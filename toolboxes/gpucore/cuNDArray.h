@@ -15,7 +15,7 @@
 template <class T> class EXPORTGPUCORE cuNDArray;
 template <class T> EXPORTGPUCORE int cuNDArray_permute(cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *order, int shift_mode);
 
-template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
+template <class T> class EXPORTGPUCORE cuNDArray : public GADGETRON::NDArray<T>
 {
   friend int cuNDArray_permute<>(cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *order, int shift_mode);
     
@@ -50,7 +50,7 @@ template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
 
   virtual boost::shared_ptr< hoNDArray<T> > to_host() const;
 
-  virtual int permute(std::vector<unsigned int> *dim_order, NDArray<T> *out = 0, int shift_mode = 0);
+  virtual int permute(std::vector<unsigned int> *dim_order, GADGETRON::NDArray<T> *out = 0, int shift_mode = 0);
   
   virtual int set_device(int device_no);
   inline int get_device() { return device_; }

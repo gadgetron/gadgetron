@@ -7,6 +7,9 @@
 #include <iostream>
 #include <boost/shared_ptr.hpp>
 
+namespace GADGETRON
+{
+
 template <class T> class NDArray
 {
  public:
@@ -156,5 +159,7 @@ protected:
   unsigned long int elements_;
   bool delete_data_on_destruct_;  
 };
+
+}
 
 #endif //NDARRAY_H
