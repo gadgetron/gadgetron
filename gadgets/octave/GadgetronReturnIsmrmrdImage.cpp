@@ -1,9 +1,10 @@
 #include <octave/oct.h>
+#include <octave/ov-struct.h>
 
 #include "OctaveCommunicator.h"
      
-DEFUN_DLD (GadgetronReturnIsmrmrd, args, nargout,
-	   "GadgetronReturnIsmrmrd will eventually return ISMRMRD data to the gadgetron")
+DEFUN_DLD (GadgetronReturnIsmrmrdImage, args, nargout,
+	   "GadgetronReturnIsmrmrdImage return Image to the Gadgetron")
 {
   int nargin = args.length ();
 
@@ -13,7 +14,9 @@ DEFUN_DLD (GadgetronReturnIsmrmrd, args, nargout,
     print_usage(); 
   } else {
     std::string id(args(0).string_value());
-    OctaveCommunicator::instance()->message_gadget(id);    
+
+    ACE_Message_Block* m = 0;
+    OctaveCommunicator::instance()->message_gadget(id, m);
   }
   return octave_value_list ();
 }

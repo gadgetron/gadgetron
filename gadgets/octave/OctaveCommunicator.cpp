@@ -28,24 +28,23 @@ void OctaveCommunicator::register_gadget(Gadget* g)
   gadget_map_[g->module()->name()] = g;
 }
 
-bool OctaveCommunicator::message_gadget(std::string gadget)
+bool OctaveCommunicator::message_gadget(std::string gadget, ACE_Message_Block* m)
 {
-  std::cout << "Messaging Gadget with Communicator = " << this << std::endl;
+  //std::cout << "Messaging Gadget with Communicator = " << this << std::endl;
   std::map<std::string, Gadget*>::iterator it = gadget_map_.find(gadget);
+
   if (it != gadget_map_.end()) {
-    std::cout << "Messaging Gadget with ID = " << gadget << ", message is: " << it->second << std::endl;
-    return true;
+	  if (it->second->putq(m) < 0) {
+		  return false;
+	  } else {
+		  return true;
+	  }
   } else {
     std::cout << "Gadget with ID = " << gadget << " NOT FOUND!" << std::endl;
+    m->release();
     return false;
   }
   return false;
 }
 
 OctaveCommunicator* OctaveCommunicator::instance_ = NULL;
-/*
-bool message_gadget(std::string gadget)
-{
-  return OctaveCommunicator::instance()->message_gadget(gadget);
-}
-*/

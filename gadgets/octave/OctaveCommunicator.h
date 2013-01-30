@@ -16,7 +16,7 @@ class EXPORTGADGETSOCTAVECOMMUNICATOR OctaveCommunicator
   
   void register_gadget(Gadget* g);
 
-  bool message_gadget(std::string g);
+  bool message_gadget(std::string g, ACE_Message_Block* m);
 
  private:
   OctaveCommunicator();

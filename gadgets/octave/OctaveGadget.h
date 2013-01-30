@@ -3,6 +3,7 @@
 #include <octave/oct.h>
 #include <octave/octave.h>
 #include <octave/parse.h>
+#include <octave/ov-struct.h>
 
 #include "gadgetronoctave_export.h"
 #include "Gadget.h"
@@ -58,23 +59,7 @@ public Gadget2<T, hoNDArray< std::complex<float> > >
     return GADGET_OK;
   }
 
-
-  int process(GadgetContainerMessage<T>* m1,
-	      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
-  {
-    octave_value_list in = octave_value (this->next()->module()->name());
-    octave_value_list out = feval (datafunc_->c_str(), in, 1);
-
-	//GADGET_DEBUG1("Data passing Octave Gadget\n");
-	if (this->next()->putq(m1) < 0) {
-		m1->release();
-		return GADGET_FAIL;
-	}
-
-    return GADGET_OK;
-  }
-  
- private:
+protected:
   boost::shared_ptr<std::string> path_;
   boost::shared_ptr<std::string> reffunc_;
   boost::shared_ptr<std::string> datafunc_;
@@ -91,6 +76,9 @@ public OctaveGadget<ISMRMRD::AcquisitionHeader>
  public:
   GADGET_DECLARE(AcquisitionPythonGadget);
   
+  int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
+  	      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+
 };
 
 class EXPORTGADGETSOCTAVE ImageOctaveGadget :
@@ -98,5 +86,8 @@ public OctaveGadget<ISMRMRD::ImageHeader>
 {
  public:
   GADGET_DECLARE(ImagePythonGadget);
+
+  int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
+  	      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
 };
