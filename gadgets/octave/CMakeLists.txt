@@ -12,7 +12,7 @@ include_directories(   ${OCTAVE_INCLUDE_DIRS}
 link_directories(${OCTAVE_LINK_DIRS})
 
 add_library(gadgetronoctavecommunicator SHARED OctaveCommunicator.cpp)
-target_link_libraries(gadgetronoctavecommunicator ${OCTAVE_LIBRARY})
+target_link_libraries(gadgetronoctavecommunicator ${OCTAVE_LIBRARY} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
 add_library(GadgetronReturnIsmrmrdAcquisition MODULE GadgetronReturnIsmrmrdAcquisition.cpp)
 SET_TARGET_PROPERTIES(GadgetronReturnIsmrmrdAcquisition PROPERTIES SUFFIX .oct PREFIX "")
