@@ -58,7 +58,7 @@
       <property><name>config_function</name>              <value>config_function</value></property>
     </gadget>
 
-<!--
+
     <gadget>
       <name>ImageViewPython</name>
       <dll>gadgetronpython</dll>
@@ -69,7 +69,7 @@
       <property><name>input_function</name>               <value>recon_function</value></property>
       <property><name>config_function</name>              <value>config_function</value></property>
     </gadget>
--->
+
      <gadget>
       <name>Extract</name>
       <dll>gadgetroncore</dll>

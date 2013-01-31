@@ -1,8 +1,9 @@
+#include "GadgetReference.h"
 #include <boost/python.hpp>
 #include <numpy/arrayobject.h>
 
 #include "../core/GadgetMRIHeaders.h"
-#include "GadgetReference.h"
+
 #include "ismrmrd.h"
 
 using namespace boost::python;

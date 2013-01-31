@@ -23,11 +23,12 @@ GadgetReference::~GadgetReference()
 }
 
 template<class T>
-int GadgetReference::return_data(T header, boost::python::numeric::array arr)
+int GadgetReference::return_data(T header, boost::python::object arr)
 {
 
-  int ndims = PyArray_NDIM(arr.ptr());
-  npy_intp* dims = PyArray_DIMS(arr.ptr());
+	PyArrayObject* arrPtr = PyArray_GETCONTIGUOUS((PyArrayObject*)arr.ptr());//PyArray_FromObject(arr.ptr(),NPY_COMPLEX64,1,5); //So.... this is probably really really really bad.
+  int ndims = PyArray_NDIM(arrPtr);
+  npy_intp* dims = PyArray_DIMS(arrPtr);
   std::vector<unsigned int> dimensions(ndims);
   for (int i = 0; i < ndims; i++) dimensions[ndims-i-1] = static_cast<unsigned int>(dims[i]);
 
@@ -44,7 +45,7 @@ int GadgetReference::return_data(T header, boost::python::numeric::array arr)
     
   }
 
-  memcpy(m2->getObjectPtr()->get_data_ptr(), PyArray_DATA(arr.ptr()), m2->getObjectPtr()->get_number_of_elements()*2*sizeof(float));
+  memcpy(m2->getObjectPtr()->get_data_ptr(), PyArray_DATA(arrPtr), m2->getObjectPtr()->get_number_of_elements()*sizeof(std::complex<float>));
 
   if (gadget_) {
     //ACE_Time_Value wait = ACE_OS::gettimeofday() + ACE_Time_Value(0,1000); //1ms from now
@@ -77,12 +78,12 @@ int GadgetReference::return_data(T header, boost::python::numeric::array arr)
 
 }
 
-int GadgetReference::return_acquisition(ISMRMRD::AcquisitionHeader acq, boost::python::numeric::array arr)
+int GadgetReference::return_acquisition(ISMRMRD::AcquisitionHeader acq, boost::python::object arr)
 {
   return return_data<ISMRMRD::AcquisitionHeader>(acq, arr);
 }
 
-int GadgetReference::return_image(ISMRMRD::ImageHeader img, boost::python::numeric::array arr)
+int GadgetReference::return_image(ISMRMRD::ImageHeader img, boost::python::object arr)
 {
   return return_data<ISMRMRD::ImageHeader>(img, arr);
 }

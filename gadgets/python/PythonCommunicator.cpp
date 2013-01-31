@@ -169,16 +169,16 @@ template<class T> int PythonCommunicator::process(Gadget* g,
 			std::vector<int> dims2(dims.size());
 			for (unsigned int i = 0; i < dims.size(); i++) dims2[dims.size()-i-1] = static_cast<int>(dims[i]);
 
-			boost::python::object obj(boost::python::handle<>(PyArray_FromDims(dims2.size(), &dims2[0], PyArray_CFLOAT)));
-			boost::python::object data = boost::python::extract<boost::python::numeric::array>(obj);
+			boost::python::object obj(boost::python::handle<>(PyArray_FromDims(dims2.size(), &dims2[0], NPY_COMPLEX64)));
+			//boost::python::object data = boost::python::extract<boost::python::numeric::array>(obj);
 
 			//Copy data
-			memcpy(PyArray_DATA(data.ptr()), m2->getObjectPtr()->get_data_ptr(), m2->getObjectPtr()->get_number_of_elements()*sizeof(float)*2);
+			memcpy(PyArray_DATA((PyArrayObject*)obj.ptr()), m2->getObjectPtr()->get_data_ptr(), m2->getObjectPtr()->get_number_of_elements()*sizeof(std::complex<float>));
 
 			//Get Header
 			T acq = *m1->getObjectPtr();
 
-			if ( boost::python::extract<int>(it->second(acq, data)) != GADGET_OK) {
+			if ( boost::python::extract<int>(it->second(acq, obj)) != GADGET_OK) {
 				GADGET_DEBUG2("Gadget (%s) Returned from python call with error\n", g->module()->name());
 				PyGILState_Release(gstate);
 				return GADGET_FAIL;
