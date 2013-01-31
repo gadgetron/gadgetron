@@ -56,6 +56,9 @@ public Gadget2<T, hoNDArray< std::complex<float> > >
     in(1) = octave_value(this->next()->module()->name());
     out = feval(reffunc_->c_str(), in, 2);
 
+    in(0) = octave_value(std::string(mb->rd_ptr(),mb->length()));
+    out = feval(configfunc_->c_str(), in, 1);
+
     return GADGET_OK;
   }
 

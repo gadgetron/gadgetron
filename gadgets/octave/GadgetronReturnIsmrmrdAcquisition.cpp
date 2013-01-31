@@ -18,8 +18,7 @@ DEFUN_DLD (GadgetronReturnIsmrmrdAcquisition, args, nargout,
   } else {
     std::string id(args(0).string_value());
     Octave_map h(args(1).map_value());
-    ComplexNDArray d(args(2).complex_array_value());
-
+    FloatComplexNDArray d(args(2).complex_array_value());
 
     GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1 =
     		new GadgetContainerMessage<ISMRMRD::AcquisitionHeader>();

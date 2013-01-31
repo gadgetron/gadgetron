@@ -30,6 +30,6 @@ install(TARGETS gadgetronoctave DESTINATION lib)
 install(TARGETS GadgetronReturnIsmrmrdAcquisition DESTINATION octave)
 install(TARGETS GadgetronReturnIsmrmrdImage DESTINATION octave)
 
-install(FILES octave/my_gadget_reference.m octave/my_recon_function.m  DESTINATION octave)
+install(FILES octave/my_gadget_reference.m octave/my_recon_function.m octave/my_config_function.m DESTINATION octave)
 
 install(FILES octave.xml DESTINATION config)
