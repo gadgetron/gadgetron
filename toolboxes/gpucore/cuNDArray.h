@@ -15,7 +15,7 @@
 template <class T> class EXPORTGPUCORE cuNDArray;
 template <class T> EXPORTGPUCORE int cuNDArray_permute(cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *order, int shift_mode);
 
-template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
+template <class T> class EXPORTGPUCORE cuNDArray : public GADGETRON::NDArray<T>
 {
   friend int cuNDArray_permute<>(cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *order, int shift_mode);
     
@@ -30,6 +30,12 @@ template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
   // Constructor from hoNDArray
   cuNDArray(hoNDArray<T> *a);
 
+  cuNDArray(std::vector<unsigned int> *dimensions);
+  cuNDArray(std::vector<unsigned int> *dimensions, int device_no);
+  cuNDArray(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct = false);
+  cuNDArray(boost::shared_ptr<std::vector<unsigned int>  > dimensions);
+  cuNDArray(boost::shared_ptr<std::vector<unsigned int>  > dimensions, int device_no);
+  cuNDArray(boost::shared_ptr<std::vector<unsigned int>  > dimensions, T* data, bool delete_data_on_destruct = false);
   // Assignment operator
   cuNDArray& operator=(const cuNDArray<T>& rhs);
   
@@ -44,7 +50,7 @@ template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
 
   virtual boost::shared_ptr< hoNDArray<T> > to_host() const;
 
-  virtual int permute(std::vector<unsigned int> *dim_order, NDArray<T> *out = 0, int shift_mode = 0);
+  virtual int permute(std::vector<unsigned int> *dim_order, GADGETRON::NDArray<T> *out = 0, int shift_mode = 0);
   
   virtual int set_device(int device_no);
   inline int get_device() { return device_; }

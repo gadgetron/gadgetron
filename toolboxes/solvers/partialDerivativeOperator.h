@@ -9,7 +9,9 @@ template <class REAL, unsigned int D, class ARRAY_TYPE> class partialDerivativeO
   
 public:
   
-  partialDerivativeOperator( unsigned int dimension ) : linearOperator<REAL,ARRAY_TYPE>() { compute_stride(dimension); }
+  partialDerivativeOperator( unsigned int dimension ) : 
+    linearOperator<REAL,ARRAY_TYPE>() { compute_stride(dimension); }
+
   virtual ~partialDerivativeOperator() {}
     
   virtual int mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
@@ -27,9 +29,13 @@ public:
     return compute_second_order_partial_derivative( forwards_stride_, adjoint_stride_, in, out, accumulate );   
   }
 
-  virtual int compute_partial_derivative( typename intd<D>::Type stride, ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate ) = 0;  
-  virtual int compute_second_order_partial_derivative( typename intd<D>::Type forwards_stride, typename intd<D>::Type adjoint_stride, 
-						       ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate ) = 0;    
+  virtual int compute_partial_derivative
+  ( typename intd<D>::Type stride, ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate ) = 0;  
+
+  virtual int compute_second_order_partial_derivative
+  ( typename intd<D>::Type forwards_stride, typename intd<D>::Type adjoint_stride, 
+    ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate ) = 0;    
+
 protected:
   
   virtual void compute_stride( unsigned int _dimension )

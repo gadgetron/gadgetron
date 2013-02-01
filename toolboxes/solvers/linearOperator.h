@@ -10,6 +10,15 @@ template <class REAL, class ARRAY_TYPE> class linearOperator
  public:
 
   linearOperator() { weight_ = REAL(1); }
+  linearOperator(std::vector<unsigned int> *dims) { weight_ = REAL(1);
+  	  set_domain_dimensions(dims);
+  	  set_codomain_dimensions(dims);
+  }
+  linearOperator(std::vector<unsigned int> *dims, std::vector<unsigned int> *codims) {
+	  weight_ = REAL(1);
+	  set_domain_dimensions(dims);
+	  set_codomain_dimensions(codims);
+  }
   virtual ~linearOperator() {}
 
   virtual void set_weight( REAL weight ){ weight_ = weight; }

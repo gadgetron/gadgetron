@@ -18,7 +18,7 @@ if(XSD_INCLUDE_DIR)
 	SET(XSD_FOUND TRUE)
 else(XSD_INCLUDE_DIR)
 	find_program(XSD_EXECUTABLE NAMES ${__XSD_NAME}
-	     PATHS
+	     HINTS
 		 ${XSD_DIR}/bin
 	)
 
@@ -28,9 +28,10 @@ else(XSD_INCLUDE_DIR)
 		SET(XSD_EXECUTABLE "xsd-NOTFOUND" CACHE FILE "xsd executable path")
 	endif(XSD_EXECUTABLE)
 
-	find_path(XSD_INCLUDE_DIR NAMES xsd 
-	    PATHS
+	find_path(XSD_INCLUDE_DIR NAMES xsd
+            HINTS
 		${XSD_DIR}/include
+	    PATHS
 		/usr/include
 		/usr/local/include
 	)

@@ -98,7 +98,7 @@ typename uintd<D>::Type idx_to_co( unsigned int idx, const vector_td<unsigned in
 } 
 
 template<unsigned int D> __inline__ __host__ __device__ 
-typename intd<D>::Type idx_to_co( int idx, const typename intd<D>::Type dims )
+typename intd<D>::Type idx_to_co( int idx, const vector_td<int,D> dims )
 {
   typename intd<D>::Type co;
   int idx_tmp = idx;
@@ -158,17 +158,6 @@ unsigned int co_to_idx( const typename uintd<D>::Type co, const typename uintd<D
   return idx;
 } 
 
-template<unsigned int D> __inline__ __host__ __device__ 
-int co_to_idx( const typename intd<D>::Type co, const typename intd<D>::Type dims )
-{
-  int idx = 0;
-  unsigned long block_size = 1;
-  for (unsigned int i=0; i<D; i++) {
-    idx += (block_size*co.vec[i]);
-    block_size *= dims.vec[i];
-  }
-  return idx;
-} 
 
 template<unsigned int D> __inline__ __host__ __device__ 
 int co_to_idx( const typename intd<D>::Type co, const typename intd<D>::Type dims, const typename intd<D>::Type order )

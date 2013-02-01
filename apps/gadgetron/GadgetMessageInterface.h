@@ -44,6 +44,8 @@ struct GadgetMessageScript
 class GadgetMessageReader
 {
  public:
+	virtual ~GadgetMessageReader() {}
+
   /**
      Function must be implemented to read a specific message.
    */
@@ -58,7 +60,9 @@ class GadgetMessageReader
 class GadgetMessageWriter
 {
  public:
-  /**
+	virtual ~GadgetMessageWriter() {}
+
+   /**
      Function must be implemented to write a specific message.
    */
   virtual int write(ACE_SOCK_Stream* stream, ACE_Message_Block* mb) = 0;

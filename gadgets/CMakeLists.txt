@@ -9,6 +9,11 @@ if (NOT WIN32)
 endif (NOT WIN32)
 endif(CUDA_FOUND)
 
+find_package(Octave)
+if (NOT WIN32 AND OCTAVE_FOUND)
+	add_subdirectory(octave)
+endif(NOT WIN32 AND OCTAVE_FOUND)
+
 if (BLAS_FOUND AND LAPACK_FOUND)
 	MESSAGE("Compiling optimized (BLAS/LAPACK) MRI Gadgets")
 	add_subdirectory(mri_core)

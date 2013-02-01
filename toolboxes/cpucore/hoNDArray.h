@@ -69,17 +69,32 @@ protected:
   unsigned long int current_idx_;
 };
 
-template <class T> class hoNDArray : public NDArray<T>
+template <class T> class hoNDArray : public GADGETRON::NDArray<T>
 {
 public:
 
-  hoNDArray() : NDArray<T>::NDArray() {}
+ hoNDArray() : GADGETRON::NDArray<T>::NDArray() {}
 
+ hoNDArray(std::vector<unsigned int> *dimensions) : GADGETRON::NDArray<T>::NDArray() {
+	  this->create(dimensions);
+  }
+ hoNDArray(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct=false) : GADGETRON::NDArray<T>::NDArray() {
+  	  this->create(dimensions,data,delete_data_on_destruct);
+    }
+
+ hoNDArray(boost::shared_ptr< std::vector<unsigned int> > dimensions) : GADGETRON::NDArray<T>::NDArray() {
+	  this->create(dimensions.get());
+  }
+ hoNDArray(boost::shared_ptr< std::vector<unsigned int> > dimensions, T* data, bool delete_data_on_destruct=false) : GADGETRON::NDArray<T>::NDArray() {
+  	  this->create(dimensions.get(),data,delete_data_on_destruct);
+    }
   virtual ~hoNDArray() {
     if (this->delete_data_on_destruct_) {
       deallocate_memory();
     }
   }
+
+
 
   // Copy constructor
   hoNDArray(const hoNDArray<T>& a)
@@ -124,7 +139,7 @@ public:
     std::fill(this->get_data_ptr(), this->get_data_ptr()+this->get_number_of_elements(), value);
   }
 
-  virtual int permute(std::vector<unsigned int> *dim_order, NDArray<T>* out = 0, int shift_mode = 0)
+  virtual int permute(std::vector<unsigned int> *dim_order, GADGETRON::NDArray<T>* out = 0, int shift_mode = 0)
   {
     hoNDArray<T>* out_int = 0;
 

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
+        xmlns="http://gadgetron.sf.net/gadgetron"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        
+    <reader>
+      <slot>1008</slot>
+      <dll>gadgetroncore</dll>
+      <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
+    </reader>
+  
+    <writer>
+      <slot>1004</slot>
+      <dll>gadgetroncore</dll>
+      <classname>MRIImageWriterCPLX</classname>
+    </writer>
+    <writer>
+      <slot>1005</slot>
+      <dll>gadgetroncore</dll>
+      <classname>MRIImageWriterFLOAT</classname>
+    </writer>
+    <writer>
+      <slot>1006</slot>
+      <dll>gadgetroncore</dll>
+      <classname>MRIImageWriterUSHORT</classname>
+    </writer>
+  
+  
+    <gadget>
+      <name>OctaveDownsample</name>
+      <dll>gadgetronoctave</dll>
+      <classname>AcquisitionOctaveGadget</classname>
+      <!--
+   	  <property><name>path</name>                  <value>/home/myuser/scripts/python</value></property>
+      -->
+      <property><name>gadget_reference_function</name>    <value>gadget_reference_downsample_2x</value></property>
+      <property><name>input_function</name>               <value>downsample_2x</value></property>
+      <property><name>config_function</name>              <value>configure_downsample_2x</value></property> 
+    </gadget>
+
+    <gadget>
+      <name>OctaveAccumulate</name>
+      <dll>gadgetronoctave</dll>
+      <classname>AcquisitionOctaveGadget</classname>
+      <!--
+   	  <property><name>path</name>                  <value>/home/myuser/scripts/python</value></property>
+      -->
+      <property><name>gadget_reference_function</name>    <value>gadget_reference_accumulator</value></property>
+      <property><name>input_function</name>               <value>accumulator</value></property>
+      <property><name>config_function</name>              <value>configure_accumulator</value></property> 
+    </gadget>
+
+    <!--
+    <gadget>
+      <name>Acc</name>
+      <dll>gadgetroncore</dll>
+      <classname>AccumulatorGadget</classname>
+    </gadget>
+    <gadget>
+      <name>FFT</name>
+      <dll>gadgetroncore</dll>
+      <classname>FFTGadget</classname>
+    </gadget>
+    <gadget>
+      <name>CropCombine</name>
+      <dll>gadgetroncore</dll>
+      <classname>CropAndCombineGadget</classname>
+    </gadget>
+    -->
+    <gadget>
+      <name>Extract</name>
+      <dll>gadgetroncore</dll>
+      <classname>ExtractGadget</classname>
+    </gadget>  
+    <gadget>
+      <name>ImageFinishFLOAT</name>
+      <dll>gadgetroncore</dll>
+      <classname>ImageFinishGadgetFLOAT</classname>
+    </gadget>
+
+</gadgetronStreamConfiguration>
