@@ -44,20 +44,14 @@ public Gadget2<T, hoNDArray< std::complex<float> > >
     OctaveCommunicator::instance()->register_gadget(this->controller_->find_gadget(this->next()->module()->name()));
 
     octave_value_list in = octave_value (path_->c_str());
-    octave_value_list out = feval ("addpath", in, 1);
-
-    const char* gadgetron_home = ACE_OS::getenv("GADGETRON_HOME");
-    std::string path_name = std::string(gadgetron_home) + std::string("/octave");
-
-    in = octave_value (path_name.c_str());
-    out = feval ("addpath", in, 1);
+    octave_value_list out = OctaveCommunicator::instance()->octave_feval ("addpath", in, 1);
 
     in(0) = octave_value(this->module()->name());
     in(1) = octave_value(this->next()->module()->name());
-    out = feval(reffunc_->c_str(), in, 2);
+    out = OctaveCommunicator::instance()->octave_feval(reffunc_->c_str(), in, 2);
 
     in(0) = octave_value(std::string(mb->rd_ptr(),mb->length()));
-    out = feval(configfunc_->c_str(), in, 1);
+    out = OctaveCommunicator::instance()->octave_feval(configfunc_->c_str(), in, 1);
 
     return GADGET_OK;
   }

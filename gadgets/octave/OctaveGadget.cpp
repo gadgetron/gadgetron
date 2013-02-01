@@ -5,6 +5,15 @@
 	      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
  {
 
+   //We want to avoid a deadlock for the Python GIL if this python call results in an output that the GadgetReference will not be able to get rid of.
+   //This is kind of a nasty busy wait, maybe we should add an event handler to the NotificationStrategy of the Q or something, but for now, this will do it.
+   while (this->next()->msg_queue()->is_full()) {
+     //GADGET_DEBUG2("Gadget (%s) sleeping while downstream Gadget (%s) does some work\n", this->module()->name(), this->next()->module()->name());
+     ACE_Time_Value tv(0,10000); //Sleep for 10ms while the downstream Gadget does some work
+      ACE_OS::sleep(tv);
+   }
+
+
 	Octave_map m;
 	ISMRMRD::AcquisitionHeader h = *m1->getObjectPtr();
 
@@ -92,7 +101,7 @@
     in(0) = m;
     in(1) = data;
 
-    octave_value_list out = feval (datafunc_->c_str(), in, 2);
+    octave_value_list out = OctaveCommunicator::instance()->octave_feval (datafunc_->c_str(), in, 2);
 
     //We are now done with the data
     m1->release();
@@ -103,6 +112,15 @@
  int ImageOctaveGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 	      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
  {
+
+   //We want to avoid a deadlock for the Python GIL if this python call results in an output that the GadgetReference will not be able to get rid of.
+   //This is kind of a nasty busy wait, maybe we should add an event handler to the NotificationStrategy of the Q or something, but for now, this will do it.
+   while (this->next()->msg_queue()->is_full()) {
+     //GADGET_DEBUG2("Gadget (%s) sleeping while downstream Gadget (%s) does some work\n", this->module()->name(), this->next()->module()->name());
+     ACE_Time_Value tv(0,10000); //Sleep for 10ms while the downstream Gadget does some work
+     ACE_OS::sleep(tv);
+   }
+
 
 	Octave_map m;
 	ISMRMRD::ImageHeader h = *m1->getObjectPtr();
@@ -179,7 +197,7 @@
     in(0) = m; //octave_value (this->next()->module()->name());
     in(1) = data;
 
-    octave_value_list out = feval (datafunc_->c_str(), in, 2);
+    octave_value_list out = OctaveCommunicator::instance()->octave_feval (datafunc_->c_str(), in, 2);
 
     m1->release();
 
