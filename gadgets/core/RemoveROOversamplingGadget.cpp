@@ -39,6 +39,7 @@ int RemoveROOversamplingGadget
 
   m1->cont(m3);
   m1->getObjectPtr()->number_of_samples = data_out_dims[0];
+  m1->getObjectPtr()->center_sample /= 2;
 
   if (this->next()->putq(m1) == -1) {
     ACE_ERROR_RETURN( (LM_ERROR,
