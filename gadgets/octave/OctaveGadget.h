@@ -71,7 +71,7 @@ class EXPORTGADGETSOCTAVE AcquisitionOctaveGadget :
 public OctaveGadget<ISMRMRD::AcquisitionHeader>
 {
  public:
-  GADGET_DECLARE(AcquisitionPythonGadget);
+  GADGET_DECLARE(AcquisitionOctaveGadget);
   
   int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
   	      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
@@ -82,7 +82,7 @@ class EXPORTGADGETSOCTAVE ImageOctaveGadget :
 public OctaveGadget<ISMRMRD::ImageHeader>
 {
  public:
-  GADGET_DECLARE(ImagePythonGadget);
+  GADGET_DECLARE(ImageOctaveGadget);
 
   int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
   	      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
