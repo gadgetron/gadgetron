@@ -2,7 +2,7 @@
 #include "vector_td.h"
 #include "vector_td_utilities.h"
 #include "check_CUDA.h"
-
+namespace Gadgetron{
 // Template Power function
 template<unsigned int i, unsigned int j>
 struct Pow
@@ -111,3 +111,4 @@ template class EXPORTSOLVERS cuLaplaceOperator<double_complext, 1>;
 template class EXPORTSOLVERS cuLaplaceOperator<double_complext, 2>;
 template class EXPORTSOLVERS cuLaplaceOperator<double_complext, 3>;
 
+}

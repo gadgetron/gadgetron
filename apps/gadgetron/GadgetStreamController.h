@@ -19,6 +19,9 @@
 
 typedef ACE_Module<ACE_MT_SYNCH> GadgetModule;
 
+namespace Gadgetron{
+
+
 class GadgetStreamController 
 : public ACE_Svc_Handler<ACE_SOCK_STREAM, ACE_MT_SYNCH>
 {
@@ -72,5 +75,5 @@ private:
   template <class T>  T* load_dll_component(const char* DLL, const char* component_name);
 
 };
-
+}
 #endif //GADGETSTREAMCONTROLLER_H

@@ -3,6 +3,7 @@
 #include "ndarray_vector_td_utilities.h"
 #include <sstream>
 
+using namespace Gadgetron;
 template<class REAL> __global__ void 
 sample_array_kernel( complext<REAL> *in, complext<REAL> *out,
 		     unsigned int *idx, 
@@ -73,7 +74,7 @@ cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray<_complext> *in, cuNDArray<_c
 
 
   dim3 blockDim(512,1,1);
-  dim3 gridDim((unsigned int) ceil((double)idx_->get_number_of_elements()/blockDim.x), 1, 1 );
+  dim3 gridDim((unsigned int) std::ceil((double)idx_->get_number_of_elements()/blockDim.x), 1, 1 );
   sample_array_kernel<REAL><<< gridDim, blockDim >>>( tmp.get_data_ptr(), out->get_data_ptr(), idx_->get_data_ptr(),
 						      in->get_number_of_elements(), idx_->get_number_of_elements(), this->ncoils_);
   cudaError_t err = cudaGetLastError();
@@ -109,7 +110,7 @@ cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray<_complext> *in, cuNDArray<_c
   tmp.clear();
 
   dim3 blockDim(512,1,1);
-  dim3 gridDim((unsigned int) ceil((double)idx_->get_number_of_elements()/blockDim.x), 1, 1 );
+  dim3 gridDim((unsigned int) std::ceil((double)idx_->get_number_of_elements()/blockDim.x), 1, 1 );
   insert_samples_kernel<REAL><<< gridDim, blockDim >>>( in->get_data_ptr(), tmp.get_data_ptr(),
 							idx_->get_data_ptr(),out->get_number_of_elements(),
 							idx_->get_number_of_elements(), this->ncoils_);

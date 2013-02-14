@@ -127,7 +127,7 @@ template <typename T> void hoNDArray_trmm( hoNDArray<T>* A, hoNDArray<T>* B, T a
 
 	trmm_wrapper(&M, &N, &alpha, A->get_data_ptr(), B->get_data_ptr());
 
-}
+	}
 
 template EXPORTLINALG void hoNDArray_trmm( hoNDArray<float>* A, hoNDArray<float>* B, float alpha);
 template EXPORTLINALG void hoNDArray_trmm( hoNDArray<double>* A, hoNDArray<double>* B, double alpha);

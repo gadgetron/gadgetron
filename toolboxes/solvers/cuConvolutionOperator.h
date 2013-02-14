@@ -7,6 +7,8 @@
 #include "vector_td_utilities.h"
 
 
+namespace Gadgetron{
+
 
 template <class REAL, unsigned int D> class cuConvolutionOperator 
 	: public convolutionOperator<cuNDArray<complext<REAL> >, D >
@@ -36,5 +38,5 @@ public:
     return linearOperator< cuNDArray< complext<REAL> > >::clone(this);
   }
 
-
 };
+}//End of namespace

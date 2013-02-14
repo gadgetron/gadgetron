@@ -2,7 +2,7 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "GPUCGGoldenRadial.h"
 #include "Gadgetron.h"
-
+namespace Gadgetron{
 boost::shared_ptr< cuNDArray<floatd2> >
 GPUCGGoldenRadialGadget::calculate_trajectory()
 {
@@ -35,3 +35,4 @@ GPUCGGoldenRadialGadget::calculate_density_compensation()
 }
 
 GADGET_FACTORY_DECLARE(GPUCGGoldenRadialGadget)
+}

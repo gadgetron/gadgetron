@@ -12,7 +12,7 @@
 #include "hoNDArray.h"
 #include "GadgetMessageInterface.h"
 
-
+namespace Gadgetron{
 /**
    Default implementation of GadgetMessageReader for Image messages
 
@@ -46,7 +46,7 @@ template <typename T> class GadgetImageMessageReader : public GadgetMessageReade
       new GadgetContainerMessage< hoNDArray< T > >();
 
     try{ data->getObjectPtr()->create(&dims);}
-    catch (gt_runtime_error &err){
+    catch (runtime_error &err){
     	GADGET_DEBUG_EXCEPTION(err,"GadgetImageMessageReader, failed to allocate memory\n");
       imgh->release();
       return 0;
@@ -63,6 +63,7 @@ template <typename T> class GadgetImageMessageReader : public GadgetMessageReade
     return imgh;
   }
 };
+}
 
 
 #endif //GADGETSOCKETRECEIVER_H

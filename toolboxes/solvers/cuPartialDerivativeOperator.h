@@ -4,6 +4,7 @@
 #include "cuLinearOperator_macros.h"
 #include "cuNDArray.h"
 
+namespace Gadgetron{
 template <class T, unsigned int D> class EXPORTSOLVERS cuPartialDerivativeOperator
 	: public partialDerivativeOperator<D, cuNDArray<T> >
 {
@@ -30,3 +31,4 @@ template <class T, unsigned int D> class EXPORTSOLVERS cuPartialDerivativeOperat
   
   DECLARE_LINEAR_OPERATOR_DEVICE_SUPPORT(cuPartialDerivativeOperator)
 };
+}

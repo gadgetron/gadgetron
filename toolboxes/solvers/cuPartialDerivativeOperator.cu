@@ -3,6 +3,7 @@
 #include "check_CUDA.h"
 #include "ndarray_vector_td_utilities.h"
 
+namespace Gadgetron{
 template<class T, unsigned int D> __global__ void
 first_order_partial_derivative_kernel( typename intd<D>::Type stride, 
 				       typename intd<D>::Type dims, 
@@ -154,3 +155,5 @@ template class EXPORTSOLVERS cuPartialDerivativeOperator<double, 4>;
 template class EXPORTSOLVERS cuPartialDerivativeOperator<double_complext, 2>;
 template class EXPORTSOLVERS cuPartialDerivativeOperator<double_complext, 3>;
 template class EXPORTSOLVERS cuPartialDerivativeOperator<double_complext, 4>;
+
+}

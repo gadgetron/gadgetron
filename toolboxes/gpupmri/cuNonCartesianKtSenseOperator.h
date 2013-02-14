@@ -2,6 +2,7 @@
 
 #include "cuNonCartesianSenseOperator.h"
 
+namespace Gadgetron{
 template<class REAL, unsigned int D>
 class EXPORTGPUPMRI cuNonCartesianKtSenseOperator : public cuNonCartesianSenseOperator<REAL,D>
 {
@@ -22,3 +23,4 @@ class EXPORTGPUPMRI cuNonCartesianKtSenseOperator : public cuNonCartesianSenseOp
     return linearOperator< cuNDArray<complext<REAL> > >::clone(this);
   }  
 };
+}

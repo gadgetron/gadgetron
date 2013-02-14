@@ -3,7 +3,7 @@
 #include "diagonalOperator.h"
 #include "cuLinearOperator_macros.h"
 #include "cuNDArray.h"
-
+namespace Gadgetron{
 template <class REAL, class T> class cuDiagonalOperator 
   : public diagonalOperator< REAL, cuNDArray<T> >
 {
@@ -38,3 +38,4 @@ public:
   
   DECLARE_LINEAR_OPERATOR_DEVICE_SUPPORT(cuDiagonalOperator)
 };
+}

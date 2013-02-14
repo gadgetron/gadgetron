@@ -8,6 +8,7 @@
 
 #include "sbSolver.h"
 
+namespace Gadgetron{
 template<
 	  class ARRAY_TYPE_REAL, 
 	  class ARRAY_TYPE_ELEMENT, 
@@ -114,3 +115,4 @@ public:
     return u_k;
   }  
 };
+}

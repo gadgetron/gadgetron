@@ -9,7 +9,7 @@
 #include <iostream>
 
 using namespace std;
-
+using namespace Gadgetron;
 const int kernel_width = 7;
 
 template<class REAL, unsigned int D> void
@@ -26,7 +26,7 @@ void set_phase_reference( cuNDArray<complext<REAL> > *csm, unsigned int number_o
 //
 
 template<class REAL, unsigned int D> boost::shared_ptr< cuNDArray<complext<REAL> > >
-estimate_b1_map( cuNDArray<complext<REAL> > *data_in, int target_coils)
+Gadgetron::estimate_b1_map( cuNDArray<complext<REAL> > *data_in, int target_coils)
 {
 
   if( data_in->get_number_of_dimensions() < 2 ){
@@ -595,11 +595,11 @@ void set_phase_reference(cuNDArray<complext<REAL> > *csm, unsigned int number_of
 //
 
 //template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,1>(cuNDArray<complext<float> >*, int);
-template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,2>(cuNDArray<complext<float> >*, int);
+template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<float> > > Gadgetron::estimate_b1_map<float,2>(cuNDArray<complext<float> >*, int);
 //template boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,3>(cuNDArray<complext<float> >*, int);
 //template boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,4>(cuNDArray<complext<float> >*, int);
 
 //template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,1>(cuNDArray<complext<double> >*, int);
-template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,2>(cuNDArray<complext<double> >*, int);
+template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > Gadgetron::estimate_b1_map<double,2>(cuNDArray<complext<double> >*, int);
 //template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,3>(cuNDArray<complext<double> >*, int);
 //template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,4>(cuNDArray<complext<double> >*, int);

@@ -4,6 +4,7 @@
 #include "complext.h"
 #include "NFFT.h"
 
+namespace Gadgetron{
 template<class REAL, unsigned int D> class EXPORTGPUNFFT cuNFFTOperator 
   : public linearOperator<cuNDArray< complext<REAL> > >
 {
@@ -39,3 +40,4 @@ protected:
   std::vector<unsigned int> dimensionsK_;
   bool ready_;
 };
+}

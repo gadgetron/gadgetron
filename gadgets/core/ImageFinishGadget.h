@@ -9,7 +9,7 @@
 #include "GadgetStreamController.h"
 
 #include <complex>
-
+namespace Gadgetron{
 template <typename T>
 class EXPORTGADGETSCORE ImageFinishGadget : 
 public Gadget2<ISMRMRD::ImageHeader,hoNDArray< T > >
@@ -39,5 +39,5 @@ public ImageFinishGadget< std::complex<float> >
  public:
   GADGET_DECLARE(ImageFinishGadgetCPLX);
 };
-
+}
 #endif //IMAGEFINISHGADGET_H

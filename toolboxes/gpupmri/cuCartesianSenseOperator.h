@@ -2,6 +2,7 @@
 
 #include "cuSenseOperator.h"
 
+namespace Gadgetron{
 template<class REAL, unsigned int D>
 class EXPORTGPUPMRI cuCartesianSenseOperator 
 	: public cuSenseOperator<REAL,D>
@@ -33,3 +34,4 @@ class EXPORTGPUPMRI cuCartesianSenseOperator
  protected:
   boost::shared_ptr< cuNDArray<unsigned int> > idx_;
 };
+}

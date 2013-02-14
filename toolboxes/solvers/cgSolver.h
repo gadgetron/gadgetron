@@ -11,6 +11,7 @@
 #include <iostream>
 #include <limits>
 
+namespace Gadgetron{
 template <class ARRAY_TYPE> class cgSolver
   : public linearSolver<ARRAY_TYPE>
 {
@@ -88,10 +89,6 @@ public:
     //
     
     ARRAY_TYPE *d = _d;
-    if( !d->get_data_ptr() ){
-      throw std::runtime_error( "Error: cgSolver::solve : memory allocation failed" );
-
-    }
 
     // Compute right hand side
     //
@@ -376,12 +373,12 @@ protected:
     //
 
     if( !in || !out ){
-      throw std::runtime_error( "Error: cgSolver::mult_MH_M : invalid input pointer(s)" );
+      BOOST_THROW_EXCEPTION(runtime_error( "Error: cgSolver::mult_MH_M : invalid input pointer(s)" ));
 
     }
 
     if( in->get_number_of_elements() != out->get_number_of_elements() ){
-      throw std::runtime_error( "Error: cgSolver::mult_MH_M : array dimensionality mismatch" );
+    	BOOST_THROW_EXCEPTION(runtime_error( "Error: cgSolver::mult_MH_M : array dimensionality mismatch" ));
 
     }
     
@@ -436,3 +433,4 @@ protected:
   boost::shared_ptr<ARRAY_TYPE> x_, p_, r_;
 
 };
+}

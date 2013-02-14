@@ -3,6 +3,7 @@
 #include "linearOperator.h"
 #include "vector_td.h"
 
+namespace Gadgetron{
 template <unsigned int D, class ARRAY_TYPE> class EXPORTSOLVERS laplaceOperator
 	: public linearOperator<ARRAY_TYPE>
 {
@@ -26,3 +27,4 @@ public:
 protected:
   virtual void compute_laplace( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate ) = 0;
 };
+}

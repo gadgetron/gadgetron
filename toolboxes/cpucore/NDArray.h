@@ -10,6 +10,7 @@
 #include <new>
 #include "GadgetronException.h"
 
+namespace Gadgetron{
 template <class T> class NDArray
 {
  public:
@@ -53,7 +54,7 @@ template <class T> class NDArray
   virtual void create(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct = false)
   {
     if (!data) {
-    	BOOST_THROW_EXCEPTION(gt_runtime_error("NDArray<T>::create: 0x0 pointer provided"));
+    	BOOST_THROW_EXCEPTION(runtime_error("NDArray<T>::create: 0x0 pointer provided"));
     }
     
     std::vector<unsigned int> *tmp = new std::vector<unsigned int>;
@@ -166,5 +167,6 @@ protected:
   unsigned long int elements_;
   bool delete_data_on_destruct_;  
 };
+}
 
 #endif //NDARRAY_H

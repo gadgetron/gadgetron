@@ -7,6 +7,7 @@
 #include <cuComplex.h>
 #include <sstream>
 
+namespace Gadgetron{
 template<class T> cufftType_t get_transform_type();
 template<> cufftType_t get_transform_type< cuFloatComplex  >() { return CUFFT_C2C; }
 template<> cufftType_t get_transform_type< cuDoubleComplex >() { return CUFFT_Z2Z; }
@@ -63,11 +64,11 @@ cuNDFFT<T>::fft_int( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_tra
     if ((*dims_to_transform)[i] >= array_ndim) {
     	std::stringstream ss;
     	ss << "cuNDFFT::fft Invalid dimensions specified for transform " << (*dims_to_transform)[i] << "max " << array_ndim;
-      BOOST_THROW_EXCEPTION(gt_runtime_error(ss.str()));
+      BOOST_THROW_EXCEPTION(runtime_error(ss.str()));
 
     }
     if (dim_count[(*dims_to_transform)[i]] > 0) {
-      BOOST_THROW_EXCEPTION(gt_runtime_error("cuNDFFT::fft Invalid dimensions (duplicates) specified for transform"));
+      BOOST_THROW_EXCEPTION(runtime_error("cuNDFFT::fft Invalid dimensions (duplicates) specified for transform"));
 
     }
     dim_count[(*dims_to_transform)[i]]++;
@@ -98,7 +99,7 @@ cuNDFFT<T>::fft_int( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_tra
   if (ftres != CUFFT_SUCCESS) {
 	  std::stringstream ss;
 	  ss << "cuNDFFT FFT plan failed: " << ftres;
-    BOOST_THROW_EXCEPTION(gt_runtime_error(ss.str()));
+    BOOST_THROW_EXCEPTION(runtime_error(ss.str()));
 
   }
 
@@ -106,7 +107,7 @@ cuNDFFT<T>::fft_int( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_tra
   input->permute(&new_dim_order,0,-1);
 
   if( cuNDA_FFT_execute<T>( plan, input, direction ) != CUFFT_SUCCESS ) {
-    BOOST_THROW_EXCEPTION(gt_runtime_error("cuNDFFT FFT execute failed"));
+    BOOST_THROW_EXCEPTION(runtime_error("cuNDFFT FFT execute failed"));
 
   }
 
@@ -114,7 +115,7 @@ cuNDFFT<T>::fft_int( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_tra
   if (ftres != CUFFT_SUCCESS) {
 	  std::stringstream ss;
 	  ss << "cuNDFFT FFT plan destroy failed: " << ftres;
-    BOOST_THROW_EXCEPTION(gt_runtime_error(ss.str()));
+    BOOST_THROW_EXCEPTION(runtime_error(ss.str()));
 
   }
 
@@ -177,3 +178,4 @@ cuNDFFT<T>::ifft( cuNDArray<T> *input, bool do_scale )
 //template class EXPORTGPUCORE cuNDFFT<cuDoubleComplex>;
 template class EXPORTGPUCORE cuNDFFT<float_complext>;
 template class EXPORTGPUCORE cuNDFFT<double_complext>;
+}

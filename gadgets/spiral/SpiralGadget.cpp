@@ -8,7 +8,7 @@
 #include "check_CUDA.h"
 
 #include <vector>
-
+namespace Gadgetron{
 void calc_vds(double slewmax,double gradmax,double Tgsample,double Tdsample,int Ninterleaves,
 		double* fov, int numfov,double krmax,
 		int ngmax, double** xgrad,double** ygrad,int* numgrad);
@@ -98,13 +98,13 @@ int SpiralGadget::process_config(ACE_Message_Block* mb)
 	trajectory_dimensions.push_back(samples_per_interleave_*Nints);
 
 	try{host_traj_->create(&trajectory_dimensions);}
-	catch (gt_runtime_error &err ){
+	catch (runtime_error &err ){
 		GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for trajectory\n");
 		return GADGET_FAIL;
 	}
 
 	try{host_weights_->create(&trajectory_dimensions);}
-	catch (gt_runtime_error &err ){
+	catch (runtime_error &err ){
 		GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for weights\n");
 		return GADGET_FAIL;
 	}
@@ -139,7 +139,7 @@ int SpiralGadget::process_config(ACE_Message_Block* mb)
 
 	for (unsigned int i = 0; i < slices; i++) {
 		try{host_data_buffer_[i].create(&data_dimensions);}
-		catch (gt_runtime_error &err){
+		catch (runtime_error &err){
 			GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for data buffer\n");
 			return GADGET_FAIL;
 		}
@@ -164,7 +164,7 @@ int SpiralGadget::process_config(ACE_Message_Block* mb)
 
 	// Preprocess
 	try { 	plan_.preprocess( &traj, NFFT_plan<float,2>::NFFT_PREP_ALL ); }
-	catch (gt_runtime_error& err){
+	catch (runtime_error& err){
 		GADGET_DEBUG_EXCEPTION(err,"NFFT preprocess failed\n");
 		return GADGET_FAIL;
 	}
@@ -210,7 +210,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		cuNDArray<float_complext> image; image.create(&image_dims);
 
 		try{ plan_.compute( &data, &image, &gpu_weights_, NFFT_plan<float,2>::NFFT_BACKWARDS_NC2C ); }
-		catch (gt_runtime_error& err){
+		catch (runtime_error& err){
 			GADGET_DEBUG_EXCEPTION(err, "NFFT compute failed\n");
 			return GADGET_FAIL;
 		}
@@ -221,7 +221,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 				new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
 
 		try{ m4->getObjectPtr()->create(&image_dimensions_);}
-		catch (gt_runtime_error& err){
+		catch (runtime_error& err){
 			GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for combined image\n");
 			m4->release();
 			return GADGET_FAIL;
@@ -278,3 +278,4 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 
 
 GADGET_FACTORY_DECLARE(SpiralGadget)
+}

@@ -2,6 +2,7 @@
 #include "vector_td_utilities.h"
 #include <sstream>
 
+using namespace Gadgetron;
 template<class REAL> __global__ void 
 mult_csm_kernel( complext<REAL> *in, complext<REAL> *out, complext<REAL> *csm,
 		 unsigned int image_elements, unsigned int nframes, unsigned int ncoils )
@@ -16,15 +17,15 @@ mult_csm_kernel( complext<REAL> *in, complext<REAL> *out, complext<REAL> *csm,
 }
 
 template<class REAL, unsigned int D> void
-csm_mult_M( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, cuNDArray< complext<REAL> > *csm )
+Gadgetron::csm_mult_M( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, cuNDArray< complext<REAL> > *csm )
 {  
   int device;
   if( cudaGetDevice( &device ) != cudaSuccess ){
-    throw cuda_error( "mult_csm: unable to query current device");
+    BOOST_THROW_EXCEPTION(cuda_error( "mult_csm: unable to query current device"));
   }
   
   if( !in || in->get_device() != device || !out || out->get_device() != device || !csm || csm->get_device() != device ){
-    throw cuda_error("mult_csm: array not residing current device");
+    BOOST_THROW_EXCEPTION(cuda_error("mult_csm: array not residing current device"));
 
   }
   
@@ -58,7 +59,7 @@ csm_mult_M( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, c
     std::stringstream ss;
     ss << "mult_csm: unable to multiply with coil sensitivities: " <<
       cudaGetErrorString(err);
-    throw cuda_error(ss.str());
+    BOOST_THROW_EXCEPTION(cuda_error(ss.str()));
 
   }
 }
@@ -78,11 +79,11 @@ mult_csm_conj_sum_kernel( complext<REAL> *in, complext<REAL> *out, complext<REAL
 }
 
 template<class REAL, unsigned int D> void
-csm_mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, cuNDArray<complext<REAL> > *csm )
+Gadgetron::csm_mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, cuNDArray<complext<REAL> > *csm )
 {
   int device;
   if( cudaGetDevice( &device ) != cudaSuccess ){
-    throw cuda_error( "mult_csm_conj_sum: unable to query current device");
+    BOOST_THROW_EXCEPTION(cuda_error( "mult_csm_conj_sum: unable to query current device"));
 
   }
   
@@ -120,7 +121,7 @@ csm_mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, cu
   	std::stringstream ss;
     ss << "mult_csm_conj_sum: unable to combine coils " <<
       cudaGetErrorString(err);
-    throw cuda_error(ss.str());
+    BOOST_THROW_EXCEPTION(cuda_error(ss.str()));
 
   }
   
@@ -128,22 +129,22 @@ csm_mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, cu
 
 // Instantiation
 
-template EXPORTGPUPMRI void csm_mult_M<float,1>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
-template EXPORTGPUPMRI void csm_mult_M<float,2>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
-template EXPORTGPUPMRI void csm_mult_M<float,3>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
-template EXPORTGPUPMRI void csm_mult_M<float,4>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
+template EXPORTGPUPMRI void Gadgetron::csm_mult_M<float,1>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
+template EXPORTGPUPMRI void Gadgetron::csm_mult_M<float,2>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
+template EXPORTGPUPMRI void Gadgetron::csm_mult_M<float,3>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
+template EXPORTGPUPMRI void Gadgetron::csm_mult_M<float,4>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
 
-template EXPORTGPUPMRI void csm_mult_M<double,1>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
-template EXPORTGPUPMRI void csm_mult_M<double,2>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
-template EXPORTGPUPMRI void csm_mult_M<double,3>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
-template EXPORTGPUPMRI void csm_mult_M<double,4>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
+template EXPORTGPUPMRI void Gadgetron::csm_mult_M<double,1>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
+template EXPORTGPUPMRI void Gadgetron::csm_mult_M<double,2>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
+template EXPORTGPUPMRI void Gadgetron::csm_mult_M<double,3>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
+template EXPORTGPUPMRI void Gadgetron::csm_mult_M<double,4>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
 
-template EXPORTGPUPMRI void csm_mult_MH<float,1>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
-template EXPORTGPUPMRI void csm_mult_MH<float,2>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
-template EXPORTGPUPMRI void csm_mult_MH<float,3>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
-template EXPORTGPUPMRI void csm_mult_MH<float,4>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
+template EXPORTGPUPMRI void Gadgetron::csm_mult_MH<float,1>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
+template EXPORTGPUPMRI void Gadgetron::csm_mult_MH<float,2>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
+template EXPORTGPUPMRI void Gadgetron::csm_mult_MH<float,3>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
+template EXPORTGPUPMRI void Gadgetron::csm_mult_MH<float,4>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
 
-template EXPORTGPUPMRI void csm_mult_MH<double,1>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
-template EXPORTGPUPMRI void csm_mult_MH<double,2>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
-template EXPORTGPUPMRI void csm_mult_MH<double,3>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
-template EXPORTGPUPMRI void csm_mult_MH<double,4>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
+template EXPORTGPUPMRI void Gadgetron::csm_mult_MH<double,1>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
+template EXPORTGPUPMRI void Gadgetron::csm_mult_MH<double,2>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
+template EXPORTGPUPMRI void Gadgetron::csm_mult_MH<double,3>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
+template EXPORTGPUPMRI void Gadgetron::csm_mult_MH<double,4>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);

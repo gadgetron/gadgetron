@@ -2,6 +2,7 @@
 #include "vector_td.h"
 #include <sstream>
 
+namespace Gadgetron{
 template <class T> 
 __global__ void cuNDArray_permute_kernel(T* in, T* out, 
 					 unsigned int ndim,
@@ -47,7 +48,7 @@ template <class T> void cuNDArray_permute(cuNDArray<T>* in,
     out_ptr = out->data_;
   } else {
     if (cudaMalloc((void**) &out_ptr, in->elements_*sizeof(T)) != cudaSuccess) {
-      throw cuda_error("cuNDArray_permute : Error allocating CUDA memory");
+      BOOST_THROW_EXCEPTION(cuda_error("cuNDArray_permute : Error allocating CUDA memory"));
 
 
     }
@@ -56,7 +57,7 @@ template <class T> void cuNDArray_permute(cuNDArray<T>* in,
   unsigned int* dims        = new unsigned int[in->get_number_of_dimensions()];
   unsigned int* strides_out = new unsigned int[in->get_number_of_dimensions()];
   if (!dims || !strides_out) {
-    throw cuda_error("cuNDArray_permute: failed to allocate temporary storage for arrays");
+    BOOST_THROW_EXCEPTION(cuda_error("cuNDArray_permute: failed to allocate temporary storage for arrays"));
 
   }
 
@@ -73,12 +74,12 @@ template <class T> void cuNDArray_permute(cuNDArray<T>* in,
   unsigned int* strides_out_dev = 0;
   
   if (cudaMalloc((void**) &dims_dev, in->dimensions_->size()*sizeof(unsigned int)) != cudaSuccess) {
-    throw cuda_error("cuNDArray_permute : Error allocating CUDA dims memory");
+    BOOST_THROW_EXCEPTION(cuda_error("cuNDArray_permute : Error allocating CUDA dims memory"));
 
   }
   
   if (cudaMalloc((void**) &strides_out_dev, in->dimensions_->size()*sizeof(unsigned int)) != cudaSuccess) {
-    throw cuda_error("cuNDArray_permute : Error allocating CUDA strides_out memory");
+    BOOST_THROW_EXCEPTION(cuda_error("cuNDArray_permute : Error allocating CUDA strides_out memory"));
 
   }
   
@@ -88,12 +89,12 @@ template <class T> void cuNDArray_permute(cuNDArray<T>* in,
     err = cudaGetLastError();
     std::stringstream ss;
     ss << "cuNDArray_permute : Error uploading dimensions to device, " << cudaGetErrorString(err);
-    throw cuda_error(ss.str());
+    BOOST_THROW_EXCEPTION(cuda_error(ss.str()));
   }
 
   if (cudaMemcpy(strides_out_dev, strides_out, in->dimensions_->size()*sizeof(unsigned int), cudaMemcpyHostToDevice) !=
       cudaSuccess) {
-    throw cuda_error("cuNDArray_permute : Error uploading strides to device");
+    BOOST_THROW_EXCEPTION(cuda_error("cuNDArray_permute : Error uploading strides to device"));
 
   }
 
@@ -114,7 +115,7 @@ template <class T> void cuNDArray_permute(cuNDArray<T>* in,
   if( err != cudaSuccess ){
 	  std::stringstream ss;
 	  ss <<"cuNDArray_permute : Error during kernel call: " << cudaGetErrorString(err);
-    throw cuda_error(ss.str());
+    BOOST_THROW_EXCEPTION(cuda_error(ss.str()));
 
   }
 
@@ -122,7 +123,7 @@ template <class T> void cuNDArray_permute(cuNDArray<T>* in,
     err = cudaGetLastError();
     std::stringstream ss;
     ss << "cuNDArray_permute: failed to delete device memory (dims_dev) " << cudaGetErrorString(err);
-    throw cuda_error(ss.str());
+    BOOST_THROW_EXCEPTION(cuda_error(ss.str()));
 
   }
 
@@ -130,7 +131,7 @@ template <class T> void cuNDArray_permute(cuNDArray<T>* in,
     err = cudaGetLastError();
     std::stringstream ss;
     ss << "cuNDArray_permute: failed to delete device memory (strides_out_dev) "<< cudaGetErrorString(err);
-    throw cuda_error(ss.str());
+    BOOST_THROW_EXCEPTION(cuda_error(ss.str()));
   }
   
   delete [] dims;
@@ -144,14 +145,14 @@ template <class T> void cuNDArray_permute(cuNDArray<T>* in,
     *in->dimensions_ = new_dims;
     if( in->delete_data_on_destruct() ){
       if (cudaFree(in->data_) != cudaSuccess) {
-	throw cuda_error("cuNDArray_permute: failed to delete device memory");
+	BOOST_THROW_EXCEPTION(cuda_error("cuNDArray_permute: failed to delete device memory"));
 
       }
       in->data_ = out_ptr;
     }
     else{
       if( cudaMemcpy( in->data_, out_ptr, in->elements_*sizeof(T),  cudaMemcpyDeviceToDevice) != cudaSuccess ) {
-   	throw cuda_error("cuNDArray_permute: failed to copy device memory");
+   	BOOST_THROW_EXCEPTION(cuda_error("cuNDArray_permute: failed to copy device memory"));
 
       }
     }
@@ -331,3 +332,4 @@ template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<double_complext>* in,
 				 cuNDArray<double_complext>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
+}

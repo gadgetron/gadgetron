@@ -5,6 +5,7 @@
 #include "vector_td.h"
 #include "complext.h"
 
+namespace Gadgetron{
 template<class REAL, unsigned int D, bool ATOMICS = false> class EXPORTGPUPMRI cuSenseRHSBuffer
 {
  public:
@@ -55,3 +56,4 @@ template<class REAL, unsigned int D, bool ATOMICS = false> class EXPORTGPUPMRI c
 
 //To prevent the use of Atomics with doubles.
 template<unsigned int D> class EXPORTGPUPMRI cuSenseRHSBuffer<double,D,true>{};
+}

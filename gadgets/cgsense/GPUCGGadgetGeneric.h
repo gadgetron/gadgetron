@@ -17,7 +17,7 @@
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
 #include "ismrmrd.h"
-
+namespace Gadgetron{
 class CGSenseJob
 {
 public:
@@ -81,5 +81,5 @@ protected:
 	int image_series_;
 	int image_counter_;
 };
-
+}
 #endif //GPUCGGadgetGeneric

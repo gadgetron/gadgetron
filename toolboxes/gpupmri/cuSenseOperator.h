@@ -6,7 +6,7 @@
 #include "cuNDArray.h"
 #include "vector_td.h"
 
-
+namespace Gadgetron{
 template<class REAL, unsigned int D> class EXPORTGPUPMRI cuSenseOperator 
 	: public senseOperator<REAL, D, cuNDArray< complext<REAL> > >
 {
@@ -26,3 +26,4 @@ public:
   
   DECLARE_LINEAR_OPERATOR_DEVICE_SUPPORT(cuSenseOperator)
 };
+}

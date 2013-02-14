@@ -4,6 +4,7 @@
 #include "vector_td_utilities.h"
 
 #define BLOCK_SIZE 512
+namespace Gadgetron{
 template<class REAL, class T, unsigned int D> __global__ void
 mult_M_kernel( typename intd<D>::Type dims, T *in, T *out,REAL *sigma, REAL *norm )
 {  
@@ -196,3 +197,4 @@ template class EXPORTSOLVERS cuVariableGaussOperator<double, double_complext::Ty
 template class EXPORTSOLVERS cuVariableGaussOperator<double, double_complext::Type, 2>;
 template class EXPORTSOLVERS cuVariableGaussOperator<double, double_complext::Type, 3>;
 */
+}

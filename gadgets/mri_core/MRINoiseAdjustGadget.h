@@ -6,7 +6,7 @@
 #include "ismrmrd.h"
 
 #include <complex>
-
+namespace Gadgetron{
 class EXPORTGADGETSMRICORE MRINoiseAdjustGadget :
 public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
 {
@@ -33,3 +33,4 @@ public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
   
 };
 
+}

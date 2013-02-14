@@ -3,6 +3,7 @@
 #include "real_utilities.h"
 #include "cgSolver.h"
 
+namespace Gadgetron{
 template <class ARRAY_TYPE> class cgSolver;
 
 template <class ARRAY_TYPE> class cgTerminationCallback
@@ -181,3 +182,4 @@ protected:
 
       REAL tc_last_;
     };
+}

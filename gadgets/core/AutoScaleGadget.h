@@ -11,7 +11,7 @@
 #include <Gadget.h>
 #include "ismrmrd.h"
 #include "hoNDArray.h"
-
+namespace Gadgetron{
 class AutoScaleGadget:
 public Gadget2<ISMRMRD::ImageHeader,hoNDArray< float > >
 {
@@ -29,5 +29,5 @@ protected:
 	float max_value_;
 
 };
-
+}
 #endif /* AUTOSCALEGADGET_H_ */

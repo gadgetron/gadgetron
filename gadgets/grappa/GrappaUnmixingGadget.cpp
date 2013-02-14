@@ -8,7 +8,7 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "GrappaUnmixingGadget.h"
 #include "FFT.h"
-
+namespace Gadgetron{
 GrappaUnmixingGadget::GrappaUnmixingGadget() {
 	// TODO Auto-generated constructor stub
 
@@ -34,7 +34,7 @@ int GrappaUnmixingGadget::process(GadgetContainerMessage<GrappaUnmixingJob>* m1,
 	}
 
 	try{cm2->getObjectPtr()->create(&combined_dims);}
-	catch (gt_runtime_error &err ){
+	catch (runtime_error &err ){
 		GADGET_DEBUG_EXCEPTION(err,"Unable to create combined image array\n");
 		return GADGET_FAIL;
 	}
@@ -70,3 +70,4 @@ int GrappaUnmixingGadget::process(GadgetContainerMessage<GrappaUnmixingJob>* m1,
 }
 
 GADGET_FACTORY_DECLARE(GrappaUnmixingGadget)
+}

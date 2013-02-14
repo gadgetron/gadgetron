@@ -9,7 +9,7 @@
 #include "hoNDArray_fileio.h"
 
 #include "tinyxml.h"
-
+namespace Gadgetron{
 GPUCGGadgetGeneric::GPUCGGadgetGeneric()
 : channels_(0)
 , device_number_(0)
@@ -96,8 +96,8 @@ int GPUCGGadgetGeneric::process_config( ACE_Message_Block* mb )
 		GADGET_DEBUG2("Matrix size  : [%d,%d] \n", matrix_size_.vec[0], matrix_size_.vec[1]);
 
 		matrix_size_os_ =
-				uintd2(static_cast<unsigned int>(ceil((matrix_size_.vec[0]*oversampling_)/warp_size)*warp_size),
-						static_cast<unsigned int>(ceil((matrix_size_.vec[1]*oversampling_)/warp_size)*warp_size));
+				uintd2(static_cast<unsigned int>(std::ceil((matrix_size_.vec[0]*oversampling_)/warp_size)*warp_size),
+						static_cast<unsigned int>(std::ceil((matrix_size_.vec[1]*oversampling_)/warp_size)*warp_size));
 
 		GADGET_DEBUG2("Matrix size OS: [%d,%d] \n", matrix_size_os_.vec[0], matrix_size_os_.vec[1]);
 
@@ -157,7 +157,7 @@ int GPUCGGadgetGeneric::configure_channels()
 	E_->set_csm(csm);
 
 	try{ E_->setup( matrix_size_, matrix_size_os_, static_cast<float>(kernel_width_) );}
-	catch (gt_runtime_error& err){
+	catch (runtime_error& err){
 		GADGET_DEBUG_EXCEPTION(err, "\nError: unable to setup encoding operator.\n" );
 		return GADGET_FAIL;
 	}
@@ -209,7 +209,7 @@ int GPUCGGadgetGeneric::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1
 	E_->set_dcw(dcw);
 	E_->set_csm(csm);
 	try{ E_->preprocess(traj.get());}
-	catch (gt_runtime_error& err){
+	catch (runtime_error& err){
 		GADGET_DEBUG_EXCEPTION(err,"\nError during cgOperatorNonCartesianSense::preprocess()\n");
 		return GADGET_FAIL;
 	}
@@ -251,7 +251,7 @@ int GPUCGGadgetGeneric::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1
 	img_dims[1] = matrix_size_.vec[1];
 
 	try{cm2->getObjectPtr()->create(&img_dims);}
-	catch (gt_runtime_error &err){
+	catch (runtime_error &err){
 		GADGET_DEBUG_EXCEPTION(err,"\nUnable to allocate host image array");
 		m1->release();
 		return GADGET_FAIL;
@@ -287,3 +287,4 @@ int GPUCGGadgetGeneric::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1
 }
 
 GADGET_FACTORY_DECLARE(GPUCGGadgetGeneric)
+}

@@ -8,7 +8,7 @@
 #include "GadgetMRIHeaders.h"
 
 #include <complex>
-
+namespace Gadgetron{
 class EXPORTGADGETSCORE AcquisitionFinishGadget : 
 public Gadget2<ISMRMRD::AcquisitionHeader,NDArray< std::complex<float> > >
 {
@@ -20,6 +20,6 @@ public Gadget2<ISMRMRD::AcquisitionHeader,NDArray< std::complex<float> > >
 		      GadgetContainerMessage< NDArray< std::complex<float> > >* m2);
 
 };
-
+}
 
 #endif //ACQUISITIONFINISHGADGET_H

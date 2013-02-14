@@ -20,7 +20,7 @@
 #include "gadgetroncore_export.h"
 #include "url_encode.h"
 #include "Gadgetron.h"
-
+namespace Gadgetron{
 class GadgetIsmrmrdAcquisitionMessageWriter : public GadgetMessageWriter
 {
 
@@ -120,7 +120,7 @@ public:
 			tdims.push_back(m1->getObjectPtr()->number_of_samples);
 
 			try { m3->getObjectPtr()->create(&tdims);}
-			catch (gt_runtime_error &err){
+			catch (runtime_error &err){
 				GADGET_DEBUG_EXCEPTION(err,"(%P|%t) Allocate trajectory data\n");
 				m1->release();
 
@@ -147,7 +147,7 @@ public:
 		adims.push_back(m1->getObjectPtr()->active_channels);
 
 		try{ m2->getObjectPtr()->create(&adims); }
-		catch (gt_runtime_error &err ){
+		catch (runtime_error &err ){
 			GADGET_DEBUG_EXCEPTION(err,"(%P|%t) Allocate sample data\n")
 			m1->release();
 
@@ -202,4 +202,5 @@ inline boost::shared_ptr<ISMRMRD::ismrmrdHeader> parseIsmrmrdXMLHeader(std::stri
 	return cfg;
 }
 #endif
+}
 #endif //GADGETISMRMRDREADWRITE_H

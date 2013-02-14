@@ -12,6 +12,9 @@
 #include <vector>
 #include <iostream>
 
+namespace Gadgetron{
+
+
 template<
 	  class ARRAY_TYPE_REAL, 
 	  class ARRAY_TYPE_ELEMENT, 
@@ -846,3 +849,4 @@ protected:
   std::vector<unsigned int> weights_backup_;
 
 };
+}

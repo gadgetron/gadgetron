@@ -11,6 +11,7 @@
 #include <iostream>
 #include <algorithm>
 
+namespace Gadgetron{
 
 //
 // Get/set operations on vector_td<T,D>
@@ -430,4 +431,5 @@ vector_td<REAL,D> to_reald( const vector_td<T,D> vec )
     res.vec[i] = (REAL) vec.vec[i];
   }
   return res;
+}
 }

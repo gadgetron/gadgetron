@@ -7,7 +7,7 @@
 
 #include "GadgetIsmrmrdReadWrite.h"
 #include "AutoScaleGadget.h"
-
+namespace Gadgetron{
 AutoScaleGadget::AutoScaleGadget()
 	: histogram_bins_(100)
 	, current_scale_(1.0)
@@ -71,4 +71,4 @@ int AutoScaleGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, G
 
 GADGET_FACTORY_DECLARE(AutoScaleGadget)
 
-
+}

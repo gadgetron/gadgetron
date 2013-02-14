@@ -10,7 +10,7 @@
 #include "GPUTimer.h"
 #include "complext.h"
 #include <cuComplex.h>
-
+namespace Gadgetron{
 template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsDescription
 {
 
@@ -88,7 +88,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 		}
 
 		try{unmixing_dev.create(data_dimensions.get());}
-		catch (gt_runtime_error &err){
+		catch (runtime_error &err){
 			GADGET_DEBUG_EXCEPTION(err,"Unable to allocate device memory for unmixing coeffcients\n");
 			return GADGET_FAIL;
 		}
@@ -121,7 +121,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 
 			try {
 				unmixing_host->reshape(tmp_dims.get());
-			} catch (gt_runtime_error &err){
+			} catch (runtime_error &err){
 				GADGET_DEBUG_EXCEPTION( err, "Reshaping of GRAPPA weights failed \n" );
 
 			}
@@ -205,7 +205,7 @@ add_job( hoNDArray< std::complex<T> >* ref_data,
 	mb1->cont(mb2);
 
 	try{mb2->getObjectPtr()->create(ref_data->get_dimensions().get());}
-	catch (gt_runtime_error &err ){
+	catch (runtime_error &err ){
 		mb1->release();
 		return -3;
 	}
@@ -238,3 +238,4 @@ template class EXPORTGADGETSGRAPPA GrappaWeightsCalculator<float>;
 //template class EXPORTGADGETSGRAPPA GrappaWeightsCalculator<double>; //TOFO
 //template class EXPORTGADGETSGRAPPA GrappaWeightsDescription<double>;
 
+}

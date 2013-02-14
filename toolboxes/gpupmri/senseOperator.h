@@ -7,6 +7,7 @@
 #include <iostream>
 #include "GadgetronException.h"
 
+namespace Gadgetron{
 template<class REAL, unsigned int D, class ARRAY_TYPE> class EXPORTGPUPMRI senseOperator 
 	: public linearOperator<ARRAY_TYPE>
 {
@@ -29,7 +30,7 @@ public:
       this->set_domain_dimensions(&tmp_dims);
     }
     else{
-      BOOST_THROW_EXCEPTION(gt_runtime_error("Error: senseOperator::set_csm : unexpected csm dimensionality"));
+      BOOST_THROW_EXCEPTION(runtime_error("Error: senseOperator::set_csm : unexpected csm dimensionality"));
     }    
   }
 
@@ -44,3 +45,4 @@ protected:
   unsigned int ncoils_;
   boost::shared_ptr< ARRAY_TYPE > csm_;
 };
+}

@@ -2,7 +2,7 @@
 #include "GadgetMessageInterface.h"
 #include "AcquisitionFinishGadget.h"
 #include "GadgetStreamController.h"
-
+namespace Gadgetron{
 int AcquisitionFinishGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 				 GadgetContainerMessage< NDArray< std::complex<float> > >* m2)
 {
@@ -21,5 +21,6 @@ int AcquisitionFinishGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
   return controller_->output_ready(mb);
 
 }
-
 GADGET_FACTORY_DECLARE(AcquisitionFinishGadget)
+}
+

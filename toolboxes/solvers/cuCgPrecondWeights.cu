@@ -1,7 +1,7 @@
 #include "cuCgPrecondWeights.h"
 #include "vector_td_utilities.h"
 #include <sstream>
-
+namespace Gadgetron{
 template<class T> __global__ void 
 weight_multiplication( T* in, T* out, T* weight, unsigned long elements )
 {
@@ -98,3 +98,4 @@ template class EXPORTSOLVERS cuCgPrecondWeights<float_complext>;
 
 template class EXPORTSOLVERS cuCgPrecondWeights<double>;
 template class EXPORTSOLVERS cuCgPrecondWeights<double_complext>;
+}//End of namespace

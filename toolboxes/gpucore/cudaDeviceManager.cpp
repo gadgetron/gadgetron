@@ -10,6 +10,7 @@
 #include "cuda_device_runtime_api.h"
 #include "check_CUDA.h"
 
+namespace Gadgetron{
 cudaDeviceManager * cudaDeviceManager::_instance = 0;
 cudaDeviceManager::cudaDeviceManager() {
 	 // This function is executed only once
@@ -22,13 +23,15 @@ cudaDeviceManager::cudaDeviceManager() {
 
 	  int old_device;
 	  if( cudaGetDevice(&old_device) != cudaSuccess ) {
-	    BOOST_THROW_EXCEPTION(gt_runtime_error( "Error: unable to get device no"));
+	    BOOST_THROW_EXCEPTION(runtime_error( "Error: unable to get device no"));
 
 	  }
 
 	  _warp_size = std::vector<int>(num_devices,0);
 	  _max_blockdim = std::vector<int>(num_devices,0);
 	  _max_griddim = std::vector<int>(num_devices,0);
+	  _major = std::vector<int>(num_devices,0);
+	  _minor = std::vector<int>(num_devices,0);
 	  handle = std::vector<cublasHandle_t>(num_devices,cublasHandle_t());
 
 	  for( int device=0; device<num_devices; device++ ){
@@ -48,6 +51,9 @@ cudaDeviceManager::cudaDeviceManager() {
 	    _warp_size[device] = deviceProp.warpSize;
 	    _max_blockdim[device] = deviceProp.maxThreadsDim[0];
 	    _max_griddim[device] = deviceProp.maxGridSize[0];
+	    _major[device] = deviceProp.major;
+	    _minor[device] = deviceProp.minor;
+
 
 
 
@@ -96,7 +102,16 @@ int cudaDeviceManager::warp_size(){
 	CUDA_CALL(cudaGetDevice(&device));
 	return _warp_size[device];
 }
-
+int cudaDeviceManager::major_version(){
+	int device;
+	CUDA_CALL(cudaGetDevice(&device));
+	return _major[device];
+}
+int cudaDeviceManager::minor_version(){
+	int device;
+	CUDA_CALL(cudaGetDevice(&device));
+	return _minor[device];
+}
 
 size_t cudaDeviceManager::getFreeMemory(){
 	size_t free,total;
@@ -140,4 +155,5 @@ cublasHandle_t cudaDeviceManager::getHandle(){
 
 void cudaDeviceManager::CleanUp(){
 	delete _instance; _instance = 0;
+}
 }

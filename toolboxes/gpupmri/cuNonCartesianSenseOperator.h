@@ -3,6 +3,7 @@
 #include "cuSenseOperator.h"
 #include "NFFT.h"
 
+namespace Gadgetron{
 template<class REAL, unsigned int D, bool ATOMICS = false> class EXPORTGPUPMRI cuNonCartesianSenseOperator 
   : public cuSenseOperator<REAL,D>
 {
@@ -44,3 +45,4 @@ protected:
 
  //Atomics can't be used with doubles
 template<unsigned int D> class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,D,true>{};
+}

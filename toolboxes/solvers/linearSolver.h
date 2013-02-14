@@ -6,6 +6,7 @@
 #include <vector>
 #include <iostream>
 
+namespace Gadgetron{
 template <class ARRAY_TYPE> class linearSolver
   : public solver<ARRAY_TYPE, ARRAY_TYPE>
 {
@@ -76,3 +77,4 @@ protected:
   typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
   typedef typename realType<ELEMENT_TYPE>::type REAL;
 };
+}

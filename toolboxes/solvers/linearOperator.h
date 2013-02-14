@@ -6,6 +6,8 @@
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
 #include "complext.h"
+
+namespace Gadgetron{
 template < class ARRAY_TYPE> class linearOperator
 {
 private:
@@ -98,3 +100,4 @@ protected:
   std::vector<unsigned int> domain_dims_;
   std::vector<unsigned int> codomain_dims_; 
 };
+}

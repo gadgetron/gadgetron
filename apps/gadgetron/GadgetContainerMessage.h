@@ -4,6 +4,7 @@
 
 #include <ace/Message_Block.h>
 
+namespace Gadgetron{
 /**
    The purpose of this case is to provide a type indepent interface to all ContainerMessages
 
@@ -112,5 +113,5 @@ template <class T> GadgetContainerMessage<T>* AsContainerMessage(ACE_Message_Blo
 
   return reinterpret_cast<GadgetContainerMessage<T>* >(mbb);
 }
-
+}
 #endif  //GADGETCONTAINERMESSAGE_H

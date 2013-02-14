@@ -8,11 +8,11 @@
 #include <boost/exception/info.hpp>
 #include <boost/exception/diagnostic_information.hpp>
 
-
-class gt_runtime_error: virtual public boost::exception, virtual public std::exception {
+namespace Gadgetron{
+class runtime_error: virtual public boost::exception, virtual public std::exception {
 public:
-	gt_runtime_error() : boost::exception(), std::exception(), msg(0){}
-	gt_runtime_error(std::string _msg) : boost::exception(), std::exception(), msg(_msg.c_str()){
+	runtime_error() : boost::exception(), std::exception(), msg(0){}
+	runtime_error(std::string _msg) : boost::exception(), std::exception(), msg(_msg.c_str()){
 	}
  virtual const  char * what() const throw(){
 	 if (msg) return msg;
@@ -22,8 +22,9 @@ protected:
  const char * msg;
 }; //(2)
 
-class gt_bad_alloc : public gt_runtime_error {
+class bad_alloc : public runtime_error {
 	public:
-		gt_bad_alloc(std::string msg) : gt_runtime_error(msg){}
-		gt_bad_alloc() : gt_runtime_error(){}
+		bad_alloc(std::string msg) : runtime_error(msg){}
+		bad_alloc() : runtime_error(){}
 };
+}

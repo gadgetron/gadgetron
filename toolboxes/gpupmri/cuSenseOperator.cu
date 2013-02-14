@@ -2,6 +2,7 @@
 #include "sense_utilities.h"
 #include "vector_td_utilities.h"
 
+using namespace Gadgetron;
 template<class REAL, unsigned int D> void
 cuSenseOperator<REAL,D>::mult_csm( cuNDArray<complext<REAL> >* in, cuNDArray<complext<REAL> >* out )
 {  

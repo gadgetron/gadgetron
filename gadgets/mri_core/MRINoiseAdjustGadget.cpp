@@ -7,7 +7,7 @@
 #include "GadgetronTimer.h"
 
 #include "GadgetIsmrmrdReadWrite.h"
-
+namespace Gadgetron{
 MRINoiseAdjustGadget::MRINoiseAdjustGadget()
 : noise_decorrelation_calculated_(false)
 , number_of_noise_samples_(0)
@@ -205,3 +205,4 @@ int MRINoiseAdjustGadget
 
 
 GADGET_FACTORY_DECLARE(MRINoiseAdjustGadget)
+}

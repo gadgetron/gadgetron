@@ -2,7 +2,7 @@
 #include "RemoveROOversamplingGadget.h"
 #include "Gadgetron.h"
 #include "FFT.h"
-
+namespace Gadgetron{
 int RemoveROOversamplingGadget
 ::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
@@ -18,7 +18,7 @@ int RemoveROOversamplingGadget
   data_out_dims[0] = data_out_dims[0]/2;
 
   try{ m3->getObjectPtr()->create(&data_out_dims);}
-  catch (gt_runtime_error &err){
+  catch (runtime_error &err){
     GADGET_DEBUG_EXCEPTION(err,"Unable to create new data array for downsampled data\n");
     return GADGET_FAIL;
   }
@@ -53,3 +53,4 @@ int RemoveROOversamplingGadget
 
 
 GADGET_FACTORY_DECLARE(RemoveROOversamplingGadget)
+}

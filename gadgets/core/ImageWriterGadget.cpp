@@ -2,7 +2,7 @@
 #include "ImageWriterGadget.h"
 
 #include <fstream>
-
+namespace Gadgetron{
 template<typename T>
 int ImageWriterGadget<T> ::
 process( GadgetContainerMessage< ISMRMRD::ImageHeader>* m1,
@@ -49,3 +49,4 @@ process( GadgetContainerMessage< ISMRMRD::ImageHeader>* m1,
 GADGET_FACTORY_DECLARE(ImageWriterGadgetUSHORT)
 GADGET_FACTORY_DECLARE(ImageWriterGadgetFLOAT)
 GADGET_FACTORY_DECLARE(ImageWriterGadgetCPLX)
+}

@@ -8,6 +8,7 @@
 #include "ndarray_vector_td_utilities.h"
 #include "complext.h"
 
+namespace Gadgetron{
 template <class T> class cuSbcCgSolver
   : public sbcSolver<
 		      cuNDArray<typename realType<T>::type >,
@@ -21,3 +22,4 @@ public:
   virtual ~cuSbcCgSolver() {}
 
 };
+}

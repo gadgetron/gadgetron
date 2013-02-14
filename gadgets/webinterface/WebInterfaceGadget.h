@@ -6,7 +6,8 @@
 #include "GadgetStreamController.h"
 
 #include <complex>
-
+#include "mongoose.h"
+namespace Gadgetron{
 class EXPORTGADGETSWEBINTERFACE WebInterfaceGadget : public Gadget
 {
  public:
@@ -21,6 +22,6 @@ class EXPORTGADGETSWEBINTERFACE WebInterfaceGadget : public Gadget
 
   struct mg_context *mongoose_ctx_;
 };
-
+}
 
 #endif //WEBINTERFACEGADGET_H

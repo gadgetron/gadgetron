@@ -3,7 +3,7 @@
 #pragma once
 
 #include "GPUCGGadget.h"
-
+namespace Gadgetron{
 class EXPORTGADGETSCGSENSE GPUCGGoldenRadialGadget : public GPUCGGadget
 {
 
@@ -14,6 +14,6 @@ class EXPORTGADGETSCGSENSE GPUCGGoldenRadialGadget : public GPUCGGadget
   virtual boost::shared_ptr< cuNDArray<floatd2> > calculate_trajectory();
   virtual boost::shared_ptr< cuNDArray<float> > calculate_density_compensation();
 };
-
+}
 
 #endif //GPUCGGOLDENRADIALGADGET_H

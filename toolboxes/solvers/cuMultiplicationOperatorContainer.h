@@ -3,6 +3,7 @@
 #include "multiplicationOperatorContainer.h"
 #include "cuNDArray.h"
 
+namespace Gadgetron{
 template <class REAL, class T> class cuMultiplicationOperatorContainer 
   : public multiplicationOperatorContainer< REAL, cuNDArray<T> >
 {
@@ -14,3 +15,4 @@ public:
     return linearOperator< REAL, cuNDArray<T> >::clone(this);
   }  
 };
+}

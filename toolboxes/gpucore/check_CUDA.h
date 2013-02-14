@@ -26,12 +26,12 @@ inline void THROW_ERROR(const char* file, const int line,
 inline void CHECK_FOR_CUDA_ERROR(char const * cur_fun, const char* file, const int line) {
     cudaError_t errorCode = cudaGetLastError();
     if (errorCode != cudaSuccess) {
-    	boost::exception_detail::throw_exception_(cuda_error(errorCode),cur_fun,file,line);
+    	boost::exception_detail::throw_exception_(Gadgetron::cuda_error(errorCode),cur_fun,file,line);
     }
 #ifdef DEBUG
     errorCode = cudaThreadSynchronize();
     if (errorCode != cudaSuccess) {
-    	boost::exception_detail::throw_exception_(cuda_error(errorCode),cur_fun,file,line);
+    	boost::exception_detail::throw_exception_(Gadgetron::cuda_error(errorCode),cur_fun,file,line);
     }
 #endif
 }

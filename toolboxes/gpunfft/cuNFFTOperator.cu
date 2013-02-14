@@ -1,21 +1,22 @@
 #include "cuNFFTOperator.h"
 #include "ndarray_vector_td_utilities.h"
 
+namespace Gadgetron{
 template<class REAL, unsigned int D> void
 cuNFFTOperator<REAL,D>::mult_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate )
 {
   if( !in || !out ){
-    throw std::runtime_error("Error: cuNFFTOperator::mult_M : 0x0 input/output not accepted");
+    BOOST_THROW_EXCEPTION(runtime_error("Error: cuNFFTOperator::mult_M : 0x0 input/output not accepted"));
 
   }
 
   if( !ready_ ) {
-    throw std::runtime_error("Error: cuNFFTOperator::mult_M : plan has not been set up");
+    BOOST_THROW_EXCEPTION(runtime_error("Error: cuNFFTOperator::mult_M : plan has not been set up"));
 
   }
 
   if( dimensionsK_.size() == 0 ){
-    throw std::runtime_error("Error: cuNFFTOperator::mult_M : preprocessing has not be performed");
+    BOOST_THROW_EXCEPTION(runtime_error("Error: cuNFFTOperator::mult_M : preprocessing has not be performed"));
 
   }
 
@@ -42,17 +43,17 @@ template<class REAL, unsigned int D> void
 cuNFFTOperator<REAL,D>::mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate )
 {
   if( !in || !out ){
-    throw std::runtime_error("Error: cuNFFTOperator::mult_MH : 0x0 input/output not accepted");
+    BOOST_THROW_EXCEPTION(runtime_error("Error: cuNFFTOperator::mult_MH : 0x0 input/output not accepted"));
 
   }
 
   if( !ready_ ) {
-    throw std::runtime_error("Error: cuNFFTOperator::mult_MH : plan has not been set up");
+    BOOST_THROW_EXCEPTION(runtime_error("Error: cuNFFTOperator::mult_MH : plan has not been set up"));
 
   }
 
   if( dimensionsK_.size() == 0 ){
-    throw std::runtime_error("Error: cuNFFTOperator::mult_MH : preprocessing has not be performed");
+    BOOST_THROW_EXCEPTION(runtime_error("Error: cuNFFTOperator::mult_MH : preprocessing has not be performed"));
 
   }
 
@@ -78,17 +79,17 @@ template<class REAL, unsigned int D> void
 cuNFFTOperator<REAL,D>::mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate )
 {
   if( !in || !out ){
-    throw std::runtime_error("Error: cuNFFTOperator::mult_MH_M : 0x0 input/output not accepted");
+    BOOST_THROW_EXCEPTION(runtime_error("Error: cuNFFTOperator::mult_MH_M : 0x0 input/output not accepted"));
 
   }
   
   if( !ready_ ) {
-    throw std::runtime_error("Error: cuNFFTOperator::mult_MH_M : plan has not been set up");
+    BOOST_THROW_EXCEPTION(runtime_error("Error: cuNFFTOperator::mult_MH_M : plan has not been set up"));
 
   }
   
   if( dimensionsK_.size() == 0 ){
-    throw std::runtime_error("Error: cuNFFTOperator::mult_MH_M : preprocessing has not be performed");
+    BOOST_THROW_EXCEPTION(runtime_error("Error: cuNFFTOperator::mult_MH_M : preprocessing has not be performed"));
 
   }
 
@@ -124,7 +125,7 @@ template<class REAL, unsigned int D> void
 cuNFFTOperator<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory ) 
 {
   if( !ready_ ) {
-    throw std::runtime_error("Error: cuNFFTOperator::preprocess : plan has not been set up");
+    BOOST_THROW_EXCEPTION(runtime_error("Error: cuNFFTOperator::preprocess : plan has not been set up"));
 
   }
 
@@ -136,7 +137,7 @@ cuNFFTOperator<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *tra
     plan_->preprocess( trajectory, NFFT_plan<REAL,D>::NFFT_PREP_ALL );
   }
   else {
-    throw std::runtime_error("Error: cuNFFTOperator : cannot set trajectory to 0x0.");
+    BOOST_THROW_EXCEPTION(runtime_error("Error: cuNFFTOperator : cannot set trajectory to 0x0."));
 
   }
   
@@ -157,3 +158,4 @@ template class EXPORTGPUNFFT cuNFFTOperator<double,1>;
 template class EXPORTGPUNFFT cuNFFTOperator<double,2>;
 template class EXPORTGPUNFFT cuNFFTOperator<double,3>;
 template class EXPORTGPUNFFT cuNFFTOperator<double,4>;
+}

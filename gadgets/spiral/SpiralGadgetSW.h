@@ -14,7 +14,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
-
+namespace Gadgetron{
 
 class EXPORTGADGETSSPIRAL SpiralGadgetSW :
 public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
@@ -62,5 +62,5 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > buffer_;
 
 };
-
+}
 #endif //SpiralGadgetSW_H

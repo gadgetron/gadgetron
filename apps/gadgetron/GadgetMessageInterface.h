@@ -11,6 +11,7 @@
 #include "GadgetronExport.h"
 #include "Gadget.h"
 
+namespace Gadgetron{
 enum GadgetronMessageID {
   GADGET_MESSAGE_INT_ID_MIN       =   0,
   GADGET_MESSAGE_CONFIG_FILE      =   1,
@@ -223,7 +224,7 @@ class GadgetMessageScriptReader : public GadgetMessageReader
 #define GADGETRON_WRITER_FACTORY_DECLARE(WRITER)	\
   GADGETRON_LOADABLE_FACTORY_DECLARE(GadgetMessageWriter, WRITER)
 
-
+}
 
 
 

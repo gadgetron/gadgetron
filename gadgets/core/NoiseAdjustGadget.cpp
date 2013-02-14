@@ -3,7 +3,7 @@
 #include "GadgetIsmrmrdReadWrite.h"
 
 #include "hoNDArray_fileio.h"
-
+namespace Gadgetron{
 void choldc(std::complex<double> *a, int n)
 {
 	int i,j,k;
@@ -128,7 +128,7 @@ int NoiseAdjustGadget
 		if (noise_covariance_matrix_.get_number_of_elements() != channels*channels) {
 			std::vector<unsigned int> dims(2, channels);
 			try{ noise_covariance_matrix_.create(&dims);}
-			catch (gt_runtime_error &err){
+			catch (runtime_error &err){
 				GADGET_DEBUG_EXCEPTION(err,"Unable to allocate storage for noise covariance matrix\n");
 				return GADGET_FAIL;
 			}
@@ -216,3 +216,4 @@ int NoiseAdjustGadget
 
 
 GADGET_FACTORY_DECLARE(NoiseAdjustGadget)
+}

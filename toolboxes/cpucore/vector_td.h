@@ -2,6 +2,7 @@
 
 #include "cpucore_defines.h"
 
+namespace Gadgetron{
 template< class T, unsigned int D > class vector_td
 {
 public:
@@ -167,3 +168,4 @@ typedef vector_td<unsigned int,1> uintd1;
 typedef vector_td<unsigned int,2> uintd2;
 typedef vector_td<unsigned int,3> uintd3;
 typedef vector_td<unsigned int,4> uintd4;
+}

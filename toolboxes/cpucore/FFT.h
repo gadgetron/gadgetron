@@ -10,6 +10,7 @@
 #include "cpucore_export.h"
 #include <complex>
 
+namespace Gadgetron{
 /** 
     Generic class for Fourier Transforms
     This class is a singleton because the planning
@@ -271,5 +272,5 @@ template<> inline void FFT<double>::set_function_pointers()
 	fftw_plan_dft_1d_ptr_ = (void* (*)(int, void*, void*, int, unsigned))(&fftw_plan_dft_1d);
 	fftw_destroy_plan_ptr_ = (void (*)(void*))(&fftw_destroy_plan);
 		}
-
+}
 #endif //FFT_H

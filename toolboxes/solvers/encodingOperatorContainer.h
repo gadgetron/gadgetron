@@ -6,6 +6,8 @@
 #include <boost/smart_ptr.hpp>
 #include <sstream>
 #include <stdexcept>
+
+namespace Gadgetron{
 template <class ARRAY_TYPE> class encodingOperatorContainer
   : public linearOperator<ARRAY_TYPE>
 {
@@ -179,3 +181,4 @@ protected:
   std::vector<unsigned int> offsets_;
   unsigned int num_elements_;
 };
+}

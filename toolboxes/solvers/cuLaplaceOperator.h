@@ -4,7 +4,7 @@
 #include "cuLinearOperator_macros.h"
 #include "cuNDArray.h"
 #include "solvers_export.h"
-
+namespace Gadgetron{
 template < class T, unsigned int D>
 class EXPORTSOLVERS cuLaplaceOperator : public laplaceOperator<D, cuNDArray<T> >
 {
@@ -23,3 +23,4 @@ public:
 
   DECLARE_LINEAR_OPERATOR_DEVICE_SUPPORT(cuLaplaceOperator)
 };
+}

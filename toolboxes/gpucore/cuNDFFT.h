@@ -5,6 +5,7 @@
 #include "cuNDArray.h"
 #include "gpucore_export.h"
 
+namespace Gadgetron{
 /*
   Wrapper of the CUFFT library for ndarrays of complex type.
   ----------------------------------------------------------
@@ -32,5 +33,5 @@ template<class T> class EXPORTGPUCORE cuNDFFT
  protected:
   void fft_int( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_transform, int direction, bool do_scale = true );
 };
-
+}
 #endif

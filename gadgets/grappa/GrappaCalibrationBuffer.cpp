@@ -2,7 +2,7 @@
 
 #include "GadgetIsmrmrdReadWrite.h"
 #include "Gadgetron.h"
-
+namespace Gadgetron{
 GrappaCalibrationBuffer::GrappaCalibrationBuffer(std::vector<unsigned int> dimensions,
 						 boost::shared_ptr<GrappaWeights<float> > w,
 						 GrappaWeightsCalculator<float>* weights_calculator)
@@ -16,7 +16,7 @@ GrappaCalibrationBuffer::GrappaCalibrationBuffer(std::vector<unsigned int> dimen
 {
   dimensions_ = dimensions;
   try {buffer_.create(&dimensions_);}
-  catch (gt_runtime_error & err){
+  catch (runtime_error & err){
     GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for GRAPPA buffer");
   }
   
@@ -135,4 +135,5 @@ int GrappaCalibrationBuffer::add_data(ISMRMRD::AcquisitionHeader* m1, hoNDArray<
 
 
   return GADGET_OK;
+}
 }

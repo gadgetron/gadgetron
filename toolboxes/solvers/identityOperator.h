@@ -3,6 +3,7 @@
 #include "linearOperator.h"
 #include <iostream>
 
+namespace Gadgetron{
 template < class ARRAY_TYPE> class identityOperator
 	: public linearOperator<ARRAY_TYPE>
 {
@@ -17,7 +18,7 @@ template < class ARRAY_TYPE> class identityOperator
   {
     // We will do only the most basic dimensionality checking
     if( in->get_number_of_elements() != out->get_number_of_elements() ){
-      throw std::runtime_error("Error :: identityOperator :: in/out dimensions mismatch");
+      BOOST_THROW_EXCEPTION(runtime_error("Error :: identityOperator :: in/out dimensions mismatch"));
     }
 
 
@@ -46,3 +47,4 @@ template < class ARRAY_TYPE> class identityOperator
      return linearOperator<  ARRAY_TYPE >::clone(this);
    }
 };
+}

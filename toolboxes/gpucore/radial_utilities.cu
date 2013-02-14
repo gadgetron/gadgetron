@@ -11,6 +11,7 @@
 
 using namespace std;
 
+namespace Gadgetron{
 template<class REAL> __inline__ __device__ REAL get_angle_step_GR();
 template<> __inline__ __device__ float get_angle_step_GR(){ return CUDART_PI_F/((sqrtf(5.0f)+1.0f)*0.5f); }
 template<> __inline__ __device__ double get_angle_step_GR(){ return CUDART_PI/((sqrt(5.0)+1.0)*0.5); }
@@ -398,3 +399,4 @@ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >compute_radial_dcw_
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >compute_radial_dcw_golden_ratio_2d<float>( unsigned int, unsigned int, float, float, unsigned int );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >compute_radial_dcw_golden_ratio_2d<double>( unsigned int, unsigned int, double, double, unsigned int );
+}

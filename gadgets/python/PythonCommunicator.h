@@ -17,6 +17,7 @@
 
 #include "gadgetronpython_export.h"
 
+namespace Gadgetron{
 class EXPORTGADGETSPYTHON PythonCommunicator
 {
 
@@ -46,3 +47,4 @@ class EXPORTGADGETSPYTHON PythonCommunicator
 };
 
 typedef ACE_Singleton<PythonCommunicator, ACE_Thread_Mutex> PythonCommunicatorSingleton;
+}

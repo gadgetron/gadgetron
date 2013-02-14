@@ -3,6 +3,7 @@
 #include "linearOperator.h"
 #include "vector_td.h"
 
+namespace Gadgetron{
 template < unsigned int D, class ARRAY_TYPE> class partialDerivativeOperator
 	: public linearOperator<ARRAY_TYPE>
 {
@@ -58,3 +59,4 @@ private:
   typename intd<D>::Type forwards_stride_;
   typename intd<D>::Type adjoint_stride_;
 };
+}

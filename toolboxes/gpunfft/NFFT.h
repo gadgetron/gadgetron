@@ -25,6 +25,7 @@
 
 template<class REAL, unsigned int D, bool ATOMICS> struct _convolve_NFFT_NC2C;
 
+namespace Gadgetron{
 //  ------------------------------
 //  --- NFFT class declaration ---
 //  ------------------------------
@@ -164,3 +165,5 @@ template< class REAL, unsigned int D, bool ATOMICS = false > class EXPORTGPUNFFT
 //Empty class to cause compile errors if you try to use NFFT with double and atomics
 template< unsigned int D> class EXPORTGPUNFFT NFFT_plan<double,D,true>
 {};
+
+}//End of namespace

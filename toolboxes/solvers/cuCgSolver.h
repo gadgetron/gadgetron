@@ -2,14 +2,8 @@
 
 #include "cuNDArray.h"
 #include "cgSolver.h"
-#include "cuCgPreconditioner.h"
-#include "real_utilities.h"
-#include "vector_td_utilities.h"
-#include "ndarray_vector_td_utilities.h"
 #include "cuGTBLAS.h"
-#include <iostream>
-
-
+namespace Gadgetron{
 template <class T> class cuCgSolver
 	: public cgSolver<cuNDArray<T> >
 {
@@ -26,3 +20,4 @@ protected:
   int old_device_;
   cuNDArray<T> *new_rhs;
 };
+}

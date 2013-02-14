@@ -9,6 +9,7 @@
 #include <boost/smart_ptr.hpp>
 #include <vector>
 
+namespace Gadgetron{
 template < class T, unsigned int D> class EXPORTSOLVERS cuVariableGaussOperator
 	: public linearOperator< cuNDArray<T> >
 {
@@ -35,3 +36,4 @@ template < class T, unsigned int D> class EXPORTSOLVERS cuVariableGaussOperator
 
   DECLARE_LINEAR_OPERATOR_DEVICE_SUPPORT(cuVariableGaussOperator)
 };
+}

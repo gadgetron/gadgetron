@@ -6,7 +6,7 @@
 #include "GrappaWeights.h"
 
 #include <list>
-
+namespace Gadgetron{
 template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsCalculator : public ACE_Task<ACE_MT_SYNCH>
 {
   typedef ACE_Task<ACE_MT_SYNCH> inherited;
@@ -61,3 +61,4 @@ template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsCalculator : public AC
   std::list<unsigned int> uncombined_channels_;
   int target_coils_;
 };
+}

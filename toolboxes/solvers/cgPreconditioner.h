@@ -3,7 +3,7 @@
 #pragma once
 
 #include "solvers_export.h"
-
+namespace Gadgetron{
 template <class ARRAY_TYPE> class cgPreconditioner
 {
  public:
@@ -18,5 +18,6 @@ template <class ARRAY_TYPE> class cgPreconditioner
   void * operator new(size_t s, void * p) { return p; }
   
 };
+}
 
 #endif //CGPRECONDITIONER_H

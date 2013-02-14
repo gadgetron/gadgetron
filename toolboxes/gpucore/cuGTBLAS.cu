@@ -4,7 +4,7 @@
 #include "complext.h"
 #include "cudaDeviceManager.h"
 
-
+namespace Gadgetron{
 
 #define CUBLAS_CALL(fun) {cublasStatus_t err = fun; if (err != CUBLAS_STATUS_SUCCESS) {BOOST_THROW_EXCEPTION(cuda_error(getCublasErrorString(err)));}}
 //NRM2
@@ -213,5 +213,5 @@ template int amin(cuNDArray<double_complext>* x,int device);
 template int amax(cuNDArray<double_complext>* x,int device);
 template double asum(cuNDArray<double_complext>* x,int device);
 
-
+}
 

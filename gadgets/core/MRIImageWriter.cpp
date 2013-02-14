@@ -5,7 +5,7 @@
 
 #include "GadgetContainerMessage.h"
 #include "hoNDArray.h"
-
+namespace Gadgetron{
 template <typename T>
 int MRIImageWriter<T>::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 {
@@ -85,3 +85,4 @@ int MRIImageWriter<T>::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriterFLOAT)
 GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriterUSHORT)
 GADGETRON_WRITER_FACTORY_DECLARE(MRIImageWriterCPLX)
+}

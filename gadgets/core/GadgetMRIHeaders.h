@@ -32,7 +32,7 @@ enum GadgetImageTypes
 	GADGET_IMAGE_IMAG
 };
 */
-
+namespace Gadgetron{
 enum GadgetMessageID {
   GADGET_MESSAGE_EXT_ID_MIN                = 1000,
   GADGET_MESSAGE_ACQUISITION               = 1001, /**< DEPRECATED */
@@ -118,5 +118,6 @@ struct ISMRMRD::ImageHeader
 
 }; 
 */
+}
 
 #endif  //GADGETMRIHEADERS_H

@@ -11,6 +11,7 @@
 
 #include <iostream>
 
+using namespace Gadgetron;
 int2 vec_to_int2(std::vector<unsigned int> vec)
 {
 	int2 ret; ret.x = 0; ret.y = 0;

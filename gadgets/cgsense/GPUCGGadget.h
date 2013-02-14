@@ -17,7 +17,7 @@
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
 #include "ismrmrd.h"
-
+namespace Gadgetron{
 class EXPORTGADGETSCGSENSE GPUCGGadget : public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 {
 
@@ -99,5 +99,5 @@ protected:
 
 	ACE_Thread_Mutex mutex_;
 };
-
+}
 #endif //GPUCGGADGET

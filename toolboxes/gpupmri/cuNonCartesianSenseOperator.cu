@@ -2,7 +2,8 @@
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
 
-static unsigned int prod( std::vector<unsigned int> &vec )
+using namespace Gadgetron;
+static unsigned int prodv( std::vector<unsigned int> &vec )
 {
   unsigned int result = 1;
   for( unsigned int i=0; i<vec.size(); i++ ){
@@ -14,8 +15,8 @@ static unsigned int prod( std::vector<unsigned int> &vec )
 template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {
-  if( (in->get_number_of_elements() != prod(*this->get_domain_dimensions())) || 
-      (out->get_number_of_elements() != prod(*this->get_codomain_dimensions())) ) {
+  if( (in->get_number_of_elements() != prodv(*this->get_domain_dimensions())) ||
+      (out->get_number_of_elements() != prodv(*this->get_codomain_dimensions())) ) {
     throw std::runtime_error( "cuNonCartesianSenseOperator::mult_M: dimensions mismatch");
   }
 
@@ -44,8 +45,8 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray<_complext>* in, c
 template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {
-  if( (out->get_number_of_elements() != prod(*this->get_domain_dimensions())) || 
-      (in->get_number_of_elements() != prod(*this->get_codomain_dimensions())) ) {
+  if( (out->get_number_of_elements() != prodv(*this->get_domain_dimensions())) ||
+      (in->get_number_of_elements() != prodv(*this->get_codomain_dimensions())) ) {
   	throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH: dimensions mismatch");
   }
 

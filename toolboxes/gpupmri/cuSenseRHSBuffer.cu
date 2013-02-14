@@ -2,6 +2,7 @@
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
 
+using namespace Gadgetron;
 template<class REAL, unsigned int D, bool ATOMICS>
 void cuSenseRHSBuffer<REAL,D,ATOMICS>::clear()
 {

@@ -1,6 +1,7 @@
 #include "cuNonCartesianKtSenseOperator.h"
 #include "cuNDFFT.h"
 
+using namespace Gadgetron;
 template<class REAL, unsigned int D> void
 cuNonCartesianKtSenseOperator<REAL,D>::mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
 {

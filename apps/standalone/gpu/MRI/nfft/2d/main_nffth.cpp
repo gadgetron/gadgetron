@@ -35,6 +35,7 @@
 #include <iostream>
 
 using namespace std;
+using namespace Gadgetron;
 
 // Define desired precision
 typedef float _real; 

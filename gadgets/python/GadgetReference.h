@@ -8,7 +8,7 @@
 #include <boost/python/tuple.hpp>
 #include "gadgetronpython_export.h"
 #include "ismrmrd.h"
-
+namespace Gadgetron{
 class EXPORTGADGETSPYTHON GadgetReference
 {
 
@@ -30,3 +30,4 @@ class EXPORTGADGETSPYTHON GadgetReference
   Gadget* gadget_;
 
 };
+}

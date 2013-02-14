@@ -11,7 +11,7 @@
 #include "hoNDArray.h"
 #include "GrappaWeights.h"
 #include "GrappaWeightsCalculator.h"
-
+namespace Gadgetron{
 class EXPORTGADGETSGRAPPA CalibrationBufferCounter
 {
 
@@ -117,5 +117,5 @@ class EXPORTGADGETSGRAPPA GrappaCalibrationBuffer
   unsigned int last_line_;
   bool weights_invalid_;
 };
-
+}
 #endif

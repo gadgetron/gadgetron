@@ -6,14 +6,14 @@
 #include "real_utilities.h"
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
-#include "cuEncodingOperatorContainer.h"
+#include "encodingOperatorContainer.h"
 
-template <class REAL, class T> class cuSbLwSolver 
-  : public sbSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T>, cuLwSolver<REAL,T>, cuEncodingOperatorContainer<REAL,T> >
+template <class T> class cuSbLwSolver
+  : public sbSolver<cuNDArray<typename realType<T>::type>, cuNDArray<T>, cuLwSolver<T> >
 {
 public:
   
-  cuSbLwSolver() : sbSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T>, cuLwSolver<REAL,T>, cuEncodingOperatorContainer<REAL,T> >() { 
+  cuSbLwSolver() : sbSolver< cuNDArray<typename realType<T>::type>, cuNDArray<T>, cuLwSolver<T> >() {
     set_device(-1); 
   }
 

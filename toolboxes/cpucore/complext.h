@@ -139,15 +139,15 @@ template<class T>  __inline__ __host__ __device__ complext<T> sqrt(complext<T> x
 	return complext<T>(sqrt((r+x.real())/2),sgn(x.imag())*sqrt((r-x.real())/2));
 }
 template<class T> __inline__ __host__ __device__ T abs(complext<T> comp){
-  return std::sqrt(comp.vec[0]*comp.vec[0]+comp.vec[1]*comp.vec[1]);
+  return sqrt(comp.vec[0]*comp.vec[0]+comp.vec[1]*comp.vec[1]);
 }
 
 template<class T> __inline__ __host__ __device__ complext<T> sin(complext<T> comp){
-  return complext<T>(std::sin(comp.vec[0])*std::cosh(comp.vec[1]),std::cos(comp.vec[0])*std::sinh(comp.vec[1]));
+  return complext<T>(sin(comp.vec[0])*std::cosh(comp.vec[1]),std::cos(comp.vec[0])*std::sinh(comp.vec[1]));
 }
 
 template<class T> __inline__ __host__ __device__ complext<T> cos(complext<T> comp){
-  return complext<T>(std::cos(comp.vec[0])*std::cosh(comp.vec[1]),-std::sin(comp.vec[0])*std::sinh(comp.vec[1]));
+  return complext<T>(cos(comp.vec[0])*cosh(comp.vec[1]),-sin(comp.vec[0])*sinh(comp.vec[1]));
 }
 
 template<class T> __inline__ __host__ __device__ T imag(complext<T> comp){
@@ -259,6 +259,11 @@ __inline__ __host__ __device__ float sgn(float x){
 	return (0 < x) - (x < 0);
 }
 
-__inline__ __host__ __device__ int sqrt(int x){return (int) sqrt(float(x));};
-__inline__ __host__ __device__ unsigned int  sqrt( unsigned int x){return (unsigned int)(sqrt(float(x)));}
-__inline__ __host__ __device__ unsigned int  abs( unsigned int x){return x;}
+template<class T> __inline__ __host__ __device__ float sgn(complext<T> x){
+	if (norm(x) <= 0) return 0;
+	return (x/abs(x));
+}
+//
+//__inline__ __host__ __device__ int sqrt(int x){return (int) sqrt(float(x));};
+//__inline__ __host__ __device__ unsigned int  sqrt( unsigned int x){return (unsigned int)(sqrt(float(x)));}
+//__inline__ __host__ __device__ unsigned int  abs( unsigned int x){return x;}

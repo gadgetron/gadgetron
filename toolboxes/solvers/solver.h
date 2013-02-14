@@ -5,6 +5,7 @@
 #include <iostream>
 #include "solvers_export.h"
 
+namespace Gadgetron{
 template <class ARRAY_TYPE_IN, class ARRAY_TYPE_OUT> class solver
 {
 public:
@@ -42,3 +43,4 @@ protected:
   int output_mode_;
   boost::shared_ptr<ARRAY_TYPE_OUT> x0_;
 };
+}

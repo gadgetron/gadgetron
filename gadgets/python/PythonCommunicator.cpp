@@ -3,7 +3,7 @@
 #include <numpy/arrayobject.h>
 #include <boost/algorithm/string.hpp>
 #include "ismrmrd.h"
-
+namespace Gadgetron{
 PythonCommunicator::PythonCommunicator()
 {
 	Py_Initialize();
@@ -206,3 +206,4 @@ template int PythonCommunicator::process(Gadget*, GadgetContainerMessage<ISMRMRD
 
 template int PythonCommunicator::process(Gadget*, GadgetContainerMessage<ISMRMRD::ImageHeader>*,
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >*);
+}

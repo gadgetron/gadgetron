@@ -6,6 +6,9 @@
 #include <boost/smart_ptr.hpp>
 #include <vector>
 
+namespace Gadgetron{
+
+
 template <class COMPLEX_ARRAY_TYPE, unsigned int D> class convolutionOperator
 	: public linearOperator<COMPLEX_ARRAY_TYPE>
 {  
@@ -240,3 +243,5 @@ private:
   boost::shared_ptr<COMPLEX_ARRAY_TYPE> kernel_;
   boost::shared_ptr<COMPLEX_ARRAY_TYPE> adjoint_kernel_;
 };
+
+}

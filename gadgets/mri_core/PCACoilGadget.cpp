@@ -10,7 +10,7 @@
 #include "matrix_vector_op.h"
 #include "matrix_decomposition.h"
 #include "GadgetIsmrmrdReadWrite.h"
-
+namespace Gadgetron{
 PCACoilGadget::PCACoilGadget()
  : max_buffered_profiles_(100)
  , samples_to_use_(16)
@@ -231,4 +231,4 @@ int PCACoilGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m
 }
 
 GADGET_FACTORY_DECLARE(PCACoilGadget)
-
+}

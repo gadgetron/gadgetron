@@ -10,6 +10,7 @@
 #include <string.h>
 #include <boost/shared_ptr.hpp>
 
+namespace Gadgetron{
 template<class T> int write_nd_array(hoNDArray<T> *a, const char* filename)
 {
   int* header = new int[a->get_number_of_dimensions()+1];
@@ -60,5 +61,5 @@ template <class T> boost::shared_ptr< hoNDArray<T> > read_nd_array(const char* f
   
   return out;
 }
-
+}
 #endif

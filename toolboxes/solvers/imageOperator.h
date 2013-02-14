@@ -6,6 +6,9 @@
 #include <boost/smart_ptr.hpp>
 #include <vector>
 
+namespace Gadgetron{
+
+
 template <class ARRAY_TYPE_REAL, class ARRAY_TYPE_OPERATOR> class imageOperator
   : public linearOperator<ARRAY_TYPE_OPERATOR>
 {
@@ -90,3 +93,4 @@ public:
 protected:
   boost::shared_ptr< ARRAY_TYPE_REAL > image_;
 };
+}

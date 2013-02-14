@@ -14,6 +14,7 @@
 #include "thrust/device_vector.h"
 #include "GadgetronCuException.h"
 
+namespace Gadgetron{
 template <class T> class EXPORTGPUCORE cuNDArray;
 template <class T> EXPORTGPUCORE void cuNDArray_permute(cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *order, int shift_mode);
 
@@ -124,8 +125,7 @@ template<class T> void operator/= (cuNDArray<complext<T> > &, cuNDArray<T> &);
 template<class T> void operator/= (cuNDArray<complext<T> > &, T );
 
 
-
-
+}
 
 
 #endif //CUNDARRAY_H

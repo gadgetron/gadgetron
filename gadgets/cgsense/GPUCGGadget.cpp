@@ -8,7 +8,7 @@
 #include "hoNDArray_fileio.h"
 
 #include "tinyxml.h"
-
+namespace Gadgetron{
 GPUCGGadget::GPUCGGadget()
 : slice_no_(0)
 , profiles_per_frame_(32)
@@ -116,8 +116,8 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
 		GADGET_DEBUG2("\nMatrix size  : [%d,%d] \n", matrix_size_.vec[0], matrix_size_.vec[1]);
 
 		matrix_size_os_ =
-				uintd2(static_cast<unsigned int>(ceil((matrix_size_.vec[0]*oversampling_)/warp_size)*warp_size),
-						static_cast<unsigned int>(ceil((matrix_size_.vec[1]*oversampling_)/warp_size)*warp_size));
+				uintd2(static_cast<unsigned int>(std::ceil((matrix_size_.vec[0]*oversampling_)/warp_size)*warp_size),
+						static_cast<unsigned int>(std::ceil((matrix_size_.vec[1]*oversampling_)/warp_size)*warp_size));
 
 		GADGET_DEBUG2("\nMatrix size OS: [%d,%d] \n", matrix_size_os_.vec[0], matrix_size_os_.vec[1]);
 
@@ -271,7 +271,7 @@ int GPUCGGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		}
 
 		try{ E_->preprocess(traj.get());}
-		catch (gt_runtime_error& err){
+		catch (runtime_error& err){
 			GADGET_DEBUG_EXCEPTION(err, "\nError during cgOperatorNonCartesianSense::preprocess()\n");
 			return GADGET_FAIL;
 		}
@@ -299,7 +299,7 @@ int GPUCGGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		}
 
 		try{ E_->mult_csm_conj_sum( csm_data.get(), &reg_image );}
-		catch (gt_runtime_error& err){
+		catch (runtime_error& err){
 			GADGET_DEBUG_EXCEPTION(err,"\nError combining coils to regularization image\n");
 			return GADGET_FAIL;
 		}
@@ -338,7 +338,7 @@ int GPUCGGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		img_dims[1] = matrix_size_.vec[1];
 
 		try{cm2->getObjectPtr()->create(&img_dims);}
-		catch (gt_runtime_error &err){
+		catch (runtime_error &err){
 			GADGET_DEBUG_EXCEPTION(err,"\nUnable to allocate host image array");
 			cm1->release();
 			return GADGET_FAIL;
@@ -469,7 +469,7 @@ boost::shared_ptr< cuNDArray<float_complext> >  GPUCGGadget::upload_samples()
 	std::vector<unsigned int> dims; dims.push_back(samples_needed); dims.push_back(channels_);
 	hoNDArray<float_complext> tmp;
 	try{ tmp.create( &dims, (float_complext*)data_host_ptr_, false );}
-	catch (gt_runtime_error &err){
+	catch (runtime_error &err){
 		GADGET_DEBUG1("\nFailed to create temporary host data array\n");
 		return boost::shared_ptr< cuNDArray<float_complext> >();
 	}
@@ -496,4 +496,5 @@ int GPUCGGadget::parameter_changed(std::string name, std::string new_value, std:
 	mutex_.release();
 
 	return GADGET_OK;
+}
 }

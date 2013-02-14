@@ -2,7 +2,7 @@
 
 #include "cuCgPreconditioner.h"
 #include <boost/smart_ptr.hpp>
-
+namespace Gadgetron{
 template<class T> class EXPORTSOLVERS cuCgPrecondWeights : public cuCgPreconditioner<T>
 {
  public:
@@ -16,3 +16,4 @@ template<class T> class EXPORTSOLVERS cuCgPrecondWeights : public cuCgPreconditi
  protected:
   boost::shared_ptr< cuNDArray<T> > weights_;
 };
+}
