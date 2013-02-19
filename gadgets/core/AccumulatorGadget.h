@@ -25,6 +25,7 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 
   hoNDArray< std::complex<float> >* buffer_;
   std::vector<unsigned int> dimensions_;
+  std::vector<float> field_of_view_;
   unsigned int slices_;
 
   int image_counter_;
