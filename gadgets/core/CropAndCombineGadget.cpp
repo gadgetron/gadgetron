@@ -48,7 +48,7 @@ process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 	  mag += mag_tmp;
 	}
 
-	d2[offset_2] = std::polar((float)sqrt(mag),phase);
+	d2[offset_2] = std::polar(std::sqrt(mag),phase);
       }
     }
   }

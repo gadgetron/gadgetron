@@ -15,14 +15,13 @@ include_directories(   ${ACE_INCLUDE_DIR}
 				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
 				       ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-				       ${CMAKE_SOURCE_DIR}/toolboxes/linalg
 				       ${CMAKE_SOURCE_DIR}/gadgets/core
 				       ${CMAKE_SOURCE_DIR}/toolboxes/hostutils
 				       ${CMAKE_SOURCE_DIR}/toolboxes/gpucore)
 
 add_library(gadgetronmricore SHARED MRINoiseAdjustGadget.cpp PCACoilGadget.cpp)
 
-target_link_libraries(gadgetronmricore tinyxml cpucore linalg ${ISMRMRD_LIBRARIES}  ${ISMRMRD_XSD_LIBRARIES} ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
+target_link_libraries(gadgetronmricore tinyxml cpucore ${ISMRMRD_LIBRARIES}  ${ISMRMRD_XSD_LIBRARIES} ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ARMADILLO_LIBRARIES})
 
 install (FILES MRINoiseAdjustGadget.h PCACoilGadget.h DESTINATION include)
 

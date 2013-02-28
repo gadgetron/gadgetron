@@ -76,7 +76,7 @@ int GrappaCalibrationBuffer::add_data(ISMRMRD::AcquisitionHeader* m1, hoNDArray<
   if (is_first_scan_in_slice) {
     biggest_gap_current_ = 0;
   } else if (acquiring_sequentially){
-    unsigned int gap = abs(static_cast<int>(last_line_) - static_cast<int>(line));
+    unsigned int gap = std::abs(static_cast<int>(last_line_) - static_cast<int>(line));
     if (gap != biggest_gap_current_) biggest_gap_current_ = gap;
   } else {
 	biggest_gap_current_ = 0;

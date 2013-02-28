@@ -2,11 +2,12 @@
 #include "Gadgetron.h"
 
 #include "hoNDArray_fileio.h"
-#include "matrix_vector_op.h"
-#include "matrix_decomposition.h"
+
 #include "GadgetronTimer.h"
 
 #include "GadgetIsmrmrdReadWrite.h"
+
+#include <armadillo>
 namespace Gadgetron{
 MRINoiseAdjustGadget::MRINoiseAdjustGadget()
 : noise_decorrelation_calculated_(false)
@@ -48,11 +49,11 @@ int MRINoiseAdjustGadget
 		if (noise_covariance_matrix_.get_number_of_elements() != channels*channels) {
 			std::vector<unsigned int> dims(2, channels);
 			try{noise_covariance_matrix_.create(&dims);}
-			catch (gt_bad_alloc& err)	{
+			catch (bad_alloc& err)	{
 				GADGET_DEBUG_EXCEPTION(err, "Unable to allocate storage for noise covariance matrix\n" );
 				return GADGET_FAIL;
 			}
-			noise_covariance_matrix_.clear(std::complex<double>(0.0,0.0));
+			noise_covariance_matrix_.clear();
 			number_of_noise_samples_ = 0;
 		}
 
@@ -85,7 +86,7 @@ int MRINoiseAdjustGadget
 			if ((noise_dwell_time_us_ == 0.0f) || (acquisition_dwell_time_us_ == 0.0f)) {
 				noise_bw_scale_factor_ = 1.0f;
 			} else {
-				noise_bw_scale_factor_ = sqrt(2*acquisition_dwell_time_us_/noise_dwell_time_us_*receiver_noise_bandwidth_);
+				noise_bw_scale_factor_ = std::sqrt(2*acquisition_dwell_time_us_/noise_dwell_time_us_*receiver_noise_bandwidth_);
 			}
 
 			GADGET_DEBUG2("Noise dwell time: %f\n", noise_dwell_time_us_);
@@ -104,33 +105,37 @@ int MRINoiseAdjustGadget
 					cc_ptr[i] /= number_of_noise_samples_;
 				}
 
+				arma::cx_mat noise_cov = arma::cx_mat(cc_ptr,(arma::uword)channels,(arma::uword)channels,false,false);
 				//write_nd_array(&noise_covariance_matrix_, "CC.cplx");
 
 				//2. Cholesky decomposition
-				hoNDArray_choldc(&noise_covariance_matrix_);
+				//hoNDArray_choldc(&noise_covariance_matrix_);
+				noise_cov=arma::chol(noise_cov);
 				//choldc(cc_ptr, channels);
 
 				//write_nd_array(&noise_covariance_matrix_, "CC_chol.cplx");
 
 				//3. Invert lower triangular
 				//inv_L(cc_ptr, channels);
-				hoNDArray_inv_lower_triangular(&noise_covariance_matrix_);
+				//hoNDArray_inv_lower_triangular(&noise_covariance_matrix_);
+				noise_cov = arma::inv(arma::trimatu(noise_cov));
 
 				//write_nd_array(&noise_covariance_matrix_, "CC_chol_inv_L.cplx");
 
 				//4. Scale for noise BW
-				for (unsigned int i = 0; i < channels*channels; i++) {
+				/*for (unsigned int i = 0; i < channels*channels; i++) {
 					cc_ptr[i] *= noise_bw_scale_factor_;
-				}
+				}*/
+				noise_cov = noise_cov*std::complex<double>(noise_bw_scale_factor_,0); //elementwise multiplication
 
 				/* Copy to float precision */
 				std::vector<unsigned int> dims(2, channels);
 				try{noise_covariance_matrixf_.create(&dims);}
-				catch (gt_bad_alloc& err){
+				catch (bad_alloc& err){
 					GADGET_DEBUG_EXCEPTION(err,"Unable to allocate storage for noise covariance matrix (float)\n");
 					return GADGET_FAIL;
 				}
-				noise_covariance_matrixf_.clear(std::complex<float>(0.0,0.0));
+				noise_covariance_matrixf_.clear();
 
 				std::complex<float>* ccf_ptr = noise_covariance_matrixf_.get_data_ptr();
 				for (unsigned int i = 0; i < channels*channels; i++) {
@@ -142,12 +147,14 @@ int MRINoiseAdjustGadget
 			if (noise_decorrelation_calculated_) {
 				//static int data_written = 0;
 
-				std::complex<float> alpha(1.0,0);
-				try {hoNDArray_trmm(&noise_covariance_matrixf_, m2->getObjectPtr(), alpha);}
-				catch (gt_runtime_error& err){
-					GADGET_DEBUG_EXCEPTION(err,"Noise Decorrelation Failed\n");
-					return GADGET_FAIL;
-				}
+
+				arma::cx_fmat arma_m2 = arma::cx_fmat(m2->getObjectPtr()->get_data_ptr(),channels,channels,false);
+				arma::cx_fmat noise_cov_f = arma::trimatu(arma::cx_fmat(noise_covariance_matrixf_.get_data_ptr(),channels,channels,false));
+
+				arma_m2 = noise_cov_f*arma_m2;
+
+
+
 
 				//Noise decorrelate
 				/*

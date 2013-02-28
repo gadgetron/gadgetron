@@ -239,7 +239,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 				phase += mag_tmp*arg(recon_ptr[c*npixels+i]);
 				mag += mag_tmp;
 			}
-			comb_ptr[i] = std::polar((float)sqrt(mag),phase)*std::complex<float>(npixels,0.0);
+			comb_ptr[i] = std::polar(std::sqrt(mag),phase)*std::complex<float>(npixels,0.0);
 		}
 
 

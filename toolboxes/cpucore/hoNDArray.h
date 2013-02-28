@@ -2,6 +2,7 @@
 #define HONDARRAY_H
 #pragma once
 
+
 #include "NDArray.h"
 
 #include "complext.h"
@@ -11,6 +12,7 @@
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
 #include "GadgetronException.h"
+
 namespace Gadgetron{
 class ArrayIterator
 {
@@ -136,11 +138,16 @@ public:
     return ret;
   }
 
-  virtual void clear(T value)
-  {
-    std::fill(this->get_data_ptr(), this->get_data_ptr()+this->get_number_of_elements(), value);
-  }
+  //Elementwise operations
+   void abs(){ for (int i = 0; i < this->elements_; i++) this->data_[i] = std::abs(this->data_[i]);}
+   void sqrt(){ for (int i = 0; i < this->elements_; i++) this->data_[i] = std::sqrt(this->data_[i]);}
+   void clear(){ memset(this->data_,0,this->elements_*sizeof(T));}
+   void fill(T val) {std::fill(this->begin(),this->end(),val);}
+   void reciprocal(){ for (int i = 0; i < this->elements_; i++) this->data_[i] = T(1)/this->data_[i];}
+   void reciprocal_sqrt(){ for (int i = 0; i < this->elements_; i++) this->data_[i] = T(1)/std::sqrt(this->data_[i]);};
 
+   T* begin(){return this->data_;}
+   T* end(){return (this->data_+this->elements_);}
   virtual void permute(std::vector<unsigned int> *dim_order, NDArray<T>* out = 0, int shift_mode = 0)
   {
     hoNDArray<T>* out_int = 0;
@@ -220,6 +227,7 @@ public:
 
   }
 
+
 protected:
   
   virtual void allocate_memory()
@@ -280,5 +288,77 @@ protected:
   }
 
 };
+
+template<class T,class S> static bool compatible_dimensions(hoNDArray<T> & x, hoNDArray<S> & y){
+	bool retVal = true;
+	for (int i = 0; i < y.get_number_of_dimensions(); i++){
+		retVal &= (x.get_size(i) == y.get_size(i));
+	}
+	return retVal;
+}
+
+
+//TODO: Reimplement using BLAS
+template<class T> void operator+= (hoNDArray<T> &x, hoNDArray<T> &y){
+	if (compatible_dimensions(x,y)){
+		for (int i = 0; i < x.get_number_of_elements(); i++){
+			x.get_data_ptr()[i] += y.get_data_ptr()[i%y.get_number_of_elements()];
+		}
+	} else {
+		BOOST_THROW_EXCEPTION(runtime_error("Incompatible array dimensions"));
+	}
+}
+template<class T> void operator+= (hoNDArray<T> &x, T y ){
+	for (int i = 0; i < x.get_number_of_elements(); i++){
+				x.get_data_ptr()[i] += y;
+	}
+}
+//TODO: Reimplement using BLAS
+template<class T> void operator*= (hoNDArray<T> &x, hoNDArray<T> &y){
+	if (compatible_dimensions(x,y)){
+		for (int i = 0; i < x.get_number_of_elements(); i++){
+			x.get_data_ptr()[i] *= y.get_data_ptr()[i%y.get_number_of_elements()];
+		}
+	} else {
+		BOOST_THROW_EXCEPTION(runtime_error("Incompatible array dimensions"));
+	}
+}
+template<class T> void operator*= (hoNDArray<T> &x, T y ){
+	for (int i = 0; i < x.get_number_of_elements(); i++){
+				x.get_data_ptr()[i] *= y;
+	}
+}
+
+//TODO: Reimplement using BLAS
+template<class T> void operator-= (hoNDArray<T> &x, hoNDArray<T> &y){
+	if (compatible_dimensions(x,y)){
+		for (int i = 0; i < x.get_number_of_elements(); i++){
+			x.get_data_ptr()[i] -= y.get_data_ptr()[i%y.get_number_of_elements()];
+		}
+	} else {
+		BOOST_THROW_EXCEPTION(runtime_error("Incompatible array dimensions"));
+	}
+}
+template<class T> void operator-= (hoNDArray<T> &x, T y ){
+	for (int i = 0; i < x.get_number_of_elements(); i++){
+				x.get_data_ptr()[i] -= y;
+	}
+}
+
+//TODO: Reimplement using BLAS
+template<class T> void operator/= (hoNDArray<T> &x, hoNDArray<T> &y){
+	if (compatible_dimensions(x,y)){
+		for (int i = 0; i < x.get_number_of_elements(); i++){
+			x.get_data_ptr()[i] /= y.get_data_ptr()[i%y.get_number_of_elements()];
+		}
+	} else {
+		BOOST_THROW_EXCEPTION(runtime_error("Incompatible array dimensions"));
+	}
+}
+template<class T> void operator/= (hoNDArray<T> &x, T y ){
+	for (int i = 0; i < x.get_number_of_elements(); i++){
+				x.get_data_ptr()[i] /= y;
+	}
+}
 }
 #endif //HONDARRAY_H

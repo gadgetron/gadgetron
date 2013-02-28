@@ -3,6 +3,10 @@ if (WIN32)
 ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUCORE__)
 endif (WIN32)
 
+if (GTEST_FOUND)
+	add_subdirectory(tests)
+endif (GTEST_FOUND)
+
 find_package(CULA REQUIRED)
 
 include_directories( ${CUDA_INCLUDE_DIRS}
@@ -26,7 +30,7 @@ cuda_add_library(gpucore SHARED
 							)
 
 target_link_libraries(gpucore ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CULA_LIBRARIES})
-target_link_libraries(cufft_test ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CULA_LIBRARIES} gpucore gpucore)
+target_link_libraries(cufft_test ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CULA_LIBRARIES} gpucore)
 
 install(TARGETS gpucore DESTINATION lib)
 install(TARGETS cufft_test DESTINATION bin)

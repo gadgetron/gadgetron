@@ -15,6 +15,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 set(Boost_NO_BOOST_CMAKE ON)
 find_package(Boost REQUIRED)
 find_package(ACE REQUIRED)
+find_package(Armadillo REQUIRED)
 find_package(FFTW3 COMPONENTS single double REQUIRED)
 
 if (${CMAKE_VERSION} VERSION_LESS "2.8.4")
@@ -34,6 +35,14 @@ find_package(LAPACK)
 endif (WIN32)
 
 find_package(CUDA 4.1)
+
+find_package(GTest)
+
+if (GTEST_FOUND)
+	ENABLE_TESTING()
+	add_subdirectory(test)
+endif (GTEST_FOUND)
+
 
 if (CUDA_FOUND)
    MESSAGE("CUDA Found, GPU components will be compiled")

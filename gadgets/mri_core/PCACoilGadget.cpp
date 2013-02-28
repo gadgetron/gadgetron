@@ -7,9 +7,10 @@
 
 #include "PCACoilGadget.h"
 #include "hoNDArray_fileio.h"
-#include "matrix_vector_op.h"
-#include "matrix_decomposition.h"
+
 #include "GadgetIsmrmrdReadWrite.h"
+
+#include "gtArmadillo.h"
 namespace Gadgetron{
 PCACoilGadget::PCACoilGadget()
  : max_buffered_profiles_(100)
@@ -77,7 +78,7 @@ int PCACoilGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m
 
 			hoNDArray< std::complex<float> > A;
 			try{A.create(&dims);}
-			catch (gt_bad_alloc& err){
+			catch (bad_alloc& err){
 				GADGET_DEBUG_EXCEPTION(err,"Unable to create array for PCA calculation\n");
 			}
 
@@ -89,12 +90,12 @@ int PCACoilGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m
 			std::vector<unsigned int> means_dims; means_dims.push_back(channels);
 
 			try{means.create(&means_dims);}
-			catch (gt_bad_alloc& err){
+			catch (bad_alloc& err){
 				GADGET_DEBUG_EXCEPTION(err,"Unable to create temporary stoorage for mean values\n");
 				return -1;
 			}
 
-			means.clear(std::complex<float>(0.0f,0.0f));
+			means.clear();
 
 			std::complex<float>* means_ptr = means.get_data_ptr();
 			for (unsigned int p = 0; p < profiles_available; p++) {
@@ -139,7 +140,7 @@ int PCACoilGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m
 			std::vector<unsigned int> S_dims; S_dims.push_back(channels);
 			hoNDArray<float> S;
 			try {S.create(&S_dims);}
-			catch (gt_bad_alloc& err){
+			catch (bad_alloc& err){
 				GADGET_DEBUG_EXCEPTION(err,"Failed to create array for singular values\n");
 				return GADGET_FAIL;
 			}
@@ -151,7 +152,7 @@ int PCACoilGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m
 			hoNDArray< std::complex<float> >* VT = pca_coefficients_[location];
 
 			try {VT->create(&VT_dims);}
-			catch (gt_bad_alloc& err){
+			catch (bad_alloc& err){
 				GADGET_DEBUG_EXCEPTION(err,"Failed to create array for VT\n");
 				return GADGET_FAIL;
 			}
@@ -169,11 +170,19 @@ int PCACoilGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m
 
 			//We don't need to calculate U in this case.
 			//if (hoNDArray_svd< std::complex<float>, float >(&A, &U , &S , &VT) != 0) {
+
+			arma::cx_fmat Am = as_matrix(&A);
+			arma::cx_fmat Vm = as_matrix(VT);
+			arma::cx_fmat Um;
+			arma::fvec Sv;
+			arma::svd_econ(Um,Sv,Vm,Am,'r');
+			/*
+			 *
 			try {hoNDArray_svd< std::complex<float> >(&A, 0 , &S , VT);}
-			catch (gt_runtime_error& err){
+			catch (runtime_error& err){
 				GADGET_DEBUG_EXCEPTION(err,"SVD failed\n");
 				return GADGET_FAIL;
-			}
+			}*/
 
 
 
@@ -202,20 +211,27 @@ int PCACoilGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m
 				new GadgetContainerMessage< hoNDArray< std::complex<float> > >;
 
 		try{m3->getObjectPtr()->create(m2->getObjectPtr()->get_dimensions().get()); }
-		catch (gt_bad_alloc& err){
+		catch (bad_alloc& err){
 			GADGET_DEBUG_EXCEPTION(err,"Unable to create storage for PCA coils\n");
 			m3->release();
 			return GADGET_FAIL;
 		}
 
 		if (pca_coefficients_[location] != 0) {
-			std::complex<float> alpha(1.0,0.0);
-			std::complex<float> beta(0.0,0.0);
+/*
+			arma::cx_fmat am3 = m3->getObjectPtr()->as_matrix();
+			arma::cx_fmat am2 = m2->getObjectPtr()->as_matrix();
+			arma::cx_fmat aPca = pca_coefficients_[location]->as_matrix();
+
+			am3 = aPca*am2;
+			*/
+			/*
 			try {hoNDArray_gemm( pca_coefficients_[location], m2->getObjectPtr(), alpha,  m3->getObjectPtr(), beta);}
-			catch(gt_runtime_error& err){
+			catch(runtime_error& err){
 				GADGET_DEBUG_EXCEPTION(err,"Failed to apply PCA coefficients\n");
 				return GADGET_FAIL;
-			}
+			}z
+			*/
 		}
 
 		m1->cont(m3);

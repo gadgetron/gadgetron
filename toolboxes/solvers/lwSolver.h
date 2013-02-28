@@ -11,6 +11,7 @@
 #include <vector>
 #include <iostream>
 
+namespace Gadgetron{
 template <class ARRAY_TYPE> class lwSolver
   : public linearSolver< ARRAY_TYPE>
 {
@@ -45,7 +46,7 @@ public:
     std::vector<unsigned int> image_dims = *this->encoding_operator_->get_domain_dimensions();
 
     if( image_dims.size() == 0 ){
-      BOOST_THROW_EXCEPTION(gt_runtime_error("Error: lwSolver::solve : domain dimensions not set on encoding operator" ));
+      BOOST_THROW_EXCEPTION(runtime_error("Error: lwSolver::solve : domain dimensions not set on encoding operator" ));
     }
         
     // Allocate solution array.
@@ -207,3 +208,4 @@ protected:
   unsigned int iterations_;
   REAL alpha_;
 };
+}

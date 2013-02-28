@@ -43,7 +43,7 @@ vector_td<int,D> sgn( const vector_td<T,D> vec )
 {
   vector_td<int,D> res;
   for (unsigned int i=0; i<D; i++) {
-    res.vec[i] = sgn(vec.vec[i]);
+    res.vec[i] = ::sgn(vec.vec[i]);
   }
   return res;
 }
@@ -288,7 +288,7 @@ T max( const vector_td<T,D> vec )
 {
   T res = vec.vec[0];
   for (unsigned int i=1; i<D; i++){
-    res = max(res,vec.vec[i]);
+    res = std::max(res,vec.vec[i]);
   }
   return res;
 }
@@ -298,7 +298,7 @@ T min( const vector_td<T,D> vec )
 {
   T res = vec.vec[0];
   for (unsigned int i=1; i<D; i++){
-    res = min(res,vec.vec[i]);
+    res = std::min(res,vec.vec[i]);
   }
   return res;
 }

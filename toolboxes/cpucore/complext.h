@@ -11,7 +11,7 @@
 #include <complex>
 #include <cmath>
 
-
+namespace Gadgetron{
 
 template< class T > class complext
 {
@@ -130,16 +130,21 @@ template<> struct realType<std::complex<float> > {typedef float type; };
 template<> struct realType<std::complex<double> > {typedef double type; };
 
 
+template<class T> struct stdType {typedef T type;};
+template<> struct stdType<double_complext> {typedef std::complex<double> type;};
+template<> struct stdType<float_complext> {typedef std::complex<float> type;};
+
+
 
 template<class T>  __inline__ __host__ __device__ complext<T> polar(const T& rho, const T& theta = 0){
   return complext<T>(rho*std::cos(theta),rho*std::sin(theta));
 }
 template<class T>  __inline__ __host__ __device__ complext<T> sqrt(complext<T> x){
 	T r = abs(x);
-	return complext<T>(sqrt((r+x.real())/2),sgn(x.imag())*sqrt((r-x.real())/2));
+	return complext<T>(::sqrt((r+x.real())/2),sgn(x.imag())*::sqrt((r-x.real())/2));
 }
 template<class T> __inline__ __host__ __device__ T abs(complext<T> comp){
-  return sqrt(comp.vec[0]*comp.vec[0]+comp.vec[1]*comp.vec[1]);
+  return ::sqrt(comp.vec[0]*comp.vec[0]+comp.vec[1]*comp.vec[1]);
 }
 
 template<class T> __inline__ __host__ __device__ complext<T> sin(complext<T> comp){
@@ -259,11 +264,14 @@ __inline__ __host__ __device__ float sgn(float x){
 	return (0 < x) - (x < 0);
 }
 
-template<class T> __inline__ __host__ __device__ float sgn(complext<T> x){
+template<class T> __inline__ __host__ __device__ T sgn(complext<T> x){
 	if (norm(x) <= 0) return 0;
 	return (x/abs(x));
 }
+
+
 //
 //__inline__ __host__ __device__ int sqrt(int x){return (int) sqrt(float(x));};
 //__inline__ __host__ __device__ unsigned int  sqrt( unsigned int x){return (unsigned int)(sqrt(float(x)));}
 //__inline__ __host__ __device__ unsigned int  abs( unsigned int x){return x;}
+}

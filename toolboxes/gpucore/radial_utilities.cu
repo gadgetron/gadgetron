@@ -14,7 +14,7 @@ using namespace std;
 namespace Gadgetron{
 template<class REAL> __inline__ __device__ REAL get_angle_step_GR();
 template<> __inline__ __device__ float get_angle_step_GR(){ return CUDART_PI_F/((sqrtf(5.0f)+1.0f)*0.5f); }
-template<> __inline__ __device__ double get_angle_step_GR(){ return CUDART_PI/((sqrt(5.0)+1.0)*0.5); }
+template<> __inline__ __device__ double get_angle_step_GR(){ return CUDART_PI/((::sqrt(5.0)+1.0)*0.5); }
 
 template<class REAL> __global__ void
 compute_radial_trajectory_golden_ratio_2d_kernel( typename reald<REAL,2>::Type *co, REAL angular_offset )

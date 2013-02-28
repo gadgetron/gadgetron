@@ -2,13 +2,17 @@ if (WIN32)
 ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUCORE__)
 endif (WIN32)
 
+if (GTEST_FOUND)
+	add_subdirectory(tests)
+endif (GTEST_FOUND)
+
 include_directories(${ACE_INCLUDE_DIR} 
 		    ${Boost_INCLUDE_DIR}
 		    ${FFTW3_INCLUDE_DIR})
 
-add_library(cpucore SHARED FFT.cpp)
+add_library(cpucore SHARED FFT.cpp hoGTBLAS.cpp)
 
-target_link_libraries(cpucore ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
+target_link_libraries(cpucore ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ARMADILLO_LIBRARIES})
 
 install(TARGETS cpucore DESTINATION lib)
 
@@ -26,4 +30,5 @@ install(FILES
 	vector_td_utilities.h
 	real_utilities.h
 	cpucore_defines.h
+	hoGTBLAS.h
 	DESTINATION include)

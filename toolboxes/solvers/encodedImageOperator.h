@@ -2,6 +2,7 @@
 
 #include "imageOperator.h"
 
+namespace Gadgetron{
 template <class ARRAY_TYPE_REAL, class ARRAY_TYPE_OPERATOR> class encodedImageOperator
 	: public imageOperator<ARRAY_TYPE_REAL, ARRAY_TYPE_OPERATOR>
 {
@@ -22,7 +23,7 @@ public:
   virtual void mult_MH_M( ARRAY_TYPE_OPERATOR *in, ARRAY_TYPE_OPERATOR *out, bool accumulate = false )
   {    
     if( !encoding_operator_.get() ){
-      BOOST_THROW_EXCEPTION(gt_runtime_error("encodedImageOperator::mult_MH_M failed : encoding operator not set"));
+      BOOST_THROW_EXCEPTION(runtime_error("encodedImageOperator::mult_MH_M failed : encoding operator not set"));
     }
     
     ARRAY_TYPE_OPERATOR tmp(in->get_dimensions());
@@ -39,3 +40,4 @@ public:
 private:
   boost::shared_ptr< linearOperator<ARRAY_TYPE_OPERATOR> > encoding_operator_;
 };
+}

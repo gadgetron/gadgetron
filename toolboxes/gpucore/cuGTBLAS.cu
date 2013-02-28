@@ -146,13 +146,13 @@ template<class T> int amin(cuNDArray<T>* x,int device){
 
 	int result;
 	CUBLAS_CALL(cublas_amin(cudaDeviceManager::Instance()->getHandle(device),x->get_number_of_elements(),x->get_data_ptr(),1,&result));
-	return result;
+	return result-1;
 }
 
 template<class T> int amax(cuNDArray<T>* x,int device){
 	int result;
 	CUBLAS_CALL(cublas_amax(cudaDeviceManager::Instance()->getHandle(device),x->get_number_of_elements(),x->get_data_ptr(),1,&result));
-	return result;
+	return result-1;
 }
 
 

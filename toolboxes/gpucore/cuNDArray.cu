@@ -7,6 +7,8 @@
 #include "check_CUDA.h"
 
 
+using namespace Gadgetron;
+
 template<typename T>
 class cuNDA_modulus : public thrust::unary_function<T,T>
 {
@@ -17,8 +19,14 @@ private:
 	const int mod;
 };
 
-
-template<class T,class S, class F>  void equals_transform(Gadgetron::cuNDArray<T> & x,Gadgetron::cuNDArray<S> & y){
+template<class T,class S> static bool compatible_dimensions(cuNDArray<T> & x, cuNDArray<S> & y){
+	bool retVal = true;
+	for (int i = 0; i < y.get_number_of_dimensions(); i++){
+		retVal &= (x.get_size(i) == y.get_size(i));
+	}
+	return retVal;
+}
+template<class T,class S, class F>  void equals_transform(cuNDArray<T> & x,cuNDArray<S> & y){
 	if (x.dimensions_equal(&y)){
 			thrust::transform(x.begin(), x.end(), y.begin(), x.begin(), F());
 		} else if (compatible_dimensions(x,y))
@@ -28,7 +36,7 @@ template<class T,class S, class F>  void equals_transform(Gadgetron::cuNDArray<T
 			thrust::permutation_iterator<thrust::device_ptr<S>,transform_it> p = thrust::make_permutation_iterator(y.begin(),indices);
 			thrust::transform(x.begin(),x.end(),p,x.begin(),F());
 		} else {
-			BOOST_THROW_EXCEPTION(Gadgetron::runtime_error("cuNDArrays have incompatible dimensions"));
+			BOOST_THROW_EXCEPTION(runtime_error("cuNDArrays have incompatible dimensions"));
 		}
 }
 
@@ -625,13 +633,7 @@ struct cuNDA_divides : public thrust::binary_function<complext<T> ,T,complext<T>
  __host__ __device__ complext<T> operator()(const complext<T> &x, const T &y) const {return x/y;}
 };
 
-template<class T,class S> static bool compatible_dimensions(Gadgetron::cuNDArray<T> & x, Gadgetron::cuNDArray<S> & y){
-	bool retVal = true;
-	for (int i = 0; i < y.get_number_of_dimensions(); i++){
-		retVal &= (x.get_size(i) == y.get_size(i));
-	}
-	return retVal;
-}
+
 
 
 template<class T> void Gadgetron::operator+= (Gadgetron::cuNDArray< complext<T> > & x , Gadgetron::cuNDArray<T> & y){
@@ -682,15 +684,15 @@ template EXPORTGPUCORE class cuNDArray< int2 >;
 template EXPORTGPUCORE class cuNDArray< int3 >;
 template EXPORTGPUCORE class cuNDArray< int4 >;
 */
-template void Gadgetron::operator+=<int> (Gadgetron::cuNDArray<int> & x , Gadgetron::cuNDArray<int> & y);
-template void Gadgetron::operator-=<int> (Gadgetron::cuNDArray<int> & x , Gadgetron::cuNDArray<int> & y);
-template void Gadgetron::operator*=<int> (Gadgetron::cuNDArray<int> & x , Gadgetron::cuNDArray<int> & y);
-template void Gadgetron::operator/=<int> (Gadgetron::cuNDArray<int> & x , Gadgetron::cuNDArray<int> & y);
+template void Gadgetron::operator+=<int> (cuNDArray<int> & x , cuNDArray<int> & y);
+template void Gadgetron::operator-=<int> (cuNDArray<int> & x , cuNDArray<int> & y);
+template void Gadgetron::operator*=<int> (cuNDArray<int> & x , cuNDArray<int> & y);
+template void Gadgetron::operator/=<int> (cuNDArray<int> & x , cuNDArray<int> & y);
 
-template void Gadgetron::operator+=<int> (Gadgetron::cuNDArray<int> & x , int y);
-template void Gadgetron::operator-=<int> (Gadgetron::cuNDArray<int> & x , int y);
-template void Gadgetron::operator*=<int> (Gadgetron::cuNDArray<int> & x , int y);
-template void Gadgetron::operator/=<int> (Gadgetron::cuNDArray<int> & x , int y);
+template void Gadgetron::operator+=<int> (cuNDArray<int> & x , int y);
+template void Gadgetron::operator-=<int> (cuNDArray<int> & x , int y);
+template void Gadgetron::operator*=<int> (cuNDArray<int> & x , int y);
+template void Gadgetron::operator/=<int> (cuNDArray<int> & x , int y);
 
 template EXPORTGPUCORE class Gadgetron::cuNDArray< unsigned int >;
 
@@ -700,15 +702,15 @@ template EXPORTGPUCORE class Gadgetron::cuNDArray< uint3 >;
 template EXPORTGPUCORE class Gadgetron::cuNDArray< uint4 >;
 */
 
-template void Gadgetron::operator+=<unsigned int> (Gadgetron::cuNDArray<unsigned int> & x , Gadgetron::cuNDArray<unsigned int> & y);
-template void Gadgetron::operator-=<unsigned int> (Gadgetron::cuNDArray<unsigned int> & x , Gadgetron::cuNDArray<unsigned int> & y);
-template void Gadgetron::operator*=<unsigned int> (Gadgetron::cuNDArray<unsigned int> & x , Gadgetron::cuNDArray<unsigned int> & y);
-template void Gadgetron::operator/=<unsigned int> (Gadgetron::cuNDArray<unsigned int> & x , Gadgetron::cuNDArray<unsigned int> & y);
+template void Gadgetron::operator+=<unsigned int> (cuNDArray<unsigned int> & x , cuNDArray<unsigned int> & y);
+template void Gadgetron::operator-=<unsigned int> (cuNDArray<unsigned int> & x , cuNDArray<unsigned int> & y);
+template void Gadgetron::operator*=<unsigned int> (cuNDArray<unsigned int> & x , cuNDArray<unsigned int> & y);
+template void Gadgetron::operator/=<unsigned int> (cuNDArray<unsigned int> & x , cuNDArray<unsigned int> & y);
 
-template void Gadgetron::operator+=<unsigned int> (Gadgetron::cuNDArray<unsigned int> & x , unsigned int y);
-template void Gadgetron::operator-=<unsigned int> (Gadgetron::cuNDArray<unsigned int> & x , unsigned int y);
-template void Gadgetron::operator*=<unsigned int> (Gadgetron::cuNDArray<unsigned int> & x , unsigned int y);
-template void Gadgetron::operator/=<unsigned int> (Gadgetron::cuNDArray<unsigned int> & x , unsigned int y);
+template void Gadgetron::operator+=<unsigned int> (cuNDArray<unsigned int> & x , unsigned int y);
+template void Gadgetron::operator-=<unsigned int> (cuNDArray<unsigned int> & x , unsigned int y);
+template void Gadgetron::operator*=<unsigned int> (cuNDArray<unsigned int> & x , unsigned int y);
+template void Gadgetron::operator/=<unsigned int> (cuNDArray<unsigned int> & x , unsigned int y);
 
 template EXPORTGPUCORE class Gadgetron::cuNDArray< float >;
 
@@ -730,16 +732,16 @@ template void Gadgetron::operator*=<float> (Gadgetron::cuNDArray<float> & x , fl
 template void Gadgetron::operator/=<float> (Gadgetron::cuNDArray<float> & x , float y);
 
 
-template void Gadgetron::operator+=<float> (Gadgetron::cuNDArray<float_complext> & x , Gadgetron::cuNDArray<float> & y);
-template void Gadgetron::operator-=<float> (Gadgetron::cuNDArray<float_complext> & x , Gadgetron::cuNDArray<float> & y);
-template void Gadgetron::operator*=<float> (Gadgetron::cuNDArray<float_complext> & x , Gadgetron::cuNDArray<float> & y);
-template void Gadgetron::operator/=<float> (Gadgetron::cuNDArray<float_complext> & x , Gadgetron::cuNDArray<float> & y);
+template void Gadgetron::operator+=<float> (cuNDArray<float_complext> & x , cuNDArray<float> & y);
+template void Gadgetron::operator-=<float> (cuNDArray<float_complext> & x , cuNDArray<float> & y);
+template void Gadgetron::operator*=<float> (cuNDArray<float_complext> & x , cuNDArray<float> & y);
+template void Gadgetron::operator/=<float> (cuNDArray<float_complext> & x , cuNDArray<float> & y);
 
 
-template void Gadgetron::operator+=<float> (Gadgetron::cuNDArray<float_complext> & x , float y);
-template void Gadgetron::operator-=<float> (Gadgetron::cuNDArray<float_complext> & x , float y);
-template void Gadgetron::operator*=<float> (Gadgetron::cuNDArray<float_complext> & x , float y);
-template void Gadgetron::operator/=<float> (Gadgetron::cuNDArray<float_complext> & x , float y);
+template void Gadgetron::operator+=<float> (cuNDArray<float_complext> & x , float y);
+template void Gadgetron::operator-=<float> (cuNDArray<float_complext> & x , float y);
+template void Gadgetron::operator*=<float> (cuNDArray<float_complext> & x , float y);
+template void Gadgetron::operator/=<float> (cuNDArray<float_complext> & x , float y);
 
 
 template EXPORTGPUCORE class Gadgetron::cuNDArray< double >;
@@ -761,15 +763,15 @@ template void Gadgetron::operator*=<double> (Gadgetron::cuNDArray<double> & x , 
 template void Gadgetron::operator/=<double> (Gadgetron::cuNDArray<double> & x , double y);
 
 
-template EXPORTGPUCORE void Gadgetron::operator+=<double> (Gadgetron::cuNDArray<double_complext> & x , Gadgetron::cuNDArray<double> & y);
-template EXPORTGPUCORE void Gadgetron::operator-=<double> (Gadgetron::cuNDArray<double_complext> & x , Gadgetron::cuNDArray<double> & y);
-template EXPORTGPUCORE void Gadgetron::operator*=<double> (Gadgetron::cuNDArray<double_complext> & x , Gadgetron::cuNDArray<double> & y);
-template EXPORTGPUCORE void Gadgetron::operator /=<double> (Gadgetron::cuNDArray<double_complext> & x , Gadgetron::cuNDArray<double> & y);
+template EXPORTGPUCORE void Gadgetron::operator+=<double> (cuNDArray<double_complext> & x , cuNDArray<double> & y);
+template EXPORTGPUCORE void Gadgetron::operator-=<double> (cuNDArray<double_complext> & x , cuNDArray<double> & y);
+template EXPORTGPUCORE void Gadgetron::operator*=<double> (cuNDArray<double_complext> & x , cuNDArray<double> & y);
+template EXPORTGPUCORE void Gadgetron::operator /=<double> (cuNDArray<double_complext> & x , cuNDArray<double> & y);
 
-template void Gadgetron::operator+=<double> (Gadgetron::cuNDArray<double_complext> & x , double y);
-template void Gadgetron::operator-=<double> (Gadgetron::cuNDArray<double_complext> & x , double y);
-template void Gadgetron::operator*=<double> (Gadgetron::cuNDArray<double_complext> & x , double y);
-template void Gadgetron::operator/=<double> (Gadgetron::cuNDArray<double_complext> & x , double y);
+template void Gadgetron::operator+=<double> (cuNDArray<double_complext> & x , double y);
+template void Gadgetron::operator-=<double> (cuNDArray<double_complext> & x , double y);
+template void Gadgetron::operator*=<double> (cuNDArray<double_complext> & x , double y);
+template void Gadgetron::operator/=<double> (cuNDArray<double_complext> & x , double y);
 
 
 template EXPORTGPUCORE class Gadgetron::cuNDArray< Gadgetron::intd1 >;
@@ -794,28 +796,28 @@ template EXPORTGPUCORE class Gadgetron::cuNDArray< Gadgetron::doubled4 >;
 
 template EXPORTGPUCORE class Gadgetron::cuNDArray<float_complext>;
 
-template void Gadgetron::operator+=<float_complext> (Gadgetron::cuNDArray<float_complext> & x , Gadgetron::cuNDArray<float_complext> & y);
-template void Gadgetron::operator-=<float_complext> (Gadgetron::cuNDArray<float_complext> & x , Gadgetron::cuNDArray<float_complext> & y);
-template void Gadgetron::operator*=<float_complext> (Gadgetron::cuNDArray<float_complext> & x , Gadgetron::cuNDArray<float_complext> & y);
-template void Gadgetron::operator/=<float_complext> (Gadgetron::cuNDArray<float_complext> & x , Gadgetron::cuNDArray<float_complext> & y);
+template void Gadgetron::operator+=<float_complext> (cuNDArray<float_complext> & x , cuNDArray<float_complext> & y);
+template void Gadgetron::operator-=<float_complext> (cuNDArray<float_complext> & x , cuNDArray<float_complext> & y);
+template void Gadgetron::operator*=<float_complext> (cuNDArray<float_complext> & x , cuNDArray<float_complext> & y);
+template void Gadgetron::operator/=<float_complext> (cuNDArray<float_complext> & x , cuNDArray<float_complext> & y);
 
-template void Gadgetron::operator+=<float_complext> (Gadgetron::cuNDArray<float_complext> & x , float_complext y);
-template void Gadgetron::operator-=<float_complext> (Gadgetron::cuNDArray<float_complext> & x , float_complext y);
-template void Gadgetron::operator*=<float_complext> (Gadgetron::cuNDArray<float_complext> & x , float_complext y);
-template void Gadgetron::operator/=<float_complext> (Gadgetron::cuNDArray<float_complext> & x , float_complext y);
+template void Gadgetron::operator+=<float_complext> (cuNDArray<float_complext> & x , float_complext y);
+template void Gadgetron::operator-=<float_complext> (cuNDArray<float_complext> & x , float_complext y);
+template void Gadgetron::operator*=<float_complext> (cuNDArray<float_complext> & x , float_complext y);
+template void Gadgetron::operator/=<float_complext> (cuNDArray<float_complext> & x , float_complext y);
 
 
 
 template EXPORTGPUCORE class Gadgetron::cuNDArray<double_complext>;
 
-template void Gadgetron::operator+=<double_complext> (Gadgetron::cuNDArray<double_complext> & x , Gadgetron::cuNDArray<double_complext> & y);
-template void Gadgetron::operator-=<double_complext> (Gadgetron::cuNDArray<double_complext> & x , Gadgetron::cuNDArray<double_complext> & y);
-template void Gadgetron::operator*=<double_complext> (Gadgetron::cuNDArray<double_complext> & x , Gadgetron::cuNDArray<double_complext> & y);
-template void Gadgetron::operator/=<double_complext> (Gadgetron::cuNDArray<double_complext> & x , Gadgetron::cuNDArray<double_complext> & y);
+template void Gadgetron::operator+=<double_complext> (cuNDArray<double_complext> & x , cuNDArray<double_complext> & y);
+template void Gadgetron::operator-=<double_complext> (cuNDArray<double_complext> & x , cuNDArray<double_complext> & y);
+template void Gadgetron::operator*=<double_complext> (cuNDArray<double_complext> & x , cuNDArray<double_complext> & y);
+template void Gadgetron::operator/=<double_complext> (cuNDArray<double_complext> & x , cuNDArray<double_complext> & y);
 
-template void Gadgetron::operator+=<double_complext> (Gadgetron::cuNDArray<double_complext> & x , double_complext y);
-template void Gadgetron::operator-=<double_complext> (Gadgetron::cuNDArray<double_complext> & x , double_complext y);
-template void Gadgetron::operator*=<double_complext> (Gadgetron::cuNDArray<double_complext> & x , double_complext y);
-template void Gadgetron::operator/=<double_complext> (Gadgetron::cuNDArray<double_complext> & x , double_complext y);
+template void Gadgetron::operator+=<double_complext> (cuNDArray<double_complext> & x , double_complext y);
+template void Gadgetron::operator-=<double_complext> (cuNDArray<double_complext> & x , double_complext y);
+template void Gadgetron::operator*=<double_complext> (cuNDArray<double_complext> & x , double_complext y);
+template void Gadgetron::operator/=<double_complext> (cuNDArray<double_complext> & x , double_complext y);
 
 
