@@ -44,12 +44,14 @@ template<class T> int amin(cuNDArray<T>* x){return amin(x,x->get_device());}
  * @param x Input data
  * @param device Device on which to perform computation
  * @return index of absolute maximum values
+ * @details Note that this returns the C-style index and NOT the Fortran index.
  */
 template<class T> int amax(cuNDArray<T>* x,int device);
 /**
  * @brief Gets the index of the index of the element with maximum absolute
  * @param x Input data
  * @return index of absolute maximum values
+ * @details Note that this returns the C-style index and NOT the Fortran index.
  */
 template<class T> int amax(cuNDArray<T>* x){return amax(x,x->get_device());}
 

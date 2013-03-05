@@ -1,8 +1,8 @@
 #pragma once 
 
-#include <Python.h>
+//#include <Python.h>
 #include <boost/python.hpp>
-#include <numpy/arrayobject.h>
+//#include <numpy/arrayobject.h>
 #include <boost/algorithm/string.hpp>
 
 #include "gadgetronpython_export.h"

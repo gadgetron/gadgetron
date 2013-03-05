@@ -1,6 +1,6 @@
 #include "GadgetReference.h"
 #include <boost/python.hpp>
-#include <numpy/arrayobject.h>
+//#include <numpy/arrayobject.h>
 
 #include "../core/GadgetMRIHeaders.h"
 

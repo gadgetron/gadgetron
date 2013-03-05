@@ -6,6 +6,7 @@ endif (WIN32)
 include_directories( ${CUDA_INCLUDE_DIRS}
                      ${Boost_INCLUDE_DIR}
                      ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
+		     ${CMAKE_SOURCE_DIR}/toolboxes/operators
 		     ${CMAKE_SOURCE_DIR}/toolboxes/solvers
                      ${CMAKE_SOURCE_DIR}/toolboxes/gpucore)
 

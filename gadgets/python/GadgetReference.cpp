@@ -4,9 +4,11 @@
 #include "GadgetContainerMessage.h"
 #include "hoNDArray.h"
 #include "ismrmrd.h"
-
+#include <boost/preprocessor/stringize.hpp>
 #include <boost/python.hpp>
-#include <numpy/arrayobject.h>
+#include <numpy/numpyconfig.h>
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
+#include <numpy/ndarrayobject.h>
 
 #include <complex>
 namespace Gadgetron{

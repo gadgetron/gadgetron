@@ -83,8 +83,8 @@ template<class T> int Gadgetron::amax(hoNDArray<T> *x){
 }
 
 //TODO: Make sure this approach doesn't actually copy our x....
+// 01-03-2013: Runtime seems to be the same as the simple loop approach, so it's probably safe
 template<class T> typename realType<T>::type Gadgetron::asum(hoNDArray<T> *x){
-
 	arma::Col<typename stdType<T>::type> xM = as_vector(x);
 	return arma::accu(arma::abs(xM));
 
