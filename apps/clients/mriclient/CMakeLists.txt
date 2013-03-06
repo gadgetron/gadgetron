@@ -43,5 +43,5 @@ ENDIF(WIN32)
 
 
 install(TARGETS mriclient DESTINATION bin)
-install (FILES ImageWriter.h HDF5ImageWriter.h DESTINATION include)
+install (FILES ImageWriter.h HDF5ImageWriter.h BlobFileWriter.h DESTINATION include)
 install(FILES ${ISMRMRD_LIBRARIES} DESTINATION lib)

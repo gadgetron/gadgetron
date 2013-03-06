@@ -39,6 +39,10 @@ int AccumulatorGadget::process_config(ACE_Message_Block* mb)
 	dimensions_.push_back(e_space.matrixSize().y());
 	dimensions_.push_back(e_space.matrixSize().z());
 
+        field_of_view_.push_back(e_space.fieldOfView_mm().x());
+        field_of_view_.push_back(e_space.fieldOfView_mm().y());
+        field_of_view_.push_back(e_space.fieldOfView_mm().z());
+
 	slices_ = e_limits.slice().present() ? e_limits.slice().get().maximum()+1 : 1;
 
   return GADGET_OK;
@@ -134,6 +138,9 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     cm1->getObjectPtr()->matrix_size[0]     = img_dims[0];
     cm1->getObjectPtr()->matrix_size[1]     = img_dims[1];
     cm1->getObjectPtr()->matrix_size[2]     = img_dims[2];
+    cm1->getObjectPtr()->field_of_view[0]   = field_of_view_[0];
+    cm1->getObjectPtr()->field_of_view[1]   = field_of_view_[1];
+    cm1->getObjectPtr()->field_of_view[2]   = field_of_view_[2];
     cm1->getObjectPtr()->channels           = img_dims[3];
     cm1->getObjectPtr()->slice   = m1->getObjectPtr()->idx.slice;
 

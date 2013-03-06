@@ -76,7 +76,7 @@ compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile,
 }
 
 template<class REAL> __global__ void
-compute_radial_trajectory_fixed_angle_2d_kernel( typename reald<REAL,2>::Type *co, REAL one_over_num_profiles_per_frame, REAL one_over_num_frames )
+compute_radial_trajectory_fixed_angle_2d_kernel( typename reald<REAL,2>::Type *co, REAL one_over_num_profiles_per_frame, REAL one_over_num_frames, REAL angular_offset )
 {
   const unsigned int index = blockIdx.x*blockDim.x + threadIdx.x;              
 
@@ -87,7 +87,7 @@ compute_radial_trajectory_fixed_angle_2d_kernel( typename reald<REAL,2>::Type *c
   const REAL frame = (REAL)blockIdx.y;
 
   REAL cos_angle, sin_angle;
-  gad_sincos<REAL>( (lprofile+frame*one_over_num_frames)*one_over_num_profiles_per_frame*get_pi<REAL>(), &sin_angle, &cos_angle );
+  gad_sincos<REAL>( (lprofile+frame*one_over_num_frames)*one_over_num_profiles_per_frame*get_pi<REAL>()+angular_offset, &sin_angle, &cos_angle );
 
   typename reald<REAL,2>::Type sample_pos; 
   sample_pos.vec[0] = (sample_idx_on_profile-bias)*cos_angle/samples_per_profile;
@@ -97,7 +97,7 @@ compute_radial_trajectory_fixed_angle_2d_kernel( typename reald<REAL,2>::Type *c
 }
 
 template<class REAL> boost::shared_ptr< cuNDArray< typename reald<REAL,2>::Type > > 
-compute_radial_trajectory_fixed_angle_2d( unsigned int num_samples_per_profile, unsigned int num_profiles_per_frame, unsigned int num_frames )
+compute_radial_trajectory_fixed_angle_2d( unsigned int num_samples_per_profile, unsigned int num_profiles_per_frame, unsigned int num_frames, REAL angular_offset )
 {
   typedef typename reald<REAL,2>::Type T;
   
@@ -127,7 +127,7 @@ compute_radial_trajectory_fixed_angle_2d( unsigned int num_samples_per_profile, 
   dim3 dimGrid( num_profiles_per_frame, num_frames );
   
   // Invoke kernel
-  compute_radial_trajectory_fixed_angle_2d_kernel<REAL><<< dimGrid, dimBlock >>> ( co->get_data_ptr(), REAL(1)/(REAL)num_profiles_per_frame, REAL(1)/(REAL)num_frames );
+  compute_radial_trajectory_fixed_angle_2d_kernel<REAL><<< dimGrid, dimBlock >>> ( co->get_data_ptr(), REAL(1)/(REAL)num_profiles_per_frame, REAL(1)/(REAL)num_frames, angular_offset );
   
   CHECK_FOR_CUDA_ERROR();
   
@@ -382,10 +382,10 @@ compute_radial_dcw_fixed_angle_2d( unsigned int samples_per_profile, unsigned in
 //
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray< typename reald<float,2>::Type > > 
-compute_radial_trajectory_fixed_angle_2d<float>( unsigned int, unsigned int, unsigned int );
+compute_radial_trajectory_fixed_angle_2d<float>( unsigned int, unsigned int, unsigned int, float );
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray< typename reald<double,2>::Type > > 
-compute_radial_trajectory_fixed_angle_2d<double>( unsigned int, unsigned int, unsigned int );
+compute_radial_trajectory_fixed_angle_2d<double>( unsigned int, unsigned int, unsigned int, double );
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray< typename reald<float,2>::Type > > 
 compute_radial_trajectory_golden_ratio_2d<float>( unsigned int, unsigned int, unsigned int, unsigned int );
@@ -393,7 +393,7 @@ compute_radial_trajectory_golden_ratio_2d<float>( unsigned int, unsigned int, un
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray< typename reald<double,2>::Type > > 
 compute_radial_trajectory_golden_ratio_2d<double>( unsigned int, unsigned int, unsigned int, unsigned int );
 
-template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >compute_radial_dcw_fixed_angle_2d<float>( unsigned int, unsigned int, float, float );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >compute_radial_dcw_fixed_angle_2d<float>( unsigned int, unsigned int, float, float);
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >compute_radial_dcw_fixed_angle_2d<double>( unsigned int, unsigned int, double, double );
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >compute_radial_dcw_golden_ratio_2d<float>( unsigned int, unsigned int, float, float, unsigned int );
