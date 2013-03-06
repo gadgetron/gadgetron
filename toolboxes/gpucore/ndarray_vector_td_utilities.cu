@@ -268,7 +268,7 @@ cAbs_kernel( T *in, REAL *out, unsigned int number_of_elements )
 
   if( idx<number_of_elements ){
     T val = in[idx];
-    out[idx] = abs(val);
+    out[idx] = Gadgetron::abs(val);
   }
 }
 
@@ -310,8 +310,8 @@ public:
 	minmax_clamp_functor(T _min,T _max):min(_min),max(_max) {};
 	 __inline__ __host__ __device__ T operator()(const T &y) const {
 		 if (y < min) return min;
-		 if (y > max) return max;
-		 return y;
+		 else if (y > max) return max;
+		 else return y;
 	 }
 private:
 	const T min,max;
@@ -1504,7 +1504,7 @@ shrink1_kernel( REAL gamma, T *in, T *out, unsigned int number_of_elements )
  
   if( idx<number_of_elements ){
     T in_val = in[idx]; 
-    REAL in_norm = abs<REAL>(in_val);
+    REAL in_norm = abs(in_val);
     T _res;
     if( in_norm > REAL(0) )
       _res =  in_val/in_norm;

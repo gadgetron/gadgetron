@@ -264,11 +264,17 @@ __inline__ __host__ __device__ float sgn(float x){
 	return (0 < x) - (x < 0);
 }
 
-template<class T> __inline__ __host__ __device__ T sgn(complext<T> x){
+template<class T> __inline__ __host__ __device__ complext<T> sgn(complext<T> x){
 	if (norm(x) <= 0) return 0;
 	return (x/abs(x));
 }
 
+/*
+__inline__ __host__ __device__ float abs(float x){ return std::abs(x);}
+__inline__ __host__ __device__ double abs(double x){ return std::abs(x);}
+*/
+
+using std::abs;
 
 //
 //__inline__ __host__ __device__ int sqrt(int x){return (int) sqrt(float(x));};

@@ -24,7 +24,7 @@ public:
     
   // Compute regularization image (apply the adjoint encoding operator on the encoded image)
   virtual void compute( ARRAY_TYPE_OPERATOR *image )
-  {     
+  {
     // Make temporary copy of input
     ARRAY_TYPE_OPERATOR tmp(*image);
 

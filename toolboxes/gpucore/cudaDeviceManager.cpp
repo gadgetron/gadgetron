@@ -153,6 +153,11 @@ cublasHandle_t cudaDeviceManager::getHandle(){
 	return handle[device];
 }
 
+int cudaDeviceManager::getCurrentDevice(){
+	int device;
+	CUDA_CALL(cudaGetDevice(&device));
+	return device;
+}
 void cudaDeviceManager::CleanUp(){
 	delete _instance; _instance = 0;
 }

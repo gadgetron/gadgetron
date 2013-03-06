@@ -18,22 +18,6 @@ find_package(ACE REQUIRED)
 find_package(Armadillo REQUIRED)
 find_package(FFTW3 COMPONENTS single double REQUIRED)
 
-if (${CMAKE_VERSION} VERSION_LESS "2.8.4")
- MESSAGE("You have cmake version less than 2.8.4, hence FindBLAS requires a Fortran compiler")
- MESSAGE("Upgrade to a newer version of cmake to avoid this Fortran compiler check")
- enable_language(Fortran)
-endif(${CMAKE_VERSION} VERSION_LESS "2.8.4")
-
-if (WIN32)
-# We modified findBlas to make it compatible with ACML5.1.0.
-# Soon hopefully, we can return to the native findBLAS again?
-find_package(GBLAS)
-find_package(GLAPACK) 
-else (WIN32)
-find_package(BLAS)
-find_package(LAPACK) 
-endif (WIN32)
-
 find_package(CUDA 4.1)
 
 find_package(GTest)
@@ -72,3 +56,5 @@ IF (ACE_FOUND AND ISMRMRD_FOUND)
        add_subdirectory(gadgets)
 ENDIF (ACE_FOUND AND ISMRMRD_FOUND)
 add_subdirectory(cmake)
+
+

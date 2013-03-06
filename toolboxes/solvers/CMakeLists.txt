@@ -34,9 +34,8 @@ install(FILES
 	cuLwSolver.h
 	cuSbLwSolver.h
 	cuSbcLwSolver.h
-	linearOperator.h
 	cuGPBBSolver.h
-	gpsolver.h
+	gpSolver.h
 	gpBBSolver.h
 	solvers_export.h
 DESTINATION include)

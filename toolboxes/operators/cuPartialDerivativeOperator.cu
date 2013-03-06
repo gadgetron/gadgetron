@@ -58,12 +58,12 @@ cuPartialDerivativeOperator<T,D>::compute_partial_derivative( typename intd<D>::
 								   bool accumulate )
 {
   if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
-    throw std::runtime_error( "partialDerivativeOperator::compute_partial_derivative : array dimensions mismatch.");
+    BOOST_THROW_EXCEPTION(runtime_error( "partialDerivativeOperator::compute_partial_derivative : array dimensions mismatch."));
 
   }
 
   if( in->get_number_of_dimensions() != D || out->get_number_of_dimensions() != D ){
-  	throw std::runtime_error("partialDerivativeOperator::compute_partial_derivative : dimensionality mismatch");
+  	BOOST_THROW_EXCEPTION(runtime_error("partialDerivativeOperator::compute_partial_derivative : dimensionality mismatch"));
 
   }
 
@@ -102,12 +102,12 @@ cuPartialDerivativeOperator<T,D>::compute_second_order_partial_derivative( typen
 										bool accumulate )
 {  
   if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
-    throw std::runtime_error( "partialDerivativeOperator::compute_second_order_partial_derivative : array dimensions mismatch.");
+    BOOST_THROW_EXCEPTION(runtime_error( "partialDerivativeOperator::compute_second_order_partial_derivative : array dimensions mismatch."));
 
   }
 
   if( in->get_number_of_dimensions() != D || out->get_number_of_dimensions() != D ){
-    throw std::runtime_error( "partialDerivativeOperator::compute_second_order_partial_derivative : dimensionality mismatch");
+    BOOST_THROW_EXCEPTION(runtime_error( "partialDerivativeOperator::compute_second_order_partial_derivative : dimensionality mismatch"));
 
   }
 

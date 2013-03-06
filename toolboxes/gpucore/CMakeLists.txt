@@ -25,6 +25,7 @@ cuda_add_library(gpucore SHARED
                             cuNDArray.cu
                             cuNDFFT.cpp
                             cuGTBLAS.cu
+                            hoCuGTBLAS.cu
                             CUBLASContextProvider.cpp
                             cudaDeviceManager.cpp
 							)
@@ -40,8 +41,11 @@ GPUTimer.h
 check_CUDA.h
 ndarray_vector_td_utilities.h
 cuNDArray.h
+hoCuNDArray.h
+hoCuNDArray_utils.h
 cuNDFFT.h
 cuGTBLAS.h
+hoCuGTBLAS.h
 GadgetronCuException.h
 radial_utilities.h
 real_utilities_device.h

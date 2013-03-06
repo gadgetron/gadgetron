@@ -31,4 +31,6 @@ install(FILES
 	real_utilities.h
 	cpucore_defines.h
 	hoGTBLAS.h
+	hoNDArray_utils.h
+	gtArmadillo.h
 	DESTINATION include)

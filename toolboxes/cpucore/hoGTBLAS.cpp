@@ -1,5 +1,6 @@
 #include "hoGTBLAS.h"
 #include "gtArmadillo.h"
+
 using namespace Gadgetron;
 /**
  * @brief Returns the dot product of two arrays

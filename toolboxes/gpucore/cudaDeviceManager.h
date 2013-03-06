@@ -46,6 +46,7 @@ public:
 	size_t getTotalMemory(int device);
 	cublasHandle_t getHandle();
 	cublasHandle_t getHandle(int device){return handle[device];};
+	int getCurrentDevice();
 
 };
 }
