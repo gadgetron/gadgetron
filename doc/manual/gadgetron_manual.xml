@@ -3696,7 +3696,9 @@ struct AcquisitionHeader
  uint16_t           trajectory_dimensions;          
  float              sample_time_us;                 
  float              position[3];                    
- float              quaternion[4];                  
+ float              read_dir[3];                    
+ float              phase_dir[3];                    
+ float              slice_dir[3];                    
  float              patient_table_position[3];      
  EncodingCounters   idx;                            
  int32_t            user_int[8];                    
@@ -3723,7 +3725,9 @@ uint16_t            version;
  float               field_of_view[3];              
  uint16_t            channels;                      
  float               position[3];                   
- float               quaternion[4];                 
+ float               read_dir[3];                    
+ float               phase_dir[3];                    
+ float               slice_dir[3];                    
  float               patient_table_position[3];     
  uint16_t            average;                       
  uint16_t            slice;                         
@@ -4193,10 +4197,15 @@ def recon_function(acq, data):
         g.img_set_position(img_head, 0,g.acq_get_position(acq,0))
         g.img_set_position(img_head, 1,g.acq_get_position(acq,1))
         g.img_set_position(img_head, 2,g.acq_get_position(acq,2))
-        g.img_set_quaternion(img_head, 0,g.acq_get_quaternion(acq, 0))
-        g.img_set_quaternion(img_head, 1,g.acq_get_quaternion(acq, 1))
-        g.img_set_quaternion(img_head, 2,g.acq_get_quaternion(acq, 2))
-        g.img_set_quaternion(img_head, 3,g.acq_get_quaternion(acq, 3))
+        g.img_set_read_dir(img_head, 0,g.acq_get_read_dir(acq,0))
+        g.img_set_read_dir(img_head, 1,g.acq_get_read_dir(acq,1))
+        g.img_set_read_dir(img_head, 2,g.acq_get_read_dir(acq,2))
+        g.img_set_phase_dir(img_head, 0,g.acq_get_phase_dir(acq,0))
+        g.img_set_phase_dir(img_head, 1,g.acq_get_phase_dir(acq,1))
+        g.img_set_phase_dir(img_head, 2,g.acq_get_phase_dir(acq,2))
+        g.img_set_slice_dir(img_head, 0,g.acq_get_slice_dir(acq,0))
+        g.img_set_slice_dir(img_head, 1,g.acq_get_slice_dir(acq,1))
+        g.img_set_slice_dir(img_head, 2,g.acq_get_slice_dir(acq,2))
         g.img_set_patient_table_position(img_head, 0, g.acq_get_patient_table_position(acq,0))
         g.img_set_patient_table_position(img_head, 1, g.acq_get_patient_table_position(acq,1))
         g.img_set_patient_table_position(img_head, 2, g.acq_get_patient_table_position(acq,2))
@@ -5126,9 +5135,17 @@ process(GadgetContainerMessage&lt;ISMRMRD::AcquisitionHeader&gt;* m1,
       m1-&gt;getObjectPtr()-&gt;position,
     sizeof(float)*3);
 
-    memcpy(cm1-&gt;getObjectPtr()-&gt;quaternion,
-      m1-&gt;getObjectPtr()-&gt;quaternion,
-    sizeof(float)*4);
+    memcpy(cm1-&gt;getObjectPtr()-&gt;read_dir,
+      m1-&gt;getObjectPtr()-&gt;read_dir,
+    sizeof(float)*3);
+
+    memcpy(cm1-&gt;getObjectPtr()-&gt;phase_dir,
+      m1-&gt;getObjectPtr()-&gt;phase_dir,
+    sizeof(float)*3);
+
+    memcpy(cm1-&gt;getObjectPtr()-&gt;slice_dir,
+      m1-&gt;getObjectPtr()-&gt;slice_dir,
+    sizeof(float)*3);
  
     memcpy(cm1-&gt;getObjectPtr()-&gt;patient_table_position,
       m1-&gt;getObjectPtr()-&gt;patient_table_position, sizeof(float)*3);

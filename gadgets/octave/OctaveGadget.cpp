@@ -50,10 +50,20 @@
 	memcpy(&position(0),h.position,sizeof(float)*3);
 	m.assign("position",                         octave_value(position));
 
- 	d(0) = 4;
-	FloatNDArray quaternion(d);
-	memcpy(&quaternion(0),h.quaternion,sizeof(float)*4);
-	m.assign("quaternion",                     octave_value(quaternion));
+	d(0) = 3;
+	FloatNDArray read_dir(d);
+	memcpy(&read_dir(0),h.read_dir,sizeof(float)*3);
+	m.assign("read_dir",            octave_value(read_dir));
+
+	d(0) = 3;
+	FloatNDArray phase_dir(d);
+	memcpy(&phase_dir(0),h.phase_dir,sizeof(float)*3);
+	m.assign("phase_dir",            octave_value(phase_dir));
+
+	d(0) = 3;
+	FloatNDArray slice_dir(d);
+	memcpy(&slice_dir(0),h.slice_dir,sizeof(float)*3);
+	m.assign("slice_dir",            octave_value(slice_dir));
 
 	d(0) = 3;
 	FloatNDArray patient_table_position(d);
@@ -147,10 +157,20 @@
 	memcpy(&position(0),h.position,sizeof(float)*3);
 	m.assign("position",            octave_value(position));
 
-	d(0) = 4;
-	FloatNDArray quaternion(d);
-	memcpy(&quaternion(0),h.quaternion,sizeof(float)*3);
-	m.assign("quaternion",            octave_value(quaternion));
+	d(0) = 3;
+	FloatNDArray read_dir(d);
+	memcpy(&read_dir(0),h.read_dir,sizeof(float)*3);
+	m.assign("read_dir",            octave_value(read_dir));
+
+	d(0) = 3;
+	FloatNDArray phase_dir(d);
+	memcpy(&phase_dir(0),h.phase_dir,sizeof(float)*3);
+	m.assign("phase_dir",            octave_value(phase_dir));
+
+	d(0) = 3;
+	FloatNDArray slice_dir(d);
+	memcpy(&slice_dir(0),h.slice_dir,sizeof(float)*3);
+	m.assign("slice_dir",            octave_value(slice_dir));
 
 	d(0) = 3;
 	FloatNDArray patient_table_position(d);
