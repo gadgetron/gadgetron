@@ -1,0 +1,61 @@
+#ifndef DICOMFINISHGADGET_H
+#define DICOMFINISHGADGET_H
+
+#include "fmrifgelib_export.h"
+#include "Gadget.h"
+#include "hoNDArray.h"
+#include "GadgetMRIHeaders.h"
+#include "ismrmrd.h"
+#include "GadgetStreamController.h"
+
+#include <string>
+#include <map>
+#include <complex>
+
+template <typename T>
+class EXPORTGADGETSCORE DicomFinishGadget :
+    public Gadget2<ISMRMRD::ImageHeader, hoNDArray< T > >
+{
+    public:
+        DicomFinishGadget<T>()
+            : Gadget2<ISMRMRD::ImageHeader, hoNDArray<T> >()
+            , dcmFile()
+            , seriesIUIDRoot()
+        { }
+
+    protected:
+        virtual int process_config(ACE_Message_Block * mb);
+        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
+                GadgetContainerMessage< hoNDArray< T > >* m2);
+
+    private:
+        DcmFileFormat dcmFile;
+        std::string seriesIUIDRoot;
+        long initialSeriesNumber;
+        std::map <unsigned int, std::string> seriesIUIDs;
+};
+
+class EXPORTGADGETSCORE DicomFinishGadgetUSHORT :
+    public DicomFinishGadget<ACE_UINT16>
+{
+    public:
+        GADGET_DECLARE(DicomFinishGadgetUSHORT);
+};
+
+class EXPORTGADGETSCORE DicomFinishGadgetFLOAT :
+    public DicomFinishGadget<float>
+{
+    public:
+        GADGET_DECLARE(DicomFinishGadgetFLOAT);
+};
+
+/*
+class EXPORTGADGETSCORE DicomFinishGadgetCPLX :
+    public DicomFinishGadget< std::complex<float> >
+{
+    public:
+        GADGET_DECLARE(DicomFinishGadgetCPLX);
+};
+*/
+
+#endif //DICOMFINISHGADGET_H
