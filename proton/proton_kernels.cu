@@ -9,7 +9,8 @@
 #define STEPS 3
 
 using namespace Gadgetron;
-template <typename T> __inline__ __host__ __device__ T sgn(T val)
+
+/*template <typename T> __inline__ __host__ __device__ T sgn(T val)
 {
     return copysign(T(1),val);
 }
@@ -20,7 +21,7 @@ template< class T, unsigned int D > __inline__ __host__ __device__ vector_td<T,D
   vector_td<T,D> res;
   for(unsigned int i=0; i<D; i++ ) res.vec[i] =sgn(v1.vec[i]);
   return res;
-}
+}*/
 /*
 template< class T, class R, unsigned int D > __inline__ __host__ __device__ vector_td<typename vectorTDReturnType<T,R>::type,D> operator* ( const vector_td<T,D> &v1, const vector_td<R,D> &v2 )
 {
@@ -257,6 +258,7 @@ template <class REAL> __global__ void Gadgetron::crop_splines_kernel(vector_td<R
 
 			//p = (2*t3-3*t2+1)*p0+(t3-2*t2+t)*m0+(3*t2-2*t3)*p1+(t3-t2)*m1+half_dims;
 			p=t*m0+p0+half_dims;
+
 			if ( min(p) >= 0 && p < dims) break;
 
 		}
@@ -265,7 +267,6 @@ template <class REAL> __global__ void Gadgetron::crop_splines_kernel(vector_td<R
 
 		//pt0 =  (2*t3-3*t2+1)*p0+(t3-2*t2+t)*m0+(3*t2-2*t3)*p1+(t3-t2)*m1; //Calculate new starting point
 		pt0=t*m0+p0;
-
 
 		t = 0;
 		for (int i = 0; i < MAXSTEP; i++){

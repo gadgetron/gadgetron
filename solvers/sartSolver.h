@@ -83,9 +83,8 @@ template <class ARRAY_TYPE> class sartSolver
 
 			return boost::shared_ptr<ARRAY_TYPE>(x);
 		}
-		virtual bool add_regularization_operator( boost::shared_ptr< linearOperator<ARRAY_TYPE> > op){
+		virtual void add_regularization_operator( boost::shared_ptr< linearOperator<ARRAY_TYPE> > op){
 			std::cout << "Error sartSolver::add_regularization_operator - SART Solver does NOT support regularization operators." << std::endl;
-			return false;
 		}
 
 

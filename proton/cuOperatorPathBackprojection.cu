@@ -110,6 +110,9 @@ template<class REAL> void cuOperatorPathBackprojection<REAL>
 	int dims = splines->get_number_of_elements()/4;
 
 
+	if (!this->splines->get_data_ptr()) BOOST_THROW_EXCEPTION(runtime_error("Splines data is empty."));
+	if (!projections->get_data_ptr()) BOOST_THROW_EXCEPTION(runtime_error("Projections data is empty."));
+	if (projections->get_number_of_elements() != dims) BOOST_THROW_EXCEPTION(runtime_error("Projections data does not match splines."));
 	 
 
 	 int threadsPerBlock =std::min(dims,MAX_THREADS_PER_BLOCK);
@@ -124,11 +127,12 @@ template<class REAL> void cuOperatorPathBackprojection<REAL>
 
 	 for (int offset = 0; offset <  (dims+batchSize); offset += batchSize){
 
-	   crop_splines_kernel<<< dimGrid, dimBlock >>> (this->splines->get_data_ptr(),projections->get_data_ptr(),physical_dims,origin,(int) dims,background,offset);
-
+	   crop_splines_kernel<<< dimGrid, dimBlock >>> (this->splines->get_data_ptr(),projections->get_data_ptr(),physical_dims,origin,dims,background,offset);
+	   cudaThreadSynchronize();
 	   CHECK_FOR_CUDA_ERROR();
 	 }
-
+	 cudaThreadSynchronize();
+   CHECK_FOR_CUDA_ERROR();
 	 if (rescale_dirs){
 		 for (int offset = 0; offset <  (dims+batchSize); offset += batchSize){
 		   rescale_directions_kernel<<< dimGrid, dimBlock >>> (this->splines->get_data_ptr(),projections->get_data_ptr(),physical_dims,(int) dims,offset);

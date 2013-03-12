@@ -2,7 +2,18 @@ cmake_minimum_required(VERSION 2.6)
 
 PROJECT(gt-tomography)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
+find_path(GADGETRON_CMAKE_MODULES FindGadgetron.cmake HINTS
+$ENV{GADGETRON_HOME}/cmake
+/usr/local/gadgetron/cmake)
+
+if (NOT GADGETRON_CMAKE_MODULES)
+  MESSAGE(FATAL_ERROR "GADGETRON_CMAKE_MODULES cannot be found. 
+   Try to set GADGETRON_HOME environment variable.")
+endif(NOT GADGETRON_CMAKE_MODULES)
+
+set(CMAKE_MODULE_PATH ${GADGETRON_CMAKE_MODULES})
+
 find_package(Gadgetron REQUIRED)
 
 include_directories(  "${GADGETRON_HOME}/include")
