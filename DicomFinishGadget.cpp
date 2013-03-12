@@ -716,8 +716,6 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
     int window_center = (mid_pix_val + mean_pix_val) / 2;
     int window_width_left = window_center - min_pix_val;
     int window_width_right = max_pix_val - window_center;
-    printf("%d %d %d %d %d %d\n", (int)min_pix_val, (int)max_pix_val, (int)mean_pix_val,
-            mid_pix_val, window_width_left, window_width_right);;
     int window_width = (window_width_right > window_width_left) ?
             window_width_right : window_width_left;
     // Window Center
