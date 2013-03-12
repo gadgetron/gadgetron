@@ -24,25 +24,24 @@ public:
 	}
 	virtual ~gpSolver(){}
 
-	virtual bool add_regularization_operator(boost::shared_ptr< linearOperator<ARRAY_TYPE> > op ){
-		return add_regularization_operator(op,2);
+
+	virtual void add_regularization_operator(boost::shared_ptr< linearOperator<ARRAY_TYPE> > op ){
+		add_regularization_operator(op,2);
 	}
-	virtual bool add_regularization_operator(boost::shared_ptr< linearOperator<ARRAY_TYPE> > op, int L_norm ){
+	virtual void add_regularization_operator(boost::shared_ptr< linearOperator<ARRAY_TYPE> > op, int L_norm ){
 	  if (L_norm==1){
 		  operators.push_back(boost::shared_ptr<gpRegularizationOperator>(new l1GPRegularizationOperator(op)));
 	  }else{
-		  operators.push_back(boost::shared_ptr<gpRegularizationOperator>(new l2GPRegularizationOperator(op)));
+		  operators.push_back(op);
 	  }
-	  return true;
 	}
 
-	virtual bool add_regularization_operator(boost::shared_ptr< linearOperator<ARRAY_TYPE> > op, boost::shared_ptr<ARRAY_TYPE> prior, int L_norm=2 ){
+	virtual void add_regularization_operator(boost::shared_ptr< linearOperator<ARRAY_TYPE> > op, boost::shared_ptr<ARRAY_TYPE> prior, int L_norm=2 ){
 	  if (L_norm==1){
 		  operators.push_back(boost::shared_ptr<gpRegularizationOperator>(new l1GPRegularizationOperator(op,prior)));
 	  }else{
 		  operators.push_back(boost::shared_ptr<gpRegularizationOperator>(new l2GPRegularizationOperator(op,prior)));
 	  }
-	  return true;
 	}
 
 	virtual void add_regularization_group_operator ( boost::shared_ptr< linearOperator<ARRAY_TYPE> > op )
@@ -90,38 +89,58 @@ public:
 protected:
 
 
-	virtual REAL add_gradient(ARRAY_TYPE* x, ARRAY_TYPE* g){
-		REAL cost = REAL(0);
-
+	virtual void add_gradient(ARRAY_TYPE* x, ARRAY_TYPE* g){
 		for (int i = 0; i < operators.size(); i++){
-			boost::shared_ptr<gpRegularizationOperator> op = operators[i];
-			cost += op->add_gradient(x,g);
-
+			boost::shared_ptr<generalOperator<ARRAY_TYPE> > op = operators[i];
+			op->gradient(x,g,true);
 		}
-		return cost;
+
 	}
 
 
 
-	class gpRegularizationOperator {
+	class gpRegularizationOperator : public generalOperator<ARRAY_TYPE> {
 	public:
-	  gpRegularizationOperator(){
+	  gpRegularizationOperator() : generalOperator<ARRAY_TYPE>(){
 	  }
+
+	  gpRegularizationOperator(std::vector<unsigned int> *dims): generalOperator<ARRAY_TYPE>(){this->set_domain_dimensions(dims);};
 	  gpRegularizationOperator(
-			  boost::shared_ptr<ARRAY_TYPE> _prior){
+			  boost::shared_ptr<ARRAY_TYPE> _prior): generalOperator<ARRAY_TYPE>(){
 		  prior = _prior;
-
-
 	  }
 
-	  virtual void set_domain_dimensions(std::vector<unsigned int> *dims)=0;
+	  gpRegularizationOperator(boost::shared_ptr<ARRAY_TYPE> _prior,std::vector<unsigned int> *dims): generalOperator<ARRAY_TYPE>(){
+				prior = _prior;
+				set_domain_dimensions(dims);
+		}
 
-	  virtual REAL add_gradient(ARRAY_TYPE* x, ARRAY_TYPE* g)=0;
 
 	protected:
 
 	  boost::shared_ptr<ARRAY_TYPE> prior;
 
+	};
+
+
+	class l2GPRegularizationOperator : public gpRegularizationOperator {
+	public:
+		l2GPRegularizationOperator(boost::shared_ptr<linearOperator<ARRAY_TYPE> > _op){
+				  op = _op;
+		}
+	  l2GPRegularizationOperator(
+			  boost::shared_ptr<linearOperator<ARRAY_TYPE> > _op,
+			  boost::shared_ptr<ARRAY_TYPE> _prior): gpRegularizationOperator(_prior){op = _op;}
+	  virtual void gradient(ARRAY_TYPE* x, ARRAY_TYPE* g,bool accumulate=false){
+	  	ARRAY_TYPE* x2 = x;
+		  if (this->prior.get()){
+			  x2 = new ARRAY_TYPE(*x);
+			  axpy(REAL(-1),this->prior.get(),x2);
+		  }
+		  op->gradient(x,g,accumulate);
+	  }
+	protected:
+	  boost::shared_ptr<linearOperator<ARRAY_TYPE> > op;
 	};
 
 	class l1GPRegularizationOperator : public gpRegularizationOperator {
@@ -135,10 +154,12 @@ protected:
 			  boost::shared_ptr<ARRAY_TYPE> _prior): gpRegularizationOperator(_prior){op = _op;}
 
 
-	  virtual REAL add_gradient(ARRAY_TYPE* x, ARRAY_TYPE* g){
+	  virtual void gradient(ARRAY_TYPE* x, ARRAY_TYPE* g,bool accumulate=false){
 		  ARRAY_TYPE tmp(op->get_codomain_dimensions());
 		  ARRAY_TYPE q(op->get_domain_dimensions());
 		  ARRAY_TYPE* x2 = x;
+
+		  if (!accumulate) g->clear();
 		  if (this->prior.get()){
 			  x2 = new ARRAY_TYPE;
 			  *x2 = *x;
@@ -146,15 +167,15 @@ protected:
 
 		  }
 		  op->mult_M(x2,&tmp);
-
-		  REAL cost = op->get_weight()*asum(&tmp);
 		  inplace_sgn(&tmp);
 		  op->mult_MH(&tmp,&q,false);
 		  axpy(op->get_weight(),&q,g);
-		  if (this->prior.get()){ delete x2; }
-		  return cost;
+		  if (this->prior.get()) delete x2;
 	  }
+
+
 	  virtual void set_domain_dimensions(std::vector<unsigned int> *dims){
+	  	generalOperator<ARRAY_TYPE>::set_domain_dimensions(dims);
 		  op->set_domain_dimensions(dims);
 		  if (op->get_codomain_dimensions()->size() == 0){
 			  std::cout << "WARNING: Codomain dimension not set. Setting to domain_dimension" << std::endl;
@@ -164,45 +185,6 @@ protected:
 	  boost::shared_ptr<linearOperator<ARRAY_TYPE> > op;
 
 
-	};
-
-	class l2GPRegularizationOperator : public gpRegularizationOperator {
-	public:
-	  l2GPRegularizationOperator(boost::shared_ptr<linearOperator<ARRAY_TYPE> > _op){
-		  op = _op;
-
-	  }
-	  l2GPRegularizationOperator(boost::shared_ptr<linearOperator<ARRAY_TYPE> > _op,
-			  boost::shared_ptr<ARRAY_TYPE> _prior): gpRegularizationOperator(_prior){
-		  op = _op;
-
-	  }
-	  virtual REAL add_gradient(ARRAY_TYPE* x, ARRAY_TYPE* g){
-		  ARRAY_TYPE tmp(op->get_codomain_dimensions());
-		  ARRAY_TYPE q(op->get_domain_dimensions());
-		  ARRAY_TYPE* x2 = x;
-		  if (this->prior.get()){
-			  x2 = new ARRAY_TYPE;
-			  *x2 = *x;
-			  axpy(REAL(-1),this->prior.get(),x2);
-
-		  }
-		  op->mult_M(x2,&tmp,false);
-
-		  REAL cost = op->get_weight()*dot(&tmp,&tmp);
-		  op->mult_MH(&tmp,&q,false);
-		  axpy(op->get_weight(),&q,g);
-		  if (this->prior.get()){ delete x2; }
-		  return cost;
-	  }
-	  boost::shared_ptr<linearOperator<ARRAY_TYPE> > op;
-	  virtual void set_domain_dimensions(std::vector<unsigned int> *dims){
-		  op->set_domain_dimensions(dims);
-		  if (op->get_codomain_dimensions()->size() == 0){
-			  std::cout << "WARNING: Codomain dimension not set. Setting to domain_dimension" << std::endl;
-			  op->set_codomain_dimensions(dims);
-		  }
-	  }
 	};
 
 	class l1GroupGPRegularizationOperator : public gpRegularizationOperator {
@@ -218,12 +200,12 @@ protected:
 		  threshold = REAL(1e-8);
 
 	  }
-	  virtual REAL add_gradient(ARRAY_TYPE* x, ARRAY_TYPE* g){
+	  virtual void gradient(ARRAY_TYPE* x, ARRAY_TYPE* g,bool accumulate=false){
 		  std::vector<boost::shared_ptr<ARRAY_TYPE> > data;
 		  ARRAY_TYPE gData(group.front()->get_codomain_dimensions());
 		  gData.clear();
 
-
+		  if (!accumulate) g->clear();
 		  ARRAY_TYPE* x2 = x;
 		  if (this->prior.get()){
 			  x2 = new ARRAY_TYPE;
@@ -249,7 +231,7 @@ protected:
 		  			  delete x2;
 		  }
 		  gData.sqrt();
-		  REAL cost = group.front()->get_weight()*asum(&gData);
+		  //REAL cost = group.front()->get_weight()*asum(&gData);
 		  clamp_min(&gData,threshold);
 		  gData.reciprocal();
 
@@ -267,7 +249,6 @@ protected:
 			  axpy(op->get_weight(),&q,g);
 		  }
 
-		  return cost;
 	  }
 
 	  void set_threshold(REAL _threshold){
@@ -279,7 +260,7 @@ protected:
 	  REAL threshold;
 
 	  virtual void set_domain_dimensions(std::vector<unsigned int> *dims){
-
+	  	generalOperator<ARRAY_TYPE>::set_domain_dimensions(dims);
 		  for (int i = 0; i < group.size(); i++ ){
 			  boost::shared_ptr<linearOperator<ARRAY_TYPE> > op = group[i];
 			  op->set_domain_dimensions(dims);
@@ -293,7 +274,7 @@ protected:
 
 	 };
 
-	std::vector< boost::shared_ptr<gpRegularizationOperator> > operators;
+	std::vector< boost::shared_ptr<generalOperator<ARRAY_TYPE> > > operators;
 	std::vector< boost::shared_ptr<linearOperator<ARRAY_TYPE> > >  current_group;
 
 

@@ -63,14 +63,21 @@ TYPED_TEST(cuNDArray_Test,equalsMultiplyTest){
 }
 
 TYPED_TEST(cuNDArray_Test,absTest){
-	this->Array.fill(TypeParam(2));
+	this->Array.fill(TypeParam(2.2));
 	this->Array.abs();
 	TypeParam res = this->Array.get_device_ptr()[121];
-	EXPECT_FLOAT_EQ(2,real(res));
-	this->Array.fill(TypeParam(-2));
+	EXPECT_FLOAT_EQ(real(res),2.2);
+	this->Array.fill(TypeParam(-2.2));
 	this->Array.abs();
 	res = this->Array.get_device_ptr()[121];
-	EXPECT_FLOAT_EQ(2,real(res));
+	EXPECT_FLOAT_EQ(real(res),2.2);
 }
 
 
+TYPED_TEST(cuNDArray_Test,sqrtTest){
+	this->Array.fill(TypeParam(12.1));
+	this->Array.sqrt();
+	TypeParam res = this->Array.get_device_ptr()[121];
+	EXPECT_FLOAT_EQ(real(res),3.478505426);
+
+}

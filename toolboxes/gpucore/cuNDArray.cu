@@ -510,7 +510,7 @@ template <class T>
 void Gadgetron::cuNDArray<T>::sqrt()
 {
 	thrust::device_ptr<T> devPtr = this->get_device_ptr();
-	thrust::transform(devPtr,devPtr+this->get_number_of_elements(),devPtr,cuNDA_sqrt<T>());
+	thrust::transform(this->begin(),this->end(),this->begin(),cuNDA_sqrt<T>());
 }
 
 

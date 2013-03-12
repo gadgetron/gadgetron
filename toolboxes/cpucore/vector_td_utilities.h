@@ -11,6 +11,9 @@
 #include <iostream>
 #include <algorithm>
 
+
+using std::min;
+using std::max;
 namespace Gadgetron{
 
 //
@@ -43,7 +46,7 @@ vector_td<int,D> sgn( const vector_td<T,D> vec )
 {
   vector_td<int,D> res;
   for (unsigned int i=0; i<D; i++) {
-    res.vec[i] = ::sgn(vec.vec[i]);
+    res.vec[i] = sgn(vec.vec[i]);
   }
   return res;
 }
@@ -288,7 +291,7 @@ T max( const vector_td<T,D> vec )
 {
   T res = vec.vec[0];
   for (unsigned int i=1; i<D; i++){
-    res = std::max(res,vec.vec[i]);
+    res = ::max(res,vec.vec[i]);
   }
   return res;
 }
@@ -298,7 +301,7 @@ T min( const vector_td<T,D> vec )
 {
   T res = vec.vec[0];
   for (unsigned int i=1; i<D; i++){
-    res = std::min(res,vec.vec[i]);
+    res =::min(res,vec.vec[i]);
   }
   return res;
 }
@@ -432,4 +435,11 @@ vector_td<REAL,D> to_reald( const vector_td<T,D> vec )
   }
   return res;
 }
+
+template<class T, unsigned int D> ::std::ostream& operator<<(::std::ostream& os, const vector_td<T,D>& vec) {
+	os << "vector_td<" << D << "> (" ;
+	for (int i = 0; i < D-1; i++) os << vec[i] << ", ";
+	return os << vec[D-1] <<')';
+}
+
 }

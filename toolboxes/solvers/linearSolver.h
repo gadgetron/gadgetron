@@ -39,23 +39,21 @@ public:
   }  
   
   // Add linear operator to solver (in addition to the encoding operator)
-  virtual bool add_regularization_operator( boost::shared_ptr< linearOperator< ARRAY_TYPE> > op)
+  virtual void add_regularization_operator( boost::shared_ptr< linearOperator< ARRAY_TYPE> > op)
   {
     if( !op.get() ){
-    	throw std::runtime_error( "Error: linearSolver::add_regularization_operator : NULL operator provided" );
+    	BOOST_THROW_EXCEPTION(runtime_error( "Error: linearSolver::add_regularization_operator : NULL operator provided" ));
 
     }
     
     regularization_operators_.push_back(op);
-    
-    return true;
   }
   
   virtual boost::shared_ptr< linearOperator< ARRAY_TYPE> >
   get_regularization_operator( unsigned int i )
   {
     if( i >= get_number_of_regularization_operators() ){
-    	throw std::runtime_error( "Error: linearSolver::get_regularization_operator : index out of range" );
+    	BOOST_THROW_EXCEPTION(runtime_error( "Error: linearSolver::get_regularization_operator : index out of range" ));
 
     }
     

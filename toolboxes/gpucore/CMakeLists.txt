@@ -3,10 +3,6 @@ if (WIN32)
 ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUCORE__)
 endif (WIN32)
 
-if (GTEST_FOUND)
-	add_subdirectory(tests)
-endif (GTEST_FOUND)
-
 find_package(CULA REQUIRED)
 
 include_directories( ${CUDA_INCLUDE_DIRS}

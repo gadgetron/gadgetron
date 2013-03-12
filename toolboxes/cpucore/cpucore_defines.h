@@ -1,5 +1,6 @@
+#pragma once
 
-#ifdef GTCUDA_FOUND
+#if defined(GTCUDA_FOUND) || defined(__host__) || defined(__CUDACC__)
 #include <host_defines.h>
 #else
 //#define __inline__ inline

@@ -10,7 +10,9 @@ include_directories(		${CUDA_INCLUDE_DIRS}
 
 cuda_add_library(operators SHARED cuPartialDerivativeOperator.cu
                                 cuLaplaceOperator.cu
-                                cuVariableGaussOperator.cu)
+                                cuVariableGaussOperator.cu
+                                cuTVOperator.cu
+                                cuTV1DOperator.cu)
 
 target_link_libraries(operators gpucore ${CUDA_LIBRARIES}
 ${CUDA_CUBLAS_LIBRARIES} )
@@ -19,6 +21,7 @@ install(TARGETS operators DESTINATION lib)
 
 install(FILES 	
 	linearOperator.h
+	generalOperator.h
 	cuLinearOperator_macros.h
 	identityOperator.h
 	imageOperator.h
@@ -35,4 +38,6 @@ install(FILES
 	cuLaplaceOperator.h
 	cuVariableGaussOperator.h
 	encodingOperatorContainer.h
+	cuTVOperator.h
+    cuTV1DOperator.h
 DESTINATION include)

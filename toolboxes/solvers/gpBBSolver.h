@@ -49,6 +49,8 @@ template <class ARRAY_TYPE> class gpBBSolver
 		x->create(image_dims.get());
 
 
+		ARRAY_TYPE x_old(image_dims.get());
+
 
 		ARRAY_TYPE * g = new ARRAY_TYPE;
 		g->create(image_dims.get());
@@ -61,7 +63,7 @@ template <class ARRAY_TYPE> class gpBBSolver
 		} else  {
 			x->clear();
 		}
-		REAL nabla_old;
+
 
 		ARRAY_TYPE encoding_space;
 		REAL reg_res,data_res;
@@ -90,17 +92,10 @@ template <class ARRAY_TYPE> class gpBBSolver
 
 			}
 
-            /*
-			if (i==0){
-				r0=this->solver_dot(g,g);
-			}
-            */
-
-			reg_res = this->add_gradient(x,g); // Adds the gradient from all the regularization operators
+			this->add_gradient(x,g); // Adds the gradient from all the regularization operators
 
 			if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
 										 std::cout << "Data residual: " << data_res << std::endl;
-										 std::cout << "Cost function: " << data_res+reg_res << std::endl;
 			}
 
 			if (non_negativity_constraint_) solver_non_negativity_filter(x,g);
@@ -115,11 +110,14 @@ template <class ARRAY_TYPE> class gpBBSolver
 			  }
 
 			} else {
-				REAL gg = dot(g,g);
-				REAL gogo = dot(g_old,g_old);
-				REAL ggo = dot(g,g_old);
-				REAL nabla1 = nabla_old*gogo/(gogo-ggo);
-				REAL nabla2 = nabla_old*(gogo-ggo)/(gogo-2*ggo+gg);
+				x_old -= *x;
+				*g_old -= *g;
+				REAL xx = dot(&x_old,&x_old);
+				REAL gx = dot(g_old,&x_old);
+				REAL gg = dot(g_old,&x_old);
+				REAL nabla1 = xx/gx;
+
+				REAL nabla2 = gx/gg;
 				if ((nabla2/nabla1) < 0.5) nabla = nabla2;
 				else nabla = nabla1;
 
@@ -136,6 +134,8 @@ template <class ARRAY_TYPE> class gpBBSolver
 			tmp=g_old;
 			g_old=g;
 			g=tmp;
+
+			x_old = *x;
 			REAL grad_norm = nrm2(g_old);
 
 			if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
@@ -147,7 +147,9 @@ template <class ARRAY_TYPE> class gpBBSolver
 
 			if (grad_norm < tc_tolerance_)  break;
 
-			nabla_old = nabla;
+
+
+
 		}
 
 

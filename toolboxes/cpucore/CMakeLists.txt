@@ -2,10 +2,6 @@ if (WIN32)
 ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUCORE__)
 endif (WIN32)
 
-if (GTEST_FOUND)
-	add_subdirectory(tests)
-endif (GTEST_FOUND)
-
 include_directories(${ACE_INCLUDE_DIR} 
 		    ${Boost_INCLUDE_DIR}
 		    ${FFTW3_INCLUDE_DIR})
