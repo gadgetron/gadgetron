@@ -1,6 +1,8 @@
 #include "cuNDArray.h"
 #include "vector_td.h"
+#include <sstream>
 
+namespace Gadgetron{
 template <class T> 
 __global__ void cuNDArray_permute_kernel(T* in, T* out, 
 					 unsigned int ndim,
@@ -32,7 +34,7 @@ __global__ void cuNDArray_permute_kernel(T* in, T* out,
   }
 }
 
-template <class T> int cuNDArray_permute(cuNDArray<T>* in,
+template <class T> void cuNDArray_permute(cuNDArray<T>* in,
  					 cuNDArray<T>* out,
 					 std::vector<unsigned int> *order,
 					 int shift_mode)
@@ -46,17 +48,17 @@ template <class T> int cuNDArray_permute(cuNDArray<T>* in,
     out_ptr = out->data_;
   } else {
     if (cudaMalloc((void**) &out_ptr, in->elements_*sizeof(T)) != cudaSuccess) {
-      std::cerr << "cuNDArray_permute : Error allocating CUDA memory" << std::endl;
-      out_ptr = 0;
-      return -1;
+      BOOST_THROW_EXCEPTION(cuda_error("cuNDArray_permute : Error allocating CUDA memory"));
+
+
     }
   }
 
-  unsigned int* dims        = new unsigned int[in->dimensions_->size()];
-  unsigned int* strides_out = new unsigned int[in->dimensions_->size()];
+  unsigned int* dims        = new unsigned int[in->get_number_of_dimensions()];
+  unsigned int* strides_out = new unsigned int[in->get_number_of_dimensions()];
   if (!dims || !strides_out) {
-    std::cerr << "cuNDArray_permute: failed to allocate temporary storage for arrays" << std::endl;
-    return -1;
+    BOOST_THROW_EXCEPTION(cuda_error("cuNDArray_permute: failed to allocate temporary storage for arrays"));
+
   }
 
   for (unsigned int i = 0; i < in->dimensions_->size(); i++) {
@@ -72,28 +74,28 @@ template <class T> int cuNDArray_permute(cuNDArray<T>* in,
   unsigned int* strides_out_dev = 0;
   
   if (cudaMalloc((void**) &dims_dev, in->dimensions_->size()*sizeof(unsigned int)) != cudaSuccess) {
-    std::cerr << "cuNDArray_permute : Error allocating CUDA dims memory" << std::endl;
-    return -1;
+    BOOST_THROW_EXCEPTION(cuda_error("cuNDArray_permute : Error allocating CUDA dims memory"));
+
   }
   
   if (cudaMalloc((void**) &strides_out_dev, in->dimensions_->size()*sizeof(unsigned int)) != cudaSuccess) {
-    std::cerr << "cuNDArray_permute : Error allocating CUDA strides_out memory" << std::endl;
-    return -1;
+    BOOST_THROW_EXCEPTION(cuda_error("cuNDArray_permute : Error allocating CUDA strides_out memory"));
+
   }
   
   if (cudaMemcpy(dims_dev, dims, in->dimensions_->size()*sizeof(unsigned int), cudaMemcpyHostToDevice) !=
       cudaSuccess) {
 
     err = cudaGetLastError();
-    std::cerr << "cuNDArray_permute : Error uploading dimensions to device, " 
-	      << cudaGetErrorString(err) << std::endl;
-    return -1;
+    std::stringstream ss;
+    ss << "cuNDArray_permute : Error uploading dimensions to device, " << cudaGetErrorString(err);
+    BOOST_THROW_EXCEPTION(cuda_error(ss.str()));
   }
 
   if (cudaMemcpy(strides_out_dev, strides_out, in->dimensions_->size()*sizeof(unsigned int), cudaMemcpyHostToDevice) !=
       cudaSuccess) {
-    std::cerr << "cuNDArray_permute : Error uploading strides to device" << std::endl;
-    return -1;
+    BOOST_THROW_EXCEPTION(cuda_error("cuNDArray_permute : Error uploading strides to device"));
+
   }
 
   dim3 blockDim(512,1,1);
@@ -111,22 +113,25 @@ template <class T> int cuNDArray_permute(cuNDArray<T>* in,
 
   err = cudaGetLastError();
   if( err != cudaSuccess ){
-    std::cerr << "cuNDArray_permute : Error during kernel call: " << cudaGetErrorString(err) << std::endl;
-    return -1;
+	  std::stringstream ss;
+	  ss <<"cuNDArray_permute : Error during kernel call: " << cudaGetErrorString(err);
+    BOOST_THROW_EXCEPTION(cuda_error(ss.str()));
+
   }
 
   if (cudaFree(dims_dev) != cudaSuccess) {
     err = cudaGetLastError();
-    std::cerr << "cuNDArray_permute: failed to delete device memory (dims_dev) " 
-	      << cudaGetErrorString(err) << std::endl;
-    return -1;
+    std::stringstream ss;
+    ss << "cuNDArray_permute: failed to delete device memory (dims_dev) " << cudaGetErrorString(err);
+    BOOST_THROW_EXCEPTION(cuda_error(ss.str()));
+
   }
 
   if (cudaFree(strides_out_dev) != cudaSuccess) {
     err = cudaGetLastError();
-    std::cerr << "cuNDArray_permute: failed to delete device memory (strides_out_dev) " 
-	      << cudaGetErrorString(err) << std::endl;
-    return -1;
+    std::stringstream ss;
+    ss << "cuNDArray_permute: failed to delete device memory (strides_out_dev) "<< cudaGetErrorString(err);
+    BOOST_THROW_EXCEPTION(cuda_error(ss.str()));
   }
   
   delete [] dims;
@@ -140,190 +145,191 @@ template <class T> int cuNDArray_permute(cuNDArray<T>* in,
     *in->dimensions_ = new_dims;
     if( in->delete_data_on_destruct() ){
       if (cudaFree(in->data_) != cudaSuccess) {
-	std::cerr << "cuNDArray_permute: failed to delete device memory" << std::endl;
-	return -1;
+	BOOST_THROW_EXCEPTION(cuda_error("cuNDArray_permute: failed to delete device memory"));
+
       }
       in->data_ = out_ptr;
     }
     else{
       if( cudaMemcpy( in->data_, out_ptr, in->elements_*sizeof(T),  cudaMemcpyDeviceToDevice) != cudaSuccess ) {
-   	std::cerr << "cuNDArray_permute: failed to copy device memory" << std::endl;
-	return -1;
+   	BOOST_THROW_EXCEPTION(cuda_error("cuNDArray_permute: failed to copy device memory"));
+
       }
     }
   }
   
-  return 0;
+
 }
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<int>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<int>* in,
 				 cuNDArray<int>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<int2>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<int2>* in,
 				 cuNDArray<int2>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<int3>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<int3>* in,
 				 cuNDArray<int3>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<int4>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<int4>* in,
 				 cuNDArray<int4>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<unsigned int>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<unsigned int>* in,
 				 cuNDArray<unsigned int>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<uint2>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<uint2>* in,
 				 cuNDArray<uint2>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<uint3>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<uint3>* in,
 				 cuNDArray<uint3>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<uint4>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<uint4>* in,
 				 cuNDArray<uint4>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<float>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<float>* in,
 				 cuNDArray<float>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<float2>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<float2>* in,
 				 cuNDArray<float2>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<float3>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<float3>* in,
 				 cuNDArray<float3>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<float4>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<float4>* in,
 				 cuNDArray<float4>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<double>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<double>* in,
 				 cuNDArray<double>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<double2>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<double2>* in,
 				 cuNDArray<double2>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<double3>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<double3>* in,
 				 cuNDArray<double3>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<double4>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<double4>* in,
 				 cuNDArray<double4>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
 
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<intd1>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<intd1>* in,
 				 cuNDArray<intd1>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<intd2>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<intd2>* in,
 				 cuNDArray<intd2>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<intd3>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<intd3>* in,
 				 cuNDArray<intd3>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<intd4>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<intd4>* in,
 				 cuNDArray<intd4>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<uintd1>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<uintd1>* in,
 				 cuNDArray<uintd1>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<uintd2>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<uintd2>* in,
 				 cuNDArray<uintd2>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<uintd3>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<uintd3>* in,
 				 cuNDArray<uintd3>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<uintd4>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<uintd4>* in,
 				 cuNDArray<uintd4>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<floatd1>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<floatd1>* in,
 				 cuNDArray<floatd1>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<floatd2>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<floatd2>* in,
 				 cuNDArray<floatd2>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<floatd3>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<floatd3>* in,
 				 cuNDArray<floatd3>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<floatd4>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<floatd4>* in,
 				 cuNDArray<floatd4>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<doubled1>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<doubled1>* in,
 				 cuNDArray<doubled1>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<doubled2>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<doubled2>* in,
 				 cuNDArray<doubled2>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<doubled3>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<doubled3>* in,
 				 cuNDArray<doubled3>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<doubled4>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<doubled4>* in,
 				 cuNDArray<doubled4>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 				   
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<float_complext>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<float_complext>* in,
 				 cuNDArray<float_complext>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE int cuNDArray_permute<>(cuNDArray<double_complext>* in,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<double_complext>* in,
 				 cuNDArray<double_complext>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
+}

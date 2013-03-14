@@ -6,7 +6,7 @@
 #include "gadgetroncore_export.h"
 
 #include <complex>
-
+namespace Gadgetron{
 class EXPORTGADGETSCORE RemoveROOversamplingGadget :
 public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
 {
@@ -18,3 +18,4 @@ public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
 		      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 };
 
+}

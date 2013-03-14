@@ -12,6 +12,7 @@
 
 #include "url_encode.h"
 
+using namespace Gadgetron;
 void print_usage()
 {
 	ACE_DEBUG((LM_INFO, ACE_TEXT("Usage: \n") ));

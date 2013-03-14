@@ -18,6 +18,7 @@
 #include "GadgetronExport.h"
 #include "Gadgetron.h"
 
+namespace Gadgetron{
 class GadgetStreamController;
 
 class Gadget : public ACE_Task<ACE_MT_SYNCH>
@@ -402,6 +403,6 @@ protected:
 
 #define GADGET_FACTORY_DECLARE(GADGET)	\
 		GADGETRON_LOADABLE_FACTORY_DECLARE(Gadget,GADGET)
-
+}
 
 #endif //GADGET_H

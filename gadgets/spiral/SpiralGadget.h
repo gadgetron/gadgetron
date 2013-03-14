@@ -12,7 +12,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-
+namespace Gadgetron{
 class EXPORTGADGETSSPIRAL SpiralGadget : 
 public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 {
@@ -43,5 +43,5 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   NFFT_plan<float, 2> plan_;
 
 };
-
+}
 #endif //SPIRALGADGET_H

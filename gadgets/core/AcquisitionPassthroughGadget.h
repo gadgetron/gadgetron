@@ -7,7 +7,7 @@
 #include "ismrmrd.h"
 
 #include <complex>
-
+namespace Gadgetron{
 class EXPORTGADGETSCORE AcquisitionPassthroughGadget : 
 public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
 {
@@ -19,5 +19,5 @@ public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
 		      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 };
 
-
+}
 #endif //ACQUISITIONPASSTHROUGHGADGET_H

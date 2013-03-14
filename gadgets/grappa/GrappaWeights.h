@@ -6,7 +6,7 @@
 
 #include "gadgetrongrappa_export.h"
 #include "hoNDArray.h"
-
+namespace Gadgetron{
 template <class T> class EXPORTGADGETSGRAPPA GrappaWeights
 {
  public:
@@ -33,3 +33,4 @@ template <class T> class EXPORTGADGETSGRAPPA GrappaWeights
   hoNDArray< std::complex<T> > weights_;
 
 };
+}

@@ -7,7 +7,7 @@
 #include "Gadget.h"
 #include "ismrmrd.h"
 #include "hoNDArray.h"
-
+namespace Gadgetron{
 class EXPORTGADGETSCORE CropAndCombineGadget : 
 public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
 {
@@ -19,5 +19,5 @@ public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
 		       GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 		     
 };
-
+}
 #endif //CROPANDCOMBINEGADGET_H

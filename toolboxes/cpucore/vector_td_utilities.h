@@ -11,6 +11,11 @@
 #include <iostream>
 #include <algorithm>
 
+
+using std::min;
+using std::max;
+namespace Gadgetron{
+
 //
 // Get/set operations on vector_td<T,D>
 //
@@ -281,30 +286,22 @@ T dot( const vector_td<T,D> vec1, const vector_td<T,D> vec2 )
   return res;
 }
 
-#ifdef max
-#undef max
-#endif // max
-
 template<class T, unsigned int D> __inline__ __host__ __device__ 
-T max( const vector_td<T,D> vecUsed )
+T max( const vector_td<T,D> vec )
 {
-  T res = vecUsed.vec[0];
+  T res = vec.vec[0];
   for (unsigned int i=1; i<D; i++){
-    res = max(res,vecUsed.vec[i]);
+    res = ::max(res,vec.vec[i]);
   }
   return res;
 }
 
-#ifdef min
-#undef min
-#endif // min
-
 template<class T, unsigned int D> __inline__ __host__ __device__ 
-T min( const vector_td<T,D> vecUsed )
+T min( const vector_td<T,D> vec )
 {
-  T res = vecUsed.vec[0];
+  T res = vec.vec[0];
   for (unsigned int i=1; i<D; i++){
-    res = min(res,vecUsed.vec[i]);
+    res =::min(res,vec.vec[i]);
   }
   return res;
 }
@@ -437,4 +434,40 @@ vector_td<REAL,D> to_reald( const vector_td<T,D> vec )
     res.vec[i] = (REAL) vec.vec[i];
   }
   return res;
+}
+
+template<class T, unsigned int D> ::std::ostream& operator<<(::std::ostream& os, const vector_td<T,D>& vec) {
+	os <<'[' ;
+	for (int i = 0; i < D-1; i++) os << vec[i] << ", ";
+	return os << vec[D-1] <<']';
+}
+template<class T, unsigned int D> std::istream& operator>> (std::istream& is, vector_td<T,D>& vec){
+	char tmp;
+	is.get(tmp);
+	if (tmp != '['){
+		is.setstate(std::ios::failbit);
+		return is;
+	}
+
+	for (int i = 0; i < D-1; i++){
+		T val;
+		tmp = ' ';
+		is >> val;
+		vec[i]=val;
+		while (tmp == ' ') is.get(tmp);
+		if (tmp != ','){
+				is.setstate(std::ios::failbit);
+				return is;
+		}
+	}
+	tmp = ' ';
+	is >> vec[D-1];
+	while (tmp == ' ') is.get(tmp);
+	if (tmp != ']'){
+			is.setstate(std::ios::failbit);
+			return is;
+	}
+	return is;
+
+}
 }

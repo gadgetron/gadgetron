@@ -6,7 +6,7 @@
 #include "cuNDArray.h"
 #include "vector_td.h"
 
-
+namespace Gadgetron{
 template<class REAL, unsigned int D> class EXPORTGPUPMRI cuSenseOperator 
 	: public senseOperator<REAL, D, cuNDArray< complext<REAL> > >
 {
@@ -18,11 +18,12 @@ public:
 
   typedef complext<REAL> _complext;
 
-  virtual int mult_M( cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate = false ) = 0;
-  virtual int mult_MH( cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate = false ) = 0;
+  virtual void mult_M( cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate = false ) = 0;
+  virtual void mult_MH( cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate = false ) = 0;
     
-  virtual int mult_csm( cuNDArray<_complext> *in, cuNDArray< _complext> *out );
-  virtual int mult_csm_conj_sum( cuNDArray<_complext> *in, cuNDArray<_complext> *out );
+  virtual void mult_csm( cuNDArray<_complext> *in, cuNDArray< _complext> *out );
+  virtual void mult_csm_conj_sum( cuNDArray<_complext> *in, cuNDArray<_complext> *out );
   
   DECLARE_LINEAR_OPERATOR_DEVICE_SUPPORT(cuSenseOperator)
 };
+}

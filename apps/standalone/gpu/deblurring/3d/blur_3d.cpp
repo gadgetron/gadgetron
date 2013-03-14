@@ -7,12 +7,12 @@
 #include "parameterparser.h"
 #include "cuConvolutionOperator.h"
 #include "ndarray_vector_td_utilities.h"
-
+#include "cuGTBLAS.h"
 #include <iostream>
 #include <math.h>
 
 using namespace std;
-
+using namespace Gadgetron;
 // Define desired precision
 typedef float _real; 
 typedef complext<_real> _complext;
@@ -73,14 +73,14 @@ int main( int argc, char** argv)
   // Upload host image/kernel and convert to complex type
   //
   cuNDArray<_real> _image(&host_image);
-  boost::shared_ptr< cuNDArray<_complext> > image = cuNDA_real_to_complext<_real>( &_image );
+  boost::shared_ptr< cuNDArray<_complext> > image = real_to_complext<_real>( &_image );
   
   cuNDArray<_real> _kernel(&host_kernel);
-  boost::shared_ptr< cuNDArray<_complext> > kernel = cuNDA_real_to_complext<_real>( &_kernel );
+  boost::shared_ptr< cuNDArray<_complext> > kernel = real_to_complext<_real>( &_kernel );
 
   // Normalize kernel
-  _real scale = cuNDA_asum<_real>(kernel.get());
-  cuNDA_scal<_real>( _real(1)/scale, kernel.get() );
+  _real scale = asum(kernel.get());
+  *kernel /= scale;
 
   // Setup resulting blurred image
   cuNDArray<_complext> blurred_image;
@@ -100,13 +100,13 @@ int main( int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > blurred_image_host = blurred_image.to_host();
   write_nd_array<_complext>( blurred_image_host.get(), (char*)parms.get_parameter('r')->get_string_value());
 
-  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_cAbs<_real,_complext>(&blurred_image)->to_host();
+  boost::shared_ptr< hoNDArray<_real> > host_norm = abs(&blurred_image)->to_host();
   write_nd_array<_real>( host_norm.get(), "blurred_image.real" );
 
   boost::shared_ptr< hoNDArray<_complext> > kernel_image_host = kernel->to_host();
   write_nd_array<_complext>( kernel_image_host.get(), (char*)parms.get_parameter('K')->get_string_value());
 
-  boost::shared_ptr< hoNDArray<_real> > host_norm_kernel = cuNDA_cAbs<_real,_complext>(kernel.get())->to_host();
+  boost::shared_ptr< hoNDArray<_real> > host_norm_kernel = abs(kernel.get())->to_host();
   write_nd_array<_real>( host_norm_kernel.get(), "kernel_image.real" );
 
   return 0;

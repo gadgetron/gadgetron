@@ -19,6 +19,7 @@
 //
 // Transfer result from shared memory to global memory.
 //
+using namespace Gadgetron;
 
 template<class REAL> __inline__ __device__ void 
 NFFT_output( unsigned int number_of_samples, unsigned int number_of_batches, complext<REAL> *samples,
@@ -239,3 +240,4 @@ NFFT_convolve_kernel( REAL alpha, REAL beta, REAL W, vector_td<unsigned int, D> 
   // Output k-space image to global memory
   NFFT_output<REAL>( number_of_samples, number_of_batches, samples, double_warp_size_power, globalThreadId, sharedMemFirstSampleIdx, accumulate );
 }
+

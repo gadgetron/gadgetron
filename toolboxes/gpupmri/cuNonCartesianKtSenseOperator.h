@@ -2,6 +2,7 @@
 
 #include "cuNonCartesianSenseOperator.h"
 
+namespace Gadgetron{
 template<class REAL, unsigned int D>
 class EXPORTGPUPMRI cuNonCartesianKtSenseOperator : public cuNonCartesianSenseOperator<REAL,D>
 {
@@ -15,10 +16,11 @@ class EXPORTGPUPMRI cuNonCartesianKtSenseOperator : public cuNonCartesianSenseOp
   cuNonCartesianKtSenseOperator() : cuNonCartesianSenseOperator<REAL,D>() {}
   virtual ~cuNonCartesianKtSenseOperator() {}
   
-  virtual int mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
-  virtual int mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
+  virtual void mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
+  virtual void mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
 
-  virtual boost::shared_ptr< linearOperator< REAL, cuNDArray< complext<REAL>  > > > clone(){
-    return linearOperator< REAL, cuNDArray<complext<REAL> > >::clone(this);
+  virtual boost::shared_ptr< linearOperator<cuNDArray< complext<REAL>  > > > clone(){
+    return linearOperator< cuNDArray<complext<REAL> > >::clone(this);
   }  
 };
+}

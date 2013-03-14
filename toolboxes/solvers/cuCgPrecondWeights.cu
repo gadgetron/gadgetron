@@ -1,6 +1,7 @@
 #include "cuCgPrecondWeights.h"
 #include "vector_td_utilities.h"
-
+#include <sstream>
+namespace Gadgetron{
 template<class T> __global__ void 
 weight_multiplication( T* in, T* out, T* weight, unsigned long elements )
 {
@@ -11,50 +12,42 @@ weight_multiplication( T* in, T* out, T* weight, unsigned long elements )
   }
 }
 
-template <class T> int 
+template <class T> void
 cuCgPrecondWeights<T>::set_weights( boost::shared_ptr< cuNDArray<T> > w ) 
 {
-  int ret1 = 0, ret2 = 0;
+
   if( w->get_device() != this->device_ ){
-    ret1 = this->set_device();
-    if( ret1 == 0 ) weights_ = boost::shared_ptr< cuNDArray<T> >(new cuNDArray<T>(*w.get()));
-    ret2 = this->restore_device();
+    this->set_device();
+    weights_ = boost::shared_ptr< cuNDArray<T> >(new cuNDArray<T>(*w.get()));
+    this->restore_device();
   }
   else    
     weights_ = w;
   
-  if( ret1 == 0 && ret2 == 0 )
-    return 0;
-  else{
-    std::cout << std::endl << "cuCGPrecondWeight::set_weights failed" << std::endl;
-    return -1;
-  }
+
 }
 
-template <class T> int 
+template <class T> void
 cuCgPrecondWeights<T>::apply(cuNDArray<T>* in, cuNDArray<T>* out)
 {
   if( !weights_.get() ){
-    std::cerr << "cuCGPreconWeight::apply: weights not set" << std::endl;
-    return -1;
+    throw std::runtime_error( "cuCGPreconWeight::apply: weights not set");
+
   }
  
   if ( !in || !out || in->get_number_of_elements() != out->get_number_of_elements()) {
-    std::cerr << "cuCGPreconWeight::apply: input and output dimensions mismatch" << std::endl;
-    return -1;
+  	throw std::runtime_error("cuCGPreconWeight::apply: input and output dimensions mismatch");
+
   }
 
   if (in->get_number_of_elements() % weights_->get_number_of_elements()) {
-    std::cerr << "cuCGPreconWeight::apply: input dimensions don't match weights dimensions" << std::endl;
-    return -1;
+  	throw std::runtime_error( "cuCGPreconWeight::apply: input dimensions don't match weights dimensions" );
+
   }
   
-  int ret = this->set_device();
-  if( ret < 0 ){
-    std::cerr << "cuCGPreconWeight::apply: unable to set device" << std::endl;
-    return -1;
-  }
+  this->set_device();
   
+
   cuNDArray<T> *in_int, *out_int;
 
   if( this->device_ != in->get_device() )
@@ -84,18 +77,15 @@ cuCgPrecondWeights<T>::apply(cuNDArray<T>* in, cuNDArray<T>* out)
 
   cudaError_t err = cudaGetLastError();
   if( err != cudaSuccess ){
-    std::cerr << "cuCGPreconWeight::apply: Unable to apply weights: " << 
-      cudaGetErrorString(err) << std::endl;
-    return -2;
+  	std::stringstream ss;
+  	ss << "cuCGPreconWeight::apply: Unable to apply weights: " <<
+  	      cudaGetErrorString(err);
+  	throw std::runtime_error(ss.str());
+
   }
   
-  ret = this->restore_device();
-  if( ret < 0 ){
-    std::cerr << "cuCGPreconWeight::apply: unable to restore device" << std::endl;
-    return -3;
-  }
+  this->restore_device();
   
-  return 0;
 }
 
 
@@ -108,3 +98,4 @@ template class EXPORTSOLVERS cuCgPrecondWeights<float_complext>;
 
 template class EXPORTSOLVERS cuCgPrecondWeights<double>;
 template class EXPORTSOLVERS cuCgPrecondWeights<double_complext>;
+}//End of namespace

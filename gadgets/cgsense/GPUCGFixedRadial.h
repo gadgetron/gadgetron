@@ -3,7 +3,7 @@
 #pragma once
 
 #include "GPUCGGadget.h"
-
+namespace Gadgetron{
 class EXPORTGADGETSCGSENSE GPUCGFixedRadialGadget : public GPUCGGadget
 {
 
@@ -23,6 +23,6 @@ class EXPORTGADGETSCGSENSE GPUCGFixedRadialGadget : public GPUCGGadget
   unsigned int dynamic_acceleration_factor_;
   int previous_projection_;
 };
-
+}
 
 #endif //GPUCGGOLDENRADIALGADGET_H

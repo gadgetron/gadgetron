@@ -3,6 +3,7 @@
 #include "vector_td.h"
 #include "cpucore_defines.h"
 
+namespace Gadgetron{
 //
 // Return types
 //
@@ -420,4 +421,5 @@ vector_td<T,D> operator% ( const vector_td<T,D> &v1, const vector_td<T,D> &v2 )
   vector_td<T,D> res = v1;
   res %= v2;
   return res;
+}
 }

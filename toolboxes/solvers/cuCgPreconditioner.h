@@ -4,6 +4,8 @@
 
 #include "cgPreconditioner.h"
 #include "cuNDArray.h"
+namespace Gadgetron{
+
 
 template <class T> class cuCgPreconditioner 
 	: public cgPreconditioner< cuNDArray<T> >
@@ -54,4 +56,5 @@ protected:
 
 };
 
+}
 #endif //CUCGPRECONDITIONER_H

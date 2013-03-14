@@ -11,6 +11,7 @@
 
 #include <iostream>
 
+using namespace Gadgetron;
 int2 vec_to_int2(std::vector<unsigned int> vec)
 {
 	int2 ret; ret.x = 0; ret.y = 0;
@@ -334,19 +335,11 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 	b_size.push_back(kspace_locations);
 	b_size.push_back(target_coils);
 
-	cuNDArray<T> system_matrix;
-	if (!system_matrix.create(&sys_matrix_size)) {
-		std::cout << "htgrappa_calculate_grappa_unmixing: Unable to allocate device memory for system matrix" << std::endl;
-		return -1;
-	}
+	cuNDArray<T> system_matrix = cuNDArray<T>(&sys_matrix_size);
 
 	clear(&system_matrix);
 
-	cuNDArray<T> b;
-	if (!b.create(&b_size)) {
-		std::cout << "htgrappa_calculate_grappa_unmixing: Unable to allocate device memory for right hand sides" << std::endl;
-		return -1;
-	}
+	cuNDArray<T> b = cuNDArray<T>(&b_size);
 
 	int2 dims = vec_to_int2(*ref_data->get_dimensions());
 	int2 dros = vec_to_int2(ros);
@@ -358,23 +351,14 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 	int m = kspace_locations;
 
 	std::vector<unsigned int> AHA_dims(2,n);
-	cuNDArray<T> AHA;
-	if (!AHA.create(&AHA_dims)) {
-		std::cout << "htgrappa_calculate_grappa_unmixing: Unable to allocate device memory for AHA" << std::endl;
-		return -1;
-	}
+	cuNDArray<T> AHA = cuNDArray<T>(&AHA_dims);
 
 	//TODO: Use target coils here
 	std::vector<unsigned int> AHrhs_dims;
 	AHrhs_dims.push_back(n);
 	AHrhs_dims.push_back(target_coils);
 
-	cuNDArray<T> AHrhs;
-	if (!AHrhs.create(&AHrhs_dims)) {
-		std::cout << "htgrappa_calculate_grappa_unmixing: Unable to allocate device memory for AHrhs" << std::endl;
-		return -1;
-	}
-
+	cuNDArray<T> AHrhs = cuNDArray<T>(&AHrhs_dims);
 
 	cublasHandle_t handle = *CUBLASContextProvider::instance()->getCublasHandle();
 	/*
@@ -390,12 +374,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 	gkernel_dims.push_back((*kernel_size)[1]*acceleration_factor);
 	gkernel_dims.push_back(source_coils);
 	gkernel_dims.push_back(target_coils);
-	cuNDArray<T> gkernel;
-	if (!gkernel.create(&gkernel_dims)) {
-		std::cerr << "htgrappa_calculate_grappa_unmixing: Unable to allocate array for GRAPPA kernel" << std::endl;
-		return -1;
-	}
-
+	cuNDArray<T> gkernel = cuNDArray<T>(&gkernel_dims);
 	clear(&gkernel);
 
 	for (unsigned int set = 0; set < acceleration_factor-1; set++) {
@@ -517,12 +496,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 	}
 
 	//TODO: This should be source coils
-	cuNDArray<T> tmp_mixing;
-	if (!tmp_mixing.create(ref_data->get_dimensions().get())) {
-		std::cerr << "htgrappa_calculate_grappa_unmixing: Unable to create temp mixing storage on device." << std::endl;
-		return -1;
-	}
-
+	cuNDArray<T> tmp_mixing = cuNDArray<T>(ref_data->get_dimensions());
 
 	int kernel_elements = gkernel.get_number_of_elements()/target_coils;
 	int total_elements = tmp_mixing.get_number_of_elements()/source_coils;

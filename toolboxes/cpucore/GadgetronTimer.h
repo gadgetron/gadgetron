@@ -11,7 +11,7 @@
 
 #include <iostream>
 #include <string>
-
+namespace Gadgetron{
 class GadgetronTimer
 {
 public:
@@ -61,5 +61,5 @@ protected:
 
 	std::string name_;
 };
-
+}
 #endif //__GADGETRONTIMER_H

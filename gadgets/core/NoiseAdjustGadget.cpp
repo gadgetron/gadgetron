@@ -3,14 +3,14 @@
 #include "GadgetIsmrmrdReadWrite.h"
 
 #include "hoNDArray_fileio.h"
-
+namespace Gadgetron{
 void choldc(std::complex<double> *a, int n)
 {
 	int i,j,k;
 
 	for (k= 0; k < n; k++)
 	{
-		a[k*n+k] = std::complex<double>(sqrt(real(a[k*n+k])),0.0);
+		a[k*n+k] = std::complex<double>(std::sqrt(real(a[k*n+k])),0.0);
 
 		for (i = k+1; i < n; i++)
 		{
@@ -127,12 +127,13 @@ int NoiseAdjustGadget
 		//If noise covariance matrix is not allocated
 		if (noise_covariance_matrix_.get_number_of_elements() != channels*channels) {
 			std::vector<unsigned int> dims(2, channels);
-			if (!noise_covariance_matrix_.create(&dims)) {
-				GADGET_DEBUG1("Unable to allocate storage for noise covariance matrix\n");
+			try{ noise_covariance_matrix_.create(&dims);}
+			catch (runtime_error &err){
+				GADGET_DEBUG_EXCEPTION(err,"Unable to allocate storage for noise covariance matrix\n");
 				return GADGET_FAIL;
-			} else {
-				noise_covariance_matrix_.clear(std::complex<double>(0.0,0.0));
 			}
+			noise_covariance_matrix_.fill(std::complex<double>(0.0,0.0));
+
 			number_of_noise_samples_ = 0;
 		}
 
@@ -154,7 +155,7 @@ int NoiseAdjustGadget
 			if ((noise_dwell_time_us_ == 0.0f) || (acquisition_dwell_time_us_ == 0.0f)) {
 				noise_bw_scale_factor_ = 1.0f;
 			} else {
-				noise_bw_scale_factor_ = sqrt(2*acquisition_dwell_time_us_/noise_dwell_time_us_*receiver_noise_bandwidth_);
+				noise_bw_scale_factor_ = std::sqrt(2*acquisition_dwell_time_us_/noise_dwell_time_us_*receiver_noise_bandwidth_);
 			}
 
 			GADGET_DEBUG2("Noise dwell time: %f\n", noise_dwell_time_us_);
@@ -215,3 +216,4 @@ int NoiseAdjustGadget
 
 
 GADGET_FACTORY_DECLARE(NoiseAdjustGadget)
+}

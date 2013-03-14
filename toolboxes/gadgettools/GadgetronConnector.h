@@ -20,6 +20,7 @@
 #include "GadgetMessageInterface.h"
 #include "gadgettools_export.h"
 
+namespace Gadgetron{
 class WriterTask : public ACE_Task<ACE_MT_SYNCH>
 {
 
@@ -166,5 +167,5 @@ protected:
 	//GadgetronSlotContainer<GadgetMessageWriter> writers_;
 
 };
-
+}
 #endif /* GADGETRONCONNECTOR_H_ */

@@ -15,28 +15,23 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 set(Boost_NO_BOOST_CMAKE ON)
 find_package(Boost REQUIRED)
 find_package(ACE REQUIRED)
+find_package(Armadillo REQUIRED)
 find_package(FFTW3 COMPONENTS single double REQUIRED)
-
-if (${CMAKE_VERSION} VERSION_LESS "2.8.4")
- MESSAGE("You have cmake version less than 2.8.4, hence FindBLAS requires a Fortran compiler")
- MESSAGE("Upgrade to a newer version of cmake to avoid this Fortran compiler check")
- enable_language(Fortran)
-endif(${CMAKE_VERSION} VERSION_LESS "2.8.4")
-
-if (WIN32)
-# We modified findBlas to make it compatible with ACML5.1.0.
-# Soon hopefully, we can return to the native findBLAS again?
-find_package(GBLAS)
-find_package(GLAPACK) 
-else (WIN32)
-find_package(BLAS)
-find_package(LAPACK) 
-endif (WIN32)
 
 find_package(CUDA 4.1)
 
+find_package(GTest)
+
+if (GTEST_FOUND)
+	ENABLE_TESTING()
+	add_subdirectory(test)
+endif (GTEST_FOUND)
+
+
 if (CUDA_FOUND)
    MESSAGE("CUDA Found, GPU components will be compiled")
+   ADD_DEFINITIONS(-DGTCUDA_FOUND)
+   include_directories( ${CUDA_INCLUDE_DIRS})
 else (CUDA_FOUND)
      MESSAGE("CUDA not found. CUDA components will not be compiled")
 endif (CUDA_FOUND)
@@ -61,3 +56,5 @@ IF (ACE_FOUND AND ISMRMRD_FOUND)
        add_subdirectory(gadgets)
 ENDIF (ACE_FOUND AND ISMRMRD_FOUND)
 add_subdirectory(cmake)
+
+

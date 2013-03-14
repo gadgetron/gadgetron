@@ -7,7 +7,7 @@
 #include "ismrmrd.h"
 
 #include <complex>
-
+namespace Gadgetron{
 template<typename T> class MRIImageWriter : public GadgetMessageWriter
 {
  public:
@@ -32,5 +32,5 @@ class EXPORTGADGETSCORE MRIImageWriterCPLX : public MRIImageWriter< std::complex
  public:
   GADGETRON_WRITER_DECLARE(GadgetMessageWriterCPLX);
 };
-
+}
 #endif

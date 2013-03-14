@@ -16,7 +16,7 @@
 #include <iostream>
 
 using namespace std;
-
+using namespace Gadgetron;
 // Define desired precision
 typedef float _real; 
 typedef complext<_real> _complext;
@@ -124,16 +124,10 @@ int main(int argc, char** argv)
   boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );  
   E->set_weight( mu );
   
-  if( E->setup( matrix_size, matrix_size_os, kernel_width ) < 0 ){
-    cout << "Failed to setup non-Cartesian Sense operator" << endl;
-    return 1;
-  }
+  E->setup( matrix_size, matrix_size_os, kernel_width );
 
   // Notify encoding operator of dcw
-  if( E->set_dcw(dcw) < 0 ) {
-    cout << "Failed to set density compensation weights on encoding matrix" << endl;
-    return 1;
-  }
+  E->set_dcw(dcw);
   dcw.reset();
 
   // Define rhs buffer
@@ -143,9 +137,7 @@ int main(int argc, char** argv)
 
   rhs_buffer->set_num_coils(num_coils);
 
-  if( rhs_buffer->set_sense_operator(E) < 0 ){
-    cout << "Failed to set sense operator on rhs buffer" << endl;
-  }
+  rhs_buffer->set_sense_operator(E);
 
   //
   // Compute CSM using accumulation in the rhs buffer
@@ -172,24 +164,17 @@ int main(int argc, char** argv)
   boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_acc_coil_images(true);
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );
 
-  if( E->set_csm(csm) < 0 ) {
-    cout << "Failed to set csm on encoding matrix" << endl;
-    return 1;
-  }
-
+  E->set_csm(csm);
   std::vector<unsigned int> reg_dims = uintd_to_vector<2>(matrix_size);
-  cuNDArray<_complext> _reg_image;
-
-  if( _reg_image.create(&reg_dims) == 0x0 ){
-    cout << "Failed to allocate regularization image" << endl;
-    return 1;
-  }
+  cuNDArray<_complext> _reg_image = cuNDArray<_complext>(&reg_dims);
 
   E->mult_csm_conj_sum( acc_images.get(), &_reg_image );
   
   // Duplicate the regularization image to 'frames_per_reconstruction' frames
-  boost::shared_ptr<cuNDArray<_complext> > reg_image = cuNDA_expand( &_reg_image, frames_per_reconstruction );
-  cuNDA_scal((_real)2.0*_real(1), reg_image.get()); // We need to figure out where this scaling comes from
+  boost::shared_ptr<cuNDArray<_complext> > reg_image = expand( &_reg_image, frames_per_reconstruction );
+  *reg_image *= _real(2); // We need to figure out where this scaling comes from
+
+
 
   acc_images.reset();
   csm.reset();
@@ -198,14 +183,14 @@ int main(int argc, char** argv)
   *recon_dims = uintd_to_vector<2>(matrix_size); recon_dims->push_back(frames_per_reconstruction); 
 
   // Define regularization operators 
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > 
-    Rx( new cuPartialDerivativeOperator<_real,_complext,3>(0) ); 
+  boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
+    Rx( new cuPartialDerivativeOperator<_complext,3>(0) );
   Rx->set_weight( lambda );
   Rx->set_domain_dimensions(recon_dims.get());
   Rx->set_codomain_dimensions(recon_dims.get());
 
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > 
-    Ry( new cuPartialDerivativeOperator<_real,_complext,3>(1) ); 
+  boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
+    Ry( new cuPartialDerivativeOperator<_complext,3>(1) );
   Ry->set_weight( lambda );
   Ry->set_domain_dimensions(recon_dims.get());
   Ry->set_codomain_dimensions(recon_dims.get());
@@ -223,7 +208,7 @@ int main(int argc, char** argv)
   E->set_codomain_dimensions(&data_dims);
 
   // Setup split-Bregman solver
-  cuSbcCgSolver<_real, _complext> sb;
+  cuSbcCgSolver< _complext> sb;
   sb.set_encoding_operator( E );
   //sb.add_regularization_operator( Rx ); 
   //sb.add_regularization_operator( Ry ); 
@@ -233,22 +218,18 @@ int main(int argc, char** argv)
   sb.set_prior_image( reg_image, _real(0.2) );
   sb.set_max_outer_iterations(num_sb_outer_iterations);
   sb.set_max_inner_iterations(num_sb_inner_iterations);
-  sb.set_output_mode( cuSbcCgSolver<_real, _complext>::OUTPUT_VERBOSE );
+  sb.set_output_mode( cuSbcCgSolver< _complext>::OUTPUT_VERBOSE );
 
   sb.get_inner_solver()->set_max_iterations( num_cg_iterations );
   sb.get_inner_solver()->set_tc_tolerance( 1e-4 );
-  sb.get_inner_solver()->set_output_mode( cuCgSolver<_real, _complext>::OUTPUT_WARNINGS );
+  sb.get_inner_solver()->set_output_mode( cuCgSolver< _complext>::OUTPUT_WARNINGS );
   
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
 
   // Allocate space for result
   boost::shared_ptr< std::vector<unsigned int> > res_dims( new std::vector<unsigned int> );
   *res_dims = uintd_to_vector<2>(matrix_size); res_dims->push_back(frames_per_reconstruction*num_reconstructions); 
-  cuNDArray<_complext> result; 
-  if( result.create(res_dims.get()) == 0x0 ){
-    cout << "Failed allocate result image" << endl;
-    return 1;
-  }
+  cuNDArray<_complext> result = cuNDArray<_complext>(res_dims);
 
   timer = new GPUTimer("Full SENSE reconstruction with TV regularization.");
 
@@ -263,9 +244,7 @@ int main(int argc, char** argv)
       ( reconstruction, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, host_data.get() );
     
     // Set current trajectory and trigger NFFT preprocessing
-    if( E->preprocess(traj.get()) < 0 ) {
-      cout << "Failed to set trajectory on encoding matrix" << endl;
-    }
+    E->preprocess(traj.get());
         
     //
     // Split-Bregman solver
@@ -278,7 +257,7 @@ int main(int argc, char** argv)
     }
 
     vector<unsigned int> tmp_dims = uintd_to_vector<2>(matrix_size); tmp_dims.push_back(frames_per_reconstruction);
-    cuNDArray<_complext> tmp; tmp.create(&tmp_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );    
+    cuNDArray<_complext> tmp(&tmp_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );
 
     // Copy sbresult to result (pointed to by tmp)
     tmp = *(sbresult.get());
@@ -293,7 +272,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > host_result = result.to_host();
   write_nd_array<_complext>(host_result.get(), (char*)parms.get_parameter('r')->get_string_value());
     
-  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_cAbs<_real,_complext>(&result)->to_host();
+  boost::shared_ptr< hoNDArray<_real> > host_norm = abs(&result)->to_host();
   write_nd_array<_real>( host_norm.get(), "result.real" );
   
   delete timer;

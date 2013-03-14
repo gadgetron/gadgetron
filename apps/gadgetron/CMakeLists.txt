@@ -23,7 +23,7 @@ INCLUDE_DIRECTORIES(${XERCESC_INCLUDE_DIR})
 
 add_executable(gadgetron ${XSDS_SOURCES} main.cpp GadgetStreamController.cpp GadgetServerAcceptor.cpp)
 
-target_link_libraries(gadgetron gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${XERCESC_LIBRARIES})
+target_link_libraries(gadgetron gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${XERCESC_LIBRARIES} pthread)
 
 install(TARGETS gadgetron DESTINATION bin)
 

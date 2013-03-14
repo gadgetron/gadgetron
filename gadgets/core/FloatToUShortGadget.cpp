@@ -7,7 +7,7 @@
 
 #include "GadgetIsmrmrdReadWrite.h"
 #include "FloatToUShortGadget.h"
-
+namespace Gadgetron{
 FloatToUShortGadget::FloatToUShortGadget()
 {
 }
@@ -28,8 +28,9 @@ int FloatToUShortGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m
 
 	boost::shared_ptr< std::vector<unsigned int> > dims = m2->getObjectPtr()->get_dimensions();
 
-	if (!cm2->getObjectPtr()->create(dims.get())) {
-		GADGET_DEBUG1("Unable to create unsigned short storage in Extract Magnitude Gadget");
+	try {cm2->getObjectPtr()->create(dims);}
+	catch (runtime_error &err){
+		GADGET_DEBUG_EXCEPTION(err,"Unable to create unsigned short storage in Extract Magnitude Gadget");
 		return GADGET_FAIL;
 	}
 
@@ -40,7 +41,7 @@ int FloatToUShortGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m
 		float pix_val = src[i];
 		switch (m1->getObjectPtr()->image_type) {
 		case ISMRMRD::TYPE_MAGNITUDE:
-			pix_val = abs(pix_val);
+			pix_val = std::abs(pix_val);
 			if (pix_val > 4095) pix_val = 4095;
 			break;
 		case ISMRMRD::TYPE_REAL:
@@ -79,3 +80,4 @@ int FloatToUShortGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m
 }
 
 GADGET_FACTORY_DECLARE(FloatToUShortGadget)
+}

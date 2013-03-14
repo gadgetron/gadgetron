@@ -11,6 +11,7 @@
 #include "Gadget.h"
 #include "GadgetMessageInterface.h"
 
+namespace Gadgetron{
 class EndGadget : public Gadget
 {
 	virtual int close(unsigned long flags)
@@ -51,5 +52,6 @@ protected:
 	}
 
 };
+}
 
 #endif /* ENDGADGET_H_ */

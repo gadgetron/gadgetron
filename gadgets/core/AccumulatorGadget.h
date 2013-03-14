@@ -7,7 +7,7 @@
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "ismrmrd.h"
-
+namespace Gadgetron{
 class EXPORTGADGETSCORE AccumulatorGadget : 
 public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 {
@@ -32,5 +32,5 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   int image_series_;
 
 };
-
+}
 #endif //ACCUMULATORGADGET_H

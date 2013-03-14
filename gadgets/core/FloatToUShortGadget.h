@@ -12,7 +12,7 @@
 #include <hoNDArray.h>
 #include "ismrmrd.h"
 #include "gadgetroncore_export.h"
-
+namespace Gadgetron{
 /**
  * This Gadget converts float values to unsigned unsigned short int format.
  *
@@ -37,6 +37,6 @@ protected:
 };
 
 
-
+}
 
 #endif /* FLOATTOUSHORTGADGET_H_ */

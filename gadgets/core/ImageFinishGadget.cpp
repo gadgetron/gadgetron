@@ -1,6 +1,6 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "ImageFinishGadget.h"
-
+namespace Gadgetron{
 template <typename T>
 int ImageFinishGadget<T>
 ::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
@@ -48,3 +48,4 @@ int ImageFinishGadget<T>
 GADGET_FACTORY_DECLARE(ImageFinishGadgetFLOAT)
 GADGET_FACTORY_DECLARE(ImageFinishGadgetUSHORT)
 GADGET_FACTORY_DECLARE(ImageFinishGadgetCPLX)
+}

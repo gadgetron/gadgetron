@@ -9,7 +9,7 @@
 #include <iostream>
 
 using namespace std;
-
+using namespace Gadgetron;
 int main( int argc, char** argv) 
 {
   hoNDArray<float_complext::Type> host_data = 

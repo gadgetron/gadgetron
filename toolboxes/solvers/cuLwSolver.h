@@ -6,34 +6,15 @@
 
 #include <iostream>
 
-template <class REAL, class T> class cuLwSolver 
-  : public lwSolver< REAL, T, cuNDArray<T> >
+namespace Gadgetron{
+template <class T> class cuLwSolver
+  : public lwSolver<cuNDArray<T> >
 {
 public:
   
-  cuLwSolver() : lwSolver< REAL, T, cuNDArray<T> >() { set_device(-1); }
+  cuLwSolver() : lwSolver< cuNDArray<T> >() { set_device(-1); }
   virtual ~cuLwSolver() {}
   
-  virtual bool solver_clear( cuNDArray<T> *x )
-  {
-    return cuNDA_clear<T>(x);
-  }
-
-  virtual bool solver_scale( REAL a, cuNDArray<T> *x )
-  {
-    return cuNDA_scal<REAL>(a,x);
-  }
-  
-  virtual bool solver_axpy( T a, cuNDArray<T> *x, cuNDArray<T> *y )
-  {
-    return cuNDA_axpy<T>(a,x,y);
-  }
-
-  virtual REAL solver_asum( cuNDArray<T> *x )
-  {
-    return cuNDA_asum<REAL,T>(x);
-  }
-
   virtual bool set_device( int device )
   { 
     device_ = device;
@@ -57,3 +38,4 @@ protected:
   int device_;
   int old_device_;
 };
+}

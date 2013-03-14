@@ -18,7 +18,7 @@
 #include <math.h>
 
 using namespace std;
-
+using namespace Gadgetron;
 // Define desired precision
 typedef float _real; 
 typedef complext<_real> _complext;
@@ -119,16 +119,10 @@ int main(int argc, char** argv)
   // Define encoding matrix for non-Cartesian kt-SENSE
   boost::shared_ptr< cuNonCartesianKtSenseOperator<_real,2> > E( new cuNonCartesianKtSenseOperator<_real,2>() );
 
-  if( E->setup( matrix_size, matrix_size_os, kernel_width ) < 0 ){
-    cout << "Failed to setup non-Cartesian Sense operator" << endl;
-    return 1;
-  }
+  E->setup( matrix_size, matrix_size_os, kernel_width );
 
   // Notify encoding operator of dcw
-  if( E->set_dcw(dcw) < 0 ) {
-    cout << "Failed to set density compensation weights on encoding matrix" << endl;
-    return 1;
-  }
+  E->set_dcw(dcw);
 
   // Use a rhs buffer to estimate the csm
   //
@@ -137,9 +131,7 @@ int main(int argc, char** argv)
 
   rhs_buffer->set_num_coils(num_coils);
 
-  if( rhs_buffer->set_sense_operator(E) < 0 ){
-    cout << "Failed to set sense operator on rhs buffer" << endl;
-  }
+  rhs_buffer->set_sense_operator(E);
    
   // Fill rhs buffer
   //
@@ -165,10 +157,7 @@ int main(int argc, char** argv)
 
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );
 
-  if( E->set_csm(csm) < 0 ) {
-    cout << "Failed to set csm on encoding matrix" << endl;
-    return 1;
-  }
+  E->set_csm(csm);
 
   acc_images.reset();
   rhs_buffer.reset();
@@ -180,23 +169,23 @@ int main(int argc, char** argv)
   //
     
   // Define regularization image operator
-  boost::shared_ptr< cuImageOperator<_real,_complext> > R( new cuImageOperator<_real,_complext>() ); 
+  boost::shared_ptr< cuImageOperator<_complext> > R( new cuImageOperator<_complext>() );
   R->set_weight( kappa );
 
   // Define preconditioning operator
   boost::shared_ptr< cuCgPrecondWeights<_complext> > D( new cuCgPrecondWeights<_complext>() );
-  boost::shared_ptr< cuNDArray<_real> > ___precon_weights = cuNDA_ss<_real,_complext>( csm.get(), 2 ); 
-  boost::shared_ptr< cuNDArray<_real> > __precon_weights = cuNDA_expand<_real>( ___precon_weights.get(), frames_per_reconstruction );
+  boost::shared_ptr< cuNDArray<_real> > ___precon_weights = squaredNorm( csm.get(), 2 );
+  boost::shared_ptr< cuNDArray<_real> > __precon_weights = expand<_real>( ___precon_weights.get(), frames_per_reconstruction );
   ___precon_weights.reset();
 
   // Setup conjugate gradient solver
-  cuCgSolver<_real, _complext> cg;
+  cuCgSolver< _complext> cg;
   cg.set_encoding_operator( E );        // encoding matrix
   cg.add_regularization_operator( R );  // regularization matrix
   cg.set_preconditioner ( D );          // preconditioning matrix
   cg.set_max_iterations( num_iterations );
   cg.set_tc_tolerance( 1e-6 );
-  cg.set_output_mode( cuCgSolver<_real, _complext>::OUTPUT_VERBOSE );
+  cg.set_output_mode( cuCgSolver< _complext>::OUTPUT_VERBOSE );
       
   // Reconstruct all SENSE frames iteratively
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
@@ -205,11 +194,7 @@ int main(int argc, char** argv)
   vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size); 
   image_dims.push_back(frames_per_reconstruction*num_reconstructions); 
 
-  cuNDArray<_complext> result; 
-  if( result.create(&image_dims) == 0x0 ){
-    cout << "Failed to allocate result " << endl;
-    return 1;
-  }
+  cuNDArray<_complext> result = cuNDArray<_complext>(&image_dims);
   
   // Define shutter for training data
   _real shutter_radius = ((_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0])*(_real)profiles_per_frame/(_real)M_PI;
@@ -218,12 +203,7 @@ int main(int argc, char** argv)
 
   vector<unsigned int> image_os_dims = uintd_to_vector<2>(matrix_size_os); 
   image_os_dims.push_back(frames_per_reconstruction); image_os_dims.push_back(num_coils);    
-  cuNDArray<_complext> *image_os = new cuNDArray<_complext>(); 
-
-  if( image_os->create(&image_os_dims) == 0x0 ){
-    cout << "Failed to allocate image_os " << endl;
-    return 1;
-  }
+  cuNDArray<_complext> *image_os = new cuNDArray<_complext>(&image_os_dims);
 
   timer = new GPUTimer("Full SENSE reconstruction.");
   
@@ -248,30 +228,19 @@ int main(int argc, char** argv)
     E->get_plan()->convolve( data.get(), image_os, dcw.get(), NFFT_plan<_real,2>::NFFT_CONV_NC2C );
 
     // Apply shutter
-    cuNDA_zero_fill_border<_real,_complext,2>( shutter_radius, image_os );
+    zero_fill_border<_real,_complext,2>( shutter_radius, image_os );
     E->get_plan()->fft( image_os, NFFT_plan<_real,2>::NFFT_BACKWARDS );
     E->get_plan()->deapodize( image_os );
 
     // Remove oversampling
     image_dims = uintd_to_vector<2>(matrix_size);
     image_dims.push_back(frames_per_reconstruction); image_dims.push_back(num_coils);
-    cuNDArray<_complext> *image = new cuNDArray<_complext>(); 
-
-    if( image->create(&image_dims) == 0x0 ){
-      cout << "Failed to allocate image " << endl;
-      return 1;
-    }
+    cuNDArray<_complext> *image = new cuNDArray<_complext>(&image_dims);
     
-    cuNDA_crop<_complext,2>( (matrix_size_os-matrix_size)>>1, image_os, image );
-    
-    // Compute regularization image
-    cuNDArray<_complext> *reg_image = new cuNDArray<_complext>(); 
-
+    crop<_complext,2>( (matrix_size_os-matrix_size)>>1, image_os, image );
     image_dims.pop_back();
-    if( reg_image->create(&image_dims) == 0x0 ){
-      cout << "Failed to allocate regularization image " << endl;
-      return 1;
-    }
+    // Compute regularization image
+    cuNDArray<_complext> *reg_image = new cuNDArray<_complext>(&image_dims);
 
     E->mult_csm_conj_sum( image, reg_image );
     cuNDFFT<_complext>().ifft( reg_image, 2, true );
@@ -282,22 +251,19 @@ int main(int argc, char** argv)
     
     // Define preconditioning weights
     cuNDArray<_real> _precon_weights(*__precon_weights.get());
-    cuNDA_axpy<_real>( kappa, R->get(), &_precon_weights );  
-    cuNDA_reciprocal_sqrt<_real>( &_precon_weights );
+    axpy( kappa, R->get(), &_precon_weights );
+    _precon_weights.sqrt();
+    _precon_weights.reciprocal();
+
     boost::shared_ptr< cuNDArray<_complext> > precon_weights = 
-      cuNDA_real_to_complext<_real>( &_precon_weights );
+      real_to_complext<_real>( &_precon_weights );
     
     // Define preconditioning matrix
     D->set_weights( precon_weights );
     precon_weights.reset();
       
     // Form rhs (use result array to save memory)
-    cuNDArray<_complext> rhs; 
-
-    if( rhs.create(&image_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction ) == 0x0 ){
-      cout << "Failed to create rhs array" << endl;
-      return 1;
-    }
+    cuNDArray<_complext> rhs = cuNDArray<_complext>(&image_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction);
 
     E->mult_MH( data.get(), &rhs );
     
@@ -329,7 +295,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > host_result = result.to_host();
   write_nd_array<_complext>(host_result.get(), (char*)parms.get_parameter('r')->get_string_value());
     
-  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_cAbs<_real,_complext>(&result)->to_host();
+  boost::shared_ptr< hoNDArray<_real> > host_norm = abs(&result)->to_host();
   write_nd_array<_real>( host_norm.get(), "result.real" );
   
   delete timer;

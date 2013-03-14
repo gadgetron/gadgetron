@@ -5,6 +5,7 @@
 #include "cuNDArray.h"
 #include "gpucore_export.h"
 
+namespace Gadgetron{
 /*
   Wrapper of the CUFFT library for ndarrays of complex type.
   ----------------------------------------------------------
@@ -20,17 +21,17 @@ template<class T> class EXPORTGPUCORE cuNDFFT
   cuNDFFT() {}
   virtual ~cuNDFFT() {}
 
-  int fft ( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_transform );
-  int ifft( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_transform, bool do_scale = true );
+  void fft ( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_transform );
+  void ifft( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_transform, bool do_scale = true );
 
-  int fft ( cuNDArray<T> *input, unsigned int dim_to_transform);
-  int ifft( cuNDArray<T> *input, unsigned int dim_to_transform, bool do_scale = true );
+  void fft ( cuNDArray<T> *input, unsigned int dim_to_transform);
+  void ifft( cuNDArray<T> *input, unsigned int dim_to_transform, bool do_scale = true );
 
-  int fft ( cuNDArray<T> *input );
-  int ifft( cuNDArray<T> *input, bool do_scale = true );
+  void fft ( cuNDArray<T> *input );
+  void ifft( cuNDArray<T> *input, bool do_scale = true );
 
  protected:
-  int fft_int( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_transform, int direction, bool do_scale = true );
+  void fft_int( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_transform, int direction, bool do_scale = true );
 };
-
+}
 #endif

@@ -1,6 +1,7 @@
 #include "GadgetServerAcceptor.h"
 #include "GadgetStreamController.h"
 
+using namespace Gadgetron;
 
 GadgetServerAcceptor::~GadgetServerAcceptor ()
 {

@@ -6,7 +6,7 @@
 #include "ismrmrd.h"
 #include "hoNDArray.h"
 #include <complex>
-
+namespace Gadgetron{
 class EXPORTGADGETSCORE FFTGadget : 
 public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
 {
@@ -18,5 +18,5 @@ public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
 		       GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
 };
-
+}
 #endif //FFTGADGET_H

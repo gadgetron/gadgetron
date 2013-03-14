@@ -9,7 +9,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
-
+namespace Gadgetron{
 GrappaGadget::GrappaGadget()
 : image_counter_(0)
 , image_series_(0)
@@ -339,8 +339,9 @@ int GrappaGadget::create_image_buffer(unsigned int slice)
 	}
 
 	image_data_[slice] = new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
-	if (!image_data_[slice]->getObjectPtr()->create(&image_dimensions_)) {
-		GADGET_DEBUG1("Unable to create image buffers");
+	try{ image_data_[slice]->getObjectPtr()->create(&image_dimensions_);}
+	catch (runtime_error &err){
+		GADGET_DEBUG_EXCEPTION(err,"Unable to create image buffers");
 		return GADGET_FAIL;
 	}
 
@@ -355,3 +356,4 @@ int GrappaGadget::create_image_buffer(unsigned int slice)
 GADGET_FACTORY_DECLARE(GrappaGadget)
 
 
+}

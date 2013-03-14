@@ -14,7 +14,7 @@
 #include "hoNDArray.h"
 
 #include <complex>
-
+namespace Gadgetron{
 class EXPORTGADGETSCORE CoilReductionGadget :
 public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 {
@@ -34,5 +34,5 @@ protected:
 	unsigned int coils_out_;
 
 };
-
+}
 #endif /* COILREDUCTIONGADGET_H_ */

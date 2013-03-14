@@ -2,6 +2,7 @@
 #include "radial_utilities.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "Gadgetron.h"
+namespace Gadgetron{
 
 GPUCGFixedRadialGadget::GPUCGFixedRadialGadget()
 	: GPUCGGadget()
@@ -16,7 +17,7 @@ GPUCGFixedRadialGadget::calculate_trajectory()
 {
 	// Define trajectories
 	boost::shared_ptr< cuNDArray<floatd2> > traj = compute_radial_trajectory_fixed_angle_2d<float>
-		( samples_per_profile_, profiles_per_frame_, 1, (current_profile_offset_/profiles_per_frame_)%(total_projections_/profiles_per_frame_)*(get_pi<float>()/total_projections_) );
+		( samples_per_profile_, profiles_per_frame_, 1 );
 
   if (!traj.get()) {
     GADGET_DEBUG1("Failed to allocate trajectory");
@@ -92,3 +93,4 @@ GPUCGFixedRadialGadget::calculate_density_compensation()
 }
 
 GADGET_FACTORY_DECLARE(GPUCGFixedRadialGadget)
+}

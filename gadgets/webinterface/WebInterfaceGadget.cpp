@@ -5,7 +5,7 @@
 #include <string.h>
 #include "mongoose.h"
 #include "tinyxml.h"
-
+namespace Gadgetron{
 static GadgetStreamController* scont = 0;
 char processed_response[] = "";
 
@@ -150,3 +150,4 @@ int WebInterfaceGadget::process_config(ACE_Message_Block* m)
 }
 
 GADGET_FACTORY_DECLARE(WebInterfaceGadget)
+}

@@ -13,6 +13,7 @@ include_directories(
                 ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
                 ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
                 ${CMAKE_SOURCE_DIR}/toolboxes/gpupmri
+                ${CMAKE_SOURCE_DIR}/toolboxes/operators
                 ${CMAKE_SOURCE_DIR}/toolboxes/solvers
                 ${CMAKE_SOURCE_DIR}/toolboxes/gpucore
                 ${CMAKE_SOURCE_DIR}/toolboxes/gpunfft

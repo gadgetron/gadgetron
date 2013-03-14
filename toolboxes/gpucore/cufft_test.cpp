@@ -14,6 +14,7 @@
 #include "FileInfo.h"
 #include <complex>
 
+using namespace Gadgetron;
 int main(int argc, char** argv)
 {
 	if (argc < 2) {

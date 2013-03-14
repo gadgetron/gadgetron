@@ -8,18 +8,18 @@
 #include "GadgetMRIHeaders.h"
 
 #include <complex>
-
+namespace Gadgetron{
 class EXPORTGADGETSCORE AcquisitionFinishGadget : 
-public Gadget2<ISMRMRD::AcquisitionHeader, GADGETRON::NDArray< std::complex<float> > >
+public Gadget2<ISMRMRD::AcquisitionHeader, NDArray< std::complex<float> > >
 {
  public:
   GADGET_DECLARE(AcquisitionFinishGadget);
   
  protected:
   virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-		      GadgetContainerMessage< GADGETRON::NDArray< std::complex<float> > >* m2);
+		      GadgetContainerMessage< NDArray< std::complex<float> > >* m2);
 
 };
-
+}
 
 #endif //ACQUISITIONFINISHGADGET_H

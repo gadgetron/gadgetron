@@ -18,13 +18,16 @@ cuda_add_library(gpucore SHARED
                             ndarray_vector_td_utilities.cu
                             cuNDArray_kernels.cu
                             radial_utilities.cu
-                            cuNDArray.cpp
+                            cuNDArray.cu
                             cuNDFFT.cpp
+                            cuGTBLAS.cu
+                            hoCuGTBLAS.cu
                             CUBLASContextProvider.cpp
+                            cudaDeviceManager.cpp
 							)
 
 target_link_libraries(gpucore ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CULA_LIBRARIES})
-target_link_libraries(cufft_test ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CULA_LIBRARIES} gpucore gpucore)
+target_link_libraries(cufft_test ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} ${CUDA_CUFFT_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CULA_LIBRARIES} gpucore)
 
 install(TARGETS gpucore DESTINATION lib)
 install(TARGETS cufft_test DESTINATION bin)
@@ -34,9 +37,15 @@ GPUTimer.h
 check_CUDA.h
 ndarray_vector_td_utilities.h
 cuNDArray.h
+hoCuNDArray.h
+hoCuNDArray_utils.h
 cuNDFFT.h
+cuGTBLAS.h
+hoCuGTBLAS.h
+GadgetronCuException.h
 radial_utilities.h
 real_utilities_device.h
 gpucore_export.h
 CUBLASContextProvider.h
+cudaDeviceManager.h
 DESTINATION include)

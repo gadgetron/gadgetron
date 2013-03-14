@@ -9,7 +9,7 @@
 #include <iostream>
 
 using namespace std;
-
+using namespace Gadgetron;
 const int kernel_width = 7;
 
 template<class REAL, unsigned int D> void
@@ -26,7 +26,7 @@ void set_phase_reference( cuNDArray<complext<REAL> > *csm, unsigned int number_o
 //
 
 template<class REAL, unsigned int D> boost::shared_ptr< cuNDArray<complext<REAL> > >
-estimate_b1_map( cuNDArray<complext<REAL> > *data_in, int target_coils)
+Gadgetron::estimate_b1_map( cuNDArray<complext<REAL> > *data_in, int target_coils)
 {
 
   if( data_in->get_number_of_dimensions() < 2 ){
@@ -65,12 +65,8 @@ estimate_b1_map( cuNDArray<complext<REAL> > *data_in, int target_coils)
   } else {
 	  std::vector<unsigned int> odims = *(data_in->get_dimensions().get());
 	  odims[D] = target_coils_int;
-	  cuNDArray<complext<REAL> > *_data_out = new cuNDArray<complext<REAL> >;
+	  cuNDArray<complext<REAL> > *_data_out = new cuNDArray<complext<REAL> >(&odims);
 	  data_out = boost::shared_ptr< cuNDArray<complext<REAL> > >(_data_out);
-	  if (!_data_out->create(&odims)) {
-		  std::cout << "Failed to create internal storage for CSM" << std::endl;
-		  return data_out;
-	  }
 
 	  //Now copy one coil at a time
 	  unsigned long elements_per_coil = data_in->get_number_of_elements()/ncoils;
@@ -84,13 +80,10 @@ estimate_b1_map( cuNDArray<complext<REAL> > *data_in, int target_coils)
   }
   
   // Normalize by the RSS of the coils
-  if( !cuNDA_rss_normalize<REAL>( data_out.get(), D ) ){
-    cout << endl << "estimate_b1_map:: error in rss_normalize" << endl;
-    return boost::shared_ptr< cuNDArray<complext<REAL> > >();
-  }
+  rss_normalize( data_out.get(), D );
   
   // Now calculate the correlation matrices
-  boost::shared_ptr<cuNDArray<complext<REAL> > > corrm = cuNDA_correlation<complext<REAL> >( data_out.get() );
+  boost::shared_ptr<cuNDArray<complext<REAL> > > corrm = correlation( data_out.get() );
   data_out.reset();
   
   // Smooth (onto copy of corrm)
@@ -602,11 +595,11 @@ void set_phase_reference(cuNDArray<complext<REAL> > *csm, unsigned int number_of
 //
 
 //template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,1>(cuNDArray<complext<float> >*, int);
-template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,2>(cuNDArray<complext<float> >*, int);
+template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<float> > > Gadgetron::estimate_b1_map<float,2>(cuNDArray<complext<float> >*, int);
 //template boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,3>(cuNDArray<complext<float> >*, int);
 //template boost::shared_ptr< cuNDArray<complext<float> > > estimate_b1_map<float,4>(cuNDArray<complext<float> >*, int);
 
 //template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,1>(cuNDArray<complext<double> >*, int);
-template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,2>(cuNDArray<complext<double> >*, int);
+template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > Gadgetron::estimate_b1_map<double,2>(cuNDArray<complext<double> >*, int);
 //template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,3>(cuNDArray<complext<double> >*, int);
 //template EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<double> > > estimate_b1_map<double,4>(cuNDArray<complext<double> >*, int);

@@ -17,7 +17,7 @@
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
 #include "ismrmrd.h"
-
+namespace Gadgetron{
 class EXPORTGADGETSCGSENSE GPUCGGadget : public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 {
 
@@ -35,21 +35,21 @@ protected:
 		return true;
 	}
 
-        bool read_dir_equal(float* cosines) {
+        bool read_dir_equal(float* read_dir) {
                 for (unsigned int i = 0; i < 3; i++) {
                         if (read_dir_[i] != read_dir[i]) return false;
                 }
                 return true;
         }
 
-        bool phase_dir_equal(float* cosines) {
+        bool phase_dir_equal(float* phase_dir) {
                 for (unsigned int i = 0; i < 3; i++) {
                         if (phase_dir_[i] != phase_dir[i]) return false;
                 }
                 return true;
         }
 
-        bool slice_dir_equal(float* cosines) {
+        bool slice_dir_equal(float* slice_dir) {
                 for (unsigned int i = 0; i < 3; i++) {
                         if (slice_dir_[i] != slice_dir[i]) return false;
                 }
@@ -93,7 +93,7 @@ protected:
 	bool is_configured_;
 
 	// Define conjugate gradient solver
-	cuCgSolver<float, float_complext> cg_;
+	cuCgSolver<float_complext> cg_;
 
 	// Define non-Cartesian Sense Encofing operator
 	boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E_;
@@ -102,7 +102,7 @@ protected:
 	boost::shared_ptr< cuCgPrecondWeights<float_complext> > D_;
 
 	// Define regularization image operator
-	boost::shared_ptr< cuImageOperator<float,float_complext> > R_;
+	boost::shared_ptr< cuImageOperator<float_complext> > R_;
 
 	// Define rhs operator (for regularization)
 	boost::shared_ptr< cuSenseRHSBuffer<float,2> > rhs_buffer_;
@@ -115,5 +115,5 @@ protected:
 
 	ACE_Thread_Mutex mutex_;
 };
-
+}
 #endif //GPUCGGADGET

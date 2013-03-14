@@ -1,7 +1,7 @@
 #include "Gadgetron.h"
 #include "FlowPhaseSubtractionGadget.h"
 #include "GadgetIsmrmrdReadWrite.h"
-
+namespace Gadgetron{
 FlowPhaseSubtractionGadget::FlowPhaseSubtractionGadget()
 {
 }
@@ -99,3 +99,4 @@ process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 
 
 GADGET_FACTORY_DECLARE(FlowPhaseSubtractionGadget)
+}

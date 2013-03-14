@@ -1,8 +1,8 @@
 #pragma once 
 
-#include <Python.h>
+//#include <Python.h>
 #include <boost/python.hpp>
-#include <numpy/arrayobject.h>
+//#include <numpy/arrayobject.h>
 #include <boost/algorithm/string.hpp>
 
 #include "gadgetronpython_export.h"
@@ -18,7 +18,7 @@
 #include <stdlib.h>
 
 #include <complex>
-
+namespace Gadgetron{
 template <class T> class PythonGadget : 
 public Gadget2<T, hoNDArray< std::complex<float> > >
 {
@@ -109,3 +109,4 @@ public PythonGadget<ISMRMRD::ImageHeader>
   GADGET_DECLARE(ImagePythonGadget);
 
 };
+}

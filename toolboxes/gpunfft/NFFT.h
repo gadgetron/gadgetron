@@ -25,6 +25,7 @@
 
 template<class REAL, unsigned int D, bool ATOMICS> struct _convolve_NFFT_NC2C;
 
+namespace Gadgetron{
 //  ------------------------------
 //  --- NFFT class declaration ---
 //  ------------------------------
@@ -49,39 +50,39 @@ template< class REAL, unsigned int D, bool ATOMICS = false > class EXPORTGPUNFFT
 
   // Clear internal storage in plan
   enum NFFT_wipe_mode { NFFT_WIPE_ALL, NFFT_WIPE_PREPROCESSING };
-  bool wipe( NFFT_wipe_mode mode );
+  void wipe( NFFT_wipe_mode mode );
 
   // Replan 
-  bool setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, 
+  void setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os,
 	      REAL W, int device = -1 );
   
   // Preproces trajectory ( Cartesian to non-Cartesian / non-Cartesian to Cartesian / both )
   enum NFFT_prep_mode { NFFT_PREP_C2NC, NFFT_PREP_NC2C, NFFT_PREP_ALL };
-  bool preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory, NFFT_prep_mode mode );
+  void preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory, NFFT_prep_mode mode );
     
   // Execute NFFT (forwards/backwards; modes: Cartesian to non-Cartesian or non-Cartesian to Cartesian)
   enum NFFT_comp_mode { NFFT_FORWARDS_C2NC, NFFT_FORWARDS_NC2C, 
 			NFFT_BACKWARDS_C2NC, NFFT_BACKWARDS_NC2C };
-  bool compute( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, 
+  void compute( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
 		cuNDArray<REAL> *dcw, NFFT_comp_mode mode );
 
   // Execute NFFT iteration (from Cartesian image space to non-Cartesian Fourier space and back to Cartesian image space)
-  bool mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, 
+  void mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
 		  cuNDArray<REAL> *dcw, std::vector<unsigned int> halfway_dims );
   
  public: // Utilities
   
   // NFFT convolution (Cartesian to non-Cartesian or non-Cartesian to Cartesian)
   enum NFFT_conv_mode { NFFT_CONV_C2NC, NFFT_CONV_NC2C };
-  bool convolve( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, cuNDArray<REAL> *dcw, 
+  void convolve( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, cuNDArray<REAL> *dcw,
 		 NFFT_conv_mode mode, bool accumulate = false );
     
   // NFFT FFT
   enum NFFT_fft_mode { NFFT_FORWARDS, NFFT_BACKWARDS };
-  bool fft( cuNDArray<complext<REAL> > *data, NFFT_fft_mode mode, bool do_scale = true );
+  void fft( cuNDArray<complext<REAL> > *data, NFFT_fft_mode mode, bool do_scale = true );
   
   // NFFT deapodization
-  bool deapodize( cuNDArray<complext<REAL> > *image );
+  void deapodize( cuNDArray<complext<REAL> > *image );
 
  public: // Setup queries
 
@@ -103,30 +104,30 @@ template< class REAL, unsigned int D, bool ATOMICS = false > class EXPORTGPUNFFT
 
   // Validate setup / arguments
   enum NFFT_components { _NFFT_CONV_C2NC = 1, _NFFT_CONV_NC2C = 2, _NFFT_FFT = 4, _NFFT_DEAPODIZATION = 8 };
-  bool check_consistency( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image, 
+  void check_consistency( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image,
 			  cuNDArray<REAL> *dcw, unsigned char components );
 
   // Shared barebones constructor
-  bool barebones();
+  void barebones();
     
   // Compute beta control parameter for Kaiser-Bessel kernel
-  bool compute_beta();
+  void compute_beta();
 
   // Compute deapodization filter
-  bool compute_deapodization_filter();
+  void compute_deapodization_filter();
 
   // Dedicated computes
-  bool compute_NFFT_C2NC( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out );
-  bool compute_NFFT_NC2C( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out );
-  bool compute_NFFTH_NC2C( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out );
-  bool compute_NFFTH_C2NC( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out );
+  void compute_NFFT_C2NC( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out );
+  void compute_NFFT_NC2C( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out );
+  void compute_NFFTH_NC2C( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out );
+  void compute_NFFTH_C2NC( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out );
 
   // Dedicated convolutions
-  bool convolve_NFFT_C2NC( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate );
-  bool convolve_NFFT_NC2C( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate );
+  void convolve_NFFT_C2NC( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate );
+  void convolve_NFFT_NC2C( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate );
   
   // Internal utility
-  bool image_wrap( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate );
+  void image_wrap( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate );
 
  private:
     
@@ -160,3 +161,9 @@ template< class REAL, unsigned int D, bool ATOMICS = false > class EXPORTGPUNFFT
   bool preprocessed_C2NC, preprocessed_NC2C;
   bool initialized;
 };
+
+//Empty class to cause compile errors if you try to use NFFT with double and atomics
+template< unsigned int D> class EXPORTGPUNFFT NFFT_plan<double,D,true>
+{};
+
+}//End of namespace

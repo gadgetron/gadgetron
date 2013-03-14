@@ -13,6 +13,7 @@
 
 #define MAXHOSTNAMELENGTH 1024
 
+using namespace Gadgetron;
 GadgetronConnector::GadgetronConnector()
 	//: notifier_ (0, this, ACE_Event_Handler::WRITE_MASK)
 	: writer_task_(&this->peer())

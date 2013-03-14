@@ -17,7 +17,7 @@
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
 #include "ismrmrd.h"
-
+namespace Gadgetron{
 class CGSenseJob
 {
 public:
@@ -67,7 +67,7 @@ protected:
 	bool is_configured_;
 
 	// Define conjugate gradient solver
-	cuCgSolver<float, float_complext> cg_;
+	cuCgSolver<float_complext> cg_;
 
 	// Define non-Cartesian Sense Encofing operator
 	boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E_;
@@ -76,10 +76,10 @@ protected:
 	boost::shared_ptr< cuCgPrecondWeights<float_complext> > D_;
 
 	// Define regularization image operator
-	boost::shared_ptr< cuImageOperator<float,float_complext> > R_;
+	boost::shared_ptr< cuImageOperator<float_complext> > R_;
 
 	int image_series_;
 	int image_counter_;
 };
-
+}
 #endif //GPUCGGadgetGeneric

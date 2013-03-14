@@ -7,6 +7,7 @@
 #include "GPUTimer.h"
 #include "htgrappa.h"
 
+using namespace Gadgetron;
 int main(int argc, char** argv)
 {
   std::cout << "Simple HTGRAPPA program" << std::endl;

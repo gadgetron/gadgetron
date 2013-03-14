@@ -6,7 +6,7 @@
  */
 
 #include "FFT.h"
-
+namespace Gadgetron{
 template <typename T> FFT<T>* FFT<T>::instance()
 {
 		if (!instance_) instance_ = new FFT<T>();
@@ -17,3 +17,4 @@ template <class T> FFT<T>* FFT<T>::instance_ = NULL;
 
 template class FFT<double>;
 template class FFT<float>;
+}

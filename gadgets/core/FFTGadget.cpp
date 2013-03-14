@@ -1,7 +1,7 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "FFTGadget.h"
 #include "FFT.h"
-
+namespace Gadgetron{
 int FFTGadget::process( GadgetContainerMessage< ISMRMRD::ImageHeader>* m1,
 			GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
@@ -18,3 +18,4 @@ int FFTGadget::process( GadgetContainerMessage< ISMRMRD::ImageHeader>* m1,
 }
 
 GADGET_FACTORY_DECLARE(FFTGadget)
+}

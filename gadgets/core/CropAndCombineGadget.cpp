@@ -1,7 +1,7 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "CropAndCombineGadget.h"
 
-
+namespace Gadgetron{
 int CropAndCombineGadget::
 process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 	 GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
@@ -16,9 +16,9 @@ process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
   new_dimensions[1] = m2->getObjectPtr()->get_size(1);
   new_dimensions[2] = m2->getObjectPtr()->get_size(2);
 
-  if (!m3->getObjectPtr()->create(&new_dimensions)) {
-    ACE_DEBUG( (LM_ERROR, 
-		ACE_TEXT("CropAndCombineGadget, failed to allocate new array\n")) );
+  try{m3->getObjectPtr()->create(&new_dimensions);}
+  catch (runtime_error &err){
+  	GADGET_DEBUG_EXCEPTION(err,"CropAndCombineGadget, failed to allocate new array\n");
     return -1;
   }
 
@@ -48,7 +48,7 @@ process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 	  mag += mag_tmp;
 	}
 
-	d2[offset_2] = std::polar((float)sqrt(mag),phase);
+	d2[offset_2] = std::polar(std::sqrt(mag),phase);
       }
     }
   }
@@ -65,3 +65,4 @@ process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 }
 
 GADGET_FACTORY_DECLARE(CropAndCombineGadget)
+}

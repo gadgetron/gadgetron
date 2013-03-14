@@ -3,20 +3,24 @@
 #include "real_utilities.h"
 #include "cgSolver.h"
 
-template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class cgSolver;
+namespace Gadgetron{
+template <class ARRAY_TYPE> class cgSolver;
 
-template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class cgTerminationCallback
+template <class ARRAY_TYPE> class cgTerminationCallback
 {
+
 public:
+	typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
+	typedef typename realType<ELEMENT_TYPE>::type REAL;
   cgTerminationCallback() {}
   virtual ~cgTerminationCallback() {}
   
-  virtual bool initialize( cgSolver<REAL,ELEMENT_TYPE,ARRAY_TYPE> *cg ){cg_ = cg; return true;}
+  virtual bool initialize( cgSolver<ARRAY_TYPE> *cg ){cg_ = cg; return true;}
   virtual bool iterate( unsigned int iteration, REAL *tc_metric, bool *tc_terminate ) = 0;
 
 
 protected:
-  cgSolver<REAL,ELEMENT_TYPE,ARRAY_TYPE> *cg_;
+  cgSolver<ARRAY_TYPE> *cg_;
   REAL get_rq(){
 	  return cg_->rq_;
   }
@@ -40,21 +44,22 @@ protected:
 
 
 
-template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class relativeResidualTCB 
-  : public cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE>
+template <class ARRAY_TYPE> class relativeResidualTCB
+  : public cgTerminationCallback<ARRAY_TYPE>
 {
 	protected:
-	  typedef cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE> cgTC;
+	  typedef cgTerminationCallback<ARRAY_TYPE> cgTC;
 public:
-
-  relativeResidualTCB() : cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE>() { 
+	typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
+	typedef typename realType<ELEMENT_TYPE>::type REAL;
+  relativeResidualTCB() : cgTerminationCallback<ARRAY_TYPE>() {
     rq_0_ = REAL(0); 
     tc_last_ = get_max<REAL>();
   }
   
   virtual ~relativeResidualTCB() {}
   
-  virtual bool initialize( cgSolver<REAL,ELEMENT_TYPE,ARRAY_TYPE> *cg )
+  virtual bool initialize( cgSolver<ARRAY_TYPE> *cg )
   {
 	cgTC::initialize(cg);
     tc_last_ = get_max<REAL>();
@@ -85,21 +90,22 @@ protected:
   REAL tc_last_;
 };
 
-  template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class residualTCB
-    : public cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE>
+  template <class ARRAY_TYPE> class residualTCB
+    : public cgTerminationCallback<ARRAY_TYPE>
   {
   	protected:
-  	  typedef cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE> cgTC;
+  	  typedef cgTerminationCallback<ARRAY_TYPE> cgTC;
   public:
-
-    residualTCB() : cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE>() {
+		typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
+		typedef typename realType<ELEMENT_TYPE>::type REAL;
+    residualTCB() : cgTerminationCallback<ARRAY_TYPE>() {
 
       tc_last_ = get_max<REAL>();
     }
 
     virtual ~residualTCB() {}
 
-    virtual bool initialize( cgSolver<REAL,ELEMENT_TYPE,ARRAY_TYPE> *cg )
+    virtual bool initialize( cgSolver<ARRAY_TYPE> *cg )
     {
   	cgTC::initialize(cg);
       tc_last_ = get_max<REAL>();
@@ -131,21 +137,22 @@ protected:
   };
 
 
-    template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class updateTCB
-      : public cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE>
+    template <class ARRAY_TYPE> class updateTCB
+      : public cgTerminationCallback<ARRAY_TYPE>
     {
     	protected:
-    	  typedef cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE> cgTC;
+    	  typedef cgTerminationCallback<ARRAY_TYPE> cgTC;
     public:
-
-      updateTCB() : cgTerminationCallback<REAL,ELEMENT_TYPE,ARRAY_TYPE>() {
+			typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
+			typedef typename realType<ELEMENT_TYPE>::type REAL;
+      updateTCB() : cgTerminationCallback<ARRAY_TYPE>() {
 
         tc_last_ = get_max<REAL>();
       }
 
       virtual ~updateTCB() {}
 
-      virtual bool initialize( cgSolver<REAL,ELEMENT_TYPE,ARRAY_TYPE> *cg )
+      virtual bool initialize( cgSolver<ARRAY_TYPE> *cg )
       {
     	cgTC::initialize(cg);
         tc_last_ = get_max<REAL>();
@@ -175,3 +182,4 @@ protected:
 
       REAL tc_last_;
     };
+}

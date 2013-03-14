@@ -15,7 +15,7 @@
 
 #include <complex>
 #include <map>
-
+namespace Gadgetron{
 class EXPORTGADGETSMRICORE PCACoilGadget :
 public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
 {
@@ -44,5 +44,5 @@ private:
       int max_buffered_profiles_;
       int samples_to_use_;
 };
-
+}
 #endif /* PCACOILGADGET_H_ */

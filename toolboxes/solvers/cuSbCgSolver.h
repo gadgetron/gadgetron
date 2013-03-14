@@ -4,24 +4,18 @@
 #include "cuCgSolver.h"
 #include "cuNDArray.h"
 #include "real_utilities.h"
-#include "vector_td_utilities.h"
-#include "ndarray_vector_td_utilities.h"
-#include "cuEncodingOperatorContainer.h"
 
-template <class REAL, class T> class cuSbCgSolver 
-  : public sbSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T>, cuCgSolver<REAL,T>, cuEncodingOperatorContainer<REAL,T> >
+#include "complext.h"
+
+namespace Gadgetron{
+template <class T> class cuSbCgSolver
+  : public sbSolver<cuNDArray<typename realType<T>::type >, cuNDArray<T>, cuCgSolver<T> >
 {
 public:
   
-  cuSbCgSolver() : sbSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T>, cuCgSolver<REAL,T>, cuEncodingOperatorContainer<REAL,T> >() {
-    set_device(-1); 
+  cuSbCgSolver() : sbSolver<cuNDArray<typename realType<T>::type >, cuNDArray<T>, cuCgSolver<T> >() {
   }
   
   virtual ~cuSbCgSolver() {}
-
-#include "cuSbSolver_macros.h"
-  
-protected:
-  int device_;
-  int old_device_;
 };
+}

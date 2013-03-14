@@ -6,7 +6,8 @@
 #include <vector>
 #include <iostream>
 
-template <class REAL, class ELEMENT_TYPE, class ARRAY_TYPE> class linearSolver
+namespace Gadgetron{
+template <class ARRAY_TYPE> class linearSolver
   : public solver<ARRAY_TYPE, ARRAY_TYPE>
 {
 
@@ -19,43 +20,41 @@ public:
   virtual ~linearSolver() {}
 
   // Add encoding operator to solver (only one allowed)
-  virtual bool set_encoding_operator( boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> > op)
+  virtual void set_encoding_operator( boost::shared_ptr< linearOperator<ARRAY_TYPE> > op)
   {
     if( !op.get() ){
-      this->solver_error( "Error: linearSolver::set_encoding_operator : NULL operator provided" );
-      return false;
+      throw std::runtime_error( "Error: linearSolver::set_encoding_operator : NULL operator provided" );
+
     } 
     
     encoding_operator_ = op;
     
-    return true;
+
   }
   
-  virtual boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> > 
+  virtual boost::shared_ptr< linearOperator<ARRAY_TYPE> >
   get_encoding_operator()
   {
     return encoding_operator_;
   }  
   
   // Add linear operator to solver (in addition to the encoding operator)
-  virtual bool add_regularization_operator( boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> > op)
+  virtual void add_regularization_operator( boost::shared_ptr< linearOperator< ARRAY_TYPE> > op)
   {
     if( !op.get() ){
-      this->solver_error( "Error: linearSolver::add_regularization_operator : NULL operator provided" );
-      return false;
+    	BOOST_THROW_EXCEPTION(runtime_error( "Error: linearSolver::add_regularization_operator : NULL operator provided" ));
+
     }
     
     regularization_operators_.push_back(op);
-    
-    return true;
   }
   
-  virtual boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> > 
+  virtual boost::shared_ptr< linearOperator< ARRAY_TYPE> >
   get_regularization_operator( unsigned int i )
   {
     if( i >= get_number_of_regularization_operators() ){
-      this->solver_error( "Error: linearSolver::get_regularization_operator : index out of range" );
-      return boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> >();
+    	BOOST_THROW_EXCEPTION(runtime_error( "Error: linearSolver::get_regularization_operator : index out of range" ));
+
     }
     
     return regularization_operators_[i];
@@ -69,8 +68,11 @@ public:
 protected:
   
   // Single encoding operator
-  boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> > encoding_operator_;
+  boost::shared_ptr< linearOperator<ARRAY_TYPE> > encoding_operator_;
   
   // Vector of linear regularization operators
-  std::vector< boost::shared_ptr< linearOperator<REAL, ARRAY_TYPE> > > regularization_operators_;
+  std::vector< boost::shared_ptr< linearOperator<ARRAY_TYPE> > > regularization_operators_;
+  typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
+  typedef typename realType<ELEMENT_TYPE>::type REAL;
 };
+}

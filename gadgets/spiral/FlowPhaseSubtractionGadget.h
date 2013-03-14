@@ -7,7 +7,7 @@
 #include "hoNDArray.h"
 #include "spiral_gadgets_export.h"
 #include "ismrmrd.h"
-
+namespace Gadgetron{
 
 class EXPORTGADGETSSPIRAL FlowPhaseSubtractionGadget :
 public Gadget2< ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
@@ -29,5 +29,5 @@ public Gadget2< ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
   ACE_Message_Queue<ACE_MT_SYNCH> buffer_;
 
 };
-
+}
 #endif //FlowPhaseSubtractionGadget_H

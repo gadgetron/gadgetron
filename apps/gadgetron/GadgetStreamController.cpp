@@ -16,6 +16,7 @@
 #include <complex>
 #include <fstream>
 
+using namespace Gadgetron;
 int GadgetStreamController::open (void)
 {
 	//We will set up the controllers message queue such that when a packet is enqueued write will be triggered.

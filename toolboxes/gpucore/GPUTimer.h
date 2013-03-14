@@ -5,7 +5,7 @@
 
 #include <cuda_runtime_api.h>
 #include "GadgetronTimer.h"
-
+namespace Gadgetron{
 class GPUTimer : public GadgetronTimer
 {
 public:
@@ -29,5 +29,5 @@ public:
 		cudaThreadSynchronize();
 	}
 };
-
+}
 #endif //__GPUTIMER_H

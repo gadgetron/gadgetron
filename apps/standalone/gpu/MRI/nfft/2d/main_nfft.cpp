@@ -36,7 +36,7 @@
 #include "complext.h"
 
 using namespace std;
-
+using namespace Gadgetron;
 // Define desired precision
 typedef float _real; 
 typedef complext<_real> _complext;
@@ -99,8 +99,8 @@ int main( int argc, char** argv)
   // Upload host image to device, normalize, and convert to complex type
   timer = new GPUTimer("Uploading, normalizing and converting to complex");
   cuNDArray<_real> _image(host_image.get());
-  cuNDA_normalize( &_image, 1.0f );
-  boost::shared_ptr< cuNDArray<_complext> > image = cuNDA_real_to_complext<_real>( &_image );
+  normalize( &_image, 1.0f );
+  boost::shared_ptr< cuNDArray<_complext> > image = real_to_complext<_real>( &_image );
   delete timer;
   
   // Setup resulting samples array
@@ -119,7 +119,7 @@ int main( int argc, char** argv)
   
   // Preprocess
   timer = new GPUTimer("NFFT preprocessing");
-  bool success = plan.preprocess( traj.get(), plan_type::NFFT_PREP_C2NC );
+  plan.preprocess( traj.get(), plan_type::NFFT_PREP_C2NC );
   delete timer;
 
   // Compute density compensation weights
@@ -130,7 +130,7 @@ int main( int argc, char** argv)
 
   // Gridder
   timer = new GPUTimer("Computing nfft");
-  success = plan.compute( image.get(), &samples, dcw.get(), plan_type::NFFT_FORWARDS_C2NC );
+  plan.compute( image.get(), &samples, dcw.get(), plan_type::NFFT_FORWARDS_C2NC );
   delete timer;
 
   //

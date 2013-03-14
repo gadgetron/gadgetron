@@ -9,6 +9,7 @@
 //
 // Estimate b1 map
 //
-
+namespace Gadgetron{
 template<class REAL, unsigned int D> EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<REAL> > >
 estimate_b1_map( cuNDArray<complext<REAL> > *data, int target_coils = -1);
+}

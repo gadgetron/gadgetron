@@ -35,7 +35,7 @@
 #include <iostream>
 
 using namespace std;
-
+using namespace Gadgetron;
 // Define desired precision
 typedef float _real; 
 typedef complext<_real> _complext;
@@ -114,8 +114,8 @@ int main( int argc, char** argv)
   
   // Setup resulting image array
   vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size); image_dims.push_back((num_frames/frames_per_reconstruction)*frames_per_reconstruction);
-  cuNDArray<_complext> image; image.create(&image_dims);
-  cuNDA_clear(&image);
+  cuNDArray<_complext> image(&image_dims);
+  image.clear();
   
   // Initialize plan
   timer = new GPUTimer("Initializing plan");
@@ -138,7 +138,7 @@ int main( int argc, char** argv)
     
     // Preprocess
     timer = new GPUTimer("NFFT preprocessing");
-    bool success = plan.preprocess( traj.get(), plan_type::NFFT_PREP_NC2C );
+    plan.preprocess( traj.get(), plan_type::NFFT_PREP_NC2C );
     delete timer;
     
     // Upload data
@@ -151,7 +151,7 @@ int main( int argc, char** argv)
 
     // Gridder
     timer = new GPUTimer("Computing adjoint nfft (gridding)");
-    success = plan.compute( data.get(), &tmp_image, dcw.get(), plan_type::NFFT_BACKWARDS_NC2C );
+    plan.compute( data.get(), &tmp_image, dcw.get(), plan_type::NFFT_BACKWARDS_NC2C );
     delete timer;
   }
   
@@ -162,7 +162,7 @@ int main( int argc, char** argv)
   timer = new GPUTimer("Output result to disk");
   boost::shared_ptr< hoNDArray<_complext> > host_image = image.to_host();
   write_nd_array<_complext>( host_image.get(), "result.cplx" );
-  write_nd_array<_real>( cuNDA_cAbs<_real>(&image)->to_host().get(), "result.real" );
+  write_nd_array<_real>( abs(&image)->to_host().get(), "result.real" );
   delete timer;
 
   return 0;

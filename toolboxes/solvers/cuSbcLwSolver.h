@@ -6,14 +6,15 @@
 #include "real_utilities.h"
 #include "vector_td_utilities.h"
 #include "ndarray_vector_td_utilities.h"
-#include "cuEncodingOperatorContainer.h"
+#include "encodingOperatorContainer.h"
 
-template <class REAL, class T> class cuSbcLwSolver 
-  : public sbcSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T>, cuLwSolver<REAL,T>, cuEncodingOperatorContainer<REAL,T> >
+namespace Gadgetron{
+template <class T> class cuSbcLwSolver
+  : public sbcSolver< cuNDArray<typename realType<T>::type>, cuNDArray<T>, cuLwSolver<T> >
 {
 public:
   
-  cuSbcLwSolver() : sbcSolver< REAL, T, cuNDArray<REAL>, cuNDArray<T>, cuLwSolver<REAL,T>, cuEncodingOperatorContainer<REAL,T> >() { 
+  cuSbcLwSolver() : sbcSolver<cuNDArray<typename realType<T>::type>, cuNDArray<T>, cuLwSolver<T> >() {
     set_device(-1); 
   }
 
@@ -25,3 +26,4 @@ protected:
   int device_;
   int old_device_;
 };
+}

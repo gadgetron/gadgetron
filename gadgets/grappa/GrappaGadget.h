@@ -9,7 +9,7 @@
 #include "hoNDArray.h"
 #include "GrappaCalibrationBuffer.h"
 #include "ismrmrd.h"
-
+namespace Gadgetron{
 struct EXPORTGADGETSGRAPPA GrappaBufferInfo
 {
   float           position[3];
@@ -56,5 +56,5 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   float phase_encoding_resolution_;
   unsigned int line_offset_;
 };
-
+}
 #endif //GRAPPAGADGET_H

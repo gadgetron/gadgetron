@@ -14,7 +14,7 @@
 #include <complex>
 #include "ismrmrd.h"
 #include "GrappaWeights.h"
-
+namespace Gadgetron{
 struct GrappaUnmixingJob
 {
 	boost::shared_ptr< GrappaWeights<float> > weights_;
@@ -31,5 +31,5 @@ protected:
 			GadgetContainerMessage<ISMRMRD::ImageHeader>* m2, GadgetContainerMessage<hoNDArray<std::complex<float> > >* m3);
 
 };
-
+}
 #endif /* GRAPPAUNMIXINGGADGET_H_ */

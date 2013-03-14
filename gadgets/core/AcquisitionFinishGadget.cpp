@@ -3,7 +3,7 @@
 #include "AcquisitionFinishGadget.h"
 #include "GadgetStreamController.h"
 
-using namespace GADGETRON;
+using namespace Gadgetron;
 
 int AcquisitionFinishGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 				 GadgetContainerMessage< NDArray< std::complex<float> > >* m2)

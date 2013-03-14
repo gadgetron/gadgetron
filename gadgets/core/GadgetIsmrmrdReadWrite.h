@@ -19,7 +19,8 @@
 #include "GadgetMessageInterface.h"
 #include "gadgetroncore_export.h"
 #include "url_encode.h"
-
+#include "Gadgetron.h"
+namespace Gadgetron{
 class GadgetIsmrmrdAcquisitionMessageWriter : public GadgetMessageWriter
 {
 
@@ -118,10 +119,9 @@ public:
 			tdims.push_back(m1->getObjectPtr()->trajectory_dimensions);
 			tdims.push_back(m1->getObjectPtr()->number_of_samples);
 
-			if (!m3->getObjectPtr()->create(&tdims)) {
-				ACE_DEBUG ((LM_ERROR,
-						ACE_TEXT ("(%P|%t) Allocate trajectory data\n")));
-
+			try { m3->getObjectPtr()->create(&tdims);}
+			catch (runtime_error &err){
+				GADGET_DEBUG_EXCEPTION(err,"(%P|%t) Allocate trajectory data\n");
 				m1->release();
 
 				return 0;
@@ -146,10 +146,9 @@ public:
 		adims.push_back(m1->getObjectPtr()->number_of_samples);
 		adims.push_back(m1->getObjectPtr()->active_channels);
 
-		if (!m2->getObjectPtr()->create(&adims)) {
-			ACE_DEBUG ((LM_ERROR,
-					ACE_TEXT ("(%P|%t) Allocate sample data\n")));
-
+		try{ m2->getObjectPtr()->create(&adims); }
+		catch (runtime_error &err ){
+			GADGET_DEBUG_EXCEPTION(err,"(%P|%t) Allocate sample data\n")
 			m1->release();
 
 			return 0;
@@ -203,4 +202,5 @@ inline boost::shared_ptr<ISMRMRD::ismrmrdHeader> parseIsmrmrdXMLHeader(std::stri
 	return cfg;
 }
 #endif
+}
 #endif //GADGETISMRMRDREADWRITE_H
