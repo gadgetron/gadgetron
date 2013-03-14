@@ -2,8 +2,16 @@
 
 #include "vector_td.h"
 #include "vector_td_operators.h"
-#include "cpucore_defines.h"
 #include "real_utilities.h"
+
+#include "device_config.h"
+#ifdef GADGETRON_CUDA_IS_AVAILABLE
+#include "cuda_runtime_api.h"
+#else
+#define __host__
+#define __device__
+#define __inline__ inline
+#endif
 
 #include <float.h>
 #include <cmath>

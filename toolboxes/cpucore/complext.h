@@ -7,7 +7,15 @@
 
 #pragma once
 
-#include "cpucore_defines.h"
+#include "device_config.h"
+#ifdef GADGETRON_CUDA_IS_AVAILABLE
+#include "cuda_runtime_api.h"
+#else
+#define __host__
+#define __device__
+#define __inline__ inline
+#endif
+
 #include <cmath>
 
 template< class T > class complext

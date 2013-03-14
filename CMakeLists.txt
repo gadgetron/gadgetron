@@ -36,9 +36,12 @@ endif (WIN32)
 find_package(CUDA 4.1)
 
 if (CUDA_FOUND)
-   MESSAGE("CUDA Found, GPU components will be compiled")
+  MESSAGE("CUDA Found, GPU components will be compiled")
+  SET( GADGETRON_CUDA_FOUND_BOOL 1 )
+  include_directories( ${CUDA_INCLUDE_DIRS} )
 else (CUDA_FOUND)
-     MESSAGE("CUDA not found. CUDA components will not be compiled")
+  MESSAGE("CUDA not found. CUDA components will not be compiled")
+  SET( GADGETRON_CUDA_FOUND_BOOL 0 )
 endif (CUDA_FOUND)
 
 # Compile kernels for shader models 1.0 and 2.0 as default
