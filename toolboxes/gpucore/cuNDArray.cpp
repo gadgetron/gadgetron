@@ -267,6 +267,29 @@ boost::shared_ptr< hoNDArray<T> > cuNDArray<T>::to_host() const
   return ret;
 }
 
+template <class T>
+int cuNDArray<T>::to_host( hoNDArray<T> *out ) const 
+{
+  if( !out ){
+    std::cerr << "cuNDArray::to_host(): illegal array passed" << std::endl;
+    return -1;
+  }
+
+  if( out->get_number_of_elements() != this->get_number_of_elements() ){
+
+    if( out->create( this->get_dimensions().get() ) == 0x0 ){
+      std::cerr << "cuNDArray::to_host(): array dimensions mismatch and reallocation failed" << std::endl;
+      return -1;
+    }
+  }
+    
+  if( cudaMemcpy( out->get_data_ptr(), this->data_, this->elements_*sizeof(T), cudaMemcpyDeviceToHost) != cudaSuccess) {
+    std::cerr << "cuNDArray::to_host(): failed to copy memory from device" << std::endl;
+    return -1;
+  }
+  return 0;
+}
+
 template <class T> 
 int cuNDArray<T>::permute(std::vector<unsigned int> *dim_order, NDArray<T> *out, int shift_mode)
 {

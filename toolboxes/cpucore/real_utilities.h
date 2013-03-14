@@ -1,13 +1,6 @@
 #pragma once
 
-#include "device_config.h"
-#ifdef GADGETRON_CUDA_IS_AVAILABLE
-#include "cuda_runtime_api.h"
-#else
-#define __host__
-#define __device__
-#define __inline__ inline
-#endif
+#include "cpucore_defines.h"
 
 #ifdef _USE_MATH_DEFINES
 #include <math.h>
