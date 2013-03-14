@@ -114,13 +114,14 @@ template <class ARRAY_TYPE> class gpBBSolver
 				*g_old -= *g;
 				REAL xx = dot(&x_old,&x_old);
 				REAL gx = dot(g_old,&x_old);
-				REAL gg = dot(g_old,&x_old);
-				REAL nabla1 = xx/gx;
 
+				REAL nabla1 = xx/gx;
+				/* This is the code that enables the adaptive step size.
+				REAL gg = dot(g_old,&x_old);
 				REAL nabla2 = gx/gg;
 				if ((nabla2/nabla1) < 0.5) nabla = nabla2;
-				else nabla = nabla1;
-
+				else nabla = nabla1;*/
+				nabla = nabla1;
 
 
 			}

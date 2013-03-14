@@ -12,7 +12,7 @@
 #include "cuNDArray.h"
 #include "vector_td_utilities.h"
 #include "cuVector_td_test_kernels.h"
-
+#include <sstream>
 using namespace Gadgetron;
 using testing::Types;
 template <typename T> class vector_td_Test : public ::testing::Test {
@@ -68,4 +68,32 @@ TYPED_TEST(vector_td_Test,maxTest){
 	thrust::device_vector<TypeParam> out = test_max(&this->cuData);
 
 	EXPECT_FLOAT_EQ(TypeParam(5.3),out[5]);
+}
+
+TEST(vector_td,parseTest){
+std::string base ="[23,22,25]";
+std::stringstream ss(base);
+
+vector_td<float,3> vec;
+vector_td<float,3> res(23,22,25);
+ss >> vec;
+
+EXPECT_FALSE(ss.fail());
+EXPECT_EQ(res,vec);
+
+}
+
+
+TEST(vector_td,parseEqualTest){
+	vector_td<float,3> res(23,22,25);
+	std::stringstream ss;
+	ss << res;
+
+	vector_td<float,3> vec;
+
+	ss >> vec;
+
+	EXPECT_FALSE(ss.fail());
+	EXPECT_EQ(res,vec);
+
 }
