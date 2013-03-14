@@ -665,7 +665,7 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
 
     // Image Number
     key.set(0x0020, 0x0013);
-    snprintf(buf, BUFSIZE, "%d", img->image_index);
+    snprintf(buf, BUFSIZE, "%d", img->image_index + 1);
     WRITE_DCM_STRING(key, buf);
 
     // Image Position (Patient)
