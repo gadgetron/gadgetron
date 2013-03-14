@@ -3,7 +3,6 @@
 #pragma once
 
 #include "NDArray.h"
-
 #include "complext.h"
 #include "vector_td.h"
 

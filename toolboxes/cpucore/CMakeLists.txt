@@ -6,7 +6,7 @@ include_directories(${ACE_INCLUDE_DIR}
 		    ${Boost_INCLUDE_DIR}
 		    ${FFTW3_INCLUDE_DIR})
 
-configure_file( device_config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/device_config.h )
+configure_file( cpucore_defines.h.in ${CMAKE_CURRENT_SOURCE_DIR}/cpucore_defines.h )
 
 add_library(cpucore SHARED FFT.cpp)
 
@@ -26,5 +26,5 @@ install(FILES
 	vector_td_operators.h
 	vector_td_utilities.h
 	real_utilities.h
-	device_config.h
+	cpu_defines.h
 	DESTINATION include)
