@@ -24,6 +24,9 @@ public:
             // TODO: error checking!
             GADGET_DEBUG1("Can't start MATLAB engine\n");
         }
+
+        // Add +ismrmrd package to Matlab's path
+        engEvalString(engine_, "addpath(strcat(getenv('ISMRMRD_HOME'), '/matlab'));");
     }
 
     ~MatlabGadget()
