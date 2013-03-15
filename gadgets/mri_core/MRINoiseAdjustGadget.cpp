@@ -163,7 +163,8 @@ int MRINoiseAdjustGadget
 					GADGET_DEBUG1("Noise Decorrelation Failed\n");
 					return GADGET_FAIL;
 				}
-				/*
+                                */
+
 				/*
 				if (!data_written) {
 					write_nd_array(&noise_covariance_matrixf_, "noise_decorr_matrix.cplx");
