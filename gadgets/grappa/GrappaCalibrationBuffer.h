@@ -32,10 +32,10 @@ class EXPORTGADGETSGRAPPA CalibrationBufferCounter
   {
     int ret_val = 0;
 
-    if (!read_dir_equal(m1->getObjectPtr()->read_dir) || 
-                !phase_dir_equal(m1->getObjectPtr()->phase_dir) ||
-                !slice_dir_equal(m1->getObjectPtr()->slice_dir) ||
-                !position_equal(m1->getObjectPtr()->position)) {
+    if (!read_dir_equal(read_dir) || 
+                !phase_dir_equal(phase_dir) ||
+                !slice_dir_equal(slice_dir) ||
+                !position_equal(position)) {
       for (unsigned int i = 0; i < lines_sampled_.size(); i++) {
 	lines_sampled_[i] = 0;
       }
@@ -94,21 +94,21 @@ class EXPORTGADGETSGRAPPA CalibrationBufferCounter
 
   bool read_dir_equal(float* cosines) {
     for (unsigned int i = 0; i < 3; i++) {
-      if (read_dir_[i] != read_dir[i]) return false;
+      if (read_dir_[i] != cosines[i]) return false;
     }
     return true;
   }
 
   bool phase_dir_equal(float* cosines) {
     for (unsigned int i = 0; i < 3; i++) {
-      if (phase_dir_[i] != phase_dir[i]) return false;
+      if (phase_dir_[i] != cosines[i]) return false;
     }
     return true;
   }
 
   bool slice_dir_equal(float* cosines) {
     for (unsigned int i = 0; i < 3; i++) {
-      if (slice_dir_[i] != slice_dir[i]) return false;
+      if (slice_dir_[i] != cosines[i]) return false;
     }
     return true;
   }
