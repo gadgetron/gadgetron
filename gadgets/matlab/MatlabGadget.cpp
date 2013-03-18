@@ -1,15 +1,15 @@
 #include "MatlabGadget.h"
 
-#define NUMBER_OF_FIELDS    3 //23
+#define NUMBER_OF_FIELDS    6 //23
 
 const char *ismrmrd_acq_field_names[] = {
     "version",
     "flags",
     "measurement_uid",
-    /*
     "scan_counter",
     "acquisition_time_stamp",
     "physiology_time_stamp",
+    /*
     "number_of_samples",
     "available_channels",
     "active_channels",
@@ -41,16 +41,6 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     ISMRMRD::AcquisitionHeader *acq = m1->getObjectPtr();
     hoNDArray< std::complex<float> > *data = m2->getObjectPtr();
 
-    // Copy the Acquisition Header into Matlab memory
-    /*
-    ISMRMRD::AcquisitionHeader *macq = (ISMRMRD::AcquisitionHeader *)mxMalloc(sizeof(*acq));
-    if (!macq) {
-        GADGET_DEBUG1("Failed to allocate Matlabe memory for Acquisition Header\n");
-        return GADGET_FAIL;
-    }
-    memcpy(macq, acq, sizeof(*macq));
-    */
-
     std::cout << "Preparing Matlab struct array for Acquisition header" << std::endl;
 
     // Create struct array for storing a single ISMRMRD Acquisition Header
@@ -62,26 +52,26 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     mxArray *acqhdr_values[NUMBER_OF_FIELDS];
 
     acqhdr_values[0] = mxCreateNumericMatrix(1, 1, mxUINT16_CLASS, mxREAL);
-    *mxGetPr(acqhdr_values[0]) = acq->version;
+    memcpy(mxGetData(acqhdr_values[0]), &acq->version, mxGetElementSize(acqhdr_values[0]));
 
     acqhdr_values[1] = mxCreateNumericMatrix(1, 1, mxUINT64_CLASS, mxREAL);
-    *mxGetPr(acqhdr_values[1]) = acq->flags;
+    memcpy(mxGetData(acqhdr_values[1]), &acq->flags, mxGetElementSize(acqhdr_values[1]));
 
     acqhdr_values[2] = mxCreateNumericMatrix(1, 1, mxUINT32_CLASS, mxREAL);
-    *mxGetPr(acqhdr_values[2]) = acq->measurement_uid;
+    memcpy(mxGetData(acqhdr_values[2]), &acq->measurement_uid, mxGetElementSize(acqhdr_values[2]));
 
-    std::cout << "Set 3 array values" << std::endl;
-    fflush(stdout);
-/*
     acqhdr_values[3] = mxCreateNumericMatrix(1, 1, mxUINT32_CLASS, mxREAL);
-    mxSetData(acqhdr_values[3], &macq->scan_counter);
+    memcpy(mxGetData(acqhdr_values[3]), &acq->scan_counter, mxGetElementSize(acqhdr_values[3]));
 
     acqhdr_values[4] = mxCreateNumericMatrix(1, 1, mxUINT32_CLASS, mxREAL);
-    mxSetData(acqhdr_values[4], &macq->acquisition_time_stamp);
+    memcpy(mxGetData(acqhdr_values[4]), &acq->acquisition_time_stamp, mxGetElementSize(acqhdr_values[4]));
 
-    acqhdr_values[5] = mxCreateNumericMatrix(1, 1, mxUINT32_CLASS, mxREAL);
-    mxSetData(acqhdr_values[5], macq->physiology_time_stamp);
+    acqhdr_values[5] = mxCreateNumericMatrix(3, 1, mxUINT32_CLASS, mxREAL);
+    memcpy(mxGetData(acqhdr_values[5]), acq->physiology_time_stamp, 3 * mxGetElementSize(acqhdr_values[5]));
 
+    std::cout << "Set 6 array values" << std::endl;
+    fflush(stdout);
+/*
     acqhdr_values[6] = mxCreateNumericMatrix(1, 1, mxUINT16_CLASS, mxREAL);
     mxSetData(acqhdr_values[6], &macq->number_of_samples);
 
@@ -142,14 +132,39 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
 
     engPutVariable(engine_, "acqhdr", acqhdr);
 
+    // Prepare a buffer for collecting Matlab's output
     char buffer[2049] = "\0";
     engOutputBuffer(engine_, buffer, 2048);
 
-    engEvalString(engine_, "acqhdr");
+    // instantiate a Matlab ismrmrd.AcquisitionHeader from our struct
+    engEvalString(engine_, "h = ismrmrd.AcquisitionHeader(acqhdr);");
+
+    engEvalString(engine_, "h.scan_counter = 42;");
+
+    // cast EncodingCounters to a struct
+    engEvalString(engine_, "idx = struct(h.idx);");
+
+    engEvalString(engine_, "s = struct(h)");
+
+    // overwrite the EncodingCounter class with the EncodingCounters struct
+    engEvalString(engine_, "s.idx = idx;");
+
+    mxArray *res = engGetVariable(engine_, "s");
+    if (res == NULL) {
+        GADGET_DEBUG1("Failed to get struct back from AcquisitionHeader in Matlab\n");
+        return GADGET_FAIL;
+    }
 
     printf("%s", buffer);
+    printf("s is class %s\n", mxGetClassName(res));
+
+    mxArray *scan_counter_array = mxGetField(res, 0, "scan_counter");
+    uint32_t scan_counter = ((uint32_t *)mxGetData(scan_counter_array))[0];
+    printf("Scan counter: %u\n", scan_counter);
+    mxDestroyArray(scan_counter_array);
 
     mxDestroyArray(acqhdr);
+    mxDestroyArray(res);
 
     return GADGET_OK;
 }

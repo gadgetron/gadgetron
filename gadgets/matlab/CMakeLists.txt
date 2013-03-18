@@ -1,39 +1,21 @@
-cmake_minimum_required(VERSION 2.6)
-
-# add additional FindMatlab Module
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
-###############################################################
-#Bootstrap search for libraries
-# (We need to find cmake modules in Gadgetron)
-###############################################################
-find_path(GADGETRON_CMAKE_MODULES FindGadgetron.cmake HINTS
-    $ENV{GADGETRON_HOME}/cmake
-    /usr/local/gadgetron)
-
-if (NOT GADGETRON_CMAKE_MODULES)
-    MESSAGE(FATAL_ERROR "GADGETRON_CMAKE_MODULES cannot be found.
-    Try to set GADGETRON_HOME environment variable.")
-endif(NOT GADGETRON_CMAKE_MODULES)
-
-list(APPEND CMAKE_MODULE_PATH ${GADGETRON_CMAKE_MODULES})
-###############################################################
-
 find_package(Ismrmrd REQUIRED)
-find_package(Gadgetron REQUIRED)
-set(Boost_NO_BOOST_CMAKE ON)
-find_package(Boost COMPONENTS thread system REQUIRED)
-find_package(ACE REQUIRED)
-find_package(Matlab REQUIRED)
-
-set(CMAKE_INSTALL_PREFIX $ENV{GADGETRON_HOME})
 
 include_directories(
     ${MATLAB_INCLUDE_DIR}
     ${ACE_INCLUDE_DIR} 
     ${Boost_INCLUDE_DIR} 
     ${ISMRMRD_INCLUDE_DIR}
-    ${GADGETRON_INCLUDE_DIR}
+    ${CMAKE_SOURCE_DIR}/apps/gadgetron
+    ${CMAKE_SOURCE_DIR}/dependencies/tinyxml
+    ${CMAKE_SOURCE_DIR}/apps/gadgetron 
+    ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
+    ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+    ${CMAKE_SOURCE_DIR}/toolboxes/gpupmri
+    ${CMAKE_SOURCE_DIR}/toolboxes/gpunfft
+    ${CMAKE_SOURCE_DIR}/toolboxes/gpucore
+    ${CMAKE_SOURCE_DIR}/toolboxes/solvers
+    ${CMAKE_SOURCE_DIR}/toolboxes/hostutils
+    ${CMAKE_SOURCE_DIR}/gadgets/core
 )
 
 if (UNIX)
