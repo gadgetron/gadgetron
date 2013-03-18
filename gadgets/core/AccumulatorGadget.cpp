@@ -39,9 +39,10 @@ int AccumulatorGadget::process_config(ACE_Message_Block* mb)
 	dimensions_.push_back(e_space.matrixSize().y());
 	dimensions_.push_back(e_space.matrixSize().z());
 
-        field_of_view_.push_back(e_space.fieldOfView_mm().x());
-        field_of_view_.push_back(e_space.fieldOfView_mm().y());
-        field_of_view_.push_back(e_space.fieldOfView_mm().z());
+    field_of_view_.push_back(e_space.fieldOfView_mm().x());
+    field_of_view_.push_back(e_space.fieldOfView_mm().y());
+    field_of_view_.push_back(e_space.fieldOfView_mm().z());
+    GADGET_DEBUG2("FOV: %f, %f, %f\n", e_space.fieldOfView_mm().x(), e_space.fieldOfView_mm().y(), e_space.fieldOfView_mm().z());
 
 	slices_ = e_limits.slice().present() ? e_limits.slice().get().maximum()+1 : 1;
 
