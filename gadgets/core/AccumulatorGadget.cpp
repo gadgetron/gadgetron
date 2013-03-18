@@ -149,10 +149,18 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     		m1->getObjectPtr()->position,
 	   sizeof(float)*3);
 
-    memcpy(cm1->getObjectPtr()->quaternion,
-    		m1->getObjectPtr()->quaternion,
-	   sizeof(float)*4);
- 
+    memcpy(cm1->getObjectPtr()->read_dir,
+                m1->getObjectPtr()->read_dir,
+           sizeof(float)*3);
+
+    memcpy(cm1->getObjectPtr()->phase_dir,
+                m1->getObjectPtr()->phase_dir,
+           sizeof(float)*3);
+
+    memcpy(cm1->getObjectPtr()->slice_dir,
+                m1->getObjectPtr()->slice_dir,
+           sizeof(float)*3);
+
     memcpy(cm1->getObjectPtr()->patient_table_position,
     		m1->getObjectPtr()->patient_table_position, sizeof(float)*3);
 

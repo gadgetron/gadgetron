@@ -192,6 +192,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 				ISMRMRD::HDF5Exclusive lock; //This will ensure thread-safe access to HDF5
 				boost::shared_ptr<ISMRMRD::Acquisition> acq_tmp = ismrmrd_dataset->readAcquisition(i);
 				*(acq->getObjectPtr()) = *acq_tmp; //We are copying the data into the container message
+
 			}
 
 

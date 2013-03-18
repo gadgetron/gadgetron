@@ -34,7 +34,9 @@ GPUCGGadget::GPUCGGadget()
 	matrix_size_ = uintd2(0,0);
 	matrix_size_os_ = uintd2(0,0);
 	memset(position_, 0, 3*sizeof(float));
-	memset(quaternion_, 0, 4*sizeof(float));
+	memset(read_dir_, 0, 3*sizeof(float));
+	memset(phase_dir_, 0, 3*sizeof(float));
+	memset(slice_dir_, 0, 3*sizeof(float));
 	pass_on_undesired_data_ = true; // We will make one of these for each slice and so data should be passed on.
 }
 
@@ -232,10 +234,15 @@ int GPUCGGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 	}
 
 	// Check to see of the imaging plane has changed
-	if (!quaternion_equal(m1->getObjectPtr()->quaternion) || !position_equal(m1->getObjectPtr()->position)) {
+	if ( !read_dir_equal(m1->getObjectPtr()->read_dir) || 
+                    !phase_dir_equal(m1->getObjectPtr()->phase_dir) ||
+                    !slice_dir_equal(m1->getObjectPtr()->slice_dir) ||
+                    !position_equal(m1->getObjectPtr()->position)) {
 		rhs_buffer_->clear();
 		memcpy(position_,m1->getObjectPtr()->position,3*sizeof(float));
-		memcpy(quaternion_,m1->getObjectPtr()->quaternion,4*sizeof(float));
+		memcpy(read_dir_,m1->getObjectPtr()->read_dir,3*sizeof(float));
+		memcpy(phase_dir_,m1->getObjectPtr()->phase_dir,3*sizeof(float));
+		memcpy(slice_dir_,m1->getObjectPtr()->slice_dir,3*sizeof(float));
 	}
 
 	buffer_.enqueue_tail(m1);
@@ -358,7 +365,9 @@ int GPUCGGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		cm1->getObjectPtr()->acquisition_time_stamp     = m1->getObjectPtr()->acquisition_time_stamp;
 
 		memcpy(cm1->getObjectPtr()->position,m1->getObjectPtr()->position, sizeof(float)*3);
-		memcpy(cm1->getObjectPtr()->quaternion,m1->getObjectPtr()->quaternion, sizeof(float)*4);
+		memcpy(cm1->getObjectPtr()->read_dir,m1->getObjectPtr()->read_dir, sizeof(float)*3);
+		memcpy(cm1->getObjectPtr()->phase_dir,m1->getObjectPtr()->phase_dir, sizeof(float)*3);
+		memcpy(cm1->getObjectPtr()->slice_dir,m1->getObjectPtr()->slice_dir, sizeof(float)*3);
 		memcpy(cm1->getObjectPtr()->patient_table_position, m1->getObjectPtr()->patient_table_position, sizeof(float)*3);
 
 		cm1->getObjectPtr()->image_index = ++image_counter_;
