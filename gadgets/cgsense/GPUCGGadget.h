@@ -37,21 +37,21 @@ protected:
 
         bool read_dir_equal(float* cosines) {
                 for (unsigned int i = 0; i < 3; i++) {
-                        if (read_dir_[i] != read_dir[i]) return false;
+                        if (read_dir_[i] != cosines[i]) return false;
                 }
                 return true;
         }
 
         bool phase_dir_equal(float* cosines) {
                 for (unsigned int i = 0; i < 3; i++) {
-                        if (phase_dir_[i] != phase_dir[i]) return false;
+                        if (phase_dir_[i] != cosines[i]) return false;
                 }
                 return true;
         }
 
         bool slice_dir_equal(float* cosines) {
                 for (unsigned int i = 0; i < 3; i++) {
-                        if (slice_dir_[i] != slice_dir[i]) return false;
+                        if (slice_dir_[i] != cosines[i]) return false;
                 }
                 return true;
         }
