@@ -7,7 +7,7 @@
 
 #pragma once
 #include <vector>
-#include "cublas_v2.h"
+#include <cublas_v2.h>
 
 namespace Gadgetron{
 class cudaDeviceManager {

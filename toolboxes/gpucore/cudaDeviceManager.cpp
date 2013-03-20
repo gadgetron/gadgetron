@@ -7,8 +7,9 @@
 
 #include "cudaDeviceManager.h"
 #include "cuGTBLAS.h"
-#include "cuda_device_runtime_api.h"
 #include "check_CUDA.h"
+
+#include <cuda_runtime_api.h>
 
 namespace Gadgetron{
 cudaDeviceManager * cudaDeviceManager::_instance = 0;
