@@ -53,7 +53,9 @@ int GrappaCalibrationBuffer::add_data(ISMRMRD::AcquisitionHeader* m1, hoNDArray<
     memcpy(b+offset,d+c*samples,sizeof(std::complex<float>)*samples);
   }
 
-  int buf_update  = buffer_counter_.update_line(line,m1->position,m1->quaternion);
+  int buf_update  = buffer_counter_.update_line(line, m1->position,
+          m1->read_dir, m1->phase_dir, m1->slice_dir);
+
   if ( buf_update < 0) {
     GADGET_DEBUG2("Unable to update buffer counter for line %d\n", line);
     return GADGET_FAIL;

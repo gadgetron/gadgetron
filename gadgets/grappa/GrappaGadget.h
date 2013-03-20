@@ -13,7 +13,9 @@
 struct EXPORTGADGETSGRAPPA GrappaBufferInfo
 {
   float           position[3];
-  float           quaternion[4];
+  float           read_dir[3];
+  float           phase_dir[3];
+  float           slice_dir[3];
   unsigned int    acceleration_factor;
 };
 

@@ -41,7 +41,6 @@ ELSE (WIN32)
 	target_link_libraries(mriclient tinyxml gadgettools  ${HDF5_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES}  ${ISMRMRD_XSD_LIBRARIES} ${Boost_LIBRARIES})
 ENDIF(WIN32)
 
-
 install(TARGETS mriclient DESTINATION bin)
-install (FILES ImageWriter.h HDF5ImageWriter.h DESTINATION include)
+install(FILES ImageWriter.h HDF5ImageWriter.h BlobFileWriter.h DESTINATION include)
 install(FILES ${ISMRMRD_LIBRARIES} DESTINATION lib)

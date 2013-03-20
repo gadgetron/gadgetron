@@ -52,17 +52,47 @@ float acq_get_position(ISMRMRD::AcquisitionHeader &h, unsigned short i)
 	return 0.0f;
 }
 
-void acq_set_quaternion(ISMRMRD::AcquisitionHeader &h, unsigned short i, float v)
+void acq_set_read_dir(ISMRMRD::AcquisitionHeader &h, unsigned short i, float v)
 {
-	if (i < 4) {
-		h.quaternion[i] = v;
+	if (i < 3) {
+		h.read_dir[i] = v;
 	}
 }
 
-float acq_get_quaternion(ISMRMRD::AcquisitionHeader &h, unsigned short i)
+float acq_get_read_dir(ISMRMRD::AcquisitionHeader &h, unsigned short i)
 {
-	if (i < 4) {
-		return h.quaternion[i];
+	if (i < 3) {
+		return h.read_dir[i];
+	}
+	return 0.0f;
+}
+
+void acq_set_phase_dir(ISMRMRD::AcquisitionHeader &h, unsigned short i, float v)
+{
+	if (i < 3) {
+		h.phase_dir[i] = v;
+	}
+}
+
+float acq_get_phase_dir(ISMRMRD::AcquisitionHeader &h, unsigned short i)
+{
+	if (i < 3) {
+		return h.phase_dir[i];
+	}
+	return 0.0f;
+}
+
+void acq_set_slice_dir(ISMRMRD::AcquisitionHeader &h, unsigned short i, float v)
+{
+	if (i < 3) {
+		h.slice_dir[i] = v;
+	}
+}
+
+float acq_get_slice_dir(ISMRMRD::AcquisitionHeader &h, unsigned short i)
+{
+	if (i < 3) {
+		return h.slice_dir[i];
 	}
 	return 0.0f;
 }
@@ -172,17 +202,47 @@ float img_get_position(ISMRMRD::ImageHeader &h, unsigned short i)
 	return 0.0f;
 }
 
-void img_set_quaternion(ISMRMRD::ImageHeader &h, unsigned short i, float v)
+void img_set_read_dir(ISMRMRD::ImageHeader &h, unsigned short i, float v)
 {
-	if (i < 4) {
-		h.quaternion[i] = v;
+	if (i < 3) {
+		h.read_dir[i] = v;
 	}
 }
 
-float img_get_quaternion(ISMRMRD::ImageHeader &h, unsigned short i)
+float img_get_read_dir(ISMRMRD::ImageHeader &h, unsigned short i)
 {
-	if (i < 4) {
-		return h.quaternion[i];
+	if (i < 3) {
+		return h.read_dir[i];
+	}
+	return 0.0f;
+}
+
+void img_set_phase_dir(ISMRMRD::ImageHeader &h, unsigned short i, float v)
+{
+	if (i < 3) {
+		h.phase_dir[i] = v;
+	}
+}
+
+float img_get_phase_dir(ISMRMRD::ImageHeader &h, unsigned short i)
+{
+	if (i < 3) {
+		return h.phase_dir[i];
+	}
+	return 0.0f;
+}
+
+void img_set_slice_dir(ISMRMRD::ImageHeader &h, unsigned short i, float v)
+{
+	if (i < 3) {
+		h.slice_dir[i] = v;
+	}
+}
+
+float img_get_slice_dir(ISMRMRD::ImageHeader &h, unsigned short i)
+{
+	if (i < 3) {
+		return h.slice_dir[i];
 	}
 	return 0.0f;
 }
@@ -272,8 +332,12 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
 	def("acq_get_channel_mask", acq_get_channel_mask);
 	def("acq_set_position",acq_set_position);
 	def("acq_get_position",acq_get_position);
-	def("acq_set_quaternion",acq_set_quaternion);
-	def("acq_get_quaternion",acq_get_quaternion);
+	def("acq_set_read_dir",acq_set_read_dir);
+	def("acq_get_read_dir",acq_get_read_dir);
+	def("acq_set_phase_dir",acq_set_phase_dir);
+	def("acq_get_phase_dir",acq_get_phase_dir);
+	def("acq_set_slice_dir",acq_set_slice_dir);
+	def("acq_get_slice_dir",acq_get_slice_dir);
 	def("acq_set_patient_table_position", acq_set_patient_table_position);
 	def("acq_get_patient_table_position", acq_get_patient_table_position);
 	def("acq_set_user_int", acq_set_user_int);
@@ -287,8 +351,12 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
 	def("img_get_physiology_time_stamp", img_get_physiology_time_stamp);
 	def("img_set_position",img_set_position);
 	def("img_get_position",img_get_position);
-	def("img_set_quaternion",img_set_quaternion);
-	def("img_get_quaternion",img_get_quaternion);
+	def("img_set_read_dir",img_set_read_dir);
+	def("img_get_read_dir",img_get_read_dir);
+	def("img_set_phase_dir",img_set_phase_dir);
+	def("img_get_phase_dir",img_get_phase_dir);
+	def("img_set_slice_dir",img_set_slice_dir);
+	def("img_get_slice_dir",img_get_slice_dir);
 	def("img_set_patient_table_position", img_set_patient_table_position);
 	def("img_get_patient_table_position", img_get_patient_table_position);
 	def("img_set_user_int", img_set_user_int);
