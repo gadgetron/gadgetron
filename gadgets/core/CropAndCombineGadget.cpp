@@ -61,6 +61,8 @@ process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
   m1->getObjectPtr()->matrix_size[0] = m1->getObjectPtr()->matrix_size[0]>>1;
   m1->getObjectPtr()->channels = 1;
 
+  m1->getObjectPtr()->field_of_view[0] = m1->getObjectPtr()->field_of_view[0]/2;
+
   return this->next()->putq(m1);
 }
 

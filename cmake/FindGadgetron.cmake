@@ -30,3 +30,11 @@ list(APPEND _check_list GADGETRON_LIB_DIR)
 # all listed variables are TRUE
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Gadgetron DEFAULT_MSG ${_check_list})
+
+# If Cuda is detected on the system some header files will be needed
+# -- whether Cuda is used or not --
+
+find_package(CUDA)
+if (CUDA_FOUND)
+  include_directories( ${CUDA_INCLUDE_DIRS} )
+endif (CUDA_FOUND)

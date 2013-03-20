@@ -62,6 +62,7 @@ template <class T> class EXPORTGPUCORE cuNDArray : public NDArray<T>
   static boost::shared_ptr< cuNDArray<T> > allocate(std::vector<unsigned int> *dimensions, int device_no);  
 
   virtual boost::shared_ptr< hoNDArray<T> > to_host() const;
+  virtual int to_host( hoNDArray<T>* ) const;
 
   virtual void permute(std::vector<unsigned int> *dim_order, NDArray<T> *out = 0, int shift_mode = 0);
   

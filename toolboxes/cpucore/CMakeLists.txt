@@ -8,8 +8,10 @@ include_directories(
   ${FFTW3_INCLUDE_DIR}
   )
 
+configure_file(cpucore_defines.h.in ${CMAKE_CURRENT_SOURCE_DIR}/cpucore_defines.h)
+
 add_library(cpucore SHARED 
-  FFT.cpp 
+  FFT.cpp
   )
 
 target_link_libraries(cpucore 
