@@ -24,9 +24,6 @@ public:
             // TODO: error checking!
             GADGET_DEBUG1("Can't start MATLAB engine\n");
         }
-
-        // Add +ismrmrd package to Matlab's path
-        engEvalString(engine_, "addpath(strcat(getenv('ISMRMRD_HOME'), '/matlab'));");
     }
 
     ~MatlabGadget()
@@ -49,6 +46,9 @@ protected:
         GADGET_DEBUG2("MATLAB Data Function   : %s\n", datafunc_.get()->c_str());
         GADGET_DEBUG2("MATLAB Config Function : %s\n", configfunc_.get()->c_str());
 
+        // Add +ismrmrd package to Matlab's path
+        engEvalString(engine_, "addpath(strcat(getenv('ISMRMRD_HOME'), '/matlab'));");
+
         // Parse ISMRMRD XML header
         //boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(string(mb->rd_ptr()));
         std::string xmlConfig = std::string(mb->rd_ptr());
@@ -57,9 +57,8 @@ protected:
 
         char buffer[1025] = "\0";
         engOutputBuffer(engine_, buffer, 1024);
-
-        engEvalString(engine_, "fprintf(xmlhdr)");
-
+        //engEvalString(engine_, "fprintf(xmlhdr)");
+        engEvalString(engine_, "which ismrmrd.AcquisitionHeader");
         printf("%s", buffer);
 
 	mxDestroyArray(xmlhdr);
