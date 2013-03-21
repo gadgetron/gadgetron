@@ -1,5 +1,5 @@
 /*
- * ndarray_export.h
+ * cpucore_export.h
  *
  *  Created on: Nov 29, 2011
  *      Author: hansenms

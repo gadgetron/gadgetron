@@ -1,3 +1,13 @@
+/** \file vector_td_operators.h
+    \brief The class vector_td defines a D-dimensional vector of type T.
+
+    The class vector_td defines a D-dimensional vector of type T.
+    It is used in the Gadgetron to represent small (one- to four-dimensional) vectors only.
+    For larger vectors consider using the NDArray class instead.
+    The vector_td class can be used on both the cpu and gpu.
+    The accompanying headers vector_td_opeators.h and vector_td_utilities.h define most of the functionality.
+*/
+
 #pragma once
 
 #include "vector_td.h"

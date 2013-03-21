@@ -12,7 +12,6 @@
 #include "gpucore_export.h"
 
 #include <cublas_v2.h>
-
 #include <map>
 #include <iostream>
 
@@ -31,8 +30,6 @@ private:
 	static CUBLASContextProvider* instance_;
 
 	std::map<int, cublasHandle_t> handles_;
-
 };
-
 
 #endif /* CUBLASCONTEXTPROVIDER_H_ */

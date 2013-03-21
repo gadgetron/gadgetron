@@ -25,37 +25,35 @@ namespace Gadgetron{
    * @param[in] cc Specifies whether to use the complex conjugate of x (when applicable).
    * @return The dot product of x and y
    */
-  template<class T> EXPORTCPUCORE T dot( hoNDArray<T> *x, hoNDArray<T> *y, bool cc = true );
+  template<class T> EXPORTCPUCOREMATH T dot( hoNDArray<T> *x, hoNDArray<T> *y, bool cc = true );
 
   /**
    * @brief Calculates the l1-norm of the array (as a vector)
    * @param[in] arr Input array
    * @return The l1-norm of the array
    */
-  template<class T> EXPORTCPUCORE typename realType<T>::Type asum( hoNDArray<T> *x );
+  template<class T> EXPORTCPUCOREMATH typename realType<T>::Type asum( hoNDArray<T> *x );
 
   /**
    * @brief Calculates the l2-norm of the array (as a vector)
    * @param[in] arr Input array
    * @return The l2-norm of the array
    */
-  template<class T> EXPORTCPUCORE typename realType<T>::Type nrm2( hoNDArray<T> *x );
+  template<class T> EXPORTCPUCOREMATH typename realType<T>::Type nrm2( hoNDArray<T> *x );
   
   /**
    * @brief Returns the index of the array element with the smallest absolute value
    * @param[in] x Input data
-   * @param[out] val Pointer to an output variable providing the minimum array value (ignored if val is 0x0)
-   * @return The array index corresponding to the smallest element in the array
+   * @return The array index corresponding to the smallest element in the array (0-indexing)
    */
-  template<class T> EXPORTCPUCORE unsigned int amin( hoNDArray<T> *x, T *val = 0x0 );
+  template<class T> EXPORTCPUCOREMATH unsigned int amin( hoNDArray<T> *x );
  
   /**
    * @brief Returns the index of the array element with the largest absolute value
    * @param[in] x Input data
-   * @param[out] val Pointer to an output variable providing maximum array value (ignored if val is 0x0)
-   * @return The array index corresponding to the largest element in the array
+   * @return The array index corresponding to the largest element in the array (0-indexing)
    */
-  template<class T> EXPORTCPUCORE unsigned int amax( hoNDArray<T> *x, T *val = 0x0 );
+  template<class T> EXPORTCPUCOREMATH unsigned int amax( hoNDArray<T> *x );
 
   /**
    * @brief Calculates y = a*x+y in which x and y are considered as vectors
@@ -63,5 +61,5 @@ namespace Gadgetron{
    * @param[in] x Array
    * @param[in,out] y Array
    */
-  template<class T> EXPORTCPUCORE void axpy( T a, hoNDArray<T> *x, hoNDArray<T> *y );
+  template<class T> EXPORTCPUCOREMATH void axpy( T a, hoNDArray<T> *x, hoNDArray<T> *y );
 }

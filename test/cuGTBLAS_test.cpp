@@ -4,11 +4,14 @@
  *  Created on: Feb 28, 2013
  *      Author: Dae
  */
-#include "gtest/gtest.h"
+
 #include "cuGTBLAS.h"
+#include <gtest/gtest.h>
 #include <vector>
+
 using namespace Gadgetron;
 using testing::Types;
+
 template <typename T> class cuGTBLAS_Test : public ::testing::Test {
 	protected:
 	 virtual void SetUp() {
@@ -16,19 +19,15 @@ template <typename T> class cuGTBLAS_Test : public ::testing::Test {
 		 dims= std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
 		 Array =cuNDArray<T>(&dims);
 		 Array2 =cuNDArray<T>(&dims);
-
-
 	}
 	 std::vector<unsigned int> dims;
 	 cuNDArray<T> Array;
 	 cuNDArray<T> Array2;
-
 };
 
 typedef Types<float,double,float_complext,double_complext> Implementations;
 
 TYPED_TEST_CASE(cuGTBLAS_Test, Implementations);
-
 
 TYPED_TEST(cuGTBLAS_Test,dotTest){
 	this->Array.fill(TypeParam(1));
@@ -45,7 +44,6 @@ TYPED_TEST(cuGTBLAS_Test,axpyTest){
 
 	TypeParam val = this->Array2.get_device_ptr()[10];
 	EXPECT_FLOAT_EQ(878,real(val));
-
 }
 
 TYPED_TEST(cuGTBLAS_Test,nrm2Test){
@@ -68,13 +66,12 @@ TYPED_TEST(cuGTBLAS_Test,aminTest){
 	EXPECT_EQ(23,amin(&this->Array));
 	this->Array.get_device_ptr()[48]=TypeParam(2);
 	EXPECT_EQ(48,amin(&this->Array));
-
 }
+
 TYPED_TEST(cuGTBLAS_Test,amaxTest){
 	this->Array.fill(TypeParam(1));
 	this->Array.get_device_ptr()[23]=TypeParam(2);
 	EXPECT_EQ(23,amax(&this->Array));
 	this->Array.get_device_ptr()[48]=TypeParam(-50);
 	EXPECT_EQ(48,amax(&this->Array));
-
 }

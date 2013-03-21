@@ -1,3 +1,13 @@
+/** \file vector_td_utilities.h
+    \brief The class vector_td defines a D-dimensional vector of type T.
+
+    The class vector_td defines a D-dimensional vector of type T.
+    It is used in the Gadgetron to represent small (one- to four-dimensional) vectors only.
+    For larger vectors consider using the NDArray class instead.
+    The vector_td class can be used on both the cpu and gpu.
+    The accompanying headers vector_td_opeators.h and vector_td_utilities.h define most of the functionality.
+*/
+
 #pragma once
 
 #include "vector_td.h"
@@ -13,8 +23,8 @@
 
 namespace Gadgetron{
 
-  using std::min; // cannot specify std::min for nvcc
-  using std::max; // cannot specify std::max for nvcc
+  using std::min; // workaround for nvcc
+  using std::max; // workaround for nvcc
 
   //
   // Get/set operations on vector_td<T,D>
@@ -162,7 +172,6 @@ namespace Gadgetron{
     return idx;
   } 
 
-
   template<unsigned int D> __inline__ __host__ __device__ 
   int co_to_idx( const typename intd<D>::Type co, const typename intd<D>::Type dims, const typename intd<D>::Type order )
   {
@@ -208,7 +217,6 @@ namespace Gadgetron{
       else 
 	out.vec[i] = 1;
     }
-  
     return out;
   }
 
@@ -222,7 +230,6 @@ namespace Gadgetron{
       else
 	out.vec[i] = 1;
     }
-
     return out;
   }
 
@@ -245,7 +252,6 @@ namespace Gadgetron{
       else
 	out[i] = T(1);
     }
-
     return out;
   }
 
@@ -389,7 +395,6 @@ namespace Gadgetron{
     for (unsigned int i=0; i<D; i++){
       res += (vec.vec[i]*vec.vec[i]);
     }
-
     return res;
   }
 
@@ -432,39 +437,3 @@ namespace Gadgetron{
     }
     return res;
   }
-
-  template<class T, unsigned int D> ::std::ostream& operator<<(::std::ostream& os, const vector_td<T,D>& vec) {
-    os <<'[' ;
-    for (int i = 0; i < D-1; i++) os << vec[i] << ", ";
-    return os << vec[D-1] <<']';
-  }
-  template<class T, unsigned int D> std::istream& operator>> (std::istream& is, vector_td<T,D>& vec){
-    char tmp;
-    is.get(tmp);
-    if (tmp != '['){
-      is.setstate(std::ios::failbit);
-      return is;
-    }
-
-    for (int i = 0; i < D-1; i++){
-      T val;
-      tmp = ' ';
-      is >> val;
-      vec[i]=val;
-      while (tmp == ' ') is.get(tmp);
-      if (tmp != ','){
-	is.setstate(std::ios::failbit);
-	return is;
-      }
-    }
-    tmp = ' ';
-    is >> vec[D-1];
-    while (tmp == ' ') is.get(tmp);
-    if (tmp != ']'){
-      is.setstate(std::ios::failbit);
-      return is;
-    }
-    return is;
-
-  }
-}

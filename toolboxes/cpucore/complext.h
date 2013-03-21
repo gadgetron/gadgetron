@@ -1,9 +1,10 @@
-/*
- * complext.h
- *
- *  Created on: Feb 13, 2012
- *      Author: David C Hansen
- */
+/** \file complext.h
+    \brief An implementation of complex numbers that works for both the cpu and gpu.
+
+    complext.h provides an implementation of complex numbers that, unlike std::complex,
+    works on both the cpu and gpu. 
+    It follows the interface defined for std::complex.
+*/
 
 #pragma once
 
@@ -13,8 +14,12 @@
 
 namespace Gadgetron{
 
-  using std::abs; // cannot specify std::abs for nvcc
+  using std::abs; // workaround for nvcc
 
+/** 
+ * \class complext
+ * \brief An implementation of complex numbers that works for both the cpu and gpu.
+ */
   template< class T > class complext
   {
   public:

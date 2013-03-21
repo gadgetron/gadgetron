@@ -3,18 +3,18 @@
 #pragma once
 
 #include "gpucore_export.h"
-#include <cuda.h>
-#include <cuda_runtime_api.h>
-
 #include "NDArray.h"
 #include "hoNDArray.h"
-
-#include <boost/shared_ptr.hpp>
 #include "complext.h"
-#include "thrust/device_vector.h"
 #include "GadgetronCuException.h"
 
+#include <boost/shared_ptr.hpp>
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+#include <thrust/device_vector.h>
+
 namespace Gadgetron{
+
 template <class T> class EXPORTGPUCORE cuNDArray;
 template <class T> EXPORTGPUCORE void cuNDArray_permute(cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *order, int shift_mode);
 

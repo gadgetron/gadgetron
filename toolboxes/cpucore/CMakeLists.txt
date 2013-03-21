@@ -31,6 +31,7 @@ install(FILES
   vector_td.h
   vector_td_operators.h
   vector_td_utilities.h
+  vector_td_io.h
   real_utilities.h
   GadgetronException.h
   GadgetronTimer.h
@@ -38,5 +39,5 @@ install(FILES
   DESTINATION include)
 
 if (ARMADILLO_FOUND)
-add_subdirectory(math)
+add_subdirectory(arma_math)
 endif (ARMADILLO_FOUND)

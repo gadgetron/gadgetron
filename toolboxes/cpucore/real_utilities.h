@@ -1,3 +1,7 @@
+/** \file real_utilities.h
+    \brief A simple template based interface to some common C float/double constants to ease writing of templated code.
+*/
+
 #pragma once
 
 #include "cpucore_defines.h"

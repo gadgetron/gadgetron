@@ -66,8 +66,6 @@ namespace Gadgetron{
       }
     }
 
-    virtual void permute(std::vector<unsigned int> *dim_order, NDArray<T> *out = 0, int shift_mode = 0) = 0;
-  
     inline void shift_dim(int shift, NDArray<T> *out = 0) {
       std::vector<unsigned int> order;
       for (unsigned int i = 0; i < dimensions_->size(); i++) {
@@ -148,7 +146,6 @@ namespace Gadgetron{
       return delete_data_on_destruct_;
     }
   
-
     inline void delete_data_on_destruct(bool d) {
       delete_data_on_destruct_ = d;
     }
@@ -157,6 +154,8 @@ namespace Gadgetron{
 
     virtual void allocate_memory() = 0;
     virtual void deallocate_memory() = 0;
+
+  protected:
 
     boost::shared_ptr< std::vector<unsigned int> > dimensions_;
     T* data_;
