@@ -1,10 +1,4 @@
-#pragma once
-
-#include "hoNDArray.h"
-#include "hoArmadillo.h"
-#include "cpucore_math_export.h"
-
-/** \file hoNDArray_elementwise.h
+/** \file hoNDArray_elemwise.h
     \brief Element-wise math operations on the hoNDArray class.
     
     hoNDArray_elementwise.h defines element-wise array operations on the hoNDArray class.
@@ -23,6 +17,12 @@
     The supported types are float, double, std::complex<float>, std::complex<double>, 
     Gadgetron::complext<float> and Gadgetron::complext<double> -- with some deliberate omissions.
 */
+
+#pragma once
+
+#include "hoNDArray.h"
+#include "hoArmadillo.h"
+#include "cpucore_math_export.h"
 
 namespace Gadgetron{
 

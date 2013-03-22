@@ -294,7 +294,7 @@ namespace Gadgetron{
   {
     T res = vec.vec[0];
     for (unsigned int i=1; i<D; i++){
-      res = ::max(res,vec.vec[i]);
+      res = max(res,vec.vec[i]);
     }
     return res;
   }
@@ -304,7 +304,7 @@ namespace Gadgetron{
   {
     T res = vec.vec[0];
     for (unsigned int i=1; i<D; i++){
-      res =::min(res,vec.vec[i]);
+      res = min(res,vec.vec[i]);
     }
     return res;
   }
@@ -437,3 +437,4 @@ namespace Gadgetron{
     }
     return res;
   }
+}

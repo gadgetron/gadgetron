@@ -35,26 +35,21 @@ namespace Gadgetron{
   
     virtual ~NDArray() {}
   
-    virtual void create(boost::shared_ptr<std::vector<unsigned int>  > dimensions) {
-      this->create(dimensions.get());
-    }
-  
-    virtual void create(std::vector<unsigned int> *dimensions) {
+    virtual void create(std::vector<unsigned int> *dimensions) 
+    {
       std::vector<unsigned int> *tmp = new std::vector<unsigned int>;
       *tmp = *dimensions;
       dimensions_ = boost::shared_ptr< std::vector<unsigned int> >(tmp);
       allocate_memory();
     }
-  
-    virtual void create(boost::shared_ptr<std::vector<unsigned int>  > dimensions, T* data, bool delete_data_on_destruct = false) {
-      this->create(dimensions.get(), data, delete_data_on_destruct);
-    }
-  
-    virtual void create(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct = false) {
+    
+    virtual void create(std::vector<unsigned int> *dimensions, 
+			T* data, bool delete_data_on_destruct = false) 
+    {
       if (!data) {
 	BOOST_THROW_EXCEPTION(runtime_error("NDArray<T>::create: 0x0 pointer provided"));
       }
-    
+      
       std::vector<unsigned int> *tmp = new std::vector<unsigned int>;
       *tmp = *dimensions;
       dimensions_ = boost::shared_ptr< std::vector<unsigned int> >(tmp);
@@ -65,15 +60,16 @@ namespace Gadgetron{
 	this->elements_ *= (*this->dimensions_)[i];
       }
     }
-
-    inline void shift_dim(int shift, NDArray<T> *out = 0) {
-      std::vector<unsigned int> order;
-      for (unsigned int i = 0; i < dimensions_->size(); i++) {
-	order.push_back(static_cast<unsigned int>((i+shift)%dimensions_->size()));
-      }
-      permute(&order,out);
+    
+    virtual void create(boost::shared_ptr< std::vector<unsigned int> > dimensions) {
+      this->create(dimensions.get());
     }
   
+    virtual void create(boost::shared_ptr<std::vector<unsigned int>  > dimensions, 
+			T* data, bool delete_data_on_destruct = false) {
+      this->create(dimensions.get(), data, delete_data_on_destruct);
+    }
+      
     inline void squeeze() {
       boost::shared_ptr< std::vector<unsigned int> > new_dimensions( new std::vector<unsigned int> ); 
       for (unsigned int i = 0; i < dimensions_->size(); i++) {
@@ -108,7 +104,7 @@ namespace Gadgetron{
       return ((this->dimensions_->size() == d->size()) &&
 	      std::equal(this->dimensions_->begin(), this->dimensions_->end(), d->begin()));
     }
-  
+    
     template<class S> bool dimensions_equal(const NDArray<S> *a) {
       boost::shared_ptr<std::vector<unsigned int > > adims = a->get_dimensions();
       return ((this->dimensions_->size() == adims->size()) &&

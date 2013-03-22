@@ -1,9 +1,3 @@
-#pragma once
-
-#include "hoNDArray.h"
-#include "hoArmadillo.h"
-#include "cpucore_math_export.h"
-
 /** \file hoNDArray_blas.h
     \brief BLAS level-1 functions on the hoNDArray class.
     
@@ -15,6 +9,12 @@
     The supported types are float, double, std::complex<float>, std::complex<double>, 
     Gadgetron::complext<float>, and Gadgetron::complext<double>.
 */
+
+#pragma once
+
+#include "hoNDArray.h"
+#include "hoArmadillo.h"
+#include "cpucore_math_export.h"
 
 namespace Gadgetron{
 

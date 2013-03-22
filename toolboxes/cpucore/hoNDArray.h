@@ -23,7 +23,8 @@ namespace Gadgetron{
       this->create(dimensions);
     }
 
-    hoNDArray(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct=false) : NDArray<T>::NDArray() {
+    hoNDArray(std::vector<unsigned int> *dimensions, 
+	      T* data, bool delete_data_on_destruct = false) : NDArray<T>::NDArray() {
       this->create(dimensions,data,delete_data_on_destruct);
     }
 
@@ -31,10 +32,11 @@ namespace Gadgetron{
       this->create(dimensions.get());
     }
 
-    hoNDArray(boost::shared_ptr< std::vector<unsigned int> > dimensions, T* data, bool delete_data_on_destruct=false) : NDArray<T>::NDArray() {
+    hoNDArray(boost::shared_ptr< std::vector<unsigned int> > dimensions, 
+	      T* data, bool delete_data_on_destruct = false) : NDArray<T>::NDArray() {
       this->create(dimensions.get(),data,delete_data_on_destruct);
     }
-
+    
     virtual ~hoNDArray() {
       if (this->delete_data_on_destruct_) {
 	deallocate_memory();
@@ -64,6 +66,65 @@ namespace Gadgetron{
       }
       return *this;
     }
+
+    class ArrayIterator
+    {
+    public:
+      
+      ArrayIterator(std::vector<unsigned int> *dimensions, std::vector<unsigned int> *order)
+      {
+	dimensions_  = boost::shared_ptr< std::vector<unsigned int> >      (new std::vector<unsigned int>);
+	order_       = boost::shared_ptr< std::vector<unsigned int> >      (new std::vector<unsigned int>);
+	current_     = boost::shared_ptr< std::vector<unsigned int> >      (new std::vector<unsigned int>);
+	block_sizes_ = boost::shared_ptr< std::vector<unsigned long int> > (new std::vector<unsigned long int>);
+	
+	block_sizes_->push_back(1);
+	for (unsigned int i = 0; i < order->size(); i++) {
+	  dimensions_->push_back((*dimensions)[i]);
+	  order_->push_back((*order)[i]);
+	  current_->push_back(0);
+	  if (i > 0) {
+	    block_sizes_->push_back((*block_sizes_)[i-1]*(*dimensions_)[i-1]);
+	  }
+	}
+	current_idx_ = 0;
+      }
+      
+      inline unsigned long int advance()
+      {
+	unsigned int order_index = 0;
+	(*current_)[(*order_)[order_index]]++;
+	while ((*current_)[(*order_)[order_index]] >= (*dimensions_)[(*order_)[order_index]]) {
+	  (*current_)[(*order_)[order_index]] = 0;
+	  order_index = (order_index+1)%dimensions_->size();
+	  (*current_)[(*order_)[order_index]]++;
+	}
+	
+	current_idx_ = 0;
+	for (unsigned int i = 0; i < dimensions_->size(); i++) {
+	  current_idx_ += (*current_)[i]*(*block_sizes_)[i];
+	}
+	
+	return current_idx_;
+      }
+      
+      inline unsigned long int get_current_idx()
+      {
+	return current_idx_;
+      }
+      
+      boost::shared_ptr< std::vector<unsigned int> > get_current_sub()
+      {
+	return current_;
+      }
+      
+    protected:
+      boost::shared_ptr< std::vector<unsigned int> > dimensions_;
+      boost::shared_ptr< std::vector<unsigned int> > order_;
+      boost::shared_ptr< std::vector<unsigned int> > current_;
+      boost::shared_ptr< std::vector<unsigned long int> > block_sizes_;
+      unsigned long int current_idx_;
+    };
 
     T* begin() {
       return this->data_;
@@ -108,10 +169,10 @@ namespace Gadgetron{
     template<class X> inline void _deallocate_memory( X* data ){
       delete [] data;
     }
-  
+      
     // Overload these instances to avoid invoking the element class constructor/destructor
     //
-
+    
     void inline _allocate_memory( unsigned int size, float_complext** data ){
       *data = (float_complext*) malloc( size*sizeof(float_complext) );
     }

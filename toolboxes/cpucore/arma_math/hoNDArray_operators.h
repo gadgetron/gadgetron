@@ -1,9 +1,3 @@
-#pragma once
-
-#include "hoNDArray.h"
-#include "hoArmadillo.h"
-#include "cpucore_math_export.h"
-
 /** \file hoNDArray_operators.h
     \brief Common element-wise arithmetic operators on the hoNDArray class.
     
@@ -19,6 +13,12 @@
     Gadgetron::complext<float> and Gadgetron::complext<double>. 
     Scalars can be applied to complex numbers of corresponding precision.
 */
+
+#pragma once
+
+#include "hoNDArray.h"
+#include "hoArmadillo.h"
+#include "cpucore_math_export.h"
 
 namespace Gadgetron{
 

@@ -1,7 +1,24 @@
-/*
-  An implementation of the "Generalized Split Bregman Algorithm" - sec. 3.2. of the paper
-  "The Split Bregman Method for L1-Regularized Problems" by Tom Goldstein and Stanley Osher. 
-  Siam J. Imaging Sciences. Vol. 2, No. 2, pp. 323-343.
+/** \file sbSolver.h
+    \brief Implementation of an unconstraint Split Bregman solver
+
+    The file sbSolver.h is a device independent implementation of the unconstraint Split Bregman solver. 
+    For a constraint solver version see instead the file sbcSolver.h.
+    Detail on the algorithm can be found in sec. 3.2. of the paper
+    "The Split Bregman Method for L1-Regularized Problems" 
+    by Tom Goldstein and Stanley Osher. Siam J. Imaging Sciences. Vol. 2, No. 2, pp. 323-343.
+
+    To simplify the actual solver instantiation we refer to the files
+    - the class(/file) hoSbSolver(/.h) for a cpu instantiated solver using the hoNDArray class
+    - the class(/file) cuSbSolver(/.h) for a gpu instantiated solver using the cuNDArray class
+    - the class(/file) hoCuSbSolver(/.h) for a gpu based solver using a host memory interface. 
+
+    The latter version is intended for large reconstructions in which device memory cannot hold 
+    the entire data from the image and encoded image domains. 
+    In the "hoCu" scenario, suitable encoding and regularization operators
+    capable of batching their mult_M and mult_MHM functions should be chosen.
+
+    In all cases, the encoding and regularization operators added to the solver 
+    must adhere to the underlying instantiation of the NDArray data type.
 */
 
 #pragma once
@@ -9,17 +26,18 @@
 #include "linearSolver.h"
 #include "vector_td_utilities.h"
 #include "encodingOperatorContainer.h"
+
 #include <vector>
 #include <iostream>
 #include <algorithm>
 
 namespace Gadgetron{
 
-
 template<
 	  class ARRAY_TYPE_REAL, 
 	  class ARRAY_TYPE_ELEMENT, 
 	  class INNER_SOLVER>
+
 class sbSolver : public linearSolver<ARRAY_TYPE_ELEMENT>
 {
 	 typedef typename ARRAY_TYPE_ELEMENT::element_type ELEMENT_TYPE;
