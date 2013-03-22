@@ -11,7 +11,7 @@
 #pragma once
 
 #include "vector_td.h"
-#include "cpucore_defines.h"
+#include "core_defines.h"
 
 namespace Gadgetron{
 

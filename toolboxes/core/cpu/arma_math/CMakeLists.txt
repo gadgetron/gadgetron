@@ -3,7 +3,7 @@ ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUCORE_MATH__)
 endif (WIN32)
 
 include_directories(
-  ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   )
 
 add_library(cpucore_math SHARED 
@@ -20,9 +20,9 @@ install(TARGETS cpucore_math DESTINATION lib)
 
 install(FILES 	
   cpucore_math_export.h
-  hoNDArray_fileio.h
+  hoArmadillo.h
   hoNDArray_operators.h
   hoNDArray_elemwise.h
   hoNDArray_blas.h
-  hoArmadillo.h
+  hoNDArray_fileio.h
   DESTINATION include)

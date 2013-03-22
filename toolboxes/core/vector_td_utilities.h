@@ -13,7 +13,7 @@
 #include "vector_td.h"
 #include "vector_td_operators.h"
 #include "real_utilities.h"
-#include "cpucore_defines.h"
+#include "core_defines.h"
 
 #include <float.h>
 #include <cmath>

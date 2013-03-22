@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "cpucore_defines.h"
+#include "core_defines.h"
 
 #ifdef _USE_MATH_DEFINES
 #include <math.h>

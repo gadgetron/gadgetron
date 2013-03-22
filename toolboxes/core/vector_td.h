@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "cpucore_defines.h"
+#include "core_defines.h"
 
 namespace Gadgetron{
 

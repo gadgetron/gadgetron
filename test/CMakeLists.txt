@@ -1,11 +1,17 @@
 include_directories(${GTEST_INCLUDE})
 
 include_directories(
-  ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
-  ${CMAKE_SOURCE_DIR}/toolboxes/cpucore/arma_math
-  ${CMAKE_SOURCE_DIR}/toolboxes/gpucore
-  ${CUDA_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/toolboxes/core
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   )
+
+if(CUDA_FOUND)
+  include_directories(
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
+    ${CUDA_INCLUDE_DIRS}
+    )
+endif(CUDA_FOUND)
 
 cuda_add_executable(test_all 
   tests.cpp 
@@ -24,12 +30,16 @@ cuda_add_executable(test_all
 target_link_libraries(test_all 
   cpucore 
   cpucore_math
-  #gpucore 
-  #gpunfft 
-  hostutils 
   ${GTEST_LIBRARIES} 
-  ${CUDA_LIBRARIES} 
   pthread
   )
+
+if(CUDA_FOUND)
+  target_link_libraries(test_all 
+    #gpucore 
+    #gpunfft 
+    ${CUDA_LIBRARIES} 
+    )
+endif(CUDA_FOUND)
 
 add_test(test_all test_all)

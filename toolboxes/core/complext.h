@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "cpucore_defines.h"
+#include "core_defines.h"
 #include <complex>
 #include <cmath>
 
