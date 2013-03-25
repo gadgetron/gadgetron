@@ -7,6 +7,7 @@ import ConfigParser
 import os
 
 def run_test(environment,testcase_cfg_file):
+    print "Running test case: " + testcase_cfg_file
     pwd = os.getcwd()
     config = ConfigParser.RawConfigParser()
     config.read(testcase_cfg_file)
@@ -38,15 +39,14 @@ def run_test(environment,testcase_cfg_file):
     time.sleep(2)
 
 
-    print "Converting Siemens *.dat file to Siemens HDF5..."    
+    print "Converting Siemens *.dat file to Siemens HDF5"    
     r = subprocess.call(["siemens_to_HDF5",siemens_dat, siemens_h5],env=environment,stdout=cf,stderr=cf)
-    print "done\n"
 
-    print "Converting Siemens HDF5 to ISMRMRD..."    
+    print "Converting Siemens HDF5 to ISMRMRD."    
     r = subprocess.call(["siemens_mriclient","-f",  siemens_h5, "-m", siemens_parameter_xml, 
                          "-x", siemens_parameter_xsl, "-o", ismrmrd, "-w"],env=environment,stdout=cf,stderr=cf)
-    print "done\n"
 
+    print "Running Gadgetron recon"
     r = subprocess.call(["mriclient","-d" ,ismrmrd, "-c", gadgetron_configuration, 
                          "-G", gadgetron_configuration, "-o", result_h5],env=environment,stdout=cf,stderr=cf)
     p.terminate()
@@ -54,6 +54,9 @@ def run_test(environment,testcase_cfg_file):
     gf.close()
     cf.flush()
     cf.close()
+
+    print "Comparing results"
+
     f1 = h5py.File(result_h5)
     f2 = h5py.File(reference_h5)
     d1 = f1[result_dataset]
@@ -64,11 +67,11 @@ def run_test(environment,testcase_cfg_file):
     r = True
 
     if (compare_dimensions):
-        print "Comparing dimensions: " + str(shapes_match)
+        print "   --Comparing dimensions: " + str(shapes_match)
         r = r & shapes_match
 
     if (compare_values):
-        print "Comparing values, norm diff : " + str(norm_diff) + " (threshold: " + str(comparison_threshold) + ")" 
+        print "   --Comparing values, norm diff : " + str(norm_diff) + " (threshold: " + str(comparison_threshold) + ")" 
         r = r & (norm_diff < comparison_threshold)
 
     return r
