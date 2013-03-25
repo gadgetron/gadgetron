@@ -76,6 +76,10 @@ def run_test(environment,testcase_cfg_file):
 if __name__=="__main__":
     myenv=dict()
     myenv["GADGETRON_HOME"]=sys.argv[1]
+
+    if (os.path.isabs(myenv["GADGETRON_HOME"]) != True):
+        myenv["GADGETRON_HOME"] = os.path.abspath(myenv["GADGETRON_HOME"])
+
     myenv["PATH"]=myenv["GADGETRON_HOME"] + "/bin"
     myenv["LD_LIBRARY_PATH"]="/usr/local/cuda/lib64:/usr/local/cula/lib64:" +  myenv["GADGETRON_HOME"] + "/lib:" + myenv["GADGETRON_HOME"] + "/../ismrmrd/lib"     
     
