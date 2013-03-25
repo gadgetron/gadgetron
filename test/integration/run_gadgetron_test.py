@@ -62,6 +62,8 @@ def run_test(environment,testcase_cfg_file):
     d1 = f1[result_dataset]
     d2 = f2[reference_dataset]
     shapes_match = (d1.shape == d2.shape)
+    #print "Norm of reference: " + str(numpy.linalg.norm(d2[...]))
+    #print "Norm of difference: " + str(numpy.linalg.norm(d1[...]-d2[...]))
     norm_diff = numpy.linalg.norm(d1[...]-d2[...])/numpy.linalg.norm(d2[...])
     
     r = True
