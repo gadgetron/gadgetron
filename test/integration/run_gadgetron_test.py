@@ -35,7 +35,7 @@ def run_test(environment,testcase_cfg_file):
     #inputfilename,gadgetronconfig, referencefile, h5dataset, gadgetron_log_filename, client_log_filename):
     gf = open(gadgetron_log_filename,"w")
     cf = open(client_log_filename,"w")
-    p = subprocess.Popen(["gadgetron"], env=environment,stdout=gf,stderr=gf)
+    p = subprocess.Popen(["gadgetron","-p","9003"], env=environment,stdout=gf,stderr=gf)
     time.sleep(2)
 
 
@@ -47,7 +47,7 @@ def run_test(environment,testcase_cfg_file):
                          "-x", siemens_parameter_xsl, "-o", ismrmrd, "-w"],env=environment,stdout=cf,stderr=cf)
 
     print "Running Gadgetron recon"
-    r = subprocess.call(["mriclient","-d" ,ismrmrd, "-c", gadgetron_configuration, 
+    r = subprocess.call(["mriclient","-p","9003", "-d" ,ismrmrd, "-c", gadgetron_configuration, 
                          "-G", gadgetron_configuration, "-o", result_h5],env=environment,stdout=cf,stderr=cf)
     p.terminate()
     gf.flush()
