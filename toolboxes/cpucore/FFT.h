@@ -70,8 +70,7 @@ protected:
 
 		if (sign != -1 && sign != 1) return;
 
-		if (dim_to_transform < 0 ||
-				dim_to_transform >= input->get_number_of_dimensions()) return;
+		if (dim_to_transform >= input->get_number_of_dimensions()) return;
 
 		int stride     = 1;           //Distance between points in transform
 		int dist       = 1;           //Distance between vectors

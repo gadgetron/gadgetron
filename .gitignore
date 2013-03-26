@@ -28,5 +28,6 @@ apps/standalone/gpu/MRI/sense/noncartesian/radial/2d_golden_ratio/radial_sense_s
 lib/*.py
 lib/*.pyc
 .DS_Store
+*.swp
 build/
 *.pyc

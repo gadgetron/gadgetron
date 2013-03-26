@@ -292,6 +292,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 	unsigned int samples_per_channel =  host_data_buffer_->get_size(0);
 
 	buffer_[set*slices_+slice].enqueue_tail(m1);
+	ISMRMRD::AcquisitionHeader base_head = *m1->getObjectPtr();
 
 	if (samples_to_skip_end_ == -1) {
 		samples_to_skip_end_ = m1->getObjectPtr()->number_of_samples-samples_per_interleave_;
@@ -465,16 +466,22 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		m3->getObjectPtr()->matrix_size[1] = image_dimensions_[1];
 		m3->getObjectPtr()->matrix_size[2] = 1;
 		m3->getObjectPtr()->channels       = 1;
-		m3->getObjectPtr()->slice          = m1->getObjectPtr()->idx.slice;
-		m3->getObjectPtr()->set            = m1->getObjectPtr()->idx.set;
+		m3->getObjectPtr()->slice          = base_head.idx.slice;
+		m3->getObjectPtr()->set            = base_head.idx.set;
 
-		memcpy(m3->getObjectPtr()->position,m1->getObjectPtr()->position,
+		memcpy(m3->getObjectPtr()->position,base_head.position,
 				sizeof(float)*3);
 
-		memcpy(m3->getObjectPtr()->quaternion,m1->getObjectPtr()->quaternion,
-				sizeof(float)*4);
+		memcpy(m3->getObjectPtr()->read_dir,base_head.read_dir,
+				sizeof(float)*3);
 
-		memcpy(m3->getObjectPtr()->patient_table_position, m1->getObjectPtr()->patient_table_position, sizeof(float)*3);
+		memcpy(m3->getObjectPtr()->phase_dir,base_head.phase_dir,
+				sizeof(float)*3);
+
+		memcpy(m3->getObjectPtr()->slice_dir,base_head.slice_dir,
+				sizeof(float)*3);
+
+		memcpy(m3->getObjectPtr()->patient_table_position, base_head.patient_table_position, sizeof(float)*3);
 
 		m3->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
 		m3->getObjectPtr()->image_index = ++image_counter_; 

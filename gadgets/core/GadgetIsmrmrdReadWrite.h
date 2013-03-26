@@ -46,18 +46,18 @@ public:
 			return -1;
 		}
 
-		if ((send_cnt = sock->send_n (&acqmb->getObjectPtr()->head_, sizeof(ISMRMRD::AcquisitionHeader))) <= 0) {
+		if ((send_cnt = sock->send_n (&acqmb->getObjectPtr()->getHead(), sizeof(ISMRMRD::AcquisitionHeader))) <= 0) {
 			ACE_DEBUG ((LM_ERROR,
 					ACE_TEXT ("(%P|%t) Unable to send acquisition header\n")));
 
 			return -1;
 		}
 
-		unsigned long trajectory_elements = acqmb->getObjectPtr()->head_.trajectory_dimensions*acqmb->getObjectPtr()->head_.number_of_samples;
-		unsigned long data_elements = acqmb->getObjectPtr()->head_.active_channels*acqmb->getObjectPtr()->head_.number_of_samples;
+		unsigned long trajectory_elements = acqmb->getObjectPtr()->getHead().trajectory_dimensions*acqmb->getObjectPtr()->getHead().number_of_samples;
+		unsigned long data_elements = acqmb->getObjectPtr()->getHead().active_channels*acqmb->getObjectPtr()->getHead().number_of_samples;
 
 		if (trajectory_elements) {
-			if ((send_cnt = sock->send_n (acqmb->getObjectPtr()->traj_, sizeof(float)*trajectory_elements)) <= 0) {
+			if ((send_cnt = sock->send_n (&acqmb->getObjectPtr()->getTraj()[0], sizeof(float)*trajectory_elements)) <= 0) {
 				ACE_DEBUG ((LM_ERROR,
 						ACE_TEXT ("(%P|%t) Unable to send acquisition trajectory elements\n")));
 
@@ -66,7 +66,7 @@ public:
 		}
 
 		if (data_elements) {
-			if ((send_cnt = sock->send_n (acqmb->getObjectPtr()->data_, 2*sizeof(float)*data_elements)) <= 0) {
+			if ((send_cnt = sock->send_n (&acqmb->getObjectPtr()->getData()[0], 2*sizeof(float)*data_elements)) <= 0) {
 				ACE_DEBUG ((LM_ERROR,
 						ACE_TEXT ("(%P|%t) Unable to send acquisition data elements\n")));
 

@@ -35,12 +35,26 @@ protected:
 		return true;
 	}
 
-	bool quaternion_equal(float* quaternion) {
-		for (unsigned int i = 0; i < 4; i++) {
-			if (quaternion_[i] != quaternion[i]) return false;
-		}
-		return true;
-	}
+        bool read_dir_equal(float* cosines) {
+                for (unsigned int i = 0; i < 3; i++) {
+                        if (read_dir_[i] != cosines[i]) return false;
+                }
+                return true;
+        }
+
+        bool phase_dir_equal(float* cosines) {
+                for (unsigned int i = 0; i < 3; i++) {
+                        if (phase_dir_[i] != cosines[i]) return false;
+                }
+                return true;
+        }
+
+        bool slice_dir_equal(float* cosines) {
+                for (unsigned int i = 0; i < 3; i++) {
+                        if (slice_dir_[i] != cosines[i]) return false;
+                }
+                return true;
+        }
 
 	virtual int process( GadgetContainerMessage< ISMRMRD::AcquisitionHeader >* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2 );
 	virtual int process_config( ACE_Message_Block* mb );
@@ -68,7 +82,9 @@ protected:
 	double kappa_;
 
 	float position_[3];
-	float quaternion_[4];
+        float read_dir_[3];
+        float phase_dir_[3];
+        float slice_dir_[3];
 
 	int current_profile_offset_;
 	int allocated_samples_;

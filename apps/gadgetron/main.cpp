@@ -18,7 +18,6 @@ void print_usage()
 	ACE_DEBUG((LM_INFO, ACE_TEXT("gadgetron   -p <PORT>                      (default 9002)       \n") ));
 }
 
-
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 {
 	ACE_TRACE(( ACE_TEXT("main") ));

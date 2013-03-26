@@ -39,9 +39,10 @@ int AccumulatorGadget::process_config(ACE_Message_Block* mb)
 	dimensions_.push_back(e_space.matrixSize().y());
 	dimensions_.push_back(e_space.matrixSize().z());
 
-        field_of_view_.push_back(e_space.fieldOfView_mm().x());
-        field_of_view_.push_back(e_space.fieldOfView_mm().y());
-        field_of_view_.push_back(e_space.fieldOfView_mm().z());
+    field_of_view_.push_back(e_space.fieldOfView_mm().x());
+    field_of_view_.push_back(e_space.fieldOfView_mm().y());
+    field_of_view_.push_back(e_space.fieldOfView_mm().z());
+    GADGET_DEBUG2("FOV: %f, %f, %f\n", e_space.fieldOfView_mm().x(), e_space.fieldOfView_mm().y(), e_space.fieldOfView_mm().z());
 
 	slices_ = e_limits.slice().present() ? e_limits.slice().get().maximum()+1 : 1;
 
@@ -148,10 +149,18 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     		m1->getObjectPtr()->position,
 	   sizeof(float)*3);
 
-    memcpy(cm1->getObjectPtr()->quaternion,
-    		m1->getObjectPtr()->quaternion,
-	   sizeof(float)*4);
- 
+    memcpy(cm1->getObjectPtr()->read_dir,
+                m1->getObjectPtr()->read_dir,
+           sizeof(float)*3);
+
+    memcpy(cm1->getObjectPtr()->phase_dir,
+                m1->getObjectPtr()->phase_dir,
+           sizeof(float)*3);
+
+    memcpy(cm1->getObjectPtr()->slice_dir,
+                m1->getObjectPtr()->slice_dir,
+           sizeof(float)*3);
+
     memcpy(cm1->getObjectPtr()->patient_table_position,
     		m1->getObjectPtr()->patient_table_position, sizeof(float)*3);
 

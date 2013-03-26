@@ -19,22 +19,30 @@ class EXPORTGADGETSGRAPPA CalibrationBufferCounter
   CalibrationBufferCounter(unsigned int lines)  {
     lines_sampled_ = std::vector<unsigned int>(lines,0);
     memset(position_, 0, 3*sizeof(float));
-    memset(quaternion_, 0, 4*sizeof(float));
+    memset(read_dir_, 0, 3*sizeof(float));
+    memset(phase_dir_, 0, 3*sizeof(float));
+    memset(slice_dir_, 0, 3*sizeof(float));
   }
 
 
   virtual ~CalibrationBufferCounter() {}
 
-  int update_line(unsigned int ky_index, float* position, float* quaternion)
+  int update_line(unsigned int ky_index, float* position,
+        float* read_dir, float* phase_dir, float* slice_dir)
   {
     int ret_val = 0;
 
-    if (!quarterion_equal(quaternion) || !position_equal(position)) {
+    if (!read_dir_equal(read_dir) || 
+                !phase_dir_equal(phase_dir) ||
+                !slice_dir_equal(slice_dir) ||
+                !position_equal(position)) {
       for (unsigned int i = 0; i < lines_sampled_.size(); i++) {
 	lines_sampled_[i] = 0;
       }
       memcpy(position_,position,3*sizeof(float));
-      memcpy(quaternion_,quaternion,4*sizeof(float));
+      memcpy(read_dir_,read_dir,3*sizeof(float));
+      memcpy(phase_dir_,phase_dir,3*sizeof(float));
+      memcpy(slice_dir_,slice_dir,3*sizeof(float));
       ret_val = 1;
     }
 
@@ -73,7 +81,9 @@ class EXPORTGADGETSGRAPPA CalibrationBufferCounter
 
  protected:
   float           position_[3];
-  float           quaternion_[4];
+  float           read_dir_[3];
+  float           phase_dir_[3];
+  float           slice_dir_[3];
 
   bool position_equal(float* position) {
     for (unsigned int i = 0; i < 3; i++) {
@@ -82,9 +92,23 @@ class EXPORTGADGETSGRAPPA CalibrationBufferCounter
     return true;
   }
 
-  bool quarterion_equal(float* quaternion) {
-    for (unsigned int i = 0; i < 4; i++) {
-      if (quaternion_[i] != quaternion[i]) return false;
+  bool read_dir_equal(float* cosines) {
+    for (unsigned int i = 0; i < 3; i++) {
+      if (read_dir_[i] != cosines[i]) return false;
+    }
+    return true;
+  }
+
+  bool phase_dir_equal(float* cosines) {
+    for (unsigned int i = 0; i < 3; i++) {
+      if (phase_dir_[i] != cosines[i]) return false;
+    }
+    return true;
+  }
+
+  bool slice_dir_equal(float* cosines) {
+    for (unsigned int i = 0; i < 3; i++) {
+      if (slice_dir_[i] != cosines[i]) return false;
     }
     return true;
   }
