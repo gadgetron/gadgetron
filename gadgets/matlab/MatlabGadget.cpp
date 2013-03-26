@@ -233,7 +233,6 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     mxSetN(acqdata, m1->getObjectPtr()->number_of_samples);
     mxSetM(acqdata, m1->getObjectPtr()->active_channels);
 
-/*
     engPutVariable(engine_, "acqhdr", acqhdr);
     engPutVariable(engine_, "acqdata", acqdata);
 
@@ -243,51 +242,162 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
 
     // instantiate a Matlab ismrmrd.AcquisitionHeader from our struct
     //engEvalString(engine_, "h = ismrmrd.AcquisitionHeader(acqhdr);");
+    //engEvalString(engine_, "h.version = 999;");
+    //engEvalString(engine_, "acqhdr = struct(h);");
+    //engEvalString(engine_, "acqhdr.idx = struct(h.idx);");
+
+    engEvalString(engine_, "acqhdr.version = 42;");
+
     engEvalString(engine_, "acqdata = acqdata * 2;");
 
-    mxArray *res = engGetVariable(engine_, "acqdata");
-    if (res == NULL) {
+    mxArray *res_hdr = engGetVariable(engine_, "acqhdr");
+    if (res_hdr == NULL) {
+        GADGET_DEBUG1("Failed to get header back from Matlab\n");
+        return GADGET_FAIL;
+    }
+
+    // grab the modified AcquisitionHeader and convert it back to C++
+    GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m3 =
+            new GadgetContainerMessage<ISMRMRD::AcquisitionHeader>();
+    ISMRMRD::AcquisitionHeader *hdr_new = m3->getObjectPtr();
+    mxArray *tmp;
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 0);
+    memcpy(&hdr_new->version, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 1);
+    memcpy(&hdr_new->flags, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 2);
+    memcpy(&hdr_new->measurement_uid, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 3);
+    memcpy(&hdr_new->scan_counter, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 4);
+    memcpy(&hdr_new->acquisition_time_stamp, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 5);
+    memcpy(&hdr_new->physiology_time_stamp, mxGetData(tmp), ISMRMRD_PHYS_STAMPS * mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 6);
+    memcpy(&hdr_new->number_of_samples, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 7);
+    memcpy(&hdr_new->available_channels, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 8);
+    memcpy(&hdr_new->active_channels, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 9);
+    memcpy(&hdr_new->channel_mask, mxGetData(tmp), ISMRMRD_CHANNEL_MASKS * mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 10);
+    memcpy(&hdr_new->discard_pre, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 11);
+    memcpy(&hdr_new->discard_post, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 12);
+    memcpy(&hdr_new->center_sample, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 13);
+    memcpy(&hdr_new->encoding_space_ref, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 14);
+    memcpy(&hdr_new->trajectory_dimensions, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 15);
+    memcpy(&hdr_new->sample_time_us, mxGetData(tmp), ISMRMRD_POSITION_LENGTH * mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 16);
+    memcpy(&hdr_new->position, mxGetData(tmp), ISMRMRD_DIRECTION_LENGTH * mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 17);
+    memcpy(&hdr_new->read_dir, mxGetData(tmp), ISMRMRD_DIRECTION_LENGTH * mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 18);
+    memcpy(&hdr_new->phase_dir, mxGetData(tmp), ISMRMRD_DIRECTION_LENGTH * mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 19);
+    memcpy(&hdr_new->slice_dir, mxGetData(tmp), ISMRMRD_DIRECTION_LENGTH * mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 20);
+    memcpy(&hdr_new->patient_table_position, mxGetData(tmp), ISMRMRD_POSITION_LENGTH * mxGetElementSize(tmp));
+
+    // grab and populate the EncodingCounters
+    mxArray *res_idx = mxGetFieldByNumber(res_hdr, 0, 21);
+    tmp = mxGetFieldByNumber(res_idx, 0, 0);
+    memcpy(&hdr_new->idx.kspace_encode_step_1, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_idx, 0, 1);
+    memcpy(&hdr_new->idx.kspace_encode_step_2, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_idx, 0, 2);
+    memcpy(&hdr_new->idx.average, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_idx, 0, 3);
+    memcpy(&hdr_new->idx.slice, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_idx, 0, 4);
+    memcpy(&hdr_new->idx.contrast, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_idx, 0, 5);
+    memcpy(&hdr_new->idx.phase, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_idx, 0, 6);
+    memcpy(&hdr_new->idx.repetition, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_idx, 0, 7);
+    memcpy(&hdr_new->idx.set, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_idx, 0, 8);
+    memcpy(&hdr_new->idx.segment, mxGetData(tmp), mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_idx, 0, 9);
+    memcpy(&hdr_new->idx.user, mxGetData(tmp), ISMRMRD_USER_INTS * mxGetElementSize(tmp));
+
+    // back to AcquisitionHeader
+    tmp = mxGetFieldByNumber(res_hdr, 0, 22);
+    memcpy(&hdr_new->user_int, mxGetData(tmp), ISMRMRD_USER_INTS * mxGetElementSize(tmp));
+
+    tmp = mxGetFieldByNumber(res_hdr, 0, 23);
+    memcpy(&hdr_new->user_float, mxGetData(tmp), ISMRMRD_USER_FLOATS * mxGetElementSize(tmp));
+
+
+    mxArray *res_data = engGetVariable(engine_, "acqdata");
+    if (res_data == NULL) {
         GADGET_DEBUG1("Failed to get data back from Matlab\n");
         return GADGET_FAIL;
     }
 
-*/
-    mxArray *res = mxDuplicateArray(acqdata);
+    size_t number_of_samples = mxGetN(res_data);
+    size_t active_channels = mxGetM(res_data);
 
-    size_t number_of_samples = mxGetN(res);
-    size_t active_channels = mxGetM(res);
-    //printf("%lu %lu\n", number_of_samples, active_channels);
-
-    GadgetContainerMessage<hoNDArray< std::complex<float> > >* m3 =
+    GadgetContainerMessage<hoNDArray< std::complex<float> > >* m4 =
             new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
 
-    m1->cont(m3);
+    m3->cont(m4);
     std::vector<unsigned int> dims;
     dims.push_back(number_of_samples);
     dims.push_back(active_channels);
-    if (!m3->getObjectPtr()->create(&dims)) {
+    if (!m4->getObjectPtr()->create(&dims)) {
         GADGET_DEBUG1("Failed to create new hoNDArray\n");
         return GADGET_FAIL;
     }
 
-    real_data = (float *)mxGetData(res);
-    imag_data = (float *)mxGetImagData(res);
+    real_data = (float *)mxGetData(res_data);
+    imag_data = (float *)mxGetImagData(res_data);
     for (int i = 0; i < number_of_samples*active_channels; i++) {
-        m3->getObjectPtr()->get_data_ptr()[i] = std::complex<float>(real_data[i],imag_data[i]);
+        m4->getObjectPtr()->get_data_ptr()[i] = std::complex<float>(real_data[i],imag_data[i]);
     }
 
-
-    //mxArray *scan_counter_array = mxGetField(res, 0, "scan_counter");
-    //uint32_t scan_counter = ((uint32_t *)mxGetData(scan_counter_array))[0];
-    //printf("Scan counter: %u\n", scan_counter);
-    //mxDestroyArray(scan_counter_array);
-
     //printf("%s", buffer);
-    mxDestroyArray(res);
+    mxDestroyArray(res_hdr);
+    mxDestroyArray(res_data);
     mxDestroyArray(acqhdr);
     mxDestroyArray(acqdata);
 
-    //m1->cont(m2);
     return this->next()->putq(m1);
 }
 

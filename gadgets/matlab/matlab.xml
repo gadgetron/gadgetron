@@ -34,6 +34,7 @@
         <property><name>gadget_reference_function</name>  <value>gadget_reference_downsample_2x</value></property>
         <property><name>input_function</name>             <value>downsample_2x</value></property>
         <property><name>config_function</name>            <value>configure_downsample_2x</value></property> 
+        <property><name>matlab_class</name>               <value>NIHScale</value></property> 
     </gadget>
     <gadget>
         <name>Acc</name>
