@@ -31,13 +31,13 @@ public:
 
 	virtual ~WriterTask()
 	{
-		writers_.clear();
+	  writers_.clear();
 	}
 
 	virtual int init(void)
 	{
-		ACE_TRACE(( ACE_TEXT("WriterTask::init") ));
-		return 0;
+	  ACE_TRACE(( ACE_TEXT("WriterTask::init") ));
+	  return 0;
 	}
 
 	virtual int open(void* = 0)
