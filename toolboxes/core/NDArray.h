@@ -1,3 +1,7 @@
+/** \file NDArray.h
+    \brief Abstract base class for all Gadgetron host and device arrays
+*/
+
 #ifndef NDARRAY_H
 #define NDARRAY_H
 #pragma once

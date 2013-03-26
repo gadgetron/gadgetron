@@ -4,6 +4,8 @@ using namespace Gadgetron;
 
 // Private utility to verify array dimensions. 
 // It "replaces" NDArray::dimensions_equal() to support batch mode.
+// There is an identical function for all array instances (currently hoNDArray, cuNDArray, hoCuNDAraay)
+// !!! Remember to fix any bugs in all versions !!!
 //
 template<class T,class S> static bool compatible_dimensions( const hoNDArray<T> &x, const hoNDArray<S> &y )
 {
@@ -70,6 +72,22 @@ template<class T> hoNDArray<T>& Gadgetron::operator+= (hoNDArray<T> &x, const T 
   return x;  
 }
 
+template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator+= (hoNDArray< std::complex<T> > &x, const T &y)
+{
+  arma::Col< std::complex<T> > aRes = as_arma_col(&x);
+  std::complex<T> aY( y, T(0) );
+  aRes += aY;
+  return x;  
+}
+
+template<class T> hoNDArray< complext<T> >& Gadgetron::operator+= (hoNDArray< complext<T> > &x, const T &y)
+{
+  arma::Col< std::complex<T> > aRes = as_arma_col(&x);
+  std::complex<T> aY( y, T(0) );
+  aRes += aY;
+  return x;  
+}
+
 template<class T> hoNDArray<T>& Gadgetron::operator-= (hoNDArray<T> &x, const hoNDArray<T> &y)
 {
   if( compatible_dimensions<T,T>(x,y) ){
@@ -122,6 +140,22 @@ template<class T> hoNDArray<T>& Gadgetron::operator-= (hoNDArray<T> &x, const T 
 {
   arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&x);
   typename stdType<T>::Type aY = *((typename stdType<T>::Type*)&y);
+  aRes -= aY;
+  return x;  
+}
+
+template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator-= (hoNDArray< std::complex<T> > &x, const T &y)
+{
+  arma::Col< std::complex<T> > aRes = as_arma_col(&x);
+  std::complex<T> aY( y, T(0) );
+  aRes -= aY;
+  return x;  
+}
+
+template<class T> hoNDArray< complext<T> >& Gadgetron::operator-= (hoNDArray< complext<T> > &x, const T &y)
+{
+  arma::Col< std::complex<T> > aRes = as_arma_col(&x);
+  std::complex<T> aY( y, T(0) );
   aRes -= aY;
   return x;  
 }
@@ -182,6 +216,22 @@ template<class T> hoNDArray<T>& Gadgetron::operator*= (hoNDArray<T> &x, const T 
   return x;  
 }
 
+template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator*= (hoNDArray< std::complex<T> > &x, const T &y)
+{
+  arma::Col< std::complex<T> > aRes = as_arma_col(&x);
+  std::complex<T> aY( y, T(0) );
+  aRes *= aY;
+  return x;  
+}
+
+template<class T> hoNDArray< complext<T> >& Gadgetron::operator*= (hoNDArray< complext<T> > &x, const T &y)
+{
+  arma::Col< std::complex<T> > aRes = as_arma_col(&x);
+  std::complex<T> aY( y, T(0) );
+  aRes *= aY;
+  return x;  
+}
+
 template<class T> hoNDArray<T>& Gadgetron::operator/= (hoNDArray<T> &x, const hoNDArray<T> &y)
 {
   if( compatible_dimensions<T,T>(x,y) ){
@@ -234,6 +284,22 @@ template<class T> hoNDArray<T>& Gadgetron::operator/= (hoNDArray<T> &x, const T 
 {
   arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&x);
   typename stdType<T>::Type aY = *((typename stdType<T>::Type*)&y);
+  aRes /= aY;
+  return x;  
+}
+
+template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator/= (hoNDArray< std::complex<T> > &x, const T &y)
+{
+  arma::Col< std::complex<T> > aRes = as_arma_col(&x);
+  std::complex<T> aY( y, T(0) );
+  aRes /= aY;
+  return x;  
+}
+
+template<class T> hoNDArray< complext<T> >& Gadgetron::operator/= (hoNDArray< complext<T> > &x, const T &y)
+{
+  arma::Col< std::complex<T> > aRes = as_arma_col(&x);
+  std::complex<T> aY( y, T(0) );
   aRes /= aY;
   return x;  
 }
@@ -304,6 +370,16 @@ template EXPORTCPUCOREMATH hoNDArray< complext<float> >& operator-=<float>(hoNDA
 template EXPORTCPUCOREMATH hoNDArray< complext<float> >& operator*=<float>(hoNDArray< complext<float> >&, const hoNDArray<float>&);
 template EXPORTCPUCOREMATH hoNDArray< complext<float> >& operator/=<float>(hoNDArray< complext<float> >&, const hoNDArray<float>&);
 
+template EXPORTCPUCOREMATH hoNDArray< std::complex<float> >& operator+=<float>(hoNDArray< std::complex<float> >&, const float&);
+template EXPORTCPUCOREMATH hoNDArray< std::complex<float> >& operator-=<float>(hoNDArray< std::complex<float> >&, const float&);
+template EXPORTCPUCOREMATH hoNDArray< std::complex<float> >& operator*=<float>(hoNDArray< std::complex<float> >&, const float&);
+template EXPORTCPUCOREMATH hoNDArray< std::complex<float> >& operator/=<float>(hoNDArray< std::complex<float> >&, const float&);
+
+template EXPORTCPUCOREMATH hoNDArray< complext<float> >& operator+=<float>(hoNDArray< complext<float> >&, const float&);
+template EXPORTCPUCOREMATH hoNDArray< complext<float> >& operator-=<float>(hoNDArray< complext<float> >&, const float&);
+template EXPORTCPUCOREMATH hoNDArray< complext<float> >& operator*=<float>(hoNDArray< complext<float> >&, const float&);
+template EXPORTCPUCOREMATH hoNDArray< complext<float> >& operator/=<float>(hoNDArray< complext<float> >&, const float&);
+
 template EXPORTCPUCOREMATH hoNDArray< std::complex<double> >& operator+=< std::complex<double> > 
 (hoNDArray< std::complex<double> >&, const hoNDArray< std::complex<double> >&);
 template EXPORTCPUCOREMATH hoNDArray< std::complex<double> >& operator+=< std::complex<double> > 
@@ -348,3 +424,12 @@ template EXPORTCPUCOREMATH hoNDArray< complext<double> >& operator-=<double>(hoN
 template EXPORTCPUCOREMATH hoNDArray< complext<double> >& operator*=<double>(hoNDArray< complext<double> >&, const hoNDArray<double>&);
 template EXPORTCPUCOREMATH hoNDArray< complext<double> >& operator/=<double>(hoNDArray< complext<double> >&, const hoNDArray<double>&);
 
+template EXPORTCPUCOREMATH hoNDArray< std::complex<double> >& operator+=<double>(hoNDArray< std::complex<double> >&, const double&);
+template EXPORTCPUCOREMATH hoNDArray< std::complex<double> >& operator-=<double>(hoNDArray< std::complex<double> >&, const double&);
+template EXPORTCPUCOREMATH hoNDArray< std::complex<double> >& operator*=<double>(hoNDArray< std::complex<double> >&, const double&);
+template EXPORTCPUCOREMATH hoNDArray< std::complex<double> >& operator/=<double>(hoNDArray< std::complex<double> >&, const double&);
+
+template EXPORTCPUCOREMATH hoNDArray< complext<double> >& operator+=<double>(hoNDArray< complext<double> >&, const double&);
+template EXPORTCPUCOREMATH hoNDArray< complext<double> >& operator-=<double>(hoNDArray< complext<double> >&, const double&);
+template EXPORTCPUCOREMATH hoNDArray< complext<double> >& operator*=<double>(hoNDArray< complext<double> >&, const double&);
+template EXPORTCPUCOREMATH hoNDArray< complext<double> >& operator/=<double>(hoNDArray< complext<double> >&, const double&);

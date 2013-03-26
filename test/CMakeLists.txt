@@ -18,6 +18,9 @@ cuda_add_executable(test_all
   hoNDArray_elemwise_test.cpp 
   hoNDArray_operators_test.cpp 
   hoNDArray_blas_test.cpp 
+  cuNDArray_elemwise_test.cpp 
+  cuNDArray_operators_test.cpp 
+  cuNDArray_blas_test.cpp 
 #  hoNDArray_utils_test.cpp 
 #  cuGTBLAS_test.cpp 
 #  cuNDArray_test.cpp 
@@ -30,6 +33,7 @@ cuda_add_executable(test_all
 target_link_libraries(test_all 
   cpucore 
   cpucore_math
+  gpucore
   ${GTEST_LIBRARIES} 
   pthread
   )

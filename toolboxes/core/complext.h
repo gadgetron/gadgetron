@@ -269,14 +269,14 @@ namespace Gadgetron{
   }
 
   __inline__ __host__ __device__ double sgn(double x){
-    return (0 < x) - (x < 0);
+    return (double(0) < x) - (x < double(0));
   }
   __inline__ __host__ __device__ float sgn(float x){
-    return (0 < x) - (x < 0);
+    return (float(0) < x) - (x < float(0));
   }
 
   template<class T> __inline__ __host__ __device__ complext<T> sgn(complext<T> x){
-    if (norm(x) <= 0) return 0;
+    if (norm(x) <= T(0)) return std::complex<T>(0);
     return (x/abs(x));
   }
 }

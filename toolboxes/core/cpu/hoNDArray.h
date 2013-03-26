@@ -1,3 +1,7 @@
+/** \file hoNDArray.h
+    \brief CPU-based N-dimensional array (data container)
+*/
+
 #ifndef HONDARRAY_H
 #define HONDARRAY_H
 #pragma once

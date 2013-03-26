@@ -34,6 +34,13 @@ namespace Gadgetron{
   template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator+= (hoNDArray<T> &x, const hoNDArray<T> &y);
 
   /**
+   * @brief Implementation of element-wise operator+= on a hoNDArray with a scalar value.
+   * @param[in,out] x Input and output array.
+   * @param[in] y Input scalar.
+   */
+  template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator+= (hoNDArray<T> &x, const T &y);
+
+  /**
    * @brief Implementation of element-wise operator+= on two hoNDArrays.
    * @param[in,out] x Input and output array.
    * @param[in] y Input array.
@@ -43,6 +50,13 @@ namespace Gadgetron{
    * If x contains further dimensions the operator is batched across those dimensions.
    */
   template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator+= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y);
+
+  /**
+   * @brief Implementation of element-wise operator+= on a hoNDArray with a scalar value.
+   * @param[in,out] x Input and output array.
+   * @param[in] y Input scalar.
+   */
+  template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator+= (hoNDArray< std::complex<T> >&x, const T &y);
 
   /**
    * @brief Implementation of element-wise operator+= on two hoNDArrays.
@@ -59,12 +73,8 @@ namespace Gadgetron{
    * @brief Implementation of element-wise operator+= on a hoNDArray with a scalar value.
    * @param[in,out] x Input and output array.
    * @param[in] y Input scalar.
- 
-   * Let y be an n-dimensional array. 
-   * Then the sizes of the first n array dimensions must match between x and y.
-   * If x contains further dimensions the operator is batched across those dimensions.
    */
-  template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator+= (hoNDArray<T> &x, const T &y);
+  template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator+= (hoNDArray< complext<T> >&x, const T &y);
 
   /**
    * @brief Implementation of element-wise operator-= on two hoNDArrays.
@@ -78,6 +88,13 @@ namespace Gadgetron{
   template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator-= (hoNDArray<T> &x, const hoNDArray<T> &y);
 
   /**
+   * @brief Implementation of element-wise operator-= on a hoNDArray with a scalar value.
+   * @param[in,out] x Input and output array.
+   * @param[in] y Input scalar.
+   */
+  template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator-= (hoNDArray<T> &x, const T &y);
+
+  /**
    * @brief Implementation of element-wise operator-= on two hoNDArrays.
    * @param[in,out] x Input and output array.
    * @param[in] y Input array.
@@ -87,6 +104,13 @@ namespace Gadgetron{
    * If x contains further dimensions the operator is batched across those dimensions.
    */
   template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator-= (hoNDArray< std::complex<T > > &x, const hoNDArray<T> &y);
+
+  /**
+   * @brief Implementation of element-wise operator-= on a hoNDArray with a scalar value.
+   * @param[in,out] x Input and output array.
+   * @param[in] y Input scalar.
+   */
+  template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator-= (hoNDArray< std::complex<T> >&x, const T &y);
 
   /**
    * @brief Implementation of element-wise operator-= on two hoNDArrays.
@@ -103,12 +127,8 @@ namespace Gadgetron{
    * @brief Implementation of element-wise operator-= on a hoNDArray with a scalar value.
    * @param[in,out] x Input and output array.
    * @param[in] y Input scalar.
- 
-   * Let y be an n-dimensional array. 
-   * Then the sizes of the first n array dimensions must match between x and y.
-   * If x contains further dimensions the operator is batched across those dimensions.
    */
-  template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator-= (hoNDArray<T> &x, const T &y);
+  template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator-= (hoNDArray< complext<T> >&x, const T &y);
 
   /**
    * @brief Implementation of element-wise operator*= on two hoNDArrays.
@@ -122,6 +142,13 @@ namespace Gadgetron{
   template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator*= (hoNDArray<T> &x, const hoNDArray<T> &y);
 
   /**
+   * @brief Implementation of element-wise operator*= on a hoNDArray with a scalar value.
+   * @param[in,out] x Input and output array.
+   * @param[in] y Input scalar.
+   */
+  template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator*= (hoNDArray<T> &x, const T &y);
+
+  /**
    * @brief Implementation of element-wise operator*= on two hoNDArrays.
    * @param[in,out] x Input and output array.
    * @param[in] y Input array.
@@ -131,6 +158,13 @@ namespace Gadgetron{
    * If x contains further dimensions the operator is batched across those dimensions.
    */
   template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator*= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y);
+
+  /**
+   * @brief Implementation of element-wise operator*= on a hoNDArray with a scalar value.
+   * @param[in,out] x Input and output array.
+   * @param[in] y Input scalar.
+   */
+  template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator*= (hoNDArray< std::complex<T> > &x, const T &y);
 
   /**
    * @brief Implementation of element-wise operator*= on two hoNDArrays.
@@ -147,12 +181,8 @@ namespace Gadgetron{
    * @brief Implementation of element-wise operator*= on a hoNDArray with a scalar value.
    * @param[in,out] x Input and output array.
    * @param[in] y Input scalar.
- 
-   * Let y be an n-dimensional array. 
-   * Then the sizes of the first n array dimensions must match between x and y.
-   * If x contains further dimensions the operator is batched across those dimensions.
    */
-  template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator*= (hoNDArray<T> &x, const T &y);
+  template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator*= (hoNDArray< complext<T> > &x, const T &y);
 
   /**
    * @brief Implementation of element-wise operator/= on two hoNDArrays.
@@ -166,6 +196,13 @@ namespace Gadgetron{
   template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator/= (hoNDArray<T> &x, const hoNDArray<T> &y);
 
   /**
+   * @brief Implementation of element-wise operator/= on a hoNDArray with a scalar value.
+   * @param[in,out] x Input and output array.
+   * @param[in] y Input scalar.
+   */
+  template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator/= (hoNDArray<T> &x, const T &y);
+
+  /**
    * @brief Implementation of element-wise operator/= on two hoNDArrays.
    * @param[in,out] x Input and output array.
    * @param[in] y Input array.
@@ -175,6 +212,13 @@ namespace Gadgetron{
    * If x contains further dimensions the operator is batched across those dimensions.
    */
   template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator/= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y);
+
+  /**
+   * @brief Implementation of element-wise operator/= on a hoNDArray with a scalar value.
+   * @param[in,out] x Input and output array.
+   * @param[in] y Input scalar.
+   */
+  template<class T> EXPORTCPUCOREMATH hoNDArray< std::complex<T> >& operator/= (hoNDArray< std::complex<T> > &x, const T &y);
 
   /**
    * @brief Implementation of element-wise operator/= on two hoNDArrays.
@@ -191,10 +235,6 @@ namespace Gadgetron{
    * @brief Implementation of element-wise operator/= on a hoNDArray with a scalar value.
    * @param[in,out] x Input and output array.
    * @param[in] y Input scalar.
- 
-   * Let y be an n-dimensional array. 
-   * Then the sizes of the first n array dimensions must match between x and y.
-   * If x contains further dimensions the operator is batched across those dimensions.
-   */
-  template<class T> EXPORTCPUCOREMATH hoNDArray<T>& operator/= (hoNDArray<T> &x, const T &y);
+   */
+  template<class T> EXPORTCPUCOREMATH hoNDArray< complext<T> >& operator/= (hoNDArray< complext<T> > &x, const T &y);
 }

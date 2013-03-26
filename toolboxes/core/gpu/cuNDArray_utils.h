@@ -1,35 +1,5 @@
-#pragma once
-#include "gpucore_export.h"
 
-#include "cuNDArray.h"
-#include "vector_td.h"
-#include "vector_td_utilities.h"
-#include "complext.h"
-#include <boost/smart_ptr.hpp>
-
-//
-// Utilities returning a shared_ptr to the resulting cuNDArray
-// Component-wise operations.
-//
-
-enum cuNDA_device {
-	CUNDA_CURRENT_DEVICE, CUNDA_NDARRAY_DEVICE
-};
-
-
-namespace Gadgetron{
-// Abs "complex style" (float/double/complext arrays)
-/**
- * @brief Calculates the elementwise absolute value of the array
- * @param[in] data Input data
- * @param[in] alloc_device Device on which to allocate the new array
- * @param[in] compute_device Device on which to do the computation
- * @return A new array containing the elementwise absolute value of data
- */
-template<class T> EXPORTGPUCORE
-boost::shared_ptr<cuNDArray<typename realType<T>::type> >
-abs(cuNDArray<T> *data, cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE,
-		cuNDA_device compute_device = CUNDA_CURRENT_DEVICE);
+  template <class T>  void cuNDArray_permute(cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *order, int shift_mode);
 
 // Sum over dimension (scalar and vector_td arrays)
 template<class T> EXPORTGPUCORE
@@ -53,20 +23,6 @@ correlation(cuNDArray<T> *data,
 		cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE,
 		cuNDA_device compute_device = CUNDA_CURRENT_DEVICE);
 
-// Real to complext
-template<class REAL> EXPORTGPUCORE
-boost::shared_ptr<cuNDArray<complext<REAL> > >
-real_to_complext(cuNDArray<REAL> *data, cuNDA_device alloc_device =
-		CUNDA_CURRENT_DEVICE,
-		cuNDA_device compute_device = CUNDA_CURRENT_DEVICE);
-
-// complext to real (by discarding the imaginary component)
-template<class REAL> EXPORTGPUCORE
-boost::shared_ptr<cuNDArray<REAL> >
-complext_to_real(cuNDArray<complext<REAL> > *data, cuNDA_device alloc_device =
-		CUNDA_CURRENT_DEVICE,
-		cuNDA_device compute_device = CUNDA_CURRENT_DEVICE);
-
 // Downsample array to half size (Real arrays only)
 template<class REAL, unsigned int D> EXPORTGPUCORE
 boost::shared_ptr<cuNDArray<REAL> >
@@ -88,61 +44,6 @@ upsample_lin(cuNDArray<REAL> *data, cuNDA_device alloc_device =
 		CUNDA_CURRENT_DEVICE,
 		cuNDA_device compute_device = CUNDA_CURRENT_DEVICE);
 
-/**
- * @brief Clamps all values in the array to the minimum and maximum values specified.
- * @param[in,out] in_out Array which to clamp
- * @param[in] min minimum value
- * @param[in] max maximum value
- */
-template<class  T> EXPORTGPUCORE
-void clamp(cuNDArray<T> *in_out, T min, T max);
-
-
-/**
- * @brief Clamps all values in the array to the minimum value specified.
- * @param[in,out] in_out Array which to clamp
- * @param[in] min minimum value
- */
-template<class  T> EXPORTGPUCORE
-void clamp_min(cuNDArray<T> *in_out, T min);
-
-/**
- * @brief Clamps all values in the array to the maximum value specified.
- * @param[in,out] in_out Array which to clamp
- * @param[in] max minimum value
- */
-template<class  T> EXPORTGPUCORE
-void clamp_max(cuNDArray<T> *in_out, T max);
-
-// Normalize by RSS (float/double/complext arrays)
-template<class T> EXPORTGPUCORE
-void rss_normalize(cuNDArray<T> *in_out, unsigned int dim,
-		cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE);
-
-//Elementwise sgn function.
-/**
- * @brief Calculates the signum function elementwise
- * @param[in,out] data
- */
-template <class T> EXPORTGPUCORE void inplace_sgn(cuNDArray<T>* data);
-
-
-// Sum of Squares (float/double/complext array)
-/**
- * @brief Calculates the squared norm along the specified dimension
- * @param[in] data Input data
- * @param[in] dim Dimension along which to do the squared norm
- * @param[in] alloc_device Device on which to allocate the return array
- * @param[in] compute_device Device on which to do the computations
- * @return boost shared pointer to array containing the elementwise squared norm of data along the specifie dimension
- */
-template<class T>  EXPORTGPUCORE boost::shared_ptr<cuNDArray<typename realType<T>::type > >
-squaredNorm(cuNDArray<T> *data, unsigned int dim, cuNDA_device alloc_device =
-		CUNDA_CURRENT_DEVICE,
-		cuNDA_device compute_device = CUNDA_CURRENT_DEVICE);
-//
-// Some image utilities (with an interface fitting the NNFT)
-//
 /**
  * Calculates the elementwise maximum of two arrays
  * @param[in] in1 First input array
@@ -187,21 +88,18 @@ template<class REAL, class T, unsigned int D> EXPORTGPUCORE
 void zero_fill_border(REAL radius, cuNDArray<T> *image,
 		cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE);
 
-// Shrinkage operators
-template<class REAL, class T> EXPORTGPUCORE
-void shrink1(REAL gamma, cuNDArray<T> *in, cuNDArray<T> *out);
-
-template<class REAL, class T> EXPORTGPUCORE
-void shrinkd(REAL gamma, cuNDArray<REAL> *s_k, cuNDArray<T> *in,
-		cuNDArray<T> *out);
-
 // Mirror around the origin -- !! leaving the origin unchanged !!
 template<class T, unsigned int D> EXPORTGPUCORE
 void origin_mirror(cuNDArray<T> *in, cuNDArray<T> *out, bool zero_fill = true,
 		cuNDA_device compute_device = CUNDA_CURRENT_DEVICE);
 
+/**
+   * @brief Normalize by the root sum of squares
+   * @param[in] x Input array.
+   * @return A new complex array containing the input array in the real component and zeros in the imaginary component.
+   */
 
-template<class T> EXPORTGPUCORE
-T normalize( cuNDArray<T> *data, T new_max, cuNDA_device compute_device = CUNDA_CURRENT_DEVICE);
-
-}
+// Normalize by RSS (float/double/complext arrays)
+template<class T> EXPORTCPUCOREMATH
+void rss_normalize(hoNDArray<T> *in_out, unsigned int dim,
+		hoNDA_device compute_device = HONDA_NDARRAY_DEVICE);

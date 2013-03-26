@@ -2,13 +2,15 @@
 
 #include "GadgetronException.h"
 
-namespace Gadgetron{
+#include <cuda_runtime_api.h>
 
-class cuda_error : public runtime_error
-{
-public:
-	cuda_error(std::string msg) : runtime_error(msg) {}
-	cuda_error(cudaError_t errN) : runtime_error(cudaGetErrorString(errN)) {
-	}
-};
+namespace Gadgetron{
+  
+  class cuda_error : public runtime_error
+  {
+  public:
+    cuda_error(std::string msg) : runtime_error(msg) {}
+    cuda_error(cudaError_t errN) : runtime_error(cudaGetErrorString(errN)) {
+    }
+  };
 }

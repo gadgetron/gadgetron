@@ -8,12 +8,15 @@
     as this allows specific instantiation of the supported template types.     
     The supported types are float, double, std::complex<float>, std::complex<double>, 
     Gadgetron::complext<float>, and Gadgetron::complext<double>.
+    There are currently no amin and amax functions instantiated for complex types 
+    since Armadillo lacks an obvious method to compute the element-wise l1-norm.
 */
 
 #pragma once
 
 #include "hoNDArray.h"
 #include "hoArmadillo.h"
+#include "complext.h"
 #include "cpucore_math_export.h"
 
 namespace Gadgetron{
@@ -28,11 +31,25 @@ namespace Gadgetron{
   template<class T> EXPORTCPUCOREMATH T dot( hoNDArray<T> *x, hoNDArray<T> *y, bool cc = true );
 
   /**
-   * @brief Calculates the l1-norm of the array (as a vector)
+   * @brief Calculates the sum of the l1-norms of the array entries
    * @param[in] arr Input array
    * @return The l1-norm of the array
    */
   template<class T> EXPORTCPUCOREMATH typename realType<T>::Type asum( hoNDArray<T> *x );
+
+  /**
+   * @brief Calculates the sum of the l1-norms of the array entries
+   * @param[in] arr Input array
+   * @return The l1-norm of the array
+   */
+  template<class T> EXPORTCPUCOREMATH T asum( hoNDArray< std::complex<T> > *x );
+
+  /**
+   * @brief Calculates the sum of the l1-norms of the array entries
+   * @param[in] arr Input array
+   * @return The l1-norm of the array
+   */
+  template<class T> EXPORTCPUCOREMATH T asum( hoNDArray< complext<T> > *x );
 
   /**
    * @brief Calculates the l2-norm of the array (as a vector)
@@ -42,18 +59,46 @@ namespace Gadgetron{
   template<class T> EXPORTCPUCOREMATH typename realType<T>::Type nrm2( hoNDArray<T> *x );
   
   /**
-   * @brief Returns the index of the array element with the smallest absolute value
+   * @brief Returns the index of the array element with the smallest absolute value (l1 norm)
    * @param[in] x Input data
    * @return The array index corresponding to the smallest element in the array (0-indexing)
    */
   template<class T> EXPORTCPUCOREMATH unsigned int amin( hoNDArray<T> *x );
  
   /**
-   * @brief Returns the index of the array element with the largest absolute value
+   * @brief Returns the index of the array element with the smallest absolute value (l1 norm)
+   * @param[in] x Input data
+   * @return The array index corresponding to the smallest element in the array (0-indexing)
+   */
+  template<class T> EXPORTCPUCOREMATH unsigned int amin( hoNDArray< std::complex<T> > *x );
+
+  /**
+   * @brief Returns the index of the array element with the smallest absolute value (l1 norm)
+   * @param[in] x Input data
+   * @return The array index corresponding to the smallest element in the array (0-indexing)
+   */
+  template<class T> EXPORTCPUCOREMATH unsigned int amin( hoNDArray< complext<T> > *x );
+
+  /**
+   * @brief Returns the index of the array element with the largest absolute value (l1-norm)
    * @param[in] x Input data
    * @return The array index corresponding to the largest element in the array (0-indexing)
    */
   template<class T> EXPORTCPUCOREMATH unsigned int amax( hoNDArray<T> *x );
+
+  /**
+   * @brief Returns the index of the array element with the largest absolute value (l1-norm)
+   * @param[in] x Input data
+   * @return The array index corresponding to the largest element in the array (0-indexing)
+   */
+  template<class T> EXPORTCPUCOREMATH unsigned int amax( hoNDArray< std::complex<T> > *x );
+
+  /**
+   * @brief Returns the index of the array element with the largest absolute value (l1-norm)
+   * @param[in] x Input data
+   * @return The array index corresponding to the largest element in the array (0-indexing)
+   */
+  template<class T> EXPORTCPUCOREMATH unsigned int amax( hoNDArray< complext<T> > *x );
 
   /**
    * @brief Calculates y = a*x+y in which x and y are considered as vectors

@@ -57,7 +57,7 @@ compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile,
 
   // Allocate space for result
   vector<unsigned int> dims; dims.push_back( number_of_samples_per_frame ); dims.push_back( num_frames );
-  boost::shared_ptr< cuNDArray<T> > co = cuNDArray<T>::allocate(&dims);
+  boost::shared_ptr< cuNDArray<T> > co( new cuNDArray<T>(&dims) );
   
   if(!co.get()){
     cout << endl << "Error:: compute_radial_trajectory_golden_ratio_2d: memory allocation failed." << endl;
@@ -116,7 +116,7 @@ compute_radial_trajectory_fixed_angle_2d( unsigned int num_samples_per_profile, 
 
   // Allocate space for result
   vector<unsigned int> dims; dims.push_back( number_of_samples_per_frame ); dims.push_back( num_frames );
-  boost::shared_ptr< cuNDArray<T> > co = cuNDArray<T>::allocate(&dims);
+  boost::shared_ptr< cuNDArray<T> > co( new cuNDArray<T>(&dims) );
   
   if(!co.get()){
     cout << endl << "Error:: compute_radial_trajectory_fixed_angle_2d: memory allocation failed." << endl;
@@ -345,7 +345,7 @@ compute_radial_dcw_2d( unsigned int samples_per_profile, unsigned int num_profil
   
   // Allocate space for result
   vector<unsigned int> dims; dims.push_back( number_of_samples );
-  boost::shared_ptr< cuNDArray<REAL> > dcw = cuNDArray<REAL>::allocate(&dims);
+  boost::shared_ptr< cuNDArray<REAL> > dcw( new cuNDArray<REAL>(&dims) );
   
   if(!dcw.get()){
     cout << endl << "Error:: compute_radial_dcw_<*>_2d: memory allocation failed." << endl;
