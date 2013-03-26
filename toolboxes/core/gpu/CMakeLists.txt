@@ -15,8 +15,8 @@ cuda_add_library(gpucore SHARED
   cuNDArray_operators.cu
   cuNDArray_elemwise.cu
   cuNDArray_blas.cu
-  #cuNDArray_utils.cu
-  #cuFFT.cpp
+  cuNDArray_utils.cu
+  cuFFT.cpp
   radial_utilities.cu
   hoCuNDArray_blas.cu
   CUBLASContextProvider.cpp

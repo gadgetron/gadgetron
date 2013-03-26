@@ -1,5 +1,5 @@
-#include "hoNDArray_utils.h"
-#include "hoNDArray_elemwise.h"
+#include "cuNDArray_utils.h"
+#include "cuNDArray_elemwise.h"
 #include "complext.h"
 
 #include <gtest/gtest.h>
@@ -9,41 +9,46 @@
 using namespace Gadgetron;
 using testing::Types;
 
-template <typename T> class hoNDArray_utils_TestReal : public ::testing::Test {
+template <typename T> class cuNDArray_utils_TestReal : public ::testing::Test {
 protected:
   virtual void SetUp() {
     unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
-    Array = hoNDArray<T>(&dims);
+    Array = cuNDArray<T>(&dims);
+    Array2 = cuNDArray<T>(&dims);
   }
   std::vector<unsigned int> dims;
-  hoNDArray<T> Array;
+  cuNDArray<T> Array;
+  cuNDArray<T> Array2;
 };
 
-template <typename T> class hoNDArray_utils_TestCplx : public ::testing::Test {
+template <typename T> class cuNDArray_utils_TestCplx : public ::testing::Test {
 protected:
   virtual void SetUp() {
     unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
     dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
-    Array = hoNDArray<T>(&dims);
+    Array = cuNDArray<T>(&dims);
+    Array2 = cuNDArray<T>(&dims);
   }
   std::vector<unsigned int> dims;
-  hoNDArray<T> Array;
+  cuNDArray<T> Array;
+  cuNDArray<T> Array2;
 };
 
 typedef Types<float, double> realImplementations;
 typedef Types</*std::complex<float>, std::complex<double>,*/ float_complext, double_complext> cplxImplementations;
 
-TYPED_TEST_CASE(hoNDArray_utils_TestReal, realImplementations);
+TYPED_TEST_CASE(cuNDArray_utils_TestReal, realImplementations);
 
-TYPED_TEST(hoNDArray_utils_TestReal,permuteTest){
+TYPED_TEST(cuNDArray_utils_TestReal,permuteTest){
 
   fill(&this->Array,TypeParam(1));
 
   std::vector<unsigned int> order;
   order.push_back(0); order.push_back(1); order.push_back(2); order.push_back(3);
-
-  this->Array.get_data_ptr()[37] = TypeParam(2);
+  
+  TypeParam tmp(2);
+  CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[37], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
 
   EXPECT_FLOAT_EQ(1, permute(&this->Array,&order)->at(0));
   EXPECT_FLOAT_EQ(2, permute(&this->Array,&order)->at(37));
@@ -64,17 +69,33 @@ TYPED_TEST(hoNDArray_utils_TestReal,permuteTest){
   EXPECT_FLOAT_EQ(2, permute(&this->Array,&order)->at(851));
 }
 
+TYPED_TEST(cuNDArray_utils_TestReal,shiftDimTest){
 
-TYPED_TEST_CASE(hoNDArray_utils_TestCplx, cplxImplementations);
+  fill(&this->Array,TypeParam(1));
 
-TYPED_TEST(hoNDArray_utils_TestCplx,permuteTest){
+  TypeParam tmp(2);
+  CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[37], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
+
+  EXPECT_FLOAT_EQ(1, shift_dim(&this->Array,0)->at(0));
+  EXPECT_FLOAT_EQ(2, shift_dim(&this->Array,0)->at(37));
+  EXPECT_FLOAT_EQ(2, shift_dim(&this->Array,1)->at(1));
+  EXPECT_FLOAT_EQ(2, shift_dim(&this->Array,-1)->at(37*19));
+  EXPECT_FLOAT_EQ(2, shift_dim(&this->Array,2)->at(23*37*19));
+  EXPECT_FLOAT_EQ(2, shift_dim(&this->Array,3)->at(37*19));
+  EXPECT_FLOAT_EQ(2, shift_dim(&this->Array,4)->at(37));
+}
+
+TYPED_TEST_CASE(cuNDArray_utils_TestCplx, cplxImplementations);
+
+TYPED_TEST(cuNDArray_utils_TestCplx,permuteTest){
 
   fill(&this->Array,TypeParam(1,1));
 
   std::vector<unsigned int> order;
   order.push_back(0); order.push_back(1); order.push_back(2); order.push_back(3);
   
-  this->Array.get_data_ptr()[37] = TypeParam(2,3);
+  TypeParam tmp(2,3);
+  CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[37], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
 
   EXPECT_FLOAT_EQ(1, real(permute(&this->Array,&order)->at(0)));
   EXPECT_FLOAT_EQ(1, imag(permute(&this->Array,&order)->at(0)));
@@ -101,3 +122,31 @@ TYPED_TEST(hoNDArray_utils_TestCplx,permuteTest){
   EXPECT_FLOAT_EQ(3, imag(permute(&this->Array,&order)->at(851)));
 }
 
+TYPED_TEST(cuNDArray_utils_TestCplx,shiftDimTest){
+
+  fill(&this->Array,TypeParam(1,1));
+
+  TypeParam tmp(2,3);
+  CUDA_CALL(cudaMemcpy(&this->Array.get_data_ptr()[37], &tmp, sizeof(TypeParam), cudaMemcpyHostToDevice));
+
+  EXPECT_FLOAT_EQ(1, real(shift_dim(&this->Array,0)->at(0)));
+  EXPECT_FLOAT_EQ(1, imag(shift_dim(&this->Array,0)->at(0)));
+
+  EXPECT_FLOAT_EQ(2, real(shift_dim(&this->Array,0)->at(37)));
+  EXPECT_FLOAT_EQ(3, imag(shift_dim(&this->Array,0)->at(37)));
+
+  EXPECT_FLOAT_EQ(2, real(shift_dim(&this->Array,1)->at(1)));
+  EXPECT_FLOAT_EQ(3, imag(shift_dim(&this->Array,1)->at(1)));
+
+  EXPECT_FLOAT_EQ(2, real(shift_dim(&this->Array,-1)->at(37*19)));
+  EXPECT_FLOAT_EQ(3, imag(shift_dim(&this->Array,-1)->at(37*19)));
+
+  EXPECT_FLOAT_EQ(2, real(shift_dim(&this->Array,2)->at(23*37*19)));
+  EXPECT_FLOAT_EQ(3, imag(shift_dim(&this->Array,2)->at(23*37*19)));
+
+  EXPECT_FLOAT_EQ(2, real(shift_dim(&this->Array,3)->at(37*19)));
+  EXPECT_FLOAT_EQ(3, imag(shift_dim(&this->Array,3)->at(37*19)));
+
+  EXPECT_FLOAT_EQ(2, real(shift_dim(&this->Array,4)->at(37)));
+  EXPECT_FLOAT_EQ(3, imag(shift_dim(&this->Array,4)->at(37)));
+}

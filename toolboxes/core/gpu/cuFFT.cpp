@@ -1,8 +1,8 @@
 #include "cuFFT.h"
 #include "vector_td.h"
 #include "cuNDArray.h"
-//#include "cuNDArray_operators.h"
-//#include "cuNDArray_elemwise.h"
+#include "cuNDArray_utils.h"
+#include "cuNDArray_operators.h"
 
 #include <cufft.h>
 #include <cublas.h>
@@ -84,7 +84,7 @@ namespace Gadgetron{
     }
     
     //IFFTSHIFT
-    input->permute(&new_dim_order,0,-1);
+    *input = *permute(input,&new_dim_order,boost::shared_ptr<cuNDArray<T> >(),-1);
     
     if( cuNDA_FFT_execute<T>( plan, input, direction ) != CUFFT_SUCCESS ) {
       BOOST_THROW_EXCEPTION(runtime_error("cuFFT FFT execute failed"));      
@@ -102,7 +102,7 @@ namespace Gadgetron{
     }
     
     //FFTSHIFT 
-    input->permute(&reverse_dim_order,0,1);        
+    *input = *permute(input,&reverse_dim_order,boost::shared_ptr<cuNDArray<T> >(),1);        
   }
   
   template<class T> void

@@ -18,12 +18,11 @@ cuda_add_executable(test_all
   hoNDArray_elemwise_test.cpp 
   hoNDArray_operators_test.cpp 
   hoNDArray_blas_test.cpp 
+  hoNDArray_utils_test.cpp
   cuNDArray_elemwise_test.cpp 
   cuNDArray_operators_test.cpp 
   cuNDArray_blas_test.cpp 
-#  hoNDArray_utils_test.cpp 
-#  cuGTBLAS_test.cpp 
-#  cuNDArray_test.cpp 
+  cuNDArray_utils_test.cpp
 #  hoCuGTBLAS_test.cpp 
 #  cuNDArray_Vector_td_test.cpp 
 #  vector_td_test.cpp
