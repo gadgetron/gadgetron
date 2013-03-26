@@ -42,10 +42,9 @@ public:
 
 	virtual int open(void* = 0)
 	{
-		ACE_TRACE(( ACE_TEXT("WriterTask::open") ));
-
-		return this->activate( THR_NEW_LWP | THR_JOINABLE,
-				1 );
+	  ACE_TRACE(( ACE_TEXT("WriterTask::open") ));
+	  return this->activate( THR_NEW_LWP | THR_JOINABLE,
+				 1 );
 	}
 
 
