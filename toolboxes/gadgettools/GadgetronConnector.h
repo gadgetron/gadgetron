@@ -5,7 +5,6 @@
  *      Author: Michael S. Hansen
  */
 
-
 #ifndef GADGETRONCONNECTOR_H_
 #define GADGETRONCONNECTOR_H_
 
@@ -13,10 +12,7 @@
 #include <ace/Reactor.h>
 #include <ace/SOCK_Stream.h>
 #include <ace/Reactor_Notification_Strategy.h>
-
-
 #include <string>
-
 #include "GadgetronSlotContainer.h"
 #include "GadgetMessageInterface.h"
 #include "gadgettools_export.h"
