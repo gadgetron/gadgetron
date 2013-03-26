@@ -2,7 +2,7 @@
  * GadgetronConnector.h
  *
  *  Created on: Nov 1, 2011
- *      Author: hansenms
+ *      Author: Michael S. Hansen
  */
 
 #ifndef GADGETRONCONNECTOR_H_
