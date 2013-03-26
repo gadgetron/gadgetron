@@ -26,5 +26,5 @@ install(FILES
 	vector_td_operators.h
 	vector_td_utilities.h
 	real_utilities.h
-	cpu_defines.h
+	cpucore_defines.h
 	DESTINATION include)
