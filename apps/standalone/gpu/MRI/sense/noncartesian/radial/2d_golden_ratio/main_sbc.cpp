@@ -214,8 +214,11 @@ int main(int argc, char** argv)
   //sb.add_regularization_operator( Ry ); 
   sb.add_regularization_group_operator( Rx ); 
   sb.add_regularization_group_operator( Ry ); 
-  sb.add_group();
-  sb.set_prior_image( reg_image, _real(0.2) );
+  sb.add_group(reg_image);
+  sb.add_regularization_group_operator( Rx );
+	sb.add_regularization_group_operator( Ry );
+	sb.add_group();
+
   sb.set_max_outer_iterations(num_sb_outer_iterations);
   sb.set_max_inner_iterations(num_sb_inner_iterations);
   sb.set_output_mode( cuSbcCgSolver< _complext>::OUTPUT_VERBOSE );

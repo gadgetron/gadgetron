@@ -181,21 +181,21 @@ namespace Gadgetron{
    * @param[in] min minimum value.
    * @param[in] max maximum value.
    */
-  template<class T> EXPORTCPUCOREMATH void clamp( hoNDArray<T> *x, T min, T max );
-
+  template<class T> EXPORTCPUCOREMATH void clamp( hoNDArray<T> *x, typename realType<T>::Type min, typename realType<T>::Type max );
+  
   /**
    * @brief Clamps all values in the array to a minimum value allowed (in place).
    * @param[in,out] x Input and output array.
    * @param[in] min Minimum value.
    */
-  template<class T> EXPORTCPUCOREMATH void clamp_min( hoNDArray<T> *x, T min );
+  template<class T> EXPORTCPUCOREMATH void clamp_min( hoNDArray<T> *x, typename realType<T>::Type min );
 
   /**
    * @brief Clamps all values in the array to a maximum value allowed (in place).
    * @param[in,out] x Input and output array.
    * @param[in] max Maximum value.
    */
-  template<class T> EXPORTCPUCOREMATH void clamp_max( hoNDArray<T> *x, T max );
+  template<class T> EXPORTCPUCOREMATH void clamp_max( hoNDArray<T> *x, typename realType<T>::Type max );
 
   /**
    * @brief In place normalization (scaling) to a new maximum absolute array value val.
@@ -205,17 +205,19 @@ namespace Gadgetron{
   template<class T> EXPORTCPUCOREMATH void normalize( hoNDArray<T> *x, typename realType<T>::Type val = typename realType<T>::Type(1) );
 
   /**
-   * @brief In place shrinkage (soft thresholding), i.e. shrink(x,gamma) = x/abs(x)*max(abs(x)-gamma,0).
-   * @param[in,out] x Input and output array.
+   * @brief Shrinkage (soft thresholding), i.e. shrink(x,gamma) = x/abs(x)*max(abs(x)-gamma,0).
+   * @param[out] out Output array. Can be 0x0 in which case an in place transform is performed.
+   * @param[in,out] x Input array (and output array if out == 0x0).
    * @param[in] gamma Shrinkage control parameter
    */  
-  template<class T> EXPORTCPUCOREMATH void shrink1( hoNDArray<T> *x, typename realType<T>::Type gamma );
+  template<class T> EXPORTCPUCOREMATH void shrink1( hoNDArray<T> *x, typename realType<T>::Type gamma, hoNDArray<T> *out = 0x0 );
 
   /**
-   * @brief In place shrinkage (soft thresholding, multi-dimensional), i.e. shrink(x,gamma,s) = x/s*max(s-gamma,0).
-   * @param[in,out] x Input and output array.
+   * @brief Shrinkage (soft thresholding, multi-dimensional), i.e. shrink(x,gamma,s) = x/s*max(s-gamma,0).
+   * @param[out] out Output array. Can be 0x0 in which case an in place transform is performed.
+   * @param[in,out] x Input array (and output array if out == 0x0).
    * @param[in] s Input array, normalization.
    * @param[in] gamma Shrinkage control parameter
    */  
-  template<class T> EXPORTCPUCOREMATH void shrinkd ( hoNDArray<T> *x, hoNDArray<typename realType<T>::Type> *s, typename realType<T>::Type gamma );
+  template<class T> EXPORTCPUCOREMATH void shrinkd ( hoNDArray<T> *x, hoNDArray<typename realType<T>::Type> *s, typename realType<T>::Type gamma, hoNDArray<T> *out = 0x0 );
 }

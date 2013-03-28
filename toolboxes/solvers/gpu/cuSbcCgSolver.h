@@ -1,7 +1,7 @@
 #pragma once
 
-#include "sbcSolver.h"
 #include "cuCgSolver.h"
+#include "sbcSolver.h"
 
 namespace Gadgetron{
   

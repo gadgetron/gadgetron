@@ -1,5 +1,6 @@
 #pragma once
 
+#include "hoCuNDArray.h"
 #include "hoNDArray_utils.h"
 #include "complext.h"
 

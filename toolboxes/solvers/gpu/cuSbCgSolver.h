@@ -1,9 +1,7 @@
 #pragma once
 
-#include "sbSolver.h"
 #include "cuCgSolver.h"
-#include "cuNDArray.h"
-#include "real_utilities.h"
+#include "sbSolver.h"
 
 #include "complext.h"
 
