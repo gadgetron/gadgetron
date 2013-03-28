@@ -38,28 +38,47 @@ protected:
     {
 
         path_        = this->get_string_value("path");
-        reffunc_     = this->get_string_value("gadget_reference_function");
-        datafunc_    = this->get_string_value("input_function");
-        configfunc_  = this->get_string_value("config_function");
+        classname_   = this->get_string_value("matlab_classname");
 
-        GADGET_DEBUG2("MATLAB Ref Function    : %s\n", reffunc_.get()->c_str());
-        GADGET_DEBUG2("MATLAB Data Function   : %s\n", datafunc_.get()->c_str());
-        GADGET_DEBUG2("MATLAB Config Function : %s\n", configfunc_.get()->c_str());
+        GADGET_DEBUG2("MATLAB Path    : %s\n", path_.get()->c_str());
+        GADGET_DEBUG2("MATLAB Class Name : %s\n", classname_.get()->c_str());
+
+        // Set up buffer for catching Matlab output
+#define BUFSIZE 4096
+        char buffer[BUFSIZE] = "\0";
+        engOutputBuffer(engine_, buffer, BUFSIZE);
 
         // Add +ismrmrd package to Matlab's path
+        // TODO: this should be in user's Matlab path NOT HERE
         engEvalString(engine_, "addpath(strcat(getenv('ISMRMRD_HOME'), '/matlab'));");
+        engEvalString(engine_, "addpath(strcat(getenv('GADGETRON_HOME'), '/matlab'));");
 
-        // Parse ISMRMRD XML header
-        //boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(string(mb->rd_ptr()));
+        // Check that we found ismrmrd package
+        engEvalString(engine_, "which ismrmrd.AcquisitionHeader");
+
+        // add user specified path for this gadget
+        std::string add_user_path("addpath(");
+        add_user_path += *path_.get() + ");";
+        printf("%s\n", add_user_path.c_str());
+        engEvalString(engine_, add_user_path.c_str());
+
+        // Check that we found the class
+        std::string which_classname("which ");
+        which_classname += *classname_.get() + ";";
+        engEvalString(engine_, which_classname.c_str());
+
+        // Instantiate the Matlab gadget object from the user specified class
+        std::string instantiate_gadget("matgadget = ");
+        instantiate_gadget += *classname_.get() + "();";
+        engEvalString(engine_, instantiate_gadget.c_str());
+
+        // Call matlabgadget.config with the XML header
         std::string xmlConfig = std::string(mb->rd_ptr());
         mxArray *xmlhdr = mxCreateString(xmlConfig.c_str());
         engPutVariable(engine_, "xmlhdr", xmlhdr);
+        engEvalString(engine_, "matgadget.config(xmlhdr);");
 
-        char buffer[1025] = "\0";
-        engOutputBuffer(engine_, buffer, 1024);
-        //engEvalString(engine_, "fprintf(xmlhdr)");
-        engEvalString(engine_, "which ismrmrd.AcquisitionHeader");
-        printf("%s", buffer);
+        GADGET_DEBUG2("%s", buffer);
 
 	mxDestroyArray(xmlhdr);
 
@@ -67,9 +86,7 @@ protected:
     }
 
     boost::shared_ptr<std::string> path_;
-    boost::shared_ptr<std::string> reffunc_;
-    boost::shared_ptr<std::string> datafunc_;
-    boost::shared_ptr<std::string> configfunc_;
+    boost::shared_ptr<std::string> classname_;
 
     Engine *engine_;
 

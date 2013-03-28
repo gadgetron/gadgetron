@@ -1,4 +1,4 @@
-classdef Scale
+classdef scale
 
     properties
 
@@ -9,17 +9,14 @@ classdef Scale
     methods
 
         function obj = config(obj, xmlhdr)
-
+            fprintf(xmlhdr);
         end
 
-        function y = process(obj, head, data, traj)
+        function [reshdr, resdata] = process(obj, head, data)
 
-            y = ismrmrd.Acquisition();
-            y.head = head;
-            y.data = 2*data;
-            if (nargin == 3)
-                y.traj = traj;
-            end
+            reshdr = head;
+            reshdr.version = 99;
+            resdata = 2*data;
 
         end
 

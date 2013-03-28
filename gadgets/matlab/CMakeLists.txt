@@ -40,5 +40,5 @@ target_link_libraries(
 
 install(TARGETS gadgetronmatlab DESTINATION lib)
 
-#install(FILES DESTINATION matlab)
+install(FILES scale.m DESTINATION matlab)
 install(FILES matlab.xml DESTINATION config)

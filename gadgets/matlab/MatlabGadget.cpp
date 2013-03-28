@@ -237,20 +237,18 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     engPutVariable(engine_, "acqdata", acqdata);
 
     // Prepare a buffer for collecting Matlab's output
-    char buffer[2049] = "\0";
-    engOutputBuffer(engine_, buffer, 2048);
+    //char buffer[2049] = "\0";
+    //engOutputBuffer(engine_, buffer, 2048);
 
     // instantiate a Matlab ismrmrd.AcquisitionHeader from our struct
-    //engEvalString(engine_, "h = ismrmrd.AcquisitionHeader(acqhdr);");
-    //engEvalString(engine_, "h.version = 999;");
-    //engEvalString(engine_, "acqhdr = struct(h);");
-    //engEvalString(engine_, "acqhdr.idx = struct(h.idx);");
+    engEvalString(engine_, "acqhdr = ismrmrd.AcquisitionHeader(acqhdr);");
+    engEvalString(engine_, "[res_acqhdr, res_data] = matgadget.process(acqhdr, acqdata);");
 
-    engEvalString(engine_, "acqhdr.version = 42;");
+    // Convert object back to struct
+    engEvalString(engine_, "res_acqhdr = struct(res_acqhdr);");
+    engEvalString(engine_, "res_acqhdr.idx = struct(res_acqhdr.idx);");
 
-    engEvalString(engine_, "acqdata = acqdata * 2;");
-
-    mxArray *res_hdr = engGetVariable(engine_, "acqhdr");
+    mxArray *res_hdr = engGetVariable(engine_, "res_acqhdr");
     if (res_hdr == NULL) {
         GADGET_DEBUG1("Failed to get header back from Matlab\n");
         return GADGET_FAIL;
@@ -365,7 +363,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     memcpy(&hdr_new->user_float, mxGetData(tmp), ISMRMRD_USER_FLOATS * mxGetElementSize(tmp));
 
 
-    mxArray *res_data = engGetVariable(engine_, "acqdata");
+    mxArray *res_data = engGetVariable(engine_, "res_data");
     if (res_data == NULL) {
         GADGET_DEBUG1("Failed to get data back from Matlab\n");
         return GADGET_FAIL;
@@ -398,7 +396,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     mxDestroyArray(acqhdr);
     mxDestroyArray(acqdata);
 
-    return this->next()->putq(m1);
+    return this->next()->putq(m3);
 }
 
 
@@ -530,8 +528,8 @@ int ImageMatlabGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
     engPutVariable(engine_, "imgdata", imgdata);
 
     // Prepare a buffer for collecting Matlab's output
-    char buffer[2049] = "\0";
-    engOutputBuffer(engine_, buffer, 2048);
+    //char buffer[2049] = "\0";
+    //engOutputBuffer(engine_, buffer, 2048);
 
     engEvalString(engine_, "d = imgdata");
 
