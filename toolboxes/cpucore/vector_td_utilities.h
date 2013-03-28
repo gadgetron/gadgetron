@@ -399,7 +399,7 @@ REAL norm_squared( const vector_td<REAL,D> vec )
 template<class REAL, unsigned int D> __inline__ __host__ __device__ 
 REAL norm( const vector_td<REAL,D> vec )
 {
-  return std::sqrt(norm_squared<REAL,D>(vec));
+  return ::sqrt(norm_squared<REAL,D>(vec));
 }
 
 //

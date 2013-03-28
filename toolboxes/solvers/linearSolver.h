@@ -23,7 +23,7 @@ public:
   virtual void set_encoding_operator( boost::shared_ptr< linearOperator<ARRAY_TYPE> > op)
   {
     if( !op.get() ){
-      throw std::runtime_error( "Error: linearSolver::set_encoding_operator : NULL operator provided" );
+    	BOOST_THROW_EXCEPTION(runtime_error( "Error: linearSolver::set_encoding_operator : NULL operator provided" ));
 
     } 
     

@@ -38,4 +38,5 @@ install(FILES
 	gpSolver.h
 	gpBBSolver.h
 	solvers_export.h
+	hoGPBBSolver.h
 DESTINATION include)

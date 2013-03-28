@@ -95,7 +95,7 @@ upsample_lin(cuNDArray<REAL> *data, cuNDA_device alloc_device =
  * @param[in] max maximum value
  */
 template<class  T> EXPORTGPUCORE
-void clamp(cuNDArray<T> *in_out, T min, T max);
+void clamp(cuNDArray<T> *in_out, typename realType<T>::type min, typename realType<T>::type max);
 
 
 /**
@@ -104,7 +104,7 @@ void clamp(cuNDArray<T> *in_out, T min, T max);
  * @param[in] min minimum value
  */
 template<class  T> EXPORTGPUCORE
-void clamp_min(cuNDArray<T> *in_out, T min);
+void clamp_min(cuNDArray<T> *in_out, typename realType<T>::type min);
 
 /**
  * @brief Clamps all values in the array to the maximum value specified.
@@ -112,7 +112,7 @@ void clamp_min(cuNDArray<T> *in_out, T min);
  * @param[in] max minimum value
  */
 template<class  T> EXPORTGPUCORE
-void clamp_max(cuNDArray<T> *in_out, T max);
+void clamp_max(cuNDArray<T> *in_out, typename realType<T>::type max);
 
 // Normalize by RSS (float/double/complext arrays)
 template<class T> EXPORTGPUCORE

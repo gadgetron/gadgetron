@@ -317,9 +317,24 @@ private:
 	const T min,max;
 };
 
+
+template<typename T>
+class minmax_clamp_functor<complext<T> > : public thrust::unary_function<complext<T>, complext<T> >
+{
+public:
+	minmax_clamp_functor(T _min,T _max):min(_min),max(_max) {};
+	 __inline__ __host__ __device__ complext<T>  operator()(const complext<T>  &y) const {
+		 if (real(y) < min) return  complext<T>(min);
+		 else if (real(y) > max) return  complext<T>(max);
+		 else return  complext<T>(real(y));
+	 }
+private:
+	const T min,max;
+};
+
 // CLAMP functions
 template<class  T> EXPORTGPUCORE
-void Gadgetron::clamp(cuNDArray<T> *in_out, T min, T max){
+void Gadgetron::clamp(cuNDArray<T> *in_out, typename realType<T>::type min, typename realType<T>::type max){
 	thrust::transform(in_out->begin(),in_out->end(),in_out->begin(),minmax_clamp_functor<T>(min,max));
 }
 
@@ -327,6 +342,7 @@ template<typename T>
 class max_clamp_functor : public thrust::unary_function<T,T>
 {
 public:
+
 	max_clamp_functor(T _max):max(_max) {};
 	 __inline__ __host__ __device__ T operator()(const T &y) const {
 		 if (y > max) return max;
@@ -336,9 +352,21 @@ private:
 	const T max;
 };
 
+template<typename T>
+class max_clamp_functor<complext<T> > : public thrust::unary_function<complext<T>, complext<T> >
+{
+public:
+		max_clamp_functor(T _max):max(_max) {};
+	 __inline__ __host__ __device__ complext<T>  operator()(const complext<T>  &y) const {
+		 if (real(y) > max) return  complext<T>(max);
+		 else return  complext<T>(real(y));
+	 }
+private:
+	const T max;
+};
 // CLAMP functions
 template<class  T> EXPORTGPUCORE
-void Gadgetron::clamp_max(cuNDArray<T> *in_out, T max){
+void Gadgetron::clamp_max(cuNDArray<T> *in_out, typename realType<T>::type max){
 	thrust::transform(in_out->begin(),in_out->end(),in_out->begin(),max_clamp_functor<T>(max));
 }
 
@@ -346,6 +374,7 @@ template<typename T>
 class min_clamp_functor : public thrust::unary_function<T,T>
 {
 public:
+
 	min_clamp_functor(T _min):min(_min) {};
 	 __inline__ __host__ __device__ T operator()(const T &y) const {
 		 if (y < min) return min;
@@ -355,9 +384,21 @@ private:
 	const T min;
 };
 
+template<typename T>
+class min_clamp_functor<complext<T> > : public thrust::unary_function<complext<T>, complext<T> >
+{
+public:
+	min_clamp_functor(T _min):min(_min) {};
+	 __inline__ __host__ __device__ complext<T>  operator()(const complext<T>  &y) const {
+		 if (real(y) < min) return  complext<T>(min);
+		 else return  complext<T>(real(y));
+	 }
+private:
+	const T min;
+};
 // CLAMP functions
 template<class  T> EXPORTGPUCORE
-void Gadgetron::clamp_min(cuNDArray<T> *in_out, T min){
+void Gadgetron::clamp_min(cuNDArray<T> *in_out, typename realType<T>::type min){
 	thrust::transform(in_out->begin(),in_out->end(),in_out->begin(),min_clamp_functor<T>(min));
 }
 
@@ -2324,6 +2365,9 @@ template void Gadgetron::clamp_min<float>(cuNDArray<float>*,float);
 
 template void Gadgetron::clamp_max<double>(cuNDArray<double>*,double);
 template void Gadgetron::clamp_max<float>(cuNDArray<float>*,float);
+
+template void Gadgetron::clamp_min<double_complext>(cuNDArray<double_complext>*,double);
+template void Gadgetron::clamp_min<float_complext>(cuNDArray<float_complext>*,float);
 
 
 
