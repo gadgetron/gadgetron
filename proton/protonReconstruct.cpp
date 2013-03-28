@@ -5,7 +5,7 @@
  *      Author: u051747
  */
 #include <iostream>
-#include "parameterparser.h"
+#include <boost/program_options.hpp>
 #include "cuNDArray.h"
 #include "cuCgSolver.h"
 #include "cuImageOperator.h"
@@ -27,6 +27,7 @@
 #include "encodingOperatorContainer.h"
 #include "cuSARTSolver.h"
 #include "cuMLSolver.h"
+
 
 
 #include "ndarray_vector_td_utilities.h"
@@ -52,8 +53,17 @@ boost::shared_ptr< cuNDArray<_real> >  recursiveSolver(cuNDArray<_real> * rhs,cu
 }
 */
 
+/*
+template<class T> void notify(T val){
+	std::cout << val <<std::endl;
+}
+*/
 
+template<class T> void notify(std::string val){
+	std::cout << val << std::endl;
+}
 
+namespace po = boost::program_options;
 int main( int argc, char** argv)
 {
 
@@ -61,6 +71,7 @@ int main( int argc, char** argv)
   // Parse command line
   //
   _real background =  0.00106;
+  /*
   ParameterParser parms;
   parms.add_parameter( 'p', COMMAND_LINE_STRING, 1, "Input projection file name (.real)", true,"projections.real" );
   parms.add_parameter( 'w', COMMAND_LINE_STRING, 1, "Input uncertainties file name (.real)", false);
@@ -95,19 +106,50 @@ int main( int argc, char** argv)
     parms.print_usage();
     return 1;
   }
+*/
 
-  int multiScale_depth =parms.get_parameter('d')->get_int_value();
-  cout << "Recursion depth: " << multiScale_depth << endl;
+  std::string projectionsName;
+  std::string splinesName;
+  std::string outputFile;
+  vector_td<int,3> dimensions;
+  vector_td<float,3> physical_dims;
+  vector_td<float,3> origin;
+  int iterations;
+  po::options_description desc("Allowed options");
+  desc.add_options()
+      ("help", "produce help message")
+      ("projections,p", po::value<std::string>(&projectionsName)->default_value("projections.real"), "File containing the projection data")
+      ("splines,s", po::value<std::string>(&splinesName)->default_value("splines.real"), "File containing the spline trajectories")
+      ("dimensions,d", po::value<vector_td<int,3> >(&dimensions)->default_value(vector_td<int,3>(512,512,1)), "Pixel dimensions of the image")
+      ("size,S", po::value<vector_td<float,3> >(&physical_dims)->default_value(vector_td<float,3>(20,20,5)), "Dimensions of the image")
+      ("center,c", po::value<vector_td<float,3> >(&origin)->default_value(vector_td<float,3>(0,0,0)), "Center of the reconstruction")
+      ("iterations,i", po::value<int>(&iterations)->default_value(10), "Dimensions of the image")
+      ("output,f", po::value<std::string>(&outputFile)->default_value("image.hdf5"), "Output filename")
 
-  if (multiScale_depth > 1){
-	  cout << "Recursion depth > 1 not supported yet" << endl;
-	  return 0;
+  ;
+
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
+
+  std::cout << "Command line options:" << std::endl;
+  for (po::variables_map::iterator it = vm.begin(); it != vm.end(); ++it){
+  	boost::any a = it->second.value();
+  	std::cout << it->first << " ";
+  	if (a.type() == typeid(std::string)) std::cout << it->second.as<std::string>();
+  	if (a.type() == typeid(int)) std::cout << it->second.as<int>();
+  	if (a.type() == typeid(vector_td<float,3>)) std::cout << it->second.as<vector_td<float,3> >();
+  	if (a.type() == typeid(vector_td<int,3>)) std::cout << it->second.as<vector_td<int,3> >();
+  	std::cout << std::endl;
+
   }
-  boost::shared_ptr<hoNDArray<vector_td<_real,3> > > host_splines = read_nd_array< vector_td<_real,3> >((char*)parms.get_parameter('s')->get_string_value());
+  std::cout <<  std::endl;
+	boost::shared_ptr<hoNDArray<vector_td<_real,3> > > host_splines = read_nd_array< vector_td<_real,3> >(splinesName.c_str());
   boost::shared_ptr<cuNDArray<vector_td<_real,3> > > splines (new cuNDArray< vector_td<_real,3> >(host_splines.get()));
   cout << "Number of spline elements: " << splines->get_number_of_elements() << endl;
 
-  boost::shared_ptr< hoNDArray<_real> > host_projections = read_nd_array<_real >((char*)parms.get_parameter('p')->get_string_value());
+  boost::shared_ptr< hoNDArray<_real> > host_projections = read_nd_array<_real >(projectionsName.c_str());
   boost::shared_ptr<cuNDArray<_real > > projections (new cuNDArray<_real >(host_projections.get()));
   boost::shared_ptr<cuNDArray<_real > > projections_old = projections;
 
@@ -118,44 +160,27 @@ int main( int argc, char** argv)
 	  cout << "Critical error: Splines and projections do not match dimensions" << endl;
 	  return 0;
   }
-  vector_td<_real,3> physical_dims;
+
   vector<unsigned int> ndims;
   ndims.push_back(3);
 
 
-  physical_dims.vec[0]= (_real) parms.get_parameter('x')->get_float_value();
-  physical_dims.vec[1]= (_real) parms.get_parameter('y')->get_float_value();
-  physical_dims.vec[2]= (_real) parms.get_parameter('z')->get_float_value();
 
-
-  vector_td<_real,3> origin;
-
-
-  origin[0]= (_real) parms.get_parameter('O')->get_float_value(0);
-  origin[1]= (_real) parms.get_parameter('O')->get_float_value(1);
-  origin[2]= (_real) parms.get_parameter('O')->get_float_value(2);
-
-  //boost::shared_ptr< hoNDArray<_real> > host_guess = read_nd_array<_real >("guess.real");
-  //boost::shared_ptr<cuNDArray<_real > > guess (new cuNDArray<_real >(host_guess.get()));
-  //cuLwSolver<_real, _real> cg;
-  //cuCgSolver<_real, _real> cg;
   cuGPBBSolver<_real> cg;
-  //cuAsdPocsSolver<_real> cg;
-  //cuNonLinearCGSolver<_real> cg;
-  //cuLSQRSolver<_real> cg;
-  //cuLSMRSolver<_real> cg;
-  cg.set_max_iterations( parms.get_parameter('i')->get_int_value() );
-  //cg.set_tc_tolerance( (_real) parms.get_parameter('e')->get_float_value());
-  //cg.set_alpha(1e-7);
+
+  cg.set_max_iterations( iterations);
+
   cg.set_output_mode( cuCgSolver<_real>::OUTPUT_VERBOSE );
    cg.set_non_negativity_constraint(true);
   boost::shared_ptr< cuOperatorPathBackprojection<_real> > E (new cuOperatorPathBackprojection<_real> );
 
 
   vector<unsigned int> rhs_dims;
-	rhs_dims.push_back(parms.get_parameter('m')->get_int_value(0));
-	rhs_dims.push_back(parms.get_parameter('m')->get_int_value(1));
-	rhs_dims.push_back(parms.get_parameter('m')->get_int_value(2));
+
+
+	rhs_dims.push_back(dimensions[0]);
+	rhs_dims.push_back(dimensions[1]);
+	rhs_dims.push_back(dimensions[2]);
   cout << "RHS dims " << rhs_dims[0] << " " << rhs_dims[1] << " " << rhs_dims[2] << endl;
 
 
@@ -169,24 +194,8 @@ int main( int argc, char** argv)
    */
   boost::shared_ptr<cuNDArray<_real > > weights;
   boost::shared_ptr<cuNDArray<_real > > uncertainties;
-  if (parms.get_parameter('w')->get_is_set()){
-	  boost::shared_ptr< hoNDArray<_real> > host_uncertainties = read_nd_array<_real >((char*)parms.get_parameter('w')->get_string_value());
-	  uncertainties = boost::shared_ptr<cuNDArray<_real > > (new cuNDArray<_real >(host_uncertainties.get()));
-	  _real* uncertainties_ptr = host_uncertainties->get_data_ptr();
-	  for (int i =0; i < host_uncertainties->get_number_of_elements(); i++){
-		  uncertainties_ptr[i] = 1/uncertainties_ptr[i];
-	  }
+  E->setup(splines,physical_dims,projections,origin,background);
 
-	  weights = boost::shared_ptr<cuNDArray<_real > > (new cuNDArray<_real >(host_uncertainties.get()));
-	  //E->setup(splines,physical_dims,projections,weights,background);
-	  //cuNDA_scale(weights.get(),projections.get());
-	  
-    	E->setup(splines,physical_dims,projections,background);
-
-  } else{
-
-    	E->setup(splines,physical_dims,projections,background);
-   }
 
 
 
@@ -197,6 +206,7 @@ int main( int argc, char** argv)
   enc->add_operator(E);
 
   boost::shared_ptr<cuNDArray<_real > > prior;
+  /*
   if (parms.get_parameter('t')->get_is_set()){
  	  std::cout << "Prior image regularization in use" << std::endl;
    	  boost::shared_ptr< hoNDArray<_real> > host_prior = read_nd_array<_real >((char*)parms.get_parameter('t')->get_string_value());
@@ -252,24 +262,16 @@ int main( int argc, char** argv)
 		  
   }
 
+*/
 
 
-  cuSARTSolver<_real> sart;
-  sart.set_encoding_operator(E);
-  sart.set_max_iterations(parms.get_parameter('i')->get_int_value());
-  sart.set_non_negativity_constraint(true);
-
-  cuMLSolver<_real> ml;
-  ml.set_encoding_operator(E);
-  ml.set_max_iterations(parms.get_parameter('i')->get_int_value());
 
   boost::shared_ptr< cuNDArray<_real> > cgresult;
 
   
-  /*_real foo = cuNDA_nrm2<_real>(projections.get());
-  cuNDA_scal(1/foo,projections.get());*/
 
   cg.set_encoding_operator(enc);
+  /*
      if (parms.get_parameter('t')->get_is_set()){
     	 prior->reshape(&rhs_dims);
 	 cgresult=prior;
@@ -279,6 +281,7 @@ int main( int argc, char** argv)
        cgresult->create(&rhs_dims);
        cgresult->clear();
      }
+     */
      //cgresult = sb.solve(projections.get());
 
      //cgresult=sart.solve(projections.get());
@@ -330,7 +333,7 @@ int main( int argc, char** argv)
    		ss << argv[i] << " ";
    	}
 
-   	saveNDArray2HDF5<3>(host_result.get(),parms.get_parameter('f')->get_string_value(),physical_dims,origin,ss.str(), cg.get_max_iterations());
+   	saveNDArray2HDF5<3>(host_result.get(),outputFile,physical_dims,origin,ss.str(), cg.get_max_iterations());
 
 }
 

@@ -10,12 +10,12 @@ include_directories(
 )
 
 cuda_add_library( proton_kernels SHARED
-  cuOperatorPathBackprojection.cu hoCuOperatorPathBackprojection.cu proton_kernels.cu
+  cuOperatorPathBackprojection.cu hoCuOperatorPathBackprojection.cu proton_kernels.cu histogram.cu
 )
 
 target_link_libraries(proton_kernels gpucore hostutils solvers ${CUDA_LIBRARIES})
 
-add_executable(protonReconstruct protonReconstruct.cpp)
+add_executable(protonReconstruct protonReconstruct.cpp )
 
 add_executable(hostProtonReconstruct hostProtonReconstruct.cpp)
 
@@ -23,7 +23,7 @@ add_executable(hostProtonReconstruct hostProtonReconstruct.cpp)
 
 #add_executable(LSQRTest LSQRTest.cpp)
 
-target_link_libraries(protonReconstruct proton_kernels gpucore hostutils operators solvers ${HDF5_LIBRARIES} ${CUDA_LIBRARIES})
+target_link_libraries(protonReconstruct proton_kernels gpucore hostutils operators solvers ${HDF5_LIBRARIES} ${CUDA_LIBRARIES} ${Boost_LIBRARIES})
 target_link_libraries(hostProtonReconstruct proton_kernels cpucore gpucore hostutils operators solvers ${HDF5_LIBRARIES} ${CUDA_LIBRARIES})
 #target_link_libraries(LSQRTest proton_kernels gpucore hostutils solvers operators ${CUDA_LIBRARIES})
 
