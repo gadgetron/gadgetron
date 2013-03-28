@@ -1,9 +1,15 @@
+/** \file cuPartialDerivativeOperator.h
+    \brief Implementation of the partial derivative operator for the gpu.
+*/
+
 #include "cuPartialDerivativeOperator.h"
+#include "cuNDArray_operators.h"
+#include "cuNDArray_elemwise.h"
 #include "vector_td_utilities.h"
 #include "check_CUDA.h"
-#include "ndarray_vector_td_utilities.h"
 
 namespace Gadgetron{
+
   template<class T, unsigned int D> __global__ void
   first_order_partial_derivative_kernel( typename intd<D>::Type stride, 
 					 typename intd<D>::Type dims, 
@@ -73,9 +79,7 @@ namespace Gadgetron{
       dims.vec[i] = (int)_dims.vec[i];
     }  
     
-    _set_device();
-  
-    if (!accumulate) out->clear();
+    if (!accumulate) clear(out);
   
     dim3 dimBlock( dims.vec[0] );
     dim3 dimGrid( 1, dims.vec[D-1] );
@@ -87,8 +91,6 @@ namespace Gadgetron{
     first_order_partial_derivative_kernel<T,D><<< dimGrid, dimBlock >>> ( stride, dims, in->get_data_ptr(), out->get_data_ptr() );
   
     CHECK_FOR_CUDA_ERROR();
-
-    _restore_device();
   }
 
   template<class T, unsigned int D> void
@@ -113,9 +115,7 @@ namespace Gadgetron{
       dims.vec[i] = (int)_dims.vec[i];
     }  
   
-    _set_device();
-
-    if (!accumulate) out->clear();
+    if (!accumulate) clear(out);
 
     dim3 dimBlock( dims.vec[0] );
     dim3 dimGrid( 1, dims.vec[D-1] );
@@ -127,31 +127,29 @@ namespace Gadgetron{
     second_order_partial_derivative_kernel<T,D><<< dimGrid, dimBlock >>> ( forwards_stride, adjoint_stride, dims, in->get_data_ptr(), out->get_data_ptr() );
   
     CHECK_FOR_CUDA_ERROR();
-
-    _restore_device();
   }
 
   //
   // Instantiations
   //
 
-  template class EXPORTSOLVERS cuPartialDerivativeOperator<float, 1>;
-  template class EXPORTSOLVERS cuPartialDerivativeOperator<float, 2>;
-  template class EXPORTSOLVERS cuPartialDerivativeOperator<float, 3>;
-  template class EXPORTSOLVERS cuPartialDerivativeOperator<float, 4>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<float, 1>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<float, 2>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<float, 3>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<float, 4>;
 
-  template class EXPORTSOLVERS cuPartialDerivativeOperator<float_complext, 1>;
-  template class EXPORTSOLVERS cuPartialDerivativeOperator<float_complext, 2>;
-  template class EXPORTSOLVERS cuPartialDerivativeOperator<float_complext, 3>;
-  template class EXPORTSOLVERS cuPartialDerivativeOperator<float_complext, 4>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<float_complext, 1>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<float_complext, 2>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<float_complext, 3>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<float_complext, 4>;
 
-  template class EXPORTSOLVERS cuPartialDerivativeOperator<double, 1>;
-  template class EXPORTSOLVERS cuPartialDerivativeOperator<double, 2>;
-  template class EXPORTSOLVERS cuPartialDerivativeOperator<double, 3>;
-  template class EXPORTSOLVERS cuPartialDerivativeOperator<double, 4>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double, 1>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double, 2>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double, 3>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double, 4>;
 
-  template class EXPORTSOLVERS cuPartialDerivativeOperator<double_complext, 1>;
-  template class EXPORTSOLVERS cuPartialDerivativeOperator<double_complext, 2>;
-  template class EXPORTSOLVERS cuPartialDerivativeOperator<double_complext, 3>;
-  template class EXPORTSOLVERS cuPartialDerivativeOperator<double_complext, 4>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double_complext, 1>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double_complext, 2>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double_complext, 3>;
+  template class EXPORTGPUOPERATORS cuPartialDerivativeOperator<double_complext, 4>;
 }

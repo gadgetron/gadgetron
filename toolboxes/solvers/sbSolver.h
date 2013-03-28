@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include "linearSolver.h"
+#include "linearOperatorSolver.h"
 #include "vector_td_utilities.h"
 #include "encodingOperatorContainer.h"
 
@@ -38,17 +38,17 @@ template<
 	  class ARRAY_TYPE_ELEMENT, 
 	  class INNER_SOLVER>
 
-class sbSolver : public linearSolver<ARRAY_TYPE_ELEMENT>
+class sbSolver : public linearOperatorSolver<ARRAY_TYPE_ELEMENT>
 {
 	 typedef typename ARRAY_TYPE_ELEMENT::element_type ELEMENT_TYPE;
-	 typedef typename realType<ELEMENT_TYPE>::type REAL;
+	 typedef typename realType<ELEMENT_TYPE>::Type REAL;
 	 typedef encodingOperatorContainer<ARRAY_TYPE_ELEMENT> OPERATOR_CONTAINER;
 public:
 
   // Constructor
   //
 
-  sbSolver() : linearSolver<ARRAY_TYPE_ELEMENT>()
+  sbSolver() : linearOperatorSolver<ARRAY_TYPE_ELEMENT>()
   { 
     tolerance_ = REAL(0);
     outer_iterations_ = 10;
@@ -57,13 +57,11 @@ public:
     inner_solver_ = boost::shared_ptr<INNER_SOLVER>( new INNER_SOLVER() );
   }
   
-
   // Destructor
   //
 
   virtual ~sbSolver() {}
    
-
   // Add regularization operator (isotropic, multiple operators per group allowed)
   //
 
@@ -203,7 +201,7 @@ public:
     //
     if( this->get_x0().get() )
       *u_k = *(this->get_x0());
-    u_k->clear();
+    clear(u_k.get());
 
     //    get_inner_solver()->set_x0( u_k );
 
@@ -405,11 +403,10 @@ protected:
     for( unsigned int i=0; i<l; i++ ){
 
       d_k[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(image_dims));
-      d_k[i]->clear();
+      clear(d_k[i].get());
 
       b_k[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(image_dims));
-      b_k[i]->clear();
-
+      clear(b_k[i].get());
     }
     
     // Compute regularization operator :: mult_M on the prior image and store p_M
@@ -757,7 +754,7 @@ protected:
 	    
 	    // Update of d_k
 
-	    shrink1( REAL(1)/op->get_weight(), &tmp_sum, d_k[operator_idx].get() );
+	    //shrink1( REAL(1)/op->get_weight(), &tmp_sum, d_k[operator_idx].get() );
 	    
 	    // Update of b_k (only in the last inner iteration)
 	    if( inner_iteration == inner_iterations-1 ){
@@ -782,12 +779,11 @@ protected:
 
 	  if( !sums || !reg_out || !s_k ){
 	    throw std::runtime_error( "Error: sbSolver::core : host memory allocation for temporary arrays failed" );
-
 	  }
 
 	  for( unsigned int p=0; p<((get_prior_image().get()) ? 2 : 1); p++ ){
 	    s_k[p].create(image_dims.get());
-	    s_k[p].clear();
+	    clear(&s_k[p]);
 	  }
 	  
 	  for( unsigned int p=0; p<((get_prior_image().get()) ? 2 : 1); p++ ){
@@ -813,7 +809,7 @@ protected:
 	      boost::shared_ptr<ARRAY_TYPE_REAL> tmp_s_k = abs( &sums[idx] );
 	      s_k[p] += *tmp_s_k;
 	    }
-	    s_k[p].sqrt();
+	    sqrt_inplace(&s_k[p]);
 	  }
 
 	  for( unsigned int p=0; p<((get_prior_image().get()) ? 2 : 1); p++ ){
@@ -826,7 +822,7 @@ protected:
 		this->regularization_group_prior_operators_.at(group_idx+j);
 	      
 	      // Update of d_k
-	      shrinkd( REAL(1)/op->get_weight(), &s_k[p], &sums[idx], d_k[operator_idx+idx].get() );
+	      //shrinkd( REAL(1)/op->get_weight(), &s_k[p], &sums[idx], d_k[operator_idx+idx].get() );
 	      
 	      // Update of b_k (only in the last inner iteration)
 	      if( inner_iteration == inner_iterations-1 ){

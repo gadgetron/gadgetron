@@ -1,6 +1,5 @@
 #include "cuNonCartesianSenseOperator.h"
 #include "vector_td_utilities.h"
-#include "ndarray_vector_td_utilities.h"
 
 using namespace Gadgetron;
 static unsigned int prodv( std::vector<unsigned int> &vec )
@@ -28,7 +27,7 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray<_complext>* in, c
 
   std::vector<unsigned int> full_dimensions = *this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
-  cuNDArray<_complext> tmp(&full_dimensions, this->device_);
+  cuNDArray<_complext> tmp(&full_dimensions);
 
   mult_csm( in, &tmp );
 
@@ -57,17 +56,13 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray<_complext>* in, 
   std::vector<unsigned int> tmp_dimensions = *this->get_domain_dimensions();
   tmp_dimensions.push_back(this->ncoils_);
 
-  cuNDArray<_complext> tmp(&tmp_dimensions, this->device_);
+  cuNDArray<_complext> tmp(&tmp_dimensions);
   
   // Do the NFFT
   plan_->compute( in, &tmp, dcw_.get(), NFFT_plan<REAL,D,ATOMICS>::NFFT_BACKWARDS_NC2C );
 
   if( !accumulate ){
-    this->_set_device();
-    out->clear();
-
-    this->_restore_device();
-    
+    clear(out);    
   }
   
   mult_csm_conj_sum( &tmp, out );
@@ -120,14 +115,7 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::preprocess( cuNDArray<_reald> *traj
 template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw ) 
 {
-  if( dcw->get_device() != this->device_ ){
-    this->_set_device();
-    dcw_ = boost::shared_ptr< cuNDArray<REAL> >(new cuNDArray<REAL>(*dcw.get()));
-    this->_restore_device();
-  }
-  else    
-    dcw_ = dcw;
-  
+  dcw_ = dcw;  
 }
 
 //

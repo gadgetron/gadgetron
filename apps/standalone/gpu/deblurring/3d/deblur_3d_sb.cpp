@@ -5,7 +5,6 @@
 // Gadgetron includes
 #include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
-#include "ndarray_vector_td_utilities.h"
 #include "cuSbcCgSolver.h"
 #include "cuCgSolver.h"
 #include "cuPartialDerivativeOperator.h"
@@ -17,6 +16,7 @@
 
 using namespace std;
 using namespace Gadgetron;
+
 // Define desired precision
 typedef float _real; 
 typedef complext<_real> _complext;

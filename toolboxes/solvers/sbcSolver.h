@@ -9,15 +9,16 @@
 #include "sbSolver.h"
 
 namespace Gadgetron{
+
 template<
-	  class ARRAY_TYPE_REAL, 
-	  class ARRAY_TYPE_ELEMENT, 
-	  class INNER_SOLVER>
-class sbcSolver 
-  : public sbSolver<ARRAY_TYPE_REAL, ARRAY_TYPE_ELEMENT, INNER_SOLVER>
+  class ARRAY_TYPE_REAL, 
+  class ARRAY_TYPE_ELEMENT, 
+  class INNER_SOLVER>
+class sbcSolver : public sbSolver<ARRAY_TYPE_REAL, ARRAY_TYPE_ELEMENT, INNER_SOLVER>
 {
-  	typedef typename ARRAY_TYPE_ELEMENT::element_type ELEMENT_TYPE;
-		 typedef typename realType<ELEMENT_TYPE>::type REAL;
+  typedef typename ARRAY_TYPE_ELEMENT::element_type ELEMENT_TYPE;
+  typedef typename realType<ELEMENT_TYPE>::Type REAL;
+
 public:
   
   sbcSolver() : sbSolver<ARRAY_TYPE_REAL, ARRAY_TYPE_ELEMENT, INNER_SOLVER>() {}
@@ -41,7 +42,7 @@ public:
     if( this->get_x0().get() )
       *u_k = *(this->get_x0());
     else
-    	u_k->clear();
+      clear(u_k.get());
 
     //this->get_inner_solver()->set_x0( u_k );
 

@@ -1,8 +1,8 @@
 include_directories(
   ${Boost_INCLUDE_DIR}
-  ${CMAKE_SOURCE_DIR}/toolboxes/solvers
+  ${CMAKE_SOURCE_DIR}/toolboxes/core
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
-  ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
   )
 
 install(FILES 	
@@ -18,5 +18,10 @@ install(FILES
   gpBBSolver.h
   DESTINATION include)
 
-add_subdirectory(cpu)
-#add_subdirectory(gpu)
+IF(ARMADILLO_FOUND)
+  add_subdirectory(cpu)
+ENDIF(ARMADILLO_FOUND)
+
+IF( CUDA_FOUND)
+  add_subdirectory(gpu)
+ENDIF (CUDA_FOUND)

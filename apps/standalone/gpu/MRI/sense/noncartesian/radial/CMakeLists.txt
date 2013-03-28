@@ -1,5 +1,9 @@
+include_directories(
+  ${CMAKE_SOURCE_DIR}/toolboxes/pmri/gpu
+  )
+
 add_subdirectory(2d_golden_ratio)
 add_subdirectory(2d_golden_ratio_kt)
 if (QT4_FOUND)
-# add_subdirectory(2d_golden_ratio_gui)
+  add_subdirectory(2d_golden_ratio_gui)
 endif(QT4_FOUND)

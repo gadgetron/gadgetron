@@ -1,10 +1,11 @@
 /** \file hoPartialDerivativeOperator.h
-    \brief CPU implementation of the partial derivative operator on the cpu.
+    \brief Implementation of the partial derivative operator for the cpu.
 */
 
 #pragma once
 
 #include "partialDerivativeOperator.h"
+#include "hoNDArray_operators.h"
 #include "hoNDArray_elemwise.h"
 #include "vector_td_utilities.h"
 
@@ -25,10 +26,6 @@ namespace Gadgetron{
       partialDerivativeOperator<D, hoNDArray<T> >( dimension ) {}
     
     virtual ~hoPartialDerivativeOperator() {}
-    
-    virtual boost::shared_ptr< linearOperator< hoNDArray<T> > > clone() {
-      return linearOperator<hoNDArray<T> >::clone(this);
-    }
     
     virtual void compute_partial_derivative( typename intd<D>::Type stride, hoNDArray<T> *in,
 					     hoNDArray<T> *out, bool accumulate )
@@ -104,5 +101,9 @@ namespace Gadgetron{
 	  out->get_data_ptr()[idx] = val;
       }
     }
+
+    virtual boost::shared_ptr< linearOperator< hoNDArray<T> > > clone() {
+      return linearOperator< hoNDArray<T> >::clone(this);
+    }    
   };
 }

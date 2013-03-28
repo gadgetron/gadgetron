@@ -1,14 +1,15 @@
 // Gadgetron includes
-#include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
-#include "ndarray_vector_td_utilities.h"
+#include "cuNDArray_elemwise.h"
+#include "cuNDArray_utils.h"
+#include "NFFT_utils.h"
 #include "radial_utilities.h"
 #include "cuNonCartesianKtSenseOperator.h"
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
-#include "cuCgPrecondWeights.h"
+#include "cuCgPreconditioner.h"
 #include "cuCgSolver.h"
-#include "cuNDFFT.h"
+#include "cuFFT.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "parameterparser.h"
@@ -173,8 +174,8 @@ int main(int argc, char** argv)
   R->set_weight( kappa );
 
   // Define preconditioning operator
-  boost::shared_ptr< cuCgPrecondWeights<_complext> > D( new cuCgPrecondWeights<_complext>() );
-  boost::shared_ptr< cuNDArray<_real> > ___precon_weights = squaredNorm( csm.get(), 2 );
+  boost::shared_ptr< cuCgPreconditioner<_complext> > D( new cuCgPreconditioner<_complext>() );
+  boost::shared_ptr< cuNDArray<_real> > ___precon_weights = abs_square( csm.get() );
   boost::shared_ptr< cuNDArray<_real> > __precon_weights = expand<_real>( ___precon_weights.get(), frames_per_reconstruction );
   ___precon_weights.reset();
 
@@ -228,7 +229,7 @@ int main(int argc, char** argv)
     E->get_plan()->convolve( data.get(), image_os, dcw.get(), NFFT_plan<_real,2>::NFFT_CONV_NC2C );
 
     // Apply shutter
-    zero_fill_border<_real,_complext,2>( shutter_radius, image_os );
+    zero_fill_border<_complext,2>( shutter_radius, image_os );
     E->get_plan()->fft( image_os, NFFT_plan<_real,2>::NFFT_BACKWARDS );
     E->get_plan()->deapodize( image_os );
 
@@ -243,7 +244,7 @@ int main(int argc, char** argv)
     cuNDArray<_complext> *reg_image = new cuNDArray<_complext>(&image_dims);
 
     E->mult_csm_conj_sum( image, reg_image );
-    cuNDFFT<_complext>().ifft( reg_image, 2, true );
+    cuFFT<_complext>().ifft( reg_image, 2, true );
     R->compute( reg_image );
 
     delete reg_image; reg_image = 0x0;
@@ -252,8 +253,8 @@ int main(int argc, char** argv)
     // Define preconditioning weights
     cuNDArray<_real> _precon_weights(*__precon_weights.get());
     axpy( kappa, R->get(), &_precon_weights );
-    _precon_weights.sqrt();
-    _precon_weights.reciprocal();
+    sqrt_inplace(&_precon_weights);
+    reciprocal_inplace(&_precon_weights);
 
     boost::shared_ptr< cuNDArray<_complext> > precon_weights = 
       real_to_complext<_real>( &_precon_weights );
@@ -278,7 +279,7 @@ int main(int argc, char** argv)
     }
 
     // Goto from x-f to x-t space
-    cuNDFFT<_complext>().fft( cgresult.get(), 2 );
+    cuFFT<_complext>().fft( cgresult.get(), 2 );
     
     // Copy cgresult to result (pointed to by rhs)
     rhs = *(cgresult.get());  

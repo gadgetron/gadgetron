@@ -2,17 +2,19 @@
   Example code to blur an image and generate input data for the deblurring apps.
 */
 
-#include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
+#include "cuNDArray_operators.h"
+#include "cuNDArray_elemwise.h"
+#include "cuNDArray_blas.h"
 #include "parameterparser.h"
-
-#include "ndarray_vector_td_utilities.h"
 #include "cuConvolutionOperator.h"
+
 #include <iostream>
 #include <math.h>
-#include "cuGTBLAS.h"
+
 using namespace std;
 using namespace Gadgetron;
+
 // Define desired precision
 typedef float _real; 
 typedef complext<_real> _complext;

@@ -5,7 +5,6 @@
 */
 
 #include "NFFT.h"
-#include "ndarray_vector_td_utilities.h"
 #include "radial_utilities.h"
 #include "hoNDArray_fileio.h"
 #include "cuNDArray.h"
@@ -13,12 +12,15 @@
 #include "parameterparser.h"
 #include "cuNFFTOperator.h"
 #include "cuSbcCgSolver.h"
+#include "vector_td_utilities.h"
 #include "cuPartialDerivativeOperator.h"
+
 
 #include <iostream>
 
 using namespace std;
 using namespace Gadgetron;
+
 // Define desired precision
 typedef float _real; 
 typedef complext<_real> _complext;

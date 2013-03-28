@@ -25,17 +25,19 @@
 */
 
 #include "NFFT.h"
-#include "ndarray_vector_td_utilities.h"
 #include "radial_utilities.h"
+#include "vector_td_utilities.h"
 #include "hoNDArray_fileio.h"
-#include "cuNDArray.h"
+#include "cuNDArray_elemwise.h"
 #include "GPUTimer.h"
 #include "parameterparser.h"
+#include "complext.h"
 
 #include <iostream>
 
 using namespace std;
 using namespace Gadgetron;
+
 // Define desired precision
 typedef float _real; 
 typedef complext<_real> _complext;
@@ -115,7 +117,7 @@ int main( int argc, char** argv)
   // Setup resulting image array
   vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size); image_dims.push_back((num_frames/frames_per_reconstruction)*frames_per_reconstruction);
   cuNDArray<_complext> image(&image_dims);
-  image.clear();
+  clear(&image);
   
   // Initialize plan
   timer = new GPUTimer("Initializing plan");

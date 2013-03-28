@@ -7,7 +7,6 @@
 // Gadgetron includes
 #include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
-#include "ndarray_vector_td_utilities.h"
 #include "cuSbCgSolver.h"
 #include "cuCgSolver.h"
 #include "identityOperator.h"

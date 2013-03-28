@@ -5,38 +5,21 @@
 
 namespace Gadgetron{
 
-  template<class T> boost::shared_ptr< cuNDArray<T> > EXPORTGPUCORE shift_dim( cuNDArray<T> *in, int shift, 
-									       boost::shared_ptr< cuNDArray<T> > out = boost::shared_ptr< cuNDArray<T> >() ) {
-    if( in == 0x0 ) {
-      BOOST_THROW_EXCEPTION(runtime_error("shift_dim(): invalid input pointer provided"));
-    }    
-
-    std::vector<unsigned int> order;
-    for (int i = 0; i < in->get_number_of_dimensions(); i++) {
-      order.push_back(static_cast<unsigned int>((i+shift)%in->get_number_of_dimensions()));
-    }
-    return permute(in,&order,out);
-  }
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> >
+  shift_dim( cuNDArray<T> *in, int shift, boost::shared_ptr< cuNDArray<T> > out = boost::shared_ptr< cuNDArray<T> >() );
   
-  template<class T> boost::shared_ptr< cuNDArray<T> > EXPORTGPUCORE permute( cuNDArray<T> *in, std::vector<unsigned int> *dim_order, 
-									     boost::shared_ptr< cuNDArray<T> > out = boost::shared_ptr< cuNDArray<T> >(), 
-									     int shift_mode = 0 );
-    
-  /*
-  // Sum over dimension (scalar and vector_td arrays)
-  template<class T> EXPORTGPUCORE
-  boost::shared_ptr<cuNDArray<T> >
-  sum(cuNDArray<T> *data, unsigned int dim, cuNDA_device alloc_device =
-  CUNDA_CURRENT_DEVICE,
-  cuNDA_device compute_device = CUNDA_CURRENT_DEVICE);
-
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> >
+  permute( cuNDArray<T> *in, std::vector<unsigned int> *dim_order, 
+	   boost::shared_ptr< cuNDArray<T> > out = boost::shared_ptr< cuNDArray<T> >(), int shift_mode = 0 );
+  
   // Expand (copy) array to new dimension (scalar and vector_td arrays)
-  template<class T> EXPORTGPUCORE
-  boost::shared_ptr<cuNDArray<T> >
-  expand(cuNDArray<T> *data, unsigned int added_dim_size,
-  cuNDA_device alloc_device = CUNDA_CURRENT_DEVICE,
-  cuNDA_device compute_device = CUNDA_CURRENT_DEVICE);
+  template<class T> EXPORTGPUCORE boost::shared_ptr<cuNDArray<T> > expand(cuNDArray<T> *data, unsigned int added_dim_size );
+  
+  // Sum over dimension (scalar and vector_td arrays)
+  template<class T> EXPORTGPUCORE boost::shared_ptr<cuNDArray<T> > sum(cuNDArray<T> *data, unsigned int dim );
 
+  
+  /*
 
   // Correlation matrix over the last dimension in the input array (float/double/complext array)
   template<class T> EXPORTGPUCORE
@@ -90,40 +73,17 @@ namespace Gadgetron{
     boost::shared_ptr< cuNDArray<T> >
     minimum( cuNDArray<T> *in1,cuNDArray<T> *in2,
     cuNDA_device alloc_device, cuNDA_device compute_device );
-    // Crop (scalar and vector_td arrays)
-    template<class T, unsigned int D> EXPORTGPUCORE
-    void crop(typename uintd<D>::Type crop_offset, cuNDArray<T> *in,
-    cuNDArray<T> *out, cuNDA_device compute_device = CUNDA_CURRENT_DEVICE);
 
-    // Expand with zero filling (real and complex types)
-    template<class T, unsigned int D> EXPORTGPUCORE
-    void expand_with_zero_fill(cuNDArray<T> *in, cuNDArray<T> *out,
-    cuNDA_device compute_device = CUNDA_CURRENT_DEVICE);
+  // Border fill (circular)
+  template<class REAL, class T, unsigned int D> EXPORTGPUNFFT
+  void zero_fill_border(REAL radius, cuNDArray<T> *image );
 
-    // Zero fill border (rectangular) - (real and complex types)
-    template<class T, unsigned int D> EXPORTGPUCORE
-    void zero_fill_border(typename uintd<D>::Type matrix_size, cuNDArray<T> *image,
-    cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE);
-
-    // Border fill (circular) - (real and complex types)
-    template<class REAL, class T, unsigned int D> EXPORTGPUCORE
-    void zero_fill_border(REAL radius, cuNDArray<T> *image,
-    cuNDA_device compute_device = CUNDA_NDARRAY_DEVICE);
 
     // Mirror around the origin -- !! leaving the origin unchanged !!
     template<class T, unsigned int D> EXPORTGPUCORE
     void origin_mirror(cuNDArray<T> *in, cuNDArray<T> *out, bool zero_fill = true,
     cuNDA_device compute_device = CUNDA_CURRENT_DEVICE);
   */
-  /**
-   * @brief Normalize by the root sum of squares
-   * @param[in] x Input array.
-   * @return A new complex array containing the input array in the real component and zeros in the imaginary component.
-   */
-  /*
+
   // Normalize by RSS (float/double/complext arrays)
-  template<class T> EXPORTCPUCOREMATH
-  void rss_normalize(hoNDArray<T> *in_out, unsigned int dim,
-  hoNDA_device compute_device = HONDA_NDARRAY_DEVICE);
-  */
 }

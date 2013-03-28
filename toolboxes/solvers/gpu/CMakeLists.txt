@@ -1,41 +1,34 @@
 if (WIN32)
-ADD_DEFINITIONS(-D__BUILD_GADGETRON_SOLVERS__)
+  ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUSOLVERS__)
 endif (WIN32)
 
-include_directories(		${CUDA_INCLUDE_DIRS}
-				${Boost_INCLUDE_DIR}
-				${CMAKE_SOURCE_DIR}/toolboxes/cpucore
-				${CMAKE_SOURCE_DIR}/toolboxes/operators
-				${CMAKE_SOURCE_DIR}/toolboxes/solvers
-				${CMAKE_SOURCE_DIR}/toolboxes/gpucore)
+include_directories(
+  ${CUDA_INCLUDE_DIRS}
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/solvers
+  )
 
-cuda_add_library(solvers SHARED cuCgPrecondWeights.cu cuGPBBSolver.cu)
+cuda_add_library(gpusolvers SHARED 
+  cuCgPreconditioner.cu 
+  cuGPBBSolver.cu
+  )
 
-target_link_libraries(solvers gpucore ${CUDA_LIBRARIES}
-${CUDA_CUBLAS_LIBRARIES} )
+target_link_libraries(gpusolvers 
+  gpucore 
+  ${CUDA_LIBRARIES}
+  ${CUDA_CUBLAS_LIBRARIES} 
+  )
 
-install(TARGETS solvers DESTINATION lib)
+install(TARGETS gpusolvers DESTINATION lib)
 
 install(FILES 	
-	solver.h
-	linearOperatorSolver.h
-	cgSolver.h
-	cuCgSolver.h
-	sbSolver.h
-	sbcSolver.h
-	cuSbSolver_macros.h
-	cuSbCgSolver.h
-	cuSbcCgSolver.h
-	cgCallback.h	
-	cgPreconditioner.h
-	cuCgPreconditioner.h
-	cuCgPrecondWeights.h
-	lwSolver.h
-	cuLwSolver.h
-	cuSbLwSolver.h
-	cuSbcLwSolver.h
-	cuGPBBSolver.h
-	gpSolver.h
-	gpBBSolver.h
-	solvers_export.h
-DESTINATION include)
+  cuSbCgSolver.h
+  cuSbcCgSolver.h
+  cuCgPreconditioner.h
+  cuLwSolver.h
+  cuSbLwSolver.h
+  cuSbcLwSolver.h
+  cuGPBBSolver.h
+  gpusolvers_export.h
+  DESTINATION include)

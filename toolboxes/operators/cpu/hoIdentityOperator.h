@@ -3,7 +3,7 @@
     
     The file hoIdentityOperator.h is a convienience wrapper for the device independent identityOperator class.
     The class hoIdentityOperator instantiates the identityOperator for the hoNDArray
-    and the header otherwise includes other neccessary header files.
+    and the header furthermore includes additional neccessary header files.
 */
 
 #pragma once

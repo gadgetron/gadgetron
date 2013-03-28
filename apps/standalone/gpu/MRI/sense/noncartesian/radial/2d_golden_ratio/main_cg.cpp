@@ -1,12 +1,11 @@
 // Gadgetron includes
-#include "cuNDArray.h"
+#include "cuNDArray_elemwise.h"
 #include "hoNDArray_fileio.h"
-#include "ndarray_vector_td_utilities.h"
 #include "radial_utilities.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
-#include "cuCgPrecondWeights.h"
+#include "cuCgPreconditioner.h"
 #include "cuCgSolver.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
@@ -17,6 +16,7 @@
 
 using namespace std;
 using namespace Gadgetron;
+
 // Define desired precision
 typedef float _real; 
 typedef complext<_real> _complext;
@@ -193,16 +193,16 @@ int main(int argc, char** argv)
 
   timer = new GPUTimer("Computing preconditioning weights");
 
-  boost::shared_ptr< cuNDArray<_real> > _precon_weights = squaredNorm( csm.get(), 2 );
+  boost::shared_ptr< cuNDArray<_real> > _precon_weights = abs_square(csm.get());
   axpy( kappa, R->get(), _precon_weights.get() );
-  _precon_weights->sqrt();
-  _precon_weights->reciprocal();
+  sqrt_inplace(_precon_weights.get());
+  reciprocal_inplace(_precon_weights.get());
 
   boost::shared_ptr< cuNDArray<_complext> > precon_weights = real_to_complext<_real>( _precon_weights.get() );
   _precon_weights.reset();
 
   // Define preconditioning matrix
-  boost::shared_ptr< cuCgPrecondWeights<_complext> > D( new cuCgPrecondWeights<_complext>() );
+  boost::shared_ptr< cuCgPreconditioner<_complext> > D( new cuCgPreconditioner<_complext>() );
   D->set_weights( precon_weights );
   precon_weights.reset();
   csm.reset();

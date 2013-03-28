@@ -1,11 +1,12 @@
 #include "radialSenseAppMainWidget.h"
 
-#include "NFFT.h"
-#include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
+#include "NFFT.h"
+#include "NFFT_utils.h"
+#include "cuNDArray_elemwise.h"
+#include "cuNDArray_utils.h"
 #include "vector_td_operators.h"
 #include "vector_td_utilities.h"
-#include "ndarray_vector_td_utilities.h"
 #include "radial_utilities.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "cuCgSolver.h"
@@ -22,6 +23,7 @@
 #include <assert.h>
 
 using namespace std;
+using namespace Gadgetron;
 
 void radialSenseAppMainWindow::resetPrivateData()
 {
@@ -70,10 +72,10 @@ radialSenseAppMainWindow::radialSenseAppMainWindow(QWidget *parent) : QMainWindo
   E = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );  
 
   // Allocate preconditioner
-  D = boost::shared_ptr< cuCgPrecondWeights<float_complext> >( new cuCgPrecondWeights<float_complext>() );
+  D = boost::shared_ptr< cuCgPreconditioner<float_complext> >( new cuCgPreconditioner<float_complext>() );
 
   // Allocate regularization image operator
-  R = boost::shared_ptr< cuImageOperator<float,float_complext> >( new cuImageOperator<float,float_complext>() );
+  R = boost::shared_ptr< cuImageOperator<float_complext> >( new cuImageOperator<float_complext>() );
   R->set_weight( 1.0f );
 
   // Setup solver
@@ -82,7 +84,7 @@ radialSenseAppMainWindow::radialSenseAppMainWindow(QWidget *parent) : QMainWindo
   cg.set_preconditioner ( D );          // preconditioning matrix
   cg.set_max_iterations( get_num_iterations() );
   cg.set_tc_tolerance( 1e-6 );
-  cg.set_output_mode( cuCgSolver<float, float_complext>::OUTPUT_SILENT );
+  cg.set_output_mode( cuCgSolver<float_complext>::OUTPUT_SILENT );
 }
 
 /*
@@ -126,7 +128,7 @@ void radialSenseAppMainWindow::saveImage()
   QString filename = QFileDialog::getSaveFileName( this, tr("Save image to file"), "./", tr("Raw float data (*.raw)"));
 
   if( filename.size() == 0 )
-    return; // Cancel
+  return; // Cancel
 
   // This code is copied from 'reconstruct' and slightly modified...
 
@@ -134,21 +136,21 @@ void radialSenseAppMainWindow::saveImage()
 
   LOOP:
 
-      // Save file
-      cudaMemcpy( tmp, devPtr, prod(get_matrix_size())*sizeof(float), cudaMemcpyDeviceToHost );
-      fwrite( tmp, prod(get_matrix_size()), sizeof(float), fout );
+  // Save file
+  cudaMemcpy( tmp, devPtr, prod(get_matrix_size())*sizeof(float), cudaMemcpyDeviceToHost );
+  fwrite( tmp, prod(get_matrix_size()), sizeof(float), fout );
 
-      // Report any errors not already caught...
-      err = cudaGetLastError();
-      if( err != cudaSuccess ){
-	QMessageBox::critical( this, tr("Cuda error"), tr(cudaGetErrorString(err)) );
-	actionExit->trigger();
-      }
+  // Report any errors not already caught...
+  err = cudaGetLastError();
+  if( err != cudaSuccess ){
+  QMessageBox::critical( this, tr("Cuda error"), tr(cudaGetErrorString(err)) );
+  actionExit->trigger();
+  }
 	
-      END LOOP:
+  END LOOP:
 
-      reconWidget->projectionNumberSpinBox->setValue(reconWidget->projectionNumberSpinBox->value()+20);
-    }
+  reconWidget->projectionNumberSpinBox->setValue(reconWidget->projectionNumberSpinBox->value()+20);
+  }
 
   fclose(fout);
   cudaFree(devPtr);
@@ -206,11 +208,8 @@ void radialSenseAppMainWindow::replan()
   vector<unsigned int> image_os_dims = uintd_to_vector<2>(get_matrix_size_os()); 
   image_os_dims.push_back(frames_per_reconstruction); image_os_dims.push_back(get_num_coils());    
   cuNDArray<float_complext> *image_os = new cuNDArray<float_complext>();
-  if( !image_os->create(&image_os_dims) ){
-    cerr << "Unable to allocate device memory for oversampled image" << endl;
-    exit(1);
-  }
-  
+  image_os->create(&image_os_dims);
+
   // Extract coil sensitivity maps and training data using all the data
   for( unsigned int iteration = 0; iteration < num_profiles/profiles_per_reconstruction; iteration++ ) {
     
@@ -233,7 +232,7 @@ void radialSenseAppMainWindow::replan()
   }
   
   // We now have 'frames_per_reconstruction' k-space images of each coil. Add these up.
-  boost::shared_ptr< cuNDArray<float_complext> > acc_image_os = cuNDA_sum<float_complext>( image_os, 2 );
+  boost::shared_ptr< cuNDArray<float_complext> > acc_image_os = sum<float_complext>( image_os, 2 );
   delete image_os; image_os = 0x0;
   
   // Complete gridding of k-space CSM image
@@ -243,11 +242,8 @@ void radialSenseAppMainWindow::replan()
   // Remove oversampling
   vector<unsigned int> image_dims = uintd_to_vector<2>(get_matrix_size()); image_dims.push_back(get_num_coils());
   cuNDArray<float_complext> *image = new cuNDArray<float_complext>();
-  if( !image->create(&image_dims) ){
-    cerr << "Unable to allocate device memory for image" << endl;
-    exit(1);
-  }
-  cuNDA_crop<float_complext,2>( (get_matrix_size_os()-get_matrix_size())>>1, acc_image_os.get(), image );
+  image->create(&image_dims);
+  crop<float_complext,2>( (get_matrix_size_os()-get_matrix_size())>>1, acc_image_os.get(), image );
   acc_image_os.reset();
   
   // Estimate CSM
@@ -256,18 +252,12 @@ void radialSenseAppMainWindow::replan()
   progress.setValue(4);
 
   E->setup( get_matrix_size(), get_matrix_size_os(), get_kernel_width() ); 
-
-  if( E->set_csm(csm) < 0 ) {
-    cout << "Failed to set csm on encoding matrix" << endl;
-  }
+  E->set_csm(csm);
 
   // Setup regularization operator
   image_dims = uintd_to_vector<2>(get_matrix_size());
   cuNDArray<float_complext> *reg_image = new cuNDArray<float_complext>();
-
-  if( reg_image->create( &image_dims ) == 0x0 ){
-    cout << "Failed to allocate regularization image" << endl;
-  }
+  reg_image->create( &image_dims );
 
   E->mult_csm_conj_sum( image, reg_image );
   R->compute( reg_image );
@@ -291,10 +281,10 @@ void radialSenseAppMainWindow::replan()
 
 void radialSenseAppMainWindow::update_preconditioning_weights()
 {
-  boost::shared_ptr< cuNDArray<float> > _precon_weights = cuNDA_ss<float,float_complext>( csm.get(), 2 );
-  cuNDA_axpy<float>( get_kappa(), R->get(), _precon_weights.get() );  
-  cuNDA_reciprocal_sqrt<float>( _precon_weights.get() );
-  boost::shared_ptr< cuNDArray<float_complext> > precon_weights = cuNDA_real_to_complext<float>( _precon_weights.get() );
+  boost::shared_ptr< cuNDArray<float> > _precon_weights = abs_square<float_complext>(csm.get());
+  axpy<float>( get_kappa(), R->get(), _precon_weights.get() );  
+  reciprocal_sqrt_inplace<float>( _precon_weights.get() );
+  boost::shared_ptr< cuNDArray<float_complext> > precon_weights = real_to_complext<float>( _precon_weights.get() );
   D->set_weights( precon_weights );
 }
 
@@ -332,10 +322,8 @@ void radialSenseAppMainWindow::projectionsPerFrameChanged(int)
       float(1)/((float)samples_per_profile/(float)max(get_matrix_size().vec[0],get_matrix_size().vec[1])) );
   
   // Set density compensation weights
-  if( E->set_dcw(dcw) < 0 ) {
-    cout << "Failed to set density compensation weights on encoding matrix" << endl;
-  }
-  
+  E->set_dcw(dcw);
+
   // Reconstruct
   reconstruct();
 }
@@ -527,47 +515,45 @@ void radialSenseAppMainWindow::reconstruct()
     upload_data( get_first_projection(), samples_per_profile, samples_per_reconstruction,
 		 num_profiles*samples_per_profile, num_coils, host_samples.get() );
     
-    // Set current trajectory and trigger NFFT preprocessing
-    if( E->preprocess(traj.get()) < 0 ) {
-      cout << "Failed to set trajectory on encoding matrix" << endl;
-    }
-        
-    // Form rhs (use result array to save memory)
-    vector<unsigned int> rhs_dims = uintd_to_vector<2>(matrix_size); rhs_dims.push_back(frames_per_reconstruction);
-    cuNDArray<float_complext> rhs; rhs.create(&rhs_dims);
-    E->mult_MH( data.get(), &rhs );
+  // Set current trajectory and trigger NFFT preprocessing
+  E->preprocess(traj.get());
+  
+  // Form rhs (use result array to save memory)
+  vector<unsigned int> rhs_dims = uintd_to_vector<2>(matrix_size); rhs_dims.push_back(frames_per_reconstruction);
+  cuNDArray<float_complext> rhs; rhs.create(&rhs_dims);
+  E->mult_MH( data.get(), &rhs );
+  
+  //
+  // Conjugate gradient solver
+  //
+  
+  boost::shared_ptr< cuNDArray<float_complext> > cgresult = cg.solve_from_rhs(&rhs);
+  
+  // Magnitudes image for visualization
+  boost::shared_ptr< cuNDArray<float> > tmp_res = abs<float_complext>(cgresult.get());
+  normalize( tmp_res.get(), get_window_scale() );
+  
+  // Copy to OpenGL/pbo
+  cudaMemcpy( reconWidget->openglCanvas->getDevPtr(),
+	      tmp_res->get_data_ptr(),
+	      prod(matrix_size)*sizeof(float), cudaMemcpyDeviceToDevice );
+  
+  // Report any errors not already caught...
+  err = cudaGetLastError();
+  if( err != cudaSuccess ){
+    QMessageBox::critical( this, tr("Cuda error"), tr(cudaGetErrorString(err)) );
+    actionExit->trigger();
+  }
+  
+  reconWidget->openglCanvas->unmapPBO();
+  
+  if( !success ){
+    QMessageBox::critical( this, tr("Reconstruction error"), tr("Check console. Quitting.") );
+    actionExit->trigger();
+    exit(EXIT_FAILURE);
+  }
     
-    //
-    // Conjugate gradient solver
-    //
-
-    boost::shared_ptr< cuNDArray<float_complext> > cgresult = cg.solve_from_rhs(&rhs);
-
-    // Magnitudes image for visualization
-    boost::shared_ptr< cuNDArray<float> > tmp_res = cuNDA_cAbs<float,float_complext>(cgresult.get());
-    cuNDA_normalize( tmp_res.get(), get_window_scale() );
-
-    // Copy to OpenGL/pbo
-    cudaMemcpy( reconWidget->openglCanvas->getDevPtr(),
-		tmp_res->get_data_ptr(),
-		prod(matrix_size)*sizeof(float), cudaMemcpyDeviceToDevice );
-       
-    // Report any errors not already caught...
-    err = cudaGetLastError();
-    if( err != cudaSuccess ){
-      QMessageBox::critical( this, tr("Cuda error"), tr(cudaGetErrorString(err)) );
-      actionExit->trigger();
-    }
-    
-    reconWidget->openglCanvas->unmapPBO();
-    
-    if( !success ){
-      QMessageBox::critical( this, tr("Reconstruction error"), tr("Check console. Quitting.") );
-      actionExit->trigger();
-      exit(EXIT_FAILURE);
-    }
-    
-    reconWidget->openglCanvas->updateGL();
+  reconWidget->openglCanvas->updateGL();
 }
 
 /*
@@ -691,10 +677,7 @@ radialSenseAppMainWindow::upload_data( unsigned int profile_offset, unsigned int
 {
   vector<unsigned int> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
   cuNDArray<float_complext> *data = new cuNDArray<float_complext>();
-  if( !data->create( &dims ) ){
-    cerr << "Unable to allocate device memory for samples" << endl;
-    exit(1);
-  }
+  data->create( &dims );
   
   for( unsigned int i=0; i<num_coils; i++ )
     cudaMemcpy( data->get_data_ptr()+i*samples_per_reconstruction, 

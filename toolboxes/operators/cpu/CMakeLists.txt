@@ -1,43 +1,21 @@
 if (WIN32)
-ADD_DEFINITIONS(-D__BUILD_GADGETRON_SOLVERS__)
+ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUOPERATORS__)
 endif (WIN32)
 
-include_directories(		${CUDA_INCLUDE_DIRS}
-				${Boost_INCLUDE_DIR}
-				${CMAKE_SOURCE_DIR}/toolboxes/cpucore
-				${CMAKE_SOURCE_DIR}/toolboxes/solvers
-				${CMAKE_SOURCE_DIR}/toolboxes/gpucore)
+include_directories(
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/operators
+  )
 
-cuda_add_library(operators SHARED cuPartialDerivativeOperator.cu
-                                cuLaplaceOperator.cu
-                                cuVariableGaussOperator.cu
-                                cuTVOperator.cu
-                                cuTV1DOperator.cu)
+#target_link_libraries(cpuoperators  
+#  )
 
-target_link_libraries(operators gpucore ${CUDA_LIBRARIES}
-${CUDA_CUBLAS_LIBRARIES} )
-
-install(TARGETS operators DESTINATION lib)
+#install(TARGETS cpuoperators DESTINATION lib)
 
 install(FILES 	
-	linearOperator.h
-	generalOperator.h
-	cuLinearOperator_macros.h
-	identityOperator.h
-	imageOperator.h
-	cuImageOperator.h
-	diagonalOperator.h
-	cuDiagonalOperator.h
-	encodedImageOperator.h
-	cuEncodedImageOperator.h
-	partialDerivativeOperator.h
-	cuPartialDerivativeOperator.h
-	convolutionOperator.h
-	cuConvolutionOperator.h
-	laplaceOperator.h
-	cuLaplaceOperator.h
-	cuVariableGaussOperator.h
-	encodingOperatorContainer.h
-	cuTVOperator.h
-    cuTV1DOperator.h
-DESTINATION include)
+  hoEncodingOperatorContainer.h
+  hoMultiplicationOperatorContainer.h
+  hoIdentityOperator.h
+  hoFFTOperator.h
+  hoPartialDerivativeOperator.h
+  DESTINATION include)

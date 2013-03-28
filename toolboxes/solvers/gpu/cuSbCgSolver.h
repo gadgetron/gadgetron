@@ -8,14 +8,11 @@
 #include "complext.h"
 
 namespace Gadgetron{
-template <class T> class cuSbCgSolver
-  : public sbSolver<cuNDArray<typename realType<T>::type >, cuNDArray<T>, cuCgSolver<T> >
-{
-public:
-  
-  cuSbCgSolver() : sbSolver<cuNDArray<typename realType<T>::type >, cuNDArray<T>, cuCgSolver<T> >() {
-  }
-  
-  virtual ~cuSbCgSolver() {}
-};
+
+  template <class T> class cuSbCgSolver : public sbSolver< cuNDArray<typename realType<T>::Type >, cuNDArray<T>, cuCgSolver<T> >
+  {
+  public:    
+    cuSbCgSolver() : sbSolver<cuNDArray<typename realType<T>::Type >, cuNDArray<T>, cuCgSolver<T> >() {}    
+    virtual ~cuSbCgSolver() {}
+  };
 }

@@ -44,6 +44,13 @@ namespace Gadgetron{
   template<class T> EXPORTGPUCORE void abs_inplace( cuNDArray<T> *x );
     
   /**
+   * @brief Calculates the element-wise squared absolute values of the array entries
+   * @param[in] x Input array.
+   * @return A new array containing the element-wise absolute values of the input.
+   */
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<typename realType<T>::Type> > abs_square( cuNDArray<T> *x );
+
+  /**
    * @brief Calculates the element-wise sqrt of the array entries.
    * @param[in] x Input array.
    * @return A new array containing the element-wise sqrt of the input.
@@ -60,6 +67,9 @@ namespace Gadgetron{
    * @brief Calculates the element-wise square of the array entries.
    * @param[in] x Input array.
    * @return A new array containing the element-wise square of the input.
+   *
+   * For real numbers this functions is equivalent to square. 
+   * For complex arrays abs_square() and square() differ however.
    */
   template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > square( cuNDArray<T> *x );
     

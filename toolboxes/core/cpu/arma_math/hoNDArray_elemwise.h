@@ -40,6 +40,13 @@ namespace Gadgetron{
    * @param[in,out] x Input and output array.
    */
   template<class T> EXPORTCPUCOREMATH void abs_inplace( hoNDArray<T> *x );
+
+  /**
+   * @brief Calculates the element-wise squared absolute values of the array entries
+   * @param[in] x Input array.
+   * @return A new array containing the element-wise absolute values of the input.
+   */
+  template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<typename realType<T>::Type> > abs_square( hoNDArray<T> *x );
     
   /**
    * @brief Calculates the element-wise sqrt of the array entries.
@@ -58,6 +65,9 @@ namespace Gadgetron{
    * @brief Calculates the element-wise square of the array entries.
    * @param[in] x Input array.
    * @return A new array containing the element-wise square of the input.
+   *
+   * For real numbers this functions is equivalent to square. 
+   * For complex arrays abs_square() and square() differ however.
    */
   template<class T> EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<T> > square( hoNDArray<T> *x );
     

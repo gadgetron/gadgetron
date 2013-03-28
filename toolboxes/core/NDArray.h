@@ -6,13 +6,13 @@
 #define NDARRAY_H
 #pragma once
 
+#include "GadgetronException.h"
+
 #include <new>
 #include <vector>
 #include <iostream>
-#include <boost/shared_ptr.hpp>
 #include <stdexcept>
-#include <new>
-#include "GadgetronException.h"
+#include <boost/shared_ptr.hpp>
 
 namespace Gadgetron{
 

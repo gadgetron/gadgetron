@@ -1,4 +1,5 @@
 #include "cuNDArray_utils.h"
+#include "cudaDeviceManager.h"
 
 namespace Gadgetron {
   
@@ -128,73 +129,231 @@ namespace Gadgetron {
     delete [] dims;
     delete [] strides_out;    
   }  
-}  
-
-using namespace Gadgetron;
-
-template <class T> boost::shared_ptr< cuNDArray<T> >
-Gadgetron::permute( cuNDArray<T> *in, std::vector<unsigned int> *dim_order, boost::shared_ptr< cuNDArray<T> > out, int shift_mode )
-{
-  if( in == 0x0 || dim_order == 0x0 ) {
-    BOOST_THROW_EXCEPTION(runtime_error("permute(): invalid input pointer provided"));
-  }    
   
-  //Check ordering array
-  if (dim_order->size() > in->get_number_of_dimensions()) {
-    BOOST_THROW_EXCEPTION(runtime_error("permute(): invalid length of dimension ordering array"));
-  }
-  
-  std::vector<unsigned int> dim_count(in->get_number_of_dimensions(),0);
-  for (unsigned int i = 0; i < dim_order->size(); i++) {
-    if ((*dim_order)[i] >= in->get_number_of_dimensions()) {
-      BOOST_THROW_EXCEPTION(runtime_error("permute(): invalid dimension order array"));
+  template <class T> boost::shared_ptr< cuNDArray<T> >
+  permute( cuNDArray<T> *in, std::vector<unsigned int> *dim_order, boost::shared_ptr< cuNDArray<T> > out, int shift_mode )
+  {
+    if( in == 0x0 || dim_order == 0x0 ) {
+      BOOST_THROW_EXCEPTION(runtime_error("permute(): invalid input pointer provided"));
+    }    
+    
+    //Check ordering array
+    if (dim_order->size() > in->get_number_of_dimensions()) {
+      BOOST_THROW_EXCEPTION(runtime_error("permute(): invalid length of dimension ordering array"));
     }
-    dim_count[(*dim_order)[i]]++;
-  }
-  
-  //Create an internal array to store the dimensions
-  std::vector<unsigned int> dim_order_int;
-  
-  //Check that there are no duplicate dimensions
-  for (unsigned int i = 0; i < dim_order->size(); i++) {
-    if (dim_count[(*dim_order)[i]] != 1) {
-      BOOST_THROW_EXCEPTION(runtime_error("permute(): invalid dimension order array (duplicates)"));
+    
+    std::vector<unsigned int> dim_count(in->get_number_of_dimensions(),0);
+    for (unsigned int i = 0; i < dim_order->size(); i++) {
+      if ((*dim_order)[i] >= in->get_number_of_dimensions()) {
+	BOOST_THROW_EXCEPTION(runtime_error("permute(): invalid dimension order array"));
     }
-    dim_order_int.push_back((*dim_order)[i]);
-  }
-  
-  //Pad dimension order array with dimension not mentioned in order array
-  if (dim_order_int.size() < in->get_number_of_dimensions()) {
-    for (unsigned int i = 0; i < dim_count.size(); i++) {
-      if (dim_count[i] == 0) {
-	dim_order_int.push_back(i);
+      dim_count[(*dim_order)[i]]++;
+    }
+    
+    //Create an internal array to store the dimensions
+    std::vector<unsigned int> dim_order_int;
+    
+    //Check that there are no duplicate dimensions
+    for (unsigned int i = 0; i < dim_order->size(); i++) {
+      if (dim_count[(*dim_order)[i]] != 1) {
+	BOOST_THROW_EXCEPTION(runtime_error("permute(): invalid dimension order array (duplicates)"));
+      }
+      dim_order_int.push_back((*dim_order)[i]);
+    }
+    
+    //Pad dimension order array with dimension not mentioned in order array
+    if (dim_order_int.size() < in->get_number_of_dimensions()) {
+      for (unsigned int i = 0; i < dim_count.size(); i++) {
+	if (dim_count[i] == 0) {
+	  dim_order_int.push_back(i);
+	}
+    }
+    }
+    
+    boost::shared_ptr< cuNDArray<T> > out_int = out;
+    
+    if( out_int.get() == 0x0 ){
+      std::vector<unsigned int> dims;
+      for (unsigned int i = 0; i < dim_order_int.size(); i++)
+	dims.push_back(in->get_dimensions()->at(dim_order_int[i]));
+      out_int = boost::shared_ptr< cuNDArray<T> >(new cuNDArray<T>());
+      out_int->create(&dims);
+    }
+    
+    for (unsigned int i = 0; i < dim_order_int.size(); i++) {
+      if ((*in->get_dimensions())[dim_order_int[i]] != out_int->get_size(i)) {
+	BOOST_THROW_EXCEPTION(runtime_error("permute(): dimensions of output array do not match the input array"));
       }
     }
+    cuNDArray_permute(in, out_int.get(), &dim_order_int, shift_mode);
+    return out_int;
   }
   
-  boost::shared_ptr< cuNDArray<T> > out_int = out;
-  
-  if( out_int.get() == 0x0 ){
-    std::vector<unsigned int> dims;
-    for (unsigned int i = 0; i < dim_order_int.size(); i++)
-      dims.push_back(in->get_dimensions()->at(dim_order_int[i]));
-    out_int = boost::shared_ptr< cuNDArray<T> >(new cuNDArray<T>());
-    out_int->create(&dims);
+  template<class T> boost::shared_ptr< cuNDArray<T> > EXPORTGPUCORE 
+  shift_dim( cuNDArray<T> *in, int shift, boost::shared_ptr< cuNDArray<T> > out )
+  {
+    if( in == 0x0 ) {
+      BOOST_THROW_EXCEPTION(runtime_error("shift_dim(): invalid input pointer provided"));
+    }    
+    
+    std::vector<unsigned int> order;
+    for (int i = 0; i < in->get_number_of_dimensions(); i++) {
+      order.push_back(static_cast<unsigned int>((i+shift)%in->get_number_of_dimensions()));
+    }
+    return permute(in,&order,out);
   }
   
-  for (unsigned int i = 0; i < dim_order_int.size(); i++) {
-    if ((*in->get_dimensions())[dim_order_int[i]] != out_int->get_size(i)) {
-      BOOST_THROW_EXCEPTION(runtime_error("permute(): dimensions of output array do not match the input array"));
+  template<class T> static void find_stride( cuNDArray<T> *in, unsigned int dim, unsigned int *stride, std::vector<unsigned int> *dims )
+  {
+    *stride = 1;
+    for( unsigned int i=0; i<in->get_number_of_dimensions(); i++ ){
+      if( i != dim )
+	dims->push_back(in->get_size(i));
+      if( i < dim )
+	*stride *= in->get_size(i);
     }
   }
-  cuNDArray_permute(in, out_int.get(), &dim_order_int, shift_mode);
-  return out_int;
-}
+  
+  void setup_grid( unsigned int number_of_elements, dim3 *blockDim, dim3* gridDim, unsigned int num_batches = 1 )
+  {    
+    int cur_device = cudaDeviceManager::Instance()->getCurrentDevice();
+    int maxGridDim = cudaDeviceManager::Instance()->max_griddim(cur_device);
+    
+    // For small arrays we keep the block dimension fairly small
+    *blockDim = dim3(256);
+    *gridDim = dim3((number_of_elements+blockDim->x-1)/blockDim->x, num_batches);
+    
+    // Extend block/grid dimensions for large arrays
+    if( gridDim->x > maxGridDim){
+      blockDim->x = maxGridDim;
+      gridDim->x = (number_of_elements+blockDim->x-1)/blockDim->x;
+    }
+    
+    if( gridDim->x > maxGridDim ){
+      gridDim->x = ((unsigned int)std::sqrt((float)number_of_elements)+blockDim->x-1)/blockDim->x;
+      gridDim->y *= ((number_of_elements+blockDim->x*gridDim->x-1)/(blockDim->x*gridDim->x));
+    }
+    
+    if( gridDim->x >maxGridDim || gridDim->y >maxGridDim){      
+      BOOST_THROW_EXCEPTION(cuda_error("Grid dimension larger than supported by device"));
+    }
+  }
+  
+  // Expand
+  //
+  template<class T> __global__ void
+  expand_kernel( T *in, T *out, unsigned int number_of_elements, unsigned int new_dim_size )
+  {
+    const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;    
+    if( idx < number_of_elements ){
+      out[idx] = in[idx%(number_of_elements/new_dim_size)];
+    }
+  }
+  
+  // Expand
+  //
+  template<class T> boost::shared_ptr< cuNDArray<T> > 
+  expand( cuNDArray<T> *in, unsigned int new_dim_size )
+  {
+    unsigned int number_of_elements = in->get_number_of_elements()*new_dim_size;
+    
+    // Setup block/grid dimensions
+    dim3 blockDim; dim3 gridDim;
+    setup_grid( number_of_elements, &blockDim, &gridDim );
+    
+    // Find element stride
+    std::vector<unsigned int> dims = *in->get_dimensions();
+    dims.push_back(new_dim_size);
+    
+    // Invoke kernel
+    boost::shared_ptr< cuNDArray<T> > out( new cuNDArray<T>());
+    out->create(&dims);
 
-template boost::shared_ptr< cuNDArray<float> > Gadgetron::permute( cuNDArray<float>*, std::vector<unsigned int>*, boost::shared_ptr< cuNDArray<float> >, int );
-template boost::shared_ptr< cuNDArray<double> > Gadgetron::permute( cuNDArray<double>*, std::vector<unsigned int>*, boost::shared_ptr< cuNDArray<double> >, int );
-template boost::shared_ptr< cuNDArray<float_complext> > Gadgetron::permute( cuNDArray<float_complext>*, std::vector<unsigned int>*, boost::shared_ptr< cuNDArray<float_complext> >, int );
-template boost::shared_ptr< cuNDArray<double_complext> > Gadgetron::permute( cuNDArray<double_complext>*, std::vector<unsigned int>*, boost::shared_ptr< cuNDArray<double_complext> >, int );
+    expand_kernel<T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_elements, new_dim_size );
+    
+    CHECK_FOR_CUDA_ERROR();    
+    return out;
+  }
+  
+  // Sum
+  //
+  template<class T> __global__ void sum_kernel
+  ( T *in, T *out, unsigned int stride, unsigned int number_of_batches, unsigned int number_of_elements )
+  {
+    const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+    
+    if( idx < number_of_elements ){
+      
+      unsigned int in_idx = (idx/stride)*stride*number_of_batches+(idx%stride);
+      
+      T val = in[in_idx];
+ 
+      for( unsigned int i=1; i<number_of_batches; i++ ) 
+	val += in[i*stride+in_idx];
+
+      out[idx] = val; 
+    }
+  }
+
+  // Sum
+  //
+  template<class T>  boost::shared_ptr< cuNDArray<T> > sum( cuNDArray<T> *in, unsigned int dim )
+  {
+    // Some validity checks
+    if( !(in->get_number_of_dimensions()>1) ){
+      BOOST_THROW_EXCEPTION(runtime_error("sum: underdimensioned."));
+    }
+ 
+    if( dim > in->get_number_of_dimensions()-1 ){
+      BOOST_THROW_EXCEPTION(runtime_error( "sum: dimension out of range."));
+    }
+
+    unsigned int number_of_batches = in->get_size(dim);
+    unsigned int number_of_elements = in->get_number_of_elements()/number_of_batches;
+
+    // Setup block/grid dimensions
+    dim3 blockDim; dim3 gridDim;
+    setup_grid( number_of_elements, &blockDim, &gridDim );
+ 
+    // Find element stride
+    unsigned int stride; std::vector<unsigned int> dims;
+    find_stride<T>( in, dim, &stride, &dims );
+
+    // Invoke kernel
+    boost::shared_ptr< cuNDArray<T> > out(new cuNDArray<T>());
+    out->create(&dims);
+    
+    sum_kernel<T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
+    
+    CHECK_FOR_CUDA_ERROR();
+    return out;
+  }
+
+  //
+  // Instantiation
+  //
+  
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > permute( cuNDArray<float>*, std::vector<unsigned int>*, boost::shared_ptr< cuNDArray<float> >, int );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > permute( cuNDArray<double>*, std::vector<unsigned int>*, boost::shared_ptr< cuNDArray<double> >, int );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > permute( cuNDArray<float_complext>*, std::vector<unsigned int>*, boost::shared_ptr< cuNDArray<float_complext> >, int );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > permute( cuNDArray<double_complext>*, std::vector<unsigned int>*, boost::shared_ptr< cuNDArray<double_complext> >, int );  
+
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > shift_dim( cuNDArray<float>*, int, boost::shared_ptr< cuNDArray<float> > );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > shift_dim( cuNDArray<double>*, int, boost::shared_ptr< cuNDArray<double> > );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > shift_dim( cuNDArray<float_complext>*, int, boost::shared_ptr< cuNDArray<float_complext> > );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > shift_dim( cuNDArray<double_complext>*, int, boost::shared_ptr< cuNDArray<double_complext> > );
+
+  template boost::shared_ptr< cuNDArray<float> > expand<float>( cuNDArray<float>*, unsigned int);
+  template boost::shared_ptr< cuNDArray<double> > expand<double>( cuNDArray<double>*, unsigned int);
+  template boost::shared_ptr< cuNDArray<float_complext> > expand<float_complext>( cuNDArray<float_complext>*, unsigned int);
+  template boost::shared_ptr< cuNDArray<double_complext> > expand<double_complext>( cuNDArray<double_complext>*, unsigned int);
+
+  template boost::shared_ptr< cuNDArray<float> > sum<float>( cuNDArray<float>*, unsigned int);
+  template boost::shared_ptr< cuNDArray<double> > sum<double>( cuNDArray<double>*, unsigned int);
+  template boost::shared_ptr< cuNDArray<float_complext> > sum<float_complext>( cuNDArray<float_complext>*, unsigned int);
+  template boost::shared_ptr< cuNDArray<double_complext> > sum<double_complext>( cuNDArray<double_complext>*, unsigned int);
+  
+}
 
 
 /*
@@ -468,7 +627,7 @@ template boost::shared_ptr< cuNDArray<double_complext> > Gadgetron::permute( cuN
 
   if( idx<number_of_elements ){
   T val = in[idx];
-  out[idx] = Gadgetron::abs(val);
+  out[idx] = abs(val);
   }
   }
 
@@ -476,7 +635,7 @@ template boost::shared_ptr< cuNDArray<double_complext> > Gadgetron::permute( cuN
   //
   template<class T>
   boost::shared_ptr< cuNDArray<typename realType<T>::type > >
-  Gadgetron::abs( cuNDArray<T> *in,
+  abs( cuNDArray<T> *in,
   cuNDA_device alloc_device, cuNDA_device compute_device )
   {
   typedef typename realType<T>::type REAL;
@@ -519,7 +678,7 @@ template boost::shared_ptr< cuNDArray<double_complext> > Gadgetron::permute( cuN
 
   // CLAMP functions
   template<class  T> EXPORTGPUCORE
-  void Gadgetron::clamp(cuNDArray<T> *in_out, T min, T max){
+  void clamp(cuNDArray<T> *in_out, T min, T max){
   thrust::transform(in_out->begin(),in_out->end(),in_out->begin(),minmax_clamp_functor<T>(min,max));
   }
 
@@ -538,7 +697,7 @@ template boost::shared_ptr< cuNDArray<double_complext> > Gadgetron::permute( cuN
 
   // CLAMP functions
   template<class  T> EXPORTGPUCORE
-  void Gadgetron::clamp_max(cuNDArray<T> *in_out, T max){
+  void clamp_max(cuNDArray<T> *in_out, T max){
   thrust::transform(in_out->begin(),in_out->end(),in_out->begin(),max_clamp_functor<T>(max));
   }
 
@@ -557,128 +716,11 @@ template boost::shared_ptr< cuNDArray<double_complext> > Gadgetron::permute( cuN
 
   // CLAMP functions
   template<class  T> EXPORTGPUCORE
-  void Gadgetron::clamp_min(cuNDArray<T> *in_out, T min){
+  void clamp_min(cuNDArray<T> *in_out, T min){
   thrust::transform(in_out->begin(),in_out->end(),in_out->begin(),min_clamp_functor<T>(min));
   }
 
-  // Sum
-  //
-  template<class T> __global__ void
-  sum_kernel( T *in, T *out,
-  unsigned int stride, 
-  unsigned int number_of_batches, 
-  unsigned int number_of_elements )
-  {
-  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
 
-  if( idx < number_of_elements ){
-
-  unsigned int in_idx = (idx/stride)*stride*number_of_batches+(idx%stride);
- 
-  T val = in[in_idx];
- 
-  for( unsigned int i=1; i<number_of_batches; i++ ) 
-  val += in[i*stride+in_idx];
-
-  out[idx] = val; 
-  }
-  }
-
-  // Sum
-  //
-  template<class T>  
-  boost::shared_ptr< cuNDArray<T> >
-  Gadgetron::sum( cuNDArray<T> *in, unsigned int dim,
-  cuNDA_device alloc_device, cuNDA_device compute_device )
-  {
-  // Prepare internal array
-  int cur_device, old_device;
-  cuNDArray<T> *in_int;
-
-  // Perform device copy if array is not residing on the current device
-  prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int );
-  
-  // Some validity checks
-  if( !(in->get_number_of_dimensions()>1) ){
-  BOOST_THROW_EXCEPTION(runtime_error("sum: underdimensioned."));
-  }
- 
-  if( dim > in->get_number_of_dimensions()-1 ){
-  BOOST_THROW_EXCEPTION(runtime_error( "sum: dimension out of range."));
-  }
-
-  unsigned int number_of_batches = in->get_size(dim);
-  unsigned int number_of_elements = in->get_number_of_elements()/number_of_batches;
-
-  // Setup block/grid dimensions
-  dim3 blockDim; dim3 gridDim;
-  setup_grid( cur_device, number_of_elements, &blockDim, &gridDim );
- 
-  // Find element stride
-  unsigned int stride; std::vector<unsigned int> dims;
-  find_stride<T>( in, dim, &stride, &dims );
-
-  // Invoke kernel
-  boost::shared_ptr< cuNDArray<T> > out = cuNDArray<T>::allocate(&dims);
-  if( out.get() != 0x0 ) sum_kernel<T><<< gridDim, blockDim >>>( in_int->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
- 
-  CHECK_FOR_CUDA_ERROR();
-
-  // Restore
-  restore<1,T,T,dummy,dummy>( old_device, in, in_int, 0, alloc_device, out.get() );
-
-  return out;
-  }
-
-  // Expand
-  //
-  template<class T> __global__ void
-  expand_kernel( T *in, T *out,
-  unsigned int number_of_elements,
-  unsigned int new_dim_size )
-  {
-  const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
-
-  if( idx < number_of_elements ){
-  out[idx] = in[idx%(number_of_elements/new_dim_size)];
-  }
-  }
-
-  // Expand
-  //
-  template<class T>  
-  boost::shared_ptr< cuNDArray<T> >
-  Gadgetron::expand( cuNDArray<T> *in, unsigned int new_dim_size,
-  cuNDA_device alloc_device, cuNDA_device compute_device )
-  {
-  // Prepare internal array
-  int cur_device, old_device;
-  cuNDArray<T> *in_int;
-
-  // Perform device copy if array is not residing on the current device
-  prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in, &in_int );
-   
-  unsigned int number_of_elements = in->get_number_of_elements()*new_dim_size;
-
-  // Setup block/grid dimensions
-  dim3 blockDim; dim3 gridDim;
-  setup_grid( cur_device, number_of_elements, &blockDim, &gridDim );
- 
-  // Find element stride
-  std::vector<unsigned int> dims = *in->get_dimensions();
-  dims.push_back(new_dim_size);
-
-  // Invoke kernel
-  boost::shared_ptr< cuNDArray<T> > out = cuNDArray<T>::allocate(&dims);
-  if( out.get() != 0x0 ) expand_kernel<T><<< gridDim, blockDim >>>( in_int->get_data_ptr(), out->get_data_ptr(), number_of_elements, new_dim_size );
- 
-  CHECK_FOR_CUDA_ERROR();
-
-  // Restore
-  restore<1,T,T,dummy,dummy>( old_device, in, in_int, 0, alloc_device, out.get() );
-
-  return out;
-  }
 
   // SS
   template<class REAL, class T> __inline__  __device__ REAL
@@ -707,7 +749,7 @@ template boost::shared_ptr< cuNDArray<double_complext> > Gadgetron::permute( cuN
   // squaredNorm
   template<class T>
   boost::shared_ptr< cuNDArray<typename realType<T>::type> >
-  Gadgetron::squaredNorm( cuNDArray<T> *in, unsigned int dim,
+  squaredNorm( cuNDArray<T> *in, unsigned int dim,
   cuNDA_device alloc_device, cuNDA_device compute_device )
   {
   typedef typename realType<T>::type REAL;
@@ -861,7 +903,7 @@ return out;
  // Build correlation matrix
  template<class T>
  boost::shared_ptr< cuNDArray<T> >
- Gadgetron::correlation( cuNDArray<T> *in,
+ correlation( cuNDArray<T> *in,
  cuNDA_device alloc_device, cuNDA_device compute_device )
  {
  typedef typename realType<T>::type REAL;
@@ -920,7 +962,7 @@ return out;
  // Convert real to complext
  template<class REAL>  
  boost::shared_ptr< cuNDArray<complext<REAL> > >
- Gadgetron::real_to_complext( cuNDArray<REAL> *in,
+ real_to_complext( cuNDArray<REAL> *in,
  cuNDA_device alloc_device, cuNDA_device compute_device )
  {
  // Prepare internal array
@@ -960,7 +1002,7 @@ return out;
  // Convert complext to real by cropping the imaginary component 
  template<class REAL>  
  boost::shared_ptr< cuNDArray<REAL> >
- Gadgetron::complext_to_real( cuNDArray<complext<REAL> > *in,
+ complext_to_real( cuNDArray<complext<REAL> > *in,
  cuNDA_device alloc_device, cuNDA_device compute_device )
  {
  // Prepare internal array
@@ -1023,7 +1065,7 @@ return out;
  // Downsample
  template<class REAL, unsigned int D>
  boost::shared_ptr< cuNDArray<REAL> >
- Gadgetron::downsample( cuNDArray<REAL> *in,
+ downsample( cuNDArray<REAL> *in,
  cuNDA_device alloc_device, cuNDA_device compute_device )
  {
  // Prepare internal array
@@ -1105,7 +1147,7 @@ return out;
  // Nearest neighbor upsampling
  template<class REAL, unsigned int D>
  boost::shared_ptr< cuNDArray<REAL> >
- Gadgetron::upsample_nn( cuNDArray<REAL> *in,
+ upsample_nn( cuNDArray<REAL> *in,
  cuNDA_device alloc_device, cuNDA_device compute_device )
  {
  // Prepare internal array
@@ -1243,7 +1285,7 @@ return out;
  // Linear interpolation upsampling
  template<class REAL, unsigned int D>
  boost::shared_ptr< cuNDArray<REAL> >
- Gadgetron::upsample_lin( cuNDArray<REAL> *in,
+ upsample_lin( cuNDArray<REAL> *in,
  cuNDA_device alloc_device, cuNDA_device compute_device )
  {
  // Prepare internal array
@@ -1305,7 +1347,7 @@ return out;
  }
  };
 
- template <class T> void Gadgetron::inplace_sgn(cuNDArray<T>* x) {
+ template <class T> void inplace_sgn(cuNDArray<T>* x) {
  thrust::device_ptr<T> dev_ptr(x->get_data_ptr());
  thrust::transform(dev_ptr, dev_ptr + x->get_number_of_elements(),dev_ptr,sign_functor<T>());
  }
@@ -1323,69 +1365,6 @@ return out;
  }
 
 
- // Normalized RSS
- template<class REAL, class T> __global__ void
- rss_normalize_kernel( T *in_out, unsigned int stride, unsigned int number_of_batches, unsigned int number_of_elements )
- {
- const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
-
- if( idx < number_of_elements ){
-
- REAL reciprocal_rss = 1/(_rss<REAL,T>(idx, in_out, stride, number_of_batches));
- 
- unsigned int in_idx = (idx/stride)*stride*number_of_batches+(idx%stride);
-
- for( unsigned int i=0; i<number_of_batches; i++ ) {
- T out = in_out[i*stride+in_idx];
- out *= reciprocal_rss; // complex-scalar multiplication (element-wise operator)
- in_out[i*stride+in_idx] = out; 
- } 
- }
- }
-
- // Normalized RSS
- template<class T>
- void Gadgetron::rss_normalize( cuNDArray<T> *in_out, unsigned int dim,
- cuNDA_device compute_device )
- {
- // Prepare internal array
- int cur_device, old_device;
- cuNDArray<T> *in_out_int;
-
- // Perform device copy if array is not residing on the current device
- prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in_out, &in_out_int );
-
- // Validity checks
- if( !(in_out->get_number_of_dimensions()>1) ){
- BOOST_THROW_EXCEPTION(runtime_error( "rss_normalize: underdimensioned."));
-
- }
- 
- if( dim > in_out->get_number_of_dimensions()-1 ){
- BOOST_THROW_EXCEPTION(runtime_error("rss_normalize: dimension out of range."));
-
- }
-
- unsigned int number_of_batches = in_out->get_size(dim);
- unsigned int number_of_elements = in_out->get_number_of_elements()/number_of_batches;
-
- // Setup block/grid dimensions
- dim3 blockDim; dim3 gridDim;
- setup_grid( cur_device, number_of_elements, &blockDim, &gridDim );
- // Find element stride
- unsigned int stride; std::vector<unsigned int> dims;
- find_stride<T>( in_out, dim, &stride, &dims );
-
- // Invoke kernel
- rss_normalize_kernel<typename realType<T>::type,T><<< gridDim, blockDim >>>( in_out_int->get_data_ptr(), stride, number_of_batches, number_of_elements );
- 
- CHECK_FOR_CUDA_ERROR();
-
- // Restore
- restore<1,T,dummy,dummy,dummy>( old_device, in_out, in_out_int, 1 );
-
-
- }
 
 
 
@@ -1393,7 +1372,7 @@ return out;
 
  // Normalize (float)
  template<class T> EXPORTGPUCORE
- T Gadgetron::normalize( cuNDArray<T> *data, T new_max, cuNDA_device compute_device )
+ T normalize( cuNDArray<T> *data, T new_max, cuNDA_device compute_device )
  {
 
  unsigned int number_of_elements = data->get_number_of_elements();
@@ -1424,223 +1403,6 @@ return out;
  return scale;
  }
 
- // Crop
- template<class T, unsigned int D> __global__ void
- crop_kernel( vector_td<unsigned int,D> offset, vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
- T *in, T *out, unsigned int num_batches, unsigned int num_elements )
- {
- typedef vector_td<unsigned int,D> uintd;
- const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
- const unsigned int frame_offset = idx/num_elements;
-
- if( idx < num_elements*num_batches ){
- const uintd co = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
- const uintd co_os = offset + co;
- const unsigned int in_idx = co_to_idx<D>(co_os, matrix_size_in)+frame_offset*prod(matrix_size_in);
- out[idx] = in[in_idx];
- }
- }
-
- // Crop
- template<class T, unsigned int D> EXPORTGPUCORE
- void Gadgetron::crop( typename uintd<D>::Type offset,
- cuNDArray<T> *in, cuNDArray<T> *out,
- cuNDA_device compute_device )
- {
- if( in == 0x0 || out == 0x0 ){
-
- BOOST_THROW_EXCEPTION(runtime_error("crop: 0x0 ndarray provided"));
- }
-
- if( in->get_number_of_dimensions() != out->get_number_of_dimensions() ){
- BOOST_THROW_EXCEPTION(runtime_error("crop: image dimensions mismatch"));
-
- }
-
- if( in->get_number_of_dimensions() < D ){
- std::stringstream ss;
- ss << "crop: number of image dimensions should be at least " << D;
-
- BOOST_THROW_EXCEPTION(runtime_error(ss.str()));
- }
-
- typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
- typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( *out->get_dimensions() );
- 
- unsigned int number_of_batches = 1;
- for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
- number_of_batches *= in->get_size(d);
- }
-
- if( weak_greater(offset+matrix_size_out, matrix_size_in) ){
- BOOST_THROW_EXCEPTION(runtime_error( "crop: cropping size mismatch"));
-
- }
-
- // Prepare internal array
- int cur_device, old_device;
- cuNDArray<T> *in_int, *out_int;
-
- // Perform device copy if array is not residing on the current device
- prepare<2,T,T,dummy>( compute_device, &cur_device, &old_device, in, &in_int, out, &out_int );
-  
- // Setup block/grid dimensions
- dim3 blockDim; dim3 gridDim;
- setup_grid( cur_device, prod(matrix_size_out), &blockDim, &gridDim, number_of_batches );
-
- // Invoke kernel
- crop_kernel<T,D><<< gridDim, blockDim >>>
- ( offset, matrix_size_in, matrix_size_out, in_int->get_data_ptr(), out_int->get_data_ptr(), number_of_batches, prod(matrix_size_out) );
- 
- CHECK_FOR_CUDA_ERROR();
-
- // Restore
- restore<2,T,dummy,T,dummy>( old_device, in, in_int, 2, compute_device, 0x0, out, out_int );
-
- }
-
- // Expand and zero fill
- template<class T, unsigned int D> __global__ void
- expand_with_zero_fill_kernel( vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
- T *in, T *out, unsigned int number_of_batches, unsigned int num_elements )
- {
- typedef vector_td<unsigned int,D> uintd;
- const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
- const unsigned int frame_offset = idx/num_elements;
-
- if( idx < num_elements*number_of_batches ){
-
- const uintd co_out = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
- const uintd offset = (matrix_size_out-matrix_size_in)>>1;
- T _out;
- bool inside = (co_out>=offset) && (co_out<(matrix_size_in+offset));
-
- if( inside )
- _out = in[co_to_idx<D>(co_out-offset, matrix_size_in)+frame_offset*prod(matrix_size_in)];
- else{      
- _out = T(0);
- }
-
- out[idx] = _out;
- }
- }
-
- // Expand and zero fill
- template<class T, unsigned int D> 
- void Gadgetron::expand_with_zero_fill( cuNDArray<T> *in, cuNDArray<T> *out,
- cuNDA_device compute_device )
- { 
- if( in == 0x0 || out == 0x0 ){
- BOOST_THROW_EXCEPTION(runtime_error("zero_fill: 0x0 ndarray provided"));
-
- }
-
- if( in->get_number_of_dimensions() != out->get_number_of_dimensions() ){
- BOOST_THROW_EXCEPTION(runtime_error("zero_fill: image dimensions mismatch"));
-
- }
-
- if( in->get_number_of_dimensions() < D ){
- std::stringstream ss;
- ss << "zero_fill: number of image dimensions should be at least " << D;
- BOOST_THROW_EXCEPTION(runtime_error(ss.str()));
-
- }
-
- typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
- typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( *out->get_dimensions() );
-  
- unsigned int number_of_batches = 1;
- for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
- number_of_batches *= in->get_size(d);
- }
-
- if( weak_greater(matrix_size_in,matrix_size_out) ){
- std::runtime_error("expand: size mismatch, cannot expand");
-
- }
- 
- // Prepare internal array
- int cur_device, old_device;
- cuNDArray<T> *in_int, *out_int;
-
- // Perform device copy if array is not residing on the current device
- prepare<2,T,T,dummy>( compute_device, &cur_device, &old_device, in, &in_int, out, &out_int );
-
- // Setup block/grid dimensions
- dim3 blockDim; dim3 gridDim;
- setup_grid( cur_device, prod(matrix_size_out), &blockDim, &gridDim, number_of_batches );
- 
- // Invoke kernel
- expand_with_zero_fill_kernel<T,D><<< gridDim, blockDim >>> ( matrix_size_in, matrix_size_out, in_int->get_data_ptr(), out_int->get_data_ptr(), number_of_batches, prod(matrix_size_out) );
- 
- CHECK_FOR_CUDA_ERROR();
-
- // Restore
- restore<2,T,dummy,T,dummy>( old_device, in, in_int, 2, compute_device, 0x0, out, out_int );
-
- }
-
- // Zero fill border (rectangular)
- template<class T, unsigned int D> __global__ void
- zero_fill_border_kernel( vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
- T *image, unsigned int number_of_batches, unsigned int number_of_elements )
- {
- const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
-
- if( idx < number_of_elements ){
- const vector_td<unsigned int,D> co_out = idx_to_co<D>( idx, matrix_size_out );
- const vector_td<unsigned int,D> offset = (matrix_size_out-matrix_size_in)>>1;
- if( weak_less( co_out, offset ) || weak_greater_equal( co_out, matrix_size_in+offset ) ){
- T zero = T(0);
- for( unsigned int batch=0; batch<number_of_batches; batch++ ){
- image[idx+batch*number_of_elements] = zero;
- }
- }
- else
- ; // do nothing
- }
- }
-
- // Zero fill border (rectangular)
- template<class T, unsigned int D> 
- void Gadgetron::zero_fill_border( typename uintd<D>::Type matrix_size_in, cuNDArray<T> *in_out,
- cuNDA_device compute_device )
- { 
- typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( *in_out->get_dimensions() );
- 
- if( weak_greater(matrix_size_in, matrix_size_out) ){
- BOOST_THROW_EXCEPTION(runtime_error("zero_fill: size mismatch, cannot zero fill"));
-
- }
- 
- unsigned int number_of_batches = 1;
- for( unsigned int d=D; d<in_out->get_number_of_dimensions(); d++ ){
- number_of_batches *= in_out->get_size(d);
- }
-
- // Prepare internal array
- int cur_device, old_device;
- cuNDArray<T> *in_out_int;
-
- // Perform device copy if array is not residing on the current device
- prepare<1,T,dummy,dummy>( compute_device, &cur_device, &old_device, in_out, &in_out_int ) ;
-
- // Setup block/grid dimensions
- dim3 blockDim; dim3 gridDim;
- setup_grid( cur_device, prod(matrix_size_out), &blockDim, &gridDim );
- 
- // Invoke kernel
- zero_fill_border_kernel<T,D><<< gridDim, blockDim >>>
- ( matrix_size_in, matrix_size_out, in_out_int->get_data_ptr(), number_of_batches, prod(matrix_size_out) );
- 
- CHECK_FOR_CUDA_ERROR();
-
- // Restore
- restore<1,T,dummy,dummy,dummy>( old_device, in_out, in_out_int, 1 );
-
-
- }
 
  // Zero fill border (circular)
  template<class REAL, class T, unsigned int D> __global__ void
@@ -1659,7 +1421,7 @@ return out;
 
  // Zero fill border (circular, 2D)
  template<class REAL, class T, unsigned int D> 
- void Gadgetron::zero_fill_border( REAL radius, cuNDArray<T> *in_out,
+ void zero_fill_border( REAL radius, cuNDArray<T> *in_out,
  cuNDA_device compute_device )
  {
 
@@ -1718,7 +1480,7 @@ return out;
  }
 
  template<class REAL, class T> EXPORTGPUCORE
- void Gadgetron::shrink1( REAL gamma, cuNDArray<T> *in, cuNDArray<T> *out )
+ void shrink1( REAL gamma, cuNDArray<T> *in, cuNDArray<T> *out )
  {
  // TODO: multi-device handling
 
@@ -1770,7 +1532,7 @@ return out;
  }
 
  template<class REAL, class T> EXPORTGPUCORE
- void Gadgetron::shrinkd( REAL gamma, cuNDArray<REAL> *s_k, cuNDArray<T> *in, cuNDArray<T> *out )
+ void shrinkd( REAL gamma, cuNDArray<REAL> *s_k, cuNDArray<T> *in, cuNDArray<T> *out )
  {
  // TODO: multi-device handling
 
@@ -1839,7 +1601,7 @@ return out;
  // Mirror around the origin -- !! leaving the origin unchanged !!
  // This creates empty space "on the left" that can be filled by zero (default) or the left-over entry.
  template<class T, unsigned int D> EXPORTGPUCORE
- void Gadgetron::origin_mirror( cuNDArray<T> *in, cuNDArray<T> *out, bool zero_fill, cuNDA_device compute_device )
+ void origin_mirror( cuNDArray<T> *in, cuNDArray<T> *out, bool zero_fill, cuNDA_device compute_device )
  {
  if( in == 0x0 || out == 0x0 ){
  BOOST_THROW_EXCEPTION(runtime_error( "origin_mirror: 0x0 ndarray provided"));
@@ -1899,7 +1661,7 @@ return out;
  //
  template<class T>  
  boost::shared_ptr< cuNDArray<T> >
- Gadgetron::minimum( cuNDArray<T> *in1,cuNDArray<T> *in2,
+ minimum( cuNDArray<T> *in1,cuNDArray<T> *in2,
  cuNDA_device alloc_device, cuNDA_device compute_device )
  {
  int cur_device, old_device;
@@ -1950,7 +1712,7 @@ return out;
  //
  template<class T>  
  boost::shared_ptr< cuNDArray<T> >
- Gadgetron::maximum( cuNDArray<T> *in1,cuNDArray<T> *in2,
+ maximum( cuNDArray<T> *in1,cuNDArray<T> *in2,
  cuNDA_device alloc_device, cuNDA_device compute_device )
  {
  int cur_device, old_device;
@@ -1989,545 +1751,558 @@ return out;
  // A few functions have integer support
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<int> >
- Gadgetron::sum<int>( cuNDArray<int>*, unsigned int, cuNDA_device, cuNDA_device );
+ sum<int>( cuNDArray<int>*, unsigned int, cuNDA_device, cuNDA_device );
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<intd<1>::Type> >
- Gadgetron::sum<intd<1>::Type >( cuNDArray<intd<1>::Type >*, unsigned int, cuNDA_device, cuNDA_device );
+ sum<intd<1>::Type >( cuNDArray<intd<1>::Type >*, unsigned int, cuNDA_device, cuNDA_device );
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<intd<2>::Type> >
- Gadgetron::sum<intd<2>::Type >( cuNDArray<intd<2>::Type >*, unsigned int, cuNDA_device, cuNDA_device );
+ sum<intd<2>::Type >( cuNDArray<intd<2>::Type >*, unsigned int, cuNDA_device, cuNDA_device );
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<intd<3>::Type> >
- Gadgetron::sum<intd<3>::Type >( cuNDArray<intd<3>::Type >*, unsigned int, cuNDA_device, cuNDA_device );
+ sum<intd<3>::Type >( cuNDArray<intd<3>::Type >*, unsigned int, cuNDA_device, cuNDA_device );
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<intd<4>::Type> >
- Gadgetron::sum<intd<4>::Type >( cuNDArray<intd<4>::Type >*, unsigned int, cuNDA_device, cuNDA_device );
+ sum<intd<4>::Type >( cuNDArray<intd<4>::Type >*, unsigned int, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<unsigned int> >
- Gadgetron::sum<unsigned int>( cuNDArray<unsigned int>*, unsigned int, cuNDA_device, cuNDA_device);
+ sum<unsigned int>( cuNDArray<unsigned int>*, unsigned int, cuNDA_device, cuNDA_device);
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<uintd<1>::Type> >
- Gadgetron::sum<uintd<1>::Type>( cuNDArray<uintd<1>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
+ sum<uintd<1>::Type>( cuNDArray<uintd<1>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<uintd<2>::Type> >
- Gadgetron::sum<uintd<2>::Type>( cuNDArray<uintd<2>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
+ sum<uintd<2>::Type>( cuNDArray<uintd<2>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<uintd<3>::Type> >
- Gadgetron::sum<uintd<3>::Type>( cuNDArray<uintd<3>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
+ sum<uintd<3>::Type>( cuNDArray<uintd<3>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<uintd<4>::Type> >
- Gadgetron::sum<uintd<4>::Type>( cuNDArray<uintd<4>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
+ sum<uintd<4>::Type>( cuNDArray<uintd<4>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
 
 
  template EXPORTGPUCORE void
- Gadgetron::crop<int,1>( uintd1, cuNDArray<int>*, cuNDArray<int>*, cuNDA_device );
+ crop<int,1>( uintd1, cuNDArray<int>*, cuNDArray<int>*, cuNDA_device );
 
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<int,1>,1>( uintd1, cuNDArray<vector_td<int,1> >*, cuNDArray<vector_td<int,1> >*, cuNDA_device );
+ crop<vector_td<int,1>,1>( uintd1, cuNDArray<vector_td<int,1> >*, cuNDArray<vector_td<int,1> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<int,2>,1>( uintd1, cuNDArray<vector_td<int,2> >*, cuNDArray<vector_td<int,2> >*, cuNDA_device );
+ crop<vector_td<int,2>,1>( uintd1, cuNDArray<vector_td<int,2> >*, cuNDArray<vector_td<int,2> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<int,3>,1>( uintd1, cuNDArray<vector_td<int,3> >*, cuNDArray<vector_td<int,3> >*, cuNDA_device );
+ crop<vector_td<int,3>,1>( uintd1, cuNDArray<vector_td<int,3> >*, cuNDArray<vector_td<int,3> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<int,4>,1>( uintd1, cuNDArray<vector_td<int,4> >*, cuNDArray<vector_td<int,4> >*, cuNDA_device );
+ crop<vector_td<int,4>,1>( uintd1, cuNDArray<vector_td<int,4> >*, cuNDArray<vector_td<int,4> >*, cuNDA_device );
 
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<int,1>,2>( uintd2, cuNDArray<vector_td<int,1> >*, cuNDArray<vector_td<int,1> >*, cuNDA_device );
+ crop<vector_td<int,1>,2>( uintd2, cuNDArray<vector_td<int,1> >*, cuNDArray<vector_td<int,1> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<int,2>,2>( uintd2, cuNDArray<vector_td<int,2> >*, cuNDArray<vector_td<int,2> >*, cuNDA_device );
+ crop<vector_td<int,2>,2>( uintd2, cuNDArray<vector_td<int,2> >*, cuNDArray<vector_td<int,2> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<int,3>,2>( uintd2, cuNDArray<vector_td<int,3> >*, cuNDArray<vector_td<int,3> >*, cuNDA_device );
+ crop<vector_td<int,3>,2>( uintd2, cuNDArray<vector_td<int,3> >*, cuNDArray<vector_td<int,3> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<int,4>,2>( uintd2, cuNDArray<vector_td<int,4> >*, cuNDArray<vector_td<int,4> >*, cuNDA_device );
+ crop<vector_td<int,4>,2>( uintd2, cuNDArray<vector_td<int,4> >*, cuNDArray<vector_td<int,4> >*, cuNDA_device );
 
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<int,1>,3>( uintd3, cuNDArray<vector_td<int,1> >*, cuNDArray<vector_td<int,1> >*, cuNDA_device );
+ crop<vector_td<int,1>,3>( uintd3, cuNDArray<vector_td<int,1> >*, cuNDArray<vector_td<int,1> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<int,2>,3>( uintd3, cuNDArray<vector_td<int,2> >*, cuNDArray<vector_td<int,2> >*, cuNDA_device );
+ crop<vector_td<int,2>,3>( uintd3, cuNDArray<vector_td<int,2> >*, cuNDArray<vector_td<int,2> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<int,3>,3>( uintd3, cuNDArray<vector_td<int,3> >*, cuNDArray<vector_td<int,3> >*, cuNDA_device );
+ crop<vector_td<int,3>,3>( uintd3, cuNDArray<vector_td<int,3> >*, cuNDArray<vector_td<int,3> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<int,4>,3>( uintd3, cuNDArray<vector_td<int,4> >*, cuNDArray<vector_td<int,4> >*, cuNDA_device );
+ crop<vector_td<int,4>,3>( uintd3, cuNDArray<vector_td<int,4> >*, cuNDArray<vector_td<int,4> >*, cuNDA_device );
 
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<int,1>,4>( uintd4, cuNDArray<vector_td<int,1> >*, cuNDArray<vector_td<int,1> >*, cuNDA_device );
+ crop<vector_td<int,1>,4>( uintd4, cuNDArray<vector_td<int,1> >*, cuNDArray<vector_td<int,1> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<int,2>,4>( uintd4, cuNDArray<vector_td<int,2> >*, cuNDArray<vector_td<int,2> >*, cuNDA_device );
+ crop<vector_td<int,2>,4>( uintd4, cuNDArray<vector_td<int,2> >*, cuNDArray<vector_td<int,2> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<int,3>,4>( uintd4, cuNDArray<vector_td<int,3> >*, cuNDArray<vector_td<int,3> >*, cuNDA_device );
+ crop<vector_td<int,3>,4>( uintd4, cuNDArray<vector_td<int,3> >*, cuNDArray<vector_td<int,3> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<int,4>,4>( uintd4, cuNDArray<vector_td<int,4> >*, cuNDArray<vector_td<int,4> >*, cuNDA_device );
+ crop<vector_td<int,4>,4>( uintd4, cuNDArray<vector_td<int,4> >*, cuNDArray<vector_td<int,4> >*, cuNDA_device );
 
  template EXPORTGPUCORE void
- Gadgetron::crop<unsigned int,1>( uintd1, cuNDArray<unsigned int>*, cuNDArray<unsigned int>*, cuNDA_device );
+ crop<unsigned int,1>( uintd1, cuNDArray<unsigned int>*, cuNDArray<unsigned int>*, cuNDA_device );
 
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<unsigned int,1>,1>( uintd1, cuNDArray<vector_td<unsigned int,1> >*, cuNDArray<vector_td<unsigned int,1> >*, cuNDA_device );
+ crop<vector_td<unsigned int,1>,1>( uintd1, cuNDArray<vector_td<unsigned int,1> >*, cuNDArray<vector_td<unsigned int,1> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<unsigned int,2>,1>( uintd1, cuNDArray<vector_td<unsigned int,2> >*, cuNDArray<vector_td<unsigned int,2> >*, cuNDA_device );
+ crop<vector_td<unsigned int,2>,1>( uintd1, cuNDArray<vector_td<unsigned int,2> >*, cuNDArray<vector_td<unsigned int,2> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<unsigned int,3>,1>( uintd1, cuNDArray<vector_td<unsigned int,3> >*, cuNDArray<vector_td<unsigned int,3> >*, cuNDA_device );
+ crop<vector_td<unsigned int,3>,1>( uintd1, cuNDArray<vector_td<unsigned int,3> >*, cuNDArray<vector_td<unsigned int,3> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<unsigned int,4>,1>( uintd1, cuNDArray<vector_td<unsigned int,4> >*, cuNDArray<vector_td<unsigned int,4> >*, cuNDA_device );
+ crop<vector_td<unsigned int,4>,1>( uintd1, cuNDArray<vector_td<unsigned int,4> >*, cuNDArray<vector_td<unsigned int,4> >*, cuNDA_device );
 
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<unsigned int,1>,2>( uintd2, cuNDArray<vector_td<unsigned int,1> >*, cuNDArray<vector_td<unsigned int,1> >*, cuNDA_device );
+ crop<vector_td<unsigned int,1>,2>( uintd2, cuNDArray<vector_td<unsigned int,1> >*, cuNDArray<vector_td<unsigned int,1> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<unsigned int,2>,2>( uintd2, cuNDArray<vector_td<unsigned int,2> >*, cuNDArray<vector_td<unsigned int,2> >*, cuNDA_device );
+ crop<vector_td<unsigned int,2>,2>( uintd2, cuNDArray<vector_td<unsigned int,2> >*, cuNDArray<vector_td<unsigned int,2> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<unsigned int,3>,2>( uintd2, cuNDArray<vector_td<unsigned int,3> >*, cuNDArray<vector_td<unsigned int,3> >*, cuNDA_device );
+ crop<vector_td<unsigned int,3>,2>( uintd2, cuNDArray<vector_td<unsigned int,3> >*, cuNDArray<vector_td<unsigned int,3> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<unsigned int,4>,2>( uintd2, cuNDArray<vector_td<unsigned int,4> >*, cuNDArray<vector_td<unsigned int,4> >*, cuNDA_device );
+ crop<vector_td<unsigned int,4>,2>( uintd2, cuNDArray<vector_td<unsigned int,4> >*, cuNDArray<vector_td<unsigned int,4> >*, cuNDA_device );
 
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<unsigned int,1>,3>( uintd3, cuNDArray<vector_td<unsigned int,1> >*, cuNDArray<vector_td<unsigned int,1> >*, cuNDA_device );
+ crop<vector_td<unsigned int,1>,3>( uintd3, cuNDArray<vector_td<unsigned int,1> >*, cuNDArray<vector_td<unsigned int,1> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<unsigned int,2>,3>( uintd3, cuNDArray<vector_td<unsigned int,2> >*, cuNDArray<vector_td<unsigned int,2> >*, cuNDA_device );
+ crop<vector_td<unsigned int,2>,3>( uintd3, cuNDArray<vector_td<unsigned int,2> >*, cuNDArray<vector_td<unsigned int,2> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<unsigned int,3>,3>( uintd3, cuNDArray<vector_td<unsigned int,3> >*, cuNDArray<vector_td<unsigned int,3> >*, cuNDA_device );
+ crop<vector_td<unsigned int,3>,3>( uintd3, cuNDArray<vector_td<unsigned int,3> >*, cuNDArray<vector_td<unsigned int,3> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<unsigned int,4>,3>( uintd3, cuNDArray<vector_td<unsigned int,4> >*, cuNDArray<vector_td<unsigned int,4> >*, cuNDA_device );
+ crop<vector_td<unsigned int,4>,3>( uintd3, cuNDArray<vector_td<unsigned int,4> >*, cuNDArray<vector_td<unsigned int,4> >*, cuNDA_device );
 
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<unsigned int,1>,4>( uintd4, cuNDArray<vector_td<unsigned int,1> >*, cuNDArray<vector_td<unsigned int,1> >*, cuNDA_device );
+ crop<vector_td<unsigned int,1>,4>( uintd4, cuNDArray<vector_td<unsigned int,1> >*, cuNDArray<vector_td<unsigned int,1> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<unsigned int,2>,4>( uintd4, cuNDArray<vector_td<unsigned int,2> >*, cuNDArray<vector_td<unsigned int,2> >*, cuNDA_device );
+ crop<vector_td<unsigned int,2>,4>( uintd4, cuNDArray<vector_td<unsigned int,2> >*, cuNDArray<vector_td<unsigned int,2> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<unsigned int,3>,4>( uintd4, cuNDArray<vector_td<unsigned int,3> >*, cuNDArray<vector_td<unsigned int,3> >*, cuNDA_device );
+ crop<vector_td<unsigned int,3>,4>( uintd4, cuNDArray<vector_td<unsigned int,3> >*, cuNDArray<vector_td<unsigned int,3> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<unsigned int,4>,4>( uintd4, cuNDArray<vector_td<unsigned int,4> >*, cuNDArray<vector_td<unsigned int,4> >*, cuNDA_device );
+ crop<vector_td<unsigned int,4>,4>( uintd4, cuNDArray<vector_td<unsigned int,4> >*, cuNDArray<vector_td<unsigned int,4> >*, cuNDA_device );
 
  // Instanciation -- single precision
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::sum<float>( cuNDArray<float>*, unsigned int, cuNDA_device, cuNDA_device);
+ sum<float>( cuNDArray<float>*, unsigned int, cuNDA_device, cuNDA_device);
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<complext<float> > >
- Gadgetron::sum<complext<float> >( cuNDArray<complext<float> >*, unsigned int, cuNDA_device, cuNDA_device);
+ sum<complext<float> >( cuNDArray<complext<float> >*, unsigned int, cuNDA_device, cuNDA_device);
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<floatd<1>::Type> >
- Gadgetron::sum<floatd<1>::Type>( cuNDArray<floatd<1>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
+ sum<floatd<1>::Type>( cuNDArray<floatd<1>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<floatd<2>::Type> >
- Gadgetron::sum<floatd<2>::Type>( cuNDArray<floatd<2>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
+ sum<floatd<2>::Type>( cuNDArray<floatd<2>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<floatd<3>::Type> >
- Gadgetron::sum<floatd<3>::Type>( cuNDArray<floatd<3>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
+ sum<floatd<3>::Type>( cuNDArray<floatd<3>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<floatd<4>::Type> >
- Gadgetron::sum<floatd<4>::Type>( cuNDArray<floatd<4>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
+ sum<floatd<4>::Type>( cuNDArray<floatd<4>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::expand<float>( cuNDArray<float>*, unsigned int, cuNDA_device, cuNDA_device);
+ expand<float>( cuNDArray<float>*, unsigned int, cuNDA_device, cuNDA_device);
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> >
- Gadgetron::expand<float_complext>( cuNDArray<float_complext>*, unsigned int, cuNDA_device, cuNDA_device);
+ expand<float_complext>( cuNDArray<float_complext>*, unsigned int, cuNDA_device, cuNDA_device);
 
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::abs<float_complext>( cuNDArray<float_complext>*, cuNDA_device, cuNDA_device );
+ abs<float_complext>( cuNDArray<float_complext>*, cuNDA_device, cuNDA_device );
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::abs<float>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
-
- template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::minimum<float>( cuNDArray<float>*, cuNDArray<float>*, cuNDA_device, cuNDA_device );
- template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::maximum<float>( cuNDArray<float>*, cuNDArray<float>*,cuNDA_device, cuNDA_device );
+ abs<float>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::correlation<float>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+ minimum<float>( cuNDArray<float>*, cuNDArray<float>*, cuNDA_device, cuNDA_device );
+ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
+ maximum<float>( cuNDArray<float>*, cuNDArray<float>*,cuNDA_device, cuNDA_device );
 
- template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> >
- Gadgetron::correlation<float_complext>( cuNDArray<float_complext>*, cuNDA_device, cuNDA_device );
-
-
-
- template EXPORTGPUCORE void
- Gadgetron::crop<float,1>( uintd1, cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::crop<float,2>( uintd2, cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
-
- template EXPORTGPUCORE void
- Gadgetron::crop<complext<float>,1>( uintd1, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::crop<complext<float>,2>( uintd2, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::crop<complext<float>,3>( uintd3, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::crop<complext<float>,4>( uintd4, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
-
- template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<float,1>,1>( uintd1, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<float,2>,1>( uintd1, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<float,3>,1>( uintd1, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<float,4>,1>( uintd1, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*, cuNDA_device );
-
- template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<float,1>,2>( uintd2, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<float,2>,2>( uintd2, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<float,3>,2>( uintd2, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<float,4>,2>( uintd2, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*, cuNDA_device );
-
- template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<float,1>,3>( uintd3, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<float,2>,3>( uintd3, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<float,3>,3>( uintd3, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<float,4>,3>( uintd3, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*, cuNDA_device );
-
- template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<float,1>,4>( uintd4, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<float,2>,4>( uintd4, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<float,3>,4>( uintd4, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<float,4>,4>( uintd4, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*, cuNDA_device );
-
-
- template EXPORTGPUCORE void
- Gadgetron::expand_with_zero_fill<float,1>( cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::expand_with_zero_fill<float_complext,1>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, cuNDA_device );
-
- template EXPORTGPUCORE void
- Gadgetron::expand_with_zero_fill<float,2>( cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::expand_with_zero_fill<float_complext,2>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, cuNDA_device );
-
- template EXPORTGPUCORE void
- Gadgetron::expand_with_zero_fill<float,3>( cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::expand_with_zero_fill<float_complext,3>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, cuNDA_device );
-
- template EXPORTGPUCORE void
- Gadgetron::expand_with_zero_fill<float,4>( cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
- template EXPORTGPUCORE void
- Gadgetron::expand_with_zero_fill<float_complext,4>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, cuNDA_device );
+ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
+ correlation<float>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> >
- Gadgetron::real_to_complext<float>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
-
- template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::complext_to_real<float>( cuNDArray<float_complext>*, cuNDA_device, cuNDA_device );
-
- template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::downsample<float,1>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
-
- template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::downsample<float,2>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
-
- template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::downsample<float,3>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
-
- template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::downsample<float,4>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
-
- template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::upsample_nn<float,1>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
-
- template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::upsample_nn<float,2>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
-
- template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::upsample_nn<float,3>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
-
- template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::upsample_nn<float,4>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
-
- template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::upsample_lin<float,1>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
-
- template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::upsample_lin<float,2>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
-
- template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::upsample_lin<float,3>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
-
- template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
- Gadgetron::upsample_lin<float,4>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+ correlation<float_complext>( cuNDArray<float_complext>*, cuNDA_device, cuNDA_device );
 
 
- template EXPORTGPUCORE void Gadgetron::rss_normalize<float>( cuNDArray<float>*, unsigned int, cuNDA_device );
- template EXPORTGPUCORE void Gadgetron::rss_normalize<float_complext>( cuNDArray<float_complext>*, unsigned int, cuNDA_device );
-
-
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<float,1>(uintd1, cuNDArray<float>*, cuNDA_device );
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<float_complext,1>(uintd1, cuNDArray<float_complext>*, cuNDA_device );
-
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<float,2>(uintd2, cuNDArray<float>*, cuNDA_device );
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<float_complext,2>(uintd2, cuNDArray<float_complext>*, cuNDA_device );
-
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<float,3>(uintd3, cuNDArray<float>*, cuNDA_device );
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<float_complext,3>(uintd3, cuNDArray<float_complext>*, cuNDA_device );
-
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<float,4>(uintd4, cuNDArray<float>*, cuNDA_device );
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<float_complext,4>(uintd4, cuNDArray<float_complext>*, cuNDA_device );
-
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<float,float,2>(float, cuNDArray<float>*, cuNDA_device );
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<float,float_complext,2>(float, cuNDArray<float_complext>*, cuNDA_device );
-
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<float,float,3>(float, cuNDArray<float>*, cuNDA_device );
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<float,float_complext,3>(float, cuNDArray<float_complext>*, cuNDA_device );
-
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<float,float,4>(float, cuNDArray<float>*, cuNDA_device );
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<float,float_complext,4>(float, cuNDArray<float_complext>*, cuNDA_device );
-
-
-
- template EXPORTGPUCORE void Gadgetron::shrink1<float,float>( float, cuNDArray<float>*, cuNDArray<float>* );
- template EXPORTGPUCORE void Gadgetron::shrink1<float,float_complext>( float, cuNDArray<float_complext>*, cuNDArray<float_complext>* );
-
- template EXPORTGPUCORE void Gadgetron::shrinkd<float,float>( float, cuNDArray<float>*, cuNDArray<float>*, cuNDArray<float>* );
- template EXPORTGPUCORE void Gadgetron::shrinkd<float,float_complext>( float, cuNDArray<float>*, cuNDArray<float_complext>*, cuNDArray<float_complext>* );
-
- template EXPORTGPUCORE
- void Gadgetron::origin_mirror<float,1>(cuNDArray<float>*, cuNDArray<float>*, bool, cuNDA_device);
- template EXPORTGPUCORE
- void Gadgetron::origin_mirror<float,2>(cuNDArray<float>*, cuNDArray<float>*, bool, cuNDA_device);
- template EXPORTGPUCORE
- void Gadgetron::origin_mirror<float,3>(cuNDArray<float>*, cuNDArray<float>*, bool, cuNDA_device);
- template EXPORTGPUCORE
- void Gadgetron::origin_mirror<float,4>(cuNDArray<float>*, cuNDArray<float>*, bool, cuNDA_device);
 
  template EXPORTGPUCORE void
- Gadgetron::origin_mirror<float_complext,1>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, bool, cuNDA_device);
+ crop<float,1>( uintd1, cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::origin_mirror<float_complext,2>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, bool, cuNDA_device);
+ crop<float,2>( uintd2, cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
+
  template EXPORTGPUCORE void
- Gadgetron::origin_mirror<float_complext,3>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, bool, cuNDA_device);
+ crop<complext<float>,1>( uintd1, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::origin_mirror<float_complext,4>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, bool, cuNDA_device);
+ crop<complext<float>,2>( uintd2, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<complext<float>,3>( uintd3, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<complext<float>,4>( uintd4, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
+
+ template EXPORTGPUCORE void
+ crop<vector_td<float,1>,1>( uintd1, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<vector_td<float,2>,1>( uintd1, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<vector_td<float,3>,1>( uintd1, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<vector_td<float,4>,1>( uintd1, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*, cuNDA_device );
+
+ template EXPORTGPUCORE void
+ crop<vector_td<float,1>,2>( uintd2, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<vector_td<float,2>,2>( uintd2, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<vector_td<float,3>,2>( uintd2, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<vector_td<float,4>,2>( uintd2, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*, cuNDA_device );
+
+ template EXPORTGPUCORE void
+ crop<vector_td<float,1>,3>( uintd3, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<vector_td<float,2>,3>( uintd3, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<vector_td<float,3>,3>( uintd3, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<vector_td<float,4>,3>( uintd3, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*, cuNDA_device );
+
+ template EXPORTGPUCORE void
+ crop<vector_td<float,1>,4>( uintd4, cuNDArray<vector_td<float,1> >*, cuNDArray<vector_td<float,1> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<vector_td<float,2>,4>( uintd4, cuNDArray<vector_td<float,2> >*, cuNDArray<vector_td<float,2> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<vector_td<float,3>,4>( uintd4, cuNDArray<vector_td<float,3> >*, cuNDArray<vector_td<float,3> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<vector_td<float,4>,4>( uintd4, cuNDArray<vector_td<float,4> >*, cuNDArray<vector_td<float,4> >*, cuNDA_device );
+
+
+ template EXPORTGPUCORE void
+ crop<float,1>( uintd1, cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<float,2>( uintd2, cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
+
+ template EXPORTGPUCORE void
+ crop<complext<float>,1>( uintd1, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<complext<float>,2>( uintd2, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<complext<float>,3>( uintd3, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ crop<complext<float>,4>( uintd4, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*, cuNDA_device );
+ template EXPORTGPUCORE void
+ expand_with_zero_fill<float,1>( cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
+ template EXPORTGPUCORE void
+ expand_with_zero_fill<float_complext,1>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, cuNDA_device );
+
+ template EXPORTGPUCORE void
+ expand_with_zero_fill<float,2>( cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
+ template EXPORTGPUCORE void
+ expand_with_zero_fill<float_complext,2>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, cuNDA_device );
+
+ template EXPORTGPUCORE void
+ expand_with_zero_fill<float,3>( cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
+ template EXPORTGPUCORE void
+ expand_with_zero_fill<float_complext,3>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, cuNDA_device );
+
+ template EXPORTGPUCORE void
+ expand_with_zero_fill<float,4>( cuNDArray<float>*, cuNDArray<float>*, cuNDA_device );
+ template EXPORTGPUCORE void
+ expand_with_zero_fill<float_complext,4>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, cuNDA_device );
+
+ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> >
+ real_to_complext<float>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
+ complext_to_real<float>( cuNDArray<float_complext>*, cuNDA_device, cuNDA_device );
+
+ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
+ downsample<float,1>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
+ downsample<float,2>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
+ downsample<float,3>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
+ downsample<float,4>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
+ upsample_nn<float,1>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
+ upsample_nn<float,2>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
+ upsample_nn<float,3>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
+ upsample_nn<float,4>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
+ upsample_lin<float,1>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
+ upsample_lin<float,2>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
+ upsample_lin<float,3>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> >
+ upsample_lin<float,4>( cuNDArray<float>*, cuNDA_device, cuNDA_device );
+
+
+ template EXPORTGPUCORE void rss_normalize<float>( cuNDArray<float>*, unsigned int, cuNDA_device );
+ template EXPORTGPUCORE void rss_normalize<float_complext>( cuNDArray<float_complext>*, unsigned int, cuNDA_device );
+
+
+ template EXPORTGPUCORE void zero_fill_border<float,1>(uintd1, cuNDArray<float>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<float_complext,1>(uintd1, cuNDArray<float_complext>*, cuNDA_device );
+
+ template EXPORTGPUCORE void zero_fill_border<float,2>(uintd2, cuNDArray<float>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<float_complext,2>(uintd2, cuNDArray<float_complext>*, cuNDA_device );
+
+ template EXPORTGPUCORE void zero_fill_border<float,3>(uintd3, cuNDArray<float>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<float_complext,3>(uintd3, cuNDArray<float_complext>*, cuNDA_device );
+
+ template EXPORTGPUCORE void zero_fill_border<float,4>(uintd4, cuNDArray<float>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<float_complext,4>(uintd4, cuNDArray<float_complext>*, cuNDA_device );
+
+ template EXPORTGPUCORE void zero_fill_border<float,float,2>(float, cuNDArray<float>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<float,float_complext,2>(float, cuNDArray<float_complext>*, cuNDA_device );
+
+ template EXPORTGPUCORE void zero_fill_border<float,float,3>(float, cuNDArray<float>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<float,float_complext,3>(float, cuNDArray<float_complext>*, cuNDA_device );
+
+ template EXPORTGPUCORE void zero_fill_border<float,float,4>(float, cuNDArray<float>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<float,float_complext,4>(float, cuNDArray<float_complext>*, cuNDA_device );
+
+
+
+ template EXPORTGPUCORE void shrink1<float,float>( float, cuNDArray<float>*, cuNDArray<float>* );
+ template EXPORTGPUCORE void shrink1<float,float_complext>( float, cuNDArray<float_complext>*, cuNDArray<float_complext>* );
+
+ template EXPORTGPUCORE void shrinkd<float,float>( float, cuNDArray<float>*, cuNDArray<float>*, cuNDArray<float>* );
+ template EXPORTGPUCORE void shrinkd<float,float_complext>( float, cuNDArray<float>*, cuNDArray<float_complext>*, cuNDArray<float_complext>* );
+
+ template EXPORTGPUCORE
+ void origin_mirror<float,1>(cuNDArray<float>*, cuNDArray<float>*, bool, cuNDA_device);
+ template EXPORTGPUCORE
+ void origin_mirror<float,2>(cuNDArray<float>*, cuNDArray<float>*, bool, cuNDA_device);
+ template EXPORTGPUCORE
+ void origin_mirror<float,3>(cuNDArray<float>*, cuNDArray<float>*, bool, cuNDA_device);
+ template EXPORTGPUCORE
+ void origin_mirror<float,4>(cuNDArray<float>*, cuNDArray<float>*, bool, cuNDA_device);
+
+ template EXPORTGPUCORE void
+ origin_mirror<float_complext,1>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, bool, cuNDA_device);
+ template EXPORTGPUCORE void
+ origin_mirror<float_complext,2>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, bool, cuNDA_device);
+ template EXPORTGPUCORE void
+ origin_mirror<float_complext,3>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, bool, cuNDA_device);
+ template EXPORTGPUCORE void
+ origin_mirror<float_complext,4>(cuNDArray<float_complext>*, cuNDArray<float_complext>*, bool, cuNDA_device);
 
 
  // Instanciation -- double precision
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::sum<double>( cuNDArray<double>*, unsigned int, cuNDA_device, cuNDA_device);
+ sum<double>( cuNDArray<double>*, unsigned int, cuNDA_device, cuNDA_device);
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext > >
- Gadgetron::sum<complext<double> >( cuNDArray<double_complext >*, unsigned int, cuNDA_device, cuNDA_device);
+ sum<complext<double> >( cuNDArray<double_complext >*, unsigned int, cuNDA_device, cuNDA_device);
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<doubled<1>::Type> >
- Gadgetron::sum<doubled<1>::Type>( cuNDArray<doubled<1>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
+ sum<doubled<1>::Type>( cuNDArray<doubled<1>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<doubled<2>::Type> >
- Gadgetron::sum<doubled<2>::Type>( cuNDArray<doubled<2>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
+ sum<doubled<2>::Type>( cuNDArray<doubled<2>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<doubled<3>::Type> >
- Gadgetron::sum<doubled<3>::Type>( cuNDArray<doubled<3>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
+ sum<doubled<3>::Type>( cuNDArray<doubled<3>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<doubled<4>::Type> >
- Gadgetron::sum<doubled<4>::Type>( cuNDArray<doubled<4>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
+ sum<doubled<4>::Type>( cuNDArray<doubled<4>::Type>*, unsigned int, cuNDA_device, cuNDA_device );
 
 
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::expand<double>( cuNDArray<double>*, unsigned int, cuNDA_device, cuNDA_device);
+ expand<double>( cuNDArray<double>*, unsigned int, cuNDA_device, cuNDA_device);
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> >
- Gadgetron::expand<double_complext>( cuNDArray<double_complext>*, unsigned int, cuNDA_device, cuNDA_device);
+ expand<double_complext>( cuNDArray<double_complext>*, unsigned int, cuNDA_device, cuNDA_device);
 
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::abs<double_complext>( cuNDArray<double_complext>*, cuNDA_device, cuNDA_device );
+ abs<double_complext>( cuNDArray<double_complext>*, cuNDA_device, cuNDA_device );
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::abs<double>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+ abs<double>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::correlation<double>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+ correlation<double>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> >
- Gadgetron::correlation<double_complext>( cuNDArray<double_complext>*, cuNDA_device, cuNDA_device );
+ correlation<double_complext>( cuNDArray<double_complext>*, cuNDA_device, cuNDA_device );
 
  //template EXPORTGPUCORE void axpy<double>( cuNDArray<double>*, cuNDArray<double_complext>*, cuNDArray<double_complext>*, cuNDA_device );
 
  template EXPORTGPUCORE void
- Gadgetron::crop<double,1>( uintd1, cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
+ crop<double,1>( uintd1, cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<complext<double> ,1>( uintd1, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*, cuNDA_device );
+ crop<complext<double> ,1>( uintd1, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<complext<double> ,2>( uintd2, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*, cuNDA_device );
+ crop<complext<double> ,2>( uintd2, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<complext<double> ,3>( uintd3, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*, cuNDA_device );
+ crop<complext<double> ,3>( uintd3, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<complext<double> ,4>( uintd4, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*, cuNDA_device );
+ crop<complext<double> ,4>( uintd4, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*, cuNDA_device );
 
 
 
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<double,1>,1>( uintd1, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*, cuNDA_device );
+ crop<vector_td<double,1>,1>( uintd1, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<double,2>,1>( uintd1, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*, cuNDA_device );
+ crop<vector_td<double,2>,1>( uintd1, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<double,3>,1>( uintd1, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*, cuNDA_device );
+ crop<vector_td<double,3>,1>( uintd1, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<double,4>,1>( uintd1, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*, cuNDA_device );
+ crop<vector_td<double,4>,1>( uintd1, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*, cuNDA_device );
 
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<double,1>,2>( uintd2, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*, cuNDA_device );
+ crop<vector_td<double,1>,2>( uintd2, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<double,2>,2>( uintd2, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*, cuNDA_device );
+ crop<vector_td<double,2>,2>( uintd2, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<double,3>,2>( uintd2, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*, cuNDA_device );
+ crop<vector_td<double,3>,2>( uintd2, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<double,4>,2>( uintd2, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*, cuNDA_device );
+ crop<vector_td<double,4>,2>( uintd2, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*, cuNDA_device );
 
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<double,1>,3>( uintd3, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*, cuNDA_device );
+ crop<vector_td<double,1>,3>( uintd3, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<double,2>,3>( uintd3, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*, cuNDA_device );
+ crop<vector_td<double,2>,3>( uintd3, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<double,3>,3>( uintd3, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*, cuNDA_device );
+ crop<vector_td<double,3>,3>( uintd3, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<double,4>,3>( uintd3, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*, cuNDA_device );
+ crop<vector_td<double,4>,3>( uintd3, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*, cuNDA_device );
 
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<double,1>,4>( uintd4, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*, cuNDA_device );
+ crop<vector_td<double,1>,4>( uintd4, cuNDArray<vector_td<double,1> >*, cuNDArray<vector_td<double,1> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<double,2>,4>( uintd4, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*, cuNDA_device );
+ crop<vector_td<double,2>,4>( uintd4, cuNDArray<vector_td<double,2> >*, cuNDArray<vector_td<double,2> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<double,3>,4>( uintd4, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*, cuNDA_device );
+ crop<vector_td<double,3>,4>( uintd4, cuNDArray<vector_td<double,3> >*, cuNDArray<vector_td<double,3> >*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::crop<vector_td<double,4>,4>( uintd4, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*, cuNDA_device );
+ crop<vector_td<double,4>,4>( uintd4, cuNDArray<vector_td<double,4> >*, cuNDArray<vector_td<double,4> >*, cuNDA_device );
 
  template EXPORTGPUCORE void
- Gadgetron::expand_with_zero_fill<double,1>( cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
+ expand_with_zero_fill<double,1>( cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::expand_with_zero_fill<double_complext,1>( cuNDArray<double_complext>*, cuNDArray<double_complext>*, cuNDA_device );
+ expand_with_zero_fill<double_complext,1>( cuNDArray<double_complext>*, cuNDArray<double_complext>*, cuNDA_device );
 
  template EXPORTGPUCORE void
- Gadgetron::expand_with_zero_fill<double,2>( cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
+ expand_with_zero_fill<double,2>( cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::expand_with_zero_fill<double_complext,2>( cuNDArray<double_complext>*, cuNDArray<double_complext>*, cuNDA_device );
+ expand_with_zero_fill<double_complext,2>( cuNDArray<double_complext>*, cuNDArray<double_complext>*, cuNDA_device );
 
  template EXPORTGPUCORE void
- Gadgetron::expand_with_zero_fill<double,3>( cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
+ expand_with_zero_fill<double,3>( cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::expand_with_zero_fill<double_complext,3>( cuNDArray<double_complext>*, cuNDArray<double_complext>*, cuNDA_device );
+ expand_with_zero_fill<double_complext,3>( cuNDArray<double_complext>*, cuNDArray<double_complext>*, cuNDA_device );
 
  template EXPORTGPUCORE void
- Gadgetron::expand_with_zero_fill<double,4>( cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
+ expand_with_zero_fill<double,4>( cuNDArray<double>*, cuNDArray<double>*, cuNDA_device );
  template EXPORTGPUCORE void
- Gadgetron::expand_with_zero_fill<double_complext,4>( cuNDArray<double_complext>*, cuNDArray<double_complext>*, cuNDA_device );
+ expand_with_zero_fill<double_complext,4>( cuNDArray<double_complext>*, cuNDArray<double_complext>*, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> >
- Gadgetron::real_to_complext<double>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+ real_to_complext<double>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::complext_to_real<double>( cuNDArray<double_complext>*, cuNDA_device, cuNDA_device );
+ complext_to_real<double>( cuNDArray<double_complext>*, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::downsample<double,1>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+ downsample<double,1>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::downsample<double,2>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+ downsample<double,2>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::downsample<double,3>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+ downsample<double,3>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::downsample<double,4>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+ downsample<double,4>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::upsample_nn<double,1>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+ upsample_nn<double,1>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::upsample_nn<double,2>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+ upsample_nn<double,2>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::upsample_nn<double,3>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+ upsample_nn<double,3>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::upsample_nn<double,4>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+ upsample_nn<double,4>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::upsample_lin<double,1>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+ upsample_lin<double,1>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::upsample_lin<double,2>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+ upsample_lin<double,2>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::upsample_lin<double,3>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+ upsample_lin<double,3>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> >
- Gadgetron::upsample_lin<double,4>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
+ upsample_lin<double,4>( cuNDArray<double>*, cuNDA_device, cuNDA_device );
 
- template EXPORTGPUCORE void Gadgetron::rss_normalize<double>( cuNDArray<double>*, unsigned int, cuNDA_device );
- template EXPORTGPUCORE void Gadgetron::rss_normalize<double_complext>( cuNDArray<double_complext>*, unsigned int, cuNDA_device );
+ template EXPORTGPUCORE void rss_normalize<double>( cuNDArray<double>*, unsigned int, cuNDA_device );
+ template EXPORTGPUCORE void rss_normalize<double_complext>( cuNDArray<double_complext>*, unsigned int, cuNDA_device );
 
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<double,1>(uintd1, cuNDArray<double>*, cuNDA_device );
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<double_complext,1>(uintd1, cuNDArray<double_complext>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<double,1>(uintd1, cuNDArray<double>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<double_complext,1>(uintd1, cuNDArray<double_complext>*, cuNDA_device );
 
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<double,2>(uintd2, cuNDArray<double>*, cuNDA_device );
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<double_complext,2>(uintd2, cuNDArray<double_complext>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<double,2>(uintd2, cuNDArray<double>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<double_complext,2>(uintd2, cuNDArray<double_complext>*, cuNDA_device );
 
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<double,3>(uintd3, cuNDArray<double>*, cuNDA_device );
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<double_complext,3>(uintd3, cuNDArray<double_complext>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<double,3>(uintd3, cuNDArray<double>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<double_complext,3>(uintd3, cuNDArray<double_complext>*, cuNDA_device );
 
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<double,4>(uintd4, cuNDArray<double>*, cuNDA_device );
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<double_complext,4>(uintd4, cuNDArray<double_complext>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<double,4>(uintd4, cuNDArray<double>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<double_complext,4>(uintd4, cuNDArray<double_complext>*, cuNDA_device );
 
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<double,double,2>(double, cuNDArray<double>*, cuNDA_device );
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<double,double_complext,2>(double, cuNDArray<double_complext>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<double,double,2>(double, cuNDArray<double>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<double,double_complext,2>(double, cuNDArray<double_complext>*, cuNDA_device );
 
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<double,double,3>(double, cuNDArray<double>*, cuNDA_device );
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<double,double_complext,3>(double, cuNDArray<double_complext>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<double,double,3>(double, cuNDArray<double>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<double,double_complext,3>(double, cuNDArray<double_complext>*, cuNDA_device );
 
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<double,double,4>(double, cuNDArray<double>*, cuNDA_device );
- template EXPORTGPUCORE void Gadgetron::zero_fill_border<double,double_complext,4>(double, cuNDArray<double_complext>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<double,double,4>(double, cuNDArray<double>*, cuNDA_device );
+ template EXPORTGPUCORE void zero_fill_border<double,double_complext,4>(double, cuNDArray<double_complext>*, cuNDA_device );
 
 
- template EXPORTGPUCORE void Gadgetron::shrink1<double,double>( double, cuNDArray<double>*, cuNDArray<double>* );
- template EXPORTGPUCORE void Gadgetron::shrink1<double,double_complext>( double, cuNDArray<double_complext>*, cuNDArray<double_complext>* );
+ template EXPORTGPUCORE void shrink1<double,double>( double, cuNDArray<double>*, cuNDArray<double>* );
+ template EXPORTGPUCORE void shrink1<double,double_complext>( double, cuNDArray<double_complext>*, cuNDArray<double_complext>* );
 
- template EXPORTGPUCORE void Gadgetron::shrinkd<double,double>( double, cuNDArray<double>*, cuNDArray<double>*, cuNDArray<double>* );
- template EXPORTGPUCORE void Gadgetron::shrinkd<double,double_complext>( double, cuNDArray<double>*, cuNDArray<double_complext>*, cuNDArray<double_complext>* );
+ template EXPORTGPUCORE void shrinkd<double,double>( double, cuNDArray<double>*, cuNDArray<double>*, cuNDArray<double>* );
+ template EXPORTGPUCORE void shrinkd<double,double_complext>( double, cuNDArray<double>*, cuNDArray<double_complext>*, cuNDArray<double_complext>* );
 
  template EXPORTGPUCORE
- void Gadgetron::origin_mirror<double,1>(cuNDArray<double>*, cuNDArray<double>*, bool, cuNDA_device);
+ void origin_mirror<double,1>(cuNDArray<double>*, cuNDArray<double>*, bool, cuNDA_device);
  template EXPORTGPUCORE
- void Gadgetron::origin_mirror<double,2>(cuNDArray<double>*, cuNDArray<double>*, bool, cuNDA_device);
+ void origin_mirror<double,2>(cuNDArray<double>*, cuNDArray<double>*, bool, cuNDA_device);
  template EXPORTGPUCORE
- void Gadgetron::origin_mirror<double,3>(cuNDArray<double>*, cuNDArray<double>*, bool, cuNDA_device);
+ void origin_mirror<double,3>(cuNDArray<double>*, cuNDArray<double>*, bool, cuNDA_device);
  template EXPORTGPUCORE
- void Gadgetron::origin_mirror<double,4>(cuNDArray<double>*, cuNDArray<double>*, bool, cuNDA_device);
+ void origin_mirror<double,4>(cuNDArray<double>*, cuNDArray<double>*, bool, cuNDA_device);
 
  template EXPORTGPUCORE void
- Gadgetron::origin_mirror<double_complext,1>(cuNDArray<double_complext>*, cuNDArray<double_complext>*, bool, cuNDA_device);
+ origin_mirror<double_complext,1>(cuNDArray<double_complext>*, cuNDArray<double_complext>*, bool, cuNDA_device);
  template EXPORTGPUCORE void
- Gadgetron::origin_mirror<double_complext,2>(cuNDArray<double_complext>*, cuNDArray<double_complext>*, bool, cuNDA_device);
+ origin_mirror<double_complext,2>(cuNDArray<double_complext>*, cuNDArray<double_complext>*, bool, cuNDA_device);
  template EXPORTGPUCORE void
- Gadgetron::origin_mirror<double_complext,3>(cuNDArray<double_complext>*, cuNDArray<double_complext>*, bool, cuNDA_device);
+ origin_mirror<double_complext,3>(cuNDArray<double_complext>*, cuNDArray<double_complext>*, bool, cuNDA_device);
  template EXPORTGPUCORE void
- Gadgetron::origin_mirror<double_complext,4>(cuNDArray<double_complext>*, cuNDArray<double_complext>*, bool, cuNDA_device);
+ origin_mirror<double_complext,4>(cuNDArray<double_complext>*, cuNDArray<double_complext>*, bool, cuNDA_device);
 
  template EXPORTGPUCORE
  boost::shared_ptr< cuNDArray<float> >
- Gadgetron::squaredNorm( cuNDArray<float> *, unsigned int, cuNDA_device, cuNDA_device );
+ squaredNorm( cuNDArray<float> *, unsigned int, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE
  boost::shared_ptr< cuNDArray<float> >
- Gadgetron::squaredNorm( cuNDArray<float_complext> *, unsigned int ,cuNDA_device , cuNDA_device);
+ squaredNorm( cuNDArray<float_complext> *, unsigned int ,cuNDA_device , cuNDA_device);
 
  template EXPORTGPUCORE
  boost::shared_ptr< cuNDArray<double> >
- Gadgetron::squaredNorm( cuNDArray<double> *, unsigned int, cuNDA_device, cuNDA_device );
+ squaredNorm( cuNDArray<double> *, unsigned int, cuNDA_device, cuNDA_device );
 
  template EXPORTGPUCORE
  boost::shared_ptr< cuNDArray<double> >
- Gadgetron::squaredNorm( cuNDArray<double_complext> *, unsigned int ,cuNDA_device , cuNDA_device);
+ squaredNorm( cuNDArray<double_complext> *, unsigned int ,cuNDA_device , cuNDA_device);
 
  template EXPORTGPUCORE
- void Gadgetron::inplace_sgn(cuNDArray<float>* x);
+ void inplace_sgn(cuNDArray<float>* x);
  template EXPORTGPUCORE
- void Gadgetron::inplace_sgn(cuNDArray<double>* x);
+ void inplace_sgn(cuNDArray<double>* x);
 
 
- template void Gadgetron::clamp<double>(cuNDArray<double>*,double,double);
- template void Gadgetron::clamp<float>(cuNDArray<float>*,float,float);
+ template void clamp<double>(cuNDArray<double>*,double,double);
+ template void clamp<float>(cuNDArray<float>*,float,float);
 
- template void Gadgetron::clamp_min<double>(cuNDArray<double>*,double);
- template void Gadgetron::clamp_min<float>(cuNDArray<float>*,float);
+ template void clamp_min<double>(cuNDArray<double>*,double);
+ template void clamp_min<float>(cuNDArray<float>*,float);
 
- template void Gadgetron::clamp_max<double>(cuNDArray<double>*,double);
- template void Gadgetron::clamp_max<float>(cuNDArray<float>*,float);
+ template void clamp_max<double>(cuNDArray<double>*,double);
+ template void clamp_max<float>(cuNDArray<float>*,float);
 
 
 
- template float Gadgetron::normalize<float>( cuNDArray<float> *, float, cuNDA_device );
- template double Gadgetron::normalize<double>( cuNDArray<double> *, double, cuNDA_device );
+ template float normalize<float>( cuNDArray<float> *, float, cuNDA_device );
+ template double normalize<double>( cuNDArray<double> *, double, cuNDA_device );
 
  */

@@ -38,6 +38,29 @@ Gadgetron::abs_inplace( cuNDArray<T> *x )
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),xPtr,cuNDA_abs<T>());
 }  
   
+template<typename T> struct cuNDA_abs_square : public thrust::unary_function<T,typename realType<T>::Type>
+{
+  __device__ typename Gadgetron::realType<T>::Type operator()(const T &x) const 
+  { 
+    typename realType<T>::Type tmp = abs(x);
+    return tmp*tmp;
+  }
+};
+
+template<class T> boost::shared_ptr< cuNDArray<typename realType<T>::Type> > 
+Gadgetron::abs_square( cuNDArray<T> *x )
+{ 
+  if( x == 0x0 )
+    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::abs_square(): Invalid input array"));
+   
+  boost::shared_ptr< cuNDArray<typename realType<T>::Type> > result(new cuNDArray<typename realType<T>::Type>());
+  result->create(x->get_dimensions());
+  thrust::device_ptr<typename realType<T>::Type> resPtr = result->get_device_ptr();
+  thrust::device_ptr<T> xPtr = x->get_device_ptr();
+  thrust::transform(xPtr,xPtr+x->get_number_of_elements(),resPtr,cuNDA_abs_square<T>());
+  return result;
+}
+
 template<typename T> struct cuNDA_sqrt : public thrust::unary_function<T,T>
 {
   __device__ T operator()(const T &x) const {return sqrt(x);}
@@ -426,6 +449,7 @@ Gadgetron::shrinkd( cuNDArray<T> *x, cuNDArray<typename realType<T>::Type> *s, t
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > Gadgetron::abs<float>( cuNDArray<float>* );
 template EXPORTGPUCORE void Gadgetron::abs_inplace<float>( cuNDArray<float>* );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > Gadgetron::abs_square<float>( cuNDArray<float>* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > Gadgetron::sqrt<float>( cuNDArray<float>* );
 template EXPORTGPUCORE void Gadgetron::sqrt_inplace<float>( cuNDArray<float>* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > Gadgetron::square<float>( cuNDArray<float>* );
@@ -447,6 +471,7 @@ template EXPORTGPUCORE void Gadgetron::shrinkd<float> ( cuNDArray<float>*, cuNDA
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > Gadgetron::abs<double>( cuNDArray<double>* );
 template EXPORTGPUCORE void Gadgetron::abs_inplace<double>( cuNDArray<double>* );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > Gadgetron::abs_square<double>( cuNDArray<double>* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > Gadgetron::sqrt<double>( cuNDArray<double>* );
 template EXPORTGPUCORE void Gadgetron::sqrt_inplace<double>( cuNDArray<double>* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > Gadgetron::square<double>( cuNDArray<double>* );
@@ -468,6 +493,7 @@ template EXPORTGPUCORE void Gadgetron::shrinkd<double> ( cuNDArray<double>*, cuN
 
 /*template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > Gadgetron::abs< std::complex<float> >( cuNDArray< std::complex<float> >* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray< std::complex<float> > > Gadgetron::sqrt< std::complex<float> >( cuNDArray< std::complex<float> >* );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > Gadgetron::abs_square< std::complex<float> >( cuNDArray< std::complex<float> >* );
 template EXPORTGPUCORE void Gadgetron::sqrt_inplace< std::complex<float> >( cuNDArray< std::complex<float> >* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray< std::complex<float> > > Gadgetron::square< std::complex<float> >( cuNDArray< std::complex<float> >* );
 template EXPORTGPUCORE void Gadgetron::square_inplace< std::complex<float> >( cuNDArray< std::complex<float> >* );
@@ -483,6 +509,7 @@ template EXPORTGPUCORE void Gadgetron::shrinkd< std::complex<float> > ( cuNDArra
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > Gadgetron::abs< std::complex<double> >( cuNDArray< std::complex<double> >* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray< std::complex<double> > > Gadgetron::sqrt< std::complex<double> >( cuNDArray< std::complex<double> >* );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > Gadgetron::abs_square< std::complex<double> >( cuNDArray< std::complex<double> >* );
 template EXPORTGPUCORE void Gadgetron::sqrt_inplace< std::complex<double> >( cuNDArray< std::complex<double> >* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray< std::complex<double> > > Gadgetron::square< std::complex<double> >( cuNDArray< std::complex<double> >* );
 template EXPORTGPUCORE void Gadgetron::square_inplace< std::complex<double> >( cuNDArray< std::complex<double> >* );
@@ -498,6 +525,7 @@ template EXPORTGPUCORE void Gadgetron::shrinkd< std::complex<double> > ( cuNDArr
 */
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > Gadgetron::abs< complext<float> >( cuNDArray< complext<float> >* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray< complext<float> > > Gadgetron::sqrt< complext<float> >( cuNDArray< complext<float> >* );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > Gadgetron::abs_square< complext<float> >( cuNDArray< complext<float> >* );
 template EXPORTGPUCORE void Gadgetron::sqrt_inplace< complext<float> >( cuNDArray< complext<float> >* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray< complext<float> > > Gadgetron::square< complext<float> >( cuNDArray< complext<float> >* );
 template EXPORTGPUCORE void Gadgetron::square_inplace< complext<float> >( cuNDArray< complext<float> >* );
@@ -513,6 +541,7 @@ template EXPORTGPUCORE void Gadgetron::shrinkd< complext<float> > ( cuNDArray< c
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > Gadgetron::abs< complext<double> >( cuNDArray< complext<double> >* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray< complext<double> > > Gadgetron::sqrt< complext<double> >( cuNDArray< complext<double> >* );
+template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > Gadgetron::abs_square< complext<double> >( cuNDArray< complext<double> >* );
 template EXPORTGPUCORE void Gadgetron::sqrt_inplace< complext<double> >( cuNDArray< complext<double> >* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray< complext<double> > > Gadgetron::square< complext<double> >( cuNDArray< complext<double> >* );
 template EXPORTGPUCORE void Gadgetron::square_inplace< complext<double> >( cuNDArray< complext<double> >* );

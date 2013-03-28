@@ -1,60 +1,24 @@
-#ifndef CUCGPRECONDITIONER_H
-#define CUCGPRECONDITIONER_H
 #pragma once
 
 #include "cgPreconditioner.h"
 #include "cuNDArray.h"
+#include "gpusolvers_export.h"
+
+#include <boost/shared_ptr.hpp>
+
 namespace Gadgetron{
 
-
-template <class T> class cuCgPreconditioner 
-	: public cgPreconditioner< cuNDArray<T> >
-{
- public:
-  cuCgPreconditioner( int device = -1 ) : cgPreconditioner< cuNDArray<T> >()
+  template<class T> class EXPORTGPUSOLVERS cuCgPreconditioner : public cgPreconditioner< cuNDArray<T> >
   {
-    if( device<0 ){
-      if( cudaGetDevice( &device_ ) != cudaSuccess ){
-	std::cerr << "cuCgPreconditioner: unable to get current device." << std::endl ;
-	device_ = 0;
-      }
-    }
-    else
-      device_ = device;
-  }
-
-  virtual ~cuCgPreconditioner() {}
-
-protected:
-  virtual int set_device()
-  {
-    if( cudaGetDevice( &old_device_ ) != cudaSuccess ){
-      std::cerr << "cuCgPreconditioner::set_device: unable to get current device." << std::endl ;
-      return -1;
-    }
-    if( device_ != old_device_ && cudaSetDevice(device_) != cudaSuccess) {
-      std::cerr << "cuCgPreconditioner::set_device: unable to set device " << device_ << std::endl;
-      return -1;
-    }
-    return 0;
-  }
-
-  virtual int restore_device()
-  {
-    if( device_ != old_device_ && cudaSetDevice(old_device_) != cudaSuccess) {
-      std::cerr << "cuCgPreconditioner::restore_device: unable to set device " << old_device_ << std::endl;
-      return -1;
-    }
-    return 0;
-  }
-
- protected:
-  int device_;
-  
- private:
-  int old_device_;
-
-};
-
+  public:
+    
+    cuCgPreconditioner() : cgPreconditioner< cuNDArray<T> >() {}
+    virtual ~cuCgPreconditioner() {}
+    
+    virtual void set_weights( boost::shared_ptr< cuNDArray<T> > w );
+    virtual void apply(cuNDArray<T>* in, cuNDArray<T>* out);
+    
+  protected:
+    boost::shared_ptr< cuNDArray<T> > weights_;
+  };
 }
-#endif //CUCGPRECONDITIONER_H

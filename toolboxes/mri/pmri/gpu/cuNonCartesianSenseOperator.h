@@ -4,8 +4,7 @@
 #include "NFFT.h"
 
 namespace Gadgetron{
-template<class REAL, unsigned int D, bool ATOMICS = false> class EXPORTGPUPMRI cuNonCartesianSenseOperator 
-  : public cuSenseOperator<REAL,D>
+template<class REAL, unsigned int D, bool ATOMICS = false> class EXPORTGPUPMRI cuNonCartesianSenseOperator : public cuSenseOperator<REAL,D>
 {
   
  public:
