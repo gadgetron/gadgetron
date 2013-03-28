@@ -23,8 +23,8 @@ add_executable(hostProtonReconstruct hostProtonReconstruct.cpp)
 
 #add_executable(LSQRTest LSQRTest.cpp)
 
-target_link_libraries(protonReconstruct proton_kernels gpucore hostutils operators solvers ${HDF5_LIBRARIES} ${CUDA_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(hostProtonReconstruct proton_kernels cpucore gpucore hostutils operators solvers ${HDF5_LIBRARIES} ${CUDA_LIBRARIES})
+target_link_libraries(protonReconstruct proton_kernels gpucore hostutils operators solvers ${HDF5_LIBRARIES} ${CUDA_LIBRARIES} ${CULA_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(hostProtonReconstruct proton_kernels cpucore gpucore hostutils operators solvers ${HDF5_LIBRARIES}  ${CULA_LIBRARIES} ${CUDA_LIBRARIES})
 #target_link_libraries(LSQRTest proton_kernels gpucore hostutils solvers operators ${CUDA_LIBRARIES})
 
 #target_link_libraries(protonForward proton_kernels gpucore hostutils solvers operators ${CUDA_LIBRARIES})
