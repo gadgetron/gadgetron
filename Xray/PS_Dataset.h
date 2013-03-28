@@ -107,7 +107,7 @@ class PS_Dataset {
 					H5LTget_dataset_info(file_id,"/projections",dim,NULL,NULL);
 					std::vector<unsigned int> dims(dim,dim+3);
 					projections = boost::shared_ptr<hoNDArray<float> >(new hoNDArray<float>(&dims));
-					H5LTread_dataset (file_id,"/projections", H5T_NATIVE_UINT, projections->get_data_ptr());
+					H5LTread_dataset (file_id,"/projections", H5T_NATIVE_FLOAT, projections->get_data_ptr());
 					cleanup_projections = true;
 					cleanup_geometry = true;
 

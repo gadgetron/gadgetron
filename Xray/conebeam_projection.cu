@@ -59,55 +59,6 @@ floatd2 calcSagVector(float ioe_angle_in_degrees, floatd3 sag_parameters_x, floa
     float d_yp = calcSagValue(ioe_angle_in_degrees, sag_parameters_y);
     return floatd2(d_xp, d_yp);
 }
-/*
-__global__ void
-redundancy_correct_kernel( float lambda,
-			   float lambda_max, float gamma_m, float gamma_thresh,
-			   float *projection)
-{
-  const unsigned int PROJ_IDX_X = threadIdx.x+blockIdx.x*blockDim.x;
-  const unsigned int PROJ_IDX_Y = blockIdx.y;
-  const unsigned int PROJECTION_RES_X = blockDim.x*gridDim.x;
-
-  const float gamma = -gamma_m + 2.0f*gamma_m*(float(PROJ_IDX_X)/float(PROJECTION_RES_X));
-
-  float res = 0.0f;
-
-  if( lambda >= 0 && lambda < 2.0f*(gamma_thresh+gamma) ){
-    float tmp = sin(PI/4.0f*lambda/(gamma_thresh+gamma));
-    res = tmp*tmp;
-  }
-  else if( lambda >= 2.0f*(gamma_thresh+gamma) && lambda < PI+2.0f*gamma ){
-    res = 1.0f;
-  }
-  else if( lambda >= PI+2.0f*gamma && lambda < PI+2.0f*gamma_thresh ){
-    float tmp = sin(PI/4.0f*(PI+2.0f*gamma_thresh-lambda)/(gamma_thresh+gamma));
-    res = tmp*tmp;
-  }
-  else ;
-
-  const unsigned int idx = PROJ_IDX_Y*PROJECTION_RES_X+PROJ_IDX_X;
-  projection[idx] *= res;
-}
-
-void
-redundancy_correct( float lambda,
-		    float lambda_max, float gamma_m, float gamma_thresh,
-		    cuNDArray<float> *projection)
-{
-  const unsigned int projection_res_x = projection->get_size(0);
-  const unsigned int projection_res_y = projection->get_size(1);
-
-  const dim3 dimBlock(projection_res_x/4);
-  const dim3 dimGrid(4,projection_res_y);
-
-  redundancy_correct_kernel<<< dimGrid, dimBlock >>>( lambda, lambda_max, gamma_m, gamma_thresh,
-						      projection->get_data_ptr());
-
-  CHECK_FOR_CUDA_ERROR();
-}
-
-*/
 
 __global__ void
 conebeam_forwards_projection_cb_kernel(float* projections, float* angles,
@@ -116,21 +67,6 @@ conebeam_forwards_projection_cb_kernel(float* projections, float* angles,
                                        floatd3 sag_parameters_x, floatd3 sag_parameters_y,
                                        float SDD, float SAD,
                                        const unsigned int numSamplesPerRay, bool use_circular_cutoff) {
-    // Some defines to give the thread/block/grid setup (more) meaningful names
-    /*
-    const  int PROJ_IDX_X = threadIdx.x;
-    const  int PROJ_IDX_Y = blockIdx.x;
-    const  int PROJECTION = blockIdx.y;
-    const  int PROJECTION_RES_X = blockDim.x;
-    const  int PROJECTION_RES_Y = gridDim.x;
-    */
-    /*
-    const int PROJ_IDX_X = blockIdx.x;
-    const int PROJ_IDX_Y = blockIdx.y;
-    const int PROJECTION = threadIdx.x;
-    const int PROJECTION_RES_X = gridDim.x;
-    const int PROJECTION_RES_Y = gridDim.y;
-    */
 
     const int PROJ_IDX_X = threadIdx.x + blockIdx.x * blockDim.x;
     const int PROJ_IDX_Y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -235,7 +171,7 @@ conebeam_forwards_projection_cb_kernel(float* projections, float* angles,
 
 // Forwards projection of the 3D volume of a given phase onto projections
 template <class TYPE>
-bool Gadgetron::conebeam_forwards_projection( hoNDArray<TYPE>& projections, hoNDArray<TYPE>& x, unsigned int bin,
+bool Gadgetron::conebeam_forwards_projection( hoNDArray<TYPE>* projections, hoNDArray<TYPE>* x, unsigned int bin,
                                    std::vector<unsigned int>& binningdata,
                                    std::vector<float>& angles,
                                    unsigned int orig_ppb, floatd3 is_spacing_in_mm, floatd2 ps_dims_in_mm,
@@ -243,19 +179,19 @@ bool Gadgetron::conebeam_forwards_projection( hoNDArray<TYPE>& projections, hoND
                                    float SDD, float SAD,
                                    unsigned int numSamplesPerRay, bool use_circular_cutoff,
                                    bool accumulate) {
-    assert( projections.get_number_of_dimensions() == 3 );
-    assert( (x.get_number_of_dimensions() == 3) || (x.get_number_of_dimensions() == 4) );
+    assert( projections->get_number_of_dimensions() == 3 );
+    assert( (x->get_number_of_dimensions() == 3) || (x->get_number_of_dimensions() == 4) );
 
     if (accumulate)
-        std::cout << "accumultate seams to be broken!" << std::endl;
+        std::cout << "accumulate seams to be broken!" << std::endl;
 
-    const unsigned int projection_res_x = projections.get_size(0);
-    const unsigned int projection_res_y = projections.get_size(1);
+    const unsigned int projection_res_x = projections->get_size(0);
+    const unsigned int projection_res_y = projections->get_size(1);
     const unsigned int num_projections  = binningdata.size();
 
-    const unsigned int matrix_size_x = x.get_size(0);
-    const unsigned int matrix_size_y = x.get_size(1);
-    const unsigned int matrix_size_z = x.get_size(2);
+    const unsigned int matrix_size_x = x->get_size(0);
+    const unsigned int matrix_size_y = x->get_size(1);
+    const unsigned int matrix_size_z = x->get_size(2);
     floatd3 is_dims_in_pixels = floatd3(matrix_size_x, matrix_size_y, matrix_size_z);
 
     unsigned int offs = bin * matrix_size_x * matrix_size_y * matrix_size_z;
@@ -277,7 +213,7 @@ bool Gadgetron::conebeam_forwards_projection( hoNDArray<TYPE>& projections, hoND
 
     cpy_params.dstArray = image_array;
     cpy_params.srcPtr =
-        make_cudaPitchedPtr((void*)(x.get_data_ptr()+offs), extent.width*sizeof(float),
+        make_cudaPitchedPtr((void*)(x->get_data_ptr()+offs), extent.width*sizeof(float),
                             extent.width, extent.height);
     cudaMemcpy3D(&cpy_params);
     CHECK_FOR_CUDA_ERROR();
@@ -326,7 +262,7 @@ bool Gadgetron::conebeam_forwards_projection( hoNDArray<TYPE>& projections, hoND
             CHECK_FOR_CUDA_ERROR();
 
             if (accumulate) {
-                cudaMemcpy(projections_DevPtr+i*projSize, projections.get_data_ptr()+from_id*projSize,
+                cudaMemcpy(projections_DevPtr+i*projSize, projections->get_data_ptr()+from_id*projSize,
                            projSize*sizeof(float), cudaMemcpyHostToDevice);
                 CHECK_FOR_CUDA_ERROR();
             } else {
@@ -344,6 +280,7 @@ bool Gadgetron::conebeam_forwards_projection( hoNDArray<TYPE>& projections, hoND
         uint2 ps_dims_in_pixels = make_uint2(projection_res_x, projection_res_y);
 
         cudaFuncSetCacheConfig(conebeam_forwards_projection_cb_kernel, cudaFuncCachePreferL1);
+
         conebeam_forwards_projection_cb_kernel<<< dimGrid, dimBlock >>>
             (projections_DevPtr, angles_DevPtr,
              is_dims_in_pixels, is_spacing_in_mm, ps_dims_in_pixels, ps_dims_in_mm,
@@ -353,14 +290,15 @@ bool Gadgetron::conebeam_forwards_projection( hoNDArray<TYPE>& projections, hoND
         // Copy result from device to host
         for (unsigned int p=from_projection, i=0; p<to_projection; p++, i++) {
             unsigned int to_id = binningdata[p];
-            cudaMemcpy(projections.get_data_ptr()+to_id*projSize,
-                       projections_DevPtr+i*projSize, projSize*sizeof(float), cudaMemcpyDeviceToHost);
+            CUDA_CALL(cudaMemcpy(projections->get_data_ptr()+projSize*to_id,
+                       projections_DevPtr+i*projSize, projSize*sizeof(float), cudaMemcpyDeviceToHost));
             CHECK_FOR_CUDA_ERROR();
         }
 
         cudaFree(projections_DevPtr);
         cudaFree(angles_DevPtr);
     }
+
     cudaUnbindTexture(image_tex);
     cudaFreeArray(image_array);
 
@@ -386,12 +324,6 @@ conebeam_backwards_projection_cb_kernel( floatd3 is_dims_in_pixels, floatd2 ps_d
 
     floatd3 is_pc = floatd3( IMAGE_X, IMAGE_Y, IMAGE_Z );
 
-    /*
-#ifdef IS_ORIGON_CENTERING
-    // old origin, between pixels (negative and positive sides have equal number of pixels)
-    is_pc -= floatd3(0.5) * zAxisDir;
-#endif
-    */
 
     // Normailzed coordinater ]0, 1[
     floatd3 is_nc01 = is_pc / is_dims_in_pixels;
@@ -403,22 +335,6 @@ conebeam_backwards_projection_cb_kernel( floatd3 is_dims_in_pixels, floatd2 ps_d
 
     // real world coordinates in mm.
     const floatd3 pos_traj_original = is_nc * is_dims_in_mm;
-
-    /*
-    if (use_circular_cutoff) {
-        float inplane_inner_circle_radius = fmin(is_dims_in_mm.x, is_dims_in_mm.y) / 2.0f;
-
-        float length_of_p2D = length(floatd2( floor(fabsf(pos_traj_original.x)),
-                                                  floor(fabsf(pos_traj_original.y)) ));
-
-        //const floatd3 pixel_step_size = is_dims_in_mm / is_dims_in_pixels;
-        //const floatd2 pixel_step_size_2d = floatd2(pixel_step_size.x, pixel_step_size.y);
-        //length_of_p2D = length_of_p2D + length(pixel_step_size_2d);
-        if ( length_of_p2D > inplane_inner_circle_radius ) {
-            sum = false;
-        }
-    }
-    */
 
     // Backproject all projection data
     float result = 0.0f;
@@ -437,22 +353,11 @@ conebeam_backwards_projection_cb_kernel( floatd3 is_dims_in_pixels, floatd2 ps_d
 
         floatd2 sag = calcSagVector(angle, sag_parameters_x, sag_parameters_y);
         endPoint2d -= sag; // this sag is in mm.
-	//endPoint2d -= floatd2(148.0f, 0.0f); // Half-fan
-
-
-        //floatd2 ps_origin_offset = floatd2(0.0f);
-        //endPoint2d += ps_origin_offset; // this is in mm.
 
         floatd2 ps_nc = (endPoint2d / ps_dims_in_mm); // [-0.5; 0.5]
         floatd2 ps_nc01_offset = floor(ps_dims_in_pixels/2.0) / ps_dims_in_pixels;
         floatd2 ps_nc01 = ps_nc + ps_nc01_offset; // [0; 1]
         floatd2 ps_pc = ps_nc01 * ps_dims_in_pixels;
-
-        /*
-#ifndef PS_ORIGON_CENTERING
-        ps_pc -= floatd2(0.5);
-#endif
-        */
 
         ps_pc += floatd2(0.5f); // into OpenGL texture coordinates
 
@@ -565,7 +470,7 @@ boost::shared_ptr< cuNDArray<float> > get_conebeam_ramp(unsigned int dim, float 
 
 // Backproject all projections for a given phase.
 template <class TYPE>
-bool Gadgetron::conebeam_backwards_projection( hoNDArray<TYPE>& projections_in, hoNDArray<TYPE>& x, unsigned int bin,
+bool Gadgetron::conebeam_backwards_projection( hoNDArray<TYPE>* projections, hoNDArray<TYPE>* x, unsigned int bin,
                                     std::vector<unsigned int>& binningdata,
                                     std::vector<float>& angles,
                                     unsigned int orig_ppb, floatd3 is_spacing_in_mm, floatd2 ps_dims_in_mm,
@@ -573,112 +478,31 @@ bool Gadgetron::conebeam_backwards_projection( hoNDArray<TYPE>& projections_in, 
                                     float SDD, float SAD, bool use_circular_cutoff,
                                     bool use_fbp, bool accumulate) {
 
-    hoNDArray<TYPE> projections;
+    /*hoNDArray<TYPE> projections;
     std::vector<unsigned int> image_dims = *(projections_in.get_dimensions().get());
-    projections.create(&image_dims);
-    memcpy(projections.get_data_ptr(), projections_in.get_data_ptr(),
-           projections_in.get_number_of_elements() * sizeof(TYPE));
+    projections->create(&image_dims);*/
 
-    assert( projections.get_number_of_dimensions() == 3 );
-    assert( (x.get_number_of_dimensions() == 3) || (x.get_number_of_dimensions() == 4) );
+    assert( projections->get_number_of_dimensions() == 3 );
+    assert( (x->get_number_of_dimensions() == 3) || (x->get_number_of_dimensions() == 4) );
 
-    unsigned int matrix_size_x = x.get_size(0);
-    unsigned int matrix_size_y = x.get_size(1);
-    unsigned int matrix_size_z = x.get_size(2);
+    unsigned int matrix_size_x = x->get_size(0);
+    unsigned int matrix_size_y = x->get_size(1);
+    unsigned int matrix_size_z = x->get_size(2);
     floatd3 is_dims = floatd3(matrix_size_x, matrix_size_y, matrix_size_z);
     unsigned int num_image_elements = matrix_size_x*matrix_size_y*matrix_size_z;
 
-    unsigned int projection_res_x = projections.get_size(0);
-    unsigned int projection_res_y = projections.get_size(1);
+    unsigned int projection_res_x = projections->get_size(0);
+    unsigned int projection_res_y = projections->get_size(1);
     floatd2 ps_dims_in_pixels = floatd2(projection_res_x, projection_res_y);
     unsigned int num_projections = binningdata.size();
-    /*
-    if (use_fbp) {
-        const float ADD = SDD - SAD; // in mm.
-        unsigned int num_projection_elements = projection_res_x * projection_res_y;
-        std::vector<unsigned int> dims;
-        dims.push_back(projection_res_x);
-        dims.push_back(projection_res_y);
 
-        TYPE* fromdata = projections.get_data_ptr();
-        for (unsigned int p=0; p<num_projections; p++) {
-            // fetch projection (3d to 2d)
-            hoNDArray<TYPE> host_projection;
-            host_projection.create(&dims);
-            unsigned int from = p * num_projection_elements;
-            memcpy(host_projection.get_data_ptr(), fromdata+from, num_projection_elements * sizeof(TYPE));
-
-            // copy to device
-            cuNDArray<TYPE> device_projection_original( &host_projection );
-
-            // 1. Cosine weighting "SDD / sqrt( SDD*SDD + u*u + v*v)"
-            //     elementwize multiply each pixel with weights
-            static boost::shared_ptr< cuNDArray<TYPE> > cos_weights;
-            static bool initialized = false;
-            if (!initialized) {
-                cos_weights = get_cosinus_weights(make_uint2(projection_res_x, projection_res_y), ps_dims_in_mm, ADD, SAD);
-                initialized = true;
-                //write_nd_array<TYPE>( cos_weights->to_host().get(), "cos_weights.real");
-            }
-            scale(cos_weights.get(), &device_projection_original);
-
-            // 1.5 redundancy correct
-            float lambda_max = 2.0*PI;
-            float gamma_m = PI/2.0-atan(SDD/(ps_dims_in_mm.x/2.0f));
-            float gamma_thresh = (lambda_max-PI)/2.0f;
-            //   printf("\n\nlambda_max: %f \ngamma_m: %f \ngamma_thresh: %f\n",
-            //    lambda_max*(360.0/(2.0*PI)),
-            //    gamma_m*(360.0/(2.0*PI)),
-            //    gamma_thresh*(360.0/(2.0*PI)));
-
-            //redundancy_correct( angles[p]*(PI/180.0f), lambda_max, gamma_m, gamma_thresh, &device_projection);
-
-            cuNDArray<TYPE> device_projection;
-            std::vector<unsigned int> dims = *(host_projection.get_dimensions().get());
-            std::vector<unsigned int> double_dims;
-            for (unsigned int i=0; i<dims.size(); i++)
-                double_dims.push_back(dims[i] << 1);
-            device_projection.create(&double_dims);
-            expand_with_zero_fill<float,2>( &device_projection_original, &device_projection );
-
-            // 2. Ramp filter using FFT
-            static boost::shared_ptr< cuNDArray<TYPE> > ramp;
-            static bool ramp_initialized = false;
-            if (!ramp_initialized) {
-                ramp = get_ramp(projection_res_x*2, ps_dims_in_mm.x/(projection_res_x*2));
-                ramp_initialized = true;
-                write_nd_array<TYPE>( ramp->to_host().get(), "ramp.real");
-            }
-            boost::shared_ptr< cuNDArray<complext<TYPE> > > complex_projection =
-                real_to_complext(&device_projection);
-            cuNDFFT<complext<TYPE> >().fft(complex_projection.get(), (unsigned int)0);
-            scale(ramp.get(), complex_projection.get());
-            cuNDFFT<complext<TYPE> >().ifft(complex_projection.get(),(unsigned int)0);
-
-            // copy cuNDArray back to hoNDArray
-            boost::shared_ptr< cuNDArray<TYPE> > result_original =
-                complext_to_real<TYPE>(complex_projection.get());
-
-            boost::shared_ptr< cuNDArray<TYPE> > result(new cuNDArray<TYPE>());
-            result->create(&dims);
-            uintd<2>::Type offset;
-            offset.vec[0]= dims[0]>>1;
-            offset.vec[1]= dims[1]>>1;
-            crop<float,2>( offset, result_original.get(), result.get() );
-
-            boost::shared_ptr< hoNDArray<TYPE> > result_projection = result->to_host();
-            memcpy(fromdata+from, result_projection->get_data_ptr(),
-                   num_projection_elements * sizeof(TYPE));
-        }
-    }
-    */
     // BACKWARDS PROJECT
     float *x_DevPtr;
     cudaMalloc( (void**) &x_DevPtr, num_image_elements*sizeof(float) );
 
     if (accumulate) {
         unsigned int offs = bin * matrix_size_x * matrix_size_y * matrix_size_z;
-        cudaMemcpy(x_DevPtr, x.get_data_ptr()+offs,
+        cudaMemcpy(x_DevPtr, x->get_data_ptr()+offs,
                    num_image_elements*sizeof(float), cudaMemcpyHostToDevice);
         CHECK_FOR_CUDA_ERROR();
     } else {
@@ -742,7 +566,7 @@ bool Gadgetron::conebeam_backwards_projection( hoNDArray<TYPE>& projections_in, 
             CHECK_FOR_CUDA_ERROR();
 
             // Upload projections to device
-            cudaMemcpy(projections_DevPtr+i*projSize, projections.get_data_ptr()+from_id*projSize,
+            cudaMemcpy(projections_DevPtr+i*projSize, projections->get_data_ptr()+from_id*projSize,
                        projSize*sizeof(float), cudaMemcpyHostToDevice);
             CHECK_FOR_CUDA_ERROR();
 
@@ -772,19 +596,6 @@ bool Gadgetron::conebeam_backwards_projection( hoNDArray<TYPE>& projections_in, 
                 }
                 device_projection_original *= *cos_weights;
 
-                /*
-                // 1.5 redundancy correct
-                float lambda_max = 2.0*PI;
-                float gamma_m = PI/2.0-atan(SDD/(ps_dims_in_mm.x/2.0f));
-                float gamma_thresh = (lambda_max-PI)/2.0f;
-                //   printf("\n\nlambda_max: %f \ngamma_m: %f \ngamma_thresh: %f\n",
-                //    lambda_max*(360.0/(2.0*PI)),
-                //    gamma_m*(360.0/(2.0*PI)),
-                //    gamma_thresh*(360.0/(2.0*PI)));
-                //redundancy_correct( angles[p]*(PI/180.0f), lambda_max, gamma_m, gamma_thresh, &device_projection);
-                */
-
-                //if (use_fbp) {
                 cuNDArray<TYPE> device_projection;
                 //std::vector<unsigned int> dims = *(host_projection.get_dimensions().get());
                 std::vector<unsigned int> double_dims;
@@ -862,29 +673,16 @@ bool Gadgetron::conebeam_backwards_projection( hoNDArray<TYPE>& projections_in, 
 
     // Copy result from device to host
     unsigned int offs = bin * matrix_size_x * matrix_size_y * matrix_size_z;
-    cudaMemcpy( x.get_data_ptr()+offs, x_DevPtr, num_image_elements*sizeof(float), cudaMemcpyDeviceToHost );
+    cudaMemcpy( x->get_data_ptr()+offs, x_DevPtr, num_image_elements*sizeof(float), cudaMemcpyDeviceToHost );
     CHECK_FOR_CUDA_ERROR();
 
     cudaFree( x_DevPtr );
     CHECK_FOR_CUDA_ERROR();
 
-//#define _write_free_memory_file_
-#ifdef _write_free_memory_file_
-    std::filebuf fb;
-    static bool initial = true;
-    if (initial) {
-        fb.open ("free_device_memory.txt",std::ios::out);
-        initial = false;
-    } else
-        fb.open ("free_device_memory.txt",std::ios::out|std::ios::app);
-    std::ostream os(&fb);
-    os << "free device memory (in bytes): " << free_device_memory() << std::endl;
-    fb.close();
-#endif
     return true;
 }
 
-template bool Gadgetron::conebeam_forwards_projection(hoNDArray<float>&, hoNDArray<float>&, unsigned int bin,
+template bool Gadgetron::conebeam_forwards_projection(hoNDArray<float>*, hoNDArray<float>*, unsigned int bin,
                                            std::vector<unsigned int>& binningdata,
                                            std::vector<float>& angles,
                                            unsigned int orig_ppb,
@@ -894,7 +692,7 @@ template bool Gadgetron::conebeam_forwards_projection(hoNDArray<float>&, hoNDArr
                                            unsigned int numSamplesPerRay, bool use_circular_cutoff,
                                            bool accumulate);
 
-template bool Gadgetron::conebeam_backwards_projection(hoNDArray<float>&, hoNDArray<float>&, unsigned int bin,
+template bool Gadgetron::conebeam_backwards_projection(hoNDArray<float>*, hoNDArray<float>*, unsigned int bin,
 																						std::vector<unsigned int>& binningdata,
 																						std::vector<float>& angles,
                                             unsigned int orig_ppb,

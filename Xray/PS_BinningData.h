@@ -45,7 +45,8 @@ class PS_BinningData {
 			}
 			binningData=std::vector< std::vector<unsigned int> >();
 			unsigned int numBins;
-			H5LTread_dataset (file_id, "/binning_dataformat_version", H5T_NATIVE_UINT, &numBins);
+			H5LTread_dataset (file_id, "/numBins", H5T_NATIVE_UINT, &numBins);
+			std::cout << "Number of bins: " << numBins << std::endl;
 			//Ok, so this really isn't very elegant. A folder in the hdf5 file containing the data would be better
 			for (unsigned int i=1; i<=numBins; i++) {
 					std::stringstream path;
@@ -59,8 +60,8 @@ class PS_BinningData {
 
     void generateData(PS_Geometry* ps_g) {
         unsigned int numProjections = ps_g->getAnglesArray().size();
-        binningData.push_back(std::vector<unsigned int>(boost::counting_iterator<unsigned int>(1),
-        		boost::counting_iterator<unsigned int>(numProjections+1)));
+        binningData.push_back(std::vector<unsigned int>(boost::counting_iterator<unsigned int>(0),
+        		boost::counting_iterator<unsigned int>(numProjections)));
     } 
 /*
     void loadDataDir(std::string inDir) {

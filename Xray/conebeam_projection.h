@@ -12,7 +12,7 @@ namespace Gadgetron{
 
 // Forwards projection of the 3D volume of a given phase onto projections
 template <class TYPE>
-bool conebeam_forwards_projection( hoNDArray<TYPE>& projections, hoNDArray<TYPE>& image, unsigned int bin,
+bool conebeam_forwards_projection( hoNDArray<TYPE>* projections, hoNDArray<TYPE>* image, unsigned int bin,
                                    std::vector<unsigned int>& binningdata,
                                    std::vector<float>& angles,
                                    unsigned int ppb, floatd3 is_box_dims, floatd2 ip_dims,
@@ -22,7 +22,7 @@ bool conebeam_forwards_projection( hoNDArray<TYPE>& projections, hoNDArray<TYPE>
 
 // Backproject all projections for a given phase
 template <class TYPE>
-bool conebeam_backwards_projection( hoNDArray<TYPE>& projections, hoNDArray<TYPE>& image, unsigned int bin,
+bool conebeam_backwards_projection( hoNDArray<TYPE>* projections, hoNDArray<TYPE>* image, unsigned int bin,
 																		std::vector<unsigned int>& binningdata,
 																		std::vector<float>& angles,
                                     unsigned int ppb, floatd3 is_box_dims, floatd2 ip_dims,

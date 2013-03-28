@@ -1,7 +1,7 @@
 //#define _USE_EXPERIMENTAL_GPBB_SOLVER_
 
 #include "ndarray_vector_td_utilities.h"
-#include "hoCuNDArray_utils.h"
+#include "hoNDArray_utils.h"
 #include "radial_utilities.h"
 #include "hoNDArray_fileio.h"
 #include "cuNDArray.h"
@@ -22,7 +22,9 @@
 #include "cuConvolutionOperator.h"
 #include "ndarray_vector_td_utilities.h"
 
-#include "hoGPBBSolver.h"
+#include "hoCuGTBLAS.h"
+#include "hoGTBLAS.h"
+#include "cgSolver.h"
 #include "PS_Dataset.h"
 #include <sstream>
 #include "complext.h"
@@ -99,8 +101,6 @@ int main(int argc, char** argv) {
 
   std::string inFile = (char*)parms.get_parameter('d')->get_string_value();
   std::string outFile = (char*)parms.get_parameter('r')->get_string_value();
-
-  std::string spatial_regularization_image_filename = (char*)parms.get_parameter('s')->get_string_value();
 
 
   PS_Dataset* ps = new PS_Dataset(ps_g);
@@ -180,7 +180,6 @@ int main(int argc, char** argv) {
 
 
 
-  size_t numBins = ps_bd->getBinningData().size();
 
   std::vector<unsigned int> is_dims;
   is_dims.push_back(is_dims_in_pixels[0]);
@@ -193,8 +192,8 @@ int main(int argc, char** argv) {
   ps_dims.push_back(ps_dims_in_pixels[0]);
   ps_dims.push_back(ps_dims_in_pixels[1]);
   ps_dims.push_back(numProjs);
-  boost::shared_ptr< hoCuNDArray<_real> > projections = boost::static_pointer_cast<hoCuNDArray<_real> >(ps->getProjections());
-
+  boost::shared_ptr< hoNDArray<_real> > projections = boost::static_pointer_cast<hoNDArray<_real> >(ps->getProjections());
+  write_nd_array<_real>( projections.get(),"tmp.real" );
   //Standard 3d FDK
   // Define encoding matrix
   boost::shared_ptr< hoCudaConebeamProjectionOperator<_real> > 
@@ -206,12 +205,18 @@ int main(int argc, char** argv) {
   // Form right hand side
   E->set_domain_dimensions(&is_dims);
 
-  hoCuNDArray<_real> fdk(&is_dims);
+  hoNDArray<_real> fdk(&is_dims);
   E->mult_MH(projections.get(),&fdk);
-
+/*
+  cgSolver<hoNDArray<_real> > solver;
+  solver.set_encoding_operator(E);
+  solver.solve(projections.get());
+  boost::shared_ptr<hoNDArray<_real> > cgres = solver.solve(projections.get());
+  write_nd_array<_real>(cgres.get(),"cg.real");*/
   write_nd_array<_real>( &fdk,"fdk.real" );
+
   //4D FDK-MB algorithm starts here.
-	is_dims.push_back(numBins);
+
 
 
   PS_BinningData* ps_bd4d = new PS_BinningData();
@@ -220,6 +225,8 @@ int main(int argc, char** argv) {
  	ps_bd4d->loadData(binningdata_filename);
  	ps_bd4d->print(std::cout);
 
+ 	size_t numBins = ps_bd4d->getBinningData().size();
+ 	is_dims.push_back(numBins);
 	boost::shared_ptr< hoCudaConebeamProjectionOperator<_real> >
 	      E4D( new hoCudaConebeamProjectionOperator<_real>() );
 	E4D->setup( ps_g, ps_bd4d, ps_g->getAnglesArray(), ppb,
@@ -229,12 +236,20 @@ int main(int argc, char** argv) {
 	// Form right hand side
 	E4D->set_domain_dimensions(&is_dims);
 
+/*
+  cgSolver<hoNDArray<_real> > solver;
+  solver.set_encoding_operator(E4D);
+  solver.solve(projections.get());
+  boost::shared_ptr<hoNDArray<_real> > cgres = solver.solve(projections.get());
+  write_nd_array<_real>(cgres.get(),"cg.real");
+*/
 	//Dirty trick to save a spot of memory
-	*projections *= -1.0f;
-	E4D->mult_M(&fdk,projections.get(),true);
-	*projections *= -1.0f;
+	hoNDArray<_real> diff_proj(projections->get_dimensions());
 
-	hoCuNDArray<_real> result(&is_dims);
+	E->mult_M(&fdk,&diff_proj);
+	*projections -= diff_proj;
+
+	hoNDArray<_real> result(&is_dims);
 	E4D->mult_MH(projections.get(),&result);
 
 	result += fdk;
@@ -243,4 +258,6 @@ int main(int argc, char** argv) {
 
 
 	write_nd_array<_real>( &result, outFile.c_str() );
+
+
 }

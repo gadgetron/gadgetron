@@ -6,25 +6,20 @@
 #include <vector>
 
 #include <stdio.h>
-#include "hoCuNDArray_utils.h"
+#include "hoNDArray_utils.h"
 #include "hoNDArray_fileio.h"
 
 //#define TIME_ITR
 using namespace Gadgetron;
 template<class REAL> void hoCudaConebeamProjectionOperator<REAL>
-::mult_M( hoCuNDArray<REAL>* in1, hoCuNDArray<REAL>* out, bool accumulate )
+::mult_M( hoNDArray<REAL>* in, hoNDArray<REAL>* out, bool accumulate )
 {
   if( !preprocessed ){
   	BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaConebeamProjectionOperator : setup not performed"));
   }
 
-  hoCuNDArray<REAL>* in = in1;
-  hoCuNDArray<REAL> in2;
-  /*  if (is_weights != NULL) {
-    in2 = *in1;
-    in  = &in2;
-    *is_weights *= * in;
-    }*/
+
+
 
   //unsigned int offset = 0;
   for (unsigned int b=0; b < binning->getBinningData().size(); b++) {
@@ -35,7 +30,7 @@ template<class REAL> void hoCudaConebeamProjectionOperator<REAL>
     ps_dims.push_back(ps_dims_in_pixels.x);
     ps_dims.push_back(ps_dims_in_pixels.y);
     ps_dims.push_back(numProjsInBin);
-    hoCuNDArray<REAL> temp;
+    hoNDArray<REAL> temp;
     unsigned int sliceSize = ps_dims_in_pixels.x * ps_dims_in_pixels.y;
     temp.create( &ps_dims, out->get_data_ptr() + offset*sliceSize );
     */
@@ -48,7 +43,7 @@ template<class REAL> void hoCudaConebeamProjectionOperator<REAL>
     floatd3 SAGy = geometry->getSAGyArray();
     float SDD = geometry->getSDD();
     float SAD = geometry->getSAD();
-    conebeam_forwards_projection(*out, *in, b,
+    conebeam_forwards_projection(out, in, b,
 				      binning->getBinningData()[b],
 				      angles, 
 				      ppb, is_spacing_in_mm, ps_dims_in_mm, 
@@ -57,25 +52,25 @@ template<class REAL> void hoCudaConebeamProjectionOperator<REAL>
 
     //offset += projections_per_bin[b];
   }
-
+/*
   if (ps_weights != NULL) {
     *out *= * ps_weights;
   }
 
   if (ps_scale != 1.0) {
   	*out *= ps_scale;
-  }
+  }*/
 }
 
 template<class REAL> void hoCudaConebeamProjectionOperator<REAL>
-::mult_MH( hoCuNDArray<REAL>* in1, hoCuNDArray<REAL>* out, bool accumulate )
+::mult_MH( hoNDArray<REAL>* in1, hoNDArray<REAL>* out, bool accumulate )
 {
   if( !preprocessed ){
     BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaConebeamProjectionOperator : setup not performed"));
   }
 
-  hoCuNDArray<REAL>* in = in1;
-  hoCuNDArray<REAL> in2;
+  hoNDArray<REAL>* in = in1;
+  hoNDArray<REAL> in2;
   if (ps_weights != NULL) {
     in2 = *in1;
     in  = &in2;
@@ -90,7 +85,7 @@ template<class REAL> void hoCudaConebeamProjectionOperator<REAL>
       ps_dims.push_back(ps_dims_in_pixels.x);
       ps_dims.push_back(ps_dims_in_pixels.y);
       ps_dims.push_back(numProjsInBin);
-      hoCuNDArray<REAL> temp;
+      hoNDArray<REAL> temp;
       unsigned int sliceSize = ps_dims_in_pixels.x * ps_dims_in_pixels.y;
       temp.create( &ps_dims, in->get_data_ptr() + offset*sliceSize );
     */
@@ -103,7 +98,7 @@ template<class REAL> void hoCudaConebeamProjectionOperator<REAL>
     floatd3 SAGy = geometry->getSAGyArray();
     float SDD = geometry->getSDD();
     float SAD = geometry->getSAD();
-    conebeam_backwards_projection(*in, *out, b,
+    conebeam_backwards_projection(in, out, b,
 				       binning->getBinningData()[b],
 				       angles, ppb, is_spacing_in_mm, ps_dims_in_mm,
 				       SAGx, SAGy, SDD, SAD, 
@@ -122,7 +117,7 @@ template<class REAL> void hoCudaConebeamProjectionOperator<REAL>
 }
 
 template<class REAL> void hoCudaConebeamProjectionOperator<REAL>
-::mult_MH_M( hoCuNDArray<REAL>* in, hoCuNDArray<REAL>* out, bool accumulate )
+::mult_MH_M( hoNDArray<REAL>* in, hoNDArray<REAL>* out, bool accumulate )
 {
   if( !preprocessed ){
   	BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaConebeamProjectionOperator : setup not performed"));
@@ -150,7 +145,7 @@ template<class REAL> void hoCudaConebeamProjectionOperator<REAL>
   ps_dims.push_back(ps_dims_in_pixels[1]);
   ps_dims.push_back(numOfAllProjections);
 
-  hoCuNDArray<REAL> temp;
+  hoNDArray<REAL> temp;
   temp.create( &ps_dims );
         
 #ifdef TIME_ITR
@@ -158,7 +153,7 @@ template<class REAL> void hoCudaConebeamProjectionOperator<REAL>
   timer2 = new GPUTimer("forwards projection");
 #endif
 
-  mult_M(in, &temp, accumulate);
+  mult_M(in, &temp, false);
 #ifdef TIME_ITR
   delete timer2;
   timer2 = new GPUTimer("backwards projection");
