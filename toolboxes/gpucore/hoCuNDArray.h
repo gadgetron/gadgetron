@@ -39,6 +39,11 @@ public:
 			}
 			return *this;
 		}
+		virtual ~hoCuNDArray() {
+		    if (this->delete_data_on_destruct_) {
+		      this->deallocate_memory();
+		    }
+		  }
 
 };
 }
