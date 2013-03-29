@@ -11,7 +11,9 @@
 #include "hoNDArray.h"
 #include "GrappaWeights.h"
 #include "GrappaWeightsCalculator.h"
+
 namespace Gadgetron{
+
 class EXPORTGADGETSGRAPPA CalibrationBufferCounter
 {
 
@@ -32,7 +34,7 @@ class EXPORTGADGETSGRAPPA CalibrationBufferCounter
   {
     int ret_val = 0;
 
-    if (!read_dir_equal(read_dir) ||
+    if (!read_dir_equal(read_dir) || 
                 !phase_dir_equal(phase_dir) ||
                 !slice_dir_equal(slice_dir) ||
                 !position_equal(position)) {
@@ -92,23 +94,23 @@ class EXPORTGADGETSGRAPPA CalibrationBufferCounter
     return true;
   }
 
-  bool read_dir_equal(float* read_dir) {
+  bool read_dir_equal(float* cosines) {
     for (unsigned int i = 0; i < 3; i++) {
-      if (read_dir_[i] != read_dir[i]) return false;
+      if (read_dir_[i] != cosines[i]) return false;
     }
     return true;
   }
 
-  bool phase_dir_equal(float* phase_dir) {
+  bool phase_dir_equal(float* cosines) {
     for (unsigned int i = 0; i < 3; i++) {
-      if (phase_dir_[i] != phase_dir[i]) return false;
+      if (phase_dir_[i] != cosines[i]) return false;
     }
     return true;
   }
 
-  bool slice_dir_equal(float* slice_dir) {
+  bool slice_dir_equal(float* cosines) {
     for (unsigned int i = 0; i < 3; i++) {
-      if (slice_dir_[i] != slice_dir[i]) return false;
+      if (slice_dir_[i] != cosines[i]) return false;
     }
     return true;
   }
@@ -141,5 +143,7 @@ class EXPORTGADGETSGRAPPA GrappaCalibrationBuffer
   unsigned int last_line_;
   bool weights_invalid_;
 };
+
 }
+
 #endif
