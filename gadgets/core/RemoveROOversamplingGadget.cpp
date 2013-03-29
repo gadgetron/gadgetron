@@ -1,8 +1,10 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "RemoveROOversamplingGadget.h"
 #include "Gadgetron.h"
-#include "FFT.h"
+#include "hoFFT.h"
+
 namespace Gadgetron{
+
 int RemoveROOversamplingGadget
 ::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
@@ -23,7 +25,7 @@ int RemoveROOversamplingGadget
     return GADGET_FAIL;
   }
 
-  FFT<float>::instance()->ifft(m2->getObjectPtr(),0);
+  hoFFT<float>::instance()->ifft(m2->getObjectPtr(),0);
   
   std::complex<float>* data_in  = m2->getObjectPtr()->get_data_ptr();
   std::complex<float>* data_out = m3->getObjectPtr()->get_data_ptr();
@@ -34,7 +36,7 @@ int RemoveROOversamplingGadget
     memcpy(data_out+offset_out,data_in+offset_in,data_out_dims[0]*sizeof(std::complex<float>));
   }
 
-  FFT<float>::instance()->fft(m3->getObjectPtr(),0);
+  hoFFT<float>::instance()->fft(m3->getObjectPtr(),0);
   
   m2->release(); //We are done with this data
 

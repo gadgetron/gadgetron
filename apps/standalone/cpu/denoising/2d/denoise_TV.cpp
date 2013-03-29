@@ -7,7 +7,7 @@
 // Gadgetron includes
 #include "hoNDArray.h"
 #include "hoNDArray_fileio.h"
-#include "hoCgSolver.h"
+#include "hoSbCgSolver.h"
 #include "hoIdentityOperator.h"
 #include "hoPartialDerivativeOperator.h"
 #include "parameterparser.h"
@@ -31,8 +31,8 @@ int main(int argc, char** argv)
   parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Noisy image file name (.real)", true );
   parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Result file name", true, "denoised_image_TV.real" );
   parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of cg iterations", true, "20" );
-  //  parms.add_parameter( 'I', COMMAND_LINE_INT,    1, "Number of sb inner iterations", true, "1" );
-  //parms.add_parameter( 'O', COMMAND_LINE_INT,    1, "Number of sb outer iterations", true, "10" );
+  parms.add_parameter( 'I', COMMAND_LINE_INT,    1, "Number of sb inner iterations", true, "1" );
+  parms.add_parameter( 'O', COMMAND_LINE_INT,    1, "Number of sb outer iterations", true, "10" );
   parms.add_parameter( 'm', COMMAND_LINE_FLOAT,  1, "Regularization weight (mu)", true, "25.0" );
 
   parms.parse_parameter_list(argc, argv);
@@ -70,8 +70,8 @@ int main(int argc, char** argv)
   }
   
   unsigned int num_cg_iterations = parms.get_parameter('i')->get_int_value();
-  //unsigned int num_inner_iterations = parms.get_parameter('I')->get_int_value();
-  //unsigned int num_outer_iterations = parms.get_parameter('O')->get_int_value();
+  unsigned int num_inner_iterations = parms.get_parameter('I')->get_int_value();
+  unsigned int num_outer_iterations = parms.get_parameter('O')->get_int_value();
   
   // Setup regularization operators
   boost::shared_ptr< hoPartialDerivativeOperator<_real,2> > Rx( new hoPartialDerivativeOperator<_real,2>(0) );
@@ -91,21 +91,21 @@ int main(int argc, char** argv)
   E->set_codomain_dimensions(data->get_dimensions().get());
   
   // Setup split-Bregman solver
-  hoCgSolver<_real> sb;
+  hoSbCgSolver<_real> sb;
   sb.set_encoding_operator( E );
-  sb.add_regularization_operator( Rx ); // Anisotropic denoising
-  sb.add_regularization_operator( Ry ); // Anisotropic denoising
-  //sb.add_regularization_group_operator( Rx ); // Isotropic denoising
-  //sb.add_regularization_group_operator( Ry); // Isotropic denoising
-  //sb.add_group();
-  //sb.set_max_outer_iterations(num_outer_iterations);
-  //sb.set_max_inner_iterations(num_inner_iterations);
+  //sb.add_regularization_operator( Rx ); // Anisotropic denoising
+  //sb.add_regularization_operator( Ry ); // Anisotropic denoising
+  sb.add_regularization_group_operator( Rx ); // Isotropic denoising
+  sb.add_regularization_group_operator( Ry); // Isotropic denoising
+  sb.add_group();
+  sb.set_max_outer_iterations(num_outer_iterations);
+  sb.set_max_inner_iterations(num_inner_iterations);
   sb.set_output_mode( hoCgSolver<_real>::OUTPUT_VERBOSE );
   
   // Setup inner conjugate gradient solver
-  //sb.get_inner_solver()->set_max_iterations( num_cg_iterations );
-  // sb.get_inner_solver()->set_tc_tolerance( 1e-4 );
-  //sb.get_inner_solver()->set_output_mode( hoCgSolver<_real>::OUTPUT_WARNINGS );
+  sb.get_inner_solver()->set_max_iterations( num_cg_iterations );
+  sb.get_inner_solver()->set_tc_tolerance( 1e-4 );
+  sb.get_inner_solver()->set_output_mode( hoCgSolver<_real>::OUTPUT_WARNINGS );
   
   // Run split-Bregman solver
   boost::shared_ptr< hoNDArray<_real> > sbresult = sb.solve(data.get());

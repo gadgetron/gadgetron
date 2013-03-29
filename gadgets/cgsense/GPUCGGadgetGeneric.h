@@ -5,19 +5,21 @@
 #include <ace/Synch.h>
 #include <ace/Mutex.h>
 
-#include <complex>
-
 #include "gadgetroncgsense_export.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "cuCgSolver.h"
 #include "cuNonCartesianSenseOperator.h"
-#include "cuCgPrecondWeights.h"
+#include "cuCgPreconditioner.h"
 #include "NFFT.h"
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
 #include "ismrmrd.h"
+
+#include <complex>
+
 namespace Gadgetron{
+
 class CGSenseJob
 {
 public:
@@ -73,7 +75,7 @@ protected:
 	boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E_;
 
 	// Define preconditioner
-	boost::shared_ptr< cuCgPrecondWeights<float_complext> > D_;
+	boost::shared_ptr< cuCgPreconditioner<float_complext> > D_;
 
 	// Define regularization image operator
 	boost::shared_ptr< cuImageOperator<float_complext> > R_;

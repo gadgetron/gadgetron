@@ -922,7 +922,7 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::compute_deapodization_filter()
   fft( deapodization_filter.get(), NFFT_BACKWARDS, false );
   
   // Reciprocal
-  reciprocal(deapodization_filter.get());
+  reciprocal_inplace(deapodization_filter.get());
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void

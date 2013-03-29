@@ -29,12 +29,9 @@ find_package(Matlab REQUIRED)
 set(CMAKE_INSTALL_PREFIX $ENV{GADGETRON_HOME})
 
 include_directories(
-    ${MATLAB_INCLUDE_DIR}
-    ${ACE_INCLUDE_DIR} 
-    ${Boost_INCLUDE_DIR} 
-    ${ISMRMRD_INCLUDE_DIR}
-    ${GADGETRON_INCLUDE_DIR}
-)
+  ${MATLAB_INCLUDE_DIR}
+  #${GADGETRON_INCLUDE_DIR}
+  )
 
 if (UNIX)
     if (APPLE)

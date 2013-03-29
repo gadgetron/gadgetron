@@ -71,6 +71,10 @@ namespace Gadgetron{
       return *this;
     }
     
+    virtual void fill(T value) {
+      std::fill(this->get_data_ptr(), this->get_data_ptr()+this->get_number_of_elements(), value);
+    }
+    
     T* begin() {
       return this->data_;
     }

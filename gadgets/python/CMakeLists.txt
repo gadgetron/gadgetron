@@ -3,14 +3,10 @@ add_definitions(-DNPY_NO_DEPRECATED_API)
 
 find_package(Ismrmrd REQUIRED)
 
-include_directories(   ${ACE_INCLUDE_DIR} 
-				       ${PYTHON_INCLUDE_PATH}
-				       ${PYTHON_NUMPY_INCLUDE_DIR}
-				       ${Boost_INCLUDE_DIR} 
-				       ${ISMRMRD_INCLUDE_DIR}
-				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
-				       ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
-				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools)
+include_directories(
+  ${PYTHON_INCLUDE_PATH}
+  ${PYTHON_NUMPY_INCLUDE_DIR}
+  )
 
 add_library(GadgetronPythonMRI MODULE GadgetronPythonMRI.cpp GadgetReference.cpp)
 

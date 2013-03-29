@@ -26,12 +26,10 @@ Gadgetron::csm_mult_M( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL
   
   if( !in || in->get_device() != device || !out || out->get_device() != device || !csm || csm->get_device() != device ){
     BOOST_THROW_EXCEPTION(cuda_error("mult_csm: array not residing current device"));
-
   }
   
   if( in->get_number_of_dimensions() < D  || in->get_number_of_dimensions() > D+1 ){
     throw std::runtime_error( "mult_csm: unexpected input dimensionality");
-
   }
 
   if( in->get_number_of_dimensions() > out->get_number_of_dimensions() ){
@@ -84,7 +82,6 @@ Gadgetron::csm_mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL>
   int device;
   if( cudaGetDevice( &device ) != cudaSuccess ){
     BOOST_THROW_EXCEPTION(cuda_error( "mult_csm_conj_sum: unable to query current device"));
-
   }
   
   if( !in || in->get_device() != device || !out || out->get_device() != device || !csm || csm->get_device() != device ){
@@ -93,7 +90,6 @@ Gadgetron::csm_mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL>
   
   if( out->get_number_of_dimensions() < D  || out->get_number_of_dimensions() > D+1 ){
   	throw std::runtime_error("mult_csm_conj_sum: unexpected output dimensionality");
-
   }
 
   if( out->get_number_of_dimensions() > in->get_number_of_dimensions() ){
@@ -122,9 +118,7 @@ Gadgetron::csm_mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL>
     ss << "mult_csm_conj_sum: unable to combine coils " <<
       cudaGetErrorString(err);
     BOOST_THROW_EXCEPTION(cuda_error(ss.str()));
-
   }
-  
 }
 
 // Instantiation

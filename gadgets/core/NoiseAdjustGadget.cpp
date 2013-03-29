@@ -1,9 +1,10 @@
 #include "NoiseAdjustGadget.h"
 #include "Gadgetron.h"
 #include "GadgetIsmrmrdReadWrite.h"
-
 #include "hoNDArray_fileio.h"
+
 namespace Gadgetron{
+
 void choldc(std::complex<double> *a, int n)
 {
 	int i,j,k;

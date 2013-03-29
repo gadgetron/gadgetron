@@ -13,11 +13,13 @@
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "cuNonCartesianSenseOperator.h"
-#include "cuCgPrecondWeights.h"
+#include "cuCgPreconditioner.h"
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
 #include "ismrmrd.h"
+
 namespace Gadgetron{
+
 class EXPORTGADGETSCGSENSE GPUCGGadget : public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 {
 
@@ -99,7 +101,7 @@ protected:
 	boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E_;
 
 	// Define preconditioner
-	boost::shared_ptr< cuCgPrecondWeights<float_complext> > D_;
+	boost::shared_ptr< cuCgPreconditioner<float_complext> > D_;
 
 	// Define regularization image operator
 	boost::shared_ptr< cuImageOperator<float_complext> > R_;

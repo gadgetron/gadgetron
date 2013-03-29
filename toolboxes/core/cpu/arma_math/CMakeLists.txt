@@ -24,5 +24,4 @@ install(FILES
   hoNDArray_operators.h
   hoNDArray_elemwise.h
   hoNDArray_blas.h
-  hoNDArray_fileio.h
   DESTINATION include)

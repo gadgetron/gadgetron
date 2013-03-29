@@ -282,7 +282,7 @@ void radialSenseAppMainWindow::replan()
 void radialSenseAppMainWindow::update_preconditioning_weights()
 {
   boost::shared_ptr< cuNDArray<float> > _precon_weights = abs_square<float_complext>(csm.get());
-  axpy<float>( get_kappa(), R->get(), _precon_weights.get() );  
+  axpy<float>( get_kappa(), R->get().get(), _precon_weights.get() );  
   reciprocal_sqrt_inplace<float>( _precon_weights.get() );
   boost::shared_ptr< cuNDArray<float_complext> > precon_weights = real_to_complext<float>( _precon_weights.get() );
   D->set_weights( precon_weights );

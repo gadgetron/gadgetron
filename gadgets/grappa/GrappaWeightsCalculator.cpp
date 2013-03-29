@@ -1,7 +1,6 @@
-#include "cuNDFFT.h"
+#include "cuFFT.h"
 #include "GrappaWeightsCalculator.h"
 #include "GadgetContainerMessage.h"
-
 #include "GadgetIsmrmrdReadWrite.h"
 #include "Gadgetron.h"
 #include "b1_map.h"
@@ -9,8 +8,11 @@
 #include "htgrappa.h"
 #include "GPUTimer.h"
 #include "complext.h"
+
 #include <cuComplex.h>
+
 namespace Gadgetron{
+
 template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsDescription
 {
 
@@ -64,7 +66,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 		device_data.squeeze();
 
 		std::vector<unsigned int> ftdims(2,0); ftdims[1] = 1;
-		cuNDFFT<float_complext> ft;
+		cuFFT<float_complext> ft;
 
 		//Go to image space
 		ft.ifft( &device_data, &ftdims);

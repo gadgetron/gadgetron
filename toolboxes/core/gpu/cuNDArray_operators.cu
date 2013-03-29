@@ -17,11 +17,7 @@ namespace Gadgetron{
   //
   template<class T,class S> static bool compatible_dimensions( const cuNDArray<T> &x, const cuNDArray<S> &y )
   {
-    bool retVal = true;
-    for (int i = 0; i < y.get_number_of_dimensions(); i++){
-      retVal &= (x.get_size(i) == y.get_size(i));
-    }
-    return retVal;
+    return ((x.get_number_of_elements()%y.get_number_of_elements())==0);
   }
 
   template<typename T>

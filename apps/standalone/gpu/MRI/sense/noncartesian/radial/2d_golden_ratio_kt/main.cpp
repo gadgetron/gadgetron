@@ -13,6 +13,7 @@
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "parameterparser.h"
+#include "vector_td_utilities.h"
 
 // Std includes
 #include <iostream>
@@ -252,7 +253,7 @@ int main(int argc, char** argv)
     
     // Define preconditioning weights
     cuNDArray<_real> _precon_weights(*__precon_weights.get());
-    axpy( kappa, R->get(), &_precon_weights );
+    axpy( kappa, R->get().get(), &_precon_weights );
     sqrt_inplace(&_precon_weights);
     reciprocal_inplace(&_precon_weights);
 

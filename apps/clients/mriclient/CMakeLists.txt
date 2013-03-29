@@ -8,13 +8,14 @@ include_directories(
   ${Boost_INCLUDE_DIR}  
   ${HDF5_INCLUDE_DIRS}
   ${HDF5_INCLUDE_DIRS}/cpp
-  ${CMAKE_SOURCE_DIR}/gadgets/core 
-  ${CMAKE_SOURCE_DIR}/apps/gadgetron
-  ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
-  ${CMAKE_SOURCE_DIR}/toolboxes/hostutils
-  ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   ${ISMRMRD_INCLUDE_DIR}
   ${XSD_INCLUDE_DIR}
+  ${CMAKE_SOURCE_DIR}/gadgets/core 
+  ${CMAKE_SOURCE_DIR}/apps/gadgetron
+  ${CMAKE_SOURCE_DIR}/toolboxes/core
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
+  ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   )
 
 LINK_DIRECTORIES(${BOOST_ROOT}/lib)

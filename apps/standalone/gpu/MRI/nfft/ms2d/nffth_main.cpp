@@ -163,7 +163,7 @@ int main( int argc, char** argv)
   
   timer = new GPUTimer("Output result to disk");
   boost::shared_ptr< hoNDArray<_complext> > host_image = image.to_host();
-  write_nd_array<_complext>( host_image.get(), "result.cplx" );
+  write_nd_array<_complext>( host_image.get(), (char*)parms.get_parameter('d')->get_string_value() );
   write_nd_array<_real>( abs(&image)->to_host().get(), "result.real" );
   delete timer;
 

@@ -46,7 +46,7 @@ add_subdirectory(dependencies)
 add_subdirectory(toolboxes)
 add_subdirectory(apps)
 IF (ACE_FOUND AND ISMRMRD_FOUND)
-  #add_subdirectory(gadgets)
+  add_subdirectory(gadgets)
 ENDIF (ACE_FOUND AND ISMRMRD_FOUND)
 
 add_subdirectory(cmake)

@@ -1,15 +1,12 @@
 #pragma once
 
 #include "linearOperator.h"
-#include "vector_td_utilities.h"
-
-#include <boost/smart_ptr.hpp>
-#include <vector>
 
 namespace Gadgetron{
-
+  
   template <class ARRAY_TYPE_REAL, class ARRAY_TYPE_OPERATOR> class imageOperator : public linearOperator<ARRAY_TYPE_OPERATOR>
   {
+
   protected:
     typedef typename ARRAY_TYPE_REAL::element_type REAL;
     typedef typename ARRAY_TYPE_OPERATOR::element_type ELEMENT_TYPE;
@@ -20,7 +17,7 @@ namespace Gadgetron{
     virtual ~imageOperator() {}
   
     // Get regularization image
-    virtual ARRAY_TYPE_REAL* get() { return image_.get(); }
+    virtual boost::shared_ptr<ARRAY_TYPE_REAL> get() { return image_; }
     
     // Compute regularization image (apply the adjoint encoding operator on the encoded image)
     virtual void compute( ARRAY_TYPE_OPERATOR *image )
@@ -45,12 +42,13 @@ namespace Gadgetron{
       if( !accumulate ){
     	tmp = out;
     	*tmp = *in;
-      } else
+      } 
+      else
     	tmp = new ARRAY_TYPE_OPERATOR(*in);
-    
+      
       *tmp *= *image_;
-      *tmp *= ELEMENT_TYPE(2);
-
+      *tmp *= *image_;
+      
       if (accumulate){
     	*out += *tmp;
     	delete tmp;

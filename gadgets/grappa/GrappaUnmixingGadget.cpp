@@ -7,8 +7,10 @@
 
 #include "GadgetIsmrmrdReadWrite.h"
 #include "GrappaUnmixingGadget.h"
-#include "FFT.h"
+#include "hoFFT.h"
+
 namespace Gadgetron{
+
 GrappaUnmixingGadget::GrappaUnmixingGadget() {
 	// TODO Auto-generated constructor stub
 
@@ -42,9 +44,9 @@ int GrappaUnmixingGadget::process(GadgetContainerMessage<GrappaUnmixingJob>* m1,
 	m1->cont(0);
 	m2->cont(cm2);
 
-	FFT<float>::instance()->ifft(m3->getObjectPtr(),0);
-	FFT<float>::instance()->ifft(m3->getObjectPtr(),1);
-	FFT<float>::instance()->ifft(m3->getObjectPtr(),2);
+	hoFFT<float>::instance()->ifft(m3->getObjectPtr(),0);
+	hoFFT<float>::instance()->ifft(m3->getObjectPtr(),1);
+	hoFFT<float>::instance()->ifft(m3->getObjectPtr(),2);
 
 	if (!m1->getObjectPtr()->weights_) {
 		GADGET_DEBUG1("Weights are a NULL\n");

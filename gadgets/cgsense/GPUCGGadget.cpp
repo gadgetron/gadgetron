@@ -1,14 +1,18 @@
+#include "cuNDArray_operators.h"
+#include "cuNDArray_elemwise.h"
+#include "cuNDArray_blas.h"
+#include "cuNDArray_utils.h"
+#include "vector_td_utilities.h"
 #include "b1_map.h"
 #include "GPUCGGadget.h"
 #include "Gadgetron.h"
 #include "GadgetMRIHeaders.h"
-#include "ndarray_vector_td_utilities.h"
 #include "GadgetIsmrmrdReadWrite.h"
-
 #include "hoNDArray_fileio.h"
-
 #include "tinyxml.h"
+
 namespace Gadgetron{
+
 GPUCGGadget::GPUCGGadget()
 : slice_no_(0)
 , profiles_per_frame_(32)
@@ -129,11 +133,11 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
 		// Allocate encoding operator for non-Cartesian Sense
 		std::vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size_);
 		E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );
-		E_->set_device(device_number_);
+		//E_->set_device(device_number_);
 		E_->set_domain_dimensions(&image_dims);
 
 		// Allocate preconditioner
-		D_ = boost::shared_ptr< cuCgPrecondWeights<float_complext> >( new cuCgPrecondWeights<float_complext>() );
+		D_ = boost::shared_ptr< cuCgPreconditioner<float_complext> >( new cuCgPreconditioner<float_complext>() );
 		//D_->set_device(device_number_);
 
 		// Allocate regularization image operator
@@ -175,7 +179,7 @@ int GPUCGGadget::configure_channels()
 		return GADGET_FAIL;
 	}
 
-	try { csm->fill(float_complext(1));}
+	try { fill(csm.get(), float_complext(1)); }
 	catch ( cuda_error &err){
 		GADGET_DEBUG_EXCEPTION(err, "Failed to fill csm array \n" );
 		return GADGET_FAIL;
@@ -314,12 +318,13 @@ int GPUCGGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 
 		R_->compute(&reg_image);
 
-		// TODO: error check these computations
-
 		// Define preconditioning weights
-		boost::shared_ptr< cuNDArray<float> > _precon_weights = squaredNorm( csm.get(), 2 );
-		axpy( float(kappa_), R_->get(), _precon_weights.get() );
-		_precon_weights->reciprocal_sqrt();
+		boost::shared_ptr< cuNDArray<float> > _precon_weights = sum(abs_square(csm.get()).get(), 2);
+		boost::shared_ptr<cuNDArray<float> > R_diag = R_->get();
+		*R_diag *= float(kappa_);
+		*_precon_weights += *R_diag;
+		R_diag.reset();
+		reciprocal_sqrt_inplace(_precon_weights.get());
 		boost::shared_ptr< cuNDArray<float_complext> > precon_weights = real_to_complext( _precon_weights.get() );
 		_precon_weights.reset();
 		D_->set_weights( precon_weights );

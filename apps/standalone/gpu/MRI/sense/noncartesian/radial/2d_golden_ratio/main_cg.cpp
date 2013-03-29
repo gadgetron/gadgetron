@@ -1,5 +1,6 @@
 // Gadgetron includes
 #include "cuNDArray_elemwise.h"
+#include "cuNDArray_utils.h"
 #include "hoNDArray_fileio.h"
 #include "radial_utilities.h"
 #include "cuNonCartesianSenseOperator.h"
@@ -10,6 +11,7 @@
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "parameterparser.h"
+#include "vector_td_utilities.h"
 
 // Std includes
 #include <iostream>
@@ -193,11 +195,12 @@ int main(int argc, char** argv)
 
   timer = new GPUTimer("Computing preconditioning weights");
 
-  boost::shared_ptr< cuNDArray<_real> > _precon_weights = abs_square(csm.get());
-  axpy( kappa, R->get(), _precon_weights.get() );
-  sqrt_inplace(_precon_weights.get());
-  reciprocal_inplace(_precon_weights.get());
-
+  boost::shared_ptr< cuNDArray<_real> > _precon_weights = sum(abs_square(csm.get()).get(),2);
+  boost::shared_ptr< cuNDArray<_real> > R_diag = R->get();
+  *R_diag *= kappa;
+  *_precon_weights += *R_diag;
+  R_diag.reset();
+  reciprocal_sqrt_inplace(_precon_weights.get());
   boost::shared_ptr< cuNDArray<_complext> > precon_weights = real_to_complext<_real>( _precon_weights.get() );
   _precon_weights.reset();
 
@@ -293,6 +296,7 @@ int main(int argc, char** argv)
 
       // Add operators to solver
       cg.set_encoding_operator( E );        // encoding matrix
+      
       cg.add_regularization_operator( R );  // regularization matrix
     }
     

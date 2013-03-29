@@ -1,14 +1,6 @@
 find_package(Ismrmrd REQUIRED)
 find_package(Octave REQUIRED)
 
-include_directories(   ${OCTAVE_INCLUDE_DIRS}
-					   ${ACE_INCLUDE_DIR} 
-				       ${Boost_INCLUDE_DIR} 
-				       ${ISMRMRD_INCLUDE_DIR}
-				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
-				       ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
-				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools)
-
 link_directories(${OCTAVE_LINK_DIRS})
 
 add_library(gadgetronoctavecommunicator SHARED OctaveCommunicator.cpp)

@@ -6,20 +6,11 @@ endif (WIN32)
 
 find_package(Ismrmrd REQUIRED)
 
-include_directories(   ${ACE_INCLUDE_DIR}
-				       ${CUDA_INCLUDE_DIRS}
-				       ${Boost_INCLUDE_DIR}
-				       ${FFTW3_INCLUDE_DIR}
-				       ${ISMRMRD_INCLUDE_DIR}
-					   ${XSD_INCLUDE_DIR}
-				       ${CMAKE_SOURCE_DIR}/dependencies/tinyxml
-				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
-				       ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
-				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-				       ${CMAKE_SOURCE_DIR}/toolboxes/gpupmri
-				       ${CMAKE_SOURCE_DIR}/toolboxes/gpucore
-					   ${CMAKE_SOURCE_DIR}/toolboxes/hostutils
-				       ${CMAKE_SOURCE_DIR}/gadgets/core)
+include_directories(
+  ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
+  ${CMAKE_SOURCE_DIR}/gadgets/core
+)
 
 add_library(gadgetrongrappa SHARED GrappaGadget.cpp
 								   GrappaCalibrationBuffer.cpp

@@ -20,25 +20,23 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray<_complext>* in, c
   }
 
   if( !ready_ ) {
-  	throw std::runtime_error( "cuNonCartesianSenseOperator::mult_M: plan has not been set up");
-
+    throw std::runtime_error( "cuNonCartesianSenseOperator::mult_M: plan has not been set up");
   }
-
-
+    
   std::vector<unsigned int> full_dimensions = *this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
-  cuNDArray<_complext> tmp(&full_dimensions);
-
+  cuNDArray<_complext> tmp(&full_dimensions);  
   mult_csm( in, &tmp );
-
-  if( accumulate ){
-    throw std::runtime_error( "cuNonCartesianSenseOperator::mult_M: accumulation mode not (yet) supported");
-  }
   
   // Forwards NFFT
-  plan_->compute( &tmp, out, dcw_.get(), NFFT_plan<REAL,D,ATOMICS>::NFFT_FORWARDS_C2NC );
 
-
+  if( accumulate ){
+    cuNDArray<_complext> tmp_out(out->get_dimensions());
+    plan_->compute( &tmp, &tmp_out, dcw_.get(), NFFT_plan<REAL,D,ATOMICS>::NFFT_FORWARDS_C2NC );
+    *out += tmp_out;
+  }
+  else
+    plan_->compute( &tmp, out, dcw_.get(), NFFT_plan<REAL,D,ATOMICS>::NFFT_FORWARDS_C2NC );
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
@@ -46,16 +44,15 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray<_complext>* in, 
 {
   if( (out->get_number_of_elements() != prodv(*this->get_domain_dimensions())) ||
       (in->get_number_of_elements() != prodv(*this->get_codomain_dimensions())) ) {
-  	throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH: dimensions mismatch");
+    throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH: dimensions mismatch");
   }
 
   if( !ready_ ) {
-  	throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH: plan has not been set up" );
+    throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH: plan has not been set up" );
   }
 
   std::vector<unsigned int> tmp_dimensions = *this->get_domain_dimensions();
   tmp_dimensions.push_back(this->ncoils_);
-
   cuNDArray<_complext> tmp(&tmp_dimensions);
   
   // Do the NFFT
@@ -65,15 +62,13 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray<_complext>* in, 
     clear(out);    
   }
   
-  mult_csm_conj_sum( &tmp, out );
-  
+  mult_csm_conj_sum( &tmp, out );  
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::setup( _uintd matrix_size, _uintd matrix_size_os, REAL W )
 {  
   plan_->setup( matrix_size, matrix_size_os, W );
-  
   ready_ = true;
 }
 
@@ -85,8 +80,7 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::preprocess( cuNDArray<_reald> *traj
   }
   
   if( !ready_ ) {
-  	throw std::runtime_error( "cuNonCartesianSenseOperator::preprocess: plan has not been set up");
-
+    throw std::runtime_error( "cuNonCartesianSenseOperator::preprocess: plan has not been set up");	
   }
 
   if( trajectory ){
@@ -107,9 +101,7 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::preprocess( cuNDArray<_reald> *traj
   }
   else {
     throw std::runtime_error( "cuNonCartesianSenseOperator: cannot set trajectory to 0x0.");
-
-  }
-  
+  }  
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
@@ -122,6 +114,9 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::set_dcw( boost::shared_ptr< cuNDArr
 // Instantiations
 //
 
+template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,1,true>;
+template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,1,false>;
+
 template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,2,true>;
 template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,2,false>;
 
@@ -131,7 +126,7 @@ template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,3,false>;
 template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,4,true>;
 template class EXPORTGPUPMRI cuNonCartesianSenseOperator<float,4,false>;
 
-
+template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,1,false>;
 template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,2,false>;
 template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,3,false>;
 template class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,4,false>;

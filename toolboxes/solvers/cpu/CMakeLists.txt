@@ -9,4 +9,6 @@ include_directories(
 
 install(FILES 	
   hoCgSolver.h
+  hoSbCgSolver.h
+  hoGPBBSolver.h
   DESTINATION include)

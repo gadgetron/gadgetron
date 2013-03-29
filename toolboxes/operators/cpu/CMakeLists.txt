@@ -13,8 +13,6 @@ include_directories(
 #install(TARGETS cpuoperators DESTINATION lib)
 
 install(FILES 	
-  hoEncodingOperatorContainer.h
-  hoMultiplicationOperatorContainer.h
   hoIdentityOperator.h
   hoFFTOperator.h
   hoPartialDerivativeOperator.h

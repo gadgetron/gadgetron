@@ -3,13 +3,15 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "Gadgetron.h"
 #include "GrappaGadget.h"
-#include "FFT.h"
+//#include "hoFFT.h"
 #include "GrappaUnmixingGadget.h"
 #include "GadgetIsmrmrdReadWrite.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
+
 namespace Gadgetron{
+
 GrappaGadget::GrappaGadget()
 : image_counter_(0)
 , image_series_(0)
@@ -296,9 +298,9 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		}
 
 		/*
-		FFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),0);
-		FFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),1);
-		FFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),2);
+		hoFFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),0);
+		hoFFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),1);
+		hoFFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),2);
 
 		//apply weights
 		float scale_factor = (dimensions_[0] *dimensions_[1] *dimensions_[0] *dimensions_[1])/10;

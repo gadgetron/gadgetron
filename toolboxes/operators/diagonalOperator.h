@@ -1,91 +1,74 @@
 #pragma once
 
 #include "linearOperator.h"
-#include "vector_td_utilities.h"
 
-#include <boost/smart_ptr.hpp>
-#include <vector>
+namespace Gadgetron {
 
-template <class REAL, class ARRAY_TYPE> class diagonalOperator 
-  : public linearOperator<REAL, ARRAY_TYPE>
-{
-  
-public:
-  
-  diagonalOperator() : linearOperator<REAL, ARRAY_TYPE>() {}
-  virtual ~diagonalOperator() {}
-  
-  // Set/get diagonal
-  virtual void set_diagonal( boost::shared_ptr<ARRAY_TYPE> diagonal ) { diagonal_ = diagonal; }
-  virtual ARRAY_TYPE* get_diagonal() { return diagonal_.get(); }
-      
-  // Apply diagonal operator (twice)
-  virtual int mult_MH_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
-  {    
-    bool ret2 = true;
-    
-    if( !accumulate ) 
-      ret2 = operator_clear( out );
-    
-    if( ret2 ){
-      ret2 = operator_axpy( diagonal_.get(), in, out );
-      ret2 &= operator_axpy( diagonal_.get(), in, out );
-    }else
-      ret2 = false;
-        
-    if( ret2 )
-      return 0;
-    else{
-      std::cout << std::endl << "Error: diagonalOperator::mult_MH_M failed" << std::endl;
-      return -1;
-    }
-  }
-  
-  virtual int mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
+  template <class ARRAY_TYPE> class diagonalOperator : public linearOperator<ARRAY_TYPE>
   {
-    bool ret2 = true;
-
-    if( !accumulate )
-      ret2 = operator_clear( out );
-
-    if( ret2 ){
-      ret2 = operator_axpy( diagonal_.get(), in, out );
-
-    }else
-      ret2 = false;
-
-    if( ret2 )
-      return 0;
-    else{
-      std::cout << std::endl << "Error: diagonalOperator::mult_M failed" << std::endl;
-      return -1;
+  public:
+  
+    diagonalOperator() : linearOperator<ARRAY_TYPE>() {}
+    virtual ~diagonalOperator() {}
+  
+    // Set/get diagonal
+    //
+    
+    virtual void set_diagonal( boost::shared_ptr<ARRAY_TYPE> diagonal ) { 
+      diagonal_ = diagonal;
+      diagonal_conj_ = conj(diagonal.get());
     }
-  }
+
+    virtual boost::shared_ptr<ARRAY_TYPE> get_diagonal() { return diagonal_; }
   
-  virtual int mult_MH( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
-  {
-    bool ret2 = true;
-
-    if( !accumulate )
-      ret2 = operator_clear( out );
-
-    if( ret2 ){
-      ret2 = operator_axpy( diagonal_.get(), in, out );
-
-    }else
-      ret2 = false;
-
-    if( ret2 )
-      return 0;
-    else{
-      std::cout << std::endl << "Error: diagonalOperator::mult_MH failed" << std::endl;
-      return -1;
+    // Apply diagonal operator (twice)
+    virtual void mult_MH_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate )
+    {    
+      if( accumulate ) {
+	ARRAY_TYPE tmp(*in);
+	tmp *= *diagonal_;
+	tmp *= *diagonal_conj_;
+	*out += tmp;
+      }
+      else{
+	*out = *in;
+	*out *= *diagonal_;
+	*out *= *diagonal_conj_;
+      }
     }
-  }
   
-  virtual bool operator_clear( ARRAY_TYPE* ) = 0;
-  virtual bool operator_axpy( ARRAY_TYPE*, ARRAY_TYPE*, ARRAY_TYPE* ) = 0;
+    virtual void mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
+    {
+      if( accumulate ) {
+	ARRAY_TYPE tmp(*in);
+	tmp *= *diagonal_;
+	*out += tmp;
+      }
+      else{
+	*out = *in;
+	*out *= *diagonal_;
+      }
+    }
   
-protected:
-  boost::shared_ptr<ARRAY_TYPE> diagonal_;
-};
+    virtual void mult_MH( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
+    {
+      if( accumulate ) {
+	ARRAY_TYPE tmp(*in);
+	tmp *= *diagonal_conj_;
+	*out += tmp;
+      }
+      else{
+	*out = *in;
+	*out *= *diagonal_conj_;
+      }
+    }
+    
+    virtual boost::shared_ptr< linearOperator<ARRAY_TYPE> > clone() {
+      return linearOperator<ARRAY_TYPE>::clone(this);
+    }
+  
+  protected:
+    boost::shared_ptr<ARRAY_TYPE> diagonal_;
+    boost::shared_ptr<ARRAY_TYPE> diagonal_conj_;
+  };
+}

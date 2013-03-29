@@ -11,7 +11,7 @@ namespace Gadgetron{
   /** \class linearOperator
       \brief Base class for all linear Operators
   */
-  template < class ARRAY_TYPE> class linearOperator : public generalOperator<ARRAY_TYPE>
+  template <class ARRAY_TYPE> class linearOperator : public generalOperator<ARRAY_TYPE>
   {
   
   private:

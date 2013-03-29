@@ -27,7 +27,6 @@ target_link_libraries(gpuoperators
 install(TARGETS gpuoperators DESTINATION lib)
 
 install(FILES 	
-  cuLinearOperator_macros.h
   cuImageOperator.h
   cuDiagonalOperator.h
   cuEncodedImageOperator.h

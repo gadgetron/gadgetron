@@ -7,6 +7,12 @@ using namespace Gadgetron;
 template<class T> T 
 Gadgetron::dot( hoNDArray<T> *x, hoNDArray<T> *y, bool cc )
 {
+  if( x == 0x0 || y == 0x0 )
+    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::dot(): Invalid input array"));
+
+  if( x->get_number_of_elements() != y->get_number_of_elements() )
+    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::dot(): Array sizes mismatch"));
+  
   arma::Col<typename stdType<T>::Type> xM = as_arma_col(x);
   arma::Col<typename stdType<T>::Type> yM = as_arma_col(y);
   typename stdType<T>::Type res = (cc) ? arma::cdot(xM,yM) : arma::dot(xM,yM);
@@ -16,6 +22,9 @@ Gadgetron::dot( hoNDArray<T> *x, hoNDArray<T> *y, bool cc )
 template<class T> typename realType<T>::Type 
 Gadgetron::asum( hoNDArray<T> *x )
 {
+  if( x == 0x0 )
+    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::asum(): Invalid input array"));
+
   typedef typename realType<T>::Type realT;
   arma::Col<typename stdType<T>::Type> xM = as_arma_col(x);
   return realT(arma::norm(xM,1));
@@ -24,18 +33,27 @@ Gadgetron::asum( hoNDArray<T> *x )
 template<class T> T 
 Gadgetron::asum( hoNDArray< std::complex<T> > *x )
 {
+  if( x == 0x0 )
+    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::asum(): Invalid input array"));
+
   return arma::norm(arma::abs(real(as_arma_col(x)))+arma::abs(imag(as_arma_col(x))),1);
 }
 
 template<class T> T 
 Gadgetron::asum( hoNDArray< complext<T> > *x )
 {
+  if( x == 0x0 )
+    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::asum(): Invalid input array"));
+
   return arma::norm(arma::abs(real(as_arma_col(x)))+arma::abs(imag(as_arma_col(x))),1);
 }
 
 template<class T> typename realType<T>::Type 
 Gadgetron::nrm2( hoNDArray<T> *x )
 {
+  if( x == 0x0 )
+    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::nrm2(): Invalid input array"));
+
   typedef typename realType<T>::Type realT;
   arma::Col<typename stdType<T>::Type> xM = as_arma_col(x);
   return realT(arma::norm(xM,2));
@@ -44,6 +62,9 @@ Gadgetron::nrm2( hoNDArray<T> *x )
 template<class T> unsigned int 
 Gadgetron::amin( hoNDArray<T> *x )
 {
+  if( x == 0x0 )
+    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::amin(): Invalid input array"));
+
   typedef typename realType<T>::Type realT;
   arma::Col<realT> xM = arma::abs(as_arma_col(x));
   unsigned int idx;
@@ -54,6 +75,9 @@ Gadgetron::amin( hoNDArray<T> *x )
 template<class T> unsigned int 
 Gadgetron::amin( hoNDArray< std::complex<T> > *x )
 {
+  if( x == 0x0 )
+    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::amin(): Invalid input array"));
+
   arma::Col<T> xM = arma::abs(real(as_arma_col(x)))+arma::abs(imag(as_arma_col(x)));
   unsigned int idx;
   T min = xM.min(idx);
@@ -63,6 +87,9 @@ Gadgetron::amin( hoNDArray< std::complex<T> > *x )
 template<class T> unsigned int 
 Gadgetron::amin( hoNDArray< complext<T> > *x )
 {
+  if( x == 0x0 )
+    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::amin(): Invalid input array"));
+
   arma::Col<T> xM = arma::abs(real(as_arma_col(x)))+arma::abs(imag(as_arma_col(x)));
   unsigned int idx;
   T min = xM.min(idx);
@@ -72,6 +99,9 @@ Gadgetron::amin( hoNDArray< complext<T> > *x )
 template<class T> unsigned int 
 Gadgetron::amax( hoNDArray<T> *x )
 {
+  if( x == 0x0 )
+    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::amax(): Invalid input array"));
+
   typedef typename realType<T>::Type realT;
   arma::Col<realT> xM = arma::abs(as_arma_col(x));
   unsigned int idx;
@@ -82,6 +112,9 @@ Gadgetron::amax( hoNDArray<T> *x )
 template<class T> unsigned int 
 Gadgetron::amax( hoNDArray< std::complex<T> > *x )
 {
+  if( x == 0x0 )
+    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::amax(): Invalid input array"));
+
   arma::Col<T> xM = arma::abs(real(as_arma_col(x)))+arma::abs(imag(as_arma_col(x)));
   unsigned int idx;
   T max = xM.max(idx);
@@ -91,6 +124,9 @@ Gadgetron::amax( hoNDArray< std::complex<T> > *x )
 template<class T> unsigned int 
 Gadgetron::amax( hoNDArray< complext<T> > *x )
 {
+  if( x == 0x0 )
+    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::amax(): Invalid input array"));
+
   arma::Col<T> xM = arma::abs(real(as_arma_col(x)))+arma::abs(imag(as_arma_col(x)));
   unsigned int idx;
   T max = xM.max(idx);
@@ -100,6 +136,12 @@ Gadgetron::amax( hoNDArray< complext<T> > *x )
 template<class T> void 
 Gadgetron::axpy( T a, hoNDArray<T> *x, hoNDArray<T> *y )
 {
+  if( x == 0x0 || y == 0x0 )
+    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::axpy(): Invalid input array"));
+
+  if( x->get_number_of_elements() != y->get_number_of_elements() )
+    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::axpy(): Array sizes mismatch"));
+
   typedef typename stdType<T>::Type stdT;
   arma::Col<stdT> xM = as_arma_col(x);
   arma::Col<stdT> yM = as_arma_col(y);
