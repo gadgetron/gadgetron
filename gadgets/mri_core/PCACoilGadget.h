@@ -15,34 +15,37 @@
 
 #include <complex>
 #include <map>
-namespace Gadgetron{
-class EXPORTGADGETSMRICORE PCACoilGadget :
-public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
-{
-	typedef Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > > inherited;
-public:
-	GADGET_DECLARE(PCACoilGadget);
 
-	PCACoilGadget();
-	virtual ~PCACoilGadget();
+namespace Gadgetron {
 
-protected:
-	  virtual int process_config(ACE_Message_Block* mb);
-	  virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-			      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+  class EXPORTGADGETSMRICORE PCACoilGadget :
+    public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
+  {
+    typedef Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > > inherited;
+  public:
+    GADGET_DECLARE(PCACoilGadget);
 
-private:
-	  //Map containing buffers, one for each location
-      std::map< int, std::vector< ACE_Message_Block* > > buffer_;
+    PCACoilGadget();
+    virtual ~PCACoilGadget();
 
-      //Keep track of whether we are buffering for a particular location
-      std::map< int, bool> buffering_mode_;
+  protected:
+    virtual int process_config(ACE_Message_Block* mb);
+    virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
+			GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
-      //Map for storing PCA coefficients for each location
-      std::map<int, hoNDArray<std::complex<float> >* > pca_coefficients_;
+  private:
+    //Map containing buffers, one for each location
+    std::map< int, std::vector< ACE_Message_Block* > > buffer_;
 
-      int max_buffered_profiles_;
-      int samples_to_use_;
-};
+    //Keep track of whether we are buffering for a particular location
+    std::map< int, bool> buffering_mode_;
+
+    //Map for storing PCA coefficients for each location
+    std::map<int, hoNDArray<std::complex<float> >* > pca_coefficients_;
+
+    int max_buffered_profiles_;
+    int samples_to_use_;
+  };
 }
+
 #endif /* PCACOILGADGET_H_ */

@@ -6,12 +6,17 @@
 namespace Gadgetron{
 
   template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> >
-  shift_dim( cuNDArray<T> *in, int shift, boost::shared_ptr< cuNDArray<T> > out = boost::shared_ptr< cuNDArray<T> >() );
+  shift_dim( cuNDArray<T> *in, int shift );
+
+  template<class T> EXPORTGPUCORE void
+  shift_dim( cuNDArray<T> *in, cuNDArray<T> *out, int shift );
   
   template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> >
-  permute( cuNDArray<T> *in, std::vector<unsigned int> *dim_order, 
-	   boost::shared_ptr< cuNDArray<T> > out = boost::shared_ptr< cuNDArray<T> >(), int shift_mode = 0 );
+  permute( cuNDArray<T> *in, std::vector<unsigned int> *dim_order, int shift_mode = 0 );
   
+  template<class T> EXPORTGPUCORE void
+  permute( cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *dim_order, int shift_mode = 0 );
+
   // Expand (copy) array to new dimension (scalar and vector_td arrays)
   template<class T> EXPORTGPUCORE boost::shared_ptr<cuNDArray<T> > expand(cuNDArray<T> *data, unsigned int added_dim_size );
   

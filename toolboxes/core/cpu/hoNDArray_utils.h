@@ -60,8 +60,7 @@ namespace Gadgetron {
     unsigned long int current_idx_;
   };
   
-  template<class T> boost::shared_ptr< hoNDArray<T> > shift_dim( hoNDArray<T> *in, int shift, 
-								 boost::shared_ptr< hoNDArray<T> > out = boost::shared_ptr< hoNDArray<T> >())
+  template<class T> boost::shared_ptr< hoNDArray<T> > shift_dim( hoNDArray<T> *in, int shift )  
   {
     if( in == 0x0 ) {
       BOOST_THROW_EXCEPTION(runtime_error("shift_dim(): invalid input pointer provided"));
@@ -70,15 +69,42 @@ namespace Gadgetron {
     for (unsigned int i = 0; i < in->get_number_of_dimensions(); i++) {
       order.push_back(static_cast<unsigned int>((i+shift)%in->get_number_of_dimensions()));
     }
-    return permute(&order,out);
+    return permute(in,&order);
+  }
+
+  template<class T> void shift_dim( hoNDArray<T> *in, hoNDArray<T> *out, int shift )
+  {
+    if( in == 0x0 || out == 0x0 ) {
+      BOOST_THROW_EXCEPTION(runtime_error("shift_dim(): invalid pointer provided"));
+    }    
+    std::vector<unsigned int> order;
+    for (unsigned int i = 0; i < in->get_number_of_dimensions(); i++) {
+      order.push_back(static_cast<unsigned int>((i+shift)%in->get_number_of_dimensions()));
+    }
+    permute(in,out,&order);
   }
   
-  template<class T> boost::shared_ptr< hoNDArray<T> > permute( hoNDArray<T> *in, std::vector<unsigned int> *dim_order, 
-							       boost::shared_ptr< hoNDArray<T> > out = boost::shared_ptr< hoNDArray<T> >(), 
-							       int shift_mode = 0) 
+  template<class T> boost::shared_ptr< hoNDArray<T> > 
+  permute( hoNDArray<T> *in, std::vector<unsigned int> *dim_order, int shift_mode = 0) 
   {
     if( in == 0x0 || dim_order == 0x0 ) {
-      BOOST_THROW_EXCEPTION(runtime_error("permute(): invalid input pointer provided"));
+      BOOST_THROW_EXCEPTION(runtime_error("permute(): invalid pointer provided"));
+    }    
+
+    std::vector<unsigned int> dims;
+    for (unsigned int i = 0; i < dim_order->size(); i++)
+      dims.push_back(in->get_dimensions()->at(dim_order->at(i)));
+    boost::shared_ptr< hoNDArray<T> > out( new hoNDArray<T>() );    
+    out->create(&dims);
+    permute( in, out.get(), dim_order, shift_mode );
+    return out;
+  }
+  
+  template<class T> void 
+  permute( hoNDArray<T> *in, hoNDArray<T> *out, std::vector<unsigned int> *dim_order, int shift_mode = 0) 
+  {
+    if( in == 0x0 || out == 0x0 || dim_order == 0x0 ) {
+      BOOST_THROW_EXCEPTION(runtime_error("permute(): invalid pointer provided"));
     }    
     
     // Check ordering array
@@ -89,12 +115,11 @@ namespace Gadgetron {
     std::vector<unsigned int> dim_count(in->get_number_of_dimensions(),0);
     for (unsigned int i = 0; i < dim_order->size(); i++) {
       if ((*dim_order)[i] >= in->get_number_of_dimensions()) {
-	BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::permute - Invalid dimension order array"));
-      
+	BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::permute - Invalid dimension order array"));      
       }
       dim_count[(*dim_order)[i]]++;
     }
-  
+      
     // Create an internal array to store the dimensions
     std::vector<unsigned int> dim_order_int;
   
@@ -107,6 +132,12 @@ namespace Gadgetron {
       dim_order_int.push_back((*dim_order)[i]);
     }
   
+    for (unsigned int i = 0; i < dim_order_int.size(); i++) {
+      if ((*in->get_dimensions())[dim_order_int[i]] != out->get_size(i)) {
+	BOOST_THROW_EXCEPTION(runtime_error("permute(): dimensions of output array do not match the input array"));
+      }
+    }
+    
     // Pad dimension order array with dimension not mentioned in order array
     if (dim_order_int.size() < in->get_number_of_dimensions()) {
       for (unsigned int i = 0; i < dim_count.size(); i++) {
@@ -115,30 +146,13 @@ namespace Gadgetron {
 	}
       }
     }
-  
-    boost::shared_ptr< hoNDArray<T> > out_int = out;
-
-    if( out_int.get() == 0x0 ){
-      std::vector<unsigned int> dims;
-      for (unsigned int i = 0; i < dim_order_int.size(); i++)
-	dims.push_back(in->get_dimensions()->at(dim_order_int[i]));
-      out_int = boost::shared_ptr< hoNDArray<T> >(new hoNDArray<T>());
-      out_int->create(&dims);
-    }
     
-    for (unsigned int i = 0; i < dim_order_int.size(); i++) {
-      if ((*in->get_dimensions())[dim_order_int[i]] != out_int->get_size(i)) {
-	BOOST_THROW_EXCEPTION(runtime_error("permute(): dimensions of output array do not match the input array"));
-      }
-    }
-  
-    T* o = out_int->get_data_ptr();
+    T* o = out->get_data_ptr();
     
     ArrayIterator it(in->get_dimensions().get(),&dim_order_int);
     for (unsigned long int i = 0; i < in->get_number_of_elements(); i++) {
       o[i] = in->get_data_ptr()[it.get_current_idx()];
       it.advance();
     }
-    return out_int;
   }
 }

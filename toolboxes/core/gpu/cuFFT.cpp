@@ -84,7 +84,7 @@ namespace Gadgetron{
     }
     
     //IFFTSHIFT
-    *input = *permute(input,&new_dim_order,boost::shared_ptr<cuNDArray<T> >(),-1);
+    *input = *permute(input,&new_dim_order,-1);
     
     if( cuNDA_FFT_execute<T>( plan, input, direction ) != CUFFT_SUCCESS ) {
       BOOST_THROW_EXCEPTION(runtime_error("cuFFT FFT execute failed"));      
@@ -102,7 +102,7 @@ namespace Gadgetron{
     }
     
     //FFTSHIFT 
-    *input = *permute(input,&reverse_dim_order,boost::shared_ptr<cuNDArray<T> >(),1);        
+    *input = *permute(input,&reverse_dim_order,1);        
   }
   
   template<class T> void

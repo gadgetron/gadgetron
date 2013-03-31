@@ -100,4 +100,3 @@ TYPED_TEST(hoNDArray_utils_TestCplx,permuteTest){
   EXPECT_FLOAT_EQ(2, real(permute(&this->Array,&order)->at(851)));
   EXPECT_FLOAT_EQ(3, imag(permute(&this->Array,&order)->at(851)));
 }
-

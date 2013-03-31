@@ -36,10 +36,23 @@ else(MATLAB_FOUND)
   message("MATLAB NOT FOUND: ${MATLAB_INCLUDE_DIR}")
 endif(MATLAB_FOUND)
 
-if (BLAS_FOUND AND LAPACK_FOUND)
+# To go once we have Armadillo take over...
+if (WIN32)
+# We modified findBlas to make it compatible with ACML5.1.0.
+# Soon hopefully, we can return to the native findBLAS again?
+find_package(GBLAS)
+find_package(GLAPACK) 
+else (WIN32)
+find_package(BLAS)
+find_package(LAPACK) 
+endif (WIN32)
+
+#if (ARMADILLO_FOUND)
+if (BLAS_FOUND)
   MESSAGE("Compiling optimized (BLAS/LAPACK) MRI Gadgets")
   add_subdirectory(mri_core)
-endif (BLAS_FOUND AND LAPACK_FOUND)
+#endif (ARMADILLO_FOUND)
+endif (BLAS_FOUND)
 
 find_package(Boost COMPONENTS python)
 if (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND PYTHON_NUMPY_FOUND)

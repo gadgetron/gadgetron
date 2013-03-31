@@ -117,9 +117,7 @@
 %
 */
 
-
-
-
+namespace Gadgetron{
 
 
 /* ----------------------------------------------------------------------- */
@@ -490,4 +488,5 @@ void calc_traj(double* xgrad, double* ygrad, int ngrad, int Nints, double Tgsamp
         }    
     }
     
+}
 }

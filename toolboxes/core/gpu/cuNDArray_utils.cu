@@ -131,10 +131,26 @@ namespace Gadgetron {
   }  
   
   template <class T> boost::shared_ptr< cuNDArray<T> >
-  permute( cuNDArray<T> *in, std::vector<unsigned int> *dim_order, boost::shared_ptr< cuNDArray<T> > out, int shift_mode )
+  permute( cuNDArray<T> *in, std::vector<unsigned int> *dim_order, int shift_mode )
   {
     if( in == 0x0 || dim_order == 0x0 ) {
-      BOOST_THROW_EXCEPTION(runtime_error("permute(): invalid input pointer provided"));
+      BOOST_THROW_EXCEPTION(runtime_error("permute(): invalid pointer provided"));
+    }    
+
+    std::vector<unsigned int> dims;
+    for (unsigned int i = 0; i < dim_order->size(); i++)
+      dims.push_back(in->get_dimensions()->at(dim_order->at(i)));
+    boost::shared_ptr< cuNDArray<T> > out( new cuNDArray<T>() );    
+    out->create(&dims);
+    permute( in, out.get(), dim_order, shift_mode );
+    return out;
+  }
+  
+  template <class T> void
+  permute( cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *dim_order, int shift_mode )
+  {
+    if( in == 0x0 || out == 0x0 || dim_order == 0x0 ) {
+      BOOST_THROW_EXCEPTION(runtime_error("permute(): invalid pointer provided"));
     }    
     
     //Check ordering array
@@ -161,36 +177,25 @@ namespace Gadgetron {
       dim_order_int.push_back((*dim_order)[i]);
     }
     
+    for (unsigned int i = 0; i < dim_order_int.size(); i++) {
+      if ((*in->get_dimensions())[dim_order_int[i]] != out->get_size(i)) {
+	BOOST_THROW_EXCEPTION(runtime_error("permute(): dimensions of output array do not match the input array"));
+      }
+    }
+    
     //Pad dimension order array with dimension not mentioned in order array
     if (dim_order_int.size() < in->get_number_of_dimensions()) {
       for (unsigned int i = 0; i < dim_count.size(); i++) {
 	if (dim_count[i] == 0) {
 	  dim_order_int.push_back(i);
 	}
-    }
-    }
-    
-    boost::shared_ptr< cuNDArray<T> > out_int = out;
-    
-    if( out_int.get() == 0x0 ){
-      std::vector<unsigned int> dims;
-      for (unsigned int i = 0; i < dim_order_int.size(); i++)
-	dims.push_back(in->get_dimensions()->at(dim_order_int[i]));
-      out_int = boost::shared_ptr< cuNDArray<T> >(new cuNDArray<T>());
-      out_int->create(&dims);
-    }
-    
-    for (unsigned int i = 0; i < dim_order_int.size(); i++) {
-      if ((*in->get_dimensions())[dim_order_int[i]] != out_int->get_size(i)) {
-	BOOST_THROW_EXCEPTION(runtime_error("permute(): dimensions of output array do not match the input array"));
       }
-    }
-    cuNDArray_permute(in, out_int.get(), &dim_order_int, shift_mode);
-    return out_int;
+    }    
+    cuNDArray_permute(in, out, &dim_order_int, shift_mode);
   }
   
   template<class T> boost::shared_ptr< cuNDArray<T> > EXPORTGPUCORE 
-  shift_dim( cuNDArray<T> *in, int shift, boost::shared_ptr< cuNDArray<T> > out )
+  shift_dim( cuNDArray<T> *in, int shift )
   {
     if( in == 0x0 ) {
       BOOST_THROW_EXCEPTION(runtime_error("shift_dim(): invalid input pointer provided"));
@@ -200,7 +205,21 @@ namespace Gadgetron {
     for (int i = 0; i < in->get_number_of_dimensions(); i++) {
       order.push_back(static_cast<unsigned int>((i+shift)%in->get_number_of_dimensions()));
     }
-    return permute(in,&order,out);
+    return permute(in,&order);
+  }
+
+  template<class T> void
+  shift_dim( cuNDArray<T> *in, cuNDArray<T> *out, int shift )
+  {
+    if( in == 0x0 || out == 0x0 ) {
+      BOOST_THROW_EXCEPTION(runtime_error("shift_dim(): invalid pointer provided"));
+    }    
+    
+    std::vector<unsigned int> order;
+    for (int i = 0; i < in->get_number_of_dimensions(); i++) {
+      order.push_back(static_cast<unsigned int>((i+shift)%in->get_number_of_dimensions()));
+    }
+    permute(in,out,&order);
   }
   
   template<class T> static void find_stride( cuNDArray<T> *in, unsigned int dim, unsigned int *stride, std::vector<unsigned int> *dims )
@@ -333,15 +352,25 @@ namespace Gadgetron {
   // Instantiation
   //
   
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > permute( cuNDArray<float>*, std::vector<unsigned int>*, boost::shared_ptr< cuNDArray<float> >, int );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > permute( cuNDArray<double>*, std::vector<unsigned int>*, boost::shared_ptr< cuNDArray<double> >, int );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > permute( cuNDArray<float_complext>*, std::vector<unsigned int>*, boost::shared_ptr< cuNDArray<float_complext> >, int );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > permute( cuNDArray<double_complext>*, std::vector<unsigned int>*, boost::shared_ptr< cuNDArray<double_complext> >, int );  
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > permute( cuNDArray<float>*, std::vector<unsigned int>*, int );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > permute( cuNDArray<double>*, std::vector<unsigned int>*, int );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > permute( cuNDArray<float_complext>*, std::vector<unsigned int>*, int );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > permute( cuNDArray<double_complext>*, std::vector<unsigned int>*, int );  
+  
+  template EXPORTGPUCORE void permute( cuNDArray<float>*, cuNDArray<float>*, std::vector<unsigned int>*, int);
+  template EXPORTGPUCORE void permute( cuNDArray<double>*, cuNDArray<double>*, std::vector<unsigned int>*, int);
+  template EXPORTGPUCORE void permute( cuNDArray<float_complext>*, cuNDArray<float_complext>*, std::vector<unsigned int>*, int);
+  template EXPORTGPUCORE void permute( cuNDArray<double_complext>*, cuNDArray<double_complext>*, std::vector<unsigned int>*, int);
+  
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > shift_dim( cuNDArray<float>*, int );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > shift_dim( cuNDArray<double>*, int );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > shift_dim( cuNDArray<float_complext>*, int );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > shift_dim( cuNDArray<double_complext>*, int );
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > shift_dim( cuNDArray<float>*, int, boost::shared_ptr< cuNDArray<float> > );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > shift_dim( cuNDArray<double>*, int, boost::shared_ptr< cuNDArray<double> > );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > shift_dim( cuNDArray<float_complext>*, int, boost::shared_ptr< cuNDArray<float_complext> > );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > shift_dim( cuNDArray<double_complext>*, int, boost::shared_ptr< cuNDArray<double_complext> > );
+  template EXPORTGPUCORE void shift_dim( cuNDArray<float>*, cuNDArray<float>*, int shift );
+  template EXPORTGPUCORE void shift_dim( cuNDArray<double>*, cuNDArray<double>*, int shift );
+  template EXPORTGPUCORE void shift_dim( cuNDArray<float_complext>*, cuNDArray<float_complext>*, int shift );
+  template EXPORTGPUCORE void shift_dim( cuNDArray<double_complext>*, cuNDArray<double_complext>*, int shift );
 
   template boost::shared_ptr< cuNDArray<float> > expand<float>( cuNDArray<float>*, unsigned int);
   template boost::shared_ptr< cuNDArray<double> > expand<double>( cuNDArray<double>*, unsigned int);

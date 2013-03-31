@@ -9,7 +9,8 @@
 #include <cula_lapack_device.h>
 #include <iostream>
 
-using namespace Gadgetron;
+namespace Gadgetron {
+
 int2 vec_to_int2(std::vector<unsigned int> vec)
 {
 	int2 ret; ret.x = 0; ret.y = 0;
@@ -572,3 +573,5 @@ template EXPORTGPUPMRI int htgrappa_calculate_grappa_unmixing(cuNDArray<complext
 		cuNDArray<complext<float> >* out_mixing_coeff,
 		std::vector< std::pair<unsigned int, unsigned int> >* sampled_region,
 		std::list< unsigned int >* uncombined_channels);
+
+}
