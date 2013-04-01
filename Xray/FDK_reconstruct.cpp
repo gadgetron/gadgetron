@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ) {
       //logger.info << " Running reconstruction with the following parameters: " << logger.end;
-      //parms.print_parameter_list();
+      parms.print_parameter_list();
   }
   else{
     parms.print_parameter_list();
@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
   ps_dims.push_back(ps_dims_in_pixels[1]);
   ps_dims.push_back(numProjs);
   boost::shared_ptr< hoNDArray<_real> > projections = boost::static_pointer_cast<hoNDArray<_real> >(ps->getProjections());
-  write_nd_array<_real>( projections.get(),"tmp.real" );
+
   //Standard 3d FDK
   // Define encoding matrix
   boost::shared_ptr< hoCudaConebeamProjectionOperator<_real> > 
@@ -209,12 +209,6 @@ int main(int argc, char** argv) {
   E->mult_MH(projections.get(),&fdk);
 
 
-  cgSolver<hoNDArray<_real> > solver;
-  solver.set_encoding_operator(E);
-  solver.solve(projections.get());
-  solver.set_max_iterations(30);
-  boost::shared_ptr<hoNDArray<_real> > cgres = solver.solve(projections.get());
-  write_nd_array<_real>(cgres.get(),"cg.real");
   write_nd_array<_real>( &fdk,"fdk.real" );
 
   //4D FDK-MB algorithm starts here.
@@ -238,14 +232,7 @@ int main(int argc, char** argv) {
 	// Form right hand side
 	E4D->set_domain_dimensions(&is_dims);
 
-/*
-  cgSolver<hoNDArray<_real> > solver;
-  solver.set_encoding_operator(E4D);
-  solver.solve(projections.get());
-  boost::shared_ptr<hoNDArray<_real> > cgres = solver.solve(projections.get());
-  write_nd_array<_real>(cgres.get(),"cg.real");
-*/
-	//Dirty trick to save a spot of memory
+
 	hoNDArray<_real> diff_proj(projections->get_dimensions());
 
 	E->mult_M(&fdk,&diff_proj);
