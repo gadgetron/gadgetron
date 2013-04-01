@@ -61,12 +61,13 @@ class PS_Geometry {
 			H5LTget_dataset_info(file_id,"/angles",&dim,NULL,NULL);
 			anglesArray = std::vector<float>(dim,0.0f);
 			H5LTread_dataset (file_id, "/angles", H5T_NATIVE_FLOAT, &anglesArray[0]);
-
 			H5LTread_dataset (file_id, "/SAD", H5T_NATIVE_FLOAT, &SAD);
 			H5LTread_dataset (file_id, "/SDD", H5T_NATIVE_FLOAT, &SDD);
 			H5LTread_dataset (file_id, "/spacing", H5T_NATIVE_FLOAT, &spacingArray[0]);
 			H5LTread_dataset (file_id, "/SAGx", H5T_NATIVE_FLOAT, &SAGxArray[0]);
 			H5LTread_dataset (file_id, "/SAGy", H5T_NATIVE_FLOAT, &SAGyArray[0]);
+
+
 
     }
 /*
@@ -117,9 +118,10 @@ class PS_Geometry {
         if (anglesArray.size() == 0)
             os << "angles: " << "EMPTY" << std::endl;
         else {
-
-            os << "angles: " << anglesArray[0] << " ... " << anglesArray.back()
-               << ", number of angles: " << anglesArray.size() << std::endl;
+        	os << "Angles: ";
+        		for (int i = 0; i < anglesArray.size(); i++) os << anglesArray[i] << std::endl;
+            /*os << "angles: " << anglesArray[0] << " ... " << anglesArray.back()
+               << ", number of angles: " << anglesArray.size() << std::endl;*/
         }
         os << "SDD: " << SDD << "mm" << std::endl;
         os << "SAD: " << SAD << "mm" << std::endl;

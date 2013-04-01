@@ -105,7 +105,10 @@ class PS_Dataset {
 
 					hsize_t dim[3];
 					H5LTget_dataset_info(file_id,"/projections",dim,NULL,NULL);
-					std::vector<unsigned int> dims(dim,dim+3);
+					std::vector<unsigned int> dims;
+					dims.push_back(dim[2]);
+					dims.push_back(dim[1]);
+					dims.push_back(dim[0]);
 					projections = boost::shared_ptr<hoNDArray<float> >(new hoNDArray<float>(&dims));
 					H5LTread_dataset (file_id,"/projections", H5T_NATIVE_FLOAT, projections->get_data_ptr());
 					cleanup_projections = true;
@@ -115,17 +118,25 @@ class PS_Dataset {
 							geometry->loadData(inFile);
 					//if (loadBinning)
 					//binning->loadData(inFile);
+					 H5Fclose (file_id);
         }
     }
-/*
+
     void saveData(std::string outFile) {
-        createEmptyFile(outFile);
-        appendVariable(outFile, "/projection_dataformat_version", 1);
-        appendTypedArray3D(outFile, "/projections", *projections );        
-        if (geometry != NULL)
-            geometry->saveData(outFile);
+    	hid_t file_id = H5Fcreate (outFile.c_str(), H5F_ACC_TRUNC , H5P_DEFAULT,H5P_DEFAULT);
+    	unsigned int dataformat_version=1;
+    	hsize_t dims[1] = {1};
+    	H5LTmake_dataset(file_id,"/projection_dataformat_version", 1,dims, H5T_NATIVE_UINT,&dataformat_version);
+
+    	boost::shared_ptr<std::vector<unsigned int > > pdims = projections->get_dimensions();
+    	hsize_t * dims2 = new hsize_t[pdims->size()];
+    	for (int i = 0; i < pdims->size(); i++) dims2[i] = pdims->at(pdims->size()-i-1);
+    	H5LTmake_dataset(file_id,"/projections",pdims->size(),dims2, H5T_NATIVE_FLOAT,projections->get_data_ptr());
+    	delete[] dims2;
+    	H5Fclose (file_id);
+
+
     }
-    */
     /*
     void setSAGx(float vx, float vy, float vz) {
         geometry->setSAGx(vx, vy, vz);

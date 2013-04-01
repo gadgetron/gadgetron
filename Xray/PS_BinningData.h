@@ -60,8 +60,10 @@ class PS_BinningData {
 
     void generateData(PS_Geometry* ps_g) {
         unsigned int numProjections = ps_g->getAnglesArray().size();
+
         binningData.push_back(std::vector<unsigned int>(boost::counting_iterator<unsigned int>(0),
         		boost::counting_iterator<unsigned int>(numProjections)));
+
     } 
 /*
     void loadDataDir(std::string inDir) {

@@ -207,12 +207,14 @@ int main(int argc, char** argv) {
 
   hoNDArray<_real> fdk(&is_dims);
   E->mult_MH(projections.get(),&fdk);
-/*
+
+
   cgSolver<hoNDArray<_real> > solver;
   solver.set_encoding_operator(E);
   solver.solve(projections.get());
+  solver.set_max_iterations(30);
   boost::shared_ptr<hoNDArray<_real> > cgres = solver.solve(projections.get());
-  write_nd_array<_real>(cgres.get(),"cg.real");*/
+  write_nd_array<_real>(cgres.get(),"cg.real");
   write_nd_array<_real>( &fdk,"fdk.real" );
 
   //4D FDK-MB algorithm starts here.
