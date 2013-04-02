@@ -7,19 +7,19 @@
 
 #include "GadgetIsmrmrdReadWrite.h"
 #include "AutoScaleGadget.h"
+
 namespace Gadgetron{
+
 AutoScaleGadget::AutoScaleGadget()
 	: histogram_bins_(100)
 	, current_scale_(1.0)
 	, max_value_(2048)
 {
-
 }
 
 AutoScaleGadget::~AutoScaleGadget() {
 	// TODO Auto-generated destructor stub
 }
-
 
 int AutoScaleGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<hoNDArray<float> > *m2)
 {

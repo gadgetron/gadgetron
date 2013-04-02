@@ -14,6 +14,7 @@ include_directories(
 
 install(FILES 	
   hoIdentityOperator.h
+  hoImageOperator.h
   hoFFTOperator.h
   hoPartialDerivativeOperator.h
   DESTINATION include)

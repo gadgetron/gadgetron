@@ -1,6 +1,7 @@
 #pragma once
 
 #include "linearOperator.h"
+#include "GadgetronTimer.h"
 
 namespace Gadgetron{
   
@@ -13,14 +14,14 @@ namespace Gadgetron{
     
   public:
     
-    imageOperator() : linearOperator<ARRAY_TYPE_OPERATOR>() {}
+    imageOperator() : linearOperator<ARRAY_TYPE_OPERATOR>(), offset_(REAL(0)) {}
     virtual ~imageOperator() {}
   
     // Get regularization image
     virtual boost::shared_ptr<ARRAY_TYPE_REAL> get() { return image_; }
     
-    // Compute regularization image (apply the adjoint encoding operator on the encoded image)
-    virtual void compute( ARRAY_TYPE_OPERATOR *image )
+    // Compute regularization image
+    virtual void compute( ARRAY_TYPE_OPERATOR *image, bool offset_estimation = true )
     {
       // Make temporary copy of input
       ARRAY_TYPE_OPERATOR tmp(*image);
@@ -29,12 +30,20 @@ namespace Gadgetron{
       REAL sum = asum( &tmp );
       REAL scale = ( (REAL) tmp.get_number_of_elements()/sum );
       tmp *= scale;
-    
-      // Reciprocalize image
+
       image_ =  abs(&tmp);
+
+      {
+	GadgetronTimer _t("\noffset COMP: ");
+	if( offset_estimation )
+	  offset_ = estimate_offset();
+      }
+
+      // Reciprocalize image
+      if(offset_ > REAL(0)) *image_ += offset_;      
       reciprocal_inplace(image_.get());
     }
-  
+    
     // Apply regularization image operator
     virtual void mult_MH_M( ARRAY_TYPE_OPERATOR *in, ARRAY_TYPE_OPERATOR *out, bool accumulate = false )
     {        
@@ -77,12 +86,12 @@ namespace Gadgetron{
       mult_M(in,out,accumulate);
     }
   
-    virtual boost::shared_ptr< linearOperator<ARRAY_TYPE_OPERATOR > > clone()
-    {
-      return linearOperator<ARRAY_TYPE_OPERATOR>::clone(this);
-    }
+  protected:
+    // Estimate offset to the regularization image
+    virtual REAL estimate_offset() = 0;
 
   protected:
     boost::shared_ptr< ARRAY_TYPE_REAL > image_;
+    REAL offset_;
   };
 }

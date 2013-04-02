@@ -1,8 +1,8 @@
 #pragma once
 
-#include "cuNDArray_operators.h"
-#include "cuNDArray_elemwise.h"
-#include "cuNDArray_blas.h"
+#include "hoNDArray_operators.h"
+#include "hoNDArray_elemwise.h"
+#include "hoNDArray_blas.h"
 #include "complext.h"
 #include "imageOperator.h"
 
@@ -11,17 +11,17 @@
 
 namespace Gadgetron{
 
-  template <class T> class cuImageOperator : public imageOperator< cuNDArray<typename realType<T>::Type >, cuNDArray<T> >
+  template <class T> class hoImageOperator : public imageOperator< hoNDArray<typename realType<T>::Type >, hoNDArray<T> >
   {
   public:
 
-    cuImageOperator() : imageOperator< cuNDArray<typename realType<T>::Type >, cuNDArray<T> >() {}
-    virtual ~cuImageOperator() {}    
+    hoImageOperator() : imageOperator< hoNDArray<typename realType<T>::Type >, hoNDArray<T> >() {}
+    virtual ~hoImageOperator() {}    
 
-    typedef typename imageOperator< cuNDArray<typename realType<T>::Type>, cuNDArray<T> >::REAL REAL;
+    typedef typename imageOperator< hoNDArray<typename realType<T>::Type>, hoNDArray<T> >::REAL REAL;
 
-    virtual boost::shared_ptr< linearOperator< cuNDArray<T> > > clone() {
-      return linearOperator< cuNDArray<T> >::clone(this);
+    virtual boost::shared_ptr< linearOperator< hoNDArray<T> > > clone() {
+      return linearOperator< hoNDArray<T> >::clone(this);
     }
 
   protected:
@@ -33,15 +33,11 @@ namespace Gadgetron{
       // Returns an estimation of the "average" intensity of the 'sigma' proportion of the image with the smallest intensities.
       //
       
-      // This simple code is fast enough (<.5 ms on a 192x192 image) that we can just copy the hoImageOperators host code
-      //
-
       const unsigned int granularity = 50000; 
       std::vector<unsigned int> histogram(granularity,0);
       REAL max_value = this->image_->at(amax(this->image_.get()));
-      boost::shared_ptr<hoNDArray<REAL> > tmp = this->image_->to_host();
-      REAL *d = tmp->get_data_ptr();
-      
+      REAL *d = this->image_->get_data_ptr();
+
       for( unsigned int i=0; i<this->image_->get_number_of_elements(); i++) {
 	unsigned int bin = std::min(static_cast<unsigned int>(std::floor((d[i]/max_value)*granularity)), granularity-1);
 	histogram[bin]++;
@@ -49,13 +45,12 @@ namespace Gadgetron{
       
       //Find 1th percentile
       //
-      
+
       unsigned int cumsum = 0, counter = 0;
       while (cumsum < (unsigned int)(REAL(0.01)*this->image_->get_number_of_elements())) {
 	cumsum += histogram[counter++];
       }      
-
-      return  REAL(counter+1)*max_value/granularity;
+      return REAL(counter+1)*max_value/granularity;
     }
   };
 }
