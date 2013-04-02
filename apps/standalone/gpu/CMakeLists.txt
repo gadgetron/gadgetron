@@ -12,6 +12,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
   )
 
-add_subdirectory(MRI)
+add_subdirectory(mri)
 add_subdirectory(denoising)
 add_subdirectory(deblurring)

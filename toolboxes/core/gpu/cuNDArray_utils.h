@@ -17,10 +17,10 @@ namespace Gadgetron{
   template<class T> EXPORTGPUCORE void
   permute( cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *dim_order, int shift_mode = 0 );
 
-  // Expand (copy) array to new dimension (scalar and vector_td arrays)
+  // Expand array to new dimension
   template<class T> EXPORTGPUCORE boost::shared_ptr<cuNDArray<T> > expand(cuNDArray<T> *data, unsigned int added_dim_size );
   
-  // Sum over dimension (scalar and vector_td arrays)
+  // Sum over dimension
   template<class T> EXPORTGPUCORE boost::shared_ptr<cuNDArray<T> > sum(cuNDArray<T> *data, unsigned int dim );
 
   

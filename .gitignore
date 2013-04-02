@@ -31,4 +31,4 @@ lib/*.pyc
 *.swp
 build/
 *.pyc
-toolboxes/cpucore/cpucore_defines.h
+toolboxes/core/core_defines.h

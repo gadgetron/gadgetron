@@ -261,11 +261,11 @@ namespace Gadgetron {
   // Expand
   //
   template<class T> __global__ void
-  expand_kernel( T *in, T *out, unsigned int number_of_elements, unsigned int new_dim_size )
+  expand_kernel( T *in, T *out, unsigned int number_of_elements_in, unsigned int number_of_elements_out, unsigned int new_dim_size )
   {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;    
-    if( idx < number_of_elements ){
-      out[idx] = in[idx%(number_of_elements/new_dim_size)];
+    if( idx < number_of_elements_out ){
+      out[idx] = in[idx%number_of_elements_in];
     }
   }
   
@@ -274,11 +274,11 @@ namespace Gadgetron {
   template<class T> boost::shared_ptr< cuNDArray<T> > 
   expand( cuNDArray<T> *in, unsigned int new_dim_size )
   {
-    unsigned int number_of_elements = in->get_number_of_elements()*new_dim_size;
+    unsigned int number_of_elements_out = in->get_number_of_elements()*new_dim_size;
     
     // Setup block/grid dimensions
     dim3 blockDim; dim3 gridDim;
-    setup_grid( number_of_elements, &blockDim, &gridDim );
+    setup_grid( number_of_elements_out, &blockDim, &gridDim );
     
     // Find element stride
     std::vector<unsigned int> dims = *in->get_dimensions();
@@ -288,8 +288,9 @@ namespace Gadgetron {
     boost::shared_ptr< cuNDArray<T> > out( new cuNDArray<T>());
     out->create(&dims);
 
-    expand_kernel<T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), number_of_elements, new_dim_size );
-    
+    expand_kernel<T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), 
+					       in->get_number_of_elements(), number_of_elements_out, new_dim_size );
+
     CHECK_FOR_CUDA_ERROR();    
     return out;
   }

@@ -11,4 +11,5 @@ install(FILES
   hoCgSolver.h
   hoSbCgSolver.h
   hoGPBBSolver.h
+  hoCgPreconditioner.h
   DESTINATION include)

@@ -164,81 +164,55 @@ template<class T> void Gadgetron::sgn_inplace( hoNDArray<T> *x )
     x->get_data_ptr()[i] = sgn(x->get_data_ptr()[i]);
 }
 
-template<class T> boost::shared_ptr< hoNDArray<T> > 
-Gadgetron::real( hoNDArray< std::complex<T> > *x )
+template<class T> boost::shared_ptr< hoNDArray<typename realType<T>::Type> > 
+Gadgetron::real( hoNDArray<T> *x )
 {
   if( x == 0x0 )
     BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::real(): Invalid input array"));
   
-  boost::shared_ptr< hoNDArray<T> > result(new hoNDArray<T>());
+  boost::shared_ptr< hoNDArray<typename realType<T>::Type> > result(new hoNDArray<typename realType<T>::Type>());
   result->create(x->get_dimensions());
-  arma::Col<T> aRes = as_arma_col(result.get());
+  arma::Col<typename realType<T>::Type> aRes = as_arma_col(result.get());
   aRes = arma::real(as_arma_col(x));
   return result;
 }
 
-template<class T> boost::shared_ptr< hoNDArray<T> > 
-Gadgetron::real( hoNDArray< complext<T> > *x )
-{
-  if( x == 0x0 )
-    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::real(): Invalid input array"));
-  
-  boost::shared_ptr< hoNDArray<T> > result(new hoNDArray<T>());
-  result->create(x->get_dimensions());
-  arma::Col<T> aRes = as_arma_col(result.get());
-  aRes = arma::real(as_arma_col(x));
-  return result;
-}
-
-template<class T> boost::shared_ptr< hoNDArray<T> > 
-Gadgetron::imag( hoNDArray< std::complex<T> > *x )
+template<class T> boost::shared_ptr< hoNDArray<typename realType<T>::Type> > 
+Gadgetron::imag( hoNDArray<T> *x )
 {
   if( x == 0x0 )
     BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::imag(): Invalid input array"));
   
-  boost::shared_ptr< hoNDArray<T> > result(new hoNDArray<T>());
+  boost::shared_ptr< hoNDArray<typename realType<T>::Type> > result(new hoNDArray<typename realType<T>::Type>());
   result->create(x->get_dimensions());
-  arma::Col<T> aRes = as_arma_col(result.get());
+  arma::Col<typename realType<T>::Type> aRes = as_arma_col(result.get());
   aRes = arma::imag(as_arma_col(x));
   return result;
 }
 
 template<class T> boost::shared_ptr< hoNDArray<T> > 
-Gadgetron::imag( hoNDArray< complext<T> > *x )
+Gadgetron::conj( hoNDArray<T> *x )
 {
   if( x == 0x0 )
-    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::imag(): Invalid input array"));
+    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::conj(): Invalid input array"));
   
   boost::shared_ptr< hoNDArray<T> > result(new hoNDArray<T>());
   result->create(x->get_dimensions());
-  arma::Col<T> aRes = as_arma_col(result.get());
-  aRes = arma::imag(as_arma_col(x));
+  arma::Col<typename stdType<T>::Type> aRes = as_arma_col(result.get());
+  aRes = arma::conj(as_arma_col(x));
   return result;
 }
 
-template<class T> boost::shared_ptr< hoNDArray< std::complex<T> > > 
-Gadgetron::real_to_std_complex( hoNDArray<T> *x )
+template<class T> boost::shared_ptr< hoNDArray<T> >
+Gadgetron::real_to_complex( hoNDArray<typename realType<T>::Type> *x )
 {
   if( x == 0x0 )
     BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::real_to_std_complex(): Invalid input array"));
   
-  boost::shared_ptr< hoNDArray< std::complex<T> > > result(new hoNDArray< std::complex<T> >());
+  boost::shared_ptr< hoNDArray<T> > result(new hoNDArray<T>());
   result->create(x->get_dimensions());
-  arma::Col< std::complex<T> > aRes = as_arma_col(result.get());
-  aRes = arma::Col< std::complex<T> >(as_arma_col(x), arma::Col<T>(x->get_number_of_elements()).zeros());
-  return result;
-}
-
-template<class T> boost::shared_ptr< hoNDArray< complext<T> > > 
-Gadgetron::real_to_complext( hoNDArray<T> *x )
-{
-  if( x == 0x0 )
-    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::real_to_std_complex(): Invalid input array"));
-  
-  boost::shared_ptr< hoNDArray< complext<T> > > result(new hoNDArray< complext<T> >());
-  result->create(x->get_dimensions());
-  arma::Col< std::complex<T> > aRes = as_arma_col(result.get());
-  aRes = arma::Col< std::complex<T> >(as_arma_col(x), arma::Col<T>(x->get_number_of_elements()).zeros());
+  arma::Col<typename stdType<T>::Type> aRes = as_arma_col(result.get());
+  aRes = arma::Col<typename stdType<T>::Type>(as_arma_col(x), arma::Col<typename realType<T>::Type>(x->get_number_of_elements()).zeros());
   return result;
 }
 
@@ -571,18 +545,28 @@ template EXPORTCPUCOREMATH void Gadgetron::normalize< complext<double> >( hoNDAr
 template EXPORTCPUCOREMATH void Gadgetron::shrink1< complext<double> >( hoNDArray< complext<double> >*, double, hoNDArray< complext<double> >* );
 template EXPORTCPUCOREMATH void Gadgetron::shrinkd< complext<double> > ( hoNDArray< complext<double> >*, hoNDArray<double>*, double, hoNDArray< complext<double> >* );
 
-template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray< std::complex<float> > > Gadgetron::real_to_std_complex<float>( hoNDArray<float>* );
-template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray< complext<float> > > Gadgetron::real_to_complext<float>( hoNDArray<float>* );
-template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > Gadgetron::real<float>( hoNDArray< std::complex<float> >* );
-template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > Gadgetron::real<float>( hoNDArray< complext<float> >* );
-template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > Gadgetron::imag<float>( hoNDArray< std::complex<float> >* );
-template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > Gadgetron::imag<float>( hoNDArray< complext<float> >* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray< std::complex<float> > > Gadgetron::real_to_complex< std::complex<float> >( hoNDArray<float>* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float_complext> > Gadgetron::real_to_complex<float_complext>( hoNDArray<float>* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > Gadgetron::real<float>( hoNDArray<float>* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > Gadgetron::real<std::complex<float> >( hoNDArray< std::complex<float> >* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > Gadgetron::real<float_complext>( hoNDArray<float_complext>* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > Gadgetron::imag<float>( hoNDArray<float>* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > Gadgetron::imag<std::complex<float> >( hoNDArray< std::complex<float> >* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > Gadgetron::imag<float_complext>( hoNDArray<float_complext>* );
 
-template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray< std::complex<double> > > Gadgetron::real_to_std_complex<double>( hoNDArray<double>* );
-template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray< complext<double> > > Gadgetron::real_to_complext<double>( hoNDArray<double>* );
-template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > Gadgetron::real<double>( hoNDArray< std::complex<double> >* );
-template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > Gadgetron::real<double>( hoNDArray< complext<double> >* );
-template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > Gadgetron::imag<double>( hoNDArray< std::complex<double> >* );
-template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > Gadgetron::imag<double>( hoNDArray< complext<double> >* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > Gadgetron::conj<float>( hoNDArray<float>* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<std::complex<float> > > Gadgetron::conj<std::complex<float> >( hoNDArray<std::complex<float> >* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float_complext> > Gadgetron::conj<float_complext>( hoNDArray<float_complext>* );
 
 
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray< std::complex<double> > > Gadgetron::real_to_complex< std::complex<double> >( hoNDArray<double>* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double_complext> > Gadgetron::real_to_complex<double_complext>( hoNDArray<double>* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > Gadgetron::real<double>( hoNDArray<double>* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > Gadgetron::real<std::complex<double> >( hoNDArray< std::complex<double> >* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > Gadgetron::real<double_complext>( hoNDArray<double_complext>* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > Gadgetron::imag<std::complex<double> >( hoNDArray< std::complex<double> >* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > Gadgetron::imag<double>( hoNDArray<double>* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > Gadgetron::imag<double_complext>( hoNDArray<double_complext>* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > Gadgetron::conj<double>( hoNDArray<double>* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<std::complex<double> > > Gadgetron::conj<std::complex<double> >( hoNDArray<std::complex<double> >* );
+template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double_complext> > Gadgetron::conj<double_complext>( hoNDArray<double_complext>* );

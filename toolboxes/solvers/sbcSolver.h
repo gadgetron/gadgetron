@@ -39,8 +39,6 @@ namespace Gadgetron{
       else 
 	clear(u_k.get());
 
-      //this->get_inner_solver()->set_x0( u_k );
-
       // Normalize (a copy of) the input data
       //
 
@@ -74,10 +72,10 @@ namespace Gadgetron{
 
 	if( this->tolerance_ > REAL(0) || this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
 	
-	  REAL delta = asum(&encoded_image);
+	  REAL delta = nrm2(&encoded_image);
 	
 	  if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
-	    std::cout << "Residual (outer loop): " << delta << std::endl << std::endl;
+	    std::cout << "Squared residual norm (outer loop): " << delta*delta << std::endl << std::endl;
 	  
 	  if( delta < this->tolerance_ )
 	    break;

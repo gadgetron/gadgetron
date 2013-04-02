@@ -123,43 +123,29 @@ namespace Gadgetron{
    * @param[in] x Input array.
    * @return A new array of the real component of the complex array.
    */
-  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > real( cuNDArray< std::complex<T> > *x );
-
-  /**
-   * @brief Extract the real component from a complex array.
-   * @param[in] x Input array.
-   * @return A new array of the real component of the complex array.
-   */
-  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > real( cuNDArray< complext<T> > *x );
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<typename realType<T>::Type> > real( cuNDArray<T> *x );
 
   /**
    * @brief Extract the imaginary component from a complex array.
    * @param[in] x Input array.
    * @return A new array of the imaginary component of the complex array.
    */
-  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > imag( cuNDArray< std::complex<T> > *x );
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<typename realType<T>::Type> > imag( cuNDArray<T> *x );
 
   /**
-   * @brief Extract the imaginary component from a complex array.
+   * @brief Create a new array of the complex conjugate of the input array. For real arrays a copy of the input array is return.
    * @param[in] x Input array.
-   * @return A new array of the imaginary component of the complex array.
+   * @return A new array of the complex conjugate of the input array.
    */
-  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > imag( cuNDArray< complext<T> > *x );
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > conj( cuNDArray<T> *x );
 
   /**
    * @brief Construct a complex array from a real array.
    * @param[in] x Input array.
    * @return A new complex array containing the input array in the real component and zeros in the imaginary component.
    */
-  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray< std::complex<T> > > real_to_std_complex( cuNDArray<T> *x );
+  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > real_to_complex( cuNDArray<typename realType<T>::Type> *x );
   
-  /**
-   * @brief Construct a complex array from a real array.
-   * @param[in] x Input array.
-   * @return A new complex array containing the input array in the real component and zeros in the imaginary component.
-   */
-  template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray< complext<T> > > real_to_complext( cuNDArray<T> *x );
-
   //
   // From hereon the functions are all in-place although without the _inplace suffix...
   //

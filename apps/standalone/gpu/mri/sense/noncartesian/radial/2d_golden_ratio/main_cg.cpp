@@ -1,15 +1,13 @@
 // Gadgetron includes
-#include "hoNDArray_fileio.h"
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_utils.h"
-#include "NFFT_utils.h"
+#include "hoNDArray_fileio.h"
 #include "radial_utilities.h"
-#include "cuNonCartesianKtSenseOperator.h"
+#include "cuNonCartesianSenseOperator.h"
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
 #include "cuCgPreconditioner.h"
 #include "cuCgSolver.h"
-#include "cuFFT.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "parameterparser.h"
@@ -17,19 +15,20 @@
 
 // Std includes
 #include <iostream>
-#include <math.h>
 
 using namespace std;
 using namespace Gadgetron;
+
 // Define desired precision
 typedef float _real; 
 typedef complext<_real> _complext;
 typedef reald<_real,2>::Type _reald2;
 
+const bool use_atomics = false;
+
 // Upload samples for one reconstruction from host to device
 boost::shared_ptr< cuNDArray<_complext> > 
-upload_data( unsigned int reconstruction, unsigned int samples_per_reconstruction, unsigned int total_samples_per_coil, unsigned int num_coils,
-	     hoNDArray<_complext> *host_data )
+upload_data( unsigned int reconstruction, unsigned int samples_per_reconstruction, unsigned int total_samples_per_coil, unsigned int num_coils, hoNDArray<_complext> *host_data )
 {
   vector<unsigned int> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
   cuNDArray<_complext> *data = new cuNDArray<_complext>(); data->create( &dims );
@@ -53,7 +52,7 @@ int main(int argc, char** argv)
   parms.add_parameter( 'm', COMMAND_LINE_INT,    1, "Matrix size", true );
   parms.add_parameter( 'o', COMMAND_LINE_INT,    1, "Oversampled matrix size", true );
   parms.add_parameter( 'p', COMMAND_LINE_INT,    1, "Profiles per frame", true );
-  parms.add_parameter( 'f', COMMAND_LINE_INT,    1, "Frames per reconstruction", true, "32" );
+  parms.add_parameter( 'f', COMMAND_LINE_INT,    1, "Frames per reconstruction (negative meaning all)", true, "-1" );
   parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of iterations", true, "10" );
   parms.add_parameter( 'k', COMMAND_LINE_FLOAT,  1, "Kernel width", true, "5.5" );
   parms.add_parameter( 'K', COMMAND_LINE_FLOAT,  1, "Kappa", true, "0.1" );
@@ -109,27 +108,30 @@ int main(int argc, char** argv)
   cout << endl << "#profiles/frame: " << profiles_per_frame;
   cout << endl << "#profiles: " << num_profiles;
   cout << endl << "#coils: " << num_coils;
-  cout << endl << "#frames/reconstruction " << frames_per_reconstruction;
-  cout << endl << "#profiles/reconstruction " << profiles_per_reconstruction;
-  cout << endl << "#samples/reconstruction " << samples_per_reconstruction << endl << endl;
+  cout << endl << "#frames/reconstruction: " << frames_per_reconstruction;
+  cout << endl << "#profiles/reconstruction: " << profiles_per_reconstruction;
+  cout << endl << "#samples/reconstruction: " << samples_per_reconstruction << endl << endl;
 
-  // Density compensation weights are constant throughout all reconstrutions
+  // Set density compensation weights
   boost::shared_ptr< cuNDArray<_real> > dcw = compute_radial_dcw_golden_ratio_2d
     ( samples_per_profile, profiles_per_frame, (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0], 
       _real(1)/((_real)samples_per_profile/(_real)max(matrix_size.vec[0],matrix_size.vec[1])) );
-  
-  // Define encoding matrix for non-Cartesian kt-SENSE
-  boost::shared_ptr< cuNonCartesianKtSenseOperator<_real,2> > E( new cuNonCartesianKtSenseOperator<_real,2>() );
 
-  E->setup( matrix_size, matrix_size_os, kernel_width );
+  // Define encoding matrix for non-Cartesian SENSE
+  boost::shared_ptr< cuNonCartesianSenseOperator<_real,2,use_atomics> > E
+    ( new cuNonCartesianSenseOperator<_real,2,use_atomics>() );  
+
+   E->setup( matrix_size, matrix_size_os, kernel_width );
 
   // Notify encoding operator of dcw
-  E->set_dcw(dcw);
+  E->set_dcw(dcw) ;
+  dcw.reset();
 
-  // Use a rhs buffer to estimate the csm
+  // Define rhs buffer
   //
 
-  boost::shared_ptr< cuSenseRHSBuffer<_real,2> > rhs_buffer( new cuSenseRHSBuffer<_real,2>() );
+  boost::shared_ptr< cuSenseRHSBuffer<_real,2,use_atomics> > rhs_buffer
+    ( new cuSenseRHSBuffer<_real,2,use_atomics>() );
 
   rhs_buffer->set_num_coils(num_coils);
 
@@ -137,140 +139,137 @@ int main(int argc, char** argv)
    
   // Fill rhs buffer
   //
- 
-  timer = new GPUTimer("CSM estimation");
+
+  timer = new GPUTimer("Filling rhs buffer");
     
   // Go through all the data...
   for( unsigned int iteration = 0; iteration < num_profiles/profiles_per_frame; iteration++ ) {
 
     // Define trajectories
     boost::shared_ptr< cuNDArray<_reald2> > traj = compute_radial_trajectory_golden_ratio_2d<_real>
-      ( samples_per_profile, profiles_per_frame, 1, iteration*profiles_per_reconstruction );
+      ( samples_per_profile, profiles_per_frame, 1, iteration*profiles_per_frame );
     
     // Upload data
     boost::shared_ptr< cuNDArray<_complext> > csm_data = upload_data
       ( iteration, samples_per_frame, num_profiles*samples_per_profile, num_coils, host_data.get() );
-        
+    
     // Add frame to rhs buffer
     rhs_buffer->add_frame_data( csm_data.get(), traj.get() );
   }
-  
+
+  delete timer;
+
+
+  // Estimate CSM
+  //
+
+  timer = new GPUTimer("Estimating csm");
+
   boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_acc_coil_images();
 
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );
 
   E->set_csm(csm);
-
-  acc_images.reset();
-  rhs_buffer.reset();
- 
   delete timer;
+  
 
-  // 
-  // Setup radial kt-SENSE reconstructions
+  // Define regularization image operator 
   //
-    
-  // Define regularization image operator
+
+  timer = new GPUTimer("Computing regularization");
+
+  std::vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size);
+  cuNDArray<_complext> reg_image = cuNDArray<_complext>(&image_dims);
+
+  E->mult_csm_conj_sum( acc_images.get(), &reg_image );
+  acc_images.reset();
+
   boost::shared_ptr< cuImageOperator<_complext> > R( new cuImageOperator<_complext>() );
   R->set_weight( kappa );
+  R->compute( &reg_image );
 
-  // Define preconditioning operator
+  delete timer;
+
+  // Define preconditioning weights
+  //
+
+  timer = new GPUTimer("Computing preconditioning weights");
+
+  boost::shared_ptr< cuNDArray<_real> > _precon_weights = sum(abs_square(csm.get()).get(),2);
+  boost::shared_ptr< cuNDArray<_real> > R_diag = R->get();
+  *R_diag *= kappa;
+  *_precon_weights += *R_diag;
+  R_diag.reset();
+  reciprocal_sqrt_inplace(_precon_weights.get());
+  boost::shared_ptr< cuNDArray<_complext> > precon_weights = real_to_complex<_complext>( _precon_weights.get() );
+  _precon_weights.reset();
+
+  // Define preconditioning matrix
   boost::shared_ptr< cuCgPreconditioner<_complext> > D( new cuCgPreconditioner<_complext>() );
-  boost::shared_ptr< cuNDArray<_real> > ___precon_weights = abs_square( csm.get() );
-  boost::shared_ptr< cuNDArray<_real> > __precon_weights = expand<_real>( ___precon_weights.get(), frames_per_reconstruction );
-  ___precon_weights.reset();
+  D->set_weights( precon_weights );
+  precon_weights.reset();
+  csm.reset();
 
+  delete timer;
+  
+  // 
+  // Setup radial SENSE reconstructions
+  //
+      
   // Setup conjugate gradient solver
-  cuCgSolver< _complext> cg;
-  cg.set_encoding_operator( E );        // encoding matrix
-  cg.add_regularization_operator( R );  // regularization matrix
-  cg.set_preconditioner ( D );          // preconditioning matrix
+  cuCgSolver<_complext> cg;
+  cg.set_preconditioner ( D );  // preconditioning matrix
   cg.set_max_iterations( num_iterations );
   cg.set_tc_tolerance( 1e-6 );
   cg.set_output_mode( cuCgSolver< _complext>::OUTPUT_VERBOSE );
-      
+
   // Reconstruct all SENSE frames iteratively
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
   
   // Allocate space for result
-  vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size); 
+  image_dims = uintd_to_vector<2>(matrix_size); 
   image_dims.push_back(frames_per_reconstruction*num_reconstructions); 
-
   cuNDArray<_complext> result = cuNDArray<_complext>(&image_dims);
-  
-  // Define shutter for training data
-  _real shutter_radius = ((_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0])*(_real)profiles_per_frame/(_real)M_PI;
-  shutter_radius /= _real(2);
-  std::cout << "Shutter radius: " << shutter_radius << std::endl;
-
-  vector<unsigned int> image_os_dims = uintd_to_vector<2>(matrix_size_os); 
-  image_os_dims.push_back(frames_per_reconstruction); image_os_dims.push_back(num_coils);    
-  cuNDArray<_complext> *image_os = new cuNDArray<_complext>(&image_os_dims);
 
   timer = new GPUTimer("Full SENSE reconstruction.");
-  
+
   for( unsigned int reconstruction = 0; reconstruction<num_reconstructions; reconstruction++ ){
 
-    // 
-    // Estimate training data
-    // 
-
-    // Define trajectories
+    // Determine trajectories
     boost::shared_ptr< cuNDArray<_reald2> > traj = compute_radial_trajectory_golden_ratio_2d<_real>
       ( samples_per_profile, profiles_per_frame, frames_per_reconstruction, reconstruction*profiles_per_reconstruction );
-    
-    // Preprocess
-    E->preprocess( traj.get() );
     
     // Upload data
     boost::shared_ptr< cuNDArray<_complext> > data = upload_data
       ( reconstruction, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, host_data.get() );
     
-    // Convolve to Cartesian k-space
-    E->get_plan()->convolve( data.get(), image_os, dcw.get(), NFFT_plan<_real,2>::NFFT_CONV_NC2C );
+    // Set current trajectory and trigger NFFT preprocessing
+    E->preprocess(traj.get());
 
-    // Apply shutter
-    zero_fill_border<_complext,2>( shutter_radius, image_os );
-    E->get_plan()->fft( image_os, NFFT_plan<_real,2>::NFFT_BACKWARDS );
-    E->get_plan()->deapodize( image_os );
+    // 
+    // Demonstration of how to use the 'cgSolver::solve_from_rhs' interface
+    // 
 
-    // Remove oversampling
-    image_dims = uintd_to_vector<2>(matrix_size);
-    image_dims.push_back(frames_per_reconstruction); image_dims.push_back(num_coils);
-    cuNDArray<_complext> *image = new cuNDArray<_complext>(&image_dims);
+    /*
     
-    crop<_complext,2>( (matrix_size_os-matrix_size)>>1, image_os, image );
-    image_dims.pop_back();
-    // Compute regularization image
-    cuNDArray<_complext> *reg_image = new cuNDArray<_complext>(&image_dims);
+    // Add operators to solver
+    cg.add_encoding_operator( E );        // encoding matrix
+    cg.add_regularization_operator( R );  // regularization matrix
 
-    E->mult_csm_conj_sum( image, reg_image );
-    cuFFT<_complext>().ifft( reg_image, 2, true );
-    R->compute( reg_image );
-
-    delete reg_image; reg_image = 0x0;
-    delete image; image = 0x0;
-    
-    // Define preconditioning weights
-    cuNDArray<_real> _precon_weights(*__precon_weights.get());
-    axpy( kappa, R->get().get(), &_precon_weights );
-    sqrt_inplace(&_precon_weights);
-    reciprocal_inplace(&_precon_weights);
-
-    boost::shared_ptr< cuNDArray<_complext> > precon_weights = 
-      real_to_complext<_real>( &_precon_weights );
-    
-    // Define preconditioning matrix
-    D->set_weights( precon_weights );
-    precon_weights.reset();
-      
     // Form rhs (use result array to save memory)
-    cuNDArray<_complext> rhs = cuNDArray<_complext>(&image_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction);
+    vector<unsigned int> rhs_dims = uintd_to_vector<2>(matrix_size); 
+    rhs_dims.push_back(frames_per_reconstruction);
+    cuNDArray<_complext> rhs; 
+
+    if( rhs.create( &rhs_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction ) == 0x0 ){
+      cout << "Failed to allocate rhs" << endl;
+      return 1;
+    }
 
     E->mult_MH( data.get(), &rhs );
-    
+
     //
-    // Conjugate gradient solver
+    // Invoke conjugate gradient solver
     //
 
     boost::shared_ptr< cuNDArray<_complext> > cgresult;
@@ -279,16 +278,49 @@ int main(int argc, char** argv)
       cgresult = cg.solve_from_rhs(&rhs);
     }
 
-    // Goto from x-f to x-t space
-    cuFFT<_complext>().fft( cgresult.get(), 2 );
+    */
+
+    // 
+    // Demonstration of how to use the 'cgSolver::solve' interface
+    // 
     
-    // Copy cgresult to result (pointed to by rhs)
-    rhs = *(cgresult.get());  
+    // Define image dimensions
+    vector<unsigned int> image_dims;
+    image_dims = uintd_to_vector<2>(matrix_size); 
+    image_dims.push_back(frames_per_reconstruction);
+    
+    if( reconstruction == 0 ){
+      
+      // Pass image dimensions to encoding operator
+      E->set_domain_dimensions(&image_dims);
+
+      // Add operators to solver
+      cg.set_encoding_operator( E );        // encoding matrix
+      
+      cg.add_regularization_operator( R );  // regularization matrix
+    }
+    
+    //
+    // Invoke conjugate gradient solver
+    //
+
+    boost::shared_ptr< cuNDArray<_complext> > cgresult;
+    {
+      GPUTimer timer("GPU Conjugate Gradient solve");
+      cgresult = cg.solve(data.get());
+    }
+
+    if( !cgresult.get() )
+      return 1;
+
+    // Copy cgresult to overall result
+    cuNDArray<_complext> out(&image_dims,
+		    result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );
+    
+    out = *(cgresult.get());
   }
   
   delete timer;
-  delete image_os; image_os = 0x0;
-  csm.reset();
 
   // All done, write out the result
 

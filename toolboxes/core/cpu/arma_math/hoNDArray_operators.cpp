@@ -9,25 +9,23 @@ using namespace Gadgetron;
 //
 template<class T,class S> static bool compatible_dimensions( const hoNDArray<T> &x, const hoNDArray<S> &y )
 {
-  bool retVal = true;
-  for (int i = 0; i < y.get_number_of_dimensions(); i++){
-    retVal &= (x.get_size(i) == y.get_size(i));
-  }
-  return retVal;
+  return ((x.get_number_of_elements()%y.get_number_of_elements())==0);
 }
 
 template<class T> hoNDArray<T>& Gadgetron::operator+= (hoNDArray<T> &x, const hoNDArray<T> &y)
 {
   if( compatible_dimensions<T,T>(x,y) ){
+    arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
     unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
     for( unsigned int batch=0; batch<num_batches; batch++ ){	
       hoNDArray<T> tmp;
       tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
       arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&tmp);
-      aRes += as_arma_col(&y);
-      return x;
+      aRes += aY;
     }
-  } else {
+    return x;    
+  } 
+  else {
     BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator+=: Incompatible array dimensions"));
   }
 }
@@ -35,15 +33,17 @@ template<class T> hoNDArray<T>& Gadgetron::operator+= (hoNDArray<T> &x, const ho
 template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator+= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
 {
   if( compatible_dimensions<std::complex<T>,T>(x,y) ){
+    arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
     unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
     for( unsigned int batch=0; batch<num_batches; batch++ ){	
       hoNDArray< std::complex<T> > tmp;
       tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
       arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
-      aRes += arma::Col< std::complex<T> >( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-      return x;
+      aRes += aY;
     }
-  } else {
+    return x;
+  } 
+  else {
     BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator+=: Incompatible array dimensions"));
   }
 }
@@ -51,15 +51,17 @@ template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator+= (hoNDArray
 template<class T> hoNDArray< complext<T> >& Gadgetron::operator+= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
 {
   if( compatible_dimensions<complext<T>,T>(x,y) ){
+    arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
     unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
     for( unsigned int batch=0; batch<num_batches; batch++ ){	
       hoNDArray< complext<T> > tmp;
       tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
       arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
-      aRes += arma::Col< std::complex<T> >( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-      return x;
+      aRes += aY;
     }
-  } else {
+    return x;
+  } 
+  else {
     BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator+=: Incompatible array dimensions"));
   }
 }
@@ -91,15 +93,17 @@ template<class T> hoNDArray< complext<T> >& Gadgetron::operator+= (hoNDArray< co
 template<class T> hoNDArray<T>& Gadgetron::operator-= (hoNDArray<T> &x, const hoNDArray<T> &y)
 {
   if( compatible_dimensions<T,T>(x,y) ){
+    arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
     unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
     for( unsigned int batch=0; batch<num_batches; batch++ ){	
       hoNDArray<T> tmp;
       tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
       arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&tmp);
-      aRes -= as_arma_col(&y);
-      return x;
+      aRes -= aY;
     }
-  } else {
+    return x;    
+  } 
+  else {
     BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator-=: Incompatible array dimensions"));
   }
 }
@@ -107,15 +111,17 @@ template<class T> hoNDArray<T>& Gadgetron::operator-= (hoNDArray<T> &x, const ho
 template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator-= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
 {
   if( compatible_dimensions<std::complex<T>,T>(x,y) ){
+    arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
     unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
     for( unsigned int batch=0; batch<num_batches; batch++ ){	
       hoNDArray< std::complex<T> > tmp;
       tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
       arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
-      aRes -= arma::Col< std::complex<T> >( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-      return x;
+      aRes -= aY;
     }
-  } else {
+    return x;
+  } 
+  else {
     BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator-=: Incompatible array dimensions"));
   }
 }
@@ -123,15 +129,17 @@ template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator-= (hoNDArray
 template<class T> hoNDArray< complext<T> >& Gadgetron::operator-= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
 {
   if( compatible_dimensions<complext<T>,T>(x,y) ){
+    arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
     unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
     for( unsigned int batch=0; batch<num_batches; batch++ ){	
       hoNDArray< complext<T> > tmp;
       tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
       arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
       aRes -= arma::Col< std::complex<T> >( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-      return x;
     }
-  } else {
+    return x;
+  } 
+  else {
     BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator-=: Incompatible array dimensions"));
   }
 }
@@ -163,15 +171,17 @@ template<class T> hoNDArray< complext<T> >& Gadgetron::operator-= (hoNDArray< co
 template<class T> hoNDArray<T>& Gadgetron::operator*= (hoNDArray<T> &x, const hoNDArray<T> &y)
 {
   if( compatible_dimensions<T,T>(x,y) ){
+    arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
     unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
     for( unsigned int batch=0; batch<num_batches; batch++ ){	
       hoNDArray<T> tmp;
       tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
       arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&tmp);
-      aRes %= as_arma_col(&y);
-      return x;
+      aRes %= aY;
     }
-  } else {
+    return x;
+  } 
+  else {
     BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator*=: Incompatible array dimensions"));
   }
 }
@@ -179,15 +189,17 @@ template<class T> hoNDArray<T>& Gadgetron::operator*= (hoNDArray<T> &x, const ho
 template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator*= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
 {
   if( compatible_dimensions<std::complex<T>,T>(x,y) ){
+    arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );    
     unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
     for( unsigned int batch=0; batch<num_batches; batch++ ){	
       hoNDArray< std::complex<T> > tmp;
       tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
       arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
-      aRes %= arma::Col< std::complex<T> >( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-      return x;
+      aRes %= aY;
     }
-  } else {
+    return x;
+  } 
+  else {
     BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator*=: Incompatible array dimensions"));
   }
 }
@@ -195,15 +207,17 @@ template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator*= (hoNDArray
 template<class T> hoNDArray< complext<T> >& Gadgetron::operator*= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
 {
   if( compatible_dimensions<complext<T>,T>(x,y) ){
+    arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
     unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
     for( unsigned int batch=0; batch<num_batches; batch++ ){	
       hoNDArray< complext<T> > tmp;
       tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
       arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
       aRes %= arma::Col< std::complex<T> >( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-      return x;
     }
-  } else {
+    return x;
+  } 
+  else {
     BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator*=: Incompatible array dimensions"));
   }
 }
@@ -235,15 +249,17 @@ template<class T> hoNDArray< complext<T> >& Gadgetron::operator*= (hoNDArray< co
 template<class T> hoNDArray<T>& Gadgetron::operator/= (hoNDArray<T> &x, const hoNDArray<T> &y)
 {
   if( compatible_dimensions<T,T>(x,y) ){
+    arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
     unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
     for( unsigned int batch=0; batch<num_batches; batch++ ){	
       hoNDArray<T> tmp;
       tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
       arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&tmp);
-      aRes /= as_arma_col(&y);
-      return x;
+      aRes /= aY;
     }
-  } else {
+    return x;
+  } 
+  else {
     BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator/=: Incompatible array dimensions"));
   }
 }
@@ -251,15 +267,17 @@ template<class T> hoNDArray<T>& Gadgetron::operator/= (hoNDArray<T> &x, const ho
 template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator/= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
 {
   if( compatible_dimensions<std::complex<T>,T>(x,y) ){
+    arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );    
     unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
     for( unsigned int batch=0; batch<num_batches; batch++ ){	
       hoNDArray< std::complex<T> > tmp;
       tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
       arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
-      aRes /= arma::Col< std::complex<T> >( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-      return x;
+      aRes /= aY;
     }
-  } else {
+    return x;
+  } 
+  else {
     BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator/=: Incompatible array dimensions"));
   }
 }
@@ -267,15 +285,17 @@ template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator/= (hoNDArray
 template<class T> hoNDArray< complext<T> >& Gadgetron::operator/= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
 {
   if( compatible_dimensions<complext<T>,T>(x,y) ){
+    arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
     unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
     for( unsigned int batch=0; batch<num_batches; batch++ ){	
       hoNDArray< complext<T> > tmp;
       tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
       arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
       aRes /= arma::Col< std::complex<T> >( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-      return x;
     }
-  } else {
+    return x;
+  } 
+  else {
     BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator/=: Incompatible array dimensions"));
   }
 }

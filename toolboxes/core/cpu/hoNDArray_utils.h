@@ -3,7 +3,7 @@
 #include "hoNDArray.h"
 
 namespace Gadgetron {
-  
+
   class ArrayIterator
   {
   public:
@@ -59,7 +59,7 @@ namespace Gadgetron {
     boost::shared_ptr< std::vector<unsigned long int> > block_sizes_;
     unsigned long int current_idx_;
   };
-  
+    
   template<class T> boost::shared_ptr< hoNDArray<T> > shift_dim( hoNDArray<T> *in, int shift )  
   {
     if( in == 0x0 ) {
@@ -155,4 +155,54 @@ namespace Gadgetron {
       it.advance();
     }
   }
+
+  // Expand array to new dimension
+  template<class T> boost::shared_ptr<hoNDArray<T> > expand(hoNDArray<T> *in, unsigned int new_dim_size )
+  {
+    if( in == 0x0 ){
+      BOOST_THROW_EXCEPTION(runtime_error("expand(): illegal input pointer."));
+    }
+    
+    std::vector<unsigned int> dims = *in->get_dimensions(); dims.push_back(new_dim_size);
+    boost::shared_ptr< hoNDArray<T> > out( new hoNDArray<T>()); out->create(&dims);    
+    const unsigned int number_of_elements_in = in->get_number_of_elements();    
+
+    for( unsigned int idx=0; idx<number_of_elements_in*new_dim_size; idx++ ){
+      out[idx] = in[idx%number_of_elements_in];
+    }
+    return out;
+  }
+  
+  // Sum over dimension
+  template<class T> boost::shared_ptr<hoNDArray<T> > sum(hoNDArray<T> *in, unsigned int dim )
+  {
+    if( in == 0x0 ){
+      BOOST_THROW_EXCEPTION(runtime_error("sum(): illegal input pointer."));
+    }
+
+    if( !(in->get_number_of_dimensions()>1) ){
+      BOOST_THROW_EXCEPTION(runtime_error("sum(): underdimensioned."));
+    }
+ 
+    if( dim > in->get_number_of_dimensions()-1 ){
+      BOOST_THROW_EXCEPTION(runtime_error( "sum(): dimension out of range."));
+    }
+
+    unsigned int number_of_batches = in->get_size(dim);
+    unsigned int number_of_elements = in->get_number_of_elements()/number_of_batches;
+    std::vector<unsigned int> dims = *in->get_dimensions(); dims.pop_back();
+
+    boost::shared_ptr< hoNDArray<T> > out(new hoNDArray<T>());
+    out->create(&dims);
+        
+    for( unsigned int idx=0; idx<number_of_elements; idx++ ){
+      T val(0);
+      for( unsigned int j=0; j<number_of_batches; j++ ){
+	unsigned int in_idx = j*number_of_elements+idx;
+	val += in->get_data_ptr()[in_idx];      
+      }
+      out->get_data_ptr()[idx] = val;       
+    }
+    return out;
+  } 
 }

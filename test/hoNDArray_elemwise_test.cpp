@@ -104,6 +104,12 @@ TYPED_TEST(hoNDArray_elemwise_TestReal,absTest){
   EXPECT_FLOAT_EQ(TypeParam(1.3),TypeParam(this->Array.get_data_ptr()[2454]));
 }
 
+TYPED_TEST(hoNDArray_elemwise_TestReal,absSquareTest){
+  fill(&this->Array,TypeParam(-5.5));
+  EXPECT_FLOAT_EQ(TypeParam(-5.5),TypeParam(this->Array.get_data_ptr()[13]));
+  EXPECT_FLOAT_EQ(TypeParam(-5.5*-5.5),TypeParam(abs_square(&this->Array)->get_data_ptr()[13]));
+}
+
 TYPED_TEST(hoNDArray_elemwise_TestReal,sqrtTest){
   fill(&this->Array,TypeParam(17.9));
   EXPECT_FLOAT_EQ(std::sqrt(TypeParam(17.9)),TypeParam(sqrt(&this->Array)->get_data_ptr()[23433]));
@@ -201,6 +207,22 @@ TYPED_TEST(hoNDArray_elemwise_TestReal,shrinkdTest){
   EXPECT_FLOAT_EQ(0.0,this->Array.get_data_ptr()[125]);
 }
 
+TYPED_TEST(hoNDArray_elemwise_TestReal,realTest){
+  fill(&this->Array,TypeParam(1.2));
+  EXPECT_FLOAT_EQ(TypeParam(1.2),real(&this->Array)->at(125));
+}
+
+TYPED_TEST(hoNDArray_elemwise_TestReal,imagTest){
+  fill(&this->Array,TypeParam(1.2));
+  EXPECT_FLOAT_EQ(TypeParam(0.0),imag(&this->Array)->at(125));
+}
+
+TYPED_TEST(hoNDArray_elemwise_TestReal,conjTest){
+  fill(&this->Array,TypeParam(1.2));
+  EXPECT_FLOAT_EQ(TypeParam(1.2),real(&this->Array)->at(125));
+  EXPECT_FLOAT_EQ(TypeParam(0.0),imag(&this->Array)->at(125));
+}
+
 TYPED_TEST_CASE(hoNDArray_elemwise_TestCplx, cplxImplementations);
 
 TYPED_TEST(hoNDArray_elemwise_TestCplx,fillTest){
@@ -219,6 +241,11 @@ TYPED_TEST(hoNDArray_elemwise_TestCplx,clearTest){
 TYPED_TEST(hoNDArray_elemwise_TestCplx,absTest){
   fill(&this->Array,TypeParam(-5.5,7.7));
   EXPECT_FLOAT_EQ(std::sqrt(5.5*5.5+7.7*7.7),abs(&this->Array)->get_data_ptr()[32113]);
+}
+
+TYPED_TEST(hoNDArray_elemwise_TestCplx,absSquareTest){
+  fill(&this->Array,TypeParam(-5.5,7.7));
+  EXPECT_FLOAT_EQ(5.5*5.5+7.7*7.7,abs_square(&this->Array)->get_data_ptr()[32113]);
 }
 
 TYPED_TEST(hoNDArray_elemwise_TestCplx,sqrtTest){
@@ -264,7 +291,13 @@ TYPED_TEST(hoNDArray_elemwise_TestCplx,reciprocal_sqrtTest){
 TYPED_TEST(hoNDArray_elemwise_TestCplx,realImagTest){
   fill(&this->Array,TypeParam(3.4,4.2));
   EXPECT_FLOAT_EQ(3.4,real(&this->Array)->get_data_ptr()[33425]);
-  EXPECT_FLOAT_EQ(4.2,imag(&this->Array)->get_data_ptr()[45]);
+  EXPECT_NEAR(4.2,imag(&this->Array)->get_data_ptr()[45], 0.000001);
+}
+
+TYPED_TEST(hoNDArray_elemwise_TestCplx,conjTest){
+  fill(&this->Array,TypeParam(3.4,4.2));
+  EXPECT_FLOAT_EQ(3.4,real(conj(&this->Array)->at(33425)));
+  EXPECT_NEAR(-4.2,imag(conj(&this->Array)->at(45)), 0.000001);
 }
 
 TYPED_TEST(hoNDArray_elemwise_TestCplx,normalizeTest){
@@ -273,6 +306,36 @@ TYPED_TEST(hoNDArray_elemwise_TestCplx,normalizeTest){
   normalize(&this->Array,110);
   EXPECT_FLOAT_EQ(real(TypeParam(50,50)*real(TypeParam(110,110))/abs(TypeParam(-200,-200))),real(&this->Array)->get_data_ptr()[12345]);
   EXPECT_FLOAT_EQ(imag(TypeParam(50,50)*real(TypeParam(110,110))/abs(TypeParam(-200,-200))),imag(&this->Array)->get_data_ptr()[12345]);
+}
+
+TYPED_TEST(hoNDArray_elemwise_TestCplx,clampTest){
+  fill(&this->Array,TypeParam(-5.7, -4.6));
+  this->Array.get_data_ptr()[354222] = TypeParam(101.3,203.4);
+  clamp(&this->Array,real(TypeParam(4.9,0)),real(TypeParam(100.0,0)));
+  EXPECT_FLOAT_EQ(real(TypeParam(4.9,0)),real(&this->Array)->get_data_ptr()[3435]);
+  EXPECT_FLOAT_EQ(real(TypeParam(100.0,0)),real(&this->Array)->get_data_ptr()[354222]);
+  EXPECT_FLOAT_EQ(imag(TypeParam(4.9,0)),imag(&this->Array)->get_data_ptr()[3435]);
+  EXPECT_FLOAT_EQ(imag(TypeParam(100.0,0)),imag(&this->Array)->get_data_ptr()[354222]);
+}
+
+TYPED_TEST(hoNDArray_elemwise_TestCplx,clamp_minTest){
+  fill(&this->Array,TypeParam(-5.7, -4.6));
+  this->Array.get_data_ptr()[91] = TypeParam(-101.3, -203.4);
+  clamp_min(&this->Array, real(TypeParam(-10.6,0)));
+  EXPECT_FLOAT_EQ(real(TypeParam(-5.7,0)),real(&this->Array)->get_data_ptr()[28]);
+  EXPECT_FLOAT_EQ(real(TypeParam(-10.6,0)),real(&this->Array)->get_data_ptr()[91]);
+  EXPECT_FLOAT_EQ(imag(TypeParam(-5.7,0)),imag(&this->Array)->get_data_ptr()[28]);
+  EXPECT_FLOAT_EQ(imag(TypeParam(-10.6,0)),imag(&this->Array)->get_data_ptr()[91]);
+}
+
+TYPED_TEST(hoNDArray_elemwise_TestCplx,clamp_maxTest){
+  fill(&this->Array,TypeParam(5.7, 4.6));
+  this->Array.get_data_ptr()[91] = TypeParam(101.3, 203.4);
+  clamp_max(&this->Array,real(TypeParam(10.6,0)));
+  EXPECT_FLOAT_EQ(real(TypeParam(5.7,0)),real(&this->Array)->get_data_ptr()[28]);
+  EXPECT_FLOAT_EQ(real(TypeParam(10.6,0)),real(&this->Array)->get_data_ptr()[91]);
+  EXPECT_FLOAT_EQ(imag(TypeParam(5.7,0)),imag(&this->Array)->get_data_ptr()[28]);
+  EXPECT_FLOAT_EQ(imag(TypeParam(10.6,0)),imag(&this->Array)->get_data_ptr()[91]);
 }
 
 TYPED_TEST(hoNDArray_elemwise_TestCplx,shrink1Test){
@@ -303,14 +366,14 @@ TYPED_TEST_CASE(hoNDArray_elemwise_TestCplx2, stdCplxImplementations);
 
 TYPED_TEST(hoNDArray_elemwise_TestCplx2,realToCplxTest){
   fill(&this->Array,TypeParam(3.4,4.2));
-  EXPECT_FLOAT_EQ(3.4,real(real_to_std_complex(real(&this->Array).get())->get_data_ptr()[33425]));
-  EXPECT_FLOAT_EQ(0.0,imag(real_to_std_complex(real(&this->Array).get())->get_data_ptr()[33425]));
+  EXPECT_FLOAT_EQ(3.4,real(real_to_complex<TypeParam>(real(&this->Array).get())->get_data_ptr()[33425]));
+  EXPECT_FLOAT_EQ(0.0,imag(real_to_complex<TypeParam>(real(&this->Array).get())->get_data_ptr()[33425]));
 }
 
 TYPED_TEST_CASE(hoNDArray_elemwise_TestCplx3, cplxtImplementations);
 
 TYPED_TEST(hoNDArray_elemwise_TestCplx3,realToCplxTest){
   fill(&this->Array,TypeParam(3.4,4.2));
-  EXPECT_FLOAT_EQ(3.4,real(real_to_complext(real(&this->Array).get())->get_data_ptr()[33425]));
-  EXPECT_FLOAT_EQ(0.0,imag(real_to_complext(real(&this->Array).get())->get_data_ptr()[33425]));
+  EXPECT_FLOAT_EQ(3.4,real(real_to_complex<TypeParam>(real(&this->Array).get())->get_data_ptr()[33425]));
+  EXPECT_FLOAT_EQ(0.0,imag(real_to_complex<TypeParam>(real(&this->Array).get())->get_data_ptr()[33425]));
 }

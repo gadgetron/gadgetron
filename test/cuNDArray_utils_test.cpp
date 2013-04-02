@@ -85,10 +85,24 @@ TYPED_TEST(cuNDArray_utils_TestReal,shiftDimTest){
   EXPECT_FLOAT_EQ(2, shift_dim(&this->Array,4)->at(37));
 }
 
+TYPED_TEST(cuNDArray_utils_TestReal,sumTest){
+  TypeParam v1 = TypeParam(12.34);
+  unsigned int idx = 0;
+
+  fill(&this->Array,v1);
+  EXPECT_FLOAT_EQ(49*v1,sum(&this->Array,1)->at(idx));
+
+  fill(&this->Array,v1);
+  EXPECT_FLOAT_EQ(23*v1,sum(&this->Array,2)->at(idx));
+
+  fill(&this->Array,v1);
+  EXPECT_FLOAT_EQ(19*v1,sum(&this->Array,3)->at(idx));
+}
+
 TYPED_TEST_CASE(cuNDArray_utils_TestCplx, cplxImplementations);
 
 TYPED_TEST(cuNDArray_utils_TestCplx,permuteTest){
-
+  
   fill(&this->Array,TypeParam(1,1));
 
   std::vector<unsigned int> order;
@@ -149,4 +163,21 @@ TYPED_TEST(cuNDArray_utils_TestCplx,shiftDimTest){
 
   EXPECT_FLOAT_EQ(2, real(shift_dim(&this->Array,4)->at(37)));
   EXPECT_FLOAT_EQ(3, imag(shift_dim(&this->Array,4)->at(37)));
+}
+
+TYPED_TEST(cuNDArray_utils_TestCplx,sumTest){
+  TypeParam v1 = TypeParam(12.34, 56.78);
+  unsigned int idx = 0;
+
+  fill(&this->Array,v1);
+  EXPECT_FLOAT_EQ(real(TypeParam(49)*v1),real(sum(&this->Array,1)->at(idx)));
+  EXPECT_FLOAT_EQ(imag(TypeParam(49)*v1),imag(sum(&this->Array,1)->at(idx)));
+
+  fill(&this->Array,v1);
+  EXPECT_FLOAT_EQ(real(TypeParam(23)*v1),real(sum(&this->Array,2)->at(idx)));
+  EXPECT_FLOAT_EQ(imag(TypeParam(23)*v1),imag(sum(&this->Array,2)->at(idx)));
+
+  fill(&this->Array,v1);
+  EXPECT_FLOAT_EQ(real(TypeParam(19)*v1),real(sum(&this->Array,3)->at(idx)));
+  EXPECT_FLOAT_EQ(imag(TypeParam(19)*v1),imag(sum(&this->Array,3)->at(idx)));
 }

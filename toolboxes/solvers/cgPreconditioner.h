@@ -6,6 +6,9 @@
 #define CGPRECONDITIONER_H
 #pragma once
 
+#include "GadgetronException.h"
+#include <boost/shared_ptr.hpp>
+
 namespace Gadgetron{
 
   template <class ARRAY_TYPE> class cgPreconditioner
@@ -15,11 +18,33 @@ namespace Gadgetron{
     cgPreconditioner() {}
     virtual ~cgPreconditioner() {}
     
-    virtual void apply( ARRAY_TYPE* in, ARRAY_TYPE* out) = 0;
+    virtual void set_weights( boost::shared_ptr<ARRAY_TYPE> w ){
+      weights_ = w;
+    }
+
+    virtual void apply( ARRAY_TYPE *in, ARRAY_TYPE *out )
+    {
+      if( !weights_.get() ){
+	throw std::runtime_error( "cgPreconditioner::apply(): weights not set");
+      }
+      
+      if ( !in || !out || in->get_number_of_elements() != out->get_number_of_elements()) {
+	throw std::runtime_error("cgPreconditioner::apply(): input and output dimensions mismatch");
+      }
+      
+      if (in->get_number_of_elements() % weights_->get_number_of_elements()) {
+	throw std::runtime_error( "cgPreconditioner::apply(): unexpected dimensionality of computed weights" );
+      }
+      *out = *in;
+      *out *= *weights_;
+    };
     
     void* operator new (size_t bytes) { return ::new char[bytes]; }
     void operator delete (void *ptr) { delete [] static_cast <char *> (ptr); } 
     void * operator new(size_t s, void * p) { return p; }    
+    
+  protected:
+    boost::shared_ptr<ARRAY_TYPE> weights_;    
   };
 }
 

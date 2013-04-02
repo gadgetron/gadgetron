@@ -10,7 +10,6 @@ include_directories(
   )
 
 cuda_add_library(gpusolvers SHARED 
-  cuCgPreconditioner.cu 
   cuGPBBSolver.cu
   )
 

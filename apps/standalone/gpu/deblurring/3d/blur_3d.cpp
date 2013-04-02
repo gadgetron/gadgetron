@@ -73,10 +73,10 @@ int main( int argc, char** argv)
   // Upload host image/kernel and convert to complex type
   //
   cuNDArray<_real> _image(&host_image);
-  boost::shared_ptr< cuNDArray<_complext> > image = real_to_complext<_real>( &_image );
+  boost::shared_ptr< cuNDArray<_complext> > image = real_to_complex<_complext>( &_image );
   
   cuNDArray<_real> _kernel(&host_kernel);
-  boost::shared_ptr< cuNDArray<_complext> > kernel = real_to_complext<_real>( &_kernel );
+  boost::shared_ptr< cuNDArray<_complext> > kernel = real_to_complex<_complext>( &_kernel );
 
   // Normalize kernel
   _real scale = asum(kernel.get());

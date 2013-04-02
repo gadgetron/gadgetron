@@ -325,7 +325,7 @@ int GPUCGGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		*_precon_weights += *R_diag;
 		R_diag.reset();
 		reciprocal_sqrt_inplace(_precon_weights.get());
-		boost::shared_ptr< cuNDArray<float_complext> > precon_weights = real_to_complext( _precon_weights.get() );
+		boost::shared_ptr< cuNDArray<float_complext> > precon_weights = real_to_complex<float_complext>( _precon_weights.get() );
 		_precon_weights.reset();
 		D_->set_weights( precon_weights );
 

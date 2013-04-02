@@ -13,11 +13,14 @@ template <typename T> class hoNDArray_operators_TestReal : public ::testing::Tes
 protected:
   virtual void SetUp() {
     unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    unsigned int vdims2[] = {37, 49}; //Smaller dimensionality to test batch mode
     dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+    dims2 = std::vector<unsigned int>(vdims2,vdims2+sizeof(vdims2)/sizeof(unsigned int));
     Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<T>(&dims);
+    Array2 = hoNDArray<T>(&dims2);
   }
   std::vector<unsigned int> dims;
+  std::vector<unsigned int> dims2;
   hoNDArray<T> Array;
   hoNDArray<T> Array2;
 };
@@ -26,11 +29,14 @@ template <typename T> class hoNDArray_operators_TestCplx : public ::testing::Tes
 protected:
   virtual void SetUp() {
     unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    unsigned int vdims2[] = {37, 49}; //Smaller dimensionality to test batch mode
     dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+    dims2 = std::vector<unsigned int>(vdims2,vdims2+sizeof(vdims2)/sizeof(unsigned int));
     Array = hoNDArray<T>(&dims);
-    Array2 = hoNDArray<T>(&dims);
+    Array2 = hoNDArray<T>(&dims2);
   }
   std::vector<unsigned int> dims;
+  std::vector<unsigned int> dims2;
   hoNDArray<T> Array;
   hoNDArray<T> Array2;
 };
@@ -53,7 +59,7 @@ TYPED_TEST(hoNDArray_operators_TestReal,equalsAddTest1){
 TYPED_TEST(hoNDArray_operators_TestReal,equalsAddTest2){
   TypeParam v1 = TypeParam(98.4);
   TypeParam v2 = TypeParam(2.2);
-  unsigned int idx = 1295;
+  unsigned int idx = 12295;
   fill(&this->Array,v1);
   this->Array += v2;
   EXPECT_FLOAT_EQ(v1+v2,this->Array.get_data_ptr()[idx]);
@@ -110,7 +116,7 @@ TYPED_TEST(hoNDArray_operators_TestReal,equalsDivideTest1){
 TYPED_TEST(hoNDArray_operators_TestReal,equalsDivideTest2){
   TypeParam v1 = TypeParam(56342.24);
   TypeParam v2 = TypeParam(23434.34);
-  unsigned int idx = 91;
+  unsigned int idx = 12591;
   fill(&this->Array,v1);
   this->Array /= v2;
   EXPECT_FLOAT_EQ(v1/v2,this->Array.get_data_ptr()[idx]);
@@ -132,7 +138,7 @@ TYPED_TEST(hoNDArray_operators_TestCplx,equalsAddTest1){
 TYPED_TEST(hoNDArray_operators_TestCplx,equalsAddTest2){
   TypeParam v1 = TypeParam(98.4, 45.34);
   TypeParam v2 = TypeParam(2.2,3.23);
-  unsigned int idx = 1295;
+  unsigned int idx = 12925;
   fill(&this->Array,v1);
   this->Array += v2;
   EXPECT_FLOAT_EQ(real(v1+v2),real(this->Array.get_data_ptr()[idx]));
@@ -142,7 +148,7 @@ TYPED_TEST(hoNDArray_operators_TestCplx,equalsAddTest2){
 TYPED_TEST(hoNDArray_operators_TestCplx,equalsAddTest3){
   TypeParam v1 = TypeParam(98.4, 45.34);
   TypeParam v2 = TypeParam(2.2,0.0);
-  unsigned int idx = 1295;
+  unsigned int idx = 12295;
   fill(&this->Array,v1);
   this->Array += real(v2);
   EXPECT_FLOAT_EQ(real(v1+v2),real(this->Array.get_data_ptr()[idx]));
@@ -163,7 +169,7 @@ TYPED_TEST(hoNDArray_operators_TestCplx,equalsSubtractTest1){
 TYPED_TEST(hoNDArray_operators_TestCplx,equalsSubtractTest2){
   TypeParam v1 = TypeParam(98.4, 45.34);
   TypeParam v2 = TypeParam(2.2,3.23);
-  unsigned int idx = 1295;
+  unsigned int idx = 12925;
   fill(&this->Array,v1);
   this->Array -= v2;
   EXPECT_FLOAT_EQ(real(v1-v2),real(this->Array.get_data_ptr()[idx]));
@@ -173,7 +179,7 @@ TYPED_TEST(hoNDArray_operators_TestCplx,equalsSubtractTest2){
 TYPED_TEST(hoNDArray_operators_TestCplx,equalsSubtractTest3){
   TypeParam v1 = TypeParam(98.4, 45.34);
   TypeParam v2 = TypeParam(2.2,0.0);
-  unsigned int idx = 1295;
+  unsigned int idx = 12925;
   fill(&this->Array,v1);
   this->Array -= real(v2);
   EXPECT_FLOAT_EQ(real(v1-v2),real(this->Array.get_data_ptr()[idx]));
@@ -194,7 +200,7 @@ TYPED_TEST(hoNDArray_operators_TestCplx,equalsMultiplyTest1){
 TYPED_TEST(hoNDArray_operators_TestCplx,equalsMultiplyTest2){
   TypeParam v1 = TypeParam(98.4, 45.34);
   TypeParam v2 = TypeParam(2.2,3.23);
-  unsigned int idx = 1295;
+  unsigned int idx = 12925;
   fill(&this->Array,v1);
   this->Array *= v2;
   EXPECT_FLOAT_EQ(real(v1*v2),real(this->Array.get_data_ptr()[idx]));
@@ -204,7 +210,7 @@ TYPED_TEST(hoNDArray_operators_TestCplx,equalsMultiplyTest2){
 TYPED_TEST(hoNDArray_operators_TestCplx,equalsMultiplyTest3){
   TypeParam v1 = TypeParam(98.4, 45.34);
   TypeParam v2 = TypeParam(2.2,0.0);
-  unsigned int idx = 1295;
+  unsigned int idx = 12295;
   fill(&this->Array,v1);
   this->Array *= real(v2);
   EXPECT_FLOAT_EQ(real(v1*v2),real(this->Array.get_data_ptr()[idx]));
@@ -225,7 +231,7 @@ TYPED_TEST(hoNDArray_operators_TestCplx,equalsDivideTest1){
 TYPED_TEST(hoNDArray_operators_TestCplx,equalsDivideTest2){
   TypeParam v1 = TypeParam(98.4, 45.34);
   TypeParam v2 = TypeParam(2.2,3.23);
-  unsigned int idx = 1295;
+  unsigned int idx = 12295;
   fill(&this->Array,v1);
   this->Array /= v2;
   EXPECT_FLOAT_EQ(real(v1/v2),real(this->Array.get_data_ptr()[idx]));
@@ -235,7 +241,7 @@ TYPED_TEST(hoNDArray_operators_TestCplx,equalsDivideTest2){
 TYPED_TEST(hoNDArray_operators_TestCplx,equalsDivideTest3){
   TypeParam v1 = TypeParam(98.4, 45.34);
   TypeParam v2 = TypeParam(2.2,0.0);
-  unsigned int idx = 1295;
+  unsigned int idx = 12295;
   fill(&this->Array,v1);
   this->Array /= real(v2);
   EXPECT_FLOAT_EQ(real(v1/v2),real(this->Array.get_data_ptr()[idx]));

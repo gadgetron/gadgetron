@@ -385,7 +385,8 @@ namespace Gadgetron{
       //
       if( this->get_x0().get() )
 	*u_k = *(this->get_x0());
-      else clear(u_k.get());
+      else 
+	clear(u_k.get());
       
       boost::shared_ptr<ARRAY_TYPE_ELEMENT> f(new ARRAY_TYPE_ELEMENT(*_f));
       initialize();
@@ -586,7 +587,7 @@ namespace Gadgetron{
 	      // Compute change in u_k
 	      if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE ){
 	    	*u_k -= *tmp_u_k;
-		std::cout << "u_k delta (inner loop): " << asum(u_k.get()) << std::endl;
+		std::cout << "u_k delta l2-norm (inner loop): " << nrm2(u_k.get()) << std::endl;
 	      }
 	    
 	      // Update u_k 
@@ -609,10 +610,10 @@ namespace Gadgetron{
 	  u_k_prev *= ELEMENT_TYPE(-1);
 	  u_k_prev += *u_k;
 
-	  REAL delta = asum(&u_k_prev);
+	  REAL delta = nrm2(&u_k_prev);
 
 	  if( this->output_mode_ >= solver<ARRAY_TYPE_ELEMENT, ARRAY_TYPE_ELEMENT>::OUTPUT_VERBOSE )
-	    std::cout << "u_k delta (outer loop): " << delta << std::endl << std::endl;
+	    std::cout << "u_k delta l2-norm (outer loop): " << delta << std::endl << std::endl;
 
 	  if( delta < tolerance )
 	    break;

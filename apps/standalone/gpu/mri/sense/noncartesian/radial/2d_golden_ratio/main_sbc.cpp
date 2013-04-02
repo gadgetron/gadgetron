@@ -7,7 +7,7 @@
 #include "cuSenseRHSBuffer.h"
 #include "cuPartialDerivativeOperator.h"
 #include "cuCgSolver.h"
-#include "cuSbCgSolver.h"
+#include "cuSbcCgSolver.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "parameterparser.h"
@@ -53,7 +53,8 @@ int main(int argc, char** argv)
   parms.add_parameter( 'I', COMMAND_LINE_INT,    1, "Number of sb inner iterations", true, "1" );
   parms.add_parameter( 'O', COMMAND_LINE_INT,    1, "Number of sb outer iterations", true, "20" );
   parms.add_parameter( 'k', COMMAND_LINE_FLOAT,  1, "Kernel width", true, "5.5" );
-  parms.add_parameter( 'M', COMMAND_LINE_FLOAT,  1, "Regularization weight (mu)", true, "25.0" );
+  parms.add_parameter( 'M', COMMAND_LINE_FLOAT,  1, "Mu", true, "1.0" );
+  parms.add_parameter( 'L', COMMAND_LINE_FLOAT,  1, "Lambda", true, "2.0" );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -95,7 +96,7 @@ int main(int argc, char** argv)
   unsigned int frames_per_reconstruction = parms.get_parameter('f')->get_int_value();
 
   _real mu = (_real) parms.get_parameter('M')->get_float_value();
-  _real lambda = (_real)1.0*mu; 
+  _real lambda = (_real) parms.get_parameter('L')->get_float_value();
 
   // Silent correction of invalid command line parameters (clamp to valid range)
   if( profiles_per_frame > num_profiles ) profiles_per_frame = num_profiles;
@@ -164,7 +165,6 @@ int main(int argc, char** argv)
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );
 
   E->set_csm(csm);
-
   std::vector<unsigned int> reg_dims = uintd_to_vector<2>(matrix_size);
   cuNDArray<_complext> _reg_image = cuNDArray<_complext>(&reg_dims);
 
@@ -172,7 +172,8 @@ int main(int argc, char** argv)
   
   // Duplicate the regularization image to 'frames_per_reconstruction' frames
   boost::shared_ptr<cuNDArray<_complext> > reg_image = expand( &_reg_image, frames_per_reconstruction );
-  *reg_image *= _real(2);// We need to figure out where this scaling comes from
+  *reg_image *= _real(2); // We need to figure out where this scaling comes from
+
 
 
   acc_images.reset();
@@ -182,13 +183,14 @@ int main(int argc, char** argv)
   *recon_dims = uintd_to_vector<2>(matrix_size); recon_dims->push_back(frames_per_reconstruction); 
 
   // Define regularization operators 
-  
-  boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> > Rx( new cuPartialDerivativeOperator<_complext,3>(0) );
+  boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
+    Rx( new cuPartialDerivativeOperator<_complext,3>(0) );
   Rx->set_weight( lambda );
   Rx->set_domain_dimensions(recon_dims.get());
   Rx->set_codomain_dimensions(recon_dims.get());
 
-  boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> > Ry( new cuPartialDerivativeOperator<_complext,3>(1) );
+  boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
+    Ry( new cuPartialDerivativeOperator<_complext,3>(1) );
   Ry->set_weight( lambda );
   Ry->set_domain_dimensions(recon_dims.get());
   Ry->set_codomain_dimensions(recon_dims.get());
@@ -198,7 +200,7 @@ int main(int argc, char** argv)
   // 
   // Setup radial SENSE reconstructions
   //
-    
+
   vector<unsigned int> data_dims; 
   data_dims.push_back(samples_per_reconstruction); data_dims.push_back(num_coils);
 
@@ -206,21 +208,27 @@ int main(int argc, char** argv)
   E->set_codomain_dimensions(&data_dims);
 
   // Setup split-Bregman solver
-  cuSbCgSolver<_complext> sb;
+  cuSbcCgSolver< _complext> sb;
   sb.set_encoding_operator( E );
-  sb.add_regularization_group_operator( Rx ); 
+  sb.add_regularization_operator( Rx ); 
+  sb.add_regularization_operator( Ry ); 
+  /*  sb.add_regularization_group_operator( Rx ); 
   sb.add_regularization_group_operator( Ry ); 
-  sb.add_group();
+  sb.add_group(reg_image);*/
+  /*  sb.add_regularization_group_operator( Rx );
+  sb.add_regularization_group_operator( Ry );
+  sb.add_group();*/
+
   sb.set_max_outer_iterations(num_sb_outer_iterations);
   sb.set_max_inner_iterations(num_sb_inner_iterations);
-  sb.set_output_mode( cuSbCgSolver< _complext>::OUTPUT_VERBOSE );
-  
+  sb.set_output_mode( cuSbcCgSolver< _complext>::OUTPUT_VERBOSE );
+
   sb.get_inner_solver()->set_max_iterations( num_cg_iterations );
   sb.get_inner_solver()->set_tc_tolerance( 1e-4 );
   sb.get_inner_solver()->set_output_mode( cuCgSolver< _complext>::OUTPUT_WARNINGS );
-
-  unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
-  //unsigned int num_reconstructions = 1;
+  
+  //unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
+  unsigned int num_reconstructions = 10;
 
   // Allocate space for result
   boost::shared_ptr< std::vector<unsigned int> > res_dims( new std::vector<unsigned int> );
@@ -240,7 +248,7 @@ int main(int argc, char** argv)
       ( reconstruction, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, host_data.get() );
     
     // Set current trajectory and trigger NFFT preprocessing
-     E->preprocess(traj.get());
+    E->preprocess(traj.get());
         
     //
     // Split-Bregman solver
@@ -248,7 +256,7 @@ int main(int argc, char** argv)
 
     boost::shared_ptr< cuNDArray<_complext> > sbresult;
     {
-      GPUTimer timer("GPU Split Bregman solve");
+      GPUTimer timer("GPU constrained Split Bregman solve");
       sbresult = sb.solve(data.get());
     }
 

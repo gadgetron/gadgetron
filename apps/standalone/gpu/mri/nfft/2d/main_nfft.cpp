@@ -102,7 +102,7 @@ int main( int argc, char** argv)
   timer = new GPUTimer("Uploading, normalizing and converting to complex");
   cuNDArray<_real> _image(host_image.get());
   normalize( &_image, 1.0f );
-  boost::shared_ptr< cuNDArray<_complext> > image = real_to_complext<_real>( &_image );
+  boost::shared_ptr< cuNDArray<_complext> > image = real_to_complex<_complext>( &_image );
   delete timer;
   
   // Setup resulting samples array

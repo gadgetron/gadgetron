@@ -38,7 +38,7 @@ namespace Gadgetron{
     // Apply regularization image operator
     virtual void mult_MH_M( ARRAY_TYPE_OPERATOR *in, ARRAY_TYPE_OPERATOR *out, bool accumulate = false )
     {        
-      ARRAY_TYPE_OPERATOR * tmp;
+      ARRAY_TYPE_OPERATOR *tmp;
       if( !accumulate ){
     	tmp = out;
     	*tmp = *in;
@@ -57,7 +57,7 @@ namespace Gadgetron{
   
     virtual void mult_M( ARRAY_TYPE_OPERATOR *in, ARRAY_TYPE_OPERATOR *out, bool accumulate = false )
     {
-      ARRAY_TYPE_OPERATOR * tmp;
+      ARRAY_TYPE_OPERATOR *tmp;
       if( !accumulate ){
 	tmp = out;
 	*tmp = *in;
