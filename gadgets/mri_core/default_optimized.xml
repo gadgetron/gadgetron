@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
-        xmlns="http://gadgetron.sf.net/gadgetron"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-         
+			      xmlns="http://gadgetron.sf.net/gadgetron"
+			      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  
     <reader>
       <slot>1008</slot>
       <dll>gadgetroncore</dll>
@@ -34,7 +34,7 @@
       -->
     </gadget>
 	
-	<gadget>
+    <gadget>
       <name>PCA</name>
       <dll>gadgetronmricore</dll>
       <classname>PCACoilGadget</classname>
