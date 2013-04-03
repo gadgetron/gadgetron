@@ -211,7 +211,12 @@ int main(int argc, char** argv) {
 
   write_nd_array<_real>( &fdk,"fdk.real" );
 
-  //4D FDK-MB algorithm starts here.
+  /*4D FDK-MB algorithm starts here. McKinnon GC, RHT Bates,
+   *
+   *"Towards Imaging the Beating Heart Usefully with a Conventional CT Scanner,"
+   *" Biomedical Engineering, IEEE Transactions on , vol.BME-28, no.2, pp.123,127, Feb. 1981
+   * doi: 10.1109/TBME.1981.324785
+  */
 
 
 

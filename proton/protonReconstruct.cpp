@@ -115,24 +115,33 @@ int main( int argc, char** argv)
   vector_td<float,3> physical_dims;
   vector_td<float,3> origin;
   int iterations;
+  int device;
   po::options_description desc("Allowed options");
   desc.add_options()
       ("help", "produce help message")
       ("projections,p", po::value<std::string>(&projectionsName)->default_value("projections.real"), "File containing the projection data")
       ("splines,s", po::value<std::string>(&splinesName)->default_value("splines.real"), "File containing the spline trajectories")
       ("dimensions,d", po::value<vector_td<int,3> >(&dimensions)->default_value(vector_td<int,3>(512,512,1)), "Pixel dimensions of the image")
-      ("size,S", po::value<vector_td<float,3> >(&physical_dims)->default_value(vector_td<float,3>(20,20,5)), "Dimensions of the image")
+      ("size,S", po::value<vector_td<float,3> >(&physical_dims)->default_value(vector_td<float,3>(20,20,5)), "Dimensions of the image in cm")
       ("center,c", po::value<vector_td<float,3> >(&origin)->default_value(vector_td<float,3>(0,0,0)), "Center of the reconstruction")
       ("iterations,i", po::value<int>(&iterations)->default_value(10), "Dimensions of the image")
       ("output,f", po::value<std::string>(&outputFile)->default_value("image.hdf5"), "Output filename")
+      ("prior,P", po::value<std::string>(),"Prior image filename")
+			("prior-weight,k",po::value<float>(),"Weight of the prior image")
+      ("device",po::value<int>(&device)->default_value(0),"Number of the device to use (0 indexed)")
 
   ;
 
-
+  cudaSetDevice(device);
+	cudaDeviceReset();
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
 
+  if (vm.count("help")) {
+		cout << desc << "\n";
+		return 1;
+  }
   std::cout << "Command line options:" << std::endl;
   for (po::variables_map::iterator it = vm.begin(); it != vm.end(); ++it){
   	boost::any a = it->second.value();
@@ -166,38 +175,20 @@ int main( int argc, char** argv)
 
 
 
-  cuGPBBSolver<_real> cg;
+  cuGPBBSolver<_real> solver;
 
-  cg.set_max_iterations( iterations);
+  solver.set_max_iterations( iterations);
 
-  cg.set_output_mode( cuCgSolver<_real>::OUTPUT_VERBOSE );
-   cg.set_non_negativity_constraint(true);
+  solver.set_output_mode( cuCgSolver<_real>::OUTPUT_VERBOSE );
+   solver.set_non_negativity_constraint(true);
   boost::shared_ptr< cuOperatorPathBackprojection<_real> > E (new cuOperatorPathBackprojection<_real> );
 
 
-  vector<unsigned int> rhs_dims;
+  vector<unsigned int> rhs_dims(&dimensions[0],&dimensions[4]);
 
-
-	rhs_dims.push_back(dimensions[0]);
-	rhs_dims.push_back(dimensions[1]);
-	rhs_dims.push_back(dimensions[2]);
-  cout << "RHS dims " << rhs_dims[0] << " " << rhs_dims[1] << " " << rhs_dims[2] << endl;
-
-
-  /*boost::shared_ptr<cuNDArray<_real> > guess(new cuNDArray<_real>);
-  vector<unsigned int> guess_dims  = rhs_dims;
-  guess_dims[0] /=multiScale_depth;
-  guess_dims[1] /=multiScale_depth;
-  guess_dims[2] /=multiScale_depth;
-  guess->create(&guess_dims);
-  cuNDA_clear(guess.get(),_real(1));
-   */
   boost::shared_ptr<cuNDArray<_real > > weights;
   boost::shared_ptr<cuNDArray<_real > > uncertainties;
   E->setup(splines,physical_dims,projections,origin,background);
-
-
-
 
   E->set_domain_dimensions(&rhs_dims);
   E->set_codomain_dimensions(projections->get_dimensions().get());
@@ -206,125 +197,53 @@ int main( int argc, char** argv)
   enc->add_operator(E);
 
   boost::shared_ptr<cuNDArray<_real > > prior;
-  /*
-  if (parms.get_parameter('t')->get_is_set()){
- 	  std::cout << "Prior image regularization in use" << std::endl;
-   	  boost::shared_ptr< hoNDArray<_real> > host_prior = read_nd_array<_real >((char*)parms.get_parameter('t')->get_string_value());
-   	  prior = boost::shared_ptr<cuNDArray<_real > > (new cuNDArray<_real >(host_prior.get()));
-	  prior->reshape(&rhs_dims);
-   	  _real offset = _real(0.01);
-   	  //cuNDA_add(offset,prior.get());
+   if (vm.count("prior")){
+  	  std::cout << "Prior image regularization in use" << std::endl;
+ 		boost::shared_ptr<hoNDArray<_real> > host_prior = read_nd_array<_real >(vm["prior"].as<std::string>().c_str());
+
+ 		host_prior->reshape(&rhs_dims);
+ 		prior = boost::shared_ptr<cuNDArray<_real> >(new cuNDArray<_real>(host_prior.get()));
+ 		_real offset = _real(0.01);
+ 		//cuNDA_add(offset,prior.get());
 
 
-   	  if (parms.get_parameter('c')->get_float_value()>0){
+ 		if (vm.count("k")){
 
- 		  boost::shared_ptr<cuImageOperator<_real> > I (new cuImageOperator<_real>());
-		  I->compute(prior.get());
-	    //	    boost::shared_ptr<cuIdentityOperator<_real> > I (new cuIdentityOperator<_real>());
-		  I->set_weight((_real) parms.get_parameter('c')->get_float_value());
-		  //cuNDA_threshold_min(0.1f,I->get());
-		  //boost::shared_ptr< hoNDArray<_real> > host_dxy = I->get()->to_host();
-		  //write_nd_array<_real>(host_dxy.get(), "priorInverse.real");
-		  I->set_codomain_dimensions(&rhs_dims);
-		  I->set_domain_dimensions(&rhs_dims);
-		  cuNDArray<_real> tmp = *prior;
-		  
+			boost::shared_ptr<imageOperator<cuNDArray<_real>,cuNDArray<_real> > > I (new imageOperator<cuNDArray<_real>,cuNDArray<_real> >());
+			I->compute(prior.get());
 
-		  I->mult_M(prior.get(),&tmp);
+			I->set_weight(vm["k"].as<float>());
 
-		  //cuNDA_scal(I->get_weight(),&tmp);
-		  std::vector<cuNDArray<_real>* > proj;
-		  proj.push_back(projections.get());
-		  proj.push_back(&tmp);
-		  enc->add_operator(I);
-		  projections = enc->create_codomain(proj);
-   	  }
-  }
-
-  if (parms.get_parameter('v')->get_is_set()){
+			I->set_codomain_dimensions(&rhs_dims);
+			I->set_domain_dimensions(&rhs_dims);
+			cuNDArray<_real> tmp = *prior;
 
 
+			I->mult_M(prior.get(),&tmp);
 
-    boost::shared_ptr< cuPartialDerivativeOperator<_real,3> > Rx( new cuPartialDerivativeOperator<_real,3>(0) );
-    boost::shared_ptr< cuPartialDerivativeOperator<_real,3> > Ry( new cuPartialDerivativeOperator<_real,3>(1) );
-    Rx->set_codomain_dimensions(&rhs_dims);
-    Ry->set_codomain_dimensions(&rhs_dims);
-    Rx->set_domain_dimensions(&rhs_dims);
-    Ry->set_domain_dimensions(&rhs_dims);
-    Rx->set_weight(parms.get_parameter('v')->get_float_value());
-    Ry->set_weight(parms.get_parameter('v')->get_float_value());
+			//cuNDA_scal(I->get_weight(),&tmp);
+			std::vector<cuNDArray<_real>* > proj;
+			proj.push_back(projections.get());
+			proj.push_back(&tmp);
+			enc->add_operator(I);
+			projections = enc->create_codomain(proj);
 
-    cg.add_regularization_group_operator(Rx);
-    cg.add_regularization_group_operator(Ry);
-    cg.add_group(1);
+		} else {
+			std::cout << "WARNING: Prior image set, but weight not specified" << std::endl;
+		}
+ 		solver.set_x0(prior);
+   }
 
+  solver.set_encoding_operator(enc);
 
-		  
-  }
+  boost::shared_ptr< cuNDArray<_real> > cgresult = solver.solve(projections.get());
 
-*/
+	cuNDArray<_real> tp = *projections_old;
 
+	E->mult_M(cgresult.get(),&tp);
+	axpy(-1.0f,projections_old.get(),&tp);
+	std::cout << "Total residual " << nrm2(&tp) << std::endl;
 
-
-  boost::shared_ptr< cuNDArray<_real> > cgresult;
-
-  
-
-  cg.set_encoding_operator(enc);
-  /*
-     if (parms.get_parameter('t')->get_is_set()){
-    	 prior->reshape(&rhs_dims);
-	 cgresult=prior;
-	 cg.set_x0(cgresult);
-     } else {
-       cgresult = boost::shared_ptr< cuNDArray<_real> >(new cuNDArray<_real>());
-       cgresult->create(&rhs_dims);
-       cgresult->clear();
-     }
-     */
-     //cgresult = sb.solve(projections.get());
-
-     //cgresult=sart.solve(projections.get());
-     //cgresult=ml.solve(projections.get());
-     cgresult = cg.solve(projections.get());
-
-     cuNDArray<_real> tp = *projections_old;
-
-     E->mult_M(cgresult.get(),&tp);
-     axpy(-1.0f,projections_old.get(),&tp);
-     std::cout << "Total residual " << nrm2(&tp) << std::endl;
-     //cgresult = recursiveSolver(&rhs,&cg,multiScale_depth-1);
-    /* boost::shared_ptr< vector<cuNDArray<_real> *> > projVec = boost::shared_ptr< vector<cuNDArray<_real> *> >(new vector<cuNDArray<_real> *>);
-     projVec->push_back(projections.get());
-     projVec->push_back(0);
-     cgresult = cg.solve(projVec,&rhs_dims);*/
-/*
-     for (int i = 0; i < 30; i++) {
-       cg.set_x0(cgresult);
-	 cgresult = cg.solve(projections.get());
-
-	 cuNDArray<_real> tmp_proj = *projections_old;
-
-	 E->mult_M(cgresult.get(),&tmp_proj);
-	 cuNDA_axpy(-1.0f,projections_old.get(),&tmp_proj);
-
-	 cuNDA_threshold_amin(uncertainties.get(),&tmp_proj);
-	 std::cout << "Iteration " << i << " residual: " << cuNDA_dot(&tmp_proj,&tmp_proj) << std::endl;
-
-	 cuNDArray<_real> proj_view;
-	 boost::shared_ptr<std::vector<unsigned int> > projection_dims = projections_old->get_dimensions();
-	 proj_view.create(projection_dims.get(),projections->get_data_ptr());
-
-	 cuNDA_axpy(-1.0f,&tmp_proj,&proj_view);
-
-	 printf("Dumping frame\n");
-	 char filename_real[256];
-	 sprintf(&(filename_real[0]), "out_u_%04i.real", i);
-	 boost::shared_ptr<hoNDArray<_real> > tmp = cgresult->to_host();
-	 write_nd_array<_real>(tmp.get(), filename_real);
-       }
-	  
-     */
 
    boost::shared_ptr< hoNDArray<_real> > host_result = cgresult->to_host();
    //write_nd_array<_real>(host_result.get(), (char*)parms.get_parameter('f')->get_string_value());
@@ -333,7 +252,7 @@ int main( int argc, char** argv)
    		ss << argv[i] << " ";
    	}
 
-   	saveNDArray2HDF5<3>(host_result.get(),outputFile,physical_dims,origin,ss.str(), cg.get_max_iterations());
+   	saveNDArray2HDF5<3>(host_result.get(),outputFile,physical_dims,origin,ss.str(), solver.get_max_iterations());
 
 }
 
