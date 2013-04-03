@@ -143,6 +143,7 @@ namespace Gadgetron {
 	arma::cx_fmat Vm = as_arma_matrix(VT);
 	arma::cx_fmat Um;
 	arma::fvec Sv;
+
 	if( !arma::svd_econ(Um,Sv,Vm,Am.t(),'r') ){
 	  GADGET_DEBUG1("Failed to compute SVD\n");
 	  return GADGET_FAIL;
