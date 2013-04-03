@@ -62,7 +62,7 @@
       <property><name>cg_limit</name>                <value>1e-6</value></property>
       <property><name>oversampling</name>            <value>1.25</value></property>
       <property><name>kernel_width</name>            <value>5.5</value></property>
-      <property><name>kappa</name>                   <value>0.1</value></property>
+      <property><name>kappa</name>                   <value>0.3</value></property>
       <property><name>pass_on_undesired_data</name>  <value>true</value></property>
     </gadget>
 
@@ -78,7 +78,7 @@
       <property><name>cg_limit</name>                <value>1e-6</value></property>
       <property><name>oversampling</name>            <value>1.25</value></property>
       <property><name>kernel_width</name>            <value>5.5</value></property>
-      <property><name>kappa</name>                   <value>0.1</value></property>
+      <property><name>kappa</name>                   <value>0.3</value></property>
       <property><name>pass_on_undesired_data</name>  <value>true</value></property>
     </gadget>
 
@@ -94,7 +94,7 @@
       <property><name>cg_limit</name>                <value>1e-6</value></property>
       <property><name>oversampling</name>            <value>1.25</value></property>
       <property><name>kernel_width</name>            <value>5.5</value></property>
-      <property><name>kappa</name>                   <value>0.1</value></property>
+      <property><name>kappa</name>                   <value>0.3</value></property>
       <property><name>pass_on_undesired_data</name>  <value>true</value></property>
     </gadget>
  

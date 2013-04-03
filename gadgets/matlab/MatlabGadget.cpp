@@ -4,6 +4,8 @@
 #define NUMBER_OF_IDX_FIELDS    10
 #define NUMBER_OF_IMG_FIELDS    25
 
+namespace Gadgetron{
+
 const char* ismrmrd_acq_field_names[] = {
     "version",
     "flags",
@@ -265,7 +267,8 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     std::vector<unsigned int> dims;
     dims.push_back(number_of_samples);
     dims.push_back(active_channels);
-    if (!m3->getObjectPtr()->create(&dims)) {
+    try{ m3->getObjectPtr()->create(&dims); } 
+    catch(bad_alloc& err){
         GADGET_DEBUG1("Failed to create new hoNDArray\n");
         return GADGET_FAIL;
     }
@@ -447,3 +450,4 @@ int ImageMatlabGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 
 GADGET_FACTORY_DECLARE(AcquisitionMatlabGadget)
 GADGET_FACTORY_DECLARE(ImageMatlabGadget)
+}

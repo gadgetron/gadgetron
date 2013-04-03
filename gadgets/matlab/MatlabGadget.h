@@ -5,13 +5,13 @@
 #include "Gadgetron.h"
 #include "hoNDArray.h"
 #include "ismrmrd.h"
-
 #include "engine.h"     // Matlab Engine header
 
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <complex>
+
+namespace Gadgetron{
 
 template <class T> class MatlabGadget :
     public Gadget2<T, hoNDArray< std::complex<float> > >
@@ -98,3 +98,4 @@ class EXPORTGADGETSMATLAB ImageMatlabGadget :
                 GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
 };
+}

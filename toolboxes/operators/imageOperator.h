@@ -33,12 +33,9 @@ namespace Gadgetron{
 
       image_ =  abs(&tmp);
 
-      {
-	GadgetronTimer _t("\noffset COMP: ");
-	if( offset_estimation )
-	  offset_ = estimate_offset();
-      }
-
+      if( offset_estimation )
+	offset_ = estimate_offset();
+      
       // Reciprocalize image
       if(offset_ > REAL(0)) *image_ += offset_;      
       reciprocal_inplace(image_.get());

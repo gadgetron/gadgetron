@@ -6,10 +6,9 @@
  */
 
 #include "PCACoilGadget.h"
-#include "hoNDArray_fileio.h"
-#include "matrix_vector_op.h"
-#include "matrix_decomposition.h"
 #include "GadgetIsmrmrdReadWrite.h"
+#include "hoArmadillo.h"
+#include "hoNDArray_elemwise.h"
 
 namespace Gadgetron {
 
@@ -126,19 +125,8 @@ namespace Gadgetron {
 	  }
 	}
 
-
 	//Collected data for temp matrix, now let's calculate SVD coefficients
 
-	//write_nd_array(&A,"A.cplx");
-
-	std::vector<unsigned int> S_dims; S_dims.push_back(channels);
-	hoNDArray<float> S;
-	try {S.create(&S_dims);}
-	catch (bad_alloc& err){
-	  GADGET_DEBUG_EXCEPTION(err,"Failed to create array for singular values\n");
-	  return GADGET_FAIL;
-	}
-	
 	std::vector<unsigned int> VT_dims;
 	VT_dims.push_back(channels);
 	VT_dims.push_back(channels);
@@ -151,27 +139,17 @@ namespace Gadgetron {
 	  return GADGET_FAIL;
 	}
 	
-	/*
-	  std::vector<unsigned int> U_dims;
-	  U_dims.push_back(channels);
-	  U_dims.push_back(total_samples);
-	  hoNDArray< std::complex<float> > U;
-	  if (!U.create(&U_dims)) {
-	  GADGET_DEBUG1("Failed to create array for U\n");
-	  return GADGET_FAIL;
-	  }
-	*/
-
-	//We don't need to calculate U in this case.
-	//if (hoNDArray_svd< std::complex<float>, float >(&A, &U , &S , &VT) != 0) {
-	if (hoNDArray_svd< std::complex<float>, float >(&A, 0 , &S , VT) != 0) {
-	  GADGET_DEBUG1("SVD failed\n");
+	arma::cx_fmat Am = as_arma_matrix(&A);
+	arma::cx_fmat Vm = as_arma_matrix(VT);
+	arma::cx_fmat Um;
+	arma::fvec Sv;
+	if( !arma::svd_econ(Um,Sv,Vm,Am.t(),'r') ){
+	  GADGET_DEBUG1("Failed to compute SVD\n");
 	  return GADGET_FAIL;
 	}
 
-	//write_nd_array(&S,"S.real");
-	//write_nd_array(&U,"U.cplx");
-	//write_nd_array(VT,"VT.cplx");
+	//write_nd_array(&S,"S_arma.real");
+	//write_nd_array(VT,"VT_arma.cplx");
 
 	//Switch off buffering for this slice
 	buffering_mode_[location] = false;
@@ -198,15 +176,13 @@ namespace Gadgetron {
 	return GADGET_FAIL;
       }
 
-      if (pca_coefficients_[location] != 0) {
-	std::complex<float> alpha(1.0,0.0);
-	std::complex<float> beta(0.0,0.0);
-	if (hoNDArray_gemm( pca_coefficients_[location], m2->getObjectPtr(), alpha,  m3->getObjectPtr(), beta) < 0) {
-	  GADGET_DEBUG1("Failed to apply PCA coefficients\n");
-	  return GADGET_FAIL;
-	}
+      if (pca_coefficients_[location] != 0) {	
+	arma::cx_fmat am3 = as_arma_matrix(m3->getObjectPtr());
+	arma::cx_fmat am2 = as_arma_matrix(m2->getObjectPtr());
+	arma::cx_fmat aPca = as_arma_matrix(pca_coefficients_[location]);
+	am3 = (aPca.t()*am2.t()).t();	  	
       }
-
+      
       m1->cont(m3);
       m2->release();
 
@@ -220,5 +196,4 @@ namespace Gadgetron {
   }
 
   GADGET_FACTORY_DECLARE(PCACoilGadget)
-
 }

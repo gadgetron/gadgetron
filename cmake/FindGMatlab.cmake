@@ -70,7 +70,7 @@ foreach(lib mat ut mex mx eng)
     find_library(MATLAB_${LIB}_LIBRARY
         ${lib}
         HINTS ${MATLAB_ROOT} ${MATLAB_LIB_ROOT}
-        PATH_SUFFIXES lib bin bin/maci64 bin/glnax64 bin/glnax86
+        PATH_SUFFIXES lib bin bin/maci64 bin/glnxa64 bin/glnax86
     )
     if(MATLAB_${LIB}_LIBRARY)
         list(APPEND MATLAB_LIBRARIES ${MATLAB_${LIB}_LIBRARY})
