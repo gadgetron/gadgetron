@@ -124,12 +124,12 @@ int main( int argc, char** argv)
 		//cuNDA_add(offset,prior.get());
 
 
-		if (vm.count("k")){
+		if (vm.count("prior-weight")){
 
 		boost::shared_ptr<imageOperator<hoCuNDArray<_real>,hoCuNDArray<_real> > > I (new imageOperator<hoCuNDArray<_real>,hoCuNDArray<_real> >());
 		I->compute(prior.get());
 
-		I->set_weight(vm["k"].as<float>());
+		I->set_weight(vm["prior-weight"].as<float>());
 
 		I->set_codomain_dimensions(&rhs_dims);
 		I->set_domain_dimensions(&rhs_dims);
