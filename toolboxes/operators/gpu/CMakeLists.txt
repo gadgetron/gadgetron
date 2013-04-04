@@ -29,10 +29,11 @@ install(TARGETS gpuoperators DESTINATION lib)
 install(FILES 	
   cuImageOperator.h
   cuDiagonalOperator.h
-  cuEncodedImageOperator.h
   cuPartialDerivativeOperator.h
   cuConvolutionOperator.h
   cuLaplaceOperator.h
   cuTVOperator.h
   cuTV1DOperator.h
+  gpuoperators_export.h
+  hoCuOperator.h
   DESTINATION include)

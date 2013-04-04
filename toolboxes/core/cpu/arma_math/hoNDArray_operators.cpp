@@ -1,5 +1,5 @@
 #include "hoNDArray_operators.h"
-
+#include "hoArmadillo.h"
 using namespace Gadgetron;
 
 // Private utility to verify array dimensions. 

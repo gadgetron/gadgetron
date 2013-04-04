@@ -82,10 +82,11 @@ namespace Gadgetron{
     {
       mult_M(in,out,accumulate);
     }
+
   
   protected:
     // Estimate offset to the regularization image
-    virtual REAL estimate_offset() = 0;
+    virtual REAL estimate_offset()=0;
 
   protected:
     boost::shared_ptr< ARRAY_TYPE_REAL > image_;

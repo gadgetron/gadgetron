@@ -2,7 +2,7 @@
 #include "hoNDArray_operators.h"
 #include "hoNDArray_blas.h"
 #include "complext.h"
-
+#include "hoArmadillo.h"
 #include <complex>
 
 using namespace Gadgetron;
@@ -283,9 +283,7 @@ Gadgetron::clamp( hoNDArray<T> *x, typename realType<T>::Type min, typename real
     BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::clamp(): Invalid input array"));
 
   hoNDA_clamp<T> functor(min, max);
-
-  for( unsigned int i=0; i<x->get_number_of_elements(); i++ )
-    x->get_data_ptr()[i] = functor.operator()(x->get_data_ptr()[i]);
+  std::transform(x->begin(),x->end(),x->begin(),functor);
 }  
 
 template<typename T> struct hoNDA_clamp_min //: public thrust::unary_function<T,T>
@@ -328,9 +326,7 @@ Gadgetron::clamp_min( hoNDArray<T> *x, typename realType<T>::Type min )
     BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::clamp_min(): Invalid input array"));
    
   hoNDA_clamp_min<T> functor(min);
-
-  for( unsigned int i=0; i<x->get_number_of_elements(); i++ )
-    x->get_data_ptr()[i] = functor.operator()(x->get_data_ptr()[i]);
+  std::transform(x->begin(),x->end(),x->begin(),functor);
 }  
 
 template<typename T> struct hoNDA_clamp_max //: public thrust::unary_function<T,T>
@@ -373,9 +369,7 @@ Gadgetron::clamp_max( hoNDArray<T> *x, typename realType<T>::Type max )
     BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::clamp_max(): Invalid input array"));
    
   hoNDA_clamp_max<T> functor(max);
-  
-  for( unsigned int i=0; i<x->get_number_of_elements(); i++ )
-    x->get_data_ptr()[i] = functor.operator()(x->get_data_ptr()[i]);
+  std::transform(x->begin(),x->end(),x->begin(),functor);
 }
 
 template<class T> void 

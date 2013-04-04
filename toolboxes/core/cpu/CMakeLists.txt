@@ -12,7 +12,7 @@ add_library(cpucore SHARED
   )
 
 target_link_libraries(cpucore 
-  ${FFTW3_LIBRARIES} 
+  ${FFTW3_LIBRARIES} ${Boost_LIBRARIES}
   )
 
 install(TARGETS cpucore DESTINATION lib)

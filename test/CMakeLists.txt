@@ -35,6 +35,7 @@ target_link_libraries(test_all
   gpucore
   ${GTEST_LIBRARIES} 
   pthread
+  ${BOOST_LIBRARIES}	
   )
 
 if(CUDA_FOUND)

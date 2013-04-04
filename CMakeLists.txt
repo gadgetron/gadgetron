@@ -13,7 +13,7 @@ set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 set(Boost_NO_BOOST_CMAKE ON)
-find_package(Boost REQUIRED)
+find_package(Boost COMPONENTS system thread REQUIRED)
 find_package(ACE REQUIRED)
 find_package(FFTW3 COMPONENTS single double REQUIRED)
 
@@ -39,7 +39,7 @@ find_package(Qt4 4.6)
 
 find_package(PythonLibs)
 find_package(Numpy)
-find_package(GLEW)
+find_package(GLEW REQUIRED)
 find_package(Ismrmrd)
 
 add_subdirectory(dependencies)

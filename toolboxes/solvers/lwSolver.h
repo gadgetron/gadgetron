@@ -6,21 +6,21 @@
 
 #pragma once
 
-#include "linearSolver.h"
+#include "linearOperatorSolver.h"
 
 #include <vector>
 #include <iostream>
 
 namespace Gadgetron{
 template <class ARRAY_TYPE> class lwSolver
-  : public linearSolver< ARRAY_TYPE>
+  : public linearOperatorSolver< ARRAY_TYPE>
 {
   	typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
   	typedef typename realType<ELEMENT_TYPE>::type REAL;
 public:
 
   // Constructor
-  lwSolver() : linearSolver<ARRAY_TYPE>() {
+  lwSolver() : linearOperatorSolver<ARRAY_TYPE>() {
     iterations_ = 3;
     alpha_ = REAL(1);
   }

@@ -22,6 +22,7 @@ target_link_libraries(gadgetronmricore tinyxml cpucore cpucore_math
   ${FFTW3_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
   ${ARMADILLO_LIBRARIES}
+  ${BOOST_LIBRARIES}
   )
 
 install(FILES MRINoiseAdjustGadget.h PCACoilGadget.h DESTINATION include)

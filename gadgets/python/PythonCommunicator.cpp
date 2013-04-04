@@ -132,7 +132,7 @@ int PythonCommunicator::processConfig(Gadget* g, ACE_Message_Block* mb)
 	if (it != config_fnc_.end()) {
 		gstate = PyGILState_Ensure();
 		try {
-			boost::python::object ignored = it->second(boost::python::handle<>(PyString_FromString(mb->rd_ptr())));
+			boost::python::object ignored = it->second(boost::python::object(std::string(mb->rd_ptr())));
 		}  catch(boost::python::error_already_set const &) {
 			GADGET_DEBUG2("Error calling process config function for Gadget %s\n", g->module()->name());
 			PyErr_Print();

@@ -28,6 +28,7 @@ install(FILES
   cuLwSolver.h
   cuSbLwSolver.h
   cuSbcLwSolver.h
+  cuCgSolver.h
   cuGPBBSolver.h
   gpusolvers_export.h
   DESTINATION include)

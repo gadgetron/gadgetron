@@ -41,6 +41,8 @@ install(FILES
   cuNDArray_utils.h
   hoCuNDArray.h
   hoCuNDArray_blas.h
+  hoCuNDArray_operators.h
+  hoCuNDArray_elemwise.h
   GPUTimer.h				
   cuFFT.h
   GadgetronCuException.h
