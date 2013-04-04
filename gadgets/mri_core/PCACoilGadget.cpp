@@ -10,6 +10,8 @@
 #include "hoArmadillo.h"
 #include "hoNDArray_elemwise.h"
 
+#include "hoNDArray_fileio.h"
+
 namespace Gadgetron {
 
   PCACoilGadget::PCACoilGadget()
@@ -144,13 +146,13 @@ namespace Gadgetron {
 	arma::cx_fmat Um;
 	arma::fvec Sv;
 
-	if( !arma::svd_econ(Um,Sv,Vm,Am.t(),'r') ){
+	if( !arma::svd_econ(Um,Sv,Vm,Am.st(),'r') ){
 	  GADGET_DEBUG1("Failed to compute SVD\n");
 	  return GADGET_FAIL;
 	}
 
-	//write_nd_array(&S,"S_arma.real");
 	//write_nd_array(VT,"VT_arma.cplx");
+	//exit(1);
 
 	//Switch off buffering for this slice
 	buffering_mode_[location] = false;
@@ -181,7 +183,9 @@ namespace Gadgetron {
 	arma::cx_fmat am3 = as_arma_matrix(m3->getObjectPtr());
 	arma::cx_fmat am2 = as_arma_matrix(m2->getObjectPtr());
 	arma::cx_fmat aPca = as_arma_matrix(pca_coefficients_[location]);
-	am3 = (aPca.t()*am2.t()).t();	  	
+	am3 = (aPca.t()*am2.st()).st();
+	//write_nd_array(m3->getObjectPtr(),"m3_arma.cplx");
+	//exit(1);
       }
       
       m1->cont(m3);

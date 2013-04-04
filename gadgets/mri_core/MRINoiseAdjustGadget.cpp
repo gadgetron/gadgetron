@@ -99,13 +99,17 @@ namespace Gadgetron{
 	  arma::cx_mat noise_cov = as_arma_matrix(&noise_covariance_matrix_);	  
 	  arma::cx_fmat noise_covf = as_arma_matrix(&noise_covariance_matrixf_);
 
-	  noise_covf = arma::conv_to<arma::cx_fmat>::from
-	    (noise_bw_scale_factor_*arma::inv(arma::trimatu(arma::chol(noise_cov/number_of_noise_samples_))));
+	  {	  
+	    GadgetronTimer timer("Noise deccorelation");
+	    noise_covf = arma::conv_to<arma::cx_fmat>::from
+	      (noise_bw_scale_factor_*arma::inv(arma::trimatu(arma::chol(noise_cov/number_of_noise_samples_))));
+	  }
 
 	  noise_decorrelation_calculated_ = true;
 	}
 		
 	if (noise_decorrelation_calculated_) {
+	  GadgetronTimer timer("MAT mult");
 	  arma::cx_fmat noise_covf = as_arma_matrix(&noise_covariance_matrixf_);
 	  arma::cx_fmat am2 = as_arma_matrix(m2->getObjectPtr());	  
 	  am2 *= noise_covf;
