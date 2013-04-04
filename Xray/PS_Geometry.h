@@ -5,6 +5,7 @@
 
 #include "hdf5.h"
 #include "hdf5_hl.h"
+#include "vector_td_io.h"
 namespace Gadgetron {
 
 class PS_Geometry {

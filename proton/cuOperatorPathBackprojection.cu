@@ -1,7 +1,7 @@
 #include "cuOperatorPathBackprojection.h"
 #include "vector_td_utilities.h"
-#include "ndarray_vector_td_utilities.h"
-
+#include "cuNDArray_operators.h"
+#include "cuNDArray_elemwise.h"
 #include "check_CUDA.h"
 
 #include <vector>
@@ -27,7 +27,7 @@ template<class REAL> void cuOperatorPathBackprojection<REAL>
 	 if( !in || !out){
 	    BOOST_THROW_EXCEPTION(runtime_error( "cuOperatorPathBackprojection: mult_M empty data pointer"));;
 	  }
-	 if (!accumulate) out->clear();
+	 if (!accumulate) clear(out);
 
 	  int dims =  out->get_number_of_elements();
 
@@ -58,7 +58,7 @@ template<class REAL> void cuOperatorPathBackprojection<REAL>
 	 if( !in || !out){
 		 BOOST_THROW_EXCEPTION(runtime_error("cuOperatorPathBackprojection: mult_MH empty data pointer"));
 	  }
-	 if (!accumulate) out->clear();
+	 if (!accumulate) clear(out);
 
 	 int dims =  in->get_number_of_elements();
 	 int threadsPerBlock =std::min(dims,MAX_THREADS_PER_BLOCK);

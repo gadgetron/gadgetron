@@ -9,8 +9,7 @@
 #include "cuNDArray.h"
 #include "hoCuNDArray.h"
 
-#include "cuEncodedImageOperator.h"
-#include "ndarray_vector_td_utilities.h"
+
 #include "hoCuOperatorPathBackprojection.h"
 #include "hoNDArray_fileio.h"
 #include "check_CUDA.h"
@@ -20,10 +19,10 @@
 #include "hdf5_utils.h"
 
 #include "encodingOperatorContainer.h"
-#include "ndarray_vector_td_utilities.h"
-#include "hoCuNDArray_utils.h"
-#include "imageOperator.h"
+#include "hoCuOperator.h"
+#include "hoImageOperator.h"
 #include <boost/program_options.hpp>
+#include "vector_td_io.h"
 using namespace std;
 using namespace Gadgetron;
 typedef float _real;
@@ -61,8 +60,7 @@ int main( int argc, char** argv)
 			("device",po::value<int>(&device)->default_value(0),"Number of the device to use (0 indexed)")
 
 	;
-	cudaSetDevice(device);
-	cudaDeviceReset();
+
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
 	po::notify(vm);
@@ -74,13 +72,17 @@ int main( int argc, char** argv)
 	std::cout << "Command line options:" << std::endl;
 	for (po::variables_map::iterator it = vm.begin(); it != vm.end(); ++it){
 		boost::any a = it->second.value();
-		std::cout << it->first << " ";
+		std::cout << it->first << ": ";
 		if (a.type() == typeid(std::string)) std::cout << it->second.as<std::string>();
-		if (a.type() == typeid(int)) std::cout << it->second.as<int>();
-		if (a.type() == typeid(vector_td<float,3>)) std::cout << it->second.as<vector_td<float,3> >();
-		if (a.type() == typeid(vector_td<int,3>)) std::cout << it->second.as<vector_td<int,3> >();
+		else if (a.type() == typeid(int)) std::cout << it->second.as<int>();
+		else if (a.type() == typeid(float)) std::cout << it->second.as<float>();
+		else if (a.type() == typeid(vector_td<float,3>)) std::cout << it->second.as<vector_td<float,3> >();
+		else if (a.type() == typeid(vector_td<int,3>)) std::cout << it->second.as<vector_td<int,3> >();
+		else std::cout << "Unknown type" << std::endl;
 		std::cout << std::endl;
 	}
+	cudaSetDevice(device);
+	cudaDeviceReset();
 
 
   boost::shared_ptr<hoCuNDArray<vector_td<_real,3> > > splines = boost::static_pointer_cast<hoCuNDArray<vector_td<_real,3> > >(read_nd_array< vector_td<_real,3> >(splinesName.c_str()));
@@ -106,7 +108,7 @@ int main( int argc, char** argv)
   boost::shared_ptr< hoCuOperatorPathBackprojection<_real> > E (new hoCuOperatorPathBackprojection<_real> );
   E->setup(splines,physical_dims,projections,origin,background);
 
-  std::vector<unsigned int> rhs_dims(&dimensions[0],&dimensions[4]); //Quick and dirty vector_td to vector
+  std::vector<unsigned int> rhs_dims(&dimensions[0],&dimensions[3]); //Quick and dirty vector_td to vector
   E->set_domain_dimensions(&rhs_dims);
   E->set_codomain_dimensions(projections->get_dimensions().get());
 
@@ -126,7 +128,7 @@ int main( int argc, char** argv)
 
 		if (vm.count("prior-weight")){
 
-		boost::shared_ptr<imageOperator<hoCuNDArray<_real>,hoCuNDArray<_real> > > I (new imageOperator<hoCuNDArray<_real>,hoCuNDArray<_real> >());
+		boost::shared_ptr<hoImageOperator<_real> > I (new hoImageOperator<_real > ());
 		I->compute(prior.get());
 
 		I->set_weight(vm["prior-weight"].as<float>());
@@ -142,7 +144,7 @@ int main( int argc, char** argv)
 		std::vector<hoCuNDArray<_real>* > proj;
 		proj.push_back(projections.get());
 		proj.push_back(&tmp);
-		enc->add_operator(I);
+		enc->add_operator(to_hoCu<_real>(I));
 		projections = enc->create_codomain(proj);
 		}
 		solver.set_x0(prior);

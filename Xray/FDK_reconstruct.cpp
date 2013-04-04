@@ -1,6 +1,3 @@
-//#define _USE_EXPERIMENTAL_GPBB_SOLVER_
-
-#include "ndarray_vector_td_utilities.h"
 #include "hoNDArray_utils.h"
 #include "radial_utilities.h"
 #include "hoNDArray_fileio.h"
@@ -20,10 +17,10 @@
 
 // TMP (blurring)
 #include "cuConvolutionOperator.h"
-#include "ndarray_vector_td_utilities.h"
 
-#include "hoCuGTBLAS.h"
-#include "hoGTBLAS.h"
+#include "hoCuNDArray_blas.h"
+#include "hoCuNDArray_operators.h"
+#include "hoNDArray_blas.h"
 #include "cgSolver.h"
 #include "PS_Dataset.h"
 #include <sstream>

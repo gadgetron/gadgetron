@@ -9,8 +9,6 @@
 #include "cuNDArray.h"
 #include "cuCgSolver.h"
 #include "cuImageOperator.h"
-#include "cuEncodedImageOperator.h"
-#include "ndarray_vector_td_utilities.h"
 #include "cuOperatorPathBackprojection.h"
 #include "cuPartialDerivativeOperator.h"
 #include "cuLaplaceOperator.h"
@@ -28,9 +26,9 @@
 #include "cuSARTSolver.h"
 #include "cuMLSolver.h"
 
+#include "vector_td_io.h"
 
 
-#include "ndarray_vector_td_utilities.h"
 using namespace std;
 using namespace Gadgetron;
 typedef float _real;
@@ -132,8 +130,7 @@ int main( int argc, char** argv)
 
   ;
 
-  cudaSetDevice(device);
-	cudaDeviceReset();
+
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
   po::notify(vm);
@@ -143,16 +140,20 @@ int main( int argc, char** argv)
 		return 1;
   }
   std::cout << "Command line options:" << std::endl;
-  for (po::variables_map::iterator it = vm.begin(); it != vm.end(); ++it){
-  	boost::any a = it->second.value();
-  	std::cout << it->first << " ";
-  	if (a.type() == typeid(std::string)) std::cout << it->second.as<std::string>();
-  	if (a.type() == typeid(int)) std::cout << it->second.as<int>();
-  	if (a.type() == typeid(vector_td<float,3>)) std::cout << it->second.as<vector_td<float,3> >();
-  	if (a.type() == typeid(vector_td<int,3>)) std::cout << it->second.as<vector_td<int,3> >();
-  	std::cout << std::endl;
+	for (po::variables_map::iterator it = vm.begin(); it != vm.end(); ++it){
+		boost::any a = it->second.value();
+		std::cout << it->first << ": ";
+		if (a.type() == typeid(std::string)) std::cout << it->second.as<std::string>();
+		else if (a.type() == typeid(int)) std::cout << it->second.as<int>();
+		else if (a.type() == typeid(float)) std::cout << it->second.as<float>();
+		else if (a.type() == typeid(vector_td<float,3>)) std::cout << it->second.as<vector_td<float,3> >();
+		else if (a.type() == typeid(vector_td<int,3>)) std::cout << it->second.as<vector_td<int,3> >();
+		else std::cout << "Unknown type" << std::endl;
+		std::cout << std::endl;
+	}
 
-  }
+  cudaSetDevice(device);
+ 	cudaDeviceReset();
   std::cout <<  std::endl;
 	boost::shared_ptr<hoNDArray<vector_td<_real,3> > > host_splines = read_nd_array< vector_td<_real,3> >(splinesName.c_str());
   boost::shared_ptr<cuNDArray<vector_td<_real,3> > > splines (new cuNDArray< vector_td<_real,3> >(host_splines.get()));
@@ -184,7 +185,7 @@ int main( int argc, char** argv)
   boost::shared_ptr< cuOperatorPathBackprojection<_real> > E (new cuOperatorPathBackprojection<_real> );
 
 
-  vector<unsigned int> rhs_dims(&dimensions[0],&dimensions[4]);
+  vector<unsigned int> rhs_dims(&dimensions[0],&dimensions[3]);
 
   boost::shared_ptr<cuNDArray<_real > > weights;
   boost::shared_ptr<cuNDArray<_real > > uncertainties;
@@ -209,7 +210,7 @@ int main( int argc, char** argv)
 
  		if (vm.count("prior-weight")){
 
-			boost::shared_ptr<imageOperator<cuNDArray<_real>,cuNDArray<_real> > > I (new imageOperator<cuNDArray<_real>,cuNDArray<_real> >());
+			boost::shared_ptr<cuImageOperator<_real > > I (new cuImageOperator<_real >());
 			I->compute(prior.get());
 
 			I->set_weight(vm["prior-weight"].as<float>());

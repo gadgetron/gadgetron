@@ -2,7 +2,7 @@
 
 //#define SINCOSF __sincosf // fast math
 #define SINCOSF sincosf
-#include "vector_td.h"
+#include "vector_td_utilities.h"
 
 namespace Gadgetron{
 

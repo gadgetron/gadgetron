@@ -9,12 +9,13 @@
 #include <float.h>
 
 #include "hoNDArray.h"
-#include "cuNDArray.h"
-#include "ndarray_vector_td_utilities.h"
+#include "cuNDArray_elemwise.h"
+#include "cuNDArray_operators.h"
 #include "hoNDArray_fileio.h"
-#include "cuNDFFT.h"
+#include "cuFFT.h"
 #include "GPUTimer.h"
 #include "float3x3.h"
+#include "NFFT_utils.h"
 //#include "../../libs/device_utils/float3x3.h"
 //#include <cuda_utilities.h>
 #include <iostream>
@@ -457,9 +458,9 @@ boost::shared_ptr< cuNDArray<float> > get_conebeam_ramp(unsigned int dim, float 
     cuNDArray<float> tmp_real(&weights);
     expand_with_zero_fill<float,1>( &tmp_real, &weights_os );
 
-    boost::shared_ptr< cuNDArray<float_complext> > tmp_cplx = real_to_complext(&weights_os);
-    cuNDFFT<float_complext>().fft(tmp_cplx.get(),(unsigned int)0);
-    boost::shared_ptr< cuNDArray<float> >  tmp_res = complext_to_real(tmp_cplx.get());
+    boost::shared_ptr< cuNDArray<float_complext> > tmp_cplx = real_to_complex<float_complext>(&weights_os);
+    cuFFT<float_complext>().fft(tmp_cplx.get(),(unsigned int)0);
+    boost::shared_ptr< cuNDArray<float> >  tmp_res = real(tmp_cplx.get());
 
     //zero_fill_border<float,1>( vector_to_uintd<1>(*weights.get_dimensions())>>1, res.get());
 
@@ -614,14 +615,14 @@ bool Gadgetron::conebeam_backwards_projection( hoNDArray<TYPE>* projections, hoN
                 }
 
                 boost::shared_ptr< cuNDArray<complext<TYPE> > > complex_projection =
-                    real_to_complext(&device_projection);
-                cuNDFFT<complext<TYPE> >().fft(complex_projection.get(), (unsigned int)0);
+                    real_to_complex< complext<TYPE> >(&device_projection);
+                cuFFT<complext<TYPE> >().fft(complex_projection.get(), (unsigned int)0);
                 *complex_projection *= *ramp;
-                cuNDFFT<complext<TYPE> >().ifft(complex_projection.get(),(unsigned int)0);
+                cuFFT<complext<TYPE> >().ifft(complex_projection.get(),(unsigned int)0);
 
                 // copy cuNDArray back to hoNDArray
                 boost::shared_ptr< cuNDArray<TYPE> > result_original =
-                    complext_to_real<TYPE>(complex_projection.get());
+                    real(complex_projection.get());
 
                 /*
                 boost::shared_ptr< cuNDArray<TYPE> > result(new cuNDArray<TYPE>());

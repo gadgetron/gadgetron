@@ -1,6 +1,5 @@
 #include "hoCudaConebeamProjectionOperator.h"
 #include "vector_td_utilities.h"
-#include "ndarray_vector_td_utilities.h"
 
 #include "conebeam_projection.h"
 #include <vector>
@@ -8,6 +7,7 @@
 #include <stdio.h>
 #include "hoNDArray_utils.h"
 #include "hoNDArray_fileio.h"
+#include "hoCuNDArray_operators.h"
 
 //#define TIME_ITR
 using namespace Gadgetron;

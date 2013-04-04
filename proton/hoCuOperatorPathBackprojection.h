@@ -1,8 +1,10 @@
+#pragma once
 #include "linearOperator.h"
 #include "hoCuNDArray.h"
 #include <vector>
-#include "GPUTimer.h"
-#pragma once
+
+//#include "hoNDArray_operators.h"
+
 
 namespace Gadgetron{
 template<class REAL>

@@ -1,6 +1,6 @@
 #include "proton_kernels.h"
 #include "vector_td_utilities.h"
-#include "ndarray_vector_td_utilities.h"
+
 #include "cuNDArray.h"
 
 //TODO: Get rid of these defines.

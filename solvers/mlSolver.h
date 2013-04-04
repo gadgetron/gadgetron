@@ -1,13 +1,13 @@
 #pragma once
-#include "linearSolver.h"
+#include "linearOperatorSolver.h"
 
 namespace Gadgetron{
 template <class ARRAY_TYPE> class mlSolver
-: public linearSolver<ARRAY_TYPE> {
+: public linearOperatorSolver<ARRAY_TYPE> {
 	typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
 		typedef typename realType<ELEMENT_TYPE>::type REAL;
 	public:
-		mlSolver(): linearSolver<ARRAY_TYPE>() {
+		mlSolver(): linearOperatorSolver<ARRAY_TYPE>() {
 			_iterations=10;
 		}
 		virtual ~mlSolver(){};

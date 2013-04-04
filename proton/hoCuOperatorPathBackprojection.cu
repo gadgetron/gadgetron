@@ -1,6 +1,6 @@
 #include "hoCuOperatorPathBackprojection.h"
 #include "vector_td_utilities.h"
-#include "ndarray_vector_td_utilities.h"
+
 
 #include "check_CUDA.h"
 
@@ -10,7 +10,7 @@
 #include <stdexcept>
 #include <algorithm>
 
-
+#include "hoNDArray_operators.h"
 
 #include "proton_kernels.cu"
 
@@ -237,3 +237,4 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 }
 // Instantiations
 template class hoCuOperatorPathBackprojection<float>;
+
