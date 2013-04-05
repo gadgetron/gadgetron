@@ -39,7 +39,7 @@ find_package(Qt4 4.6)
 
 find_package(PythonLibs)
 find_package(Numpy)
-find_package(GLEW REQUIRED)
+find_package(GLEW)
 find_package(Ismrmrd)
 
 add_subdirectory(dependencies)
