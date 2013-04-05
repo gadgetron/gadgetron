@@ -330,6 +330,26 @@ namespace Gadgetron{
   }
 
   template<class T, unsigned int D> __inline__ __host__ __device__
+   vector_td<T,D> amin( const vector_td<T,D> vec1, T val)
+   {
+     vector_td<T,D> res;
+     for (unsigned int i=0; i<D; i++){
+       res[i] = vec1[i] < val ? vec1[i] : val;
+     }
+     return res;
+   }
+
+   template<class T, unsigned int D> __inline__ __host__ __device__
+   vector_td<T,D> amax( const vector_td<T,D> vec1, T val )
+   {
+     vector_td<T,D> res;
+     for (unsigned int i=0; i<D; i++){
+       res[i] = vec1[i] > val ? vec1[i] : val;
+     }
+     return res;
+   }
+
+  template<class T, unsigned int D> __inline__ __host__ __device__
   T max_not_nan( const vector_td<T,D> vec )
   {
     int i=0;
