@@ -23,6 +23,18 @@ public:
         if (!(engine_ = engOpen(""))) {
             // TODO: error checking!
             GADGET_DEBUG1("Can't start MATLAB engine\n");
+        } else {
+            // Add ISMRMRD Java bindings jar to Matlab's path
+            // TODO: this should be in user's Matlab path NOT HERE
+            engEvalString(engine_, "javaaddpath('/usr/local/ismrmrd/lib/ismrmrd.jar')");
+            engEvalString(engine_, "addpath(strcat(getenv('GADGETRON_HOME'), '/matlab'));");
+
+            // Import ISMRMRD package
+            engEvalString(engine_, "import org.ismrm.ismrmrd.*;");
+            engEvalString(engine_, "import org.ismrm.ismrmrd.xmlhdr.*;");
+
+            // Load the Java JNI library
+            engEvalString(engine_, "JNILibLoader.load()");
         }
     }
 
@@ -48,19 +60,11 @@ protected:
         char buffer[BUFSIZE] = "\0";
         engOutputBuffer(engine_, buffer, BUFSIZE);
 
-        // Add +ismrmrd package to Matlab's path
-        // TODO: this should be in user's Matlab path NOT HERE
-        engEvalString(engine_, "addpath(strcat(getenv('ISMRMRD_HOME'), '/matlab'));");
-        engEvalString(engine_, "addpath(strcat(getenv('GADGETRON_HOME'), '/matlab'));");
-
-        // Check that we found ismrmrd package
-        engEvalString(engine_, "which ismrmrd.AcquisitionHeader");
-
         // add user specified path for this gadget
-        std::string add_user_path("addpath(");
-        add_user_path += *path_.get() + ");";
-        printf("%s\n", add_user_path.c_str());
-        engEvalString(engine_, add_user_path.c_str());
+        if (path_->length() > 0) {
+            std::string add_user_path("addpath(" + *path_.get() + ");");
+            engEvalString(engine_, add_user_path.c_str());
+        }
 
         // Check that we found the class
         std::string which_classname("which ");
