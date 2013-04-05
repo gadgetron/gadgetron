@@ -85,12 +85,15 @@ template <class REAL> __global__ void Gadgetron::forward_kernel(REAL* image, REA
 			t = REAL(i)/(steps);
 			p = d+t*(c+t*(b+t*a));
 
-			id=co_to_idx(to_intd((p+dims/2)*ndims/dims),ndims);
+			co = to_intd((p+dims/2)*ndims/dims);
+			co = amax(amin(co,ndims-1),0);
+			id=co_to_idx(co,ndims);
 			//REAL step_length = norm((-1.0/(steps*steps*steps)-3*t*t/steps+3*t/(steps*steps))*a+(1.0/(steps*steps)-2*t/steps)*b-c/steps);
 			length += norm(p-p_old)/2;
 
 			if(id_old != id){
-				if (min(co) >= 0 && co < ndims ) res+=image[id_old]*length;
+				//if (min(co) >= 0 && co < ndims ) res+=image[id_old]*length;
+				res+=image[id_old]*length;
 				length=0;
 			}
 
@@ -98,6 +101,7 @@ template <class REAL> __global__ void Gadgetron::forward_kernel(REAL* image, REA
 			id_old=id;
 			p_old=p;
 			co = to_intd((p+dims/2)*ndims/dims);
+			co = amax(amin(co,ndims-1),0);
 		}
 		projections[idx] += res;
 	}
@@ -130,6 +134,7 @@ template <class REAL> __global__ void Gadgetron::backwards_kernel(REAL* projecti
 		vector_td<REAL,3> p;
 		vector_td<REAL,3> p_old=d;
 		co = to_intd((d+dims/2)*ndims/dims);
+		co = amax(amin(co,ndims-1),0);
 		id_old=co_to_idx(co,ndims);
 
 		int steps =max(ndims)*STEPS;
@@ -143,7 +148,8 @@ template <class REAL> __global__ void Gadgetron::backwards_kernel(REAL* projecti
 			length += norm(p-p_old)/2;
 
 			if(id_old != id){
-				if (min(co) >= 0 && co < ndims ) atomicAdd(&(image[id_old]),length*proj);
+				//if (min(co) >= 0 && co < ndims ) atomicAdd(&(image[id_old]),length*proj);
+				atomicAdd(&(image[id_old]),length*proj);
 				length=0;
 			}
 
@@ -151,6 +157,7 @@ template <class REAL> __global__ void Gadgetron::backwards_kernel(REAL* projecti
 			id_old=id;
 
 			co = to_intd((p+dims/2)*ndims/dims);
+			co = amax(amin(co,ndims-1),0);
 		}
 
 	}
