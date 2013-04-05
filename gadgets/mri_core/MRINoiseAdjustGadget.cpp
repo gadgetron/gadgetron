@@ -1,7 +1,5 @@
 #include "MRINoiseAdjustGadget.h"
 #include "Gadgetron.h"
-#include "hoNDArray_fileio.h"
-#include "GadgetronTimer.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "hoArmadillo.h"
 #include "hoNDArray_elemwise.h"
@@ -100,19 +98,17 @@ namespace Gadgetron{
 	  arma::cx_fmat noise_covf = as_arma_matrix(&noise_covariance_matrixf_);
 
 	  {	  
-	    GadgetronTimer timer("Noise deccorelation");
 	    noise_covf = arma::conv_to<arma::cx_fmat>::from
 	      (noise_bw_scale_factor_*arma::inv(arma::trimatu(arma::chol(noise_cov/number_of_noise_samples_))));
 	  }
-
+	  
 	  noise_decorrelation_calculated_ = true;
 	}
 		
 	if (noise_decorrelation_calculated_) {
-	  GadgetronTimer timer("MAT mult");
 	  arma::cx_fmat noise_covf = as_arma_matrix(&noise_covariance_matrixf_);
 	  arma::cx_fmat am2 = as_arma_matrix(m2->getObjectPtr());	  
-	  am2 *= noise_covf;
+	  am2 = am2*arma::trimatu(noise_covf);
 	}
       }
       
