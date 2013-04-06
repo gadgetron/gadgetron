@@ -1,6 +1,6 @@
 #include "htgrappa.h"
 #include "hoNDArray_fileio.h"
-#include "cuFFT.h"
+#include "cuNDFFT.h"
 #include "GPUTimer.h"
 
 #include "CUBLASContextProvider.h"
@@ -499,7 +499,7 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 	int kernel_elements = gkernel.get_number_of_elements()/target_coils;
 	int total_elements = tmp_mixing.get_number_of_elements()/source_coils;
 	dkernel_size.y *= acceleration_factor;
-	cuFFT<T> ft;
+	cuNDFFT<typename realType<T>::Type> ft;
 	std::vector<unsigned int> ft_dims(2,0);ft_dims[1] = 1;
 	clear(out_mixing_coeff);
 	unsigned int current_uncombined_index = 0;

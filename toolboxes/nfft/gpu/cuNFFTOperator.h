@@ -1,8 +1,7 @@
 #pragma once
 
 #include "linearOperator.h"
-#include "complext.h"
-#include "NFFT.h"
+#include "cuNFFT.h"
 #include "gpunfft_export.h"
 
 namespace Gadgetron{
@@ -12,7 +11,7 @@ namespace Gadgetron{
   public:
   
     cuNFFTOperator() : linearOperator<cuNDArray< complext<REAL> > >() {
-      plan_ = boost::shared_ptr< NFFT_plan<REAL, D> >( new NFFT_plan<REAL, D>() );
+      plan_ = boost::shared_ptr< cuNFFT_plan<REAL, D> >( new cuNFFT_plan<REAL, D>() );
       ready_ = false; 
     }
   
@@ -21,7 +20,7 @@ namespace Gadgetron{
     virtual void set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw ) { dcw_ = dcw; }
     inline boost::shared_ptr< cuNDArray<REAL> > get_dcw() { return dcw_; }
 
-    inline boost::shared_ptr< NFFT_plan<REAL, D> > get_plan() { return plan_; }
+    inline boost::shared_ptr< cuNFFT_plan<REAL, D> > get_plan() { return plan_; }
   
     virtual void setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W );
     virtual void preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory );
@@ -35,7 +34,7 @@ namespace Gadgetron{
     }
 
   protected:
-    boost::shared_ptr< NFFT_plan<REAL, D> > plan_;
+    boost::shared_ptr< cuNFFT_plan<REAL, D> > plan_;
     boost::shared_ptr< cuNDArray<REAL> > dcw_;
     std::vector<unsigned int> dimensionsK_;
     bool ready_;

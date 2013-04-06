@@ -31,7 +31,7 @@ namespace Gadgetron{
       tmp_out = out;
     }
   
-    plan_->compute( in, tmp_out, dcw_.get(), NFFT_plan<REAL,D>::NFFT_FORWARDS_C2NC );
+    plan_->compute( in, tmp_out, dcw_.get(), cuNFFT_plan<REAL,D>::NFFT_FORWARDS_C2NC );
 
     if( accumulate ){
       *out += *tmp_out;
@@ -68,7 +68,7 @@ namespace Gadgetron{
       tmp_out = out;
     }
 
-    plan_->compute( in, tmp_out, dcw_.get(), NFFT_plan<REAL,D>::NFFT_BACKWARDS_NC2C );
+    plan_->compute( in, tmp_out, dcw_.get(), cuNFFT_plan<REAL,D>::NFFT_BACKWARDS_NC2C );
     if( accumulate ){
       *out += *tmp_out;
       delete tmp_out;
@@ -126,7 +126,7 @@ namespace Gadgetron{
     if( trajectory ){
       dimensionsK_.clear();
       dimensionsK_ = *trajectory->get_dimensions();    
-      plan_->preprocess( trajectory, NFFT_plan<REAL,D>::NFFT_PREP_ALL );
+      plan_->preprocess( trajectory, cuNFFT_plan<REAL,D>::NFFT_PREP_ALL );
     }
     else {
       BOOST_THROW_EXCEPTION(runtime_error("Error: cuNFFTOperator : cannot set trajectory to 0x0."));

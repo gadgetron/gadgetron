@@ -1,7 +1,7 @@
 #include "radialSenseAppMainWidget.h"
 
 #include "hoNDArray_fileio.h"
-#include "NFFT.h"
+#include "cuNFFT.h"
 #include "NFFT_utils.h"
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_utils.h"
@@ -218,7 +218,7 @@ void radialSenseAppMainWindow::replan()
       ( samples_per_profile, profiles_per_frame, frames_per_reconstruction, iteration*profiles_per_reconstruction );
     
     // Preprocess
-    plan.preprocess( traj.get(), NFFT_plan<float,2>::NFFT_PREP_NC2C );
+    plan.preprocess( traj.get(), cuNFFT_plan<float,2>::NFFT_PREP_NC2C );
     traj.reset();
     
     // Upload data
@@ -227,7 +227,7 @@ void radialSenseAppMainWindow::replan()
 		   num_profiles*samples_per_profile, get_num_coils(), host_samples.get() );
     
     // Accumulate k-space for CSM estimation
-    plan.convolve( csm_data.get(), image_os, dcw.get(), NFFT_plan<float,2>::NFFT_CONV_NC2C, (iteration==0) ? false : true );
+    plan.convolve( csm_data.get(), image_os, dcw.get(), cuNFFT_plan<float,2>::NFFT_CONV_NC2C, (iteration==0) ? false : true );
     csm_data.reset();
   }
   
@@ -236,7 +236,7 @@ void radialSenseAppMainWindow::replan()
   delete image_os; image_os = 0x0;
   
   // Complete gridding of k-space CSM image
-  plan.fft( acc_image_os.get(), NFFT_plan<float,2>::NFFT_BACKWARDS );
+  plan.fft( acc_image_os.get(), cuNFFT_plan<float,2>::NFFT_BACKWARDS );
   plan.deapodize( acc_image_os.get() );
   
   // Remove oversampling

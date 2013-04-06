@@ -1,7 +1,7 @@
 #pragma once
 
 #include "cuSenseOperator.h"
-#include "NFFT.h"
+#include "cuNFFT.h"
 
 namespace Gadgetron{
 
@@ -10,23 +10,22 @@ namespace Gadgetron{
   
   public:
   
-    typedef typename cuSenseOperator<REAL,D>::_complext _complext;
     typedef typename uintd<D>::Type _uintd;
     typedef typename reald<REAL,D>::Type _reald;
 
     cuNonCartesianSenseOperator() : cuSenseOperator<REAL,D>() { 
-      plan_ = boost::shared_ptr< NFFT_plan<REAL, D, ATOMICS> >( new NFFT_plan<REAL, D, ATOMICS>() );
+      plan_ = boost::shared_ptr< cuNFFT_plan<REAL, D, ATOMICS> >( new cuNFFT_plan<REAL, D, ATOMICS>() );
       ready_ = false; 
     }
     
     virtual ~cuNonCartesianSenseOperator() {}
     
-    inline boost::shared_ptr< NFFT_plan<REAL, D, ATOMICS> > get_plan() { return plan_; }
+    inline boost::shared_ptr< cuNFFT_plan<REAL, D, ATOMICS> > get_plan() { return plan_; }
     inline boost::shared_ptr< cuNDArray<REAL> > get_dcw() { return dcw_; }
     inline bool is_setup() { return ready_; }
     
-    virtual void mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
-    virtual void mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate = false );
+    virtual void mult_M( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate = false );
+    virtual void mult_MH( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate = false );
 
     virtual void setup( _uintd matrix_size, _uintd matrix_size_os, REAL W );
     virtual void preprocess( cuNDArray<_reald> *trajectory );
@@ -37,7 +36,7 @@ namespace Gadgetron{
     }
   
   protected:
-    boost::shared_ptr< NFFT_plan<REAL, D, ATOMICS> > plan_;
+    boost::shared_ptr< cuNFFT_plan<REAL, D, ATOMICS> > plan_;
     boost::shared_ptr< cuNDArray<REAL> > dcw_;
     bool ready_;
   };

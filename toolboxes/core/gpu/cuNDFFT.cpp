@@ -1,4 +1,4 @@
-#include "cuFFT.h"
+#include "cuNDFFT.h"
 #include "vector_td.h"
 #include "cuNDArray.h"
 #include "cuNDArray_utils.h"
@@ -12,27 +12,19 @@
 namespace Gadgetron{
   
   template<class T> cufftType_t get_transform_type();
-  template<> cufftType_t get_transform_type< cuFloatComplex  >() { return CUFFT_C2C; }
-  template<> cufftType_t get_transform_type< cuDoubleComplex >() { return CUFFT_Z2Z; }
-  template<> cufftType_t get_transform_type< float_complext  >() { return CUFFT_C2C; }
-  template<> cufftType_t get_transform_type< double_complext >() { return CUFFT_Z2Z; }
+  template<> cufftType_t get_transform_type<float>() { return CUFFT_C2C; }
+  template<> cufftType_t get_transform_type<double>() { return CUFFT_Z2Z; }
   
-  template<class T> cufftResult_t cuNDA_FFT_execute( cufftHandle plan, cuNDArray<T> *in_out, int direction );
-
-  template<> cufftResult_t cuNDA_FFT_execute<cuFloatComplex>( cufftHandle plan, cuNDArray<cuFloatComplex> *in_out, int direction ){
-    return cufftExecC2C(plan, in_out->get_data_ptr(), in_out->get_data_ptr(), direction); }
-
-  template<> cufftResult_t cuNDA_FFT_execute<cuDoubleComplex>( cufftHandle plan, cuNDArray<cuDoubleComplex> *in_out, int direction ){
-    return cufftExecZ2Z(plan, in_out->get_data_ptr(), in_out->get_data_ptr(), direction); }
-
-  template<> cufftResult_t cuNDA_FFT_execute<float_complext>( cufftHandle plan, cuNDArray<float_complext> *in_out, int direction ){
+  template<class T> cufftResult_t cuNDA_FFT_execute( cufftHandle plan, cuNDArray< complext<T> > *in_out, int direction );
+  
+  template<> cufftResult_t cuNDA_FFT_execute<float>( cufftHandle plan, cuNDArray<float_complext> *in_out, int direction ){
     return cufftExecC2C(plan, (cuFloatComplex*)in_out->get_data_ptr(), (cuFloatComplex*)in_out->get_data_ptr(), direction); }
 
-  template<> cufftResult_t cuNDA_FFT_execute<double_complext>( cufftHandle plan, cuNDArray<double_complext> *in_out, int direction ){
+  template<> cufftResult_t cuNDA_FFT_execute<double>( cufftHandle plan, cuNDArray<double_complext> *in_out, int direction ){
     return cufftExecZ2Z(plan, (cuDoubleComplex*)in_out->get_data_ptr(), (cuDoubleComplex*)in_out->get_data_ptr(), direction); }
   
   template<class T> void
-  cuFFT<T>::fft_int( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_transform, int direction, bool do_scale )
+  cuNDFFT<T>::fft_int( cuNDArray< complext<T> > *input, std::vector<unsigned int> *dims_to_transform, int direction, bool do_scale )
   {
     std::vector<unsigned int> new_dim_order;
     std::vector<unsigned int> reverse_dim_order;
@@ -46,11 +38,11 @@ namespace Gadgetron{
     for (unsigned int i = 0; i < dims_to_transform->size(); i++) {
       if ((*dims_to_transform)[i] >= array_ndim) {
     	std::stringstream ss;
-    	ss << "cuFFT::fft Invalid dimensions specified for transform " << (*dims_to_transform)[i] << "max " << array_ndim;
+    	ss << "cuNDFFT::fft Invalid dimensions specified for transform " << (*dims_to_transform)[i] << "max " << array_ndim;
 	BOOST_THROW_EXCEPTION(runtime_error(ss.str()));	
       }
       if (dim_count[(*dims_to_transform)[i]] > 0) {
-	BOOST_THROW_EXCEPTION(runtime_error("cuFFT::fft Invalid dimensions (duplicates) specified for transform"));	
+	BOOST_THROW_EXCEPTION(runtime_error("cuNDFFT::fft Invalid dimensions (duplicates) specified for transform"));	
       }
       dim_count[(*dims_to_transform)[i]]++;
       dims[dims_to_transform->size()-1-i] = (*array_dims)[(*dims_to_transform)[i]];
@@ -79,7 +71,7 @@ namespace Gadgetron{
     ftres = cufftPlanMany(&plan,ndim,&dims[0],&dims[0],1,elements_in_ft,&dims[0],1,elements_in_ft,get_transform_type<T>(),batches);
     if (ftres != CUFFT_SUCCESS) {
       std::stringstream ss;
-      ss << "cuFFT FFT plan failed: " << ftres;
+      ss << "cuNDFFT FFT plan failed: " << ftres;
       BOOST_THROW_EXCEPTION(runtime_error(ss.str()));      
     }
     
@@ -87,13 +79,13 @@ namespace Gadgetron{
     *input = *permute(input,&new_dim_order,-1);
     
     if( cuNDA_FFT_execute<T>( plan, input, direction ) != CUFFT_SUCCESS ) {
-      BOOST_THROW_EXCEPTION(runtime_error("cuFFT FFT execute failed"));      
+      BOOST_THROW_EXCEPTION(runtime_error("cuNDFFT FFT execute failed"));      
     }
     
     ftres = cufftDestroy( plan );
     if (ftres != CUFFT_SUCCESS) {
       std::stringstream ss;
-      ss << "cuFFT FFT plan destroy failed: " << ftres;
+      ss << "cuNDFFT FFT plan destroy failed: " << ftres;
       BOOST_THROW_EXCEPTION(runtime_error(ss.str()));      
     }
     
@@ -106,33 +98,33 @@ namespace Gadgetron{
   }
   
   template<class T> void
-  cuFFT<T>::fft( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_transform )
+  cuNDFFT<T>::fft( cuNDArray< complext<T> > *input, std::vector<unsigned int> *dims_to_transform )
   {
     fft_int(input, dims_to_transform, CUFFT_FORWARD, false);
   }
   
   template<class T> void
-  cuFFT<T>::ifft( cuNDArray<T> *input, std::vector<unsigned int> *dims_to_transform, bool do_scale )
+  cuNDFFT<T>::ifft( cuNDArray< complext<T> > *input, std::vector<unsigned int> *dims_to_transform, bool do_scale )
   {
     fft_int(input, dims_to_transform, CUFFT_INVERSE, do_scale);
   }
   
   template<class T> void
-  cuFFT<T>::fft( cuNDArray<T> *input, unsigned int dim_to_transform )
+  cuNDFFT<T>::fft( cuNDArray< complext<T> > *input, unsigned int dim_to_transform )
   {
     std::vector<unsigned int> dims(1,dim_to_transform);
     fft_int(input, &dims, CUFFT_FORWARD, false);
   }
   
   template<class T> void
-  cuFFT<T>::ifft( cuNDArray<T> *input, unsigned int dim_to_transform, bool do_scale )
+  cuNDFFT<T>::ifft( cuNDArray< complext<T> > *input, unsigned int dim_to_transform, bool do_scale )
   {
     std::vector<unsigned int> dims(1,dim_to_transform);
     fft_int(input, &dims, CUFFT_INVERSE, do_scale);
   }
   
   template<class T> void
-  cuFFT<T>::fft( cuNDArray<T> *input )
+  cuNDFFT<T>::fft( cuNDArray< complext<T> > *input )
   {
     std::vector<unsigned int> dims(input->get_number_of_dimensions(),0);
     for (unsigned int i = 0; i < dims.size(); i++) dims[i] = i;
@@ -140,7 +132,7 @@ namespace Gadgetron{
   }
   
   template<class T> void
-  cuFFT<T>::ifft( cuNDArray<T> *input, bool do_scale )
+  cuNDFFT<T>::ifft( cuNDArray<complext<T> > *input, bool do_scale )
   {
     std::vector<unsigned int> dims(input->get_number_of_dimensions(),0);
     for (unsigned int i = 0; i < dims.size(); i++) dims[i] = i;
@@ -148,8 +140,6 @@ namespace Gadgetron{
   }
   
   // Instantiation
-  //template class EXPORTGPUCORE cuFFT<cuFloatComplex>;
-  //template class EXPORTGPUCORE cuFFT<cuDoubleComplex>;
-  template class EXPORTGPUCORE cuFFT<float_complext>;
-  template class EXPORTGPUCORE cuFFT<double_complext>;
+  template class EXPORTGPUCORE cuNDFFT<float>;
+  template class EXPORTGPUCORE cuNDFFT<double>;
 }

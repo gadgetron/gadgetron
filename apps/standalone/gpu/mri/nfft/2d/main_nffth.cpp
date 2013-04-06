@@ -24,7 +24,7 @@
 
 */
 
-#include "NFFT.h"
+#include "cuNFFT.h"
 #include "radial_utilities.h"
 #include "vector_td_utilities.h"
 #include "hoNDArray_fileio.h"
@@ -42,7 +42,7 @@ using namespace Gadgetron;
 typedef float _real; 
 typedef complext<_real> _complext;
 typedef reald<_real,2>::Type _reald2;
-typedef NFFT_plan<_real,2> plan_type;
+typedef cuNFFT_plan<_real,2> plan_type;
 
 int main( int argc, char** argv) 
 {

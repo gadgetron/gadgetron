@@ -5,24 +5,23 @@
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_blas.h"
 #include "vector_td.h"
+#include "complext.h"
 #include "gpupmri_export.h"
 
 namespace Gadgetron{
 
-  template<class REAL, unsigned int D> class EXPORTGPUPMRI cuSenseOperator : public senseOperator<REAL, D, cuNDArray< complext<REAL> > >
+  template<class REAL, unsigned int D> class EXPORTGPUPMRI cuSenseOperator : public senseOperator< cuNDArray< complext<REAL> >, D >
   {
     
   public:
     
-    cuSenseOperator() : senseOperator<REAL,D,cuNDArray< _complext> >() {}
+    cuSenseOperator() : senseOperator<cuNDArray< complext<REAL> >,D >() {}
     virtual ~cuSenseOperator() {}
+        
+    virtual void mult_M( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate = false ) = 0;
+    virtual void mult_MH( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate = false ) = 0;
     
-    typedef complext<REAL> _complext;
-    
-    virtual void mult_M( cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate = false ) = 0;
-    virtual void mult_MH( cuNDArray<_complext> *in, cuNDArray<_complext> *out, bool accumulate = false ) = 0;
-    
-    virtual void mult_csm( cuNDArray<_complext> *in, cuNDArray< _complext> *out );
-    virtual void mult_csm_conj_sum( cuNDArray<_complext> *in, cuNDArray<_complext> *out );    
+    virtual void mult_csm( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out );
+    virtual void mult_csm_conj_sum( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out );    
   };
 }

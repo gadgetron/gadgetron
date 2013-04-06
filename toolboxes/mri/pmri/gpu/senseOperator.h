@@ -2,14 +2,14 @@
 
 #include "linearOperator.h"
 #include "gpupmri_export.h"
+#include "GadgetronException.h"
 
 #include <boost/smart_ptr.hpp>
 #include <iostream>
-#include "GadgetronException.h"
 
 namespace Gadgetron{
 
-  template<class REAL, unsigned int D, class ARRAY_TYPE> class EXPORTGPUPMRI senseOperator : public linearOperator<ARRAY_TYPE>
+  template<class ARRAY_TYPE, unsigned int D> class EXPORTGPUPMRI senseOperator : public linearOperator<ARRAY_TYPE>
   {
 
   public:

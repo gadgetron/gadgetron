@@ -2,7 +2,8 @@
 #include "vector_td_utilities.h"
 #include <sstream>
 
-using namespace Gadgetron;
+namespace Gadgetron{
+
 template<class REAL> __global__ void 
 mult_csm_kernel( complext<REAL> *in, complext<REAL> *out, complext<REAL> *csm,
 		 unsigned int image_elements, unsigned int nframes, unsigned int ncoils )
@@ -17,7 +18,7 @@ mult_csm_kernel( complext<REAL> *in, complext<REAL> *out, complext<REAL> *csm,
 }
 
 template<class REAL, unsigned int D> void
-Gadgetron::csm_mult_M( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, cuNDArray< complext<REAL> > *csm )
+csm_mult_M( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, cuNDArray< complext<REAL> > *csm )
 {  
   int device;
   if( cudaGetDevice( &device ) != cudaSuccess ){
@@ -77,7 +78,7 @@ mult_csm_conj_sum_kernel( complext<REAL> *in, complext<REAL> *out, complext<REAL
 }
 
 template<class REAL, unsigned int D> void
-Gadgetron::csm_mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, cuNDArray<complext<REAL> > *csm )
+csm_mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, cuNDArray<complext<REAL> > *csm )
 {
   int device;
   if( cudaGetDevice( &device ) != cudaSuccess ){
@@ -123,22 +124,23 @@ Gadgetron::csm_mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL>
 
 // Instantiation
 
-template EXPORTGPUPMRI void Gadgetron::csm_mult_M<float,1>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
-template EXPORTGPUPMRI void Gadgetron::csm_mult_M<float,2>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
-template EXPORTGPUPMRI void Gadgetron::csm_mult_M<float,3>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
-template EXPORTGPUPMRI void Gadgetron::csm_mult_M<float,4>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
+template EXPORTGPUPMRI void csm_mult_M<float,1>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
+template EXPORTGPUPMRI void csm_mult_M<float,2>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
+template EXPORTGPUPMRI void csm_mult_M<float,3>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
+template EXPORTGPUPMRI void csm_mult_M<float,4>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
 
-template EXPORTGPUPMRI void Gadgetron::csm_mult_M<double,1>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
-template EXPORTGPUPMRI void Gadgetron::csm_mult_M<double,2>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
-template EXPORTGPUPMRI void Gadgetron::csm_mult_M<double,3>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
-template EXPORTGPUPMRI void Gadgetron::csm_mult_M<double,4>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
+template EXPORTGPUPMRI void csm_mult_M<double,1>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
+template EXPORTGPUPMRI void csm_mult_M<double,2>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
+template EXPORTGPUPMRI void csm_mult_M<double,3>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
+template EXPORTGPUPMRI void csm_mult_M<double,4>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
 
-template EXPORTGPUPMRI void Gadgetron::csm_mult_MH<float,1>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
-template EXPORTGPUPMRI void Gadgetron::csm_mult_MH<float,2>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
-template EXPORTGPUPMRI void Gadgetron::csm_mult_MH<float,3>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
-template EXPORTGPUPMRI void Gadgetron::csm_mult_MH<float,4>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
+template EXPORTGPUPMRI void csm_mult_MH<float,1>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
+template EXPORTGPUPMRI void csm_mult_MH<float,2>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
+template EXPORTGPUPMRI void csm_mult_MH<float,3>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
+template EXPORTGPUPMRI void csm_mult_MH<float,4>( cuNDArray< complext<float> >*, cuNDArray< complext<float> >*, cuNDArray< complext<float> >*);
 
-template EXPORTGPUPMRI void Gadgetron::csm_mult_MH<double,1>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
-template EXPORTGPUPMRI void Gadgetron::csm_mult_MH<double,2>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
-template EXPORTGPUPMRI void Gadgetron::csm_mult_MH<double,3>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
-template EXPORTGPUPMRI void Gadgetron::csm_mult_MH<double,4>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
+template EXPORTGPUPMRI void csm_mult_MH<double,1>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
+template EXPORTGPUPMRI void csm_mult_MH<double,2>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
+template EXPORTGPUPMRI void csm_mult_MH<double,3>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
+template EXPORTGPUPMRI void csm_mult_MH<double,4>( cuNDArray< complext<double> >*, cuNDArray< complext<double> >*, cuNDArray< complext<double> >*);
+}

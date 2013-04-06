@@ -64,11 +64,11 @@ namespace Gadgetron{
 
     // Preprocess frame
     //
-    sense_op_->get_plan()->preprocess( trajectory, NFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_NC2C );
+    sense_op_->get_plan()->preprocess( trajectory, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_NC2C );
 
     // Convolve to form k-space frame (accumulation mode)
     //
-    sense_op_->get_plan()->convolve( samples, &cur_buffer, sense_op_->get_dcw().get(), NFFT_plan<REAL,D,ATOMICS>::NFFT_CONV_NC2C, true );
+    sense_op_->get_plan()->convolve( samples, &cur_buffer, sense_op_->get_dcw().get(), cuNFFT_plan<REAL,D,ATOMICS>::NFFT_CONV_NC2C, true );
 
     // Update the accumulation buffer (if it is time...)
     //
@@ -126,7 +126,7 @@ namespace Gadgetron{
     cuNDArray<_complext> acc_copy = acc_buffer_;
 
     // FFT
-    sense_op_->get_plan()->fft( &acc_copy, NFFT_plan<REAL,D,ATOMICS>::NFFT_BACKWARDS );
+    sense_op_->get_plan()->fft( &acc_copy, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_BACKWARDS );
 
     // Deapodize
     sense_op_->get_plan()->deapodize( &acc_copy );
