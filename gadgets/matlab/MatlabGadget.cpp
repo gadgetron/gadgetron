@@ -47,39 +47,41 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
 
     engPutVariable(engine_, "acq_hdr_bytes", acq_hdr_bytes);
     engPutVariable(engine_, "acqData", acq_data);
-    engEvalString(engine_, "matgadget.putIn(1, acq_hdr_bytes, acqData);");
-    engEvalString(engine_, "matgadget.process();");
 
-    printf("%s\n", buffer);
+    engEvalString(engine_, "acqHdr = AcquisitionHeader();");
+    engEvalString(engine_, "ismrmrd.copyJBytesToAcquisitionHeader(acq_hdr_bytes, acqHdr);");
+    engEvalString(engine_, "matgadget = matgadget.process(acqHdr, acqData);");
 
-    engEvalString(engine_, "smatgadget = struct(matgadget);");
-    mxArray *matgadget = engGetVariable(engine_, "smatgadget");
-    if (!matgadget) {
-        GADGET_DEBUG1("Failed to get matgadget\n");
+    printf("%s", buffer);
+
+    // Get the size of the gadget's queue
+    engEvalString(engine_, "qlen = matgadget.getQLength();");    
+    mxArray *qlen = engGetVariable(engine_, "qlen");
+    if (qlen == NULL) {
+        GADGET_DEBUG1("Failed to get length of Queue from matgadget\n");
         return GADGET_FAIL;
     }
+    int num_ret_elem = *((int *)mxGetData(qlen));
 
-    mxArray *Q = mxGetField(matgadget, 0, "Q");
-    if (!Q) {
-        GADGET_DEBUG1("Failed to get Q from matgadget\n");
-        return GADGET_FAIL;
-    }
-    if (!mxIsCell(Q)) {
-        GADGET_DEBUG1("Q is NOT A CELL");
-        return GADGET_FAIL;
-    }
-    mwSize num_cells = mxGetNumberOfElements(Q);
+    // Loop over the elements of the Q, reading one entry at a time
+    // call matgadget.getQ(id) 1-based
+    // to get a structure with type, headerbytes, and data
     mwIndex idx;
-    printf("# cells: %ld\n", num_cells);
+    for (idx = 0; idx < num_ret_elem; idx++) {
+        std::string cmd = "Qe = matgadget.getQ("+boost::lexical_cast<std::string>(idx+1)+");";
+        engEvalString(engine_, cmd.c_str());
+        mxArray *Qe = engGetVariable(engine_, "Qe");
+        if (Qe == NULL) {
+            GADGET_DEBUG1("Failed to get the entry off the queue from matgadget\n");
+            return GADGET_FAIL;
+        }
+        mxArray *res_type = mxGetField(Qe, 0, "type");
+        mxArray *res_hdr  = mxGetField(Qe, 0, "bytes");
+        mxArray *res_data = mxGetField(Qe, 0, "data");
 
-    for (idx = 0; idx < num_cells; idx++) {
-        mxArray *entry = mxGetCell(Q, idx);
-        mxArray *res_type = mxGetField(entry, 0, "type");
-        mxArray *res_hdr = mxGetField(entry, 0, "head");
-        mxArray *res_data = mxGetField(entry, 0, "data");
-
+        // determine the type of the object on the quue (i.e. acquisition or image)
         int tp = *((int *)mxGetData(res_type));
-        printf("idx: %ld, header type: %d\n", idx, tp);
+        //printf("idx: %ld, header type: %d\n", idx, tp);
         switch (tp) {
         case 1:     // AcquisitionHeader
         {
@@ -89,6 +91,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
             ISMRMRD::AcquisitionHeader *hdr_new = m3->getObjectPtr();
             memcpy(hdr_new, mxGetData(res_hdr), sizeof(ISMRMRD::AcquisitionHeader));
 
+            //printf("no of samples: %d\n", hdr_new->number_of_samples);
             size_t number_of_samples = mxGetN(res_data);
             size_t active_channels = mxGetM(res_data);
 
@@ -128,7 +131,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     }
 
     // Clear the gadget's queue
-    engEvalString(engine_, "matgadget.Q = {};");
+    engEvalString(engine_, "matgadget = matgadget.emptyQ();");
 
     printf("%s", buffer);
 
@@ -156,8 +159,8 @@ int ImageMatlabGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
     }
 
     unsigned long num_elements = m2->getObjectPtr()->get_number_of_elements();
-    printf("%ld\n", num_elements);
-    fflush(stdout);
+    //printf("%ld\n", num_elements);
+    //fflush(stdout);
 
     float *real_data = (float *)mxCalloc(num_elements, sizeof(float));
     if (!real_data) {

@@ -12,6 +12,7 @@
 #include <stdlib.h>
 
 #include <complex>
+#include <boost/lexical_cast.hpp>
 
 template <class T> class MatlabGadget :
     public Gadget2<T, hoNDArray< std::complex<float> > >
@@ -34,7 +35,7 @@ public:
             engEvalString(engine_, "import org.ismrm.ismrmrd.xmlhdr.*;");
 
             // Load the Java JNI library
-            engEvalString(engine_, "JNILibLoader.load()");
+            engEvalString(engine_, "JNILibLoader.load();");
         }
     }
 
@@ -79,8 +80,9 @@ protected:
         // Call matlabgadget.config with the XML header
         std::string xmlConfig = std::string(mb->rd_ptr());
         mxArray *xmlhdr = mxCreateString(xmlConfig.c_str());
-        engPutVariable(engine_, "xmlhdr", xmlhdr);
-        engEvalString(engine_, "matgadget.config(xmlhdr);");
+        engPutVariable(engine_, "xmlhdrstring", xmlhdr);
+        engEvalString(engine_, "xmlhdr = XMLString.StringToIsmrmrdHeader(xmlhdrstring);");
+        engEvalString(engine_, "matgadget = matgadget.config(xmlhdr);");
 
         GADGET_DEBUG2("%s", buffer);
 
