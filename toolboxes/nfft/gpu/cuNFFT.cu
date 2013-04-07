@@ -13,9 +13,9 @@
 */
 
 // Includes - Gadgetron
-#include "NFFT.h"
+#include "cuNFFT.h"
 #include "NFFT_utils.h"
-#include "cuFFT.h"
+#include "cuNDFFT.h"
 #include "cuNDArray_operators.h"
 #include "cuNDArray_elemwise.h"
 #include "vector_td_utilities.h"
@@ -67,7 +67,7 @@ typedef float dummy;
 // We would love to hide this inside the class, but the compiler core dumps on us when we try...
 //
 template<class REAL, unsigned int D, bool ATOMICS> struct _convolve_NFFT_NC2C{
-  static bool apply( NFFT_plan<REAL,D,ATOMICS> *plan, 
+  static bool apply( cuNFFT_plan<REAL,D,ATOMICS> *plan, 
 		     cuNDArray<complext<REAL> > *in, 
 		     cuNDArray<complext<REAL> > *out, 
 		     bool accumulate );
@@ -83,12 +83,12 @@ static bool prepare( int device, int *old_device,
 {
   // Get current Cuda device
   if( cudaGetDevice(old_device) != cudaSuccess ) {
-    BOOST_THROW_EXCEPTION( cuda_error("Error: NFFT : unable to get device no"));
+    BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT : unable to get device no"));
 
   }
 
   if( device != *old_device && cudaSetDevice(device) != cudaSuccess) {
-    BOOST_THROW_EXCEPTION( cuda_error("Error : NFFT : unable to set device no"));
+    BOOST_THROW_EXCEPTION( cuda_error("Error : cuNFFT : unable to set device no"));
 
   }
   
@@ -144,12 +144,12 @@ static bool restore( int old_device, cuNDArray<I1> *out,
   // Get current Cuda device
   int device;
   if( cudaGetDevice(&device) != cudaSuccess ) {
-    BOOST_THROW_EXCEPTION( cuda_error("Error: NFFT : unable to get device no"));
+    BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT : unable to get device no"));
   }
   
   // Restore old device
   if( device != old_device && cudaSetDevice(old_device) != cudaSuccess) {
-    BOOST_THROW_EXCEPTION( cuda_error("Error: NFFT : unable to restore device no"));
+    BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT : unable to restore device no"));
   }
   
   return true;
@@ -161,14 +161,14 @@ static bool restore( int old_device, cuNDArray<I1> *out,
 //
 
 template<class REAL, unsigned int D, bool ATOMICS> 
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::NFFT_plan()
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::cuNFFT_plan()
 {
   // Minimal initialization
   barebones();
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> 
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::NFFT_plan( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int device )
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::cuNFFT_plan( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int device )
 {
   // Minimal initialization
   barebones();
@@ -178,13 +178,13 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::NFFT_plan( typename uintd<D>::Type matrix_
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> 
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::~NFFT_plan()
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::~cuNFFT_plan()
 {
   wipe(NFFT_WIPE_ALL);
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> 
-void Gadgetron::NFFT_plan<REAL,D,ATOMICS>::setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int _device )
+void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W, int _device )
 {
   // Free memory
   wipe(NFFT_WIPE_ALL);
@@ -195,7 +195,7 @@ void Gadgetron::NFFT_plan<REAL,D,ATOMICS>::setup( typename uintd<D>::Type matrix
 
   if( _device<0 ){
     if( cudaGetDevice( &device ) != cudaSuccess ){
-      BOOST_THROW_EXCEPTION( cuda_error("Error: NFFT_plan::setup: unable to determine device properties."));
+      BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT_plan::setup: unable to determine device properties."));
     }
   }
   else
@@ -208,7 +208,7 @@ void Gadgetron::NFFT_plan<REAL,D,ATOMICS>::setup( typename uintd<D>::Type matrix
   //
   
   if( sum(matrix_size%vec_warp_size) || sum(matrix_size_os%vec_warp_size) ){
-    BOOST_THROW_EXCEPTION( runtime_error("Error: Illegal matrix size for the NFFT plan (not a multiple of the warp size)"));
+    BOOST_THROW_EXCEPTION( runtime_error("Error: Illegal matrix size for the cuNFFT plan (not a multiple of the warp size)"));
 
   }
 
@@ -229,7 +229,7 @@ void Gadgetron::NFFT_plan<REAL,D,ATOMICS>::setup( typename uintd<D>::Type matrix
   
   REAL one = REAL(1);
   if( alpha < one ){
-    BOOST_THROW_EXCEPTION( runtime_error("Error: NFFT : Illegal oversampling ratio suggested"));
+    BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT : Illegal oversampling ratio suggested"));
   }
 
   this->W = W;
@@ -240,7 +240,7 @@ void Gadgetron::NFFT_plan<REAL,D,ATOMICS>::setup( typename uintd<D>::Type matrix
   for( unsigned int dim=1; dim<D; dim++){
     
     if( std::abs((REAL)matrix_size_os.vec[dim]/(REAL)matrix_size.vec[dim]-frac)>frac_limit ){
-      BOOST_THROW_EXCEPTION( runtime_error("Error: NFFT : Oversampling ratio is not constant between dimensions"));
+      BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT : Oversampling ratio is not constant between dimensions"));
     }
   }
   
@@ -249,10 +249,10 @@ void Gadgetron::NFFT_plan<REAL,D,ATOMICS>::setup( typename uintd<D>::Type matrix
   
   int device_no_old;
   if (cudaGetDevice(&device_no_old) != cudaSuccess) {
-    BOOST_THROW_EXCEPTION( cuda_error("Error: NFFT_plan::setup: unable to get device no"));
+    BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT_plan::setup: unable to get device no"));
   }  
   if( device != device_no_old && cudaSetDevice(device) != cudaSuccess) {
-    BOOST_THROW_EXCEPTION( cuda_error("Error: NFFT_plan::setup: unable to set device"));
+    BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT_plan::setup: unable to set device"));
   }  
 
   // Calculate deapodization filter
@@ -261,19 +261,19 @@ void Gadgetron::NFFT_plan<REAL,D,ATOMICS>::setup( typename uintd<D>::Type matrix
   initialized = true;
 
   if( device != device_no_old && cudaSetDevice(device_no_old) != cudaSuccess) {
-    BOOST_THROW_EXCEPTION( cuda_error("Error: NFFT_plan::setup: unable to restore device"));
+    BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT_plan::setup: unable to restore device"));
   }
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> 
-void Gadgetron::NFFT_plan<REAL,D,ATOMICS>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory, NFFT_prep_mode mode )
+void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory, NFFT_prep_mode mode )
 {
   if( !trajectory || trajectory->get_number_of_elements()==0 ){
-    BOOST_THROW_EXCEPTION( runtime_error("Error: NFFT_plan::preprocess: invalid trajectory"));
+    BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan::preprocess: invalid trajectory"));
   }
   
   if( !initialized ){
-    BOOST_THROW_EXCEPTION( runtime_error("Error: NFFT_plan::preprocess: NFFT_plan::setup must be invoked prior to preprocessing."));
+    BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan::preprocess: cuNFFT_plan::setup must be invoked prior to preprocessing."));
   }
 
   wipe(NFFT_WIPE_PREPROCESSING);
@@ -282,7 +282,7 @@ void Gadgetron::NFFT_plan<REAL,D,ATOMICS>::preprocess( cuNDArray<typename reald<
   int old_device;
 
   if( !prepare<typename reald<REAL,D>::Type,dummy,dummy>(device, &old_device, trajectory, &trajectory_int ) ){
-    BOOST_THROW_EXCEPTION( cuda_error("Error: NFFT_plan::preprocess: device preparation error."));
+    BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT_plan::preprocess: device preparation error."));
   }
     
   number_of_samples = trajectory_int->get_size(0);
@@ -363,12 +363,12 @@ void Gadgetron::NFFT_plan<REAL,D,ATOMICS>::preprocess( cuNDArray<typename reald<
     preprocessed_NC2C = true;
 
   if( !restore<typename reald<REAL,D>::Type,dummy,dummy>(old_device, trajectory, trajectory, trajectory_int) ){
-    BOOST_THROW_EXCEPTION( cuda_error("Error: NFFT_plan::preprocess: unable to restore compute device."));
+    BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT_plan::preprocess: unable to restore compute device."));
   }
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::compute( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
 			    cuNDArray<REAL> *dcw, NFFT_comp_mode mode )
 {  
   // Validity checks
@@ -387,7 +387,7 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::compute( cuNDArray<complext<REAL> > *in, c
   else if( mode == NFFT_BACKWARDS_C2NC ) 
     components = _NFFT_CONV_C2NC + _NFFT_FFT + _NFFT_DEAPODIZATION;
   else{
-    BOOST_THROW_EXCEPTION( runtime_error("Error: NFFT_plan::compute: unknown mode"));
+    BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan::compute: unknown mode"));
   }
   
   {
@@ -408,7 +408,7 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::compute( cuNDArray<complext<REAL> > *in, c
 
   if( !prepare<complext<REAL>, complext<REAL>, REAL>
       (device, &old_device, in, &in_int, out, &out_int, dcw, &dcw_int ) ){
-    BOOST_THROW_EXCEPTION( cuda_error("Error: NFFT_plan::compute: device preparation error."));
+    BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT_plan::compute: device preparation error."));
   }
 
   typename uintd<D>::Type image_dims = vector_to_uintd<D>( (mode == NFFT_FORWARDS_C2NC || mode == NFFT_BACKWARDS_C2NC ) ? *in->get_dimensions() : *out->get_dimensions() );
@@ -530,14 +530,14 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::compute( cuNDArray<complext<REAL> > *in, c
   
   if( !restore<complext<REAL> ,complext<REAL> ,REAL>
       (old_device, out, out, out_int, in, in_int, dcw, dcw_int ) ){
-    BOOST_THROW_EXCEPTION( cuda_error("Error: NFFT_plan::compute: unable to restore compute device."));    
+    BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT_plan::compute: unable to restore compute device."));    
   }
   
   CHECK_FOR_CUDA_ERROR();
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
 			      cuNDArray<REAL> *dcw, std::vector<unsigned int> halfway_dims )
 {
   // Validity checks
@@ -545,7 +545,7 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::mult_MH_M( cuNDArray<complext<REAL> > *in,
   unsigned char components = _NFFT_CONV_C2NC + _NFFT_CONV_NC2C + _NFFT_FFT + _NFFT_DEAPODIZATION;
   
   if( in->get_number_of_elements() != out->get_number_of_elements() ){
-    BOOST_THROW_EXCEPTION( runtime_error("Error: NFFT_plan::mult_MH_M: in/out image sizes mismatch"));
+    BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan::mult_MH_M: in/out image sizes mismatch"));
   }
   
   cuNDArray<complext<REAL> > *working_samples = new cuNDArray<complext<REAL> >(&halfway_dims);
@@ -559,7 +559,7 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::mult_MH_M( cuNDArray<complext<REAL> > *in,
   
   if( !prepare<complext<REAL>, complext<REAL>, REAL>
       (device, &old_device, in, &in_int, out, &out_int, dcw, &dcw_int ) ){
-    BOOST_THROW_EXCEPTION( cuda_error("Error: NFFT_plan::mult_MH_M: device preparation error."));
+    BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT_plan::mult_MH_M: device preparation error."));
   }
   
   cuNDArray<complext<REAL> > *working_image = 0x0;
@@ -603,7 +603,7 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::mult_MH_M( cuNDArray<complext<REAL> > *in,
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::convolve( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::convolve( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
 			     cuNDArray<REAL> *dcw, NFFT_conv_mode mode, bool accumulate )
 {
   unsigned char components;
@@ -638,7 +638,7 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::convolve( cuNDArray<complext<REAL> > *in, 
   bool oversampled_image = (image_dims==matrix_size_os); 
   
   if( !oversampled_image ){
-    BOOST_THROW_EXCEPTION( runtime_error("Error: NFFT_plan::convolve: ERROR: oversampled image not provided as input."));
+    BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan::convolve: ERROR: oversampled image not provided as input."));
   }
 
   vector<unsigned int> vec_dims = uintd_to_vector<D>(matrix_size_os); 
@@ -673,7 +673,7 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::convolve( cuNDArray<complext<REAL> > *in, 
     break;
 
   default:
-    BOOST_THROW_EXCEPTION( runtime_error( "Error: NFFT_plan::convolve: unknown mode."));
+    BOOST_THROW_EXCEPTION( runtime_error( "Error: cuNFFT_plan::convolve: unknown mode."));
     break;
   }
 
@@ -682,7 +682,7 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::convolve( cuNDArray<complext<REAL> > *in, 
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::fft(cuNDArray<complext<REAL> > *data, NFFT_fft_mode mode, bool do_scale )
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::fft(cuNDArray<complext<REAL> > *data, NFFT_fft_mode mode, bool do_scale )
 {
   cuNDArray<complext<REAL> > *data_int = 0x0;
   int old_device;
@@ -693,17 +693,17 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::fft(cuNDArray<complext<REAL> > *data, NFFT
   vector<unsigned int> dims_to_transform = uintd_to_vector<D>( _dims_to_transform );
   
   if( mode == NFFT_FORWARDS ){
-    cuFFT<complext<REAL> >().fft( data_int, &dims_to_transform );
+    cuNDFFT<REAL>().fft( data_int, &dims_to_transform );
   }
   else{
-    cuFFT<complext<REAL> >().ifft( data_int, &dims_to_transform, do_scale );
+    cuNDFFT<REAL>().ifft( data_int, &dims_to_transform, do_scale );
   }
 
   restore<complext<REAL> ,dummy,dummy>(old_device, data, data, data_int);
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::deapodize( cuNDArray<complext<REAL> > *image )
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::deapodize( cuNDArray<complext<REAL> > *image )
 {
   unsigned char components;
   components = _NFFT_FFT;
@@ -718,7 +718,7 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::deapodize( cuNDArray<complext<REAL> > *ima
   bool oversampled_image = (image_dims==matrix_size_os); 
   
   if( !oversampled_image ){
-    BOOST_THROW_EXCEPTION( runtime_error( "Error: NFFT_plan::deapodize: ERROR: oversampled image not provided as input."));
+    BOOST_THROW_EXCEPTION( runtime_error( "Error: cuNFFT_plan::deapodize: ERROR: oversampled image not provided as input."));
   }
   *image_int *= *deapodization_filter;
     
@@ -730,44 +730,44 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::deapodize( cuNDArray<complext<REAL> > *ima
 //
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::check_consistency( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image,
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::check_consistency( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image,
 				      cuNDArray<REAL> *weights, unsigned char components )
 {
 
   if( !initialized ){
-    BOOST_THROW_EXCEPTION( runtime_error( "Error: NFFT_plan: Unable to proceed without setup."));
+    BOOST_THROW_EXCEPTION( runtime_error( "Error: cuNFFT_plan: Unable to proceed without setup."));
   }
   
   if( (components & _NFFT_CONV_C2NC ) && !preprocessed_C2NC ){
-  	BOOST_THROW_EXCEPTION( runtime_error("Error: NFFT_plan: Unable to compute NFFT before preprocessing."));
+  	BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan: Unable to compute NFFT before preprocessing."));
   }
   
   if( (components & _NFFT_CONV_NC2C ) && !(preprocessed_NC2C || (preprocessed_C2NC && ATOMICS ) ) ){
-    BOOST_THROW_EXCEPTION( runtime_error("Error: NFFT_plan: Unable to compute NFFT before preprocessing."));
+    BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan: Unable to compute NFFT before preprocessing."));
   }
   
   if( ((components & _NFFT_CONV_C2NC ) || (components & _NFFT_CONV_NC2C )) && !(image && samples) ){
-    BOOST_THROW_EXCEPTION( runtime_error("Error: NFFT_plan: Unable to process 0x0 input/output."));
+    BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan: Unable to process 0x0 input/output."));
   }
   
   if( ((components & _NFFT_FFT) || (components & _NFFT_DEAPODIZATION )) && !image ){
-    BOOST_THROW_EXCEPTION( runtime_error("Error: NFFT_plan: Unable to process 0x0 input."));
+    BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan: Unable to process 0x0 input."));
   }
 
   if( image->get_number_of_dimensions() < D ){
-    BOOST_THROW_EXCEPTION( runtime_error("Error: NFFT_plan: Number of image dimensions mismatch the plan."));
+    BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan: Number of image dimensions mismatch the plan."));
   }    
 
   typename uintd<D>::Type image_dims = vector_to_uintd<D>( *image->get_dimensions() );
   bool oversampled_image = (image_dims==matrix_size_os);
   
   if( !((oversampled_image) ? (image_dims == matrix_size_os) : (image_dims == matrix_size) )){
-    BOOST_THROW_EXCEPTION( runtime_error("Error: NFFT_plan: Image dimensions mismatch."));
+    BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan: Image dimensions mismatch."));
   }
   
   if( (components & _NFFT_CONV_C2NC ) || (components & _NFFT_CONV_NC2C )){    
     if( (samples->get_number_of_elements() == 0) || (samples->get_number_of_elements() % (number_of_frames*number_of_samples)) ){
-      BOOST_THROW_EXCEPTION( runtime_error("Error: NFFT_plan: The number of samples is not a multiple of #samples/frame x #frames as requested through preprocessing"));
+      BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan: The number of samples is not a multiple of #samples/frame x #frames as requested through preprocessing"));
     }
     
     unsigned int num_batches_in_samples_array = samples->get_number_of_elements()/(number_of_frames*number_of_samples);
@@ -779,7 +779,7 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::check_consistency( cuNDArray<complext<REAL
     num_batches_in_image_array /= number_of_frames;
 
     if( num_batches_in_samples_array != num_batches_in_image_array ){
-      BOOST_THROW_EXCEPTION( runtime_error("Error: NFFT_plan: Number of batches mismatch between samples and image arrays"));
+      BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan: Number of batches mismatch between samples and image arrays"));
     }
   }
   
@@ -788,14 +788,14 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::check_consistency( cuNDArray<complext<REAL
       if( weights->get_number_of_elements() == 0 ||
 	  !( weights->get_number_of_elements() == number_of_samples || 
 	     weights->get_number_of_elements() == number_of_frames*number_of_samples) ){
-	BOOST_THROW_EXCEPTION( runtime_error("Error: NFFT_plan: The number of weights should match #samples/frame x #frames as requested through preprocessing"));
+	BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan: The number of weights should match #samples/frame x #frames as requested through preprocessing"));
       }
     }
   }  
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> 
-void Gadgetron::NFFT_plan<REAL,D,ATOMICS>::barebones()
+void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::barebones()
 {	
   // These are the fundamental booleans checked before accessing the various member pointers
   initialized = preprocessed_C2NC = preprocessed_NC2C = false;
@@ -806,21 +806,21 @@ void Gadgetron::NFFT_plan<REAL,D,ATOMICS>::barebones()
 
   // and specify the device
   if (cudaGetDevice(&device) != cudaSuccess) {
-    BOOST_THROW_EXCEPTION( cuda_error("Error: NFFT_plan::barebones:: unable to get device no"));
+    BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT_plan::barebones:: unable to get device no"));
   }
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> 
-void Gadgetron::NFFT_plan<REAL,D,ATOMICS>::wipe( NFFT_wipe_mode mode )
+void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::wipe( NFFT_wipe_mode mode )
 {
   // Get current Cuda device
   int old_device;
   if( cudaGetDevice(&old_device) != cudaSuccess ) {
-    BOOST_THROW_EXCEPTION( cuda_error("Error: NFFT_plan::wipe: unable to get device no"));
+    BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT_plan::wipe: unable to get device no"));
   }
 
   if( device != old_device && cudaSetDevice(device) != cudaSuccess) {
-    BOOST_THROW_EXCEPTION( cuda_error("Error: NFFT_plan::wipe: unable to set device no"));
+    BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT_plan::wipe: unable to set device no"));
   }
 
   if( mode==NFFT_WIPE_ALL && initialized ){
@@ -840,12 +840,12 @@ void Gadgetron::NFFT_plan<REAL,D,ATOMICS>::wipe( NFFT_wipe_mode mode )
   }
 
   if( device != old_device && cudaSetDevice(old_device) != cudaSuccess) {
-    BOOST_THROW_EXCEPTION( cuda_error("Error: NFFT_plan::wipe: unable to restore device no"));
+    BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT_plan::wipe: unable to restore device no"));
   }
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> 
-void Gadgetron::NFFT_plan<REAL,D,ATOMICS>::compute_beta()
+void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_beta()
 {	
   // Compute Kaiser-Bessel beta paramter according to the formula provided in 
   // Beatty et. al. IEEE TMI 2005;24(6):799-808.
@@ -901,7 +901,7 @@ compute_deapodization_filter_kernel( typename uintd<D>::Type matrix_size_os, typ
 //
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::compute_deapodization_filter()
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_deapodization_filter()
 {
   std::vector<unsigned int> tmp_vec_os = uintd_to_vector<D>(matrix_size_os);
   deapodization_filter = boost::shared_ptr< cuNDArray<complext<REAL> > >( new cuNDArray<complext<REAL> >);
@@ -926,7 +926,7 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::compute_deapodization_filter()
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::compute_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples )
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples )
 {
   // private method - no consistency check. We trust in ourselves.
 
@@ -941,7 +941,7 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::compute_NFFT_C2NC( cuNDArray<complext<REAL
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::compute_NFFTH_NC2C( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image )
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_NFFTH_NC2C( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image )
 {
   // private method - no consistency check. We trust in ourselves.
 
@@ -956,7 +956,7 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::compute_NFFTH_NC2C( cuNDArray<complext<REA
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::compute_NFFTH_C2NC( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples )
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_NFFTH_C2NC( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples )
 {
   // private method - no consistency check. We trust in ourselves.
 
@@ -971,7 +971,7 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::compute_NFFTH_C2NC( cuNDArray<complext<REA
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::compute_NFFT_NC2C( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image )
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_NFFT_NC2C( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image )
 {
   // private method - no consistency check. We trust in ourselves.
 
@@ -986,7 +986,7 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::compute_NFFT_NC2C( cuNDArray<complext<REAL
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::convolve_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples, bool accumulate )
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::convolve_NFFT_C2NC( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples, bool accumulate )
 {
   // private method - no consistency check. We trust in ourselves.
   
@@ -1054,14 +1054,14 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::convolve_NFFT_C2NC( cuNDArray<complext<REA
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::convolve_NFFT_NC2C( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples, bool accumulate )
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::convolve_NFFT_NC2C( cuNDArray<complext<REAL> > *image, cuNDArray<complext<REAL> > *samples, bool accumulate )
 {
   _convolve_NFFT_NC2C<REAL,D,ATOMICS>::apply( this, image, samples, accumulate );
 }
 
 template<unsigned int D> struct
 _convolve_NFFT_NC2C<float,D,true>{ // True: use atomic operations variant
-  static bool apply( NFFT_plan<float,D,true> *plan, 
+  static bool apply( cuNFFT_plan<float,D,true> *plan, 
 		     cuNDArray<complext<float> > *samples, 
 		     cuNDArray<complext<float> > *image, 
 		     bool accumulate )
@@ -1089,7 +1089,7 @@ _convolve_NFFT_NC2C<float,D,true>{ // True: use atomic operations variant
     
     // Check if warp_size is a power of two. We do some modulus tricks in the kernels that depend on this...
     if( !((cudaDeviceManager::Instance()->warp_size(device) & (cudaDeviceManager::Instance()->warp_size(device)-1)) == 0 ) ){
-      BOOST_THROW_EXCEPTION( cuda_error("NFFT: unsupported hardware (warpSize is not a power of two)"));
+      BOOST_THROW_EXCEPTION( cuda_error("cuNFFT: unsupported hardware (warpSize is not a power of two)"));
     }
     
     unsigned int num_batches = 1;
@@ -1163,7 +1163,7 @@ _convolve_NFFT_NC2C<double,D,true>{ // True: use atomic operations variant
 
 template<class REAL, unsigned int D> struct
 _convolve_NFFT_NC2C<REAL,D,false>{ // False: use non-atomic operations variant
-  static void apply( NFFT_plan<REAL,D,false> *plan,
+  static void apply( cuNFFT_plan<REAL,D,false> *plan,
 		     cuNDArray<complext<REAL> > *samples, 
 		     cuNDArray<complext<REAL> > *image, 
 		     bool accumulate )
@@ -1186,7 +1186,7 @@ _convolve_NFFT_NC2C<REAL,D,false>{ // False: use non-atomic operations variant
      // private method - no consistency check. We trust in ourselves.
     // Check if warp_size is a power of two. We do some modulus tricks in the kernels that depend on this...
 	 if( !((cudaDeviceManager::Instance()->warp_size(device) & (cudaDeviceManager::Instance()->warp_size(device)-1)) == 0 ) ){
-		BOOST_THROW_EXCEPTION( cuda_error("NFFT: unsupported hardware (warpSize is not a power of two)"));
+		BOOST_THROW_EXCEPTION( cuda_error("cuNFFT: unsupported hardware (warpSize is not a power of two)"));
 
 	 }
     unsigned int num_batches = 1;
@@ -1373,7 +1373,7 @@ image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Ty
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::image_wrap( cuNDArray<complext<REAL> > *source, cuNDArray<complext<REAL> > *target, bool accumulate )
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::image_wrap( cuNDArray<complext<REAL> > *source, cuNDArray<complext<REAL> > *target, bool accumulate )
 {
   unsigned int num_batches = 1;
   for( unsigned int d=D; d<source->get_number_of_dimensions(); d++ )
@@ -1388,7 +1388,7 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::image_wrap( cuNDArray<complext<REAL> > *so
   // Safety check
   if( (prod(matrix_size_os)%bdim) != 0 ) {
   	std::stringstream ss;
-  	ss << "Error: NFFT : the number of oversampled image elements must be a multiplum of the block size: " << bdim;
+  	ss << "Error: cuNFFT : the number of oversampled image elements must be a multiplum of the block size: " << bdim;
     BOOST_THROW_EXCEPTION( runtime_error(ss.str()));
   }
 
@@ -1399,25 +1399,25 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::image_wrap( cuNDArray<complext<REAL> > *so
 }	
 
 template<class REAL, unsigned int D, bool ATOMICS> typename uintd<D>::Type
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::get_matrix_size()
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::get_matrix_size()
 {
   return matrix_size;
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> typename uintd<D>::Type
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::get_matrix_size_os()
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::get_matrix_size_os()
 {
   return matrix_size_os;
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> REAL 
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::get_W()
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::get_W()
 {
   return W;
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> unsigned int 
-Gadgetron::NFFT_plan<REAL,D,ATOMICS>::get_device()
+Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::get_device()
 {
   return device;
 }
@@ -1427,18 +1427,18 @@ Gadgetron::NFFT_plan<REAL,D,ATOMICS>::get_device()
 // Template instantion
 //
 
-template class EXPORTGPUNFFT Gadgetron::NFFT_plan< float, 1, true >;
-template class EXPORTGPUNFFT Gadgetron::NFFT_plan< float, 1, false >;
-template class EXPORTGPUNFFT Gadgetron::NFFT_plan< double, 1, false >;
+template class EXPORTGPUNFFT Gadgetron::cuNFFT_plan< float, 1, true >;
+template class EXPORTGPUNFFT Gadgetron::cuNFFT_plan< float, 1, false >;
+template class EXPORTGPUNFFT Gadgetron::cuNFFT_plan< double, 1, false >;
 
-template class EXPORTGPUNFFT Gadgetron::NFFT_plan< float, 2, true >;
-template class EXPORTGPUNFFT Gadgetron::NFFT_plan< float, 2, false >;
-template class EXPORTGPUNFFT Gadgetron::NFFT_plan< double, 2, false >;
+template class EXPORTGPUNFFT Gadgetron::cuNFFT_plan< float, 2, true >;
+template class EXPORTGPUNFFT Gadgetron::cuNFFT_plan< float, 2, false >;
+template class EXPORTGPUNFFT Gadgetron::cuNFFT_plan< double, 2, false >;
 
-template class EXPORTGPUNFFT Gadgetron::NFFT_plan< float, 3, true >;
-template class EXPORTGPUNFFT Gadgetron::NFFT_plan< float, 3, false >;
-template class EXPORTGPUNFFT Gadgetron::NFFT_plan< double, 3, false >;
+template class EXPORTGPUNFFT Gadgetron::cuNFFT_plan< float, 3, true >;
+template class EXPORTGPUNFFT Gadgetron::cuNFFT_plan< float, 3, false >;
+template class EXPORTGPUNFFT Gadgetron::cuNFFT_plan< double, 3, false >;
 
-template class EXPORTGPUNFFT Gadgetron::NFFT_plan< float, 4, true >;
-template class EXPORTGPUNFFT Gadgetron::NFFT_plan< float, 4, false >;
-template class EXPORTGPUNFFT Gadgetron::NFFT_plan< double, 4, false >;
+template class EXPORTGPUNFFT Gadgetron::cuNFFT_plan< float, 4, true >;
+template class EXPORTGPUNFFT Gadgetron::cuNFFT_plan< float, 4, false >;
+template class EXPORTGPUNFFT Gadgetron::cuNFFT_plan< double, 4, false >;

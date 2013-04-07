@@ -16,7 +16,7 @@ cuda_add_library(gpucore SHARED
   cuNDArray_elemwise.cu
   cuNDArray_blas.cu
   cuNDArray_utils.cu
-  cuFFT.cpp
+  cuNDFFT.cpp
   radial_utilities.cu
   hoCuNDArray_blas.cu
   CUBLASContextProvider.cpp
@@ -44,7 +44,7 @@ install(FILES
   hoCuNDArray_operators.h
   hoCuNDArray_elemwise.h
   GPUTimer.h				
-  cuFFT.h
+  cuNDFFT.h
   GadgetronCuException.h
   radial_utilities.h
   real_utilities_device.h

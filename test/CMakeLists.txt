@@ -1,9 +1,8 @@
-include_directories(${GTEST_INCLUDE})
-
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+  ${GTEST_INCLUDE_DIRS}
   )
 
 if(CUDA_FOUND)
@@ -33,9 +32,9 @@ target_link_libraries(test_all
   cpucore 
   cpucore_math
   gpucore
-  ${GTEST_LIBRARIES} 
   pthread
   ${BOOST_LIBRARIES}	
+  ${GTEST_LIBRARIES} 
   )
 
 if(CUDA_FOUND)

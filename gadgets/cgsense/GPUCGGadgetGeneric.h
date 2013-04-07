@@ -11,7 +11,7 @@
 #include "cuCgSolver.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "cuCgPreconditioner.h"
-#include "NFFT.h"
+#include "cuNFFT.h"
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
 #include "ismrmrd.h"
