@@ -16,46 +16,52 @@
 #include "core_defines.h"
 
 #include <float.h>
-#include <cmath>
 #include <vector>
 #include <iostream>
 #include <algorithm>
 
+#ifndef __CUDA_ARCH__
+using std::min; // workaround for nvcc
+using std::max; // workaround for nvcc
+using std::ceil; // workaround for nvcc
+using std::abs; // workaround for nvcc
+using std::floor; // workaround for nvcc
+using std::sqrt;
+#endif
+
 namespace Gadgetron{
 
-  using std::min; // workaround for nvcc
-  using std::max; // workaround for nvcc
 
   //
   // Get/set operations on vector_td<T,D>
   //
 
   template<class T, unsigned int D> __inline__ __host__ __device__ T 
-  get( const vector_td<T,D> vec, unsigned int dim ) { return vec.vec[dim]; }
+  get( const vector_td<T,D>& vec, unsigned int dim ) { return vec[dim]; }
 
   template<class T, unsigned int D> __inline__ __host__ __device__ void 
-  set( vector_td<T,D> &vec, unsigned int dim, T val ) { vec.vec[dim] = val; }
+  set( vector_td<T,D> &vec, unsigned int dim, T val ) { vec[dim] = val; }
 
   //
   // Component-wise math operations
   //
 
   template<class T, unsigned int D> __inline__ __host__ __device__ 
-  vector_td<T,D> abs( const vector_td<T,D> vec )
+  vector_td<T,D> abs( const vector_td<T,D>& vec )
   {
     vector_td<T,D> res;
     for (unsigned int i=0; i<D; i++) {
-      res.vec[i] = std::abs(vec.vec[i]);
+      res[i] = std::abs(vec[i]);
     }
     return res;
   }
 
   template<class T, unsigned int D> __inline__ __host__ __device__
-  vector_td<int,D> sgn( const vector_td<T,D> vec )
+  vector_td<int,D> sgn( const vector_td<T,D>& vec )
   {
     vector_td<int,D> res;
     for (unsigned int i=0; i<D; i++) {
-      res.vec[i] = sgn(vec.vec[i]);
+      res[i] = sgn(vec[i]);
     }
     return res;
   }
@@ -65,7 +71,7 @@ namespace Gadgetron{
   {
     vector_td<REAL,D> res;
     for (unsigned int i=0; i<D; i++) {
-      res.vec[i] = std::ceil(vec.vec[i]);
+      res[i] = ::ceil(vec[i]);
     }
     return res;
   }
@@ -75,7 +81,7 @@ namespace Gadgetron{
   {
     vector_td<REAL,D> res;
     for (unsigned int i=0; i<D; i++) {
-      res.vec[i] = std::floor(vec.vec[i]);
+      res[i] = ::floor(vec[i]);
     }
     return res;
   }
@@ -89,7 +95,7 @@ namespace Gadgetron{
   {
     vector_td<T,D> res;
     for (unsigned int i=0; i<D; i++) {
-      res.vec[i] = scalar;
+      res[i] = scalar;
     }
     return res;
   }
@@ -104,9 +110,9 @@ namespace Gadgetron{
     typename uintd<D>::Type co;
     unsigned int idx_tmp = idx;
     for (unsigned int i=0; i<D; i++) {
-      co.vec[i] = idx_tmp%dims.vec[i];
-      idx_tmp -= co.vec[i];
-      idx_tmp /= dims.vec[i];
+      co[i] = idx_tmp%dims[i];
+      idx_tmp -= co[i];
+      idx_tmp /= dims[i];
     }
     return co;
   } 
@@ -117,9 +123,9 @@ namespace Gadgetron{
     typename intd<D>::Type co;
     int idx_tmp = idx;
     for (unsigned int i=0; i<D; i++) {
-      co.vec[i] = idx_tmp%dims.vec[i];
-      idx_tmp -= co.vec[i];
-      idx_tmp /= dims.vec[i];
+      co[i] = idx_tmp%dims[i];
+      idx_tmp -= co[i];
+      idx_tmp /= dims[i];
     }
     return co;
   } 
@@ -130,8 +136,8 @@ namespace Gadgetron{
     unsigned int idx = 0;
     unsigned long block_size = 1;
     for (unsigned int i=0; i<D; i++) {
-      idx += (block_size*co.vec[i]);
-      block_size *= dims.vec[i];
+      idx += (block_size*co[i]);
+      block_size *= dims[i];
     }
     return idx;
   } 
@@ -142,8 +148,8 @@ namespace Gadgetron{
     int idx = 0;
     long block_size = 1;
     for (int i=0; i<D; i++) {
-      idx += (block_size*co.vec[i]);
-      block_size *= dims.vec[i];
+      idx += (block_size*co[i]);
+      block_size *= dims[i];
     }
     return idx;
   }
@@ -154,8 +160,8 @@ namespace Gadgetron{
     int idx = 0;
     long block_size = 1;
     for (int i=0; i<D; i++) {
-      idx += (block_size*co.vec[i]);
-      block_size *= dims.vec[i];
+      idx += (block_size*co[i]);
+      block_size *= dims[i];
     }
     return idx;
   }
@@ -166,8 +172,8 @@ namespace Gadgetron{
     unsigned int idx = 0;
     unsigned long block_size = 1;
     for (unsigned int i=0; i<D; i++){
-      idx += (block_size*co.d[order.vec[i]]);
-      block_size *= dims.d[order.vec[i]];
+      idx += (block_size*co.d[order[i]]);
+      block_size *= dims.d[order[i]];
     }
     return idx;
   } 
@@ -178,8 +184,8 @@ namespace Gadgetron{
     int idx = 0;
     unsigned long block_size = 1;
     for (unsigned int i=0; i<D; i++){
-      idx += (block_size*co.d[order.vec[i]]);
-      block_size *= dims.d[order.vec[i]];
+      idx += (block_size*co.d[order[i]]);
+      block_size *= dims.d[order[i]];
     }
     return idx;
   } 
@@ -189,7 +195,7 @@ namespace Gadgetron{
   {
     typename uintd<D>::Type res;
     for(unsigned int i=0; i<D; i++) {
-      res.vec[i]=i;
+      res[i]=i;
     }
     return res;
   }
@@ -203,7 +209,7 @@ namespace Gadgetron{
   {
     std::vector<unsigned int> out(D);
     for( unsigned int i=0; i<D; i++ )
-      out[i] = _uintd.vec[i];
+      out[i] = _uintd[i];
     return out;
   }
 
@@ -213,9 +219,9 @@ namespace Gadgetron{
     typename uintd<D>::Type out;
     for( unsigned int i=0; i<D; i++ ){
       if( i<_vector.size() )
-	out.vec[i] = _vector[i];
+	out[i] = _vector[i];
       else 
-	out.vec[i] = 1;
+	out[i] = 1;
     }
     return out;
   }
@@ -226,9 +232,9 @@ namespace Gadgetron{
     typename intd<D>::Type out;
     for( unsigned int i=0; i<D; i++ ){
       if( i<_vector.size() )
-	out.vec[i] = _vector[i];
+	out[i] = _vector[i];
       else
-	out.vec[i] = 1;
+	out[i] = 1;
     }
     return out;
   }
@@ -260,57 +266,58 @@ namespace Gadgetron{
   //
 
   template<class T, unsigned int D> __inline__ __host__ __device__ 
-  T prod( const vector_td<T,D> vec )
+  T prod( const vector_td<T,D>& vec )
   {
-    T res = vec.vec[0];
+    T res = vec[0];
     for (unsigned int i=1; i<D; i++){
-      res *= vec.vec[i];
+      res *= vec[i];
     }
     return res;
   }
 
   template<class T, unsigned int D> __inline__ __host__ __device__ 
-  T sum( const vector_td<T,D> vec )
+  T sum( const vector_td<T,D>& vec )
   {
-    T res = vec.vec[0];
+    T res = vec[0];
     for (unsigned int i=1; i<D; i++){
-      res += vec.vec[i];
+      res += vec[i];
     }
     return res;
   }
 
   template<class T, unsigned int D> __inline__ __host__ __device__ 
-  T dot( const vector_td<T,D> vec1, const vector_td<T,D> vec2 )
+  T dot( const vector_td<T,D>& vec1, const vector_td<T,D>& vec2 )
   {
-    T res = (vec1.vec[0]*vec2.vec[0]);
+    T res = (vec1[0]*vec2[0]);
     for (unsigned int i=1; i<D; i++){
-      res += (vec1.vec[i]*vec2.vec[i]);
+      res += (vec1[i]*vec2[i]);
     }
     return res;
   }
 
-  template<class T, unsigned int D> __inline__ __host__ __device__ 
-  T max( const vector_td<T,D> vec )
-  {
-    T res = vec.vec[0];
-    for (unsigned int i=1; i<D; i++){
-      res = max(res,vec.vec[i]);
-    }
-    return res;
-  }
 
-  template<class T, unsigned int D> __inline__ __host__ __device__ 
-  T min( const vector_td<T,D> vec )
+  template<class T, unsigned int D> __inline__ __host__ __device__
+  T max( const vector_td<T,D>& vec )
   {
-    T res = vec.vec[0];
+    T res = vec[0];
     for (unsigned int i=1; i<D; i++){
-      res = min(res,vec.vec[i]);
+      res = ::max(res,vec[i]);
     }
     return res;
   }
 
   template<class T, unsigned int D> __inline__ __host__ __device__
-  vector_td<T,D> amin( const vector_td<T,D> vec1, const vector_td<T,D> vec2)
+  T min( const vector_td<T,D>& vec )
+  {
+    T res = vec[0];
+    for (unsigned int i=1; i<D; i++){
+      res = ::min(res,vec[i]);
+    }
+    return res;
+  }
+
+  template<class T, unsigned int D> __inline__ __host__ __device__
+  vector_td<T,D> amin( const vector_td<T,D>& vec1, const vector_td<T,D>& vec2)
   {
     vector_td<T,D> res;
     for (unsigned int i=0; i<D; i++){
@@ -320,7 +327,7 @@ namespace Gadgetron{
   }
 
   template<class T, unsigned int D> __inline__ __host__ __device__
-  vector_td<T,D> amax( const vector_td<T,D> vec1, const vector_td<T,D> vec2)
+  vector_td<T,D> amax( const vector_td<T,D>& vec1, const vector_td<T,D>& vec2)
   {
     vector_td<T,D> res;
     for (unsigned int i=0; i<D; i++){
@@ -330,7 +337,7 @@ namespace Gadgetron{
   }
 
   template<class T, unsigned int D> __inline__ __host__ __device__
-   vector_td<T,D> amin( const vector_td<T,D> vec1, T val)
+   vector_td<T,D> amin( const vector_td<T,D>& vec1, T val)
    {
      vector_td<T,D> res;
      for (unsigned int i=0; i<D; i++){
@@ -340,7 +347,7 @@ namespace Gadgetron{
    }
 
    template<class T, unsigned int D> __inline__ __host__ __device__
-   vector_td<T,D> amax( const vector_td<T,D> vec1, T val )
+   vector_td<T,D> amax( const vector_td<T,D>& vec1, T val )
    {
      vector_td<T,D> res;
      for (unsigned int i=0; i<D; i++){
@@ -350,56 +357,56 @@ namespace Gadgetron{
    }
 
   template<class T, unsigned int D> __inline__ __host__ __device__
-  T max_not_nan( const vector_td<T,D> vec )
+  T max_not_nan( const vector_td<T,D>& vec )
   {
     int i=0;
-    while (isnan(vec.vec[i])) i++;
+    while (isnan(vec[i])) i++;
     if (i >= D) return 0;
-    T res = vec.vec[i];
+    T res = vec[i];
     for (++i; i<D; i++){
-      if (!isnan(vec.vec[i])) res = max(res,vec.vec[i]);
+      if (!isnan(vec[i])) res = ::max(res,vec[i]);
     }
     return res;
   }
 
   template<class T, unsigned int D> __inline__ __host__ __device__
-  T min_not_nan( const vector_td<T,D> vec )
+  T min_not_nan( const vector_td<T,D>& vec )
   {
     int i=0;
-    while (isnan(vec.vec[i])) i++;
-    T res = vec.vec[i];
+    while (isnan(vec[i])) i++;
+    T res = vec[i];
     for (++i; i<D; i++){
-      if (!isnan(vec.vec[i])) res = min(res,vec.vec[i]);
+      if (!isnan(vec[i])) res = ::min(res,vec[i]);
     }
     return res;
   }
 
   template<class T, unsigned int D> __inline__ __host__ __device__ 
-  unsigned int argmin( const vector_td<T,D> vec )
+  unsigned int argmin( const vector_td<T,D>& vec )
   {
     unsigned int res= 0;
     for (unsigned int i=1; i<D; i++){
-      if (vec.vec[i] < vec.vec[res] ) res = i;
+      if (vec[i] < vec[res] ) res = i;
     }
     return res;
   }
 
   template<class T, unsigned int D> __inline__ __host__ __device__ 
-  unsigned int argmin_not_nan( const vector_td<T,D> vec )
+  unsigned int argmin_not_nan( const vector_td<T,D>& vec )
   {
     unsigned int res= 0;
     for (unsigned int i=1; i<D; i++){
-      if (vec.vec[i] < vec.vec[res] && !isnan(vec.vec[i])) res = i;
+      if (vec[i] < vec[res] && !isnan(vec[i])) res = i;
     }
     return res;
   }
 
   template<class T, unsigned int D> __inline__ __host__ __device__ 
-  unsigned int argmax( const vector_td<T,D> vec )
+  unsigned int argmax( const vector_td<T,D>& vec )
   {
     unsigned int res= 0;
     for (unsigned int i=1; i<D; i++){
-      if (vec.vec[i] > vec.vec[res] ) res = i;
+      if (vec[i] > vec[res] ) res = i;
     }
     return res;
   }
@@ -413,7 +420,7 @@ namespace Gadgetron{
   {
     REAL res = REAL(0);
     for (unsigned int i=0; i<D; i++){
-      res += (vec.vec[i]*vec.vec[i]);
+      res += (vec[i]*vec[i]);
     }
     return res;
   }
@@ -421,7 +428,7 @@ namespace Gadgetron{
   template<class REAL, unsigned int D> __inline__ __host__ __device__ 
   REAL norm( const vector_td<REAL,D> vec )
   {
-    return std::sqrt(norm_squared<REAL,D>(vec));
+    return ::sqrt(norm_squared<REAL,D>(vec));
   }
 
   //
@@ -429,31 +436,31 @@ namespace Gadgetron{
   //
 
   template<class T, unsigned int D> __inline__ __host__ __device__ 
-  vector_td<int,D> to_intd( const vector_td<T,D> vec )
+  vector_td<int,D> to_intd( const vector_td<T,D>& vec )
   {
     vector_td<int,D> res;
     for (unsigned int i=0; i<D; i++){
-      res.vec[i] = int(vec.vec[i]);
+      res[i] = int(vec[i]);
     }
     return res;
   }
 
   template<class T, unsigned int D> __inline__ __host__ __device__ 
-  vector_td<unsigned int,D> to_uintd( const vector_td<T,D> vec )
+  vector_td<unsigned int,D> to_uintd( const vector_td<T,D>& vec )
   {
     vector_td<unsigned int,D> res;
     for (unsigned int i=0; i<D; i++){
-      res.vec[i] = (unsigned int) vec.vec[i];
+      res[i] = (unsigned int) vec[i];
     }
     return res;
   }
 
   template<class REAL, class T, unsigned int D> __inline__ __host__ __device__ 
-  vector_td<REAL,D> to_reald( const vector_td<T,D> vec )
+  vector_td<REAL,D> to_reald( const vector_td<T,D>& vec )
   {
     vector_td<REAL,D> res;
     for (unsigned int i=0; i<D; i++){
-      res.vec[i] = (REAL) vec.vec[i];
+      res[i] = (REAL) vec[i];
     }
     return res;
   }

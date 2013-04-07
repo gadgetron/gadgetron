@@ -25,8 +25,8 @@ cuda_add_executable(test_all
   cuNDArray_utils_test.cpp
 #  hoCuGTBLAS_test.cpp 
 #  cuNDArray_Vector_td_test.cpp 
-#  vector_td_test.cpp
-#  cuVector_td_test_kernels.cu 
+  vector_td_test.cpp
+  cuVector_td_test_kernels.cu 
   )
 
 target_link_libraries(test_all 
