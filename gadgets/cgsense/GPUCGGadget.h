@@ -2,13 +2,8 @@
 #define GPUCGGADGET_H
 #pragma once
 
-#include <ace/Synch.h>
-#include <ace/Mutex.h>
-
-#include <complex>
-
 #include "gadgetroncgsense_export.h"
-#include "NFFT.h"
+#include "cuNFFT.h"
 #include "cuCgSolver.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
@@ -17,6 +12,10 @@
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
 #include "ismrmrd.h"
+
+#include <ace/Synch.h>
+#include <ace/Mutex.h>
+#include <complex>
 
 namespace Gadgetron {
 

@@ -9,8 +9,9 @@
 
 #include <vector>
 #include "complext.h"
-#include "cuNDArray.h"
+#include "cuNDArray_elemwise.h"
 #include "vector_td_utilities.h"
+#include "vector_td_io.h"
 #include "cuVector_td_test_kernels.h"
 #include <sstream>
 using namespace Gadgetron;
@@ -21,7 +22,6 @@ template <typename T> class vector_td_Test : public ::testing::Test {
 		 unsigned int vdims[] = {37}; //Using prime numbers for setup because they are messy
 		 dims= std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
 		 cuData = cuNDArray<vector_td<T,3> >(&dims);
-		 cuData.clear();
 	}
 	 cuNDArray<vector_td<T,3> > cuData;
 	 std::vector<unsigned int> dims;
@@ -36,7 +36,8 @@ TYPED_TEST_CASE(vector_td_Test, Implementations);
 
 
 TYPED_TEST(vector_td_Test,absTest){
-	this->cuData.fill(vector_td<TypeParam,3>(-2));
+
+	vector_fill(&this->cuData,vector_td<TypeParam,3>(-2));
 
 	test_abs(&this->cuData);
 	vector_td<TypeParam,3> expected(2);
@@ -45,7 +46,7 @@ TYPED_TEST(vector_td_Test,absTest){
 }
 
 TYPED_TEST(vector_td_Test,normTest){
-	this->cuData.fill(vector_td<TypeParam,3>(12.1));
+	vector_fill(&this->cuData,vector_td<TypeParam,3>(12.1));
 
 	thrust::device_vector<TypeParam> out = test_norm(&this->cuData);
 
@@ -55,7 +56,7 @@ TYPED_TEST(vector_td_Test,normTest){
 
 
 TYPED_TEST(vector_td_Test,minTest){
-	this->cuData.fill(vector_td<TypeParam,3>(2.2,1.1,5.3));
+	vector_fill(&this->cuData,vector_td<TypeParam,3>(2.2,1.1,5.3));
 
 	thrust::device_vector<TypeParam> out = test_min(&this->cuData);
 
@@ -63,7 +64,7 @@ TYPED_TEST(vector_td_Test,minTest){
 }
 
 TYPED_TEST(vector_td_Test,maxTest){
-	this->cuData.fill(vector_td<TypeParam,3>(2.2,1.1,5.3));
+	vector_fill(&this->cuData,vector_td<TypeParam,3>(2.2,1.1,5.3));
 
 	thrust::device_vector<TypeParam> out = test_max(&this->cuData);
 

@@ -4,7 +4,7 @@
   
 */
 
-#include "NFFT.h"
+#include "cuNFFT.h"
 #include "radial_utilities.h"
 #include "hoNDArray_fileio.h"
 #include "cuNDArray.h"

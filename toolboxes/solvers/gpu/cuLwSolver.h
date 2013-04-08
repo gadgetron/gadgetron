@@ -2,8 +2,7 @@
 
 #include "lwSolver.h"
 #include "cuNDArray.h"
-#include "ndarray_vector_td_utilities.h"
-
+#include "cuNDArray_blas.h"
 #include <iostream>
 
 namespace Gadgetron{

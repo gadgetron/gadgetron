@@ -4,7 +4,7 @@
 #include "vector_td.h"
 #include "hoNDArray.h"
 #include "cuNDArray.h"
-#include "NFFT.h"
+#include "cuNFFT.h"
 #include "cuCgSolver.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "cuImageOperator.h"
@@ -102,7 +102,7 @@ private slots:
 private:
 	
   // Reconstruction plan
-  NFFT_plan<float,2> plan;
+  cuNFFT_plan<float,2> plan;
 
   // Define conjugate gradient solver
   cuCgSolver<float_complext> cg;

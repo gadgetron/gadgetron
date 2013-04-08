@@ -1,9 +1,8 @@
-include_directories(${GTEST_INCLUDE})
-
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+  ${GTEST_INCLUDE_DIRS}
   )
 
 if(CUDA_FOUND)
@@ -25,16 +24,17 @@ cuda_add_executable(test_all
   cuNDArray_utils_test.cpp
 #  hoCuGTBLAS_test.cpp 
 #  cuNDArray_Vector_td_test.cpp 
-#  vector_td_test.cpp
-#  cuVector_td_test_kernels.cu 
+  vector_td_test.cpp
+  cuVector_td_test_kernels.cu 
   )
 
 target_link_libraries(test_all 
   cpucore 
   cpucore_math
   gpucore
-  ${GTEST_LIBRARIES} 
   pthread
+  ${BOOST_LIBRARIES}	
+  ${GTEST_LIBRARIES} 
   )
 
 if(CUDA_FOUND)

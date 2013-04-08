@@ -7,7 +7,7 @@
 #include "hoNDArray.h"
 #include "spiral_gadgets_export.h"
 #include "vector_td.h"
-#include "NFFT.h"
+#include "cuNFFT.h"
 #include "ismrmrd.h"
 
 #include <boost/shared_ptr.hpp>
@@ -40,7 +40,7 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 
   hoNDArray<float_complext>* host_data_buffer_;
   std::vector<unsigned int> image_dimensions_;
-  NFFT_plan<float, 2> plan_;
+  cuNFFT_plan<float, 2> plan_;
 
 };
 }

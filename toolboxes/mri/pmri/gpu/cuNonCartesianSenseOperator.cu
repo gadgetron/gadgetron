@@ -2,6 +2,7 @@
 #include "vector_td_utilities.h"
 
 using namespace Gadgetron;
+
 static unsigned int prodv( std::vector<unsigned int> &vec )
 {
   unsigned int result = 1;
@@ -12,7 +13,7 @@ static unsigned int prodv( std::vector<unsigned int> &vec )
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
+cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate )
 {
   if( (in->get_number_of_elements() != prodv(*this->get_domain_dimensions())) ||
       (out->get_number_of_elements() != prodv(*this->get_codomain_dimensions())) ) {
@@ -25,22 +26,22 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray<_complext>* in, c
     
   std::vector<unsigned int> full_dimensions = *this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
-  cuNDArray<_complext> tmp(&full_dimensions);  
+  cuNDArray< complext<REAL> > tmp(&full_dimensions);  
   mult_csm( in, &tmp );
   
   // Forwards NFFT
 
   if( accumulate ){
-    cuNDArray<_complext> tmp_out(out->get_dimensions());
-    plan_->compute( &tmp, &tmp_out, dcw_.get(), NFFT_plan<REAL,D,ATOMICS>::NFFT_FORWARDS_C2NC );
+    cuNDArray< complext<REAL> > tmp_out(out->get_dimensions());
+    plan_->compute( &tmp, &tmp_out, dcw_.get(), cuNFFT_plan<REAL,D,ATOMICS>::NFFT_FORWARDS_C2NC );
     *out += tmp_out;
   }
   else
-    plan_->compute( &tmp, out, dcw_.get(), NFFT_plan<REAL,D,ATOMICS>::NFFT_FORWARDS_C2NC );
+    plan_->compute( &tmp, out, dcw_.get(), cuNFFT_plan<REAL,D,ATOMICS>::NFFT_FORWARDS_C2NC );
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray<_complext>* in, cuNDArray<_complext>* out, bool accumulate )
+cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate )
 {
   if( (out->get_number_of_elements() != prodv(*this->get_domain_dimensions())) ||
       (in->get_number_of_elements() != prodv(*this->get_codomain_dimensions())) ) {
@@ -53,10 +54,10 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray<_complext>* in, 
 
   std::vector<unsigned int> tmp_dimensions = *this->get_domain_dimensions();
   tmp_dimensions.push_back(this->ncoils_);
-  cuNDArray<_complext> tmp(&tmp_dimensions);
+  cuNDArray< complext<REAL> > tmp(&tmp_dimensions);
   
   // Do the NFFT
-  plan_->compute( in, &tmp, dcw_.get(), NFFT_plan<REAL,D,ATOMICS>::NFFT_BACKWARDS_NC2C );
+  plan_->compute( in, &tmp, dcw_.get(), cuNFFT_plan<REAL,D,ATOMICS>::NFFT_BACKWARDS_NC2C );
 
   if( !accumulate ){
     clear(out);    
@@ -97,7 +98,7 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::preprocess( cuNDArray<_reald> *traj
     tmp_dims.push_back(num_frames);
     this->set_domain_dimensions(&tmp_dims);
     
-    plan_->preprocess( trajectory, NFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_ALL );
+    plan_->preprocess( trajectory, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_ALL );
   }
   else {
     throw std::runtime_error( "cuNonCartesianSenseOperator: cannot set trajectory to 0x0.");

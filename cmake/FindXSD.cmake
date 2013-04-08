@@ -28,7 +28,7 @@ else(XSD_INCLUDE_DIR)
 		SET(XSD_EXECUTABLE "xsd-NOTFOUND" CACHE FILE "xsd executable path")
 	endif(XSD_EXECUTABLE)
 
-	find_path(XSD_INCLUDE_DIR NAMES xsd
+	find_path(XSD_INCLUDE_DIR NAMES xsd/cxx
             HINTS
 		${XSD_DIR}/include
 	    PATHS

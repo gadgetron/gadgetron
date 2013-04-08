@@ -5,6 +5,7 @@
 #include "gpupmri_export.h"
 
 namespace Gadgetron{
+
 // Multiply with coil sensitivities
 //
 
@@ -12,6 +13,7 @@ template< class REAL, unsigned int D > EXPORTGPUPMRI void
 csm_mult_M( cuNDArray< complext<REAL> > *in, 
 	    cuNDArray< complext<REAL> > *out, 
 	    cuNDArray< complext<REAL> > *csm );
+
 
 // Multiply with adjoint of coil sensitivities
 //

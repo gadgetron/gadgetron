@@ -73,6 +73,7 @@ namespace Gadgetron {
 	try{ A.create(&dims); }
 	catch (bad_alloc& err){	  
 	  GADGET_DEBUG1("Unable to create array for PCA calculation\n");
+	  return GADGET_FAIL;
 	}
 
 	std::complex<float>* A_ptr = A.get_data_ptr();
@@ -85,7 +86,7 @@ namespace Gadgetron {
 	try{means.create(&means_dims);}
 	catch (bad_alloc& err){
 	  GADGET_DEBUG1("Unable to create temporary stoorage for mean values\n");
-	  return -1;
+	  return GADGET_FAIL;
 	}
 
 	means.fill(std::complex<float>(0.0f,0.0f));
@@ -103,16 +104,12 @@ namespace Gadgetron {
 	  std::complex<float>* d = m_tmp->getObjectPtr()->get_data_ptr();
 
 	  for (unsigned s = 0; s < samples_to_use; s++) {
-	    std::complex<float> mean(0.0,0.0);
 	    for (unsigned int c = 0; c < channels; c++) {
-
-	      //We use the conjugate of the data so that the output VT of the SVD is the actual PCA coefficient matrix\
-	      A_ptr[c + sample_counter*channels] =
-		conj(d[c*samples_per_profile + data_offset + s]);
-
-	      means_ptr[c] += conj(d[c*samples_per_profile + data_offset + s]);
+	      //We use the conjugate of the data so that the output VT of the SVD is the actual PCA coefficient matrix
+	      A_ptr[c + sample_counter*channels] = d[c*samples_per_profile + data_offset + s];
+	      means_ptr[c] += d[c*samples_per_profile + data_offset + s];
 	    }
-
+	    
 	    sample_counter++;
 	    //GADGET_DEBUG2("Sample counter = %d/%d\n", sample_counter, total_samples);
 	  }
@@ -144,13 +141,10 @@ namespace Gadgetron {
 	arma::cx_fmat Um;
 	arma::fvec Sv;
 
-	if( !arma::svd_econ(Um,Sv,Vm,Am.t(),'r') ){
+	if( !arma::svd_econ(Um,Sv,Vm,Am.st(),'r') ){
 	  GADGET_DEBUG1("Failed to compute SVD\n");
 	  return GADGET_FAIL;
 	}
-
-	//write_nd_array(&S,"S_arma.real");
-	//write_nd_array(VT,"VT_arma.cplx");
 
 	//Switch off buffering for this slice
 	buffering_mode_[location] = false;
@@ -181,9 +175,9 @@ namespace Gadgetron {
 	arma::cx_fmat am3 = as_arma_matrix(m3->getObjectPtr());
 	arma::cx_fmat am2 = as_arma_matrix(m2->getObjectPtr());
 	arma::cx_fmat aPca = as_arma_matrix(pca_coefficients_[location]);
-	am3 = (aPca.t()*am2.t()).t();	  	
+	am3 = am2*aPca;
       }
-      
+
       m1->cont(m3);
       m2->release();
 
@@ -192,8 +186,7 @@ namespace Gadgetron {
 	return GADGET_FAIL;
       }
     }
-
-    return GADGET_OK;//
+    return GADGET_OK;
   }
 
   GADGET_FACTORY_DECLARE(PCACoilGadget)

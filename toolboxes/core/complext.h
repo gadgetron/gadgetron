@@ -137,7 +137,7 @@ namespace Gadgetron{
   template<> struct realType<std::complex<float> > {typedef float Type; };
   template<> struct realType<std::complex<double> > {typedef double Type; };
 
-  template<class T> struct stdType {typedef T type;};
+  template<class T> struct stdType {typedef T Type;};
   template<> struct stdType<double_complext> {typedef std::complex<double> Type;};
   template<> struct stdType<float_complext> {typedef std::complex<float> Type;};
   template<> struct stdType<std::complex<double> > {typedef std::complex<double> Type;};
@@ -145,6 +145,17 @@ namespace Gadgetron{
   template<> struct stdType<double> {typedef double Type;};
   template<> struct stdType<float> {typedef float Type;};
 
+  __inline__ __host__ __device__ double sgn(double x){
+    return (double(0) < x) - (x < double(0));
+  }
+  __inline__ __host__ __device__ float sgn(float x){
+    return (float(0) < x) - (x < float(0));
+  }
+
+  template<class T> __inline__ __host__ __device__ complext<T> sgn(complext<T> x){
+    if (norm(x) <= T(0)) return std::complex<T>(0);
+    return (x/abs(x));
+  }
   template<class T>  __inline__ __host__ __device__ complext<T> polar(const T& rho, const T& theta = 0){
     return complext<T>(rho*std::cos(theta),rho*std::sin(theta));
   }
@@ -268,15 +279,5 @@ namespace Gadgetron{
     return res;
   }
 
-  __inline__ __host__ __device__ double sgn(double x){
-    return (double(0) < x) - (x < double(0));
-  }
-  __inline__ __host__ __device__ float sgn(float x){
-    return (float(0) < x) - (x < float(0));
-  }
 
-  template<class T> __inline__ __host__ __device__ complext<T> sgn(complext<T> x){
-    if (norm(x) <= T(0)) return std::complex<T>(0);
-    return (x/abs(x));
-  }
 }

@@ -8,11 +8,11 @@ include_directories(
   )
 
 add_library(cpucore SHARED 
-  hoFFT.cpp
+  hoNDFFT.cpp
   )
 
 target_link_libraries(cpucore 
-  ${FFTW3_LIBRARIES} 
+  ${FFTW3_LIBRARIES} ${Boost_LIBRARIES}
   )
 
 install(TARGETS cpucore DESTINATION lib)
@@ -21,7 +21,7 @@ install(FILES
   hoNDArray.h
   hoNDArray_utils.h
   hoNDArray_fileio.h
-  hoFFT.h
+  hoNDFFT.h
   DESTINATION include)
 
 if (ARMADILLO_FOUND)

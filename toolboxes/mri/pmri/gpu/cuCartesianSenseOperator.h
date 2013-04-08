@@ -11,10 +11,8 @@ namespace Gadgetron{
     cuCartesianSenseOperator() : cuSenseOperator<REAL,D>() {}
     virtual ~cuCartesianSenseOperator() {}
     
-    typedef typename cuSenseOperator<REAL,D>::_complext _complext;
-    
-    virtual void mult_M( cuNDArray< _complext> *in, cuNDArray< _complext> *out, bool accumulate = false);
-    virtual void mult_MH( cuNDArray< _complext> *in, cuNDArray< _complext> *out, bool accumulate = false);
+    virtual void mult_M( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate = false);
+    virtual void mult_MH( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate = false);
     
     virtual void set_sampling_indices( boost::shared_ptr< cuNDArray<unsigned int> > idx) 
     {

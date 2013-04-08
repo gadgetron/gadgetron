@@ -9,7 +9,7 @@
 #include "cuImageOperator.h"
 #include "cuCgPreconditioner.h"
 #include "cuCgSolver.h"
-#include "cuFFT.h"
+#include "cuNDFFT.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "parameterparser.h"
@@ -223,11 +223,11 @@ int main(int argc, char** argv)
       ( reconstruction, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, host_data.get() );
     
     // Convolve to Cartesian k-space
-    E->get_plan()->convolve( data.get(), image_os, dcw.get(), NFFT_plan<_real,2>::NFFT_CONV_NC2C );
+    E->get_plan()->convolve( data.get(), image_os, dcw.get(), cuNFFT_plan<_real,2>::NFFT_CONV_NC2C );
 
     // Apply shutter
     zero_fill_border<_complext,2>( shutter_radius, image_os );
-    E->get_plan()->fft( image_os, NFFT_plan<_real,2>::NFFT_BACKWARDS );
+    E->get_plan()->fft( image_os, cuNFFT_plan<_real,2>::NFFT_BACKWARDS );
     E->get_plan()->deapodize( image_os );
 
     // Remove oversampling
@@ -241,7 +241,7 @@ int main(int argc, char** argv)
     cuNDArray<_complext> *reg_image = new cuNDArray<_complext>(&image_dims);
 
     E->mult_csm_conj_sum( image, reg_image );
-    cuFFT<_complext>().ifft( reg_image, 2, true );
+    cuNDFFT<_real>().ifft( reg_image, 2, true );
     R->compute( reg_image );
 
     delete reg_image; reg_image = 0x0;
@@ -272,7 +272,7 @@ int main(int argc, char** argv)
     }
 
     // Goto from x-f to x-t space
-    cuFFT<_complext>().fft( cgresult.get(), 2 );
+    cuNDFFT<_real>().fft( cgresult.get(), 2 );
     
     // Copy cgresult to result
     cuNDArray<_complext> tmp(&image_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction);    

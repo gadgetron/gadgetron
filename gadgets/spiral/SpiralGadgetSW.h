@@ -1,19 +1,18 @@
 #ifndef SpiralGadgetSW_H
 #define SpiralGadgetSW_H
 
-
-
-#include <complex>
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
 #include "spiral_gadgets_export.h"
 #include "vector_td.h"
-#include "NFFT.h"
+#include "cuNFFT.h"
 #include "ismrmrd.h"
 
+#include <complex>
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
+
 namespace Gadgetron{
 
 class EXPORTGADGETSSPIRAL SpiralGadgetSW :
@@ -57,7 +56,7 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 
   hoNDArray<float_complext>* host_data_buffer_;
   std::vector<unsigned int> image_dimensions_;
-  NFFT_plan<float, 2> plan_;
+  cuNFFT_plan<float, 2> plan_;
 
   boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > buffer_;
 

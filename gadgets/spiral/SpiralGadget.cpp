@@ -160,10 +160,10 @@ int SpiralGadget::process_config(ACE_Message_Block* mb)
 
 	// Initialize plan
 	// NFFT_plan<float, 2> plan( matrix_size, matrix_size_os, W );
-	plan_ = NFFT_plan<float, 2>( matrix_size, matrix_size_os, W );
+	plan_ = cuNFFT_plan<float, 2>( matrix_size, matrix_size_os, W );
 
 	// Preprocess
-	try { 	plan_.preprocess( &traj, NFFT_plan<float,2>::NFFT_PREP_ALL ); }
+	try { 	plan_.preprocess( &traj, cuNFFT_plan<float,2>::NFFT_PREP_ALL ); }
 	catch (runtime_error& err){
 		GADGET_DEBUG_EXCEPTION(err,"NFFT preprocess failed\n");
 		return GADGET_FAIL;
@@ -209,7 +209,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 		image_dims.push_back(num_batches);
 		cuNDArray<float_complext> image; image.create(&image_dims);
 
-		try{ plan_.compute( &data, &image, &gpu_weights_, NFFT_plan<float,2>::NFFT_BACKWARDS_NC2C ); }
+		try{ plan_.compute( &data, &image, &gpu_weights_, cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C ); }
 		catch (runtime_error& err){
 			GADGET_DEBUG_EXCEPTION(err, "NFFT compute failed\n");
 			return GADGET_FAIL;

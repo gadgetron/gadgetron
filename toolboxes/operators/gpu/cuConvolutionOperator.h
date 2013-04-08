@@ -3,7 +3,7 @@
 #include "cuNDArray_operators.h"
 #include "cuNDArray_utils.h"
 #include "NFFT_utils.h"
-#include "cuFFT.h"
+#include "cuNDFFT.h"
 #include "vector_td_utilities.h"
 #include "convolutionOperator.h"
 #include "gpuoperators_export.h"

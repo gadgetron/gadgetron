@@ -1,4 +1,4 @@
-#include "cuFFT.h"
+#include "cuNDFFT.h"
 #include "GrappaWeightsCalculator.h"
 #include "GadgetContainerMessage.h"
 #include "GadgetIsmrmrdReadWrite.h"
@@ -66,7 +66,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 		device_data.squeeze();
 
 		std::vector<unsigned int> ftdims(2,0); ftdims[1] = 1;
-		cuFFT<float_complext> ft;
+		cuNDFFT<float> ft;
 
 		//Go to image space
 		ft.ifft( &device_data, &ftdims);

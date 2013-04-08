@@ -68,6 +68,10 @@ template<class T, unsigned int D> thrust::device_vector<T> Gadgetron::test_max(c
 	return out;
 }
 
+template<class T, unsigned int D> void Gadgetron::vector_fill(cuNDArray< vector_td<T,D> >* data,  vector_td<T,D> val){
+	thrust::fill(data->begin(),data->end(),val);
+}
+
 
 template void Gadgetron::test_abs<float,1>(cuNDArray< vector_td<float,1> > *);
 template void Gadgetron::test_abs<float,2>(cuNDArray< vector_td<float,2> > *);
@@ -111,3 +115,14 @@ template  thrust::device_vector<double> Gadgetron::test_max<double,1>(cuNDArray<
 template thrust::device_vector<double> Gadgetron::test_max<double,2>(cuNDArray< vector_td<double,2> > *);
 template thrust::device_vector<double> Gadgetron::test_max<double,3>(cuNDArray< vector_td<double,3> > *);
 template thrust::device_vector<double> Gadgetron::test_max<double,4>(cuNDArray< vector_td<double,4> > *);
+
+template void Gadgetron::vector_fill<float,1>(cuNDArray< vector_td<float,1> > *, vector_td<float,1>);
+template void Gadgetron::vector_fill<float,2>(cuNDArray< vector_td<float,2> > *, vector_td<float,2>);
+template void Gadgetron::vector_fill<float,3>(cuNDArray< vector_td<float,3> > *, vector_td<float,3>);
+template void Gadgetron::vector_fill<float,4>(cuNDArray< vector_td<float,4> > *, vector_td<float,4>);
+
+
+template void Gadgetron::vector_fill<double,1>(cuNDArray< vector_td<double,1> > *, vector_td<double,1>);
+template void Gadgetron::vector_fill<double,2>(cuNDArray< vector_td<double,2> > *, vector_td<double,2>);
+template void Gadgetron::vector_fill<double,3>(cuNDArray< vector_td<double,3> > *, vector_td<double,3>);
+template void Gadgetron::vector_fill<double,4>(cuNDArray< vector_td<double,4> > *, vector_td<double,4>);
