@@ -30,9 +30,14 @@ else (CUDA_FOUND)
   SET( GADGETRON_CUDA_FOUND_BOOL 0 )
 endif (CUDA_FOUND)
 
-# Compile kernels for shader models 1.0 and 2.0 as default
+# Compile kernels for shader models 1.0 and 2.0 as default for Cuda 4
+# Support shader models 3.0 and 3.5 from Cuda 5 and up
 IF (${CMAKE_VERSION} VERSION_GREATER "2.8.7")
-  set(CUDA_NVCC_FLAGS "-gencode=arch=compute_10,code=\"sm_10,compute_10\" -gencode=arch=compute_20,code=\"sm_20,compute_20\"")
+   IF(${CUDA_VERSION} VERSION_GREATER "4.99")
+	set(CUDA_NVCC_FLAGS "-gencode arch=compute_10,code=sm_10 -gencode arch=compute_20,code=sm_20 -gencode arch=compute_30,code=sm_30 -gencode arch=compute_35,code=sm_35")
+   ELSE(${CUDA_VERSION} VERSION_GREATER "4.99")
+	set(CUDA_NVCC_FLAGS "-gencode arch=compute_10,code=sm_10 -gencode arch=compute_20,code=sm_20")
+   ENDIF(${CUDA_VERSION} VERSION_GREATER "4.99")
 ENDIF (${CMAKE_VERSION} VERSION_GREATER "2.8.7")
 
 find_package(Qt4 4.6)
