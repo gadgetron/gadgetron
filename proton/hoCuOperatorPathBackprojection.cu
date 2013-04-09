@@ -69,6 +69,7 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 		 // Invoke kernel
 		 int offset_k = 0;
 		 //std::cout << "Starting forward kernel with grid " << dimGrid.x << " " << dimGrid.y << " " << dimGrid.z << std::endl;
+		 cudaFuncSetCacheConfig(forward_kernel<REAL>, cudaFuncCachePreferL1);
 		 for (int i = 0; i <= (totalBlocksPerGrid+dimGrid.x-1)/dimGrid.x; i++){
 			forward_kernel<REAL><<< dimGrid, dimBlock >>> (image.get_data_ptr(), out_dev.get_data_ptr(),splines_dev.get_data_ptr(),physical_dims, _dims, batch_size,offset_k);
 			offset_k += dimBlock.x*dimGrid.x;
@@ -126,6 +127,7 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 		// Invoke kernel
 		int offset_k = 0;
 		//std::cout << "Starting forward kernel with grid " << dimGrid.x << " " << dimGrid.y << " " << dimGrid.z << std::endl;
+		cudaFuncSetCacheConfig(backwards_kernel<REAL>, cudaFuncCachePreferL1);
 		for (int i = 0; i <= (totalBlocksPerGrid+dimGrid.x-1)/dimGrid.x; i++){
 			backwards_kernel<REAL><<< dimGrid, dimBlock >>> (in_dev.get_data_ptr(), image.get_data_ptr(),splines_dev.get_data_ptr(),physical_dims, _dims, batch_size, offset_k);
 			offset_k += dimBlock.x*dimGrid.x;

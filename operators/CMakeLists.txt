@@ -4,4 +4,5 @@ endif (WIN32)
 
 install(FILES 	
 	hoCuPartialDerivativeOperator.h
+	subsetOperator.h
 DESTINATION include)
