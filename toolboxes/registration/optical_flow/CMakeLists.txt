@@ -3,6 +3,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers
+  ${CMAKE_SOURCE_DIR}/toolboxes/operators
 )
 
 install(FILES
@@ -11,7 +12,9 @@ install(FILES
   resampleOperator.h
   DESTINATION include)
 
-add_subdirectory(cpu)
+if(ARMADILLO_FOUND AND ${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.39" )
+  add_subdirectory(cpu)
+endif(ARMADILLO_FOUND AND ${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.39" )
 
 if (CUDA_FOUND)
   add_subdirectory(gpu)

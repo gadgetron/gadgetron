@@ -307,14 +307,9 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::preprocess( cuNDArray<typename real
   if( !( mode == NFFT_PREP_C2NC || ATOMICS )){
     
     // allocate storage for and compute temporary prefix-sum variable (#cells influenced per sample)
-  	CHECK_FOR_CUDA_ERROR();
-  	cudaError_t errorCode = cudaThreadSynchronize();
-		if (errorCode != cudaSuccess) {
-  	    	boost::exception_detail::throw_exception_(cuda_error(errorCode),BOOST_CURRENT_FUNCTION,__FILE__,__LINE__);
-		}
     device_vector<unsigned int> c_p_s(trajectory_int->get_number_of_elements());
-    CHECK_FOR_CUDA_ERROR();
     device_vector<unsigned int> c_p_s_ps(trajectory_int->get_number_of_elements());
+    CHECK_FOR_CUDA_ERROR();
     
     REAL half_W = REAL(0.5)*W;
     thrust::plus<unsigned int> binary_op;

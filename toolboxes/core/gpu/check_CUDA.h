@@ -1,8 +1,9 @@
 #pragma once
 
-#include <stdio.h>
-#include <boost/exception/detail/attribute_noreturn.hpp>
 #include "GadgetronCuException.h"
+
+#include <boost/exception/detail/attribute_noreturn.hpp>
+#include <stdio.h>
 
 inline void THROW_ERROR(const char* file, const int line,
                         const char* errorString) {

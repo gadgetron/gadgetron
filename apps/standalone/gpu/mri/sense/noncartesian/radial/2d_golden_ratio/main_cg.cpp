@@ -314,9 +314,7 @@ int main(int argc, char** argv)
       return 1;
 
     // Copy cgresult to overall result
-    cuNDArray<_complext> out(&image_dims,
-		    result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );
-    
+    cuNDArray<_complext> out(&image_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );    
     out = *(cgresult.get());
   }
   

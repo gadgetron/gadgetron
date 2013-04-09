@@ -1,38 +1,42 @@
 #pragma once
 
-#include "hoResampleOperator.h"
-#include <Eigen/Sparse>
+#include "hoNDArray.h"
+#include "hoNDArray_operators.h"
+#include "hoNDArray_elemwise.h"
+#include "resampleOperator.h"
+#include "complext.h"
+#include "cpureg_export.h"
 
-template <class REAL, class T, unsigned int D>
-class EXPORTGPUREG hoLinearResampleOperator : public hoResampleOperator<REAL,T,D>
-{
+#include <armadillo>
+
+namespace Gadgetron{
+
+  template <class T, unsigned int D>
+  class EXPORTCPUREG hoLinearResampleOperator : public resampleOperator<hoNDArray<typename realType<T>::Type>, hoNDArray<T> >
+  {  
+  public:
+    
+    hoLinearResampleOperator() : resampleOperator<hoNDArray<typename realType<T>::Type>, hoNDArray<T> >() {}
+    virtual ~hoLinearResampleOperator() {}
   
- public:
+    virtual void mult_M( hoNDArray<T> *in, hoNDArray<T> *out, bool accumulate = false);
+    virtual void mult_MH( hoNDArray<T> *in, hoNDArray<T> *out, bool accumulate = false);
+    virtual void set_displacement_field( boost::shared_ptr< hoNDArray<typename realType<T>::Type> > offsets );
+
+    virtual unsigned int get_temporal_dimension_size() { return temporal_dim_size_; }
+
+    virtual void reset();
+
+    virtual boost::shared_ptr< linearOperator< hoNDArray<T> > > clone() {
+      return linearOperator< hoNDArray<T> >::clone(this);
+    }
   
-  hoLinearResampleOperator() : hoResampleOperator<REAL,T,D>() {}
-  virtual ~hoLinearResampleOperator() {}
+  private:
+    inline bool is_border_pixel( typename reald<typename realType<T>::Type,D>::Type co, typename uintd<D>::Type dims );
+    inline unsigned int get_num_neighbors();
   
-  virtual int mult_M( hoNDArray<T> *in, hoNDArray<T> *out, bool accumulate = false);
-  virtual int mult_MH( hoNDArray<T> *in, hoNDArray<T> *out, bool accumulate = false);
-
-  //
-  // If 'identity_dimension' is non-negative it indicates that a frame of "zero displacements" 
-  // should be inserted at this dimension. A negative value (deafault) is ignored.
-  //
-
-  virtual bool set_displacement_field( boost::shared_ptr< hoNDArray<REAL> > offsets );
-
-  virtual unsigned int get_temporal_dimension_size() { return temporal_dim_size_; }
-
-  virtual boost::shared_ptr< linearOperator< REAL, hoNDArray<T> > > clone() {
-    return linearOperator< REAL, hoNDArray<T> >::clone(this);
-  }
-
- private:
-  inline bool is_border_pixel( typename reald<REAL,D>::Type co, typename uintd<D>::Type dims );
-  inline unsigned int get_num_neighbors();
-  
- protected:
-  boost::shared_ptr< Eigen::SparseMatrix<REAL> > R_;
-  unsigned int temporal_dim_size_;
-};
+  protected:
+    boost::shared_ptr< arma::SpMat<typename realType<T>::Type> > R_;
+    unsigned int temporal_dim_size_;
+  };
+}
