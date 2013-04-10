@@ -1,4 +1,4 @@
-classdef BaseGadget
+classdef BaseGadget < handle
 
     properties
 

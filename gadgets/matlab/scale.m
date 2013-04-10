@@ -1,4 +1,4 @@
-classdef scale < BaseGadget
+classdef scale < handle & BaseGadget
 
     properties
 
@@ -21,7 +21,7 @@ classdef scale < BaseGadget
             
             resdata = obj.factor * data;
 
-            obj = obj.putQ(reshdr, resdata);
+            obj.putQ(reshdr, resdata);
             %fprintf('Put on Queue %d, type = %d\n',length(obj.Q),obj.Q{1}.type);
 
         end

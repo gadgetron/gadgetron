@@ -68,13 +68,11 @@ protected:
         }
 
         // Check that we found the class
-        std::string which_classname("which ");
-        which_classname += *classname_.get() + ";";
+        std::string which_classname("which " + *classname_.get() + ";");
         engEvalString(engine_, which_classname.c_str());
 
         // Instantiate the Matlab gadget object from the user specified class
-        std::string instantiate_gadget("matgadget = ");
-        instantiate_gadget += *classname_.get() + "();";
+        std::string instantiate_gadget("matgadget = " + *classname_.get() + "();");
         engEvalString(engine_, instantiate_gadget.c_str());
 
         // Call matlabgadget.config with the XML header
