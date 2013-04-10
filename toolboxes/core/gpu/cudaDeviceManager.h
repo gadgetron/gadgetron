@@ -46,7 +46,7 @@ namespace Gadgetron{
     size_t getTotalMemory();
     size_t getTotalMemory(int device);
     cublasHandle_t getHandle();
-    cublasHandle_t getHandle(int device){return handle[device];};
+    cublasHandle_t getHandle(int device);
     int getCurrentDevice();
     
   };
