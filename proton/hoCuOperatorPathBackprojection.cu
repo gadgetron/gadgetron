@@ -1,6 +1,8 @@
 #include "hoCuOperatorPathBackprojection.h"
 #include "vector_td_utilities.h"
 
+#include "vector_td_io.h"
+
 
 #include "check_CUDA.h"
 
@@ -11,6 +13,9 @@
 #include <algorithm>
 
 #include "hoNDArray_operators.h"
+
+#include "hoCuNDArray_blas.h"
+#include "cuNDArray_blas.h"
 
 #include "proton_kernels.cu"
 
@@ -27,10 +32,6 @@ template<class REAL> size_t hoCuOperatorPathBackprojection<REAL>::calculate_batc
 	size_t total;
 
 	int res = cudaMemGetInfo(&free,&total);
-
-	//printReturn(res);
-
-	std::cout << "Free memory in MB: " << free << std::endl;
 	return 1024*1024*(free/(1024*1024*mem_per_proton)); //Divisons by 1024*1024 to ensure MB batch size
 }
 
@@ -168,11 +169,11 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 	this->physical_dims = physical_dims;
 	this->background = background;
 	this->origin = origin;
-	std::cout  << "Calling setup function nowish" << std::endl;
-	std::vector<unsigned int> dims = *(splines->get_dimensions().get());
-	dims[0] /= 4;
-	size_t max_batch_size = calculate_batch_size();
 
+
+
+	size_t max_batch_size = calculate_batch_size();
+	std::cout  << "Calling setup function nowish " << max_batch_size << std::endl;
 
 	size_t elements = splines->get_number_of_elements()/4;
 	size_t offset = 0;
@@ -201,7 +202,6 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 		int totalBlocksPerGrid = (batch_size-1)/MAX_THREADS_PER_BLOCK+1;
 		dim3 dimGrid(std::min(totalBlocksPerGrid,MAX_BLOCKS));
 
-
 		// Invoke kernel
 		int offset_k = 0;
 		//std::cout << "Starting forward kernel with grid " << dimGrid.x << " " << dimGrid.y << " " << dimGrid.z << std::endl;
@@ -211,6 +211,7 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 
 		}
 		cudaThreadSynchronize();
+
 		// Invoke kernel
 		if (rescale_dirs){
 			offset_k = 0;

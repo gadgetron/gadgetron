@@ -10,12 +10,16 @@
 #include "hoCuNDArray.h"
 
 
-#include "hoCuOperatorPathBackprojection.h"
+#include "hoCuProtonSubsetOperator.h"
 #include "hoNDArray_fileio.h"
 #include "check_CUDA.h"
 
 #include "hoCuGPBBSolver.h"
 #include "hoCuPartialDerivativeOperator.h"
+#include "hoCuNDArray_blas.h"
+#include "hoCuNDArray_operators.h"
+
+#include "osSARTSolver.h"
 #include "hdf5_utils.h"
 
 #include "encodingOperatorContainer.h"
@@ -27,7 +31,7 @@ using namespace std;
 using namespace Gadgetron;
 typedef float _real;
 
-
+typedef solver<hoCuNDArray<_real>, hoCuNDArray<_real> > baseSolver;
 namespace po = boost::program_options;
 int main( int argc, char** argv)
 {
@@ -37,19 +41,18 @@ int main( int argc, char** argv)
   //
 
   _real background =  0.00106;
-  std::string projectionsName;
-	std::string splinesName;
+  std::string dataName;
 	std::string outputFile;
 	vector_td<int,3> dimensions;
 	vector_td<float,3> physical_dims;
 	vector_td<float,3> origin;
 	int iterations;
 	int device;
+	int subsets;
 	po::options_description desc("Allowed options");
 	desc.add_options()
 			("help", "produce help message")
-			("projections,p", po::value<std::string>(&projectionsName)->default_value("projections.real"), "File containing the projection data")
-			("splines,s", po::value<std::string>(&splinesName)->default_value("splines.real"), "File containing the spline trajectories")
+			("data,D", po::value<std::string>(&dataName)->default_value("data.hdf5"), "HDF5 file containing projections and splines")
 			("dimensions,d", po::value<vector_td<int,3> >(&dimensions)->default_value(vector_td<int,3>(512,512,1)), "Pixel dimensions of the image")
 			("size,S", po::value<vector_td<float,3> >(&physical_dims)->default_value(vector_td<float,3>(20,20,5)), "Dimensions of the image")
 			("center,c", po::value<vector_td<float,3> >(&origin)->default_value(vector_td<float,3>(0,0,0)), "Center of the reconstruction")
@@ -58,7 +61,7 @@ int main( int argc, char** argv)
 			("prior,P", po::value<std::string>(),"Prior image filename")
 			("prior-weight,k",po::value<float>(),"Weight of the prior image")
 			("device",po::value<int>(&device)->default_value(0),"Number of the device to use (0 indexed)")
-
+			("subsets,n", po::value<int>(&subsets)->default_value(10), "Number of subsets to use")
 	;
 
 	po::variables_map vm;
@@ -85,33 +88,21 @@ int main( int argc, char** argv)
 	cudaDeviceReset();
 
 
-  boost::shared_ptr<hoCuNDArray<vector_td<_real,3> > > splines = boost::static_pointer_cast<hoCuNDArray<vector_td<_real,3> > >(read_nd_array< vector_td<_real,3> >(splinesName.c_str()));
-  cout << "Number of spline elements: " << splines->get_number_of_elements() << endl;
-
-  boost::shared_ptr< hoCuNDArray<_real> > projections = boost::static_pointer_cast<hoCuNDArray<_real> > (read_nd_array<_real >(projectionsName.c_str()));
-
-  std::cout << "Number of elements " << projections->get_number_of_elements() << std::endl;
-
-
-  if (projections->get_number_of_elements() != splines->get_number_of_elements()/4){
-	  cout << "Critical error: Splines and projections do not match dimensions" << endl;
-	  return 0;
-  }
-
+/*
   hoCuGPBBSolver< _real> solver;
 
   solver.set_max_iterations( iterations);
-  //solver.set_tc_tolerance( (_real) parms.get_parameter('e')->get_float_value());
-  //solver.set_alpha(1e-7);
-  solver.set_output_mode( hoCuGPBBSolver< _real>::OUTPUT_VERBOSE );
+
+  solver.set_output_mode( hoCuGPBBSolver< _real>::OUTPUT_VERBOSE );*/
+	osSARTSolver<hoCuNDArray<_real> > solver;
   solver.set_non_negativity_constraint(true);
-  boost::shared_ptr< hoCuOperatorPathBackprojection<_real> > E (new hoCuOperatorPathBackprojection<_real> );
-  E->setup(splines,physical_dims,projections,origin,background);
+  boost::shared_ptr< hoCuProtonSubsetOperator<_real> > E (new hoCuProtonSubsetOperator<_real>(subsets) );
+  boost::shared_ptr<hoCuNDArray<_real> >  projections = E->load_data(dataName,physical_dims,origin,background);
 
   std::vector<unsigned int> rhs_dims(&dimensions[0],&dimensions[3]); //Quick and dirty vector_td to vector
   E->set_domain_dimensions(&rhs_dims);
   E->set_codomain_dimensions(projections->get_dimensions().get());
-
+/*
   boost::shared_ptr<encodingOperatorContainer< hoCuNDArray<float> > > enc (new encodingOperatorContainer<hoCuNDArray<float> >());
   enc->set_domain_dimensions(&rhs_dims);
   enc->add_operator(E);
@@ -151,14 +142,22 @@ int main( int argc, char** argv)
   }
 
   solver.set_encoding_operator(enc);
-
+*/
+  solver.set_encoding_operator(E);
+  solver.set_output_mode(baseSolver::OUTPUT_VERBOSE);
 	//hoCuNDA_clear(projections.get());
 	//CHECK_FOR_CUDA_ERROR();
+
 
 	//float res = dot(projections.get(),projections.get());
 
 	boost::shared_ptr< hoCuNDArray<_real> > result = solver.solve(projections.get());
 
+	hoCuNDArray<_real> tmp_proj(projections->get_dimensions());
+	E->mult_M(result.get(),&tmp_proj,false);
+	tmp_proj -= *projections;
+
+	std::cout << "L2 norm of residual: " << nrm2(&tmp_proj) << std::endl;
 	//write_nd_array<_real>(result.get(), (char*)parms.get_parameter('f')->get_string_value());
 	std::stringstream ss;
 	for (int i = 0; i < argc; i++){

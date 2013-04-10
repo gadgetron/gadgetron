@@ -237,7 +237,7 @@ template <class REAL> __global__ void backwards_kernel(REAL* projections, REAL* 
 }
 */
 
-template <class REAL> __global__ void Gadgetron::crop_splines_kernel(vector_td<REAL,3> * splines, REAL* projections, const  vector_td<REAL,3>  dims, const  vector_td<REAL,3>  origin, const int proj_dim,REAL background,int offset)
+template <class REAL> __global__ void Gadgetron::crop_splines_kernel(vector_td<REAL,3> * splines, REAL* projections, const  vector_td<REAL,3>  dims, const  vector_td<REAL,3>  origin, const int proj_dim,const REAL background,int offset)
 {
 	const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x+offset;
 
@@ -295,7 +295,6 @@ template <class REAL> __global__ void Gadgetron::crop_splines_kernel(vector_td<R
 		pt1=p1-t*m1;
 		REAL deltaLength = norm(p1-pt1)+norm(p0-pt0);
 		projections[idx] -= deltaLength*background;
-
 		splines[sid]=pt0;
 		splines[sid+1]=pt1;
 

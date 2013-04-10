@@ -10,7 +10,7 @@ template <class REAL> __global__ void backwards_kernel(REAL* projections, REAL* 
 		vector_td<REAL,3> * splines,  const vector_td<REAL,3> dims,
 		const typename uintd<3>::Type ndims, const int proj_dim, const int offset);
 
-template <class REAL> __global__ void crop_splines_kernel(vector_td<REAL,3> * splines, REAL* projections, const  vector_td<REAL,3>  dims, const  vector_td<REAL,3>  origin,const int proj_dim,REAL background,int offset);
+template <class REAL> __global__ void crop_splines_kernel(vector_td<REAL,3> * splines, REAL* projections, const  vector_td<REAL,3>  dims, const  vector_td<REAL,3>  origin,const int proj_dim,const REAL background,int offset);
 template <class REAL> __global__ void rescale_directions_kernel(vector_td<REAL,3> * splines, REAL* projections, const  vector_td<REAL,3>  dims,  const int proj_dim, const int offset);
 
 
