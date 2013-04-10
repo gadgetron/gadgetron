@@ -185,7 +185,7 @@ protected:
 		char node[2048];
 		hsize_t nobj,len;
 		herr_t err;
-		hid_t group_id = H5Gopen(file_id,path.c_str(),H5P_DEFAULT);
+		hid_t group_id = H5Gopen1(file_id,path.c_str());
 
 		err = H5Gget_num_objs(group_id, &nobj);
 
