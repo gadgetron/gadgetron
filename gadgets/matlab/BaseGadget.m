@@ -44,7 +44,7 @@ classdef BaseGadget < handle
 		obj.Q{idx}.type = int32(0);
                 return;
             end
-            obj.Q{idx}.data = data;
+            obj.Q{idx}.data = single(data);
             
         end
 

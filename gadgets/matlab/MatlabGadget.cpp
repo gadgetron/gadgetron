@@ -38,8 +38,8 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     mxArray *acq_data = mxCreateNumericMatrix(0, 0, mxSINGLE_CLASS, mxCOMPLEX);
     mxSetData(acq_data, real_data);
     mxSetImagData(acq_data, imag_data);
-    mxSetN(acq_data, m1->getObjectPtr()->number_of_samples);
-    mxSetM(acq_data, m1->getObjectPtr()->active_channels);
+    mxSetM(acq_data, m1->getObjectPtr()->number_of_samples);
+    mxSetN(acq_data, m1->getObjectPtr()->active_channels);
 
     // Prepare a buffer for collecting Matlab's output
     char buffer[2049] = "\0";
@@ -92,8 +92,8 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
             memcpy(hdr_new, mxGetData(res_hdr), sizeof(ISMRMRD::AcquisitionHeader));
 
             //printf("no of samples: %d\n", hdr_new->number_of_samples);
-            size_t number_of_samples = mxGetN(res_data);
-            size_t active_channels = mxGetM(res_data);
+            size_t number_of_samples = mxGetM(res_data);
+            size_t active_channels = mxGetN(res_data);
 
             GadgetContainerMessage<hoNDArray< std::complex<float> > >* m4 =
                     new GadgetContainerMessage< hoNDArray< std::complex<float> > >();

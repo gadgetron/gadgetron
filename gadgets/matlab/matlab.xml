@@ -26,13 +26,17 @@
     </writer>
 
 
+<!--
     <gadget>
         <name>MatlabAcquisition</name>
         <dll>gadgetronmatlab</dll>
         <classname>AcquisitionMatlabGadget</classname>
+-->
         <!--<property><name>path</name><value></value></property>-->
+<!--
         <property><name>matlab_classname</name><value>scale</value></property>
     </gadget>
+-->
     <!--
     <gadget>
         <name>Acc</name>
