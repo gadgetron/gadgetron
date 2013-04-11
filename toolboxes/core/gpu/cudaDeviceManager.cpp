@@ -70,7 +70,8 @@ namespace Gadgetron{
     // TODO Auto-generated destructor stub
 
     for (int device = 0; device < num_devices; device++){
-      cublasDestroy(handle[device]);
+    	if (handle[device] != NULL)
+    		cublasDestroy(handle[device]);
     }
   }
 
