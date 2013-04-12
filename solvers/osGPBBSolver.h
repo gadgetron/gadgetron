@@ -8,11 +8,11 @@
 #include <boost/iterator/counting_iterator.hpp>
 
 namespace Gadgetron{
-template <class ARRAY_TYPE> class osGPBBSolver : public solver< ARRAY_TYPE,ARRAY_TYPE> {
+template <class ARRAY_TYPE> class osGPBBSolver : public gpSolver< ARRAY_TYPE> {
 	typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
 	typedef typename realType<ELEMENT_TYPE>::Type REAL;
 	public:
-		osGPBBSolver() :solver< ARRAY_TYPE,ARRAY_TYPE>() {
+		osGPBBSolver() : gpSolver< ARRAY_TYPE>() {
 			_iterations=10;
 			_beta = REAL(0.8);
 			non_negativity_=false;
@@ -74,7 +74,8 @@ template <class ARRAY_TYPE> class osGPBBSolver : public solver< ARRAY_TYPE,ARRAY
 					*g *= this->encoding_operator_->get_weight();
 
 
-					//this->add_gradient(x,g);
+
+					this->add_gradient(x,g);
 					if (non_negativity_) solver_non_negativity_filter(x,g);
 
 					REAL nabla;

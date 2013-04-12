@@ -27,8 +27,10 @@
 #include "encodingOperatorContainer.h"
 #include "hoCuOperator.h"
 #include "hoImageOperator.h"
+#include "identityOperator.h"
 #include <boost/program_options.hpp>
 #include "vector_td_io.h"
+#include "projectionSpaceOperator.h"
 using namespace std;
 using namespace Gadgetron;
 typedef float _real;
@@ -106,47 +108,38 @@ int main( int argc, char** argv)
   std::vector<unsigned int> rhs_dims(&dimensions[0],&dimensions[3]); //Quick and dirty vector_td to vector
   E->set_domain_dimensions(&rhs_dims);
   E->set_codomain_dimensions(projections->get_dimensions().get());
-/*
-  boost::shared_ptr<encodingOperatorContainer< hoCuNDArray<float> > > enc (new encodingOperatorContainer<hoCuNDArray<float> >());
-  enc->set_domain_dimensions(&rhs_dims);
-  enc->add_operator(E);
-
   boost::shared_ptr<hoCuNDArray<_real > > prior;
-  if (vm.count("prior")){
- 	  std::cout << "Prior image regularization in use" << std::endl;
-		prior = boost::static_pointer_cast<hoCuNDArray<_real > >(read_nd_array<_real >(vm["prior"].as<std::string>().c_str()));
+    if (vm.count("prior")){
+   	  std::cout << "Prior image regularization in use" << std::endl;
+  		prior = boost::static_pointer_cast<hoCuNDArray<_real > >(read_nd_array<_real >(vm["prior"].as<std::string>().c_str()));
 
-		prior->reshape(&rhs_dims);
-		_real offset = _real(0.01);
-		//cuNDA_add(offset,prior.get());
-
-
-		if (vm.count("prior-weight")){
-
-		boost::shared_ptr<hoImageOperator<_real> > I (new hoImageOperator<_real > ());
-		I->compute(prior.get());
-
-		I->set_weight(vm["prior-weight"].as<float>());
-
-		I->set_codomain_dimensions(&rhs_dims);
-		I->set_domain_dimensions(&rhs_dims);
-		hoCuNDArray<_real> tmp = *prior;
+  		prior->reshape(&rhs_dims);
+  		_real offset = _real(0.01);
+  		//cuNDA_add(offset,prior.get());
 
 
-		I->mult_M(prior.get(),&tmp);
+  		if (vm.count("prior-weight")){
 
-		//cuNDA_scal(I->get_weight(),&tmp);
-		std::vector<hoCuNDArray<_real>* > proj;
-		proj.push_back(projections.get());
-		proj.push_back(&tmp);
-		enc->add_operator(to_hoCu<_real>(I));
-		projections = enc->create_codomain(proj);
-		}
-		solver.set_x0(prior);
-  }
+  		//boost::shared_ptr<hoImageOperator<_real> > I (new hoImageOperator<_real > ());
+  		//I->compute(prior.get());
+  			boost::shared_ptr<identityOperator<hoCuNDArray<_real> > > Itmp ( new identityOperator<hoCuNDArray<_real> >);
 
-  solver.set_encoding_operator(enc);
-*/
+  			boost::shared_ptr<projectionSpaceOperator<hoCuNDArray<_real> > > I (new projectionSpaceOperator<hoCuNDArray<_real> >(Itmp));
+
+  		I->set_weight(vm["prior-weight"].as<float>());
+
+  		I->set_codomain_dimensions(&rhs_dims);
+  		I->set_domain_dimensions(&rhs_dims);
+  		I->set_projections(prior);
+  		//hoCuNDArray<_real> tmp = *prior;
+
+
+  		//I->mult_M(prior.get(),&tmp);
+  		solver.add_regularization_operator(I);
+
+  		}
+  		solver.set_x0(prior);
+    }
   solver.set_encoding_operator(E);
   solver.set_output_mode(baseSolver::OUTPUT_VERBOSE);
 	//hoCuNDA_clear(projections.get());

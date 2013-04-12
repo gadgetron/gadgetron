@@ -210,8 +210,9 @@ int main( int argc, char** argv)
 
  		if (vm.count("prior-weight")){
 
-			boost::shared_ptr<cuImageOperator<_real > > I (new cuImageOperator<_real >());
-			I->compute(prior.get());
+			//boost::shared_ptr<cuImageOperator<_real > > I (new cuImageOperator<_real >());
+ 			boost::shared_ptr<identityOperator<cuNDArray<_real > > > I (new identityOperator<cuNDArray<_real > >());
+			//I->compute(prior.get());
 
 			I->set_weight(vm["prior-weight"].as<float>());
 

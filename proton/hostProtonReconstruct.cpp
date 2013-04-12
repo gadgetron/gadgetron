@@ -21,6 +21,7 @@
 #include "encodingOperatorContainer.h"
 #include "hoCuOperator.h"
 #include "hoImageOperator.h"
+#include "identityOperator.h"
 #include <boost/program_options.hpp>
 #include "vector_td_io.h"
 using namespace std;
@@ -128,8 +129,8 @@ int main( int argc, char** argv)
 
 		if (vm.count("prior-weight")){
 
-		boost::shared_ptr<hoImageOperator<_real> > I (new hoImageOperator<_real > ());
-		I->compute(prior.get());
+		boost::shared_ptr<identityOperator<hoNDArray<_real > > > I (new identityOperator<hoNDArray<_real > >());
+		//I->compute(prior.get());
 
 		I->set_weight(vm["prior-weight"].as<float>());
 
