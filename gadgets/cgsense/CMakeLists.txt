@@ -4,6 +4,10 @@ ADD_DEFINITIONS(-D__BUILD_GADGETRON_CGSENSE__)
 ADD_DEFINITIONS(-D__BUILD_GADGETS__)
 endif (WIN32)
 
+if(WIN32)
+link_directories(${Boost_LIBRARY_DIRS})
+endif(WIN32)
+
 find_package(Ismrmrd REQUIRED)
 
 include_directories(   
@@ -19,7 +23,12 @@ include_directories(
 
 add_library(gadgetroncgsense SHARED GPUCGGadget.cpp GPUCGGoldenRadial.cpp GPUCGFixedRadial.cpp GPUCGGadgetGeneric.cpp)
 
-target_link_libraries(gadgetroncgsense gpusolvers gpuoperators gpuparallelmri tinyxml ${ISMRMRD_LIBRARIES} ${ISMRMRD_XSD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
+target_link_libraries(gadgetroncgsense 
+  cpucore gpucore gpusolvers gpuoperators gpuparallelmri tinyxml 
+  ${Boost_LIBRARIES}
+  ${ISMRMRD_LIBRARIES} ${ISMRMRD_XSD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} 
+  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
+  )
 
 install (TARGETS gadgetroncgsense DESTINATION lib)
 install (FILES radial_single.xml  DESTINATION config)

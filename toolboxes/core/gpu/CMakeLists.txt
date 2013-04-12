@@ -2,6 +2,10 @@ if (WIN32)
   ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUCORE__)
 endif (WIN32)
 
+if(WIN32)
+link_directories(${Boost_LIBRARY_DIRS})
+endif(WIN32)
+
 find_package(CULA REQUIRED)
 
 include_directories( 
@@ -24,6 +28,7 @@ cuda_add_library(gpucore SHARED
   )
 
 target_link_libraries(gpucore 
+  ${Boost_LIBRARIES}
   ${CUDA_LIBRARIES} 
   ${CUDA_CUFFT_LIBRARIES} 
   ${CUDA_CUBLAS_LIBRARIES} 

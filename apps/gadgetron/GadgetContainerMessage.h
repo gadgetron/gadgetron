@@ -3,6 +3,7 @@
 #pragma once
 
 #include <ace/Message_Block.h>
+#include <string>
 
 namespace Gadgetron{
 /**

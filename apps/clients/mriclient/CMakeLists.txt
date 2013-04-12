@@ -1,7 +1,7 @@
 find_package(Ismrmrd REQUIRED)
 find_package(HDF5 1.8 COMPONENTS C CXX REQUIRED)
 set(Boost_NO_BOOST_CMAKE ON)
-find_package(Boost COMPONENTS thread system REQUIRED)
+find_package(Boost COMPONENTS thread system date_time chrono REQUIRED)
 
 include_directories(    
   ${ACE_INCLUDE_DIR} 
@@ -18,7 +18,10 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   )
 
-LINK_DIRECTORIES(${BOOST_ROOT}/lib)
+if(WIN32)
+link_directories(${Boost_LIBRARY_DIRS})
+endif(WIN32)
+
 
 add_executable(mriclient main.cpp)
 

@@ -7,6 +7,7 @@ ENDIF (WIN32)
 include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+  ${ARMADILLO_INCLUDE_DIRS}
 )
 
 find_package(Ismrmrd REQUIRED)

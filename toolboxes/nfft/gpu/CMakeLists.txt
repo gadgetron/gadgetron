@@ -3,6 +3,10 @@ ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUNFFT__)
 ADD_DEFINITIONS(-D_USE_MATH_DEFINES)
 endif (WIN32)
 
+if(WIN32)
+link_directories(${Boost_LIBRARY_DIRS})
+endif(WIN32)
+
 include_directories( 
   ${CUDA_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
@@ -21,6 +25,7 @@ cuda_add_library(gpunfft SHARED
 target_link_libraries(
   gpunfft 
   gpucore 
+  ${Boost_LIBRARIES}
   ${FFTW3_LIBRARIES} 
   ${CUDA_LIBRARIES} 
   ${CUDA_CUFFT_LIBRARIES} 

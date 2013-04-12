@@ -8,11 +8,11 @@
 #include "radial_utilities.h"
 #include "hoNDArray_fileio.h"
 #include "cuNDArray.h"
-#include "GPUTimer.h"
+#include "vector_td_utilities.h"
 #include "parameterparser.h"
 #include "cuNFFTOperator.h"
 #include "cuCgSolver.h"
-#include "vector_td_utilities.h"
+#include "GPUTimer.h"
 
 #include <iostream>
 

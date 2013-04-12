@@ -2,16 +2,16 @@
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_utils.h"
 #include "hoNDArray_fileio.h"
+#include "vector_td_utilities.h"
+#include "cuImageOperator.h"
 #include "radial_utilities.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "cuSenseRHSBuffer.h"
-#include "cuImageOperator.h"
 #include "cuCgPreconditioner.h"
 #include "cuCgSolver.h"
 #include "b1_map.h"
-#include "GPUTimer.h"
 #include "parameterparser.h"
-#include "vector_td_utilities.h"
+#include "GPUTimer.h"
 
 // Std includes
 #include <iostream>

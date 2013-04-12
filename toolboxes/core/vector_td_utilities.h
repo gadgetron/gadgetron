@@ -21,8 +21,6 @@
 #include <algorithm>
 
 #ifndef __CUDA_ARCH__
-using std::min; // workaround for nvcc
-using std::max; // workaround for nvcc
 using std::ceil; // workaround for nvcc
 using std::abs; // workaround for nvcc
 using std::floor; // workaround for nvcc
@@ -31,6 +29,15 @@ using std::sqrt;
 
 namespace Gadgetron{
 
+  // Windows/Cuda has some issues when using min and max.
+  // For now we define our own implementation
+
+  template <class T> __inline__ __host__ __device__ const T& _vector_td_min (const T& a, const T& b) {
+    return (a>b)?b:a;
+  }
+  template <class T> __inline__ __host__ __device__ const T& _vector_td_max (const T& a, const T& b) {
+    return (a<b)?b:a;
+  }
 
   //
   // Get/set operations on vector_td<T,D>
@@ -295,23 +302,22 @@ namespace Gadgetron{
     return res;
   }
 
-
   template<class T, unsigned int D> __inline__ __host__ __device__
   T max( const vector_td<T,D>& vec )
   {
     T res = vec[0];
     for (unsigned int i=1; i<D; i++){
-      res = ::max(res,vec[i]);
+      res = _vector_td_max(res,vec[i]);
     }
     return res;
   }
-
+  
   template<class T, unsigned int D> __inline__ __host__ __device__
   T min( const vector_td<T,D>& vec )
   {
     T res = vec[0];
     for (unsigned int i=1; i<D; i++){
-      res = ::min(res,vec[i]);
+      res = _vector_td_min(res,vec[i]);
     }
     return res;
   }
@@ -364,7 +370,7 @@ namespace Gadgetron{
     if (i >= D) return 0;
     T res = vec[i];
     for (++i; i<D; i++){
-      if (!isnan(vec[i])) res = ::max(res,vec[i]);
+      if (!isnan(vec[i])) res = _vector_td_max(res,vec[i]);
     }
     return res;
   }
@@ -376,7 +382,7 @@ namespace Gadgetron{
     while (isnan(vec[i])) i++;
     T res = vec[i];
     for (++i; i<D; i++){
-      if (!isnan(vec[i])) res = ::min(res,vec[i]);
+      if (!isnan(vec[i])) res = _vector_td_min(res,vec[i]);
     }
     return res;
   }

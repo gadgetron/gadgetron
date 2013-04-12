@@ -1,6 +1,3 @@
-find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
-
 include( ${QT_USE_FILE} )
 
 #We need binary and source dirs in this because of the header files created by the make process

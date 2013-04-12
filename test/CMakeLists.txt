@@ -1,16 +1,19 @@
+ENABLE_TESTING()
+
+if(WIN32)
+link_directories(${Boost_LIBRARY_DIRS})
+endif(WIN32)
+
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
+  ${Boost_INCLUDE_DIR}
+  ${CUDA_INCLUDE_DIRS}
+  ${ARMADILLO_INCLUDE_DIRS}
   ${GTEST_INCLUDE_DIRS}
   )
-
-if(CUDA_FOUND)
-  include_directories(
-    ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-    ${CUDA_INCLUDE_DIRS}
-    )
-endif(CUDA_FOUND)
 
 cuda_add_executable(test_all 
   tests.cpp 
@@ -32,17 +35,11 @@ target_link_libraries(test_all
   cpucore 
   cpucore_math
   gpucore
-  pthread
+  #gpucore 
+  #gpunfft 
   ${BOOST_LIBRARIES}	
   ${GTEST_LIBRARIES} 
+  ${CUDA_LIBRARIES} 
   )
-
-if(CUDA_FOUND)
-  target_link_libraries(test_all 
-    #gpucore 
-    #gpunfft 
-    ${CUDA_LIBRARIES} 
-    )
-endif(CUDA_FOUND)
 
 add_test(test_all test_all)

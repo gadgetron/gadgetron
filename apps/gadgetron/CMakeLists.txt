@@ -6,8 +6,8 @@ find_package(XSD REQUIRED)
 find_package(XercesC REQUIRED)
 
 include_directories(
-  ${ACE_INCLUDE_DIR} 
   ${Boost_INCLUDE_DIR}
+  ${ACE_INCLUDE_DIR} 
   ${XSD_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/apps/gadgetron
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
@@ -17,9 +17,7 @@ include_directories(
 SET(XSDS schema/gadgetron.xsd)
 SET(XSD_ARGS cxx-tree --generate-serialization)
 WRAP_XSD(XSDS_SOURCES XSD_INCLUDES ${CMAKE_CURRENT_BINARY_DIR}/schema ${XSDS} OPTIONS ${XSD_ARGS})
-
-INCLUDE_DIRECTORIES(${XSD_INCLUDES})
-INCLUDE_DIRECTORIES(${XERCESC_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${XSD_INCLUDES} ${XERCESC_INCLUDE_DIR})
 
 add_executable(gadgetron 
   ${XSDS_SOURCES} 
@@ -31,7 +29,7 @@ target_link_libraries(gadgetron
   gadgettools 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
   ${XERCESC_LIBRARIES} 
-  pthread)
+ )
 
 install(TARGETS gadgetron DESTINATION bin)
 

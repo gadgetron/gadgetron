@@ -12,14 +12,9 @@ namespace Gadgetron{
       \brief Base class for all linear Operators
   */
   template <class ARRAY_TYPE> class linearOperator : public generalOperator<ARRAY_TYPE>
-  {
-  
-  private:
-    typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
-    typedef typename realType<ELEMENT_TYPE>::Type REAL;
-    
+  {    
   public:
-    
+
     linearOperator() : generalOperator<ARRAY_TYPE>() {}
 
     linearOperator(std::vector<unsigned int> *dims) : generalOperator<ARRAY_TYPE>(dims) {

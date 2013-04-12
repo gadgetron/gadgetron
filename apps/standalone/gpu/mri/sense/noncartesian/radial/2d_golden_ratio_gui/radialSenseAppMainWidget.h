@@ -2,6 +2,7 @@
 
 // Gadgetron includes
 #include "vector_td.h"
+#include "vector_td_utilities.h"
 #include "hoNDArray.h"
 #include "cuNDArray.h"
 #include "cuNFFT.h"
@@ -10,7 +11,6 @@
 #include "cuImageOperator.h"
 #include "cuCgPreconditioner.h"
 #include "complext.h"
-#include "vector_td_utilities.h"
 
 #include <boost/smart_ptr.hpp>
 

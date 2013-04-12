@@ -9,14 +9,15 @@
 #include "cuCgSolver.h"
 #include "cuSbCgSolver.h"
 #include "b1_map.h"
-#include "GPUTimer.h"
 #include "parameterparser.h"
+#include "GPUTimer.h"
 
 // Std includes
 #include <iostream>
 
 using namespace std;
 using namespace Gadgetron;
+
 // Define desired precision
 typedef float _real; 
 typedef complext<_real> _complext;

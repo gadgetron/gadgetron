@@ -7,12 +7,17 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   )
 
+if(WIN32)
+link_directories(${Boost_LIBRARY_DIRS})
+endif(WIN32)
+
 add_library(cpucore SHARED 
   hoNDFFT.cpp
   )
 
 target_link_libraries(cpucore 
-  ${FFTW3_LIBRARIES} ${Boost_LIBRARIES}
+  ${FFTW3_LIBRARIES} 
+  ${Boost_LIBRARIES}
   )
 
 install(TARGETS cpucore DESTINATION lib)
