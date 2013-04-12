@@ -74,6 +74,8 @@ template <class ARRAY_TYPE> class osSARTSolver : public solver< ARRAY_TYPE,ARRAY
 				this->encoding_operator_->mult_MH(tmp_projections[i].get(),&ones_images.back(),i,false);
 				clamp_min(&ones_images.back(),ELEMENT_TYPE(1e-6));
 				reciprocal_inplace(&ones_images.back());
+
+
 			}
 			if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
 				std::cout << "osSART setup done, starting iterations:" << std::endl;

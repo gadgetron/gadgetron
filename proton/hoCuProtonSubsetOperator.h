@@ -45,8 +45,7 @@ public:
 			operators.back().setup(spline_arrays[i],physical_dims,sub_projections[i],origin,background);
 			std::cout << "Projections: " << i << " " << nrm2(sub_projections[i].get()) << " " << *sub_projections[i]->begin() << std::endl;
 		}
-		vector_td<REAL,3>* test = splines->get_data_ptr();
-		std::cout << "First spline " << test[0] <<" " << test[1] << " " << test[2] << " " << test[3] << std::endl;
+
 
 
 		return projections;
@@ -95,6 +94,10 @@ protected:
 			const size_t float_offset[1] = {0};
 			std::string projections_name = "projections";
 
+			std::vector< boost::shared_ptr<hoCuNDArray<REAL> > > tmp_proj = this->projection_subsets(projections.get());
+			std::vector<REAL*> ptrs;
+			for (int i = 0; i< tmp_proj.size(); i++) ptrs.push_back(tmp_proj[i]->get_data_ptr());
+
 			REAL* ptr = projections->get_data_ptr();
 			for (int i = 0; i < groupnames.size(); i++){
 				hsize_t nfields,nrecords;
@@ -105,10 +108,10 @@ protected:
 				for (int subset =0; subset < this->number_of_subsets; subset++){
 					hsize_t batchSize = nrecords/this->number_of_subsets;
 					if (subset < extra)  batchSize += 1;
-					err = H5TBread_records (file_id, (groupnames[i]+projections_name).c_str(), offset, batchSize, sizeof(float),  float_offset, float_size,  ptr );
+					err = H5TBread_records (file_id, (groupnames[i]+projections_name).c_str(), offset, batchSize, sizeof(float),  float_offset, float_size,  ptrs[subset] );
 					if (err < 0) BOOST_THROW_EXCEPTION(runtime_error("Unable to read splines from hdf5 file"));
 					offset += batchSize;
-					ptr += batchSize;
+					ptrs[subset] += batchSize;
 				}
 
 			}
@@ -146,7 +149,9 @@ protected:
 		hid_t strtype;                     /* Datatype ID */
 		herr_t status;
 
-		splinePtr = splines->get_data_ptr();
+		std::vector<vector_td<REAL,3> *> ptrs;
+		for (int i = 0; i< spline_arrays.size(); i++) ptrs.push_back(spline_arrays[i]->get_data_ptr());
+
 		for (int i = 0; i < groupnames.size(); i++){
 			hsize_t nfields,nrecords;
 			herr_t err = H5TBget_table_info (file_id, (groupnames[i]+splines_name).c_str(), &nfields, &nrecords );
@@ -156,10 +161,10 @@ protected:
 			for (int subset =0; subset < this->number_of_subsets; subset++){
 				hsize_t batchSize = nrecords/this->number_of_subsets;
 				if (subset < extra)  batchSize += 1;
-				err = H5TBread_records (file_id, (groupnames[i]+splines_name).c_str(), offset, batchSize, sizeof(Spline),  dst_offset, dst_sizes,  splinePtr );
+				err = H5TBread_records (file_id, (groupnames[i]+splines_name).c_str(), offset, batchSize, sizeof(Spline),  dst_offset, dst_sizes,  ptrs[subset]);
 				if (err < 0) BOOST_THROW_EXCEPTION(runtime_error("Unable to read splines from hdf5 file"));
 				offset += batchSize;
-				splinePtr += batchSize*sizeof(Spline)/sizeof(vector_td<REAL,3>);
+				ptrs[subset] += batchSize*sizeof(Spline)/sizeof(vector_td<REAL,3>);
 			}
 
 		}

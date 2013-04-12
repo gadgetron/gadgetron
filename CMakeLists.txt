@@ -19,7 +19,7 @@ find_package(Gadgetron REQUIRED)
 include_directories(  "${GADGETRON_HOME}/include")
 
 LINK_DIRECTORIES(${GADGETRON_LIB_DIR})   
-find_package(Boost COMPONENTS program_options REQUIRED)
+find_package(Boost COMPONENTS program_options system thread REQUIRED)
 find_package(CUDA 4.0 REQUIRED)
 find_package(CULA REQUIRED)
 if (CUDA_FOUND)

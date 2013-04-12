@@ -173,7 +173,7 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 
 
 	size_t max_batch_size = calculate_batch_size();
-	std::cout  << "Calling setup function nowish " << max_batch_size << std::endl;
+	//std::cout  << "Calling setup function nowish " << max_batch_size << std::endl;
 
 	size_t elements = splines->get_number_of_elements()/4;
 	size_t offset = 0;

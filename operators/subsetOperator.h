@@ -16,17 +16,18 @@ public:
 	subset_dimensions(number_of_subsets,std::vector<unsigned int>()){};
 
 	virtual ~subsetOperator(){};
-	virtual void mult_M(ARRAY_TYPE* in, ARRAY_TYPE* out, int subset, bool accumulate=false)=0;
-	virtual void mult_MH(ARRAY_TYPE* in, ARRAY_TYPE* out, int subset, bool accumulate=false)=0;
-	virtual void mult_MH_M(ARRAY_TYPE* in, ARRAY_TYPE* out, int subset, bool accumulate=false)=0;
+	virtual void mult_M(ARRAY_TYPE* in, ARRAY_TYPE* out, int subset, bool accumulate)=0;
+	virtual void mult_MH(ARRAY_TYPE* in, ARRAY_TYPE* out, int subset, bool accumulate)=0;
+	virtual void mult_MH_M(ARRAY_TYPE* in, ARRAY_TYPE* out, int subset, bool accumulate)=0;
 
-	virtual void mult_M(ARRAY_TYPE* in, ARRAY_TYPE* out,bool accumulate=false){
+	virtual void mult_M(ARRAY_TYPE* in, ARRAY_TYPE* out,bool accumulate){
 		if (!accumulate) clear(out);
 		std::vector<boost::shared_ptr<ARRAY_TYPE> > projections = projection_subsets(out);
+
 		for (int i = 0; i < number_of_subsets; i++) mult_M(in,projections[i].get(),i,true);
 	}
 
-	virtual void mult_MH(ARRAY_TYPE* in, ARRAY_TYPE* out,bool accumulate=false){
+	virtual void mult_MH(ARRAY_TYPE* in, ARRAY_TYPE* out,bool accumulate){
 			if (!accumulate) clear(out);
 			std::vector<boost::shared_ptr<ARRAY_TYPE> > projections = projection_subsets(in);
 			for (int i = 0; i < number_of_subsets; i++) mult_MH(projections[i].get(),out,i,true);

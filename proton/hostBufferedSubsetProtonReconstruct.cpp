@@ -10,7 +10,7 @@
 #include "hoCuNDArray.h"
 
 
-#include "hoCuProtonSubsetOperator.h"
+#include "hoCuProtonBufferedSubsetOperator.h"
 #include "hoNDArray_fileio.h"
 #include "check_CUDA.h"
 
@@ -20,6 +20,7 @@
 #include "hoCuNDArray_operators.h"
 
 #include "osSARTSolver.h"
+
 #include "hoOSGPBBSolver.h"
 #include "hdf5_utils.h"
 
@@ -99,7 +100,7 @@ int main( int argc, char** argv)
 	hoOSGPBBSolver<hoCuNDArray<_real> > solver;
   solver.set_non_negativity_constraint(true);
   solver.set_max_iterations(iterations);
-  boost::shared_ptr< hoCuProtonSubsetOperator<_real> > E (new hoCuProtonSubsetOperator<_real>(subsets) );
+  boost::shared_ptr< hoCuProtonBufferedSubsetOperator<_real> > E (new hoCuProtonBufferedSubsetOperator<_real>(subsets) );
   boost::shared_ptr<hoCuNDArray<_real> >  projections = E->load_data(dataName,physical_dims,origin,background);
 
   std::vector<unsigned int> rhs_dims(&dimensions[0],&dimensions[3]); //Quick and dirty vector_td to vector
