@@ -4,7 +4,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
         GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
     // Initialize a string for matlab commands
-    std::string cmd="";
+    std::string cmd;
 
     ISMRMRD::AcquisitionHeader *acq = m1->getObjectPtr();
 
@@ -44,10 +44,6 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     mxSetM(acq_data, m1->getObjectPtr()->number_of_samples);
     mxSetN(acq_data, m1->getObjectPtr()->active_channels);
 
-    // Prepare a buffer for collecting Matlab's output
-    char buffer[2049] = "\0";
-    engOutputBuffer(engine_, buffer, 2048);
-
     // Logic:
     // send AcquisitionHeader as a byte array
     // send AcquisitionData as a complex float array
@@ -60,8 +56,6 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     engPutVariable(engine_, "data", acq_data);
     cmd = "Q = matgadget.run_process(1, hdr_bytes, data); matgadget.emptyQ();";
     send_matlab_command(cmd);
-    //engEvalString(engine_, cmd.c_str());
-    //GADGET_DEBUG2("%s\n", buffer);
 
     // Get the size of the gadget's queue
     mxArray *Q = engGetVariable(engine_, "Q");
@@ -160,8 +154,9 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
         }
     }
 
-    //mxDestroyArray(acq_hdr_bytes);
-    //mxDestroyArray(acq_data);
+    // Match all mxCreate___s with mxDestroy___s
+    mxDestroyArray(acq_hdr_bytes);
+    mxDestroyArray(acq_data);
 
     return GADGET_OK;
 }
@@ -171,7 +166,10 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
 //      It only works for images of type std::complex<float>
 int ImageMatlabGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
         GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
-{    
+{
+    // Initialize a string for matlab commands
+    std::string cmd;
+
     ISMRMRD::ImageHeader *img = m1->getObjectPtr();
 
     // Create a mxArray of bytes for the ISMRMRD::ImageHeader
@@ -199,47 +197,33 @@ int ImageMatlabGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
     float *imag_data = (float *)mxGetImagData(img_data);
     unsigned long num_elements = m2->getObjectPtr()->get_number_of_elements();
     for (int i = 0; i < num_elements; i++) {
-        //std::cout << i << ": " << raw_data[i].real() << ", " << raw_data[i].imag() << endl;
         real_data[i] = raw_data[i].real();
         imag_data[i] = raw_data[i].imag();
     }
 
-    // Prepare a buffer for collecting Matlab's output
-    //char buffer[2049] = "\0";
-    //engOutputBuffer(engine_, buffer, 2048);
-
     engPutVariable(engine_, "hdr_bytes", img_hdr_bytes);
     engPutVariable(engine_, "data", img_data);
-
-    engEvalString(engine_, "matgadget = matgadget.process(ismrmrd.ImageHeader(hdr_bytes), data);");
-    //GADGET_DEBUG2("%s", buffer);
+    cmd = "Q = matgadget.run_process(2, hdr_bytes, data); matgadget.emptyQ();";
+    send_matlab_command(cmd);
 
     // Get the size of the gadget's queue
-    engEvalString(engine_, "qlen = matgadget.getQLength();");
-    mxArray *qlen = engGetVariable(engine_, "qlen");
-    if (qlen == NULL) {
-        GADGET_DEBUG1("Failed to get length of Queue from matgadget\n");
+    mxArray *Q = engGetVariable(engine_, "Q");
+    if (Q == NULL) {
+        GADGET_DEBUG1("Failed to get the Queue from matgadget\n");
         return GADGET_FAIL;
     }
-    int num_ret_elem = *((int *)mxGetData(qlen));
+    size_t qlen = mxGetNumberOfElements(Q);
 
     // Loop over the elements of the Q, reading one entry at a time
-    // call matgadget.getQ(id) 1-based
     // to get a structure with type, headerbytes, and data
     mwIndex idx;
-    for (idx = 0; idx < num_ret_elem; idx++) {
-        std::string cmd = "Qe = matgadget.getQ("+boost::lexical_cast<std::string>(idx+1)+");";
-        engEvalString(engine_, cmd.c_str());
-        mxArray *Qe = engGetVariable(engine_, "Qe");
-        if (Qe == NULL) {
-            GADGET_DEBUG1("Failed to get the entry off the queue from matgadget\n");
-            return GADGET_FAIL;
-        }
-        mxArray *res_type = mxGetField(Qe, 0, "type");
-        mxArray *res_hdr  = mxGetField(Qe, 0, "bytes");
-        mxArray *res_data = mxGetField(Qe, 0, "data");
+    for (idx = 0; idx < qlen; idx++) {
+        mxArray *res_type = mxGetField(Q, idx, "type");
+        mxArray *res_hdr  = mxGetField(Q, idx, "bytes");
+        mxArray *res_data = mxGetField(Q, idx, "data");
 
-        // determine the type of the object on the quue (i.e. acquisition or image)
+        // determine the type of the object on the queue (i.e. acquisition or image)
+        // although, since this is an Image gadget, it better be an image
         int tp = *((int *)mxGetData(res_type));
         switch (tp) {
         case 2:     // ImageHeader
@@ -283,8 +267,9 @@ int ImageMatlabGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
         }
     }
 
-    //mxDestroyArray(acq_hdr_bytes);
-    //mxDestroyArray(acq_data);
+    // Match all mxCreate___s with mxDestroy___s
+    mxDestroyArray(img_hdr_bytes);
+    mxDestroyArray(img_data);
 
     return GADGET_OK;
 }

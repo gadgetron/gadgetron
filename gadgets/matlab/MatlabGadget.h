@@ -41,10 +41,10 @@ public:
         } else {
             // Add ISMRMRD Java bindings jar to Matlab's path
             // TODO: this should be in user's Matlab path NOT HERE
-	  
+
             // Prepare a buffer for collecting Matlab's output
-            char buffer[2049] = "\0";
-            engOutputBuffer(engine_, buffer, 2048);
+            char matlab_buffer_[2049] = "\0";
+            engOutputBuffer(engine_, matlab_buffer_, 2048);
             engEvalString(engine_, "javaaddpath(fullfile(getenv('ISMRMRD_HOME'),'lib','ismrmrd.jar'));");
             engEvalString(engine_, "javaaddpath(fullfile(getenv('GADGETRON_HOME'), 'matlab'));");
             engEvalString(engine_, "addpath(fullfile(getenv('GADGETRON_HOME'), 'matlab'));");
@@ -53,21 +53,21 @@ public:
             // Load the Java JNI library
             engEvalString(engine_, "org.ismrm.ismrmrd.JNILibLoader.load();");
 
-	    GADGET_DEBUG2("%s", buffer);
+	    GADGET_DEBUG2("%s", matlab_buffer_);
         }
     }
 
     ~MatlabGadget()
     {
-        char buffer[2049] = "\0";
-        engOutputBuffer(engine_, buffer, 2048);
+        char matlab_buffer_[2049] = "\0";
+        engOutputBuffer(engine_, matlab_buffer_, 2048);
 	// Stop the Java Command server
         // send the stop signal to the command server and
         //  wait a bit for it to shut down cleanly.
         GADGET_DEBUG1("Closing down the Matlab Command Server\n");
-	engEvalString(engine_, "M.notifyEnd(); pause(2);");
+	engEvalString(engine_, "M.notifyEnd(); pause(1);");
         engEvalString(engine_, "clear java;");
-        GADGET_DEBUG2("%s", buffer);
+        GADGET_DEBUG2("%s", matlab_buffer_);
         // Close the Matlab engine
         GADGET_DEBUG1("Closing down Matlab\n");
         engClose(engine_);
@@ -77,30 +77,28 @@ protected:
 
     int process_config(ACE_Message_Block* mb)
     {
+        std::string cmd;
 
-        std::string cmd = "";
-
-        path_        = this->get_string_value("path");
+        debug_mode_  = this->get_int_value("debug_mode");
+        path_        = this->get_string_value("matlab_path");
         classname_   = this->get_string_value("matlab_classname");
-        //mport        = this->get_string_value("matlab_port");
+        command_server_port_ = this->get_int_value("matlab_port");
 
-        GADGET_DEBUG2("MATLAB Path    : %s\n", path_.get()->c_str());
         GADGET_DEBUG2("MATLAB Class Name : %s\n", classname_.get()->c_str());
 
-        // Set up buffer for catching Matlab output
-        char buffer[2049] = "\0";
-        engOutputBuffer(engine_, buffer, 2048);
+        char matlab_buffer_[2049] = "\0";
+        engOutputBuffer(engine_, matlab_buffer_, 2048);
 
    	// Instantiate the Java Command server
-        // TODO: make the command server run on a user specified port
-	engEvalString(engine_, "M = MatlabCommandServer(); M.start();");
-        //GADGET_DEBUG2("%s", buffer);
+        // TODO: we HAVE to pause in Matlab to allow the java command server thread to start
+        cmd = "M = MatlabCommandServer(" + boost::lexical_cast<std::string>(command_server_port_) +
+                "); M.start(); pause(1);";
+	engEvalString(engine_, cmd.c_str());
+        GADGET_DEBUG2("%s", matlab_buffer_);
 
         // add user specified path for this gadget
-        if (path_->length() > 0) {
-            cmd = "addpath(" + *path_.get() + ");";
-            //engEvalString(engine_, cmd.c_str());
-            //GADGET_DEBUG2("%s", buffer);
+        if (!path_->empty()) {
+            cmd = "addpath(" + *path_ + ");";
             send_matlab_command(cmd);
         }
 
@@ -112,11 +110,12 @@ protected:
         // Instantiate the Matlab gadget object from the user specified class
         // Call matlab gadget's init method with the XML Header
         // and the user definined config method
-        cmd = "matgadget = " + *classname_.get() + "();";
+        cmd = "matgadget = " + *classname_ + "();";
         cmd += "matgadget.init(xmlstring); matgadget.config();";
-        //engEvalString(engine_, cmd.c_str());
-        //GADGET_DEBUG2("%s", buffer);
-        send_matlab_command(cmd);
+        if (send_matlab_command(cmd) != GADGET_OK) {
+            GADGET_DEBUG1("Failed to send matlab command.\n");
+            return GADGET_FAIL;
+        }
 
 	mxDestroyArray(xmlstring);
 
@@ -125,38 +124,46 @@ protected:
 
     int send_matlab_command(std::string& command)
     {
-      ACE_SOCK_Stream client_stream_;
-      ACE_INET_Addr remote_addr_("3000","localhost");
-      ACE_SOCK_Connector connector_;
 
-      if (connector_.connect (client_stream_, remote_addr_) == -1) {
-	std::cout << "Connection failed" << endl;
-        return -1;
-      }
-      else  {
-        //std::cout<<"Connected to " << remote_addr_.get_host_name() << ":" << remote_addr_.get_port_number() << endl;
-      }
+        if (debug_mode_) {
+            char matlab_buffer_[2049] = "\0";
+            engOutputBuffer(engine_, matlab_buffer_, 2048);
+            engEvalString(engine_, command.c_str());
+            GADGET_DEBUG2("%s\n", matlab_buffer_);
+            return GADGET_OK;
+        }
+        else {
+            ACE_SOCK_Stream client_stream;
+            ACE_INET_Addr remote_addr(command_server_port_, "localhost");
+            ACE_SOCK_Connector connector;
 
-      ACE_Time_Value timeout(10);
-      if (client_stream_.send_n(command.c_str(), command.size(), &timeout) == -1) {
-	std::cout << "Error in send_n" << std::endl;
-      }
-      else {
-	//std::cout << "Sent " << command << std::endl;
-      }
+            if (connector.connect(client_stream, remote_addr) == -1) {
+                GADGET_DEBUG1("Connection failed\n");
+                return GADGET_FAIL;
+            }
 
-      if (client_stream_.close () == -1){
-	std::cout << "Error in close" << std::endl;
-	return -1;
-      }
-      return 0;
+            ACE_Time_Value timeout(10);
+            if (client_stream.send_n(command.c_str(), command.size(), &timeout) == -1) {
+                GADGET_DEBUG1("Error in send_n\n");
+                client_stream.close();
+                return GADGET_FAIL;
+            }
+
+            if (client_stream.close () == -1){
+                GADGET_DEBUG1("Error in close\n");
+                return GADGET_FAIL;
+            }
+            return GADGET_OK;
+        }
     }
+
 
     boost::shared_ptr<std::string> path_;
     boost::shared_ptr<std::string> classname_;
+    int command_server_port_;
+    int debug_mode_;
 
     Engine *engine_;
-
 };
 
 
