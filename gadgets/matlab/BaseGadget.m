@@ -2,50 +2,69 @@ classdef BaseGadget < handle
 
     properties
 
-        Q = {};
+        Q = [];
+        xml = [];
 
     end
 
     methods
 
-        function obj = config(obj, xmlhdr)
-
+        % Constructor
+        function g = BaseGadget()
         end
 
-        function obj = process(obj, head, data)
-
+        % Init function
+        function init(g, xmlstr)
+            % Convert the xml config string to an IsmrmrdHeader object
+            g.xml = org.ismrm.ismrmrd.xmlhdr.XMLString.StringToIsmrmrdHeader(xmlstr);
+            g.emptyQ();
         end
 
-        function obj = emptyQ(obj)
-           obj.Q = {};
-        end
-
-        function ret = getQLength(obj)
-	  ret = int32(length(obj.Q));
-        end
-
-        function ret = getQ(obj,idx)
-	  ret = obj.Q{idx};
-        end
-
-        function obj = putQ(obj, head, data)
-            import org.ismrm.ismrmrd.*;
-            import org.ismrm.ismrmrd.xmlhdr.*;
-            
-            idx = length(obj.Q) + 1;
-            if isa(head, 'AcquisitionHeader')
-	        obj.Q{idx}.type = int32(1);
-                obj.Q{idx}.bytes = ismrmrd.acquisitionHeaderToJBytes(head);
-            elseif isa(head, 'ImageHeader')
-	        obj.Q{idx}.type = int32(2);
-                obj.Q{idx}.bytes = ismrmrd.imageHeaderToJBytes(head);
+        % Process function
+        function [Q] = run_process(g, htype, hdr_bytes, data)
+            if (htype == 1)
+                head = ismrmrd.AcquisitionHeader(hdr_bytes);
+            elseif (htype == 2)
+                head = ismrmrd.ImageHeader(hdr_bytes);
             else
-                % TODO: throw error
-		obj.Q{idx}.type = int32(0);
-                return;
+                error('Uknown header type.');
             end
-            obj.Q{idx}.data = single(data);
-            
+            g.process(head, data);
+            Q = g.Q;
+        end
+
+        % Config function
+        function config(g)
+            fprintf('%s\n',char(org.ismrm.ismrmrd.xmlhdr.XMLString.IsmrmrdHeaderToString(g.xml)));
+        end
+        
+        % Process function
+        function process(g, head, data)
+            g.putQ(head,data);
+        end
+
+        % Q related functions
+        function emptyQ(g)
+           g.Q = [];
+        end
+
+        function putQ(g, head, data)
+            % find the end of the queue
+	        idx = length(g.Q) + 1;
+            % put the type of the header and the bytes for the header on the queue
+            if isa(head, 'ismrmrd.AcquisitionHeader')
+                g.Q(idx).type = int32(1);
+                g.Q(idx).bytes = head.toBytes();
+            elseif isa(head, 'ismrmrd.ImageHeader')
+                g.Q(idx).type = int32(2);
+                g.Q(idx).bytes = head.toBytes();
+            else
+                % TODO: do we throw an error here?
+                g.Q(idx).type = int32(0);
+            end
+            % put the data on the queue
+            % make sure the data is single precision
+            g.Q(idx).data = single(data);
         end
 
     end

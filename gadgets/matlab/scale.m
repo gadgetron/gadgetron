@@ -1,29 +1,21 @@
-classdef scale < handle & BaseGadget
+classdef scale < BaseGadget
 
     properties
-
         factor;
-        
     end
 
     methods
 
-        function obj = config(obj, xmlhdr)
-            fprintf('The resonance frequency is %d\n', xmlhdr.getExperimentalConditions().getH1ResonanceFrequencyHz());
-            obj.factor = 2;
+        function config(g)
+            g.factor = 2;
         end
 
-        function obj = process(obj, head, data)
-
-	    %fprintf('Processing line = %d\n', head.getIdx().getKspace_encode_step_1());
+        function process(g, head, data)
+    	    fprintf('Processing line = %d\n', head.idx.kspace_encode_step_1);
             reshdr = head;
-            reshdr.setVersion(99);
-            
-            resdata = obj.factor * data;
-
-            obj.putQ(reshdr, resdata);
-            %fprintf('Put on Queue %d, type = %d\n',length(obj.Q),obj.Q{1}.type);
-
+            reshdr.version = 99;
+            resdata = g.factor * data;
+            g.putQ(reshdr, resdata);
         end
 
     end

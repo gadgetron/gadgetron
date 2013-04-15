@@ -27,7 +27,7 @@ class MatlabCommandServer extends Thread {
 
         try {
             socket = new ServerSocket(3000);
-            socket.setSoTimeout(3000); //3000ms time out. We will check if shutdown has occurred every 3s.
+            socket.setSoTimeout(1000); //1000ms time out. We will check if shutdown has occurred every 1000ms.
         } catch (Exception e) {
             // Socket creation has failed, we should do something
             System.err.println("Socket failed to open");
@@ -88,7 +88,6 @@ class MatlabCommandServer extends Thread {
 	return true;
 
     }
-
 
     public void notifyEnd() {
 	stop_signal_received = true;
