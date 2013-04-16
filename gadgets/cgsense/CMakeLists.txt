@@ -1,16 +1,17 @@
 if (WIN32)
-ADD_DEFINITIONS(-DTIXML_USE_STL)
-ADD_DEFINITIONS(-D__BUILD_GADGETRON_CGSENSE__)
-ADD_DEFINITIONS(-D__BUILD_GADGETS__)
+  ADD_DEFINITIONS(-DTIXML_USE_STL)
+  ADD_DEFINITIONS(-D__BUILD_GADGETRON_CGSENSE__)
+  ADD_DEFINITIONS(-D__BUILD_GADGETS__)
 endif (WIN32)
 
 if(WIN32)
-link_directories(${Boost_LIBRARY_DIRS})
+  link_directories(${Boost_LIBRARY_DIRS})
 endif(WIN32)
 
 find_package(Ismrmrd REQUIRED)
 
 include_directories(   
+  ${ISMRMRD_XSD_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
@@ -21,12 +22,11 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/core
 )
 
-add_library(gadgetroncgsense SHARED GPUCGGadget.cpp GPUCGGoldenRadial.cpp GPUCGFixedRadial.cpp GPUCGGadgetGeneric.cpp)
+add_library(gadgetroncgsense SHARED GPUCGGadget.cpp GPUCGGoldenRadial.cpp GPUCGFixedRadial.cpp GPUCGGadgetGeneric.cpp ${ISMRMRD_XSD_SOURCE})
 
 target_link_libraries(gadgetroncgsense 
   cpucore gpucore gpusolvers gpuoperators gpuparallelmri tinyxml 
-  ${Boost_LIBRARIES}
-  ${ISMRMRD_LIBRARIES} ${ISMRMRD_XSD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} 
+  ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 

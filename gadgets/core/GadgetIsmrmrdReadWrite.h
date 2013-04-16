@@ -10,9 +10,8 @@
 #include "gadgetroncore_export.h"
 
 #include <ismrmrd.h>
-
 #ifndef EXCLUDE_ISMRMRD_XSD
-#include "ismrmrd.hxx"
+#include <ismrmrd.hxx>
 #endif
 
 #include <ace/SOCK_Stream.h>
