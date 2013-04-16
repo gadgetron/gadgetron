@@ -5,6 +5,9 @@ import h5py
 import numpy
 import ConfigParser
 import os
+import shutil
+import platform
+import matplotlib.pyplot as plt
 
 def run_test(environment,testcase_cfg_file):
     print "Running test case: " + testcase_cfg_file
@@ -27,17 +30,22 @@ def run_test(environment,testcase_cfg_file):
     result_dataset = config.get('TEST','result_dataset')
     compare_dimensions = config.getboolean('TEST','compare_dimensions')
     compare_values = config.getboolean('TEST','compare_values')
-    comparison_threshold = config.getfloat('TEST','comparison_threshold')
-
-    subprocess.call(["rm", "-rf", out_folder])
-    subprocess.call(["mkdir", "-p", out_folder])
+    compare_scales = config.getboolean('TEST','compare_scales')
+    comparison_threshold_values = config.getfloat('TEST','comparison_threshold_values')
+    comparison_threshold_scales = config.getfloat('TEST','comparison_threshold_scales')
     
+    if os.path.exists(out_folder):
+        shutil.rmtree(out_folder)
+    os.makedirs(out_folder)
+	
     #inputfilename,gadgetronconfig, referencefile, h5dataset, gadgetron_log_filename, client_log_filename):
     gf = open(gadgetron_log_filename,"w")
     cf = open(client_log_filename,"w")
-    p = subprocess.Popen(["gadgetron","-p","9003"], env=environment,stdout=gf,stderr=gf)
+    if platform.system() != "Windows":
+      p = subprocess.Popen(["gadgetron","-p","9003"], env=environment,stdout=gf,stderr=gf)
+    else:
+      p = subprocess.Popen(["gadgetron","-p","9003"], stdout=gf,stderr=gf)
     time.sleep(2)
-
 
     print "Converting Siemens *.dat file to Siemens HDF5"    
     r = subprocess.call(["siemens_to_HDF5",siemens_dat, siemens_h5],env=environment,stdout=cf,stderr=cf)
@@ -47,8 +55,13 @@ def run_test(environment,testcase_cfg_file):
                          "-x", siemens_parameter_xsl, "-o", ismrmrd, "-w"],env=environment,stdout=cf,stderr=cf)
 
     print "Running Gadgetron recon"
-    r = subprocess.call(["mriclient","-p","9003", "-d" ,ismrmrd, "-c", gadgetron_configuration, 
-                         "-G", gadgetron_configuration, "-o", result_h5],env=environment,stdout=cf,stderr=cf)
+    if platform.system() != "Windows":
+      r = subprocess.call(["mriclient","-p","9003", "-d" ,ismrmrd, "-c", gadgetron_configuration, 
+                           "-G", gadgetron_configuration, "-o", result_h5],env=environment,stdout=cf,stderr=cf)
+    else:
+      r = subprocess.call(["mriclient","-p","9003", "-d" ,ismrmrd, "-c", gadgetron_configuration, 
+                           "-G", gadgetron_configuration, "-o", result_h5],stdout=cf,stderr=cf)
+
     p.terminate()
     gf.flush()
     gf.close()
@@ -61,11 +74,15 @@ def run_test(environment,testcase_cfg_file):
     f2 = h5py.File(reference_h5)
     d1 = f1[result_dataset]
     d2 = f2[reference_dataset]
+
     shapes_match = (d1.shape == d2.shape)
+
     #print "Norm of reference: " + str(numpy.linalg.norm(d2[...]))
     #print "Norm of difference: " + str(numpy.linalg.norm(d1[...]-d2[...]))
     norm_diff = numpy.linalg.norm(d1[...]-d2[...])/numpy.linalg.norm(d2[...])
-    
+
+    scale = float(numpy.dot(d1[...].flatten().astype('float32'),d1[...].flatten().astype('float32')))/float(numpy.dot(d1[...].flatten().astype('float32'),d2[...].flatten().astype('float32')))
+	
     r = True
 
     if (compare_dimensions):
@@ -73,10 +90,14 @@ def run_test(environment,testcase_cfg_file):
         r = r & shapes_match
 
     if (compare_values):
-        print "   --Comparing values, norm diff : " + str(norm_diff) + " (threshold: " + str(comparison_threshold) + ")" 
-        r = r & (norm_diff < comparison_threshold)
+        print "   --Comparing values, norm diff : " + str(norm_diff) + " (threshold: " + str(comparison_threshold_values) + ")" 
+        r = r & (norm_diff < comparison_threshold_values)
 
-    return r
+    if (compare_scales):
+        print "   --Comparing image scales, ratio : " + str(scale) + " (" + str(abs(1-scale)) + ")" + " (threshold: " + str(comparison_threshold_scales) + ")" 
+        r = r & (abs(1-scale) < comparison_threshold_scales)
+
+	return r
 
 if __name__=="__main__":
     myenv=dict()
@@ -84,21 +105,28 @@ if __name__=="__main__":
 
     if (os.path.isabs(myenv["GADGETRON_HOME"]) != True):
         myenv["GADGETRON_HOME"] = os.path.abspath(myenv["GADGETRON_HOME"])
-
-    myenv["PATH"]=myenv["GADGETRON_HOME"] + "/bin"
-    myenv["LD_LIBRARY_PATH"]="/usr/local/cuda/lib64:/usr/local/cula/lib64:" +  myenv["GADGETRON_HOME"] + "/lib:" + myenv["GADGETRON_HOME"] + "/../ismrmrd/lib"     
     
+    if platform.system() != "Windows":
+      myenv["LD_LIBRARY_PATH"]="/usr/local/cuda/lib64:/usr/local/cula/lib64:" +  myenv["GADGETRON_HOME"] + "/lib:" + myenv["GADGETRON_HOME"] + "/../ismrmrd/lib"     
+    else:
+      myenv["LD_LIBRARY_PATH"]=os.environ['Path'];
+
+    if platform.system() != "Windows":
+      myenv["PATH"]=myenv["GADGETRON_HOME"] + "/bin"
+    else:
+      myenv["PATH"]=myenv["LD_LIBRARY_PATH"]
+      
+
     print "Running Gadgetron test with: "
     print "  -- GADGETRON_HOME  : " +  myenv["GADGETRON_HOME"]
     print "  -- PATH            : " +  myenv["PATH"]
     print "  -- LD_LIBRARY_PATH : " +  myenv["LD_LIBRARY_PATH"]
     print "  -- TEST CASE       : " + sys.argv[2]
     test_result = run_test(myenv, sys.argv[2])
+
     if (test_result):
         print "TEST: " + sys.argv[2] + " SUCCESS"
         sys.exit(0)
     else:
         print "TEST: " + sys.argv[2] + " FAILED"
         sys.exit(-100)
-
-
