@@ -77,10 +77,8 @@ def run_test(environment,testcase_cfg_file):
 
     shapes_match = (d1.shape == d2.shape)
 
-    #print "Norm of reference: " + str(numpy.linalg.norm(d2[...]))
-    #print "Norm of difference: " + str(numpy.linalg.norm(d1[...]-d2[...]))
-    norm_diff = numpy.linalg.norm(d1[...]-d2[...])/numpy.linalg.norm(d2[...])
-
+    # If the types in the hdf5 are unsigned short numpy produces norms, dot products etc. in unsigned short. And that _will_ overflow...
+    norm_diff = numpy.linalg.norm(d1[...].flatten().astype('float32')-d2[...].flatten().astype('float32'))/numpy.linalg.norm(d2[...].flatten().astype('float32'))
     scale = float(numpy.dot(d1[...].flatten().astype('float32'),d1[...].flatten().astype('float32')))/float(numpy.dot(d1[...].flatten().astype('float32'),d2[...].flatten().astype('float32')))
 	
     r = True
