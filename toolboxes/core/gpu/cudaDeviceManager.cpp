@@ -57,18 +57,6 @@ namespace Gadgetron{
 
 
 
-
-      cublasStatus_t ret = cublasCreate(&handle[device]);
-      if (ret != CUBLAS_STATUS_SUCCESS) {
-	std::stringstream ss;
-	ss << "Error: unable to create cublas handle for device " << device << " ";
-	ss << getCublasErrorString(ret) << std::endl;
-	BOOST_THROW_EXCEPTION(cuda_error(ss.str()));
-
-      }
-
-      cublasSetPointerMode( handle[device], CUBLAS_POINTER_MODE_HOST );
-
     }
 
     if( cudaSetDevice(old_device) != cudaSuccess ) {
@@ -82,7 +70,8 @@ namespace Gadgetron{
     // TODO Auto-generated destructor stub
 
     for (int device = 0; device < num_devices; device++){
-      cublasDestroy(handle[device]);
+    	if (handle[device] != NULL)
+    		cublasDestroy(handle[device]);
     }
   }
 
@@ -151,9 +140,22 @@ namespace Gadgetron{
   cublasHandle_t cudaDeviceManager::getHandle(){
     int device;
     CUDA_CALL(cudaGetDevice(&device));
+    return getHandle(device);
+  }
+  cublasHandle_t cudaDeviceManager::getHandle(int device){
+    if (handle[device] == NULL){
+      cublasStatus_t ret = cublasCreate(&handle[device]);
+      if (ret != CUBLAS_STATUS_SUCCESS) {
+      	std::stringstream ss;
+      	ss <<"Error: unable to create cublas handle for device " << device << " ";
+      	ss << getCublasErrorString(ret) << std::endl;
+      	BOOST_THROW_EXCEPTION(cuda_error(ss.str()));
+
+      }
+      cublasSetPointerMode( handle[device], CUBLAS_POINTER_MODE_HOST );
+    }
     return handle[device];
   }
-
   int cudaDeviceManager::getCurrentDevice(){
     int device;
     CUDA_CALL(cudaGetDevice(&device));
