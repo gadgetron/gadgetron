@@ -4,6 +4,7 @@
 
 // Gadgetron includes
 #include "cuCKOpticalFlowSolver.h"
+#include "cuLinearResampleOperator.h"
 #include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
 #include "parameterparser.h"
@@ -78,10 +79,16 @@ int main(int argc, char** argv)
   _real alpha = (_real) parms.get_parameter('a')->get_float_value();
   _real beta = (_real) parms.get_parameter('b')->get_float_value();
 
+  // Use trilinear interpolation for resampling
+  //
+
+  boost::shared_ptr< cuLinearResampleOperator<_real,3> > R( new cuLinearResampleOperator<_real,3>() );
+
   // Setup solver
   //
   
   cuCKOpticalFlowSolver<_real,3> CK;
+  CK.set_interpolator( R );
   CK.set_output_mode( cuCKOpticalFlowSolver<_real,3>::OUTPUT_VERBOSE );  
   CK.set_num_multires_levels( 4 );
   CK.set_max_num_iterations_per_level( 500 );

@@ -136,8 +136,7 @@ namespace Gadgetron{
       std::vector<unsigned int> grad_dims;
 
       (fixed_image->get_number_of_elements()<moving_image->get_number_of_elements() )
-	? grad_dims = *(moving_image->get_dimensions().get())
-	: grad_dims = *(fixed_image->get_dimensions().get());
+	? grad_dims = *moving_image->get_dimensions() : grad_dims = *fixed_image->get_dimensions();
   
       grad_dims.push_back(D+1); 
   
@@ -174,7 +173,6 @@ namespace Gadgetron{
       core_grad_spatial( fixed_image->get_data_ptr(), moving_image->get_data_ptr(), grad_image->get_data_ptr(), 
 			 matrix_size_moving, number_of_batches_fixed, number_of_batches_moving );
     
-
       // Compute temporal partial derivatives
       //
 

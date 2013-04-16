@@ -103,7 +103,7 @@ namespace Gadgetron{
     
     // Invoke kernel (temporal partial derivative)
     temporal_grad_kernel<REAL,D><<< gridDim, blockDim >>>
-      ( fixed_image, moving_image, gradient_image+number_of_elements*max(number_of_batches_moving, number_of_batches_fixed)*D, 
+      ( fixed_image, moving_image, gradient_image,
 	matrix_size_moving, number_of_batches_fixed, number_of_batches_moving );
     
     CHECK_FOR_CUDA_ERROR();
