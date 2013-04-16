@@ -4,6 +4,7 @@ endif (WIN32)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+  ${ARMADILLO_INCLUDE_DIRS}
   )
 
 add_library(cpucore_math SHARED 

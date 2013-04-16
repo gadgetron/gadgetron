@@ -26,6 +26,12 @@ namespace Gadgetron{
 
   protected:
 
+    // Windows/Cuda has given some real issues about defining min
+    // - so for now we resolve to defining our own:
+    const unsigned int& my_min(const unsigned int& a, const unsigned int& b) {
+        return (a>b)?b:a;
+    }
+
     // Estimate offset to the regularization image
     virtual REAL estimate_offset()
     {
@@ -43,7 +49,7 @@ namespace Gadgetron{
       REAL *d = tmp->get_data_ptr();
       
       for( unsigned int i=0; i<this->image_->get_number_of_elements(); i++) {
-	unsigned int bin = std::min(static_cast<unsigned int>(std::floor((d[i]/max_value)*granularity)), granularity-1);
+	unsigned int bin = my_min(static_cast<unsigned int>(std::floor((d[i]/max_value)*granularity)), granularity-1);
 	histogram[bin]++;
       }
       

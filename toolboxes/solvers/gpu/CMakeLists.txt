@@ -2,6 +2,10 @@ if (WIN32)
   ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUSOLVERS__)
 endif (WIN32)
 
+if(WIN32)
+link_directories(${Boost_LIBRARY_DIRS})
+endif(WIN32)
+
 include_directories(
   ${CUDA_INCLUDE_DIRS}
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
@@ -15,6 +19,7 @@ cuda_add_library(gpusolvers SHARED
 
 target_link_libraries(gpusolvers 
   gpucore 
+  ${Boost_LIBRARIES}
   ${CUDA_LIBRARIES}
   ${CUDA_CUBLAS_LIBRARIES} 
   )

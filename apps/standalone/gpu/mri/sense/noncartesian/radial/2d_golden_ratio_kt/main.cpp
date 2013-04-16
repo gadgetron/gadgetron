@@ -2,6 +2,7 @@
 #include "hoNDArray_fileio.h"
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_utils.h"
+#include "vector_td_utilities.h"
 #include "NFFT_utils.h"
 #include "radial_utilities.h"
 #include "cuNonCartesianKtSenseOperator.h"
@@ -11,9 +12,8 @@
 #include "cuCgSolver.h"
 #include "cuNDFFT.h"
 #include "b1_map.h"
-#include "GPUTimer.h"
 #include "parameterparser.h"
-#include "vector_td_utilities.h"
+#include "GPUTimer.h"
 
 // Std includes
 #include <iostream>

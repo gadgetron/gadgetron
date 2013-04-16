@@ -3,6 +3,10 @@ ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUPMRI__)
 ADD_DEFINITIONS(-DWIN32_LEAN_AND_MEAN)
 endif (WIN32)
 
+if(WIN32)
+link_directories(${Boost_LIBRARY_DIRS})
+endif(WIN32)
+
 find_package(CULA REQUIRED)
 
 include_directories(
@@ -33,6 +37,7 @@ cuda_add_library(gpuparallelmri SHARED
 target_link_libraries(gpuparallelmri 
   gpucore 
   gpunfft 
+  ${Boost_LIBRARIES}
   ${FFTW3_LIBRARIES} 
   ${CUDA_LIBRARIES} 
   ${CUDA_CUFFT_LIBRARIES} 

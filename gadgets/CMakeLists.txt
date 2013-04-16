@@ -3,7 +3,9 @@ include_directories(
   ${Boost_INCLUDE_DIR}
   ${FFTW3_INCLUDE_DIR}
   ${ISMRMRD_INCLUDE_DIR}
+  ${ISMRMRD_XSD_INCLUDE_DIR}
   ${XSD_INCLUDE_DIR}
+  ${XERCESC_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/dependencies/tinyxml
   ${CMAKE_SOURCE_DIR}/apps/gadgetron 
   ${CMAKE_SOURCE_DIR}/toolboxes/core
@@ -18,15 +20,13 @@ add_subdirectory(webinterface)
 if (CUDA_FOUND)
   add_subdirectory(grappa)
   add_subdirectory(cgsense)
-  if (NOT WIN32)
-    add_subdirectory(spiral)
-  endif (NOT WIN32)
+  add_subdirectory(spiral)
 endif(CUDA_FOUND)
 
 find_package(Octave)
-if (NOT WIN32 AND OCTAVE_FOUND)
+if (OCTAVE_FOUND)
   add_subdirectory(octave)
-endif(NOT WIN32 AND OCTAVE_FOUND)
+endif(OCTAVE_FOUND)
 
 find_package(GMatlab)
 if (MATLAB_FOUND)

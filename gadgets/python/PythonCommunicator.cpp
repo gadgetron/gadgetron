@@ -96,7 +96,6 @@ int PythonCommunicator::registerGadget(Gadget* g, std::string mod,
 			gadget_ref_[g] = boost::shared_ptr<GadgetReference>(new GadgetReference());
 			gadget_ref_[g]->set_gadget(g);
 			gadget_ref_fnc_[g](*gadget_ref_[g].get());
-
 		}
 
 		if (conf.size() != 0) {

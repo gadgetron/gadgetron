@@ -373,6 +373,7 @@ namespace Gadgetron {
   template EXPORTGPUCORE void shift_dim( cuNDArray<float_complext>*, cuNDArray<float_complext>*, int shift );
   template EXPORTGPUCORE void shift_dim( cuNDArray<double_complext>*, cuNDArray<double_complext>*, int shift );
 
+<<<<<<< HEAD
   template boost::shared_ptr< cuNDArray<float> > expand<float>( cuNDArray<float>*, unsigned int);
   template boost::shared_ptr< cuNDArray<double> > expand<double>( cuNDArray<double>*, unsigned int);
   template boost::shared_ptr< cuNDArray<float_complext> > expand<float_complext>( cuNDArray<float_complext>*, unsigned int);
@@ -382,4 +383,15 @@ namespace Gadgetron {
   template boost::shared_ptr< cuNDArray<double> > sum<double>( cuNDArray<double>*, unsigned int);
   template boost::shared_ptr< cuNDArray<float_complext> > sum<float_complext>( cuNDArray<float_complext>*, unsigned int);
   template boost::shared_ptr< cuNDArray<double_complext> > sum<double_complext>( cuNDArray<double_complext>*, unsigned int);  
+=======
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > expand<float>( cuNDArray<float>*, unsigned int);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > expand<double>( cuNDArray<double>*, unsigned int);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > expand<float_complext>( cuNDArray<float_complext>*, unsigned int);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > expand<double_complext>( cuNDArray<double_complext>*, unsigned int);
+
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > sum<float>( cuNDArray<float>*, unsigned int);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > sum<double>( cuNDArray<double>*, unsigned int);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > sum<float_complext>( cuNDArray<float_complext>*, unsigned int);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > sum<double_complext>( cuNDArray<double_complext>*, unsigned int);  
+>>>>>>> 486fbb3fe0f436aefd527f2d368a8301e331539f
 }

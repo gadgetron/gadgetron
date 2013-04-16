@@ -23,7 +23,6 @@
 #pragma once
 
 #include "hoNDArray.h"
-
 #include "cpucore_math_export.h"
 
 namespace Gadgetron{

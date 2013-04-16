@@ -1,7 +1,6 @@
 #pragma once
 
 #include "GadgetronException.h"
-
 #include <cuda_runtime_api.h>
 
 namespace Gadgetron{

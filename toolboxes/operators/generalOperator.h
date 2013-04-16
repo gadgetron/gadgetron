@@ -12,13 +12,12 @@
 
 namespace Gadgetron{
 
-  template <class ARRAY> class generalOperator{
- 
-  private:
+  template <class ARRAY> class generalOperator
+  {
+   public:
+
     typedef typename ARRAY::element_type ELEMENT_TYPE;
     typedef typename realType<ELEMENT_TYPE>::Type REAL;
-
-  public:
 
     generalOperator() : weight_(REAL(1)){};
 
