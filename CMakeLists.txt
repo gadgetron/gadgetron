@@ -69,7 +69,6 @@ else(ISMRMRD_FOUND)
 message("\nISMRMRD not found. Only compiling toolboxes and standalone applications.")
 endif(ISMRMRD_FOUND)
 
-add_subdirectory(dependencies)
 add_subdirectory(toolboxes)
 add_subdirectory(apps)
 IF (ACE_FOUND AND ISMRMRD_FOUND)

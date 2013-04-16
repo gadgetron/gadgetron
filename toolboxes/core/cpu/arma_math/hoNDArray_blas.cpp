@@ -4,8 +4,7 @@
 
 namespace Gadgetron{
 
-    template<class T> T 
-        Gadgetron::dot( hoNDArray<T> *x, hoNDArray<T> *y, bool cc )
+    template<class T> T dot( hoNDArray<T> *x, hoNDArray<T> *y, bool cc )
     {
         if( x == 0x0 || y == 0x0 )
             BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::dot(): Invalid input array"));
@@ -19,8 +18,7 @@ namespace Gadgetron{
         return *((T*)(&res));
     }
 
-    template<class T> typename realType<T>::Type 
-        Gadgetron::asum( hoNDArray<T> *x )
+    template<class T> typename realType<T>::Type asum( hoNDArray<T> *x )
     {
         if( x == 0x0 )
             BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::asum(): Invalid input array"));
@@ -30,8 +28,7 @@ namespace Gadgetron{
         return realT(arma::norm(xM,1));
     }
 
-    template<class T> T 
-        Gadgetron::asum( hoNDArray< std::complex<T> > *x )
+    template<class T> T asum( hoNDArray< std::complex<T> > *x )
     {
         if( x == 0x0 )
             BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::asum(): Invalid input array"));
@@ -39,8 +36,7 @@ namespace Gadgetron{
         return arma::norm(arma::abs(real(as_arma_col(x)))+arma::abs(imag(as_arma_col(x))),1);
     }
 
-    template<class T> T 
-        Gadgetron::asum( hoNDArray< complext<T> > *x )
+    template<class T> T asum( hoNDArray< complext<T> > *x )
     {
         if( x == 0x0 )
             BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::asum(): Invalid input array"));
@@ -48,8 +44,7 @@ namespace Gadgetron{
         return arma::norm(arma::abs(real(as_arma_col(x)))+arma::abs(imag(as_arma_col(x))),1);
     }
 
-    template<class T> typename realType<T>::Type 
-        Gadgetron::nrm2( hoNDArray<T> *x )
+    template<class T> typename realType<T>::Type nrm2( hoNDArray<T> *x )
     {
         if( x == 0x0 )
             BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::nrm2(): Invalid input array"));
@@ -59,8 +54,7 @@ namespace Gadgetron{
         return realT(arma::norm(xM,2));
     }
 
-    template<class T> unsigned int 
-        Gadgetron::amin( hoNDArray<T> *x )
+    template<class T> unsigned int amin( hoNDArray<T> *x )
     {
         if( x == 0x0 )
             BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::amin(): Invalid input array"));
@@ -72,8 +66,7 @@ namespace Gadgetron{
         return idx;
     }
 
-    template<class T> unsigned int 
-        Gadgetron::amin( hoNDArray< std::complex<T> > *x )
+    template<class T> unsigned int amin( hoNDArray< std::complex<T> > *x )
     {
         if( x == 0x0 )
             BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::amin(): Invalid input array"));
@@ -84,8 +77,7 @@ namespace Gadgetron{
         return idx;
     }
 
-    template<class T> unsigned int 
-        Gadgetron::amin( hoNDArray< complext<T> > *x )
+    template<class T> unsigned int amin( hoNDArray< complext<T> > *x )
     {
         if( x == 0x0 )
             BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::amin(): Invalid input array"));
@@ -96,8 +88,7 @@ namespace Gadgetron{
         return idx;
     }
 
-    template<class T> unsigned int 
-        Gadgetron::amax( hoNDArray<T> *x )
+    template<class T> unsigned int amax( hoNDArray<T> *x )
     {
         if( x == 0x0 )
             BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::amax(): Invalid input array"));
@@ -109,8 +100,7 @@ namespace Gadgetron{
         return idx;
     }
 
-    template<class T> unsigned int 
-        Gadgetron::amax( hoNDArray< std::complex<T> > *x )
+    template<class T> unsigned int amax( hoNDArray< std::complex<T> > *x )
     {
         if( x == 0x0 )
             BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::amax(): Invalid input array"));
@@ -121,8 +111,7 @@ namespace Gadgetron{
         return idx;
     }
 
-    template<class T> unsigned int 
-        Gadgetron::amax( hoNDArray< complext<T> > *x )
+    template<class T> unsigned int amax( hoNDArray< complext<T> > *x )
     {
         if( x == 0x0 )
             BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::amax(): Invalid input array"));
@@ -133,8 +122,7 @@ namespace Gadgetron{
         return idx;
     }
 
-    template<class T> void 
-        Gadgetron::axpy( T a, hoNDArray<T> *x, hoNDArray<T> *y )
+    template<class T> void axpy( T a, hoNDArray<T> *x, hoNDArray<T> *y )
     {
         if( x == 0x0 || y == 0x0 )
             BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::axpy(): Invalid input array"));

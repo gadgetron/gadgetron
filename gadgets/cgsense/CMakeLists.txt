@@ -25,7 +25,7 @@ include_directories(
 add_library(gadgetroncgsense SHARED GPUCGGadget.cpp GPUCGGoldenRadial.cpp GPUCGFixedRadial.cpp GPUCGGadgetGeneric.cpp ${ISMRMRD_XSD_SOURCE})
 
 target_link_libraries(gadgetroncgsense 
-  cpucore gpucore gpusolvers gpuoperators gpuparallelmri tinyxml 
+  cpucore gpucore gpusolvers gpuoperators gpuparallelmri 
   ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )

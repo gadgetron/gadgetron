@@ -13,7 +13,7 @@ namespace Gadgetron{
         return ((x.get_number_of_elements()%y.get_number_of_elements())==0);
     }
 
-    template<class T> hoNDArray<T>& Gadgetron::operator+= (hoNDArray<T> &x, const hoNDArray<T> &y)
+    template<class T> hoNDArray<T>& operator+= (hoNDArray<T> &x, const hoNDArray<T> &y)
     {
         if( compatible_dimensions<T,T>(x,y) ){
             arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
@@ -31,7 +31,7 @@ namespace Gadgetron{
         }
     }
 
-    template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator+= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
+    template<class T> hoNDArray< std::complex<T> >& operator+= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
     {
         if( compatible_dimensions<std::complex<T>,T>(x,y) ){
             arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
@@ -49,7 +49,7 @@ namespace Gadgetron{
         }
     }
 
-    template<class T> hoNDArray< complext<T> >& Gadgetron::operator+= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
+    template<class T> hoNDArray< complext<T> >& operator+= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
     {
         if( compatible_dimensions<complext<T>,T>(x,y) ){
             arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
@@ -67,7 +67,7 @@ namespace Gadgetron{
         }
     }
 
-    template<class T> hoNDArray<T>& Gadgetron::operator+= (hoNDArray<T> &x, const T &y)
+    template<class T> hoNDArray<T>& operator+= (hoNDArray<T> &x, const T &y)
     {
         arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&x);
         typename stdType<T>::Type aY = *((typename stdType<T>::Type*)&y);
@@ -75,7 +75,7 @@ namespace Gadgetron{
         return x;  
     }
 
-    template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator+= (hoNDArray< std::complex<T> > &x, const T &y)
+    template<class T> hoNDArray< std::complex<T> >& operator+= (hoNDArray< std::complex<T> > &x, const T &y)
     {
         arma::Col< std::complex<T> > aRes = as_arma_col(&x);
         std::complex<T> aY( y, T(0) );
@@ -83,7 +83,7 @@ namespace Gadgetron{
         return x;  
     }
 
-    template<class T> hoNDArray< complext<T> >& Gadgetron::operator+= (hoNDArray< complext<T> > &x, const T &y)
+    template<class T> hoNDArray< complext<T> >& operator+= (hoNDArray< complext<T> > &x, const T &y)
     {
         arma::Col< std::complex<T> > aRes = as_arma_col(&x);
         std::complex<T> aY( y, T(0) );
@@ -91,7 +91,7 @@ namespace Gadgetron{
         return x;  
     }
 
-    template<class T> hoNDArray<T>& Gadgetron::operator-= (hoNDArray<T> &x, const hoNDArray<T> &y)
+    template<class T> hoNDArray<T>& operator-= (hoNDArray<T> &x, const hoNDArray<T> &y)
     {
         if( compatible_dimensions<T,T>(x,y) ){
             arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
@@ -109,7 +109,7 @@ namespace Gadgetron{
         }
     }
 
-    template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator-= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
+    template<class T> hoNDArray< std::complex<T> >& operator-= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
     {
         if( compatible_dimensions<std::complex<T>,T>(x,y) ){
             arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
@@ -127,7 +127,7 @@ namespace Gadgetron{
         }
     }
 
-    template<class T> hoNDArray< complext<T> >& Gadgetron::operator-= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
+    template<class T> hoNDArray< complext<T> >& operator-= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
     {
         if( compatible_dimensions<complext<T>,T>(x,y) ){
             arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
@@ -145,7 +145,7 @@ namespace Gadgetron{
         }
     }
 
-    template<class T> hoNDArray<T>& Gadgetron::operator-= (hoNDArray<T> &x, const T &y)
+    template<class T> hoNDArray<T>& operator-= (hoNDArray<T> &x, const T &y)
     {
         arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&x);
         typename stdType<T>::Type aY = *((typename stdType<T>::Type*)&y);
@@ -153,7 +153,7 @@ namespace Gadgetron{
         return x;  
     }
 
-    template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator-= (hoNDArray< std::complex<T> > &x, const T &y)
+    template<class T> hoNDArray< std::complex<T> >& operator-= (hoNDArray< std::complex<T> > &x, const T &y)
     {
         arma::Col< std::complex<T> > aRes = as_arma_col(&x);
         std::complex<T> aY( y, T(0) );
@@ -161,7 +161,7 @@ namespace Gadgetron{
         return x;  
     }
 
-    template<class T> hoNDArray< complext<T> >& Gadgetron::operator-= (hoNDArray< complext<T> > &x, const T &y)
+    template<class T> hoNDArray< complext<T> >& operator-= (hoNDArray< complext<T> > &x, const T &y)
     {
         arma::Col< std::complex<T> > aRes = as_arma_col(&x);
         std::complex<T> aY( y, T(0) );
@@ -169,7 +169,7 @@ namespace Gadgetron{
         return x;  
     }
 
-    template<class T> hoNDArray<T>& Gadgetron::operator*= (hoNDArray<T> &x, const hoNDArray<T> &y)
+    template<class T> hoNDArray<T>& operator*= (hoNDArray<T> &x, const hoNDArray<T> &y)
     {
         if( compatible_dimensions<T,T>(x,y) ){
             arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
@@ -187,7 +187,7 @@ namespace Gadgetron{
         }
     }
 
-    template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator*= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
+    template<class T> hoNDArray< std::complex<T> >& operator*= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
     {
         if( compatible_dimensions<std::complex<T>,T>(x,y) ){
             arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );    
@@ -205,7 +205,7 @@ namespace Gadgetron{
         }
     }
 
-    template<class T> hoNDArray< complext<T> >& Gadgetron::operator*= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
+    template<class T> hoNDArray< complext<T> >& operator*= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
     {
         if( compatible_dimensions<complext<T>,T>(x,y) ){
             arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
@@ -223,7 +223,7 @@ namespace Gadgetron{
         }
     }
 
-    template<class T> hoNDArray<T>& Gadgetron::operator*= (hoNDArray<T> &x, const T &y)
+    template<class T> hoNDArray<T>& operator*= (hoNDArray<T> &x, const T &y)
     {
         arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&x);
         typename stdType<T>::Type aY = *((typename stdType<T>::Type*)&y);
@@ -231,7 +231,7 @@ namespace Gadgetron{
         return x;  
     }
 
-    template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator*= (hoNDArray< std::complex<T> > &x, const T &y)
+    template<class T> hoNDArray< std::complex<T> >& operator*= (hoNDArray< std::complex<T> > &x, const T &y)
     {
         arma::Col< std::complex<T> > aRes = as_arma_col(&x);
         std::complex<T> aY( y, T(0) );
@@ -239,7 +239,7 @@ namespace Gadgetron{
         return x;  
     }
 
-    template<class T> hoNDArray< complext<T> >& Gadgetron::operator*= (hoNDArray< complext<T> > &x, const T &y)
+    template<class T> hoNDArray< complext<T> >& operator*= (hoNDArray< complext<T> > &x, const T &y)
     {
         arma::Col< std::complex<T> > aRes = as_arma_col(&x);
         std::complex<T> aY( y, T(0) );
@@ -247,7 +247,7 @@ namespace Gadgetron{
         return x;  
     }
 
-    template<class T> hoNDArray<T>& Gadgetron::operator/= (hoNDArray<T> &x, const hoNDArray<T> &y)
+    template<class T> hoNDArray<T>& operator/= (hoNDArray<T> &x, const hoNDArray<T> &y)
     {
         if( compatible_dimensions<T,T>(x,y) ){
             arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
@@ -265,7 +265,7 @@ namespace Gadgetron{
         }
     }
 
-    template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator/= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
+    template<class T> hoNDArray< std::complex<T> >& operator/= (hoNDArray< std::complex<T> > &x, const hoNDArray<T> &y)
     {
         if( compatible_dimensions<std::complex<T>,T>(x,y) ){
             arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );    
@@ -283,7 +283,7 @@ namespace Gadgetron{
         }
     }
 
-    template<class T> hoNDArray< complext<T> >& Gadgetron::operator/= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
+    template<class T> hoNDArray< complext<T> >& operator/= (hoNDArray< complext<T> > &x, const hoNDArray<T> &y)
     {
         if( compatible_dimensions<complext<T>,T>(x,y) ){
             arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
@@ -301,7 +301,7 @@ namespace Gadgetron{
         }
     }
 
-    template<class T> hoNDArray<T>& Gadgetron::operator/= (hoNDArray<T> &x, const T &y)
+    template<class T> hoNDArray<T>& operator/= (hoNDArray<T> &x, const T &y)
     {
         arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&x);
         typename stdType<T>::Type aY = *((typename stdType<T>::Type*)&y);
@@ -309,7 +309,7 @@ namespace Gadgetron{
         return x;  
     }
 
-    template<class T> hoNDArray< std::complex<T> >& Gadgetron::operator/= (hoNDArray< std::complex<T> > &x, const T &y)
+    template<class T> hoNDArray< std::complex<T> >& operator/= (hoNDArray< std::complex<T> > &x, const T &y)
     {
         arma::Col< std::complex<T> > aRes = as_arma_col(&x);
         std::complex<T> aY( y, T(0) );
@@ -317,7 +317,7 @@ namespace Gadgetron{
         return x;  
     }
 
-    template<class T> hoNDArray< complext<T> >& Gadgetron::operator/= (hoNDArray< complext<T> > &x, const T &y)
+    template<class T> hoNDArray< complext<T> >& operator/= (hoNDArray< complext<T> > &x, const T &y)
     {
         arma::Col< std::complex<T> > aRes = as_arma_col(&x);
         std::complex<T> aY( y, T(0) );

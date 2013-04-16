@@ -19,14 +19,14 @@ add_library(gadgetronpython SHARED
 	GadgetronPythonMRI.cpp
 	PythonCommunicator.cpp)
 
-target_link_libraries(gadgetronpython tinyxml
+target_link_libraries(gadgetronpython
 	${ISMRMRD_LIBRARIES} 
 	optimized ${ACE_LIBRARIES}  
 	debug ${ACE_DEBUG_LIBRARY} 
 	${PYTHON_LIBRARIES}
 	${Boost_LIBRARIES})
 	
-target_link_libraries(GadgetronPythonMRI tinyxml 
+target_link_libraries(GadgetronPythonMRI
 	optimized ${ACE_LIBRARIES}  
 	debug ${ACE_DEBUG_LIBRARY} 
 	${PYTHON_LIBRARIES} 

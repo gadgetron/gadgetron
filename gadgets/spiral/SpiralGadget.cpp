@@ -1,7 +1,6 @@
 #include "SpiralGadget.h"
 #include "cuNDArray.h"
 #include "Gadgetron.h"
-#include "GadgetXml.h"
 #include "hoNDArray_fileio.h"
 #include "vector_td.h"
 #include "vector_td_operators.h"
