@@ -28,7 +28,7 @@ add_library(gadgetrongrappa SHARED
     )
 
 target_link_libraries(gadgetrongrappa 
-  gpuparallelmri cpucore tinyxml 
+  gpuparallelmri cpucore
   ${Boost_LIBRARIES}
   ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 

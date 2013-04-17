@@ -68,6 +68,66 @@ template<class T, unsigned int D> thrust::device_vector<T> Gadgetron::test_max(c
 	return out;
 }
 
+template<typename T, unsigned D>
+struct test_amin_functor : public thrust::binary_function<vector_td<T,D>, vector_td<T,D>, vector_td<T,D> >
+{
+	__host__ __device__ vector_td<T,D> operator()(const vector_td<T,D> &x, const vector_td<T,D> &y) const {return amin(x,y);}
+
+};
+
+template<class T, unsigned int D> boost::shared_ptr<cuNDArray<vector_td<T,D> > > Gadgetron::test_amin(cuNDArray< vector_td<T,D> >* data1, cuNDArray< vector_td<T,D> >* data2){
+	boost::shared_ptr<cuNDArray<vector_td<T,D> > > out( new cuNDArray<vector_td<T,D> >(data1->get_dimensions()));
+	thrust::transform(data1->begin(),data1->end(),data2->begin(),out->begin(),test_amin_functor<T,D>());
+	return out;
+}
+
+
+template<typename T, unsigned D>
+struct test_amax_functor : public thrust::binary_function<vector_td<T,D>, vector_td<T,D>, vector_td<T,D> >
+{
+	__host__ __device__ vector_td<T,D> operator()(const vector_td<T,D> &x, const vector_td<T,D> &y) const {return amax(x,y);}
+
+};
+
+template<class T, unsigned int D> boost::shared_ptr<cuNDArray<vector_td<T,D> > > Gadgetron::test_amax(cuNDArray< vector_td<T,D> >* data1, cuNDArray< vector_td<T,D> >* data2){
+	boost::shared_ptr<cuNDArray<vector_td<T,D> > > out( new cuNDArray<vector_td<T,D> >(data1->get_dimensions()));
+	thrust::transform(data1->begin(),data1->end(),data2->begin(),out->begin(),test_amax_functor<T,D>());
+	return out;
+}
+
+template<typename T, unsigned D>
+class test_amin2_functor : public thrust::unary_function<vector_td<T,D>, vector_td<T,D> >
+{
+public:
+	test_amin2_functor(T _val): val(_val){};
+	__host__ __device__ vector_td<T,D> operator()(const vector_td<T,D> &x) const {return amin(x,val);}
+	T val;
+};
+
+template<class T, unsigned int D> boost::shared_ptr<cuNDArray<vector_td<T,D> > > Gadgetron::test_amin2(cuNDArray< vector_td<T,D> >* data1, T val){
+	boost::shared_ptr<cuNDArray<vector_td<T,D> > > out( new cuNDArray<vector_td<T,D> >(data1->get_dimensions()));
+	thrust::transform(data1->begin(),data1->end(),out->begin(),test_amin2_functor<T,D>(val));
+	return out;
+}
+
+
+template<typename T, unsigned D>
+class test_amax2_functor : public thrust::unary_function<vector_td<T,D>, vector_td<T,D> >
+{
+public:
+	test_amax2_functor(T _val): val(_val){};
+	__host__ __device__ vector_td<T,D> operator()(const vector_td<T,D> &x) const {return amax(x,val);}
+	T val;
+};
+
+template<class T, unsigned int D> boost::shared_ptr<cuNDArray<vector_td<T,D> > > Gadgetron::test_amax2(cuNDArray< vector_td<T,D> >* data1, T val){
+	boost::shared_ptr<cuNDArray<vector_td<T,D> > > out( new cuNDArray<vector_td<T,D> >(data1->get_dimensions()));
+	thrust::transform(data1->begin(),data1->end(),out->begin(),test_amax2_functor<T,D>(val));
+	return out;
+}
+
+
+
 template<class T, unsigned int D> void Gadgetron::vector_fill(cuNDArray< vector_td<T,D> >* data,  vector_td<T,D> val){
 	thrust::fill(data->begin(),data->end(),val);
 }
@@ -115,6 +175,55 @@ template  thrust::device_vector<double> Gadgetron::test_max<double,1>(cuNDArray<
 template thrust::device_vector<double> Gadgetron::test_max<double,2>(cuNDArray< vector_td<double,2> > *);
 template thrust::device_vector<double> Gadgetron::test_max<double,3>(cuNDArray< vector_td<double,3> > *);
 template thrust::device_vector<double> Gadgetron::test_max<double,4>(cuNDArray< vector_td<double,4> > *);
+
+
+
+template boost::shared_ptr<cuNDArray<vector_td<float,1> > > Gadgetron::test_amin<float,1>(cuNDArray< vector_td<float,1> > *,cuNDArray< vector_td<float,1> > *);
+template boost::shared_ptr<cuNDArray<vector_td<float,2> > > Gadgetron::test_amin<float,2>(cuNDArray< vector_td<float,2> > *, cuNDArray< vector_td<float,2> > *);
+template  boost::shared_ptr<cuNDArray<vector_td<float,3> > > Gadgetron::test_amin<float,3>(cuNDArray< vector_td<float,3> > *, cuNDArray< vector_td<float,3> > *);
+template  boost::shared_ptr<cuNDArray<vector_td<float,4> > > Gadgetron::test_amin<float,4>(cuNDArray< vector_td<float,4> > *, cuNDArray< vector_td<float,4> > *);
+
+template  boost::shared_ptr<cuNDArray<vector_td<double,1> > > Gadgetron::test_amin<double,1>(cuNDArray< vector_td<double,1> > *, cuNDArray< vector_td<double,1> > *);
+template boost::shared_ptr<cuNDArray<vector_td<double,2> > > Gadgetron::test_amin<double,2>(cuNDArray< vector_td<double,2> > *, cuNDArray< vector_td<double,2> > *);
+template boost::shared_ptr<cuNDArray<vector_td<double,3> > > Gadgetron::test_amin<double,3>(cuNDArray< vector_td<double,3> > *, cuNDArray< vector_td<double,3> > *);
+template boost::shared_ptr<cuNDArray<vector_td<double,4> > > Gadgetron::test_amin<double,4>(cuNDArray< vector_td<double,4> > *, cuNDArray< vector_td<double,4> > *);
+
+
+
+template boost::shared_ptr<cuNDArray<vector_td<float,1> > > Gadgetron::test_amin2<float,1>(cuNDArray< vector_td<float,1> > *, float );
+template boost::shared_ptr<cuNDArray<vector_td<float,2> > > Gadgetron::test_amin2<float,2>(cuNDArray< vector_td<float,2> > *, float);
+template  boost::shared_ptr<cuNDArray<vector_td<float,3> > > Gadgetron::test_amin2<float,3>(cuNDArray< vector_td<float,3> > *, float);
+template  boost::shared_ptr<cuNDArray<vector_td<float,4> > > Gadgetron::test_amin2<float,4>(cuNDArray< vector_td<float,4> > *, float);
+
+template  boost::shared_ptr<cuNDArray<vector_td<double,1> > > Gadgetron::test_amin2<double,1>(cuNDArray< vector_td<double,1> > *, double);
+template boost::shared_ptr<cuNDArray<vector_td<double,2> > > Gadgetron::test_amin2<double,2>(cuNDArray< vector_td<double,2> > *, double);
+template boost::shared_ptr<cuNDArray<vector_td<double,3> > > Gadgetron::test_amin2<double,3>(cuNDArray< vector_td<double,3> > *, double);
+template boost::shared_ptr<cuNDArray<vector_td<double,4> > > Gadgetron::test_amin2<double,4>(cuNDArray< vector_td<double,4> > *, double);
+
+
+
+template boost::shared_ptr<cuNDArray<vector_td<float,1> > > Gadgetron::test_amax<float,1>(cuNDArray< vector_td<float,1> > *,cuNDArray< vector_td<float,1> > *);
+template boost::shared_ptr<cuNDArray<vector_td<float,2> > > Gadgetron::test_amax<float,2>(cuNDArray< vector_td<float,2> > *, cuNDArray< vector_td<float,2> > *);
+template  boost::shared_ptr<cuNDArray<vector_td<float,3> > > Gadgetron::test_amax<float,3>(cuNDArray< vector_td<float,3> > *, cuNDArray< vector_td<float,3> > *);
+template  boost::shared_ptr<cuNDArray<vector_td<float,4> > > Gadgetron::test_amax<float,4>(cuNDArray< vector_td<float,4> > *, cuNDArray< vector_td<float,4> > *);
+
+template  boost::shared_ptr<cuNDArray<vector_td<double,1> > > Gadgetron::test_amax<double,1>(cuNDArray< vector_td<double,1> > *, cuNDArray< vector_td<double,1> > *);
+template boost::shared_ptr<cuNDArray<vector_td<double,2> > > Gadgetron::test_amax<double,2>(cuNDArray< vector_td<double,2> > *, cuNDArray< vector_td<double,2> > *);
+template boost::shared_ptr<cuNDArray<vector_td<double,3> > > Gadgetron::test_amax<double,3>(cuNDArray< vector_td<double,3> > *, cuNDArray< vector_td<double,3> > *);
+template boost::shared_ptr<cuNDArray<vector_td<double,4> > > Gadgetron::test_amax<double,4>(cuNDArray< vector_td<double,4> > *, cuNDArray< vector_td<double,4> > *);
+
+
+template boost::shared_ptr<cuNDArray<vector_td<float,1> > > Gadgetron::test_amax2<float,1>(cuNDArray< vector_td<float,1> > *, float );
+template boost::shared_ptr<cuNDArray<vector_td<float,2> > > Gadgetron::test_amax2<float,2>(cuNDArray< vector_td<float,2> > *, float);
+template  boost::shared_ptr<cuNDArray<vector_td<float,3> > > Gadgetron::test_amax2<float,3>(cuNDArray< vector_td<float,3> > *, float);
+template  boost::shared_ptr<cuNDArray<vector_td<float,4> > > Gadgetron::test_amax2<float,4>(cuNDArray< vector_td<float,4> > *, float);
+
+template  boost::shared_ptr<cuNDArray<vector_td<double,1> > > Gadgetron::test_amax2<double,1>(cuNDArray< vector_td<double,1> > *, double);
+template boost::shared_ptr<cuNDArray<vector_td<double,2> > > Gadgetron::test_amax2<double,2>(cuNDArray< vector_td<double,2> > *, double);
+template boost::shared_ptr<cuNDArray<vector_td<double,3> > > Gadgetron::test_amax2<double,3>(cuNDArray< vector_td<double,3> > *, double);
+template boost::shared_ptr<cuNDArray<vector_td<double,4> > > Gadgetron::test_amax2<double,4>(cuNDArray< vector_td<double,4> > *, double);
+
+
 
 template void Gadgetron::vector_fill<float,1>(cuNDArray< vector_td<float,1> > *, vector_td<float,1>);
 template void Gadgetron::vector_fill<float,2>(cuNDArray< vector_td<float,2> > *, vector_td<float,2>);

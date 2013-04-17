@@ -24,7 +24,7 @@ add_library(gadgetronmricore SHARED
   ${ISMRMRD_XSD_SOURCE}
   )
 
-target_link_libraries(gadgetronmricore tinyxml cpucore cpucore_math 
+target_link_libraries(gadgetronmricore cpucore cpucore_math 
   ${ISMRMRD_LIBRARIES}  
   ${FFTW3_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 

@@ -9,7 +9,6 @@
 #include "GadgetMRIHeaders.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "hoNDArray_fileio.h"
-#include "tinyxml.h"
 
 namespace Gadgetron{
 

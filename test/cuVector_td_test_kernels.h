@@ -10,4 +10,9 @@ template<class T, unsigned int D> thrust::device_vector<T> test_norm(cuNDArray< 
 template<class T, unsigned int D> thrust::device_vector<T> test_min(cuNDArray< vector_td<T,D> >* data);
 
 template<class T, unsigned int D> thrust::device_vector<T> test_max(cuNDArray< vector_td<T,D> >* data);
+
+template<class T, unsigned int D> boost::shared_ptr<cuNDArray<vector_td<T,D> > > test_amax(cuNDArray< vector_td<T,D> >* data1, cuNDArray< vector_td<T,D> >* data2);
+template<class T, unsigned int D> boost::shared_ptr<cuNDArray<vector_td<T,D> > > test_amin(cuNDArray< vector_td<T,D> >* data1, cuNDArray< vector_td<T,D> >* data2);
+template<class T, unsigned int D> boost::shared_ptr<cuNDArray<vector_td<T,D> > > test_amin2(cuNDArray< vector_td<T,D> >* data, T val);
+template<class T, unsigned int D> boost::shared_ptr<cuNDArray<vector_td<T,D> > > test_amax2(cuNDArray< vector_td<T,D> >* data, T val);
 }

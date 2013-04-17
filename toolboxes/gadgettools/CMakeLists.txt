@@ -10,7 +10,6 @@ install(TARGETS gadgettools DESTINATION lib)
 
 install (FILES	GadgetImageMessageReader.h 
 			GadgetImageMessageWriter.h
-			GadgetXml.h
 			GadgetronConnector.h
 			gadgettools_export.h
 			GadgetronSlotContainer.h

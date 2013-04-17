@@ -276,8 +276,8 @@ namespace Gadgetron{
     bool initialized;
   };
 
-  // Empty class to cause compile errors if you try to use NFFT with double and atomics
+  // Pure virtual class to cause compile errors if you try to use NFFT with double and atomics
   // - since this is not supported on the device
   template< unsigned int D> class EXPORTGPUNFFT cuNFFT_plan<double,D,true>
-  {};
+  { virtual void atomics_not_support_for_double()=0;};
 }

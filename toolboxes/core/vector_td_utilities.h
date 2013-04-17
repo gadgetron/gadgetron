@@ -327,7 +327,7 @@ namespace Gadgetron{
   {
     vector_td<T,D> res;
     for (unsigned int i=0; i<D; i++){
-      res[i] = vec1[i] < vec2[i] ? vec1[i] : vec2[i];
+      res[i] = _vector_td_min(vec1[i],vec2[i]);
     }
     return res;
   }
@@ -337,7 +337,7 @@ namespace Gadgetron{
   {
     vector_td<T,D> res;
     for (unsigned int i=0; i<D; i++){
-      res[i] = vec1[i] > vec2[i] ? vec1[i] : vec2[i];
+      res[i] = _vector_td_max(vec1[i],vec2[i]);
     }
     return res;
   }
@@ -347,7 +347,7 @@ namespace Gadgetron{
    {
      vector_td<T,D> res;
      for (unsigned int i=0; i<D; i++){
-       res[i] = vec1[i] < val ? vec1[i] : val;
+       res[i] = _vector_td_min(vec1[i],val);
      }
      return res;
    }
@@ -357,7 +357,7 @@ namespace Gadgetron{
    {
      vector_td<T,D> res;
      for (unsigned int i=0; i<D; i++){
-       res[i] = vec1[i] > val ? vec1[i] : val;
+       res[i] = _vector_td_max(vec1[i],val);
      }
      return res;
    }

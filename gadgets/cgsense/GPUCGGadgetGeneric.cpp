@@ -9,7 +9,6 @@
 #include "GPUTimer.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "hoNDArray_fileio.h"
-#include "tinyxml.h"
 #include "vector_td_utilities.h"
 
 namespace Gadgetron{
