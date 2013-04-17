@@ -162,18 +162,16 @@ namespace Gadgetron{
     return false;
   }
 
-  template<unsigned int i, unsigned int j>
-  struct Pow
+  template<unsigned int i, unsigned int j> struct Pow
   {
-    enum { Value = i*Pow<i,j-1>::Value};
+    enum { Value = i*Pow<i,j-1>::Value };
   };
-
-  template <unsigned int i>
-  struct Pow<i,1>
+  
+  template <unsigned int i> struct Pow<i,1>
   {
-    enum { Value = i};
+    enum { Value = i };
   };
-
+  
   // Cornelius-Kanade / Jacobi iteration
   //
 

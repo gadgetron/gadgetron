@@ -14,11 +14,14 @@ namespace Gadgetron{
   template<class REAL, unsigned int D> __global__ 
   void temporal_grad_kernel(REAL*,REAL*,REAL*,typename uintd<D>::Type,unsigned int,unsigned int);
 
-  template <class T> __host__ __device__ const T& max (const T& a, const T& b) {
+  // There is some issue about Cuda defining min/max incompatibly...
+  //
+
+  template <class T> __host__ __device__ const T& _cuOF_max (const T& a, const T& b) {
     return (a<b)?b:a;
   }
 
-  template <class T> __host__ __device__ const T& min (const T& a, const T& b) {
+  template <class T> __host__ __device__ const T& _cuOF_min (const T& a, const T& b) {
     return (a>b)?b:a;
   }
 
@@ -81,7 +84,7 @@ namespace Gadgetron{
     unsigned int number_of_elements = prod(matrix_size_moving);
     dim3 blockDim; dim3 gridDim;
 
-    setup_grid( &blockDim, &gridDim, number_of_elements, max(number_of_batches_moving, number_of_batches_fixed)*D );
+    setup_grid( &blockDim, &gridDim, number_of_elements, _cuOF_max(number_of_batches_moving, number_of_batches_fixed)*D );
     
     // Invoke kernel (spatial partial derivatives)
     spatial_grad_kernel<REAL,D><<< gridDim, blockDim >>>
@@ -99,7 +102,7 @@ namespace Gadgetron{
     unsigned int number_of_elements = prod(matrix_size_moving);
     dim3 blockDim; dim3 gridDim;
     
-    setup_grid( &blockDim, &gridDim, number_of_elements, max(number_of_batches_moving, number_of_batches_fixed)*1 );
+    setup_grid( &blockDim, &gridDim, number_of_elements, _cuOF_max(number_of_batches_moving, number_of_batches_fixed)*1 );
     
     // Invoke kernel (temporal partial derivative)
     temporal_grad_kernel<REAL,D><<< gridDim, blockDim >>>
@@ -157,14 +160,14 @@ namespace Gadgetron{
     const unsigned int num_elements_per_pdev_moving = num_elements_per_batch*num_batches_moving;
 
     // Total number of elements for all partial derivatives
-    const unsigned int num_elements_total = max(num_elements_per_pdev_fixed, num_elements_per_pdev_moving)*D;
+    const unsigned int num_elements_total = _cuOF_max(num_elements_per_pdev_fixed, num_elements_per_pdev_moving)*D;
   
     if( idx < num_elements_total ){
     
       // The (minimum) index in the slowest varying output dimension determines which partial derivative to compute 
       const unsigned int stride_dim_fixed = idx/(num_elements_per_pdev_fixed);
       const unsigned int stride_dim_moving = idx/(num_elements_per_pdev_moving);
-      const unsigned int stride_dim = min(stride_dim_fixed, stride_dim_moving);
+      const unsigned int stride_dim = _cuOF_min(stride_dim_fixed, stride_dim_moving);
 
       // Local index to the partial derivative
       const unsigned int idx_in_pdev_fixed = idx-stride_dim_fixed*num_elements_per_pdev_fixed;
@@ -184,8 +187,7 @@ namespace Gadgetron{
       unsigned int count = 0;
 
       //
-      // Find partial derivatives       
-      // Use central differences
+      // Find partial derivatives using central differences
       //
     
       typename uintd<D>::Type stride = compute_stride<D>(stride_dim);
@@ -249,7 +251,7 @@ namespace Gadgetron{
     const unsigned int num_elements_per_pdev_moving = num_elements_per_batch*num_batches_moving;
 
     // Total number of elements for all partial derivatives
-    const unsigned int num_elements_total = max(num_elements_per_pdev_fixed, num_elements_per_pdev_moving)*D;
+    const unsigned int num_elements_total = _cuOF_max(num_elements_per_pdev_fixed, num_elements_per_pdev_moving)*D;
   
     if( idx < num_elements_total ){
     

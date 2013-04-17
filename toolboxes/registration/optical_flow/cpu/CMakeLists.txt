@@ -8,7 +8,11 @@ include_directories(
 )
 
 add_library(cpureg SHARED 
+  hoOpticalFlowSolver.cpp
+  hoHSOpticalFlowSolver.cpp
+  hoCKOpticalFlowSolver.cpp
   hoLinearResampleOperator.cpp
+  hoRegistration_utils.cpp
   )
 
 target_link_libraries(cpureg 
@@ -19,5 +23,9 @@ target_link_libraries(cpureg
 install(TARGETS cpureg DESTINATION lib)
 
 install(FILES
-  hoLinearResampleOperator.cpp
+  hoOpticalFlowSolver.h
+  hoHSOpticalFlowSolver.h
+  hoCKOpticalFlowSolver.h
+  hoLinearResampleOperator.h
+  hoRegistration_utils.h
   DESTINATION include)

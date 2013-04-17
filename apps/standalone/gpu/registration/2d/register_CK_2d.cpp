@@ -99,7 +99,7 @@ int main(int argc, char** argv)
   // Run registration
   //
 
-  boost::shared_ptr< cuNDArray<_real> > result = CK.solve( &fixed_image, &moving_image, true );
+  boost::shared_ptr< cuNDArray<_real> > result = CK.solve( &fixed_image, &moving_image );
 
   if( !result.get() ){
     cout << endl << "Registration solver failed. Quitting!\n" << endl;

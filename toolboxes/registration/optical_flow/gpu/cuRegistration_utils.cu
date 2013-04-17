@@ -25,7 +25,7 @@ namespace Gadgetron{
     }
     
     if( gridDim->x >maxGridDim || gridDim->y >maxGridDim){      
-      BOOST_THROW_EXCEPTION(cuda_error("Grid dimension larger than supported by device"));
+      BOOST_THROW_EXCEPTION(runtime_error("Grid dimension larger than supported by device"));
     }
   }
 
@@ -53,7 +53,7 @@ namespace Gadgetron{
 
       for( unsigned int i=0; i<num_adds; i++ ){
 	const uintd local_co = idx_to_co<D>( i, twos );
-	if( weak_greater_equal( local_co, matrix_size_out ) ) continue; // To allow array dimensions of 1
+	if( weak_greater_equal( local_co, matrix_size_out ) ) continue; // To allow array dimensions of size 1
 	const unsigned int in_idx = co_to_idx<D>(co_in+local_co, matrix_size_in)+frame_offset*prod(matrix_size_in);
 	actual_adds++;
 	res += in[in_idx];
@@ -69,7 +69,7 @@ namespace Gadgetron{
     // A few sanity checks 
 
     if( in == 0x0 ){
-      BOOST_THROW_EXCEPTION(cuda_error("downsample: illegal input provided."));
+      BOOST_THROW_EXCEPTION(runtime_error("downsample(): illegal input provided."));
     }
     
     if( in->get_number_of_dimensions() < D ){
@@ -210,11 +210,11 @@ namespace Gadgetron{
     // A few sanity checks 
 
     if( in == 0x0 ){
-      BOOST_THROW_EXCEPTION(cuda_error("upsample: illegal input provided."));
+      BOOST_THROW_EXCEPTION(runtime_error("upsample(): illegal input provided."));
     }
 
     if( in->get_number_of_dimensions() < D ){
-      BOOST_THROW_EXCEPTION(runtime_error( "upsample: the number of array dimensions should be at least D"));
+      BOOST_THROW_EXCEPTION(runtime_error( "upsample(): the number of array dimensions should be at least D"));
     }
     
     typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
