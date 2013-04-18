@@ -63,42 +63,42 @@ namespace Gadgetron{
    * @param[in] x Input data
    * @return The array index corresponding to the smallest element in the array (0-indexing)
    */
-  template<class T> EXPORTCPUCOREMATH unsigned int amin( hoNDArray<T> *x );
+  template<class T> EXPORTCPUCOREMATH long unsigned int amin( hoNDArray<T> *x );
  
   /**
    * @brief Returns the index of the array element with the smallest absolute value (l1 norm)
    * @param[in] x Input data
    * @return The array index corresponding to the smallest element in the array (0-indexing)
    */
-  template<class T> EXPORTCPUCOREMATH unsigned int amin( hoNDArray< std::complex<T> > *x );
+  template<class T> EXPORTCPUCOREMATH long unsigned int amin( hoNDArray< std::complex<T> > *x );
 
   /**
    * @brief Returns the index of the array element with the smallest absolute value (l1 norm)
    * @param[in] x Input data
    * @return The array index corresponding to the smallest element in the array (0-indexing)
    */
-  template<class T> EXPORTCPUCOREMATH unsigned int amin( hoNDArray< complext<T> > *x );
+  template<class T> EXPORTCPUCOREMATH long unsigned int amin( hoNDArray< complext<T> > *x );
 
   /**
    * @brief Returns the index of the array element with the largest absolute value (l1-norm)
    * @param[in] x Input data
    * @return The array index corresponding to the largest element in the array (0-indexing)
    */
-  template<class T> EXPORTCPUCOREMATH unsigned int amax( hoNDArray<T> *x );
+  template<class T> EXPORTCPUCOREMATH long unsigned int amax( hoNDArray<T> *x );
 
   /**
    * @brief Returns the index of the array element with the largest absolute value (l1-norm)
    * @param[in] x Input data
    * @return The array index corresponding to the largest element in the array (0-indexing)
    */
-  template<class T> EXPORTCPUCOREMATH unsigned int amax( hoNDArray< std::complex<T> > *x );
+  template<class T> EXPORTCPUCOREMATH long unsigned int amax( hoNDArray< std::complex<T> > *x );
 
   /**
    * @brief Returns the index of the array element with the largest absolute value (l1-norm)
    * @param[in] x Input data
    * @return The array index corresponding to the largest element in the array (0-indexing)
    */
-  template<class T> EXPORTCPUCOREMATH unsigned int amax( hoNDArray< complext<T> > *x );
+  template<class T> EXPORTCPUCOREMATH long unsigned int amax( hoNDArray< complext<T> > *x );
 
   /**
    * @brief Calculates y = a*x+y in which x and y are considered as vectors

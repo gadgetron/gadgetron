@@ -78,11 +78,6 @@ namespace Gadgetron{
       num_batches *= _gradient_image->get_size(d);
     }
     
-    // Continuation flag is used for early Jacobi termination
-    //
-  
-    unsigned int continue_flag = 0;
-
     // Get ready...
     //
 
@@ -104,6 +99,9 @@ namespace Gadgetron{
 	std::cout << "."; std::cout.flush();
       }
     
+      // Continuation flag used for early Jacobi termination      
+      unsigned int continue_flag = 0;
+
       // Number of elements per batch
       const unsigned int num_elements_per_batch = prod(matrix_size);
       
@@ -113,7 +111,7 @@ namespace Gadgetron{
       REAL *in_disp = ping->get_data_ptr();
       REAL *out_disp = pong->get_data_ptr();
       REAL *gradient_image = _gradient_image->get_data_ptr();
-      REAL *stencil_image = _stencil_image->get_data_ptr();
+      REAL *stencil_image = (_stencil_image) ? _stencil_image->get_data_ptr() : 0x0;
 
       //
       // Find the average velocities (shared memory)

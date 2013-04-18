@@ -41,7 +41,6 @@ namespace Gadgetron{
   template<class REAL, unsigned int D> boost::shared_ptr< hoNDArray<REAL> >
   hoCKOpticalFlowSolver<REAL,D>::core_solver( hoNDArray<REAL> *_gradient_image, hoNDArray<REAL> *_stencil_image )
   {
-
     // Sanity checks
     //
   
@@ -57,9 +56,8 @@ namespace Gadgetron{
     //
   
     boost::shared_ptr< std::vector<unsigned int> > disp_dims = _gradient_image->get_dimensions();
-    boost::shared_ptr< hoNDArray<REAL> > displacements_ping( new hoNDArray<REAL>(disp_dims.get()));
-    boost::shared_ptr< hoNDArray<REAL> > displacements_pong( new hoNDArray<REAL>(disp_dims.get()));
-  
+    boost::shared_ptr< hoNDArray<REAL> > displacements_ping( new hoNDArray<REAL>(disp_dims.get()) );
+    boost::shared_ptr< hoNDArray<REAL> > displacements_pong( new hoNDArray<REAL>(disp_dims.get()) );
     clear(displacements_ping.get());
     clear(displacements_pong.get());
     
@@ -76,17 +74,12 @@ namespace Gadgetron{
       num_batches *= _gradient_image->get_size(d);
     }
   
-    // Continuation flag used for early Jacobi termination
-    //
-  
-    unsigned int continue_flag = 0;
-
     // Get ready
     // 
 
     unsigned int iteration_no = 0;
     hoNDArray<REAL> *ping = displacements_ping.get();
-    hoNDArray<REAL> *pong = displacements_pong.get();
+    hoNDArray<REAL> *pong = displacements_pong.get(); 
 
     if( this->output_mode_ >= hoOpticalFlowSolver<REAL,D>::OUTPUT_VERBOSE ) {
       std::cout << std::endl;
@@ -95,13 +88,16 @@ namespace Gadgetron{
     //
     // Main Jacobi loop
     //
-
+    
     while(true){
     
       if( this->output_mode_ >= hoOpticalFlowSolver<REAL,D>::OUTPUT_VERBOSE ) {
 	std::cout << "."; std::cout.flush();
       }
     
+      // Continuation flag used for early Jacobi termination
+      unsigned int continue_flag = 0;
+
       // Number of elements per batch
       const unsigned int num_elements_per_batch = prod(matrix_size);
   
@@ -111,12 +107,12 @@ namespace Gadgetron{
       REAL *in_disp = ping->get_data_ptr();
       REAL *out_disp = pong->get_data_ptr();
       REAL *gradient_image = _gradient_image->get_data_ptr();
-      REAL *stencil_image = _stencil_image->get_data_ptr();
+      REAL *stencil_image = (_stencil_image) ? _stencil_image->get_data_ptr() : 0x0;
 
       //
       // Find the average velocities (shared memory)
       //
-
+      
       for( unsigned int dim = 0; dim < D+1; dim++ ){
 	for( unsigned int idx = 0; idx < num_elements_per_dim; idx++ ){
 	  	  

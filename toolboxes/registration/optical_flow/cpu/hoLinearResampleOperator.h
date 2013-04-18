@@ -36,7 +36,8 @@ namespace Gadgetron{
     inline unsigned int get_num_neighbors();
   
   protected:
-    boost::shared_ptr< arma::SpMat<typename realType<T>::Type> > R_;
+    arma::SpMat<typename realType<T>::Type> R_M_;
+    arma::SpMat<typename realType<T>::Type> R_MH_;
     unsigned int temporal_dim_size_;
   };
 }

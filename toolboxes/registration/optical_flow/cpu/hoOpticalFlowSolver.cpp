@@ -135,7 +135,7 @@ namespace Gadgetron{
     const unsigned int num_elements_per_pdev_moving = num_elements_per_batch*num_batches_moving;
 
     // Total number of elements for all partial derivatives
-    const unsigned int num_elements_total = std::max(num_elements_per_pdev_fixed, num_elements_per_pdev_moving)*D;
+    const unsigned int num_elements_total = std::max(num_elements_per_pdev_fixed, num_elements_per_pdev_moving);
   
     for( unsigned int idx =0; idx < num_elements_total; idx++ ){
       

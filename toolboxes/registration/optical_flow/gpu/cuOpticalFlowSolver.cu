@@ -102,7 +102,7 @@ namespace Gadgetron{
     unsigned int number_of_elements = prod(matrix_size_moving);
     dim3 blockDim; dim3 gridDim;
     
-    setup_grid( &blockDim, &gridDim, number_of_elements, _cuOF_max(number_of_batches_moving, number_of_batches_fixed)*1 );
+    setup_grid( &blockDim, &gridDim, number_of_elements, _cuOF_max(number_of_batches_moving, number_of_batches_fixed) );
     
     // Invoke kernel (temporal partial derivative)
     temporal_grad_kernel<REAL,D><<< gridDim, blockDim >>>

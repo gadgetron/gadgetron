@@ -23,7 +23,7 @@ namespace Gadgetron{
   
     arma::Col<typename stdType<T>::Type > in_vec = as_arma_col(in);
     arma::Col<typename stdType<T>::Type > out_vec = as_arma_col(out);
-    out_vec = in_vec * (*R_.get());
+    out_vec = R_M_ * in_vec;
   }
 
   template <class T, unsigned int D>
@@ -41,13 +41,14 @@ namespace Gadgetron{
 
     arma::Col<typename stdType<T>::Type > in_vec = as_arma_col(in);
     arma::Col<typename stdType<T>::Type > out_vec = as_arma_col(out);
-    out_vec = (*R_.get()) * in_vec;
+    out_vec = R_MH_ * in_vec;
   }
-
+  
   template <class T, unsigned int D>
   void hoLinearResampleOperator<T,D>::reset()
   {
-    R_->reset();
+    R_M_.reset();
+    R_MH_.reset();
     resampleOperator< hoNDArray<typename realType<T>::Type>, hoNDArray<T> >::reset();
   }
   
@@ -82,10 +83,10 @@ namespace Gadgetron{
 
     const unsigned int num_elements_mat = prod(matrix_size);
     const unsigned int num_elements_ext = prod(matrix_size)*extended_dim;
-
-    R_ = boost::shared_ptr< arma::SpMat<typename realType<T>::Type> >
-      ( new arma::SpMat<typename realType<T>::Type>( num_elements_mat, num_elements_ext ) );
-  
+    
+    R_M_.set_size( num_elements_ext, num_elements_mat );
+    R_MH_.set_size( num_elements_mat, num_elements_ext );
+    
     for( unsigned int idx=0; idx<num_elements_ext; idx++ ){
     
       const unsigned int batch_no = idx/num_elements_mat;
@@ -177,10 +178,10 @@ namespace Gadgetron{
 	// Insert weight in resampling matrix R_
 	//
       
-	(*R_.get())(mat_i, mat_j) =  weight;
+	R_M_(mat_j,mat_i) =  weight;
+	R_MH_(mat_i, mat_j) =  weight;
       }
     }
-  
     this->preprocessed_ = true;
   }
 

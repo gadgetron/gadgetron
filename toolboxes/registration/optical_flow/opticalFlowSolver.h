@@ -90,7 +90,7 @@ namespace Gadgetron{
       //
 
       boost::shared_ptr< ARRAY_TYPE_REAL > grad_image = grad( fixed_image, def_moving_image );
-
+      
       // The deformed image is no longer needed
       //
 
