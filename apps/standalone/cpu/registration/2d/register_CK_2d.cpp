@@ -4,9 +4,10 @@
 
 // Gadgetron includes
 #include "hoCKOpticalFlowSolver.h"
-#include "hoLinearResampleOperator.h"
+#include "hoLinearResampleOperator_eigen.h"
 #include "hoNDArray.h"
 #include "hoNDArray_fileio.h"
+#include "GadgetronTimer.h"
 #include "parameterparser.h"
 
 // Std includes
@@ -76,7 +77,7 @@ int main(int argc, char** argv)
   // Use bilinear interpolation for resampling
   //
 
-  boost::shared_ptr< hoLinearResampleOperator<_real,2> > R( new hoLinearResampleOperator<_real,2>() );
+  boost::shared_ptr< hoLinearResampleOperator_eigen<_real,2> > R( new hoLinearResampleOperator_eigen<_real,2>() );
 
   // Setup solver
   //
@@ -93,14 +94,22 @@ int main(int argc, char** argv)
   // Run registration
   //
 
-  boost::shared_ptr< hoNDArray<_real> > result = CK.solve( fixed_image.get(), moving_image.get() );
+  boost::shared_ptr< hoNDArray<_real> > result;
+  {
+    GadgetronTimer timer("Running registration");
+    result = CK.solve( fixed_image.get(), moving_image.get() );
+  }
 
   if( !result.get() ){
     cout << endl << "Registration solver failed. Quitting!\n" << endl;
     return 1;
   }
 
-  boost::shared_ptr< hoNDArray<_real> > deformed_moving = CK.deform( moving_image.get(), result );
+  boost::shared_ptr< hoNDArray<_real> > deformed_moving;
+  {
+    GadgetronTimer timer("Applying deformation");
+    deformed_moving = CK.deform( moving_image.get(), result );
+  }
   
   // All done, write out the result
   //
