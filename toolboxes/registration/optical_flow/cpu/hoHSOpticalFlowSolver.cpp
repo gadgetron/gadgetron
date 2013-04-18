@@ -1,6 +1,8 @@
 #include "hoHSOpticalFlowSolver.h"
 #include "vector_td_utilities.h"
 
+#include <omp.h>
+
 namespace Gadgetron{
 
   // Helpers
@@ -118,6 +120,7 @@ namespace Gadgetron{
       //
       
       for( unsigned int dim = 0; dim < D; dim++ ){
+#pragma omp parallel for
 	for( unsigned int idx = 0; idx < num_elements_per_dim; idx++ ){
 	  
 	  // Index to the shared memory
@@ -172,6 +175,7 @@ namespace Gadgetron{
       const REAL disp_thresh_sqr = this->limit_*this->limit_;
       
       for( unsigned int dim = 0; dim < D; dim++ ){
+#pragma omp parallel for
 	for( unsigned int idx = 0; idx < num_elements_per_dim; idx++ ){
 
 	  // Batch idx (second slowest varying dimension)   

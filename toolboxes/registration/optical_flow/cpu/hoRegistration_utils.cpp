@@ -1,6 +1,8 @@
 #include "hoRegistration_utils.h"
 #include "vector_td_utilities.h"
 
+#include <omp.h>
+
 namespace Gadgetron{
 
   // Utility to check if all neighbors required for the linear interpolation exists
@@ -63,6 +65,7 @@ namespace Gadgetron{
     
     typedef vector_td<unsigned int,D> uintd;
 
+#pragma omp parallel for
     for( unsigned int idx=0; idx < num_elements*num_batches; idx++ ){
 
       const unsigned int frame_offset = idx/num_elements;
@@ -128,6 +131,7 @@ namespace Gadgetron{
     
     typedef vector_td<unsigned int,D> uintd;
     
+#pragma omp parallel for
     for( unsigned int idx=0; idx < num_elements*num_batches; idx++ ){
       
       REAL res = REAL(0);
