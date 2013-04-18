@@ -78,7 +78,7 @@ namespace Gadgetron{
       BOOST_THROW_EXCEPTION( runtime_error("hoLinearResampleOperator::set_displacement_field : illegal tailing array dim" ));
     }
   
-    const typename uintd<D>::Type matrix_size = vector_to_uintd<D>( *(displacements->get_dimensions()));
+    const typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>( *(displacements->get_dimensions()));
 
     const unsigned int num_elements_mat = prod(matrix_size);
     const unsigned int num_elements_ext = prod(matrix_size)*extended_dim;

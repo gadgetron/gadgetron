@@ -49,7 +49,7 @@ namespace Gadgetron{
     // Setup grid
     //
 
-    typename uintd<D>::Type matrix_size = vector_to_uintd<D>( *gradient_image->get_dimensions() );  
+    typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>( *gradient_image->get_dimensions() );  
     unsigned int number_of_elements = prod(matrix_size);
     unsigned int number_of_batches = 1;
 

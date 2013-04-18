@@ -46,7 +46,7 @@ namespace Gadgetron{
   
   protected:  
     virtual boost::shared_ptr< hoNDArray<REAL> > 
-      core_solver( hoNDArray<REAL> *gradient_image, hoNDArray<REAL> *stencil_image );  
+      core_solver( hoNDArray<REAL> *gradient_image, hoNDArray<REAL> *stencil );  
     
   protected:
     REAL alpha_;

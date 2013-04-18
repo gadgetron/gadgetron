@@ -249,7 +249,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );  
   E->setup( matrix_size, matrix_size_os, kernel_width );
   
-  std::vector<unsigned int> tmp_vec = uintd_to_vector<2>(matrix_size);
+  std::vector<unsigned int> tmp_vec = to_std_vector(matrix_size);
   tmp_vec.push_back(frames_per_reconstruction);
   E->set_domain_dimensions( &tmp_vec );
 
@@ -294,7 +294,7 @@ int main(int argc, char** argv)
   // Define regularization image operator 
   //
 
-  std::vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size);
+  std::vector<unsigned int> image_dims = to_std_vector(matrix_size);
   cuNDArray<_complext> *regul_image = new cuNDArray<_complext>(&image_dims);
   
   E->mult_csm_conj_sum( acc_images.get(), regul_image );
@@ -346,7 +346,7 @@ int main(int argc, char** argv)
   // Allocate space for aliased reconstruction
   //
   
-  image_dims = uintd_to_vector<2>(matrix_size); 
+  image_dims = to_std_vector(matrix_size); 
   image_dims.push_back(frames_per_reconstruction*num_reconstructions); 
   cuNDArray<_complext> *sense_result_cplx = new cuNDArray<_complext>; 
   std::cout << std::endl << matrix_size[0] << " " << matrix_size[1] << " " << frames_per_reconstruction << " " << num_reconstructions;
@@ -378,7 +378,7 @@ int main(int argc, char** argv)
     // Form rhs (use sense_result_cplx array to save memory)
     //
     
-    vector<unsigned int> rhs_dims = uintd_to_vector<2>(matrix_size); 
+    vector<unsigned int> rhs_dims = to_std_vector(matrix_size); 
     rhs_dims.push_back(frames_per_reconstruction);
     cuNDArray<_complext> rhs; 
 
@@ -527,7 +527,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< registrationReconOperator<_real,2> > 
     RR( new registrationReconOperator<_real,2>() );  
 
-  std::vector<unsigned int> rhs_dims = uintd_to_vector<2>(matrix_size); 
+  std::vector<unsigned int> rhs_dims = to_std_vector(matrix_size); 
   RR->set_domain_dimensions( &rhs_dims );
 
   RR->set_encoding_operator( E );

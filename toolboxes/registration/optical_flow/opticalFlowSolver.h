@@ -47,14 +47,14 @@ namespace Gadgetron{
 	BOOST_THROW_EXCEPTION( runtime_error("opticalFlowSolver::compute(): illegal input array received."));
       }
     
-      if( prod(vector_to_uintd<D>(*fixed_image->get_dimensions().get())) != 
-	  prod(vector_to_uintd<D>(*moving_image->get_dimensions().get())) ){
+      if( prod(from_std_vector<unsigned int,D>(*fixed_image->get_dimensions().get())) != 
+	  prod(from_std_vector<unsigned int,D>(*moving_image->get_dimensions().get())) ){
 	BOOST_THROW_EXCEPTION( runtime_error("opticalFlowSolver::compute(): core image dimensions (excluding batches) mismatch."));
       }
     
       if( stencil_image && 
-	  prod(vector_to_uintd<D>(*fixed_image->get_dimensions().get())) != 
-	  prod(vector_to_uintd<D>(*stencil_image->get_dimensions().get())) ){
+	  prod(from_std_vector<unsigned int,D>(*fixed_image->get_dimensions().get())) != 
+	  prod(from_std_vector<unsigned int,D>(*stencil_image->get_dimensions().get())) ){
 	BOOST_THROW_EXCEPTION( runtime_error("opticalFlowSolver::compute(): stencil image dimensions mismatch fixed/moving image dimensions."));
       }
     
@@ -145,8 +145,8 @@ namespace Gadgetron{
       // Setup for the spatial partial derivatives
       //
   
-      typename uintd<D>::Type matrix_size_fixed = vector_to_uintd<D>( *fixed_image->get_dimensions() );
-      typename uintd<D>::Type matrix_size_moving = vector_to_uintd<D>( *moving_image->get_dimensions() );
+      typename uintd<D>::Type matrix_size_fixed = from_std_vector<unsigned int,D>( *fixed_image->get_dimensions() );
+      typename uintd<D>::Type matrix_size_moving = from_std_vector<unsigned int,D>( *moving_image->get_dimensions() );
 
       if( matrix_size_fixed != matrix_size_moving ){
 	BOOST_THROW_EXCEPTION( runtime_error("opticalFlowSolver::grad(): fixed/moving image dimensions mismatch (2)."));

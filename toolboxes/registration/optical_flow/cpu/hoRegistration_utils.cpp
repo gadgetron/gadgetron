@@ -36,7 +36,7 @@ namespace Gadgetron{
       }
     }
     
-    typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *_in->get_dimensions() );
+    typename uintd<D>::Type matrix_size_in = from_std_vector<unsigned int,D>( *_in->get_dimensions() );
     typename uintd<D>::Type matrix_size_out = matrix_size_in >> 1;
 
     for( unsigned int d=0; d<D; d++ ){
@@ -51,7 +51,7 @@ namespace Gadgetron{
       num_batches *= _in->get_size(d);
     }
   
-    std::vector<unsigned int> dims = uintd_to_vector<D>(matrix_size_out);
+    std::vector<unsigned int> dims = to_std_vector(matrix_size_out);
     for( unsigned int d=D; d<_in->get_number_of_dimensions(); d++ ){
       dims.push_back(_in->get_size(d));
     }
@@ -101,7 +101,7 @@ namespace Gadgetron{
       BOOST_THROW_EXCEPTION(runtime_error( "upsample(): the number of array dimensions should be at least D"));
     }
     
-    typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *_in->get_dimensions() );
+    typename uintd<D>::Type matrix_size_in = from_std_vector<unsigned int,D>( *_in->get_dimensions() );
     typename uintd<D>::Type matrix_size_out = matrix_size_in << 1;
 
     for( unsigned int d=0; d<D; d++ ){
@@ -116,7 +116,7 @@ namespace Gadgetron{
       num_batches *= _in->get_size(d);
     }
   
-    std::vector<unsigned int> dims = uintd_to_vector<D>(matrix_size_out);
+    std::vector<unsigned int> dims = to_std_vector(matrix_size_out);
     for( unsigned int d=D; d<_in->get_number_of_dimensions(); d++ ){
       dims.push_back(_in->get_size(d));
     }

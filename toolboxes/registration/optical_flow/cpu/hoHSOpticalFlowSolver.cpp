@@ -70,7 +70,7 @@ namespace Gadgetron{
     REAL *shared_mem = _shared_mem->get_data_ptr();
     clear( _shared_mem.get());
    
-    typename uintd<D>::Type matrix_size = vector_to_uintd<D>( *_gradient_image->get_dimensions() );  
+    typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>( *_gradient_image->get_dimensions() );  
     unsigned int number_of_elements = prod(matrix_size);
     unsigned int num_batches = 1;
     
@@ -112,6 +112,8 @@ namespace Gadgetron{
       
       REAL *in_disp = ping->get_data_ptr();
       REAL *out_disp = pong->get_data_ptr();
+      REAL *gradient_image = _gradient_image->get_data_ptr();
+      REAL *stencil_image = _stencil_image->get_data_ptr();
 
       //
       // Find the average velocities (shared memory)
@@ -129,6 +131,9 @@ namespace Gadgetron{
 	  // Local index to the image (or batch in our terminology)
 	  const unsigned int idx_in_batch = idx-batch_idx*num_elements_per_batch;
     	  
+	  if( stencil_image && stencil_image[idx_in_batch] > REAL(0) )
+	    continue;
+
 	  // Local co to the image
 	  const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );	  
 	  const typename intd<D>::Type zeros  = to_vector_td<int,D>(0);
@@ -167,11 +172,19 @@ namespace Gadgetron{
       //
       
       const REAL disp_thresh_sqr = this->limit_*this->limit_;
-      REAL *gradient_image = _gradient_image->get_data_ptr();
       
       for( unsigned int dim = 0; dim < D; dim++ ){
 	for( unsigned int idx = 0; idx < num_elements_per_dim; idx++ ){
+
+	  // Batch idx (second slowest varying dimension)   
+	  const unsigned int batch_idx = idx/num_elements_per_batch;
 	  
+	  // Local index to the image (or batch in our terminology)
+	  const unsigned int idx_in_batch = idx-batch_idx*num_elements_per_batch;
+    	  
+	  if( stencil_image && stencil_image[idx_in_batch] > REAL(0) )
+	    continue;
+
 	  // Index to the shared memory
 	  const unsigned int shared_idx = dim*num_elements_per_dim+idx;
 

@@ -82,7 +82,7 @@ namespace Gadgetron{
       }
     }
     
-    typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
+    typename uintd<D>::Type matrix_size_in = from_std_vector<unsigned int,D>( *in->get_dimensions() );
     typename uintd<D>::Type matrix_size_out = matrix_size_in >> 1;
 
     for( unsigned int d=0; d<D; d++ ){
@@ -102,7 +102,7 @@ namespace Gadgetron{
 
     setup_grid( number_of_elements, &blockDim, &gridDim, number_of_batches );
     
-    std::vector<unsigned int> dims = uintd_to_vector<D>(matrix_size_out);
+    std::vector<unsigned int> dims = to_std_vector(matrix_size_out);
     for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
       dims.push_back(in->get_size(d));
     }
@@ -217,7 +217,7 @@ namespace Gadgetron{
       BOOST_THROW_EXCEPTION(runtime_error( "upsample(): the number of array dimensions should be at least D"));
     }
     
-    typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
+    typename uintd<D>::Type matrix_size_in = from_std_vector<unsigned int,D>( *in->get_dimensions() );
     typename uintd<D>::Type matrix_size_out = matrix_size_in << 1;
 
     for( unsigned int d=0; d<D; d++ ){
@@ -236,7 +236,7 @@ namespace Gadgetron{
     dim3 blockDim; dim3 gridDim;
     setup_grid( number_of_elements, &blockDim, &gridDim, number_of_batches );
     
-    std::vector<unsigned int> dims = uintd_to_vector<D>(matrix_size_out);
+    std::vector<unsigned int> dims = to_std_vector(matrix_size_out);
     for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
       dims.push_back(in->get_size(d));
     }

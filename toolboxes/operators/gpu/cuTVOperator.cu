@@ -60,7 +60,7 @@ template<class T, unsigned int D> void cuTVOperator<T,D>::gradient (cuNDArray<T>
   if (!accumulate) 
     clear(out);
 
-  const vector_td<int,D> dims = vector_to_intd<D>(*(in->get_dimensions()));
+  const typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>(*(in->get_dimensions())));
   int elements = in->get_number_of_elements();
 
   int threadsPerBlock =std::min(prod(dims),cudaDeviceManager::Instance()->max_blockdim());

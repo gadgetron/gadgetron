@@ -108,7 +108,7 @@
       }									\
     }									\
 									\
-    typename uintd<D>::Type matrix_size = vector_to_uintd<D>(*in->get_dimensions().get()); \
+    typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>(*in->get_dimensions().get()); \
     unsigned int num_elements_mat = prod(matrix_size);			\
     unsigned int num_batches = (surplus == 2) ? 1 : in->get_number_of_elements() / num_elements_mat; \
     unsigned int extended_dim = (surplus == 1) ? 1 : out->get_size(D);	\
@@ -222,7 +222,7 @@
       tmp_out = new cuNDArray<T>(in->get_dimensions().get());		\
     }									\
 									\
-    typename uintd<D>::Type matrix_size = vector_to_uintd<D>( *this->offsets_->get_dimensions().get() ); \
+    typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>( *this->offsets_->get_dimensions().get() ); \
     unsigned int num_batches = (surplus == 2) ? 1 : in->get_number_of_elements() / prod(matrix_size); \
     unsigned int extended_dim = (surplus == 1) ? 1 : in->get_size(D);	\
     unsigned int num_elements = prod(matrix_size)*extended_dim;		\

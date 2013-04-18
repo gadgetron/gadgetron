@@ -209,7 +209,7 @@ namespace Gadgetron{
   template<class T, unsigned int D> void 
   cuLinearResampleOperator<T,D>::write_sort_arrays( thrust::device_vector<unsigned int> &sort_keys )
   {
-    typename uintd<D>::Type matrix_size = vector_to_uintd<D>(*this->offsets_->get_dimensions().get());
+    typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>(*this->offsets_->get_dimensions().get());
     int surplus = this->offsets_->get_number_of_dimensions()-D;
     unsigned int extended_dim = (surplus == 1) ? 1 : this->offsets_->get_size(D);
   

@@ -90,7 +90,7 @@ int main( int argc, char** argv)
   unsigned int samples_per_profile = parms.get_parameter('s')->get_int_value();  
   _real kernel_width = parms.get_parameter('k')->get_float_value();
 
-  uintd2 matrix_size = vector_to_uintd<2>(*(host_image->get_dimensions().get()));
+  uintd2 matrix_size = from_std_vector<unsigned int,2>(*(host_image->get_dimensions().get()));
   _real alpha = (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0];
 
   if( matrix_size.vec[0] != matrix_size.vec[1] ){
