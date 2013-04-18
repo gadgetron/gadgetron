@@ -40,6 +40,7 @@ add_custom_command(
 add_custom_target(matlab_command_server ALL DEPENDS ${JAVA_MATLAB_SERVER_CLASS})
 
 install(TARGETS gadgetronmatlab DESTINATION lib)
+install(FILES MatlabGadget.h DESTINATION include)
 install(FILES BaseGadget.m scale.m accumulate_and_recon.m mask_image.m DESTINATION matlab)
 install(FILES matlab.xml DESTINATION config)
 install(FILES ${JAVA_MATLAB_SERVER_CLASS} DESTINATION matlab)

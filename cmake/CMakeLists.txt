@@ -10,4 +10,6 @@ FindXSD.cmake
 FindXercesC.cmake
 FindXalanC.cmake
 FindIsmrmrd.cmake
+FindGMatlab.cmake
+FindDCMTK.cmake
 DESTINATION cmake)

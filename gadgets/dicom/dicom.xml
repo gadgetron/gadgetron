@@ -11,15 +11,9 @@
 
     <writer>
         <slot>1012</slot>
-        <dll>gadgetronfmrifgelib</dll>
+        <dll>gadgetrondicom</dll>
         <classname>DicomImageWriter</classname>
     </writer>
-
-   <gadget>
-      <name>RemoveRFChop</name>
-      <dll>gadgetroninatilib</dll>
-      <classname>RemoveRFChopGadget</classname>
-   </gadget>
 
     <gadget>
         <name>Acc</name>
@@ -58,7 +52,7 @@
 
     <gadget>
         <name>DicomFinishFLOAT</name>
-        <dll>gadgetronfmrifgelib</dll>
+        <dll>gadgetrondicom</dll>
         <classname>DicomFinishGadgetFLOAT</classname>
     </gadget>
 

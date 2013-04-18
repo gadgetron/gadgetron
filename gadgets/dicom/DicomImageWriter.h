@@ -7,6 +7,8 @@
 #include "ismrmrd.h"
 
 
+namespace Gadgetron {
+
 class EXPORTGADGETSCORE DicomImageWriter : public GadgetMessageWriter
 {
  public:
@@ -15,24 +17,6 @@ class EXPORTGADGETSCORE DicomImageWriter : public GadgetMessageWriter
   GADGETRON_WRITER_DECLARE(DicomImageWriter);
 };
 
-/*
-class EXPORTGADGETSCORE DicomImageWriterUSHORT : public DicomImageWriter<ACE_UINT16>
-{
- public:
-  GADGETRON_WRITER_DECLARE(DicomImageWriterUSHORT);
-};
-
-class EXPORTGADGETSCORE DicomImageWriterFLOAT : public DicomImageWriter<float>
-{
- public:
-  GADGETRON_WRITER_DECLARE(DicomImageWriterFLOAT);
-};
-
-class EXPORTGADGETSCORE DicomImageWriterCPLX : public DicomImageWriter< std::complex<float> >
-{
- public:
-  GADGETRON_WRITER_DECLARE(DicomImageWriterCPLX);
-};
-*/
+} /* namespace Gadgetron */
 
 #endif

@@ -1,7 +1,4 @@
-# add additional FindDCMTK Module
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-find_package(DCMTK REQUIRED)
-
+# DCMTK-necessary preprocessor flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_CONFIG_H -D_REENTRANT -D_OSF_SOURCE")
 
 set(GT_DICOM_LIBRARIES
@@ -11,40 +8,36 @@ set(GT_DICOM_LIBRARIES
     ${DCMTK_ofstd_LIBRARY}
     m
     #rt
-    pthread
     #nsl
-)
+    pthread)
 
 # sanity check:
-message(STATUS "DCMTK ${DCMTK_HOME}")
-message(STATUS "Include: ${DCMTK_INCLUDE_DIRS}")
-message(STATUS "Libs: ${GT_DICOM_LIBRARIES}")
+#message("DCMTK ${DCMTK_HOME}")
+#message("Include: ${DCMTK_INCLUDE_DIRS}")
+#message("Libraries: ${GT_DICOM_LIBRARIES}")
 
-INCLUDE_DIRECTORIES(
-    ${ISMRMRD_INCLUDE_DIR}
-    ${ACE_INCLUDE_DIR}
-    ${Boost_INCLUDE_DIR}
-    ${GADGETRON_INCLUDE_DIR}
-    ${DCMTK_INCLUDE_DIRS}
-)
+include_directories(
+    ${CMAKE_SOURCE_DIR}/gadgets/core    # for GadgetIsmrmrdReadWrite.h
+    ${DCMTK_INCLUDE_DIRS})
 
-set(FMRIF_GE_LIB gadgetronfmrifgelib)
-ADD_LIBRARY(${FMRIF_GE_LIB} SHARED DicomFinishGadget.cpp DicomImageWriter.cpp)
+set(GT_DICOM_LIB gadgetrondicom)
+add_library(${GT_DICOM_LIB} SHARED
+    DicomFinishGadget.cpp
+    DicomImageWriter.cpp
+    ${ISMRMRD_XSD_SOURCE})
 
-TARGET_LINK_LIBRARIES(
-    ${FMRIF_GE_LIB}
+target_link_libraries(
+    ${GT_DICOM_LIB}
     ${ISMRMRD_LIBRARIES}
-    ${ISMRMRD_XSD_LIBRARIES}
     optimized ${ACE_LIBRARIES}
     debug ${ACE_DEBUG_LIBRARY}
-    ${GT_DICOM_LIBRARIES}
-)
+    ${XERCESC_LIBRARIES}
+    ${GT_DICOM_LIBRARIES})
 
-INSTALL(
-    FILES DicomFinishGadget.h DicomImageWriter.h fmrifgelib_export.h
-    DESTINATION include
-)
+install(
+    FILES DicomFinishGadget.h DicomImageWriter.h dicomlib_export.h
+    DESTINATION include)
 
-INSTALL(TARGETS ${FMRIF_GE_LIB} DESTINATION lib)
+install(TARGETS ${GT_DICOM_LIB} DESTINATION lib)
 
-INSTALL(FILES dicom.xml DESTINATION config)
+install(FILES dicom.xml DESTINATION config)

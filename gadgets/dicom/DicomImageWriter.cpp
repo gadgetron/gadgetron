@@ -18,6 +18,8 @@
 #include "dcmtk/dcmdata/dcostrmb.h"
 
 
+namespace Gadgetron {
+
 int DicomImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 {
     GadgetContainerMessage<DcmFileFormat>* dcm_file_message = AsContainerMessage<DcmFileFormat>(mb);
@@ -28,7 +30,8 @@ int DicomImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 
     DcmFileFormat *dcmFile = dcm_file_message->getObjectPtr();
 
-/* BEGIN DEBUG */
+/* BEGIN DEBUG
+
     OFString modality;
     DcmTagKey key(0x0008, 0x0060);
     OFCondition s = dcmFile->getDataset()->findAndGetOFString(key, modality);
@@ -37,8 +40,9 @@ int DicomImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
         return GADGET_FAIL;
     }
 
-    //GADGET_DEBUG2("Verifying that DcmDataset is valid... Modality: %s\n", modality.c_str());
-/* END DEBUG */
+    GADGET_DEBUG2("Verifying that DcmDataset is valid... Modality: %s\n", modality.c_str());
+
+END DEBUG */
 
     //GADGET_DEBUG1("Initializing transfer state for DICOM file\n");
     // Initialize transfer state of DcmDataset
@@ -97,5 +101,5 @@ int DicomImageWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 }
 
 GADGETRON_WRITER_FACTORY_DECLARE(DicomImageWriter)
-//GADGETRON_WRITER_FACTORY_DECLARE(DicomImageWriterFLOAT)
-//GADGETRON_WRITER_FACTORY_DECLARE(DicomImageWriterCPLX)
+
+} /* namespace Gadgetron */

@@ -14,9 +14,13 @@
 
 using namespace std;
 
+// Used for windowing using short ints
 #define PIX_RANGE_MAX    (+32767)
 #define PIX_RANGE_MIN    (-32768)
 
+
+// Writes a DICOM string value at the given location in the header
+// Saves keystrokes
 #define WRITE_DCM_STRING(k, s)    \
     do {                                                                    \
         status = dataset->putAndInsertString(k, s);            \
@@ -26,6 +30,8 @@ using namespace std;
             return GADGET_FAIL;                                             \
         }                                                                   \
     } while (0)
+
+namespace Gadgetron {
 
 template <typename T>
 int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
@@ -192,7 +198,8 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
         WRITE_DCM_STRING(key, 0);
     }
 
-    // Modality = MR
+    // Modality
+    // TODO: this is hardcoded!!
     key.set(0x0008, 0x0060);
     WRITE_DCM_STRING(key, "MR");
 
@@ -380,7 +387,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     }
 
     // Angio Flag
-    // TODO
+    // TODO: hardcoded
     key.set(0x0018, 0x0025);
     WRITE_DCM_STRING(key, "N");
 
@@ -421,11 +428,8 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     }
 
     // Spacing Between Slices
-    // TODO: This is currently ZERO because the Slice Thickness field is
-    // the sum of a slice's thickness and the spacing between two slices
     key.set(0x0018, 0x0088);
-    //snprintf(buf, BUFSIZE, "%f", cfg->encoding().front().reconSpace().fieldOfView_mm().z());
-    snprintf(buf, BUFSIZE, "%f", 0.0);
+    snprintf(buf, BUFSIZE, "%f", cfg->encoding().front().reconSpace().fieldOfView_mm().z());
     WRITE_DCM_STRING(key, buf);
 
     // Echo Train Length
@@ -438,12 +442,12 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     }
 
     // Percent Sampling
-    // TODO
+    // TODO: hardcoded
     key.set(0x0018, 0x0093);
     WRITE_DCM_STRING(key, "100");
 
     // Percent Phase FOV
-    // TODO
+    // TODO: hardcoded
     key.set(0x0018, 0x0094);
     WRITE_DCM_STRING(key, "100");
 
@@ -465,7 +469,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     }
 
     // Reconstruction Diameter (FOV)
-    // TODO
+    // TODO: hmm
     key.set(0x0018, 0x1100);
 
     // Frequency Encoding Direction
@@ -477,7 +481,6 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     }
 
     // Flip Angle
-    // TODO
     if (mr_image.flipAngle_deg().present()) {
         key.set(0x0018, 0x1314);
         snprintf(buf, BUFSIZE, "%d", (int)mr_image.flipAngle_deg().get());
@@ -532,12 +535,12 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
 
     // Samples Per Pixel
     key.set(0x0028, 0x0002);
-    // TODO
+    // TODO: hardcoded
     WRITE_DCM_STRING(key, "1");
 
     // Photometric Interpretation
     key.set(0x0028, 0x0004);
-    // TODO
+    // TODO: hardcoded
     WRITE_DCM_STRING(key, "MONOCHROME2");
 
     // Pixel Spacing (Array of len 2)
@@ -582,7 +585,9 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
             new GadgetContainerMessage<hoNDArray< ACE_INT16 > >();
     boost::shared_ptr< std::vector<unsigned int> > dims = m2->getObjectPtr()->get_dimensions();
 
-    if (!pixels->getObjectPtr()->create(dims.get())) {
+    try {
+        pixels->getObjectPtr()->create(dims.get());
+    } catch (bad_alloc& err) {
         GADGET_DEBUG1("Unable to create short storage in DicomFinishGadget");
         return GADGET_FAIL;
     }
@@ -632,11 +637,11 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
     DcmDataset *dataset = dcmFile.getDataset();
 
     // Echo Number
-    // TODO... when img->contrast contains a useful number
+    // TODO: it is often the case the img->contrast is not properly set
+    // likely due to the allocated ISMRMRD::ImageHeader being uninitialized
     key.set(0x0018, 0x0086);
-    //snprintf(buf, BUFSIZE, "%d", img->contrast);
-    //WRITE_DCM_STRING(key, buf);
-    WRITE_DCM_STRING(key, "1");
+    snprintf(buf, BUFSIZE, "%d", img->contrast);
+    WRITE_DCM_STRING(key, buf);
 
     // Acquisition Matrix ... Image Dimensions
     // Defined as: [frequency rows, frequency columns, phase rows, phase columns]
@@ -709,15 +714,14 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
     snprintf(buf, BUFSIZE, "%d", img->matrix_size[1]);
     WRITE_DCM_STRING(key, buf);
 
-    // TODO - come up with windowing algorithm
-    // Simple window scaling so the images come out in a viewable state
-    //int window_center = min_pix_val + (((max_pix_val - min_pix_val) / 2) + ((mean_pix_val - min_pix_val) / 2)) / 2;
+    // Simple windowing using pixel values calculated earlier...
     int mid_pix_val = (max_pix_val + min_pix_val) / 2;
     int window_center = (mid_pix_val + mean_pix_val) / 2;
     int window_width_left = window_center - min_pix_val;
     int window_width_right = max_pix_val - window_center;
     int window_width = (window_width_right > window_width_left) ?
             window_width_right : window_width_left;
+
     // Window Center
     key.set(0x0028, 0x1050);
     snprintf(buf, BUFSIZE, "%d", window_center);
@@ -816,3 +820,5 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
 GADGET_FACTORY_DECLARE(DicomFinishGadgetFLOAT)
 GADGET_FACTORY_DECLARE(DicomFinishGadgetUSHORT)
 //GADGET_FACTORY_DECLARE(DicomFinishGadgetCPLX)
+
+} /* namespace Gadgetron */

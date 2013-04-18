@@ -1,7 +1,7 @@
 #ifndef DICOMFINISHGADGET_H
 #define DICOMFINISHGADGET_H
 
-#include "fmrifgelib_export.h"
+#include "dicomlib_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
@@ -11,6 +11,9 @@
 #include <string>
 #include <map>
 #include <complex>
+
+
+namespace Gadgetron {
 
 template <typename T>
 class EXPORTGADGETSCORE DicomFinishGadget :
@@ -57,5 +60,7 @@ class EXPORTGADGETSCORE DicomFinishGadgetCPLX :
         GADGET_DECLARE(DicomFinishGadgetCPLX);
 };
 */
+
+} /* namespace Gadgetron */
 
 #endif //DICOMFINISHGADGET_H
