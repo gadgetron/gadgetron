@@ -19,8 +19,11 @@
 
 #include <complex>
 
+namespace Gadgetron
+{
+
 template <class T> class OctaveGadget :
-public Gadget2<T, hoNDArray< std::complex<float> > >
+public Gadgetron::Gadget2<T, hoNDArray< std::complex<float> > >
 {
  public:
   //GADGET_DECLARE(OctaveGadget);
@@ -88,3 +91,5 @@ public OctaveGadget<ISMRMRD::ImageHeader>
   	      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
 };
+
+}

@@ -22,7 +22,7 @@ class EXPORTGADGETSOCTAVECOMMUNICATOR OctaveCommunicator
  public:
   static OctaveCommunicator* instance(); 
   
-  void register_gadget(Gadget* g);
+  void register_gadget(Gadgetron::Gadget* g);
   bool message_gadget(std::string g, ACE_Message_Block* m);
   octave_value_list octave_feval (const std::string &name, const octave_value_list &args=octave_value_list(), int nargout=0);
 
@@ -33,7 +33,7 @@ class EXPORTGADGETSOCTAVECOMMUNICATOR OctaveCommunicator
   static OctaveCommunicator* instance_;
   ACE_Thread_Mutex mutex_;
   
-  std::map<std::string, Gadget*> gadget_map_;
+  std::map<std::string, Gadgetron::Gadget*> gadget_map_;
 };
 
 
