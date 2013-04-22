@@ -65,7 +65,7 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 		 dim3 dimBlock( threadsPerBlock);
 		 int totalBlocksPerGrid = (batch_size+threadsPerBlock-1)/threadsPerBlock;
 		 dim3 dimGrid(std::min(totalBlocksPerGrid,MAX_BLOCKS));
-		 typename uintd<3>::Type _dims = vector_to_uintd<3>( *(image.get_dimensions().get()) );
+		 typename uintd<3>::Type _dims = from_std_vector<unsigned int,3>( *(image.get_dimensions().get()) );
 
 		 // Invoke kernel
 		 int offset_k = 0;
@@ -123,7 +123,7 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 		 dim3 dimBlock( threadsPerBlock);
 		 int totalBlocksPerGrid = (batch_size+threadsPerBlock-1)/threadsPerBlock;
 		 dim3 dimGrid(std::min(totalBlocksPerGrid,MAX_BLOCKS));
-		typename uintd<3>::Type _dims = vector_to_uintd<3>( *(image.get_dimensions().get()) );
+		 typename uintd<3>::Type _dims = from_std_vector<unsigned int,3>( *(image.get_dimensions().get()) );
 
 		// Invoke kernel
 		int offset_k = 0;

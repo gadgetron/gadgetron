@@ -464,7 +464,7 @@ boost::shared_ptr< cuNDArray<float> > get_conebeam_ramp(unsigned int dim, float 
 
     //zero_fill_border<float,1>( vector_to_uintd<1>(*weights.get_dimensions())>>1, res.get());
 
-    crop<float,1>( vector_to_uintd<1>(dims)>>1, tmp_res.get(), res );
+    crop<float,1>( from_std_vector<unsigned int,1>(dims)>>1, tmp_res.get(), res );
 
     return boost::shared_ptr< cuNDArray<float> >(res);
 }
