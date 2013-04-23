@@ -12,9 +12,12 @@ install(FILES
   resampleOperator.h
   DESTINATION include)
 
-if(ARMADILLO_FOUND AND ${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.39" )
+if(ARMADILLO_FOUND)
+  message("Compiling optical flow registration toolbox")
   add_subdirectory(cpu)
-endif(ARMADILLO_FOUND AND ${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.39" )
+else (ARMADILLO_FOUND)
+  message("Armadillo not found. Not compiling the optical flow registration toolbox. ")  
+endif(ARMADILLO_FOUND)
 
 if (CUDA_FOUND)
   add_subdirectory(gpu)

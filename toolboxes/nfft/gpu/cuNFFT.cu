@@ -304,8 +304,10 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::preprocess( cuNDArray<typename real
   thrust::transform( trajectory_positions_in.begin(), trajectory_positions_in.end(), trajectory_positions->begin(), 
 		     trajectory_scale<REAL,D>(matrix_size_os_real, matrix_size_os_plus_wrap_real) );
   
+  CHECK_FOR_CUDA_ERROR();
+
   if( !( mode == NFFT_PREP_C2NC || ATOMICS )){
-    
+
     // allocate storage for and compute temporary prefix-sum variable (#cells influenced per sample)
     device_vector<unsigned int> c_p_s(trajectory_int->get_number_of_elements());
     device_vector<unsigned int> c_p_s_ps(trajectory_int->get_number_of_elements());

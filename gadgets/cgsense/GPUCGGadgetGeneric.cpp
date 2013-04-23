@@ -213,7 +213,7 @@ int GPUCGGadgetGeneric::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1
 	E_->set_csm(csm);
 	try{ E_->preprocess(traj.get());}
 	catch (runtime_error& err){
-		GADGET_DEBUG_EXCEPTION(err,"\nError during cgOperatorNonCartesianSense::preprocess()\n");
+		GADGET_DEBUG_EXCEPTION(err,"\nError during cuOperatorNonCartesianSense::preprocess()\n");
 		return GADGET_FAIL;
 	}
 
