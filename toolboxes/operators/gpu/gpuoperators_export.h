@@ -1,3 +1,7 @@
+/** \file gpuoperators_export.h
+    \brief Required definitions for Windows, importing/exporting dll symbols 
+*/
+
 #ifndef GPUOPERATORS_EXPORT_H_
 #define GPUOPERATORS_EXPORT_H_
 

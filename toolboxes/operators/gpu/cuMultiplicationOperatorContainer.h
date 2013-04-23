@@ -1,3 +1,7 @@
+/** \file cuMultiplicationOperatorContainer.h
+    \brief Operator used to chain together (concatenate) a series of operators by multiplication, GPU version.
+*/
+
 #pragma once
 
 #include "multiplicationOperatorContainer.h"

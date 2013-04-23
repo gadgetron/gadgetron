@@ -1,3 +1,7 @@
+/** \file check_CUDA.h
+    \brief Macroes to check whether GPU-based code has caused any errors, and if so, throw a runtime exception accordingly.
+*/
+
 #pragma once
 
 #include <stdio.h>

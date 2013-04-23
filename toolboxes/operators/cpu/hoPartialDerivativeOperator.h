@@ -1,5 +1,5 @@
 /** \file hoPartialDerivativeOperator.h
-    \brief Implementation of the partial derivative operator for the cpu.
+    \brief Partial derivative regularization operator, CPU based.
 */
 
 #pragma once

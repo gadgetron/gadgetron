@@ -1,3 +1,7 @@
+/** \file cuTV1DOperator.h
+    \brief Total variation regularization operator, GPU based. Optimized 1D version.
+*/
+
 #pragma once
 
 #include "cuNDArray.h"

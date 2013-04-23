@@ -1,3 +1,7 @@
+/** \file cgCallback.h
+    \brief Class to specify the termination criteria for the conjugate gradient solver through a callback mechanism.
+*/
+
 #pragma once
 
 #include "real_utilities.h"

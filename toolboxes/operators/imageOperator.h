@@ -1,3 +1,7 @@
+/** \file imageOperator.h
+    \brief Base class for the image regularization operators.
+*/
+
 #pragma once
 
 #include "linearOperator.h"

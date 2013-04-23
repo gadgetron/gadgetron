@@ -1,3 +1,7 @@
+/** \file multiplicationOperatorContainer.h
+    \brief Operator used to chain together (concatenate) a series of operators by multiplication.
+*/
+
 #pragma once
 
 #include "linearOperator.h"

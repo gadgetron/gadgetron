@@ -1,3 +1,7 @@
+/** \file convolutionOperator.h
+    \brief Base class for all convolution operators.
+*/
+
 #pragma once
 
 #include "linearOperator.h"

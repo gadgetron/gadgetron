@@ -1,3 +1,7 @@
+/** \file cuPartialDerivativeOperator.h
+    \brief Partial derivative regularization operator, GPU based.
+*/
+
 #pragma once
 
 #include "partialDerivativeOperator.h"

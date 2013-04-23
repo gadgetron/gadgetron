@@ -1,3 +1,7 @@
+/** \file encodingOperatorContainer.h
+    \brief Encoding operator that can contain multiple other encoding operators. Use when more than one encoding operator is required in a solver.
+*/
+
 #pragma once
 
 #include "linearOperator.h"
