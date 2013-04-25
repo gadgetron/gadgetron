@@ -162,7 +162,7 @@ namespace Gadgetron {
     for (unsigned int i = 0; i < dim_order->size(); i++) {
       if ((*dim_order)[i] >= in->get_number_of_dimensions()) {
 	BOOST_THROW_EXCEPTION(runtime_error("permute(): invalid dimension order array"));
-    }
+      }
       dim_count[(*dim_order)[i]]++;
     }
     

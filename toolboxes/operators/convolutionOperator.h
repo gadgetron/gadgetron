@@ -209,7 +209,7 @@ namespace Gadgetron{
     virtual void origin_mirror( COMPLEX_ARRAY_TYPE *in, COMPLEX_ARRAY_TYPE *out ) = 0;
 
     virtual void operator_crop( COMPLEX_ARRAY_TYPE *in, COMPLEX_ARRAY_TYPE *out ){
-      typename uintd<D>::Type offset = vector_to_uintd<D>(*(in->get_dimensions().get()))>>2;
+      typename uintd<D>::Type offset = from_std_vector<unsigned int,D>(*(in->get_dimensions().get()))>>2;
       crop<ELEMENT_TYPE,D>( offset, in, out );
     }
     

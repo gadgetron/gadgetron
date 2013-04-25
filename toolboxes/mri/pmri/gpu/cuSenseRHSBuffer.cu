@@ -37,7 +37,7 @@ namespace Gadgetron{
 
     _uintd image_dims = op->get_plan()->get_matrix_size_os();
 
-    std::vector<unsigned int> dims = uintd_to_vector<D>( image_dims );
+    std::vector<unsigned int> dims = to_std_vector( image_dims );
     dims.push_back(num_coils_);
     acc_buffer_.create(&dims);
 
@@ -109,7 +109,7 @@ namespace Gadgetron{
     _uintd image_dims = sense_op_->get_plan()->get_matrix_size();
     _uintd image_dims_os = sense_op_->get_plan()->get_matrix_size_os();
 
-    std::vector<unsigned int> dims = uintd_to_vector<D>( image_dims );
+    std::vector<unsigned int> dims = to_std_vector( image_dims );
     dims.push_back(num_coils_);
 
     cuNDArray<_complext> *image = new cuNDArray<_complext>(&dims);

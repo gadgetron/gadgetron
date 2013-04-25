@@ -165,7 +165,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );
 
   E->set_csm(csm);
-  std::vector<unsigned int> reg_dims = uintd_to_vector<2>(matrix_size);
+  std::vector<unsigned int> reg_dims = to_std_vector(matrix_size);
   cuNDArray<_complext> _reg_image = cuNDArray<_complext>(&reg_dims);
 
   E->mult_csm_conj_sum( acc_images.get(), &_reg_image );
@@ -180,7 +180,7 @@ int main(int argc, char** argv)
   csm.reset();
 
   boost::shared_ptr< std::vector<unsigned int> > recon_dims( new std::vector<unsigned int> );
-  *recon_dims = uintd_to_vector<2>(matrix_size); recon_dims->push_back(frames_per_reconstruction); 
+  *recon_dims = to_std_vector(matrix_size); recon_dims->push_back(frames_per_reconstruction); 
 
   // Define regularization operators 
   boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
@@ -232,7 +232,7 @@ int main(int argc, char** argv)
 
   // Allocate space for result
   boost::shared_ptr< std::vector<unsigned int> > res_dims( new std::vector<unsigned int> );
-  *res_dims = uintd_to_vector<2>(matrix_size); res_dims->push_back(frames_per_reconstruction*num_reconstructions); 
+  *res_dims = to_std_vector(matrix_size); res_dims->push_back(frames_per_reconstruction*num_reconstructions); 
   cuNDArray<_complext> result = cuNDArray<_complext>(res_dims);
 
   timer = new GPUTimer("Full SENSE reconstruction with TV regularization.");
@@ -260,7 +260,7 @@ int main(int argc, char** argv)
       sbresult = sb.solve(data.get());
     }
 
-    vector<unsigned int> tmp_dims = uintd_to_vector<2>(matrix_size); tmp_dims.push_back(frames_per_reconstruction);
+    vector<unsigned int> tmp_dims = to_std_vector(matrix_size); tmp_dims.push_back(frames_per_reconstruction);
     cuNDArray<_complext> tmp(&tmp_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );
 
     // Copy sbresult to result (pointed to by tmp)

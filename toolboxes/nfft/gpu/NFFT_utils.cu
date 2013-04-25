@@ -65,8 +65,8 @@ namespace Gadgetron {
       BOOST_THROW_EXCEPTION(runtime_error(ss.str()));
     }
 
-    typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
-    typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( *out->get_dimensions() );
+    typename uintd<D>::Type matrix_size_in = from_std_vector<unsigned int,D>( *in->get_dimensions() );
+    typename uintd<D>::Type matrix_size_out = from_std_vector<unsigned int,D>( *out->get_dimensions() );
  
     unsigned int number_of_batches = 1;
     for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
@@ -132,8 +132,8 @@ namespace Gadgetron {
       BOOST_THROW_EXCEPTION(runtime_error(ss.str()));
     }
 
-    typename uintd<D>::Type matrix_size_in = vector_to_uintd<D>( *in->get_dimensions() );
-    typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( *out->get_dimensions() );
+    typename uintd<D>::Type matrix_size_in = from_std_vector<unsigned int,D>( *in->get_dimensions() );
+    typename uintd<D>::Type matrix_size_out = from_std_vector<unsigned int,D>( *out->get_dimensions() );
   
     unsigned int number_of_batches = 1;
     for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
@@ -180,7 +180,7 @@ namespace Gadgetron {
   template<class T, unsigned int D> 
   void zero_fill_border( typename uintd<D>::Type matrix_size_in, cuNDArray<T> *in_out )
   { 
-    typename uintd<D>::Type matrix_size_out = vector_to_uintd<D>( *in_out->get_dimensions() );
+    typename uintd<D>::Type matrix_size_out = from_std_vector<unsigned int,D>( *in_out->get_dimensions() );
  
     if( weak_greater(matrix_size_in, matrix_size_out) ){
       BOOST_THROW_EXCEPTION(runtime_error("zero_fill: size mismatch, cannot zero fill"));

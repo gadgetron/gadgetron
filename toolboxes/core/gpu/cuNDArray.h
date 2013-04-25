@@ -219,7 +219,7 @@ namespace Gadgetron{
       if (deviceProp.unifiedAddressing) {
 	cudaPointerAttributes attrib;
 	if (cudaPointerGetAttributes(&attrib, data) != cudaSuccess) {
-	  printf("\nCuda error: %s\n", cudaGetErrorString(cudaGetLastError())); fflush(stdout);
+	  CHECK_FOR_CUDA_ERROR();
 	  BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::create: Unable to determine attributes of pointer"));
 	}
 	this->device_ = attrib.device;

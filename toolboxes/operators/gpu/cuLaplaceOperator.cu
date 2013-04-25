@@ -70,11 +70,7 @@ namespace Gadgetron{
 
     }
   
-    typename uintd<D>::Type _dims = vector_to_uintd<D>( *(in->get_dimensions().get()) );
-    typename intd<D>::Type dims;
-    for( unsigned int i=0; i<D; i++ ){
-      dims.vec[i] = (int)_dims.vec[i];
-    }  
+    typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>( *(in->get_dimensions().get()) ));
 
     dim3 dimBlock( dims.vec[0] );
     dim3 dimGrid( 1, dims.vec[D-1] );
