@@ -33,7 +33,7 @@ add_library(gadgetroncore SHARED AcquisitionPassthroughGadget.cpp
 target_link_libraries(gadgetroncore 
   cpucore 
   ${Boost_LIBRARIES}
-  ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
+  ${ISMRMRD_LIBRARIES} ${ISMRMRD_XSD_LIBRARIES} ${FFTW3_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   ${XERCESC_LIBRARIES} 
   )

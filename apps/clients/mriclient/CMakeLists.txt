@@ -27,7 +27,7 @@ include_directories(
 add_executable(mriclient main.cpp)
 add_executable(gt_alive  gt_alive.cpp)
 
-target_link_libraries(gt_alive gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}  ${Boost_LIBRARIES})
+target_link_libraries(gt_alive gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}  ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES} ${ISMRMRD_XSD_LIBRARIES})
 
 IF(WIN32)
 	SET(HDF5_LIB_DIR ${HDF5_INCLUDE_DIR}/../lib)
@@ -44,9 +44,9 @@ IF(WIN32)
 	#target_link_libraries(mriclient debug ${HDF5_LIB_DIR}/zlib.lib)
 	#target_link_libraries(mriclient debug ${HDF5_LIB_DIR}/szip.lib)
 
-	target_link_libraries(mriclient gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
+	target_link_libraries(mriclient gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${ISMRMRD_XSD_LIBRARIES} ${Boost_LIBRARIES})
 ELSE (WIN32)
-	target_link_libraries(mriclient gadgettools  ${HDF5_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
+	target_link_libraries(mriclient gadgettools  ${HDF5_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${ISMRMRD_XSD_LIBRARIES} ${Boost_LIBRARIES})
 ENDIF(WIN32)
 
 install(TARGETS mriclient gt_alive DESTINATION bin)
