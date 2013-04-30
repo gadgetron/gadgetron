@@ -28,7 +28,7 @@ add_library(gadgetroncgsense SHARED GPUCGGadget.cpp GPUCGGoldenRadial.cpp GPUCGF
 
 target_link_libraries(gadgetroncgsense 
   cpucore gpucore gpusolvers gpuoperators gpuparallelmri 
-  ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES} ${ISMRMRD_XSD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} 
+  ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 

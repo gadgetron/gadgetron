@@ -30,7 +30,7 @@ add_library(gadgetronspiral SHARED SpiralGadgetSW.cpp FlowPhaseSubtractionGadget
 
 target_link_libraries(gadgetronspiral
   gpunfft gpusolvers gpuoperators gpuparallelmri 
-  ${ISMRMRD_LIBRARIES} ${ISMRMRD_XSD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
+  ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 

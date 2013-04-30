@@ -30,7 +30,7 @@ add_library(gadgetrongrappa SHARED
 target_link_libraries(gadgetrongrappa 
   gpuparallelmri cpucore
   ${Boost_LIBRARIES}
-  ${ISMRMRD_LIBRARIES} ${ISMRMRD_XSD_LIBRARIES} ${FFTW3_LIBRARIES} 
+  ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
   ${XERCESC_LIBRARIES} 
   )
