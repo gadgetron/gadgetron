@@ -49,8 +49,8 @@ class EXPORTGPUCORE cudaDeviceManager
     size_t getFreeMemory(int device);
     size_t getTotalMemory();
     size_t getTotalMemory(int device);
-    inline cublasHandle_t getHandle();
-    inline cublasHandle_t getHandle(int device);
+    cublasHandle_t getHandle();
+    cublasHandle_t getHandle(int device);
     int getCurrentDevice();
     
   };

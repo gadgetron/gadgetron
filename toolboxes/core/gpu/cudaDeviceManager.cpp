@@ -137,13 +137,13 @@ namespace Gadgetron{
     return _instance;
   }
 
-  inline cublasHandle_t cudaDeviceManager::getHandle(){
+  cublasHandle_t cudaDeviceManager::getHandle(){
     int device;
     CUDA_CALL(cudaGetDevice(&device));
     return getHandle(device);
   }
 
-  inline cublasHandle_t cudaDeviceManager::getHandle(int device){
+  cublasHandle_t cudaDeviceManager::getHandle(int device){
     if (handle[device] == NULL){
       cublasStatus_t ret = cublasCreate(&handle[device]);
       if (ret != CUBLAS_STATUS_SUCCESS) {
