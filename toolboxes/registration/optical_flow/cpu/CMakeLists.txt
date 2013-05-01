@@ -17,6 +17,7 @@ include_directories(
 
 IF(EIGEN_INCLUDE_DIR)
   ADD_DEFINITIONS(-DEIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET)
+IF(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.39" )
   add_library(cpureg SHARED 
     hoOpticalFlowSolver.cpp
     hoHSOpticalFlowSolver.cpp
@@ -25,6 +26,15 @@ IF(EIGEN_INCLUDE_DIR)
     hoLinearResampleOperator_eigen.cpp
     hoRegistration_utils.cpp
     )
+ELSE(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.39" )
+  add_library(cpureg SHARED 
+    hoOpticalFlowSolver.cpp
+    hoHSOpticalFlowSolver.cpp
+    hoCKOpticalFlowSolver.cpp
+    hoLinearResampleOperator_eigen.cpp
+    hoRegistration_utils.cpp
+    )
+ENDIF(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.39" )
 ELSE(EIGEN_INCLUDE_DIR)
 IF(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.39" )
   add_library(cpureg SHARED 
