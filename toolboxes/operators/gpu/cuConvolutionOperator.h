@@ -1,3 +1,7 @@
+/** \file cuConvolutionOperator.h
+    \brief Convolution operator, GPU based.
+*/
+
 #pragma once
 
 #include "cuNDArray_operators.h"

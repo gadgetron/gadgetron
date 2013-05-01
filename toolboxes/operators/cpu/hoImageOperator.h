@@ -1,3 +1,7 @@
+/** \file hoImageOperator.h
+    \brief Image regularization operator, CPU based.
+*/
+
 #pragma once
 
 #include "hoNDArray_operators.h"

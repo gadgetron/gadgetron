@@ -1,3 +1,7 @@
+/** \file cuSenseOperator.h
+    \brief Base class for the GPU based Sense operators
+*/
+
 #pragma once
 
 #include "senseOperator.h"

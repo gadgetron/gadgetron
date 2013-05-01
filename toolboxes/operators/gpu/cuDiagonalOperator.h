@@ -1,3 +1,7 @@
+/** \file cuDiagonalOperator.h
+    \brief Diagonal matrix regularization operator, GPU based.
+*/
+
 #pragma once
 
 #include "cuNDArray_operators.h"

@@ -1,3 +1,7 @@
+/** \file encodedImageOperator.h
+    \brief Regularization operator for encoded images. Careful, only implements mult_MH_M and not (yet) mult_M and mult_MH.
+*/
+
 #pragma once
 
 #include "imageOperator.h"

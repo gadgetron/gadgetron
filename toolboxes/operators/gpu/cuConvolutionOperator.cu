@@ -77,7 +77,7 @@ namespace Gadgetron {
       BOOST_THROW_EXCEPTION(runtime_error(ss.str()));
     }
 
-    typename uintd<D>::Type matrix_size = vector_to_uintd<D>( *in->get_dimensions() );
+    typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>( *in->get_dimensions() );
   
     // Setup block/grid dimensions
     dim3 blockDim; dim3 gridDim;

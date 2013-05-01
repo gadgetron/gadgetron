@@ -1,9 +1,6 @@
-/*
- * gpunfft_export.h
- *
- *  Created on: Nov 18, 2011
- *      Author: Michael S. Hansen
- */
+/** \file gpunfft_export.h
+    \brief Required definitions for Windows, importing/exporting dll symbols 
+*/
 
 #ifndef GPUNFFT_EXPORT_H_
 #define GPUNFFT_EXPORT_H_

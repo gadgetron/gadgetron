@@ -98,7 +98,7 @@ int main( int argc, char** argv)
   E->set_dcw(dcw);
   
   // Set image dimensions
-  vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size);
+  vector<unsigned int> image_dims = to_std_vector(matrix_size);
   E->set_domain_dimensions(&image_dims);
   
   // Preprocess

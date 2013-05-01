@@ -59,7 +59,7 @@ template<class REAL, class T, unsigned int D> __global__ void tvGradient_kernel(
 template<class T, unsigned int D> void cuTV1DOperator<T,D>::gradient (cuNDArray<T> * in,cuNDArray<T> * out, bool accumulate){
   if (!accumulate) clear(out);
 
-  const vector_td<int,D> dims = vector_to_intd<D>(*(in->get_dimensions()));
+  const typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>(*(in->get_dimensions())));
   int elements = in->get_number_of_elements();
 
   int threadsPerBlock =std::min(prod(dims),cudaDeviceManager::Instance()->max_blockdim());

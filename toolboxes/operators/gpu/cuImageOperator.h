@@ -1,3 +1,7 @@
+/** \file cuImageOperator.h
+    \brief Image regularization operator, GPU based.
+*/
+
 #pragma once
 
 #include "cuNDArray_operators.h"

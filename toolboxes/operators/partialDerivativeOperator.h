@@ -1,5 +1,5 @@
 /** \file partialDerivativeOperator.h
-    \brief Base class for the partialDerivative operator.
+    \brief Base class for the partialDerivative operators.
 
     The file partialDerivativeOperator.h is a device independent partial implementation 
     of a partial derivative operator.
