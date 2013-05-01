@@ -26,6 +26,7 @@ IF(EIGEN_INCLUDE_DIR)
     hoRegistration_utils.cpp
     )
 ELSE(EIGEN_INCLUDE_DIR)
+IF(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.39" )
   add_library(cpureg SHARED 
     hoOpticalFlowSolver.cpp
     hoHSOpticalFlowSolver.cpp
@@ -33,6 +34,14 @@ ELSE(EIGEN_INCLUDE_DIR)
     hoLinearResampleOperator.cpp
     hoRegistration_utils.cpp
     )
+ELSE(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.39" )
+  add_library(cpureg SHARED 
+    hoOpticalFlowSolver.cpp
+    hoHSOpticalFlowSolver.cpp
+    hoCKOpticalFlowSolver.cpp
+    hoRegistration_utils.cpp
+    )
+ENDIF(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.39" )
 ENDIF(EIGEN_INCLUDE_DIR)
 
 target_link_libraries(cpureg 
@@ -46,9 +55,12 @@ install(FILES
   hoOpticalFlowSolver.h
   hoHSOpticalFlowSolver.h
   hoCKOpticalFlowSolver.h
-  hoLinearResampleOperator.h
   hoRegistration_utils.h
   DESTINATION include)
+
+IF(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.39" )
+  install(FILES hoLinearResampleOperator.h DESTINATION include)
+ENDIF(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.39" )
 
 IF(EIGEN_INCLUDE_DIR)
   install(FILES hoLinearResampleOperator_eigen.h DESTINATION include)

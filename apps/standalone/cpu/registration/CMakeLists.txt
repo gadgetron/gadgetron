@@ -9,7 +9,7 @@ find_path(EIGEN_INCLUDE_DIR Eigen/Core
 IF(EIGEN_INCLUDE_DIR)
   ADD_DEFINITIONS(-DEIGEN_YES_I_KNOW_SPARSE_MODULE_IS_NOT_STABLE_YET)
   INCLUDE_DIRECTORIES(${EIGEN_INCLUDE_DIR})
+  add_subdirectory(2d)
+  add_subdirectory(3d)
 ENDIF(EIGEN_INCLUDE_DIR)
 
-add_subdirectory(2d)
-add_subdirectory(3d)
