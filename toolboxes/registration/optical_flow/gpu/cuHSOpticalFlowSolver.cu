@@ -20,8 +20,8 @@ namespace Gadgetron{
   // Implementation
   //
 
-  template<class REAL, unsigned int D> boost::shared_ptr< cuNDArray<REAL> >
-  cuHSOpticalFlowSolver<REAL,D>::core_solver( cuNDArray<REAL> *gradient_image, cuNDArray<REAL> *stencil_image )
+  template<class T, unsigned int D> boost::shared_ptr< cuNDArray<T> >
+  cuHSOpticalFlowSolver<T,D>::core_solver( cuNDArray<T> *gradient_image, cuNDArray<T> *stencil_image )
   {
     // Sanity checks
     //
@@ -41,8 +41,8 @@ namespace Gadgetron{
     boost::shared_ptr< std::vector<unsigned int> > disp_dims = gradient_image->get_dimensions();
     disp_dims->pop_back(); disp_dims->push_back(D);
 
-    boost::shared_ptr< cuNDArray<REAL> > displacements_ping(new cuNDArray<REAL>(disp_dims.get()));
-    boost::shared_ptr< cuNDArray<REAL> > displacements_pong(new cuNDArray<REAL>(disp_dims.get()));
+    boost::shared_ptr< cuNDArray<T> > displacements_ping(new cuNDArray<T>(disp_dims.get()));
+    boost::shared_ptr< cuNDArray<T> > displacements_pong(new cuNDArray<T>(disp_dims.get()));
   
     clear(displacements_ping.get());
     clear(displacements_pong.get());
@@ -70,10 +70,10 @@ namespace Gadgetron{
     }
   
     unsigned int iteration_no = 0;
-    cuNDArray<REAL> *ping = displacements_ping.get();
-    cuNDArray<REAL> *pong = displacements_pong.get();
+    cuNDArray<T> *ping = displacements_ping.get();
+    cuNDArray<T> *pong = displacements_pong.get();
 
-    if( this->output_mode_ >= cuOpticalFlowSolver<REAL,D>::OUTPUT_VERBOSE ) {
+    if( this->output_mode_ >= cuOpticalFlowSolver<T,D>::OUTPUT_VERBOSE ) {
       std::cout << std::endl;
     }
 
@@ -83,7 +83,7 @@ namespace Gadgetron{
 
     while(true){
     
-      if( this->output_mode_ >= cuOpticalFlowSolver<REAL,D>::OUTPUT_VERBOSE ) {
+      if( this->output_mode_ >= cuOpticalFlowSolver<T,D>::OUTPUT_VERBOSE ) {
 	std::cout << "."; std::cout.flush();
       }
     
@@ -98,7 +98,7 @@ namespace Gadgetron{
       // Invoke kernel
       //
     
-      HornSchunk_kernel<REAL,D><<< gridDim, blockDim, (blockDim.x*blockDim.y)*sizeof(REAL) >>>
+      HornSchunk_kernel<T,D><<< gridDim, blockDim, (blockDim.x*blockDim.y)*sizeof(T) >>>
 	( gradient_image->get_data_ptr(), (stencil_image) ? stencil_image->get_data_ptr() : 0x0,
 	  ping->get_data_ptr(), pong->get_data_ptr(),
 	  matrix_size, number_of_batches, alpha_, this->limit_*this->limit_, continue_flag );
@@ -108,7 +108,7 @@ namespace Gadgetron{
       // Swap in/out buffers
       //
     
-      cuNDArray<REAL> *tmp = ping;
+      cuNDArray<T> *tmp = ping;
       ping = pong;
       pong = tmp;
 
@@ -120,7 +120,7 @@ namespace Gadgetron{
       }
     
       if( _continue_flag == 0 ){
-	if( this->output_mode_ >= cuOpticalFlowSolver<REAL,D>::OUTPUT_VERBOSE ) {
+	if( this->output_mode_ >= cuOpticalFlowSolver<T,D>::OUTPUT_VERBOSE ) {
 	  std::cout << std::endl << "Break after " << iteration_no+1 << " iterations" << std::endl;
 	}
 	break;

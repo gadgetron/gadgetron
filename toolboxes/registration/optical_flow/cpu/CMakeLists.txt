@@ -13,6 +13,7 @@ ENDIF(EIGEN_INCLUDE_DIR)
 include_directories(   
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
+  ${ARMADILLO_INCLUDE_DIR}
 )
 
 IF(EIGEN_INCLUDE_DIR)
@@ -55,7 +56,8 @@ ENDIF(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.39" )
 ENDIF(EIGEN_INCLUDE_DIR)
 
 target_link_libraries(cpureg 
-  cpucore 
+  cpucore
+  cpucore_math 
   ${ARMADILLO_LIBRARIES}
   )
 

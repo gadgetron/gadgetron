@@ -22,8 +22,8 @@
 
 namespace Gadgetron{
 
-  template<class REAL, unsigned int D> class EXPORTGPUREG cuCKOpticalFlowSolver 
-    : public cuOpticalFlowSolver<REAL, D>
+  template<class T, unsigned int D> class EXPORTGPUREG cuCKOpticalFlowSolver 
+    : public cuOpticalFlowSolver<T, D>
   {
   
   public:
@@ -31,9 +31,9 @@ namespace Gadgetron{
     // Constructors / destructors
     //
   
-    cuCKOpticalFlowSolver() : cuOpticalFlowSolver<REAL,D>(){ 
-      alpha_ = REAL(0.1); 
-      beta_ = REAL(0.01); 
+    cuCKOpticalFlowSolver() : cuOpticalFlowSolver<T,D>(){ 
+      alpha_ = T(0.1); 
+      beta_ = T(0.01); 
     } 
   
     virtual ~cuCKOpticalFlowSolver() {}
@@ -41,15 +41,15 @@ namespace Gadgetron{
     // Set the regularization weight
     //
   
-    inline void set_alpha( REAL alpha ) { alpha_ = alpha; }
-    inline void set_beta( REAL beta ) { beta_ = beta; }
+    inline void set_alpha( T alpha ) { alpha_ = alpha; }
+    inline void set_beta( T beta ) { beta_ = beta; }
   
   protected:  
-    virtual boost::shared_ptr< cuNDArray<REAL> > 
-      core_solver( cuNDArray<REAL> *gradient_image, cuNDArray<REAL> *stencil_image );  
+    virtual boost::shared_ptr< cuNDArray<T> > 
+      core_solver( cuNDArray<T> *gradient_image, cuNDArray<T> *stencil_image );  
     
   protected:
-    REAL alpha_;
-    REAL beta_;
+    T alpha_;
+    T beta_;
   };
 }

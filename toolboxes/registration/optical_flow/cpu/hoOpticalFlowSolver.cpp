@@ -37,8 +37,8 @@ namespace Gadgetron{
       return false;
   }
     
-  template<class REAL, unsigned int D> void
-  hoOpticalFlowSolver<REAL,D>::core_grad_spatial( REAL *fixed_image, REAL *moving_image, REAL *gradient_image, 
+  template<class T, unsigned int D> void
+  hoOpticalFlowSolver<T,D>::core_grad_spatial( T *fixed_image, T *moving_image, T *gradient_image, 
 						  typename uintd<D>::Type matrix_size, 
 						  unsigned int num_batches_fixed, 
 						  unsigned int num_batches_moving )
@@ -72,7 +72,7 @@ namespace Gadgetron{
       // Local co to the image
       const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
  
-      REAL res;
+      T res;
       unsigned int count = 0;
 
       //
@@ -97,7 +97,7 @@ namespace Gadgetron{
       fixed_idx = stride_base_idx+base_idx_fixed;
       moving_idx = stride_base_idx+base_idx_moving;
     
-      res = (fixed_image[fixed_idx]+moving_image[moving_idx])*REAL(0.5);
+      res = (fixed_image[fixed_idx]+moving_image[moving_idx])*T(0.5);
 
       // Neighbor "minus stride" side
       if( !is_border_pixel_in_stride_dim_before<D>( stride_dim, co, matrix_size )){
@@ -111,10 +111,10 @@ namespace Gadgetron{
       fixed_idx = stride_base_idx+base_idx_fixed;
       moving_idx = stride_base_idx+base_idx_moving;
     
-      res -= (fixed_image[fixed_idx]+moving_image[moving_idx])*REAL(0.5);
+      res -= (fixed_image[fixed_idx]+moving_image[moving_idx])*T(0.5);
 
       if( count == 2 ) // Both neighbors exist
-	res /= REAL(2);
+	res /= T(2);
 
       // Output result
       //
@@ -123,8 +123,8 @@ namespace Gadgetron{
     }
   }
   
-  template<class REAL, unsigned int D> void
-  hoOpticalFlowSolver<REAL,D>::core_grad_temporal( REAL *fixed_image, REAL *moving_image, REAL *gradient_image, 
+  template<class T, unsigned int D> void
+  hoOpticalFlowSolver<T,D>::core_grad_temporal( T *fixed_image, T *moving_image, T *gradient_image, 
 						   typename uintd<D>::Type matrix_size, 
 						   unsigned int num_batches_fixed, 
 						   unsigned int num_batches_moving )
@@ -158,7 +158,7 @@ namespace Gadgetron{
       const unsigned int fixed_idx = idx_in_batch+base_idx_fixed;
       const unsigned int moving_idx = idx_in_batch+base_idx_moving;
     
-      const REAL res = moving_image[moving_idx]-fixed_image[fixed_idx];
+      const T res = moving_image[moving_idx]-fixed_image[fixed_idx];
     
       // Output result
       //

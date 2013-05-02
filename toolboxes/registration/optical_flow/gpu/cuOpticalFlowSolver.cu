@@ -25,8 +25,8 @@ namespace Gadgetron{
     return (a>b)?b:a;
   }
 
-  template<class REAL, unsigned int D> void
-  cuOpticalFlowSolver<REAL,D>::setup_grid( dim3 *blockDim, dim3* gridDim, 
+  template<class T, unsigned int D> void
+  cuOpticalFlowSolver<T,D>::setup_grid( dim3 *blockDim, dim3* gridDim, 
 					   unsigned int number_of_elements, 
 					   unsigned int num_batches, 
 					   bool use_2d_blocks, 
@@ -66,7 +66,7 @@ namespace Gadgetron{
     }
 
     if( gridDim->x > max_griddim ){
-      gridDim->x = ((unsigned int)std::sqrt((REAL)number_of_elements)+(blockDim->x*blockDim->y)-1)/(blockDim->x*blockDim->y);
+      gridDim->x = ((unsigned int)std::sqrt((T)number_of_elements)+(blockDim->x*blockDim->y)-1)/(blockDim->x*blockDim->y);
       gridDim->y *= ((number_of_elements+(blockDim->x*blockDim->y)*gridDim->x-1)/((blockDim->x*blockDim->y)*gridDim->x));
     }
    
@@ -75,8 +75,8 @@ namespace Gadgetron{
     }
   }
   
-  template<class REAL, unsigned int D> void
-  cuOpticalFlowSolver<REAL,D>::core_grad_spatial( REAL *fixed_image, REAL *moving_image, REAL *gradient_image, 
+  template<class T, unsigned int D> void
+  cuOpticalFlowSolver<T,D>::core_grad_spatial( T *fixed_image, T *moving_image, T *gradient_image, 
 						  typename uintd<D>::Type matrix_size_moving, 
 						  unsigned int number_of_batches_fixed, 
 						  unsigned int number_of_batches_moving )
@@ -87,14 +87,14 @@ namespace Gadgetron{
     setup_grid( &blockDim, &gridDim, number_of_elements, _cuOF_max(number_of_batches_moving, number_of_batches_fixed)*D );
     
     // Invoke kernel (spatial partial derivatives)
-    spatial_grad_kernel<REAL,D><<< gridDim, blockDim >>>
+    spatial_grad_kernel<T,D><<< gridDim, blockDim >>>
       ( fixed_image, moving_image, gradient_image, matrix_size_moving, number_of_batches_fixed, number_of_batches_moving );
     
     CHECK_FOR_CUDA_ERROR();
   }
   
-  template<class REAL, unsigned int D> void
-  cuOpticalFlowSolver<REAL,D>::core_grad_temporal( REAL *fixed_image, REAL *moving_image, REAL *gradient_image, 
+  template<class T, unsigned int D> void
+  cuOpticalFlowSolver<T,D>::core_grad_temporal( T *fixed_image, T *moving_image, T *gradient_image, 
 						   typename uintd<D>::Type matrix_size_moving, 
 						   unsigned int number_of_batches_fixed, 
 						   unsigned int number_of_batches_moving )
@@ -105,7 +105,7 @@ namespace Gadgetron{
     setup_grid( &blockDim, &gridDim, number_of_elements, _cuOF_max(number_of_batches_moving, number_of_batches_fixed) );
     
     // Invoke kernel (temporal partial derivative)
-    temporal_grad_kernel<REAL,D><<< gridDim, blockDim >>>
+    temporal_grad_kernel<T,D><<< gridDim, blockDim >>>
       ( fixed_image, moving_image, gradient_image,
 	matrix_size_moving, number_of_batches_fixed, number_of_batches_moving );
     

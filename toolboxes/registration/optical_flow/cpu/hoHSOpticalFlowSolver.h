@@ -22,8 +22,8 @@
 
 namespace Gadgetron{
 
-  template<class REAL, unsigned int D> class EXPORTCPUREG hoHSOpticalFlowSolver 
-    : public hoOpticalFlowSolver<REAL, D>
+  template<class T, unsigned int D> class EXPORTCPUREG hoHSOpticalFlowSolver 
+    : public hoOpticalFlowSolver<T, D>
   {
     
   public:
@@ -31,8 +31,8 @@ namespace Gadgetron{
     // Constructors / destructors
     //
   
-    hoHSOpticalFlowSolver() : hoOpticalFlowSolver<REAL,D>(){ 
-      alpha_ = REAL(0.1); 
+    hoHSOpticalFlowSolver() : hoOpticalFlowSolver<T,D>(){ 
+      alpha_ = T(0.1); 
     } 
   
     virtual ~hoHSOpticalFlowSolver() {}
@@ -40,13 +40,13 @@ namespace Gadgetron{
     // Set the regularization weight
     //
   
-    inline void set_alpha( REAL alpha ) { alpha_ = alpha; }
+    inline void set_alpha( T alpha ) { alpha_ = alpha; }
   
   protected:  
-    virtual boost::shared_ptr< hoNDArray<REAL> > 
-      core_solver( hoNDArray<REAL> *gradient_image, hoNDArray<REAL> *stencil_image );
+    virtual boost::shared_ptr< hoNDArray<T> > 
+      core_solver( hoNDArray<T> *gradient_image, hoNDArray<T> *stencil_image );
     
   protected:
-    REAL alpha_;
+    T alpha_;
   };
 }

@@ -57,8 +57,6 @@ namespace Gadgetron{
     // I.e. the vector field dimension is the slowest varying.
     //
   
-    using solver<registrationData<ARRAY_TYPE>, ARRAY_TYPE >::solve;
-
     virtual boost::shared_ptr<ARRAY_TYPE> 
     solve( ARRAY_TYPE *fixed_image, ARRAY_TYPE *moving_image, bool input_normalization_allowed = false ) = 0;
   

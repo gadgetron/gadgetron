@@ -12,10 +12,11 @@ namespace Gadgetron{
   template<class ARRAY_TYPE_REAL, unsigned int D> class multiresRegistrationSolver 
     : public registrationSolver<ARRAY_TYPE_REAL>
   {
+  protected:    
+      typedef typename ARRAY_TYPE_REAL::element_type REAL;
+
   public:
-    
-    typedef typename ARRAY_TYPE_REAL::element_type REAL;
-    
+
     multiresRegistrationSolver() : registrationSolver<ARRAY_TYPE_REAL>(){
       num_multires_levels_ = 0;
       max_num_iterations_per_level_ = 500;
@@ -36,8 +37,12 @@ namespace Gadgetron{
     // The main solver interface
     //
 
-    using registrationSolver<ARRAY_TYPE_REAL>::solve;
-  
+    virtual boost::shared_ptr<ARRAY_TYPE_REAL> 
+    solve( registrationData<ARRAY_TYPE_REAL> *rd )
+    {
+      return registrationSolver<ARRAY_TYPE_REAL>::solve(rd);
+    }
+
     virtual boost::shared_ptr<ARRAY_TYPE_REAL> solve( ARRAY_TYPE_REAL *fixed_image, 
 						      ARRAY_TYPE_REAL *moving_image, 
 						      bool input_normalization_allowed = false  )

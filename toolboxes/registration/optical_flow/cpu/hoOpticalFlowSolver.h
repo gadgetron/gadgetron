@@ -17,28 +17,28 @@
 
 namespace Gadgetron{
 
-  template<class REAL, unsigned int D> class EXPORTCPUREG hoOpticalFlowSolver 
-    : public opticalFlowSolver< hoNDArray<REAL>,D >
+  template<class T, unsigned int D> class EXPORTCPUREG hoOpticalFlowSolver 
+    : public opticalFlowSolver< hoNDArray<T>,D >
   {  
   public:
   
-    hoOpticalFlowSolver() : opticalFlowSolver< hoNDArray<REAL>,D >() {}   
+    hoOpticalFlowSolver() : opticalFlowSolver< hoNDArray<T>,D >() {}   
     virtual ~hoOpticalFlowSolver() {}
     
   protected:
 
     // Inherited and still pure virtual...
-    virtual boost::shared_ptr< hoNDArray<REAL> > core_solver( hoNDArray<REAL> *gradient_image, hoNDArray<REAL> *stencil_image ) = 0;      
+    virtual boost::shared_ptr< hoNDArray<T> > core_solver( hoNDArray<T> *gradient_image, hoNDArray<T> *stencil_image ) = 0;      
 
     // CPU-based computation of the spatial and temporal image gradient
     //
     
-    virtual void core_grad_spatial( REAL *fixed_image, REAL *moving_image, REAL *gradient_image, 
+    virtual void core_grad_spatial( T *fixed_image, T *moving_image, T *gradient_image, 
 				    typename uintd<D>::Type matrix_size_moving, 
 				    unsigned int number_of_batches_fixed, 
 				    unsigned int number_of_batches_moving );
     
-    virtual void core_grad_temporal( REAL *fixed_image, REAL *moving_image, REAL *gradient_image, 
+    virtual void core_grad_temporal( T *fixed_image, T *moving_image, T *gradient_image, 
 				     typename uintd<D>::Type matrix_size_moving, 
 				     unsigned int number_of_batches_fixed, 
 				     unsigned int number_of_batches_moving );

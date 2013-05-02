@@ -40,8 +40,8 @@ namespace Gadgetron{
   // Implementation
   //
 
-  template<class REAL, unsigned int D> boost::shared_ptr< hoNDArray<REAL> >
-  hoCKOpticalFlowSolver<REAL,D>::core_solver( hoNDArray<REAL> *_gradient_image, hoNDArray<REAL> *_stencil_image )
+  template<class T, unsigned int D> boost::shared_ptr< hoNDArray<T> >
+  hoCKOpticalFlowSolver<T,D>::core_solver( hoNDArray<T> *_gradient_image, hoNDArray<T> *_stencil_image )
   {
     // Sanity checks
     //
@@ -58,14 +58,14 @@ namespace Gadgetron{
     //
   
     boost::shared_ptr< std::vector<unsigned int> > disp_dims = _gradient_image->get_dimensions();
-    boost::shared_ptr< hoNDArray<REAL> > displacements_ping( new hoNDArray<REAL>(disp_dims.get()) );
-    boost::shared_ptr< hoNDArray<REAL> > displacements_pong( new hoNDArray<REAL>(disp_dims.get()) );
+    boost::shared_ptr< hoNDArray<T> > displacements_ping( new hoNDArray<T>(disp_dims.get()) );
+    boost::shared_ptr< hoNDArray<T> > displacements_pong( new hoNDArray<T>(disp_dims.get()) );
     clear(displacements_ping.get());
     clear(displacements_pong.get());
     
     // We use "shared memory" to hold the averaged displacements
-    boost::shared_ptr< hoNDArray<REAL> > _shared_mem(new hoNDArray<REAL>(disp_dims.get()));
-    REAL *shared_mem = _shared_mem->get_data_ptr();
+    boost::shared_ptr< hoNDArray<T> > _shared_mem(new hoNDArray<T>(disp_dims.get()));
+    T *shared_mem = _shared_mem->get_data_ptr();
     clear( _shared_mem.get());
 
     typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>( *disp_dims );  
@@ -80,10 +80,10 @@ namespace Gadgetron{
     // 
 
     unsigned int iteration_no = 0;
-    hoNDArray<REAL> *ping = displacements_ping.get();
-    hoNDArray<REAL> *pong = displacements_pong.get(); 
+    hoNDArray<T> *ping = displacements_ping.get();
+    hoNDArray<T> *pong = displacements_pong.get(); 
 
-    if( this->output_mode_ >= hoOpticalFlowSolver<REAL,D>::OUTPUT_VERBOSE ) {
+    if( this->output_mode_ >= hoOpticalFlowSolver<T,D>::OUTPUT_VERBOSE ) {
       std::cout << std::endl;
     }
 
@@ -93,7 +93,7 @@ namespace Gadgetron{
     
     while(true){
     
-      if( this->output_mode_ >= hoOpticalFlowSolver<REAL,D>::OUTPUT_VERBOSE ) {
+      if( this->output_mode_ >= hoOpticalFlowSolver<T,D>::OUTPUT_VERBOSE ) {
 	std::cout << "."; std::cout.flush();
       }
     
@@ -106,10 +106,10 @@ namespace Gadgetron{
       // Number of elements per dim
       const unsigned int num_elements_per_dim = num_elements_per_batch*num_batches;
 
-      REAL *in_disp = ping->get_data_ptr();
-      REAL *out_disp = pong->get_data_ptr();
-      REAL *gradient_image = _gradient_image->get_data_ptr();
-      REAL *stencil_image = (_stencil_image) ? _stencil_image->get_data_ptr() : 0x0;
+      T *in_disp = ping->get_data_ptr();
+      T *out_disp = pong->get_data_ptr();
+      T *gradient_image = _gradient_image->get_data_ptr();
+      T *stencil_image = (_stencil_image) ? _stencil_image->get_data_ptr() : 0x0;
 
       //
       // Find the average velocities (shared memory)
@@ -128,7 +128,7 @@ namespace Gadgetron{
 	  // Local index to the image (or batch in our terminology)
 	  const unsigned int idx_in_batch = idx-batch_idx*num_elements_per_batch;
     	  
-	  if( stencil_image && stencil_image[idx_in_batch] > REAL(0) )
+	  if( stencil_image && stencil_image[idx_in_batch] > T(0) )
 	    continue;
 
 	  // Local co to the image
@@ -138,9 +138,9 @@ namespace Gadgetron{
 	  const typename intd<D>::Type threes = to_vector_td<int,D>(3);
 	  
 	  const int num_neighbors = Pow<3,D>::Value;
-	  REAL num_contribs = REAL(0);
+	  T num_contribs = T(0);
 	  
-	  shared_mem[shared_idx] = REAL(0);
+	  shared_mem[shared_idx] = T(0);
 	  
 	  // Compute average of neighbors
 	  //
@@ -163,7 +163,7 @@ namespace Gadgetron{
 	    }
 	    
 	    shared_mem[shared_idx] += in_disp[neighbor_idx];
-	    num_contribs += REAL(1);
+	    num_contribs += T(1);
 	  }
 	  
 	  // Normalize
@@ -175,7 +175,7 @@ namespace Gadgetron{
       // Update displacement field (Jacobi iteration)
       //
       
-      const REAL disp_thresh_sqr = this->limit_*this->limit_;
+      const T disp_thresh_sqr = this->limit_*this->limit_;
 
       for( unsigned int dim = 0; dim < D+1; dim++ ){
 #pragma omp parallel for
@@ -190,13 +190,13 @@ namespace Gadgetron{
 	  // Local index to the image (or batch in our terminology)
 	  const unsigned int idx_in_batch = idx-batch_idx*num_elements_per_batch;
     	  
-	  if( stencil_image && stencil_image[idx_in_batch] > REAL(0) )
+	  if( stencil_image && stencil_image[idx_in_batch] > T(0) )
 	    continue;
 
-	  REAL phi = REAL(0);
-	  REAL norm = REAL(0);
+	  T phi = T(0);
+	  T norm = T(0);
 	  
-	  typename reald<REAL,D>::Type derivatives;
+	  typename reald<T,D>::Type derivatives;
 	  
 	  // Contributions from the spatial dimensions
 	  //
@@ -226,7 +226,7 @@ namespace Gadgetron{
 	  // Form result displacement
 	  //
 	  
-	  REAL result;
+	  T result;
 	  
 	  if( dim<D )
 	    result = shared_mem[shared_idx]-derivatives.vec[dim]*phi;
@@ -236,7 +236,7 @@ namespace Gadgetron{
 	  // Clear the "termination" flag if the displacement field has changed above the threshold
 	  //
 	  
-	  REAL delta = result-in_disp[dim*num_elements_per_dim+idx];
+	  T delta = result-in_disp[dim*num_elements_per_dim+idx];
 	  if( dim < D && delta*delta > disp_thresh_sqr )
 	    continue_flag = 1;
 	  
@@ -250,7 +250,7 @@ namespace Gadgetron{
       // Swap in/out buffers
       //
       
-      hoNDArray<REAL> *tmp = ping;
+      hoNDArray<T> *tmp = ping;
       ping = pong;
       pong = tmp;
 
@@ -258,7 +258,7 @@ namespace Gadgetron{
       //
       
       if( continue_flag == 0 ){
-	if( this->output_mode_ >= hoOpticalFlowSolver<REAL,D>::OUTPUT_VERBOSE ) {
+	if( this->output_mode_ >= hoOpticalFlowSolver<T,D>::OUTPUT_VERBOSE ) {
 	  std::cout << std::endl << "Break after " << iteration_no+1 << " iterations" << std::endl;
 	}
 	break;

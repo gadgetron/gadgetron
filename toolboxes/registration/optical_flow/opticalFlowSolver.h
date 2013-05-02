@@ -17,12 +17,12 @@ namespace Gadgetron{
 
   template<class ARRAY_TYPE_REAL, unsigned int D> class opticalFlowSolver 
     : public multiresRegistrationSolver<ARRAY_TYPE_REAL,D>
-  {
-  
+  {  
+  protected:
+      typedef typename ARRAY_TYPE_REAL::element_type REAL;
+
   public:
   
-    typedef typename ARRAY_TYPE_REAL::element_type REAL;
-
     opticalFlowSolver() : multiresRegistrationSolver<ARRAY_TYPE_REAL,D>(){ 
       limit_ = REAL(0.01);
     } 
