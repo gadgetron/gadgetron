@@ -28,7 +28,7 @@ add_executable(gadgetron
 target_link_libraries(gadgetron 
   gadgettools 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
-  ${XERCESC_LIBRARIES} 
+  ${XERCESC_LIBRARIES} pthread
  )
 
 install(TARGETS gadgetron DESTINATION bin)
@@ -42,7 +42,7 @@ install(FILES
   GadgetMessageInterface.h
   EndGadget.h
   GadgetronExport.h
-  DESTINATION include)
+  DESTINATION include) 
 
 install(FILES 	
   gadgetron.xml.example

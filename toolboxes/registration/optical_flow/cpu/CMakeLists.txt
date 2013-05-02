@@ -56,7 +56,7 @@ ENDIF(EIGEN_INCLUDE_DIR)
 
 target_link_libraries(cpureg 
   cpucore 
-  ${ARMADILLO_LIBRARIES}
+  ${ARMADILLO_LIBRARIES} pthread
   )
 
 install(TARGETS cpureg DESTINATION lib)
