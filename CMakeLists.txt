@@ -17,8 +17,12 @@ set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 set(Boost_NO_BOOST_CMAKE ON)
 
-# We actually only use system and thread explicitly, but they require linking in date_time and chrono...
-find_package(Boost COMPONENTS system thread date_time chrono REQUIRED)
+# Windows Boost requires linking of Boost.DateTime and Boost.Chrono for Boost.Thread
+if (WIN32)
+    find_package(Boost COMPONENTS system thread date_time chrono REQUIRED)
+else (WIN32)
+    find_package(Boost COMPONENTS system thread date_time REQUIRED)
+endif (WIN32)
 
 find_package(FFTW3 COMPONENTS single double REQUIRED)
 

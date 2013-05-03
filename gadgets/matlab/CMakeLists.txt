@@ -1,9 +1,6 @@
 find_package(Ismrmrd REQUIRED)
 
-include_directories(
-  ${MATLAB_INCLUDE_DIR}
-  #${GADGETRON_INCLUDE_DIR}
-  )
+include_directories(${MATLAB_INCLUDE_DIR})
 
 if (UNIX)
     if (APPLE)
