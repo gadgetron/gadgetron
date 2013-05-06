@@ -11,7 +11,6 @@ if ( WIN32 )
             
                 SET(EXECUTABLE_OUTPUT_PATH ${GADGETRON_SOURCE_DIR}/prod/bin/vc8 CACHE STRING "Where to put the executables")
                 SET(LIBRARY_OUTPUT_PATH ${GADGETRON_SOURCE_DIR}/prod/bin/vc8 CACHE STRING "Where to put the libraries")
-                SET(CMAKE_INSTALL_PREFIX ${GADGETRON_SOURCE_DIR}/prod/Install/vc8)
 
                 if ( NOT FLAG_FTK_SUPPRESS_COMPILING_WARNINGS )
                     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
@@ -30,7 +29,6 @@ if ( WIN32 )
                     message(" The current complier is Visual Studio 10 ...")
                     SET(EXECUTABLE_OUTPUT_PATH ${GADGETRON_SOURCE_DIR}/prod/bin/vc10 CACHE STRING "Where to put the executables")
                     SET(LIBRARY_OUTPUT_PATH ${GADGETRON_SOURCE_DIR}/prod/bin/vc10 CACHE STRING "Where to put the libraries")
-                    SET(CMAKE_INSTALL_PREFIX ${GADGETRON_SOURCE_DIR}/prod/Install/vc10)
                                     
                     if ( NOT FLAG_FTK_SUPPRESS_COMPILING_WARNINGS )
                         SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
@@ -50,7 +48,6 @@ if ( WIN32 )
                         
                         SET(EXECUTABLE_OUTPUT_PATH ${GADGETRON_SOURCE_DIR}/prod/bin/vc9 CACHE STRING "Where to put the executables")
                         SET(LIBRARY_OUTPUT_PATH ${GADGETRON_SOURCE_DIR}/prod/bin/vc9 CACHE STRING "Where to put the libraries")
-                        SET(CMAKE_INSTALL_PREFIX ${GADGETRON_SOURCE_DIR}/prod/Install/vc9)
                                         
                         if ( NOT FLAG_FTK_SUPPRESS_COMPILING_WARNINGS )
                             SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
@@ -70,7 +67,6 @@ if ( WIN32 )
                         
                             SET(EXECUTABLE_OUTPUT_PATH ${GADGETRON_SOURCE_DIR}/prod/bin/vc6 CACHE STRING "Where to put the executables")
                             SET(LIBRARY_OUTPUT_PATH ${GADGETRON_SOURCE_DIR}/prod/bin/vc6 CACHE STRING "Where to put the libraries")
-                            SET(CMAKE_INSTALL_PREFIX ${GADGETRON_SOURCE_DIR}/prod/Install/vc6)    
 
                             if ( NOT FLAG_FTK_SUPPRESS_COMPILING_WARNINGS )
                                 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
@@ -90,7 +86,6 @@ if ( WIN32 )
                             
                                 SET(EXECUTABLE_OUTPUT_PATH ${GADGETRON_SOURCE_DIR}/prod/bin/vc2003 CACHE STRING "Where to put the executables")
                                 SET(LIBRARY_OUTPUT_PATH ${GADGETRON_SOURCE_DIR}/prod/bin/vc2003 CACHE STRING "Where to put the libraries")    
-                                SET(CMAKE_INSTALL_PREFIX ${GADGETRON_SOURCE_DIR}/prod/Install/vc2003)
 
                                 if ( NOT FLAG_FTK_SUPPRESS_COMPILING_WARNINGS )
                                     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
@@ -123,7 +118,6 @@ if ( WIN32 )
     
         SET(EXECUTABLE_OUTPUT_PATH ${GADGETRON_SOURCE_DIR}/prod/bin/cygwin CACHE STRING "Where to put the executables")
         SET(LIBRARY_OUTPUT_PATH ${GADGETRON_SOURCE_DIR}/prod/bin/cygwin CACHE STRING "Where to put the libraries")
-        SET(CMAKE_INSTALL_PREFIX ${GADGETRON_SOURCE_DIR}/prod/Install/cygwin)
 
         if ( NOT FLAG_FTK_SUPPRESS_COMPILING_WARNINGS ) 
           SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wextra -Wall -Wno-deprecated -Wno-uninitialized -Wundef -Wpointer-arith -Wwrite-strings -Wconversion -Wsign-compare -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls")
@@ -144,9 +138,6 @@ else ( WIN32 )
         message(" The current complier is GCC ...")
 
         ADD_DEFINITIONS(-DBUILD_PLATFORM_LINUX)
-        #SET(EXECUTABLE_OUTPUT_PATH ${GADGETRON_SOURCE_DIR}/prod/bin/gcc CACHE STRING "Where to put the executables")
-        #SET(LIBRARY_OUTPUT_PATH ${GADGETRON_SOURCE_DIR}/prod/bin/gcc CACHE STRING "Where to put the libraries")
-        #SET(CMAKE_INSTALL_PREFIX ${GADGETRON_SOURCE_DIR}/prod/Install/gcc)
 
         if ( NOT FLAG_FTK_SUPPRESS_COMPILING_WARNINGS )
           SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -Wextra -Wall -Wno-deprecated -Wno-uninitialized -Wundef -Wpointer-arith -Wwrite-strings -Wconversion -Wsign-compare -Wmissing-noreturn -Wmissing-format-attribute -Wredundant-decls")
@@ -164,7 +155,6 @@ else ( WIN32 )
 
         SET(EXECUTABLE_OUTPUT_PATH ${GADGETRON_SOURCE_DIR}/prod/bin/others CACHE STRING "Where to put the executables")
         SET(LIBRARY_OUTPUT_PATH ${GADGETRON_SOURCE_DIR}/prod/bin/others CACHE STRING "Where to put the libraries")
-        SET(CMAKE_INSTALL_PREFIX ${GADGETRON_SOURCE_DIR}/prod/Install/others)
 
     endif ( CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCC )
 

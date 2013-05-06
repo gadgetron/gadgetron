@@ -27,6 +27,8 @@ install(TARGETS
 # matlab warpper
 if (MATLAB_FOUND)
     message("MATLAB FOUND: ${MATLAB_INCLUDE_DIR}")
+    SET(CMAKE_DEBUG_POSTFIX )
+
     if (WIN32)
     include_directories( ${MATLAB_INCLUDE_DIR} )
     add_library(Matlab_register_CK_2d_cpu SHARED Matlab_register_CK_2d.cpp)
@@ -38,7 +40,7 @@ if (MATLAB_FOUND)
                     WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}\\${CMAKE_CFG_INTDIR} )
     endif ( HAS_64_BIT )
 
-    install(FILES Matlab_register_CK_2d_cpu.mexw64 DESTINATION ${CMAKE_INSTALL_PREFIX}/bin )
+    # install(TARGETS Matlab_register_CK_2d_cpu.mexw64 DESTINATION bin )
   endif (WIN32)
 else(MATLAB_FOUND)
   message("MATLAB NOT FOUND: no matlab warpper will be compiled ... ")

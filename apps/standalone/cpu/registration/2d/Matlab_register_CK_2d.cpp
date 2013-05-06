@@ -1,7 +1,7 @@
 
 #include <matrix.h>
 #include <mat.h>
-#include <mex.h>
+#include <mexGT.h>
 #include <cmath>
 #include <vector>
 #include <iostream>

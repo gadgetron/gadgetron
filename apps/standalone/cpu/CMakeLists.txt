@@ -7,6 +7,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
+  ${CMAKE_SOURCE_DIR}/apps/matlab
   ${Boost_INCLUDE_DIR} 
   ${ARMADILLO_INCLUDE_DIRS}
 )
