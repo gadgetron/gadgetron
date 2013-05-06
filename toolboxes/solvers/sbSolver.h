@@ -227,7 +227,7 @@ namespace Gadgetron{
 
       virtual void  update_dk(ARRAY_TYPE_ELEMENT* u_k){
 	*(this->d_k) = *u_k;
-	*(this->d_k) -= (*(this->d_k));
+	*(this->d_k) -= (*(this->b_k));
 	clamp_min(this->d_k.get(),REAL(0));
       }
 
