@@ -1,6 +1,21 @@
 cmake_minimum_required(VERSION 2.8)
 project(GADGETRON)
 
+# build options for 64 bits system
+if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+    message(" 64bit system is found  ... ")
+    set( HAS_64_BIT On CACHE BOOL "64bit build")
+else( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+    message(" 32bit system is found  ... ")
+    set( HAS_64_BIT Off CACHE BOOL "64bit build")
+endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+
+# build options for openMP support
+OPTION(HAS_OPENMP "Use openMP" Off)
+if ( HAS_OPENMP )
+    message(" The openMP multithreading is supported ... ")
+endif ( HAS_OPENMP )
+
 if (WIN32)
   ADD_DEFINITIONS(-DWIN32 -D_WIN32 -D_WINDOWS)
   ADD_DEFINITIONS(-DUNICODE -D_UNICODE)
@@ -11,6 +26,9 @@ endif (WIN32)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
+# differentiate current compiler used
+INCLUDE(Compiler.cmake)
 
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
@@ -68,6 +86,8 @@ if(ISMRMRD_FOUND)
 else(ISMRMRD_FOUND)
 message("\nISMRMRD not found. Only compiling toolboxes and standalone applications.")
 endif(ISMRMRD_FOUND)
+
+find_package(GMatlab)
 
 add_subdirectory(toolboxes)
 add_subdirectory(apps)

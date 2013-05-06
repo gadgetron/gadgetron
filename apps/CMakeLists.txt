@@ -6,3 +6,4 @@ IF (ACE_FOUND)
 	ENDIF (ISMRMRD_FOUND)	 
 ENDIF (ACE_FOUND)
 add_subdirectory(standalone)
+
