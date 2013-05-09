@@ -166,7 +166,11 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         // Run registration
         //
         boost::shared_ptr< hoNDArray<_real> > result;
-        result = CK.solve( fixed_image.get(), moving_image.get() );
+
+        {
+            Gadgetron::GadgetronTimer timer("Running registration - solve");
+            result = CK.solve( fixed_image.get(), moving_image.get() );
+        }
 
         if( !result.get() )
         {
