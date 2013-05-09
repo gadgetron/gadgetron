@@ -33,14 +33,11 @@ if (MATLAB_FOUND)
     include_directories( ${MATLAB_INCLUDE_DIR} )
     add_library(Matlab_register_CK_2d_cpu SHARED Matlab_register_CK_2d.cpp)
     target_link_libraries(Matlab_register_CK_2d_cpu ${MATLAB_LIBRARIES} hostutils cpureg cpucore cpucore_math)
-    if ( HAS_64_BIT )
-        add_custom_command(TARGET Matlab_register_CK_2d_cpu 
-                    POST_BUILD COMMAND del Matlab_register_CK_2d_cpu.mexw64 
-                    POST_BUILD COMMAND rename Matlab_register_CK_2d_cpu.dll Matlab_register_CK_2d_cpu.mexw64 
-                    WORKING_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}\\${CMAKE_CFG_INTDIR} )
+    if ( HAS_64_BIT )				
+		SET_TARGET_PROPERTIES(Matlab_register_CK_2d_cpu PROPERTIES SUFFIX .mexw64)
     endif ( HAS_64_BIT )
 
-    # install(TARGETS Matlab_register_CK_2d_cpu.mexw64 DESTINATION bin )
+    install(TARGETS Matlab_register_CK_2d_cpu DESTINATION bin )
   endif (WIN32)
 else(MATLAB_FOUND)
   message("MATLAB NOT FOUND: no matlab warpper will be compiled ... ")
