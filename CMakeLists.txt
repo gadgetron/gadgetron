@@ -48,7 +48,20 @@ else(ACE_FOUND)
 endif(ACE_FOUND)
 
 find_package(CUDA 4.1)
+
 find_package(GTest)
+#Add support for the default ubuntu package of gtest
+if (NOT GTEST_FOUND)
+find_path(GTEST_SRC_DIR src/gtest.cc HINTS /usr/src/gtest)
+if (GTEST_SRC_DIR)
+MESSAGE("GTest src package found. Compiling as part of Gadgetron.")
+add_subdirectory(${GTEST_SRC_DIR} ${CMAKE_BINARY_DIR}/gtest )
+include_directories( "/usr/include/gtest" )
+set(GTEST_FOUND 1)
+set(GTEST_LIBRARIES gtest gtest_main)
+endif (GTEST_SRC_DIR)
+endif (NOT GTEST_FOUND)
+
 find_package(Armadillo)
 
 if (CUDA_FOUND)

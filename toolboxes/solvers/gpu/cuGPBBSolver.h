@@ -27,6 +27,6 @@ namespace Gadgetron{
     
     virtual void solver_non_negativity_filter(cuNDArray<T> *x,cuNDArray<T> *g);
     
-    virtual void solver_reciprocal_clamp( cuNDArray<T>* x,REAL threshold) ;           
+
   };
 }

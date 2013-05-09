@@ -20,6 +20,22 @@ namespace Gadgetron{
     enum { Value = i};
   };
 
+  template<class T, unsigned int D, unsigned int dim> class inner_laplace_functor{
+  public:
+		static __device__ __inline__ void apply(T& val,const T* in, const typename intd<D>::Type dims,const typename intd<D>::Type co, typename intd<D>::Type& stride){
+			for (int d = -1; d < 2; d++)
+				stride[dim]=d;
+				inner_laplace_functor<T,D,dim-1>::apply(val,in,dims,co,stride);
+		}
+  };
+  template<class T, unsigned int D> class inner_laplace_functor<T,D,0>{
+  public:
+  	static __device__ __inline__ void apply(T& val,const T* in, const typename intd<D>::Type dims,const typename intd<D>::Type co, typename intd<D>::Type& stride){
+  		typename intd<D>::Type coN = (co+dims+stride)%dims;
+  		val -= in[co_to_idx<D>(coN,dims)];
+  	}
+  };
+
   template<class REAL, class T, unsigned int D> __global__ void
   laplace_kernel( typename intd<D>::Type dims, T *in, T *out )
   {  
@@ -31,32 +47,10 @@ namespace Gadgetron{
 
       typename intd<D>::Type co = idx_to_co<D>(idx, dims);
 
-      typename intd<D>::Type stride;
+      typename intd<D>::Type stride(0);
 
-      for (int i = 0; i < D; i++) stride.vec[i]=0;
 
-      for (int d1 = -1; d1 < 2; d1++){
-	stride.vec[0] = d1;
-
-	if (D > 1){
-	  for (int d2 = -1; d2 < 2; d2++){
-	    stride.vec[1] = d2;
-	    if (D > 2){
-	      for (int d3 = -1; d3 < 2; d3++){
-		stride.vec[2] = d3;
-		coN = (co+dims+stride)%dims;
-		val -=  in[co_to_idx<D>(coN, dims)];
-	      }
-	    } else { 
-	      coN = (co+dims+stride)%dims;
-	      val += T(0) - in[co_to_idx<D>(coN, dims)];
-	    }
-	  }
-	} else {
-	  coN = (co+dims+stride)%dims;
-	  val -= in[co_to_idx<D>(coN, dims)];
-	}
-      }
+      inner_laplace_functor<T,D,D-1>::apply(val,in,dims,co,stride);
       out[idx] = val+in[co_to_idx<D>(co, dims)]*((REAL) Pow<3,D>::Value);
     }
   }
@@ -72,11 +66,8 @@ namespace Gadgetron{
   
     typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>( *(in->get_dimensions().get()) ));
 
-    dim3 dimBlock( dims.vec[0] );
-    dim3 dimGrid( 1, dims.vec[D-1] );
-  
-    for( unsigned int d=1; d<D-1; d++ )
-      dimGrid.x *= dims.vec[d];
+    dim3 dimBlock( dims[0] );
+    dim3 dimGrid( prod(dims)/dims[0] );
   
     // Invoke kernel
     laplace_kernel<typename realType<T>::Type ,T,D><<< dimGrid, dimBlock >>> (dims, in->get_data_ptr(), out->get_data_ptr() );
