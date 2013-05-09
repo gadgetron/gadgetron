@@ -75,7 +75,7 @@ namespace Gadgetron{
 	// Apply the input deformation
 	//
     
-	_def_moving_image = deform( moving_image, result_in_out );
+	_def_moving_image = this->deform( moving_image, result_in_out );
 	def_moving_image = _def_moving_image.get();
       }
       else{
