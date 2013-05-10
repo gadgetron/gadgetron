@@ -32,8 +32,8 @@ namespace Gadgetron{
     //
   
     hoCKOpticalFlowSolver() : hoOpticalFlowSolver<T,D>(){ 
-      alpha_ = T(0.1); 
-      beta_ = T(0.01); 
+      alpha_ = T(0.05); 
+      beta_ = T(1.0); 
     } 
   
     virtual ~hoCKOpticalFlowSolver() {}

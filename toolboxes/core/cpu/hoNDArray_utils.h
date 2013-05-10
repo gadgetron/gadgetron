@@ -248,7 +248,6 @@ namespace Gadgetron {
 
         const int num_elements_in = prod(matrix_size_in);
         const int num_elements_out = prod(matrix_size_out);
-        const typename uintd<D>::Type offset = (matrix_size_out-matrix_size_in)>>1;
 
         T *in_ptr = in->get_data_ptr();
         T *out_ptr = out->get_data_ptr();
@@ -257,9 +256,9 @@ namespace Gadgetron {
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-            for( int idx=0; idx<num_elements_out*num_batches; idx++ ){
+            for( int idx=0; idx<num_elements_out; idx++ ){
                 const typename uintd<D>::Type co = idx_to_co<D>( idx, matrix_size_out );
-                const typename uintd<D>::Type co_os = offset + co;
+                const typename uintd<D>::Type co_os = crop_offset + co;
                 const unsigned int in_idx = co_to_idx<D>(co_os, matrix_size_in)+frame_offset*num_elements_in;
                 out_ptr[idx+frame_offset*num_elements_out] = in_ptr[in_idx];
             }
@@ -309,7 +308,7 @@ namespace Gadgetron {
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-            for( int idx=0; idx<num_elements_out*num_batches; idx++ ){
+            for( int idx=0; idx<num_elements_out; idx++ ){
                 const typename uintd<D>::Type co_out = idx_to_co<D>( idx, matrix_size_out );                
                 T _out;
                 bool inside = (co_out>=offset) && (co_out<(matrix_size_in+offset));

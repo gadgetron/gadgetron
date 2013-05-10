@@ -173,9 +173,7 @@ namespace Gadgetron{
             }
         }  
         //R_->finalize();
-        {
-        GadgetronTimer timer("Sparse build");
-        R_->setFromTriplets(coefficients.begin(), coefficients.end()); }
+        R_->setFromTriplets(coefficients.begin(), coefficients.end());
         this->preprocessed_ = true;
     }
 
