@@ -8,6 +8,7 @@
 #include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
 #include "parameterparser.h"
+#include "GadgetronTimer.h"
 
 // Std includes
 #include <iostream>
@@ -99,7 +100,11 @@ int main(int argc, char** argv)
   // Run registration
   //
 
-  boost::shared_ptr< cuNDArray<_real> > result = CK.solve( &fixed_image, &moving_image );
+  boost::shared_ptr< cuNDArray<_real> > result;
+  {
+      GadgetronTimer timer("Running registration");
+      result = CK.solve( &fixed_image, &moving_image );
+  }
 
   if( !result.get() ){
     cout << endl << "Registration solver failed. Quitting!\n" << endl;

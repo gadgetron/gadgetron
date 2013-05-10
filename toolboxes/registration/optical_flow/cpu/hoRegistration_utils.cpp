@@ -65,8 +65,10 @@ namespace Gadgetron{
     
     typedef vector_td<unsigned int,D> uintd;
 
+#ifdef USE_OMP
 #pragma omp parallel for
-    for( unsigned int idx=0; idx < num_elements*num_batches; idx++ ){
+#endif
+    for( int idx=0; idx < num_elements*num_batches; idx++ ){
 
       const unsigned int frame_offset = idx/num_elements;
       const uintd co_out = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
@@ -130,9 +132,11 @@ namespace Gadgetron{
     REAL *out = _out->get_data_ptr();
     
     typedef vector_td<unsigned int,D> uintd;
-    
+
+#ifdef USE_OMP
 #pragma omp parallel for
-    for( unsigned int idx=0; idx < num_elements*num_batches; idx++ ){
+#endif
+    for( int idx=0; idx < num_elements*num_batches; idx++ ){
       
       REAL res = REAL(0);
 

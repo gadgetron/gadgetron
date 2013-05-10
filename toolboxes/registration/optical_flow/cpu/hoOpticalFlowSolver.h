@@ -11,6 +11,7 @@
 #include "hoNDArray.h"
 #include "hoNDArray_operators.h"
 #include "hoNDArray_elemwise.h"
+#include "hoNDArray_utils.h"
 #include "hoRegistration_utils.h"
 #include "opticalFlowSolver.h"
 #include "cpureg_export.h"
@@ -28,7 +29,7 @@ namespace Gadgetron{
   protected:
 
     // Inherited and still pure virtual...
-    virtual boost::shared_ptr< hoNDArray<T> > core_solver( hoNDArray<T> *gradient_image, hoNDArray<T> *stencil_image ) = 0;      
+    //virtual boost::shared_ptr< hoNDArray<T> > core_solver( hoNDArray<T> *gradient_image, hoNDArray<T> *stencil_image ) = 0;      
 
     // CPU-based computation of the spatial and temporal image gradient
     //

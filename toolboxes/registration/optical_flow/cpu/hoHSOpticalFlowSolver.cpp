@@ -120,8 +120,10 @@ namespace Gadgetron{
       //
       
       for( unsigned int dim = 0; dim < D; dim++ ){
-//#pragma omp parallel for
-	for( unsigned int idx = 0; idx < num_elements_per_dim; idx++ ){
+#ifdef USE_OMP
+#pragma omp parallel for
+#endif
+      for( int idx = 0; idx < num_elements_per_dim; idx++ ){
 	  
 	  // Index to the shared memory
 	  const unsigned int shared_idx = dim*num_elements_per_dim+idx;
@@ -175,8 +177,10 @@ namespace Gadgetron{
       const T disp_thresh_sqr = this->limit_*this->limit_;
       
       for( unsigned int dim = 0; dim < D; dim++ ){
-//#pragma omp parallel for
-	for( unsigned int idx = 0; idx < num_elements_per_dim; idx++ ){
+#ifdef USE_OMP
+#pragma omp parallel for
+#endif
+      for( int idx = 0; idx < num_elements_per_dim; idx++ ){
 
 	  // Batch idx (second slowest varying dimension)   
 	  const unsigned int batch_idx = idx/num_elements_per_batch;

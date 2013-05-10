@@ -1,6 +1,6 @@
 #include "cuSenseRHSBuffer.h"
 #include "vector_td_utilities.h"
-#include "NFFT_utils.h"
+#include "cuNDArray_utils.h"
 
 namespace Gadgetron{
 

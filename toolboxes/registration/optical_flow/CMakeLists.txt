@@ -13,7 +13,7 @@ install(FILES
   DESTINATION include)
 
 if(ARMADILLO_FOUND)
-  message("Compiling optical flow registration toolbox")
+  message("Compiling optical flow registration toolbox.")
   add_subdirectory(cpu)
 else (ARMADILLO_FOUND)
   message("Armadillo not found. Not compiling the optical flow registration toolbox. ")  

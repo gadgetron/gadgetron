@@ -11,6 +11,7 @@
 #include "cuNDArray.h"
 #include "cuNDArray_operators.h"
 #include "cuNDArray_elemwise.h"
+#include "cuNDArray_utils.h"
 #include "cuRegistration_utils.h"
 #include "opticalFlowSolver.h"
 #include "gpureg_export.h"
@@ -28,7 +29,7 @@ namespace Gadgetron{
   protected:
 
     // Inherited and still pure virtual...
-    virtual boost::shared_ptr< cuNDArray<T> > core_solver( cuNDArray<T> *gradient_image, cuNDArray<T> *stencil_image ) = 0;      
+    //virtual boost::shared_ptr< cuNDArray<T> > core_solver( cuNDArray<T> *gradient_image, cuNDArray<T> *stencil_image ) = 0;      
 
     // General tool to set up the block/grid dimensions
     void setup_grid( dim3 *blockDim, dim3* gridDim, unsigned int number_of_elements, 

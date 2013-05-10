@@ -64,7 +64,7 @@ namespace Gadgetron{
       if( use_oversampling ){
 	boost::shared_ptr< std::vector<unsigned int> > osdims = kernel_->get_dimensions();
 	tmp_out = new COMPLEX_ARRAY_TYPE(osdims);
-	expand_with_zero_fill<ELEMENT_TYPE,D>( in, tmp_out );
+	pad<ELEMENT_TYPE,D>( in, tmp_out );
       }
       else if( accumulate ){
 	tmp_out = new COMPLEX_ARRAY_TYPE(*in);
@@ -120,7 +120,7 @@ namespace Gadgetron{
       if( use_oversampling ){
 	boost::shared_ptr< std::vector<unsigned int> > osdims = kernel_->get_dimensions();
 	tmp_out = new COMPLEX_ARRAY_TYPE(osdims);
-	expand_with_zero_fill<ELEMENT_TYPE,D>( in, tmp_out );
+	pad<ELEMENT_TYPE,D>( in, tmp_out );
       }
       else if( accumulate ){
 	tmp_out = new COMPLEX_ARRAY_TYPE(*in);
@@ -174,7 +174,7 @@ namespace Gadgetron{
       if( use_oversampling ){
 	boost::shared_ptr< std::vector<unsigned int> > osdims = adjoint_kernel_->get_dimensions();
 	tmp_out = new COMPLEX_ARRAY_TYPE(osdims);
-	expand_with_zero_fill<ELEMENT_TYPE,D>( in, tmp_out );
+	pad<ELEMENT_TYPE,D>( in, tmp_out );
       }
       else if( accumulate ){
 	tmp_out = new COMPLEX_ARRAY_TYPE(*in);

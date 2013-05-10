@@ -14,10 +14,10 @@
 
 // Includes - Gadgetron
 #include "cuNFFT.h"
-#include "NFFT_utils.h"
 #include "cuNDFFT.h"
 #include "cuNDArray_operators.h"
 #include "cuNDArray_elemwise.h"
+#include "cuNDArray_utils.h"
 #include "vector_td_utilities.h"
 #include "cudaDeviceManager.h"
 #include "check_CUDA.h"
@@ -427,7 +427,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute( cuNDArray<complext<REAL> > *in,
     
     if( !oversampled_image ){
       working_image = new cuNDArray<complext<REAL> >(&vec_dims);
-      expand_with_zero_fill<complext<REAL>, D>( in_int, working_image );
+      pad<complext<REAL>, D>( in_int, working_image );
     }
     else{
       working_image = in_int;
@@ -511,7 +511,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute( cuNDArray<complext<REAL> > *in,
     if( !oversampled_image ){
       working_image = new cuNDArray<complext<REAL> >(&vec_dims);
       
-      expand_with_zero_fill<complext<REAL>, D>( in_int, working_image );
+      pad<complext<REAL>, D>( in_int, working_image );
     }
     else{
       working_image = in_int;
@@ -571,7 +571,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::mult_MH_M( cuNDArray<complext<REAL> > *i
   
   if( !oversampled_image ){
     working_image = new cuNDArray<complext<REAL> >(&vec_dims);
-    expand_with_zero_fill<complext<REAL>, D>( in_int, working_image );
+    pad<complext<REAL>, D>( in_int, working_image );
   }
   else{
     working_image = in_int;
