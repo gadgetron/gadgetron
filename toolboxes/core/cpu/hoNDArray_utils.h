@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hoNDArray.h"
+#include "vector_td_utilities.h"
 
 namespace Gadgetron {
 
