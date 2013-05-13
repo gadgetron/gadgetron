@@ -37,14 +37,13 @@ namespace Gadgetron{
 
     arma::Col<typename stdType<T>::Type > in_vec = as_arma_col(in);
     arma::Col<typename stdType<T>::Type > out_vec = as_arma_col(out);
-    out_vec = R_MH_ * in_vec;
+    out_vec = arma::trans(R_M_) * in_vec;
   }
   
   template <class T, unsigned int D>
   void hoLinearResampleOperator<T,D>::reset()
   {
     R_M_.reset();
-    R_MH_.reset();
     resampleOperator< hoNDArray<typename realType<T>::Type>, hoNDArray<T> >::reset();
   }
   
@@ -80,9 +79,14 @@ namespace Gadgetron{
     const unsigned int num_elements_mat = prod(matrix_size);
     const unsigned int num_elements_ext = prod(matrix_size)*extended_dim;
     
-    R_M_.set_size( num_elements_ext, num_elements_mat );
-    R_MH_.set_size( num_elements_mat, num_elements_ext );
-    
+    //R_M_.set_size( num_elements_ext, num_elements_mat );
+    //R_MH_.set_size( num_elements_mat, num_elements_ext );
+    const unsigned int num_neighbors = this->get_num_neighbors();
+    arma::umat locations(2,num_elements_ext*num_neighbors);
+    arma::Col<typename realType<T>::Type > values(num_elements_ext*num_neighbors);
+    int location_index = 0;
+
+
     for( unsigned int idx=0; idx<num_elements_ext; idx++ ){
     
       const unsigned int batch_no = idx/num_elements_mat;
@@ -100,7 +104,7 @@ namespace Gadgetron{
       //
     
       const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
-      const unsigned int num_neighbors = this->get_num_neighbors();
+
     
       // Weights are non-zero only if all neighbors exist
       //
@@ -174,10 +178,15 @@ namespace Gadgetron{
 	// Insert weight in resampling matrix R_
 	//
       
-	R_M_(mat_j,mat_i) =  weight;
-	R_MH_(mat_i, mat_j) =  weight;
+	locations(0,location_index) = mat_j;
+	locations(1,location_index) = mat_i;
+	values(location_index) = weight;
+	location_index++;
       }
     }
+    locations.resize(2,location_index);
+    values.resize(location_index);
+    R_M_ = arma::SpMat<typename realType<T>::Type>(locations,values,num_elements_ext, num_elements_mat,false);
     this->preprocessed_ = true;
   }
 
