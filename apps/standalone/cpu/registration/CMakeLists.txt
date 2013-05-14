@@ -3,11 +3,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
   )
 
-find_path(EIGEN_INCLUDE_DIR Eigen/Core
-  HINTS /usr/include/eigen3 /usr/local/eigen3 /opt/local/include/eigen3)
-
-IF(EIGEN_INCLUDE_DIR AND EIGEN_SPARSE_IS_STABLE)
-  INCLUDE_DIRECTORIES(${EIGEN_INCLUDE_DIR})
-  add_subdirectory(2d)
-  add_subdirectory(3d)
-ENDIF(EIGEN_INCLUDE_DIR AND EIGEN_SPARSE_IS_STABLE)
+if(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.79" )
+add_subdirectory(2d)
+add_subdirectory(3d)
+endif(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.79" )

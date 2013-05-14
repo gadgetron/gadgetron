@@ -50,6 +50,7 @@ namespace Gadgetron{
   template <class T, unsigned int D> void
   hoLinearResampleOperator<T,D>::set_displacement_field( boost::shared_ptr< hoNDArray<typename realType<T>::Type> > displacements )
   {
+    typedef typename realType<T>::Type REAL;
     this->preprocessed_ = false;
 
     if( displacements.get() == 0x0 ){
@@ -61,13 +62,9 @@ namespace Gadgetron{
     if( !( surplus == 1 || surplus == 2 ) ){
       BOOST_THROW_EXCEPTION( runtime_error("hoLinearResampleOperator::set_displacement_field : unexpected array dimensionality." ));
     }  
-
-    typedef typename realType<T>::Type REAL;
   
     // Determine the number of registrations performed
     const unsigned int extended_dim = (surplus == 1) ? 1 : displacements->get_size(D); 
-    temporal_dim_size_ = extended_dim;
-  
     const unsigned int field_dim = (surplus == 1) ? displacements->get_size(D) : displacements->get_size(D+1);
 
     if( !(field_dim == D || field_dim == D+1 )){
@@ -75,17 +72,13 @@ namespace Gadgetron{
     }
   
     const typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>( *(displacements->get_dimensions()));
-
     const unsigned int num_elements_mat = prod(matrix_size);
     const unsigned int num_elements_ext = prod(matrix_size)*extended_dim;
     
-    //R_M_.set_size( num_elements_ext, num_elements_mat );
-    //R_MH_.set_size( num_elements_mat, num_elements_ext );
     const unsigned int num_neighbors = this->get_num_neighbors();
     arma::umat locations(2,num_elements_ext*num_neighbors);
     arma::Col<typename realType<T>::Type > values(num_elements_ext*num_neighbors);
     int location_index = 0;
-
 
     for( unsigned int idx=0; idx<num_elements_ext; idx++ ){
     
@@ -93,7 +86,6 @@ namespace Gadgetron{
       const unsigned int idx_in_batch = idx-batch_no*num_elements_mat;
     
       const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
-    
       typename reald<REAL,D>::Type co_disp = to_reald<REAL,unsigned int,D>(co);
       for( unsigned int dim=0; dim<D; dim++ ){
 	REAL tmp = displacements->get_data_ptr()[dim*num_elements_ext+batch_no*num_elements_mat+idx_in_batch];
@@ -104,7 +96,6 @@ namespace Gadgetron{
       //
     
       const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
-
     
       // Weights are non-zero only if all neighbors exist
       //
@@ -113,11 +104,6 @@ namespace Gadgetron{
 	continue;
     
       // Iterate over all neighbors
-      //
-    
-      //
-      // For historic reasons (eigen) we construct the matrix column by column.
-      // It is more easy then to construct the transpose:
       //
     
       unsigned int mat_j = idx;
@@ -175,9 +161,6 @@ namespace Gadgetron{
 	    weight *= (REAL(1.0)-(co_stride.vec[dim]-co_disp.vec[dim])); }
 	}
       
-	// Insert weight in resampling matrix R_
-	//
-      
 	locations(0,location_index) = mat_j;
 	locations(1,location_index) = mat_i;
 	values(location_index) = weight;
@@ -186,7 +169,7 @@ namespace Gadgetron{
     }
     locations.resize(2,location_index);
     values.resize(location_index);
-    R_M_ = arma::SpMat<typename realType<T>::Type>(locations,values,num_elements_ext, num_elements_mat,false);
+    R_M_ = arma::SpMat<REAL>( locations, values, num_elements_ext, num_elements_mat, true );
     this->preprocessed_ = true;
   }
 

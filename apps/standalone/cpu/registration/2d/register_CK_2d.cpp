@@ -4,7 +4,7 @@
 
 // Gadgetron includes
 #include "hoCKOpticalFlowSolver.h"
-#include "hoLinearResampleOperator_eigen.h"
+#include "hoLinearResampleOperator.h"
 #include "hoNDArray.h"
 #include "hoNDArray_fileio.h"
 #include "GadgetronTimer.h"
@@ -77,7 +77,7 @@ int main(int argc, char** argv)
   // Use bilinear interpolation for resampling
   //
 
-  boost::shared_ptr< hoLinearResampleOperator_eigen<_real,2> > R( new hoLinearResampleOperator_eigen<_real,2>() );
+  boost::shared_ptr< hoLinearResampleOperator<_real,2> > R( new hoLinearResampleOperator<_real,2>() );
 
   // Setup solver
   //

@@ -22,9 +22,6 @@ namespace Gadgetron{
     virtual void mult_M( hoNDArray<T> *in, hoNDArray<T> *out, bool accumulate = false);
     virtual void mult_MH( hoNDArray<T> *in, hoNDArray<T> *out, bool accumulate = false);
     virtual void set_displacement_field( boost::shared_ptr< hoNDArray<typename realType<T>::Type> > offsets );
-
-    virtual unsigned int get_temporal_dimension_size() { return temporal_dim_size_; }
-
     virtual void reset();
 
     virtual boost::shared_ptr< linearOperator< hoNDArray<T> > > clone() {
@@ -37,7 +34,5 @@ namespace Gadgetron{
   
   protected:
     arma::SpMat<typename realType<T>::Type> R_M_;
-    arma::SpMat<typename realType<T>::Type> R_MH_;
-    unsigned int temporal_dim_size_;
   };
 }
