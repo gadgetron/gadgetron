@@ -97,7 +97,7 @@ namespace Gadgetron{
   // Vectorize a scalar value
   //
 
-  template<class T, unsigned int D> __inline__ __host__ __device__ 
+  template<class T, unsigned int D> __inline__ __host__ __device__
   vector_td<T,D> to_vector_td( const T scalar )
   {
     vector_td<T,D> res;

@@ -67,8 +67,17 @@ public:
 
       if (!codoms[i]->dimensions_equal(get_codomain_dimensions(i).get())){
       	 std::stringstream ss;
-      	 ss << "encodingOperatorContainter::create_codomain: input codomain " << i << "does not match corresponding operator codomain";
-      	 throw std::runtime_error(ss.str());
+      	 ss << "encodingOperatorContainter::create_codomain: input codomain " << i << " does not match corresponding operator codomain" << std::endl;
+      	 ss << "Input codomain: ";
+      	 std::vector<unsigned int> ico = *codoms[i]->get_dimensions();
+      	 for (int k = 0; k < ico.size(); k++) ss << ico[k] << " ";
+      	 ss << std::endl;
+      	 ss << "Operator codomain: ";
+      	 ico = *get_codomain_dimensions(i);
+      	 std::cout << "SIZE: " << ico.size() << std::endl;
+      	 for (int k = 0; k < ico.size(); k++) ss << ico[k] << " ";
+      	 ss << std::endl;
+      	 BOOST_THROW_EXCEPTION(runtime_error(ss.str()));
 
       }
 
