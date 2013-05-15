@@ -42,9 +42,8 @@ namespace Gadgetron{
 	b_k = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(image_dims.get()));
 	clear(d_k.get());
 	clear(b_k.get());	
-	if (prior.get()){
-	  p_M = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT());
-	  p_M->create(image_dims.get());
+	if(prior.get()){
+	  p_M = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(image_dims));
 	  reg_op->mult_M(prior.get(),p_M.get());
 	}
       }
@@ -53,7 +52,7 @@ namespace Gadgetron{
       {
 	*encoding_space=*d_k;
 	*encoding_space -= *b_k;
-	if (prior.get()){
+	if(prior.get()){
 	  *encoding_space -= *p_M;
 	}
       }
@@ -71,10 +70,8 @@ namespace Gadgetron{
       virtual void update_dk_bk(ARRAY_TYPE_ELEMENT*) = 0;
       
       virtual void set_prior(boost::shared_ptr<ARRAY_TYPE_ELEMENT> image){ prior=image; }
+
       boost::shared_ptr< linearOperator< ARRAY_TYPE_ELEMENT> > reg_op;
-
-    protected:
-
       boost::shared_ptr<ARRAY_TYPE_ELEMENT> d_k;
       boost::shared_ptr<ARRAY_TYPE_ELEMENT> b_k;
       boost::shared_ptr<ARRAY_TYPE_ELEMENT> p_M;
@@ -283,7 +280,7 @@ namespace Gadgetron{
       if( !op.get() ){
 	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::add_regularization_group_operator : NULL operator provided" ));
       }    
-      current_group.push_back(op);
+      current_group_.push_back(op);
     }
   
     // Add isotroic regularization group (multiple groups allowed)
@@ -291,54 +288,58 @@ namespace Gadgetron{
 
     virtual void add_group(int L_norm=1)
     {
-      if(current_group.size()==0){
+      if(current_group_.size()==0){
     	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::add_group : no regularization group operators added" ));
       }
       if (L_norm==2){
-    	for (int i=0; i<current_group.size(); i++){
-	  regularization_operators.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(current_group[i])));
+    	for (int i=0; i<current_group_.size(); i++){
+	  regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(current_group_[i])));
     	}
 	
       } else {	
-    	boost::shared_ptr<sbL1GroupRegularizationOperator> group(new sbL1GroupRegularizationOperator(current_group));
-        regularization_operators.push_back(group);
+    	boost::shared_ptr<sbL1GroupRegularizationOperator> group(new sbL1GroupRegularizationOperator(current_group_));
+        regularization_operators_.push_back(group);
       }
-      current_group = std::vector<boost::shared_ptr<linearOperator<ARRAY_TYPE_ELEMENT> > >();
+      current_group_ = std::vector<boost::shared_ptr<linearOperator<ARRAY_TYPE_ELEMENT> > >();
     }
 
-    virtual void add_group(boost::shared_ptr<ARRAY_TYPE_ELEMENT> prior,int L_norm=1)
+    virtual void add_group( ARRAY_TYPE_ELEMENT *prior, int L_norm=1 )
     {
-      if(current_group.size()==0){
+      if(current_group_.size()==0){
 	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::add_group : no regularization group operators added" ));
       }
       if (L_norm==2){
-    	for (int i =0; i < current_group.size(); i++){
-	  regularization_operators.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(current_group[i])));
-	  regularization_operators.back()->set_prior(prior);
+    	for (int i =0; i < current_group_.size(); i++){
+	  regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(current_group_[i])));
+	  boost::shared_ptr<ARRAY_TYPE_ELEMENT> tmp( new ARRAY_TYPE_ELEMENT(*prior) );
+	  regularization_operators_.back()->set_prior(tmp);
     	}
       } else {       
-    	boost::shared_ptr<sbL1GroupRegularizationOperator> group(new sbL1GroupRegularizationOperator(current_group));
-    	group->set_prior(prior);
-        regularization_operators.push_back(group);
+    	boost::shared_ptr<sbL1GroupRegularizationOperator> group(new sbL1GroupRegularizationOperator(current_group_));
+	boost::shared_ptr<ARRAY_TYPE_ELEMENT> tmp( new ARRAY_TYPE_ELEMENT(*prior) );
+    	group->set_prior(tmp);
+        regularization_operators_.push_back(group);
       }
-      current_group = std::vector<boost::shared_ptr<linearOperator<ARRAY_TYPE_ELEMENT> > >();
+      current_group_ = std::vector<boost::shared_ptr<linearOperator<ARRAY_TYPE_ELEMENT> > >();
     }
 
     virtual void add_regularization_operator(boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op, int L_norm=1 ){
       if (L_norm==1){
-	regularization_operators.push_back(boost::shared_ptr<sbL1RegularizationOperator>(new sbL1RegularizationOperator(op)));
+	regularization_operators_.push_back(boost::shared_ptr<sbL1RegularizationOperator>(new sbL1RegularizationOperator(op)));
       }else{
-	regularization_operators.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(op)));
+	regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(op)));
       }
     }
 
-    virtual void add_regularization_operator(boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op, boost::shared_ptr<ARRAY_TYPE_ELEMENT> prior, int L_norm=1 ){
+    virtual void add_regularization_operator(boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op, ARRAY_TYPE_ELEMENT *prior, int L_norm=1 ){
       if (L_norm==1){
-	regularization_operators.push_back(boost::shared_ptr<sbL1RegularizationOperator>(new sbL1RegularizationOperator(op)));
-	regularization_operators.back()->set_prior(prior);
+	regularization_operators_.push_back(boost::shared_ptr<sbL1RegularizationOperator>(new sbL1RegularizationOperator(op)));
+	boost::shared_ptr<ARRAY_TYPE_ELEMENT> tmp( new ARRAY_TYPE_ELEMENT(*prior) );
+	regularization_operators_.back()->set_prior(tmp);
       }else{
-	regularization_operators.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(op)));
-	regularization_operators.back()->set_prior(prior);
+	regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(op)));
+	boost::shared_ptr<ARRAY_TYPE_ELEMENT> tmp( new ARRAY_TYPE_ELEMENT(*prior) );
+	regularization_operators_.back()->set_prior(tmp);
       }
     }
     
@@ -401,9 +402,9 @@ namespace Gadgetron{
       else 
 	clear(u_k.get());
       
+      // Normalize and _then_ initialize (the order matters)
       boost::shared_ptr<ARRAY_TYPE_ELEMENT> f(new ARRAY_TYPE_ELEMENT(*_f));
-      REAL normalization_factor = normalize_input( f.get() );
-
+      REAL normalization_factor = normalization( f.get() );
       initialize();
 
       // Invoke the core solver
@@ -415,6 +416,11 @@ namespace Gadgetron{
 
       // Undo normalization
       *u_k /= normalization_factor;
+      for( unsigned int i=0; i<regularization_operators_.size(); i++ ){
+	boost::shared_ptr<sbRegularizationOperator> op = regularization_operators_[i];
+	if( op->prior.get() )
+	  *op->prior /= normalization_factor;
+      }
     
       // ... and return the result
       //    
@@ -456,9 +462,9 @@ namespace Gadgetron{
       boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op;
     
       // Validate regularization operators (non-group)
-      for( unsigned int i=0; i<this->regularization_operators.size(); i++ ){
+      for( unsigned int i=0; i<this->regularization_operators_.size(); i++ ){
       
-	op = regularization_operators[i]->reg_op;
+	op = regularization_operators_[i]->reg_op;
       
 	if( !op.get() ){
 	  BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::validate_regularization_operators : invalid operator provided" ));
@@ -476,9 +482,6 @@ namespace Gadgetron{
       }
     }
   
-    // Validate prior
-    //
-  
     // Check that the solver is set up properly
     virtual void validate_solver()
     {
@@ -490,17 +493,15 @@ namespace Gadgetron{
       validate_regularization_operators( image_dims.get());
     }  
 
-    // Initialize d_k and b_k arrays to zero images and compute operator priors
-    //
-
+    // Initialize solver
     virtual void initialize()
     {
       // Get image dimensions
       boost::shared_ptr< std::vector<unsigned int> > image_dims = this->encoding_operator_->get_domain_dimensions();
 
       if (non_negativity_filter_weight_ > REAL(0)){
-    	regularization_operators.push_back(boost::shared_ptr<sbNonNegativityOperator>(new sbNonNegativityOperator));
-    	regularization_operators.back()->set_weight(non_negativity_filter_weight_);
+    	regularization_operators_.push_back(boost::shared_ptr<sbNonNegativityOperator>(new sbNonNegativityOperator));
+    	regularization_operators_.back()->set_weight(non_negativity_filter_weight_);
       }
     
       // Set up inner solver
@@ -513,9 +514,9 @@ namespace Gadgetron{
       // The domain is constant for all operators (the image dimensions)
       enc_op_container_->set_domain_dimensions( image_dims.get() );
 
-      for (int i=0; i < regularization_operators.size(); i++){
-    	regularization_operators[i]->initialize(image_dims);
-    	enc_op_container_->add_operator( regularization_operators[i]->reg_op );
+      for (int i=0; i < regularization_operators_.size(); i++){
+    	regularization_operators_[i]->initialize(image_dims);
+    	enc_op_container_->add_operator( regularization_operators_[i]->reg_op );
       }
     }
   
@@ -526,11 +527,11 @@ namespace Gadgetron{
     {
       enc_op_container_ = boost::shared_ptr<encodingOperatorContainer<ARRAY_TYPE_ELEMENT> >( new encodingOperatorContainer<ARRAY_TYPE_ELEMENT>);
       inner_solver_->set_encoding_operator( enc_op_container_ );
-      for (int i=0; i < regularization_operators.size(); i++){
-	regularization_operators[i]->deinitialize();
+      for (int i=0; i < regularization_operators_.size(); i++){
+	regularization_operators_[i]->deinitialize();
       }
       if (non_negativity_filter_weight_ > REAL(0)){
-    	regularization_operators.pop_back();
+    	regularization_operators_.pop_back();
       }
     }
 
@@ -584,8 +585,8 @@ namespace Gadgetron{
 	    // Next add the regularization operators' data, d_k - b_k
 	    //
 
-	    for( unsigned int i=0; i< regularization_operators.size(); i++ ){
-	      boost::shared_ptr<sbRegularizationOperator > op = regularization_operators[i];
+	    for( unsigned int i=0; i< regularization_operators_.size(); i++ ){
+	      boost::shared_ptr<sbRegularizationOperator > op = regularization_operators_[i];
 	      tmp.create( image_dims.get(), data.get_data_ptr()+enc_op_container_->get_offset(i+1) );
 	      op->update_encoding_space(&tmp);
 	    }
@@ -618,8 +619,8 @@ namespace Gadgetron{
 	  // Update d_k (and b_k in final inner iteration)
 	  //
 	  
-	  for( unsigned int i=0; i< regularization_operators.size(); i++ ){
-	    boost::shared_ptr<sbRegularizationOperator > op = regularization_operators[i];
+	  for( unsigned int i=0; i< regularization_operators_.size(); i++ ){
+	    boost::shared_ptr<sbRegularizationOperator > op = regularization_operators_[i];
 	    if( inner_iteration < inner_iterations-1 )
 	      op->update_dk(u_k.get());
 	    else
@@ -644,7 +645,7 @@ namespace Gadgetron{
       } // end of outer loop
     }
     
-    virtual REAL normalize_input( ARRAY_TYPE_ELEMENT *f )
+    virtual REAL normalization( ARRAY_TYPE_ELEMENT *f )
     {
       //
       // Normalize to an average energy of "one intensity unit per image element"
@@ -655,7 +656,17 @@ namespace Gadgetron{
       op->mult_MH( f, &tmp );
       REAL sum = asum( &tmp );
       REAL image_scale = REAL(tmp.get_number_of_elements())/sum;
+
+      // Normalize input data
       *f *= image_scale;
+
+      // Normalize priors
+      for( unsigned int i=0; i<regularization_operators_.size(); i++ ){
+	boost::shared_ptr<sbRegularizationOperator> op = regularization_operators_[i];
+	if( op->prior.get() )
+	  *op->prior *= image_scale;
+      }
+
       return image_scale;
     }
     
@@ -663,9 +674,8 @@ namespace Gadgetron{
     REAL tolerance_;
     unsigned int outer_iterations_, inner_iterations_;
     unsigned int num_reg_operators_;
-    std::vector< boost::shared_ptr<sbRegularizationOperator > > regularization_operators;
-    std::vector< boost::shared_ptr<linearOperator<ARRAY_TYPE_ELEMENT> > >  current_group;
-    boost::shared_ptr<ARRAY_TYPE_ELEMENT> prior_;
+    std::vector< boost::shared_ptr<sbRegularizationOperator> > regularization_operators_;
+    std::vector< boost::shared_ptr<linearOperator<ARRAY_TYPE_ELEMENT> > >  current_group_;
     boost::shared_ptr<INNER_SOLVER> inner_solver_;
     boost::shared_ptr<encodingOperatorContainer<ARRAY_TYPE_ELEMENT> > enc_op_container_;
     std::vector<unsigned int> weights_backup_;

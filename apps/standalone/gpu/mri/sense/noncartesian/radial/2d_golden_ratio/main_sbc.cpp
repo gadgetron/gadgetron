@@ -167,7 +167,6 @@ int main(int argc, char** argv)
   
   // Duplicate the regularization image to 'frames_per_reconstruction' frames
   boost::shared_ptr<cuNDArray<_complext> > reg_image = expand( &_reg_image, frames_per_reconstruction );
-  *reg_image *= _real(2); // We need to figure out where this scaling comes from
 
   acc_images.reset();
   csm.reset();
@@ -212,8 +211,15 @@ int main(int argc, char** argv)
   sb.add_regularization_group_operator( Rx ); 
   sb.add_regularization_group_operator( Ry ); 
   sb.add_regularization_group_operator( Rz ); 
-  //sb.add_group(reg_image);
   sb.add_group();
+
+  // Use the code below for prior image constraint compressed sensing (PICCS)
+  /*
+  sb.add_regularization_group_operator( Rx ); 
+  sb.add_regularization_group_operator( Ry ); 
+  sb.add_regularization_group_operator( Rz ); 
+  sb.add_group(reg_image.get());
+  */
 
   sb.set_max_outer_iterations(num_sb_outer_iterations);
   sb.set_max_inner_iterations(num_sb_inner_iterations);
@@ -221,7 +227,7 @@ int main(int argc, char** argv)
 
   sb.get_inner_solver()->set_max_iterations( num_cg_iterations );
   sb.get_inner_solver()->set_tc_tolerance( 1e-4 );
-  sb.get_inner_solver()->set_output_mode( cuCgSolver< _complext>::OUTPUT_VERBOSE );
+  sb.get_inner_solver()->set_output_mode( cuCgSolver< _complext>::OUTPUT_WARNINGS );
   
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
 

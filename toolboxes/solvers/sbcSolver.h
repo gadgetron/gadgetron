@@ -40,16 +40,12 @@ namespace Gadgetron{
 	clear(u_k.get());
 
 
-      // Normalize
+      // Normalize and _then_ initialize (the order matters)
       //
       
       boost::shared_ptr<ARRAY_TYPE_ELEMENT> f(new ARRAY_TYPE_ELEMENT(*_f));
-      REAL normalization_factor = normalize_input( f.get() );
+      REAL normalization_factor = normalization( f.get() );
       boost::shared_ptr<ARRAY_TYPE_ELEMENT> f_k(new ARRAY_TYPE_ELEMENT(*f));
-      
-      // Initialize
-      //
-
       this->initialize();
         
       // Outer loop
@@ -92,7 +88,11 @@ namespace Gadgetron{
 
       // Undo normalization
       *u_k /= normalization_factor;
-
+      for( unsigned int i=0; i<this->regularization_operators_.size(); i++ ){
+	if( this->regularization_operators_[i]->prior.get() )
+	  *this->regularization_operators_[i]->prior /= normalization_factor;
+      }
+      
       // ... and return the result
       return u_k;
     }  

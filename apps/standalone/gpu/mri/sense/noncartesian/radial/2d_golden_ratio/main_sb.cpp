@@ -167,7 +167,6 @@ int main(int argc, char** argv)
   
   // Duplicate the regularization image to 'frames_per_reconstruction' frames
   boost::shared_ptr<cuNDArray<_complext> > reg_image = expand( &_reg_image, frames_per_reconstruction );
-  *reg_image *= _real(2);// We need to figure out where this scaling comes from
 
   acc_images.reset();
   csm.reset();
@@ -200,11 +199,22 @@ int main(int argc, char** argv)
   E->set_codomain_dimensions(&data_dims);
 
   // Setup split-Bregman solver
+  //
+
   cuSbCgSolver<_complext> sb;
   sb.set_encoding_operator( E );
   sb.add_regularization_group_operator( Rx ); 
   sb.add_regularization_group_operator( Ry ); 
   sb.add_group();
+
+  // Use the code below for prior image constraint compressed sensing (PICCS)
+  /*
+  sb.add_regularization_group_operator( Rx ); 
+  sb.add_regularization_group_operator( Ry ); 
+  sb.add_regularization_group_operator( Rz ); 
+  sb.add_group(reg_image.get());
+  */
+
   sb.set_max_outer_iterations(num_sb_outer_iterations);
   sb.set_max_inner_iterations(num_sb_inner_iterations);
   sb.set_output_mode( cuSbCgSolver< _complext>::OUTPUT_VERBOSE );
