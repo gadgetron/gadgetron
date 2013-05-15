@@ -123,10 +123,7 @@ int main(int argc, char** argv)
   // Define encoding matrix for non-Cartesian SENSE
   boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );  
   E->set_weight( mu );
-  
   E->setup( matrix_size, matrix_size_os, kernel_width );
-
-  // Notify encoding operator of dcw
   E->set_dcw(dcw);
   dcw.reset();
 
@@ -136,7 +133,6 @@ int main(int argc, char** argv)
   boost::shared_ptr< cuSenseRHSBuffer<_real,2> > rhs_buffer( new cuSenseRHSBuffer<_real,2>() );
 
   rhs_buffer->set_num_coils(num_coils);
-
   rhs_buffer->set_sense_operator(E);
 
   //
@@ -164,17 +160,14 @@ int main(int argc, char** argv)
   boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_acc_coil_images(true);
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );
 
-  E->set_csm(csm);
   std::vector<unsigned int> reg_dims = to_std_vector(matrix_size);
   cuNDArray<_complext> _reg_image = cuNDArray<_complext>(&reg_dims);
-
+  E->set_csm(csm);
   E->mult_csm_conj_sum( acc_images.get(), &_reg_image );
   
   // Duplicate the regularization image to 'frames_per_reconstruction' frames
   boost::shared_ptr<cuNDArray<_complext> > reg_image = expand( &_reg_image, frames_per_reconstruction );
   *reg_image *= _real(2); // We need to figure out where this scaling comes from
-
-
 
   acc_images.reset();
   csm.reset();
@@ -195,6 +188,12 @@ int main(int argc, char** argv)
   Ry->set_domain_dimensions(recon_dims.get());
   Ry->set_codomain_dimensions(recon_dims.get());
  
+  boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
+    Rz( new cuPartialDerivativeOperator<_complext,3>(2) );
+  Rz->set_weight( lambda );
+  Rz->set_domain_dimensions(recon_dims.get());
+  Rz->set_codomain_dimensions(recon_dims.get());
+
   delete timer;
     
   // 
@@ -210,14 +209,11 @@ int main(int argc, char** argv)
   // Setup split-Bregman solver
   cuSbcCgSolver< _complext> sb;
   sb.set_encoding_operator( E );
-  sb.add_regularization_operator( Rx ); 
-  sb.add_regularization_operator( Ry ); 
-  /*  sb.add_regularization_group_operator( Rx ); 
+  sb.add_regularization_group_operator( Rx ); 
   sb.add_regularization_group_operator( Ry ); 
-  sb.add_group(reg_image);*/
-  /*  sb.add_regularization_group_operator( Rx );
-  sb.add_regularization_group_operator( Ry );
-  sb.add_group();*/
+  sb.add_regularization_group_operator( Rz ); 
+  //sb.add_group(reg_image);
+  sb.add_group();
 
   sb.set_max_outer_iterations(num_sb_outer_iterations);
   sb.set_max_inner_iterations(num_sb_inner_iterations);
@@ -225,15 +221,14 @@ int main(int argc, char** argv)
 
   sb.get_inner_solver()->set_max_iterations( num_cg_iterations );
   sb.get_inner_solver()->set_tc_tolerance( 1e-4 );
-  sb.get_inner_solver()->set_output_mode( cuCgSolver< _complext>::OUTPUT_WARNINGS );
+  sb.get_inner_solver()->set_output_mode( cuCgSolver< _complext>::OUTPUT_VERBOSE );
   
-  //unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
-  unsigned int num_reconstructions = 10;
+  unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
 
   // Allocate space for result
-  boost::shared_ptr< std::vector<unsigned int> > res_dims( new std::vector<unsigned int> );
-  *res_dims = to_std_vector(matrix_size); res_dims->push_back(frames_per_reconstruction*num_reconstructions); 
-  cuNDArray<_complext> result = cuNDArray<_complext>(res_dims);
+  std::vector<unsigned int> res_dims = to_std_vector(matrix_size); 
+  res_dims.push_back(frames_per_reconstruction*num_reconstructions); 
+  cuNDArray<_complext> result = cuNDArray<_complext>(&res_dims);
 
   timer = new GPUTimer("Full SENSE reconstruction with TV regularization.");
 
@@ -264,7 +259,7 @@ int main(int argc, char** argv)
     cuNDArray<_complext> tmp(&tmp_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );
 
     // Copy sbresult to result (pointed to by tmp)
-    tmp = *(sbresult.get());
+    tmp = *sbresult;
   }
   
   delete timer;

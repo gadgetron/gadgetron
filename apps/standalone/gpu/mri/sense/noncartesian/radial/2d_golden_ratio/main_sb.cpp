@@ -122,11 +122,8 @@ int main(int argc, char** argv)
   
   // Define encoding matrix for non-Cartesian SENSE
   boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );  
-  E->set_weight( mu );
-  
+  E->set_weight( mu );  
   E->setup( matrix_size, matrix_size_os, kernel_width );
-
-  // Notify encoding operator of dcw
   E->set_dcw(dcw);
   dcw.reset();
 
@@ -134,9 +131,7 @@ int main(int argc, char** argv)
   //
 
   boost::shared_ptr< cuSenseRHSBuffer<_real,2> > rhs_buffer( new cuSenseRHSBuffer<_real,2>() );
-
   rhs_buffer->set_num_coils(num_coils);
-
   rhs_buffer->set_sense_operator(E);
 
   //
@@ -164,17 +159,15 @@ int main(int argc, char** argv)
   boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_acc_coil_images(true);
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );
 
-  E->set_csm(csm);
-
   std::vector<unsigned int> reg_dims = to_std_vector(matrix_size);
   cuNDArray<_complext> _reg_image = cuNDArray<_complext>(&reg_dims);
 
+  E->set_csm(csm);
   E->mult_csm_conj_sum( acc_images.get(), &_reg_image );
   
   // Duplicate the regularization image to 'frames_per_reconstruction' frames
   boost::shared_ptr<cuNDArray<_complext> > reg_image = expand( &_reg_image, frames_per_reconstruction );
   *reg_image *= _real(2);// We need to figure out where this scaling comes from
-
 
   acc_images.reset();
   csm.reset();
@@ -220,8 +213,7 @@ int main(int argc, char** argv)
   sb.get_inner_solver()->set_tc_tolerance( 1e-4 );
   sb.get_inner_solver()->set_output_mode( cuCgSolver< _complext>::OUTPUT_WARNINGS );
 
-  //unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
-  unsigned int num_reconstructions = 1;
+  unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
 
   // Allocate space for result
   boost::shared_ptr< std::vector<unsigned int> > res_dims( new std::vector<unsigned int> );
@@ -231,7 +223,7 @@ int main(int argc, char** argv)
   timer = new GPUTimer("Full SENSE reconstruction with TV regularization.");
 
   for( unsigned int reconstruction = 0; reconstruction<num_reconstructions; reconstruction++ ){
-
+    
     // Determine trajectories
     boost::shared_ptr< cuNDArray<_reald2> > traj = compute_radial_trajectory_golden_ratio_2d<_real>
       ( samples_per_profile, profiles_per_frame, frames_per_reconstruction, reconstruction*profiles_per_reconstruction );
@@ -241,12 +233,12 @@ int main(int argc, char** argv)
       ( reconstruction, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, host_data.get() );
     
     // Set current trajectory and trigger NFFT preprocessing
-     E->preprocess(traj.get());
-        
+    E->preprocess(traj.get());
+    
     //
     // Split-Bregman solver
     //
-
+    
     boost::shared_ptr< cuNDArray<_complext> > sbresult;
     {
       GPUTimer timer("GPU Split Bregman solve");

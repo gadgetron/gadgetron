@@ -9,6 +9,8 @@
 #include "hoNDArray_elemwise.h"
 #include "vector_td_utilities.h"
 
+#include <omp.h>
+
 namespace Gadgetron{
 
   /** \class hoPartialDerivativeOperator
@@ -40,6 +42,9 @@ namespace Gadgetron{
       
       typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>( *(in->get_dimensions().get()) ));
       
+#ifdef USE_OMP
+#pragma omp parallel for
+#endif
       for( unsigned int idx=0; idx<in->get_number_of_elements(); idx++ ) {
 	
 	T valN, valC;
@@ -73,6 +78,9 @@ namespace Gadgetron{
       
       typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>( *(in->get_dimensions().get()) ));
   
+#ifdef USE_OMP
+#pragma omp parallel for
+#endif
       for( unsigned int idx=0; idx<in->get_number_of_elements(); idx++ ) {
 	
 	T valN1, valN2, valC;
