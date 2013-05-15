@@ -266,6 +266,12 @@ namespace Gadgetron {
         return out;
     }    
 
+    /**
+     * @param[in] size Size of the output array
+     * @param[in] in Input array
+     * @param[in] val Value to use for padding
+     * @returns New array of the specified size, containing the original input array in the center and val outside.
+     */
     template<class T, unsigned int D> boost::shared_ptr< hoNDArray<T> >
     pad( typename uintd<D>::Type size, hoNDArray<T> *in, T val = T(0) )
     {
@@ -309,13 +315,13 @@ namespace Gadgetron {
 #pragma omp parallel for
 #endif
             for( int idx=0; idx<num_elements_out; idx++ ){
-                const typename uintd<D>::Type co_out = idx_to_co<D>( idx, matrix_size_out );                
+                const typename uintd<D>::Type co_out = idx_to_co<D>( idx, matrix_size_out );
                 T _out;
                 bool inside = (co_out>=offset) && (co_out<(matrix_size_in+offset));
 
                 if( inside )
                     _out = in_ptr[co_to_idx<D>(co_out-offset, matrix_size_in)+frame_offset*num_elements_in];
-                else{      
+                else{
                     _out = val;
                 }
                 out_ptr[idx+frame_offset*num_elements_out] = _out;

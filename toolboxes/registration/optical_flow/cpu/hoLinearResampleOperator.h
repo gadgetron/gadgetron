@@ -7,7 +7,7 @@
 #include "complext.h"
 #include "cpureg_export.h"
 
-#include <armadillo>
+#include "hoArmadillo.h"
 
 namespace Gadgetron{
 
@@ -33,6 +33,6 @@ namespace Gadgetron{
     inline unsigned int get_num_neighbors();
   
   protected:
-    arma::SpMat<typename realType<T>::Type> R_M_;
+    arma::SpMat<typename realType<T>::Type> R_T_; //Contains the TRANSPOSED resampling matrix.
   };
 }

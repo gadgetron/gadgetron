@@ -19,9 +19,9 @@ namespace Gadgetron{
       BOOST_THROW_EXCEPTION( runtime_error("hoLinearResampleOperator::mult_M(): illegal input/output array." ));
     }
   
-    arma::Col<typename stdType<T>::Type > in_vec = as_arma_col(in);
-    arma::Col<typename stdType<T>::Type > out_vec = as_arma_col(out);
-    out_vec = R_M_ * in_vec;
+    arma::Row<typename stdType<T>::Type > in_vec = as_arma_row(in);
+    arma::Row<typename stdType<T>::Type > out_vec = as_arma_row(out);
+    out_vec = in_vec*R_T_;
   }
 
   template <class T, unsigned int D>
@@ -37,13 +37,13 @@ namespace Gadgetron{
 
     arma::Col<typename stdType<T>::Type > in_vec = as_arma_col(in);
     arma::Col<typename stdType<T>::Type > out_vec = as_arma_col(out);
-    out_vec = arma::trans(R_M_) * in_vec;
+    out_vec = R_T_ * in_vec;
   }
   
   template <class T, unsigned int D>
   void hoLinearResampleOperator<T,D>::reset()
   {
-    R_M_.reset();
+    R_T_.reset();
     resampleOperator< hoNDArray<typename realType<T>::Type>, hoNDArray<T> >::reset();
   }
   
@@ -161,15 +161,15 @@ namespace Gadgetron{
 	    weight *= (REAL(1.0)-(co_stride.vec[dim]-co_disp.vec[dim])); }
 	}
       
-	locations(0,location_index) = mat_j;
-	locations(1,location_index) = mat_i;
+	locations(0,location_index) = mat_i;
+	locations(1,location_index) = mat_j;
 	values(location_index) = weight;
 	location_index++;
       }
     }
     locations.resize(2,location_index);
     values.resize(location_index);
-    R_M_ = arma::SpMat<REAL>( locations, values, num_elements_ext, num_elements_mat, true );
+    R_T_ = arma::SpMat<REAL>( locations, values, num_elements_mat, num_elements_ext, false );
     this->preprocessed_ = true;
   }
 

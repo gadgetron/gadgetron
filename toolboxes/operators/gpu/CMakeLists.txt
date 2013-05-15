@@ -39,6 +39,8 @@ install(FILES
   cuLaplaceOperator.h
   cuTVOperator.h
   cuTV1DOperator.h
+  hoCuTVOperator.h
+  hoCuTVpicsOperator.h
   gpuoperators_export.h
   hoCuOperator.h
   DESTINATION include)
