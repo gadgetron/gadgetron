@@ -44,7 +44,7 @@ namespace Gadgetron{
       //
       
       boost::shared_ptr<ARRAY_TYPE_ELEMENT> f(new ARRAY_TYPE_ELEMENT(*_f));
-      REAL normalization_factor = normalization( f.get() );
+      REAL normalization_factor = this->normalization( f.get() );
       boost::shared_ptr<ARRAY_TYPE_ELEMENT> f_k(new ARRAY_TYPE_ELEMENT(*f));
       this->initialize();
         
