@@ -50,11 +50,10 @@ namespace Gadgetron{
 
       virtual void update_encoding_space(ARRAY_TYPE_ELEMENT* encoding_space)
       {
-	*encoding_space=*d_k;
+	*encoding_space = *d_k;
 	*encoding_space -= *b_k;
-	if(prior.get()){
-	  *encoding_space -= *p_M;
-	}
+	if(prior.get())
+	  *encoding_space += *p_M;
       }
 
       virtual void deinitialize(){
@@ -87,18 +86,16 @@ namespace Gadgetron{
       {
 	ARRAY_TYPE_ELEMENT tmp(*this->b_k);
 	this->reg_op->mult_M(u_k,&tmp,true);
-	if (this->prior.get()){
+	if (this->prior.get())
 	  tmp -= *(this->p_M);
-	}
 	shrink1(&tmp,REAL(1)/this->reg_op->get_weight(),this->d_k.get());
       }
 
       virtual void update_dk_bk(ARRAY_TYPE_ELEMENT* u_k)
       {
 	this->reg_op->mult_M(u_k,this->b_k.get(),true);
-	if (this->prior.get()){
+	if (this->prior.get())
 	  *(this->b_k) -= *(this->p_M);
-	}
 	shrink1(this->b_k.get(),REAL(1)/this->reg_op->get_weight(),this->d_k.get());
 	*this->b_k -= *this->d_k;
       }
@@ -107,9 +104,11 @@ namespace Gadgetron{
     class sbL1GroupRegularizationOperator : public sbRegularizationOperator
     {
     public:
-      sbL1GroupRegularizationOperator(std::vector<boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > > group) : sbRegularizationOperator()
+      sbL1GroupRegularizationOperator(std::vector<boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > > group) 
+	: sbRegularizationOperator()
       {
-	op_cont = boost::shared_ptr<encodingOperatorContainer<ARRAY_TYPE_ELEMENT> >(new encodingOperatorContainer<ARRAY_TYPE_ELEMENT>);
+	op_cont = boost::shared_ptr<encodingOperatorContainer<ARRAY_TYPE_ELEMENT> >
+	  (new encodingOperatorContainer<ARRAY_TYPE_ELEMENT>);
 	for (int i = 0; i < group.size(); i++)
 	  op_cont->add_operator(group[i]);
 	reg_ops = group;
@@ -122,12 +121,11 @@ namespace Gadgetron{
 	  ARRAY_TYPE_ELEMENT tmp(image_dims,encoding_space->get_data_ptr()+op_cont->get_offset(i));
 	  tmp = *d_ks[i];
 	  tmp -= *b_ks[i];
-	  if (this->prior.get()){
-	    tmp -= *p_Ms[i];
-	  }
+	  if (this->prior.get())
+	    tmp += *p_Ms[i];
 	}
       }
-
+      
       virtual void initialize(boost::shared_ptr< std::vector<unsigned int> > image_dimensions)
       {
 	image_dims = image_dimensions;
