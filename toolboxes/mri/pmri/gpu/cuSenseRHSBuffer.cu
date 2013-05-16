@@ -8,7 +8,7 @@ namespace Gadgetron{
   void cuSenseRHSBuffer<REAL,D,ATOMICS>::clear()
   {
     if( sense_op_.get() == 0x0 ){
-      throw std::runtime_error("cuSenseRHSBuffer::clear: nothing to clear; sense operator not yet set." );
+      BOOST_THROW_EXCEPTION(runtime_error("cuSenseRHSBuffer::clear: nothing to clear; sense operator not yet set."));
     }
 
     Gadgetron::clear(&acc_buffer_);
@@ -22,15 +22,11 @@ namespace Gadgetron{
   void cuSenseRHSBuffer<REAL,D,ATOMICS>::set_sense_operator( boost::shared_ptr< cuNonCartesianSenseOperator<REAL,D,ATOMICS> > op )
   {
     if( op.get() == 0x0 ){
-      throw std::runtime_error("cuSenseRHSBuffer::set_sense_operator: invalid array pointer");
-    }
-
-    if( !op->is_setup() ){
-      throw std::runtime_error("cuSenseRHSBuffer::set_sense_operator: operator has not been set up");
+      BOOST_THROW_EXCEPTION(runtime_error("cuSenseRHSBuffer::set_sense_operator: invalid array pointer"));
     }
 
     if( num_coils_ == 0 ){
-      throw std::runtime_error("cuSenseRHSBuffer::set_sense_operator: number of coils not set");
+      BOOST_THROW_EXCEPTION(runtime_error("cuSenseRHSBuffer::set_sense_operator: number of coils not set"));
     }
 
     sense_op_ = op;
@@ -50,11 +46,11 @@ namespace Gadgetron{
   void cuSenseRHSBuffer<REAL,D,ATOMICS>::add_frame_data( cuNDArray<_complext> *samples, cuNDArray<_reald> *trajectory )
   {
     if( sense_op_.get() == 0x0 ){
-      throw std::runtime_error("cuSenseRHSBuffer::add_frame_data: sense_operator not set");
+      BOOST_THROW_EXCEPTION(runtime_error("cuSenseRHSBuffer::add_frame_data: sense_operator not set."));
     }
 
     if( !samples || !trajectory ){
-      throw std::runtime_error("cuSenseRHSBuffer::add_frame_data: illegal input pointer");
+      BOOST_THROW_EXCEPTION(runtime_error("cuSenseRHSBuffer::add_frame_data: illegal input pointer"));
     }
 
     // Make array containing the "current" buffer from the cyclic buffer
@@ -102,7 +98,7 @@ namespace Gadgetron{
   boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseRHSBuffer<REAL,D,ATOMICS>::get_acc_coil_images( bool normalize )
   {
     if( sense_op_.get() == 0x0 ){
-      throw std::runtime_error("cuSenseRHSBuffer::get_acc_coil_images: sense_operator not set");
+      BOOST_THROW_EXCEPTION(runtime_error("cuSenseRHSBuffer::get_acc_coil_images: sense_operator not set"));
     }
 
     // Prepare return image

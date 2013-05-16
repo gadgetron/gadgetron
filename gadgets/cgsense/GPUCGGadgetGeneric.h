@@ -7,6 +7,7 @@
 
 #include "gadgetroncgsense_export.h"
 #include "Gadget.h"
+#include "SenseJob.h"
 #include "GadgetMRIHeaders.h"
 #include "cuCgSolver.h"
 #include "cuNonCartesianSenseOperator.h"
@@ -20,25 +21,7 @@
 
 namespace Gadgetron{
 
-class CGSenseJob
-{
-public:
-
-	CGSenseJob() {}
-
-	~CGSenseJob() {
-
-	}
-
-	boost::shared_ptr< hoNDArray<float_complext> > csm_host_;
-	boost::shared_ptr< hoNDArray<float_complext> > reg_host_;
-	boost::shared_ptr< hoNDArray<floatd2>        > tra_host_;
-	boost::shared_ptr< hoNDArray<float>          > dcw_host_;
-	boost::shared_ptr< hoNDArray<float_complext> > dat_host_;
-};
-
-
-class EXPORTGADGETSCGSENSE GPUCGGadgetGeneric : public Gadget2< ISMRMRD::ImageHeader, CGSenseJob >
+class EXPORTGADGETSCGSENSE GPUCGGadgetGeneric : public Gadget2< ISMRMRD::ImageHeader, SenseJob >
 {
 
 public:
@@ -49,7 +32,7 @@ public:
 
 protected:
 
-	virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader >* m1, GadgetContainerMessage< CGSenseJob > * m2 );
+	virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader >* m1, GadgetContainerMessage< SenseJob > * m2 );
 	virtual int process_config( ACE_Message_Block* mb );
 
 	virtual int configure_channels();

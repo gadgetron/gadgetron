@@ -1,6 +1,6 @@
 if (WIN32)
   ADD_DEFINITIONS(-DTIXML_USE_STL)
-  ADD_DEFINITIONS(-D__BUILD_GADGETRON_CGSENSE__)
+  ADD_DEFINITIONS(-D__BUILD_GADGETRON_SBSENSE__)
   ADD_DEFINITIONS(-D__BUILD_GADGETS__)
 endif (WIN32)
 
@@ -20,17 +20,20 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
   ${CMAKE_SOURCE_DIR}/gadgets/core
+  ${CMAKE_SOURCE_DIR}/gadgets/cgsense
   ${HDF5_INCLUDE_DIR}
   ${HDF5_INCLUDE_DIR}/cpp
 )
 
-add_library(gadgetroncgsense SHARED GPUCGGadget.cpp GPUCGGoldenRadial.cpp GPUCGFixedRadial.cpp GPUCGGadgetGeneric.cpp ${ISMRMRD_XSD_SOURCE})
+add_library(gadgetronsbsense SHARED 
+cuSbGadgetGeneric.cpp ${ISMRMRD_XSD_SOURCE})
+#  cuSbGadget.cpp cuSbGoldenRadial.cpp cuSbFixedRadial.cpp 
 
-target_link_libraries(gadgetroncgsense 
+target_link_libraries(gadgetronsbsense 
   cpucore gpucore gpusolvers gpuoperators gpuparallelmri 
   ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 
-install (TARGETS gadgetroncgsense DESTINATION lib)
-install (FILES radial_single.xml DESTINATION config)
+install (TARGETS gadgetronsbsense DESTINATION lib)
+install (FILES radial_single_sb.xml DESTINATION config)

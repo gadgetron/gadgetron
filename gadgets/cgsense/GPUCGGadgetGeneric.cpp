@@ -168,7 +168,7 @@ int GPUCGGadgetGeneric::configure_channels()
 	return GADGET_OK;
 }
 
-int GPUCGGadgetGeneric::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< CGSenseJob > * m2)
+int GPUCGGadgetGeneric::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage<SenseJob> * m2)
 {
 
 	GPUTimer timer("GPUCGGadgetGeneric::process");
@@ -178,7 +178,7 @@ int GPUCGGadgetGeneric::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1
 		return GADGET_FAIL;
 	}
 
-	CGSenseJob* j = m2->getObjectPtr();
+	SenseJob* j = m2->getObjectPtr();
 
 	//Let's first check that this job has the required stuff...
 	if (!j->csm_host_.get() || !j->dat_host_.get() || !j->tra_host_.get() || !j->dcw_host_.get()) {
@@ -234,8 +234,18 @@ int GPUCGGadgetGeneric::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1
 	D_->set_weights( precon_weights );
 	
 	// Invoke solver
-	boost::shared_ptr< cuNDArray<float_complext> > cgresult = cg_.solve(device_samples.get());
+	// 
 
+	boost::shared_ptr< cuNDArray<float_complext> > cgresult;
+
+	try{
+	  cgresult = cg_.solve(device_samples.get());
+	}
+	catch (runtime_error& err){
+	  GADGET_DEBUG_EXCEPTION(err,"\nError during solve()\n");
+	  return GADGET_FAIL;
+	}
+	
 	if (!cgresult.get()) {
 		GADGET_DEBUG1("\nIterative_sense_compute failed\n");
 		return GADGET_FAIL;

@@ -89,7 +89,7 @@ namespace Gadgetron{
 	  std::cout << "Iteration " << iteration << ". rq/rq_0 = " << *tc_metric << std::endl;
 	}
 	if( (tc_last_-(*tc_metric)) < REAL(0) ){
-	  std::cout << "----- Warning: CG residual increase. Stability problem! -----" << std::endl;
+	  std::cout << "Warning: conjugate gradient residual increase." << std::endl;
 	}
       }
     

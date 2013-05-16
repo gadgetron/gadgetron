@@ -19,6 +19,7 @@ add_subdirectory(core)
 if (CUDA_FOUND)
   add_subdirectory(grappa)
   add_subdirectory(cgsense)
+  add_subdirectory(sbsense)
   add_subdirectory(spiral)
 endif(CUDA_FOUND)
 

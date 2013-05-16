@@ -1,4 +1,5 @@
 #include "SpiralGadgetSW.h"
+#include "SenseJob.h"
 #include "Gadgetron.h"
 #include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
@@ -449,8 +450,8 @@ namespace Gadgetron{
                 return GADGET_FAIL;
             }
 
-            GadgetContainerMessage< CGSenseJob >* m4 =
-                new GadgetContainerMessage< CGSenseJob >();
+            GadgetContainerMessage< SenseJob >* m4 =
+                new GadgetContainerMessage< SenseJob >();
 
             m4->getObjectPtr()->dat_host_ = data_host;
             m4->getObjectPtr()->csm_host_ = csm_host;

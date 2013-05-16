@@ -15,15 +15,15 @@ static unsigned int prodv( std::vector<unsigned int> &vec )
 template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate )
 {
+  if( !in || !out ){
+    BOOST_THROW_EXCEPTION(runtime_error("cuNonCartesianSenseOperator::mult_M : 0x0 input/output not accepted"));
+  }
+  
   if( (in->get_number_of_elements() != prodv(*this->get_domain_dimensions())) ||
       (out->get_number_of_elements() != prodv(*this->get_codomain_dimensions())) ) {
-    throw std::runtime_error( "cuNonCartesianSenseOperator::mult_M: dimensions mismatch");
+    BOOST_THROW_EXCEPTION(runtime_error("cuNonCartesianSenseOperator::mult_M: dimensions mismatch"));
   }
 
-  if( !ready_ ) {
-    throw std::runtime_error( "cuNonCartesianSenseOperator::mult_M: plan has not been set up");
-  }
-    
   std::vector<unsigned int> full_dimensions = *this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
   cuNDArray< complext<REAL> > tmp(&full_dimensions);  
@@ -43,13 +43,13 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray< complext<REAL> >
 template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate )
 {
+  if( !in || !out ){
+    BOOST_THROW_EXCEPTION(runtime_error("cuNonCartesianSenseOperator::mult_MH : 0x0 input/output not accepted"));
+  }
+  
   if( (out->get_number_of_elements() != prodv(*this->get_domain_dimensions())) ||
       (in->get_number_of_elements() != prodv(*this->get_codomain_dimensions())) ) {
     throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH: dimensions mismatch");
-  }
-
-  if( !ready_ ) {
-    throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH: plan has not been set up" );
   }
 
   std::vector<unsigned int> tmp_dimensions = *this->get_domain_dimensions();
@@ -70,39 +70,28 @@ template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::setup( _uintd matrix_size, _uintd matrix_size_os, REAL W )
 {  
   plan_->setup( matrix_size, matrix_size_os, W );
-  ready_ = true;
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::preprocess( cuNDArray<_reald> *trajectory ) 
 {
-  if( !this->csm_.get() || this->csm_->get_number_of_elements() == 0 ) {
-    throw std::runtime_error( "cuNonCartesianSenseOperator::set_trajectory : Error setting trajectory, csm not set");
+  if( trajectory == 0x0 ){
+    BOOST_THROW_EXCEPTION(runtime_error( "cuNonCartesianSenseOperator: cannot preprocess 0x0 trajectory."));
   }
   
-  if( !ready_ ) {
-    throw std::runtime_error( "cuNonCartesianSenseOperator::preprocess: plan has not been set up");	
+  boost::shared_ptr< std::vector<unsigned int> > domain_dims = this->get_domain_dimensions();
+  if( domain_dims.get() == 0x0 || domain_dims->size() == 0 ){
+    BOOST_THROW_EXCEPTION(runtime_error("cuNonCartesianSenseOperator::preprocess : operator domain dimensions not set"));
   }
-
-  if( trajectory ){
-
-    unsigned int num_frames = trajectory->get_number_of_elements()/trajectory->get_size(0);
+  
+  {
     std::vector<unsigned int> tmp_dims;
     tmp_dims = *trajectory->get_dimensions();
     tmp_dims.push_back(this->ncoils_);
     this->set_codomain_dimensions(&tmp_dims);
-    
-    tmp_dims.clear();
-    tmp_dims = *this->csm_->get_dimensions();
-    tmp_dims.pop_back();
-    tmp_dims.push_back(num_frames);
-    this->set_domain_dimensions(&tmp_dims);
-    
-    plan_->preprocess( trajectory, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_ALL );
   }
-  else {
-    throw std::runtime_error( "cuNonCartesianSenseOperator: cannot set trajectory to 0x0.");
-  }  
+  
+  plan_->preprocess( trajectory, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_ALL );
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void

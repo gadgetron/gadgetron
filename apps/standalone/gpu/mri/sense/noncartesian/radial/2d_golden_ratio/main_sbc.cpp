@@ -232,7 +232,7 @@ int main(int argc, char** argv)
   E->set_codomain_dimensions(&data_dims);
 
   // Setup split-Bregman solver
-  cuSbcCgSolver< _complext> sb;
+  cuSbcCgSolver<_complext> sb;
   sb.set_encoding_operator( E );
   
   // Add "TV" regularization
@@ -253,11 +253,11 @@ int main(int argc, char** argv)
   
   sb.set_max_outer_iterations(num_sb_outer_iterations);
   sb.set_max_inner_iterations(num_sb_inner_iterations);
-  sb.set_output_mode( cuSbcCgSolver< _complext>::OUTPUT_VERBOSE );
+  sb.set_output_mode( cuSbcCgSolver<_complext>::OUTPUT_VERBOSE );
 
   sb.get_inner_solver()->set_max_iterations( num_cg_iterations );
   sb.get_inner_solver()->set_tc_tolerance( 1e-4 );
-  sb.get_inner_solver()->set_output_mode( cuCgSolver< _complext>::OUTPUT_WARNINGS );
+  sb.get_inner_solver()->set_output_mode( cuCgSolver<_complext>::OUTPUT_WARNINGS );
   
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
 

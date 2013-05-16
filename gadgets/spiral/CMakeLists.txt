@@ -35,4 +35,4 @@ target_link_libraries(gadgetronspiral
   )
 
 install (TARGETS gadgetronspiral DESTINATION lib)
-install (FILES spiral.xml spiral_MSH.xml DESTINATION config)
+install (FILES spiral.xml spiral_MSH.xml spiral_sb.xml DESTINATION config)

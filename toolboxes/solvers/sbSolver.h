@@ -155,20 +155,21 @@ namespace Gadgetron{
       virtual void update_dk(ARRAY_TYPE_ELEMENT* u_k)
       {
 	ARRAY_TYPE_REAL s_k(image_dims);
-	ARRAY_TYPE_ELEMENT tmp[reg_ops.size()];
+	ARRAY_TYPE_ELEMENT *tmp = new ARRAY_TYPE_ELEMENT[reg_ops.size()];
 	for (int i=0; i<reg_ops.size(); i++) {
 	  tmp[i] = *b_ks[i];
 	  this->reg_ops[i]->mult_M(u_k,&tmp[i],true);	  
 	  if (this->prior.get())
 	    tmp[i] -= *p_Ms[i];
-	  (i==0) ? s_k = *abs_square(&tmp[i]) : s_k += *abs_square(&tmp[i]);
+	  (i==0) ? s_k = *abs_square<ELEMENT_TYPE>(&tmp[i]) : s_k += *abs_square<ELEMENT_TYPE>(&tmp[i]);
 	}
 	sqrt_inplace(&s_k);
 	for (int i=0; i<reg_ops.size(); i++) {
 	  shrinkd(&tmp[i],&s_k,REAL(1)/reg_ops[i]->get_weight(),d_ks[i].get());
 	}	
+	delete[] tmp;
       }
-      
+
       virtual void update_dk_bk(ARRAY_TYPE_ELEMENT* u_k)
       {	
 	ARRAY_TYPE_REAL s_k(image_dims);
@@ -273,7 +274,7 @@ namespace Gadgetron{
     // Add regularization operator (isotropic, multiple operators per group allowed)
     //
 
-    virtual void add_regularization_group_operator ( boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op )
+    virtual void add_regularization_group_operator( boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op )
     {
       if( !op.get() ){
 	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::add_regularization_group_operator : NULL operator provided" ));
@@ -292,13 +293,12 @@ namespace Gadgetron{
       if (L_norm==2){
     	for (int i=0; i<current_group_.size(); i++){
 	  regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(current_group_[i])));
-    	}
-	
+    	}	
       } else {	
     	boost::shared_ptr<sbL1GroupRegularizationOperator> group(new sbL1GroupRegularizationOperator(current_group_));
         regularization_operators_.push_back(group);
       }
-      current_group_ = std::vector<boost::shared_ptr<linearOperator<ARRAY_TYPE_ELEMENT> > >();
+      current_group_.clear();
     }
 
     virtual void add_group( ARRAY_TYPE_ELEMENT *prior, int L_norm=1 )
@@ -307,7 +307,7 @@ namespace Gadgetron{
 	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::add_group : no regularization group operators added" ));
       }
       if (L_norm==2){
-    	for (int i =0; i < current_group_.size(); i++){
+    	for (int i=0; i<current_group_.size(); i++){
 	  regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(current_group_[i])));
 	  boost::shared_ptr<ARRAY_TYPE_ELEMENT> tmp( new ARRAY_TYPE_ELEMENT(*prior) );
 	  regularization_operators_.back()->set_prior(tmp);
@@ -443,11 +443,13 @@ namespace Gadgetron{
 	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::validate_encoding_operator : operator not set" ));
       }
     
-      if( op->get_domain_dimensions()->size() == 0 ){
+      boost::shared_ptr< std::vector<unsigned int> > op_dims = op->get_domain_dimensions();
+      if( op_dims->size() == 0 ){
     	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::validate_encoding_operator : encoding operator must have specified domain dimensions" ));
       }
     
-      if( op->get_codomain_dimensions()->size() == 0 ){
+      op_dims = op->get_codomain_dimensions();
+      if( op_dims->size() == 0 ){
     	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::validate_encoding_operator : encoding operator must have specified codomain dimensions" ));
       }
     }
@@ -457,38 +459,34 @@ namespace Gadgetron{
 
     virtual void validate_regularization_operators( std::vector<unsigned int> *image_dims )
     {
-      boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op;
+      if( image_dims->size() == 0 ){
+	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::validate_regularization_operators : empty dimensions vector provided" ));
+      }
     
-      // Validate regularization operators (non-group)
       for( unsigned int i=0; i<this->regularization_operators_.size(); i++ ){
       
-	op = regularization_operators_[i]->reg_op;
+	boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op = regularization_operators_[i]->reg_op;
+	boost::shared_ptr< std::vector<unsigned int> > op_dims = op->get_domain_dimensions();
       
 	if( !op.get() ){
 	  BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::validate_regularization_operators : invalid operator provided" ));
 	}
-      
-	if( *(op->get_domain_dimensions()) != *image_dims ){
-	  op->set_domain_dimensions(image_dims);
-	  this->solver_warning( "Warning: sbSolver::validate_regularization_operators : operator domain dimensions set to match the image dimensions" );
-	}
-      
-	if( *(op->get_codomain_dimensions()) != *image_dims ){
-	  op->set_codomain_dimensions(image_dims);
-	  this->solver_warning( "Warning: sbSolver::validate_regularization_operators : operator codomain dimensions set to match the image dimensions" );
+	
+	if( *op_dims != *image_dims ){
+	  BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::validate_regularization_operators : operator domain dimensions mismatch between encoding and regularization operators" ));
 	}
       }
     }
-  
+    
     // Check that the solver is set up properly
     virtual void validate_solver()
     {
-      // Some tests to see if we are ready to go...
+      // Some tests to check if we are ready to go...
       //
     
       validate_encoding_operator();   
-      boost::shared_ptr< std::vector<unsigned int> > image_dims = this->encoding_operator_->get_domain_dimensions();    
-      validate_regularization_operators( image_dims.get());
+      boost::shared_ptr< std::vector<unsigned int> > op_dims = this->encoding_operator_->get_domain_dimensions();
+      validate_regularization_operators(op_dims.get());
     }  
 
     // Initialize solver
@@ -508,9 +506,6 @@ namespace Gadgetron{
       enc_op_container_ = boost::shared_ptr<encodingOperatorContainer<ARRAY_TYPE_ELEMENT> >( new encodingOperatorContainer<ARRAY_TYPE_ELEMENT>() );
       inner_solver_->set_encoding_operator( enc_op_container_ );
       enc_op_container_->add_operator( this->encoding_operator_ );
-
-      // The domain is constant for all operators (the image dimensions)
-      enc_op_container_->set_domain_dimensions( image_dims.get() );
 
       for (int i=0; i < regularization_operators_.size(); i++){
     	regularization_operators_[i]->initialize(image_dims);
