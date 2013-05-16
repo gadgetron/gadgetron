@@ -207,14 +207,6 @@ int main(int argc, char** argv)
   sb.add_regularization_group_operator( Ry ); 
   sb.add_group();
 
-  // Use the code below for prior image constraint compressed sensing (PICCS)
-  /*
-  sb.add_regularization_group_operator( Rx ); 
-  sb.add_regularization_group_operator( Ry ); 
-  sb.add_regularization_group_operator( Rz ); 
-  sb.add_group(reg_image.get());
-  */
-
   sb.set_max_outer_iterations(num_sb_outer_iterations);
   sb.set_max_inner_iterations(num_sb_inner_iterations);
   sb.set_output_mode( cuSbCgSolver< _complext>::OUTPUT_VERBOSE );

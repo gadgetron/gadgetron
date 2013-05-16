@@ -318,7 +318,7 @@ namespace Gadgetron{
     	group->set_prior(tmp);
         regularization_operators_.push_back(group);
       }
-      current_group_ = std::vector<boost::shared_ptr<linearOperator<ARRAY_TYPE_ELEMENT> > >();
+      current_group_.clear();
     }
 
     virtual void add_regularization_operator(boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op, int L_norm=1 ){
