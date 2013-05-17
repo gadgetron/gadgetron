@@ -26,8 +26,12 @@ include_directories(
 )
 
 add_library(gadgetronsbsense SHARED 
-cuSbGadgetGeneric.cpp ${ISMRMRD_XSD_SOURCE})
-#  cuSbGadget.cpp cuSbGoldenRadial.cpp cuSbFixedRadial.cpp 
+  cuSbGadgetGeneric.cpp 
+  cuSbGadget.cpp
+  cuSbGoldenRadial.cpp 
+  cuSbFixedRadial.cpp 
+  ${ISMRMRD_XSD_SOURCE}
+  )
 
 target_link_libraries(gadgetronsbsense 
   cpucore gpucore gpusolvers gpuoperators gpuparallelmri 
@@ -36,4 +40,3 @@ target_link_libraries(gadgetronsbsense
   )
 
 install (TARGETS gadgetronsbsense DESTINATION lib)
-install (FILES radial_single_sb.xml DESTINATION config)

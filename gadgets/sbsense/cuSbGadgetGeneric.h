@@ -55,7 +55,7 @@ namespace Gadgetron{
 
     bool is_configured_;
 
-    // Define conjugate gradient solver
+    // Define constraint Split Bregman solver
     cuSbcCgSolver<float_complext> sb_;
 
     // Define non-Cartesian Sense Encofing operator

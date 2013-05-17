@@ -34,5 +34,5 @@ target_link_libraries(gadgetronmricore cpucore cpucore_math
   )
 
 install(FILES MRINoiseAdjustGadget.h PCACoilGadget.h DESTINATION include)
-install(FILES default_optimized.xml radial_single_optimized.xml radial_single_fixed_optimized.xml radial_ms_optimized.xml DESTINATION config)
+install(FILES default_optimized.xml radial_single_optimized.xml radial_single_fixed_optimized.xml radial_ms_optimized.xml radial_sb.xml DESTINATION config)
 install(TARGETS gadgetronmricore DESTINATION lib)

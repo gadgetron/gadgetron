@@ -1,13 +1,14 @@
-#ifndef GPUCGGADGET_H
-#define GPUCGGADGET_H
+#ifndef CUSBGADGET_H
+#define CUSBGADGET_H
 #pragma once
 
-#include "gadgetroncgsense_export.h"
+#include "gadgetronsbsense_export.h"
 #include "cuNFFT.h"
-#include "cuCgSolver.h"
+#include "cuSbcCgSolver.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "cuNonCartesianSenseOperator.h"
+#include "cuPartialDerivativeOperator.h"
 #include "cuCgPreconditioner.h"
 #include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
@@ -19,12 +20,12 @@
 
 namespace Gadgetron {
 
-  class EXPORTGADGETSCGSENSE GPUCGGadget : public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
+  class EXPORTGADGETSSBSENSE cuSbGadget : public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   {
 
   public:
-    GPUCGGadget();
-    virtual ~GPUCGGadget();
+    cuSbGadget();
+    virtual ~cuSbGadget();
 
   protected:
     virtual int parameter_changed(std::string name, std::string new_value, std::string old_value);
@@ -76,11 +77,14 @@ namespace Gadgetron {
     int device_number_;
     uintd2 matrix_size_;
     uintd2 matrix_size_os_;
-    unsigned int number_of_iterations_;
+    unsigned int number_of_cg_iterations_;
+    unsigned int number_of_sb_iterations_;
     double cg_limit_;
     double oversampling_;
     double kernel_width_;
-    double kappa_;
+    double mu_;
+    double lambda_;
+    double alpha_;
 
     float position_[3];
     float read_dir_[3];
@@ -93,8 +97,8 @@ namespace Gadgetron {
 
     bool is_configured_;
 
-    // Define conjugate gradient solver
-    cuCgSolver<float_complext> cg_;
+    // Define constraint Split Bregman solver
+    cuSbcCgSolver<float_complext> sb_;
 
     // Define non-Cartesian Sense Encofing operator
     boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E_;
@@ -102,8 +106,13 @@ namespace Gadgetron {
     // Define preconditioner
     boost::shared_ptr< cuCgPreconditioner<float_complext> > D_;
 
-    // Define regularization image operator
-    boost::shared_ptr< cuImageOperator<float_complext> > R_;
+    // Define regularization operators
+    boost::shared_ptr< cuPartialDerivativeOperator<float_complext,2> > Rx1_;
+    boost::shared_ptr< cuPartialDerivativeOperator<float_complext,2> > Rx2_;
+    boost::shared_ptr< cuPartialDerivativeOperator<float_complext,2> > Ry1_;
+    boost::shared_ptr< cuPartialDerivativeOperator<float_complext,2> > Ry2_;
+    //boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> > Rz1_;
+    //boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> > Rz2_;
 
     // Define rhs operator (for regularization)
     boost::shared_ptr< cuSenseRHSBuffer<float,2> > rhs_buffer_;
@@ -116,7 +125,6 @@ namespace Gadgetron {
 
     ACE_Thread_Mutex mutex_;
   };
-
 }
 
-#endif //GPUCGGADGET
+#endif //CUSBGADGET

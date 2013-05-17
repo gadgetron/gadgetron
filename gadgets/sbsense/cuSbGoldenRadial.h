@@ -1,19 +1,21 @@
-#ifndef GPUCGGOLDENRADIALGADGET_H
-#define GPUCGGOLDENRADIALGADGET_H
+#ifndef CUSBGOLDENRADIALGADGET_H
+#define CUSBGOLDENRADIALGADGET_H
 #pragma once
 
-#include "GPUCGGadget.h"
+#include "cuSbGadget.h"
+
 namespace Gadgetron{
-class EXPORTGADGETSCGSENSE GPUCGGoldenRadialGadget : public GPUCGGadget
-{
 
- public:
-  GADGET_DECLARE(GPUCGGoldenRadialGadget);
+  class EXPORTGADGETSSBSENSE cuSbGoldenRadialGadget : public cuSbGadget
+  {
 
- protected:
-  virtual boost::shared_ptr< cuNDArray<floatd2> > calculate_trajectory();
-  virtual boost::shared_ptr< cuNDArray<float> > calculate_density_compensation();
-};
+  public:
+    GADGET_DECLARE(cuSbGoldenRadialGadget);
+
+  protected:
+    virtual boost::shared_ptr< cuNDArray<floatd2> > calculate_trajectory();
+    virtual boost::shared_ptr< cuNDArray<float> > calculate_density_compensation();
+  };
 }
 
-#endif //GPUCGGOLDENRADIALGADGET_H
+#endif //CUSBGOLDENRADIALGADGET_H
