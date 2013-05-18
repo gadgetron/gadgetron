@@ -25,6 +25,7 @@ namespace Gadgetron{
   , lambda_(2.0)
   , alpha_(0.5)
   , is_configured_(false)
+  , prepared_(false)
   , image_series_(0)
   , image_counter_(0)
   {
@@ -110,74 +111,38 @@ namespace Gadgetron{
       GADGET_DEBUG2("Matrix size OS: [%d,%d] \n", matrix_size_os_.vec[0], matrix_size_os_.vec[1]);
 
       // Allocate encoding operator for non-Cartesian Sense
-      std::vector<unsigned int> image_dims = to_std_vector(matrix_size_);
-
       E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );
-      E_->set_domain_dimensions(&image_dims);
-      //E_->set_codomain_dimensions(DO WE KNOW THIS AT THIS TIME?);
 
       // Allocate preconditioner
       D_ = boost::shared_ptr< cuCgPreconditioner<float_complext> >( new cuCgPreconditioner<float_complext>() );
 
-      // Define regularization operators 
-      // We need "a pair" for PICCS
-      //
-      
-      Rx1_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,2> >
-	( new cuPartialDerivativeOperator<float_complext,2>(0) );
+      Rx1_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
+	( new cuPartialDerivativeOperator<float_complext,3>(0) );
       Rx1_->set_weight( (1.0-alpha_)*lambda_ );
-      Rx1_->set_domain_dimensions(&image_dims);
-      Rx1_->set_codomain_dimensions(&image_dims);
 
-      Ry1_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,2> >
-	( new cuPartialDerivativeOperator<float_complext,2>(1) );
+      Ry1_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
+	( new cuPartialDerivativeOperator<float_complext,3>(1) );
       Ry1_->set_weight( (1.0-alpha_)*lambda_ );
-      Ry1_->set_domain_dimensions(&image_dims);
-      Ry1_->set_codomain_dimensions(&image_dims);
 
-      /*Rz1_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
+      Rz1_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
 	( new cuPartialDerivativeOperator<float_complext,3>(2) );
       Rz1_->set_weight( (1.0-alpha_)*lambda_ );
-      Rz1_->set_domain_dimensions(&image_dims);
-      Rz1_->set_codomain_dimensions(&image_dims);*/
 
-      Rx2_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,2> >
-	( new cuPartialDerivativeOperator<float_complext,2>(0) );
+      Rx2_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
+	( new cuPartialDerivativeOperator<float_complext,3>(0) );
       Rx2_->set_weight( alpha_*lambda_ );
-      Rx2_->set_domain_dimensions(&image_dims);
-      Rx2_->set_codomain_dimensions(&image_dims);
 
-      Ry2_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,2> >
-	( new cuPartialDerivativeOperator<float_complext,2>(1) );
+      Ry2_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
+	( new cuPartialDerivativeOperator<float_complext,3>(1) );
       Ry2_->set_weight( alpha_*lambda_ );
-      Ry2_->set_domain_dimensions(&image_dims);
-      Ry2_->set_codomain_dimensions(&image_dims);
 
-      /*Rz2_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
+      Rz2_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
 	( new cuPartialDerivativeOperator<float_complext,3>(2) );
       Rz2_->set_weight( alpha_*lambda_ );
-      Rz2_->set_domain_dimensions(&image_dims);
-      Rz2_->set_codomain_dimensions(&image_dims);*/
 
       // Setup split-Bregman solver
       sb_.set_encoding_operator( E_ );
-      
-      // Add "TV" regularization
-      if( alpha_<1.0 ){
-	sb_.add_regularization_group_operator( Rx1_ ); 
-	sb_.add_regularization_group_operator( Ry1_ ); 
-	//sb_.add_regularization_group_operator( Rz1_ ); 
-	sb_.add_group();
-      }
-      
-      // Add "PICCS" regularization
-      /*if( alpha_ > 0.0 ){
-	sb_.add_regularization_group_operator( Rx2_ ); 
-	sb_.add_regularization_group_operator( Ry2_ ); 
-	//sb_.add_regularization_group_operator( Rz2_ ); 
-	sb_.add_group(reg_image.get());  <--- !!!!
-	}*/
-      
+            
       sb_.set_max_outer_iterations(number_of_sb_iterations_);
       sb_.set_max_inner_iterations(1);
       sb_.set_output_mode( cuSbcCgSolver<float_complext>::OUTPUT_WARNINGS );
@@ -185,49 +150,12 @@ namespace Gadgetron{
       sb_.get_inner_solver()->set_max_iterations( number_of_cg_iterations_ );
       sb_.get_inner_solver()->set_tc_tolerance( cg_limit_ );
       sb_.get_inner_solver()->set_output_mode( cuCgSolver<float_complext>::OUTPUT_WARNINGS );
-      //sb_.get_inner_solver()->set_preconditioner( D_ );  <--- !!!
-
-      if( configure_channels() == GADGET_FAIL )
-	return GADGET_FAIL;
+      sb_.get_inner_solver()->set_preconditioner( D_ );
 
       is_configured_ = true;
     }
 
     GADGET_DEBUG1("cuSbGadgetGeneric::end of process_config\n");
-
-    return GADGET_OK;
-  }
-
-  int cuSbGadgetGeneric::configure_channels()
-  {
-    GADGET_DEBUG1("cuSbGadgetGeneric::configure_channels\n");
-
-    // We do not have a csm yet, so initialize a dummy one to purely ones
-    boost::shared_ptr< cuNDArray<float_complext> > csm = boost::shared_ptr< cuNDArray<float_complext> >( new cuNDArray<float_complext> );
-    std::vector<unsigned int> csm_dims = to_std_vector(matrix_size_); csm_dims.push_back( channels_ );
-
-    try {csm->create( &csm_dims ); }
-    catch (cuda_error& err){
-      GADGET_DEBUG_EXCEPTION(err, "\nError: unable to create csm.\n" );
-      return GADGET_FAIL;
-    }
-
-    try { fill(csm.get(), float_complext(1)); }
-    catch (cuda_error & err){
-      GADGET_DEBUG_EXCEPTION(err, "\nError: unable to clear csm.\n" );
-      return GADGET_FAIL;
-    }
-
-    // Setup matrix operator
-    E_->set_csm(csm);
-
-    try{ E_->setup( matrix_size_, matrix_size_os_, static_cast<float>(kernel_width_) );}
-    catch (runtime_error& err){
-      GADGET_DEBUG_EXCEPTION(err, "\nError: unable to setup encoding operator.\n" );
-      return GADGET_FAIL;
-    }
-
-    GADGET_DEBUG1("cuSbGadgetGeneric::end of configure_channels\n");
 
     return GADGET_OK;
   }
@@ -254,6 +182,7 @@ namespace Gadgetron{
 
     unsigned int samples = j->dat_host_->get_size(0);
     unsigned int channels = j->dat_host_->get_size(1);
+    unsigned int frames = j->tra_host_->get_size(1);
 
     if (samples != j->tra_host_->get_number_of_elements()) {
       GADGET_DEBUG2("Mismatch between number of samples (%d) and number of k-space coordinates (%d)\n", samples, j->tra_host_->get_number_of_elements());
@@ -261,49 +190,103 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    if( m1->getObjectPtr()->channels != channels_ ) {
-      GADGET_DEBUG2("Adjusting #channels from %d to %d\n", channels_,  m1->getObjectPtr()->channels );
-      channels_ = m1->getObjectPtr()->channels;
-      if( configure_channels() == GADGET_FAIL ) // Update buffers dependant on #channels
-	return GADGET_FAIL;
-    }
-
     boost::shared_ptr< cuNDArray<floatd2> > traj(new cuNDArray<floatd2> (j->tra_host_.get()));
     boost::shared_ptr< cuNDArray<float> > dcw(new cuNDArray<float> (j->dcw_host_.get()));
     boost::shared_ptr< cuNDArray<float_complext> > csm(new cuNDArray<float_complext> (j->csm_host_.get()));
     boost::shared_ptr< cuNDArray<float_complext> > device_samples(new cuNDArray<float_complext> (j->dat_host_.get()));
+    
+    std::vector<unsigned int> image_dims = to_std_vector(matrix_size_);
+    image_dims.push_back(frames);
 
+    E_->set_domain_dimensions(&image_dims);
+    E_->set_codomain_dimensions(device_samples->get_dimensions().get());
+    
+    if( !prepared_){
+      
+      reg_image_ = boost::shared_ptr< cuNDArray<float_complext> >
+	(new cuNDArray<float_complext>(&image_dims));
+      
+      // These operators need their domain/codomain set before being added to the solver
+      //
+
+      // Define regularization operators 
+      // We need "a pair" for PICCS
+      //
+            
+      Rx1_->set_domain_dimensions(&image_dims);
+      Rx1_->set_codomain_dimensions(&image_dims);
+      
+      Ry1_->set_domain_dimensions(&image_dims);
+      Ry1_->set_codomain_dimensions(&image_dims);
+      
+      Rz1_->set_domain_dimensions(&image_dims);
+      Rz1_->set_codomain_dimensions(&image_dims);
+      
+      Rx2_->set_domain_dimensions(&image_dims);
+      Rx2_->set_codomain_dimensions(&image_dims);
+      
+      Ry2_->set_domain_dimensions(&image_dims);
+      Ry2_->set_codomain_dimensions(&image_dims);
+      
+      Rz2_->set_domain_dimensions(&image_dims);
+      Rz2_->set_codomain_dimensions(&image_dims);
+      
+      // Add "TV" regularization
+      if( alpha_<1.0 ){
+	sb_.add_regularization_group_operator( Rx1_ ); 
+	sb_.add_regularization_group_operator( Ry1_ ); 
+	if(frames>1)
+	  sb_.add_regularization_group_operator( Rz1_ ); 
+	sb_.add_group();
+      }
+      
+      // Add "PICCS" regularization
+      if( alpha_ > 0.0 ){
+	sb_.add_regularization_group_operator( Rx2_ ); 
+	sb_.add_regularization_group_operator( Ry2_ ); 
+	if(frames>1)
+	  sb_.add_regularization_group_operator( Rz2_ ); 
+	sb_.add_group(reg_image_);
+      }
+      
+      prepared_ = true;
+    }
+    
     E_->set_dcw(dcw);
     E_->set_csm(csm);
+    
+    try{ E_->setup( matrix_size_, matrix_size_os_, static_cast<float>(kernel_width_) ); }
+    catch (runtime_error& err){
+      GADGET_DEBUG_EXCEPTION(err, "\nError: unable to setup encoding operator.\n" );
+      return GADGET_FAIL;
+    }
+
     try{ E_->preprocess(traj.get());}
     catch (runtime_error& err){
       GADGET_DEBUG_EXCEPTION(err,"\nError during cuOperatorNonCartesianSense::preprocess()\n");
       return GADGET_FAIL;
     }
 
-    boost::shared_ptr< cuNDArray<float_complext> > reg_image(new cuNDArray<float_complext> (j->reg_host_.get()));
-    //R_->compute(reg_image.get()); <--- !!!
+    // Expand the average image to the number of frames
+    {
+      cuNDArray<float_complext> tmp(*j->reg_host_);
+      *reg_image_ = *expand( &tmp, frames );
+    }
 
-    /*
     // Define preconditioning weights
     boost::shared_ptr< cuNDArray<float> > _precon_weights = sum(abs_square(csm.get()).get(), 2);
-    boost::shared_ptr<cuNDArray<float> > R_diag = R_->get();
-    *R_diag *= float(kappa_);
-    *_precon_weights += *R_diag;
-    R_diag.reset();
     reciprocal_sqrt_inplace(_precon_weights.get());	
     boost::shared_ptr< cuNDArray<float_complext> > precon_weights = real_to_complex<float_complext>( _precon_weights.get() );
     _precon_weights.reset();
     D_->set_weights( precon_weights );
-    */
-	
+    precon_weights.reset();
+    
     // Invoke solver
     //
 
     boost::shared_ptr< cuNDArray<float_complext> > sbresult;
 
-    try{ 
-      sbresult = sb_.solve(device_samples.get()); }
+    try{ sbresult = sb_.solve(device_samples.get()); }
     catch (runtime_error& err){
       GADGET_DEBUG_EXCEPTION(err,"\nError during solve()\n");
       return GADGET_FAIL;
@@ -316,48 +299,56 @@ namespace Gadgetron{
     
     m2->release();
 
-    //Now pass the reconstructed image on
+    // Now pass on the reconstructed images
 
-    GadgetContainerMessage< hoNDArray< std::complex<float> > >* cm2 =
-      new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
+    for( unsigned int frame=0; frame<frames; frame++ ){
+      
+      GadgetContainerMessage< hoNDArray< std::complex<float> > >* cm2 =
+	new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
+      
+      GadgetContainerMessage<ISMRMRD::ImageHeader>* m = 
+	(frame==0) ? m1 : new GadgetContainerMessage<ISMRMRD::ImageHeader>();
 
-    m1->cont(cm2);
+      if( frame>0 )
+	*m->getObjectPtr() = *m1->getObjectPtr();
 
-    std::vector<unsigned int> img_dims(2);
-    img_dims[0] = matrix_size_.vec[0];
-    img_dims[1] = matrix_size_.vec[1];
+      m->cont(cm2);
 
-    try{cm2->getObjectPtr()->create(&img_dims);}
-    catch (runtime_error &err){
-      GADGET_DEBUG_EXCEPTION(err,"\nUnable to allocate host image array");
-      m1->release();
-      return GADGET_FAIL;
-    }
+      std::vector<unsigned int> img_dims(2);
+      img_dims[0] = matrix_size_.vec[0];
+      img_dims[1] = matrix_size_.vec[1];
 
-    size_t data_length = prod(matrix_size_);
+      try{cm2->getObjectPtr()->create(&img_dims);}
+      catch (runtime_error &err){
+	GADGET_DEBUG_EXCEPTION(err,"\nUnable to allocate host image array");
+	m->release();
+	return GADGET_FAIL;
+      }
 
-    cudaMemcpy(cm2->getObjectPtr()->get_data_ptr(),
-	       sbresult->get_data_ptr(),
-	       data_length*sizeof(std::complex<float>),
-	       cudaMemcpyDeviceToHost);
+      size_t data_length = prod(matrix_size_);
 
-    cudaError_t err = cudaGetLastError();
-    if( err != cudaSuccess ){
-      GADGET_DEBUG2("\nUnable to copy result from device to host: %s", cudaGetErrorString(err));
-      m1->release();
-      return GADGET_FAIL;
-    }
+      cudaMemcpy(cm2->getObjectPtr()->get_data_ptr(),
+		 sbresult->get_data_ptr()+frame*data_length,
+		 data_length*sizeof(std::complex<float>),
+		 cudaMemcpyDeviceToHost);
 
-    m1->getObjectPtr()->matrix_size[0] = img_dims[0];
-    m1->getObjectPtr()->matrix_size[1] = img_dims[1];
-    m1->getObjectPtr()->matrix_size[2] = 1;
-    m1->getObjectPtr()->channels       = 1;
+      cudaError_t err = cudaGetLastError();
+      if( err != cudaSuccess ){
+	GADGET_DEBUG2("\nUnable to copy result from device to host: %s", cudaGetErrorString(err));
+	m->release();
+	return GADGET_FAIL;
+      }
 
+      m->getObjectPtr()->matrix_size[0] = img_dims[0];
+      m->getObjectPtr()->matrix_size[1] = img_dims[1];
+      m->getObjectPtr()->matrix_size[2] = 1;
+      m->getObjectPtr()->channels       = 1;
 
-    if (this->next()->putq(m1) < 0) {
-      GADGET_DEBUG1("\nFailed to result image on to Q\n");
-      m1->release();
-      return GADGET_FAIL;
+      if (this->next()->putq(m) < 0) {
+	GADGET_DEBUG1("\nFailed to result image on to Q\n");
+	m->release();
+	return GADGET_FAIL;
+      }
     }
 
     return GADGET_OK;

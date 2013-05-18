@@ -41,14 +41,18 @@ namespace Gadgetron{
         int image_series_;
         int device_number_;
 
-        long     Tsamp_ns_;
-        long     Nints_;
-        double   gmax_;
+        long    Tsamp_ns_;
+        long    Nints_;
+	long    interleaves_counter_singleframe_;
+	long    interleaves_counter_multiframe_;
+	long    acceleration_factor_;
+        double  gmax_;
         double  smax_;
         double  krmax_;
         double  fov_;
 
         bool prepared_;
+	bool use_multiframe_grouping_;
 
         boost::shared_ptr< hoNDArray<floatd2> > host_traj_;
         boost::shared_ptr< hoNDArray<float> > host_weights_;

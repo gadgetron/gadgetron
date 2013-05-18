@@ -48,7 +48,8 @@
     <name>SpiralGadgetSW</name>
     <dll>gadgetronspiral</dll>
     <classname>SpiralGadgetSW</classname>
-    <property><name>deviceno</name><value>1</value></property>
+    <property><name>deviceno</name><value>0</value></property>
+    <property><name>use_multiframe_grouping</name><value>false</value></property>
   </gadget>
   
   <gadget>

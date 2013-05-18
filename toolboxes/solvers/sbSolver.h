@@ -301,7 +301,7 @@ namespace Gadgetron{
       current_group_.clear();
     }
 
-    virtual void add_group( ARRAY_TYPE_ELEMENT *prior, int L_norm=1 )
+    virtual void add_group( boost::shared_ptr<ARRAY_TYPE_ELEMENT> prior, int L_norm=1 )
     {
       if(current_group_.size()==0){
 	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::add_group : no regularization group operators added" ));
@@ -309,13 +309,11 @@ namespace Gadgetron{
       if (L_norm==2){
     	for (int i=0; i<current_group_.size(); i++){
 	  regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(current_group_[i])));
-	  boost::shared_ptr<ARRAY_TYPE_ELEMENT> tmp( new ARRAY_TYPE_ELEMENT(*prior) );
-	  regularization_operators_.back()->set_prior(tmp);
+	  regularization_operators_.back()->set_prior(prior);
     	}
       } else {       
     	boost::shared_ptr<sbL1GroupRegularizationOperator> group(new sbL1GroupRegularizationOperator(current_group_));
-	boost::shared_ptr<ARRAY_TYPE_ELEMENT> tmp( new ARRAY_TYPE_ELEMENT(*prior) );
-    	group->set_prior(tmp);
+    	group->set_prior(prior);
         regularization_operators_.push_back(group);
       }
       current_group_.clear();
@@ -329,15 +327,13 @@ namespace Gadgetron{
       }
     }
 
-    virtual void add_regularization_operator(boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op, ARRAY_TYPE_ELEMENT *prior, int L_norm=1 ){
+    virtual void add_regularization_operator(boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op, boost::shared_ptr<ARRAY_TYPE_ELEMENT> prior, int L_norm=1 ){
       if (L_norm==1){
 	regularization_operators_.push_back(boost::shared_ptr<sbL1RegularizationOperator>(new sbL1RegularizationOperator(op)));
-	boost::shared_ptr<ARRAY_TYPE_ELEMENT> tmp( new ARRAY_TYPE_ELEMENT(*prior) );
-	regularization_operators_.back()->set_prior(tmp);
+	regularization_operators_.back()->set_prior(prior);
       }else{
 	regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(op)));
-	boost::shared_ptr<ARRAY_TYPE_ELEMENT> tmp( new ARRAY_TYPE_ELEMENT(*prior) );
-	regularization_operators_.back()->set_prior(tmp);
+	regularization_operators_.back()->set_prior(prior);
       }
     }
     

@@ -36,8 +36,6 @@ namespace Gadgetron{
     virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader >* m1, GadgetContainerMessage< SenseJob > * m2 );
     virtual int process_config( ACE_Message_Block* mb );
 
-    virtual int configure_channels();
-
     int channels_;
     int device_number_;
 
@@ -54,6 +52,7 @@ namespace Gadgetron{
     double alpha_;
 
     bool is_configured_;
+    bool prepared_;
 
     // Define constraint Split Bregman solver
     cuSbcCgSolver<float_complext> sb_;
@@ -64,13 +63,16 @@ namespace Gadgetron{
     // Define preconditioner
     boost::shared_ptr< cuCgPreconditioner<float_complext> > D_;
 
+    // Average image for regularization
+    boost::shared_ptr< cuNDArray<float_complext> > reg_image_;
+
     // Define regularization operators
-    boost::shared_ptr< cuPartialDerivativeOperator<float_complext,2> > Rx1_;
-    boost::shared_ptr< cuPartialDerivativeOperator<float_complext,2> > Rx2_;
-    boost::shared_ptr< cuPartialDerivativeOperator<float_complext,2> > Ry1_;
-    boost::shared_ptr< cuPartialDerivativeOperator<float_complext,2> > Ry2_;
-    //boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> > Rz1_;
-    //boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> > Rz2_;
+    boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> > Rx1_;
+    boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> > Rx2_;
+    boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> > Ry1_;
+    boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> > Ry2_;
+    boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> > Rz1_;
+    boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> > Rz2_;
 	
     int image_series_;
     int image_counter_;

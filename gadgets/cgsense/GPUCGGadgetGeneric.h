@@ -35,8 +35,6 @@ protected:
 	virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader >* m1, GadgetContainerMessage< SenseJob > * m2 );
 	virtual int process_config( ACE_Message_Block* mb );
 
-	virtual int configure_channels();
-
 	int channels_;
 	int device_number_;
 

@@ -5,6 +5,7 @@
 #include "radial_utilities.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "cuSenseRHSBuffer.h"
+#include "cuCgPreconditioner.h"
 #include "cuPartialDerivativeOperator.h"
 #include "cuCgSolver.h"
 #include "cuSbcCgSolver.h"
@@ -164,16 +165,29 @@ int main(int argc, char** argv)
   // Estimate csm
   boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_acc_coil_images(true);
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );
+  E->set_csm(csm);
 
   std::vector<unsigned int> reg_dims = to_std_vector(matrix_size);
   cuNDArray<_complext> _reg_image = cuNDArray<_complext>(&reg_dims);
-  E->set_csm(csm);
   E->mult_csm_conj_sum( acc_images.get(), &_reg_image );
-  
+
   // Duplicate the regularization image to 'frames_per_reconstruction' frames
   boost::shared_ptr<cuNDArray<_complext> > reg_image = expand( &_reg_image, frames_per_reconstruction );
 
   acc_images.reset();
+
+  // Define preconditioning weights
+  //
+
+  boost::shared_ptr< cuNDArray<_real> > _precon_weights = sum(abs_square(csm.get()).get(),2);
+  reciprocal_sqrt_inplace(_precon_weights.get());
+  boost::shared_ptr< cuNDArray<_complext> > precon_weights = real_to_complex<_complext>( _precon_weights.get() );
+  _precon_weights.reset();
+
+  // Define preconditioning matrix
+  boost::shared_ptr< cuCgPreconditioner<_complext> > D( new cuCgPreconditioner<_complext>() );
+  D->set_weights( precon_weights );
+  precon_weights.reset();
   csm.reset();
 
   boost::shared_ptr< std::vector<unsigned int> > recon_dims( new std::vector<unsigned int> );
@@ -245,16 +259,17 @@ int main(int argc, char** argv)
   
   // Add "PICCS" regularization
   if( alpha > 0.0 ){
-    sb.add_regularization_group_operator( Rx ); 
-    sb.add_regularization_group_operator( Ry ); 
-    sb.add_regularization_group_operator( Rz ); 
-    sb.add_group(reg_image.get());
+    sb.add_regularization_group_operator( Rx2 ); 
+    sb.add_regularization_group_operator( Ry2 ); 
+    sb.add_regularization_group_operator( Rz2 ); 
+    sb.add_group(reg_image);
   }
   
   sb.set_max_outer_iterations(num_sb_outer_iterations);
   sb.set_max_inner_iterations(num_sb_inner_iterations);
   sb.set_output_mode( cuSbcCgSolver<_complext>::OUTPUT_VERBOSE );
 
+  sb.get_inner_solver()->set_preconditioner ( D );
   sb.get_inner_solver()->set_max_iterations( num_cg_iterations );
   sb.get_inner_solver()->set_tc_tolerance( 1e-4 );
   sb.get_inner_solver()->set_output_mode( cuCgSolver<_complext>::OUTPUT_WARNINGS );
