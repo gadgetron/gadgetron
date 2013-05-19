@@ -88,10 +88,7 @@ namespace Gadgetron{
 
       // Undo normalization
       *u_k /= normalization_factor;
-      for( unsigned int i=0; i<this->regularization_operators_.size(); i++ ){
-	if( this->regularization_operators_[i]->prior.get() )
-	  *this->regularization_operators_[i]->prior /= normalization_factor;
-      }
+      this->scale_priors(REAL(1)/normalization_factor);
       
       // ... and return the result
       return u_k;

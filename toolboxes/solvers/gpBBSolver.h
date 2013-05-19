@@ -4,6 +4,7 @@
 #include "GadgetronException.h"
 #include "real_utilities.h"
 #include "complext.h"
+#include "cgPreconditioner.h"
 #include <vector>
 #include <iostream>
 
@@ -72,15 +73,23 @@ namespace Gadgetron{
 	  clear(g);
 
 	  this->encoding_operator_->mult_MH(in,g);
+	  if (precond_.get()) {
+	  	precond_->apply(g,g);
+	  	precond_->apply(g,g);
+	  }
 
 	  *g *=  -this->encoding_operator_->get_weight();
-	  data_res = dot(in,in);
+	  data_res = real(dot(in,in));
 	  reg_res=REAL(0);
 	} else {
 	  this->encoding_operator_->mult_M(x,&encoding_space);
 	  axpy(REAL(-1),in,&encoding_space);
-	  data_res = dot(&encoding_space,&encoding_space);
+	  data_res = real(dot(&encoding_space,&encoding_space));
 	  this->encoding_operator_->mult_MH(&encoding_space,g);
+	  if (precond_.get()) {
+	  	precond_->apply(g,g);
+	  	precond_->apply(g,g);
+	  }
 	  *g *=  this->encoding_operator_->get_weight();
 	}
 	
@@ -91,7 +100,7 @@ namespace Gadgetron{
 	}
 
 	if (non_negativity_constraint_) solver_non_negativity_filter(x,g);
-	REAL nabla;
+	ELEMENT_TYPE nabla;
 	if (i==0){
 	  ARRAY_TYPE tmp_encoding = *in;
 	  this->encoding_operator_->mult_M(g,&tmp_encoding);
@@ -103,10 +112,10 @@ namespace Gadgetron{
 	} else {
 	  x_old -= *x;
 	  *g_old -= *g;
-	  REAL xx = dot(&x_old,&x_old);
-	  REAL gx = dot(g_old,&x_old);
+	  ELEMENT_TYPE xx = dot(&x_old,&x_old);
+	  ELEMENT_TYPE gx = dot(g_old,&x_old);
 
-	  REAL nabla1 = xx/gx;
+	  ELEMENT_TYPE nabla1 = xx/gx;
 
 	  /* This is the code that enables the adaptive step size.
 	     REAL gg = dot(g_old,&x_old);
@@ -129,7 +138,7 @@ namespace Gadgetron{
 	}
 	iteration_callback(x,i,data_res,reg_res);
 	axpy(-nabla,g_old,x);
-	if (non_negativity_constraint_) clamp_min(x,ELEMENT_TYPE(0));
+	if (non_negativity_constraint_) clamp_min(x,REAL(0));
 	if (grad_norm < tc_tolerance_)  break;
       }
       delete g,g_old;
@@ -160,6 +169,12 @@ namespace Gadgetron{
     virtual void set_dump_residual(bool dump_res){
       dump_residual = dump_res;
     }
+    // Set preconditioner
+    //
+
+    virtual void set_preconditioner( boost::shared_ptr< cgPreconditioner<ARRAY_TYPE> > precond ) {
+      precond_ = precond;
+    }
     
   protected:
     typedef typename std::vector<boost::shared_ptr<linearOperator<ARRAY_TYPE> > >::iterator  csIterator;
@@ -178,5 +193,7 @@ namespace Gadgetron{
     REAL tc_tolerance_;
     REAL threshold;
     bool dump_residual;
+    // Preconditioner
+        boost::shared_ptr< cgPreconditioner<ARRAY_TYPE> > precond_;
   };
 }

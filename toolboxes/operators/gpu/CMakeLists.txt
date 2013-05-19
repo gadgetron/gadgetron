@@ -38,6 +38,7 @@ install(FILES
   cuConvolutionOperator.h
   cuLaplaceOperator.h
   cuTVOperator.h
+  cuTVpicsOperator.h
   cuTV1DOperator.h
   hoCuTVOperator.h
   hoCuTVpicsOperator.h

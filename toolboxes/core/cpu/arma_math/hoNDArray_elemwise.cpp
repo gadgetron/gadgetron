@@ -392,6 +392,24 @@ namespace Gadgetron{
         } 
     }
 
+    template<class T> void pshrink( hoNDArray<T> *x, typename realType<T>::Type gamma,typename realType<T>::Type p, hoNDArray<T> *out )
+    {
+        if( x == 0x0 )
+            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::pshrink(): Invalid input array"));
+
+        T *outPtr = (out==0x0) ? x->get_data_ptr() : out->get_data_ptr();
+
+#ifdef USE_OMP
+#pragma omp parallel for
+#endif
+        for( int i = 0; i < x->get_number_of_elements(); i++ ) {
+            T prev = x->get_data_ptr()[i];
+            typename realType<T>::Type absPrev = abs(prev);
+            T sgnPrev = (absPrev <= typename realType<T>::Type(0)) ? T(0) : prev/absPrev;
+            outPtr[i] = sgnPrev*std::max(absPrev-gamma*std::pow(absPrev,p-1), typename realType<T>::Type(0));
+        }
+    }
+
     template<class T> void shrinkd ( hoNDArray<T> *_x, hoNDArray<typename realType<T>::Type> *_s, typename realType<T>::Type gamma, hoNDArray<T> *out )
     {
         if( _x == 0x0  || _s == 0 )
@@ -433,6 +451,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void clamp_max<float>( hoNDArray<float>*, float );
     template EXPORTCPUCOREMATH void normalize<float>( hoNDArray<float>*, float );
     template EXPORTCPUCOREMATH void shrink1<float>( hoNDArray<float>*, float, hoNDArray<float>* );
+    template EXPORTCPUCOREMATH void pshrink<float>( hoNDArray<float>*, float,float, hoNDArray<float>* );
     template EXPORTCPUCOREMATH void shrinkd<float> ( hoNDArray<float>*, hoNDArray<float>*, float, hoNDArray<float>* );
 
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > abs<double>( hoNDArray<double>* );
@@ -455,6 +474,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void clamp_max<double>( hoNDArray<double>*, double );
     template EXPORTCPUCOREMATH void normalize<double>( hoNDArray<double>*, double );
     template EXPORTCPUCOREMATH void shrink1<double>( hoNDArray<double>*, double, hoNDArray<double>* );
+    template EXPORTCPUCOREMATH void pshrink<double>( hoNDArray<double>*, double,double, hoNDArray<double>* );
     template EXPORTCPUCOREMATH void shrinkd<double> ( hoNDArray<double>*, hoNDArray<double>*, double, hoNDArray<double>* );
 
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > abs< std::complex<float> >( hoNDArray< std::complex<float> >* );
@@ -474,6 +494,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void clamp_max<std::complex<float> >( hoNDArray< std::complex<float> >*, float );
     template EXPORTCPUCOREMATH void normalize< std::complex<float> >( hoNDArray< std::complex<float> >*, float );
     template EXPORTCPUCOREMATH void shrink1< std::complex<float> >( hoNDArray< std::complex<float> >*, float, hoNDArray< std::complex<float> >* );
+    template EXPORTCPUCOREMATH void pshrink< std::complex<float> >( hoNDArray< std::complex<float> >*, float,float, hoNDArray< std::complex<float> >* );
     template EXPORTCPUCOREMATH void shrinkd< std::complex<float> > ( hoNDArray< std::complex<float> >*, hoNDArray<float>*, float, hoNDArray< std::complex<float> >* );
 
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > abs< std::complex<double> >( hoNDArray< std::complex<double> >* );
@@ -493,6 +514,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void clamp_max<std::complex<double> >( hoNDArray< std::complex<double> >*, double );
     template EXPORTCPUCOREMATH void normalize< std::complex<double> >( hoNDArray< std::complex<double> >*, double );
     template EXPORTCPUCOREMATH void shrink1< std::complex<double> >( hoNDArray< std::complex<double> >*, double, hoNDArray< std::complex<double> >* );
+    template EXPORTCPUCOREMATH void pshrink< std::complex<double> >( hoNDArray< std::complex<double> >*, double,double, hoNDArray< std::complex<double> >* );
     template EXPORTCPUCOREMATH void shrinkd< std::complex<double> > ( hoNDArray< std::complex<double> >*, hoNDArray<double>*, double, hoNDArray< std::complex<double> >* );
 
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > abs< complext<float> >( hoNDArray< complext<float> >* );
@@ -512,6 +534,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void clamp_max<complext<float> >( hoNDArray< complext<float> >*, float );
     template EXPORTCPUCOREMATH void normalize< complext<float> >( hoNDArray< complext<float> >*, float );
     template EXPORTCPUCOREMATH void shrink1< complext<float> >( hoNDArray< complext<float> >*, float, hoNDArray< complext<float> >* );
+    template EXPORTCPUCOREMATH void pshrink< complext<float> >( hoNDArray< complext<float> >*, float,float, hoNDArray< complext<float> >* );
     template EXPORTCPUCOREMATH void shrinkd< complext<float> > ( hoNDArray< complext<float> >*, hoNDArray<float>*, float, hoNDArray< complext<float> >* );
 
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > abs< complext<double> >( hoNDArray< complext<double> >* );
@@ -531,6 +554,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void clamp_max<complext<double> >( hoNDArray< complext<double> >*, double );
     template EXPORTCPUCOREMATH void normalize< complext<double> >( hoNDArray< complext<double> >*, double );
     template EXPORTCPUCOREMATH void shrink1< complext<double> >( hoNDArray< complext<double> >*, double, hoNDArray< complext<double> >* );
+    template EXPORTCPUCOREMATH void pshrink< complext<double> >( hoNDArray< complext<double> >*, double,double, hoNDArray< complext<double> >* );
     template EXPORTCPUCOREMATH void shrinkd< complext<double> > ( hoNDArray< complext<double> >*, hoNDArray<double>*, double, hoNDArray< complext<double> >* );
 
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray< std::complex<float> > > real_to_complex< std::complex<float> >( hoNDArray<float>* );

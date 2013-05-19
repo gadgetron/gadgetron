@@ -1,7 +1,11 @@
 add_executable(radial_sense_cg main_cg.cpp)
 add_executable(radial_sense_sbc main_sbc.cpp)
-
+add_executable(radial_sense_gpbb main_gpbb.cpp)
+MESSAGE("CUDA LIBRARIES:  ${CUDA_LIBRARIES}")
 target_link_libraries(radial_sense_cg gpuoperators cpucore gpucore gpuparallelmri gpunfft hostutils gpusolvers ${CUDA_LIBRARIES})
 target_link_libraries(radial_sense_sbc gpuoperators cpucore gpucore gpuparallelmri gpunfft hostutils gpusolvers ${CUDA_LIBRARIES})
+target_link_libraries(radial_sense_gpbb gpuoperators cpucore gpucore gpuparallelmri gpunfft hostutils gpusolvers ${CUDA_LIBRARIES})
 
 install(TARGETS radial_sense_cg radial_sense_sbc DESTINATION bin)
+install(TARGETS radial_sense_sbc radial_sense_sbc DESTINATION bin)
+install(TARGETS radial_sense_gpbb radial_sense_sbc DESTINATION bin)

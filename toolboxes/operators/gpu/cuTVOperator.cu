@@ -51,7 +51,7 @@ template<class REAL, class T, unsigned int D> __global__ void tvGradient_kernel(
       }
       co[i]+=1;
     }
-    out[idx] += result;
+    out[idx] += result*weight;
   }
 }
 
