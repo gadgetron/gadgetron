@@ -219,4 +219,13 @@ namespace Gadgetron{
    * @param[in] gamma Shrinkage control parameter
    */  
   template<class T> EXPORTGPUCORE void shrinkd ( cuNDArray<T> *x, cuNDArray<typename realType<T>::Type> *s, typename realType<T>::Type gamma, cuNDArray<T> *out = 0x0 );
+
+  /**
+     * @brief In place p-shrinkage (soft thresholding, multi-dimensional), i.e. shrink(x,gamma,s) = x/s*max(s-gamma*abs(x)^(p-1),0).
+     * @param[out] out Output array. Can be 0x0 in which case an in place transform is performed.
+     * @param[in,out] x Input array (and output array if out == 0x0).
+     * @param[in] s Input array, normalization.
+     * @param[in] gamma Shrinkage control parameter
+     */
+    template<class T> EXPORTGPUCORE void pshrinkd ( cuNDArray<T> *x, cuNDArray<typename realType<T>::Type> *s, typename realType<T>::Type gamma,typename realType<T>::Type p, cuNDArray<T> *out = 0x0 );
 }

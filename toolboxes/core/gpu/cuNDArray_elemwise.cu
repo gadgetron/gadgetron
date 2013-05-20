@@ -474,6 +474,29 @@ Gadgetron::shrinkd( cuNDArray<T> *x, cuNDArray<typename realType<T>::Type> *s, t
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),sPtr,outPtr,cuNDA_shrinkd<T>(gamma));
 }  
 
+
+template<typename T> struct cuNDA_pshrinkd : public thrust::binary_function<T,typename realType<T>::Type,T>
+{
+  cuNDA_pshrinkd( typename realType<T>::Type _gamma,typename realType<T>::Type _p ) : gamma(_gamma), p(_p) {}
+  __device__ T operator()(const T &x, const typename realType<T>::Type &s) const {
+    return x/s*max(s-gamma*pow(s,p-1),typename realType<T>::Type(0));
+  }
+  typename realType<T>::Type gamma;
+  typename realType<T>::Type p;
+};
+
+template<class T> void
+Gadgetron::pshrinkd( cuNDArray<T> *x, cuNDArray<typename realType<T>::Type> *s, typename realType<T>::Type gamma,typename realType<T>::Type p, cuNDArray<T> *out )
+{
+  if( x == 0x0 )
+    BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::shrinkd(): Invalid input array"));
+
+  thrust::device_ptr<T> xPtr = x->get_device_ptr();
+  thrust::device_ptr<T> outPtr = (out == 0x0) ? x->get_device_ptr() : out->get_device_ptr();
+  thrust::device_ptr<typename realType<T>::Type> sPtr = s->get_device_ptr();
+  thrust::transform(xPtr,xPtr+x->get_number_of_elements(),sPtr,outPtr,cuNDA_pshrinkd<T>(gamma,p));
+}
+
 //
 // Instantiation
 //
@@ -500,6 +523,7 @@ template EXPORTGPUCORE void Gadgetron::normalize<float>( cuNDArray<float>*, floa
 template EXPORTGPUCORE void Gadgetron::shrink1<float>( cuNDArray<float>*, float, cuNDArray<float>* );
 template EXPORTGPUCORE void Gadgetron::pshrink<float>( cuNDArray<float>*, float,float, cuNDArray<float>* );
 template EXPORTGPUCORE void Gadgetron::shrinkd<float> ( cuNDArray<float>*, cuNDArray<float>*, float, cuNDArray<float>* );
+template EXPORTGPUCORE void Gadgetron::pshrinkd<float> ( cuNDArray<float>*, cuNDArray<float>*, float,float, cuNDArray<float>* );
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > Gadgetron::abs<double>( cuNDArray<double>* );
 template EXPORTGPUCORE void Gadgetron::abs_inplace<double>( cuNDArray<double>* );
@@ -523,6 +547,7 @@ template EXPORTGPUCORE void Gadgetron::normalize<double>( cuNDArray<double>*, do
 template EXPORTGPUCORE void Gadgetron::shrink1<double>( cuNDArray<double>*, double, cuNDArray<double>* );
 template EXPORTGPUCORE void Gadgetron::pshrink<double>( cuNDArray<double>*, double,double, cuNDArray<double>* );
 template EXPORTGPUCORE void Gadgetron::shrinkd<double> ( cuNDArray<double>*, cuNDArray<double>*, double, cuNDArray<double>* );
+template EXPORTGPUCORE void Gadgetron::pshrinkd<double> ( cuNDArray<double>*, cuNDArray<double>*, double,double, cuNDArray<double>* );
 
 /*template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > Gadgetron::abs< std::complex<float> >( cuNDArray< std::complex<float> >* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray< std::complex<float> > > Gadgetron::sqrt< std::complex<float> >( cuNDArray< std::complex<float> >* );
@@ -577,6 +602,7 @@ template EXPORTGPUCORE void Gadgetron::normalize< complext<float> >( cuNDArray< 
 template EXPORTGPUCORE void Gadgetron::shrink1< complext<float> >( cuNDArray< complext<float> >*, float, cuNDArray< complext<float> >* );
 template EXPORTGPUCORE void Gadgetron::pshrink< complext<float> >( cuNDArray< complext<float> >*, float,float, cuNDArray< complext<float> >* );
 template EXPORTGPUCORE void Gadgetron::shrinkd< complext<float> > ( cuNDArray< complext<float> >*, cuNDArray<float>*, float, cuNDArray< complext<float> >* );
+template EXPORTGPUCORE void Gadgetron::pshrinkd< complext<float> > ( cuNDArray< complext<float> >*, cuNDArray<float>*, float,float, cuNDArray< complext<float> >* );
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > Gadgetron::abs< complext<double> >( cuNDArray< complext<double> >* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray< complext<double> > > Gadgetron::sqrt< complext<double> >( cuNDArray< complext<double> >* );
@@ -599,6 +625,7 @@ template EXPORTGPUCORE void Gadgetron::normalize< complext<double> >( cuNDArray<
 template EXPORTGPUCORE void Gadgetron::shrink1< complext<double> >( cuNDArray< complext<double> >*, double, cuNDArray< complext<double> >* );
 template EXPORTGPUCORE void Gadgetron::pshrink< complext<double> >( cuNDArray< complext<double> >*, double, double, cuNDArray< complext<double> >* );
 template EXPORTGPUCORE void Gadgetron::shrinkd< complext<double> > ( cuNDArray< complext<double> >*, cuNDArray<double>*, double, cuNDArray< complext<double> >* );
+template EXPORTGPUCORE void Gadgetron::pshrinkd< complext<double> > ( cuNDArray< complext<double> >*, cuNDArray<double>*, double,double, cuNDArray< complext<double> >* );
 
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > Gadgetron::real<float>( cuNDArray<float>* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > Gadgetron::imag<float>( cuNDArray<float>* );

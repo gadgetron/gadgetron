@@ -19,6 +19,7 @@ namespace Gadgetron{
   protected:	
     typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
     typedef typename realType<ELEMENT_TYPE>::Type REAL;
+    typedef ARRAY_TYPE ARRAY_CLASS;
   
   public:
 
@@ -32,7 +33,7 @@ namespace Gadgetron{
 
     virtual ~gpBBSolver(){}
 
-    boost::shared_ptr<ARRAY_TYPE> solve(ARRAY_TYPE* in)
+    virtual boost::shared_ptr<ARRAY_TYPE> solve(ARRAY_TYPE* in)
     {      
       if( this->encoding_operator_.get() == 0 ){
 	BOOST_THROW_EXCEPTION(runtime_error("Error: gpBBSolver::compute_rhs : no encoding operator is set" ));

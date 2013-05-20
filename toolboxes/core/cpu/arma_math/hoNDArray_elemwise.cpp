@@ -427,6 +427,23 @@ namespace Gadgetron{
         } 
     }
 
+
+    template<class T> void pshrinkd ( hoNDArray<T> *_x, hoNDArray<typename realType<T>::Type> *_s, typename realType<T>::Type gamma,typename realType<T>::Type p, hoNDArray<T> *out )
+    {
+        if( _x == 0x0  || _s == 0 )
+            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::shrinkd(): Invalid input array"));
+
+        T *outPtr = (out==0x0) ? _x->get_data_ptr() : out->get_data_ptr();
+
+#ifdef USE_OMP
+#pragma omp parallel for
+#endif
+        for( int i = 0; i < _x->get_number_of_elements(); i++ ) {
+            T x = _x->get_data_ptr()[i];
+            typename realType<T>::Type s = _s->get_data_ptr()[i];
+            outPtr[i] = x/s*std::max(s-gamma*std::pow(s,p-1),typename realType<T>::Type(0));
+        }
+    }
     //
     // Instantiation
     //
@@ -453,6 +470,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void shrink1<float>( hoNDArray<float>*, float, hoNDArray<float>* );
     template EXPORTCPUCOREMATH void pshrink<float>( hoNDArray<float>*, float,float, hoNDArray<float>* );
     template EXPORTCPUCOREMATH void shrinkd<float> ( hoNDArray<float>*, hoNDArray<float>*, float, hoNDArray<float>* );
+    template EXPORTCPUCOREMATH void pshrinkd<float> ( hoNDArray<float>*, hoNDArray<float>*, float,float, hoNDArray<float>* );
 
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > abs<double>( hoNDArray<double>* );
     template EXPORTCPUCOREMATH void abs_inplace<double>( hoNDArray<double>* );
@@ -476,6 +494,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void shrink1<double>( hoNDArray<double>*, double, hoNDArray<double>* );
     template EXPORTCPUCOREMATH void pshrink<double>( hoNDArray<double>*, double,double, hoNDArray<double>* );
     template EXPORTCPUCOREMATH void shrinkd<double> ( hoNDArray<double>*, hoNDArray<double>*, double, hoNDArray<double>* );
+    template EXPORTCPUCOREMATH void pshrinkd<double> ( hoNDArray<double>*, hoNDArray<double>*, double,double, hoNDArray<double>* );
 
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > abs< std::complex<float> >( hoNDArray< std::complex<float> >* );
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > abs_square< std::complex<float> >( hoNDArray< std::complex<float> >* );
@@ -496,6 +515,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void shrink1< std::complex<float> >( hoNDArray< std::complex<float> >*, float, hoNDArray< std::complex<float> >* );
     template EXPORTCPUCOREMATH void pshrink< std::complex<float> >( hoNDArray< std::complex<float> >*, float,float, hoNDArray< std::complex<float> >* );
     template EXPORTCPUCOREMATH void shrinkd< std::complex<float> > ( hoNDArray< std::complex<float> >*, hoNDArray<float>*, float, hoNDArray< std::complex<float> >* );
+    template EXPORTCPUCOREMATH void pshrinkd< std::complex<float> > ( hoNDArray< std::complex<float> >*, hoNDArray<float>*, float,float, hoNDArray< std::complex<float> >* );
 
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > abs< std::complex<double> >( hoNDArray< std::complex<double> >* );
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<double> > abs_square< std::complex<double> >( hoNDArray< std::complex<double> >* );
@@ -516,6 +536,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH void shrink1< std::complex<double> >( hoNDArray< std::complex<double> >*, double, hoNDArray< std::complex<double> >* );
     template EXPORTCPUCOREMATH void pshrink< std::complex<double> >( hoNDArray< std::complex<double> >*, double,double, hoNDArray< std::complex<double> >* );
     template EXPORTCPUCOREMATH void shrinkd< std::complex<double> > ( hoNDArray< std::complex<double> >*, hoNDArray<double>*, double, hoNDArray< std::complex<double> >* );
+    template EXPORTCPUCOREMATH void pshrinkd< std::complex<double> > ( hoNDArray< std::complex<double> >*, hoNDArray<double>*, double,double, hoNDArray< std::complex<double> >* );
 
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > abs< complext<float> >( hoNDArray< complext<float> >* );
     template EXPORTCPUCOREMATH boost::shared_ptr< hoNDArray<float> > abs_square< complext<float> >( hoNDArray< complext<float> >* );

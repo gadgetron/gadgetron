@@ -129,6 +129,7 @@ namespace Gadgetron{
       REAL p;
     };
 
+
     class sbL1GroupRegularizationOperator : public sbRegularizationOperator
     {
     public:
@@ -221,6 +222,102 @@ namespace Gadgetron{
       std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > p_Ms;
       boost::shared_ptr<encodingOperatorContainer<ARRAY_TYPE_ELEMENT> > op_cont;
       boost::shared_ptr< std::vector<unsigned int> > image_dims;
+    };
+
+
+    class sbL0GroupRegularizationOperator : public sbRegularizationOperator
+    {
+    public:
+      sbL0GroupRegularizationOperator(std::vector<boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > > group, REAL _p = REAL(0.5))
+	: sbRegularizationOperator(), p(_p)
+      {
+	op_cont = boost::shared_ptr<encodingOperatorContainer<ARRAY_TYPE_ELEMENT> >
+	  (new encodingOperatorContainer<ARRAY_TYPE_ELEMENT>);
+	for (int i = 0; i < group.size(); i++)
+	  op_cont->add_operator(group[i]);
+	reg_ops = group;
+	this->reg_op = op_cont;
+      }
+
+      virtual void update_encoding_space(ARRAY_TYPE_ELEMENT* encoding_space)
+      {
+	for (int i=0; i < reg_ops.size(); i++){
+	  ARRAY_TYPE_ELEMENT tmp(image_dims,encoding_space->get_data_ptr()+op_cont->get_offset(i));
+	  tmp = *d_ks[i];
+	  tmp -= *b_ks[i];
+	  if (this->prior.get())
+	    tmp += *p_Ms[i];
+	}
+      }
+
+      virtual void initialize(boost::shared_ptr< std::vector<unsigned int> > image_dimensions)
+      {
+	image_dims = image_dimensions;
+	d_ks = std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> >(reg_ops.size());
+	b_ks = std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> >(reg_ops.size());
+	if (this->prior.get())
+	  p_Ms = std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> >(reg_ops.size());
+	for (int i=0; i<reg_ops.size(); i++){
+	  d_ks[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(image_dims));
+	  clear(d_ks[i].get());
+	  b_ks[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(image_dims));
+	  clear(b_ks[i].get());
+	  if (this->prior.get()){
+	    p_Ms[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(image_dims));
+	    reg_ops[i]->mult_M(this->prior.get(),p_Ms[i].get());
+	  }
+	}
+      }
+
+      virtual void deinitialize()
+      {
+	d_ks.clear();
+	b_ks.clear();
+	p_Ms.clear();
+      }
+
+      virtual void update_dk(ARRAY_TYPE_ELEMENT* u_k)
+      {
+	ARRAY_TYPE_REAL s_k(image_dims);
+	ARRAY_TYPE_ELEMENT *tmp = new ARRAY_TYPE_ELEMENT[reg_ops.size()];
+	for (int i=0; i<reg_ops.size(); i++) {
+	  tmp[i] = *b_ks[i];
+	  this->reg_ops[i]->mult_M(u_k,&tmp[i],true);
+	  if (this->prior.get())
+	    tmp[i] -= *p_Ms[i];
+	  (i==0) ? s_k = *abs_square<ELEMENT_TYPE>(&tmp[i]) : s_k += *abs_square<ELEMENT_TYPE>(&tmp[i]);
+	}
+	sqrt_inplace(&s_k);
+	for (int i=0; i<reg_ops.size(); i++) {
+	  pshrinkd(&tmp[i],&s_k,REAL(1)/reg_ops[i]->get_weight(),p,d_ks[i].get());
+	}
+	delete[] tmp;
+      }
+
+      virtual void update_dk_bk(ARRAY_TYPE_ELEMENT* u_k)
+      {
+	ARRAY_TYPE_REAL s_k(image_dims);
+	for (int i=0; i<reg_ops.size(); i++) {
+	  this->reg_ops[i]->mult_M(u_k,b_ks[i].get(),true);
+	  if (this->prior.get())
+	    *b_ks[i] -= *p_Ms[i];
+	  (i==0) ? s_k = *abs_square(b_ks[i].get()) : s_k += *abs_square(b_ks[i].get());
+	}
+	sqrt_inplace(&s_k);
+	for (int i=0; i<reg_ops.size(); i++) {
+	  pshrinkd(b_ks[i].get(),&s_k,REAL(1)/reg_ops[i]->get_weight(),p,d_ks[i].get());
+	  *b_ks[i] -= *d_ks[i];
+	}
+      }
+
+    protected:
+      std::vector<boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > > reg_ops;
+      std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > d_ks;
+      std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > b_ks;
+      std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > p_Ms;
+      boost::shared_ptr<encodingOperatorContainer<ARRAY_TYPE_ELEMENT> > op_cont;
+      boost::shared_ptr< std::vector<unsigned int> > image_dims;
+      REAL p;
     };
 
     class sbL2RegularizationOperator : public sbRegularizationOperator
@@ -320,12 +417,15 @@ namespace Gadgetron{
       }
       if (L_norm==2){
     	for (int i=0; i<current_group_.size(); i++){
-	  regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(current_group_[i])));
+    		regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(current_group_[i])));
     	}	
-      } else {	
+      } else if (L_norm==0){
+      	boost::shared_ptr<sbL0GroupRegularizationOperator> group(new sbL0GroupRegularizationOperator(current_group_));
+      	regularization_operators_.push_back(group);
+      }else if (L_norm ==1){
     	boost::shared_ptr<sbL1GroupRegularizationOperator> group(new sbL1GroupRegularizationOperator(current_group_));
         regularization_operators_.push_back(group);
-      }
+      } else BOOST_THROW_EXCEPTION(runtime_error("Illega L-norm used in add_group"));
       current_group_.clear();
     }
 
@@ -335,15 +435,19 @@ namespace Gadgetron{
 	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::add_group : no regularization group operators added" ));
       }
       if (L_norm==2){
-    	for (int i=0; i<current_group_.size(); i++){
-	  regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(current_group_[i])));
-	  regularization_operators_.back()->set_prior(prior);
-    	}
-      } else {       
+				for (int i=0; i<current_group_.size(); i++){
+					regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(current_group_[i])));
+					regularization_operators_.back()->set_prior(prior);
+				}
+      } else if (L_norm==0){
+      	boost::shared_ptr<sbL0GroupRegularizationOperator> group(new sbL0GroupRegularizationOperator(current_group_));
+				group->set_prior(prior);
+				regularization_operators_.push_back(group);
+      } else if (L_norm==1){
     	boost::shared_ptr<sbL1GroupRegularizationOperator> group(new sbL1GroupRegularizationOperator(current_group_));
     	group->set_prior(prior);
         regularization_operators_.push_back(group);
-      }
+      } else BOOST_THROW_EXCEPTION(runtime_error("Illega L-norm used in add_group"));
       current_group_.clear();
     }
 
