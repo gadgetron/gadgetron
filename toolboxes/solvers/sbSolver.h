@@ -37,7 +37,8 @@ namespace Gadgetron{
       sbRegularizationOperator(boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op) { reg_op=op; }
       virtual ~sbRegularizationOperator(){}
       
-      virtual void initialize(boost::shared_ptr< std::vector<unsigned int> > image_dims)
+      virtual void initialize(boost::shared_ptr< std::vector<unsigned int> > image_dims,
+			      REAL normalization_factor = REAL(1))
       {
 	d_k = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(image_dims.get()));
 	b_k = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(image_dims.get()));
@@ -46,6 +47,7 @@ namespace Gadgetron{
 	if(prior.get()){
 	  p_M = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(image_dims));
 	  reg_op->mult_M(prior.get(),p_M.get());
+	  *p_M *= normalization_factor;
 	}
       }
 
@@ -155,7 +157,8 @@ namespace Gadgetron{
 	}
       }
       
-      virtual void initialize(boost::shared_ptr< std::vector<unsigned int> > image_dimensions)
+      virtual void initialize(boost::shared_ptr< std::vector<unsigned int> > image_dimensions,
+			      REAL normalization_factor = REAL(1))
       {
 	image_dims = image_dimensions;
 	d_ks = std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> >(reg_ops.size());
@@ -170,6 +173,7 @@ namespace Gadgetron{
 	  if (this->prior.get()){
 	    p_Ms[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(image_dims));
 	    reg_ops[i]->mult_M(this->prior.get(),p_Ms[i].get());
+	    *p_Ms[i] *= normalization_factor;
 	  }
 	}
       }
@@ -250,7 +254,8 @@ namespace Gadgetron{
 	}
       }
 
-      virtual void initialize(boost::shared_ptr< std::vector<unsigned int> > image_dimensions)
+      virtual void initialize(boost::shared_ptr< std::vector<unsigned int> > image_dimensions,
+			      REAL normalization_factor = REAL(1))
       {
 	image_dims = image_dimensions;
 	d_ks = std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> >(reg_ops.size());
@@ -265,6 +270,7 @@ namespace Gadgetron{
 	  if (this->prior.get()){
 	    p_Ms[i] = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(image_dims));
 	    reg_ops[i]->mult_M(this->prior.get(),p_Ms[i].get());
+	    *p_Ms[i] *= normalization_factor;
 	  }
 	}
       }
@@ -350,8 +356,10 @@ namespace Gadgetron{
 	this->reg_op = boost::shared_ptr<identityOperator<ARRAY_TYPE_ELEMENT> >(new identityOperator<ARRAY_TYPE_ELEMENT>);
       }
       
-      virtual void initialize(boost::shared_ptr< std::vector<unsigned int> > image_dims){
-	sbRegularizationOperator::initialize(image_dims);
+      virtual void initialize(boost::shared_ptr< std::vector<unsigned int> > image_dims, 
+			      REAL normalization_factor = REAL(1))
+      {
+	sbRegularizationOperator::initialize(image_dims, normalization_factor);
 	this->reg_op->set_domain_dimensions(image_dims.get());
 	this->reg_op->set_codomain_dimensions(image_dims.get());
       }
@@ -382,6 +390,7 @@ namespace Gadgetron{
 
     sbSolver() : linearOperatorSolver<ARRAY_TYPE_ELEMENT>()
     { 
+      normalization_mode_ = SB_NORMALIZE_TO_IMAGE_SPACE_IDENTITY;
       tolerance_ = REAL(0);
       outer_iterations_ = 10;
       inner_iterations_ = 1;
@@ -396,7 +405,7 @@ namespace Gadgetron{
 
     virtual ~sbSolver() {}
    
-    // Add regularization operator (isotropic, multiple operators per group allowed)
+    // Add regularization operator to group (for isotropic regularization)
     //
 
     virtual void add_regularization_group_operator( boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op )
@@ -417,7 +426,7 @@ namespace Gadgetron{
       }
       if (L_norm==2){
     	for (int i=0; i<current_group_.size(); i++){
-    		regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(current_group_[i])));
+	  regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(current_group_[i])));
     	}	
       } else if (L_norm==0){
       	boost::shared_ptr<sbL0GroupRegularizationOperator> group(new sbL0GroupRegularizationOperator(current_group_));
@@ -435,14 +444,14 @@ namespace Gadgetron{
 	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::add_group : no regularization group operators added" ));
       }
       if (L_norm==2){
-				for (int i=0; i<current_group_.size(); i++){
-					regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(current_group_[i])));
-					regularization_operators_.back()->set_prior(prior);
-				}
+	for (int i=0; i<current_group_.size(); i++){
+	  regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(current_group_[i])));
+	  regularization_operators_.back()->set_prior(prior);
+	}
       } else if (L_norm==0){
       	boost::shared_ptr<sbL0GroupRegularizationOperator> group(new sbL0GroupRegularizationOperator(current_group_));
-				group->set_prior(prior);
-				regularization_operators_.push_back(group);
+	group->set_prior(prior);
+	regularization_operators_.push_back(group);
       } else if (L_norm==1){
     	boost::shared_ptr<sbL1GroupRegularizationOperator> group(new sbL1GroupRegularizationOperator(current_group_));
     	group->set_prior(prior);
@@ -456,25 +465,36 @@ namespace Gadgetron{
 	regularization_operators_.push_back(boost::shared_ptr<sbL1RegularizationOperator>(new sbL1RegularizationOperator(op)));
       }else if (L_norm == 0){
       	regularization_operators_.push_back(boost::shared_ptr<sbL0RegularizationOperator>(new sbL0RegularizationOperator(op)));
-				} else  {
+      }else{
 	regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(op)));
       }
     }
-
+    
     virtual void add_regularization_operator(boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op, boost::shared_ptr<ARRAY_TYPE_ELEMENT> prior, int L_norm=1 ){
       if (L_norm==1){
 	regularization_operators_.push_back(boost::shared_ptr<sbL1RegularizationOperator>(new sbL1RegularizationOperator(op)));
 	regularization_operators_.back()->set_prior(prior);
       }else if (L_norm == 0){
-				regularization_operators_.push_back(boost::shared_ptr<sbL0RegularizationOperator>(new sbL0RegularizationOperator(op)));
-				regularization_operators_.back()->set_prior(prior);
-
+	regularization_operators_.push_back(boost::shared_ptr<sbL0RegularizationOperator>(new sbL0RegularizationOperator(op)));
+	regularization_operators_.back()->set_prior(prior);
       }else{
 	regularization_operators_.push_back(boost::shared_ptr<sbL2RegularizationOperator>(new sbL2RegularizationOperator(op)));
 	regularization_operators_.back()->set_prior(prior);
       }
     }
     
+    // Specify normalization mode. 
+    // The default mode is to use image space normalization.
+
+    enum SB_normalization_mode{
+      SB_NO_NORMALIZATION,
+      SB_NORMALIZE_TO_IMAGE_SPACE_IDENTITY
+    };
+      
+    virtual void set_normalization_mode( SB_normalization_mode mode ){
+      normalization_mode_ = mode;
+    }
+
     // Set termination criterium tolerance
     //
     
@@ -536,8 +556,8 @@ namespace Gadgetron{
       
       // Normalize and _then_ initialize (the order matters)
       boost::shared_ptr<ARRAY_TYPE_ELEMENT> f(new ARRAY_TYPE_ELEMENT(*_f));
-      REAL normalization_factor = normalization( f.get() );
-      initialize();
+      REAL normalization_factor = normalize_data( f.get() );
+      initialize( normalization_factor );
 
       // Invoke the core solver
       //
@@ -548,7 +568,6 @@ namespace Gadgetron{
 
       // Undo normalization
       *u_k /= normalization_factor;
-      scale_priors(REAL(1)/normalization_factor);
     
       // ... and return the result
       //    
@@ -620,10 +639,11 @@ namespace Gadgetron{
     }  
 
     // Initialize solver
-    virtual void initialize()
+    virtual void initialize( REAL normalization_factor = REAL(1) )
     {
       // Get image dimensions
-      boost::shared_ptr< std::vector<unsigned int> > image_dims = this->encoding_operator_->get_domain_dimensions();
+      boost::shared_ptr< std::vector<unsigned int> > image_dims = 
+	this->encoding_operator_->get_domain_dimensions();
 
       if (non_negativity_filter_weight_ > REAL(0)){
     	regularization_operators_.push_back(boost::shared_ptr<sbNonNegativityOperator>(new sbNonNegativityOperator));
@@ -637,8 +657,11 @@ namespace Gadgetron{
       inner_solver_->set_encoding_operator( enc_op_container_ );
       enc_op_container_->add_operator( this->encoding_operator_ );
 
+      // Invoke initialization on all regularization operators
+      //
+
       for (int i=0; i < regularization_operators_.size(); i++){
-    	regularization_operators_[i]->initialize(image_dims);
+    	regularization_operators_[i]->initialize(image_dims, normalization_factor);
     	enc_op_container_->add_operator( regularization_operators_[i]->reg_op );
       }
     }
@@ -768,41 +791,29 @@ namespace Gadgetron{
       } // end of outer loop
     }
     
-    virtual REAL normalization( ARRAY_TYPE_ELEMENT *f )
+    virtual REAL normalize_data( ARRAY_TYPE_ELEMENT *f )
     {
-      //
-      // Normalize to an average energy of "one intensity unit per image element"
-      //
+      REAL image_scale = REAL(1);
       
-      boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op = this->encoding_operator_;
-      ARRAY_TYPE_ELEMENT tmp( op->get_domain_dimensions() );
-      op->mult_MH( f, &tmp );
-      REAL sum = asum( &tmp );
-      REAL image_scale = REAL(tmp.get_number_of_elements())/sum;
-
-      // Normalize input data
-      *f *= image_scale;
-
-      // Normalize priors
-      scale_priors(image_scale);
+      if( normalization_mode_ == SB_NORMALIZE_TO_IMAGE_SPACE_IDENTITY ){
+	
+	//
+	// Normalize to an average energy of "one intensity unit per image element"
+	//
+		
+	boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op = this->encoding_operator_;
+	ARRAY_TYPE_ELEMENT tmp( op->get_domain_dimensions() );
+	op->mult_MH( f, &tmp );
+	REAL sum = asum( &tmp );
+	image_scale = REAL(tmp.get_number_of_elements())/sum;
+	*f *= image_scale;
+      }	
 
       return image_scale;
     }
-
-    virtual void scale_priors(REAL image_scale){
-    	std::set<ARRAY_TYPE_ELEMENT*> priors;
-			for( unsigned int i=0; i<regularization_operators_.size(); i++ ){
-
-				boost::shared_ptr<sbRegularizationOperator> op = regularization_operators_[i];
-				if( op->prior.get() )
-					if (priors.count(op->prior.get()) == 0){
-						*op->prior *= image_scale;
-						priors.insert(op->prior.get());
-					}
-			}
-    }
-    
+      
   protected:
+    SB_normalization_mode normalization_mode_;
     REAL tolerance_;
     unsigned int outer_iterations_, inner_iterations_;
     unsigned int num_reg_operators_;

@@ -1,7 +1,7 @@
 #ifndef IMAGEFINISHGADGET_H
 #define IMAGEFINISHGADGET_H
 
-#include "gadgetroncore_export.h"
+#include "gadgetron_core_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"

@@ -199,19 +199,19 @@ int main(int argc, char** argv)
 
   boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
     Rx( new cuPartialDerivativeOperator<_complext,3>(0) );
-  Rx->set_weight( (1.0-alpha)*lambda );
+  Rx->set_weight( (1.0f-alpha)*lambda );
   Rx->set_domain_dimensions(recon_dims.get());
   Rx->set_codomain_dimensions(recon_dims.get());
 
   boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
     Ry( new cuPartialDerivativeOperator<_complext,3>(1) );
-  Ry->set_weight( (1.0-alpha)*lambda );
+  Ry->set_weight( (1.0f-alpha)*lambda );
   Ry->set_domain_dimensions(recon_dims.get());
   Ry->set_codomain_dimensions(recon_dims.get());
  
   boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> >
     Rz( new cuPartialDerivativeOperator<_complext,3>(2) );
-  Rz->set_weight( (1.0-alpha)*lambda );
+  Rz->set_weight( (1.0f-alpha)*lambda );
   Rz->set_domain_dimensions(recon_dims.get());
   Rz->set_codomain_dimensions(recon_dims.get());
 

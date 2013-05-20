@@ -1,18 +1,11 @@
-/*
- * ExtractMagnitudeGadget.h
- *
- *  Created on: Nov 8, 2011
- *      Author: Michael S. Hansen
- */
-
 #ifndef EXTRACTGADGET_H_
 #define EXTRACTGADGET_H_
 
-#include <Gadget.h>
+#include "Gadget.h"
+#include "gadgetron_core_export.h"
 #include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
 #include "ismrmrd.h"
-#include "gadgetroncore_export.h"
 
 #include <complex>
 
@@ -25,7 +18,9 @@
 #define GADGET_EXTRACT_IMAG                   (1 << 2) //4
 #define GADGET_EXTRACT_PHASE                  (1 << 3) //8
 #define GADGET_EXTRACT_MAX                    (1 << 4) //16
+
 namespace Gadgetron{
+
 class EXPORTGADGETSCORE ExtractGadget:
 public Gadget2<ISMRMRD::ImageHeader,hoNDArray< std::complex<float> > >
 {

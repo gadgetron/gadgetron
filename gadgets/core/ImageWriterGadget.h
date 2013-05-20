@@ -3,14 +3,15 @@
 
 #include <complex>
 
-#include "gadgetroncore_export.h"
+#include "gadgetron_core_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "ismrmrd.h"
+
 namespace Gadgetron{
 
-template <typename T> class ImageWriterGadget :
-public Gadget2<ISMRMRD::ImageHeader, hoNDArray< T > >
+  template <typename T> class ImageWriterGadget :
+    public Gadget2<ISMRMRD::ImageHeader, hoNDArray< T > >
 {
  public:
 

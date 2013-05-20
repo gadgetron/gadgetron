@@ -12,25 +12,26 @@ find_package(Ismrmrd REQUIRED)
 find_package(XSD REQUIRED)
 find_package(XercesC REQUIRED)
 
-add_library(gadgetroncore SHARED AcquisitionPassthroughGadget.cpp
-								 AcquisitionFinishGadget.cpp 
-								 AccumulatorGadget.cpp
-								 FFTGadget.cpp
-								 ImageFinishGadget.cpp
-								 CropAndCombineGadget.cpp
-								 ImageWriterGadget.cpp
-								 MRIImageWriter.cpp
-								 NoiseAdjustGadget.cpp
-								 ExtractGadget.cpp
-								 FloatToUShortGadget.cpp
-								 RemoveROOversamplingGadget.cpp
-								 CoilReductionGadget.cpp
-								 AutoScaleGadget.cpp
-								 GadgetIsmrmrdReadWrite.cpp
-								 ${ISMRMRD_XSD_SOURCE}
-								 )
+add_library(gadgetron_core SHARED AcquisitionPassthroughGadget.cpp
+  AcquisitionFinishGadget.cpp 
+  AccumulatorGadget.cpp
+  FFTGadget.cpp
+  ImageFinishGadget.cpp
+  CropAndCombineGadget.cpp
+  ImageWriterGadget.cpp
+  MRIImageWriter.cpp
+  NoiseAdjustGadget.cpp
+  ExtractGadget.cpp
+  FloatToUShortGadget.cpp
+  RemoveROOversamplingGadget.cpp
+  CoilReductionGadget.cpp
+  AutoScaleGadget.cpp
+  FlowPhaseSubtractionGadget.cpp
+  GadgetIsmrmrdReadWrite.cpp
+  ${ISMRMRD_XSD_SOURCE}
+  )
 
-target_link_libraries(gadgetroncore 
+target_link_libraries(gadgetron_core 
   cpucore 
   ${Boost_LIBRARIES}
   ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
@@ -39,28 +40,28 @@ target_link_libraries(gadgetroncore
   )
 
 install (FILES	
-            AccumulatorGadget.h
-			AcquisitionFinishGadget.h
-			AcquisitionPassthroughGadget.h
-			CropAndCombineGadget.h	
-			ExtractGadget.h
-			FloatToUShortGadget.h
-			FFTGadget.h
-			GadgetMRIHeaders.h
-			ImageFinishGadget.h
-			ImageWriterGadget.h
-			MRIImageWriter.h
-			NoiseAdjustGadget.h
-			RemoveROOversamplingGadget.h
-			CoilReductionGadget.h
-			AutoScaleGadget.h
-			GadgetIsmrmrdReadWrite.h
-			gadgetroncore_export.h
-			DESTINATION include)
+  AccumulatorGadget.h
+  AcquisitionFinishGadget.h
+  AcquisitionPassthroughGadget.h
+  CropAndCombineGadget.h	
+  ExtractGadget.h
+  FloatToUShortGadget.h
+  FFTGadget.h
+  GadgetMRIHeaders.h
+  ImageFinishGadget.h
+  ImageWriterGadget.h
+  MRIImageWriter.h
+  NoiseAdjustGadget.h
+  RemoveROOversamplingGadget.h
+  CoilReductionGadget.h
+  AutoScaleGadget.h
+  FlowPhaseSubtractionGadget.h
+  GadgetIsmrmrdReadWrite.h
+  gadgetron_core_export.h
+  DESTINATION include)
 
-install(TARGETS gadgetroncore DESTINATION lib)
+install(TARGETS gadgetron_core DESTINATION lib)
 install(FILES default.xml default_short.xml DESTINATION config)
 
 install(FILES ${ISMRMRD_SCHEMA_DIR}/ismrmrd.xsd DESTINATION schema)
 install(FILES ${ISMRMRD_LIBRARIES} DESTINATION lib)
-

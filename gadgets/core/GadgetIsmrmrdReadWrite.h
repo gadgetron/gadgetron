@@ -2,12 +2,12 @@
 #define GADGETISMRMRDREADWRITE_H
 
 #include "Gadgetron.h"
+#include "gadgetron_core_export.h"
 #include "GadgetMRIHeaders.h"
 #include "GadgetContainerMessage.h"
 #include "GadgetMessageInterface.h"
 #include "hoNDArray.h"
 #include "url_encode.h"
-#include "gadgetroncore_export.h"
 
 #include <ismrmrd.h>
 #ifndef EXCLUDE_ISMRMRD_XSD

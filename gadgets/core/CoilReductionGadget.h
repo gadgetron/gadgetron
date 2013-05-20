@@ -1,20 +1,15 @@
-/*
- * CoilReductionGadget.h
- *
- *  Created on: Dec 5, 2011
- *      Author: Michael S. Hansen
- */
-
 #ifndef COILREDUCTIONGADGET_H_
 #define COILREDUCTIONGADGET_H_
 
-#include "gadgetroncore_export.h"
+#include "gadgetron_core_export.h"
 #include "Gadget.h"
 #include "ismrmrd.h"
 #include "hoNDArray.h"
 
 #include <complex>
+
 namespace Gadgetron{
+
 class EXPORTGADGETSCORE CoilReductionGadget :
 public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 {

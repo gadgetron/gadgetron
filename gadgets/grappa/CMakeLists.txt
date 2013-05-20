@@ -1,12 +1,6 @@
 if (WIN32)
-  ADD_DEFINITIONS(-DTIXML_USE_STL)
   ADD_DEFINITIONS(-D__BUILD_GADGETRON_GRAPPA__)
-  ADD_DEFINITIONS(-D__BUILD_GADGETS__)
 endif (WIN32)
-
-if(WIN32)
-  link_directories(${Boost_LIBRARY_DIRS})
-endif(WIN32)
 
 find_package(Ismrmrd REQUIRED)
 find_package(XSD REQUIRED)
@@ -18,7 +12,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/core
 )
 
-add_library(gadgetrongrappa SHARED 
+add_library(gadgetron_grappa SHARED 
 	GrappaGadget.cpp
 	GrappaCalibrationBuffer.cpp
 	GrappaWeights.cpp
@@ -27,7 +21,7 @@ add_library(gadgetrongrappa SHARED
 	${ISMRMRD_XSD_SOURCE}
     )
 
-target_link_libraries(gadgetrongrappa 
+target_link_libraries(gadgetron_grappa 
   gpuparallelmri cpucore
   ${Boost_LIBRARIES}
   ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
@@ -35,7 +29,5 @@ target_link_libraries(gadgetrongrappa
   ${XERCESC_LIBRARIES} 
   )
 
-install (TARGETS gadgetrongrappa DESTINATION lib)
+install (TARGETS gadgetron_grappa DESTINATION lib)
 install (FILES grappa.xml grappa_float.xml DESTINATION config)
-
-

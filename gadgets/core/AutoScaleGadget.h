@@ -1,20 +1,14 @@
-/*
- * AutoScaleGadget.h
- *
- *  Created on: Dec 19, 2011
- *      Author: Michael S. Hansen
- */
-
 #ifndef AUTOSCALEGADGET_H_
 #define AUTOSCALEGADGET_H_
 
+#include "gadgetron_core_export.h"
 #include "Gadget.h"
 #include "ismrmrd.h"
 #include "hoNDArray.h"
 
 namespace Gadgetron{
 
-  class AutoScaleGadget:
+  class EXPORTGADGETSCORE AutoScaleGadget:
     public Gadget2<ISMRMRD::ImageHeader,hoNDArray< float > >
   {
   public:
@@ -33,4 +27,5 @@ namespace Gadgetron{
     float max_value_;
   };
 }
+
 #endif /* AUTOSCALEGADGET_H_ */

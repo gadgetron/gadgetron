@@ -7,9 +7,9 @@
 #include "cuSenseRHSBuffer.h"
 #include "cuCgPreconditioner.h"
 #include "cuPartialDerivativeOperator.h"
-#include "cuGPBBSolver.h"
-#include "cuTVOperator.h"
-#include "cuTVpicsOperator.h"
+#include "cuGpBbSolver.h"
+#include "cuTvOperator.h"
+#include "cuTvPicsOperator.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "parameterparser.h"
@@ -19,6 +19,7 @@
 
 using namespace std;
 using namespace Gadgetron;
+
 // Define desired precision
 typedef float _real;
 typedef complext<_real> _complext;
@@ -51,11 +52,10 @@ int main(int argc, char** argv)
   parms.add_parameter( 'o', COMMAND_LINE_INT,    1, "Oversampled matrix size", true );
   parms.add_parameter( 'p', COMMAND_LINE_INT,    1, "Profiles per frame", true );
   parms.add_parameter( 'f', COMMAND_LINE_INT,    1, "Frames per reconstruction (negative meaning all)", true, "-1" );
-  parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of cg iterations", true, "10" );
+  parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of iterations", true, "10" );
   parms.add_parameter( 'k', COMMAND_LINE_FLOAT,  1, "Kernel width", true, "5.5" );
-  parms.add_parameter( 'M', COMMAND_LINE_FLOAT,  1, "Mu", true, "1.0" );
   parms.add_parameter( 'L', COMMAND_LINE_FLOAT,  1, "Lambda", true, "2.0" );
-  parms.add_parameter( 'A', COMMAND_LINE_FLOAT,  1, "Alpha in [0;1] (for PICCS)", true, "0.5" );
+  parms.add_parameter( 'A', COMMAND_LINE_FLOAT,  1, "Alpha in [0;1] (for PICS)", true, "0.5" );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -90,12 +90,11 @@ int main(int argc, char** argv)
   uintd2 matrix_size = uintd2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
   uintd2 matrix_size_os = uintd2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
   _real kernel_width = parms.get_parameter('k')->get_float_value();
-  unsigned int num_cg_iterations = parms.get_parameter('i')->get_int_value();
+  unsigned int num_iterations = parms.get_parameter('i')->get_int_value();
 
   unsigned int profiles_per_frame = parms.get_parameter('p')->get_int_value();
   unsigned int frames_per_reconstruction = parms.get_parameter('f')->get_int_value();
 
-  _real mu = (_real) parms.get_parameter('M')->get_float_value();
   _real lambda = (_real) parms.get_parameter('L')->get_float_value();
   _real alpha = (_real) parms.get_parameter('A')->get_float_value();
 
@@ -126,7 +125,6 @@ int main(int argc, char** argv)
 
   // Define encoding matrix for non-Cartesian SENSE
   boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );
-  E->set_weight( mu );
   E->setup( matrix_size, matrix_size_os, kernel_width );
   E->set_dcw(dcw);
   dcw.reset();
@@ -191,9 +189,6 @@ int main(int argc, char** argv)
   boost::shared_ptr< std::vector<unsigned int> > recon_dims( new std::vector<unsigned int> );
   *recon_dims = to_std_vector(matrix_size); recon_dims->push_back(frames_per_reconstruction);
 
-  // Define regularization operators
-  // We need "a pair" for PICCS
-  //
   delete timer;
 
   //
@@ -207,30 +202,30 @@ int main(int argc, char** argv)
   E->set_codomain_dimensions(&data_dims);
 
   // Setup split-Bregman solver
-  cuGPBBSolver<_complext> solver;
+  cuGpBbSolver<_complext> solver;
 
   // Add "TV" regularization
-  if( (alpha<1.0) && (lambda > 0)){
-    boost::shared_ptr<generalOperator<cuNDArray<_complext> > > TV(new cuTVOperator<_complext,3>);
-    TV->set_weight(lambda*(1-alpha));
+  if( (alpha<1.0f) && (lambda>0.0f)){
+    boost::shared_ptr<cuTvOperator<_complext,3> > TV(new cuTvOperator<_complext,3>);
+    TV->set_weight(lambda*(1.0f-alpha));
     solver.add_nonlinear_operator(TV);
   }
 
-  // Add "PICCS" regularization
-  boost::shared_ptr<cuTVpicsOperator<_complext,3> > PICS;
-  if( (alpha > 0.0) && (lambda > 0)){
-  	PICS = boost::shared_ptr<cuTVpicsOperator<_complext,3> >(new cuTVpicsOperator<_complext,3>);
-  	PICS->set_weight(lambda*alpha);
-  	PICS->set_prior(reg_image);
-  	solver.add_nonlinear_operator(PICS);
+  // Add "PICS" regularization
+  boost::shared_ptr<cuTvPicsOperator<_complext,3> > PICS;
+  if( (alpha>0.0f) && (lambda>0.0f)){
+    PICS = boost::shared_ptr<cuTvPicsOperator<_complext,3> >(new cuTvPicsOperator<_complext,3>);
+    PICS->set_weight(lambda*alpha);
+    PICS->set_prior(reg_image);
+    solver.add_nonlinear_operator(PICS);
   }
 
-  solver.set_output_mode( cuGPBBSolver<_complext>::OUTPUT_VERBOSE );
-
+  solver.set_encoding_operator( E );
   solver.set_preconditioner ( D );
-  solver.set_max_iterations( num_cg_iterations );
-  solver.set_encoding_operator(E);
-  solver.set_x0(reg_image);
+  solver.set_max_iterations( num_iterations );
+  solver.set_output_mode( cuGpBbSolver<_complext>::OUTPUT_VERBOSE );
+  solver.set_x0( reg_image );
+
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
 
   // Allocate space for result
@@ -257,32 +252,17 @@ int main(int argc, char** argv)
     // Split-Bregman solver
     //
 
-    boost::shared_ptr< cuNDArray<_complext> > sbresult;
+    boost::shared_ptr< cuNDArray<_complext> > solve_result;
     {
       GPUTimer timer("GPU constrained Split Bregman solve");
-      _real image_scale;
-      {
-      	cuNDArray<_complext> tmp(recon_dims);
-      	E->mult_MH( data.get(), &tmp );
-				_real sum = asum( &tmp );
-				//_real image_scale = _real(tmp.get_number_of_elements())/sum;
-				_real image_scale = _real(1);
-				std::cout << "Image scale: " << image_scale << std::endl;
-				*data *= image_scale;
-				if (PICS.get())
-					*PICS->get_prior() *= image_scale;
-      }
-      sbresult = solver.solve(data.get());
-/**sbresult /= image_scale;
-      if (PICS.get())
-      	*PICS->get_prior() /= image_scale;*/
+      solve_result = solver.solve(data.get());
     }
 
     vector<unsigned int> tmp_dims = to_std_vector(matrix_size); tmp_dims.push_back(frames_per_reconstruction);
     cuNDArray<_complext> tmp(&tmp_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );
 
     // Copy sbresult to result (pointed to by tmp)
-    tmp = *sbresult;
+    tmp = *solve_result;
   }
 
   delete timer;

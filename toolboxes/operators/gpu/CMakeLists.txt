@@ -16,8 +16,8 @@ include_directories(
 cuda_add_library(gpuoperators SHARED 
   cuPartialDerivativeOperator.cu
   cuLaplaceOperator.cu
-  cuTVOperator.cu
-  cuTV1DOperator.cu
+  cuTvOperator.cu
+  cuTv1dOperator.cu
   cuConvolutionOperator.cu
   )
 
@@ -37,11 +37,11 @@ install(FILES
   cuPartialDerivativeOperator.h
   cuConvolutionOperator.h
   cuLaplaceOperator.h
-  cuTVOperator.h
-  cuTVpicsOperator.h
-  cuTV1DOperator.h
-  hoCuTVOperator.h
-  hoCuTVpicsOperator.h
+  cuTvOperator.h
+  cuTvPicsOperator.h
+  cuTv1dOperator.h
+  hoCuTvOperator.h
+  hoCuTvPicsOperator.h
   gpuoperators_export.h
   hoCuOperator.h
   DESTINATION include)

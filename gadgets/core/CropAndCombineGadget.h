@@ -1,13 +1,15 @@
 #ifndef CROPANDCOMBINEGADGET_H
 #define CROPANDCOMBINEGADGET_H
 
-#include <complex>
-
-#include "gadgetroncore_export.h"
+#include "gadgetron_core_export.h"
 #include "Gadget.h"
 #include "ismrmrd.h"
 #include "hoNDArray.h"
+
+#include <complex>
+
 namespace Gadgetron{
+
 class EXPORTGADGETSCORE CropAndCombineGadget : 
 public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
 {

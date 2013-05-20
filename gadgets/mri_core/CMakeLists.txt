@@ -1,12 +1,6 @@
 IF (WIN32)
-  ADD_DEFINITIONS(-DTIXML_USE_STL)
   ADD_DEFINITIONS(-D__BUILD_GADGETRON_MRICORE__)
-  ADD_DEFINITIONS(-D__BUILD_GADGETS__)
 ENDIF (WIN32)
-
-if(WIN32)
-  link_directories(${Boost_LIBRARY_DIRS})
-endif(WIN32)
 
 find_package(Ismrmrd REQUIRED)
 find_package(XSD REQUIRED)
@@ -18,13 +12,13 @@ include_directories(
   ${ARMADILLO_INCLUDE_DIRS}
 )
 
-add_library(gadgetronmricore SHARED 
+add_library(gadgetron_mricore SHARED 
   MRINoiseAdjustGadget.cpp
   PCACoilGadget.cpp
   ${ISMRMRD_XSD_SOURCE}
   )
 
-target_link_libraries(gadgetronmricore cpucore cpucore_math 
+target_link_libraries(gadgetron_mricore cpucore cpucore_math 
   ${ISMRMRD_LIBRARIES} 
   ${FFTW3_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
@@ -34,5 +28,5 @@ target_link_libraries(gadgetronmricore cpucore cpucore_math
   )
 
 install(FILES MRINoiseAdjustGadget.h PCACoilGadget.h DESTINATION include)
-install(FILES default_optimized.xml radial_single_optimized.xml radial_single_fixed_optimized.xml radial_ms_optimized.xml radial_sb.xml DESTINATION config)
-install(TARGETS gadgetronmricore DESTINATION lib)
+install(FILES default_optimized.xml DESTINATION config)
+install(TARGETS gadgetron_mricore DESTINATION lib)

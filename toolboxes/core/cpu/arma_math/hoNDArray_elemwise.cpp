@@ -413,7 +413,7 @@ namespace Gadgetron{
     template<class T> void shrinkd ( hoNDArray<T> *_x, hoNDArray<typename realType<T>::Type> *_s, typename realType<T>::Type gamma, hoNDArray<T> *out )
     {
         if( _x == 0x0  || _s == 0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::shrinkd(): Invalid input array"));
+            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::pshrinkd(): Invalid input array"));
 
         T *outPtr = (out==0x0) ? _x->get_data_ptr() : out->get_data_ptr();
 

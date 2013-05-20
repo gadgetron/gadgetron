@@ -1,18 +1,13 @@
-/*
- * FloatToUShortGadget.h
- *
- *  Created on: Nov 26, 2011
- *      Author: hansenms
- */
-
 #ifndef FLOATTOUSHORTGADGET_H_
 #define FLOATTOUSHORTGADGET_H_
 
-#include <Gadget.h>
-#include <hoNDArray.h>
+#include "Gadget.h"
+#include "gadgetron_core_export.h"
+#include "hoNDArray.h"
 #include "ismrmrd.h"
-#include "gadgetroncore_export.h"
+
 namespace Gadgetron{
+
 /**
  * This Gadget converts float values to unsigned unsigned short int format.
  *
@@ -35,8 +30,6 @@ protected:
 			GadgetContainerMessage< hoNDArray< float > >* m2);
 
 };
-
-
 }
 
 #endif /* FLOATTOUSHORTGADGET_H_ */
