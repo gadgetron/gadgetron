@@ -36,7 +36,7 @@ namespace Gadgetron{
     {
       cudaGetDevice(&this->device_);
       this->data_ = 0;
-      this->dimensions_ = a.dimensions_;      
+      this->dimensions_ = boost::shared_ptr<std::vector<unsigned int> >(new std::vector<unsigned int>(*a.dimensions_));
       allocate_memory();
       if (a.device_ == this->device_) {
 	CUDA_CALL(cudaMemcpy(this->data_, a.data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice));

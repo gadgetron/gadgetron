@@ -32,9 +32,9 @@ namespace Gadgetron{
     hoCuNDArray(const hoNDArray<T>& a)
     {
       this->data_ = 0;
-      this->dimensions_ = a.dimensions_;
+      this->dimensions_ = boost::shared_ptr< std::vector<unsigned int> >(new std::vector<unsigned int>(*a.get_dimensions()));
       this->allocate_memory();
-      memcpy( this->data_, a.data_, this->elements_*sizeof(T) );
+      memcpy( this->data_, a.get_data_ptr(), this->elements_*sizeof(T) );
     }    
   };
 }

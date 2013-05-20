@@ -50,7 +50,7 @@ namespace Gadgetron{
     // Copy constructor
     hoNDArray(const hoNDArray<T>& a) {
       this->data_ = 0;
-      this->dimensions_ = a.dimensions_;
+      this->dimensions_ = boost::shared_ptr< std::vector<unsigned int> >(new std::vector<unsigned int>(*a.dimensions_));
       allocate_memory();
       memcpy( this->data_, a.data_, this->elements_*sizeof(T) );
     }
