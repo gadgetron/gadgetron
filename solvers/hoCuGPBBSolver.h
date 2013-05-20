@@ -14,6 +14,8 @@ public:
 
 	}
 
+	virtual ~hoCuGPBBSolver(){};
+
 protected:
   virtual void solver_non_negativity_filter(hoCuNDArray<T> *x,hoCuNDArray<T> *g)
   {

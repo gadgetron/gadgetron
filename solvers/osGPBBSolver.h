@@ -6,6 +6,7 @@
 #include <vector>
 #include <functional>
 #include <boost/iterator/counting_iterator.hpp>
+#include "gpSolver.h"
 
 namespace Gadgetron{
 template <class ARRAY_TYPE> class osGPBBSolver : public gpSolver< ARRAY_TYPE> {
@@ -18,6 +19,7 @@ template <class ARRAY_TYPE> class osGPBBSolver : public gpSolver< ARRAY_TYPE> {
 			non_negativity_=false;
 		}
 		virtual ~osGPBBSolver(){};
+
 
 		void set_max_iterations(int i){_iterations=i;}
 		int get_max_iterations(){return _iterations;}
@@ -61,8 +63,11 @@ template <class ARRAY_TYPE> class osGPBBSolver : public gpSolver< ARRAY_TYPE> {
 				std::cout << "osGPBB setup done, starting iterations:" << std::endl;
 			}
 
+			std::vector<int> isubsets(boost::counting_iterator<int>(0), boost::counting_iterator<int>(this->encoding_operator_->get_number_of_subsets()));
+
 			for (int i =0; i < _iterations; i++){
-				for (int subset = 0; subset < this->encoding_operator_->get_number_of_subsets(); subset++){
+				for (int isubset = 0; isubset < this->encoding_operator_->get_number_of_subsets(); isubset++){
+					int subset = isubsets[isubset];
 					this->encoding_operator_->mult_M(x,encoding_spaces[subset].get(),subset,false);
 					*encoding_spaces[subset] -= *subsets[subset];
 
@@ -111,6 +116,9 @@ template <class ARRAY_TYPE> class osGPBBSolver : public gpSolver< ARRAY_TYPE> {
 					axpy(-nabla,g_old,x);
 					if (non_negativity_) clamp_min(x,ELEMENT_TYPE(0));
 				}
+				std::reverse(isubsets.begin(),isubsets.end());
+				iteration_callback(x,i);
+
 			}
 			delete g,g_old;
 
@@ -122,6 +130,7 @@ template <class ARRAY_TYPE> class osGPBBSolver : public gpSolver< ARRAY_TYPE> {
 
 protected:
 	virtual void solver_non_negativity_filter(ARRAY_TYPE*,ARRAY_TYPE*)=0;
+	virtual void iteration_callback(ARRAY_TYPE*, int i){};
 	int _iterations;
 	REAL _beta;
 	bool non_negativity_;

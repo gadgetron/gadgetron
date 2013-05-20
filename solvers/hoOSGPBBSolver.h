@@ -1,7 +1,8 @@
 #pragma once
 
 #include "osGPBBSolver.h"
-
+#include "hoNDArray_fileio.h"
+#include <sstream>
 
 namespace Gadgetron{
 
@@ -19,6 +20,11 @@ protected:
 			if ( real(x[i]) <= REAL(0) && real(g[i]) > 0) g[i]=ELEMENT_TYPE(0);
 	}
 
+	virtual void iteration_callback(ARRAY_TYPE* x, int i){
+		std::stringstream ss;
+		ss << "iteration-" << i << ".real";
+		write_nd_array(x,ss.str().c_str());
+	}
 };
 /**
  * Specialization to disable class for cuNDArrays

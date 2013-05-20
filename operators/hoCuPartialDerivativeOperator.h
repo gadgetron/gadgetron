@@ -4,6 +4,8 @@
 #include "cuPartialDerivativeOperator.h"
 #include "hoCuNDArray.h"
 #include "cudaDeviceManager.h"
+#include "cuNDArray_operators.h"
+#include "cuNDArray_elemwise.h"
 namespace Gadgetron{
 template <class T, unsigned int D> class hoCuPartialDerivativeOperator :
   public linearOperator<hoCuNDArray<T> >

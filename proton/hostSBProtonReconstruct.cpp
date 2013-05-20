@@ -20,15 +20,18 @@
 
 #include "encodingOperatorContainer.h"
 #include "hoCuOperator.h"
-#include "hoImageOperator.h"
+
 #include "identityOperator.h"
 #include <boost/program_options.hpp>
 #include "vector_td_io.h"
 
-#include "hoCuTVOperator.h"
-#include "hoCuTVpicsOperator.h"
+#include "hoCuPartialDerivativeOperator.h"
 #include "projectionSpaceOperator.h"
 #include "weightingOperator.h"
+#include "sbcSolver.h"
+#include "cgSolver.h"
+
+
 using namespace std;
 using namespace Gadgetron;
 typedef float _real;
@@ -50,6 +53,7 @@ int main( int argc, char** argv)
 	vector_td<float,3> physical_dims;
 	vector_td<float,3> origin;
 	int iterations;
+	int outer_iterations;
 	int device;
 	po::options_description desc("Allowed options");
 	desc.add_options()
@@ -59,7 +63,8 @@ int main( int argc, char** argv)
 			("dimensions,d", po::value<vector_td<int,3> >(&dimensions)->default_value(vector_td<int,3>(512,512,1)), "Pixel dimensions of the image")
 			("size,S", po::value<vector_td<float,3> >(&physical_dims)->default_value(vector_td<float,3>(20,20,5)), "Dimensions of the image")
 			("center,c", po::value<vector_td<float,3> >(&origin)->default_value(vector_td<float,3>(0,0,0)), "Center of the reconstruction")
-			("iterations,i", po::value<int>(&iterations)->default_value(10), "Dimensions of the image")
+			("iterations,i", po::value<int>(&iterations)->default_value(10), "Inner iteration")
+			("outer-iterations,O", po::value<int>(&outer_iterations)->default_value(10), "Outer iteration")
 			("output,f", po::value<std::string>(&outputFile)->default_value("image.hdf5"), "Output filename")
 			("prior,P", po::value<std::string>(),"Prior image filename")
 			("prior-weight,k",po::value<float>(),"Weight of the prior image")
@@ -107,13 +112,20 @@ int main( int argc, char** argv)
 	  return 0;
   }
 
-  hoCuGPBBSolver< _real> solver;
+  sbcSolver<hoCuNDArray<_real>,hoCuNDArray<_real>,cgSolver<hoCuNDArray<_real> > > solver;
 
-  solver.set_max_iterations( iterations);
+
+  solver.set_max_inner_iterations(1);
+  solver.set_max_outer_iterations(outer_iterations);
+
   //solver.set_tc_tolerance( (_real) parms.get_parameter('e')->get_float_value());
   //solver.set_alpha(1e-7);
-  solver.set_output_mode( hoCuGPBBSolver< _real>::OUTPUT_VERBOSE );
-  solver.set_non_negativity_constraint(true);
+  solver.get_inner_solver()->set_max_iterations(iterations);
+  solver.get_inner_solver()->set_output_mode(cgSolver<hoCuNDArray<_real> >::OUTPUT_VERBOSE);
+  solver.get_inner_solver()->set_tc_tolerance(1e-5);
+
+  solver.set_output_mode( sbcSolver<hoCuNDArray<_real>,hoCuNDArray<_real>,cgSolver<hoCuNDArray<_real> > >::OUTPUT_VERBOSE );
+  solver.set_non_negativity_filter(true);
   boost::shared_ptr< hoCuOperatorPathBackprojection<_real> > E (new hoCuOperatorPathBackprojection<_real> );
   E->setup(splines,physical_dims,projections,origin,background);
 
@@ -183,25 +195,44 @@ int main( int argc, char** argv)
 			//I->mult_M(prior.get(),&tmp);
 			solver.add_regularization_operator(W);
 		}
+
 		if (vm.count("PICS-weight")){
 			std::cout << "PICS in used" << std::endl;
-			boost::shared_ptr<hoCuTVpicsOperator<float,3> > pics (new hoCuTVpicsOperator<float,3>);
+			boost::shared_ptr<hoCuPartialDerivativeOperator<_real,3> > Rx(new hoCuPartialDerivativeOperator<_real,3>(0));
+			boost::shared_ptr<hoCuPartialDerivativeOperator<_real,3> > Ry(new hoCuPartialDerivativeOperator<_real,3>(1));
 
-			pics->set_prior(prior);
-			pics->set_weight(vm["PICS-weight"].as<float>());
-			solver.add_nonlinear_operator(pics);
+			Rx->set_weight(vm["PICS-weight"].as<float>());
+			Ry->set_weight(vm["PICS-weight"].as<float>());
+			Rx->set_codomain_dimensions(&rhs_dims);
+			Ry->set_codomain_dimensions(&rhs_dims);
+			Rx->set_domain_dimensions(&rhs_dims);
+			Ry->set_domain_dimensions(&rhs_dims);
 
+			solver.add_regularization_group_operator(Rx);
+			solver.add_regularization_group_operator(Ry);
+			solver.add_group(prior.get(),1);
 
 
 		}
-		solver.set_x0(prior);
+
+		//solver.set_x0(prior);
   }
 
   if (vm.count("TV")){
 	  std::cout << "Total variation regularization in use" << std::endl;
-	  boost::shared_ptr<hoCuTVOperator<float,3> > tv(new hoCuTVOperator<float,3>);
-	  tv->set_weight(vm["TV"].as<float>());
-	  solver.add_nonlinear_operator(tv);
+		boost::shared_ptr<hoCuPartialDerivativeOperator<_real,3> > Rx(new hoCuPartialDerivativeOperator<_real,3>(0));
+		boost::shared_ptr<hoCuPartialDerivativeOperator<_real,3> > Ry(new hoCuPartialDerivativeOperator<_real,3>(1));
+
+		Rx->set_weight(vm["TV"].as<float>());
+		Ry->set_weight(vm["TV"].as<float>());
+		Rx->set_codomain_dimensions(&rhs_dims);
+		Ry->set_codomain_dimensions(&rhs_dims);
+		Rx->set_domain_dimensions(&rhs_dims);
+		Ry->set_domain_dimensions(&rhs_dims);
+		solver.add_regularization_group_operator(Rx);
+		solver.add_regularization_group_operator(Ry);
+		solver.add_group(1);
+
   }
 
   solver.set_encoding_operator(E);
@@ -218,7 +249,7 @@ int main( int argc, char** argv)
 	for (int i = 0; i < argc; i++){
 		ss << argv[i] << " ";
 	}
-	saveNDArray2HDF5<3>(result.get(),outputFile,physical_dims,origin,ss.str(), solver.get_max_iterations());
+	saveNDArray2HDF5<3>(result.get(),outputFile,physical_dims,origin,ss.str(), solver.get_max_outer_iterations());
 }
 
 

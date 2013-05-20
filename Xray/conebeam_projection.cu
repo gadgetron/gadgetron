@@ -15,7 +15,7 @@
 #include "cuNFFT.h"
 #include "GPUTimer.h"
 #include "float3x3.h"
-#include "NFFT_utils.h"
+#include "cuNDArray_utils.h"
 //#include "../../libs/device_utils/float3x3.h"
 //#include <cuda_utilities.h>
 #include <iostream>
@@ -430,12 +430,11 @@ boost::shared_ptr< cuNDArray<float> > get_conebeam_ramp(unsigned int dim, float 
     dims_os.push_back(dim<<1);
 
     hoNDArray<float> weights;
-    cuNDArray<float> weights_os;
+
     cuNDArray<float> *res = new cuNDArray<float>();
 
    weights.create(&dims);
 
-    weights_os.create(&dims_os);
 
     res->create(&dims);
 
@@ -456,9 +455,9 @@ boost::shared_ptr< cuNDArray<float> > get_conebeam_ramp(unsigned int dim, float 
     }
 
     cuNDArray<float> tmp_real(&weights);
-    expand_with_zero_fill<float,1>( &tmp_real, &weights_os );
+    boost::shared_ptr< cuNDArray<float> > weights_os = pad<float,1>( from_std_vector<unsigned int,1>(dims_os), &tmp_real );
 
-    boost::shared_ptr< cuNDArray<float_complext> > tmp_cplx = real_to_complex<float_complext>(&weights_os);
+    boost::shared_ptr< cuNDArray<float_complext> > tmp_cplx = real_to_complex<float_complext>(weights_os.get());
     cuNFFT_plan<float,1>().fft(tmp_cplx.get(),cuNFFT_plan<float,1>::NFFT_FORWARDS);
     boost::shared_ptr< cuNDArray<float> >  tmp_res = real(tmp_cplx.get());
 
@@ -603,7 +602,7 @@ bool Gadgetron::conebeam_backwards_projection( hoNDArray<TYPE>* projections, hoN
                 for (unsigned int i=0; i<dims.size(); i++)
                     double_dims.push_back(dims[i] << 1);
                 device_projection.create(&double_dims);
-                expand_with_zero_fill<float,2>( &device_projection_original, &device_projection );
+                pad<float,2>( &device_projection_original, &device_projection );
 
                 // 2. Ramp filter using FFT
                 static boost::shared_ptr< cuNDArray<TYPE> > ramp;
