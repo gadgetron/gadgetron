@@ -210,7 +210,7 @@ int main( int argc, char** argv)
 
 			solver.add_regularization_group_operator(Rx);
 			solver.add_regularization_group_operator(Ry);
-			solver.add_group(prior.get(),1);
+			solver.add_group(prior,1);
 
 
 		}

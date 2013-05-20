@@ -29,6 +29,7 @@
 #include "hoCuTVpicsOperator.h"
 #include "projectionSpaceOperator.h"
 #include "weightingOperator.h"
+#include "ABOCSSolver.h"
 using namespace std;
 using namespace Gadgetron;
 typedef float _real;
@@ -107,7 +108,8 @@ int main( int argc, char** argv)
 	  return 0;
   }
 
-  hoCuGPBBSolver< _real> solver;
+  ABOCSSolver< hoCuGPBBSolver< _real> > solver;
+  solver.set_eps(_real(7.6e6));
 
   solver.set_max_iterations( iterations);
   //solver.set_tc_tolerance( (_real) parms.get_parameter('e')->get_float_value());
