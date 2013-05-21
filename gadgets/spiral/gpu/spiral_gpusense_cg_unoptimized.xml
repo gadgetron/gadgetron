@@ -24,26 +24,19 @@
     <dll>gadgetron_core</dll>
     <classname>MRIImageWriterUSHORT</classname>
   </writer>
-
+  
   <gadget>
     <name>NoiseAdjust</name>
-    <dll>gadgetron_mricore</dll>
-    <classname>MRINoiseAdjustGadget</classname>
-  </gadget>
-  
-  <gadget>
-    <name>PCA</name>
-    <dll>gadgetron_mricore</dll>
-    <classname>PCACoilGadget</classname>
-  </gadget>
-  
-  <gadget>
-    <name>CoilReduction</name>
     <dll>gadgetron_core</dll>
-    <classname>CoilReductionGadget</classname>
-    <property><name>coils_out</name><value>8</value></property>
+    <classname>NoiseAdjustGadget</classname>
   </gadget>
-
+  
+  <gadget>
+    <name>RemoveROOversampling</name>
+    <dll>gadgetron_core</dll>
+    <classname>RemoveROOversamplingGadget</classname>
+  </gadget>
+  
   <gadget>
     <name>gpuSpiralSensePrepGadget</name>
     <dll>gadgetron_gpuspiral</dll>
@@ -53,15 +46,15 @@
   </gadget>
   
   <gadget>
-    <name>gpuGpSenseGadget</name>
+    <name>gpuCgSenseGadget</name>
     <dll>gadgetron_gpusense</dll>
-    <classname>gpuGpSenseGadget</classname>
-    <property><name>deviceno</name>                <value>0</value></property>
-    <property><name>number_of_iterations</name>    <value>50</value></property>
+    <classname>gpuCgSenseGadget</classname>
+    <property><name>deviceno</name>                <value>1</value></property>
+    <property><name>number_of_iterations</name>    <value>10</value></property>
+    <property><name>cg_limit</name>                <value>1e-6</value></property>
     <property><name>oversampling</name>            <value>1.25</value></property>
     <property><name>kernel_width</name>            <value>5.5</value></property>
-    <property><name>lambda</name>                  <value>2.0e-7</value></property>
-    <property><name>alpha</name>                   <value>0.5</value></property>
+    <property><name>kappa</name>                   <value>0.3</value></property>
   </gadget>
 
   <gadget>

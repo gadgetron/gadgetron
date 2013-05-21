@@ -24,6 +24,8 @@ add_subdirectory(core)
 if (ARMADILLO_FOUND)
   MESSAGE("Compiling optimized (Armadillo) MRI Gadgets")
   add_subdirectory(mri_core)
+elseif (ARMADILLO_FOUND)
+  MESSAGE("Armadillo not found, i.e. not compiling Blas/Lapack optimized MRI Gadgets")
 endif (ARMADILLO_FOUND)
 
 add_subdirectory(radial)

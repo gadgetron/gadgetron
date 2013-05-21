@@ -27,21 +27,14 @@
 
   <gadget>
     <name>NoiseAdjust</name>
-    <dll>gadgetron_mricore</dll>
-    <classname>MRINoiseAdjustGadget</classname>
-  </gadget>
-  
-  <gadget>
-    <name>PCA</name>
-    <dll>gadgetron_mricore</dll>
-    <classname>PCACoilGadget</classname>
-  </gadget>
-  
-  <gadget>
-    <name>CoilReduction</name>
     <dll>gadgetron_core</dll>
-    <classname>CoilReductionGadget</classname>
-    <property><name>coils_out</name><value>8</value></property>
+    <classname>NoiseAdjustGadget</classname>
+  </gadget>
+  
+  <gadget>
+    <name>RemoveROOversampling</name>
+    <dll>gadgetron_core</dll>
+    <classname>RemoveROOversamplingGadget</classname>
   </gadget>
 
   <gadget>

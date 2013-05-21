@@ -5,47 +5,47 @@
         
     <reader>
       <slot>1008</slot>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetroncore</dll>
       <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
     </reader>
  
     <writer>
       <slot>1004</slot>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetroncore</dll>
       <classname>MRIImageWriterCPLX</classname>
     </writer>
     <writer>
       <slot>1005</slot>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetroncore</dll>
       <classname>MRIImageWriterFLOAT</classname>
     </writer>
     <writer>
       <slot>1006</slot>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetroncore</dll>
       <classname>MRIImageWriterUSHORT</classname>
     </writer>
 
     <gadget>
       <name>NoiseAdjust</name>
-      <dll>gadgetron_mricore</dll>
+      <dll>gadgetronmricore</dll>
       <classname>MRINoiseAdjustGadget</classname>
     </gadget>
 
     <gadget>
       <name>RemoveROOversampling</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetroncore</dll>
       <classname>RemoveROOversamplingGadget</classname>
     </gadget>
 
    <gadget>
       <name>PCA</name>
-      <dll>gadgetron_mricore</dll>
+      <dll>gadgetronmricore</dll>
       <classname>PCACoilGadget</classname>
     </gadget>
 
     <gadget>
       <name>CoilReduction</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetroncore</dll>
       <classname>CoilReductionGadget</classname>
       <property>
         <name>coils_out</name>
@@ -55,7 +55,7 @@
 
     <gadget>
       <name>GPUCGRadial0</name>
-      <dll>gadgetron_gpusense</dll>
+      <dll>gadgetroncgsense</dll>
       <classname>GPUCGGoldenRadialGadget</classname>
       <property><name>deviceno</name>                <value>0</value></property>
       <property><name>sliceno</name>                 <value>0</value></property>
@@ -71,34 +71,34 @@
 
      <gadget>
       <name>Extract</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetroncore</dll>
       <classname>ExtractGadget</classname>
     </gadget>
 
 	<!--
     <gadget>
       <name>ImageWrite</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetroncore</dll>
       <classname>ImageWriterGadgetFLOAT</classname>
     </gadget>
     -->
 
     <gadget>
       <name>AutoScale</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetroncore</dll>
       <classname>AutoScaleGadget</classname>
     </gadget>
 
 
     <gadget>
       <name>FloatToShort</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetroncore</dll>
       <classname>FloatToUShortGadget</classname>
     </gadget>
 
     <gadget>
       <name>ImageFinishUSHORT</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetroncore</dll>
       <classname>ImageFinishGadgetUSHORT</classname>
     </gadget>
 

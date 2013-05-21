@@ -276,10 +276,12 @@ namespace Gadgetron{
       }
 
       for (unsigned int i = 0; i < slices_*sets_; i++) {
-	try{ host_data_buffer_[i].create(&data_dimensions); }catch (std::exception & err) {
+	try{ host_data_buffer_[i].create(&data_dimensions); }
+	catch (std::exception & err) {
 	  GADGET_DEBUG1("Unable to allocate memory for data buffer\n");
 	  return GADGET_FAIL;
 	}
+	host_data_buffer_[i].fill(0.0f);
       }
     }
 

@@ -34,8 +34,18 @@ target_link_libraries(gadgetron_gpuspiral
 
 install (TARGETS gadgetron_gpuspiral DESTINATION lib)
 
+if (ARMADILLO_FOUND)
+  install (FILES 
+    spiral_gpusense_cg.xml 
+    spiral_gpusense_sb.xml 
+    spiral_gpusense_gp.xml
+    DESTINATION config)
+elseif (ARMADILLO_FOUND)
+  MESSAGE("Armadillo not found, hence Gadgetron's Blas/Lapack optimized config files are not being installed")
+endif (ARMADILLO_FOUND)
+
 install (FILES 
-  spiral_gpusense_cg.xml 
-  spiral_gpusense_sb.xml 
-  spiral_gpusense_gp.xml
+  spiral_gpusense_cg_unoptimized.xml 
+  spiral_gpusense_sb_unoptimized.xml 
+  spiral_gpusense_gp_unoptimized.xml
   DESTINATION config)

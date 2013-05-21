@@ -17,10 +17,10 @@ namespace Gadgetron{
   : channels_(0)
   , device_number_(0)
   , number_of_iterations_(50)
-  , oversampling_(1.25)
-  , kernel_width_(5.5)
-  , lambda_(2.0)
-  , alpha_(0.5)
+  , oversampling_(1.25f)
+  , kernel_width_(5.5f)
+  , lambda_(2.0e-7)
+  , alpha_(0.5f)
   , is_configured_(false)
   , prepared_(false)
   , image_series_(0)
@@ -212,6 +212,9 @@ namespace Gadgetron{
       cuNDArray<float_complext> tmp(*j->reg_host_);
       *reg_image_ = *expand( &tmp, frames );
     }
+
+    // Use the averaged image as a starting guess
+    gp_.set_x0( reg_image_ );
 
     // Define preconditioning weights
     boost::shared_ptr< cuNDArray<float> > _precon_weights = sum(abs_square(csm.get()).get(), 2);
