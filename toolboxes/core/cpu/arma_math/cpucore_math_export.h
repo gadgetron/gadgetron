@@ -1,9 +1,6 @@
-/*
- * cpucore_math_export.h
- *
- *  Created on: Nov 29, 2011
- *      Author: hansenms
- */
+/** \file cpucore_math_export.h
+    \brief Required definitions for Windows, importing/exporting dll symbols 
+*/
 
 #ifndef CPUCORE_MATH_EXPORT_H_
 #define CPUCORE_MATH_EXPORT_H_

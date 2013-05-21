@@ -25,7 +25,7 @@ add_library(gadgetronmricore SHARED
   )
 
 target_link_libraries(gadgetronmricore cpucore cpucore_math 
-  ${ISMRMRD_LIBRARIES}  
+  ${ISMRMRD_LIBRARIES} 
   ${FFTW3_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
   ${ARMADILLO_LIBRARIES}

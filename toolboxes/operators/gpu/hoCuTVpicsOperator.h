@@ -1,26 +1,44 @@
 #pragma once
 
-#include "picsOperator.h"
-#include "hoNDArray.h"
-#include "hoNDArray_vector_td_utilities.h"
-template<class REAL, class T, unsigned int D> class hoTVpicsOperator : public picsOperator<REAL,T,hoNDArray<T> >{
+
+#include "hoCuNDArray.h"
+#include "hoCuTVOperator.h"
+
+namespace Gadgetron{
+
+
+template<class T, unsigned int D> class hoCuTVpicsOperator : public generalOperator<hoCuNDArray<T> >{
+private:
+	typedef typename realType<T>::Type REAL;
 public:
-	hoTVpicsOperator():picsOperator<REAL,T,hoNDArray<T> >(){
-		set_CSOperator(boost::shared_ptr<sparsifyingOperator<REAL,hoNDArray<T> > >(new hoTVOperator<REAL,T,D>));
+	hoCuTVpicsOperator():generalOperator<hoCuNDArray<T> >(){
+
 	}
-	virtual ~hoTVpicsOperator(){}
+	void set_prior(boost::shared_ptr<hoCuNDArray<T> > _prior){
+		prior = _prior;
+	}
+
+	virtual void gradient(hoCuNDArray<T>* in, hoCuNDArray<T>* out, bool accumulate){
+		hoCuNDArray<T> tmp = *in;
+		tmp -= *prior;
+		op.gradient(&tmp,out, accumulate);
+	}
 
 	void set_limit(REAL limit){
-		hoTVOperator<REAL,T,D>* op = dynamic_cast<hoTVOperator<REAL,T,D>* >( this->csOperator.get());
-		op->set_limit(limit);
+		op.set_limit(limit);
 	}
+
+	virtual void set_weight(REAL weight){
+		op.set_weight(weight);
+	}
+	virtual REAL get_weight(){
+		return op.get_weight();
+	}
+	virtual ~hoCuTVpicsOperator(){}
+
 protected:
-	virtual bool pics_axpy(T a,hoNDArray<T>* x,hoNDArray<T>* y){
-		return hoNDA_axpy<T>(a,x,y);
-
-	}
-	virtual bool pics_scal(T a,hoNDArray<T>* x){
-			return hoNDA_scal(a,x);
-
-	}
+	hoCuTVOperator<T,D> op;
+	boost::shared_ptr<hoCuNDArray<T> > prior;
 };
+
+}

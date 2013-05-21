@@ -142,6 +142,7 @@ namespace Gadgetron{
     CUDA_CALL(cudaGetDevice(&device));
     return getHandle(device);
   }
+
   cublasHandle_t cudaDeviceManager::getHandle(int device){
     if (handle[device] == NULL){
       cublasStatus_t ret = cublasCreate(&handle[device]);

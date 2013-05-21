@@ -27,6 +27,9 @@ namespace Gadgetron{
     }
     virtual ~gpSolver(){}
 
+    virtual void add_nonlinear_operator(boost::shared_ptr< generalOperator<ARRAY_TYPE> > op ){
+          operators.push_back(op);
+	}
 
     virtual void add_regularization_operator(boost::shared_ptr< linearOperator<ARRAY_TYPE> > op ){
       add_regularization_operator(op,2);

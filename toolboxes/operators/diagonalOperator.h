@@ -1,3 +1,7 @@
+/** \file laplaceOperator.h
+    \brief Base class for the diagonal matrix operators.
+*/
+
 #pragma once
 
 #include "linearOperator.h"

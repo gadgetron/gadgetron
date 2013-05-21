@@ -97,7 +97,7 @@ namespace Gadgetron{
   // Vectorize a scalar value
   //
 
-  template<class T, unsigned int D> __inline__ __host__ __device__ 
+  template<class T, unsigned int D> __inline__ __host__ __device__
   vector_td<T,D> to_vector_td( const T scalar )
   {
     vector_td<T,D> res;
@@ -208,45 +208,10 @@ namespace Gadgetron{
   }
 
   //
-  // Conversion between vector<unsigned int> and uintd
+  // Conversion between vector_td and std::vector
   //
 
-  template<unsigned int D> 
-  std::vector<unsigned int> uintd_to_vector( typename uintd<D>::Type _uintd )
-  {
-    std::vector<unsigned int> out(D);
-    for( unsigned int i=0; i<D; i++ )
-      out[i] = _uintd[i];
-    return out;
-  }
-
-  template<unsigned int D> 
-  typename uintd<D>::Type vector_to_uintd( std::vector<unsigned int> _vector )
-  {
-    typename uintd<D>::Type out;
-    for( unsigned int i=0; i<D; i++ ){
-      if( i<_vector.size() )
-	out[i] = _vector[i];
-      else 
-	out[i] = 1;
-    }
-    return out;
-  }
-
-  template<unsigned int D>
-  typename intd<D>::Type vector_to_intd( std::vector<unsigned int> _vector )
-  {
-    typename intd<D>::Type out;
-    for( unsigned int i=0; i<D; i++ ){
-      if( i<_vector.size() )
-	out[i] = _vector[i];
-      else
-	out[i] = 1;
-    }
-    return out;
-  }
-
-  template<class T, unsigned int D>
+  template<class T, unsigned int D> inline
   std::vector<T> to_std_vector( vector_td<T,D> vec )
   {
     std::vector<T> out(D);
@@ -255,7 +220,7 @@ namespace Gadgetron{
     return out;
   }
 
-  template<class T, unsigned int D>
+  template<class T, unsigned int D> inline
   vector_td<T,D> from_std_vector( std::vector<T> _vector )
   {
     vector_td<T,D> out;

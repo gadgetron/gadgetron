@@ -1,9 +1,6 @@
-/*
- * solvers_export.h
- *
- *  Created on: Nov 18, 2011
- *      Author: Michael S. Hansen
- */
+/** \file gpusolvers_export.h
+    \brief Required definitions for Windows, importing/exporting dll symbols 
+*/
 
 #ifndef GPUSOLVERS_EXPORT_H_
 #define GPUSOLVERS_EXPORT_H_

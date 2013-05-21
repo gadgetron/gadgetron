@@ -27,7 +27,7 @@ include_directories(
 add_executable(mriclient main.cpp)
 add_executable(gt_alive  gt_alive.cpp)
 
-target_link_libraries(gt_alive gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}  ${Boost_LIBRARIES})
+target_link_libraries(gt_alive gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}  ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES})
 
 IF(WIN32)
 	SET(HDF5_LIB_DIR ${HDF5_INCLUDE_DIR}/../lib)

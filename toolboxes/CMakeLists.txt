@@ -6,10 +6,8 @@ IF(CUDA_FOUND OR ARMADILLO_FOUND)
 ENDIF(CUDA_FOUND OR ARMADILLO_FOUND)
 
 add_subdirectory(mri)
-
-IF(CUDA_FOUND)
-  add_subdirectory(nfft)
-ENDIF(CUDA_FOUND)
+add_subdirectory(nfft)
+add_subdirectory(registration)
 
 IF (ACE_FOUND)
   add_subdirectory(gadgettools)

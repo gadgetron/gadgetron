@@ -1,3 +1,7 @@
+/** \file cuNonCartesianKtSenseOperator.h
+    \brief Non-Cartesian kt-Sense operator, GPU based.
+*/
+
 #pragma once
 
 #include "cuNonCartesianSenseOperator.h"

@@ -3,7 +3,6 @@
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_utils.h"
 #include "vector_td_utilities.h"
-#include "NFFT_utils.h"
 #include "radial_utilities.h"
 #include "cuNonCartesianKtSenseOperator.h"
 #include "cuSenseRHSBuffer.h"
@@ -189,7 +188,7 @@ int main(int argc, char** argv)
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
 
   // Allocate space for result
-  vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size); 
+  vector<unsigned int> image_dims = to_std_vector(matrix_size); 
   image_dims.push_back(frames_per_reconstruction*num_reconstructions); 
 
   cuNDArray<_complext> result = cuNDArray<_complext>(&image_dims);
@@ -199,7 +198,7 @@ int main(int argc, char** argv)
   shutter_radius /= _real(2);
   std::cout << "Shutter radius: " << shutter_radius << std::endl;
 
-  vector<unsigned int> image_os_dims = uintd_to_vector<2>(matrix_size_os); 
+  vector<unsigned int> image_os_dims = to_std_vector(matrix_size_os); 
   image_os_dims.push_back(frames_per_reconstruction); image_os_dims.push_back(num_coils);    
   cuNDArray<_complext> *image_os = new cuNDArray<_complext>(&image_os_dims);
 
@@ -226,12 +225,12 @@ int main(int argc, char** argv)
     E->get_plan()->convolve( data.get(), image_os, dcw.get(), cuNFFT_plan<_real,2>::NFFT_CONV_NC2C );
 
     // Apply shutter
-    zero_fill_border<_complext,2>( shutter_radius, image_os );
+    fill_border<_complext,2>( shutter_radius, image_os );
     E->get_plan()->fft( image_os, cuNFFT_plan<_real,2>::NFFT_BACKWARDS );
     E->get_plan()->deapodize( image_os );
 
     // Remove oversampling
-    image_dims = uintd_to_vector<2>(matrix_size);
+    image_dims = to_std_vector(matrix_size);
     image_dims.push_back(frames_per_reconstruction); image_dims.push_back(num_coils);
     cuNDArray<_complext> *image = new cuNDArray<_complext>(&image_dims);
     crop<_complext,2>( (matrix_size_os-matrix_size)>>1, image_os, image );

@@ -23,29 +23,6 @@ template <class T> void Gadgetron::cuGPBBSolver<T>::solver_non_negativity_filter
   filter_kernel<T><<<dimGrid,dimBlock>>>(x->get_data_ptr(),g->get_data_ptr(),elements);
 }
 
-template<typename T>
-struct negate2 : public thrust::unary_function<T,T>
-{
-  __host__ __device__ T operator()(const T &x) const {return -x;}
-};
-
-template<typename REAL, typename T>
-struct reciprocal_clamp_functor : public thrust::unary_function<T,T>
-{
-  const REAL clamp;
-  reciprocal_clamp_functor(REAL _clamp) : clamp(_clamp){}
-  __host__ __device__
-  T operator()(const T &x) const{
-    if (real(x) < clamp) return T(0);
-    else return T(1)/x;
-  }
-};
-
-template <class T> void Gadgetron::cuGPBBSolver<T>::solver_reciprocal_clamp( Gadgetron::cuNDArray<T>* x,REAL threshold) 
-{
-  thrust::device_ptr<T> dev_ptr(x->get_data_ptr());
-  thrust::transform(dev_ptr, dev_ptr + x->get_number_of_elements(),dev_ptr,reciprocal_clamp_functor<REAL,T>(threshold));
-};
 
 template class EXPORTGPUSOLVERS Gadgetron::cuGPBBSolver<float>;
 template class EXPORTGPUSOLVERS Gadgetron::cuGPBBSolver<double>;

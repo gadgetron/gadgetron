@@ -1,43 +1,30 @@
 #pragma once
 
 #include "cuTVOperator.h"
-#include "hoNDArray.h"
-#include "sparsifyingOperator.h"
+#include "hoCuNDArray.h"
+#include "generalOperator.h"
 #include "hoNDArray_fileio.h"
+#include "vector_td_utilities.h"
 
-template<class REAL, class T, unsigned int D> class hoTVOperator : public sparsifyingOperator< REAL, hoNDArray<T> >{
+namespace Gadgetron{
+
+template<class T, unsigned int D> class EXPORTGPUOPERATORS hoCuTVOperator : public generalOperator<hoCuNDArray<T> >{
+private:
+	typedef typename realType<T>::Type REAL;
 public:
-	hoTVOperator() : sparsifyingOperator<REAL, hoNDArray<T> >(){
+	hoCuTVOperator() : generalOperator< hoCuNDArray<T> >(){
 		limit_ = REAL(1e-8);
 		cuTV.set_limit(limit_);
 	}
-	virtual ~hoTVOperator(){}
+	virtual ~hoCuTVOperator(){}
 	void set_limit(REAL limit){
 		limit_ = limit;
 		cuTV.set_limit(limit);
 	}
-	virtual void apply(hoNDArray<T>* in ,hoNDArray<T>* out, bool accumulate=false){
-		const vector_td<unsigned int,D> dims = from_std_vector<unsigned int, D>(*(in->get_dimensions()));
-		int elements = in->get_number_of_elements();
 
-		for (int i =0; i < (elements/prod(dims)); i++){
-			hoNDArray<T> tmp_in;
-			std::vector<unsigned int> dimensions = to_std_vector(dims);
-			tmp_in.create(&dimensions,in->get_data_ptr()+i*prod(dims));
-			hoNDArray<T> tmp_out;
-			tmp_out.create(&dimensions,out->get_data_ptr()+i*prod(dims));
-			cuNDArray<T> cuIn(&tmp_in);
-			cuNDArray<T> cuOut(&tmp_out);
-
-			cuTV.apply(&cuIn,&cuOut,accumulate);
-			boost::shared_ptr< hoNDArray<T> > tmp = cuOut.to_host();
-			tmp_out = *tmp;
-		}
-
-	}
-	virtual void gradient(hoNDArray<T>* in ,hoNDArray<T>* out, bool accumulate=false){
+	virtual void gradient(hoCuNDArray<T>* in ,hoCuNDArray<T>* out, bool accumulate=false){
 		if (in->get_number_of_elements() != out->get_number_of_elements()){
-			throw "in_array and output array dimension mismatch";
+			BOOST_THROW_EXCEPTION(runtime_error("in_array and output array dimension mismatch"));
 		}
 
 
@@ -70,38 +57,29 @@ public:
 
 protected:
 	REAL limit_;
-	cuTVOperator<REAL,T,D> cuTV;
+	cuTVOperator<T,D> cuTV;
 };
 
-template<class REAL, class T> class hoTVOperator<REAL,T,4> : public sparsifyingOperator< REAL, hoNDArray<T> >{
+template<class T> class hoCuTVOperator<T,4> : public generalOperator< hoCuNDArray<T> >{
+private:
+	typedef typename realType<T>::Type REAL;
 public:
-	hoTVOperator() : sparsifyingOperator<REAL, hoNDArray<T> >(){
+	hoCuTVOperator() : generalOperator< hoCuNDArray<T> >(){
 		limit_ = REAL(1e-8);
 	}
-	virtual ~hoTVOperator(){}
+	virtual ~hoCuTVOperator(){}
 	void set_limit(REAL limit){
 		limit_ = limit;
 	}
-	virtual void apply(hoNDArray<T>* in_array ,hoNDArray<T>* out_array, bool accumulate=false){
-		T* in = in_array->get_data_ptr();
-		T* out = out_array->get_data_ptr();
-		if (!accumulate)hoNDA_clear(in_array);
-		vector_td<unsigned int,4> dims = vector_to_uintd<4>(*(in_array->get_dimensions()));
-		for (int idx = 0; idx < in_array->get_number_of_elements(); idx++){
-			vector_td<unsigned int,4> co = idx_to_co<4>(idx, dims);
-			out[idx] = this->weight_*gradient_(in,dims,co);
-		}
 
-
-	}
-	virtual void gradient(hoNDArray<T>* in_array ,hoNDArray<T>* out_array, bool accumulate=false){
+	virtual void gradient(hoCuNDArray<T>* in_array ,hoCuNDArray<T>* out_array, bool accumulate=false){
 		if (in_array->get_number_of_elements() != out_array->get_number_of_elements()){
-			throw "in_array and output array dimension mismatch";
+			BOOST_THROW_EXCEPTION(runtime_error("in_array and output array dimension mismatch"));
 		}
 		T* in = in_array->get_data_ptr();
 		T* out = out_array->get_data_ptr();
-		vector_td<unsigned int,4> dims = vector_to_uintd<4>(*(in_array->get_dimensions()));
-		if (!accumulate)hoNDA_clear(in_array);
+		vector_td<unsigned int,4> dims = from_std_vector<unsigned int, 4>(*(in_array->get_dimensions()));
+		if (!accumulate)clear(in_array);
 		for (int idx = 0; idx < in_array->get_number_of_elements(); idx++){
 				T xi = in[idx];
 				T result=T(0);
@@ -152,3 +130,4 @@ protected:
 
 
 };
+}

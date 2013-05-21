@@ -3,7 +3,9 @@
 #include "hoNDArray_blas.h"
 #include "complext.h"
 #include "hoArmadillo.h"
+
 #include <complex>
+#include <omp.h>
 
 namespace Gadgetron{
 
@@ -139,6 +141,9 @@ namespace Gadgetron{
 
         boost::shared_ptr< hoNDArray<T> > res( new hoNDArray<T>() );
         res->create(x->get_dimensions());   
+#ifdef USE_OMP
+#pragma omp parallel for
+#endif
         for( int i = 0; i < res->get_number_of_elements(); i++ ){
             res->get_data_ptr()[i] = sgn(x->get_data_ptr()[i]);
         }
@@ -150,6 +155,9 @@ namespace Gadgetron{
         if( x == 0x0 )
             BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::sgn_inplace(): Invalid input array"));
 
+#ifdef USE_OMP
+#pragma omp parallel for
+#endif
         for( int i = 0; i < x->get_number_of_elements(); i++ ) 
             x->get_data_ptr()[i] = sgn(x->get_data_ptr()[i]);
     }
@@ -373,6 +381,9 @@ namespace Gadgetron{
 
         T *outPtr = (out==0x0) ? x->get_data_ptr() : out->get_data_ptr();
 
+#ifdef USE_OMP
+#pragma omp parallel for
+#endif
         for( int i = 0; i < x->get_number_of_elements(); i++ ) {
             T prev = x->get_data_ptr()[i];
             typename realType<T>::Type absPrev = abs(prev);
@@ -388,6 +399,9 @@ namespace Gadgetron{
 
         T *outPtr = (out==0x0) ? _x->get_data_ptr() : out->get_data_ptr();
 
+#ifdef USE_OMP
+#pragma omp parallel for
+#endif
         for( int i = 0; i < _x->get_number_of_elements(); i++ ) {
             T x = _x->get_data_ptr()[i];
             typename realType<T>::Type s = _s->get_data_ptr()[i];

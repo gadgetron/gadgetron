@@ -1,3 +1,7 @@
+/** \file laplaceOperator.h
+    \brief Base class for the Laplacian operator implementations.
+*/
+
 #pragma once
 
 #include "linearOperator.h"

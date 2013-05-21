@@ -27,7 +27,6 @@ endif(CUDA_FOUND)
 #  add_subdirectory(octave)
 #endif(OCTAVE_FOUND)
 
-find_package(GMatlab)
 if (MATLAB_FOUND)
   message("MATLAB FOUND: ${MATLAB_INCLUDE_DIR}")
   add_subdirectory(matlab)

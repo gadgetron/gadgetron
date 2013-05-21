@@ -1,3 +1,7 @@
+/** \file cuCartesianSenseOperator.h
+    \brief Cartesian Sense operator, GPU based.
+*/
+
 #pragma once
 
 #include "cuSenseOperator.h"

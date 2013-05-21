@@ -14,10 +14,10 @@
 
 // Includes - Gadgetron
 #include "cuNFFT.h"
-#include "NFFT_utils.h"
 #include "cuNDFFT.h"
 #include "cuNDArray_operators.h"
 #include "cuNDArray_elemwise.h"
+#include "cuNDArray_utils.h"
 #include "vector_td_utilities.h"
 #include "cudaDeviceManager.h"
 #include "check_CUDA.h"
@@ -304,17 +304,14 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::preprocess( cuNDArray<typename real
   thrust::transform( trajectory_positions_in.begin(), trajectory_positions_in.end(), trajectory_positions->begin(), 
 		     trajectory_scale<REAL,D>(matrix_size_os_real, matrix_size_os_plus_wrap_real) );
   
+  CHECK_FOR_CUDA_ERROR();
+
   if( !( mode == NFFT_PREP_C2NC || ATOMICS )){
-    
+
     // allocate storage for and compute temporary prefix-sum variable (#cells influenced per sample)
-  	CHECK_FOR_CUDA_ERROR();
-  	cudaError_t errorCode = cudaThreadSynchronize();
-		if (errorCode != cudaSuccess) {
-  	    	boost::exception_detail::throw_exception_(cuda_error(errorCode),BOOST_CURRENT_FUNCTION,__FILE__,__LINE__);
-		}
     device_vector<unsigned int> c_p_s(trajectory_int->get_number_of_elements());
-    CHECK_FOR_CUDA_ERROR();
     device_vector<unsigned int> c_p_s_ps(trajectory_int->get_number_of_elements());
+    CHECK_FOR_CUDA_ERROR();
     
     REAL half_W = REAL(0.5)*W;
     thrust::plus<unsigned int> binary_op;
@@ -411,10 +408,11 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute( cuNDArray<complext<REAL> > *in,
     BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT_plan::compute: device preparation error."));
   }
 
-  typename uintd<D>::Type image_dims = vector_to_uintd<D>( (mode == NFFT_FORWARDS_C2NC || mode == NFFT_BACKWARDS_C2NC ) ? *in->get_dimensions() : *out->get_dimensions() );
+  typename uintd<D>::Type image_dims = from_std_vector<unsigned int,D>
+    ( (mode == NFFT_FORWARDS_C2NC || mode == NFFT_BACKWARDS_C2NC ) ? *in->get_dimensions() : *out->get_dimensions() );
   bool oversampled_image = (image_dims==matrix_size_os);
   
-  vector<unsigned int> vec_dims = uintd_to_vector<D>(matrix_size_os);
+  vector<unsigned int> vec_dims = to_std_vector(matrix_size_os);
   {
     cuNDArray<complext<REAL> > *image = ((mode == NFFT_FORWARDS_C2NC || mode == NFFT_BACKWARDS_C2NC ) ? in : out );
     for( unsigned int d=D; d<image->get_number_of_dimensions(); d++ )
@@ -429,7 +427,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute( cuNDArray<complext<REAL> > *in,
     
     if( !oversampled_image ){
       working_image = new cuNDArray<complext<REAL> >(&vec_dims);
-      expand_with_zero_fill<complext<REAL>, D>( in_int, working_image );
+      pad<complext<REAL>, D>( in_int, working_image );
     }
     else{
       working_image = in_int;
@@ -513,7 +511,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute( cuNDArray<complext<REAL> > *in,
     if( !oversampled_image ){
       working_image = new cuNDArray<complext<REAL> >(&vec_dims);
       
-      expand_with_zero_fill<complext<REAL>, D>( in_int, working_image );
+      pad<complext<REAL>, D>( in_int, working_image );
     }
     else{
       working_image = in_int;
@@ -564,16 +562,16 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::mult_MH_M( cuNDArray<complext<REAL> > *i
   
   cuNDArray<complext<REAL> > *working_image = 0x0;
 
-  typename uintd<D>::Type image_dims = vector_to_uintd<D>(*in->get_dimensions()); 
+  typename uintd<D>::Type image_dims = from_std_vector<unsigned int,D>(*in->get_dimensions()); 
   bool oversampled_image = (image_dims==matrix_size_os); 
  
-  vector<unsigned int> vec_dims = uintd_to_vector<D>(matrix_size_os); 
+  vector<unsigned int> vec_dims = to_std_vector(matrix_size_os); 
   for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ )
     vec_dims.push_back(in->get_size(d));
   
   if( !oversampled_image ){
     working_image = new cuNDArray<complext<REAL> >(&vec_dims);
-    expand_with_zero_fill<complext<REAL>, D>( in_int, working_image );
+    pad<complext<REAL>, D>( in_int, working_image );
   }
   else{
     working_image = in_int;
@@ -634,14 +632,15 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::convolve( cuNDArray<complext<REAL> > *in
   
   cuNDArray<complext<REAL> > *working_samples = 0x0;
   
-  typename uintd<D>::Type image_dims = vector_to_uintd<D>(*(((mode == NFFT_CONV_C2NC) ? in : out )->get_dimensions())); 
+  typename uintd<D>::Type image_dims = from_std_vector<unsigned int, D>
+    (*(((mode == NFFT_CONV_C2NC) ? in : out )->get_dimensions())); 
   bool oversampled_image = (image_dims==matrix_size_os); 
   
   if( !oversampled_image ){
     BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan::convolve: ERROR: oversampled image not provided as input."));
   }
 
-  vector<unsigned int> vec_dims = uintd_to_vector<D>(matrix_size_os); 
+  vector<unsigned int> vec_dims = to_std_vector(matrix_size_os); 
   {
     cuNDArray<complext<REAL> > *image = ((mode == NFFT_CONV_C2NC) ? in : out );
     for( unsigned int d=D; d<image->get_number_of_dimensions(); d++ )
@@ -690,7 +689,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::fft(cuNDArray<complext<REAL> > *data, NF
   prepare<complext<REAL>,dummy,dummy>( device, &old_device, data, &data_int );
   
   typename uintd<D>::Type _dims_to_transform = counting_vec<D>();
-  vector<unsigned int> dims_to_transform = uintd_to_vector<D>( _dims_to_transform );
+  vector<unsigned int> dims_to_transform = to_std_vector( _dims_to_transform );
   
   if( mode == NFFT_FORWARDS ){
     cuNDFFT<REAL>().fft( data_int, &dims_to_transform );
@@ -714,7 +713,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::deapodize( cuNDArray<complext<REAL> > *i
   
   prepare<complext<REAL>,dummy,dummy>(device, &old_device, image, &image_int );
 
-  typename uintd<D>::Type image_dims = vector_to_uintd<D>(*image->get_dimensions()); 
+  typename uintd<D>::Type image_dims = from_std_vector<unsigned int, D>(*image->get_dimensions()); 
   bool oversampled_image = (image_dims==matrix_size_os); 
   
   if( !oversampled_image ){
@@ -758,7 +757,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::check_consistency( cuNDArray<complext<RE
     BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan: Number of image dimensions mismatch the plan."));
   }    
 
-  typename uintd<D>::Type image_dims = vector_to_uintd<D>( *image->get_dimensions() );
+  typename uintd<D>::Type image_dims = from_std_vector<unsigned int,D>( *image->get_dimensions() );
   bool oversampled_image = (image_dims==matrix_size_os);
   
   if( !((oversampled_image) ? (image_dims == matrix_size_os) : (image_dims == matrix_size) )){
@@ -903,7 +902,7 @@ compute_deapodization_filter_kernel( typename uintd<D>::Type matrix_size_os, typ
 template<class REAL, unsigned int D, bool ATOMICS> void
 Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_deapodization_filter()
 {
-  std::vector<unsigned int> tmp_vec_os = uintd_to_vector<D>(matrix_size_os);
+  std::vector<unsigned int> tmp_vec_os = to_std_vector(matrix_size_os);
   deapodization_filter = boost::shared_ptr< cuNDArray<complext<REAL> > >( new cuNDArray<complext<REAL> >);
   deapodization_filter->create(&tmp_vec_os);
   vector_td<REAL,D> matrix_size_os_real = to_reald<REAL,unsigned int, D>(matrix_size_os);
@@ -1236,7 +1235,7 @@ _convolve_NFFT_NC2C<REAL,D,false>{ // False: use non-atomic operations variant
     // Define temporary image that includes a wrapping zone
     cuNDArray<complext<REAL> > _tmp;
     
-    vector<unsigned int> vec_dims = uintd_to_vector<D>(matrix_size_os+matrix_size_wrap); 
+    vector<unsigned int> vec_dims = to_std_vector(matrix_size_os+matrix_size_wrap); 
     if( number_of_frames > 1 )
       vec_dims.push_back(number_of_frames);
     if( num_batches > 1 ) 

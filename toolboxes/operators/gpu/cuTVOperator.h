@@ -1,3 +1,7 @@
+/** \file cuTVOperator.h
+    \brief Total variation regularization operator, GPU based.
+*/
+
 #pragma once
 
 #include "generalOperator.h"
