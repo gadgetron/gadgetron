@@ -21,7 +21,12 @@ set(Boost_NO_BOOST_CMAKE ON)
 if (WIN32)
     find_package(Boost COMPONENTS system thread date_time chrono REQUIRED)
 else (WIN32)
-    find_package(Boost COMPONENTS system thread date_time REQUIRED)
+    find_package(Boost 1.37 COMPONENTS system thread date_time)
+    if (NOT Boost_FOUND)
+        find_package(Boost COMPONENTS system thread date_time REQUIRED)
+        # Boost versions < 1.37 do not define the macro BOOST_THROW_EXCEPTION
+        add_definitions(-DBOOST_THROW_EXCEPTION=::boost::throw_exception)
+    endif()
 endif (WIN32)
 
 find_package(FFTW3 COMPONENTS single double REQUIRED)
