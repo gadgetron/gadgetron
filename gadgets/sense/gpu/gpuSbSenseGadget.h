@@ -41,6 +41,7 @@ namespace Gadgetron{
 
     uintd2 matrix_size_;
     uintd2 matrix_size_os_;
+    uintd2 matrix_size_seq_;
 
     unsigned int number_of_cg_iterations_;
     unsigned int number_of_sb_iterations_;

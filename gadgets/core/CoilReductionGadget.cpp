@@ -105,8 +105,14 @@ namespace Gadgetron{
         m2->release();
         m1->cont(m3);
         m1->getObjectPtr()->active_channels = coils_out_;
-
-        return this->next()->putq(m1);
+	
+        if( this->next()->putq(m1) < 0 ){
+	  GADGET_DEBUG1("Failed to put message on queue\n");
+	  m1->release();
+	  return GADGET_FAIL;
+	}
+	
+	return GADGET_OK;
     }
 
     GADGET_FACTORY_DECLARE(CoilReductionGadget)

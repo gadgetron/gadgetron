@@ -691,4 +691,7 @@ namespace Gadgetron {
     template EXPORTGPUCORE void fill_border<double_complext,2>(uintd2, cuNDArray<double_complext>*,double_complext);
     template EXPORTGPUCORE void fill_border<double_complext,3>(uintd3, cuNDArray<double_complext>*,double_complext);
     template EXPORTGPUCORE void fill_border<double_complext,4>(uintd4, cuNDArray<double_complext>*,double_complext);
+
+    // We can probably instantiate these functionsfor many more types? E.g. arrays of floatd2. For now we introduce what we have needed...
+    template EXPORTGPUCORE boost::shared_ptr< cuNDArray<floatd2> > expand<floatd2>( cuNDArray<floatd2>*, unsigned int);  
 }

@@ -5,49 +5,49 @@
         
     <reader>
       <slot>1008</slot>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
     </reader>
   
     <writer>
       <slot>1004</slot>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>MRIImageWriterCPLX</classname>
     </writer>
     <writer>
       <slot>1005</slot>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>MRIImageWriterFLOAT</classname>
     </writer>
     <writer>
       <slot>1006</slot>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>MRIImageWriterUSHORT</classname>
     </writer>
   
     <gadget>
       <name>Acc</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>AccumulatorGadget</classname>
     </gadget>
     <gadget>
       <name>FFT</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>FFTGadget</classname>
     </gadget>
     <gadget>
       <name>CropCombine</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>CropAndCombineGadget</classname>
     </gadget>
     <gadget>
       <name>Extract</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>ExtractGadget</classname>
     </gadget>  
     <gadget>
       <name>ImageFinishFLOAT</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>ImageFinishGadgetFLOAT</classname>
     </gadget>
 

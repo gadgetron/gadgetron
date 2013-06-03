@@ -8,8 +8,9 @@
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "GadgetIsmrmrdReadWrite.h"
-#include "hoNDArray_fileio.h"
 #include "vector_td_utilities.h"
+
+#include "hoNDArray_fileio.h"
 
 namespace Gadgetron{
 
@@ -82,34 +83,18 @@ namespace Gadgetron{
       GADGET_DEBUG1("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
-
+    
     ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
-    ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
+    //ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
+    //ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
+
+    matrix_size_seq_ = uintd2( e_space.matrixSize().x(), e_space.matrixSize().y() );
 
     if (!is_configured_) {
 
-      cudaDeviceProp deviceProp;
-      if( cudaGetDeviceProperties( &deviceProp, device_number_ ) != cudaSuccess) {
-	GADGET_DEBUG1( "\nError: unable to query device properties.\n" );
-	return GADGET_FAIL;
-      }
-
-      unsigned int warp_size = deviceProp.warpSize;
-
       channels_ = cfg->acquisitionSystemInformation().present() ?
 	(cfg->acquisitionSystemInformation().get().receiverChannels().present() ? cfg->acquisitionSystemInformation().get().receiverChannels().get() : 1) : 1;
-
-      matrix_size_ = uintd2(e_space.matrixSize().x(), e_space.matrixSize().y());
-
-      GADGET_DEBUG2("Matrix size  : [%d,%d] \n", matrix_size_.vec[0], matrix_size_.vec[1]);
-
-      matrix_size_os_ =
-	uintd2(static_cast<unsigned int>(std::ceil((matrix_size_.vec[0]*oversampling_)/warp_size)*warp_size),
-	       static_cast<unsigned int>(std::ceil((matrix_size_.vec[1]*oversampling_)/warp_size)*warp_size));
-
-      GADGET_DEBUG2("Matrix size OS: [%d,%d] \n", matrix_size_os_.vec[0], matrix_size_os_.vec[1]);
-
+     
       // Allocate encoding operator for non-Cartesian Sense
       E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );
 
@@ -173,19 +158,21 @@ namespace Gadgetron{
 
     SenseJob* j = m2->getObjectPtr();
 
-    //Let's first check that this job has the required stuff...
+    // Let's first check that this job has the required data...
     if (!j->csm_host_.get() || !j->dat_host_.get() || !j->tra_host_.get() || !j->dcw_host_.get()) {
-      GADGET_DEBUG1("Received an incomplete Sense JOB\n");
+      GADGET_DEBUG1("Received an incomplete Sense job\n");
       m1->release();
       return GADGET_FAIL;
     }
 
     unsigned int samples = j->dat_host_->get_size(0);
     unsigned int channels = j->dat_host_->get_size(1);
-    unsigned int frames = j->tra_host_->get_size(1);
+    unsigned int rotations = samples / j->tra_host_->get_number_of_elements();
+    unsigned int frames = j->tra_host_->get_size(1)*rotations;
 
-    if (samples != j->tra_host_->get_number_of_elements()) {
-      GADGET_DEBUG2("Mismatch between number of samples (%d) and number of k-space coordinates (%d)\n", samples, j->tra_host_->get_number_of_elements());
+    if( samples%j->tra_host_->get_number_of_elements() ) {
+      GADGET_DEBUG2("Mismatch between number of samples (%d) and number of k-space coordinates (%d).\nThe first should be a multiplum of the latter.\n", 
+		    samples, j->tra_host_->get_number_of_elements());
       m1->release();
       return GADGET_FAIL;
     }
@@ -195,14 +182,35 @@ namespace Gadgetron{
     boost::shared_ptr< cuNDArray<float_complext> > csm(new cuNDArray<float_complext> (j->csm_host_.get()));
     boost::shared_ptr< cuNDArray<float_complext> > device_samples(new cuNDArray<float_complext> (j->dat_host_.get()));
     
-    std::vector<unsigned int> image_dims = to_std_vector(matrix_size_);
-    image_dims.push_back(frames);
-
-    E_->set_domain_dimensions(&image_dims);
-    E_->set_codomain_dimensions(device_samples->get_dimensions().get());
-    
     if( !prepared_){
+
+      // Take the reconstruction matrix size from the regulariaztion image. 
+      // It could be oversampled from the sequence specified size...
       
+      matrix_size_ = uintd2( j->reg_host_->get_size(0), j->reg_host_->get_size(1) );
+      
+      GADGET_DEBUG2("Matrix size  : [%d,%d] \n", matrix_size_.vec[0], matrix_size_.vec[1]);
+      
+      cudaDeviceProp deviceProp;
+      if( cudaGetDeviceProperties( &deviceProp, device_number_ ) != cudaSuccess) {
+	GADGET_DEBUG1( "\nError: unable to query device properties.\n" );
+	return GADGET_FAIL;
+      }
+
+      unsigned int warp_size = deviceProp.warpSize;
+
+      matrix_size_os_ =
+	uintd2(static_cast<unsigned int>(std::ceil((matrix_size_.vec[0]*oversampling_)/warp_size)*warp_size),
+	       static_cast<unsigned int>(std::ceil((matrix_size_.vec[1]*oversampling_)/warp_size)*warp_size));
+      
+      GADGET_DEBUG2("Matrix size OS: [%d,%d] \n", matrix_size_os_.vec[0], matrix_size_os_.vec[1]);
+      
+      std::vector<unsigned int> image_dims = to_std_vector(matrix_size_);
+      image_dims.push_back(frames);
+      
+      E_->set_domain_dimensions(&image_dims);
+      E_->set_codomain_dimensions(device_samples->get_dimensions().get());
+            
       reg_image_ = boost::shared_ptr< cuNDArray<float_complext> >
 	(new cuNDArray<float_complext>(&image_dims));
       
@@ -292,11 +300,23 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
+    printf("\nScaling: %f\n", abs(dot(reg_image_.get(), reg_image_.get())/dot(reg_image_.get(),sbresult.get()))); 
+
     if (!sbresult.get()) {
       GADGET_DEBUG1("\nSplit Bregman solver failed\n");
       return GADGET_FAIL;
     }
+
+    // If the recon matrix size exceeds the sequence matrix size then crop
+    if( matrix_size_seq_ != matrix_size_ )
+      sbresult = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>2, matrix_size_seq_, sbresult.get() );
     
+    static int counter = 0;
+    char filename[256];
+    sprintf((char*)filename, "recon_sb_%2d.real", counter);
+    write_nd_array<float>( abs(sbresult.get())->to_host().get(), filename );
+    counter++;
+
     m2->release();
 
     // Now pass on the reconstructed images
@@ -307,9 +327,9 @@ namespace Gadgetron{
 	new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
       
       GadgetContainerMessage<ISMRMRD::ImageHeader>* m = 
-	(frame==0) ? m1 : new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+	(frame==frames-1) ? m1 : new GadgetContainerMessage<ISMRMRD::ImageHeader>();
 
-      if( frame>0 )
+      if( frame<frames-1 )
 	*m->getObjectPtr() = *m1->getObjectPtr();
 
       m->cont(cm2);

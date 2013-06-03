@@ -5,29 +5,29 @@
   
     <reader>
       <slot>1008</slot>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
     </reader>
 
     <writer>
       <slot>1004</slot>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>MRIImageWriterCPLX</classname>
     </writer>
     <writer>
       <slot>1005</slot>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>MRIImageWriterFLOAT</classname>
     </writer>
     <writer>
       <slot>1006</slot>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>MRIImageWriterUSHORT</classname>
     </writer>
 
     <gadget>
       <name>MRINoiseAdjust</name>
-      <dll>gadgetronmricore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>MRINoiseAdjustGadget</classname>
       <!--
       <property><name>threads</name><value>2</value></property>
@@ -36,46 +36,46 @@
 	
     <gadget>
       <name>PCA</name>
-      <dll>gadgetronmricore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>PCACoilGadget</classname>
     </gadget>
 	
     <gadget>
       <name>CoilReduction</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>CoilReductionGadget</classname>
       <property><name>coils_out</name><value>16</value></property>
     </gadget>
     
     <gadget>
       <name>Acc</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>AccumulatorGadget</classname>
     </gadget>
  
     <gadget>
       <name>FFT</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>FFTGadget</classname>
     </gadget>
 
 	<!--
     <gadget>
       <name>ImageWrite</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>ImageWriterGadgetCPLX</classname>
     </gadget>
     -->
     
     <gadget>
       <name>CropCombine</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>CropAndCombineGadget</classname>
     </gadget>
 
     <gadget>
       <name>Extract</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>ExtractGadget</classname>
       <!--
       <property><name>extract_mask</name><value>9</value></property>
@@ -85,7 +85,7 @@
 	<!--
     <gadget>
       <name>ImageWrite</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>ImageWriterGadgetFLOAT</classname>
     </gadget>
     -->
@@ -93,7 +93,7 @@
     <!--
     <gadget>
       <name>FloatToShort</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>FloatToUShortGadget</classname>
     </gadget>
     -->
@@ -101,21 +101,21 @@
  	<!--
     <gadget>
       <name>ImageFinishCPLX</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>ImageFinishGadgetCPLX</classname>
     </gadget>
     -->
 
     <gadget>
       <name>ImageFinishFLOAT</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>ImageFinishGadgetFLOAT</classname>
     </gadget>
 
     <!--
      <gadget>
       <name>ImageFinishUSHORT</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_core</dll>
       <classname>ImageFinishGadgetUSHORT</classname>
     </gadget>
     -->

@@ -42,9 +42,6 @@ namespace Gadgetron{
   int gpuSpiralSensePrepGadget::process_config(ACE_Message_Block* mb)
   {
 
-    device_number_ = get_int_value(std::string("deviceno").c_str());
-    use_multiframe_grouping_ = get_bool_value(std::string("use_multiframe_grouping").c_str());
-
     int number_of_devices = 0;
     if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
       GADGET_DEBUG1( "Error: unable to query number of CUDA devices.\n" );
@@ -55,6 +52,8 @@ namespace Gadgetron{
       GADGET_DEBUG1( "Error: No available CUDA devices.\n" );
       return GADGET_FAIL;
     }
+
+    device_number_ = get_int_value(std::string("deviceno").c_str());
 
     if (device_number_ >= number_of_devices) {
       GADGET_DEBUG2("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
@@ -68,8 +67,15 @@ namespace Gadgetron{
 
     boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
-    std::vector<long> dims;
+    if( cfg.get() == 0x0 ){
+      GADGET_DEBUG1("Unable to parse Ismrmrd header\n");
+      return GADGET_FAIL;
+    }
+
+    use_multiframe_grouping_ = get_bool_value(std::string("use_multiframe_grouping").c_str());
+
     ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
+
     if (e_seq.size() != 1) {
       GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
       GADGET_DEBUG1("This Gadget only supports one encoding space\n");
@@ -325,7 +331,7 @@ namespace Gadgetron{
 
       if( !use_multiframe_grouping_ || (use_multiframe_grouping_ && interleaves_counter_multiframe_ == Nints_) ){
 
-	GPUTimer timer("Spiral SW Gridding for CSM calc...");
+	GPUTimer timer("Spiral gridding for csm calc...");
 
 	unsigned int num_coils = m1->getObjectPtr()->active_channels;
 
@@ -353,7 +359,7 @@ namespace Gadgetron{
 	// Estimate CSM
 	boost::shared_ptr< cuNDArray<float_complext> > csm = estimate_b1_map<float,2>( &image );
 
-	//We will use a SENSE operator to calculate a combined image using the trajectories.
+	// Use a SENSE operator to calculate a combined image using the trajectories.
 	boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E(new cuNonCartesianSenseOperator<float,2>());
 	E->set_csm(csm);
 
