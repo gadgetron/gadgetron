@@ -70,7 +70,7 @@
       <name>GPUCGRadial1</name>
       <dll>gadgetroncgsense</dll>
       <classname>GPUCGGoldenRadialGadget</classname>
-      <property><name>deviceno</name>                <value>1</value></property>
+      <property><name>deviceno</name>                <value>0</value></property>
       <property><name>sliceno</name>                 <value>1</value></property>
       <property><name>profiles_per_frame</name>      <value>32</value></property>
       <property><name>shared_profiles</name>         <value>0</value></property>
@@ -86,7 +86,7 @@
       <name>GPUCGRadial2</name>
       <dll>gadgetroncgsense</dll>
       <classname>GPUCGGoldenRadialGadget</classname>
-      <property><name>deviceno</name>                <value>2</value></property>
+      <property><name>deviceno</name>                <value>0</value></property>
       <property><name>sliceno</name>                 <value>2</value></property>
       <property><name>profiles_per_frame</name>      <value>32</value></property>
       <property><name>shared_profiles</name>         <value>0</value></property>
