@@ -13,11 +13,9 @@ include_directories(
   ${CUDA_INCLUDE_DIRS}
   ${CULA_INCLUDE_DIR} 
   ${Boost_INCLUDE_DIR} 
-  #${CMAKE_SOURCE_DIR}/apps/gadgetron 
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-  #${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
   ${CMAKE_SOURCE_DIR}/gadgets/core
@@ -30,7 +28,7 @@ cuda_add_library(gpuparallelmri SHARED
   cuCartesianSenseOperator.cu
   cuNonCartesianSenseOperator.cu
   cuNonCartesianKtSenseOperator.cu
-  cuSenseRHSBuffer.cu
+  cuSenseBuffer.cu
   htgrappa.cu
   )
 
@@ -56,6 +54,6 @@ install(FILES
 	cuCartesianSenseOperator.h
 	cuNonCartesianSenseOperator.h
 	cuNonCartesianKtSenseOperator.h
-	cuSenseRHSBuffer.h
+	cuSenseBuffer.h
 	gpupmri_export.h
 DESTINATION include)

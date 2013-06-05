@@ -5,23 +5,23 @@
          
     <reader>
       <slot>1008</slot>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
     </reader>
 
     <writer>
       <slot>1004</slot>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>MRIImageWriterCPLX</classname>
     </writer>
     <writer>
       <slot>1005</slot>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>MRIImageWriterFLOAT</classname>
     </writer>
     <writer>
       <slot>1006</slot>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>MRIImageWriterUSHORT</classname>
     </writer>
 
@@ -73,25 +73,25 @@
 
      <gadget>
       <name>Extract</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>ExtractGadget</classname>
      </gadget>
 
      <gadget>
       <name>Autoscale</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>AutoScaleGadget</classname>
      </gadget>
     
      <gadget>
       <name>FloatToShort</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>FloatToUShortGadget</classname>
     </gadget>
   
     <gadget>
       <name>ImageFinishUSHORT</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>ImageFinishGadgetUSHORT</classname>
     </gadget>
 

@@ -5,16 +5,13 @@
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_utils.h"
 #include "vector_td_operators.h"
-#include "cuNonCartesianSenseOperator.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "check_CUDA.h"
 #include "radial_utilities.h"
-#include "cuCgSolver.h"
-#include "cuCgPreconditioner.h"
 
-#include "hoNDArray_elemwise.h"
-#include "hoNDArray_fileio.h"
+//#include "hoNDArray_elemwise.h"
+//#include "hoNDArray_fileio.h"
 
 #include <algorithm>
 #include <vector>
@@ -45,11 +42,11 @@ namespace Gadgetron{
 
     set_parameter(std::string("mode").c_str(), "0");
     set_parameter(std::string("deviceno").c_str(), "0");
-    set_parameter(std::string("use_multiframe_grouping").c_str(), "false");
     set_parameter(std::string("convolution_kernel_width").c_str(), "5.5");
-    set_parameter(std::string("convolution_oversampling_factor").c_str(), "2.0");
+    set_parameter(std::string("convolution_oversampling_factor").c_str(), "1.25");
     set_parameter(std::string("rotations_per_reconstruction").c_str(), "0");
     set_parameter(std::string("buffer_length_in_rotations").c_str(), "4");
+    set_parameter(std::string("real_time_buffer_mode").c_str(), "false");
   }
   
   gpuRadialSenseGadget::~gpuRadialSenseGadget()
@@ -65,6 +62,15 @@ namespace Gadgetron{
     GADGET_DEBUG1("gpuRadialSenseGadget::process_config\n");
     GPUTimer timer("gpuRadialSenseGadget::process_config");
 
+    mode_ = get_int_value(std::string("mode").c_str());
+    device_number_ = get_int_value(std::string("deviceno").c_str());
+    profiles_per_frame_ = get_int_value(std::string("profiles_per_frame").c_str());
+    frames_per_rotation_ = get_int_value(std::string("frames_per_rotation").c_str());
+    rotations_per_reconstruction_ = get_int_value(std::string("rotations_per_reconstruction").c_str());
+    buffer_length_in_rotations_ = get_int_value(std::string("buffer_length_in_rotations").c_str());
+    cg_iterations_for_reg_ = get_int_value(std::string("cg_iterations_for_regularization").c_str());
+    real_time_buffer_mode_ = get_bool_value(std::string("real_time_buffer_mode").c_str());
+
     int number_of_devices;
     if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
       GADGET_DEBUG1( "Error: unable to query number of CUDA devices.\n" );
@@ -75,13 +81,6 @@ namespace Gadgetron{
       GADGET_DEBUG1( "Error: No available CUDA devices.\n" );
       return GADGET_FAIL;
     }
-
-    mode_ = get_int_value(std::string("mode").c_str());
-    device_number_ = get_int_value(std::string("deviceno").c_str());
-    profiles_per_frame_ = get_int_value(std::string("profiles_per_frame").c_str());
-    frames_per_rotation_ = get_int_value(std::string("frames_per_rotation").c_str());
-    rotations_per_reconstruction_ = get_int_value(std::string("rotations_per_reconstruction").c_str());
-    buffer_length_in_rotations_ = get_int_value(std::string("buffer_length_in_rotations").c_str());
 
     if (device_number_ >= number_of_devices) {
       GADGET_DEBUG2("Adjusting device number from %d to %d\n", device_number_,  (device_number_%number_of_devices));
@@ -146,7 +145,7 @@ namespace Gadgetron{
       (static_cast<unsigned int>(std::ceil((matrix_size.vec[0]*oversampling_factor_)/warp_size)*warp_size),
        static_cast<unsigned int>(std::ceil((matrix_size.vec[1]*oversampling_factor_)/warp_size)*warp_size));
 
-    oversampling_factor_ = matrix_size_os.vec[0]/matrix_size.vec[0]; // in case the warp_size constraint above kicked in
+    oversampling_factor_ = float(matrix_size_os.vec[0])/float(matrix_size.vec[0]); // in case the warp_size constraint above kicked in
     
     // Initialize plan
     plan_ = cuNFFT_plan<float, 2>( matrix_size, matrix_size_os, kernel_width_ );
@@ -176,11 +175,36 @@ namespace Gadgetron{
   process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
   {
+    
     // Noise should have been consumed by the noise adjust, but just in case...
+    //
+    
     bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
     if (is_noise) { 
       m1->release();
       return GADGET_OK;
+    }
+
+    // Have the imaging plane changed?
+    //
+
+    if ( !read_dir_equal(m1->getObjectPtr()->read_dir) || 
+	 !phase_dir_equal(m1->getObjectPtr()->phase_dir) ||
+	 !slice_dir_equal(m1->getObjectPtr()->slice_dir) ||
+	 !position_equal(m1->getObjectPtr()->position)) {
+
+      if (host_data_buffer_){
+	delete[] host_data_buffer_;
+	host_data_buffer_ = 0x0;
+      }
+
+      if( real_time_buffer_mode_ )
+	rhs_buffer_->clear();
+
+      memcpy(position_,m1->getObjectPtr()->position,3*sizeof(float));
+      memcpy(read_dir_,m1->getObjectPtr()->read_dir,3*sizeof(float));
+      memcpy(phase_dir_,m1->getObjectPtr()->phase_dir,3*sizeof(float));
+      memcpy(slice_dir_,m1->getObjectPtr()->slice_dir,3*sizeof(float));
     }
 
     // Allocate host data buffer at the first invocation 
@@ -217,6 +241,11 @@ namespace Gadgetron{
       
       if( prepare_host_buffers(m1->getObjectPtr()->active_channels) == GADGET_FAIL ){
 	GADGET_DEBUG1("Failed to create host buffers");
+	return GADGET_FAIL;
+      }
+
+      if( initialize_regularization_image_solver(m1->getObjectPtr()->active_channels) != GADGET_OK ){
+	GADGET_DEBUG1("Failed to initialize regularization solver");
 	return GADGET_FAIL;
       }
     }
@@ -258,29 +287,33 @@ namespace Gadgetron{
       }
     }
     previous_profile_[set*slices_+slice] = profile;
+
+    if( !real_time_buffer_mode_ ){
     
-    // Copy the incoming profile to the host buffer
-    //
-        
-    unsigned int samples_to_copy = m1->getObjectPtr()->number_of_samples;
-    unsigned int samples_per_channel =  host_data_buffer_->get_size(0);
-    unsigned int profiles_in_buffer = profiles_per_frame_*frames_per_rotation_*buffer_length_in_rotations_;
-
-    std::complex<float>* data_ptr = reinterpret_cast< std::complex<float>* >
-      (host_data_buffer_[set*slices_+slice].get_data_ptr());
-
-    std::complex<float>* profile_ptr = m2->getObjectPtr()->get_data_ptr();
-
-    for (unsigned int c = 0; c < m1->getObjectPtr()->active_channels; c++) {
-      memcpy(data_ptr+
-	     c*samples_per_channel+
-	     (profiles_counter_global_[set*slices_+slice]%profiles_in_buffer)*samples_to_copy,
-	     profile_ptr+c*m1->getObjectPtr()->number_of_samples, 
-	     samples_to_copy*sizeof(std::complex<float>));
+      // Copy the incoming profile to the host buffer
+      //
+      
+      unsigned int samples_to_copy = m1->getObjectPtr()->number_of_samples;
+      unsigned int samples_per_channel =  host_data_buffer_->get_size(0);
+      unsigned int profiles_in_buffer = profiles_per_frame_*frames_per_rotation_*buffer_length_in_rotations_;
+      
+      std::complex<float>* data_ptr = reinterpret_cast< std::complex<float>* >
+	(host_data_buffer_[set*slices_+slice].get_data_ptr());
+      
+      std::complex<float>* profile_ptr = m2->getObjectPtr()->get_data_ptr();
+      
+      for (unsigned int c = 0; c < m1->getObjectPtr()->active_channels; c++) {
+	memcpy(data_ptr+
+	       c*samples_per_channel+
+	       (profiles_counter_global_[set*slices_+slice]%profiles_in_buffer)*samples_to_copy,
+	       profile_ptr+c*m1->getObjectPtr()->number_of_samples, 
+	       samples_to_copy*sizeof(std::complex<float>));
+      }
     }
 
     // Are we ready to reconstruct (downstream) ?
     //
+
     long profiles_per_reconstruction = profiles_per_frame_*frames_per_rotation_*rotations_per_reconstruction_;
 
     bool is_last_profile_in_frame = (profiles_counter_frame_[set*slices_+slice] == profiles_per_frame_-1);
@@ -298,210 +331,100 @@ namespace Gadgetron{
 
     if( is_last_profile_in_frame && is_last_rotation ){
       
-      GPUTimer timer("gpuRadialSenseGadget::process (sense job prep)");
+      GPUTimer timer("gpuRadialSenseGadget::processing frame(s)");
 
-      unsigned int profiles_in_buffer = profiles_per_frame_*frames_per_rotation_*buffer_length_in_rotations_;
-      
-      // If this is a golden ratio scan, the buffer trajectories (and dcw buffer "permutation") keep changing...
       //
-      
-      if( mode_ == 2 ){
-	
-	{
-	  GPUTimer timer("shift dcw buffer");
-	  shift_density_compensation_for_buffer(profiles_counter_global_[set*slices_+slice]);
-	}
-
-	boost::shared_ptr< cuNDArray<floatd2> > traj;
-	{
-	  GPUTimer timer("Calc traj (1)");
-	  traj = calculate_trajectory_for_buffer(profiles_counter_global_[set*slices_+slice]);
-	}
-	
-	// Re-preprocess plan
-	{
-	  GPUTimer timer("Preprocess");
-	  try{ plan_.preprocess( traj.get(), cuNFFT_plan<float,2>::NFFT_PREP_ALL ); }
-	  catch (runtime_error& err){
-	    GADGET_DEBUG_EXCEPTION(err,"NFFT preprocess failed\n");
-	    return GADGET_FAIL;
-	  }
-	}
-      }
-      
-      unsigned int num_coils = m1->getObjectPtr()->active_channels;
-      cuNDArray<float_complext> data(&host_data_buffer_[set*slices_+slice]);
-      
-      // Setup averaged image (an image for each coil)
-      std::vector<unsigned int> image_dims;
-      image_dims.push_back(image_dimensions_recon_[0]);
-      image_dims.push_back(image_dimensions_recon_[1]);
-      if( buffer_length_in_rotations_ > 1 && (mode_ == 0 || mode_ == 1) )
-	image_dims.push_back(buffer_length_in_rotations_);
-      image_dims.push_back(num_coils);
+      // Compute regularization image.
+      // -----------------------------
+      // This is done either using the cuSenseRHSBuffer (for real time mode)
+      // or a host buffer of profiles.
+      //
 
       boost::shared_ptr< cuNDArray<float_complext> > image(new cuNDArray<float_complext>); 
-      
-      try{image->create(&image_dims);}
-      catch (runtime_error &err){
-	GADGET_DEBUG_EXCEPTION(err,"\nError allocating coil images on device\n");
-	return GADGET_FAIL;
-      }
-      
-      try {
-	GPUTimer timer("NFFT::compute for buffer");
-	plan_.compute( &data, image.get(), device_weights_buffer_.get(), cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C );
-      }
-      catch (runtime_error& err){
-	GADGET_DEBUG_EXCEPTION(err,"NFFT compute failed\n");
-	return GADGET_FAIL;
-      }
-      	
-     // For modes 0 and 1 we have reconstructed coil images for each buffer rotation. Average those.
-      if( buffer_length_in_rotations_ > 1 && (mode_ == 0 || mode_ == 1) ){
-	boost::shared_ptr< cuNDArray<float_complext> > tmp = sum( image.get(), 2); 
-	*tmp /= float_complext(buffer_length_in_rotations_);
-	image = tmp;	
-      }
 
-      // Estimate CSM
-      boost::shared_ptr< cuNDArray<float_complext> > csm;
-      {
-	GPUTimer timer("Estimating csm");
-	csm = estimate_b1_map<float,2>( image.get() );
-      }
+      if( !real_time_buffer_mode_ ){
 
-      // Use a SENSE operator to calculate a combined image using the trajectories.
-      boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E(new cuNonCartesianSenseOperator<float,2>());
-      E->set_csm(csm);
-      
-      // Setup averaged image (one image from the combined coils)
-      boost::shared_ptr< std::vector<unsigned int> > reg_dims = image->get_dimensions();
-      reg_dims->pop_back();
-      cuNDArray<float_complext> reg_image;
-      
-      try{reg_image.create(reg_dims.get());}
-      catch (runtime_error &err){
-	GADGET_DEBUG_EXCEPTION(err,"\nError allocating regularization image on device\n");
-	return GADGET_FAIL;
-      }
-      
-      try {E->mult_csm_conj_sum( image.get(), &reg_image ); }
-      catch (runtime_error& err){
-	GADGET_DEBUG_EXCEPTION(err,"\nError combining coils to regularization image\n");
-	return GADGET_FAIL;
-      }
+	// Using the host buffer to compute the regularization image
+	//
 
-      /*
-      // Experimental
-      //
-      {
-	// Define conjugate gradient solver
-	cuCgSolver<float_complext> cg_;
-
-	// Define non-Cartesian Sense Encofing operator
-	boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E_( new cuNonCartesianSenseOperator<float,2>() );
+	if( mode_ == 2 ){
+	  
+	  // If this is a golden ratio scan, the buffer trajectories (and dcw buffer "permutation") keep changing...
+	  //
+	  
+	  shift_density_compensation_for_buffer(profiles_counter_global_[set*slices_+slice]);
+	  
+	  boost::shared_ptr< cuNDArray<floatd2> > traj = 
+	    calculate_trajectory_for_buffer(profiles_counter_global_[set*slices_+slice]);
+	  
+	  // Re-preprocess plan
+	  try{ plan_.preprocess( traj.get(), cuNFFT_plan<float,2>::NFFT_PREP_ALL ); }
+	  catch (runtime_error& err){
+	  GADGET_DEBUG_EXCEPTION(err,"NFFT preprocess failed\n");
+	  return GADGET_FAIL;
+	  }
+	}
 	
-	// Define preconditioner
-	boost::shared_ptr< cuCgPreconditioner<float_complext> > D_( new cuCgPreconditioner<float_complext>() );
+	unsigned int num_coils = m1->getObjectPtr()->active_channels;
+	cuNDArray<float_complext> data(&host_data_buffer_[set*slices_+slice]);
 	
-	// Setup solver
-	cg_.set_encoding_operator( E_ );        // encoding matrix
-	cg_.set_preconditioner( D_ );           // preconditioning matrix
-	cg_.set_max_iterations( 2 );
-	cg_.set_tc_tolerance( 1e-6 );
-	cg_.set_output_mode( cuCgSolver<float_complext>::OUTPUT_VERBOSE);
-
+	// Setup averaged image (an image for each coil)
 	std::vector<unsigned int> image_dims;
 	image_dims.push_back(image_dimensions_recon_[0]);
 	image_dims.push_back(image_dimensions_recon_[1]);
 	if( buffer_length_in_rotations_ > 1 && (mode_ == 0 || mode_ == 1) )
 	  image_dims.push_back(buffer_length_in_rotations_);
+	image_dims.push_back(num_coils);
 	
-	E_->set_domain_dimensions(&image_dims);
-	E_->set_codomain_dimensions(data.get_dimensions().get());
-	E_->set_dcw(device_weights_buffer_);
-	E_->set_csm(csm);
-
-	cudaDeviceProp deviceProp;
-	if( cudaGetDeviceProperties( &deviceProp, device_number_ ) != cudaSuccess) {
-	  GADGET_DEBUG1( "Error: unable to query device properties.\n" );
+	try{image->create(&image_dims);}
+	catch (runtime_error &err){
+	  GADGET_DEBUG_EXCEPTION(err,"\nError allocating coil images on device\n");
 	  return GADGET_FAIL;
 	}
 	
-	unsigned int warp_size = deviceProp.warpSize;
-
- 	uintd2 matrix_size = uintd2(image_dimensions_recon_[0],image_dimensions_recon_[1]);
-	uintd2 matrix_size_os
-	  (static_cast<unsigned int>(std::ceil((matrix_size.vec[0]*oversampling_factor_)/warp_size)*warp_size),
-	   static_cast<unsigned int>(std::ceil((matrix_size.vec[1]*oversampling_factor_)/warp_size)*warp_size));
-	
-	try{ E_->setup( matrix_size, matrix_size_os, kernel_width_); }
-	catch (runtime_error& err){
-	  GADGET_DEBUG_EXCEPTION(err, "\nError: unable to setup encoding operator.\n" );
-	  return GADGET_FAIL;
-	}
-	
-	boost::shared_ptr< cuNDArray<floatd2> > traj;
-	{
-	  GPUTimer timer("Calc traj (1)");
-	  traj = calculate_trajectory_for_buffer(profiles_counter_global_[set*slices_+slice]);
-	}
-	
-	try{ E_->preprocess(traj.get());}
-	catch (runtime_error& err){
-	  GADGET_DEBUG_EXCEPTION(err,"\nError during cuOperatorNonCartesianSense::preprocess()\n");
-	  return GADGET_FAIL;
-	}
-	
-	// Define preconditioning weights
-	boost::shared_ptr< cuNDArray<float> > _precon_weights = sum(abs_square(csm.get()).get(), 2);
-	reciprocal_sqrt_inplace(_precon_weights.get());	
-	boost::shared_ptr< cuNDArray<float_complext> > precon_weights = real_to_complex<float_complext>( _precon_weights.get() );
-	_precon_weights.reset();
-	D_->set_weights( precon_weights ); 
-	
-	boost::shared_ptr< cuNDArray<float_complext> > cgresult;
-	
-	try{
-	  cgresult = cg_.solve(&data);
+	try {
+	  plan_.compute( &data, image.get(), device_weights_buffer_.get(), cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C );
 	}
 	catch (runtime_error& err){
-	  GADGET_DEBUG_EXCEPTION(err,"\nError during solve()\n");
+	  GADGET_DEBUG_EXCEPTION(err,"NFFT compute failed\n");
 	  return GADGET_FAIL;
 	}
-	
-	if (!cgresult.get()) {
-	  GADGET_DEBUG1("\nIterative_sense_compute failed\n");
-	  return GADGET_FAIL;
-	}
-	
+      	
 	// For modes 0 and 1 we have reconstructed coil images for each buffer rotation. Average those.
 	if( buffer_length_in_rotations_ > 1 && (mode_ == 0 || mode_ == 1) ){
-	  boost::shared_ptr< cuNDArray<float_complext> > tmp = sum( cgresult.get(), 2); 
+	  boost::shared_ptr< cuNDArray<float_complext> > tmp = sum( image.get(), 2); 
 	  *tmp /= float_complext(buffer_length_in_rotations_);
-	  reg_image = *tmp;	
+	  image = tmp;	
 	}
-	else
-	  reg_image = *cgresult;
+      }
+      else{
+	
+	// Real-time mode using the cuSenseRHSBuffer
+	//
 
-	static int counter = 0;
-	char filename[256];
-	sprintf((char*)filename, "cgreg_%2d.real", counter);
-	write_nd_array<float>( abs(cgresult.get())->to_host().get(), filename );
-	counter++;	
-	}*/
+	
+      }
+
+      // Estimate CSM
+      boost::shared_ptr< cuNDArray<float_complext> > csm  = estimate_b1_map<float,2>( image.get() );
+      
+      // Compute regularization image
+      boost::shared_ptr< cuNDArray<float_complext> > reg_image = 
+	compute_regularization_image( image.get(), &data, csm, set, slice );
       
       boost::shared_ptr< hoNDArray<float_complext> > csm_host = csm->to_host();
-      boost::shared_ptr< hoNDArray<float_complext> > reg_host = reg_image.to_host();
- 
+      boost::shared_ptr< hoNDArray<float_complext> > reg_host = reg_image->to_host();
       
+      csm.reset();
+      reg_image.reset();
+
+      /*
       static int counter = 0;
       char filename[256];
-      sprintf((char*)filename, "reg_%2d.real", counter);
+      sprintf((char*)filename, "reg_%d.real", counter);
       write_nd_array<float>( abs(reg_host.get()).get(), filename );
-      counter++; 
-
+      counter++; */
+      
       // Prepare data array of the profiles for the downstream reconstruction
       //
       
@@ -563,7 +486,6 @@ namespace Gadgetron{
       // - when we are reconstructing frame-by-frame
       
       if( mode_ == 2 || rotations_per_reconstruction_ == 0 ){
-	GPUTimer timer("Calc traj (2)");
 	calculate_trajectory_for_reconstruction( profiles_counter_global_[set*slices_+slice] - ((new_frame_detected) ? 1 : 0) );
       }
       
@@ -572,8 +494,8 @@ namespace Gadgetron{
       m4->getObjectPtr()->dat_host_ = data_host;
       m4->getObjectPtr()->csm_host_ = csm_host;
       m4->getObjectPtr()->reg_host_ = reg_host;
-      m4->getObjectPtr()->tra_host_ = host_traj_frame_;
-      m4->getObjectPtr()->dcw_host_ = host_weights_frame_;
+      m4->getObjectPtr()->tra_host_ = boost::shared_ptr< hoNDArray<floatd2> >(new hoNDArray<floatd2>(*host_traj_frame_));
+      m4->getObjectPtr()->dcw_host_ = boost::shared_ptr< hoNDArray<float> >(new hoNDArray<float>(*host_weights_frame_));
 
       GadgetContainerMessage<ISMRMRD::ImageHeader>* m3 = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
       m3->cont(m4);
@@ -909,5 +831,132 @@ namespace Gadgetron{
   }
   
 
+  int
+  gpuRadialSenseGadget::initialize_regularization_image_solver(unsigned int num_channels)
+  {
+    // Setup solver
+    
+    E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );        
+    
+    if( real_time_buffer_mode_ ){
+      rhs_buffer_ = boost::shared_ptr< cuSenseRHSBuffer<float,2> >( new cuSenseRHSBuffer<float,2>() );
+      rhs_buffer_->set_num_coils( num_channels );
+      rhs_buffer_->set_sense_operator( E_ );
+    }
+
+    if( (cg_iterations_for_reg_ > 0) || real_time_buffer_mode_ ){ 
+      
+      cudaDeviceProp deviceProp;
+      if( cudaGetDeviceProperties( &deviceProp, device_number_ ) != cudaSuccess) {
+	GADGET_DEBUG1( "Error: unable to query device properties.\n" );
+	return GADGET_FAIL;
+      }
+      
+      unsigned int warp_size = deviceProp.warpSize;
+      
+      uintd2 matrix_size = uintd2(image_dimensions_recon_[0],image_dimensions_recon_[1]);
+      uintd2 matrix_size_os
+	(static_cast<unsigned int>(std::ceil((matrix_size.vec[0]*oversampling_factor_)/warp_size)*warp_size),
+	 static_cast<unsigned int>(std::ceil((matrix_size.vec[1]*oversampling_factor_)/warp_size)*warp_size));
+      
+      try{ E_->setup( matrix_size, matrix_size_os, kernel_width_); }
+      catch (runtime_error& err){
+	GADGET_DEBUG_EXCEPTION(err, "\nError: unable to setup encoding operator.\n" );
+	return GADGET_FAIL;
+      }
+      
+      E_->set_dcw(device_weights_buffer_);      
+      
+      D_ = boost::shared_ptr< cuCgPreconditioner<float_complext> >( new cuCgPreconditioner<float_complext>() );
+      
+      cg_.set_encoding_operator( E_ );        // encoding matrix
+      cg_.set_preconditioner( D_ );           // preconditioning matrix
+      cg_.set_max_iterations( cg_iterations_for_reg_ );
+      cg_.set_tc_tolerance( 1e-6 );
+      cg_.set_output_mode( cuCgSolver<float_complext>::OUTPUT_SILENT);
+    }
+    return GADGET_OK;
+  }
+
+  boost::shared_ptr< cuNDArray<float_complext> > 
+  gpuRadialSenseGadget::compute_regularization_image( cuNDArray<float_complext> *image, cuNDArray<float_complext> *data, 
+						      boost::shared_ptr< cuNDArray<float_complext> > csm, 
+						      unsigned int set, unsigned int slice )
+  {
+    boost::shared_ptr< cuNDArray<float_complext> > reg_image;
+    
+    try{
+      
+      // Setup averaged image
+
+      std::vector<unsigned int> image_dims;
+      image_dims.push_back(image_dimensions_recon_[0]); image_dims.push_back(image_dimensions_recon_[1]);
+      if( buffer_length_in_rotations_ > 1 && (mode_ == 0 || mode_ == 1) )
+	image_dims.push_back(buffer_length_in_rotations_);
+      
+      boost::shared_ptr< std::vector<unsigned int> > reg_dims = image->get_dimensions(); reg_dims->pop_back();    
+      reg_image = boost::shared_ptr< cuNDArray<float_complext> >( new cuNDArray<float_complext>(reg_dims.get()));
+      
+      E_->set_csm(csm);
+
+      // There are two options of computing the regularization image:
+      //
+      
+      if( cg_iterations_for_reg_ == 0 ) {
+	
+	// 1. Basic coil combination based on the csm (the default mode)
+	// 
+	
+	E_->mult_csm_conj_sum( image, reg_image.get() );
+      }
+      else{
+	
+	// 2. Compute regularization based on a conjugate gradient solver
+	//    - preferred mode if the scaling of the regularization image should match the reconstructed images
+	// 
+			
+	E_->set_domain_dimensions(&image_dims);
+	E_->set_codomain_dimensions(data->get_dimensions().get());
+	
+	if( !E_->is_preprocessed() || mode_ == 2 ){ // mode 2 is golden ratio
+
+	  boost::shared_ptr< cuNDArray<floatd2> > traj = 
+	    calculate_trajectory_for_buffer(profiles_counter_global_[set*slices_+slice]);
+	  E_->preprocess(traj.get());
+	}
+	
+	// Define preconditioning weights
+	boost::shared_ptr< cuNDArray<float> > _precon_weights = sum(abs_square(csm.get()).get(), 2);
+	reciprocal_sqrt_inplace(_precon_weights.get());	
+	boost::shared_ptr< cuNDArray<float_complext> > precon_weights = real_to_complex<float_complext>( _precon_weights.get() );
+	_precon_weights.reset();
+	D_->set_weights( precon_weights ); 
+	
+	// Compute regularization image
+	boost::shared_ptr< cuNDArray<float_complext> > cgresult = cg_.solve(data);
+	
+	// For modes 0 and 1 we have reconstructed coil images for each buffer rotation. Average those.
+	if( buffer_length_in_rotations_ > 1 && (mode_ == 0 || mode_ == 1) ){
+	  boost::shared_ptr< cuNDArray<float_complext> > tmp = sum( cgresult.get(), 2); 
+	  *tmp /= float_complext(buffer_length_in_rotations_);
+	  *reg_image = *tmp;	
+	}
+	else
+	  *reg_image = *cgresult;
+	
+	/*
+	static int counter = 0;
+	char filename[256];
+	sprintf((char*)filename, "cgreg_%d.real", counter);
+	write_nd_array<float>( abs(cgresult.get())->to_host().get(), filename );
+	counter++; */
+      }
+    }
+    catch (runtime_error& err){
+      GADGET_DEBUG_EXCEPTION(err,"Error computing regularization image");
+    }
+    return reg_image;
+  }
+    
   GADGET_FACTORY_DECLARE(gpuRadialSenseGadget)
 }

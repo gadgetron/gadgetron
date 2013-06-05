@@ -1,13 +1,13 @@
 #ifndef GRAPPAGADGET_H
 #define GRAPPAGADGET_H
 
-#include "gadgetron_grappa_export.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
 #include "GrappaCalibrationBuffer.h"
-#include "ismrmrd.h"
+#include "gadgetron_grappa_export.h"
 
+#include <ismrmrd.h>
 #include <complex>
 
 namespace Gadgetron{

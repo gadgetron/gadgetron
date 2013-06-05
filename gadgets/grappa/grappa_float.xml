@@ -5,30 +5,30 @@
          
     <reader>
       <slot>1008</slot>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
     </reader>
  
      <writer>
       <slot>1004</slot>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>MRIImageWriterCPLX</classname>
     </writer>
     <writer>
       <slot>1005</slot>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>MRIImageWriterFLOAT</classname>
     </writer>
     <writer>
       <slot>1006</slot>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>MRIImageWriterUSHORT</classname>
     </writer>
   
     <gadget>
       <name>NoiseAdjust</name>
       <dll>gadgetron_mricore</dll>
-      <classname>MRINoiseAdjustGadget</classname>
+      <classname>NoiseAdjustGadget</classname>
     </gadget>
 
    <gadget>
@@ -39,14 +39,14 @@
 
     <gadget>
       <name>CoilReduction</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>CoilReductionGadget</classname>
       <property><name>coils_out</name><value>16</value></property>
     </gadget>
     
     <gadget>
       <name>RemoveROOversampling</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>RemoveROOversamplingGadget</classname>
     </gadget>
 
@@ -55,9 +55,6 @@
       <dll>gadgetron_grappa</dll>
       <classname>GrappaGadget</classname>
       <property><name>target_coils</name><value>8</value></property>
-      <!--
-      <property><name>uncombined_channels</name><value>15</value></property>
-      -->
     </gadget>
 
     <gadget>
@@ -68,55 +65,52 @@
 
      <gadget>
       <name>Extract</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>ExtractGadget</classname>
-      <!--
-      <property><name>extract_mask</name><value>9</value></property>
-      -->
     </gadget>
 
-	<!--
+    <!--
     <gadget>
       <name>ImageWrite</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>ImageWriterGadgetFLOAT</classname>
     </gadget>
     -->
 
-	<!--
+    <!--
     <gadget>
       <name>AutoScale</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>AutoScaleGadget</classname>
     </gadget>
     -->
     
-	<!--
+    <!--
     <gadget>
       <name>FloatToShort</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>FloatToUShortGadget</classname>
     </gadget>
      -->
 
- 	<!--
+    <!--
     <gadget>
       <name>ImageFinishCPLX</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>ImageFinishGadgetCPLX</classname>
     </gadget>
     -->
 
     <gadget>
       <name>ImageFinishFLOAT</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>ImageFinishGadgetFLOAT</classname>
     </gadget>
 
- 	<!--
+    <!--
     <gadget>
       <name>ImageFinishUSHORT</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>ImageFinishGadgetUSHORT</classname>
     </gadget>
     -->

@@ -16,7 +16,7 @@ include_directories(
   ${HDF5_INCLUDE_DIRS}/cpp
   ${ISMRMRD_INCLUDE_DIR}
   ${XSD_INCLUDE_DIR}
-  ${CMAKE_SOURCE_DIR}/gadgets/core 
+  ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
   ${CMAKE_SOURCE_DIR}/apps/gadgetron
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu

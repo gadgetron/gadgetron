@@ -7,7 +7,7 @@ find_package(XSD REQUIRED)
 find_package(XercesC REQUIRED)
 
 include_directories(
-  ${ISMRMRD_XSD_INCLUDE_DIR}
+  ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
@@ -18,6 +18,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
   ${CMAKE_SOURCE_DIR}/gadgets/core
   ${CMAKE_SOURCE_DIR}/gadgets/sense
+  ${ISMRMRD_XSD_INCLUDE_DIR}
   )
 
 if(CUDA_FOUND)
@@ -36,21 +37,4 @@ if(CUDA_FOUND)
   install (TARGETS gadgetron_gpuradial DESTINATION lib)
 endif(CUDA_FOUND)
 
-if (ARMADILLO_FOUND)
-  install (FILES 
-    fixed_radial_gpusense_cg.xml 
-#    fixed_radial_gpusense_sb.xml 
-#    fixed_radial_gpusense_gp.xml
-    golden_radial_gpusense_cg.xml 
-#    golden_radial_gpusense_sb.xml 
-#    golden_radial_gpusense_gp.xml
-    DESTINATION config)
-elseif (ARMADILLO_FOUND)
-  MESSAGE("Armadillo not found, no Blas/Lapack optimized config files are being installed!")
-endif (ARMADILLO_FOUND)
-
-install (FILES 
-#  fixed_radial_gpusense_cg_unoptimized.xml 
-#  fixed_radial_gpusense_sb_unoptimized.xml 
-#  fixed_radial_gpusense_gp_unoptimized.xml
-  DESTINATION config)
+add_subdirectory(config)

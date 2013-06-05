@@ -85,6 +85,7 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::preprocess( cuNDArray<_reald> *traj
     BOOST_THROW_EXCEPTION(runtime_error("cuNonCartesianSenseOperator::preprocess : operator domain dimensions not set"));
   }
   plan_->preprocess( trajectory, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_ALL );
+  is_preprocessed_ = true;
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void

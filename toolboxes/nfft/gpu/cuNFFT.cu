@@ -799,6 +799,10 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::barebones()
   // These are the fundamental booleans checked before accessing the various member pointers
   initialized = preprocessed_C2NC = preprocessed_NC2C = false;
 
+  // Clear matrix sizes
+  clear(matrix_size);
+  clear(matrix_size_os);
+
   // Clear pointers
   trajectory_positions = 0x0;
   tuples_last = bucket_begin = bucket_end = 0x0;

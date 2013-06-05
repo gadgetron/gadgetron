@@ -6,6 +6,7 @@
 find_package(Ismrmrd REQUIRED)
 
 include_directories(
+  ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${PYTHON_INCLUDE_PATH}
   ${PYTHON_NUMPY_INCLUDE_DIR}
   )

@@ -134,7 +134,6 @@ int main(int argc, char** argv)
     ( new cuSenseRHSBuffer<_real,2,use_atomics>() );
 
   rhs_buffer->set_num_coils(num_coils);
-
   rhs_buffer->set_sense_operator(E);
    
   // Fill rhs buffer
@@ -237,9 +236,6 @@ int main(int argc, char** argv)
   image_dims = to_std_vector(matrix_size); 
   image_dims.push_back(frames_per_reconstruction);
   
-  // Pass image dimensions to encoding operator
-  E->set_domain_dimensions(&image_dims);
-  
   for( unsigned int reconstruction = 0; reconstruction<num_reconstructions; reconstruction++ ){
 
     // Determine trajectories
@@ -250,6 +246,10 @@ int main(int argc, char** argv)
     boost::shared_ptr< cuNDArray<_complext> > data = upload_data
       ( reconstruction, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, host_data.get() );
     
+    // Pass image dimensions to encoding operator
+    E->set_domain_dimensions(&image_dims);
+    E->set_codomain_dimensions(data->get_dimensions().get());
+  
     // Set current trajectory and trigger NFFT preprocessing
     E->preprocess(traj.get());
     

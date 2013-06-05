@@ -19,19 +19,12 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   )
 
-add_subdirectory(core)
-
-if (ARMADILLO_FOUND)
-  add_subdirectory(mri_core)
-elseif (ARMADILLO_FOUND)
-  MESSAGE("Armadillo not found, i.e. not compiling Blas/Lapack optimized MRI Gadgets")
-endif (ARMADILLO_FOUND)
-
-add_subdirectory(radial)
-add_subdirectory(spiral)
-add_subdirectory(sense)
+add_subdirectory(mri_core)
 
 if (CUDA_FOUND)
+  add_subdirectory(radial)
+  add_subdirectory(spiral)
+  add_subdirectory(sense)
   add_subdirectory(grappa)
 endif(CUDA_FOUND)
 

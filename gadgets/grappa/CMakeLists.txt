@@ -7,6 +7,7 @@ find_package(XSD REQUIRED)
 find_package(XercesC REQUIRED)
 
 include_directories(
+  ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${CMAKE_SOURCE_DIR}/gadgets/core

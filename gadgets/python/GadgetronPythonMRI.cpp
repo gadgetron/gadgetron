@@ -2,9 +2,9 @@
 #include <boost/python.hpp>
 //#include <numpy/arrayobject.h>
 
-#include "../core/GadgetMRIHeaders.h"
+#include "../mri_core/GadgetMRIHeaders.h"
 
-#include "ismrmrd.h"
+#include <ismrmrd.h>
 
 using namespace boost::python;
 

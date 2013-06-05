@@ -6,6 +6,10 @@
 #include "hoNDArray.h"
 #include "vector_td.h"
 #include "cuNFFT.h"
+#include "cuNonCartesianSenseOperator.h"
+#include "cuCgSolver.h"
+#include "cuCgPreconditioner.h"
+#include "cuSenseRHSBuffer.h"
 #include "ismrmrd.h"
 
 #include <complex>
@@ -83,6 +87,34 @@ namespace Gadgetron{
 
   private:
 
+    bool position_equal(float* position) {
+      for (unsigned int i = 0; i < 3; i++) {
+	if (position_[i] != position[i]) return false;
+      }
+      return true;
+    }
+    
+    bool read_dir_equal(float* cosines) {
+      for (unsigned int i = 0; i < 3; i++) {
+	if (read_dir_[i] != cosines[i]) return false;
+      }
+      return true;
+    }
+    
+    bool phase_dir_equal(float* cosines) {
+      for (unsigned int i = 0; i < 3; i++) {
+	if (phase_dir_[i] != cosines[i]) return false;
+      }
+      return true;
+    }
+
+    bool slice_dir_equal(float* cosines) {
+      for (unsigned int i = 0; i < 3; i++) {
+	if (slice_dir_[i] != cosines[i]) return false;
+      }
+      return true;
+    }
+
     boost::shared_ptr< cuNDArray<floatd2> > calculate_trajectory_for_buffer(long profile_offset);
     int calculate_trajectory_for_reconstruction(long profile_offset);
     int calculate_density_compensation_for_buffer();
@@ -90,7 +122,15 @@ namespace Gadgetron{
     int shift_density_compensation_for_buffer(long profile_offset);
     
     int prepare_host_buffers(unsigned int num_channels);
+
     template<class ARRAY> boost::shared_ptr<ARRAY> wrap_array( boost::shared_ptr<ARRAY> tmp, long profile_offset );
+
+    int initialize_regularization_image_solver(unsigned int num_channels);
+
+    boost::shared_ptr< cuNDArray<float_complext> > 
+      compute_regularization_image( cuNDArray<float_complext> *image, cuNDArray<float_complext> *data, 
+				    boost::shared_ptr< cuNDArray<float_complext> > csm, 
+				    unsigned int set, unsigned int slice );
 
     int slices_;
     int sets_;
@@ -113,6 +153,13 @@ namespace Gadgetron{
     float kernel_width_;
     float oversampling_factor_;
 
+    bool real_time_buffer_mode_;
+
+    float position_[3];
+    float read_dir_[3];
+    float phase_dir_[3];
+    float slice_dir_[3];
+
     boost::shared_ptr< hoNDArray<floatd2> > host_traj_frame_;
     boost::shared_ptr< hoNDArray<float> > host_weights_frame_;
     boost::shared_ptr< cuNDArray<float> > device_weights_buffer_;
@@ -121,7 +168,12 @@ namespace Gadgetron{
     std::vector<unsigned int> image_dimensions_;
     std::vector<unsigned int> image_dimensions_recon_;
 
+    cuCgSolver<float_complext> cg_;
     cuNFFT_plan<float, 2> plan_;
+    boost::shared_ptr< cuSenseRHSBuffer<float,2> > rhs_buffer_;
+    boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E_;
+    boost::shared_ptr< cuCgPreconditioner<float_complext> > D_;
+    int cg_iterations_for_reg_;
 
     hoNDArray<float_complext> *host_data_buffer_;
     boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > buffer_;

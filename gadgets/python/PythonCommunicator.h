@@ -1,5 +1,12 @@
 #pragma once
 
+#include "Gadgetron.h"
+#include "Gadget.h"
+#include "hoNDArray.h"
+#include "GadgetContainerMessage.h"
+#include "GadgetReference.h"
+#include "gadgetronpython_export.h"
+
 #include <ace/Singleton.h>
 #include <ace/Synch.h>
 
@@ -9,15 +16,8 @@
 #include <string>
 #include <complex>
 
-#include "Gadgetron.h"
-#include "Gadget.h"
-#include "hoNDArray.h"
-#include "GadgetContainerMessage.h"
-#include "GadgetReference.h"
-
-#include "gadgetronpython_export.h"
-
 namespace Gadgetron{
+
 class EXPORTGADGETSPYTHON PythonCommunicator
 {
 
