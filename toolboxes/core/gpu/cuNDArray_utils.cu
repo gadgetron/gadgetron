@@ -241,14 +241,14 @@ namespace Gadgetron {
     {    
         int cur_device = cudaDeviceManager::Instance()->getCurrentDevice();
         int maxGridDim = cudaDeviceManager::Instance()->max_griddim(cur_device);
-
+        int maxBlockDim = cudaDeviceManager::Instance()->max_blockdim(cur_device);
         // For small arrays we keep the block dimension fairly small
         *blockDim = dim3(256);
         *gridDim = dim3((number_of_elements+blockDim->x-1)/blockDim->x, num_batches);
 
         // Extend block/grid dimensions for large arrays
         if( gridDim->x > maxGridDim){
-            blockDim->x = maxGridDim;
+            blockDim->x = maxBlockDim;
             gridDim->x = (number_of_elements+blockDim->x-1)/blockDim->x;
         }
 
