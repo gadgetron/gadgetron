@@ -72,6 +72,12 @@ namespace Gadgetron{
     for(unsigned int i=0; i<D; i++ ) v1.vec[i] *= v2;
   }
 
+  template< class T, unsigned int D > __inline__ __host__ __device__
+  void operator *=  ( vector_td<T,D> &v1, const vector_td<T,D> &v2 )
+	{
+      for(unsigned int i=0; i<D; i++ ) v1.vec[i] *= v2.vec[i];
+    }
+
   template< class T, unsigned int D > __inline__ __host__ __device__ 
   void operator /= ( vector_td<T,D> &v1, const T &v2 )
   {
@@ -211,8 +217,8 @@ namespace Gadgetron{
   template< class T, unsigned int D > __inline__ __host__ __device__ 
   bool operator!= ( const vector_td<T,D> &v1, const vector_td<T,D> &v2 ) 
   { 
-    for(unsigned int i=0; i<D; i++ ) if(!(v1.vec[i] != v2.vec[i])) return false;
-    return true;
+    for(unsigned int i=0; i<D; i++ ) if((v1.vec[i] != v2.vec[i])) return true;
+    return false;
   }
 
   template< class T, unsigned int D > __inline__ __host__ __device__ 

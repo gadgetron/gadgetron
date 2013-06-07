@@ -237,7 +237,7 @@ namespace Gadgetron {
         }
     }
 
-    void setup_grid( unsigned int number_of_elements, dim3 *blockDim, dim3* gridDim, unsigned int num_batches = 1 )
+    inline void setup_grid( unsigned int number_of_elements, dim3 *blockDim, dim3* gridDim, unsigned int num_batches = 1 )
     {    
         int cur_device = cudaDeviceManager::Instance()->getCurrentDevice();
         int maxGridDim = cudaDeviceManager::Instance()->max_griddim(cur_device);
@@ -489,7 +489,6 @@ namespace Gadgetron {
         // Setup block/grid dimensions
         dim3 blockDim; dim3 gridDim;
         setup_grid( prod(matrix_size_out), &blockDim, &gridDim, number_of_batches );
-
         // Invoke kernel
         pad_kernel<T,D><<< gridDim, blockDim >>> 
             ( matrix_size_in, matrix_size_out, in->get_data_ptr(), out->get_data_ptr(), number_of_batches, prod(matrix_size_out), val );

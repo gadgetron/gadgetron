@@ -719,7 +719,7 @@ namespace Gadgetron{
     CHECK_FOR_CUDA_ERROR();
   }
 
-  void setup_grid( unsigned int cur_device, unsigned int number_of_elements,
+  inline void setup_grid( unsigned int cur_device, unsigned int number_of_elements,
 		   dim3 *blockDim, dim3* gridDim, unsigned int num_batches )
   {
     
@@ -727,10 +727,10 @@ namespace Gadgetron{
     *blockDim = dim3(256);
     *gridDim = dim3((number_of_elements+blockDim->x-1)/blockDim->x, num_batches);
     int maxGridDim = cudaDeviceManager::Instance()->max_griddim(cur_device);
-
+    int maxBlockDim = cudaDeviceManager::Instance()->max_blockdim(cur_device);
     // Extend block/grid dimensions for large arrays
     if( gridDim->x > maxGridDim){
-      blockDim->x = maxGridDim;
+      blockDim->x = maxBlockDim;
       gridDim->x = (number_of_elements+blockDim->x-1)/blockDim->x;
     }
     
