@@ -14,7 +14,6 @@
 #include "cuCgPreconditioner.h"
 #include "cuPartialDerivativeOperator.h"
 #include "cuNFFT.h"
-#include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
 #include "ismrmrd.h"
 

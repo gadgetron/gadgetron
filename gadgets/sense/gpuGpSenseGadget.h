@@ -11,7 +11,6 @@
 #include "cuTvOperator.h"
 #include "cuTvPicsOperator.h"
 #include "cuNFFT.h"
-#include "cuSenseRHSBuffer.h"
 #include "cuImageOperator.h"
 #include "gadgetron_gpusense_export.h"
 

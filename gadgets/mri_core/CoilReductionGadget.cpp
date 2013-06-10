@@ -92,7 +92,6 @@ namespace Gadgetron{
         for (int c = 0; c < m1->getObjectPtr()->active_channels; c++) {
             if (c > coil_mask_.size()) {
                 GADGET_DEBUG1("Fatal error, too many coils for coil mask\n");
-                m1->release();
                 m3->release();
                 return GADGET_FAIL;
             }
@@ -108,7 +107,6 @@ namespace Gadgetron{
 	
         if( this->next()->putq(m1) < 0 ){
 	  GADGET_DEBUG1("Failed to put message on queue\n");
-	  m1->release();
 	  return GADGET_FAIL;
 	}
 	

@@ -2,27 +2,25 @@
 #include "vector_td_utilities.h"
 #include "cuNDArray_utils.h"
 
-#include <assert.h>
-
 namespace Gadgetron{
 
   template<class REAL, unsigned int D, bool ATOMICS>
-  void cuSenseBuffer<REAL,D,ATOMICS>::
-  cuSenseBuffer() 
+  cuSenseBuffer<REAL,D,ATOMICS>::cuSenseBuffer() 
   {
     num_coils_ = 0;
     cur_idx_ = cur_sub_idx_ = 0;
     cycle_length_ = 0; sub_cycle_length_ = 0;
     acc_buffer_empty_ = true;
-    clear(matrix_size_);
-    clear(matrix_size_os_);
+    Gadgetron::clear(matrix_size_);
+    Gadgetron::clear(matrix_size_os_);
+    W_ = REAL(0);
   }
   
   template<class REAL, unsigned int D, bool ATOMICS>
   void cuSenseBuffer<REAL,D,ATOMICS>::clear()
   {
-    clear(&acc_buffer_);
-    clear(&cyc_buffer_);
+    Gadgetron::clear(&acc_buffer_);
+    Gadgetron::clear(&cyc_buffer_);
 
     num_coils_ = cur_idx_ = cur_sub_idx_ = 0;
     acc_buffer_empty_ = true;
@@ -30,30 +28,55 @@ namespace Gadgetron{
 
   template<class REAL, unsigned int D, bool ATOMICS>
   void cuSenseBuffer<REAL,D,ATOMICS>::
-  void setup( _uintd matrix_size, _uintd matrix_size_os, unsigned int num_coils, unsigned int num_cycles, unsigned int num_sub_cycles );
+  setup( _uintd matrix_size, _uintd matrix_size_os, REAL W, 
+	 unsigned int num_coils, unsigned int num_cycles, unsigned int num_sub_cycles )
   {      
+    bool matrix_size_changed = (matrix_size_ == matrix_size);
+    bool matrix_size_os_changed = (matrix_size_os_ == matrix_size_os);
+    bool kernel_changed = (W_ == W);
+    bool num_coils_changed = (num_coils_ == num_coils );
+    bool num_cycles_changed = (cycle_length_ == num_cycles+1);
+    bool is_virgin = (E_.get() == 0x0);
+    //bool num_sub_cycles_changed = (sub_cycle_length_ == num_sub_cycles);
+
     matrix_size_ = matrix_size;
     matrix_size_os_ = matrix_size_os;
+    W_ = W;
     num_coils_ = num_coils;
     cycle_length_ = num_cycles+1; // +1 as we need a "working buffer" in a addition to 'cycle_length' full ones
     sub_cycle_length_ = num_sub_cycles;
 
-    std::vector<unsigned int> dims = to_std_vector( image_dims );
+    std::vector<unsigned int> dims = to_std_vector(matrix_size_);
     
-    E_ = boost::shared_ptr< cuNonCartesianSenseOperator<REAL,D,ATOMICS> >(new cuNonCartesianSenseOperator<REAL,D,ATOMICS>);
-    E_->set_domain_dimensions(dims);
+    if( is_virgin )
+      E_ = boost::shared_ptr< cuNonCartesianSenseOperator<REAL,D,ATOMICS> >(new cuNonCartesianSenseOperator<REAL,D,ATOMICS>);
     
+    if( is_virgin || matrix_size_changed || matrix_size_os_changed || kernel_changed ){
+      E_->set_domain_dimensions(&dims);
+      E_->get_plan()->setup( matrix_size_, matrix_size_os_, W );
+    }
+    
+    dims = to_std_vector(matrix_size_os_);    
     dims.push_back(num_coils_);
-    acc_buffer_.create(&dims);
-    
-    dims.push_back(cycle_length_);
-    cyc_buffer_.create(&dims);
-    
-    clear();
-  }
 
+    if( acc_buffer_.get_number_of_elements() == 0 || matrix_size_os_changed || num_coils_changed ){
+      acc_buffer_.create(&dims);
+      Gadgetron::clear( &acc_buffer_ );
+    }
+
+    dims.push_back(cycle_length_);
+    if( cyc_buffer_.get_number_of_elements() == 0 || matrix_size_os_changed || num_coils_changed ){
+      cyc_buffer_.create(&dims);      
+      Gadgetron::clear( &cyc_buffer_);
+    }
+    else if( num_cycles_changed ){
+      // Reuse the old buffer content in this case...
+      // This happens automatically (in all cases?) with the current design?
+    }
+  }
+  
   template<class REAL, unsigned int D, bool ATOMICS> 
-  void cuSenseBuffer<REAL,D,ATOMICS>::add_frame_data( cuNDArray<_complext> *samples, cuNDArray<_reald> *trajectory )
+  bool cuSenseBuffer<REAL,D,ATOMICS>::add_frame_data( cuNDArray<_complext> *samples, cuNDArray<_reald> *trajectory )
   {
     if( !samples || !trajectory ){
       BOOST_THROW_EXCEPTION(runtime_error("cuSenseBuffer::add_frame_data: illegal input pointer"));
@@ -81,13 +104,17 @@ namespace Gadgetron{
     // Convolve to form k-space frame (accumulation mode)
     //
     
-    E_->get_plan()->convolve( samples, &cur_buffer, dcw_, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_CONV_NC2C, true );
+    E_->get_plan()->convolve( samples, &cur_buffer, dcw_.get(), cuNFFT_plan<REAL,D,ATOMICS>::NFFT_CONV_NC2C, true );
 
     // Update the accumulation buffer (if it is time...)
     //
 
+    bool cycle_completed = false;
+
     if( cur_sub_idx_ == sub_cycle_length_-1 ){
 
+      cycle_completed = true;
+      
       // Buffer complete, add to accumulation buffer
       //
 
@@ -114,52 +141,68 @@ namespace Gadgetron{
 
     cur_sub_idx_++;
     if( cur_sub_idx_ == sub_cycle_length_ ) cur_sub_idx_ = 0;
+
+    return cycle_completed;
   }
 
   template<class REAL, unsigned int D, bool ATOMICS>
-  boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseBuffer<REAL,D,ATOMICS>::get_acc_coil_images( bool normalize )
+  boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseBuffer<REAL,D,ATOMICS>::get_accumulated_coil_images( bool normalize )
   {
-    if( sense_op_.get() == 0x0 ){
-      BOOST_THROW_EXCEPTION(runtime_error("cuSenseBuffer::get_acc_coil_images: sense_operator not set"));
-    }
-
-    // Prepare return image
-    _uintd image_dims = sense_op_->get_plan()->get_matrix_size();
-    _uintd image_dims_os = sense_op_->get_plan()->get_matrix_size_os();
-
-    std::vector<unsigned int> dims = to_std_vector( image_dims );
+    std::vector<unsigned int> dims = to_std_vector(matrix_size_);
     dims.push_back(num_coils_);
 
-    cuNDArray<_complext> *image = new cuNDArray<_complext>(&dims);
+    acc_image_ = boost::shared_ptr< cuNDArray<_complext> >( new cuNDArray<_complext>(&dims) );
+				    
     // Check if we are ready to reconstruct. If not return an image of ones...
     if( acc_buffer_empty_ ){
-      fill(image,_complext(1));
-      return boost::shared_ptr< cuNDArray<_complext> >(image);
+      fill(acc_image_.get(),_complext(1));
+      return acc_image_;
     }
 
-    // Complete gridding of k-space CSM image
+    // Finalize gridding of k-space CSM image (convolution has been done already)
     //
 
     // Copy accumulation buffer before in-place FFT
     cuNDArray<_complext> acc_copy = acc_buffer_;
 
     // FFT
-    sense_op_->get_plan()->fft( &acc_copy, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_BACKWARDS );
-
+    E_->get_plan()->fft( &acc_copy, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_BACKWARDS );
+    
     // Deapodize
-    sense_op_->get_plan()->deapodize( &acc_copy );
-
+    E_->get_plan()->deapodize( &acc_copy );
+    
     // Remove oversampling
-    crop<_complext,D>( (image_dims_os-image_dims)>>1, &acc_copy, image );
+    crop<_complext,D>( (matrix_size_os_-matrix_size_)>>1, &acc_copy, acc_image_.get() );
 
     if( normalize ){
       REAL scale = REAL(1)/(((REAL)cycle_length_-REAL(1))*(REAL)sub_cycle_length_);
-      *image *= scale;
+      *acc_image_ *= scale;
     }
 
-    return boost::shared_ptr< cuNDArray<_complext> >(image);
+    return acc_image_;
   }
 
+  template<class REAL, unsigned int D, bool ATOMICS>
+  boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseBuffer<REAL,D,ATOMICS>::get_combined_coil_image( bool normalize )
+  {
+    if( csm_.get() == 0x0 ){
+      BOOST_THROW_EXCEPTION(runtime_error("cuSenseBuffer::get_combined_coil_image: csm not set"));
+    }
+
+    if( acc_image_.get() == 0x0 ){
+      if( get_accumulated_coil_images().get() == 0x0 ){ // This updates acc_image_
+	BOOST_THROW_EXCEPTION(runtime_error("cuSenseBuffer::get_combined_coil_image: unable to acquire accumulated coil images"));
+      }
+    }
+    
+    std::vector<unsigned int> dims = to_std_vector(matrix_size_);
+    boost::shared_ptr< cuNDArray<_complext> > image( new cuNDArray<_complext>(&dims) );
+
+    E_->set_csm(csm_);
+    E_->mult_csm_conj_sum( acc_image_.get(), image.get() );
+
+    return image;
+  }
 
   //
   // Instantiations

@@ -4,7 +4,7 @@
 #include "cuNDArray_utils.h"
 #include "radial_utilities.h"
 #include "cuNonCartesianSenseOperator.h"
-#include "cuSenseRHSBuffer.h"
+#include "cuSenseBuffer.h"
 #include "cuCgPreconditioner.h"
 #include "cuPartialDerivativeOperator.h"
 #include "cuCgSolver.h"
@@ -136,7 +136,7 @@ int main(int argc, char** argv)
   // Define rhs buffer
   //
 
-  boost::shared_ptr< cuSenseRHSBuffer<_real,2> > rhs_buffer( new cuSenseRHSBuffer<_real,2>() );
+  boost::shared_ptr< cuSenseBuffer<_real,2> > rhs_buffer( new cuSenseBuffer<_real,2>() );
 
   rhs_buffer->set_num_coils(num_coils);
   rhs_buffer->set_sense_operator(E);

@@ -66,16 +66,6 @@ namespace Gadgetron{
   //
 
   template<class T, unsigned int D> __inline__ __host__ __device__ 
-  void clear( const T &val = T(0) )
-  {
-    vector_td<T,D> res;
-    for (unsigned int i=0; i<D; i++) {
-      res[i] = std::abs(vec[i]);
-    }
-    return res;
-  }
-
-  template<class T, unsigned int D> __inline__ __host__ __device__ 
   vector_td<T,D> abs( const vector_td<T,D>& vec )
   {
     vector_td<T,D> res;

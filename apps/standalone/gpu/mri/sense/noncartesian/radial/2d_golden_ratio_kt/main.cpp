@@ -5,7 +5,7 @@
 #include "vector_td_utilities.h"
 #include "radial_utilities.h"
 #include "cuNonCartesianKtSenseOperator.h"
-#include "cuSenseRHSBuffer.h"
+#include "cuSenseBuffer.h"
 #include "cuImageOperator.h"
 #include "cuCgPreconditioner.h"
 #include "cuCgSolver.h"
@@ -127,7 +127,7 @@ int main(int argc, char** argv)
 
   // Use a rhs buffer to estimate the csm
   //
-  boost::shared_ptr< cuSenseRHSBuffer<_real,2> > rhs_buffer( new cuSenseRHSBuffer<_real,2>() );
+  boost::shared_ptr< cuSenseBuffer<_real,2> > rhs_buffer( new cuSenseBuffer<_real,2>() );
   rhs_buffer->set_num_coils(num_coils);
   rhs_buffer->set_sense_operator(E);
    

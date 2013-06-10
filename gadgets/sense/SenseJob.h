@@ -12,10 +12,10 @@ namespace Gadgetron{
     SenseJob() {}
     ~SenseJob() {}
     
-    boost::shared_ptr< hoNDArray<float_complext> > csm_host_;
-    boost::shared_ptr< hoNDArray<float_complext> > reg_host_;
+    boost::shared_ptr< hoNDArray<float_complext> > dat_host_;
     boost::shared_ptr< hoNDArray<floatd2>        > tra_host_;
     boost::shared_ptr< hoNDArray<float>          > dcw_host_;
-    boost::shared_ptr< hoNDArray<float_complext> > dat_host_;
+    boost::shared_ptr< hoNDArray<float_complext> > csm_host_;
+    boost::shared_ptr< hoNDArray<float_complext> > reg_host_;
   };
 }
