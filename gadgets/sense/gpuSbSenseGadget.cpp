@@ -9,27 +9,27 @@
 #include "GPUTimer.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "vector_td_utilities.h"
-
 #include "hoNDArray_fileio.h"
 
 namespace Gadgetron{
 
   gpuSbSenseGadget::gpuSbSenseGadget()
-  : channels_(0)
-  , device_number_(0)
-  , number_of_cg_iterations_(10)
-  , number_of_sb_iterations_(10)
-  , cg_limit_(1e-4)
-  , oversampling_(1.25)
-  , kernel_width_(5.5)
-  , mu_(1.0)
-  , lambda_(2.0)
-  , alpha_(0.5)
-  , is_configured_(false)
-  , prepared_(false)
-  , image_series_(0)
-  , image_counter_(0)
+    : is_configured_(false)
+    , prepared_(false)
+    , channels_(0)
+    , image_counter_(0)
   {
+    set_parameter(std::string("deviceno").c_str(), "0");
+    set_parameter(std::string("sliceno").c_str(), "0");
+    set_parameter(std::string("number_of_sb_iterations").c_str(), "20");
+    set_parameter(std::string("number_of_cg_iterations").c_str(), "10");
+    set_parameter(std::string("cg_limit").c_str(), "1e-6");
+    set_parameter(std::string("oversampling_factor").c_str(), "1.5");
+    set_parameter(std::string("kernel_width").c_str(), "5.5");
+    set_parameter(std::string("mu").c_str(), "1.0");
+    set_parameter(std::string("lambda").c_str(), "2.0");
+    set_parameter(std::string("alpha").c_str(), "0.5");
+
     matrix_size_ = uintd2(0,0);
     matrix_size_os_ = uintd2(0,0);
     matrix_size_seq_ = uintd2(0,0);
@@ -64,16 +64,16 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    number_of_cg_iterations_ = get_int_value(std::string("number_of_cg_iterations").c_str());
+    pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data").c_str());
+    slice_number_ = get_int_value(std::string("sliceno").c_str());
     number_of_sb_iterations_ = get_int_value(std::string("number_of_sb_iterations").c_str());
+    number_of_cg_iterations_ = get_int_value(std::string("number_of_cg_iterations").c_str());
     cg_limit_ = get_double_value(std::string("cg_limit").c_str());
-    oversampling_ = get_double_value(std::string("oversampling").c_str());
+    oversampling_factor_ = get_double_value(std::string("oversampling_factor").c_str());
     kernel_width_ = get_double_value(std::string("kernel_width").c_str());
     mu_ = get_double_value(std::string("mu").c_str());
     lambda_ = get_double_value(std::string("lambda").c_str());
     alpha_ = get_double_value(std::string("alpha").c_str());
-    pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data").c_str());
-    image_series_ = this->get_int_value("image_series");
 
     boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
@@ -131,7 +131,7 @@ namespace Gadgetron{
             
       sb_.set_max_outer_iterations(number_of_sb_iterations_);
       sb_.set_max_inner_iterations(1);
-      sb_.set_output_mode( cuSbcCgSolver<float_complext>::OUTPUT_WARNINGS );
+      sb_.set_output_mode( cuSbcCgSolver<float_complext>::OUTPUT_SILENT );
       
       sb_.get_inner_solver()->set_max_iterations( number_of_cg_iterations_ );
       sb_.get_inner_solver()->set_tc_tolerance( cg_limit_ );
@@ -146,11 +146,18 @@ namespace Gadgetron{
     return GADGET_OK;
   }
 
-  int gpuSbSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage<SenseJob> * m2)
+  int gpuSbSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<SenseJob> *m2)
   {
-    GADGET_DEBUG1("gpuSbSenseGadget::process\n");
+    // Is this data for this gadget's slice?
+    //
+    
+    if (m1->getObjectPtr()->slice != slice_number_) {      
+      // No, pass it downstream...
+      return this->next()->putq(m1);
+    }
 
-    GPUTimer timer("gpuSbSenseGadget::process");
+    //GADGET_DEBUG1("gpuSbSenseGadget::process\n");
+    //GPUTimer timer("gpuSbSenseGadget::process");
 
     if (!is_configured_) {
       GADGET_DEBUG1("\nData received before configuration complete\n");
@@ -162,7 +169,6 @@ namespace Gadgetron{
     // Let's first check that this job has the required data...
     if (!j->csm_host_.get() || !j->dat_host_.get() || !j->tra_host_.get() || !j->dcw_host_.get()) {
       GADGET_DEBUG1("Received an incomplete Sense job\n");
-      m1->release();
       return GADGET_FAIL;
     }
 
@@ -174,7 +180,6 @@ namespace Gadgetron{
     if( samples%j->tra_host_->get_number_of_elements() ) {
       GADGET_DEBUG2("Mismatch between number of samples (%d) and number of k-space coordinates (%d).\nThe first should be a multiplum of the latter.\n", 
 		    samples, j->tra_host_->get_number_of_elements());
-      m1->release();
       return GADGET_FAIL;
     }
 
@@ -190,8 +195,6 @@ namespace Gadgetron{
       
       matrix_size_ = uintd2( j->reg_host_->get_size(0), j->reg_host_->get_size(1) );
       
-      GADGET_DEBUG2("Matrix size  : [%d,%d] \n", matrix_size_[0], matrix_size_[1]);
-      
       cudaDeviceProp deviceProp;
       if( cudaGetDeviceProperties( &deviceProp, device_number_ ) != cudaSuccess) {
 	GADGET_DEBUG1( "\nError: unable to query device properties.\n" );
@@ -201,27 +204,23 @@ namespace Gadgetron{
       unsigned int warp_size = deviceProp.warpSize;
 
       matrix_size_os_ =
-	uintd2(static_cast<unsigned int>(std::ceil((matrix_size_[0]*oversampling_)/warp_size)*warp_size),
-	       static_cast<unsigned int>(std::ceil((matrix_size_[1]*oversampling_)/warp_size)*warp_size));
+	uintd2(((static_cast<unsigned int>(std::ceil(matrix_size_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
+	       ((static_cast<unsigned int>(std::ceil(matrix_size_[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
       
-      GADGET_DEBUG2("Matrix size OS: [%d,%d] \n", matrix_size_os_[0], matrix_size_os_[1]);
-      
+      GADGET_DEBUG2("Matrix size    : [%d,%d] \n", matrix_size_[0], matrix_size_[1]);
+      GADGET_DEBUG2("Matrix size OS : [%d,%d] \n", matrix_size_os_[0], matrix_size_os_[1]);
+
       std::vector<unsigned int> image_dims = to_std_vector(matrix_size_);
       image_dims.push_back(frames);
       
       E_->set_domain_dimensions(&image_dims);
       E_->set_codomain_dimensions(device_samples->get_dimensions().get());
             
-      reg_image_ = boost::shared_ptr< cuNDArray<float_complext> >
-	(new cuNDArray<float_complext>(&image_dims));
+      reg_image_ = boost::shared_ptr< cuNDArray<float_complext> >(new cuNDArray<float_complext>(&image_dims));
       
       // These operators need their domain/codomain set before being added to the solver
       //
 
-      // Define regularization operators 
-      // We need "a pair" for PICCS
-      //
-            
       Rx1_->set_domain_dimensions(&image_dims);
       Rx1_->set_codomain_dimensions(&image_dims);
       
@@ -241,6 +240,8 @@ namespace Gadgetron{
       Rz2_->set_codomain_dimensions(&image_dims);
       
       // Add "TV" regularization
+      // 
+      
       if( alpha_<1.0 ){
 	sb_.add_regularization_group_operator( Rx1_ ); 
 	sb_.add_regularization_group_operator( Ry1_ ); 
@@ -250,6 +251,8 @@ namespace Gadgetron{
       }
       
       // Add "PICCS" regularization
+      //
+
       if( alpha_ > 0.0 ){
 	sb_.add_regularization_group_operator( Rx2_ ); 
 	sb_.add_regularization_group_operator( Ry2_ ); 
@@ -262,27 +265,21 @@ namespace Gadgetron{
     }
     
     E_->set_dcw(dcw);
-    E_->set_csm(csm);
-    
-    try{ E_->setup( matrix_size_, matrix_size_os_, static_cast<float>(kernel_width_) ); }
-    catch (runtime_error& err){
-      GADGET_DEBUG_EXCEPTION(err, "\nError: unable to setup encoding operator.\n" );
-      return GADGET_FAIL;
-    }
-
-    try{ E_->preprocess(traj.get());}
-    catch (runtime_error& err){
-      GADGET_DEBUG_EXCEPTION(err,"\nError during cuOperatorNonCartesianSense::preprocess()\n");
-      return GADGET_FAIL;
-    }
+    E_->set_csm(csm);    
+    E_->setup( matrix_size_, matrix_size_os_, static_cast<float>(kernel_width_) );
+    E_->preprocess(traj.get());
 
     // Expand the average image to the number of frames
+    //
+
     {
       cuNDArray<float_complext> tmp(*j->reg_host_);
       *reg_image_ = *expand( &tmp, frames );
     }
 
     // Define preconditioning weights
+    //
+
     boost::shared_ptr< cuNDArray<float> > _precon_weights = sum(abs_square(csm.get()).get(), 2);
     reciprocal_sqrt_inplace(_precon_weights.get());	
     boost::shared_ptr< cuNDArray<float_complext> > precon_weights = real_to_complex<float_complext>( _precon_weights.get() );
@@ -294,62 +291,62 @@ namespace Gadgetron{
     //
 
     boost::shared_ptr< cuNDArray<float_complext> > sbresult;
-
-    try{ sbresult = sb_.solve(device_samples.get()); }
-    catch (runtime_error& err){
-      GADGET_DEBUG_EXCEPTION(err,"\nError during solve()\n");
-      return GADGET_FAIL;
+    {
+      GADGET_DEBUG1("Running split Bregman solver\n");
+      GPUTimer timer("Running split Bregman solver");
+      sbresult = sb_.solve(device_samples.get());
     }
 
+    // Provide some info about the scaling between the regularization and reconstruction.
+    // If it is not close to one, PICCS does not work optimally...
+    // 
+
+    if( alpha_ > 0.0 ){
+      cuNDArray<float_complext> gpureg(j->reg_host_.get());
+      boost::shared_ptr< cuNDArray<float_complext> > gpurec = sum(sbresult.get(),2);
+      *gpurec /= float(sbresult->get_size(2));
+      float scale = abs(dot(gpurec.get(), gpurec.get())/dot(gpurec.get(),&gpureg));
+      GADGET_DEBUG2("Scaling factor between regularization and reconstruction is %f.\n", scale);
+    }
+    
     if (!sbresult.get()) {
       GADGET_DEBUG1("\nSplit Bregman solver failed\n");
       return GADGET_FAIL;
     }
+    
+    /*
+    static int counter = 0;
+    char filename[256];
+    sprintf((char*)filename, "recon_sb_%d.cplx", counter);
+    write_nd_array<float_complext>( sbresult->to_host().get(), filename );
+    counter++; */
 
     // If the recon matrix size exceeds the sequence matrix size then crop
     if( matrix_size_seq_ != matrix_size_ )
       sbresult = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>2, matrix_size_seq_, sbresult.get() );
-    
-    static int counter = 0;
-    char filename[256];
-    sprintf((char*)filename, "recon_sb_%d.real", counter);
-    write_nd_array<float>( abs(sbresult.get())->to_host().get(), filename );
-    counter++;
-
-    m2->release();
-
+        
     // Now pass on the reconstructed images
+    //
 
     for( unsigned int frame=0; frame<frames; frame++ ){
       
-      GadgetContainerMessage< hoNDArray< std::complex<float> > >* cm2 =
-	new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
-      
-      GadgetContainerMessage<ISMRMRD::ImageHeader>* m = 
-	(frame==frames-1) ? m1 : new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+      GadgetContainerMessage< hoNDArray< std::complex<float> > > *cm = new GadgetContainerMessage< hoNDArray< std::complex<float> > >();     
+      GadgetContainerMessage<ISMRMRD::ImageHeader> *m = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
 
-      if( frame<frames-1 )
-	*m->getObjectPtr() = *m1->getObjectPtr();
-
+      *m->getObjectPtr() = *m1->getObjectPtr();
       m->getObjectPtr()->matrix_size[0] = matrix_size_seq_[0];
-      m->getObjectPtr()->matrix_size[1] = matrix_size_seq_[1];
+      m->getObjectPtr()->matrix_size[1] = matrix_size_seq_[1];      
+      m->cont(cm);
       
-      m->cont(cm2);
-
       std::vector<unsigned int> img_dims(2);
       img_dims[0] = matrix_size_seq_[0];
       img_dims[1] = matrix_size_seq_[1];
 
-      try{cm2->getObjectPtr()->create(&img_dims);}
-      catch (runtime_error &err){
-	GADGET_DEBUG_EXCEPTION(err,"\nUnable to allocate host image array");
-	m->release();
-	return GADGET_FAIL;
-      }
+      cm->getObjectPtr()->create(&img_dims);
 
       size_t data_length = prod(matrix_size_seq_);
 
-      cudaMemcpy(cm2->getObjectPtr()->get_data_ptr(),
+      cudaMemcpy(cm->getObjectPtr()->get_data_ptr(),
 		 sbresult->get_data_ptr()+frame*data_length,
 		 data_length*sizeof(std::complex<float>),
 		 cudaMemcpyDeviceToHost);
@@ -373,6 +370,7 @@ namespace Gadgetron{
       }
     }
 
+    m1->release();
     return GADGET_OK;
   }
 

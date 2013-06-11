@@ -40,7 +40,7 @@
       <name>CoilReduction</name>
       <dll>gadgetron_mricore</dll>
       <classname>CoilReductionGadget</classname>
-      <property><name>coils_out</name><value>8</value></property>
+      <property><name>coils_out</name><value>16</value></property>
     </gadget>
     
     <gadget>
@@ -49,8 +49,9 @@
       <classname>gpuRadialSenseGadget</classname>
       <property><name>deviceno</name><value>0</value></property>
       <property><name>mode</name><value>1</value></property>
+      <property><name>rotations_per_reconstruction</name><value>4</value></property>
       <property><name>buffer_length_in_rotations</name><value>4</value></property>
-      <property><name>buffer_convolution_kernel_width</name><value>1.5</value></property>
+      <property><name>buffer_convolution_kernel_width</name><value>5.5</value></property>
       <property><name>buffer_convolution_oversampling_factor</name><value>1.25</value></property>
       <property><name>reconstruction_os_factor_x</name><value>1.5</value></property>
       <property><name>reconstruction_os_factor_y</name><value>1.5</value></property>
@@ -63,7 +64,7 @@
       <property><name>pass_on_undesired_data</name>  <value>true</value></property>
       <property><name>deviceno</name>                <value>0</value></property>
       <property><name>sliceno</name>                 <value>0</value></property>
-      <property><name>number_of_iterations</name>    <value>5</value></property>
+      <property><name>number_of_iterations</name>    <value>10</value></property>
       <property><name>cg_limit</name>                <value>1e-6</value></property>
       <property><name>oversampling_factor</name>     <value>1.25</value></property>
       <property><name>kernel_width</name>            <value>5.5</value></property>
@@ -77,7 +78,7 @@
       <property><name>pass_on_undesired_data</name>  <value>true</value></property>
       <property><name>deviceno</name>                <value>0</value></property>
       <property><name>sliceno</name>                 <value>1</value></property>
-      <property><name>number_of_iterations</name>    <value>5</value></property>
+      <property><name>number_of_iterations</name>    <value>10</value></property>
       <property><name>cg_limit</name>                <value>1e-6</value></property>
       <property><name>oversampling_factor</name>     <value>1.25</value></property>
       <property><name>kernel_width</name>            <value>5.5</value></property>
@@ -91,7 +92,7 @@
       <property><name>pass_on_undesired_data</name>  <value>true</value></property>
       <property><name>deviceno</name>                <value>0</value></property>
       <property><name>sliceno</name>                 <value>2</value></property>
-      <property><name>number_of_iterations</name>    <value>5</value></property>
+      <property><name>number_of_iterations</name>    <value>10</value></property>
       <property><name>cg_limit</name>                <value>1e-6</value></property>
       <property><name>oversampling_factor</name>     <value>1.25</value></property>
       <property><name>kernel_width</name>            <value>5.5</value></property>

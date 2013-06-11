@@ -25,7 +25,11 @@ namespace Gadgetron{
     virtual void set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw ){
       dcw_ = dcw;
     }
-
+    
+    inline REAL get_normalization_factor(){
+      return REAL(1)/(((REAL)cycle_length_-REAL(1))*(REAL)sub_cycle_length_);
+    }
+    
     virtual void clear();
 
     virtual void setup( _uintd matrix_size, _uintd matrix_size_os, REAL W, 
@@ -34,10 +38,10 @@ namespace Gadgetron{
     // Boolean return value indicates whether the accumulation buffer has changed (i.e. a cycle has been completed)
     virtual bool add_frame_data( cuNDArray<_complext> *samples, cuNDArray<_reald> *trajectory ); 
 
-    virtual boost::shared_ptr< cuNDArray<_complext> > get_accumulated_coil_images( bool normalize = false );
-    virtual boost::shared_ptr< cuNDArray<_complext> > get_combined_coil_image( bool normalize = false );
+    virtual boost::shared_ptr< cuNDArray<_complext> > get_accumulated_coil_images();
+    virtual boost::shared_ptr< cuNDArray<_complext> > get_combined_coil_image();
     
-  private:
+  protected:
     _uintd matrix_size_, matrix_size_os_;
     REAL W_;
     unsigned int num_coils_;
@@ -49,6 +53,7 @@ namespace Gadgetron{
     boost::shared_ptr< cuNDArray<_complext> > csm_;
     boost::shared_ptr< cuNDArray<REAL> > dcw_;
     boost::shared_ptr< cuNonCartesianSenseOperator<REAL,D,ATOMICS> > E_;
+    cuNFFT_plan<REAL,D,ATOMICS> nfft_plan_;
   };
   
   // To prevent the use of atomics with doubles.

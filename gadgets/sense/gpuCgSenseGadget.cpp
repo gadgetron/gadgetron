@@ -19,7 +19,6 @@ namespace Gadgetron{
     , channels_(0)
     , image_counter_(0)
   {
-    set_parameter(std::string("image_series").c_str(), "0");
     set_parameter(std::string("deviceno").c_str(), "0");
     set_parameter(std::string("sliceno").c_str(), "0");
     set_parameter(std::string("number_of_iterations").c_str(), "5");
@@ -62,14 +61,13 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
+    pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data").c_str());
     slice_number_ = get_int_value(std::string("sliceno").c_str());
     number_of_iterations_ = get_int_value(std::string("number_of_iterations").c_str());
     cg_limit_ = get_double_value(std::string("cg_limit").c_str());
     oversampling_factor_ = get_double_value(std::string("oversampling_factor").c_str());
     kernel_width_ = get_double_value(std::string("kernel_width").c_str());
     kappa_ = get_double_value(std::string("kappa").c_str());
-    pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data").c_str());
-    image_series_ = this->get_int_value("image_series");
 
     boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
@@ -139,7 +137,6 @@ namespace Gadgetron{
     // Some basic validation of the incoming Sense job
     if (!j->csm_host_.get() || !j->dat_host_.get() || !j->tra_host_.get() || !j->dcw_host_.get()) {
       GADGET_DEBUG1("Received an incomplete Sense job\n");
-      m1->release();
       return GADGET_FAIL;
     }
 
@@ -151,7 +148,6 @@ namespace Gadgetron{
     if( samples%j->tra_host_->get_number_of_elements() ) {
       GADGET_DEBUG2("Mismatch between number of samples (%d) and number of k-space coordinates (%d).\nThe first should be a multiplum of the latter.\n", 
 		    samples, j->tra_host_->get_number_of_elements());
-      m1->release();
       return GADGET_FAIL;
     }
 
@@ -163,7 +159,6 @@ namespace Gadgetron{
     cudaDeviceProp deviceProp;
     if( cudaGetDeviceProperties( &deviceProp, device_number_ ) != cudaSuccess) {
       GADGET_DEBUG1( "Error: unable to query device properties.\n" );
-      m1->release();
       return GADGET_FAIL;
     }
     
@@ -175,8 +170,8 @@ namespace Gadgetron{
       uintd2(((static_cast<unsigned int>(std::ceil(matrix_size_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
 	     ((static_cast<unsigned int>(std::ceil(matrix_size_[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
     
-    //GADGET_DEBUG2("Matrix size  : [%d,%d] \n", matrix_size_[0], matrix_size_[1]);    
-    //GADGET_DEBUG2("Matrix size OS: [%d,%d] \n", matrix_size_os_[0], matrix_size_os_[1]);
+    GADGET_DEBUG2("Matrix size    : [%d,%d] \n", matrix_size_[0], matrix_size_[1]);    
+    GADGET_DEBUG2("Matrix size OS : [%d,%d] \n", matrix_size_os_[0], matrix_size_os_[1]);
 
     std::vector<unsigned int> image_dims = to_std_vector(matrix_size_);
     image_dims.push_back(frames);
@@ -206,23 +201,29 @@ namespace Gadgetron{
     // Invoke solver
     // 
 
-    boost::shared_ptr< cuNDArray<float_complext> > cgresult = cg_.solve(device_samples.get());
+    boost::shared_ptr< cuNDArray<float_complext> > cgresult;
     
+    {
+      //GPUTimer timer("gpuCgSenseGadget::solve()");
+      cgresult = cg_.solve(device_samples.get());
+    }
+
     if (!cgresult.get()) {
       GADGET_DEBUG1("Iterative_sense_compute failed\n");
       return GADGET_FAIL;
     }
 
-    // If the recon matrix size exceeds the sequence matrix size then crop
-    if( matrix_size_seq_ != matrix_size_ )
-      cgresult = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>2, matrix_size_seq_, cgresult.get() );    
-    
-    /*    static int counter = 0;
+    /*
+    static int counter = 0;
     char filename[256];
     sprintf((char*)filename, "recon_%d.real", counter);
     write_nd_array<float>( abs(cgresult.get())->to_host().get(), filename );
     counter++; */
 
+    // If the recon matrix size exceeds the sequence matrix size then crop
+    if( matrix_size_seq_ != matrix_size_ )
+      cgresult = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>2, matrix_size_seq_, cgresult.get() );    
+    
     // Now pass on the reconstructed images
 
     for( unsigned int frame=0; frame<frames; frame++ ){

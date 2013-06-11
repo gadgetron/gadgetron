@@ -9,6 +9,7 @@ find_package(XercesC REQUIRED)
 include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers
@@ -28,7 +29,7 @@ add_library(gadgetron_gpuspiral SHARED
   ${ISMRMRD_XSD_SOURCE})
 
 target_link_libraries(gadgetron_gpuspiral
-  gpunfft gpusolvers gpuoperators gpuparallelmri
+  cpucore gpucore gpunfft gpusolvers gpuoperators gpuparallelmri
   ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
@@ -40,14 +41,12 @@ if (ARMADILLO_FOUND)
   install (FILES 
     spiral_gpusense_cg.xml 
     spiral_gpusense_sb.xml 
-    spiral_gpusense_gp.xml
     DESTINATION config)
 elseif (ARMADILLO_FOUND)
-  MESSAGE("Armadillo not found, hence Gadgetron's Blas/Lapack optimized config files are not being installed")
+  MESSAGE("Armadillo not found. Hence only a limited number (of unoptimized) config files will be available!")
 endif (ARMADILLO_FOUND)
 
 install (FILES 
   spiral_gpusense_cg_unoptimized.xml 
   spiral_gpusense_sb_unoptimized.xml 
-  spiral_gpusense_gp_unoptimized.xml
   DESTINATION config)

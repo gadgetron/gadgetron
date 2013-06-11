@@ -76,7 +76,7 @@ install(FILES
   DESTINATION include)
 
 if (ARMADILLO_FOUND)
-  install(FILES default_optimized.xml DESTINATION config)
+  install(FILES default.xml default_short.xml default_optimized.xml DESTINATION config)
 endif (ARMADILLO_FOUND)
 
 install(TARGETS gadgetron_mricore DESTINATION lib)

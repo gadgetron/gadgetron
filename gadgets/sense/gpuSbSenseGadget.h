@@ -37,6 +37,7 @@ namespace Gadgetron{
 
     int channels_;
     int device_number_;
+    int slice_number_;
 
     uintd2 matrix_size_;
     uintd2 matrix_size_os_;
@@ -45,7 +46,7 @@ namespace Gadgetron{
     unsigned int number_of_cg_iterations_;
     unsigned int number_of_sb_iterations_;
     double cg_limit_;
-    double oversampling_;
+    double oversampling_factor_;
     double kernel_width_;
     double mu_;
     double lambda_;

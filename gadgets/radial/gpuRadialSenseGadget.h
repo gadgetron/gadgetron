@@ -9,7 +9,7 @@
 #include "cuNonCartesianSenseOperator.h"
 #include "cuCgSolver.h"
 #include "cuCgPreconditioner.h"
-#include "cuSenseBuffer.h"
+#include "cuSenseBufferCg.h"
 #include "ismrmrd.h"
 
 #include <complex>
@@ -125,10 +125,17 @@ namespace Gadgetron{
     boost::shared_ptr< hoNDArray<float_complext> > extract_samples_from_queue
       ( ACE_Message_Queue<ACE_MT_SYNCH> *queue, std::vector<unsigned int> dims );
 
-    boost::shared_ptr< cuNDArray<floatd2> > calculate_trajectory_for_frame(long profile_offset);
-    int calculate_density_compensation_for_frame();
+    // Compute trajectory/dcw for a reconstruction (to store internally)
     int calculate_trajectory_for_reconstruction(long profile_offset);
     int calculate_density_compensation_for_reconstruction();
+
+    // Compute trajectory/dcw for adding frames to the accumulation buffer
+    boost::shared_ptr< cuNDArray<floatd2> > calculate_trajectory_for_frame(long profile_offset);
+    boost::shared_ptr< cuNDArray<float> > calculate_density_compensation_for_frame();
+
+    // Compute trajectory/dcw for the fully sampled accumulation buffer (iterative buffer mode only)
+    boost::shared_ptr< cuNDArray<floatd2> > calculate_trajectory_for_rhs(long profile_offset);
+    boost::shared_ptr< cuNDArray<float> > calculate_density_compensation_for_rhs();
 
     int slices_;
     int sets_;
@@ -141,7 +148,8 @@ namespace Gadgetron{
     long profiles_per_frame_;           // for an undersampled frame
     long frames_per_rotation_;          // representing a fully sampled frame
     long rotations_per_reconstruction_; // the number of rotations to batch per reconstruction. Set to '0' to reconstruct frames individually.
-    long buffer_length_in_rotations_;   // a multiplum of 'frames_per_rotation'
+    long buffer_frames_per_rotation_;   // the number of buffer subcycles
+    long buffer_length_in_rotations_;   // the number of buffer cycles
 
     long *previous_profile_;
     long *profiles_counter_frame_;
@@ -155,20 +163,21 @@ namespace Gadgetron{
     float phase_dir_[3];
     float slice_dir_[3];
 
+    bool buffer_using_solver_;
     bool buffer_update_needed_;
 
     boost::shared_ptr< hoNDArray<floatd2> > host_traj_recon_;
     boost::shared_ptr< hoNDArray<float> > host_weights_recon_;
-    boost::shared_ptr< cuNDArray<float> > device_weights_frame_;
     
     boost::shared_ptr< hoNDArray<float_complext> > csm_host_;
     boost::shared_ptr< hoNDArray<float_complext> > reg_host_;
     
+    boost::shared_ptr< cuSenseBuffer<float,2> > acc_buffer_;
+
     std::vector<unsigned int> image_dimensions_;
     std::vector<unsigned int> image_dimensions_recon_;
     uintd2 image_dimensions_recon_os_;
 
-    cuSenseBuffer<float,2> acc_buffer_;
     boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > frame_queue_;
     boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > recon_queue_;
   };

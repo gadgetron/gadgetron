@@ -53,7 +53,8 @@ namespace Gadgetron{
     
     if( is_virgin || matrix_size_changed || matrix_size_os_changed || kernel_changed ){
       E_->set_domain_dimensions(&dims);
-      E_->get_plan()->setup( matrix_size_, matrix_size_os_, W );
+      E_->setup( matrix_size_, matrix_size_os_, W );
+      nfft_plan_.setup( matrix_size_, matrix_size_os_, W );
     }
     
     dims = to_std_vector(matrix_size_os_);    
@@ -99,12 +100,12 @@ namespace Gadgetron{
     // Preprocess frame
     //
 
-    E_->get_plan()->preprocess( trajectory, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_NC2C );
+    nfft_plan_.preprocess( trajectory, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_NC2C );
     
     // Convolve to form k-space frame (accumulation mode)
     //
     
-    E_->get_plan()->convolve( samples, &cur_buffer, dcw_.get(), cuNFFT_plan<REAL,D,ATOMICS>::NFFT_CONV_NC2C, true );
+    nfft_plan_.convolve( samples, &cur_buffer, dcw_.get(), cuNFFT_plan<REAL,D,ATOMICS>::NFFT_CONV_NC2C, true );
 
     // Update the accumulation buffer (if it is time...)
     //
@@ -146,7 +147,7 @@ namespace Gadgetron{
   }
 
   template<class REAL, unsigned int D, bool ATOMICS>
-  boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseBuffer<REAL,D,ATOMICS>::get_accumulated_coil_images( bool normalize )
+  boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseBuffer<REAL,D,ATOMICS>::get_accumulated_coil_images()
   {
     std::vector<unsigned int> dims = to_std_vector(matrix_size_);
     dims.push_back(num_coils_);
@@ -166,24 +167,24 @@ namespace Gadgetron{
     cuNDArray<_complext> acc_copy = acc_buffer_;
 
     // FFT
-    E_->get_plan()->fft( &acc_copy, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_BACKWARDS );
+    nfft_plan_.fft( &acc_copy, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_BACKWARDS );
     
     // Deapodize
-    E_->get_plan()->deapodize( &acc_copy );
+    nfft_plan_.deapodize( &acc_copy );
     
     // Remove oversampling
     crop<_complext,D>( (matrix_size_os_-matrix_size_)>>1, &acc_copy, acc_image_.get() );
-
-    if( normalize ){
-      REAL scale = REAL(1)/(((REAL)cycle_length_-REAL(1))*(REAL)sub_cycle_length_);
-      *acc_image_ *= scale;
-    }
-
+    
+    //if( normalize ){
+    //REAL scale = REAL(1)/(((REAL)cycle_length_-REAL(1))*(REAL)sub_cycle_length_);
+    //*acc_image_ *= scale;
+    //}
+    
     return acc_image_;
   }
 
   template<class REAL, unsigned int D, bool ATOMICS>
-  boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseBuffer<REAL,D,ATOMICS>::get_combined_coil_image( bool normalize )
+  boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseBuffer<REAL,D,ATOMICS>::get_combined_coil_image()
   {
     if( csm_.get() == 0x0 ){
       BOOST_THROW_EXCEPTION(runtime_error("cuSenseBuffer::get_combined_coil_image: csm not set"));

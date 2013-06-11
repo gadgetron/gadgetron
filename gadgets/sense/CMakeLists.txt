@@ -8,6 +8,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
   ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
@@ -23,7 +24,6 @@ include_directories(
 add_library(gadgetron_gpusense SHARED 
   gpuCgSenseGadget.cpp 
   gpuSbSenseGadget.cpp 
-  gpuGpSenseGadget.cpp
   ${ISMRMRD_XSD_SOURCE}
   )
 

@@ -9,7 +9,7 @@ find_package(XercesC REQUIRED)
 include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers
@@ -29,7 +29,7 @@ if(CUDA_FOUND)
     ${ISMRMRD_XSD_SOURCE})
   
   target_link_libraries(gadgetron_gpuradial
-    gpunfft gpusolvers gpuoperators gpuparallelmri gpucore cpucore_math
+    gpunfft gpusolvers gpuoperators gpuparallelmri cpucore gpucore
     ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
     )

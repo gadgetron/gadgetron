@@ -5,35 +5,35 @@
   
   <reader>
     <slot>1008</slot>
-    <dll>gadgetron_core</dll>
+    <dll>gadgetron_mricore</dll>
     <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
   </reader>
   
   <writer>
     <slot>1004</slot>
-    <dll>gadgetron_core</dll>
+    <dll>gadgetron_mricore</dll>
     <classname>MRIImageWriterCPLX</classname>
   </writer>
   <writer>
     <slot>1005</slot>
-    <dll>gadgetron_core</dll>
+    <dll>gadgetron_mricore</dll>
     <classname>MRIImageWriterFLOAT</classname>
   </writer>
   <writer>
     <slot>1006</slot>
-    <dll>gadgetron_core</dll>
+    <dll>gadgetron_mricore</dll>
     <classname>MRIImageWriterUSHORT</classname>
   </writer>
   
   <gadget>
     <name>NoiseAdjust</name>
-    <dll>gadgetron_core</dll>
-    <classname>NoiseAdjustGadget</classname>
+    <dll>gadgetron_mricore</dll>
+    <classname>NoiseAdjustGadget_unoptimized</classname>
   </gadget>
   
   <gadget>
     <name>RemoveROOversampling</name>
-    <dll>gadgetron_core</dll>
+    <dll>gadgetron_mricore</dll>
     <classname>RemoveROOversamplingGadget</classname>
   </gadget>
   
@@ -49,7 +49,7 @@
     <name>gpuCgSenseGadget</name>
     <dll>gadgetron_gpusense</dll>
     <classname>gpuCgSenseGadget</classname>
-    <property><name>deviceno</name>                <value>1</value></property>
+    <property><name>deviceno</name>                <value>0</value></property>
     <property><name>number_of_iterations</name>    <value>10</value></property>
     <property><name>cg_limit</name>                <value>1e-6</value></property>
     <property><name>oversampling</name>            <value>1.25</value></property>
@@ -59,13 +59,13 @@
 
   <gadget>
     <name>PhaseSubtraction</name>
-    <dll>gadgetron_core</dll>
+    <dll>gadgetron_mricore</dll>
     <classname>FlowPhaseSubtractionGadget</classname>
   </gadget>
   
   <gadget>
     <name>Extract</name>
-    <dll>gadgetron_core</dll>
+    <dll>gadgetron_mricore</dll>
     <classname>ExtractGadget</classname>
     <property><name>extract_mask</name><value>9</value></property>
   </gadget>
@@ -73,34 +73,34 @@
   <!--
       <gadget>
       <name>ImageWrite</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>ImageWriterGadgetFLOAT</classname>
       </gadget>
   -->    
   
   <gadget>
     <name>AutoScaleGadget</name>
-    <dll>gadgetron_core</dll>
+    <dll>gadgetron_mricore</dll>
     <classname>AutoScaleGadget</classname>
   </gadget> 
 
   <gadget>
     <name>FloatToShort</name>
-    <dll>gadgetron_core</dll>
+    <dll>gadgetron_mricore</dll>
     <classname>FloatToUShortGadget</classname>
   </gadget>
   
   <!--
       <gadget>
       <name>ImageFinishCPLX</name>
-      <dll>gadgetron_core</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>ImageFinishGadgetCPLX</classname>
       </gadget>
   -->
   
   <gadget>
     <name>ImageFinishShort</name>
-    <dll>gadgetron_core</dll>
+    <dll>gadgetron_mricore</dll>
     <classname>ImageFinishGadgetUSHORT</classname>
   </gadget>    
 
