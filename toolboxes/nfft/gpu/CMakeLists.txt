@@ -18,7 +18,6 @@ include_directories(
 
 cuda_add_library(gpunfft SHARED 
   cuNFFT.cu 
-  NFFT_utils.cu
   cuNFFTOperator.cu
   )
 
@@ -36,7 +35,6 @@ install(TARGETS gpunfft DESTINATION lib)
 
 install(FILES 
   cuNFFT.h 
-  NFFT_utils.h
   cuNFFTOperator.h 
   gpunfft_export.h 
   DESTINATION include)

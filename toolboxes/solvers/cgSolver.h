@@ -1,5 +1,5 @@
 /** \file cgSolver.h
-    \brief Implementation of a conjugate gradient solver.
+    \brief Base class for the conjugate gradient solvers.
 
     The file cgSolver.h is a device independent implementation of the conjugate gradient solver.
     To simplify the actual instantiation we refer to 

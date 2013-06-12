@@ -1,9 +1,6 @@
-/*
- * gpucore_export.h
- *
- *  Created on: Nov 18, 2011
- *      Author: Michael S. Hansen
- */
+/** \file gpucore_export.h
+    \brief Required definitions for Windows, importing/exporting dll symbols 
+*/
 
 #ifndef GPUCORE_EXPORT_H_
 #define GPUCORE_EXPORT_H_

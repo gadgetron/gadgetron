@@ -1,3 +1,7 @@
+/** \file senseOperator.h
+    \brief Base class for all Sense operators
+*/
+
 #pragma once
 
 #include "linearOperator.h"

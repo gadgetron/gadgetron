@@ -1,6 +1,29 @@
 cmake_minimum_required(VERSION 2.8)
 project(GADGETRON)
 
+# build options for 64 bits system
+if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+    message(" 64bit system is found  ... ")
+    set( HAS_64_BIT On CACHE BOOL "64bit build")
+else( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+    message(" 32bit system is found  ... ")
+    set( HAS_64_BIT Off CACHE BOOL "64bit build")
+endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+
+# build options for OpenMP support
+find_package(OpenMP)
+if (OPENMP_FOUND)
+	message("OpenMP multithreading enabled")
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+	OPTION(USE_OPENMP "Use OpenMP" On)
+else (OPENMP_FOUND)
+	message("OpenMP multithreading not supported")
+endif (OPENMP_FOUND)
+if(USE_OPENMP) 
+	ADD_DEFINITIONS(-DUSE_OMP)
+endif(USE_OPENMP) 
+
 if (WIN32)
   ADD_DEFINITIONS(-DWIN32 -D_WIN32 -D_WINDOWS)
   ADD_DEFINITIONS(-DUNICODE -D_UNICODE)
@@ -33,17 +56,31 @@ find_package(FFTW3 COMPONENTS single double REQUIRED)
 
 find_package(ACE)
 if(ACE_FOUND)
-  MESSAGE("\nACE found, the streaming framework will be compiled")
+  MESSAGE("\nACE found, the streaming framework will be compiled.")
 else(ACE_FOUND)
   MESSAGE("\nACE not found. Only toolboxes and standalone applications are compiled. The streaming framework will not be compiled.")
 endif(ACE_FOUND)
 
 find_package(CUDA 4.1)
+
 find_package(GTest)
+#Add support for the default ubuntu package of gtest (which is not compiled
+if (NOT GTEST_FOUND)
+find_path(GTEST_SRC_DIR src/gtest.cc HINTS /usr/src/gtest)
+find_path(GTEST_INCLUDE_DIRS gtest.h HINTS /usr/include/gtest)
+if (GTEST_SRC_DIR AND GTEST_INCLUDE_DIRS)
+MESSAGE("GTest src package found. Compiling as part of Gadgetron.")
+add_subdirectory(${GTEST_SRC_DIR} ${CMAKE_BINARY_DIR}/gtest )
+include_directories(${GTEST_INCLUDE_DIRS})
+set(GTEST_FOUND 1)
+set(GTEST_LIBRARIES gtest gtest_main)
+endif (GTEST_SRC_DIR AND GTEST_INCLUDE_DIRS)
+endif (NOT GTEST_FOUND)
+
 find_package(Armadillo)
 
 if (CUDA_FOUND)
-  MESSAGE("CUDA found, GPU components will be compiled")
+  MESSAGE("CUDA found, GPU components will be compiled.")
   SET( GADGETRON_CUDA_FOUND_BOOL 1 )
   include_directories( ${CUDA_INCLUDE_DIRS} )
 
@@ -57,7 +94,7 @@ if (CUDA_FOUND)
      ENDIF(${CUDA_VERSION} VERSION_GREATER "4.99")
   ENDIF (${CMAKE_VERSION} VERSION_GREATER "2.8.7")
 else (CUDA_FOUND)
-  MESSAGE("CUDA not found. CUDA components will not be compiled")
+  MESSAGE("CUDA not found. CUDA components will not be compiled.")
   SET( GADGETRON_CUDA_FOUND_BOOL 0 )
 endif (CUDA_FOUND)
 
@@ -77,6 +114,8 @@ if(ISMRMRD_FOUND)
 else(ISMRMRD_FOUND)
 message("\nISMRMRD not found. Only compiling toolboxes and standalone applications.")
 endif(ISMRMRD_FOUND)
+
+find_package(GMatlab)
 
 add_subdirectory(toolboxes)
 add_subdirectory(apps)

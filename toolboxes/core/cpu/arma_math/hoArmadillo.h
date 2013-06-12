@@ -1,5 +1,5 @@
 #pragma once
-
+#define ARMA_64BIT_WORD
 #include "hoNDArray.h"
 #include <armadillo>
 
@@ -61,4 +61,24 @@ namespace Gadgetron{
   {
     return arma::Col<typename stdType<T>::Type>( (typename stdType<T>::Type*) x->get_data_ptr(), x->get_number_of_elements(), false, true );
   }
+
+  /**
+     * @brief Creates an Armadillo row vector from an arbitrary-dimensional hoNDArray.
+     * @param[in] x Input array.
+     * @return An Armadillo array mapped to the data pointer of the hoNDArray.
+     */
+    template<class T> arma::Row<typename stdType<T>::Type > as_arma_row( hoNDArray<T> *x )
+    {
+      return arma::Row<typename stdType<T>::Type>( (typename stdType<T>::Type*) x->get_data_ptr(), x->get_number_of_elements(), false, true );
+    }
+
+    /**
+     * @brief Creates an Armadillo row vector from an arbitrary-dimensional hoNDArray.
+     * @param[in] x Input array.
+     * @return An Armadillo array mapped to the data pointer of the hoNDArray.
+     */
+    template<class T> const arma::Row<typename stdType<T>::Type > as_arma_row( const hoNDArray<T> *x )
+    {
+      return arma::Row<typename stdType<T>::Type>( (typename stdType<T>::Type*) x->get_data_ptr(), x->get_number_of_elements(), false, true );
+    }
 }

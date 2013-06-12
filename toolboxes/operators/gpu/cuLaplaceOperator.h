@@ -1,3 +1,7 @@
+/** \file cuLaplaceOperator.h
+    \brief Laplace regularization operator, GPU based.
+*/
+
 #pragma once
 
 #include "laplaceOperator.h"

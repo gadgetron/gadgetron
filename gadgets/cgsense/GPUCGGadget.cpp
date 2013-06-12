@@ -130,7 +130,7 @@ int GPUCGGadget::process_config( ACE_Message_Block* mb )
 		GADGET_DEBUG2("Using device number %d for slice %d\n", device_number_, slice_no_);
 
 		// Allocate encoding operator for non-Cartesian Sense
-		std::vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size_);
+		std::vector<unsigned int> image_dims = to_std_vector(matrix_size_);
 		E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );
 		//E_->set_device(device_number_);
 		E_->set_domain_dimensions(&image_dims);
@@ -169,7 +169,7 @@ int GPUCGGadget::configure_channels()
 {
 	// We do not have a csm yet, so initialize a dummy one to purely ones
 
-	std::vector<unsigned int> csm_dims = uintd_to_vector<2>(matrix_size_); csm_dims.push_back( channels_ );
+	std::vector<unsigned int> csm_dims = to_std_vector(matrix_size_); csm_dims.push_back( channels_ );
 	boost::shared_ptr< cuNDArray<float_complext> > csm( new cuNDArray<float_complext> );
 
 	try { csm->create( &csm_dims ); }

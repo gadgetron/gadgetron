@@ -1,5 +1,5 @@
 /** \file hoPartialDerivativeOperator.h
-    \brief Implementation of the partial derivative operator for the cpu.
+    \brief Partial derivative regularization operator, CPU based.
 */
 
 #pragma once
@@ -8,6 +8,8 @@
 #include "hoNDArray_operators.h"
 #include "hoNDArray_elemwise.h"
 #include "vector_td_utilities.h"
+
+#include <omp.h>
 
 namespace Gadgetron{
 
@@ -38,12 +40,11 @@ namespace Gadgetron{
 	BOOST_THROW_EXCEPTION(runtime_error("hoPartialDerivativeOperator::compute_partial_derivative : dimensionality mismatch"));	
       }
       
-      typename uintd<D>::Type _dims = vector_to_uintd<D>( *(in->get_dimensions().get()) );
-      typename intd<D>::Type dims;
-      for( unsigned int i=0; i<D; i++ ){
-	dims.vec[i] = (int)_dims.vec[i];
-      }  
+      typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>( *(in->get_dimensions().get()) ));
       
+#ifdef USE_OMP
+#pragma omp parallel for
+#endif
       for( unsigned int idx=0; idx<in->get_number_of_elements(); idx++ ) {
 	
 	T valN, valC;
@@ -75,12 +76,11 @@ namespace Gadgetron{
 	BOOST_THROW_EXCEPTION(runtime_error( "hoPartialDerivativeOperator::compute_second_order_partial_derivative : dimensionality mismatch"));	
       }
       
-      typename uintd<D>::Type _dims = vector_to_uintd<D>( *(in->get_dimensions().get()) );
-      typename intd<D>::Type dims;
-      for( unsigned int i=0; i<D; i++ ){
-	dims.vec[i] = (int)_dims.vec[i];
-      }  
+      typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>( *(in->get_dimensions().get()) ));
   
+#ifdef USE_OMP
+#pragma omp parallel for
+#endif
       for( unsigned int idx=0; idx<in->get_number_of_elements(); idx++ ) {
 	
 	T valN1, valN2, valC;

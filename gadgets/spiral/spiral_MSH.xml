@@ -55,7 +55,7 @@
       <name>GPUCGGadgetGeneric</name>
       <dll>gadgetroncgsense</dll>
       <classname>GPUCGGadgetGeneric</classname>
-      <property><name>deviceno</name>                <value>1</value></property>
+      <property><name>deviceno</name>                <value>0</value></property>
       <property><name>number_of_iterations</name>    <value>10</value></property>
       <property><name>cg_limit</name>                <value>1e-6</value></property>
       <property><name>oversampling</name>            <value>1.25</value></property>

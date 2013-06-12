@@ -178,7 +178,7 @@ int main(int argc, char** argv)
 
   timer = new GPUTimer("Computing regularization");
 
-  std::vector<unsigned int> image_dims = uintd_to_vector<2>(matrix_size);
+  std::vector<unsigned int> image_dims = to_std_vector(matrix_size);
   cuNDArray<_complext> reg_image = cuNDArray<_complext>(&image_dims);
 
   E->mult_csm_conj_sum( acc_images.get(), &reg_image );
@@ -227,7 +227,7 @@ int main(int argc, char** argv)
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
   
   // Allocate space for result
-  image_dims = uintd_to_vector<2>(matrix_size); 
+  image_dims = to_std_vector(matrix_size); 
   image_dims.push_back(frames_per_reconstruction*num_reconstructions); 
   cuNDArray<_complext> result = cuNDArray<_complext>(&image_dims);
 
@@ -257,7 +257,7 @@ int main(int argc, char** argv)
     cg.add_regularization_operator( R );  // regularization matrix
 
     // Form rhs (use result array to save memory)
-    vector<unsigned int> rhs_dims = uintd_to_vector<2>(matrix_size); 
+    vector<unsigned int> rhs_dims = to_std_vector(matrix_size); 
     rhs_dims.push_back(frames_per_reconstruction);
     cuNDArray<_complext> rhs; 
 
@@ -286,7 +286,7 @@ int main(int argc, char** argv)
     
     // Define image dimensions
     vector<unsigned int> image_dims;
-    image_dims = uintd_to_vector<2>(matrix_size); 
+    image_dims = to_std_vector(matrix_size); 
     image_dims.push_back(frames_per_reconstruction);
     
     if( reconstruction == 0 ){
@@ -314,9 +314,7 @@ int main(int argc, char** argv)
       return 1;
 
     // Copy cgresult to overall result
-    cuNDArray<_complext> out(&image_dims,
-		    result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );
-    
+    cuNDArray<_complext> out(&image_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );    
     out = *(cgresult.get());
   }
   
