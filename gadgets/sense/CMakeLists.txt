@@ -23,6 +23,7 @@ include_directories(
 
 add_library(gadgetron_gpusense SHARED 
   gpuCgSenseGadget.cpp 
+  gpuCgKtSenseGadget.cpp 
   gpuSbSenseGadget.cpp 
   ${ISMRMRD_XSD_SOURCE}
   )

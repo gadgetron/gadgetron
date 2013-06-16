@@ -1,5 +1,5 @@
-#ifndef gpuCgSenseGadget_H
-#define gpuCgSenseGadget_H
+#ifndef gpuCgKtSenseGadget_H
+#define gpuCgKtSenseGadget_H
 #pragma once
 
 #include "gadgetron_gpusense_export.h"
@@ -7,7 +7,7 @@
 #include "SenseJob.h"
 #include "GadgetMRIHeaders.h"
 #include "cuCgSolver.h"
-#include "cuNonCartesianSenseOperator.h"
+#include "cuNonCartesianKtSenseOperator.h"
 #include "cuCgPreconditioner.h"
 #include "cuNFFT.h"
 #include "cuImageOperator.h"
@@ -17,19 +17,21 @@
 
 namespace Gadgetron{
 
-  class EXPORTGADGETS_GPUSENSE gpuCgSenseGadget : public Gadget2<ISMRMRD::ImageHeader, SenseJob>
+  class EXPORTGADGETS_GPUSENSE gpuCgKtSenseGadget : public Gadget2<ISMRMRD::ImageHeader, SenseJob>
   {
 
   public:
-    GADGET_DECLARE(gpuCgSenseGadget);
+    GADGET_DECLARE(gpuCgKtSenseGadget);
 
-    gpuCgSenseGadget();
-    virtual ~gpuCgSenseGadget();
+    gpuCgKtSenseGadget();
+    virtual ~gpuCgKtSenseGadget();
 
   protected:
 
     virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader > *m1, GadgetContainerMessage< SenseJob > *m2 );
     virtual int process_config( ACE_Message_Block* mb );
+
+    boost::shared_ptr< cuNDArray<float_complext> > compute_regularization_image( SenseJob *job );
 
     int channels_;
     int device_number_;
@@ -44,6 +46,8 @@ namespace Gadgetron{
     double oversampling_factor_;
     double kernel_width_;
     double kappa_;
+    double shutter_radius_;
+    unsigned int rotations_to_discard_;
 
     bool is_configured_;
 
@@ -51,7 +55,7 @@ namespace Gadgetron{
     cuCgSolver<float_complext> cg_;
 
     // Define non-Cartesian Sense Encofing operator
-    boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E_;
+    boost::shared_ptr< cuNonCartesianKtSenseOperator<float,2> > E_;
 
     // Define preconditioner
     boost::shared_ptr< cuCgPreconditioner<float_complext> > D_;
@@ -63,4 +67,4 @@ namespace Gadgetron{
     int image_counter_;
   };
 }
-#endif //gpuCgSenseGadget
+#endif //gpuCgKtSenseGadget

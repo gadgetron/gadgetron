@@ -123,23 +123,22 @@ int main(int argc, char** argv)
 
   // Density compensation weights are constant throughout all reconstrutions
   boost::shared_ptr< cuNDArray<_real> > dcw = compute_radial_dcw_golden_ratio_2d
-    ( samples_per_profile, profiles_per_frame, (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0], 
-      _real(1)/((_real)samples_per_profile/(_real)max(matrix_size.vec[0],matrix_size.vec[1])) );
+    ( samples_per_profile, profiles_per_frame, (_real)matrix_size_os[0]/(_real)matrix_size[0], 
+      _real(1)/((_real)samples_per_profile/(_real)max(matrix_size[0],matrix_size[1])) );
   
   // Define encoding matrix for non-Cartesian SENSE
   boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );  
   E->set_weight( mu );
   E->setup( matrix_size, matrix_size_os, kernel_width );
   E->set_dcw(dcw);
-  dcw.reset();
 
   // Define rhs buffer
   //
 
   boost::shared_ptr< cuSenseBuffer<_real,2> > rhs_buffer( new cuSenseBuffer<_real,2>() );
 
-  rhs_buffer->set_num_coils(num_coils);
-  rhs_buffer->set_sense_operator(E);
+  rhs_buffer->setup( matrix_size, matrix_size_os, kernel_width, num_coils, 8, 16 );
+  rhs_buffer->set_dcw(dcw);
 
   //
   // Compute CSM using accumulation in the rhs buffer
@@ -163,7 +162,8 @@ int main(int argc, char** argv)
   }
     
   // Estimate csm
-  boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_acc_coil_images(true);
+  boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_accumulated_coil_images();
+  *acc_images *= rhs_buffer->get_normalization_factor();
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );
   E->set_csm(csm);
 

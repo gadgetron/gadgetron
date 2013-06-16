@@ -117,13 +117,13 @@ namespace Gadgetron{
     }
 
     bool reconfigure_;
-    virtual void reconfigure( unsigned int num_coils );
+    virtual void reconfigure();
 
     GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* duplicate_profile
       ( GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *profile );
 
     boost::shared_ptr< hoNDArray<float_complext> > extract_samples_from_queue
-      ( ACE_Message_Queue<ACE_MT_SYNCH> *queue, std::vector<unsigned int> dims );
+      ( ACE_Message_Queue<ACE_MT_SYNCH> *queue, bool acknowledge_sliding_window );
 
     // Compute trajectory/dcw for a reconstruction (to store internally)
     int calculate_trajectory_for_reconstruction(long profile_offset);
@@ -155,8 +155,13 @@ namespace Gadgetron{
     long *profiles_counter_frame_;
     long *profiles_counter_global_;
 
+    long sliding_window_profiles_;
+    long sliding_window_rotations_;
+
     float kernel_width_;
     float oversampling_factor_;
+
+    unsigned int num_coils_;
 
     float position_[3];
     float read_dir_[3];

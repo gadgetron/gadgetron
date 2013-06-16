@@ -55,7 +55,7 @@ int main(int argc, char** argv)
   parms.add_parameter( 'f', COMMAND_LINE_INT,    1, "Frames per reconstruction (negative meaning all)", true, "-1" );
   parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of iterations", true, "10" );
   parms.add_parameter( 'k', COMMAND_LINE_FLOAT,  1, "Kernel width", true, "5.5" );
-  parms.add_parameter( 'K', COMMAND_LINE_FLOAT,  1, "Kappa", true, "0.1" );
+  parms.add_parameter( 'K', COMMAND_LINE_FLOAT,  1, "Kappa", true, "0.3" );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -114,8 +114,8 @@ int main(int argc, char** argv)
 
   // Set density compensation weights
   boost::shared_ptr< cuNDArray<_real> > dcw = compute_radial_dcw_golden_ratio_2d
-    ( samples_per_profile, profiles_per_frame, (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0], 
-      _real(1)/((_real)samples_per_profile/(_real)max(matrix_size.vec[0],matrix_size.vec[1])) );
+    ( samples_per_profile, profiles_per_frame, (_real)matrix_size_os[0]/(_real)matrix_size[0], 
+      _real(1)/((_real)samples_per_profile/(_real)max(matrix_size[0],matrix_size[1])) );
 
   // Define encoding matrix for non-Cartesian SENSE
   boost::shared_ptr< cuNonCartesianSenseOperator<_real,2,use_atomics> > E
@@ -125,7 +125,6 @@ int main(int argc, char** argv)
 
   // Notify encoding operator of dcw
   E->set_dcw(dcw) ;
-  dcw.reset();
 
   // Define rhs buffer
   //
@@ -133,9 +132,9 @@ int main(int argc, char** argv)
   boost::shared_ptr< cuSenseBuffer<_real,2,use_atomics> > rhs_buffer
     ( new cuSenseBuffer<_real,2,use_atomics>() );
 
-  rhs_buffer->set_num_coils(num_coils);
-  rhs_buffer->set_sense_operator(E);
-   
+  rhs_buffer->setup( matrix_size, matrix_size_os, kernel_width, num_coils, 8, 16 );
+  rhs_buffer->set_dcw(dcw);
+
   // Fill rhs buffer
   //
 
@@ -164,7 +163,7 @@ int main(int argc, char** argv)
 
   timer = new GPUTimer("Estimating csm");
 
-  boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_acc_coil_images();
+  boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_accumulated_coil_images();
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );  
   E->set_csm(csm);
 

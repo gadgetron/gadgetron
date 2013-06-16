@@ -26,6 +26,7 @@ namespace Gadgetron{
     , device_number_(-1)
     , mode_(-1)
     , samples_per_profile_(-1)
+    , num_coils_(0)
     , previous_profile_(0x0)
     , profiles_counter_frame_(0x0)
     , profiles_counter_global_(0x0)
@@ -58,6 +59,9 @@ namespace Gadgetron{
   {
     //GADGET_DEBUG1("gpuRadialSenseGadget::process_config\n");
 
+    // Get configuration values from config file
+    //
+
     mode_ = get_int_value(std::string("mode").c_str());
     device_number_ = get_int_value(std::string("deviceno").c_str());
     profiles_per_frame_ = get_int_value(std::string("profiles_per_frame").c_str());
@@ -65,6 +69,30 @@ namespace Gadgetron{
     rotations_per_reconstruction_ = get_int_value(std::string("rotations_per_reconstruction").c_str());
     buffer_length_in_rotations_ = get_int_value(std::string("buffer_length_in_rotations").c_str());
     buffer_using_solver_ = get_bool_value(std::string("buffer_using_solver").c_str());
+
+    // Currently there are some restrictions on the allowed sliding window configurations
+    //
+    
+    sliding_window_profiles_ = get_int_value(std::string("sliding_window_profiles").c_str());
+    sliding_window_rotations_ = get_int_value(std::string("sliding_window_rotations").c_str());
+
+    if( sliding_window_profiles_>0 && sliding_window_rotations_>0 ){
+      GADGET_DEBUG1( "Error: Sliding window reconstruction is not yet supported for both profiles and frames simultaneously.\n" );
+      return GADGET_FAIL;
+    }
+
+    if( sliding_window_profiles_>0 && rotations_per_reconstruction_>0 ){
+      GADGET_DEBUG1( "Error: Sliding window reconstruction over profiles is not yet supported for multiframe reconstructions.\n" );
+      return GADGET_FAIL;
+    }
+    
+    if( sliding_window_rotations_ > 0 && sliding_window_rotations_ >= rotations_per_reconstruction_ ){
+      GADGET_DEBUG1( "Error: Illegal sliding window configuration.\n" );
+      return GADGET_FAIL;
+    }
+
+    // Setup and validate device configuration
+    //
 
     int number_of_devices;
     if (cudaGetDeviceCount(&number_of_devices)!= cudaSuccess) {
@@ -96,8 +124,13 @@ namespace Gadgetron{
     unsigned int warp_size = deviceProp.warpSize;
 
     // Convolution kernel width and oversampling ratio (for the buffer)
+    //
+
     kernel_width_ = get_double_value(std::string("buffer_convolution_kernel_width").c_str());
     oversampling_factor_ = get_double_value(std::string("buffer_convolution_oversampling_factor").c_str());
+
+    // Get the Ismrmrd header
+    //
 
     boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
     
@@ -118,6 +151,7 @@ namespace Gadgetron{
     ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
 
     // Matrix sizes (as a multiple of the GPU's warp size)
+    //
 
     image_dimensions_.push_back(((e_space.matrixSize().x()+warp_size-1)/warp_size)*warp_size);
     image_dimensions_.push_back(((e_space.matrixSize().y()+warp_size-1)/warp_size)*warp_size);
@@ -127,8 +161,8 @@ namespace Gadgetron{
     
     uintd2 matrix_size = uintd2(image_dimensions_recon_[0],image_dimensions_recon_[1]);
     image_dimensions_recon_os_ = uintd2
-      (((static_cast<unsigned int>(std::ceil(matrix_size.vec[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
-       ((static_cast<unsigned int>(std::ceil(matrix_size.vec[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
+      (((static_cast<unsigned int>(std::ceil(matrix_size[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
+       ((static_cast<unsigned int>(std::ceil(matrix_size[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
     
     oversampling_factor_ = float(image_dimensions_recon_os_[0])/float(matrix_size[0]); // in case the warp_size constraint kicked in
     
@@ -159,7 +193,10 @@ namespace Gadgetron{
       recon_queue_[i].high_water_mark(bsize);
       recon_queue_[i].low_water_mark(bsize);
       }
-    
+
+    // Define some profile counter for book-keeping
+    //
+
     previous_profile_ = new long[slices_*sets_];
     profiles_counter_frame_= new long[slices_*sets_];
     profiles_counter_global_= new long[slices_*sets_];
@@ -176,7 +213,8 @@ namespace Gadgetron{
     }
     
     // Assign some default values ("upper bound estimates") of the yet unknown entities
-    
+    //
+
     if( profiles_per_frame_ == 0 ){
       profiles_per_frame_ = image_dimensions_[0];
     }
@@ -189,6 +227,8 @@ namespace Gadgetron{
     }
 
     // Allocate accumulation buffer
+    //
+
     if( buffer_using_solver_ )
       acc_buffer_ = boost::shared_ptr< cuSenseBufferCg<float,2> >(new cuSenseBufferCg<float,2>());
     else
@@ -244,14 +284,19 @@ namespace Gadgetron{
     unsigned int profile = m1->getObjectPtr()->idx.kspace_encode_step_1;
     unsigned int slice = m1->getObjectPtr()->idx.slice;
     unsigned int set = m1->getObjectPtr()->idx.set;
-    unsigned int num_coils = m1->getObjectPtr()->active_channels;
     bool new_frame_detected = false;
 
-    // Reconfigure at first pass (and if the reconfigure_ flag is set later on)
-    // 
+    // Reconfigure at first pass
+    // - or if the number of coil changes
+    // - or if the reconfigure_ flag is set
+
+    if( num_coils_ != m1->getObjectPtr()->active_channels ){
+      num_coils_ = m1->getObjectPtr()->active_channels;
+      reconfigure();
+    }
 
     if( reconfigure_ )
-      reconfigure(num_coils);
+      reconfigure();
 
     // Keep track of the incoming profile ids (mode dependent)
     // - to determine the number of profiles per frame
@@ -265,7 +310,7 @@ namespace Gadgetron{
 	  unsigned int acceleration_factor = profile - previous_profile_[set*slices_+slice];
 	  if( acceleration_factor != frames_per_rotation_ ){
 	    frames_per_rotation_ = acceleration_factor;
-	    reconfigure(num_coils);
+	    reconfigure();
 	  }
 	}
       }
@@ -277,47 +322,34 @@ namespace Gadgetron{
 	  profiles_per_frame_ = profiles_counter_frame_[set*slices_+slice];
 	  if( mode_ == 1 && get_int_value(std::string("frames_per_rotation").c_str()) == 0 )
 	    frames_per_rotation_ = image_dimensions_[0]/profiles_per_frame_;
-	  reconfigure(num_coils);
+	  reconfigure();
 	}
       }
     }
     previous_profile_[set*slices_+slice] = profile;
-
-    // Are we ready to add a frame to the buffer? Or reconstruct downstream?
-    //
-
-    long profiles_per_reconstruction = profiles_per_frame_*frames_per_rotation_*rotations_per_reconstruction_;
-
-    bool is_last_profile_in_frame = (profiles_counter_frame_[set*slices_+slice] == profiles_per_frame_-1);
-    is_last_profile_in_frame |= new_frame_detected;
-       
-    bool is_last_rotation = (rotations_per_reconstruction_ == 0);
-    if( profiles_per_reconstruction > 0 )
-      is_last_rotation |= ((profiles_counter_global_[set*slices_+slice]%profiles_per_reconstruction) == profiles_per_reconstruction-1);
 
     // Enqueue profile
     // - if 'new_frame_detected' the current profile does not belong to the current frame and we delay enqueing
 
     if( !new_frame_detected ) {
       
-      // The memory handling is easier if we make copies for our internal queues
+      // Memory handling is easier if we make copies for our internal queues
       frame_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m1));
       recon_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m1));
     }
 
-    // If the profile is the last of the frame then update the accumulation buffer
-    //
+    // If the profile is the last of a "true frame" (ignoring any sliding window profiles)
+    // - then update the accumulation buffer
+
+    bool is_last_profile_in_frame = (profiles_counter_frame_[set*slices_+slice] == profiles_per_frame_-1);
+    is_last_profile_in_frame |= new_frame_detected;
 
     if( is_last_profile_in_frame ){
 
       //GPUTimer timer("gpuRadialGadget::UPDATING BUFFER FRAME");
 
-      std::vector<unsigned int> dims;
-      dims.push_back(samples_per_profile_*profiles_per_frame_);
-      dims.push_back(num_coils);
-
       boost::shared_ptr< hoNDArray<float_complext> > host_samples = 
-	extract_samples_from_queue( &frame_queue_[set*slices_+slice], dims );
+	extract_samples_from_queue( &frame_queue_[set*slices_+slice], false );
 
       if( host_samples.get() == 0x0 ){
 	GADGET_DEBUG1("Failed to extract frame data from queue\n");
@@ -332,11 +364,16 @@ namespace Gadgetron{
       buffer_update_needed_ |= acc_buffer_->add_frame_data( &samples, traj.get() );
     }
     
-    // If the profile is the last before a reconstruction then prepare the Sense job
-    //
-    
-    if( is_last_profile_in_frame && is_last_rotation ){
+    // Are we ready to reconstruct (downstream)?
+    // - then prepare the Sense job
 
+    long profiles_per_reconstruction = profiles_per_frame_;
+
+    if( rotations_per_reconstruction_ > 0 )
+      profiles_per_reconstruction *= (frames_per_rotation_*rotations_per_reconstruction_);
+    
+    if( recon_queue_[set*slices_+slice].message_count() == profiles_per_reconstruction ){
+      
       // Update csm and regularization images if the buffer has changed (completed a cycle) 
       // - and at the first pass
 
@@ -369,7 +406,7 @@ namespace Gadgetron{
 	// Compute regularization image
 	//
 
-	boost::shared_ptr< cuNDArray<float_complext> > reg_image;	
+	boost::shared_ptr< cuNDArray<float_complext> > reg_image;
 	acc_buffer_->set_csm(csm);
 	
 	if( buffer_using_solver_ && mode_ == 2 ){
@@ -399,14 +436,8 @@ namespace Gadgetron{
       // Prepare data array of the profiles for the downstream reconstruction
       //
       
-      unsigned int num_frames = std::max(1L,frames_per_rotation_*rotations_per_reconstruction_);
-
-      std::vector<unsigned int> dims;
-      dims.push_back(samples_per_profile_*profiles_per_frame_*num_frames);
-      dims.push_back(num_coils);
-
       boost::shared_ptr< hoNDArray<float_complext> > samples_host = 
-	extract_samples_from_queue( &recon_queue_[set*slices_+slice], dims );
+	extract_samples_from_queue( &recon_queue_[set*slices_+slice], true );
       
       if( samples_host.get() == 0x0 ){
 	GADGET_DEBUG1("Failed to extract frame data from queue\n");
@@ -438,8 +469,8 @@ namespace Gadgetron{
       ISMRMRD::AcquisitionHeader base_head = *m1->getObjectPtr();
       m3->getObjectPtr()->matrix_size[0] = image_dimensions_recon_[0];
       m3->getObjectPtr()->matrix_size[1] = image_dimensions_recon_[1];
-      m3->getObjectPtr()->matrix_size[2] = num_frames;
-      m3->getObjectPtr()->channels       = num_coils;
+      m3->getObjectPtr()->matrix_size[2] = std::max(1L,frames_per_rotation_*rotations_per_reconstruction_);
+      m3->getObjectPtr()->channels       = num_coils_;
       m3->getObjectPtr()->slice          = base_head.idx.slice;
       m3->getObjectPtr()->set            = base_head.idx.set;
 
@@ -686,12 +717,16 @@ namespace Gadgetron{
     }
   }
 
-  boost::shared_ptr< hoNDArray<float_complext> > gpuRadialSenseGadget::extract_samples_from_queue
-  ( ACE_Message_Queue<ACE_MT_SYNCH> *queue, std::vector<unsigned int> dims )
+  boost::shared_ptr< hoNDArray<float_complext> > gpuRadialSenseGadget::
+  extract_samples_from_queue( ACE_Message_Queue<ACE_MT_SYNCH> *queue, bool sliding_window )
   {    
     //GADGET_DEBUG1("Emptying queue...\n");
+
     unsigned int profiles_buffered = queue->message_count();
-    unsigned num_coils = dims.back();
+    
+    std::vector<unsigned int> dims;
+    dims.push_back(samples_per_profile_*profiles_buffered);
+    dims.push_back(num_coils_);
     
     boost::shared_ptr< hoNDArray<float_complext> > host_samples(new hoNDArray<float_complext>(&dims));
     
@@ -711,7 +746,7 @@ namespace Gadgetron{
 	return boost::shared_ptr< hoNDArray<float_complext> >();
       }
 	
-      for (unsigned int c = 0; c < num_coils; c++) {
+      for (unsigned int c = 0; c < num_coils_; c++) {
 	
 	float_complext *data_ptr = host_samples->get_data_ptr();
 	data_ptr += c*samples_per_profile_*profiles_buffered+p*samples_per_profile_;
@@ -722,13 +757,15 @@ namespace Gadgetron{
 	memcpy(data_ptr,r_ptr,samples_per_profile_*sizeof(float_complext));
       }
 
-      mbq->release();
-    }    
-
-    if( queue->message_count() ) {
-      GADGET_DEBUG1("Error emptying queue\n");
-      return boost::shared_ptr< hoNDArray<float_complext> >();
-    }
+      // In sliding window mode the profile might need to go back at the end of the queue
+      // 
+      
+      long profiles_in_sliding_window = sliding_window_profiles_ + profiles_per_frame_*frames_per_rotation_*sliding_window_rotations_;
+      if( sliding_window && p >= (profiles_buffered-profiles_in_sliding_window) )
+	queue->enqueue_tail(mbq);
+      else
+	mbq->release();
+    } 
     
     return host_samples;
   }
@@ -749,7 +786,7 @@ namespace Gadgetron{
     return copy;
   }
 
-  void gpuRadialSenseGadget::reconfigure( unsigned int num_coils )
+  void gpuRadialSenseGadget::reconfigure()
   {    
     GADGET_DEBUG2("\nReconfiguring:\n#profiles/frame:%d\n#frames/rotation: %d\n#rotations/reconstruction:%d\n", profiles_per_frame_, frames_per_rotation_, rotations_per_reconstruction_);
 
@@ -766,7 +803,7 @@ namespace Gadgetron{
     }
       
     acc_buffer_->setup( from_std_vector<unsigned int,2>(image_dimensions_recon_), image_dimensions_recon_os_, 
-			kernel_width_, num_coils, buffer_length_in_rotations_, buffer_frames_per_rotation_ );
+			kernel_width_, num_coils_, buffer_length_in_rotations_, buffer_frames_per_rotation_ );
     
     boost::shared_ptr< cuNDArray<float> > device_weights_frame = calculate_density_compensation_for_frame();
     acc_buffer_->set_dcw(device_weights_frame);

@@ -778,6 +778,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::check_consistency( cuNDArray<complext<RE
     num_batches_in_image_array /= number_of_frames;
 
     if( num_batches_in_samples_array != num_batches_in_image_array ){
+      printf("\ncuNFFT::check_consistency() failed:\n#elements in the samples array: %ld.\n#samples from preprocessing: %d.\n#frames from preprocessing: %d.\nLeading to %d batches in the samples array.\nThe number of batches in the image array is %d.\n",samples->get_number_of_elements(), number_of_samples, number_of_frames, num_batches_in_samples_array, num_batches_in_image_array ); fflush(stdout);
       BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan: Number of batches mismatch between samples and image arrays"));
     }
   }
