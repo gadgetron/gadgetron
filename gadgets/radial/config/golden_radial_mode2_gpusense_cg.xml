@@ -50,7 +50,7 @@
       <property><name>deviceno</name><value>0</value></property>
       <property><name>mode</name><value>2</value></property>
       <property><name>profiles_per_frame</name><value>16</value></property>
-      <property><name>rotations_per_reconstruction</name><value>32</value></property>
+      <property><name>rotations_per_reconstruction</name><value>16</value></property>
       <property><name>buffer_frames_per_rotation</name><value>16</value></property>
       <property><name>buffer_length_in_rotations</name><value>2</value></property>
       <property><name>buffer_convolution_kernel_width</name><value>5.5</value></property>
