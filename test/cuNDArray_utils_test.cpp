@@ -99,7 +99,27 @@ TYPED_TEST(cuNDArray_utils_TestReal,sumTest){
   EXPECT_FLOAT_EQ(19*v1,sum(&this->Array,3)->at(idx));
 }
 
+
+TYPED_TEST(cuNDArray_utils_TestReal,meanTest){
+  TypeParam v1 = TypeParam(12.34);
+  unsigned int idx = 0;
+
+  fill(&this->Array,v1);
+  EXPECT_FLOAT_EQ(v1,mean(&this->Array));
+
+}
 TYPED_TEST_CASE(cuNDArray_utils_TestCplx, cplxImplementations);
+
+
+
+TYPED_TEST(cuNDArray_utils_TestCplx,meanTest){
+  TypeParam v1 = TypeParam(12.34);
+  unsigned int idx = 0;
+
+  fill(&this->Array,v1);
+  EXPECT_FLOAT_EQ(real(v1),real(mean(&this->Array)));
+
+}
 
 TYPED_TEST(cuNDArray_utils_TestCplx,permuteTest){
   
