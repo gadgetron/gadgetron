@@ -25,8 +25,8 @@
 #include <boost/program_options.hpp>
 #include "vector_td_io.h"
 
-#include "hoCuTVOperator.h"
-#include "hoCuTVpicsOperator.h"
+#include "hoCuTvOperator.h"
+#include "hoCuTvPicsOperator.h"
 #include "projectionSpaceOperator.h"
 #include "weightingOperator.h"
 #include "ABOCSSolver.h"
@@ -187,7 +187,7 @@ int main( int argc, char** argv)
 		}
 		if (vm.count("PICS-weight")){
 			std::cout << "PICS in used" << std::endl;
-			boost::shared_ptr<hoCuTVpicsOperator<float,3> > pics (new hoCuTVpicsOperator<float,3>);
+			boost::shared_ptr<hoCuTvPicsOperator<float,3> > pics (new hoCuTvPicsOperator<float,3>);
 
 			pics->set_prior(prior);
 			pics->set_weight(vm["PICS-weight"].as<float>());
@@ -201,7 +201,7 @@ int main( int argc, char** argv)
 
   if (vm.count("TV")){
 	  std::cout << "Total variation regularization in use" << std::endl;
-	  boost::shared_ptr<hoCuTVOperator<float,3> > tv(new hoCuTVOperator<float,3>);
+	  boost::shared_ptr<hoCuTvOperator<float,3> > tv(new hoCuTvOperator<float,3>);
 	  tv->set_weight(vm["TV"].as<float>());
 	  solver.add_nonlinear_operator(tv);
   }

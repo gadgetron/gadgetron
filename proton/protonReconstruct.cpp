@@ -15,7 +15,7 @@
 #include "hoNDArray_fileio.h"
 #include "check_CUDA.h"
 #include "cuLwSolver.h"
-#include "cuGPBBSolver.h"
+#include "cuGpBbSolver.h"
 #include "identityOperator.h"
 
 
@@ -176,7 +176,7 @@ int main( int argc, char** argv)
 
 
 
-  cuGPBBSolver<_real> solver;
+  cuGpBbSolver<_real> solver;
 
   solver.set_max_iterations( iterations);
 
