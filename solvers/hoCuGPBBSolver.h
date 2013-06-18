@@ -1,16 +1,16 @@
 #pragma once
 
-#include "gpBBSolver.h"
+#include "gpBbSolver.h"
 #include "hoNDArray_elemwise.h"
 #include "hoCuNDArray_blas.h"
 #include "complext.h"
 
 namespace Gadgetron{
 
-template<class T> class hoCuGPBBSolver: public gpBBSolver<hoCuNDArray<T> >{
+template<class T> class hoCuGPBBSolver: public gpBbSolver<hoCuNDArray<T> >{
 	typedef typename realType<T>::Type REAL;
 public:
-	hoCuGPBBSolver():gpBBSolver<hoCuNDArray<T> >(){
+	hoCuGPBBSolver():gpBbSolver<hoCuNDArray<T> >(){
 
 	}
 
