@@ -8,13 +8,12 @@
 #include "cuCgPreconditioner.h"
 #include "cuPartialDerivativeOperator.h"
 #include "FISTASolver.h"
-#include "cuWTVOperator.h"
 #include "cuTVpicsOperator.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "parameterparser.h"
 #include "vector_td_utilities.h"
-#include "cuWaveletOperator.h"
+#include "cuHaarWaveletOperator.h"
 #include "identityOperator.h"
 
 // Std includes
@@ -59,7 +58,7 @@ int main(int argc, char** argv)
   parms.add_parameter( 'M', COMMAND_LINE_FLOAT,  1, "Mu", true, "1.0" );
   parms.add_parameter( 'L', COMMAND_LINE_FLOAT,  1, "Lambda", true, "0.0" );
   parms.add_parameter( 'A', COMMAND_LINE_FLOAT,  1, "Alpha in [0;1] (for PICCS)", true, "0.5" );
-  parms.add_parameter( 'W', COMMAND_LINE_FLOAT,  1, "Wavelet weight", true, "0.0" );
+  parms.add_parameter( 'W', COMMAND_LINE_FLOAT,  1, "HaarWavelet weight", true, "0.0" );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -232,7 +231,7 @@ int main(int argc, char** argv)
 
 
   if (w > 0.0){
-  	boost::shared_ptr<cuWaveletOperator<_complext,3> > wave(new cuWaveletOperator<_complext,3>);
+  	boost::shared_ptr<cuHaarWaveletOperator<_complext,3> > wave(new cuHaarWaveletOperator<_complext,3>);
 		wave->set_weight(w);
 		wave->set_domain_dimensions(recon_dims.get());
 

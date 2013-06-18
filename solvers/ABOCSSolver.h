@@ -76,7 +76,7 @@ template<class GPBB> class ABOCSSolver : public GPBB{
 							this->precond_->apply(g,g);
 						}
 						data_res = real(dot(in,in));
-						REAL abocs = std::max(beta,eps-REAL(0.5)*data_res);
+						REAL abocs = std::max(beta,eps-data_res);
 						*g *=  -this->encoding_operator_->get_weight()/abocs;
 
 						reg_res=REAL(0);
@@ -89,7 +89,7 @@ template<class GPBB> class ABOCSSolver : public GPBB{
 							this->precond_->apply(g,g);
 							this->precond_->apply(g,g);
 						}
-						REAL abocs = std::max(beta,eps-REAL(0.5)*data_res);
+						REAL abocs = std::max(beta,eps-data_res);
 						*g *=  this->encoding_operator_->get_weight()/abocs;
 					}
 

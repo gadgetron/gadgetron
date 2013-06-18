@@ -16,8 +16,8 @@
 #include "GPUTimer.h"
 #include "float3x3.h"
 #include "cuNDArray_utils.h"
-//#include "../../libs/device_utils/float3x3.h"
-//#include <cuda_utilities.h>
+#include "cudaDeviceManager.h"
+
 #include <iostream>
 #include <fstream>
 
@@ -67,7 +67,7 @@ conebeam_forwards_projection_cb_kernel(float* projections, float* angles,
                                        uint2 ps_dims_in_pixels_uint, floatd2 ps_dims_in_mm,
                                        floatd3 sag_parameters_x, floatd3 sag_parameters_y,
                                        float SDD, float SAD,
-                                       const unsigned int numSamplesPerRay, bool use_circular_cutoff) {
+                                       const unsigned int numSamplesPerRay) {
 
     const int PROJ_IDX_X = threadIdx.x + blockIdx.x * blockDim.x;
     const int PROJ_IDX_Y = threadIdx.y + blockIdx.y * blockDim.y;
@@ -101,7 +101,7 @@ conebeam_forwards_projection_cb_kernel(float* projections, float* angles,
     floatd2 ps_nc01 = ps_pc / ps_dims_in_pixels; // [0; 1[
 
     //floatd2 ps_nc01_offset = floatd2(0.5);
-    floatd2 ps_nc01_offset = floor(ps_dims_in_pixels/2.0) / ps_dims_in_pixels;
+    floatd2 ps_nc01_offset = floor(ps_dims_in_pixels/2.0f) / ps_dims_in_pixels;
     floatd2 ps_nc = ps_nc01 - ps_nc01_offset; // [-0.5; 0.5[
     floatd2 proj_coords = ps_nc * ps_dims_in_mm; // ps in mm
     proj_coords += sag; // this sag is in mm.
@@ -118,12 +118,7 @@ conebeam_forwards_projection_cb_kernel(float* projections, float* angles,
     // Find direction of the line integral
     floatd3 dir = endPoint-startPoint;
 
-    // Scale start and end onto radius
-    floatd3 is_dims_in_mm = is_spacing_in_mm * is_dims_in_pixels;
-    float radius = norm( (is_dims_in_mm + is_spacing_in_mm) / floatd3(2.0f) );
-    floatd3 unitDir = dir / SDD;
-    startPoint = startPoint + (unitDir * (SAD-radius));
-    endPoint = endPoint - (unitDir * (ADD-radius));
+
     float rayLength = norm(startPoint-endPoint);
 
     const int projectionSpaceId =
@@ -132,43 +127,32 @@ conebeam_forwards_projection_cb_kernel(float* projections, float* angles,
         PROJECTION * PROJECTION_RES_X * PROJECTION_RES_Y;
 
     float result = 0.0f;
+    floatd3 is_dims_in_mm = is_spacing_in_mm*is_dims_in_pixels;
+    float tStart = max(amin((is_dims_in_mm*0.5f-startPoint)/dir,(-is_dims_in_mm*0.5f-startPoint)/dir));
+    float tEnd = min(amax((is_dims_in_mm*0.5f-startPoint)/dir,(-is_dims_in_mm*0.5f-startPoint)/dir));
+    endPoint = startPoint+tEnd*dir+is_dims_in_mm*0.5f;
+    startPoint += tStart*dir+is_dims_in_mm*0.5f;
 
-        for ( int sampleIndex = 0; sampleIndex<numSamplesPerRay; sampleIndex++) {
-            float i = float(sampleIndex)/float(numSamplesPerRay); // [0; 1[
-            floatd3 samplePoint = startPoint+dir*i;
-            /*
-            if (use_circular_cutoff) {
-                float inplane_inner_circle_radius = fmin(is_dims_in_mm.x, is_dims_in_mm.y) / 2.0f;
-                float length_of_p2D = length(floatd2( floor(fabsf(samplePoint.x)),
-                                                          floor(fabsf(samplePoint.y)) ));
-                if ( length_of_p2D > inplane_inner_circle_radius )
-                    continue;
-            }
-            */
-
-            floatd3 is_nc = samplePoint / is_dims_in_mm; // normalized coordinates [-0.5, 0.5]
-            is_nc[2] *= zAxisDir; // swap z coordinate in image space
+    startPoint /= is_spacing_in_mm;
+    endPoint /= is_spacing_in_mm;
+    dir = endPoint-startPoint;
+    startPoint += 0.5f;
 
 
-            floatd3 is_nc01_offset = floor(is_dims_in_pixels/2.0) / is_dims_in_pixels;
-            floatd3 is_nc01 = is_nc + is_nc01_offset; // normalized coordinate space offset [0.0, 1.0]
-            floatd3 is_pc = is_nc01 * is_dims_in_pixels; // pixel coordinates
-            /*
-#ifndef IS_ORIGON_CENTERING
-            is_pc += floatd3(0.5) * zAxisDir;
-#endif
-            */
 
-            is_pc += floatd3(0.5f); // into OpenGL texture coordinates
+	for ( int sampleIndex = 0; sampleIndex<numSamplesPerRay; sampleIndex++) {
+		float i = float(sampleIndex)/float(numSamplesPerRay); // [0; 1[
+		floatd3 samplePoint = (startPoint+dir*i);
 
-            // Accumulate result
-            float value = tex3D( image_tex, is_pc[0], is_pc[1], is_pc[2] );
-            result += value * (rayLength / float(numSamplesPerRay));
-        } // ends sampleIndex loop
+		// Accumulate result
+		result+=tex3D( image_tex, samplePoint[0], samplePoint[1], samplePoint[2] );
+	} // ends sampleIndex loop
 
-    projections[projectionSpaceId] += result;
+    projections[projectionSpaceId] += result*(rayLength / float(numSamplesPerRay));;
     }
 }
+
+
 
 // Forwards projection of the 3D volume of a given phase onto projections
 template <class TYPE>
@@ -178,7 +162,7 @@ bool Gadgetron::conebeam_forwards_projection( hoNDArray<TYPE>* projections, hoND
                                    unsigned int orig_ppb, floatd3 is_spacing_in_mm, floatd2 ps_dims_in_mm,
                                    floatd3 sag_parameters_x, floatd3 sag_parameters_y,
                                    float SDD, float SAD,
-                                   unsigned int numSamplesPerRay, bool use_circular_cutoff,
+                                   unsigned int numSamplesPerRay,
                                    bool accumulate) {
     assert( projections->get_number_of_dimensions() == 3 );
     assert( (x->get_number_of_dimensions() == 3) || (x->get_number_of_dimensions() == 4) );
@@ -212,6 +196,7 @@ bool Gadgetron::conebeam_forwards_projection( hoNDArray<TYPE>* projections, hoND
     cudaMalloc3DArray(&image_array, &channelDesc, extent);
     CHECK_FOR_CUDA_ERROR();
 
+    cudaFuncSetCacheConfig(conebeam_forwards_projection_cb_kernel, cudaFuncCachePreferL1);
     cpy_params.dstArray = image_array;
     cpy_params.srcPtr =
         make_cudaPitchedPtr((void*)(x->get_data_ptr()+offs), extent.width*sizeof(float),
@@ -222,17 +207,29 @@ bool Gadgetron::conebeam_forwards_projection( hoNDArray<TYPE>* projections, hoND
     cudaBindTextureToArray(image_tex, image_array, channelDesc);
     CHECK_FOR_CUDA_ERROR();
 
-    unsigned int num_batches = std::ceil(num_projections / float(orig_ppb));
+    size_t free_mem = cudaDeviceManager::Instance()->getFreeMemory()/2;
+
+    unsigned int projSize = projection_res_x*projection_res_y;
+    int base_ppb = free_mem/(projSize*sizeof(TYPE));
+    //int base_ppb = 1;
+    if (debugInfo){
+    	std::cout <<"Free memory: " << free_mem/(1024*1024)<<std::endl;
+    	std::cout << "Projection size:"<< (projSize*sizeof(TYPE))/(1024*1024) << std::endl;
+    }
+
+    unsigned int num_batches = std::ceil(num_projections / float(base_ppb));
+
+
 
     if (debugInfo) {
         printf("number of batches: %i\n", num_batches);
-        printf("original projections per batch: %i\n", orig_ppb);
-        printf("total number then: %i\n", orig_ppb*num_batches);
+        printf("original projections per batch: %i\n", base_ppb);
+        printf("total number then: %i\n", base_ppb*num_batches);
     }
 
     for (unsigned int batch = 0; batch < num_batches; batch++) {
-        unsigned int from_projection = batch * orig_ppb;
-        unsigned int to_projection = (batch+1) * orig_ppb;
+        unsigned int from_projection = batch * base_ppb;
+        unsigned int to_projection = (batch+1) * base_ppb;
         if (from_projection > num_projections)
             from_projection = num_projections;
         if (to_projection > num_projections)
@@ -252,8 +249,8 @@ bool Gadgetron::conebeam_forwards_projection( hoNDArray<TYPE>* projections, hoND
 
         // Allocate temporary GPU memory for the forward projections
         float* projections_DevPtr;
-        unsigned int projSize = projection_res_x*projection_res_y;
-        cudaMalloc( (void**) &projections_DevPtr, projSize*ppb*sizeof(float));
+
+        CUDA_CALL(cudaMalloc( (void**) &projections_DevPtr, projSize*ppb*sizeof(TYPE)));
         CHECK_FOR_CUDA_ERROR();
 
         for (unsigned int p=from_projection, i=0; p<to_projection; p++, i++) {
@@ -263,34 +260,38 @@ bool Gadgetron::conebeam_forwards_projection( hoNDArray<TYPE>* projections, hoND
             CHECK_FOR_CUDA_ERROR();
 
             if (accumulate) {
-                cudaMemcpy(projections_DevPtr+i*projSize, projections->get_data_ptr()+from_id*projSize,
-                           projSize*sizeof(float), cudaMemcpyHostToDevice);
+                CUDA_CALL(cudaMemcpy(projections_DevPtr+i*projSize, projections->get_data_ptr()+from_id*projSize,
+                           projSize*sizeof(TYPE), cudaMemcpyHostToDevice));
                 CHECK_FOR_CUDA_ERROR();
             } else {
-                cudaMemset(projections_DevPtr+i*projSize, 0, projSize*sizeof(float));
+                CUDA_CALL(cudaMemset(projections_DevPtr+i*projSize, 0, projSize*sizeof(TYPE)));
                 CHECK_FOR_CUDA_ERROR();
             }
 
         }
 
 
-
-        dim3 dimBlock(256, 1);
+        {
+        	GPUTimer tim("Projection time");
+        //dim3 dimBlock(8, 8,8);
+        dim3 dimBlock(16,16);
 		dim3 dimGrid((unsigned int) std::ceil((double)projection_res_x/(double)dimBlock.x),
-                     (unsigned int) std::ceil((double)projection_res_y/(double)dimBlock.y), ppb);
+			 (unsigned int) std::ceil((double)projection_res_y/(double)dimBlock.y), ppb);
         uint2 ps_dims_in_pixels = make_uint2(projection_res_x, projection_res_y);
 
-        cudaFuncSetCacheConfig(conebeam_forwards_projection_cb_kernel, cudaFuncCachePreferL1);
 
         conebeam_forwards_projection_cb_kernel<<< dimGrid, dimBlock >>>
             (projections_DevPtr, angles_DevPtr,
              is_dims_in_pixels, is_spacing_in_mm, ps_dims_in_pixels, ps_dims_in_mm,
-             sag_parameters_x, sag_parameters_y, SDD, SAD, numSamplesPerRay, use_circular_cutoff);
+             sag_parameters_x, sag_parameters_y, SDD, SAD, numSamplesPerRay);
+
+        cudaDeviceSynchronize();
         CHECK_FOR_CUDA_ERROR();
 
         // Copy result from device to host
         for (unsigned int p=from_projection, i=0; p<to_projection; p++, i++) {
             unsigned int to_id = binningdata[p];
+
             CUDA_CALL(cudaMemcpy(projections->get_data_ptr()+projSize*to_id,
                        projections_DevPtr+i*projSize, projSize*sizeof(float), cudaMemcpyDeviceToHost));
             CHECK_FOR_CUDA_ERROR();
@@ -298,6 +299,7 @@ bool Gadgetron::conebeam_forwards_projection( hoNDArray<TYPE>* projections, hoND
 
         cudaFree(projections_DevPtr);
         cudaFree(angles_DevPtr);
+        }
     }
 
     cudaUnbindTexture(image_tex);
@@ -313,7 +315,7 @@ conebeam_backwards_projection_cb_kernel( floatd3 is_dims_in_pixels, floatd2 ps_d
                                 unsigned int from_projection,
                                 floatd2 ps_dims_in_mm, floatd3 is_spacing_in_mm,
                                 floatd3 sag_parameters_x, floatd3 sag_parameters_y,
-                                float SDD, float SAD, bool use_circular_cutoff,
+                                float SDD, float SAD,
                                 bool use_fbp) {
     const unsigned int IMAGE_Y = blockIdx.x;
     const unsigned int IMAGE_Z = blockIdx.y;
@@ -360,7 +362,7 @@ conebeam_backwards_projection_cb_kernel( floatd3 is_dims_in_pixels, floatd2 ps_d
         floatd2 ps_nc01 = ps_nc + ps_nc01_offset; // [0; 1]
         floatd2 ps_pc = ps_nc01 * ps_dims_in_pixels;
 
-        ps_pc += floatd2(0.5f); // into OpenGL texture coordinates
+        ps_pc += 0.5f; // into OpenGL texture coordinates
 
         float weight = 1.0;
         if (use_fbp) {
@@ -397,6 +399,8 @@ conebeam_backwards_projection_cb_kernel( floatd3 is_dims_in_pixels, floatd2 ps_d
         IMAGE_Z * ((unsigned int)is_dims_in_pixels[0]) * ((unsigned int)is_dims_in_pixels[1]);
     x[ id ] += result;
 }
+
+
 
 boost::shared_ptr< cuNDArray<float> > get_conebeam_cosinus_weights(uintd2 ps_dims_in_pixels, floatd2 ps_dims_in_mm,
                                                           float D0d, float Ds0) {
@@ -475,13 +479,13 @@ bool Gadgetron::conebeam_backwards_projection( hoNDArray<TYPE>* projections, hoN
                                     std::vector<float>& angles,
                                     unsigned int orig_ppb, floatd3 is_spacing_in_mm, floatd2 ps_dims_in_mm,
                                     floatd3 sag_parameters_x, floatd3 sag_parameters_y,
-                                    float SDD, float SAD, bool use_circular_cutoff,
+                                    float SDD, float SAD,
                                     bool use_fbp, bool accumulate) {
 
     /*hoNDArray<TYPE> projections;
     std::vector<unsigned int> image_dims = *(projections_in.get_dimensions().get());
     projections->create(&image_dims);*/
-
+	GPUTimer tim("Backprojection");
     assert( projections->get_number_of_dimensions() == 3 );
     assert( (x->get_number_of_dimensions() == 3) || (x->get_number_of_dimensions() == 4) );
 
@@ -509,18 +513,25 @@ bool Gadgetron::conebeam_backwards_projection( hoNDArray<TYPE>* projections, hoN
         cudaMemset(x_DevPtr, 0, num_image_elements*sizeof(float));
         CHECK_FOR_CUDA_ERROR();
     }
-
-    unsigned int num_batches = std::ceil(num_projections / float(orig_ppb));
+    size_t free_mem = cudaDeviceManager::Instance()->getFreeMemory()/2;
+    size_t projSize = projections->get_size(0)*projections->get_size(1);
+    int base_ppb = free_mem/(projSize*sizeof(TYPE));
+	//int base_ppb = 1;
+    if (debugInfo){
+	std::cout <<"Free memory: " << free_mem/(1024*1024)<<std::endl;
+	std::cout << "Projection size:"<< (projSize*sizeof(TYPE))/(1024*1024) << std::endl;
+    }
+	unsigned int num_batches = std::ceil(num_projections / float(base_ppb));
 
     if (debugInfo) {
         printf("number of batches: %i\n", num_batches);
-        printf("original projections per batch: %i\n", orig_ppb);
-        printf("total number then: %i\n", orig_ppb*num_batches);
+        printf("original projections per batch: %i\n", base_ppb);
+        printf("total number then: %i\n", base_ppb*num_batches);
     }
 
     for (unsigned int batch = 0; batch < num_batches; batch++) {
-        unsigned int from_projection = batch * orig_ppb;
-        unsigned int to_projection = (batch+1) * orig_ppb;
+        unsigned int from_projection = batch * base_ppb;
+        unsigned int to_projection = (batch+1) * base_ppb;
         if (from_projection > num_projections)
             from_projection = num_projections;
         if (to_projection > num_projections)
@@ -652,12 +663,14 @@ bool Gadgetron::conebeam_backwards_projection( hoNDArray<TYPE>* projections, hoN
         dim3 dimBlock( matrix_size_x );
         dim3 dimGrid( matrix_size_y, matrix_size_z );
 
+        /*dim3 dimBlock( std::min(matrix_size_x,8u),std::min(matrix_size_y,8u),std::min(matrix_size_z,8u) );
+         dim3 dimGrid( matrix_size_x/dimBlock.x,matrix_size_y/dimBlock.y,matrix_size_z/dimBlock.z);*/
         cudaFuncSetCacheConfig(conebeam_backwards_projection_cb_kernel, cudaFuncCachePreferL1);
         // Invoke kernel
         conebeam_backwards_projection_cb_kernel<<< dimGrid, dimBlock >>>
             (is_dims, ps_dims_in_pixels, ppb, num_projections, x_DevPtr, angles_DevPtr,
              from_projection, ps_dims_in_mm, is_spacing_in_mm,
-             sag_parameters_x, sag_parameters_y, SDD, SAD, use_circular_cutoff, use_fbp);
+             sag_parameters_x, sag_parameters_y, SDD, SAD, use_fbp);
         CHECK_FOR_CUDA_ERROR();
 
         // Cleanup
@@ -689,7 +702,7 @@ template bool Gadgetron::conebeam_forwards_projection(hoNDArray<float>*, hoNDArr
                                            floatd3 is_spacing_in_mm, floatd2 ps_dims_in_mm,
                                            floatd3 sag_parameters_x, floatd3 sag_parameters_y,
                                            float SDD, float SAD,
-                                           unsigned int numSamplesPerRay, bool use_circular_cutoff,
+                                           unsigned int numSamplesPerRay,
                                            bool accumulate);
 
 template bool Gadgetron::conebeam_backwards_projection(hoNDArray<float>*, hoNDArray<float>*, unsigned int bin,
@@ -698,5 +711,5 @@ template bool Gadgetron::conebeam_backwards_projection(hoNDArray<float>*, hoNDAr
                                             unsigned int orig_ppb,
                                             floatd3 is_spacing_in_mm, floatd2 ps_dims_in_mm,
                                             floatd3 sag_parameters_x, floatd3 sag_parameters_y,
-                                            float SDD, float SAD, bool use_circular_cutoff,
+                                            float SDD, float SAD,
                                             bool use_fbp, bool accumulate);

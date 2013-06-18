@@ -18,7 +18,7 @@ bool conebeam_forwards_projection( hoNDArray<TYPE>* projections, hoNDArray<TYPE>
                                    unsigned int ppb, floatd3 is_box_dims, floatd2 ip_dims,
                                    floatd3 sag_parameters_x, floatd3 sag_parameters_y,
                                    float SDD, float SAD,
-                                   unsigned int numSamplesPerRay, bool use_circular_cutoff, bool accumulate);
+                                   unsigned int numSamplesPerRay,  bool accumulate);
 
 // Backproject all projections for a given phase
 template <class TYPE>
@@ -27,6 +27,6 @@ bool conebeam_backwards_projection( hoNDArray<TYPE>* projections, hoNDArray<TYPE
 																		std::vector<float>& angles,
                                     unsigned int ppb, floatd3 is_box_dims, floatd2 ip_dims,
                                     floatd3 sag_parameters_x, floatd3 sag_parameters_y,
-                                    float SDD, float SAD, bool use_circular_cutoff,
+                                    float SDD, float SAD,
                                     bool use_fbp, bool accumulate);
 }

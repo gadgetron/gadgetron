@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
   parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Input file", true, "projections.hdf5" );
   parms.add_parameter( 'o', COMMAND_LINE_INT, 1, "Number of samples per ray", true, "0" );
   parms.add_parameter( 'p', COMMAND_LINE_INT, 1, "Projections per batch", true, "1" );
-  parms.add_parameter( 'q', COMMAND_LINE_INT, 1, "Use circular cutoff", true, "0" );
+
   parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, 
                        "Output image file name (.real)", true, "reconstruction.real" );
   parms.add_parameter( 'x', COMMAND_LINE_INT,    1, "Matrix size in the x direction", true, "512" );
@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
       is_dims_in_mm = is_spacing_in_mm * is_dims_in_pixels;
   }
 
-  unsigned int useCircularCutoff = parms.get_parameter('q')->get_int_value();
+
   bool use_sag_correction = parms.get_parameter('S')->get_int_value();
 
   PS_BinningData* ps_bd = new PS_BinningData();
@@ -189,7 +189,7 @@ int main(int argc, char** argv) {
   ps_dims.push_back(ps_dims_in_pixels[0]);
   ps_dims.push_back(ps_dims_in_pixels[1]);
   ps_dims.push_back(numProjs);
-  boost::shared_ptr< hoNDArray<_real> > projections = boost::static_pointer_cast<hoNDArray<_real> >(ps->getProjections());
+  boost::shared_ptr< hoCuNDArray<_real> > projections = boost::static_pointer_cast<hoCuNDArray<_real> >(ps->getProjections());
 
   //Standard 3d FDK
   // Define encoding matrix
@@ -197,12 +197,12 @@ int main(int argc, char** argv) {
       E( new hoCudaConebeamProjectionOperator<_real>() );
   E->setup( ps_g, ps_bd, ps_g->getAnglesArray(), ppb,
                  is_spacing_in_mm, ps_dims_in_pixels,
-                 numSamplesPerRay, useCircularCutoff, true);
+                 numSamplesPerRay,  true);
   E->set_codomain_dimensions(projections->get_dimensions().get());
   // Form right hand side
   E->set_domain_dimensions(&is_dims);
 
-  hoNDArray<_real> fdk(&is_dims);
+  hoCuNDArray<_real> fdk(&is_dims);
   E->mult_MH(projections.get(),&fdk);
 
 
@@ -229,18 +229,18 @@ int main(int argc, char** argv) {
 	      E4D( new hoCudaConebeamProjectionOperator<_real>() );
 	E4D->setup( ps_g, ps_bd4d, ps_g->getAnglesArray(), ppb,
 								 is_spacing_in_mm, ps_dims_in_pixels,
-								 numSamplesPerRay, useCircularCutoff, true);
+								 numSamplesPerRay,  true);
 	E4D->set_codomain_dimensions(projections->get_dimensions().get());
 	// Form right hand side
 	E4D->set_domain_dimensions(&is_dims);
 
 
-	hoNDArray<_real> diff_proj(projections->get_dimensions());
+	hoCuNDArray<_real> diff_proj(projections->get_dimensions());
 
 	E->mult_M(&fdk,&diff_proj);
 	*projections -= diff_proj;
 
-	hoNDArray<_real> result(&is_dims);
+	hoCuNDArray<_real> result(&is_dims);
 	E4D->mult_MH(projections.get(),&result);
 
 	result += fdk;

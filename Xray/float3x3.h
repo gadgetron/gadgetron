@@ -51,7 +51,7 @@ __inline__ __device__ float3x3 calcRotationMatrixAroundY(float angle) {
     return rotation;
 }
 
-__inline__ __device__ float3x3 calcRotationMatrixAroundZ(float angle) {
+__inline__ __host__  __device__ float3x3 calcRotationMatrixAroundZ(float angle) {
     float cos_angle, sin_angle;
     sincosf(angle, &sin_angle, &cos_angle);
   

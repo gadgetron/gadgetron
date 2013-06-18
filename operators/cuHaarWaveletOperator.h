@@ -6,12 +6,12 @@
 
 namespace Gadgetron {
 
-template<class T, unsigned int D> class cuWaveletOperator : public linearOperator<cuNDArray<T> >{
+template<class T, unsigned int D> class cuHaarWaveletOperator : public linearOperator<cuNDArray<T> >{
 
 public:
-	cuWaveletOperator() : linearOperator<cuNDArray<T> >(){};
+	cuHaarWaveletOperator() : linearOperator<cuNDArray<T> >(){};
 
-	virtual ~cuWaveletOperator(){};
+	virtual ~cuHaarWaveletOperator(){};
 	virtual void mult_M(cuNDArray<T>*,cuNDArray<T>*,bool );
 	virtual void mult_MH(cuNDArray<T>*,cuNDArray<T>*,bool );
 	virtual void mult_MH_M(cuNDArray<T>* in ,cuNDArray<T>* out,bool accumulate ){

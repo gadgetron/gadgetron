@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
   parms.add_parameter( 'P', COMMAND_LINE_STRING,    1,
                        "Projection space geometry file", true, "ps_geometry.hdf5" );
   parms.add_parameter( 'B', COMMAND_LINE_STRING,    1,
-                       "Projection space binning file", true, "binning.hdf5" );
+                       "Projection space binning file", false);
   parms.add_parameter( 'S', COMMAND_LINE_INT, 1, "Use exact SAG correction if present", true, "0" );
 
   parms.add_parameter( 'X', COMMAND_LINE_STRING,    1,
@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
 
 
 
-  boost::shared_ptr<hoNDArray<_real> > image = read_nd_array<_real>(imageFile.c_str());
+  boost::shared_ptr<hoCuNDArray<_real> > image = boost::static_pointer_cast<hoCuNDArray<_real > >(read_nd_array<_real>(imageFile.c_str()));
   unsigned int ip_w = parms.get_parameter('x')->get_int_value();;
   unsigned int ip_h = parms.get_parameter('y')->get_int_value();;
   uintd2 ps_dims_in_pixels =uintd2(ip_w, ip_h);
@@ -161,6 +161,8 @@ int main(int argc, char** argv) {
 
   float step_size_in_mm = lengthOfRay_in_mm / numSamplesPerRay;
 
+  std::cout << "Number of samples per ray: " << numSamplesPerRay << std::endl;
+
   if (!use_sag_correction) {
   	ps_g->setSAGx(0,0,0);
   	ps_g->setSAGy(0,0,0);
@@ -171,9 +173,11 @@ int main(int argc, char** argv) {
 
   size_t needed_bytes = 2 * prod(is_dims_in_pixels) * sizeof(_real);
   PS_BinningData* ps_bd4d = new PS_BinningData();
+  if (parms.get_parameter('B')->get_is_set()){
 	std::string binningdata_filename = (char*)parms.get_parameter('B')->get_string_value();
 	std::cout << "binning data file: " << binningdata_filename << std::endl;
 	ps_bd4d->loadData(binningdata_filename);
+  } else ps_bd4d->generateData(ps_g);
 	ps_bd4d->print(std::cout);
 
 
@@ -200,16 +204,17 @@ int main(int argc, char** argv) {
 	      E4D( new hoCudaConebeamProjectionOperator<_real>() );
 	E4D->setup( ps_g, ps_bd4d, ps_g->getAnglesArray(), ppb,
 								 is_spacing_in_mm, ps_dims_in_pixels,
-								 numSamplesPerRay, useCircularCutoff, true);
+								 numSamplesPerRay, true);
 	E4D->set_codomain_dimensions(&ps_dims);
 	// Form right hand side
 	E4D->set_domain_dimensions(&is_dims);
 	std::cout << "Projection size: " << ps_dims[0] << " " << ps_dims[1] << " " << ps_dims[2] << std::endl;
-	boost::shared_ptr<hoNDArray<_real> > projections(new hoNDArray<_real>(&ps_dims));
+	boost::shared_ptr<hoCuNDArray<_real> > projections(new hoCuNDArray<_real>(&ps_dims));
 	E4D->mult_M(image.get(),projections.get());
 
 	PS_Dataset ps_d(projections);
 	ps_d.saveData(parms.get_parameter('r')->get_string_value());
+	write_nd_array<float>(projections.get(),"projections.real");
 
 
 }

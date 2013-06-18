@@ -12,7 +12,7 @@
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "parameterparser.h"
-#include "cuWaveletOperator.h"
+#include "cuHaarWaveletOperator.h"
 
 // Std includes
 #include <iostream>
@@ -58,7 +58,7 @@ int main(int argc, char** argv)
   parms.add_parameter( 'M', COMMAND_LINE_FLOAT,  1, "Mu", true, "1.0" );
   parms.add_parameter( 'L', COMMAND_LINE_FLOAT,  1, "Lambda", true, "0.0" );
   parms.add_parameter( 'A', COMMAND_LINE_FLOAT,  1, "Alpha in [0;1] (for PICCS)", true, "0.5" );
-  parms.add_parameter( 'W', COMMAND_LINE_FLOAT,  1, "Wavelet weighting", true, "0.0" );
+  parms.add_parameter( 'W', COMMAND_LINE_FLOAT,  1, "HaarWavelet weighting", true, "0.0" );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -285,21 +285,27 @@ int main(int argc, char** argv)
 		*/
   }
   
-  if (w > 0.0){
-  	boost::shared_ptr<cuWaveletOperator<_complext,3> > wave(new cuWaveletOperator<_complext,3>);
-  	wave->set_weight(w);
+  if ((alpha<1.0) && w > 0.0){
+  	boost::shared_ptr<cuHaarWaveletOperator<_complext,3> > wave(new cuHaarWaveletOperator<_complext,3>);
+  	wave->set_weight(w*(1.0f-alpha));
   	wave->set_domain_dimensions(recon_dims.get());
   	sb.add_regularization_operator(wave);
   }
 
+  if ((alpha > 0.0) && w > 0.0){
+   	boost::shared_ptr<cuHaarWaveletOperator<_complext,3> > wave(new cuHaarWaveletOperator<_complext,3>);
+   	wave->set_weight(w*alpha);
+   	wave->set_domain_dimensions(recon_dims.get());
+   	sb.add_regularization_operator(wave,reg_image);
+   }
   sb.set_max_outer_iterations(num_sb_outer_iterations);
   sb.set_max_inner_iterations(num_sb_inner_iterations);
   sb.set_output_mode( cuSbcCgSolver<_complext>::OUTPUT_VERBOSE );
 
   sb.get_inner_solver()->set_preconditioner ( D );
   sb.get_inner_solver()->set_max_iterations( num_cg_iterations );
-  sb.get_inner_solver()->set_tc_tolerance( 1e-8 );
-  sb.get_inner_solver()->set_output_mode( cuCgSolver<_complext>::OUTPUT_VERBOSE );
+  sb.get_inner_solver()->set_tc_tolerance( 1e-12 );
+  sb.get_inner_solver()->set_output_mode( cuCgSolver<_complext>::OUTPUT_WARNINGS );
   
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
 

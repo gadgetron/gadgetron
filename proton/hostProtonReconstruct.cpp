@@ -109,7 +109,12 @@ int main( int argc, char** argv)
   }
 
   ABOCSSolver< hoCuGPBBSolver< _real> > solver;
-  solver.set_eps(_real(7.6e6));
+  solver.set_eps(_real(1.33e8));
+  //solver.set_eps(_real(3.09e7));
+  //solver.set_eps(_real(7.8e6));
+  //solver.set_eps(_real(6.8e6));
+  //solver.set_eps(_real(1));
+  //solver.set_eps(_real(7.65e6));
 
   solver.set_max_iterations( iterations);
   //solver.set_tc_tolerance( (_real) parms.get_parameter('e')->get_float_value());
@@ -133,8 +138,12 @@ int main( int argc, char** argv)
 		prior->reshape(&rhs_dims);
 		_real offset = _real(0.01);
 		//cuNDA_add(offset,prior.get());
+		boost::shared_ptr<hoCuNDArray<_real > > ptmp(new hoCuNDArray<_real>(*prior));
 
-
+		sqrt_inplace(ptmp.get());
+		boost::shared_ptr< cgPreconditioner<hoCuNDArray<_real> > > precon(new cgPreconditioner<hoCuNDArray<_real> >);
+		precon->set_weights(prior);
+		solver.set_preconditioner(precon);
 		if (vm.count("prior-weight")){
 			std::cout << "Prior image difference regularization in use" << std::endl;
 			boost::shared_ptr<identityOperator<hoCuNDArray<_real> > > Itmp ( new identityOperator<hoCuNDArray<_real> >);

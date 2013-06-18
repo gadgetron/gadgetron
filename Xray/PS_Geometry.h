@@ -120,9 +120,9 @@ class PS_Geometry {
             os << "angles: " << "EMPTY" << std::endl;
         else {
         	os << "Angles: ";
-        		for (int i = 0; i < anglesArray.size(); i++) os << anglesArray[i] << std::endl;
-            /*os << "angles: " << anglesArray[0] << " ... " << anglesArray.back()
-               << ", number of angles: " << anglesArray.size() << std::endl;*/
+        	//	for (int i = 0; i < anglesArray.size(); i++) os << anglesArray[i] << std::endl;
+            os << "angles: " << anglesArray[0] << " ... " << anglesArray.back()
+               << ", number of angles: " << anglesArray.size() << std::endl;
         }
         os << "SDD: " << SDD << "mm" << std::endl;
         os << "SAD: " << SAD << "mm" << std::endl;
