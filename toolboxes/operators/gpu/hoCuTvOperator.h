@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cuTVOperator.h"
+#include "cuTvOperator.h"
 #include "hoCuNDArray.h"
 #include "generalOperator.h"
 #include "hoNDArray_fileio.h"
@@ -8,15 +8,15 @@
 
 namespace Gadgetron{
 
-template<class T, unsigned int D> class EXPORTGPUOPERATORS hoCuTVOperator : public generalOperator<hoCuNDArray<T> >{
+template<class T, unsigned int D> class EXPORTGPUOPERATORS hoCuTvOperator : public generalOperator<hoCuNDArray<T> >{
 private:
 	typedef typename realType<T>::Type REAL;
 public:
-	hoCuTVOperator() : generalOperator< hoCuNDArray<T> >(){
+	hoCuTvOperator() : generalOperator< hoCuNDArray<T> >(){
 		limit_ = REAL(1e-8);
 		cuTV.set_limit(limit_);
 	}
-	virtual ~hoCuTVOperator(){}
+	virtual ~hoCuTvOperator(){}
 	void set_limit(REAL limit){
 		limit_ = limit;
 		cuTV.set_limit(limit);
@@ -57,17 +57,17 @@ public:
 
 protected:
 	REAL limit_;
-	cuTVOperator<T,D> cuTV;
+	cuTvOperator<T,D> cuTV;
 };
 
-template<class T> class hoCuTVOperator<T,4> : public generalOperator< hoCuNDArray<T> >{
+template<class T> class hoCuTvOperator<T,4> : public generalOperator< hoCuNDArray<T> >{
 private:
 	typedef typename realType<T>::Type REAL;
 public:
-	hoCuTVOperator() : generalOperator< hoCuNDArray<T> >(){
+	hoCuTvOperator() : generalOperator< hoCuNDArray<T> >(){
 		limit_ = REAL(1e-8);
 	}
-	virtual ~hoCuTVOperator(){}
+	virtual ~hoCuTvOperator(){}
 	void set_limit(REAL limit){
 		limit_ = limit;
 	}
