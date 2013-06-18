@@ -121,7 +121,7 @@ private:
 			grad += norm(xi-dt);
 			co[i]-=1;
 		}
-		return sqrt(grad);
+		return std::sqrt(grad);
 	}
 
 

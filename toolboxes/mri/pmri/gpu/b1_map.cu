@@ -18,7 +18,7 @@ namespace Gadgetron{
 
   const int kernel_width = 7;
 
-  void setup_grid( unsigned int cur_device, unsigned int number_of_elements, dim3 *blockDim, dim3* gridDim, unsigned int num_batches=1 );    
+
   template<class REAL, unsigned int D> void smooth_correlation_matrices( cuNDArray<complext<REAL> >*, cuNDArray<complext<REAL> >*);
   template<class REAL> boost::shared_ptr< cuNDArray<complext<REAL> > > extract_csm( cuNDArray<complext<REAL> >*, unsigned int, unsigned int);
   template<class REAL> void set_phase_reference( cuNDArray<complext<REAL> >*, unsigned int, unsigned int);
@@ -26,6 +26,33 @@ namespace Gadgetron{
   template<class T> boost::shared_ptr< cuNDArray<T> > correlation( cuNDArray<T> *in );
   template<class T> void rss_normalize( cuNDArray<T> *in_out, unsigned int dim );
   
+
+
+  static inline void setup_grid( unsigned int cur_device, unsigned int number_of_elements,
+		   dim3 *blockDim, dim3* gridDim, unsigned int num_batches=1 )
+  {
+
+    // For small arrays we keep the block dimension fairly small
+    *blockDim = dim3(256);
+    *gridDim = dim3((number_of_elements+blockDim->x-1)/blockDim->x, num_batches);
+    int maxGridDim = cudaDeviceManager::Instance()->max_griddim(cur_device);
+    int maxBlockDim = cudaDeviceManager::Instance()->max_blockdim(cur_device);
+    // Extend block/grid dimensions for large arrays
+    if( gridDim->x > maxGridDim){
+      blockDim->x = maxBlockDim;
+      gridDim->x = (number_of_elements+blockDim->x-1)/blockDim->x;
+    }
+
+    if( gridDim->x > maxGridDim ){
+      gridDim->x = ((unsigned int)std::sqrt((float)number_of_elements)+blockDim->x-1)/blockDim->x;
+      gridDim->y *= ((number_of_elements+blockDim->x*gridDim->x-1)/(blockDim->x*gridDim->x));
+    }
+
+    if( gridDim->x >maxGridDim || gridDim->y >maxGridDim){
+
+      BOOST_THROW_EXCEPTION(cuda_error("Grid dimension larger than supported by device"));
+    }
+  }
   //
   // Main method
   //
@@ -719,31 +746,6 @@ namespace Gadgetron{
     CHECK_FOR_CUDA_ERROR();
   }
 
-  inline void setup_grid( unsigned int cur_device, unsigned int number_of_elements,
-		   dim3 *blockDim, dim3* gridDim, unsigned int num_batches )
-  {
-    
-    // For small arrays we keep the block dimension fairly small
-    *blockDim = dim3(256);
-    *gridDim = dim3((number_of_elements+blockDim->x-1)/blockDim->x, num_batches);
-    int maxGridDim = cudaDeviceManager::Instance()->max_griddim(cur_device);
-    int maxBlockDim = cudaDeviceManager::Instance()->max_blockdim(cur_device);
-    // Extend block/grid dimensions for large arrays
-    if( gridDim->x > maxGridDim){
-      blockDim->x = maxBlockDim;
-      gridDim->x = (number_of_elements+blockDim->x-1)/blockDim->x;
-    }
-    
-    if( gridDim->x > maxGridDim ){
-      gridDim->x = ((unsigned int)std::sqrt((float)number_of_elements)+blockDim->x-1)/blockDim->x;
-      gridDim->y *= ((number_of_elements+blockDim->x*gridDim->x-1)/(blockDim->x*gridDim->x));
-    }
-    
-    if( gridDim->x >maxGridDim || gridDim->y >maxGridDim){
-      
-      BOOST_THROW_EXCEPTION(cuda_error("Grid dimension larger than supported by device"));
-    }
-  }
 
 
   //

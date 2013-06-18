@@ -11,7 +11,7 @@ template<class T> EXPORTGPUCORE void Gadgetron::axpy( T a, hoCuNDArray<T>* x, ho
 {
   int device = cudaDeviceManager::Instance()->getCurrentDevice();
   size_t free = cudaDeviceManager::Instance()->getFreeMemory(device);
-  size_t batchSize = (free/(sizeof(T)*2));
+  size_t batchSize = 1024*1024*(free/(sizeof(T)*2*1024*1024)); //Ensure 1Mb allocations
   size_t remaining = x->get_number_of_elements();
   batchSize = std::min(batchSize,remaining);
   T* x_ptr = x->get_data_ptr();
@@ -45,7 +45,7 @@ template<class T> EXPORTGPUCORE T Gadgetron::dot( hoCuNDArray<T> *x, hoCuNDArray
 {
   int device = cudaDeviceManager::Instance()->getCurrentDevice();
   size_t free = cudaDeviceManager::Instance()->getFreeMemory(device);
-  size_t batchSize = (free/(sizeof(T)*2));
+  size_t batchSize = 1024*1024*(free/(sizeof(T)*2*1024*1024)); //Ensure 1Mb allocations
   size_t remaining = x->get_number_of_elements();
   batchSize = std::min(batchSize,remaining);
   T* x_ptr = x->get_data_ptr();
@@ -80,7 +80,7 @@ template<class T> EXPORTGPUCORE typename realType<T>::Type Gadgetron::nrm2( hoCu
   typedef typename realType<T>::Type REAL;
   int device = cudaDeviceManager::Instance()->getCurrentDevice();
   size_t free = cudaDeviceManager::Instance()->getFreeMemory(device);
-  size_t batchSize = (free/(sizeof(T)));
+  size_t batchSize = 1024*1024*(free/(sizeof(T)*1024*1024)); //Ensure 1Mb allocations
   size_t remaining = x->get_number_of_elements();
   batchSize = std::min(batchSize,remaining);
   T* x_ptr = x->get_data_ptr();
@@ -108,7 +108,7 @@ template<class T> EXPORTGPUCORE typename realType<T>::Type Gadgetron::asum( hoCu
   typedef typename realType<T>::Type REAL;
   int device = cudaDeviceManager::Instance()->getCurrentDevice();
   size_t free = cudaDeviceManager::Instance()->getFreeMemory(device);
-  size_t batchSize = (free/(sizeof(T)));
+  size_t batchSize = 1024*1024*(free/(sizeof(T)*1024*1024)); //Ensure 1Mb allocations
   size_t remaining = x->get_number_of_elements();
   batchSize = std::min(batchSize,remaining);
   T* x_ptr = x->get_data_ptr();
@@ -136,7 +136,7 @@ template<class T> EXPORTGPUCORE int Gadgetron::amin( hoCuNDArray<T>* x )
 {
   int device = cudaDeviceManager::Instance()->getCurrentDevice();
   size_t free = cudaDeviceManager::Instance()->getFreeMemory(device);
-  size_t batchSize = (free/(sizeof(T)));
+  size_t batchSize = 1024*1024*(free/(sizeof(T)*1024*1024)); //Ensure 1Mb allocations
   size_t remaining = x->get_number_of_elements();
   batchSize = std::min(batchSize,remaining);
   T* x_ptr = x->get_data_ptr();
@@ -169,7 +169,7 @@ template<class T> EXPORTGPUCORE int Gadgetron::amax( hoCuNDArray<T>* x )
 {
   int device = cudaDeviceManager::Instance()->getCurrentDevice();
   size_t free = cudaDeviceManager::Instance()->getFreeMemory(device);
-  size_t batchSize = (free/(sizeof(T)));
+  size_t batchSize = 1024*1024*(free/(sizeof(T)*1024*1024)); //Ensure 1Mb allocations
   size_t remaining = x->get_number_of_elements();
   batchSize = std::min(batchSize,remaining);
   T* x_ptr = x->get_data_ptr();
