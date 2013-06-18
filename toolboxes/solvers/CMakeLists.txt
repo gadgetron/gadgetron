@@ -15,7 +15,7 @@ install(FILES
   cgPreconditioner.h
   lwSolver.h
   gpSolver.h
-  gpBBSolver.h
+  gpBbSolver.h
   DESTINATION include)
 
 IF(ARMADILLO_FOUND)

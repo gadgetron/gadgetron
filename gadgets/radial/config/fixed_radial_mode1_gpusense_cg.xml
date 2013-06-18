@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
+        xmlns="http://gadgetron.sf.net/gadgetron"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+         
+    <reader>
+      <slot>1008</slot>
+      <dll>gadgetron_mricore</dll>
+      <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
+    </reader>
+    <writer>
+      <slot>1004</slot>
+      <dll>gadgetron_mricore</dll>
+      <classname>MRIImageWriterCPLX</classname>
+    </writer>
+    <writer>
+      <slot>1005</slot>
+      <dll>gadgetron_mricore</dll>
+      <classname>MRIImageWriterFLOAT</classname>
+    </writer>
+    <writer>
+      <slot>1006</slot>
+      <dll>gadgetron_mricore</dll>
+      <classname>MRIImageWriterUSHORT</classname>
+    </writer>
+
+    <gadget>
+      <name>NoiseAdjust</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>NoiseAdjustGadget</classname>
+    </gadget>
+
+    <gadget>
+      <name>PCA</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>PCACoilGadget</classname>
+    </gadget>
+
+    <gadget>
+      <name>CoilReduction</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>CoilReductionGadget</classname>
+      <property><name>coils_out</name><value>16</value></property>
+    </gadget>
+    
+    <gadget>
+      <name>gpuRadialSenseGadget</name>
+      <dll>gadgetron_gpuradial</dll>
+      <classname>gpuRadialSenseGadget</classname>
+      <property><name>deviceno</name><value>0</value></property>
+      <property><name>mode</name><value>1</value></property>
+      <property><name>rotations_per_reconstruction</name><value>4</value></property>
+      <property><name>buffer_length_in_rotations</name><value>4</value></property>
+      <property><name>buffer_convolution_kernel_width</name><value>5.5</value></property>
+      <property><name>buffer_convolution_oversampling_factor</name><value>1.25</value></property>
+      <property><name>reconstruction_os_factor_x</name><value>1.5</value></property>
+      <property><name>reconstruction_os_factor_y</name><value>1.5</value></property>
+    </gadget>
+    
+    <gadget>
+      <name>gpuCgSenseGadget_slice0</name>
+      <dll>gadgetron_gpusense</dll>
+      <classname>gpuCgSenseGadget</classname>
+      <property><name>pass_on_undesired_data</name>  <value>true</value></property>
+      <property><name>deviceno</name>                <value>0</value></property>
+      <property><name>sliceno</name>                 <value>0</value></property>
+      <property><name>number_of_iterations</name>    <value>10</value></property>
+      <property><name>cg_limit</name>                <value>1e-6</value></property>
+      <property><name>oversampling_factor</name>     <value>1.25</value></property>
+      <property><name>kernel_width</name>            <value>5.5</value></property>
+      <property><name>kappa</name>                   <value>0.3</value></property>
+    </gadget>
+
+    <gadget>
+      <name>gpuCgSenseGadget_slice1</name>
+      <dll>gadgetron_gpusense</dll>
+      <classname>gpuCgSenseGadget</classname>
+      <property><name>pass_on_undesired_data</name>  <value>true</value></property>
+      <property><name>deviceno</name>                <value>0</value></property>
+      <property><name>sliceno</name>                 <value>1</value></property>
+      <property><name>number_of_iterations</name>    <value>10</value></property>
+      <property><name>cg_limit</name>                <value>1e-6</value></property>
+      <property><name>oversampling_factor</name>     <value>1.25</value></property>
+      <property><name>kernel_width</name>            <value>5.5</value></property>
+      <property><name>kappa</name>                   <value>0.3</value></property>
+    </gadget>
+
+    <gadget>
+      <name>gpuCgSenseGadget_slice2</name>
+      <dll>gadgetron_gpusense</dll>
+      <classname>gpuCgSenseGadget</classname>
+      <property><name>pass_on_undesired_data</name>  <value>true</value></property>
+      <property><name>deviceno</name>                <value>0</value></property>
+      <property><name>sliceno</name>                 <value>2</value></property>
+      <property><name>number_of_iterations</name>    <value>10</value></property>
+      <property><name>cg_limit</name>                <value>1e-6</value></property>
+      <property><name>oversampling_factor</name>     <value>1.25</value></property>
+      <property><name>kernel_width</name>            <value>5.5</value></property>
+      <property><name>kappa</name>                   <value>0.3</value></property>
+    </gadget>
+
+     <gadget>
+      <name>Extract</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>ExtractGadget</classname>
+    </gadget>
+
+    <!--
+	<gadget>
+	<name>ImageWrite</name>
+	<dll>gadgetron_mricore</dll>
+	<classname>ImageWriterGadgetFLOAT</classname>
+	</gadget>
+    -->
+    
+    <gadget>
+      <name>AutoScale</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>AutoScaleGadget</classname>
+    </gadget>
+        
+    <gadget>
+      <name>FloatToShort</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>FloatToUShortGadget</classname>
+    </gadget>
+    
+    <!--
+	<gadget>
+	<name>ImageFinishCPLX</name>
+	<dll>gadgetron_mricore</dll>
+	<classname>ImageFinishGadgetCPLX</classname>
+	</gadget>
+    -->
+    
+    <!--
+	<gadget>
+	<name>ImageFinishFLOAT</name>
+	<dll>gadgetron_mricore</dll>
+	<classname>ImageFinishGadgetFLOAT</classname>
+	</gadget>
+    -->
+    
+    <gadget>
+      <name>ImageFinishUSHORT</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>ImageFinishGadgetUSHORT</classname>
+    </gadget>
+    
+</gadgetronStreamConfiguration>

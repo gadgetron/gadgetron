@@ -1,7 +1,3 @@
-#include "ace/Log_Msg.h"
-#include "ace/Get_Opt.h"
-#include "ace/OS_NS_string.h"
-
 #include "GadgetronConnector.h"
 #include "GadgetMRIHeaders.h"
 #include "GadgetContainerMessage.h"
@@ -12,12 +8,15 @@
 #include "ismrmrd_hdf5.h"
 #include "GadgetIsmrmrdReadWrite.h"
 
+#include <ace/Log_Msg.h>
+#include <ace/Get_Opt.h>
+#include <ace/OS_NS_string.h>
+
 #include <fstream>
 #include <time.h>
 #include <iomanip>
 
 using namespace Gadgetron;
-
 
 int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 {
@@ -40,7 +39,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 	}
 
 	//Tell Gadgetron which XML configuration to run.
-	if (con.send_gadgetron_configuration_file(std::string("default.xml")) != 0) {
+	if (con.send_gadgetron_configuration_file(std::string("isalive.xml")) != 0) {
 		ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to send XML configuration to the Gadgetron host")));
 		return -1;
 	}

@@ -14,7 +14,7 @@ include_directories(
   )
 
 cuda_add_library(gpusolvers SHARED 
-  cuGPBBSolver.cu
+  cuGpBbSolver.cu
   )
 
 target_link_libraries(gpusolvers 
@@ -34,6 +34,6 @@ install(FILES
   cuSbLwSolver.h
   cuSbcLwSolver.h
   cuCgSolver.h
-  cuGPBBSolver.h
+  cuGpBbSolver.h
   gpusolvers_export.h
   DESTINATION include)

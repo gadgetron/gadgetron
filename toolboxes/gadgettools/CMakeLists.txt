@@ -1,5 +1,6 @@
 include_directories(${ACE_INCLUDE_DIR} 
 		    ${Boost_INCLUDE_DIR}  
+		    ${CMAKE_SOURCE_DIR}/toolboxes/core
   	            ${CMAKE_SOURCE_DIR}/apps/gadgetron)
 
 add_library(gadgettools SHARED GadgetronConnector.cpp)

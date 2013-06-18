@@ -3,6 +3,7 @@
 
 using namespace Gadgetron;
 
+/*
 static unsigned int prodv( std::vector<unsigned int> &vec )
 {
   unsigned int result = 1;
@@ -10,7 +11,7 @@ static unsigned int prodv( std::vector<unsigned int> &vec )
     result *= vec[i];
   }
   return result;
-}
+  }*/
 
 template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate )
@@ -18,11 +19,11 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray< complext<REAL> >
   if( !in || !out ){
     BOOST_THROW_EXCEPTION(runtime_error("cuNonCartesianSenseOperator::mult_M : 0x0 input/output not accepted"));
   }
-  
+  /*  
   if( (in->get_number_of_elements() != prodv(*this->get_domain_dimensions())) ||
       (out->get_number_of_elements() != prodv(*this->get_codomain_dimensions())) ) {
     BOOST_THROW_EXCEPTION(runtime_error("cuNonCartesianSenseOperator::mult_M: dimensions mismatch"));
-  }
+    }*/
 
   std::vector<unsigned int> full_dimensions = *this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
@@ -46,11 +47,11 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray< complext<REAL> 
   if( !in || !out ){
     BOOST_THROW_EXCEPTION(runtime_error("cuNonCartesianSenseOperator::mult_MH : 0x0 input/output not accepted"));
   }
-  
+  /*  
   if( (out->get_number_of_elements() != prodv(*this->get_domain_dimensions())) ||
       (in->get_number_of_elements() != prodv(*this->get_codomain_dimensions())) ) {
     throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH: dimensions mismatch");
-  }
+    }*/
 
   std::vector<unsigned int> tmp_dimensions = *this->get_domain_dimensions();
   tmp_dimensions.push_back(this->ncoils_);
@@ -83,15 +84,8 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::preprocess( cuNDArray<_reald> *traj
   if( domain_dims.get() == 0x0 || domain_dims->size() == 0 ){
     BOOST_THROW_EXCEPTION(runtime_error("cuNonCartesianSenseOperator::preprocess : operator domain dimensions not set"));
   }
-  
-  {
-    std::vector<unsigned int> tmp_dims;
-    tmp_dims = *trajectory->get_dimensions();
-    tmp_dims.push_back(this->ncoils_);
-    this->set_codomain_dimensions(&tmp_dims);
-  }
-  
   plan_->preprocess( trajectory, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_ALL );
+  is_preprocessed_ = true;
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void

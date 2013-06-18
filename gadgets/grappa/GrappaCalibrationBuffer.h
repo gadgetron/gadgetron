@@ -1,16 +1,16 @@
 #ifndef GRAPPACALIBRATIONBUFFER_H
 #define GRAPPACALIBRATIONBUFFER_H
 
-#include <vector>
-#include <string.h>
-#include <memory>
-#include <complex>
-
-#include "gadgetrongrappa_export.h"
+#include "gadgetron_grappa_export.h"
 #include "ismrmrd.h"
 #include "hoNDArray.h"
 #include "GrappaWeights.h"
 #include "GrappaWeightsCalculator.h"
+
+#include <vector>
+#include <string.h>
+#include <memory>
+#include <complex>
 
 namespace Gadgetron{
 

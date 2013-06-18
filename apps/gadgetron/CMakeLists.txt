@@ -11,6 +11,7 @@ include_directories(
   ${XSD_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/apps/gadgetron
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+  ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils)
 
 #Process the XSD files

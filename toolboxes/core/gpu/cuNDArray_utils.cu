@@ -558,10 +558,9 @@ namespace Gadgetron {
     }
 
 
-    template<class T> T mean(cuNDArray<T>* in){
-
-    	return thrust::reduce(in->begin(),in->end(),T(0),thrust::plus<T>())/T(in->get_number_of_elements());
-
+    template<class T> T mean(cuNDArray<T>* in)
+    {
+      return thrust::reduce(in->begin(),in->end(),T(0),thrust::plus<T>())/T(in->get_number_of_elements());
     }
 
     //
@@ -701,8 +700,12 @@ namespace Gadgetron {
     template EXPORTGPUCORE void fill_border<double_complext,3>(uintd3, cuNDArray<double_complext>*,double_complext);
     template EXPORTGPUCORE void fill_border<double_complext,4>(uintd4, cuNDArray<double_complext>*,double_complext);
 
-
     template EXPORTGPUCORE double mean<double>(cuNDArray<double>*);
-
     template EXPORTGPUCORE double_complext mean<double_complext>(cuNDArray<double_complext>*);
+  
+    // We can probably instantiate these functionsfor many more types? E.g. arrays of floatd2. 
+    // For now we just introduce what we have needed...
+    //
+
+    template EXPORTGPUCORE boost::shared_ptr< cuNDArray<floatd2> > expand<floatd2>( cuNDArray<floatd2>*, unsigned int);  
 }

@@ -72,7 +72,13 @@ namespace Gadgetron{
     }
     
     virtual void fill(T value) {
+#ifdef USE_OMP
+#pragma omp parallel for
+      for( int i=0; i<this->get_number_of_elements(); i++ )
+	this->get_data_ptr()[i] = value;
+#else
       std::fill(this->get_data_ptr(), this->get_data_ptr()+this->get_number_of_elements(), value);
+#endif
     }
     
     T* begin() {

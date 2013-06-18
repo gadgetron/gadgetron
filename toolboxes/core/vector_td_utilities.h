@@ -50,6 +50,18 @@ namespace Gadgetron{
   set( vector_td<T,D> &vec, unsigned int dim, T val ) { vec[dim] = val; }
 
   //
+  // In-place operations
+  //
+
+  template<class T, unsigned int D> __inline__ __host__ __device__ 
+  void clear( vector_td<T,D> &vec, const T &val = T(0) )
+  {
+    for (unsigned int i=0; i<D; i++) {
+      vec[i] = val;
+    }
+  }
+  
+  //
   // Component-wise math operations
   //
 

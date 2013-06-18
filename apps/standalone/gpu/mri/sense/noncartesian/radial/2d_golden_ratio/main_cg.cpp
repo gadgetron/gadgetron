@@ -6,7 +6,7 @@
 #include "cuImageOperator.h"
 #include "radial_utilities.h"
 #include "cuNonCartesianSenseOperator.h"
-#include "cuSenseRHSBuffer.h"
+#include "cuSenseBuffer.h"
 #include "cuCgPreconditioner.h"
 #include "cuCgSolver.h"
 #include "b1_map.h"
@@ -55,7 +55,7 @@ int main(int argc, char** argv)
   parms.add_parameter( 'f', COMMAND_LINE_INT,    1, "Frames per reconstruction (negative meaning all)", true, "-1" );
   parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of iterations", true, "10" );
   parms.add_parameter( 'k', COMMAND_LINE_FLOAT,  1, "Kernel width", true, "5.5" );
-  parms.add_parameter( 'K', COMMAND_LINE_FLOAT,  1, "Kappa", true, "0.1" );
+  parms.add_parameter( 'K', COMMAND_LINE_FLOAT,  1, "Kappa", true, "0.3" );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -114,8 +114,8 @@ int main(int argc, char** argv)
 
   // Set density compensation weights
   boost::shared_ptr< cuNDArray<_real> > dcw = compute_radial_dcw_golden_ratio_2d
-    ( samples_per_profile, profiles_per_frame, (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0], 
-      _real(1)/((_real)samples_per_profile/(_real)max(matrix_size.vec[0],matrix_size.vec[1])) );
+    ( samples_per_profile, profiles_per_frame, (_real)matrix_size_os[0]/(_real)matrix_size[0], 
+      _real(1)/((_real)samples_per_profile/(_real)max(matrix_size[0],matrix_size[1])) );
 
   // Define encoding matrix for non-Cartesian SENSE
   boost::shared_ptr< cuNonCartesianSenseOperator<_real,2,use_atomics> > E
@@ -125,18 +125,16 @@ int main(int argc, char** argv)
 
   // Notify encoding operator of dcw
   E->set_dcw(dcw) ;
-  dcw.reset();
 
   // Define rhs buffer
   //
 
-  boost::shared_ptr< cuSenseRHSBuffer<_real,2,use_atomics> > rhs_buffer
-    ( new cuSenseRHSBuffer<_real,2,use_atomics>() );
+  boost::shared_ptr< cuSenseBuffer<_real,2,use_atomics> > rhs_buffer
+    ( new cuSenseBuffer<_real,2,use_atomics>() );
 
-  rhs_buffer->set_num_coils(num_coils);
+  rhs_buffer->setup( matrix_size, matrix_size_os, kernel_width, num_coils, 8, 16 );
+  rhs_buffer->set_dcw(dcw);
 
-  rhs_buffer->set_sense_operator(E);
-   
   // Fill rhs buffer
   //
 
@@ -165,7 +163,7 @@ int main(int argc, char** argv)
 
   timer = new GPUTimer("Estimating csm");
 
-  boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_acc_coil_images();
+  boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_accumulated_coil_images();
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );  
   E->set_csm(csm);
 
@@ -237,9 +235,6 @@ int main(int argc, char** argv)
   image_dims = to_std_vector(matrix_size); 
   image_dims.push_back(frames_per_reconstruction);
   
-  // Pass image dimensions to encoding operator
-  E->set_domain_dimensions(&image_dims);
-  
   for( unsigned int reconstruction = 0; reconstruction<num_reconstructions; reconstruction++ ){
 
     // Determine trajectories
@@ -250,6 +245,10 @@ int main(int argc, char** argv)
     boost::shared_ptr< cuNDArray<_complext> > data = upload_data
       ( reconstruction, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, host_data.get() );
     
+    // Pass image dimensions to encoding operator
+    E->set_domain_dimensions(&image_dims);
+    E->set_codomain_dimensions(data->get_dimensions().get());
+  
     // Set current trajectory and trigger NFFT preprocessing
     E->preprocess(traj.get());
     

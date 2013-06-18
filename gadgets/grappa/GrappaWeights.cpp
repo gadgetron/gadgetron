@@ -1,8 +1,10 @@
-#include "GadgetIsmrmrdReadWrite.h"
+#include "../mri_core/GadgetIsmrmrdReadWrite.h"
 #include "Gadgetron.h"
 #include "GrappaWeights.h"
 #include "hoNDArray_fileio.h"
+
 namespace Gadgetron{
+
 template <class T> int GrappaWeights<T>::
 update(hoNDArray< std::complex<T> >* new_weights)
 {
