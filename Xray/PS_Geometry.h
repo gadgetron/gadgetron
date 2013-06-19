@@ -13,6 +13,8 @@ class PS_Geometry {
     float SAD;
     float SDD;
     std::vector<float> anglesArray;
+    std::vector<float> offsetxArray;
+    std::vector<float> offsetyArray;
     floatd2 spacingArray;
     floatd3 SAGxArray;
     floatd3 SAGyArray;
@@ -22,6 +24,8 @@ class PS_Geometry {
     void setSDD( float SDD ) { this->SDD = SDD; }
 
     std::vector<float>& getAnglesArray() { return anglesArray; }
+    std::vector<float>& getOffsetXArray() { return offsetxArray; }
+    std::vector<float>& getOffsetYArray() { return offsetyArray; }
     float getSAD() { return SAD; }
     float getSDD() { return SDD; }
 
@@ -51,7 +55,7 @@ class PS_Geometry {
 			H5LTread_dataset (file_id, "/geometry_dataformat_version", H5T_NATIVE_UINT, &dataformat_version);
 
 
-			unsigned int needed = 1;
+			unsigned int needed = 2;
 			if (!(dataformat_version == needed)) {
 					std::stringstream ss;
 					ss << "wrong geometry data format version inside hdf5 file, found: "
@@ -62,11 +66,17 @@ class PS_Geometry {
 			H5LTget_dataset_info(file_id,"/angles",&dim,NULL,NULL);
 			anglesArray = std::vector<float>(dim,0.0f);
 			H5LTread_dataset (file_id, "/angles", H5T_NATIVE_FLOAT, &anglesArray[0]);
+
+			H5LTget_dataset_info(file_id,"/offsetx",&dim,NULL,NULL);
+			offsetxArray = std::vector<float>(dim,0.0f);
+			H5LTread_dataset (file_id, "/offsetx", H5T_NATIVE_FLOAT, &offsetxArray[0]);
+			H5LTget_dataset_info(file_id,"/offsety",&dim,NULL,NULL);
+			offsetyArray = std::vector<float>(dim,0.0f);
+			H5LTread_dataset (file_id, "/offsety", H5T_NATIVE_FLOAT, &offsetyArray[0]);
 			H5LTread_dataset (file_id, "/SAD", H5T_NATIVE_FLOAT, &SAD);
 			H5LTread_dataset (file_id, "/SDD", H5T_NATIVE_FLOAT, &SDD);
 			H5LTread_dataset (file_id, "/spacing", H5T_NATIVE_FLOAT, &spacingArray[0]);
-			H5LTread_dataset (file_id, "/SAGx", H5T_NATIVE_FLOAT, &SAGxArray[0]);
-			H5LTread_dataset (file_id, "/SAGy", H5T_NATIVE_FLOAT, &SAGyArray[0]);
+
 
 
 

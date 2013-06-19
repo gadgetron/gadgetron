@@ -34,8 +34,8 @@
 #include "hoCuPartialDerivativeOperator.h"
 #include "hoCuGPBBSolver.h"
 
-#include "hoCuTVOperator.h"
-#include "hoCuTVpicsOperator.h"
+#include "hoCuTvOperator.h"
+#include "hoCuTvPicsOperator.h"
 using namespace std;
 using namespace Gadgetron;
 // Define desired precision
@@ -196,7 +196,7 @@ int main(int argc, char** argv) {
 	// Define encoding matrix
 	boost::shared_ptr< hoCudaConebeamProjectionOperator<float> >
 	E( new hoCudaConebeamProjectionOperator<float>() );
-	E->setup( ps_g, ps_bd, ps_g->getAnglesArray(), 1u,
+	E->setup( ps_g, ps_bd, ps_g->getAnglesArray(),ps_g->getOffsetXArray(), ps_g->getOffsetYArray(), 1u,
 			voxelSize, ps_dims_in_pixels,
 			numSamplesPerRay, false);
 	E->set_codomain_dimensions(projections->get_dimensions().get());
@@ -212,7 +212,7 @@ int main(int argc, char** argv) {
 
 	if (vm.count("TV")){
 		std::cout << "Total variation regularization in use" << std::endl;
-		boost::shared_ptr<hoCuTVOperator<float,3> > tv(new hoCuTVOperator<float,3>);
+		boost::shared_ptr<hoCuTvOperator<float,3> > tv(new hoCuTvOperator<float,3>);
 		tv->set_weight(vm["TV"].as<float>());
 		solver.add_nonlinear_operator(tv);
 	}
@@ -225,7 +225,7 @@ int main(int argc, char** argv) {
 		std::vector<unsigned int> is_dims3d = to_std_vector(imageSize);
 		boost::shared_ptr< hoCudaConebeamProjectionOperator<float> >
 		Ep( new hoCudaConebeamProjectionOperator<float>() );
-		Ep->setup( ps_g, ps_bd_pics, ps_g->getAnglesArray(), 1u,
+		Ep->setup( ps_g, ps_bd_pics, ps_g->getAnglesArray(), ps_g->getOffsetXArray(), ps_g->getOffsetYArray(), 1u,
 				voxelSize, ps_dims_in_pixels,
 				numSamplesPerRay, true);
 		Ep->set_codomain_dimensions(projections->get_dimensions().get());
@@ -240,7 +240,7 @@ int main(int argc, char** argv) {
 		float s = dot(projections.get(),&tmp_proj)/dot(&tmp_proj,&tmp_proj);
 		*prior3d *= s;
 		boost::shared_ptr<hoCuNDArray<float> > prior =  to_4d(prior3d.get(),is_dims.back());
-		boost::shared_ptr<hoCuTVpicsOperator<float,3> > pics (new hoCuTVpicsOperator<float,3>);
+		boost::shared_ptr<hoCuTvPicsOperator<float,3> > pics (new hoCuTvPicsOperator<float,3>);
 		pics->set_prior(prior);
 		pics->set_weight(vm["PICS"].as<float>());
 		solver.add_nonlinear_operator(pics);

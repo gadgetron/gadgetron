@@ -195,7 +195,7 @@ int main(int argc, char** argv) {
   // Define encoding matrix
   boost::shared_ptr< hoCudaConebeamProjectionOperator<_real> > 
       E( new hoCudaConebeamProjectionOperator<_real>() );
-  E->setup( ps_g, ps_bd, ps_g->getAnglesArray(), ppb,
+  E->setup( ps_g, ps_bd, ps_g->getAnglesArray(),ps_g->getOffsetXArray(),ps_g->getOffsetYArray(), ppb,
                  is_spacing_in_mm, ps_dims_in_pixels,
                  numSamplesPerRay,  true);
   E->set_codomain_dimensions(projections->get_dimensions().get());
@@ -227,7 +227,7 @@ int main(int argc, char** argv) {
  	is_dims.push_back(numBins);
 	boost::shared_ptr< hoCudaConebeamProjectionOperator<_real> >
 	      E4D( new hoCudaConebeamProjectionOperator<_real>() );
-	E4D->setup( ps_g, ps_bd4d, ps_g->getAnglesArray(), ppb,
+	E4D->setup( ps_g, ps_bd4d, ps_g->getAnglesArray(),ps_g->getOffsetXArray(),ps_g->getOffsetYArray(), ppb,
 								 is_spacing_in_mm, ps_dims_in_pixels,
 								 numSamplesPerRay,  true);
 	E4D->set_codomain_dimensions(projections->get_dimensions().get());

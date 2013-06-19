@@ -202,7 +202,7 @@ int main(int argc, char** argv) {
 
 	boost::shared_ptr< hoCudaConebeamProjectionOperator<_real> >
 	      E4D( new hoCudaConebeamProjectionOperator<_real>() );
-	E4D->setup( ps_g, ps_bd4d, ps_g->getAnglesArray(), ppb,
+	E4D->setup( ps_g, ps_bd4d, ps_g->getAnglesArray(), ps_g->getOffsetXArray(),ps_g->getOffsetYArray(),ppb,
 								 is_spacing_in_mm, ps_dims_in_pixels,
 								 numSamplesPerRay, true);
 	E4D->set_codomain_dimensions(&ps_dims);
