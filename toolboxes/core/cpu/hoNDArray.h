@@ -96,7 +96,7 @@ namespace Gadgetron{
       return this->get_data_ptr()[idx];
     }
     
-    T operator[]( unsigned int idx ){
+    T& operator[]( unsigned int idx ){
       if( idx >= this->get_number_of_elements() ){
   	BOOST_THROW_EXCEPTION( runtime_error("cuNDArray::operator[]: index out of range."));
       }
