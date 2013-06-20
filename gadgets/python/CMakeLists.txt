@@ -1,3 +1,7 @@
+IF (WIN32)
+  ADD_DEFINITIONS(-D__BUILD_GADGETRON_PYTHON__)
+ENDIF (WIN32)
+
 # TODO: The Gadgetron Python code uses Numpy C-API code
 # from Numpy versions < 1.7. If Numpy version is >= 1.7
 # you will get compiler warnings
@@ -12,7 +16,6 @@ include_directories(
   )
 
 add_library(GadgetronPythonMRI MODULE GadgetronPythonMRI.cpp GadgetReference.cpp)
-
 
 add_library(gadgetron_python SHARED       		
 	PythonGadget.cpp

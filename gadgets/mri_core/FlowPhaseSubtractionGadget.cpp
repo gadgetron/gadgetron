@@ -82,7 +82,7 @@ namespace Gadgetron{
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-            for (unsigned long i = 0; i < m2->getObjectPtr()->get_number_of_elements(); i++) {
+            for (long i = 0; i < m2->getObjectPtr()->get_number_of_elements(); i++) {
                 std::complex<float> tmp = std::polar((std::abs(p0[i])+std::abs(p1[i]))/2, std::arg(p1[i])-std::arg(p0[i]));
                 p1[i] = tmp;
             }
