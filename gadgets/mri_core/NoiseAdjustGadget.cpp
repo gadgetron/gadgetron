@@ -10,6 +10,7 @@ namespace Gadgetron{
   : noise_decorrelation_calculated_(false)
   , number_of_noise_samples_(0)
   , noise_bw_scale_factor_(1.0f)
+  ,noise_dwell_time_us_(0.0f)
   , is_configured_(false)
   {
   }

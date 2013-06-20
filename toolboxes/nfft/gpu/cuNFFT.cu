@@ -200,6 +200,12 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::setup( typename uintd<D>::Type matr
   }
   else
     device = _device;
+
+  // The convolution does not work properly for very small convolution kernel widths
+  // (experimentally observed limit)
+
+  if( W < REAL(1.8) ) 
+    BOOST_THROW_EXCEPTION( runtime_error("Error: the convolution kernel width for the cuNFFT plan is too small."));
   
   typename uintd<D>::Type vec_warp_size = to_vector_td<unsigned int,D>(cudaDeviceManager::Instance()->warp_size(device));
 
@@ -209,7 +215,6 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::setup( typename uintd<D>::Type matr
   
   if( sum(matrix_size%vec_warp_size) || sum(matrix_size_os%vec_warp_size) ){
     BOOST_THROW_EXCEPTION( runtime_error("Error: Illegal matrix size for the cuNFFT plan (not a multiple of the warp size)"));
-
   }
 
   //

@@ -9,3 +9,6 @@ target_link_libraries(nffth_cg gpusolvers gpuoperators gpucore gpunfft hostutils
 target_link_libraries(nffth_sb gpusolvers gpuoperators gpucore gpunfft hostutils ${CUDA_LIBRARIES})
 
 install(TARGETS nfft nffth nffth_cg nffth_sb DESTINATION bin)
+
+#add_executable(random random.cpp)
+#target_link_libraries(random hostutils)
