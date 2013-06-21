@@ -2,7 +2,12 @@ find_package(Ismrmrd REQUIRED)
 find_package(HDF5 1.8 COMPONENTS C CXX REQUIRED)
 
 set(Boost_NO_BOOST_CMAKE ON)
-find_package(Boost COMPONENTS thread system date_time chrono REQUIRED)
+
+if(WIN32)
+  find_package(Boost COMPONENTS thread system date_time chrono REQUIRED)
+else(WIN32)
+  find_package(Boost COMPONENTS thread system REQUIRED)
+endif(WIN32)
 
 if(WIN32)
   link_directories(${Boost_LIBRARY_DIRS})

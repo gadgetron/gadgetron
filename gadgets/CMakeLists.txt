@@ -19,7 +19,9 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   )
 
-add_subdirectory(mri_core)
+if(ARMADILLO_FOUND)
+  add_subdirectory(mri_core)
+endif(ARMADILLO_FOUND)
 
 if (CUDA_FOUND)
   add_subdirectory(radial)
