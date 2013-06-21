@@ -85,11 +85,11 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
     
-    ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    //ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
+    //ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
+    ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
     //ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
 
-    matrix_size_seq_ = uintd2( e_space.matrixSize().x(), e_space.matrixSize().y() );
+    matrix_size_seq_ = uintd2( r_space.matrixSize().x(), r_space.matrixSize().y() );
 
     if (!is_configured_) {
 

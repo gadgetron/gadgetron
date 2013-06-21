@@ -67,9 +67,9 @@ namespace Gadgetron{
 			  cfg->acquisitionSystemInformation().get().receiverChannels().get() : 1);
     dimensions_.push_back(slices);
 
-    fov_.push_back(e_space.fieldOfView_mm().x());
-    fov_.push_back(e_space.fieldOfView_mm().y());
-    fov_.push_back(e_space.fieldOfView_mm().z());
+    fov_.push_back(r_space.fieldOfView_mm().x());
+    fov_.push_back(r_space.fieldOfView_mm().y());
+    fov_.push_back(r_space.fieldOfView_mm().z());
 
     line_offset_ = (dimensions_[1]>>1)-e_limits.kspace_encoding_step_1().get().center();
 

@@ -82,7 +82,7 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
+    //ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
     ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
     ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
 
@@ -149,12 +149,12 @@ namespace Gadgetron{
     samples_to_skip_start_  = 0; //n.get<int>(std::string("samplestoskipstart.value"))[0];
     samples_to_skip_end_    = -1; //n.get<int>(std::string("samplestoskipend.value"))[0];
 
-    image_dimensions_.push_back(e_space.matrixSize().x());
-    image_dimensions_.push_back(e_space.matrixSize().y());
+    image_dimensions_.push_back(r_space.matrixSize().x());
+    image_dimensions_.push_back(r_space.matrixSize().y());
 
-    fov_vec_.push_back(e_space.fieldOfView_mm().x());
-    fov_vec_.push_back(e_space.fieldOfView_mm().y());
-    fov_vec_.push_back(e_space.fieldOfView_mm().z());
+    fov_vec_.push_back(r_space.fieldOfView_mm().x());
+    fov_vec_.push_back(r_space.fieldOfView_mm().y());
+    fov_vec_.push_back(r_space.fieldOfView_mm().z());
 
     slices_ = e_limits.slice().present() ? e_limits.slice().get().maximum() + 1 : 1;
     sets_ = e_limits.set().present() ? e_limits.set().get().maximum() + 1 : 1;
