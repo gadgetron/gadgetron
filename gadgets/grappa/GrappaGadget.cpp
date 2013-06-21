@@ -67,6 +67,10 @@ namespace Gadgetron{
 			  cfg->acquisitionSystemInformation().get().receiverChannels().get() : 1);
     dimensions_.push_back(slices);
 
+    fov_.push_back(e_space.fieldOfView_mm().x());
+    fov_.push_back(e_space.fieldOfView_mm().y());
+    fov_.push_back(e_space.fieldOfView_mm().z());
+
     line_offset_ = (dimensions_[1]>>1)-e_limits.kspace_encoding_step_1().get().center();
 
     return GADGET_OK;
@@ -254,6 +258,11 @@ namespace Gadgetron{
       cm1->getObjectPtr()->matrix_size[0] = image_dimensions_[0];
       cm1->getObjectPtr()->matrix_size[1] = image_dimensions_[1];
       cm1->getObjectPtr()->matrix_size[2] = image_dimensions_[2];
+
+      cm1->getObjectPtr()->field_of_view[0] = fov_[0];
+      cm1->getObjectPtr()->field_of_view[1] = fov_[1];
+      cm1->getObjectPtr()->field_of_view[2] = fov_[2];
+
       cm1->getObjectPtr()->channels       = 1+weights_calculator_.get_number_of_uncombined_channels();
       cm1->getObjectPtr()->slice              = m1->getObjectPtr()->idx.slice;
       cm1->getObjectPtr()->acquisition_time_stamp         = time_stamps_[slice];

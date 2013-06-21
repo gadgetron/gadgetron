@@ -22,7 +22,7 @@ namespace Gadgetron{
     Gadgetron::clear(&acc_buffer_);
     Gadgetron::clear(&cyc_buffer_);
 
-    num_coils_ = cur_idx_ = cur_sub_idx_ = 0;
+    cur_idx_ = cur_sub_idx_ = 0;
     acc_buffer_empty_ = true;
   }
 

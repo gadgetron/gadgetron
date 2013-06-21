@@ -152,10 +152,12 @@ namespace Gadgetron{
 
     // Matrix sizes (as a multiple of the GPU's warp size)
     //
-
+    
     image_dimensions_.push_back(((e_space.matrixSize().x()+warp_size-1)/warp_size)*warp_size);
     image_dimensions_.push_back(((e_space.matrixSize().y()+warp_size-1)/warp_size)*warp_size);
-    
+    fov_.push_back(e_space.fieldOfView_mm().x());
+    fov_.push_back(e_space.fieldOfView_mm().y());
+    fov_.push_back(e_space.fieldOfView_mm().z());
     image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize().x()*get_double_value(std::string("reconstruction_os_factor_x").c_str())))+warp_size-1)/warp_size)*warp_size);  
     image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize().y()*get_double_value(std::string("reconstruction_os_factor_y").c_str())))+warp_size-1)/warp_size)*warp_size);
     
@@ -263,6 +265,7 @@ namespace Gadgetron{
 
       // If so then clear the accumulation buffer
       acc_buffer_->clear();
+      buffer_update_needed_ = true;
       
       memcpy(position_,m1->getObjectPtr()->position,3*sizeof(float));
       memcpy(read_dir_,m1->getObjectPtr()->read_dir,3*sizeof(float));
@@ -470,9 +473,14 @@ namespace Gadgetron{
       m3->getObjectPtr()->matrix_size[0] = image_dimensions_recon_[0];
       m3->getObjectPtr()->matrix_size[1] = image_dimensions_recon_[1];
       m3->getObjectPtr()->matrix_size[2] = std::max(1L,frames_per_rotation_*rotations_per_reconstruction_);
-      m3->getObjectPtr()->channels       = num_coils_;
-      m3->getObjectPtr()->slice          = base_head.idx.slice;
-      m3->getObjectPtr()->set            = base_head.idx.set;
+
+      m3->getObjectPtr()->field_of_view[0] = fov_[0];
+      m3->getObjectPtr()->field_of_view[1] = fov_[1];
+      m3->getObjectPtr()->field_of_view[2] = fov_[2];
+
+      m3->getObjectPtr()->channels = num_coils_;
+      m3->getObjectPtr()->slice = base_head.idx.slice;
+      m3->getObjectPtr()->set = base_head.idx.set;
 
       memcpy(m3->getObjectPtr()->position,base_head.position, sizeof(float)*3);
       memcpy(m3->getObjectPtr()->read_dir,base_head.read_dir, sizeof(float)*3);

@@ -179,6 +179,7 @@ namespace Gadgetron{
     
     boost::shared_ptr< cuSenseBuffer<float,2> > acc_buffer_;
 
+    std::vector<unsigned int> fov_;
     std::vector<unsigned int> image_dimensions_;
     std::vector<unsigned int> image_dimensions_recon_;
     uintd2 image_dimensions_recon_os_;

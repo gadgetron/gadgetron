@@ -148,8 +148,13 @@ namespace Gadgetron{
 
     samples_to_skip_start_  = 0; //n.get<int>(std::string("samplestoskipstart.value"))[0];
     samples_to_skip_end_    = -1; //n.get<int>(std::string("samplestoskipend.value"))[0];
+
     image_dimensions_.push_back(e_space.matrixSize().x());
     image_dimensions_.push_back(e_space.matrixSize().y());
+
+    fov_vec_.push_back(e_space.fieldOfView_mm().x());
+    fov_vec_.push_back(e_space.fieldOfView_mm().y());
+    fov_vec_.push_back(e_space.fieldOfView_mm().z());
 
     slices_ = e_limits.slice().present() ? e_limits.slice().get().maximum() + 1 : 1;
     sets_ = e_limits.set().present() ? e_limits.set().get().maximum() + 1 : 1;
@@ -479,6 +484,11 @@ namespace Gadgetron{
 	m3->getObjectPtr()->matrix_size[0] = image_dimensions_[0];
 	m3->getObjectPtr()->matrix_size[1] = image_dimensions_[1];
 	m3->getObjectPtr()->matrix_size[2] = acceleration_factor_;
+
+	m3->getObjectPtr()->field_of_view[0] = fov_vec_[0];
+	m3->getObjectPtr()->field_of_view[1] = fov_vec_[1];
+	m3->getObjectPtr()->field_of_view[2] = fov_vec_[2];
+
 	m3->getObjectPtr()->channels       = num_coils;
 	m3->getObjectPtr()->slice          = base_head.idx.slice;
 	m3->getObjectPtr()->set            = base_head.idx.set;

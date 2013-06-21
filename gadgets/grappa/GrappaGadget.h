@@ -45,6 +45,7 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   bool first_call_;
  private:
   std::vector< GrappaCalibrationBuffer* > buffers_;
+  std::vector<unsigned int> fov_;
   std::vector<unsigned int> dimensions_;
   std::vector<unsigned int> image_dimensions_;
   std::vector< GadgetContainerMessage<  hoNDArray< std::complex<float> > >* > image_data_;

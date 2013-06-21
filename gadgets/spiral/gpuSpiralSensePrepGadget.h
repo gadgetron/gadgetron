@@ -60,6 +60,7 @@ namespace Gadgetron{
     cuNDArray<float> gpu_weights_;
 
     hoNDArray<float_complext>* host_data_buffer_;
+    std::vector<unsigned int> fov_vec_;
     std::vector<unsigned int> image_dimensions_;
     cuNFFT_plan<float, 2> plan_;
 
