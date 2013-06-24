@@ -71,6 +71,7 @@ namespace Gadgetron{
     kappa_ = get_double_value(std::string("kappa").c_str());
     shutter_radius_ = get_double_value(std::string("training_data_shutter_radius").c_str());
     rotations_to_discard_ = get_int_value(std::string("rotations_to_discard").c_str());
+    output_convergence_ = get_bool_value(std::string("output_convergence").c_str());
 
     if( (rotations_to_discard_%2) == 1 ){
       GADGET_DEBUG1("#rotations to discard must be even.\n");
@@ -114,7 +115,7 @@ namespace Gadgetron{
       cg_.set_preconditioner( D_ );           // preconditioning matrix
       cg_.set_max_iterations( number_of_iterations_ );
       cg_.set_tc_tolerance( cg_limit_ );
-      cg_.set_output_mode( cuCgSolver<float_complext>::OUTPUT_SILENT);
+      cg_.set_output_mode( (output_convergence_) ? cuCgSolver<float_complext>::OUTPUT_VERBOSE : cuCgSolver<float_complext>::OUTPUT_SILENT );
 
       is_configured_ = true;
     }

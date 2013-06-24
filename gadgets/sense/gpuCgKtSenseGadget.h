@@ -49,6 +49,7 @@ namespace Gadgetron{
     double shutter_radius_;
     unsigned int rotations_to_discard_;
 
+    bool output_convergence_;
     bool is_configured_;
 
     // Define conjugate gradient solver
