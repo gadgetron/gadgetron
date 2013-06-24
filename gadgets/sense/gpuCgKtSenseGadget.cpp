@@ -213,7 +213,7 @@ namespace Gadgetron{
     boost::shared_ptr< cuNDArray<float_complext> > cgresult;
     
     {
-      //GPUTimer timer("gpuCgKtSenseGadget::solve()");
+      GPUTimer timer("gpuCgKtSenseGadget::solve()");
       cgresult = cg_.solve(device_samples.get());
     }
 
@@ -333,7 +333,7 @@ namespace Gadgetron{
       // #profiles/frame : this is just an estimate (we dont have the exact value at this stage)
       unsigned int profiles_per_frame = num_samples / (frames_per_reconstruction*matrix_size_os_[0]);
       shutter_radius_ = ((float)matrix_size_os_[0]/(float)matrix_size_[0])*(float)profiles_per_frame/(float)M_PI;
-      GADGET_DEBUG2("Estimated training data shutter radius: %f", shutter_radius_);
+      GADGET_DEBUG2("Estimated training data shutter radius: %f\n", shutter_radius_);
     }
 
     fill_border<float_complext,2>( shutter_radius_, &image_os );

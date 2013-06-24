@@ -50,14 +50,14 @@
       <property><name>deviceno</name><value>0</value></property>
       <property><name>mode</name><value>2</value></property>
       <property><name>profiles_per_frame</name><value>16</value></property>
-      <property><name>rotations_per_reconstruction</name><value>64</value></property>
+      <property><name>rotations_per_reconstruction</name><value>32</value></property>
       <property><name>buffer_frames_per_rotation</name><value>32</value></property>
-      <property><name>buffer_length_in_rotations</name><value>2</value></property>
+      <property><name>buffer_length_in_rotations</name><value>1</value></property>
       <property><name>buffer_convolution_kernel_width</name><value>5.5</value></property>
       <property><name>buffer_convolution_oversampling_factor</name><value>1.25</value></property>
       <property><name>reconstruction_os_factor_x</name><value>1.5</value></property>
       <property><name>reconstruction_os_factor_y</name><value>1.5</value></property>
-      <property><name>sliding_window_rotations</name><value>32</value></property>
+      <property><name>sliding_window_rotations</name><value>16</value></property>
     </gadget>
     
     <gadget>
@@ -72,7 +72,7 @@
       <property><name>oversampling_factor</name>     <value>1.25</value></property>
       <property><name>kernel_width</name>            <value>5.5</value></property>
       <property><name>kappa</name>                   <value>0.3</value></property>
-      <property><name>rotations_to_discard</name>    <value>32</value></property>
+      <property><name>rotations_to_discard</name>    <value>16</value></property>
     </gadget>
 
     <gadget>
@@ -87,7 +87,7 @@
       <property><name>oversampling_factor</name>     <value>1.25</value></property>
       <property><name>kernel_width</name>            <value>5.5</value></property>
       <property><name>kappa</name>                   <value>0.3</value></property>
-      <property><name>rotations_to_discard</name>    <value>32</value></property>
+      <property><name>rotations_to_discard</name>    <value>16</value></property>
     </gadget>
 
     <gadget>
@@ -102,7 +102,7 @@
       <property><name>oversampling_factor</name>     <value>1.25</value></property>
       <property><name>kernel_width</name>            <value>5.5</value></property>
       <property><name>kappa</name>                   <value>0.3</value></property>
-      <property><name>rotations_to_discard</name>    <value>32</value></property>
+      <property><name>rotations_to_discard</name>    <value>16</value></property>
     </gadget>
 
      <gadget>
