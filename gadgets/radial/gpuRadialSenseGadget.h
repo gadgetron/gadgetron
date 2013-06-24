@@ -168,6 +168,7 @@ namespace Gadgetron{
     float phase_dir_[3];
     float slice_dir_[3];
 
+    bool output_timing_;
     bool buffer_using_solver_;
     bool buffer_update_needed_;
 

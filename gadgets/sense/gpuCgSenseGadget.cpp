@@ -18,6 +18,7 @@ namespace Gadgetron{
     : is_configured_(false)
     , channels_(0)
     , image_counter_(0)
+    , matrix_size_reported_(0)
   {
     set_parameter(std::string("deviceno").c_str(), "0");
     set_parameter(std::string("sliceno").c_str(), "0");
@@ -68,6 +69,8 @@ namespace Gadgetron{
     oversampling_factor_ = get_double_value(std::string("oversampling_factor").c_str());
     kernel_width_ = get_double_value(std::string("kernel_width").c_str());
     kappa_ = get_double_value(std::string("kappa").c_str());
+    output_convergence_ = get_bool_value(std::string("output_convergence").c_str());
+    output_timing_ = get_bool_value(std::string("output_timing").c_str());
 
     boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
@@ -106,7 +109,7 @@ namespace Gadgetron{
       cg_.set_preconditioner( D_ );           // preconditioning matrix
       cg_.set_max_iterations( number_of_iterations_ );
       cg_.set_tc_tolerance( cg_limit_ );
-      cg_.set_output_mode( cuCgSolver<float_complext>::OUTPUT_SILENT);
+      cg_.set_output_mode( (output_convergence_) ? cuCgSolver<float_complext>::OUTPUT_VERBOSE : cuCgSolver<float_complext>::OUTPUT_SILENT);
 
       is_configured_ = true;
     }
@@ -125,8 +128,11 @@ namespace Gadgetron{
     }
     
     //GADGET_DEBUG1("gpuCgSenseGadget::process\n");
-    //GPUTimer timer("gpuCgSenseGadget::process");
 
+    boost::shared_ptr<GPUTimer> process_timer;
+    if( output_timing_ )
+      process_timer = boost::shared_ptr<GPUTimer>( new GPUTimer("gpuCgSenseGadget::process()") );
+    
     if (!is_configured_) {
       GADGET_DEBUG1("Data received before configuration was completed\n");
       return GADGET_FAIL;
@@ -169,9 +175,12 @@ namespace Gadgetron{
     matrix_size_os_ =
       uintd2(((static_cast<unsigned int>(std::ceil(matrix_size_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
 	     ((static_cast<unsigned int>(std::ceil(matrix_size_[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
-    
-    GADGET_DEBUG2("Matrix size    : [%d,%d] \n", matrix_size_[0], matrix_size_[1]);    
-    GADGET_DEBUG2("Matrix size OS : [%d,%d] \n", matrix_size_os_[0], matrix_size_os_[1]);
+
+    if( !matrix_size_reported_ ) {
+      GADGET_DEBUG2("Matrix size    : [%d,%d] \n", matrix_size_[0], matrix_size_[1]);    
+      GADGET_DEBUG2("Matrix size OS : [%d,%d] \n", matrix_size_os_[0], matrix_size_os_[1]);
+      matrix_size_reported_ = true;
+    }
 
     std::vector<unsigned int> image_dims = to_std_vector(matrix_size_);
     image_dims.push_back(frames);
@@ -204,8 +213,14 @@ namespace Gadgetron{
     boost::shared_ptr< cuNDArray<float_complext> > cgresult;
     
     {
-      //GPUTimer timer("gpuCgSenseGadget::solve()");
+      boost::shared_ptr<GPUTimer> solve_timer;
+      if( output_timing_ )
+	solve_timer = boost::shared_ptr<GPUTimer>( new GPUTimer("gpuCgSenseGadget::solve()") );
+
       cgresult = cg_.solve(device_samples.get());
+
+      if( output_timing_ )
+	solve_timer.reset();
     }
 
     if (!cgresult.get()) {
@@ -222,7 +237,7 @@ namespace Gadgetron{
 
     // If the recon matrix size exceeds the sequence matrix size then crop
     if( matrix_size_seq_ != matrix_size_ )
-      cgresult = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>2, matrix_size_seq_, cgresult.get() );    
+      cgresult = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>1, matrix_size_seq_, cgresult.get() );    
     
     // Now pass on the reconstructed images
 
@@ -271,6 +286,9 @@ namespace Gadgetron{
       }
     }
     
+    if( output_timing_ )
+      process_timer.reset();
+
     m1->release();
     return GADGET_OK;
   }

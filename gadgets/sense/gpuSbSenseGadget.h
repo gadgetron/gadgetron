@@ -52,6 +52,7 @@ namespace Gadgetron{
     double lambda_;
     double alpha_;
 
+    bool output_convergence_;
     bool is_configured_;
     bool prepared_;
 

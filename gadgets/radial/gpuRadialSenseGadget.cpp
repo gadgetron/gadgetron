@@ -69,6 +69,7 @@ namespace Gadgetron{
     rotations_per_reconstruction_ = get_int_value(std::string("rotations_per_reconstruction").c_str());
     buffer_length_in_rotations_ = get_int_value(std::string("buffer_length_in_rotations").c_str());
     buffer_using_solver_ = get_bool_value(std::string("buffer_using_solver").c_str());
+    output_timing_ = get_bool_value(std::string("output_timing").c_str());
 
     // Currently there are some restrictions on the allowed sliding window configurations
     //
@@ -254,7 +255,10 @@ namespace Gadgetron{
     }
 
     //GADGET_DEBUG1("gpuRadialSenseGadget::process\n");
-    //GPUTimer timer("gpuRadialGadget::process");
+
+    boost::shared_ptr<GPUTimer> process_timer;
+    if( output_timing_ )
+      process_timer = boost::shared_ptr<GPUTimer>( new GPUTimer("gpuRadialSenseGadget::process()") );
 
     // Have the imaging plane changed?
     //
@@ -520,6 +524,9 @@ namespace Gadgetron{
     }
 
     profiles_counter_global_[set*slices_+slice]++;
+
+    if( output_timing_ )
+      process_timer.reset();
     
     m1->release(); // the internal queues hold copies
     return GADGET_OK;

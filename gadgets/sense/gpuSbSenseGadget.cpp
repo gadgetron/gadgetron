@@ -74,6 +74,7 @@ namespace Gadgetron{
     mu_ = get_double_value(std::string("mu").c_str());
     lambda_ = get_double_value(std::string("lambda").c_str());
     alpha_ = get_double_value(std::string("alpha").c_str());
+    output_convergence_ = get_bool_value(std::string("output_convergence").c_str());
 
     boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
@@ -131,11 +132,11 @@ namespace Gadgetron{
             
       sb_.set_max_outer_iterations(number_of_sb_iterations_);
       sb_.set_max_inner_iterations(1);
-      sb_.set_output_mode( cuSbcCgSolver<float_complext>::OUTPUT_SILENT );
+      sb_.set_output_mode( (output_convergence_) ? cuSbcCgSolver<float_complext>::OUTPUT_VERBOSE : cuSbcCgSolver<float_complext>::OUTPUT_SILENT );
       
       sb_.get_inner_solver()->set_max_iterations( number_of_cg_iterations_ );
       sb_.get_inner_solver()->set_tc_tolerance( cg_limit_ );
-      sb_.get_inner_solver()->set_output_mode( cuCgSolver<float_complext>::OUTPUT_SILENT );
+      sb_.get_inner_solver()->set_output_mode( (output_convergence_) ? cuCgSolver<float_complext>::OUTPUT_VERBOSE : cuCgSolver<float_complext>::OUTPUT_SILENT );
       sb_.get_inner_solver()->set_preconditioner( D_ );
 
       is_configured_ = true;
@@ -323,7 +324,7 @@ namespace Gadgetron{
 
     // If the recon matrix size exceeds the sequence matrix size then crop
     if( matrix_size_seq_ != matrix_size_ )
-      sbresult = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>2, matrix_size_seq_, sbresult.get() );
+      sbresult = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>1, matrix_size_seq_, sbresult.get() );
         
     // Now pass on the reconstructed images
     //
