@@ -22,13 +22,13 @@ namespace Gadgetron{
     : samples_to_skip_start_(0)
     , samples_to_skip_end_(0)
     , samples_per_interleave_(0)
-    , host_data_buffer_(0)
+    , host_data_buffer_(0x0)
     , image_counter_(0)
     , image_series_(0)
     , prepared_(false)
     , use_multiframe_grouping_(false)
-    , interleaves_counter_singleframe_(0)
-    , interleaves_counter_multiframe_(0)
+    , interleaves_counter_singleframe_(0x0)
+    , interleaves_counter_multiframe_(0x0)
     , acceleration_factor_(0)
   {
     GADGET_DEBUG1("Initializing Spiral\n");
@@ -176,8 +176,8 @@ namespace Gadgetron{
   }
 
   int gpuSpiralSensePrepGadget::
-  process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
+  process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1,
+	  GadgetContainerMessage< hoNDArray< std::complex<float> > > *m2)
   {
     bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
     if (is_noise) { //Noise should have been consumed by the noise adjust, but just in case.
@@ -212,25 +212,18 @@ namespace Gadgetron{
       std::vector<unsigned int> trajectory_dimensions;
       trajectory_dimensions.push_back(samples_per_interleave_*Nints_);
 
-      try{host_traj_->create(&trajectory_dimensions);}
-      catch (runtime_error &err){
-	GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for trajectory\n");
-	return GADGET_FAIL;
-      }
+      host_traj_->create(&trajectory_dimensions);
+      host_weights_->create(&trajectory_dimensions);
 
-      try{host_weights_->create(&trajectory_dimensions);}
-      catch (runtime_error& err ){
-	GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for weights\n");
-	return GADGET_FAIL;
-      }
-
-      float* co_ptr = reinterpret_cast<float*>(host_traj_->get_data_ptr());
-      float* we_ptr =  reinterpret_cast<float*>(host_weights_->get_data_ptr());
-
-      for (int i = 0; i < (samples_per_interleave_*Nints_); i++) {
-	co_ptr[i*2]   = -x_trajectory[i]/2;
-	co_ptr[i*2+1] = -y_trajectory[i]/2;
-	we_ptr[i] = weighting[i];
+      {
+	float* co_ptr = reinterpret_cast<float*>(host_traj_->get_data_ptr());
+	float* we_ptr =  reinterpret_cast<float*>(host_weights_->get_data_ptr());
+	
+	for (int i = 0; i < (samples_per_interleave_*Nints_); i++) {
+	  co_ptr[i*2]   = -x_trajectory[i]/2;
+	  co_ptr[i*2+1] = -y_trajectory[i]/2;
+	  we_ptr[i] = weighting[i];
+	}
       }
 
       delete [] xgrad;
@@ -248,29 +241,16 @@ namespace Gadgetron{
       float W = 5.5f;
 
       // Upload host arrays to device arrays
-      cuNDArray<floatd2> traj;
-      try {traj= cuNDArray<floatd2>(*host_traj_);}
-      catch (runtime_error& err){
-	GADGET_DEBUG_EXCEPTION(err,"Failed to allocate device array\n");
-	return GADGET_FAIL;
-      }
+      cuNDArray<floatd2> traj(*host_traj_);
 
-      try{gpu_weights_ = cuNDArray<float>(*host_weights_);}
-      catch (runtime_error& err){
-	GADGET_DEBUG_EXCEPTION(err,"Failed to allocate device array\n");
-	return GADGET_FAIL;
-      };
+      gpu_weights_ = cuNDArray<float>(*host_weights_);
 
       // Initialize plan
       // NFFT_plan<float, 2> plan( matrix_size, matrix_size_os, W );
       plan_ = cuNFFT_plan<float, 2>( matrix_size, matrix_size_os, W );
 
       // Preprocess
-      try{plan_.preprocess( &traj, cuNFFT_plan<float,2>::NFFT_PREP_ALL );}
-      catch (runtime_error& err){
-	GADGET_DEBUG_EXCEPTION(err,"NFFT preprocess failed\n");
-	return GADGET_FAIL;
-      }
+      plan_.preprocess( &traj, cuNFFT_plan<float,2>::NFFT_PREP_ALL );
 
       prepared_ = true;
     }
@@ -287,17 +267,23 @@ namespace Gadgetron{
       }
 
       for (unsigned int i = 0; i < slices_*sets_; i++) {
-	try{ host_data_buffer_[i].create(&data_dimensions); }
-	catch (std::exception & err) {
-	  GADGET_DEBUG1("Unable to allocate memory for data buffer\n");
-	  return GADGET_FAIL;
-	}
+	host_data_buffer_[i].create(&data_dimensions);
 	host_data_buffer_[i].fill(0.0f);
       }
     }
 
-    interleaves_counter_singleframe_++;
-    interleaves_counter_multiframe_++;
+    if( !interleaves_counter_singleframe_ ){
+      interleaves_counter_singleframe_ = new long(slices_*sets_);
+      for( unsigned int i=0; i<slices_*sets_; i++ )
+	interleaves_counter_singleframe_[i] = 0;
+    }
+
+    if( !interleaves_counter_multiframe_ ){
+      interleaves_counter_multiframe_ = new long(slices_*sets_);
+      for( unsigned int i=0; i<slices_*sets_; i++ )
+	interleaves_counter_multiframe_[i] = 0;
+    }
+
     unsigned int samples_to_copy = m1->getObjectPtr()->number_of_samples-samples_to_skip_end_;
     unsigned int interleave = m1->getObjectPtr()->idx.kspace_encode_step_1;
     unsigned int slice = m1->getObjectPtr()->idx.slice;
@@ -305,7 +291,12 @@ namespace Gadgetron{
 
     unsigned int samples_per_channel =  host_data_buffer_->get_size(0);
 
-    buffer_[set*slices_+slice].enqueue_tail(m1);
+    interleaves_counter_singleframe_[set*slices_+slice]++;
+    interleaves_counter_multiframe_[set*slices_+slice]++;
+
+    // Duplicate the profile to avoid double deletion in case problems are encountered
+
+    buffer_[set*slices_+slice].enqueue_tail(duplicate_profile(m1));
     ISMRMRD::AcquisitionHeader base_head = *m1->getObjectPtr();
 
     if (samples_to_skip_end_ == -1) {
@@ -313,7 +304,7 @@ namespace Gadgetron{
       GADGET_DEBUG2("Adjusting samples_to_skip_end_ = %d\n", samples_to_skip_end_);
     }
 
-    std::complex<float>* data_ptr    = reinterpret_cast< std::complex<float>* >(host_data_buffer_[set*slices_+slice].get_data_ptr());
+    std::complex<float>* data_ptr = reinterpret_cast< std::complex<float>* >(host_data_buffer_[set*slices_+slice].get_data_ptr());
     std::complex<float>* profile_ptr = m2->getObjectPtr()->get_data_ptr();
 
     for (unsigned int c = 0; c < m1->getObjectPtr()->active_channels; c++) {
@@ -324,17 +315,17 @@ namespace Gadgetron{
     bool is_last_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
     if (is_last_scan_in_slice) {
 
-      if( Nints_%interleaves_counter_singleframe_ ){
+      if( Nints_%interleaves_counter_singleframe_[set*slices_+slice] ){
 	GADGET_DEBUG1("Unexpected number of interleaves encountered in frame\n");
 	return GADGET_FAIL;
       }
 
-      if( acceleration_factor_ != Nints_/interleaves_counter_singleframe_ ){
+      if( acceleration_factor_ != Nints_/interleaves_counter_singleframe_[set*slices_+slice] ){
 	GADGET_DEBUG1("Change of acceleration factor detected\n");
-	acceleration_factor_ =  Nints_/interleaves_counter_singleframe_;
+	acceleration_factor_ =  Nints_/interleaves_counter_singleframe_[set*slices_+slice];
       }
 
-      if( !use_multiframe_grouping_ || (use_multiframe_grouping_ && interleaves_counter_multiframe_ == Nints_) ){
+      if( !use_multiframe_grouping_ || (use_multiframe_grouping_ && interleaves_counter_multiframe_[set*slices_+slice] == Nints_) ){
 
 	GPUTimer timer("Spiral gridding for csm calc...");
 
@@ -347,19 +338,10 @@ namespace Gadgetron{
 	image_dims.push_back(image_dimensions_[0]);
 	image_dims.push_back(image_dimensions_[1]);
 	image_dims.push_back(num_coils);
-	cuNDArray<float_complext> image; 
-	
-	try{image.create(&image_dims);}
-	catch (runtime_error &err){
-	  GADGET_DEBUG_EXCEPTION(err,"\nError allocating coil images on device\n");
-	  return GADGET_FAIL;
-	}
 
-	try {plan_.compute( &data, &image, &gpu_weights_, cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C );}
-	catch (runtime_error& err){
-	  GADGET_DEBUG_EXCEPTION(err,"NFFT compute failed\n");
-	  return GADGET_FAIL;
-	}
+	cuNDArray<float_complext> image(&image_dims);
+
+	plan_.compute( &data, &image, &gpu_weights_, cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C );
 
 	// Estimate CSM
 	boost::shared_ptr< cuNDArray<float_complext> > csm = estimate_b1_map<float,2>( &image );
@@ -371,19 +353,10 @@ namespace Gadgetron{
 	// Setup averaged image (one image from the combined coils)
 	boost::shared_ptr< std::vector<unsigned int> > reg_dims = image.get_dimensions();
 	reg_dims->pop_back();
-	cuNDArray<float_complext> reg_image;
 
-	try{reg_image.create(reg_dims.get());}
-	catch (runtime_error &err){
-	  GADGET_DEBUG_EXCEPTION(err,"\nError allocating regularization image on device\n");
-	  return GADGET_FAIL;
-	}
+	cuNDArray<float_complext> reg_image(reg_dims.get());
 
-	try {E->mult_csm_conj_sum( &image, &reg_image ); }
-	catch (runtime_error& err){
-	  GADGET_DEBUG_EXCEPTION(err,"\nError combining coils to regularization image\n");
-	  return GADGET_FAIL;
-	}
+	E->mult_csm_conj_sum( &image, &reg_image );
 
 	boost::shared_ptr< hoNDArray<float_complext> > csm_host = csm->to_host();
 	boost::shared_ptr< hoNDArray<float_complext> > reg_host = reg_image.to_host();
@@ -392,35 +365,18 @@ namespace Gadgetron{
 
 	std::vector<unsigned int> ddimensions;
 
-	ddimensions.push_back(samples_per_interleave_*interleaves_counter_singleframe_*((use_multiframe_grouping_) ? acceleration_factor_ : 1));
+	ddimensions.push_back(samples_per_interleave_*interleaves_counter_singleframe_[set*slices_+slice]*((use_multiframe_grouping_) ? acceleration_factor_ : 1));
 	ddimensions.push_back(num_coils);
 	
-	boost::shared_ptr< hoNDArray<float_complext> > data_host(new hoNDArray<float_complext>());
-
-	try{data_host->create(&ddimensions);}
-	catch (runtime_error& err){
-	  GADGET_DEBUG_EXCEPTION(err,"Unable to allocate host data array\n");
-	  return GADGET_FAIL;
-	}
+	boost::shared_ptr< hoNDArray<float_complext> > data_host(new hoNDArray<float_complext>(&ddimensions));
 
 	ddimensions.clear();
-	ddimensions.push_back(samples_per_interleave_*interleaves_counter_singleframe_);
+	ddimensions.push_back(samples_per_interleave_*interleaves_counter_singleframe_[set*slices_+slice]);
 	ddimensions.push_back((use_multiframe_grouping_) ? acceleration_factor_ : 1);
 
-	boost::shared_ptr< hoNDArray<floatd2> > traj_host(new hoNDArray<floatd2>());
-	try {traj_host->create(&ddimensions);}
-	catch (runtime_error& err){
-	  GADGET_DEBUG_EXCEPTION(err, "Unable to allocate host trajectory array\n");
-	  return GADGET_FAIL;
-	}
-
-	boost::shared_ptr< hoNDArray<float> > dcw_host(new hoNDArray<float>());
-	try {dcw_host->create(&ddimensions);}
-	catch (runtime_error& err){
-	  GADGET_DEBUG_EXCEPTION(err, "Unable to allocate host density compensation array\n");
-	  return GADGET_FAIL;
-	}
-
+	boost::shared_ptr< hoNDArray<floatd2> > traj_host(new hoNDArray<floatd2>(&ddimensions));
+	boost::shared_ptr< hoNDArray<float> > dcw_host(new hoNDArray<float>(&ddimensions));
+	
 	for (unsigned int p = 0; p < profiles_buffered; p++) {
 	  ACE_Message_Block* mbq;
 	  if (buffer_[set*slices_+slice].dequeue_head(mbq) < 0) {
@@ -508,11 +464,28 @@ namespace Gadgetron{
 	  m3->release();
 	  return GADGET_FAIL;
 	}
-	interleaves_counter_multiframe_ = 0;
+	interleaves_counter_multiframe_[set*slices_+slice] = 0;
       }
-      interleaves_counter_singleframe_ = 0;
+      interleaves_counter_singleframe_[set*slices_+slice] = 0;
     }
+    m1->release();
     return GADGET_OK;
+  }
+
+  GadgetContainerMessage<ISMRMRD::AcquisitionHeader>*
+  gpuSpiralSensePrepGadget::duplicate_profile( GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *profile )
+  {
+    GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *copy = 
+      new GadgetContainerMessage<ISMRMRD::AcquisitionHeader>();
+    
+    GadgetContainerMessage< hoNDArray< std::complex<float> > > *cont_copy = 
+      new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
+    
+    *copy->getObjectPtr() = *profile->getObjectPtr();
+    *(cont_copy->getObjectPtr()) = *(AsContainerMessage<hoNDArray< std::complex<float> > >(profile->cont())->getObjectPtr());
+    
+    copy->cont(cont_copy);
+    return copy;
   }
 
   GADGET_FACTORY_DECLARE(gpuSpiralSensePrepGadget)
