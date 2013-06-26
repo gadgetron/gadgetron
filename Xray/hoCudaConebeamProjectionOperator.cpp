@@ -1,158 +1,138 @@
 #include "hoCudaConebeamProjectionOperator.h"
-#include "vector_td_utilities.h"
-
-
 #include "conebeam_projection.h"
-#include <vector>
+#include "hoNDArray.h"
+#include "vector_td_operators.h"
+#include "GPUTimer.h"
 
+#include <vector>
 #include <stdio.h>
 
-#include "hoNDArray_fileio.h"
-#include "hoCuNDArray_elemwise.h"
-#include "hoCuNDArray_operators.h"
-#include "hoCuNDArray_blas.h"
-
-//#define TIME_ITR
-
-using namespace Gadgetron;
-
-template<class REAL> void hoCudaConebeamProjectionOperator<REAL>
-::mult_M( hoCuNDArray<REAL>* in1, hoCuNDArray<REAL>* out, bool accumulate )
+namespace Gadgetron
 {
-  if( !preprocessed ){
-    throw std::runtime_error( "Error: hoCudaConebeamProjectionOperator : setup not performed");
-
-  }
-  GPUTimer timer("Conebeam forwards projection");
-  hoCuNDArray<REAL>* in = in1;
-  hoCuNDArray<REAL> in2;
-  /*  if (is_weights != NULL) {
-    in2 = *in1;
-    in  = &in2;
-    hoNDA_scale(is_weights, in);
-    }*/
-
-  //unsigned int offset = 0;
-  for (unsigned int b=0; b < binning->getBinningData().size(); b++) {
-    //unsigned int numProjsInBin = projections_per_bin[b];
-    /*
-    //std::cout << "forward: " << b << std::endl;
-    std::vector<unsigned int> ps_dims;
-    ps_dims.push_back(ps_dims_in_pixels.x);
-    ps_dims.push_back(ps_dims_in_pixels.y);
-    ps_dims.push_back(numProjsInBin);
-    hoCuNDArray<REAL> temp;
-    unsigned int sliceSize = ps_dims_in_pixels.x * ps_dims_in_pixels.y;
-    temp.create( &ps_dims, out->get_data_ptr() + offset*sliceSize );
-    */
-
-    floatd2 ps_dims_in_pixels_float = floatd2( ps_dims_in_pixels[0], ps_dims_in_pixels[1] );
-    floatd2 ps_spacing_in_mm = geometry->getSpacingArray();
-    floatd2 ps_dims_in_mm = ps_spacing_in_mm * ps_dims_in_pixels_float;
-
-    /*
-    floatd3 SAGx = floatd3(geometry->getSAGxArray()->getData()[0],
-			      geometry->getSAGxArray()->getData()[1],
-			      geometry->getSAGxArray()->getData()[2]);
-    floatd3 SAGy = floatd3(geometry->getSAGyArray()->getData()[0],
-			      geometry->getSAGyArray()->getData()[1],
-			      geometry->getSAGyArray()->getData()[2]);
-    */
-    float SDD = geometry->getSDD();
-    float SAD = geometry->getSAD();
-    conebeam_forwards_projection(*out, *in, b,
-				      binning->getBinningData()[b],
-				      angles, 
-				      ppb, is_spacing_in_mm, ps_dims_in_mm, 
-                      offsetx, offsety, SDD, SAD, 
-				      numSamplesPerRay, accumulate);
-
-
-
-    //offset += projections_per_bin[b];
-  }
-  std::cout << "Projection norm:" << nrm2(out) << std::endl;
-
-}
-
-template<class REAL> void hoCudaConebeamProjectionOperator<REAL>
-::mult_MH( hoCuNDArray<REAL>* in1, hoCuNDArray<REAL>* out, bool accumulate )
-{
-  if( !preprocessed ){
-    throw std::runtime_error("Error: hoCudaConebeamProjectionOperator : setup not performed");
-  }
-  GPUTimer timer("Conebeam backwards projection");
-  hoCuNDArray<REAL>* in = in1;
-  hoCuNDArray<REAL> in2;
-
-  for (unsigned int b=0; b < binning->getBinningData().size(); b++) {
-
-    floatd2 ps_dims_in_pixels_float = floatd2( ps_dims_in_pixels[0], ps_dims_in_pixels[1] );
-    floatd2 ps_spacing_in_mm = geometry->getSpacingArray();
-    floatd2 ps_dims_in_mm = ps_spacing_in_mm * ps_dims_in_pixels_float;
-
-    float SDD = geometry->getSDD();
-    float SAD = geometry->getSAD();
-    conebeam_backwards_projection(*in, *out, b,
-				       binning->getBinningData()[b],
-				       angles, ppb, is_spacing_in_mm, ps_dims_in_mm,
-                                       offsetx, offsety, SDD, SAD, 
-				        use_fbp, accumulate);
-
-  }
-
-
-}
-
-template<class REAL> void hoCudaConebeamProjectionOperator<REAL>
-::mult_MH_M( hoCuNDArray<REAL>* in, hoCuNDArray<REAL>* out, bool accumulate )
-{
-  if( !preprocessed ){
-    throw std::runtime_error("Error: hoCudaConebeamProjectionOperator : setup not performed");
-  }
-
-  //if (gt!=NULL) delete gt;
-  //gt = new GPUTimer("cgSolver Iteration");
-
-  //GPUTimer *timer;
-  //timer = new GPUTimer("hoCudaConebeamProjectionOperator mult_MH_M");
-
-  // calc number of projections
-  //unsigned int numOfAllProjections = binning->getNumberOfProjections();
-
-  /*
-    unsigned int offset = 0;
-    for (unsigned int b=0; b < projections_per_bin.size(); b++) {
-    offset += projections_per_bin[b];
+  void hoCudaConebeamProjectionOperator
+  ::mult_M( hoNDArray<float> *image, hoNDArray<float> *projections, bool accumulate )
+  {
+    //
+    // Validate the input 
+    //
+    
+    if( image == 0x0 || projections == 0x0 ){
+      BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M:: illegal array pointer provided"));
     }
-  */
+    
+    if( image->get_number_of_dimensions() != 4 ){
+      BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M: image array must be four-dimensional"));
+    }
 
-  // Make copy of input to avoid it being overwritten
-  std::vector<unsigned int> ps_dims;
-  ps_dims.push_back(ps_dims_in_pixels[0]);
-  ps_dims.push_back(ps_dims_in_pixels[1]);
-  ps_dims.push_back(numProjections);
+    if( projections->get_number_of_dimensions() != 3 ){
+      BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M: projections array must be three-dimensional"));
+    }
+    
+    if( !preprocessed ){
+      BOOST_THROW_EXCEPTION(runtime_error( "Error: hoCudaConebeamProjectionOperator::mult_M: setup not performed"));
+    }
 
-  hoCuNDArray<REAL> temp;
-  temp.create( &ps_dims );
-        
-#ifdef TIME_ITR
-  GPUTimer *timer2;
-  timer2 = new GPUTimer("forwards projection");
-#endif
+    if( projections->get_size(2) != acquisition->get_geometry()->get_angles().size() || 
+	projections->get_size(2) != acquisition->get_geometry()->get_offsets().size() ){
+      BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M: inconsistent sizes of input arrays/vectors"));
+    }
 
-  mult_M(in, &temp, accumulate);
+    GPUTimer timer("Conebeam forwards projection");
 
-#ifdef TIME_ITR
-  delete timer2;
-  timer2 = new GPUTimer("backwards projection");
-#endif
+    // Iterate over the temporal dimension.
+    // I.e. reconstruct one 3D volume at a time.
+    //
 
-  mult_MH(&temp, out, accumulate);
-#ifdef TIME_ITR
-  delete timer2;
-#endif
+    for( int b=0; b<binning->get_number_of_bins(); b++ ) {
+
+      floatd2 ps_dims_in_pixels_float(projections->get_size(0), projections->get_size(1));
+      floatd2 ps_spacing_in_mm = acquisition->get_geometry()->get_spacing();
+      floatd2 ps_dims_in_mm = ps_spacing_in_mm * ps_dims_in_pixels_float;
+
+      float SDD = acquisition->get_geometry()->get_SDD();
+      float SAD = acquisition->get_geometry()->get_SAD();
+
+      std::vector<unsigned int> dims_3d = *image->get_dimensions();
+      dims_3d.pop_back();
+      
+      int num_3d_elements = dims_3d[0]*dims_3d[1]*dims_3d[2];
+
+      hoNDArray<float> image_3d(&dims_3d, image->get_data_ptr()+b*num_3d_elements);
+
+      conebeam_forwards_projection( projections, &image_3d, 
+				    acquisition->get_geometry()->get_angles(), 
+				    acquisition->get_geometry()->get_offsets(),
+				    binning->get_bin(b),
+				    projections_per_batch, num_samples_per_ray,
+				    is_spacing_in_mm, ps_dims_in_mm, 
+				    SDD, SAD, 
+				    accumulate );
+    }
+  }
+
+  void hoCudaConebeamProjectionOperator
+  ::mult_MH( hoNDArray<float> *projections, hoNDArray<float> *image, bool accumulate )
+  {
+    //
+    // Validate the input 
+    //
+    
+    if( image == 0x0 || projections == 0x0 ){
+      BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH:: illegal array pointer provided"));
+    }
+    
+    if( image->get_number_of_dimensions() != 4 ){
+      BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH: image array must be four-dimensional"));
+    }
+
+    if( projections->get_number_of_dimensions() != 3 ){
+      BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH: projections array must be three-dimensional"));
+    }
+    
+    if( !preprocessed ){
+      BOOST_THROW_EXCEPTION(runtime_error( "Error: hoCudaConebeamProjectionOperator::mult_MH: setup not performed"));
+    }
+
+    if( projections->get_size(2) != acquisition->get_geometry()->get_angles().size() ||
+	projections->get_size(2) != acquisition->get_geometry()->get_offsets().size() ){
+      BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH: inconsistent sizes of input arrays/vectors"));
+    }
+
+    GPUTimer timer("Conebeam backwards projection");
+
+    // Iterate over the temporal dimension.
+    // I.e. reconstruct one 3D volume at a time.
+    //
+
+    for( int b=0; b<binning->get_number_of_bins(); b++ ) {
+
+      floatd2 ps_dims_in_pixels_float(projections->get_size(0), projections->get_size(1));
+      floatd2 ps_spacing_in_mm = acquisition->get_geometry()->get_spacing();
+      floatd2 ps_dims_in_mm = ps_spacing_in_mm * ps_dims_in_pixels_float;
+
+      uintd3 is_dims_in_pixels( image->get_size(0), image->get_size(1), image->get_size(2) );
+
+      float SDD = acquisition->get_geometry()->get_SDD();
+      float SAD = acquisition->get_geometry()->get_SAD();
+
+      std::vector<unsigned int> dims_3d = *image->get_dimensions();
+      dims_3d.pop_back();
+
+      int num_3d_elements = dims_3d[0]*dims_3d[1]*dims_3d[2];
+
+      hoNDArray<float> image_3d(&dims_3d, image->get_data_ptr()+b*num_3d_elements);
+
+      conebeam_backwards_projection( projections, &image_3d,
+				     acquisition->get_geometry()->get_angles(), 
+				     acquisition->get_geometry()->get_offsets(),
+				     binning->get_bin(b),
+				     projections_per_batch,
+				     is_dims_in_pixels, is_spacing_in_mm,
+				     ps_dims_in_mm,
+				     SDD, SAD, 
+				     use_fbp, use_oversampling_in_fbp,
+				     maximum_angle,
+      				     accumulate );
+    }
+  }
 }
-
-// Instantiations
-template class hoCudaConebeamProjectionOperator<float>;
