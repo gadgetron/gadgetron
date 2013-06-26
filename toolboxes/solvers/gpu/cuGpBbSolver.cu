@@ -19,7 +19,9 @@ template <class REAL> __global__ void filter_kernel(complext<REAL>* x, complext<
   }
 }
 
-template <class T> void Gadgetron::cuGpBbSolver<T>::solver_non_negativity_filter(Gadgetron::cuNDArray<T>* x , Gadgetron::cuNDArray<T>* g){
+template <class T> void Gadgetron::cuGpBbSolver<T>::
+solver_non_negativity_filter(Gadgetron::cuNDArray<T>* x , Gadgetron::cuNDArray<T>* g)
+{
   int elements = g->get_number_of_elements();
 
   int threadsPerBlock = std::min(elements,MAX_THREADS_PER_BLOCK);

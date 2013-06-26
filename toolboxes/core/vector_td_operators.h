@@ -60,10 +60,10 @@ namespace Gadgetron{
     for(unsigned int i=0; i<D; i++ ) v1.vec[i] -= v2.vec[i];
   }
 
-  template< class T, class R, unsigned int D > __inline__ __host__ __device__ 
-  void component_wise_mul_eq ( vector_td<T,D> &v1, const vector_td<R,D> &v2 )
-  { 
-    for(unsigned int i=0; i<D; i++ ) v1.vec[i] *= v2.vec[i];
+  template< class T, unsigned int D > __inline__ __host__ __device__ 
+  void operator *= ( vector_td<T,D> &v1, const T &v2 )
+  {
+    for(unsigned int i=0; i<D; i++ ) v1.vec[i] *= v2;
   }
 
   template< class T, class R, unsigned int D > __inline__ __host__ __device__ 

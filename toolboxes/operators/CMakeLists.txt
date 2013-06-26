@@ -17,6 +17,7 @@ install(FILES
   partialDerivativeOperator.h
   convolutionOperator.h
   laplaceOperator.h
+  tvPicsOperator.h
   DESTINATION include)
 
 IF (ARMADILLO_FOUND)

@@ -84,12 +84,10 @@ static bool prepare( int device, int *old_device,
   // Get current Cuda device
   if( cudaGetDevice(old_device) != cudaSuccess ) {
     BOOST_THROW_EXCEPTION( cuda_error("Error: cuNFFT : unable to get device no"));
-
   }
 
   if( device != *old_device && cudaSetDevice(device) != cudaSuccess) {
     BOOST_THROW_EXCEPTION( cuda_error("Error : cuNFFT : unable to set device no"));
-
   }
   
   // Transfer arrays to compute device if necessary
@@ -204,9 +202,10 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::setup( typename uintd<D>::Type matr
   // The convolution does not work properly for very small convolution kernel widths
   // (experimentally observed limit)
 
-  if( W < REAL(1.8) ) 
+  if( W < REAL(1.8) ) {
     BOOST_THROW_EXCEPTION( runtime_error("Error: the convolution kernel width for the cuNFFT plan is too small."));
-  
+  }
+
   typename uintd<D>::Type vec_warp_size = to_vector_td<unsigned int,D>(cudaDeviceManager::Instance()->warp_size(device));
 
   //
@@ -743,7 +742,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::check_consistency( cuNDArray<complext<RE
   }
   
   if( (components & _NFFT_CONV_C2NC ) && !preprocessed_C2NC ){
-  	BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan: Unable to compute NFFT before preprocessing."));
+    BOOST_THROW_EXCEPTION( runtime_error("Error: cuNFFT_plan: Unable to compute NFFT before preprocessing."));
   }
   
   if( (components & _NFFT_CONV_NC2C ) && !(preprocessed_NC2C || (preprocessed_C2NC && ATOMICS ) ) ){

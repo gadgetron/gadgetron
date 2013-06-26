@@ -156,28 +156,31 @@ namespace Gadgetron {
             it.advance();
         }
     }
-
+   
     // Expand array to new dimension
     template<class T> boost::shared_ptr<hoNDArray<T> > 
     expand(hoNDArray<T> *in, unsigned int new_dim_size )
     {
-        if( in == 0x0 ){
-            BOOST_THROW_EXCEPTION(runtime_error("expand(): illegal input pointer."));
-        }
+      if( in == 0x0 ){
+	BOOST_THROW_EXCEPTION(runtime_error("expand(): illegal input pointer."));
+      }
+      
+      const unsigned int number_of_elements_in = in->get_number_of_elements();    
 
-        std::vector<unsigned int> dims = *in->get_dimensions(); dims.push_back(new_dim_size);
-        boost::shared_ptr< hoNDArray<T> > out( new hoNDArray<T>()); out->create(&dims);    
-        const unsigned int number_of_elements_in = in->get_number_of_elements();    
+      std::vector<unsigned int> dims = *in->get_dimensions(); 
+      dims.push_back(new_dim_size);
 
+      boost::shared_ptr< hoNDArray<T> > out(new hoNDArray<T>(&dims));
+      
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-    for( unsigned int idx=0; idx<number_of_elements_in*new_dim_size; idx++ ){
-            out[idx] = in[idx%number_of_elements_in];
-        }
-        return out;
+      for( int idx=0; idx<number_of_elements_in*new_dim_size; idx++ ){
+	(*out)[idx] = in->at(idx%number_of_elements_in);
+      }
+      return out;
     }
-
+  
     // Sum over dimension
     template<class T> boost::shared_ptr<hoNDArray<T> > 
     sum(hoNDArray<T> *in, unsigned int dim )

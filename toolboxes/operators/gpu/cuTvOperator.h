@@ -11,8 +11,10 @@
 
 namespace Gadgetron{
 
-  template<class T, unsigned int D> class EXPORTGPUOPERATORS cuTvOperator : public generalOperator<cuNDArray<T> > 
+  template<class T, unsigned int D> class EXPORTGPUOPERATORS cuTvOperator 
+    : public generalOperator<cuNDArray<T> > 
   {
+
   protected:
     typedef typename realType<T>::Type REAL;
     

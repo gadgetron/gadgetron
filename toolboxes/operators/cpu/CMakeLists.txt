@@ -17,4 +17,6 @@ install(FILES
   hoImageOperator.h
   hoFFTOperator.h
   hoPartialDerivativeOperator.h
+  hoTvOperator.h
+  hoTvPicsOperator.h
   DESTINATION include)
