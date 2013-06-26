@@ -345,7 +345,7 @@ namespace Gadgetron{
 
     image_data_[slice] = new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
     try{ image_data_[slice]->getObjectPtr()->create(&image_dimensions_);}
-    catch (runtime_error &err){
+    catch (std::runtime_error &err){
       GADGET_DEBUG_EXCEPTION(err,"Unable to create image buffers");
       return GADGET_FAIL;
     }

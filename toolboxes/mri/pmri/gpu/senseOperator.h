@@ -6,7 +6,6 @@
 
 #include "linearOperator.h"
 #include "gpupmri_export.h"
-#include "GadgetronException.h"
 
 #include <boost/smart_ptr.hpp>
 #include <iostream>
@@ -31,7 +30,7 @@ namespace Gadgetron{
 	ncoils_ = csm_->get_size(D);
       }
       else{
-	BOOST_THROW_EXCEPTION(runtime_error("Error: senseOperator::set_csm : unexpected csm dimensionality"));
+	throw std::runtime_error("Error: senseOperator::set_csm : unexpected csm dimensionality");
       }    
     }
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "linearOperatorSolver.h"
-#include "GadgetronException.h"
 #include "real_utilities.h"
 #include "complext.h"
 
@@ -58,7 +57,7 @@ namespace Gadgetron{
     virtual void add_group(int L_norm=1)
     {
       if(current_group.size()==0){
-	BOOST_THROW_EXCEPTION(runtime_error( "Error: gpBBSolver::add_group : no regularization group operators added" ));
+	throw std::runtime_error( "Error: gpBBSolver::add_group : no regularization group operators added" );
       }
       if (L_norm==2){
 	for (int i =0; i < current_group.size(); i++){
@@ -76,7 +75,7 @@ namespace Gadgetron{
     virtual void add_group(boost::shared_ptr<ARRAY_TYPE> prior, int L_norm=1)
     {
       if(current_group.size()==0){
-	BOOST_THROW_EXCEPTION(runtime_error( "Error: gpBBSolver::add_group : no regularization group operators added" ));
+	throw std::runtime_error( "Error: gpBBSolver::add_group : no regularization group operators added" );
 
       }
       if (L_norm==2){

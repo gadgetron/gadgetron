@@ -26,7 +26,7 @@ namespace Gadgetron{
   template<class T> arma::Mat<typename stdType<T>::Type> as_arma_matrix( hoNDArray<T> *x )
   {
     if( x->get_number_of_dimensions() != 2 )
-      BOOST_THROW_EXCEPTION( runtime_error("Wrong number of dimensions. Cannot convert hoNDArray to matrix"));
+      throw std::runtime_error("Wrong number of dimensions. Cannot convert hoNDArray to matrix");
     return arma::Mat<typename stdType<T>::Type>( (typename stdType<T>::Type*) x->get_data_ptr(), x->get_size(0), x->get_size(1), false, true );
   }
 
@@ -38,7 +38,7 @@ namespace Gadgetron{
   template<class T> const arma::Mat<typename stdType<T>::Type> as_arma_matrix( const hoNDArray<T> *x )
   {
     if( x->get_number_of_dimensions() != 2 )
-      BOOST_THROW_EXCEPTION( runtime_error("Wrong number of dimensions. Cannot convert hoNDArray to matrix"));
+      throw std::runtime_error("Wrong number of dimensions. Cannot convert hoNDArray to matrix");
     return arma::Mat<typename stdType<T>::Type>( (typename stdType<T>::Type*) x->get_data_ptr(), x->get_size(0), x->get_size(1), false, true );
   }
   

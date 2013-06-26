@@ -23,12 +23,12 @@ namespace Gadgetron{
     virtual void mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
     {
       if( in == 0x0 || out == 0x0 ){
-	BOOST_THROW_EXCEPTION(runtime_error("Error: identityOperator::mult_{M,MH,MHM}: illegal array pointer provided"));
+	throw std::runtime_error("Error: identityOperator::mult_{M,MH,MHM}: illegal array pointer provided");
       }
 
       // We will do only the most basic dimensionality checking
       if( in->get_number_of_elements() != out->get_number_of_elements() ){
-	BOOST_THROW_EXCEPTION(runtime_error("Error: identityOperator: in/out dimensions mismatch"));
+	throw std::runtime_error("Error: identityOperator: in/out dimensions mismatch");
       }
         
       if( accumulate )

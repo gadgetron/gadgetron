@@ -8,7 +8,7 @@ namespace Gadgetron{
   cuNFFTOperator<REAL,D>::mult_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate )
   {
     if( !in || !out ){
-      BOOST_THROW_EXCEPTION(runtime_error("cuNFFTOperator::mult_M : 0x0 input/output not accepted"));
+      throw std::runtime_error("cuNFFTOperator::mult_M : 0x0 input/output not accepted");
     }
 
     cuNDArray<complext<REAL> > *tmp_out;
@@ -32,7 +32,7 @@ namespace Gadgetron{
   cuNFFTOperator<REAL,D>::mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate )
   {
     if( !in || !out ){
-      BOOST_THROW_EXCEPTION(runtime_error("cuNFFTOperator::mult_MH : 0x0 input/output not accepted"));
+      throw std::runtime_error("cuNFFTOperator::mult_MH : 0x0 input/output not accepted");
     }
 
     cuNDArray<complext<REAL> > *tmp_out;
@@ -55,12 +55,12 @@ namespace Gadgetron{
   cuNFFTOperator<REAL,D>::mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate )
   {
     if( !in || !out ){
-      BOOST_THROW_EXCEPTION(runtime_error("cuNFFTOperator::mult_MH_M : 0x0 input/output not accepted"));
+      throw std::runtime_error("cuNFFTOperator::mult_MH_M : 0x0 input/output not accepted");
     }
     
     boost::shared_ptr< std::vector<unsigned int> > codomain_dims = this->get_codomain_dimensions();
     if( codomain_dims.get() == 0x0 || codomain_dims->size() == 0 ){
-      BOOST_THROW_EXCEPTION(runtime_error("cuNFFTOperator::mult_MH_M : operator codomain dimensions not set"));
+      throw std::runtime_error("cuNFFTOperator::mult_MH_M : operator codomain dimensions not set");
     }
 
     cuNDArray<complext<REAL> > *tmp_out;
@@ -90,7 +90,7 @@ namespace Gadgetron{
   cuNFFTOperator<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory ) 
   {
     if( trajectory == 0x0 ){
-      BOOST_THROW_EXCEPTION(runtime_error("cuNFFTOperator::preprocess : 0x0 trajectory provided."));
+      throw std::runtime_error("cuNFFTOperator::preprocess : 0x0 trajectory provided.");
     }
     
     plan_->preprocess( trajectory, cuNFFT_plan<REAL,D>::NFFT_PREP_ALL );

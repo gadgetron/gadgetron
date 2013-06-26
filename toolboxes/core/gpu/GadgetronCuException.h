@@ -1,15 +1,14 @@
 #pragma once
 
-#include "GadgetronException.h"
 #include <cuda_runtime_api.h>
 
 namespace Gadgetron{
   
-  class cuda_error : public runtime_error
+  class cuda_error : public std::runtime_error
   {
   public:
-    cuda_error(std::string msg) : runtime_error(msg) {}
-    cuda_error(cudaError_t errN) : runtime_error(cudaGetErrorString(errN)) {
+    cuda_error(std::string msg) : std::runtime_error(msg) {}
+    cuda_error(cudaError_t errN) : std::runtime_error(cudaGetErrorString(errN)) {
     }
   };
 }

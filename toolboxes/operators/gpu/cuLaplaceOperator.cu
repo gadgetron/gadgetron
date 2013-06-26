@@ -60,7 +60,7 @@ namespace Gadgetron{
   {
   
     if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
-      BOOST_THROW_EXCEPTION(runtime_error("laplaceOperator::compute_laplace : array dimensions mismatch."));
+      throw std::runtime_error("laplaceOperator::compute_laplace : array dimensions mismatch.");
 
     }
   

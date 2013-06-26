@@ -17,7 +17,7 @@ process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
   new_dimensions[2] = m2->getObjectPtr()->get_size(2);
 
   try{m3->getObjectPtr()->create(&new_dimensions);}
-  catch (runtime_error &err){
+  catch (std::runtime_error &err){
   	GADGET_DEBUG_EXCEPTION(err,"CropAndCombineGadget, failed to allocate new array\n");
     return -1;
   }

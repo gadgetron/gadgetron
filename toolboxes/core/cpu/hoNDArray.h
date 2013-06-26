@@ -9,12 +9,11 @@
 #include "NDArray.h"
 #include "complext.h"
 #include "vector_td.h"
-#include "GadgetronException.h"
 
 #include <string.h>
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
-
+#include <new>          // std::runtime_error
 namespace Gadgetron{
 
   template <class T> class hoNDArray : public NDArray<T>
@@ -91,14 +90,14 @@ namespace Gadgetron{
     
     T& at( unsigned int idx ){
       if( idx >= this->get_number_of_elements() ){
-  	BOOST_THROW_EXCEPTION( runtime_error("cuNDArray::at(): index out of range."));
+  	throw std::runtime_error("cuNDArray::at(): index out of range.");
       }
       return this->get_data_ptr()[idx];
     }
     
     T& operator[]( unsigned int idx ){
       if( idx >= this->get_number_of_elements() ){
-  	BOOST_THROW_EXCEPTION( runtime_error("cuNDArray::operator[]: index out of range."));
+  	throw std::runtime_error("cuNDArray::operator[]: index out of range.");
       }
       return this->get_data_ptr()[idx];
     }
@@ -117,7 +116,7 @@ namespace Gadgetron{
       _allocate_memory(this->elements_, &this->data_);
     
       if( this->data_ == 0x0 ){
-	BOOST_THROW_EXCEPTION( bad_alloc("hoNDArray<>::allocate memory failed"));
+	throw std::runtime_error("hoNDArray<>::allocate memory failed");
       }
     }
 

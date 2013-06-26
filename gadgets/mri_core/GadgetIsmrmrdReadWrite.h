@@ -117,7 +117,7 @@ namespace Gadgetron{
                 tdims.push_back(m1->getObjectPtr()->number_of_samples);
 
                 try { m3->getObjectPtr()->create(&tdims);}
-                catch (runtime_error &err){
+                catch (std::runtime_error &err){
                     GADGET_DEBUG_EXCEPTION(err,"(%P|%t) Allocate trajectory data\n");
                     m1->release();
 
@@ -144,7 +144,7 @@ namespace Gadgetron{
             adims.push_back(m1->getObjectPtr()->active_channels);
 
             try{ m2->getObjectPtr()->create(&adims); }
-            catch (runtime_error &err ){
+            catch (std::runtime_error &err ){
                 GADGET_DEBUG_EXCEPTION(err,"(%P|%t) Allocate sample data\n")
                     m1->release();
 

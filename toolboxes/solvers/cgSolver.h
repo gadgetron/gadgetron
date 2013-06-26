@@ -165,7 +165,7 @@ namespace Gadgetron{
     {
     
       if( this->encoding_operator_.get() == 0 ){
-      	throw runtime_error( "Error: cgSolver::compute_rhs : no encoding operator is set" );
+      	throw std::runtime_error( "Error: cgSolver::compute_rhs : no encoding operator is set" );
       } 
         
       // Get image space dimensions from the encoding operator
@@ -173,7 +173,7 @@ namespace Gadgetron{
 
       boost::shared_ptr< std::vector<unsigned int> > image_dims = this->encoding_operator_->get_domain_dimensions();
       if( image_dims->size() == 0 ){
-      	throw runtime_error( "Error: cgSolver::compute_rhs : encoding operator has not set domain dimension" );
+      	throw std::runtime_error( "Error: cgSolver::compute_rhs : encoding operator has not set domain dimension" );
       }
 
       // Create result array and clear
@@ -216,7 +216,7 @@ namespace Gadgetron{
       //
 
       if( !rhs || rhs->get_number_of_elements() == 0 ){
-      	throw runtime_error( "Error: cgSolver::initialize : empty or NULL rhs provided" );
+      	throw std::runtime_error( "Error: cgSolver::initialize : empty or NULL rhs provided" );
       }
     
       // Result, x
@@ -248,7 +248,7 @@ namespace Gadgetron{
       if (this->get_x0().get()){
 	
 	if( !this->get_x0()->dimensions_equal( rhs )){
-	  throw runtime_error( "Error: cgSolver::initialize : RHS and initial guess must have same dimensions" );
+	  throw std::runtime_error( "Error: cgSolver::initialize : RHS and initial guess must have same dimensions" );
 	}
 	
 	*x_ = *(this->get_x0());
@@ -352,11 +352,11 @@ namespace Gadgetron{
       //
 
       if( !in || !out ){
-	BOOST_THROW_EXCEPTION(runtime_error( "Error: cgSolver::mult_MH_M : invalid input pointer(s)" ));
+	throw std::runtime_error( "Error: cgSolver::mult_MH_M : invalid input pointer(s)" );
       }
 
       if( in->get_number_of_elements() != out->get_number_of_elements() ){
-    	BOOST_THROW_EXCEPTION(runtime_error( "Error: cgSolver::mult_MH_M : array dimensionality mismatch" ));
+    	throw std::runtime_error( "Error: cgSolver::mult_MH_M : array dimensionality mismatch" );
       }
     
       // Intermediate storage

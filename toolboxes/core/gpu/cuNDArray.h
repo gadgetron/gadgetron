@@ -50,7 +50,7 @@ namespace Gadgetron{
 	  deallocate_memory();
 	  this->data_ = 0;
 	  this->dimensions_->clear();
-	  BOOST_THROW_EXCEPTION(cuda_error(err));
+	  throw cuda_error(err);
 	}
       }      
     }
@@ -73,7 +73,7 @@ namespace Gadgetron{
 	  deallocate_memory();
 	  this->data_ = 0;
 	  this->dimensions_->clear();
-	  BOOST_THROW_EXCEPTION(cuda_error(err));
+	  throw cuda_error(err);
 	}
       }      
     }
@@ -165,25 +165,25 @@ namespace Gadgetron{
 	if (this->device_ == rhs.device_) {
 	  if (cudaMemcpy(this->data_, rhs.data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice) !=cudaSuccess) {	    
 	    cudaSetDevice(cur_device);
-	    BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::operator=: failed to copy data (2)"));
+	    throw cuda_error("cuNDArray::operator=: failed to copy data (2)");
 	  }
 	} else {	  
 	  if( cudaSetDevice(rhs.device_) != cudaSuccess) {	    
 	    cudaSetDevice(cur_device);
-	    BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::operator=: unable to set device no (2)"));
+	    throw cuda_error("cuNDArray::operator=: unable to set device no (2)");
 	  }
 	  boost::shared_ptr< hoNDArray<T> > tmp = rhs.to_host();
 	  if( cudaSetDevice(this->device_) != cudaSuccess) {	    
 	    cudaSetDevice(cur_device);
-	    BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::operator=: unable to set device no (3)"));
+	    throw cuda_error("cuNDArray::operator=: unable to set device no (3)");
 	  }	  
 	  if (cudaMemcpy(this->data_, tmp->get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) != cudaSuccess) {	    
 	    cudaSetDevice(cur_device);
-	    BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::operator=: failed to copy data (3)"));
+	    throw cuda_error("cuNDArray::operator=: failed to copy data (3)");
 	  }
 	}	
 	if( cudaSetDevice(cur_device) != cudaSuccess) {
-	  BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::operator=: unable to restore to current device"));
+	  throw cuda_error("cuNDArray::operator=: unable to restore to current device");
 	}
       }      
       return *this;
@@ -197,7 +197,7 @@ namespace Gadgetron{
     virtual void create(std::vector<unsigned int> *dimensions, int device_no)
     {
       if (device_no < 0){
-	BOOST_THROW_EXCEPTION(cuda_error("cuNDArray::create: illegal device no"));	
+	throw cuda_error("cuNDArray::create: illegal device no");
       }      
       this->device_ = device_no; 
       NDArray<T>::create(dimensions);
@@ -206,21 +206,21 @@ namespace Gadgetron{
     virtual void create(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct = false)
     {
       if (!data) {
-	BOOST_THROW_EXCEPTION(runtime_error("cuNDArray::create: 0x0 pointer provided"));
+	throw std::runtime_error("cuNDArray::create: 0x0 pointer provided");
       }  
       int tmp_device; 
       if( cudaGetDevice(&tmp_device) != cudaSuccess) {
-	BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::create: Unable to query for device"));
+	throw cuda_error("cuNDArray::create: Unable to query for device");
       }      
       cudaDeviceProp deviceProp; 
       if( cudaGetDeviceProperties( &deviceProp, tmp_device) != cudaSuccess) {
-	BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::create: Unable to query device properties"));	
+	throw cuda_error("cuNDArray::create: Unable to query device properties");
       }  
       if (deviceProp.unifiedAddressing) {
 	cudaPointerAttributes attrib;
 	if (cudaPointerGetAttributes(&attrib, data) != cudaSuccess) {
 	  CHECK_FOR_CUDA_ERROR();
-	  BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::create: Unable to determine attributes of pointer"));
+	  throw cuda_error("cuNDArray::create: Unable to determine attributes of pointer");
 	}
 	this->device_ = attrib.device;
       } else {
@@ -246,7 +246,7 @@ namespace Gadgetron{
       boost::shared_ptr< hoNDArray<T> > ret = boost::shared_ptr< hoNDArray<T> >(new hoNDArray<T>);
       ret->create(this->dimensions_.get());
       if (cudaMemcpy(ret->get_data_ptr(), this->data_, this->elements_*sizeof(T), cudaMemcpyDeviceToHost) != cudaSuccess) {
-	BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::to_host(): failed to copy memory from device"));
+	throw cuda_error("cuNDArray::to_host(): failed to copy memory from device");
       }      
       return ret;
     }
@@ -254,13 +254,13 @@ namespace Gadgetron{
     virtual void to_host( hoNDArray<T> *out ) const 
     {
       if( !out ){
-	BOOST_THROW_EXCEPTION( runtime_error("cuNDArray::to_host(): illegal array passed."));
+	throw std::runtime_error("cuNDArray::to_host(): illegal array passed.");
       }      
       if( out->get_number_of_elements() != this->get_number_of_elements() ){	
 	out->create( this->get_dimensions().get());
       }      
       if( cudaMemcpy( out->get_data_ptr(), this->data_, this->elements_*sizeof(T), cudaMemcpyDeviceToHost) != cudaSuccess) {
-	BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::to_host(): failed to copy memory from device"));
+	throw cuda_error("cuNDArray::to_host(): failed to copy memory from device");
       }
     }
     
@@ -271,25 +271,25 @@ namespace Gadgetron{
 
       int cur_device; 
       if( cudaGetDevice(&cur_device) != cudaSuccess) {
-	BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::set_device: unable to get device no"));	
+	throw cuda_error("cuNDArray::set_device: unable to get device no");
       }      
       if( cur_device != device_ && cudaSetDevice(device_) != cudaSuccess) {
-	BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::set_device: unable to set device no"));
+	throw cuda_error("cuNDArray::set_device: unable to set device no");
       }      
       boost::shared_ptr< hoNDArray<T> > tmp = to_host();      
       deallocate_memory();        
       if( cudaSetDevice(device) != cudaSuccess) {
 	cudaSetDevice(cur_device);
-	BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::set_device: unable to set device no (2)"));
+	throw cuda_error("cuNDArray::set_device: unable to set device no (2)");
       } 
       device_ = device;      
       allocate_memory();
       if (cudaMemcpy(this->data_, tmp->get_data_ptr(), this->elements_*sizeof(T), cudaMemcpyHostToDevice) != cudaSuccess) {
 	cudaSetDevice(cur_device);
-	BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::set_device: failed to copy data"));
+	throw cuda_error("cuNDArray::set_device: failed to copy data");
       }
       if( cudaSetDevice(cur_device) != cudaSuccess) {
-	BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::set_device: unable to restore device to current device"));
+	throw cuda_error("cuNDArray::set_device: unable to restore device to current device");
       }
     }
     
@@ -309,7 +309,7 @@ namespace Gadgetron{
 
     T at( unsigned int idx ){
       if( idx >= this->get_number_of_elements() ){
-  	BOOST_THROW_EXCEPTION( runtime_error("cuNDArray::at(): index out of range."));
+  	throw std::runtime_error("cuNDArray::at(): index out of range.");
       }
       T res;
       CUDA_CALL(cudaMemcpy(&res, &this->get_data_ptr()[idx], sizeof(T), cudaMemcpyDeviceToHost));
@@ -318,7 +318,7 @@ namespace Gadgetron{
         
     T operator[]( unsigned int idx ){
       if( idx >= this->get_number_of_elements() ){
-  	BOOST_THROW_EXCEPTION( runtime_error("cuNDArray::operator[]: index out of range."));
+  	throw std::runtime_error("cuNDArray::operator[]: index out of range.");
       }
       T res;
       CUDA_CALL(cudaMemcpy(&res, &this->get_data_ptr()[idx], sizeof(T), cudaMemcpyDeviceToHost));
@@ -336,7 +336,7 @@ namespace Gadgetron{
 
       this->elements_ = 1;
       if (this->dimensions_->empty())
-  	BOOST_THROW_EXCEPTION( runtime_error("cuNDArray::allocate_memory() : dimensions is empty."));
+  	throw std::runtime_error("cuNDArray::allocate_memory() : dimensions is empty.");
       for (unsigned int i = 0; i < this->dimensions_->size(); i++) {
 	this->elements_ *= (*this->dimensions_)[i];
       } 
@@ -345,12 +345,12 @@ namespace Gadgetron{
       
       int device_no_old;
       if (cudaGetDevice(&device_no_old) != cudaSuccess) {
-	BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::allocate_memory: unable to get device no"));
+	throw cuda_error("cuNDArray::allocate_memory: unable to get device no");
       }
       
       if (device_ != device_no_old) {
 	if (cudaSetDevice(device_) != cudaSuccess) {
-	  BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::allocate_memory: unable to set device no"));
+	  throw cuda_error("cuNDArray::allocate_memory: unable to set device no");
 	}
       }
       
@@ -366,12 +366,12 @@ namespace Gadgetron{
 	} 
 	err << ")";
 	this->data_ = 0;
-	BOOST_THROW_EXCEPTION(bad_alloc(err.str()));	
+	throw std::runtime_error(err.str());
       }
       
       if (device_ != device_no_old) {
 	if (cudaSetDevice(device_no_old) != cudaSuccess) {
-	  BOOST_THROW_EXCEPTION( cuda_error("cuNDArray::allocate_memory: unable to restore device no"));
+	  throw cuda_error("cuNDArray::allocate_memory: unable to restore device no");
 	}
       }      
     }

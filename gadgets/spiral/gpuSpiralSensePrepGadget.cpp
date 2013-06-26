@@ -213,13 +213,13 @@ namespace Gadgetron{
       trajectory_dimensions.push_back(samples_per_interleave_*Nints_);
 
       try{host_traj_->create(&trajectory_dimensions);}
-      catch (runtime_error &err){
+      catch (std::runtime_error &err){
 	GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for trajectory\n");
 	return GADGET_FAIL;
       }
 
       try{host_weights_->create(&trajectory_dimensions);}
-      catch (runtime_error& err ){
+      catch (std::runtime_error& err ){
 	GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for weights\n");
 	return GADGET_FAIL;
       }
@@ -250,13 +250,13 @@ namespace Gadgetron{
       // Upload host arrays to device arrays
       cuNDArray<floatd2> traj;
       try {traj= cuNDArray<floatd2>(*host_traj_);}
-      catch (runtime_error& err){
+      catch (std::runtime_error& err){
 	GADGET_DEBUG_EXCEPTION(err,"Failed to allocate device array\n");
 	return GADGET_FAIL;
       }
 
       try{gpu_weights_ = cuNDArray<float>(*host_weights_);}
-      catch (runtime_error& err){
+      catch (std::runtime_error& err){
 	GADGET_DEBUG_EXCEPTION(err,"Failed to allocate device array\n");
 	return GADGET_FAIL;
       };
@@ -267,7 +267,7 @@ namespace Gadgetron{
 
       // Preprocess
       try{plan_.preprocess( &traj, cuNFFT_plan<float,2>::NFFT_PREP_ALL );}
-      catch (runtime_error& err){
+      catch (std::runtime_error& err){
 	GADGET_DEBUG_EXCEPTION(err,"NFFT preprocess failed\n");
 	return GADGET_FAIL;
       }
@@ -350,13 +350,13 @@ namespace Gadgetron{
 	cuNDArray<float_complext> image; 
 	
 	try{image.create(&image_dims);}
-	catch (runtime_error &err){
+	catch (std::runtime_error &err){
 	  GADGET_DEBUG_EXCEPTION(err,"\nError allocating coil images on device\n");
 	  return GADGET_FAIL;
 	}
 
 	try {plan_.compute( &data, &image, &gpu_weights_, cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C );}
-	catch (runtime_error& err){
+	catch (std::runtime_error& err){
 	  GADGET_DEBUG_EXCEPTION(err,"NFFT compute failed\n");
 	  return GADGET_FAIL;
 	}
@@ -374,13 +374,13 @@ namespace Gadgetron{
 	cuNDArray<float_complext> reg_image;
 
 	try{reg_image.create(reg_dims.get());}
-	catch (runtime_error &err){
+	catch (std::runtime_error &err){
 	  GADGET_DEBUG_EXCEPTION(err,"\nError allocating regularization image on device\n");
 	  return GADGET_FAIL;
 	}
 
 	try {E->mult_csm_conj_sum( &image, &reg_image ); }
-	catch (runtime_error& err){
+	catch (std::runtime_error& err){
 	  GADGET_DEBUG_EXCEPTION(err,"\nError combining coils to regularization image\n");
 	  return GADGET_FAIL;
 	}
@@ -398,7 +398,7 @@ namespace Gadgetron{
 	boost::shared_ptr< hoNDArray<float_complext> > data_host(new hoNDArray<float_complext>());
 
 	try{data_host->create(&ddimensions);}
-	catch (runtime_error& err){
+	catch (std::runtime_error& err){
 	  GADGET_DEBUG_EXCEPTION(err,"Unable to allocate host data array\n");
 	  return GADGET_FAIL;
 	}
@@ -409,14 +409,14 @@ namespace Gadgetron{
 
 	boost::shared_ptr< hoNDArray<floatd2> > traj_host(new hoNDArray<floatd2>());
 	try {traj_host->create(&ddimensions);}
-	catch (runtime_error& err){
+	catch (std::runtime_error& err){
 	  GADGET_DEBUG_EXCEPTION(err, "Unable to allocate host trajectory array\n");
 	  return GADGET_FAIL;
 	}
 
 	boost::shared_ptr< hoNDArray<float> > dcw_host(new hoNDArray<float>());
 	try {dcw_host->create(&ddimensions);}
-	catch (runtime_error& err){
+	catch (std::runtime_error& err){
 	  GADGET_DEBUG_EXCEPTION(err, "Unable to allocate host density compensation array\n");
 	  return GADGET_FAIL;
 	}

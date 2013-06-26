@@ -12,11 +12,11 @@ namespace Gadgetron{
   void hoLinearResampleOperator<T,D>::mult_M( hoNDArray<T> *in, hoNDArray<T> *out, bool accumulate )
   {
     if( !this->preprocessed_ ){
-      BOOST_THROW_EXCEPTION( runtime_error("hoLinearResampleOperator::mult_M(): displacements not set." ));
+      throw std::runtime_error("hoLinearResampleOperator::mult_M(): displacements not set." );
     }
   
     if( !in || !in->get_data_ptr() || !out || !out->get_data_ptr() ){
-      BOOST_THROW_EXCEPTION( runtime_error("hoLinearResampleOperator::mult_M(): illegal input/output array." ));
+      throw std::runtime_error("hoLinearResampleOperator::mult_M(): illegal input/output array." );
     }
   
     arma::Row<typename stdType<T>::Type > in_vec = as_arma_row(in);
@@ -28,11 +28,11 @@ namespace Gadgetron{
   void hoLinearResampleOperator<T,D>::mult_MH( hoNDArray<T> *in, hoNDArray<T> *out, bool accumulate )
   {
     if( !this->preprocessed_ ){
-      BOOST_THROW_EXCEPTION( runtime_error("hoLinearResampleOperator::mult_M(): displacements not set." ));
+      throw std::runtime_error("hoLinearResampleOperator::mult_M(): displacements not set." );
     }
   
     if( !in || !in->get_data_ptr() || !out || !out->get_data_ptr() ){
-      BOOST_THROW_EXCEPTION( runtime_error("hoLinearResampleOperator::mult_M(): illegal input/output array." ));
+      throw std::runtime_error("hoLinearResampleOperator::mult_M(): illegal input/output array." );
     }
 
     arma::Col<typename stdType<T>::Type > in_vec = as_arma_col(in);
@@ -54,13 +54,13 @@ namespace Gadgetron{
     this->preprocessed_ = false;
 
     if( displacements.get() == 0x0 ){
-      BOOST_THROW_EXCEPTION( runtime_error("hoLinearResampleOperator::set_displacement_field : displacements ptr is 0x0." ));
+      throw std::runtime_error("hoLinearResampleOperator::set_displacement_field : displacements ptr is 0x0." );
     }  
   
     const int surplus = displacements->get_number_of_dimensions()-D;
   
     if( !( surplus == 1 || surplus == 2 ) ){
-      BOOST_THROW_EXCEPTION( runtime_error("hoLinearResampleOperator::set_displacement_field : unexpected array dimensionality." ));
+      throw std::runtime_error("hoLinearResampleOperator::set_displacement_field : unexpected array dimensionality." );
     }  
   
     // Determine the number of registrations performed
@@ -68,7 +68,7 @@ namespace Gadgetron{
     const unsigned int field_dim = (surplus == 1) ? displacements->get_size(D) : displacements->get_size(D+1);
 
     if( !(field_dim == D || field_dim == D+1 )){
-      BOOST_THROW_EXCEPTION( runtime_error("hoLinearResampleOperator::set_displacement_field : illegal tailing array dim" ));
+      throw std::runtime_error("hoLinearResampleOperator::set_displacement_field : illegal tailing array dim" );
     }
   
     const typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>( *(displacements->get_dimensions()));

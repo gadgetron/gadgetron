@@ -33,11 +33,11 @@ namespace Gadgetron{
               hoNDArray<T> *out, bool accumulate )
           {
               if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
-                  BOOST_THROW_EXCEPTION(runtime_error( "hoPartialDerivativeOperator::compute_partial_derivative : array dimensions mismatch."));	
+                  throw std::runtime_error( "hoPartialDerivativeOperator::compute_partial_derivative : array dimensions mismatch.");
               }
 
               if( in->get_number_of_dimensions() != D || out->get_number_of_dimensions() != D ){
-                  BOOST_THROW_EXCEPTION(runtime_error("hoPartialDerivativeOperator::compute_partial_derivative : dimensionality mismatch"));	
+                  throw std::runtime_error("hoPartialDerivativeOperator::compute_partial_derivative : dimensionality mismatch");
               }
 
               typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>( *(in->get_dimensions().get()) ));
@@ -69,11 +69,11 @@ namespace Gadgetron{
               hoNDArray<T> *in, hoNDArray<T> *out, bool accumulate )
           {
               if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
-                  BOOST_THROW_EXCEPTION(runtime_error( "hoPartialDerivativeOperator::compute_second_order_partial_derivative : array dimensions mismatch."));	
+                  throw std::runtime_error( "hoPartialDerivativeOperator::compute_second_order_partial_derivative : array dimensions mismatch.");
               }
 
               if( in->get_number_of_dimensions() != D || out->get_number_of_dimensions() != D ){
-                  BOOST_THROW_EXCEPTION(runtime_error( "hoPartialDerivativeOperator::compute_second_order_partial_derivative : dimensionality mismatch"));	
+                  throw std::runtime_error( "hoPartialDerivativeOperator::compute_second_order_partial_derivative : dimensionality mismatch");
               }
 
               typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>( *(in->get_dimensions().get()) ));

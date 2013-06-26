@@ -28,11 +28,11 @@ namespace Gadgetron{
     //
   
     if( !gradient_image ){
-      BOOST_THROW_EXCEPTION(runtime_error("cuCKOpticalFlowSolver::core_solver(): illegal input gradient image received."));
+      throw std::runtime_error("cuCKOpticalFlowSolver::core_solver(): illegal input gradient image received.");
     }
 
     if( gradient_image->get_number_of_dimensions() <= D ){
-      BOOST_THROW_EXCEPTION(runtime_error("cuCKOpticalFlowSolver::core_solver(): number of gradient image dimensions is too small."));
+      throw std::runtime_error("cuCKOpticalFlowSolver::core_solver(): number of gradient image dimensions is too small.");
     }
   
     // The dimensions of the displacement field should match the gradient field
@@ -65,7 +65,7 @@ namespace Gadgetron{
   
     unsigned int *continue_flag;
     if( cudaMalloc((void**)&continue_flag, sizeof(unsigned int) ) != cudaSuccess ) {
-      BOOST_THROW_EXCEPTION(runtime_error("cuCKOpticalFlowSolver::core_solver(): failed to allocate continuation flag."));
+      throw std::runtime_error("cuCKOpticalFlowSolver::core_solver(): failed to allocate continuation flag.");
     }
     
     unsigned int iteration_no = 0;
@@ -91,7 +91,7 @@ namespace Gadgetron{
     
       unsigned int _continue_flag = 0;
       if( cudaMemcpy( continue_flag, &_continue_flag, sizeof(unsigned int), cudaMemcpyHostToDevice ) != cudaSuccess ) {
-	BOOST_THROW_EXCEPTION(runtime_error("cuCKOpticalFlowSolver::core_solver(): failed to set continuation flag."));
+	throw std::runtime_error("cuCKOpticalFlowSolver::core_solver(): failed to set continuation flag.");
       }
     
       // Invoke kernel
@@ -115,7 +115,7 @@ namespace Gadgetron{
       //
 
       if( cudaMemcpy(&_continue_flag, continue_flag, sizeof(unsigned int), cudaMemcpyDeviceToHost) != cudaSuccess ) {
-	BOOST_THROW_EXCEPTION(runtime_error("cuHSOpticalFlowSolver::core_solver(): failed to evaluate the continuation flag."));
+	throw std::runtime_error("cuHSOpticalFlowSolver::core_solver(): failed to evaluate the continuation flag.");
       }
     
       if( _continue_flag == 0 ){
@@ -132,7 +132,7 @@ namespace Gadgetron{
     }
   
     if( cudaFree(continue_flag) != cudaSuccess ) {
-      BOOST_THROW_EXCEPTION(runtime_error("cuCKOpticalFlowSolver::core_solver(): failed to free continuation flag."));
+      throw std::runtime_error("cuCKOpticalFlowSolver::core_solver(): failed to free continuation flag.");
     }
   
     if( ping == displacements_ping.get() )   

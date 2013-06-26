@@ -19,12 +19,12 @@ namespace Gadgetron{
     atexit(&CleanUp);
     if( cudaGetDeviceCount( &num_devices ) != cudaSuccess) {
       num_devices = 0;
-      BOOST_THROW_EXCEPTION(cuda_error( "Error: no Cuda devices present."));
+      throw cuda_error( "Error: no Cuda devices present.");;
     }
 
     int old_device;
     if( cudaGetDevice(&old_device) != cudaSuccess ) {
-      BOOST_THROW_EXCEPTION(runtime_error( "Error: unable to get device no"));
+      throw std::runtime_error( "Error: unable to get device no");;
 
     }
 
@@ -38,14 +38,14 @@ namespace Gadgetron{
     for( int device=0; device<num_devices; device++ ){
 
       if( cudaSetDevice(device) != cudaSuccess ) {
-	BOOST_THROW_EXCEPTION(cuda_error( "Error: unable to set device no"));
+	throw cuda_error( "Error: unable to set device no");;
 
       }
 
       cudaDeviceProp deviceProp;
 
       if( cudaGetDeviceProperties( &deviceProp, device ) != cudaSuccess) {
-	BOOST_THROW_EXCEPTION(cuda_error("Error: unable to determine device properties."));
+	throw cuda_error("Error: unable to determine device properties.");;
 
       }
 
@@ -60,7 +60,7 @@ namespace Gadgetron{
     }
 
     if( cudaSetDevice(old_device) != cudaSuccess ) {
-      BOOST_THROW_EXCEPTION(cuda_error( "Error: unable to restore device no"));
+      throw cuda_error( "Error: unable to restore device no");;
 
     }
 
@@ -150,7 +150,7 @@ namespace Gadgetron{
       	std::stringstream ss;
       	ss <<"Error: unable to create cublas handle for device " << device << " ";
       	ss << getCublasErrorString(ret) << std::endl;
-      	BOOST_THROW_EXCEPTION(cuda_error(ss.str()));
+      	throw cuda_error(ss.str());;
 
       }
       cublasSetPointerMode( handle[device], CUBLAS_POINTER_MODE_HOST );

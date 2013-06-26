@@ -45,7 +45,7 @@ int ExtractGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, Gad
 			boost::shared_ptr< std::vector<unsigned int> > dims = m2->getObjectPtr()->get_dimensions();
 
 			try{cm2->getObjectPtr()->create(dims.get());}
-			catch (runtime_error &err){
+			catch (std::runtime_error &err){
 				GADGET_DEBUG_EXCEPTION(err,"Unable to create unsigned short storage in Extract Magnitude Gadget");
 				return GADGET_FAIL;
 			}

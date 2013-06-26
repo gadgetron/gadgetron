@@ -80,15 +80,15 @@ namespace Gadgetron{
   bool cuSenseBuffer<REAL,D,ATOMICS>::add_frame_data( cuNDArray<_complext> *samples, cuNDArray<_reald> *trajectory )
   {
     if( !samples || !trajectory ){
-      BOOST_THROW_EXCEPTION(runtime_error("cuSenseBuffer::add_frame_data: illegal input pointer"));
+      throw std::runtime_error("cuSenseBuffer::add_frame_data: illegal input pointer");
     }
 
     if( num_coils_ != samples->get_size(samples->get_number_of_dimensions()-1) ){
-      BOOST_THROW_EXCEPTION(runtime_error("cuSenseBuffer::add_frame_data: unexpected number of coils according to setup"));
+      throw std::runtime_error("cuSenseBuffer::add_frame_data: unexpected number of coils according to setup");
     }
 
     if( dcw_.get() == 0x0 ){
-      BOOST_THROW_EXCEPTION(runtime_error("cuSenseBuffer::density compensation weights not set"));
+      throw std::runtime_error("cuSenseBuffer::density compensation weights not set");
     }
     
     // Make array containing the "current" buffer from the cyclic buffer
@@ -187,12 +187,12 @@ namespace Gadgetron{
   boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseBuffer<REAL,D,ATOMICS>::get_combined_coil_image()
   {
     if( csm_.get() == 0x0 ){
-      BOOST_THROW_EXCEPTION(runtime_error("cuSenseBuffer::get_combined_coil_image: csm not set"));
+      throw std::runtime_error("cuSenseBuffer::get_combined_coil_image: csm not set");
     }
 
     if( acc_image_.get() == 0x0 ){
       if( get_accumulated_coil_images().get() == 0x0 ){ // This updates acc_image_
-	BOOST_THROW_EXCEPTION(runtime_error("cuSenseBuffer::get_combined_coil_image: unable to acquire accumulated coil images"));
+	throw std::runtime_error("cuSenseBuffer::get_combined_coil_image: unable to acquire accumulated coil images");
       }
     }
     

@@ -39,10 +39,10 @@ namespace Gadgetron{
       if ((*dims_to_transform)[i] >= array_ndim) {
     	std::stringstream ss;
     	ss << "cuNDFFT::fft Invalid dimensions specified for transform " << (*dims_to_transform)[i] << "max " << array_ndim;
-	BOOST_THROW_EXCEPTION(runtime_error(ss.str()));	
+	throw std::runtime_error(ss.str());;
       }
       if (dim_count[(*dims_to_transform)[i]] > 0) {
-	BOOST_THROW_EXCEPTION(runtime_error("cuNDFFT::fft Invalid dimensions (duplicates) specified for transform"));	
+	throw std::runtime_error("cuNDFFT::fft Invalid dimensions (duplicates) specified for transform");;
       }
       dim_count[(*dims_to_transform)[i]]++;
       dims[dims_to_transform->size()-1-i] = (*array_dims)[(*dims_to_transform)[i]];
@@ -72,21 +72,21 @@ namespace Gadgetron{
     if (ftres != CUFFT_SUCCESS) {
       std::stringstream ss;
       ss << "cuNDFFT FFT plan failed: " << ftres;
-      BOOST_THROW_EXCEPTION(runtime_error(ss.str()));      
+      throw std::runtime_error(ss.str());;
     }
     
     //IFFTSHIFT
     *input = *permute(input,&new_dim_order,-1);
     
     if( cuNDA_FFT_execute<T>( plan, input, direction ) != CUFFT_SUCCESS ) {
-      BOOST_THROW_EXCEPTION(runtime_error("cuNDFFT FFT execute failed"));      
+      throw std::runtime_error("cuNDFFT FFT execute failed");;
     }
     
     ftres = cufftDestroy( plan );
     if (ftres != CUFFT_SUCCESS) {
       std::stringstream ss;
       ss << "cuNDFFT FFT plan destroy failed: " << ftres;
-      BOOST_THROW_EXCEPTION(runtime_error(ss.str()));      
+      throw std::runtime_error(ss.str());;
     }
     
     if (do_scale) {

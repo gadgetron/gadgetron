@@ -44,7 +44,7 @@ namespace Gadgetron{
 	thrust::permutation_iterator<thrust::device_ptr<S>,transform_it> p = thrust::make_permutation_iterator(y.begin(),indices);
 	thrust::transform(x.begin(),x.end(),p,x.begin(),F());
       } else {
-      BOOST_THROW_EXCEPTION(runtime_error("The provided cuNDArrays have incompatible dimensions for operator {+=,-=,*=,/=}"));
+      throw std::runtime_error("The provided cuNDArrays have incompatible dimensions for operator {+=,-=,*=,/=}");
     }
   }
 

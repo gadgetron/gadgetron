@@ -12,7 +12,7 @@ namespace Gadgetron{
     template<class T> boost::shared_ptr< hoNDArray<typename realType<T>::Type> > abs( hoNDArray<T> *x )
     { 
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::abs(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::abs(): Invalid input array");
 
         boost::shared_ptr< hoNDArray<typename realType<T>::Type> > result(new hoNDArray<typename realType<T>::Type>());
         result->create(x->get_dimensions());
@@ -24,7 +24,7 @@ namespace Gadgetron{
     template<class T> void abs_inplace( hoNDArray<T> *x )
     { 
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::abs_inplace(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::abs_inplace(): Invalid input array");
 
         arma::Col<typename realType<T>::Type> aRes = as_arma_col(x);
         aRes = arma::abs(aRes);
@@ -33,7 +33,7 @@ namespace Gadgetron{
     template<class T> boost::shared_ptr< hoNDArray<typename realType<T>::Type> > abs_square( hoNDArray<T> *x )
     { 
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::abs_square(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::abs_square(): Invalid input array");
 
         boost::shared_ptr< hoNDArray<typename realType<T>::Type> > result(new hoNDArray<typename realType<T>::Type>());
         result->create(x->get_dimensions());
@@ -45,7 +45,7 @@ namespace Gadgetron{
     template<class T> boost::shared_ptr< hoNDArray<T> > sqrt( hoNDArray<T> *x )
     { 
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::sqrt(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::sqrt(): Invalid input array");
 
         boost::shared_ptr< hoNDArray<T> > result(new hoNDArray<T>());
         result->create(x->get_dimensions());
@@ -57,7 +57,7 @@ namespace Gadgetron{
     template<class T> void sqrt_inplace( hoNDArray<T> *x )
     { 
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::sqrt_inplace(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::sqrt_inplace(): Invalid input array");
 
         arma::Col<typename stdType<T>::Type> aRes = as_arma_col(x);
         aRes = arma::sqrt(aRes);
@@ -66,7 +66,7 @@ namespace Gadgetron{
     template<class T> boost::shared_ptr< hoNDArray<T> > square( hoNDArray<T> *x )
     { 
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::square(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::square(): Invalid input array");
 
         boost::shared_ptr< hoNDArray<T> > result(new hoNDArray<T>());
         result->create(x->get_dimensions());
@@ -78,7 +78,7 @@ namespace Gadgetron{
     template<class T> void square_inplace( hoNDArray<T> *x )
     { 
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::square_inplace(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::square_inplace(): Invalid input array");
 
         arma::Col<typename stdType<T>::Type> aRes = as_arma_col(x);
         aRes = arma::square(aRes);
@@ -87,7 +87,7 @@ namespace Gadgetron{
     template<class T> boost::shared_ptr< hoNDArray<T> > reciprocal( hoNDArray<T> *x )
     { 
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::reciprocal(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::reciprocal(): Invalid input array");
 
         arma::Col<typename stdType<T>::Type> ones(x->get_number_of_elements());
         ones.ones();
@@ -101,7 +101,7 @@ namespace Gadgetron{
     template<class T> void reciprocal_inplace( hoNDArray<T> *x )
     { 
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::reciprocal_inplace(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::reciprocal_inplace(): Invalid input array");
 
         arma::Col<typename stdType<T>::Type> aRes = as_arma_col(x);
         arma::Col<typename stdType<T>::Type> ones(x->get_number_of_elements());
@@ -112,7 +112,7 @@ namespace Gadgetron{
     template<class T> boost::shared_ptr< hoNDArray<T> > reciprocal_sqrt( hoNDArray<T> *x )
     { 
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::reciprocal_sqrt(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::reciprocal_sqrt(): Invalid input array");
 
         arma::Col<typename stdType<T>::Type> ones(x->get_number_of_elements());
         ones.ones();   
@@ -126,7 +126,7 @@ namespace Gadgetron{
     template<class T> void reciprocal_sqrt_inplace( hoNDArray<T> *x )
     { 
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::reciprocal_sqrt_inplace(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::reciprocal_sqrt_inplace(): Invalid input array");
 
         arma::Col<typename stdType<T>::Type> ones(x->get_number_of_elements());
         ones.ones();
@@ -137,7 +137,7 @@ namespace Gadgetron{
     template<class T> boost::shared_ptr< hoNDArray<T> > sgn( hoNDArray<T> *x )
     {
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::sgn(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::sgn(): Invalid input array");
 
         boost::shared_ptr< hoNDArray<T> > res( new hoNDArray<T>() );
         res->create(x->get_dimensions());   
@@ -153,7 +153,7 @@ namespace Gadgetron{
     template<class T> void sgn_inplace( hoNDArray<T> *x )
     {
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::sgn_inplace(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::sgn_inplace(): Invalid input array");
 
 #ifdef USE_OMP
 #pragma omp parallel for
@@ -165,7 +165,7 @@ namespace Gadgetron{
     template<class T> boost::shared_ptr< hoNDArray<typename realType<T>::Type> > real( hoNDArray<T> *x )
     {
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::real(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::real(): Invalid input array");
 
         boost::shared_ptr< hoNDArray<typename realType<T>::Type> > result(new hoNDArray<typename realType<T>::Type>());
         result->create(x->get_dimensions());
@@ -177,7 +177,7 @@ namespace Gadgetron{
     template<class T> boost::shared_ptr< hoNDArray<typename realType<T>::Type> > imag( hoNDArray<T> *x )
     {
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::imag(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::imag(): Invalid input array");
 
         boost::shared_ptr< hoNDArray<typename realType<T>::Type> > result(new hoNDArray<typename realType<T>::Type>());
         result->create(x->get_dimensions());
@@ -189,7 +189,7 @@ namespace Gadgetron{
     template<class T> boost::shared_ptr< hoNDArray<T> > conj( hoNDArray<T> *x )
     {
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::conj(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::conj(): Invalid input array");
 
         boost::shared_ptr< hoNDArray<T> > result(new hoNDArray<T>());
         result->create(x->get_dimensions());
@@ -201,7 +201,7 @@ namespace Gadgetron{
     template<class T> boost::shared_ptr< hoNDArray<T> > real_to_complex( hoNDArray<typename realType<T>::Type> *x )
     {
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::real_to_std_complex(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::real_to_std_complex(): Invalid input array");
 
         boost::shared_ptr< hoNDArray<T> > result(new hoNDArray<T>());
         result->create(x->get_dimensions());
@@ -213,7 +213,7 @@ namespace Gadgetron{
     template<class T> void clear( hoNDArray<T> *x )
     {
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::clear(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::clear(): Invalid input array");
 
         memset( x->get_data_ptr(), 0, x->get_number_of_elements()*sizeof(T));
     }
@@ -221,7 +221,7 @@ namespace Gadgetron{
     template<class T> void fill( hoNDArray<T> *x, T val )
     {
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::fill(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::fill(): Invalid input array");
 
         arma::Col<typename stdType<T>::Type> aRes = as_arma_col(x);
         aRes.fill(*((typename stdType<T>::Type*)&val));
@@ -273,7 +273,7 @@ namespace Gadgetron{
     template<class T> void clamp( hoNDArray<T> *x, typename realType<T>::Type min, typename realType<T>::Type max )
     { 
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::clamp(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::clamp(): Invalid input array");
 
         hoNDA_clamp<T> functor(min, max);
         std::transform(x->begin(),x->end(),x->begin(),functor);
@@ -315,7 +315,7 @@ namespace Gadgetron{
     template<class T> void clamp_min( hoNDArray<T> *x, typename realType<T>::Type min )
     { 
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::clamp_min(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::clamp_min(): Invalid input array");
 
         hoNDA_clamp_min<T> functor(min);
         std::transform(x->begin(),x->end(),x->begin(),functor);
@@ -357,7 +357,7 @@ namespace Gadgetron{
     template<class T> void clamp_max( hoNDArray<T> *x, typename realType<T>::Type max )
     { 
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::clamp_max(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::clamp_max(): Invalid input array");
 
         hoNDA_clamp_max<T> functor(max);
         std::transform(x->begin(),x->end(),x->begin(),functor);
@@ -366,7 +366,7 @@ namespace Gadgetron{
     template<class T> void normalize( hoNDArray<T> *x, typename realType<T>::Type val )
     {
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::normalize(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::normalize(): Invalid input array");
 
         unsigned int max_idx = amax(x);
         T max_val_before = x->get_data_ptr()[max_idx];
@@ -377,7 +377,7 @@ namespace Gadgetron{
     template<class T> void shrink1( hoNDArray<T> *x, typename realType<T>::Type gamma, hoNDArray<T> *out )
     {
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::shrink1(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::shrink1(): Invalid input array");
 
         T *outPtr = (out==0x0) ? x->get_data_ptr() : out->get_data_ptr();
 
@@ -395,7 +395,7 @@ namespace Gadgetron{
     template<class T> void pshrink( hoNDArray<T> *x, typename realType<T>::Type gamma,typename realType<T>::Type p, hoNDArray<T> *out )
     {
         if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::pshrink(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::pshrink(): Invalid input array");
 
         T *outPtr = (out==0x0) ? x->get_data_ptr() : out->get_data_ptr();
 
@@ -413,7 +413,7 @@ namespace Gadgetron{
     template<class T> void shrinkd ( hoNDArray<T> *_x, hoNDArray<typename realType<T>::Type> *_s, typename realType<T>::Type gamma, hoNDArray<T> *out )
     {
         if( _x == 0x0  || _s == 0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::pshrinkd(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::pshrinkd(): Invalid input array");
 
         T *outPtr = (out==0x0) ? _x->get_data_ptr() : out->get_data_ptr();
 
@@ -431,7 +431,7 @@ namespace Gadgetron{
     template<class T> void pshrinkd ( hoNDArray<T> *_x, hoNDArray<typename realType<T>::Type> *_s, typename realType<T>::Type gamma,typename realType<T>::Type p, hoNDArray<T> *out )
     {
         if( _x == 0x0  || _s == 0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::shrinkd(): Invalid input array"));
+            throw std::runtime_error("Gadgetron::shrinkd(): Invalid input array");
 
         T *outPtr = (out==0x0) ? _x->get_data_ptr() : out->get_data_ptr();
 

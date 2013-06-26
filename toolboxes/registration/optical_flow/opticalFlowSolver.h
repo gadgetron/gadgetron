@@ -44,24 +44,24 @@ namespace Gadgetron{
             //
 
             if( !fixed_image || !moving_image ){
-                BOOST_THROW_EXCEPTION( runtime_error("opticalFlowSolver::compute(): illegal input array received."));
+                throw std::runtime_error("opticalFlowSolver::compute(): illegal input array received.");
             }
 
             if( prod(from_std_vector<unsigned int,D>(*fixed_image->get_dimensions().get())) != 
                 prod(from_std_vector<unsigned int,D>(*moving_image->get_dimensions().get())) ){
-                    BOOST_THROW_EXCEPTION( runtime_error("opticalFlowSolver::compute(): core image dimensions (excluding batches) mismatch."));
+                    throw std::runtime_error("opticalFlowSolver::compute(): core image dimensions (excluding batches) mismatch.");
             }
 
             if( stencil_image && 
                 prod(from_std_vector<unsigned int,D>(*fixed_image->get_dimensions().get())) != 
                 prod(from_std_vector<unsigned int,D>(*stencil_image->get_dimensions().get())) ){
-                    BOOST_THROW_EXCEPTION( runtime_error("opticalFlowSolver::compute(): stencil image dimensions mismatch fixed/moving image dimensions."));
+                    throw std::runtime_error("opticalFlowSolver::compute(): stencil image dimensions mismatch fixed/moving image dimensions.");
             }
 
             if( result_in_out.get() && 
                 !( result_in_out->get_number_of_dimensions() > D ||
                 result_in_out->get_size(result_in_out->get_number_of_dimensions()-1) == D )){
-                    BOOST_THROW_EXCEPTION( runtime_error("opticalFlowSolver::compute(): input displacements dimensionality mismatch"));
+                    throw std::runtime_error("opticalFlowSolver::compute(): input displacements dimensionality mismatch");
             }
 
             // If an approximate displacement field is provided it is used to resample the moving image
@@ -121,12 +121,12 @@ namespace Gadgetron{
             //
 
             if( !fixed_image || !moving_image ){
-                BOOST_THROW_EXCEPTION( runtime_error("opticalFlowSolver::grad(): illegal input received."));
+                throw std::runtime_error("opticalFlowSolver::grad(): illegal input received.");
             }
 
             if( !((moving_image->get_number_of_elements() % fixed_image->get_number_of_elements()) == 0 ||
                 (fixed_image->get_number_of_elements() % moving_image->get_number_of_elements()) == 0 )){
-                    BOOST_THROW_EXCEPTION( runtime_error("opticalFlowSolver::grad(): fixed/moving image dimensions mismatch."));
+                    throw std::runtime_error("opticalFlowSolver::grad(): fixed/moving image dimensions mismatch.");
             }
 
             // Determine dimension size of the gradient field:
@@ -149,7 +149,7 @@ namespace Gadgetron{
             typename uintd<D>::Type matrix_size_moving = from_std_vector<unsigned int,D>( *moving_image->get_dimensions() );
 
             if( matrix_size_fixed != matrix_size_moving ){
-                BOOST_THROW_EXCEPTION( runtime_error("opticalFlowSolver::grad(): fixed/moving image dimensions mismatch (2)."));
+                throw std::runtime_error("opticalFlowSolver::grad(): fixed/moving image dimensions mismatch (2).");
             }
 
             // Ignoring the batch dimensions the fixed and moving images have the same number of elements

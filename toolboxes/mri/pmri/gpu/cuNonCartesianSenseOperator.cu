@@ -17,12 +17,12 @@ template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate )
 {
   if( !in || !out ){
-    BOOST_THROW_EXCEPTION(runtime_error("cuNonCartesianSenseOperator::mult_M : 0x0 input/output not accepted"));
+    throw std::runtime_error("cuNonCartesianSenseOperator::mult_M : 0x0 input/output not accepted");
   }
   /*  
   if( (in->get_number_of_elements() != prodv(*this->get_domain_dimensions())) ||
       (out->get_number_of_elements() != prodv(*this->get_codomain_dimensions())) ) {
-    BOOST_THROW_EXCEPTION(runtime_error("cuNonCartesianSenseOperator::mult_M: dimensions mismatch"));
+    throw std::runtime_error("cuNonCartesianSenseOperator::mult_M: dimensions mismatch");
     }*/
 
   std::vector<unsigned int> full_dimensions = *this->get_domain_dimensions();
@@ -45,7 +45,7 @@ template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate )
 {
   if( !in || !out ){
-    BOOST_THROW_EXCEPTION(runtime_error("cuNonCartesianSenseOperator::mult_MH : 0x0 input/output not accepted"));
+    throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH : 0x0 input/output not accepted");
   }
   /*  
   if( (out->get_number_of_elements() != prodv(*this->get_domain_dimensions())) ||
@@ -77,12 +77,12 @@ template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::preprocess( cuNDArray<_reald> *trajectory ) 
 {
   if( trajectory == 0x0 ){
-    BOOST_THROW_EXCEPTION(runtime_error( "cuNonCartesianSenseOperator: cannot preprocess 0x0 trajectory."));
+    throw std::runtime_error( "cuNonCartesianSenseOperator: cannot preprocess 0x0 trajectory.");
   }
   
   boost::shared_ptr< std::vector<unsigned int> > domain_dims = this->get_domain_dimensions();
   if( domain_dims.get() == 0x0 || domain_dims->size() == 0 ){
-    BOOST_THROW_EXCEPTION(runtime_error("cuNonCartesianSenseOperator::preprocess : operator domain dimensions not set"));
+    throw std::runtime_error("cuNonCartesianSenseOperator::preprocess : operator domain dimensions not set");
   }
   plan_->preprocess( trajectory, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_ALL );
   is_preprocessed_ = true;

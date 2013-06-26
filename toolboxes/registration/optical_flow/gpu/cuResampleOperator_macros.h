@@ -4,7 +4,6 @@
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_utils.h"
 #include "complext.h"
-#include "GadgetronException.h"
 
 /* 
    This macro definition is a workaround 

@@ -6,8 +6,6 @@
 #define NDARRAY_H
 #pragma once
 
-#include "GadgetronException.h"
-
 #include <new>
 #include <vector>
 #include <iostream>
@@ -51,7 +49,7 @@ namespace Gadgetron{
 			T* data, bool delete_data_on_destruct = false) 
     {
       if (!data) {
-	BOOST_THROW_EXCEPTION(runtime_error("NDArray<T>::create: 0x0 pointer provided"));
+	 throw std::runtime_error("NDArray<T>::create: 0x0 pointer provided");
       }
       
       std::vector<unsigned int> *tmp = new std::vector<unsigned int>;

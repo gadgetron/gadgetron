@@ -41,7 +41,7 @@ int GadgetReference::return_data(T header, boost::python::object arr)
   m1->cont(m2);
 
   try{m2->getObjectPtr()->create(&dimensions);}
-  catch (runtime_error &err){
+  catch (std::runtime_error &err){
     GADGET_DEBUG_EXCEPTION(err,"Failed to create data storage for data returning from Python");
     return GADGET_FAIL;
     

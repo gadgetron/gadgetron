@@ -411,7 +411,7 @@ namespace Gadgetron{
     virtual void add_regularization_group_operator( boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op )
     {
       if( !op.get() ){
-	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::add_regularization_group_operator : NULL operator provided" ));
+	throw std::runtime_error( "Error: sbSolver::add_regularization_group_operator : NULL operator provided" );
       }    
       current_group_.push_back(op);
     }
@@ -422,7 +422,7 @@ namespace Gadgetron{
     virtual void add_group(int L_norm=1)
     {
       if(current_group_.size()==0){
-    	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::add_group : no regularization group operators added" ));
+    	throw std::runtime_error( "Error: sbSolver::add_group : no regularization group operators added" );
       }
       if (L_norm==2){
     	for (int i=0; i<current_group_.size(); i++){
@@ -434,14 +434,14 @@ namespace Gadgetron{
       }else if (L_norm ==1){
     	boost::shared_ptr<sbL1GroupRegularizationOperator> group(new sbL1GroupRegularizationOperator(current_group_));
         regularization_operators_.push_back(group);
-      } else BOOST_THROW_EXCEPTION(runtime_error("Illega L-norm used in add_group"));
+      } else throw std::runtime_error("Illega L-norm used in add_group");
       current_group_.clear();
     }
 
     virtual void add_group( boost::shared_ptr<ARRAY_TYPE_ELEMENT> prior, int L_norm=1 )
     {
       if(current_group_.size()==0){
-	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::add_group : no regularization group operators added" ));
+	throw std::runtime_error( "Error: sbSolver::add_group : no regularization group operators added" );
       }
       if (L_norm==2){
 	for (int i=0; i<current_group_.size(); i++){
@@ -456,7 +456,7 @@ namespace Gadgetron{
     	boost::shared_ptr<sbL1GroupRegularizationOperator> group(new sbL1GroupRegularizationOperator(current_group_));
     	group->set_prior(prior);
         regularization_operators_.push_back(group);
-      } else BOOST_THROW_EXCEPTION(runtime_error("Illega L-norm used in add_group"));
+      } else throw std::runtime_error("Illega L-norm used in add_group");
       current_group_.clear();
     }
 
@@ -589,17 +589,17 @@ namespace Gadgetron{
       boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op = this->get_encoding_operator();
 
       if( !op.get() ){
-	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::validate_encoding_operator : operator not set" ));
+	throw std::runtime_error( "Error: sbSolver::validate_encoding_operator : operator not set" );
       }
     
       boost::shared_ptr< std::vector<unsigned int> > op_dims = op->get_domain_dimensions();
       if( op_dims->size() == 0 ){
-    	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::validate_encoding_operator : encoding operator must have specified domain dimensions" ));
+    	throw std::runtime_error( "Error: sbSolver::validate_encoding_operator : encoding operator must have specified domain dimensions" );
       }
     
       op_dims = op->get_codomain_dimensions();
       if( op_dims->size() == 0 ){
-    	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::validate_encoding_operator : encoding operator must have specified codomain dimensions" ));
+    	throw std::runtime_error( "Error: sbSolver::validate_encoding_operator : encoding operator must have specified codomain dimensions" );
       }
     }
   
@@ -609,7 +609,7 @@ namespace Gadgetron{
     virtual void validate_regularization_operators( std::vector<unsigned int> *image_dims )
     {
       if( image_dims->size() == 0 ){
-	BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::validate_regularization_operators : empty dimensions vector provided" ));
+	throw std::runtime_error( "Error: sbSolver::validate_regularization_operators : empty dimensions vector provided" );
       }
     
       for( unsigned int i=0; i<this->regularization_operators_.size(); i++ ){
@@ -618,11 +618,11 @@ namespace Gadgetron{
 	boost::shared_ptr< std::vector<unsigned int> > op_dims = op->get_domain_dimensions();
       
 	if( !op.get() ){
-	  BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::validate_regularization_operators : invalid operator provided" ));
+	  throw std::runtime_error( "Error: sbSolver::validate_regularization_operators : invalid operator provided" );
 	}
 	
 	if( *op_dims != *image_dims ){
-	  BOOST_THROW_EXCEPTION(runtime_error( "Error: sbSolver::validate_regularization_operators : operator domain dimensions mismatch between encoding and regularization operators" ));
+	  throw std::runtime_error( "Error: sbSolver::validate_regularization_operators : operator domain dimensions mismatch between encoding and regularization operators" );
 	}
       }
     }

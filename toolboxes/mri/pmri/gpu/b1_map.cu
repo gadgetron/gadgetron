@@ -7,7 +7,6 @@
 #include "complext.h"
 #include "check_CUDA.h"
 #include "cudaDeviceManager.h"
-#include "GadgetronException.h"
 
 #include <iostream>
 #include <cmath>
@@ -50,7 +49,7 @@ namespace Gadgetron{
 
     if( gridDim->x >maxGridDim || gridDim->y >maxGridDim){
 
-      BOOST_THROW_EXCEPTION(cuda_error("Grid dimension larger than supported by device"));
+      throw cuda_error("Grid dimension larger than supported by device");
     }
   }
   //
@@ -239,7 +238,7 @@ namespace Gadgetron{
     dim3 blockDim(((max_blockdim/number_of_batches)/warp_size)*warp_size, number_of_batches);
 
     if( blockDim.x == 0 ){
-      BOOST_THROW_EXCEPTION(runtime_error("correlation: correlation dimension exceeds device capacity."));
+      throw std::runtime_error("correlation: correlation dimension exceeds device capacity.");
     }
   
     dim3 gridDim((number_of_elements+blockDim.x-1)/blockDim.x);

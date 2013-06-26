@@ -42,7 +42,7 @@ namespace Gadgetron{
 	std::vector<unsigned int> dims(2, channels);
 			
 	try{noise_covariance_matrix_.create(&dims);}
-	catch (bad_alloc& err)	{
+	catch (std::runtime_error& err)	{
 	  GADGET_DEBUG_EXCEPTION(err, "Unable to allocate storage for noise covariance matrix\n" );
 	  return GADGET_FAIL;
 	}
@@ -84,7 +84,7 @@ namespace Gadgetron{
 	  
 	  std::vector<unsigned int> dims(2, channels);
 	  try{noise_covariance_matrixf_.create(&dims);}
-	  catch (bad_alloc& err){
+	  catch (std::runtime_error& err){
 	    GADGET_DEBUG_EXCEPTION(err,"Unable to allocate storage for noise covariance matrix (float)\n");
 	    return GADGET_FAIL;
 	  }

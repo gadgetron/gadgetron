@@ -27,7 +27,7 @@ namespace Gadgetron{
             return x;    
         } 
         else {
-            BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator+=: Incompatible array dimensions"));
+            throw std::runtime_error("hoNDArray::operator+=: Incompatible array dimensions");
         }
     }
 
@@ -45,7 +45,7 @@ namespace Gadgetron{
             return x;
         } 
         else {
-            BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator+=: Incompatible array dimensions"));
+            throw std::runtime_error("hoNDArray::operator+=: Incompatible array dimensions");
         }
     }
 
@@ -63,7 +63,7 @@ namespace Gadgetron{
             return x;
         } 
         else {
-            BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator+=: Incompatible array dimensions"));
+            throw std::runtime_error("hoNDArray::operator+=: Incompatible array dimensions");
         }
     }
 
@@ -105,7 +105,7 @@ namespace Gadgetron{
             return x;    
         } 
         else {
-            BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator-=: Incompatible array dimensions"));
+            throw std::runtime_error("hoNDArray::operator-=: Incompatible array dimensions");
         }
     }
 
@@ -123,7 +123,7 @@ namespace Gadgetron{
             return x;
         } 
         else {
-            BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator-=: Incompatible array dimensions"));
+            throw std::runtime_error("hoNDArray::operator-=: Incompatible array dimensions");
         }
     }
 
@@ -141,7 +141,7 @@ namespace Gadgetron{
             return x;
         } 
         else {
-            BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator-=: Incompatible array dimensions"));
+            throw std::runtime_error("hoNDArray::operator-=: Incompatible array dimensions");
         }
     }
 
@@ -183,7 +183,7 @@ namespace Gadgetron{
             return x;
         } 
         else {
-            BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator*=: Incompatible array dimensions"));
+            throw std::runtime_error("hoNDArray::operator*=: Incompatible array dimensions");
         }
     }
 
@@ -201,7 +201,7 @@ namespace Gadgetron{
             return x;
         } 
         else {
-            BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator*=: Incompatible array dimensions"));
+            throw std::runtime_error("hoNDArray::operator*=: Incompatible array dimensions");
         }
     }
 
@@ -219,7 +219,7 @@ namespace Gadgetron{
             return x;
         } 
         else {
-            BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator*=: Incompatible array dimensions"));
+            throw std::runtime_error("hoNDArray::operator*=: Incompatible array dimensions");
         }
     }
 
@@ -261,7 +261,7 @@ namespace Gadgetron{
             return x;
         } 
         else {
-            BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator/=: Incompatible array dimensions"));
+            throw std::runtime_error("hoNDArray::operator/=: Incompatible array dimensions");
         }
     }
 
@@ -279,7 +279,7 @@ namespace Gadgetron{
             return x;
         } 
         else {
-            BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator/=: Incompatible array dimensions"));
+            throw std::runtime_error("hoNDArray::operator/=: Incompatible array dimensions");
         }
     }
 
@@ -297,7 +297,7 @@ namespace Gadgetron{
             return x;
         } 
         else {
-            BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::operator/=: Incompatible array dimensions"));
+            throw std::runtime_error("hoNDArray::operator/=: Incompatible array dimensions");
         }
     }
 

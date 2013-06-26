@@ -36,11 +36,11 @@ namespace Gadgetron{
     //
 
     if( this->csm_.get() == 0x0 ){
-      BOOST_THROW_EXCEPTION(runtime_error("cuSenseBufferCg::get_combined_coil_image: csm not set"));
+      throw std::runtime_error("cuSenseBufferCg::get_combined_coil_image: csm not set");
     }
 
     if( !this->E_->is_preprocessed() ){
-      BOOST_THROW_EXCEPTION(runtime_error("cuSenseBufferCg::get_combined_coil_image: preprocessing not performed"));
+      throw std::runtime_error("cuSenseBufferCg::get_combined_coil_image: preprocessing not performed");
     }
     
     // Compute (and scale) rhs
@@ -49,7 +49,7 @@ namespace Gadgetron{
     boost::shared_ptr< cuNDArray<_complext> > rhs = cuSenseBuffer<REAL,D,ATOMICS>::get_combined_coil_image();
 
     if( rhs.get() == 0x0 ){
-      BOOST_THROW_EXCEPTION(runtime_error("cuSenseBufferCg::get_combined_coil_image: failed to compute rhs"));
+      throw std::runtime_error("cuSenseBufferCg::get_combined_coil_image: failed to compute rhs");
     }
     
     *rhs *= this->get_normalization_factor();

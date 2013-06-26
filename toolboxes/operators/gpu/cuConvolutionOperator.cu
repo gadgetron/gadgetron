@@ -25,7 +25,7 @@ namespace Gadgetron {
     }
     
     if( gridDim->x >maxGridDim || gridDim->y >maxGridDim){      
-      BOOST_THROW_EXCEPTION(cuda_error("Grid dimension larger than supported by device"));
+      throw cuda_error("Grid dimension larger than supported by device");
     }
   }
 
@@ -64,17 +64,17 @@ namespace Gadgetron {
   cuConvolutionOperator<REAL,D>::origin_mirror( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out )
   {
     if( in == 0x0 || out == 0x0 ){
-      BOOST_THROW_EXCEPTION(runtime_error( "origin_mirror: 0x0 ndarray provided"));
+      throw std::runtime_error( "origin_mirror: 0x0 ndarray provided");
     }
     
     if( !in->dimensions_equal(out) ){
-      BOOST_THROW_EXCEPTION(runtime_error("origin_mirror: image dimensions mismatch"));
+      throw std::runtime_error("origin_mirror: image dimensions mismatch");
     }
     
     if( in->get_number_of_dimensions() != D ){
       std::stringstream ss;
       ss << "origin_mirror: number of image dimensions is not " << D;
-      BOOST_THROW_EXCEPTION(runtime_error(ss.str()));
+      throw std::runtime_error(ss.str());
     }
 
     typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>( *in->get_dimensions() );

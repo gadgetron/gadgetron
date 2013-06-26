@@ -24,7 +24,7 @@
 #define GADGET_DEBUG_EXCEPTION(err, message); \
 	{std::string gdb ("[file %N, line %l] "); \
 	gdb += message; \
-	gdb += diagnostic_information(err); \
+	gdb += err.what(); \
   ACE_DEBUG( (LM_DEBUG, \
 	      ACE_TEXT(gdb.c_str() )));}
 
