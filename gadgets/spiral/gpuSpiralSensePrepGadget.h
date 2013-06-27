@@ -27,10 +27,15 @@ namespace Gadgetron{
     virtual ~gpuSpiralSensePrepGadget();
 
   protected:
+
     virtual int process_config(ACE_Message_Block* mb);
+    
     virtual int process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader >* m1,
 			GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2);
-
+    
+    virtual GadgetContainerMessage<ISMRMRD::AcquisitionHeader>*
+      duplicate_profile( GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *profile );
+    
   private:
     int samples_to_skip_start_;
     int samples_to_skip_end_;
@@ -44,8 +49,8 @@ namespace Gadgetron{
 
     long    Tsamp_ns_;
     long    Nints_;
-    long    interleaves_counter_singleframe_;
-    long    interleaves_counter_multiframe_;
+    long    *interleaves_counter_singleframe_;
+    long    *interleaves_counter_multiframe_;
     long    acceleration_factor_;
     double  gmax_;
     double  smax_;
