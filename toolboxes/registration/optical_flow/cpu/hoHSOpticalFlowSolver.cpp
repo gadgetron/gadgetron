@@ -47,11 +47,11 @@ namespace Gadgetron{
     //
   
     if( !_gradient_image ){
-      BOOST_THROW_EXCEPTION(runtime_error("hoHSOpticalFlowSolver::core_solver(): illegal input gradient image received."));
+      throw std::runtime_error("hoHSOpticalFlowSolver::core_solver(): illegal input gradient image received.");
     }
   
     if( _gradient_image->get_number_of_dimensions() <= D ){
-      BOOST_THROW_EXCEPTION(runtime_error("hoHSOpticalFlowSolver::core_solver(): number of gradient image dimensions is too small."));
+      throw std::runtime_error("hoHSOpticalFlowSolver::core_solver(): number of gradient image dimensions is too small.");
     }
     
     // The dimensions of the displacement field should match the gradient field
