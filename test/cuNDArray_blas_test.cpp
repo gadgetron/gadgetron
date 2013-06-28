@@ -1,12 +1,14 @@
 #include "cuNDArray_blas.h"
 #include "cuNDArray_elemwise.h"
+
 #include <gtest/gtest.h>
 #include <vector>
 
 using namespace Gadgetron;
 using testing::Types;
 
-template <typename T> class cuNDArray_blas_Real : public ::testing::Test {
+template <typename T> class cuNDArray_blas_Real : public ::testing::Test 
+{
 protected:
   virtual void SetUp() {
     unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy

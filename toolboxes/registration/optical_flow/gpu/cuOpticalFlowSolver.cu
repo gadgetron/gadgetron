@@ -1,7 +1,9 @@
 #include "cuOpticalFlowSolver.h"
 #include "vector_td_utilities.h"
 #include "check_CUDA.h"
+
 #include <stdexcept>
+
 namespace Gadgetron{
 
   //
@@ -49,7 +51,7 @@ namespace Gadgetron{
     
     // For small arrays we keep the block dimension fairly small
     if( use_2d_blocks )
-      *blockDim = dim3(((256/num_unknowns)/warp_size)*warp_size,num_unknowns);
+      *blockDim = dim3(((256/num_unknowns)/warp_size)*warp_size, num_unknowns);
     else
       *blockDim = dim3(256);
   

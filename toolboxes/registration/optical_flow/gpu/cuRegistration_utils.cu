@@ -1,33 +1,9 @@
 #include "cuRegistration_utils.h"
 #include "cudaDeviceManager.h"
 #include "vector_td_utilities.h"
+#include "setup_grid.h"
 
 namespace Gadgetron{
-
-  void setup_grid( unsigned int number_of_elements, dim3 *blockDim, dim3* gridDim, unsigned int num_batches = 1 )
-  {    
-    int cur_device = cudaDeviceManager::Instance()->getCurrentDevice();
-    int maxGridDim = cudaDeviceManager::Instance()->max_griddim(cur_device);
-    
-    // For small arrays we keep the block dimension fairly small
-    *blockDim = dim3(256);
-    *gridDim = dim3((number_of_elements+blockDim->x-1)/blockDim->x, num_batches);
-    
-    // Extend block/grid dimensions for large arrays
-    if( gridDim->x > maxGridDim){
-      blockDim->x = maxGridDim;
-      gridDim->x = (number_of_elements+blockDim->x-1)/blockDim->x;
-    }
-    
-    if( gridDim->x > maxGridDim ){
-      gridDim->x = ((unsigned int)std::sqrt((float)number_of_elements)+blockDim->x-1)/blockDim->x;
-      gridDim->y *= ((number_of_elements+blockDim->x*gridDim->x-1)/(blockDim->x*gridDim->x));
-    }
-    
-    if( gridDim->x >maxGridDim || gridDim->y >maxGridDim){      
-      throw std::runtime_error("Grid dimension larger than supported by device");
-    }
-  }
 
   // Downsample
   template<class REAL, unsigned int D> __global__ void
@@ -99,7 +75,6 @@ namespace Gadgetron{
   
     // Setup block/grid dimensions
     dim3 blockDim; dim3 gridDim;
-
     setup_grid( number_of_elements, &blockDim, &gridDim, number_of_batches );
     
     std::vector<unsigned int> dims = to_std_vector(matrix_size_out);

@@ -57,4 +57,5 @@ install(FILES
   check_CUDA.h
   cudaDeviceManager.h
   CUBLASContextProvider.h
+  setup_grid.h
   DESTINATION include)

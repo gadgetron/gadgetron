@@ -5,7 +5,7 @@
 
 using namespace Gadgetron;
 
-#define CUBLAS_CALL(fun) {cublasStatus_t err = fun; if (err != CUBLAS_STATUS_SUCCESS) {BOOST_THROW_EXCEPTION(cuda_error(getCublasErrorString(err)));}}
+#define CUBLAS_CALL(fun) {cublasStatus_t err = fun; if (err != CUBLAS_STATUS_SUCCESS) {throw cuda_error(getCublasErrorString(err));}}
 
 template<class T> EXPORTGPUCORE void Gadgetron::axpy( T a, hoCuNDArray<T>* x, hoCuNDArray<T>* y )
 {

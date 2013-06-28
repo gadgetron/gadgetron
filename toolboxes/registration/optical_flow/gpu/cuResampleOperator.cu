@@ -12,42 +12,6 @@ using namespace thrust;
 namespace Gadgetron{
 
   template<class T, unsigned int D> void 
-  cuResampleOperator<T,D>::setup_grid( dim3 *blockDim, dim3* gridDim, unsigned int number_of_elements, unsigned int num_batches )
-  {
-    int device;
-    cudaDeviceProp deviceProp; 
-  
-    if( cudaGetDevice( &device ) != cudaSuccess) {
-      BOOST_THROW_EXCEPTION(cuda_error("cuResampleOperator::setup_grid(): unable to determine current device."));
-    }
-
-    if( cudaGetDeviceProperties( &deviceProp, device ) != cudaSuccess) {
-      BOOST_THROW_EXCEPTION(cuda_error("cuResampleOperator::setup_grid(): unable to query device properties."));
-    }
-  
-    int max_blockdim = deviceProp.maxThreadsDim[0];
-    int max_griddim  = deviceProp.maxGridSize[0];
-  
-    // For small arrays we keep the block dimension fairly small
-    *blockDim = dim3(256);
-    *gridDim = dim3((number_of_elements+blockDim->x-1)/blockDim->x, num_batches);
-
-    // Extend block/grid dimensions for large arrays
-    if( gridDim->x > max_griddim ){
-      blockDim->x = max_blockdim;
-      gridDim->x = (number_of_elements+blockDim->x-1)/blockDim->x;
-    }
-
-    if( gridDim->x > max_griddim ){
-      gridDim->x = ((unsigned int)std::sqrt((REAL)number_of_elements)+blockDim->x-1)/blockDim->x;
-      gridDim->y *= ((number_of_elements+blockDim->x*gridDim->x-1)/(blockDim->x*gridDim->x));
-    }
-   
-    if( gridDim->x > max_griddim || gridDim->y > max_griddim )
-      BOOST_THROW_EXCEPTION(cuda_error("cuResampleOperator::setup_grid(): grid dimensions exceeded."));
-  }
-
-  template<class T, unsigned int D> void 
   cuResampleOperator<T,D>::mult_MH_preprocess()
   {
     this->preprocessed_ = false;
@@ -56,7 +20,7 @@ namespace Gadgetron{
     //
   
     if( !this->offsets_.get() ){
-      BOOST_THROW_EXCEPTION(cuda_error("cuResampleOperator::mult_MH_preprocess(): displacement field not set."));
+      throw cuda_error("cuResampleOperator::mult_MH_preprocess(): displacement field not set.");
     }
 
     // Make a device vector wrap of the displacement field

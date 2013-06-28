@@ -115,10 +115,10 @@
     dim3 blockDim, gridDim;						\
     									\
     if( surplus == 1 ){							\
-      this->setup_grid( &blockDim, &gridDim, num_elements_mat, num_batches ); \
+      setup_grid( num_elements_mat, &blockDim, &gridDim, num_batches ); \
     }									\
     else{								\
-      this->setup_grid( &blockDim, &gridDim, num_elements_mat*extended_dim ); \
+      setup_grid( num_elements_mat, &blockDim, &gridDim, num_elements_mat*extended_dim ); \
     }									\
     									\
     if( surplus == 1 ) {						\
@@ -228,7 +228,7 @@
 									\
     dim3 blockDim, gridDim;						\
 									\
-    this->setup_grid( &blockDim, &gridDim, num_elements, num_batches );	\
+    setup_grid( num_elements, &blockDim, &gridDim, num_batches );	\
     mult_MH_kernel<T,D><<< gridDim, blockDim >>>			\
       ( in->get_data_ptr(), tmp_out->get_data_ptr(),			\
 	raw_pointer_cast(&this->weights_[0]), raw_pointer_cast(&this->indices_[0]), \

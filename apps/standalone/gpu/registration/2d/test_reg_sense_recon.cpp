@@ -72,7 +72,7 @@ public:
   virtual void mult_M( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate = false)
   {
     if( !in || !out || !R_->get_displacement_field() ){
-      BOOST_THROW_EXCEPTION(cuda_error("registrationReconOperator::mult_M failed (1)"));
+      throw cuda_error("registrationReconOperator::mult_M failed (1)");
     }
     
     // Allocate intermediate image
@@ -91,7 +91,7 @@ public:
   virtual void mult_MH( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate = false )
   {
     if( !in || !out || !R_->is_preprocessed() ){
-      BOOST_THROW_EXCEPTION(cuda_error("registrationReconOperator::mult_MH failed (1)"));
+      throw cuda_error("registrationReconOperator::mult_MH failed (1)");
     }
     
     // Allocate intermediate image
@@ -108,7 +108,7 @@ public:
   virtual void mult_MH_M( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate = false )
   {
     if( !in || !out || !R_->get_displacement_field() ){
-      BOOST_THROW_EXCEPTION(cuda_error("registrationReconOperator::mult_MH_M failed (1)"));
+      throw cuda_error("registrationReconOperator::mult_MH_M failed (1)");
     }
 
     // Allocate intermediate image
