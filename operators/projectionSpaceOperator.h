@@ -29,7 +29,7 @@ public:
 	virtual void gradient(ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false)
 	{
 		if( in == 0x0 || out == 0x0 )
-			BOOST_THROW_EXCEPTION(runtime_error("linearOperator::gradient(): Invalid input and/or output array"));
+		  throw std::runtime_error("linearOperator::gradient(): Invalid input and/or output array");
 
 		ARRAY_TYPE* tmp = out;
 		if (accumulate) {

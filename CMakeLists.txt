@@ -73,7 +73,7 @@ INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR})
 add_subdirectory(solvers)
 add_subdirectory(operators)
 add_subdirectory(proton)
-add_subdirectory(Xray)
+add_subdirectory(xray)
 add_subdirectory(test)
 #add_subdirectory(mri)
 

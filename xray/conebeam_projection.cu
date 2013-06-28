@@ -11,7 +11,6 @@
 #include "cuNFFT.h"
 #include "check_CUDA.h"
 #include "GPUTimer.h"
-#include "GadgetronException.h"
 #include "cudaDeviceManager.h"
 #include "hoNDArray_fileio.h"
 
@@ -104,15 +103,15 @@ namespace Gadgetron
     //
     
     if( projections == 0x0 ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: redundancy_correct: illegal array pointer provided"));
+      throw std::runtime_error("Error: redundancy_correct: illegal array pointer provided");
     }
     
     if( projections->get_number_of_dimensions() != 3 ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: redundancy_correct: projections array must be three-dimensional"));
+      throw std::runtime_error("Error: redundancy_correct: projections array must be three-dimensional");
     }
     
     if( projections->get_size(2) != angles.size() ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: redundancy_correct: inconsistent sizes of input array/vector"));
+      throw std::runtime_error("Error: redundancy_correct: inconsistent sizes of input array/vector");
     }
 
     const int projection_res_x = projections->get_size(0);
@@ -125,7 +124,7 @@ namespace Gadgetron
     const float min_angle = *std::min_element(angles.begin(),angles.end());
 
     if( min_angle < -180.0f ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: redundancy_correct: unexpected range of the angles array"));
+      throw std::runtime_error("Error: redundancy_correct: unexpected range of the angles array");
     }
     
     if( min_angle < 0.0f ){
@@ -134,7 +133,7 @@ namespace Gadgetron
 
     const float max_angle = *std::max_element(angles.begin(),angles.end());
     if( max_angle*(CUDART_PI_F/180.0f) >= CUDART_PI_F+2.0f*gamma_thresh ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: redundancy_correct: unexpected range of the angles array after correction"));
+      throw std::runtime_error("Error: redundancy_correct: unexpected range of the angles array after correction");
     }
 
     cudaMalloc( (void**) &angles_DevPtr, angles.size()*sizeof(float));
@@ -148,11 +147,11 @@ namespace Gadgetron
     int warp_size = cudaDeviceManager::Instance()->warp_size();
   
     if( projection_res_x < warp_size ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: redundancy_correct: projection sizes have to be at least as large as the warp size"));
+      throw std::runtime_error("Error: redundancy_correct: projection sizes have to be at least as large as the warp size");
     }
 
     if( projection_res_x % warp_size ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: redundancy_correct: projection sizes have to be a multiplum of the warp size"));
+      throw std::runtime_error("Error: redundancy_correct: projection sizes have to be a multiplum of the warp size");
     }
 
     // Launch kernel
@@ -341,19 +340,19 @@ namespace Gadgetron
     //
 
     if( projections == 0x0 || image == 0x0 ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: conebeam_forwards_projection: illegal array pointer provided"));
+      throw std::runtime_error("Error: conebeam_forwards_projection: illegal array pointer provided");
     }
 
     if( projections->get_number_of_dimensions() != 3 ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: conebeam_forwards_projection: projections array must be three-dimensional"));
+      throw std::runtime_error("Error: conebeam_forwards_projection: projections array must be three-dimensional");
     }
 
     if( image->get_number_of_dimensions() != 3 ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: conebeam_forwards_projection: image array must be three-dimensional"));
+      throw std::runtime_error("Error: conebeam_forwards_projection: image array must be three-dimensional");
     }
 
     if( projections->get_size(2) != angles.size() || projections->get_size(2) != offsets.size() ) {
-      BOOST_THROW_EXCEPTION(runtime_error("Error: conebeam_forwards_projection: inconsistent sizes of input arrays/vectors"));
+      throw std::runtime_error("Error: conebeam_forwards_projection: inconsistent sizes of input arrays/vectors");
     }
 
     int projection_res_x = projections->get_size(0);
@@ -442,7 +441,7 @@ namespace Gadgetron
 	int from_id = indices[p];
 
 	if( from_id >= num_projections_in_all_bins ) {
-	  BOOST_THROW_EXCEPTION(runtime_error("Error: conebeam_forwards_projection: illegal index in bin"));
+	  throw std::runtime_error("Error: conebeam_forwards_projection: illegal index in bin");
 	}
 	
 	angles_vec.push_back(angles[from_id]);
@@ -773,19 +772,19 @@ namespace Gadgetron
     //
 
     if( projections == 0x0 || image == 0x0 ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: conebeam_backwards_projection: illegal array pointer provided"));
+      throw std::runtime_error("Error: conebeam_backwards_projection: illegal array pointer provided");
     }
 
     if( projections->get_number_of_dimensions() != 3 ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: conebeam_backwards_projection: projections array must be three-dimensional"));
+      throw std::runtime_error("Error: conebeam_backwards_projection: projections array must be three-dimensional");
     }
 
     if( image->get_number_of_dimensions() != 3 ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: conebeam_backwards_projection: image array must be three-dimensional"));
+      throw std::runtime_error("Error: conebeam_backwards_projection: image array must be three-dimensional");
     }
 
     if( projections->get_size(2) != angles.size() || projections->get_size(2) != offsets.size() ) {
-      BOOST_THROW_EXCEPTION(runtime_error("Error: conebeam_backwards_projection: inconsistent sizes of input arrays/vectors"));
+      throw std::runtime_error("Error: conebeam_backwards_projection: inconsistent sizes of input arrays/vectors");
     }
 
     // Some utility variables
@@ -798,11 +797,11 @@ namespace Gadgetron
     unsigned int warp_size = cudaDeviceManager::Instance()->warp_size();
   
     if( matrix_size_x < warp_size ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: conebeam_backwards_projection: image dimension 'x' must be at least as large as the warp size"));
+      throw std::runtime_error("Error: conebeam_backwards_projection: image dimension 'x' must be at least as large as the warp size");
     }
 
     if( matrix_size_x % warp_size ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: conebeam_backwards_projection: image dimension 'x' must be a multiplum of the warp size"));
+      throw std::runtime_error("Error: conebeam_backwards_projection: image dimension 'x' must be a multiplum of the warp size");
     }
 
     floatd3 is_dims(matrix_size_x, matrix_size_y, matrix_size_z);
@@ -903,7 +902,7 @@ namespace Gadgetron
 	int from_id = indices[p];
 
 	if( from_id >= num_projections_in_all_bins ) {
-	  BOOST_THROW_EXCEPTION(runtime_error("Error: conebeam_backwards_projection: illegal index in bin"));
+	  throw std::runtime_error("Error: conebeam_backwards_projection: illegal index in bin");
 	}
 	
 	angles_vec.push_back(angles[from_id]);

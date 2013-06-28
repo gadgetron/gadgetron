@@ -17,24 +17,24 @@ namespace Gadgetron
     //
     
     if( image == 0x0 || projections == 0x0 ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M:: illegal array pointer provided"));
+      throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M:: illegal array pointer provided");
     }
     
     if( image->get_number_of_dimensions() != 4 ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M: image array must be four-dimensional"));
+      throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M: image array must be four-dimensional");
     }
 
     if( projections->get_number_of_dimensions() != 3 ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M: projections array must be three-dimensional"));
+      throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M: projections array must be three-dimensional");
     }
     
     if( !preprocessed ){
-      BOOST_THROW_EXCEPTION(runtime_error( "Error: hoCudaConebeamProjectionOperator::mult_M: setup not performed"));
+      throw std::runtime_error( "Error: hoCudaConebeamProjectionOperator::mult_M: setup not performed");
     }
 
     if( projections->get_size(2) != acquisition->get_geometry()->get_angles().size() || 
 	projections->get_size(2) != acquisition->get_geometry()->get_offsets().size() ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M: inconsistent sizes of input arrays/vectors"));
+      throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M: inconsistent sizes of input arrays/vectors");
     }
 
     GPUTimer timer("Conebeam forwards projection");
@@ -78,24 +78,24 @@ namespace Gadgetron
     //
     
     if( image == 0x0 || projections == 0x0 ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH:: illegal array pointer provided"));
+      throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH:: illegal array pointer provided");
     }
     
     if( image->get_number_of_dimensions() != 4 ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH: image array must be four-dimensional"));
+      throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH: image array must be four-dimensional");
     }
 
     if( projections->get_number_of_dimensions() != 3 ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH: projections array must be three-dimensional"));
+      throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH: projections array must be three-dimensional");
     }
     
     if( !preprocessed ){
-      BOOST_THROW_EXCEPTION(runtime_error( "Error: hoCudaConebeamProjectionOperator::mult_MH: setup not performed"));
+      throw std::runtime_error( "Error: hoCudaConebeamProjectionOperator::mult_MH: setup not performed");
     }
 
     if( projections->get_size(2) != acquisition->get_geometry()->get_angles().size() ||
 	projections->get_size(2) != acquisition->get_geometry()->get_offsets().size() ){
-      BOOST_THROW_EXCEPTION(runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH: inconsistent sizes of input arrays/vectors"));
+      throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH: inconsistent sizes of input arrays/vectors");
     }
 
     GPUTimer timer("Conebeam backwards projection");

@@ -26,7 +26,7 @@
 template<class REAL> void cuOperatorPathBackprojection<REAL>
     ::mult_M( cuNDArray<REAL>* in, cuNDArray<REAL>* out, bool accumulate ) {
 	 if( !in || !out){
-	    BOOST_THROW_EXCEPTION(runtime_error( "cuOperatorPathBackprojection: mult_M empty data pointer"));;
+	   throw std::runtime_error( "cuOperatorPathBackprojection: mult_M empty data pointer");
 	  }
 	 if (!accumulate) clear(out);
 
@@ -57,7 +57,7 @@ template<class REAL> void cuOperatorPathBackprojection<REAL>
 template<class REAL> void cuOperatorPathBackprojection<REAL>
     ::mult_MH( cuNDArray<REAL>* in, cuNDArray<REAL>* out, bool accumulate ) {
 	 if( !in || !out){
-		 BOOST_THROW_EXCEPTION(runtime_error("cuOperatorPathBackprojection: mult_MH empty data pointer"));
+	   throw std::runtime_error("cuOperatorPathBackprojection: mult_MH empty data pointer");
 	  }
 	 if (!accumulate) clear(out);
 
@@ -114,9 +114,9 @@ template<class REAL> void cuOperatorPathBackprojection<REAL>
 	int dims = splines->get_number_of_elements()/4;
 
 
-	if (!this->splines->get_data_ptr()) BOOST_THROW_EXCEPTION(runtime_error("Splines data is empty."));
-	if (!projections->get_data_ptr()) BOOST_THROW_EXCEPTION(runtime_error("Projections data is empty."));
-	if (projections->get_number_of_elements() != dims) BOOST_THROW_EXCEPTION(runtime_error("Projections data does not match splines."));
+	if (!this->splines->get_data_ptr()) throw std::runtime_error("Splines data is empty.");
+	if (!projections->get_data_ptr()) throw std::runtime_error("Projections data is empty.");
+	if (projections->get_number_of_elements() != dims) throw std::runtime_error("Projections data does not match splines.");
 	 
 
 	 int threadsPerBlock =std::min(dims,MAX_THREADS_PER_BLOCK);

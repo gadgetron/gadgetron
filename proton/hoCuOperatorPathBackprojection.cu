@@ -38,7 +38,7 @@ template<class REAL> size_t hoCuOperatorPathBackprojection<REAL>::calculate_batc
 template<class REAL> void hoCuOperatorPathBackprojection<REAL>
     ::mult_M( hoCuNDArray<REAL>* in, hoCuNDArray<REAL>* out, bool accumulate ) {
 	 if( !in || !out){
-	    BOOST_THROW_EXCEPTION(runtime_error("cuOperatorPathBackprojection: mult_M empty data pointer"));
+	   throw std::runtime_error("cuOperatorPathBackprojection: mult_M empty data pointer");
 	  }
 
 	 cuNDArray<REAL> image(in);
@@ -92,10 +92,10 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 template<class REAL> void hoCuOperatorPathBackprojection<REAL>
     ::mult_MH( hoCuNDArray<REAL>* in, hoCuNDArray<REAL>* out, bool accumulate ) {
 	 if( !in || !out){
-	    BOOST_THROW_EXCEPTION(runtime_error("cuOperatorPathBackprojection: mult_MH empty data pointer"));
+	   throw std::runtime_error("cuOperatorPathBackprojection: mult_MH empty data pointer");
 	  }
 	 if (this->weights.get()){
-		 BOOST_THROW_EXCEPTION(runtime_error("Weights unsupported at the moment!"));
+	   throw std::runtime_error("Weights unsupported at the moment!");
 	 }
 
 	 cuNDArray<REAL> image(out);

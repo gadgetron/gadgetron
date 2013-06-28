@@ -17,7 +17,7 @@ template <class ARRAY_TYPE> class mlSolver
 		boost::shared_ptr<ARRAY_TYPE> solve(ARRAY_TYPE* in){
 			//boost::shared_ptr<ARRAY_TYPE> rhs = compute_rhs(in);
 			if( this->encoding_operator_.get() == 0 ){
-			 BOOST_THROW_EXCEPTION(runtime_error( "Error: mlSolver::solve : no encoding operator is set" ));
+			  throw std::runtime_error( "Error: mlSolver::solve : no encoding operator is set" );
 			  return boost::shared_ptr<ARRAY_TYPE>();
 			}
 
@@ -26,7 +26,7 @@ template <class ARRAY_TYPE> class mlSolver
 
 			boost::shared_ptr< std::vector<unsigned int> > image_dims = this->encoding_operator_->get_domain_dimensions();
 			if( image_dims->size() == 0 ){
-			 BOOST_THROW_EXCEPTION(runtime_error( "Error: mlSolver::solve : encoding operator has not set domain dimension" ));
+			  throw std::runtime_error( "Error: mlSolver::solve : encoding operator has not set domain dimension" );
 			  return boost::shared_ptr<ARRAY_TYPE>();
 			}
 

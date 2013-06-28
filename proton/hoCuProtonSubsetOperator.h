@@ -7,7 +7,7 @@
 #include <numeric>
 #include <thrust/reduce.h>
 #include <thrust/functional.h>
-#include "GadgetronException.h"
+
 /**
  * This class is inconsistent, messy and requires polish. It's also suspected to be unreliable
  */
@@ -57,17 +57,17 @@ public:
 	virtual void mult_M(hoCuNDArray<REAL>* in, hoCuNDArray<REAL>* out, int subset, bool accumulate=false){
 		std::stringstream ss;
 		ss << "Subset " << subset << " out of bounds";
-		if (subset >= operators.size() ) BOOST_THROW_EXCEPTION(runtime_error(ss.str()));
+		if (subset >= operators.size() ) throw std::runtime_error(ss.str());
 		operators[subset].mult_M(in,out,accumulate);
 	}
 	virtual void mult_MH(hoCuNDArray<REAL>* in, hoCuNDArray<REAL>* out, int subset, bool accumulate=false){
 			std::stringstream ss;
 			ss << "Subset " << subset << " out of bounds";
-			if (subset >= operators.size() ) BOOST_THROW_EXCEPTION(runtime_error(ss.str()));
+			if (subset >= operators.size() ) throw std::runtime_error(ss.str());
 			operators[subset].mult_MH(in,out,accumulate);
 	}
 	virtual void mult_MH_M(hoCuNDArray<REAL>* in, hoCuNDArray<REAL>* out, int subset, bool accumulate=false){
-				if (subset >= operators.size() ) BOOST_THROW_EXCEPTION(runtime_error("Subset out of bounds"));
+	  if (subset >= operators.size() ) throw std::runtime_error("Subset out of bounds");
 				operators[subset].mult_MH_M(in,out,accumulate);
 	}
   virtual boost::shared_ptr< linearOperator<hoCuNDArray<REAL> > > clone() {
@@ -102,14 +102,14 @@ protected:
 			for (int i = 0; i < groupnames.size(); i++){
 				hsize_t nfields,nrecords;
 				herr_t err = H5TBget_table_info (file_id, (groupnames[i]+projections_name).c_str(), &nfields, &nrecords );
-				if (err < 0) BOOST_THROW_EXCEPTION(runtime_error("Illegal hdf5 dataset provided"));
+				if (err < 0) throw std::runtime_error("Illegal hdf5 dataset provided");
 				size_t extra = nrecords%this->number_of_subsets;
 				hsize_t offset = 0;
 				for (int subset =0; subset < this->number_of_subsets; subset++){
 					hsize_t batchSize = nrecords/this->number_of_subsets;
 					if (subset < extra)  batchSize += 1;
 					err = H5TBread_records (file_id, (groupnames[i]+projections_name).c_str(), offset, batchSize, sizeof(float),  float_offset, float_size,  ptrs[subset] );
-					if (err < 0) BOOST_THROW_EXCEPTION(runtime_error("Unable to read splines from hdf5 file"));
+					if (err < 0) throw std::runtime_error("Unable to read splines from hdf5 file");
 					offset += batchSize;
 					ptrs[subset] += batchSize;
 				}
@@ -155,14 +155,14 @@ protected:
 		for (int i = 0; i < groupnames.size(); i++){
 			hsize_t nfields,nrecords;
 			herr_t err = H5TBget_table_info (file_id, (groupnames[i]+splines_name).c_str(), &nfields, &nrecords );
-			if (err < 0) BOOST_THROW_EXCEPTION(runtime_error("Illegal hdf5 dataset provided"));
+			if (err < 0) throw std::runtime_error("Illegal hdf5 dataset provided");
 			size_t extra = nrecords%this->number_of_subsets;
 			hsize_t offset = 0;
 			for (int subset =0; subset < this->number_of_subsets; subset++){
 				hsize_t batchSize = nrecords/this->number_of_subsets;
 				if (subset < extra)  batchSize += 1;
 				err = H5TBread_records (file_id, (groupnames[i]+splines_name).c_str(), offset, batchSize, sizeof(Spline),  dst_offset, dst_sizes,  ptrs[subset]);
-				if (err < 0) BOOST_THROW_EXCEPTION(runtime_error("Unable to read splines from hdf5 file"));
+				if (err < 0) throw std::runtime_error("Unable to read splines from hdf5 file");
 				offset += batchSize;
 				ptrs[subset] += batchSize*sizeof(Spline)/sizeof(vector_td<REAL,3>);
 			}
@@ -175,7 +175,7 @@ protected:
 		for (int i = 0; i < groupnames.size(); i++){
 			hsize_t nfields,nrecords;
 			herr_t err = H5TBget_table_info (file_id, (groupnames[i]+projection_name).c_str(), &nfields, &nrecords );
-			if (err < 0) BOOST_THROW_EXCEPTION(runtime_error("Illegal hdf5 dataset provided"));
+			if (err < 0) throw std::runtime_error("Illegal hdf5 dataset provided");
 			size_t extra = nrecords%this->number_of_subsets;
 			for (int subset =0; subset < this->number_of_subsets; subset++){
 				this->subset_dimensions[subset][0] += nrecords/this->number_of_subsets;
