@@ -31,7 +31,7 @@ namespace Gadgetron{
     virtual void gradient( hoCuNDArray<T> *in, hoCuNDArray<T> *out, bool accumulate=false )
     {
       if (in->get_number_of_elements() != out->get_number_of_elements()){
-	BOOST_THROW_EXCEPTION(runtime_error("hoCuTvOperator: input/output array dimensions mismatch"));
+	throw std::runtime_error("hoCuTvOperator: input/output array dimensions mismatch");
       }
       
       const vector_td<unsigned int,D> dims = from_std_vector<unsigned int, D>(*(in->get_dimensions()));

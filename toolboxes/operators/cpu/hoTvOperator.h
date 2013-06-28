@@ -28,7 +28,7 @@ namespace Gadgetron{
     virtual void gradient( hoNDArray<T> *in_array, hoNDArray<T> *out_array, bool accumulate=false )
     {
       if (in_array->get_number_of_elements() != out_array->get_number_of_elements()){
-	BOOST_THROW_EXCEPTION(runtime_error("hoTvOperator: input/output array dimensions mismatch"));
+	throw std::runtime_error("hoTvOperator: input/output array dimensions mismatch");
       }
 
       T* in = in_array->get_data_ptr();

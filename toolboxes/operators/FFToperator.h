@@ -23,7 +23,7 @@ namespace Gadgetron{
     virtual void mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
     {
       if( in == 0x0 || out == 0x0 ){
-	BOOST_THROW_EXCEPTION(runtime_error("Error: FFTOperator::mult_M(): illegal array pointer provided"));
+	throw std::runtime_error("Error: FFTOperator::mult_M(): illegal array pointer provided");
       }
       
       if( accumulate ){
@@ -40,7 +40,7 @@ namespace Gadgetron{
     virtual void mult_MH( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
     {
       if( in == 0x0 || out == 0x0 ){
-	BOOST_THROW_EXCEPTION(runtime_error("Error: FFTOperator::mult_M(): illegal array pointer provided"));
+	throw std::runtime_error("Error: FFTOperator::mult_M(): illegal array pointer provided");
       }
       
       if( accumulate ){
