@@ -18,9 +18,10 @@ namespace Gadgetron{
   gpuCgKtSenseGadget::gpuCgKtSenseGadget()
     : is_configured_(false)
     , channels_(0)
-    , image_counter_(0)
+    , frame_counter_(0)
   {
     set_parameter(std::string("deviceno").c_str(), "0");
+    set_parameter(std::string("setno").c_str(), "0");
     set_parameter(std::string("sliceno").c_str(), "0");
     set_parameter(std::string("number_of_iterations").c_str(), "5");
     set_parameter(std::string("cg_limit").c_str(), "1e-6");
@@ -63,6 +64,7 @@ namespace Gadgetron{
     }
 
     pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data").c_str());
+    set_number_ = get_int_value(std::string("setno").c_str());
     slice_number_ = get_int_value(std::string("sliceno").c_str());
     number_of_iterations_ = get_int_value(std::string("number_of_iterations").c_str());
     cg_limit_ = get_double_value(std::string("cg_limit").c_str());
@@ -125,10 +127,10 @@ namespace Gadgetron{
 
   int gpuCgKtSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<SenseJob> *m2)
   {
-    // Is this data for this gadget's slice?
+    // Is this data for this gadget's set/slice?
     //
     
-    if (m1->getObjectPtr()->slice != slice_number_) {      
+    if( m1->getObjectPtr()->set != set_number_ || m1->getObjectPtr()->slice != slice_number_ ) {      
       // No, pass it downstream...
       return this->next()->putq(m1);
     }
@@ -288,6 +290,7 @@ namespace Gadgetron{
       m->getObjectPtr()->matrix_size[1] = matrix_size_seq_[1];
       m->getObjectPtr()->matrix_size[2] = 1;
       m->getObjectPtr()->channels       = 1;
+      m->getObjectPtr()->image_index    = frame_counter_ + frame;
       
       if (this->next()->putq(m) < 0) {
 	GADGET_DEBUG1("Failed to put result image on to queue\n");
@@ -296,6 +299,8 @@ namespace Gadgetron{
       }
     }
     
+    frame_counter_ += frames;
+
     m1->release();
     return GADGET_OK;
   }

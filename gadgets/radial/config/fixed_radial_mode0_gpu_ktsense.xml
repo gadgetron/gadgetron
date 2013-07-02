@@ -44,9 +44,9 @@
     </gadget>
     
     <gadget>
-      <name>gpuRadialSenseGadget</name>
+      <name>gpuRadialSensePrepGadget</name>
       <dll>gadgetron_gpuradial</dll>
-      <classname>gpuRadialSenseGadget</classname>
+      <classname>gpuRadialSensePrepGadget</classname>
       <property><name>deviceno</name><value>0</value></property>
       <property><name>mode</name><value>0</value></property>
       <property><name>rotations_per_reconstruction</name><value>8</value></property>

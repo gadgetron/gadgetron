@@ -1,10 +1,3 @@
-/*
- * cudaDeviceManager.h
- *
- *  Created on: Jan 25, 2013
- *      Author: Dae
- */
-
 #pragma once
 
 #include "gpucore_export.h"
@@ -27,7 +20,7 @@ class EXPORTGPUCORE cudaDeviceManager
     std::vector<int> _max_griddim;
     std::vector<int> _major;
     std::vector<int> _minor;
-    std::vector<cublasHandle_t>  handle;
+    std::vector<cublasHandle_t> _handle;
     static cudaDeviceManager * _instance;
     cudaDeviceManager(cudaDeviceManager const&);
     cudaDeviceManager& operator=(cudaDeviceManager const&);

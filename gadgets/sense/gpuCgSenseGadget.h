@@ -21,6 +21,7 @@ namespace Gadgetron{
   {
 
   public:
+
     GADGET_DECLARE(gpuCgSenseGadget);
 
     gpuCgSenseGadget();
@@ -33,6 +34,7 @@ namespace Gadgetron{
 
     int channels_;
     int device_number_;
+    int set_number_;
     int slice_number_;
 
     uintd2 matrix_size_;
@@ -62,8 +64,7 @@ namespace Gadgetron{
     // Define regularization image operator
     boost::shared_ptr< cuImageOperator<float_complext> > R_;
 
-    int image_series_;
-    int image_counter_;
+    unsigned int frame_counter_;
   };
 }
 #endif //gpuCgSenseGadget

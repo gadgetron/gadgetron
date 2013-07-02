@@ -1,4 +1,4 @@
-#include "gpuRadialSenseGadget.h"
+#include "gpuRadialSensePrepGadget.h"
 #include "Gadgetron.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "SenseJob.h"
@@ -14,32 +14,25 @@
 #include <algorithm>
 #include <vector>
 #include <cmath>
-#include <boost/shared_ptr.hpp>
 
 namespace Gadgetron{
 
-  gpuRadialSenseGadget::gpuRadialSenseGadget()
+  gpuRadialSensePrepGadget::gpuRadialSensePrepGadget()
     : slices_(-1)
     , sets_(-1)
-    , image_counter_(0)
     , image_series_(0)
     , device_number_(-1)
     , mode_(-1)
     , samples_per_profile_(-1)
-    , num_coils_(0)
-    , previous_profile_(0x0)
-    , profiles_counter_frame_(0x0)
-    , profiles_counter_global_(0x0)
     , kernel_width_(-1.0f)
     , oversampling_factor_(-1.0f)
-    , buffer_update_needed_(false)
-    , reconfigure_(true)
   {
     // Set some default values in case the config does not contain a specification
     //
 
     set_parameter(std::string("mode").c_str(), "0");
     set_parameter(std::string("deviceno").c_str(), "0");
+    set_parameter(std::string("buffer_length_in_rotations").c_str(), "1");
     set_parameter(std::string("buffer_using_solver").c_str(), "false");
     set_parameter(std::string("buffer_convolution_kernel_width").c_str(), "5.5");
     set_parameter(std::string("buffer_convolution_oversampling_factor").c_str(), "1.25");
@@ -48,24 +41,17 @@ namespace Gadgetron{
     set_parameter(std::string("reconstruction_os_factor_y").c_str(), "1.0");
   }
   
-  gpuRadialSenseGadget::~gpuRadialSenseGadget()
-  {
-    if( previous_profile_ ) delete[] previous_profile_;
-    if( profiles_counter_frame_ ) delete[] profiles_counter_frame_;
-    if( profiles_counter_global_ ) delete[] profiles_counter_global_;
-  }
+  gpuRadialSensePrepGadget::~gpuRadialSensePrepGadget() {}
   
-  int gpuRadialSenseGadget::process_config(ACE_Message_Block* mb)
+  int gpuRadialSensePrepGadget::process_config(ACE_Message_Block* mb)
   {
-    //GADGET_DEBUG1("gpuRadialSenseGadget::process_config\n");
+    //GADGET_DEBUG1("gpuRadialSensePrepGadget::process_config\n");
 
     // Get configuration values from config file
     //
 
     mode_ = get_int_value(std::string("mode").c_str());
     device_number_ = get_int_value(std::string("deviceno").c_str());
-    profiles_per_frame_ = get_int_value(std::string("profiles_per_frame").c_str());
-    frames_per_rotation_ = get_int_value(std::string("frames_per_rotation").c_str());
     rotations_per_reconstruction_ = get_int_value(std::string("rotations_per_reconstruction").c_str());
     buffer_length_in_rotations_ = get_int_value(std::string("buffer_length_in_rotations").c_str());
     buffer_using_solver_ = get_bool_value(std::string("buffer_using_solver").c_str());
@@ -198,50 +184,105 @@ namespace Gadgetron{
       recon_queue_[i].low_water_mark(bsize);
       }
 
-    // Define some profile counter for book-keeping
+    // Define some profile counters for book-keeping
     //
 
-    previous_profile_ = new long[slices_*sets_];
-    profiles_counter_frame_= new long[slices_*sets_];
-    profiles_counter_global_= new long[slices_*sets_];
-
-    if( !previous_profile_ || !profiles_counter_frame_ || !profiles_counter_global_ ){
-      GADGET_DEBUG1("Failed to allocate host memory\n");
+    previous_profile_ = boost::shared_array<long>(new long[slices_*sets_]);
+    image_counter_ = boost::shared_array<long>(new long[slices_*sets_]);
+    profiles_counter_frame_= boost::shared_array<long>(new long[slices_*sets_]);
+    profiles_counter_global_= boost::shared_array<long>(new long[slices_*sets_]);
+    profiles_per_frame_= boost::shared_array<long>(new long[slices_*sets_]);
+    frames_per_rotation_= boost::shared_array<long>(new long[slices_*sets_]);
+    buffer_frames_per_rotation_= boost::shared_array<long>(new long[slices_*sets_]);
+    buffer_update_needed_ = boost::shared_array<bool>(new bool[slices_*sets_]);
+    reconfigure_ = boost::shared_array<bool>(new bool[slices_*sets_]);
+    num_coils_ = boost::shared_array<unsigned int>(new unsigned int[slices_*sets_]);
+    
+    if( !previous_profile_.get() ||
+	!image_counter_.get() || 
+	!profiles_counter_frame_.get() ||
+	!profiles_counter_global_.get() ||
+	!profiles_per_frame_.get() || 
+	!frames_per_rotation_.get() ||
+	!buffer_frames_per_rotation_.get() ||
+	!buffer_update_needed_.get() ||
+	!num_coils_.get() ||
+	!reconfigure_ ){
+      GADGET_DEBUG1("Failed to allocate host memory (1)\n");
       return GADGET_FAIL;
     }
-    
+
     for( unsigned int i=0; i<slices_*sets_; i++ ){
       previous_profile_[i] = -1;
+      image_counter_[i] = 0;
       profiles_counter_frame_[i] = 0;
       profiles_counter_global_[i] = 0;
-    }
-    
-    // Assign some default values ("upper bound estimates") of the yet unknown entities
-    //
+      profiles_per_frame_[i] = get_int_value(std::string("profiles_per_frame").c_str());
+      frames_per_rotation_[i] = get_int_value(std::string("frames_per_rotation").c_str());
+      buffer_frames_per_rotation_[i] = get_int_value(std::string("buffer_frames_per_rotation").c_str());
+      num_coils_[i] = 0;
+      buffer_update_needed_[i] = true;
+      reconfigure_[i] = true;
 
-    if( profiles_per_frame_ == 0 ){
-      profiles_per_frame_ = image_dimensions_[0];
+      // Assign some default values ("upper bound estimates") of the (possibly) unknown entities
+      //
+      
+      if( profiles_per_frame_[i] == 0 ){
+	profiles_per_frame_[i] = image_dimensions_[0];
+      }
+      
+      if( frames_per_rotation_[i] == 0 ){
+	if( mode_ == 2 ) // golden angle
+	  frames_per_rotation_[i] = 1;
+	else
+	  frames_per_rotation_[i] = image_dimensions_[0]/profiles_per_frame_[i];
+      }
     }
     
-    if( frames_per_rotation_ == 0 ){
-      if( mode_ == 2 ) // golden angle
-	frames_per_rotation_ = 1;
-      else
-	frames_per_rotation_ = image_dimensions_[0]/profiles_per_frame_;
+    position_ = boost::shared_array<float[3]>(new float[slices_*sets_][3]);
+    read_dir_ = boost::shared_array<float[3]>(new float[slices_*sets_][3]);
+    phase_dir_ = boost::shared_array<float[3]>(new float[slices_*sets_][3]);
+    slice_dir_ = boost::shared_array<float[3]>(new float[slices_*sets_][3]);
+
+    if( !position_.get() || !read_dir_.get() || !phase_dir_.get() || !slice_dir_.get() ){
+      GADGET_DEBUG1("Failed to allocate host memory (2)\n");
+      return GADGET_FAIL;
+    }
+
+    for( unsigned int i=0; i<slices_*sets_; i++ ){
+      (position_[i])[0] = (position_[i])[1] = (position_[i])[2] = 0.0f;
+      (read_dir_[i])[0] = (read_dir_[i])[1] = (read_dir_[i])[2] = 0.0f;
+      (phase_dir_[i])[0] = (phase_dir_[i])[1] = (phase_dir_[i])[2] = 0.0f;
+      (slice_dir_[i])[0] = (slice_dir_[i])[1] = (slice_dir_[i])[2] = 0.0f;
     }
 
     // Allocate accumulation buffer
     //
 
     if( buffer_using_solver_ )
-      acc_buffer_ = boost::shared_ptr< cuSenseBufferCg<float,2> >(new cuSenseBufferCg<float,2>());
+      acc_buffer_ = boost::shared_array< cuSenseBuffer<float,2> >(new cuSenseBufferCg<float,2>[slices_*sets_]);
     else
-      acc_buffer_ = boost::shared_ptr< cuSenseBuffer<float,2> >(new cuSenseBuffer<float,2>());
+      acc_buffer_ = boost::shared_array< cuSenseBuffer<float,2> >(new cuSenseBuffer<float,2>[slices_*sets_]);
     
+    // Allocate remaining shared_arrays
+    //
+    
+    csm_host_ = boost::shared_array< hoNDArray<float_complext> >(new hoNDArray<float_complext>[slices_*sets_]);
+    reg_host_ = boost::shared_array< hoNDArray<float_complext> >(new hoNDArray<float_complext>[slices_*sets_]);
+
+    host_traj_recon_ = boost::shared_array< hoNDArray<floatd2> >(new hoNDArray<floatd2>[slices_*sets_]);
+    host_weights_recon_ = boost::shared_array< hoNDArray<float> >(new hoNDArray<float>[slices_*sets_]);
+
+    if( !csm_host_.get() || !reg_host_.get() || !host_traj_recon_.get() || !host_weights_recon_ ){
+      GADGET_DEBUG1("Failed to allocate host memory (3)\n");
+      return GADGET_FAIL;
+    }
+
+
     return GADGET_OK;
   }
 
-  int gpuRadialSenseGadget::
+  int gpuRadialSensePrepGadget::
   process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
   {
@@ -254,28 +295,32 @@ namespace Gadgetron{
       return GADGET_OK;
     }
 
-    //GADGET_DEBUG1("gpuRadialSenseGadget::process\n");
+    //GADGET_DEBUG1("gpuRadialSensePrepGadget::process\n");
 
     boost::shared_ptr<GPUTimer> process_timer;
     if( output_timing_ )
-      process_timer = boost::shared_ptr<GPUTimer>( new GPUTimer("gpuRadialSenseGadget::process()") );
+      process_timer = boost::shared_ptr<GPUTimer>( new GPUTimer("gpuRadialSensePrepGadget::process()") );
+
+    unsigned int profile = m1->getObjectPtr()->idx.kspace_encode_step_1;
+    unsigned int slice = m1->getObjectPtr()->idx.slice;
+    unsigned int set = m1->getObjectPtr()->idx.set;
 
     // Have the imaging plane changed?
     //
 
-    if ( !read_dir_equal(m1->getObjectPtr()->read_dir) || 
-	 !phase_dir_equal(m1->getObjectPtr()->phase_dir) ||
-	 !slice_dir_equal(m1->getObjectPtr()->slice_dir) ||
-	 !position_equal(m1->getObjectPtr()->position)) {
-
-      // If so then clear the accumulation buffer
-      acc_buffer_->clear();
-      buffer_update_needed_ = true;
+    if( !vec_equal(position_[set*slices_+slice], m1->getObjectPtr()->position) ||
+	!vec_equal(read_dir_[set*slices_+slice], m1->getObjectPtr()->read_dir) || 
+	!vec_equal(phase_dir_[set*slices_+slice], m1->getObjectPtr()->phase_dir) ||
+	!vec_equal(slice_dir_[set*slices_+slice], m1->getObjectPtr()->slice_dir) ){
       
-      memcpy(position_,m1->getObjectPtr()->position,3*sizeof(float));
-      memcpy(read_dir_,m1->getObjectPtr()->read_dir,3*sizeof(float));
-      memcpy(phase_dir_,m1->getObjectPtr()->phase_dir,3*sizeof(float));
-      memcpy(slice_dir_,m1->getObjectPtr()->slice_dir,3*sizeof(float));
+      // Yes indeed, clear the accumulation buffer
+      acc_buffer_[set*slices_+slice].clear();
+      buffer_update_needed_[set*slices_+slice] = true;
+      
+      memcpy(position_[set*slices_+slice],m1->getObjectPtr()->position,3*sizeof(float));
+      memcpy(read_dir_[set*slices_+slice],m1->getObjectPtr()->read_dir,3*sizeof(float));
+      memcpy(phase_dir_[set*slices_+slice],m1->getObjectPtr()->phase_dir,3*sizeof(float));
+      memcpy(slice_dir_[set*slices_+slice],m1->getObjectPtr()->slice_dir,3*sizeof(float));
     }
     
     // Only when the first profile arrives, do we know the #samples/profile
@@ -289,22 +334,22 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
     
-    unsigned int profile = m1->getObjectPtr()->idx.kspace_encode_step_1;
-    unsigned int slice = m1->getObjectPtr()->idx.slice;
-    unsigned int set = m1->getObjectPtr()->idx.set;
     bool new_frame_detected = false;
 
     // Reconfigure at first pass
     // - or if the number of coil changes
     // - or if the reconfigure_ flag is set
 
-    if( num_coils_ != m1->getObjectPtr()->active_channels ){
-      num_coils_ = m1->getObjectPtr()->active_channels;
-      reconfigure();
+    if( num_coils_[set*slices_+slice] != m1->getObjectPtr()->active_channels ){
+      GADGET_DEBUG1("Reconfiguring due to change in the number of coils\n");
+      num_coils_[set*slices_+slice] = m1->getObjectPtr()->active_channels;
+      reconfigure(set, slice);
     }
 
-    if( reconfigure_ )
-      reconfigure();
+    if( reconfigure_[set*slices_+slice] ){
+      GADGET_DEBUG1("Reconfiguring due to boolean indicator\n");
+      reconfigure(set, slice);
+    }
 
     // Keep track of the incoming profile ids (mode dependent)
     // - to determine the number of profiles per frame
@@ -316,21 +361,23 @@ namespace Gadgetron{
       if ( profile > previous_profile_[set*slices_+slice]) { // this is not the last profile in the frame
 	if( mode_ == 0 && get_int_value(std::string("frames_per_rotation").c_str()) == 0 ){
 	  unsigned int acceleration_factor = profile - previous_profile_[set*slices_+slice];
-	  if( acceleration_factor != frames_per_rotation_ ){
-	    frames_per_rotation_ = acceleration_factor;
-	    reconfigure();
+	  if( acceleration_factor != frames_per_rotation_[set*slices_+slice] ){
+	    GADGET_DEBUG1("Reconfiguring due to change in acceleration factor\n");
+	    frames_per_rotation_[set*slices_+slice] = acceleration_factor;
+	    reconfigure(set, slice);
 	  }
 	}
       }
       else{ // This is the first profile in a new frame
 	if( get_int_value(std::string("profiles_per_frame").c_str()) == 0 && // make sure the user did not specify a desired value for this variable
 	    profiles_counter_frame_[set*slices_+slice] > 0 &&
-	    profiles_counter_frame_[set*slices_+slice] != profiles_per_frame_ ){ // a new acceleration factor is detected
+	    profiles_counter_frame_[set*slices_+slice] != profiles_per_frame_[set*slices_+slice] ){ // a new acceleration factor is detected
+	  GADGET_DEBUG1("Reconfiguring due to new slice detection\n");
 	  new_frame_detected = true;
-	  profiles_per_frame_ = profiles_counter_frame_[set*slices_+slice];
+	  profiles_per_frame_[set*slices_+slice] = profiles_counter_frame_[set*slices_+slice];
 	  if( mode_ == 1 && get_int_value(std::string("frames_per_rotation").c_str()) == 0 )
-	    frames_per_rotation_ = image_dimensions_[0]/profiles_per_frame_;
-	  reconfigure();
+	    frames_per_rotation_[set*slices_+slice] = image_dimensions_[0]/profiles_per_frame_[set*slices_+slice];
+	  reconfigure(set, slice);
 	}
       }
     }
@@ -349,15 +396,13 @@ namespace Gadgetron{
     // If the profile is the last of a "true frame" (ignoring any sliding window profiles)
     // - then update the accumulation buffer
 
-    bool is_last_profile_in_frame = (profiles_counter_frame_[set*slices_+slice] == profiles_per_frame_-1);
+    bool is_last_profile_in_frame = (profiles_counter_frame_[set*slices_+slice] == profiles_per_frame_[set*slices_+slice]-1);
     is_last_profile_in_frame |= new_frame_detected;
 
     if( is_last_profile_in_frame ){
 
-      //GPUTimer timer("gpuRadialGadget::UPDATING BUFFER FRAME");
-
       boost::shared_ptr< hoNDArray<float_complext> > host_samples = 
-	extract_samples_from_queue( &frame_queue_[set*slices_+slice], false );
+	extract_samples_from_queue( &frame_queue_[set*slices_+slice], false, set, slice );
 
       if( host_samples.get() == 0x0 ){
 	GADGET_DEBUG1("Failed to extract frame data from queue\n");
@@ -367,32 +412,33 @@ namespace Gadgetron{
       cuNDArray<float_complext> samples( host_samples.get() );
       
       long profile_offset = profiles_counter_global_[set*slices_+slice] - ((new_frame_detected) ? 1 : 0);
-      boost::shared_ptr< cuNDArray<floatd2> > traj = calculate_trajectory_for_frame(profile_offset);
+      boost::shared_ptr< cuNDArray<floatd2> > traj = calculate_trajectory_for_frame(profile_offset, set, slice);
 
-      buffer_update_needed_ |= acc_buffer_->add_frame_data( &samples, traj.get() );
+      buffer_update_needed_[set*slices_+slice] |= acc_buffer_[set*slices_+slice].add_frame_data( &samples, traj.get() );
     }
     
     // Are we ready to reconstruct (downstream)?
     // - then prepare the Sense job
 
-    long profiles_per_reconstruction = profiles_per_frame_;
+    long profiles_per_reconstruction = profiles_per_frame_[set*slices_+slice];
 
     if( rotations_per_reconstruction_ > 0 )
-      profiles_per_reconstruction *= (frames_per_rotation_*rotations_per_reconstruction_);
+      profiles_per_reconstruction *= (frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_);
     
     if( recon_queue_[set*slices_+slice].message_count() == profiles_per_reconstruction ){
       
       // Update csm and regularization images if the buffer has changed (completed a cycle) 
       // - and at the first pass
 
-      if( buffer_update_needed_ || csm_host_.get() == 0x0 || reg_host_.get() == 0x0 ){
+      if( buffer_update_needed_[set*slices_+slice] || 
+	  csm_host_[set*slices_+slice].get_number_of_elements() == 0 || 
+	  reg_host_[set*slices_+slice].get_number_of_elements() == 0 ){
 
-	//GPUTimer timer("gpuRadialGadget::UPDATING BUFFER CSM/REG");
-      
 	// Get the accumulated coil images
 	//
 
-	boost::shared_ptr< cuNDArray<float_complext> > csm_data = acc_buffer_->get_accumulated_coil_images();
+	boost::shared_ptr< cuNDArray<float_complext> > csm_data 
+	  = acc_buffer_[set*slices_+slice].get_accumulated_coil_images();
 
 	if( !csm_data.get() ){
 	  GADGET_DEBUG1("Error during accumulation buffer computation\n");
@@ -409,43 +455,44 @@ namespace Gadgetron{
 	  return GADGET_FAIL;
 	}            
 
-	csm_host_ = csm->to_host();
+	csm_host_[set*slices_+slice] = *(csm->to_host());
 	
 	// Compute regularization image
 	//
 
 	boost::shared_ptr< cuNDArray<float_complext> > reg_image;
-	acc_buffer_->set_csm(csm);
+	acc_buffer_[set*slices_+slice].set_csm(csm);
 	
 	if( buffer_using_solver_ && mode_ == 2 ){
-	  cuSenseBufferCg<float,2> *acc = (cuSenseBufferCg<float,2>*) acc_buffer_.get();
-	  acc->preprocess(calculate_trajectory_for_rhs(profiles_counter_global_[set*slices_+slice] - ((new_frame_detected) ? 1 : 0)).get());
+	  cuSenseBufferCg<float,2> *acc = (cuSenseBufferCg<float,2>*) &acc_buffer_[set*slices_+slice];
+	  acc->preprocess( calculate_trajectory_for_rhs( profiles_counter_global_[set*slices_+slice] - 
+							 ((new_frame_detected) ? 1 : 0), set, slice).get());
 	}
 
-	reg_image = acc_buffer_->get_combined_coil_image();
+	reg_image = acc_buffer_[set*slices_+slice].get_combined_coil_image();
 	
 	if( !reg_image.get() ){
 	  GADGET_DEBUG1("Error computing regularization image\n");
 	  return GADGET_FAIL;
 	}            
 	
-	reg_host_ = reg_image->to_host();
+	reg_host_[set*slices_+slice] = *(reg_image->to_host());
 		
 	/*
 	static int counter = 0;
 	char filename[256];
 	sprintf((char*)filename, "reg_%d.cplx", counter);
-	write_nd_array<float_complext>( reg_host_.get(), filename );
+	write_nd_array<float_complext>( reg_host_[set*slices_+slice].get(), filename );
 	counter++; */
 
-	buffer_update_needed_ = false;
+	buffer_update_needed_[set*slices_+slice] = false;
       }
 
       // Prepare data array of the profiles for the downstream reconstruction
       //
       
       boost::shared_ptr< hoNDArray<float_complext> > samples_host = 
-	extract_samples_from_queue( &recon_queue_[set*slices_+slice], true );
+	extract_samples_from_queue( &recon_queue_[set*slices_+slice], true, set, slice );
       
       if( samples_host.get() == 0x0 ){
 	GADGET_DEBUG1("Failed to extract frame data from queue\n");
@@ -457,7 +504,8 @@ namespace Gadgetron{
       // - when we are reconstructing frame-by-frame
       
       if( mode_ == 2 || rotations_per_reconstruction_ == 0 ){
-	calculate_trajectory_for_reconstruction( profiles_counter_global_[set*slices_+slice] - ((new_frame_detected) ? 1 : 0) );
+	calculate_trajectory_for_reconstruction
+	  ( profiles_counter_global_[set*slices_+slice] - ((new_frame_detected) ? 1 : 0), set, slice );
       }
       
       // Set up Sense job
@@ -466,10 +514,10 @@ namespace Gadgetron{
       GadgetContainerMessage< SenseJob >* m4 = new GadgetContainerMessage< SenseJob >();
 	
       m4->getObjectPtr()->dat_host_ = samples_host;
-      m4->getObjectPtr()->tra_host_ = boost::shared_ptr< hoNDArray<floatd2> >(new hoNDArray<floatd2>(*host_traj_recon_));
-      m4->getObjectPtr()->dcw_host_ = boost::shared_ptr< hoNDArray<float> >(new hoNDArray<float>(*host_weights_recon_));
-      m4->getObjectPtr()->csm_host_ = boost::shared_ptr< hoNDArray<float_complext> >( new hoNDArray<float_complext>(*csm_host_));
-      m4->getObjectPtr()->reg_host_ = boost::shared_ptr< hoNDArray<float_complext> >( new hoNDArray<float_complext>(*reg_host_));
+      m4->getObjectPtr()->tra_host_ = boost::shared_ptr< hoNDArray<floatd2> >(new hoNDArray<floatd2>(host_traj_recon_[set*slices_+slice]));
+      m4->getObjectPtr()->dcw_host_ = boost::shared_ptr< hoNDArray<float> >(new hoNDArray<float>(host_weights_recon_[set*slices_+slice]));
+      m4->getObjectPtr()->csm_host_ = boost::shared_ptr< hoNDArray<float_complext> >( new hoNDArray<float_complext>(csm_host_[set*slices_+slice]));
+      m4->getObjectPtr()->reg_host_ = boost::shared_ptr< hoNDArray<float_complext> >( new hoNDArray<float_complext>(reg_host_[set*slices_+slice]));
 
       GadgetContainerMessage<ISMRMRD::ImageHeader>* m3 = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
       m3->cont(m4);
@@ -477,13 +525,13 @@ namespace Gadgetron{
       ISMRMRD::AcquisitionHeader base_head = *m1->getObjectPtr();
       m3->getObjectPtr()->matrix_size[0] = image_dimensions_recon_[0];
       m3->getObjectPtr()->matrix_size[1] = image_dimensions_recon_[1];
-      m3->getObjectPtr()->matrix_size[2] = std::max(1L,frames_per_rotation_*rotations_per_reconstruction_);
+      m3->getObjectPtr()->matrix_size[2] = std::max(1L,frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_);
 
       m3->getObjectPtr()->field_of_view[0] = fov_[0];
       m3->getObjectPtr()->field_of_view[1] = fov_[1];
       m3->getObjectPtr()->field_of_view[2] = fov_[2];
 
-      m3->getObjectPtr()->channels = num_coils_;
+      m3->getObjectPtr()->channels = num_coils_[set*slices_+slice];
       m3->getObjectPtr()->slice = base_head.idx.slice;
       m3->getObjectPtr()->set = base_head.idx.set;
 
@@ -494,7 +542,7 @@ namespace Gadgetron{
       memcpy(m3->getObjectPtr()->patient_table_position, base_head.patient_table_position, sizeof(float)*3);
 
       m3->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
-      m3->getObjectPtr()->image_index = ++image_counter_; 
+      m3->getObjectPtr()->image_index = image_counter_[set*slices_+slice]++; 
       m3->getObjectPtr()->image_series_index = image_series_;
 
       //GADGET_DEBUG1("Putting job on queue\n");
@@ -533,7 +581,7 @@ namespace Gadgetron{
   }
   
   int 
-  gpuRadialSenseGadget::calculate_trajectory_for_reconstruction(long profile_offset)
+  gpuRadialSensePrepGadget::calculate_trajectory_for_reconstruction(long profile_offset, unsigned int set, unsigned int slice)
   {   
     //GADGET_DEBUG1("Calculating trajectory for reconstruction\n");
 
@@ -544,15 +592,15 @@ namespace Gadgetron{
       {
 	if( rotations_per_reconstruction_ == 0 ){
 
-	  long local_frame = (profile_offset/profiles_per_frame_)%frames_per_rotation_;
-	  float angular_offset = M_PI/float(profiles_per_frame_)*float(local_frame)/float(frames_per_rotation_);	  
+	  long local_frame = (profile_offset/profiles_per_frame_[set*slices_+slice])%frames_per_rotation_[set*slices_+slice];
+	  float angular_offset = M_PI/float(profiles_per_frame_[set*slices_+slice])*float(local_frame)/float(frames_per_rotation_[set*slices_+slice]);	  
 
-	  host_traj_recon_ = compute_radial_trajectory_fixed_angle_2d<float>
-	    ( samples_per_profile_, profiles_per_frame_, 1, angular_offset )->to_host();	
+	  host_traj_recon_[set*slices_+slice] = *compute_radial_trajectory_fixed_angle_2d<float>
+	    ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], 1, angular_offset )->to_host();	
 	}
 	else{
-	  host_traj_recon_ = compute_radial_trajectory_fixed_angle_2d<float>
-	    ( samples_per_profile_, profiles_per_frame_, frames_per_rotation_ )->to_host();
+	  host_traj_recon_[set*slices_+slice] = *compute_radial_trajectory_fixed_angle_2d<float>
+	    ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], frames_per_rotation_[set*slices_+slice] )->to_host();
 	}
       }
       break;
@@ -560,15 +608,15 @@ namespace Gadgetron{
     case 2:
       {
 	if( rotations_per_reconstruction_ == 0 ){	  
-	  unsigned int first_profile_in_reconstruction = std::max(0L, profile_offset-profiles_per_frame_+1);
-	  host_traj_recon_ = compute_radial_trajectory_golden_ratio_2d<float>
-	    ( samples_per_profile_, profiles_per_frame_, 1, first_profile_in_reconstruction )->to_host();	
+	  unsigned int first_profile_in_reconstruction = std::max(0L, profile_offset-profiles_per_frame_[set*slices_+slice]+1);
+	  host_traj_recon_[set*slices_+slice] = *compute_radial_trajectory_golden_ratio_2d<float>
+	    ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], 1, first_profile_in_reconstruction )->to_host();	
 	}
 	else{
 	  unsigned int first_profile_in_reconstruction = 
-	    std::max(0L, profile_offset-profiles_per_frame_*frames_per_rotation_*rotations_per_reconstruction_+1);
-	  host_traj_recon_ = compute_radial_trajectory_golden_ratio_2d<float>
-	    ( samples_per_profile_, profiles_per_frame_, frames_per_rotation_*rotations_per_reconstruction_, first_profile_in_reconstruction )->to_host();
+	    std::max(0L, profile_offset-profiles_per_frame_[set*slices_+slice]*frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_+1);
+	  host_traj_recon_[set*slices_+slice] = *compute_radial_trajectory_golden_ratio_2d<float>
+	    ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_, first_profile_in_reconstruction )->to_host();
 	}	  
       }
       break;
@@ -582,7 +630,7 @@ namespace Gadgetron{
   }  
 
   int
-  gpuRadialSenseGadget::calculate_density_compensation_for_reconstruction()
+  gpuRadialSensePrepGadget::calculate_density_compensation_for_reconstruction( unsigned int set, unsigned int slice)
   {
     //GADGET_DEBUG1("Calculating dcw for reconstruction\n");
     
@@ -590,14 +638,14 @@ namespace Gadgetron{
       
     case 0:
     case 1:
-      host_weights_recon_ = compute_radial_dcw_fixed_angle_2d<float>
-	( samples_per_profile_, profiles_per_frame_, oversampling_factor_, 
+      host_weights_recon_[set*slices_+slice] = *compute_radial_dcw_fixed_angle_2d<float>
+	( samples_per_profile_, profiles_per_frame_[set*slices_+slice], oversampling_factor_, 
 	  1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) )->to_host();
       break;
       
     case 2:
-      host_weights_recon_ = compute_radial_dcw_golden_ratio_2d<float>
-	( samples_per_profile_, profiles_per_frame_, oversampling_factor_, 
+      host_weights_recon_[set*slices_+slice] = *compute_radial_dcw_golden_ratio_2d<float>
+	( samples_per_profile_, profiles_per_frame_[set*slices_+slice], oversampling_factor_, 
 	  1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) )->to_host();
       break;
       
@@ -610,7 +658,7 @@ namespace Gadgetron{
   }
   
   boost::shared_ptr< cuNDArray<floatd2> > 
-  gpuRadialSenseGadget::calculate_trajectory_for_frame(long profile_offset)
+  gpuRadialSensePrepGadget::calculate_trajectory_for_frame(long profile_offset, unsigned int set, unsigned int slice)
   {
     //GADGET_DEBUG1("Calculating trajectory for buffer frame\n");
 
@@ -621,20 +669,20 @@ namespace Gadgetron{
     case 0:
     case 1:
       {
-	long local_frame = (profile_offset/profiles_per_frame_)%frames_per_rotation_;
-	float angular_offset = M_PI/float(profiles_per_frame_)*float(local_frame)/float(frames_per_rotation_);	  
+	long local_frame = (profile_offset/profiles_per_frame_[set*slices_+slice])%frames_per_rotation_[set*slices_+slice];
+	float angular_offset = M_PI/float(profiles_per_frame_[set*slices_+slice])*float(local_frame)/float(frames_per_rotation_[set*slices_+slice]);	  
 
 	result = compute_radial_trajectory_fixed_angle_2d<float>
-	  ( samples_per_profile_, profiles_per_frame_, 1, angular_offset );  
+	  ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], 1, angular_offset );  
       }
       break;
 	
     case 2:
       { 
-	unsigned int first_profile_in_buffer = std::max(0L, profile_offset-profiles_per_frame_+1);
+	unsigned int first_profile_in_buffer = std::max(0L, profile_offset-profiles_per_frame_[set*slices_+slice]+1);
 
 	result  = compute_radial_trajectory_golden_ratio_2d<float>
-	  ( samples_per_profile_, profiles_per_frame_, 1, first_profile_in_buffer );
+	  ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], 1, first_profile_in_buffer );
       }
       break;	
 	
@@ -647,7 +695,7 @@ namespace Gadgetron{
   }
 
   boost::shared_ptr< cuNDArray<float> >
-  gpuRadialSenseGadget::calculate_density_compensation_for_frame()
+  gpuRadialSensePrepGadget::calculate_density_compensation_for_frame(unsigned int set, unsigned int slice)
   {    
     //GADGET_DEBUG1("Calculating dcw for buffer frame\n");
 
@@ -656,12 +704,12 @@ namespace Gadgetron{
     case 0:
     case 1:
       return compute_radial_dcw_fixed_angle_2d<float>
-	( samples_per_profile_, profiles_per_frame_, oversampling_factor_, 1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) );
+	( samples_per_profile_, profiles_per_frame_[set*slices_+slice], oversampling_factor_, 1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) );
       break;
       
     case 2:
       return compute_radial_dcw_golden_ratio_2d<float>
-	( samples_per_profile_, profiles_per_frame_, oversampling_factor_, 1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) );
+	( samples_per_profile_, profiles_per_frame_[set*slices_+slice], oversampling_factor_, 1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) );
       break;
       
     default:
@@ -673,24 +721,30 @@ namespace Gadgetron{
 
 
   boost::shared_ptr< cuNDArray<floatd2> > 
-  gpuRadialSenseGadget::calculate_trajectory_for_rhs(long profile_offset)
+  gpuRadialSensePrepGadget::calculate_trajectory_for_rhs(long profile_offset, unsigned int set, unsigned int slice)
   {
     //GADGET_DEBUG1("Calculating trajectory for rhs\n");
-
-    boost::shared_ptr< cuNDArray<floatd2> > result;
 
     switch(mode_){
 
     case 0:
     case 1:
-      return compute_radial_trajectory_fixed_angle_2d<float>( samples_per_profile_, profiles_per_frame_*buffer_frames_per_rotation_, 1 );
+      return compute_radial_trajectory_fixed_angle_2d<float>
+	( samples_per_profile_, profiles_per_frame_[set*slices_+slice]*buffer_frames_per_rotation_[set*slices_+slice], 1 );
       break;
 	
     case 2:
       { 
-	unsigned int first_profile = std::max(0L, profile_offset-profiles_per_frame_*buffer_frames_per_rotation_*buffer_length_in_rotations_+1);
+	unsigned int first_profile = 
+	  std::max(0L, profile_offset-profiles_per_frame_[set*slices_+slice]*
+		   buffer_frames_per_rotation_[set*slices_+slice]*
+		   buffer_length_in_rotations_+1);
+
 	return compute_radial_trajectory_golden_ratio_2d<float>
-	  ( samples_per_profile_, profiles_per_frame_*buffer_frames_per_rotation_*buffer_length_in_rotations_, 1, first_profile );
+	  ( samples_per_profile_, 
+	    profiles_per_frame_[set*slices_+slice]*
+	    buffer_frames_per_rotation_[set*slices_+slice]*buffer_length_in_rotations_, 
+	    1, first_profile );
       }
       break;	
 	
@@ -702,7 +756,7 @@ namespace Gadgetron{
   }
   
   boost::shared_ptr< cuNDArray<float> >
-  gpuRadialSenseGadget::calculate_density_compensation_for_rhs()
+  gpuRadialSensePrepGadget::calculate_density_compensation_for_rhs(unsigned int set, unsigned int slice)
   {
     //GADGET_DEBUG1("Calculating dcw for rhs\n");
     
@@ -711,16 +765,21 @@ namespace Gadgetron{
     case 0:
     case 1:
       {
-	unsigned int num_profiles = profiles_per_frame_*buffer_frames_per_rotation_;
+	unsigned int num_profiles = 
+	  profiles_per_frame_[set*slices_+slice]*buffer_frames_per_rotation_[set*slices_+slice];
+
 	return compute_radial_dcw_fixed_angle_2d<float>
-	  ( samples_per_profile_, num_profiles, oversampling_factor_, 1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) );
+	  ( samples_per_profile_, num_profiles, oversampling_factor_, 
+	    1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) );
       }
       break;
       
     case 2:
       {
-	unsigned int num_profiles = profiles_per_frame_*buffer_frames_per_rotation_*buffer_length_in_rotations_;
-	return  compute_radial_dcw_golden_ratio_2d<float>
+	unsigned int num_profiles = 
+	  profiles_per_frame_[set*slices_+slice]*buffer_frames_per_rotation_[set*slices_+slice]*buffer_length_in_rotations_;
+
+	return compute_radial_dcw_golden_ratio_2d<float>
 	  ( samples_per_profile_, num_profiles, oversampling_factor_, 
 	    1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) );
       }
@@ -733,8 +792,9 @@ namespace Gadgetron{
     }
   }
 
-  boost::shared_ptr< hoNDArray<float_complext> > gpuRadialSenseGadget::
-  extract_samples_from_queue( ACE_Message_Queue<ACE_MT_SYNCH> *queue, bool sliding_window )
+  boost::shared_ptr< hoNDArray<float_complext> > gpuRadialSensePrepGadget::
+  extract_samples_from_queue( ACE_Message_Queue<ACE_MT_SYNCH> *queue, bool sliding_window,
+			      unsigned int set, unsigned int slice )
   {    
     //GADGET_DEBUG1("Emptying queue...\n");
 
@@ -742,7 +802,7 @@ namespace Gadgetron{
     
     std::vector<unsigned int> dims;
     dims.push_back(samples_per_profile_*profiles_buffered);
-    dims.push_back(num_coils_);
+    dims.push_back(num_coils_[set*slices_+slice]);
     
     boost::shared_ptr< hoNDArray<float_complext> > host_samples(new hoNDArray<float_complext>(&dims));
     
@@ -762,7 +822,7 @@ namespace Gadgetron{
 	return boost::shared_ptr< hoNDArray<float_complext> >();
       }
 	
-      for (unsigned int c = 0; c < num_coils_; c++) {
+      for (unsigned int c = 0; c < num_coils_[set*slices_+slice]; c++) {
 	
 	float_complext *data_ptr = host_samples->get_data_ptr();
 	data_ptr += c*samples_per_profile_*profiles_buffered+p*samples_per_profile_;
@@ -776,7 +836,8 @@ namespace Gadgetron{
       // In sliding window mode the profile might need to go back at the end of the queue
       // 
       
-      long profiles_in_sliding_window = sliding_window_profiles_ + profiles_per_frame_*frames_per_rotation_*sliding_window_rotations_;
+      long profiles_in_sliding_window = sliding_window_profiles_ + 
+	profiles_per_frame_[set*slices_+slice]*frames_per_rotation_[set*slices_+slice]*sliding_window_rotations_;
       if( sliding_window && p >= (profiles_buffered-profiles_in_sliding_window) )
 	queue->enqueue_tail(mbq);
       else
@@ -787,7 +848,7 @@ namespace Gadgetron{
   }
   
   GadgetContainerMessage<ISMRMRD::AcquisitionHeader>*
-  gpuRadialSenseGadget::duplicate_profile( GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *profile )
+  gpuRadialSensePrepGadget::duplicate_profile( GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *profile )
   {
     GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *copy = 
       new GadgetContainerMessage<ISMRMRD::AcquisitionHeader>();
@@ -802,36 +863,39 @@ namespace Gadgetron{
     return copy;
   }
 
-  void gpuRadialSenseGadget::reconfigure()
+  void gpuRadialSensePrepGadget::reconfigure(unsigned int set, unsigned int slice)
   {    
-    GADGET_DEBUG2("\nReconfiguring:\n#profiles/frame:%d\n#frames/rotation: %d\n#rotations/reconstruction:%d\n", profiles_per_frame_, frames_per_rotation_, rotations_per_reconstruction_);
+    GADGET_DEBUG2("\nReconfiguring:\n#profiles/frame:%d\n#frames/rotation: %d\n#rotations/reconstruction:%d\n", profiles_per_frame_[set*slices_+slice], frames_per_rotation_[set*slices_+slice], rotations_per_reconstruction_);
 
-    calculate_trajectory_for_reconstruction(0);
-    calculate_density_compensation_for_reconstruction();
+    calculate_trajectory_for_reconstruction(0, set, slice);
+    calculate_density_compensation_for_reconstruction(set, slice);
     
-    buffer_frames_per_rotation_ = get_int_value(std::string("buffer_frames_per_rotation").c_str());    
+    buffer_frames_per_rotation_[set*slices_+slice] = get_int_value(std::string("buffer_frames_per_rotation").c_str());
 
-    if( buffer_frames_per_rotation_ == 0 ){
+    if( buffer_frames_per_rotation_[set*slices_+slice] == 0 ){
       if( mode_ == 2 )
-	buffer_frames_per_rotation_ = image_dimensions_recon_os_[0]/profiles_per_frame_;
+	buffer_frames_per_rotation_[set*slices_+slice] = 
+	  image_dimensions_recon_os_[0]/profiles_per_frame_[set*slices_+slice];
       else
-	buffer_frames_per_rotation_ = frames_per_rotation_;
+	buffer_frames_per_rotation_[set*slices_+slice] = frames_per_rotation_[set*slices_+slice];
     }
       
-    acc_buffer_->setup( from_std_vector<unsigned int,2>(image_dimensions_recon_), image_dimensions_recon_os_, 
-			kernel_width_, num_coils_, buffer_length_in_rotations_, buffer_frames_per_rotation_ );
+    acc_buffer_[set*slices_+slice].setup
+      ( from_std_vector<unsigned int,2>(image_dimensions_recon_), image_dimensions_recon_os_, 
+	kernel_width_, num_coils_[set*slices_+slice], 
+	buffer_length_in_rotations_, buffer_frames_per_rotation_[set*slices_+slice] );
     
-    boost::shared_ptr< cuNDArray<float> > device_weights_frame = calculate_density_compensation_for_frame();
-    acc_buffer_->set_dcw(device_weights_frame);
+    boost::shared_ptr< cuNDArray<float> > device_weights_frame = calculate_density_compensation_for_frame(set, slice);
+    acc_buffer_[set*slices_+slice].set_dcw(device_weights_frame);
 
     if( buffer_using_solver_ ){
-      cuSenseBufferCg<float,2> *acc = (cuSenseBufferCg<float,2>*) acc_buffer_.get();
-      acc->set_dcw_for_rhs(calculate_density_compensation_for_rhs());
-      acc->preprocess(calculate_trajectory_for_rhs(0).get());
+      cuSenseBufferCg<float,2> *acc = (cuSenseBufferCg<float,2>*) &acc_buffer_[set*slices_+slice];
+      acc->set_dcw_for_rhs(calculate_density_compensation_for_rhs(set, slice));
+      acc->preprocess(calculate_trajectory_for_rhs(0, set, slice).get());
     }
     
-    reconfigure_ = false;
+    reconfigure_[set*slices_+slice] = false;
   }
 
-  GADGET_FACTORY_DECLARE(gpuRadialSenseGadget)
+  GADGET_FACTORY_DECLARE(gpuRadialSensePrepGadget)
 }

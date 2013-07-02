@@ -43,14 +43,14 @@ namespace Gadgetron{
     int interleaves_;
     int slices_;
     int sets_;
-    int image_counter_;
+    boost::shared_array<long> image_counter_;
     int image_series_;
     int device_number_;
 
     long    Tsamp_ns_;
     long    Nints_;
-    long    *interleaves_counter_singleframe_;
-    long    *interleaves_counter_multiframe_;
+    boost::shared_array<long> interleaves_counter_singleframe_;
+    boost::shared_array<long> interleaves_counter_multiframe_;
     long    acceleration_factor_;
     double  gmax_;
     double  smax_;
@@ -64,7 +64,7 @@ namespace Gadgetron{
     boost::shared_ptr< hoNDArray<float> > host_weights_;
     cuNDArray<float> gpu_weights_;
 
-    hoNDArray<float_complext>* host_data_buffer_;
+    boost::shared_array< hoNDArray<float_complext> > host_data_buffer_;
     std::vector<unsigned int> fov_vec_;
     std::vector<unsigned int> image_dimensions_;
     cuNFFT_plan<float, 2> plan_;

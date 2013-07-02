@@ -14,7 +14,6 @@
 
 #include <algorithm>
 #include <vector>
-#include <boost/shared_ptr.hpp>
 
 namespace Gadgetron{
 
@@ -22,22 +21,15 @@ namespace Gadgetron{
     : samples_to_skip_start_(0)
     , samples_to_skip_end_(0)
     , samples_per_interleave_(0)
-    , host_data_buffer_(0x0)
-    , image_counter_(0)
     , image_series_(0)
     , prepared_(false)
     , use_multiframe_grouping_(false)
-    , interleaves_counter_singleframe_(0x0)
-    , interleaves_counter_multiframe_(0x0)
     , acceleration_factor_(0)
   {
     GADGET_DEBUG1("Initializing Spiral\n");
   }
 
-  gpuSpiralSensePrepGadget::~gpuSpiralSensePrepGadget()
-  {
-    if (host_data_buffer_) delete [] host_data_buffer_;
-  }
+  gpuSpiralSensePrepGadget::~gpuSpiralSensePrepGadget() {}
 
   int gpuSpiralSensePrepGadget::process_config(ACE_Message_Block* mb)
   {
@@ -255,13 +247,15 @@ namespace Gadgetron{
       prepared_ = true;
     }
 
-    if (!host_data_buffer_) {
+    if (!host_data_buffer_.get()) {
       std::vector<unsigned int> data_dimensions;
       data_dimensions.push_back(samples_per_interleave_*interleaves_);
       data_dimensions.push_back(m1->getObjectPtr()->active_channels);
 
-      host_data_buffer_ = new hoNDArray<float_complext>[slices_*sets_];
-      if (!host_data_buffer_) {
+      host_data_buffer_ = boost::shared_array< hoNDArray<float_complext> >
+	(new hoNDArray<float_complext>[slices_*sets_]);
+      
+      if (!host_data_buffer_.get()) {
 	GADGET_DEBUG1("Unable to allocate array for host data buffer\n");
 	return GADGET_FAIL;
       }
@@ -272,14 +266,20 @@ namespace Gadgetron{
       }
     }
 
-    if( !interleaves_counter_singleframe_ ){
-      interleaves_counter_singleframe_ = new long(slices_*sets_);
+    if( !image_counter_.get() ){
+      image_counter_ = boost::shared_array<long>(new long[slices_*sets_]);
+      for( unsigned int i=0; i<slices_*sets_; i++ )
+	image_counter_[i] = 0;
+    }
+
+    if( !interleaves_counter_singleframe_.get() ){
+      interleaves_counter_singleframe_ = boost::shared_array<long>(new long[slices_*sets_]);
       for( unsigned int i=0; i<slices_*sets_; i++ )
 	interleaves_counter_singleframe_[i] = 0;
     }
 
-    if( !interleaves_counter_multiframe_ ){
-      interleaves_counter_multiframe_ = new long(slices_*sets_);
+    if( !interleaves_counter_multiframe_.get() ){
+      interleaves_counter_multiframe_ = boost::shared_array<long>(new long[slices_*sets_]);
       for( unsigned int i=0; i<slices_*sets_; i++ )
 	interleaves_counter_multiframe_[i] = 0;
     }
@@ -289,7 +289,7 @@ namespace Gadgetron{
     unsigned int slice = m1->getObjectPtr()->idx.slice;
     unsigned int set = m1->getObjectPtr()->idx.set;
 
-    unsigned int samples_per_channel =  host_data_buffer_->get_size(0);
+    unsigned int samples_per_channel =  host_data_buffer_[set*slices_+slice].get_size(0);
 
     interleaves_counter_singleframe_[set*slices_+slice]++;
     interleaves_counter_multiframe_[set*slices_+slice]++;
@@ -304,7 +304,9 @@ namespace Gadgetron{
       GADGET_DEBUG2("Adjusting samples_to_skip_end_ = %d\n", samples_to_skip_end_);
     }
 
-    std::complex<float>* data_ptr = reinterpret_cast< std::complex<float>* >(host_data_buffer_[set*slices_+slice].get_data_ptr());
+    std::complex<float>* data_ptr = reinterpret_cast< std::complex<float>* >
+      (host_data_buffer_[set*slices_+slice].get_data_ptr());
+
     std::complex<float>* profile_ptr = m2->getObjectPtr()->get_data_ptr();
 
     for (unsigned int c = 0; c < m1->getObjectPtr()->active_channels; c++) {
@@ -456,7 +458,7 @@ namespace Gadgetron{
 	memcpy(m3->getObjectPtr()->patient_table_position, base_head.patient_table_position, sizeof(float)*3);
 
 	m3->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
-	m3->getObjectPtr()->image_index = ++image_counter_; 
+	m3->getObjectPtr()->image_index = image_counter_[set*slices_+slice]++;
 	m3->getObjectPtr()->image_series_index = image_series_;
 
 	if (this->next()->putq(m3) < 0) {

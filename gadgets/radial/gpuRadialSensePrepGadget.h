@@ -69,91 +69,88 @@
 
 namespace Gadgetron{
 
-  class EXPORTGADGETS_RADIAL gpuRadialSenseGadget :
+  class EXPORTGADGETS_RADIAL gpuRadialSensePrepGadget :
     public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   {
 
   public:
-    GADGET_DECLARE(gpuRadialSenseGadget);
+    GADGET_DECLARE(gpuRadialSensePrepGadget);
 
-    gpuRadialSenseGadget();
-    virtual ~gpuRadialSenseGadget();
+    gpuRadialSensePrepGadget();
+    virtual ~gpuRadialSensePrepGadget();
 
   protected:
     
-    virtual int process_config(ACE_Message_Block* mb);
+    virtual int process_config(ACE_Message_Block *mb);
 
-    virtual int process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader >* m1,
-			GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2);
+    virtual int process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1,
+			GadgetContainerMessage< hoNDArray< std::complex<float> > > *m2);
 
   private:
 
-    inline bool position_equal(float* position) {
+    inline bool vec_equal(float *in1, float *in2) {
       for (unsigned int i = 0; i < 3; i++) {
-	if (position_[i] != position[i]) return false;
+	if (in1[i] != in2[i]) return false;
       }
       return true;
     }
     
-    inline bool read_dir_equal(float* cosines) {
-      for (unsigned int i = 0; i < 3; i++) {
-	if (read_dir_[i] != cosines[i]) return false;
-      }
-      return true;
-    }
-    
-    inline bool phase_dir_equal(float* cosines) {
-      for (unsigned int i = 0; i < 3; i++) {
-	if (phase_dir_[i] != cosines[i]) return false;
-      }
-      return true;
-    }
-
-    inline bool slice_dir_equal(float* cosines) {
-      for (unsigned int i = 0; i < 3; i++) {
-	if (slice_dir_[i] != cosines[i]) return false;
-      }
-      return true;
-    }
-
-    bool reconfigure_;
-    virtual void reconfigure();
+    boost::shared_array<bool> reconfigure_;
+    virtual void reconfigure(unsigned int set, unsigned int slice);
 
     GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* duplicate_profile
       ( GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *profile );
 
     boost::shared_ptr< hoNDArray<float_complext> > extract_samples_from_queue
-      ( ACE_Message_Queue<ACE_MT_SYNCH> *queue, bool acknowledge_sliding_window );
+      ( ACE_Message_Queue<ACE_MT_SYNCH> *queue, bool acknowledge_sliding_window,
+	unsigned int set, unsigned int slice );
 
     // Compute trajectory/dcw for a reconstruction (to store internally)
-    int calculate_trajectory_for_reconstruction(long profile_offset);
-    int calculate_density_compensation_for_reconstruction();
+    int calculate_trajectory_for_reconstruction(long profile_offset, unsigned int set, unsigned int slice);
+    int calculate_density_compensation_for_reconstruction(unsigned int set, unsigned int slice);
 
-    // Compute trajectory/dcw for adding frames to the accumulation buffer
-    boost::shared_ptr< cuNDArray<floatd2> > calculate_trajectory_for_frame(long profile_offset);
-    boost::shared_ptr< cuNDArray<float> > calculate_density_compensation_for_frame();
+    // Compute trajectory/dcw for adding (usually undersampled) frames to the accumulation buffer
+    //
+
+    boost::shared_ptr< cuNDArray<floatd2> > 
+      calculate_trajectory_for_frame(long profile_offset, unsigned int set, unsigned int slice);
+
+    boost::shared_ptr< cuNDArray<float> >
+      calculate_density_compensation_for_frame(unsigned int set, unsigned int slice);
 
     // Compute trajectory/dcw for the fully sampled accumulation buffer (iterative buffer mode only)
-    boost::shared_ptr< cuNDArray<floatd2> > calculate_trajectory_for_rhs(long profile_offset);
-    boost::shared_ptr< cuNDArray<float> > calculate_density_compensation_for_rhs();
+    //
+
+    boost::shared_ptr< cuNDArray<floatd2> > 
+      calculate_trajectory_for_rhs(long profile_offset, unsigned int set, unsigned int slice);
+
+    boost::shared_ptr< cuNDArray<float> > 
+      calculate_density_compensation_for_rhs(unsigned int set, unsigned int slice);
 
     int slices_;
     int sets_;
-    int image_counter_;
-    int image_series_;
     int device_number_;
     int mode_; // See note above
-
+    int image_series_;
     long samples_per_profile_;
-    long profiles_per_frame_;           // for an undersampled frame
-    long frames_per_rotation_;          // representing a fully sampled frame
-    long rotations_per_reconstruction_; // the number of rotations to batch per reconstruction. Set to '0' to reconstruct frames individually.
-    long buffer_frames_per_rotation_;   // the number of buffer subcycles
-    long buffer_length_in_rotations_;   // the number of buffer cycles
 
-    long *previous_profile_;
-    long *profiles_counter_frame_;
-    long *profiles_counter_global_;
+    boost::shared_array<long> image_counter_;
+    boost::shared_array<long> profiles_per_frame_;  // for an undersampled frame
+    boost::shared_array<long> frames_per_rotation_; // representing a fully sampled frame
+
+    // The number of rotations to batch per reconstruction. 
+    // Set to '0' to reconstruct frames individually.
+    long rotations_per_reconstruction_; 
+
+    // The number of buffer cycles
+    long buffer_length_in_rotations_; 
+
+    boost::shared_array<long> buffer_frames_per_rotation_; // the number of buffer subcycles
+
+    // Internal book-keping
+    boost::shared_array<long> previous_profile_;
+    boost::shared_array<long> profiles_counter_frame_;
+    boost::shared_array<long> profiles_counter_global_;
 
     long sliding_window_profiles_;
     long sliding_window_rotations_;
@@ -161,24 +158,25 @@ namespace Gadgetron{
     float kernel_width_;
     float oversampling_factor_;
 
-    unsigned int num_coils_;
+    boost::shared_array<unsigned int> num_coils_;
 
-    float position_[3];
-    float read_dir_[3];
-    float phase_dir_[3];
-    float slice_dir_[3];
+    boost::shared_array<float[3]> position_;
+    boost::shared_array<float[3]> read_dir_;
+    boost::shared_array<float[3]> phase_dir_;
+    boost::shared_array<float[3]> slice_dir_;
 
     bool output_timing_;
     bool buffer_using_solver_;
-    bool buffer_update_needed_;
 
-    boost::shared_ptr< hoNDArray<floatd2> > host_traj_recon_;
-    boost::shared_ptr< hoNDArray<float> > host_weights_recon_;
+    boost::shared_array<bool> buffer_update_needed_;
+
+    boost::shared_array< hoNDArray<floatd2> > host_traj_recon_;
+    boost::shared_array< hoNDArray<float> > host_weights_recon_;
     
-    boost::shared_ptr< hoNDArray<float_complext> > csm_host_;
-    boost::shared_ptr< hoNDArray<float_complext> > reg_host_;
+    boost::shared_array< hoNDArray<float_complext> > csm_host_;
+    boost::shared_array< hoNDArray<float_complext> > reg_host_;
     
-    boost::shared_ptr< cuSenseBuffer<float,2> > acc_buffer_;
+    boost::shared_array< cuSenseBuffer<float,2> > acc_buffer_;
 
     std::vector<unsigned int> fov_;
     std::vector<unsigned int> image_dimensions_;

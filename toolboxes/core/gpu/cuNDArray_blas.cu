@@ -7,7 +7,7 @@
 
 namespace Gadgetron{
 
-#define CUBLAS_CALL(fun) {cublasStatus_t err = fun; if (err != CUBLAS_STATUS_SUCCESS) {throw cuda_error(getCublasErrorString(err));;}}
+#define CUBLAS_CALL(fun) {cublasStatus_t err = fun; if (err != CUBLAS_STATUS_SUCCESS) {throw cuda_error(getCublasErrorString(err));}}
 
   //NRM2
   //
@@ -134,7 +134,7 @@ namespace Gadgetron{
   template<class T> typename realType<T>::Type nrm2( cuNDArray<T> *arr )
   {
     if( arr == 0x0 )
-      throw std::runtime_error("Gadgetron::nrm2(): Invalid input array");;
+      throw std::runtime_error("Gadgetron::nrm2(): Invalid input array");
 
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     typedef typename realType<T>::Type REAL;
@@ -149,10 +149,10 @@ namespace Gadgetron{
   template<class T> T dot( cuNDArray<T> *arr1, cuNDArray<T> *arr2, bool cc )
   {
     if( arr1 == 0x0 || arr2 == 0x0 )
-      throw std::runtime_error("Gadgetron::dot(): Invalid input array");;
+      throw std::runtime_error("Gadgetron::dot(): Invalid input array");
     
     if( arr1->get_number_of_elements() != arr2->get_number_of_elements() )
-      throw std::runtime_error("Gadgetron::dot(): Array sizes mismatch");;
+      throw std::runtime_error("Gadgetron::dot(): Array sizes mismatch");
 
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     T ret;
@@ -167,10 +167,10 @@ namespace Gadgetron{
   template<class T> void axpy( T a, cuNDArray<T> *x, cuNDArray<T> *y )
   {
     if( x == 0x0 || y == 0x0 )
-      throw std::runtime_error("Gadgetron::axpy(): Invalid input array");;
+      throw std::runtime_error("Gadgetron::axpy(): Invalid input array");
     
     if( x->get_number_of_elements() != y->get_number_of_elements() )
-      throw std::runtime_error("Gadgetron::axpy(): Array sizes mismatch");;
+      throw std::runtime_error("Gadgetron::axpy(): Array sizes mismatch");
 
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     CUBLAS_CALL(cublas_axpy(cudaDeviceManager::Instance()->getHandle(device), x->get_number_of_elements(),
@@ -186,7 +186,7 @@ namespace Gadgetron{
   template<class T> typename realType<T>::Type asum(cuNDArray<T>* x)
   {
     if( x == 0x0 )
-      throw std::runtime_error("Gadgetron::asum(): Invalid input array");;
+      throw std::runtime_error("Gadgetron::asum(): Invalid input array");
     
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     typename realType<T>::Type result;
@@ -197,22 +197,42 @@ namespace Gadgetron{
   template<class T> int amin( cuNDArray<T>* x )
   {
     if( x == 0x0 )
-      throw std::runtime_error("Gadgetron::amin(): Invalid input array");;
+      throw std::runtime_error("Gadgetron::amin(): Invalid input array");
 
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     int result;
+
     CUBLAS_CALL(cublas_amin(cudaDeviceManager::Instance()->getHandle(device),x->get_number_of_elements(),x->get_data_ptr(),1,&result));
+    
+    if( result > x->get_number_of_elements() ){
+      throw std::runtime_error("Gadgetron::amin(): computed index is out of bounds");
+    }
+    
     return result-1;
   }
   
   template<class T> int amax(cuNDArray<T> *x )
   {
     if( x == 0x0 )
-      throw std::runtime_error("Gadgetron::amax(): Invalid input array");;
+      throw std::runtime_error("Gadgetron::amax(): Invalid input array");
 
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     int result;
+
     CUBLAS_CALL(cublas_amax(cudaDeviceManager::Instance()->getHandle(device),x->get_number_of_elements(),x->get_data_ptr(),1,&result));
+
+    if( result > x->get_number_of_elements() ){
+
+      result = amax(x);
+      
+      if( result > x->get_number_of_elements() ){
+	throw std::runtime_error("Gadgetron::amax(): computed index is out of bounds");
+      }
+      else{
+	std::cout << std::endl << "WARNING: spooky inconsistent behaviour from Gadgetron::amax(cuNDArray*). Be aware" << std::endl;
+      }
+    }
+    
     return result-1;
   }
   
