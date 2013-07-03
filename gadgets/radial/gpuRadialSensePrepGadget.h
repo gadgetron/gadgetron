@@ -177,6 +177,7 @@ namespace Gadgetron{
     boost::shared_array< hoNDArray<float_complext> > reg_host_;
     
     boost::shared_array< cuSenseBuffer<float,2> > acc_buffer_;
+    boost::shared_array< cuSenseBufferCg<float,2> > acc_buffer_cg_;
 
     std::vector<unsigned int> fov_;
     std::vector<unsigned int> image_dimensions_;

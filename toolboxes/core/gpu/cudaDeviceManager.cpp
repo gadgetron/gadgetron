@@ -22,7 +22,7 @@ namespace Gadgetron{
       throw cuda_error( "Error: no Cuda devices present.");
     }
 
-    _mutex = boost::shared_array<boost::mutex>(new boost::mutex());
+    _mutex = boost::shared_array<boost::mutex>(new boost::mutex[_num_devices]);
 
     int old_device;
     if( cudaGetDevice(&old_device) != cudaSuccess ) {

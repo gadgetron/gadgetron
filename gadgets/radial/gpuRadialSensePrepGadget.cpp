@@ -260,7 +260,7 @@ namespace Gadgetron{
     //
 
     if( buffer_using_solver_ )
-      acc_buffer_ = boost::shared_array< cuSenseBuffer<float,2> >(new cuSenseBufferCg<float,2>[slices_*sets_]);
+      acc_buffer_cg_ = boost::shared_array< cuSenseBufferCg<float,2> >(new cuSenseBufferCg<float,2>[slices_*sets_]);
     else
       acc_buffer_ = boost::shared_array< cuSenseBuffer<float,2> >(new cuSenseBuffer<float,2>[slices_*sets_]);
     
@@ -295,15 +295,20 @@ namespace Gadgetron{
       return GADGET_OK;
     }
 
+    unsigned int profile = m1->getObjectPtr()->idx.kspace_encode_step_1;
+    unsigned int slice = m1->getObjectPtr()->idx.slice;
+    unsigned int set = m1->getObjectPtr()->idx.set;
+
+    // Get a pointer to the accumulation buffer. 
+    //
+
+    cuSenseBuffer<float,2> *acc_buffer = (buffer_using_solver_) ? &acc_buffer_cg_[set*slices_+slice] : &acc_buffer_[set*slices_+slice];
+
     //GADGET_DEBUG1("gpuRadialSensePrepGadget::process\n");
 
     boost::shared_ptr<GPUTimer> process_timer;
     if( output_timing_ )
       process_timer = boost::shared_ptr<GPUTimer>( new GPUTimer("gpuRadialSensePrepGadget::process()") );
-
-    unsigned int profile = m1->getObjectPtr()->idx.kspace_encode_step_1;
-    unsigned int slice = m1->getObjectPtr()->idx.slice;
-    unsigned int set = m1->getObjectPtr()->idx.set;
 
     // Have the imaging plane changed?
     //
@@ -314,7 +319,7 @@ namespace Gadgetron{
 	!vec_equal(slice_dir_[set*slices_+slice], m1->getObjectPtr()->slice_dir) ){
       
       // Yes indeed, clear the accumulation buffer
-      acc_buffer_[set*slices_+slice].clear();
+      acc_buffer->clear();
       buffer_update_needed_[set*slices_+slice] = true;
       
       memcpy(position_[set*slices_+slice],m1->getObjectPtr()->position,3*sizeof(float));
@@ -414,7 +419,7 @@ namespace Gadgetron{
       long profile_offset = profiles_counter_global_[set*slices_+slice] - ((new_frame_detected) ? 1 : 0);
       boost::shared_ptr< cuNDArray<floatd2> > traj = calculate_trajectory_for_frame(profile_offset, set, slice);
 
-      buffer_update_needed_[set*slices_+slice] |= acc_buffer_[set*slices_+slice].add_frame_data( &samples, traj.get() );
+      buffer_update_needed_[set*slices_+slice] |= acc_buffer->add_frame_data( &samples, traj.get() );
     }
     
     // Are we ready to reconstruct (downstream)?
@@ -437,8 +442,7 @@ namespace Gadgetron{
 	// Get the accumulated coil images
 	//
 
-	boost::shared_ptr< cuNDArray<float_complext> > csm_data 
-	  = acc_buffer_[set*slices_+slice].get_accumulated_coil_images();
+	boost::shared_ptr< cuNDArray<float_complext> > csm_data = acc_buffer->get_accumulated_coil_images();
 
 	if( !csm_data.get() ){
 	  GADGET_DEBUG1("Error during accumulation buffer computation\n");
@@ -455,21 +459,20 @@ namespace Gadgetron{
 	  return GADGET_FAIL;
 	}            
 
+	acc_buffer->set_csm(csm);
 	csm_host_[set*slices_+slice] = *(csm->to_host());
 	
 	// Compute regularization image
 	//
 
 	boost::shared_ptr< cuNDArray<float_complext> > reg_image;
-	acc_buffer_[set*slices_+slice].set_csm(csm);
 	
 	if( buffer_using_solver_ && mode_ == 2 ){
-	  cuSenseBufferCg<float,2> *acc = (cuSenseBufferCg<float,2>*) &acc_buffer_[set*slices_+slice];
-	  acc->preprocess( calculate_trajectory_for_rhs( profiles_counter_global_[set*slices_+slice] - 
-							 ((new_frame_detected) ? 1 : 0), set, slice).get());
+	  ((cuSenseBufferCg<float,2>*)acc_buffer)->preprocess
+	    ( calculate_trajectory_for_rhs( profiles_counter_global_[set*slices_+slice] - ((new_frame_detected) ? 1 : 0), set, slice).get());
 	}
 
-	reg_image = acc_buffer_[set*slices_+slice].get_combined_coil_image();
+	reg_image = acc_buffer->get_combined_coil_image();
 	
 	if( !reg_image.get() ){
 	  GADGET_DEBUG1("Error computing regularization image\n");
@@ -879,19 +882,19 @@ namespace Gadgetron{
       else
 	buffer_frames_per_rotation_[set*slices_+slice] = frames_per_rotation_[set*slices_+slice];
     }
-      
-    acc_buffer_[set*slices_+slice].setup
-      ( from_std_vector<unsigned int,2>(image_dimensions_recon_), image_dimensions_recon_os_, 
-	kernel_width_, num_coils_[set*slices_+slice], 
-	buffer_length_in_rotations_, buffer_frames_per_rotation_[set*slices_+slice] );
+    
+    cuSenseBuffer<float,2> *acc_buffer = (buffer_using_solver_) ? &acc_buffer_cg_[set*slices_+slice] : &acc_buffer_[set*slices_+slice];
+
+    acc_buffer->setup( from_std_vector<unsigned int,2>(image_dimensions_recon_), image_dimensions_recon_os_, 
+		       kernel_width_, num_coils_[set*slices_+slice], 
+		       buffer_length_in_rotations_, buffer_frames_per_rotation_[set*slices_+slice] );
     
     boost::shared_ptr< cuNDArray<float> > device_weights_frame = calculate_density_compensation_for_frame(set, slice);
-    acc_buffer_[set*slices_+slice].set_dcw(device_weights_frame);
+    acc_buffer->set_dcw(device_weights_frame);
 
     if( buffer_using_solver_ ){
-      cuSenseBufferCg<float,2> *acc = (cuSenseBufferCg<float,2>*) &acc_buffer_[set*slices_+slice];
-      acc->set_dcw_for_rhs(calculate_density_compensation_for_rhs(set, slice));
-      acc->preprocess(calculate_trajectory_for_rhs(0, set, slice).get());
+      ((cuSenseBufferCg<float,2>*) acc_buffer)->set_dcw_for_rhs(calculate_density_compensation_for_rhs(set, slice));
+      ((cuSenseBufferCg<float,2>*) acc_buffer)->preprocess(calculate_trajectory_for_rhs(0, set, slice).get());
     }
     
     reconfigure_[set*slices_+slice] = false;
