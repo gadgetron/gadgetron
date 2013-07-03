@@ -25,6 +25,12 @@
     </writer>
 
     <gadget>
+      <name>NoiseAdjust</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>NoiseAdjustGadget_unoptimized</classname>
+    </gadget>
+
+    <gadget>
       <name>gpuRadialSensePrepGadget</name>
       <dll>gadgetron_gpuradial</dll>
       <classname>gpuRadialSensePrepGadget</classname>
