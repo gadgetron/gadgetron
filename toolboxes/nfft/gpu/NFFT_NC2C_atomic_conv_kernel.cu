@@ -23,7 +23,6 @@
 // First the implementation of the inner-most loop
 // 
 
-using namespace Gadgetron;
 template<class REAL, unsigned int D> __inline__ __device__ void
 NFFT_iterate_body( REAL alpha, REAL beta, REAL W, vector_td<unsigned int, D> matrix_size_os, 
 		   unsigned int number_of_batches, complext<REAL> *samples, complext<REAL> *image,

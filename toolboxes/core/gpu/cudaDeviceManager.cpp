@@ -1,5 +1,6 @@
 #include "cudaDeviceManager.h"
 #include "check_CUDA.h"
+#include "cuNDArray_blas.h"
 
 #include <cuda_runtime_api.h>
 #include <stdlib.h>
@@ -11,28 +12,31 @@ namespace Gadgetron{
 
   cudaDeviceManager::cudaDeviceManager() {
 
-    // This function is executed only once
+    // This constructor is executed only once for a singleton
+    //
 
     atexit(&CleanUp);
 
-    if( cudaGetDeviceCount( &num_devices ) != cudaSuccess) {
-      num_devices = 0;
+    if( cudaGetDeviceCount( &_num_devices ) != cudaSuccess) {
+      _num_devices = 0;
       throw cuda_error( "Error: no Cuda devices present.");
     }
+
+    _mutex = boost::shared_array<boost::mutex>(new boost::mutex());
 
     int old_device;
     if( cudaGetDevice(&old_device) != cudaSuccess ) {
       throw std::runtime_error( "Error: unable to get device no");
     }
 
-    _warp_size = std::vector<int>(num_devices,0);
-    _max_blockdim = std::vector<int>(num_devices,0);
-    _max_griddim = std::vector<int>(num_devices,0);
-    _major = std::vector<int>(num_devices,0);
-    _minor = std::vector<int>(num_devices,0);
-    _handle = std::vector<cublasHandle_t>(num_devices, (cublasContext*)0x0);
+    _warp_size = std::vector<int>(_num_devices,0);
+    _max_blockdim = std::vector<int>(_num_devices,0);
+    _max_griddim = std::vector<int>(_num_devices,0);
+    _major = std::vector<int>(_num_devices,0);
+    _minor = std::vector<int>(_num_devices,0);
+    _handle = std::vector<cublasHandle_t>(_num_devices, (cublasContext*)0x0);
 
-    for( int device=0; device<num_devices; device++ ){
+    for( int device=0; device<_num_devices; device++ ){
 
       if( cudaSetDevice(device) != cudaSuccess ) {
 	throw cuda_error( "Error: unable to set device no");
@@ -61,7 +65,7 @@ namespace Gadgetron{
 
     // TODO Auto-generated destructor stub
 
-    for (int device = 0; device < num_devices; device++){
+    for (int device = 0; device < _num_devices; device++){
       if (_handle[device] != NULL)
 	cublasDestroy(_handle[device]);
     }
@@ -142,25 +146,39 @@ namespace Gadgetron{
     return _instance;
   }
 
-  cublasHandle_t cudaDeviceManager::getHandle()
+  cublasHandle_t cudaDeviceManager::lockHandle()
   {
     int device;
     CUDA_CALL(cudaGetDevice(&device));
-    return getHandle(device);
+    return lockHandle(device);
   }
 
-  cublasHandle_t cudaDeviceManager::getHandle(int device)
+  cublasHandle_t cudaDeviceManager::lockHandle(int device)
   {
+    _mutex[device].lock();
     if (_handle[device] == NULL){
       cublasStatus_t ret = cublasCreate(&_handle[device]);
       if (ret != CUBLAS_STATUS_SUCCESS) {
       	std::stringstream ss;
-      	ss <<"Error: unable to create cublas handle for device " << device << " - code : " << ret << std::endl;
+      	ss << "Error: unable to create cublas handle for device " << device << " : ";
+	ss << gadgetron_getCublasErrorString(ret) << std::endl;
       	throw cuda_error(ss.str());
       }
       cublasSetPointerMode( _handle[device], CUBLAS_POINTER_MODE_HOST );
     }
     return _handle[device];
+  }
+
+  void cudaDeviceManager::unlockHandle()
+  {
+    int device;
+    CUDA_CALL(cudaGetDevice(&device));
+    return unlockHandle(device);
+  }
+
+  void cudaDeviceManager::unlockHandle(int device)
+  {
+    _mutex[device].unlock();
   }
 
   int cudaDeviceManager::getCurrentDevice()

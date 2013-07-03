@@ -7,10 +7,17 @@
 
 namespace Gadgetron{
 
-#define CUBLAS_CALL(fun) {cublasStatus_t err = fun; if (err != CUBLAS_STATUS_SUCCESS) {throw cuda_error(getCublasErrorString(err));}}
+#define CUBLAS_CALL(fun) {cublasStatus_t err = fun; if (err != CUBLAS_STATUS_SUCCESS) {throw cuda_error(gadgetron_getCublasErrorString(err));}}
 
   //NRM2
   //
+
+  template<class T> EXPORTGPUCORE cublasStatus_t cublas_axpy(cublasHandle_t hndl, int n, const T* a , const T* x , int incx,  T* y, int incy);
+  template<class T> EXPORTGPUCORE cublasStatus_t cublas_dot(cublasHandle_t, int, const T*, int, const  T*, int, T*, bool cc = true);
+  template<class T> EXPORTGPUCORE cublasStatus_t cublas_nrm2(cublasHandle_t, int, const T*, int, typename realType<T>::Type *result);
+  template<class T> EXPORTGPUCORE cublasStatus_t cublas_amax(cublasHandle_t handle, int n,const T *x, int incx, int *result);
+  template<class T> EXPORTGPUCORE cublasStatus_t cublas_amin(cublasHandle_t handle, int n,const T *x, int incx, int *result);
+  template<class T> EXPORTGPUCORE cublasStatus_t cublas_asum(cublasHandle_t handle, int n,const T *x, int incx, typename realType<T>::Type *result);
 
   template<> EXPORTGPUCORE cublasStatus_t cublas_nrm2<float>(cublasHandle_t hndl, int n, const float*  x, int inc, float* res){
     return cublasSnrm2(hndl,n,x,inc,res);
@@ -140,9 +147,11 @@ namespace Gadgetron{
     typedef typename realType<T>::Type REAL;
     REAL ret;
 
-    CUBLAS_CALL(cublas_nrm2<T>( cudaDeviceManager::Instance()->getHandle(device), arr->get_number_of_elements(),
-				arr->get_data_ptr(), 1,
-				&ret));
+    CUBLAS_CALL(cublas_nrm2<T>( cudaDeviceManager::Instance()->lockHandle(device), 
+				arr->get_number_of_elements(), arr->get_data_ptr(), 1, &ret));
+
+    cudaDeviceManager::Instance()->unlockHandle(device);
+
     return ret;
   }
 
@@ -157,10 +166,11 @@ namespace Gadgetron{
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     T ret;
 
-    CUBLAS_CALL(cublas_dot( cudaDeviceManager::Instance()->getHandle(device), arr1->get_number_of_elements(),
-			    arr1->get_data_ptr(), 1,
-			    arr2->get_data_ptr(), 1,
-			    &ret, cc ));
+    CUBLAS_CALL(cublas_dot( cudaDeviceManager::Instance()->lockHandle(device), arr1->get_number_of_elements(),
+			    arr1->get_data_ptr(), 1, arr2->get_data_ptr(), 1, &ret, cc ));
+
+    cudaDeviceManager::Instance()->unlockHandle(device);
+
     return ret;
   }
 
@@ -173,9 +183,11 @@ namespace Gadgetron{
       throw std::runtime_error("Gadgetron::axpy(): Array sizes mismatch");
 
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
-    CUBLAS_CALL(cublas_axpy(cudaDeviceManager::Instance()->getHandle(device), x->get_number_of_elements(),
-			    &a, x->get_data_ptr(), 1,
-			    y->get_data_ptr(), 1));
+
+    CUBLAS_CALL(cublas_axpy(cudaDeviceManager::Instance()->lockHandle(device), 
+			    x->get_number_of_elements(), &a, x->get_data_ptr(), 1, y->get_data_ptr(), 1));
+
+    cudaDeviceManager::Instance()->unlockHandle(device);
   }
 
   template<class T> void axpy( T a,  cuNDArray< complext<T> > *x, cuNDArray< complext<T> > *y )
@@ -190,7 +202,12 @@ namespace Gadgetron{
     
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     typename realType<T>::Type result;
-    CUBLAS_CALL(cublas_asum(cudaDeviceManager::Instance()->getHandle(device),x->get_number_of_elements(),x->get_data_ptr(),1,&result));
+
+    CUBLAS_CALL(cublas_asum(cudaDeviceManager::Instance()->lockHandle(device),
+			    x->get_number_of_elements(),x->get_data_ptr(),1,&result));
+
+    cudaDeviceManager::Instance()->unlockHandle(device);
+
     return result;
   }
   
@@ -202,7 +219,10 @@ namespace Gadgetron{
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     int result;
 
-    CUBLAS_CALL(cublas_amin(cudaDeviceManager::Instance()->getHandle(device),x->get_number_of_elements(),x->get_data_ptr(),1,&result));
+    CUBLAS_CALL(cublas_amin(cudaDeviceManager::Instance()->lockHandle(device),
+			    x->get_number_of_elements(),x->get_data_ptr(),1,&result));
+
+    cudaDeviceManager::Instance()->unlockHandle(device);
     
     if( result > x->get_number_of_elements() ){
       throw std::runtime_error("Gadgetron::amin(): computed index is out of bounds");
@@ -219,24 +239,19 @@ namespace Gadgetron{
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     int result;
 
-    CUBLAS_CALL(cublas_amax(cudaDeviceManager::Instance()->getHandle(device),x->get_number_of_elements(),x->get_data_ptr(),1,&result));
+    CUBLAS_CALL(cublas_amax(cudaDeviceManager::Instance()->lockHandle(device),
+			    x->get_number_of_elements(),x->get_data_ptr(),1,&result));
 
+    cudaDeviceManager::Instance()->unlockHandle(device);
+    
     if( result > x->get_number_of_elements() ){
-
-      result = amax(x);
-      
-      if( result > x->get_number_of_elements() ){
-	throw std::runtime_error("Gadgetron::amax(): computed index is out of bounds");
-      }
-      else{
-	std::cout << std::endl << "WARNING: spooky inconsistent behaviour from Gadgetron::amax(cuNDArray*). Be aware" << std::endl;
-      }
+      throw std::runtime_error("Gadgetron::amax(): computed index is out of bounds");
     }
     
     return result-1;
   }
   
-  std::string getCublasErrorString(cublasStatus_t err)
+  std::string gadgetron_getCublasErrorString(cublasStatus_t err)
   {
     switch (err){
     case CUBLAS_STATUS_NOT_INITIALIZED:
