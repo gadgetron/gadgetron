@@ -56,7 +56,26 @@
     <name>gpuSbSenseGadget</name>
     <dll>gadgetron_gpusense</dll>
     <classname>gpuSbSenseGadget</classname>
+    <property><name>pass_on_undesired_data</name>  <value>true</value></property>
     <property><name>deviceno</name>                <value>0</value></property>
+    <property><name>setno</name>                   <value>0</value></property>
+    <property><name>number_of_cg_iterations</name> <value>10</value></property>
+    <property><name>number_of_sb_iterations</name> <value>10</value></property>
+    <property><name>cg_limit</name>                <value>1e-6</value></property>
+    <property><name>oversampling_factor</name>     <value>1.25</value></property>
+    <property><name>kernel_width</name>            <value>5.5</value></property>
+    <property><name>mu</name>                      <value>1.0</value></property>
+    <property><name>lambda</name>                  <value>2.0</value></property>
+    <property><name>alpha</name>                   <value>0.5</value></property>
+  </gadget>
+
+  <gadget>
+    <name>gpuSbSenseGadget</name>
+    <dll>gadgetron_gpusense</dll>
+    <classname>gpuSbSenseGadget</classname>
+    <property><name>pass_on_undesired_data</name>  <value>true</value></property>
+    <property><name>deviceno</name>                <value>0</value></property>
+    <property><name>setno</name>                   <value>1</value></property>
     <property><name>number_of_cg_iterations</name> <value>10</value></property>
     <property><name>number_of_sb_iterations</name> <value>10</value></property>
     <property><name>cg_limit</name>                <value>1e-6</value></property>
