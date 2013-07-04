@@ -21,7 +21,6 @@ namespace Gadgetron{
     : samples_to_skip_start_(0)
     , samples_to_skip_end_(0)
     , samples_per_interleave_(0)
-    , image_series_(0)
     , prepared_(false)
     , use_multiframe_grouping_(false)
     , acceleration_factor_(0)
@@ -459,7 +458,7 @@ namespace Gadgetron{
 
 	m3->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
 	m3->getObjectPtr()->image_index = image_counter_[set*slices_+slice]++;
-	m3->getObjectPtr()->image_series_index = image_series_;
+	m3->getObjectPtr()->image_series_index = set*slices_+slice;
 
 	if (this->next()->putq(m3) < 0) {
 	  GADGET_DEBUG1("Failed to put job on queue.\n");

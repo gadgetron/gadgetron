@@ -131,7 +131,6 @@ namespace Gadgetron{
     int sets_;
     int device_number_;
     int mode_; // See note above
-    int image_series_;
     long samples_per_profile_;
 
     boost::shared_array<long> image_counter_;

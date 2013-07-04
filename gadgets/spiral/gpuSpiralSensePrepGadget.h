@@ -44,7 +44,6 @@ namespace Gadgetron{
     int slices_;
     int sets_;
     boost::shared_array<long> image_counter_;
-    int image_series_;
     int device_number_;
 
     long    Tsamp_ns_;

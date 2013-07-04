@@ -20,7 +20,6 @@ namespace Gadgetron{
   gpuRadialSensePrepGadget::gpuRadialSensePrepGadget()
     : slices_(-1)
     , sets_(-1)
-    , image_series_(0)
     , device_number_(-1)
     , mode_(-1)
     , samples_per_profile_(-1)
@@ -546,7 +545,7 @@ namespace Gadgetron{
 
       m3->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
       m3->getObjectPtr()->image_index = image_counter_[set*slices_+slice]++; 
-      m3->getObjectPtr()->image_series_index = image_series_;
+      m3->getObjectPtr()->image_series_index = set*slices_+slice;
 
       //GADGET_DEBUG1("Putting job on queue\n");
       
