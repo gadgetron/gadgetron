@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+using namespace Gadgetron;
+
 OctaveCommunicator* OctaveCommunicator::instance()
 {
   if (!instance_) instance_ = new OctaveCommunicator();

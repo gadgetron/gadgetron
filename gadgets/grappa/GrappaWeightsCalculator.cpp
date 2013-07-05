@@ -1,7 +1,6 @@
 #include "cuNDFFT.h"
 #include "GrappaWeightsCalculator.h"
 #include "GadgetContainerMessage.h"
-
 #include "GadgetIsmrmrdReadWrite.h"
 #include "Gadgetron.h"
 #include "b1_map.h"
@@ -9,7 +8,10 @@
 #include "htgrappa.h"
 #include "GPUTimer.h"
 #include "complext.h"
+
 #include <cuComplex.h>
+
+namespace Gadgetron{
 
 template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsDescription
 {
@@ -64,7 +66,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 		device_data.squeeze();
 
 		std::vector<unsigned int> ftdims(2,0); ftdims[1] = 1;
-		cuNDFFT<float_complext> ft;
+		cuNDFFT<float> ft;
 
 		//Go to image space
 		ft.ifft( &device_data, &ftdims);
@@ -87,8 +89,9 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 			data_dimensions->push_back(uncombined_channels_.size()+1);
 		}
 
-		if (!unmixing_dev.create(data_dimensions.get())) {
-			GADGET_DEBUG1("Unable to allocate device memory for unmixing coeffcients\n");
+		try{unmixing_dev.create(data_dimensions.get());}
+		catch (std::runtime_error &err){
+			GADGET_DEBUG_EXCEPTION(err,"Unable to allocate device memory for unmixing coeffcients\n");
 			return GADGET_FAIL;
 		}
 
@@ -117,9 +120,12 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 			//TODO: This reshaping needs to take uncombined channels into account
 			boost::shared_ptr< std::vector<unsigned int> > tmp_dims = mb2->getObjectPtr()->get_dimensions();
 			if (uncombined_channels_.size()) tmp_dims->push_back(uncombined_channels_.size()+1);
-			if (unmixing_host->reshape(tmp_dims.get()) < 0) {
-				GADGET_DEBUG1("Failed to reshape GRAPPA weights\n");
-				return GADGET_FAIL;
+
+			try {
+				unmixing_host->reshape(tmp_dims.get());
+			} catch (std::runtime_error &err){
+				GADGET_DEBUG_EXCEPTION( err, "Reshaping of GRAPPA weights failed \n" );
+
 			}
 
 			if (mb1->getObjectPtr()->destination->update(reinterpret_cast<hoNDArray<std::complex<float> >* >(unmixing_host.get())) < 0) {
@@ -200,7 +206,8 @@ add_job( hoNDArray< std::complex<T> >* ref_data,
 
 	mb1->cont(mb2);
 
-	if (!mb2->getObjectPtr()->create(ref_data->get_dimensions().get())) {
+	try{mb2->getObjectPtr()->create(ref_data->get_dimensions().get());}
+	catch (std::runtime_error &err ){
 		mb1->release();
 		return -3;
 	}
@@ -233,3 +240,4 @@ template class EXPORTGADGETSGRAPPA GrappaWeightsCalculator<float>;
 //template class EXPORTGADGETSGRAPPA GrappaWeightsCalculator<double>; //TOFO
 //template class EXPORTGADGETSGRAPPA GrappaWeightsDescription<double>;
 
+}

@@ -1,16 +1,16 @@
+#include "GadgetServerAcceptor.h"
+#include "FileInfo.h"
+#include "url_encode.h"
+#include "gadgetron.hxx" //Generated header file for XML configuration
+
 #include <ace/Log_Msg.h>
 #include <ace/Service_Config.h>
 #include <ace/Reactor.h>
 #include <ace/Get_Opt.h>
 #include <ace/OS_NS_string.h>
-
-#include "GadgetServerAcceptor.h"
-#include "FileInfo.h"
-
-#include "gadgetron.hxx" //Generated header file for XML configuration
 #include <iostream>
 
-#include "url_encode.h"
+using namespace Gadgetron;
 
 void print_usage()
 {

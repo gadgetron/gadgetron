@@ -1,5 +1,6 @@
 #include "OctaveGadget.h"
 
+namespace Gadgetron {
 
  int AcquisitionOctaveGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 	      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
@@ -227,3 +228,5 @@
 
 GADGET_FACTORY_DECLARE(AcquisitionOctaveGadget)
 GADGET_FACTORY_DECLARE(ImageOctaveGadget)
+
+}

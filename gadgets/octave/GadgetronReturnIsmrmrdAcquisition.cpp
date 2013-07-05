@@ -5,7 +5,9 @@
 #include "ismrmrd.h"
 #include "hoNDArray.h"
 #include "OctaveCommunicator.h"
-     
+
+using namespace Gadgetron;
+
 DEFUN_DLD (GadgetronReturnIsmrmrdAcquisition, args, nargout,
 	   "GadgetronReturnIsmrmrdAcquisition Returns Acquisition to the Gadgetron")
 {
@@ -117,9 +119,11 @@ DEFUN_DLD (GadgetronReturnIsmrmrdAcquisition, args, nargout,
     	dims.push_back(d.dims()(i));
     }
 
-    if (!m2->getObjectPtr()->create(&dims)) {
-    	GADGET_DEBUG1("Failed to allocate return array\n");
-    	m1->release();
+    try {
+        m2->getObjectPtr()->create(&dims);
+    } catch (...) {
+        GADGET_DEBUG1("Failed to allocate return array\n");
+        m1->release();
     }
 
     memcpy(m2->getObjectPtr()->get_data_ptr(), &d(0), sizeof(float)*2*d.nelem());

@@ -5,29 +5,29 @@
          
     <reader>
       <slot>1008</slot>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
     </reader>
 
     <writer>
       <slot>1004</slot>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>MRIImageWriterCPLX</classname>
     </writer>
     <writer>
       <slot>1005</slot>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>MRIImageWriterFLOAT</classname>
     </writer>
     <writer>
       <slot>1006</slot>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>MRIImageWriterUSHORT</classname>
     </writer>
 
     <gadget>
       <name>RemoveOversamplingPython</name>
-      <dll>gadgetronpython</dll>
+      <dll>gadgetron_python</dll>
       <classname>AcquisitionPythonGadget</classname>
       <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
       <property><name>python_module</name>                <value>remove_2x_oversampling</value></property>
@@ -38,7 +38,7 @@
 
     <gadget>
       <name>AccReconPython</name>
-      <dll>gadgetronpython</dll>
+      <dll>gadgetron_python</dll>
       <classname>AcquisitionPythonGadget</classname>
       <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
       <property><name>python_module</name>                <value>accumulate_and_recon</value></property>
@@ -49,7 +49,7 @@
 
     <gadget>
       <name>CoilCombinePython</name>
-      <dll>gadgetronpython</dll>
+      <dll>gadgetron_python</dll>
       <classname>ImagePythonGadget</classname>
       <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
       <property><name>python_module</name>                <value>rms_coil_combine</value></property>
@@ -61,7 +61,7 @@
     <!--
     <gadget>
       <name>ImageViewPython</name>
-      <dll>gadgetronpython</dll>
+      <dll>gadgetron_python</dll>
       <classname>ImagePythonGadget</classname>
       <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
       <property><name>python_module</name>                <value>image_viewer</value></property>
@@ -73,25 +73,25 @@
 
      <gadget>
       <name>Extract</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>ExtractGadget</classname>
      </gadget>
 
      <gadget>
       <name>Autoscale</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>AutoScaleGadget</classname>
      </gadget>
     
      <gadget>
       <name>FloatToShort</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>FloatToUShortGadget</classname>
     </gadget>
   
     <gadget>
       <name>ImageFinishUSHORT</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>ImageFinishGadgetUSHORT</classname>
     </gadget>
 

@@ -1,11 +1,12 @@
 #pragma once
 
-#include <ace/Task.h>
-
-#include "gadgetrongrappa_export.h"
+#include "gadgetron_grappa_export.h"
 #include "GrappaWeights.h"
 
+#include <ace/Task.h>
 #include <list>
+
+namespace Gadgetron{
 
 template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsCalculator : public ACE_Task<ACE_MT_SYNCH>
 {
@@ -61,3 +62,4 @@ template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsCalculator : public AC
   std::list<unsigned int> uncombined_channels_;
   int target_coils_;
 };
+}

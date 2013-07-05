@@ -2,16 +2,18 @@
   Example code to blur an image and generate input data for the deblurring apps.
 */
 
-#include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
+#include "cuNDArray_operators.h"
+#include "cuNDArray_elemwise.h"
+#include "cuNDArray_blas.h"
 #include "parameterparser.h"
 #include "cuConvolutionOperator.h"
-#include "ndarray_vector_td_utilities.h"
 
 #include <iostream>
 #include <math.h>
 
 using namespace std;
+using namespace Gadgetron;
 
 // Define desired precision
 typedef float _real; 
@@ -57,8 +59,8 @@ int main( int argc, char** argv)
     
   // Upload host image to device, normalize, and convert to complex type
   cuNDArray<_real> _image(&host_image);
-  cuNDA_normalize( &_image, _real(1) );
-  boost::shared_ptr< cuNDArray<_complext> > image = cuNDA_real_to_complext<_real>( &_image );
+  normalize( &_image, _real(1) );
+  boost::shared_ptr< cuNDArray<_complext> > image = real_to_complex<_complext>( &_image );
   
   // Setup resulting blurred image
   cuNDArray<_complext> blurred_image; 
@@ -79,11 +81,11 @@ int main( int argc, char** argv)
   }
 
   cuNDArray<_real> _kernel(&host_kernel);
-  boost::shared_ptr< cuNDArray<_complext> > kernel = cuNDA_real_to_complext<_real>( &_kernel );
+  boost::shared_ptr< cuNDArray<_complext> > kernel = real_to_complex<_complext>( &_kernel );
 
   // Normalize kernel
-  _real scale = cuNDA_asum<_real>(kernel.get());
-  cuNDA_scal<_real>( 1.0/scale, kernel.get() );
+  _real scale = asum(kernel.get());
+  *kernel /= scale;
 
   // Create convolution operator and assign kernel
   cuConvolutionOperator<_real,2> conv;
@@ -99,7 +101,7 @@ int main( int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > blurred_image_host = blurred_image.to_host();
   write_nd_array<_complext>( blurred_image_host.get(), (char*)parms.get_parameter('r')->get_string_value());
 
-  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_cAbs<_real,_complext>(&blurred_image)->to_host();
+  boost::shared_ptr< hoNDArray<_real> > host_norm = abs(&blurred_image)->to_host();
   write_nd_array<_real>( host_norm.get(), "blurred_image.real" );
 
   boost::shared_ptr< hoNDArray<_complext> > kernel_image_host = kernel->to_host();

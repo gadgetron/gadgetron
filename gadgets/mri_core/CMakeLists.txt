@@ -1,30 +1,82 @@
 IF (WIN32)
-	ADD_DEFINITIONS(-DTIXML_USE_STL)
-	ADD_DEFINITIONS(-D__BUILD_GADGETRON_MRICORE__)
-	ADD_DEFINITIONS(-D__BUILD_GADGETS__)
+  ADD_DEFINITIONS(-D__BUILD_GADGETRON_MRICORE__)
 ENDIF (WIN32)
 
 find_package(Ismrmrd REQUIRED)
+find_package(XSD REQUIRED)
+find_package(XercesC REQUIRED)
 
-include_directories(   ${ACE_INCLUDE_DIR} 
-				       ${Boost_INCLUDE_DIR}
-				       ${FFTW3_INCLUDE_DIR}
-				       ${ISMRMRD_INCLUDE_DIR}
-					   ${XSD_INCLUDE_DIR}
-					   ${CMAKE_SOURCE_DIR}/dependencies/tinyxml
-				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
-				       ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
-				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-				       ${CMAKE_SOURCE_DIR}/toolboxes/linalg
-				       ${CMAKE_SOURCE_DIR}/gadgets/core
-				       ${CMAKE_SOURCE_DIR}/toolboxes/hostutils
-				       ${CMAKE_SOURCE_DIR}/toolboxes/gpucore)
+include_directories(
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+  ${ARMADILLO_INCLUDE_DIRS}
+)
 
-add_library(gadgetronmricore SHARED MRINoiseAdjustGadget.cpp PCACoilGadget.cpp)
+if (ARMADILLO_FOUND)
+  list(APPEND OPTIMIZED_GADGETS NoiseAdjustGadget.cpp)
+  list(APPEND OPTIMIZED_GADGETS PCACoilGadget.cpp)
+  list(APPEND OPTIMIZED_GADGET_HEADERS NoiseAdjustGadget.h)
+  list(APPEND OPTIMIZED_GADGET_HEADERS PCACoilGadget.h)
+  list(APPEND OPTIMIZED_GADGET_LIBS ${ARMADILLO_LIBRARIES})
+elseif (ARMADILLO_FOUND)
+  MESSAGE("Armadillo not found, i.e. not compiling Blas/Lapack optimized MRI Gadgets")
+endif (ARMADILLO_FOUND)
 
-target_link_libraries(gadgetronmricore tinyxml cpucore linalg ${ISMRMRD_LIBRARIES}  ${ISMRMRD_XSD_LIBRARIES} ${FFTW3_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
-install (FILES MRINoiseAdjustGadget.h PCACoilGadget.h DESTINATION include)
+add_library(gadgetron_mricore SHARED 
+  AcquisitionPassthroughGadget.cpp
+  AcquisitionFinishGadget.cpp 
+  AccumulatorGadget.cpp
+  FFTGadget.cpp
+  ImageFinishGadget.cpp
+  CropAndCombineGadget.cpp
+  ImageWriterGadget.cpp
+  MRIImageWriter.cpp
+  NoiseAdjustGadget_unoptimized.cpp
+  ExtractGadget.cpp
+  FloatToUShortGadget.cpp
+  RemoveROOversamplingGadget.cpp
+  CoilReductionGadget.cpp
+  AutoScaleGadget.cpp
+  FlowPhaseSubtractionGadget.cpp
+  GadgetIsmrmrdReadWrite.cpp
+  ${OPTIMIZED_GADGETS}
+  ${ISMRMRD_XSD_SOURCE}
+  )
 
-install(TARGETS gadgetronmricore DESTINATION lib)
-install(FILES default_optimized.xml radial_single_optimized.xml radial_single_fixed_optimized.xml radial_ms_optimized.xml DESTINATION config)
+target_link_libraries(gadgetron_mricore 
+  cpucore cpucore_math 
+  ${ISMRMRD_LIBRARIES} 
+  ${FFTW3_LIBRARIES} 
+  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
+  ${BOOST_LIBRARIES}
+  ${XERCESC_LIBRARIES} 
+  ${OPTIMIZED_GADGET_LIBS}
+  )
+
+install(FILES 
+  AccumulatorGadget.h
+  AcquisitionFinishGadget.h
+  AcquisitionPassthroughGadget.h
+  CropAndCombineGadget.h	
+  ExtractGadget.h
+  FloatToUShortGadget.h
+  FFTGadget.h
+  GadgetMRIHeaders.h
+  ImageFinishGadget.h
+  ImageWriterGadget.h
+  MRIImageWriter.h
+  NoiseAdjustGadget.h
+  RemoveROOversamplingGadget.h
+  CoilReductionGadget.h
+  AutoScaleGadget.h
+  FlowPhaseSubtractionGadget.h
+  GadgetIsmrmrdReadWrite.h
+  gadgetron_mricore_export.h
+  ${OPTIMIZED_GADGET_HEADERS}
+  DESTINATION include)
+
+if (ARMADILLO_FOUND)
+  install(FILES default.xml default_short.xml default_optimized.xml DESTINATION config)
+endif (ARMADILLO_FOUND)
+
+install(TARGETS gadgetron_mricore DESTINATION lib)

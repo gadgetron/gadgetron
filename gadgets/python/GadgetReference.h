@@ -1,33 +1,33 @@
 #pragma once
 
 #include "Gadget.h"
-#include "../core/GadgetMRIHeaders.h"
-
-
-#include <boost/python.hpp>
-#include <boost/python/numeric.hpp>
-#include <boost/python/tuple.hpp>
+#include "GadgetMRIHeaders.h"
 #include "gadgetronpython_export.h"
-#include "ismrmrd.h"
 
-class EXPORTGADGETSPYTHON GadgetReference
-{
+#include <ismrmrd.h>
+#include <boost/python.hpp>
+#include <boost/python/tuple.hpp>
 
- public:
-  GadgetReference();
-  ~GadgetReference();
-  
-  int set_gadget(Gadget* g)
+namespace Gadgetron{
+
+  class EXPORTGADGETSPYTHON GadgetReference
   {
-    gadget_ = g;
-    return 0;
-  }
-
-  template<class T> int return_data(T header, boost::python::numeric::array arr);
-  int return_acquisition(ISMRMRD::AcquisitionHeader acq, boost::python::numeric::array arr);
-  int return_image(ISMRMRD::ImageHeader img, boost::python::numeric::array arr);
-
- protected:
-  Gadget* gadget_;
-
-};
+  
+  public:
+    GadgetReference();
+    ~GadgetReference();
+  
+    int set_gadget(Gadget* g)
+    {
+      gadget_ = g;
+      return 0;
+    }
+  
+    template<class T> int return_data(T header, boost::python::object arr);
+    int return_acquisition(ISMRMRD::AcquisitionHeader acq, boost::python::object arr);
+    int return_image(ISMRMRD::ImageHeader img, boost::python::object arr);
+  
+  protected:
+    Gadget* gadget_;  
+  };
+}

@@ -7,7 +7,9 @@
 
 #include "GadgetIsmrmrdReadWrite.h"
 #include "GrappaUnmixingGadget.h"
-#include "FFT.h"
+#include "hoNDFFT.h"
+
+namespace Gadgetron{
 
 GrappaUnmixingGadget::GrappaUnmixingGadget() {
 	// TODO Auto-generated constructor stub
@@ -33,17 +35,18 @@ int GrappaUnmixingGadget::process(GadgetContainerMessage<GrappaUnmixingJob>* m1,
 		combined_dims.push_back(m2->getObjectPtr()->channels);
 	}
 
-	if (!cm2->getObjectPtr()->create(&combined_dims)) {
-		GADGET_DEBUG1("Unable to create combined image array\n");
+	try{cm2->getObjectPtr()->create(&combined_dims);}
+	catch (std::runtime_error &err ){
+		GADGET_DEBUG_EXCEPTION(err,"Unable to create combined image array\n");
 		return GADGET_FAIL;
 	}
 
 	m1->cont(0);
 	m2->cont(cm2);
 
-	FFT<float>::instance()->ifft(m3->getObjectPtr(),0);
-	FFT<float>::instance()->ifft(m3->getObjectPtr(),1);
-	FFT<float>::instance()->ifft(m3->getObjectPtr(),2);
+	hoNDFFT<float>::instance()->ifft(m3->getObjectPtr(),0);
+	hoNDFFT<float>::instance()->ifft(m3->getObjectPtr(),1);
+	hoNDFFT<float>::instance()->ifft(m3->getObjectPtr(),2);
 
 	if (!m1->getObjectPtr()->weights_) {
 		GADGET_DEBUG1("Weights are a NULL\n");
@@ -69,3 +72,4 @@ int GrappaUnmixingGadget::process(GadgetContainerMessage<GrappaUnmixingJob>* m1,
 }
 
 GADGET_FACTORY_DECLARE(GrappaUnmixingGadget)
+}

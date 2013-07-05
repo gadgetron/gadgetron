@@ -1,11 +1,12 @@
 #pragma once 
 
-#include <ace/Synch.h>
+#include "gadgetron_grappa_export.h"
+#include "hoNDArray.h"
 
+#include <ace/Synch.h>
 #include <complex>
 
-#include "gadgetrongrappa_export.h"
-#include "hoNDArray.h"
+namespace Gadgetron{
 
 template <class T> class EXPORTGADGETSGRAPPA GrappaWeights
 {
@@ -33,3 +34,4 @@ template <class T> class EXPORTGADGETSGRAPPA GrappaWeights
   hoNDArray< std::complex<T> > weights_;
 
 };
+}

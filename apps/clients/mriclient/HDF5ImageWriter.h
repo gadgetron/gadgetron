@@ -12,6 +12,7 @@
 #include "ismrmrd_hdf5.h"
 #include <sstream>
 
+namespace Gadgetron{
 template <typename T> class HDF5ImageWriter : public ImageWriter<T>
 {
 
@@ -61,5 +62,5 @@ protected:
 	ISMRMRD::IsmrmrdDataset dataset_;
 };
 
-
+}
 #endif /* HDF5IMAGEWRITER_H_ */

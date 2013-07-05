@@ -5,30 +5,29 @@
         
     <reader>
       <slot>1008</slot>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
     </reader>
   
     <writer>
       <slot>1004</slot>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>MRIImageWriterCPLX</classname>
     </writer>
     <writer>
       <slot>1005</slot>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>MRIImageWriterFLOAT</classname>
     </writer>
     <writer>
       <slot>1006</slot>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>MRIImageWriterUSHORT</classname>
     </writer>
-  
-  
+    
     <gadget>
       <name>OctaveDownsample</name>
-      <dll>gadgetronoctave</dll>
+      <dll>gadgetron_octave</dll>
       <classname>AcquisitionOctaveGadget</classname>
       <!--
    	  <property><name>path</name>                  <value>/home/myuser/scripts/python</value></property>
@@ -40,7 +39,7 @@
 
     <gadget>
       <name>OctaveAccumulate</name>
-      <dll>gadgetronoctave</dll>
+      <dll>gadgetron_octave</dll>
       <classname>AcquisitionOctaveGadget</classname>
       <!--
    	  <property><name>path</name>                  <value>/home/myuser/scripts/python</value></property>
@@ -53,28 +52,32 @@
     <!--
     <gadget>
       <name>Acc</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>AccumulatorGadget</classname>
     </gadget>
+
     <gadget>
       <name>FFT</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>FFTGadget</classname>
     </gadget>
+
     <gadget>
       <name>CropCombine</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>CropAndCombineGadget</classname>
     </gadget>
     -->
+
     <gadget>
       <name>Extract</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>ExtractGadget</classname>
     </gadget>  
+  
     <gadget>
       <name>ImageFinishFLOAT</name>
-      <dll>gadgetroncore</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>ImageFinishGadgetFLOAT</classname>
     </gadget>
 

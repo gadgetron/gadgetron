@@ -4,6 +4,7 @@
 #include "ace/SOCK_Acceptor.h"
 #include "ace/Reactor.h"
 
+namespace Gadgetron{
 class GadgetServerAcceptor : public ACE_Event_Handler
 {
 public:
@@ -21,5 +22,5 @@ public:
 protected:
   ACE_SOCK_Acceptor acceptor_;
 };
-
+}
 #endif //_GADGETSERVERACCEPTOR_H

@@ -1,34 +1,36 @@
+IF (WIN32)
+  ADD_DEFINITIONS(-D__BUILD_GADGETRON_PYTHON__)
+ENDIF (WIN32)
 
-add_definitions(-DNPY_NO_DEPRECATED_API)
+# TODO: The Gadgetron Python code uses Numpy C-API code
+# from Numpy versions < 1.7. If Numpy version is >= 1.7
+# you will get compiler warnings
+#add_definitions(-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
 
 find_package(Ismrmrd REQUIRED)
 
-include_directories(   ${ACE_INCLUDE_DIR} 
-				       ${PYTHON_INCLUDE_PATH}
-				       ${PYTHON_NUMPY_INCLUDE_DIR}
-				       ${Boost_INCLUDE_DIR} 
-				       ${ISMRMRD_INCLUDE_DIR}
-				       ${CMAKE_SOURCE_DIR}/apps/gadgetron 
-				       ${CMAKE_SOURCE_DIR}/toolboxes/cpucore
-				       ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools)
+include_directories(
+  ${CMAKE_SOURCE_DIR}/gadgets/mri_core
+  ${PYTHON_INCLUDE_PATH}
+  ${PYTHON_NUMPY_INCLUDE_DIR}
+  )
 
 add_library(GadgetronPythonMRI MODULE GadgetronPythonMRI.cpp GadgetReference.cpp)
 
-
-add_library(gadgetronpython SHARED       		
+add_library(gadgetron_python SHARED       		
 	PythonGadget.cpp
 	GadgetReference.cpp
 	GadgetronPythonMRI.cpp
 	PythonCommunicator.cpp)
 
-target_link_libraries(gadgetronpython tinyxml
+target_link_libraries(gadgetron_python
 	${ISMRMRD_LIBRARIES} 
 	optimized ${ACE_LIBRARIES}  
 	debug ${ACE_DEBUG_LIBRARY} 
 	${PYTHON_LIBRARIES}
 	${Boost_LIBRARIES})
 	
-target_link_libraries(GadgetronPythonMRI tinyxml 
+target_link_libraries(GadgetronPythonMRI
 	optimized ${ACE_LIBRARIES}  
 	debug ${ACE_DEBUG_LIBRARY} 
 	${PYTHON_LIBRARIES} 
@@ -36,12 +38,12 @@ target_link_libraries(GadgetronPythonMRI tinyxml
 
 IF (WIN32)
     SET_TARGET_PROPERTIES(GadgetronPythonMRI PROPERTIES SUFFIX .pyd)
-	SET_TARGET_PROPERTIES(gadgetronpython PROPERTIES LINK_FLAGS "/LIBPATH:${PYTHON_INCLUDE_DIR}/../libs" )
+	SET_TARGET_PROPERTIES(gadgetron_python PROPERTIES LINK_FLAGS "/LIBPATH:${PYTHON_INCLUDE_DIR}/../libs" )
 ENDIF(WIN32)
 
 set_target_properties(GadgetronPythonMRI PROPERTIES PREFIX "")
 	
-install(TARGETS gadgetronpython GadgetronPythonMRI DESTINATION lib)
+install(TARGETS gadgetron_python GadgetronPythonMRI DESTINATION lib)
 
 install(FILES 
 	rms_coil_combine.py

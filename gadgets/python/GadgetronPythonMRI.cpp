@@ -1,9 +1,10 @@
-#include <boost/python.hpp>
-#include <numpy/arrayobject.h>
-
-#include "../core/GadgetMRIHeaders.h"
 #include "GadgetReference.h"
-#include "ismrmrd.h"
+#include <boost/python.hpp>
+//#include <numpy/arrayobject.h>
+
+#include "../mri_core/GadgetMRIHeaders.h"
+
+#include <ismrmrd.h>
 
 using namespace boost::python;
 
@@ -403,9 +404,9 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
 			.def_readwrite("image_series_index", &ISMRMRD::ImageHeader::image_series_index)
 			;
 
-	class_<GadgetReference>("GadgetReference")
-    		.def("return_acquisition", &GadgetReference::return_data<ISMRMRD::AcquisitionHeader>)
-    		.def("return_image", &GadgetReference::return_data<ISMRMRD::ImageHeader>)
+	class_<Gadgetron::GadgetReference>("GadgetReference")
+    		.def("return_acquisition", &Gadgetron::GadgetReference::return_data<ISMRMRD::AcquisitionHeader>)
+    		.def("return_image", &Gadgetron::GadgetReference::return_data<ISMRMRD::ImageHeader>)
 
     		;
 
@@ -423,19 +424,19 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
 				  .value("TYPE_IMAG",ISMRMRD::TYPE_IMAG)
 				  ;
 
-	enum_<GadgetMessageID>("GadgetMessageID")
-				  .value("GADGET_MESSAGE_EXT_ID_MIN",GADGET_MESSAGE_EXT_ID_MIN)
-				  .value("GADGET_MESSAGE_ACQUISITION",GADGET_MESSAGE_ACQUISITION)
-				  .value("GADGET_MESSAGE_NEW_MEASUREMENT",GADGET_MESSAGE_NEW_MEASUREMENT)
-				  .value("GADGET_MESSAGE_END_OF_SCAN",GADGET_MESSAGE_END_OF_SCAN)
-				  .value("GADGET_MESSAGE_IMAGE_CPLX_FLOAT",GADGET_MESSAGE_IMAGE_CPLX_FLOAT)
-				  .value("GADGET_MESSAGE_IMAGE_REAL_FLOAT",GADGET_MESSAGE_IMAGE_REAL_FLOAT)
-				  .value("GADGET_MESSAGE_IMAGE_REAL_USHORT",GADGET_MESSAGE_IMAGE_REAL_USHORT)
-				  .value("GADGET_MESSAGE_ISMRMRD_ACQUISITION", GADGET_MESSAGE_ISMRMRD_ACQUISITION)
-				  .value("GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT", GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT)
-				  .value("GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT", GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT)
-				  .value("GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT", GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT)
-				  .value("GADGET_MESSAGE_EMPTY",GADGET_MESSAGE_EMPTY)
-				  .value("GADGET_MESSAGE_EXT_ID_MAX",GADGET_MESSAGE_EXT_ID_MAX)
+	enum_<Gadgetron::GadgetMessageID>("GadgetMessageID")
+				  .value("GADGET_MESSAGE_EXT_ID_MIN",Gadgetron::GADGET_MESSAGE_EXT_ID_MIN)
+				  .value("GADGET_MESSAGE_ACQUISITION",Gadgetron::GADGET_MESSAGE_ACQUISITION)
+				  .value("GADGET_MESSAGE_NEW_MEASUREMENT",Gadgetron::GADGET_MESSAGE_NEW_MEASUREMENT)
+				  .value("GADGET_MESSAGE_END_OF_SCAN",Gadgetron::GADGET_MESSAGE_END_OF_SCAN)
+				  .value("GADGET_MESSAGE_IMAGE_CPLX_FLOAT",Gadgetron::GADGET_MESSAGE_IMAGE_CPLX_FLOAT)
+				  .value("GADGET_MESSAGE_IMAGE_REAL_FLOAT",Gadgetron::GADGET_MESSAGE_IMAGE_REAL_FLOAT)
+				  .value("GADGET_MESSAGE_IMAGE_REAL_USHORT",Gadgetron::GADGET_MESSAGE_IMAGE_REAL_USHORT)
+				  .value("GADGET_MESSAGE_ISMRMRD_ACQUISITION", Gadgetron::GADGET_MESSAGE_ISMRMRD_ACQUISITION)
+				  .value("GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT", Gadgetron::GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT)
+				  .value("GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT", Gadgetron::GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT)
+				  .value("GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT", Gadgetron::GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT)
+				  .value("GADGET_MESSAGE_EMPTY",Gadgetron::GADGET_MESSAGE_EMPTY)
+				  .value("GADGET_MESSAGE_EXT_ID_MAX",Gadgetron::GADGET_MESSAGE_EXT_ID_MAX)
 				  ;
 }

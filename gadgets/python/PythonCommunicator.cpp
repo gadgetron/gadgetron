@@ -1,9 +1,13 @@
 #include "PythonCommunicator.h"
-#include "../core/GadgetMRIHeaders.h"
+#include "../mri_core/GadgetMRIHeaders.h"
+
+#include <numpy/numpyconfig.h>
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <numpy/arrayobject.h>
 #include <boost/algorithm/string.hpp>
-#include "ismrmrd.h"
+#include <ismrmrd.h>
 
+namespace Gadgetron{
 PythonCommunicator::PythonCommunicator()
 {
 	Py_Initialize();
@@ -94,7 +98,6 @@ int PythonCommunicator::registerGadget(Gadget* g, std::string mod,
 			gadget_ref_[g] = boost::shared_ptr<GadgetReference>(new GadgetReference());
 			gadget_ref_[g]->set_gadget(g);
 			gadget_ref_fnc_[g](*gadget_ref_[g].get());
-
 		}
 
 		if (conf.size() != 0) {
@@ -130,7 +133,7 @@ int PythonCommunicator::processConfig(Gadget* g, ACE_Message_Block* mb)
 	if (it != config_fnc_.end()) {
 		gstate = PyGILState_Ensure();
 		try {
-			boost::python::object ignored = it->second(boost::python::handle<>(PyString_FromString(mb->rd_ptr())));
+			boost::python::object ignored = it->second(boost::python::object(std::string(mb->rd_ptr())));
 		}  catch(boost::python::error_already_set const &) {
 			GADGET_DEBUG2("Error calling process config function for Gadget %s\n", g->module()->name());
 			PyErr_Print();
@@ -169,16 +172,16 @@ template<class T> int PythonCommunicator::process(Gadget* g,
 			std::vector<int> dims2(dims.size());
 			for (unsigned int i = 0; i < dims.size(); i++) dims2[dims.size()-i-1] = static_cast<int>(dims[i]);
 
-			boost::python::object obj(boost::python::handle<>(PyArray_FromDims(dims2.size(), &dims2[0], PyArray_CFLOAT)));
-			boost::python::object data = boost::python::extract<boost::python::numeric::array>(obj);
+			boost::python::object obj(boost::python::handle<>(PyArray_FromDims(dims2.size(), &dims2[0], NPY_COMPLEX64)));
+			//boost::python::object data = boost::python::extract<boost::python::numeric::array>(obj);
 
 			//Copy data
-			memcpy(PyArray_DATA(data.ptr()), m2->getObjectPtr()->get_data_ptr(), m2->getObjectPtr()->get_number_of_elements()*sizeof(float)*2);
+			memcpy(PyArray_DATA((PyArrayObject*)obj.ptr()), m2->getObjectPtr()->get_data_ptr(), m2->getObjectPtr()->get_number_of_elements()*sizeof(std::complex<float>));
 
 			//Get Header
 			T acq = *m1->getObjectPtr();
 
-			if ( boost::python::extract<int>(it->second(acq, data)) != GADGET_OK) {
+			if ( boost::python::extract<int>(it->second(acq, obj)) != GADGET_OK) {
 				GADGET_DEBUG2("Gadget (%s) Returned from python call with error\n", g->module()->name());
 				PyGILState_Release(gstate);
 				return GADGET_FAIL;
@@ -206,3 +209,4 @@ template int PythonCommunicator::process(Gadget*, GadgetContainerMessage<ISMRMRD
 
 template int PythonCommunicator::process(Gadget*, GadgetContainerMessage<ISMRMRD::ImageHeader>*,
 		GadgetContainerMessage< hoNDArray< std::complex<float> > >*);
+}

@@ -5,6 +5,7 @@
 
 #include "GadgetImageMessageReader.h"
 
+namespace Gadgetron{
 template <typename T> class ImageWriter : public GadgetImageMessageReader<T>
 {
 
@@ -105,5 +106,5 @@ public:
 protected:
 	size_t number_of_calls_;
 };
-
+}
 #endif //IMAGE_WRITER

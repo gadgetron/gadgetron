@@ -5,6 +5,7 @@
 #include "ismrmrd.h"
 #include "hoNDArray.h"
 
+using namespace Gadgetron;
 
 DEFUN_DLD (GadgetronReturnIsmrmrdImage, args, nargout,
 	   "GadgetronReturnIsmrmrdImage return Image to the Gadgetron")
@@ -89,7 +90,9 @@ DEFUN_DLD (GadgetronReturnIsmrmrdImage, args, nargout,
 	    	dims.push_back(d.dims()(i));
 	    }
 
-	    if (!m2->getObjectPtr()->create(&dims)) {
+	    try {
+	        m2->getObjectPtr()->create(&dims);
+	    } catch (...) {
 	    	GADGET_DEBUG1("Failed to allocate return array\n");
 	    	m1->release();
 	    }

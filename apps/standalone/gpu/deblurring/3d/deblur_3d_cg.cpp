@@ -5,7 +5,6 @@
 // Gadgetron includes
 #include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
-#include "ndarray_vector_td_utilities.h"
 #include "cuCgSolver.h"
 #include "cuPartialDerivativeOperator.h"
 #include "cuConvolutionOperator.h"
@@ -15,6 +14,7 @@
 #include <iostream>
 
 using namespace std;
+using namespace Gadgetron;
 
 // Define desired precision
 typedef float _real; 
@@ -65,9 +65,9 @@ int main(int argc, char** argv)
   unsigned int num_iterations = parms.get_parameter('i')->get_int_value();
   
   // Setup regularization operators
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Rx( new cuPartialDerivativeOperator<_real,_complext,3>(0) ); 
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Ry( new cuPartialDerivativeOperator<_real,_complext,3>(1) ); 
-  boost::shared_ptr< cuPartialDerivativeOperator<_real,_complext,3> > Rz( new cuPartialDerivativeOperator<_real,_complext,3>(2) ); 
+  boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> > Rx( new cuPartialDerivativeOperator<_complext,3>(0) );
+  boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> > Ry( new cuPartialDerivativeOperator<_complext,3>(1) );
+  boost::shared_ptr< cuPartialDerivativeOperator<_complext,3> > Rz( new cuPartialDerivativeOperator<_complext,3>(2) );
 
   Rx->set_weight( kappa );
   Ry->set_weight( kappa );
@@ -83,14 +83,14 @@ int main(int argc, char** argv)
   E->set_domain_dimensions(data.get_dimensions().get());
     
   // Setup conjugate gradient solver
-  cuCgSolver<_real, _complext> cg;
+  cuCgSolver<_complext> cg;
   cg.set_encoding_operator( E );                         // encoding matrix
   if( kappa>0.0 ) cg.add_regularization_operator( Rx );  // regularization matrix
   if( kappa>0.0 ) cg.add_regularization_operator( Ry );  // regularization matrix
   if( kappa>0.0 ) cg.add_regularization_operator( Rz );  // regularization matrix
   cg.set_max_iterations( num_iterations );
   cg.set_tc_tolerance( 1e-12 );
-  cg.set_output_mode( cuCgSolver<_real, _complext>::OUTPUT_VERBOSE );
+  cg.set_output_mode( cuCgSolver<_complext>::OUTPUT_VERBOSE );
                 
   // Form right hand side
   cuNDArray<_complext> rhs; rhs.create(data.get_dimensions().get());
@@ -107,7 +107,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< hoNDArray<_complext> > host_result = cgresult->to_host();
   write_nd_array<_complext>(host_result.get(), (char*)parms.get_parameter('r')->get_string_value());
     
-  boost::shared_ptr< hoNDArray<_real> > host_norm = cuNDA_cAbs<_real,_complext>(cgresult.get())->to_host();
+  boost::shared_ptr< hoNDArray<_real> > host_norm = abs(cgresult.get())->to_host();
   write_nd_array<_real>( host_norm.get(), "cg_deblurred_image.real" );  
 
   return 0;
