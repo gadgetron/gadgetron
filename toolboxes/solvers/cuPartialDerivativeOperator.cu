@@ -146,18 +146,22 @@ cuPartialDerivativeOperator<REAL,T,D>::compute_second_order_partial_derivative( 
 
 // Instantiations
 
+template class EXPORTSOLVERS cuPartialDerivativeOperator<float, float, 1>;
 template class EXPORTSOLVERS cuPartialDerivativeOperator<float, float, 2>;
 template class EXPORTSOLVERS cuPartialDerivativeOperator<float, float, 3>;
 template class EXPORTSOLVERS cuPartialDerivativeOperator<float, float, 4>;
 
+template class EXPORTSOLVERS cuPartialDerivativeOperator<float, float_complext, 1>;
 template class EXPORTSOLVERS cuPartialDerivativeOperator<float, float_complext, 2>;
 template class EXPORTSOLVERS cuPartialDerivativeOperator<float, float_complext, 3>;
 template class EXPORTSOLVERS cuPartialDerivativeOperator<float, float_complext, 4>;
 
+template class EXPORTSOLVERS cuPartialDerivativeOperator<double, double, 1>;
 template class EXPORTSOLVERS cuPartialDerivativeOperator<double, double, 2>;
 template class EXPORTSOLVERS cuPartialDerivativeOperator<double, double, 3>;
 template class EXPORTSOLVERS cuPartialDerivativeOperator<double, double, 4>;
 
+template class EXPORTSOLVERS cuPartialDerivativeOperator<double, double_complext, 1>;
 template class EXPORTSOLVERS cuPartialDerivativeOperator<double, double_complext, 2>;
 template class EXPORTSOLVERS cuPartialDerivativeOperator<double, double_complext, 3>;
 template class EXPORTSOLVERS cuPartialDerivativeOperator<double, double_complext, 4>;
