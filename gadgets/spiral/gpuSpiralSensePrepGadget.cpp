@@ -152,6 +152,16 @@ namespace Gadgetron{
 
     buffer_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[slices_*sets_]);
 
+    image_headers_queue_ = 
+      boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[slices_*sets_]);
+
+    size_t bsize = sizeof(GadgetContainerMessage<ISMRMRD::ImageHeader>)*100*Nints_;
+
+    for( unsigned int i=0; i<slices_*sets_; i++ ){
+      image_headers_queue_[i].high_water_mark(bsize);
+      image_headers_queue_[i].low_water_mark(bsize);
+    }
+
     GADGET_DEBUG2("smax:                    %f\n", smax_);
     GADGET_DEBUG2("gmax:                    %f\n", gmax_);
     GADGET_DEBUG2("Tsamp_ns:                %d\n", Tsamp_ns_);
@@ -313,7 +323,9 @@ namespace Gadgetron{
 	     profile_ptr+c*m1->getObjectPtr()->number_of_samples, samples_to_copy*sizeof(std::complex<float>));
     }
 
-    bool is_last_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
+    bool is_last_scan_in_slice = 
+      ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
+
     if (is_last_scan_in_slice) {
 
       if( Nints_%interleaves_counter_singleframe_[set*slices_+slice] ){
@@ -326,7 +338,53 @@ namespace Gadgetron{
 	acceleration_factor_ =  Nints_/interleaves_counter_singleframe_[set*slices_+slice];
       }
 
-      if( !use_multiframe_grouping_ || (use_multiframe_grouping_ && interleaves_counter_multiframe_[set*slices_+slice] == Nints_) ){
+      // Prepare the image header for this frame
+      //
+
+      GadgetContainerMessage<ISMRMRD::ImageHeader> *header = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+      ISMRMRD::AcquisitionHeader *base_head = m1->getObjectPtr();
+
+      {
+	// Initialize header to all zeroes (there is a few fields we do not set yet)
+	ISMRMRD::ImageHeader tmp = {0};
+	*(header->getObjectPtr()) = tmp;
+      }
+
+      header->getObjectPtr()->version = base_head->version;
+
+      header->getObjectPtr()->matrix_size[0] = image_dimensions_[0];
+      header->getObjectPtr()->matrix_size[1] = image_dimensions_[1];
+      header->getObjectPtr()->matrix_size[2] = acceleration_factor_;
+
+      header->getObjectPtr()->field_of_view[0] = fov_vec_[0];
+      header->getObjectPtr()->field_of_view[1] = fov_vec_[1];
+      header->getObjectPtr()->field_of_view[2] = fov_vec_[2];
+
+      header->getObjectPtr()->channels = base_head->active_channels;
+      header->getObjectPtr()->slice = base_head->idx.slice;
+      header->getObjectPtr()->set = base_head->idx.set;
+
+      header->getObjectPtr()->acquisition_time_stamp = base_head->acquisition_time_stamp;
+      memcpy(header->getObjectPtr()->physiology_time_stamp, base_head->physiology_time_stamp, sizeof(uint32_t)*ISMRMRD_PHYS_STAMPS);
+
+      memcpy(header->getObjectPtr()->position, base_head->position, sizeof(float)*3);
+      memcpy(header->getObjectPtr()->read_dir, base_head->read_dir, sizeof(float)*3);
+      memcpy(header->getObjectPtr()->phase_dir, base_head->phase_dir, sizeof(float)*3);
+      memcpy(header->getObjectPtr()->slice_dir, base_head->slice_dir, sizeof(float)*3);
+      memcpy(header->getObjectPtr()->patient_table_position, base_head->patient_table_position, sizeof(float)*3);
+
+      header->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
+      header->getObjectPtr()->image_index = image_counter_[set*slices_+slice]++; 
+      header->getObjectPtr()->image_series_index = set*slices_+slice;
+
+      image_headers_queue_[set*slices_+slice].enqueue_tail(header);
+
+      // Check if it is time to reconstruct.
+      // I.e. prepare and pass a Sense job downstream...
+      //
+
+      if( !use_multiframe_grouping_ || 
+	  (use_multiframe_grouping_ && interleaves_counter_multiframe_[set*slices_+slice] == Nints_) ){
 
 	GPUTimer timer("Spiral gridding for csm calc...");
 
@@ -385,8 +443,11 @@ namespace Gadgetron{
 	    return GADGET_FAIL;
 	  }
 
-	  GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* acq = AsContainerMessage<ISMRMRD::AcquisitionHeader>(mbq);
-	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq->cont());
+	  GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* acq = 
+	    AsContainerMessage<ISMRMRD::AcquisitionHeader>(mbq);
+
+	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* daq = 
+	    AsContainerMessage<hoNDArray< std::complex<float> > >(mbq->cont());
 
 	  if (!acq || !daq) {
 	    GADGET_DEBUG1("Unable to interpret data on message Q\n");
@@ -422,11 +483,6 @@ namespace Gadgetron{
 	  mbq->release();
 	}
 
-	if (buffer_[set*slices_+slice].message_count()) {
-	  GADGET_DEBUG1("Error occured, all messages should have been cleared off the buffer by now.\n");
-	  return GADGET_FAIL;
-	}
-
 	GadgetContainerMessage< SenseJob >* m4 = new GadgetContainerMessage< SenseJob >();
 
 	m4->getObjectPtr()->dat_host_ = data_host;
@@ -435,31 +491,43 @@ namespace Gadgetron{
 	m4->getObjectPtr()->tra_host_ = traj_host;
 	m4->getObjectPtr()->dcw_host_ = dcw_host;
 
-	GadgetContainerMessage<ISMRMRD::ImageHeader>* m3 = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+	// Pull the image headers out of the queue
+	//
+	
+	long frames_per_reconstruction = (use_multiframe_grouping_) ? acceleration_factor_ : 1;
+      
+	if( image_headers_queue_[set*slices_+slice].message_count() != frames_per_reconstruction ){
+	  m4->release();
+	  GADGET_DEBUG2("Unexpected size of image header queue: %d, %d\n", 
+			image_headers_queue_[set*slices_+slice].message_count(), frames_per_reconstruction);
+	  return GADGET_FAIL;
+	}
+	
+	m4->getObjectPtr()->image_headers_ =
+	  boost::shared_array<ISMRMRD::ImageHeader>( new ISMRMRD::ImageHeader[frames_per_reconstruction] );
+	
+	for( unsigned int i=0; i<frames_per_reconstruction; i++ ){	
+	  
+	  ACE_Message_Block *mbq;
+	  
+	  if( image_headers_queue_[set*slices_+slice].dequeue_head(mbq) < 0 ) {
+	    m4->release();
+	    GADGET_DEBUG1("Image header dequeue failed\n");
+	    return GADGET_FAIL;
+	  }
+	  
+	  GadgetContainerMessage<ISMRMRD::ImageHeader> *m = AsContainerMessage<ISMRMRD::ImageHeader>(mbq);
+	  m4->getObjectPtr()->image_headers_[i] = *m->getObjectPtr();
+	  m->release();
+	}
+
+	// The Sense Job needs an image header as well. 
+	// Let us just copy the initial one...
+	
+	GadgetContainerMessage<ISMRMRD::ImageHeader> *m3 = new GadgetContainerMessage<ISMRMRD::ImageHeader>;
+	*m3->getObjectPtr() = m4->getObjectPtr()->image_headers_[0];
 	m3->cont(m4);
-
-	m3->getObjectPtr()->matrix_size[0] = image_dimensions_[0];
-	m3->getObjectPtr()->matrix_size[1] = image_dimensions_[1];
-	m3->getObjectPtr()->matrix_size[2] = acceleration_factor_;
-
-	m3->getObjectPtr()->field_of_view[0] = fov_vec_[0];
-	m3->getObjectPtr()->field_of_view[1] = fov_vec_[1];
-	m3->getObjectPtr()->field_of_view[2] = fov_vec_[2];
-
-	m3->getObjectPtr()->channels       = num_coils;
-	m3->getObjectPtr()->slice          = base_head.idx.slice;
-	m3->getObjectPtr()->set            = base_head.idx.set;
-
-	memcpy(m3->getObjectPtr()->position,base_head.position, sizeof(float)*3);
-	memcpy(m3->getObjectPtr()->read_dir,base_head.read_dir, sizeof(float)*3);
-	memcpy(m3->getObjectPtr()->phase_dir,base_head.phase_dir, sizeof(float)*3);
-	memcpy(m3->getObjectPtr()->slice_dir,base_head.slice_dir, sizeof(float)*3);
-	memcpy(m3->getObjectPtr()->patient_table_position, base_head.patient_table_position, sizeof(float)*3);
-
-	m3->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
-	m3->getObjectPtr()->image_index = image_counter_[set*slices_+slice]++;
-	m3->getObjectPtr()->image_series_index = set*slices_+slice;
-
+	
 	if (this->next()->putq(m3) < 0) {
 	  GADGET_DEBUG1("Failed to put job on queue.\n");
 	  m3->release();

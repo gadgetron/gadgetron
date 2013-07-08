@@ -69,6 +69,7 @@ namespace Gadgetron{
     cuNFFT_plan<float, 2> plan_;
 
     boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > buffer_;
+    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > image_headers_queue_;
   };
 }
 #endif //gpuSpiralSensePrepGadget_H

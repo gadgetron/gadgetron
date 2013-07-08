@@ -183,7 +183,8 @@ namespace Gadgetron{
     std::vector<unsigned int> image_dimensions_recon_;
     uintd2 image_dimensions_recon_os_;
 
-    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > frame_queue_;
-    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > recon_queue_;
+    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > frame_profiles_queue_;
+    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > recon_profiles_queue_;
+    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > image_headers_queue_;
   };
 }

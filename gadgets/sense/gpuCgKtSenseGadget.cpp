@@ -239,6 +239,7 @@ namespace Gadgetron{
       cgresult = crop<float_complext,2>( (matrix_size_-matrix_size_seq_)>>1, matrix_size_seq_, cgresult.get() );    
     
     // Now pass on the reconstructed images
+    //
 
     unsigned int frames_per_rotation = frames/rotations;
 
@@ -255,15 +256,13 @@ namespace Gadgetron{
       if( rotation_idx < (rotations_to_discard_>>1) || rotation_idx >= rotations-(rotations_to_discard_>>1) )
 	continue;
             
-      GadgetContainerMessage<ISMRMRD::ImageHeader> *m = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
-      GadgetContainerMessage< hoNDArray< std::complex<float> > > *cm = new GadgetContainerMessage< hoNDArray< std::complex<float> > >();      
+      GadgetContainerMessage<ISMRMRD::ImageHeader> *m = 
+	new GadgetContainerMessage<ISMRMRD::ImageHeader>();
 
-      if( !m || !cm ){
-	GADGET_DEBUG1("Unable create container messages\n");
-	return GADGET_FAIL;
-      }
+      GadgetContainerMessage< hoNDArray< std::complex<float> > > *cm = 
+	new GadgetContainerMessage< hoNDArray< std::complex<float> > >();      
 
-      *(m->getObjectPtr()) = *(m1->getObjectPtr());
+      *m->getObjectPtr() = j->image_headers_[frame];
       m->cont(cm);
       
       std::vector<unsigned int> img_dims(2);
