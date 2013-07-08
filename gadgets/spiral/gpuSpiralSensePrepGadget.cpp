@@ -26,6 +26,7 @@ namespace Gadgetron{
     , acceleration_factor_(0)
   {
     GADGET_DEBUG1("Initializing Spiral\n");
+    set_parameter(std::string("propagate_csm_from_set").c_str(), "-1");
   }
 
   gpuSpiralSensePrepGadget::~gpuSpiralSensePrepGadget() {}
@@ -54,6 +55,17 @@ namespace Gadgetron{
     if (cudaSetDevice(device_number_)!= cudaSuccess) {
       GADGET_DEBUG1( "Error: unable to set CUDA device.\n" );
       return GADGET_FAIL;
+    }
+
+    propagate_csm_from_set_ = get_int_value(std::string("propagate_csm_from_set").c_str());
+
+    if( propagate_csm_from_set_ > 0 ){
+      GADGET_DEBUG2("Currently, only set 0 can propagate coil sensitivity maps. Set %d was specified.\n", propagate_csm_from_set_ );
+      return GADGET_FAIL;
+    }
+
+    if( propagate_csm_from_set_ >= 0 ){
+      GADGET_DEBUG2("Propagating csm from set %d to all sets\n", propagate_csm_from_set_ );
     }
 
     boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
@@ -386,28 +398,45 @@ namespace Gadgetron{
       if( !use_multiframe_grouping_ || 
 	  (use_multiframe_grouping_ && interleaves_counter_multiframe_[set*slices_+slice] == Nints_) ){
 
-	GPUTimer timer("Spiral gridding for csm calc...");
-
 	unsigned int num_coils = m1->getObjectPtr()->active_channels;
-
-	cuNDArray<float_complext> data(&host_data_buffer_[set*slices_+slice]);
-
+	
 	// Setup averaged image (an image for each coil)
+	//
+
 	std::vector<unsigned int> image_dims;
 	image_dims.push_back(image_dimensions_[0]);
 	image_dims.push_back(image_dimensions_[1]);
 	image_dims.push_back(num_coils);
-
+	
 	cuNDArray<float_complext> image(&image_dims);
-
+	cuNDArray<float_complext> data(&host_data_buffer_[set*slices_+slice]);
+	
 	plan_.compute( &data, &image, &gpu_weights_, cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C );
-
-	// Estimate CSM
-	boost::shared_ptr< cuNDArray<float_complext> > csm = estimate_b1_map<float,2>( &image );
-
+	
+	// Check if we need to compute a new csm
+	//
+	
+	if( propagate_csm_from_set_ < 0 || propagate_csm_from_set_ == set ){
+	  
+	  // Estimate CSM
+	  csm_ = estimate_b1_map<float,2>( &image );
+	}
+	else{
+	  
+	  // Make sure that the csm has actually been computed
+	  //
+	  
+	  if( csm_.get() == 0x0 ){
+	    GADGET_DEBUG1("Error, csm has not been computed\n");
+	    return GADGET_FAIL;
+	  }
+	  
+	  //GADGET_DEBUG2("Set %d is reusing the csm from set %d\n", set, propagate_csm_from_set_);
+	}
+	
 	// Use a SENSE operator to calculate a combined image using the trajectories.
 	boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E(new cuNonCartesianSenseOperator<float,2>());
-	E->set_csm(csm);
+	E->set_csm(csm_);
 
 	// Setup averaged image (one image from the combined coils)
 	boost::shared_ptr< std::vector<unsigned int> > reg_dims = image.get_dimensions();
@@ -417,7 +446,7 @@ namespace Gadgetron{
 
 	E->mult_csm_conj_sum( &image, &reg_image );
 
-	boost::shared_ptr< hoNDArray<float_complext> > csm_host = csm->to_host();
+	boost::shared_ptr< hoNDArray<float_complext> > csm_host = csm_->to_host();
 	boost::shared_ptr< hoNDArray<float_complext> > reg_host = reg_image.to_host();
 
 	unsigned int profiles_buffered = buffer_[set*slices_+slice].message_count();

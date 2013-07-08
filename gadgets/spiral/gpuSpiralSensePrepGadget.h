@@ -58,6 +58,7 @@ namespace Gadgetron{
 
     bool prepared_;
     bool use_multiframe_grouping_;
+    int propagate_csm_from_set_;
 
     boost::shared_ptr< hoNDArray<floatd2> > host_traj_;
     boost::shared_ptr< hoNDArray<float> > host_weights_;
@@ -67,6 +68,7 @@ namespace Gadgetron{
     std::vector<unsigned int> fov_vec_;
     std::vector<unsigned int> image_dimensions_;
     cuNFFT_plan<float, 2> plan_;
+    boost::shared_ptr< cuNDArray<float_complext> > csm_;
 
     boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > buffer_;
     boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > image_headers_queue_;
