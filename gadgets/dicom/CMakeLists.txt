@@ -17,7 +17,7 @@ set(GT_DICOM_LIBRARIES
 #message("Libraries: ${GT_DICOM_LIBRARIES}")
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/gadgets/core    # for GadgetIsmrmrdReadWrite.h
+    ${CMAKE_SOURCE_DIR}/gadgets/mri_core    # for GadgetIsmrmrdReadWrite.h
     ${DCMTK_INCLUDE_DIRS})
 
 set(GT_DICOM_LIB gadgetrondicom)
@@ -35,7 +35,7 @@ target_link_libraries(
     ${GT_DICOM_LIBRARIES})
 
 install(
-    FILES DicomFinishGadget.h DicomImageWriter.h dicomlib_export.h
+    FILES DicomFinishGadget.h DicomImageWriter.h gadgetrondicom_export.h
     DESTINATION include)
 
 install(TARGETS ${GT_DICOM_LIB} DESTINATION lib)

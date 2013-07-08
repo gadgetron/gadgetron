@@ -1,7 +1,7 @@
 #ifndef DICOMFINISHGADGET_H
 #define DICOMFINISHGADGET_H
 
-#include "dicomlib_export.h"
+#include "gadgetrondicom_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
@@ -16,7 +16,7 @@
 namespace Gadgetron {
 
 template <typename T>
-class EXPORTGADGETSCORE DicomFinishGadget :
+class EXPORTGADGETSDICOM DicomFinishGadget :
     public Gadget2<ISMRMRD::ImageHeader, hoNDArray< T > >
 {
     public:
@@ -38,14 +38,14 @@ class EXPORTGADGETSCORE DicomFinishGadget :
         std::map <unsigned int, std::string> seriesIUIDs;
 };
 
-class EXPORTGADGETSCORE DicomFinishGadgetUSHORT :
+class EXPORTGADGETSDICOM DicomFinishGadgetUSHORT :
     public DicomFinishGadget<ACE_UINT16>
 {
     public:
         GADGET_DECLARE(DicomFinishGadgetUSHORT);
 };
 
-class EXPORTGADGETSCORE DicomFinishGadgetFLOAT :
+class EXPORTGADGETSDICOM DicomFinishGadgetFLOAT :
     public DicomFinishGadget<float>
 {
     public:
@@ -53,7 +53,7 @@ class EXPORTGADGETSCORE DicomFinishGadgetFLOAT :
 };
 
 /*
-class EXPORTGADGETSCORE DicomFinishGadgetCPLX :
+class EXPORTGADGETSDICOM DicomFinishGadgetCPLX :
     public DicomFinishGadget< std::complex<float> >
 {
     public:
