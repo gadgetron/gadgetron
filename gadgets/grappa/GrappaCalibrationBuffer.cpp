@@ -16,7 +16,7 @@ GrappaCalibrationBuffer::GrappaCalibrationBuffer(std::vector<unsigned int> dimen
 {
   dimensions_ = dimensions;
   try {buffer_.create(&dimensions_);}
-  catch (runtime_error & err){
+  catch (std::runtime_error & err){
     GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for GRAPPA buffer");
   }
   

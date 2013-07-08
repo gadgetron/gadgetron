@@ -4,7 +4,6 @@
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_utils.h"
 #include "complext.h"
-#include "GadgetronException.h"
 
 /* 
    This macro definition is a workaround 
@@ -71,11 +70,11 @@
   cu##COMPONENT<T,D>::mult_M( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate ) \
   {									\
     if( !in || !out ){							\
-      BOOST_THROW_EXCEPTION(cuda_error("cuResampleOperator::mult_M(): illegal input/output array.")); \
+      throw cuda_error("cuResampleOperator::mult_M(): illegal input/output array."); \
     }									\
     									\
     if( !this->offsets_.get() ){					\
-      BOOST_THROW_EXCEPTION(cuda_error("cuResampleOperator::mult_M(): displacement field not set.")); \
+      throw cuda_error("cuResampleOperator::mult_M(): displacement field not set."); \
     }									\
 									\
     cuNDArray<T> tmp;							\
@@ -87,24 +86,24 @@
     int surplus = this->offsets_->get_number_of_dimensions()-D;		\
     									\
     if( !( surplus == 1 || surplus == 2) || this->offsets_->get_size(D-1+surplus) < D ){ \
-      BOOST_THROW_EXCEPTION(cuda_error("cuResampleOperator::mult_M(): unexpected dimensions of displacement field.")); \
+      throw cuda_error("cuResampleOperator::mult_M(): unexpected dimensions of displacement field."); \
     }									\
     									\
     if( surplus == 1 ){							\
       if( in->get_number_of_elements() != out->get_number_of_elements() ){ \
-	BOOST_THROW_EXCEPTION(cuda_error("cuResampleOperator::mult_M(): in/out array dimensions mismatch (1).")); \
+	throw cuda_error("cuResampleOperator::mult_M(): in/out array dimensions mismatch (1)."); \
       }									\
       if( (in->get_number_of_elements() % num_disp_vectors ) != 0 ){	\
-	BOOST_THROW_EXCEPTION(cuda_error("cuResampleOperator::mult_M(): in/out array dimensions mismatch displacement field.")); \
+	throw cuda_error("cuResampleOperator::mult_M(): in/out array dimensions mismatch displacement field."); \
       }									\
     }									\
     									\
     if( surplus == 2 ){							\
       if( (out->get_number_of_elements() % in->get_number_of_elements()) != 0 ){ \
-	BOOST_THROW_EXCEPTION(cuda_error("cuResampleOperator::mult_M(): in/out array dimensions mismatch (2).")); \
+	throw cuda_error("cuResampleOperator::mult_M(): in/out array dimensions mismatch (2)."); \
       }									\
       if( out->get_number_of_dimensions() != (D+1) || out->get_number_of_elements() != num_disp_vectors ){ \
-	BOOST_THROW_EXCEPTION(cuda_error("cuResampleOperator::mult_M(): output array dimensions mismatch displacement field.")); \
+	throw cuda_error("cuResampleOperator::mult_M(): output array dimensions mismatch displacement field."); \
       }									\
     }									\
 									\
@@ -116,10 +115,10 @@
     dim3 blockDim, gridDim;						\
     									\
     if( surplus == 1 ){							\
-      this->setup_grid( &blockDim, &gridDim, num_elements_mat, num_batches ); \
+      setup_grid( num_elements_mat, &blockDim, &gridDim, num_batches ); \
     }									\
     else{								\
-      this->setup_grid( &blockDim, &gridDim, num_elements_mat*extended_dim ); \
+      setup_grid( num_elements_mat, &blockDim, &gridDim, num_elements_mat*extended_dim ); \
     }									\
     									\
     if( surplus == 1 ) {						\
@@ -183,11 +182,11 @@
   cu##COMPONENT<T,D>::mult_MH( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate ) \
   {									\
     if( !in || !out ){							\
-      BOOST_THROW_EXCEPTION(cuda_error("cuResampleOperator::mult_MH(): illegal input/output array.")); \
+      throw cuda_error("cuResampleOperator::mult_MH(): illegal input/output array."); \
     }									\
     									\
     if( !this->preprocessed_ ){						\
-      BOOST_THROW_EXCEPTION(cuda_error("cuResampleOperator::mult_MH(): preprocessing has not been performed.")); \
+      throw cuda_error("cuResampleOperator::mult_MH(): preprocessing has not been performed."); \
     }									\
     									\
     cuNDArray<T> tmp;							\
@@ -200,19 +199,19 @@
 									\
     if( surplus == 1 ){							\
       if( in->get_number_of_elements() != out->get_number_of_elements() ){ \
-	BOOST_THROW_EXCEPTION(cuda_error("cuResampleOperator::mult_MH(): in/out array dimensions mismatch (1).")); \
+	throw cuda_error("cuResampleOperator::mult_MH(): in/out array dimensions mismatch (1)."); \
       }									\
       if( (in->get_number_of_elements() % num_disp_vectors ) != 0 ){	\
-	BOOST_THROW_EXCEPTION(cuda_error("cuResampleOperator::mult_MH(): in/out array dimensions mismatch displacement field (1).")); \
+	throw cuda_error("cuResampleOperator::mult_MH(): in/out array dimensions mismatch displacement field (1)."); \
       }									\
     }									\
 									\
     if( surplus == 2 ){							\
       if( (in->get_number_of_elements() % out->get_number_of_elements()) != 0 ){ \
-	BOOST_THROW_EXCEPTION(cuda_error("cuResampleOperator::mult_MH(): in/out array dimensions mismatch (2).")); \
+	throw cuda_error("cuResampleOperator::mult_MH(): in/out array dimensions mismatch (2)."); \
       }									\
       if( in->get_number_of_dimensions() != (D+1) || in->get_number_of_elements() != num_disp_vectors ){ \
-	BOOST_THROW_EXCEPTION(cuda_error("cuResampleOperator::mult_MH(): output array dimensions mismatch displacement field.")); \
+	throw cuda_error("cuResampleOperator::mult_MH(): output array dimensions mismatch displacement field."); \
       }									\
     }									\
     									\
@@ -229,7 +228,7 @@
 									\
     dim3 blockDim, gridDim;						\
 									\
-    this->setup_grid( &blockDim, &gridDim, num_elements, num_batches );	\
+    setup_grid( num_elements, &blockDim, &gridDim, num_batches );	\
     mult_MH_kernel<T,D><<< gridDim, blockDim >>>			\
       ( in->get_data_ptr(), tmp_out->get_data_ptr(),			\
 	raw_pointer_cast(&this->weights_[0]), raw_pointer_cast(&this->indices_[0]), \

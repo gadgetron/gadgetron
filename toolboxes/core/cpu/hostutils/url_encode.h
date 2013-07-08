@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+namespace Gadgetron {
+
 /**
    Simple utility function for removing spaces and backslashes in URLs
    This function is used in various places to ensure proper encoding of schemalocation URIs
@@ -39,6 +41,7 @@ inline std::string url_encode(const std::string& in) {
 	delete [] tmp;
 
 	return ret;
+}
 }
 
 #endif //URLENCODE_H

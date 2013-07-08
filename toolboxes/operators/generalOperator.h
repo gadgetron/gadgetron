@@ -4,11 +4,12 @@
 
 #pragma once
 
-#include "GadgetronException.h"
+
 #include "complext.h"
 
 #include <boost/shared_ptr.hpp>
 #include <vector>
+#include <stdexcept>
 
 namespace Gadgetron{
 
@@ -31,7 +32,7 @@ namespace Gadgetron{
     
     virtual void set_domain_dimensions( std::vector<unsigned int> *dims )
     {
-      if( dims == 0x0 ) BOOST_THROW_EXCEPTION(runtime_error("Null pointer provided"));
+      if( dims == 0x0 ) throw std::runtime_error("Null pointer provided");
       domain_dims_ = *dims;  
     }
     

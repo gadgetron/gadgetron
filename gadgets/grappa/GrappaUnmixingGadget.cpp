@@ -36,7 +36,7 @@ int GrappaUnmixingGadget::process(GadgetContainerMessage<GrappaUnmixingJob>* m1,
 	}
 
 	try{cm2->getObjectPtr()->create(&combined_dims);}
-	catch (runtime_error &err ){
+	catch (std::runtime_error &err ){
 		GADGET_DEBUG_EXCEPTION(err,"Unable to create combined image array\n");
 		return GADGET_FAIL;
 	}

@@ -3,13 +3,11 @@ find_package(HDF5 1.8 COMPONENTS C CXX REQUIRED)
 
 set(Boost_NO_BOOST_CMAKE ON)
 
-# Windows Boost requires linking of Boost.DateTime and Boost.Chrono for Boost.Thread
-if (WIN32)
-    find_package(Boost COMPONENTS system thread date_time chrono REQUIRED)
-else (WIN32)
-    find_package(Boost COMPONENTS system thread date_time REQUIRED)
-endif (WIN32)
-
+if(WIN32)
+  find_package(Boost COMPONENTS thread system date_time chrono REQUIRED)
+else(WIN32)
+  find_package(Boost COMPONENTS thread system REQUIRED)
+endif(WIN32)
 
 if(WIN32)
   link_directories(${Boost_LIBRARY_DIRS})
@@ -23,7 +21,7 @@ include_directories(
   ${HDF5_INCLUDE_DIRS}/cpp
   ${ISMRMRD_INCLUDE_DIR}
   ${XSD_INCLUDE_DIR}
-  ${CMAKE_SOURCE_DIR}/gadgets/core 
+  ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
   ${CMAKE_SOURCE_DIR}/apps/gadgetron
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu

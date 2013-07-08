@@ -1,14 +1,7 @@
-/*
- * PCACoilGadget.h
- *
- *  Created on: Dec 13, 2011
- *      Author: Michael S. Hansen
- */
-
 #ifndef PCACOILGADGET_H_
 #define PCACOILGADGET_H_
 
-#include "gadgetronmricore_export.h"
+#include "gadgetron_mricore_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "ismrmrd.h"

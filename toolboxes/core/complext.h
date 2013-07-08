@@ -153,7 +153,7 @@ namespace Gadgetron{
   }
 
   template<class T> __inline__ __host__ __device__ complext<T> sgn(complext<T> x){
-    if (norm(x) <= T(0)) return std::complex<T>(0);
+    if (norm(x) <= T(0)) return complext<T>(0);
     return (x/abs(x));
   }
   template<class T>  __inline__ __host__ __device__ complext<T> polar(const T& rho, const T& theta = 0){

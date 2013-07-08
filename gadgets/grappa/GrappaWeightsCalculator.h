@@ -1,12 +1,13 @@
 #pragma once
 
-#include <ace/Task.h>
-
-#include "gadgetrongrappa_export.h"
+#include "gadgetron_grappa_export.h"
 #include "GrappaWeights.h"
 
+#include <ace/Task.h>
 #include <list>
+
 namespace Gadgetron{
+
 template <class T> class EXPORTGADGETSGRAPPA GrappaWeightsCalculator : public ACE_Task<ACE_MT_SYNCH>
 {
   typedef ACE_Task<ACE_MT_SYNCH> inherited;

@@ -40,4 +40,6 @@ namespace Gadgetron{
   // Sum over dimension
   template<class T> EXPORTGPUCORE boost::shared_ptr<cuNDArray<T> > 
   sum(cuNDArray<T> *data, unsigned int dim );
+
+  template<class T> EXPORTGPUCORE T mean(cuNDArray<T>* data);
 }

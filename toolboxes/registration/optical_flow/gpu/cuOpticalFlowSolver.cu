@@ -2,6 +2,8 @@
 #include "vector_td_utilities.h"
 #include "check_CUDA.h"
 
+#include <stdexcept>
+
 namespace Gadgetron{
 
   //
@@ -36,11 +38,11 @@ namespace Gadgetron{
     cudaDeviceProp deviceProp; 
   
     if( cudaGetDevice( &device ) != cudaSuccess) {
-      BOOST_THROW_EXCEPTION(runtime_error("cuOpticalFlowSolver::setup_grid(): unable to determine current device"));
+      throw std::runtime_error("cuOpticalFlowSolver::setup_grid(): unable to determine current device");
     }
     
     if( cudaGetDeviceProperties( &deviceProp, device ) != cudaSuccess) {
-      BOOST_THROW_EXCEPTION(runtime_error("cuOpticalFlowSolver::setup_grid(): unable to query current device"));
+      throw std::runtime_error("cuOpticalFlowSolver::setup_grid(): unable to query current device");
     }
     
     int max_blockdim = deviceProp.maxThreadsDim[0];
@@ -49,7 +51,7 @@ namespace Gadgetron{
     
     // For small arrays we keep the block dimension fairly small
     if( use_2d_blocks )
-      *blockDim = dim3(((256/num_unknowns)/warp_size)*warp_size,num_unknowns);
+      *blockDim = dim3(((256/num_unknowns)/warp_size)*warp_size, num_unknowns);
     else
       *blockDim = dim3(256);
   
@@ -71,7 +73,7 @@ namespace Gadgetron{
     }
    
     if( gridDim->x > max_griddim || gridDim->y > max_griddim ){      
-      BOOST_THROW_EXCEPTION(runtime_error("cuOpticalFlowSolver::setup_grid(): maximum grid dimensions exceeded"));
+      throw std::runtime_error("cuOpticalFlowSolver::setup_grid(): maximum grid dimensions exceeded");
     }
   }
   

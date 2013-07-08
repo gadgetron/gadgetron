@@ -20,13 +20,6 @@
 
 namespace Gadgetron{
 
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_axpy(cublasHandle_t hndl, int n, const T* a , const T* x , int incx,  T* y, int incy);
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_dot(cublasHandle_t, int, const T*, int, const  T*, int, T*, bool cc = true);
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_nrm2(cublasHandle_t, int, const T*, int, typename realType<T>::Type *result);
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_amax(cublasHandle_t handle, int n,const T *x, int incx, int *result);
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_amin(cublasHandle_t handle, int n,const T *x, int incx, int *result);
-  template<class T> EXPORTGPUCORE cublasStatus_t cublas_asum(cublasHandle_t handle, int n,const T *x, int incx, typename realType<T>::Type *result);
-
   template<class T> EXPORTGPUCORE T dot( cuNDArray<T> *x, cuNDArray<T> *y, bool cc = true );
 
   template<class T> EXPORTGPUCORE typename realType<T>::Type nrm2( cuNDArray<T> *x );
@@ -52,5 +45,5 @@ namespace Gadgetron{
   
   template<class T> EXPORTGPUCORE typename realType<T>::Type asum( cuNDArray<T> *x );
   
-  EXPORTGPUCORE std::string getCublasErrorString(cublasStatus_t err);
+  EXPORTGPUCORE std::string gadgetron_getCublasErrorString(cublasStatus_t err);
 }

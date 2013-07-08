@@ -55,7 +55,7 @@ namespace Gadgetron{
       unsigned int dim = _dimension;
       
       if( _dimension > D-1 ){
-	BOOST_THROW_EXCEPTION(runtime_error("Error: partialDerivativeOperator: dimension out of range"));      
+	throw std::runtime_error("Error: partialDerivativeOperator: dimension out of range");
       }
       
       for( unsigned int d=0; d<D; d++ ){

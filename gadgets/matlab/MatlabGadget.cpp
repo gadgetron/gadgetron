@@ -99,7 +99,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
             dims.push_back(active_channels);
             try {
                 m4->getObjectPtr()->create(&dims);
-            } catch (bad_alloc& err) {
+            } catch (std::bad_alloc& err) {
                 GADGET_DEBUG1("Failed to create new hoNDArray\n");
                 return GADGET_FAIL;
             }
@@ -136,7 +136,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
             dims.push_back(hdr_new->channels);
             try {
                 m4->getObjectPtr()->create(&dims);
-            } catch (bad_alloc& err) {
+            } catch (std::bad_alloc& err) {
                 GADGET_DEBUG1("Failed to create new hoNDArray\n");
                 return GADGET_FAIL;
             }
@@ -251,7 +251,7 @@ int ImageMatlabGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
             dims.push_back(hdr_new->channels);
             try {
                 m4->getObjectPtr()->create(&dims);
-            } catch (bad_alloc& err) {
+            } catch (std::bad_alloc& err) {
                 GADGET_DEBUG1("Failed to create new hoNDArray\n");
                 return GADGET_FAIL;
             }

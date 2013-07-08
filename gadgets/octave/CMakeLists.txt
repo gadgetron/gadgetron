@@ -3,12 +3,12 @@ find_package(Octave REQUIRED)
 
 link_directories(${OCTAVE_LINK_DIRS})
 
-add_library(gadgetronoctavecommunicator SHARED OctaveCommunicator.cpp)
-target_link_libraries(gadgetronoctavecommunicator ${OCTAVE_LIBRARY} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
+add_library(gadgetron_octavecommunicator SHARED OctaveCommunicator.cpp)
+target_link_libraries(gadgetron_octavecommunicator ${OCTAVE_LIBRARY} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
 add_library(GadgetronReturnIsmrmrdAcquisition MODULE GadgetronReturnIsmrmrdAcquisition.cpp)
 SET_TARGET_PROPERTIES(GadgetronReturnIsmrmrdAcquisition PROPERTIES SUFFIX .oct PREFIX "")
-target_link_libraries(GadgetronReturnIsmrmrdAcquisition ${OCTAVE_LIBRARY} gadgetronoctavecommunicator optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
+target_link_libraries(GadgetronReturnIsmrmrdAcquisition ${OCTAVE_LIBRARY} gadgetron_octavecommunicator optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
 add_library(XMLGetXPath MODULE pugixml.cpp XMLGetXPath.cpp)
 SET_TARGET_PROPERTIES(XMLGetXPath PROPERTIES SUFFIX .oct PREFIX "")
@@ -16,13 +16,13 @@ target_link_libraries(XMLGetXPath ${OCTAVE_LIBRARY})
 
 add_library(GadgetronReturnIsmrmrdImage MODULE GadgetronReturnIsmrmrdImage.cpp)
 SET_TARGET_PROPERTIES(GadgetronReturnIsmrmrdImage PROPERTIES SUFFIX .oct PREFIX "")
-target_link_libraries(GadgetronReturnIsmrmrdImage ${OCTAVE_LIBRARY} gadgetronoctavecommunicator optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
+target_link_libraries(GadgetronReturnIsmrmrdImage ${OCTAVE_LIBRARY} gadgetron_octavecommunicator optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY})
 
-add_library(gadgetronoctave SHARED OctaveGadget.cpp)
-target_link_libraries(gadgetronoctave ${OCTAVE_LIBRARY} gadgetronoctavecommunicator cpucore)
+add_library(gadgetron_octave SHARED OctaveGadget.cpp)
+target_link_libraries(gadgetron_octave ${OCTAVE_LIBRARY} gadgetron_octavecommunicator cpucore)
 	
-install(TARGETS gadgetronoctavecommunicator DESTINATION lib)
-install(TARGETS gadgetronoctave DESTINATION lib)
+install(TARGETS gadgetron_octavecommunicator DESTINATION lib)
+install(TARGETS gadgetron_octave DESTINATION lib)
 install(TARGETS GadgetronReturnIsmrmrdAcquisition DESTINATION octave)
 install(TARGETS GadgetronReturnIsmrmrdImage DESTINATION octave)
 install(TARGETS XMLGetXPath DESTINATION octave)

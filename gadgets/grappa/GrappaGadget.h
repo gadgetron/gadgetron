@@ -1,14 +1,15 @@
 #ifndef GRAPPAGADGET_H
 #define GRAPPAGADGET_H
 
-#include <complex>
-
-#include "gadgetrongrappa_export.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
 #include "GrappaCalibrationBuffer.h"
-#include "ismrmrd.h"
+#include "gadgetron_grappa_export.h"
+
+#include <ismrmrd.h>
+#include <complex>
+
 namespace Gadgetron{
 struct EXPORTGADGETSGRAPPA GrappaBufferInfo
 {
@@ -44,6 +45,7 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   bool first_call_;
  private:
   std::vector< GrappaCalibrationBuffer* > buffers_;
+  std::vector<unsigned int> fov_;
   std::vector<unsigned int> dimensions_;
   std::vector<unsigned int> image_dimensions_;
   std::vector< GadgetContainerMessage<  hoNDArray< std::complex<float> > >* > image_data_;

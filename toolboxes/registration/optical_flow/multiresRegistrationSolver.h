@@ -53,22 +53,22 @@ namespace Gadgetron{
             //
 
             if( !fixed_image || !moving_image ){
-                BOOST_THROW_EXCEPTION( runtime_error("multiresRegistrationSolver::solve : invalid input pointer."));
+                throw std::runtime_error("multiresRegistrationSolver::solve : invalid input pointer.");
             }
 
             if( !this->interpolator_.get() ){
-                BOOST_THROW_EXCEPTION( runtime_error("multiresRegistrationSolver::solve : interpolator not set."));
+                throw std::runtime_error("multiresRegistrationSolver::solve : interpolator not set.");
             }
 
             typename uintd<D>::Type fixed_dims = from_std_vector<unsigned int,D>(*moving_image->get_dimensions());
             typename uintd<D>::Type moving_dims = from_std_vector<unsigned int,D>(*fixed_image->get_dimensions());
 
             if(!(fixed_dims == moving_dims)){
-                BOOST_THROW_EXCEPTION( runtime_error("multiresRegistrationSolver::solve : fixed/moving image base dimensions mismatch."));
+                throw std::runtime_error("multiresRegistrationSolver::solve : fixed/moving image base dimensions mismatch.");
             }
 
             if( weak_less_equal(fixed_dims>>num_multires_levels_, to_vector_td<unsigned int, D>(1)) ){
-                BOOST_THROW_EXCEPTION( runtime_error("multiresRegistrationSolver::solve : too many multiresolution levels for image dimensionality."));
+                throw std::runtime_error("multiresRegistrationSolver::solve : too many multiresolution levels for image dimensionality.");
             }
 
             // Normalize the input
@@ -82,7 +82,7 @@ namespace Gadgetron{
 
             if( input_normalization_allowed ){
                 if( use_padding ){
-                    BOOST_THROW_EXCEPTION( runtime_error("multiresRegistrationSolver::solve : input normalization not possible as image padding is required."));
+                    throw std::runtime_error("multiresRegistrationSolver::solve : input normalization not possible as image padding is required.");
                 }
                 else{
                     normalized_fixed = fixed_image;

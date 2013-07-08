@@ -1,8 +1,10 @@
-#include "GadgetIsmrmrdReadWrite.h"
+#include "../mri_core/GadgetIsmrmrdReadWrite.h"
 #include "Gadgetron.h"
 #include "GrappaWeights.h"
 #include "hoNDArray_fileio.h"
+
 namespace Gadgetron{
+
 template <class T> int GrappaWeights<T>::
 update(hoNDArray< std::complex<T> >* new_weights)
 {
@@ -17,7 +19,7 @@ update(hoNDArray< std::complex<T> >* new_weights)
 
   if (!weights_.dimensions_equal(new_weights)) {
     try{weights_.create(new_weights->get_dimensions());}
-    catch (runtime_error & err){
+    catch (std::runtime_error & err){
       return -2;
     }
   }

@@ -1,10 +1,12 @@
 #include "cuNDArray_utils.h"
+#include "cuNDArray_blas.h"
 #include "cuNDArray_elemwise.h"
 #include "complext.h"
 
 #include <gtest/gtest.h>
 #include <complex>
 #include <vector>
+#include "vector_td_utilities.h"
 
 using namespace Gadgetron;
 using testing::Types;
@@ -99,7 +101,27 @@ TYPED_TEST(cuNDArray_utils_TestReal,sumTest){
   EXPECT_FLOAT_EQ(19*v1,sum(&this->Array,3)->at(idx));
 }
 
+
+TYPED_TEST(cuNDArray_utils_TestReal,meanTest){
+  TypeParam v1 = TypeParam(12.34);
+  unsigned int idx = 0;
+
+  fill(&this->Array,v1);
+  EXPECT_FLOAT_EQ(v1,mean(&this->Array));
+
+}
 TYPED_TEST_CASE(cuNDArray_utils_TestCplx, cplxImplementations);
+
+
+
+TYPED_TEST(cuNDArray_utils_TestCplx,meanTest){
+  TypeParam v1 = TypeParam(12.34);
+  unsigned int idx = 0;
+
+  fill(&this->Array,v1);
+  EXPECT_FLOAT_EQ(real(v1),real(mean(&this->Array)));
+
+}
 
 TYPED_TEST(cuNDArray_utils_TestCplx,permuteTest){
   
@@ -180,4 +202,39 @@ TYPED_TEST(cuNDArray_utils_TestCplx,sumTest){
   fill(&this->Array,v1);
   EXPECT_FLOAT_EQ(real(TypeParam(19)*v1),real(sum(&this->Array,3)->at(idx)));
   EXPECT_FLOAT_EQ(imag(TypeParam(19)*v1),imag(sum(&this->Array,3)->at(idx)));
+}
+
+TYPED_TEST(cuNDArray_utils_TestCplx,padTest){
+  TypeParam v1 = TypeParam(12.34, 56.78);
+  unsigned int idx = 0;
+
+  fill(&this->Array,v1);
+
+  vector_td<unsigned int,4> size = from_std_vector<unsigned int,4>(this->dims);
+  size *= 2;
+
+  boost::shared_ptr<cuNDArray<TypeParam> > out = pad<TypeParam,4>(size,&this->Array);
+
+  double scale = std::pow(2.0,4);
+  EXPECT_EQ(out->get_number_of_elements(),this->Array.get_number_of_elements()*scale);
+  EXPECT_FLOAT_EQ(real(mean(out.get()))*scale,real(mean(&this->Array)));
+  EXPECT_FLOAT_EQ(imag(mean(out.get()))*scale,imag(mean(&this->Array)));
+}
+
+
+TEST(padTest,largeSize){
+// So, this test is mainly here because pad apparently fails for large sized arrays.
+	unsigned int vdims[] = {192,192,50};
+	std::vector<unsigned int> dims(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+	unsigned int vdims2[] = {256,256,256};
+	std::vector<unsigned int> dims2(vdims2,vdims2+sizeof(vdims2)/sizeof(unsigned int));
+
+	cuNDArray<float_complext> in(&dims);
+	fill(&in,float_complext(1));
+	cuNDArray<float_complext> out(&dims2);
+
+	pad<float_complext,3>(&in,&out);
+
+	EXPECT_FLOAT_EQ(nrm2(&in),nrm2(&out));
+
 }

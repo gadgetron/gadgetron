@@ -1,3 +1,8 @@
+if (WIN32)
+  ADD_DEFINITIONS(-D__BUILD_GADGETS__)
+  link_directories(${Boost_LIBRARY_DIRS})
+endif (WIN32)
+
 include_directories(   
   ${ACE_INCLUDE_DIR} 
   ${Boost_INCLUDE_DIR}
@@ -14,12 +19,15 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   )
 
-add_subdirectory(core)
+if(ARMADILLO_FOUND)
+  add_subdirectory(mri_core)
+endif(ARMADILLO_FOUND)
 
 if (CUDA_FOUND)
-  add_subdirectory(grappa)
-  add_subdirectory(cgsense)
+  add_subdirectory(radial)
   add_subdirectory(spiral)
+  add_subdirectory(sense)
+  add_subdirectory(grappa)
 endif(CUDA_FOUND)
 
 #find_package(Octave)
@@ -31,11 +39,6 @@ if (MATLAB_FOUND)
     message("Compilng MATLAB gadgets")
     add_subdirectory(matlab)
 endif(MATLAB_FOUND)
-
-if (ARMADILLO_FOUND)
-  MESSAGE("Compiling optimized (Armadillo) MRI Gadgets")
-  add_subdirectory(mri_core)
-endif (ARMADILLO_FOUND)
 
 find_package(Boost COMPONENTS python)
 if (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND PYTHON_NUMPY_FOUND)

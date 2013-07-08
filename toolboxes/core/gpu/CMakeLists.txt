@@ -48,6 +48,7 @@ install(FILES
   hoCuNDArray_blas.h
   hoCuNDArray_operators.h
   hoCuNDArray_elemwise.h
+  hoCuNDArray_utils.h
   GPUTimer.h				
   cuNDFFT.h
   GadgetronCuException.h
@@ -56,4 +57,5 @@ install(FILES
   check_CUDA.h
   cudaDeviceManager.h
   CUBLASContextProvider.h
+  setup_grid.h
   DESTINATION include)

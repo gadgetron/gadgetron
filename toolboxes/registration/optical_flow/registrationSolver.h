@@ -2,7 +2,6 @@
 
 #include "solver.h"
 #include "resampleOperator.h"
-#include "GadgetronException.h"
 
 namespace Gadgetron{
   
@@ -73,7 +72,7 @@ namespace Gadgetron{
     deform( ARRAY_TYPE *image, boost::shared_ptr<ARRAY_TYPE> displacements )
     {
       if( !interpolator_.get() ){
-	    BOOST_THROW_EXCEPTION(runtime_error("registrationSolver::deform() : interpolator not set"));
+	    throw std::runtime_error("registrationSolver::deform() : interpolator not set");;
       }
     
       boost::shared_ptr<ARRAY_TYPE> out(new ARRAY_TYPE);

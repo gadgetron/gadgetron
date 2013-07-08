@@ -9,7 +9,7 @@
 namespace Gadgetron{
 // Compute fixed angle radial trajectory in the normalized range [-1/2;1/2]
 template<class REAL> EXPORTGPUCORE boost::shared_ptr< cuNDArray< typename reald<REAL,2>::Type > >
-compute_radial_trajectory_fixed_angle_2d( unsigned int num_samples_per_profile, unsigned int num_profiles_per_frame, unsigned int num_frames, REAL angular_offset = 0.0 );
+compute_radial_trajectory_fixed_angle_2d( unsigned int num_samples_per_profile, unsigned int num_profiles_per_frame, unsigned int num_frames, REAL angular_offset = REAL(0) );
 
 // Compute golden ratio radial trajectory in the normalized range [-1/2;1/2]
 template<class REAL> EXPORTGPUCORE boost::shared_ptr< cuNDArray< typename reald<REAL,2>::Type > >

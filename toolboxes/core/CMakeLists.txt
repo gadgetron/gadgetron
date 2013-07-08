@@ -13,7 +13,6 @@ install(FILES
   vector_td_utilities.h
   vector_td_io.h
   real_utilities.h
-  GadgetronException.h
   GadgetronTimer.h
   DESTINATION include)
 

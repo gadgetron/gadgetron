@@ -29,7 +29,7 @@
 #include "parameterparser.h"
 #include "radial_utilities.h"
 #include "cuNonCartesianSenseOperator.h"
-#include "cuSenseRHSBuffer.h"
+#include "cuSenseBuffer.h"
 #include "cuImageOperator.h"
 #include "cuCgPreconditioner.h"
 #include "cuCgSolver.h"
@@ -72,7 +72,7 @@ public:
   virtual void mult_M( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate = false)
   {
     if( !in || !out || !R_->get_displacement_field() ){
-      BOOST_THROW_EXCEPTION(cuda_error("registrationReconOperator::mult_M failed (1)"));
+      throw cuda_error("registrationReconOperator::mult_M failed (1)");
     }
     
     // Allocate intermediate image
@@ -91,7 +91,7 @@ public:
   virtual void mult_MH( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate = false )
   {
     if( !in || !out || !R_->is_preprocessed() ){
-      BOOST_THROW_EXCEPTION(cuda_error("registrationReconOperator::mult_MH failed (1)"));
+      throw cuda_error("registrationReconOperator::mult_MH failed (1)");
     }
     
     // Allocate intermediate image
@@ -108,7 +108,7 @@ public:
   virtual void mult_MH_M( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate = false )
   {
     if( !in || !out || !R_->get_displacement_field() ){
-      BOOST_THROW_EXCEPTION(cuda_error("registrationReconOperator::mult_MH_M failed (1)"));
+      throw cuda_error("registrationReconOperator::mult_MH_M failed (1)");
     }
 
     // Allocate intermediate image
@@ -257,14 +257,13 @@ int main(int argc, char** argv)
   //
   
   E->set_dcw(dcw);
-  dcw.reset();
   
   // Define rhs buffer
   //
 
-  boost::shared_ptr< cuSenseRHSBuffer<_real,2> > rhs_buffer( new cuSenseRHSBuffer<_real,2>() );
-  rhs_buffer->set_num_coils(num_coils);
-  rhs_buffer->set_sense_operator(E);
+  boost::shared_ptr< cuSenseBuffer<_real,2> > rhs_buffer( new cuSenseBuffer<_real,2>() );
+  rhs_buffer->setup( matrix_size, matrix_size_os, kernel_width, num_coils, 8, 16 );
+  rhs_buffer->set_dcw(dcw);
   
   // Fill rhs buffer (go through all the data...)
   //
@@ -286,7 +285,7 @@ int main(int argc, char** argv)
   // Estimate CSM
   //
 
-  boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_acc_coil_images();
+  boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_accumulated_coil_images();
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );
 
   E->set_csm(csm);

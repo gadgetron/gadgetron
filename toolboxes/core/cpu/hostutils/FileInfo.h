@@ -1,15 +1,10 @@
-/*
- * FileInfo.h
- *
- *  Created on: Dec 25, 2011
- *      Author: Michael S. Hansen
- */
-
 #ifndef FILEINFO_H_
 #define FILEINFO_H_
 
 #include <string>
 #include <fstream>
+
+namespace Gadgetron {
 
 /**
  *  Simple wrapper class for getting file info (file exists, file length, etc) before accessing file
@@ -54,6 +49,6 @@ protected:
 	bool file_exists_;
 	std::string filename_;
 };
-
+}
 
 #endif /* FILEINFO_H_ */

@@ -34,10 +34,7 @@ namespace Gadgetron{
   protected:
     virtual unsigned int get_num_neighbors() = 0;
     virtual void write_sort_arrays( thrust::device_vector<unsigned int> &sort_keys ) = 0;
-  
-  protected:
-    virtual void setup_grid( dim3 *blockDim, dim3* gridDim, unsigned int number_of_elements, unsigned int num_batches = 1 );
-  
+    
   protected:
     thrust::device_vector<unsigned int> lower_bounds_;
     thrust::device_vector<unsigned int> upper_bounds_;

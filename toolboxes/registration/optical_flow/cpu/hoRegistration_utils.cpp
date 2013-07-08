@@ -25,16 +25,16 @@ namespace Gadgetron{
     // A few sanity checks 
 
     if( _in == 0x0 ){
-      BOOST_THROW_EXCEPTION(runtime_error( "downsample(): illegal input provided."));
+      throw std::runtime_error( "downsample(): illegal input provided.");
     }
     
     if( _in->get_number_of_dimensions() < D ){
-      BOOST_THROW_EXCEPTION(runtime_error( "downsample(): the number of array dimensions should be at least D"));      
+      throw std::runtime_error( "downsample(): the number of array dimensions should be at least D");
     }
     
     for( unsigned int d=0; d<D; d++ ){
       if( (_in->get_size(d)%2) == 1 && _in->get_size(d) != 1 ){
-	BOOST_THROW_EXCEPTION(runtime_error( "downsample(): uneven array dimensions larger than one not accepted"));
+	throw std::runtime_error( "downsample(): uneven array dimensions larger than one not accepted");
       }
     }
     
@@ -99,11 +99,11 @@ namespace Gadgetron{
     // A few sanity checks 
 
     if( _in == 0x0 ){
-      BOOST_THROW_EXCEPTION(runtime_error("upsample(): illegal input provided."));
+      throw std::runtime_error("upsample(): illegal input provided.");
     }
 
     if( _in->get_number_of_dimensions() < D ){
-      BOOST_THROW_EXCEPTION(runtime_error( "upsample(): the number of array dimensions should be at least D"));
+      throw std::runtime_error( "upsample(): the number of array dimensions should be at least D");
     }
     
     typename uintd<D>::Type matrix_size_in = from_std_vector<unsigned int,D>( *_in->get_dimensions() );

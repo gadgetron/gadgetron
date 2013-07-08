@@ -19,15 +19,15 @@ namespace Gadgetron{
 
     cuNonCartesianSenseOperator() : cuSenseOperator<REAL,D>() { 
       plan_ = boost::shared_ptr< cuNFFT_plan<REAL, D, ATOMICS> >( new cuNFFT_plan<REAL, D, ATOMICS>() );
-      ready_ = false; 
+      is_preprocessed_ = false;
     }
     
     virtual ~cuNonCartesianSenseOperator() {}
     
     inline boost::shared_ptr< cuNFFT_plan<REAL, D, ATOMICS> > get_plan() { return plan_; }
     inline boost::shared_ptr< cuNDArray<REAL> > get_dcw() { return dcw_; }
-    inline bool is_setup() { return ready_; }
-    
+    inline bool is_preprocessed() { return is_preprocessed_; } 
+
     virtual void mult_M( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate = false );
     virtual void mult_MH( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate = false );
 
@@ -42,7 +42,7 @@ namespace Gadgetron{
   protected:
     boost::shared_ptr< cuNFFT_plan<REAL, D, ATOMICS> > plan_;
     boost::shared_ptr< cuNDArray<REAL> > dcw_;
-    bool ready_;
+    bool is_preprocessed_;
   };
   
   //Atomics can't be used with doubles

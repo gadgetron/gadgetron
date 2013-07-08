@@ -71,7 +71,7 @@ namespace Gadgetron {
 
 	hoNDArray< std::complex<float> > A;
 	try{ A.create(&dims); }
-	catch (bad_alloc& err){	  
+	catch (std::runtime_error & err){
 	  GADGET_DEBUG1("Unable to create array for PCA calculation\n");
 	  return GADGET_FAIL;
 	}
@@ -84,7 +84,7 @@ namespace Gadgetron {
 	std::vector<unsigned int> means_dims; means_dims.push_back(channels);
 
 	try{means.create(&means_dims);}
-	catch (bad_alloc& err){
+	catch (std::runtime_error& err){
 	  GADGET_DEBUG1("Unable to create temporary stoorage for mean values\n");
 	  return GADGET_FAIL;
 	}
@@ -131,7 +131,7 @@ namespace Gadgetron {
 	hoNDArray< std::complex<float> >* VT = pca_coefficients_[location];
 
 	try {VT->create(&VT_dims);}
-	catch (bad_alloc& err){
+	catch (std::runtime_error& err){
 	  GADGET_DEBUG_EXCEPTION(err,"Failed to create array for VT\n");
 	  return GADGET_FAIL;
 	}
@@ -165,7 +165,7 @@ namespace Gadgetron {
 	new GadgetContainerMessage< hoNDArray< std::complex<float> > >;
 
       try{m3->getObjectPtr()->create(m2->getObjectPtr()->get_dimensions().get()); }
-      catch (bad_alloc& err){
+      catch (std::runtime_error& err){
 	GADGET_DEBUG_EXCEPTION(err,"Unable to create storage for PCA coils\n");
 	m3->release();
 	return GADGET_FAIL;

@@ -12,7 +12,6 @@ namespace Gadgetron{
   
     cuNFFTOperator() : linearOperator<cuNDArray< complext<REAL> > >() {
       plan_ = boost::shared_ptr< cuNFFT_plan<REAL, D> >( new cuNFFT_plan<REAL, D>() );
-      ready_ = false; 
     }
   
     virtual ~cuNFFTOperator() {}
@@ -36,7 +35,5 @@ namespace Gadgetron{
   protected:
     boost::shared_ptr< cuNFFT_plan<REAL, D> > plan_;
     boost::shared_ptr< cuNDArray<REAL> > dcw_;
-    std::vector<unsigned int> dimensionsK_;
-    bool ready_;
   };
 }

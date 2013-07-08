@@ -9,12 +9,11 @@
 #include "NDArray.h"
 #include "complext.h"
 #include "vector_td.h"
-#include "GadgetronException.h"
 
 #include <string.h>
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
-
+#include <new>          // std::runtime_error
 namespace Gadgetron{
 
   template <class T> class hoNDArray : public NDArray<T>
@@ -50,7 +49,7 @@ namespace Gadgetron{
     // Copy constructor
     hoNDArray(const hoNDArray<T>& a) {
       this->data_ = 0;
-      this->dimensions_ = a.dimensions_;
+      this->dimensions_ = boost::shared_ptr< std::vector<unsigned int> >(new std::vector<unsigned int>(*a.dimensions_));
       allocate_memory();
       memcpy( this->data_, a.data_, this->elements_*sizeof(T) );
     }
@@ -72,7 +71,13 @@ namespace Gadgetron{
     }
     
     virtual void fill(T value) {
+#ifdef USE_OMP
+#pragma omp parallel for
+      for( int i=0; i<this->get_number_of_elements(); i++ )
+	this->get_data_ptr()[i] = value;
+#else
       std::fill(this->get_data_ptr(), this->get_data_ptr()+this->get_number_of_elements(), value);
+#endif
     }
     
     T* begin() {
@@ -85,14 +90,14 @@ namespace Gadgetron{
     
     T& at( unsigned int idx ){
       if( idx >= this->get_number_of_elements() ){
-  	BOOST_THROW_EXCEPTION( runtime_error("cuNDArray::at(): index out of range."));
+  	throw std::runtime_error("hoNDArray::at(): index out of range.");
       }
       return this->get_data_ptr()[idx];
     }
     
-    T operator[]( unsigned int idx ){
+    T& operator[]( unsigned int idx ){
       if( idx >= this->get_number_of_elements() ){
-  	BOOST_THROW_EXCEPTION( runtime_error("cuNDArray::operator[]: index out of range."));
+  	throw std::runtime_error("hoNDArray::operator[]: index out of range.");
       }
       return this->get_data_ptr()[idx];
     }
@@ -111,7 +116,7 @@ namespace Gadgetron{
       _allocate_memory(this->elements_, &this->data_);
     
       if( this->data_ == 0x0 ){
-	BOOST_THROW_EXCEPTION( bad_alloc("hoNDArray<>::allocate memory failed"));
+	throw std::runtime_error("hoNDArray<>::allocate memory failed");
       }
     }
 

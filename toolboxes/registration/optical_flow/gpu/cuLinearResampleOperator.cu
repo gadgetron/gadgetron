@@ -2,6 +2,7 @@
 #include "cuResampleOperator_macros.h"
 #include "vector_td_utilities.h"
 #include "check_CUDA.h"
+#include "setup_grid.h"
 
 namespace Gadgetron{
 
@@ -214,7 +215,7 @@ namespace Gadgetron{
     unsigned int extended_dim = (surplus == 1) ? 1 : this->offsets_->get_size(D);
   
     dim3 blockDim, gridDim;
-    this->setup_grid( &blockDim, &gridDim, prod(matrix_size)*extended_dim );
+    setup_grid( prod(matrix_size)*extended_dim, &blockDim, &gridDim );
     
     write_sort_arrays_kernel<typename realType<T>::Type,D><<< gridDim, blockDim >>>
       ( matrix_size, extended_dim, this->offsets_->get_data_ptr(),

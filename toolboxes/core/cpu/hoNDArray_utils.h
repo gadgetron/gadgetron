@@ -64,7 +64,7 @@ namespace Gadgetron {
     template<class T> boost::shared_ptr< hoNDArray<T> > shift_dim( hoNDArray<T> *in, int shift )  
     {
         if( in == 0x0 ) {
-            BOOST_THROW_EXCEPTION(runtime_error("shift_dim(): invalid input pointer provided"));
+            throw std::runtime_error("shift_dim(): invalid input pointer provided");;
         }    
         std::vector<unsigned int> order;
         for (unsigned int i = 0; i < in->get_number_of_dimensions(); i++) {
@@ -76,7 +76,7 @@ namespace Gadgetron {
     template<class T> void shift_dim( hoNDArray<T> *in, hoNDArray<T> *out, int shift )
     {
         if( in == 0x0 || out == 0x0 ) {
-            BOOST_THROW_EXCEPTION(runtime_error("shift_dim(): invalid pointer provided"));
+            throw std::runtime_error("shift_dim(): invalid pointer provided");;
         }    
         std::vector<unsigned int> order;
         for (unsigned int i = 0; i < in->get_number_of_dimensions(); i++) {
@@ -89,7 +89,7 @@ namespace Gadgetron {
     permute( hoNDArray<T> *in, std::vector<unsigned int> *dim_order, int shift_mode = 0) 
     {
         if( in == 0x0 || dim_order == 0x0 ) {
-            BOOST_THROW_EXCEPTION(runtime_error("permute(): invalid pointer provided"));
+            throw std::runtime_error("permute(): invalid pointer provided");;
         }    
 
         std::vector<unsigned int> dims;
@@ -105,18 +105,18 @@ namespace Gadgetron {
         permute( hoNDArray<T> *in, hoNDArray<T> *out, std::vector<unsigned int> *dim_order, int shift_mode = 0) 
     {
         if( in == 0x0 || out == 0x0 || dim_order == 0x0 ) {
-            BOOST_THROW_EXCEPTION(runtime_error("permute(): invalid pointer provided"));
+            throw std::runtime_error("permute(): invalid pointer provided");;
         }    
 
         // Check ordering array
         if (dim_order->size() > in->get_number_of_dimensions()) {
-            BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::permute - Invalid length of dimension ordering array"));
+            throw std::runtime_error("hoNDArray::permute - Invalid length of dimension ordering array");;
         }
 
         std::vector<unsigned int> dim_count(in->get_number_of_dimensions(),0);
         for (unsigned int i = 0; i < dim_order->size(); i++) {
             if ((*dim_order)[i] >= in->get_number_of_dimensions()) {
-                BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::permute - Invalid dimension order array"));      
+                throw std::runtime_error("hoNDArray::permute - Invalid dimension order array");;
             }
             dim_count[(*dim_order)[i]]++;
         }
@@ -127,7 +127,7 @@ namespace Gadgetron {
         // Check that there are no duplicate dimensions
         for (unsigned int i = 0; i < dim_order->size(); i++) {
             if (dim_count[(*dim_order)[i]] != 1) {
-                BOOST_THROW_EXCEPTION(runtime_error("hoNDArray::permute - Invalid dimension order array (duplicates)"));
+                throw std::runtime_error("hoNDArray::permute - Invalid dimension order array (duplicates)");;
 
             }
             dim_order_int.push_back((*dim_order)[i]);
@@ -135,7 +135,7 @@ namespace Gadgetron {
 
         for (unsigned int i = 0; i < dim_order_int.size(); i++) {
             if ((*in->get_dimensions())[dim_order_int[i]] != out->get_size(i)) {
-                BOOST_THROW_EXCEPTION(runtime_error("permute(): dimensions of output array do not match the input array"));
+                throw std::runtime_error("permute(): dimensions of output array do not match the input array");;
             }
         }
 
@@ -156,42 +156,45 @@ namespace Gadgetron {
             it.advance();
         }
     }
-
+   
     // Expand array to new dimension
     template<class T> boost::shared_ptr<hoNDArray<T> > 
     expand(hoNDArray<T> *in, unsigned int new_dim_size )
     {
-        if( in == 0x0 ){
-            BOOST_THROW_EXCEPTION(runtime_error("expand(): illegal input pointer."));
-        }
+      if( in == 0x0 ){
+	throw std::runtime_error("expand(): illegal input pointer.");;
+      }
+      
+      const unsigned int number_of_elements_in = in->get_number_of_elements();    
 
-        std::vector<unsigned int> dims = *in->get_dimensions(); dims.push_back(new_dim_size);
-        boost::shared_ptr< hoNDArray<T> > out( new hoNDArray<T>()); out->create(&dims);    
-        const unsigned int number_of_elements_in = in->get_number_of_elements();    
+      std::vector<unsigned int> dims = *in->get_dimensions(); 
+      dims.push_back(new_dim_size);
 
+      boost::shared_ptr< hoNDArray<T> > out(new hoNDArray<T>(&dims));
+      
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-    for( unsigned int idx=0; idx<number_of_elements_in*new_dim_size; idx++ ){
-            out[idx] = in[idx%number_of_elements_in];
-        }
-        return out;
+      for( int idx=0; idx<number_of_elements_in*new_dim_size; idx++ ){
+	(*out)[idx] = in->at(idx%number_of_elements_in);
+      }
+      return out;
     }
-
+  
     // Sum over dimension
     template<class T> boost::shared_ptr<hoNDArray<T> > 
     sum(hoNDArray<T> *in, unsigned int dim )
     {
         if( in == 0x0 ){
-            BOOST_THROW_EXCEPTION(runtime_error("sum(): illegal input pointer."));
+            throw std::runtime_error("sum(): illegal input pointer.");;
         }
 
         if( !(in->get_number_of_dimensions()>1) ){
-            BOOST_THROW_EXCEPTION(runtime_error("sum(): underdimensioned."));
+            throw std::runtime_error("sum(): underdimensioned.");;
         }
 
         if( dim > in->get_number_of_dimensions()-1 ){
-            BOOST_THROW_EXCEPTION(runtime_error( "sum(): dimension out of range."));
+            throw std::runtime_error( "sum(): dimension out of range.");;
         }
 
         unsigned int number_of_batches = in->get_size(dim);
@@ -219,13 +222,13 @@ namespace Gadgetron {
     crop( typename uintd<D>::Type crop_offset, typename uintd<D>::Type crop_size, hoNDArray<T> *in )
     {
         if( in == 0x0 ){
-            BOOST_THROW_EXCEPTION(runtime_error("crop: 0x0 array provided"));
+            throw std::runtime_error("crop: 0x0 array provided");;
         }
 
         if( in->get_number_of_dimensions() < D ){
             std::stringstream ss;
             ss << "crop: number of image dimensions should be at least " << D;
-            BOOST_THROW_EXCEPTION(runtime_error(ss.str()));
+            throw std::runtime_error(ss.str());;
         }
 
         std::vector<unsigned int> dims = to_std_vector(crop_size);
@@ -243,7 +246,7 @@ namespace Gadgetron {
         }
 
         if( weak_greater(crop_offset+matrix_size_out, matrix_size_in) ){
-            BOOST_THROW_EXCEPTION(runtime_error( "crop: cropping size mismatch"));
+            throw std::runtime_error( "crop: cropping size mismatch");;
         }
 
         const int num_elements_in = prod(matrix_size_in);
@@ -276,13 +279,13 @@ namespace Gadgetron {
     pad( typename uintd<D>::Type size, hoNDArray<T> *in, T val = T(0) )
     {
         if( in == 0x0 ){
-            BOOST_THROW_EXCEPTION(runtime_error("pad: 0x0 array provided"));
+            throw std::runtime_error("pad: 0x0 array provided");;
         }
 
         if( in->get_number_of_dimensions() < D ){
             std::stringstream ss;
             ss << "pad: number of image dimensions should be at least " << D;
-            BOOST_THROW_EXCEPTION(runtime_error(ss.str()));
+            throw std::runtime_error(ss.str());;
         }
 
         std::vector<unsigned int> dims = to_std_vector(size);

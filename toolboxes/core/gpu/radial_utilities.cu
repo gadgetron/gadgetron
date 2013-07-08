@@ -79,7 +79,7 @@ compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile,
 template<class REAL> __global__ void
 compute_radial_trajectory_fixed_angle_2d_kernel( typename reald<REAL,2>::Type *co, REAL one_over_num_profiles_per_frame, REAL one_over_num_frames, REAL angular_offset )
 {
-  const unsigned int index = blockIdx.x*blockDim.x + threadIdx.x;              
+  const unsigned int index = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
 
   const REAL samples_per_profile = (REAL) blockDim.x;
   const REAL bias = samples_per_profile * REAL(0.5);
@@ -88,7 +88,7 @@ compute_radial_trajectory_fixed_angle_2d_kernel( typename reald<REAL,2>::Type *c
   const REAL frame = (REAL)blockIdx.y;
 
   REAL cos_angle, sin_angle;
-  gad_sincos<REAL>( (lprofile+frame*one_over_num_frames)*one_over_num_profiles_per_frame*get_pi<REAL>()+angular_offset, &sin_angle, &cos_angle );
+  gad_sincos<REAL>( (lprofile+frame*one_over_num_frames)*one_over_num_profiles_per_frame*get_pi<REAL>()+angular_offset+get_pi<REAL>(), &sin_angle, &cos_angle );
 
   typename reald<REAL,2>::Type sample_pos; 
   sample_pos.vec[0] = (sample_idx_on_profile-bias)*cos_angle/samples_per_profile;
@@ -115,13 +115,11 @@ compute_radial_trajectory_fixed_angle_2d( unsigned int num_samples_per_profile, 
   unsigned int number_of_samples_per_frame = num_samples_per_profile * num_profiles_per_frame;
 
   // Allocate space for result
-  vector<unsigned int> dims; dims.push_back( number_of_samples_per_frame ); dims.push_back( num_frames );
-  boost::shared_ptr< cuNDArray<T> > co( new cuNDArray<T>(&dims) );
+  vector<unsigned int> dims; 
+  dims.push_back( number_of_samples_per_frame ); 
+  dims.push_back( num_frames );
   
-  if(!co.get()){
-    cout << endl << "Error:: compute_radial_trajectory_fixed_angle_2d: memory allocation failed." << endl;
-    return boost::shared_ptr< cuNDArray<T> >();
-  }
+  boost::shared_ptr< cuNDArray<T> > co( new cuNDArray<T>(&dims) );
   
   // Set dimensions of grid/blocks.
   dim3 dimBlock( num_samples_per_profile );

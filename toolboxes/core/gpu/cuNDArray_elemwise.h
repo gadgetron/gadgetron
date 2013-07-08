@@ -200,6 +200,17 @@ namespace Gadgetron{
    */  
   template<class T> EXPORTGPUCORE void shrink1( cuNDArray<T> *x, typename realType<T>::Type gamma, cuNDArray<T> *out = 0x0 );
 
+
+
+  /**
+   * @brief In place p-shrinkage (soft thresholding), i.e. pshrink(x,gamma,p) = x/abs(x)*max(abs(x)-gamma*abs(x)^(p-1),0).
+   * @param[out] out Output array. Can be 0x0 in which case an in place transform is performed.
+   * @param[in,out] x Input array (and output array if out == 0x0).
+   * @param[in] gamma Shrinkage control parameter
+   * @param[in] p p value of the shrinkage. Should be less than 1 and more than 0.
+   */
+  template<class T> EXPORTGPUCORE void pshrink( cuNDArray<T> *x, typename realType<T>::Type gamma,typename realType<T>::Type p, cuNDArray<T> *out = 0x0 );
+
   /**
    * @brief In place shrinkage (soft thresholding, multi-dimensional), i.e. shrink(x,gamma,s) = x/s*max(s-gamma,0).
    * @param[out] out Output array. Can be 0x0 in which case an in place transform is performed.
@@ -208,4 +219,13 @@ namespace Gadgetron{
    * @param[in] gamma Shrinkage control parameter
    */  
   template<class T> EXPORTGPUCORE void shrinkd ( cuNDArray<T> *x, cuNDArray<typename realType<T>::Type> *s, typename realType<T>::Type gamma, cuNDArray<T> *out = 0x0 );
+
+  /**
+     * @brief In place p-shrinkage (soft thresholding, multi-dimensional), i.e. pshrink(x,s,gamma,p) = x/s*max(s-gamma*s^(p-1),0).
+     * @param[out] out Output array. Can be 0x0 in which case an in place transform is performed.
+     * @param[in,out] x Input array (and output array if out == 0x0).
+     * @param[in] gamma Shrinkage control parameter
+     * @param[in] p p value of the shrinkage. Should be less than 1 and more than 0.
+     */
+    template<class T> EXPORTGPUCORE void pshrinkd ( cuNDArray<T> *x, cuNDArray<typename realType<T>::Type> *s, typename realType<T>::Type gamma,typename realType<T>::Type p, cuNDArray<T> *out = 0x0 );
 }

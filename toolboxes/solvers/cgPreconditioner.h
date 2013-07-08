@@ -6,7 +6,6 @@
 #define CGPRECONDITIONER_H
 #pragma once
 
-#include "GadgetronException.h"
 #include <boost/shared_ptr.hpp>
 
 namespace Gadgetron{

@@ -1,3 +1,7 @@
+IF (WIN32)
+  ADD_DEFINITIONS(-D__BUILD_GADGETRON_PYTHON__)
+ENDIF (WIN32)
+
 # TODO: The Gadgetron Python code uses Numpy C-API code
 # from Numpy versions < 1.7. If Numpy version is >= 1.7
 # you will get compiler warnings
@@ -6,20 +10,20 @@
 find_package(Ismrmrd REQUIRED)
 
 include_directories(
+  ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${PYTHON_INCLUDE_PATH}
   ${PYTHON_NUMPY_INCLUDE_DIR}
   )
 
 add_library(GadgetronPythonMRI MODULE GadgetronPythonMRI.cpp GadgetReference.cpp)
 
-
-add_library(gadgetronpython SHARED       		
+add_library(gadgetron_python SHARED       		
 	PythonGadget.cpp
 	GadgetReference.cpp
 	GadgetronPythonMRI.cpp
 	PythonCommunicator.cpp)
 
-target_link_libraries(gadgetronpython
+target_link_libraries(gadgetron_python
 	${ISMRMRD_LIBRARIES} 
 	optimized ${ACE_LIBRARIES}  
 	debug ${ACE_DEBUG_LIBRARY} 
@@ -34,12 +38,12 @@ target_link_libraries(GadgetronPythonMRI
 
 IF (WIN32)
     SET_TARGET_PROPERTIES(GadgetronPythonMRI PROPERTIES SUFFIX .pyd)
-	SET_TARGET_PROPERTIES(gadgetronpython PROPERTIES LINK_FLAGS "/LIBPATH:${PYTHON_INCLUDE_DIR}/../libs" )
+	SET_TARGET_PROPERTIES(gadgetron_python PROPERTIES LINK_FLAGS "/LIBPATH:${PYTHON_INCLUDE_DIR}/../libs" )
 ENDIF(WIN32)
 
 set_target_properties(GadgetronPythonMRI PROPERTIES PREFIX "")
 	
-install(TARGETS gadgetronpython GadgetronPythonMRI DESTINATION lib)
+install(TARGETS gadgetron_python GadgetronPythonMRI DESTINATION lib)
 
 install(FILES 
 	rms_coil_combine.py

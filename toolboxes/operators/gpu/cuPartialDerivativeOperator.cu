@@ -64,12 +64,12 @@ namespace Gadgetron{
 								bool accumulate )
   {
     if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
-      BOOST_THROW_EXCEPTION(runtime_error( "partialDerivativeOperator::compute_partial_derivative : array dimensions mismatch."));
+      throw std::runtime_error( "partialDerivativeOperator::compute_partial_derivative : array dimensions mismatch.");
 
     }
 
     if( in->get_number_of_dimensions() != D || out->get_number_of_dimensions() != D ){
-      BOOST_THROW_EXCEPTION(runtime_error("partialDerivativeOperator::compute_partial_derivative : dimensionality mismatch"));
+      throw std::runtime_error("partialDerivativeOperator::compute_partial_derivative : dimensionality mismatch");
 
     }
 
@@ -95,12 +95,12 @@ namespace Gadgetron{
 									     bool accumulate )
   {  
     if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
-      BOOST_THROW_EXCEPTION(runtime_error( "partialDerivativeOperator::compute_second_order_partial_derivative : array dimensions mismatch."));
+      throw std::runtime_error( "partialDerivativeOperator::compute_second_order_partial_derivative : array dimensions mismatch.");
 
     }
 
     if( in->get_number_of_dimensions() != D || out->get_number_of_dimensions() != D ){
-      BOOST_THROW_EXCEPTION(runtime_error( "partialDerivativeOperator::compute_second_order_partial_derivative : dimensionality mismatch"));
+      throw std::runtime_error( "partialDerivativeOperator::compute_second_order_partial_derivative : dimensionality mismatch");
 
     }
 

@@ -37,7 +37,7 @@ namespace Gadgetron{
     virtual void gradient(ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false)
     {
       if( in == 0x0 || out == 0x0 )
-	BOOST_THROW_EXCEPTION(runtime_error("linearOperator::gradient(): Invalid input and/or output array"));
+	throw std::runtime_error("linearOperator::gradient(): Invalid input and/or output array");
 
       ARRAY_TYPE* tmp = out;
       if (accumulate) {
@@ -54,7 +54,7 @@ namespace Gadgetron{
     virtual void set_codomain_dimensions( std::vector<unsigned int> *dims )
     { 
       if( dims == 0x0 ) 
-	BOOST_THROW_EXCEPTION(runtime_error("linearOperator::set_codomain_dimensions: illegal dimensions array provided"));
+	throw std::runtime_error("linearOperator::set_codomain_dimensions: illegal dimensions array provided");
       codomain_dims_ = *dims; 
     }
       
@@ -71,7 +71,7 @@ namespace Gadgetron{
     virtual void mult_MH_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false )
     {    
       if( codomain_dims_.size() == 0 ){
-	BOOST_THROW_EXCEPTION(runtime_error("Error: linearOperator::mult_MH_M : codomain dimensions not set"));	
+	throw std::runtime_error("Error: linearOperator::mult_MH_M : codomain dimensions not set");
       }
       
       ARRAY_TYPE tmp;

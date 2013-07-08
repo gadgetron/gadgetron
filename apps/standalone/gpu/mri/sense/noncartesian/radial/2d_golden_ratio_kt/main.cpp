@@ -5,7 +5,7 @@
 #include "vector_td_utilities.h"
 #include "radial_utilities.h"
 #include "cuNonCartesianKtSenseOperator.h"
-#include "cuSenseRHSBuffer.h"
+#include "cuSenseBuffer.h"
 #include "cuImageOperator.h"
 #include "cuCgPreconditioner.h"
 #include "cuCgSolver.h"
@@ -54,9 +54,9 @@ int main(int argc, char** argv)
   parms.add_parameter( 'o', COMMAND_LINE_INT,    1, "Oversampled matrix size", true );
   parms.add_parameter( 'p', COMMAND_LINE_INT,    1, "Profiles per frame", true );
   parms.add_parameter( 'f', COMMAND_LINE_INT,    1, "Frames per reconstruction", true, "32" );
-  parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of iterations", true, "10" );
+  parms.add_parameter( 'i', COMMAND_LINE_INT,    1, "Number of iterations", true, "25" );
   parms.add_parameter( 'k', COMMAND_LINE_FLOAT,  1, "Kernel width", true, "5.5" );
-  parms.add_parameter( 'K', COMMAND_LINE_FLOAT,  1, "Kappa", true, "0.1" );
+  parms.add_parameter( 'K', COMMAND_LINE_FLOAT,  1, "Kappa", true, "0.25" );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -115,8 +115,8 @@ int main(int argc, char** argv)
 
   // Density compensation weights are constant throughout all reconstrutions
   boost::shared_ptr< cuNDArray<_real> > dcw = compute_radial_dcw_golden_ratio_2d
-    ( samples_per_profile, profiles_per_frame, (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0], 
-      _real(1)/((_real)samples_per_profile/(_real)max(matrix_size.vec[0],matrix_size.vec[1])) );
+    ( samples_per_profile, profiles_per_frame, (_real)matrix_size_os[0]/(_real)matrix_size[0], 
+      _real(1)/((_real)samples_per_profile/(_real)max(matrix_size[0],matrix_size[1])) );
   
   // Define encoding matrix for non-Cartesian kt-SENSE
   boost::shared_ptr< cuNonCartesianKtSenseOperator<_real,2> > E( new cuNonCartesianKtSenseOperator<_real,2>() );
@@ -125,11 +125,20 @@ int main(int argc, char** argv)
   // Notify encoding operator of dcw
   E->set_dcw(dcw);
 
-  // Use a rhs buffer to estimate the csm
+  // Use a rhs buffer to estimate the csm -- from all the data
   //
-  boost::shared_ptr< cuSenseRHSBuffer<_real,2> > rhs_buffer( new cuSenseRHSBuffer<_real,2>() );
-  rhs_buffer->set_num_coils(num_coils);
-  rhs_buffer->set_sense_operator(E);
+
+  unsigned int profiles_per_subcycle = matrix_size_os[0]<<1; // causes no alising
+  unsigned int num_subcycles = profiles_per_subcycle / profiles_per_frame;
+  unsigned int num_cycles = num_profiles / profiles_per_subcycle;
+
+  std::cout << "Buffer cycles/sybcycles: " << num_cycles << " / " << num_subcycles << std::endl;
+
+  boost::shared_ptr< cuSenseBuffer<_real,2> > rhs_buffer( new cuSenseBuffer<_real,2>() );
+
+  // The first acquired profiles are often undesired. Skip the first two cycles...
+  rhs_buffer->setup( matrix_size, matrix_size_os, kernel_width, num_coils, num_cycles-1, num_subcycles );
+  rhs_buffer->set_dcw(dcw);
    
   // Fill rhs buffer
   //
@@ -151,7 +160,7 @@ int main(int argc, char** argv)
     rhs_buffer->add_frame_data( csm_data.get(), traj.get() );
   }
   
-  boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_acc_coil_images();
+  boost::shared_ptr< cuNDArray<_complext> > acc_images = rhs_buffer->get_accumulated_coil_images();
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );
 
   E->set_csm(csm);
@@ -194,7 +203,7 @@ int main(int argc, char** argv)
   cuNDArray<_complext> result = cuNDArray<_complext>(&image_dims);
   
   // Define shutter for training data
-  _real shutter_radius = ((_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0])*(_real)profiles_per_frame/(_real)M_PI;
+  _real shutter_radius = ((_real)matrix_size_os[0]/(_real)matrix_size[0])*(_real)profiles_per_frame/(_real)M_PI;
   shutter_radius /= _real(2);
   std::cout << "Shutter radius: " << shutter_radius << std::endl;
 
@@ -215,12 +224,16 @@ int main(int argc, char** argv)
       ( samples_per_profile, profiles_per_frame, frames_per_reconstruction, reconstruction*profiles_per_reconstruction );
     
     // Preprocess
+    image_dims.pop_back(); image_dims.push_back(frames_per_reconstruction); 
+    E->set_domain_dimensions(&image_dims);
     E->preprocess( traj.get() );
     
     // Upload data
     boost::shared_ptr< cuNDArray<_complext> > data = upload_data
       ( reconstruction, samples_per_reconstruction, num_profiles*samples_per_profile, num_coils, host_data.get() );
-    
+
+    E->set_codomain_dimensions(data->get_dimensions().get());    
+
     // Convolve to Cartesian k-space
     E->get_plan()->convolve( data.get(), image_os, dcw.get(), cuNFFT_plan<_real,2>::NFFT_CONV_NC2C );
 
@@ -230,8 +243,7 @@ int main(int argc, char** argv)
     E->get_plan()->deapodize( image_os );
 
     // Remove oversampling
-    image_dims = to_std_vector(matrix_size);
-    image_dims.push_back(frames_per_reconstruction); image_dims.push_back(num_coils);
+    image_dims.push_back(num_coils);
     cuNDArray<_complext> *image = new cuNDArray<_complext>(&image_dims);
     crop<_complext,2>( (matrix_size_os-matrix_size)>>1, image_os, image );
     image_dims.pop_back();
