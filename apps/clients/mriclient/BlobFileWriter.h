@@ -1,10 +1,12 @@
-#ifndef DICOMIMAGEWRITER_H
-#define DICOMIMAGEWRITER_H
+#ifndef BLOB_FILE_WRITER_H
+#define BLOB_FILE_WRITER_H
 
 #include <fstream>
 #include <iomanip>
 
 #include "GadgetMessageInterface.h"
+
+namespace Gadgetron {
 
 #define MAX_BLOBS_LOG_10    6
 
@@ -84,4 +86,6 @@ class BlobFileWriter : public GadgetMessageReader
         std::string file_suffix;
 };
 
-#endif //DICOM_IMAGE_WRITER
+} // namespace Gadgetron
+
+#endif //BLOB_FILE_WRITER_H
