@@ -6,8 +6,6 @@
 #include "hoNDArray.h"
 #include "vector_td.h"
 #include "cuNFFT.h"
-#include "cuNonCartesianSenseOperator.h"
-#include "cuCgSolver.h"
 #include "cuCgPreconditioner.h"
 #include "cuSenseBufferCg.h"
 #include "ismrmrd.h"

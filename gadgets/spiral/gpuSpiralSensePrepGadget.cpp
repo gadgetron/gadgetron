@@ -1,13 +1,13 @@
 #include "gpuSpiralSensePrepGadget.h"
 #include "SenseJob.h"
 #include "Gadgetron.h"
-#include "cuNDArray.h"
+#include "cuNDArray_utils.h"
+#include "vector_td_utilities.h"
 #include "hoNDArray_fileio.h"
 #include "vector_td.h"
 #include "vector_td_operators.h"
 #include "check_CUDA.h"
 #include "b1_map.h"
-#include "cuNonCartesianSenseOperator.h"
 #include "GPUTimer.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "vds.h"
@@ -26,7 +26,12 @@ namespace Gadgetron{
     , acceleration_factor_(0)
   {
     GADGET_DEBUG1("Initializing Spiral\n");
+    set_parameter(std::string("buffer_using_solver").c_str(), "false");
     set_parameter(std::string("propagate_csm_from_set").c_str(), "-1");
+    set_parameter(std::string("buffer_convolution_kernel_width").c_str(), "5.5");
+    set_parameter(std::string("buffer_convolution_oversampling_factor").c_str(), "1.25");
+    set_parameter(std::string("reconstruction_os_factor_x").c_str(), "1.0");
+    set_parameter(std::string("reconstruction_os_factor_y").c_str(), "1.0");
   }
 
   gpuSpiralSensePrepGadget::~gpuSpiralSensePrepGadget() {}
@@ -57,6 +62,14 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
+    cudaDeviceProp deviceProp;
+    if( cudaGetDeviceProperties( &deviceProp, device_number_ ) != cudaSuccess) {
+      GADGET_DEBUG1( "Error: unable to query device properties.\n" );
+      return GADGET_FAIL;
+    }
+    
+    unsigned int warp_size = deviceProp.warpSize;
+
     propagate_csm_from_set_ = get_int_value(std::string("propagate_csm_from_set").c_str());
 
     if( propagate_csm_from_set_ > 0 ){
@@ -68,14 +81,23 @@ namespace Gadgetron{
       GADGET_DEBUG2("Propagating csm from set %d to all sets\n", propagate_csm_from_set_ );
     }
 
+    buffer_using_solver_ = get_bool_value(std::string("buffer_using_solver").c_str());
+    use_multiframe_grouping_ = get_bool_value(std::string("use_multiframe_grouping").c_str());
+
+    if( buffer_using_solver_ && !use_multiframe_grouping_ ){
+      GADGET_DEBUG1("Enabling 'buffer_using_solver' requires also enabling 'use_multiframe_grouping'.\n" );
+      return GADGET_FAIL;
+    }
+
+    // Start parsing the ISMRMRD XML header
+    //
+
     boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
     if( cfg.get() == 0x0 ){
       GADGET_DEBUG1("Unable to parse Ismrmrd header\n");
       return GADGET_FAIL;
     }
-
-    use_multiframe_grouping_ = get_bool_value(std::string("use_multiframe_grouping").c_str());
 
     ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
 
@@ -88,6 +110,26 @@ namespace Gadgetron{
     //ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
     ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
     ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
+
+    // Determine reconstruction matrix sizes
+    //
+
+    kernel_width_ = get_double_value(std::string("buffer_convolution_kernel_width").c_str());
+    oversampling_factor_ = get_double_value(std::string("buffer_convolution_oversampling_factor").c_str());
+    
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(r_space.matrixSize().x()*get_double_value(std::string("reconstruction_os_factor_x").c_str())))+warp_size-1)/warp_size)*warp_size);  
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(r_space.matrixSize().y()*get_double_value(std::string("reconstruction_os_factor_y").c_str())))+warp_size-1)/warp_size)*warp_size);
+      
+    image_dimensions_recon_os_ = uintd2
+      (((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
+       ((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
+    
+    // In case the warp_size constraint kicked in
+    oversampling_factor_ = float(image_dimensions_recon_os_[0])/float(image_dimensions_recon_[0]);
+    
+    //
+    // Setup the spiral trajectory
+    //
 
     if (!(*e_seq.begin()).trajectoryDescription().present()) {
       GADGET_DEBUG1("Trajectory description needed to calculate trajectory");
@@ -152,9 +194,6 @@ namespace Gadgetron{
     samples_to_skip_start_  = 0; //n.get<int>(std::string("samplestoskipstart.value"))[0];
     samples_to_skip_end_    = -1; //n.get<int>(std::string("samplestoskipend.value"))[0];
 
-    image_dimensions_.push_back(r_space.matrixSize().x());
-    image_dimensions_.push_back(r_space.matrixSize().y());
-
     fov_vec_.push_back(r_space.fieldOfView_mm().x());
     fov_vec_.push_back(r_space.fieldOfView_mm().y());
     fov_vec_.push_back(r_space.fieldOfView_mm().z());
@@ -182,8 +221,8 @@ namespace Gadgetron{
     GADGET_DEBUG2("krmax:                   %f\n", krmax_);
     GADGET_DEBUG2("samples_to_skip_start_ : %d\n", samples_to_skip_start_);
     GADGET_DEBUG2("samples_to_skip_end_   : %d\n", samples_to_skip_end_);
-    GADGET_DEBUG2("matrix_size_x          : %d\n", image_dimensions_[0]);
-    GADGET_DEBUG2("matrix_size_y          : %d\n", image_dimensions_[1]);
+    GADGET_DEBUG2("recon matrix_size_x    : %d\n", image_dimensions_recon_[0]);
+    GADGET_DEBUG2("recon matrix_size_y    : %d\n", image_dimensions_recon_[1]);
 
     return GADGET_OK;
   }
@@ -192,13 +231,17 @@ namespace Gadgetron{
   process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1,
 	  GadgetContainerMessage< hoNDArray< std::complex<float> > > *m2)
   {
+    // Noise should have been consumed by the noise adjust, but just in case...
+    //
+
     bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
-    if (is_noise) { //Noise should have been consumed by the noise adjust, but just in case.
+    if (is_noise) {
       m1->release();
       return GADGET_OK;
     }
 
     if (!prepared_) {
+
       int     nfov   = 1;         /*  number of fov coefficients.             */
       int     ngmax  = 1e5;       /*  maximum number of gradient samples      */
       double  *xgrad;             /*  x-component of gradient.                */
@@ -245,30 +288,44 @@ namespace Gadgetron{
       delete [] y_trajectory;
       delete [] weighting;
 
-      //Make NFFT plan
-      // Matrix sizes
-      uintd2 matrix_size = uintd2(image_dimensions_[0],image_dimensions_[1]);
-      uintd2 matrix_size_os = uintd2(image_dimensions_[0]*2,image_dimensions_[1]*2);
+      // Setup the NFFT plan
+      //
 
-      // Kernel width
-      float W = 5.5f;
-
-      // Upload host arrays to device arrays
       cuNDArray<floatd2> traj(*host_traj_);
+      dcw_buffer_ = boost::shared_ptr< cuNDArray<float> >( new cuNDArray<float>(*host_weights_) );
+	
+      nfft_plan_.setup( from_std_vector<unsigned int,2>(image_dimensions_recon_), image_dimensions_recon_os_, kernel_width_ );
+      nfft_plan_.preprocess(&traj, cuNFFT_plan<float,2>::NFFT_PREP_NC2C);
 
-      gpu_weights_ = cuNDArray<float>(*host_weights_);
+      // Setup the non-Cartesian Sense encoding operator 
+      //
+      
+      E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >(new cuNonCartesianSenseOperator<float,2>);
+      E_->setup( from_std_vector<unsigned int,2>(image_dimensions_recon_), image_dimensions_recon_os_, kernel_width_ );
+      
+      // Setup cg solver if the csm/regularization image is to be based hereon
+      //
 
-      // Initialize plan
-      // NFFT_plan<float, 2> plan( matrix_size, matrix_size_os, W );
-      plan_ = cuNFFT_plan<float, 2>( matrix_size, matrix_size_os, W );
+      if( buffer_using_solver_ ){
 
-      // Preprocess
-      plan_.preprocess( &traj, cuNFFT_plan<float,2>::NFFT_PREP_ALL );
+	E_->set_dcw(dcw_buffer_);
+
+	D_ = boost::shared_ptr< cuCgPreconditioner<float_complext> >( new cuCgPreconditioner<float_complext>() );
+	cg_.set_encoding_operator( E_ );
+	cg_.set_preconditioner( D_ );
+	cg_.set_max_iterations( 2 );
+	cg_.set_tc_tolerance( 1e-6 );
+	cg_.set_output_mode( cuCgSolver<float_complext>::OUTPUT_SILENT);
+      }
 
       prepared_ = true;
     }
 
+    // Allocate host data buffer if it is NULL
+    //
+
     if (!host_data_buffer_.get()) {
+
       std::vector<unsigned int> data_dimensions;
       data_dimensions.push_back(samples_per_interleave_*interleaves_);
       data_dimensions.push_back(m1->getObjectPtr()->active_channels);
@@ -286,6 +343,9 @@ namespace Gadgetron{
 	host_data_buffer_[i].fill(0.0f);
       }
     }
+
+    // Allocate various counters if they are NULL
+    //
 
     if( !image_counter_.get() ){
       image_counter_ = boost::shared_array<long>(new long[slices_*sets_]);
@@ -305,19 +365,30 @@ namespace Gadgetron{
 	interleaves_counter_multiframe_[i] = 0;
     }
 
+    // Define some utility variables
+    //
+
     unsigned int samples_to_copy = m1->getObjectPtr()->number_of_samples-samples_to_skip_end_;
     unsigned int interleave = m1->getObjectPtr()->idx.kspace_encode_step_1;
     unsigned int slice = m1->getObjectPtr()->idx.slice;
     unsigned int set = m1->getObjectPtr()->idx.set;
-
     unsigned int samples_per_channel =  host_data_buffer_[set*slices_+slice].get_size(0);
+
+    // Some book-keeping to keep track of the frame count
+    //
 
     interleaves_counter_singleframe_[set*slices_+slice]++;
     interleaves_counter_multiframe_[set*slices_+slice]++;
 
-    // Duplicate the profile to avoid double deletion in case problems are encountered
-
+    // Duplicate the profile to avoid double deletion in case problems are encountered below.
+    // Enque profile until all profiles for the reconstruction have been received.
+    //
+    
     buffer_[set*slices_+slice].enqueue_tail(duplicate_profile(m1));
+    
+    // Copy profile into the accumulation buffer for csm/regularization estimation
+    //
+
     ISMRMRD::AcquisitionHeader base_head = *m1->getObjectPtr();
 
     if (samples_to_skip_end_ == -1) {
@@ -335,22 +406,49 @@ namespace Gadgetron{
 	     profile_ptr+c*m1->getObjectPtr()->number_of_samples, samples_to_copy*sizeof(std::complex<float>));
     }
 
+    // Have we received sufficient data for a new frame?
+    //
+
     bool is_last_scan_in_slice = 
       ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
 
     if (is_last_scan_in_slice) {
+
+      // This was the final profile of a frame
+      //
 
       if( Nints_%interleaves_counter_singleframe_[set*slices_+slice] ){
 	GADGET_DEBUG1("Unexpected number of interleaves encountered in frame\n");
 	return GADGET_FAIL;
       }
 
+      // Has the acceleration factor changed?
+      //
+
       if( acceleration_factor_ != Nints_/interleaves_counter_singleframe_[set*slices_+slice] ){
+
 	GADGET_DEBUG1("Change of acceleration factor detected\n");
 	acceleration_factor_ =  Nints_/interleaves_counter_singleframe_[set*slices_+slice];
+
+	// The encoding operator needs to have its domain/codomain dimensions set accordingly
+	//
+	
+	if( buffer_using_solver_ ){
+
+	  std::vector<unsigned int> domain_dims = image_dimensions_recon_;
+	  
+	  std::vector<unsigned int> codomain_dims = *host_traj_->get_dimensions();
+	  codomain_dims.push_back(m1->getObjectPtr()->active_channels);
+	  
+	  E_->set_domain_dimensions(&domain_dims);
+	  E_->set_codomain_dimensions(&codomain_dims);
+
+	  cuNDArray<floatd2> traj(*host_traj_);
+	  E_->preprocess(&traj);
+	}
       }
 
-      // Prepare the image header for this frame
+      // Prepare an image header for this frame
       //
 
       GadgetContainerMessage<ISMRMRD::ImageHeader> *header = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
@@ -364,8 +462,8 @@ namespace Gadgetron{
 
       header->getObjectPtr()->version = base_head->version;
 
-      header->getObjectPtr()->matrix_size[0] = image_dimensions_[0];
-      header->getObjectPtr()->matrix_size[1] = image_dimensions_[1];
+      header->getObjectPtr()->matrix_size[0] = image_dimensions_recon_[0];
+      header->getObjectPtr()->matrix_size[1] = image_dimensions_recon_[1];
       header->getObjectPtr()->matrix_size[2] = acceleration_factor_;
 
       header->getObjectPtr()->field_of_view[0] = fov_vec_[0];
@@ -389,6 +487,9 @@ namespace Gadgetron{
       header->getObjectPtr()->image_index = image_counter_[set*slices_+slice]++; 
       header->getObjectPtr()->image_series_index = set*slices_+slice;
 
+      // Enque header until we are ready to assemble a Sense job
+      //
+
       image_headers_queue_[set*slices_+slice].enqueue_tail(header);
 
       // Check if it is time to reconstruct.
@@ -400,51 +501,59 @@ namespace Gadgetron{
 
 	unsigned int num_coils = m1->getObjectPtr()->active_channels;
 	
-	// Setup averaged image (an image for each coil)
+	// Compute coil images from the fully sampled data buffer
 	//
 
 	std::vector<unsigned int> image_dims;
-	image_dims.push_back(image_dimensions_[0]);
-	image_dims.push_back(image_dimensions_[1]);
+	image_dims.push_back(image_dimensions_recon_[0]);
+	image_dims.push_back(image_dimensions_recon_[1]);
 	image_dims.push_back(num_coils);
 	
 	cuNDArray<float_complext> image(&image_dims);
 	cuNDArray<float_complext> data(&host_data_buffer_[set*slices_+slice]);
 	
-	plan_.compute( &data, &image, &gpu_weights_, cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C );
-	
+	nfft_plan_.compute( &data, &image, dcw_buffer_.get(), cuNFFT_plan<float,2>::NFFT_BACKWARDS_NC2C );
+
 	// Check if we need to compute a new csm
 	//
 	
-	if( propagate_csm_from_set_ < 0 || propagate_csm_from_set_ == set ){
-	  
-	  // Estimate CSM
-	  csm_ = estimate_b1_map<float,2>( &image );
+	if( propagate_csm_from_set_ < 0 || propagate_csm_from_set_ == set ){	  	  
+	  csm_ = estimate_b1_map<float,2>( &image ); // Estimates csm
 	}
 	else{
-	  
-	  // Make sure that the csm has actually been computed
-	  //
-	  
+	  //GADGET_DEBUG2("Set %d is reusing the csm from set %d\n", set, propagate_csm_from_set_);
 	  if( csm_.get() == 0x0 ){
 	    GADGET_DEBUG1("Error, csm has not been computed\n");
 	    return GADGET_FAIL;
-	  }
-	  
-	  //GADGET_DEBUG2("Set %d is reusing the csm from set %d\n", set, propagate_csm_from_set_);
+	  }	  
 	}
+	E_->set_csm(csm_);
+
+	// Compute regularization using basic coil combination
+	//
 	
-	// Use a SENSE operator to calculate a combined image using the trajectories.
-	boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E(new cuNonCartesianSenseOperator<float,2>());
-	E->set_csm(csm_);
+	image_dims.pop_back();
+	cuNDArray<float_complext> reg_image(&image_dims);
+	E_->mult_csm_conj_sum( &image, &reg_image );
+	
+	if( buffer_using_solver_ ){
+	  
+	  // Compute regularization using cg solver
+	  //
+	  
+	  // Define preconditioning weights
+	  boost::shared_ptr< cuNDArray<float> > _precon_weights = sum(abs_square(csm_.get()).get(), 2);
+	  reciprocal_sqrt_inplace(_precon_weights.get());	
+	  boost::shared_ptr< cuNDArray<float_complext> > precon_weights = real_to_complex<float_complext>( _precon_weights.get() );
+	  _precon_weights.reset();
+	  D_->set_weights( precon_weights );
+	  
+	  // Solve from the plain coil combination
+	  reg_image = *cg_.solve_from_rhs(&reg_image);
+	}
 
-	// Setup averaged image (one image from the combined coils)
-	boost::shared_ptr< std::vector<unsigned int> > reg_dims = image.get_dimensions();
-	reg_dims->pop_back();
-
-	cuNDArray<float_complext> reg_image(reg_dims.get());
-
-	E->mult_csm_conj_sum( &image, &reg_image );
+	// Get ready to fill in the Sense job
+	//
 
 	boost::shared_ptr< hoNDArray<float_complext> > csm_host = csm_->to_host();
 	boost::shared_ptr< hoNDArray<float_complext> > reg_host = reg_image.to_host();
@@ -452,8 +561,8 @@ namespace Gadgetron{
 	unsigned int profiles_buffered = buffer_[set*slices_+slice].message_count();
 
 	std::vector<unsigned int> ddimensions;
-
-	ddimensions.push_back(samples_per_interleave_*interleaves_counter_singleframe_[set*slices_+slice]*((use_multiframe_grouping_) ? acceleration_factor_ : 1));
+	ddimensions.push_back(samples_per_interleave_*interleaves_counter_singleframe_[set*slices_+slice]*
+			      ((use_multiframe_grouping_) ? acceleration_factor_ : 1));
 	ddimensions.push_back(num_coils);
 	
 	boost::shared_ptr< hoNDArray<float_complext> > data_host(new hoNDArray<float_complext>(&ddimensions));

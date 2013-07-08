@@ -51,6 +51,10 @@
     <property><name>deviceno</name><value>0</value></property>
     <property><name>use_multiframe_grouping</name><value>true</value></property>
     <property><name>propagate_csm_from_set</name><value>0</value></property>
+    <property><name>buffer_convolution_kernel_width</name><value>5.5</value></property>
+    <property><name>buffer_convolution_oversampling_factor</name><value>1.25</value></property>
+    <property><name>reconstruction_os_factor_x</name><value>1.5</value></property>
+    <property><name>reconstruction_os_factor_y</name><value>1.5</value></property>
   </gadget>
   
   <gadget>

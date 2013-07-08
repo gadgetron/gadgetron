@@ -1,6 +1,7 @@
 #include "gpuRadialSensePrepGadget.h"
 #include "Gadgetron.h"
 #include "GadgetIsmrmrdReadWrite.h"
+#include "cuNonCartesianSenseOperator.h"
 #include "SenseJob.h"
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_utils.h"
@@ -23,8 +24,6 @@ namespace Gadgetron{
     , device_number_(-1)
     , mode_(-1)
     , samples_per_profile_(-1)
-    , kernel_width_(-1.0f)
-    , oversampling_factor_(-1.0f)
   {
     // Set some default values in case the config does not contain a specification
     //
@@ -142,22 +141,24 @@ namespace Gadgetron{
     
     image_dimensions_.push_back(((r_space.matrixSize().x()+warp_size-1)/warp_size)*warp_size);
     image_dimensions_.push_back(((r_space.matrixSize().y()+warp_size-1)/warp_size)*warp_size);
-    fov_.push_back(r_space.fieldOfView_mm().x());
-    fov_.push_back(r_space.fieldOfView_mm().y());
-    fov_.push_back(r_space.fieldOfView_mm().z());
+
     image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(r_space.matrixSize().x()*get_double_value(std::string("reconstruction_os_factor_x").c_str())))+warp_size-1)/warp_size)*warp_size);  
     image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(r_space.matrixSize().y()*get_double_value(std::string("reconstruction_os_factor_y").c_str())))+warp_size-1)/warp_size)*warp_size);
     
-    uintd2 matrix_size = uintd2(image_dimensions_recon_[0],image_dimensions_recon_[1]);
     image_dimensions_recon_os_ = uintd2
-      (((static_cast<unsigned int>(std::ceil(matrix_size[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
-       ((static_cast<unsigned int>(std::ceil(matrix_size[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
+      (((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
+       ((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
     
-    oversampling_factor_ = float(image_dimensions_recon_os_[0])/float(matrix_size[0]); // in case the warp_size constraint kicked in
+    // In case the warp_size constraint kicked in
+    oversampling_factor_ = float(image_dimensions_recon_os_[0])/float(image_dimensions_recon_[0]); 
     
     GADGET_DEBUG2("matrix_size_x : %d, recon: %d, recon_os: %d\n", image_dimensions_[0], image_dimensions_recon_[0], image_dimensions_recon_os_[0]);
     GADGET_DEBUG2("matrix_size_y : %d, recon: %d, recon_os: %d\n", image_dimensions_[1], image_dimensions_recon_[1], image_dimensions_recon_os_[1]);
     
+    fov_.push_back(r_space.fieldOfView_mm().x());
+    fov_.push_back(r_space.fieldOfView_mm().y());
+    fov_.push_back(r_space.fieldOfView_mm().z());
+
     slices_ = e_limits.slice().present() ? e_limits.slice().get().maximum() + 1 : 1;
     sets_ = e_limits.set().present() ? e_limits.set().get().maximum() + 1 : 1;
     
