@@ -35,7 +35,7 @@ target_link_libraries(
     ${GT_DICOM_LIBRARIES})
 
 install(
-    FILES DicomFinishGadget.h DicomImageWriter.h gadgetrondicom_export.h
+    FILES DicomFinishGadget.h DicomImageWriter.h gadgetron_dicom_export.h
     DESTINATION include)
 
 install(TARGETS ${GT_DICOM_LIB} DESTINATION lib)

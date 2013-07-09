@@ -3,7 +3,7 @@
 
 
 #if defined (WIN32)
-#if defined (gadgetrondicom_EXPORTS)
+#if defined (gadgetron_dicom_EXPORTS)
 #define EXPORTGADGETSDICOM __declspec(dllexport)
 #else
 #define EXPORTGADGETSDICOM __declspec(dllimport)

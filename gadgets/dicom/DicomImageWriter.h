@@ -1,7 +1,7 @@
 #ifndef DICOMIMAGEWRITER_H
 #define DICOMIMAGEWRITER_H
 
-#include "gadgetrondicom_export.h"
+#include "gadgetron_dicom_export.h"
 #include "GadgetMessageInterface.h"
 #include "GadgetMRIHeaders.h"
 #include "ismrmrd.h"

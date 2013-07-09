@@ -1,7 +1,7 @@
 #ifndef DICOMFINISHGADGET_H
 #define DICOMFINISHGADGET_H
 
-#include "gadgetrondicom_export.h"
+#include "gadgetron_dicom_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
