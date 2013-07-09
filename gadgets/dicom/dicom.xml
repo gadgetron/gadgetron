@@ -11,7 +11,7 @@
 
     <writer>
         <slot>1012</slot>
-        <dll>gadgetrondicom</dll>
+        <dll>gadgetron_dicom</dll>
         <classname>DicomImageWriter</classname>
     </writer>
 
@@ -52,7 +52,7 @@
 
     <gadget>
         <name>DicomFinishFLOAT</name>
-        <dll>gadgetrondicom</dll>
+        <dll>gadgetron_dicom</dll>
         <classname>DicomFinishGadgetFLOAT</classname>
     </gadget>
 

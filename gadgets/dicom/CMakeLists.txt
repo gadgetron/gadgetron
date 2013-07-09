@@ -20,7 +20,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/gadgets/mri_core    # for GadgetIsmrmrdReadWrite.h
     ${DCMTK_INCLUDE_DIRS})
 
-set(GT_DICOM_LIB gadgetrondicom)
+set(GT_DICOM_LIB gadgetron_dicom)
 add_library(${GT_DICOM_LIB} SHARED
     DicomFinishGadget.cpp
     DicomImageWriter.cpp
