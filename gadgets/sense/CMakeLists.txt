@@ -25,6 +25,7 @@ add_library(gadgetron_gpusense SHARED
   gpuCgSenseGadget.cpp 
   gpuCgKtSenseGadget.cpp 
   gpuSbSenseGadget.cpp 
+  gpuGenericSensePrepGadget.cpp
   ${ISMRMRD_XSD_SOURCE}
   )
 
@@ -39,3 +40,5 @@ install (TARGETS gadgetron_gpusense DESTINATION lib)
 install (FILES 
   SenseJob.h
   DESTINATION include)
+
+add_subdirectory(config)
