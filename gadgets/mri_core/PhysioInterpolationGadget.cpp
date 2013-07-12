@@ -97,20 +97,27 @@ namespace Gadgetron{
     //Calculate relative time stamps
     unsigned int current_cycle = 0;
     std::vector<float> relative_cycle_time;
+
+    //Make sure we have cycle lengths for all the cycles we have covered
+    cycle_lengths.insert(cycle_lengths.begin(),median_cycle_length);
+    cycle_lengths.push_back(median_cycle_length);
+    
     for (unsigned int i = 0; i < time_stamps_.size(); i++) {
       if (i >= cycle_starts[current_cycle]) {
 	current_cycle++;
       }
 
+      /*
       if (current_cycle == 0 || (current_cycle > cycle_lengths.size())) {
 	//First and last cycle, we have to assume the cycle length, we will use the median cycle.
 	relative_cycle_time.push_back(time_stamps_[i]/median_cycle_length + current_cycle);
 	GADGET_DEBUG2("Corrected time stamps: %d, %f * (%d)\n",i,relative_cycle_time[i],current_cycle);
       } else {
 	//Here we actually know the cycle length
-      	relative_cycle_time.push_back(time_stamps_[i]/cycle_lengths[current_cycle-1] + current_cycle);
+	*/
+      	relative_cycle_time.push_back(time_stamps_[i]/cycle_lengths[current_cycle] + current_cycle);
 	GADGET_DEBUG2("Corrected time stamps: %d, %f  (%d)\n",i,relative_cycle_time[i],current_cycle);
-      }
+	//}
     }
     
     //Make a temporary list of all the data pointers from the Q
@@ -152,9 +159,38 @@ namespace Gadgetron{
     std::vector< GadgetContainerMessage< hoNDArray< std::complex<float> > > * > out_data;
     
     for (unsigned int i = 0; i < recon_cycle_time.size(); i++) {
+      GadgetContainerMessage<ISMRMRD::ImageHeader>* tmpm1 = new GadgetContainerMessage<ISMRMRD::ImageHeader>;
+      GadgetContainerMessage< hoNDArray< std::complex<float> > >* tmpm2 = new GadgetContainerMessage< hoNDArray< std::complex<float> > >;
       
+      tmpm1->cont(tmpm2);
 
+      (*tmpm1->getObjectPtr()) = (*hptrs[0]);
+      tmpm2->getObjectPtr()->create(aptrs[0]->get_dimensions());
+
+      out_heads.push_back(tmpm1->getObjectPtr());
+      out_data.push_back(tmp2->getObjectPtrt());
+
+      unsigned short current_cycle = static_cast<unsigned short>(floor(recon_cycle_time[i] + 0.0001));
+      unsigned short current_phase = static_cast<unsigned short>((recon_cycle_time[i]+0.0001-current_cycle)/(1.0/static_cast<float>(phases_to_reconstruct_)) + 0.0001);
+
+      tmpm1->getObjectPtr()->physiology_time_stamp[phys_time_index_] = static_cast<unsigned>(floor((recon_cycle_time[i]+0.0001-current_cycle)*cycle_lengths[current_cycle])); 
+      tmpm1->getObjectPtr()->phase = current_phase;
+      tmpm1->getObjectPtr()->image_index = current_phase+1;
+      tmpm1->getObjectPtr()->image_series_index = current_cycle*10;
+      
+      /*
+      GADGET_DEBUG2("new_time: %f, %d, time_stamp: %d, phase: %d, index: %d, series: %d\n",
+		    recon_cycle_time[i],
+		    current_cycle,
+		    tmpm1->getObjectPtr()->physiology_time_stamp[phys_time_index_],
+		    tmpm1->getObjectPtr()->phase,
+		    tmpm1->getObjectPtr()->image_index,
+		    tmpm1->getObjectPtr()->image_series_index);
+
+      */
     }
+
+
 
 
 
