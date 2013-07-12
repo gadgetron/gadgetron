@@ -80,3 +80,4 @@ if (ARMADILLO_FOUND)
 endif (ARMADILLO_FOUND)
 
 install(TARGETS gadgetron_mricore DESTINATION lib)
+install(FILES ${ISMRMRD_SCHEMA_DIR}/ismrmrd.xsd DESTINATION schema)
