@@ -38,6 +38,7 @@ add_library(gadgetron_mricore SHARED
   AutoScaleGadget.cpp
   FlowPhaseSubtractionGadget.cpp
   GadgetIsmrmrdReadWrite.cpp
+  PhysioInterpolationGadget.cpp
   ${OPTIMIZED_GADGETS}
   ${ISMRMRD_XSD_SOURCE}
   )
