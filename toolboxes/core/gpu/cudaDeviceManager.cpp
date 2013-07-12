@@ -2,12 +2,15 @@
 #include "check_CUDA.h"
 #include "cuNDArray_blas.h"
 
+#include <boost/thread/mutex.hpp>
+#include <boost/shared_array.hpp>
 #include <cuda_runtime_api.h>
 #include <stdlib.h>
 #include <sstream>
 
 namespace Gadgetron{
 
+  static boost::shared_array<boost::mutex> _mutex;
   cudaDeviceManager* cudaDeviceManager::_instance = 0;
 
   cudaDeviceManager::cudaDeviceManager() {
