@@ -1,7 +1,10 @@
 #include "PhysioInterpolationGadget.h"
 #include "Gadgetron.h"
 #include "GadgetIsmrmrdReadWrite.h"
+#include "GadgetronTimer.h"
 #include <numeric>
+#include "Spline.h"
+
 
 #ifdef USE_OMP
 #include <omp.h>
@@ -13,26 +16,19 @@ namespace Gadgetron{
     : phys_time_index_(0)
     , phases_to_reconstruct_(30)
     , buffer_(ACE_Message_Queue_Base::DEFAULT_HWM * 10, ACE_Message_Queue_Base::DEFAULT_LWM * 10)
-  {}
+  {
+    set_parameter(std::string("physiology_time_index").c_str(), "0");
+    set_parameter(std::string("mode").c_str(), "0");
+    set_parameter(std::string("phases").c_str(), "30");
+  }
 
   PhysioInterpolationGadget::~PhysioInterpolationGadget() {}
 
   int PhysioInterpolationGadget::process_config(ACE_Message_Block* mb)
   {
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
-
-    std::vector<long> dims;
-    ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-    if (e_seq.size() != 1) {
-      GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
-      GADGET_DEBUG1("This Gadget only supports one encoding space\n");
-      return GADGET_FAIL;
-    }
-
-    ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
-    ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
-
+    phys_time_index_ = get_int_value("physiology_time_index");
+    phases_to_reconstruct_ = get_int_value("phases");
+    mode_ = get_int_value("mode");
     return GADGET_OK;
   }
 
@@ -56,7 +52,7 @@ namespace Gadgetron{
     float int_count = 0.0;
     std::vector<unsigned int> cycle_starts;
     for (unsigned int i = 0; i < time_stamps_.size(); i++) {
-      GADGET_DEBUG2("Time %d, %f\n", i, time_stamps_[i]);
+      //GADGET_DEBUG2("Time %d, %f\n", i, time_stamps_[i]);
       if (time_stamps_[i] < previous) {
 	cycle_starts.push_back(i);
       } else if (i > 0 ) {
@@ -106,18 +102,8 @@ namespace Gadgetron{
       if (i >= cycle_starts[current_cycle]) {
 	current_cycle++;
       }
-
-      /*
-      if (current_cycle == 0 || (current_cycle > cycle_lengths.size())) {
-	//First and last cycle, we have to assume the cycle length, we will use the median cycle.
-	relative_cycle_time.push_back(time_stamps_[i]/median_cycle_length + current_cycle);
-	GADGET_DEBUG2("Corrected time stamps: %d, %f * (%d)\n",i,relative_cycle_time[i],current_cycle);
-      } else {
-	//Here we actually know the cycle length
-	*/
-      	relative_cycle_time.push_back(time_stamps_[i]/cycle_lengths[current_cycle] + current_cycle);
-	GADGET_DEBUG2("Corrected time stamps: %d, %f  (%d)\n",i,relative_cycle_time[i],current_cycle);
-	//}
+      relative_cycle_time.push_back(time_stamps_[i]/cycle_lengths[current_cycle] + current_cycle);
+      //GADGET_DEBUG2("Corrected time stamps: %d, %f  (%d)\n",i,relative_cycle_time[i],current_cycle);
     }
     
     //Make a temporary list of all the data pointers from the Q
@@ -167,8 +153,8 @@ namespace Gadgetron{
       (*tmpm1->getObjectPtr()) = (*hptrs[0]);
       tmpm2->getObjectPtr()->create(aptrs[0]->get_dimensions());
 
-      out_heads.push_back(tmpm1->getObjectPtr());
-      out_data.push_back(tmp2->getObjectPtrt());
+      out_heads.push_back(tmpm1);
+      out_data.push_back(tmpm2);
 
       unsigned short current_cycle = static_cast<unsigned short>(floor(recon_cycle_time[i] + 0.0001));
       unsigned short current_phase = static_cast<unsigned short>((recon_cycle_time[i]+0.0001-current_cycle)/(1.0/static_cast<float>(phases_to_reconstruct_)) + 0.0001);
@@ -191,10 +177,44 @@ namespace Gadgetron{
     }
 
 
+    //Let's interpolate the images
+    unsigned inelem = relative_cycle_time.size();
+    unsigned outelem = recon_cycle_time.size();
+    unsigned imageelem = aptrs[0]->get_number_of_elements();
+
+    {
+
+      GadgetronTimer interptime("Interpolation Time");
+
+#ifdef USE_OMP
+#pragma omp parallel for
+#endif
+    for (size_t p = 0; p < imageelem; p++) {
+      std::vector< std::complex<float> > data_in(inelem);
+
+      //Get the input data for this pixel
+      for (unsigned int i = 0; i < inelem; i++) data_in[i] = aptrs[i]->get_data_ptr()[p];
+      
+      //Interpolate the data
+      Spline<float, std::complex<float> > sp(relative_cycle_time, data_in);
+      std::vector<std::complex<float> > data_out = sp[recon_cycle_time];
+
+      //Copy it to the images
+      for (unsigned int i = 0; i < outelem; i++) out_data[i]->getObjectPtr()->get_data_ptr()[p] = data_out[i];
+    }
+
+    }
+
+    //Send out the images
+    for (unsigned int i = 0; i < out_heads.size(); i++) {
+      if (this->next()->putq(out_heads[i]) < 0) {
+	GADGET_DEBUG1("Unable to put data on next Gadgets Q\n");
+	return GADGET_FAIL;
+      }
+    }
 
 
-
-    //We can get rid of the data now
+    //We can get rid of the buffered data now
     buffer_.flush();
 
     return ret;
