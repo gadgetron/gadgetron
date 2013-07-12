@@ -37,16 +37,4 @@ target_link_libraries(gadgetron_gpuspiral
 install (TARGETS gadgetron_gpuspiral DESTINATION lib)
 install (FILES vds.h DESTINATION include)
 
-if (ARMADILLO_FOUND)
-  install (FILES 
-    spiral_gpusense_cg.xml 
-    spiral_gpusense_sb.xml 
-    DESTINATION config)
-elseif (ARMADILLO_FOUND)
-  MESSAGE("Armadillo not found. Hence only a limited number (of unoptimized) config files will be available!")
-endif (ARMADILLO_FOUND)
-
-install (FILES 
-  spiral_gpusense_cg_unoptimized.xml 
-  spiral_gpusense_sb_unoptimized.xml 
-  DESTINATION config)
+add_subdirectory(config)

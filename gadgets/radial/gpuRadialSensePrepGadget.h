@@ -6,12 +6,10 @@
 #include "hoNDArray.h"
 #include "vector_td.h"
 #include "cuNFFT.h"
-#include "cuNonCartesianSenseOperator.h"
-#include "cuCgSolver.h"
 #include "cuCgPreconditioner.h"
 #include "cuSenseBufferCg.h"
-#include "ismrmrd.h"
 
+#include <ismrmrd.h>
 #include <complex>
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
@@ -98,14 +96,17 @@ namespace Gadgetron{
     boost::shared_array<bool> reconfigure_;
     virtual void reconfigure(unsigned int set, unsigned int slice);
 
-    GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* duplicate_profile
-      ( GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *profile );
+    GadgetContainerMessage< hoNDArray< std::complex<float> > >*
+      duplicate_profile( GadgetContainerMessage< hoNDArray< std::complex<float> > > *profile );
 
-    boost::shared_ptr< hoNDArray<float_complext> > extract_samples_from_queue
-      ( ACE_Message_Queue<ACE_MT_SYNCH> *queue, bool acknowledge_sliding_window,
-	unsigned int set, unsigned int slice );
+    boost::shared_ptr< hoNDArray<float_complext> > 
+      extract_samples_from_queue( ACE_Message_Queue<ACE_MT_SYNCH> *queue,
+				  bool acknowledge_sliding_window,
+				  unsigned int set, unsigned int slice );
 
     // Compute trajectory/dcw for a reconstruction (to store internally)
+    //
+
     int calculate_trajectory_for_reconstruction(long profile_offset, unsigned int set, unsigned int slice);
     int calculate_density_compensation_for_reconstruction(unsigned int set, unsigned int slice);
 
@@ -183,7 +184,8 @@ namespace Gadgetron{
     std::vector<unsigned int> image_dimensions_recon_;
     uintd2 image_dimensions_recon_os_;
 
-    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > frame_queue_;
-    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > recon_queue_;
+    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > frame_profiles_queue_;
+    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > recon_profiles_queue_;
+    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > image_headers_queue_;
   };
 }

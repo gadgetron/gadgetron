@@ -52,6 +52,7 @@ namespace Gadgetron{
     double mu_;
     double lambda_;
     double alpha_;
+    unsigned int rotations_to_discard_;
 
     bool output_convergence_;
     bool is_configured_;

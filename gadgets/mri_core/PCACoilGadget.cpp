@@ -64,6 +64,12 @@ namespace Gadgetron {
 
 	//GADGET_DEBUG2("Calculating PCA coefficients with %d profiles for %d coils\n", profiles_available, channels);
 	int samples_to_use = samples_per_profile > samples_to_use_ ? samples_to_use_ : samples_per_profile;
+
+	//For some sequences there is so little data, we should just use it all.
+	if (profiles_available < 16) {
+	  samples_to_use = samples_per_profile;
+	}
+
 	int total_samples = samples_to_use*profiles_available;
 
 	std::vector<unsigned int> dims(2);
@@ -78,8 +84,14 @@ namespace Gadgetron {
 
 	std::complex<float>* A_ptr = A.get_data_ptr();
 	unsigned int sample_counter = 0;
-	unsigned int data_offset = (samples_per_profile -samples_to_use)>>1;
 
+	unsigned int data_offset = 0;
+	if (m1->getObjectPtr()->center_sample >= (samples_to_use>>1)) {
+	  data_offset = m1->getObjectPtr()->center_sample - (samples_to_use>>1);
+	}
+
+	//GADGET_DEBUG2("Data offset = %d\n", data_offset);
+ 
 	hoNDArray<std::complex<float> > means;
 	std::vector<unsigned int> means_dims; means_dims.push_back(channels);
 
@@ -161,6 +173,7 @@ namespace Gadgetron {
 	buffer_[location].clear();
       }
     } else {
+      //GADGET_DEBUG1("Not buffering anymore\n");
       GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 =
 	new GadgetContainerMessage< hoNDArray< std::complex<float> > >;
 
@@ -179,6 +192,11 @@ namespace Gadgetron {
       }
 
       m1->cont(m3);
+      
+      //In case there are trajectories attached. 
+      m3->cont(m2->cont());
+      m2->cont(0);
+
       m2->release();
 
       if (this->next()->putq(m1) < 0) {

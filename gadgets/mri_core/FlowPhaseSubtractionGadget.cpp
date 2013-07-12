@@ -2,6 +2,10 @@
 #include "Gadgetron.h"
 #include "GadgetIsmrmrdReadWrite.h"
 
+#ifdef USE_OMP
+#include <omp.h>
+#endif 
+
 namespace Gadgetron{
 
   FlowPhaseSubtractionGadget::FlowPhaseSubtractionGadget() {}

@@ -1,7 +1,9 @@
 #include "hoRegistration_utils.h"
 #include "vector_td_utilities.h"
 
+#ifdef USE_OMP
 #include <omp.h>
+#endif 
 
 namespace Gadgetron{
 

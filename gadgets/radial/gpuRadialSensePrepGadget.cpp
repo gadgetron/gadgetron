@@ -1,6 +1,7 @@
 #include "gpuRadialSensePrepGadget.h"
 #include "Gadgetron.h"
 #include "GadgetIsmrmrdReadWrite.h"
+#include "cuNonCartesianSenseOperator.h"
 #include "SenseJob.h"
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_utils.h"
@@ -23,8 +24,6 @@ namespace Gadgetron{
     , device_number_(-1)
     , mode_(-1)
     , samples_per_profile_(-1)
-    , kernel_width_(-1.0f)
-    , oversampling_factor_(-1.0f)
   {
     // Set some default values in case the config does not contain a specification
     //
@@ -142,22 +141,27 @@ namespace Gadgetron{
     
     image_dimensions_.push_back(((r_space.matrixSize().x()+warp_size-1)/warp_size)*warp_size);
     image_dimensions_.push_back(((r_space.matrixSize().y()+warp_size-1)/warp_size)*warp_size);
-    fov_.push_back(r_space.fieldOfView_mm().x());
-    fov_.push_back(r_space.fieldOfView_mm().y());
-    fov_.push_back(r_space.fieldOfView_mm().z());
+
     image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(r_space.matrixSize().x()*get_double_value(std::string("reconstruction_os_factor_x").c_str())))+warp_size-1)/warp_size)*warp_size);  
     image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(r_space.matrixSize().y()*get_double_value(std::string("reconstruction_os_factor_y").c_str())))+warp_size-1)/warp_size)*warp_size);
     
-    uintd2 matrix_size = uintd2(image_dimensions_recon_[0],image_dimensions_recon_[1]);
     image_dimensions_recon_os_ = uintd2
-      (((static_cast<unsigned int>(std::ceil(matrix_size[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
-       ((static_cast<unsigned int>(std::ceil(matrix_size[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
+      (((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
+       ((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
     
-    oversampling_factor_ = float(image_dimensions_recon_os_[0])/float(matrix_size[0]); // in case the warp_size constraint kicked in
+    // In case the warp_size constraint kicked in
+    oversampling_factor_ = float(image_dimensions_recon_os_[0])/float(image_dimensions_recon_[0]); 
     
-    GADGET_DEBUG2("matrix_size_x : %d, recon: %d, recon_os: %d\n", image_dimensions_[0], image_dimensions_recon_[0], image_dimensions_recon_os_[0]);
-    GADGET_DEBUG2("matrix_size_y : %d, recon: %d, recon_os: %d\n", image_dimensions_[1], image_dimensions_recon_[1], image_dimensions_recon_os_[1]);
+    GADGET_DEBUG2("matrix_size_x : %d, recon: %d, recon_os: %d\n", 
+		  image_dimensions_[0], image_dimensions_recon_[0], image_dimensions_recon_os_[0]);
+
+    GADGET_DEBUG2("matrix_size_y : %d, recon: %d, recon_os: %d\n", 
+		  image_dimensions_[1], image_dimensions_recon_[1], image_dimensions_recon_os_[1]);
     
+    fov_.push_back(r_space.fieldOfView_mm().x());
+    fov_.push_back(r_space.fieldOfView_mm().y());
+    fov_.push_back(r_space.fieldOfView_mm().z());
+
     slices_ = e_limits.slice().present() ? e_limits.slice().get().maximum() + 1 : 1;
     sets_ = e_limits.set().present() ? e_limits.set().get().maximum() + 1 : 1;
     
@@ -165,22 +169,22 @@ namespace Gadgetron{
     // - one queue for the currently incoming frame
     // - one queue for the next reconstruction
 
-    frame_queue_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[slices_*sets_]);
-    recon_queue_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[slices_*sets_]);
+    frame_profiles_queue_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[slices_*sets_]);
+    recon_profiles_queue_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[slices_*sets_]);
+    image_headers_queue_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[slices_*sets_]);
 
-    size_t bsize = (sizeof(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>)+
-		    sizeof(GadgetContainerMessage< hoNDArray< std::complex<float> > >))*image_dimensions_[0]*10;
-  
+    size_t bsize = sizeof(GadgetContainerMessage< hoNDArray< std::complex<float> > >)*image_dimensions_[0]*10;
+
     for( unsigned int i=0; i<slices_*sets_; i++ ){
-      frame_queue_[i].high_water_mark(bsize);
-      frame_queue_[i].low_water_mark(bsize);
+      frame_profiles_queue_[i].high_water_mark(bsize);
+      frame_profiles_queue_[i].low_water_mark(bsize);
     }
     
     bsize *= (rotations_per_reconstruction_+1);
     
     for( unsigned int i=0; i<slices_*sets_; i++ ){
-      recon_queue_[i].high_water_mark(bsize);
-      recon_queue_[i].low_water_mark(bsize);
+      recon_profiles_queue_[i].high_water_mark(bsize);
+      recon_profiles_queue_[i].low_water_mark(bsize);
       }
 
     // Define some profile counters for book-keeping
@@ -212,6 +216,7 @@ namespace Gadgetron{
     }
 
     for( unsigned int i=0; i<slices_*sets_; i++ ){
+
       previous_profile_[i] = -1;
       image_counter_[i] = 0;
       profiles_counter_frame_[i] = 0;
@@ -236,8 +241,14 @@ namespace Gadgetron{
 	else
 	  frames_per_rotation_[i] = image_dimensions_[0]/profiles_per_frame_[i];
       }
-    }
+
+      bsize = sizeof(GadgetContainerMessage<ISMRMRD::ImageHeader>)*100*
+	std::max(1L, frames_per_rotation_[i]*rotations_per_reconstruction_);
     
+      image_headers_queue_[i].high_water_mark(bsize);
+      image_headers_queue_[i].low_water_mark(bsize);
+    }
+        
     position_ = boost::shared_array<float[3]>(new float[slices_*sets_][3]);
     read_dir_ = boost::shared_array<float[3]>(new float[slices_*sets_][3]);
     phase_dir_ = boost::shared_array<float[3]>(new float[slices_*sets_][3]);
@@ -277,15 +288,14 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-
     return GADGET_OK;
   }
 
   int gpuRadialSensePrepGadget::
-  process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
+  process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1,
+	  GadgetContainerMessage< hoNDArray< std::complex<float> > > *m2)
   {
-    // Noise should have been consumed by the noise adjust, but just in case...
+    // Noise should have been consumed by the noise adjust (if in the gadget chain)
     //
     
     bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
@@ -393,8 +403,8 @@ namespace Gadgetron{
     if( !new_frame_detected ) {
       
       // Memory handling is easier if we make copies for our internal queues
-      frame_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m1));
-      recon_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m1));
+      frame_profiles_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m2));
+      recon_profiles_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m2));
     }
 
     // If the profile is the last of a "true frame" (ignoring any sliding window profiles)
@@ -405,8 +415,11 @@ namespace Gadgetron{
 
     if( is_last_profile_in_frame ){
 
+      // Extract this frame's samples to update the csm/regularization buffer
+      //
+
       boost::shared_ptr< hoNDArray<float_complext> > host_samples = 
-	extract_samples_from_queue( &frame_queue_[set*slices_+slice], false, set, slice );
+	extract_samples_from_queue( &frame_profiles_queue_[set*slices_+slice], false, set, slice );
 
       if( host_samples.get() == 0x0 ){
 	GADGET_DEBUG1("Failed to extract frame data from queue\n");
@@ -419,6 +432,47 @@ namespace Gadgetron{
       boost::shared_ptr< cuNDArray<floatd2> > traj = calculate_trajectory_for_frame(profile_offset, set, slice);
 
       buffer_update_needed_[set*slices_+slice] |= acc_buffer->add_frame_data( &samples, traj.get() );
+
+      // Prepare the image header for this frame
+      //
+
+      GadgetContainerMessage<ISMRMRD::ImageHeader> *header = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+      ISMRMRD::AcquisitionHeader *base_head = m1->getObjectPtr();
+
+      {
+	// Initialize header to all zeroes (there is a few fields we do not set yet)
+	ISMRMRD::ImageHeader tmp = {0};
+	*(header->getObjectPtr()) = tmp;
+      }
+
+      header->getObjectPtr()->version = base_head->version;
+
+      header->getObjectPtr()->matrix_size[0] = image_dimensions_recon_[0];
+      header->getObjectPtr()->matrix_size[1] = image_dimensions_recon_[1];
+      header->getObjectPtr()->matrix_size[2] = std::max(1L,frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_);
+
+      header->getObjectPtr()->field_of_view[0] = fov_[0];
+      header->getObjectPtr()->field_of_view[1] = fov_[1];
+      header->getObjectPtr()->field_of_view[2] = fov_[2];
+
+      header->getObjectPtr()->channels = num_coils_[set*slices_+slice];
+      header->getObjectPtr()->slice = base_head->idx.slice;
+      header->getObjectPtr()->set = base_head->idx.set;
+
+      header->getObjectPtr()->acquisition_time_stamp = base_head->acquisition_time_stamp;
+      memcpy(header->getObjectPtr()->physiology_time_stamp, base_head->physiology_time_stamp, sizeof(uint32_t)*ISMRMRD_PHYS_STAMPS);
+
+      memcpy(header->getObjectPtr()->position, base_head->position, sizeof(float)*3);
+      memcpy(header->getObjectPtr()->read_dir, base_head->read_dir, sizeof(float)*3);
+      memcpy(header->getObjectPtr()->phase_dir, base_head->phase_dir, sizeof(float)*3);
+      memcpy(header->getObjectPtr()->slice_dir, base_head->slice_dir, sizeof(float)*3);
+      memcpy(header->getObjectPtr()->patient_table_position, base_head->patient_table_position, sizeof(float)*3);
+
+      header->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
+      header->getObjectPtr()->image_index = image_counter_[set*slices_+slice]++; 
+      header->getObjectPtr()->image_series_index = set*slices_+slice;
+
+      image_headers_queue_[set*slices_+slice].enqueue_tail(header);
     }
     
     // Are we ready to reconstruct (downstream)?
@@ -429,7 +483,7 @@ namespace Gadgetron{
     if( rotations_per_reconstruction_ > 0 )
       profiles_per_reconstruction *= (frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_);
     
-    if( recon_queue_[set*slices_+slice].message_count() == profiles_per_reconstruction ){
+    if( recon_profiles_queue_[set*slices_+slice].message_count() == profiles_per_reconstruction ){
       
       // Update csm and regularization images if the buffer has changed (completed a cycle) 
       // - and at the first pass
@@ -494,7 +548,7 @@ namespace Gadgetron{
       //
       
       boost::shared_ptr< hoNDArray<float_complext> > samples_host = 
-	extract_samples_from_queue( &recon_queue_[set*slices_+slice], true, set, slice );
+	extract_samples_from_queue( &recon_profiles_queue_[set*slices_+slice], true, set, slice );
       
       if( samples_host.get() == 0x0 ){
 	GADGET_DEBUG1("Failed to extract frame data from queue\n");
@@ -521,32 +575,53 @@ namespace Gadgetron{
       m4->getObjectPtr()->csm_host_ = boost::shared_ptr< hoNDArray<float_complext> >( new hoNDArray<float_complext>(csm_host_[set*slices_+slice]));
       m4->getObjectPtr()->reg_host_ = boost::shared_ptr< hoNDArray<float_complext> >( new hoNDArray<float_complext>(reg_host_[set*slices_+slice]));
 
-      GadgetContainerMessage<ISMRMRD::ImageHeader>* m3 = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+      // Pull the image headers out of the queue
+      //
+
+      long frames_per_reconstruction = 
+	std::max( 1L, frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_ );
+      
+      if( image_headers_queue_[set*slices_+slice].message_count() != frames_per_reconstruction ){
+	m4->release();
+	GADGET_DEBUG2("Unexpected size of image header queue: %d, %d\n", 
+		      image_headers_queue_[set*slices_+slice].message_count(), frames_per_reconstruction);
+	return GADGET_FAIL;
+      }
+
+      m4->getObjectPtr()->image_headers_ =
+	boost::shared_array<ISMRMRD::ImageHeader>( new ISMRMRD::ImageHeader[frames_per_reconstruction] );
+      
+      for( unsigned int i=0; i<frames_per_reconstruction; i++ ){	
+
+	ACE_Message_Block *mbq;
+
+	if( image_headers_queue_[set*slices_+slice].dequeue_head(mbq) < 0 ) {
+	  m4->release();
+	  GADGET_DEBUG1("Image header dequeue failed\n");
+	  return GADGET_FAIL;
+	}
+	
+	GadgetContainerMessage<ISMRMRD::ImageHeader> *m = AsContainerMessage<ISMRMRD::ImageHeader>(mbq);
+	m4->getObjectPtr()->image_headers_[i] = *m->getObjectPtr();
+
+	// In sliding window mode the header might need to go back at the end of the queue for reuse
+	// 
+	
+	if( i >= frames_per_reconstruction-sliding_window_rotations_*frames_per_rotation_[set*slices_+slice] ){
+	  image_headers_queue_[set*slices_+slice].enqueue_tail(m);
+	}
+	else {
+	  m->release();
+	}
+      }      
+      
+      // The Sense Job needs an image header as well. 
+      // Let us just copy the initial one...
+
+      GadgetContainerMessage<ISMRMRD::ImageHeader> *m3 = new GadgetContainerMessage<ISMRMRD::ImageHeader>;
+      *m3->getObjectPtr() = m4->getObjectPtr()->image_headers_[0];
       m3->cont(m4);
-
-      ISMRMRD::AcquisitionHeader base_head = *m1->getObjectPtr();
-      m3->getObjectPtr()->matrix_size[0] = image_dimensions_recon_[0];
-      m3->getObjectPtr()->matrix_size[1] = image_dimensions_recon_[1];
-      m3->getObjectPtr()->matrix_size[2] = std::max(1L,frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_);
-
-      m3->getObjectPtr()->field_of_view[0] = fov_[0];
-      m3->getObjectPtr()->field_of_view[1] = fov_[1];
-      m3->getObjectPtr()->field_of_view[2] = fov_[2];
-
-      m3->getObjectPtr()->channels = num_coils_[set*slices_+slice];
-      m3->getObjectPtr()->slice = base_head.idx.slice;
-      m3->getObjectPtr()->set = base_head.idx.set;
-
-      memcpy(m3->getObjectPtr()->position,base_head.position, sizeof(float)*3);
-      memcpy(m3->getObjectPtr()->read_dir,base_head.read_dir, sizeof(float)*3);
-      memcpy(m3->getObjectPtr()->phase_dir,base_head.phase_dir, sizeof(float)*3);
-      memcpy(m3->getObjectPtr()->slice_dir,base_head.slice_dir, sizeof(float)*3);
-      memcpy(m3->getObjectPtr()->patient_table_position, base_head.patient_table_position, sizeof(float)*3);
-
-      m3->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
-      m3->getObjectPtr()->image_index = image_counter_[set*slices_+slice]++; 
-      m3->getObjectPtr()->image_series_index = set*slices_+slice;
-
+      
       //GADGET_DEBUG1("Putting job on queue\n");
       
       if (this->next()->putq(m3) < 0) {
@@ -567,8 +642,8 @@ namespace Gadgetron{
       // This is the first profile of the next frame, enqueue.
       // We have encountered deadlocks if the same profile is enqueued twice in different queues. Hence the copy.
       
-      frame_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m1));
-      recon_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m1)); 
+      frame_profiles_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m2));
+      recon_profiles_queue_[set*slices_+slice].enqueue_tail(duplicate_profile(m2)); 
 
       profiles_counter_frame_[set*slices_+slice]++;
     }
@@ -816,10 +891,9 @@ namespace Gadgetron{
 	return boost::shared_ptr< hoNDArray<float_complext> >();
       }
       
-      GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *acq = AsContainerMessage<ISMRMRD::AcquisitionHeader>(mbq);
-      GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq->cont());
+      GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq);
 	
-      if (!acq || !daq) {
+      if (!daq) {
 	GADGET_DEBUG1("Unable to interpret data on message queue\n");
 	return boost::shared_ptr< hoNDArray<float_complext> >();
       }
@@ -840,6 +914,7 @@ namespace Gadgetron{
       
       long profiles_in_sliding_window = sliding_window_profiles_ + 
 	profiles_per_frame_[set*slices_+slice]*frames_per_rotation_[set*slices_+slice]*sliding_window_rotations_;
+
       if( sliding_window && p >= (profiles_buffered-profiles_in_sliding_window) )
 	queue->enqueue_tail(mbq);
       else
@@ -849,25 +924,21 @@ namespace Gadgetron{
     return host_samples;
   }
   
-  GadgetContainerMessage<ISMRMRD::AcquisitionHeader>*
-  gpuRadialSensePrepGadget::duplicate_profile( GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *profile )
+  GadgetContainerMessage< hoNDArray< std::complex<float> > >*
+  gpuRadialSensePrepGadget::duplicate_profile( GadgetContainerMessage< hoNDArray< std::complex<float> > > *profile )
   {
-    GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *copy = 
-      new GadgetContainerMessage<ISMRMRD::AcquisitionHeader>();
-    
-    GadgetContainerMessage< hoNDArray< std::complex<float> > > *cont_copy = 
+    GadgetContainerMessage< hoNDArray< std::complex<float> > > *copy = 
       new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
     
     *copy->getObjectPtr() = *profile->getObjectPtr();
-    *(cont_copy->getObjectPtr()) = *(AsContainerMessage<hoNDArray< std::complex<float> > >(profile->cont())->getObjectPtr());
     
-    copy->cont(cont_copy);
     return copy;
   }
 
   void gpuRadialSensePrepGadget::reconfigure(unsigned int set, unsigned int slice)
   {    
-    GADGET_DEBUG2("\nReconfiguring:\n#profiles/frame:%d\n#frames/rotation: %d\n#rotations/reconstruction:%d\n", profiles_per_frame_[set*slices_+slice], frames_per_rotation_[set*slices_+slice], rotations_per_reconstruction_);
+    GADGET_DEBUG2("\nReconfiguring:\n#profiles/frame:%d\n#frames/rotation: %d\n#rotations/reconstruction:%d\n", 
+		  profiles_per_frame_[set*slices_+slice], frames_per_rotation_[set*slices_+slice], rotations_per_reconstruction_);
 
     calculate_trajectory_for_reconstruction(0, set, slice);
     calculate_density_compensation_for_reconstruction(set, slice);

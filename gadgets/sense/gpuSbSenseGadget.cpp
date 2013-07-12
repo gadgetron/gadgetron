@@ -76,7 +76,13 @@ namespace Gadgetron{
     mu_ = get_double_value(std::string("mu").c_str());
     lambda_ = get_double_value(std::string("lambda").c_str());
     alpha_ = get_double_value(std::string("alpha").c_str());
+    rotations_to_discard_ = get_int_value(std::string("rotations_to_discard").c_str());
     output_convergence_ = get_bool_value(std::string("output_convergence").c_str());
+
+    if( (rotations_to_discard_%2) == 1 ){
+      GADGET_DEBUG1("#rotations to discard must be even.\n");
+      return GADGET_FAIL;
+    }
 
     boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
@@ -331,12 +337,28 @@ namespace Gadgetron{
     // Now pass on the reconstructed images
     //
 
+    unsigned int frames_per_rotation = frames/rotations;
+
+    if( rotations == 1 ){ // this is the case for golden ratio
+      rotations = frames;
+      frames_per_rotation = 1;
+    }
+
     for( unsigned int frame=0; frame<frames; frame++ ){
       
-      GadgetContainerMessage< hoNDArray< std::complex<float> > > *cm = new GadgetContainerMessage< hoNDArray< std::complex<float> > >();     
-      GadgetContainerMessage<ISMRMRD::ImageHeader> *m = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+      unsigned int rotation_idx = frame/frames_per_rotation;
 
-      *m->getObjectPtr() = *m1->getObjectPtr();
+      // Check if we should discard this frame
+      if( rotation_idx < (rotations_to_discard_>>1) || rotation_idx >= rotations-(rotations_to_discard_>>1) )
+	continue;
+
+      GadgetContainerMessage< hoNDArray< std::complex<float> > > *cm = 
+	new GadgetContainerMessage< hoNDArray< std::complex<float> > >();     
+
+      GadgetContainerMessage<ISMRMRD::ImageHeader> *m = 
+	new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+
+      *m->getObjectPtr() = j->image_headers_[frame];
       m->getObjectPtr()->matrix_size[0] = matrix_size_seq_[0];
       m->getObjectPtr()->matrix_size[1] = matrix_size_seq_[1];      
       m->cont(cm);

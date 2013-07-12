@@ -27,7 +27,7 @@
 
   <gadget>
     <name>MatlabAcquisition</name>
-    <dll>gadgetronmatlab</dll>
+    <dll>gadgetron_matlab</dll>
     <classname>AcquisitionMatlabGadget</classname>
     <property><name>debug_mode</name><value>0</value></property>
     <property><name>matlab_path</name><value></value></property>
@@ -37,7 +37,7 @@
 
   <gadget>
     <name>MatlabAcquisition</name>
-    <dll>gadgetronmatlab</dll>
+    <dll>gadgetron_matlab</dll>
     <classname>AcquisitionMatlabGadget</classname>
     <property><name>matlab_path</name><value></value></property>
     <property><name>matlab_classname</name><value>accumulate_and_recon</value></property>
@@ -52,7 +52,7 @@
 
   <gadget>
     <name>MatlabImage</name>
-    <dll>gadgetronmatlab</dll>
+    <dll>gadgetron_matlab</dll>
     <classname>ImageMatlabGadget</classname>
     <property><name>matlab_path</name><value></value></property>
     <property><name>matlab_classname</name><value>mask_image</value></property>

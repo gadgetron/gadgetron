@@ -46,6 +46,7 @@ namespace Gadgetron{
     double oversampling_factor_;
     double kernel_width_;
     double kappa_;
+    unsigned int rotations_to_discard_;
 
     bool output_convergence_;
     bool output_timing_;

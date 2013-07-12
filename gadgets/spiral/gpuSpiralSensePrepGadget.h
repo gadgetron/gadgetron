@@ -5,6 +5,10 @@
 #include "gadgetron_gpuspiral_export.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
+#include "cuCgSolver.h"
+#include "cuNonCartesianSenseOperator.h"
+#include "cuCgPreconditioner.h"
+#include "cuNFFT.h"
 #include "hoNDArray.h"
 #include "vector_td.h"
 #include "cuNFFT.h"
@@ -58,17 +62,31 @@ namespace Gadgetron{
 
     bool prepared_;
     bool use_multiframe_grouping_;
+    bool buffer_using_solver_;
+
+    int propagate_csm_from_set_;
+
+    float kernel_width_;
+    float oversampling_factor_;
 
     boost::shared_ptr< hoNDArray<floatd2> > host_traj_;
     boost::shared_ptr< hoNDArray<float> > host_weights_;
-    cuNDArray<float> gpu_weights_;
-
+    
     boost::shared_array< hoNDArray<float_complext> > host_data_buffer_;
+    boost::shared_ptr< cuNDArray<float> > dcw_buffer_;
+
     std::vector<unsigned int> fov_vec_;
-    std::vector<unsigned int> image_dimensions_;
-    cuNFFT_plan<float, 2> plan_;
+    std::vector<unsigned int> image_dimensions_recon_;
+    uintd2 image_dimensions_recon_os_;
+
+    cuNFFT_plan<float,2> nfft_plan_;
+    cuCgSolver<float_complext> cg_;
+    boost::shared_ptr< cuNDArray<float_complext> > csm_;
+    boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E_;
+    boost::shared_ptr< cuCgPreconditioner<float_complext> > D_;
 
     boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > buffer_;
+    boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > image_headers_queue_;
   };
 }
 #endif //gpuSpiralSensePrepGadget_H
