@@ -444,10 +444,25 @@ namespace Gadgetron{
 
       acc_buffer->set_dcw(dcw);
       buffer_update_needed_[idx] |= acc_buffer->add_frame_data( &samples, traj.get() );
+    }
 
-      // Prepare an image header for this frame
-      //
+    // Are we ready to reconstruct (downstream)?
+    //
 
+    long readouts_per_reconstruction = readouts_per_frame_[idx];
+
+    if( rotations_per_reconstruction_ > 0 )
+      readouts_per_reconstruction *= (frames_per_rotation_[idx]*rotations_per_reconstruction_);
+    
+    bool is_last_readout_in_reconstruction = ( recon_readout_queue_[idx].message_count() == readouts_per_reconstruction );
+
+    // Prepare the image header for this frame
+    // - if this is indeed the last profile of a new frame
+    // - or if we are about to reconstruct due to 'sliding_window_profiles_' > 0
+    
+    if( is_last_readout_in_frame || 
+	(is_last_readout_in_reconstruction && image_headers_queue_[idx].message_count() == 0) ){
+      
       GadgetContainerMessage<ISMRMRD::ImageHeader> *header = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
       ISMRMRD::AcquisitionHeader *base_head = m1->getObjectPtr();
 
@@ -487,15 +502,10 @@ namespace Gadgetron{
       image_headers_queue_[idx].enqueue_tail(header);
     }
     
-    // Are we ready to reconstruct (downstream)?
-    // - then prepare the Sense job
+    // If it is time to reconstruct (downstream) then prepare the Sense job
+    // 
 
-    long readouts_per_reconstruction = readouts_per_frame_[idx];
-
-    if( rotations_per_reconstruction_ > 0 )
-      readouts_per_reconstruction *= (frames_per_rotation_[idx]*rotations_per_reconstruction_);
-    
-    if( recon_readout_queue_[idx].message_count() == readouts_per_reconstruction ){
+    if( is_last_readout_in_reconstruction ){
       
       // Update csm and regularization images if the buffer has changed (completed a cycle) 
       // - and at the first pass

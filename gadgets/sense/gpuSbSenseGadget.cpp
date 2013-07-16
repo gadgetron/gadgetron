@@ -107,6 +107,7 @@ namespace Gadgetron{
      
       // Allocate encoding operator for non-Cartesian Sense
       E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );
+      E_->set_weight(mu_);
 
       // Allocate preconditioner
       D_ = boost::shared_ptr< cuCgPreconditioner<float_complext> >( new cuCgPreconditioner<float_complext>() );

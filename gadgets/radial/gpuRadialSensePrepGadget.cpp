@@ -432,10 +432,25 @@ namespace Gadgetron{
       boost::shared_ptr< cuNDArray<floatd2> > traj = calculate_trajectory_for_frame(profile_offset, set, slice);
 
       buffer_update_needed_[set*slices_+slice] |= acc_buffer->add_frame_data( &samples, traj.get() );
+    }
+    
+    // Are we ready to reconstruct (downstream)?
+    //
+    
+    long profiles_per_reconstruction = profiles_per_frame_[set*slices_+slice];
+    
+    if( rotations_per_reconstruction_ > 0 )
+      profiles_per_reconstruction *= (frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_);
+    
+    bool is_last_profile_in_reconstruction = ( recon_profiles_queue_[set*slices_+slice].message_count() == profiles_per_reconstruction );
+        
+    // Prepare the image header for this frame
+    // - if this is indeed the last profile of a new frame
+    // - or if we are about to reconstruct due to 'sliding_window_profiles_' > 0
 
-      // Prepare the image header for this frame
-      //
-
+    if( is_last_profile_in_frame || 
+	(is_last_profile_in_reconstruction && image_headers_queue_[set*slices_+slice].message_count() == 0) ){
+      
       GadgetContainerMessage<ISMRMRD::ImageHeader> *header = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
       ISMRMRD::AcquisitionHeader *base_head = m1->getObjectPtr();
 
@@ -475,19 +490,14 @@ namespace Gadgetron{
       image_headers_queue_[set*slices_+slice].enqueue_tail(header);
     }
     
-    // Are we ready to reconstruct (downstream)?
-    // - then prepare the Sense job
+    // If it is time to reconstruct (downstream) then prepare the Sense job
+    // 
 
-    long profiles_per_reconstruction = profiles_per_frame_[set*slices_+slice];
-
-    if( rotations_per_reconstruction_ > 0 )
-      profiles_per_reconstruction *= (frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_);
-    
-    if( recon_profiles_queue_[set*slices_+slice].message_count() == profiles_per_reconstruction ){
+    if( is_last_profile_in_reconstruction ){
       
       // Update csm and regularization images if the buffer has changed (completed a cycle) 
       // - and at the first pass
-
+      
       if( buffer_update_needed_[set*slices_+slice] || 
 	  csm_host_[set*slices_+slice].get_number_of_elements() == 0 || 
 	  reg_host_[set*slices_+slice].get_number_of_elements() == 0 ){
