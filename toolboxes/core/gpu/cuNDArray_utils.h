@@ -42,4 +42,8 @@ namespace Gadgetron{
   sum(cuNDArray<T> *data, unsigned int dim );
 
   template<class T> EXPORTGPUCORE T mean(cuNDArray<T>* data);
+
+  template<class T> EXPORTGPUCORE T min(cuNDArray<T>* data);
+
+  template<class T> EXPORTGPUCORE T max(cuNDArray<T>* data);
 }

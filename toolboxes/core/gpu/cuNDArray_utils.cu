@@ -541,6 +541,16 @@ namespace Gadgetron {
     return thrust::reduce(in->begin(),in->end(),T(0),thrust::plus<T>())/T(in->get_number_of_elements());
   }
 
+  template<class T> T min(cuNDArray<T>* in)
+	{
+  	return *thrust::min_element(in->begin(),in->end());
+	}
+
+  template<class T> T max(cuNDArray<T>* in)
+	{
+		return *thrust::max_element(in->begin(),in->end());
+	}
+
   //
   // Instantiation
   //
@@ -613,6 +623,10 @@ namespace Gadgetron {
   template EXPORTGPUCORE float mean<float>(cuNDArray<float>*);
   template EXPORTGPUCORE float_complext mean<float_complext>(cuNDArray<float_complext>*);
 
+  template EXPORTGPUCORE float min<float>(cuNDArray<float>*);
+  template EXPORTGPUCORE float max<float>(cuNDArray<float>*);
+
+
   template EXPORTGPUCORE void pad<float_complext,1>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, float_complext);
   template EXPORTGPUCORE void pad<float_complext,2>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, float_complext);  
   template EXPORTGPUCORE void pad<float_complext,3>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, float_complext);
@@ -681,6 +695,8 @@ namespace Gadgetron {
   template EXPORTGPUCORE double mean<double>(cuNDArray<double>*);
   template EXPORTGPUCORE double_complext mean<double_complext>(cuNDArray<double_complext>*);
   
+  template EXPORTGPUCORE double min<double>(cuNDArray<double>*);
+	template EXPORTGPUCORE double max<double>(cuNDArray<double>*);
   // We can probably instantiate these functionsfor many more types? E.g. arrays of floatd2. 
   // For now we just introduce what we have needed...
   //
