@@ -5,7 +5,10 @@
 #include "hoArmadillo.h"
 
 #include <complex>
+
+#ifdef USE_OMP
 #include <omp.h>
+#endif
 
 namespace Gadgetron{
 

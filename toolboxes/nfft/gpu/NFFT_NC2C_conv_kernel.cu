@@ -20,7 +20,6 @@
 // Transfer result from shared memory to global memory.
 //
 
-using namespace Gadgetron;
 template<class REAL> __inline__ __device__ void 
 NFFT_H_output( unsigned int number_of_batches, complext<REAL>*image,
 	       unsigned int double_warp_size_power, unsigned int number_of_domains, 

@@ -4,7 +4,9 @@
 #include "hoNDArray_operators.h"
 #include "vector_td_operators.h"
 
+#ifdef USE_OMP
 #include <omp.h>
+#endif
 
 namespace Gadgetron{
 

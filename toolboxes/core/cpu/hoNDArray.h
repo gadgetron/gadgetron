@@ -90,14 +90,14 @@ namespace Gadgetron{
     
     T& at( unsigned int idx ){
       if( idx >= this->get_number_of_elements() ){
-  	throw std::runtime_error("cuNDArray::at(): index out of range.");
+  	throw std::runtime_error("hoNDArray::at(): index out of range.");
       }
       return this->get_data_ptr()[idx];
     }
     
     T& operator[]( unsigned int idx ){
       if( idx >= this->get_number_of_elements() ){
-  	throw std::runtime_error("cuNDArray::operator[]: index out of range.");
+  	throw std::runtime_error("hoNDArray::operator[]: index out of range.");
       }
       return this->get_data_ptr()[idx];
     }

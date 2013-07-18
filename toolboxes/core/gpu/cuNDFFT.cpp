@@ -5,7 +5,6 @@
 #include "cuNDArray_operators.h"
 
 #include <cufft.h>
-#include <cublas.h>
 #include <cuComplex.h>
 #include <sstream>
 

@@ -16,11 +16,10 @@ if (ARMADILLO_FOUND)
   list(APPEND OPTIMIZED_GADGETS PCACoilGadget.cpp)
   list(APPEND OPTIMIZED_GADGET_HEADERS NoiseAdjustGadget.h)
   list(APPEND OPTIMIZED_GADGET_HEADERS PCACoilGadget.h)
-  list(APPEND OPTIMIZED_GADGET_LIBS ${ARMADILLO_LIBRARIES})
+  list(APPEND OPTIMIZED_GADGET_LIBS cpucore_math ${ARMADILLO_LIBRARIES})
 elseif (ARMADILLO_FOUND)
   MESSAGE("Armadillo not found, i.e. not compiling Blas/Lapack optimized MRI Gadgets")
 endif (ARMADILLO_FOUND)
-
 
 add_library(gadgetron_mricore SHARED 
   AcquisitionPassthroughGadget.cpp
@@ -44,7 +43,7 @@ add_library(gadgetron_mricore SHARED
   )
 
 target_link_libraries(gadgetron_mricore 
-  cpucore cpucore_math 
+  cpucore
   ${ISMRMRD_LIBRARIES} 
   ${FFTW3_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 

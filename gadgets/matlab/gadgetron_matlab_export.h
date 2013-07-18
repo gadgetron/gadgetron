@@ -10,7 +10,7 @@
 
 
 #if defined (WIN32)
-#if defined (__BUILD_GADGETRON_MATLAB__) || defined (gadgetronmatlab_EXPORTS)
+#if defined (__BUILD_GADGETRON_MATLAB__) || defined (gadgetron_matlab_EXPORTS)
 #define EXPORTGADGETSMATLAB __declspec(dllexport)
 #else
 #define EXPORTGADGETSMATLAB __declspec(dllimport)

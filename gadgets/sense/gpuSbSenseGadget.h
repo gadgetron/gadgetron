@@ -37,6 +37,7 @@ namespace Gadgetron{
 
     int channels_;
     int device_number_;
+    int set_number_;
     int slice_number_;
 
     uintd2 matrix_size_;
@@ -51,6 +52,7 @@ namespace Gadgetron{
     double mu_;
     double lambda_;
     double alpha_;
+    unsigned int rotations_to_discard_;
 
     bool output_convergence_;
     bool is_configured_;
@@ -76,8 +78,7 @@ namespace Gadgetron{
     boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> > Rz1_;
     boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> > Rz2_;
 	
-    int image_series_;
-    int image_counter_;
+    int frame_counter_;
   };
 }
 #endif //gpuSbSenseGadget

@@ -17,9 +17,10 @@ namespace Gadgetron{
     : is_configured_(false)
     , prepared_(false)
     , channels_(0)
-    , image_counter_(0)
+    , frame_counter_(0)
   {
     set_parameter(std::string("deviceno").c_str(), "0");
+    set_parameter(std::string("setno").c_str(), "0");
     set_parameter(std::string("sliceno").c_str(), "0");
     set_parameter(std::string("number_of_sb_iterations").c_str(), "20");
     set_parameter(std::string("number_of_cg_iterations").c_str(), "10");
@@ -65,6 +66,7 @@ namespace Gadgetron{
     }
 
     pass_on_undesired_data_ = get_bool_value(std::string("pass_on_undesired_data").c_str());
+    set_number_ = get_int_value(std::string("setno").c_str());
     slice_number_ = get_int_value(std::string("sliceno").c_str());
     number_of_sb_iterations_ = get_int_value(std::string("number_of_sb_iterations").c_str());
     number_of_cg_iterations_ = get_int_value(std::string("number_of_cg_iterations").c_str());
@@ -74,7 +76,13 @@ namespace Gadgetron{
     mu_ = get_double_value(std::string("mu").c_str());
     lambda_ = get_double_value(std::string("lambda").c_str());
     alpha_ = get_double_value(std::string("alpha").c_str());
+    rotations_to_discard_ = get_int_value(std::string("rotations_to_discard").c_str());
     output_convergence_ = get_bool_value(std::string("output_convergence").c_str());
+
+    if( (rotations_to_discard_%2) == 1 ){
+      GADGET_DEBUG1("#rotations to discard must be even.\n");
+      return GADGET_FAIL;
+    }
 
     boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
@@ -149,10 +157,10 @@ namespace Gadgetron{
 
   int gpuSbSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<SenseJob> *m2)
   {
-    // Is this data for this gadget's slice?
+    // Is this data for this gadget's set/slice?
     //
     
-    if (m1->getObjectPtr()->slice != slice_number_) {      
+    if( m1->getObjectPtr()->set != set_number_ || m1->getObjectPtr()->slice != slice_number_ ) {      
       // No, pass it downstream...
       return this->next()->putq(m1);
     }
@@ -329,12 +337,28 @@ namespace Gadgetron{
     // Now pass on the reconstructed images
     //
 
+    unsigned int frames_per_rotation = frames/rotations;
+
+    if( rotations == 1 ){ // this is the case for golden ratio
+      rotations = frames;
+      frames_per_rotation = 1;
+    }
+
     for( unsigned int frame=0; frame<frames; frame++ ){
       
-      GadgetContainerMessage< hoNDArray< std::complex<float> > > *cm = new GadgetContainerMessage< hoNDArray< std::complex<float> > >();     
-      GadgetContainerMessage<ISMRMRD::ImageHeader> *m = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+      unsigned int rotation_idx = frame/frames_per_rotation;
 
-      *m->getObjectPtr() = *m1->getObjectPtr();
+      // Check if we should discard this frame
+      if( rotation_idx < (rotations_to_discard_>>1) || rotation_idx >= rotations-(rotations_to_discard_>>1) )
+	continue;
+
+      GadgetContainerMessage< hoNDArray< std::complex<float> > > *cm = 
+	new GadgetContainerMessage< hoNDArray< std::complex<float> > >();     
+
+      GadgetContainerMessage<ISMRMRD::ImageHeader> *m = 
+	new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+
+      *m->getObjectPtr() = j->image_headers_[frame];
       m->getObjectPtr()->matrix_size[0] = matrix_size_seq_[0];
       m->getObjectPtr()->matrix_size[1] = matrix_size_seq_[1];      
       m->cont(cm);
@@ -363,6 +387,7 @@ namespace Gadgetron{
       m->getObjectPtr()->matrix_size[1] = img_dims[1];
       m->getObjectPtr()->matrix_size[2] = 1;
       m->getObjectPtr()->channels       = 1;
+      m->getObjectPtr()->image_index    = frame_counter_ + frame;
 
       if (this->next()->putq(m) < 0) {
 	GADGET_DEBUG1("\nFailed to result image on to Q\n");
@@ -371,6 +396,7 @@ namespace Gadgetron{
       }
     }
 
+    frame_counter_ += frames;
     m1->release();
     return GADGET_OK;
   }

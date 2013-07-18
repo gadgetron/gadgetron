@@ -14,7 +14,7 @@ if (ARMADILLO_FOUND)
     golden_radial_mode2_gpu_ktsense.xml 
     DESTINATION config)
 elseif (ARMADILLO_FOUND)
-  MESSAGE("Armadillo not found. Hence only a limited number (of unoptimized) config files will be available!")
+  MESSAGE("Armadillo not found, only unoptimized radial config files will be available")
 endif (ARMADILLO_FOUND)
 
 install (FILES 

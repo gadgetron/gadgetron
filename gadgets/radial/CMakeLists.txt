@@ -25,7 +25,7 @@ if(CUDA_FOUND)
   include_directories(${CUDA_INCLUDE_DIRS})
   
   add_library(gadgetron_gpuradial SHARED 
-    gpuRadialSenseGadget.cpp 
+    gpuRadialSensePrepGadget.cpp 
     ${ISMRMRD_XSD_SOURCE})
   
   target_link_libraries(gadgetron_gpuradial

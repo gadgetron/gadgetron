@@ -1,9 +1,6 @@
 find_package(Ismrmrd REQUIRED)
 
-include_directories(
-  ${MATLAB_INCLUDE_DIR}
-  #${GADGETRON_INCLUDE_DIR}
-  )
+include_directories(${MATLAB_INCLUDE_DIR})
 
 if (UNIX)
     if (APPLE)
@@ -15,9 +12,9 @@ else(UNIX)
     SET(MATLAB_SUFFIX ".dll")
 endif(UNIX)
 
-add_library(gadgetronmatlab SHARED MatlabGadget.cpp)
+add_library(gadgetron_matlab SHARED MatlabGadget.cpp)
 target_link_libraries(
-    gadgetronmatlab
+    gadgetron_matlab
     ${MATLAB_LIBRARIES}
     ${ISMRMRD_LIBRARIES}
     ${ISMRMRD_XSD_LIBRARIES}
@@ -39,7 +36,8 @@ add_custom_command(
 )
 add_custom_target(matlab_command_server ALL DEPENDS ${JAVA_MATLAB_SERVER_CLASS})
 
-install(TARGETS gadgetronmatlab DESTINATION lib)
+install(TARGETS gadgetron_matlab DESTINATION lib)
+install(FILES MatlabGadget.h gadgetron_matlab_export.h DESTINATION include)
 install(FILES BaseGadget.m scale.m accumulate_and_recon.m mask_image.m DESTINATION matlab)
 install(FILES matlab.xml DESTINATION config)
 install(FILES ${JAVA_MATLAB_SERVER_CLASS} DESTINATION matlab)

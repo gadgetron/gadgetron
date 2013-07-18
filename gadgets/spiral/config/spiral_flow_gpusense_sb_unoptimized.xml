@@ -24,7 +24,7 @@
     <dll>gadgetron_mricore</dll>
     <classname>MRIImageWriterUSHORT</classname>
   </writer>
-  
+
   <gadget>
     <name>NoiseAdjust</name>
     <dll>gadgetron_mricore</dll>
@@ -32,29 +32,45 @@
   </gadget>
   
   <gadget>
-    <name>RemoveROOversampling</name>
-    <dll>gadgetron_mricore</dll>
-    <classname>RemoveROOversamplingGadget</classname>
-  </gadget>
-  
-  <gadget>
     <name>gpuSpiralSensePrepGadget</name>
     <dll>gadgetron_gpuspiral</dll>
     <classname>gpuSpiralSensePrepGadget</classname>
     <property><name>deviceno</name><value>0</value></property>
-    <property><name>use_multiframe_grouping</name><value>false</value></property>
+    <property><name>use_multiframe_grouping</name><value>true</value></property>
   </gadget>
   
   <gadget>
-    <name>gpuCgSenseGadget</name>
+    <name>gpuSbSenseGadget</name>
     <dll>gadgetron_gpusense</dll>
-    <classname>gpuCgSenseGadget</classname>
+    <classname>gpuSbSenseGadget</classname>
+    <property><name>pass_on_undesired_data</name>  <value>true</value></property>
     <property><name>deviceno</name>                <value>0</value></property>
-    <property><name>number_of_iterations</name>    <value>10</value></property>
+    <property><name>setno</name>                   <value>0</value></property>
+    <property><name>number_of_cg_iterations</name> <value>10</value></property>
+    <property><name>number_of_sb_iterations</name> <value>10</value></property>
     <property><name>cg_limit</name>                <value>1e-6</value></property>
-    <property><name>oversampling</name>            <value>1.25</value></property>
+    <property><name>oversampling_factor</name>     <value>1.25</value></property>
     <property><name>kernel_width</name>            <value>5.5</value></property>
-    <property><name>kappa</name>                   <value>0.3</value></property>
+    <property><name>mu</name>                      <value>1.0</value></property>
+    <property><name>lambda</name>                  <value>2.0</value></property>
+    <property><name>alpha</name>                   <value>0.5</value></property>
+  </gadget>
+
+  <gadget>
+    <name>gpuSbSenseGadget</name>
+    <dll>gadgetron_gpusense</dll>
+    <classname>gpuSbSenseGadget</classname>
+    <property><name>pass_on_undesired_data</name>  <value>true</value></property>
+    <property><name>deviceno</name>                <value>0</value></property>
+    <property><name>setno</name>                   <value>1</value></property>
+    <property><name>number_of_cg_iterations</name> <value>10</value></property>
+    <property><name>number_of_sb_iterations</name> <value>10</value></property>
+    <property><name>cg_limit</name>                <value>1e-6</value></property>
+    <property><name>oversampling_factor</name>     <value>1.25</value></property>
+    <property><name>kernel_width</name>            <value>5.5</value></property>
+    <property><name>mu</name>                      <value>1.0</value></property>
+    <property><name>lambda</name>                  <value>2.0</value></property>
+    <property><name>alpha</name>                   <value>0.5</value></property>
   </gadget>
 
   <gadget>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gadgetronmatlab_export.h"
+#include "gadgetron_matlab_export.h"
 #include "Gadget.h"
 #include "Gadgetron.h"
 #include "hoNDArray.h"
