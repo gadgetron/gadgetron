@@ -65,7 +65,6 @@ namespace Gadgetron{
 	this->dimensions_ = rhs.get_dimensions();
 	allocate_memory();
 	memcpy( this->data_, rhs.data_, this->elements_*sizeof(T) );
-
       }
       return *this;
     }

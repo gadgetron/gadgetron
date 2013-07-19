@@ -55,6 +55,7 @@ namespace Gadgetron{
     unsigned int rotations_to_discard_;
 
     bool output_convergence_;
+    bool exclusive_access_;
     bool is_configured_;
     bool prepared_;
 

@@ -2,7 +2,7 @@
 #define gpuSpiralSensePrepGadget_H
 #pragma once
 
-#include "gadgetron_gpuspiral_export.h"
+#include "gadgetron_spiral_export.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "cuCgSolver.h"
@@ -12,15 +12,15 @@
 #include "hoNDArray.h"
 #include "vector_td.h"
 #include "cuNFFT.h"
-#include "ismrmrd.h"
 
+#include <ismrmrd.h>
 #include <complex>
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
 
 namespace Gadgetron{
 
-  class EXPORTGADGETS_GPUSPIRAL gpuSpiralSensePrepGadget :
+  class EXPORTGADGETS_SPIRAL gpuSpiralSensePrepGadget :
     public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   {
 

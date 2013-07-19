@@ -2,6 +2,8 @@ if (ARMADILLO_FOUND)
   install (FILES 
     spiral_flow_gpusense_cg.xml 
     spiral_flow_gpusense_sb.xml 
+    spiral_flow_generic_gpusense_cg.xml 
+    spiral_flow_generic_gpusense_sb.xml 
     spiral_interactive.xml 
     DESTINATION config)
 elseif (ARMADILLO_FOUND)

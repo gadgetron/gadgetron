@@ -11,8 +11,13 @@
 #include "vector_td_utilities.h"
 #include "hoNDArray_fileio.h"
 
+#include <boost/thread/mutex.hpp>
+
 namespace Gadgetron{
 
+#define max_number_of_gpus 10
+  static boost::mutex _mutex[max_number_of_gpus];
+  
   gpuSbSenseGadget::gpuSbSenseGadget()
     : is_configured_(false)
     , prepared_(false)
@@ -30,6 +35,7 @@ namespace Gadgetron{
     set_parameter(std::string("mu").c_str(), "1.0");
     set_parameter(std::string("lambda").c_str(), "2.0");
     set_parameter(std::string("alpha").c_str(), "0.5");
+    set_parameter(std::string("exclusive_access").c_str(), "false");
 
     matrix_size_ = uintd2(0,0);
     matrix_size_os_ = uintd2(0,0);
@@ -78,6 +84,7 @@ namespace Gadgetron{
     alpha_ = get_double_value(std::string("alpha").c_str());
     rotations_to_discard_ = get_int_value(std::string("rotations_to_discard").c_str());
     output_convergence_ = get_bool_value(std::string("output_convergence").c_str());
+    exclusive_access_ = get_bool_value(std::string("exclusive_access").c_str());
 
     if( (rotations_to_discard_%2) == 1 ){
       GADGET_DEBUG1("#rotations to discard must be even.\n");
@@ -304,7 +311,18 @@ namespace Gadgetron{
     {
       GADGET_DEBUG1("Running split Bregman solver\n");
       GPUTimer timer("Running split Bregman solver");
+
+      // Optionally, allow exclusive (per device) access to the solver
+      // This may not matter much in terms of speed, but it can in terms of memory consumption
+      //
+
+      if( exclusive_access_ )
+	_mutex[device_number_].lock();
+
       sbresult = sb_.solve(device_samples.get());
+
+      if( exclusive_access_ )
+	_mutex[device_number_].unlock();
     }
 
     // Provide some info about the scaling between the regularization and reconstruction.

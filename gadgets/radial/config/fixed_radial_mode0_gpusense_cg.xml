@@ -69,6 +69,7 @@
       <property><name>oversampling_factor</name>     <value>1.25</value></property>
       <property><name>kernel_width</name>            <value>5.5</value></property>
       <property><name>kappa</name>                   <value>0.3</value></property>
+      <property><name>output_convergence</name><value>true</value></property>
     </gadget>
 
     <gadget>
@@ -83,6 +84,7 @@
       <property><name>oversampling_factor</name>     <value>1.25</value></property>
       <property><name>kernel_width</name>            <value>5.5</value></property>
       <property><name>kappa</name>                   <value>0.3</value></property>
+      <property><name>output_convergence</name><value>true</value></property>
     </gadget>
 
     <gadget>
@@ -97,6 +99,7 @@
       <property><name>oversampling_factor</name>     <value>1.25</value></property>
       <property><name>kernel_width</name>            <value>5.5</value></property>
       <property><name>kappa</name>                   <value>0.3</value></property>
+      <property><name>output_convergence</name><value>true</value></property>
     </gadget>
 
      <gadget>

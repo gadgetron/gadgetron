@@ -1,5 +1,5 @@
 IF (WIN32)
-  ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUSPIRAL__)
+  ADD_DEFINITIONS(-D__BUILD_GADGETRON_SPIRAL__)
 ENDIF (WIN32)
 
 find_package(Ismrmrd REQUIRED)
@@ -23,18 +23,19 @@ include_directories(
   ${CUDA_INCLUDE_DIRS}
   )
 
-add_library(gadgetron_gpuspiral SHARED 
+add_library(gadgetron_spiral SHARED 
   vds.cpp 
   gpuSpiralSensePrepGadget.cpp 
+  SpiralToGenericGadget.cpp
   ${ISMRMRD_XSD_SOURCE})
 
-target_link_libraries(gadgetron_gpuspiral
+target_link_libraries(gadgetron_spiral
   cpucore gpucore gpunfft gpusolvers gpuoperators gpuparallelmri
   ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 
-install (TARGETS gadgetron_gpuspiral DESTINATION lib)
+install (TARGETS gadgetron_spiral DESTINATION lib)
 install (FILES vds.h DESTINATION include)
 
 add_subdirectory(config)

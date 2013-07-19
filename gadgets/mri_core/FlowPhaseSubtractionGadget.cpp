@@ -38,6 +38,13 @@ namespace Gadgetron{
 
     buffer_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[sets_]); 
 
+    size_t bsize = sizeof(GadgetContainerMessage< GadgetContainerMessage<ISMRMRD::ImageHeader> >)*10000;
+
+    for( unsigned int i=0; i<sets_; i++ ){
+      buffer_[i].high_water_mark(bsize);
+      buffer_[i].low_water_mark(bsize);
+    }
+
     return GADGET_OK;
   }
 

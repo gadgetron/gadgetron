@@ -243,8 +243,7 @@ namespace Gadgetron{
     
     virtual boost::shared_ptr< hoNDArray<T> > to_host() const
     {
-      boost::shared_ptr< hoNDArray<T> > ret = boost::shared_ptr< hoNDArray<T> >(new hoNDArray<T>);
-      ret->create(this->dimensions_.get());
+      boost::shared_ptr< hoNDArray<T> > ret(new hoNDArray<T>(this->dimensions_.get()));
       if (cudaMemcpy(ret->get_data_ptr(), this->data_, this->elements_*sizeof(T), cudaMemcpyDeviceToHost) != cudaSuccess) {
 	throw cuda_error("cuNDArray::to_host(): failed to copy memory from device");
       }      
