@@ -30,6 +30,7 @@ namespace Gadgetron{
 
     set_parameter(std::string("deviceno").c_str(), "0");
     set_parameter(std::string("rotations_per_reconstruction").c_str(), "0");
+    set_parameter(std::string("propagate_csm_from_set").c_str(), "-1");
     set_parameter(std::string("buffer_length_in_rotations").c_str(), "0");
     set_parameter(std::string("buffer_using_solver").c_str(), "false");
     set_parameter(std::string("buffer_convolution_kernel_width").c_str(), "5.5");
@@ -103,6 +104,20 @@ namespace Gadgetron{
     }
     
     unsigned int warp_size = deviceProp.warpSize;
+
+    // It is possible to specify one set to use for csm propagation, and then propagate this to all sets
+    //
+
+    propagate_csm_from_set_ = get_int_value(std::string("propagate_csm_from_set").c_str());
+
+    if( propagate_csm_from_set_ > 0 ){
+      GADGET_DEBUG2("Currently, only set 0 can propagate coil sensitivity maps. Set %d was specified.\n", propagate_csm_from_set_ );
+      return GADGET_FAIL;
+    }
+
+    if( propagate_csm_from_set_ >= 0 ){
+      GADGET_DEBUG2("Propagating csm from set %d to all sets\n", propagate_csm_from_set_ );
+    }
 
     // Convolution kernel width and oversampling ratio (for the buffer)
     //
@@ -194,6 +209,7 @@ namespace Gadgetron{
     //
 
     previous_readout_no_ = boost::shared_array<long>(new long[slices_*sets_]);
+    acceleration_factor_ = boost::shared_array<long>(new long[slices_*sets_]);
     image_counter_ = boost::shared_array<long>(new long[slices_*sets_]);
     readout_counter_frame_= boost::shared_array<long>(new long[slices_*sets_]);
     readout_counter_global_= boost::shared_array<long>(new long[slices_*sets_]);
@@ -207,6 +223,7 @@ namespace Gadgetron{
     for( unsigned int i=0; i<slices_*sets_; i++ ){
 
       previous_readout_no_[i] = -1;
+      acceleration_factor_[i] = -1;
       image_counter_[i] = 0;
       readout_counter_frame_[i] = 0;
       readout_counter_global_[i] = 0;
@@ -369,7 +386,16 @@ namespace Gadgetron{
     if (previous_readout_no_[idx] >= 0) {
 
       if ( readout > previous_readout_no_[idx]) { 
-	// this is not the last readout in the frame
+	// This is not the last readout in the frame.
+	// Make an estimate of the acceleration factor
+	//
+	
+	long tmp_accel = readout - previous_readout_no_[idx];
+
+	if( acceleration_factor_[idx] != tmp_accel )
+	  GADGET_DEBUG2("Detected an acceleration factor of %d\n", tmp_accel);
+	
+	acceleration_factor_[idx] = tmp_accel;
       }
       else{ 
 
@@ -384,10 +410,18 @@ namespace Gadgetron{
 	  //
 
 	  GADGET_DEBUG1("Reconfiguring (acceleration factor changed)\n");
+
 	  new_frame_detected = true;
 	  readouts_per_frame_[idx] = readout_counter_frame_[idx];
-	  if( get_int_value(std::string("frames_per_rotation").c_str()) == 0 )
-	    frames_per_rotation_[idx] = image_dimensions_[0]/readouts_per_frame_[idx];
+
+	    // Assume that #frames/rotation equals the acceleration factor
+	    // If not, or if we cannot deduce the acceleration factor from the difference
+	    // of two subsequent readout ids, then 'frames_per_rotation' have to be specified in the config...
+	    //
+	    
+	  if( get_int_value(std::string("frames_per_rotation").c_str()) == 0 ) {
+	    frames_per_rotation_[idx] = acceleration_factor_[idx];
+	  }
 	  reconfigure(set, slice);
 	}
       }
@@ -412,8 +446,8 @@ namespace Gadgetron{
     bool is_last_readout_in_frame = (readout_counter_frame_[idx] == readouts_per_frame_[idx]-1);
     is_last_readout_in_frame |= new_frame_detected;
 
-    boost::shared_ptr< cuNDArray<floatd2> > traj; 
-    boost::shared_ptr< cuNDArray<float> > dcw; 
+    cuNDArray<floatd2> traj;
+    cuNDArray<float> dcw;
     
     if( is_last_readout_in_frame ){
 
@@ -436,18 +470,33 @@ namespace Gadgetron{
 					     &traj, &dcw );
 
       // Scale dcw weights to the are of the oversampled recon matrix size
-      float scale_factor = float(prod(image_dimensions_recon_os_))/asum(dcw.get());
-      *dcw *= scale_factor;
+      float scale_factor = float(prod(image_dimensions_recon_os_))/asum(&dcw);
+      dcw *= scale_factor;
       
       // Add this frame to the buffer
       //
 
-      acc_buffer->set_dcw(dcw);
-      buffer_update_needed_[idx] |= acc_buffer->add_frame_data( &samples, traj.get() );
+      acc_buffer->set_dcw(boost::shared_ptr< cuNDArray<float> >(new cuNDArray<float>(&dcw)));
+      buffer_update_needed_[idx] |= acc_buffer->add_frame_data( &samples, &traj );
+    }
 
-      // Prepare an image header for this frame
-      //
+    // Are we ready to reconstruct (downstream)?
+    //
 
+    long readouts_per_reconstruction = readouts_per_frame_[idx];
+
+    if( rotations_per_reconstruction_ > 0 )
+      readouts_per_reconstruction *= (frames_per_rotation_[idx]*rotations_per_reconstruction_);
+    
+    bool is_last_readout_in_reconstruction = ( recon_readout_queue_[idx].message_count() == readouts_per_reconstruction );
+
+    // Prepare the image header for this frame
+    // - if this is indeed the last profile of a new frame
+    // - or if we are about to reconstruct due to 'sliding_window_profiles_' > 0
+    
+    if( is_last_readout_in_frame || 
+	(is_last_readout_in_reconstruction && image_headers_queue_[idx].message_count() == 0) ){
+      
       GadgetContainerMessage<ISMRMRD::ImageHeader> *header = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
       ISMRMRD::AcquisitionHeader *base_head = m1->getObjectPtr();
 
@@ -487,15 +536,10 @@ namespace Gadgetron{
       image_headers_queue_[idx].enqueue_tail(header);
     }
     
-    // Are we ready to reconstruct (downstream)?
-    // - then prepare the Sense job
+    // If it is time to reconstruct (downstream) then prepare the Sense job
+    // 
 
-    long readouts_per_reconstruction = readouts_per_frame_[idx];
-
-    if( rotations_per_reconstruction_ > 0 )
-      readouts_per_reconstruction *= (frames_per_rotation_[idx]*rotations_per_reconstruction_);
-    
-    if( recon_readout_queue_[idx].message_count() == readouts_per_reconstruction ){
+    if( is_last_readout_in_reconstruction ){
       
       // Update csm and regularization images if the buffer has changed (completed a cycle) 
       // - and at the first pass
@@ -512,10 +556,19 @@ namespace Gadgetron{
  	// Estimate CSM
 	//
 
-	boost::shared_ptr< cuNDArray<float_complext> > csm = estimate_b1_map<float,2>( csm_data.get() );
+	if( propagate_csm_from_set_ < 0 || propagate_csm_from_set_ == set ){	  	  
+	  csm_ = estimate_b1_map<float,2>( csm_data.get() );
+	}
+	else{
+	  GADGET_DEBUG2("Set %d is reusing the csm from set %d\n", set, propagate_csm_from_set_);
+	  if( csm_.get() == 0x0 ){
+	    GADGET_DEBUG1("Error: csm has not been computed, cannot propagate\n");
+	    return GADGET_FAIL;
+	  }	  
+	}
 
-	acc_buffer->set_csm(csm);
-	csm_host_[idx] = *(csm->to_host());
+	acc_buffer->set_csm(csm_);
+	csm_host_[idx] = *(csm_->to_host());
 	
 	// Compute regularization image
 	//
@@ -529,32 +582,32 @@ namespace Gadgetron{
 
 	  extract_trajectory_and_dcw_from_queue( &recon_traj_queue_[idx], true, set, slice, 
 						 samples_per_readout_*readouts_per_frame_[idx],
-						 std::max(1L, rotations_per_reconstruction_),
+						 std::max(1L, frames_per_rotation_[idx]*rotations_per_reconstruction_),
 						 &traj, &dcw );
 
 	  // Scale dcw weights to the are of the oversampled recon matrix size
-	  float scale_factor = float(prod(image_dimensions_recon_os_))/asum(dcw.get());
-	  *dcw *= scale_factor;
+	  float scale_factor = float(prod(image_dimensions_recon_os_))/asum(&dcw);
+	  dcw *= scale_factor;
 
-	  dims = *traj->get_dimensions();
+	  dims = *traj.get_dimensions();
 
  	  std::vector<unsigned int> tmp_dims;
 	  tmp_dims.push_back(dims[0]*dims[1]);
 	  tmp_dims.push_back(1);
 	  
-	  traj->reshape(&tmp_dims);
-	  dcw->reshape(&tmp_dims);
+	  traj.reshape(&tmp_dims);
+	  dcw.reshape(&tmp_dims);
 	  
-	  ((cuSenseBufferCg<float,2>*)acc_buffer)->preprocess(traj.get());
-	  ((cuSenseBufferCg<float,2>*)acc_buffer)->set_dcw_for_rhs(dcw);
+	  ((cuSenseBufferCg<float,2>*)acc_buffer)->preprocess(&traj);
+	  ((cuSenseBufferCg<float,2>*)acc_buffer)->set_dcw_for_rhs(boost::shared_ptr< cuNDArray<float> >(new cuNDArray<float>(&dcw)));
 	}
 
 	reg_image = acc_buffer->get_combined_coil_image();	
 	reg_host_[idx] = *(reg_image->to_host());
 	
 	if( buffer_using_solver_ ){
-	  traj->reshape(&dims);
-	  dcw->reshape(&dims);
+	  traj.reshape(&dims);
+	  dcw.reshape(&dims);
 	}
 	
 	/*
@@ -581,21 +634,21 @@ namespace Gadgetron{
       if( !(/*rotations_per_reconstruction_ == 0 ||*/ buffer_using_solver_) ){
       	extract_trajectory_and_dcw_from_queue( &recon_traj_queue_[idx], true, set, slice, 
 					       samples_per_readout_*readouts_per_frame_[idx],
-					       std::max(1L, rotations_per_reconstruction_),
+					       std::max(1L, frames_per_rotation_[idx]*rotations_per_reconstruction_),
 					       &traj, &dcw );
       }
 
       // Set up the Sense job
       //
 
-      GadgetContainerMessage< SenseJob > *sj = new GadgetContainerMessage< SenseJob >();
-	
-      sj->getObjectPtr()->dat_host_ = samples_host;
-      sj->getObjectPtr()->tra_host_ = traj->to_host();
-      sj->getObjectPtr()->dcw_host_ = dcw->to_host();
+      GadgetContainerMessage< SenseJob > *sj = new GadgetContainerMessage<SenseJob>();
+      	
+      sj->getObjectPtr()->dat_host_ = samples_host;      
+      sj->getObjectPtr()->tra_host_ = traj.to_host();
+      sj->getObjectPtr()->dcw_host_ = dcw.to_host();
       sj->getObjectPtr()->csm_host_ = boost::shared_ptr< hoNDArray<float_complext> >( new hoNDArray<float_complext>(csm_host_[idx]));
       sj->getObjectPtr()->reg_host_ = boost::shared_ptr< hoNDArray<float_complext> >( new hoNDArray<float_complext>(reg_host_[idx]));
-
+      
       // Pull the image headers out of the queue
       //
 
@@ -608,9 +661,9 @@ namespace Gadgetron{
 		      image_headers_queue_[idx].message_count(), frames_per_reconstruction);
 	return GADGET_FAIL;
       }
-
+      
       sj->getObjectPtr()->image_headers_ =
-	boost::shared_array<ISMRMRD::ImageHeader>( new ISMRMRD::ImageHeader[frames_per_reconstruction] );
+      boost::shared_array<ISMRMRD::ImageHeader>( new ISMRMRD::ImageHeader[frames_per_reconstruction] );
       
       for( unsigned int i=0; i<frames_per_reconstruction; i++ ){	
 
@@ -634,12 +687,13 @@ namespace Gadgetron{
 	else {
 	  m->release();
 	}
-      }      
+      }
       
       // The Sense Job needs an image header as well. 
       // Let us just copy the initial one...
 
       GadgetContainerMessage<ISMRMRD::ImageHeader> *m4 = new GadgetContainerMessage<ISMRMRD::ImageHeader>;
+
       *m4->getObjectPtr() = sj->getObjectPtr()->image_headers_[0];
       m4->cont(sj);
 
@@ -666,8 +720,8 @@ namespace Gadgetron{
 
       frame_readout_queue_[idx].enqueue_tail(duplicate_array(m2));
       recon_readout_queue_[idx].enqueue_tail(duplicate_array(m2)); 
-      frame_readout_queue_[idx].enqueue_tail(duplicate_array(m3));
-      recon_readout_queue_[idx].enqueue_tail(duplicate_array(m3)); 
+      frame_traj_queue_[idx].enqueue_tail(duplicate_array(m3));
+      recon_traj_queue_[idx].enqueue_tail(duplicate_array(m3)); 
 
       readout_counter_frame_[idx]++;
     }
@@ -738,6 +792,21 @@ namespace Gadgetron{
   gpuGenericSensePrepGadget::extract_trajectory_from_queue ( ACE_Message_Queue<ACE_MT_SYNCH> *queue, 
 							     bool sliding_window, unsigned int set, unsigned int slice )
   {    
+    if(!queue) {
+      GADGET_DEBUG1("Illegal queue pointer, cannot extract trajectory\n");
+      throw std::runtime_error("gpuGenericSensePrepGadget::extract_trajectory_from_queue: illegal queue pointer");	
+    }
+
+    if(queue->message_count()==0) {
+      GADGET_DEBUG1("Empty queue, cannot extract trajectory\n");
+      throw std::runtime_error("gpuGenericSensePrepGadget::extract_trajectory_from_queue: empty queue");	
+    }
+
+    if(samples_per_readout_ < 1) {
+      GADGET_DEBUG2("Empty queue (%d), cannot extract trajectory\n", samples_per_readout_);
+      throw std::runtime_error("gpuGenericSensePrepGadget::extract_trajectory_from_queue: empty queue");	
+    }
+    
     unsigned int readouts_buffered = queue->message_count();
     
     std::vector<unsigned int> dims;
@@ -747,8 +816,7 @@ namespace Gadgetron{
     
     boost::shared_ptr< hoNDArray<float> > host_samples(new hoNDArray<float>(&dims));
     
-    for (unsigned int p=0; p<readouts_buffered; p++) {
-      
+    for (unsigned int p=0; p<readouts_buffered; p++) {      
       ACE_Message_Block* mbq;
       if (queue->dequeue_head(mbq) < 0) {
 	GADGET_DEBUG1("Message dequeue failed\n");
@@ -787,7 +855,7 @@ namespace Gadgetron{
   void gpuGenericSensePrepGadget::extract_trajectory_and_dcw_from_queue
   ( ACE_Message_Queue<ACE_MT_SYNCH> *queue, bool sliding_window, unsigned int set, unsigned int slice, 
     unsigned int samples_per_frame, unsigned int num_frames,
-    boost::shared_ptr< cuNDArray<floatd2> > *traj, boost::shared_ptr< cuNDArray<float> > *dcw )
+    cuNDArray<floatd2> *traj, cuNDArray<float> *dcw )
   {
     // Extract trajectory and dcw.
     // They are stored as a float array of dimensions: 3 x #samples_per_readout x #readouts.
@@ -810,7 +878,7 @@ namespace Gadgetron{
     
     {
       hoNDArray<float> tmp(&dims_1d, host_traj_dcw_shifted->get_data_ptr()+2*dims_1d[0]);
-      *dcw = boost::shared_ptr< cuNDArray<float> >(new cuNDArray<float>(&tmp));
+      *dcw = tmp;
     }
     
     std::vector<unsigned int> dims_2d = dims_1d;
@@ -825,8 +893,7 @@ namespace Gadgetron{
     
     cuNDArray<floatd2> tmp2(&dims_1d, (floatd2*)_traj->get_data_ptr());
     
-    *traj = boost::shared_ptr< cuNDArray<floatd2> >(new cuNDArray<floatd2>(&dims_1d));
-    **traj = tmp2;
+    *traj = tmp2;
     
     unsigned int idx = set*slices_+slice;
     dims_2d.clear();
@@ -834,8 +901,8 @@ namespace Gadgetron{
     dims_2d.push_back(samples_per_frame);
     dims_2d.push_back(num_frames);
 
-    (*dcw)->reshape(&dims_2d);
-    (*traj)->reshape(&dims_2d);
+    dcw->reshape(&dims_2d);
+    traj->reshape(&dims_2d);
   }
 
   template<class T> GadgetContainerMessage< hoNDArray<T> >*

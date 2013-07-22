@@ -60,7 +60,7 @@ namespace Gadgetron{
     void extract_trajectory_and_dcw_from_queue
       ( ACE_Message_Queue<ACE_MT_SYNCH> *queue, bool sliding_window, unsigned int set, unsigned int slice, 
 	unsigned int samples_per_frame, unsigned int num_frames,
-	boost::shared_ptr< cuNDArray<floatd2> > *traj, boost::shared_ptr< cuNDArray<float> > *dcw );
+	cuNDArray<floatd2> *traj, cuNDArray<float> *dcw );
     
     int slices_;
     int sets_;
@@ -82,6 +82,7 @@ namespace Gadgetron{
 
     // Internal book-keping
     boost::shared_array<long> previous_readout_no_;
+    boost::shared_array<long> acceleration_factor_;
     boost::shared_array<long> readout_counter_frame_;
     boost::shared_array<long> readout_counter_global_;
 
@@ -100,6 +101,9 @@ namespace Gadgetron{
 
     bool output_timing_;
     bool buffer_using_solver_;
+
+    int propagate_csm_from_set_;
+    boost::shared_ptr< cuNDArray<float_complext> > csm_;
 
     boost::shared_array<bool> buffer_update_needed_;
 
