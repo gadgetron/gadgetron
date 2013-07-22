@@ -27,8 +27,10 @@ namespace Gadgetron{
 			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
     private:
+      std::string file_prefix_;
       std::string ismrmrd_file_name_;
       boost::shared_ptr<ISMRMRD::IsmrmrdDataset>  ismrmrd_dataset_;
+      bool append_timestamp_;
     };
 }
 #endif //ISMRMRDDUMPGADGET_H

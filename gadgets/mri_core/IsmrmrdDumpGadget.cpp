@@ -3,10 +3,37 @@
 #include "Gadgetron.h"
 namespace Gadgetron{
 
+
+  std::string get_date_time_string()
+  {
+    time_t rawtime;
+    struct tm * timeinfo;
+    time ( &rawtime );
+    timeinfo = localtime ( &rawtime );
+
+    
+    std::stringstream str;
+    str << timeinfo->tm_year+1900
+	<< std::setw(2) << std::setfill('0') << timeinfo->tm_mon+1
+	<< std::setw(2) << std::setfill('0') << timeinfo->tm_mday
+	<< "-"
+	<< std::setw(2) << std::setfill('0') << timeinfo->tm_hour
+	<< std::setw(2) << std::setfill('0') << timeinfo->tm_min
+	<< std::setw(2) << std::setfill('0') << timeinfo->tm_sec;
+    
+    std::string ret = str.str();
+    
+    return ret;
+  }
+
   IsmrmrdDumpGadget::IsmrmrdDumpGadget()
     : Gadget2()
-    , ismrmrd_file_name_("ISMRMRD_DUMP.h5")
+    , file_prefix_("ISMRMRD_DUMP")
+    , ismrmrd_file_name_("ISMRMRD_DUMP.h5") //This will be reset during configuration
+    , append_timestamp_(true)
   {
+    set_parameter("file_prefix","ISMRMRD_DUMP",false);
+    set_parameter("append_timestamp","1",false);
 
   }
 
@@ -76,6 +103,17 @@ int IsmrmrdDumpGadget
 int IsmrmrdDumpGadget
 ::process_config(ACE_Message_Block* mb)
 {
+
+  file_prefix_ = *(get_string_value("file_prefix").get());
+  append_timestamp_ = (get_int_value("append_timestamp") > 0);
+
+  //Generate filename
+  if (append_timestamp_) {
+    ismrmrd_file_name_ = file_prefix_ + std::string("_") + get_date_time_string() + std::string(".h5");
+  } else {
+    ismrmrd_file_name_ = file_prefix_ + std::string(".h5");
+  }
+  
   
   ISMRMRD::HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
   ismrmrd_dataset_ = boost::shared_ptr<ISMRMRD::IsmrmrdDataset>(new ISMRMRD::IsmrmrdDataset(ismrmrd_file_name_.c_str(), "dataset"));

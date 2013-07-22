@@ -82,5 +82,7 @@ if (ARMADILLO_FOUND)
   install(FILES default.xml default_short.xml default_optimized.xml DESTINATION config)
 endif (ARMADILLO_FOUND)
 
+install(FILES ismrmrd_dump.xml DESTINATION config)
+
 install(TARGETS gadgetron_mricore DESTINATION lib)
 install(FILES ${ISMRMRD_SCHEMA_DIR}/ismrmrd.xsd DESTINATION schema)
