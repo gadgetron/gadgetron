@@ -8,15 +8,15 @@ set( CPU_REG 0)
 set( GPU_REG 0)
 
 if(ARMADILLO_FOUND)
-  if(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.819" )
+  if(ARMADILLO_VERSION_STRING VERSION_GREATER "3.819" )
     
     set(CPU_REG 1)
     list(APPEND CPU_GADGETS cpuRegistrationAveragingGadget.cpp)
-    list(APPEND CPU_LIBS cpucore_math cpureg ${CUDA_LIBRARIES})
+    list(APPEND CPU_LIBS cpucore_math cpureg)
     
-  elseif(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.819" )
+  elseif(ARMADILLO_VERSION_STRING VERSION_GREATER "3.819" )
     MESSAGE("Armadillo of at least version 3.820 not found, not compiling cpu-based registration gadgets")
-  endif(${ARMADILLO_VERSION_STRING} VERSION_GREATER "3.819" )
+  endif(ARMADILLO_VERSION_STRING VERSION_GREATER "3.819" )
 elseif (ARMADILLO_FOUND)
   MESSAGE("Armadillo not found, not compiling cpu-based registration gadgets")
 endif (ARMADILLO_FOUND)
@@ -25,7 +25,7 @@ if(CUDA_FOUND)
 
   set(GPU_REG 1)
   list(APPEND GPU_GADGETS gpuRegistrationAveragingGadget.cpp)
-  list(APPEND GPU_LIBS gpucore gpureg)
+  list(APPEND GPU_LIBS gpucore gpureg ${CUDA_LIBRARIES})
 
 elseif (CUDA_FOUND)
   MESSAGE("Cuda not found, not compiling gpu-based registration gadgets")
@@ -48,6 +48,7 @@ if(CPU_REG)
   include_directories(   
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
+    ${ARMADILLO_INCLUDE_DIRS}
     )
 endif(CPU_REG)
 
@@ -55,8 +56,9 @@ if(GPU_REG)
   include_directories(   
     ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/gpu
+    ${CUDA_INCLUDE_DIRS}
     )
-endif(CPU_REG)
+endif(GPU_REG)
 
 add_library(gadgetron_moco SHARED
   ${CPU_GADGETS}
