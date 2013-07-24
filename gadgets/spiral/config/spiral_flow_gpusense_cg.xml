@@ -46,7 +46,7 @@
 
   <gadget>
     <name>gpuSpiralSensePrepGadget</name>
-    <dll>gadgetron_gpuspiral</dll>
+    <dll>gadgetron_spiral</dll>
     <classname>gpuSpiralSensePrepGadget</classname>
     <property><name>deviceno</name><value>0</value></property>
     <property><name>use_multiframe_grouping</name><value>true</value></property>

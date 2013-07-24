@@ -46,7 +46,7 @@
 
   <gadget>
     <name>gpuSpiralSensePrepGadget</name>
-    <dll>gadgetron_gpuspiral</dll>
+    <dll>gadgetron_spiral</dll>
     <classname>gpuSpiralSensePrepGadget</classname>
     <property><name>deviceno</name><value>0</value></property>
     <property><name>buffer_convolution_kernel_width</name><value>4.5</value></property>
