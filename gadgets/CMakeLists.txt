@@ -59,3 +59,5 @@ if(DCMTK_FOUND)
 else(DCMTK_FOUND)
   message("DCMTK NOT found, not compiling DICOM gadget")
 endif(DCMTK_FOUND)
+
+add_subdirectory(moco)
