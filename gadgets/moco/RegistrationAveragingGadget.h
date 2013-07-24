@@ -58,7 +58,7 @@ namespace Gadgetron{
       this->beta_  = (typename ARRAY_TYPE::element_type)this->get_double_value("beta");
       this->limit_ = (typename ARRAY_TYPE::element_type)this->get_double_value("limit");
       this->output_convergence_ = this->get_bool_value(std::string("output_convergence").c_str());
-      this->num_multires_levels_ = this->get_int_value(std::string("num_multires_levels").c_str());
+      this->num_multires_levels_ = this->get_int_value(std::string("num_multiresolution_levels").c_str());
       this->max_iterations_per_level_ = this->get_int_value(std::string("max_iterations_per_level").c_str());
       
       // Fow now we require the existence of a gadget named "PhysioInterpolationGadget" upstream,
@@ -142,8 +142,6 @@ namespace Gadgetron{
   // All the work is done here in this gadget
   virtual int close(unsigned long flags)
   {
-    int ret =  Gadget::close(flags);
-
     if( this->phase_images_.get() ){
       
       GADGET_DEBUG1("RegistrationAveragingGadget::close (performing registration and averaging images)\n");
@@ -152,14 +150,19 @@ namespace Gadgetron{
       //
       
       unsigned int num_images = this->phase_images_[0].message_count();
-      
+
       for( unsigned int phase = 0; phase< this->number_of_phases_; phase++ ){
 	if( num_images != this->phase_images_[phase].message_count() ){
 	  GADGET_DEBUG1("Failed to set up registration, a different number of images received for each phase\n");
-	  return ret;
+	  return Gadget::close(flags);
 	}
       }
       
+      if( num_images == 0 ){
+	GADGET_DEBUG1("No images to register\n");
+	return Gadget::close(flags);
+      }
+
       for( unsigned int phase=0; phase < this->number_of_phases_; phase++ ){
 	
 	unsigned int num_image_elements = this->image_dimensions_[0]*image_dimensions_[1];
@@ -177,14 +180,14 @@ namespace Gadgetron{
 	  
 	  if( this->phase_images_[phase].dequeue_head(mbq) < 0 ) {
 	    GADGET_DEBUG1("Image header dequeue failed\n");
-	    return ret;
+	    return Gadget::close(flags);
 	  }
 	  
 	  GadgetContainerMessage<ISMRMRD::ImageHeader> *m1 = AsContainerMessage<ISMRMRD::ImageHeader>(mbq);
 	  
 	  if( m1 == 0x0 ) {
 	    GADGET_DEBUG1("Unexpected image type on queue\n");
-	    return ret;
+	    return Gadget::close(flags);
 	  }
 	  
 	  GadgetContainerMessage< hoNDArray<typename ARRAY_TYPE::element_type> > *m2 = 
@@ -193,7 +196,7 @@ namespace Gadgetron{
 	  if( m2 == 0x0 ) {
 	    GADGET_DEBUG1("Unexpected continuation on queue\n");
 	    m1->release();
-	    return ret;
+	    return Gadget::close(flags);
 	  }
 	  
 	  if( image == 0 ){
@@ -206,9 +209,13 @@ namespace Gadgetron{
 	    // We are going to pass on the averaged image using this header
 	    header = m1; 
 
-	    // But the continuation will be a new array (set after registration)
-	    m1->cont(0x0); 
-	    m2->release();
+	    // The continuation will be a new array (set after registration).
+	    // No registration is however performed if we received only one image. 
+	    // In the latter case keep the current continuation.
+	    if( num_images > 1 ){	      
+	      m1->cont(0x0); 
+	      m2->release();
+	    }
 	  }
 	  else{
 
@@ -219,48 +226,53 @@ namespace Gadgetron{
 	  }
 	}
 	
-	// Perform registration for the current phase
-	//
-	
-	boost::shared_ptr<ARRAY_TYPE> deformations;
-	{
-	  GadgetronTimer timer("Running registration");
-	  deformations = this->of_solver_->solve( &fixed_image, &moving_image );
-	}
-	
-	// Deform moving images based on the registration
-	//
-	
-	boost::shared_ptr<ARRAY_TYPE> deformed_moving;
-	{
-	  GadgetronTimer timer("Applying deformation");
-	  deformed_moving = this->of_solver_->deform( &moving_image, deformations );
-	}
-	
-	// Accumulate the deformed moving images (into one image) and add this image to the fixed image. 
-	// Then divide by the number of images to get the average.
-	//
-	
-	fixed_image += *sum(deformed_moving.get(), 2);
-	fixed_image /= ((typename ARRAY_TYPE::element_type)num_images);
-	
-	// Pass along averaged image
-	//
-
-	if( set_continuation( header, &fixed_image ) < 0 ) {
-	  GADGET_DEBUG1("Failed to set continuation\n");
-	  header->release();
-	  return ret;
+	if( num_images > 1 ){
+	  
+	  // Perform registration for the current phase
+	  //
+	  
+	  boost::shared_ptr<ARRAY_TYPE> deformations;
+	  {
+	    GadgetronTimer timer("Running registration");
+	    deformations = this->of_solver_->solve( &fixed_image, &moving_image );
+	  }
+	  
+	  // Deform moving images based on the registration
+	  //
+	  
+	  boost::shared_ptr<ARRAY_TYPE> deformed_moving;
+	  {
+	    GadgetronTimer timer("Applying deformation");
+	    deformed_moving = this->of_solver_->deform( &moving_image, deformations );
+	  }
+	  
+	  // Accumulate the deformed moving images (into one image) and add this image to the fixed image. 
+	  // Then divide by the number of images to get the average.
+	  //
+	  
+	  
+	  fixed_image += ((deformed_moving->get_number_of_dimensions() == 3) ? *sum(deformed_moving.get(), 2) : *deformed_moving);
+	  fixed_image /= ((typename ARRAY_TYPE::element_type)num_images);
+	  
+	  // Pass along averaged image
+	  //
+	  
+	  if( set_continuation( header, &fixed_image ) < 0 ) {
+	    GADGET_DEBUG1("Failed to set continuation\n");
+	    header->release();
+	    return Gadget::close(flags);
+	  }
 	}
 
 	if( this->next()->putq(header) < 0 ) {
 	  GADGET_DEBUG1("Failed to put registrered image on queue\n");
 	  header->release();
-	  return ret;
+	  return Gadget::close(flags);
 	}
       }
     }
-    return ret;
+    
+    return Gadget::close(flags);
   }
 
   virtual int setup_solver() = 0;

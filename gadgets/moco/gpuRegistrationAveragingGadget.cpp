@@ -46,6 +46,5 @@ namespace Gadgetron{
     return GADGET_OK;
   }
 
-  
   GADGET_FACTORY_DECLARE(gpuRegistrationAveragingGadget2D)
 }
