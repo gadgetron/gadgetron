@@ -11,7 +11,7 @@
 #include "hoNDArray_elemwise.h"
 
 #ifdef HAVE_MKL
-#include "mkl.h"
+#include "mkl_service.h"
 #endif
 
 namespace Gadgetron {
