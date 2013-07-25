@@ -10,6 +10,12 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   ${ARMADILLO_INCLUDE_DIRS}
 )
+if (MKL_FOUND)
+add_definitions(-DHAVE_MKL)
+include_directories(
+  ${MKL_INCLUDE_DIR}
+)
+endif (MKL_FOUND)
 
 if (ARMADILLO_FOUND)
   list(APPEND OPTIMIZED_GADGETS NoiseAdjustGadget.cpp)
@@ -17,6 +23,9 @@ if (ARMADILLO_FOUND)
   list(APPEND OPTIMIZED_GADGET_HEADERS NoiseAdjustGadget.h)
   list(APPEND OPTIMIZED_GADGET_HEADERS PCACoilGadget.h)
   list(APPEND OPTIMIZED_GADGET_LIBS cpucore_math ${ARMADILLO_LIBRARIES})
+  if (MKL_FOUND)
+    list(APPEND OPTIMIZED_GADGET_LIBS ${MKL_LIBRARY_DIR})
+  endif (MKL_FOUND)
 elseif (ARMADILLO_FOUND)
   MESSAGE("Armadillo not found, i.e. not compiling Blas/Lapack optimized MRI Gadgets")
 endif (ARMADILLO_FOUND)
