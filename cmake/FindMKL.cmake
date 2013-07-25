@@ -1,78 +1,59 @@
-# This CMake script taken from
-# https://github.com/lindahua/light-matrix
+# - Find the MKL libraries
+# Modified from Armadillo's ARMA_FindMKL.cmake
+# This module defines
+#  MKL_INCLUDE_DIR, the directory for the MKL headers
+#  MKL_LIBRARIES, the libraries needed to use Intel's implementation of BLAS & LAPACK.
+#  MKL_FOUND, If false, do not try to use MKL.
 
-# a simple cmake script to locate Intel Math Kernel Library
+# Set the include path
+# TODO: what if MKL is not installed in /opt/intel/mkl?
+# try to find at /opt/intel/mkl
+if (EXISTS "/opt/intel/mkl")
+  set(MKLROOT_PATH "/opt/intel/mkl")
+  set(MKL_INCLUDE_DIR "${MKLROOT_PATH}/include")
+endif (EXISTS "/opt/intel/mkl")
 
-# This script looks for two places:
-#	- the environment variable MKLROOT
-#	- the directory /opt/intel/mkl
+SET(MKL_NAMES ${MKL_NAMES} mkl_lapack)
+SET(MKL_NAMES ${MKL_NAMES} mkl_intel_thread)
+SET(MKL_NAMES ${MKL_NAMES} mkl_core)
+SET(MKL_NAMES ${MKL_NAMES} guide)
+SET(MKL_NAMES ${MKL_NAMES} mkl)
+SET(MKL_NAMES ${MKL_NAMES} iomp5)
+#SET(MKL_NAMES ${MKL_NAMES} pthread)
 
+IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
+  SET(MKL_NAMES ${MKL_NAMES} mkl_intel_lp64)
+ELSE(CMAKE_SIZEOF_VOID_P EQUAL 8)
+  SET(MKL_NAMES ${MKL_NAMES} mkl_intel)
+ENDIF(CMAKE_SIZEOF_VOID_P EQUAL 8)
 
-# Stage 1: find the root directory
+FOREACH (MKL_NAME ${MKL_NAMES})
+  FIND_LIBRARY(${MKL_NAME}_LIBRARY
+    NAMES ${MKL_NAME}
+    PATHS /usr/lib64 /usr/lib /usr/local/lib64 /usr/local/lib /opt/intel/lib/intel64 /opt/intel/lib/ia32 /opt/intel/mkl/lib/lib64 /opt/intel/mkl/lib/intel64 /opt/intel/mkl/lib/ia32 /opt/intel/mkl/lib /opt/intel/*/mkl/lib/intel64 /opt/intel/*/mkl/lib/ia32/ /opt/mkl/*/lib/em64t /opt/mkl/*/lib/32 /opt/intel/mkl/*/lib/em64t /opt/intel/mkl/*/lib/32
+    )
 
-set(MKLROOT_PATH $ENV{MKLROOT})
+  SET(TMP_LIBRARY ${${MKL_NAME}_LIBRARY})
 
-if (NOT MKLROOT_PATH)
-	# try to find at /opt/intel/mkl
-		
-	if (EXISTS "/opt/intel/mkl")
-		set(MKLROOT_PATH "/opt/intel/mkl")
-	endif (EXISTS "/opt/intel/mkl")
-endif (NOT MKLROOT_PATH)
+  IF(TMP_LIBRARY)
+    SET(MKL_LIBRARIES ${MKL_LIBRARIES} ${TMP_LIBRARY})
+  ENDIF(TMP_LIBRARY)
+ENDFOREACH(MKL_NAME)
 
+IF (MKL_LIBRARIES)
+  SET(MKL_FOUND "YES")
+ELSE (MKL_LIBRARIES)
+  SET(MKL_FOUND "NO")
+ENDIF (MKL_LIBRARIES)
 
-# Stage 2: find include path and libraries
-	
-if (MKLROOT_PATH)
-	# root-path found
-	
-	set(EXPECT_MKL_INCPATH "${MKLROOT_PATH}/include")
-	
-	if (CMAKE_SYSTEM_NAME MATCHES "Darwin")
-	    set(EXPECT_MKL_LIBPATH "${MKLROOT_PATH}/lib")
-	endif (CMAKE_SYSTEM_NAME MATCHES "Darwin")
-	
-	set(EXPECT_ICC_LIBPATH "$ENV{ICC_LIBPATH}")
-	
-	if (CMAKE_SYSTEM_NAME MATCHES "Linux")
-	    if (CMAKE_SIZEOF_VOID_P MATCHES 8)
-	        set(EXPECT_MKL_LIBPATH "${MKLROOT_PATH}/lib/intel64")
-	    else (CMAKE_SIZEOF_VOID_P MATCHES 8)
-	        set(EXPECT_MKL_LIBPATH "${MKLROOT_PATH}/lib/ia32")
-	    endif (CMAKE_SIZEOF_VOID_P MATCHES 8)
-	endif (CMAKE_SYSTEM_NAME MATCHES "Linux")
-	
-	# set include
-	
-	if (IS_DIRECTORY ${EXPECT_MKL_INCPATH})
-	    set(MKL_INCLUDE_DIR ${EXPECT_MKL_INCPATH})
-	endif (IS_DIRECTORY ${EXPECT_MKL_INCPATH})
-	
-	if (IS_DIRECTORY ${EXPECT_MKL_LIBPATH})
-		set(MKL_LIBRARY_DIR ${EXPECT_MKL_LIBPATH})
-	endif (IS_DIRECTORY ${EXPECT_MKL_LIBPATH})
-	
-	# find specific library files
-		
-	find_library(LIB_MKL_RT NAMES mkl_rt HINTS ${MKL_LIBRARY_DIR})
-	find_library(LIB_PTHREAD NAMES pthread)	
-	
-endif (MKLROOT_PATH)
+IF (MKL_FOUND)
+  IF (NOT MKL_FIND_QUIETLY)
+    MESSAGE(STATUS "Found MKL libraries: ${MKL_LIBRARIES}")
+  ENDIF (NOT MKL_FIND_QUIETLY)
+ELSE (MKL_FOUND)
+  IF (MKL_FIND_REQUIRED)
+    MESSAGE(FATAL_ERROR "Could not find MKL libraries")
+  ENDIF (MKL_FIND_REQUIRED)
+ENDIF (MKL_FOUND)
 
-set(MKL_LIBRARY 
-	${LIB_MKL_RT} 
-	${LIB_PTHREAD})
-	
-# deal with QUIET and REQUIRED argument
-
-include(FindPackageHandleStandardArgs)
-
-find_package_handle_standard_args(MKL DEFAULT_MSG 
-    MKL_LIBRARY_DIR
-    LIB_MKL_RT
-    LIB_PTHREAD
-    MKL_INCLUDE_DIR)
-    
-mark_as_advanced(LIB_MKL_RT LIB_PTHREAD LIB_IMF MKL_INCLUDE_DIR)
-
-
+# MARK_AS_ADVANCED(MKL_LIBRARY)
