@@ -105,7 +105,8 @@ if __name__=="__main__":
         myenv["GADGETRON_HOME"] = os.path.abspath(myenv["GADGETRON_HOME"])
     
     if platform.system() != "Windows":
-      myenv["LD_LIBRARY_PATH"]="/usr/local/cuda/lib64:/usr/local/cula/lib64:" +  myenv["GADGETRON_HOME"] + "/lib:" + myenv["GADGETRON_HOME"] + "/../ismrmrd/lib" + ":/opt/intel/mkl/lib/intel64:/opt/intel/lib/intel64"    
+      myenv["LD_LIBRARY_PATH"]= myenv["GADGETRON_HOME"]+"/lib:" + myenv["GADGETRON_HOME"]+"/../ismrmrd/lib:" + myenv["GADGETRON_HOME"]+"/../arma/lib:"
+      myenv["LD_LIBRARY_PATH"]+="/usr/local/cuda/lib64:/usr/local/cula/lib64:/opt/intel/mkl/lib/intel64:/opt/intel/lib/intel64"    
     else:
       myenv["LD_LIBRARY_PATH"]=os.environ['Path'];
 
