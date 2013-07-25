@@ -13,9 +13,11 @@
 #include <algorithm>
 
 #include "hoNDArray_operators.h"
+#include "hoNDArray_elemwise.h"
 
 #include "hoCuNDArray_blas.h"
 #include "cuNDArray_blas.h"
+#include "cuNDArray_elemwise.h"
 
 #include "proton_kernels.cu"
 
@@ -36,11 +38,16 @@ template<class REAL> size_t hoCuOperatorPathBackprojection<REAL>::calculate_batc
 }
 
 template<class REAL> void hoCuOperatorPathBackprojection<REAL>
-    ::mult_M( hoCuNDArray<REAL>* in, hoCuNDArray<REAL>* out, bool accumulate ) {
-	 if( !in || !out){
+    ::mult_M( hoCuNDArray<REAL>* in, hoCuNDArray<REAL>* out_orig, bool accumulate ) {
+	 if( !in || !out_orig){
 	   throw std::runtime_error("cuOperatorPathBackprojection: mult_M empty data pointer");
 	  }
 
+	 hoCuNDArray<REAL>* out = out_orig;
+	 if (this->weights.get() && accumulate){
+		 out = new hoCuNDArray<REAL>(out_orig->get_dimensions());
+		 clear(out);
+	 }
 	 cuNDArray<REAL> image(in);
 	 size_t max_batch_size = calculate_batch_size();
 	 size_t elements = out->get_number_of_elements();
@@ -59,7 +66,7 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 		 batch_dim.push_back(4);
 		 hoCuNDArray<vector_td<REAL,3> > splines_view(&batch_dim,splines->get_data_ptr()+offset*4); // This creates a "view" of splines
 		 cuNDArray<vector_td<REAL,3> > splines_dev(&splines_view);
-		 if (!accumulate) cudaMemset(out_dev.get_data_ptr(),0,sizeof(REAL)*batch_size);
+		 if (!accumulate) clear(&out_dev);
 
 		 int threadsPerBlock = std::min((int)batch_size,MAX_THREADS_PER_BLOCK);
 		 dim3 dimBlock( threadsPerBlock);
@@ -77,30 +84,41 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 		 }
 		 //cudaDeviceSynchronize();
 		 CHECK_FOR_CUDA_ERROR();
-		 if (this->weights.get()){
-			//cuNDA_scale(this->weights.get(),&out_dev);
-			throw std::runtime_error("Weights currently not supported");
-		 }
+
+
 
 		 cudaMemcpy(out_view.get_data_ptr(),out_dev.get_data_ptr(),batch_size*sizeof(REAL),cudaMemcpyDeviceToHost); //Copies back the data to the host
 
 		offset += batch_size;
 
 	 }
+
+	 if (weights.get()){
+		 *out *= *weights;
+		 if (accumulate){
+			 *out_orig += *out;
+			 delete out;
+		 }
+
+	 }
+
 }
 
 template<class REAL> void hoCuOperatorPathBackprojection<REAL>
-    ::mult_MH( hoCuNDArray<REAL>* in, hoCuNDArray<REAL>* out, bool accumulate ) {
-	 if( !in || !out){
+    ::mult_MH( hoCuNDArray<REAL>* in_orig, hoCuNDArray<REAL>* out, bool accumulate ) {
+	 if( !in_orig || !out){
 	   throw std::runtime_error("cuOperatorPathBackprojection: mult_MH empty data pointer");
 	  }
-	 if (this->weights.get()){
-	   throw std::runtime_error("Weights unsupported at the moment!");
+	 hoCuNDArray<REAL>* in = in_orig;
+
+	 if (weights.get()){
+		 in = new hoCuNDArray<REAL>(*in_orig);
+		 *in *= *weights;
 	 }
 
 	 cuNDArray<REAL> image(out);
 	 CHECK_FOR_CUDA_ERROR();
-	 if (!accumulate) cudaMemset(image.get_data_ptr(),0,image.get_number_of_elements()*sizeof(REAL));
+	 if (!accumulate) clear(&image);
 	 CHECK_FOR_CUDA_ERROR();
 	 size_t max_batch_size = calculate_batch_size();
 	 size_t elements = in->get_number_of_elements();
@@ -140,10 +158,13 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 	 }
 
 	 cudaMemcpy(out->get_data_ptr(),image.get_data_ptr(),image.get_number_of_elements()*sizeof(REAL),cudaMemcpyDeviceToHost);
-}
 
-template<class REAL> void hoCuOperatorPathBackprojection<REAL>
-::mult_MH_M( hoCuNDArray<REAL>* in, hoCuNDArray<REAL>* out, bool accumulate ) {
+	 if (weights.get()){
+		 delete in;
+	 }
+}
+/*
+template<class REAL> void hoCuOperatorPathBackprojection<REAL>::mult_MH_M( hoCuNDArray<REAL>* in, hoCuNDArray<REAL>* out, bool accumulate ) {
 
 	hoCuNDArray<REAL> tmp;
 
@@ -156,11 +177,12 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 
 	mult_MH(&tmp,out);
 
-}
+}*/
 template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 ::setup(boost::shared_ptr< hoCuNDArray< vector_td<REAL,3> > > splines,  vector_td<REAL,3> physical_dims,  boost::shared_ptr< hoCuNDArray< REAL > > projections,  boost::shared_ptr< hoCuNDArray<REAL> > weights, vector_td<REAL,3> origin,REAL background){
 	this->weights=weights;
 	setup(splines,physical_dims,projections,origin,background);
+	*projections *= *weights;
 }
 template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 ::setup(boost::shared_ptr< hoCuNDArray< vector_td<REAL,3> > > splines,  vector_td<REAL,3> physical_dims,boost::shared_ptr< hoCuNDArray< REAL > > projections, vector_td<REAL,3> origin, REAL background){
@@ -188,6 +210,8 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 
 
 		cuNDArray<REAL> projections_dev(&projections_view);
+
+		cuNDArray<REAL> lengths_dev(&batch_dim);
 		CHECK_FOR_CUDA_ERROR();
 		batch_dim.push_back(4);
 		hoCuNDArray<vector_td<REAL,3> > splines_view(&batch_dim,splines->get_data_ptr()+offset*4); // This creates a "view" of splines
@@ -229,6 +253,17 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 	   offset_k += dimGrid.x*dimBlock.x;
 	   CHECK_FOR_CUDA_ERROR();
 	 }
+	 cudaThreadSynchronize();
+	 /*
+	 offset_k = 0;
+	 for (int i = 0; i <= (totalBlocksPerGrid-1)/MAX_BLOCKS+1; i++){
+		 	 length_correction_kernel<<< dimGrid, dimBlock >>> (splines_dev.get_data_ptr(),projections_dev.get_data_ptr(),batch_size,offset_k);
+		   offset_k += dimGrid.x*dimBlock.x;
+		   CHECK_FOR_CUDA_ERROR();
+		   std::cout << "Correction kernel enabled" << std::endl;
+	 }
+*/
+
 
 	 cudaMemcpy(splines_view.get_data_ptr(),splines_dev.get_data_ptr(),batch_size*4*sizeof(vector_td<REAL,3>),cudaMemcpyDeviceToHost);
 	 cudaMemcpy(projections_view.get_data_ptr(),projections_dev.get_data_ptr(),batch_size*sizeof(REAL),cudaMemcpyDeviceToHost);

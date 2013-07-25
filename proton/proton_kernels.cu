@@ -3,6 +3,8 @@
 
 #include "cuNDArray.h"
 
+#include <stdio.h>
+
 //TODO: Get rid of these defines.
 #define INT_STEPS 2048
 #define MAXSTEP 512
@@ -141,7 +143,6 @@ template <class REAL> __global__ void Gadgetron::backwards_kernel(REAL* projecti
 		id_old=co_to_idx(co,ndims);
 
 		int steps =max(ndims)*STEPS;
-
 		for (int i = 1; i < steps; i++){
 			t = REAL(i)/(steps);
 			p = d+t*(c+t*(b+t*a));
@@ -159,7 +160,7 @@ template <class REAL> __global__ void Gadgetron::backwards_kernel(REAL* projecti
 
 			length+=norm(p-p_old)/2;
 			id_old=id;
-
+			p_old=p;
 			//co = to_intd((p+dims/2)*ndims/dims);
 			//co = amax(amin(co,ndims-1),0);
 		}
@@ -356,33 +357,65 @@ template <class REAL> __global__ void Gadgetron::points_to_coefficients(vector_t
 
 }
 
-template <class REAL> __global__ void spline_trapz_kernel(vector_td<REAL,3> * splines, REAL* lengths, int dim)
+template <class REAL> __global__ void Gadgetron::spline_trapz_kernel(vector_td<REAL,3> * splines, REAL* lengths, int dim, int offset)
 {
-
 	//Admiral Ackbarz
-	const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
+	const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x+offset;
 	const int sid = 4*idx;
 	if (idx < dim){
 		REAL res = 0;
 		REAL s1;
 		//Load in points to registers
-		vector_td<REAL,3> p0 = splines[sid];
-		vector_td<REAL,3> p1 = splines[sid+1];
-		vector_td<REAL,3> m0 = splines[sid+2];
-		vector_td<REAL,3> m1 = splines[sid+3];
+		vector_td<REAL,3> a = splines[sid];
+		vector_td<REAL,3> b = splines[sid+1];
+		vector_td<REAL,3> c = splines[sid+2];
+		vector_td<REAL,3> d = splines[sid+3];
 
 		REAL t = 0;
-		REAL t2 = 0;
-		REAL s0 = norm((6*t2-6*t)*p0+(3*t2-4*t+1)*m0+(6*t-6*t2)*p1+(3*t2-2*t)*m1);
+		REAL s0 = norm(d);
 
 		for (int i = 1; i < INT_STEPS; i++){
 			t = ((REAL) i)/INT_STEPS;
-			t2 = t*t;
-			s1 = norm((6*t2-6*t)*p0+(3*t2-4*t+1)*m0+(6*t-6*t2)*p1+(3*t2-2*t)*m1);
+			s1 = norm(c+t*(2*b+t*3*a));
 			res += (s0+s1)/(2*INT_STEPS);
 			s0 = s1;
 		}
 		lengths[idx]=res;
+	}
+
+}
+
+/***
+ * The Hansen correctional facility for young cubic splines.
+ * Corrects the path length with the ratio between the length of the straight line approximation and the length of the spline
+ */
+template <class REAL> __global__ void Gadgetron::length_correction_kernel(vector_td<REAL,3> * splines, REAL* projections, int dim, int offset)
+{
+	//Admiral Ackbarz
+	const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x+offset;
+	const int sid = 4*idx;
+	if (idx < dim){
+		REAL res = 0;
+		REAL s1;
+		//Load in points to registers
+		vector_td<REAL,3> a = splines[sid];
+		vector_td<REAL,3> b = splines[sid+1];
+		vector_td<REAL,3> c = splines[sid+2];
+		vector_td<REAL,3> d = splines[sid+3];
+
+		REAL t = 0;
+
+		REAL s0 = norm(d);
+
+		for (int i = 1; i < INT_STEPS; i++){
+			t = ((REAL) i)/INT_STEPS;
+			s1 = norm(c+t*(2*b+t*3*a));
+			res += (s0+s1)/(2*INT_STEPS);
+			s0 = s1;
+		}
+		REAL tmp = norm(a+b+c)/res;
+		projections[idx] *= tmp;
+		if (idx-offset == 0)	printf("Correction: %f\n",tmp);
 	}
 
 }
@@ -400,6 +433,8 @@ template __global__ void Gadgetron::rescale_directions_kernel<float>(vector_td<f
 
 
 template __global__ void Gadgetron::points_to_coefficients<float>(vector_td<float,3> * splines, int dim,int offset);
+
+template __global__  void Gadgetron::length_correction_kernel<float>(vector_td<float,3> * splines, float* projections, int dim, int offset);
 /*
 template<> __global__ void forward_kernel<float>(float* image, float* projections,
 		vector_td<float,3> * splines,  const vector_td<float,3> dims,
