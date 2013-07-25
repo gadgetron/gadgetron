@@ -7,9 +7,13 @@ find_package(XSD REQUIRED)
 find_package(XercesC REQUIRED)
 
 if (MKL_FOUND)
+  # This is a fix for the bug in SVD when MKL is multi-threaded
   MESSAGE("MKL Found, enabling MKL for mri_core gadgets.")
   add_definitions(-DHAVE_MKL)
-  # MESSAGE(${MKL_LIBRARIES})
+  # These are needed to get the linking to work properly when
+  # MKL is installed, but Armadillo is NOT using it.
+  list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
+  list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
 endif (MKL_FOUND)
 
 include_directories(
@@ -61,6 +65,7 @@ target_link_libraries(gadgetron_mricore
   ${XERCESC_LIBRARIES} 
   ${OPTIMIZED_GADGET_LIBS}
   ${MKL_LIBRARIES}
+  ${EXTRA_MKL_LIBRARIES}
   )
 
 install(FILES 
