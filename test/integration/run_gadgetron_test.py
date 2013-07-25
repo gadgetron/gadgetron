@@ -107,7 +107,6 @@ if __name__=="__main__":
     if platform.system() != "Windows":
       myenv["LD_LIBRARY_PATH"]= myenv["GADGETRON_HOME"]+"/lib:" + myenv["GADGETRON_HOME"]+"/../ismrmrd/lib:" + myenv["GADGETRON_HOME"]+"/../arma/lib"
       myenv["LD_LIBRARY_PATH"]+=":/usr/local/cuda/lib64:/usr/local/cula/lib64:/opt/intel/mkl/lib/intel64:/opt/intel/lib/intel64"
-      myenv["LD_PRELOAD"]="/opt/intel/mkl/lib/intel64/libmkl_core.so:/opt/intel/mkl/lib/intel64/libmkl_intel_thread.so"    
     else:
       myenv["LD_LIBRARY_PATH"]=os.environ['Path'];
 
