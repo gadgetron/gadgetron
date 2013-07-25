@@ -143,19 +143,19 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
     
-    //ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
+    ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
     ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
     ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
 
     // Matrix sizes (as a multiple of the GPU's warp size)
     //
     
-    image_dimensions_.push_back(r_space.matrixSize().x());
-    image_dimensions_.push_back(r_space.matrixSize().y());
+    image_dimensions_.push_back(e_space.matrixSize().x());
+    image_dimensions_.push_back(e_space.matrixSize().y());
 
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(r_space.matrixSize().x()*get_double_value(std::string("reconstruction_os_factor_x").c_str())))+warp_size-1)/warp_size)*warp_size);  
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize().x()*get_double_value(std::string("reconstruction_os_factor_x").c_str())))+warp_size-1)/warp_size)*warp_size);  
 
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(r_space.matrixSize().y()*get_double_value(std::string("reconstruction_os_factor_y").c_str())))+warp_size-1)/warp_size)*warp_size);
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize().y()*get_double_value(std::string("reconstruction_os_factor_y").c_str())))+warp_size-1)/warp_size)*warp_size);
     
     image_dimensions_recon_os_ = uintd2
       (((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,

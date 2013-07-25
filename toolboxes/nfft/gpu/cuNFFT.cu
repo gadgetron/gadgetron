@@ -229,24 +229,14 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::setup( typename uintd<D>::Type matr
   matrix_size_wrap = to_uintd<REAL,D>( ceil(W_vec) );
   matrix_size_wrap<<=1; 
   
-  alpha = (REAL) matrix_size_os.vec[0] / (REAL) matrix_size.vec[0];
+  alpha = to_reald<REAL,unsigned int,D>(matrix_size_os) / to_reald<REAL,unsigned int,D>(matrix_size);
   
-  REAL one = REAL(1);
-  if( alpha < one ){
+  typename reald<REAL,D>::Type ones(1);
+  if( weak_less( alpha, ones ) ){
     throw std::runtime_error("Error: cuNFFT : Illegal oversampling ratio suggested");
   }
 
   this->W = W;
-
-  REAL frac = (REAL)matrix_size_os.vec[0]/(REAL)matrix_size.vec[0];
-  const REAL frac_limit = (REAL)0.0000001;
-
-  for( unsigned int dim=1; dim<D; dim++){
-    
-    if( std::abs((REAL)matrix_size_os.vec[dim]/(REAL)matrix_size.vec[dim]-frac)>frac_limit ){
-      throw std::runtime_error("Error: cuNFFT : Oversampling ratio is not constant between dimensions");
-    }
-  }
   
   // Compute Kaiser-Bessel beta
   compute_beta();
@@ -857,7 +847,8 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_beta()
 {	
   // Compute Kaiser-Bessel beta paramter according to the formula provided in 
   // Beatty et. al. IEEE TMI 2005;24(6):799-808.
-  beta = (M_PI*std::sqrt((W*W)/(alpha*alpha)*(alpha-0.5)*(alpha-0.5)-0.8)); 
+  for( unsigned int d=0; d<D; d++ )
+    beta[d] = (M_PI*std::sqrt((W*W)/(alpha[d]*alpha[d])*(alpha[d]-REAL(0.5))*(alpha[d]-REAL(0.5))-REAL(0.8))); 
 }
 
 //
@@ -866,7 +857,8 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_beta()
 
 template<class REAL, unsigned int D> __global__ void
 compute_deapodization_filter_kernel( typename uintd<D>::Type matrix_size_os, typename reald<REAL,D>::Type matrix_size_os_real, 
-				     REAL W, REAL half_W, REAL one_over_W, REAL beta, complext<REAL> *image_os )
+				     REAL W, REAL half_W, REAL one_over_W, 
+				     typename reald<REAL,D>::Type beta, complext<REAL> *image_os )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const unsigned int num_elements = prod(matrix_size_os);
@@ -1082,8 +1074,8 @@ _convolve_NFFT_NC2C<float,D,true>{ // True: use atomic operations variant
     unsigned int number_of_samples = plan->number_of_samples;
     typename uintd<D>::Type matrix_size_os = plan->matrix_size_os;
     typename uintd<D>::Type matrix_size_wrap = plan->matrix_size_wrap;
-    float alpha = plan->alpha;
-    float beta = plan->beta;
+    typename reald<float,D>::Type alpha = plan->alpha;
+    typename reald<float,D>::Type beta = plan->beta;
     float W = plan->W;
     thrust::device_vector< typename reald<float,D>::Type > *trajectory_positions = plan->trajectory_positions;    
 
@@ -1183,8 +1175,8 @@ _convolve_NFFT_NC2C<REAL,D,false>{ // False: use non-atomic operations variant
     unsigned int number_of_samples = plan->number_of_samples;
     typename uintd<D>::Type matrix_size_os = plan->matrix_size_os;
     typename uintd<D>::Type matrix_size_wrap = plan->matrix_size_wrap;
-    REAL alpha = plan->alpha;
-    REAL beta = plan->beta;
+    typename reald<REAL,D>::Type alpha = plan->alpha;
+    typename reald<REAL,D>::Type beta = plan->beta;
     REAL W = plan->W;
     thrust::device_vector< typename reald<REAL,D>::Type > *trajectory_positions = plan->trajectory_positions;    
     thrust::device_vector<unsigned int> *tuples_last = plan->tuples_last;

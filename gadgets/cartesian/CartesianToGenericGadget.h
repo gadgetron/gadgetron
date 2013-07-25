@@ -1,27 +1,28 @@
-#ifndef SpiralToGenericGadget_H
-#define SpiralToGenericGadget_H
+#ifndef CartesianToGenericGadget_H
+#define CartesianToGenericGadget_H
 #pragma once
 
-#include "gadgetron_spiral_export.h"
+#include "gadgetron_cartesian_export.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
 
 #include <ismrmrd.h>
+#include <vector>
 #include <complex>
 #include <boost/shared_ptr.hpp>
 
 namespace Gadgetron{
 
-  class EXPORTGADGETS_SPIRAL SpiralToGenericGadget :
+  class EXPORTGADGETS_CARTESIAN CartesianToGenericGadget :
     public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   {
 
   public:
-    GADGET_DECLARE(SpiralToGenericGadget);
+    GADGET_DECLARE(CartesianToGenericGadget);
 
-    SpiralToGenericGadget();
-    virtual ~SpiralToGenericGadget();
+    CartesianToGenericGadget();
+    virtual ~CartesianToGenericGadget();
 
   protected:
 
@@ -31,20 +32,7 @@ namespace Gadgetron{
 			GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2);
     
   private:
-    int samples_to_skip_start_;
-    int samples_to_skip_end_;
-    int samples_per_interleave_;
-    int interleaves_;
-    long    Tsamp_ns_;
-    long    Nints_;
-    long    acceleration_factor_;
-    double  gmax_;
-    double  smax_;
-    double  krmax_;
-    double  fov_;
-    bool prepared_;
-    
-    boost::shared_ptr< hoNDArray<float> > host_traj_;
+    std::vector<unsigned int> matrix_size_;
   };
 }
-#endif //SpiralToGenericGadget_H
+#endif //CartesianToGenericGadget_H

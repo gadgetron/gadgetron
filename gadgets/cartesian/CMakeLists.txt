@@ -7,6 +7,7 @@ find_package(XSD REQUIRED)
 find_package(XercesC REQUIRED)
 
 include_directories(
+  ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${ISMRMRD_XSD_INCLUDE_DIR}
   )
 
@@ -20,6 +21,3 @@ target_link_libraries(gadgetron_cartesian
   )
 
 install (TARGETS gadgetron_cartesian DESTINATION lib)
-install (FILES vds.h DESTINATION include)
-
-add_subdirectory(config)

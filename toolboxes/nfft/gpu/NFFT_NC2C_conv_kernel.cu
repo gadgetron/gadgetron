@@ -38,7 +38,8 @@ NFFT_H_output( unsigned int number_of_batches, complext<REAL>*image,
 
 
 template<class REAL, unsigned int D> __inline__ __device__ void
-NFFT_H_convolve( REAL alpha, REAL beta, REAL W, unsigned int number_of_samples, unsigned int number_of_batches, unsigned int number_of_domains,
+NFFT_H_convolve( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Type beta, REAL W, 
+		 unsigned int number_of_samples, unsigned int number_of_batches, unsigned int number_of_domains,
 		 vector_td<REAL,D> *traj_positions, complext<REAL>*samples, unsigned int *tuples_last, unsigned int *bucket_begin, unsigned int *bucket_end,
 		 unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vector_td<REAL,D> matrix_size_os_real, 
 		 unsigned int globalThreadId, vector_td<unsigned int,D> domainPos, unsigned int sharedMemFirstCellIdx )
@@ -91,7 +92,7 @@ NFFT_H_convolve( REAL alpha, REAL beta, REAL W, unsigned int number_of_samples, 
 //
 
 template<class REAL, unsigned int D> __global__ void
-NFFT_H_convolve_kernel( REAL alpha, REAL beta, REAL W,
+NFFT_H_convolve_kernel( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Type beta, REAL W,
 			vector_td<unsigned int,D> domain_count_grid, unsigned int number_of_samples, unsigned int number_of_batches,
 			vector_td<REAL,D> *traj_positions, complext<REAL>*image, complext<REAL>*samples,
 			unsigned int *tuples_last, unsigned int *bucket_begin, unsigned int *bucket_end, unsigned int double_warp_size_power, 
