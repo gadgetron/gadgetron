@@ -19,6 +19,7 @@
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_utils.h"
 #include "vector_td_utilities.h"
+#include "vector_td_io.h"
 #include "cudaDeviceManager.h"
 #include "check_CUDA.h"
 
@@ -213,6 +214,9 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::setup( typename uintd<D>::Type matr
   //
   
   if( sum(matrix_size%vec_warp_size) || sum(matrix_size_os%vec_warp_size) ){
+    std::cout << "Matrix size: " << matrix_size << std::endl;
+    std::cout << "Matrix size os: " << matrix_size_os << std::endl;
+    std::cout << "Warp size: " << vec_warp_size << std::endl;
     throw std::runtime_error("Error: Illegal matrix size for the cuNFFT plan (not a multiple of the warp size)");
   }
 
