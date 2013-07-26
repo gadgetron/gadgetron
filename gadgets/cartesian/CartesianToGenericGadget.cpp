@@ -29,6 +29,8 @@ namespace Gadgetron{
     matrix_size_.push_back( e_space.matrixSize().x() );
     matrix_size_.push_back( e_space.matrixSize().y() );
 
+    center_phase_ = e_limits.kspace_encoding_step_1().get().center();
+
     return GADGET_OK;
   }
 
@@ -50,7 +52,8 @@ namespace Gadgetron{
 
     unsigned int samples_per_readout = m1->getObjectPtr()->number_of_samples;
     unsigned int center_sample = m1->getObjectPtr()->center_sample;
-    unsigned int offset = (matrix_size_[0]>>1)-center_sample; // In case of partial Fourier
+    unsigned int offset_readout = (matrix_size_[0]>>1)-center_sample; // In case of partial Fourier
+    unsigned int offset_phase = (matrix_size_[1]>>1)-center_phase_; // In case of partial Fourier
     unsigned int phase_encode_step = m1->getObjectPtr()->idx.kspace_encode_step_1;
 
     std::vector<unsigned int> trajectory_dimensions;
@@ -66,10 +69,10 @@ namespace Gadgetron{
     for( unsigned int sample=0; sample<samples_per_readout; sample++ ){
 
       // trajectory x (normalized to [-0.5;0.5])
-      traj_ptr[sample*3+0] = float(sample+offset)/float(matrix_size_[0])-0.5f;
+      traj_ptr[sample*3+0] = float(sample+offset_readout)/float(matrix_size_[0])-0.5f;
 
       // trajectory y (normalized to [-0.5;0.5])
-      traj_ptr[sample*3+1] = float(phase_encode_step)/float(matrix_size_[1])-0.5f;
+      traj_ptr[sample*3+1] = float(phase_encode_step+offset_phase)/float(matrix_size_[1])-0.5f;
 
       // dcw
       traj_ptr[sample*3+2] = 1.0f;

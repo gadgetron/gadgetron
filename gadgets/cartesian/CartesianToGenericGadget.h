@@ -33,6 +33,7 @@ namespace Gadgetron{
     
   private:
     std::vector<unsigned int> matrix_size_;
+    unsigned short center_phase_;
   };
 }
 #endif //CartesianToGenericGadget_H
