@@ -9,6 +9,7 @@
 #include "GadgetStreamController.h"
 #include "GadgetronTimer.h"
 #include "gadgetron_moco_export.h"
+#include "hoNDArray_fileio.h"
 
 #include <ismrmrd.h>
 #include <complex>
@@ -41,7 +42,7 @@ namespace Gadgetron{
       this->set_parameter(std::string("alpha").c_str(), "0.05");
       this->set_parameter(std::string("beta").c_str(), "1.0");
       this->set_parameter(std::string("limit").c_str(), "0.01");
-      this->set_parameter(std::string("num_multiresolution_levels").c_str(), "4");
+      this->set_parameter(std::string("num_multiresolution_levels").c_str(), "3");
       this->set_parameter(std::string("max_iterations_per_level").c_str(), "500");    
       this->set_parameter(std::string("output_convergence").c_str(), "false");
     }
@@ -90,15 +91,15 @@ namespace Gadgetron{
 			 GadgetContainerMessage< hoNDArray< typename ARRAY_TYPE::element_type > > *m2 )
     {
 
-      // If this image header corresponds to series 1, it is not part of the sorted phases.
+      //GADGET_DEBUG2("\nSERIES: %d, PHASE: %d", m1->getObjectPtr()->image_series_index, m1->getObjectPtr()->phase );
+
+      // If this image header corresponds to series 0, it is not part of the sorted phases.
       // Just pass those images along...
       //
 
-      if( m1->getObjectPtr()->image_series_index == 1 ){
+      if( m1->getObjectPtr()->image_series_index < 9 ){
 	return this->next()->putq(m1);
       }
-
-      //GADGET_DEBUG2("\nSeries: %d, PHASE: %d", m1->getObjectPtr()->image_series_index, m1->getObjectPtr()->phase );
       
       // At first pass allocate the image buffer array.
       //
@@ -147,12 +148,19 @@ namespace Gadgetron{
       GADGET_DEBUG1("RegistrationAveragingGadget::close (performing registration and averaging images)\n");
       
       // Make sure we have the same number of images on all phase queues
+      // (It doesn't really matter, but if not the case something probably went wrong upstream)
       //
-      
+
       unsigned int num_images = this->phase_images_[0].message_count();
 
+      //GADGET_DEBUG2("Number of images for phase 0: %d", num_images );
+
       for( unsigned int phase = 0; phase< this->number_of_phases_; phase++ ){
-	if( num_images != this->phase_images_[phase].message_count() ){
+
+	unsigned int num_images_phase = this->phase_images_[phase].message_count();
+	//GADGET_DEBUG2("Number of images for phase %d: %d", phase, num_images_phase );
+
+	if( num_images != num_images_phase ){
 	  GADGET_DEBUG1("Failed to set up registration, a different number of images received for each phase\n");
 	  return Gadget::close(flags);
 	}
@@ -222,7 +230,7 @@ namespace Gadgetron{
 	    // Assign this image as the 'image-1'th frame in the moving image
 	    ARRAY_TYPE tmp_moving(&image_dimensions_, moving_image.get_data_ptr()+(image-1)*num_image_elements);
 	    tmp_moving = *m2->getObjectPtr(); // Copy as for the fixed image
-	    m1->release();
+	    m1->release();	    
 	  }
 	}
 	
@@ -236,7 +244,7 @@ namespace Gadgetron{
 	    GadgetronTimer timer("Running registration");
 	    deformations = this->of_solver_->solve( &fixed_image, &moving_image );
 	  }
-	  
+
 	  // Deform moving images based on the registration
 	  //
 	  
@@ -246,10 +254,27 @@ namespace Gadgetron{
 	    deformed_moving = this->of_solver_->deform( &moving_image, deformations );
 	  }
 	  
+	  /*{
+	    // The debug code below only compiles for cuNDArrays.
+	    // To use (temporarily) comment out
+	    // list(APPEND CPU_GADGETS cpuRegistrationAveragingGadget.cpp)
+	    // in the CMakeList.txt
+	    //
+	    char filename[256];
+	    sprintf((char*)filename, "fixed_%d.real", phase);
+	    write_nd_array<float>( fixed_image.to_host().get(), filename );
+	    sprintf((char*)filename, "moving_%d.real", phase);
+	    write_nd_array<float>( moving_image.to_host().get(), filename );
+	    sprintf((char*)filename, "deformed_moving_%d.real", phase);
+	    write_nd_array<float>( deformed_moving->to_host().get(), filename );
+	    sprintf((char*)filename, "deformation_%d.real", phase);
+	    write_nd_array<float>( deformations->to_host().get(), filename );
+	    } */
+
+	 
 	  // Accumulate the deformed moving images (into one image) and add this image to the fixed image. 
 	  // Then divide by the number of images to get the average.
-	  //
-	  
+	  //	  
 	  
 	  fixed_image += ((deformed_moving->get_number_of_dimensions() == 3) ? *sum(deformed_moving.get(), 2) : *deformed_moving);
 	  fixed_image /= ((typename ARRAY_TYPE::element_type)num_images);

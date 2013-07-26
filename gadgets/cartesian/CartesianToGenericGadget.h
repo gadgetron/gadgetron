@@ -34,6 +34,10 @@ namespace Gadgetron{
   private:
     std::vector<unsigned int> matrix_size_;
     unsigned short center_phase_;
+
+    // We can enforce the encoding space dimension 
+    // to be a multiple of the "warp size" (required for the gpu nfft)
+    unsigned int warp_size_; 
   };
 }
 #endif //CartesianToGenericGadget_H

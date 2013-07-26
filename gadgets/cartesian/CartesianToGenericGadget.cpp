@@ -3,7 +3,11 @@
 
 namespace Gadgetron{
 
-  CartesianToGenericGadget::CartesianToGenericGadget() {}
+  CartesianToGenericGadget::CartesianToGenericGadget() 
+  {
+    set_parameter(std::string("matrix_size_as_a_multipluple_of").c_str(), "1");
+  }
+
   CartesianToGenericGadget::~CartesianToGenericGadget() {}
   
   int CartesianToGenericGadget::process_config(ACE_Message_Block* mb)
@@ -23,11 +27,14 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
+    // Enforcement of the matrix size being a multiple of the "warp size"
+    warp_size_ = get_int_value(std::string("matrix_size_as_a_multipluple_of").c_str());
+
     ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
     ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
 
-    matrix_size_.push_back( e_space.matrixSize().x() );
-    matrix_size_.push_back( e_space.matrixSize().y() );
+    matrix_size_.push_back( (e_space.matrixSize().x()+warp_size_-1)/warp_size_*warp_size_);
+    matrix_size_.push_back( (e_space.matrixSize().y()+warp_size_-1)/warp_size_*warp_size_);
 
     center_phase_ = e_limits.kspace_encoding_step_1().get().center();
 

@@ -30,6 +30,7 @@ int main(int argc, char** argv)
   parms.add_parameter( 'm', COMMAND_LINE_STRING, 1, "Moving image file name (.real)", true );
   parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Result file name", true, "displacement_field.real" );
   parms.add_parameter( 'a', COMMAND_LINE_FLOAT,  1, "Regularization weight (alpha)", true, "0.1" );
+  parms.add_parameter( 'l', COMMAND_LINE_INT,    1, "Number of multiresolution levels", true, "3" );
   
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -78,6 +79,8 @@ int main(int argc, char** argv)
   
   _real alpha = (_real) parms.get_parameter('a')->get_float_value();
 
+  unsigned int multires_levels = parms.get_parameter('l')->get_int_value();
+
   // Use bilinear interpolation for resampling
   //
 
@@ -89,8 +92,8 @@ int main(int argc, char** argv)
   cuHSOpticalFlowSolver<_real,2> HS;
   HS.set_interpolator( R );
   HS.set_output_mode( cuHSOpticalFlowSolver<_real,2>::OUTPUT_VERBOSE );  
-  HS.set_num_multires_levels( 4 );
   HS.set_max_num_iterations_per_level( 500 );
+  HS.set_num_multires_levels( multires_levels );
   HS.set_alpha(alpha);
   HS.set_limit(0.01f);
   

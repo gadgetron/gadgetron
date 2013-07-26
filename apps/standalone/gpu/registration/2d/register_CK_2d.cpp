@@ -31,6 +31,7 @@ int main(int argc, char** argv)
   parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Result file name", true, "displacement_field.real" );
   parms.add_parameter( 'a', COMMAND_LINE_FLOAT,  1, "Regularization weight (alpha)", true, "0.05" );
   parms.add_parameter( 'b', COMMAND_LINE_FLOAT,  1, "Regularization weight (beta)", true, "1.0" );
+  parms.add_parameter( 'l', COMMAND_LINE_INT,    1, "Number of multiresolution levels", true, "3" );
   
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ){
@@ -79,6 +80,8 @@ int main(int argc, char** argv)
   
   _real alpha = (_real) parms.get_parameter('a')->get_float_value();
   _real beta = (_real) parms.get_parameter('b')->get_float_value();
+  
+  unsigned int multires_levels = parms.get_parameter('l')->get_int_value();
 
   // Use bilinear interpolation for resampling
   //
@@ -91,8 +94,8 @@ int main(int argc, char** argv)
   cuCKOpticalFlowSolver<_real,2> CK;
   CK.set_interpolator( R );
   CK.set_output_mode( cuCKOpticalFlowSolver<_real,2>::OUTPUT_VERBOSE );  
-  CK.set_num_multires_levels( 4 );
   CK.set_max_num_iterations_per_level( 500 );
+  CK.set_num_multires_levels( multires_levels );
   CK.set_alpha(alpha);
   CK.set_beta(beta);
   CK.set_limit(0.01f);

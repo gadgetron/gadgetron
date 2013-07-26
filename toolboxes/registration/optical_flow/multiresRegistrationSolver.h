@@ -222,8 +222,13 @@ namespace Gadgetron{
             typename uintd<D>::Type twos = to_vector_td<unsigned int, D>(2);
             for( unsigned int i=0; i<num_multires_levels_; i++ ){
                 dims /= (unsigned int)2;
+		
+		if( weak_less( dims, 12*ones ) ){
+		  throw std::runtime_error("multiresRegistrationSolver::padding_required : resolution too low. Too many multiresolution levels specified?");
+		}
+		
                 if( weak_equal(dims%twos, ones) ){
-                    padding_required = true; 
+		  padding_required = true; 
                 }
             }
             return padding_required;
