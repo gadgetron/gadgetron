@@ -6,9 +6,20 @@ find_package(Ismrmrd REQUIRED)
 find_package(XSD REQUIRED)
 find_package(XercesC REQUIRED)
 
+if (MKL_FOUND)
+  # This is a fix for the bug in SVD when MKL is multi-threaded
+  MESSAGE("MKL Found, enabling MKL for mri_core gadgets.")
+  add_definitions(-DHAVE_MKL)
+  # These are needed to get the linking to work properly when
+  # MKL is installed, but Armadillo is NOT using it.
+  list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
+  list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
+endif (MKL_FOUND)
+
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   ${ARMADILLO_INCLUDE_DIRS}
+  ${MKL_INCLUDE_DIR}
 )
 
 if (ARMADILLO_FOUND)
@@ -39,8 +50,10 @@ add_library(gadgetron_mricore SHARED
   FlowPhaseSubtractionGadget.cpp
   GadgetIsmrmrdReadWrite.cpp
   PhysioInterpolationGadget.cpp
+  IsmrmrdDumpGadget.cpp
   ${OPTIMIZED_GADGETS}
   ${ISMRMRD_XSD_SOURCE}
+  ${MKL_LIBRARIES}
   )
 
 target_link_libraries(gadgetron_mricore 
@@ -51,6 +64,8 @@ target_link_libraries(gadgetron_mricore
   ${BOOST_LIBRARIES}
   ${XERCESC_LIBRARIES} 
   ${OPTIMIZED_GADGET_LIBS}
+  ${MKL_LIBRARIES}
+  ${EXTRA_MKL_LIBRARIES}
   )
 
 install(FILES 
@@ -71,6 +86,8 @@ install(FILES
   AutoScaleGadget.h
   FlowPhaseSubtractionGadget.h
   GadgetIsmrmrdReadWrite.h
+  PhysioInterpolationGadget.h
+  IsmrmrdDumpGadget.h
   gadgetron_mricore_export.h
   ${OPTIMIZED_GADGET_HEADERS}
   DESTINATION include)
@@ -78,6 +95,8 @@ install(FILES
 if (ARMADILLO_FOUND)
   install(FILES default.xml default_short.xml default_optimized.xml DESTINATION config)
 endif (ARMADILLO_FOUND)
+
+install(FILES ismrmrd_dump.xml DESTINATION config)
 
 install(TARGETS gadgetron_mricore DESTINATION lib)
 install(FILES ${ISMRMRD_SCHEMA_DIR}/ismrmrd.xsd DESTINATION schema)

@@ -285,6 +285,15 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::preprocess( cuNDArray<typename real
     
   number_of_samples = trajectory_int->get_size(0);
   number_of_frames = trajectory_int->get_number_of_elements()/number_of_samples;
+
+  // Make sure that the trajectory values are within range [-1/2;1/2]
+  thrust::pair< thrust::device_ptr<REAL>, thrust::device_ptr<REAL> > mm_pair = 
+    thrust::minmax_element( device_pointer_cast<REAL>((REAL*)trajectory_int->get_data_ptr()), 
+			    device_pointer_cast<REAL>(((REAL*)trajectory_int->get_data_ptr())+trajectory_int->get_number_of_elements()*D ));
+  
+  if( *mm_pair.first < REAL(-0.5) || *mm_pair.second > REAL(0.5) ){
+    throw std::runtime_error("Error: cuNFFT::preprocess : trajectory out of range [-1/2;1/2]");
+  }
   
   // Make Thrust device vector of trajectory and samples
   device_vector< vector_td<REAL,D> > trajectory_positions_in

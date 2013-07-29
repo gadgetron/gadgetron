@@ -74,6 +74,8 @@ endif (NOT GTEST_FOUND)
 
 find_package(Armadillo)
 
+find_package(MKL)
+
 if (CUDA_FOUND)
   MESSAGE("CUDA found, GPU components will be compiled.")
   SET( GADGETRON_CUDA_FOUND_BOOL 1 )
