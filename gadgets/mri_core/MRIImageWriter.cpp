@@ -1,11 +1,12 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "MRIImageWriter.h"
+#include "GadgetContainerMessage.h"
+#include "hoNDArray.h"
 
 #include <complex>
 
-#include "GadgetContainerMessage.h"
-#include "hoNDArray.h"
 namespace Gadgetron{
+
 template <typename T>
 int MRIImageWriter<T>::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 {

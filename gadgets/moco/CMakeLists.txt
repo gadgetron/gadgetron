@@ -67,7 +67,7 @@ add_library(gadgetron_moco SHARED
   )
 
 target_link_libraries(gadgetron_moco
-  cpucore ${CPU_LIBS} ${GPU_LIBS}
+  cpucore gadgetron_mricore ${CPU_LIBS} ${GPU_LIBS}
   ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )

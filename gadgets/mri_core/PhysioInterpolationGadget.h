@@ -21,7 +21,7 @@ namespace Gadgetron{
         PhysioInterpolationGadget();
         virtual ~PhysioInterpolationGadget();
 
-	unsigned short get_number_of_phases() { return phases_to_reconstruct_; }
+	inline unsigned short get_number_of_phases() { return phases_to_reconstruct_; }
 
     protected:
         virtual int process_config(ACE_Message_Block* mb);
