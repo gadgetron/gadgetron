@@ -11,6 +11,7 @@
 #include "FileInfo.h"
 #include "ismrmrd_hdf5.h"
 #include "GadgetIsmrmrdReadWrite.h"
+#include "BlobFileWriter.h"
 
 #include <fstream>
 #include <time.h>
@@ -167,6 +168,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 		con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT, new HDF5ImageWriter<ACE_UINT16>(std::string(hdf5_out_file), std::string(hdf5_out_group)));
 		con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT, new HDF5ImageWriter<float>(std::string(hdf5_out_file), std::string(hdf5_out_group)));
 		con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT, new HDF5ImageWriter< std::complex<float> >(std::string(hdf5_out_file), std::string(hdf5_out_group)));
+
+		con.register_reader(GADGET_MESSAGE_DICOM, new BlobFileWriter(std::string(hdf5_out_file), std::string("sdcopen")));
 
 		//Open a connection with the gadgetron
 		if (con.open(std::string(hostname),std::string(port_no)) != 0) {

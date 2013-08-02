@@ -81,7 +81,7 @@ END DEBUG */
     //GADGET_DEBUG2("Sent GadgetMessageIdentifier %d\n", id.id);
 
 
-    unsigned long nbytes = (unsigned long)serialized_length;
+    uint32_t nbytes = (uint32_t)serialized_length;
     //GADGET_DEBUG2("Sending bytes length %d\n", serialized_length);
     if ((send_cnt = sock->send_n (&nbytes, sizeof(nbytes))) <= 0) {
         ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send DICOM bytes length\n")));
