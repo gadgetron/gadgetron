@@ -18,6 +18,8 @@ endif (MKL_FOUND)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+  ${HDF5_INCLUDE_DIR}
+  ${HDF5_INCLUDE_DIR}/cpp
   ${ARMADILLO_INCLUDE_DIRS}
   ${MKL_INCLUDE_DIR}
 )
