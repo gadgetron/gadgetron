@@ -11,6 +11,7 @@ add_library(cpucore_math SHARED
   hoNDArray_operators.cpp
   hoNDArray_elemwise.cpp
   hoNDArray_blas.cpp
+  hoNDArray_reductions.cpp
   )
 
 target_link_libraries(cpucore_math 
@@ -25,4 +26,6 @@ install(FILES
   hoNDArray_operators.h
   hoNDArray_elemwise.h
   hoNDArray_blas.h
+  hoNDArray_reductions.h
+  hoNDArray_math.h
   DESTINATION include)

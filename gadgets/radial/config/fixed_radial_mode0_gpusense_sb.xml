@@ -73,6 +73,7 @@
       <property><name>mu</name>                      <value>1.0</value></property>
       <property><name>lambda</name>                  <value>2.0</value></property>
       <property><name>alpha</name>                   <value>0.5</value></property>
+      <property><name>output_convergence</name><value>true</value></property>
     </gadget>
 
     <gadget>
@@ -90,6 +91,7 @@
       <property><name>mu</name>                      <value>1.0</value></property>
       <property><name>lambda</name>                  <value>2.0</value></property>
       <property><name>alpha</name>                   <value>0.5</value></property>
+      <property><name>output_convergence</name><value>true</value></property>
     </gadget>
 
     <gadget>
@@ -107,6 +109,7 @@
       <property><name>mu</name>                      <value>1.0</value></property>
       <property><name>lambda</name>                  <value>2.0</value></property>
       <property><name>alpha</name>                   <value>0.5</value></property>
+      <property><name>output_convergence</name><value>true</value></property>
     </gadget>
 
      <gadget>

@@ -51,9 +51,9 @@ find_package(FFTW3 COMPONENTS single double REQUIRED)
 
 find_package(ACE)
 if(ACE_FOUND)
-  MESSAGE("\nACE found, the streaming framework will be compiled.")
+  MESSAGE("ACE found, the streaming framework will be compiled.")
 else(ACE_FOUND)
-  MESSAGE("\nACE not found. Only toolboxes and standalone applications are compiled. The streaming framework will not be compiled.")
+  MESSAGE("ACE not found. Only toolboxes and standalone applications are compiled. The streaming framework will not be compiled.")
 endif(ACE_FOUND)
 
 find_package(CUDA 4.1)
@@ -74,24 +74,36 @@ endif (NOT GTEST_FOUND)
 
 find_package(Armadillo)
 
+find_package(MKL)
+
 if (CUDA_FOUND)
   MESSAGE("CUDA found, GPU components will be compiled.")
   SET( GADGETRON_CUDA_FOUND_BOOL 1 )
   include_directories( ${CUDA_INCLUDE_DIRS} )
   #set(CUDA_VERBOSE_BUILD ON)
 
-  # Compile kernels for shader models 1.0 and 2.0 as default for Cuda 4
-  # Support shader models 3.0 and 3.5 from Cuda 5 and up
+  # Compile kernels for compute models 1.0 and 2.0 as default for Cuda 4.1
+  # Support compute model 3.0 from Cuda 4.2 and up
+  # Support compute model 3.5 from Cuda 5 and up
+
   set(CUDA_NVCC_FLAGS1 "-gencode arch=compute_10,code=sm_10")
   set(CUDA_NVCC_FLAGS2 "-gencode arch=compute_20,code=sm_20")
   set(CUDA_NVCC_FLAGS3 "-gencode arch=compute_30,code=sm_30") 
   set(CUDA_NVCC_FLAGS4 "-gencode arch=compute_35,code=sm_35")   
 
   if(${CUDA_VERSION} VERSION_GREATER "4.99")
-    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS1} ${CUDA_NVCC_FLAGS2} ${CUDA_NVCC_FLAGS3} ${CUDA_NVCC_FLAGS4})    
-  else(${CUDA_VERSION} VERSION_GREATER "4.99")
-    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS1} ${CUDA_NVCC_FLAGS2})    
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS1} ${CUDA_NVCC_FLAGS2} ${CUDA_NVCC_FLAGS3} ${CUDA_NVCC_FLAGS4})
+  else(${CUDA_VERSION} VERSION_GREATER "4.99")    
+
+    if(${CUDA_VERSION} VERSION_GREATER "4.1")
+      set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS1} ${CUDA_NVCC_FLAGS2} ${CUDA_NVCC_FLAGS3})
+    else(${CUDA_VERSION} VERSION_GREATER "4.1")      
+
+      set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS1} ${CUDA_NVCC_FLAGS2})          
+
+    endif(${CUDA_VERSION} VERSION_GREATER "4.1")
   endif(${CUDA_VERSION} VERSION_GREATER "4.99")
+
 else (CUDA_FOUND)
   MESSAGE("CUDA not found. CUDA components will not be compiled.")
   SET( GADGETRON_CUDA_FOUND_BOOL 0 )
@@ -107,11 +119,11 @@ find_package(HDF5 1.8 COMPONENTS C CXX)
 
 find_package(Ismrmrd)
 if(ISMRMRD_FOUND)
-  message("\nISMRMRD found")
+  message("ISMRMRD found")
   find_package(XSD REQUIRED)
   find_package(XercesC REQUIRED)
 else(ISMRMRD_FOUND)
-  message("\nISMRMRD not found. Only compiling toolboxes and standalone applications.")
+  message("ISMRMRD not found. Only compiling toolboxes and standalone applications.")
 endif(ISMRMRD_FOUND)
 
 find_package(GMatlab)

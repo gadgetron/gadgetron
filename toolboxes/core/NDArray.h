@@ -85,11 +85,11 @@ namespace Gadgetron{
     inline void reshape(std::vector<unsigned int> *dims) {
       unsigned long int new_elements = 1;
       for (unsigned int i = 0; i < dims->size(); i++) {
-	new_elements *= (*dims)[i];
+	new_elements *= dims->at(i);
       }
     
       if (new_elements != elements_) {
-	std::runtime_error("NDArray<T>::reshape : Number of elements cannot change during reshape");
+	throw std::runtime_error("NDArray<T>::reshape : Number of elements cannot change during reshape");
       }
     
       // Copy the input dimensions array

@@ -355,7 +355,7 @@ namespace Gadgetron{
 		      m2,
 		      typeid(GadgetContainerMessage<P3>*).name(),
 		      typeid(m3).name(),
-		      m2));
+		      m3));
 
 	  return -1;
 	} else {

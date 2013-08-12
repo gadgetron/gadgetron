@@ -11,7 +11,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-  ${CMAKE_SOURCE_DIR}/gadgets/core
 )
 
 add_library(gadgetron_grappa SHARED 
@@ -32,4 +31,5 @@ target_link_libraries(gadgetron_grappa
   )
 
 install (TARGETS gadgetron_grappa DESTINATION lib)
-install (FILES grappa.xml grappa_float.xml DESTINATION config)
+
+add_subdirectory(config)

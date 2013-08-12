@@ -36,7 +36,7 @@ namespace Gadgetron{
     {
       cudaGetDevice(&this->device_);
       this->data_ = 0;
-      this->dimensions_ = boost::shared_ptr<std::vector<unsigned int> >(new std::vector<unsigned int>(*a.dimensions_));
+      this->dimensions_ = a.get_dimensions();
       allocate_memory();
       if (a.device_ == this->device_) {
 	CUDA_CALL(cudaMemcpy(this->data_, a.data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice));
@@ -59,7 +59,7 @@ namespace Gadgetron{
     {
       cudaGetDevice(&this->device_);
       this->data_ = 0;
-      this->dimensions_ = a->dimensions_;      
+      this->dimensions_ = a->get_dimensions();
       allocate_memory();
       if (a->device_ == this->device_) {
 	CUDA_CALL(cudaMemcpy(this->data_, a->data_, this->elements_*sizeof(T), cudaMemcpyDeviceToDevice));
@@ -159,7 +159,7 @@ namespace Gadgetron{
 	if( !dimensions_match ){	  
 	  deallocate_memory();	  
 	  this->elements_ = rhs.elements_;
-	  this->dimensions_ = rhs.dimensions_;	  
+	  this->dimensions_ = rhs.get_dimensions();
 	  allocate_memory();	  
 	}	
 	if (this->device_ == rhs.device_) {
@@ -182,6 +182,34 @@ namespace Gadgetron{
 	    throw cuda_error("cuNDArray::operator=: failed to copy data (3)");
 	  }
 	}	
+	if( cudaSetDevice(cur_device) != cudaSuccess) {
+	  throw cuda_error("cuNDArray::operator=: unable to restore to current device");
+	}
+      }      
+      return *this;
+    }
+
+    cuNDArray<T>& operator=(const hoNDArray<T>& rhs)
+    {
+      int cur_device; 
+      CUDA_CALL(cudaGetDevice(&cur_device));      
+      bool dimensions_match = this->dimensions_equal(&rhs);      
+      if (dimensions_match && (cur_device == this->device_)) {	
+	CUDA_CALL(cudaMemcpy(this->get_data_ptr(), rhs.get_data_ptr(), this->get_number_of_elements()*sizeof(T), cudaMemcpyHostToDevice));
+      }
+      else {	
+	CUDA_CALL(cudaSetDevice(this->device_));
+	if( !dimensions_match ){	  
+	  deallocate_memory();	  
+	  this->elements_ = rhs.get_number_of_elements();
+	  this->dimensions_ = rhs.get_dimensions();
+	  allocate_memory();	  
+	}	
+	if (cudaMemcpy(this->get_data_ptr(), rhs.get_data_ptr(), this->get_number_of_elements()*sizeof(T), 
+		       cudaMemcpyHostToDevice) !=cudaSuccess) {	    
+	  cudaSetDevice(cur_device);
+	  throw cuda_error("cuNDArray::operator=: failed to copy data (1)");
+	}
 	if( cudaSetDevice(cur_device) != cudaSuccess) {
 	  throw cuda_error("cuNDArray::operator=: unable to restore to current device");
 	}
@@ -243,8 +271,7 @@ namespace Gadgetron{
     
     virtual boost::shared_ptr< hoNDArray<T> > to_host() const
     {
-      boost::shared_ptr< hoNDArray<T> > ret = boost::shared_ptr< hoNDArray<T> >(new hoNDArray<T>);
-      ret->create(this->dimensions_.get());
+      boost::shared_ptr< hoNDArray<T> > ret(new hoNDArray<T>(this->dimensions_.get()));
       if (cudaMemcpy(ret->get_data_ptr(), this->data_, this->elements_*sizeof(T), cudaMemcpyDeviceToHost) != cudaSuccess) {
 	throw cuda_error("cuNDArray::to_host(): failed to copy memory from device");
       }      

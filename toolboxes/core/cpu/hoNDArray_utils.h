@@ -303,7 +303,7 @@ namespace Gadgetron {
         }
 
         if( weak_greater(matrix_size_in,matrix_size_out) ){
-            std::runtime_error("pad: size mismatch, cannot expand");
+            throw std::runtime_error("pad: size mismatch, cannot expand");
         }
 
         const int num_elements_in = prod(matrix_size_in);

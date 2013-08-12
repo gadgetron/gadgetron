@@ -4,8 +4,6 @@
 
 #include <vector>
 #include <cublas_v2.h>
-#include <boost/thread/mutex.hpp>
-#include <boost/shared_array.hpp>
 
 namespace Gadgetron{
 
@@ -69,7 +67,6 @@ namespace Gadgetron{
     std::vector<int> _major;
     std::vector<int> _minor;
     std::vector<cublasHandle_t> _handle;
-    boost::shared_array<boost::mutex> _mutex;
     static cudaDeviceManager * _instance;    
   };
 }

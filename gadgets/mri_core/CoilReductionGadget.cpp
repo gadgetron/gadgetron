@@ -23,7 +23,7 @@ namespace Gadgetron{
     {
         boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
-        coils_in_ = cfg->acquisitionSystemInformation().get().receiverChannels().get();
+        coils_in_ = cfg->acquisitionSystemInformation().get().receiverChannels().present() ? cfg->acquisitionSystemInformation().get().receiverChannels().get() : 128;
 
         boost::shared_ptr<std::string> coil_mask = this->get_string_value("coil_mask");
 
@@ -101,8 +101,14 @@ namespace Gadgetron{
             }
         }
 
-        m2->release();
         m1->cont(m3);
+	
+	//In case trajectories are attached
+	m3->cont(m2->cont());
+	m2->cont(0);
+
+        m2->release();
+
         m1->getObjectPtr()->active_channels = coils_out_;
 	
         if( this->next()->putq(m1) < 0 ){

@@ -46,6 +46,10 @@ namespace Gadgetron{
       vec[1] = tmp.vec[1];
     }
 
+    __inline__ __host__ __device__  complext(const std::complex<T>& tmp){
+          vec[0] = tmp.real();
+          vec[1] = tmp.imag();
+		}
     __inline__ __host__ __device__  complext(const T r){
       vec[0] = r;
       vec[1] = 0;
