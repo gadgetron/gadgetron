@@ -1,47 +1,26 @@
-# - Find CodeSource Xsd
-# This module can be used to find Xsd and it's include path
+# - Find CodeSynthesis XSD
+# This module can be used to find XSD and it's include path
 # Variables:
-#	XSD_EXECUTABLE
-#	XSD_INCLUDE_DIR
-#	XSD_FOUND
+#	XSD_FOUND - System has XSD
+#	XSD_EXECUTABLE - XSD binary executable
+#	XSD_INCLUDE_DIR - XSD include directory
+#
+# Functions:
+#       WRAP_XSD - Generates C++ bindings in the given output directory for a given schema file
 
-SET(XSD_FOUND FALSE)
+if(NOT DEFINED XSD_DIR AND DEFINED ENV{XSD_DIR})
+    set(XSD_DIR $ENV{XSD_DIR})
+endif(NOT DEFINED XSD_DIR AND DEFINED ENV{XSD_DIR})
 
-if(WIN32)
-	SET(__XSD_NAME xsd.exe)
-else(WIN32)
-	SET(__XSD_NAME xsdcxx xsd)
-endif(WIN32)
+find_program(XSD_EXECUTABLE NAMES xsd xsdcxx xsd.exe
+    PATHS ${XSD_DIR} /usr /usr/local
+    PATH_SUFFIXES bin
+)
 
-if(XSD_INCLUDE_DIR)
-	#in cache already
-	SET(XSD_FOUND TRUE)
-else(XSD_INCLUDE_DIR)
-	find_program(XSD_EXECUTABLE NAMES ${__XSD_NAME}
-	     HINTS
-		 ${XSD_DIR}/bin
-	)
-
-	if(XSD_EXECUTABLE)
-		SET(XSD_FOUND TRUE)
-	else(XSD_EXECUTABLE)
-		SET(XSD_EXECUTABLE "xsd-NOTFOUND" CACHE FILE "xsd executable path")
-	endif(XSD_EXECUTABLE)
-
-	find_path(XSD_INCLUDE_DIR NAMES xsd/cxx
-            HINTS
-		${XSD_DIR}/include
-	    PATHS
-		/usr/include
-		/usr/local/include
-	)
-
-	if(XSD_INCLUDE_DIR)
-		SET(XSD_FOUND TRUE)
-	else(XSD_INCLUDE_DIR)
-		SET(XSD_INCLUDE_DIR "xsd-include-NOTFOUND" CACHE PATH "xsd include path")
-	endif(XSD_INCLUDE_DIR)
-endif(XSD_INCLUDE_DIR)
+find_path(XSD_INCLUDE_DIR NAMES xsd/cxx/pre.hxx
+    PATHS ${XSD_DIR} /usr /usr/local
+    PATH_SUFFIXES include
+)
 
 FUNCTION(XSD_EXTRACT_OPTIONS _xsd_files _xsd_options)
 	foreach(current_arg ${ARGN})
@@ -84,3 +63,6 @@ FUNCTION(WRAP_XSD XSD_SRCS XSD_INCLUDES OUT_PATH)
 	SET(${XSD_SRCS} ${_XSD_SRCS} PARENT_SCOPE)
 ENDFUNCTION(WRAP_XSD)
 
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(XSD DEFAULT_MSG XSD_INCLUDE_DIR XSD_EXECUTABLE)
+mark_as_advanced(XSD_INCLUDE_DIR XSD_EXECUTABLE)
