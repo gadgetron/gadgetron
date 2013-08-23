@@ -27,8 +27,7 @@ namespace Gadgetron{
   }
 
   IsmrmrdDumpGadget::IsmrmrdDumpGadget()
-    : Gadget2()
-    , file_prefix_("ISMRMRD_DUMP")
+    : file_prefix_("ISMRMRD_DUMP")
     , ismrmrd_file_name_("ISMRMRD_DUMP.h5") //This will be reset during configuration
     , append_timestamp_(true)
   {

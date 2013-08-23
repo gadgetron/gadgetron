@@ -16,7 +16,7 @@ namespace Gadgetron{
   public:
     GADGET_DECLARE(gpuRegistrationAveragingGadget2D);
     
-    gpuRegistrationAveragingGadget2D() : RegistrationAveragingGadget() {}
+    gpuRegistrationAveragingGadget2D() {}
     virtual ~gpuRegistrationAveragingGadget2D() {}
 
   protected:
