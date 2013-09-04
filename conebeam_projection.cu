@@ -5,6 +5,7 @@
 #include "conebeam_projection.h"
 #include "float3x3.h"
 #include "hoNDArray_operators.h"
+#include "vector_td.h"
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_operators.h"
 #include "cuNDArray_utils.h"
@@ -13,6 +14,7 @@
 #include "GPUTimer.h"
 #include "cudaDeviceManager.h"
 #include "hoNDArray_fileio.h"
+#include "setup_grid.h"
 
 #include <cuda_runtime_api.h>
 #include <float.h>
@@ -27,10 +29,14 @@
 
 // Cuda insists on that constant variables and textures are defined at the global scope.
 // This WILL become problematic in a multi-threaded (multi-GPU) environment one day.
-// Acces should really be protected by mutexes.
+// !!! To do: Acces should be protected by mutexes !!!
+// To alleviate the problem somewhat we make a variables for each of the kernels...
 
-static /*__constant__*/ /*__device__*/ float *angles_DevPtr;
-static /*__constant__*/ /*__device__*/ Gadgetron::floatd2 *offsets_DevPtr;
+static /*__constant__*/ /*__device__*/ float *angles_DevPtr_forwards;
+static /*__constant__*/ /*__device__*/ float *angles_DevPtr_backwards;
+static /*__constant__*/ /*__device__*/ float *angles_DevPtr_redundancy;
+static /*__constant__*/ /*__device__*/ Gadgetron::floatd2 *offsets_DevPtr_forwards;
+static /*__constant__*/ /*__device__*/ Gadgetron::floatd2 *offsets_DevPtr_backwards;
 
 #define NORMALIZED_TC 0
 
@@ -58,38 +64,40 @@ namespace Gadgetron
   __global__ void
   redundancy_correct_kernel( float *projection,
 			     float *angles,
+			     intd3 dims,
 			     float lambda_max, 
 			     float gamma_m, 
 			     float gamma_thresh )
   {
-    const int PROJ_IDX_X = threadIdx.x+blockIdx.x*blockDim.x;
-    const int PROJ_IDX_Y = blockIdx.y;
-    const int PROJ_ID = blockIdx.z;
-    const int PROJECTION_RES_X = blockDim.x*gridDim.x;
-    const int PROJECTION_RES_Y = gridDim.y;
+    const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+    const int num_elements = prod(dims);
 
-    const long int idx = PROJ_ID*PROJECTION_RES_Y*PROJECTION_RES_X*PROJ_IDX_Y*PROJECTION_RES_X+PROJ_IDX_X;
-    const float gamma = -gamma_m + 2.0f*gamma_m*(float(PROJ_IDX_X)/float(PROJECTION_RES_X));
-    const float lambda = angles[PROJ_ID]*(CUDART_PI_F/180.0f);
+    if( idx < num_elements ){
 
-    float res = 0.0f;
-
-    if( lambda >= 0.0f && lambda < 2.0f*(gamma_thresh+gamma) ){
-      float tmp = ::sin(CUDART_PI_F/4.0f*lambda/(gamma_thresh+gamma));
-      res = tmp*tmp;
+      const intd3 co = idx_to_co<3>( idx, dims );
+      
+      const float gamma = -gamma_m + 2.0f*gamma_m*(float(co[0])/float(dims[0]));
+      const float lambda = degrees2radians(angles[co[2]]);
+      
+      float res = 0.0f;
+      
+      if( lambda >= 0.0f && lambda < 2.0f*(gamma_thresh+gamma) ){
+	float tmp = ::sin(CUDART_PI_F/4.0f*lambda/(gamma_thresh+gamma));
+	res = tmp*tmp;
+      }
+      else if( lambda >= 2.0f*(gamma_thresh+gamma) && lambda < CUDART_PI_F+2.0f*gamma ){
+	res = 1.0f;
+      }
+      else if( lambda >= CUDART_PI_F+2.0f*gamma && lambda < CUDART_PI_F+2.0f*gamma_thresh ){
+	float tmp = ::sin(CUDART_PI_F/4.0f*(CUDART_PI_F+2.0f*gamma_thresh-lambda)/(gamma_thresh+gamma));
+	res = tmp*tmp;
+      }
+      else ;
+      
+      projection[idx] *= res;
     }
-    else if( lambda >= 2.0f*(gamma_thresh+gamma) && lambda < CUDART_PI_F+2.0f*gamma ){
-      res = 1.0f;
-    }
-    else if( lambda >= CUDART_PI_F+2.0f*gamma && lambda < CUDART_PI_F+2.0f*gamma_thresh ){
-      float tmp = ::sin(CUDART_PI_F/4.0f*(CUDART_PI_F+2.0f*gamma_thresh-lambda)/(gamma_thresh+gamma));
-      res = tmp*tmp;
-    }
-    else ;
-
-    projection[idx] *= res;
   }
-
+    
   void
   redundancy_correct( cuNDArray<float> *projections,
 		      std::vector<float> angles,
@@ -117,55 +125,46 @@ namespace Gadgetron
     const int projection_res_x = projections->get_size(0);
     const int projection_res_y = projections->get_size(1);
     const int num_projections = projections->get_size(2);
+    intd3 dims(projection_res_x, projection_res_y,num_projections);
 
     // If not the case already, then try to transform the angles array into the range [0;360[
     //
 
     const float min_angle = *std::min_element(angles.begin(),angles.end());
+    const float max_angle = *std::max_element(angles.begin(),angles.end());
 
-    if( min_angle < -180.0f ){
-      throw std::runtime_error("Error: redundancy_correct: unexpected range of the angles array");
+    if( max_angle - min_angle > 360.0f ){
+      throw std::runtime_error("Error: redundancy_correct: angles array range greater tham 360 degrees currently not supported");
     }
     
-    if( min_angle < 0.0f ){
-      transform(angles.begin(), angles.end(), angles.begin(), bind2nd(std::plus<double>(), 180.0f ));
+    if( min_angle < -360.0f ){
+      throw std::runtime_error("Error: redundancy_correct: unexpected range of the angles array (1)");
     }
 
-    const float max_angle = *std::max_element(angles.begin(),angles.end());
-    if( max_angle*(CUDART_PI_F/180.0f) >= CUDART_PI_F+2.0f*gamma_thresh ){
-      throw std::runtime_error("Error: redundancy_correct: unexpected range of the angles array after correction");
+    if( max_angle > 360.0f ){
+      throw std::runtime_error("Error: redundancy_correct: unexpected range of the angles array (2)");
+    }
+    
+    for( unsigned int i = 0; i<angles.size(); i++ ){
+      angles[i] = std::fmod(angles[i]+360.0f, 360.0f);
     }
 
-    cudaMalloc( (void**) &angles_DevPtr, angles.size()*sizeof(float));
-    cudaMemcpy( angles_DevPtr, &angles[0], angles.size()*sizeof(float), cudaMemcpyHostToDevice );
+    cudaMalloc( (void**) &angles_DevPtr_redundancy, angles.size()*sizeof(float));
+    cudaMemcpy( angles_DevPtr_redundancy, &angles[0], angles.size()*sizeof(float), cudaMemcpyHostToDevice );
     CHECK_FOR_CUDA_ERROR();
-
-    // We have been somewhat lazy in the reundancy kernel (and the block/grid setup). 
-    // If the checks below fail, it is a fairly easy fix...
-    //
-
-    int warp_size = cudaDeviceManager::Instance()->warp_size();
-  
-    if( projection_res_x < warp_size ){
-      throw std::runtime_error("Error: redundancy_correct: projection sizes have to be at least as large as the warp size");
-    }
-
-    if( projection_res_x % warp_size ){
-      throw std::runtime_error("Error: redundancy_correct: projection sizes have to be a multiplum of the warp size");
-    }
 
     // Launch kernel
     //
 
-    dim3 dimBlock(std::min(projection_res_x, 256));
-    dim3 dimGrid((projection_res_x+dimBlock.x-1)/dimBlock.x, projection_res_y, num_projections);
+    dim3 dimBlock, dimGrid;
+    setup_grid( prod(dims), &dimBlock, &dimGrid );
     
     redundancy_correct_kernel<<< dimGrid, dimBlock >>>
-      ( projections->get_data_ptr(), angles_DevPtr, lambda_max, gamma_m, gamma_thresh );
+      ( projections->get_data_ptr(), angles_DevPtr_redundancy, dims, lambda_max, gamma_m, gamma_thresh );
 
     CHECK_FOR_CUDA_ERROR();
     
-    cudaFree(angles_DevPtr);
+    cudaFree(angles_DevPtr_redundancy);
     CHECK_FOR_CUDA_ERROR();
   }
 
@@ -181,41 +180,32 @@ namespace Gadgetron
 				       floatd3 is_dims_in_pixels, 
 				       floatd3 is_spacing_in_mm,
 				       intd2 ps_dims_in_pixels_int, 
+				       int num_projections,
 				       floatd2 ps_dims_in_mm,
 				       float SDD, 
 				       float SAD,
 				       float num_samples_per_ray, 
 				       bool accumulate )
   {
-    // Some defines to give the thread/block/grid setup (more) meaningful names
-    //
 
-    const int PROJ_IDX_X = threadIdx.x + blockIdx.x * blockDim.x;
-    const int PROJ_IDX_Y = threadIdx.y + blockIdx.y * blockDim.y;
-    const int PROJECTION = blockIdx.z;
-    const int PROJECTION_RES_X = ps_dims_in_pixels_int[0];
-    const int PROJECTION_RES_Y = ps_dims_in_pixels_int[1];
 
-    if ( PROJ_IDX_X < PROJECTION_RES_X && PROJ_IDX_Y < PROJECTION_RES_Y) {
+    const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+    const int num_elements = prod(ps_dims_in_pixels_int)*num_projections;
 
-      // Projection space pixel index
-      //
+    if( idx < num_elements){
 
-      const long int projectionSpaceId =
-	PROJ_IDX_X +
-	PROJ_IDX_Y * PROJECTION_RES_X +
-	PROJECTION * PROJECTION_RES_X * PROJECTION_RES_Y;
-
+      const intd3 co = idx_to_co<3>( idx, intd3(ps_dims_in_pixels_int[0], ps_dims_in_pixels_int[1], num_projections) );
+      
       // Projection space dimensions and spacing
       //
 
-      const floatd2 ps_dims_in_pixels = floatd2(PROJECTION_RES_X, PROJECTION_RES_Y);
+      const floatd2 ps_dims_in_pixels = floatd2(ps_dims_in_pixels_int[0], ps_dims_in_pixels_int[1]);
       const floatd2 ps_spacing = ps_dims_in_mm / ps_dims_in_pixels;
 
       // Determine projection angle and rotation matrix
       //
 
-      const float angle = angles[PROJECTION];
+      const float angle = angles[co[2]];
       const float3x3 rotation = calcRotationMatrixAroundZ(degrees2radians(angle));
 
       // Find start and end point for the line integral (image space)
@@ -228,16 +218,16 @@ namespace Gadgetron
       //
 
 #ifdef PS_ORIGIN_CENTERING
-      const floatd2 ps_pc = floatd2(PROJ_IDX_X, PROJ_IDX_Y) + floatd2(0.5);
+      const floatd2 ps_pc = floatd2(co[0], co[1]) + floatd2(0.5);
 #else
-      const floatd2 ps_pc = floatd2(PROJ_IDX_X, PROJ_IDX_Y);
+      const floatd2 ps_pc = floatd2(co[0], co[1]);
 #endif
 
       // Convert the projection plate coordinates into image space,
       // - local to the plate in metric units
       // - including half-fan and sag correction
 
-      const floatd2 proj_coords = (ps_pc / ps_dims_in_pixels - 0.5f) * ps_dims_in_mm + offsets[PROJECTION];
+      const floatd2 proj_coords = (ps_pc / ps_dims_in_pixels - 0.5f) * ps_dims_in_mm + offsets[co[2]];
 
       // Define the end point for the line integrals
       //
@@ -282,7 +272,7 @@ namespace Gadgetron
       // Read the existing output value for accumulation at this point.
       // The cost of this fetch is hidden from our subsequent integration
     
-      const float incoming = (accumulate) ? projections[projectionSpaceId] : 0.0f;
+      const float incoming = (accumulate) ? projections[idx] : 0.0f;
 
       // Normalization factor
       // 
@@ -312,7 +302,7 @@ namespace Gadgetron
       // And output
       //
 
-      projections[projectionSpaceId] = incoming + result*rayLength;
+      projections[idx] = incoming + result*rayLength;
     }
   }
 
@@ -399,10 +389,10 @@ namespace Gadgetron
     // Keep the angles and offsets lists in constant device memory
     //
   
-    cudaMalloc( (void**) &angles_DevPtr, projections_per_batch*sizeof(float));
+    cudaMalloc( (void**) &angles_DevPtr_forwards, projections_per_batch*sizeof(float));
     CHECK_FOR_CUDA_ERROR();
   
-    cudaMalloc( (void**) &offsets_DevPtr, projections_per_batch*sizeof(floatd2));
+    cudaMalloc( (void**) &offsets_DevPtr_forwards, projections_per_batch*sizeof(floatd2));
     CHECK_FOR_CUDA_ERROR();
   
     // Allocate device memory for the projections
@@ -451,19 +441,17 @@ namespace Gadgetron
       // Upload angles and offsets data to device
       //
       
-      cudaMemcpy(angles_DevPtr, &angles_vec[0], projections_in_batch*sizeof(float), cudaMemcpyHostToDevice);
+      cudaMemcpy(angles_DevPtr_forwards, &angles_vec[0], projections_in_batch*sizeof(float), cudaMemcpyHostToDevice);
       CHECK_FOR_CUDA_ERROR();
     
-      cudaMemcpy(offsets_DevPtr, &offsets_vec[0], projections_in_batch*sizeof(float), cudaMemcpyHostToDevice);
+      cudaMemcpy(offsets_DevPtr_forwards, &offsets_vec[0], projections_in_batch*sizeof(float), cudaMemcpyHostToDevice);
       CHECK_FOR_CUDA_ERROR();
 
       // Block/grid configuration
       //
 
-      dim3 dimBlock(std::min(projection_res_x, 256));
-      dim3 dimGrid((projection_res_x+dimBlock.x-1)/dimBlock.x, 
-		   projection_res_y, 
-		   projections_in_batch );
+      dim3 dimBlock, dimGrid;      
+      setup_grid( projection_res_x*projection_res_y*projections_in_batch, &dimBlock, &dimGrid );
 
       //
       // Launch kernel 
@@ -475,9 +463,9 @@ namespace Gadgetron
       cudaFuncSetCacheConfig(conebeam_forwards_projection_kernel, cudaFuncCachePreferL1);
 
       conebeam_forwards_projection_kernel<<< dimGrid, dimBlock >>>
-	( projections_DevPtr, angles_DevPtr, offsets_DevPtr,
+	( projections_DevPtr, angles_DevPtr_forwards, offsets_DevPtr_forwards,
 	  is_dims_in_pixels, is_spacing_in_mm, 
-	  ps_dims_in_pixels, ps_dims_in_mm,
+	  ps_dims_in_pixels, projections_in_batch, ps_dims_in_mm,
 	  SDD, SAD,
 	  num_samples_per_ray, 
 	  false );
@@ -526,8 +514,8 @@ namespace Gadgetron
     //
 
     cudaFree(projections_DevPtr);
-    cudaFree(offsets_DevPtr);
-    cudaFree(angles_DevPtr);
+    cudaFree(offsets_DevPtr_forwards);
+    cudaFree(angles_DevPtr_forwards);
     cudaUnbindTexture(image_tex);
     cudaFreeArray(image_array);
 
@@ -538,7 +526,7 @@ namespace Gadgetron
   conebeam_backwards_projection_kernel( float *image, 
 					float *angles,
 					floatd2 *offsets,
-					floatd3 is_dims_in_pixels, 
+					intd3 is_dims_in_pixels_int, 
 					floatd3 is_spacing_in_mm,
 					floatd2 ps_dims_in_pixels,
 					floatd2 ps_dims_in_mm,
@@ -553,105 +541,106 @@ namespace Gadgetron
     // Image voxel to backproject into (pixel coordinate and index)
     //
 
-    const int IMAGE_X = threadIdx.x;
-    const int IMAGE_Y = blockIdx.x;
-    const int IMAGE_Z = blockIdx.y;
+    const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+    const int num_elements = prod(is_dims_in_pixels_int);
 
-    const long int id =
-      IMAGE_X +
-      IMAGE_Y * blockDim.x +
-      IMAGE_Z * blockDim.x*gridDim.x;
+    if( idx < num_elements ){
+
+      const intd3 co = idx_to_co<3>(idx, is_dims_in_pixels_int);
 
 #ifdef IS_ORIGIN_CENTERING
-    const floatd3 is_pc = floatd3( IMAGE_X, IMAGE_Y, IMAGE_Z ) + floatd3(0.5);
+      const floatd3 is_pc = floatd3(co[0], co[1], co[2]) + floatd3(0.5);
 #else
-    const floatd3 is_pc = floatd3( IMAGE_X, IMAGE_Y, IMAGE_Z );
+      const floatd3 is_pc = floatd3(co[0], co[1], co[2]);
 #endif
 
-    // Normalized image space coordinate [-0.5, 0.5[
-    //
+      // Normalized image space coordinate [-0.5, 0.5[
+      //
+
+      const floatd3 is_dims_in_pixels(is_dims_in_pixels_int[0],is_dims_in_pixels_int[1],is_dims_in_pixels_int[2]);
 
 #ifdef FLIP_Z_AXIS
-    floatd3 is_nc = is_pc / is_dims_in_pixels - floatd3(0.5f);
-    is_nc[2] *= -1.0f;
+      floatd3 is_nc = is_pc / is_dims_in_pixels - floatd3(0.5f);
+      is_nc[2] *= -1.0f;
 #else
-    const floatd3 is_nc = is_pc / is_dims_in_pixels - floatd3(0.5f);
+      const floatd3 is_nc = is_pc / is_dims_in_pixels - floatd3(0.5f);
 #endif
     
-    // Image space coordinate in metric units
-    //
-
-    const floatd3 is_dims_in_mm = is_spacing_in_mm * is_dims_in_pixels;
-    const floatd3 pos = is_nc * is_dims_in_mm;
-
-    // Read the existing output value for accumulation at this point.
-    // The cost of this fetch is hidden by the loop
-    
-    const float incoming = (accumulate) ? image[id] : 0.0f;
-    
-    // Backprojection loop
-    //
-
-    float result = 0.0f;
-
-    for( int projection = 0; projection < num_projections_in_batch; projection++ ) {
-
-      // Projection angle
-      const float angle = degrees2radians(angles[projection]);
-      
-      // Projection rotation matrix
-      const float3x3 inverseRotation = calcRotationMatrixAroundZ(-angle);
-
-      // Rotated image coordinate (local to the projection's coordinate system)
-      const floatd3 pos_proj = mul(inverseRotation, pos);
-
-      // Project the image position onto the projection plate.
-      // Account for half-fan and sag offsets.
-      
-      const floatd3 startPoint = floatd3(0.0f, -SAD, 0.0f);
-      floatd3 dir = pos_proj - startPoint;
-      dir = dir / dir[1];
-      const floatd3 endPoint = startPoint + dir * SDD;
-      const floatd2 endPoint2d = floatd2(endPoint[0], endPoint[2]) - offsets[projection];
-
-      // Convert metric projection coordinates into pixel coordinates
+      // Image space coordinate in metric units
       //
 
-#ifndef PS_ORIGIN_CENTERING
-      floatd2 ps_pc = ((endPoint2d / ps_dims_in_mm) + floatd2(0.5f)) * ps_dims_in_pixels + floatd2(0.5f);
-#else
-      floatd2 ps_pc = ((endPoint2d / ps_dims_in_mm) + floatd2(0.5f)) * ps_dims_in_pixels;
-#endif
+      const floatd3 is_dims_in_mm = is_spacing_in_mm * is_dims_in_pixels;
+      const floatd3 pos = is_nc * is_dims_in_mm;
+
+      // Read the existing output value for accumulation at this point.
+      // The cost of this fetch is hidden by the loop
+    
+      const float incoming = (accumulate) ? image[idx] : 0.0f;
+    
+      // Backprojection loop
+      //
+
+      float result = 0.0f;
+    
+      for( int projection = 0; projection < num_projections_in_batch; projection++ ) {
       
-      // Apply filter (filtered backprojection mode only)
-      // 
+	// Projection angle
+	const float angle = degrees2radians(angles[projection]);
+      
+	// Projection rotation matrix
+	const float3x3 inverseRotation = calcRotationMatrixAroundZ(-angle);
 
-      float weight = 1.0;
+	// Rotated image coordinate (local to the projection's coordinate system)
+	const floatd3 pos_proj = mul(inverseRotation, pos);
 
-      if( use_fbp ){
+	// Project the image position onto the projection plate.
+	// Account for half-fan and sag offsets.
+      
+	const floatd3 startPoint = floatd3(0.0f, -SAD, 0.0f);
+	floatd3 dir = pos_proj - startPoint;
+	dir = dir / dir[1];
+	const floatd3 endPoint = startPoint + dir * SDD;
+	const floatd2 endPoint2d = floatd2(endPoint[0], endPoint[2]) - offsets[projection];
 
-	// Equation 3.59, page 96 and equation 10.2, page 386
-	// in Computed Tomography 2nd edition, Jiang Hsieh
+	// Convert metric projection coordinates into pixel coordinates
 	//
 
-	const float xx = pos[0];
-	const float yy = pos[1];
-	const float beta = angle;
-	const float r = ::hypot(xx,yy);
-	const float phi = ::atan2(yy,xx);
-	const float D = SAD;
-	const float ym = r*::sin(beta-phi);
-	const float U = (D+ym)/D;
-	weight = 1.0f/(U*U);
+#ifndef PS_ORIGIN_CENTERING
+	floatd2 ps_pc = ((endPoint2d / ps_dims_in_mm) + floatd2(0.5f)) * ps_dims_in_pixels + floatd2(0.5f);
+#else
+	floatd2 ps_pc = ((endPoint2d / ps_dims_in_mm) + floatd2(0.5f)) * ps_dims_in_pixels;
+#endif
+      
+	// Apply filter (filtered backprojection mode only)
+	// 
+
+	float weight = 1.0;
+
+	if( use_fbp ){
+
+	  // Equation 3.59, page 96 and equation 10.2, page 386
+	  // in Computed Tomography 2nd edition, Jiang Hsieh
+	  //
+
+	  const float xx = pos[0];
+	  const float yy = pos[1];
+	  const float beta = angle;
+	  const float r = ::hypot(xx,yy);
+	  const float phi = ::atan2(yy,xx);
+	  const float D = SAD;
+	  const float ym = r*::sin(beta-phi);
+	  const float U = (D+ym)/D;
+	  weight = 1.0f/(U*U);
+	}
+
+	// Read the projection data (bilinear interpolation enabled) and accumulate
+	//
+
+	const float val = weight * tex2DLayered( projections_tex, ps_pc[0], ps_pc[1], projection );
+	result += val;
       }
-
-      // Read the projection data (bilinear interpolation enabled) and accumulate
-      //
-
-      const float val = weight * tex2DLayered( projections_tex, ps_pc[0], ps_pc[1], projection );
-      result += val;
+      image[idx] = incoming + result / num_projections_in_bin;
     }
-    image[id] = incoming + result / num_projections_in_bin;
   }
 
   // Compute cosine weights (for filtered backprojection)
@@ -756,7 +745,7 @@ namespace Gadgetron
 				 std::vector<floatd2> offsets, 
 				 std::vector<unsigned int> indices,
 				 int projections_per_batch,
-				 uintd3 is_dims_in_pixels, 
+				 intd3 is_dims_in_pixels, 
 				 floatd3 is_spacing_in_mm, 
 				 floatd2 ps_dims_in_mm,
 				 float SDD, 
@@ -834,10 +823,10 @@ namespace Gadgetron
 	(new cuNDArray<float>(image->get_dimensions().get()));
     }
 
-    cudaMalloc( (void**) &angles_DevPtr, projections_per_batch*sizeof(float) );
+    cudaMalloc( (void**) &angles_DevPtr_backwards, projections_per_batch*sizeof(float) );
     CHECK_FOR_CUDA_ERROR();
     
-    cudaMalloc( (void**) &offsets_DevPtr, projections_per_batch*sizeof(floatd2) );
+    cudaMalloc( (void**) &offsets_DevPtr_backwards, projections_per_batch*sizeof(floatd2) );
     CHECK_FOR_CUDA_ERROR();
     
     //
@@ -912,10 +901,10 @@ namespace Gadgetron
       // Upload angles and offsets data to device
       //
       
-      cudaMemcpy(angles_DevPtr, &angles_vec[0], projections_in_batch*sizeof(float), cudaMemcpyHostToDevice);
+      cudaMemcpy(angles_DevPtr_backwards, &angles_vec[0], projections_in_batch*sizeof(float), cudaMemcpyHostToDevice);
       CHECK_FOR_CUDA_ERROR();
     
-      cudaMemcpy(offsets_DevPtr, &offsets_vec[0], projections_in_batch*sizeof(float), cudaMemcpyHostToDevice);
+      cudaMemcpy(offsets_DevPtr_backwards, &offsets_vec[0], projections_in_batch*sizeof(float), cudaMemcpyHostToDevice);
       CHECK_FOR_CUDA_ERROR();
 
       // Pre-backprojection filtering (if enabled)
@@ -942,10 +931,11 @@ namespace Gadgetron
 	// 1.5 redundancy correct (for short fan scans)
 	//
 
-	if( maximum_angle < 2.0*CUDART_PI_F ){
+	if( maximum_angle < 360.0f ){
+	  float max_angle_rad = degrees2radians(maximum_angle);
 	  float gamma_m = CUDART_PI_F/2.0-::atan(SDD/(ps_dims_in_mm[0]/2.0f));
-	  float gamma_thresh = (maximum_angle-CUDART_PI_F)/2.0f;
-	  redundancy_correct( &projections_batch, angles_vec, maximum_angle, gamma_m, gamma_thresh );
+	  float gamma_thresh = (max_angle_rad-CUDART_PI_F)/2.0f;
+	  redundancy_correct( &projections_batch, angles_vec, max_angle_rad, gamma_m, gamma_thresh );
 	}
 
 	// 2. Apply ramp filter (using FFT)
@@ -1032,8 +1022,8 @@ namespace Gadgetron
       CHECK_FOR_CUDA_ERROR();
       
       // Define dimensions of grid/blocks.
-      dim3 dimBlock( matrix_size_x );
-      dim3 dimGrid( matrix_size_y, matrix_size_z );
+      dim3 dimBlock, dimGrid;
+      setup_grid( matrix_size_x*matrix_size_y*matrix_size_z, &dimBlock, &dimGrid );
 
       //
       // Go...
@@ -1043,9 +1033,8 @@ namespace Gadgetron
 
       // Invoke kernel
       conebeam_backwards_projection_kernel<<< dimGrid, dimBlock >>>
-	( image_device->get_data_ptr(), angles_DevPtr, offsets_DevPtr,
-	  floatd3(float(is_dims_in_pixels[0]), float(is_dims_in_pixels[1]), float(is_dims_in_pixels[2])),
-	  is_spacing_in_mm, ps_dims_in_pixels, ps_dims_in_mm,
+	( image_device->get_data_ptr(), angles_DevPtr_backwards, offsets_DevPtr_backwards,
+	  is_dims_in_pixels, is_spacing_in_mm, ps_dims_in_pixels, ps_dims_in_mm,
 	  projections_in_batch, num_projections_in_bin, 
 	  SDD, SAD, use_fbp,
 	  (batch==0) ? accumulate : true );
@@ -1053,11 +1042,11 @@ namespace Gadgetron
       CHECK_FOR_CUDA_ERROR();
 
       /*
-      static int counter = 0;
-      char filename[256];
-      sprintf((char*)filename, "bp_%d.real", counter);
-      write_nd_array<float>( image_device->to_host().get(), filename );
-      counter++; */
+	static int counter = 0;
+	char filename[256];
+	sprintf((char*)filename, "bp_%d.real", counter);
+	write_nd_array<float>( image_device->to_host().get(), filename );
+	counter++; */
 
       // Cleanup
       cudaUnbindTexture(projections_tex);
@@ -1071,8 +1060,8 @@ namespace Gadgetron
 
     CHECK_FOR_CUDA_ERROR();
         
-    cudaFree(offsets_DevPtr);
-    cudaFree(angles_DevPtr);
+    cudaFree(offsets_DevPtr_backwards);
+    cudaFree(angles_DevPtr_backwards);
     CHECK_FOR_CUDA_ERROR();    
   }
 }
