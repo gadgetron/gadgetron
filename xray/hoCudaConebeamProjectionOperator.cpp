@@ -110,7 +110,7 @@ namespace Gadgetron
       floatd2 ps_spacing_in_mm = acquisition->get_geometry()->get_spacing();
       floatd2 ps_dims_in_mm = ps_spacing_in_mm * ps_dims_in_pixels_float;
 
-      uintd3 is_dims_in_pixels( image->get_size(0), image->get_size(1), image->get_size(2) );
+      intd3 is_dims_in_pixels( image->get_size(0), image->get_size(1), image->get_size(2) );
 
       float SDD = acquisition->get_geometry()->get_SDD();
       float SAD = acquisition->get_geometry()->get_SAD();

@@ -37,7 +37,7 @@ namespace Gadgetron {
 				 std::vector<floatd2> offsets, 
 				 std::vector<unsigned int> indices,
 				 int projections_per_batch,
-				 uintd3 is_dims_in_pixels, 
+				 intd3 is_dims_in_pixels, 
 				 floatd3 is_spacing_in_mm, 
 				 floatd2 ps_dims_in_mm,
 				 float SDD, 

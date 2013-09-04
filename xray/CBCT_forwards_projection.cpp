@@ -5,6 +5,7 @@
 #include "hoNDArray_fileio.h"
 #include "vector_td_utilities.h"
 #include "GPUTimer.h"
+#include "setup_grid.h"
 
 #include <iostream>
 #include <algorithm>
@@ -20,7 +21,7 @@ int main(int argc, char** argv)
 
   ParameterParser parms(1024);
   parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Input volume filename (.real)", true );
-  parms.add_parameter( 'b', COMMAND_LINE_STRING, 1, "Binning filename (.hdf5) - 4D only", false );
+  parms.add_parameter( 'b', COMMAND_LINE_STRING, 1, "Optional binning filename (.hdf5) - 4D only", false );
   parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Output projections filename (.real)", true, "projections_simulated.real" );
   parms.add_parameter( 'h', COMMAND_LINE_STRING, 1, "Output acquisition filename (.h5)", true, "acquisition_simulated.h5" );
   parms.add_parameter( 'f', COMMAND_LINE_FLOAT, 3, "Input volume FOV in mm (3d)", true, "448, 448, 252" );
@@ -28,8 +29,8 @@ int main(int argc, char** argv)
   parms.add_parameter( 'q', COMMAND_LINE_FLOAT, 2, "Projection plate FOV in mm (2d)", true, "800.0, 400.0" );
   parms.add_parameter( 'a', COMMAND_LINE_FLOAT, 1, "SAD", true, "1000.0" );
   parms.add_parameter( 's', COMMAND_LINE_FLOAT, 1, "SDD", true, "1500.0" );
-  parms.add_parameter( 'u', COMMAND_LINE_FLOAT, 1, "Initial angle", true, "0.0" );
-  parms.add_parameter( 'v', COMMAND_LINE_FLOAT, 1, "Angular spacing", true, "0.5" );
+  parms.add_parameter( 'u', COMMAND_LINE_FLOAT, 1, "Initial angle (degrees)", true, "0.0" );
+  parms.add_parameter( 'v', COMMAND_LINE_FLOAT, 1, "Angular spacing (degrees)", true, "0.5" );
   parms.add_parameter( 'w', COMMAND_LINE_INT, 1, "Number of projections", true, "720" );
   parms.add_parameter( 'P', COMMAND_LINE_INT, 1, "Projections per batch", true, "50" );
   parms.add_parameter( 'S', COMMAND_LINE_INT, 1, "Samples per line integral", true, "0" );

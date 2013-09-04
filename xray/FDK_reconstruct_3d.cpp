@@ -25,7 +25,7 @@ int main(int argc, char** argv)
   parms.add_parameter( 'f', COMMAND_LINE_FLOAT, 3, "FOV in mm (3d)", true, "448, 448, 252" );
   parms.add_parameter( 'F', COMMAND_LINE_INT, 1, "Use filtered backprojection (fbp)", true, "1" );
   parms.add_parameter( 'O', COMMAND_LINE_INT, 1, "Use oversampling in fbp", true, "0" );
-  parms.add_parameter( 'H', COMMAND_LINE_FLOAT, 1, "Half-scan mode maximum angle", true, "0" );
+  parms.add_parameter( 'H', COMMAND_LINE_FLOAT, 1, "Half-scan mode maximum angle (degrees)", true, "0" );
   parms.add_parameter( 'P', COMMAND_LINE_INT, 1, "Projections per batch", true, "50" );
 
   parms.parse_parameter_list(argc, argv);
@@ -100,7 +100,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< hoCudaConebeamProjectionOperator > E( new hoCudaConebeamProjectionOperator() );
   
   E->setup( acquisition, binning, projections_per_batch, 0, is_spacing_in_mm, 
-	    use_fbp, use_fbp_os, (half_scan_max_angle == 0.0f) ? 2.0f*CUDART_PI_F : half_scan_max_angle );
+	    use_fbp, use_fbp_os, (half_scan_max_angle == 0.0f) ? 360.0f : half_scan_max_angle );
 
   {
     GPUTimer timer("Running 3D FDK reconstruction");

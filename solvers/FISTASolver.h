@@ -18,7 +18,7 @@ public:
 	virtual boost::shared_ptr<ARRAY> solve(ARRAY* in){
 
 			if( this->encoding_operator_.get() == 0 ){
-				BOOST_THROW_EXCEPTION(runtime_error("Error: gpBBSolver::compute_rhs : no encoding operator is set" ));
+			  throw std::runtime_error("Error: gpBBSolver::compute_rhs : no encoding operator is set" );
 			}
 
 			// Get image space dimensions from the encoding operator
@@ -26,7 +26,7 @@ public:
 
 			boost::shared_ptr< std::vector<unsigned int> > image_dims = this->encoding_operator_->get_domain_dimensions();
 			if( image_dims->size() == 0 ){
-				BOOST_THROW_EXCEPTION(runtime_error("Error: gpBBSolver::compute_rhs : encoding operator has not set domain dimension" ));
+			  throw std::runtime_error("Error: gpBBSolver::compute_rhs : encoding operator has not set domain dimension" );
 			}
 
 			ARRAY * y = new ARRAY;
