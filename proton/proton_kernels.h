@@ -16,5 +16,6 @@ template <class REAL> __global__ void rescale_directions_kernel(vector_td<REAL,3
 
 template <class REAL> __global__ void points_to_coefficients(vector_td<REAL,3> * splines, int dim,int offset);
 
-//template <class REAL> __global__ void spline_trapz_kernel(vector_td<REAL,3> * splines, REAL* lengths, int dim);
+template <class REAL> __global__ void spline_trapz_kernel(vector_td<REAL,3> * splines, REAL* lengths, int dim, int offset);
+template <class REAL> __global__ void length_correction_kernel(vector_td<REAL,3> * splines, REAL* projections, int dim, int offset);
 }

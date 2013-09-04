@@ -30,6 +30,10 @@
 #include "projectionSpaceOperator.h"
 #include "weightingOperator.h"
 #include "ABOCSSolver.h"
+
+#include "hoCuNCGSolver.h"
+#include "hoCuCgSolver.h"
+#include "hoCuTTSSolver.h"
 using namespace std;
 using namespace Gadgetron;
 typedef float _real;
@@ -64,9 +68,11 @@ int main( int argc, char** argv)
 			("output,f", po::value<std::string>(&outputFile)->default_value("image.hdf5"), "Output filename")
 			("prior,P", po::value<std::string>(),"Prior image filename")
 			("prior-weight,k",po::value<float>(),"Weight of the prior image")
+			("lbar,L",po::value<float>(),"Logarithmic barrier position")
 			("wprior-weight,w",po::value<float>(),"Weight of the weighted prior image")
 			("PICS-weight,C",po::value<float>(),"TV Weight of the prior image (Prior image compressed sensing)")
 			("TV,T",po::value<float>(),"TV Weight ")
+			("variance,v",po::value<std::string>(),"File containing the variance of data")
 			("device",po::value<int>(&device)->default_value(0),"Number of the device to use (0 indexed)")
 
 	;
@@ -108,21 +114,39 @@ int main( int argc, char** argv)
 	  return 0;
   }
 
-  ABOCSSolver< hoCuGPBBSolver< _real> > solver;
-  solver.set_eps(_real(1.33e8));
+/*
+hoCuGPBBSolver<_real>* solver;
+
+  if(vm.count("lbar") > 0){
+	  ABOCSSolver< hoCuGPBBSolver< _real> >* tmp = new ABOCSSolver< hoCuGPBBSolver< _real> >;
+	  tmp->set_eps(vm["lbar"].as<float>());
+	  solver=tmp;
+  } else solver = new hoCuGPBBSolver<_real>;
+*/
+
+  hoCuNCGSolver<_real>* solver = new hoCuNCGSolver<_real>;
+  //hoCuTTSSolver<_real>* solver= new hoCuTTSSolver<_real>;
+  //hoCuCgSolver<_real>* solver = new hoCuCgSolver<_real>;
   //solver.set_eps(_real(3.09e7));
   //solver.set_eps(_real(7.8e6));
   //solver.set_eps(_real(6.8e6));
   //solver.set_eps(_real(1));
   //solver.set_eps(_real(7.65e6));
 
-  solver.set_max_iterations( iterations);
+  solver->set_max_iterations( iterations);
   //solver.set_tc_tolerance( (_real) parms.get_parameter('e')->get_float_value());
   //solver.set_alpha(1e-7);
-  solver.set_output_mode( hoCuGPBBSolver< _real>::OUTPUT_VERBOSE );
-  solver.set_non_negativity_constraint(true);
+  solver->set_output_mode( hoCuGPBBSolver< _real>::OUTPUT_VERBOSE );
+  solver->set_non_negativity_constraint(true);
   boost::shared_ptr< hoCuOperatorPathBackprojection<_real> > E (new hoCuOperatorPathBackprojection<_real> );
-  E->setup(splines,physical_dims,projections,origin,background);
+
+  if (vm.count("variance")){
+	  boost::shared_ptr< hoCuNDArray<_real> > variance = boost::static_pointer_cast<hoCuNDArray<_real> > (read_nd_array<_real >(vm["variance"].as<std::string>().c_str()));
+	  if (variance->get_number_of_elements() != projections->get_number_of_elements())
+		  throw std::runtime_error("Number of elements in the ");
+	  reciprocal_inplace(variance.get());
+	  E->setup(splines,physical_dims,projections,variance,origin,background);
+  } else E->setup(splines,physical_dims,projections,origin,background);
 
   std::vector<unsigned int> rhs_dims(&dimensions[0],&dimensions[3]); //Quick and dirty vector_td to vector
   E->set_domain_dimensions(&rhs_dims);
@@ -143,7 +167,7 @@ int main( int argc, char** argv)
 		sqrt_inplace(ptmp.get());
 		boost::shared_ptr< cgPreconditioner<hoCuNDArray<_real> > > precon(new cgPreconditioner<hoCuNDArray<_real> >);
 		precon->set_weights(prior);
-		solver.set_preconditioner(precon);
+		solver->set_preconditioner(precon);
 		if (vm.count("prior-weight")){
 			std::cout << "Prior image difference regularization in use" << std::endl;
 			boost::shared_ptr<identityOperator<hoCuNDArray<_real> > > Itmp ( new identityOperator<hoCuNDArray<_real> >);
@@ -159,7 +183,7 @@ int main( int argc, char** argv)
 
 
 			//I->mult_M(prior.get(),&tmp);
-			solver.add_regularization_operator(I);
+			solver->add_regularization_operator(I,prior);
 		}
 
 		if (vm.count("wprior-weight")){
@@ -192,7 +216,7 @@ int main( int argc, char** argv)
 
 
 			//I->mult_M(prior.get(),&tmp);
-			solver.add_regularization_operator(W);
+			solver->add_regularization_operator(W,tmp_array);
 		}
 		if (vm.count("PICS-weight")){
 			std::cout << "PICS in used" << std::endl;
@@ -200,36 +224,40 @@ int main( int argc, char** argv)
 
 			pics->set_prior(prior);
 			pics->set_weight(vm["PICS-weight"].as<float>());
-			solver.add_nonlinear_operator(pics);
+			//solver->add_nonlinear_operator(pics);
+			throw std::runtime_error("Unsupported");
 
 
 
 		}
-		solver.set_x0(prior);
+		solver->set_x0(prior);
   }
 
   if (vm.count("TV")){
 	  std::cout << "Total variation regularization in use" << std::endl;
 	  boost::shared_ptr<hoCuTvOperator<float,3> > tv(new hoCuTvOperator<float,3>);
 	  tv->set_weight(vm["TV"].as<float>());
-	  solver.add_nonlinear_operator(tv);
+	  //solver->add_nonlinear_operator(tv);
+	  throw std::runtime_error("Unsupported");
   }
 
-  solver.set_encoding_operator(E);
+  solver->set_encoding_operator(E);
 
 	//hoCuNDA_clear(projections.get());
 	//CHECK_FOR_CUDA_ERROR();
 
 	//float res = dot(projections.get(),projections.get());
 
-	boost::shared_ptr< hoCuNDArray<_real> > result = solver.solve(projections.get());
+	boost::shared_ptr< hoCuNDArray<_real> > result = solver->solve(projections.get());
 
 	//write_nd_array<_real>(result.get(), (char*)parms.get_parameter('f')->get_string_value());
 	std::stringstream ss;
 	for (int i = 0; i < argc; i++){
 		ss << argv[i] << " ";
 	}
-	saveNDArray2HDF5<3>(result.get(),outputFile,physical_dims,origin,ss.str(), solver.get_max_iterations());
+	saveNDArray2HDF5<3>(result.get(),outputFile,physical_dims,origin,ss.str(), solver->get_max_iterations());
+
+	delete solver;
 }
 
 

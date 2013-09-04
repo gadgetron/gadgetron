@@ -17,7 +17,7 @@ class hoCuOperatorPathBackprojection : public linearOperator<hoCuNDArray<REAL> >
 
     virtual void mult_M( hoCuNDArray<REAL>* in, hoCuNDArray<REAL>* out, bool accumulate = false );
     virtual void mult_MH( hoCuNDArray<REAL>* in, hoCuNDArray<REAL>* out, bool accumulate = false );
-    virtual void mult_MH_M( hoCuNDArray<REAL>* in, hoCuNDArray<REAL>* out, bool accumulate = false );
+    //virtual void mult_MH_M( hoCuNDArray<REAL>* in, hoCuNDArray<REAL>* out, bool accumulate = false );
 
     virtual void setup(boost::shared_ptr< hoCuNDArray<vector_td<REAL,3> > > splines, vector_td<REAL,3> physical_dims,boost::shared_ptr< hoCuNDArray< REAL > > projections, vector_td<REAL,3> origin, REAL background=0);
     virtual void setup(boost::shared_ptr< hoCuNDArray<vector_td<REAL,3> > > splines, vector_td<REAL,3> physical_dims, boost::shared_ptr< hoCuNDArray< REAL > > projections, boost::shared_ptr< hoCuNDArray<REAL> > weights, vector_td<REAL,3> origin, REAL background = 0);
