@@ -92,6 +92,12 @@
   </gadget>
 
   <gadget>
+    <name>MaxwellCorrection</name>
+    <dll>gadgetron_mricore</dll>
+    <classname>MaxwellCorrectionGadget</classname>
+  </gadget>
+  
+  <gadget>
     <name>PhysioInterpolation</name>
     <dll>gadgetron_mricore</dll>
     <classname>PhysioInterpolationGadget</classname>
