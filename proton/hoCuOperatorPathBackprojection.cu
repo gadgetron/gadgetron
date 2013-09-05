@@ -29,7 +29,7 @@
 
 template<class REAL> size_t hoCuOperatorPathBackprojection<REAL>::calculate_batch_size(){
 
-	int mem_per_proton = 13*sizeof(REAL); // Need 12 REALS for the splines and 1 for the projection
+	int mem_per_proton = 14*sizeof(REAL); // Need 12 REALS for the splines and 1 for the projection
 	size_t free;
 	size_t total;
 
