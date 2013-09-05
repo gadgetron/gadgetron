@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cuNDArray.h"
+#include "cuNDArray_math.h"
 #include "cuTvOperator.h"
 #include "tvPicsOperator.h"
 

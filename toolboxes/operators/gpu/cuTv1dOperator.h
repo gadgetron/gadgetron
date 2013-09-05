@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "cuNDArray.h"
+#include "cuNDArray_math.h"
 #include "generalOperator.h"
 #include "complext.h"
 #include "gpuoperators_export.h"
@@ -30,6 +30,7 @@ namespace Gadgetron{
     }
 
     virtual void gradient(cuNDArray<T>*,cuNDArray<T>*, bool accumulate=false);
+    virtual REAL magnitude(cuNDArray<T>*);
 
   protected:
     REAL limit_;    

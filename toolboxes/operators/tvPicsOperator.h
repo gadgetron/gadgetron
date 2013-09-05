@@ -20,6 +20,11 @@ namespace Gadgetron{
       op_.gradient(&tmp, out, accumulate);
     }
 
+    virtual REAL magnitude(ARRAY_TYPE *x){
+    	ARRAY_TYPE tmp = *x;
+    	tmp -= *prior_;
+    	return op_.magnitude(&tmp);
+    }
     void set_limit(REAL limit){
       op_.set_limit(limit);
     }

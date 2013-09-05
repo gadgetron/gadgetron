@@ -5,8 +5,7 @@
 #pragma once
 
 #include "partialDerivativeOperator.h"
-#include "hoNDArray_operators.h"
-#include "hoNDArray_elemwise.h"
+#include "hoNDArray_math.h"
 #include "vector_td_utilities.h"
 
 #ifdef USE_OMP

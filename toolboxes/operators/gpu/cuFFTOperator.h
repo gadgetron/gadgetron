@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "cuNDArray_math.h"
 #include "FFTOperator.h"
 #include "cuFFT.h"
 

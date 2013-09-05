@@ -1,8 +1,7 @@
 #pragma once
 
-#include "hoNDArray.h"
-#include "hoNDArray_operators.h"
-#include "hoNDArray_elemwise.h"
+#include "hoNDArray_math.h"
+
 #include "resampleOperator.h"
 #include "complext.h"
 #include "cpureg_export.h"

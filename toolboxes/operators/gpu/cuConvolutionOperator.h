@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "cuNDArray_operators.h"
-#include "cuNDArray_utils.h"
+
+#include "cuNDArray_math.h"
 #include "cuNDFFT.h"
 #include "vector_td_utilities.h"
 #include "convolutionOperator.h"

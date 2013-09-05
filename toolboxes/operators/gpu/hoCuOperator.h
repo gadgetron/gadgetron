@@ -1,5 +1,5 @@
 #pragma once
-#include "hoNDArray_operators.h"
+#include "hoCuNDArray_math.h"
 #include "linearOperator.h"
 
 #include <boost/shared_ptr.hpp>

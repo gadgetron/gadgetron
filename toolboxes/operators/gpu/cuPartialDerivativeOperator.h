@@ -4,8 +4,9 @@
 
 #pragma once
 
+#include "cuNDArray_math.h"
 #include "partialDerivativeOperator.h"
-#include "cuNDArray.h"
+
 #include "gpuoperators_export.h"
 
 namespace Gadgetron{

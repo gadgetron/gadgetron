@@ -1,6 +1,6 @@
 #pragma once
 
-#include "hoCuNDArray.h"
+
 #include "hoCuTvOperator.h"
 #include "tvPicsOperator.h"
 

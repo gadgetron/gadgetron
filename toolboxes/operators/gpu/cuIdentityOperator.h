@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "cuNDArray.h"
+#include "cuNDArray_math.h"
 #include "identityOperator.h"
 
 namespace Gadgetron{

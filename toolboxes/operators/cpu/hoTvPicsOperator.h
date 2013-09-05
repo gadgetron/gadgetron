@@ -1,6 +1,6 @@
 #pragma once
 
-#include "hoNDArray.h"
+#include "hoNDArray_math.h"
 #include "hoTvOperator.h"
 #include "tvPicsOperator.h"
 

@@ -28,14 +28,37 @@ namespace Gadgetron{
     
     virtual ~generalOperator(){};
 
+    /**
+     * @brief Calculates the gradient of the operator at point "in"
+     * @param[in] in Input point at which to calculate the gradient
+     * @param[in,out] out Gradient
+     * @param[in] accumulate If false, overrides the output array. Otherwise adds result.
+     */
     virtual void gradient(ARRAY* in, ARRAY* out, bool accumulate = false ) = 0;
     
+
+    /**
+     * @brief Calculates the function value of the operator
+     * @param[in] in Point at which to calculate the value
+     * @return Function value at point "in"
+     */
+    virtual REAL magnitude(ARRAY* in)=0;
+
+
+    /**
+     * Set the domain dimension (image size) of the operator
+     * @param[in] dims Domain dimensions
+     */
     virtual void set_domain_dimensions( std::vector<unsigned int> *dims )
     {
       if( dims == 0x0 ) throw std::runtime_error("Null pointer provided");
       domain_dims_ = *dims;  
     }
     
+    /**
+     *
+     * @return The domain dimensions (image size) of the operator
+     */
     virtual boost::shared_ptr< std::vector<unsigned int> > get_domain_dimensions()
     {
       std::vector<unsigned int> *dims = new std::vector<unsigned int>();
@@ -43,7 +66,16 @@ namespace Gadgetron{
       return boost::shared_ptr< std::vector<unsigned int> >(dims);
     }
     
+    /**
+     * Sets the weight of the operator
+     * @param[in] weight
+     */
     virtual void set_weight( REAL weight ){ weight_ = weight; }
+
+    /**
+     *
+     * @return Weight of the operator
+     */
     virtual REAL get_weight(){ return weight_; }
     
     void* operator new (size_t bytes) { return ::new char[bytes]; }

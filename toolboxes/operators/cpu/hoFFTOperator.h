@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include "hoNDArray_math.h"
 #include "FFTOperator.h"
 #include "hoFFT.h"
 

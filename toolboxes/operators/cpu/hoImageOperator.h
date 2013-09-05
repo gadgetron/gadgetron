@@ -4,9 +4,7 @@
 
 #pragma once
 
-#include "hoNDArray_operators.h"
-#include "hoNDArray_elemwise.h"
-#include "hoNDArray_blas.h"
+#include "hoNDArray_math.h"
 #include "complext.h"
 #include "imageOperator.h"
 

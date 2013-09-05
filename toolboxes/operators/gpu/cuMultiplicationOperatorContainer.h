@@ -4,8 +4,9 @@
 
 #pragma once
 
+#include "cuNDArray_math.h"
 #include "multiplicationOperatorContainer.h"
-#include "cuNDArray.h"
+
 
 namespace Gadgetron{
 template <class REAL, class T> class cuMultiplicationOperatorContainer 
