@@ -10,7 +10,8 @@
 #include <complex>
 
 namespace Gadgetron{  
-    class EXPORTGADGETSMRICORE  PhysioInterpolationGadget :
+
+    class EXPORTGADGETSMRICORE PhysioInterpolationGadget :
         public Gadget2< ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
     {
 
@@ -19,6 +20,8 @@ namespace Gadgetron{
 
         PhysioInterpolationGadget();
         virtual ~PhysioInterpolationGadget();
+
+	inline unsigned short get_number_of_phases() { return phases_to_reconstruct_; }
 
     protected:
         virtual int process_config(ACE_Message_Block* mb);
@@ -31,9 +34,7 @@ namespace Gadgetron{
 	unsigned short phys_time_index_;
 	unsigned short phases_to_reconstruct_;
 	unsigned short mode_; //0=seperate series for each complete RR,
-	                      //1=First complete RR interval only
-	
-
+	                      //1=First complete RR interval only	
     private:
 	ACE_Message_Queue<ACE_MT_SYNCH> buffer_;
 	std::vector<float> time_stamps_;

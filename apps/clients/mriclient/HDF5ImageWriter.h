@@ -9,7 +9,8 @@
 #define HDF5IMAGEWRITER_H_
 
 #include "ImageWriter.h"
-#include "ismrmrd_hdf5.h"
+
+#include <ismrmrd_hdf5.h>
 #include <sstream>
 
 namespace Gadgetron{

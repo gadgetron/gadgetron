@@ -188,6 +188,34 @@ namespace Gadgetron{
       }      
       return *this;
     }
+
+    cuNDArray<T>& operator=(const hoNDArray<T>& rhs)
+    {
+      int cur_device; 
+      CUDA_CALL(cudaGetDevice(&cur_device));      
+      bool dimensions_match = this->dimensions_equal(&rhs);      
+      if (dimensions_match && (cur_device == this->device_)) {	
+	CUDA_CALL(cudaMemcpy(this->get_data_ptr(), rhs.get_data_ptr(), this->get_number_of_elements()*sizeof(T), cudaMemcpyHostToDevice));
+      }
+      else {	
+	CUDA_CALL(cudaSetDevice(this->device_));
+	if( !dimensions_match ){	  
+	  deallocate_memory();	  
+	  this->elements_ = rhs.get_number_of_elements();
+	  this->dimensions_ = rhs.get_dimensions();
+	  allocate_memory();	  
+	}	
+	if (cudaMemcpy(this->get_data_ptr(), rhs.get_data_ptr(), this->get_number_of_elements()*sizeof(T), 
+		       cudaMemcpyHostToDevice) !=cudaSuccess) {	    
+	  cudaSetDevice(cur_device);
+	  throw cuda_error("cuNDArray::operator=: failed to copy data (1)");
+	}
+	if( cudaSetDevice(cur_device) != cudaSuccess) {
+	  throw cuda_error("cuNDArray::operator=: unable to restore to current device");
+	}
+      }      
+      return *this;
+    }
     
     virtual void create(std::vector<unsigned int> *dimensions)
     {

@@ -89,35 +89,39 @@ KaiserBessel( float u, float matrix_size_os, float one_over_W, float beta )
 //
 
 template<class REAL> __inline__ __device__ REAL
-KaiserBessel( const Gadgetron::vector_td<REAL,1> &u, const Gadgetron::vector_td<REAL,1> &matrix_size_os, REAL one_over_W, REAL beta )
+KaiserBessel( const Gadgetron::vector_td<REAL,1> &u, const Gadgetron::vector_td<REAL,1> &matrix_size_os, 
+	      REAL one_over_W, typename reald<REAL,1>::Type beta )
 {
-  REAL phi_x = KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta );
+  REAL phi_x = KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta[0] );
   return phi_x;
 }
 
 template<class REAL> __inline__ __device__ REAL
-KaiserBessel( const Gadgetron::vector_td<REAL,2> &u, const Gadgetron::vector_td<REAL,2> &matrix_size_os, REAL one_over_W, REAL beta )
+KaiserBessel( const Gadgetron::vector_td<REAL,2> &u, const Gadgetron::vector_td<REAL,2> &matrix_size_os, 
+	      REAL one_over_W, typename reald<REAL,2>::Type beta )
 {
-  REAL phi_x = KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta );
-  REAL phi_y = KaiserBessel( u.vec[1], matrix_size_os.vec[1], one_over_W, beta );
+  REAL phi_x = KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta[0] );
+  REAL phi_y = KaiserBessel( u.vec[1], matrix_size_os.vec[1], one_over_W, beta[1] );
   return phi_x*phi_y;
 }
 
 template<class REAL> __inline__ __device__ REAL
-KaiserBessel( const Gadgetron::vector_td<REAL,3> &u, const Gadgetron::vector_td<REAL,3> &matrix_size_os, REAL one_over_W, REAL beta )
+KaiserBessel( const Gadgetron::vector_td<REAL,3> &u, const Gadgetron::vector_td<REAL,3> &matrix_size_os, 
+	      REAL one_over_W, typename reald<REAL,3>::Type beta )
 {
-  REAL phi_x = KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta );
-  REAL phi_y = KaiserBessel( u.vec[1], matrix_size_os.vec[1], one_over_W, beta );
-  REAL phi_z = KaiserBessel( u.vec[2], matrix_size_os.vec[2], one_over_W, beta );
+  REAL phi_x = KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta[0] );
+  REAL phi_y = KaiserBessel( u.vec[1], matrix_size_os.vec[1], one_over_W, beta[1] );
+  REAL phi_z = KaiserBessel( u.vec[2], matrix_size_os.vec[2], one_over_W, beta[2] );
   return phi_x*phi_y*phi_z;
 }
 
 template<class REAL> __inline__ __device__ REAL
-KaiserBessel( const Gadgetron::vector_td<REAL,4> &u, Gadgetron::vector_td<REAL,4> &matrix_size_os, REAL one_over_W, REAL beta )
+KaiserBessel( const Gadgetron::vector_td<REAL,4> &u, Gadgetron::vector_td<REAL,4> &matrix_size_os, 
+	      REAL one_over_W, typename reald<REAL,4>::Type beta )
 {
-  REAL phi_x = KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta );
-  REAL phi_y = KaiserBessel( u.vec[1], matrix_size_os.vec[1], one_over_W, beta );
-  REAL phi_z = KaiserBessel( u.vec[2], matrix_size_os.vec[2], one_over_W, beta );
-  REAL phi_w = KaiserBessel( u.vec[3], matrix_size_os.vec[3], one_over_W, beta );
+  REAL phi_x = KaiserBessel( u.vec[0], matrix_size_os.vec[0], one_over_W, beta[0] );
+  REAL phi_y = KaiserBessel( u.vec[1], matrix_size_os.vec[1], one_over_W, beta[1] );
+  REAL phi_z = KaiserBessel( u.vec[2], matrix_size_os.vec[2], one_over_W, beta[2] );
+  REAL phi_w = KaiserBessel( u.vec[3], matrix_size_os.vec[3], one_over_W, beta[3] );
   return phi_x*phi_y*phi_z*phi_w;
 }

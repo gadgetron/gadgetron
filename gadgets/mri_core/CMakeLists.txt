@@ -6,9 +6,22 @@ find_package(Ismrmrd REQUIRED)
 find_package(XSD REQUIRED)
 find_package(XercesC REQUIRED)
 
+if (MKL_FOUND)
+  # This is a fix for the bug in SVD when MKL is multi-threaded
+  MESSAGE("MKL Found, enabling MKL for mri_core gadgets.")
+  add_definitions(-DHAVE_MKL)
+  # These are needed to get the linking to work properly when
+  # MKL is installed, but Armadillo is NOT using it.
+  list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
+  list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
+endif (MKL_FOUND)
+
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+  ${HDF5_INCLUDE_DIR}
+  ${HDF5_INCLUDE_DIR}/cpp
   ${ARMADILLO_INCLUDE_DIRS}
+  ${MKL_INCLUDE_DIR}
 )
 
 if (ARMADILLO_FOUND)
@@ -42,6 +55,7 @@ add_library(gadgetron_mricore SHARED
   IsmrmrdDumpGadget.cpp
   ${OPTIMIZED_GADGETS}
   ${ISMRMRD_XSD_SOURCE}
+  ${MKL_LIBRARIES}
   )
 
 target_link_libraries(gadgetron_mricore 
@@ -52,6 +66,8 @@ target_link_libraries(gadgetron_mricore
   ${BOOST_LIBRARIES}
   ${XERCESC_LIBRARIES} 
   ${OPTIMIZED_GADGET_LIBS}
+  ${MKL_LIBRARIES}
+  ${EXTRA_MKL_LIBRARIES}
   )
 
 install(FILES 

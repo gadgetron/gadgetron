@@ -24,7 +24,8 @@
 // 
 
 template<class REAL, unsigned int D> __inline__ __device__ void
-NFFT_iterate_body( REAL alpha, REAL beta, REAL W, vector_td<unsigned int, D> matrix_size_os, 
+NFFT_iterate_body( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Type beta, 
+		   REAL W, vector_td<unsigned int, D> matrix_size_os, 
 		   unsigned int number_of_batches, complext<REAL> *samples, complext<REAL> *image,
 		   unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vector_td<REAL,D> matrix_size_os_real, 
 		   unsigned int frame, unsigned int num_frames,
@@ -70,7 +71,8 @@ NFFT_iterate_body( REAL alpha, REAL beta, REAL W, vector_td<unsigned int, D> mat
 //
 
 template<class REAL> __inline__ __device__ void
-NFFT_iterate( REAL alpha, REAL beta, REAL W, vector_td<unsigned int,1> matrix_size_os, 
+NFFT_iterate( typename reald<REAL,1>::Type alpha, typename reald<REAL,1>::Type beta, 
+	      REAL W, vector_td<unsigned int,1> matrix_size_os, 
 	      unsigned int number_of_batches, complext<REAL> *samples, complext<REAL> *image,
 	      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, 
 	      vector_td<REAL,1> matrix_size_os_real, 
@@ -94,7 +96,8 @@ NFFT_iterate( REAL alpha, REAL beta, REAL W, vector_td<unsigned int,1> matrix_si
 //
 
 template<class REAL> __inline__ __device__ void
-NFFT_iterate( REAL alpha, REAL beta, REAL W, vector_td<unsigned int,2> matrix_size_os, 
+NFFT_iterate( typename reald<REAL,2>::Type alpha, typename reald<REAL,2>::Type beta, 
+	      REAL W, vector_td<unsigned int,2> matrix_size_os, 
 	      unsigned int number_of_batches, complext<REAL> *samples, complext<REAL> *image,
 	      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, 
 	      vector_td<REAL,2> matrix_size_os_real, 
@@ -120,7 +123,8 @@ NFFT_iterate( REAL alpha, REAL beta, REAL W, vector_td<unsigned int,2> matrix_si
 //
 
 template<class REAL> __inline__ __device__ void
-NFFT_iterate( REAL alpha, REAL beta, REAL W, vector_td<unsigned int,3> matrix_size_os, 
+NFFT_iterate( typename reald<REAL,3>::Type alpha, typename reald<REAL,3>::Type beta, 
+	      REAL W, vector_td<unsigned int,3> matrix_size_os, 
 	      unsigned int number_of_batches, complext<REAL> *samples, complext<REAL> *image,
 	      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, 
 	      vector_td<REAL,3> matrix_size_os_real, 
@@ -148,7 +152,8 @@ NFFT_iterate( REAL alpha, REAL beta, REAL W, vector_td<unsigned int,3> matrix_si
 //
 
 template<class REAL> __inline__ __device__ void
-NFFT_iterate( REAL alpha, REAL beta, REAL W, vector_td<unsigned int,4> matrix_size_os, 
+NFFT_iterate( typename reald<REAL,4>::Type alpha, typename reald<REAL,4>::Type beta, 
+	      REAL W, vector_td<unsigned int,4> matrix_size_os, 
 	      unsigned int number_of_batches, complext<REAL> *samples, complext<REAL> *image,
 	      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W,
 	      vector_td<REAL,4> matrix_size_os_real, 
@@ -178,7 +183,7 @@ NFFT_iterate( REAL alpha, REAL beta, REAL W, vector_td<unsigned int,4> matrix_si
 //
 
 template<class REAL, unsigned int D> __global__ void
-NFFT_H_atomic_convolve_kernel( REAL alpha, REAL beta, REAL W, 
+NFFT_H_atomic_convolve_kernel( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Type beta, REAL W, 
 			       vector_td<unsigned int, D> matrix_size_os, vector_td<unsigned int, D> matrix_size_wrap,
 			       unsigned int num_samples_per_frame, unsigned int num_batches, 
 			       vector_td<REAL,D> *traj_positions, complext<REAL> *samples, complext<REAL> *image,

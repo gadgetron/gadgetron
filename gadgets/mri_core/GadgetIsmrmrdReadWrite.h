@@ -20,7 +20,7 @@
 
 namespace Gadgetron{
 
-    class GadgetIsmrmrdAcquisitionMessageWriter : public GadgetMessageWriter
+    class EXPORTGADGETSMRICORE GadgetIsmrmrdAcquisitionMessageWriter : public GadgetMessageWriter
     {
 
     public:

@@ -4,7 +4,6 @@
 #include "resampleOperator.h"
 #include "complext.h"
 #include "cpureg_export.h"
-
 #include "hoArmadillo.h"
 
 namespace Gadgetron{

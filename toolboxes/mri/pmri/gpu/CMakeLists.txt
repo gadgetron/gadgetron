@@ -20,7 +20,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
-  ${CMAKE_SOURCE_DIR}/gadgets/core
   )
 
 cuda_add_library(gpuparallelmri SHARED 	

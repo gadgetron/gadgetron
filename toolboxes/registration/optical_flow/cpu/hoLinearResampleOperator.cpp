@@ -147,7 +147,7 @@ namespace Gadgetron{
 	  }
 	}
 	
-	mat_i = co_to_idx<D>(co_stride_uintd, matrix_size);
+	mat_i = co_to_idx<D>(co_stride_uintd, matrix_size)+batch_no*num_elements_mat;
       
 	// Determine weight
 	//
@@ -169,7 +169,7 @@ namespace Gadgetron{
     }
     locations.resize(2,location_index);
     values.resize(location_index);
-    R_T_ = arma::SpMat<REAL>( locations, values, num_elements_mat, num_elements_ext, false );
+    R_T_ = arma::SpMat<REAL>( locations, values, num_elements_mat*extended_dim, num_elements_ext, false );
     this->preprocessed_ = true;
   }
 

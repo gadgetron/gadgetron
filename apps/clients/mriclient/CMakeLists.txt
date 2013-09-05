@@ -14,6 +14,12 @@ if(WIN32)
 endif(WIN32)
 
 include_directories(      
+  ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
+  ${CMAKE_SOURCE_DIR}/apps/gadgetron
+  ${CMAKE_SOURCE_DIR}/toolboxes/core
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
+  ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   ${ISMRMRD_XSD_INCLUDE_DIR}
   ${ACE_INCLUDE_DIR} 
   ${Boost_INCLUDE_DIR}  
@@ -21,16 +27,10 @@ include_directories(
   ${HDF5_INCLUDE_DIRS}/cpp
   ${ISMRMRD_INCLUDE_DIR}
   ${XSD_INCLUDE_DIR}
-  ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
-  ${CMAKE_SOURCE_DIR}/apps/gadgetron
-  ${CMAKE_SOURCE_DIR}/toolboxes/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-  ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   )
 
 add_executable(mriclient main.cpp)
-add_executable(gt_alive  gt_alive.cpp)
+add_executable(gt_alive gt_alive.cpp)
 
 target_link_libraries(gt_alive gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}  ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES})
 
@@ -44,12 +44,7 @@ IF(WIN32)
 	target_link_libraries(mriclient debug ${HDF5_LIB_DIR}/hdf5_cppddll.lib)
 	target_link_libraries(mriclient debug ${HDF5_LIB_DIR}/hdf5_hlddll.lib)
 
-	#target_link_libraries(mriclient optimized ${HDF5_LIB_DIR}/zlib.lib)
-	#target_link_libraries(mriclient optimized ${HDF5_LIB_DIR}/szip.lib)
-	#target_link_libraries(mriclient debug ${HDF5_LIB_DIR}/zlib.lib)
-	#target_link_libraries(mriclient debug ${HDF5_LIB_DIR}/szip.lib)
-
-	target_link_libraries(mriclient gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
+	target_link_libraries(mriclient gadgetron_mricore gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
 ELSE (WIN32)
 	target_link_libraries(mriclient gadgettools  ${HDF5_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
 ENDIF(WIN32)

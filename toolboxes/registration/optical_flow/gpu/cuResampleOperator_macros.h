@@ -118,7 +118,7 @@
       setup_grid( num_elements_mat, &blockDim, &gridDim, num_batches ); \
     }									\
     else{								\
-      setup_grid( num_elements_mat, &blockDim, &gridDim, num_elements_mat*extended_dim ); \
+      setup_grid( num_elements_mat*extended_dim, &blockDim, &gridDim ); \
     }									\
     									\
     if( surplus == 1 ) {						\

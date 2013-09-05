@@ -2,10 +2,9 @@
 #include "Gadgetron.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "GadgetronTimer.h"
-#include <numeric>
 #include "Spline.h"
 
-
+#include <numeric>
 #ifdef USE_OMP
 #include <omp.h>
 #endif 
@@ -189,7 +188,7 @@ namespace Gadgetron{
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-    for (size_t p = 0; p < imageelem; p++) {
+    for (int p = 0; p < (int)imageelem; p++) {
       std::vector< std::complex<float> > data_in(inelem);
 
       //Get the input data for this pixel

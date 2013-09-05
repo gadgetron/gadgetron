@@ -249,8 +249,9 @@ namespace Gadgetron{
     typename uintd<D>::Type matrix_size_os;       // Oversampled matrix size
     typename uintd<D>::Type matrix_size_wrap;     // Wrap size at border
 
-    REAL alpha;                                   // Oversampling factor
-    REAL beta;                                    // Kaiser-Bessel convolution kernel control parameter
+    typename reald<REAL,D>::Type alpha;           // Oversampling factor (for each dimension)
+    typename reald<REAL,D>::Type beta;            // Kaiser-Bessel convolution kernel control parameter
+
     REAL W;                                       // Kernel width in oversampled grid
 
     unsigned int number_of_samples;               // Number of samples per frame per coil

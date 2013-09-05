@@ -51,9 +51,9 @@ find_package(FFTW3 COMPONENTS single double REQUIRED)
 
 find_package(ACE)
 if(ACE_FOUND)
-  MESSAGE("\nACE found, the streaming framework will be compiled.")
+  MESSAGE("ACE found, the streaming framework will be compiled.")
 else(ACE_FOUND)
-  MESSAGE("\nACE not found. Only toolboxes and standalone applications are compiled. The streaming framework will not be compiled.")
+  MESSAGE("ACE not found. Only toolboxes and standalone applications are compiled. The streaming framework will not be compiled.")
 endif(ACE_FOUND)
 
 find_package(CUDA 4.1)
@@ -73,6 +73,8 @@ if (NOT GTEST_FOUND)
 endif (NOT GTEST_FOUND)
 
 find_package(Armadillo)
+
+find_package(MKL)
 
 if (CUDA_FOUND)
   MESSAGE("CUDA found, GPU components will be compiled.")
@@ -117,11 +119,11 @@ find_package(HDF5 1.8 COMPONENTS C CXX)
 
 find_package(Ismrmrd)
 if(ISMRMRD_FOUND)
-  message("\nISMRMRD found")
+  message("ISMRMRD found")
   find_package(XSD REQUIRED)
   find_package(XercesC REQUIRED)
 else(ISMRMRD_FOUND)
-  message("\nISMRMRD not found. Only compiling toolboxes and standalone applications.")
+  message("ISMRMRD not found. Only compiling toolboxes and standalone applications.")
 endif(ISMRMRD_FOUND)
 
 find_package(GMatlab)
