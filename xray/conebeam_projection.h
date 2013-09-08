@@ -9,8 +9,8 @@
 namespace Gadgetron {
   
   // Forwards projection of a 3D volume onto a set of projections.
-  // Dependent on the provided binnning indices, 
-  // only a subset of the projections may be included.
+  // - dependening on the provided binnning indices, 
+  //   just a subset of the projections can be targeted.
   
   void 
   conebeam_forwards_projection( hoNDArray<float> *projections,
@@ -19,16 +19,16 @@ namespace Gadgetron {
 				std::vector<floatd2> offsets, 
 				std::vector<unsigned int> indices,
 				int projections_per_batch, 
-				int num_samples_per_ray,
-				floatd3 is_spacing_in_mm, 
+				float samples_per_pixel,
+				floatd3 is_dims_in_mm, 
 				floatd2 ps_dims_in_mm,
 				float SDD, 
 				float SAD,
 				bool accumulate );
   
   // Backprojection of a set of projections onto a 3D volume.
-  // Dependent on the provided binnning indices, 
-  // only a subset of the projections may be included.
+  // - depending on the provided binnning indices, 
+  //   just a subset of the projections can be included.
 
   void 
   conebeam_backwards_projection( hoNDArray<float> *projections, 
@@ -38,7 +38,7 @@ namespace Gadgetron {
 				 std::vector<unsigned int> indices,
 				 int projections_per_batch,
 				 intd3 is_dims_in_pixels, 
-				 floatd3 is_spacing_in_mm, 
+				 floatd3 is_dims_in_mm, 
 				 floatd2 ps_dims_in_mm,
 				 float SDD, 
 				 float SAD,

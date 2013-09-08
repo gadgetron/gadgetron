@@ -17,7 +17,7 @@ namespace Gadgetron
     //
     
     if( image == 0x0 || projections == 0x0 ){
-      throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M:: illegal array pointer provided");
+      throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M: illegal array pointer provided");
     }
     
     if( image->get_number_of_dimensions() != 4 ){
@@ -28,12 +28,12 @@ namespace Gadgetron
       throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M: projections array must be three-dimensional");
     }
     
-    if( !preprocessed ){
+    if( !preprocessed_ ){
       throw std::runtime_error( "Error: hoCudaConebeamProjectionOperator::mult_M: setup not performed");
     }
 
-    if( projections->get_size(2) != acquisition->get_geometry()->get_angles().size() || 
-	projections->get_size(2) != acquisition->get_geometry()->get_offsets().size() ){
+    if( projections->get_size(2) != acquisition_->get_geometry()->get_angles().size() || 
+	projections->get_size(2) != acquisition_->get_geometry()->get_offsets().size() ){
       throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M: inconsistent sizes of input arrays/vectors");
     }
 
@@ -43,14 +43,14 @@ namespace Gadgetron
     // I.e. reconstruct one 3D volume at a time.
     //
 
-    for( int b=0; b<binning->get_number_of_bins(); b++ ) {
+    for( int b=0; b<binning_->get_number_of_bins(); b++ ) {
 
       floatd2 ps_dims_in_pixels_float(projections->get_size(0), projections->get_size(1));
-      floatd2 ps_spacing_in_mm = acquisition->get_geometry()->get_spacing();
-      floatd2 ps_dims_in_mm = ps_spacing_in_mm * ps_dims_in_pixels_float;
+      floatd2 ps_dims_in_mm = acquisition_->get_geometry()->get_FOV();
+      floatd2 ps_spacing_in_mm = ps_dims_in_mm / ps_dims_in_pixels_float;
 
-      float SDD = acquisition->get_geometry()->get_SDD();
-      float SAD = acquisition->get_geometry()->get_SAD();
+      float SDD = acquisition_->get_geometry()->get_SDD();
+      float SAD = acquisition_->get_geometry()->get_SAD();
 
       std::vector<unsigned int> dims_3d = *image->get_dimensions();
       dims_3d.pop_back();
@@ -60,11 +60,11 @@ namespace Gadgetron
       hoNDArray<float> image_3d(&dims_3d, image->get_data_ptr()+b*num_3d_elements);
 
       conebeam_forwards_projection( projections, &image_3d, 
-				    acquisition->get_geometry()->get_angles(), 
-				    acquisition->get_geometry()->get_offsets(),
-				    binning->get_bin(b),
-				    projections_per_batch, num_samples_per_ray,
-				    is_spacing_in_mm, ps_dims_in_mm, 
+				    acquisition_->get_geometry()->get_angles(), 
+				    acquisition_->get_geometry()->get_offsets(),
+				    binning_->get_bin(b),
+				    projections_per_batch_, samples_per_pixel_,
+				    is_dims_in_mm_, ps_dims_in_mm, 
 				    SDD, SAD, 
 				    accumulate );
     }
@@ -89,12 +89,12 @@ namespace Gadgetron
       throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH: projections array must be three-dimensional");
     }
     
-    if( !preprocessed ){
+    if( !preprocessed_ ){
       throw std::runtime_error( "Error: hoCudaConebeamProjectionOperator::mult_MH: setup not performed");
     }
 
-    if( projections->get_size(2) != acquisition->get_geometry()->get_angles().size() ||
-	projections->get_size(2) != acquisition->get_geometry()->get_offsets().size() ){
+    if( projections->get_size(2) != acquisition_->get_geometry()->get_angles().size() ||
+	projections->get_size(2) != acquisition_->get_geometry()->get_offsets().size() ){
       throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH: inconsistent sizes of input arrays/vectors");
     }
 
@@ -104,16 +104,16 @@ namespace Gadgetron
     // I.e. reconstruct one 3D volume at a time.
     //
 
-    for( int b=0; b<binning->get_number_of_bins(); b++ ) {
+    for( int b=0; b<binning_->get_number_of_bins(); b++ ) {
 
       floatd2 ps_dims_in_pixels_float(projections->get_size(0), projections->get_size(1));
-      floatd2 ps_spacing_in_mm = acquisition->get_geometry()->get_spacing();
-      floatd2 ps_dims_in_mm = ps_spacing_in_mm * ps_dims_in_pixels_float;
+      floatd2 ps_dims_in_mm = acquisition_->get_geometry()->get_FOV();
+      floatd2 ps_spacing_in_mm = ps_dims_in_mm / ps_dims_in_pixels_float;
 
       intd3 is_dims_in_pixels( image->get_size(0), image->get_size(1), image->get_size(2) );
 
-      float SDD = acquisition->get_geometry()->get_SDD();
-      float SAD = acquisition->get_geometry()->get_SAD();
+      float SDD = acquisition_->get_geometry()->get_SDD();
+      float SAD = acquisition_->get_geometry()->get_SAD();
 
       std::vector<unsigned int> dims_3d = *image->get_dimensions();
       dims_3d.pop_back();
@@ -123,16 +123,15 @@ namespace Gadgetron
       hoNDArray<float> image_3d(&dims_3d, image->get_data_ptr()+b*num_3d_elements);
 
       conebeam_backwards_projection( projections, &image_3d,
-				     acquisition->get_geometry()->get_angles(), 
-				     acquisition->get_geometry()->get_offsets(),
-				     binning->get_bin(b),
-				     projections_per_batch,
-				     is_dims_in_pixels, is_spacing_in_mm,
+				     acquisition_->get_geometry()->get_angles(), 
+				     acquisition_->get_geometry()->get_offsets(),
+				     binning_->get_bin(b),
+				     projections_per_batch_,
+				     is_dims_in_pixels, is_dims_in_mm_,
 				     ps_dims_in_mm,
 				     SDD, SAD, 
-				     use_fbp, use_oversampling_in_fbp,
-				     maximum_angle,
-      				     accumulate );
+				     use_fbp_, use_oversampling_in_fbp_,
+      				     max_angle_, accumulate );
     }
   }
 }

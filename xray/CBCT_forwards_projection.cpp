@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 
   ParameterParser parms(1024);
   parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Input volume filename (.real)", true );
-  parms.add_parameter( 'b', COMMAND_LINE_STRING, 1, "Optional binning filename (.hdf5) - 4D only", false );
+  //parms.add_parameter( 'b', COMMAND_LINE_STRING, 1, "Optional binning filename (.hdf5) - 4D only", false );
   parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Output projections filename (.real)", true, "projections_simulated.real" );
   parms.add_parameter( 'h', COMMAND_LINE_STRING, 1, "Output acquisition filename (.h5)", true, "acquisition_simulated.h5" );
   parms.add_parameter( 'f', COMMAND_LINE_FLOAT, 3, "Input volume FOV in mm (3d)", true, "448, 448, 252" );
@@ -32,8 +32,8 @@ int main(int argc, char** argv)
   parms.add_parameter( 'u', COMMAND_LINE_FLOAT, 1, "Initial angle (degrees)", true, "0.0" );
   parms.add_parameter( 'v', COMMAND_LINE_FLOAT, 1, "Angular spacing (degrees)", true, "0.5" );
   parms.add_parameter( 'w', COMMAND_LINE_INT, 1, "Number of projections", true, "720" );
-  parms.add_parameter( 'P', COMMAND_LINE_INT, 1, "Projections per batch", true, "50" );
-  parms.add_parameter( 'S', COMMAND_LINE_INT, 1, "Samples per line integral", true, "0" );
+  parms.add_parameter( 'P', COMMAND_LINE_INT, 1, "Projections per batch", false );
+  parms.add_parameter( 'S', COMMAND_LINE_FLOAT, 1, "Samples per pixel in line integral", false );
   
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ) {
@@ -46,7 +46,7 @@ int main(int argc, char** argv)
   }
   
   std::string image_filename = (char*)parms.get_parameter('d')->get_string_value();
-  std::string binning_filname = (char*)parms.get_parameter('b')->get_string_value();
+  //std::string binning_filname = (char*)parms.get_parameter('b')->get_string_value();
   std::string projections_filename = (char*)parms.get_parameter('r')->get_string_value();
   std::string acquisition_filename = (char*)parms.get_parameter('h')->get_string_value();
   
@@ -60,6 +60,16 @@ int main(int argc, char** argv)
     exit(1);
   }
 
+  // Add default temporal dimension of 1 since the operator only takes four-dimensional images
+  //
+
+  if( image->get_number_of_dimensions() == 3 ){
+    std::vector<unsigned int> dims = *image->get_dimensions();
+    dims.push_back(1);
+    image->reshape(&dims);
+  }
+
+
   // Configuring...
   //
 
@@ -68,8 +78,6 @@ int main(int argc, char** argv)
   
   floatd2 ps_dims_in_mm( parms.get_parameter('q')->get_float_value(0),
 			 parms.get_parameter('q')->get_float_value(1) );
-
-  floatd2 ps_spacing_in_mm = ps_dims_in_mm / ps_dims_in_pixels;
 
   float SAD = parms.get_parameter('a')->get_float_value();
   float SDD = parms.get_parameter('s')->get_float_value();
@@ -82,32 +90,21 @@ int main(int argc, char** argv)
 			 parms.get_parameter('f')->get_float_value(1), 
 			 parms.get_parameter('f')->get_float_value(2) );
 
-  floatd3 is_spacing_in_mm = is_dims_in_mm / is_dims_in_pixels;
-
   float start_angle = parms.get_parameter('u')->get_float_value();
   float angular_spacing = parms.get_parameter('v')->get_float_value();
 
   unsigned int number_of_projections = parms.get_parameter('w')->get_int_value();
-  unsigned int projections_per_batch = parms.get_parameter('P')->get_int_value();
-
-  unsigned int samples_per_ray = parms.get_parameter('S')->get_int_value();
-  if( samples_per_ray == 0 ){
-    float samples_per_pixel = 1.5f;
-    samples_per_ray = (unsigned int)(samples_per_pixel*float(is_dims_in_mm[0]));
-  }
 
   // Load the binning data (if provided)
   //
   
   boost::shared_ptr<CBCT_binning> binning( new CBCT_binning() );
+  //  if( binning_filename.size() > 0 )
+  //  binning->load(bining_filename);
+  //else
   binning->set_as_default_3d_bin(number_of_projections);
-  /*  if( binning_filename.size() > 0 ){
-    binning = boost::shared_ptr<CBCT_binning>(new CBCT_binning());
-    binning->load(bining_filename);
-    } */
   binning->print();
   
-
   // Create projection angles array
   // - and offsets (assuming zeros for now)
   
@@ -136,7 +133,7 @@ int main(int argc, char** argv)
   boost::shared_ptr<CBCT_geometry> geometry( new CBCT_geometry() );
   geometry->set_SAD(SAD);
   geometry->set_SDD(SDD);
-  geometry->set_spacing(ps_spacing_in_mm);
+  geometry->set_FOV(ps_dims_in_mm);
   geometry->set_angles(angles);
   geometry->set_offsets(offsets);
 
@@ -147,13 +144,32 @@ int main(int argc, char** argv)
   acquisition->set_geometry(geometry);
   acquisition->set_projections(projections);
 
+  // Define conebeam projection operator
+  // - and configure based on input parameters
   //
-  // Standard 3D FDK reconstruction
+
+  boost::shared_ptr< hoCudaConebeamProjectionOperator > E( new hoCudaConebeamProjectionOperator() );
+  
+  CommandLineParameter *parm = parms.get_parameter('P');
+  if( parm && parm->get_is_set() )
+    E->set_num_projections_per_batch( parm->get_int_value() );
+  
+  parm = parms.get_parameter('S');  
+  if( parm && parm->get_is_set() ) 
+    E->set_num_samples_per_pixel( parm->get_float_value() );
+  
+  E->setup( acquisition, binning, is_dims_in_mm );
+
+  // Initialize the device
+  // - just to report more accurate timings
+  //
+
+  cudaThreadSynchronize();
+
+  //
+  // Forwards projection (X-ray image simulation)
   //
   
-  boost::shared_ptr< hoCudaConebeamProjectionOperator > E( new hoCudaConebeamProjectionOperator() );
-  E->setup( acquisition, binning, projections_per_batch, samples_per_ray, is_spacing_in_mm );
-
   {
     GPUTimer timer("Running CBCT forwards projection");
     E->mult_M( image.get(), projections.get() );
