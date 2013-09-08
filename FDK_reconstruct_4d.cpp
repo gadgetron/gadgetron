@@ -62,10 +62,8 @@ int main(int argc, char** argv)
   uintd2 ps_dims_in_pixels( acquisition->get_projections()->get_size(0),
 			    acquisition->get_projections()->get_size(1) );
   
-  floatd2 ps_spacing_in_mm( acquisition->get_geometry()->get_spacing()[0],
-			    acquisition->get_geometry()->get_spacing()[1] );
-
-  floatd2 ps_dims_in_mm = ps_dims_in_pixels * ps_spacing_in_mm;
+  floatd2 ps_dims_in_mm( acquisition->get_geometry()->get_FOV()[0],
+			 acquisition->get_geometry()->get_FOV()[1] );
 
   float SDD = acquisition->get_geometry()->get_SDD();
   float SAD = acquisition->get_geometry()->get_SAD();
@@ -77,8 +75,6 @@ int main(int argc, char** argv)
   floatd3 is_dims_in_mm( parms.get_parameter('f')->get_float_value(0), 
 			 parms.get_parameter('f')->get_float_value(1), 
 			 parms.get_parameter('f')->get_float_value(2) );
-  
-  floatd3 is_spacing_in_mm = is_dims_in_mm/is_dims_in_pixels;
   
   bool use_fbp = parms.get_parameter('F')->get_int_value();
   bool use_fbp_os = parms.get_parameter('O')->get_int_value();
@@ -102,8 +98,8 @@ int main(int argc, char** argv)
   
   boost::shared_ptr< hoCudaConebeamProjectionOperator > E( new hoCudaConebeamProjectionOperator() );
   
-  E->setup( acquisition, binning, projections_per_batch, 0, is_spacing_in_mm, 
-	    use_fbp, use_fbp_os, (half_scan_max_angle == 0.0f) ? 2.0f*CUDART_PI_F : half_scan_max_angle );
+  //E->setup( acquisition, binning, projections_per_batch, 0, is_spacing_in_mm, 
+  //	    use_fbp, use_fbp_os, (half_scan_max_angle == 0.0f) ? 2.0f*CUDART_PI_F : half_scan_max_angle );
 
   {
     GPUTimer timer("Running 3D FDK reconstruction");

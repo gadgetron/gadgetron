@@ -27,16 +27,9 @@
 #define IS_ORIGIN_CENTERING
 //#define FLIP_Z_AXIS
 
-// Cuda insists on that constant variables and textures are defined at the global scope.
-// This WILL become problematic in a multi-threaded (multi-GPU) environment one day.
-// !!! To do: Acces should be protected by mutexes !!!
-// To alleviate the problem somewhat we make a variables for each of the kernels...
-
-static /*__constant__*/ /*__device__*/ float *angles_DevPtr_forwards;
-static /*__constant__*/ /*__device__*/ float *angles_DevPtr_backwards;
-static /*__constant__*/ /*__device__*/ float *angles_DevPtr_redundancy;
-static /*__constant__*/ /*__device__*/ Gadgetron::floatd2 *offsets_DevPtr_forwards;
-static /*__constant__*/ /*__device__*/ Gadgetron::floatd2 *offsets_DevPtr_backwards;
+// Read the projection/image data respectively as a texture (for input)
+// - taking advantage of the cache and hardware interpolation
+//
 
 #define NORMALIZED_TC 0
 
@@ -49,16 +42,14 @@ projections_tex( NORMALIZED_TC, cudaFilterModeLinear, cudaAddressModeBorder );
 namespace Gadgetron 
 {
   
-  // Read the projection/image data respectively as a texture (taking advantage of the cache and interpolation)
-  //
-
   inline __host__ __device__
   float degrees2radians(float degree) {
     return degree * (CUDART_PI_F/180.0f);
   }
 
   //
-  // Redundancy correction is used for FDK in short fan mode (when you do not acquire a full rotation of data)
+  // Redundancy correction is used for FDK in short scan mode
+  // - i.e. when you do not acquire a full rotation of data
   //
 
   __global__ void
@@ -125,7 +116,7 @@ namespace Gadgetron
     const int projection_res_x = projections->get_size(0);
     const int projection_res_y = projections->get_size(1);
     const int num_projections = projections->get_size(2);
-    intd3 dims(projection_res_x, projection_res_y,num_projections);
+    intd3 dims(projection_res_x, projection_res_y, num_projections);
 
     // If not the case already, then try to transform the angles array into the range [0;360[
     //
@@ -149,8 +140,10 @@ namespace Gadgetron
       angles[i] = std::fmod(angles[i]+360.0f, 360.0f);
     }
 
-    cudaMalloc( (void**) &angles_DevPtr_redundancy, angles.size()*sizeof(float));
-    cudaMemcpy( angles_DevPtr_redundancy, &angles[0], angles.size()*sizeof(float), cudaMemcpyHostToDevice );
+    float *angles_DevPtr;
+
+    cudaMalloc( (void**) &angles_DevPtr, angles.size()*sizeof(float));
+    cudaMemcpy( angles_DevPtr, &angles[0], angles.size()*sizeof(float), cudaMemcpyHostToDevice );
     CHECK_FOR_CUDA_ERROR();
 
     // Launch kernel
@@ -160,11 +153,11 @@ namespace Gadgetron
     setup_grid( prod(dims), &dimBlock, &dimGrid );
     
     redundancy_correct_kernel<<< dimGrid, dimBlock >>>
-      ( projections->get_data_ptr(), angles_DevPtr_redundancy, dims, lambda_max, gamma_m, gamma_thresh );
+      ( projections->get_data_ptr(), angles_DevPtr, dims, lambda_max, gamma_m, gamma_thresh );
 
     CHECK_FOR_CUDA_ERROR();
     
-    cudaFree(angles_DevPtr_redundancy);
+    cudaFree(angles_DevPtr);
     CHECK_FOR_CUDA_ERROR();
   }
 
@@ -178,14 +171,13 @@ namespace Gadgetron
 				       float *angles,
 				       floatd2 *offsets,
 				       floatd3 is_dims_in_pixels, 
-				       floatd3 is_spacing_in_mm,
+				       floatd3 is_dims_in_mm,
 				       intd2 ps_dims_in_pixels_int, 
-				       int num_projections,
 				       floatd2 ps_dims_in_mm,
+				       int num_projections,
 				       float SDD, 
 				       float SAD,
-				       float num_samples_per_ray, 
-				       bool accumulate )
+				       float num_samples_per_ray )
   {
 
 
@@ -244,10 +236,8 @@ namespace Gadgetron
       // Perform integration only inside the bounding cylinder of the image volume
       //
 
-      const floatd3 is_dims_in_mm = is_dims_in_pixels*is_spacing_in_mm;
       const floatd2 is_dims_in_mm_xy(is_dims_in_mm[0], is_dims_in_mm[1]);
-      const floatd2 is_spacing_in_mm_xy(is_spacing_in_mm[0], is_spacing_in_mm[1]);
-      const float radius = norm( (is_dims_in_mm_xy + is_spacing_in_mm_xy) * floatd2(0.5f) );
+      const float radius = norm( is_dims_in_mm_xy * floatd2(0.5f) );
       const floatd3 unitDir = dir / SDD;
 
       startPoint = startPoint + (unitDir * (SAD-radius));
@@ -269,16 +259,6 @@ namespace Gadgetron
       dir *= is_dims_in_pixels;
       dir /= num_samples_per_ray; // now in step size units
 
-      // Read the existing output value for accumulation at this point.
-      // The cost of this fetch is hidden from our subsequent integration
-    
-      const float incoming = (accumulate) ? projections[idx] : 0.0f;
-
-      // Normalization factor
-      // 
-
-      const float rayLength = norm(startPoint-endPoint)/num_samples_per_ray;
-
       //
       // Perform line integration
       //
@@ -299,10 +279,15 @@ namespace Gadgetron
 	result += tex3D( image_tex, samplePoint[0], samplePoint[1], samplePoint[2] );
       }
 
-      // And output
+      // Normalization factor
+      // 
+
+      const float sampling_distance = norm(startPoint-endPoint)/num_samples_per_ray;
+
+      // Output
       //
 
-      projections[idx] = incoming + result*rayLength;
+      projections[idx] = result*sampling_distance;
     }
   }
 
@@ -317,8 +302,8 @@ namespace Gadgetron
 				std::vector<floatd2> offsets, 
 				std::vector<unsigned int> indices,
 				int projections_per_batch, 
-				int num_samples_per_ray,
-				floatd3 is_spacing_in_mm, 
+				float samples_per_pixel,
+				floatd3 is_dims_in_mm, 
 				floatd2 ps_dims_in_mm,
 				float SDD, 
 				float SAD,
@@ -386,50 +371,52 @@ namespace Gadgetron
     cudaBindTextureToArray(image_tex, image_array, channelDesc);
     CHECK_FOR_CUDA_ERROR();
 
-    // Keep the angles and offsets lists in constant device memory
+    // Allocate the angles, offsets and projections in device memory
+    // Using as many streams as batches enables concurrent copy/compute on devices with "just" one copy engine
     //
   
-    cudaMalloc( (void**) &angles_DevPtr_forwards, projections_per_batch*sizeof(float));
-    CHECK_FOR_CUDA_ERROR();
-  
-    cudaMalloc( (void**) &offsets_DevPtr_forwards, projections_per_batch*sizeof(floatd2));
-    CHECK_FOR_CUDA_ERROR();
-  
-    // Allocate device memory for the projections
-    //
+    float* angles_DevPtr[num_batches];
+    float* projections_DevPtr[num_batches];
+    Gadgetron::floatd2* offsets_DevPtr[num_batches];
+    cudaStream_t streams[num_batches];
 
-    float* projections_DevPtr;
-    cudaMalloc( (void**) &projections_DevPtr, projection_res_x*projection_res_y*projections_per_batch*sizeof(float));
+    for (unsigned int batch=0; batch<num_batches; batch++ ){
+      cudaStreamCreate(&streams[batch]);
+      cudaMalloc( (void**) &angles_DevPtr[batch], projections_per_batch*sizeof(float));
+      cudaMalloc( (void**) &offsets_DevPtr[batch], projections_per_batch*sizeof(floatd2));
+      cudaMalloc( (void**) &projections_DevPtr[batch], projection_res_x*projection_res_y*projections_per_batch*sizeof(float));
+    }
+  
     CHECK_FOR_CUDA_ERROR();
 
     //
-    // Iterate over the batches
+    // Iterate over the batches to copy input
     //
-  
+    
     for( int batch = 0; batch < num_batches; batch++ ) {
-
+      
       int from_projection = batch * projections_per_batch;
       int to_projection = (batch+1) * projections_per_batch;
-
+      
       if (to_projection > num_projections_in_bin)
 	to_projection = num_projections_in_bin;
-
+      
       int projections_in_batch = to_projection-from_projection;
-
-      printf("batch: %03i, handling projections: %03i - %03i, angle %.2f - %.2f\n",
+      
+      printf("batch: %03i, handling projections: %03i - %03i, angles: %.2f - %.2f\n",
 	     batch, from_projection, to_projection-1,
 	     angles[from_projection], angles[to_projection-1]);
-
+      
       // Make vectors of the angles and offsets present in the current bin (indices)
       //
       
       std::vector<float> angles_vec;
       std::vector<floatd2> offsets_vec;
-
+      
       for( int p=from_projection; p<to_projection; p++ ){
-
+	
 	int from_id = indices[p];
-
+	
 	if( from_id >= num_projections_in_all_bins ) {
 	  throw std::runtime_error("Error: conebeam_forwards_projection: illegal index in bin");
 	}
@@ -437,19 +424,37 @@ namespace Gadgetron
 	angles_vec.push_back(angles[from_id]);
 	offsets_vec.push_back(offsets[from_id]);
       }
-	
+      
       // Upload angles and offsets data to device
       //
       
-      cudaMemcpy(angles_DevPtr_forwards, &angles_vec[0], projections_in_batch*sizeof(float), cudaMemcpyHostToDevice);
+      cudaMemcpyAsync(angles_DevPtr[batch], &angles_vec[0], 
+		      projections_in_batch*sizeof(float), cudaMemcpyHostToDevice, streams[batch]);
+      
+      cudaMemcpyAsync(offsets_DevPtr[batch], &offsets_vec[0], 
+		      projections_in_batch*sizeof(floatd2), cudaMemcpyHostToDevice, streams[batch]);
+      
       CHECK_FOR_CUDA_ERROR();
-    
-      cudaMemcpy(offsets_DevPtr_forwards, &offsets_vec[0], projections_in_batch*sizeof(float), cudaMemcpyHostToDevice);
-      CHECK_FOR_CUDA_ERROR();
+      
+    }
 
+    //
+    // Iterate over the batches to invoke kernels
+    //
+  
+    for( int batch = 0; batch < num_batches; batch++ ) {
+
+      int from_projection = batch * projections_per_batch;
+      int to_projection = (batch+1) * projections_per_batch;
+      
+      if (to_projection > num_projections_in_bin)
+	to_projection = num_projections_in_bin;
+      
+      int projections_in_batch = to_projection-from_projection;
+      
       // Block/grid configuration
       //
-
+      
       dim3 dimBlock, dimGrid;      
       setup_grid( projection_res_x*projection_res_y*projections_in_batch, &dimBlock, &dimGrid );
 
@@ -462,19 +467,30 @@ namespace Gadgetron
       
       cudaFuncSetCacheConfig(conebeam_forwards_projection_kernel, cudaFuncCachePreferL1);
 
-      conebeam_forwards_projection_kernel<<< dimGrid, dimBlock >>>
-	( projections_DevPtr, angles_DevPtr_forwards, offsets_DevPtr_forwards,
-	  is_dims_in_pixels, is_spacing_in_mm, 
-	  ps_dims_in_pixels, projections_in_batch, ps_dims_in_mm,
-	  SDD, SAD,
-	  num_samples_per_ray, 
-	  false );
+      conebeam_forwards_projection_kernel<<< dimGrid, dimBlock, 0, streams[batch] >>>
+	( projections_DevPtr[batch], angles_DevPtr[batch], offsets_DevPtr[batch],
+	  is_dims_in_pixels, is_dims_in_mm, 
+	  ps_dims_in_pixels, ps_dims_in_mm, 
+	  projections_in_batch, SDD, SAD, samples_per_pixel*float(matrix_size_x) );
       
       CHECK_FOR_CUDA_ERROR();
+    }
 
-      // Copy result from device to host adhering to the binning
-      // Be sure to copy sequentially numbered projections in one copy operation.
+    //
+    // Iterate over the batches to copy result from device to host
+    //
+  
+    for( int batch = 0; batch < num_batches; batch++ ) {
       
+      int from_projection = batch * projections_per_batch;
+      int to_projection = (batch+1) * projections_per_batch;
+      
+      if (to_projection > num_projections_in_bin)
+	to_projection = num_projections_in_bin;
+      
+      // Be sure to copy sequentially numbered projections in one copy operation.
+      //
+
       int p = from_projection;
       while( p<to_projection ) {
 	
@@ -488,9 +504,10 @@ namespace Gadgetron
 	int size = projection_res_x*projection_res_y;
 
 	if( !accumulate ) {
-	  cudaMemcpy( projections->get_data_ptr()+to_id*size, 
-		      projections_DevPtr+(p-from_projection)*size, 
-		      size*num_sequential_projections*sizeof(float), cudaMemcpyDeviceToHost );
+	  cudaMemcpyAsync( projections->get_data_ptr()+to_id*size, 
+			   projections_DevPtr[batch]+(p-from_projection)*size, 
+			   size*num_sequential_projections*sizeof(float), 
+			   cudaMemcpyDeviceToHost, streams[batch] );
 	}
 	else {
 	  std::vector<unsigned int> dims;
@@ -498,24 +515,30 @@ namespace Gadgetron
 	  dims.push_back(projection_res_y);
 	  dims.push_back(num_sequential_projections);
 	  hoNDArray<float> tmp(&dims);
-	  cudaMemcpy( tmp.get_data_ptr(), projections_DevPtr+(p-from_projection)*size, 
-		      size*num_sequential_projections*sizeof(float), cudaMemcpyDeviceToHost );
+	  cudaMemcpyAsync( tmp.get_data_ptr(), 
+			   projections_DevPtr[batch]+(p-from_projection)*size, 
+			   size*num_sequential_projections*sizeof(float), 
+			   cudaMemcpyDeviceToHost, streams[batch] );
 	  hoNDArray<float> target( &dims, projections->get_data_ptr()+to_id*size );
 	  target += tmp;
 	}
 	
-	CHECK_FOR_CUDA_ERROR();
+	//	CHECK_FOR_CUDA_ERROR();
 	
 	p += num_sequential_projections;
       }
     }
 
     // Clean up
+    // - hypothesis: exact inverse order of allocation makes memory fragmention less likely)
     //
 
-    cudaFree(projections_DevPtr);
-    cudaFree(offsets_DevPtr_forwards);
-    cudaFree(angles_DevPtr_forwards);
+    for( int batch = num_batches-1; batch >= 0; batch-- ) {
+      cudaFree(projections_DevPtr[batch]);
+      cudaFree(offsets_DevPtr[batch]);
+      cudaFree(angles_DevPtr[batch]);
+      cudaStreamDestroy(streams[batch]);
+    }
     cudaUnbindTexture(image_tex);
     cudaFreeArray(image_array);
 
@@ -527,15 +550,15 @@ namespace Gadgetron
 					float *angles,
 					floatd2 *offsets,
 					intd3 is_dims_in_pixels_int, 
-					floatd3 is_spacing_in_mm,
+					floatd3 is_dims_in_mm,
 					floatd2 ps_dims_in_pixels,
 					floatd2 ps_dims_in_mm,
 					int num_projections_in_batch,
 					float num_projections_in_bin, 
 					float SDD, 
 					float SAD,
-					bool use_fbp,
-					bool accumulate ) 
+					bool use_fbp, 
+					bool accumulate )
   {
 
     // Image voxel to backproject into (pixel coordinate and index)
@@ -569,14 +592,13 @@ namespace Gadgetron
       // Image space coordinate in metric units
       //
 
-      const floatd3 is_dims_in_mm = is_spacing_in_mm * is_dims_in_pixels;
       const floatd3 pos = is_nc * is_dims_in_mm;
 
       // Read the existing output value for accumulation at this point.
       // The cost of this fetch is hidden by the loop
-    
+      
       const float incoming = (accumulate) ? image[idx] : 0.0f;
-    
+
       // Backprojection loop
       //
 
@@ -639,6 +661,10 @@ namespace Gadgetron
 	const float val = weight * tex2DLayered( projections_tex, ps_pc[0], ps_pc[1], projection );
 	result += val;
       }
+
+      // Output normalized image
+      //
+
       image[idx] = incoming + result / num_projections_in_bin;
     }
   }
@@ -746,7 +772,7 @@ namespace Gadgetron
 				 std::vector<unsigned int> indices,
 				 int projections_per_batch,
 				 intd3 is_dims_in_pixels, 
-				 floatd3 is_spacing_in_mm, 
+				 floatd3 is_dims_in_mm, 
 				 floatd2 ps_dims_in_mm,
 				 float SDD, 
 				 float SAD,
@@ -823,10 +849,13 @@ namespace Gadgetron
 	(new cuNDArray<float>(image->get_dimensions().get()));
     }
 
-    cudaMalloc( (void**) &angles_DevPtr_backwards, projections_per_batch*sizeof(float) );
+    float *angles_DevPtr;
+    Gadgetron::floatd2 *offsets_DevPtr;
+
+    cudaMalloc( (void**) &angles_DevPtr, projections_per_batch*sizeof(float) );
     CHECK_FOR_CUDA_ERROR();
     
-    cudaMalloc( (void**) &offsets_DevPtr_backwards, projections_per_batch*sizeof(floatd2) );
+    cudaMalloc( (void**) &offsets_DevPtr, projections_per_batch*sizeof(floatd2) );
     CHECK_FOR_CUDA_ERROR();
     
     //
@@ -843,7 +872,7 @@ namespace Gadgetron
 
       int projections_in_batch = to_projection-from_projection;
 
-      printf("batch: %03i, handling projections: %03i - %03i, angle %.2f - %.2f\n", batch,
+      printf("batch: %03i, handling projections: %03i - %03i, angles: %.2f - %.2f\n", batch,
 	     from_projection, to_projection-1, angles[from_projection], angles[to_projection-1]);      
 
       // Allocate device memory for projections and upload
@@ -901,10 +930,10 @@ namespace Gadgetron
       // Upload angles and offsets data to device
       //
       
-      cudaMemcpy(angles_DevPtr_backwards, &angles_vec[0], projections_in_batch*sizeof(float), cudaMemcpyHostToDevice);
+      cudaMemcpy(angles_DevPtr, &angles_vec[0], projections_in_batch*sizeof(float), cudaMemcpyHostToDevice);
       CHECK_FOR_CUDA_ERROR();
     
-      cudaMemcpy(offsets_DevPtr_backwards, &offsets_vec[0], projections_in_batch*sizeof(float), cudaMemcpyHostToDevice);
+      cudaMemcpy(offsets_DevPtr, &offsets_vec[0], projections_in_batch*sizeof(floatd2), cudaMemcpyHostToDevice);
       CHECK_FOR_CUDA_ERROR();
 
       // Pre-backprojection filtering (if enabled)
@@ -1033,8 +1062,8 @@ namespace Gadgetron
 
       // Invoke kernel
       conebeam_backwards_projection_kernel<<< dimGrid, dimBlock >>>
-	( image_device->get_data_ptr(), angles_DevPtr_backwards, offsets_DevPtr_backwards,
-	  is_dims_in_pixels, is_spacing_in_mm, ps_dims_in_pixels, ps_dims_in_mm,
+	( image_device->get_data_ptr(), angles_DevPtr, offsets_DevPtr,
+	  is_dims_in_pixels, is_dims_in_mm, ps_dims_in_pixels, ps_dims_in_mm,
 	  projections_in_batch, num_projections_in_bin, 
 	  SDD, SAD, use_fbp,
 	  (batch==0) ? accumulate : true );
@@ -1052,16 +1081,15 @@ namespace Gadgetron
       cudaUnbindTexture(projections_tex);
       cudaFreeArray(projections_array);
       CHECK_FOR_CUDA_ERROR();          
-    }         
+    }
     
     // Copy result from device to host
     cudaMemcpy( image->get_data_ptr(), image_device->get_data_ptr(), 
 		num_image_elements*sizeof(float), cudaMemcpyDeviceToHost );
-
     CHECK_FOR_CUDA_ERROR();
-        
-    cudaFree(offsets_DevPtr_backwards);
-    cudaFree(angles_DevPtr_backwards);
+    
+    cudaFree(offsets_DevPtr);
+    cudaFree(angles_DevPtr);
     CHECK_FOR_CUDA_ERROR();    
   }
 }

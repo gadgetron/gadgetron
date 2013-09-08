@@ -23,7 +23,7 @@ namespace Gadgetron{
     CBCT_geometry() {
       SAD_ = 0.0f;
       SDD_ = 0.0f;
-      spacing_ = floatd2(0.0f);
+      FOV_ = floatd2(0.0f);
     }
 
     ~CBCT_geometry() {}
@@ -34,8 +34,8 @@ namespace Gadgetron{
     inline void set_SDD( float SDD ) { SDD_ = SDD; }
     inline float get_SDD() { return SDD_; }
     
-    inline void set_spacing( floatd2 v ) { spacing_ = v; }
-    inline floatd2 get_spacing() { return spacing_; }
+    inline void set_FOV( floatd2 v ) { FOV_ = v; }
+    inline floatd2 get_FOV() { return FOV_; }
     
     inline void set_angles( std::vector<float> &angles ) { angles_ = angles; }
     inline std::vector<float>& get_angles() { return angles_; }
@@ -65,7 +65,7 @@ namespace Gadgetron{
 
       os << "SDD: " << SDD_ << "mm" << std::endl;
       os << "SAD: " << SAD_ << "mm" << std::endl;
-      os << "Spacing: " << spacing_ << "mm" << std::endl;
+      os << "FOV: " << FOV_ << "mm" << std::endl;
       os << "----------------------------------" << std::endl;
     }
 
@@ -86,7 +86,7 @@ namespace Gadgetron{
       }
       {
 	hsize_t dims[1] = {2};
-	H5LTmake_dataset(file_id, "/spacing", 1, dims, H5T_NATIVE_FLOAT, &spacing_);
+	H5LTmake_dataset(file_id, "/FOV", 1, dims, H5T_NATIVE_FLOAT, &FOV_);
       }
       {
 	hsize_t dims[1] = {angles_.size()};
@@ -109,7 +109,7 @@ namespace Gadgetron{
 
     float SAD_;
     float SDD_;
-    floatd2 spacing_;
+    floatd2 FOV_;
     std::vector<float> angles_;
     std::vector<floatd2> offsets_;
   };
@@ -200,19 +200,19 @@ namespace Gadgetron{
 	geometry_->get_offsets().push_back(floatd2(offsets_x[i], offsets_y[i]));
       }
 
-      // Get SAD / SDD / spacing
+      // Get SAD / SDD / FOV
       //
 
       float SAD, SDD;
-      floatd2 spacing;
+      floatd2 FOV;
       
       H5LTread_dataset (file_id, "/SAD", H5T_NATIVE_FLOAT, &SAD);
       H5LTread_dataset (file_id, "/SDD", H5T_NATIVE_FLOAT, &SDD);
-      H5LTread_dataset (file_id, "/spacing", H5T_NATIVE_FLOAT, &spacing);
+      H5LTread_dataset (file_id, "/FOV", H5T_NATIVE_FLOAT, &FOV);
       
       geometry_->set_SAD(SAD);
       geometry_->set_SDD(SDD);
-      geometry_->set_spacing(spacing);
+      geometry_->set_FOV(FOV);
       
       // Test data format of the projections
       //
