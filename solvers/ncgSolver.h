@@ -15,27 +15,31 @@ namespace Gadgetron{
  *
  */
 
-template <class ARRAY_TYPE> class ncgSolver : public linearOperatorSolver<ARRAY_TYPE>
+template <class ARRAY_TYPE> class ncgSolver : public gpSolver<ARRAY_TYPE>
 {
 protected:
 	typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
 	typedef typename realType<ELEMENT_TYPE>::Type REAL;
 	typedef ARRAY_TYPE ARRAY_CLASS;
+	typedef gpSolver<ARRAY_TYPE> GP;
+	typedef typename gpSolver<ARRAY_TYPE>::l1GPRegularizationOperator l1GPRegularizationOperator;
 
 public:
 
-	ncgSolver(): linearOperatorSolver<ARRAY_TYPE>() {
+	ncgSolver(): gpSolver<ARRAY_TYPE>() {
 		iterations_ = 10;
 		tc_tolerance_ = (REAL)1e-6;
 		non_negativity_constraint_=false;
 		dump_residual = false;
 		threshold= REAL(1e-8);
+		log_barrier = REAL(0);
+		barrier_threshold=1e4;
 	}
 
 	virtual ~ncgSolver(){}
 
 	virtual boost::shared_ptr<ARRAY_TYPE> solve(ARRAY_TYPE* in)
-    		{
+									{
 		if( this->encoding_operator_.get() == 0 ){
 			throw std::runtime_error("Error: ncgSolver::compute_rhs : no encoding operator is set" );
 		}
@@ -92,29 +96,29 @@ public:
 			std::cout << "Iterating..." << std::endl;
 		}
 		for (int i = 0; i < iterations_; i++){
-			if ((i==0) && (!this->x0_.get())){
-				clear(g);
+			if (i==0){
+				if (this->x0_.get()){
+					this->encoding_operator_->mult_M(x,&encoding_space);
 
-				this->encoding_operator_->mult_MH(in,g);
-
-				*g *=  -this->encoding_operator_->get_weight();
-				data_res = real(dot(in,in));
-				reg_res=REAL(0);
-				clear(&encoding_space);
-				encoding_space -= *in;
-				add_gradient(regEnc,g);
-
-			} else if (i == 0){
-				this->encoding_operator_->mult_M(x,&encoding_space);
+				} else clear(&encoding_space);
 				encoding_space -= *in;
 				this->encoding_operator_->mult_MH(&encoding_space,g);
+
 				*g *=  this->encoding_operator_->get_weight();
-				data_res = real(dot(&encoding_space,&encoding_space));
+				data_res = std::sqrt(this->encoding_operator_->get_weight())*real(dot(&encoding_space,&encoding_space));
+
 				calc_regMultM(x,regEnc);
 				for (int n = 0; n < regEnc.size(); n++)
 					if (reg_priors[n].get())
 						axpy(-std::sqrt(this->regularization_operators_[n]->get_weight()),reg_priors[n].get(),&regEnc[n]);
-				add_gradient(regEnc,g);
+
+				if (log_barrier > 0 ){
+						*g *= REAL(1)/(std::max(log_barrier-data_res,1/(barrier_threshold*barrier_threshold)));
+				}
+				this->add_gradient(x,g);
+				add_linear_gradient(regEnc,g);
+				reg_res=REAL(0);
+
 			}else {
 				data_res = real(dot(&encoding_space,&encoding_space));
 			}
@@ -126,6 +130,7 @@ public:
 				std::cout << "Iteration " <<i << ". Gradient norm: " <<  grad_norm << std::endl;
 				std::cout << "Data residual: " << data_res << std::endl;
 			}
+			if ((log_barrier > 0 ) && (log_barrier < data_res)) *g *= 1/(barrier_threshold*barrier_threshold);
 			if (non_negativity_constraint_) solver_non_negativity_filter(x,g);
 
 			if (i == 0){
@@ -153,10 +158,13 @@ public:
 			//this->encoding_operator_->mult_MH(&encoding_space2,&gtmp);
 			calc_regMultM(&d,regEnc2);
 
-			REAL alpha0 = -(dot(&encoding_space,&encoding_space2)+calc_dot(regEnc,regEnc2))/(dot(&encoding_space2,&encoding_space2)+calc_dot(regEnc2,regEnc2));
+			REAL alpha0 = REAL(1);
+			if (this->operators.size() == 0) alpha0 = -(dot(&encoding_space,&encoding_space2)+calc_dot(regEnc,regEnc2))/(dot(&encoding_space2,&encoding_space2)+calc_dot(regEnc2,regEnc2));
+			//REAL alpha0 = REAL(1);
 			REAL alpha;
 			REAL alpha_old;
-			REAL old_norm = dot(&encoding_space,&encoding_space)+calc_dot(regEnc,regEnc);
+			REAL old_norm = functionValue(&encoding_space,regEnc,x);
+
 			REAL gd = dot(g,&d);
 
 			*g_old = *g;
@@ -166,24 +174,25 @@ public:
 			int k = 0;
 
 			alpha_old = 0;
-			while (not wolfe){
-				alpha=alpha0*std::pow(rho,k);
+			ARRAY_TYPE x2(*x);
 
+			while (not wolfe){
+
+				alpha=alpha0*std::pow(rho,k);
 				axpy(alpha-alpha_old,&encoding_space2,&encoding_space);
 				reg_axpy(alpha-alpha_old,regEnc2,regEnc);
-
+				axpy(alpha-alpha_old,&d,&x2);
 				//gdiff = *g;
 				//axpy(alpha,&gtmp,&gdiff);
 
-				if ((dot(&encoding_space,&encoding_space)+calc_dot(regEnc,regEnc)) <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
+				if (functionValue(&encoding_space,regEnc,&x2) <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
 				//if ((dot(&gdiff,&d)) >= sigma*gd) wolfe =false; //So... officially this is part of the strong Wolfe condition. For semi-linear problems our initial step size should be sufficient.
 				k++;
-				std::cout << "Res: " << dot(&encoding_space,&encoding_space)+calc_dot(regEnc,regEnc) << " Target: " << old_norm+alpha*delta*gd << std::endl;
-//				std::cout << "Step2: " << dot(&gdiff,&d) << " Target " << sigma*gd  << std::endl;
+				//std::cout << "Res: " << dot(&encoding_space,&encoding_space)+calc_dot(regEnc,regEnc) << " Target: " << old_norm+alpha*delta*gd << std::endl;
+				//				std::cout << "Step2: " << dot(&gdiff,&d) << " Target " << sigma*gd  << std::endl;
 				if (alpha == 0) throw std::runtime_error("Wolfe line search failed");
 				alpha_old = alpha;
 			}
-
 
 			axpy(alpha,&d,x);
 			if (non_negativity_constraint_){
@@ -196,8 +205,13 @@ public:
 						axpy(-std::sqrt(this->regularization_operators_[n]->get_weight()),reg_priors[n].get(),&regEnc[n]);
 			}
 			this->encoding_operator_->mult_MH(&encoding_space,g);
+			if (log_barrier > 0 ){
+					*g *= REAL(1)/(std::max(log_barrier-data_res,1/(barrier_threshold*barrier_threshold)));
 
-			this->add_gradient(regEnc,g);
+			}
+			this->add_gradient(x,g);
+			add_linear_gradient(regEnc,g);
+
 
 			iteration_callback(x,i,data_res,reg_res);
 
@@ -207,7 +221,9 @@ public:
 		delete g,g_old;
 
 		return boost::shared_ptr<ARRAY_TYPE>(x);
-    		}
+	}
+
+
 
 	// Set preconditioner
 	//
@@ -240,22 +256,44 @@ public:
 	}
 
 	virtual void add_regularization_operator( boost::shared_ptr< linearOperator< ARRAY_TYPE> > op)
-	    {
-	      if( !op.get() ){
-		throw std::runtime_error( "Error: linearOperatorSolver::add_regularization_operator : NULL operator provided" );
-	      }
-	      this->regularization_operators_.push_back(op);
-	      reg_priors.push_back(boost::shared_ptr<ARRAY_TYPE>((ARRAY_TYPE*)0));
-	    }
+	{
+		if( !op.get() ){
+			throw std::runtime_error( "Error: linearOperatorSolver::add_regularization_operator : NULL operator provided" );
+		}
+		this->regularization_operators_.push_back(op);
+		reg_priors.push_back(boost::shared_ptr<ARRAY_TYPE>((ARRAY_TYPE*)0));
+	}
 
 	virtual void add_regularization_operator( boost::shared_ptr< linearOperator< ARRAY_TYPE> > op,boost::shared_ptr<ARRAY_TYPE> prior)
-	    {
-	      if( !op.get() ){
-		throw std::runtime_error( "Error: linearOperatorSolver::add_regularization_operator : NULL operator provided" );
-	      }
-	      this->regularization_operators_.push_back(op);
-	      reg_priors.push_back(prior);
-	    }
+	{
+		if( !op.get() ){
+			throw std::runtime_error( "Error: linearOperatorSolver::add_regularization_operator : NULL operator provided" );
+		}
+
+		this->regularization_operators_.push_back(op);
+		reg_priors.push_back(prior);
+	}
+
+	virtual void add_regularization_operator(boost::shared_ptr< linearOperator<ARRAY_TYPE> > op, int L_norm ){
+		if (L_norm==1){
+
+			this->operators.push_back(boost::shared_ptr< l1GPRegularizationOperator>(new l1GPRegularizationOperator(op)));
+		}else{
+			add_regularization_operator(op);
+		}
+	}
+
+
+	virtual void add_regularization_operator(boost::shared_ptr< linearOperator<ARRAY_TYPE> > op, boost::shared_ptr<ARRAY_TYPE> prior, int L_norm ){
+		if (L_norm==1){
+			this->operators.push_back(boost::shared_ptr<l1GPRegularizationOperator>(new l1GPRegularizationOperator(op,prior)));
+		}else{
+			add_regularization_operator(op,prior);
+		}
+	}
+	virtual void set_barrier(REAL barrier){
+		log_barrier = barrier;
+	}
 
 
 protected:
@@ -268,34 +306,53 @@ protected:
 
 
 
-		ELEMENT_TYPE calc_dot(std::vector<ARRAY_TYPE>& x,std::vector<ARRAY_TYPE>& y){
-			ELEMENT_TYPE res(0);
-			for (int  i = 0; i < x.size(); i++)
-				res += dot(&x[i],&y[i]);
-			return res;
+	ELEMENT_TYPE calc_dot(std::vector<ARRAY_TYPE>& x,std::vector<ARRAY_TYPE>& y){
+		ELEMENT_TYPE res(0);
+		for (int  i = 0; i < x.size(); i++)
+			res += dot(&x[i],&y[i]);
+		return res;
+	}
+
+	void add_linear_gradient(std::vector<ARRAY_TYPE>& elems, ARRAY_TYPE* g){
+		ARRAY_TYPE tmp(g->get_dimensions());
+		for (int i = 0; i <elems.size(); i++){
+			this->regularization_operators_[i]->mult_MH(&elems[i],&tmp);
+			axpy(std::sqrt(this->regularization_operators_[i]->get_weight()),&tmp,g);
+		}
+	}
+
+	void calc_regMultM(ARRAY_TYPE* x,std::vector<ARRAY_TYPE>& elems){
+		for (int i = 0; i <elems.size(); i++){
+			this->regularization_operators_[i]->mult_M(x,&elems[i]);
+			elems[i] *= std::sqrt(this->regularization_operators_[i]->get_weight());
+		}
+	}
+
+	void reg_axpy(REAL alpha, std::vector<ARRAY_TYPE>& x, std::vector<ARRAY_TYPE>& y){
+		for (int i = 0; i <x.size(); i++){
+			axpy(alpha,&x[i],&y[i]);
+
+		}
+	}
+
+	REAL functionValue(ARRAY_TYPE* encoding_space,std::vector<ARRAY_TYPE>& regEnc, ARRAY_TYPE * x){
+		REAL res = 0;
+		if (log_barrier > 0){
+			REAL residual = this->encoding_operator_->get_weight()*dot(encoding_space,encoding_space);
+			if ((log_barrier-residual) < 1/(barrier_threshold*barrier_threshold)) res += this->encoding_operator_->get_weight()*residual*barrier_threshold;
+			else res += this->encoding_operator_->get_weight()*std::min(-std::log(log_barrier-residual),barrier_threshold*residual);
+		}else res+= std::sqrt(this->encoding_operator_->get_weight())*dot(encoding_space,encoding_space);
+
+		for (int i = 0; i  < this->operators.size(); i++){
+					res += this->operators[i]->magnitude(x);
 		}
 
-		void add_gradient(std::vector<ARRAY_TYPE>& elems, ARRAY_TYPE* g){
-			ARRAY_TYPE tmp(g->get_dimensions());
-			for (int i = 0; i <elems.size(); i++){
-				this->regularization_operators_[i]->mult_MH(&elems[i],&tmp);
-				axpy(std::sqrt(this->regularization_operators_[i]->get_weight()),&tmp,g);
-			}
-		}
+		res += calc_dot(regEnc,regEnc);
+		return res;
 
-		void calc_regMultM(ARRAY_TYPE* x,std::vector<ARRAY_TYPE>& elems){
-			for (int i = 0; i <elems.size(); i++){
-							this->regularization_operators_[i]->mult_M(x,&elems[i]);
-							elems[i] *= std::sqrt(this->regularization_operators_[i]->get_weight());
-			}
-		}
+	}
 
-		void reg_axpy(REAL alpha, std::vector<ARRAY_TYPE>& x, std::vector<ARRAY_TYPE>& y){
-			for (int i = 0; i <x.size(); i++){
-				axpy(alpha,&x[i],&y[i]);
 
-			}
-		}
 
 
 
@@ -310,6 +367,8 @@ protected:
 	REAL tc_tolerance_;
 	REAL threshold;
 	bool dump_residual;
+	REAL log_barrier;
+	REAL barrier_threshold;
 	// Preconditioner
 
 	std::vector<boost::shared_ptr<ARRAY_TYPE> > reg_priors;

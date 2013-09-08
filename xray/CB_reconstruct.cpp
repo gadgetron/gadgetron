@@ -82,7 +82,7 @@ int main(int argc, char** argv)
   cudaSetDevice(device);
   cudaDeviceReset();
        
-  CBCT_acquisition *ps = new CBCT_acquisition();
+  boost::shared_ptr<CBCT_acquisition> ps(new CBCT_acquisition());
   ps->load(acquisition_filename);
   unsigned int ip_w = ps->get_projections()->get_size(0);
   unsigned int ip_h = ps->get_projections()->get_size(1);
@@ -100,7 +100,7 @@ int main(int argc, char** argv)
   // Projection space physical dimensions 40cm x 30cm
   floatd2 ps_dims_in_mm(ip_x, ip_y);
 
-  CBCT_binning *binning = new CBCT_binning();
+  boost::shared_ptr<CBCT_binning> binning(new CBCT_binning());
   if (vm.count("binning")){
     std::cout << "Loading binning data" << std::endl;
     binning->load(vm["binning"].as<string>());
@@ -159,6 +159,7 @@ int main(int argc, char** argv)
     E->set_codomain_dimensions(projections->get_dimensions().get()); */
   // Form right hand side
 
+  E->setup(ps,binning,1u,numSamplesPerRay,imageDimensions,false,false);
   E->set_domain_dimensions(&is_dims);
 
 
@@ -167,6 +168,8 @@ int main(int argc, char** argv)
   solver.set_encoding_operator(E);
   solver.set_output_mode(hoGpBbSolver<float>::OUTPUT_VERBOSE);
   solver.set_max_iterations(iterations);
+
+  solver.set_non_negativity_constraint(true);
 
   if (vm.count("TV")){
     std::cout << "Total variation regularization in use" << std::endl;

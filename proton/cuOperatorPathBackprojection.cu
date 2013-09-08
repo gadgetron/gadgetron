@@ -1,8 +1,8 @@
 #include "cuOperatorPathBackprojection.h"
 #include "vector_td_utilities.h"
 #include "vector_td_io.h"
-#include "cuNDArray_operators.h"
-#include "cuNDArray_elemwise.h"
+#include "cuNDArray_math.h"
+
 #include "check_CUDA.h"
 
 #include <vector>

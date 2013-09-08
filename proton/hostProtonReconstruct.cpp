@@ -32,8 +32,8 @@
 #include "ABOCSSolver.h"
 
 #include "hoCuNCGSolver.h"
-#include "hoCuCgSolver.h"
-#include "hoCuTTSSolver.h"
+
+
 using namespace std;
 using namespace Gadgetron;
 typedef float _real;
@@ -136,10 +136,14 @@ hoCuGPBBSolver<_real>* solver;
   solver->set_max_iterations( iterations);
   //solver.set_tc_tolerance( (_real) parms.get_parameter('e')->get_float_value());
   //solver.set_alpha(1e-7);
-  solver->set_output_mode( hoCuGPBBSolver< _real>::OUTPUT_VERBOSE );
+  solver->set_output_mode( hoCuNCGSolver< _real>::OUTPUT_VERBOSE );
   solver->set_non_negativity_constraint(true);
   boost::shared_ptr< hoCuOperatorPathBackprojection<_real> > E (new hoCuOperatorPathBackprojection<_real> );
 
+//  if (vm.count("lbar")){
+//	  solver->set_barrier(vm["lbar"].as<_real>());
+//	  std::cout << "Barrier set to" << vm["lbar"].as<_real>() << std::endl;
+//  }
   if (vm.count("variance")){
 	  boost::shared_ptr< hoCuNDArray<_real> > variance = boost::static_pointer_cast<hoCuNDArray<_real> > (read_nd_array<_real >(vm["variance"].as<std::string>().c_str()));
 	  if (variance->get_number_of_elements() != projections->get_number_of_elements())
@@ -167,7 +171,7 @@ hoCuGPBBSolver<_real>* solver;
 		sqrt_inplace(ptmp.get());
 		boost::shared_ptr< cgPreconditioner<hoCuNDArray<_real> > > precon(new cgPreconditioner<hoCuNDArray<_real> >);
 		precon->set_weights(prior);
-		solver->set_preconditioner(precon);
+		//solver->set_preconditioner(precon);
 		if (vm.count("prior-weight")){
 			std::cout << "Prior image difference regularization in use" << std::endl;
 			boost::shared_ptr<identityOperator<hoCuNDArray<_real> > > Itmp ( new identityOperator<hoCuNDArray<_real> >);
@@ -224,9 +228,7 @@ hoCuGPBBSolver<_real>* solver;
 
 			pics->set_prior(prior);
 			pics->set_weight(vm["PICS-weight"].as<float>());
-			//solver->add_nonlinear_operator(pics);
-			throw std::runtime_error("Unsupported");
-
+			solver->add_nonlinear_operator(pics);
 
 
 		}
@@ -237,8 +239,8 @@ hoCuGPBBSolver<_real>* solver;
 	  std::cout << "Total variation regularization in use" << std::endl;
 	  boost::shared_ptr<hoCuTvOperator<float,3> > tv(new hoCuTvOperator<float,3>);
 	  tv->set_weight(vm["TV"].as<float>());
-	  //solver->add_nonlinear_operator(tv);
-	  throw std::runtime_error("Unsupported");
+	  solver->add_nonlinear_operator(tv);
+
   }
 
   solver->set_encoding_operator(E);
