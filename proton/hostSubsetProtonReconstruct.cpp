@@ -21,6 +21,9 @@
 
 #include "osSARTSolver.h"
 #include "hoOSGPBBSolver.h"
+#include "hoOSCGSolver.h"
+#include "hoOSCGPBBSolver.h"
+#include "hoABIBBSolver.h"
 #include "hdf5_utils.h"
 
 #include "encodingOperatorContainer.h"
@@ -30,6 +33,8 @@
 #include <boost/program_options.hpp>
 #include "vector_td_io.h"
 
+#include "hoCuTvOperator.h"
+#include "hoCuTvPicsOperator.h"
 #include "projectionSpaceOperator.h"
 
 using namespace std;
@@ -66,6 +71,7 @@ int main( int argc, char** argv)
 			("prior,P", po::value<std::string>(),"Prior image filename")
 			("prior-weight,k",po::value<float>(),"Weight of the prior image")
 			("device",po::value<int>(&device)->default_value(0),"Number of the device to use (0 indexed)")
+			("TV,T",po::value<float>(),"TV Weight ")
 			("subsets,n", po::value<int>(&subsets)->default_value(10), "Number of subsets to use")
 	;
 
@@ -100,7 +106,9 @@ int main( int argc, char** argv)
 
   solver.set_output_mode( hoCuGPBBSolver< _real>::OUTPUT_VERBOSE );*/
 	//osSARTSolver<hoCuNDArray<_real> > solver;
-	hoOSGPBBSolver<hoCuNDArray<_real> > solver;
+	//hoOSCGPBBSolver<hoCuNDArray<_real> > solver;
+	//hoABIBBSolver<hoCuNDArray<_real> > solver;
+	hoOSCGSolver<hoCuNDArray<_real> > solver;
   solver.set_non_negativity_constraint(true);
   solver.set_max_iterations(iterations);
   boost::shared_ptr< hoCuProtonSubsetOperator<_real> > E (new hoCuProtonSubsetOperator<_real>(subsets) );
@@ -142,7 +150,12 @@ int main( int argc, char** argv)
 		}
 		solver.set_x0(prior);
   }
-
+  if (vm.count("TV")){
+	  std::cout << "Total variation regularization in use" << std::endl;
+	  boost::shared_ptr<hoCuTvOperator<float,3> > tv(new hoCuTvOperator<float,3>);
+	  tv->set_weight(vm["TV"].as<float>());
+	  solver.add_nonlinear_operator(tv);
+  }
 
   solver.set_encoding_operator(E);
   solver.set_output_mode(baseSolver::OUTPUT_VERBOSE);
