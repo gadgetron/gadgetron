@@ -94,10 +94,9 @@ int main(int argc, char** argv)
   //
   
   boost::shared_ptr< hoCudaConebeamProjectionOperator > E( new hoCudaConebeamProjectionOperator() );
-  
-  //E->setup( acquisition, binning, projections_per_batch, 0, is_dims_in_mm, 
-  //	    use_fbp, use_fbp_os, (half_scan_max_angle == 0.0f) ? 360.0f : half_scan_max_angle );
 
+  E->setup( acquisition, binning, is_dims_in_mm );
+  E->use_filtered_backprojections(true);
   {
     GPUTimer timer("Running 3D FDK reconstruction");
     E->mult_MH( acquisition->get_projections().get(), &fdk_3d );

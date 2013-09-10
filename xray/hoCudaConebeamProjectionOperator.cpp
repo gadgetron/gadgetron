@@ -1,6 +1,5 @@
 #include "hoCudaConebeamProjectionOperator.h"
 #include "conebeam_projection.h"
-#include "hoNDArray.h"
 #include "vector_td_operators.h"
 #include "GPUTimer.h"
 

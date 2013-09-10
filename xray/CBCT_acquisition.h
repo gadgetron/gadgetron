@@ -156,8 +156,12 @@ namespace Gadgetron{
       //
 
       unsigned int geom_dataformat_version;
-      H5LTread_dataset (file_id, "/geometry_dataformat_version", H5T_NATIVE_UINT, &geom_dataformat_version);
+      herr_t errCode;
+      errCode = H5LTread_dataset (file_id, "/geometry_dataformat_version", H5T_NATIVE_UINT, &geom_dataformat_version);
 
+      if (errCode < 0){
+      	throw std::runtime_error("Error reading /geometry_dataformat_version from file.");
+      }
       unsigned int needed = 2;
       if (!(geom_dataformat_version == needed)) {
 	std::stringstream ss;
@@ -175,21 +179,27 @@ namespace Gadgetron{
       //
 
       hsize_t dim;
-      H5LTget_dataset_info(file_id,"/angles",&dim,NULL,NULL);
+      errCode = H5LTget_dataset_info(file_id,"/angles",&dim,NULL,NULL);
+      if (errCode < 0) 	throw std::runtime_error("Error getting /angles dataset info from file.");
+
       std::vector<float> angles (dim,0.0f);
       geometry_->set_angles(angles);
-      H5LTread_dataset (file_id, "/angles", H5T_NATIVE_FLOAT, &geometry_->get_angles()[0]);
-
+      errCode=H5LTread_dataset (file_id, "/angles", H5T_NATIVE_FLOAT, &geometry_->get_angles()[0]);
+      if (errCode < 0) 	throw std::runtime_error("Error reading /angles from file.");
       // Get offsets array
       //
 
-      H5LTget_dataset_info(file_id,"/offsetx",&dim,NULL,NULL);
+      errCode=H5LTget_dataset_info(file_id,"/offsetx",&dim,NULL,NULL);
+      if (errCode < 0) 	throw std::runtime_error("Error getting /offsetx dataset info from file.");
       std::vector<float> offsets_x = std::vector<float>(dim,0.0f);
-      H5LTread_dataset (file_id, "/offsetx", H5T_NATIVE_FLOAT, &offsets_x[0]);
+      errCode=H5LTread_dataset (file_id, "/offsetx", H5T_NATIVE_FLOAT, &offsets_x[0]);
+      if (errCode < 0) 	throw std::runtime_error("Error reading /offsetx from file.");
 
-      H5LTget_dataset_info(file_id,"/offsety",&dim,NULL,NULL);
+      errCode=H5LTget_dataset_info(file_id,"/offsety",&dim,NULL,NULL);
+      if (errCode < 0) 	throw std::runtime_error("Error getting /offsety dataset info from file.");
       std::vector<float> offsets_y = std::vector<float>(dim,0.0f);
-      H5LTread_dataset (file_id, "/offsety", H5T_NATIVE_FLOAT, &offsets_y[0]);
+      errCode=H5LTread_dataset (file_id, "/offsety", H5T_NATIVE_FLOAT, &offsets_y[0]);
+      if (errCode < 0) 	throw std::runtime_error("Error reading /offsety from file.");
 
       if( offsets_x.size() != offsets_y.size() ){
 	throw std::runtime_error("CBCT_geometry::load : x/y offset arrays has different lengths");
@@ -200,25 +210,14 @@ namespace Gadgetron{
 	geometry_->get_offsets().push_back(floatd2(offsets_x[i], offsets_y[i]));
       }
 
-      // Get SAD / SDD / FOV
-      //
-
-      float SAD, SDD;
-      floatd2 FOV;
       
-      H5LTread_dataset (file_id, "/SAD", H5T_NATIVE_FLOAT, &SAD);
-      H5LTread_dataset (file_id, "/SDD", H5T_NATIVE_FLOAT, &SDD);
-      H5LTread_dataset (file_id, "/FOV", H5T_NATIVE_FLOAT, &FOV);
-      
-      geometry_->set_SAD(SAD);
-      geometry_->set_SDD(SDD);
-      geometry_->set_FOV(FOV);
       
       // Test data format of the projections
       //
 
       unsigned int proj_dataformat_version;
-      H5LTread_dataset (file_id, "/projection_dataformat_version", H5T_NATIVE_UINT, &proj_dataformat_version);
+      errCode=H5LTread_dataset (file_id, "/projection_dataformat_version", H5T_NATIVE_UINT, &proj_dataformat_version);
+      if (errCode < 0) 	throw std::runtime_error("Error reading /projection_dataformat_version from file.");
 
       needed = 1;
       if (!(proj_dataformat_version == needed)) {
@@ -229,16 +228,39 @@ namespace Gadgetron{
       }
       
       hsize_t vec_dim[3];
-      H5LTget_dataset_info(file_id,"/projections",vec_dim,NULL,NULL);
-
+      errCode=H5LTget_dataset_info(file_id,"/projections",vec_dim,NULL,NULL);
+      if (errCode < 0) 	throw std::runtime_error("Error getting /projections dataset info from file.");
       std::vector<unsigned int> dims;
       dims.push_back(vec_dim[2]);
       dims.push_back(vec_dim[1]);
       dims.push_back(vec_dim[0]);
 
       projections_ = boost::shared_ptr<hoNDArray<float> >(new hoNDArray<float>(&dims));
-      H5LTread_dataset (file_id,"/projections", H5T_NATIVE_FLOAT, projections_->get_data_ptr());
+      errCode=H5LTread_dataset (file_id,"/projections", H5T_NATIVE_FLOAT, projections_->get_data_ptr());
+      if (errCode < 0) 	throw std::runtime_error("Error reading /projections from file.");
 
+      // Get SAD / SDD / FOV
+            //
+
+			float SAD, SDD;
+			floatd2 FOV;
+
+			errCode=H5LTread_dataset (file_id, "/SAD", H5T_NATIVE_FLOAT, &SAD);
+			if (errCode < 0) 	throw std::runtime_error("Error reading /SAD from file.");
+			errCode=H5LTread_dataset (file_id, "/SDD", H5T_NATIVE_FLOAT, &SDD);
+			if (errCode < 0) 	throw std::runtime_error("Error reading /SDD from file.");
+			errCode=H5LTread_dataset (file_id, "/FOV", H5T_NATIVE_FLOAT, &FOV);
+			if (errCode < 0){
+				floatd2 spacing;
+				errCode=H5LTread_dataset (file_id, "/spacing", H5T_NATIVE_FLOAT, &spacing);
+				FOV[0] = spacing[0]*dims[0];
+				FOV[1] = spacing[1]*dims[1];
+				if (errCode < 0) throw std::runtime_error("Error reading /FOV from file.");
+			}
+
+			geometry_->set_SAD(SAD);
+			geometry_->set_SDD(SDD);
+			geometry_->set_FOV(FOV);
       H5Fclose (file_id);
     }
     
