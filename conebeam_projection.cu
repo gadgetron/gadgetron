@@ -177,7 +177,7 @@ namespace Gadgetron
 				       int num_projections,
 				       float SDD, 
 				       float SAD,
-				       float num_samples_per_ray )
+				       const int num_samples_per_ray )
   {
 
 
@@ -235,14 +235,23 @@ namespace Gadgetron
 
       // Perform integration only inside the bounding cylinder of the image volume
       //
-
+/*
       const floatd2 is_dims_in_mm_xy(is_dims_in_mm[0], is_dims_in_mm[1]);
       const float radius = norm( is_dims_in_mm_xy * floatd2(0.5f) );
       const floatd3 unitDir = dir / SDD;
 
       startPoint = startPoint + (unitDir * (SAD-radius));
       endPoint = endPoint - (unitDir * (ADD-radius));
+*/
+      const floatd3 start = amin((-is_dims_in_mm-startPoint)/dir,(is_dims_in_mm-startPoint)/dir);
+			const floatd3 end = amax((-is_dims_in_mm-startPoint)/dir,(is_dims_in_mm-startPoint)/dir);
 
+			float a1 = fmax(max(start),0.0f);
+			float aend = fmin(min(end),1.0f);
+			//endPoint = startPoint+aend*dir;
+			startPoint += a1*dir;
+
+			const float sampling_distance = norm((aend-a1)*dir)/num_samples_per_ray;
       // Now perform conversion of the line integral start/end into voxel coordinates
       //      
 
@@ -257,7 +266,7 @@ namespace Gadgetron
       dir[2] *= -1.0f;
 #endif
       dir *= is_dims_in_pixels;
-      dir /= num_samples_per_ray; // now in step size units
+      dir /= float(num_samples_per_ray); // now in step size units
 
       //
       // Perform line integration
@@ -265,12 +274,12 @@ namespace Gadgetron
 
       float result = 0.0f;
 
-      for ( float sampleIndex = 0.0f; sampleIndex<num_samples_per_ray-0.5f; sampleIndex+= 1.0f) {
+      for ( int sampleIndex = 0; sampleIndex<num_samples_per_ray; sampleIndex++) {
       
 #ifndef IS_ORIGIN_CENTERING
-	floatd3 samplePoint = startPoint+dir*sampleIndex + floatd3(0.5f);
+	floatd3 samplePoint = startPoint+dir*float(sampleIndex) + floatd3(0.5f);
 #else
-	floatd3 samplePoint = startPoint+dir*sampleIndex;
+	floatd3 samplePoint = startPoint+dir*float(sampleIndex);
 #endif
 
 	// Accumulate result
@@ -281,8 +290,6 @@ namespace Gadgetron
 
       // Normalization factor
       // 
-
-      const float sampling_distance = norm(startPoint-endPoint)/num_samples_per_ray;
 
       // Output
       //
@@ -347,7 +354,7 @@ namespace Gadgetron
 
     // Build texture from input image
     //
-
+    cudaFuncSetCacheConfig(conebeam_forwards_projection_kernel, cudaFuncCachePreferL1);
     cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float>();
     cudaExtent extent;
     extent.width = matrix_size_x;
@@ -403,9 +410,9 @@ namespace Gadgetron
       
       int projections_in_batch = to_projection-from_projection;
       
-      printf("batch: %03i, handling projections: %03i - %03i, angles: %.2f - %.2f\n",
+      /*printf("batch: %03i, handling projections: %03i - %03i, angles: %.2f - %.2f\n",
 	     batch, from_projection, to_projection-1,
-	     angles[from_projection], angles[to_projection-1]);
+	     angles[from_projection], angles[to_projection-1]);*/
       
       // Make vectors of the angles and offsets present in the current bin (indices)
       //
@@ -465,7 +472,7 @@ namespace Gadgetron
       floatd3 is_dims_in_pixels(matrix_size_x, matrix_size_y, matrix_size_z);
       intd2 ps_dims_in_pixels(projection_res_x, projection_res_y);
       
-      cudaFuncSetCacheConfig(conebeam_forwards_projection_kernel, cudaFuncCachePreferL1);
+
 
       conebeam_forwards_projection_kernel<<< dimGrid, dimBlock, 0, streams[batch] >>>
 	( projections_DevPtr[batch], angles_DevPtr[batch], offsets_DevPtr[batch],
@@ -871,10 +878,10 @@ namespace Gadgetron
 	to_projection = num_projections_in_bin;
 
       int projections_in_batch = to_projection-from_projection;
-
+/*
       printf("batch: %03i, handling projections: %03i - %03i, angles: %.2f - %.2f\n", batch,
 	     from_projection, to_projection-1, angles[from_projection], angles[to_projection-1]);      
-
+*/
       // Allocate device memory for projections and upload
       //
 

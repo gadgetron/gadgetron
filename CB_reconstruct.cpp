@@ -19,7 +19,7 @@
 #include "hoGpBbSolver.h"
 #include "hoTvOperator.h"
 #include "hoTvPicsOperator.h"
-
+#include "hoNCGSolver.h"
 #include <iostream>
 #include <algorithm>
 #include <sstream>
@@ -88,17 +88,12 @@ int main(int argc, char** argv)
   unsigned int ip_h = ps->get_projections()->get_size(1);
   uintd2 ps_dims_in_pixels(ip_w, ip_h);
 
-  float ip_sx = ps->get_geometry()->get_spacing()[0];
-  float ip_sy = ps->get_geometry()->get_spacing()[1];
-
-  float ip_x = ip_sx * ps_dims_in_pixels[0];
-  float ip_y = ip_sy * ps_dims_in_pixels[1];
+  ps->get_geometry()->print(std::cout);
 
   //ps->get_geometry()->set_spacing(floatd2(ip_sx,ip_sy));
   float SDD = ps->get_geometry()->get_SDD();
   float SAD = ps->get_geometry()->get_SAD();
   // Projection space physical dimensions 40cm x 30cm
-  floatd2 ps_dims_in_mm(ip_x, ip_y);
 
   boost::shared_ptr<CBCT_binning> binning(new CBCT_binning());
   if (vm.count("binning")){
@@ -139,6 +134,8 @@ int main(int argc, char** argv)
 
   std::cout << "IS dimensions " << is_dims[0] << " " << is_dims[1] << " " << is_dims[2] << std::endl;
 
+  std::cout << "Image size " << imageDimensions << std::endl;
+
   is_dims.push_back(binning->get_number_of_bins());
   std::vector<unsigned int> ps_dims;
   ps_dims.push_back(ps_dims_in_pixels[0]);
@@ -148,6 +145,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< hoNDArray<float> > projections =
     boost::static_pointer_cast<hoNDArray<float> >(ps->get_projections());
 
+  clamp_min(projections.get(),0.0f);
   //Standard 3d FDK
   // Define encoding matrix
   boost::shared_ptr< hoCudaConebeamProjectionOperator >
@@ -159,11 +157,12 @@ int main(int argc, char** argv)
     E->set_codomain_dimensions(projections->get_dimensions().get()); */
   // Form right hand side
 
-  E->setup(ps,binning,1u,numSamplesPerRay,imageDimensions,false,false);
+  E->setup(ps,binning,imageDimensions);
   E->set_domain_dimensions(&is_dims);
 
 
-  hoGpBbSolver<float> solver;
+  //hoGpBbSolver<float> solver;
+  hoNCGSolver<float> solver;
   solver.set_domain_dimensions(&is_dims);
   solver.set_encoding_operator(E);
   solver.set_output_mode(hoGpBbSolver<float>::OUTPUT_VERBOSE);

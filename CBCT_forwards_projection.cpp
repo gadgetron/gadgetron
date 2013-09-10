@@ -159,6 +159,7 @@ int main(int argc, char** argv)
     E->set_num_samples_per_pixel( parm->get_float_value() );
   
   E->setup( acquisition, binning, is_dims_in_mm );
+  E->set_num_projections_per_batch(10);
 
   // Initialize the device
   // - just to report more accurate timings
