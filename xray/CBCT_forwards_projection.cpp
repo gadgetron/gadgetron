@@ -53,7 +53,7 @@ int main(int argc, char** argv)
   // Load volume
   //
   
-  boost::shared_ptr< hoNDArray<float> > image = read_nd_array<float>( image_filename.c_str() );
+  boost::shared_ptr< hoCuNDArray<float> > image(new hoCuNDArray<float>(*read_nd_array<float>( image_filename.c_str() )));
   
   if( image->get_number_of_dimensions() < 3 ){
     std::cout << "Input image volume should have at least three dimensions" << std::endl;
@@ -125,7 +125,7 @@ int main(int argc, char** argv)
   ps_dims.push_back(ps_dims_in_pixels[1]);
   ps_dims.push_back(number_of_projections);
 
-  boost::shared_ptr< hoNDArray<float> > projections( new hoNDArray<float>(&ps_dims) );
+  boost::shared_ptr< hoCuNDArray<float> > projections( new hoCuNDArray<float>(&ps_dims) );
 
   // Create geometry setup
   //

@@ -100,15 +100,16 @@ int main( int argc, char** argv)
 	cudaSetDevice(device);
 	cudaDeviceReset();
 
+	boost::shared_ptr<hoCuNDArray<vector_td<_real,3> > > splines(
+			new hoCuNDArray<vector_td<_real,3> > (*read_nd_array< vector_td<_real,3> >(splinesName.c_str())));
 
-  boost::shared_ptr<hoCuNDArray<vector_td<_real,3> > > splines = boost::static_pointer_cast<hoCuNDArray<vector_td<_real,3> > >(read_nd_array< vector_td<_real,3> >(splinesName.c_str()));
   cout << "Number of spline elements: " << splines->get_number_of_elements() << endl;
 
-  boost::shared_ptr< hoCuNDArray<_real> > projections = boost::static_pointer_cast<hoCuNDArray<_real> > (read_nd_array<_real >(projectionsName.c_str()));
+  boost::shared_ptr< hoCuNDArray<_real> > projections(new hoCuNDArray<_real>(*read_nd_array<_real >(projectionsName.c_str())));
 
   std::cout << "Number of elements " << projections->get_number_of_elements() << std::endl;
 
-
+  std::cout << "Debug demon 2" << std::endl;
   if (projections->get_number_of_elements() != splines->get_number_of_elements()/4){
 	  cout << "Critical error: Splines and projections do not match dimensions" << endl;
 	  return 0;
@@ -145,7 +146,7 @@ hoCuGPBBSolver<_real>* solver;
 //	  std::cout << "Barrier set to" << vm["lbar"].as<_real>() << std::endl;
 //  }
   if (vm.count("variance")){
-	  boost::shared_ptr< hoCuNDArray<_real> > variance = boost::static_pointer_cast<hoCuNDArray<_real> > (read_nd_array<_real >(vm["variance"].as<std::string>().c_str()));
+	  boost::shared_ptr< hoCuNDArray<_real> > variance(new hoCuNDArray<_real>(*read_nd_array<_real >(vm["variance"].as<std::string>().c_str())));
 	  if (variance->get_number_of_elements() != projections->get_number_of_elements())
 		  throw std::runtime_error("Number of elements in the ");
 	  reciprocal_inplace(variance.get());
@@ -161,7 +162,7 @@ hoCuGPBBSolver<_real>* solver;
   boost::shared_ptr<hoCuNDArray<_real > > prior;
   if (vm.count("prior")){
  	  std::cout << "Prior image used as initial guess" << std::endl;
-		prior = boost::static_pointer_cast<hoCuNDArray<_real > >(read_nd_array<_real >(vm["prior"].as<std::string>().c_str()));
+		prior = boost::shared_ptr<hoCuNDArray<_real > >(new hoCuNDArray<_real >(*read_nd_array<_real >(vm["prior"].as<std::string>().c_str())));
 
 		prior->reshape(&rhs_dims);
 		_real offset = _real(0.01);

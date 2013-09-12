@@ -1,4 +1,4 @@
-#include "hoNDArray_utils.h"
+#include "hoCuNDArray_utils.h"
 #include "radial_utilities.h"
 #include "hoNDArray_fileio.h"
 #include "cuNDArray.h"
@@ -7,9 +7,9 @@
 #include "hoPartialDerivativeOperator.h"
 #include "hoCudaConebeamProjectionOperator.h"
 #include "cuConvolutionOperator.h"
-#include "hoNDArray_blas.h"
-#include "hoNDArray_operators.h"
-#include "hoNDArray_blas.h"
+#include "hoCuNDArray_blas.h"
+#include "hoCuNDArray_operators.h"
+#include "hoCuNDArray_blas.h"
 #include "cgSolver.h"
 #include "CBCT_acquisition.h"
 #include "complext.h"
@@ -17,9 +17,9 @@
 #include "vector_td_io.h"
 #include "hoPartialDerivativeOperator.h"
 #include "hoGpBbSolver.h"
-#include "hoTvOperator.h"
-#include "hoTvPicsOperator.h"
-#include "hoNCGSolver.h"
+#include "hoCuTvOperator.h"
+#include "hoCuTvPicsOperator.h"
+#include "hoCuNCGSolver.h"
 #include <iostream>
 #include <algorithm>
 #include <sstream>
@@ -81,6 +81,10 @@ int main(int argc, char** argv)
   }
   cudaSetDevice(device);
   cudaDeviceReset();
+
+  //Really weird stuff. Needed to initialize the device?? Should find real bug.
+  cudaDeviceManager::Instance()->lockHandle();
+  cudaDeviceManager::Instance()->unlockHandle();
        
   boost::shared_ptr<CBCT_acquisition> ps(new CBCT_acquisition());
   ps->load(acquisition_filename);
@@ -142,8 +146,7 @@ int main(int argc, char** argv)
   ps_dims.push_back(ps_dims_in_pixels[1]);
   ps_dims.push_back(numProjs);
 
-  boost::shared_ptr< hoNDArray<float> > projections =
-    boost::static_pointer_cast<hoNDArray<float> >(ps->get_projections());
+  boost::shared_ptr< hoCuNDArray<float> > projections (new hoCuNDArray<float>(*ps->get_projections()));
 
   clamp_min(projections.get(),0.0f);
   //Standard 3d FDK
@@ -159,20 +162,22 @@ int main(int argc, char** argv)
 
   E->setup(ps,binning,imageDimensions);
   E->set_domain_dimensions(&is_dims);
+  E->set_num_projections_per_batch(1);
+
 
 
   //hoGpBbSolver<float> solver;
-  hoNCGSolver<float> solver;
+  hoCuNCGSolver<float> solver;
   solver.set_domain_dimensions(&is_dims);
   solver.set_encoding_operator(E);
-  solver.set_output_mode(hoGpBbSolver<float>::OUTPUT_VERBOSE);
+  solver.set_output_mode(hoCuNCGSolver<float>::OUTPUT_VERBOSE);
   solver.set_max_iterations(iterations);
 
   solver.set_non_negativity_constraint(true);
 
   if (vm.count("TV")){
     std::cout << "Total variation regularization in use" << std::endl;
-    boost::shared_ptr<hoTvOperator<float,3> > tv(new hoTvOperator<float,3>);
+    boost::shared_ptr<hoCuTvOperator<float,3> > tv(new hoCuTvOperator<float,3>);
     tv->set_weight(vm["TV"].as<float>());
     solver.add_nonlinear_operator(tv);
   }
@@ -191,15 +196,15 @@ int main(int argc, char** argv)
     // Form right hand side
     Ep->set_domain_dimensions(&is_dims3d);
 
-    boost::shared_ptr<hoNDArray<float> > prior3d(new hoNDArray<float>(&is_dims3d));
+    boost::shared_ptr<hoCuNDArray<float> > prior3d(new hoCuNDArray<float>(&is_dims3d));
     Ep->mult_MH(projections.get(),prior3d.get());
 
-    hoNDArray<float> tmp_proj(*projections);
+    hoCuNDArray<float> tmp_proj(*projections);
     Ep->mult_M(prior3d.get(),&tmp_proj);
     float s = dot(projections.get(),&tmp_proj)/dot(&tmp_proj,&tmp_proj);
     *prior3d *= s;
-    boost::shared_ptr<hoNDArray<float> > prior = expand( prior3d.get(), is_dims.back() );
-    boost::shared_ptr<hoTvPicsOperator<float,3> > pics (new hoTvPicsOperator<float,3>);
+    boost::shared_ptr<hoCuNDArray<float> > prior(new hoCuNDArray<float>(*expand( prior3d.get(), is_dims.back() )));
+    boost::shared_ptr<hoCuTvPicsOperator<float,3> > pics (new hoCuTvPicsOperator<float,3>);
     pics->set_prior(prior);
     pics->set_weight(vm["PICS"].as<float>());
     solver.add_nonlinear_operator(pics);
@@ -207,8 +212,8 @@ int main(int argc, char** argv)
     delete binning_pics;
   }
 
-  boost::shared_ptr< hoNDArray<float> > result = solver.solve(projections.get());
-  //boost::shared_ptr< hoNDArray<float> > result(new hoNDArray<float>(&is_dims));
+  boost::shared_ptr< hoCuNDArray<float> > result = solver.solve(projections.get());
+  //boost::shared_ptr< hoCuNDArray<float> > result(new hoCuNDArray<float>(&is_dims));
   //E->mult_MH(projections.get(),result.get());
   write_nd_array<float>( result.get(), outputFile.c_str());
 

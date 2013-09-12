@@ -1,6 +1,6 @@
 #pragma once
 
-#include "hoNDArray.h"
+#include "hoCuNDArray.h"
 #include "vector_td.h"
 
 #include <vector>
@@ -13,8 +13,8 @@ namespace Gadgetron {
   //   just a subset of the projections can be targeted.
   
   void 
-  conebeam_forwards_projection( hoNDArray<float> *projections,
-				hoNDArray<float> *image,
+  conebeam_forwards_projection( hoCuNDArray<float> *projections,
+				hoCuNDArray<float> *image,
 				std::vector<float> angles, 
 				std::vector<floatd2> offsets, 
 				std::vector<unsigned int> indices,
@@ -31,8 +31,8 @@ namespace Gadgetron {
   //   just a subset of the projections can be included.
 
   void 
-  conebeam_backwards_projection( hoNDArray<float> *projections, 
-				 hoNDArray<float> *image,
+  conebeam_backwards_projection( hoCuNDArray<float> *projections,
+				 hoCuNDArray<float> *image,
 				 std::vector<float> angles, 
 				 std::vector<floatd2> offsets, 
 				 std::vector<unsigned int> indices,
