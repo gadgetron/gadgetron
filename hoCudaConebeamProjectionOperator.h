@@ -1,8 +1,8 @@
 #pragma once
-#include "hoNDArray_math.h"
+#include "hoCuNDArray_math.h"
 #include "CBCT_acquisition.h"
 #include "CBCT_binning.h"
-#include "hoNDArray_operators.h"
+#include "hoCuNDArray_operators.h"
 
 #include "linearOperator.h"
 
@@ -11,10 +11,10 @@
 
 namespace Gadgetron{
   
-  class hoCudaConebeamProjectionOperator : public linearOperator< hoNDArray<float> >
+  class hoCudaConebeamProjectionOperator : public linearOperator< hoCuNDArray<float> >
   {
   public:
-    hoCudaConebeamProjectionOperator() : linearOperator< hoNDArray<float> >() 
+    hoCudaConebeamProjectionOperator() : linearOperator< hoCuNDArray<float> >()
     {
       samples_per_pixel_ = 1.5;      
       max_angle_ = 360.0f;
@@ -26,8 +26,8 @@ namespace Gadgetron{
 
     virtual ~hoCudaConebeamProjectionOperator() {}
 
-    virtual void mult_M( hoNDArray<float> *in, hoNDArray<float> *out, bool accumulate = false );
-    virtual void mult_MH( hoNDArray<float> *in, hoNDArray<float> *out, bool accumulate = false );
+    virtual void mult_M( hoCuNDArray<float> *in, hoCuNDArray<float> *out, bool accumulate = false );
+    virtual void mult_MH( hoCuNDArray<float> *in, hoCuNDArray<float> *out, bool accumulate = false );
 
     virtual void setup( boost::shared_ptr<CBCT_acquisition> acquisition,
 			boost::shared_ptr<CBCT_binning> binning,
@@ -59,8 +59,8 @@ namespace Gadgetron{
       max_angle_ = angle;
     }
 
-    virtual boost::shared_ptr< linearOperator< hoNDArray<float> > > clone() {
-      return linearOperator< hoNDArray<float> >::clone(this);
+    virtual boost::shared_ptr< linearOperator< hoCuNDArray<float> > > clone() {
+      return linearOperator< hoCuNDArray<float> >::clone(this);
     }
     
   protected:

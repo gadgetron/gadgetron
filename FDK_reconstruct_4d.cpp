@@ -3,6 +3,7 @@
 #include "CBCT_binning.h"
 #include "hoCudaConebeamProjectionOperator.h"
 #include "hoNDArray_fileio.h"
+#include "hoCuNDArray_math.h"
 #include "vector_td_utilities.h"
 #include "GPUTimer.h"
 
@@ -90,7 +91,7 @@ int main(int argc, char** argv)
   is_dims.push_back(is_dims_in_pixels[2]);
   is_dims.push_back(1); // one temporal frame for 3d
   
-  hoNDArray<float> fdk_3d(&is_dims);
+  hoCuNDArray<float> fdk_3d(&is_dims);
 
   //
   // Standard 3D FDK reconstruction
@@ -101,9 +102,11 @@ int main(int argc, char** argv)
   //E->setup( acquisition, binning, projections_per_batch, 0, is_spacing_in_mm, 
   //	    use_fbp, use_fbp_os, (half_scan_max_angle == 0.0f) ? 2.0f*CUDART_PI_F : half_scan_max_angle );
 
+
   {
+  	hoCuNDArray<float> projections(*acquisition->get_projections());
     GPUTimer timer("Running 3D FDK reconstruction");
-    E->mult_MH( acquisition->get_projections().get(), &fdk_3d );
+    E->mult_MH( &projections, &fdk_3d );
   }
 
   write_nd_array<float>( &fdk_3d, "fdk.real" );

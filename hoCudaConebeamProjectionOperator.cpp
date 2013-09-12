@@ -9,7 +9,7 @@
 namespace Gadgetron
 {
   void hoCudaConebeamProjectionOperator
-  ::mult_M( hoNDArray<float> *image, hoNDArray<float> *projections, bool accumulate )
+  ::mult_M( hoCuNDArray<float> *image, hoCuNDArray<float> *projections, bool accumulate )
   {
     //
     // Validate the input 
@@ -56,7 +56,7 @@ namespace Gadgetron
       
       int num_3d_elements = dims_3d[0]*dims_3d[1]*dims_3d[2];
 
-      hoNDArray<float> image_3d(&dims_3d, image->get_data_ptr()+b*num_3d_elements);
+      hoCuNDArray<float> image_3d(&dims_3d, image->get_data_ptr()+b*num_3d_elements);
 
       conebeam_forwards_projection( projections, &image_3d, 
 				    acquisition_->get_geometry()->get_angles(), 
@@ -70,7 +70,7 @@ namespace Gadgetron
   }
 
   void hoCudaConebeamProjectionOperator
-  ::mult_MH( hoNDArray<float> *projections, hoNDArray<float> *image, bool accumulate )
+  ::mult_MH( hoCuNDArray<float> *projections, hoCuNDArray<float> *image, bool accumulate )
   {
     //
     // Validate the input 
@@ -119,7 +119,7 @@ namespace Gadgetron
 
       int num_3d_elements = dims_3d[0]*dims_3d[1]*dims_3d[2];
 
-      hoNDArray<float> image_3d(&dims_3d, image->get_data_ptr()+b*num_3d_elements);
+      hoCuNDArray<float> image_3d(&dims_3d, image->get_data_ptr()+b*num_3d_elements);
 
       conebeam_backwards_projection( projections, &image_3d,
 				     acquisition_->get_geometry()->get_angles(), 
