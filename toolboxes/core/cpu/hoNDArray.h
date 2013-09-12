@@ -1,6 +1,6 @@
 /** \file hoNDArray.h
     \brief CPU-based N-dimensional array (data container)
-*/
+zz*/
 
 #ifndef HONDARRAY_H
 #define HONDARRAY_H
@@ -26,7 +26,7 @@ namespace Gadgetron{
       this->create(dimensions);
     }
 
-    hoNDArray(std::vector<unsigned int> *dimensions, 
+    hoNDArray(std::vector<unsigned int> *dimensions,
 	      T* data, bool delete_data_on_destruct = false) : NDArray<T>::NDArray() {
       this->create(dimensions,data,delete_data_on_destruct);
     }
@@ -35,11 +35,11 @@ namespace Gadgetron{
       this->create(dimensions.get());
     }
 
-    hoNDArray(boost::shared_ptr< std::vector<unsigned int> > dimensions, 
+    hoNDArray(boost::shared_ptr< std::vector<unsigned int> > dimensions,
 	      T* data, bool delete_data_on_destruct = false) : NDArray<T>::NDArray() {
       this->create(dimensions.get(),data,delete_data_on_destruct);
     }
-    
+
     virtual ~hoNDArray() {
       if (this->delete_data_on_destruct_) {
 	deallocate_memory();
@@ -60,15 +60,15 @@ namespace Gadgetron{
       if (this->dimensions_equal(&rhs)) {
 	memcpy(this->data_, rhs.data_, this->elements_*sizeof(T));
       } else {
-	deallocate_memory();
+	this->deallocate_memory();
 	this->data_ = 0;
 	this->dimensions_ = rhs.get_dimensions();
-	allocate_memory();
+	this->allocate_memory();
 	memcpy( this->data_, rhs.data_, this->elements_*sizeof(T) );
       }
       return *this;
     }
-    
+
     virtual void fill(T value) {
 #ifdef USE_OMP
 #pragma omp parallel for
@@ -78,31 +78,31 @@ namespace Gadgetron{
       std::fill(this->get_data_ptr(), this->get_data_ptr()+this->get_number_of_elements(), value);
 #endif
     }
-    
+
     T* begin() {
       return this->data_;
     }
-    
+
     T* end() {
       return (this->data_+this->elements_);
     }
-    
+
     T& at( unsigned int idx ){
       if( idx >= this->get_number_of_elements() ){
   	throw std::runtime_error("hoNDArray::at(): index out of range.");
       }
       return this->get_data_ptr()[idx];
     }
-    
+
     T& operator[]( unsigned int idx ){
       if( idx >= this->get_number_of_elements() ){
   	throw std::runtime_error("hoNDArray::operator[]: index out of range.");
       }
       return this->get_data_ptr()[idx];
     }
-    
+
   protected:
-  
+
     virtual void allocate_memory()
     {
       deallocate_memory();
@@ -113,7 +113,7 @@ namespace Gadgetron{
       }
 
       _allocate_memory(this->elements_, &this->data_);
-    
+
       if( this->data_ == 0x0 ){
 	throw std::runtime_error("hoNDArray<>::allocate memory failed");
       }
@@ -136,10 +136,10 @@ namespace Gadgetron{
     template<class X> inline void _deallocate_memory( X* data ){
       delete [] data;
     }
-      
+
     // Overload these instances to avoid invoking the element class constructor/destructor
     //
-    
+
     void inline _allocate_memory( unsigned int size, float_complext** data ){
       *data = (float_complext*) malloc( size*sizeof(float_complext) );
     }

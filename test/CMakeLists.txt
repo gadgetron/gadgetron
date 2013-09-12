@@ -25,7 +25,8 @@ cuda_add_executable(test_all
   cuNDArray_operators_test.cpp 
   cuNDArray_blas_test.cpp 
   cuNDArray_utils_test.cpp
-#  hoCuGTBLAS_test.cpp 
+  hoCuGTBLAS_test.cpp
+  hoCuNDArray_elemwise_test.cpp 
 #  cuNDArray_Vector_td_test.cpp 
   vector_td_test.cpp
   cuVector_td_test_kernels.cu 
@@ -35,8 +36,6 @@ target_link_libraries(test_all
   cpucore 
   cpucore_math
   gpucore
-  #gpucore 
-  #gpunfft 
   ${BOOST_LIBRARIES}	
   ${GTEST_LIBRARIES} 
   ${CUDA_LIBRARIES} 

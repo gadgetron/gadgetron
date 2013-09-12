@@ -5,7 +5,7 @@
  *      Author: Dae
  */
 #include "gtest/gtest.h"
-#include "hoCuGTBLAS.h"
+#include "hoCuNDArray_blas.h"
 #include <vector>
 using namespace Gadgetron;
 using testing::Types;

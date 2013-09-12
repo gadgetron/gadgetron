@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <iostream>
+#include <stdexcept>
 
 namespace Gadgetron{
 
