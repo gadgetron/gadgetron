@@ -73,5 +73,6 @@ namespace Gadgetron{
     bool use_oversampling_in_fbp_;
     unsigned int projections_per_batch_;
     bool preprocessed_;
+    boost::shared_ptr<hoCuNDArray<float> > variance_;
   };
 }

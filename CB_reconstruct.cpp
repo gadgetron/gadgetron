@@ -16,7 +16,7 @@
 #include "encodingOperatorContainer.h"
 #include "vector_td_io.h"
 #include "hoPartialDerivativeOperator.h"
-#include "hoGpBbSolver.h"
+#include "hoCuGPBBSolver.h"
 #include "hoCuTvOperator.h"
 #include "hoCuTvPicsOperator.h"
 #include "hoCuNCGSolver.h"
@@ -25,7 +25,7 @@
 #include <sstream>
 #include <math_constants.h>
 #include <boost/program_options.hpp>
-
+#include "hoRegistration_utils.h"
 using namespace std;
 using namespace Gadgetron;
 
@@ -38,6 +38,7 @@ int main(int argc, char** argv)
   uintd3 imageSize;
   floatd3 voxelSize;
   int device;
+  unsigned int downsamples;
   unsigned int iterations;
   po::options_description desc("Allowed options");
   desc.add_options()
@@ -55,6 +56,7 @@ int main(int argc, char** argv)
     ("prior", po::value<std::string>(),"Prior image filename")
     ("PICS",po::value<float>(),"TV Weight of the prior image (Prior image compressed sensing)")
     ("device",po::value<int>(&device)->default_value(0),"Number of the device to use (0 indexed)")
+    ("downsample,K",po::value<unsigned int>(&downsamples)->default_value(1),"Downsample projections this factor")
     ;
 
   po::variables_map vm;
@@ -88,9 +90,7 @@ int main(int argc, char** argv)
        
   boost::shared_ptr<CBCT_acquisition> ps(new CBCT_acquisition());
   ps->load(acquisition_filename);
-  unsigned int ip_w = ps->get_projections()->get_size(0);
-  unsigned int ip_h = ps->get_projections()->get_size(1);
-  uintd2 ps_dims_in_pixels(ip_w, ip_h);
+
 
   ps->get_geometry()->print(std::cout);
 
@@ -129,8 +129,7 @@ int main(int argc, char** argv)
   float step_size_in_mm = lengthOfRay_in_mm / numSamplesPerRay;
 
   size_t numProjs = ps->get_projections()->get_size(2);
-  size_t height = ip_h;
-  size_t width = ip_w;
+
 
   size_t needed_bytes = 2 * prod(imageSize) * sizeof(float);
 
@@ -141,43 +140,44 @@ int main(int argc, char** argv)
   std::cout << "Image size " << imageDimensions << std::endl;
 
   is_dims.push_back(binning->get_number_of_bins());
-  std::vector<unsigned int> ps_dims;
-  ps_dims.push_back(ps_dims_in_pixels[0]);
-  ps_dims.push_back(ps_dims_in_pixels[1]);
-  ps_dims.push_back(numProjs);
 
-  boost::shared_ptr< hoCuNDArray<float> > projections (new hoCuNDArray<float>(*ps->get_projections()));
+  boost::shared_ptr< hoCuNDArray<float> > projections;
+  {
+		boost::shared_ptr<hoNDArray<float> > tmp_proj = ps->get_projections();
+		for (int k = 1; k < downsamples; k++)
+			tmp_proj=downsample<float,2>(tmp_proj.get());
 
+		projections =boost::shared_ptr< hoCuNDArray<float> > (new hoCuNDArray<float>(*tmp_proj));
+  }
   clamp_min(projections.get(),0.0f);
+
   //Standard 3d FDK
   // Define encoding matrix
   boost::shared_ptr< hoCudaConebeamProjectionOperator >
     E( new hoCudaConebeamProjectionOperator() );
 
-  /*E->setup( ps_g, ps_bd, ps_g->getAnglesArray(),ps_g->getOffsetXArray(), ps_g->getOffsetYArray(), 1u,
-    voxelSize, ps_dims_in_pixels,
-    numSamplesPerRay, false);
-    E->set_codomain_dimensions(projections->get_dimensions().get()); */
-  // Form right hand side
+  ps->set_projections(projections);
 
   E->setup(ps,binning,imageDimensions);
   E->set_domain_dimensions(&is_dims);
-  E->set_num_projections_per_batch(1);
+  E->set_codomain_dimensions(projections->get_dimensions().get());
 
 
 
-  //hoGpBbSolver<float> solver;
+
+
+  //hoCuGPBBSolver<float> solver;
   hoCuNCGSolver<float> solver;
   solver.set_domain_dimensions(&is_dims);
   solver.set_encoding_operator(E);
-  solver.set_output_mode(hoCuNCGSolver<float>::OUTPUT_VERBOSE);
+  solver.set_output_mode(hoCuGPBBSolver<float>::OUTPUT_VERBOSE);
   solver.set_max_iterations(iterations);
 
   solver.set_non_negativity_constraint(true);
 
   if (vm.count("TV")){
     std::cout << "Total variation regularization in use" << std::endl;
-    boost::shared_ptr<hoCuTvOperator<float,3> > tv(new hoCuTvOperator<float,3>);
+    boost::shared_ptr<hoCuTvOperator<float,4> > tv(new hoCuTvOperator<float,4>);
     tv->set_weight(vm["TV"].as<float>());
     solver.add_nonlinear_operator(tv);
   }
