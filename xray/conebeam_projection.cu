@@ -388,10 +388,8 @@ conebeam_forwards_projection( hoCuNDArray<float> *projections,
 	// Using as many streams as batches enables concurrent copy/compute on devices with "just" one copy engine
 	//
 
-	float* angles_DevPtr;
-	float* projections_DevPtr;
-	Gadgetron::floatd2* offsets_DevPtr;
 
+	float* projections_DevPtr;
 	float* projections_DevPtr2;
 
 	cudaStream_t mainStream;
@@ -401,13 +399,10 @@ conebeam_forwards_projection( hoCuNDArray<float> *projections,
 	cudaStreamCreate(&mainStream);
 	cudaStreamCreate(&indyStream);
 
-	//Allocate memory on the gpu
-	cudaMalloc( (void**) &angles_DevPtr, projections_per_batch*sizeof(float));
-	cudaMalloc( (void**) &offsets_DevPtr, projections_per_batch*sizeof(floatd2));
+
 	cudaMalloc( (void**) &projections_DevPtr, projection_res_x*projection_res_y*projections_per_batch*sizeof(float));
 
 	cudaMalloc( (void**) &projections_DevPtr2, projection_res_x*projection_res_y*projections_per_batch*sizeof(float));
-
 
 	std::vector<float> angles_vec;
 	std::vector<floatd2> offsets_vec;
@@ -424,16 +419,10 @@ conebeam_forwards_projection( hoCuNDArray<float> *projections,
 		offsets_vec.push_back(offsets[from_id]);
 	}
 
-
-	int from_projection_old;
-	int to_projection_old;
-
+	thrust::device_vector<float> angles_devVec(angles_vec);
+	thrust::device_vector<floatd2> offsets_devVec(offsets_vec);
 
 	for (unsigned int batch=0; batch<num_batches; batch++ ){
-
-
-
-
 
 		//
 		// Iterate over the batches to copy input
@@ -446,12 +435,6 @@ conebeam_forwards_projection( hoCuNDArray<float> *projections,
 			to_projection = num_projections_in_bin;
 
 		int projections_in_batch = to_projection-from_projection;
-
-		cudaMemcpyAsync(angles_DevPtr, &angles_vec[from_projection],
-				projections_in_batch*sizeof(float), cudaMemcpyHostToDevice,mainStream);
-
-		cudaMemcpyAsync(offsets_DevPtr, &offsets_vec[from_projection],
-				projections_in_batch*sizeof(floatd2), cudaMemcpyHostToDevice, mainStream);
 
 
 
@@ -470,70 +453,49 @@ conebeam_forwards_projection( hoCuNDArray<float> *projections,
 
 
 
+		float* raw_angles = thrust::raw_pointer_cast(&angles_devVec[from_projection]);
+		floatd2* raw_offsets = thrust::raw_pointer_cast(&offsets_devVec[from_projection]);
 		conebeam_forwards_projection_kernel<<< dimGrid, dimBlock, 0, mainStream >>>
-				( projections_DevPtr, angles_DevPtr, offsets_DevPtr,
+				( projections_DevPtr, raw_angles, raw_offsets,
 						is_dims_in_pixels, is_dims_in_mm,
 						ps_dims_in_pixels, ps_dims_in_mm,
 						projections_in_batch, SDD, SAD, samples_per_pixel*float(matrix_size_x) );
 
 
 		//If not initial batch, start copying the old stuff
-		if (batch != 0){
-			int p = from_projection_old;
-			while( p<to_projection_old ) {
 
-				int num_sequential_projections = 1;
-				while( p+num_sequential_projections < to_projection_old &&
-						indices[p+num_sequential_projections]==(indices[p+num_sequential_projections-1]+1) ){
-					num_sequential_projections++;
-				}
+		int p = from_projection;
+		while( p<to_projection) {
 
-				int to_id = indices[p];
-				int size = projection_res_x*projection_res_y;
-
-
-				cudaMemcpyAsync( int_projections->get_data_ptr()+to_id*size,
-						projections_DevPtr2+(p-from_projection_old)*size,
-						size*num_sequential_projections*sizeof(float),
-						cudaMemcpyDeviceToHost, indyStream);
-				//	CHECK_FOR_CUDA_ERROR();
-
-				p += num_sequential_projections;
+			int num_sequential_projections = 1;
+			while( p+num_sequential_projections < to_projection &&
+					indices[p+num_sequential_projections]==(indices[p+num_sequential_projections-1]+1) ){
+				num_sequential_projections++;
 			}
+
+			int to_id = indices[p];
+			int size = projection_res_x*projection_res_y;
+
+
+			cudaMemcpyAsync( int_projections->get_data_ptr()+to_id*size,
+					projections_DevPtr+(p-from_projection)*size,
+					size*num_sequential_projections*sizeof(float),
+					cudaMemcpyDeviceToHost, mainStream);
+			//	CHECK_FOR_CUDA_ERROR();
+
+			p += num_sequential_projections;
 		}
+
+
 
 		std::swap(projections_DevPtr,projections_DevPtr2);
 		std::swap(mainStream, indyStream);
-		from_projection_old=from_projection;
-		to_projection_old=to_projection;
+
 	}
 
 
-	//Copy last batch
-	int p = from_projection_old;
-	while( p<to_projection_old ) {
-
-		int num_sequential_projections = 1;
-		while( p+num_sequential_projections < to_projection_old &&
-				indices[p+num_sequential_projections]==(indices[p+num_sequential_projections-1]+1) ){
-			num_sequential_projections++;
-		}
-
-		int to_id = indices[p];
-		int size = projection_res_x*projection_res_y;
-
-
-		cudaMemcpyAsync( int_projections->get_data_ptr()+to_id*size,
-				projections_DevPtr2+(p-from_projection_old)*size,
-				size*num_sequential_projections*sizeof(float),
-				cudaMemcpyDeviceToHost, indyStream);
-		//	CHECK_FOR_CUDA_ERROR();
-
-		p += num_sequential_projections;
-	}
-
-
-	cudaUnbindTexture(image_tex);
+	cudaFree(projections_DevPtr);
+	cudaFree(projections_DevPtr2);
 	cudaFreeArray(image_array);
 
 	CHECK_FOR_CUDA_ERROR();
