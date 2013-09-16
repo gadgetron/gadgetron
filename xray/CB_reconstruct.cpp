@@ -26,6 +26,7 @@
 #include <math_constants.h>
 #include <boost/program_options.hpp>
 #include "hoRegistration_utils.h"
+#include "hoCuPartialDerivativeOperator.h"
 using namespace std;
 using namespace Gadgetron;
 

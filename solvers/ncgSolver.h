@@ -32,7 +32,6 @@ public:
 		non_negativity_constraint_=false;
 		dump_residual = false;
 		threshold= REAL(1e-8);
-		log_barrier = REAL(0);
 		barrier_threshold=1e4;
 	}
 
@@ -111,10 +110,6 @@ public:
 				for (int n = 0; n < regEnc.size(); n++)
 					if (reg_priors[n].get())
 						axpy(-std::sqrt(this->regularization_operators_[n]->get_weight()),reg_priors[n].get(),&regEnc[n]);
-
-				if (log_barrier > 0 ){
-						*g *= REAL(1)/(std::max(log_barrier-data_res,1/(barrier_threshold*barrier_threshold)));
-				}
 				this->add_gradient(x,g);
 				add_linear_gradient(regEnc,g);
 				reg_res=REAL(0);
@@ -130,7 +125,6 @@ public:
 				std::cout << "Iteration " <<i << ". Gradient norm: " <<  grad_norm << std::endl;
 				std::cout << "Data residual: " << data_res << std::endl;
 			}
-			if ((log_barrier > 0 ) && (log_barrier < data_res)) *g *= 1/(barrier_threshold*barrier_threshold);
 			if (non_negativity_constraint_) solver_non_negativity_filter(x,g);
 
 			if (i == 0){
@@ -182,11 +176,11 @@ public:
 				axpy(alpha-alpha_old,&encoding_space2,&encoding_space);
 				reg_axpy(alpha-alpha_old,regEnc2,regEnc);
 				axpy(alpha-alpha_old,&d,&x2);
-				//gdiff = *g;
-				//axpy(alpha,&gtmp,&gdiff);
+
+				//axpy(alpha-alpha_old,&gtmp,g);
 
 				if (functionValue(&encoding_space,regEnc,&x2) <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
-				//if ((dot(&gdiff,&d)) >= sigma*gd) wolfe =false; //So... officially this is part of the strong Wolfe condition. For semi-linear problems our initial step size should be sufficient.
+				//if ((dot(g,&d)) >= sigma*gd) wolfe =false; //So... officially this is part of the strong Wolfe condition. For semi-linear problems our initial step size should be sufficient.
 				k++;
 				//std::cout << "Res: " << dot(&encoding_space,&encoding_space)+calc_dot(regEnc,regEnc) << " Target: " << old_norm+alpha*delta*gd << std::endl;
 				//				std::cout << "Step2: " << dot(&gdiff,&d) << " Target " << sigma*gd  << std::endl;
@@ -205,10 +199,6 @@ public:
 						axpy(-std::sqrt(this->regularization_operators_[n]->get_weight()),reg_priors[n].get(),&regEnc[n]);
 			}
 			this->encoding_operator_->mult_MH(&encoding_space,g);
-			if (log_barrier > 0 ){
-					*g *= REAL(1)/(std::max(log_barrier-data_res,1/(barrier_threshold*barrier_threshold)));
-
-			}
 			this->add_gradient(x,g);
 			add_linear_gradient(regEnc,g);
 
@@ -291,9 +281,6 @@ public:
 			add_regularization_operator(op,prior);
 		}
 	}
-	virtual void set_barrier(REAL barrier){
-		log_barrier = barrier;
-	}
 
 
 protected:
@@ -336,12 +323,7 @@ protected:
 	}
 
 	REAL functionValue(ARRAY_TYPE* encoding_space,std::vector<ARRAY_TYPE>& regEnc, ARRAY_TYPE * x){
-		REAL res = 0;
-		if (log_barrier > 0){
-			REAL residual = this->encoding_operator_->get_weight()*dot(encoding_space,encoding_space);
-			if ((log_barrier-residual) < 1/(barrier_threshold*barrier_threshold)) res += this->encoding_operator_->get_weight()*residual*barrier_threshold;
-			else res += this->encoding_operator_->get_weight()*std::min(-std::log(log_barrier-residual),barrier_threshold*residual);
-		}else res+= std::sqrt(this->encoding_operator_->get_weight())*dot(encoding_space,encoding_space);
+		REAL res= std::sqrt(this->encoding_operator_->get_weight())*dot(encoding_space,encoding_space);
 
 		for (int i = 0; i  < this->operators.size(); i++){
 					res += this->operators[i]->magnitude(x);
@@ -367,7 +349,7 @@ protected:
 	REAL tc_tolerance_;
 	REAL threshold;
 	bool dump_residual;
-	REAL log_barrier;
+
 	REAL barrier_threshold;
 	// Preconditioner
 
