@@ -437,7 +437,6 @@ conebeam_forwards_projection( hoCuNDArray<float> *projections,
 		int projections_in_batch = to_projection-from_projection;
 
 
-
 		// Block/grid configuration
 		//
 
@@ -838,7 +837,6 @@ conebeam_backwards_projection( hoCuNDArray<float> *projections,
 		 */
 		// Allocate device memory for projections and upload
 		//
-
 		std::vector<unsigned int> dims;
 		dims.push_back(projection_res_x);
 		dims.push_back(projection_res_y);
