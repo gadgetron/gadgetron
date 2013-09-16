@@ -31,7 +31,7 @@
 // - taking advantage of the cache and hardware interpolation
 //
 
-#define NORMALIZED_TC 0
+#define NORMALIZED_TC 1
 
 static texture<float, 3, cudaReadModeElementType> 
 image_tex( NORMALIZED_TC, cudaFilterModeLinear, cudaAddressModeBorder );
@@ -260,12 +260,12 @@ conebeam_forwards_projection_kernel( float *projections,
 		startPoint[2] *= -1.0f;
 #endif
 		startPoint += 0.5f;
-		startPoint *= is_dims_in_pixels;
+		//startPoint *= is_dims_in_pixels;
 		dir /= is_dims_in_mm;
 #ifdef FLIP_Z_AXIS
 		dir[2] *= -1.0f;
 #endif
-		dir *= is_dims_in_pixels;
+		//dir *= is_dims_in_pixels;
 		dir /= float(num_samples_per_ray); // now in step size units
 
 		//
@@ -277,7 +277,7 @@ conebeam_forwards_projection_kernel( float *projections,
 		for ( int sampleIndex = 0; sampleIndex<num_samples_per_ray; sampleIndex++) {
 
 #ifndef IS_ORIGIN_CENTERING
-			floatd3 samplePoint = startPoint+dir*float(sampleIndex) + floatd3(0.5f);
+			floatd3 samplePoint = startPoint+dir*float(sampleIndex) + floatd3(0.5f)/is_dims_in_pixels;
 #else
 			floatd3 samplePoint = startPoint+dir*float(sampleIndex);
 #endif
@@ -588,9 +588,10 @@ conebeam_backwards_projection_kernel( float *image,
 			//
 
 #ifndef PS_ORIGIN_CENTERING
-			floatd2 ps_pc = ((endPoint2d / ps_dims_in_mm) + floatd2(0.5f)) * ps_dims_in_pixels + floatd2(0.5f);
+			floatd2 ps_pc = ((endPoint2d / ps_dims_in_mm) + floatd2(0.5f)) + floatd2(0.5f)/ps_dims_in_pixels;
+			//floatd2 ps_pc = ((endPoint2d / ps_dims_in_mm) + floatd2(0.5f)) * ps_dims_in_pixels + floatd2(0.5f);
 #else
-			floatd2 ps_pc = ((endPoint2d / ps_dims_in_mm) + floatd2(0.5f)) * ps_dims_in_pixels;
+			floatd2 ps_pc = ((endPoint2d / ps_dims_in_mm) + floatd2(0.5f));
 #endif
 
 			// Apply filter (filtered backprojection mode only)
@@ -618,8 +619,9 @@ conebeam_backwards_projection_kernel( float *image,
 			// Read the projection data (bilinear interpolation enabled) and accumulate
 			//
 
-			const float val = weight * tex2DLayered( projections_tex, ps_pc[0], ps_pc[1], projection );
-			result += val;
+
+			result +=  weight * tex2DLayered( projections_tex, ps_pc[0], ps_pc[1], projection );
+
 		}
 
 		// Output normalized image
