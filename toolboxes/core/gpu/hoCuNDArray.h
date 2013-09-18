@@ -58,6 +58,13 @@ public:
 		}
 	}
 
+	T operator[]( unsigned int idx ){
+	  if( idx >= this->get_number_of_elements() ){
+	    throw std::runtime_error("cuNDArray::operator[]: index out of range.");
+	  }
+	  return this->data_[idx];
+	}
+
 protected:
 
 	virtual void allocate_memory()

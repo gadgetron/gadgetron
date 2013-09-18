@@ -29,6 +29,7 @@ install(FILES
   hoHSOpticalFlowSolver.h
   hoCKOpticalFlowSolver.h
   hoRegistration_utils.h
+  cpureg_export.h
   DESTINATION include)
 
 install(FILES hoLinearResampleOperator.h DESTINATION include)
