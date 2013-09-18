@@ -23,7 +23,7 @@
 #include "hoOSGPBBSolver.h"
 #include "hoOSCGSolver.h"
 #include "hoOSCGPBBSolver.h"
-#include "hoABIBBSolver.h"
+//#include "hoABIBBSolver.h"
 #include "hdf5_utils.h"
 
 #include "encodingOperatorContainer.h"
