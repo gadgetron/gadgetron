@@ -25,9 +25,8 @@ int main(int argc, char** argv)
   parms.add_parameter( 'm', COMMAND_LINE_INT, 3, "Matrix size (3d)", true, "256, 256, 144" );
   parms.add_parameter( 'f', COMMAND_LINE_FLOAT, 3, "FOV in mm (3d)", true, "448, 448, 252" );
   parms.add_parameter( 'F', COMMAND_LINE_INT, 1, "Use filtered backprojection (fbp)", true, "1" );
-  parms.add_parameter( 'O', COMMAND_LINE_INT, 1, "Use oversampling in fbp", true, "0" );
-  parms.add_parameter( 'H', COMMAND_LINE_FLOAT, 1, "Half-scan mode maximum angle (degrees)", true, "0" );
-  parms.add_parameter( 'P', COMMAND_LINE_INT, 1, "Projections per batch", true, "50" );
+  parms.add_parameter( 'O', COMMAND_LINE_INT, 1, "Use oversampling in fbp", false );
+  parms.add_parameter( 'P', COMMAND_LINE_INT, 1, "Projections per batch", false );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ) {
@@ -75,9 +74,6 @@ int main(int argc, char** argv)
 			 parms.get_parameter('f')->get_float_value(2) );
   
   bool use_fbp = parms.get_parameter('F')->get_int_value();
-  bool use_fbp_os = parms.get_parameter('O')->get_int_value();
-  float half_scan_max_angle = parms.get_parameter('H')->get_float_value();
-  unsigned int projections_per_batch = parms.get_parameter('P')->get_int_value();
 
   // Allocate array to hold the result
   //
@@ -96,11 +92,20 @@ int main(int argc, char** argv)
   
   boost::shared_ptr< hoCudaConebeamProjectionOperator > E( new hoCudaConebeamProjectionOperator() );
 
-  hoCuNDArray<float> projections(*acquisition->get_projections());
   E->setup( acquisition, binning, is_dims_in_mm );
-  E->use_filtered_backprojections(true);
+  E->use_filtered_backprojections(use_fbp);
+
+  CommandLineParameter *parm = parms.get_parameter('P');
+  if( parm && parm->get_is_set() )
+    E->set_num_projections_per_batch( parm->get_int_value() );
+  
+  parm = parms.get_parameter('O');  
+  if( parm && parm->get_is_set() ) 
+    E->use_oversampling_in_filtered_backprojection( bool(parm->get_int_value()) );
+
   {
     GPUTimer timer("Running 3D FDK reconstruction");
+    hoCuNDArray<float> projections(*acquisition->get_projections());
     E->mult_MH( &projections, &fdk_3d );
   }
 

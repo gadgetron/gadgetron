@@ -36,7 +36,7 @@ namespace Gadgetron
       throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M: inconsistent sizes of input arrays/vectors");
     }
 
-    GPUTimer timer("Conebeam forwards projection");
+    //GPUTimer timer("Conebeam forwards projection");
 
     // Iterate over the temporal dimension.
     // I.e. reconstruct one 3D volume at a time.
@@ -97,7 +97,7 @@ namespace Gadgetron
       throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH: inconsistent sizes of input arrays/vectors");
     }
 
-    GPUTimer timer("Conebeam backwards projection");
+    //GPUTimer timer("Conebeam backwards projection");
 
     // Iterate over the temporal dimension.
     // I.e. reconstruct one 3D volume at a time.
