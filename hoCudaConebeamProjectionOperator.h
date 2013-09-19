@@ -36,6 +36,26 @@ namespace Gadgetron{
       acquisition_ = acquisition;
       binning_ = binning;
       is_dims_in_mm_ = is_dims_in_mm;
+      
+      // Determine the minimum and maximum angle scanned. Are we in a short scan setup?
+      // Transform array angles from [0;max_angle_]
+      //
+      
+      std::vector<float> &angles = acquisition->get_geometry()->get_angles();
+      
+      if( angles[0] > angles[angles.size()-1] ){
+	// Our convention is to use increasing angles. This dataset does not. Change that.
+	//transform(angles.begin(), angles.end(), angles.begin(), bind2nd(std::multiplies<float>(), -1.0f));
+      }
+
+      float min_value = *std::min_element(angles.begin(), angles.end() );
+      float max_value = *std::max_element(angles.begin(), angles.end() );
+      max_angle_ = max_value-min_value;
+      transform(angles.begin(), angles.end(), angles.begin(), bind2nd(std::minus<float>(), min_value));
+
+      std::cout << std::endl <<  *std::min_element(angles.begin(), angles.end() ) << " " 
+		<< *std::max_element(angles.begin(), angles.end() ) << std::endl;
+
       preprocessed_ = true;
     }
 
@@ -53,10 +73,6 @@ namespace Gadgetron{
 
     inline void set_num_samples_per_pixel( float samples_per_pixel ){
       samples_per_pixel_ = samples_per_pixel;
-    }
-
-    inline void set_short_scan_maximum_angle( float angle ){
-      max_angle_ = angle;
     }
 
     virtual boost::shared_ptr< linearOperator< hoCuNDArray<float> > > clone() {
