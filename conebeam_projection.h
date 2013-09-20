@@ -9,8 +9,8 @@
 namespace Gadgetron {
   
   // Forwards projection of a 3D volume onto a set of projections.
-  // - dependening on the provided binnning indices, 
-  //   just a subset of the projections can be targeted.
+  // - dependening on the provided binnning indices, just a subset of the projections can be targeted.
+  //
   
   void 
   conebeam_forwards_projection( hoCuNDArray<float> *projections,
@@ -27,8 +27,8 @@ namespace Gadgetron {
 				bool accumulate );
   
   // Backprojection of a set of projections onto a 3D volume.
-  // - depending on the provided binnning indices, 
-  //   just a subset of the projections can be included.
+  // - depending on the provided binnning indices, just a subset of the projections can be included
+  //
 
   void 
   conebeam_backwards_projection( hoCuNDArray<float> *projections,
@@ -43,7 +43,6 @@ namespace Gadgetron {
 				 float SDD, 
 				 float SAD,
 				 bool use_fbp, 
-				 bool use_oversampling_in_fbp,
-				 float maximum_angle,
+				 bool short_scan,
 				 bool accumulate );
 }
