@@ -21,11 +21,11 @@ int main(int argc, char** argv)
 
   ParameterParser parms(1024);
   parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Input acquisition filename (.hdf5)", true );
+  parms.add_parameter( 'B', COMMAND_LINE_STRING, 1, "Binning filename (.hdf5)", false );
   parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Output image filename (.real)", true, "reconstruction_FDK.real" );
   parms.add_parameter( 'm', COMMAND_LINE_INT, 3, "Matrix size (3d)", true, "256, 256, 144" );
   parms.add_parameter( 'f', COMMAND_LINE_FLOAT, 3, "FOV in mm (3d)", true, "448, 448, 252" );
   parms.add_parameter( 'F', COMMAND_LINE_INT, 1, "Use filtered backprojection (fbp)", true, "1" );
-  parms.add_parameter( 'O', COMMAND_LINE_INT, 1, "Use oversampling in fbp", false );
   parms.add_parameter( 'P', COMMAND_LINE_INT, 1, "Projections per batch", false );
 
   parms.parse_parameter_list(argc, argv);
@@ -47,11 +47,18 @@ int main(int argc, char** argv)
   boost::shared_ptr<CBCT_acquisition> acquisition( new CBCT_acquisition() );
   acquisition->load(acquisition_filename);
 
-  // Generate default binning data
+  // Load or generate binning data
   //
   
   boost::shared_ptr<CBCT_binning> binning( new CBCT_binning() );
-  binning->set_as_default_3d_bin(acquisition->get_projections()->get_size(2));
+
+  if (parms.get_parameter('B')->get_is_set()){
+    std::string binningdata_filename = (char*)parms.get_parameter('B')->get_string_value();
+    std::cout << "Using binning data file: " << binningdata_filename << std::endl;
+    binning->load(binningdata_filename);
+  } 
+  else 
+    binning->set_as_default_3d_bin(acquisition->get_projections()->get_size(2));
 
   // Configuring...
   //
@@ -99,10 +106,6 @@ int main(int argc, char** argv)
   if( parm && parm->get_is_set() )
     E->set_num_projections_per_batch( parm->get_int_value() );
   
-  parm = parms.get_parameter('O');  
-  if( parm && parm->get_is_set() ) 
-    E->use_oversampling_in_filtered_backprojection( bool(parm->get_int_value()) );
-
   {
     GPUTimer timer("Running 3D FDK reconstruction");
     hoCuNDArray<float> projections(*acquisition->get_projections());
