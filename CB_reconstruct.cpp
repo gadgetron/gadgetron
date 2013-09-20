@@ -159,6 +159,11 @@ int main(int argc, char** argv)
 
   ps->set_projections(projections);
 
+  std::vector<floatd2> offsets = ps->get_geometry()->get_offsets();
+
+  std::fill(offsets.begin(),offsets.end(),floatd2(0,0));
+
+//ps->get_geometry()->set_offsets(offsets);
   E->setup(ps,binning,imageDimensions);
   E->set_domain_dimensions(&is_dims);
   E->set_codomain_dimensions(projections->get_dimensions().get());
@@ -178,9 +183,15 @@ int main(int argc, char** argv)
 
   if (vm.count("TV")){
     std::cout << "Total variation regularization in use" << std::endl;
-    boost::shared_ptr<hoCuTvOperator<float,4> > tv(new hoCuTvOperator<float,4>);
+    boost::shared_ptr<hoCuTvOperator<float,3> > tv(new hoCuTvOperator<float,3>);
     tv->set_weight(vm["TV"].as<float>());
     solver.add_nonlinear_operator(tv);
+/*
+    boost::shared_ptr<hoCuPartialDerivativeOperator<float,4> > dt ( new hoCuPartialDerivativeOperator<float,4>(3));
+    dt->set_weight(vm["TV"].as<float>());
+    dt->set_domain_dimensions(&is_dims);
+    dt->set_codomain_dimensions(&is_dims);
+    solver.add_regularization_operator(dt,2);*/
   }
 
   if (vm.count("PICS")){
