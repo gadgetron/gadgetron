@@ -3,7 +3,7 @@
 #include "CBCT_acquisition.h"
 #include "CBCT_binning.h"
 #include "hoCuNDArray_operators.h"
-
+#include <numeric>
 #include "linearOperator.h"
 
 #include <math_constants.h>
@@ -56,6 +56,12 @@ namespace Gadgetron{
       std::cout << std::endl <<  *std::min_element(angles.begin(), angles.end() ) << " " 
 		<< *std::max_element(angles.begin(), angles.end() ) << std::endl;
 
+
+     std::vector<floatd2> offsets = acquisition->get_geometry()->get_offsets();
+     floatd2 mean_offsets = std::accumulate(offsets.begin(),offsets.end(),floatd2(0,0))/float(offsets.size());
+     mean_offset_ = mean_offsets[0];
+
+
       preprocessed_ = true;
     }
 
@@ -85,6 +91,7 @@ namespace Gadgetron{
     floatd3 is_dims_in_mm_;
     float samples_per_pixel_;
     float max_angle_;
+    float mean_offset_;
     bool use_fbp_;
     bool use_oversampling_in_fbp_;
     unsigned int projections_per_batch_;

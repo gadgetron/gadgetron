@@ -45,5 +45,6 @@ namespace Gadgetron {
 				 bool use_fbp, 
 				 bool use_oversampling_in_fbp,
 				 float maximum_angle,
+				 float mean_offset,
 				 bool accumulate );
 }
