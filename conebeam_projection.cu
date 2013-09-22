@@ -9,6 +9,7 @@
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_operators.h"
 #include "cuNDArray_utils.h"
+#include "cuNDArray_blas.h"
 #include "cuNFFT.h"
 #include "check_CUDA.h"
 #include "GPUTimer.h"
@@ -17,6 +18,7 @@
 #include "setup_grid.h"
 
 #include <cuda_runtime_api.h>
+#include <cufft.h>
 #include <float.h>
 #include <iostream>
 #include <fstream>
@@ -42,10 +44,71 @@ projections_tex( NORMALIZED_TC, cudaFilterModeLinear, cudaAddressModeBorder );
 namespace Gadgetron 
 {
 
-inline __host__ __device__
+// Utility to convert from degrees to radians
+//
+
+static inline __host__ __device__
 float degrees2radians(float degree) {
 	return degree * (CUDART_PI_F/180.0f);
 }
+
+// Utilities for filtering in frequency space
+//
+
+static boost::shared_ptr< cuNDArray<float_complext> > cb_fft( cuNDArray<float> *data )
+  		{
+	std::vector<unsigned int> in_dims = *data->get_dimensions();
+	std::vector<unsigned int> out_dims;
+	out_dims.push_back((in_dims[0]>>1)+1);
+	out_dims.push_back(in_dims[1]);
+	out_dims.push_back(in_dims[2]);
+
+	boost::shared_ptr< cuNDArray<float_complext> > result( new cuNDArray<float_complext>(&out_dims) );
+	cufftHandle plan;
+
+	if( cufftPlanMany( &plan, 1, (int*)(&in_dims[0]), 0x0, 1, in_dims[0], 0x0, 1, out_dims[0], CUFFT_R2C, in_dims[1]*in_dims[2] ) != CUFFT_SUCCESS) {
+		throw std::runtime_error("CB FFT plan failed");
+	}
+
+	if( cufftExecR2C( plan, data->get_data_ptr(), (cuFloatComplex*) result->get_data_ptr() ) != CUFFT_SUCCESS ) {
+		throw std::runtime_error("CB FFT execute failed");;
+	}
+
+	if( cufftDestroy(plan) != CUFFT_SUCCESS) {
+		throw std::runtime_error("CB FFT failed to destroy plan");
+	}
+
+	return result;
+  		}
+
+static boost::shared_ptr< cuNDArray<float> > cb_ifft( cuNDArray<float_complext> *data )
+  		{
+	std::vector<unsigned int> in_dims = *data->get_dimensions();
+	std::vector<unsigned int> out_dims;
+	out_dims.push_back((in_dims[0]-1)<<1);
+	out_dims.push_back(in_dims[1]);
+	out_dims.push_back(in_dims[2]);
+
+	boost::shared_ptr< cuNDArray<float> > result( new cuNDArray<float>(&out_dims) );
+	cufftHandle plan;
+
+	if( cufftPlanMany( &plan, 1, (int*)(&out_dims[0]), 0x0, 1, in_dims[0], 0x0, 1, out_dims[0], CUFFT_C2R, in_dims[1]*in_dims[2] ) != CUFFT_SUCCESS) {
+		throw std::runtime_error("CB iFFT plan failed");
+	}
+
+	if( cufftExecC2R( plan, (cuFloatComplex*) data->get_data_ptr(), result->get_data_ptr() ) != CUFFT_SUCCESS ) {
+		throw std::runtime_error("CB iFFT execute failed");;
+	}
+
+	if( cufftDestroy(plan) != CUFFT_SUCCESS) {
+		throw std::runtime_error("CB iFFT failed to destroy plan");
+	}
+
+	*result /= float(out_dims[0]);
+
+	return result;
+  		}
+
 
 //
 // Redundancy correction for short scan mode
@@ -55,12 +118,12 @@ float degrees2radians(float degree) {
 // and (for the implementation) "Parker weights revisited", Wesarg et al, Med. Phys. 29(3) 2002.
 //
 
-static const float epsilon = 0.001f; // to avoid singularities
+static const float epsilon = 0.001f;
 
 static __inline__ __device__ float S( float beta )
 {
 	if( beta <= -0.5f ) return 0.0f;
-	else if( beta > -0.5f && beta < 0.5f ) return 0.5f*(1+sinf(CUDART_PI_F*beta));
+	else if( beta > -0.5f && beta < 0.5f ) return 0.5f*(1.0f+sinf(CUDART_PI_F*beta));
 	else /*if( beta >= 0.5f )*/ return 1.0f;
 }
 
@@ -79,7 +142,7 @@ __global__ void
 redundancy_correct_kernel( float *projections,
 		float *angles,
 		uintd3 dims, // Dimensions of the projections array
-		float delta // The half-fan angle
+		float delta  // The half-fan angle
 )
 {
 	const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
@@ -130,7 +193,6 @@ redundancy_correct( cuNDArray<float> *projections,
 	const unsigned int num_projections = projections->get_size(2);
 	uintd3 dims(projection_res_x, projection_res_y, num_projections);
 
-
 	float *angles_DevPtr;
 
 	cudaMalloc( (void**) &angles_DevPtr, angles.size()*sizeof(float));
@@ -146,9 +208,6 @@ redundancy_correct( cuNDArray<float> *projections,
 	redundancy_correct_kernel<<< dimGrid, dimBlock >>>
 			( projections->get_data_ptr(), angles_DevPtr, dims, delta );
 
-
-	CHECK_FOR_CUDA_ERROR();
-
 	cudaFree(angles_DevPtr);
 	CHECK_FOR_CUDA_ERROR();
 }
@@ -162,6 +221,7 @@ offset_correct_kernel( float *projections,
 		floatd2 *offsets,
 		uintd3 dims, // Dimensions of the projections array
 		floatd2 phys_dims, //Physical dimensions in mm
+		float SAD,
 		float SDD // Source detector distance
 )
 {
@@ -194,6 +254,7 @@ void
 offset_correct( cuNDArray<float> *projections,
 		floatd2* offsets, //Ptr to cuda array
 		floatd2 phys_dims,
+		float SAD,
 		float SDD//Source detector
 )
 {
@@ -211,8 +272,8 @@ offset_correct( cuNDArray<float> *projections,
 	}
 
 	/*if( projections->get_size(2) != offsets->get_number_of_elements() ){
-		throw std::runtime_error("Error: redundancy_correct: inconsistent sizes of input array/vector");
-	}*/
+  		throw std::runtime_error("Error: redundancy_correct: inconsistent sizes of input array/vector");
+  	}*/
 
 	const unsigned int projection_res_x = projections->get_size(0);
 	const unsigned int projection_res_y = projections->get_size(1);
@@ -231,13 +292,12 @@ offset_correct( cuNDArray<float> *projections,
 
 
 	offset_correct_kernel<<< dimGrid, dimBlock >>>
-			( projections->get_data_ptr(), offsets, dims,phys_dims,SDD);
+			( projections->get_data_ptr(), offsets, dims,phys_dims,SAD,SDD);
 
 
 
 	CHECK_FOR_CUDA_ERROR();
 }
-
 //
 // Forwards projection
 //
@@ -311,23 +371,16 @@ conebeam_forwards_projection_kernel( float *projections,
 
 		// Perform integration only inside the bounding cylinder of the image volume
 		//
-		/*
-	const floatd2 is_dims_in_mm_xy(is_dims_in_mm[0], is_dims_in_mm[1]);
-	const float radius = norm( is_dims_in_mm_xy * floatd2(0.5f) );
-	const floatd3 unitDir = dir / SDD;
 
-	startPoint = startPoint + (unitDir * (SAD-radius));
-	endPoint = endPoint - (unitDir * (ADD-radius));
-		 */
 		const floatd3 start = amin((-is_dims_in_mm-startPoint)/dir,(is_dims_in_mm-startPoint)/dir);
 		const floatd3 end = amax((-is_dims_in_mm-startPoint)/dir,(is_dims_in_mm-startPoint)/dir);
 
 		float a1 = fmax(max(start),0.0f);
 		float aend = fmin(min(end),1.0f);
-		//endPoint = startPoint+aend*dir;
 		startPoint += a1*dir;
 
 		const float sampling_distance = norm((aend-a1)*dir)/num_samples_per_ray;
+
 		// Now perform conversion of the line integral start/end into voxel coordinates
 		//
 
@@ -336,12 +389,10 @@ conebeam_forwards_projection_kernel( float *projections,
 		startPoint[2] *= -1.0f;
 #endif
 		startPoint += 0.5f;
-		//startPoint *= is_dims_in_pixels;
 		dir /= is_dims_in_mm;
 #ifdef FLIP_Z_AXIS
 		dir[2] *= -1.0f;
 #endif
-		//dir *= is_dims_in_pixels;
 		dir /= float(num_samples_per_ray); // now in step size units
 
 		//
@@ -436,6 +487,7 @@ conebeam_forwards_projection( hoCuNDArray<float> *projections,
 
 	// Build texture from input image
 	//
+
 	cudaFuncSetCacheConfig(conebeam_forwards_projection_kernel, cudaFuncCachePreferL1);
 	cudaChannelFormatDesc channelDesc = cudaCreateChannelDesc<float>();
 	cudaExtent extent;
@@ -464,20 +516,16 @@ conebeam_forwards_projection( hoCuNDArray<float> *projections,
 	// Using as many streams as batches enables concurrent copy/compute on devices with "just" one copy engine
 	//
 
-
 	float* projections_DevPtr;
 	float* projections_DevPtr2;
 
 	cudaStream_t mainStream;
 	cudaStream_t indyStream;
 
-
 	cudaStreamCreate(&mainStream);
 	cudaStreamCreate(&indyStream);
 
-
 	cudaMalloc( (void**) &projections_DevPtr, projection_res_x*projection_res_y*projections_per_batch*sizeof(float));
-
 	cudaMalloc( (void**) &projections_DevPtr2, projection_res_x*projection_res_y*projections_per_batch*sizeof(float));
 
 	std::vector<float> angles_vec;
@@ -526,8 +574,6 @@ conebeam_forwards_projection( hoCuNDArray<float> *projections,
 		floatd3 is_dims_in_pixels(matrix_size_x, matrix_size_y, matrix_size_z);
 		intd2 ps_dims_in_pixels(projection_res_x, projection_res_y);
 
-
-
 		float* raw_angles = thrust::raw_pointer_cast(&angles_devVec[from_projection]);
 		floatd2* raw_offsets = thrust::raw_pointer_cast(&offsets_devVec[from_projection]);
 		conebeam_forwards_projection_kernel<<< dimGrid, dimBlock, 0, mainStream >>>
@@ -536,8 +582,8 @@ conebeam_forwards_projection( hoCuNDArray<float> *projections,
 						ps_dims_in_pixels, ps_dims_in_mm,
 						projections_in_batch, SDD, SAD, samples_per_pixel*float(matrix_size_x) );
 
-
-		//If not initial batch, start copying the old stuff
+		// If not initial batch, start copying the old stuff
+		//
 
 		int p = from_projection;
 		while( p<to_projection) {
@@ -556,18 +602,13 @@ conebeam_forwards_projection( hoCuNDArray<float> *projections,
 					projections_DevPtr+(p-from_projection)*size,
 					size*num_sequential_projections*sizeof(float),
 					cudaMemcpyDeviceToHost, mainStream);
-			//	CHECK_FOR_CUDA_ERROR();
 
 			p += num_sequential_projections;
 		}
 
-
-
 		std::swap(projections_DevPtr,projections_DevPtr2);
 		std::swap(mainStream, indyStream);
-
 	}
-
 
 	cudaFree(projections_DevPtr);
 	cudaFree(projections_DevPtr2);
@@ -658,7 +699,7 @@ conebeam_backwards_projection_kernel( float *image,
 			floatd3 dir = pos_proj - startPoint;
 			dir = dir / dir[1];
 			const floatd3 endPoint = startPoint + dir * SDD;
-			const floatd2 endPoint2d = floatd2(endPoint[0], endPoint[2]) - offsets[projection];
+			const floatd2 endPoint2d = floatd2(endPoint[0], endPoint[2])- offsets[projection];
 
 			// Convert metric projection coordinates into pixel coordinates
 			//
@@ -695,9 +736,7 @@ conebeam_backwards_projection_kernel( float *image,
 			// Read the projection data (bilinear interpolation enabled) and accumulate
 			//
 
-
 			result +=  weight * tex2DLayered( projections_tex, ps_pc[0], ps_pc[1], projection );
-
 		}
 
 		// Output normalized image
@@ -748,54 +787,32 @@ get_cosinus_weights( intd2 ps_dims_in_pixels, floatd2 ps_dims_in_mm, float D0d, 
 //
 
 boost::shared_ptr< cuNDArray<float> >
-get_ramp( int dim, float delta )
+get_ramp( int size )
 {
-	std::vector<unsigned int> dims, dims_os;
-	dims.push_back(dim);
-	dims_os.push_back(dim<<1);
+	std::vector<unsigned int> dims;
+	dims.push_back((size>>1)+1); // cufft R2C outputs in this size
 
-	hoCuNDArray<float> weights(&dims);
-	float* data = weights.get_data_ptr();
+	hoCuNDArray<float> host_weights(&dims);
+	float* data = host_weights.get_data_ptr();
 
-	// Compute ramp weights
-	//
+	data[0] = 0.25f; // heuristically assigned
 
+	float A2 = dims[0]*dims[0];
 #ifdef USE_OMP
 #pragma omp parallel for
-#endif
-	for( int i=0; i<dim; i++ ) {
-
-		// Equation 3.29, page 73 in Computed Tomography 2nd edition, Jiang Hsieh
-		//
-
-		int n = i-dim/2;
-		float value;
-		if(n==0) {
-			value = 1.0f/(4.0f*delta*delta);
-		} else if ((i%2)==0) { // even
-			value = 0.0f;
-		} else { // odd
-			float tmp = n*CUDART_PI_F*delta;
-			value = -1.0f/(tmp*tmp);
-		}
-		data[i] = value;
+#endif    
+	for( int i=0; i<dims[0]; i++ ) {
+		//data[i+1] = std::min(float(i+1), float(size>>4));
+		int k = i+1;
+		data[i+1] = k*A2/(A2-k*k)*std::exp(-A2/(A2-k*k)); //From Guo et al,Journal of X-Ray Science and Technology 2011, doi: 10.3233/XST-2011-0294
+		//data[i+1] = float(i+1);
 	}
 
-	cuNDArray<float> tmp_real(&weights);
-	cuNDArray<float> weights_os(&dims_os);
-	pad<float,1>( &tmp_real, &weights_os );
-
-	// Compute FFT of the ramp weights
-	//
-
-	boost::shared_ptr< cuNDArray<float_complext> > tmp_cplx = real_to_complex<float_complext>(&weights_os);
-	cuNFFT_plan<float,1>().fft(tmp_cplx.get(), cuNFFT_plan<float,1>::NFFT_FORWARDS);
-	boost::shared_ptr< cuNDArray<float> >  tmp_res = real(tmp_cplx.get());
-
-	cuNDArray<float> *res = new cuNDArray<float>(&dims);
-	crop<float,1>( from_std_vector<unsigned int,1>(dims)>>1, tmp_res.get(), res );
-
-	return boost::shared_ptr< cuNDArray<float> >(res);
+	data[dims[0]-1]=0;
+	boost::shared_ptr< cuNDArray<float> > weights(new cuNDArray<float>(&host_weights));
+	float sum = asum(weights.get());
+	*weights /= sum;
+	return weights;
 }
 
 //
@@ -815,9 +832,8 @@ conebeam_backwards_projection( hoCuNDArray<float> *projections,
 		float SDD,
 		float SAD,
 		bool use_fbp,
-		bool use_oversampling_in_fbp,
-		float maximum_angle,
-		float mean_offset,
+		bool short_scan,
+		bool use_offset_correction,
 		bool accumulate )
 {
 
@@ -897,7 +913,6 @@ conebeam_backwards_projection( hoCuNDArray<float> *projections,
 	cudaMalloc( (void**) &offsets_DevPtr, projections_per_batch*sizeof(floatd2) );
 	CHECK_FOR_CUDA_ERROR();
 
-
 	//
 	// Iterate over batches
 	//
@@ -912,12 +927,13 @@ conebeam_backwards_projection( hoCuNDArray<float> *projections,
 
 		int projections_in_batch = to_projection-from_projection;
 
-		/*printf("batch: %03i, handling projections: %03i - %03i, angles: %.2f - %.2f\n",
-	batch, from_projection, to_projection-1, angles[from_projection], angles[to_projection-1]);      
-		 */
+		// printf("batch: %03i, handling projections: %03i - %03i, angles: %.2f - %.2f\n",
+		//	 batch, from_projection, to_projection-1, angles[from_projection], angles[to_projection-1]);
+
 
 		// Allocate device memory for projections and upload
 		//
+
 		std::vector<unsigned int> dims;
 		dims.push_back(projection_res_x);
 		dims.push_back(projection_res_y);
@@ -925,12 +941,12 @@ conebeam_backwards_projection( hoCuNDArray<float> *projections,
 
 		cuNDArray<float> projections_batch(&dims);
 
-
-
 		// Copy result from device to host adhering to the binning
 		// Be sure to copy sequentially numbered projections in one copy operation.
+		//
 
 		int p = from_projection;
+
 		while( p<to_projection ) {
 
 			int num_sequential_projections = 1;
@@ -981,8 +997,10 @@ conebeam_backwards_projection( hoCuNDArray<float> *projections,
 		// Pre-backprojection filtering (if enabled)
 		//
 
-		if (mean_offset > ps_dims_in_mm[0]*0.1)
-			offset_correct(&projections_batch,offsets_DevPtr,ps_dims_in_mm,SDD);
+		if (use_offset_correction)
+			offset_correct(&projections_batch,offsets_DevPtr,ps_dims_in_mm,SAD,SDD);
+
+
 		if (use_fbp) {
 
 			static boost::shared_ptr< cuNDArray<float> > cos_weights;
@@ -1006,7 +1024,7 @@ conebeam_backwards_projection( hoCuNDArray<float> *projections,
 			// 1.5 redundancy correct (in short scan mode)
 			//
 
-			if( maximum_angle < 350.0f ){
+			if( short_scan ){
 				float delta = std::atan(ps_dims_in_mm[0]/(2.0f*SDD));
 				redundancy_correct( &projections_batch, angles_vec, delta );
 			}
@@ -1014,58 +1032,18 @@ conebeam_backwards_projection( hoCuNDArray<float> *projections,
 			// 2. Apply ramp filter (using FFT)
 			//
 
-			// Use oversamping if asked for...
-			//
+			static boost::shared_ptr< cuNDArray<float> > ramp;
+			static bool ramp_initialized = false;
 
-			if( use_oversampling_in_fbp ) {
-
-				std::vector<unsigned int> dims_os;
-				dims_os.push_back(projection_res_x<<1);
-				dims_os.push_back(projection_res_y);
-				dims_os.push_back(projections_in_batch);
-
-				cuNDArray<float> projections_os(&dims_os);
-				pad<float,2>( &projections_batch, &projections_os );
-
-				static boost::shared_ptr< cuNDArray<float> > ramp;
-				static bool ramp_initialized = false;
-
-				if (!ramp_initialized) {
-					ramp = get_ramp( projection_res_x<<1, ps_dims_in_mm[0]/(projection_res_x<<1) );
-					ramp_initialized = true;
-					//write_nd_array<float>( ramp->to_host().get(), "ramp.real");
-				}
-
-				boost::shared_ptr< cuNDArray<complext<float> > > complex_projections_os =
-						real_to_complex< complext<float> >(&projections_os);
-				cuNFFT_plan<float,1>().fft(complex_projections_os.get(),cuNFFT_plan<float,1>::NFFT_FORWARDS);
-				*complex_projections_os *= *ramp;
-				cuNFFT_plan<float,1>().fft(complex_projections_os.get(),cuNFFT_plan<float,1>::NFFT_BACKWARDS);
-				projections_os = *real(complex_projections_os.get());
-
-				uintd<2>::Type offset;
-				offset.vec[0]= projection_res_x>>1;
-				offset.vec[1]= 0;
-				crop<float,2>( offset, &projections_os, &projections_batch );
+			if (!ramp_initialized) {
+				ramp = get_ramp( projection_res_x );
+				ramp_initialized = true;
+				//write_nd_array<float>( ramp->to_host().get(), "ramp.real");
 			}
-			else{
 
-				static boost::shared_ptr< cuNDArray<float> > ramp;
-				static bool ramp_initialized = false;
-
-				if (!ramp_initialized) {
-					ramp = get_ramp( projection_res_x, ps_dims_in_mm[0]/projection_res_x );
-					ramp_initialized = true;
-					//write_nd_array<float>( ramp->to_host().get(), "ramp.real");
-				}
-
-				boost::shared_ptr< cuNDArray<complext<float> > > complex_projections =
-						real_to_complex< complext<float> >(&projections_batch);
-				cuNFFT_plan<float,1>().fft(complex_projections.get(),cuNFFT_plan<float,1>::NFFT_FORWARDS);
-				*complex_projections *= *ramp;
-				cuNFFT_plan<float,1>().fft(complex_projections.get(),cuNFFT_plan<float,1>::NFFT_BACKWARDS);
-				projections_batch = *real(complex_projections.get());
-			}
+			boost::shared_ptr< cuNDArray<complext<float> > > complex_projections = cb_fft( &projections_batch );
+			*complex_projections *= *ramp;
+			projections_batch = *cb_ifft( complex_projections.get() );
 		}
 
 		// Build array for input texture
@@ -1105,6 +1083,8 @@ conebeam_backwards_projection( hoCuNDArray<float> *projections,
 		cudaFuncSetCacheConfig(conebeam_backwards_projection_kernel, cudaFuncCachePreferL1);
 
 		// Invoke kernel
+		//
+
 		conebeam_backwards_projection_kernel<<< dimGrid, dimBlock >>>
 				( image_device->get_data_ptr(), angles_DevPtr, offsets_DevPtr,
 						is_dims_in_pixels, is_dims_in_mm, ps_dims_in_pixels, ps_dims_in_mm,
@@ -1114,22 +1094,20 @@ conebeam_backwards_projection( hoCuNDArray<float> *projections,
 
 		CHECK_FOR_CUDA_ERROR();
 
-		/*
-	static int counter = 0;
-	char filename[256];
-	sprintf((char*)filename, "bp_%d.real", counter);
-	write_nd_array<float>( image_device->to_host().get(), filename );
-	counter++; */
-
 		// Cleanup
+		//
+
 		cudaUnbindTexture(projections_tex);
 		cudaFreeArray(projections_array);
 		CHECK_FOR_CUDA_ERROR();
 	}
 
 	// Copy result from device to host
+	//
+
 	cudaMemcpy( image->get_data_ptr(), image_device->get_data_ptr(),
 			num_image_elements*sizeof(float), cudaMemcpyDeviceToHost );
+
 	CHECK_FOR_CUDA_ERROR();
 
 	cudaFree(offsets_DevPtr);
