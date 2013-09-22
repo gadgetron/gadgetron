@@ -44,5 +44,6 @@ namespace Gadgetron {
 				 float SAD,
 				 bool use_fbp, 
 				 bool short_scan,
+				 bool offset_correct,
 				 bool accumulate );
 }

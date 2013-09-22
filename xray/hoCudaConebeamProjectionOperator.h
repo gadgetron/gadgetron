@@ -6,6 +6,7 @@
 #include "hoCuNDArray_math.h"
 #include "hoCuNDArray_operators.h"
 
+#include <numeric>
 #include <math_constants.h>
 #include <vector>
 
@@ -21,6 +22,7 @@ namespace Gadgetron{
       use_fbp_ = false;
       short_scan_ = false;
       preprocessed_ = false;
+      use_offset_correction_=false;
     }
 
     virtual ~hoCudaConebeamProjectionOperator() {}
@@ -61,7 +63,11 @@ namespace Gadgetron{
       std::cout << std::endl <<  *std::min_element(angles.begin(), angles.end() ) << " " 
 		<< *std::max_element(angles.begin(), angles.end() ) << std::endl;
       */
+      std::vector<floatd2> offsets = acquisition_->get_geometry()->get_offsets();
+      floatd2 mean_offset = std::accumulate(offsets.begin(),offsets.end(),floatd2(0,0))/float(offsets.size());
 
+      if (mean_offset[0] > ps_dims_in_mm[0]*0.1)
+      	use_offset_correction_=true;
       preprocessed_ = true;
     }
 
@@ -90,6 +96,7 @@ namespace Gadgetron{
     unsigned int projections_per_batch_;
     bool preprocessed_;
     bool short_scan_;
+    bool use_offset_correction_;
     boost::shared_ptr<hoCuNDArray<float> > variance_;
   };
 }

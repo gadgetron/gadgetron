@@ -19,8 +19,8 @@ namespace Gadgetron
       throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M: illegal array pointer provided");
     }
     
-    if( image->get_number_of_dimensions() != 4 ){
-      throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M: image array must be four-dimensional");
+    if( (image->get_number_of_dimensions() != 4) &&  (image->get_number_of_dimensions() != 3) ){
+      throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_M: image array must be four or three -dimensional");
     }
 
     if( projections->get_number_of_dimensions() != 3 ){
@@ -50,7 +50,8 @@ namespace Gadgetron
       float SAD = acquisition_->get_geometry()->get_SAD();
 
       std::vector<unsigned int> dims_3d = *image->get_dimensions();
-      dims_3d.pop_back();
+      if (dims_3d.size()==4)
+      	dims_3d.pop_back();
       
       int num_3d_elements = dims_3d[0]*dims_3d[1]*dims_3d[2];
 
@@ -78,9 +79,9 @@ namespace Gadgetron
       throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH:: illegal array pointer provided");
     }
     
-    if( image->get_number_of_dimensions() != 4 ){
-      throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH: image array must be four-dimensional");
-    }
+    if( (image->get_number_of_dimensions() != 4) &&  (image->get_number_of_dimensions() != 3) ){
+          throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH: image array must be four or three -dimensional");
+        }
 
     if( projections->get_number_of_dimensions() != 3 ){
       throw std::runtime_error("Error: hoCudaCobebeamProjectionOperator::mult_MH: projections array must be three-dimensional");
@@ -111,7 +112,8 @@ namespace Gadgetron
       float SAD = acquisition_->get_geometry()->get_SAD();
 
       std::vector<unsigned int> dims_3d = *image->get_dimensions();
-      dims_3d.pop_back();
+      if (dims_3d.size() ==4)
+      	dims_3d.pop_back();
 
       int num_3d_elements = dims_3d[0]*dims_3d[1]*dims_3d[2];
 
@@ -123,7 +125,7 @@ namespace Gadgetron
 				     binning_->get_bin(b),
 				     projections_per_batch_,
 				     is_dims_in_pixels, is_dims_in_mm_, ps_dims_in_mm,
-				     SDD, SAD, use_fbp_, short_scan_, accumulate );
+				     SDD, SAD, use_fbp_, short_scan_,use_offset_correction_, accumulate );
     }
   }
 }
