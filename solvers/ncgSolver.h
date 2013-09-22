@@ -28,7 +28,7 @@ public:
 
 	ncgSolver(): gpSolver<ARRAY_TYPE>() {
 		iterations_ = 10;
-		tc_tolerance_ = (REAL)1e-6;
+		tc_tolerance_ = (REAL)1e-8;
 		non_negativity_constraint_=false;
 		dump_residual = false;
 		threshold= REAL(1e-8);
@@ -94,6 +94,7 @@ public:
 		if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
 			std::cout << "Iterating..." << std::endl;
 		}
+		REAL grad0;
 		for (int i = 0; i < iterations_; i++){
 			if (i==0){
 				if (this->x0_.get()){
@@ -119,14 +120,19 @@ public:
 			}
 
 
-			REAL grad_norm = nrm2(g);
+			//REAL grad_norm = nrm2(g);
+			REAL grad_norm=REAL(1);
+			if (non_negativity_constraint_) solver_non_negativity_filter(x,g);
+			
+			/*if (i==0) grad0=::abs((*g)[amax(g)]);
+			  else grad_norm = ::abs((*g)[amax(g)])/(grad0); //L-inf norm*/
+			if (i==0) grad0 = dot(g,g);
+			else grad_norm = dot(g,g)/grad0;
 			if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
 
 				std::cout << "Iteration " <<i << ". Gradient norm: " <<  grad_norm << std::endl;
 				std::cout << "Data residual: " << data_res << std::endl;
 			}
-			if (non_negativity_constraint_) solver_non_negativity_filter(x,g);
-
 			if (i == 0){
 				d -= *g;
 			} else {
@@ -205,7 +211,7 @@ public:
 
 			iteration_callback(x,i,data_res,reg_res);
 
-
+			
 			if (grad_norm < tc_tolerance_)  break;
 		}
 		delete g,g_old;
