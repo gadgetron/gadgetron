@@ -31,7 +31,7 @@ namespace Gadgetron{
     //TODO: Generalize to work if we can fit just the 1 single dimension on the gpu
     virtual void mult_M(hoCuNDArray<T>* in, hoCuNDArray<T>* out, bool accumulate)
     {
-      /*size_t free = cudaDeviceManager::Instance()->getFreeMemory();
+      size_t free = cudaDeviceManager::Instance()->getFreeMemory();
 
       if( free/sizeof(T) < in->get_number_of_elements()*2)
 	throw std::runtime_error("hoCuPartialDerivativeOperator: not enough device memory");
@@ -42,14 +42,14 @@ namespace Gadgetron{
 
       dev.mult_M(&cuIn,&cuOut,accumulate);
 
-      cudaMemcpy(out->get_data_ptr(),cuOut.get_data_ptr(),out->get_number_of_elements()*sizeof(T),cudaMemcpyDeviceToHost);*/
-    	hoDev.mult_M(in,out,accumulate);
+      cudaMemcpy(out->get_data_ptr(),cuOut.get_data_ptr(),out->get_number_of_elements()*sizeof(T),cudaMemcpyDeviceToHost);
+    	//hoDev.mult_M(in,out,accumulate);
     }
 
     //TODO: Generalize to work if we can fit just the 1 single dimension on the gpu
     virtual void mult_MH(hoCuNDArray<T>* in, hoCuNDArray<T>* out, bool accumulate)
     {
-    	/*
+
       size_t free = cudaDeviceManager::Instance()->getFreeMemory();
 
       if( free/sizeof(T) < in->get_number_of_elements()*2)
@@ -62,14 +62,14 @@ namespace Gadgetron{
       dev.mult_MH(&cuIn,&cuOut,accumulate);
 
       cudaMemcpy(out->get_data_ptr(),cuOut.get_data_ptr(),out->get_number_of_elements()*sizeof(T),cudaMemcpyDeviceToHost);
-      */
-    	hoDev.mult_MH(in,out,accumulate);
+
+    	//hoDev.mult_MH(in,out,accumulate);
     }
 
     //TODO: Generalize to work if we can fit just the 1 single dimension on the gpu
     virtual void mult_MH_M(hoCuNDArray<T>* in, hoCuNDArray<T>* out, bool accumulate)
     {
-    	/*
+
       size_t free = cudaDeviceManager::Instance()->getFreeMemory();
 
       if( free/sizeof(T) < in->get_number_of_elements()*2)
@@ -82,8 +82,8 @@ namespace Gadgetron{
       dev.mult_MH_M(&cuIn,&cuOut,accumulate);
 
       cudaMemcpy(out->get_data_ptr(),cuOut.get_data_ptr(),out->get_number_of_elements()*sizeof(T),cudaMemcpyDeviceToHost);
-      */
-    	hoDev.mult_MH_M(in,out,accumulate);
+
+    	//hoDev.mult_MH_M(in,out,accumulate);
     }
 
   protected:

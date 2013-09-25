@@ -614,6 +614,8 @@ conebeam_forwards_projection( hoCuNDArray<float> *projections,
 	cudaFree(projections_DevPtr2);
 	cudaFreeArray(image_array);
 
+	CUDA_CALL(cudaStreamDestroy(mainStream));
+	CUDA_CALL(cudaStreamDestroy(indyStream));
 	CHECK_FOR_CUDA_ERROR();
 
 	if (accumulate){
