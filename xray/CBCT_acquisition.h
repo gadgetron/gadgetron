@@ -186,6 +186,7 @@ public:
 		geometry_->set_angles(angles);
 		errCode=H5LTread_dataset (file_id, "/angles", H5T_NATIVE_FLOAT, &geometry_->get_angles()[0]);
 		if (errCode < 0) 	throw std::runtime_error("Error reading /angles from file.");
+
 		// Get offsets array
 		//
 

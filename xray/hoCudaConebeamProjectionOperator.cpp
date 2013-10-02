@@ -131,7 +131,7 @@ namespace Gadgetron
 				     binning_->get_bin(b),
 				     projections_per_batch_,
 				     is_dims_in_pixels, is_dims_in_mm_, ps_dims_in_mm,
-				     SDD, SAD, use_fbp_, short_scan_,use_offset_correction_, accumulate );
+				     SDD, SAD, use_fbp_, short_scan_, use_offset_correction_, accumulate );
     }
   }
 }

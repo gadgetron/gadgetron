@@ -55,19 +55,21 @@ namespace Gadgetron{
       float delta = std::atan(ps_dims_in_mm[0]/(2.0f*SDD)); // Fan angle
       
       if( angle_span*CUDART_PI_F/180.0f > CUDART_PI_F+3.0f*delta )
-	short_scan_ = false;
+        short_scan_ = false;
       else
-	short_scan_ = true;
+        short_scan_ = true;
       
       /*
       std::cout << std::endl <<  *std::min_element(angles.begin(), angles.end() ) << " " 
-		<< *std::max_element(angles.begin(), angles.end() ) << std::endl;
+      << *std::max_element(angles.begin(), angles.end() ) << std::endl;
       */
+
       std::vector<floatd2> offsets = acquisition_->get_geometry()->get_offsets();
       floatd2 mean_offset = std::accumulate(offsets.begin(),offsets.end(),floatd2(0,0))/float(offsets.size());
 
       if (mean_offset[0] > ps_dims_in_mm[0]*0.1)
       	use_offset_correction_=true;
+
       preprocessed_ = true;
     }
 
