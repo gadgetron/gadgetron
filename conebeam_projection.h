@@ -1,10 +1,8 @@
 #pragma once
 
 #include "hoCuNDArray.h"
+#include "cuNDArray.h"
 #include "vector_td.h"
-
-#include <vector>
-#include <math_constants.h>
 
 namespace Gadgetron {
   
@@ -13,7 +11,8 @@ namespace Gadgetron {
   //
   
   void 
-  conebeam_forwards_projection( hoCuNDArray<float> *projections,
+  conebeam_forwards_projection( 
+        hoCuNDArray<float> *projections,
 				hoCuNDArray<float> *image,
 				std::vector<float> angles, 
 				std::vector<floatd2> offsets, 
@@ -24,26 +23,30 @@ namespace Gadgetron {
 				floatd2 ps_dims_in_mm,
 				float SDD, 
 				float SAD,
-				bool accumulate );
+				bool accumulate 
+  );
   
   // Backprojection of a set of projections onto a 3D volume.
   // - depending on the provided binnning indices, just a subset of the projections can be included
   //
 
-  void 
-  conebeam_backwards_projection( hoCuNDArray<float> *projections,
-				 hoCuNDArray<float> *image,
-				 std::vector<float> angles, 
-				 std::vector<floatd2> offsets, 
-				 std::vector<unsigned int> indices,
-				 int projections_per_batch,
-				 intd3 is_dims_in_pixels, 
-				 floatd3 is_dims_in_mm, 
-				 floatd2 ps_dims_in_mm,
-				 float SDD, 
-				 float SAD,
-				 bool use_fbp, 
-				 bool short_scan,
-				 bool offset_correct,
-				 bool accumulate );
+  template <bool FBP>
+  void conebeam_backwards_projection( 
+        hoCuNDArray<float> *projections,
+        hoCuNDArray<float> *image,
+        std::vector<float> angles, 
+        std::vector<floatd2> offsets, 
+        std::vector<unsigned int> indices,
+        int projections_per_batch,
+        intd3 is_dims_in_pixels, 
+        floatd3 is_dims_in_mm, 
+        floatd2 ps_dims_in_mm,
+        float SDD, 
+        float SAD,
+        bool accumulate, 
+        bool short_scan,
+        bool use_offset_correction,
+        cuNDArray<float> *cosine_weights = 0x0,
+        cuNDArray<float> *frequency_filter = 0x0
+  );
 }

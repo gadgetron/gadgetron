@@ -1,7 +1,7 @@
 #include "parameterparser.h"
 #include "CBCT_acquisition.h"
 #include "CBCT_binning.h"
-#include "hoCudaConebeamProjectionOperator.h"
+#include "hoCuConebeamProjectionOperator.h"
 #include "hoNDArray_fileio.h"
 #include "hoCuNDArray_math.h"
 #include "vector_td_utilities.h"
@@ -116,7 +116,7 @@ int main(int argc, char** argv)
   // - and configure based on input parameters
   //
   
-  boost::shared_ptr< hoCudaConebeamProjectionOperator > E( new hoCudaConebeamProjectionOperator() );
+  boost::shared_ptr< hoCuConebeamProjectionOperator > E( new hoCuConebeamProjectionOperator() );
 
   E->setup( acquisition, binning, is_dims_in_mm );
   E->use_filtered_backprojections(use_fbp);

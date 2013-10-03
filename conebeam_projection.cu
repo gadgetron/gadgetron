@@ -9,7 +9,6 @@
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_operators.h"
 #include "cuNDArray_utils.h"
-#include "cuNDArray_blas.h"
 #include "cuNFFT.h"
 #include "check_CUDA.h"
 #include "GPUTimer.h"
@@ -18,12 +17,12 @@
 #include "setup_grid.h"
 
 #include <cuda_runtime_api.h>
+#include <math_constants.h>
 #include <cufft.h>
-#include <float.h>
 #include <iostream>
-#include <fstream>
 #include <cmath>
 #include <algorithm>
+#include <vector>
 
 #define PS_ORIGIN_CENTERING
 #define IS_ORIGIN_CENTERING
@@ -111,7 +110,7 @@ namespace Gadgetron
   
   //
   // Redundancy correction for short scan mode
-  // - i.e. when you do not acquire a full rotation of data
+  // - i.e. for less than a full rotation of data
   //
   // See "Optimal short scan convolution reconstruction for fanbeam CT", Dennis Parker, Med. Phys. 9(2) 1982
   // and (for the implementation) "Parker weights revisited", Wesarg et al, Med. Phys. 29(3) 2002.
@@ -129,7 +128,7 @@ namespace Gadgetron
   static __inline__ __device__ float B( float alpha, float delta )
   {
     return 2.0f*(delta-alpha)+epsilon;
-  }
+ }
 
   static __inline__ __device__ float b( float alpha, float delta )
   {
@@ -216,7 +215,6 @@ namespace Gadgetron
     if( idx < num_elements ){
 
       const uintd3 co = idx_to_co<3>( idx, dims );
-      //const floatd2 offset = floatd2(0,0);
       const floatd2 offset = offsets[co[2]];
       const float t = phys_dims[0]*(float(co[0])/(float(dims[0]))-0.5f)+offset[0];
       const float omega = phys_dims[0]/2.0f-fabs(offset[0]);
@@ -478,15 +476,11 @@ namespace Gadgetron
     // Allocate the angles, offsets and projections in device memory
     //
 
-    float* projections_DevPtr;
-    float* projections_DevPtr2;
-
+    float *projections_DevPtr, *projections_DevPtr2;
     cudaMalloc( (void**) &projections_DevPtr, projection_res_x*projection_res_y*projections_per_batch*sizeof(float));
     cudaMalloc( (void**) &projections_DevPtr2, projection_res_x*projection_res_y*projections_per_batch*sizeof(float));
 
-    cudaStream_t mainStream;
-    cudaStream_t indyStream;
-
+    cudaStream_t mainStream, indyStream;
     cudaStreamCreate(&mainStream);
     cudaStreamCreate(&indyStream);
 
@@ -528,7 +522,6 @@ namespace Gadgetron
       dim3 dimBlock, dimGrid;
       setup_grid( projection_res_x*projection_res_y*projections_in_batch, &dimBlock, &dimGrid );
 
-      //
       // Launch kernel
       //
 
@@ -584,7 +577,7 @@ namespace Gadgetron
     }
   }
 
-  __global__ void
+  template <bool FBP> __global__ void
   conebeam_backwards_projection_kernel( float *image,
                                         float *angles,
                                         floatd2 *offsets,
@@ -596,7 +589,6 @@ namespace Gadgetron
                                         float num_projections_in_bin,
                                         float SDD,
                                         float SAD,
-                                        bool use_fbp,
                                         bool accumulate )
   {
     // Image voxel to backproject into (pixel coordinate and index)
@@ -684,7 +676,7 @@ namespace Gadgetron
 
         float weight = 1.0;
 
-        if( use_fbp ){
+        if( FBP ){
 
           // Equation 3.59, page 96 and equation 10.2, page 386
           // in Computed Tomography 2nd edition, Jiang Hsieh
@@ -714,97 +706,29 @@ namespace Gadgetron
     }
   }
 
-  // Compute cosine weights (for filtered backprojection)
-  //
-
-  boost::shared_ptr< cuNDArray<float> >
-  get_cosinus_weights( intd2 ps_dims_in_pixels, floatd2 ps_dims_in_mm, float D0d, float Ds0 )
-  {
-    std::vector<unsigned int> dims;
-    dims.push_back(ps_dims_in_pixels[0]);
-    dims.push_back(ps_dims_in_pixels[1]);
-
-    hoCuNDArray<float> weights(&dims);
-    float* data = weights.get_data_ptr();
-
-    const float Dsd = D0d + Ds0;
-
-#ifdef USE_OMP
-#pragma omp parallel for
-#endif
-    for( int y=0; y<ps_dims_in_pixels[1]; y++ ) {
-      for( int x=0; x<ps_dims_in_pixels[0]; x++ ) {
-
-        double xx = (( double(x) / double(ps_dims_in_pixels[0])) - 0.5) * ps_dims_in_mm[0];
-        double yy = (( double(y) / double(ps_dims_in_pixels[1])) - 0.5) * ps_dims_in_mm[1];
-        double s = Ds0 * xx/Dsd;
-        double t = Ds0 * yy/Dsd;
-
-        // Equation 10.1, page 386 in Computed Tomography 2nd edition, Jiang Hsieh
-        //
-
-        double value = Ds0 / std::sqrt( Ds0*Ds0 + s*s + t*t );
-        data[x+y*ps_dims_in_pixels[0]] = float(value);
-      }
-    }
-    return boost::shared_ptr< cuNDArray<float> >(new cuNDArray<float>(&weights));
-  }
-
-  //
-  // Use ramp filter in filtered backprojection
-  //
-
-  boost::shared_ptr< cuNDArray<float> >
-  get_ramp( int size )
-  {
-    std::vector<unsigned int> dims;
-    dims.push_back((size>>1)+1); // cufft R2C outputs in this size
-
-    hoCuNDArray<float> host_weights(&dims);
-    float* data = host_weights.get_data_ptr();
-
-    data[0] = 0.25f; // heuristically assigned
-
-    float A2 = dims[0]*dims[0];
-#ifdef USE_OMP
-#pragma omp parallel for
-#endif    
-    for( int i=0; i<dims[0]; i++ ) {
-      //data[i+1] = std::min(float(i+1), float(size>>4));
-      int k = i+1;
-      data[i+1] = k*A2/(A2-k*k)*std::exp(-A2/(A2-k*k)); //From Guo et al,Journal of X-Ray Science and Technology 2011, doi: 10.3233/XST-2011-0294
-      //data[i+1] = float(i+1);
-    }
-
-    data[dims[0]-1]=0;
-    boost::shared_ptr< cuNDArray<float> > weights(new cuNDArray<float>(&host_weights));
-    float sum = asum(weights.get());
-    *weights /= sum;
-    return weights;
-  }
-
   //
   // Backprojection
   //
 
-  void
-  conebeam_backwards_projection( hoCuNDArray<float> *projections,
-                                 hoCuNDArray<float> *image,
-                                 std::vector<float> angles,
-                                 std::vector<floatd2> offsets,
-                                 std::vector<unsigned int> indices,
-                                 int projections_per_batch,
-                                 intd3 is_dims_in_pixels,
-                                 floatd3 is_dims_in_mm,
-                                 floatd2 ps_dims_in_mm,
-                                 float SDD,
-                                 float SAD,
-                                 bool use_fbp,
-                                 bool short_scan,
-                                 bool use_offset_correction,
-                                 bool accumulate )
+  template <bool FBP> 
+  void conebeam_backwards_projection( hoCuNDArray<float> *projections,
+                                      hoCuNDArray<float> *image,
+                                      std::vector<float> angles,
+                                      std::vector<floatd2> offsets,
+                                      std::vector<unsigned int> indices,
+                                      int projections_per_batch,
+                                      intd3 is_dims_in_pixels,
+                                      floatd3 is_dims_in_mm,
+                                      floatd2 ps_dims_in_mm,
+                                      float SDD,
+                                      float SAD,
+                                      bool short_scan,
+                                      bool use_offset_correction,
+                                      bool accumulate,
+                                      cuNDArray<float> *cosine_weights,
+                                      cuNDArray<float> *frequency_filter
+                                      )
   {
-
     //
     // Validate the input
     //
@@ -825,6 +749,10 @@ namespace Gadgetron
       throw std::runtime_error("Error: conebeam_backwards_projection: inconsistent sizes of input arrays/vectors");
     }
 
+    if( FBP && !(cosine_weights && frequency_filter) ){
+      throw std::runtime_error("Error: conebeam_backwards_projection: for _filtered_ backprojection both cosine weights and a filter must be provided");
+    }
+    
     // Some utility variables
     //
 
@@ -873,15 +801,11 @@ namespace Gadgetron
     // Allocate the angles, offsets and projections in device memory
     //
 
-    float* projections_DevPtr;
-    float* projections_DevPtr2;
-
+    float *projections_DevPtr, *projections_DevPtr2;
     cudaMalloc( (void**) &projections_DevPtr, projection_res_x*projection_res_y*projections_per_batch*sizeof(float));
     cudaMalloc( (void**) &projections_DevPtr2, projection_res_x*projection_res_y*projections_per_batch*sizeof(float));
 
-    cudaStream_t mainStream;
-    cudaStream_t indyStream;
-
+    cudaStream_t mainStream, indyStream;
     cudaStreamCreate(&mainStream);
     cudaStreamCreate(&indyStream);
 
@@ -969,33 +893,23 @@ namespace Gadgetron
       float* raw_angles = thrust::raw_pointer_cast(&angles_devVec[from_projection]);
       floatd2* raw_offsets = thrust::raw_pointer_cast(&offsets_devVec[from_projection]);
 
-      // Pre-backprojection filtering (if enabled)
+      // Apply offset correction 
+      // - for half fan mode, sag correction etc.
       //
 
       if( use_offset_correction )
         offset_correct( projections_batch, raw_offsets, ps_dims_in_mm, SAD, SDD );
 
-      if( use_fbp ){
-
-        static boost::shared_ptr< cuNDArray<float> > cos_weights;
-        static bool initialized = false;
-
-        // Compute cosine weighing at first invocation
+      if( FBP ){
+        
+        // Apply cosine weighting : "SDD / sqrt(SDD*SDD + u*u + v*v)" 
+        // - with (u,v) positions given in metric units on a virtual detector at the origin
         //
 
-        if (!initialized) {
-          const float ADD = SDD - SAD;
-          cos_weights = get_cosinus_weights(intd2(projection_res_x, projection_res_y), ps_dims_in_mm, ADD, SAD);
-          initialized = true;
-          //write_nd_array<float>( cos_weights->to_host().get(), "cos_weights.real");
-        }
+        *projections_batch *= *cosine_weights;
 
-        // 1. Cosine weighting "SDD / sqrt(SDD*SDD + u*u + v*v)"
-        //
-
-        *projections_batch *= *cos_weights;
-
-        // 1.5 redundancy correct (in short scan mode)
+        // Redundancy correct
+        // - for short scan mode
         //
 
         if( short_scan ){
@@ -1003,21 +917,18 @@ namespace Gadgetron
           redundancy_correct( projections_batch, raw_angles, delta );
         }
 
-        // 2. Apply ramp filter (using FFT)
+        // Apply frequency filter
+        // - use zero padding to avoid the cyclic boundary conditions induced by the fft
         //
 
-        static boost::shared_ptr< cuNDArray<float> > ramp;
-        static bool ramp_initialized = false;
-
-        if (!ramp_initialized) {
-          ramp = get_ramp( projection_res_x );
-          ramp_initialized = true;
-          //write_nd_array<float>( ramp->to_host().get(), "ramp.real");
-        }
-
-        boost::shared_ptr< cuNDArray<complext<float> > > complex_projections = cb_fft( projections_batch );
-        *complex_projections *= *ramp;
-        cb_ifft( complex_projections.get(), projections_batch );
+        std::vector<unsigned int> batch_dims = *projections_batch->get_dimensions(); 
+        uintd3 pad_dims(batch_dims[0]<<1, batch_dims[1], batch_dims[2]);        
+        boost::shared_ptr< cuNDArray<float> > padded_projections = pad<float,3>( pad_dims, projections_batch );
+        boost::shared_ptr< cuNDArray<complext<float> > > complex_projections = cb_fft( padded_projections.get() );
+        *complex_projections *= *frequency_filter;
+        cb_ifft( complex_projections.get(), padded_projections.get() );
+        uintd3 crop_offsets(batch_dims[0]>>1, 0, 0);
+        crop<float,3>( crop_offsets, padded_projections.get(), projections_batch );      
       }
 
       // Build array for input texture
@@ -1109,13 +1020,12 @@ namespace Gadgetron
       // Invoke kernel
       //
 
-      cudaFuncSetCacheConfig(conebeam_backwards_projection_kernel, cudaFuncCachePreferL1);
+      cudaFuncSetCacheConfig(conebeam_backwards_projection_kernel<FBP>, cudaFuncCachePreferL1);
 
-      conebeam_backwards_projection_kernel<<< dimGrid, dimBlock, 0, mainStream >>>
+      conebeam_backwards_projection_kernel<FBP><<< dimGrid, dimBlock, 0, mainStream >>>
 				( image_device->get_data_ptr(), raw_angles, raw_offsets,
           is_dims_in_pixels, is_dims_in_mm, ps_dims_in_pixels, ps_dims_in_mm,
-          projections_in_batch, num_projections_in_bin, SDD, SAD, use_fbp,
-          (batch==0) ? accumulate : true );
+          projections_in_batch, num_projections_in_bin, SDD, SAD, (batch==0) ? accumulate : true );
 
       CHECK_FOR_CUDA_ERROR();
 
@@ -1148,4 +1058,15 @@ namespace Gadgetron
     CUDA_CALL(cudaStreamDestroy(mainStream));
     CHECK_FOR_CUDA_ERROR();
   }
+
+  // Template instantiations
+  //
+
+  template void conebeam_backwards_projection<false>
+  ( hoCuNDArray<float>*, hoCuNDArray<float>*, std::vector<float>, std::vector<floatd2>, std::vector<unsigned int>,
+    int, intd3, floatd3, floatd2, float, float, bool, bool, bool, cuNDArray<float>*, cuNDArray<float>* );
+
+  template void conebeam_backwards_projection<true>
+  ( hoCuNDArray<float>*, hoCuNDArray<float>*, std::vector<float>, std::vector<floatd2>, std::vector<unsigned int>,
+    int, intd3, floatd3, floatd2, float, float, bool, bool, bool, cuNDArray<float>*, cuNDArray<float>* );
 }

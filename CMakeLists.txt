@@ -9,7 +9,7 @@ include_directories(
 )
 
 cuda_add_library(Xray_kernels SHARED
-  conebeam_projection.cu hoCudaConebeamProjectionOperator.cpp
+  conebeam_projection.cu hoCuConebeamProjectionOperator.cpp
 )
 
 target_link_libraries(Xray_kernels gpucore gpunfft hostutils ${CUDA_LIBRARIES})

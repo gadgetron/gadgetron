@@ -1,5 +1,6 @@
 #pragma once
 
+#include "cuNDArray.h"
 #include "linearOperator.h"
 #include "CBCT_acquisition.h"
 #include "CBCT_binning.h"
@@ -12,10 +13,10 @@
 
 namespace Gadgetron{
   
-  class hoCudaConebeamProjectionOperator : public linearOperator< hoCuNDArray<float> >
+  class hoCuConebeamProjectionOperator : public linearOperator< hoCuNDArray<float> >
   {
   public:
-    hoCudaConebeamProjectionOperator() : linearOperator< hoCuNDArray<float> >()
+    hoCuConebeamProjectionOperator() : linearOperator< hoCuNDArray<float> >()
     {
       samples_per_pixel_ = 1.5;      
       projections_per_batch_ = 20;
@@ -25,7 +26,7 @@ namespace Gadgetron{
       use_offset_correction_=false;
     }
 
-    virtual ~hoCudaConebeamProjectionOperator() {}
+    virtual ~hoCuConebeamProjectionOperator() {}
 
     virtual void mult_M( hoCuNDArray<float> *in, hoCuNDArray<float> *out, bool accumulate = false );
     virtual void mult_MH( hoCuNDArray<float> *in, hoCuNDArray<float> *out, bool accumulate = false );
@@ -85,10 +86,18 @@ namespace Gadgetron{
       samples_per_pixel_ = samples_per_pixel;
     }
 
+    inline void set_frequency_filter( boost::shared_ptr< cuNDArray<float> > weights ){
+      frequency_filter_ = weights;
+    }
+
     virtual boost::shared_ptr< linearOperator< hoCuNDArray<float> > > clone() {
       return linearOperator< hoCuNDArray<float> >::clone(this);
     }
     
+  protected:
+    virtual void compute_default_frequency_filter();
+    virtual void compute_cosine_weights();
+
   protected:
     boost::shared_ptr<CBCT_acquisition> acquisition_;
     boost::shared_ptr<CBCT_binning> binning_;
@@ -99,6 +108,7 @@ namespace Gadgetron{
     bool preprocessed_;
     bool short_scan_;
     bool use_offset_correction_;
-    boost::shared_ptr<hoCuNDArray<float> > variance_;
+    boost::shared_ptr< cuNDArray<float> > cosine_weights_;
+    boost::shared_ptr< cuNDArray<float> > frequency_filter_;
   };
 }

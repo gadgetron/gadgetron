@@ -1,7 +1,7 @@
 #include "parameterparser.h"
 #include "CBCT_acquisition.h"
 #include "CBCT_binning.h"
-#include "hoCudaConebeamProjectionOperator.h"
+#include "hoCuConebeamProjectionOperator.h"
 #include "hoNDArray_fileio.h"
 #include "vector_td_utilities.h"
 #include "GPUTimer.h"
@@ -217,7 +217,7 @@ int main(int argc, char** argv)
   // - and configure based on input parameters
   //
 
-  boost::shared_ptr< hoCudaConebeamProjectionOperator > E( new hoCudaConebeamProjectionOperator() );
+  boost::shared_ptr< hoCuConebeamProjectionOperator > E( new hoCuConebeamProjectionOperator() );
   
   CommandLineParameter *parm = parms.get_parameter('P');
   if( parm && parm->get_is_set() )
