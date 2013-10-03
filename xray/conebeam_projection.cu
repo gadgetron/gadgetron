@@ -338,8 +338,9 @@ namespace Gadgetron
       //
 
       const floatd3 vec_over_dir = (is_dims_in_mm-startPoint)/dir;
-      const floatd3 start = amin(-vec_over_dir, vec_over_dir);
-      const floatd3 end   = amax(-vec_over_dir, vec_over_dir);
+      const floatd3 vecdiff_over_dir = (-is_dims_in_mm-startPoint)/dir;
+      const floatd3 start = amin(vecdiff_over_dir, vec_over_dir);
+      const floatd3 end   = amax(vecdiff_over_dir, vec_over_dir);
 
       float a1 = fmax(max(start),0.0f);
       float aend = fmin(min(end),1.0f);

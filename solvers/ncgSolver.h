@@ -28,7 +28,7 @@ public:
 
 	ncgSolver(): gpSolver<ARRAY_TYPE>() {
 		iterations_ = 10;
-		tc_tolerance_ = (REAL)1e-8;
+		tc_tolerance_ = (REAL)1e-6;
 		non_negativity_constraint_=false;
 		dump_residual = false;
 		threshold= REAL(1e-8);
@@ -38,7 +38,7 @@ public:
 	virtual ~ncgSolver(){}
 
 	virtual boost::shared_ptr<ARRAY_TYPE> solve(ARRAY_TYPE* in)
-									{
+															{
 		if( this->encoding_operator_.get() == 0 ){
 			throw std::runtime_error("Error: ncgSolver::compute_rhs : no encoding operator is set" );
 		}
@@ -51,15 +51,10 @@ public:
 			throw std::runtime_error("Error: ncgSolver::compute_rhs : encoding operator has not set domain dimension" );
 		}
 
-		ARRAY_TYPE * x = new ARRAY_TYPE;
-		x->create(image_dims.get());
-
-
-
-		ARRAY_TYPE * g = new ARRAY_TYPE;
-		g->create(image_dims.get());
-		ARRAY_TYPE *  g_old = new ARRAY_TYPE;
-		g_old->create(image_dims.get());
+		REAL sigma = REAL(0.4);
+		ARRAY_TYPE * x = new ARRAY_TYPE(image_dims.get());
+		ARRAY_TYPE * g = new ARRAY_TYPE(image_dims.get());
+		ARRAY_TYPE *  g_old = new ARRAY_TYPE;(image_dims.get());
 
 		if (this->x0_.get()){
 			*x = *(this->x0_.get());
@@ -67,9 +62,6 @@ public:
 			clear(x);
 		}
 
-		REAL rho = REAL(0.5);
-		REAL delta = REAL(0.001);
-		REAL sigma = REAL(0.4);
 
 		std::vector<ARRAY_TYPE> regEnc;
 
@@ -81,14 +73,15 @@ public:
 			}
 
 		}
-		std::vector<ARRAY_TYPE> regEnc2 = regEnc;
 
 		ARRAY_TYPE d(image_dims.get());
 		clear(&d);
 		ARRAY_TYPE encoding_space(in->get_dimensions().get());
 
-		ARRAY_TYPE gtmp(image_dims.get());
-		ARRAY_TYPE encoding_space2(in->get_dimensions().get());
+		boost::shared_ptr<ARRAY_TYPE> encoding_space2(new ARRAY_TYPE(in->get_dimensions().get()));
+		boost::shared_ptr<ARRAY_TYPE> encoding_space3;
+		if (non_negativity_constraint_) encoding_space3 = boost::shared_ptr<ARRAY_TYPE>(new ARRAY_TYPE(in->get_dimensions().get()));
+		else encoding_space3 = encoding_space2;
 		REAL reg_res,data_res;
 
 		if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
@@ -122,14 +115,15 @@ public:
 
 			//REAL grad_norm = nrm2(g);
 			REAL grad_norm=REAL(1);
+
 			if (non_negativity_constraint_) solver_non_negativity_filter(x,g);
-			
+			//REAL grad_norm = nrm2(g)/std::sqrt(data_res);
 			/*if (i==0) grad0=::abs((*g)[amax(g)]);
-			  else grad_norm = ::abs((*g)[amax(g)])/(grad0); //L-inf norm*/
+			else grad_norm = ::abs((*g)[amax(g)])/(grad0); //L-inf norm */
+
 			if (i==0) grad0 = dot(g,g);
 			else grad_norm = dot(g,g)/grad0;
 			if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
-
 				std::cout << "Iteration " <<i << ". Gradient norm: " <<  grad_norm << std::endl;
 				std::cout << "Data residual: " << data_res << std::endl;
 			}
@@ -143,7 +137,6 @@ public:
 				//ELEMENT_TYPE beta = std::max(REAL(0),-dot(g,g_old)/g_old_norm); //PRP ste[
 				ELEMENT_TYPE betaDy = -gg/dot(&d,g_old);
 				ELEMENT_TYPE betaHS = dot(g,g_old)/dot(&d,g_old);
-
 				ELEMENT_TYPE beta = std::max(REAL(0),std::min(betaDy,betaHS)); //Hybrid step size from Dai and Yuan 2001
 
 				std::cout << "Beta " << beta << std::endl;
@@ -153,71 +146,39 @@ public:
 				d -= *g;
 
 			}
+			*g_old=*g;
 
-			this->encoding_operator_->mult_M(&d,&encoding_space2);
-			//this->encoding_operator_->mult_MH(&encoding_space2,&gtmp);
-			calc_regMultM(&d,regEnc2);
-
-			REAL alpha0 = REAL(1);
-			if (this->operators.size() == 0) alpha0 = -(dot(&encoding_space,&encoding_space2)+calc_dot(regEnc,regEnc2))/(dot(&encoding_space2,&encoding_space2)+calc_dot(regEnc2,regEnc2));
-			//REAL alpha0 = REAL(1);
-			REAL alpha;
-			REAL alpha_old;
-			REAL old_norm = functionValue(&encoding_space,regEnc,x);
-
-			REAL gd = dot(g,&d);
-
-			*g_old = *g;
-
-			bool wolfe=false;
-
-			int k = 0;
-
-			alpha_old = 0;
-			ARRAY_TYPE x2(*x);
-
-			while (not wolfe){
-
-				alpha=alpha0*std::pow(rho,k);
-				axpy(alpha-alpha_old,&encoding_space2,&encoding_space);
-				reg_axpy(alpha-alpha_old,regEnc2,regEnc);
-				axpy(alpha-alpha_old,&d,&x2);
-
-				//axpy(alpha-alpha_old,&gtmp,g);
-
-				if (functionValue(&encoding_space,regEnc,&x2) <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
-				//if ((dot(g,&d)) >= sigma*gd) wolfe =false; //So... officially this is part of the strong Wolfe condition. For semi-linear problems our initial step size should be sufficient.
-				k++;
-				//std::cout << "Res: " << dot(&encoding_space,&encoding_space)+calc_dot(regEnc,regEnc) << " Target: " << old_norm+alpha*delta*gd << std::endl;
-				//				std::cout << "Step2: " << dot(&gdiff,&d) << " Target " << sigma*gd  << std::endl;
-				if (alpha == 0) throw std::runtime_error("Wolfe line search failed");
-				alpha_old = alpha;
-			}
-
-			axpy(alpha,&d,x);
 			if (non_negativity_constraint_){
+				ARRAY_TYPE x_old(*x);
+				ARRAY_TYPE enc_old(encoding_space);
+				std::vector<ARRAY_TYPE> reg_old=regEnc;
+				REAL alpha = wolfe_search(x,&d,g,&encoding_space,regEnc);
+				if (alpha==0) break;
 				clamp_min(x,ELEMENT_TYPE(0));
-				this->encoding_operator_->mult_M(x,&encoding_space);
-				encoding_space -= *in;
-				calc_regMultM(x,regEnc);
-				for (int n = 0; n < regEnc.size(); n++)
-					if (reg_priors[n].get())
-						axpy(-std::sqrt(this->regularization_operators_[n]->get_weight()),reg_priors[n].get(),&regEnc[n]);
+
+				x_old -= *x;
+				x_old *= ELEMENT_TYPE(-1);
+				encoding_space = enc_old;
+				regEnc=reg_old;
+				alpha=wolfe_search(x,&x_old,g,&encoding_space,regEnc);
+				if (alpha==0) break;
+			} else{
+				REAL alpha=wolfe_search(x,&d,g,&encoding_space,regEnc);
+				if (alpha==0) break;
 			}
 			this->encoding_operator_->mult_MH(&encoding_space,g);
 			this->add_gradient(x,g);
 			add_linear_gradient(regEnc,g);
 
-
 			iteration_callback(x,i,data_res,reg_res);
 
-			
+
 			if (grad_norm < tc_tolerance_)  break;
 		}
 		delete g,g_old;
 
 		return boost::shared_ptr<ARRAY_TYPE>(x);
-	}
+															}
 
 
 
@@ -332,12 +293,63 @@ protected:
 		REAL res= std::sqrt(this->encoding_operator_->get_weight())*dot(encoding_space,encoding_space);
 
 		for (int i = 0; i  < this->operators.size(); i++){
-					res += this->operators[i]->magnitude(x);
+			res += this->operators[i]->magnitude(x);
 		}
 
 		res += calc_dot(regEnc,regEnc);
 		return res;
 
+	}
+
+	REAL wolfe_search(ARRAY_TYPE* x, ARRAY_TYPE *d,ARRAY_TYPE *g, ARRAY_TYPE* encoding_space, std::vector<ARRAY_TYPE>& regEnc){
+		REAL rho = REAL(0.5);
+		REAL delta = REAL(0.001);
+
+		ARRAY_TYPE diff_encoding_space(encoding_space->get_dimensions());
+		this->encoding_operator_->mult_M(d,&diff_encoding_space);
+
+		std::vector<ARRAY_TYPE> regEnc2 = regEnc;
+		//this->encoding_operator_->mult_MH(&encoding_space2,&gtmp);
+		calc_regMultM(d,regEnc2);
+
+		REAL alpha0 = REAL(1);
+		//If we do not have non-linear operators
+		if (this->operators.size() == 0) alpha0 = -(dot(encoding_space,&diff_encoding_space)+calc_dot(regEnc,regEnc2))/(dot(&diff_encoding_space,&diff_encoding_space)+calc_dot(regEnc2,regEnc2));
+		//REAL alpha0 = REAL(1);
+		REAL alpha;
+		REAL alpha_old;
+		REAL old_norm = functionValue(encoding_space,regEnc,x);
+
+		REAL gd = dot(g,d);
+
+		//*g_old = *g;
+
+		bool wolfe=false;
+
+		int k = 0;
+
+		alpha_old = 0;
+
+
+		while (not wolfe){
+
+			alpha=alpha0*std::pow(rho,k);
+			axpy(alpha-alpha_old,&diff_encoding_space,encoding_space);
+			reg_axpy(alpha-alpha_old,regEnc2,regEnc);
+			axpy(alpha-alpha_old,d,x);
+
+			//axpy(alpha-alpha_old,&gtmp,g);
+			REAL f  = functionValue(encoding_space,regEnc,x) ;
+			if (f <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
+			//if ((dot(g,&d)) >= sigma*gd) wolfe =false; //So... officially this is part of the strong Wolfe condition. For semi-linear problems our initial step size should be sufficient.
+			k++;
+			std::cout << "Res: " << f << " Target: " << old_norm+alpha*delta*gd << std::endl;
+			//				std::cout << "Step2: " << dot(&gdiff,&d) << " Target " << sigma*gd  << std::endl;
+			//if (alpha == 0) throw std::runtime_error("Wolfe line search failed");
+			if (alpha == 0) return 0;
+			alpha_old = alpha;
+		}
+		return alpha;
 	}
 
 
