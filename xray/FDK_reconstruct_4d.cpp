@@ -1,7 +1,7 @@
 #include "parameterparser.h"
 #include "CBCT_acquisition.h"
 #include "CBCT_binning.h"
-#include "hoCudaConebeamProjectionOperator.h"
+#include "hoCuConebeamProjectionOperator.h"
 #include "hoNDArray_fileio.h"
 #include "hoCuNDArray_math.h"
 #include "vector_td_utilities.h"
@@ -97,7 +97,7 @@ int main(int argc, char** argv)
 	// Standard 3D FDK reconstruction
 	//
 
-	boost::shared_ptr< hoCudaConebeamProjectionOperator > E( new hoCudaConebeamProjectionOperator() );
+	boost::shared_ptr< hoCuConebeamProjectionOperator > E( new hoCuConebeamProjectionOperator() );
 
 	E->setup( acquisition, binning, is_dims_in_mm );
 
@@ -125,8 +125,8 @@ int main(int argc, char** argv)
 
 	size_t numBins = ps_bd4d->get_number_of_bins();
 	is_dims.push_back(numBins);
-	boost::shared_ptr< hoCudaConebeamProjectionOperator >
-	E4D( new hoCudaConebeamProjectionOperator() );
+	boost::shared_ptr< hoCuConebeamProjectionOperator >
+	E4D( new hoCuConebeamProjectionOperator() );
 	E4D->setup(acquisition,ps_bd4d,is_dims_in_mm);
 	E4D->use_filtered_backprojections(true);
 	E4D->set_domain_dimensions(&is_dims);

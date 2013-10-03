@@ -5,7 +5,7 @@
 #include "imageOperator.h"
 #include "identityOperator.h"
 #include "hoPartialDerivativeOperator.h"
-#include "hoCudaConebeamProjectionOperator.h"
+#include "hoCuConebeamProjectionOperator.h"
 #include "cuConvolutionOperator.h"
 #include "hoCuNDArray_blas.h"
 #include "hoCuNDArray_operators.h"
@@ -16,16 +16,17 @@
 #include "encodingOperatorContainer.h"
 #include "vector_td_io.h"
 #include "hoCuPartialDerivativeOperator.h"
-
 #include "hoCuTvOperator.h"
 #include "hoCuTvPicsOperator.h"
 #include "hoCuSbcCgSolver.h"
+#include "hoRegistration_utils.h"
+
 #include <iostream>
 #include <algorithm>
 #include <sstream>
 #include <math_constants.h>
 #include <boost/program_options.hpp>
-#include "hoRegistration_utils.h"
+
 using namespace std;
 using namespace Gadgetron;
 
@@ -155,8 +156,8 @@ int main(int argc, char** argv)
 
 	//Standard 3d FDK
 	// Define encoding matrix
-	boost::shared_ptr< hoCudaConebeamProjectionOperator >
-	E( new hoCudaConebeamProjectionOperator() );
+	boost::shared_ptr< hoCuConebeamProjectionOperator >
+	E( new hoCuConebeamProjectionOperator() );
 
 	ps->set_projections(projections);
 
@@ -208,8 +209,8 @@ int main(int argc, char** argv)
 		CBCT_binning *binning_pics = new CBCT_binning();
 		binning_pics->set_as_default_3d_bin(projections->get_size(2));
 		std::vector<unsigned int> is_dims3d = to_std_vector(imageSize);
-		boost::shared_ptr< hoCudaConebeamProjectionOperator >
-		Ep( new hoCudaConebeamProjectionOperator() );
+		boost::shared_ptr< hoCuConebeamProjectionOperator >
+		Ep( new hoCuConebeamProjectionOperator() );
 		Ep->setup(ps,binning,imageDimensions);
 		Ep->use_filtered_backprojections(true);
 		Ep->set_codomain_dimensions(projections->get_dimensions().get());
