@@ -130,15 +130,9 @@ int main( int argc, char** argv)
   plan.preprocess( traj.get(), plan_type::NFFT_PREP_C2NC );
   delete timer;
 
-  // Compute density compensation weights
-  timer = new GPUTimer("Computing density compensation weights");
-  boost::shared_ptr< cuNDArray<_real> > dcw = compute_radial_dcw_golden_ratio_2d
-    ( samples_per_profile, profiles_per_frame, alpha, _real(1)/((_real)samples_per_profile/(_real)matrix_size.vec[0]) );
-  delete timer;
-
   // Gridder
   timer = new GPUTimer("Computing nfft");
-  plan.compute( image.get(), &samples, dcw.get(), plan_type::NFFT_FORWARDS_C2NC );
+  plan.compute( image.get(), &samples, 0x0, plan_type::NFFT_FORWARDS_C2NC );
   delete timer;
 
   //
@@ -147,7 +141,7 @@ int main( int argc, char** argv)
   
   timer = new GPUTimer("Output result to disk");
   boost::shared_ptr< hoNDArray<_complext> > host_samples = samples.to_host();
-  write_nd_array<_complext>( host_samples.get(), (char*)parms.get_parameter('d')->get_string_value() );
+  write_nd_array<_complext>( host_samples.get(), (char*)parms.get_parameter('r')->get_string_value() );
   delete timer;
 
   return 0;

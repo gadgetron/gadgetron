@@ -6,8 +6,6 @@ target_link_libraries(register_HS_2d_cpu
   cpureg 
   cpucore 
   cpucore_math
-  #cpuoperators
-  #cpusolvers 
   )
 
 target_link_libraries(register_CK_2d_cpu 
@@ -15,8 +13,6 @@ target_link_libraries(register_CK_2d_cpu
   cpureg 
   cpucore
   cpucore_math
-  #  cpuoperators
-  #  cpusolvers 
   )
 
 install(TARGETS 
@@ -24,9 +20,9 @@ install(TARGETS
   register_CK_2d_cpu 
   DESTINATION bin)
 
-# matlab warpper
+# matlab wrapper
 if (MATLAB_FOUND)
-  message("MATLAB FOUND: ${MATLAB_INCLUDE_DIR}, Matlab registration wrapper is being compiled.")
+  message("Matlab found> ${MATLAB_INCLUDE_DIR}. Matlab registration wrapper is being compiled.")
   SET(CMAKE_DEBUG_POSTFIX)
   if (WIN32)
     include_directories( ${MATLAB_INCLUDE_DIR} )
@@ -38,5 +34,5 @@ if (MATLAB_FOUND)
     install(TARGETS Matlab_register_CK_2d_cpu DESTINATION bin )
   endif (WIN32)
 else(MATLAB_FOUND)
-  message("MATLAB NOT FOUND: matlab wrapper for registration toolbox will not be compiled.")
+  message("Matlab not found. Matlab wrapper for registration toolbox will not be compiled.")
 endif(MATLAB_FOUND)
