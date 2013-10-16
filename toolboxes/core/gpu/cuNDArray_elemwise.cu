@@ -457,7 +457,8 @@ template<typename T> struct cuNDA_shrinkd : public thrust::binary_function<T,typ
 {
   cuNDA_shrinkd( typename realType<T>::Type _gamma ) : gamma(_gamma) {}
   __device__ T operator()(const T &x, const typename realType<T>::Type &s) const {
-    return x/s*max(s-gamma,typename realType<T>::Type(0));
+  	T xs = (s <= typename realType<T>::Type(0)) ? T(0) : x/s;
+    return xs*max(s-gamma,typename realType<T>::Type(0));
   }
   typename realType<T>::Type gamma;
 };

@@ -426,7 +426,10 @@ namespace Gadgetron{
         for( int i = 0; i < _x->get_number_of_elements(); i++ ) {
             T x = _x->get_data_ptr()[i];
             typename realType<T>::Type s = _s->get_data_ptr()[i];
-            outPtr[i] = x/s*std::max(s-gamma,typename realType<T>::Type(0));
+            if (s > gamma)
+            	outPtr[i] = x/s*(s-gamma);
+            else
+            	outPtr[i] = 0;
         } 
     }
 
