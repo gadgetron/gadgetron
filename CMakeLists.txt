@@ -7,7 +7,7 @@ if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
   set( HAS_64_BIT On CACHE BOOL "64bit build")
 else( CMAKE_SIZEOF_VOID_P EQUAL 8 )
   message(" 32bit system is found  ... ")
-  set( HAS_64_BIT Off CACHE BOOL "64bit build")
+  set( HAS_64_BIT Off CACHE BOOL "64bit build"e)
 endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
 
 # build options for OpenMP support

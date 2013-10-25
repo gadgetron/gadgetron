@@ -48,7 +48,7 @@ cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray< complext<REAL> > *in, cuNDA
   full_dimensions.push_back(this->ncoils_);
   cuNDArray< complext<REAL> > tmp(&full_dimensions);
 
-  mult_csm(in,&tmp);
+  this->mult_csm(in,&tmp);
 
   cuNDFFT<REAL> ft;
   std::vector<unsigned int> ft_dims;
@@ -114,7 +114,7 @@ cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray< complext<REAL> > *in, cuNDA
   if (!accumulate) 
     clear(out);
   
-  mult_csm_conj_sum(&tmp,out);
+  this->mult_csm_conj_sum(&tmp,out);
 }
 
 //

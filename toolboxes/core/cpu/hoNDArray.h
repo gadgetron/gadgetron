@@ -130,7 +130,7 @@ namespace Gadgetron{
     //
 
     template<class X> inline void _allocate_memory( unsigned int size, X** data ){
-      *data = new (std::nothrow) X[size];
+      *data = new(std::nothrow) X[size];
     }
 
     template<class X> inline void _deallocate_memory( X* data ){

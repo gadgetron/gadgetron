@@ -2,9 +2,6 @@ IF (WIN32)
 ADD_DEFINITIONS(-DTIXML_USE_STL)
 ENDIF (WIN32)
 
-find_package(XSD REQUIRED)
-find_package(XercesC REQUIRED)
-
 include_directories(
   ${Boost_INCLUDE_DIR}
   ${ACE_INCLUDE_DIR} 
