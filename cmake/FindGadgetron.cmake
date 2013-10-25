@@ -13,7 +13,7 @@
 set(_check_list)
 
 # Search for the header file.
-find_path(GADGETRON_HOME include/Gadget.h 
+find_path(GADGETRON_HOME include/GadgetronTimer.h
   HINTS $ENV{GADGETRON_HOME} /usr/local/gadgetron /usr/gadgetron)
 mark_as_advanced(GADGETRON_HOME)
 list(APPEND _check_list GADGETRON_HOME)
