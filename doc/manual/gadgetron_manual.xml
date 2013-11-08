@@ -643,9 +643,6 @@ sudo make install</userinput></screen>Last command will install the library in
             <screen><prompt>$</prompt> <userinput>cd gadgetron</userinput>
 $ <userinput>mkdir build</userinput>
 $ <userinput>cd build</userinput>
-$ <userinput>cmake -DPYTHON_NUMPY_INCLUDE_DIR= \
-  /opt/local/Library/Frameworks/Python.framework \
-  /Versions/2.7/lib/python2.7/site-packages/numpy/core/include ../</userinput>
 $ <userinput>make</userinput>
 $ <userinput>sudo make install</userinput></screen>
 
@@ -995,7 +992,7 @@ cmake-gui.exe
 
             <para>Hit configure (again)</para>
 
-            <para>Specify <varname>PYTHON_NUMPY_INCLUDE_DIR</varname> =
+            <para>Specify <varname>NUMPY_INCLUDE_DIRS</varname> =
             <filename>C:/Python27/Lib/site-packages/numpy/core/include</filename></para>
 
             <para>Hit configure (again)</para>

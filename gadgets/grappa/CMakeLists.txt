@@ -31,4 +31,5 @@ target_link_libraries(gadgetron_grappa
   )
 
 install (TARGETS gadgetron_grappa DESTINATION lib)
-install (FILES grappa.xml grappa_float.xml DESTINATION config)
+
+add_subdirectory(config)

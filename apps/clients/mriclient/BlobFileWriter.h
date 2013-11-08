@@ -27,8 +27,8 @@ class BlobFileWriter : public GadgetMessageReader
         {
             ssize_t recv_count = 0;
 
-            // MUST READ A LONG
-            unsigned long nbytes;
+            // MUST READ 32-bits
+            uint32_t nbytes;
             if ((recv_count = socket->recv_n(&nbytes, sizeof(nbytes))) <= 0) {
                 ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, BlobFileWriter, failed to read Blob Header\n")) );
                 return 0;

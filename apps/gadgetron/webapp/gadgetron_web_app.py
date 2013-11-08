@@ -17,7 +17,14 @@ run_gadgetron_check = True
 def ctrlcsignal(signal, frame):
     global reactor
     global run_gadgetron_check
-    print "Shutting down server"
+    print "Shutting down server (SIGINT)"
+    run_gadgetron_check = False
+    reactor.stop()
+
+def termsignal(signal, frame):
+    global reactor
+    global run_gadgetron_check
+    print "Shutting down server (TERM)"
     run_gadgetron_check = False
     reactor.stop()
 
@@ -86,7 +93,7 @@ class GadgetronResource(resource.Resource):
             self.gadgetron_process.kill()
             time.sleep(2)
         gf = open(self.gadgetron_log_filename,"w")
-        self.gadgetron_process = subprocess.Popen(["gadgetron"], env=self.environment,stdout=gf,stderr=gf)
+        self.gadgetron_process = subprocess.Popen(["gadgetron","-p",self.gadgetron_port], env=self.environment,stdout=gf,stderr=gf)
         time.sleep(2)
         self.process_lock.release()
 
@@ -163,6 +170,7 @@ root.putChild('gadgetron',GadgetronResource(sys.argv[1]))
 root.putChild('log', GadgetronLogResource(config.get('GADGETRON','logfile')))
 
 signal.signal(signal.SIGINT, ctrlcsignal)
+signal.signal(signal.SIGHUP, termsignal)
 
 reactor.listenTCP(port, server.Site(root))
 reactor.run()

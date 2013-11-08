@@ -3,7 +3,7 @@ FindACE.cmake
 FindCULA.cmake
 FindFFTW3.cmake
 FindGLEW.cmake
-FindNumpy.cmake
+FindNumPy.cmake
 FindTinyXML.cmake
 FindGadgetron.cmake
 FindXSD.cmake

@@ -92,6 +92,12 @@
   </gadget>
   
   <gadget>
+    <name>MaxwellCorrection</name>
+    <dll>gadgetron_mricore</dll>
+    <classname>MaxwellCorrectionGadget</classname>
+  </gadget>
+  
+  <gadget>
     <name>Extract</name>
     <dll>gadgetron_mricore</dll>
     <classname>ExtractGadget</classname>
