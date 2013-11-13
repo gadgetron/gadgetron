@@ -64,37 +64,9 @@ namespace Gadgetron{
                     throw std::runtime_error("opticalFlowSolver::compute(): input displacements dimensionality mismatch");
             }
 
-            // If an approximate displacement field is provided it is used to resample the moving image
-            //
 
-            boost::shared_ptr<ARRAY_TYPE_REAL> _def_moving_image;
-            ARRAY_TYPE_REAL *def_moving_image = 0x0;
+            boost::shared_ptr<ARRAY_TYPE_REAL> grad_image = grad( fixed_image, moving_image );
 
-            if( result_in_out.get() ){ 
-
-                // Apply the input deformation
-                //
-
-                _def_moving_image = this->deform( moving_image, result_in_out );
-                def_moving_image = _def_moving_image.get();
-            }
-            else{
-
-                // There is no input deformation to apply
-                //
-
-                def_moving_image = moving_image;
-            }
-
-            // Compute gradient image
-            //
-
-            boost::shared_ptr<ARRAY_TYPE_REAL> grad_image = grad( fixed_image, def_moving_image );
-
-            // The deformed image is no longer needed
-            //
-
-            _def_moving_image.reset(); def_moving_image = 0x0;
 
             // Invoke core solver (e.g. Horn-Schunk, Cornelius-Kanade, ...)
             //

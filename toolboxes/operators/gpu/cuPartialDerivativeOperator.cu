@@ -68,10 +68,6 @@ namespace Gadgetron{
 
     }
 
-    if( in->get_number_of_dimensions() != D || out->get_number_of_dimensions() != D ){
-      throw std::runtime_error("partialDerivativeOperator::compute_partial_derivative : dimensionality mismatch");
-
-    }
 
     if (!accumulate) clear(out);
     
@@ -82,8 +78,11 @@ namespace Gadgetron{
     for( unsigned int d=1; d<D-1; d++ )
       dimGrid.x *= dims.vec[d];
   
+    size_t elements = in->get_number_of_elements();
+
     // Invoke kernel
-    first_order_partial_derivative_kernel<T,D><<< dimGrid, dimBlock >>> ( stride, dims, in->get_data_ptr(), out->get_data_ptr() );
+    for (int i = 0; i < elements/prod(dims); i++)
+    	first_order_partial_derivative_kernel<T,D><<< dimGrid, dimBlock >>> ( stride, dims, in->get_data_ptr()+i*prod(dims), out->get_data_ptr()+i*prod(dims));
   
     CHECK_FOR_CUDA_ERROR();
   }
@@ -99,10 +98,7 @@ namespace Gadgetron{
 
     }
 
-    if( in->get_number_of_dimensions() != D || out->get_number_of_dimensions() != D ){
-      throw std::runtime_error( "partialDerivativeOperator::compute_second_order_partial_derivative : dimensionality mismatch");
 
-    }
 
     if (!accumulate) clear(out);
 
@@ -113,8 +109,11 @@ namespace Gadgetron{
     for( unsigned int d=1; d<D-1; d++ )
       dimGrid.x *= dims.vec[d];
   
-    // Invoke kernel
-    second_order_partial_derivative_kernel<T,D><<< dimGrid, dimBlock >>> ( forwards_stride, adjoint_stride, dims, in->get_data_ptr(), out->get_data_ptr() );
+    size_t elements = in->get_number_of_elements();
+
+        // Invoke kernel
+		for (int i = 0; i < elements/prod(dims); i++)
+			second_order_partial_derivative_kernel<T,D><<< dimGrid, dimBlock >>> ( forwards_stride, adjoint_stride, dims, in->get_data_ptr()+i*prod(dims), out->get_data_ptr()+i*prod(dims) );
   
     CHECK_FOR_CUDA_ERROR();
   }

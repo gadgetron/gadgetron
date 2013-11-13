@@ -32,4 +32,5 @@ install(FILES
   cuResampleOperator.h
   cuLinearResampleOperator.h
   cuRegistration_utils.h
+  cuCGHSOFSolver.h
   DESTINATION include)
