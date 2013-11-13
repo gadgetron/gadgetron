@@ -12,6 +12,7 @@
 #include "hoNDArray_operators.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_utils.h"
+#include "hoNDArray_blas.h"
 #include "hoRegistration_utils.h"
 #include "opticalFlowSolver.h"
 #include "cpureg_export.h"

@@ -15,11 +15,11 @@ namespace Gadgetron{
   {
     for( unsigned int dim=0; dim<D; dim++ ){
       if( dims[dim] > 1 && ( co[dim] < REAL(0) || co[dim] >= (REAL(dims[dim])-REAL(1)) ) )
-	return true;
+        return true;
     }
     return false;
   }
-
+  
   template<unsigned int D> static __inline__ __host__ __device__ 
   unsigned int _get_num_neighbors()
   {
@@ -38,9 +38,9 @@ namespace Gadgetron{
 
   template<class T, unsigned int D> __device__ 
   T interpolate( unsigned int batch_no, 
-		 typename reald<typename realType<T>::Type,D>::Type co, 
-		 typename uintd<D>::Type matrix_size, 
-		 T *image )
+                 typename reald<typename realType<T>::Type,D>::Type co, 
+                 typename uintd<D>::Type matrix_size, 
+                 T *image )
   {
     typedef typename realType<T>::Type REAL;
 
@@ -73,16 +73,16 @@ namespace Gadgetron{
       typename reald<REAL,D>::Type co_stride;
 
       for( unsigned int dim=0; dim<D; dim++ ){
-	if( stride.vec[dim] == 0 ){
-	  co_stride.vec[dim] = ::floor(co.vec[dim]);
-	}
-	else{
-	  co_stride.vec[dim] = ::ceil(co.vec[dim]);
-	  if( co_stride.vec[dim] == co.vec[dim] )
-	    co_stride.vec[dim] += REAL(1.0);
-	}
+        if( stride.vec[dim] == 0 ){
+          co_stride.vec[dim] = ::floor(co.vec[dim]);
+        }
+        else{
+          co_stride.vec[dim] = ::ceil(co.vec[dim]);
+          if( co_stride.vec[dim] == co.vec[dim] )
+            co_stride.vec[dim] += REAL(1.0);
+        }
       }
-    
+      
       // Read corresponding pixel value
       //
     
@@ -95,14 +95,14 @@ namespace Gadgetron{
 
       for( unsigned int dim=0; dim<D; dim++ ){
 
-	if( stride.vec[dim] == 0 ){
-	  weight *= (REAL(1.0)-(co.vec[dim]-co_stride.vec[dim]));
-	}
-	else{
-	  weight *= (REAL(1.0)-(co_stride.vec[dim]-co.vec[dim]));
-	}
+        if( stride.vec[dim] == 0 ){
+          weight *= (REAL(1.0)-(co.vec[dim]-co_stride.vec[dim]));
+        }
+        else{
+          weight *= (REAL(1.0)-(co_stride.vec[dim]-co.vec[dim]));
+        }
       }
-    
+      
       // Accumulate result
       //
     
@@ -117,7 +117,7 @@ namespace Gadgetron{
 
   template<class REAL, unsigned int D> __global__ void
   write_sort_arrays_kernel( typename uintd<D>::Type matrix_size, unsigned int extended_size, REAL *displacements,
-			    unsigned int *sort_keys, unsigned int *sort_values_indices, REAL *sort_values_weights )
+                            unsigned int *sort_keys, unsigned int *sort_values_indices, REAL *sort_values_weights )
   {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
     const unsigned int num_elements_mat = prod(matrix_size);
@@ -132,7 +132,7 @@ namespace Gadgetron{
 
       typename reald<REAL,D>::Type co_disp = to_reald<REAL,unsigned int,D>(co);
       for( unsigned int dim=0; dim<D; dim++ )
-	co_disp.vec[dim] +=  displacements[dim*num_elements_ext+batch_no*num_elements_mat+idx_in_batch];
+        co_disp.vec[dim] +=  displacements[dim*num_elements_ext+batch_no*num_elements_mat+idx_in_batch];
     
       // Determine the number of neighbors
       //
@@ -150,59 +150,59 @@ namespace Gadgetron{
     
       for( unsigned int i=0; i<num_neighbors; i++ ){
       
-	// Write out the sort values/indices
-	//
-      
-	sort_values_indices[idx+i*num_elements_ext] = idx;
+        // Write out the sort values/indices
+        //
+        
+        sort_values_indices[idx+i*num_elements_ext] = idx;
+        
+        // Determine image coordinate of current neighbor
+        //
+        
+        const typename uintd<D>::Type stride = idx_to_co<D>( i, twos );
+        
+        if( weak_greater_equal( stride, matrix_size ) ) non_zero = false; // For dimensions of size 1
+        
+        typename reald<REAL,D>::Type co_stride;
+        
+        if( non_zero ){
+          for( unsigned int dim=0; dim<D; dim++ ){
+            if( stride.vec[dim] == 0 ){
+              co_stride.vec[dim] = ::floor(co_disp.vec[dim]);
+            }
+            else{
+              co_stride.vec[dim] = ::ceil(co_disp.vec[dim]);
+              if( co_stride.vec[dim] == co_disp.vec[dim] )
+                co_stride.vec[dim] += REAL(1.0);
+            }
+          }
+          
+          // Write out sort keys (moving image resampling indices).
+          //
+          
+          sort_keys[idx+i*num_elements_ext] = co_to_idx<D>(to_uintd<REAL,D>(co_stride), matrix_size) + batch_no*num_elements_mat;
+        }
+        else{
+          sort_keys[idx+i*num_elements_ext] = idx; // Could be anything, weight is zero
+        }
+        
+        // Determine weight
+        //
+        
+        REAL weight = (non_zero) ? REAL(1) : REAL(0);
+        
+        if( non_zero ){
+          for( unsigned int dim=0; dim<D; dim++ ){	  
+            if( stride.vec[dim] == 0 ){
+              weight *= (REAL(1.0)-(co_disp.vec[dim]-co_stride.vec[dim])); }
+            else{
+              weight *= (REAL(1.0)-(co_stride.vec[dim]-co_disp.vec[dim])); }
+          }
+        }
+        
+        // Write out the sort values/weights
+        //
 
-	// Determine image coordinate of current neighbor
-	//
-      
-	const typename uintd<D>::Type stride = idx_to_co<D>( i, twos );
-
-	if( weak_greater_equal( stride, matrix_size ) ) non_zero = false; // For dimensions of size 1
-      
-	typename reald<REAL,D>::Type co_stride;
-      
-	if( non_zero ){
-	  for( unsigned int dim=0; dim<D; dim++ ){
-	    if( stride.vec[dim] == 0 ){
-	      co_stride.vec[dim] = ::floor(co_disp.vec[dim]);
-	    }
-	    else{
-	      co_stride.vec[dim] = ::ceil(co_disp.vec[dim]);
-	      if( co_stride.vec[dim] == co_disp.vec[dim] )
-		co_stride.vec[dim] += REAL(1.0);
-	    }
-	  }
-
-	  // Write out sort keys (moving image resampling indices).
-	  //
-	
-	  sort_keys[idx+i*num_elements_ext] = co_to_idx<D>(to_uintd<REAL,D>(co_stride), matrix_size) + batch_no*num_elements_mat;
-	}
-	else{
-	  sort_keys[idx+i*num_elements_ext] = idx; // Could be anything, weight is zero
-	}
- 
-	// Determine weight
-	//
-      
-	REAL weight = (non_zero) ? REAL(1) : REAL(0);
-      
-	if( non_zero ){
-	  for( unsigned int dim=0; dim<D; dim++ ){	  
-	    if( stride.vec[dim] == 0 ){
-	      weight *= (REAL(1.0)-(co_disp.vec[dim]-co_stride.vec[dim])); }
-	    else{
-	      weight *= (REAL(1.0)-(co_stride.vec[dim]-co_disp.vec[dim])); }
-	  }
-	}
-      
-	// Write out the sort values/weights
-	//
-
-	sort_values_weights[idx+i*num_elements_ext] = weight;
+        sort_values_weights[idx+i*num_elements_ext] = weight;
       }
     }
   };
@@ -219,9 +219,9 @@ namespace Gadgetron{
     
     write_sort_arrays_kernel<typename realType<T>::Type,D><<< gridDim, blockDim >>>
       ( matrix_size, extended_dim, this->offsets_->get_data_ptr(),
-	raw_pointer_cast(&(sort_keys[0])),
-	raw_pointer_cast(&(this->indices_)[0]),
-	raw_pointer_cast(&(this->weights_)[0]) );
+        raw_pointer_cast(&(sort_keys[0])),
+        raw_pointer_cast(&(this->indices_)[0]),
+        raw_pointer_cast(&(this->weights_)[0]) );
     
     CHECK_FOR_CUDA_ERROR();
   };

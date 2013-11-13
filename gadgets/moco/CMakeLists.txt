@@ -24,7 +24,7 @@ endif (ARMADILLO_FOUND)
 if(CUDA_FOUND)
 
   set(GPU_REG 1)
-  list(APPEND GPU_GADGETS gpuRegistrationAveragingGadget.cpp)
+  list(APPEND GPU_GADGETS gpuRegistrationAveragingGadget.cpp gpuRegistrationScatteringGadget.cpp)
   list(APPEND GPU_LIBS gpucore gpureg ${CUDA_LIBRARIES})
 
 elseif (CUDA_FOUND)

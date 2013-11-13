@@ -51,7 +51,7 @@ namespace Gadgetron{
     float int_count = 0.0;
     std::vector<unsigned int> cycle_starts;
     for (unsigned int i = 0; i < time_stamps_.size(); i++) {
-      //GADGET_DEBUG2("Time %d, %f\n", i, time_stamps_[i]);
+      GADGET_DEBUG2("Time %d, %f\n", i, time_stamps_[i]);
       if (time_stamps_[i] < previous) {
 	cycle_starts.push_back(i);
       } else if (i > 0 ) {

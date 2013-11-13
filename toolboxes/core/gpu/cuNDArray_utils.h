@@ -46,4 +46,16 @@ namespace Gadgetron{
   template<class T> EXPORTGPUCORE T min(cuNDArray<T>* data);
 
   template<class T> EXPORTGPUCORE T max(cuNDArray<T>* data);
+
+  template<class T, unsigned int D> EXPORTGPUCORE 
+  boost::shared_ptr< cuNDArray<T> > upsample( cuNDArray<T>* in );
+
+  template<class T, unsigned int D> EXPORTGPUCORE
+  void upsample( cuNDArray<T> *in, cuNDArray<T> *out );
+
+  template<class T, unsigned int D> EXPORTGPUCORE 
+  boost::shared_ptr< cuNDArray<T> > downsample( cuNDArray<T>* in );
+
+  template<class T, unsigned int D> EXPORTGPUCORE
+  void downsample( cuNDArray<T> *in, cuNDArray<T> *out );
 }

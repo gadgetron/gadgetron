@@ -3,18 +3,19 @@
 #include "cudaDeviceManager.h"
 #include "setup_grid.h"
 
+#include <math_functions.h>
 #include <cmath>
 
 namespace Gadgetron {
 
   template <class T> 
   __global__ void cuNDArray_permute_kernel(
-					   T* in, T* out, 
-					   unsigned int ndim,
-					   unsigned int* dims,
-					   unsigned int* strides_out,
-					   unsigned long int elements,
-					   int shift_mode)
+                                           T* in, T* out, 
+                                           unsigned int ndim,
+                                           unsigned int* dims,
+                                           unsigned int* strides_out,
+                                           unsigned long int elements,
+                                           int shift_mode)
   {
     unsigned long idx_in = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
     unsigned long idx_out = 0;
@@ -24,25 +25,25 @@ namespace Gadgetron {
 
       unsigned int cur_index;
       for (unsigned int i = 0; i < ndim; i++) {
-	unsigned long idx_in_remainder = idx_in_tmp / dims[i];
-	cur_index = idx_in_tmp-(idx_in_remainder*dims[i]); //cur_index = idx_in_tmp%dims[i];
-	if (shift_mode < 0) { //IFFTSHIFT
-	  idx_out += ((cur_index+(dims[i]>>1))%dims[i])*strides_out[i];
-	} else if (shift_mode > 0) { //FFTSHIFT
-	  idx_out += ((cur_index+((dims[i]+1)>>1))%dims[i])*strides_out[i];
-	} else {
-	  idx_out += cur_index*strides_out[i];
-	}
-	idx_in_tmp = idx_in_remainder;
+        unsigned long idx_in_remainder = idx_in_tmp / dims[i];
+        cur_index = idx_in_tmp-(idx_in_remainder*dims[i]); //cur_index = idx_in_tmp%dims[i];
+        if (shift_mode < 0) { //IFFTSHIFT
+          idx_out += ((cur_index+(dims[i]>>1))%dims[i])*strides_out[i];
+        } else if (shift_mode > 0) { //FFTSHIFT
+          idx_out += ((cur_index+((dims[i]+1)>>1))%dims[i])*strides_out[i];
+        } else {
+          idx_out += cur_index*strides_out[i];
+        }
+        idx_in_tmp = idx_in_remainder;
       }
       out[idx_in] = in[idx_out];
     }
   }
 
   template <class T> void cuNDArray_permute(cuNDArray<T>* in,
-					    cuNDArray<T>* out,
-					    std::vector<unsigned int> *order,
-					    int shift_mode)
+                                            cuNDArray<T>* out,
+                                            std::vector<unsigned int> *order,
+                                            int shift_mode)
   {
       
     if( out == 0x0 ){
@@ -58,7 +59,7 @@ namespace Gadgetron {
       out_ptr = out->get_data_ptr();
     } else {
       if (cudaMalloc((void**) &out_ptr, in->get_number_of_elements()*sizeof(T)) != cudaSuccess) {
-	throw cuda_error("cuNDArray_permute : Error allocating CUDA memory");;
+        throw cuda_error("cuNDArray_permute : Error allocating CUDA memory");;
       }
     }
 
@@ -73,7 +74,7 @@ namespace Gadgetron {
       dims[i] = (*in->get_dimensions())[(*order)[i]];
       strides_out[i] = 1;    
       for (unsigned int j = 0; j < (*order)[i]; j++) {
-	strides_out[i] *= (*in->get_dimensions())[j];
+        strides_out[i] *= (*in->get_dimensions())[j];
       }
     }
 
@@ -104,13 +105,13 @@ namespace Gadgetron {
     if( in->get_number_of_dimensions() > 2 ){
       gridDim = dim3((unsigned int) std::ceil((double)in->get_size(0)*in->get_size(1)/blockDim.x), 1, 1 );
       for( unsigned int d=2; d<in->get_number_of_dimensions(); d++ )
-	gridDim.y *= in->get_size(d);
+        gridDim.y *= in->get_size(d);
     }
     else
       gridDim = dim3((unsigned int) std::ceil((double)in->get_number_of_elements()/blockDim.x), 1, 1 );
 
     cuNDArray_permute_kernel<<< gridDim, blockDim >>>( in_ptr, out_ptr, in->get_number_of_dimensions(), 
-						       dims_dev, strides_out_dev, in->get_number_of_elements(), shift_mode);
+                                                       dims_dev, strides_out_dev, in->get_number_of_elements(), shift_mode);
 
     err = cudaGetLastError();
     if( err != cudaSuccess ){
@@ -167,7 +168,7 @@ namespace Gadgetron {
     std::vector<unsigned int> dim_count(in->get_number_of_dimensions(),0);
     for (unsigned int i = 0; i < dim_order->size(); i++) {
       if ((*dim_order)[i] >= in->get_number_of_dimensions()) {
-	throw std::runtime_error("permute(): invalid dimension order array");;
+        throw std::runtime_error("permute(): invalid dimension order array");;
       }
       dim_count[(*dim_order)[i]]++;
     }
@@ -178,23 +179,23 @@ namespace Gadgetron {
     //Check that there are no duplicate dimensions
     for (unsigned int i = 0; i < dim_order->size(); i++) {
       if (dim_count[(*dim_order)[i]] != 1) {
-	throw std::runtime_error("permute(): invalid dimension order array (duplicates)");;
+        throw std::runtime_error("permute(): invalid dimension order array (duplicates)");;
       }
       dim_order_int.push_back((*dim_order)[i]);
     }
 
     for (unsigned int i = 0; i < dim_order_int.size(); i++) {
       if ((*in->get_dimensions())[dim_order_int[i]] != out->get_size(i)) {
-	throw std::runtime_error("permute(): dimensions of output array do not match the input array");;
+        throw std::runtime_error("permute(): dimensions of output array do not match the input array");;
       }
     }
 
     //Pad dimension order array with dimension not mentioned in order array
     if (dim_order_int.size() < in->get_number_of_dimensions()) {
       for (unsigned int i = 0; i < dim_count.size(); i++) {
-	if (dim_count[i] == 0) {
-	  dim_order_int.push_back(i);
-	}
+        if (dim_count[i] == 0) {
+          dim_order_int.push_back(i);
+        }
       }
     }    
     cuNDArray_permute(in, out, &dim_order_int, shift_mode);
@@ -233,9 +234,9 @@ namespace Gadgetron {
     *stride = 1;
     for( unsigned int i=0; i<in->get_number_of_dimensions(); i++ ){
       if( i != dim )
-	dims->push_back(in->get_size(i));
+        dims->push_back(in->get_size(i));
       if( i < dim )
-	*stride *= in->get_size(i);
+        *stride *= in->get_size(i);
     }
   }
 
@@ -243,8 +244,8 @@ namespace Gadgetron {
   //
   template<class T> 
   __global__ void expand_kernel( 
-				T *in, T *out, 
-				unsigned int number_of_elements_in, unsigned int number_of_elements_out, unsigned int new_dim_size )
+                                T *in, T *out, 
+                                unsigned int number_of_elements_in, unsigned int number_of_elements_out, unsigned int new_dim_size )
   {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;    
     if( idx < number_of_elements_out ){
@@ -272,7 +273,7 @@ namespace Gadgetron {
     out->create(&dims);
 
     expand_kernel<T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), 
-					       in->get_number_of_elements(), number_of_elements_out, new_dim_size );
+                                               in->get_number_of_elements(), number_of_elements_out, new_dim_size );
 
     CHECK_FOR_CUDA_ERROR();    
     return out;
@@ -282,8 +283,8 @@ namespace Gadgetron {
   //
   template<class T> 
   __global__ void sum_kernel( 
-			     T *in, T *out, 
-			     unsigned int stride, unsigned int number_of_batches, unsigned int number_of_elements )
+                             T *in, T *out, 
+                             unsigned int stride, unsigned int number_of_batches, unsigned int number_of_elements )
   {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
 
@@ -294,7 +295,7 @@ namespace Gadgetron {
       T val = in[in_idx];
 
       for( unsigned int i=1; i<number_of_batches; i++ ) 
-	val += in[i*stride+in_idx];
+        val += in[i*stride+in_idx];
 
       out[idx] = val; 
     }
@@ -336,8 +337,8 @@ namespace Gadgetron {
 
   // Crop
   template<class T, unsigned int D> __global__ void crop_kernel( 
-								vector_td<unsigned int,D> offset, vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
-								T *in, T *out, unsigned int num_batches, unsigned int num_elements )
+                                                                vector_td<unsigned int,D> offset, vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
+                                                                T *in, T *out, unsigned int num_batches, unsigned int num_elements )
   {
     typedef vector_td<unsigned int,D> uintd;
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
@@ -410,8 +411,8 @@ namespace Gadgetron {
   // Expand and zero fill
   template<class T, unsigned int D> 
   __global__ void pad_kernel( 
-			     vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
-			     T *in, T *out, unsigned int number_of_batches, unsigned int num_elements, T val )
+                             vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
+                             T *in, T *out, unsigned int number_of_batches, unsigned int num_elements, T val )
   {
     typedef vector_td<unsigned int,D> uintd;
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
@@ -425,9 +426,9 @@ namespace Gadgetron {
       bool inside = (co_out>=offset) && (co_out<(matrix_size_in+offset));
 
       if( inside )
-	_out = in[co_to_idx<D>(co_out-offset, matrix_size_in)+frame_offset*prod(matrix_size_in)];
+        _out = in[co_to_idx<D>(co_out-offset, matrix_size_in)+frame_offset*prod(matrix_size_in)];
       else{      
-	_out = val;
+        _out = val;
       }
 
       out[idx] = _out;
@@ -491,8 +492,8 @@ namespace Gadgetron {
 
   template<class T, unsigned int D> 
   __global__ void fill_border_kernel( 
-				     vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
-				     T *image, unsigned int number_of_batches, unsigned int number_of_elements, T val )
+                                     vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
+                                     T *image, unsigned int number_of_batches, unsigned int number_of_elements, T val )
   {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
 
@@ -500,12 +501,12 @@ namespace Gadgetron {
       const vector_td<unsigned int,D> co_out = idx_to_co<D>( idx, matrix_size_out );
       const vector_td<unsigned int,D> offset = (matrix_size_out-matrix_size_in)>>1;
       if( weak_less( co_out, offset ) || weak_greater_equal( co_out, matrix_size_in+offset ) ){
-	for( unsigned int batch=0; batch<number_of_batches; batch++ ){
-	  image[idx+batch*number_of_elements] = val;
-	}
+	      for( unsigned int batch=0; batch<number_of_batches; batch++ ){
+          image[idx+batch*number_of_elements] = val;
+        }
       }
       else
-	; // do nothing
+	      ; // do nothing
     }
   }
 
@@ -535,7 +536,6 @@ namespace Gadgetron {
     CHECK_FOR_CUDA_ERROR();
   }
 
-
   template<class T> T mean(cuNDArray<T>* in)
   {
     return thrust::reduce(in->begin(),in->end(),T(0),thrust::plus<T>())/T(in->get_number_of_elements());
@@ -550,6 +550,196 @@ namespace Gadgetron {
 	{
 		return *thrust::max_element(in->begin(),in->end());
 	}
+
+  template<class T, unsigned int D> __global__ void 
+  upsample_kernel( typename uintd<D>::Type matrix_size_in,
+                   typename uintd<D>::Type matrix_size_out,
+                   unsigned int num_batches,
+                   T *image_in,
+                   T *image_out )
+  {
+    typedef typename realType<T>::Type REAL;
+    
+    const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+    const unsigned int num_elements_out = prod(matrix_size_out);
+    
+    if( idx < num_elements_out*num_batches ){
+      
+      const unsigned int batch = idx/num_elements_out;
+      const unsigned int batch_offset_in = batch*prod(matrix_size_in);
+      
+      const typename uintd<D>::Type co_out = idx_to_co<D>( idx-batch*num_elements_out, matrix_size_out );
+      const typename uintd<D>::Type co_in = co_out >> 1;
+      const typename uintd<D>::Type ones = to_vector_td<unsigned int,D>(1);
+      const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
+      const typename uintd<D>::Type offset = co_out%twos;
+      
+      const unsigned int num_cells = 1 << D;
+      
+      T cellsum(0);
+      unsigned int count = 0;
+      
+      for( unsigned int i=0; i<num_cells; i++ ){
+        
+        const typename uintd<D>::Type stride = idx_to_co<D>( i, twos );
+        
+        if( offset >= stride ){
+          cellsum += image_in[batch_offset_in+co_to_idx(amin(co_in+stride, matrix_size_in-ones), matrix_size_in)];
+          count++;
+        }
+      }
+
+      image_out[idx] = cellsum / REAL(count);
+    }
+  }
+
+  //
+  // Linear upsampling by a factor of two (on a D-dimensional grid) 
+  // Note that this operator is the transpose of the downsampling operator below by design
+  // - based on Briggs et al, A Multigrid Tutorial 2nd edition, pp. 34-35
+  // 
+  
+  template<class T, unsigned int D> boost::shared_ptr< cuNDArray<T> > upsample( cuNDArray<T>* in )
+	{
+    if( in == 0x0 )
+      throw std::runtime_error("upsample: illegal input pointer");
+
+    std::vector<unsigned int> dims_out = *in->get_dimensions();
+    for( unsigned int i=0; i<D; i++ ) dims_out[i] <<= 1;
+    boost::shared_ptr< cuNDArray<T> > out(new cuNDArray<T>(&dims_out));
+    upsample<T,D>( in, out.get() );
+    return out;
+	}
+
+  template<class T, unsigned int D> void upsample( cuNDArray<T> *in, cuNDArray<T> *out )
+  {
+    if( in == 0x0 || out == 0x0 )
+      throw std::runtime_error("upsample: illegal input pointer");
+
+    typename uintd<D>::Type matrix_size_in  = from_std_vector<unsigned int,D>( *in->get_dimensions() );
+    typename uintd<D>::Type matrix_size_out = from_std_vector<unsigned int,D>( *out->get_dimensions() );
+
+    if( (matrix_size_in<<1) != matrix_size_out ){
+      throw std::runtime_error("upsample: arrays do not correspond to upsampling by a factor of two");
+    }
+
+    unsigned int number_of_batches = 1;
+    for( unsigned int d=D; d<out->get_number_of_dimensions(); d++ ){
+      number_of_batches *= out->get_size(d);
+    }
+
+    // Setup block/grid dimensions
+    dim3 blockDim; dim3 gridDim;
+    setup_grid( prod(matrix_size_out), &blockDim, &gridDim, number_of_batches );
+
+    // Invoke kernel
+    upsample_kernel<T,D><<< gridDim, blockDim >>>
+      ( matrix_size_in, matrix_size_out, number_of_batches, in->get_data_ptr(), out->get_data_ptr() );
+
+    CHECK_FOR_CUDA_ERROR();    
+  }
+  //
+  // Linear downsampling by a factor of two (on a D-dimensional grid)
+  // Note that this operator is the transpose of the upsampling operator above by design
+  // - based on Briggs et al, A Multigrid Tutorial 2nd edition, pp. 36.
+  // 
+
+  template<class T, unsigned int D> __global__ void 
+  downsample_kernel( typename uintd<D>::Type matrix_size_in,
+                     typename uintd<D>::Type matrix_size_out,
+                     unsigned int num_batches,
+                     T *image_in,
+                     T *image_out )
+  {
+    typedef typename realType<T>::Type REAL;
+    
+    const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+    const int num_elements_out = (int)prod(matrix_size_out);
+    
+    if( idx < num_elements_out*(int)num_batches ){
+      
+      const int batch = idx/num_elements_out;
+      const int batch_offset_in = batch*(int)prod(matrix_size_in);
+      
+      const typename intd<D>::Type co_out = idx_to_co<D>( idx-batch*num_elements_out, to_intd(matrix_size_out) );
+      const typename intd<D>::Type co_in = co_out << 1;
+      
+      T cellsum[D+1];
+      for( unsigned int d=0; d<D+1; d++ ){
+        cellsum[d] = T(0);
+      }
+      
+      //const int num_cells = pow(3,D); // no pow for integers on device
+      int num_cells = 1; 
+      for( int i=0; i<D; i++ ) num_cells *=3;
+
+      const REAL denominator = pow(REAL(4),REAL(D));
+      
+      for( int i=0; i<num_cells; i++ ){
+        
+        const typename intd<D>::Type zeros  = to_vector_td<int,D>(0);
+        const typename intd<D>::Type ones   = to_vector_td<int,D>(1);
+        const typename intd<D>::Type threes = to_vector_td<int,D>(3);
+        const typename intd<D>::Type stride = idx_to_co<D>(i,threes)-ones; // in the range [-1;1]^D
+        
+        int distance = 0;
+        for( int d=0; d<D; d++ ){
+          if( abs(stride[d])>0 )
+            distance++;
+        }
+        
+        cellsum[distance] += image_in[batch_offset_in+co_to_idx(amax(zeros, amin(matrix_size_in-ones,co_in+stride)), matrix_size_in)];
+      }
+      
+      T res = T(0);
+      
+      for( unsigned int d=0; d<D+1; d++ ){
+        res += (REAL(1<<(D-d))*cellsum[d]);
+      }
+      
+      image_out[idx] = res / denominator;
+    }
+  }
+
+  template<class T, unsigned int D> boost::shared_ptr< cuNDArray<T> > downsample( cuNDArray<T>* in )
+  {
+    if( in == 0x0 )
+      throw std::runtime_error("downsample: illegal input pointer");
+    
+    std::vector<unsigned int> dims_out = *in->get_dimensions();
+    for( unsigned int i=0; i<D; i++ ) dims_out[i] >>= 1;
+    boost::shared_ptr< cuNDArray<T> > out(new cuNDArray<T>(&dims_out));
+    downsample<T,D>( in, out.get() );
+    return out;
+  }
+
+  template<class T, unsigned int D> void downsample( cuNDArray<T> *in, cuNDArray<T> *out )
+  {
+    if( in == 0x0 || out == 0x0 )
+      throw std::runtime_error("downsample: illegal input pointer");
+
+    typename uintd<D>::Type matrix_size_in  = from_std_vector<unsigned int,D>( *in->get_dimensions() );
+    typename uintd<D>::Type matrix_size_out = from_std_vector<unsigned int,D>( *out->get_dimensions() );
+
+    if( (matrix_size_in>>1) != matrix_size_out ){
+      throw std::runtime_error("downsample: arrays do not correspond to downsampling by a factor of two");
+    }
+
+    unsigned int number_of_batches = 1;
+    for( unsigned int d=D; d<out->get_number_of_dimensions(); d++ ){
+      number_of_batches *= out->get_size(d);
+    }
+
+    // Setup block/grid dimensions
+    dim3 blockDim; dim3 gridDim;
+    setup_grid( prod(matrix_size_out), &blockDim, &gridDim, number_of_batches );
+
+    // Invoke kernel
+    downsample_kernel<T,D><<< gridDim, blockDim >>>
+      ( matrix_size_in, matrix_size_out, number_of_batches, in->get_data_ptr(), out->get_data_ptr() );
+
+    CHECK_FOR_CUDA_ERROR();    
+  }
 
   //
   // Instantiation
@@ -620,13 +810,6 @@ namespace Gadgetron {
   template EXPORTGPUCORE void pad<float,3>( cuNDArray<float>*, cuNDArray<float>*, float);
   template EXPORTGPUCORE void pad<float,4>( cuNDArray<float>*, cuNDArray<float>*, float);
 
-  template EXPORTGPUCORE float mean<float>(cuNDArray<float>*);
-  template EXPORTGPUCORE float_complext mean<float_complext>(cuNDArray<float_complext>*);
-
-  template EXPORTGPUCORE float min<float>(cuNDArray<float>*);
-  template EXPORTGPUCORE float max<float>(cuNDArray<float>*);
-
-
   template EXPORTGPUCORE void pad<float_complext,1>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, float_complext);
   template EXPORTGPUCORE void pad<float_complext,2>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, float_complext);  
   template EXPORTGPUCORE void pad<float_complext,3>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, float_complext);
@@ -692,12 +875,98 @@ namespace Gadgetron {
   template EXPORTGPUCORE void fill_border<double_complext,3>(uintd3, cuNDArray<double_complext>*,double_complext);
   template EXPORTGPUCORE void fill_border<double_complext,4>(uintd4, cuNDArray<double_complext>*,double_complext);
 
+  template EXPORTGPUCORE float mean<float>(cuNDArray<float>*);
+  template EXPORTGPUCORE float_complext mean<float_complext>(cuNDArray<float_complext>*);
   template EXPORTGPUCORE double mean<double>(cuNDArray<double>*);
   template EXPORTGPUCORE double_complext mean<double_complext>(cuNDArray<double_complext>*);
-  
+
+  template EXPORTGPUCORE float min<float>(cuNDArray<float>*);
+  template EXPORTGPUCORE float max<float>(cuNDArray<float>*);
   template EXPORTGPUCORE double min<double>(cuNDArray<double>*);
 	template EXPORTGPUCORE double max<double>(cuNDArray<double>*);
-  // We can probably instantiate these functionsfor many more types? E.g. arrays of floatd2. 
+
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > upsample<float,1>(cuNDArray<float>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > upsample<float,2>(cuNDArray<float>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > upsample<float,3>(cuNDArray<float>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > upsample<float,4>(cuNDArray<float>*);
+
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > upsample<float_complext,1>(cuNDArray<float_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > upsample<float_complext,2>(cuNDArray<float_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > upsample<float_complext,3>(cuNDArray<float_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > upsample<float_complext,4>(cuNDArray<float_complext>*);
+
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > upsample<double,1>(cuNDArray<double>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > upsample<double,2>(cuNDArray<double>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > upsample<double,3>(cuNDArray<double>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > upsample<double,4>(cuNDArray<double>*);
+
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > upsample<double_complext,1>(cuNDArray<double_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > upsample<double_complext,2>(cuNDArray<double_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > upsample<double_complext,3>(cuNDArray<double_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > upsample<double_complext,4>(cuNDArray<double_complext>*);
+
+  template EXPORTGPUCORE void upsample<float,1>(cuNDArray<float>*, cuNDArray<float>*);
+  template EXPORTGPUCORE void upsample<float,2>(cuNDArray<float>*, cuNDArray<float>*);
+  template EXPORTGPUCORE void upsample<float,3>(cuNDArray<float>*, cuNDArray<float>*);
+  template EXPORTGPUCORE void upsample<float,4>(cuNDArray<float>*, cuNDArray<float>*);
+
+  template EXPORTGPUCORE void upsample<float_complext,1>(cuNDArray<float_complext>*, cuNDArray<float_complext>*);
+  template EXPORTGPUCORE void upsample<float_complext,2>(cuNDArray<float_complext>*, cuNDArray<float_complext>*);
+  template EXPORTGPUCORE void upsample<float_complext,3>(cuNDArray<float_complext>*, cuNDArray<float_complext>*);
+  template EXPORTGPUCORE void upsample<float_complext,4>(cuNDArray<float_complext>*, cuNDArray<float_complext>*);
+
+  template EXPORTGPUCORE void upsample<double,1>(cuNDArray<double>*, cuNDArray<double>*);
+  template EXPORTGPUCORE void upsample<double,2>(cuNDArray<double>*, cuNDArray<double>*);
+  template EXPORTGPUCORE void upsample<double,3>(cuNDArray<double>*, cuNDArray<double>*);
+  template EXPORTGPUCORE void upsample<double,4>(cuNDArray<double>*, cuNDArray<double>*);
+
+  template EXPORTGPUCORE void upsample<double_complext,1>(cuNDArray<double_complext>*, cuNDArray<double_complext>*);
+  template EXPORTGPUCORE void upsample<double_complext,2>(cuNDArray<double_complext>*, cuNDArray<double_complext>*);
+  template EXPORTGPUCORE void upsample<double_complext,3>(cuNDArray<double_complext>*, cuNDArray<double_complext>*);
+  template EXPORTGPUCORE void upsample<double_complext,4>(cuNDArray<double_complext>*, cuNDArray<double_complext>*);
+
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > downsample<float,1>(cuNDArray<float>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > downsample<float,2>(cuNDArray<float>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > downsample<float,3>(cuNDArray<float>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > downsample<float,4>(cuNDArray<float>*);
+
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > downsample<float_complext,1>(cuNDArray<float_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > downsample<float_complext,2>(cuNDArray<float_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > downsample<float_complext,3>(cuNDArray<float_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > downsample<float_complext,4>(cuNDArray<float_complext>*);
+
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > downsample<double,1>(cuNDArray<double>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > downsample<double,2>(cuNDArray<double>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > downsample<double,3>(cuNDArray<double>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > downsample<double,4>(cuNDArray<double>*);
+
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > downsample<double_complext,1>(cuNDArray<double_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > downsample<double_complext,2>(cuNDArray<double_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > downsample<double_complext,3>(cuNDArray<double_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > downsample<double_complext,4>(cuNDArray<double_complext>*);
+
+  template EXPORTGPUCORE void downsample<float,1>(cuNDArray<float>*, cuNDArray<float>*);
+  template EXPORTGPUCORE void downsample<float,2>(cuNDArray<float>*, cuNDArray<float>*);
+  template EXPORTGPUCORE void downsample<float,3>(cuNDArray<float>*, cuNDArray<float>*);
+  template EXPORTGPUCORE void downsample<float,4>(cuNDArray<float>*, cuNDArray<float>*);
+
+  template EXPORTGPUCORE void downsample<float_complext,1>(cuNDArray<float_complext>*, cuNDArray<float_complext>*);
+  template EXPORTGPUCORE void downsample<float_complext,2>(cuNDArray<float_complext>*, cuNDArray<float_complext>*);
+  template EXPORTGPUCORE void downsample<float_complext,3>(cuNDArray<float_complext>*, cuNDArray<float_complext>*);
+  template EXPORTGPUCORE void downsample<float_complext,4>(cuNDArray<float_complext>*, cuNDArray<float_complext>*);
+
+  template EXPORTGPUCORE void downsample<double,1>(cuNDArray<double>*, cuNDArray<double>*);
+  template EXPORTGPUCORE void downsample<double,2>(cuNDArray<double>*, cuNDArray<double>*);
+  template EXPORTGPUCORE void downsample<double,3>(cuNDArray<double>*, cuNDArray<double>*);
+  template EXPORTGPUCORE void downsample<double,4>(cuNDArray<double>*, cuNDArray<double>*);
+
+  template EXPORTGPUCORE void downsample<double_complext,1>(cuNDArray<double_complext>*, cuNDArray<double_complext>*);
+  template EXPORTGPUCORE void downsample<double_complext,2>(cuNDArray<double_complext>*, cuNDArray<double_complext>*);
+  template EXPORTGPUCORE void downsample<double_complext,3>(cuNDArray<double_complext>*, cuNDArray<double_complext>*);
+  template EXPORTGPUCORE void downsample<double_complext,4>(cuNDArray<double_complext>*, cuNDArray<double_complext>*);
+
+
+  // We can probably instantiate the functions below functionsfor many more types? E.g. arrays of floatd2. 
   // For now we just introduce what we have needed...
   //
 

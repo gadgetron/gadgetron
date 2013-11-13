@@ -35,7 +35,7 @@ namespace Gadgetron{
   
     device_vector<REAL> displacements
       ( device_pointer_cast<REAL>(this->offsets_->get_data_ptr()), 
-	device_pointer_cast<REAL>(this->offsets_->get_data_ptr()+num_elements_disp) );
+        device_pointer_cast<REAL>(this->offsets_->get_data_ptr()+num_elements_disp) );
   
     // Make sort keys/values array from the deformation field
     //

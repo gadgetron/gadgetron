@@ -12,6 +12,7 @@
 #include "cuNDArray_operators.h"
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_utils.h"
+#include "cuNDArray_blas.h"
 #include "cuRegistration_utils.h"
 #include "opticalFlowSolver.h"
 #include "gpureg_export.h"

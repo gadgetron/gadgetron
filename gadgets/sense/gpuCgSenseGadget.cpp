@@ -222,25 +222,26 @@ namespace Gadgetron{
     {
       boost::shared_ptr<GPUTimer> solve_timer;
       if( output_timing_ )
-	solve_timer = boost::shared_ptr<GPUTimer>( new GPUTimer("gpuCgSenseGadget::solve()") );
-
+        solve_timer = boost::shared_ptr<GPUTimer>( new GPUTimer("gpuCgSenseGadget::solve()") );
+      
       cgresult = cg_.solve(device_samples.get());
-
+      
       if( output_timing_ )
-	solve_timer.reset();
+        solve_timer.reset();
     }
-
+    
     if (!cgresult.get()) {
       GADGET_DEBUG1("Iterative_sense_compute failed\n");
       return GADGET_FAIL;
     }
 
     /*
-    static int counter = 0;
-    char filename[256];
-    sprintf((char*)filename, "recon_%d.real", counter);
-    write_nd_array<float>( abs(cgresult.get())->to_host().get(), filename );
-    counter++; */
+      static int counter = 0;
+      char filename[256];
+      sprintf((char*)filename, "recon_%d.real", counter);
+      write_nd_array<float>( abs(cgresult.get())->to_host().get(), filename );
+      counter++; 
+    */
 
     // If the recon matrix size exceeds the sequence matrix size then crop
     if( matrix_size_seq_ != matrix_size_ )
@@ -262,13 +263,13 @@ namespace Gadgetron{
 
       // Check if we should discard this frame
       if( rotation_idx < (rotations_to_discard_>>1) || rotation_idx >= rotations-(rotations_to_discard_>>1) )
-	continue;
+        continue;
 
       GadgetContainerMessage<ISMRMRD::ImageHeader> *m = 
-	new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+        new GadgetContainerMessage<ISMRMRD::ImageHeader>();
 
       GadgetContainerMessage< hoNDArray< std::complex<float> > > *cm = 
-	new GadgetContainerMessage< hoNDArray< std::complex<float> > >();      
+        new GadgetContainerMessage< hoNDArray< std::complex<float> > >();      
       
       *m->getObjectPtr() = j->image_headers_[frame];
       m->cont(cm);
@@ -282,15 +283,15 @@ namespace Gadgetron{
       size_t data_length = prod(matrix_size_seq_);
 
       cudaMemcpy(cm->getObjectPtr()->get_data_ptr(),
-		 cgresult->get_data_ptr()+frame*data_length,
-		 data_length*sizeof(std::complex<float>),
-		 cudaMemcpyDeviceToHost);
-
+                 cgresult->get_data_ptr()+frame*data_length,
+                 data_length*sizeof(std::complex<float>),
+                 cudaMemcpyDeviceToHost);
+      
       cudaError_t err = cudaGetLastError();
       if( err != cudaSuccess ){
-	GADGET_DEBUG2("Unable to copy result from device to host: %s\n", cudaGetErrorString(err));
-	m->release();
-	return GADGET_FAIL;
+        GADGET_DEBUG2("Unable to copy result from device to host: %s\n", cudaGetErrorString(err));
+        m->release();
+        return GADGET_FAIL;
       }
 
       m->getObjectPtr()->matrix_size[0] = matrix_size_seq_[0];
@@ -300,9 +301,9 @@ namespace Gadgetron{
       m->getObjectPtr()->image_index    = frame_counter_ + frame;
             
       if (this->next()->putq(m) < 0) {
-	GADGET_DEBUG1("Failed to put result image on to queue\n");
-	m->release();
-	return GADGET_FAIL;
+        GADGET_DEBUG1("Failed to put result image on to queue\n");
+        m->release();
+        return GADGET_FAIL;
       }
     }
     
