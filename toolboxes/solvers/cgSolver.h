@@ -123,6 +123,12 @@ namespace Gadgetron{
 
     virtual boost::shared_ptr<ARRAY_TYPE> solve_from_rhs( ARRAY_TYPE *rhs ) 
     {
+      // For zero iterations we have computed / return the right hand side
+      //
+
+      if( iterations_ == 0 ){
+        return boost::shared_ptr<ARRAY_TYPE>( new ARRAY_TYPE(*rhs) );
+      }
 
       // Initialize
       //
@@ -133,20 +139,20 @@ namespace Gadgetron{
       //
 
       if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
-	std::cout << "Iterating..." << std::endl;
+        std::cout << "Iterating..." << std::endl;
       }
     
       for( unsigned int it=0; it<iterations_; it++ ){
 
-	REAL tc_metric;
-	bool tc_terminate;
+        REAL tc_metric;
+        bool tc_terminate;
       
-	this->iterate( it, &tc_metric, &tc_terminate );
+        this->iterate( it, &tc_metric, &tc_terminate );
 
-	solver_dump( x_.get());
+        solver_dump( x_.get());
       
-	if( tc_terminate )
-	  break;
+        if( tc_terminate )
+          break;
       }
     
       // Clean up and we are done
@@ -239,42 +245,42 @@ namespace Gadgetron{
       //
       
       if( precond_.get() ) {	
-	precond_->apply( p_.get(), p_.get() );
-	precond_->apply( p_.get(), p_.get() );
+        precond_->apply( p_.get(), p_.get() );
+        precond_->apply( p_.get(), p_.get() );
       }
 
       rq0_ = real(dot( r_.get(), p_.get() ));
 
       if (this->get_x0().get()){
 	
-	if( !this->get_x0()->dimensions_equal( rhs )){
-	  throw std::runtime_error( "Error: cgSolver::initialize : RHS and initial guess must have same dimensions" );
-	}
+        if( !this->get_x0()->dimensions_equal( rhs )){
+          throw std::runtime_error( "Error: cgSolver::initialize : RHS and initial guess must have same dimensions" );
+        }
 	
-	*x_ = *(this->get_x0());
-	
-	ARRAY_TYPE mhmX( rhs->get_dimensions());
+        *x_ = *(this->get_x0());
+        
+        ARRAY_TYPE mhmX( rhs->get_dimensions());
 
-	if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
-	  std::cout << "Preparing guess..." << std::endl;
-	}
-
-	mult_MH_M( this->get_x0().get(), &mhmX );
-
-	*r_ -= mhmX;
-	*p_ = *r_;
-
-	// Apply preconditioning, twice (should change preconditioners to do this)
-	//
-
-	if( precond_.get() ){
-	  precond_->apply( p_.get(), p_.get() );
-	  precond_->apply( p_.get(), p_.get() );
-	}
+        if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ) {
+          std::cout << "Preparing guess..." << std::endl;
+        }
+        
+        mult_MH_M( this->get_x0().get(), &mhmX );
+        
+        *r_ -= mhmX;
+        *p_ = *r_;
+        
+        // Apply preconditioning, twice (should change preconditioners to do this)
+        //
+        
+        if( precond_.get() ){
+          precond_->apply( p_.get(), p_.get() );
+          precond_->apply( p_.get(), p_.get() );
+        }
       }
-
+      
       rq_ = real( dot( r_.get(), p_.get() ));
-
+      
       // Invoke termination callback initialization
       //
     
@@ -319,27 +325,27 @@ namespace Gadgetron{
 
       if( precond_.get() ){
 
-	precond_->apply( r_.get(), &q );
-	precond_->apply( &q, &q );
-	
-	REAL tmp_rq = real(dot( r_.get(), &q ));      
-	*p_ *= ELEMENT_TYPE((tmp_rq/rq_));
-	axpy( ELEMENT_TYPE(1), &q, p_.get() );
-	rq_ = tmp_rq;
+        precond_->apply( r_.get(), &q );
+        precond_->apply( &q, &q );
+        
+        REAL tmp_rq = real(dot( r_.get(), &q ));      
+        *p_ *= ELEMENT_TYPE((tmp_rq/rq_));
+        axpy( ELEMENT_TYPE(1), &q, p_.get() );
+        rq_ = tmp_rq;
       } 
       else{
-
-	REAL tmp_rq = real(dot( r_.get(), r_.get()) );
-	*p_ *= ELEMENT_TYPE((tmp_rq/rq_));           
-	axpy( ELEMENT_TYPE(1), r_.get(), p_.get() );
-	rq_ = tmp_rq;      
+        
+        REAL tmp_rq = real(dot( r_.get(), r_.get()) );
+        *p_ *= ELEMENT_TYPE((tmp_rq/rq_));           
+        axpy( ELEMENT_TYPE(1), r_.get(), p_.get() );
+        rq_ = tmp_rq;      
       }
-    
+      
       // Invoke termination callback iteration
       //
 
       if( !cb_->iterate( iteration, tc_metric, tc_terminate ) ){
-	throw std::runtime_error( "Error: cgSolver::iterate : termination callback iteration failed" );
+        throw std::runtime_error( "Error: cgSolver::iterate : termination callback iteration failed" );
       }    
     }
     
@@ -352,11 +358,11 @@ namespace Gadgetron{
       //
 
       if( !in || !out ){
-	throw std::runtime_error( "Error: cgSolver::mult_MH_M : invalid input pointer(s)" );
+        throw std::runtime_error( "Error: cgSolver::mult_MH_M : invalid input pointer(s)" );
       }
 
       if( in->get_number_of_elements() != out->get_number_of_elements() ){
-    	throw std::runtime_error( "Error: cgSolver::mult_MH_M : array dimensionality mismatch" );
+        throw std::runtime_error( "Error: cgSolver::mult_MH_M : array dimensionality mismatch" );
       }
     
       // Intermediate storage
@@ -378,8 +384,8 @@ namespace Gadgetron{
       //
 
       for( unsigned int i=0; i<this->regularization_operators_.size(); i++ ){      
-	this->regularization_operators_[i]->mult_MH_M( in, &q, false );
-	axpy( this->regularization_operators_[i]->get_weight(), &q, out );
+        this->regularization_operators_[i]->mult_MH_M( in, &q, false );
+        axpy( this->regularization_operators_[i]->get_weight(), &q, out );
       }      
     }
     
