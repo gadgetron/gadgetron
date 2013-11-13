@@ -28,7 +28,7 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray< complext<REAL> >
   std::vector<unsigned int> full_dimensions = *this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
   cuNDArray< complext<REAL> > tmp(&full_dimensions);  
-  mult_csm( in, &tmp );
+  this->mult_csm( in, &tmp );
   
   // Forwards NFFT
 
@@ -64,7 +64,7 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray< complext<REAL> 
     clear(out);    
   }
   
-  mult_csm_conj_sum( &tmp, out );  
+  this->mult_csm_conj_sum( &tmp, out );
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
