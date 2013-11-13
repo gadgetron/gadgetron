@@ -72,8 +72,14 @@ namespace Gadgetron{
     float count = 0;
     for (unsigned int i = 1; i < cycle_starts.size(); i++) {
       float clength = time_stamps_[cycle_starts[i]-1] + median_interval - time_stamps_[cycle_starts[i]];
+      //GADGET_DEBUG2("clength: %f\n", clength);
       cycle_lengths.push_back(clength);
     }
+
+    //GADGET_DEBUG2("Cycle starts: %d, cycle_lengths: %d\n", cycle_starts.size(), cycle_lengths.size());
+    //for (unsigned int i = 0; i < cycle_starts.size(); i++) {
+    //  GADGET_DEBUG2("\t%d,%f\n",cycle_starts[i], cycle_lengths[i]);
+    //} 
 
     std::sort(cycle_lengths.begin(),cycle_lengths.end());
     float mean_cycle_length = std::accumulate(cycle_lengths.begin(), cycle_lengths.end(), 0.0)/cycle_lengths.size();
@@ -98,11 +104,12 @@ namespace Gadgetron{
     cycle_lengths.push_back(median_cycle_length);
     
     for (unsigned int i = 0; i < time_stamps_.size(); i++) {
-      if (i >= cycle_starts[current_cycle]) {
+      if ((i >= cycle_starts[current_cycle]) && (current_cycle < cycle_starts.size())) {
+	  //GADGET_DEBUG2("Incrementing current_cycle, %d,%d\n",i,cycle_starts[current_cycle]);
 	current_cycle++;
       }
       relative_cycle_time.push_back(time_stamps_[i]/cycle_lengths[current_cycle] + current_cycle);
-      //GADGET_DEBUG2("Corrected time stamps: %d, %f  (%d)\n",i,relative_cycle_time[i],current_cycle);
+	//GADGET_DEBUG2("Corrected time stamps: %d, %f  (%d)\n",i,relative_cycle_time[i],current_cycle);
     }
     
     //Make a temporary list of all the data pointers from the Q
