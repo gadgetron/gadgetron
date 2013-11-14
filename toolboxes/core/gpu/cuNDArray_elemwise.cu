@@ -298,36 +298,38 @@ Gadgetron::fill( cuNDArray<T> *x, T val )
 
 template<typename T> struct cuNDA_clamp : public thrust::unary_function<T,T>
 {
-  cuNDA_clamp( T _min, T _max ) : min(_min), max(_max) {}
+  cuNDA_clamp( T _min, T _max, T _min_val, T _max_val ) : min(_min), max(_max),min_val(_min_val), max_val(_max_val) {}
   __device__ T operator()(const T &x) const 
   {
-    if( x < min ) return min;
-    else if ( x > max) return max;
+    if( x < min ) return min_val;
+    else if ( x >= max) return max_val;
     else return x;
   }
   T min, max;
+  T min_val, max_val;
 };
 
 template<typename T> struct cuNDA_clamp< complext<T> > : public thrust::unary_function< complext<T>, complext<T> >
 {
-  cuNDA_clamp( T _min, T _max ) : min(_min), max(_max) {}
+	cuNDA_clamp( T _min, T _max, complext<T> _min_val, complext<T> _max_val ) : min(_min), max(_max),min_val(_min_val), max_val(_max_val) {}
   __device__ complext<T> operator()(const complext<T> &x) const 
   {
-    if( real(x) < min ) return complext<T>(min);
-    else if ( real(x) > max) return complext<T>(max);
+    if( real(x) < min ) return min_val;
+    else if ( real(x) >= max) return max_val;
     else return complext<T>(real(x));
   }
   T min, max;
+  complext<T> min_val, max_val;
 };
 
 template<class T> void 
-Gadgetron::clamp( cuNDArray<T> *x, typename realType<T>::Type min, typename realType<T>::Type max )
+Gadgetron::clamp( cuNDArray<T> *x, typename realType<T>::Type min, typename realType<T>::Type max, T min_val, T max_val)
 { 
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::clamp(): Invalid input array");
    
   thrust::device_ptr<T> xPtr = x->get_device_ptr();
-  thrust::transform(xPtr,xPtr+x->get_number_of_elements(),xPtr,cuNDA_clamp<T>(min, max));
+  thrust::transform(xPtr,xPtr+x->get_number_of_elements(),xPtr,cuNDA_clamp<T>(min, max,min_val, max_val));
 }  
 
 template<typename T> struct cuNDA_clamp_min : public thrust::unary_function<T,T>
