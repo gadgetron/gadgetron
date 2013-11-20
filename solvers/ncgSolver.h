@@ -152,12 +152,13 @@ public:
 				ARRAY_TYPE x_old(*x);
 				ARRAY_TYPE enc_old(encoding_space);
 				std::vector<ARRAY_TYPE> reg_old=regEnc;
-				REAL alpha = wolfe_search(x,&d,g,&encoding_space,regEnc);
+				REAL alpha = wolfe_search(&x_old,&d,g,&encoding_space,regEnc);
 				if (alpha==0) break;
-				clamp_min(x,ELEMENT_TYPE(0));
+				clamp_min(&x_old,ELEMENT_TYPE(0));
+
 
 				x_old -= *x;
-				x_old *= ELEMENT_TYPE(-1);
+
 				encoding_space = enc_old;
 				regEnc=reg_old;
 				alpha=wolfe_search(x,&x_old,g,&encoding_space,regEnc);
