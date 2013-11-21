@@ -276,7 +276,7 @@ namespace Gadgetron{
       memcpy(cm1->getObjectPtr()->phase_dir,m1->getObjectPtr()->phase_dir,
 	     sizeof(float)*3);
 
-      memcpy(cm1->getObjectPtr()->slice_dir,m1->getObjectPtr()->read_dir,
+      memcpy(cm1->getObjectPtr()->slice_dir,m1->getObjectPtr()->slice_dir,
 	     sizeof(float)*3);
 
       memcpy(cm1->getObjectPtr()->patient_table_position,m1->getObjectPtr()->patient_table_position, sizeof(float)*3);
