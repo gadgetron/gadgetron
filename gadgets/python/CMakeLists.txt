@@ -2,10 +2,8 @@ IF (WIN32)
   ADD_DEFINITIONS(-D__BUILD_GADGETRON_PYTHON__)
 ENDIF (WIN32)
 
-# TODO: The Gadgetron Python code uses Numpy C-API code
-# from Numpy versions < 1.7. If Numpy version is >= 1.7
-# you will get compiler warnings
-#add_definitions(-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
+# All NumPy C-API code is guaranteed to compile with NumPy version >= 1.7
+add_definitions(-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
 
 find_package(Ismrmrd REQUIRED)
 
