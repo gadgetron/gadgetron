@@ -114,20 +114,22 @@ public:
 				this->add_gradient(x,g);
 				add_linear_gradient(regEnc,g);
 				reg_res=REAL(0);
-				grad_norm0=nrm2(g);
+
 
 			}else {
 				data_res = real(dot(&encoding_space,&encoding_space));
 			}
 
 
-			REAL grad_norm = nrm2(g);
+
+			if (non_negativity_constraint_) solver_non_negativity_filter(x,g);
+			if (i==0) grad_norm0=dot(g,g);
+			REAL grad_norm = dot(g,g);
 			if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
 
-				std::cout << "Iteration " <<i << ". Gradient norm: " <<  grad_norm << std::endl;
+				std::cout << "Iteration " <<i << ". Realtive gradient norm: " <<  grad_norm/grad_norm0 << std::endl;
 				std::cout << "Data residual: " << data_res << std::endl;
 			}
-			if (non_negativity_constraint_) solver_non_negativity_filter(x,g);
 
 			if (i == 0){
 				d -= *g;
