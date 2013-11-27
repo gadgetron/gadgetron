@@ -53,6 +53,7 @@ add_library(gadgetron_mricore SHARED
   GadgetIsmrmrdReadWrite.cpp
   PhysioInterpolationGadget.cpp
   IsmrmrdDumpGadget.cpp
+  CplxDumpGadget.cpp
   MaxwellCorrectionGadget.cpp
   ${OPTIMIZED_GADGETS}
   ${ISMRMRD_XSD_SOURCE}
@@ -91,6 +92,7 @@ install(FILES
   GadgetIsmrmrdReadWrite.h
   PhysioInterpolationGadget.h
   IsmrmrdDumpGadget.h
+  CplxDumpGadget.h
   MaxwellCorrectionGadget.h
   gadgetron_mricore_export.h
   ${OPTIMIZED_GADGET_HEADERS}

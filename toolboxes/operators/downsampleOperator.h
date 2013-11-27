@@ -12,33 +12,40 @@
 
 namespace Gadgetron{
   
-  template < unsigned int D, class ARRAY_TYPE> class downsamplingOperatorOperator 
+  template <class ARRAY_TYPE, unsigned int D> class downsampleOperator
     : public linearOperator<ARRAY_TYPE>
   {
     
   public:
-    
-    downsamplingOperatorOperator() : linearOperator<ARRAY_TYPE>() {}
-    virtual ~downsamplingOperatorOperator() {}
+
+    typedef typename ARRAY_TYPE::element_type T;
+
+    downsampleOperator() : linearOperator<ARRAY_TYPE>() {}
+    virtual ~downsampleOperator() {}
     
     virtual void mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
     {
       if( accumulate ){
-        boost::shared_ptr<ARRAY_TYPE> tmp = downsample(in);
+        boost::shared_ptr<ARRAY_TYPE> tmp = downsample<T,D>(in);
         *out += *tmp;
       }
       else
-        downsample(in,out);
+        downsample<T,D>(in,out);
     }
     
     virtual void mult_MH( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
     {
       if( accumulate ){
-        boost::shared_ptr<ARRAY_TYPE> tmp = upsample(in);
+        boost::shared_ptr<ARRAY_TYPE> tmp = upsample<T,D>(in);
         *out += *tmp;
       }
       else
-        upsample(in,out);
+        upsample<T,D>(in,out);
     }
+
+    virtual boost::shared_ptr< linearOperator< ARRAY_TYPE > > clone()
+    {
+      return linearOperator<ARRAY_TYPE>::clone(this);
+    }    
   };
 }

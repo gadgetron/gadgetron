@@ -88,8 +88,8 @@ namespace Gadgetron{
       const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
       typename reald<REAL,D>::Type co_disp = to_reald<REAL,unsigned int,D>(co);
       for( unsigned int dim=0; dim<D; dim++ ){
-	REAL tmp = displacements->get_data_ptr()[dim*num_elements_ext+batch_no*num_elements_mat+idx_in_batch];
-	co_disp.vec[dim] += tmp;
+        REAL tmp = displacements->get_data_ptr()[dim*num_elements_ext+batch_no*num_elements_mat+idx_in_batch];
+        co_disp.vec[dim] += tmp;
       } 
     
       // Determine the number of neighbors
@@ -101,7 +101,7 @@ namespace Gadgetron{
       //
     
       if( this->is_border_pixel(co_disp, matrix_size) )
-	continue;
+        continue;
     
       // Iterate over all neighbors
       //
@@ -111,60 +111,60 @@ namespace Gadgetron{
     
       for( unsigned int i=0; i<num_neighbors; i++ ){
       
-	// Determine image coordinate of current neighbor
-	//
+        // Determine image coordinate of current neighbor
+        //
+        
+        const typename uintd<D>::Type stride = idx_to_co<D>( i, twos );
+        
+        if( weak_greater_equal( stride, matrix_size ) ) continue; // For dimensions of size 1
+        
+        typename reald<REAL,D>::Type co_stride;
       
-	const typename uintd<D>::Type stride = idx_to_co<D>( i, twos );
-      
-	if( weak_greater_equal( stride, matrix_size ) ) continue; // For dimensions of size 1
-      
-	typename reald<REAL,D>::Type co_stride;
-      
-	for( unsigned int dim=0; dim<D; dim++ ){
-	  if( stride.vec[dim] == 0 ){
-	    co_stride.vec[dim] = std::floor(co_disp.vec[dim]);
-	  }
-	  else{
-	    co_stride.vec[dim] = std::ceil(co_disp.vec[dim]);
-	    if( co_stride.vec[dim] == co_disp.vec[dim] )
-	      co_stride.vec[dim] += REAL(1.0);
-	  }
-	}
+        for( unsigned int dim=0; dim<D; dim++ ){
+          if( stride.vec[dim] == 0 ){
+            co_stride.vec[dim] = std::floor(co_disp.vec[dim]);
+          }
+          else{
+            co_stride.vec[dim] = std::ceil(co_disp.vec[dim]);
+            if( co_stride.vec[dim] == co_disp.vec[dim] )
+              co_stride.vec[dim] += REAL(1.0);
+          }
+        }
 
-	// Validate that the coordinate is within the expected range
-	//
+        // Validate that the coordinate is within the expected range
+        //
 
-	typename uintd<D>::Type ones = to_vector_td<unsigned int,D>(1);
-	typename uintd<D>::Type co_stride_uintd = to_uintd<REAL,D>(co_stride);
+        typename uintd<D>::Type ones = to_vector_td<unsigned int,D>(1);
+        typename uintd<D>::Type co_stride_uintd = to_uintd<REAL,D>(co_stride);
 
-	if( weak_greater( co_stride_uintd, matrix_size-ones ) ){
+        if( weak_greater( co_stride_uintd, matrix_size-ones ) ){
 
-	  for( unsigned int dim=0; dim<D; dim++ ){
-	    if( co_stride[dim] < REAL(0) )
-	      co_stride_uintd[dim] = 0;
-	    if( co_stride[dim] > (REAL(matrix_size[dim])-REAL(1)) )
-	      co_stride_uintd[dim] = matrix_size[dim]-1;
-	  }
-	}
+          for( unsigned int dim=0; dim<D; dim++ ){
+            if( co_stride[dim] < REAL(0) )
+              co_stride_uintd[dim] = 0;
+            if( co_stride[dim] > (REAL(matrix_size[dim])-REAL(1)) )
+              co_stride_uintd[dim] = matrix_size[dim]-1;
+          }
+        }
 	
-	mat_i = co_to_idx<D>(co_stride_uintd, matrix_size)+batch_no*num_elements_mat;
+        mat_i = co_to_idx<D>(co_stride_uintd, matrix_size)+batch_no*num_elements_mat;
       
-	// Determine weight
-	//
+        // Determine weight
+        //
       
-	REAL weight = REAL(1);
+        REAL weight = REAL(1);
       
-	for( unsigned int dim=0; dim<D; dim++ ){	  
-	  if( stride.vec[dim] == 0 ){
-	    weight *= (REAL(1.0)-(co_disp.vec[dim]-co_stride.vec[dim])); }
-	  else{
-	    weight *= (REAL(1.0)-(co_stride.vec[dim]-co_disp.vec[dim])); }
-	}
+        for( unsigned int dim=0; dim<D; dim++ ){	  
+          if( stride.vec[dim] == 0 ){
+            weight *= (REAL(1.0)-(co_disp.vec[dim]-co_stride.vec[dim])); }
+          else{
+            weight *= (REAL(1.0)-(co_stride.vec[dim]-co_disp.vec[dim])); }
+        }
       
-	locations(0,location_index) = mat_i;
-	locations(1,location_index) = mat_j;
-	values(location_index) = weight;
-	location_index++;
+        locations(0,location_index) = mat_i;
+        locations(1,location_index) = mat_j;
+        values(location_index) = weight;
+        location_index++;
       }
     }
     locations.resize(2,location_index);
@@ -180,7 +180,7 @@ namespace Gadgetron{
 
     for( unsigned int dim=0; dim<D; dim++ ){
       if( dims[dim] > 1 && ( co[dim] < REAL(0) || co[dim] >= (REAL(dims[dim])-REAL(1)) ) )
-	return true;
+        return true;
     }
     return false;
   }

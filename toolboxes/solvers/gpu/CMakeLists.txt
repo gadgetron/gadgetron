@@ -35,5 +35,6 @@ install(FILES
   cuSbcLwSolver.h
   cuCgSolver.h
   cuGpBbSolver.h
+  hoCuGpBbSolver.h
   gpusolvers_export.h
   DESTINATION include)

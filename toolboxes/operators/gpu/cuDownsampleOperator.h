@@ -19,10 +19,10 @@ namespace Gadgetron{
       The class cuDownsampleOperator is a convienience wrapper for the device independent downsampleOperator.
       cuDownsampleOperator instantiates the downsampleOperator for type cuNDArray<T>.
   */
-  template <class T> class cuDownsampleOperator : public downsampleOperator< cuNDArray<T> >
+  template <class T, unsigned int D> class cuDownsampleOperator : public downsampleOperator<cuNDArray<T>,D>
   {
   public:    
-    cuDownsampleOperator() : downsampleOperator< cuNDArray<T> >() {}
+    cuDownsampleOperator() : downsampleOperator<cuNDArray<T>,D>() {}
     virtual ~cuDownsampleOperator() {}
   }; 
 }

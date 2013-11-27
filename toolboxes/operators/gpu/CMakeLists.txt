@@ -40,6 +40,8 @@ install(FILES
   cuTvOperator.h
   cuTvPicsOperator.h
   cuTv1dOperator.h
+  cuDownsampleOperator.h
+  cuUpsampleOperator.h
   hoCuTvOperator.h
   hoCuTvPicsOperator.h
   gpuoperators_export.h

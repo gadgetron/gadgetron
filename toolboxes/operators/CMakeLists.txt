@@ -17,6 +17,8 @@ install(FILES
   partialDerivativeOperator.h
   convolutionOperator.h
   laplaceOperator.h
+  downsampleOperator.h
+  upsampleOperator.h
   tvPicsOperator.h
   DESTINATION include)
 

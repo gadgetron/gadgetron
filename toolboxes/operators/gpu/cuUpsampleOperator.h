@@ -19,10 +19,10 @@ namespace Gadgetron{
       The class cuUpsampleOperator is a convienience wrapper for the device independent upsampleOperator.
       cuUpsampleOperator instantiates the upsampleOperator for type cuNDArray<T>.
   */
-  template <class T> class cuUpsampleOperator : public upsampleOperator< cuNDArray<T> >
+  template <class T, unsigned int D> class cuUpsampleOperator : public upsampleOperator<cuNDArray<T>, D>
   {
   public:    
-    cuUpsampleOperator() : upsampleOperator< cuNDArray<T> >() {}
+    cuUpsampleOperator() : upsampleOperator<cuNDArray<T>,D>() {}
     virtual ~cuUpsampleOperator() {}
   }; 
 }

@@ -9,6 +9,7 @@ include_directories(
 install(FILES
   registrationSolver.h
   multiresRegistrationSolver.h
+  opticalFlowSolver.h 
   resampleOperator.h
   opticalFlowOperator.h 
   DESTINATION include)

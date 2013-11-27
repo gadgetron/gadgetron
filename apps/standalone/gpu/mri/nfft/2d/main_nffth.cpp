@@ -98,7 +98,7 @@ int main( int argc, char** argv)
   
   // Setup resulting image array
   vector<unsigned int> image_dims = to_std_vector(matrix_size);
-  cuNDArray<_complext> image; image.create(&image_dims);
+  cuNDArray<_complext> image(&image_dims);
   
   // Initialize plan
   timer = new GPUTimer("Initializing plan");

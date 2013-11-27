@@ -7,6 +7,7 @@
 #include "cuLinearResampleOperator.h"
 #include "cuNDArray.h"
 #include "hoNDArray_fileio.h"
+#include "hoNDArray_utils.h"
 #include "parameterparser.h"
 #include "cuCGHSOFSolver.h"
 // Std includes
@@ -71,6 +72,16 @@ int main(int argc, char** argv)
     return 1;
   }
   
+  if( num_fixed_dims < num_moving_dims  ){
+    host_fixed = expand( host_fixed.get(), host_moving->get_size(2) );
+    num_fixed_dims = host_fixed->get_number_of_dimensions();
+  }
+
+  if( num_moving_dims < num_moving_dims  ){
+    host_moving = expand( host_moving.get(), host_fixed->get_size(2) );
+    num_moving_dims = host_moving->get_number_of_dimensions();
+  }
+
   // Upload host data to device
   //
 
