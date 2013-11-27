@@ -761,16 +761,6 @@ namespace Gadgetron
     int matrix_size_y = image->get_size(1);
     int matrix_size_z = image->get_size(2);
 
-    unsigned int warp_size = cudaDeviceManager::Instance()->warp_size();
-
-    if( matrix_size_x < warp_size ){
-      throw std::runtime_error("Error: conebeam_backwards_projection: image dimension 'x' must be at least as large as the warp size");
-    }
-
-    if( matrix_size_x % warp_size ){
-      throw std::runtime_error("Error: conebeam_backwards_projection: image dimension 'x' must be a multiplum of the warp size");
-    }
-
     floatd3 is_dims(matrix_size_x, matrix_size_y, matrix_size_z);
     int num_image_elements = matrix_size_x*matrix_size_y*matrix_size_z;
 

@@ -18,12 +18,12 @@ namespace Gadgetron{
   public:
     hoCuConebeamProjectionOperator() : linearOperator< hoCuNDArray<float> >()
     {
-      samples_per_pixel_ = 1.5;      
+      samples_per_pixel_ = 1.5f;
       projections_per_batch_ = 20;
       use_fbp_ = false;
       short_scan_ = false;
       preprocessed_ = false;
-      use_offset_correction_=false;
+      use_offset_correction_ = false;
     }
 
     virtual ~hoCuConebeamProjectionOperator() {}
@@ -32,8 +32,8 @@ namespace Gadgetron{
     virtual void mult_MH( hoCuNDArray<float> *in, hoCuNDArray<float> *out, bool accumulate = false );
 
     virtual void setup( boost::shared_ptr<CBCT_acquisition> acquisition,
-			boost::shared_ptr<CBCT_binning> binning,
-			floatd3 is_dims_in_mm )
+                        boost::shared_ptr<CBCT_binning> binning,
+                        floatd3 is_dims_in_mm )
     {      
       acquisition_ = acquisition;
       binning_ = binning;
@@ -68,7 +68,7 @@ namespace Gadgetron{
       std::vector<floatd2> offsets = acquisition_->get_geometry()->get_offsets();
       floatd2 mean_offset = std::accumulate(offsets.begin(),offsets.end(),floatd2(0,0))/float(offsets.size());
 
-      if (mean_offset[0] > ps_dims_in_mm[0]*0.1)
+      if (mean_offset[0] > ps_dims_in_mm[0]*0.1f)
       	use_offset_correction_=true;
 
       preprocessed_ = true;

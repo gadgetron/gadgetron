@@ -7,6 +7,9 @@
 #include "GPUTimer.h"
 #include "setup_grid.h"
 
+
+#include "cuNDArray_utils.h"
+
 #include <iostream>
 #include <algorithm>
 #include <sstream>
@@ -108,7 +111,6 @@ int main(int argc, char** argv)
     dims.push_back(1);
     image->reshape(&dims);
   }
-
 
   // Configuring...
   //

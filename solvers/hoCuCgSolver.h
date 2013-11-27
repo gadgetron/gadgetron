@@ -21,12 +21,13 @@ namespace Gadgetron{
     hoCuCgSolver() : cgSolver<hoCuNDArray<T> >(), _it(0) {}
     virtual ~hoCuCgSolver() {}
 
+    /* TSS: This is too expensive to do in general. Move responsibility of dumping to the apps.
     virtual void solver_dump(hoCuNDArray<T>* x){
     	std::stringstream ss;
 			ss << "iteration-" << _it << ".real";
 			write_nd_array(x,ss.str().c_str());
 			_it++;
-    }
+      }*/
 
   private:
     int _it;
