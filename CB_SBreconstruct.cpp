@@ -42,26 +42,29 @@ int main(int argc, char** argv)
 	unsigned int downsamples;
 	unsigned int iterations;
 	unsigned int inner_iterations;
+  float non_negativity_weight;
+
 	po::options_description desc("Allowed options");
 	desc.add_options()
-    				("help", "produce help message")
-    				("acquisition,a", po::value<string>(&acquisition_filename)->default_value("acquisition.hdf5"), "Acquisition data")
-    				("samples,n",po::value<unsigned int>(),"Number of samples per ray")
-    				("output,f", po::value<string>(&outputFile)->default_value("reconstruction.real"), "Output filename")
-    				("size,s",po::value<uintd3>(&imageSize)->default_value(uintd3(512,512,1)),"Image size in pixels")
-    				("binning,b",po::value<string>(),"Binning file for 4d reconstruction")
-    				("SAG","Use exact SAG correction if present")
-    				("voxelSize,v",po::value<floatd3>(&voxelSize)->default_value(floatd3(0.488f,0.488f,1.0f)),"Voxel size in mm")
-    				("dimensions,d",po::value<floatd3>(),"Image dimensions in mm. Overwrites voxelSize.")
-    				("iterations,i",po::value<unsigned int>(&iterations)->default_value(10),"Number of iterations")
-    				("inner-iterations",po::value<unsigned int>(&inner_iterations)->default_value(5),"Number of iterations in the inner solver")
-    				("TV,T",po::value<float>(),"TV Weight ")
-    				("prior", po::value<std::string>(),"Prior image filename")
-    				("PICCS",po::value<float>(),"TV Weight of the prior image (Prior image constrained compressed sensing)")
-    				("device",po::value<int>(&device)->default_value(0),"Number of the device to use (0 indexed)")
-    				("downsample,K",po::value<unsigned int>(&downsamples)->default_value(1),"Downsample projections this factor")
-    				;
-
+    ("help", "produce help message")
+    ("acquisition,a", po::value<string>(&acquisition_filename)->default_value("acquisition.hdf5"), "Acquisition data")
+    ("samples,n",po::value<unsigned int>(),"Number of samples per ray")
+    ("output,f", po::value<string>(&outputFile)->default_value("reconstruction.real"), "Output filename")
+    ("size,s",po::value<uintd3>(&imageSize)->default_value(uintd3(512,512,1)),"Image size in pixels")
+    ("binning,b",po::value<string>(),"Binning file for 4d reconstruction")
+    ("SAG","Use exact SAG correction if present")
+    ("voxelSize,v",po::value<floatd3>(&voxelSize)->default_value(floatd3(0.488f,0.488f,1.0f)),"Voxel size in mm")
+    ("dimensions,d",po::value<floatd3>(),"Image dimensions in mm. Overwrites voxelSize.")
+    ("iterations,i",po::value<unsigned int>(&iterations)->default_value(10),"Number of iterations")
+    ("inner-iterations",po::value<unsigned int>(&inner_iterations)->default_value(5),"Number of iterations in the inner solver")
+    ("TV,T",po::value<float>(),"TV Weight ")
+    ("non-negativity,N",po::value<float>(&non_negativity_weight)->default_value(1.0f),"Weight for the non-negativity (soft) constraint ")
+    ("prior", po::value<std::string>(),"Prior image filename")
+    ("PICCS",po::value<float>(),"TV Weight of the prior image (Prior image constrained compressed sensing)")
+    ("device",po::value<int>(&device)->default_value(0),"Number of the device to use (0 indexed)")
+    ("downsample,K",po::value<unsigned int>(&downsamples)->default_value(1),"Downsample projections this factor")
+    ;
+  
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);
 	po::notify(vm);
@@ -171,7 +174,7 @@ int main(int argc, char** argv)
 	solver.set_encoding_operator(E);
 	solver.set_max_outer_iterations(iterations);
 	solver.get_inner_solver()->set_max_iterations(inner_iterations);
-	solver.set_non_negativity_filter(true);
+	solver.set_non_negativity_filter(non_negativity_weight);
 	solver.set_output_mode(hoCuSbcCgSolver<float>::OUTPUT_VERBOSE);
 
 	if (vm.count("TV")){

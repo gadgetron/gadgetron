@@ -88,12 +88,10 @@ namespace Gadgetron
   void hoCuConebeamProjectionOperator
   ::mult_M( hoCuNDArray<float> *image, hoCuNDArray<float> *projections, bool accumulate )
   {
+
     // Validate the input 
     //
 
-  	if (!accumulate)
-  		clear(projections);
-    
     if( image == 0x0 || projections == 0x0 ){
       throw std::runtime_error("Error: hoCuConebeamProjectionOperator::mult_M: illegal array pointer provided");
     }
@@ -115,6 +113,9 @@ namespace Gadgetron
       throw std::runtime_error("Error: hoCuConebeamProjectionOperator::mult_M: inconsistent sizes of input arrays/vectors");
     }
 
+  	if (!accumulate)
+  		clear(projections);
+    
     // Iterate over the temporal dimension.
     // I.e. reconstruct one 3D volume at a time.
     //
@@ -151,11 +152,8 @@ namespace Gadgetron
   ::mult_MH( hoCuNDArray<float> *projections, hoCuNDArray<float> *image, bool accumulate )
   {
 
-    //
     // Validate the input 
     //
-
-    if (!accumulate) clear(image);
 
     if( image == 0x0 || projections == 0x0 ){
       throw std::runtime_error("Error: hoCuConebeamProjectionOperator::mult_MH:: illegal array pointer provided");
@@ -177,6 +175,9 @@ namespace Gadgetron
         projections->get_size(2) != acquisition_->get_geometry()->get_offsets().size() ){
       throw std::runtime_error("Error: hoCuConebeamProjectionOperator::mult_MH: inconsistent sizes of input arrays/vectors");
     }
+
+    if (!accumulate) 
+      clear(image);
 
     // Iterate over the temporal dimension.
     // I.e. reconstruct one 3D volume at a time.
