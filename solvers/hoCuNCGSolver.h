@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ncgSolver.h"
 #include "hoNDArray_math.h"
 #include "hoCuNDArray_blas.h"
 #include "hoNDArray_fileio.h"
 #include "complext.h"
+#include "ncgSolver.h"
 
 namespace Gadgetron{
 

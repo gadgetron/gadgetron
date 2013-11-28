@@ -1,9 +1,11 @@
 #pragma once
 
+#include "gpSolver.h"
 #include "linearOperatorSolver.h"
 #include "real_utilities.h"
 #include "complext.h"
 #include "cgPreconditioner.h"
+
 #include <vector>
 #include <iostream>
 #include <numeric>

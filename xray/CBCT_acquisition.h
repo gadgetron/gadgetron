@@ -6,6 +6,7 @@
 
 #include "vector_td_io.h"
 #include "hoNDArray.h"
+#include "hoRegistration_utils.h"
 
 #include <hdf5.h>
 #include <hdf5_hl.h>
@@ -54,7 +55,7 @@ public:
 		else {
 			os << "Angles: ";
 			os << "Angles: " << angles_.front() << " ... " << angles_.back()
-	  		 << ", number of angles: " << angles_.size() << std::endl;
+	  										 << ", number of angles: " << angles_.size() << std::endl;
 		}
 
 		if (offsets_.size() == 0)
@@ -144,6 +145,12 @@ public:
 		return projections_;
 	}
 
+	void downsample( unsigned int num_downsamples )
+	{
+		for (int k = 0; k < num_downsamples; k++)
+			projections_ = Gadgetron::downsample<float,2>(projections_.get());
+	}
+
 	void load( std::string filename )
 	{
 		// Open hdf5 file
@@ -210,8 +217,6 @@ public:
 		for( unsigned int i=0; i<offsets_x.size(); i++ ){
 			geometry_->get_offsets().push_back(floatd2(offsets_x[i], offsets_y[i]));
 		}
-
-
 
 		// Test data format of the projections
 		//
