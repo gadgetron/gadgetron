@@ -53,6 +53,14 @@ namespace Gadgetron{
       binning_ = binning;
       is_dims_in_mm_ = is_dims_in_mm;
         
+      // Determine the minimum and maximum angles scanned and transform array angles from [0;max_angle_].
+      // This is necessary to be consistent with the 'hoCuConebeamProjectionOperator'
+      //
+
+      std::vector<float> &angles = acquisition->get_geometry()->get_angles();      
+      float min_value = *std::min_element(angles.begin(), angles.end() );
+      transform(angles.begin(), angles.end(), angles.begin(), bind2nd(std::minus<float>(), min_value));
+
       std::vector<floatd2> offsets = acquisition_->get_geometry()->get_offsets();
       floatd2 mean_offset = std::accumulate(offsets.begin(),offsets.end(),floatd2(0,0))/float(offsets.size());
     

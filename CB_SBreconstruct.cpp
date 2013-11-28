@@ -20,6 +20,7 @@
 #include "hoCuTvPicsOperator.h"
 #include "hoCuSbcCgSolver.h"
 #include "hoRegistration_utils.h"
+#include "GPUTimer.h"
 
 #include <iostream>
 #include <algorithm>
@@ -42,7 +43,7 @@ int main(int argc, char** argv)
 	unsigned int downsamples;
 	unsigned int iterations;
 	unsigned int inner_iterations;
-  float non_negativity_weight;
+	float non_negativity_weight;
 
 	po::options_description desc("Allowed options");
 	desc.add_options()
@@ -62,7 +63,7 @@ int main(int argc, char** argv)
     ("prior", po::value<std::string>(),"Prior image filename")
     ("PICCS",po::value<float>(),"TV Weight of the prior image (Prior image constrained compressed sensing)")
     ("device",po::value<int>(&device)->default_value(0),"Number of the device to use (0 indexed)")
-    ("downsample,K",po::value<unsigned int>(&downsamples)->default_value(1),"Downsample projections this factor")
+    ("downsample,D",po::value<unsigned int>(&downsamples)->default_value(0),"Downsample projections this factor")
     ;
   
 	po::variables_map vm;
@@ -96,21 +97,18 @@ int main(int argc, char** argv)
 
 	boost::shared_ptr<CBCT_acquisition> ps(new CBCT_acquisition());
 	ps->load(acquisition_filename);
-
-
 	ps->get_geometry()->print(std::cout);
+	ps->downsample(downsamples);
 
-	//ps->get_geometry()->set_spacing(floatd2(ip_sx,ip_sy));
 	float SDD = ps->get_geometry()->get_SDD();
 	float SAD = ps->get_geometry()->get_SAD();
-	// Projection space physical dimensions 40cm x 30cm
 
 	boost::shared_ptr<CBCT_binning> binning(new CBCT_binning());
 	if (vm.count("binning")){
 		std::cout << "Loading binning data" << std::endl;
 		binning->load(vm["binning"].as<string>());
-
-	} else binning->set_as_default_3d_bin(ps->get_projections()->get_size(2));
+	} else 
+    binning->set_as_default_3d_bin(ps->get_projections()->get_size(2));
 
 	binning->print(std::cout);
 
@@ -121,9 +119,6 @@ int main(int argc, char** argv)
 	}
 	else imageDimensions = voxelSize*imageSize;
 
-
-	//floatd3 is_dims_in_mm = is_dims_in_pixels * is_spacing_in_mm;
-
 	float lengthOfRay_in_mm = norm(imageDimensions);
 	unsigned int numSamplesPerPixel = 3;
 	float minSpacing = min(voxelSize)/numSamplesPerPixel;
@@ -133,41 +128,24 @@ int main(int argc, char** argv)
 	else numSamplesPerRay = ceil( lengthOfRay_in_mm / minSpacing );
 
 	float step_size_in_mm = lengthOfRay_in_mm / numSamplesPerRay;
-
 	size_t numProjs = ps->get_projections()->get_size(2);
-
-
 	size_t needed_bytes = 2 * prod(imageSize) * sizeof(float);
 
 	std::vector<unsigned int> is_dims = to_std_vector(imageSize);
-
 	std::cout << "IS dimensions " << is_dims[0] << " " << is_dims[1] << " " << is_dims[2] << std::endl;
-
 	std::cout << "Image size " << imageDimensions << std::endl;
 
 	is_dims.push_back(binning->get_number_of_bins());
 
-	boost::shared_ptr< hoCuNDArray<float> > projections;
-	{
-		boost::shared_ptr<hoNDArray<float> > tmp_proj = ps->get_projections();
-		for (int k = 1; k < downsamples; k++)
-			tmp_proj=downsample<float,2>(tmp_proj.get());
+	hoCuNDArray<float> projections(*ps->get_projections());
 
-		projections =boost::shared_ptr< hoCuNDArray<float> > (new hoCuNDArray<float>(*tmp_proj));
-	}
-	clamp_min(projections.get(),0.0f);
-
-	//Standard 3d FDK
 	// Define encoding matrix
 	boost::shared_ptr< hoCuConebeamProjectionOperator >
-	E( new hoCuConebeamProjectionOperator() );
-
-	ps->set_projections(projections);
+    E( new hoCuConebeamProjectionOperator() );
 
 	E->setup(ps,binning,imageDimensions);
 	E->set_domain_dimensions(&is_dims);
-	E->set_codomain_dimensions(projections->get_dimensions().get());
-
+	E->set_codomain_dimensions(ps->get_projections()->get_dimensions().get());
 
 	hoCuSbcCgSolver<float> solver;
 
@@ -204,28 +182,27 @@ int main(int argc, char** argv)
 
 		solver.add_group(1);
 		//solver.add_regularization_operator(dt,1);
-
 	}
 
 	if (vm.count("PICCS")){
 		std::cout << "PICCS in used" << std::endl;
 		CBCT_binning *binning_pics = new CBCT_binning();
-		binning_pics->set_as_default_3d_bin(projections->get_size(2));
+		binning_pics->set_as_default_3d_bin(ps->get_projections()->get_size(2));
 		std::vector<unsigned int> is_dims3d = to_std_vector(imageSize);
 		boost::shared_ptr< hoCuConebeamProjectionOperator >
 		Ep( new hoCuConebeamProjectionOperator() );
 		Ep->setup(ps,binning,imageDimensions);
 		Ep->use_filtered_backprojections(true);
-		Ep->set_codomain_dimensions(projections->get_dimensions().get());
-		// Form right hand side
+		Ep->set_codomain_dimensions(ps->get_projections()->get_dimensions().get());
 		Ep->set_domain_dimensions(&is_dims3d);
 
 		boost::shared_ptr<hoCuNDArray<float> > prior3d(new hoCuNDArray<float>(&is_dims3d));
-		Ep->mult_MH(projections.get(),prior3d.get());
+		Ep->mult_MH(&projections,prior3d.get());
 
-		hoCuNDArray<float> tmp_proj(*projections);
+		hoCuNDArray<float> tmp_proj(projections);
 		Ep->mult_M(prior3d.get(),&tmp_proj);
-		float s = dot(projections.get(),&tmp_proj)/dot(&tmp_proj,&tmp_proj);
+
+		float s = dot(&projections,&tmp_proj)/dot(&tmp_proj,&tmp_proj);
 		*prior3d *= s;
 		boost::shared_ptr<hoCuNDArray<float> > prior(new hoCuNDArray<float>(*expand( prior3d.get(), is_dims.back() )));
 		boost::shared_ptr<hoCuPartialDerivativeOperator<float,4> > dx (new hoCuPartialDerivativeOperator<float,4>(0) );
@@ -239,14 +216,14 @@ int main(int argc, char** argv)
 		dt->set_weight(vm["PICCS"].as<float>());
 
 		dx->set_codomain_dimensions(&is_dims);
-				dy->set_codomain_dimensions(&is_dims);
-				dz->set_codomain_dimensions(&is_dims);
-				dt->set_codomain_dimensions(&is_dims);
-
-				dx->set_domain_dimensions(&is_dims);
-				dy->set_domain_dimensions(&is_dims);
-				dz->set_domain_dimensions(&is_dims);
-				dt->set_domain_dimensions(&is_dims);
+		dy->set_codomain_dimensions(&is_dims);
+		dz->set_codomain_dimensions(&is_dims);
+		dt->set_codomain_dimensions(&is_dims);
+    
+		dx->set_domain_dimensions(&is_dims);
+		dy->set_domain_dimensions(&is_dims);
+		dz->set_domain_dimensions(&is_dims);
+		dt->set_domain_dimensions(&is_dims);
 
 		solver.add_regularization_group_operator(dx);
 		solver.add_regularization_group_operator(dy);
@@ -257,10 +234,15 @@ int main(int argc, char** argv)
 		delete binning_pics;
 	}
 
-	boost::shared_ptr< hoCuNDArray<float> > result = solver.solve(projections.get());
-	//boost::shared_ptr< hoCuNDArray<float> > result(new hoCuNDArray<float>(&is_dims));
-	//E->mult_MH(projections.get(),result.get());
+	// Run solver
+	//
+
+	boost::shared_ptr< hoCuNDArray<float> > result;
+
+	{
+		GPUTimer timer("\nRunning Split Bregman solver");
+		result = solver.solve(&projections);
+	}
+
 	write_nd_array<float>( result.get(), outputFile.c_str());
-
-
 }
