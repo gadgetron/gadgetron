@@ -28,7 +28,7 @@ public:
 
 	ncgSolver(): gpSolver<ARRAY_TYPE>() {
 		iterations_ = 10;
-		tc_tolerance_ = (REAL)1e-6;
+		tc_tolerance_ = (REAL)1e-7;
 		non_negativity_constraint_=false;
 		dump_residual = false;
 		threshold= REAL(1e-8);
@@ -138,17 +138,21 @@ public:
 				ELEMENT_TYPE ggold = dot(g,g_old);
 				*g_old -= *g;
 				ELEMENT_TYPE gg = dot(g,g);
-				//ELEMENT_TYPE beta = std::max(REAL(0),-dot(g,g_old)/g_old_norm); //PRP ste[
+				ELEMENT_TYPE gy = -dot(&d,g_old);
+				//ELEMENT_TYPE beta = -dot(g,g_old)/g_old_norm; //PRP ste[
+				//ELEMENT_TYPE theta = gy/g_old_norm;
+
 				ELEMENT_TYPE betaDy = -gg/dot(&d,g_old);
 				ELEMENT_TYPE betaHS = dot(g,g_old)/dot(&d,g_old);
-
 				ELEMENT_TYPE beta = std::max(REAL(0),std::min(betaDy,betaHS)); //Hybrid step size from Dai and Yuan 2001
 
 				std::cout << "Beta " << beta << std::endl;
 				//ELEMENT_TYPE beta(0);
 
 				d *= beta;
+
 				d -= *g;
+				//axpy(theta,g_old,&d);
 
 			}
 
@@ -181,20 +185,25 @@ public:
 				reg_axpy(alpha-alpha_old,regEnc2,regEnc);
 				axpy(alpha-alpha_old,&d,&x2);
 
-				//axpy(alpha-alpha_old,&gtmp,g);
+				axpy(alpha-alpha_old,&gtmp,g);
 
 				if (functionValue(&encoding_space,regEnc,&x2) <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
-				//if ((dot(g,&d)) >= sigma*gd) wolfe =false; //So... officially this is part of the strong Wolfe condition. For semi-linear problems our initial step size should be sufficient.
+				//if (functionValue(&encoding_space,regEnc,&x2) <= old_norm-alpha*alpha*delta*dot(&d,&d)) wolfe = true;
+				//if (non_negativity_constraint_ && (min(&x2) < 0)) wolfe = false;
+				if ((dot(g,&d)) >= sigma*gd) wolfe =false; //So... officially this is part of the strong Wolfe condition. For semi-linear problems our initial step size should be sufficient.
 				k++;
 				//std::cout << "Res: " << dot(&encoding_space,&encoding_space)+calc_dot(regEnc,regEnc) << " Target: " << old_norm+alpha*delta*gd << std::endl;
 				//				std::cout << "Step2: " << dot(&gdiff,&d) << " Target " << sigma*gd  << std::endl;
 				if (alpha == 0) throw std::runtime_error("Wolfe line search failed");
 				alpha_old = alpha;
 			}
-
+			x2 = *x;
 			axpy(alpha,&d,x);
 			if (non_negativity_constraint_){
 				clamp_min(x,ELEMENT_TYPE(0));
+				d = *x;
+				d -= x2;
+				d /= alpha;
 				this->encoding_operator_->mult_M(x,&encoding_space);
 				encoding_space -= *in;
 				calc_regMultM(x,regEnc);
