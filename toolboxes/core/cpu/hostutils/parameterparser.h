@@ -36,15 +36,15 @@ namespace Gadgetron {
     std::string get_desc();
 
   private:
-    CommandLineParameterType m_type;
-    char m_switch;
-    unsigned int   m_nr_values;
-    std::string    m_desc;
-    bool           m_is_set;
-    bool           m_is_required;
-    int           *m_int_value;
-    std::string   *m_string_value;
-    float         *m_float_value;
+    CommandLineParameterType  m_type;
+    char                      m_switch;
+    unsigned int              m_nr_values;
+    std::string               m_desc;
+    bool                      m_is_set;
+    bool                      m_is_required;
+    int                      *m_int_value;
+    std::string              *m_string_value;
+    float                    *m_float_value;
   };
 
   class EXPORTHOSTUTILS ParameterParser
