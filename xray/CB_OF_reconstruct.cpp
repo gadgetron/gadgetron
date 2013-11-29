@@ -87,8 +87,8 @@ perform_registration( boost::shared_ptr< hoNDArray<float> > volume, unsigned int
 		cuCKOpticalFlowSolver<float,3> OFs;
 		OFs.set_interpolator( R );
 		OFs.set_output_mode( cuCKOpticalFlowSolver<float,3>::OUTPUT_VERBOSE );
-		OFs.set_num_multires_levels( 3 - ((downsample) ? 1 : 0) );
 		OFs.set_max_num_iterations_per_level( 500 );
+		OFs.set_num_multires_levels( 3 - ((downsample) ? 1 : 0) );
 		OFs.set_alpha(of_alpha);
 		OFs.set_beta(of_beta);
 		OFs.set_limit(0.01f);
@@ -151,7 +151,7 @@ int main(int argc, char** argv)
 	parms.add_parameter( 'T', COMMAND_LINE_FLOAT, 1, "TV regularization weight", true, "0.0" );
 
 	parms.add_parameter( 'P', COMMAND_LINE_INT, 1, "Projections per batch", false );
-	parms.add_parameter( 'D', COMMAND_LINE_INT, 1, "Number of downsamples of projection plate", false );
+	parms.add_parameter( 'D', COMMAND_LINE_INT, 1, "Number of downsamples of projection plate", true, "0" );
 	parms.add_parameter( 'R', COMMAND_LINE_INT, 1, "Use downsampling of registration field (bool)", true, "0" );
 
 	parms.parse_parameter_list(argc, argv);
@@ -183,11 +183,9 @@ int main(int argc, char** argv)
 	// Downsample projections if requested
 	//
 
-	CommandLineParameter *parm = parms.get_parameter('D');
-
-	if( parm && parm->get_is_set() ) {
+	{
 		GPUTimer timer("Downsampling projections");
-		unsigned int num_downsamples = parm->get_int_value();
+		unsigned int num_downsamples = parms.get_parameter('D')->get_int_value();    
 		acquisition->downsample(num_downsamples);
 	}
 
@@ -294,7 +292,6 @@ int main(int argc, char** argv)
 	hoCuNDArray<float> projections( *acquisition->get_projections() );
 
 	for( unsigned int phase=0; phase<binning->get_number_of_bins(); phase++ ){
-
 		{
 			boost::shared_ptr< hoNDArray<float> > displacements =
 					perform_registration( tv_recon, phase, of_alpha, of_beta, use_reg_downsampling );
