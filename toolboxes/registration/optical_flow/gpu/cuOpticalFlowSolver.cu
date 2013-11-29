@@ -60,9 +60,9 @@ namespace Gadgetron{
     // Extend block/grid dimensions for large arrays
     if( gridDim->x > max_griddim ){
       if( use_2d_blocks )
-	blockDim->x = ((max_blockdim/num_unknowns)/warp_size)*warp_size;
+        blockDim->x = ((max_blockdim/num_unknowns)/warp_size)*warp_size;
       else
-	blockDim->x = max_blockdim;
+        blockDim->x = max_blockdim;
     
       gridDim->x = (number_of_elements+(blockDim->x*blockDim->y)-1)/(blockDim->x*blockDim->y);
     }
@@ -109,7 +109,7 @@ namespace Gadgetron{
     // Invoke kernel (temporal partial derivative)
     temporal_grad_kernel<T,D><<< gridDim, blockDim >>>
       ( fixed_image, moving_image, gradient_image,
-	matrix_size_moving, number_of_batches_fixed, number_of_batches_moving );
+        matrix_size_moving, number_of_batches_fixed, number_of_batches_moving );
     
     CHECK_FOR_CUDA_ERROR();
   }
@@ -151,8 +151,8 @@ namespace Gadgetron{
 
   template<class REAL, unsigned int D> __global__ void
   spatial_grad_kernel( REAL *fixed_image, REAL *moving_image, REAL *gradient_image, 
-		       typename uintd<D>::Type matrix_size, 
-		       unsigned int num_batches_fixed, unsigned int num_batches_moving )
+                       typename uintd<D>::Type matrix_size, 
+                       unsigned int num_batches_fixed, unsigned int num_batches_moving )
   {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
 
@@ -201,11 +201,11 @@ namespace Gadgetron{
      
       // Neighbor "plus stride" side
       if( !is_border_pixel_in_stride_dim_after<D>( stride_dim, co, matrix_size )){
-	stride_base_idx = co_to_idx<D>(co+stride, matrix_size);
-	count++;
+        stride_base_idx = co_to_idx<D>(co+stride, matrix_size);
+        count++;
       }
       else{
-	stride_base_idx = idx_in_batch;
+        stride_base_idx = idx_in_batch;
       }
     
       fixed_idx = stride_base_idx+base_idx_fixed;
@@ -215,11 +215,11 @@ namespace Gadgetron{
 
       // Neighbor "minus stride" side
       if( !is_border_pixel_in_stride_dim_before<D>( stride_dim, co, matrix_size )){
-	stride_base_idx = co_to_idx<D>(co-stride, matrix_size);
-	count++;
+        stride_base_idx = co_to_idx<D>(co-stride, matrix_size);
+        count++;
       }
       else{
-	stride_base_idx = co_to_idx<D>(co, matrix_size);
+        stride_base_idx = co_to_idx<D>(co, matrix_size);
       }
     
       fixed_idx = stride_base_idx+base_idx_fixed;
@@ -228,7 +228,7 @@ namespace Gadgetron{
       res -= (fixed_image[fixed_idx]+moving_image[moving_idx])*REAL(0.5);
 
       if( count == 2 ) // Both neighbors exist
-	res /= REAL(2);
+        res /= REAL(2);
 
       // Output result
       //
@@ -242,8 +242,8 @@ namespace Gadgetron{
 
   template<class REAL, unsigned int D> __global__ void
   temporal_grad_kernel( REAL *fixed_image, REAL *moving_image, REAL *gradient_image, 
-			typename uintd<D>::Type matrix_size, 
-			unsigned int num_batches_fixed, unsigned int num_batches_moving )
+                        typename uintd<D>::Type matrix_size, 
+                        unsigned int num_batches_fixed, unsigned int num_batches_moving )
   { 
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
 
@@ -253,7 +253,7 @@ namespace Gadgetron{
     const unsigned int num_elements_per_pdev_moving = num_elements_per_batch*num_batches_moving;
 
     // Total number of elements for all partial derivatives
-    const unsigned int num_elements_total = _cuOF_max(num_elements_per_pdev_fixed, num_elements_per_pdev_moving)*D;
+    const unsigned int num_elements_total = _cuOF_max(num_elements_per_pdev_fixed, num_elements_per_pdev_moving);
   
     if( idx < num_elements_total ){
     

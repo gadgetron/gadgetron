@@ -14,7 +14,7 @@ cuda_add_library(gpureg SHARED
   cuCKOpticalFlowSolver.cu 
   cuResampleOperator.cu 
   cuLinearResampleOperator.cu
-  cuRegistration_utils.cu
+#  cuRegistration_utils.cu
   )
 
 target_link_libraries(gpureg 
@@ -31,6 +31,6 @@ install(FILES
   gpureg_export.h
   cuResampleOperator.h
   cuLinearResampleOperator.h
-  cuRegistration_utils.h
+#  cuRegistration_utils.h
   cuCGHSOFSolver.h
   DESTINATION include)

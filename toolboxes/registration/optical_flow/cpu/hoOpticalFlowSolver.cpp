@@ -87,25 +87,25 @@ namespace Gadgetron{
      
       // Neighbor "plus stride" side
       if( !is_border_pixel_in_stride_dim_after<D>( stride_dim, co, matrix_size )){
-	stride_base_idx = co_to_idx<D>(co+stride, matrix_size);
-	count++;
+        stride_base_idx = co_to_idx<D>(co+stride, matrix_size);
+        count++;
       }
       else{
-	stride_base_idx = idx_in_batch;
+        stride_base_idx = idx_in_batch;
       }
     
       fixed_idx = stride_base_idx+base_idx_fixed;
       moving_idx = stride_base_idx+base_idx_moving;
-    
+      
       res = (fixed_image[fixed_idx]+moving_image[moving_idx])*T(0.5);
 
       // Neighbor "minus stride" side
       if( !is_border_pixel_in_stride_dim_before<D>( stride_dim, co, matrix_size )){
-	stride_base_idx = co_to_idx<D>(co-stride, matrix_size);
-	count++;
+        stride_base_idx = co_to_idx<D>(co-stride, matrix_size);
+        count++;
       }
       else{
-	stride_base_idx = co_to_idx<D>(co, matrix_size);
+        stride_base_idx = co_to_idx<D>(co, matrix_size);
       }
     
       fixed_idx = stride_base_idx+base_idx_fixed;
@@ -114,7 +114,7 @@ namespace Gadgetron{
       res -= (fixed_image[fixed_idx]+moving_image[moving_idx])*T(0.5);
 
       if( count == 2 ) // Both neighbors exist
-	res /= T(2);
+        res /= T(2);
 
       // Output result
       //

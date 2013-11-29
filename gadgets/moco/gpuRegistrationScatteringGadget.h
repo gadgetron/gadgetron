@@ -3,7 +3,6 @@
 
 #include "cuNDArray_operators.h"
 #include "cuNDArray_utils.h"
-#include "cuRegistration_utils.h"
 #include "cuCKOpticalFlowSolver.h"
 #include "RegistrationScatteringGadget.h"
 

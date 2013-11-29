@@ -83,7 +83,7 @@ namespace Gadgetron{
     while(true){
     
       if( this->output_mode_ >= cuOpticalFlowSolver<T,D>::OUTPUT_VERBOSE ) {
-	std::cout << "."; std::cout.flush();
+        std::cout << "."; std::cout.flush();
       }
     
       // Clear termination flag
@@ -91,17 +91,17 @@ namespace Gadgetron{
     
       unsigned int _continue_flag = 0;
       if( cudaMemcpy( continue_flag, &_continue_flag, sizeof(unsigned int), cudaMemcpyHostToDevice ) != cudaSuccess ) {
-	throw std::runtime_error("cuCKOpticalFlowSolver::core_solver(): failed to set continuation flag.");
+        throw std::runtime_error("cuCKOpticalFlowSolver::core_solver(): failed to set continuation flag.");
       }
     
       // Invoke kernel
       //
     
       CorneliusKanade_kernel<T,D><<< gridDim, blockDim, (blockDim.x*blockDim.y)*sizeof(T) >>>
-	( gradient_image->get_data_ptr(), (stencil_image) ? stencil_image->get_data_ptr() : 0x0,
-	  ping->get_data_ptr(), pong->get_data_ptr(), 
-	  matrix_size, number_of_batches, alpha_, beta_, this->limit_*this->limit_, continue_flag );
-    
+        ( gradient_image->get_data_ptr(), (stencil_image) ? stencil_image->get_data_ptr() : 0x0,
+          ping->get_data_ptr(), pong->get_data_ptr(), 
+          matrix_size, number_of_batches, alpha_, beta_, this->limit_*this->limit_, continue_flag );
+      
       CHECK_FOR_CUDA_ERROR();
 
       // Swap in/out buffers
@@ -115,19 +115,19 @@ namespace Gadgetron{
       //
 
       if( cudaMemcpy(&_continue_flag, continue_flag, sizeof(unsigned int), cudaMemcpyDeviceToHost) != cudaSuccess ) {
-	throw std::runtime_error("cuHSOpticalFlowSolver::core_solver(): failed to evaluate the continuation flag.");
+        throw std::runtime_error("cuHSOpticalFlowSolver::core_solver(): failed to evaluate the continuation flag.");
       }
     
       if( _continue_flag == 0 ){
-	if( this->output_mode_ >= cuOpticalFlowSolver<T,D>::OUTPUT_VERBOSE ) {
-	  std::cout << std::endl << "Break after " << iteration_no+1 << " iterations" << std::endl;
-	}
-	break;
+        if( this->output_mode_ >= cuOpticalFlowSolver<T,D>::OUTPUT_VERBOSE ) {
+          std::cout << std::endl << "Break after " << iteration_no+1 << " iterations" << std::endl;
+        }
+        break;
       }
-    
+      
       if( iteration_no > this->max_num_iterations_per_level_ ) 
-	break;    
-    
+        break;    
+      
       iteration_no++;
     }
   
@@ -149,19 +149,19 @@ namespace Gadgetron{
   {
     for( unsigned int d=0; d<D; d++ ){
       if( stride.vec[d] == -1 ){
-	if( co.vec[d] == 0 ){
-	  return true;
-	}
+        if( co.vec[d] == 0 ){
+          return true;
+        }
       }
       else if( stride.vec[d] == 1 ){
-	if( co.vec[d] == (dims.vec[d]-1) ){
-	  return true;
-	}
+        if( co.vec[d] == (dims.vec[d]-1) ){
+          return true;
+        }
       }
     }
     return false;
   }
-
+  
   template<unsigned int i, unsigned int j> struct Pow
   {
     enum { Value = i*Pow<i,j-1>::Value };
@@ -177,11 +177,11 @@ namespace Gadgetron{
 
   template<class REAL, unsigned int D> __global__ void
   CorneliusKanade_kernel( REAL *gradient_image, REAL *stencil_image,
-			  REAL *in_disp, REAL *out_disp, 
-			  typename uintd<D>::Type matrix_size, unsigned int num_batches,
-			  REAL alpha, REAL beta, REAL disp_thresh_sqr, unsigned int *continue_signal )
+                          REAL *in_disp, REAL *out_disp, 
+                          typename uintd<D>::Type matrix_size, unsigned int num_batches,
+                          REAL alpha, REAL beta, REAL disp_thresh_sqr, unsigned int *continue_signal )
   {  
-
+    
     // The overall flow dimension corresponding to this thread
     const unsigned int dim = threadIdx.y;
 
@@ -237,25 +237,25 @@ namespace Gadgetron{
     
       for( int i=0; i<num_neighbors; i++ ){
       
-	// Find the stride of the neighbor {-1, 0, 1}^D
-	const typename intd<D>::Type stride = idx_to_co<D>( i, threes ) - ones;
-      
-	unsigned int neighbor_idx;
-      
-	const unsigned int base_offset = dim*num_elements_per_dim + batch_idx*num_elements_per_batch;
-      
-	// Verify that the neighbor is not out of bounds (and not the thread itself)
-	if( !is_border_pixel_for_stride<D>( stride, co, matrix_size ) && !(stride==zeros) ){	
-	  neighbor_idx = (unsigned int) co_to_idx<D>( to_intd(co)+stride, to_intd(matrix_size)) + base_offset;
-	}
-	else{
-	  neighbor_idx = idx_in_batch + base_offset;
-	}
-      
-	shared_mem[shared_idx] += in_disp[neighbor_idx];
-	num_contribs += REAL(1);
+        // Find the stride of the neighbor {-1, 0, 1}^D
+        const typename intd<D>::Type stride = idx_to_co<D>( i, threes ) - ones;
+        
+        unsigned int neighbor_idx;
+        
+        const unsigned int base_offset = dim*num_elements_per_dim + batch_idx*num_elements_per_batch;
+        
+        // Verify that the neighbor is not out of bounds (and not the thread itself)
+        if( !is_border_pixel_for_stride<D>( stride, co, matrix_size ) && !(stride==zeros) ){	
+          neighbor_idx = (unsigned int) co_to_idx<D>( to_intd(co)+stride, to_intd(matrix_size)) + base_offset;
+        }
+        else{
+          neighbor_idx = idx_in_batch + base_offset;
+        }
+        
+        shared_mem[shared_idx] += in_disp[neighbor_idx];
+        num_contribs += REAL(1);
       }
-    
+      
       // Normalize
       shared_mem[shared_idx] /= num_contribs;
     }
@@ -276,17 +276,17 @@ namespace Gadgetron{
     
       // Contributions from the spatial dimensions
       //
-    
+      
       for( unsigned int d=0; d<D; d++ ){
-	derivatives.vec[d] = gradient_image[d*num_elements_per_dim+idx];
-	const unsigned int shared_idx = d*blockDim.x+threadIdx.x;
-	phi += (shared_mem[shared_idx]*derivatives.vec[d]);
-	norm += (derivatives.vec[d]*derivatives.vec[d]);
+        derivatives.vec[d] = gradient_image[d*num_elements_per_dim+idx];
+        const unsigned int shared_idx = d*blockDim.x+threadIdx.x;
+        phi += (shared_mem[shared_idx]*derivatives.vec[d]);
+        norm += (derivatives.vec[d]*derivatives.vec[d]);
       }
-    
+      
       // Contributions from the temporal dimension
       //
-    
+      
       phi += gradient_image[D*num_elements_per_dim+idx];
     
       // Contribution from the intensity attentuation estimation
@@ -306,20 +306,20 @@ namespace Gadgetron{
       REAL result;
     
       if( dim<D )
-	result = shared_mem[shared_idx]-derivatives.vec[dim]*phi;
+        result = shared_mem[shared_idx]-derivatives.vec[dim]*phi;
       else
-	result = shared_mem[D*blockDim.x+threadIdx.x]+(alpha/beta)*(alpha/beta)*phi;
-    
+        result = shared_mem[D*blockDim.x+threadIdx.x]+(alpha/beta)*(alpha/beta)*phi;
+      
       // Clear the "termination" flag if the displacement field has changed above the threshold
       //
-    
+      
       REAL delta = result-in_disp[dim*num_elements_per_dim+idx];
       if( dim < D && delta*delta > disp_thresh_sqr )
-	continue_signal[0] = 1;
-    
+        continue_signal[0] = 1;
+      
       // Output result
       //
-    
+      
       out_disp[dim*num_elements_per_dim+idx] = result;
     }
   }

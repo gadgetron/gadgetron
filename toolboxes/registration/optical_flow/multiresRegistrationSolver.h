@@ -40,10 +40,10 @@ public:
 	//
 
 	virtual boost::shared_ptr<ARRAY_TYPE_REAL> solve( registrationData<ARRAY_TYPE_REAL> *rd )
-        				{
+  {
 		return registrationSolver<ARRAY_TYPE_REAL>::solve(rd);
-        				}
-
+  }
+  
 	virtual boost::shared_ptr<ARRAY_TYPE_REAL> solve(
 			ARRAY_TYPE_REAL *fixed_image,
 			ARRAY_TYPE_REAL *moving_image,
@@ -115,21 +115,22 @@ public:
 		}
 
 		boost::shared_ptr<ARRAY_TYPE_REAL> result =
-				solveMultiRes( num_multires_levels_, normalized_fixed, normalized_moving, this->stencil_.get() );
+      solveMultiRes( num_multires_levels_, normalized_fixed, normalized_moving, this->stencil_.get() );
 
 		if( use_padding ){
 			result = crop<REAL,D>( (round_pow2(fixed_dims)-fixed_dims)>>2, fixed_dims, result.get());
 		}
 
 		return result;
-        				}
+  }
 
 protected:
 
 	// Pure virtual fuctions to be implemented in a subclass
 	//
 
-	virtual void compute( ARRAY_TYPE_REAL *fixed_image, ARRAY_TYPE_REAL *moving_image, ARRAY_TYPE_REAL *stencil_image, boost::shared_ptr<ARRAY_TYPE_REAL> &result ) = 0;
+	virtual void compute( ARRAY_TYPE_REAL *fixed_image, ARRAY_TYPE_REAL *moving_image, ARRAY_TYPE_REAL *stencil_image, 
+                        boost::shared_ptr<ARRAY_TYPE_REAL> &result ) = 0;
 
 	// The recursive multi-resolution solver
 	//
@@ -138,9 +139,8 @@ protected:
 			unsigned int res_level,
 			ARRAY_TYPE_REAL *fixed_image,
 			ARRAY_TYPE_REAL *moving_image,
-			ARRAY_TYPE_REAL *stencil_image ){
-
-
+			ARRAY_TYPE_REAL *stencil_image )
+  {
 		boost::shared_ptr<ARRAY_TYPE_REAL> result;
 
 		if (res_level>0){
@@ -188,22 +188,17 @@ protected:
 				std::cout << std::endl << "Multiresolution level " << res_level;
 			}
 
-
 			// Use estimated (lowres) motion to compute displacements at the current resolution
 			//
 
-			boost::shared_ptr<ARRAY_TYPE_REAL> def_moving_image;
-
-
-			// Apply the input deformation
-			def_moving_image = this->deform( moving_image, result );
-
-			// Compute gradient image
+			boost::shared_ptr<ARRAY_TYPE_REAL> def_moving_image = this->deform( moving_image, result );
+      
+			// Compute registationnat the current multiresolution level
 			//
 
-
 			compute( fixed_image, def_moving_image.get(), stencil_image, result );
-		}	else{
+		}	
+    else{
 
 			//
 			// We are now at the end of the multi-resolution chain
@@ -230,7 +225,9 @@ protected:
 		bool padding_required = false;
 		typename uintd<D>::Type ones = to_vector_td<unsigned int, D>(1);
 		typename uintd<D>::Type twos = to_vector_td<unsigned int, D>(2);
+
 		for( unsigned int i=0; i<num_multires_levels_; i++ ){
+
 			dims /= (unsigned int)2;
 
 			if( weak_less( dims, 12*ones ) ){
