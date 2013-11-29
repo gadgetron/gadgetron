@@ -29,6 +29,7 @@ int main(int argc, char** argv)
 	parms.add_parameter( 'O', COMMAND_LINE_INT, 1, "Use oversampling in fbp", true, "0" );
 	parms.add_parameter( 'H', COMMAND_LINE_FLOAT, 1, "Half-scan mode maximum angle", true, "0" );
 	parms.add_parameter( 'P', COMMAND_LINE_INT, 1, "Projections per batch", true, "50" );
+  parms.add_parameter( 'D', COMMAND_LINE_INT, 1, "Number of downsamples of projection plate", true, "0" );
 
 	parms.parse_parameter_list(argc, argv);
 	if( parms.all_required_parameters_set() ) {
@@ -49,6 +50,15 @@ int main(int argc, char** argv)
 
 	boost::shared_ptr<CBCT_acquisition> acquisition( new CBCT_acquisition() );
 	acquisition->load(acquisition_filename);
+
+	// Downsample projections if requested
+	//
+
+	{
+		GPUTimer timer("Downsampling projections");
+		unsigned int num_downsamples = parms.get_parameter('D')->get_int_value();    
+		acquisition->downsample(num_downsamples);
+	}
 
 	// Load the binning data
 	//

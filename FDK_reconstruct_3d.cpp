@@ -28,7 +28,7 @@ int main(int argc, char** argv)
   parms.add_parameter( 'f', COMMAND_LINE_FLOAT, 3, "FOV in mm (3d)", true, "448, 448, 252" );
   parms.add_parameter( 'F', COMMAND_LINE_INT, 1, "Use filtered backprojection (fbp)", true, "1" );
   parms.add_parameter( 'P', COMMAND_LINE_INT, 1, "Projections per batch", false );
-  parms.add_parameter( 'D', COMMAND_LINE_INT, 1, "Number of downsamples of projection plate", false );
+  parms.add_parameter( 'D', COMMAND_LINE_INT, 1, "Number of downsamples of projection plate", true, "0" );
 
   parms.parse_parameter_list(argc, argv);
   if( parms.all_required_parameters_set() ) {
@@ -53,6 +53,15 @@ int main(int argc, char** argv)
     acquisition->load(acquisition_filename);
   }
 
+	// Downsample projections if requested
+	//
+
+	{
+		GPUTimer timer("Downsampling projections");
+		unsigned int num_downsamples = parms.get_parameter('D')->get_int_value();    
+		acquisition->downsample(num_downsamples);
+	}
+  
   // Load or generate binning data
   //
   
@@ -102,15 +111,6 @@ int main(int argc, char** argv)
   //
 
   hoCuNDArray<float> projections(*acquisition->get_projections());  
-
-  CommandLineParameter *parm = parms.get_parameter('D');
-  
-  if( parm && parm->get_is_set() ) {
-    GPUTimer timer("Downsampling projections");
-    unsigned int num_downsamples = parm->get_int_value();
-    for( int k = 0; k < num_downsamples; k++ )
-      projections = *downsample<float,2>(&projections);
-  }
   
   // Define conebeam projection operator
   // - and configure based on input parameters
@@ -121,7 +121,7 @@ int main(int argc, char** argv)
   E->setup( acquisition, binning, is_dims_in_mm );
   E->use_filtered_backprojections(use_fbp);
 
-  parm = parms.get_parameter('P');
+  CommandLineParameter *parm = parms.get_parameter('P');
   if( parm && parm->get_is_set() )
     E->set_num_projections_per_batch( parm->get_int_value() );
   

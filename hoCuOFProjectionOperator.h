@@ -282,6 +282,21 @@ namespace Gadgetron{
             is_dims_in_mm_, ps_dims_in_mm,
             SDD, SAD, false, use_offset_correction_, false );
 
+        // Weight this phase according to the temporal distance to the phase being reconstructed
+        //
+
+        /* {
+          const REAL overall_scale = REAL(1)/gaussian(REAL(0));
+          int dist = (int(phase_)-int(b));
+          float scale;
+          if( abs(dist) <= (this->binning_->get_number_of_bins()>>1) )
+            scale = overall_scale*this->gaussian(float(dist));
+          else
+            scale = overall_scale*this->gaussian(float(this->binning_->get_number_of_bins())-float(abs(dist)));
+          //printf("\nScaling with factor: %f for bin %d", scale, b);
+          image_3d *= scale;
+          }*/
+        
         bin++;
       }
 
@@ -289,7 +304,6 @@ namespace Gadgetron{
       // - upsampling required if the vector field was initially downsampled
       //
       
-
       if( image_4d.get_size(0) == image->get_size(0) )
         R_->mult_MH( &image_4d, image, true );
       else{
