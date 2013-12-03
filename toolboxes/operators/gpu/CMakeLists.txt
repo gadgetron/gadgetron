@@ -44,6 +44,7 @@ install(FILES
   cuUpsampleOperator.h
   hoCuTvOperator.h
   hoCuTvPicsOperator.h
+  hoCuEncodingOperatorContainer.h
   gpuoperators_export.h
   hoCuOperator.h
   DESTINATION include)
