@@ -43,9 +43,9 @@ namespace Gadgetron {
         floatd2 ps_dims_in_mm,
         float SDD, 
         float SAD,
-        bool accumulate, 
         bool short_scan,
         bool use_offset_correction,
+        bool accumulate, 
         cuNDArray<float> *cosine_weights = 0x0,
         cuNDArray<float> *frequency_filter = 0x0
   );

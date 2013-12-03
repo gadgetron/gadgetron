@@ -110,9 +110,10 @@ int main(int argc, char** argv)
 	boost::shared_ptr< hoCuConebeamProjectionOperator > E( new hoCuConebeamProjectionOperator() );
 
 	E->setup( acquisition, binning, is_dims_in_mm );
+	E->set_use_filtered_backprojection(true);
 
-	E->use_filtered_backprojections(true);
 	hoCuNDArray<float> projections(*acquisition->get_projections());
+
 	{
 		GPUTimer timer("Running 3D FDK reconstruction");
 		E->mult_MH( &projections, &fdk_3d );
@@ -138,7 +139,7 @@ int main(int argc, char** argv)
 	boost::shared_ptr< hoCuConebeamProjectionOperator >
 	E4D( new hoCuConebeamProjectionOperator() );
 	E4D->setup(acquisition,ps_bd4d,is_dims_in_mm);
-	E4D->use_filtered_backprojections(true);
+	E4D->set_use_filtered_backprojection(true);
 	E4D->set_domain_dimensions(&is_dims);
 
 	hoCuNDArray<float> fdk(*expand(&fdk_3d,numBins));

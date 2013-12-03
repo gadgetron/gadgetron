@@ -106,12 +106,8 @@ int main(int argc, char** argv)
   is_dims.push_back(is_dims_in_pixels[2]);
   
   hoCuNDArray<float> fdk_3d(&is_dims);
-
-  // Downsample projections if requested
-  //
-
   hoCuNDArray<float> projections(*acquisition->get_projections());  
-  
+
   // Define conebeam projection operator
   // - and configure based on input parameters
   //
@@ -119,7 +115,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< hoCuConebeamProjectionOperator > E( new hoCuConebeamProjectionOperator() );
 
   E->setup( acquisition, binning, is_dims_in_mm );
-  E->use_filtered_backprojections(use_fbp);
+  E->set_use_filtered_backprojection(use_fbp);
 
   CommandLineParameter *parm = parms.get_parameter('P');
   if( parm && parm->get_is_set() )

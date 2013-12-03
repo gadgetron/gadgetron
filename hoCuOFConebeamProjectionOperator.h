@@ -16,24 +16,30 @@
 
 namespace Gadgetron{
 
-  class hoCuOFProjectionOperator : public linearOperator< hoCuNDArray<float> >
+  class hoCuOFConebeamProjectionOperator : public linearOperator< hoCuNDArray<float> >
   {
   public:
 
-    hoCuOFProjectionOperator() : linearOperator< hoCuNDArray<float> >()
+    hoCuOFConebeamProjectionOperator() : linearOperator< hoCuNDArray<float> >()
     {
       samples_per_pixel_ = 1.5;      
       projections_per_batch_ = 20;
       use_offset_correction_ = false;
+      allow_offset_correction_override_ = true;
       phase_ = -1;
       displacements_set_ = false;
       preprocessed_ = false;
     }
   
-    virtual ~hoCuOFProjectionOperator() {}
+    virtual ~hoCuOFConebeamProjectionOperator() {}
   
     virtual void set_encoding_phase( unsigned int phase ) { phase_ = (int) phase; }
   
+    inline void set_use_offset_correction( bool use_correction ){
+      use_offset_correction_ = use_correction;
+      allow_offset_correction_override_ = false;
+    }
+
     inline void set_num_projections_per_batch( unsigned int projections_per_batch ){
       projections_per_batch_ = projections_per_batch;
     }
@@ -47,7 +53,7 @@ namespace Gadgetron{
                         floatd3 is_dims_in_mm )
     {      
       if( !acquisition.get() || !binning.get() )
-        throw std::runtime_error("Error: hoCuOFProjectionOperator::setup: illegal input");
+        throw std::runtime_error("Error: hoCuOFConebeamProjectionOperator::setup: illegal input");
       
       acquisition_ = acquisition;
       binning_ = binning;
@@ -66,8 +72,8 @@ namespace Gadgetron{
     
       floatd2 ps_dims_in_mm = acquisition_->get_geometry()->get_FOV();
 
-      if (mean_offset[0] > ps_dims_in_mm[0]*0.1f)
-        use_offset_correction_ = true;
+      if( allow_offset_correction_override_ && mean_offset[0] > ps_dims_in_mm[0]*0.1f )
+      	use_offset_correction_ = true;
     
       preprocessed_ = true;
     }
@@ -98,36 +104,33 @@ namespace Gadgetron{
       //
       
       if( image == 0x0 || projections == 0x0 ){
-        throw std::runtime_error("Error: hoCuOFProjectionOperator::mult_M: illegal array pointer provided");
+        throw std::runtime_error("Error: hoCuOFConebeamProjectionOperator::mult_M: illegal array pointer provided");
       }
       
       if( image->get_number_of_dimensions() != 3 ){
-        throw std::runtime_error("Error: hoCuOFProjectionOperator::mult_M: image array must be three-dimensional");
+        throw std::runtime_error("Error: hoCuOFConebeamProjectionOperator::mult_M: image array must be three-dimensional");
       }
       
       if( projections->get_number_of_dimensions() != 3 ){
-        throw std::runtime_error("Error: hoCuOFProjectionOperator::mult_M: projections array must be three-dimensional");
+        throw std::runtime_error("Error: hoCuOFConebeamProjectionOperator::mult_M: projections array must be three-dimensional");
       }
       
       if( !preprocessed_ ){
-        throw std::runtime_error( "Error: hoCuOFProjectionOperator::mult_M: setup not performed");
+        throw std::runtime_error( "Error: hoCuOFConebeamProjectionOperator::mult_M: setup not performed");
       }
 
       if( !displacements_set_ ){
-        throw std::runtime_error( "Error: hoCuOFProjectionOperator::mult_M: displacement field not set");
+        throw std::runtime_error( "Error: hoCuOFConebeamProjectionOperator::mult_M: displacement field not set");
       }
       
       if( phase_ < 0 ){
-        throw std::runtime_error( "Error: hoCuOFProjectionOperator::mult_M: phase not set");
+        throw std::runtime_error( "Error: hoCuOFConebeamProjectionOperator::mult_M: phase not set");
       }
 
       if( projections->get_size(2) != acquisition_->get_geometry()->get_angles().size() || 
           projections->get_size(2) != acquisition_->get_geometry()->get_offsets().size() ){
-        throw std::runtime_error("Error: hoCuOFProjectionOperator::mult_M: inconsistent sizes of input arrays/vectors");
+        throw std::runtime_error("Error: hoCuOFConebeamProjectionOperator::mult_M: inconsistent sizes of input arrays/vectors");
       }
-      
-      if (!accumulate)
-        clear(projections);
       
       //
       // Forwards projection
@@ -137,38 +140,30 @@ namespace Gadgetron{
       float SDD = acquisition_->get_geometry()->get_SDD();
       float SAD = acquisition_->get_geometry()->get_SAD();
 
-      // First we project phase 'phase_'
-      //
-
-      {
-        conebeam_forwards_projection( projections, image,
-                                      acquisition_->get_geometry()->get_angles(), 
-                                      acquisition_->get_geometry()->get_offsets(),
-                                      binning_->get_bin(phase_),
-                                      projections_per_batch_, samples_per_pixel_,
-                                      is_dims_in_mm_, ps_dims_in_mm, 
-                                      SDD, SAD, true );
-      }
-
-      // Then project the remaining phases 
+      // Project all phases except phase_
       //
 
       hoCuNDArray<float> *moving_image;
       boost::shared_ptr< hoCuNDArray<float> > moving_image_boost;
+
+      unsigned int num_downsamples = log2l(image->get_size(0)/reg_is_dims_4d_[0]);
 
       if( image->get_size(0) == reg_is_dims_4d_[0] )
         moving_image = image;
       else{
         // Downsampling required
         std::vector<unsigned int> tmp_dims = *image->get_dimensions();
-        for( unsigned int i=0; i<tmp_dims.size(); i++ ) tmp_dims[i] /= 2;
-        cuDownsampleOperator<float,3> D;
         cuNDArray<float> tmp_in(image);
-        cuNDArray<float> tmp_out(&tmp_dims);
+        for( unsigned int d=0; d<num_downsamples; d++ ){
+          for( unsigned int i=0; i<tmp_dims.size(); i++ ) tmp_dims[i] /= 2;
+          cuDownsampleOperator<float,3> D;
+          cuNDArray<float> tmp_out(&tmp_dims);
+          D.mult_M( &tmp_in, &tmp_out );
+          tmp_in = tmp_out;
+        }
         moving_image_boost = boost::shared_ptr< hoCuNDArray<float> >( new hoCuNDArray<float>(&tmp_dims) );
         moving_image = moving_image_boost.get();
-        D.mult_M( &tmp_in, &tmp_out );
-        *moving_image = *tmp_out.to_host();
+        *moving_image = *tmp_in.to_host();
       }
 
       hoCuNDArray<float> image_4d(&reg_is_dims_4d_);
@@ -192,7 +187,7 @@ namespace Gadgetron{
                                       binning_->get_bin(b),
                                       projections_per_batch_, samples_per_pixel_,
                                       is_dims_in_mm_, ps_dims_in_mm, 
-                                      SDD, SAD, true );
+                                      SDD, SAD, accumulate );
         
         bin++;
       }
@@ -205,63 +200,51 @@ namespace Gadgetron{
       //
 
       if( image == 0x0 || projections == 0x0 ){
-        throw std::runtime_error("Error: hoCuOFProjectionOperator::mult_MH:: illegal array pointer provided");
+        throw std::runtime_error("Error: hoCuOFConebeamProjectionOperator::mult_MH:: illegal array pointer provided");
       }
     
       if( image->get_number_of_dimensions() != 3 ){
-        throw std::runtime_error("Error: hoCuOFProjectionOperator::mult_MH: image array must be three-dimensional");
+        throw std::runtime_error("Error: hoCuOFConebeamProjectionOperator::mult_MH: image array must be three-dimensional");
       }
     
       if( projections->get_number_of_dimensions() != 3 ){
-        throw std::runtime_error("Error: hoCuOFProjectionOperator::mult_MH: projections array must be three-dimensional");
+        throw std::runtime_error("Error: hoCuOFConebeamProjectionOperator::mult_MH: projections array must be three-dimensional");
       }
     
       if( !preprocessed_ ){
-        throw std::runtime_error( "Error: hoCuOFProjectionOperator::mult_MH: setup not performed");
+        throw std::runtime_error( "Error: hoCuOFConebeamProjectionOperator::mult_MH: setup not performed");
       }
 
       if( !displacements_set_ ){
-        throw std::runtime_error( "Error: hoCuOFProjectionOperator::mult_MH: displacement field not set");
+        throw std::runtime_error( "Error: hoCuOFConebeamProjectionOperator::mult_MH: displacement field not set");
       }
 
       if( phase_ < 0 ){
-        throw std::runtime_error( "Error: hoCuOFProjectionOperator::mult_MH: phase not set");
+        throw std::runtime_error( "Error: hoCuOFConebeamProjectionOperator::mult_MH: phase not set");
       }
 
       if( projections->get_size(2) != acquisition_->get_geometry()->get_angles().size() ||
           projections->get_size(2) != acquisition_->get_geometry()->get_offsets().size() ){
-        throw std::runtime_error("Error: hoCuOFProjectionOperator::mult_MH: inconsistent sizes of input arrays/vectors");
+        throw std::runtime_error("Error: hoCuOFConebeamProjectionOperator::mult_MH: inconsistent sizes of input arrays/vectors");
       }
 
       //
       // Backwards projection
       //
       
-      intd3 is_dims_in_pixels_highres( image->get_size(0), image->get_size(1), image->get_size(2) );
-      intd3 is_dims_in_pixels_lowres = is_dims_in_pixels_highres/2;
       floatd2 ps_dims_in_mm = acquisition_->get_geometry()->get_FOV();      
       float SDD = acquisition_->get_geometry()->get_SDD();
       float SAD = acquisition_->get_geometry()->get_SAD();
 
-      // First we backproject phase 'phase_'
-      //
-      
-      conebeam_backwards_projection<false>
-        ( projections, image,
-          acquisition_->get_geometry()->get_angles(), 
-          acquisition_->get_geometry()->get_offsets(),
-          binning_->get_bin(phase_),
-          projections_per_batch_,
-          is_dims_in_pixels_highres, is_dims_in_mm_, ps_dims_in_mm,
-          SDD, SAD, false, use_offset_correction_, accumulate );
-
-      // Then backproject the remaining phases 
+      // Backproject all phases but phase_
       //
 
       hoCuNDArray<float> image_4d(&reg_is_dims_4d_);
 
       std::vector<unsigned int> is_dims_3d = reg_is_dims_4d_;
       is_dims_3d.pop_back();
+      
+      intd3 is_dims_lores( is_dims_3d[0], is_dims_3d[1], is_dims_3d[2]);
 
       int num_3d_elements = is_dims_3d[0]*is_dims_3d[1]*is_dims_3d[2];
       
@@ -277,47 +260,50 @@ namespace Gadgetron{
             acquisition_->get_geometry()->get_angles(), 
             acquisition_->get_geometry()->get_offsets(),
             binning_->get_bin(b),
-            projections_per_batch_,
-            (image_4d.get_size(0) == image->get_size(0)) ? is_dims_in_pixels_highres : is_dims_in_pixels_lowres, 
-            is_dims_in_mm_, ps_dims_in_mm,
+            projections_per_batch_, is_dims_lores, is_dims_in_mm_, ps_dims_in_mm,
             SDD, SAD, false, use_offset_correction_, false );
 
-        // Weight this phase according to the temporal distance to the phase being reconstructed
+        // Gaussian weighing of result according to the cyclic distance to the reference frame
         //
-
-        /* {
-          const REAL overall_scale = REAL(1)/gaussian(REAL(0));
-          int dist = (int(phase_)-int(b));
-          float scale;
-          if( abs(dist) <= (this->binning_->get_number_of_bins()>>1) )
-            scale = overall_scale*this->gaussian(float(dist));
-          else
-            scale = overall_scale*this->gaussian(float(this->binning_->get_number_of_bins())-float(abs(dist)));
-          //printf("\nScaling with factor: %f for bin %d", scale, b);
-          image_3d *= scale;
-          }*/
         
+        const float overall_scale = float(1)/this->gaussian(float(0));
+        int dist = (phase_-b);
+        float scale;
+        if( abs(dist) <= (this->binning_->get_number_of_bins()>>1) )
+          scale = overall_scale*this->gaussian(float(dist));
+        else
+          scale = overall_scale*this->gaussian(float(this->binning_->get_number_of_bins())-float(abs(dist)));        
+
+        image_3d *= scale;
+
         bin++;
       }
 
-      // And finally apply the adjoint of the resampling matrix
+      // Spply the adjoint of the resampling matrix
       // - upsampling required if the vector field was initially downsampled
       //
       
       if( image_4d.get_size(0) == image->get_size(0) )
-        R_->mult_MH( &image_4d, image, true );
+        R_->mult_MH( &image_4d, image, accumulate );
       else{
         // Upsampling required
+        unsigned int num_upsamples = log2l(image->get_size(0)/reg_is_dims_4d_[0]);
         std::vector<unsigned int> dims_3d = reg_is_dims_4d_;
         dims_3d.pop_back();
         hoCuNDArray<float> image_lowres(&dims_3d);
         R_->mult_MH( &image_4d, &image_lowres );
-        cuUpsampleOperator<float,3> U;
-        for( unsigned int i=0; i<3; i++ ) dims_3d[i]*=2;
         cuNDArray<float> tmp_in(&image_lowres);
-        cuNDArray<float> tmp_out(&dims_3d);
-        U.mult_M( &tmp_in, &tmp_out ); // this is the transpose of the downsampling by design
-        *image += *tmp_out.to_host();
+        for( unsigned int d=0; d<num_upsamples; d++ ){
+          for( unsigned int i=0; i<3; i++ ) dims_3d[i]*=2;
+          cuNDArray<float> tmp_out(&dims_3d);
+          cuUpsampleOperator<float,3> U;
+          U.mult_M( &tmp_in, &tmp_out ); // this is the transpose of the downsampling by design
+          tmp_in = tmp_out;
+        }
+        if( accumulate )
+          *image += *tmp_in.to_host();
+        else
+          *image = *tmp_in.to_host();
       }      
     }
     
@@ -335,14 +321,18 @@ namespace Gadgetron{
     float samples_per_pixel_;
     unsigned int projections_per_batch_;
     bool use_offset_correction_;
+    bool allow_offset_correction_override_;
     bool displacements_set_;
     bool preprocessed_;
 
-    inline float gaussian( float x ) {
+  private:
+    
+    inline float gaussian( float x )
+    {
       const float sigma = std::sqrt(float(5.0));
       const float pi = float(4)*std::atan(float(1));
       const float a = float(1)/(sigma*std::sqrt(float(2)*pi));
       return a*std::exp(-float(0.5)*(x/sigma)*(x/sigma));
-    }  
+    }      
   };
 }

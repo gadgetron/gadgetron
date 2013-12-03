@@ -24,6 +24,7 @@ namespace Gadgetron{
       short_scan_ = false;
       preprocessed_ = false;
       use_offset_correction_ = false;
+      allow_offset_correction_override_ = true;
     }
 
     virtual ~hoCuConebeamProjectionOperator() {}
@@ -32,11 +33,9 @@ namespace Gadgetron{
     virtual void mult_MH( hoCuNDArray<float> *in, hoCuNDArray<float> *out, bool accumulate = false );
 
     virtual void setup( boost::shared_ptr<CBCT_acquisition> acquisition,
-                        boost::shared_ptr<CBCT_binning> binning,
                         floatd3 is_dims_in_mm )
     {      
       acquisition_ = acquisition;
-      binning_ = binning;
       is_dims_in_mm_ = is_dims_in_mm;
       
       // Determine the minimum and maximum angles scanned and transform array angles from [0;max_angle_].
@@ -68,14 +67,32 @@ namespace Gadgetron{
       std::vector<floatd2> offsets = acquisition_->get_geometry()->get_offsets();
       floatd2 mean_offset = std::accumulate(offsets.begin(),offsets.end(),floatd2(0,0))/float(offsets.size());
 
-      if (mean_offset[0] > ps_dims_in_mm[0]*0.1f)
-      	use_offset_correction_=true;
-
+      if( allow_offset_correction_override_ && mean_offset[0] > ps_dims_in_mm[0]*0.1f )
+      	use_offset_correction_ = true;
+      
       preprocessed_ = true;
     }
 
-    inline void use_filtered_backprojections( bool use_fbp ){
+    virtual void setup( boost::shared_ptr<CBCT_acquisition> acquisition,
+                        boost::shared_ptr<CBCT_binning> binning,
+                        floatd3 is_dims_in_mm )
+    {
+      binning_ = binning;
+      setup( acquisition, is_dims_in_mm );
+    }
+
+
+    inline void set_use_filtered_backprojection( bool use_fbp ){
       use_fbp_ = use_fbp;      
+    }
+
+    inline void set_use_offset_correction( bool use_correction ){
+      use_offset_correction_ = use_correction;
+      allow_offset_correction_override_ = false;
+    }
+
+    inline bool get_use_offset_correction(){
+      return use_offset_correction_;
     }
 
     inline void set_num_projections_per_batch( unsigned int projections_per_batch ){
@@ -90,6 +107,22 @@ namespace Gadgetron{
       frequency_filter_ = weights;
     }
 
+    void set_acquisition( boost::shared_ptr<CBCT_acquisition> acquisition ){
+      acquisition_ = acquisition;
+    }
+
+    boost::shared_ptr<CBCT_acquisition> get_acquisition(){
+      return acquisition_;
+    }
+
+    void set_binning( boost::shared_ptr<CBCT_binning> binning ){
+      binning_ = binning;
+    }
+
+    boost::shared_ptr<CBCT_binning> get_binning(){
+      return binning_;
+    }
+    
     virtual boost::shared_ptr< linearOperator< hoCuNDArray<float> > > clone() {
       return linearOperator< hoCuNDArray<float> >::clone(this);
     }
@@ -108,6 +141,7 @@ namespace Gadgetron{
     bool preprocessed_;
     bool short_scan_;
     bool use_offset_correction_;
+    bool allow_offset_correction_override_;
     boost::shared_ptr< cuNDArray<float> > cosine_weights_;
     boost::shared_ptr< cuNDArray<float> > frequency_filter_;
   };

@@ -10,11 +10,14 @@
 #include "cuLinearResampleOperator.h"
 #include "cuDownsampleOperator.h"
 #include "GPUTimer.h"
+#include "hoCuCgSolver.h"
 #include "hoCuNCGSolver.h"
+#include "hoCuEncodingOperatorContainer.h"
 
 #include "CBCT_acquisition.h"
 #include "CBCT_binning.h"
-#include "hoCuOFProjectionOperator.h"
+#include "hoCuConebeamProjectionOperator.h"
+#include "hoCuOFConebeamProjectionOperator.h"
 
 #include <string>
 #include <sstream>
@@ -22,44 +25,21 @@
 using namespace Gadgetron;
 
 boost::shared_ptr< hoNDArray<float> >
-perform_registration( boost::shared_ptr< hoNDArray<float> > volume, unsigned int phase, float of_alpha, float of_beta, bool downsample )
+perform_registration( boost::shared_ptr< hoNDArray<float> > volume, unsigned int phase, float of_alpha, float of_beta, unsigned int num_multires_levels )
 {
 	std::vector<unsigned int> volume_dims_3d = *volume->get_dimensions();
 	volume_dims_3d.pop_back();
-
-	if( downsample ){
-		for( unsigned int i=0; i<volume_dims_3d.size(); i++ ){
-			if( (volume_dims_3d[i]%2)==1 )
-				throw std::runtime_error("Error: input volume for registration must have even size in all dimensions in order to downsample");
-			volume_dims_3d[i] /= 2;
-		}
-	}
-
-	boost::shared_ptr< hoNDArray<float> > host_volume;
-
-	if( downsample ){
-		std::vector<unsigned int> volume_dims_4d = volume_dims_3d;
-		volume_dims_4d.push_back(volume->get_dimensions()->at(3));
-		cuDownsampleOperator<float,3> D;
-		cuNDArray<float> tmp_in(volume.get());
-		cuNDArray<float> tmp_out(&volume_dims_4d);
-		D.mult_M( &tmp_in, &tmp_out );
-		host_volume = tmp_out.to_host();
-	}
-	else
-		host_volume = volume;
-
 	std::vector<unsigned int> volume_dims_3d_3 = volume_dims_3d;
 	volume_dims_3d_3.push_back(3);
 
 	unsigned int num_elements_3d = volume_dims_3d[0]* volume_dims_3d[1]* volume_dims_3d[2];
-	unsigned int num_phases = host_volume->get_size(3);
+	unsigned int num_phases = volume->get_size(3);
 
 	boost::shared_ptr< hoNDArray<float> > host_result_field( new hoNDArray<float> );
 	{
 		std::vector<unsigned int> volume_dims_4d = volume_dims_3d;
 		volume_dims_4d.push_back(3);
-		volume_dims_4d.push_back(host_volume->get_size(3)-1);
+		volume_dims_4d.push_back(volume->get_size(3)-1);
 		host_result_field->create( &volume_dims_4d );
 	}
 
@@ -67,14 +47,14 @@ perform_registration( boost::shared_ptr< hoNDArray<float> > volume, unsigned int
 	//
 
 	unsigned int counter = 0;
-	hoNDArray<float> host_moving( &volume_dims_3d, host_volume->get_data_ptr()+phase*num_elements_3d );
+	hoNDArray<float> host_moving( &volume_dims_3d, volume->get_data_ptr()+phase*num_elements_3d );
 
 	for( unsigned int i=0; i<num_phases; i++ ){
 
 		if( i==phase )
 			continue;
 
-		hoNDArray<float> host_fixed( &volume_dims_3d, host_volume->get_data_ptr()+i*num_elements_3d );
+		hoNDArray<float> host_fixed( &volume_dims_3d, volume->get_data_ptr()+i*num_elements_3d );
 
 		cuNDArray<float> fixed_image(&host_fixed);
 		cuNDArray<float> moving_image(&host_moving);
@@ -88,7 +68,7 @@ perform_registration( boost::shared_ptr< hoNDArray<float> > volume, unsigned int
 		OFs.set_interpolator( R );
 		OFs.set_output_mode( cuCKOpticalFlowSolver<float,3>::OUTPUT_VERBOSE );
 		OFs.set_max_num_iterations_per_level( 500 );
-		OFs.set_num_multires_levels( 3 - ((downsample) ? 1 : 0) );
+		OFs.set_num_multires_levels( num_multires_levels );
 		OFs.set_alpha(of_alpha);
 		OFs.set_beta(of_beta);
 		OFs.set_limit(0.01f);
@@ -125,8 +105,8 @@ perform_registration( boost::shared_ptr< hoNDArray<float> > volume, unsigned int
 		host_result_field = permute(&tmp, &order)->to_host();
 
 		/*char filename[256];
-  sprintf(&(filename[0]), "displacement_field_%i.real", phase);
-  write_nd_array<float>(host_result_field.get(), (char*)filename);*/
+    sprintf(&(filename[0]), "displacement_field_%i.real", phase);
+    write_nd_array<float>(host_result_field.get(), (char*)filename);*/
 	}
 
 	return host_result_field;
@@ -152,7 +132,7 @@ int main(int argc, char** argv)
 
 	parms.add_parameter( 'P', COMMAND_LINE_INT, 1, "Projections per batch", false );
 	parms.add_parameter( 'D', COMMAND_LINE_INT, 1, "Number of downsamples of projection plate", true, "0" );
-	parms.add_parameter( 'R', COMMAND_LINE_INT, 1, "Use downsampling of registration field (bool)", true, "0" );
+	parms.add_parameter( 'R', COMMAND_LINE_INT, 1, "Number of downsamples of registration field", true, "1" );
 
 	parms.parse_parameter_list(argc, argv);
 
@@ -192,10 +172,10 @@ int main(int argc, char** argv)
 	// Load binning data
 	//
 
-	boost::shared_ptr<CBCT_binning> binning( new CBCT_binning() );
+	boost::shared_ptr<CBCT_binning> binning_4d( new CBCT_binning() );
 	{
 		GPUTimer timer("Loading binning data");
-		binning->load(binning_filename);
+		binning_4d->load(binning_filename);
 	}
 
 	// Load intermediate reconstruction
@@ -232,14 +212,11 @@ int main(int argc, char** argv)
 			parms.get_parameter('f')->get_float_value(1),
 			parms.get_parameter('f')->get_float_value(2) );
 
-	size_t num_phases = binning->get_number_of_bins();
+	size_t num_phases = binning_4d->get_number_of_bins();
 
 	float of_alpha = parms.get_parameter('A')->get_float_value();
 	float of_beta = parms.get_parameter('B')->get_float_value();
 	float tv_weight = parms.get_parameter('T')->get_float_value();
-
-	// Allocate array to hold the result
-	//
 
 	std::vector<unsigned int> is_dims_3d;
 	is_dims_3d.push_back(is_dims_in_pixels[0]);
@@ -251,6 +228,83 @@ int main(int argc, char** argv)
 	std::vector<unsigned int> is_dims_4d = is_dims_3d;
 	is_dims_4d.push_back(num_phases);
 
+  // Create mask to zero-out the areas of the images that ar enot fully sampled
+  // Do this by a 3D unfiltered backprojection of projections of pure ones.
+  // - threshold on a 2% level
+  //
+    
+  hoCuNDArray<float> image_filter( &is_dims_3d );
+
+  {
+		GPUTimer timer("Filtering TV reconstruction");
+    hoCuNDArray<float> projections( *acquisition->get_projections() );
+    boost::shared_ptr<CBCT_binning> binning_3d( new CBCT_binning );
+    hoCuConebeamProjectionOperator E;
+    fill( &projections, 1.0f );
+    binning_3d->set_as_default_3d_bin(projections.get_size(2));
+    E.setup( acquisition, binning_3d, is_dims_in_mm );
+    E.set_use_filtered_backprojection(false);
+    E.mult_MH( &projections, &image_filter ); 
+    if( !E.get_use_offset_correction() ){
+      std::cout << std::endl << "Error: currently offset correction is assumed to guide the TV filtering. Offset correction unavailable" << std::endl;
+      exit(1);
+    }
+
+    float threshold = 0.98f * 0.5f; // 0.5 is the intensity after offset correction
+    clamp( &image_filter, threshold, threshold, 0.0f, 1.0f );
+
+    *tv_recon *= image_filter;
+  }
+
+  // Downsample TV recon if specified
+  // - for every downsample of OF image space, dowmsample OF projections as well
+  //
+  
+  unsigned int num_reg_downsamples = parms.get_parameter('R')->get_int_value();
+
+  boost::shared_ptr<hoCuNDArray<float> > projections( new hoCuNDArray<float>( *acquisition->get_projections() ));
+  boost::shared_ptr<hoCuNDArray<float> > OF_projections = projections;
+
+  if( num_reg_downsamples > 0 ) {
+    GPUTimer timer("Downsampling TV reconstruction (and OF operator projections accordingly)");
+
+    std::vector<unsigned int> tmp_dims_3d = is_dims_3d;
+    for( unsigned int i=0; i<tmp_dims_3d.size(); i++ ){
+      for( unsigned int d=0; d<num_reg_downsamples; d++ ){
+        if( (tmp_dims_3d[i]%2)==1 )
+          throw std::runtime_error("Error: input volume for registration must have even size in all dimensions (at all levels) in order to downsample");
+        tmp_dims_3d[i] /= 2;
+      }
+    }
+    
+    cuNDArray<float> tmp_image_in(tv_recon.get());
+    cuNDArray<float> tmp_proj_in(OF_projections.get());
+      
+    std::vector<unsigned int> volume_dims_4d = *tv_recon->get_dimensions();
+    std::vector<unsigned int> proj_dims_3d = *projections->get_dimensions();
+    
+    for( unsigned int d=0; d<num_reg_downsamples; d++ ){
+      
+      for( unsigned int i=0; i<3; i++ ) volume_dims_4d[i] /= 2; // do not downsample temporal dimension
+      for( unsigned int i=0; i<2; i++ ) proj_dims_3d[i] /= 2;   // do not downsample #projections dimension
+      
+      cuNDArray<float> tmp_image_out(&volume_dims_4d);      
+      cuNDArray<float> tmp_proj_out(&proj_dims_3d);
+      
+      cuDownsampleOperator<float,3> D_image;
+      cuDownsampleOperator<float,2> D_proj;
+      
+      D_image.mult_M( &tmp_image_in, &tmp_image_out );
+      D_proj.mult_M( &tmp_proj_in, &tmp_proj_out );
+      
+      tmp_image_in = tmp_image_out;
+      tmp_proj_in = tmp_proj_out;
+    }
+    
+    tv_recon = tmp_image_in.to_host();
+    OF_projections = boost::shared_ptr<hoCuNDArray<float> >( new hoCuNDArray<float>( *tmp_proj_in.to_host() ));
+  }
+  
 	// Allocate 3d array for phase-by-phase reconstruction
 	// and 4D array to hold the overall result
 	//
@@ -258,65 +312,101 @@ int main(int argc, char** argv)
 	hoCuNDArray<float> image_3d(&is_dims_3d);
 	hoNDArray<float> image_4d(&is_dims_4d);
 
-	bool use_reg_downsampling = bool(parms.get_parameter('R')->get_int_value());
-
-	// Define encoding operator for the reconstruction
+	// Define encoding operator for the reconstruction -- a "plain" CBCT operator
 	//
 
-	boost::shared_ptr< hoCuOFProjectionOperator > E( new hoCuOFProjectionOperator() );
-	E->setup( acquisition, binning, is_dims_in_mm );
+	boost::shared_ptr< hoCuConebeamProjectionOperator > E( new hoCuConebeamProjectionOperator() );
+	E->setup( acquisition, is_dims_in_mm );
 	E->set_domain_dimensions(&is_dims_3d);
 	E->set_codomain_dimensions(acquisition->get_projections()->get_dimensions().get());
+
+	// Define the optical flow regularization operator 
+	//
+  
+	boost::shared_ptr< hoCuOFConebeamProjectionOperator > OF( new hoCuOFConebeamProjectionOperator() );
+  OF->setup( acquisition, binning_4d, is_dims_in_mm );
+	OF->set_domain_dimensions(&is_dims_3d);
+	OF->set_codomain_dimensions(OF_projections->get_dimensions().get());
+
+  // Combine the two operators in an operator container
+  //
+  
+  boost::shared_ptr< hoCuEncodingOperatorContainer<float> > opContainer( new hoCuEncodingOperatorContainer<float>() );
+  
+  opContainer->add_operator(E);
+  opContainer->add_operator(OF);
+
+  std::vector<hoCuNDArray<float>*> codoms;
+  codoms.push_back( projections.get() );
+  codoms.push_back( OF_projections.get() );
+
+  boost::shared_ptr< hoCuNDArray<float> > f = opContainer->create_codomain( codoms );
+  codoms.clear(); projections.reset(); OF_projections.reset();
 
 	// Setup solver
 	//
 
-	hoCuNCGSolver<float> solver;
-	solver.set_encoding_operator(E);
+  hoCuCgSolver<float> solver;
+	//hoCuNCGSolver<float> solver;
 
-	if( tv_weight > 0.0f ){
+	solver.set_encoding_operator( opContainer );
+  
+	/*if( tv_weight > 0.0f ){
 		boost::shared_ptr<hoCuTvOperator<float,3> > tvOp(new hoCuTvOperator<float,3>());
 		tvOp->set_weight(tv_weight);
 		tvOp->set_limit(float(1e-6));
 		solver.add_nonlinear_operator(tvOp);
-	}
+    }*/
 
-	solver.set_non_negativity_constraint(true);
-	solver.set_output_mode(hoCuNCGSolver<float>::OUTPUT_VERBOSE);
+	//solver.set_non_negativity_constraint(true);
+	//solver.set_output_mode(hoCuNCGSolver<float>::OUTPUT_VERBOSE);
+  solver.set_output_mode(hoCuCgSolver<float>::OUTPUT_VERBOSE);
 	solver.set_max_iterations(parms.get_parameter('i')->get_int_value());
 	solver.set_tc_tolerance(float(1e-9));
 
 	// Solve
 	//
 
-	hoCuNDArray<float> projections( *acquisition->get_projections() );
+	for( unsigned int phase=0; phase<binning_4d->get_number_of_bins(); phase++ ){
 
-	for( unsigned int phase=0; phase<binning->get_number_of_bins(); phase++ ){
-		{
-			boost::shared_ptr< hoNDArray<float> > displacements =
-					perform_registration( tv_recon, phase, of_alpha, of_beta, use_reg_downsampling );
+    // Define the binning for the current phase
+    //
 
-			E->set_encoding_phase(phase);
-			E->set_displacement_field(displacements);
-		}
+    std::vector<unsigned int> bin = binning_4d->get_bin(phase);
+    boost::shared_ptr<CBCT_binning> binning_phase( new CBCT_binning() );
+    binning_phase->set_bin( bin, 0 );
+    E->set_binning(binning_phase);
 
-		boost::shared_ptr<hoNDArray<float> > result_phase = solver.solve(&projections);
+    OF->set_encoding_phase(phase);
 
-		// Write out every 3d volume
-		//
+    boost::shared_ptr< hoNDArray<float> > displacements =
+      perform_registration( tv_recon, phase, of_alpha, of_beta, 3 - num_reg_downsamples );
+    
+    OF->set_displacement_field(displacements);
+    displacements.reset();
 
-		{
-			char filename[256];
-			sprintf(&(filename[0]), "reconstruction_3d_%i.real", phase);
-			write_nd_array<float>( result_phase.get(), (char*)filename );
-		}
-
+		boost::shared_ptr<hoNDArray<float> > result_phase = solver.solve( f.get() );
 
 		// Copy result to 4d array
 		//
 
 		hoNDArray<float> host_result_3d( &is_dims_3d, image_4d.get_data_ptr()+phase*num_elements_3d );
 		host_result_3d = *result_phase;
+
+    // Apply "cropping" filter
+    //
+
+    host_result_3d *= image_filter;
+
+
+		// Write out every 3d volume
+		//
+
+		/*{
+			char filename[256];
+			sprintf(&(filename[0]), "reconstruction_3d_%i.real", phase);
+			write_nd_array<float>( result_phase.get(), (char*)filename );
+      }*/
 	}
 
 	write_nd_array<float>( &image_4d, result_filename.c_str() );

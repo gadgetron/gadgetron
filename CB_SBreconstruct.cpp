@@ -33,6 +33,38 @@ using namespace Gadgetron;
 
 namespace po = boost::program_options;
 
+class mySbcCgSolver : public hoCuSbcCgSolver<float> 
+{
+public:
+    mySbcCgSolver() : hoCuSbcCgSolver<float>() {
+        this->dumpFreq_ = 5;
+        this->counter_ = 1;
+    }
+    ~mySbcCgSolver() {}
+  
+  virtual bool post_linear_solver_callback( hoCuNDArray<float> *u ) {
+    printf("Iteration: %d\n", counter_);
+    if( (counter_ % dumpFreq_) == 0 ){
+      printf("Dumping frame\n");
+      char filename[19];
+      sprintf(filename, "img-itr-%04i.real", counter_);
+      write_nd_array<float>(u, filename);
+    }
+    counter_++;
+    return true;
+  }
+  void set_dump_frequency(unsigned int dumpFreq) {
+    if( dumpFreq == 0 )
+      this->dumpFreq_ = 9999999; // Not sure how modulus 0 behaves, so just make it a large number that is never reached...
+    else
+      this->dumpFreq_ = dumpFreq;
+  }
+protected:
+  unsigned int counter_;
+  unsigned int dumpFreq_;
+};
+
+
 int main(int argc, char** argv)
 {
 	string acquisition_filename;
@@ -40,6 +72,7 @@ int main(int argc, char** argv)
 	uintd3 imageSize;
 	floatd3 voxelSize;
 	int device;
+  unsigned int dump;
 	unsigned int downsamples;
 	unsigned int iterations;
 	unsigned int inner_iterations;
@@ -63,6 +96,7 @@ int main(int argc, char** argv)
     ("prior", po::value<std::string>(),"Prior image filename")
     ("PICCS",po::value<float>(),"TV Weight of the prior image (Prior image constrained compressed sensing)")
     ("device",po::value<int>(&device)->default_value(0),"Number of the device to use (0 indexed)")
+    ("dump",po::value<unsigned int>(&dump)->default_value(0),"Dump image every N iterations")    
     ("downsample,D",po::value<unsigned int>(&downsamples)->default_value(0),"Downsample projections this factor")
     ;
   
@@ -147,13 +181,16 @@ int main(int argc, char** argv)
 	E->set_domain_dimensions(&is_dims);
 	E->set_codomain_dimensions(ps->get_projections()->get_dimensions().get());
 
-	hoCuSbcCgSolver<float> solver;
+	mySbcCgSolver solver;
 
 	solver.set_encoding_operator(E);
 	solver.set_max_outer_iterations(iterations);
 	solver.get_inner_solver()->set_max_iterations(inner_iterations);
+	solver.get_inner_solver()->set_tc_tolerance(1e-6);
+  solver.get_inner_solver()->set_output_mode(hoCuCgSolver<float>::OUTPUT_VERBOSE);
 	solver.set_non_negativity_filter(non_negativity_weight);
 	solver.set_output_mode(hoCuSbcCgSolver<float>::OUTPUT_VERBOSE);
+  solver.set_dump_frequency(dump);
 
 	if (vm.count("TV")){
 		boost::shared_ptr<hoCuPartialDerivativeOperator<float,4> > dx (new hoCuPartialDerivativeOperator<float,4>(0) );
@@ -179,9 +216,8 @@ int main(int argc, char** argv)
 		solver.add_regularization_group_operator(dx);
 		solver.add_regularization_group_operator(dy);
 		solver.add_regularization_group_operator(dz);
-
+		solver.add_regularization_group_operator(dt);
 		solver.add_group(1);
-		//solver.add_regularization_operator(dt,1);
 	}
 
 	if (vm.count("PICCS")){
@@ -192,7 +228,7 @@ int main(int argc, char** argv)
 		boost::shared_ptr< hoCuConebeamProjectionOperator >
 		Ep( new hoCuConebeamProjectionOperator() );
 		Ep->setup(ps,binning,imageDimensions);
-		Ep->use_filtered_backprojections(true);
+		Ep->set_use_filtered_backprojection(true);
 		Ep->set_codomain_dimensions(ps->get_projections()->get_dimensions().get());
 		Ep->set_domain_dimensions(&is_dims3d);
 
