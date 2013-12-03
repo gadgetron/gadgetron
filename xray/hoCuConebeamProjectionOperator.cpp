@@ -108,14 +108,15 @@ namespace Gadgetron
       throw std::runtime_error( "Error: hoCuConebeamProjectionOperator::mult_M: setup not performed");
     }
 
+    if( !binning_.get() ){
+      throw std::runtime_error( "Error: hoCuConebeamProjectionOperator::mult_M: binning not provided");
+    }
+
     if( projections->get_size(2) != acquisition_->get_geometry()->get_angles().size() || 
         projections->get_size(2) != acquisition_->get_geometry()->get_offsets().size() ){
       throw std::runtime_error("Error: hoCuConebeamProjectionOperator::mult_M: inconsistent sizes of input arrays/vectors");
     }
 
-  	if (!accumulate)
-  		clear(projections);
-    
     // Iterate over the temporal dimension.
     // I.e. reconstruct one 3D volume at a time.
     //
@@ -171,13 +172,14 @@ namespace Gadgetron
       throw std::runtime_error( "Error: hoCuConebeamProjectionOperator::mult_MH: setup not performed");
     }
 
+    if( !binning_.get() ){
+      throw std::runtime_error( "Error: hoCuConebeamProjectionOperator::mult_MH: binning not provided");
+    }
+
     if( projections->get_size(2) != acquisition_->get_geometry()->get_angles().size() ||
         projections->get_size(2) != acquisition_->get_geometry()->get_offsets().size() ){
       throw std::runtime_error("Error: hoCuConebeamProjectionOperator::mult_MH: inconsistent sizes of input arrays/vectors");
     }
-
-    if (!accumulate) 
-      clear(image);
 
     // Iterate over the temporal dimension.
     // I.e. reconstruct one 3D volume at a time.
