@@ -183,7 +183,6 @@ namespace Gadgetron{
   	clamp(x,min,max,T(min),T(max));
   }
 
-
   /**
    * @brief Clamps all values in the array to a minimum value allowed (in place).
    * @param[in,out] x Input and output array.

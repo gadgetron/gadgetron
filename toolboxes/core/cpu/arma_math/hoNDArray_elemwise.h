@@ -165,8 +165,20 @@ namespace Gadgetron{
    * @param[in,out] x Input and output array.
    * @param[in] min minimum value.
    * @param[in] max maximum value.
+   * @param[in] min_val value to which everything below the minimum will be set
+   * @param[in] max_val value to which everything above the maximum will be set
    */
-  template<class T> EXPORTCPUCOREMATH void clamp( hoNDArray<T> *x, typename realType<T>::Type min, typename realType<T>::Type max );
+  template<class T> EXPORTCPUCOREMATH void clamp( hoNDArray<T> *x, typename realType<T>::Type min, typename realType<T>::Type max, T min_val, T max_val );
+  
+  /**
+   * @brief Clamps all values in the array to the minimum and maximum values specified (in place).
+   * @param[in,out] x Input and output array.
+   * @param[in] min minimum value.
+   * @param[in] max maximum value.
+   */
+  template<class T> EXPORTCPUCOREMATH void clamp( hoNDArray<T> *x, typename realType<T>::Type min, typename realType<T>::Type max ){
+  	clamp(x,min,max,T(min),T(max));
+  }
   
   /**
    * @brief Clamps all values in the array to a minimum value allowed (in place).

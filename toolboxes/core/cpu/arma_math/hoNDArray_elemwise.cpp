@@ -239,46 +239,50 @@ namespace Gadgetron{
 
     template<typename T> struct hoNDA_clamp //: public thrust::unary_function<T,T>
     {
-        hoNDA_clamp( T _min, T _max ) : min(_min), max(_max) {}
+      hoNDA_clamp( T _min, T _max, T _min_val, T _max_val ) : min(_min), max(_max), min_val(_min_val), max_val(_max_val) {}
         T operator()(const T &x) const 
         {
-            if( x < min ) return min;
-            else if ( x > max) return max;
+            if( x < min ) return min_val;
+            else if ( x >= max) return max_val;
             else return x;
         }
-        T min, max;
+      T min, max;
+      T min_val, max_val;
     };
 
     template<typename T> struct hoNDA_clamp< std::complex<T> > //: public thrust::unary_function< std::complex<T>, std::complex<T> >
     {
-        hoNDA_clamp( T _min, T _max ) : min(_min), max(_max) {}
+      hoNDA_clamp( T _min, T _max, std::complex<T> _min_val, std::complex<T> _max_val ) : min(_min), max(_max), min_val(_min_val), max_val(_max_val) {}
         std::complex<T> operator()(const std::complex<T> &x) const 
         {
-            if( real(x) < min ) return std::complex<T>(min);
-            else if ( real(x) > max) return std::complex<T>(max);
+            if( real(x) < min ) return min_val;
+            else if ( real(x) >= max) return max_val;
             else return std::complex<T>(real(x));
         }
-        T min, max;
+      T min, max;
+      std::complex<T> min_val, max_val;
     };
 
     template<typename T> struct hoNDA_clamp< complext<T> > //: public thrust::unary_function< complext<T>, complext<T> >
     {
-        hoNDA_clamp( T _min, T _max ) : min(_min), max(_max) {}
+        hoNDA_clamp( T _min, T _max, complext<T> _min_val, complext<T> _max_val ) : min(_min), max(_max), min_val(_min_val), max_val(_max_val) {}
         complext<T> operator()(const complext<T> &x) const 
         {
-            if( real(x) < min ) return complext<T>(min);
-            else if ( real(x) > max) return complext<T>(max);
+            if( real(x) < min ) return min_val;
+            else if ( real(x) >= max) return max_val;
             else return complext<T>(real(x));
         }
         T min, max;
+        complext<T> min_val, max_val;
     };
 
-    template<class T> void clamp( hoNDArray<T> *x, typename realType<T>::Type min, typename realType<T>::Type max )
+    template<class T> void clamp( hoNDArray<T> *x, 
+                                  typename realType<T>::Type min, typename realType<T>::Type max, T min_val, T max_val )
     { 
         if( x == 0x0 )
             throw std::runtime_error("Gadgetron::clamp(): Invalid input array");
 
-        hoNDA_clamp<T> functor(min, max);
+        hoNDA_clamp<T> functor(min, max, min_val, max_val);
         std::transform(x->begin(),x->end(),x->begin(),functor);
     }  
 
