@@ -5,13 +5,12 @@
 
 #ifndef _WIN32
 
-    #pragma message "GCC version is " __GNUC__ "." __GNUC_MINOR__ "." __GNUC_PATCHLEVEL__
-
     #define GCC_VERSION (__GNUC__ * 10000 \
                                    + __GNUC_MINOR__ * 1000 \
                                    + __GNUC_PATCHLEVEL__)
 
     #if GCC_VERSION < 42000
+        #pragma message ("GCC version is older than 4.2.0")
         #define GCC_OLD_FLAG 1
     #endif
 
