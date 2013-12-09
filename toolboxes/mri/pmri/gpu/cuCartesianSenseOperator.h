@@ -8,7 +8,7 @@
 
 namespace Gadgetron{
   
-  template<class REAL, unsigned int D> class EXPORTGPUPMRI cuCartesianSenseOperator : public cuSenseOperator<REAL,D>
+  template<class REAL, unsigned long long D> class EXPORTGPUPMRI cuCartesianSenseOperator : public cuSenseOperator<REAL,D>
   {
   public:
     
@@ -22,7 +22,7 @@ namespace Gadgetron{
     {
       if (idx.get()) {
 	idx_ = idx;
-	std::vector<unsigned int> tmp_dims;
+	std::vector<unsigned long long> tmp_dims;
 	tmp_dims.push_back(idx_->get_number_of_elements());
 	tmp_dims.push_back(this->ncoils_);
 	this->set_codomain_dimensions(&tmp_dims);

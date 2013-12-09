@@ -11,7 +11,7 @@ Pure virtual functions are expected to do the actual work.
 
 namespace Gadgetron{
 
-    template<class ARRAY_TYPE_REAL, unsigned int D> class multiresRegistrationSolver 
+    template<class ARRAY_TYPE_REAL, unsigned long long D> class multiresRegistrationSolver 
         : public registrationSolver<ARRAY_TYPE_REAL>
     {
     protected:    
@@ -29,10 +29,10 @@ namespace Gadgetron{
         // Utilities to specify the registration settings
         //
 
-        virtual void set_num_multires_levels( unsigned int levels ) { 
+        virtual void set_num_multires_levels( unsigned long long levels ) { 
             num_multires_levels_ = levels; }
 
-        virtual void set_max_num_iterations_per_level( unsigned int iterations ) { 
+        virtual void set_max_num_iterations_per_level( unsigned long long iterations ) { 
             max_num_iterations_per_level_ = iterations; }
 
         // 
@@ -60,14 +60,14 @@ namespace Gadgetron{
                 throw std::runtime_error("multiresRegistrationSolver::solve : interpolator not set.");
             }
 
-            typename uintd<D>::Type fixed_dims = from_std_vector<unsigned int,D>(*moving_image->get_dimensions());
-            typename uintd<D>::Type moving_dims = from_std_vector<unsigned int,D>(*fixed_image->get_dimensions());
+            typename uintd<D>::Type fixed_dims = from_std_vector<unsigned long long,D>(*moving_image->get_dimensions());
+            typename uintd<D>::Type moving_dims = from_std_vector<unsigned long long,D>(*fixed_image->get_dimensions());
 
             if(!(fixed_dims == moving_dims)){
                 throw std::runtime_error("multiresRegistrationSolver::solve : fixed/moving image base dimensions mismatch.");
             }
 
-            if( weak_less_equal(fixed_dims>>num_multires_levels_, to_vector_td<unsigned int, D>(1)) ){
+            if( weak_less_equal(fixed_dims>>num_multires_levels_, to_vector_td<unsigned long long, D>(1)) ){
                 throw std::runtime_error("multiresRegistrationSolver::solve : too many multiresolution levels for image dimensionality.");
             }
 
@@ -135,7 +135,7 @@ namespace Gadgetron{
         //
 
         virtual boost::shared_ptr<ARRAY_TYPE_REAL> solveMultiRes( 
-            unsigned int res_level, 
+            unsigned long long res_level, 
             ARRAY_TYPE_REAL *fixed_image, 
             ARRAY_TYPE_REAL *moving_image, 
             ARRAY_TYPE_REAL *stencil_image )
@@ -218,10 +218,10 @@ namespace Gadgetron{
         virtual bool padding_required( typename uintd<D>::Type dims )
         {
             bool padding_required = false;
-            typename uintd<D>::Type ones = to_vector_td<unsigned int, D>(1);
-            typename uintd<D>::Type twos = to_vector_td<unsigned int, D>(2);
-            for( unsigned int i=0; i<num_multires_levels_; i++ ){
-                dims /= (unsigned int)2;
+            typename uintd<D>::Type ones = to_vector_td<unsigned long long, D>(1);
+            typename uintd<D>::Type twos = to_vector_td<unsigned long long, D>(2);
+            for( unsigned long long i=0; i<num_multires_levels_; i++ ){
+                dims /= (unsigned long long)2;
 		
 		if( weak_less( dims, 12*ones ) ){
 		  throw std::runtime_error("multiresRegistrationSolver::padding_required : resolution too low. Too many multiresolution levels specified?");
@@ -235,15 +235,15 @@ namespace Gadgetron{
         }
 
     protected:
-        unsigned int num_multires_levels_;
-        unsigned int max_num_iterations_per_level_;
+        unsigned long long num_multires_levels_;
+        unsigned long long max_num_iterations_per_level_;
 
     private:
         typename uintd<D>::Type round_pow2(typename uintd<D>::Type v)      
         {
-            typename uintd<D>::Type ones = to_vector_td<unsigned int, D>(1);
+            typename uintd<D>::Type ones = to_vector_td<unsigned long long, D>(1);
             typename uintd<D>::Type out = v-ones;
-            for( unsigned int d=0; d<D; d++ ){
+            for( unsigned long long d=0; d<D; d++ ){
                 out[d] |= out[d] >> 1;
                 out[d] |= out[d] >> 2;
                 out[d] |= out[d] >> 4;

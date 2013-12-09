@@ -8,6 +8,7 @@ target_link_libraries(register_HS_2d_cpu
   cpucore_math
   #cpuoperators
   #cpusolvers 
+  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
   )
 
 target_link_libraries(register_CK_2d_cpu 
@@ -17,6 +18,7 @@ target_link_libraries(register_CK_2d_cpu
   cpucore_math
   #  cpuoperators
   #  cpusolvers 
+  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
   )
 
 install(TARGETS 
@@ -31,7 +33,7 @@ if (MATLAB_FOUND)
   if (WIN32)
     include_directories( ${MATLAB_INCLUDE_DIR} )
     add_library(Matlab_register_CK_2d_cpu SHARED Matlab_register_CK_2d.cpp)
-    target_link_libraries(Matlab_register_CK_2d_cpu ${MATLAB_LIBRARIES} hostutils cpureg cpucore cpucore_math)
+    target_link_libraries(Matlab_register_CK_2d_cpu ${MATLAB_LIBRARIES} cpureg cpucore cpucore_math)
     if ( HAS_64_BIT )				
       SET_TARGET_PROPERTIES(Matlab_register_CK_2d_cpu PROPERTIES SUFFIX .mexw64)
     endif ( HAS_64_BIT )    

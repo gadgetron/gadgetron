@@ -6,7 +6,7 @@ namespace Gadgetron{
 
   template<class REAL> __global__ void 
   mult_csm_kernel( complext<REAL> *in, complext<REAL> *out, complext<REAL> *csm,
-		   unsigned int image_elements, unsigned int nframes, unsigned int ncoils )
+		   unsigned long long image_elements, unsigned int nframes, unsigned int ncoils )
   {
     unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
     if( idx < image_elements) {
@@ -17,7 +17,7 @@ namespace Gadgetron{
     }
   }
 
-  template<class REAL, unsigned int D> void
+  template<class REAL, unsigned long long D> void
   csm_mult_M( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, cuNDArray< complext<REAL> > *csm )
   {  
     int device;
@@ -65,7 +65,7 @@ namespace Gadgetron{
 
   template <class REAL> __global__ void 
   mult_csm_conj_sum_kernel( complext<REAL> *in, complext<REAL> *out, complext<REAL> *csm,
-			    unsigned int image_elements, unsigned int nframes, unsigned int ncoils )
+			    unsigned long long image_elements, unsigned int nframes, unsigned int ncoils )
   {
     unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
     if( idx < image_elements ) {
@@ -77,7 +77,7 @@ namespace Gadgetron{
     }
   }
 
-  template<class REAL, unsigned int D> void
+  template<class REAL, unsigned long long D> void
   csm_mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, cuNDArray<complext<REAL> > *csm )
   {
     int device;

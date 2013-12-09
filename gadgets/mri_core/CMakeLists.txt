@@ -7,17 +7,22 @@ find_package(XSD REQUIRED)
 find_package(XercesC REQUIRED)
 
 if (MKL_FOUND)
-  # This is a fix for the bug in SVD when MKL is multi-threaded
-  MESSAGE("MKL Found, enabling MKL for mri_core gadgets.")
-  add_definitions(-DHAVE_MKL)
-  # These are needed to get the linking to work properly when
-  # MKL is installed, but Armadillo is NOT using it.
-  list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
-  list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
+    # This is a fix for the bug in SVD when MKL is multi-threaded
+    MESSAGE("MKL Found, enabling MKL for mri_core gadgets.")
+    add_definitions(-DHAVE_MKL)
+    # These are needed to get the linking to work properly when
+    # MKL is installed, but Armadillo is NOT using it.
+    list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
+    list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
+
+    INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
+    LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
 endif (MKL_FOUND)
 
 include_directories(
+  ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+  ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   ${HDF5_INCLUDE_DIR}
   ${HDF5_INCLUDE_DIR}/cpp
   ${ARMADILLO_INCLUDE_DIRS}
@@ -35,28 +40,30 @@ elseif (ARMADILLO_FOUND)
 endif (ARMADILLO_FOUND)
 
 add_library(gadgetron_mricore SHARED 
-  AcquisitionPassthroughGadget.cpp
-  AcquisitionFinishGadget.cpp 
-  AccumulatorGadget.cpp
-  FFTGadget.cpp
-  ImageFinishGadget.cpp
-  CropAndCombineGadget.cpp
-  ImageWriterGadget.cpp
-  MRIImageWriter.cpp
-  NoiseAdjustGadget_unoptimized.cpp
-  ExtractGadget.cpp
-  FloatToUShortGadget.cpp
-  RemoveROOversamplingGadget.cpp
-  CoilReductionGadget.cpp
-  AutoScaleGadget.cpp
-  FlowPhaseSubtractionGadget.cpp
-  GadgetIsmrmrdReadWrite.cpp
-  PhysioInterpolationGadget.cpp
-  IsmrmrdDumpGadget.cpp
-  MaxwellCorrectionGadget.cpp
+  GadgetMRIHeaders.h 
+  AcquisitionPassthroughGadget.h AcquisitionPassthroughGadget.cpp
+  AcquisitionFinishGadget.h AcquisitionFinishGadget.cpp 
+  AccumulatorGadget.h AccumulatorGadget.cpp
+  FFTGadget.h FFTGadget.cpp
+  ImageFinishGadget.h ImageFinishGadget.cpp
+  CropAndCombineGadget.h CropAndCombineGadget.cpp
+  ImageWriterGadget.h ImageWriterGadget.cpp
+  MRIImageWriter.h MRIImageWriter.cpp
+  NoiseAdjustGadget_unoptimized.h NoiseAdjustGadget_unoptimized.cpp
+  ExtractGadget.h ExtractGadget.cpp
+  FloatToUShortGadget.h FloatToUShortGadget.cpp
+  RemoveROOversamplingGadget.h RemoveROOversamplingGadget.cpp
+  CoilReductionGadget.h CoilReductionGadget.cpp
+  AutoScaleGadget.h AutoScaleGadget.cpp
+  FlowPhaseSubtractionGadget.h FlowPhaseSubtractionGadget.cpp
+  GadgetIsmrmrdReadWrite.h GadgetIsmrmrdReadWrite.cpp
+  PhysioInterpolationGadget.h PhysioInterpolationGadget.cpp
+  IsmrmrdDumpGadget.h IsmrmrdDumpGadget.cpp
+  PartialFourierAdjustROGadget.h PartialFourierAdjustROGadget.cpp
+  MaxwellCorrectionGadget.h MaxwellCorrectionGadget.cpp
   ${OPTIMIZED_GADGETS}
+  ${OPTIMIZED_GADGET_HEADERS}
   ${ISMRMRD_XSD_SOURCE}
-  ${MKL_LIBRARIES}
   )
 
 target_link_libraries(gadgetron_mricore 
@@ -75,7 +82,7 @@ install(FILES
   AccumulatorGadget.h
   AcquisitionFinishGadget.h
   AcquisitionPassthroughGadget.h
-  CropAndCombineGadget.h	
+  CropAndCombineGadget.h
   ExtractGadget.h
   FloatToUShortGadget.h
   FFTGadget.h
@@ -83,6 +90,7 @@ install(FILES
   ImageFinishGadget.h
   ImageWriterGadget.h
   MRIImageWriter.h
+  MaxwellCorrectionGadget.h
   NoiseAdjustGadget.h
   RemoveROOversamplingGadget.h
   CoilReductionGadget.h
@@ -91,7 +99,7 @@ install(FILES
   GadgetIsmrmrdReadWrite.h
   PhysioInterpolationGadget.h
   IsmrmrdDumpGadget.h
-  MaxwellCorrectionGadget.h
+  PartialFourierAdjustROGadget.h
   gadgetron_mricore_export.h
   ${OPTIMIZED_GADGET_HEADERS}
   DESTINATION include)

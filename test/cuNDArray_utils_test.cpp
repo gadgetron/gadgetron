@@ -14,12 +14,12 @@ using testing::Types;
 template <typename T> class cuNDArray_utils_TestReal : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+    unsigned long long vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    dims = std::vector<unsigned long long>(vdims,vdims+sizeof(vdims)/sizeof(unsigned long long));
     Array = cuNDArray<T>(&dims);
     Array2 = cuNDArray<T>(&dims);
   }
-  std::vector<unsigned int> dims;
+  std::vector<unsigned long long> dims;
   cuNDArray<T> Array;
   cuNDArray<T> Array2;
 };
@@ -27,12 +27,12 @@ protected:
 template <typename T> class cuNDArray_utils_TestCplx : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+    unsigned long long vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    dims = std::vector<unsigned long long>(vdims,vdims+sizeof(vdims)/sizeof(unsigned long long));
     Array = cuNDArray<T>(&dims);
     Array2 = cuNDArray<T>(&dims);
   }
-  std::vector<unsigned int> dims;
+  std::vector<unsigned long long> dims;
   cuNDArray<T> Array;
   cuNDArray<T> Array2;
 };
@@ -46,7 +46,7 @@ TYPED_TEST(cuNDArray_utils_TestReal,permuteTest){
 
   fill(&this->Array,TypeParam(1));
 
-  std::vector<unsigned int> order;
+  std::vector<unsigned long long> order;
   order.push_back(0); order.push_back(1); order.push_back(2); order.push_back(3);
   
   TypeParam tmp(2);
@@ -127,7 +127,7 @@ TYPED_TEST(cuNDArray_utils_TestCplx,permuteTest){
   
   fill(&this->Array,TypeParam(1,1));
 
-  std::vector<unsigned int> order;
+  std::vector<unsigned long long> order;
   order.push_back(0); order.push_back(1); order.push_back(2); order.push_back(3);
   
   TypeParam tmp(2,3);
@@ -210,7 +210,7 @@ TYPED_TEST(cuNDArray_utils_TestCplx,padTest){
 
   fill(&this->Array,v1);
 
-  vector_td<unsigned int,4> size = from_std_vector<unsigned int,4>(this->dims);
+  vector_td<unsigned long long,4> size = from_std_vector<unsigned long long,4>(this->dims);
   size *= 2;
 
   boost::shared_ptr<cuNDArray<TypeParam> > out = pad<TypeParam,4>(size,&this->Array);
@@ -224,10 +224,10 @@ TYPED_TEST(cuNDArray_utils_TestCplx,padTest){
 
 TEST(padTest,largeSize){
 // So, this test is mainly here because pad apparently fails for large sized arrays.
-	unsigned int vdims[] = {192,192,50};
-	std::vector<unsigned int> dims(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
-	unsigned int vdims2[] = {256,256,256};
-	std::vector<unsigned int> dims2(vdims2,vdims2+sizeof(vdims2)/sizeof(unsigned int));
+	unsigned long long vdims[] = {192,192,50};
+	std::vector<unsigned long long> dims(vdims,vdims+sizeof(vdims)/sizeof(unsigned long long));
+	unsigned long long vdims2[] = {256,256,256};
+	std::vector<unsigned long long> dims2(vdims2,vdims2+sizeof(vdims2)/sizeof(unsigned long long));
 
 	cuNDArray<float_complext> in(&dims);
 	fill(&in,float_complext(1));

@@ -1,4 +1,5 @@
 include_directories(
+  ${ACE_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
   ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
   )

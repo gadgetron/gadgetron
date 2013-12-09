@@ -6,7 +6,7 @@
 
 namespace Gadgetron{
   
-  template<class REAL, unsigned int D, bool ATOMICS = false> 
+  template<class REAL, unsigned long long D, bool ATOMICS = false> 
   class EXPORTGPUPMRI cuSenseBufferCg : public cuSenseBuffer<REAL,D,ATOMICS> 
   {
   public:
@@ -35,5 +35,5 @@ namespace Gadgetron{
   };
   
   // To prevent the use of atomics with doubles.
-  template<unsigned int D> class EXPORTGPUPMRI cuSenseBufferCg<double,D,true>{};
+  template<unsigned long long D> class EXPORTGPUPMRI cuSenseBufferCg<double,D,true>{};
 }

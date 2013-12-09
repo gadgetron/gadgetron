@@ -18,10 +18,10 @@ namespace Gadgetron{
 
   const int kernel_width = 7;
 
-  template<class REAL, unsigned int D> void smooth_correlation_matrices( cuNDArray<complext<REAL> >*, cuNDArray<complext<REAL> >*);
+  template<class REAL, unsigned long long D> void smooth_correlation_matrices( cuNDArray<complext<REAL> >*, cuNDArray<complext<REAL> >*);
   template<class REAL> boost::shared_ptr< cuNDArray<complext<REAL> > > extract_csm( cuNDArray<complext<REAL> >*, unsigned int, unsigned int);
   template<class REAL> void set_phase_reference( cuNDArray<complext<REAL> >*, unsigned int, unsigned int);
-  template<class T> void find_stride( cuNDArray<T> *in, unsigned int dim, unsigned int *stride, std::vector<unsigned int> *dims );
+  template<class T> void find_stride( cuNDArray<T> *in, unsigned int dim, unsigned int *stride, std::vector<unsigned long long> *dims );
   template<class T> boost::shared_ptr< cuNDArray<T> > correlation( cuNDArray<T> *in );
   template<class T> void rss_normalize( cuNDArray<T> *in_out, unsigned int dim );
   
@@ -29,7 +29,7 @@ namespace Gadgetron{
   // Main method
   //
 
-  template<class REAL, unsigned int D> boost::shared_ptr< cuNDArray<complext<REAL> > >
+  template<class REAL, unsigned long long D> boost::shared_ptr< cuNDArray<complext<REAL> > >
   estimate_b1_map( cuNDArray<complext<REAL> > *data_in, int target_coils)
   {
 
@@ -67,7 +67,7 @@ namespace Gadgetron{
       cuNDArray<complext<REAL> > *_data_out = new cuNDArray<complext<REAL> >(*data_in);
       data_out = boost::shared_ptr< cuNDArray<complext<REAL> > >(_data_out);
     } else {
-      std::vector<unsigned int> odims = *(data_in->get_dimensions().get());
+      std::vector<unsigned long long> odims = *(data_in->get_dimensions().get());
       odims[D] = target_coils_int;
       cuNDArray<complext<REAL> > *_data_out = new cuNDArray<complext<REAL> >(&odims);
       data_out = boost::shared_ptr< cuNDArray<complext<REAL> > >(_data_out);
@@ -109,7 +109,7 @@ namespace Gadgetron{
   }
 
   template<class T> static void find_stride( cuNDArray<T> *in, unsigned int dim,
-					     unsigned int *stride, std::vector<unsigned int> *dims )
+					     unsigned int *stride, std::vector<unsigned long long> *dims )
   {
     *stride = 1;
     for( unsigned int i=0; i<in->get_number_of_dimensions(); i++ ){
@@ -167,7 +167,7 @@ namespace Gadgetron{
     setup_grid( number_of_elements, &blockDim, &gridDim );
 
     // Find element stride
-    unsigned int stride; std::vector<unsigned int> dims;
+    unsigned int stride; std::vector<unsigned long long> dims;
     find_stride<T>( in_out, dim, &stride, &dims );
 
     // Invoke kernel
@@ -214,7 +214,7 @@ namespace Gadgetron{
     dim3 gridDim((number_of_elements+blockDim.x-1)/blockDim.x);
 
     // Invoke kernel
-    std::vector<unsigned int> dims = *in->get_dimensions(); dims.push_back(number_of_batches);
+    std::vector<unsigned long long> dims = *in->get_dimensions(); dims.push_back(number_of_batches);
     boost::shared_ptr< cuNDArray<T> > out( new cuNDArray<T> );
     out->create(&dims);
 
@@ -504,7 +504,7 @@ namespace Gadgetron{
     }
   }
 
-  template<class REAL, unsigned int D> void
+  template<class REAL, unsigned long long D> void
   smooth_correlation_matrices( cuNDArray<complext<REAL> > *corrm, cuNDArray<complext<REAL> > *corrm_smooth )
   {
     typename intd<D>::Type image_dims;
@@ -649,7 +649,7 @@ namespace Gadgetron{
   template<class REAL> __host__ 
   boost::shared_ptr<cuNDArray<complext<REAL> > > extract_csm(cuNDArray<complext<REAL> > *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements )
   {
-    vector<unsigned int> image_dims;
+    vector<unsigned long long> image_dims;
 
     for( unsigned int i=0; i<corrm_in->get_number_of_dimensions()-1; i++ ){
       image_dims.push_back(corrm_in->get_size(i));

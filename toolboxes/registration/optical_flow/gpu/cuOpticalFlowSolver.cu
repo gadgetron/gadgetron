@@ -10,10 +10,10 @@ namespace Gadgetron{
   // Kernel prototype declarations
   //
 
-  template<class REAL, unsigned int D> __global__ 
+  template<class REAL, unsigned long long D> __global__ 
   void spatial_grad_kernel(REAL*,REAL*,REAL*,typename uintd<D>::Type,unsigned int,unsigned int);
 
-  template<class REAL, unsigned int D> __global__ 
+  template<class REAL, unsigned long long D> __global__ 
   void temporal_grad_kernel(REAL*,REAL*,REAL*,typename uintd<D>::Type,unsigned int,unsigned int);
 
   // There is some issue about Cuda defining min/max incompatibly...
@@ -27,7 +27,7 @@ namespace Gadgetron{
     return (a>b)?b:a;
   }
 
-  template<class T, unsigned int D> void
+  template<class T, unsigned long long D> void
   cuOpticalFlowSolver<T,D>::setup_grid( dim3 *blockDim, dim3* gridDim, 
 					   unsigned int number_of_elements, 
 					   unsigned int num_batches, 
@@ -77,11 +77,11 @@ namespace Gadgetron{
     }
   }
   
-  template<class T, unsigned int D> void
+  template<class T, unsigned long long D> void
   cuOpticalFlowSolver<T,D>::core_grad_spatial( T *fixed_image, T *moving_image, T *gradient_image, 
 						  typename uintd<D>::Type matrix_size_moving, 
-						  unsigned int number_of_batches_fixed, 
-						  unsigned int number_of_batches_moving )
+						  unsigned long number_of_batches_fixed, 
+						  unsigned long number_of_batches_moving )
   {        
     unsigned int number_of_elements = prod(matrix_size_moving);
     dim3 blockDim; dim3 gridDim;
@@ -95,11 +95,11 @@ namespace Gadgetron{
     CHECK_FOR_CUDA_ERROR();
   }
   
-  template<class T, unsigned int D> void
+  template<class T, unsigned long long D> void
   cuOpticalFlowSolver<T,D>::core_grad_temporal( T *fixed_image, T *moving_image, T *gradient_image, 
 						   typename uintd<D>::Type matrix_size_moving, 
-						   unsigned int number_of_batches_fixed, 
-						   unsigned int number_of_batches_moving )
+						   unsigned long number_of_batches_fixed, 
+						   unsigned long number_of_batches_moving )
   {        
     unsigned int number_of_elements = prod(matrix_size_moving);
     dim3 blockDim; dim3 gridDim;
@@ -117,7 +117,7 @@ namespace Gadgetron{
   // Helpers
   //
 
-  template<unsigned int D> __device__ 
+  template<unsigned long long D> __device__ 
   typename uintd<D>::Type compute_stride( unsigned int dim )
   {
     typename uintd<D>::Type res;
@@ -128,7 +128,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template<unsigned int D> __device__ 
+  template<unsigned long long D> __device__ 
   bool is_border_pixel_in_stride_dim_before( unsigned int dim, typename uintd<D>::Type co, typename uintd<D>::Type dims )
   {
     if( co.vec[dim] == 0 )
@@ -137,7 +137,7 @@ namespace Gadgetron{
       return false;
   }
 
-  template<unsigned int D> __device__ 
+  template<unsigned long long D> __device__ 
   bool is_border_pixel_in_stride_dim_after( unsigned int dim, typename uintd<D>::Type co, typename uintd<D>::Type dims )
   {
     if( co.vec[dim] == (dims.vec[dim]-1) )
@@ -149,7 +149,7 @@ namespace Gadgetron{
   // Spatial partial derivatives
   //
 
-  template<class REAL, unsigned int D> __global__ void
+  template<class REAL, unsigned long long D> __global__ void
   spatial_grad_kernel( REAL *fixed_image, REAL *moving_image, REAL *gradient_image, 
 		       typename uintd<D>::Type matrix_size, 
 		       unsigned int num_batches_fixed, unsigned int num_batches_moving )
@@ -240,7 +240,7 @@ namespace Gadgetron{
   // Temporal partial derivatives
   //
 
-  template<class REAL, unsigned int D> __global__ void
+  template<class REAL, unsigned long long D> __global__ void
   temporal_grad_kernel( REAL *fixed_image, REAL *moving_image, REAL *gradient_image, 
 			typename uintd<D>::Type matrix_size, 
 			unsigned int num_batches_fixed, unsigned int num_batches_moving )

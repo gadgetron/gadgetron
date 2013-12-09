@@ -7,6 +7,7 @@ target_link_libraries(register_CK_3d_cpu
   cpucore_math
 #  cpuoperators
 #  cpusolvers 
+  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
   )
 
 install(TARGETS register_CK_3d_cpu DESTINATION bin)

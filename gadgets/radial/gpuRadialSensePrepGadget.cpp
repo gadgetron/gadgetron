@@ -887,7 +887,7 @@ namespace Gadgetron{
 
     unsigned int profiles_buffered = queue->message_count();
     
-    std::vector<unsigned int> dims;
+    std::vector<unsigned long long> dims;
     dims.push_back(samples_per_profile_*profiles_buffered);
     dims.push_back(num_coils_[set*slices_+slice]);
     
@@ -965,7 +965,7 @@ namespace Gadgetron{
     
     cuSenseBuffer<float,2> *acc_buffer = (buffer_using_solver_) ? &acc_buffer_cg_[set*slices_+slice] : &acc_buffer_[set*slices_+slice];
 
-    acc_buffer->setup( from_std_vector<unsigned int,2>(image_dimensions_recon_), image_dimensions_recon_os_, 
+    acc_buffer->setup( from_std_vector<unsigned long long,2>(image_dimensions_recon_), image_dimensions_recon_os_, 
 		       kernel_width_, num_coils_[set*slices_+slice], 
 		       buffer_length_in_rotations_, buffer_frames_per_rotation_[set*slices_+slice] );
     

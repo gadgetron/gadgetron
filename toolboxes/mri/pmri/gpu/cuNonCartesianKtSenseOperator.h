@@ -8,7 +8,7 @@
 
 namespace Gadgetron{
 
-  template<class REAL, unsigned int D>
+  template<class REAL, unsigned long long D>
   class EXPORTGPUPMRI cuNonCartesianKtSenseOperator : public cuNonCartesianSenseOperator<REAL,D>
   {
     

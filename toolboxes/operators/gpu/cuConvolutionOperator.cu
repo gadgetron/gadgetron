@@ -6,15 +6,15 @@
 namespace Gadgetron {
 
   // Mirror, but keep the origin unchanged
-  template<class T, unsigned int D> __global__ void
-  origin_mirror_kernel( vector_td<unsigned int,D> matrix_size, vector_td<unsigned int,D> origin, T *in, T *out, bool zero_fill )
+  template<class T, unsigned long long D> __global__ void
+  origin_mirror_kernel( vector_td<unsigned long long,D> matrix_size, vector_td<unsigned long long,D> origin, T *in, T *out, bool zero_fill )
   {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
     
     if( idx < prod(matrix_size) ){
       
-      vector_td<unsigned int,D> in_co = idx_to_co<D>( idx, matrix_size );
-      vector_td<unsigned int,D> out_co = matrix_size-in_co;
+      vector_td<unsigned long long,D> in_co = idx_to_co<D>( idx, matrix_size );
+      vector_td<unsigned long long,D> out_co = matrix_size-in_co;
     
       bool wrap = false;
       for( unsigned int d=0; d<D; d++ ){
@@ -24,8 +24,8 @@ namespace Gadgetron {
 	}
       }
     
-      const unsigned int in_idx = co_to_idx<D>(in_co, matrix_size);
-      const unsigned int out_idx = co_to_idx<D>(out_co, matrix_size);
+      const unsigned long long in_idx = co_to_idx<D>(in_co, matrix_size);
+      const unsigned long long out_idx = co_to_idx<D>(out_co, matrix_size);
 
       if( wrap && zero_fill )
 	out[out_idx] = T(0);
@@ -36,7 +36,7 @@ namespace Gadgetron {
   
   // Mirror around the origin -- !! leaving the origin unchanged !!
   // This creates empty space "on the left" that can be filled by zero (default) or the left-over entry.
-  template<class REAL, unsigned int D> void
+  template<class REAL, unsigned long long D> void
   cuConvolutionOperator<REAL,D>::origin_mirror( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out )
   {
     if( in == 0x0 || out == 0x0 ){
@@ -53,7 +53,7 @@ namespace Gadgetron {
       throw std::runtime_error(ss.str());
     }
 
-    typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>( *in->get_dimensions() );
+    typename uintd<D>::Type matrix_size = from_std_vector<unsigned long long,D>( *in->get_dimensions() );
   
     // Setup block/grid dimensions
     dim3 blockDim; dim3 gridDim;
@@ -67,7 +67,7 @@ namespace Gadgetron {
   }
 
 
-  template <class REAL, unsigned int D> void 
+  template <class REAL, unsigned long long D> void 
   cuConvolutionOperator<REAL,D>::operator_fft( bool forwards_transform, cuNDArray< complext<REAL> > *image )
   {
     if( forwards_transform )

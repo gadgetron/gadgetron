@@ -17,8 +17,11 @@ include_directories(
   )
 
 cuda_add_library(gpunfft SHARED 
-  cuNFFT.cu 
-  cuNFFTOperator.cu
+    cuNFFT.h
+    cuNFFTOperator.h
+    gpunfft_export.h
+    cuNFFT.cu 
+    cuNFFTOperator.cu
   )
 
 target_link_libraries(

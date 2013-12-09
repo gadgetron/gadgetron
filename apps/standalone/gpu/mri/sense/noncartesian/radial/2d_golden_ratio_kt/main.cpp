@@ -31,7 +31,7 @@ boost::shared_ptr< cuNDArray<_complext> >
 upload_data( unsigned int reconstruction, unsigned int samples_per_reconstruction, unsigned int total_samples_per_coil, unsigned int num_coils,
 	     hoNDArray<_complext> *host_data )
 {
-  vector<unsigned int> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
+  vector<unsigned long long> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
   cuNDArray<_complext> *data = new cuNDArray<_complext>(); data->create( &dims );
   for( unsigned int i=0; i<num_coils; i++ )
     cudaMemcpy( data->get_data_ptr()+i*samples_per_reconstruction, 
@@ -197,7 +197,7 @@ int main(int argc, char** argv)
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
 
   // Allocate space for result
-  vector<unsigned int> image_dims = to_std_vector(matrix_size); 
+  vector<unsigned long long> image_dims = to_std_vector(matrix_size); 
   image_dims.push_back(frames_per_reconstruction*num_reconstructions); 
 
   cuNDArray<_complext> result = cuNDArray<_complext>(&image_dims);
@@ -207,7 +207,7 @@ int main(int argc, char** argv)
   shutter_radius /= _real(2);
   std::cout << "Shutter radius: " << shutter_radius << std::endl;
 
-  vector<unsigned int> image_os_dims = to_std_vector(matrix_size_os); 
+  vector<unsigned long long> image_os_dims = to_std_vector(matrix_size_os); 
   image_os_dims.push_back(frames_per_reconstruction); image_os_dims.push_back(num_coils);    
   cuNDArray<_complext> *image_os = new cuNDArray<_complext>(&image_os_dims);
 

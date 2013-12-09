@@ -31,15 +31,15 @@ int AutoScaleGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, G
 		}
 
 		if (histogram_.size() != histogram_bins_) {
-			histogram_ = std::vector<unsigned int>(histogram_bins_);
+			histogram_ = std::vector<unsigned long long>(histogram_bins_);
 		}
 
-		for (unsigned int i = 0; i < histogram_bins_; i++) {
+		for (unsigned long long i = 0; i < histogram_bins_; i++) {
 			histogram_[i] = 0;
 		}
 
 		for (unsigned long int i = 0; i < m2->getObjectPtr()->get_number_of_elements(); i++) {
-			unsigned int bin = static_cast<unsigned int>(floor((d[i]/max)*histogram_bins_));
+			unsigned long long bin = static_cast<unsigned long long>(floor((d[i]/max)*histogram_bins_));
 			if (bin >= histogram_bins_) {
 				bin = histogram_bins_-1;
 			}
@@ -48,7 +48,7 @@ int AutoScaleGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, G
 
 		//Find 99th percentile
 		long cumsum = 0;
-		unsigned int counter = 0;
+		unsigned long long counter = 0;
 		while (cumsum < (0.99*m2->getObjectPtr()->get_number_of_elements())) {
 			cumsum += histogram_[counter++];
 		}

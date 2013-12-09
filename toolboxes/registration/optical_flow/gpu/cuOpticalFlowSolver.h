@@ -18,7 +18,7 @@
 
 namespace Gadgetron{
 
-  template<class T, unsigned int D> class EXPORTGPUREG cuOpticalFlowSolver 
+  template<class T, unsigned long long D> class EXPORTGPUREG cuOpticalFlowSolver 
     : public opticalFlowSolver< cuNDArray<T>,D >
   {  
   public:
@@ -40,12 +40,12 @@ namespace Gadgetron{
     
     virtual void core_grad_spatial( T *fixed_image, T *moving_image, T *gradient_image, 
 				    typename uintd<D>::Type matrix_size_moving, 
-				    unsigned int number_of_batches_fixed, 
-				    unsigned int number_of_batches_moving );
-    
+				    unsigned long number_of_batches_fixed, 
+				    unsigned long number_of_batches_moving );
+
     virtual void core_grad_temporal( T *fixed_image, T *moving_image, T *gradient_image, 
 				     typename uintd<D>::Type matrix_size_moving, 
-				     unsigned int number_of_batches_fixed, 
-				     unsigned int number_of_batches_moving );
+				     unsigned long number_of_batches_fixed, 
+				     unsigned long number_of_batches_moving );
   };  
 }

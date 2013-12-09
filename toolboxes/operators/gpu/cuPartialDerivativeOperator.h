@@ -10,7 +10,7 @@
 
 namespace Gadgetron{
 
-  template <class T, unsigned int D> class EXPORTGPUOPERATORS cuPartialDerivativeOperator 
+  template <class T, unsigned long long D> class EXPORTGPUOPERATORS cuPartialDerivativeOperator 
     : public partialDerivativeOperator<D, cuNDArray<T> >
   {
   public:

@@ -17,8 +17,8 @@ namespace Gadgetron{
     {
         if( compatible_dimensions<T,T>(x,y) ){
             arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
-            unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( unsigned int batch=0; batch<num_batches; batch++ ){	
+            unsigned long long num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( unsigned long long batch=0; batch<num_batches; batch++ ){	
                 hoNDArray<T> tmp;
                 tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
                 arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&tmp);
@@ -35,8 +35,8 @@ namespace Gadgetron{
     {
         if( compatible_dimensions<std::complex<T>,T>(x,y) ){
             arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( unsigned int batch=0; batch<num_batches; batch++ ){	
+            unsigned long long num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( unsigned long long batch=0; batch<num_batches; batch++ ){	
                 hoNDArray< std::complex<T> > tmp;
                 tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
                 arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
@@ -53,8 +53,8 @@ namespace Gadgetron{
     {
         if( compatible_dimensions<complext<T>,T>(x,y) ){
             arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( unsigned int batch=0; batch<num_batches; batch++ ){	
+            unsigned long long num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( unsigned long long batch=0; batch<num_batches; batch++ ){	
                 hoNDArray< complext<T> > tmp;
                 tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
                 arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
@@ -95,8 +95,8 @@ namespace Gadgetron{
     {
         if( compatible_dimensions<T,T>(x,y) ){
             arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
-            unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( unsigned int batch=0; batch<num_batches; batch++ ){	
+            unsigned long long num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( unsigned long long batch=0; batch<num_batches; batch++ ){	
                 hoNDArray<T> tmp;
                 tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
                 arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&tmp);
@@ -113,8 +113,8 @@ namespace Gadgetron{
     {
         if( compatible_dimensions<std::complex<T>,T>(x,y) ){
             arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( unsigned int batch=0; batch<num_batches; batch++ ){	
+            unsigned long long num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( unsigned long long batch=0; batch<num_batches; batch++ ){	
                 hoNDArray< std::complex<T> > tmp;
                 tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
                 arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
@@ -131,8 +131,8 @@ namespace Gadgetron{
     {
         if( compatible_dimensions<complext<T>,T>(x,y) ){
             arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( unsigned int batch=0; batch<num_batches; batch++ ){	
+            unsigned long long num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( unsigned long long batch=0; batch<num_batches; batch++ ){	
                 hoNDArray< complext<T> > tmp;
                 tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
                 arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
@@ -173,8 +173,8 @@ namespace Gadgetron{
     {
         if( compatible_dimensions<T,T>(x,y) ){
             arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
-            unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( unsigned int batch=0; batch<num_batches; batch++ ){	
+            unsigned long long num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( unsigned long long batch=0; batch<num_batches; batch++ ){	
                 hoNDArray<T> tmp;
                 tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
                 arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&tmp);
@@ -191,8 +191,8 @@ namespace Gadgetron{
     {
         if( compatible_dimensions<std::complex<T>,T>(x,y) ){
             arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );    
-            unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( unsigned int batch=0; batch<num_batches; batch++ ){	
+            unsigned long long num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( unsigned long long batch=0; batch<num_batches; batch++ ){	
                 hoNDArray< std::complex<T> > tmp;
                 tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
                 arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
@@ -209,8 +209,8 @@ namespace Gadgetron{
     {
         if( compatible_dimensions<complext<T>,T>(x,y) ){
             arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( unsigned int batch=0; batch<num_batches; batch++ ){	
+            unsigned long long num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( unsigned long long batch=0; batch<num_batches; batch++ ){	
                 hoNDArray< complext<T> > tmp;
                 tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
                 arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
@@ -251,8 +251,8 @@ namespace Gadgetron{
     {
         if( compatible_dimensions<T,T>(x,y) ){
             arma::Col<typename stdType<T>::Type> aY = as_arma_col(&y);
-            unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( unsigned int batch=0; batch<num_batches; batch++ ){	
+            unsigned long long num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( unsigned long long batch=0; batch<num_batches; batch++ ){	
                 hoNDArray<T> tmp;
                 tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
                 arma::Col<typename stdType<T>::Type> aRes = as_arma_col(&tmp);
@@ -269,8 +269,8 @@ namespace Gadgetron{
     {
         if( compatible_dimensions<std::complex<T>,T>(x,y) ){
             arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );    
-            unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( unsigned int batch=0; batch<num_batches; batch++ ){	
+            unsigned long long num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( unsigned long long batch=0; batch<num_batches; batch++ ){	
                 hoNDArray< std::complex<T> > tmp;
                 tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
                 arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);
@@ -287,8 +287,8 @@ namespace Gadgetron{
     {
         if( compatible_dimensions<complext<T>,T>(x,y) ){
             arma::Col< std::complex<T> > aY( as_arma_col(&y), arma::Col<T>(y.get_number_of_elements()).zeros() );
-            unsigned int num_batches = x.get_number_of_elements()/y.get_number_of_elements();
-            for( unsigned int batch=0; batch<num_batches; batch++ ){	
+            unsigned long long num_batches = x.get_number_of_elements()/y.get_number_of_elements();
+            for( unsigned long long batch=0; batch<num_batches; batch++ ){	
                 hoNDArray< complext<T> > tmp;
                 tmp.create( y.get_dimensions(), x.get_data_ptr()+batch*y.get_number_of_elements() );
                 arma::Col< std::complex<T> > aRes = as_arma_col(&tmp);

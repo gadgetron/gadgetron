@@ -14,17 +14,29 @@
 
 namespace Gadgetron{
 
-  template< class T, unsigned int D > class vector_td
+  template< class T, unsigned long long D > class vector_td
   {
   public:
 
     T vec[D];
 
-    __inline__ __host__ __device__ T& operator[](const int i){
+    __inline__ __host__ __device__ T& operator[](const long long i)
+    {
       return vec[i];
     }
 
-    __inline__ __host__ __device__ const T& operator[](const int i) const {
+    __inline__ __host__ __device__ const T& operator[](const long long i) const
+    {
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ T& operator()(const long long i)
+    {
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ const T& operator()(const long long i) const
+    {
       return vec[i];
     }
   };
@@ -33,23 +45,23 @@ namespace Gadgetron{
   // Some typedefs for convenience (templated typedefs are not (yet) available in C++)
   //
 
-  template< class REAL, unsigned int D > struct reald{
+  template< class REAL, unsigned long long D > struct reald{
     typedef vector_td< REAL, D > Type;
   };
 
-  template< unsigned int D > struct intd{
-    typedef vector_td< int, D > Type;
+  template< unsigned long long D > struct intd{
+    typedef vector_td< long long, D > Type;
   };
 
-  template< unsigned int D > struct uintd{
-    typedef vector_td< unsigned int, D > Type;
+  template< unsigned long long D > struct uintd{
+    typedef vector_td< unsigned long long, D > Type;
   };
 
-  template< unsigned int D > struct floatd{
+  template< unsigned long long D > struct floatd{
     typedef typename reald< float, D >::Type Type;
   };
 
-  template< unsigned int D > struct doubled{
+  template< unsigned long long D > struct doubled{
     typedef typename reald< double, D >::Type Type;
   };
 
@@ -65,11 +77,19 @@ namespace Gadgetron{
       vec[0]=x;
     }
 
-    __inline__ __host__ __device__ T& operator[](const int i){
+    __inline__ __host__ __device__ T& operator[](const long long i){
       return vec[i];
     }
 
-    __inline__ __host__ __device__ const T& operator[](const int i) const {
+    __inline__ __host__ __device__ const T& operator[](const long long i) const {
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ T& operator()(const long long i){
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ const T& operator()(const long long i) const {
       return vec[i];
     }
   };
@@ -91,11 +111,19 @@ namespace Gadgetron{
       vec[0]=x;
       vec[1]=x;
     }
-    __inline__ __host__ __device__ T& operator[](const int i){
+    __inline__ __host__ __device__ T& operator[](const long long i){
       return vec[i];
     }
 
-    __inline__ __host__ __device__ const T& operator[](const int i) const {
+    __inline__ __host__ __device__ const T& operator[](const long long i) const {
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ T& operator()(const long long i){
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ const T& operator()(const long long i) const {
       return vec[i];
     }
   };
@@ -120,11 +148,19 @@ namespace Gadgetron{
       vec[2]=x;
     }
 
-    __inline__ __host__ __device__ T& operator[](const int i){
+    __inline__ __host__ __device__ T& operator[](const long long i){
       return vec[i];
     }
 
-    __inline__ __host__ __device__ const T& operator[](const int i) const {
+    __inline__ __host__ __device__ const T& operator[](const long long i) const {
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ T& operator()(const long long i){
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ const T& operator()(const long long i) const {
       return vec[i];
     }
   };
@@ -151,11 +187,19 @@ namespace Gadgetron{
       vec[3]=x;
     }
 
-    __inline__ __host__ __device__ T& operator[](const int i){
+    __inline__ __host__ __device__ T& operator[](const long long i){
       return vec[i];
     }
 
-    __inline__ __host__ __device__ const T& operator[](const int i) const {
+    __inline__ __host__ __device__ const T& operator[](const long long i) const {
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ T& operator()(const long long i){
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ const T& operator()(const long long i) const {
       return vec[i];
     }
   };
@@ -170,13 +214,24 @@ namespace Gadgetron{
   typedef vector_td<float,3> floatd3;
   typedef vector_td<float,4> floatd4;
 
-  typedef vector_td<int,1> intd1;
-  typedef vector_td<int,2> intd2;
-  typedef vector_td<int,3> intd3;
-  typedef vector_td<int,4> intd4;
+  typedef vector_td<long long,1> intd1;
+  typedef vector_td<long long,2> intd2;
+  typedef vector_td<long long,3> intd3;
+  typedef vector_td<long long,4> intd4;
 
-  typedef vector_td<unsigned int,1> uintd1;
-  typedef vector_td<unsigned int,2> uintd2;
-  typedef vector_td<unsigned int,3> uintd3;
-  typedef vector_td<unsigned int,4> uintd4;
+  typedef vector_td<unsigned long long,1> uintd1;
+  typedef vector_td<unsigned long long,2> uintd2;
+  typedef vector_td<unsigned long long,3> uintd3;
+  typedef vector_td<unsigned long long,4> uintd4;
+
+    //template <class T, unsigned long long D> std::ostream & operator<< (std::ostream & os, const vector_td<T, D>& vec)
+    //{
+    //    unsigned long long ii;
+    //    for ( ii=0; ii<D; ii++ )
+    //    {
+    //        os << vec[ii] << " ";
+    //    }
+
+    //    return os;
+    //}
 }

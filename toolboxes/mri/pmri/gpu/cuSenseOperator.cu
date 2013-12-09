@@ -4,13 +4,13 @@
 
 namespace Gadgetron{
 
-  template<class REAL, unsigned int D> void
+  template<class REAL, unsigned long long D> void
   cuSenseOperator<REAL,D>::mult_csm( cuNDArray<complext<REAL> >* in, cuNDArray<complext<REAL> >* out )
   {  
     csm_mult_M<REAL,D>( in, out, this->csm_.get() );
   }
   
-  template<class REAL, unsigned int D> void
+  template<class REAL, unsigned long long D> void
   cuSenseOperator<REAL,D>::mult_csm_conj_sum( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out )
   {
     csm_mult_MH<REAL,D>( in, out, this->csm_.get() );

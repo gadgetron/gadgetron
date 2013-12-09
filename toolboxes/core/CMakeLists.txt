@@ -1,4 +1,5 @@
 include_directories(
+  ${ACE_INCLUDE_DIR} 
   ${Boost_INCLUDE_DIR}
   )
 
@@ -13,7 +14,10 @@ install(FILES
   vector_td_utilities.h
   vector_td_io.h
   real_utilities.h
+  GadgetronCommon.h
+  GadgetronException.h
   GadgetronTimer.h
+  SerializableObject.h
   DESTINATION include)
 
 add_subdirectory(cpu)

@@ -7,7 +7,7 @@
 
 namespace Gadgetron {
 
-  CommandLineParameter::CommandLineParameter(char com_switch,CommandLineParameterType type,  unsigned int nr_values, const char* desc, bool required)
+  CommandLineParameter::CommandLineParameter(char com_switch,CommandLineParameterType type,  unsigned long long nr_values, const char* desc, bool required)
   {
     m_type = type;
     m_switch = com_switch;
@@ -37,7 +37,7 @@ namespace Gadgetron {
     if (m_string_value != 0) delete [] m_string_value;
   } 
 
-  const char* CommandLineParameter::get_string_value(unsigned int i)
+  const char* CommandLineParameter::get_string_value(unsigned long long i)
   {
     if (i < m_nr_values)
       {
@@ -49,7 +49,7 @@ namespace Gadgetron {
       }
   }
 
-  int CommandLineParameter::get_int_value(unsigned int i)
+  int CommandLineParameter::get_int_value(unsigned long long i)
   {
     if (i < m_nr_values)
       {
@@ -61,7 +61,7 @@ namespace Gadgetron {
       }
   }
 
-  float CommandLineParameter::get_float_value(unsigned int i)
+  float CommandLineParameter::get_float_value(unsigned long long i)
   {
     if (i < m_nr_values)
       {
@@ -91,7 +91,7 @@ namespace Gadgetron {
   char** CommandLineParameter::set_value(char** argv)
   {
     int args = 0; 
-    for (unsigned int i = 0; i < m_nr_values;i++)
+    for (unsigned long long i = 0; i < m_nr_values;i++)
       {
 	m_string_value[i] = std::string(argv[i]);
 	if (m_type == COMMAND_LINE_FLOAT || m_type == COMMAND_LINE_INT)
@@ -166,7 +166,7 @@ namespace Gadgetron {
     delete [] m_parameter_list;
   }
 
-  int ParameterParser::add_parameter(char com_switch,CommandLineParameterType type,  unsigned int nr_values, 
+  int ParameterParser::add_parameter(char com_switch,CommandLineParameterType type,  unsigned long long nr_values, 
 				     const char* desc, bool required, const char* def)
   {
 
@@ -178,7 +178,7 @@ namespace Gadgetron {
     std::stringstream ss (std::stringstream::in | std::stringstream::out);
     ss << def;
 
-    unsigned int args = 0; 
+    unsigned long long args = 0; 
     while (args < nr_values)
       {
 	ss >> arg_list[args];
@@ -194,7 +194,7 @@ namespace Gadgetron {
     return 0;
   }
 
-  int ParameterParser::add_parameter(char com_switch,CommandLineParameterType type,  unsigned int nr_values, const char* desc, bool required)
+  int ParameterParser::add_parameter(char com_switch,CommandLineParameterType type,  unsigned long long nr_values, const char* desc, bool required)
   {
     CommandLineParameter *p = new CommandLineParameter(com_switch, type, nr_values, desc, required);
     for (int i = 0; i < m_number_of_parameters; i++)

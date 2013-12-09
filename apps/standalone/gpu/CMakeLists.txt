@@ -1,6 +1,7 @@
 include_directories( 
   ${CUDA_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR} 
+  ${ACE_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/toolboxes/core 
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils

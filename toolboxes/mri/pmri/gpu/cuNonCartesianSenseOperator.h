@@ -9,7 +9,7 @@
 
 namespace Gadgetron{
 
-  template<class REAL, unsigned int D, bool ATOMICS = false> class EXPORTGPUPMRI cuNonCartesianSenseOperator : public cuSenseOperator<REAL,D>
+  template<class REAL, unsigned long long D, bool ATOMICS = false> class EXPORTGPUPMRI cuNonCartesianSenseOperator : public cuSenseOperator<REAL,D>
   {
   
   public:
@@ -46,5 +46,5 @@ namespace Gadgetron{
   };
   
   //Atomics can't be used with doubles
-  template<unsigned int D> class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,D,true>{};
+  template<unsigned long long D> class EXPORTGPUPMRI cuNonCartesianSenseOperator<double,D,true>{};
 }

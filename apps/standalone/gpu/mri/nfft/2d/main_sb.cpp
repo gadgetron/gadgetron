@@ -84,7 +84,7 @@ int main( int argc, char** argv)
   delete timer;
 
   // Reshape the data array to a one-dimensional array (we have no batch dimension)
-  std::vector<unsigned int> sample_dims;
+  std::vector<unsigned long long> sample_dims;
   sample_dims.push_back(samples.get_number_of_elements());
   
   // Compute trajectories
@@ -108,7 +108,7 @@ int main( int argc, char** argv)
   E->set_dcw(dcw);
   
   // Set image dimensions
-  vector<unsigned int> image_dims = to_std_vector(matrix_size);
+  vector<unsigned long long> image_dims = to_std_vector(matrix_size);
   E->set_domain_dimensions(&image_dims);
   E->set_codomain_dimensions(&sample_dims);
 

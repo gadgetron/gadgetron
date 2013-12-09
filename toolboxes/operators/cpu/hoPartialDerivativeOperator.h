@@ -18,7 +18,7 @@ namespace Gadgetron{
     /** \class hoPartialDerivativeOperator
     \brief CPU implementation of device dependent portions of the partialDerivative operator.
     */
-    template <class T, unsigned int D> class hoPartialDerivativeOperator
+    template <class T, unsigned long long D> class hoPartialDerivativeOperator
         : public partialDerivativeOperator<D, hoNDArray<T> >
     {
     public:
@@ -26,7 +26,7 @@ namespace Gadgetron{
         hoPartialDerivativeOperator() : 
           partialDerivativeOperator< D, hoNDArray<T> >(0) {}
 
-          hoPartialDerivativeOperator( unsigned int dimension ) : 
+          hoPartialDerivativeOperator( unsigned long long dimension ) : 
           partialDerivativeOperator<D, hoNDArray<T> >( dimension ) {}
 
           virtual ~hoPartialDerivativeOperator() {}
@@ -42,12 +42,12 @@ namespace Gadgetron{
                   throw std::runtime_error("hoPartialDerivativeOperator::compute_partial_derivative : dimensionality mismatch");
               }
 
-              typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>( *(in->get_dimensions().get()) ));
+              typename intd<D>::Type dims = to_intd( from_std_vector<unsigned long long,D>( *(in->get_dimensions().get()) ));
 
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-              for( int idx=0; idx<in->get_number_of_elements(); idx++ ) {
+      for( int idx=0; idx<in->get_number_of_elements(); idx++ ) {
 
                   T valN, valC;
 
@@ -78,12 +78,12 @@ namespace Gadgetron{
                   throw std::runtime_error( "hoPartialDerivativeOperator::compute_second_order_partial_derivative : dimensionality mismatch");
               }
 
-              typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>( *(in->get_dimensions().get()) ));
+              typename intd<D>::Type dims = to_intd( from_std_vector<unsigned long long,D>( *(in->get_dimensions().get()) ));
 
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-              for( int idx=0; idx<in->get_number_of_elements(); idx++ ) {
+      for( int idx=0; idx<in->get_number_of_elements(); idx++ ) {
 
                   T valN1, valN2, valC;
 

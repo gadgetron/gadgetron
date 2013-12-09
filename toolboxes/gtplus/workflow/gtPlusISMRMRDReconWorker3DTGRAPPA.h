@@ -1,0 +1,383 @@
+/** \file   gtPlusISMRMRDReconWorker3DTGRAPPA.h
+    \brief  Implement the 3DT GRAPPA reconstruction
+    \author Hui Xue
+*/
+
+#pragma once
+
+#include "ismrmrd.h"
+#include "GadgetronTimer.h"
+#include "gtPlusISMRMRDReconUtil.h"
+#include "gtPlusISMRMRDReconWorker3DT.h"
+#include "gtPlusGRAPPA.h"
+
+namespace Gadgetron { namespace gtPlus {
+
+template <typename T> 
+class gtPlusReconWorker3DTGRAPPA : public gtPlusReconWorker3DT<T>
+{
+public:
+
+    typedef gtPlusReconWorker3DT<T> BaseClass;
+    typedef gtPlusReconWorkOrder3DT<T> WorkOrderType;
+
+    gtPlusReconWorker3DTGRAPPA() : BaseClass() {}
+    virtual ~gtPlusReconWorker3DTGRAPPA() {}
+
+    virtual bool performRecon(gtPlusReconWorkOrder3DT<T>* workOrder3DT);
+
+    virtual bool performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkOrderType* workOrder3DT);
+    virtual bool performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkOrderType* workOrder3DT, unsigned long long usedN);
+
+    virtual bool performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& data);
+
+    virtual bool computeKSpace(gtPlusReconWorkOrder3DT<T>* workOrder3DT);
+
+    using BaseClass::gt_timer1_;
+    using BaseClass::gt_timer2_;
+    using BaseClass::gt_timer3_;
+    using BaseClass::performTiming_;
+    using BaseClass::gt_exporter_;
+    using BaseClass::debugFolder_;
+    using BaseClass::gtPlus_util_;
+    using BaseClass::gtPlus_mem_manager_;
+
+    using BaseClass::ref_src_;
+    using BaseClass::ref_dst_;
+    using BaseClass::data_dst_;
+    using BaseClass::ref_coil_map_dst_;
+    using BaseClass::startE1_;
+    using BaseClass::endE1_;
+
+    gtPlusGRAPPA<T> grappa_;
+};
+
+template <typename T> 
+bool gtPlusReconWorker3DTGRAPPA<T>::computeKSpace(gtPlusReconWorkOrder3DT<T>* workOrder3DT)
+{
+    bool recon_kspace = false;
+
+    if ( workOrder3DT->CalibMode_ == ISMRMRD_embedded )
+    {
+        if ( workOrder3DT->embedded_fullres_coilmap_ || workOrder3DT->embedded_ref_fillback_ )
+        {
+            recon_kspace = true;
+        }
+    }
+
+    if ( workOrder3DT->CalibMode_ == ISMRMRD_separate )
+    {
+        if ( workOrder3DT->separate_fullres_coilmap_ )
+        {
+            recon_kspace = true;
+        }
+    }
+
+    if ( workOrder3DT->recon_kspace_needed_ )
+    {
+        recon_kspace = true;
+    }
+
+    return recon_kspace;
+}
+
+template <typename T> 
+bool gtPlusReconWorker3DTGRAPPA<T>::
+performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkOrderType* workOrder3DT)
+{
+    grappa_.performTiming_ = performTiming_;
+
+    unsigned long long RO = workOrder3DT->data_.get_size(0);
+    unsigned long long E1 = workOrder3DT->data_.get_size(1);
+    unsigned long long E2 = workOrder3DT->data_.get_size(2);
+    unsigned long long N = workOrder3DT->data_.get_size(4);
+    unsigned long long srcCHA = workOrder3DT->data_.get_size(3);
+
+    unsigned long long refRO = ref_dst.get_size(0);
+    unsigned long long refE1 = ref_dst.get_size(1);
+    unsigned long long refE2 = ref_dst.get_size(2);
+    unsigned long long refN = ref_dst.get_size(4);
+    unsigned long long dstCHA = ref_dst.get_size(3);
+
+    bool reconKSpace = this->computeKSpace(workOrder3DT);
+
+    std::vector<int> kE1, oE1;
+    bool fitItself = true;
+    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, workOrder3DT->acceFactorE1_, workOrder3DT->grappa_kSize_E1_, fitItself));
+
+    std::vector<int> kE2, oE2;
+    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE2, oE2, workOrder3DT->acceFactorE2_, workOrder3DT->grappa_kSize_E2_, fitItself));
+
+    unsigned long long kRO = workOrder3DT->grappa_kSize_RO_;
+    unsigned long long kNE1 = workOrder3DT->grappa_kSize_E1_;
+    unsigned long long oNE1 = oE1.size();
+
+    unsigned long long kNE2 = workOrder3DT->grappa_kSize_E2_;
+    unsigned long long oNE2 = oE1.size();
+
+    workOrder3DT->kernel_->create(kRO, kNE1, kNE2, srcCHA, dstCHA, oNE1, oNE2, refN);
+    Gadgetron::clear(workOrder3DT->kernel_.get());
+
+    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("allocate image domain kernel ... "));
+    if ( gtPlus_mem_manager_ )
+    {
+        if ( workOrder3DT->kernelIm_->get_number_of_elements() != (unsigned long long)RO*E1*E2*srcCHA*dstCHA*refN )
+        {
+            workOrder3DT->kernelIm_->create(RO, E1, E2, srcCHA, dstCHA, refN, (T*)(gtPlus_mem_manager_->allocate(sizeof(T)*(unsigned long long)RO*E1*E2*srcCHA*dstCHA*refN)));
+        }
+    }
+    else
+    {
+        workOrder3DT->kernelIm_->create(RO, E1, E2, srcCHA, dstCHA, refN);
+    }
+    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+
+    if ( !reconKSpace )
+    {
+        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("allocate unmixing coefficient ... "));
+        if ( gtPlus_mem_manager_ )
+        {
+            if ( workOrder3DT->unmixingCoeffIm_->get_number_of_elements() != (unsigned long long)RO*E1*E2*srcCHA*refN )
+            {
+                workOrder3DT->unmixingCoeffIm_->create(RO, E1, E2, srcCHA, refN, (T*)(gtPlus_mem_manager_->allocate(sizeof(T)*(unsigned long long)RO*E1*E2*srcCHA*refN)));
+            }
+        }
+        else
+        {
+            workOrder3DT->unmixingCoeffIm_->create(RO, E1, E2, srcCHA, refN);
+        }
+        Gadgetron::clear(workOrder3DT->unmixingCoeffIm_.get());
+        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+
+        workOrder3DT->gfactor_.create(RO, E1, E2, refN);
+        Gadgetron::clear(&(workOrder3DT->gfactor_));
+    }
+
+    return true;
+}
+
+template <typename T> 
+bool gtPlusReconWorker3DTGRAPPA<T>::
+performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkOrderType* workOrder3DT, unsigned long long usedN)
+{
+    unsigned long long RO = workOrder3DT->data_.get_size(0);
+    unsigned long long E1 = workOrder3DT->data_.get_size(1);
+    unsigned long long E2 = workOrder3DT->data_.get_size(2);
+    unsigned long long N = workOrder3DT->data_.get_size(4);
+    unsigned long long srcCHA = workOrder3DT->data_.get_size(3);
+
+    unsigned long long refRO = ref_dst.get_size(0);
+    unsigned long long refE1 = ref_dst.get_size(1);
+    unsigned long long refE2 = ref_dst.get_size(2);
+    unsigned long long refN = ref_dst.get_size(4);
+    unsigned long long dstCHA = ref_dst.get_size(3);
+
+    bool reconKSpace = this->computeKSpace(workOrder3DT);
+
+    std::vector<int> kE1, oE1;
+    bool fitItself = true;
+    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, workOrder3DT->acceFactorE1_, workOrder3DT->grappa_kSize_E1_, fitItself));
+
+    std::vector<int> kE2, oE2;
+    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE2, oE2, workOrder3DT->acceFactorE2_, workOrder3DT->grappa_kSize_E2_, fitItself));
+
+    unsigned long long kRO = workOrder3DT->grappa_kSize_RO_;
+    unsigned long long kNE1 = workOrder3DT->grappa_kSize_E1_;
+    unsigned long long oNE1 = oE1.size();
+
+    unsigned long long kNE2 = workOrder3DT->grappa_kSize_E2_;
+    unsigned long long oNE2 = oE1.size();
+
+    ho4DArray<T> acsSrc(refRO, refE1, refE2, srcCHA, const_cast<T*>(ref_src.begin()+usedN*refRO*refE1*refE2*srcCHA));
+    ho4DArray<T> acsDst(refRO, refE1, refE2, dstCHA, const_cast<T*>(ref_dst.begin()+usedN*refRO*refE1*refE2*dstCHA));
+
+    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsSrc, "acsSrc");
+    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsDst, "acsDst");
+
+    ho7DArray<T> ker(kRO, kNE1, kNE2, srcCHA, dstCHA, oNE1, oNE2, workOrder3DT->kernel_->begin()+usedN*kRO*kNE1*kNE2*srcCHA*dstCHA*oNE1*oNE2);
+    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration ... "));
+    grappa_.calib3D(acsSrc, acsDst, workOrder3DT->grappa_reg_lamda_, kRO, kE1, kE2, oE1, oE2, ker);
+    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+
+    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker");
+
+    hoNDArray<T> kIm(RO, E1, E2, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin()+usedN*RO*E1*E2*srcCHA*dstCHA);
+    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D image domain kernel ... "));
+    grappa_.imageDomainKernel3D(ker, kRO, kE1, kE2, oE1, oE2, RO, E1, E2, kIm);
+    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+
+    if ( !reconKSpace )
+    {
+        hoNDArray<T> coilMap(RO, E1, E2, dstCHA, workOrder3DT->coilMap_->begin()+usedN*RO*E1*E2*dstCHA);
+        hoNDArray<T> unmixC(RO, E1, E2, srcCHA);
+        hoNDArray<T> gFactor(RO, E1, E2, workOrder3DT->gfactor_.begin()+usedN*RO*E1*E2);
+
+        this->unmixCoeff(kIm, coilMap, unmixC, gFactor);
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(1.0/workOrder3DT->acceFactorE1_/workOrder3DT->acceFactorE2_, gFactor));
+
+        memcpy(workOrder3DT->unmixingCoeffIm_->begin()+usedN*RO*E1*E2*srcCHA, unmixC.begin(), unmixC.get_number_of_bytes());
+
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unmixC, "unmixC");
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gFactor, "gFactor");
+    }
+
+    return true;
+}
+
+template <typename T> 
+bool gtPlusReconWorker3DTGRAPPA<T>::
+performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& data_dst)
+{
+    try
+    {
+        int n;
+
+        unsigned long long RO = workOrder3DT->data_.get_size(0);
+        unsigned long long E1 = workOrder3DT->data_.get_size(1);
+        unsigned long long E2 = workOrder3DT->data_.get_size(2);
+        unsigned long long N = workOrder3DT->data_.get_size(4);
+
+        unsigned long long srcCHA = workOrder3DT->kernelIm_->get_size(3);
+        unsigned long long dstCHA = workOrder3DT->kernelIm_->get_size(4);
+
+        unsigned long long refN = workOrder3DT->kernelIm_->get_size(5);
+
+        workOrder3DT->complexIm_.create(RO, E1, E2, 1, N);
+
+        hoNDArrayMemoryManaged<T> aliasedIm(gtPlus_mem_manager_);
+
+        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D compute aliased image ... "));
+        if ( workOrder3DT->downstream_coil_compression_ )
+        {
+            aliasedIm.create(workOrder3DT->data_.get_dimensions());
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->data_, aliasedIm);
+        }
+        else
+        {
+            aliasedIm.create(data_dst.get_dimensions());
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(data_dst, aliasedIm);
+        }
+        GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, aliasedIm, "aliasedIm");
+
+        bool recon_kspace = this->computeKSpace(workOrder3DT);
+
+        // if kspace is actually needed
+        if ( recon_kspace )
+        {
+            workOrder3DT->fullkspace_ = data_dst;
+
+            unsigned long long usedN;
+            if ( (refN<N) || (refN==1) )
+            {
+                hoNDArray<T> kIm(RO, E1, E2, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin());
+
+                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D allocate buffer for unwarpping ... "));
+                hoNDArrayMemoryManaged<T> buffer3DT_unwrapping(RO, E1, E2, srcCHA, gtPlus_mem_manager_);
+                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+
+                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D apply image domain kernel for every channel ... "));
+                this->applyImageDomainKernelImage(aliasedIm, kIm, buffer3DT_unwrapping, workOrder3DT->fullkspace_);
+                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+
+                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->fullkspace_, "unwarppedIm");
+            }
+            else
+            {
+                hoNDArrayMemoryManaged<T> buffer3DT_unwrapping(RO, E1, E2, srcCHA, dstCHA, gtPlus_mem_manager_);
+
+                hoNDArray<T> complexIm(RO, E1, E2, dstCHA);
+                for ( n=0; n<(int)N; n++ )
+                {
+                    hoNDArray<T> kIm(RO, E1, E2, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin()+n*RO*E1*E2*srcCHA*dstCHA);
+
+                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, "kIm_n");
+
+                    hoNDArray<T> aliasedImN(RO, E1, E2, srcCHA, aliasedIm.begin()+n*RO*E1*E2*srcCHA);
+
+                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, aliasedImN, "aliasedIm_n");
+
+                    this->applyImageDomainKernelImage(aliasedImN, kIm, buffer3DT_unwrapping, complexIm);
+                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, complexIm, "complexIm_n");
+
+                    memcpy(workOrder3DT->fullkspace_.begin()+n*RO*E1*E2*dstCHA, complexIm.begin(), sizeof(T)*RO*E1*E2*dstCHA);
+                }
+            }
+
+            if ( (workOrder3DT->coilMap_->get_size(0)==RO) 
+                && (workOrder3DT->coilMap_->get_size(1)==E1) 
+                && (workOrder3DT->coilMap_->get_size(2)==E2) 
+                && (workOrder3DT->coilMap_->get_size(3)==dstCHA) )
+            {
+                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D coil combination ... "));
+                gtPlusISMRMRDReconUtilComplex<T>().coilCombine3D(workOrder3DT->fullkspace_, *workOrder3DT->coilMap_, workOrder3DT->complexIm_);
+                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+
+                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->complexIm_, "combined");
+            }
+
+            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D go back to kspace ... "));
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(workOrder3DT->fullkspace_);
+            GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+        }
+        else
+        {
+            if ( (refN<N) || (refN==1) )
+            {
+                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D test ... "));
+                hoNDArray<T> unmixCoeff(RO, E1, E2, srcCHA, workOrder3DT->unmixingCoeffIm_->begin());
+                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+
+                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D apply unmixing coeff ... "));
+                this->applyUnmixCoeffImage(aliasedIm, unmixCoeff, workOrder3DT->complexIm_);
+                GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+
+                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->complexIm_, "unwarppedIm");
+            }
+            else
+            {
+                for ( n=0; n<(int)N; n++ )
+                {
+                    hoNDArray<T> unmixCoeff(RO, E1, E2, srcCHA, workOrder3DT->unmixingCoeffIm_->begin()+n*RO*E1*E2*srcCHA);
+                    hoNDArray<T> aliasedImN(RO, E1, E2, srcCHA, aliasedIm.begin()+n*RO*E1*E2*srcCHA);
+                    hoNDArray<T> unwarppedIm(RO, E1, E2, 1, workOrder3DT->complexIm_.begin()+n*RO*E1*E2);
+
+                    this->applyUnmixCoeffImage(aliasedImN, unmixCoeff, unwarppedIm);
+
+                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedIm, "unwarppedIm");
+                }
+            }
+        }
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DTGRAPPA<T>::performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& data) ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T> 
+bool gtPlusReconWorker3DTGRAPPA<T>::performRecon(gtPlusReconWorkOrder3DT<T>* workOrder3DT)
+{
+    try
+    {
+        GADGET_CHECK_RETURN_FALSE(workOrder3DT!=NULL);
+
+        grappa_.gtPlus_mem_manager_ = this->gtPlus_mem_manager_;
+
+        // call the BaseClass
+        GADGET_CHECK_RETURN_FALSE(BaseClass::performRecon(workOrder3DT));
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusReconWorker3DTGRAPPA<T>::performRecon(gtPlusReconWorkOrder3DT<T>* workOrder3DT) ... ");
+        return false;
+    }
+
+    return true;
+}
+
+}}

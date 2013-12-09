@@ -583,7 +583,7 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
 
     GadgetContainerMessage<hoNDArray< ACE_INT16 > > *pixels =
             new GadgetContainerMessage<hoNDArray< ACE_INT16 > >();
-    boost::shared_ptr< std::vector<unsigned int> > dims = m2->getObjectPtr()->get_dimensions();
+    boost::shared_ptr< std::vector<unsigned long long> > dims = m2->getObjectPtr()->get_dimensions();
 
     try {
         pixels->getObjectPtr()->create(dims.get());

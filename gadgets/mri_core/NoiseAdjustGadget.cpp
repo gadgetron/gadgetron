@@ -39,7 +39,7 @@ namespace Gadgetron{
 
       //If noise covariance matrix is not allocated
       if (noise_covariance_matrix_.get_number_of_elements() != channels*channels) {
-	std::vector<unsigned int> dims(2, channels);
+	std::vector<unsigned long long> dims(2, channels);
 			
 	try{noise_covariance_matrix_.create(&dims);}
 	catch (std::runtime_error& err)	{
@@ -82,7 +82,7 @@ namespace Gadgetron{
 	if (!noise_decorrelation_calculated_) {
 	  GADGET_DEBUG1("Calculating noise decorrelation\n");
 	  
-	  std::vector<unsigned int> dims(2, channels);
+	  std::vector<unsigned long long> dims(2, channels);
 	  try{noise_covariance_matrixf_.create(&dims);}
 	  catch (std::runtime_error& err){
 	    GADGET_DEBUG_EXCEPTION(err,"Unable to allocate storage for noise covariance matrix (float)\n");

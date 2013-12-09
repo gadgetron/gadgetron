@@ -12,13 +12,13 @@
 
 namespace Gadgetron{
 
-  template<class T, unsigned int D> ::std::ostream& operator<<(::std::ostream& os, const vector_td<T,D>& vec) {
+  template<class T, unsigned long long D> ::std::ostream& operator<<(std::ostream& os, const vector_td<T,D>& vec) {
     os <<'[' ;
     for (int i = 0; i < D-1; i++) os << vec[i] << ", ";
     return os << vec[D-1] <<']';
   }
 
-  template<class T, unsigned int D> std::istream& operator>>(std::istream& is, vector_td<T,D>& vec) {
+  template<class T, unsigned long long D> std::istream& operator>>(std::istream& is, vector_td<T,D>& vec) {
     char tmp;
     is.get(tmp);
     if (tmp != '['){

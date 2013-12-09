@@ -11,12 +11,12 @@ using testing::Types;
 template <typename T> class hoNDArray_elemwise_TestReal : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+    unsigned long long vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    dims = std::vector<unsigned long long>(vdims,vdims+sizeof(vdims)/sizeof(unsigned long long));
     Array = hoNDArray<T>(&dims);
     Array2 = hoNDArray<T>(&dims);
   }
-  std::vector<unsigned int> dims;
+  std::vector<unsigned long long> dims;
   hoNDArray<T> Array;
   hoNDArray<T> Array2;
 };
@@ -24,12 +24,12 @@ protected:
 template <typename T> class hoNDArray_elemwise_TestCplx : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+    unsigned long long vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    dims = std::vector<unsigned long long>(vdims,vdims+sizeof(vdims)/sizeof(unsigned long long));
     Array = hoNDArray<T>(&dims);
     Array2 = hoNDArray<T>(&dims);
   }
-  std::vector<unsigned int> dims;
+  std::vector<unsigned long long> dims;
   hoNDArray<T> Array;
   hoNDArray<T> Array2;
 };
@@ -37,12 +37,12 @@ protected:
 template <typename T> class hoNDArray_elemwise_TestCplx2 : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+    unsigned long long vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    dims = std::vector<unsigned long long>(vdims,vdims+sizeof(vdims)/sizeof(unsigned long long));
     Array = hoNDArray<T>(&dims);
     Array2 = hoNDArray<T>(&dims);
   }
-  std::vector<unsigned int> dims;
+  std::vector<unsigned long long> dims;
   hoNDArray<T> Array;
   hoNDArray<T> Array2;
 };
@@ -50,12 +50,12 @@ protected:
 template <typename T> class hoNDArray_elemwise_TestCplx3 : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+    unsigned long long vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    dims = std::vector<unsigned long long>(vdims,vdims+sizeof(vdims)/sizeof(unsigned long long));
     Array = hoNDArray<T>(&dims);
     Array2 = hoNDArray<T>(&dims);
   }
-  std::vector<unsigned int> dims;
+  std::vector<unsigned long long> dims;
   hoNDArray<T> Array;
   hoNDArray<T> Array2;
 };
@@ -63,12 +63,12 @@ protected:
 template <typename T> class hoNDArray_elemwise_TestCplx4 : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+    unsigned long long vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    dims = std::vector<unsigned long long>(vdims,vdims+sizeof(vdims)/sizeof(unsigned long long));
     Array = hoNDArray<T>(&dims);
     Array2 = hoNDArray<typename realType<T>::Type>(&dims);
   }
-  std::vector<unsigned int> dims;
+  std::vector<unsigned long long> dims;
   hoNDArray<T> Array;
   hoNDArray<typename realType<T>::Type> Array2;
 };

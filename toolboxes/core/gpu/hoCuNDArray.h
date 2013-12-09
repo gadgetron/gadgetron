@@ -18,21 +18,21 @@ namespace Gadgetron{
     
     hoCuNDArray() : hoNDArray<T>() {}
     
-    hoCuNDArray( std::vector<unsigned int> *dimensions ) : hoNDArray<T>(dimensions) {}
+    hoCuNDArray( std::vector<unsigned long long> *dimensions ) : hoNDArray<T>(dimensions) {}
 
-    hoCuNDArray( std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct = false ) :
+    hoCuNDArray( std::vector<unsigned long long> *dimensions, T* data, bool delete_data_on_destruct = false ) :
       hoNDArray<T>(dimensions, data, delete_data_on_destruct){};
     
-    hoCuNDArray( boost::shared_ptr< std::vector<unsigned int> > dimensions ) : hoNDArray<T>(dimensions) {}
+    hoCuNDArray( boost::shared_ptr< std::vector<unsigned long long> > dimensions ) : hoNDArray<T>(dimensions) {}
 
-    hoCuNDArray( boost::shared_ptr< std::vector<unsigned int> > dimensions, T* data, bool delete_data_on_destruct = false ) :
+    hoCuNDArray( boost::shared_ptr< std::vector<unsigned long long> > dimensions, T* data, bool delete_data_on_destruct = false ) :
       hoNDArray<T>(dimensions, data, delete_data_on_destruct){};
     
     // Copy constructor
     hoCuNDArray(const hoNDArray<T>& a)
     {
       this->data_ = 0;
-      this->dimensions_ = boost::shared_ptr< std::vector<unsigned int> >(new std::vector<unsigned int>(*a.get_dimensions()));
+      this->dimensions_ = boost::shared_ptr< std::vector<unsigned long long> >(new std::vector<unsigned long long>(*a.get_dimensions()));
       this->allocate_memory();
       memcpy( this->data_, a.get_data_ptr(), this->elements_*sizeof(T) );
     }    

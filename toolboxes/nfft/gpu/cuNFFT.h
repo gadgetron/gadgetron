@@ -22,7 +22,7 @@
 #include <thrust/device_vector.h>
 #include <boost/shared_ptr.hpp>
 
-template<class REAL, unsigned int D, bool ATOMICS> struct _convolve_NFFT_NC2C;
+template<class REAL, unsigned long long D, bool ATOMICS> struct _convolve_NFFT_NC2C;
 
 namespace Gadgetron{
 
@@ -42,7 +42,7 @@ namespace Gadgetron{
       the atomic mode can be necessary for very large images or for 3D/4D volumes.
       Notice: currently no devices support atomics operations in double precision.
   */
-  template< class REAL, unsigned int D, bool ATOMICS = false > class EXPORTGPUNFFT cuNFFT_plan
+  template< class REAL, unsigned long long D, bool ATOMICS = false > class EXPORTGPUNFFT cuNFFT_plan
   {
   
   public: // Main interface
@@ -138,7 +138,7 @@ namespace Gadgetron{
       \param[in] halfway_dims specifies the dimensions of the intermediate Fourier space (codomain).
     */
     void mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
-		    cuNDArray<REAL> *dcw, std::vector<unsigned int> halfway_dims );
+		    cuNDArray<REAL> *dcw, std::vector<unsigned long long> halfway_dims );
   
   public: // Utilities
   
@@ -279,6 +279,6 @@ namespace Gadgetron{
 
   // Pure virtual class to cause compile errors if you try to use NFFT with double and atomics
   // - since this is not supported on the device
-  template< unsigned int D> class EXPORTGPUNFFT cuNFFT_plan<double,D,true>{ 
+  template< unsigned long long D> class EXPORTGPUNFFT cuNFFT_plan<double,D,true>{ 
     virtual void atomics_not_supported_for_type_double() = 0; };
 }

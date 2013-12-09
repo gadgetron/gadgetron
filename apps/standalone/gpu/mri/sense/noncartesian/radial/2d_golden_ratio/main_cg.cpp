@@ -30,7 +30,7 @@ const bool use_atomics = false;
 boost::shared_ptr< cuNDArray<_complext> > 
 upload_data( unsigned int reconstruction, unsigned int samples_per_reconstruction, unsigned int total_samples_per_coil, unsigned int num_coils, hoNDArray<_complext> *host_data )
 {
-  vector<unsigned int> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
+  vector<unsigned long long> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
   cuNDArray<_complext> *data = new cuNDArray<_complext>(); data->create( &dims );
   for( unsigned int i=0; i<num_coils; i++ )
     cudaMemcpy( data->get_data_ptr()+i*samples_per_reconstruction, 
@@ -175,7 +175,7 @@ int main(int argc, char** argv)
 
   timer = new GPUTimer("Computing regularization");
 
-  std::vector<unsigned int> image_dims = to_std_vector(matrix_size);
+  std::vector<unsigned long long> image_dims = to_std_vector(matrix_size);
   cuNDArray<_complext> reg_image = cuNDArray<_complext>(&image_dims);
 
   E->mult_csm_conj_sum( acc_images.get(), &reg_image );

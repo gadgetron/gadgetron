@@ -7,7 +7,7 @@ namespace Gadgetron{
   // Kernel prototype declarations
   //
 
-  template<class REAL, unsigned int D> __global__ 
+  template<class REAL, unsigned long long D> __global__ 
   void HornSchunk_kernel(REAL*,REAL*,REAL*,REAL*,typename uintd<D>::Type,unsigned int,REAL,REAL,unsigned int*);
 
   //
@@ -20,7 +20,7 @@ namespace Gadgetron{
   // Implementation
   //
 
-  template<class T, unsigned int D> boost::shared_ptr< cuNDArray<T> >
+  template<class T, unsigned long long D> boost::shared_ptr< cuNDArray<T> >
   cuHSOpticalFlowSolver<T,D>::core_solver( cuNDArray<T> *gradient_image, cuNDArray<T> *stencil_image )
   {
     // Sanity checks
@@ -38,7 +38,7 @@ namespace Gadgetron{
     // - when removing the temporal gradient component (replacing D+1 with D)
     //
   
-    boost::shared_ptr< std::vector<unsigned int> > disp_dims = gradient_image->get_dimensions();
+    boost::shared_ptr< std::vector<unsigned long long> > disp_dims = gradient_image->get_dimensions();
     disp_dims->pop_back(); disp_dims->push_back(D);
 
     boost::shared_ptr< cuNDArray<T> > displacements_ping(new cuNDArray<T>(disp_dims.get()));
@@ -50,7 +50,7 @@ namespace Gadgetron{
     // Setup grid
     //
 
-    typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>( *gradient_image->get_dimensions() );  
+    typename uintd<D>::Type matrix_size = from_std_vector<unsigned long long,D>( *gradient_image->get_dimensions() );  
     unsigned int number_of_elements = prod(matrix_size);
     unsigned int number_of_batches = 1;
   
@@ -59,7 +59,7 @@ namespace Gadgetron{
     }
   
     dim3 blockDim; dim3 gridDim;
-    this->setup_grid( &blockDim, &gridDim, number_of_elements, number_of_batches*D, true );
+    this->setup_grid( &blockDim, &gridDim, number_of_elements, number_of_batches*D, true, D );
   
     // Allocate continuation flag (used for early Jacobi termination by the kernel)
     //
@@ -145,7 +145,7 @@ namespace Gadgetron{
   // Helpers
   //
   
-  template<unsigned int D> __device__ 
+  template<unsigned long long D> __device__ 
   bool is_border_pixel_for_stride( typename intd<D>::Type stride, typename uintd<D>::Type co, typename uintd<D>::Type dims )
   {
     for( unsigned int d=0; d<D; d++ ){
@@ -176,7 +176,7 @@ namespace Gadgetron{
   // Horn-Schunk / Jacobi iteration
   //
   
-  template<class REAL, unsigned int D> __global__ void
+  template<class REAL, unsigned long long D> __global__ void
   HornSchunk_kernel( REAL *gradient_image, REAL *stencil_image,
 		     REAL *in_disp, REAL *out_disp, 
 		     typename uintd<D>::Type matrix_size, unsigned int num_batches,
@@ -221,9 +221,9 @@ namespace Gadgetron{
       // Local co to the image
       const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
       
-      const typename intd<D>::Type zeros  = to_vector_td<int,D>(0);
-      const typename intd<D>::Type ones   = to_vector_td<int,D>(1);
-      const typename intd<D>::Type threes = to_vector_td<int,D>(3);
+      const typename intd<D>::Type zeros  = to_vector_td<long long,D>(0);
+      const typename intd<D>::Type ones   = to_vector_td<long long,D>(1);
+      const typename intd<D>::Type threes = to_vector_td<long long,D>(3);
       
       const int num_neighbors = Pow<3,D>::Value;
       REAL num_contribs = REAL(0);

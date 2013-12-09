@@ -12,3 +12,7 @@ add_subdirectory(registration)
 IF (ACE_FOUND)
   add_subdirectory(gadgettools)
 ENDIF (ACE_FOUND)
+
+IF (MKL_FOUND)
+    add_subdirectory(gtplus)
+ENDIF (MKL_FOUND)

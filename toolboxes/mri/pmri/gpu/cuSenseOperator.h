@@ -14,7 +14,7 @@
 
 namespace Gadgetron{
 
-  template<class REAL, unsigned int D> class EXPORTGPUPMRI cuSenseOperator : public senseOperator< cuNDArray< complext<REAL> >, D >
+  template<class REAL, unsigned long long D> class EXPORTGPUPMRI cuSenseOperator : public senseOperator< cuNDArray< complext<REAL> >, D >
   {
     
   public:

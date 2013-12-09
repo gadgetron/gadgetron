@@ -22,7 +22,7 @@ namespace Gadgetron{
 
     generalOperator() : weight_(REAL(1)){};
 
-    generalOperator(std::vector<unsigned int> *dims) : weight_(REAL(1)){
+    generalOperator(std::vector<unsigned long long> *dims) : weight_(REAL(1)){
       set_domain_dimensions(dims);
     }
     
@@ -30,17 +30,17 @@ namespace Gadgetron{
 
     virtual void gradient(ARRAY* in, ARRAY* out, bool accumulate = false ) = 0;
     
-    virtual void set_domain_dimensions( std::vector<unsigned int> *dims )
+    virtual void set_domain_dimensions( std::vector<unsigned long long> *dims )
     {
       if( dims == 0x0 ) throw std::runtime_error("Null pointer provided");
       domain_dims_ = *dims;  
     }
     
-    virtual boost::shared_ptr< std::vector<unsigned int> > get_domain_dimensions()
+    virtual boost::shared_ptr< std::vector<unsigned long long> > get_domain_dimensions()
     {
-      std::vector<unsigned int> *dims = new std::vector<unsigned int>();
+      std::vector<unsigned long long> *dims = new std::vector<unsigned long long>();
       *dims = domain_dims_;
-      return boost::shared_ptr< std::vector<unsigned int> >(dims);
+      return boost::shared_ptr< std::vector<unsigned long long> >(dims);
     }
     
     virtual void set_weight( REAL weight ){ weight_ = weight; }
@@ -52,6 +52,6 @@ namespace Gadgetron{
     
   protected:
     REAL weight_;
-    std::vector<unsigned int> domain_dims_;
+    std::vector<unsigned long long> domain_dims_;
   };  
 }

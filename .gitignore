@@ -11,7 +11,6 @@ inc/
 *.d
 *.txt
 !CMakeLists.txt
-config/
 bin/
 lib/*.py
 lib/*.pyc
@@ -20,3 +19,6 @@ lib/*.pyc
 build/
 *.pyc
 toolboxes/core/core_defines.h
+ut/
+prod/
+external/

@@ -15,7 +15,7 @@ add_library(gadgetron_cartesian SHARED
   CartesianToGenericGadget.cpp
   ${ISMRMRD_XSD_SOURCE})
 
-target_link_libraries(gadgetron_cartesian
+target_link_libraries(gadgetron_cartesian cpucore 
   ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )

@@ -37,21 +37,21 @@ insert_samples_kernel( complext<REAL> *in, complext<REAL> *out,
   }
 }
 
-template<class REAL, unsigned int D> void
+template<class REAL, unsigned long long D> void
 cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate )
 {
   if (!(in->dimensions_equal(this->get_domain_dimensions().get())) || !(out->dimensions_equal(this->get_codomain_dimensions().get())) ) {
     throw std::runtime_error("cuCartesianSenseOperator::mult_M dimensions mismatch");
   }
   
-  std::vector<unsigned int> full_dimensions = *this->get_domain_dimensions();
+  std::vector<unsigned long long> full_dimensions = *this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
   cuNDArray< complext<REAL> > tmp(&full_dimensions);
 
   mult_csm(in,&tmp);
 
   cuNDFFT<REAL> ft;
-  std::vector<unsigned int> ft_dims;
+  std::vector<unsigned long long> ft_dims;
   for (unsigned int i = 0; i < this->get_domain_dimensions()->size(); i++) {
     ft_dims.push_back(i);
   }
@@ -74,7 +74,7 @@ cuCartesianSenseOperator<REAL,D>::mult_M( cuNDArray< complext<REAL> > *in, cuNDA
   }
 }
 
-template<class REAL, unsigned int D> void
+template<class REAL, unsigned long long D> void
 cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray< complext<REAL> > *in, cuNDArray< complext<REAL> > *out, bool accumulate)
 {
   if (!(out->dimensions_equal(this->get_domain_dimensions().get())) || 
@@ -83,7 +83,7 @@ cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray< complext<REAL> > *in, cuNDA
 
   }
 
-  std::vector<unsigned int> tmp_dimensions = *this->get_domain_dimensions();
+  std::vector<unsigned long long> tmp_dimensions = *this->get_domain_dimensions();
   tmp_dimensions.push_back(this->ncoils_);
 
   cuNDArray< complext<REAL> > tmp(&tmp_dimensions);
@@ -104,7 +104,7 @@ cuCartesianSenseOperator<REAL,D>::mult_MH(cuNDArray< complext<REAL> > *in, cuNDA
   }
 
   cuNDFFT<REAL> ft;
-  std::vector<unsigned int> ft_dims;
+  std::vector<unsigned long long> ft_dims;
   for (unsigned int i = 0; i < this->get_domain_dimensions()->size(); i++) {
     ft_dims.push_back(i);
   }

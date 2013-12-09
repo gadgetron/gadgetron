@@ -10,7 +10,7 @@
 
 namespace Gadgetron{
 
-  template <class T, unsigned int D>
+  template <class T, unsigned long long D>
   class EXPORTGPUREG cuResampleOperator : public resampleOperator< cuNDArray<typename realType<T>::Type>, cuNDArray<T> >
   {    
   public:

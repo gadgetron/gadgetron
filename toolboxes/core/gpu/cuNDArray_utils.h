@@ -13,24 +13,24 @@ namespace Gadgetron{
   shift_dim( cuNDArray<T> *in, cuNDArray<T> *out, int shift );
   
   template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> >
-  permute( cuNDArray<T> *in, std::vector<unsigned int> *dim_order, int shift_mode = 0 );
+  permute( cuNDArray<T> *in, std::vector<unsigned long long> *dim_order, int shift_mode = 0 );
   
   template<class T> EXPORTGPUCORE void
-  permute( cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *dim_order, int shift_mode = 0 );
+  permute( cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned long long> *dim_order, int shift_mode = 0 );
 
-  template<class T, unsigned int D> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> >
+  template<class T, unsigned long long D> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> >
   crop( typename uintd<D>::Type crop_offset, typename uintd<D>::Type crop_size, cuNDArray<T> *in );
 
-  template<class T, unsigned int D> EXPORTGPUCORE
+  template<class T, unsigned long long D> EXPORTGPUCORE
   void crop( typename uintd<D>::Type crop_offset, cuNDArray<T> *in, cuNDArray<T> *out );
   
-  template<class T, unsigned int D> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> >
+  template<class T, unsigned long long D> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> >
   pad( typename uintd<D>::Type size, cuNDArray<T> *in, T val = T(0) );
 
-  template<class T, unsigned int D> EXPORTGPUCORE
+  template<class T, unsigned long long D> EXPORTGPUCORE
   void pad( cuNDArray<T> *in, cuNDArray<T> *out, T val = T(0) );
   
-  template<class T, unsigned int D> EXPORTGPUCORE
+  template<class T, unsigned long long D> EXPORTGPUCORE
   void fill_border( typename uintd<D>::Type matrix_size, cuNDArray<T> *image, T val = T(0) );
 
   // Expand array to new dimension

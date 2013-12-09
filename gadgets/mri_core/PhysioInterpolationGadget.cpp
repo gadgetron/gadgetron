@@ -49,8 +49,8 @@ namespace Gadgetron{
     float sum_int  = 0.0; 
     std::vector<float> intervals;
     float int_count = 0.0;
-    std::vector<unsigned int> cycle_starts;
-    for (unsigned int i = 0; i < time_stamps_.size(); i++) {
+    std::vector<unsigned long long> cycle_starts;
+    for (unsigned long long i = 0; i < time_stamps_.size(); i++) {
       //GADGET_DEBUG2("Time %d, %f\n", i, time_stamps_[i]);
       if (time_stamps_[i] < previous) {
 	cycle_starts.push_back(i);
@@ -70,7 +70,7 @@ namespace Gadgetron{
     float average_cycle_length = 0.0;
     std::vector<float> cycle_lengths;
     float count = 0;
-    for (unsigned int i = 1; i < cycle_starts.size(); i++) {
+    for (unsigned long long i = 1; i < cycle_starts.size(); i++) {
       float clength = time_stamps_[cycle_starts[i]-1] + median_interval - time_stamps_[cycle_starts[i]];
       //GADGET_DEBUG2("clength: %f\n", clength);
       cycle_lengths.push_back(clength);
@@ -91,22 +91,22 @@ namespace Gadgetron{
 
     //Correct the first cycle assuming it is of median length:
     float first_cycle_offset = (median_cycle_length-median_interval)+time_stamps_[cycle_starts[0]]-time_stamps_[cycle_starts[0]-1];
-    for (unsigned int i = 0; i < cycle_starts[0]; i++) {
+    for (unsigned long long i = 0; i < cycle_starts[0]; i++) {
       time_stamps_[i] += first_cycle_offset;
     }
 
     //Calculate relative time stamps
-    unsigned int current_cycle = 0;
+    unsigned long long current_cycle = 0;
     std::vector<float> relative_cycle_time;
 
     //Make sure we have cycle lengths for all the cycles we have covered
     cycle_lengths.insert(cycle_lengths.begin(),median_cycle_length);
     cycle_lengths.push_back(median_cycle_length);
-    
-    for (unsigned int i = 0; i < time_stamps_.size(); i++) {
+
+    for (unsigned long long i = 0; i < time_stamps_.size(); i++) {
       if ((i >= cycle_starts[current_cycle]) && (current_cycle < cycle_starts.size())) {
-	  //GADGET_DEBUG2("Incrementing current_cycle, %d,%d\n",i,cycle_starts[current_cycle]);
-	current_cycle++;
+      //GADGET_DEBUG2("Incrementing current_cycle, %d,%d\n",i,cycle_starts[current_cycle]);
+    current_cycle++;
       }
       relative_cycle_time.push_back(time_stamps_[i]/cycle_lengths[current_cycle] + current_cycle);
 	//GADGET_DEBUG2("Corrected time stamps: %d, %f  (%d)\n",i,relative_cycle_time[i],current_cycle);
@@ -150,7 +150,7 @@ namespace Gadgetron{
     std::vector< GadgetContainerMessage< ISMRMRD::ImageHeader >* > out_heads;
     std::vector< GadgetContainerMessage< hoNDArray< std::complex<float> > > * > out_data;
     
-    for (unsigned int i = 0; i < recon_cycle_time.size(); i++) {
+    for (unsigned long long i = 0; i < recon_cycle_time.size(); i++) {
       GadgetContainerMessage<ISMRMRD::ImageHeader>* tmpm1 = new GadgetContainerMessage<ISMRMRD::ImageHeader>;
       GadgetContainerMessage< hoNDArray< std::complex<float> > >* tmpm2 = new GadgetContainerMessage< hoNDArray< std::complex<float> > >;
       
@@ -199,20 +199,20 @@ namespace Gadgetron{
       std::vector< std::complex<float> > data_in(inelem);
 
       //Get the input data for this pixel
-      for (unsigned int i = 0; i < inelem; i++) data_in[i] = aptrs[i]->get_data_ptr()[p];
+      for (unsigned long long i = 0; i < inelem; i++) data_in[i] = aptrs[i]->get_data_ptr()[p];
       
       //Interpolate the data
       Spline<float, std::complex<float> > sp(relative_cycle_time, data_in);
       std::vector<std::complex<float> > data_out = sp[recon_cycle_time];
 
       //Copy it to the images
-      for (unsigned int i = 0; i < outelem; i++) out_data[i]->getObjectPtr()->get_data_ptr()[p] = data_out[i];
+      for (unsigned long long i = 0; i < outelem; i++) out_data[i]->getObjectPtr()->get_data_ptr()[p] = data_out[i];
     }
 
     }
 
     //Send out the images
-    for (unsigned int i = 0; i < out_heads.size(); i++) {
+    for (unsigned long long i = 0; i < out_heads.size(); i++) {
       if (this->next()->putq(out_heads[i]) < 0) {
 	GADGET_DEBUG1("Unable to put data on next Gadgets Q\n");
 	return GADGET_FAIL;

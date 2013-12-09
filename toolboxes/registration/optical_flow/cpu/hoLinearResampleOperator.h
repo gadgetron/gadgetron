@@ -10,7 +10,7 @@
 
 namespace Gadgetron{
 
-  template <class T, unsigned int D>
+  template <class T, unsigned long long D>
   class EXPORTCPUREG hoLinearResampleOperator : public resampleOperator<hoNDArray<typename realType<T>::Type>, hoNDArray<T> >
   {  
   public:
@@ -29,7 +29,7 @@ namespace Gadgetron{
   
   private:
     inline bool is_border_pixel( typename reald<typename realType<T>::Type,D>::Type co, typename uintd<D>::Type dims );
-    inline unsigned int get_num_neighbors();
+    inline unsigned long long get_num_neighbors();
   
   protected:
     arma::SpMat<typename realType<T>::Type> R_T_; //Contains the TRANSPOSED resampling matrix.

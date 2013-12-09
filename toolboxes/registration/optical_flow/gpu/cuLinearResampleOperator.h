@@ -4,7 +4,7 @@
 
 namespace Gadgetron{
 
-  template <class T, unsigned int D>
+  template <class T, unsigned long long D>
   class EXPORTGPUREG cuLinearResampleOperator : public cuResampleOperator<T,D>
   {  
   public:

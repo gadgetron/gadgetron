@@ -12,15 +12,15 @@ using testing::Types;
 template <typename T> class hoNDArray_operators_TestReal : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
-    unsigned int vdims2[] = {37, 49}; //Smaller dimensionality to test batch mode
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
-    dims2 = std::vector<unsigned int>(vdims2,vdims2+sizeof(vdims2)/sizeof(unsigned int));
+    unsigned long long vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    unsigned long long vdims2[] = {37, 49}; //Smaller dimensionality to test batch mode
+    dims = std::vector<unsigned long long>(vdims,vdims+sizeof(vdims)/sizeof(unsigned long long));
+    dims2 = std::vector<unsigned long long>(vdims2,vdims2+sizeof(vdims2)/sizeof(unsigned long long));
     Array = hoNDArray<T>(&dims);
     Array2 = hoNDArray<T>(&dims2);
   }
-  std::vector<unsigned int> dims;
-  std::vector<unsigned int> dims2;
+  std::vector<unsigned long long> dims;
+  std::vector<unsigned long long> dims2;
   hoNDArray<T> Array;
   hoNDArray<T> Array2;
 };
@@ -28,15 +28,15 @@ protected:
 template <typename T> class hoNDArray_operators_TestCplx : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
-    unsigned int vdims2[] = {37, 49}; //Smaller dimensionality to test batch mode
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
-    dims2 = std::vector<unsigned int>(vdims2,vdims2+sizeof(vdims2)/sizeof(unsigned int));
+    unsigned long long vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    unsigned long long vdims2[] = {37, 49}; //Smaller dimensionality to test batch mode
+    dims = std::vector<unsigned long long>(vdims,vdims+sizeof(vdims)/sizeof(unsigned long long));
+    dims2 = std::vector<unsigned long long>(vdims2,vdims2+sizeof(vdims2)/sizeof(unsigned long long));
     Array = hoNDArray<T>(&dims);
     Array2 = hoNDArray<T>(&dims2);
   }
-  std::vector<unsigned int> dims;
-  std::vector<unsigned int> dims2;
+  std::vector<unsigned long long> dims;
+  std::vector<unsigned long long> dims2;
   hoNDArray<T> Array;
   hoNDArray<T> Array2;
 };

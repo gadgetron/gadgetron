@@ -91,7 +91,7 @@ int main( int argc, char** argv)
   int frames_per_reconstruction = parms.get_parameter('f')->get_int_value();  
   _real kernel_width = parms.get_parameter('k')->get_float_value();
 
-  uintd2 matrix_size = from_std_vector<unsigned int,2>(*(host_image->get_dimensions().get()));
+  uintd2 matrix_size = from_std_vector<unsigned long long,2>(*(host_image->get_dimensions().get()));
   unsigned int num_frames = host_image->get_size(2);
   _real alpha = (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0];
 
@@ -111,7 +111,7 @@ int main( int argc, char** argv)
   delete timer;
   
   // Setup resulting samples array
-  vector<unsigned int> samples_dims; 
+  vector<unsigned long long> samples_dims; 
   samples_dims.push_back( samples_per_profile ); samples_dims.push_back( profiles_per_frame ); samples_dims.push_back(frames_per_reconstruction);
   cuNDArray<_complext> samples; samples.create(&samples_dims);
   

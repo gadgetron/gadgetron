@@ -574,7 +574,7 @@ namespace Gadgetron{
 	//
 
 	boost::shared_ptr< cuNDArray<float_complext> > reg_image;
-	std::vector<unsigned int> dims;
+	std::vector<unsigned long long> dims;
     	
 	if( buffer_using_solver_ ){
 
@@ -591,7 +591,7 @@ namespace Gadgetron{
 
 	  dims = *traj.get_dimensions();
 
- 	  std::vector<unsigned int> tmp_dims;
+ 	  std::vector<unsigned long long> tmp_dims;
 	  tmp_dims.push_back(dims[0]*dims[1]);
 	  tmp_dims.push_back(1);
 	  
@@ -741,7 +741,7 @@ namespace Gadgetron{
   {    
     unsigned int readouts_buffered = queue->message_count();
     
-    std::vector<unsigned int> dims;
+    std::vector<unsigned long long> dims;
     dims.push_back(samples_per_readout_*readouts_buffered);
     dims.push_back(num_coils_[set*slices_+slice]);
     
@@ -809,7 +809,7 @@ namespace Gadgetron{
     
     unsigned int readouts_buffered = queue->message_count();
     
-    std::vector<unsigned int> dims;
+    std::vector<unsigned long long> dims;
     dims.push_back(3);
     dims.push_back(samples_per_readout_);
     dims.push_back(readouts_buffered);
@@ -867,13 +867,13 @@ namespace Gadgetron{
     boost::shared_ptr< hoNDArray<float> > host_traj_dcw =
       extract_trajectory_from_queue( queue, sliding_window, set, slice );
     
-    std::vector<unsigned int> order;
+    std::vector<unsigned long long> order;
     order.push_back(1); order.push_back(2); order.push_back(0);
     
     boost::shared_ptr< hoNDArray<float> > host_traj_dcw_shifted =
       permute( host_traj_dcw.get(), &order );
     
-    std::vector<unsigned int> dims_1d;
+    std::vector<unsigned long long> dims_1d;
     dims_1d.push_back(host_traj_dcw_shifted->get_size(0)*host_traj_dcw_shifted->get_size(1));
     
     {
@@ -881,7 +881,7 @@ namespace Gadgetron{
       *dcw = tmp;
     }
     
-    std::vector<unsigned int> dims_2d = dims_1d;
+    std::vector<unsigned long long> dims_2d = dims_1d;
     dims_2d.push_back(2);
     
     order.clear();
@@ -935,10 +935,10 @@ namespace Gadgetron{
     
     if( buffer_frames_per_rotation_[idx] == 1 ){ // Is this general enough to detect golden ratio type trajectories?
 
-      acc_buffer->setup( from_std_vector<unsigned int,2>(image_dimensions_recon_), image_dimensions_recon_os_, 
+      acc_buffer->setup( from_std_vector<unsigned long long,2>(image_dimensions_recon_), image_dimensions_recon_os_, 
 			 kernel_width_, num_coils_[idx], 1, buffer_length_in_rotations_ );
     }else{
-      acc_buffer->setup( from_std_vector<unsigned int,2>(image_dimensions_recon_), image_dimensions_recon_os_, 
+      acc_buffer->setup( from_std_vector<unsigned long long,2>(image_dimensions_recon_), image_dimensions_recon_os_, 
 			 kernel_width_, num_coils_[idx], buffer_length_in_rotations_, buffer_frames_per_rotation_[idx] );
     }
     reconfigure_[idx] = false;

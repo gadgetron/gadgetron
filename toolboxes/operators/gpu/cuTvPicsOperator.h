@@ -6,7 +6,7 @@
 
 namespace Gadgetron{
 
-  template<class T, unsigned int D> class cuTvPicsOperator 
+  template<class T, unsigned long long D> class cuTvPicsOperator 
     : public tvPicsOperator< cuNDArray<T>, cuTvOperator<T,D>, typename realType<T>::Type >
   {
   public:

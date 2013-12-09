@@ -9,7 +9,7 @@
 
 // Gadgetron includes
 #include "hoCKOpticalFlowSolver.h"
-#include "hoLinearResampleOperator_eigen.h"
+#include "hoLinearResampleOperator.h"
 #include "hoNDArray.h"
 #include "hoNDArray_fileio.h"
 #include "GadgetronTimer.h"
@@ -141,7 +141,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         typedef double _real;
         using namespace Gadgetron;
 
-        std::vector<unsigned int> dim_array(2);
+        std::vector<unsigned long long> dim_array(2);
         dim_array[0] = dims[0];
         dim_array[1] = dims[1];
 
@@ -151,7 +151,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         boost::shared_ptr< hoNDArray<_real> > moving_image(new hoNDArray<_real>(&dim_array));
         memcpy(moving_image->begin(), ptrSource, sizeof(_real)*numOfPixels);
 
-        boost::shared_ptr< hoLinearResampleOperator_eigen<_real,2> > R( new hoLinearResampleOperator_eigen<_real,2>() );
+        boost::shared_ptr< hoLinearResampleOperator<_real,2> > R( new hoLinearResampleOperator<_real,2>() );
 
         // Setup solver
         hoCKOpticalFlowSolver<_real,2> CK;

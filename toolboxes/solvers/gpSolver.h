@@ -21,7 +21,7 @@ namespace Gadgetron{
   
   public:
 
-    virtual void set_domain_dimensions(std::vector<unsigned int> *dims ){
+    virtual void set_domain_dimensions(std::vector<unsigned long long> *dims ){
       for (int i = 0;  i < operators.size(); i++) operators[i]->set_domain_dimensions(dims);
     }
     virtual ~gpSolver(){}
@@ -109,13 +109,13 @@ namespace Gadgetron{
       gpRegularizationOperator() : generalOperator<ARRAY_TYPE>(){
       }
 
-      gpRegularizationOperator(std::vector<unsigned int> *dims): generalOperator<ARRAY_TYPE>(){this->set_domain_dimensions(dims);};
+      gpRegularizationOperator(std::vector<unsigned long long> *dims): generalOperator<ARRAY_TYPE>(){this->set_domain_dimensions(dims);};
       gpRegularizationOperator(
 			       boost::shared_ptr<ARRAY_TYPE> _prior): generalOperator<ARRAY_TYPE>(){
 	prior = _prior;
       }
 
-      gpRegularizationOperator(boost::shared_ptr<ARRAY_TYPE> _prior,std::vector<unsigned int> *dims): generalOperator<ARRAY_TYPE>(){
+      gpRegularizationOperator(boost::shared_ptr<ARRAY_TYPE> _prior,std::vector<unsigned long long> *dims): generalOperator<ARRAY_TYPE>(){
 	prior = _prior;
 	set_domain_dimensions(dims);
       }
@@ -179,7 +179,7 @@ namespace Gadgetron{
       }
 
 
-      virtual void set_domain_dimensions(std::vector<unsigned int> *dims){
+      virtual void set_domain_dimensions(std::vector<unsigned long long> *dims){
 	generalOperator<ARRAY_TYPE>::set_domain_dimensions(dims);
 	op->set_domain_dimensions(dims);
 	if (op->get_codomain_dimensions()->size() == 0){
@@ -255,7 +255,7 @@ namespace Gadgetron{
       std::vector<boost::shared_ptr<linearOperator<ARRAY_TYPE> > > group;
       REAL threshold;
 
-      virtual void set_domain_dimensions(std::vector<unsigned int> *dims){
+      virtual void set_domain_dimensions(std::vector<unsigned long long> *dims){
 	generalOperator<ARRAY_TYPE>::set_domain_dimensions(dims);
 	for (int i = 0; i < group.size(); i++ ){
 	  boost::shared_ptr<linearOperator<ARRAY_TYPE> > op = group[i];

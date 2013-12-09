@@ -3,7 +3,7 @@
 
 using namespace Gadgetron;
 
-template<class REAL, unsigned int D> void
+template<class REAL, unsigned long long D> void
 cuNonCartesianKtSenseOperator<REAL,D>::mult_M( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate )
 {
   if( accumulate ){
@@ -12,12 +12,12 @@ cuNonCartesianKtSenseOperator<REAL,D>::mult_M( cuNDArray< complext<REAL> >* in, 
   
   // Make a copy of the input array as the fft transform in-place and we do not want to alter the input
   cuNDArray< complext<REAL> > tmp(*in); 
-  cuNDFFT<REAL>().fft( &tmp, D ); 
+  cuNDFFT<REAL>().fft( &tmp, (unsigned int)D ); 
   
   cuNonCartesianSenseOperator<REAL,D>::mult_M( &tmp, out, accumulate );
 }
 
-template<class REAL, unsigned int D> void
+template<class REAL, unsigned long long D> void
 cuNonCartesianKtSenseOperator<REAL,D>::mult_MH( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate )
 {  
   if( accumulate ){
@@ -25,7 +25,7 @@ cuNonCartesianKtSenseOperator<REAL,D>::mult_MH( cuNDArray< complext<REAL> >* in,
   }
 
   cuNonCartesianSenseOperator<REAL,D>::mult_MH( in, out, accumulate );
-  cuNDFFT<REAL>().ifft( out, D );
+  cuNDFFT<REAL>().ifft( out, (unsigned int)D );
 }
 
 //

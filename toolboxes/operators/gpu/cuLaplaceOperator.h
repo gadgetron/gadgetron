@@ -10,7 +10,7 @@
 
 namespace Gadgetron{
 
-  template < class T, unsigned int D> class EXPORTGPUOPERATORS cuLaplaceOperator : public laplaceOperator<D, cuNDArray<T> >
+  template < class T, unsigned long long D> class EXPORTGPUOPERATORS cuLaplaceOperator : public laplaceOperator<D, cuNDArray<T> >
   {    
   public:
     

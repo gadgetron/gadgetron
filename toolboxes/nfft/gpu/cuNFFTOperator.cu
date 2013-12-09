@@ -4,7 +4,7 @@
 
 namespace Gadgetron{
 
-  template<class REAL, unsigned int D> void
+  template<class REAL, unsigned long long D> void
   cuNFFTOperator<REAL,D>::mult_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate )
   {
     if( !in || !out ){
@@ -28,7 +28,7 @@ namespace Gadgetron{
     }
   }
 
-  template<class REAL, unsigned int D> void
+  template<class REAL, unsigned long long D> void
   cuNFFTOperator<REAL,D>::mult_MH( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate )
   {
     if( !in || !out ){
@@ -51,14 +51,14 @@ namespace Gadgetron{
     }
   }
 
-  template<class REAL, unsigned int D> void
+  template<class REAL, unsigned long long D> void
   cuNFFTOperator<REAL,D>::mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, bool accumulate )
   {
     if( !in || !out ){
       throw std::runtime_error("cuNFFTOperator::mult_MH_M : 0x0 input/output not accepted");
     }
     
-    boost::shared_ptr< std::vector<unsigned int> > codomain_dims = this->get_codomain_dimensions();
+    boost::shared_ptr< std::vector<unsigned long long> > codomain_dims = this->get_codomain_dimensions();
     if( codomain_dims.get() == 0x0 || codomain_dims->size() == 0 ){
       throw std::runtime_error("cuNFFTOperator::mult_MH_M : operator codomain dimensions not set");
     }
@@ -80,13 +80,13 @@ namespace Gadgetron{
     } 
   }
   
-  template<class REAL, unsigned int D> void
+  template<class REAL, unsigned long long D> void
   cuNFFTOperator<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W )
   {  
     plan_->setup( matrix_size, matrix_size_os, W );  
   }
 
-  template<class REAL, unsigned int D> void
+  template<class REAL, unsigned long long D> void
   cuNFFTOperator<REAL,D>::preprocess( cuNDArray<typename reald<REAL,D>::Type> *trajectory ) 
   {
     if( trajectory == 0x0 ){

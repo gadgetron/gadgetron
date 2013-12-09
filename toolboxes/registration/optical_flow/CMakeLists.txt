@@ -10,6 +10,7 @@ install(FILES
   registrationSolver.h
   multiresRegistrationSolver.h
   resampleOperator.h
+  opticalFlowSolver.h
   DESTINATION include)
 
 if(ARMADILLO_FOUND)

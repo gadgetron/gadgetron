@@ -6,13 +6,13 @@
 namespace Gadgetron{
 
   // Downsample
-  template<class REAL, unsigned int D> __global__ void
+  template<class REAL, unsigned long long D> __global__ void
   downsample_kernel( REAL *in, REAL *out, 
-		     vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
+		     vector_td<unsigned long long,D> matrix_size_in, vector_td<unsigned long long,D> matrix_size_out,
 		     unsigned int num_elements, unsigned int num_batches )
   {
     // We have started a thread for each output element
-    typedef vector_td<unsigned int,D> uintd;
+    typedef vector_td<unsigned long long,D> uintd;
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
     const unsigned int frame_offset = idx/num_elements;
   
@@ -21,7 +21,7 @@ namespace Gadgetron{
       const uintd co_out = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
       const uintd co_in = co_out << 1;
 
-      const uintd twos = to_vector_td<unsigned int,D>(2);
+      const uintd twos = to_vector_td<unsigned long long,D>(2);
       const unsigned int num_adds = 1 << D;
       unsigned int actual_adds = 0;
 
@@ -39,7 +39,7 @@ namespace Gadgetron{
   }
 
   // Downsample
-  template<class REAL, unsigned int D> 
+  template<class REAL, unsigned long long D> 
   boost::shared_ptr< cuNDArray<REAL> > downsample( cuNDArray<REAL> *in )
   {
     // A few sanity checks 
@@ -58,7 +58,7 @@ namespace Gadgetron{
       }
     }
     
-    typename uintd<D>::Type matrix_size_in = from_std_vector<unsigned int,D>( *in->get_dimensions() );
+    typename uintd<D>::Type matrix_size_in = from_std_vector<unsigned long long,D>( *in->get_dimensions() );
     typename uintd<D>::Type matrix_size_out = matrix_size_in >> 1;
 
     for( unsigned int d=0; d<D; d++ ){
@@ -77,7 +77,7 @@ namespace Gadgetron{
     dim3 blockDim; dim3 gridDim;
     setup_grid( number_of_elements, &blockDim, &gridDim, number_of_batches );
     
-    std::vector<unsigned int> dims = to_std_vector(matrix_size_out);
+    std::vector<unsigned long long> dims = to_std_vector(matrix_size_out);
     for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
       dims.push_back(in->get_size(d));
     }
@@ -96,8 +96,8 @@ namespace Gadgetron{
   // Utility to check if all neighbors required for the linear interpolation exists
   // ... do not include dimensions of size 1
 
-  template<class REAL, unsigned int D> __device__ 
-  bool is_border_pixel( vector_td<unsigned int,D> co, vector_td<unsigned int,D> dims )
+  template<class REAL, unsigned long long D> __device__ 
+  bool is_border_pixel( vector_td<unsigned long long,D> co, vector_td<unsigned long long,D> dims )
   {
     for( unsigned int dim=0; dim<D; dim++ ){
       if( dims[dim] > 1 && ( co[dim] == 0 || co[dim] == (dims[dim]-1) ) )
@@ -107,13 +107,13 @@ namespace Gadgetron{
   }
 
   // Linear upsampling
-  template<class REAL, unsigned int D> __global__ void
+  template<class REAL, unsigned long long D> __global__ void
   upsample_lin_kernel( REAL *in, REAL *out,
-		       vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
+		       vector_td<unsigned long long,D> matrix_size_in, vector_td<unsigned long long,D> matrix_size_out,
 		       unsigned int num_elements, unsigned int num_batches )
   {
     // We have started a thread for each output element
-    typedef vector_td<unsigned int,D> uintd;
+    typedef vector_td<unsigned long long,D> uintd;
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
     
     if( idx < num_elements*num_batches ){
@@ -133,13 +133,13 @@ namespace Gadgetron{
 	  // Determine coordinate of neighbor in input
 	  //
 
-	  const uintd twos = to_vector_td<unsigned int,D>(2);
+	  const uintd twos = to_vector_td<unsigned long long,D>(2);
 	  const uintd stride = idx_to_co<D>( i, twos );
 
 	  if( weak_greater_equal( stride, matrix_size_out ) ) continue; // To allow array dimensions of 1
 
 	  // Be careful about dimensions of size 1
-	  uintd ones = to_vector_td<unsigned int,D>(1);
+	  uintd ones = to_vector_td<unsigned long long,D>(1);
 	  for( unsigned int d=0; d<D; d++ ){
 	    if( matrix_size_out[d] == 1 )
 	      ones[d] = 0;
@@ -149,7 +149,7 @@ namespace Gadgetron{
 	  // Read corresponding pixel value
 	  //
 	
-	  const unsigned int in_idx = co_to_idx<D>(co_in, matrix_size_in)+frame_idx*prod(matrix_size_in);
+	  const unsigned long long in_idx = co_to_idx<D>(co_in, matrix_size_in)+frame_idx*prod(matrix_size_in);
 	  REAL value = in[in_idx];
 	
 	  // Determine weight
@@ -179,7 +179,7 @@ namespace Gadgetron{
   }
 
   // Linear interpolation upsampling
-  template<class REAL, unsigned int D> boost::shared_ptr< cuNDArray<REAL> >
+  template<class REAL, unsigned long long D> boost::shared_ptr< cuNDArray<REAL> >
   upsample( cuNDArray<REAL> *in )
   {
     // A few sanity checks 
@@ -192,7 +192,7 @@ namespace Gadgetron{
       throw std::runtime_error( "upsample(): the number of array dimensions should be at least D");
     }
     
-    typename uintd<D>::Type matrix_size_in = from_std_vector<unsigned int,D>( *in->get_dimensions() );
+    typename uintd<D>::Type matrix_size_in = from_std_vector<unsigned long long,D>( *in->get_dimensions() );
     typename uintd<D>::Type matrix_size_out = matrix_size_in << 1;
 
     for( unsigned int d=0; d<D; d++ ){
@@ -211,7 +211,7 @@ namespace Gadgetron{
     dim3 blockDim; dim3 gridDim;
     setup_grid( number_of_elements, &blockDim, &gridDim, number_of_batches );
     
-    std::vector<unsigned int> dims = to_std_vector(matrix_size_out);
+    std::vector<unsigned long long> dims = to_std_vector(matrix_size_out);
     for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
       dims.push_back(in->get_size(d));
     }

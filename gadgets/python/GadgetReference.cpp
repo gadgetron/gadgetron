@@ -32,7 +32,7 @@ namespace Gadgetron{
     PyArrayObject* arrPtr = PyArray_GETCONTIGUOUS((PyArrayObject*)arr.ptr());//PyArray_FromObject(arr.ptr(),NPY_COMPLEX64,1,5); //So.... this is probably really really really bad.
     int ndims = PyArray_NDIM(arrPtr);
     npy_intp* dims = PyArray_DIMS(arrPtr);
-    std::vector<unsigned int> dimensions(ndims);
+    std::vector<unsigned long long> dimensions(ndims);
     for (int i = 0; i < ndims; i++) dimensions[ndims-i-1] = static_cast<unsigned int>(dims[i]);
 
     GadgetContainerMessage< T >*         m1 = new GadgetContainerMessage< T >;

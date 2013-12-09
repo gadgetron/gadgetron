@@ -10,10 +10,10 @@ namespace Gadgetron{
   // Helpers
   //
   
-  template<unsigned int D> inline bool
+  template<unsigned long long D> inline bool
   is_border_pixel_for_stride( typename intd<D>::Type stride, typename uintd<D>::Type co, typename uintd<D>::Type dims )
   {
-    for( unsigned int d=0; d<D; d++ ){
+    for( unsigned long long d=0; d<D; d++ ){
       if( stride.vec[d] == -1 ){
 	if( co.vec[d] == 0 ){
 	  return true;
@@ -28,12 +28,12 @@ namespace Gadgetron{
     return false;
   }
 
-  template<unsigned int i, unsigned int j> struct Pow
+  template<unsigned long long i, unsigned long long j> struct Pow
   {
     enum { Value = i*Pow<i,j-1>::Value };
   };
   
-  template <unsigned int i> struct Pow<i,1>
+  template <unsigned long long i> struct Pow<i,1>
   {
     enum { Value = i };
   };
@@ -42,7 +42,7 @@ namespace Gadgetron{
   // Implementation
   //
 
-  template<class T, unsigned int D> boost::shared_ptr< hoNDArray<T> >
+  template<class T, unsigned long long D> boost::shared_ptr< hoNDArray<T> >
   hoCKOpticalFlowSolver<T,D>::core_solver( hoNDArray<T> *_gradient_image, hoNDArray<T> *_stencil_image )
   {
     // Sanity checks
@@ -59,7 +59,7 @@ namespace Gadgetron{
     // The dimensions of the displacement field should match the gradient field
     //
   
-    boost::shared_ptr< std::vector<unsigned int> > disp_dims = _gradient_image->get_dimensions();
+    boost::shared_ptr< std::vector<unsigned long long> > disp_dims = _gradient_image->get_dimensions();
     boost::shared_ptr< hoNDArray<T> > displacements_ping( new hoNDArray<T>(disp_dims.get()) );
     boost::shared_ptr< hoNDArray<T> > displacements_pong( new hoNDArray<T>(disp_dims.get()) );
     clear(displacements_ping.get());
@@ -70,18 +70,18 @@ namespace Gadgetron{
     T *shared_mem = _shared_mem->get_data_ptr();
     clear( _shared_mem.get());
 
-    typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>( *disp_dims );  
-    unsigned int number_of_elements = prod(matrix_size);
-    unsigned int num_batches = 1;
+    typename uintd<D>::Type matrix_size = from_std_vector<unsigned long long,D>( *disp_dims );  
+    unsigned long long number_of_elements = prod(matrix_size);
+    unsigned long long num_batches = 1;
 
-    for( unsigned int d=D; d<_gradient_image->get_number_of_dimensions()-1; d++ ){
+    for( unsigned long long d=D; d<_gradient_image->get_number_of_dimensions()-1; d++ ){
       num_batches *= _gradient_image->get_size(d);
     }
   
     // Get ready
     // 
 
-    unsigned int iteration_no = 0;
+    unsigned long long iteration_no = 0;
     hoNDArray<T> *ping = displacements_ping.get();
     hoNDArray<T> *pong = displacements_pong.get(); 
 
@@ -100,13 +100,13 @@ namespace Gadgetron{
       }
     
       // Continuation flag used for early Jacobi termination
-      unsigned int continue_flag = 0;
+      unsigned long long continue_flag = 0;
 
       // Number of elements per batch
-      const unsigned int num_elements_per_batch = prod(matrix_size);
+      const unsigned long long num_elements_per_batch = prod(matrix_size);
   
       // Number of elements per dim
-      const unsigned int num_elements_per_dim = num_elements_per_batch*num_batches;
+      const unsigned long long num_elements_per_dim = num_elements_per_batch*num_batches;
 
       T *in_disp = ping->get_data_ptr();
       T *out_disp = pong->get_data_ptr();
@@ -117,29 +117,29 @@ namespace Gadgetron{
       // Find the average velocities (shared memory)
       //
       
-      for( unsigned int dim = 0; dim < D+1; dim++ ){
+      for( unsigned long long dim = 0; dim < D+1; dim++ ){
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-      for( int idx = 0; idx < num_elements_per_dim; idx++ ){
+	for( int idx = 0; idx < (int)num_elements_per_dim; idx++ ){
 	  	  
 	  // Index to the shared memory
-	  const unsigned int shared_idx = dim*num_elements_per_dim+idx;
+	  const unsigned long long shared_idx = dim*num_elements_per_dim+idx;
 	  
 	  // Batch idx (second slowest varying dimension)   
-	  const unsigned int batch_idx = idx/num_elements_per_batch;
+	  const unsigned long long batch_idx = idx/num_elements_per_batch;
 	  
 	  // Local index to the image (or batch in our terminology)
-	  const unsigned int idx_in_batch = idx-batch_idx*num_elements_per_batch;
+	  const unsigned long long idx_in_batch = idx-batch_idx*num_elements_per_batch;
     	  
 	  if( stencil_image && stencil_image[idx_in_batch] > T(0) )
 	    continue;
 
 	  // Local co to the image
 	  const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );    
-	  const typename intd<D>::Type zeros  = to_vector_td<int,D>(0);
-	  const typename intd<D>::Type ones   = to_vector_td<int,D>(1);
-	  const typename intd<D>::Type threes = to_vector_td<int,D>(3);
+	  const typename intd<D>::Type zeros  = to_vector_td<long long,D>(0);
+	  const typename intd<D>::Type ones   = to_vector_td<long long,D>(1);
+	  const typename intd<D>::Type threes = to_vector_td<long long,D>(3);
 	  
 	  const int num_neighbors = Pow<3,D>::Value;
 	  T num_contribs = T(0);
@@ -149,18 +149,18 @@ namespace Gadgetron{
 	  // Compute average of neighbors
 	  //
 	  
-	  for( int i=0; i<num_neighbors; i++ ){
+	  for( long long i=0; i<num_neighbors; i++ ){
 	    
 	    // Find the stride of the neighbor {-1, 0, 1}^D
 	    const typename intd<D>::Type stride = idx_to_co<D>( i, threes ) - ones;
 	    
-	    unsigned int neighbor_idx;
+	    unsigned long long neighbor_idx;
 	    
-	    const unsigned int base_offset = dim*num_elements_per_dim + batch_idx*num_elements_per_batch;
+	    const unsigned long long base_offset = dim*num_elements_per_dim + batch_idx*num_elements_per_batch;
 	    
 	    // Verify that the neighbor is not out of bounds (and not the thread itself)
 	    if( !is_border_pixel_for_stride<D>( stride, co, matrix_size ) && !(stride==zeros) ){	
-	      neighbor_idx = (unsigned int) co_to_idx<D>( to_intd(co)+stride, to_intd(matrix_size)) + base_offset;
+	      neighbor_idx = (unsigned long long) co_to_idx<D>( to_intd(co)+stride, to_intd(matrix_size)) + base_offset;
 	    }
 	    else{
 	      neighbor_idx = idx_in_batch + base_offset;
@@ -181,20 +181,19 @@ namespace Gadgetron{
       
       const T disp_thresh_sqr = this->limit_*this->limit_;
 
-      for( unsigned int dim = 0; dim < D+1; dim++ ){
+      for( unsigned long long dim = 0; dim < D+1; dim++ ){
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-      for( int idx = 0; idx < num_elements_per_dim; idx++ ){
-	  
+	for( int idx = 0; idx < num_elements_per_dim; idx++ ){  
 	  // Index to the shared memory
-	  const unsigned int shared_idx = dim*num_elements_per_dim+idx;
+	  const unsigned long long shared_idx = dim*num_elements_per_dim+idx;
 	  
 	  // Batch idx (second slowest varying dimension)   
-	  const unsigned int batch_idx = idx/num_elements_per_batch;
+	  const unsigned long long batch_idx = idx/num_elements_per_batch;
 	  
 	  // Local index to the image (or batch in our terminology)
-	  const unsigned int idx_in_batch = idx-batch_idx*num_elements_per_batch;
+	  const unsigned long long idx_in_batch = idx-batch_idx*num_elements_per_batch;
     	  
 	  if( stencil_image && stencil_image[idx_in_batch] > T(0) )
 	    continue;
@@ -207,9 +206,9 @@ namespace Gadgetron{
 	  // Contributions from the spatial dimensions
 	  //
 	  
-	  for( unsigned int d=0; d<D; d++ ){
+	  for( unsigned long long d=0; d<D; d++ ){
 	    derivatives.vec[d] = gradient_image[d*num_elements_per_dim+idx];
-	    const unsigned int shared_idx_d = d*num_elements_per_dim+idx;
+	    const unsigned long long shared_idx_d = d*num_elements_per_dim+idx;
 	    phi += (shared_mem[shared_idx_d]*derivatives.vec[d]);
 	    norm += (derivatives.vec[d]*derivatives.vec[d]);
 	  }

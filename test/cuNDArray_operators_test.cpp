@@ -12,12 +12,12 @@ using testing::Types;
 template <typename T> class cuNDArray_operators_TestReal : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+    unsigned long long vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    dims = std::vector<unsigned long long>(vdims,vdims+sizeof(vdims)/sizeof(unsigned long long));
     Array = cuNDArray<T>(&dims);
     Array2 = cuNDArray<T>(&dims);
   }
-  std::vector<unsigned int> dims;
+  std::vector<unsigned long long> dims;
   cuNDArray<T> Array;
   cuNDArray<T> Array2;
 };
@@ -25,12 +25,12 @@ protected:
 template <typename T> class cuNDArray_operators_TestCplx : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+    unsigned long long vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    dims = std::vector<unsigned long long>(vdims,vdims+sizeof(vdims)/sizeof(unsigned long long));
     Array = cuNDArray<T>(&dims);
     Array2 = cuNDArray<T>(&dims);
   }
-  std::vector<unsigned int> dims;
+  std::vector<unsigned long long> dims;
   cuNDArray<T> Array;
   cuNDArray<T> Array2;
 };

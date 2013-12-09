@@ -24,11 +24,11 @@ namespace Gadgetron{
     // The domain and codomain dimensions of this container cannot be set. 
     // They should be set indirectly through the contained operators instead.
     //
-    virtual void set_domain_dimensions( std::vector<unsigned int>* ){
+    virtual void set_domain_dimensions( std::vector<unsigned long long>* ){
       throw std::runtime_error( "Error: encodingOperatorContainer::set_domain_dimensions() : operation not supported." );
     }
     
-    virtual void set_codomain_dimensions( std::vector<unsigned int>* ){
+    virtual void set_codomain_dimensions( std::vector<unsigned long long>* ){
       throw std::runtime_error( "Error: encodingOperatorContainer::set_codomain_dimensions() : operation not supported." );
     }
     
@@ -36,41 +36,41 @@ namespace Gadgetron{
     // The domain should match between the individual operators.
     // The codomain is a concatenation of the indivudial operators' domains.
     //
-    virtual boost::shared_ptr< std::vector<unsigned int> > get_domain_dimensions() 
+    virtual boost::shared_ptr< std::vector<unsigned long long> > get_domain_dimensions() 
     { 
       if( operators_.size() == 0 ){
 	throw std::runtime_error( "Error: encodingOperatorContainer::get_domain_dimensions() : no operators present." );
       }
       
-      boost::shared_ptr< std::vector<unsigned int> > dims = (operators_[0])->get_domain_dimensions();
-      for( unsigned int i=1; i<operators_.size(); i++ )
+      boost::shared_ptr< std::vector<unsigned long long> > dims = (operators_[0])->get_domain_dimensions();
+      for( unsigned long long i=1; i<operators_.size(); i++ )
 	if( *dims != *((operators_[i])->get_domain_dimensions()) ){
 	  throw std::runtime_error( "Error: encodingOperatorContainer::get_domain_dimensions() : inconsistent operator dimensions." );
 	}
       return dims;
     }
     
-    virtual boost::shared_ptr< std::vector<unsigned int> > get_codomain_dimensions() 
+    virtual boost::shared_ptr< std::vector<unsigned long long> > get_codomain_dimensions() 
     { 
       if( num_elements_ == 0 ){
 	throw std::runtime_error( "Error: encodingOperatorContainer::get_codomain_dimensions() : no operators present." );
       }
       
-      std::vector<unsigned int> *dims = new std::vector<unsigned int>();
+      std::vector<unsigned long long> *dims = new std::vector<unsigned long long>();
       dims->push_back(num_elements_);
-      return boost::shared_ptr< std::vector<unsigned int> >(dims);
+      return boost::shared_ptr< std::vector<unsigned long long> >(dims);
     }
 
     // Get domain and codomain for the individual operators
     //
-    virtual boost::shared_ptr< std::vector<unsigned int> > get_domain_dimensions(unsigned int i) 
+    virtual boost::shared_ptr< std::vector<unsigned long long> > get_domain_dimensions(unsigned long long i) 
     { 
       if( i>=operators_.size() )
 	throw std::runtime_error("encodingOperatorContainer::get_domain_dimensions : illegal index provided");
       return operators_[i]->get_domain_dimensions(); 
     }
   
-    virtual boost::shared_ptr< std::vector<unsigned int> > get_codomain_dimensions(unsigned int i) 
+    virtual boost::shared_ptr< std::vector<unsigned long long> > get_codomain_dimensions(unsigned long long i) 
     { 
       if( i>=operators_.size() )
 	throw std::runtime_error("encodingOperatorContainer::get_codomain_dimensions : illegal index provided");
@@ -92,21 +92,21 @@ namespace Gadgetron{
 	throw std::runtime_error("encodingOperatorContainter::create_codomain: number of operators and number of codomains do no match");
 
       boost::shared_ptr<ARRAY_TYPE> codomain(new ARRAY_TYPE(get_codomain_dimensions()));
-      unsigned int offset = 0;
+      unsigned long long offset = 0;
 
-      for (unsigned int i = 0; i < operators_.size(); i++){
+      for (unsigned long long i = 0; i < operators_.size(); i++){
 
 	if (!codoms[i]->dimensions_equal(get_codomain_dimensions(i).get())){
 	  std::stringstream ss;
 	  ss << "encodingOperatorContainter::create_codomain: input codomain " << i << " does not match corresponding operator codomain" << std::endl;
 	  ss << "Input codomain: ";
-	  std::vector<unsigned int> ico = *codoms[i]->get_dimensions();
-	  for (unsigned int k = 0; k < ico.size(); k++) ss << ico[k] << " ";
+	  std::vector<unsigned long long> ico = *codoms[i]->get_dimensions();
+	  for (unsigned long long k = 0; k < ico.size(); k++) ss << ico[k] << " ";
 	  ss << std::endl;
 	  ss << "Operator codomain: ";
 	  ico = *get_codomain_dimensions(i);
 	  std::cout << "SIZE: " << ico.size() << std::endl;
-	  for (unsigned int k = 0; k < ico.size(); k++) ss << ico[k] << " ";
+	  for (unsigned long long k = 0; k < ico.size(); k++) ss << ico[k] << " ";
 	  ss << std::endl;
 	  throw std::runtime_error(ss.str());
 	}
@@ -122,7 +122,7 @@ namespace Gadgetron{
 
     // Get individual operators
     //
-    boost::shared_ptr< linearOperator<ARRAY_TYPE> > get_operator(unsigned int i)
+    boost::shared_ptr< linearOperator<ARRAY_TYPE> > get_operator(unsigned long long i)
     {
       if( i>=operators_.size() )
 	throw std::runtime_error("encodingOperatorContainer::get_operator : illegal index provided");
@@ -131,7 +131,7 @@ namespace Gadgetron{
 
     // Get pointer offset into codomain for individual operators "sub-codomains"
     //
-    unsigned int get_offset(unsigned int i)
+    unsigned long long get_offset(unsigned long long i)
     {
       if( i>=operators_.size() )
 	throw std::runtime_error("encodingOperatorContainer::get_offset : illegal index provided");
@@ -142,14 +142,14 @@ namespace Gadgetron{
     //
     void add_operator( boost::shared_ptr< linearOperator<ARRAY_TYPE> > op )
     {
-      boost::shared_ptr< std::vector<unsigned int> > codomain = op->get_codomain_dimensions();
+      boost::shared_ptr< std::vector<unsigned long long> > codomain = op->get_codomain_dimensions();
       
       if( codomain->size() == 0 ){
 	throw std::runtime_error("encodingOperatorContainer::add_operator : codomain dimensions not set on operator");
       }
 
-      unsigned int elements = 1;
-      for (unsigned int i=0; i<codomain->size(); i++){
+      unsigned long long elements = 1;
+      for (unsigned long long i=0; i<codomain->size(); i++){
 	elements *= codomain->at(i);
       }
     
@@ -169,7 +169,7 @@ namespace Gadgetron{
   
     virtual void mult_M( ARRAY_TYPE* in, ARRAY_TYPE* out, bool accumulate = false )
     {
-      for (unsigned int i=0; i<operators_.size(); i++){
+      for (unsigned long long i=0; i<operators_.size(); i++){
 	ARRAY_TYPE tmp_data(operators_[i]->get_codomain_dimensions(),out->get_data_ptr()+offsets_[i]);
 	operators_[i]->mult_M( in, &tmp_data, accumulate );
       }
@@ -179,7 +179,7 @@ namespace Gadgetron{
     {
       ARRAY_TYPE tmp_image(get_domain_dimensions());
         
-      for (unsigned int i=0; i<operators_.size(); i++){
+      for (unsigned long long i=0; i<operators_.size(); i++){
       
 	boost::shared_ptr< linearOperator<ARRAY_TYPE> > op = operators_[i];
 	ARRAY_TYPE tmp_data(op->get_codomain_dimensions(),in->get_data_ptr()+offsets_[i]);
@@ -204,7 +204,7 @@ namespace Gadgetron{
 
       ARRAY_TYPE tmp_image(get_domain_dimensions());
     
-      for (unsigned int i=0; i<operators_.size(); i++){
+      for (unsigned long long i=0; i<operators_.size(); i++){
       
 	boost::shared_ptr< linearOperator<ARRAY_TYPE> > op = operators_[i];
       
@@ -229,7 +229,7 @@ namespace Gadgetron{
   
   protected:
     std::vector< boost::shared_ptr< linearOperator<ARRAY_TYPE> > > operators_;
-    std::vector<unsigned int> offsets_;
-    unsigned int num_elements_;
+    std::vector<unsigned long long> offsets_;
+    unsigned long long num_elements_;
   };
 }

@@ -157,7 +157,7 @@ namespace Gadgetron{
       // Calculate the trajectory and weights
       calc_traj(xgrad, ygrad, samples_per_interleave_, Nints_, sample_time, krmax_, &x_trajectory, &y_trajectory, &weighting);
 
-      std::vector<unsigned int> trajectory_dimensions;
+      std::vector<unsigned long long> trajectory_dimensions;
       trajectory_dimensions.push_back(3);
       trajectory_dimensions.push_back(samples_per_interleave_*Nints_);
 
@@ -199,7 +199,7 @@ namespace Gadgetron{
     // Prepare for a new array continuation for the trajectory/weights of the incoming profile
     //
 
-    std::vector<unsigned int> trajectory_dimensions;
+    std::vector<unsigned long long> trajectory_dimensions;
     trajectory_dimensions.push_back(3);
     trajectory_dimensions.push_back(samples_per_interleave_);
     

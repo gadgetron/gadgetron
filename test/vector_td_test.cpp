@@ -19,14 +19,14 @@ using testing::Types;
 template <typename T> class vector_td_Test : public ::testing::Test {
 	protected:
 	 virtual void SetUp() {
-		 unsigned int vdims[] = {37}; //Using prime numbers for setup because they are messy
-		 dims= std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+		 unsigned long long vdims[] = {37}; //Using prime numbers for setup because they are messy
+		 dims= std::vector<unsigned long long>(vdims,vdims+sizeof(vdims)/sizeof(unsigned long long));
 		 cuData = cuNDArray<vector_td<T,3> >(&dims);
 		 cuData2 = cuNDArray<vector_td<T,3> >(&dims);
 	}
 	 cuNDArray<vector_td<T,3> > cuData;
 	 cuNDArray<vector_td<T,3> > cuData2;
-	 std::vector<unsigned int> dims;
+	 std::vector<unsigned long long> dims;
 
 
 };

@@ -13,7 +13,7 @@
 
 namespace Gadgetron{
 
-  template <class REAL, unsigned int D> class EXPORTGPUOPERATORS cuConvolutionOperator 
+  template <class REAL, unsigned long long D> class EXPORTGPUOPERATORS cuConvolutionOperator 
     : public convolutionOperator<cuNDArray<complext<REAL> >, D >
   {
     

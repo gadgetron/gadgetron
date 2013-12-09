@@ -10,7 +10,7 @@
 
 namespace Gadgetron{
 
-  template<class T, unsigned int D> __global__ void
+  template<class T, unsigned long long D> __global__ void
   first_order_partial_derivative_kernel( typename intd<D>::Type stride, 
 					 typename intd<D>::Type dims, 
 					 T *in, T *out )
@@ -32,7 +32,7 @@ namespace Gadgetron{
     }
   }
 
-  template<class T, unsigned int D> __global__ void
+  template<class T, unsigned long long D> __global__ void
   second_order_partial_derivative_kernel( typename intd<D>::Type forwards_stride, 
 					  typename intd<D>::Type adjoint_stride, 
 					  typename intd<D>::Type dims, 
@@ -57,7 +57,7 @@ namespace Gadgetron{
     }
   }
 
-  template< class T, unsigned int D> void
+  template< class T, unsigned long long D> void
   cuPartialDerivativeOperator<T,D>::compute_partial_derivative( typename intd<D>::Type stride,
 								cuNDArray<T> *in, 
 								cuNDArray<T> *out, 
@@ -75,7 +75,7 @@ namespace Gadgetron{
 
     if (!accumulate) clear(out);
     
-    typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>( *(in->get_dimensions().get()) ));     
+    typename intd<D>::Type dims = to_intd( from_std_vector<unsigned long long,D>( *(in->get_dimensions().get()) ));     
     dim3 dimBlock( dims.vec[0] );
     dim3 dimGrid( 1, dims.vec[D-1] );
   
@@ -88,7 +88,7 @@ namespace Gadgetron{
     CHECK_FOR_CUDA_ERROR();
   }
 
-  template<class T, unsigned int D> void
+  template<class T, unsigned long long D> void
   cuPartialDerivativeOperator<T,D>::compute_second_order_partial_derivative( typename intd<D>::Type forwards_stride,
 									     typename intd<D>::Type adjoint_stride, 
 									     cuNDArray<T> *in, cuNDArray<T> *out, 
@@ -106,7 +106,7 @@ namespace Gadgetron{
 
     if (!accumulate) clear(out);
 
-    typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>( *(in->get_dimensions().get()) ));
+    typename intd<D>::Type dims = to_intd( from_std_vector<unsigned long long,D>( *(in->get_dimensions().get()) ));
     dim3 dimBlock( dims.vec[0] );
     dim3 dimGrid( 1, dims.vec[D-1] );
   

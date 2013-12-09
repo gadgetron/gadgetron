@@ -9,12 +9,20 @@ include_directories(
 )
 
 cuda_add_library(gpureg SHARED 
-  cuOpticalFlowSolver.cu 
-  cuHSOpticalFlowSolver.cu 
-  cuCKOpticalFlowSolver.cu 
-  cuResampleOperator.cu 
-  cuLinearResampleOperator.cu
-  cuRegistration_utils.cu
+    cuCKOpticalFlowSolver.h
+    cuHSOpticalFlowSolver.h
+    cuLinearResampleOperator.h
+    cuOpticalFlowSolver.h
+    cuRegistration_utils.h
+    cuResampleOperator.h
+    cuResampleOperator_macros.h
+    gpureg_export.h
+    cuOpticalFlowSolver.cu 
+    cuHSOpticalFlowSolver.cu 
+    cuCKOpticalFlowSolver.cu 
+    cuResampleOperator.cu 
+    cuLinearResampleOperator.cu
+    cuRegistration_utils.cu
   )
 
 target_link_libraries(gpureg 

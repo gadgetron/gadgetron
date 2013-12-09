@@ -45,7 +45,16 @@ public:
 				return GADGET_FAIL;
 			}
 
-			if (dataset_.appendArray(*data->get_dimensions(),data->get_data_ptr(), img_varname.c_str())  < 0) {
+            std::vector<unsigned long long> dim = *data->get_dimensions();
+            std::vector<unsigned int> dim2(dim.size());
+
+            unsigned long long ii;
+            for ( ii=0; ii<dim.size(); ii++ )
+            {
+                dim2[ii] = dim[ii];
+            }
+
+			if (dataset_.appendArray(dim2,data->get_data_ptr(), img_varname.c_str())  < 0) {
 				GADGET_DEBUG1("Failed to write image data\n");
 				return GADGET_FAIL;
 			};

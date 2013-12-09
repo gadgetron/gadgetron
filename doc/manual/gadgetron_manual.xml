@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <book version="5.0" xmlns="http://docbook.org/ns/docbook"
       xmlns:xlink="http://www.w3.org/1999/xlink"
       xmlns:xi="http://www.w3.org/2001/XInclude"
@@ -30,15 +30,25 @@ National Institutes of Health, Bethesda, MD, USA</address>
 
     <address>Department of Computer Science and Department of Clinical Medicine
 Aarhus University, Denmark</address>
+    
+    <author>
+      <personname><honorific>Dr</honorific> <firstname>Hui
+      </firstname> <surname>Xue</surname></personname>
+
+      <email>hui.xue@nih.gov</email>
+    </author>
+
+    <address>National Heart, Lung, and Blood Institute
+National Institutes of Health, Bethesda, MD, USA</address>
 
     <author>
       <personname><firstname>Revision</firstname>
-      <surname>1.1</surname></personname>
+      <surname>1.2</surname></personname>
 
       <email/>
     </author>
 
-    <edition>1.1</edition>
+    <edition>1.2</edition>
   </info>
 
   <chapter>
@@ -78,6 +88,57 @@ Aarhus University, Denmark</address>
     <sect1>
       <title>Revision History</title>
 
+    <sect2>
+        <title>Version 2.5</title>
+
+        <para>Version 2.5 contains a number of extension and enhancements to the Gadgetron. 
+            In particular, a toolbox, named Gadgetron Plus or GtPlus is added to the package.
+            GtPlus toolbox implements the complete reconstruction workflow for ISMRMRD data format 
+            and different parallel imaging modes (embedded, interleaved, seperate etc.). Multiple 
+            linear and non-linear reconstruction algorithms are implemented in this toolbox. The data 
+            accumulation and reconstruction triggering scheme are extended to support on-the-fly reconstruction.
+            Another major extension is to extend the Gadgetron to support cloud computing. This feature is named as 
+            GtPlus Cloud. 
+            A non-exhaustive list of changes can be found below:</para>
+
+        <para><itemizedlist>
+            <listitem>
+              <para>The <classname>GadgetMessageAcquisition</classname>,
+              <classname>GadgetMessageImage</classname>, etc. (previously used
+              to describe MRI raw data and images) have been replaced with the
+              corresponding classes from the ISMRMRD library.</para>
+            </listitem>
+
+            <listitem>
+              <para>There is now a Gadgetron configuration file
+              (<filename>gadgetron.xml</filename>) used to control the port
+              number of the Gadgetron when starting. That makes it easier to
+              maintain the same port for a given installation without
+              supplying it on the command line.</para>
+            </listitem>
+
+            <listitem>
+              <para>The dependency on TinyXML has been almost entirely
+              removed. We are now using a class representations of headers and
+              configuration generated with CodeSynthesis XSD
+              (<uri>http://www.codesynthesis.com/products/xsd/</uri>).</para>
+            </listitem>
+
+            <listitem>
+              <para>All XML representations now have schema definitions to
+              make it easier to validate configuration files etc.</para>
+            </listitem>
+
+            <listitem>
+              <para>New toolbox functionality.</para>
+            </listitem>
+
+            <listitem>
+              <para>Various bug fixes.</para>
+            </listitem>
+          </itemizedlist></para>
+      </sect2>
+        
       <sect2>
         <title>Version 1.1</title>
 

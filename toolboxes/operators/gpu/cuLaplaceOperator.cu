@@ -20,7 +20,7 @@ namespace Gadgetron{
     enum { Value = i};
   };
 
-  template<class T, unsigned int D, unsigned int dim> class inner_laplace_functor{
+  template<class T, unsigned long long D, unsigned int dim> class inner_laplace_functor{
   public:
 		static __device__ __inline__ void apply(T& val,const T* in, const typename intd<D>::Type dims,const typename intd<D>::Type co, typename intd<D>::Type& stride){
 			for (int d = -1; d < 2; d++)
@@ -28,7 +28,7 @@ namespace Gadgetron{
 				inner_laplace_functor<T,D,dim-1>::apply(val,in,dims,co,stride);
 		}
   };
-  template<class T, unsigned int D> class inner_laplace_functor<T,D,0>{
+  template<class T, unsigned long long D> class inner_laplace_functor<T,D,0>{
   public:
   	static __device__ __inline__ void apply(T& val,const T* in, const typename intd<D>::Type dims,const typename intd<D>::Type co, typename intd<D>::Type& stride){
   		typename intd<D>::Type coN = (co+dims+stride)%dims;
@@ -36,7 +36,7 @@ namespace Gadgetron{
   	}
   };
 
-  template<class REAL, class T, unsigned int D> __global__ void
+  template<class REAL, class T, unsigned long long D> __global__ void
   laplace_kernel( typename intd<D>::Type dims, T *in, T *out )
   {  
     const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
@@ -55,7 +55,7 @@ namespace Gadgetron{
     }
   }
 
-  template< class T, unsigned int D> void
+  template< class T, unsigned long long D> void
   cuLaplaceOperator<T,D>::compute_laplace( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate )
   {
   
@@ -64,7 +64,7 @@ namespace Gadgetron{
 
     }
   
-    typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>( *(in->get_dimensions().get()) ));
+    typename intd<D>::Type dims = to_intd( from_std_vector<unsigned long long,D>( *(in->get_dimensions().get()) ));
 
     dim3 dimBlock( dims[0] );
     dim3 dimGrid( prod(dims)/dims[0] );

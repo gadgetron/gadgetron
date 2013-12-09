@@ -15,7 +15,7 @@ Pure virtual functions are expected to do the actual work
 
 namespace Gadgetron{
 
-    template<class ARRAY_TYPE_REAL, unsigned int D> class opticalFlowSolver 
+    template<class ARRAY_TYPE_REAL, unsigned long long D> class opticalFlowSolver 
         : public multiresRegistrationSolver<ARRAY_TYPE_REAL,D>
     {  
     protected:
@@ -47,14 +47,14 @@ namespace Gadgetron{
                 throw std::runtime_error("opticalFlowSolver::compute(): illegal input array received.");
             }
 
-            if( prod(from_std_vector<unsigned int,D>(*fixed_image->get_dimensions().get())) != 
-                prod(from_std_vector<unsigned int,D>(*moving_image->get_dimensions().get())) ){
+            if( prod(from_std_vector<unsigned long long,D>(*fixed_image->get_dimensions().get())) != 
+                prod(from_std_vector<unsigned long long,D>(*moving_image->get_dimensions().get())) ){
                     throw std::runtime_error("opticalFlowSolver::compute(): core image dimensions (excluding batches) mismatch.");
             }
 
             if( stencil_image && 
-                prod(from_std_vector<unsigned int,D>(*fixed_image->get_dimensions().get())) != 
-                prod(from_std_vector<unsigned int,D>(*stencil_image->get_dimensions().get())) ){
+                prod(from_std_vector<unsigned long long,D>(*fixed_image->get_dimensions().get())) != 
+                prod(from_std_vector<unsigned long long,D>(*stencil_image->get_dimensions().get())) ){
                     throw std::runtime_error("opticalFlowSolver::compute(): stencil image dimensions mismatch fixed/moving image dimensions.");
             }
 
@@ -133,7 +133,7 @@ namespace Gadgetron{
             // D spatial dimensions plus one temporal dimension
             //
 
-            std::vector<unsigned int> grad_dims;
+            std::vector<unsigned long long> grad_dims;
 
             (fixed_image->get_number_of_elements()<moving_image->get_number_of_elements() )
                 ? grad_dims = *moving_image->get_dimensions() : grad_dims = *fixed_image->get_dimensions();
@@ -145,8 +145,8 @@ namespace Gadgetron{
             // Setup for the spatial partial derivatives
             //
 
-            typename uintd<D>::Type matrix_size_fixed = from_std_vector<unsigned int,D>( *fixed_image->get_dimensions() );
-            typename uintd<D>::Type matrix_size_moving = from_std_vector<unsigned int,D>( *moving_image->get_dimensions() );
+            typename uintd<D>::Type matrix_size_fixed = from_std_vector<unsigned long long,D>( *fixed_image->get_dimensions() );
+            typename uintd<D>::Type matrix_size_moving = from_std_vector<unsigned long long,D>( *moving_image->get_dimensions() );
 
             if( matrix_size_fixed != matrix_size_moving ){
                 throw std::runtime_error("opticalFlowSolver::grad(): fixed/moving image dimensions mismatch (2).");
@@ -155,15 +155,15 @@ namespace Gadgetron{
             // Ignoring the batch dimensions the fixed and moving images have the same number of elements
             //
 
-            unsigned int number_of_elements = prod(matrix_size_moving);
-            unsigned int number_of_batches_fixed = 1;
-            unsigned int number_of_batches_moving = 1;
+            unsigned long long number_of_elements = prod(matrix_size_moving);
+            unsigned long long number_of_batches_fixed = 1;
+            unsigned long long number_of_batches_moving = 1;
 
-            for( unsigned int d=D; d<fixed_image->get_number_of_dimensions(); d++ ){
+            for( unsigned long long d=D; d<fixed_image->get_number_of_dimensions(); d++ ){
                 number_of_batches_fixed *= fixed_image->get_size(d);
             }
 
-            for( unsigned int d=D; d<moving_image->get_number_of_dimensions(); d++ ){
+            for( unsigned long long d=D; d<moving_image->get_number_of_dimensions(); d++ ){
                 number_of_batches_moving *= moving_image->get_size(d);
             }
 
@@ -190,13 +190,13 @@ namespace Gadgetron{
 
         virtual void core_grad_spatial( REAL *fixed_image, REAL *moving_image, REAL *gradient_image, 
             typename uintd<D>::Type matrix_size_moving, 
-            unsigned int number_of_batches_fixed, 
-            unsigned int number_of_batches_moving ) = 0;
+            unsigned long long number_of_batches_fixed, 
+            unsigned long long number_of_batches_moving ) {}
 
         virtual void core_grad_temporal( REAL *fixed_image, REAL *moving_image, REAL *gradient_image, 
             typename uintd<D>::Type matrix_size_moving, 
-            unsigned int number_of_batches_fixed, 
-            unsigned int number_of_batches_moving ) = 0;
+            unsigned long long number_of_batches_fixed, 
+            unsigned long long number_of_batches_moving ) {}
 
     protected:
         REAL limit_;

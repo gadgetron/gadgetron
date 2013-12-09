@@ -11,7 +11,7 @@
 
 namespace Gadgetron{
 
-  template<class T, unsigned int D> class EXPORTGPUOPERATORS cuTvOperator 
+  template<class T, unsigned long long D> class EXPORTGPUOPERATORS cuTvOperator 
     : public generalOperator<cuNDArray<T> > 
   {
 

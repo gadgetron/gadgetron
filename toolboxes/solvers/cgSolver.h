@@ -171,7 +171,7 @@ namespace Gadgetron{
       // Get image space dimensions from the encoding operator
       //
 
-      boost::shared_ptr< std::vector<unsigned int> > image_dims = this->encoding_operator_->get_domain_dimensions();
+      boost::shared_ptr< std::vector<unsigned long long> > image_dims = this->encoding_operator_->get_domain_dimensions();
       if( image_dims->size() == 0 ){
       	throw std::runtime_error( "Error: cgSolver::compute_rhs : encoding operator has not set domain dimension" );
       }

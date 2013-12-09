@@ -15,7 +15,7 @@
 
 #define DECLARE_CU_RESAMPLE_OPERATOR_SUPPORT(COMPONENT)			\
   									\
-  template<class T, unsigned int D> __global__ void			\
+  template<class T, unsigned long long D> __global__ void			\
   mult_M_kernel_batch( T *in, T *out,					\
 		       typename realType<T>::Type *displacements,	\
 		       typename uintd<D>::Type matrix_size, unsigned int num_batches ) \
@@ -30,7 +30,7 @@
       const unsigned int idx_in_batch = idx-batch_no*num_elements;	\
       const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size ); \
       									\
-      typename reald<REAL,D>::Type co_disp = to_reald<REAL,unsigned int,D>(co); \
+      typename reald<REAL,D>::Type co_disp = to_reald<REAL,unsigned long long,D>(co); \
       for( unsigned int dim=0; dim<D; dim++ )				\
 	co_disp.vec[dim] +=  displacements[dim*num_elements+idx_in_batch]; \
       									\
@@ -38,7 +38,7 @@
     }									\
   }									\
   									\
-  template<class T, unsigned int D> __global__ void			\
+  template<class T, unsigned long long D> __global__ void			\
   mult_M_kernel_extended( T *in, T *out,				\
 			  typename realType<T>::Type *displacements,	\
 			  typename uintd<D>::Type matrix_size,		\
@@ -57,7 +57,7 @@
       									\
       const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size ); \
       									\
-      typename reald<REAL,D>::Type co_disp = to_reald<REAL,unsigned int,D>(co); \
+      typename reald<REAL,D>::Type co_disp = to_reald<REAL,unsigned long long,D>(co); \
       for( unsigned int dim=0; dim<D; dim++ )				\
 	co_disp.vec[dim] +=  displacements[dim*num_elements_ext+batch_no*num_elements_mat+idx_in_batch]; \
 									\
@@ -66,7 +66,7 @@
     }									\
   }									\
   									\
-  template<class T, unsigned int D> void				\
+  template<class T, unsigned long long D> void				\
   cu##COMPONENT<T,D>::mult_M( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate ) \
   {									\
     if( !in || !out ){							\
@@ -107,7 +107,7 @@
       }									\
     }									\
 									\
-    typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>(*in->get_dimensions().get()); \
+    typename uintd<D>::Type matrix_size = from_std_vector<unsigned long long,D>(*in->get_dimensions().get()); \
     unsigned int num_elements_mat = prod(matrix_size);			\
     unsigned int num_batches = (surplus == 2) ? 1 : in->get_number_of_elements() / num_elements_mat; \
     unsigned int extended_dim = (surplus == 1) ? 1 : out->get_size(D);	\
@@ -139,7 +139,7 @@
     }									\
   }									\
 									\
-  template<class T, unsigned int D> __global__ void			\
+  template<class T, unsigned long long D> __global__ void			\
   mult_MH_kernel( T *in, T *out, typename realType<T>::Type *weights,	\
 		  unsigned int *indices, unsigned int *lower_bounds, unsigned int *upper_bounds, \
 		  unsigned int num_elements, unsigned int num_batches ) \
@@ -178,7 +178,7 @@
     }									\
   }									\
 									\
-  template<class T, unsigned int D> void				\
+  template<class T, unsigned long long D> void				\
   cu##COMPONENT<T,D>::mult_MH( cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate ) \
   {									\
     if( !in || !out ){							\
@@ -221,7 +221,7 @@
       tmp_out = new cuNDArray<T>(in->get_dimensions().get());		\
     }									\
 									\
-    typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>( *this->offsets_->get_dimensions().get() ); \
+    typename uintd<D>::Type matrix_size = from_std_vector<unsigned long long,D>( *this->offsets_->get_dimensions().get() ); \
     unsigned int num_batches = (surplus == 2) ? 1 : in->get_number_of_elements() / prod(matrix_size); \
     unsigned int extended_dim = (surplus == 1) ? 1 : in->get_size(D);	\
     unsigned int num_elements = prod(matrix_size)*extended_dim;		\

@@ -22,36 +22,62 @@ namespace Gadgetron{
   {
   public:
 
-    GadgetronTimer() { GadgetronTimer("GPUTimer"); }
+    GadgetronTimer() : name_("GPUTimer"), timing_in_destruction_(true) { }
 
-    GadgetronTimer(const char* name) : name_(name) 
+    GadgetronTimer(bool timing) : name_("GPUTimer"), timing_in_destruction_(timing) { }
+
+    GadgetronTimer(const char* name, bool timing=false) : name_(name), timing_in_destruction_(timing) 
     {
-      pre();
-#ifdef WIN32
-      QueryPerformanceFrequency(&frequency_);
-      QueryPerformanceCounter(&start_);
-#else
-      gettimeofday(&start_, NULL);
-#endif
+        if ( timing_in_destruction_ )
+        {
+            pre();
+            start();
+        }
     }
-    
+
     virtual ~GadgetronTimer() 
     {
-      double time_in_us = 0.0;
-      post();
-#ifdef WIN32
-      QueryPerformanceCounter(&end_);
-      time_in_us = (end_.QuadPart * (1.0e6/ frequency_.QuadPart)) - start_.QuadPart * (1.0e6 / frequency_.QuadPart);
-#else
-      gettimeofday(&end_, NULL);
-      time_in_us = ((end_.tv_sec * 1e6) + end_.tv_usec) - ((start_.tv_sec * 1e6) + start_.tv_usec);
-#endif
-      std::cout << name_ << ": " << time_in_us/1000.0 << " ms" << std::endl; std::cout.flush();
+        if ( timing_in_destruction_ )
+        {
+            post();
+            stop();
+        }
     }
-    
+
     virtual void pre() {}
     virtual void post() {}
-    
+
+    void start()
+    {
+#ifdef WIN32
+        QueryPerformanceFrequency(&frequency_);
+        QueryPerformanceCounter(&start_);
+#else
+        gettimeofday(&start_, NULL);
+#endif
+    }
+
+    void start(const char* name)
+    {
+        name_ = name;
+        start();
+    }
+
+    void stop()
+    {
+        double time_in_us = 0.0;
+#ifdef WIN32
+        QueryPerformanceCounter(&end_);
+        time_in_us = (end_.QuadPart * (1.0e6/ frequency_.QuadPart)) - start_.QuadPart * (1.0e6 / frequency_.QuadPart);
+#else
+        gettimeofday(&end_, NULL);
+        time_in_us = ((end_.tv_sec * 1e6) + end_.tv_usec) - ((start_.tv_sec * 1e6) + start_.tv_usec);
+#endif
+        std::cout << name_ << ": " << time_in_us/1000.0 << " ms" << std::endl; std::cout.flush();
+    }
+
+    void set_timing_in_destruction(bool timing) { timing_in_destruction_ = timing; }
+
   protected:
 
 #ifdef WIN32
@@ -64,6 +90,8 @@ namespace Gadgetron{
 #endif
 
     std::string name_;
+
+    bool timing_in_destruction_;
   };
 }
 

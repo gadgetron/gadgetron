@@ -22,7 +22,7 @@
 
 namespace Gadgetron{
 
-  template<class T, unsigned int D> class EXPORTCPUREG hoHSOpticalFlowSolver 
+  template<class T, unsigned long long D> class EXPORTCPUREG hoHSOpticalFlowSolver 
     : public hoOpticalFlowSolver<T, D>
   {
     

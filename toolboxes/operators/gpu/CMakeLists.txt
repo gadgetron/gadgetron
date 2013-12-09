@@ -6,7 +6,7 @@ if(WIN32)
 link_directories(${Boost_LIBRARY_DIRS})
 endif(WIN32)
 
-include_directories(		
+include_directories(
   ${CUDA_INCLUDE_DIRS}
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
@@ -14,11 +14,24 @@ include_directories(
   )
 
 cuda_add_library(gpuoperators SHARED 
-  cuPartialDerivativeOperator.cu
-  cuLaplaceOperator.cu
-  cuTvOperator.cu
-  cuTv1dOperator.cu
-  cuConvolutionOperator.cu
+    cuConvolutionOperator.h
+    cuDiagonalOperator.h
+    cuFFTOperator.h
+    cuIdentityOperator.h
+    cuImageOperator.h
+    cuLaplaceOperator.h
+    cuMultiplicationOperatorContainer.h
+    cuPartialDerivativeOperator.h
+    cuTv1dOperator.h
+    cuTvOperator.h
+    cuTvPicsOperator.h
+    gpuoperators_export.h
+    hoCuOperator.h
+    cuPartialDerivativeOperator.cu
+    cuLaplaceOperator.cu
+    cuTvOperator.cu
+    cuTv1dOperator.cu
+    cuConvolutionOperator.cu
   )
 
 target_link_libraries(gpuoperators 
@@ -32,16 +45,16 @@ target_link_libraries(gpuoperators
 install(TARGETS gpuoperators DESTINATION lib)
 
 install(FILES 	
-  cuImageOperator.h
-  cuDiagonalOperator.h
-  cuPartialDerivativeOperator.h
-  cuConvolutionOperator.h
-  cuLaplaceOperator.h
-  cuTvOperator.h
-  cuTvPicsOperator.h
-  cuTv1dOperator.h
-  hoCuTvOperator.h
-  hoCuTvPicsOperator.h
-  gpuoperators_export.h
-  hoCuOperator.h
+    cuConvolutionOperator.h
+    cuDiagonalOperator.h
+    cuFFTOperator.h
+    cuIdentityOperator.h
+    cuImageOperator.h
+    cuLaplaceOperator.h
+    cuMultiplicationOperatorContainer.h
+    cuPartialDerivativeOperator.h
+    cuTv1dOperator.h
+    cuTvOperator.h
+    cuTvPicsOperator.h
+    hoCuOperator.h
   DESTINATION include)

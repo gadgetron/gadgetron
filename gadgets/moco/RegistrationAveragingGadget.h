@@ -18,13 +18,13 @@
 
 namespace Gadgetron{  
 
-  template<class ARRAY_TYPE, unsigned int D> class opticalFlowSolver;
+  template<class ARRAY_TYPE, unsigned long long D> class opticalFlowSolver;
   
   /**
      This is an abstract gadget class and consequently should not be included in any xml configuration file.
      "Instatiate" instead the cpuRegistrationAveragingGadget or gpuRegistrationAveragingGadget.
   */
-  template<class ARRAY_TYPE, unsigned int D> class EXPORTGADGETS_MOCO RegistrationAveragingGadget 
+  template<class ARRAY_TYPE, unsigned long long D> class EXPORTGADGETS_MOCO RegistrationAveragingGadget 
     : public Gadget2<ISMRMRD::ImageHeader, hoNDArray< typename ARRAY_TYPE::element_type > > // se note below
   {
     //
@@ -112,7 +112,7 @@ namespace Gadgetron{
 	
 	size_t bsize = sizeof(GadgetContainerMessage<ISMRMRD::ImageHeader>)*100*this->number_of_phases_;
 	
-	for( unsigned int i=0; i<this->number_of_phases_; i++ ){
+	for( unsigned long long i=0; i<this->number_of_phases_; i++ ){
 	  this->phase_images_[i].high_water_mark(bsize);
 	  this->phase_images_[i].low_water_mark(bsize);      
 	}
@@ -130,7 +130,7 @@ namespace Gadgetron{
       // Put the incoming images on the appropriate queue (based on the phase index).
       // 
       
-      unsigned int phase = m1->getObjectPtr()->phase;
+      unsigned long long phase = m1->getObjectPtr()->phase;
       
       if( this->phase_images_[phase].enqueue_tail(m1) < 0 ) {
 	GADGET_DEBUG1("Failed to add image to buffer\n");
@@ -151,13 +151,13 @@ namespace Gadgetron{
       // (It doesn't really matter, but if not the case something probably went wrong upstream)
       //
 
-      unsigned int num_images = this->phase_images_[0].message_count();
+      unsigned long long num_images = this->phase_images_[0].message_count();
 
       //GADGET_DEBUG2("Number of images for phase 0: %d", num_images );
 
-      for( unsigned int phase = 0; phase< this->number_of_phases_; phase++ ){
+      for( unsigned long long phase = 0; phase< this->number_of_phases_; phase++ ){
 
-	unsigned int num_images_phase = this->phase_images_[phase].message_count();
+	unsigned long long num_images_phase = this->phase_images_[phase].message_count();
 	//GADGET_DEBUG2("Number of images for phase %d: %d", phase, num_images_phase );
 
 	if( num_images != num_images_phase ){
@@ -171,10 +171,10 @@ namespace Gadgetron{
 	return Gadget::close(flags);
       }
 
-      for( unsigned int phase=0; phase < this->number_of_phases_; phase++ ){
+      for( unsigned long long phase=0; phase < this->number_of_phases_; phase++ ){
 	
-	unsigned int num_image_elements = this->image_dimensions_[0]*image_dimensions_[1];
-	std::vector<unsigned int> moving_dims = this->image_dimensions_;
+	unsigned long long num_image_elements = this->image_dimensions_[0]*image_dimensions_[1];
+	std::vector<unsigned long long> moving_dims = this->image_dimensions_;
 	moving_dims.push_back(num_images-1);
 	
 	GadgetContainerMessage<ISMRMRD::ImageHeader> *header;
@@ -182,7 +182,7 @@ namespace Gadgetron{
 	ARRAY_TYPE fixed_image;
 	ARRAY_TYPE moving_image(&moving_dims);
 	
-	for( unsigned int image=0; image<num_images; image++ ){
+	for( unsigned long long image=0; image<num_images; image++ ){
 	  
 	  ACE_Message_Block *mbq;
 	  
@@ -309,12 +309,12 @@ namespace Gadgetron{
     typename ARRAY_TYPE::element_type beta_;
     typename ARRAY_TYPE::element_type limit_;
     bool output_convergence_;
-    unsigned int num_multires_levels_;
-    unsigned int max_iterations_per_level_;
+    unsigned long long num_multires_levels_;
+    unsigned long long max_iterations_per_level_;
 
   private:
     boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > phase_images_;
-    std::vector<unsigned int> image_dimensions_;
+    std::vector<unsigned long long> image_dimensions_;
     unsigned short number_of_phases_;    
   };
 }

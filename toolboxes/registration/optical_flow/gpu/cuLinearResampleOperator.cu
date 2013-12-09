@@ -10,7 +10,7 @@ namespace Gadgetron{
   // Check if all neighbors required for the linear interpolation exists
   // 
 
-  template<class REAL, unsigned int D> __device__ 
+  template<class REAL, unsigned long long D> __device__ 
   bool is_border_pixel( typename reald<REAL,D>::Type co, typename uintd<D>::Type dims )
   {
     for( unsigned int dim=0; dim<D; dim++ ){
@@ -20,13 +20,13 @@ namespace Gadgetron{
     return false;
   }
 
-  template<unsigned int D> static __inline__ __host__ __device__ 
+  template<unsigned long long D> static __inline__ __host__ __device__ 
   unsigned int _get_num_neighbors()
   {
     return 1 << D;
   }
 
-  template<class T, unsigned int D> unsigned int
+  template<class T, unsigned long long D> unsigned int
   cuLinearResampleOperator<T,D>::get_num_neighbors()
   {
     return _get_num_neighbors<D>();
@@ -36,7 +36,7 @@ namespace Gadgetron{
   // Linear interpolation
   //
 
-  template<class T, unsigned int D> __device__ 
+  template<class T, unsigned long long D> __device__ 
   T interpolate( unsigned int batch_no, 
 		 typename reald<typename realType<T>::Type,D>::Type co, 
 		 typename uintd<D>::Type matrix_size, 
@@ -58,7 +58,7 @@ namespace Gadgetron{
     // Iterate over all neighbors
     //
 
-    const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
+    const typename uintd<D>::Type twos = to_vector_td<unsigned long long,D>(2);
     const unsigned int num_neighbors = _get_num_neighbors<D>();
   
     for( unsigned int i=0; i<num_neighbors; i++ ){
@@ -115,7 +115,7 @@ namespace Gadgetron{
     return res;
   }
 
-  template<class REAL, unsigned int D> __global__ void
+  template<class REAL, unsigned long long D> __global__ void
   write_sort_arrays_kernel( typename uintd<D>::Type matrix_size, unsigned int extended_size, REAL *displacements,
 			    unsigned int *sort_keys, unsigned int *sort_values_indices, REAL *sort_values_weights )
   {
@@ -130,14 +130,14 @@ namespace Gadgetron{
     
       const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
 
-      typename reald<REAL,D>::Type co_disp = to_reald<REAL,unsigned int,D>(co);
+      typename reald<REAL,D>::Type co_disp = to_reald<REAL,unsigned long long,D>(co);
       for( unsigned int dim=0; dim<D; dim++ )
 	co_disp.vec[dim] +=  displacements[dim*num_elements_ext+batch_no*num_elements_mat+idx_in_batch];
     
       // Determine the number of neighbors
       //
     
-      const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
+      const typename uintd<D>::Type twos = to_vector_td<unsigned long long,D>(2);
       const unsigned int num_neighbors = _get_num_neighbors<D>();
 
       // Weights are non-zero only if all neighbors exist
@@ -207,10 +207,10 @@ namespace Gadgetron{
     }
   };
 
-  template<class T, unsigned int D> void 
+  template<class T, unsigned long long D> void 
   cuLinearResampleOperator<T,D>::write_sort_arrays( thrust::device_vector<unsigned int> &sort_keys )
   {
-    typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>(*this->offsets_->get_dimensions().get());
+    typename uintd<D>::Type matrix_size = from_std_vector<unsigned long long,D>(*this->offsets_->get_dimensions().get());
     int surplus = this->offsets_->get_number_of_dimensions()-D;
     unsigned int extended_dim = (surplus == 1) ? 1 : this->offsets_->get_size(D);
   

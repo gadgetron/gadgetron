@@ -37,18 +37,18 @@ NFFT_H_output( unsigned int number_of_batches, complext<REAL>*image,
 }
 
 
-template<class REAL, unsigned int D> __inline__ __device__ void
+template<class REAL, unsigned long long D> __inline__ __device__ void
 NFFT_H_convolve( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Type beta, REAL W, 
 		 unsigned int number_of_samples, unsigned int number_of_batches, unsigned int number_of_domains,
 		 vector_td<REAL,D> *traj_positions, complext<REAL>*samples, unsigned int *tuples_last, unsigned int *bucket_begin, unsigned int *bucket_end,
 		 unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vector_td<REAL,D> matrix_size_os_real, 
-		 unsigned int globalThreadId, vector_td<unsigned int,D> domainPos, unsigned int sharedMemFirstCellIdx )
+		 unsigned int globalThreadId, vector_td<unsigned long long,D> domainPos, unsigned int sharedMemFirstCellIdx )
 {
 
   REAL *shared_mem = (REAL*) _shared_mem;
 
   // Cell position as reald
-  vector_td<REAL,D> cell_pos = to_reald<REAL,unsigned int,D>( domainPos ); 
+  vector_td<REAL,D> cell_pos = to_reald<REAL,unsigned long long,D>( domainPos ); 
   
   // Convolve samples onto the domain (shared memory)
   const unsigned int frame_offset = blockIdx.y*number_of_domains;
@@ -91,9 +91,9 @@ NFFT_H_convolve( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Typ
 // kernel main
 //
 
-template<class REAL, unsigned int D> __global__ void
+template<class REAL, unsigned long long D> __global__ void
 NFFT_H_convolve_kernel( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Type beta, REAL W,
-			vector_td<unsigned int,D> domain_count_grid, unsigned int number_of_samples, unsigned int number_of_batches,
+			vector_td<unsigned long long,D> domain_count_grid, unsigned int number_of_samples, unsigned int number_of_batches,
 			vector_td<REAL,D> *traj_positions, complext<REAL>*image, complext<REAL>*samples,
 			unsigned int *tuples_last, unsigned int *bucket_begin, unsigned int *bucket_end, unsigned int double_warp_size_power, 
 			REAL half_W, REAL one_over_W, vector_td<REAL,D> matrix_size_os_real )
@@ -113,7 +113,7 @@ NFFT_H_convolve_kernel( typename reald<REAL,D>::Type alpha, typename reald<REAL,
   const unsigned int domainIdx = index; 
 
   // Compute global domain position
-  const vector_td<unsigned int,D> domainPos = idx_to_co<D>( domainIdx, domain_count_grid );
+  const vector_td<unsigned long long,D> domainPos = idx_to_co<D>( domainIdx, domain_count_grid );
 	
   // Number of cells
   const unsigned int num_reals = number_of_batches<<1;

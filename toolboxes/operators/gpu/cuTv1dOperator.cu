@@ -10,7 +10,7 @@
 
 using namespace Gadgetron;
 
-template<class REAL, class T, unsigned int D> inline  __device__ REAL gradient(const T* in, const vector_td<int,D>& dims, vector_td<int,D>& co){
+template<class REAL, class T, unsigned long long D> inline  __device__ REAL gradient(const T* in, const vector_td<long long,D>& dims, vector_td<long long,D>& co){
 
   T xi = in[co_to_idx<D>((co+dims)%dims,dims)];
 
@@ -23,13 +23,13 @@ template<class REAL, class T, unsigned int D> inline  __device__ REAL gradient(c
 }
 
 
-template<class REAL, class T, unsigned int D> __global__ void tvGradient_kernel(const T* in, T* out, const vector_td<int,D> dims,REAL limit,REAL weight){
-  const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
+template<class REAL, class T, unsigned long long D> __global__ void tvGradient_kernel(const T* in, T* out, const vector_td<long long,D> dims,REAL limit,REAL weight){
+  const long long idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
   if( idx < prod(dims) ){
     T xi = in[idx];
     T result=T(0);
 
-    vector_td<int,D> co = idx_to_co<D>(idx, dims);
+    vector_td<long long,D> co = idx_to_co<D>(idx, dims);
 
     REAL grad = gradient<REAL,T,D>(in,dims,co);
 
@@ -56,15 +56,15 @@ template<class REAL, class T, unsigned int D> __global__ void tvGradient_kernel(
 }
 
 
-template<class T, unsigned int D> void cuTv1DOperator<T,D>::gradient (cuNDArray<T> * in,cuNDArray<T> * out, bool accumulate){
+template<class T, unsigned long long D> void cuTv1DOperator<T,D>::gradient (cuNDArray<T> * in,cuNDArray<T> * out, bool accumulate){
   if (!accumulate) clear(out);
 
-  const typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>(*(in->get_dimensions())));
+  const typename intd<D>::Type dims = to_intd( from_std_vector<unsigned long long,D>(*(in->get_dimensions())));
   int elements = in->get_number_of_elements();
 
-  int threadsPerBlock =std::min(prod(dims),cudaDeviceManager::Instance()->max_blockdim());
+  int threadsPerBlock =std::min(prod(dims), (long long)(cudaDeviceManager::Instance()->max_blockdim()));
   dim3 dimBlock( threadsPerBlock);
-  int totalBlocksPerGrid = std::max(1,prod(dims)/cudaDeviceManager::Instance()->max_blockdim());
+  int totalBlocksPerGrid = std::max(1, (int)(prod(dims)/cudaDeviceManager::Instance()->max_blockdim()));
   dim3 dimGrid(totalBlocksPerGrid);
 
   for (int i =0; i < (elements/prod(dims)); i++){

@@ -12,7 +12,7 @@
 
 namespace Gadgetron{
 
-  template<class ARRAY_TYPE, unsigned int D> class EXPORTGPUPMRI senseOperator : public linearOperator<ARRAY_TYPE>
+  template<class ARRAY_TYPE, unsigned long long D> class EXPORTGPUPMRI senseOperator : public linearOperator<ARRAY_TYPE>
   {
 
   public:

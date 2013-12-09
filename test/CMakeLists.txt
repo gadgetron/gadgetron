@@ -15,31 +15,46 @@ include_directories(
   ${GTEST_INCLUDE_DIRS}
   )
 
-cuda_add_executable(test_all 
-  tests.cpp 
-  hoNDArray_elemwise_test.cpp 
-  hoNDArray_operators_test.cpp 
-  hoNDArray_blas_test.cpp 
-  hoNDArray_utils_test.cpp
-  cuNDArray_elemwise_test.cpp 
-  cuNDArray_operators_test.cpp 
-  cuNDArray_blas_test.cpp 
-  cuNDArray_utils_test.cpp
-#  hoCuGTBLAS_test.cpp 
-#  cuNDArray_Vector_td_test.cpp 
-  vector_td_test.cpp
-  cuVector_td_test_kernels.cu 
-  )
+if ( CUDA_FOUND )
+    cuda_add_executable(test_all 
+      tests.cpp 
+      hoNDArray_elemwise_test.cpp 
+      hoNDArray_operators_test.cpp 
+      hoNDArray_blas_test.cpp 
+      hoNDArray_utils_test.cpp
+      vector_td_test.cpp
+      cuNDArray_elemwise_test.cpp 
+      cuNDArray_operators_test.cpp 
+      cuNDArray_blas_test.cpp 
+      cuNDArray_utils_test.cpp
+      vector_td_test.cpp
+      cuVector_td_test_kernels.h 
+      cuVector_td_test_kernels.cu 
+      )
+else ( CUDA_FOUND )
+    add_executable(test_all 
+      tests.cpp 
+      hoNDArray_elemwise_test.cpp 
+      hoNDArray_operators_test.cpp 
+      hoNDArray_blas_test.cpp 
+      hoNDArray_utils_test.cpp
+      )
+endif ( CUDA_FOUND )
 
 target_link_libraries(test_all 
   cpucore 
   cpucore_math
-  gpucore
-  #gpucore 
-  #gpunfft 
-  ${BOOST_LIBRARIES}	
+  ${BOOST_LIBRARIES}
   ${GTEST_LIBRARIES} 
-  ${CUDA_LIBRARIES} 
   )
+
+if ( CUDA_FOUND )
+
+    target_link_libraries(test_all 
+      gpucore
+      ${CUDA_LIBRARIES} 
+      )
+
+endif ( CUDA_FOUND )
 
 add_test(test_all test_all)
