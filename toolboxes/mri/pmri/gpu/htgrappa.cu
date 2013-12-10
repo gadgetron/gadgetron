@@ -49,8 +49,8 @@ int clear(cuNDArray<complext<float> >* in)
 
 template <class T> int write_cuNDArray_to_disk(cuNDArray<T>* a, const char* filename)
 {
-	hoNDArray<T> host = a->to_host();
-	write_nd_array<complext<float> >(host, filename);
+	boost::shared_ptr< hoNDArray<T> > host = a->to_host();
+	write_nd_array<complext<float> >(host.get(), filename);
 	return 0;
 }
 
@@ -249,7 +249,6 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 		}
 	}
 
-
 	unsigned int source_coils = ref_data->get_size(ref_data->get_number_of_dimensions()-1);
 	unsigned int target_coils = b1->get_size(b1->get_number_of_dimensions()-1);
 	unsigned int elements_per_coil = b1->get_number_of_elements()/target_coils;
@@ -292,7 +291,14 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 	}
 
 	//Calculate region of support + offsets
-	std::vector<unsigned int> ros = *ref_data->get_dimensions();
+	std::vector<size_t> rosTmp = *ref_data->get_dimensions();
+
+    std::vector<unsigned int> ros(rosTmp.size());
+    for ( unsigned int ii=0; ii<rosTmp.size(); ii++ )
+    {
+        ros[ii ] = rosTmp[ii];
+    }
+
 	ros.pop_back(); //Remove the number of coils
 	std::vector<unsigned int> ros_offset(ref_data->get_number_of_dimensions(),0);
 	unsigned long int kspace_locations = 1;
@@ -339,7 +345,12 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 
 	cuNDArray<T> b = cuNDArray<T>(&b_size);
 
-	int2 dims = vec_to_int2(*ref_data->get_dimensions());
+    boost::shared_ptr< std::vector<size_t> > dimTmp = ref_data->get_dimensions();
+    std::vector<unsigned int> dimInt(2, 0);
+    dimInt[0] = (*dimTmp)[0];
+    dimInt[1] = (*dimTmp)[1];
+
+	int2 dims = vec_to_int2(dimInt);
 	int2 dros = vec_to_int2(ros);
 	int2 dros_offset = vec_to_int2(ros_offset);
 	int2 dkernel_size = vec_to_int2(*kernel_size);
@@ -375,10 +386,15 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 	cuNDArray<T> gkernel = cuNDArray<T>(&gkernel_dims);
 	clear(&gkernel);
 
-	for (unsigned int set = 0; set < acceleration_factor-1; set++) {
+	for (unsigned int set = 0; set < acceleration_factor-1; set++)
+    {
 		//std::cout << "Calculating coefficients for set " << set << std::endl;
 
 		//std::cout << "dros.x = " << dros.x << ", dros.y = " << dros.y << std::endl;
+
+        std::ostringstream ostr;
+        ostr << "Set_" << set << "_";
+        std::string appendix = ostr.str();
 
 		dim3 blockDim(512,1,1);
 		dim3 gridDim((unsigned int) ceil((1.0f*kspace_locations)/blockDim.x), 1, 1 );
@@ -396,8 +412,15 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 			return -1;
 		}
 
-		//write_cuNDArray_to_disk(&system_matrix,"A.cplx");
-		//write_cuNDArray_to_disk(&b,"b.cplx");
+      //  {
+      //      std::string filename = debugFolder+appendix+"A.cplx";
+		    //write_cuNDArray_to_disk(&system_matrix, filename.c_str());
+      //  }
+
+      //  {
+      //      std::string filename = debugFolder+appendix+"b.cplx";
+		    //write_cuNDArray_to_disk(&b, filename.c_str());
+      //  }
 
 		complext<float>  alpha = complext<float>(1);
 		complext<float>  beta = complext<float>(0);
@@ -414,7 +437,10 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 			return -1;
 		}
 
-		//write_cuNDArray_to_disk(&AHA,"AHA.cplx");
+      //  {
+      //      std::string filename = debugFolder+appendix+"AHA.cplx";
+		    //write_cuNDArray_to_disk(&AHA, filename.c_str());
+      //  }
 
 		{
 
@@ -427,7 +453,11 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 					(float2*) &beta, (float2*)AHrhs.get_data_ptr(), n);
 
 		}
-		//write_cuNDArray_to_disk(&AHrhs,"AHrhs.cplx");
+
+      //  {
+      //      std::string filename = debugFolder+appendix+"AHrhs.cplx";
+		    //write_cuNDArray_to_disk(&AHrhs, filename.c_str());
+      //  }
 
 		if (stat != CUBLAS_STATUS_SUCCESS) {
 			std::cerr << "htgrappa_calculate_grappa_unmixing: Failed to form AHA product using cublas gemm" << std::endl;
@@ -469,7 +499,10 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 			}
 		 */
 
-		//write_cuNDArray_to_disk(&AHrhs,"AHrhs_solution.cplx");
+      //  {
+      //      std::string filename = debugFolder+appendix+"AHrhs_solution.cplx";
+		    //write_cuNDArray_to_disk(&AHrhs, filename.c_str());
+      //  }
 
 		gridDim = dim3((unsigned int) ceil((1.0f*n*source_coils)/blockDim.x), 1, 1 );
 
@@ -482,7 +515,10 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 				acceleration_factor,
 				set);
 
-		//write_cuNDArray_to_disk(&gkernel,"kernel.cplx");
+      //  {
+      //      std::string filename = debugFolder+appendix+"kernel.cplx";
+		    //write_cuNDArray_to_disk(&gkernel, filename.c_str());
+      //  }
 
 		err = cudaGetLastError();
 		if( err != cudaSuccess ){
@@ -493,6 +529,11 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 
 	}
 
+    //{
+    //    std::string filename = debugFolder+"kernel_all.cplx";
+    //    write_cuNDArray_to_disk(&gkernel, filename.c_str());
+    //}
+
 	//TODO: This should be source coils
 	cuNDArray<T> tmp_mixing = cuNDArray<T>(ref_data->get_dimensions());
 
@@ -500,12 +541,13 @@ template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data
 	int total_elements = tmp_mixing.get_number_of_elements()/source_coils;
 	dkernel_size.y *= acceleration_factor;
 	cuNDFFT<typename realType<T>::Type> ft;
-	std::vector<unsigned int> ft_dims(2,0);ft_dims[1] = 1;
+	std::vector<size_t> ft_dims(2,0);ft_dims[1] = 1;
 	clear(out_mixing_coeff);
 	unsigned int current_uncombined_index = 0;
 
 	//TODO: Loop over target coils.
-	for (unsigned int c = 0; c < target_coils; c++) {
+	for (unsigned int c = 0; c < target_coils; c++)
+    {
 		clear(&tmp_mixing);
 
 		dim3 blockDim(512,1,1);

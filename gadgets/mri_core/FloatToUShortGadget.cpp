@@ -26,7 +26,7 @@ int FloatToUShortGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m
 	GadgetContainerMessage<hoNDArray< ACE_UINT16 > > *cm2 =
 			new GadgetContainerMessage<hoNDArray< ACE_UINT16 > >();
 
-	boost::shared_ptr< std::vector<unsigned int> > dims = m2->getObjectPtr()->get_dimensions();
+	boost::shared_ptr< std::vector<size_t> > dims = m2->getObjectPtr()->get_dimensions();
 
 	try {cm2->getObjectPtr()->create(dims);}
 	catch (std::runtime_error &err){

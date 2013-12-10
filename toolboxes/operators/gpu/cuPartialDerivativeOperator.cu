@@ -71,7 +71,7 @@ namespace Gadgetron{
 
     if (!accumulate) clear(out);
     
-    typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>( *(in->get_dimensions().get()) ));     
+    typename intd<D>::Type dims = to_intd( from_std_vector<size_t,D>( *(in->get_dimensions().get()) ));     
     dim3 dimBlock( dims.vec[0] );
     dim3 dimGrid( 1, dims.vec[D-1] );
   
@@ -102,7 +102,7 @@ namespace Gadgetron{
 
     if (!accumulate) clear(out);
 
-    typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>( *(in->get_dimensions().get()) ));
+    typename intd<D>::Type dims = to_intd( from_std_vector<size_t,D>( *(in->get_dimensions().get()) ));
     dim3 dimBlock( dims.vec[0] );
     dim3 dimGrid( 1, dims.vec[D-1] );
   

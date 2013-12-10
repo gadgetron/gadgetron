@@ -11,6 +11,11 @@
 
 namespace Gadgetron{
 
+  #ifdef M_PI
+    #undef M_PI
+  #endif // M_PI
+  #define M_PI 3.14159265358979323846
+
   MaxwellCorrectionGadget::MaxwellCorrectionGadget()
     : maxwell_coefficients_present_(false)
     , maxwell_coefficients_(4,0)

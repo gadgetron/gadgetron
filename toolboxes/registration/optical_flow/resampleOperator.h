@@ -27,7 +27,7 @@ namespace Gadgetron{
       return offsets_;
     }
 
-    virtual unsigned int get_number_of_displacement_vectors() 
+    virtual size_t get_number_of_displacement_vectors() 
     {
       if( !offsets_.get() ) return 0;
       return offsets_->get_number_of_elements()/offsets_->get_size(offsets_->get_number_of_dimensions()-1);

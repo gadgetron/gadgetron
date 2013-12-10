@@ -37,10 +37,10 @@ namespace Gadgetron{
         } else {
             std::vector<std::string> chm;
             boost::split(chm, *coil_mask, boost::is_any_of(" "));
-            for (unsigned int i = 0; i < chm.size(); i++) {
+            for (size_t i = 0; i < chm.size(); i++) {
                 std::string ch = boost::algorithm::trim_copy(chm[i]);
                 if (ch.size() > 0) {
-                    unsigned int mv = static_cast<unsigned int>(ACE_OS::atoi(ch.c_str()));
+                    size_t mv = static_cast<size_t>(ACE_OS::atoi(ch.c_str()));
                     //GADGET_DEBUG2("Coil mask value: %d\n", mv);
                     if (mv > 0) {
                         coil_mask_.push_back(1);
@@ -60,7 +60,7 @@ namespace Gadgetron{
         }
 
         coils_out_ = 0;
-        for (unsigned int i = 0; i < coil_mask_.size(); i++) {
+        for (size_t i = 0; i < coil_mask_.size(); i++) {
             if (coil_mask_[i]) coils_out_++;
         }
 
@@ -72,7 +72,7 @@ namespace Gadgetron{
 
     int CoilReductionGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1, GadgetContainerMessage<hoNDArray<std::complex<float> > > *m2)
     {
-        std::vector<unsigned int> dims_out(2);
+        std::vector<size_t> dims_out(2);
         dims_out[0] = m1->getObjectPtr()->number_of_samples;
         dims_out[1] = coils_out_;
 
@@ -87,8 +87,8 @@ namespace Gadgetron{
 
         std::complex<float>* s = m2->getObjectPtr()->get_data_ptr();
         std::complex<float>* d = m3->getObjectPtr()->get_data_ptr();
-        unsigned int samples =  m1->getObjectPtr()->number_of_samples;
-        unsigned int coils_copied = 0;
+        size_t samples =  m1->getObjectPtr()->number_of_samples;
+        size_t coils_copied = 0;
         for (int c = 0; c < m1->getObjectPtr()->active_channels; c++) {
             if (c > coil_mask_.size()) {
                 GADGET_DEBUG1("Fatal error, too many coils for coil mask\n");

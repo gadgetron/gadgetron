@@ -12,6 +12,7 @@
 #  NUMPY_VERSION_DECIMAL     - e.g. version 1.6.1 is 10601
 #  NUMPY_INCLUDE_DIRS        - path to the NumPy include files
 
+
 #============================================================================
 # Copyright 2012 Continuum Analytics, Inc.
 #

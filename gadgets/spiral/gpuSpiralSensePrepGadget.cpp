@@ -120,7 +120,7 @@ namespace Gadgetron{
     image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize().x()*get_double_value(std::string("reconstruction_os_factor_x").c_str())))+warp_size-1)/warp_size)*warp_size);  
     image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize().y()*get_double_value(std::string("reconstruction_os_factor_y").c_str())))+warp_size-1)/warp_size)*warp_size);
       
-    image_dimensions_recon_os_ = uintd2
+    image_dimensions_recon_os_ = uint64d2
       (((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
        ((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
     
@@ -265,7 +265,7 @@ namespace Gadgetron{
       host_traj_ = boost::shared_ptr< hoNDArray<floatd2> >(new hoNDArray<floatd2>);
       host_weights_ = boost::shared_ptr< hoNDArray<float> >(new hoNDArray<float>);
 
-      std::vector<unsigned int> trajectory_dimensions;
+      std::vector<size_t> trajectory_dimensions;
       trajectory_dimensions.push_back(samples_per_interleave_*Nints_);
 
       host_traj_->create(&trajectory_dimensions);
@@ -294,14 +294,14 @@ namespace Gadgetron{
       cuNDArray<floatd2> traj(*host_traj_);
       dcw_buffer_ = boost::shared_ptr< cuNDArray<float> >( new cuNDArray<float>(*host_weights_) );
 	
-      nfft_plan_.setup( from_std_vector<unsigned int,2>(image_dimensions_recon_), image_dimensions_recon_os_, kernel_width_ );
+      nfft_plan_.setup( from_std_vector<size_t,2>(image_dimensions_recon_), image_dimensions_recon_os_, kernel_width_ );
       nfft_plan_.preprocess(&traj, cuNFFT_plan<float,2>::NFFT_PREP_NC2C);
 
       // Setup the non-Cartesian Sense encoding operator 
       //
       
       E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >(new cuNonCartesianSenseOperator<float,2>);
-      E_->setup( from_std_vector<unsigned int,2>(image_dimensions_recon_), image_dimensions_recon_os_, kernel_width_ );
+      E_->setup( from_std_vector<size_t,2>(image_dimensions_recon_), image_dimensions_recon_os_, kernel_width_ );
       
       // Setup cg solver if the csm/regularization image is to be based hereon
       //
@@ -326,7 +326,7 @@ namespace Gadgetron{
 
     if (!host_data_buffer_.get()) {
 
-      std::vector<unsigned int> data_dimensions;
+      std::vector<size_t> data_dimensions;
       data_dimensions.push_back(samples_per_interleave_*interleaves_);
       data_dimensions.push_back(m1->getObjectPtr()->active_channels);
 
@@ -435,9 +435,9 @@ namespace Gadgetron{
 	
 	if( buffer_using_solver_ ){
 
-	  std::vector<unsigned int> domain_dims = image_dimensions_recon_;
+	  std::vector<size_t> domain_dims = image_dimensions_recon_;
 	  
-	  std::vector<unsigned int> codomain_dims = *host_traj_->get_dimensions();
+	  std::vector<size_t> codomain_dims = *host_traj_->get_dimensions();
 	  codomain_dims.push_back(m1->getObjectPtr()->active_channels);
 	  
 	  E_->set_domain_dimensions(&domain_dims);
@@ -504,7 +504,7 @@ namespace Gadgetron{
 	// Compute coil images from the fully sampled data buffer
 	//
 
-	std::vector<unsigned int> image_dims;
+	std::vector<size_t> image_dims;
 	image_dims.push_back(image_dimensions_recon_[0]);
 	image_dims.push_back(image_dimensions_recon_[1]);
 	image_dims.push_back(num_coils);
@@ -560,7 +560,7 @@ namespace Gadgetron{
 
 	unsigned int profiles_buffered = buffer_[set*slices_+slice].message_count();
 
-	std::vector<unsigned int> ddimensions;
+	std::vector<size_t> ddimensions;
 	ddimensions.push_back(samples_per_interleave_*interleaves_counter_singleframe_[set*slices_+slice]*
 			      ((use_multiframe_grouping_) ? acceleration_factor_ : 1));
 	ddimensions.push_back(num_coils);

@@ -94,7 +94,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
                     new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
 
             m3->cont(m4);
-            std::vector<unsigned int> dims;
+            std::vector<size_t> dims;
             dims.push_back(number_of_samples);
             dims.push_back(active_channels);
             try {
@@ -129,7 +129,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
                     new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
 
             m3->cont(m4);
-            std::vector<unsigned int> dims;
+            std::vector<size_t> dims;
             dims.push_back(hdr_new->matrix_size[0]);
             dims.push_back(hdr_new->matrix_size[1]);
             dims.push_back(hdr_new->matrix_size[2]);
@@ -244,7 +244,7 @@ int ImageMatlabGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
                     new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
 
             m3->cont(m4);
-            std::vector<unsigned int> dims;
+            std::vector<size_t> dims;
             dims.push_back(hdr_new->matrix_size[0]);
             dims.push_back(hdr_new->matrix_size[1]);
             dims.push_back(hdr_new->matrix_size[2]);

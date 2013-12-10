@@ -27,7 +27,7 @@ typedef reald<_real,2>::Type _reald2;
 boost::shared_ptr< cuNDArray<_complext> > 
 upload_data( unsigned int reconstruction, unsigned int samples_per_reconstruction, unsigned int total_samples_per_coil, unsigned int num_coils, hoNDArray<_complext> *host_data )
 {
-  vector<unsigned int> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
+  vector<size_t> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
   cuNDArray<_complext> *data = new cuNDArray<_complext>(); data->create( &dims );
   for( unsigned int i=0; i<num_coils; i++ )
     cudaMemcpy( data->get_data_ptr()+i*samples_per_reconstruction, 
@@ -88,8 +88,8 @@ int main(int argc, char** argv)
   unsigned int num_coils = host_data->get_size(2);
   
   // Configuration from the command line
-  uintd2 matrix_size = uintd2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
-  uintd2 matrix_size_os = uintd2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
+  uint64d2 matrix_size = uint64d2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
+  uint64d2 matrix_size_os = uint64d2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
   _real kernel_width = parms.get_parameter('k')->get_float_value();
   unsigned int num_cg_iterations = parms.get_parameter('i')->get_int_value();
   unsigned int num_sb_inner_iterations = parms.get_parameter('I')->get_int_value();
@@ -167,7 +167,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< cuNDArray<_complext> > csm = estimate_b1_map<_real,2>( acc_images.get() );
   E->set_csm(csm);
 
-  std::vector<unsigned int> reg_dims = to_std_vector(matrix_size);
+  std::vector<size_t> reg_dims = to_std_vector(matrix_size);
   cuNDArray<_complext> _reg_image = cuNDArray<_complext>(&reg_dims);
   E->mult_csm_conj_sum( acc_images.get(), &_reg_image );
 
@@ -190,7 +190,7 @@ int main(int argc, char** argv)
   precon_weights.reset();
   csm.reset();
 
-  boost::shared_ptr< std::vector<unsigned int> > recon_dims( new std::vector<unsigned int> );
+  boost::shared_ptr< std::vector<size_t> > recon_dims( new std::vector<size_t> );
   *recon_dims = to_std_vector(matrix_size); recon_dims->push_back(frames_per_reconstruction); 
 
   // Define regularization operators 
@@ -239,7 +239,7 @@ int main(int argc, char** argv)
   // Setup radial SENSE reconstructions
   //
 
-  vector<unsigned int> data_dims; 
+  vector<size_t> data_dims; 
   data_dims.push_back(samples_per_reconstruction); data_dims.push_back(num_coils);
 
   E->set_domain_dimensions(recon_dims.get());
@@ -277,7 +277,7 @@ int main(int argc, char** argv)
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
 
   // Allocate space for result
-  std::vector<unsigned int> res_dims = to_std_vector(matrix_size); 
+  std::vector<size_t> res_dims = to_std_vector(matrix_size); 
   res_dims.push_back(frames_per_reconstruction*num_reconstructions); 
   cuNDArray<_complext> result = cuNDArray<_complext>(&res_dims);
 
@@ -306,7 +306,7 @@ int main(int argc, char** argv)
       sbresult = sb.solve(data.get());
     }
 
-    vector<unsigned int> tmp_dims = to_std_vector(matrix_size); tmp_dims.push_back(frames_per_reconstruction);
+    vector<size_t> tmp_dims = to_std_vector(matrix_size); tmp_dims.push_back(frames_per_reconstruction);
     cuNDArray<_complext> tmp(&tmp_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction );
 
     // Copy sbresult to result (pointed to by tmp)

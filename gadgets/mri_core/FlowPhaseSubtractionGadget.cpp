@@ -40,7 +40,7 @@ namespace Gadgetron{
 
     size_t bsize = sizeof(GadgetContainerMessage< GadgetContainerMessage<ISMRMRD::ImageHeader> >)*10000;
 
-    for( unsigned int i=0; i<sets_; i++ ){
+    for( size_t i=0; i<sets_; i++ ){
       buffer_[i].high_water_mark(bsize);
       buffer_[i].low_water_mark(bsize);
     }
@@ -61,7 +61,7 @@ namespace Gadgetron{
       return GADGET_OK;
     }
 
-    unsigned int set = m1->getObjectPtr()->set;
+    size_t set = m1->getObjectPtr()->set;
 
     // Enqueue until we have images from both sets
     //

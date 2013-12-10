@@ -23,18 +23,18 @@ namespace Gadgetron{
     virtual void mult_MH( hoNDArray<T> *in, hoNDArray<T> *out, bool accumulate = false);
     virtual void set_displacement_field( boost::shared_ptr< hoNDArray<typename realType<T>::Type> > offsets );
   
-    virtual unsigned int get_temporal_dimension_size() { return temporal_dim_size_; }
+    virtual size_t get_temporal_dimension_size() { return temporal_dim_size_; }
   
     virtual boost::shared_ptr< linearOperator< hoNDArray<T> > > clone() {
       return linearOperator< hoNDArray<T> >::clone(this);
     }
   
   private:
-    inline bool is_border_pixel( typename reald<typename realType<T>::Type,D>::Type co, typename uintd<D>::Type dims );
-    inline unsigned int get_num_neighbors();
+    inline bool is_border_pixel( typename reald<typename realType<T>::Type,D>::Type co, typename uint64d<D>::Type dims );
+    inline size_t get_num_neighbors();
   
   protected:
     boost::shared_ptr< Eigen::SparseMatrix<typename realType<T>::Type> > R_;
-    unsigned int temporal_dim_size_;
+    size_t temporal_dim_size_;
   };
 }

@@ -20,6 +20,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+  ${ISMRMRD_SCHEMA_DIR}
   ${ISMRMRD_XSD_INCLUDE_DIR}
   ${ACE_INCLUDE_DIR} 
   ${Boost_INCLUDE_DIR}  
@@ -27,12 +28,14 @@ include_directories(
   ${HDF5_INCLUDE_DIRS}/cpp
   ${ISMRMRD_INCLUDE_DIR}
   ${XSD_INCLUDE_DIR}
+  ${XERCESC_INCLUDE_DIR}
   )
 
 add_executable(mriclient main.cpp)
 add_executable(gt_alive gt_alive.cpp)
 
-target_link_libraries(gt_alive gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}  ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES})
+target_link_libraries(mriclient cpucore ${MKL_LIBRARIES})
+target_link_libraries(gt_alive cpucore gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}  ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES} ${MKL_LIBRARIES})
 
 IF(WIN32)
 	SET(HDF5_LIB_DIR ${HDF5_INCLUDE_DIR}/../lib)

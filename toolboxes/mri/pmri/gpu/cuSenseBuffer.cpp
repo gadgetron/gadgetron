@@ -28,7 +28,7 @@ namespace Gadgetron{
 
   template<class REAL, unsigned int D, bool ATOMICS>
   void cuSenseBuffer<REAL,D,ATOMICS>::
-  setup( _uintd matrix_size, _uintd matrix_size_os, REAL W, 
+  setup( _uint64d matrix_size, _uint64d matrix_size_os, REAL W, 
 	 unsigned int num_coils, unsigned int num_cycles, unsigned int num_sub_cycles )
   {      
     bool matrix_size_changed = (matrix_size_ == matrix_size);
@@ -46,7 +46,7 @@ namespace Gadgetron{
     cycle_length_ = num_cycles+1; // +1 as we need a "working buffer" in a addition to 'cycle_length' full ones
     sub_cycle_length_ = num_sub_cycles;
 
-    std::vector<unsigned int> dims = to_std_vector(matrix_size_);
+    std::vector<size_t> dims = to_std_vector(matrix_size_);
     
     if( is_virgin )
       E_ = boost::shared_ptr< cuNonCartesianSenseOperator<REAL,D,ATOMICS> >(new cuNonCartesianSenseOperator<REAL,D,ATOMICS>);
@@ -149,7 +149,7 @@ namespace Gadgetron{
   template<class REAL, unsigned int D, bool ATOMICS>
   boost::shared_ptr< cuNDArray<complext<REAL> > > cuSenseBuffer<REAL,D,ATOMICS>::get_accumulated_coil_images()
   {
-    std::vector<unsigned int> dims = to_std_vector(matrix_size_);
+    std::vector<size_t> dims = to_std_vector(matrix_size_);
     dims.push_back(num_coils_);
 
     acc_image_ = boost::shared_ptr< cuNDArray<_complext> >( new cuNDArray<_complext>(&dims) );
@@ -196,7 +196,7 @@ namespace Gadgetron{
       }
     }
     
-    std::vector<unsigned int> dims = to_std_vector(matrix_size_);
+    std::vector<size_t> dims = to_std_vector(matrix_size_);
     boost::shared_ptr< cuNDArray<_complext> > image( new cuNDArray<_complext>(&dims) );
 
     E_->set_csm(csm_);

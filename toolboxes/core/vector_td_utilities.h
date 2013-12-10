@@ -20,6 +20,14 @@
 #include <iostream>
 #include <algorithm>
 
+#ifdef max
+    #undef max
+#endif // max
+
+#ifdef min
+    #undef min
+#endif // max
+
 #ifndef __CUDA_ARCH__
 using std::ceil; // workaround for nvcc
 using std::abs; // workaround for nvcc
@@ -44,10 +52,10 @@ namespace Gadgetron{
   //
 
   template<class T, unsigned int D> __inline__ __host__ __device__ T 
-  get( const vector_td<T,D>& vec, unsigned int dim ) { return vec[dim]; }
+  get( const vector_td<T,D>& vec, size_t dim ) { return vec[dim]; }
 
   template<class T, unsigned int D> __inline__ __host__ __device__ void 
-  set( vector_td<T,D> &vec, unsigned int dim, T val ) { vec[dim] = val; }
+  set( vector_td<T,D> &vec, size_t dim, T val ) { vec[dim] = val; }
 
   //
   // In-place operations
@@ -56,7 +64,7 @@ namespace Gadgetron{
   template<class T, unsigned int D> __inline__ __host__ __device__ 
   void clear( vector_td<T,D> &vec, const T &val = T(0) )
   {
-    for (unsigned int i=0; i<D; i++) {
+    for (size_t i=0; i<D; i++) {
       vec[i] = val;
     }
   }
@@ -69,7 +77,7 @@ namespace Gadgetron{
   vector_td<T,D> abs( const vector_td<T,D>& vec )
   {
     vector_td<T,D> res;
-    for (unsigned int i=0; i<D; i++) {
+    for (size_t i=0; i<D; i++) {
       res[i] = std::abs(vec[i]);
     }
     return res;
@@ -79,7 +87,7 @@ namespace Gadgetron{
   vector_td<int,D> sgn( const vector_td<T,D>& vec )
   {
     vector_td<int,D> res;
-    for (unsigned int i=0; i<D; i++) {
+    for (size_t i=0; i<D; i++) {
       res[i] = sgn(vec[i]);
     }
     return res;
@@ -89,7 +97,7 @@ namespace Gadgetron{
   vector_td<REAL,D> ceil( const vector_td<REAL,D> vec )
   {
     vector_td<REAL,D> res;
-    for (unsigned int i=0; i<D; i++) {
+    for (size_t i=0; i<D; i++) {
       res[i] = ::ceil(vec[i]);
     }
     return res;
@@ -99,7 +107,7 @@ namespace Gadgetron{
   vector_td<REAL,D> floor( const vector_td<REAL,D> vec )
   {
     vector_td<REAL,D> res;
-    for (unsigned int i=0; i<D; i++) {
+    for (size_t i=0; i<D; i++) {
       res[i] = ::floor(vec[i]);
     }
     return res;
@@ -113,7 +121,7 @@ namespace Gadgetron{
   vector_td<T,D> to_vector_td( const T scalar )
   {
     vector_td<T,D> res;
-    for (unsigned int i=0; i<D; i++) {
+    for (size_t i=0; i<D; i++) {
       res[i] = scalar;
     }
     return res;
@@ -124,11 +132,11 @@ namespace Gadgetron{
   //
 
   template<unsigned int D> __inline__ __host__ __device__ 
-  typename uintd<D>::Type idx_to_co( unsigned int idx, const vector_td<unsigned int,D> dims )
+  typename uint64d<D>::Type idx_to_co( size_t idx, const vector_td<size_t,D> dims )
   {
-    typename uintd<D>::Type co;
-    unsigned int idx_tmp = idx;
-    for (unsigned int i=0; i<D; i++) {
+    typename uint64d<D>::Type co;
+    size_t idx_tmp = idx;
+    for (size_t i=0; i<D; i++) {
       co[i] = idx_tmp%dims[i];
       idx_tmp -= co[i];
       idx_tmp /= dims[i];
@@ -137,11 +145,11 @@ namespace Gadgetron{
   } 
 
   template<unsigned int D> __inline__ __host__ __device__ 
-  typename intd<D>::Type idx_to_co( int idx, const vector_td<int,D> dims )
+  typename int64d<D>::Type idx_to_co( long long idx, const vector_td<long long,D> dims )
   {
-    typename intd<D>::Type co;
+    typename int64d<D>::Type co;
     int idx_tmp = idx;
-    for (unsigned int i=0; i<D; i++) {
+    for (size_t i=0; i<D; i++) {
       co[i] = idx_tmp%dims[i];
       idx_tmp -= co[i];
       idx_tmp /= dims[i];
@@ -150,11 +158,11 @@ namespace Gadgetron{
   } 
 
   template<unsigned int D> __inline__ __host__ __device__ 
-  unsigned int co_to_idx( const vector_td<unsigned int,D> co, const vector_td<unsigned int,D> dims )
+  size_t co_to_idx( const vector_td<size_t,D> co, const vector_td<long long,D> dims )
   {
-    unsigned int idx = 0;
+    size_t idx = 0;
     unsigned long block_size = 1;
-    for (unsigned int i=0; i<D; i++) {
+    for (size_t i=0; i<D; i++) {
       idx += (block_size*co[i]);
       block_size *= dims[i];
     }
@@ -162,7 +170,7 @@ namespace Gadgetron{
   } 
 
   template<unsigned int D> __inline__ __host__ __device__  
-  int co_to_idx( const vector_td< int,D> co, const vector_td<unsigned int,D> dims )
+  long long co_to_idx( const vector_td< long long,D> co, const vector_td<size_t,D> dims )
   {
     int idx = 0;
     long block_size = 1;
@@ -174,11 +182,23 @@ namespace Gadgetron{
   }
 
   template<unsigned int D> __inline__ __host__ __device__
-  int co_to_idx( const vector_td< int,D> co, const vector_td<int,D> dims )
+  long long co_to_idx( const vector_td< long long,D> co, const vector_td<long long,D> dims )
   {
     int idx = 0;
     long block_size = 1;
-    for (int i=0; i<D; i++) {
+    for (long long i=0; i<D; i++) {
+      idx += (block_size*co[i]);
+      block_size *= dims[i];
+    }
+    return idx;
+  }
+
+  template<unsigned int D> __inline__ __host__ __device__
+  size_t co_to_idx( const vector_td< size_t,D> co, const vector_td<size_t,D> dims )
+  {
+    int idx = 0;
+    size_t block_size = 1;
+    for (size_t i=0; i<D; i++) {
       idx += (block_size*co[i]);
       block_size *= dims[i];
     }
@@ -186,11 +206,11 @@ namespace Gadgetron{
   }
 
   template<unsigned int D> __inline__ __host__ __device__ 
-  unsigned int co_to_idx( const typename uintd<D>::Type co, const typename uintd<D>::Type dims, const typename uintd<D>::Type &order )
+  size_t co_to_idx( const typename uint64d<D>::Type co, const typename uint64d<D>::Type dims, const typename uint64d<D>::Type &order )
   {
-    unsigned int idx = 0;
+    size_t idx = 0;
     unsigned long block_size = 1;
-    for (unsigned int i=0; i<D; i++){
+    for (size_t i=0; i<D; i++){
       idx += (block_size*co.d[order[i]]);
       block_size *= dims.d[order[i]];
     }
@@ -198,11 +218,11 @@ namespace Gadgetron{
   } 
 
   template<unsigned int D> __inline__ __host__ __device__ 
-  int co_to_idx( const typename intd<D>::Type co, const typename intd<D>::Type dims, const typename intd<D>::Type order )
+  long long co_to_idx( const typename intd<D>::Type co, const typename intd<D>::Type dims, const typename intd<D>::Type order )
   {
     int idx = 0;
     unsigned long block_size = 1;
-    for (unsigned int i=0; i<D; i++){
+    for (size_t i=0; i<D; i++){
       idx += (block_size*co.d[order[i]]);
       block_size *= dims.d[order[i]];
     }
@@ -210,10 +230,10 @@ namespace Gadgetron{
   } 
 
   template<unsigned int D> __inline__ __host__ __device__ 
-  typename uintd<D>::Type counting_vec()
+  typename uint64d<D>::Type counting_vec()
   {
-    typename uintd<D>::Type res;
-    for(unsigned int i=0; i<D; i++) {
+    typename uint64d<D>::Type res;
+    for(size_t i=0; i<D; i++) {
       res[i]=i;
     }
     return res;
@@ -236,7 +256,7 @@ namespace Gadgetron{
   vector_td<T,D> from_std_vector( std::vector<T> _vector )
   {
     vector_td<T,D> out;
-    for( unsigned int i=0; i<D; i++ ){
+    for( size_t i=0; i<D; i++ ){
       if( i<_vector.size() )
 	out[i] = _vector[i];
       else
@@ -253,7 +273,7 @@ namespace Gadgetron{
   T prod( const vector_td<T,D>& vec )
   {
     T res = vec[0];
-    for (unsigned int i=1; i<D; i++){
+    for (size_t i=1; i<D; i++){
       res *= vec[i];
     }
     return res;
@@ -263,7 +283,7 @@ namespace Gadgetron{
   T sum( const vector_td<T,D>& vec )
   {
     T res = vec[0];
-    for (unsigned int i=1; i<D; i++){
+    for (size_t i=1; i<D; i++){
       res += vec[i];
     }
     return res;
@@ -273,7 +293,7 @@ namespace Gadgetron{
   T dot( const vector_td<T,D>& vec1, const vector_td<T,D>& vec2 )
   {
     T res = (vec1[0]*vec2[0]);
-    for (unsigned int i=1; i<D; i++){
+    for (size_t i=1; i<D; i++){
       res += (vec1[i]*vec2[i]);
     }
     return res;
@@ -283,7 +303,7 @@ namespace Gadgetron{
   T max( const vector_td<T,D>& vec )
   {
     T res = vec[0];
-    for (unsigned int i=1; i<D; i++){
+    for (size_t i=1; i<D; i++){
       res = _vector_td_max(res,vec[i]);
     }
     return res;
@@ -293,7 +313,7 @@ namespace Gadgetron{
   T min( const vector_td<T,D>& vec )
   {
     T res = vec[0];
-    for (unsigned int i=1; i<D; i++){
+    for (size_t i=1; i<D; i++){
       res = _vector_td_min(res,vec[i]);
     }
     return res;
@@ -303,7 +323,7 @@ namespace Gadgetron{
   vector_td<T,D> amin( const vector_td<T,D>& vec1, const vector_td<T,D>& vec2)
   {
     vector_td<T,D> res;
-    for (unsigned int i=0; i<D; i++){
+    for (size_t i=0; i<D; i++){
       res[i] = _vector_td_min(vec1[i],vec2[i]);
     }
     return res;
@@ -313,7 +333,7 @@ namespace Gadgetron{
   vector_td<T,D> amax( const vector_td<T,D>& vec1, const vector_td<T,D>& vec2)
   {
     vector_td<T,D> res;
-    for (unsigned int i=0; i<D; i++){
+    for (size_t i=0; i<D; i++){
       res[i] = _vector_td_max(vec1[i],vec2[i]);
     }
     return res;
@@ -323,7 +343,7 @@ namespace Gadgetron{
    vector_td<T,D> amin( const vector_td<T,D>& vec1, T val)
    {
      vector_td<T,D> res;
-     for (unsigned int i=0; i<D; i++){
+     for (size_t i=0; i<D; i++){
        res[i] = _vector_td_min(vec1[i],val);
      }
      return res;
@@ -333,7 +353,7 @@ namespace Gadgetron{
    vector_td<T,D> amax( const vector_td<T,D>& vec1, T val )
    {
      vector_td<T,D> res;
-     for (unsigned int i=0; i<D; i++){
+     for (size_t i=0; i<D; i++){
        res[i] = _vector_td_max(vec1[i],val);
      }
      return res;
@@ -365,30 +385,30 @@ namespace Gadgetron{
   }
 
   template<class T, unsigned int D> __inline__ __host__ __device__ 
-  unsigned int argmin( const vector_td<T,D>& vec )
+  size_t argmin( const vector_td<T,D>& vec )
   {
-    unsigned int res= 0;
-    for (unsigned int i=1; i<D; i++){
+    size_t res= 0;
+    for (size_t i=1; i<D; i++){
       if (vec[i] < vec[res] ) res = i;
     }
     return res;
   }
 
   template<class T, unsigned int D> __inline__ __host__ __device__ 
-  unsigned int argmin_not_nan( const vector_td<T,D>& vec )
+  size_t argmin_not_nan( const vector_td<T,D>& vec )
   {
-    unsigned int res= 0;
-    for (unsigned int i=1; i<D; i++){
+    size_t res= 0;
+    for (size_t i=1; i<D; i++){
       if (vec[i] < vec[res] && !isnan(vec[i])) res = i;
     }
     return res;
   }
 
   template<class T, unsigned int D> __inline__ __host__ __device__ 
-  unsigned int argmax( const vector_td<T,D>& vec )
+  size_t argmax( const vector_td<T,D>& vec )
   {
-    unsigned int res= 0;
-    for (unsigned int i=1; i<D; i++){
+    size_t res= 0;
+    for (size_t i=1; i<D; i++){
       if (vec[i] > vec[res] ) res = i;
     }
     return res;
@@ -402,7 +422,7 @@ namespace Gadgetron{
   REAL norm_squared( const vector_td<REAL,D> vec )
   {
     REAL res = REAL(0);
-    for (unsigned int i=0; i<D; i++){
+    for (size_t i=0; i<D; i++){
       res += (vec[i]*vec[i]);
     }
     return res;
@@ -422,8 +442,18 @@ namespace Gadgetron{
   vector_td<int,D> to_intd( const vector_td<T,D>& vec )
   {
     vector_td<int,D> res;
-    for (unsigned int i=0; i<D; i++){
+    for (size_t i=0; i<D; i++){
       res[i] = int(vec[i]);
+    }
+    return res;
+  }
+
+  template<class T, unsigned int D> __inline__ __host__ __device__ 
+  vector_td<long long,D> to_int64d( const vector_td<T,D>& vec )
+  {
+    vector_td<long long,D> res;
+    for (size_t i=0; i<D; i++){
+      res[i] = (long long)vec[i];
     }
     return res;
   }
@@ -432,8 +462,18 @@ namespace Gadgetron{
   vector_td<unsigned int,D> to_uintd( const vector_td<T,D>& vec )
   {
     vector_td<unsigned int,D> res;
-    for (unsigned int i=0; i<D; i++){
+    for (size_t i=0; i<D; i++){
       res[i] = (unsigned int) vec[i];
+    }
+    return res;
+  }
+
+  template<class T, unsigned int D> __inline__ __host__ __device__ 
+  vector_td<size_t,D> to_uint64d( const vector_td<T,D>& vec )
+  {
+    vector_td<size_t,D> res;
+    for (size_t i=0; i<D; i++){
+      res[i] = (size_t) vec[i];
     }
     return res;
   }
@@ -442,7 +482,7 @@ namespace Gadgetron{
   vector_td<REAL,D> to_reald( const vector_td<T,D>& vec )
   {
     vector_td<REAL,D> res;
-    for (unsigned int i=0; i<D; i++){
+    for (size_t i=0; i<D; i++){
       res[i] = (REAL) vec[i];
     }
     return res;

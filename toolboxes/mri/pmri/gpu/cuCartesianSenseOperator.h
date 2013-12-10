@@ -22,7 +22,7 @@ namespace Gadgetron{
     {
       if (idx.get()) {
 	idx_ = idx;
-	std::vector<unsigned int> tmp_dims;
+	std::vector<size_t> tmp_dims;
 	tmp_dims.push_back(idx_->get_number_of_elements());
 	tmp_dims.push_back(this->ncoils_);
 	this->set_codomain_dimensions(&tmp_dims);

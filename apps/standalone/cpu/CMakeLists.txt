@@ -1,15 +1,31 @@
 include_directories( 
-  ${CMAKE_SOURCE_DIR}/toolboxes/core 
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-  ${CMAKE_SOURCE_DIR}/toolboxes/operators
-  ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/solvers
-  ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
-  ${CMAKE_SOURCE_DIR}/apps/matlab
-  ${Boost_INCLUDE_DIR} 
-  ${ARMADILLO_INCLUDE_DIRS}
+    ${ARMADILLO_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIR}
+    ${FFTW3_INCLUDE_DIR}
+    ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/core
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+    ${CMAKE_SOURCE_DIR}/toolboxes/operators
+    ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/solvers
+    ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
+    ${CMAKE_SOURCE_DIR}/gadgets/core
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
+    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
+    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
+    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
+    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
+    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
+    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/matlab
+    ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+    ${CMAKE_SOURCE_DIR}/apps/gadgetron
+    ${CMAKE_SOURCE_DIR}/apps/matlab
+    ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
+    ${CMAKE_SOURCE_DIR}/gadgets/gtPlus 
 )
 
 #add_subdirectory(MRI)

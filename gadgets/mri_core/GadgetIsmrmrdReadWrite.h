@@ -112,7 +112,7 @@ namespace Gadgetron{
 
                 m2->cont(m3);
 
-                std::vector<unsigned int> tdims;
+                std::vector<size_t> tdims;
                 tdims.push_back(m1->getObjectPtr()->trajectory_dimensions);
                 tdims.push_back(m1->getObjectPtr()->number_of_samples);
 
@@ -139,7 +139,7 @@ namespace Gadgetron{
 
             }
 
-            std::vector<unsigned int> adims;
+            std::vector<size_t> adims;
             adims.push_back(m1->getObjectPtr()->number_of_samples);
             adims.push_back(m1->getObjectPtr()->active_channels);
 
@@ -189,7 +189,6 @@ namespace Gadgetron{
 
         boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg;
 
-        ACE_TCHAR port_no[1024];
         try {
             cfg = boost::shared_ptr<ISMRMRD::ismrmrdHeader>(ISMRMRD::ismrmrdHeader_ (str_stream,0,props));
         }  catch (const xml_schema::exception& e) {

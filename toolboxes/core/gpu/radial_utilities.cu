@@ -56,7 +56,7 @@ compute_radial_trajectory_golden_ratio_2d( unsigned int num_samples_per_profile,
   unsigned int number_of_samples_per_frame = num_samples_per_profile * num_profiles_per_frame;
 
   // Allocate space for result
-  vector<unsigned int> dims; dims.push_back( number_of_samples_per_frame ); dims.push_back( num_frames );
+  vector<size_t> dims; dims.push_back( number_of_samples_per_frame ); dims.push_back( num_frames );
   boost::shared_ptr< cuNDArray<T> > co( new cuNDArray<T>(&dims) );
   
   if(!co.get()){
@@ -115,7 +115,7 @@ compute_radial_trajectory_fixed_angle_2d( unsigned int num_samples_per_profile, 
   unsigned int number_of_samples_per_frame = num_samples_per_profile * num_profiles_per_frame;
 
   // Allocate space for result
-  vector<unsigned int> dims; 
+  vector<size_t> dims; 
   dims.push_back( number_of_samples_per_frame ); 
   dims.push_back( num_frames );
   
@@ -342,7 +342,7 @@ compute_radial_dcw_2d( unsigned int samples_per_profile, unsigned int num_profil
   unsigned int number_of_samples = samples_per_profile * num_profiles;
   
   // Allocate space for result
-  vector<unsigned int> dims; dims.push_back( number_of_samples );
+  vector<size_t> dims; dims.push_back( number_of_samples );
   boost::shared_ptr< cuNDArray<REAL> > dcw( new cuNDArray<REAL>(&dims) );
   
   if(!dcw.get()){

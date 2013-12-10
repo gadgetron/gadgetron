@@ -18,6 +18,22 @@
 #include "hoArmadillo.h"
 #include "complext.h"
 #include "cpucore_math_export.h"
+#include "GadgetronCommon.h"
+#include <complex>
+
+#ifdef USE_MKL
+    #include "mkl.h"
+#endif // USE_MKL
+
+#ifdef GT_Complex8
+    #undef GT_Complex8
+#endif // GT_Complex8
+typedef std::complex<float> GT_Complex8;
+
+#ifdef GT_Complex16
+    #undef GT_Complex16
+#endif // GT_Complex16
+typedef std::complex<double> GT_Complex16;
 
 namespace Gadgetron{
 
@@ -57,48 +73,55 @@ namespace Gadgetron{
    * @return The l2-norm of the array
    */
   template<class T> EXPORTCPUCOREMATH typename realType<T>::Type nrm2( hoNDArray<T> *x );
-  
+
+  /**
+   * @brief Calculates the l1-norm of the array (as a vector)
+   * @param[in] arr Input array
+   * @return The l1-norm of the array
+   */
+  template<class T> EXPORTCPUCOREMATH typename realType<T>::Type nrm1( hoNDArray<T> *x );
+
   /**
    * @brief Returns the index of the array element with the smallest absolute value (l1 norm)
    * @param[in] x Input data
    * @return The array index corresponding to the smallest element in the array (0-indexing)
    */
-  template<class T> EXPORTCPUCOREMATH long unsigned int amin( hoNDArray<T> *x );
+  template<class T> EXPORTCPUCOREMATH size_t amin( hoNDArray<T> *x );
  
   /**
    * @brief Returns the index of the array element with the smallest absolute value (l1 norm)
    * @param[in] x Input data
    * @return The array index corresponding to the smallest element in the array (0-indexing)
    */
-  template<class T> EXPORTCPUCOREMATH long unsigned int amin( hoNDArray< std::complex<T> > *x );
+  template<class T> EXPORTCPUCOREMATH size_t amin( hoNDArray< std::complex<T> > *x );
 
   /**
    * @brief Returns the index of the array element with the smallest absolute value (l1 norm)
    * @param[in] x Input data
    * @return The array index corresponding to the smallest element in the array (0-indexing)
    */
-  template<class T> EXPORTCPUCOREMATH long unsigned int amin( hoNDArray< complext<T> > *x );
+  template<class T> EXPORTCPUCOREMATH size_t amin( hoNDArray< complext<T> > *x );
 
   /**
    * @brief Returns the index of the array element with the largest absolute value (l1-norm)
    * @param[in] x Input data
    * @return The array index corresponding to the largest element in the array (0-indexing)
    */
-  template<class T> EXPORTCPUCOREMATH long unsigned int amax( hoNDArray<T> *x );
+  template<class T> EXPORTCPUCOREMATH size_t amax( hoNDArray<T> *x );
 
   /**
    * @brief Returns the index of the array element with the largest absolute value (l1-norm)
    * @param[in] x Input data
    * @return The array index corresponding to the largest element in the array (0-indexing)
    */
-  template<class T> EXPORTCPUCOREMATH long unsigned int amax( hoNDArray< std::complex<T> > *x );
+  template<class T> EXPORTCPUCOREMATH size_t amax( hoNDArray< std::complex<T> > *x );
 
   /**
    * @brief Returns the index of the array element with the largest absolute value (l1-norm)
    * @param[in] x Input data
    * @return The array index corresponding to the largest element in the array (0-indexing)
    */
-  template<class T> EXPORTCPUCOREMATH long unsigned int amax( hoNDArray< complext<T> > *x );
+  template<class T> EXPORTCPUCOREMATH size_t amax( hoNDArray< complext<T> > *x );
 
   /**
    * @brief Calculates y = a*x+y in which x and y are considered as vectors
@@ -107,4 +130,52 @@ namespace Gadgetron{
    * @param[in,out] y Array
    */
   template<class T> EXPORTCPUCOREMATH void axpy( T a, hoNDArray<T> *x, hoNDArray<T> *y );
+
+    /**
+     * Besides the functions calling the arma, there are some more functions directly calling the MKL routines
+     */
+
+    #ifdef USE_MKL
+
+    template<> EXPORTCPUCOREMATH float nrm1( hoNDArray<float> *x );
+    template<> EXPORTCPUCOREMATH double nrm1( hoNDArray<double> *x );
+
+    // BLAS dotc and dotu
+    // res = conj(x) dot y
+    EXPORTCPUCOREMATH GT_Complex8 dotc(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y);
+    EXPORTCPUCOREMATH GT_Complex16 dotc(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y);
+
+    // res = x dot y
+    EXPORTCPUCOREMATH GT_Complex8 dotu(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y);
+    EXPORTCPUCOREMATH GT_Complex16 dotu(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y);
+
+    // other variants for axpy
+    // r = a*x+y
+    EXPORTCPUCOREMATH bool axpy(float a, const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r);
+    EXPORTCPUCOREMATH bool axpy(double a, const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
+    EXPORTCPUCOREMATH bool axpy(const GT_Complex8& a, const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
+    EXPORTCPUCOREMATH bool axpy(const GT_Complex16& a, const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+
+    // vector-scalar product
+    // r = a*x
+    EXPORTCPUCOREMATH bool scal(float a, hoNDArray<float>& x);
+    EXPORTCPUCOREMATH bool scal(double a, hoNDArray<double>& x);
+    EXPORTCPUCOREMATH bool scal(float a, hoNDArray<GT_Complex8>& x);
+    EXPORTCPUCOREMATH bool scal(double a, hoNDArray<GT_Complex16>& x);
+    EXPORTCPUCOREMATH bool scal(GT_Complex8 a, hoNDArray<GT_Complex8>& x);
+    EXPORTCPUCOREMATH bool scal(GT_Complex16 a, hoNDArray<GT_Complex16>& x);
+
+    EXPORTCPUCOREMATH bool scal(float a, float*x, long long N);
+    EXPORTCPUCOREMATH bool scal(double a, double*x, long long N);
+    EXPORTCPUCOREMATH bool scal(float a, GT_Complex8*x, long long N);
+    EXPORTCPUCOREMATH bool scal(double a, GT_Complex16*x, long long N);
+    EXPORTCPUCOREMATH bool scal(GT_Complex8 a, GT_Complex8*x, long long N);
+    EXPORTCPUCOREMATH bool scal(GT_Complex16 a, GT_Complex16*x, long long N);
+
+    // sort the vector
+    // isascending: true for ascending and false for descending
+    EXPORTCPUCOREMATH bool sort(const hoNDArray<float>& x, hoNDArray<float>& r, bool isascending);
+    EXPORTCPUCOREMATH bool sort(const hoNDArray<double>& x, hoNDArray<double>& r, bool isascending);
+
+    #endif // USE_MKL
 }

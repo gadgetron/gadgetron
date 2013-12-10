@@ -23,7 +23,7 @@ namespace Gadgetron{
 			GadgetContainerMessage< hoNDArray< float > >* m2);
 
     unsigned int histogram_bins_;
-    std::vector<unsigned int> histogram_;
+    std::vector<size_t> histogram_;
     float current_scale_;
     float max_value_;
   };

@@ -12,7 +12,7 @@ namespace Gadgetron{
   public:
     
     typedef complext<REAL> _complext;
-    typedef typename uintd<D>::Type _uintd;
+    typedef typename uint64d<D>::Type _uint64d;
     typedef typename reald<REAL,D>::Type _reald;
 
     cuSenseBufferCg() : cuSenseBuffer<REAL,D,ATOMICS>() {}
@@ -24,7 +24,7 @@ namespace Gadgetron{
     
     virtual void preprocess( cuNDArray<_reald> *traj );
 
-    virtual void setup( _uintd matrix_size, _uintd matrix_size_os, REAL W, 
+    virtual void setup( _uint64d matrix_size, _uint64d matrix_size_os, REAL W, 
 			unsigned int num_coils, unsigned int num_cycles, unsigned int num_sub_cycles );
     
     virtual boost::shared_ptr< cuNDArray<_complext> > get_combined_coil_image();

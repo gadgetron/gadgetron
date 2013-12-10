@@ -12,15 +12,15 @@ using testing::Types;
 template <typename T> class hoNDArray_operators_TestReal : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
-    unsigned int vdims2[] = {37, 49}; //Smaller dimensionality to test batch mode
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
-    dims2 = std::vector<unsigned int>(vdims2,vdims2+sizeof(vdims2)/sizeof(unsigned int));
+    size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    size_t vdims2[] = {37, 49}; //Smaller dimensionality to test batch mode
+    dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
+    dims2 = std::vector<size_t>(vdims2,vdims2+sizeof(vdims2)/sizeof(size_t));
     Array = hoNDArray<T>(&dims);
     Array2 = hoNDArray<T>(&dims2);
   }
-  std::vector<unsigned int> dims;
-  std::vector<unsigned int> dims2;
+  std::vector<size_t> dims;
+  std::vector<size_t> dims2;
   hoNDArray<T> Array;
   hoNDArray<T> Array2;
 };
@@ -28,15 +28,15 @@ protected:
 template <typename T> class hoNDArray_operators_TestCplx : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
-    unsigned int vdims2[] = {37, 49}; //Smaller dimensionality to test batch mode
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
-    dims2 = std::vector<unsigned int>(vdims2,vdims2+sizeof(vdims2)/sizeof(unsigned int));
+    size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    size_t vdims2[] = {37, 49}; //Smaller dimensionality to test batch mode
+    dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
+    dims2 = std::vector<size_t>(vdims2,vdims2+sizeof(vdims2)/sizeof(size_t));
     Array = hoNDArray<T>(&dims);
     Array2 = hoNDArray<T>(&dims2);
   }
-  std::vector<unsigned int> dims;
-  std::vector<unsigned int> dims2;
+  std::vector<size_t> dims;
+  std::vector<size_t> dims2;
   hoNDArray<T> Array;
   hoNDArray<T> Array2;
 };

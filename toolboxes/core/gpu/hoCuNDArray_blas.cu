@@ -26,7 +26,7 @@ namespace Gadgetron{
     batchSize = std::min(batchSize,remaining);
     T* x_ptr = x->get_data_ptr();
     T* y_ptr = y->get_data_ptr();
-    std::vector<unsigned int> dims;
+    std::vector<size_t> dims;
     dims.push_back(batchSize);
     cuNDArray<T> cuX(&dims);
     cuNDArray<T> cuY(&dims);
@@ -62,7 +62,7 @@ namespace Gadgetron{
     batchSize = std::min(batchSize,remaining);
     T* x_ptr = x->get_data_ptr();
     T* y_ptr = y->get_data_ptr();
-    std::vector<unsigned int> dims;
+    std::vector<size_t> dims;
     dims.push_back(batchSize);
     cuNDArray<T> cuX(&dims);
     cuNDArray<T> cuY(&dims);
@@ -98,7 +98,7 @@ namespace Gadgetron{
     size_t remaining = x->get_number_of_elements();
     batchSize = std::min(batchSize,remaining);
     T* x_ptr = x->get_data_ptr();
-    std::vector<unsigned int> dims;
+    std::vector<size_t> dims;
     dims.push_back(batchSize);
     cuNDArray<T> cuX(&dims);
     REAL ret = 0;
@@ -129,7 +129,7 @@ namespace Gadgetron{
     size_t remaining = x->get_number_of_elements();
     batchSize = std::min(batchSize,remaining);
     T* x_ptr = x->get_data_ptr();
-    std::vector<unsigned int> dims;
+    std::vector<size_t> dims;
     dims.push_back(batchSize);
     cuNDArray<T> cuX(&dims);
     REAL ret = 0;
@@ -160,7 +160,7 @@ namespace Gadgetron{
     size_t remaining = x->get_number_of_elements();
     batchSize = std::min(batchSize,remaining);
     T* x_ptr = x->get_data_ptr();
-    std::vector<unsigned int> dims;
+    std::vector<size_t> dims;
     dims.push_back(batchSize);
     cuNDArray<T> cuX(&dims);
     std::vector<int> results;
@@ -196,7 +196,7 @@ namespace Gadgetron{
     size_t remaining = x->get_number_of_elements();
     batchSize = std::min(batchSize,remaining);
     T* x_ptr = x->get_data_ptr();
-    std::vector<unsigned int> dims;
+    std::vector<size_t> dims;
     dims.push_back(batchSize);
     cuNDArray<T> cuX(&dims);
     std::vector<int> results;

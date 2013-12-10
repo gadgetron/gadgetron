@@ -14,7 +14,7 @@ namespace Gadgetron{
     
   public:
     
-    typedef typename uintd<D>::Type _uintd;
+    typedef typename uint64d<D>::Type _uint64d;
     typedef typename reald<REAL,D>::Type _reald;
     
     cuNonCartesianKtSenseOperator() : cuNonCartesianSenseOperator<REAL,D>() {}

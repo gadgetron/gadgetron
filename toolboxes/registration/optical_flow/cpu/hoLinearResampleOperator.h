@@ -26,7 +26,7 @@ namespace Gadgetron{
     }
   
   private:
-    inline bool is_border_pixel( typename reald<typename realType<T>::Type,D>::Type co, typename uintd<D>::Type dims );
+    inline bool is_border_pixel( typename reald<typename realType<T>::Type,D>::Type co, typename uint64d<D>::Type dims );
     inline unsigned int get_num_neighbors();
   
   protected:

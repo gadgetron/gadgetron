@@ -1,0 +1,506 @@
+
+#include "GtPlusRecon2DTGadgetCloud.h"
+
+#ifdef USE_OMP
+    #include <omp.h>
+#endif // USE_OMP
+
+using namespace Gadgetron::gtPlus;
+
+namespace Gadgetron
+{
+
+GtPlusRecon2DTGadgetCloud::GtPlusRecon2DTGadgetCloud() : BaseClass(), curr_node_(0), num_of_jobs_(0)
+{
+    packages_sent_.resize(1024);
+    packages_received_.resize(1024);
+    packages_passed_to_next_gadget_.resize(1024);
+    gt_timer_2DT_cloud_.set_timing_in_destruction(false);
+}
+
+GtPlusRecon2DTGadgetCloud::~GtPlusRecon2DTGadgetCloud()
+{
+
+}
+
+int GtPlusRecon2DTGadgetCloud::process_config(ACE_Message_Block* mb)
+{
+    // [Ro E1 Cha Slice E2 Con Phase Rep Set Seg]
+    //   0  1  2   3    4   5    6     7  8   9
+    GADGET_CHECK_RETURN(BaseClass::process_config(mb)==GADGET_OK, GADGET_FAIL);
+
+    if ( CloudComputing_ )
+    {
+        bool parseSuccess = this->parseGTCloudNodeFile(cloud_node_file_, gt_cloud_);
+        if ( parseSuccess )
+        {
+            CloudSize_ = gt_cloud_.size();
+            if ( CloudSize_ == 0 ) CloudComputing_ = false;
+        }
+
+        if ( CloudComputing_ )
+        {
+            // set up the cloud
+            if (controller_.open () == -1)
+            {
+                GADGET_ERROR_MSG("Cloud controller cannot open the cloud ...");
+                controller_.handle_close (ACE_INVALID_HANDLE, 0);
+                CloudComputing_ = false;
+            }
+            else
+            {
+                readers_.resize(CloudSize_, NULL);
+                writers_.resize(CloudSize_, NULL);
+
+                unsigned int j;
+                for ( j=0; j<CloudSize_; j++ )
+                {
+                    readers_[j] = new GtPlus2DTGadgetCloudJobMessageReaderCPFL();
+                    writers_[j] = new GtPlus2DTGadgetCloudJobMessageWriterCPFL();
+                }
+
+                if ( controller_.createConnector(gt_cloud_, GADGET_MESSAGE_GADGETCLOUD_JOB, readers_, GADGET_MESSAGE_GADGETCLOUD_JOB, writers_) != 0 )
+                {
+                    GADGET_ERROR_MSG("Cloud controller_ creates connectors failed ...");
+                    controller_.handle_close (ACE_INVALID_HANDLE, 0);
+                    CloudComputing_ = false;
+                }
+                else if ( controller_.connectToCloud(gt_cloud_) != 0 )
+                {
+                    GADGET_ERROR_MSG("Cloud controller_ cannot connect to the cloud ...");
+                    controller_.handle_close (ACE_INVALID_HANDLE, 0);
+                    CloudComputing_ = false;
+                }
+            }
+        }
+    }
+
+    return GADGET_OK;
+}
+
+int GtPlusRecon2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< GtPlusGadgetImageArray >* m1, Gadgetron::GadgetContainerMessage< WorkOrderType > * m2)
+{
+    GADGET_CONDITION_MSG(verboseMode_, "GtPlusRecon2DTGadgetCloud::process(...) starts ... ");
+
+    processed_called_times_++;
+
+    // start a gadget level timer
+    if ( processed_called_times_ == 1 )
+    {
+        GADGET_START_TIMING(gt_timer_2DT_cloud_, "GtPlusRecon2DTGadgetCloud::process(...) gadegt level timer ... ");
+    }
+
+    // send out the package to current node
+    if ( CloudComputing_ )
+    {
+        GtPlusGadgetImageArray* images = m1->getObjectPtr();
+
+        WorkOrderType* workOrder = m2->getObjectPtr();
+
+        boost::shared_ptr< std::vector<size_t> > dims = workOrder->data_.get_dimensions();
+
+        GADGET_CONDITION_MSG(verboseMode_, "[Ro E1 Cha Slice E2 Con Phase Rep Set Seg] = [" 
+            << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " << (*dims)[3] << " " << (*dims)[4] 
+            << " " << (*dims)[5] << " " << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " << (*dims)[9] << "]");
+
+        dimensions_ = *dims;
+
+        // fill in more parameters
+        para_.reconSizeRO_ = (*dims)[0];
+        para_.reconSizeE1_ = reconE1_;
+        para_.reconSizeE2_ = reconE2_;
+        para_.encodingFOV_RO_ = field_of_view_encoding_[0];
+        para_.encodingFOV_E1_ = field_of_view_encoding_[1];
+        para_.encodingFOV_E2_ = field_of_view_encoding_[2];
+        para_.reconFOV_RO_ = field_of_view_recon_[0];
+        para_.reconFOV_E1_ = field_of_view_recon_[1];
+        para_.reconFOV_E2_ = field_of_view_recon_[2];
+
+        para_.workOrderPara_.CalibMode_ = workOrder->CalibMode_;
+        para_.workOrderPara_.InterleaveDim_ = workOrder->InterleaveDim_;
+
+        para_.workOrderPara_.acceFactorE1_ = workOrder->acceFactorE1_;
+        para_.workOrderPara_.acceFactorE2_ = workOrder->acceFactorE2_;
+
+        para_.workOrderPara_.kSpaceCenterRO_ = workOrder->kSpaceCenterRO_;
+        para_.workOrderPara_.kSpaceCenterEncode1_ = workOrder->kSpaceCenterEncode1_;
+        para_.workOrderPara_.kSpaceCenterEncode2_ = workOrder->kSpaceCenterEncode2_;
+
+        para_.workOrderPara_.kSpaceMaxRO_ = workOrder->kSpaceMaxRO_;
+        para_.workOrderPara_.kSpaceMaxEncode1_ = workOrder->kSpaceMaxEncode1_;
+        para_.workOrderPara_.kSpaceMaxEncode2_ = workOrder->kSpaceMaxEncode2_;
+
+        para_.workOrderPara_.start_RO_ = workOrder->start_RO_;
+        para_.workOrderPara_.end_RO_ = workOrder->end_RO_;
+
+        para_.workOrderPara_.start_E1_ = workOrder->start_E1_;
+        para_.workOrderPara_.end_E1_ = workOrder->end_E1_;
+
+        para_.workOrderPara_.start_E2_ = workOrder->start_E2_;
+        para_.workOrderPara_.end_E2_ = workOrder->end_E2_;
+
+        para_.workOrderPara_.workFlow_BufferKernel_ = workOrder->workFlow_BufferKernel_;
+        para_.workOrderPara_.workFlow_use_BufferedKernel_ = workOrder->workFlow_use_BufferedKernel_;
+        para_.workOrderPara_.num_channels_res_ = workOrder->num_channels_res_;
+
+        // set up a cloud package
+        CloudPackageType package;
+        package.para = para_;
+
+        packages_sent_[num_of_jobs_] = package;
+        packages_sent_[num_of_jobs_].kspace = workOrder->data_;
+
+        packages_received_[num_of_jobs_] = package;
+
+        packages_passed_to_next_gadget_[num_of_jobs_].first = num_of_jobs_;
+        packages_passed_to_next_gadget_[num_of_jobs_].second = false;
+
+        // store image headers
+        GtPlusGadgetImageArray imArray;
+        image_headers_.push_back(imArray);
+        image_headers_[image_headers_.size()-1].copy(*images);
+
+        // send the package to current node
+        std::vector<CloudPackageType* > jobListCloud(1);
+        std::vector<CloudPackageType* > completedJobListCloud(1);
+        std::vector<int> node_ids(1, curr_node_);
+
+        jobListCloud[0] = &packages_sent_[num_of_jobs_];
+        completedJobListCloud[0] = &packages_received_[num_of_jobs_];
+
+        // set the data and ref arrays
+        jobListCloud[0]->kspace = workOrder->data_;
+        if ( workOrder->ref_.get_number_of_elements() > 0 )
+        {
+            jobListCloud[0]->ref = workOrder->ref_;
+        }
+        else if ( CalibMode_==Gadgetron::gtPlus::ISMRMRD_interleaved )
+        {
+            jobListCloud[0]->ref = workOrder->data_;
+        }
+
+        num_of_jobs_++;
+
+        if ( controller_.runJobsOnCloud(jobListCloud, completedJobListCloud, node_ids) != 0 )
+        {
+            GADGET_ERROR_MSG("Cloud controller runs jobs on the cloud failed ...");
+            controller_.handle_close (ACE_INVALID_HANDLE, 0);
+
+            // run locally
+            int retval = BaseClass::process(m1, m2);
+            packages_passed_to_next_gadget_[num_of_jobs_].second = true;
+
+            return retval;
+        }
+
+        curr_node_++;
+        if ( curr_node_ >= CloudSize_ ) curr_node_ = 0;
+
+        m1->release();
+    }
+    else
+    {
+        return BaseClass::process(m1, m2);
+    }
+
+    return GADGET_OK;
+}
+
+bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPackageType& jobReceived)
+{
+    try
+    {
+        GtPlusRecon2DTCloudPackageCPFL* job = &jobSent;
+
+        boost::shared_ptr< std::vector<size_t> > dims = job->kspace.get_dimensions();
+
+        GADGET_CONDITION_MSG(verboseMode_, "job array size : [Ro E1 Cha Slice E2 Con Phase Rep Set Seg] = [" 
+            << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " << (*dims)[3] << " " << (*dims)[4] 
+            << " " << (*dims)[5] << " " << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " << (*dims)[9] << "]");
+
+        GtPlusRecon2DTPara& para = job->para;
+
+        // ---------------------------------------------------------
+        // set the work flow
+        // ---------------------------------------------------------
+        workflow_.reconSizeRO_ = para.reconSizeRO_;
+        workflow_.reconSizeE1_ = para.reconSizeE1_;
+        workflow_.reconSizeE2_ = para.reconSizeE2_;
+        workflow_.encodingFOV_RO_ = para.encodingFOV_RO_;
+        workflow_.encodingFOV_E1_ = para.encodingFOV_E1_;
+        workflow_.encodingFOV_E2_ = para.encodingFOV_E2_;
+        workflow_.reconFOV_RO_ = para.reconFOV_RO_;
+        workflow_.reconFOV_E1_ = para.reconFOV_E1_;
+        workflow_.reconFOV_E2_ = para.reconFOV_E2_;
+
+        // workflow_.dataDimStartingIndexes_ = workOrder->dataDimStartingIndexes_;
+        workflow_.dim4th_ = para.dim_4th_;
+        workflow_.dim5th_ = para.dim_5th_;
+        workflow_.WorkOrderShareDim_ = para.workOrder_ShareDim_;
+        workflow_.performTiming_ = performTiming_;
+
+        // ---------------------------------------------------------
+        // set work order
+        // ---------------------------------------------------------
+        WorkOrder2DTType workOrder;
+
+        workOrder.copyFromPara(para.workOrderPara_);
+
+        workOrder.CloudComputing_ = CloudComputing_;
+        workOrder.CloudSize_ = CloudSize_;
+        workOrder.gt_cloud_ = gt_cloud_;
+
+        workOrder.data_ = job->kspace;
+        workOrder.ref_ = job->ref;
+
+        // ---------------------------------------------------------
+        // set the worker
+        // ---------------------------------------------------------
+        worker_grappa_.performTiming_ = performTiming_;
+        if ( !debugFolder_fullPath_.empty() ) worker_grappa_.debugFolder_ = debugFolder_fullPath_;
+
+        worker_noacceleration_.performTiming_ = performTiming_;
+        if ( !debugFolder_fullPath_.empty() ) worker_noacceleration_.debugFolder_ = debugFolder_fullPath_;
+
+        worker_spirit_.performTiming_ = performTiming_;
+        if ( !debugFolder_fullPath_.empty() ) worker_spirit_.debugFolder_ = debugFolder_fullPath_;
+
+        worker_spirit_L1_ncg_.performTiming_ = performTiming_;
+        if ( !debugFolder_fullPath_.empty() ) worker_spirit_L1_ncg_.debugFolder_ = debugFolder_fullPath_;
+
+        if ( !debugFolder_fullPath_.empty() ) workflow_.debugFolder_ = debugFolder_fullPath_;
+
+        // set the worker
+        worker_grappa_.performTiming_ = performTiming_;
+        if ( !debugFolder_fullPath_.empty() ) worker_grappa_.debugFolder_ = debugFolder_fullPath_;
+
+        worker_noacceleration_.performTiming_ = performTiming_;
+        if ( !debugFolder_fullPath_.empty() ) worker_noacceleration_.debugFolder_ = debugFolder_fullPath_;
+
+        worker_spirit_.performTiming_ = performTiming_;
+        if ( !debugFolder_fullPath_.empty() ) worker_spirit_.debugFolder_ = debugFolder_fullPath_;
+
+        worker_spirit_L1_ncg_.performTiming_ = performTiming_;
+        if ( !debugFolder_fullPath_.empty() ) worker_spirit_L1_ncg_.debugFolder_ = debugFolder_fullPath_;
+
+        if ( verboseMode_ )
+        {
+            workOrder.print(std::cout);
+        }
+
+        // perform the recon
+        GADGET_START_TIMING_CONDITION(gt_timer1_, "Recon 2DT workorder on master node ... ", performTiming_);
+
+        GADGET_CHECK_RETURN(this->generateKSpaceFilter(workOrder), GADGET_FAIL);
+
+        workOrder.duplicate(workOrder_recon_);
+        this->setWorkOrder2DTParameters(&workOrder_recon_);
+
+        workflow_.workOrder_ = &workOrder_recon_;
+        if ( verboseMode_ )
+        {
+            workflow_.workOrder_->print(std::cout);
+        }
+
+        workflow_.setDataArray(workOrder.data_);
+
+        if ( workOrder.ref_.get_number_of_elements() > 0 )
+        {
+            workflow_.setRefArray(workOrder.ref_);
+        }
+        else if ( para.workOrderPara_.CalibMode_==Gadgetron::gtPlus::ISMRMRD_interleaved )
+        {
+            workOrder.ref_ = workOrder.data_;
+            workflow_.setRefArray(workOrder.ref_);
+        }
+
+        // set the work flow for worker and workOrder
+        if ( workOrder.acceFactorE1_ > 1 )
+        {
+            if ( para.workOrderPara_.recon_algorithm_ == Gadgetron::gtPlus::ISMRMRD_SPIRIT )
+            {
+                workflow_.worker_ = &worker_spirit_;
+            }
+            else if ( para.workOrderPara_.recon_algorithm_ == Gadgetron::gtPlus::ISMRMRD_L1SPIRIT )
+            {
+                workflow_.worker_ = &worker_spirit_L1_ncg_;
+            }
+            else
+            {
+                workflow_.worker_ = &worker_grappa_;
+            }
+        }
+        else
+        {
+            workflow_.worker_ = &worker_noacceleration_;
+        }
+
+        bool succeed = true;
+        succeed = workflow_.preProcessing();
+        if ( succeed )
+        {
+            succeed = workflow_.recon();
+            if ( succeed )
+            {
+                succeed = workflow_.postProcessing();
+            }
+        }
+
+        GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
+
+        if ( !debugFolder_fullPath_.empty() )
+        {
+            std::ostringstream ostr;
+            ostr << "Recon2DT";
+
+            hoNDArray<GT_Complex8> res = workflow_.res_;
+            res.squeeze();
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, res, ostr.str());
+        }
+
+        if ( succeed )
+        {
+            jobReceived.complexIm = workflow_.res_;
+        }
+        else
+        {
+            jobReceived.complexIm.clear();
+            jobReceived.res.clear();
+        }
+
+        GADGET_CONDITION_MSG(verboseMode_, "GtPlusRecon2DTGadgetCloud::process(...) ends ... ");
+
+        // reset the status
+        workflow_.data_ = NULL;
+        workflow_.ref_ = NULL;
+        workflow_.noise_ = NULL;
+        workflow_.workOrder_ = NULL;
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors happened in GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPackageType& jobReceived) ... ");
+        return false;
+    }
+
+    return true;
+}
+
+int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
+{
+    GADGET_CONDITION_MSG(true, "GtPlusRecon2DTGadgetCloud - close(flags) : " << flags);
+
+    if ( BaseClass::close(flags) != GADGET_OK ) return GADGET_FAIL;
+
+    if ( flags!=0 )
+    {
+        GADGET_CONDITION_MSG(verboseMode_, "GtPlusRecon2DTGadgetCloud number of total jobs : " << num_of_jobs_ << " ... ");
+
+        if ( CloudComputing_ )
+        {
+            controller_.closeCloudNode();
+
+            // register a job handler
+            GtPlusRecon2DTGadgetCloudSender gadgetJobHandler;
+            gadgetJobHandler.gadget_ = this;
+            controller_.job_handler_ = &gadgetJobHandler;
+
+            controller_.waitForJobToComplete();
+
+            // if some jobs are not completed successfully, reprocess them; otherwise, send out images
+            std::vector<DimensionRecordType> dataDimStartingIndexes;
+            unsigned int N = image_headers_.size();
+            unsigned int ii;
+            for ( ii=0; ii<N; ii++ )
+            {
+                bool jobIsOk = true;
+                if ( (packages_received_[ii].complexIm.get_number_of_elements() == 0) && (packages_received_[ii].res.get_number_of_elements() == 0) )
+                {
+                    // if the cloud goes wrong, do not try again
+                    CloudComputing_ = false;
+                    jobIsOk = this->processJob(packages_sent_[ii], packages_received_[ii]);
+                }
+
+                if ( jobIsOk )
+                {
+                    if ( !packages_passed_to_next_gadget_[ii].second )
+                    {
+                        GADGET_CHECK_RETURN(this->sendOutRecon(&image_headers_[ii], packages_received_[ii].complexIm, image_series_, dataDimStartingIndexes, "Image"), GADGET_FAIL);
+                    }
+                }
+
+                if ( !debugFolder2_fullPath_.empty() )
+                {
+                    std::ostringstream ostr;
+                    ostr << "GadgetCloud_Recon2DT_" << ii;
+
+                    hoNDArray<GT_Complex8> res = packages_received_[ii].complexIm;
+                    res.squeeze();
+                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+                }
+            }
+        }
+
+        GADGET_STOP_TIMING(gt_timer_2DT_cloud_);
+    }
+
+    return GADGET_OK;
+}
+
+GADGET_FACTORY_DECLARE(GtPlusRecon2DTGadgetCloud)
+
+// -------------------------------------------------------------------------------------------
+// GtPlusRecon2DTGadgetCloudSender
+// -------------------------------------------------------------------------------------------
+
+GtPlusRecon2DTGadgetCloudSender::GtPlusRecon2DTGadgetCloudSender()
+{
+}
+
+GtPlusRecon2DTGadgetCloudSender::~GtPlusRecon2DTGadgetCloudSender()
+{
+}
+
+bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudPackage< std::complex<float> >& ajob)
+{
+    try
+    {
+        bool jobIsOk = true;
+        if ( (gadget_->packages_received_[jobID].complexIm.get_number_of_elements() == 0) 
+            && (gadget_->packages_received_[jobID].res.get_number_of_elements() == 0) )
+        {
+            jobIsOk = false;
+            return true;
+        }
+
+        if ( jobIsOk )
+        {
+            std::vector<DimensionRecordType> dataDimStartingIndexes;
+
+            if ( !gadget_->packages_passed_to_next_gadget_[jobID].second )
+            {
+                gadget_->packages_passed_to_next_gadget_[jobID].second = true;
+                GADGET_CHECK_RETURN(gadget_->sendOutRecon(&gadget_->image_headers_[jobID], 
+                    gadget_->packages_received_[jobID].complexIm, gadget_->image_series_, dataDimStartingIndexes, "Image"), false);
+
+                if ( !gadget_->debugFolder2_fullPath_.empty() )
+                {
+                    std::ostringstream ostr;
+                    ostr << "Recon2DT_" << jobID;
+
+                    hoNDArray<GT_Complex8> res = gadget_->packages_received_[jobID].complexIm;
+                    res.squeeze();
+                    GADGET_EXPORT_ARRAY_COMPLEX(gadget_->debugFolder2_fullPath_, gadget_->gt_exporter_, res, ostr.str());
+                }
+            }
+        }
+    }
+    catch(...)
+    {
+        GADGET_DEBUG1("GtPlusRecon2DTGadgetCloudSender handling close...\n");
+        return false;
+    }
+
+    return true;
+}
+
+}

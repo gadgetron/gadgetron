@@ -6,7 +6,7 @@ namespace Gadgetron{
 
   template<class REAL> __global__ void 
   mult_csm_kernel( complext<REAL> *in, complext<REAL> *out, complext<REAL> *csm,
-		   unsigned int image_elements, unsigned int nframes, unsigned int ncoils )
+		   size_t image_elements, unsigned int nframes, unsigned int ncoils )
   {
     unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
     if( idx < image_elements) {
@@ -65,7 +65,7 @@ namespace Gadgetron{
 
   template <class REAL> __global__ void 
   mult_csm_conj_sum_kernel( complext<REAL> *in, complext<REAL> *out, complext<REAL> *csm,
-			    unsigned int image_elements, unsigned int nframes, unsigned int ncoils )
+			    size_t image_elements, unsigned int nframes, unsigned int ncoils )
   {
     unsigned int idx = blockIdx.x*blockDim.x+threadIdx.x;
     if( idx < image_elements ) {

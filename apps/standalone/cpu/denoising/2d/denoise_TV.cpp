@@ -69,9 +69,9 @@ int main(int argc, char** argv)
     return 1;
   }
   
-  unsigned int num_cg_iterations = parms.get_parameter('i')->get_int_value();
-  unsigned int num_inner_iterations = parms.get_parameter('I')->get_int_value();
-  unsigned int num_outer_iterations = parms.get_parameter('O')->get_int_value();
+  size_t num_cg_iterations = parms.get_parameter('i')->get_int_value();
+  size_t num_inner_iterations = parms.get_parameter('I')->get_int_value();
+  size_t num_outer_iterations = parms.get_parameter('O')->get_int_value();
   
   // Setup regularization operators
   boost::shared_ptr< hoPartialDerivativeOperator<_real,2> > Rx( new hoPartialDerivativeOperator<_real,2>(0) );

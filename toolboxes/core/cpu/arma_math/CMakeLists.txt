@@ -1,5 +1,5 @@
 if (WIN32)
-ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUCORE_MATH__)
+  ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUCORE_MATH__)
 endif (WIN32)
 
 include_directories(
@@ -7,16 +7,33 @@ include_directories(
   ${ARMADILLO_INCLUDE_DIRS}
   )
 
-add_library(cpucore_math SHARED 
+if (MKL_FOUND)
+  INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
+  LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
+endif (MKL_FOUND)
+
+add_library(cpucore_math ${LIBTYPE} 
+  hoNDArray_operators.h
   hoNDArray_operators.cpp
+  hoNDArray_elemwise.h
   hoNDArray_elemwise.cpp
+  hoNDArray_blas.h
   hoNDArray_blas.cpp
   hoNDArray_reductions.cpp
   )
 
-target_link_libraries(cpucore_math 
-  ${ARMADILLO_LIBRARIES}
-  )
+if (MKL_FOUND)
+  target_link_libraries(cpucore_math 
+    cpucore
+    ${ARMADILLO_LIBRARIES}
+    ${MKL_LIBRARIES}
+    )
+elseif (MKL_FOUND)
+  target_link_libraries(cpucore_math 
+    cpucore
+    ${ARMADILLO_LIBRARIES}
+    )
+endif (MKL_FOUND)
 
 install(TARGETS cpucore_math DESTINATION lib)
 

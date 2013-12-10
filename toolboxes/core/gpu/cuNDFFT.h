@@ -24,8 +24,8 @@ namespace Gadgetron{
     cuNDFFT() {}
     virtual ~cuNDFFT() {}
     
-    void fft ( cuNDArray<complext<T> > *input, std::vector<unsigned int> *dims_to_transform );
-    void ifft( cuNDArray<complext<T> > *input, std::vector<unsigned int> *dims_to_transform, bool do_scale = true );
+    void fft ( cuNDArray<complext<T> > *input, std::vector<size_t> *dims_to_transform );
+    void ifft( cuNDArray<complext<T> > *input, std::vector<size_t> *dims_to_transform, bool do_scale = true );
     
     void fft ( cuNDArray<complext<T> > *input, unsigned int dim_to_transform);
     void ifft( cuNDArray<complext<T> > *input, unsigned int dim_to_transform, bool do_scale = true );
@@ -34,7 +34,7 @@ namespace Gadgetron{
     void ifft( cuNDArray<complext<T> > *input, bool do_scale = true );
     
   protected:
-    void fft_int( cuNDArray<complext<T> > *input, std::vector<unsigned int> *dims_to_transform, int direction, bool do_scale = true );
+    void fft_int( cuNDArray<complext<T> > *input, std::vector<size_t> *dims_to_transform, int direction, bool do_scale = true );
   };
 }
 

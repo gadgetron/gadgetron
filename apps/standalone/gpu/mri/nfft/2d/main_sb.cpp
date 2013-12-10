@@ -67,8 +67,8 @@ int main( int argc, char** argv)
   }
   
   // Configuration from the command line
-  uintd2 matrix_size = uintd2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
-  uintd2 matrix_size_os = uintd2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
+  uint64d2 matrix_size = uint64d2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
+  uint64d2 matrix_size_os = uint64d2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
   _real kernel_width = parms.get_parameter('k')->get_float_value();
   unsigned int num_cg_iterations = parms.get_parameter('i')->get_int_value();
   unsigned int num_sb_iterations = parms.get_parameter('I')->get_int_value();
@@ -84,7 +84,7 @@ int main( int argc, char** argv)
   delete timer;
 
   // Reshape the data array to a one-dimensional array (we have no batch dimension)
-  std::vector<unsigned int> sample_dims;
+  std::vector<size_t> sample_dims;
   sample_dims.push_back(samples.get_number_of_elements());
   
   // Compute trajectories
@@ -108,7 +108,7 @@ int main( int argc, char** argv)
   E->set_dcw(dcw);
   
   // Set image dimensions
-  vector<unsigned int> image_dims = to_std_vector(matrix_size);
+  vector<size_t> image_dims = to_std_vector(matrix_size);
   E->set_domain_dimensions(&image_dims);
   E->set_codomain_dimensions(&sample_dims);
 

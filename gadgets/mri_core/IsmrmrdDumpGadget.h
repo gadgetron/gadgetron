@@ -13,7 +13,7 @@
 namespace Gadgetron{
 
   class EXPORTGADGETSMRICORE IsmrmrdDumpGadget : 
-  public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
+  public Gadgetron::Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
     {
     public:
       GADGET_DECLARE(IsmrmrdDumpGadget);

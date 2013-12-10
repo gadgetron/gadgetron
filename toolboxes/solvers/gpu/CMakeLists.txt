@@ -14,7 +14,16 @@ include_directories(
   )
 
 cuda_add_library(gpusolvers SHARED 
-  cuGpBbSolver.cu
+    cuCgPreconditioner.h
+    cuCgSolver.h
+    cuGpBbSolver.h
+    cuLwSolver.h
+    cuSbcCgSolver.h
+    cuSbCgSolver.h
+    cuSbcLwSolver.h
+    cuSbLwSolver.h
+    gpusolvers_export.h
+    cuGpBbSolver.cu
   )
 
 target_link_libraries(gpusolvers 

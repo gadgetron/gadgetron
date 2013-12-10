@@ -102,42 +102,116 @@ namespace Gadgetron{
       }
     }
 
-    cuNDArray(std::vector<unsigned int> *dimensions) : NDArray<T>::NDArray() 
+    // size_t interface
+    cuNDArray(std::vector<size_t> *dimensions) : NDArray<T>::NDArray() 
     {
       cudaGetDevice(&this->device_);
       create(dimensions);
     }
     
-    cuNDArray(std::vector<unsigned int> *dimensions, int device_no) : NDArray<T>::NDArray() 
+    cuNDArray(std::vector<size_t> *dimensions, int device_no) : NDArray<T>::NDArray() 
     {
       cudaGetDevice(&this->device_);
       create(dimensions,device_no);
     }
     
-    cuNDArray(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct = false) : NDArray<T>::NDArray()
+    cuNDArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false) : NDArray<T>::NDArray()
     {
       cudaGetDevice(&this->device_);
       create(dimensions,data,delete_data_on_destruct);
     }
 
-    cuNDArray(boost::shared_ptr<std::vector<unsigned int>  > dimensions) : NDArray<T>::NDArray()
+    cuNDArray(boost::shared_ptr<std::vector<size_t>  > dimensions) : NDArray<T>::NDArray()
     {
       cudaGetDevice(&this->device_);
       create(dimensions.get());
     }
 
-    cuNDArray(boost::shared_ptr<std::vector<unsigned int>  > dimensions, int device_no) : NDArray<T>::NDArray()
+    cuNDArray(boost::shared_ptr<std::vector<size_t>  > dimensions, int device_no) : NDArray<T>::NDArray()
     {
       cudaGetDevice(&this->device_);
       create(dimensions.get(),device_no);
     }
 
-    cuNDArray(boost::shared_ptr<std::vector<unsigned int>  > dimensions, T* data, bool delete_data_on_destruct = false) : NDArray<T>::NDArray()
+    cuNDArray(boost::shared_ptr<std::vector<size_t>  > dimensions, T* data, bool delete_data_on_destruct = false) : NDArray<T>::NDArray()
     {
       cudaGetDevice(&this->device_);
       create(dimensions.get(),data,delete_data_on_destruct);
     }
+
+    // unsigned int interface
+    cuNDArray(std::vector<unsigned int> *dimensions) : NDArray<T>::NDArray() 
+    {
+      std::vector<size_t> dims(dimensions->size());
+      for ( unsigned int ii=0; ii<dimensions->size(); ii++ )
+      {
+        dims[ii] = (*dimensions)[ii];
+      }
+
+      cudaGetDevice(&this->device_);
+      create(&dims);
+    }
     
+    cuNDArray(std::vector<unsigned int> *dimensions, int device_no) : NDArray<T>::NDArray() 
+    {
+      std::vector<size_t> dims(dimensions->size());
+      for ( unsigned int ii=0; ii<dimensions->size(); ii++ )
+      {
+        dims[ii] = (*dimensions)[ii];
+      }
+
+      cudaGetDevice(&this->device_);
+      create(&dims,device_no);
+    }
+    
+    cuNDArray(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct = false) : NDArray<T>::NDArray()
+    {
+      std::vector<size_t> dims(dimensions->size());
+      for ( unsigned int ii=0; ii<dimensions->size(); ii++ )
+      {
+        dims[ii] = (*dimensions)[ii];
+      }
+
+      cudaGetDevice(&this->device_);
+      create(&dims,data,delete_data_on_destruct);
+    }
+
+    cuNDArray(boost::shared_ptr<std::vector<unsigned int>  > dimensions) : NDArray<T>::NDArray()
+    {
+      std::vector<size_t> dims(dimensions->size());
+      for ( unsigned int ii=0; ii<dimensions->size(); ii++ )
+      {
+        dims[ii] = (*dimensions)[ii];
+      }
+
+      cudaGetDevice(&this->device_);
+      create(&dims);
+    }
+
+    cuNDArray(boost::shared_ptr<std::vector<unsigned int>  > dimensions, int device_no) : NDArray<T>::NDArray()
+    {
+      std::vector<size_t> dims(dimensions->size());
+      for ( unsigned int ii=0; ii<dimensions->size(); ii++ )
+      {
+        dims[ii] = (*dimensions)[ii];
+      }
+
+      cudaGetDevice(&this->device_);
+      create(&dims,device_no);
+    }
+
+    cuNDArray(boost::shared_ptr<std::vector<unsigned int>  > dimensions, T* data, bool delete_data_on_destruct = false) : NDArray<T>::NDArray()
+    {
+      std::vector<size_t> dims(dimensions->size());
+      for ( unsigned int ii=0; ii<dimensions->size(); ii++ )
+      {
+        dims[ii] = (*dimensions)[ii];
+      }
+
+      cudaGetDevice(&this->device_);
+      create(dims,data,delete_data_on_destruct);
+    }
+
     // Destructor
     virtual ~cuNDArray()
     { 
@@ -217,12 +291,12 @@ namespace Gadgetron{
       return *this;
     }
     
-    virtual void create(std::vector<unsigned int> *dimensions)
+    virtual void create(std::vector<size_t> *dimensions)
     {
       return NDArray<T>::create(dimensions);
     }
     
-    virtual void create(std::vector<unsigned int> *dimensions, int device_no)
+    virtual void create(std::vector<size_t> *dimensions, int device_no)
     {
       if (device_no < 0){
 	throw cuda_error("cuNDArray::create: illegal device no");
@@ -231,7 +305,7 @@ namespace Gadgetron{
       NDArray<T>::create(dimensions);
     }
 
-    virtual void create(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct = false)
+    virtual void create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false)
     {
       if (!data) {
 	throw std::runtime_error("cuNDArray::create: 0x0 pointer provided");
@@ -257,15 +331,15 @@ namespace Gadgetron{
       NDArray<T>::create(dimensions, data, delete_data_on_destruct);
     }
     
-    virtual void create(boost::shared_ptr<std::vector<unsigned int>  > dimensions){
+    virtual void create(boost::shared_ptr<std::vector<size_t>  > dimensions){
       this->create(dimensions.get());
     }
 
-    virtual void create(boost::shared_ptr<std::vector<unsigned int>  > dimensions, int device_no){
+    virtual void create(boost::shared_ptr<std::vector<size_t>  > dimensions, int device_no){
       this->create(dimensions.get(),device_no);
     }
 
-    virtual void create(boost::shared_ptr<std::vector<unsigned int>  > dimensions, T* data, bool delete_data_on_destruct = false){
+    virtual void create(boost::shared_ptr<std::vector<size_t>  > dimensions, T* data, bool delete_data_on_destruct = false){
       this->create(dimensions.get(), data, delete_data_on_destruct);
     }
     
@@ -334,7 +408,7 @@ namespace Gadgetron{
       return thrust::device_ptr<T>(this->data_)+this->get_number_of_elements();
     }
 
-    T at( unsigned int idx ){
+    T at( size_t idx ){
       if( idx >= this->get_number_of_elements() ){
   	throw std::runtime_error("cuNDArray::at(): index out of range.");
       }
@@ -343,7 +417,7 @@ namespace Gadgetron{
       return res;
     }
         
-    T operator[]( unsigned int idx ){
+    T operator[]( size_t idx ){
       if( idx >= this->get_number_of_elements() ){
   	throw std::runtime_error("cuNDArray::operator[]: index out of range.");
       }
@@ -364,7 +438,7 @@ namespace Gadgetron{
       this->elements_ = 1;
       if (this->dimensions_->empty())
   	throw std::runtime_error("cuNDArray::allocate_memory() : dimensions is empty.");
-      for (unsigned int i = 0; i < this->dimensions_->size(); i++) {
+      for (size_t i = 0; i < this->dimensions_->size(); i++) {
 	this->elements_ *= (*this->dimensions_)[i];
       } 
       
@@ -388,7 +462,7 @@ namespace Gadgetron{
 	err << "CUDA Memory: " << free << " (" << total << ")";
 	
 	err << "   memory requested: " << size << "( ";
-	for (unsigned int i = 0; i < this->dimensions_->size(); i++) {
+	for (size_t i = 0; i < this->dimensions_->size(); i++) {
 	  std::cerr << (*this->dimensions_)[i] << " ";
 	} 
 	err << ")";

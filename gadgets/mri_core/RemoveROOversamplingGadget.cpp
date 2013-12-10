@@ -16,7 +16,7 @@ int RemoveROOversamplingGadget
     return GADGET_FAIL;
   }
 
-  std::vector<unsigned int> data_out_dims = *m2->getObjectPtr()->get_dimensions();
+  std::vector<size_t> data_out_dims = *m2->getObjectPtr()->get_dimensions();
   data_out_dims[0] = data_out_dims[0]/2;
 
   try{ m3->getObjectPtr()->create(&data_out_dims);}

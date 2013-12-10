@@ -59,7 +59,7 @@ namespace Gadgetron{
       throw std::runtime_error("cuNFFTOperator::mult_MH_M : 0x0 input/output not accepted");
     }
     
-    boost::shared_ptr< std::vector<unsigned int> > codomain_dims = this->get_codomain_dimensions();
+    boost::shared_ptr< std::vector<size_t> > codomain_dims = this->get_codomain_dimensions();
     if( codomain_dims.get() == 0x0 || codomain_dims->size() == 0 ){
       throw std::runtime_error("cuNFFTOperator::mult_MH_M : operator codomain dimensions not set");
     }
@@ -82,7 +82,7 @@ namespace Gadgetron{
   }
   
   template<class REAL, unsigned int D> void
-  cuNFFTOperator<REAL,D>::setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os, REAL W )
+  cuNFFTOperator<REAL,D>::setup( typename uint64d<D>::Type matrix_size, typename uint64d<D>::Type matrix_size_os, REAL W )
   {  
     plan_->setup( matrix_size, matrix_size_os, W );  
   }

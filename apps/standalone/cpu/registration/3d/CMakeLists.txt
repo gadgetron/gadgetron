@@ -5,8 +5,7 @@ target_link_libraries(register_CK_3d_cpu
   cpureg 
   cpucore 
   cpucore_math
-#  cpuoperators
-#  cpusolvers 
+  ${ARMADILLO_LIBRARIES}
   )
 
 install(TARGETS register_CK_3d_cpu DESTINATION bin)

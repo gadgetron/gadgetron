@@ -145,7 +145,7 @@ namespace Gadgetron{
     image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize().x()*get_double_value(std::string("reconstruction_os_factor_x").c_str())))+warp_size-1)/warp_size)*warp_size);  
     image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize().y()*get_double_value(std::string("reconstruction_os_factor_y").c_str())))+warp_size-1)/warp_size)*warp_size);
     
-    image_dimensions_recon_os_ = uintd2
+    image_dimensions_recon_os_ = uint64d2
       (((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
        ((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
     
@@ -153,10 +153,10 @@ namespace Gadgetron{
     oversampling_factor_ = float(image_dimensions_recon_os_[0])/float(image_dimensions_recon_[0]); 
     
     GADGET_DEBUG2("matrix_size_x : %d, recon: %d, recon_os: %d\n", 
-                  image_dimensions_[0], image_dimensions_recon_[0], image_dimensions_recon_os_[0]);
+		  image_dimensions_[0], image_dimensions_recon_[0], image_dimensions_recon_os_[0]);
 
     GADGET_DEBUG2("matrix_size_y : %d, recon: %d, recon_os: %d\n", 
-                  image_dimensions_[1], image_dimensions_recon_[1], image_dimensions_recon_os_[1]);
+		  image_dimensions_[1], image_dimensions_recon_[1], image_dimensions_recon_os_[1]);
     
     fov_.push_back(r_space.fieldOfView_mm().x());
     fov_.push_back(r_space.fieldOfView_mm().y());
@@ -185,7 +185,7 @@ namespace Gadgetron{
     for( unsigned int i=0; i<slices_*sets_; i++ ){
       recon_profiles_queue_[i].high_water_mark(bsize);
       recon_profiles_queue_[i].low_water_mark(bsize);
-    }
+      }
 
     // Define some profile counters for book-keeping
     //
@@ -202,15 +202,15 @@ namespace Gadgetron{
     num_coils_ = boost::shared_array<unsigned int>(new unsigned int[slices_*sets_]);
     
     if( !previous_profile_.get() ||
-        !image_counter_.get() || 
-        !profiles_counter_frame_.get() ||
-        !profiles_counter_global_.get() ||
-        !profiles_per_frame_.get() || 
-        !frames_per_rotation_.get() ||
-        !buffer_frames_per_rotation_.get() ||
-        !buffer_update_needed_.get() ||
-        !num_coils_.get() ||
-        !reconfigure_ ){
+	!image_counter_.get() || 
+	!profiles_counter_frame_.get() ||
+	!profiles_counter_global_.get() ||
+	!profiles_per_frame_.get() || 
+	!frames_per_rotation_.get() ||
+	!buffer_frames_per_rotation_.get() ||
+	!buffer_update_needed_.get() ||
+	!num_coils_.get() ||
+	!reconfigure_ ){
       GADGET_DEBUG1("Failed to allocate host memory (1)\n");
       return GADGET_FAIL;
     }
@@ -232,18 +232,18 @@ namespace Gadgetron{
       //
       
       if( profiles_per_frame_[i] == 0 ){
-        profiles_per_frame_[i] = image_dimensions_[0];
+	profiles_per_frame_[i] = image_dimensions_[0];
       }
       
       if( frames_per_rotation_[i] == 0 ){
-        if( mode_ == 2 ) // golden angle
-          frames_per_rotation_[i] = 1;
-        else
-          frames_per_rotation_[i] = image_dimensions_[0]/profiles_per_frame_[i];
+	if( mode_ == 2 ) // golden angle
+	  frames_per_rotation_[i] = 1;
+	else
+	  frames_per_rotation_[i] = image_dimensions_[0]/profiles_per_frame_[i];
       }
 
       bsize = sizeof(GadgetContainerMessage<ISMRMRD::ImageHeader>)*100*
-        std::max(1L, frames_per_rotation_[i]*rotations_per_reconstruction_);
+	std::max(1L, frames_per_rotation_[i]*rotations_per_reconstruction_);
     
       image_headers_queue_[i].high_water_mark(bsize);
       image_headers_queue_[i].low_water_mark(bsize);
@@ -293,7 +293,7 @@ namespace Gadgetron{
 
   int gpuRadialSensePrepGadget::
   process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1,
-          GadgetContainerMessage< hoNDArray< std::complex<float> > > *m2)
+	  GadgetContainerMessage< hoNDArray< std::complex<float> > > *m2)
   {
     // Noise should have been consumed by the noise adjust (if in the gadget chain)
     //
@@ -323,9 +323,9 @@ namespace Gadgetron{
     //
 
     if( !vec_equal(position_[set*slices_+slice], m1->getObjectPtr()->position) ||
-        !vec_equal(read_dir_[set*slices_+slice], m1->getObjectPtr()->read_dir) || 
-        !vec_equal(phase_dir_[set*slices_+slice], m1->getObjectPtr()->phase_dir) ||
-        !vec_equal(slice_dir_[set*slices_+slice], m1->getObjectPtr()->slice_dir) ){
+	!vec_equal(read_dir_[set*slices_+slice], m1->getObjectPtr()->read_dir) || 
+	!vec_equal(phase_dir_[set*slices_+slice], m1->getObjectPtr()->phase_dir) ||
+	!vec_equal(slice_dir_[set*slices_+slice], m1->getObjectPtr()->slice_dir) ){
       
       // Yes indeed, clear the accumulation buffer
       acc_buffer->clear();
@@ -373,26 +373,26 @@ namespace Gadgetron{
     if (previous_profile_[set*slices_+slice] >= 0) {
 
       if ( profile > previous_profile_[set*slices_+slice]) { // this is not the last profile in the frame
-        if( mode_ == 0 && get_int_value(std::string("frames_per_rotation").c_str()) == 0 ){
-          unsigned int acceleration_factor = profile - previous_profile_[set*slices_+slice];
-          if( acceleration_factor != frames_per_rotation_[set*slices_+slice] ){
-            GADGET_DEBUG1("Reconfiguring due to change in acceleration factor\n");
-            frames_per_rotation_[set*slices_+slice] = acceleration_factor;
-            reconfigure(set, slice);
-          }
-        }
+	if( mode_ == 0 && get_int_value(std::string("frames_per_rotation").c_str()) == 0 ){
+	  unsigned int acceleration_factor = profile - previous_profile_[set*slices_+slice];
+	  if( acceleration_factor != frames_per_rotation_[set*slices_+slice] ){
+	    GADGET_DEBUG1("Reconfiguring due to change in acceleration factor\n");
+	    frames_per_rotation_[set*slices_+slice] = acceleration_factor;
+	    reconfigure(set, slice);
+	  }
+	}
       }
       else{ // This is the first profile in a new frame
-        if( get_int_value(std::string("profiles_per_frame").c_str()) == 0 && // make sure the user did not specify a desired value for this variable
-            profiles_counter_frame_[set*slices_+slice] > 0 &&
-            profiles_counter_frame_[set*slices_+slice] != profiles_per_frame_[set*slices_+slice] ){ // a new acceleration factor is detected
-          GADGET_DEBUG1("Reconfiguring due to new slice detection\n");
-          new_frame_detected = true;
-          profiles_per_frame_[set*slices_+slice] = profiles_counter_frame_[set*slices_+slice];
-          if( mode_ == 1 && get_int_value(std::string("frames_per_rotation").c_str()) == 0 )
-            frames_per_rotation_[set*slices_+slice] = image_dimensions_[0]/profiles_per_frame_[set*slices_+slice];
-          reconfigure(set, slice);
-        }
+	if( get_int_value(std::string("profiles_per_frame").c_str()) == 0 && // make sure the user did not specify a desired value for this variable
+	    profiles_counter_frame_[set*slices_+slice] > 0 &&
+	    profiles_counter_frame_[set*slices_+slice] != profiles_per_frame_[set*slices_+slice] ){ // a new acceleration factor is detected
+	  GADGET_DEBUG1("Reconfiguring due to new slice detection\n");
+	  new_frame_detected = true;
+	  profiles_per_frame_[set*slices_+slice] = profiles_counter_frame_[set*slices_+slice];
+	  if( mode_ == 1 && get_int_value(std::string("frames_per_rotation").c_str()) == 0 )
+	    frames_per_rotation_[set*slices_+slice] = image_dimensions_[0]/profiles_per_frame_[set*slices_+slice];
+	  reconfigure(set, slice);
+	}
       }
     }
     previous_profile_[set*slices_+slice] = profile;
@@ -419,11 +419,11 @@ namespace Gadgetron{
       //
 
       boost::shared_ptr< hoNDArray<float_complext> > host_samples = 
-        extract_samples_from_queue( &frame_profiles_queue_[set*slices_+slice], false, set, slice );
+	extract_samples_from_queue( &frame_profiles_queue_[set*slices_+slice], false, set, slice );
 
       if( host_samples.get() == 0x0 ){
-        GADGET_DEBUG1("Failed to extract frame data from queue\n");
-        return GADGET_FAIL;
+	GADGET_DEBUG1("Failed to extract frame data from queue\n");
+	return GADGET_FAIL;
       }
       
       cuNDArray<float_complext> samples( host_samples.get() );
@@ -449,15 +449,15 @@ namespace Gadgetron{
     // - or if we are about to reconstruct due to 'sliding_window_profiles_' > 0
 
     if( is_last_profile_in_frame || 
-        (is_last_profile_in_reconstruction && image_headers_queue_[set*slices_+slice].message_count() == 0) ){
+	(is_last_profile_in_reconstruction && image_headers_queue_[set*slices_+slice].message_count() == 0) ){
       
       GadgetContainerMessage<ISMRMRD::ImageHeader> *header = new GadgetContainerMessage<ISMRMRD::ImageHeader>();
       ISMRMRD::AcquisitionHeader *base_head = m1->getObjectPtr();
-      
+
       {
-        // Initialize header to all zeroes (there is a few fields we do not set yet)
-        ISMRMRD::ImageHeader tmp = {0};
-        *(header->getObjectPtr()) = tmp;
+	// Initialize header to all zeroes (there is a few fields we do not set yet)
+	ISMRMRD::ImageHeader tmp = {0};
+	*(header->getObjectPtr()) = tmp;
       }
 
       header->getObjectPtr()->version = base_head->version;
@@ -499,70 +499,70 @@ namespace Gadgetron{
       // - and at the first pass
       
       if( buffer_update_needed_[set*slices_+slice] || 
-          csm_host_[set*slices_+slice].get_number_of_elements() == 0 || 
-          reg_host_[set*slices_+slice].get_number_of_elements() == 0 ){
+	  csm_host_[set*slices_+slice].get_number_of_elements() == 0 || 
+	  reg_host_[set*slices_+slice].get_number_of_elements() == 0 ){
 
-        // Get the accumulated coil images
-        //
+	// Get the accumulated coil images
+	//
 
-        boost::shared_ptr< cuNDArray<float_complext> > csm_data = acc_buffer->get_accumulated_coil_images();
+	boost::shared_ptr< cuNDArray<float_complext> > csm_data = acc_buffer->get_accumulated_coil_images();
 
-        if( !csm_data.get() ){
-          GADGET_DEBUG1("Error during accumulation buffer computation\n");
-          return GADGET_FAIL;
-        }            
+	if( !csm_data.get() ){
+	  GADGET_DEBUG1("Error during accumulation buffer computation\n");
+	  return GADGET_FAIL;
+	}            
 	
-        // Estimate CSM
-        //
+	// Estimate CSM
+	//
 
-        boost::shared_ptr< cuNDArray<float_complext> > csm = estimate_b1_map<float,2>( csm_data.get() );
+	boost::shared_ptr< cuNDArray<float_complext> > csm = estimate_b1_map<float,2>( csm_data.get() );
 
-        if( !csm.get() ){
-          GADGET_DEBUG1("Error during coil estimation\n");
-          return GADGET_FAIL;
-        }            
+	if( !csm.get() ){
+	  GADGET_DEBUG1("Error during coil estimation\n");
+	  return GADGET_FAIL;
+	}            
 
-        acc_buffer->set_csm(csm);
-        csm_host_[set*slices_+slice] = *(csm->to_host());
+	acc_buffer->set_csm(csm);
+	csm_host_[set*slices_+slice] = *(csm->to_host());
 	
-        // Compute regularization image
-        //
+	// Compute regularization image
+	//
 
-        boost::shared_ptr< cuNDArray<float_complext> > reg_image;
+	boost::shared_ptr< cuNDArray<float_complext> > reg_image;
 	
-        if( buffer_using_solver_ && mode_ == 2 ){
-          ((cuSenseBufferCg<float,2>*)acc_buffer)->preprocess
-            ( calculate_trajectory_for_rhs( profiles_counter_global_[set*slices_+slice] - ((new_frame_detected) ? 1 : 0), set, slice).get());
-        }
+	if( buffer_using_solver_ && mode_ == 2 ){
+	  ((cuSenseBufferCg<float,2>*)acc_buffer)->preprocess
+	    ( calculate_trajectory_for_rhs( profiles_counter_global_[set*slices_+slice] - ((new_frame_detected) ? 1 : 0), set, slice).get());
+	}
 
-        reg_image = acc_buffer->get_combined_coil_image();
+	reg_image = acc_buffer->get_combined_coil_image();
 	
-        if( !reg_image.get() ){
-          GADGET_DEBUG1("Error computing regularization image\n");
-          return GADGET_FAIL;
-        }            
+	if( !reg_image.get() ){
+	  GADGET_DEBUG1("Error computing regularization image\n");
+	  return GADGET_FAIL;
+	}            
 	
-        reg_host_[set*slices_+slice] = *(reg_image->to_host());
+	reg_host_[set*slices_+slice] = *(reg_image->to_host());
 		
-        /*
-          static int counter = 0;
-          char filename[256];
-          sprintf((char*)filename, "reg_%d.cplx", counter);
-          write_nd_array<float_complext>( reg_host_[set*slices_+slice].get(), filename );
-          counter++; */
+	/*
+	static int counter = 0;
+	char filename[256];
+	sprintf((char*)filename, "reg_%d.cplx", counter);
+	write_nd_array<float_complext>( reg_host_[set*slices_+slice].get(), filename );
+	counter++; */
 
-        buffer_update_needed_[set*slices_+slice] = false;
+	buffer_update_needed_[set*slices_+slice] = false;
       }
 
       // Prepare data array of the profiles for the downstream reconstruction
       //
       
       boost::shared_ptr< hoNDArray<float_complext> > samples_host = 
-        extract_samples_from_queue( &recon_profiles_queue_[set*slices_+slice], true, set, slice );
+	extract_samples_from_queue( &recon_profiles_queue_[set*slices_+slice], true, set, slice );
       
       if( samples_host.get() == 0x0 ){
-        GADGET_DEBUG1("Failed to extract frame data from queue\n");
-        return GADGET_FAIL;
+	GADGET_DEBUG1("Failed to extract frame data from queue\n");
+	return GADGET_FAIL;
       }
            
       // The trajectory needs to be updated on the fly:
@@ -570,8 +570,8 @@ namespace Gadgetron{
       // - when we are reconstructing frame-by-frame
       
       if( mode_ == 2 || rotations_per_reconstruction_ == 0 ){
-        calculate_trajectory_for_reconstruction
-          ( profiles_counter_global_[set*slices_+slice] - ((new_frame_detected) ? 1 : 0), set, slice );
+	calculate_trajectory_for_reconstruction
+	  ( profiles_counter_global_[set*slices_+slice] - ((new_frame_detected) ? 1 : 0), set, slice );
       }
       
       // Set up Sense job
@@ -589,40 +589,40 @@ namespace Gadgetron{
       //
 
       long frames_per_reconstruction = 
-        std::max( 1L, frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_ );
+	std::max( 1L, frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_ );
       
       if( image_headers_queue_[set*slices_+slice].message_count() != frames_per_reconstruction ){
-        m4->release();
-        GADGET_DEBUG2("Unexpected size of image header queue: %d, %d\n", 
-                      image_headers_queue_[set*slices_+slice].message_count(), frames_per_reconstruction);
-        return GADGET_FAIL;
+	m4->release();
+	GADGET_DEBUG2("Unexpected size of image header queue: %d, %d\n", 
+		      image_headers_queue_[set*slices_+slice].message_count(), frames_per_reconstruction);
+	return GADGET_FAIL;
       }
 
       m4->getObjectPtr()->image_headers_ =
-        boost::shared_array<ISMRMRD::ImageHeader>( new ISMRMRD::ImageHeader[frames_per_reconstruction] );
+	boost::shared_array<ISMRMRD::ImageHeader>( new ISMRMRD::ImageHeader[frames_per_reconstruction] );
       
       for( unsigned int i=0; i<frames_per_reconstruction; i++ ){	
 
-        ACE_Message_Block *mbq;
+	ACE_Message_Block *mbq;
 
-        if( image_headers_queue_[set*slices_+slice].dequeue_head(mbq) < 0 ) {
-          m4->release();
-          GADGET_DEBUG1("Image header dequeue failed\n");
-          return GADGET_FAIL;
-        }
+	if( image_headers_queue_[set*slices_+slice].dequeue_head(mbq) < 0 ) {
+	  m4->release();
+	  GADGET_DEBUG1("Image header dequeue failed\n");
+	  return GADGET_FAIL;
+	}
 	
-        GadgetContainerMessage<ISMRMRD::ImageHeader> *m = AsContainerMessage<ISMRMRD::ImageHeader>(mbq);
-        m4->getObjectPtr()->image_headers_[i] = *m->getObjectPtr();
+	GadgetContainerMessage<ISMRMRD::ImageHeader> *m = AsContainerMessage<ISMRMRD::ImageHeader>(mbq);
+	m4->getObjectPtr()->image_headers_[i] = *m->getObjectPtr();
 
-        // In sliding window mode the header might need to go back at the end of the queue for reuse
-        // 
+	// In sliding window mode the header might need to go back at the end of the queue for reuse
+	// 
 	
-        if( i >= frames_per_reconstruction-sliding_window_rotations_*frames_per_rotation_[set*slices_+slice] ){
-          image_headers_queue_[set*slices_+slice].enqueue_tail(m);
-        }
-        else {
-          m->release();
-        }
+	if( i >= frames_per_reconstruction-sliding_window_rotations_*frames_per_rotation_[set*slices_+slice] ){
+	  image_headers_queue_[set*slices_+slice].enqueue_tail(m);
+	}
+	else {
+	  m->release();
+	}
       }      
       
       // The Sense Job needs an image header as well. 
@@ -635,9 +635,9 @@ namespace Gadgetron{
       //GADGET_DEBUG1("Putting job on queue\n");
       
       if (this->next()->putq(m3) < 0) {
-        GADGET_DEBUG1("Failed to put job on queue.\n");
-        m3->release();
-        return GADGET_FAIL;
+	GADGET_DEBUG1("Failed to put job on queue.\n");
+	m3->release();
+	return GADGET_FAIL;
       }
     }
     
@@ -677,34 +677,34 @@ namespace Gadgetron{
     case 0:
     case 1:
       {
-        if( rotations_per_reconstruction_ == 0 ){
+	if( rotations_per_reconstruction_ == 0 ){
 
-          long local_frame = (profile_offset/profiles_per_frame_[set*slices_+slice])%frames_per_rotation_[set*slices_+slice];
-          float angular_offset = M_PI/float(profiles_per_frame_[set*slices_+slice])*float(local_frame)/float(frames_per_rotation_[set*slices_+slice]);	  
+	  long local_frame = (profile_offset/profiles_per_frame_[set*slices_+slice])%frames_per_rotation_[set*slices_+slice];
+	  float angular_offset = M_PI/float(profiles_per_frame_[set*slices_+slice])*float(local_frame)/float(frames_per_rotation_[set*slices_+slice]);	  
 
-          host_traj_recon_[set*slices_+slice] = *compute_radial_trajectory_fixed_angle_2d<float>
-            ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], 1, angular_offset )->to_host();	
-        }
-        else{
-          host_traj_recon_[set*slices_+slice] = *compute_radial_trajectory_fixed_angle_2d<float>
-            ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], frames_per_rotation_[set*slices_+slice] )->to_host();
-        }
+	  host_traj_recon_[set*slices_+slice] = *compute_radial_trajectory_fixed_angle_2d<float>
+	    ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], 1, angular_offset )->to_host();	
+	}
+	else{
+	  host_traj_recon_[set*slices_+slice] = *compute_radial_trajectory_fixed_angle_2d<float>
+	    ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], frames_per_rotation_[set*slices_+slice] )->to_host();
+	}
       }
       break;
       
     case 2:
       {
-        if( rotations_per_reconstruction_ == 0 ){	  
-          unsigned int first_profile_in_reconstruction = std::max(0L, profile_offset-profiles_per_frame_[set*slices_+slice]+1);
-          host_traj_recon_[set*slices_+slice] = *compute_radial_trajectory_golden_ratio_2d<float>
-            ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], 1, first_profile_in_reconstruction )->to_host();	
-        }
-        else{
-          unsigned int first_profile_in_reconstruction = 
-            std::max(0L, profile_offset-profiles_per_frame_[set*slices_+slice]*frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_+1);
-          host_traj_recon_[set*slices_+slice] = *compute_radial_trajectory_golden_ratio_2d<float>
-            ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_, first_profile_in_reconstruction )->to_host();
-        }	  
+	if( rotations_per_reconstruction_ == 0 ){	  
+	  unsigned int first_profile_in_reconstruction = std::max(0L, profile_offset-profiles_per_frame_[set*slices_+slice]+1);
+	  host_traj_recon_[set*slices_+slice] = *compute_radial_trajectory_golden_ratio_2d<float>
+	    ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], 1, first_profile_in_reconstruction )->to_host();	
+	}
+	else{
+	  unsigned int first_profile_in_reconstruction = 
+	    std::max(0L, profile_offset-profiles_per_frame_[set*slices_+slice]*frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_+1);
+	  host_traj_recon_[set*slices_+slice] = *compute_radial_trajectory_golden_ratio_2d<float>
+	    ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_, first_profile_in_reconstruction )->to_host();
+	}	  
       }
       break;
 	
@@ -726,14 +726,14 @@ namespace Gadgetron{
     case 0:
     case 1:
       host_weights_recon_[set*slices_+slice] = *compute_radial_dcw_fixed_angle_2d<float>
-        ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], oversampling_factor_, 
-          1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) )->to_host();
+	( samples_per_profile_, profiles_per_frame_[set*slices_+slice], oversampling_factor_, 
+	  1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) )->to_host();
       break;
       
     case 2:
       host_weights_recon_[set*slices_+slice] = *compute_radial_dcw_golden_ratio_2d<float>
-        ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], oversampling_factor_, 
-          1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) )->to_host();
+	( samples_per_profile_, profiles_per_frame_[set*slices_+slice], oversampling_factor_, 
+	  1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) )->to_host();
       break;
       
     default:
@@ -756,20 +756,20 @@ namespace Gadgetron{
     case 0:
     case 1:
       {
-        long local_frame = (profile_offset/profiles_per_frame_[set*slices_+slice])%frames_per_rotation_[set*slices_+slice];
-        float angular_offset = M_PI/float(profiles_per_frame_[set*slices_+slice])*float(local_frame)/float(frames_per_rotation_[set*slices_+slice]);	  
+	long local_frame = (profile_offset/profiles_per_frame_[set*slices_+slice])%frames_per_rotation_[set*slices_+slice];
+	float angular_offset = M_PI/float(profiles_per_frame_[set*slices_+slice])*float(local_frame)/float(frames_per_rotation_[set*slices_+slice]);	  
 
-        result = compute_radial_trajectory_fixed_angle_2d<float>
-          ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], 1, angular_offset );  
+	result = compute_radial_trajectory_fixed_angle_2d<float>
+	  ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], 1, angular_offset );  
       }
       break;
 	
     case 2:
       { 
-        unsigned int first_profile_in_buffer = std::max(0L, profile_offset-profiles_per_frame_[set*slices_+slice]+1);
+	unsigned int first_profile_in_buffer = std::max(0L, profile_offset-profiles_per_frame_[set*slices_+slice]+1);
 
-        result  = compute_radial_trajectory_golden_ratio_2d<float>
-          ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], 1, first_profile_in_buffer );
+	result  = compute_radial_trajectory_golden_ratio_2d<float>
+	  ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], 1, first_profile_in_buffer );
       }
       break;	
 	
@@ -791,12 +791,12 @@ namespace Gadgetron{
     case 0:
     case 1:
       return compute_radial_dcw_fixed_angle_2d<float>
-        ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], oversampling_factor_, 1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) );
+	( samples_per_profile_, profiles_per_frame_[set*slices_+slice], oversampling_factor_, 1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) );
       break;
       
     case 2:
       return compute_radial_dcw_golden_ratio_2d<float>
-        ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], oversampling_factor_, 1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) );
+	( samples_per_profile_, profiles_per_frame_[set*slices_+slice], oversampling_factor_, 1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) );
       break;
       
     default:
@@ -817,21 +817,21 @@ namespace Gadgetron{
     case 0:
     case 1:
       return compute_radial_trajectory_fixed_angle_2d<float>
-        ( samples_per_profile_, profiles_per_frame_[set*slices_+slice]*buffer_frames_per_rotation_[set*slices_+slice], 1 );
+	( samples_per_profile_, profiles_per_frame_[set*slices_+slice]*buffer_frames_per_rotation_[set*slices_+slice], 1 );
       break;
 	
     case 2:
       { 
-        unsigned int first_profile = 
-          std::max(0L, profile_offset-profiles_per_frame_[set*slices_+slice]*
-                   buffer_frames_per_rotation_[set*slices_+slice]*
-                   buffer_length_in_rotations_+1);
+	unsigned int first_profile = 
+	  std::max(0L, profile_offset-profiles_per_frame_[set*slices_+slice]*
+		   buffer_frames_per_rotation_[set*slices_+slice]*
+		   buffer_length_in_rotations_+1);
 
-        return compute_radial_trajectory_golden_ratio_2d<float>
-          ( samples_per_profile_, 
-            profiles_per_frame_[set*slices_+slice]*
-            buffer_frames_per_rotation_[set*slices_+slice]*buffer_length_in_rotations_, 
-            1, first_profile );
+	return compute_radial_trajectory_golden_ratio_2d<float>
+	  ( samples_per_profile_, 
+	    profiles_per_frame_[set*slices_+slice]*
+	    buffer_frames_per_rotation_[set*slices_+slice]*buffer_length_in_rotations_, 
+	    1, first_profile );
       }
       break;	
 	
@@ -852,23 +852,23 @@ namespace Gadgetron{
     case 0:
     case 1:
       {
-        unsigned int num_profiles = 
-          profiles_per_frame_[set*slices_+slice]*buffer_frames_per_rotation_[set*slices_+slice];
+	unsigned int num_profiles = 
+	  profiles_per_frame_[set*slices_+slice]*buffer_frames_per_rotation_[set*slices_+slice];
 
-        return compute_radial_dcw_fixed_angle_2d<float>
-          ( samples_per_profile_, num_profiles, oversampling_factor_, 
-            1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) );
+	return compute_radial_dcw_fixed_angle_2d<float>
+	  ( samples_per_profile_, num_profiles, oversampling_factor_, 
+	    1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) );
       }
       break;
       
     case 2:
       {
-        unsigned int num_profiles = 
-          profiles_per_frame_[set*slices_+slice]*buffer_frames_per_rotation_[set*slices_+slice]*buffer_length_in_rotations_;
+	unsigned int num_profiles = 
+	  profiles_per_frame_[set*slices_+slice]*buffer_frames_per_rotation_[set*slices_+slice]*buffer_length_in_rotations_;
 
-        return compute_radial_dcw_golden_ratio_2d<float>
-          ( samples_per_profile_, num_profiles, oversampling_factor_, 
-            1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) );
+	return compute_radial_dcw_golden_ratio_2d<float>
+	  ( samples_per_profile_, num_profiles, oversampling_factor_, 
+	    1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) );
       }
       break;
       
@@ -881,13 +881,13 @@ namespace Gadgetron{
 
   boost::shared_ptr< hoNDArray<float_complext> > gpuRadialSensePrepGadget::
   extract_samples_from_queue( ACE_Message_Queue<ACE_MT_SYNCH> *queue, bool sliding_window,
-                              unsigned int set, unsigned int slice )
+			      unsigned int set, unsigned int slice )
   {    
     //GADGET_DEBUG1("Emptying queue...\n");
 
     unsigned int profiles_buffered = queue->message_count();
     
-    std::vector<unsigned int> dims;
+    std::vector<size_t> dims;
     dims.push_back(samples_per_profile_*profiles_buffered);
     dims.push_back(num_coils_[set*slices_+slice]);
     
@@ -897,38 +897,38 @@ namespace Gadgetron{
 
       ACE_Message_Block* mbq;
       if (queue->dequeue_head(mbq) < 0) {
-        GADGET_DEBUG1("Message dequeue failed\n");
-        return boost::shared_ptr< hoNDArray<float_complext> >();
+	GADGET_DEBUG1("Message dequeue failed\n");
+	return boost::shared_ptr< hoNDArray<float_complext> >();
       }
       
       GadgetContainerMessage< hoNDArray< std::complex<float> > > *daq = AsContainerMessage<hoNDArray< std::complex<float> > >(mbq);
 	
       if (!daq) {
-        GADGET_DEBUG1("Unable to interpret data on message queue\n");
-        return boost::shared_ptr< hoNDArray<float_complext> >();
+	GADGET_DEBUG1("Unable to interpret data on message queue\n");
+	return boost::shared_ptr< hoNDArray<float_complext> >();
       }
 	
       for (unsigned int c = 0; c < num_coils_[set*slices_+slice]; c++) {
 	
-        float_complext *data_ptr = host_samples->get_data_ptr();
-        data_ptr += c*samples_per_profile_*profiles_buffered+p*samples_per_profile_;
+	float_complext *data_ptr = host_samples->get_data_ptr();
+	data_ptr += c*samples_per_profile_*profiles_buffered+p*samples_per_profile_;
 	    
-        std::complex<float> *r_ptr = daq->getObjectPtr()->get_data_ptr();
-        r_ptr += c*daq->getObjectPtr()->get_size(0);
+	std::complex<float> *r_ptr = daq->getObjectPtr()->get_data_ptr();
+	r_ptr += c*daq->getObjectPtr()->get_size(0);
 	  
-        memcpy(data_ptr,r_ptr,samples_per_profile_*sizeof(float_complext));
+	memcpy(data_ptr,r_ptr,samples_per_profile_*sizeof(float_complext));
       }
 
       // In sliding window mode the profile might need to go back at the end of the queue
       // 
       
       long profiles_in_sliding_window = sliding_window_profiles_ + 
-        profiles_per_frame_[set*slices_+slice]*frames_per_rotation_[set*slices_+slice]*sliding_window_rotations_;
+	profiles_per_frame_[set*slices_+slice]*frames_per_rotation_[set*slices_+slice]*sliding_window_rotations_;
 
       if( sliding_window && p >= (profiles_buffered-profiles_in_sliding_window) )
-        queue->enqueue_tail(mbq);
+	queue->enqueue_tail(mbq);
       else
-        mbq->release();
+	mbq->release();
     } 
     
     return host_samples;
@@ -948,7 +948,7 @@ namespace Gadgetron{
   void gpuRadialSensePrepGadget::reconfigure(unsigned int set, unsigned int slice)
   {    
     GADGET_DEBUG2("\nReconfiguring:\n#profiles/frame:%d\n#frames/rotation: %d\n#rotations/reconstruction:%d\n", 
-                  profiles_per_frame_[set*slices_+slice], frames_per_rotation_[set*slices_+slice], rotations_per_reconstruction_);
+		  profiles_per_frame_[set*slices_+slice], frames_per_rotation_[set*slices_+slice], rotations_per_reconstruction_);
 
     calculate_trajectory_for_reconstruction(0, set, slice);
     calculate_density_compensation_for_reconstruction(set, slice);
@@ -957,17 +957,17 @@ namespace Gadgetron{
 
     if( buffer_frames_per_rotation_[set*slices_+slice] == 0 ){
       if( mode_ == 2 )
-        buffer_frames_per_rotation_[set*slices_+slice] = 
-          image_dimensions_recon_os_[0]/profiles_per_frame_[set*slices_+slice];
+	buffer_frames_per_rotation_[set*slices_+slice] = 
+	  image_dimensions_recon_os_[0]/profiles_per_frame_[set*slices_+slice];
       else
-        buffer_frames_per_rotation_[set*slices_+slice] = frames_per_rotation_[set*slices_+slice];
+	buffer_frames_per_rotation_[set*slices_+slice] = frames_per_rotation_[set*slices_+slice];
     }
     
     cuSenseBuffer<float,2> *acc_buffer = (buffer_using_solver_) ? &acc_buffer_cg_[set*slices_+slice] : &acc_buffer_[set*slices_+slice];
 
-    acc_buffer->setup( from_std_vector<unsigned int,2>(image_dimensions_recon_), image_dimensions_recon_os_, 
-                       kernel_width_, num_coils_[set*slices_+slice], 
-                       buffer_length_in_rotations_, buffer_frames_per_rotation_[set*slices_+slice] );
+    acc_buffer->setup( from_std_vector<size_t,2>(image_dimensions_recon_), image_dimensions_recon_os_, 
+		       kernel_width_, num_coils_[set*slices_+slice], 
+		       buffer_length_in_rotations_, buffer_frames_per_rotation_[set*slices_+slice] );
     
     boost::shared_ptr< cuNDArray<float> > device_weights_frame = calculate_density_compensation_for_frame(set, slice);
     acc_buffer->set_dcw(device_weights_frame);

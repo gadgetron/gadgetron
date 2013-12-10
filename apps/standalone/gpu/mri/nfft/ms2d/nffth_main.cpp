@@ -49,7 +49,7 @@ boost::shared_ptr< cuNDArray<_complext> >
 upload_data( unsigned int reconstruction, unsigned int samples_per_reconstruction,
 	     hoNDArray<_complext> *host_data )
 {
-  vector<unsigned int> dims; dims.push_back(samples_per_reconstruction);
+  vector<size_t> dims; dims.push_back(samples_per_reconstruction);
   cuNDArray<_complext> *data = new cuNDArray<_complext>(); data->create( &dims );
   cudaMemcpy( data->get_data_ptr(), 
 	      host_data->get_data_ptr()+reconstruction*samples_per_reconstruction, 
@@ -98,8 +98,8 @@ int main( int argc, char** argv)
   }
   
   // Configuration from the command line
-  uintd2 matrix_size = uintd2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
-  uintd2 matrix_size_os = uintd2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
+  uint64d2 matrix_size = uint64d2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
+  uint64d2 matrix_size_os = uint64d2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
   int frames_per_reconstruction = parms.get_parameter('f')->get_int_value();  
   _real kernel_width = parms.get_parameter('k')->get_float_value();
   
@@ -115,7 +115,7 @@ int main( int argc, char** argv)
   if( (unsigned int)frames_per_reconstruction > num_frames ) frames_per_reconstruction = num_frames;
   
   // Setup resulting image array
-  vector<unsigned int> image_dims = to_std_vector(matrix_size); 
+  vector<size_t> image_dims = to_std_vector(matrix_size); 
   image_dims.push_back((num_frames/frames_per_reconstruction)*frames_per_reconstruction);
   cuNDArray<_complext> image(&image_dims);
   clear(&image);
@@ -149,7 +149,7 @@ int main( int argc, char** argv)
     boost::shared_ptr< cuNDArray<_complext> > data = upload_data
       ( iteration, samples_per_reconstruction, host_samples.get() );
     
-    vector<unsigned int> image_dims = to_std_vector(matrix_size); 
+    vector<size_t> image_dims = to_std_vector(matrix_size); 
     image_dims.push_back(frames_per_reconstruction);
     cuNDArray<_complext> tmp_image; tmp_image.create(&image_dims, image.get_data_ptr()+iteration*prod(matrix_size)*frames_per_reconstruction);
 

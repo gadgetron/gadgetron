@@ -38,12 +38,12 @@ namespace Gadgetron{
     //
     
     virtual void core_grad_spatial( T *fixed_image, T *moving_image, T *gradient_image, 
-                                    typename uintd<D>::Type matrix_size_moving, 
+                                    typename uint64d<D>::Type matrix_size_moving, 
                                     unsigned int number_of_batches_fixed, 
                                     unsigned int number_of_batches_moving );
     
     virtual void core_grad_temporal( T *fixed_image, T *moving_image, T *gradient_image, 
-                                     typename uintd<D>::Type matrix_size_moving, 
+                                     typename uint64d<D>::Type matrix_size_moving, 
                                      unsigned int number_of_batches_fixed, 
                                      unsigned int number_of_batches_moving );
   };  

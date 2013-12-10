@@ -40,9 +40,9 @@ namespace Gadgetron{
     int set_number_;
     int slice_number_;
 
-    uintd2 matrix_size_;
-    uintd2 matrix_size_os_;
-    uintd2 matrix_size_seq_;
+    uint64d2 matrix_size_;
+    uint64d2 matrix_size_os_;
+    uint64d2 matrix_size_seq_;
 
     unsigned int number_of_cg_iterations_;
     unsigned int number_of_sb_iterations_;

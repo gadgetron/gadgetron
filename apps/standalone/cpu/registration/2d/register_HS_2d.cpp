@@ -57,8 +57,8 @@ int main(int argc, char** argv)
     return 1;
   }
   
-  unsigned int num_fixed_dims = fixed_image->get_number_of_dimensions();
-  unsigned int num_moving_dims = moving_image->get_number_of_dimensions();
+  size_t num_fixed_dims = fixed_image->get_number_of_dimensions();
+  size_t num_moving_dims = moving_image->get_number_of_dimensions();
 
   if( !(num_fixed_dims == 2 || num_fixed_dims == 3)  ){
     cout << endl << "The fixed image is not two- or three-dimensional. Quitting!\n" << endl;

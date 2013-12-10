@@ -25,7 +25,7 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray< complext<REAL> >
     throw std::runtime_error("cuNonCartesianSenseOperator::mult_M: dimensions mismatch");
     }*/
 
-  std::vector<unsigned int> full_dimensions = *this->get_domain_dimensions();
+  std::vector<size_t> full_dimensions = *this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
   cuNDArray< complext<REAL> > tmp(&full_dimensions);  
   this->mult_csm( in, &tmp );
@@ -53,7 +53,7 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray< complext<REAL> 
     throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH: dimensions mismatch");
     }*/
 
-  std::vector<unsigned int> tmp_dimensions = *this->get_domain_dimensions();
+  std::vector<size_t> tmp_dimensions = *this->get_domain_dimensions();
   tmp_dimensions.push_back(this->ncoils_);
   cuNDArray< complext<REAL> > tmp(&tmp_dimensions);
   
@@ -68,7 +68,7 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray< complext<REAL> 
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
-cuNonCartesianSenseOperator<REAL,D,ATOMICS>::setup( _uintd matrix_size, _uintd matrix_size_os, REAL W )
+cuNonCartesianSenseOperator<REAL,D,ATOMICS>::setup( _uint64d matrix_size, _uint64d matrix_size_os, REAL W )
 {  
   plan_->setup( matrix_size, matrix_size_os, W );
 }
@@ -80,7 +80,7 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::preprocess( cuNDArray<_reald> *traj
     throw std::runtime_error( "cuNonCartesianSenseOperator: cannot preprocess 0x0 trajectory.");
   }
   
-  boost::shared_ptr< std::vector<unsigned int> > domain_dims = this->get_domain_dimensions();
+  boost::shared_ptr< std::vector<size_t> > domain_dims = this->get_domain_dimensions();
   if( domain_dims.get() == 0x0 || domain_dims->size() == 0 ){
     throw std::runtime_error("cuNonCartesianSenseOperator::preprocess : operator domain dimensions not set");
   }

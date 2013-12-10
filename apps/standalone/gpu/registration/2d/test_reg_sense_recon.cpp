@@ -76,7 +76,7 @@ public:
     }
     
     // Allocate intermediate image
-    std::vector<unsigned int> tmp_dims = *R_->get_displacement_field()->get_dimensions(); tmp_dims.pop_back();
+    std::vector<size_t> tmp_dims = *R_->get_displacement_field()->get_dimensions(); tmp_dims.pop_back();
     cuNDArray< complext<REAL> > tmp_in_out;
 
     tmp_in_out.create(&tmp_dims);
@@ -95,7 +95,7 @@ public:
     }
     
     // Allocate intermediate image
-    std::vector<unsigned int> tmp_dims = *R_->get_displacement_field()->get_dimensions().get(); tmp_dims.pop_back();
+    std::vector<size_t> tmp_dims = *R_->get_displacement_field()->get_dimensions().get(); tmp_dims.pop_back();
     cuNDArray< complext<REAL> > tmp_in_out(&tmp_dims); 
 
     // Apply adjoint non-Cartesian Sense encoding
@@ -112,7 +112,7 @@ public:
     }
 
     // Allocate intermediate image
-    std::vector<unsigned int> tmp_dims = *R_->get_displacement_field()->get_dimensions().get(); tmp_dims.pop_back();
+    std::vector<size_t> tmp_dims = *R_->get_displacement_field()->get_dimensions().get(); tmp_dims.pop_back();
     cuNDArray< complext<REAL> > tmp_in_out1(&tmp_dims), tmp_in_out2(&tmp_dims); 
     
     // Deform the input image into multiple frames by applying the registration vector field
@@ -142,7 +142,7 @@ private:
 boost::shared_ptr< cuNDArray<_complext> > 
 upload_data( unsigned int reconstruction, unsigned int samples_per_reconstruction, unsigned int total_samples_per_coil, unsigned int num_coils, hoNDArray<_complext> *host_data, unsigned int offset = 0 )
 {
-  vector<unsigned int> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
+  vector<size_t> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
   cuNDArray<_complext> *data = new cuNDArray<_complext>(); data->create( &dims );
   for( unsigned int i=0; i<num_coils; i++ )
     cudaMemcpy( data->get_data_ptr()+i*samples_per_reconstruction, 
@@ -217,8 +217,8 @@ int main(int argc, char** argv)
   // Configuration from the command line
   //
 
-  uintd2 matrix_size = uintd2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
-  uintd2 matrix_size_os = uintd2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
+  uint64d2 matrix_size = uint64d2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
+  uint64d2 matrix_size_os = uint64d2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
   _real kernel_width = parms.get_parameter('k')->get_float_value();
   _real kappa = parms.get_parameter('K')->get_float_value();
   unsigned int num_iterations = parms.get_parameter('i')->get_int_value();
@@ -249,7 +249,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );  
   E->setup( matrix_size, matrix_size_os, kernel_width );
   
-  std::vector<unsigned int> tmp_vec = to_std_vector(matrix_size);
+  std::vector<size_t> tmp_vec = to_std_vector(matrix_size);
   tmp_vec.push_back(frames_per_reconstruction);
   E->set_domain_dimensions( &tmp_vec );
 
@@ -293,7 +293,7 @@ int main(int argc, char** argv)
   // Define regularization image operator 
   //
 
-  std::vector<unsigned int> image_dims = to_std_vector(matrix_size);
+  std::vector<size_t> image_dims = to_std_vector(matrix_size);
   cuNDArray<_complext> *regul_image = new cuNDArray<_complext>(&image_dims);
   
   E->mult_csm_conj_sum( acc_images.get(), regul_image );
@@ -377,7 +377,7 @@ int main(int argc, char** argv)
     // Form rhs (use sense_result_cplx array to save memory)
     //
     
-    vector<unsigned int> rhs_dims = to_std_vector(matrix_size); 
+    vector<size_t> rhs_dims = to_std_vector(matrix_size); 
     rhs_dims.push_back(frames_per_reconstruction);
     cuNDArray<_complext> rhs; 
 
@@ -407,20 +407,20 @@ int main(int argc, char** argv)
   //
 
 #ifdef PAD_Z
-  std::vector<unsigned int> _3d_dims = *(sense_result->get_dimensions());
+  std::vector<size_t> _3d_dims = *(sense_result->get_dimensions());
   unsigned int last_dim = _3d_dims.back();
   _3d_dims.pop_back(); _3d_dims.push_back(1); _3d_dims.push_back(last_dim);
   sense_result->reshape( &_3d_dims );
 #endif
   
-  vector<unsigned int> multi_dims = *sense_result->get_dimensions();
+  vector<size_t> multi_dims = *sense_result->get_dimensions();
   multi_dims.pop_back();
 #ifdef PAD_Z
   multi_dims.push_back(sense_result->get_size(3)-1);
 #else
   multi_dims.push_back(sense_result->get_size(2)-1);
 #endif
-  vector<unsigned int> single_dims = *sense_result->get_dimensions();
+  vector<size_t> single_dims = *sense_result->get_dimensions();
   single_dims.pop_back();
   
   cuNDArray<_real> 
@@ -526,7 +526,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< registrationReconOperator<_real,2> > 
     RR( new registrationReconOperator<_real,2>() );  
 
-  std::vector<unsigned int> rhs_dims = to_std_vector(matrix_size); 
+  std::vector<size_t> rhs_dims = to_std_vector(matrix_size); 
   RR->set_domain_dimensions( &rhs_dims );
 
   RR->set_encoding_operator( E );

@@ -20,11 +20,23 @@ namespace Gadgetron{
 
     T vec[D];
 
-    __inline__ __host__ __device__ T& operator[](const int i){
+    __inline__ __host__ __device__ T& operator[](const unsigned int i)
+    {
       return vec[i];
     }
 
-    __inline__ __host__ __device__ const T& operator[](const int i) const {
+    __inline__ __host__ __device__ const T& operator[](const unsigned int i) const
+    {
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ T& operator()(const unsigned int i)
+    {
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ const T& operator()(const unsigned int i) const
+    {
       return vec[i];
     }
   };
@@ -41,8 +53,16 @@ namespace Gadgetron{
     typedef vector_td< int, D > Type;
   };
 
+  template< unsigned int D > struct int64d{
+      typedef vector_td< long long, D > Type;
+    };
+
   template< unsigned int D > struct uintd{
     typedef vector_td< unsigned int, D > Type;
+  };
+
+  template< unsigned int D > struct uint64d{
+    typedef vector_td< size_t, D > Type;
   };
 
   template< unsigned int D > struct floatd{
@@ -65,11 +85,19 @@ namespace Gadgetron{
       vec[0]=x;
     }
 
-    __inline__ __host__ __device__ T& operator[](const int i){
+    __inline__ __host__ __device__ T& operator[](const unsigned int i){
       return vec[i];
     }
 
-    __inline__ __host__ __device__ const T& operator[](const int i) const {
+    __inline__ __host__ __device__ const T& operator[](const unsigned int i) const {
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ T& operator()(const unsigned int i){
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ const T& operator()(const unsigned int i) const {
       return vec[i];
     }
   };
@@ -91,11 +119,19 @@ namespace Gadgetron{
       vec[0]=x;
       vec[1]=x;
     }
-    __inline__ __host__ __device__ T& operator[](const int i){
+    __inline__ __host__ __device__ T& operator[](const unsigned int i){
       return vec[i];
     }
 
-    __inline__ __host__ __device__ const T& operator[](const int i) const {
+    __inline__ __host__ __device__ const T& operator[](const unsigned int i) const {
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ T& operator()(const unsigned int i){
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ const T& operator()(const unsigned int i) const {
       return vec[i];
     }
   };
@@ -120,11 +156,19 @@ namespace Gadgetron{
       vec[2]=x;
     }
 
-    __inline__ __host__ __device__ T& operator[](const int i){
+    __inline__ __host__ __device__ T& operator[](const unsigned int i){
       return vec[i];
     }
 
-    __inline__ __host__ __device__ const T& operator[](const int i) const {
+    __inline__ __host__ __device__ const T& operator[](const unsigned int i) const {
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ T& operator()(const unsigned int i){
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ const T& operator()(const unsigned int i) const {
       return vec[i];
     }
   };
@@ -151,11 +195,19 @@ namespace Gadgetron{
       vec[3]=x;
     }
 
-    __inline__ __host__ __device__ T& operator[](const int i){
+    __inline__ __host__ __device__ T& operator[](const unsigned int i){
       return vec[i];
     }
 
-    __inline__ __host__ __device__ const T& operator[](const int i) const {
+    __inline__ __host__ __device__ const T& operator[](const unsigned int i) const {
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ T& operator()(const unsigned int i){
+      return vec[i];
+    }
+
+    __inline__ __host__ __device__ const T& operator()(const unsigned int i) const {
       return vec[i];
     }
   };
@@ -175,8 +227,18 @@ namespace Gadgetron{
   typedef vector_td<int,3> intd3;
   typedef vector_td<int,4> intd4;
 
+  typedef vector_td<long long,1> int64d1;
+  typedef vector_td<long long,2> int64d2;
+  typedef vector_td<long long,3> int64d3;
+  typedef vector_td<long long,4> int64d4;
+
   typedef vector_td<unsigned int,1> uintd1;
   typedef vector_td<unsigned int,2> uintd2;
   typedef vector_td<unsigned int,3> uintd3;
   typedef vector_td<unsigned int,4> uintd4;
-}
+
+  typedef vector_td<size_t,1> uint64d1;
+  typedef vector_td<size_t,2> uint64d2;
+  typedef vector_td<size_t,3> uint64d3;
+  typedef vector_td<size_t,4> uint64d4;
+  }

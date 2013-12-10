@@ -7,14 +7,14 @@ namespace Gadgetron {
 
   // Mirror, but keep the origin unchanged
   template<class T, unsigned int D> __global__ void
-  origin_mirror_kernel( vector_td<unsigned int,D> matrix_size, vector_td<unsigned int,D> origin, T *in, T *out, bool zero_fill )
+  origin_mirror_kernel( vector_td<size_t,D> matrix_size, vector_td<size_t,D> origin, T *in, T *out, bool zero_fill )
   {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
     
     if( idx < prod(matrix_size) ){
       
-      vector_td<unsigned int,D> in_co = idx_to_co<D>( idx, matrix_size );
-      vector_td<unsigned int,D> out_co = matrix_size-in_co;
+      vector_td<size_t,D> in_co = idx_to_co<D>( idx, matrix_size );
+      vector_td<size_t,D> out_co = matrix_size-in_co;
     
       bool wrap = false;
       for( unsigned int d=0; d<D; d++ ){
@@ -24,8 +24,8 @@ namespace Gadgetron {
 	}
       }
     
-      const unsigned int in_idx = co_to_idx<D>(in_co, matrix_size);
-      const unsigned int out_idx = co_to_idx<D>(out_co, matrix_size);
+      const size_t in_idx = co_to_idx<D>(in_co, matrix_size);
+      const size_t out_idx = co_to_idx<D>(out_co, matrix_size);
 
       if( wrap && zero_fill )
 	out[out_idx] = T(0);
@@ -53,7 +53,7 @@ namespace Gadgetron {
       throw std::runtime_error(ss.str());
     }
 
-    typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>( *in->get_dimensions() );
+    typename uint64d<D>::Type matrix_size = from_std_vector<size_t,D>( *in->get_dimensions() );
   
     // Setup block/grid dimensions
     dim3 blockDim; dim3 gridDim;

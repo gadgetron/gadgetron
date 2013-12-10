@@ -19,6 +19,7 @@ target_link_libraries(cpu_denoise_TV
   cpucore 
   cpucore_math 
   hostutils
+  ${ARMADILLO_LIBRARIES}
   )
 
 install(TARGETS cpu_denoise_TV DESTINATION bin)

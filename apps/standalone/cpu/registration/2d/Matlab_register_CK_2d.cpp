@@ -141,7 +141,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
         typedef double _real;
         using namespace Gadgetron;
 
-        std::vector<unsigned int> dim_array(2);
+        std::vector<size_t> dim_array(2);
         dim_array[0] = dims[0];
         dim_array[1] = dims[1];
 

@@ -176,7 +176,7 @@ namespace Gadgetron{
         for( unsigned int phase=0; phase < this->number_of_phases_; phase++ ){
 	
           unsigned int num_image_elements = this->image_dimensions_[0]*image_dimensions_[1];
-          std::vector<unsigned int> moving_dims = this->image_dimensions_;
+          std::vector<size_t> moving_dims = this->image_dimensions_;
           moving_dims.push_back(num_images-1);
 	
           GadgetContainerMessage<ISMRMRD::ImageHeader> *header;
@@ -316,7 +316,7 @@ namespace Gadgetron{
 
   private:
     boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > phase_images_;
-    std::vector<unsigned int> image_dimensions_;
+    std::vector<size_t> image_dimensions_;
     unsigned short number_of_phases_;    
   };
 }

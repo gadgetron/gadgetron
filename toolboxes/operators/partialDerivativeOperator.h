@@ -41,11 +41,11 @@ namespace Gadgetron{
     }
     
     virtual void compute_partial_derivative
-    ( typename intd<D>::Type stride, 
+    ( typename int64d<D>::Type stride, 
       ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate ) = 0;  
     
     virtual void compute_second_order_partial_derivative
-    ( typename intd<D>::Type forwards_stride, typename intd<D>::Type adjoint_stride, 
+    ( typename int64d<D>::Type forwards_stride, typename int64d<D>::Type adjoint_stride, 
       ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate ) = 0;    
     
   protected:
@@ -65,7 +65,7 @@ namespace Gadgetron{
     }
     
   private:
-    typename intd<D>::Type forwards_stride_;
-    typename intd<D>::Type adjoint_stride_;
+    typename int64d<D>::Type forwards_stride_;
+    typename int64d<D>::Type adjoint_stride_;
   };
 }

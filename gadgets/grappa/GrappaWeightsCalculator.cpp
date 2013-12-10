@@ -60,12 +60,11 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 		hoNDArray<float_complext>* host_data =
 				reinterpret_cast< hoNDArray<float_complext>* >(mb2->getObjectPtr());
 
-
 		// Copy the image data to the device
 		cuNDArray<float_complext> device_data(host_data);
 		device_data.squeeze();
 
-		std::vector<unsigned int> ftdims(2,0); ftdims[1] = 1;
+		std::vector<size_t> ftdims(2,0); ftdims[1] = 1;
 		cuNDFFT<float> ft;
 
 		//Go to image space
@@ -81,9 +80,8 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 		//Go back to kspace
 		ft.fft(&device_data, &ftdims);
 
-
 		cuNDArray<complext<float> > unmixing_dev;
-		boost::shared_ptr< std::vector<unsigned int> > data_dimensions = device_data.get_dimensions();
+		boost::shared_ptr< std::vector<size_t> > data_dimensions = device_data.get_dimensions();
 
 		if (uncombined_channels_.size() > 0) {
 			data_dimensions->push_back(uncombined_channels_.size()+1);
@@ -118,8 +116,8 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 			boost::shared_ptr< hoNDArray<complext<float> > > unmixing_host = unmixing_dev.to_host();
 
 			//TODO: This reshaping needs to take uncombined channels into account
-			boost::shared_ptr< std::vector<unsigned int> > tmp_dims = mb2->getObjectPtr()->get_dimensions();
-			if (uncombined_channels_.size()) tmp_dims->push_back(uncombined_channels_.size()+1);
+			boost::shared_ptr< std::vector<size_t> > tmp_dims = mb2->getObjectPtr()->get_dimensions();
+			if (uncombined_channels_.size()) tmp_dims->push_back( (size_t) (uncombined_channels_.size()+1) );
 
 			try {
 				unmixing_host->reshape(tmp_dims.get());

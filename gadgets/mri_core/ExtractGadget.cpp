@@ -31,7 +31,7 @@ int ExtractGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, Gad
 	}
 
 	static int counter = 0;
-	for (unsigned int m = GADGET_EXTRACT_MAGNITUDE; m < GADGET_EXTRACT_MAX; m = m<<1) {
+	for (size_t m = GADGET_EXTRACT_MAGNITUDE; m < GADGET_EXTRACT_MAX; m = m<<1) {
 		if (extract_mask_ & m) {
 			GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 =
 					new GadgetContainerMessage<ISMRMRD::ImageHeader>();
@@ -42,7 +42,7 @@ int ExtractGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, Gad
 			GadgetContainerMessage<hoNDArray< float > > *cm2 =
 					new GadgetContainerMessage<hoNDArray< float > >();
 
-			boost::shared_ptr< std::vector<unsigned int> > dims = m2->getObjectPtr()->get_dimensions();
+			boost::shared_ptr< std::vector<size_t> > dims = m2->getObjectPtr()->get_dimensions();
 
 			try{cm2->getObjectPtr()->create(dims.get());}
 			catch (std::runtime_error &err){

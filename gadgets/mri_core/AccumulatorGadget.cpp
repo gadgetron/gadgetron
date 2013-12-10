@@ -118,7 +118,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     
     cm1->cont(cm2);
     
-    std::vector<unsigned int> img_dims(4);
+    std::vector<size_t> img_dims(4);
     img_dims[0] = dimensions_[0];
     img_dims[1] = dimensions_[1];
     img_dims[2] = dimensions_[2];

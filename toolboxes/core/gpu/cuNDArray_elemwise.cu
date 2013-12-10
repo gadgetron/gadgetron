@@ -282,8 +282,11 @@ template<class T> void Gadgetron::clear( cuNDArray<T> *x )
 {
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::clear(): Invalid input array");
-  
-  cudaMemset(x->get_data_ptr(),0,sizeof(T)*x->get_number_of_elements());
+
+  if ( x->get_number_of_elements() > 0 )
+  {
+    cudaMemset(x->get_data_ptr(),0,sizeof(T)*x->get_number_of_elements());
+  }
 }
 
 template<class T> void 

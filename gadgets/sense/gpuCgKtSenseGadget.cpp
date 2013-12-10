@@ -29,9 +29,9 @@ namespace Gadgetron{
     set_parameter(std::string("kernel_width").c_str(), "5.5");
     set_parameter(std::string("kappa").c_str(), "0.3");
     
-    matrix_size_ = uintd2(0,0);
-    matrix_size_os_ = uintd2(0,0);
-    matrix_size_seq_ = uintd2(0,0);
+    matrix_size_ = uint64d2(0,0);
+    matrix_size_os_ = uint64d2(0,0);
+    matrix_size_seq_ = uint64d2(0,0);
   }
 
   gpuCgKtSenseGadget::~gpuCgKtSenseGadget() {}
@@ -94,7 +94,7 @@ namespace Gadgetron{
     ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
     //ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
 
-    matrix_size_seq_ = uintd2( r_space.matrixSize().x(), r_space.matrixSize().y() );
+    matrix_size_seq_ = uint64d2( r_space.matrixSize().x(), r_space.matrixSize().y() );
 
     if (!is_configured_) {
 
@@ -175,16 +175,16 @@ namespace Gadgetron{
     
     unsigned int warp_size = deviceProp.warpSize;
     
-    matrix_size_ = uintd2( j->reg_host_->get_size(0), j->reg_host_->get_size(1) );    
+    matrix_size_ = uint64d2( j->reg_host_->get_size(0), j->reg_host_->get_size(1) );    
 
     matrix_size_os_ =
-      uintd2(((static_cast<unsigned int>(std::ceil(matrix_size_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
+      uint64d2(((static_cast<unsigned int>(std::ceil(matrix_size_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
 	     ((static_cast<unsigned int>(std::ceil(matrix_size_[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
     
     GADGET_DEBUG2("Matrix size    : [%d,%d] \n", matrix_size_[0], matrix_size_[1]);    
     GADGET_DEBUG2("Matrix size OS : [%d,%d] \n", matrix_size_os_[0], matrix_size_os_[1]);
 
-    std::vector<unsigned int> image_dims = to_std_vector(matrix_size_);
+    std::vector<size_t> image_dims = to_std_vector(matrix_size_);
     image_dims.push_back(frames);
     
     E_->set_domain_dimensions(&image_dims);
@@ -265,7 +265,7 @@ namespace Gadgetron{
       *m->getObjectPtr() = j->image_headers_[frame];
       m->cont(cm);
       
-      std::vector<unsigned int> img_dims(2);
+      std::vector<size_t> img_dims(2);
       img_dims[0] = matrix_size_seq_[0];
       img_dims[1] = matrix_size_seq_[1];
 
@@ -316,7 +316,7 @@ namespace Gadgetron{
     unsigned int num_rotations = num_samples / job->tra_host_->get_number_of_elements();
     unsigned int frames_per_reconstruction = job->tra_host_->get_size(1)*num_rotations;
 
-    std::vector<unsigned int> dims = to_std_vector(matrix_size_os_);
+    std::vector<size_t> dims = to_std_vector(matrix_size_os_);
     dims.push_back(frames_per_reconstruction); 
     dims.push_back(num_coils); 
 

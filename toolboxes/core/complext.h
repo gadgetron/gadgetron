@@ -11,6 +11,7 @@
 #include "core_defines.h"
 #include <complex>
 #include <cmath>
+#include <iostream>
 
 namespace Gadgetron{
 
@@ -26,11 +27,13 @@ namespace Gadgetron{
 
     T vec[2];
 
-    __inline__ __host__ __device__  T real(){
+    __inline__ __host__ __device__  T real() const 
+    {
       return vec[0];
     }
 
-    __inline__ __host__ __device__  T imag(){
+    __inline__ __host__ __device__  T imag() const 
+    {
       return vec[1];
     }
 
@@ -129,7 +132,28 @@ namespace Gadgetron{
       return not(*this==comp2);
     }
   };
-  
+
+    template <typename T> 
+    inline std::ostream & operator<< (std::ostream & os, const complext<T>& a )
+    {
+        os << a.real() << a.imag() << "i";
+        return os;
+    }
+
+    template <> 
+    inline std::ostream & operator<< (std::ostream & os, const complext<float>& a )
+    {
+        os << a.real() << a.imag() << "i";
+        return os;
+    }
+
+    template <> 
+    inline std::ostream & operator<< (std::ostream & os, const complext<double>& a )
+    {
+        os << a.real() << a.imag() << "i";
+        return os;
+    }
+
   typedef complext<float> float_complext;
   typedef complext<double> double_complext;
 
@@ -153,7 +177,7 @@ namespace Gadgetron{
     return (double(0) < x) - (x < double(0));
   }
   __inline__ __host__ __device__ float sgn(float x){
-    return (float(0) < x) - (x < float(0));
+    return (float)((float(0) < x) - (x < float(0)));
   }
 
   template<class T> __inline__ __host__ __device__ complext<T> sgn(complext<T> x){

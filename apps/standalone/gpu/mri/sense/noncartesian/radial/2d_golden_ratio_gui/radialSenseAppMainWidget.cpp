@@ -205,7 +205,7 @@ void radialSenseAppMainWindow::replan()
   plan.setup( get_matrix_size(), get_matrix_size_os(), get_kernel_width() );
   
   // Temporary oversampled image buffer
-  vector<unsigned int> image_os_dims = uintd_to_vector<2>(get_matrix_size_os()); 
+  vector<unsigned int> image_os_dims = uint64d_to_vector<2>(get_matrix_size_os()); 
   image_os_dims.push_back(frames_per_reconstruction); image_os_dims.push_back(get_num_coils());    
   cuNDArray<float_complext> *image_os = new cuNDArray<float_complext>();
   image_os->create(&image_os_dims);
@@ -240,7 +240,7 @@ void radialSenseAppMainWindow::replan()
   plan.deapodize( acc_image_os.get() );
   
   // Remove oversampling
-  vector<unsigned int> image_dims = uintd_to_vector<2>(get_matrix_size()); image_dims.push_back(get_num_coils());
+  vector<unsigned int> image_dims = uint64d_to_vector<2>(get_matrix_size()); image_dims.push_back(get_num_coils());
   cuNDArray<float_complext> *image = new cuNDArray<float_complext>();
   image->create(&image_dims);
   crop<float_complext,2>( (get_matrix_size_os()-get_matrix_size())>>1, acc_image_os.get(), image );
@@ -255,7 +255,7 @@ void radialSenseAppMainWindow::replan()
   E->set_csm(csm);
 
   // Setup regularization operator
-  image_dims = uintd_to_vector<2>(get_matrix_size());
+  image_dims = uint64d_to_vector<2>(get_matrix_size());
   cuNDArray<float_complext> *reg_image = new cuNDArray<float_complext>();
   reg_image->create( &image_dims );
 
@@ -503,8 +503,8 @@ void radialSenseAppMainWindow::reconstruct()
   const unsigned int profiles_per_frame = get_num_projections_per_frame();
   const unsigned int frames_per_reconstruction = 1; 
   const unsigned int profiles_per_reconstruction = get_num_projections_per_frame()*frames_per_reconstruction;
-  const uintd2 matrix_size = get_matrix_size();
-  const uintd2 matrix_size_os = get_matrix_size_os();
+  const uint64d2 matrix_size = get_matrix_size();
+  const uint64d2 matrix_size_os = get_matrix_size_os();
   const unsigned int num_coils = get_num_coils();
   const unsigned int samples_per_reconstruction = profiles_per_reconstruction*samples_per_profile;
 
@@ -521,7 +521,7 @@ void radialSenseAppMainWindow::reconstruct()
   E->preprocess(traj.get());
   
   // Form rhs (use result array to save memory)
-  vector<unsigned int> rhs_dims = uintd_to_vector<2>(matrix_size); rhs_dims.push_back(frames_per_reconstruction);
+  vector<unsigned int> rhs_dims = uint64d_to_vector<2>(matrix_size); rhs_dims.push_back(frames_per_reconstruction);
   cuNDArray<float_complext> rhs; rhs.create(&rhs_dims);
   E->mult_MH( data.get(), &rhs );
   
@@ -562,16 +562,16 @@ void radialSenseAppMainWindow::reconstruct()
   "Gets..."
 */
 
-uintd2 radialSenseAppMainWindow::get_matrix_size()
+uint64d2 radialSenseAppMainWindow::get_matrix_size()
 {
   int value = matrixSizeSpinBox->value();
-  return uintd2( value, value );
+  return uint64d2( value, value );
 }
 
-uintd2 radialSenseAppMainWindow::get_matrix_size_os()
+uint64d2 radialSenseAppMainWindow::get_matrix_size_os()
 {
   int value = oversampledMatrixSizeSpinBox->value();
-  return uintd2( value, value );
+  return uint64d2( value, value );
 }
 
 float radialSenseAppMainWindow::get_kernel_width()

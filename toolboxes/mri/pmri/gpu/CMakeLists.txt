@@ -22,16 +22,27 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
   )
 
-cuda_add_library(gpuparallelmri SHARED 	
-  b1_map.cu
-  sense_utilities.cu
-  cuSenseOperator.cu
-  cuCartesianSenseOperator.cu
-  cuNonCartesianSenseOperator.cu
-  cuNonCartesianKtSenseOperator.cu
-  cuSenseBuffer.cpp
-  cuSenseBufferCg.cpp
-  htgrappa.cu
+cuda_add_library(gpuparallelmri SHARED 
+    b1_map.h
+    cuCartesianSenseOperator.h
+    cuNonCartesianKtSenseOperator.h
+    cuNonCartesianSenseOperator.h
+    cuSenseBuffer.h
+    cuSenseBufferCg.h
+    cuSenseOperator.h
+    gpupmri_export.h
+    htgrappa.h
+    senseOperator.h
+    sense_utilities.h
+    b1_map.cu
+    sense_utilities.cu
+    cuSenseOperator.cu
+    cuCartesianSenseOperator.cu
+    cuNonCartesianSenseOperator.cu
+    cuNonCartesianKtSenseOperator.cu
+    cuSenseBuffer.cpp
+    cuSenseBufferCg.cpp
+    htgrappa.cu
   )
 
 target_link_libraries(gpuparallelmri 

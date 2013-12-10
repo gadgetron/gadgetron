@@ -31,7 +31,7 @@ boost::shared_ptr< cuNDArray<_complext> >
 upload_data( unsigned int reconstruction, unsigned int samples_per_reconstruction, unsigned int total_samples_per_coil, unsigned int num_coils,
 	     hoNDArray<_complext> *host_data )
 {
-  vector<unsigned int> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
+  vector<size_t> dims; dims.push_back(samples_per_reconstruction); dims.push_back(num_coils);
   cuNDArray<_complext> *data = new cuNDArray<_complext>(); data->create( &dims );
   for( unsigned int i=0; i<num_coils; i++ )
     cudaMemcpy( data->get_data_ptr()+i*samples_per_reconstruction, 
@@ -88,8 +88,8 @@ int main(int argc, char** argv)
   unsigned int num_coils = host_data->get_size(2);
   
   // Configuration from the command line
-  uintd2 matrix_size = uintd2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
-  uintd2 matrix_size_os = uintd2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
+  uint64d2 matrix_size = uint64d2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
+  uint64d2 matrix_size_os = uint64d2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
   _real kernel_width = parms.get_parameter('k')->get_float_value();
   _real kappa = parms.get_parameter('K')->get_float_value();
   unsigned int num_iterations = parms.get_parameter('i')->get_int_value();
@@ -197,7 +197,7 @@ int main(int argc, char** argv)
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
 
   // Allocate space for result
-  vector<unsigned int> image_dims = to_std_vector(matrix_size); 
+  vector<size_t> image_dims = to_std_vector(matrix_size); 
   image_dims.push_back(frames_per_reconstruction*num_reconstructions); 
 
   cuNDArray<_complext> result = cuNDArray<_complext>(&image_dims);
@@ -207,7 +207,7 @@ int main(int argc, char** argv)
   shutter_radius /= _real(2);
   std::cout << "Shutter radius: " << shutter_radius << std::endl;
 
-  vector<unsigned int> image_os_dims = to_std_vector(matrix_size_os); 
+  vector<size_t> image_os_dims = to_std_vector(matrix_size_os); 
   image_os_dims.push_back(frames_per_reconstruction); image_os_dims.push_back(num_coils);    
   cuNDArray<_complext> *image_os = new cuNDArray<_complext>(&image_os_dims);
 

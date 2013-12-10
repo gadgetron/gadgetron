@@ -11,12 +11,12 @@ template <typename T> class cuNDArray_blas_Real : public ::testing::Test
 {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+    size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
     Array = cuNDArray<T>(&dims);
     Array2 = cuNDArray<T>(&dims);
   }
-  std::vector<unsigned int> dims;
+  std::vector<size_t> dims;
   cuNDArray<T> Array;
   cuNDArray<T> Array2;
 };
@@ -78,12 +78,12 @@ TYPED_TEST(cuNDArray_blas_Real,amaxTest){
 template <typename T> class cuNDArray_blas_Cplx : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {37, 49}; //Using prime numbers for setup because they are messy
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+    size_t vdims[] = {37, 49}; //Using prime numbers for setup because they are messy
+    dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
     Array = cuNDArray<T>(&dims);
     Array2 = cuNDArray<T>(&dims);
   }
-  std::vector<unsigned int> dims;
+  std::vector<size_t> dims;
   cuNDArray<T> Array;
   cuNDArray<T> Array2;
 };

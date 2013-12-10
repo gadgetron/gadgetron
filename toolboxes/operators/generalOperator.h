@@ -22,7 +22,7 @@ namespace Gadgetron{
 
     generalOperator() : weight_(REAL(1)){};
 
-    generalOperator(std::vector<unsigned int> *dims) : weight_(REAL(1)){
+    generalOperator(std::vector<size_t> *dims) : weight_(REAL(1)){
       set_domain_dimensions(dims);
     }
     
@@ -49,7 +49,7 @@ namespace Gadgetron{
      * Set the domain dimension (image size) of the operator
      * @param[in] dims Domain dimensions
      */
-    virtual void set_domain_dimensions( std::vector<unsigned int> *dims )
+    virtual void set_domain_dimensions( std::vector<size_t> *dims )
     {
       if( dims == 0x0 ) throw std::runtime_error("Null pointer provided");
       domain_dims_ = *dims;  
@@ -59,11 +59,11 @@ namespace Gadgetron{
      *
      * @return The domain dimensions (image size) of the operator
      */
-    virtual boost::shared_ptr< std::vector<unsigned int> > get_domain_dimensions()
+    virtual boost::shared_ptr< std::vector<size_t> > get_domain_dimensions()
     {
-      std::vector<unsigned int> *dims = new std::vector<unsigned int>();
+      std::vector<size_t> *dims = new std::vector<size_t>();
       *dims = domain_dims_;
-      return boost::shared_ptr< std::vector<unsigned int> >(dims);
+      return boost::shared_ptr< std::vector<size_t> >(dims);
     }
     
     /**
@@ -84,6 +84,6 @@ namespace Gadgetron{
     
   protected:
     REAL weight_;
-    std::vector<unsigned int> domain_dims_;
+    std::vector<size_t> domain_dims_;
   };  
 }

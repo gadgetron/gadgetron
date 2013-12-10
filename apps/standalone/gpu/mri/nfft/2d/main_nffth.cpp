@@ -83,8 +83,8 @@ int main( int argc, char** argv)
   }
   
   // Configuration from the command line
-  uintd2 matrix_size = uintd2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
-  uintd2 matrix_size_os = uintd2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
+  uint64d2 matrix_size = uint64d2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
+  uint64d2 matrix_size_os = uint64d2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
   _real kernel_width = parms.get_parameter('k')->get_float_value();
 
   unsigned int num_profiles = host_samples->get_size(1);
@@ -97,7 +97,7 @@ int main( int argc, char** argv)
   delete timer;
   
   // Setup resulting image array
-  vector<unsigned int> image_dims = to_std_vector(matrix_size);
+  vector<size_t> image_dims = to_std_vector(matrix_size);
   cuNDArray<_complext> image(&image_dims);
   
   // Initialize plan

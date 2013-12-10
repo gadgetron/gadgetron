@@ -340,13 +340,13 @@ namespace Gadgetron {
                                                                 vector_td<unsigned int,D> offset, vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
                                                                 T *in, T *out, unsigned int num_batches, unsigned int num_elements )
   {
-    typedef vector_td<unsigned int,D> uintd;
+    typedef vector_td<unsigned int,D> uint64d;
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
     const unsigned int frame_offset = idx/num_elements;
 
     if( idx < num_elements*num_batches ){
-      const uintd co = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
-      const uintd co_os = offset + co;
+      const uint64d co = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
+      const uint64d co_os = offset + co;
       const unsigned int in_idx = co_to_idx<D>(co_os, matrix_size_in)+frame_offset*prod(matrix_size_in);
       out[idx] = in[in_idx];
     }
@@ -354,7 +354,7 @@ namespace Gadgetron {
 
   // Crop
   template<class T, unsigned int D>
-  void crop( typename uintd<D>::Type offset, cuNDArray<T> *in, cuNDArray<T> *out )
+  void crop( typename uint64d<D>::Type offset, cuNDArray<T> *in, cuNDArray<T> *out )
   {
     if( in == 0x0 || out == 0x0 ){
       throw std::runtime_error("crop: 0x0 ndarray provided");;
@@ -370,8 +370,8 @@ namespace Gadgetron {
       throw std::runtime_error(ss.str());;
     }
 
-    typename uintd<D>::Type matrix_size_in = from_std_vector<unsigned int,D>( *in->get_dimensions() );
-    typename uintd<D>::Type matrix_size_out = from_std_vector<unsigned int,D>( *out->get_dimensions() );
+    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *in->get_dimensions() );
+    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( *out->get_dimensions() );
 
     unsigned int number_of_batches = 1;
     for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
@@ -394,7 +394,7 @@ namespace Gadgetron {
   }
 
   template<class T, unsigned int D> boost::shared_ptr< cuNDArray<T> > 
-  crop( typename uintd<D>::Type offset, typename uintd<D>::Type size, cuNDArray<T> *in )
+  crop( typename uint64d<D>::Type offset, typename uint64d<D>::Type size, cuNDArray<T> *in )
   {
     if( in == 0x0 ){
       throw std::runtime_error("crop: 0x0 array provided");;
@@ -414,14 +414,14 @@ namespace Gadgetron {
                              vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
                              T *in, T *out, unsigned int number_of_batches, unsigned int num_elements, T val )
   {
-    typedef vector_td<unsigned int,D> uintd;
+    typedef vector_td<unsigned int,D> uint64d;
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
     const unsigned int frame_offset = idx/num_elements;
 
     if( idx < num_elements*number_of_batches ){
 
-      const uintd co_out = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
-      const uintd offset = (matrix_size_out-matrix_size_in)>>1;
+      const uint64d co_out = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
+      const uint64d offset = (matrix_size_out-matrix_size_in)>>1;
       T _out;
       bool inside = (co_out>=offset) && (co_out<(matrix_size_in+offset));
 
@@ -452,8 +452,8 @@ namespace Gadgetron {
       throw std::runtime_error(ss.str());;
     }
 
-    typename uintd<D>::Type matrix_size_in = from_std_vector<unsigned int,D>( *in->get_dimensions() );
-    typename uintd<D>::Type matrix_size_out = from_std_vector<unsigned int,D>( *out->get_dimensions() );
+    typename uint64d<D>::Type matrix_size_in = from_std_vector<size_t,D>( *in->get_dimensions() );
+    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( *out->get_dimensions() );
 
     unsigned int number_of_batches = 1;
     for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
@@ -476,7 +476,7 @@ namespace Gadgetron {
   }
 
   template<class T, unsigned int D> boost::shared_ptr< cuNDArray<T> >
-  pad( typename uintd<D>::Type size, cuNDArray<T> *in, T val )
+  pad( typename uint64d<D>::Type size, cuNDArray<T> *in, T val )
   {
     if( in == 0x0 ){
       throw std::runtime_error("pad: 0x0 array provided");;
@@ -512,9 +512,9 @@ namespace Gadgetron {
 
   // Zero fill border (rectangular)
   template<class T, unsigned int D> 
-  void fill_border( typename uintd<D>::Type matrix_size_in, cuNDArray<T> *in_out, T val )
+  void fill_border( typename uint64d<D>::Type matrix_size_in, cuNDArray<T> *in_out, T val )
   { 
-    typename uintd<D>::Type matrix_size_out = from_std_vector<unsigned int,D>( *in_out->get_dimensions() );
+    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( *in_out->get_dimensions() );
 
     if( weak_greater(matrix_size_in, matrix_size_out) ){
       throw std::runtime_error("fill_border: size mismatch, cannot zero fill");;
@@ -552,8 +552,8 @@ namespace Gadgetron {
 	}
 
   template<class T, unsigned int D> __global__ void 
-  upsample_kernel( typename uintd<D>::Type matrix_size_in,
-                   typename uintd<D>::Type matrix_size_out,
+  upsample_kernel( typename uint64d<D>::Type matrix_size_in,
+                   typename uint64d<D>::Type matrix_size_out,
                    unsigned int num_batches,
                    T *image_in,
                    T *image_out )
@@ -568,11 +568,11 @@ namespace Gadgetron {
       const unsigned int batch = idx/num_elements_out;
       const unsigned int batch_offset_in = batch*prod(matrix_size_in);
       
-      const typename uintd<D>::Type co_out = idx_to_co<D>( idx-batch*num_elements_out, matrix_size_out );
-      const typename uintd<D>::Type co_in = co_out >> 1;
-      const typename uintd<D>::Type ones = to_vector_td<unsigned int,D>(1);
-      const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
-      const typename uintd<D>::Type offset = co_out%twos;
+      const typename uint64d<D>::Type co_out = idx_to_co<D>( idx-batch*num_elements_out, matrix_size_out );
+      const typename uint64d<D>::Type co_in = co_out >> 1;
+      const typename uint64d<D>::Type ones = to_vector_td<unsigned int,D>(1);
+      const typename uint64d<D>::Type twos = to_vector_td<unsigned int,D>(2);
+      const typename uint64d<D>::Type offset = co_out%twos;
       
       const unsigned int num_cells = 1 << D;
       
@@ -581,7 +581,7 @@ namespace Gadgetron {
       
       for( unsigned int i=0; i<num_cells; i++ ){
         
-        const typename uintd<D>::Type stride = idx_to_co<D>( i, twos );
+        const typename uint64d<D>::Type stride = idx_to_co<D>( i, twos );
         
         if( offset >= stride ){
           cellsum += image_in[batch_offset_in+co_to_idx(amin(co_in+stride, matrix_size_in-ones), matrix_size_in)];
@@ -616,8 +616,8 @@ namespace Gadgetron {
     if( in == 0x0 || out == 0x0 )
       throw std::runtime_error("upsample: illegal input pointer");
 
-    typename uintd<D>::Type matrix_size_in  = from_std_vector<unsigned int,D>( *in->get_dimensions() );
-    typename uintd<D>::Type matrix_size_out = from_std_vector<unsigned int,D>( *out->get_dimensions() );
+    typename uint64d<D>::Type matrix_size_in  = from_std_vector<size_t,D>( *in->get_dimensions() );
+    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( *out->get_dimensions() );
 
     if( (matrix_size_in<<1) != matrix_size_out ){
       throw std::runtime_error("upsample: arrays do not correspond to upsampling by a factor of two");
@@ -645,8 +645,8 @@ namespace Gadgetron {
   // 
 
   template<class T, unsigned int D> __global__ void 
-  downsample_kernel( typename uintd<D>::Type matrix_size_in,
-                     typename uintd<D>::Type matrix_size_out,
+  downsample_kernel( typename uint64d<D>::Type matrix_size_in,
+                     typename uint64d<D>::Type matrix_size_out,
                      unsigned int num_batches,
                      T *image_in,
                      T *image_out )
@@ -718,8 +718,8 @@ namespace Gadgetron {
     if( in == 0x0 || out == 0x0 )
       throw std::runtime_error("downsample: illegal input pointer");
 
-    typename uintd<D>::Type matrix_size_in  = from_std_vector<unsigned int,D>( *in->get_dimensions() );
-    typename uintd<D>::Type matrix_size_out = from_std_vector<unsigned int,D>( *out->get_dimensions() );
+    typename uint64d<D>::Type matrix_size_in  = from_std_vector<size_t,D>( *in->get_dimensions() );
+    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( *out->get_dimensions() );
 
     if( (matrix_size_in>>1) != matrix_size_out ){
       throw std::runtime_error("downsample: arrays do not correspond to downsampling by a factor of two");
@@ -775,35 +775,35 @@ namespace Gadgetron {
   template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > sum<float_complext>( cuNDArray<float_complext>*, unsigned int);
   template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > sum<double_complext>( cuNDArray<double_complext>*, unsigned int);  
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > crop<float,1>( typename uintd<1>::Type, typename uintd<1>::Type, cuNDArray<float>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > crop<float,2>( typename uintd<2>::Type, typename uintd<2>::Type, cuNDArray<float>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > crop<float,3>( typename uintd<3>::Type, typename uintd<3>::Type, cuNDArray<float>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > crop<float,4>( typename uintd<4>::Type, typename uintd<4>::Type, cuNDArray<float>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > crop<float,1>( typename uint64d<1>::Type, typename uint64d<1>::Type, cuNDArray<float>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > crop<float,2>( typename uint64d<2>::Type, typename uint64d<2>::Type, cuNDArray<float>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > crop<float,3>( typename uint64d<3>::Type, typename uint64d<3>::Type, cuNDArray<float>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > crop<float,4>( typename uint64d<4>::Type, typename uint64d<4>::Type, cuNDArray<float>*);
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > crop<float_complext,1>( typename uintd<1>::Type, typename uintd<1>::Type, cuNDArray<float_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > crop<float_complext,2>( typename uintd<2>::Type, typename uintd<2>::Type, cuNDArray<float_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > crop<float_complext,3>( typename uintd<3>::Type, typename uintd<3>::Type, cuNDArray<float_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > crop<float_complext,4>( typename uintd<4>::Type, typename uintd<4>::Type, cuNDArray<float_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > crop<float_complext,1>( typename uint64d<1>::Type, typename uint64d<1>::Type, cuNDArray<float_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > crop<float_complext,2>( typename uint64d<2>::Type, typename uint64d<2>::Type, cuNDArray<float_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > crop<float_complext,3>( typename uint64d<3>::Type, typename uint64d<3>::Type, cuNDArray<float_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > crop<float_complext,4>( typename uint64d<4>::Type, typename uint64d<4>::Type, cuNDArray<float_complext>*);
 
-  template EXPORTGPUCORE void crop<float,1>( uintd1, cuNDArray<float>*, cuNDArray<float>*);
-  template EXPORTGPUCORE void crop<float,2>( uintd2, cuNDArray<float>*, cuNDArray<float>*);
-  template EXPORTGPUCORE void crop<float,3>( uintd3, cuNDArray<float>*, cuNDArray<float>*);
-  template EXPORTGPUCORE void crop<float,4>( uintd4, cuNDArray<float>*, cuNDArray<float>*);
+  template EXPORTGPUCORE void crop<float,1>( uint64d1, cuNDArray<float>*, cuNDArray<float>*);
+  template EXPORTGPUCORE void crop<float,2>( uint64d2, cuNDArray<float>*, cuNDArray<float>*);
+  template EXPORTGPUCORE void crop<float,3>( uint64d3, cuNDArray<float>*, cuNDArray<float>*);
+  template EXPORTGPUCORE void crop<float,4>( uint64d4, cuNDArray<float>*, cuNDArray<float>*);
 
-  template EXPORTGPUCORE void crop<complext<float>,1>( uintd1, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*);
-  template EXPORTGPUCORE void crop<complext<float>,2>( uintd2, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*);
-  template EXPORTGPUCORE void crop<complext<float>,3>( uintd3, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*);
-  template EXPORTGPUCORE void crop<complext<float>,4>( uintd4, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*);
+  template EXPORTGPUCORE void crop<complext<float>,1>( uint64d1, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*);
+  template EXPORTGPUCORE void crop<complext<float>,2>( uint64d2, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*);
+  template EXPORTGPUCORE void crop<complext<float>,3>( uint64d3, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*);
+  template EXPORTGPUCORE void crop<complext<float>,4>( uint64d4, cuNDArray<complext<float> >*, cuNDArray< complext<float> >*);
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > pad<float,1>( typename uintd<1>::Type, cuNDArray<float>*, float );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > pad<float,2>( typename uintd<2>::Type, cuNDArray<float>*, float );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > pad<float,3>( typename uintd<3>::Type, cuNDArray<float>*, float );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > pad<float,4>( typename uintd<4>::Type, cuNDArray<float>*, float );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > pad<float,1>( typename uint64d<1>::Type, cuNDArray<float>*, float );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > pad<float,2>( typename uint64d<2>::Type, cuNDArray<float>*, float );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > pad<float,3>( typename uint64d<3>::Type, cuNDArray<float>*, float );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > pad<float,4>( typename uint64d<4>::Type, cuNDArray<float>*, float );
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > pad<float_complext,1>( typename uintd<1>::Type, cuNDArray<float_complext>*, float_complext );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > pad<float_complext,2>( typename uintd<2>::Type, cuNDArray<float_complext>*, float_complext );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > pad<float_complext,3>( typename uintd<3>::Type, cuNDArray<float_complext>*, float_complext );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > pad<float_complext,4>( typename uintd<4>::Type, cuNDArray<float_complext>*, float_complext );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > pad<float_complext,1>( typename uint64d<1>::Type, cuNDArray<float_complext>*, float_complext );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > pad<float_complext,2>( typename uint64d<2>::Type, cuNDArray<float_complext>*, float_complext );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > pad<float_complext,3>( typename uint64d<3>::Type, cuNDArray<float_complext>*, float_complext );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > pad<float_complext,4>( typename uint64d<4>::Type, cuNDArray<float_complext>*, float_complext );
 
   template EXPORTGPUCORE void pad<float,1>( cuNDArray<float>*, cuNDArray<float>*, float);
   template EXPORTGPUCORE void pad<float,2>( cuNDArray<float>*, cuNDArray<float>*, float);
@@ -815,45 +815,45 @@ namespace Gadgetron {
   template EXPORTGPUCORE void pad<float_complext,3>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, float_complext);
   template EXPORTGPUCORE void pad<float_complext,4>( cuNDArray<float_complext>*, cuNDArray<float_complext>*, float_complext);
 
-  template EXPORTGPUCORE void fill_border<float,1>(uintd1, cuNDArray<float>*,float);
-  template EXPORTGPUCORE void fill_border<float,2>(uintd2, cuNDArray<float>*,float);
-  template EXPORTGPUCORE void fill_border<float,3>(uintd3, cuNDArray<float>*,float);
-  template EXPORTGPUCORE void fill_border<float,4>(uintd4, cuNDArray<float>*,float);
+  template EXPORTGPUCORE void fill_border<float,1>(uint64d1, cuNDArray<float>*,float);
+  template EXPORTGPUCORE void fill_border<float,2>(uint64d2, cuNDArray<float>*,float);
+  template EXPORTGPUCORE void fill_border<float,3>(uint64d3, cuNDArray<float>*,float);
+  template EXPORTGPUCORE void fill_border<float,4>(uint64d4, cuNDArray<float>*,float);
 
-  template EXPORTGPUCORE void fill_border<float_complext,1>(uintd1, cuNDArray<float_complext>*,float_complext);
-  template EXPORTGPUCORE void fill_border<float_complext,2>(uintd2, cuNDArray<float_complext>*,float_complext);
-  template EXPORTGPUCORE void fill_border<float_complext,3>(uintd3, cuNDArray<float_complext>*,float_complext);
-  template EXPORTGPUCORE void fill_border<float_complext,4>(uintd4, cuNDArray<float_complext>*,float_complext);
+  template EXPORTGPUCORE void fill_border<float_complext,1>(uint64d1, cuNDArray<float_complext>*,float_complext);
+  template EXPORTGPUCORE void fill_border<float_complext,2>(uint64d2, cuNDArray<float_complext>*,float_complext);
+  template EXPORTGPUCORE void fill_border<float_complext,3>(uint64d3, cuNDArray<float_complext>*,float_complext);
+  template EXPORTGPUCORE void fill_border<float_complext,4>(uint64d4, cuNDArray<float_complext>*,float_complext);
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > crop<double,1>( typename uintd<1>::Type, typename uintd<1>::Type, cuNDArray<double>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > crop<double,2>( typename uintd<2>::Type, typename uintd<2>::Type, cuNDArray<double>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > crop<double,3>( typename uintd<3>::Type, typename uintd<3>::Type, cuNDArray<double>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > crop<double,4>( typename uintd<4>::Type, typename uintd<4>::Type, cuNDArray<double>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > crop<double,1>( typename uint64d<1>::Type, typename uint64d<1>::Type, cuNDArray<double>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > crop<double,2>( typename uint64d<2>::Type, typename uint64d<2>::Type, cuNDArray<double>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > crop<double,3>( typename uint64d<3>::Type, typename uint64d<3>::Type, cuNDArray<double>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > crop<double,4>( typename uint64d<4>::Type, typename uint64d<4>::Type, cuNDArray<double>*);
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > crop<double_complext,1>( typename uintd<1>::Type, typename uintd<1>::Type, cuNDArray<double_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > crop<double_complext,2>( typename uintd<2>::Type, typename uintd<2>::Type, cuNDArray<double_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > crop<double_complext,3>( typename uintd<3>::Type, typename uintd<3>::Type, cuNDArray<double_complext>*);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > crop<double_complext,4>( typename uintd<4>::Type, typename uintd<4>::Type, cuNDArray<double_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > crop<double_complext,1>( typename uint64d<1>::Type, typename uint64d<1>::Type, cuNDArray<double_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > crop<double_complext,2>( typename uint64d<2>::Type, typename uint64d<2>::Type, cuNDArray<double_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > crop<double_complext,3>( typename uint64d<3>::Type, typename uint64d<3>::Type, cuNDArray<double_complext>*);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > crop<double_complext,4>( typename uint64d<4>::Type, typename uint64d<4>::Type, cuNDArray<double_complext>*);
 
-  template EXPORTGPUCORE void crop<double,1>( uintd1, cuNDArray<double>*, cuNDArray<double>*);
-  template EXPORTGPUCORE void crop<double,2>( uintd2, cuNDArray<double>*, cuNDArray<double>*);
-  template EXPORTGPUCORE void crop<double,3>( uintd3, cuNDArray<double>*, cuNDArray<double>*);
-  template EXPORTGPUCORE void crop<double,4>( uintd4, cuNDArray<double>*, cuNDArray<double>*);
+  template EXPORTGPUCORE void crop<double,1>( uint64d1, cuNDArray<double>*, cuNDArray<double>*);
+  template EXPORTGPUCORE void crop<double,2>( uint64d2, cuNDArray<double>*, cuNDArray<double>*);
+  template EXPORTGPUCORE void crop<double,3>( uint64d3, cuNDArray<double>*, cuNDArray<double>*);
+  template EXPORTGPUCORE void crop<double,4>( uint64d4, cuNDArray<double>*, cuNDArray<double>*);
 
-  template EXPORTGPUCORE void crop<complext<double>,1>( uintd1, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*);
-  template EXPORTGPUCORE void crop<complext<double>,2>( uintd2, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*);
-  template EXPORTGPUCORE void crop<complext<double>,3>( uintd3, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*);
-  template EXPORTGPUCORE void crop<complext<double>,4>( uintd4, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*);
+  template EXPORTGPUCORE void crop<complext<double>,1>( uint64d1, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*);
+  template EXPORTGPUCORE void crop<complext<double>,2>( uint64d2, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*);
+  template EXPORTGPUCORE void crop<complext<double>,3>( uint64d3, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*);
+  template EXPORTGPUCORE void crop<complext<double>,4>( uint64d4, cuNDArray<complext<double> >*, cuNDArray< complext<double> >*);
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > pad<double,1>( typename uintd<1>::Type, cuNDArray<double>*, double );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > pad<double,2>( typename uintd<2>::Type, cuNDArray<double>*, double );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > pad<double,3>( typename uintd<3>::Type, cuNDArray<double>*, double );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > pad<double,4>( typename uintd<4>::Type, cuNDArray<double>*, double );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > pad<double,1>( typename uint64d<1>::Type, cuNDArray<double>*, double );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > pad<double,2>( typename uint64d<2>::Type, cuNDArray<double>*, double );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > pad<double,3>( typename uint64d<3>::Type, cuNDArray<double>*, double );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > pad<double,4>( typename uint64d<4>::Type, cuNDArray<double>*, double );
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > pad<double_complext,1>( typename uintd<1>::Type, cuNDArray<double_complext>*, double_complext );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > pad<double_complext,2>( typename uintd<2>::Type, cuNDArray<double_complext>*, double_complext );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > pad<double_complext,3>( typename uintd<3>::Type, cuNDArray<double_complext>*, double_complext );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > pad<double_complext,4>( typename uintd<4>::Type, cuNDArray<double_complext>*, double_complext );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > pad<double_complext,1>( typename uint64d<1>::Type, cuNDArray<double_complext>*, double_complext );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > pad<double_complext,2>( typename uint64d<2>::Type, cuNDArray<double_complext>*, double_complext );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > pad<double_complext,3>( typename uint64d<3>::Type, cuNDArray<double_complext>*, double_complext );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > pad<double_complext,4>( typename uint64d<4>::Type, cuNDArray<double_complext>*, double_complext );
 
   template EXPORTGPUCORE void pad<double,1>( cuNDArray<double>*, cuNDArray<double>*, double);
   template EXPORTGPUCORE void pad<double,2>( cuNDArray<double>*, cuNDArray<double>*, double);
@@ -865,15 +865,15 @@ namespace Gadgetron {
   template EXPORTGPUCORE void pad<double_complext,3>( cuNDArray<double_complext>*, cuNDArray<double_complext>*, double_complext);
   template EXPORTGPUCORE void pad<double_complext,4>( cuNDArray<double_complext>*, cuNDArray<double_complext>*, double_complext);
 
-  template EXPORTGPUCORE void fill_border<double,1>(uintd1, cuNDArray<double>*,double);
-  template EXPORTGPUCORE void fill_border<double,2>(uintd2, cuNDArray<double>*,double);
-  template EXPORTGPUCORE void fill_border<double,3>(uintd3, cuNDArray<double>*,double);
-  template EXPORTGPUCORE void fill_border<double,4>(uintd4, cuNDArray<double>*,double);
+  template EXPORTGPUCORE void fill_border<double,1>(uint64d1, cuNDArray<double>*,double);
+  template EXPORTGPUCORE void fill_border<double,2>(uint64d2, cuNDArray<double>*,double);
+  template EXPORTGPUCORE void fill_border<double,3>(uint64d3, cuNDArray<double>*,double);
+  template EXPORTGPUCORE void fill_border<double,4>(uint64d4, cuNDArray<double>*,double);
 
-  template EXPORTGPUCORE void fill_border<double_complext,1>(uintd1, cuNDArray<double_complext>*,double_complext);
-  template EXPORTGPUCORE void fill_border<double_complext,2>(uintd2, cuNDArray<double_complext>*,double_complext);
-  template EXPORTGPUCORE void fill_border<double_complext,3>(uintd3, cuNDArray<double_complext>*,double_complext);
-  template EXPORTGPUCORE void fill_border<double_complext,4>(uintd4, cuNDArray<double_complext>*,double_complext);
+  template EXPORTGPUCORE void fill_border<double_complext,1>(uint64d1, cuNDArray<double_complext>*,double_complext);
+  template EXPORTGPUCORE void fill_border<double_complext,2>(uint64d2, cuNDArray<double_complext>*,double_complext);
+  template EXPORTGPUCORE void fill_border<double_complext,3>(uint64d3, cuNDArray<double_complext>*,double_complext);
+  template EXPORTGPUCORE void fill_border<double_complext,4>(uint64d4, cuNDArray<double_complext>*,double_complext);
 
   template EXPORTGPUCORE float mean<float>(cuNDArray<float>*);
   template EXPORTGPUCORE float_complext mean<float_complext>(cuNDArray<float_complext>*);

@@ -48,8 +48,8 @@ namespace Gadgetron{
     }
 
     hoNDArray< std::complex<float> > *entry = daq->getObjectPtr();
-    std::vector<unsigned int> dims_profile = *entry->get_dimensions();
-    std::vector<unsigned int> dims = dims_profile;
+    std::vector<size_t> dims_profile = *entry->get_dimensions();
+    std::vector<size_t> dims = dims_profile;
     dims.push_back(readouts_buffered);
 
     // Allocate array for result

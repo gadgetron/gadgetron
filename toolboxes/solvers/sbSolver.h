@@ -37,7 +37,7 @@ namespace Gadgetron{
       sbRegularizationOperator(boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op) { reg_op=op; }
       virtual ~sbRegularizationOperator(){}
  
-      virtual void initialize(boost::shared_ptr< std::vector<unsigned int> > image_dims,
+      virtual void initialize(boost::shared_ptr< std::vector<size_t> > image_dims,
                               REAL normalization_factor = REAL(1))
       {
         d_k = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(image_dims.get()));
@@ -158,7 +158,7 @@ namespace Gadgetron{
         }
       }
  
-      virtual void initialize(boost::shared_ptr< std::vector<unsigned int> > image_dimensions,
+      virtual void initialize(boost::shared_ptr< std::vector<size_t> > image_dimensions,
                               REAL normalization_factor = REAL(1))
       {
         image_dims = image_dimensions;
@@ -226,7 +226,7 @@ namespace Gadgetron{
       std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > b_ks;
       std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > p_Ms;
       boost::shared_ptr<encodingOperatorContainer<ARRAY_TYPE_ELEMENT> > op_cont;
-      boost::shared_ptr< std::vector<unsigned int> > image_dims;
+      boost::shared_ptr< std::vector<size_t> > image_dims;
     };
 
 
@@ -255,7 +255,7 @@ namespace Gadgetron{
         }
       }
 
-      virtual void initialize(boost::shared_ptr< std::vector<unsigned int> > image_dimensions,
+      virtual void initialize(boost::shared_ptr< std::vector<size_t> > image_dimensions,
                               REAL normalization_factor = REAL(1))
       {
         image_dims = image_dimensions;
@@ -323,7 +323,7 @@ namespace Gadgetron{
       std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > b_ks;
       std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> > p_Ms;
       boost::shared_ptr<encodingOperatorContainer<ARRAY_TYPE_ELEMENT> > op_cont;
-      boost::shared_ptr< std::vector<unsigned int> > image_dims;
+      boost::shared_ptr< std::vector<size_t> > image_dims;
       REAL p;
     };
 
@@ -357,7 +357,7 @@ namespace Gadgetron{
         this->reg_op = boost::shared_ptr<identityOperator<ARRAY_TYPE_ELEMENT> >(new identityOperator<ARRAY_TYPE_ELEMENT>);
       }
  
-      virtual void initialize(boost::shared_ptr< std::vector<unsigned int> > image_dims, 
+      virtual void initialize(boost::shared_ptr< std::vector<size_t> > image_dims, 
                               REAL normalization_factor = REAL(1))
       {
         sbRegularizationOperator::initialize(image_dims, normalization_factor);
@@ -593,7 +593,7 @@ namespace Gadgetron{
         throw std::runtime_error( "Error: sbSolver::validate_encoding_operator : operator not set" );
       }
  
-      boost::shared_ptr< std::vector<unsigned int> > op_dims = op->get_domain_dimensions();
+      boost::shared_ptr< std::vector<size_t> > op_dims = op->get_domain_dimensions();
       if( op_dims->size() == 0 ){
         throw std::runtime_error( "Error: sbSolver::validate_encoding_operator : encoding operator must have specified domain dimensions" );
       }
@@ -607,7 +607,7 @@ namespace Gadgetron{
     // Validate regularization operator
     //
 
-    virtual void validate_regularization_operators( std::vector<unsigned int> *image_dims )
+    virtual void validate_regularization_operators( std::vector<size_t> *image_dims )
     {
       if( image_dims->size() == 0 ){
         throw std::runtime_error( "Error: sbSolver::validate_regularization_operators : empty dimensions vector provided" );
@@ -616,7 +616,7 @@ namespace Gadgetron{
       for( unsigned int i=0; i<this->regularization_operators_.size(); i++ ){
  
         boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op = regularization_operators_[i]->reg_op;
-        boost::shared_ptr< std::vector<unsigned int> > op_dims = op->get_domain_dimensions();
+        boost::shared_ptr< std::vector<size_t> > op_dims = op->get_domain_dimensions();
  
         if( !op.get() ){
           throw std::runtime_error( "Error: sbSolver::validate_regularization_operators : invalid operator provided" );
@@ -635,7 +635,7 @@ namespace Gadgetron{
       //
  
       validate_encoding_operator(); 
-      boost::shared_ptr< std::vector<unsigned int> > op_dims = this->encoding_operator_->get_domain_dimensions();
+      boost::shared_ptr< std::vector<size_t> > op_dims = this->encoding_operator_->get_domain_dimensions();
       validate_regularization_operators(op_dims.get());
     } 
 
@@ -643,7 +643,7 @@ namespace Gadgetron{
     virtual void initialize( REAL normalization_factor = REAL(1) )
     {
       // Get image dimensions
-      boost::shared_ptr< std::vector<unsigned int> > image_dims = 
+      boost::shared_ptr< std::vector<size_t> > image_dims = 
         this->encoding_operator_->get_domain_dimensions();
 
       if (non_negativity_filter_weight_ > REAL(0)){
@@ -690,7 +690,7 @@ namespace Gadgetron{
                        boost::shared_ptr<ARRAY_TYPE_ELEMENT> u_k )
     {
       // Image space dimensions
-      boost::shared_ptr< std::vector<unsigned int> > image_dims = 
+      boost::shared_ptr< std::vector<size_t> > image_dims = 
         this->encoding_operator_->get_domain_dimensions();
  
       // Keep a copy of the "previous" u_k to compute the outer loop change of u_k

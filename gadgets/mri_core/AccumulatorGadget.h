@@ -26,11 +26,11 @@ namespace Gadgetron{
 			  GadgetContainerMessage< hoNDArray< std::complex<float> > > * m2);
       
       hoNDArray< std::complex<float> >* buffer_;
-      std::vector<unsigned int> dimensions_;
+      std::vector<size_t> dimensions_;
       std::vector<float> field_of_view_;
-      unsigned int slices_;
-      int image_counter_;
-      int image_series_;      
+      size_t slices_;
+      long long image_counter_;
+      long long image_series_;
     };
 }
 #endif //ACCUMULATORGADGET_H

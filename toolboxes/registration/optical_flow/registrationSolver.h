@@ -76,7 +76,7 @@ namespace Gadgetron{
       }
     
       boost::shared_ptr<ARRAY_TYPE> out(new ARRAY_TYPE);
-      std::vector<unsigned int> out_dims = *displacements->get_dimensions().get(); out_dims.pop_back();    
+      std::vector<size_t> out_dims = *displacements->get_dimensions().get(); out_dims.pop_back();    
       out->create(&out_dims);
     
       interpolator_->set_displacement_field( displacements );

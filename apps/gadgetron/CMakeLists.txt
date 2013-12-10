@@ -20,8 +20,17 @@ INCLUDE_DIRECTORIES(${XSD_INCLUDES} ${XERCESC_INCLUDE_DIR})
 add_executable(gadgetron 
   ${XSDS_SOURCES} 
   main.cpp 
-  GadgetStreamController.cpp 
-  GadgetServerAcceptor.cpp)
+  #GadgetStreamController.cpp 
+  #GadgetServerAcceptor.cpp 
+  EndGadget.h
+  Gadget.h
+  GadgetContainerMessage.h
+  GadgetMessageInterface.h
+  Gadgetron.h
+  GadgetronExport.h
+  #GadgetServerAcceptor.h
+  #GadgetStreamController.h 
+  )
 
 target_link_libraries(gadgetron 
   gadgettools 
@@ -34,8 +43,8 @@ install(TARGETS gadgetron DESTINATION bin)
 install(FILES 	
   GadgetContainerMessage.h
   Gadget.h
-  GadgetServerAcceptor.h
-  GadgetStreamController.h
+  #GadgetServerAcceptor.h
+  #GadgetStreamController.h
   Gadgetron.h
   GadgetMessageInterface.h
   EndGadget.h

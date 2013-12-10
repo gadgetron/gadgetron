@@ -14,7 +14,7 @@ namespace Gadgetron{
   
   public:
   
-    typedef typename uintd<D>::Type _uintd;
+    typedef typename uint64d<D>::Type _uint64d;
     typedef typename reald<REAL,D>::Type _reald;
 
     cuNonCartesianSenseOperator() : cuSenseOperator<REAL,D>() { 
@@ -31,7 +31,7 @@ namespace Gadgetron{
     virtual void mult_M( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate = false );
     virtual void mult_MH( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate = false );
 
-    virtual void setup( _uintd matrix_size, _uintd matrix_size_os, REAL W );
+    virtual void setup( _uint64d matrix_size, _uint64d matrix_size_os, REAL W );
     virtual void preprocess( cuNDArray<_reald> *trajectory );
     virtual void set_dcw( boost::shared_ptr< cuNDArray<REAL> > dcw );
 

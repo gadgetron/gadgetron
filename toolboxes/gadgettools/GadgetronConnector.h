@@ -17,6 +17,8 @@
 #include "GadgetMessageInterface.h"
 #include "gadgettools_export.h"
 
+#define MAXHOSTNAMELENGTH 1024
+
 namespace Gadgetron{
 class WriterTask : public ACE_Task<ACE_MT_SYNCH>
 {
@@ -44,12 +46,13 @@ public:
 	virtual int open(void* = 0)
 	{
 	  ACE_TRACE(( ACE_TEXT("WriterTask::open") ));
-	  return this->activate( THR_NEW_LWP | THR_JOINABLE,
-				 1 );
+      this->msg_queue()->high_water_mark(24.0*1024*1024*1024);
+
+	  return this->activate( THR_NEW_LWP | THR_JOINABLE, 1 );
 	}
 
 
-	int register_writer(unsigned int slot, GadgetMessageWriter* writer) {
+	int register_writer(size_t slot, GadgetMessageWriter* writer) {
 		return writers_.insert(slot,writer);
 	}
 
@@ -129,23 +132,24 @@ public:
 	GadgetronConnector();
 	virtual ~GadgetronConnector();
 
+    int openImpl (std::string hostname, std::string port);
 	int open (std::string hostname, std::string port);
 	virtual int handle_input (ACE_HANDLE fd = ACE_INVALID_HANDLE);
 	//virtual int handle_output (ACE_HANDLE fd = ACE_INVALID_HANDLE);
 	virtual int handle_close (ACE_HANDLE handle, ACE_Reactor_Mask close_mask);
 	virtual int svc(void);
 
-	int putq  (  ACE_Message_Block * mb ,  ACE_Time_Value *  timeout = 0) {
+	virtual int putq  (  ACE_Message_Block * mb ,  ACE_Time_Value *  timeout = 0) {
 		return writer_task_.putq(mb,timeout);
 	}
 
-	virtual int process(unsigned int messageid, ACE_Message_Block* mb) {
+	virtual int process(size_t messageid, ACE_Message_Block* mb) {
 		mb->release();
 		return 0;
 	}
 
-	int register_reader(unsigned int slot, GadgetMessageReader* reader);
-	int register_writer(unsigned int slot, GadgetMessageWriter* writer) {
+	virtual int register_reader(size_t slot, GadgetMessageReader* reader);
+	virtual int register_writer(size_t slot, GadgetMessageWriter* writer) {
 		return writer_task_.register_writer(slot,writer);
 	}
 
@@ -163,5 +167,6 @@ protected:
 	//GadgetronSlotContainer<GadgetMessageWriter> writers_;
 
 };
+
 }
 #endif /* GADGETRONCONNECTOR_H_ */

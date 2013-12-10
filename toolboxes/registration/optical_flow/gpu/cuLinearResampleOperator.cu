@@ -11,7 +11,7 @@ namespace Gadgetron{
   // 
 
   template<class REAL, unsigned int D> __device__ 
-  bool is_border_pixel( typename reald<REAL,D>::Type co, typename uintd<D>::Type dims )
+  bool is_border_pixel( typename reald<REAL,D>::Type co, typename uint64d<D>::Type dims )
   {
     for( unsigned int dim=0; dim<D; dim++ ){
       if( dims[dim] > 1 && ( co[dim] < REAL(0) || co[dim] >= (REAL(dims[dim])-REAL(1)) ) )
@@ -39,7 +39,7 @@ namespace Gadgetron{
   template<class T, unsigned int D> __device__ 
   T interpolate( unsigned int batch_no, 
                  typename reald<typename realType<T>::Type,D>::Type co, 
-                 typename uintd<D>::Type matrix_size, 
+                 typename uint64d<D>::Type matrix_size, 
                  T *image )
   {
     typedef typename realType<T>::Type REAL;
@@ -58,7 +58,7 @@ namespace Gadgetron{
     // Iterate over all neighbors
     //
 
-    const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
+    const typename uint64d<D>::Type twos = to_vector_td<unsigned int,D>(2);
     const unsigned int num_neighbors = _get_num_neighbors<D>();
   
     for( unsigned int i=0; i<num_neighbors; i++ ){
@@ -66,7 +66,7 @@ namespace Gadgetron{
       // Determine image coordinate of current neighbor
       //
 
-      const typename uintd<D>::Type stride = idx_to_co<D>( i, twos );
+      const typename uint64d<D>::Type stride = idx_to_co<D>( i, twos );
 
       if( weak_greater_equal( stride, matrix_size ) ) continue; // For dimensions of size 1
 
@@ -86,7 +86,7 @@ namespace Gadgetron{
       // Read corresponding pixel value
       //
     
-      T image_value = image[co_to_idx<D>(to_uintd<REAL,D>(co_stride), matrix_size) + batch_no*prod(matrix_size)];
+      T image_value = image[co_to_idx<D>(to_uint64d<REAL,D>(co_stride), matrix_size) + batch_no*prod(matrix_size)];
     
       // Determine weight
       //
@@ -116,7 +116,7 @@ namespace Gadgetron{
   }
 
   template<class REAL, unsigned int D> __global__ void
-  write_sort_arrays_kernel( typename uintd<D>::Type matrix_size, unsigned int extended_size, REAL *displacements,
+  write_sort_arrays_kernel( typename uint64d<D>::Type matrix_size, unsigned int extended_size, REAL *displacements,
                             unsigned int *sort_keys, unsigned int *sort_values_indices, REAL *sort_values_weights )
   {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
@@ -128,7 +128,7 @@ namespace Gadgetron{
       const unsigned int batch_no = idx/num_elements_mat;
       const unsigned int idx_in_batch = idx-batch_no*num_elements_mat;
     
-      const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
+      const typename uint64d<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
 
       typename reald<REAL,D>::Type co_disp = to_reald<REAL,unsigned int,D>(co);
       for( unsigned int dim=0; dim<D; dim++ )
@@ -137,7 +137,7 @@ namespace Gadgetron{
       // Determine the number of neighbors
       //
     
-      const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
+      const typename uint64d<D>::Type twos = to_vector_td<unsigned int,D>(2);
       const unsigned int num_neighbors = _get_num_neighbors<D>();
 
       // Weights are non-zero only if all neighbors exist
@@ -158,7 +158,7 @@ namespace Gadgetron{
         // Determine image coordinate of current neighbor
         //
         
-        const typename uintd<D>::Type stride = idx_to_co<D>( i, twos );
+        const typename uint64d<D>::Type stride = idx_to_co<D>( i, twos );
         
         if( weak_greater_equal( stride, matrix_size ) ) non_zero = false; // For dimensions of size 1
         
@@ -179,7 +179,7 @@ namespace Gadgetron{
           // Write out sort keys (moving image resampling indices).
           //
           
-          sort_keys[idx+i*num_elements_ext] = co_to_idx<D>(to_uintd<REAL,D>(co_stride), matrix_size) + batch_no*num_elements_mat;
+          sort_keys[idx+i*num_elements_ext] = co_to_idx<D>(to_uint64d<REAL,D>(co_stride), matrix_size) + batch_no*num_elements_mat;
         }
         else{
           sort_keys[idx+i*num_elements_ext] = idx; // Could be anything, weight is zero
@@ -210,7 +210,7 @@ namespace Gadgetron{
   template<class T, unsigned int D> void 
   cuLinearResampleOperator<T,D>::write_sort_arrays( thrust::device_vector<unsigned int> &sort_keys )
   {
-    typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>(*this->offsets_->get_dimensions().get());
+    typename uint64d<D>::Type matrix_size = from_std_vector<size_t,D>(*this->offsets_->get_dimensions().get());
     int surplus = this->offsets_->get_number_of_dimensions()-D;
     unsigned int extended_dim = (surplus == 1) ? 1 : this->offsets_->get_size(D);
   

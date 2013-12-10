@@ -75,9 +75,9 @@ namespace Gadgetron{
     boost::shared_array< hoNDArray<float_complext> > host_data_buffer_;
     boost::shared_ptr< cuNDArray<float> > dcw_buffer_;
 
-    std::vector<unsigned int> fov_vec_;
-    std::vector<unsigned int> image_dimensions_recon_;
-    uintd2 image_dimensions_recon_os_;
+    std::vector<size_t> fov_vec_;
+    std::vector<size_t> image_dimensions_recon_;
+    uint64d2 image_dimensions_recon_os_;
 
     cuNFFT_plan<float,2> nfft_plan_;
     cuCgSolver<float_complext> cg_;

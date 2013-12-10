@@ -113,10 +113,10 @@ namespace Gadgetron{
     boost::shared_array< cuSenseBuffer<float,2> > acc_buffer_;
     boost::shared_array< cuSenseBufferCg<float,2> > acc_buffer_cg_;
 
-    std::vector<unsigned int> fov_;
-    std::vector<unsigned int> image_dimensions_;
-    std::vector<unsigned int> image_dimensions_recon_;
-    uintd2 image_dimensions_recon_os_;
+    std::vector<size_t> fov_;
+    std::vector<size_t> image_dimensions_;
+    std::vector<size_t> image_dimensions_recon_;
+    uint64d2 image_dimensions_recon_os_;
 
     boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > frame_readout_queue_;
     boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > recon_readout_queue_;

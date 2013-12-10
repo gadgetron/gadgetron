@@ -8,6 +8,7 @@ include_directories(
   ${Boost_INCLUDE_DIR}
   ${FFTW3_INCLUDE_DIR}
   ${ISMRMRD_INCLUDE_DIR}
+  ${ISMRMRD_SCHEMA_DIR}
   ${ISMRMRD_XSD_INCLUDE_DIR}
   ${XSD_INCLUDE_DIR}
   ${XERCESC_INCLUDE_DIR}
@@ -19,7 +20,22 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   )
 
+if (MKL_FOUND)
+    MESSAGE("MKL Found for gtPlus ... ")
+    list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
+    if ( USE_OPENMP )
+        list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
+    endif ( USE_OPENMP )
+
+    INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
+    LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
+endif (MKL_FOUND)
+
 add_subdirectory(mri_core)
+
+if (MKL_FOUND)
+    add_subdirectory(gtPlus)
+endif (MKL_FOUND)
 
 if (CUDA_FOUND)
   message("Cuda found, compiling gpu accelerated gadgets")
@@ -43,28 +59,23 @@ endif(MATLAB_FOUND)
 
 # nest the find_package checks to provide more useful error messages
 find_package(Boost COMPONENTS python)
-
-if (Boost_PYTHON_FOUND)
-    if (PYTHONLIBS_FOUND)
-        MESSAGE("PYTHON_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIRS}")
-        MESSAGE("PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")
-        if (NUMPY_FOUND)
-            MESSAGE("NUMPY_INCLUDE_DIRS: ${NUMPY_INCLUDE_DIRS}")
-            if (NUMPY_VERSION VERSION_LESS "1.7")
-                message("NumPy version < 1.7. NOT compiling Python Gadgets")
-            else (${NUMPY_VERSION} VERSION_LESS "1.7")
-                MESSAGE("Compiling Python Gadgets")
-                add_subdirectory(python)
-            endif (NUMPY_VERSION VERSION_LESS "1.7")
-        else(NUMPY_FOUND)
-            MESSAGE("NumPy NOT found, NOT compiling Python Gadgets")
-        endif(NUMPY_FOUND)
-    else (PYTHONLIBS_FOUND)
+if (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+    MESSAGE("PYTHON_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIRS}")
+    MESSAGE("PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")
+    MESSAGE("NUMPY_INCLUDE_DIRS: ${NUMPY_INCLUDE_DIRS}")
+    MESSAGE("Compiling Python Gadgets")
+    add_subdirectory(python)
+else (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
+    if(NOT PYTHONLIBS_FOUND)
         MESSAGE("Python Libraries/Headers NOT found, NOT compiling Python Gadgets")
-    endif (PYTHONLIBS_FOUND)
-else (Boost_PYTHON_FOUND)
-    MESSAGE("Boost Python NOT found, NOT compiling Python Gadgets")
-endif (Boost_PYTHON_FOUND)
+    endif(NOT PYTHONLIBS_FOUND)
+    if(NOT NUMPY_FOUND)
+        MESSAGE("NumPy NOT found, NOT compiling Python Gadgets")
+    endif(NOT NUMPY_FOUND)
+    if(NOT Boost_PYTHON_FOUND)
+        MESSAGE("Boost Python NOT found, NOT compiling Python Gadgets")
+    endif(NOT Boost_PYTHON_FOUND)
+endif (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
 
 find_package(DCMTK)
 if(DCMTK_FOUND)

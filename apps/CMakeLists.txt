@@ -1,4 +1,3 @@
-
 IF (ACE_FOUND AND XSD_FOUND)
   add_subdirectory(gadgetron)
   IF (ISMRMRD_FOUND)

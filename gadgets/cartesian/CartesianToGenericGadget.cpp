@@ -57,13 +57,13 @@ namespace Gadgetron{
     // Make a new array as continuation of m1, and pass along
     //
 
-    unsigned int samples_per_readout = m1->getObjectPtr()->number_of_samples;
-    unsigned int center_sample = m1->getObjectPtr()->center_sample;
-    unsigned int offset_readout = (matrix_size_[0]>>1)-center_sample; // In case of partial Fourier
-    unsigned int offset_phase = (matrix_size_[1]>>1)-center_phase_; // In case of partial Fourier
-    unsigned int phase_encode_step = m1->getObjectPtr()->idx.kspace_encode_step_1;
+    size_t samples_per_readout = m1->getObjectPtr()->number_of_samples;
+    size_t center_sample = m1->getObjectPtr()->center_sample;
+    size_t offset_readout = (matrix_size_[0]>>1)-center_sample; // In case of partial Fourier
+    size_t offset_phase = (matrix_size_[1]>>1)-center_phase_; // In case of partial Fourier
+    size_t phase_encode_step = m1->getObjectPtr()->idx.kspace_encode_step_1;
 
-    std::vector<unsigned int> trajectory_dimensions;
+    std::vector<size_t> trajectory_dimensions;
     trajectory_dimensions.push_back(3);
     trajectory_dimensions.push_back(samples_per_readout);
     
@@ -73,7 +73,7 @@ namespace Gadgetron{
 
     float *traj_ptr = cont->getObjectPtr()->get_data_ptr();
 
-    for( unsigned int sample=0; sample<samples_per_readout; sample++ ){
+    for( size_t sample=0; sample<samples_per_readout; sample++ ){
 
       // trajectory x (normalized to [-0.5;0.5])
       traj_ptr[sample*3+0] = float(sample+offset_readout)/float(matrix_size_[0])-0.5f;

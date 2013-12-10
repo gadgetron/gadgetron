@@ -168,7 +168,7 @@ template<class T> int PythonCommunicator::process(Gadget* g,
 	if (it != process_fnc_.end()) {
 		gstate = PyGILState_Ensure();
 		try {
-			std::vector<unsigned int> dims = (*(m2->getObjectPtr()->get_dimensions().get()));
+			std::vector<size_t> dims = (*(m2->getObjectPtr()->get_dimensions().get()));
 			std::vector<int> dims2(dims.size());
 			for (unsigned int i = 0; i < dims.size(); i++) dims2[dims.size()-i-1] = static_cast<int>(dims[i]);
 

@@ -71,22 +71,22 @@ namespace Gadgetron{
       throw std::runtime_error("hoLinearResampleOperator::set_displacement_field : illegal tailing array dim" );
     }
   
-    const typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>( *(displacements->get_dimensions()));
-    const unsigned int num_elements_mat = prod(matrix_size);
-    const unsigned int num_elements_ext = prod(matrix_size)*extended_dim;
+    const typename uint64d<D>::Type matrix_size = from_std_vector<size_t,D>( *(displacements->get_dimensions()));
+    const size_t num_elements_mat = prod(matrix_size);
+    const size_t num_elements_ext = prod(matrix_size)*extended_dim;
     
     const unsigned int num_neighbors = this->get_num_neighbors();
     arma::umat locations(2,num_elements_ext*num_neighbors);
     arma::Col<typename realType<T>::Type > values(num_elements_ext*num_neighbors);
-    int location_index = 0;
+    size_t location_index = 0;
 
-    for( unsigned int idx=0; idx<num_elements_ext; idx++ ){
+    for( size_t idx=0; idx<num_elements_ext; idx++ ){
     
-      const unsigned int batch_no = idx/num_elements_mat;
-      const unsigned int idx_in_batch = idx-batch_no*num_elements_mat;
+      const size_t batch_no = idx/num_elements_mat;
+      const size_t idx_in_batch = idx-batch_no*num_elements_mat;
     
-      const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
-      typename reald<REAL,D>::Type co_disp = to_reald<REAL,unsigned int,D>(co);
+      const typename uint64d<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
+      typename reald<REAL,D>::Type co_disp = to_reald<REAL,size_t,D>(co);
       for( unsigned int dim=0; dim<D; dim++ ){
         REAL tmp = displacements->get_data_ptr()[dim*num_elements_ext+batch_no*num_elements_mat+idx_in_batch];
         co_disp.vec[dim] += tmp;
@@ -95,7 +95,7 @@ namespace Gadgetron{
       // Determine the number of neighbors
       //
     
-      const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
+      const typename uint64d<D>::Type twos = to_vector_td<size_t,D>(2);
     
       // Weights are non-zero only if all neighbors exist
       //
@@ -106,15 +106,15 @@ namespace Gadgetron{
       // Iterate over all neighbors
       //
     
-      unsigned int mat_j = idx;
-      unsigned int mat_i;
+      size_t mat_j = idx;
+      size_t mat_i;
     
       for( unsigned int i=0; i<num_neighbors; i++ ){
       
         // Determine image coordinate of current neighbor
         //
         
-        const typename uintd<D>::Type stride = idx_to_co<D>( i, twos );
+        const typename uint64d<D>::Type stride = idx_to_co<D>( i, twos );
         
         if( weak_greater_equal( stride, matrix_size ) ) continue; // For dimensions of size 1
         
@@ -134,20 +134,20 @@ namespace Gadgetron{
         // Validate that the coordinate is within the expected range
         //
 
-        typename uintd<D>::Type ones = to_vector_td<unsigned int,D>(1);
-        typename uintd<D>::Type co_stride_uintd = to_uintd<REAL,D>(co_stride);
+        typename uint64d<D>::Type ones = to_vector_td<size_t,D>(1);
+        typename uint64d<D>::Type co_stride_uint64d = to_uint64d<REAL,D>(co_stride);
 
-        if( weak_greater( co_stride_uintd, matrix_size-ones ) ){
+        if( weak_greater( co_stride_uint64d, matrix_size-ones ) ){
 
           for( unsigned int dim=0; dim<D; dim++ ){
             if( co_stride[dim] < REAL(0) )
-              co_stride_uintd[dim] = 0;
+              co_stride_uint64d[dim] = 0;
             if( co_stride[dim] > (REAL(matrix_size[dim])-REAL(1)) )
-              co_stride_uintd[dim] = matrix_size[dim]-1;
+              co_stride_uint64d[dim] = matrix_size[dim]-1;
           }
         }
 	
-        mat_i = co_to_idx<D>(co_stride_uintd, matrix_size)+batch_no*num_elements_mat;
+        mat_i = co_to_idx<D>(co_stride_uint64d, matrix_size)+batch_no*num_elements_mat;
       
         // Determine weight
         //
@@ -174,7 +174,7 @@ namespace Gadgetron{
   }
 
   template <class T, unsigned int D> bool
-  hoLinearResampleOperator<T,D>::is_border_pixel( typename reald<typename realType<T>::Type,D>::Type co, typename uintd<D>::Type dims )
+  hoLinearResampleOperator<T,D>::is_border_pixel( typename reald<typename realType<T>::Type,D>::Type co, typename uint64d<D>::Type dims )
   {
     typedef typename realType<T>::Type REAL;
 

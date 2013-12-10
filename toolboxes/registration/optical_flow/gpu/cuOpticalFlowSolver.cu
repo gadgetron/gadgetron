@@ -11,10 +11,10 @@ namespace Gadgetron{
   //
 
   template<class REAL, unsigned int D> __global__ 
-  void spatial_grad_kernel(REAL*,REAL*,REAL*,typename uintd<D>::Type,unsigned int,unsigned int);
+  void spatial_grad_kernel(REAL*,REAL*,REAL*,typename uint64d<D>::Type,unsigned int,unsigned int);
 
   template<class REAL, unsigned int D> __global__ 
-  void temporal_grad_kernel(REAL*,REAL*,REAL*,typename uintd<D>::Type,unsigned int,unsigned int);
+  void temporal_grad_kernel(REAL*,REAL*,REAL*,typename uint64d<D>::Type,unsigned int,unsigned int);
 
   // There is some issue about Cuda defining min/max incompatibly...
   //
@@ -79,9 +79,9 @@ namespace Gadgetron{
   
   template<class T, unsigned int D> void
   cuOpticalFlowSolver<T,D>::core_grad_spatial( T *fixed_image, T *moving_image, T *gradient_image, 
-						  typename uintd<D>::Type matrix_size_moving, 
-						  unsigned int number_of_batches_fixed, 
-						  unsigned int number_of_batches_moving )
+						  typename uint64d<D>::Type matrix_size_moving, 
+						  unsigned long number_of_batches_fixed, 
+						  unsigned long number_of_batches_moving )
   {        
     unsigned int number_of_elements = prod(matrix_size_moving);
     dim3 blockDim; dim3 gridDim;
@@ -97,9 +97,9 @@ namespace Gadgetron{
   
   template<class T, unsigned int D> void
   cuOpticalFlowSolver<T,D>::core_grad_temporal( T *fixed_image, T *moving_image, T *gradient_image, 
-						   typename uintd<D>::Type matrix_size_moving, 
-						   unsigned int number_of_batches_fixed, 
-						   unsigned int number_of_batches_moving )
+						   typename uint64d<D>::Type matrix_size_moving, 
+						   unsigned long number_of_batches_fixed, 
+						   unsigned long number_of_batches_moving )
   {        
     unsigned int number_of_elements = prod(matrix_size_moving);
     dim3 blockDim; dim3 gridDim;
@@ -118,9 +118,9 @@ namespace Gadgetron{
   //
 
   template<unsigned int D> __device__ 
-  typename uintd<D>::Type compute_stride( unsigned int dim )
+  typename uint64d<D>::Type compute_stride( unsigned int dim )
   {
-    typename uintd<D>::Type res;
+    typename uint64d<D>::Type res;
   
     for( unsigned int d=0; d<D; d++ ){
       res.vec[d] = (d==dim) ? 1 : 0;
@@ -129,7 +129,7 @@ namespace Gadgetron{
   }
 
   template<unsigned int D> __device__ 
-  bool is_border_pixel_in_stride_dim_before( unsigned int dim, typename uintd<D>::Type co, typename uintd<D>::Type dims )
+  bool is_border_pixel_in_stride_dim_before( unsigned int dim, typename uint64d<D>::Type co, typename uint64d<D>::Type dims )
   {
     if( co.vec[dim] == 0 )
       return true;
@@ -138,7 +138,7 @@ namespace Gadgetron{
   }
 
   template<unsigned int D> __device__ 
-  bool is_border_pixel_in_stride_dim_after( unsigned int dim, typename uintd<D>::Type co, typename uintd<D>::Type dims )
+  bool is_border_pixel_in_stride_dim_after( unsigned int dim, typename uint64d<D>::Type co, typename uint64d<D>::Type dims )
   {
     if( co.vec[dim] == (dims.vec[dim]-1) )
       return true;
@@ -151,7 +151,7 @@ namespace Gadgetron{
 
   template<class REAL, unsigned int D> __global__ void
   spatial_grad_kernel( REAL *fixed_image, REAL *moving_image, REAL *gradient_image, 
-                       typename uintd<D>::Type matrix_size, 
+                       typename uint64d<D>::Type matrix_size, 
                        unsigned int num_batches_fixed, unsigned int num_batches_moving )
   {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
@@ -183,7 +183,7 @@ namespace Gadgetron{
       const unsigned int idx_in_batch = idx_in_pdev_moving-batch_idx_moving*num_elements_per_batch;
 
       // Local co to the image
-      const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
+      const typename uint64d<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
  
       REAL res;
       unsigned int count = 0;
@@ -192,7 +192,7 @@ namespace Gadgetron{
       // Find partial derivatives using central differences
       //
     
-      typename uintd<D>::Type stride = compute_stride<D>(stride_dim);
+      typename uint64d<D>::Type stride = compute_stride<D>(stride_dim);
     
       const unsigned int base_idx_moving = batch_idx_moving*num_elements_per_batch;
       const unsigned int base_idx_fixed = batch_idx_fixed*num_elements_per_batch;
@@ -242,7 +242,7 @@ namespace Gadgetron{
 
   template<class REAL, unsigned int D> __global__ void
   temporal_grad_kernel( REAL *fixed_image, REAL *moving_image, REAL *gradient_image, 
-                        typename uintd<D>::Type matrix_size, 
+                        typename uint64d<D>::Type matrix_size, 
                         unsigned int num_batches_fixed, unsigned int num_batches_moving )
   { 
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;

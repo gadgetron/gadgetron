@@ -85,12 +85,12 @@ int main( int argc, char** argv)
   }
   
   // Configuration from the command line
-  uintd2 matrix_size_os = uintd2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
+  uint64d2 matrix_size_os = uint64d2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
   unsigned int num_profiles = parms.get_parameter('p')->get_int_value();
   unsigned int samples_per_profile = parms.get_parameter('s')->get_int_value();  
   _real kernel_width = parms.get_parameter('k')->get_float_value();
 
-  uintd2 matrix_size = from_std_vector<unsigned int,2>(*(host_image->get_dimensions().get()));
+  uint64d2 matrix_size = from_std_vector<size_t,2>(*(host_image->get_dimensions().get()));
   _real alpha = (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0];
 
   if( matrix_size.vec[0] != matrix_size.vec[1] ){
@@ -106,7 +106,7 @@ int main( int argc, char** argv)
   delete timer;
   
   // Setup resulting samples array
-  vector<unsigned int> samples_dims; samples_dims.push_back( samples_per_profile ); samples_dims.push_back( num_profiles );
+  vector<size_t> samples_dims; samples_dims.push_back( samples_per_profile ); samples_dims.push_back( num_profiles );
   cuNDArray<_complext> samples(&samples_dims);
   
   // Initialize plan

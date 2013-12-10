@@ -32,6 +32,7 @@ elseif (CUDA_FOUND)
 endif (CUDA_FOUND)
 
 include_directories(   
+  ${ACE_INCLUDE_DIR} 
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${CMAKE_SOURCE_DIR}/gadgets/moco
   ${CMAKE_SOURCE_DIR}/toolboxes/core
@@ -69,7 +70,7 @@ add_library(gadgetron_moco SHARED
 target_link_libraries(gadgetron_moco
   cpucore gadgetron_mricore ${CPU_LIBS} ${GPU_LIBS}
   ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES}
-  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
+  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
   )
 
 install (TARGETS gadgetron_moco DESTINATION lib)

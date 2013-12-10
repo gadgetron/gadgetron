@@ -12,7 +12,7 @@ namespace Gadgetron{
   public:
     
     typedef complext<REAL> _complext;
-    typedef typename uintd<D>::Type _uintd;
+    typedef typename uint64d<D>::Type _uint64d;
     typedef typename reald<REAL,D>::Type _reald;
 
     cuSenseBuffer();
@@ -32,7 +32,7 @@ namespace Gadgetron{
     
     virtual void clear();
 
-    virtual void setup( _uintd matrix_size, _uintd matrix_size_os, REAL W, 
+    virtual void setup( _uint64d matrix_size, _uint64d matrix_size_os, REAL W, 
 			unsigned int num_coils, unsigned int num_cycles, unsigned int num_sub_cycles );
 
     // Boolean return value indicates whether the accumulation buffer has changed (i.e. a cycle has been completed)
@@ -42,7 +42,7 @@ namespace Gadgetron{
     virtual boost::shared_ptr< cuNDArray<_complext> > get_combined_coil_image();
     
   protected:
-    _uintd matrix_size_, matrix_size_os_;
+    _uint64d matrix_size_, matrix_size_os_;
     REAL W_;
     unsigned int num_coils_;
     unsigned int cycle_length_, sub_cycle_length_;

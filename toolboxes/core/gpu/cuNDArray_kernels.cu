@@ -107,23 +107,23 @@ template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<intd4>* in,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<uintd1>* in,
-				 cuNDArray<uintd1>* out,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<uint64d1>* in,
+				 cuNDArray<uint64d1>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<uintd2>* in,
-				 cuNDArray<uintd2>* out,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<uint64d2>* in,
+				 cuNDArray<uint64d2>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<uintd3>* in,
-				 cuNDArray<uintd3>* out,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<uint64d3>* in,
+				 cuNDArray<uint64d3>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 
-template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<uintd4>* in,
-				 cuNDArray<uintd4>* out,
+template EXPORTGPUCORE void cuNDArray_permute<>(cuNDArray<uint64d4>* in,
+				 cuNDArray<uint64d4>* out,
 				 std::vector<unsigned int> *order,
 				 int shift_mode);
 

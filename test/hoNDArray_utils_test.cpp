@@ -12,22 +12,22 @@ using testing::Types;
 template <typename T> class hoNDArray_utils_TestReal : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+    size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
     Array = hoNDArray<T>(&dims);
   }
-  std::vector<unsigned int> dims;
+  std::vector<size_t> dims;
   hoNDArray<T> Array;
 };
 
 template <typename T> class hoNDArray_utils_TestCplx : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+    size_t vdims[] = {37, 49, 23, 19}; //Using prime numbers for setup because they are messy
+    dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(size_t));
     Array = hoNDArray<T>(&dims);
   }
-  std::vector<unsigned int> dims;
+  std::vector<size_t> dims;
   hoNDArray<T> Array;
 };
 
@@ -40,7 +40,7 @@ TYPED_TEST(hoNDArray_utils_TestReal,permuteTest){
 
   fill(&this->Array,TypeParam(1));
 
-  std::vector<unsigned int> order;
+  std::vector<size_t> order;
   order.push_back(0); order.push_back(1); order.push_back(2); order.push_back(3);
 
   this->Array.get_data_ptr()[37] = TypeParam(2);
@@ -98,7 +98,7 @@ TYPED_TEST(hoNDArray_utils_TestCplx,permuteTest){
 
   fill(&this->Array,TypeParam(1,1));
 
-  std::vector<unsigned int> order;
+  std::vector<size_t> order;
   order.push_back(0); order.push_back(1); order.push_back(2); order.push_back(3);
   
   this->Array.get_data_ptr()[37] = TypeParam(2,3);

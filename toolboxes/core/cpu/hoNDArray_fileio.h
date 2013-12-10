@@ -41,7 +41,7 @@ template<class T> int write_nd_array(hoNDArray<T> *a, const char* filename)
 template <class T> boost::shared_ptr< hoNDArray<T> > read_nd_array(const char* filename)
 {
   int dimensions,tmp;
-  std::vector<unsigned int> dim_array;
+  std::vector<size_t> dim_array;
   std::fstream f(filename,std::ios::in | std::ios::binary);
 
   if( !f.is_open() ){
@@ -53,7 +53,7 @@ template <class T> boost::shared_ptr< hoNDArray<T> > read_nd_array(const char* f
   for (int i = 0; i < dimensions; i++)
   {
     f.read(reinterpret_cast<char*>(&tmp),sizeof(int));
-    dim_array.push_back(static_cast<unsigned int>(tmp));
+    dim_array.push_back(static_cast<size_t>(tmp));
   }
 
   boost::shared_ptr< hoNDArray<T> > out( new hoNDArray<T>(&dim_array) );

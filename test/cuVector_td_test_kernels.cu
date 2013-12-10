@@ -23,7 +23,7 @@ template<class T, unsigned int D> void Gadgetron::test_abs(cuNDArray< vector_td<
 }
 
 
-template<typename T, unsigned D>
+template<typename T, unsigned int D>
 struct test_norm_functor : public thrust::unary_function<T,vector_td<T,D> >
 {
  __host__ __device__ T operator()(const vector_td<T,D> &x) const {return norm(x);}
@@ -39,7 +39,7 @@ template<class T, unsigned int D> thrust::device_vector<T> Gadgetron::test_norm(
 
 
 
-template<typename T, unsigned D>
+template<typename T, unsigned int D>
 struct test_min_functor : public thrust::unary_function<T,vector_td<T,D> >
 {
  __host__ __device__ T operator()(const vector_td<T,D> &x) const {return min(x);}
@@ -54,7 +54,7 @@ template<class T, unsigned int D> thrust::device_vector<T> Gadgetron::test_min(c
 }
 
 
-template<typename T, unsigned D>
+template<typename T, unsigned int D>
 struct test_max_functor : public thrust::unary_function<T,vector_td<T,D> >
 {
  __host__ __device__ T operator()(const vector_td<T,D> &x) const {return max(x);}
@@ -68,7 +68,7 @@ template<class T, unsigned int D> thrust::device_vector<T> Gadgetron::test_max(c
 	return out;
 }
 
-template<typename T, unsigned D>
+template<typename T, unsigned int D>
 struct test_amin_functor : public thrust::binary_function<vector_td<T,D>, vector_td<T,D>, vector_td<T,D> >
 {
 	__host__ __device__ vector_td<T,D> operator()(const vector_td<T,D> &x, const vector_td<T,D> &y) const {return amin(x,y);}
@@ -82,7 +82,7 @@ template<class T, unsigned int D> boost::shared_ptr<cuNDArray<vector_td<T,D> > >
 }
 
 
-template<typename T, unsigned D>
+template<typename T, unsigned int D>
 struct test_amax_functor : public thrust::binary_function<vector_td<T,D>, vector_td<T,D>, vector_td<T,D> >
 {
 	__host__ __device__ vector_td<T,D> operator()(const vector_td<T,D> &x, const vector_td<T,D> &y) const {return amax(x,y);}
@@ -95,7 +95,7 @@ template<class T, unsigned int D> boost::shared_ptr<cuNDArray<vector_td<T,D> > >
 	return out;
 }
 
-template<typename T, unsigned D>
+template<typename T, unsigned int D>
 class test_amin2_functor : public thrust::unary_function<vector_td<T,D>, vector_td<T,D> >
 {
 public:
@@ -111,7 +111,7 @@ template<class T, unsigned int D> boost::shared_ptr<cuNDArray<vector_td<T,D> > >
 }
 
 
-template<typename T, unsigned D>
+template<typename T, unsigned int D>
 class test_amax2_functor : public thrust::unary_function<vector_td<T,D>, vector_td<T,D> >
 {
 public:

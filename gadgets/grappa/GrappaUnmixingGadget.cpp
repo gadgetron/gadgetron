@@ -60,7 +60,6 @@ int GrappaUnmixingGadget::process(GadgetContainerMessage<GrappaUnmixingJob>* m1,
 		return GADGET_FAIL;
 	}
 
-
 	m1->release();
 	m3->release();
 

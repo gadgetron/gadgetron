@@ -1,169 +1,202 @@
 /** \file hoNDArray.h
     \brief CPU-based N-dimensional array (data container)
-zz*/
+*/
 
-#ifndef HONDARRAY_H
-#define HONDARRAY_H
 #pragma once
 
 #include "NDArray.h"
 #include "complext.h"
 #include "vector_td.h"
+#include "GadgetronCommon.h"
+#include "SerializableObject.h"
+
+#include "cpucore_export.h"
 
 #include <string.h>
+#include <float.h>
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
-#include <new>          // std::runtime_error
+
+#ifdef USE_MKL
+#include "mkl.h"
+#endif
+
 namespace Gadgetron{
 
-  template <class T> class hoNDArray : public NDArray<T>
+  template <typename T> class hoNDArray : public NDArray<T>, public SerializableObject
   {
   public:
 
-    hoNDArray() : NDArray<T>::NDArray() {}
+    typedef NDArray<T> BaseClass;
 
-    hoNDArray(std::vector<unsigned int> *dimensions) : NDArray<T>::NDArray() {
-      this->create(dimensions);
-    }
+    hoNDArray();
+    hoNDArray(std::vector<size_t> *dimensions);
 
-    hoNDArray(std::vector<unsigned int> *dimensions,
-	      T* data, bool delete_data_on_destruct = false) : NDArray<T>::NDArray() {
-      this->create(dimensions,data,delete_data_on_destruct);
-    }
+    hoNDArray(size_t len);
+    hoNDArray(size_t sx, size_t sy);
+    hoNDArray(size_t sx, size_t sy, size_t sz);
+    hoNDArray(size_t sx, size_t sy, size_t sz, size_t st);
+    hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp);
+    hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq);
+    hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr);
+    hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss);
 
-    hoNDArray(boost::shared_ptr< std::vector<unsigned int> > dimensions) : NDArray<T>::NDArray() {
-      this->create(dimensions.get());
-    }
+    hoNDArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+    hoNDArray(size_t len, T* data, bool delete_data_on_destruct = false);
+    hoNDArray(size_t sx, size_t sy, T* data, bool delete_data_on_destruct = false);
+    hoNDArray(size_t sx, size_t sy, size_t sz, T* data, bool delete_data_on_destruct = false);
+    hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, T* data, bool delete_data_on_destruct = false);
+    hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, T* data, bool delete_data_on_destruct = false);
+    hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, T* data, bool delete_data_on_destruct = false);
+    hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, T* data, bool delete_data_on_destruct = false);
+    hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, T* data, bool delete_data_on_destruct = false);
 
-    hoNDArray(boost::shared_ptr< std::vector<unsigned int> > dimensions,
-	      T* data, bool delete_data_on_destruct = false) : NDArray<T>::NDArray() {
-      this->create(dimensions.get(),data,delete_data_on_destruct);
-    }
+    hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions);
+    hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
 
-    virtual ~hoNDArray() {
-      if (this->delete_data_on_destruct_) {
-	deallocate_memory();
-      }
-    }
+    virtual ~hoNDArray();
 
     // Copy constructor
-    hoNDArray(const hoNDArray<T>& a) {
-      this->data_ = 0;
-      this->dimensions_ = a.get_dimensions();
-      allocate_memory();
-      memcpy( this->data_, a.data_, this->elements_*sizeof(T) );
-    }
+    hoNDArray(const hoNDArray<T>& a);
 
     // Assignment operator
-    hoNDArray& operator=(const hoNDArray& rhs) {
-      // Are the dimensions the same? Then we can just memcpy
-      if (this->dimensions_equal(&rhs)) {
-	memcpy(this->data_, rhs.data_, this->elements_*sizeof(T));
-      } else {
-	this->deallocate_memory();
-	this->data_ = 0;
-	this->dimensions_ = rhs.get_dimensions();
-	this->allocate_memory();
-	memcpy( this->data_, rhs.data_, this->elements_*sizeof(T) );
-      }
-      return *this;
+    hoNDArray& operator=(const hoNDArray& rhs);
+    void fill(T value);
+
+    virtual void create(std::vector<size_t>& dimensions);
+
+    virtual void create(std::vector<unsigned int> *dimensions);
+    virtual void create(std::vector<size_t> *dimensions);
+
+    virtual void create(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct = false);
+    virtual void create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+
+    virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions);
+    virtual void create(boost::shared_ptr<std::vector<size_t>  > dimensions, T* data, bool delete_data_on_destruct = false);
+
+    virtual void create(size_t len);
+    virtual void create(size_t sx, size_t sy);
+    virtual void create(size_t sx, size_t sy, size_t sz);
+    virtual void create(size_t sx, size_t sy, size_t sz, size_t st);
+    virtual void create(size_t sx, size_t sy, size_t sz, size_t st, size_t sp);
+    virtual void create(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq);
+    virtual void create(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr);
+    virtual void create(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss);
+    virtual void create(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, size_t su);
+
+    virtual void create(size_t len, T* data, bool delete_data_on_destruct = false);
+    virtual void create(size_t sx, size_t sy, T* data, bool delete_data_on_destruct = false);
+    virtual void create(size_t sx, size_t sy, size_t sz, T* data, bool delete_data_on_destruct = false);
+    virtual void create(size_t sx, size_t sy, size_t sz, size_t st, T* data, bool delete_data_on_destruct = false);
+    virtual void create(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, T* data, bool delete_data_on_destruct = false);
+    virtual void create(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, T* data, bool delete_data_on_destruct = false);
+    virtual void create(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, T* data, bool delete_data_on_destruct = false);
+    virtual void create(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, T* data, bool delete_data_on_destruct = false);
+    virtual void create(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, size_t su, T* data, bool delete_data_on_destruct = false);
+
+    T* begin();
+    const T* begin() const;
+
+    T* end();
+    const T* end() const;
+
+    T& at( size_t idx );
+    const T& at( size_t idx ) const;
+
+    T operator[]( size_t idx );
+
+    T& operator()( size_t idx );
+    const T& operator()( size_t idx ) const;
+
+    T& operator()( const std::vector<size_t>& ind );
+    const T& operator()( const std::vector<size_t>& ind ) const;
+
+    template<typename T2> 
+    bool copyFrom(const hoNDArray<T2>& aArray)
+    {
+        try
+        {
+            if ( !this->dimensions_equal(&aArray) )
+            {
+                this->create(aArray.get_dimensions());
+            }
+
+            for ( size_t ii=0; ii<elements_; ii++ )
+            {
+                data_[ii] = static_cast<T>(aArray(ii));
+            }
+        }
+        catch(...)
+        {
+            return false;
+        }
+
+        return true;
     }
 
-    virtual void fill(T value) {
-#ifdef USE_OMP
-#pragma omp parallel for
-      for( int i=0; i<this->get_number_of_elements(); i++ )
-	this->get_data_ptr()[i] = value;
-#else
-      std::fill(this->get_data_ptr(), this->get_data_ptr()+this->get_number_of_elements(), value);
-#endif
-    }
+    void get_sub_array(const std::vector<size_t>& start, std::vector<size_t>& size, hoNDArray<T>& out);
 
-    T* begin() {
-      return this->data_;
-    }
+    virtual void print(std::ostream& os) const;
+    virtual void printContent(std::ostream& os) const;
 
-    T* end() {
-      return (this->data_+this->elements_);
-    }
-
-    T& at( unsigned int idx ){
-      if( idx >= this->get_number_of_elements() ){
-  	throw std::runtime_error("hoNDArray::at(): index out of range.");
-      }
-      return this->get_data_ptr()[idx];
-    }
-
-    T& operator[]( unsigned int idx ){
-      if( idx >= this->get_number_of_elements() ){
-  	throw std::runtime_error("hoNDArray::operator[]: index out of range.");
-      }
-      return this->get_data_ptr()[idx];
-    }
+    virtual bool serialize(char*& buf, size_t& len) const;
+    virtual bool deserialize(char* buf, size_t& len);
 
   protected:
 
-    virtual void allocate_memory()
-    {
-      deallocate_memory();
+    using BaseClass::dimensions_;
+    using BaseClass::offsetFactors_;
+    using BaseClass::data_;
+    using BaseClass::elements_;
+    using BaseClass::delete_data_on_destruct_;
 
-      this->elements_ = 1;
-      for (unsigned int i = 0; i < this->dimensions_->size(); i++) {
-	this->elements_ *= (*this->dimensions_)[i];
-      }
-
-      _allocate_memory(this->elements_, &this->data_);
-
-      if( this->data_ == 0x0 ){
-	throw std::runtime_error("hoNDArray<>::allocate memory failed");
-      }
-    }
-
-    virtual void deallocate_memory() {
-      if( this->data_ ) {
-	_deallocate_memory( this->data_ );
-	this->data_ = 0x0;
-      }
-    }
+    virtual void allocate_memory();
+    virtual void deallocate_memory();
 
     // Generic allocator / deallocator
     //
 
-    template<class X> inline void _allocate_memory( unsigned int size, X** data ){
-      *data = new(std::nothrow) X[size];
+    template<class X> void _allocate_memory( size_t size, X** data )
+    {
+        *data = new (std::nothrow) X[size];
     }
 
-    template<class X> inline void _deallocate_memory( X* data ){
-      delete [] data;
+    template<class X> void _deallocate_memory( X* data )
+    {
+        delete [] data;
     }
 
     // Overload these instances to avoid invoking the element class constructor/destructor
     //
 
-    void inline _allocate_memory( unsigned int size, float_complext** data ){
-      *data = (float_complext*) malloc( size*sizeof(float_complext) );
+    virtual void _allocate_memory( size_t size, float** data );
+    virtual void _deallocate_memory( float* data );
+
+    virtual void _allocate_memory( size_t size, double** data );
+    virtual void _deallocate_memory( double* data );
+
+    virtual void _allocate_memory( size_t size, std::complex<float>** data );
+    virtual void _deallocate_memory( std::complex<float>* data );
+
+    virtual void _allocate_memory( size_t size, std::complex<double>** data );
+    virtual void _deallocate_memory( std::complex<double>* data );
+
+    virtual void _allocate_memory( size_t size, float_complext** data );
+    virtual void _deallocate_memory( float_complext* data );
+
+    virtual void _allocate_memory( size_t size, double_complext** data );
+    virtual void _deallocate_memory( double_complext* data );
+
+    template<class TYPE, unsigned int D> void _allocate_memory( size_t size, vector_td<TYPE,D>** data )
+    {
+        *data = (vector_td<TYPE,D>*) malloc( size*sizeof(vector_td<TYPE,D>) );
     }
 
-    void inline _deallocate_memory( float_complext* data ){
-      free( data );
-    }
-
-    void inline _allocate_memory( unsigned int size, double_complext** data ){
-      *data = (double_complext*) malloc( size*sizeof(double_complext) );
-    }
-
-    void inline _deallocate_memory( double_complext* data ){
-      free( data );
-    }
-
-    template<class TYPE, unsigned int D> void inline _allocate_memory( unsigned int size, vector_td<TYPE,D>** data ){
-      *data = (vector_td<TYPE,D>*) malloc( size*sizeof(vector_td<TYPE,D>) );
-    }
-
-    template<class TYPE, unsigned int D>  void inline _deallocate_memory( vector_td<TYPE,D>* data ){
-      free( data );
+    template<class TYPE, unsigned int D>  void _deallocate_memory( vector_td<TYPE,D>* data )
+    {
+        free( data );
     }
   };
 }
 
-#endif //HONDARRAY_H
+#include "hoNDArray.hxx"

@@ -25,12 +25,12 @@ namespace Gadgetron{
         hoPartialDerivativeOperator() : 
           partialDerivativeOperator< D, hoNDArray<T> >(0) {}
 
-          hoPartialDerivativeOperator( unsigned int dimension ) : 
+          hoPartialDerivativeOperator( size_t dimension ) : 
           partialDerivativeOperator<D, hoNDArray<T> >( dimension ) {}
 
           virtual ~hoPartialDerivativeOperator() {}
 
-          virtual void compute_partial_derivative( typename intd<D>::Type stride, hoNDArray<T> *in,
+          virtual void compute_partial_derivative( typename int64d<D>::Type stride, hoNDArray<T> *in,
               hoNDArray<T> *out, bool accumulate )
           {
               if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
@@ -41,17 +41,17 @@ namespace Gadgetron{
                   throw std::runtime_error("hoPartialDerivativeOperator::compute_partial_derivative : dimensionality mismatch");
               }
 
-              typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>( *(in->get_dimensions().get()) ));
+              typename int64d<D>::Type dims = to_int64d( from_std_vector<size_t,D>( *(in->get_dimensions().get()) ));
 
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-              for( int idx=0; idx<in->get_number_of_elements(); idx++ ) {
+      for( long long idx=0; idx<in->get_number_of_elements(); idx++ ) {
 
                   T valN, valC;
 
-                  typename intd<D>::Type co = idx_to_co<D>(idx, dims);
-                  typename intd<D>::Type coN = (co+dims+stride)%dims;
+                  typename int64d<D>::Type co = idx_to_co<D>(idx, dims);
+                  typename int64d<D>::Type coN = (co+dims+stride)%dims;
 
                   valN = in->get_data_ptr()[co_to_idx<D>(coN, dims)];
                   valC = in->get_data_ptr()[co_to_idx<D>(co, dims)];
@@ -65,8 +65,8 @@ namespace Gadgetron{
               }
           }
 
-          virtual void compute_second_order_partial_derivative( typename intd<D>::Type forwards_stride,
-              typename intd<D>::Type adjoint_stride, 
+          virtual void compute_second_order_partial_derivative( typename int64d<D>::Type forwards_stride,
+              typename int64d<D>::Type adjoint_stride, 
               hoNDArray<T> *in, hoNDArray<T> *out, bool accumulate )
           {
               if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
@@ -77,18 +77,18 @@ namespace Gadgetron{
                   throw std::runtime_error( "hoPartialDerivativeOperator::compute_second_order_partial_derivative : dimensionality mismatch");
               }
 
-              typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>( *(in->get_dimensions().get()) ));
+              typename int64d<D>::Type dims = to_int64d( from_std_vector<size_t,D>( *(in->get_dimensions().get()) ));
 
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-              for( int idx=0; idx<in->get_number_of_elements(); idx++ ) {
+      for( long long idx=0; idx<in->get_number_of_elements(); idx++ ) {
 
                   T valN1, valN2, valC;
 
-                  typename intd<D>::Type co = idx_to_co<D>(idx, dims);
-                  typename intd<D>::Type coN1 = (co+dims+forwards_stride)%dims;
-                  typename intd<D>::Type coN2 = (co+dims+adjoint_stride)%dims;
+                  typename int64d<D>::Type co = idx_to_co<D>(idx, dims);
+                  typename int64d<D>::Type coN1 = (co+dims+forwards_stride)%dims;
+                  typename int64d<D>::Type coN2 = (co+dims+adjoint_stride)%dims;
 
                   valN1 = in->get_data_ptr()[co_to_idx<D>(coN1, dims)];
                   valN2 = in->get_data_ptr()[co_to_idx<D>(coN2, dims)];

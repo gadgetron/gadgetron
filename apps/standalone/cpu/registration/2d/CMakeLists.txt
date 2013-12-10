@@ -6,6 +6,7 @@ target_link_libraries(register_HS_2d_cpu
   cpureg 
   cpucore 
   cpucore_math
+  ${ARMADILLO_LIBRARIES}
   )
 
 target_link_libraries(register_CK_2d_cpu 
@@ -13,6 +14,7 @@ target_link_libraries(register_CK_2d_cpu
   cpureg 
   cpucore
   cpucore_math
+  ${ARMADILLO_LIBRARIES}
   )
 
 install(TARGETS 

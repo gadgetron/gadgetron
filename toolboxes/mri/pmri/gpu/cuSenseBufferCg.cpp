@@ -7,7 +7,7 @@ namespace Gadgetron{
 
   template<class REAL, unsigned int D, bool ATOMICS>
   void cuSenseBufferCg<REAL,D,ATOMICS>::
-  setup( _uintd matrix_size, _uintd matrix_size_os, REAL W, 
+  setup( _uint64d matrix_size, _uint64d matrix_size_os, REAL W, 
 	 unsigned int num_coils, unsigned int num_cycles, unsigned int num_sub_cycles )
   {      
     cuSenseBuffer<REAL,D,ATOMICS>::setup( matrix_size, matrix_size_os, W, num_coils, num_cycles, num_sub_cycles );
@@ -24,7 +24,7 @@ namespace Gadgetron{
   template<class REAL, unsigned int D, bool ATOMICS>
   void cuSenseBufferCg<REAL,D,ATOMICS>::preprocess( cuNDArray<_reald> *traj ) {
     this->E_->preprocess(traj);
-    std::vector<unsigned int> dims = *traj->get_dimensions();
+    std::vector<size_t> dims = *traj->get_dimensions();
     dims.push_back(this->num_coils_);
     this->E_->set_codomain_dimensions(&dims);
   }

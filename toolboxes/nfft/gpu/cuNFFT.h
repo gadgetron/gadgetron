@@ -64,7 +64,7 @@ namespace Gadgetron{
        \param device the device (GPU id) to use for the NFFT computation. 
        The default value of -1 indicates that the currently active device is used.
      */
-    cuNFFT_plan( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os,
+    cuNFFT_plan( typename uint64d<D>::Type matrix_size, typename uint64d<D>::Type matrix_size_os,
 	       REAL W, int device = -1 );
 
     /**
@@ -89,7 +89,7 @@ namespace Gadgetron{
     /** 
 	Setup the plan. Please see the constructor taking similar arguments for a parameter description.
     */
-    void setup( typename uintd<D>::Type matrix_size, typename uintd<D>::Type matrix_size_os,
+    void setup( typename uint64d<D>::Type matrix_size, typename uint64d<D>::Type matrix_size_os,
 		REAL W, int device = -1 );
 
     /**
@@ -138,7 +138,7 @@ namespace Gadgetron{
       \param[in] halfway_dims specifies the dimensions of the intermediate Fourier space (codomain).
     */
     void mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
-		    cuNDArray<REAL> *dcw, std::vector<unsigned int> halfway_dims );
+		    cuNDArray<REAL> *dcw, std::vector<size_t> halfway_dims );
   
   public: // Utilities
   
@@ -188,12 +188,12 @@ namespace Gadgetron{
     /**
        Get the matrix size.
     */
-    typename uintd<D>::Type get_matrix_size();
+    typename uint64d<D>::Type get_matrix_size();
 
     /**
        Get the oversampled matrix size.
     */
-    typename uintd<D>::Type get_matrix_size_os();
+    typename uint64d<D>::Type get_matrix_size_os();
 
     /**
        Get the convolution kernel size
@@ -245,9 +245,9 @@ namespace Gadgetron{
 
   private:
     
-    typename uintd<D>::Type matrix_size;          // Matrix size
-    typename uintd<D>::Type matrix_size_os;       // Oversampled matrix size
-    typename uintd<D>::Type matrix_size_wrap;     // Wrap size at border
+    typename uint64d<D>::Type matrix_size;          // Matrix size
+    typename uint64d<D>::Type matrix_size_os;       // Oversampled matrix size
+    typename uint64d<D>::Type matrix_size_wrap;     // Wrap size at border
 
     typename reald<REAL,D>::Type alpha;           // Oversampling factor (for each dimension)
     typename reald<REAL,D>::Type beta;            // Kaiser-Bessel convolution kernel control parameter
