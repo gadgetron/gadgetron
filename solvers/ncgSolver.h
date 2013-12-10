@@ -129,8 +129,7 @@ public:
 			REAL grad_norm = dot(g,g);
 			if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
 
-				std::cout << "Iteration " <<i << ". Realtive gradient norm: " <<  grad_norm/grad_norm0 << std::endl;
-				std::cout << "Data residual: " << data_res << std::endl;
+				std::cout << "Iteration " <<i << ". Realtive gradient norm: " <<  grad_norm << std::endl;
 			}
 
 			if (i == 0){
@@ -199,20 +198,44 @@ public:
 				if (alpha == 0) throw std::runtime_error("Wolfe line search failed");
 				alpha_old = alpha;
 			}
-			x2 = *x;
-			axpy(alpha,&d,x);
+
+
+
+
 			if (non_negativity_constraint_){
-				clamp_min(x,ELEMENT_TYPE(0));
-				d = *x;
-				d -= x2;
-				d /= alpha;
-				this->encoding_operator_->mult_M(x,&encoding_space);
-				encoding_space -= *in;
-				calc_regMultM(x,regEnc);
-				for (int n = 0; n < regEnc.size(); n++)
-					if (reg_priors[n].get())
-						axpy(-std::sqrt(this->regularization_operators_[n]->get_weight()),reg_priors[n].get(),&regEnc[n]);
+
+				axpy(-alpha,&encoding_space2,&encoding_space);
+				reg_axpy(-alpha,regEnc2,regEnc);
+
+
+				clamp_min(&x2,ELEMENT_TYPE(0));
+				d = x2;
+				d -= *x;
+				gd = dot(g,&d);
+				x2 = *x;
+				alpha_old = 0;
+				alpha0 = 1;
+				this->encoding_operator_->mult_M(&d,&encoding_space2);
+				calc_regMultM(&d,regEnc2);
+				k=0;
+				wolfe = false;
+				while (not wolfe){
+							alpha=alpha0*std::pow(rho,k);
+							axpy(alpha-alpha_old,&encoding_space2,&encoding_space);
+							reg_axpy(alpha-alpha_old,regEnc2,regEnc);
+							axpy(alpha-alpha_old,&d,&x2);
+							if (functionValue(&encoding_space,regEnc,&x2) <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
+							k++;
+							if (alpha == 0) throw std::runtime_error("Wolfe line search failed");
+							alpha_old = alpha;
+						}
+				axpy(alpha,&d,x);
+			} else {
+				axpy(alpha,&d,x);
+
 			}
+			std::cout << "Function value: " << functionValue(&encoding_space,regEnc,x) << std::endl;
+
 			this->encoding_operator_->mult_MH(&encoding_space,g);
 			this->add_gradient(x,g);
 			add_linear_gradient(regEnc,g);
