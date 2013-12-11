@@ -46,8 +46,8 @@ public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
  private:
   std::vector< GrappaCalibrationBuffer* > buffers_;
   std::vector<unsigned int> fov_;
-  std::vector<unsigned int> dimensions_;
-  std::vector<unsigned int> image_dimensions_;
+  std::vector<size_t> dimensions_;
+  std::vector<size_t> image_dimensions_;
   std::vector< GadgetContainerMessage<  hoNDArray< std::complex<float> > >* > image_data_;
   std::vector< boost::shared_ptr<GrappaWeights<float> > > weights_;
   GrappaWeightsCalculator<float> weights_calculator_;

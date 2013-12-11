@@ -25,6 +25,7 @@
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_operators.h"
 #include "cuNDArray_utils.h"
+#include "cuNDArray_reductions.h"
 #include "hoNDArray_fileio.h"
 #include "parameterparser.h"
 #include "radial_utilities.h"

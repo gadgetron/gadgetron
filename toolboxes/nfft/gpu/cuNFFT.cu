@@ -69,18 +69,18 @@ typedef float dummy;
 //
 template<class REAL, unsigned int D, bool ATOMICS> struct _convolve_NFFT_NC2C{
   static bool apply( cuNFFT_plan<REAL,D,ATOMICS> *plan, 
-		     cuNDArray<complext<REAL> > *in, 
-		     cuNDArray<complext<REAL> > *out, 
-		     bool accumulate );
+                     cuNDArray<complext<REAL> > *in, 
+                     cuNDArray<complext<REAL> > *out, 
+                     bool accumulate );
 };
 
 // Common multi-device handling: prepare
 //
 template<class I1, class I2, class I3>
 static bool prepare( int device, int *old_device, 
-		     cuNDArray<I1> *in1,       cuNDArray<I1> **in1_int,
-		     cuNDArray<I2> *in2 = 0x0, cuNDArray<I2> **in2_int = 0x0,
-		     cuNDArray<I3> *in3 = 0x0, cuNDArray<I3> **in3_int = 0x0 )
+                     cuNDArray<I1> *in1,       cuNDArray<I1> **in1_int,
+                     cuNDArray<I2> *in2 = 0x0, cuNDArray<I2> **in2_int = 0x0,
+                     cuNDArray<I3> *in3 = 0x0, cuNDArray<I3> **in3_int = 0x0 )
 {
   // Get current Cuda device
   if( cudaGetDevice(old_device) != cudaSuccess ) {
@@ -120,9 +120,9 @@ static bool prepare( int device, int *old_device,
 //
 template<class I1, class I2, class I3>
 static bool restore( int old_device, cuNDArray<I1> *out, 
-		     cuNDArray<I1> *in1, cuNDArray<I1> *in1_int,
-		     cuNDArray<I2> *in2 = 0x0, cuNDArray<I2> *in2_int = 0x0,
-		     cuNDArray<I3> *in3 = 0x0, cuNDArray<I3> *in3_int = 0x0 )
+                     cuNDArray<I1> *in1, cuNDArray<I1> *in1_int,
+                     cuNDArray<I2> *in2 = 0x0, cuNDArray<I2> *in2_int = 0x0,
+                     cuNDArray<I3> *in3 = 0x0, cuNDArray<I3> *in3_int = 0x0 )
 {
   if( in1 && out && out->get_device() != in1_int->get_device() ){ 
     *out = *in1_int; // device transfer by assignment
@@ -289,7 +289,7 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::preprocess( cuNDArray<typename real
   // Make sure that the trajectory values are within range [-1/2;1/2]
   thrust::pair< thrust::device_ptr<REAL>, thrust::device_ptr<REAL> > mm_pair = 
     thrust::minmax_element( device_pointer_cast<REAL>((REAL*)trajectory_int->get_data_ptr()), 
-			    device_pointer_cast<REAL>(((REAL*)trajectory_int->get_data_ptr())+trajectory_int->get_number_of_elements()*D ));
+                            device_pointer_cast<REAL>(((REAL*)trajectory_int->get_data_ptr())+trajectory_int->get_number_of_elements()*D ));
   
   if( *mm_pair.first < REAL(-0.5) || *mm_pair.second > REAL(0.5) ){
     throw std::runtime_error("Error: cuNFFT::preprocess : trajectory out of range [-1/2;1/2]");
@@ -309,7 +309,7 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::preprocess( cuNDArray<typename real
 
   // convert input trajectory in [-1/2;1/2] to [0;matrix_size_os]
   thrust::transform( trajectory_positions_in.begin(), trajectory_positions_in.end(), trajectory_positions->begin(), 
-		     trajectory_scale<REAL,D>(matrix_size_os_real, matrix_size_os_plus_wrap_real) );
+                     trajectory_scale<REAL,D>(matrix_size_os_real, matrix_size_os_plus_wrap_real) );
   
   CHECK_FOR_CUDA_ERROR();
 
@@ -335,9 +335,9 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::preprocess( cuNDArray<typename real
     CHECK_FOR_CUDA_ERROR();
     
     // Fill tuple vector
-    write_pairs<REAL,D>( matrix_size_os, matrix_size_wrap, number_of_samples, number_of_frames, W, 
-			 raw_pointer_cast(&(*trajectory_positions)[0]), raw_pointer_cast(&c_p_s_ps[0]), 
-			 raw_pointer_cast(&(*tuples_first)[0]), raw_pointer_cast(&(*tuples_last)[0]) );
+    write_pairs<REAL,D>( to_uintd<size_t,D>(matrix_size_os), to_uintd<size_t,D>(matrix_size_wrap), number_of_samples, number_of_frames, W, 
+                         raw_pointer_cast(&(*trajectory_positions)[0]), raw_pointer_cast(&c_p_s_ps[0]), 
+                         raw_pointer_cast(&(*tuples_first)[0]), raw_pointer_cast(&(*tuples_last)[0]) );
     c_p_s_ps.clear();
 
     // Sort by grid indices
@@ -373,7 +373,7 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::preprocess( cuNDArray<typename real
 
 template<class REAL, unsigned int D, bool ATOMICS> void
 Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
-			    cuNDArray<REAL> *dcw, NFFT_comp_mode mode )
+                                                 cuNDArray<REAL> *dcw, NFFT_comp_mode mode )
 {  
   // Validity checks
   
@@ -543,7 +543,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute( cuNDArray<complext<REAL> > *in,
 
 template<class REAL, unsigned int D, bool ATOMICS> void
 Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
-			      cuNDArray<REAL> *dcw, std::vector<size_t> halfway_dims )
+                                                   cuNDArray<REAL> *dcw, std::vector<size_t> halfway_dims )
 {
   // Validity checks
   
@@ -586,30 +586,30 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::mult_MH_M( cuNDArray<complext<REAL> > *i
   
   compute_NFFT_C2NC( working_image, working_samples );
   
-    // Density compensation
-    if( dcw ){
-    	*working_samples *= *dcw_int;
-    }
+  // Density compensation
+  if( dcw ){
+    *working_samples *= *dcw_int;
+  }
     
-    compute_NFFTH_NC2C( working_samples, working_image );
+  compute_NFFTH_NC2C( working_samples, working_image );
     
-    delete working_samples;
-    working_samples = 0x0;
+  delete working_samples;
+  working_samples = 0x0;
     
-    if( !oversampled_image ){
-      crop<complext<REAL>, D>( (matrix_size_os-matrix_size)>>1, working_image, out_int );
-      delete working_image; working_image = 0x0;
-    }
+  if( !oversampled_image ){
+    crop<complext<REAL>, D>( (matrix_size_os-matrix_size)>>1, working_image, out_int );
+    delete working_image; working_image = 0x0;
+  }
         
-    restore<complext<REAL> ,complext<REAL> ,REAL>
-      (old_device, out, out, out_int, in, in_int, dcw, dcw_int );
+  restore<complext<REAL> ,complext<REAL> ,REAL>
+    (old_device, out, out, out_int, in, in_int, dcw, dcw_int );
     
-    CHECK_FOR_CUDA_ERROR();
+  CHECK_FOR_CUDA_ERROR();
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
 Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::convolve( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
-			     cuNDArray<REAL> *dcw, NFFT_conv_mode mode, bool accumulate )
+                                                  cuNDArray<REAL> *dcw, NFFT_conv_mode mode, bool accumulate )
 {
   unsigned char components;
 
@@ -635,7 +635,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::convolve( cuNDArray<complext<REAL> > *in
   int old_device;
   
   prepare<complext<REAL>, complext<REAL>, REAL>
-      (device, &old_device, in, &in_int, out, &out_int, dcw, &dcw_int );
+    (device, &old_device, in, &in_int, out, &out_int, dcw, &dcw_int );
   
   cuNDArray<complext<REAL> > *working_samples = 0x0;
   
@@ -680,11 +680,10 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::convolve( cuNDArray<complext<REAL> > *in
 
   default:
     throw std::runtime_error( "Error: cuNFFT_plan::convolve: unknown mode.");
-    break;
   }
 
   restore<complext<REAL>, complext<REAL>, REAL>
-      (old_device, out, out, out_int, in, in_int, dcw, dcw_int );
+    (old_device, out, out, out_int, in, in_int, dcw, dcw_int );
 }
 
 template<class REAL, unsigned int D, bool ATOMICS> void
@@ -695,7 +694,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::fft(cuNDArray<complext<REAL> > *data, NF
   
   prepare<complext<REAL>,dummy,dummy>( device, &old_device, data, &data_int );
   
-  typename uint64d<D>::Type _dims_to_transform = counting_vec<D>();
+  typename uint64d<D>::Type _dims_to_transform = counting_vec<size_t,D>();
   vector<size_t> dims_to_transform = to_std_vector( _dims_to_transform );
   
   if( mode == NFFT_FORWARDS ){
@@ -737,7 +736,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::deapodize( cuNDArray<complext<REAL> > *i
 
 template<class REAL, unsigned int D, bool ATOMICS> void
 Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::check_consistency( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image,
-				      cuNDArray<REAL> *weights, unsigned char components )
+                                                           cuNDArray<REAL> *weights, unsigned char components )
 {
 
   if( !initialized ){
@@ -793,9 +792,9 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::check_consistency( cuNDArray<complext<RE
   if( components & _NFFT_CONV_NC2C ){
     if( weights ){ 
       if( weights->get_number_of_elements() == 0 ||
-	  !( weights->get_number_of_elements() == number_of_samples || 
-	     weights->get_number_of_elements() == number_of_frames*number_of_samples) ){
-	throw std::runtime_error("Error: cuNFFT_plan: The number of weights should match #samples/frame x #frames as requested through preprocessing");
+          !( weights->get_number_of_elements() == number_of_samples || 
+             weights->get_number_of_elements() == number_of_frames*number_of_samples) ){
+        throw std::runtime_error("Error: cuNFFT_plan: The number of weights should match #samples/frame x #frames as requested through preprocessing");
       }
     }
   }  
@@ -869,9 +868,9 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_beta()
 //
 
 template<class REAL, unsigned int D> __global__ void
-compute_deapodization_filter_kernel( typename uint64d<D>::Type matrix_size_os, typename reald<REAL,D>::Type matrix_size_os_real, 
-				     REAL W, REAL half_W, REAL one_over_W, 
-				     typename reald<REAL,D>::Type beta, complext<REAL> *image_os )
+compute_deapodization_filter_kernel( typename uintd<D>::Type matrix_size_os, typename reald<REAL,D>::Type matrix_size_os_real, 
+                                     REAL W, REAL half_W, REAL one_over_W, 
+                                     typename reald<REAL,D>::Type beta, complext<REAL> *image_os )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const unsigned int num_elements = prod(matrix_size_os);
@@ -879,13 +878,13 @@ compute_deapodization_filter_kernel( typename uint64d<D>::Type matrix_size_os, t
   if( idx <num_elements ){
 
     // Compute weight from Kaiser-Bessel filter
-    const typename uint64d<D>::Type cell_pos = idx_to_co<D>(idx, matrix_size_os);
+    const typename uintd<D>::Type cell_pos = idx_to_co<D>(idx, matrix_size_os);
 
     // Sample position ("origin")
     const vector_td<REAL,D> sample_pos = REAL(0.5)*matrix_size_os_real;
 
     // Calculate the distance between the cell and the sample
-    vector_td<REAL,D> cell_pos_real = to_reald<REAL,size_t,D>(cell_pos);
+    vector_td<REAL,D> cell_pos_real = to_reald<REAL,unsigned int,D>(cell_pos);
     const typename reald<REAL,D>::Type delta = abs(sample_pos-cell_pos_real);
 
     // Compute convolution weight. 
@@ -902,7 +901,7 @@ compute_deapodization_filter_kernel( typename uint64d<D>::Type matrix_size_os, t
     }
     
     // Output weight
-   complext<REAL>  result;
+    complext<REAL>  result;
     result.vec[0] = weight; 
     result.vec[1] = zero;
     image_os[idx] = result;
@@ -927,7 +926,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_deapodization_filter()
 
   // Invoke kernel
   compute_deapodization_filter_kernel<REAL,D><<<dimGrid, dimBlock>>> 
-    ( matrix_size_os, matrix_size_os_real, W, REAL(0.5)*W, REAL(1)/W, beta, deapodization_filter->get_data_ptr() );
+    ( to_uintd<size_t,D>(matrix_size_os), matrix_size_os_real, W, REAL(0.5)*W, REAL(1)/W, beta, deapodization_filter->get_data_ptr() );
 
   CHECK_FOR_CUDA_ERROR();
   
@@ -1055,12 +1054,12 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::convolve_NFFT_C2NC( cuNDArray<complext<R
   for( unsigned int repetition = 0; repetition<num_repetitions; repetition++ ){
     NFFT_convolve_kernel<REAL,D>
       <<<dimGrid, dimBlock, (repetition==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
-      ( alpha, beta, W, matrix_size_os, matrix_size_wrap, number_of_samples, 
-	(repetition==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils, 
-	raw_pointer_cast(&(*trajectory_positions)[0]), 
-	image->get_data_ptr()+repetition*prod(matrix_size_os)*number_of_frames*domain_size_coils,
-	samples->get_data_ptr()+repetition*number_of_samples*number_of_frames*domain_size_coils, 
-	double_warp_size_power, REAL(0.5)*W, REAL(1)/(W), accumulate, matrix_size_os_real );
+      ( alpha, beta, W, to_uintd<size_t,D>(matrix_size_os), to_uintd<size_t,D>(matrix_size_wrap), number_of_samples, 
+        (repetition==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils, 
+        raw_pointer_cast(&(*trajectory_positions)[0]), 
+        image->get_data_ptr()+repetition*prod(matrix_size_os)*number_of_frames*domain_size_coils,
+        samples->get_data_ptr()+repetition*number_of_samples*number_of_frames*domain_size_coils, 
+        double_warp_size_power, REAL(0.5)*W, REAL(1)/(W), accumulate, matrix_size_os_real );
 
     CHECK_FOR_CUDA_ERROR();    
   }
@@ -1075,9 +1074,9 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::convolve_NFFT_NC2C( cuNDArray<complext<R
 template<unsigned int D> struct
 _convolve_NFFT_NC2C<float,D,true>{ // True: use atomic operations variant
   static bool apply( cuNFFT_plan<float,D,true> *plan, 
-		     cuNDArray<complext<float> > *samples, 
-		     cuNDArray<complext<float> > *image, 
-		     bool accumulate )
+                     cuNDArray<complext<float> > *samples, 
+                     cuNDArray<complext<float> > *image, 
+                     bool accumulate )
   {   
     //
     // Bring in some variables from the plan
@@ -1154,13 +1153,13 @@ _convolve_NFFT_NC2C<float,D,true>{ // True: use atomic operations variant
     for( unsigned int repetition = 0; repetition<num_repetitions; repetition++ ){
       
       NFFT_H_atomic_convolve_kernel<float,D>
-	<<<dimGrid, dimBlock, (repetition==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
-	( alpha, beta, W, matrix_size_os, matrix_size_wrap, number_of_samples,
-	  (repetition==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils,
-	  raw_pointer_cast(&(*trajectory_positions)[0]), 
-	  samples->get_data_ptr()+repetition*number_of_samples*number_of_frames*domain_size_coils,
-	  image->get_data_ptr()+repetition*prod(matrix_size_os)*number_of_frames*domain_size_coils,
-	  double_warp_size_power, float(0.5)*W, float(1)/(W), matrix_size_os_real );
+        <<<dimGrid, dimBlock, (repetition==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
+        ( alpha, beta, W, to_uintd<size_t,D>(matrix_size_os), to_uintd<size_t,D>(matrix_size_wrap), number_of_samples,
+          (repetition==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils,
+          raw_pointer_cast(&(*trajectory_positions)[0]), 
+          samples->get_data_ptr()+repetition*number_of_samples*number_of_frames*domain_size_coils,
+          image->get_data_ptr()+repetition*prod(matrix_size_os)*number_of_frames*domain_size_coils,
+          double_warp_size_power, float(0.5)*W, float(1)/(W), matrix_size_os_real );
     }
     
     CHECK_FOR_CUDA_ERROR();
@@ -1171,15 +1170,15 @@ _convolve_NFFT_NC2C<float,D,true>{ // True: use atomic operations variant
 
 template<unsigned int D> struct
 _convolve_NFFT_NC2C<double,D,true>{ // True: use atomic operations variant
-// Atomics don't exist for doubles, so this gives a compile error if you actually try to use it.
+  // Atomics don't exist for doubles, so this gives a compile error if you actually try to use it.
 };
 
 template<class REAL, unsigned int D> struct
 _convolve_NFFT_NC2C<REAL,D,false>{ // False: use non-atomic operations variant
   static void apply( cuNFFT_plan<REAL,D,false> *plan,
-		     cuNDArray<complext<REAL> > *samples, 
-		     cuNDArray<complext<REAL> > *image, 
-		     bool accumulate )
+                     cuNDArray<complext<REAL> > *samples, 
+                     cuNDArray<complext<REAL> > *image, 
+                     bool accumulate )
   {
     // Bring in some variables from the plan
     
@@ -1196,12 +1195,12 @@ _convolve_NFFT_NC2C<REAL,D,false>{ // False: use non-atomic operations variant
     thrust::device_vector<unsigned int> *bucket_begin = plan->bucket_begin;
     thrust::device_vector<unsigned int> *bucket_end = plan->bucket_end;
 
-     // private method - no consistency check. We trust in ourselves.
+    // private method - no consistency check. We trust in ourselves.
     // Check if warp_size is a power of two. We do some modulus tricks in the kernels that depend on this...
-	 if( !((cudaDeviceManager::Instance()->warp_size(device) & (cudaDeviceManager::Instance()->warp_size(device)-1)) == 0 ) ){
-		throw cuda_error("cuNFFT: unsupported hardware (warpSize is not a power of two)");
+    if( !((cudaDeviceManager::Instance()->warp_size(device) & (cudaDeviceManager::Instance()->warp_size(device)-1)) == 0 ) ){
+      throw cuda_error("cuNFFT: unsupported hardware (warpSize is not a power of two)");
 
-	 }
+    }
     unsigned int num_batches = 1;
     for( unsigned int d=D; d<image->get_number_of_dimensions(); d++ )
       num_batches *= image->get_size(d);
@@ -1264,14 +1263,14 @@ _convolve_NFFT_NC2C<REAL,D,false>{ // False: use non-atomic operations variant
     for( unsigned int repetition = 0; repetition<num_repetitions; repetition++ ){
       
       NFFT_H_convolve_kernel<REAL,D>
-	<<<dimGrid, dimBlock, (repetition==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
-	( alpha, beta, W, matrix_size_os+matrix_size_wrap, number_of_samples, 
-	  (repetition==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils, 
-	  raw_pointer_cast(&(*trajectory_positions)[0]), 
-	  _tmp.get_data_ptr()+repetition*prod(matrix_size_os+matrix_size_wrap)*number_of_frames*domain_size_coils,
-	  samples->get_data_ptr()+repetition*number_of_samples*number_of_frames*domain_size_coils, 
-	  raw_pointer_cast(&(*tuples_last)[0]), raw_pointer_cast(&(*bucket_begin)[0]), raw_pointer_cast(&(*bucket_end)[0]),
-	  double_warp_size_power, REAL(0.5)*W, REAL(1)/(W), matrix_size_os_real );
+        <<<dimGrid, dimBlock, (repetition==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
+        ( alpha, beta, W, to_uintd<size_t,D>(matrix_size_os+matrix_size_wrap), number_of_samples, 
+          (repetition==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils, 
+          raw_pointer_cast(&(*trajectory_positions)[0]), 
+          _tmp.get_data_ptr()+repetition*prod(matrix_size_os+matrix_size_wrap)*number_of_frames*domain_size_coils,
+          samples->get_data_ptr()+repetition*number_of_samples*number_of_frames*domain_size_coils, 
+          raw_pointer_cast(&(*tuples_last)[0]), raw_pointer_cast(&(*bucket_begin)[0]), raw_pointer_cast(&(*bucket_end)[0]),
+          double_warp_size_power, REAL(0.5)*W, REAL(1)/(W), matrix_size_os_real );
     }
     
     CHECK_FOR_CUDA_ERROR();
@@ -1283,19 +1282,19 @@ _convolve_NFFT_NC2C<REAL,D,false>{ // False: use non-atomic operations variant
 // Image wrap kernels
 
 template<class REAL, unsigned int D> __global__ void
-image_wrap_kernel( typename uint64d<D>::Type matrix_size_os, typename uint64d<D>::Type matrix_size_wrap, bool accumulate,
-		   complext<REAL> *in, complext<REAL> *out )
+image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type matrix_size_wrap, bool accumulate,
+                   complext<REAL> *in, complext<REAL> *out )
 {
   unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const unsigned int num_elements_per_image_src = prod(matrix_size_os+matrix_size_wrap);
   const unsigned int image_offset_src = blockIdx.y*num_elements_per_image_src;
   
-  const typename uint64d<D>::Type co = idx_to_co<D>(idx, matrix_size_os);
-  const typename uint64d<D>::Type half_wrap = matrix_size_wrap>>1;
+  const typename uintd<D>::Type co = idx_to_co<D>(idx, matrix_size_os);
+  const typename uintd<D>::Type half_wrap = matrix_size_wrap>>1;
   
   // Make "boolean" vectors denoting whether wrapping needs to be performed in a given direction (forwards/backwards)
-  typename uint64d<D>::Type B_l = vector_less( co, half_wrap ); 
-  typename uint64d<D>::Type B_r = vector_greater_equal( co, matrix_size_os-half_wrap ); 
+  typename uintd<D>::Type B_l = vector_less( co, half_wrap ); 
+  typename uintd<D>::Type B_r = vector_greater_equal( co, matrix_size_os-half_wrap ); 
   
   complext<REAL>  result = in[co_to_idx<D>(co+half_wrap, matrix_size_os+matrix_size_wrap) + image_offset_src];
 
@@ -1323,58 +1322,58 @@ image_wrap_kernel( typename uint64d<D>::Type matrix_size_os, typename uint64d<D>
       // Find d
       unsigned char d = 0;
       for( unsigned char i=0; i<D; i++ )
-	d += ((combination & (1<<i)) > 0 );
+        d += ((combination & (1<<i)) > 0 );
        
       // Create stride vector for each wrapping test
       for( unsigned char s = 0; s < (1<<d); s++ ){
         
-	// Target for stride
-	typename intd<D>::Type stride;
-	char wrap_requests = 0;
-	char skipped_dims = 0;
+        // Target for stride
+        typename intd<D>::Type stride;
+        char wrap_requests = 0;
+        char skipped_dims = 0;
 	
-	// Fill dimensions of the stride
-	for( unsigned char i=1; i<D+1; i++ ){
+        // Fill dimensions of the stride
+        for( unsigned char i=1; i<D+1; i++ ){
     
-	  // Is the stride dimension present in the current combination?
-	  if( i & combination ){
+          // Is the stride dimension present in the current combination?
+          if( i & combination ){
     
-	    // A zero bit in s indicates "check for left wrap" and a one bit is interpreted as "check for right wrap" 
-	    // ("left/right" for the individual dimension meaning wrapping on either side of the dimension).
+            // A zero bit in s indicates "check for left wrap" and a one bit is interpreted as "check for right wrap" 
+            // ("left/right" for the individual dimension meaning wrapping on either side of the dimension).
     
-	    if( i & (s<<(skipped_dims)) ){
-	      if( B_r.vec[i-1] ){ // Wrapping required 
-		set( stride, (size_t)(i-1), (long long)(-1) );
-		wrap_requests++;
-	      }
-	      else
-		set( stride, i-1, (long long)0 );
-	    }
-	    else{ 
-	      if( B_l.vec[i-1] ){ // Wrapping required 
-		set( stride, i-1, (long long)1 );
-		wrap_requests++;
-	      }
-	      else
-		set( stride, i-1, (long long)0 );
-	    }
-	  }
-	  else{
-	    // Do not test for wrapping in dimension 'i-1' (for this combination)
-	    set( stride, i-1, (long long)0 );
-	    skipped_dims++;
-	  }
-	}
+            if( i & (s<<(skipped_dims)) ){
+              if( B_r.vec[i-1] ){ // Wrapping required 
+                set( stride, (size_t)(i-1), (int)(-1) );
+                wrap_requests++;
+              }
+              else
+                set( stride, i-1, (int)0 );
+            }
+            else{ 
+              if( B_l.vec[i-1] ){ // Wrapping required 
+                set( stride, i-1, (int)1 );
+                wrap_requests++;
+              }
+              else
+                set( stride, i-1, (int)0 );
+            }
+          }
+          else{
+            // Do not test for wrapping in dimension 'i-1' (for this combination)
+            set( stride, i-1, (int)0 );
+            skipped_dims++;
+          }
+        }
 	
-	// Now it is time to do the actual wrapping (if needed)
-	if( wrap_requests == d ){
-	  typename intd<D>::Type src_co_int = to_intd(co+half_wrap);
-	  typename intd<D>::Type matrix_size_os_int = to_intd(matrix_size_os);
-	  typename intd<D>::Type co_offset_int = src_co_int + component_wise_mul<long long,D>(stride,matrix_size_os_int);
-	  typename uint64d<D>::Type co_offset = to_uint64d(co_offset_int);
-	  result += in[co_to_idx<D>(co_offset, matrix_size_os+matrix_size_wrap) + image_offset_src];
-	  break; // only one stride per combination can contribute (e.g. one edge, one corner)
-	} 
+        // Now it is time to do the actual wrapping (if needed)
+        if( wrap_requests == d ){
+          typename intd<D>::Type src_co_int = to_intd(co+half_wrap);
+          typename intd<D>::Type matrix_size_os_int = to_intd(matrix_size_os);
+          typename intd<D>::Type co_offset_int = src_co_int + component_wise_mul<int,D>(stride,matrix_size_os_int);
+          typename uintd<D>::Type co_offset = to_uintd(co_offset_int);
+          result += in[co_to_idx<D>(co_offset, matrix_size_os+matrix_size_wrap) + image_offset_src];
+          break; // only one stride per combination can contribute (e.g. one edge, one corner)
+        } 
       } 
     }
   }
@@ -1406,7 +1405,8 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::image_wrap( cuNDArray<complext<REAL> > *
   }
 
   // Invoke kernel
-  image_wrap_kernel<REAL,D><<<dimGrid, dimBlock>>>( matrix_size_os, matrix_size_wrap, accumulate, source->get_data_ptr(), target->get_data_ptr() );
+  image_wrap_kernel<REAL,D><<<dimGrid, dimBlock>>>
+    ( to_uintd<size_t,D>(matrix_size_os), to_uintd<size_t,D>(matrix_size_wrap), accumulate, source->get_data_ptr(), target->get_data_ptr() );
   
   CHECK_FOR_CUDA_ERROR();
 }	

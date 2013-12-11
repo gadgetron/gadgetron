@@ -13,9 +13,8 @@ public:
 		OF = boost::shared_ptr<OFOp>(new OFOp);
 		solver = boost::shared_ptr< cuCgSolver<T> >(new cuCgSolver<T>);
 		solver->set_encoding_operator(OF);
-		for (int i = 0; i < D; i++){
+		for (unsigned int i = 0; i < D; i++){
 			boost::shared_ptr<cuPartialDerivativeOperator<T,D> > dx(new cuPartialDerivativeOperator<T,D>(i));
-
 			solver->add_regularization_operator(dx);
 			ops.push_back(dx);
 		}
@@ -24,12 +23,12 @@ public:
 	virtual ~cuCGHSOFSolver(){};
 	typedef opticalFlowOperator<cuNDArray<T>,cuPartialDerivativeOperator<T,D>,D> OFOp;
 
-	virtual void compute( cuNDArray<T> *fixed_image, cuNDArray<T> *moving_image, cuNDArray<T> *stencil_image, boost::shared_ptr<cuNDArray<T> > &result ){
-
-		std::vector<unsigned int> dims = *fixed_image->get_dimensions();
-		OF->set_codomain_dimensions(&dims);
-
+	virtual void compute( cuNDArray<T> *fixed_image, cuNDArray<T> *moving_image, cuNDArray<T> *stencil_image, boost::shared_ptr<cuNDArray<T> > &result )
+  {
+		std::vector<size_t> dims = *fixed_image->get_dimensions();
+		OF->set_codomain_dimensions(&dims);    
 		OF->set_images(fixed_image,moving_image);
+
 		for (int i = 0; i < ops.size(); i++){
 				ops[i]->set_domain_dimensions(&dims);
 				ops[i]->set_codomain_dimensions(&dims);

@@ -41,20 +41,24 @@ else ( CUDA_FOUND )
       )
 endif ( CUDA_FOUND )
 
-target_link_libraries(test_all 
-  cpucore 
-  cpucore_math
-  ${BOOST_LIBRARIES}
-  ${GTEST_LIBRARIES} 
-  )
-
 if ( CUDA_FOUND )
-
-    target_link_libraries(test_all 
-      gpucore
-      ${CUDA_LIBRARIES} 
-      )
-
+  target_link_libraries(test_all 
+    gpucore
+    cpucore 
+    cpucore_math
+    ${CUDA_LIBRARIES} 
+    ${BOOST_LIBRARIES}
+    ${GTEST_LIBRARIES} 
+    ${ARMADILLO_LIBRARIES}
+    )
+elseif ( CUDA_FOUND )  
+  target_link_libraries(test_all 
+    cpucore 
+    cpucore_math
+    ${BOOST_LIBRARIES}
+    ${GTEST_LIBRARIES} 
+    ${ARMADILLO_LIBRARIES}
+    )
 endif ( CUDA_FOUND )
 
 add_test(test_all test_all)

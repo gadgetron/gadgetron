@@ -131,11 +131,11 @@ namespace Gadgetron{
       size_t number_of_batches_fixed = 1;
       size_t number_of_batches_moving = 1;
 
-      for( unsigned int d=D; d<fixed_image->get_number_of_dimensions(); d++ ){
+      for( size_t d=D; d<fixed_image->get_number_of_dimensions(); d++ ){
         number_of_batches_fixed *= fixed_image->get_size(d);
       }
 
-      for( unsigned int d=D; d<moving_image->get_number_of_dimensions(); d++ ){
+      for( size_t d=D; d<moving_image->get_number_of_dimensions(); d++ ){
         number_of_batches_moving *= moving_image->get_size(d);
       }
 

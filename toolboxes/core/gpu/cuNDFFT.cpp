@@ -27,14 +27,14 @@ namespace Gadgetron{
   {
     std::vector<size_t> new_dim_order;
     std::vector<size_t> reverse_dim_order;
-    std::vector<int> dims;
+    std::vector<size_t> dims;
     std::vector<size_t> dim_count(input->get_number_of_dimensions(),0);
     
-    unsigned int array_ndim = input->get_number_of_dimensions();
+    size_t array_ndim = input->get_number_of_dimensions();
     boost::shared_ptr< std::vector<size_t> > array_dims = input->get_dimensions();
     
-    dims = std::vector<int>(dims_to_transform->size(),0);
-    for (unsigned int i = 0; i < dims_to_transform->size(); i++) {
+    dims = std::vector<size_t>(dims_to_transform->size(),0);
+    for (size_t i = 0; i < dims_to_transform->size(); i++) {
       if ((*dims_to_transform)[i] >= array_ndim) {
     	std::stringstream ss;
     	ss << "cuNDFFT::fft Invalid dimensions specified for transform " << (*dims_to_transform)[i] << "max " << array_ndim;
@@ -48,26 +48,30 @@ namespace Gadgetron{
     }
     
     new_dim_order = *dims_to_transform;
-    for (unsigned int i = 0; i < array_ndim; i++) {
+    for (size_t i = 0; i < array_ndim; i++) {
       if (!dim_count[i]) new_dim_order.push_back(i);
     }
     
     reverse_dim_order = std::vector<size_t>(array_ndim,0);
-    for (unsigned int i = 0; i < array_ndim; i++) {
+    for (size_t i = 0; i < array_ndim; i++) {
       reverse_dim_order[new_dim_order[i]] = i;
     }
     
-    int ndim = dims.size();
-    int batches = 0;
-    int elements_in_ft = 1;
-    for (unsigned int i = 0; i < dims.size(); i++) 
+    size_t ndim = dims.size();
+    size_t batches = 0;
+    size_t elements_in_ft = 1;
+    for (size_t i = 0; i < dims.size(); i++) 
       elements_in_ft *= dims[i];
     batches = input->get_number_of_elements() / elements_in_ft;
     
     cufftHandle plan;
     cufftResult ftres;
     
-    ftres = cufftPlanMany(&plan,ndim,&dims[0],&dims[0],1,elements_in_ft,&dims[0],1,elements_in_ft,get_transform_type<T>(),batches);
+    std::vector<int> int_dims;
+    for( unsigned int i=0; i<dims.size(); i++ )
+      int_dims.push_back((int)dims[i]);
+
+    ftres = cufftPlanMany(&plan,ndim,&int_dims[0], &int_dims[0], 1, elements_in_ft, &int_dims[0], 1, elements_in_ft, get_transform_type<T>(), batches);
     if (ftres != CUFFT_SUCCESS) {
       std::stringstream ss;
       ss << "cuNDFFT FFT plan failed: " << ftres;
@@ -126,7 +130,7 @@ namespace Gadgetron{
   cuNDFFT<T>::fft( cuNDArray< complext<T> > *input )
   {
     std::vector<size_t> dims(input->get_number_of_dimensions(),0);
-    for (unsigned int i = 0; i < dims.size(); i++) dims[i] = i;
+    for (size_t i = 0; i < dims.size(); i++) dims[i] = i;
     fft_int(input, &dims, CUFFT_FORWARD, false);
   }
   
@@ -134,7 +138,7 @@ namespace Gadgetron{
   cuNDFFT<T>::ifft( cuNDArray<complext<T> > *input, bool do_scale )
   {
     std::vector<size_t> dims(input->get_number_of_dimensions(),0);
-    for (unsigned int i = 0; i < dims.size(); i++) dims[i] = i;
+    for (size_t i = 0; i < dims.size(); i++) dims[i] = i;
     fft_int(input, &dims, CUFFT_INVERSE, do_scale);
   }
   

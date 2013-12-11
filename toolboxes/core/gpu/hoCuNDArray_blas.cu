@@ -152,7 +152,7 @@ namespace Gadgetron{
     return ret;
   }
 
-  template<class T> EXPORTGPUCORE int amin( hoCuNDArray<T>* x )
+  template<class T> EXPORTGPUCORE size_t amin( hoCuNDArray<T>* x )
   {
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     size_t free = cudaDeviceManager::Instance()->getFreeMemory(device);
@@ -163,7 +163,7 @@ namespace Gadgetron{
     std::vector<size_t> dims;
     dims.push_back(batchSize);
     cuNDArray<T> cuX(&dims);
-    std::vector<int> results;
+    std::vector<size_t> results;
  
     for (size_t i = 0; i < (x->get_number_of_elements()-1)/batchSize+1; i++){
 
@@ -181,14 +181,14 @@ namespace Gadgetron{
       results.push_back(cur_ret+i*batchSize-1);
     }
 
-    int res =0;
-    for (int i =0; i < results.size(); i++){
+    size_t res =0;
+    for (size_t i =0; i < results.size(); i++){
       if (abs(x_ptr[results[i]]) < abs(x_ptr[res])) res = results[i];
     }
     return res;
   }
 
-  template<class T> EXPORTGPUCORE int amax( hoCuNDArray<T>* x )
+  template<class T> EXPORTGPUCORE size_t amax( hoCuNDArray<T>* x )
   {
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     size_t free = cudaDeviceManager::Instance()->getFreeMemory(device);
@@ -199,7 +199,7 @@ namespace Gadgetron{
     std::vector<size_t> dims;
     dims.push_back(batchSize);
     cuNDArray<T> cuX(&dims);
-    std::vector<int> results;
+    std::vector<size_t> results;
 
     for (size_t i = 0; i < (x->get_number_of_elements()-1)/batchSize+1; i++){
 
@@ -217,8 +217,8 @@ namespace Gadgetron{
       results.push_back(cur_ret+i*batchSize-1);
     }
 
-    int res =0;
-    for (int i =0; i < results.size(); i++){
+    size_t res =0;
+    for (size_t i =0; i < results.size(); i++){
       if (abs(x_ptr[results[i]]) > abs(x_ptr[res])) res = results[i];
     }
     return res;
@@ -231,30 +231,30 @@ namespace Gadgetron{
   template EXPORTGPUCORE float dot(hoCuNDArray<float>*,hoCuNDArray<float>*,bool);
   template EXPORTGPUCORE float nrm2(hoCuNDArray<float>*);
   template EXPORTGPUCORE void axpy(float,hoCuNDArray<float>*,hoCuNDArray<float>*);
-  template EXPORTGPUCORE int amin(hoCuNDArray<float>*);
-  template EXPORTGPUCORE int amax(hoCuNDArray<float>*);
+  template EXPORTGPUCORE size_t amin(hoCuNDArray<float>*);
+  template EXPORTGPUCORE size_t amax(hoCuNDArray<float>*);
   template EXPORTGPUCORE float asum(hoCuNDArray<float>*);
 
   template EXPORTGPUCORE double dot(hoCuNDArray<double>*,hoCuNDArray<double>*,bool);
   template EXPORTGPUCORE double nrm2(hoCuNDArray<double>*);
   template EXPORTGPUCORE void axpy(double,hoCuNDArray<double>*,hoCuNDArray<double>*);
-  template EXPORTGPUCORE int amin(hoCuNDArray<double>*);
-  template EXPORTGPUCORE int amax(hoCuNDArray<double>*);
+  template EXPORTGPUCORE size_t amin(hoCuNDArray<double>*);
+  template EXPORTGPUCORE size_t amax(hoCuNDArray<double>*);
   template EXPORTGPUCORE double asum(hoCuNDArray<double>*);
 
   template EXPORTGPUCORE float_complext dot(hoCuNDArray<float_complext>*,hoCuNDArray<float_complext>*,bool);
   template EXPORTGPUCORE float nrm2(hoCuNDArray<float_complext>*);
   template EXPORTGPUCORE void axpy(float_complext,hoCuNDArray<float_complext>*,hoCuNDArray<float_complext>*);
   template EXPORTGPUCORE void axpy(float,hoCuNDArray<float_complext>*,hoCuNDArray<float_complext>*);
-  template EXPORTGPUCORE int amin(hoCuNDArray<float_complext>*);
-  template EXPORTGPUCORE int amax(hoCuNDArray<float_complext>*);
+  template EXPORTGPUCORE size_t amin(hoCuNDArray<float_complext>*);
+  template EXPORTGPUCORE size_t amax(hoCuNDArray<float_complext>*);
   template EXPORTGPUCORE float asum(hoCuNDArray<float_complext>*);
 
   template EXPORTGPUCORE double_complext dot(hoCuNDArray<double_complext>*,hoCuNDArray<double_complext>*,bool);
   template EXPORTGPUCORE double nrm2(hoCuNDArray<double_complext>*);
   template EXPORTGPUCORE void axpy(double_complext,hoCuNDArray<double_complext>*,hoCuNDArray<double_complext>*);
   template EXPORTGPUCORE void axpy(double,hoCuNDArray<double_complext>*,hoCuNDArray<double_complext>*);
-  template EXPORTGPUCORE int amin(hoCuNDArray<double_complext>*);
-  template EXPORTGPUCORE int amax(hoCuNDArray<double_complext>*);
+  template EXPORTGPUCORE size_t amin(hoCuNDArray<double_complext>*);
+  template EXPORTGPUCORE size_t amax(hoCuNDArray<double_complext>*);
   template EXPORTGPUCORE double asum(hoCuNDArray<double_complext>*);
 }

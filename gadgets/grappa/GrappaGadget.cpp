@@ -11,10 +11,10 @@
 namespace Gadgetron{
 
   GrappaGadget::GrappaGadget()
-  : image_counter_(0)
-  , image_series_(0)
-  , first_call_(true)
-  , target_coils_(0)
+    : image_counter_(0)
+    , image_series_(0)
+    , first_call_(true)
+    , target_coils_(0)
   {
   }
 
@@ -26,8 +26,8 @@ namespace Gadgetron{
 
 
       if (image_data_[i]) {
-	image_data_[i]->release();
-	image_data_[i] = 0;
+        image_data_[i]->release();
+        image_data_[i] = 0;
       }
     }
   }
@@ -64,7 +64,7 @@ namespace Gadgetron{
     dimensions_.push_back(e_space.matrixSize().y());
     dimensions_.push_back(e_space.matrixSize().z());
     dimensions_.push_back((cfg->acquisitionSystemInformation().present() && cfg->acquisitionSystemInformation().get().receiverChannels().present()) ?
-			  cfg->acquisitionSystemInformation().get().receiverChannels().get() : 1);
+                          cfg->acquisitionSystemInformation().get().receiverChannels().get() : 1);
     dimensions_.push_back(slices);
 
     fov_.push_back(r_space.fieldOfView_mm().x());
@@ -110,8 +110,8 @@ namespace Gadgetron{
     for (unsigned int i = 0; i < uncomb.size(); i++) {
       std::string ch = boost::algorithm::trim_copy(uncomb[i]);
       if (ch.size() > 0) {
-	unsigned int channel_id = static_cast<unsigned int>(ACE_OS::atoi(ch.c_str()));
-	weights_calculator_.add_uncombined_channel(channel_id);
+        unsigned int channel_id = static_cast<unsigned int>(ACE_OS::atoi(ch.c_str()));
+        weights_calculator_.add_uncombined_channel(channel_id);
       }
     }
 
@@ -120,23 +120,23 @@ namespace Gadgetron{
 
       //Let's set some default GRAPPA weights, so that we have something to work with the first couple of frames.
       /*
-	std::vector<unsigned int> wdims = image_dimensions_;
-	if (weights_calculator_.get_number_of_uncombined_channels()) {
-	wdims.push_back(weights_calculator_.get_number_of_uncombined_channels()+1);
-	}
+        std::vector<unsigned int> wdims = image_dimensions_;
+        if (weights_calculator_.get_number_of_uncombined_channels()) {
+        wdims.push_back(weights_calculator_.get_number_of_uncombined_channels()+1);
+        }
 
-	hoNDArray< std::complex<float> > tmp_w;
-	if (!tmp_w.create(&wdims)) {
-	GADGET_DEBUG1("Unable to create temporary array with dimensions\n");
-	return GADGET_FAIL;
-	}
-	tmp_w.clear(std::complex<float>(1.0,0));
-	weights_[i]->update(&tmp_w);
+        hoNDArray< std::complex<float> > tmp_w;
+        if (!tmp_w.create(&wdims)) {
+        GADGET_DEBUG1("Unable to create temporary array with dimensions\n");
+        return GADGET_FAIL;
+        }
+        tmp_w.clear(std::complex<float>(1.0,0));
+        weights_[i]->update(&tmp_w);
       */
 
       buffers_[i] = new GrappaCalibrationBuffer(image_dimensions_,
-						weights_[i],
-						&weights_calculator_);
+                                                weights_[i],
+                                                &weights_calculator_);
     }
 
 
@@ -148,8 +148,8 @@ namespace Gadgetron{
     image_data_ = std::vector< GadgetContainerMessage< hoNDArray< std::complex<float> > >* >(dimensions_[4],0);
     for (unsigned int i = 0; i < image_data_.size(); i++) {
       if (create_image_buffer(i) != GADGET_OK) {
-	GADGET_DEBUG1("Unable to create image buffers");
-	return GADGET_FAIL;
+        GADGET_DEBUG1("Unable to create image buffers");
+        return GADGET_FAIL;
       }
     }
 
@@ -161,19 +161,19 @@ namespace Gadgetron{
 
   int GrappaGadget::
   process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
+          GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
   {
 
     if (first_call_) {
       if (m1->getObjectPtr()->active_channels != dimensions_[3]) {
-	GADGET_DEBUG1("Detected coil number change. Maybe due to upstream channel reduction\n");
-	dimensions_[3] = m1->getObjectPtr()->active_channels;
+        GADGET_DEBUG1("Detected coil number change. Maybe due to upstream channel reduction\n");
+        dimensions_[3] = m1->getObjectPtr()->active_channels;
       }
 
       if (initial_setup() != GADGET_OK) {
-	GADGET_DEBUG1("Initial Setup Failed\n");
-	m1->release();
-	return GADGET_FAIL;
+        GADGET_DEBUG1("Initial Setup Failed\n");
+        m1->release();
+        return GADGET_FAIL;
       }
       first_call_ = false;
     }
@@ -197,8 +197,8 @@ namespace Gadgetron{
 
     if (!image_data_[0]) {
       if (create_image_buffer(slice) != GADGET_OK) {
-	GADGET_DEBUG1("Failed to allocate new slice buffer\n");
-	return GADGET_FAIL;
+        GADGET_DEBUG1("Failed to allocate new slice buffer\n");
+        return GADGET_FAIL;
       }
     }
 
@@ -209,9 +209,9 @@ namespace Gadgetron{
     //Copy the data for all the channels
     for (int c = 0; c < m1->getObjectPtr()->active_channels; c++) {
       offset =
-	c*image_dimensions_[0]*image_dimensions_[1]*image_dimensions_[2] +
-	partition*image_dimensions_[0]*image_dimensions_[1] +
-	line*image_dimensions_[0];
+        c*image_dimensions_[0]*image_dimensions_[1]*image_dimensions_[2] +
+        partition*image_dimensions_[0]*image_dimensions_[1] +
+        line*image_dimensions_[0];
 
       memcpy(b+offset,d+c*samples,sizeof(std::complex<float>)*samples);
     }
@@ -228,31 +228,31 @@ namespace Gadgetron{
     if (is_last_scan_in_slice) {
 
       GadgetContainerMessage<GrappaUnmixingJob>* cm0 =
-	new GadgetContainerMessage<GrappaUnmixingJob>();
+        new GadgetContainerMessage<GrappaUnmixingJob>();
 
       GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 =
-	new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+        new GadgetContainerMessage<ISMRMRD::ImageHeader>();
 
 
       /*
-	GadgetContainerMessage< hoNDArray<std::complex<float> > >* cm2 =
-	new GadgetContainerMessage< hoNDArray<std::complex<float> > >();
+        GadgetContainerMessage< hoNDArray<std::complex<float> > >* cm2 =
+        new GadgetContainerMessage< hoNDArray<std::complex<float> > >();
 
-	std::vector<unsigned int> combined_dims(3,0);
-	combined_dims[0] = image_dimensions_[0];
-	combined_dims[1] = image_dimensions_[1];
-	combined_dims[2] = image_dimensions_[2];
+        std::vector<unsigned int> combined_dims(3,0);
+        combined_dims[0] = image_dimensions_[0];
+        combined_dims[1] = image_dimensions_[1];
+        combined_dims[2] = image_dimensions_[2];
 
-	if (weights_calculator_.get_number_of_uncombined_channels()) {
-	combined_dims.push_back(weights_calculator_.get_number_of_uncombined_channels()+1);
-	}
+        if (weights_calculator_.get_number_of_uncombined_channels()) {
+        combined_dims.push_back(weights_calculator_.get_number_of_uncombined_channels()+1);
+        }
 
-	if (!cm2->getObjectPtr()->create(&combined_dims)) {
-	GADGET_DEBUG1("Unable to create combined image array\n");
-	return GADGET_FAIL;
-	}
+        if (!cm2->getObjectPtr()->create(&combined_dims)) {
+        GADGET_DEBUG1("Unable to create combined image array\n");
+        return GADGET_FAIL;
+        }
 
-	cm1->cont(cm2);
+        cm1->cont(cm2);
       */
 
       cm1->getObjectPtr()->matrix_size[0] = image_dimensions_[0];
@@ -268,16 +268,16 @@ namespace Gadgetron{
       cm1->getObjectPtr()->acquisition_time_stamp         = time_stamps_[slice];
 
       memcpy(cm1->getObjectPtr()->position,m1->getObjectPtr()->position,
-	     sizeof(float)*3);
+             sizeof(float)*3);
 
       memcpy(cm1->getObjectPtr()->read_dir,m1->getObjectPtr()->read_dir,
-	     sizeof(float)*3);
+             sizeof(float)*3);
 
       memcpy(cm1->getObjectPtr()->phase_dir,m1->getObjectPtr()->phase_dir,
-	     sizeof(float)*3);
+             sizeof(float)*3);
 
       memcpy(cm1->getObjectPtr()->slice_dir,m1->getObjectPtr()->slice_dir,
-	     sizeof(float)*3);
+             sizeof(float)*3);
 
       memcpy(cm1->getObjectPtr()->patient_table_position,m1->getObjectPtr()->patient_table_position, sizeof(float)*3);
 
@@ -291,34 +291,34 @@ namespace Gadgetron{
 
       image_data_[slice] = 0;
       if (create_image_buffer(slice) != GADGET_OK) {
-	GADGET_DEBUG1("Failed to create image buffer");
-	return GADGET_FAIL;
+        GADGET_DEBUG1("Failed to create image buffer");
+        return GADGET_FAIL;
       }
 
       if (this->next()->putq(cm0) < 0) {
-	GADGET_DEBUG1("Failed to pass image on to next Gadget in chain\n");
-	return GADGET_FAIL;
+        GADGET_DEBUG1("Failed to pass image on to next Gadget in chain\n");
+        return GADGET_FAIL;
       }
 
       /*
-	hoFFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),0);
-	hoFFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),1);
-	hoFFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),2);
+        hoFFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),0);
+        hoFFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),1);
+        hoFFT<float>::instance()->ifft(image_data_[slice]->getObjectPtr(),2);
 
-	//apply weights
-	float scale_factor = (dimensions_[0] *dimensions_[1] *dimensions_[0] *dimensions_[1])/10;
+        //apply weights
+        float scale_factor = (dimensions_[0] *dimensions_[1] *dimensions_[0] *dimensions_[1])/10;
 
-	int appl_result = weights_[slice]->apply(image_data_[slice]->getObjectPtr(), cm2->getObjectPtr(), scale_factor);
-	if (appl_result < 0) {
-	GADGET_DEBUG2("Failed to apply GRAPPA weights: error code %d\n", appl_result);
-	return GADGET_FAIL;
-	}
+        int appl_result = weights_[slice]->apply(image_data_[slice]->getObjectPtr(), cm2->getObjectPtr(), scale_factor);
+        if (appl_result < 0) {
+        GADGET_DEBUG2("Failed to apply GRAPPA weights: error code %d\n", appl_result);
+        return GADGET_FAIL;
+        }
 
-	if (this->next()->putq(cm1) < 0) {
-	GADGET_DEBUG1("Failed to pass image on to next Gadget in chain\n");
-	return GADGET_FAIL;
-	}
-	image_data_[slice]->getObjectPtr()->clear(std::complex<float>(0.0f,0.0f));
+        if (this->next()->putq(cm1) < 0) {
+        GADGET_DEBUG1("Failed to pass image on to next Gadget in chain\n");
+        return GADGET_FAIL;
+        }
+        image_data_[slice]->getObjectPtr()->clear(std::complex<float>(0.0f,0.0f));
       */
     }
 
@@ -351,8 +351,8 @@ namespace Gadgetron{
     }
 
     std::fill(image_data_[slice]->getObjectPtr()->get_data_ptr(),
-	      image_data_[slice]->getObjectPtr()->get_data_ptr()+image_data_[slice]->getObjectPtr()->get_number_of_elements(),
-	      std::complex<float>(0.0f,0.0f));
+              image_data_[slice]->getObjectPtr()->get_data_ptr()+image_data_[slice]->getObjectPtr()->get_number_of_elements(),
+              std::complex<float>(0.0f,0.0f));
 
     return GADGET_OK;
 

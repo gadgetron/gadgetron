@@ -10,6 +10,7 @@
 #include "GadgetronTimer.h"
 #include "gadgetron_moco_export.h"
 #include "hoNDArray_fileio.h"
+#include "cuNDArray_reductions.h"
 
 #include <ismrmrd.h>
 #include <complex>

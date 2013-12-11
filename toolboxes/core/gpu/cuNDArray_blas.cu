@@ -148,7 +148,7 @@ namespace Gadgetron{
     REAL ret;
 
     CUBLAS_CALL(cublas_nrm2<T>( cudaDeviceManager::Instance()->lockHandle(device), 
-				arr->get_number_of_elements(), arr->get_data_ptr(), 1, &ret));
+                                (int)arr->get_number_of_elements(), arr->get_data_ptr(), 1, &ret));
 
     cudaDeviceManager::Instance()->unlockHandle(device);
 
@@ -166,8 +166,8 @@ namespace Gadgetron{
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
     T ret;
 
-    CUBLAS_CALL(cublas_dot( cudaDeviceManager::Instance()->lockHandle(device), arr1->get_number_of_elements(),
-			    arr1->get_data_ptr(), 1, arr2->get_data_ptr(), 1, &ret, cc ));
+    CUBLAS_CALL(cublas_dot( cudaDeviceManager::Instance()->lockHandle(device), 
+                            (int)arr1->get_number_of_elements(), arr1->get_data_ptr(), 1, arr2->get_data_ptr(), 1, &ret, cc ));
 
     cudaDeviceManager::Instance()->unlockHandle(device);
 
@@ -185,7 +185,7 @@ namespace Gadgetron{
     int device = cudaDeviceManager::Instance()->getCurrentDevice();
 
     CUBLAS_CALL(cublas_axpy(cudaDeviceManager::Instance()->lockHandle(device), 
-			    x->get_number_of_elements(), &a, x->get_data_ptr(), 1, y->get_data_ptr(), 1));
+                            (int)x->get_number_of_elements(), &a, x->get_data_ptr(), 1, y->get_data_ptr(), 1));
 
     cudaDeviceManager::Instance()->unlockHandle(device);
   }
@@ -204,14 +204,14 @@ namespace Gadgetron{
     typename realType<T>::Type result;
 
     CUBLAS_CALL(cublas_asum(cudaDeviceManager::Instance()->lockHandle(device),
-			    x->get_number_of_elements(),x->get_data_ptr(),1,&result));
+                            (int)x->get_number_of_elements(), x->get_data_ptr(), 1, &result));
 
     cudaDeviceManager::Instance()->unlockHandle(device);
 
     return result;
   }
   
-  template<class T> int amin( cuNDArray<T>* x )
+  template<class T> size_t amin( cuNDArray<T>* x )
   {
     if( x == 0x0 )
       throw std::runtime_error("Gadgetron::amin(): Invalid input array");
@@ -220,7 +220,7 @@ namespace Gadgetron{
     int result;
 
     CUBLAS_CALL(cublas_amin(cudaDeviceManager::Instance()->lockHandle(device),
-			    x->get_number_of_elements(),x->get_data_ptr(),1,&result));
+                            (int)x->get_number_of_elements(), x->get_data_ptr(), 1, &result));
 
     cudaDeviceManager::Instance()->unlockHandle(device);
     
@@ -228,10 +228,10 @@ namespace Gadgetron{
       throw std::runtime_error("Gadgetron::amin(): computed index is out of bounds");
     }
     
-    return result-1;
+    return (size_t)result-1;
   }
   
-  template<class T> int amax(cuNDArray<T> *x )
+  template<class T> size_t amax(cuNDArray<T> *x )
   {
     if( x == 0x0 )
       throw std::runtime_error("Gadgetron::amax(): Invalid input array");
@@ -240,7 +240,7 @@ namespace Gadgetron{
     int result;
 
     CUBLAS_CALL(cublas_amax(cudaDeviceManager::Instance()->lockHandle(device),
-			    x->get_number_of_elements(),x->get_data_ptr(),1,&result));
+                            (int)x->get_number_of_elements(), x->get_data_ptr(), 1, &result));
 
     cudaDeviceManager::Instance()->unlockHandle(device);
     
@@ -248,7 +248,7 @@ namespace Gadgetron{
       throw std::runtime_error("Gadgetron::amax(): computed index is out of bounds");
     }
     
-    return result-1;
+    return (size_t)result-1;
   }
   
   std::string gadgetron_getCublasErrorString(cublasStatus_t err)
@@ -282,30 +282,30 @@ namespace Gadgetron{
   template EXPORTGPUCORE float dot(cuNDArray<float>*,cuNDArray<float>*,bool);
   template EXPORTGPUCORE float nrm2(cuNDArray<float>*);
   template EXPORTGPUCORE void axpy(float,cuNDArray<float>*,cuNDArray<float>*);
-  template EXPORTGPUCORE int amin(cuNDArray<float>*);
-  template EXPORTGPUCORE int amax(cuNDArray<float>*);
+  template EXPORTGPUCORE size_t amin(cuNDArray<float>*);
+  template EXPORTGPUCORE size_t amax(cuNDArray<float>*);
   template EXPORTGPUCORE float asum(cuNDArray<float>*);
 
   template EXPORTGPUCORE double dot(cuNDArray<double>*,cuNDArray<double>*,bool);
   template EXPORTGPUCORE double nrm2(cuNDArray<double>*);
   template EXPORTGPUCORE void axpy(double,cuNDArray<double>*,cuNDArray<double>*);
-  template EXPORTGPUCORE int amin(cuNDArray<double>*);
-  template EXPORTGPUCORE int amax(cuNDArray<double>*);
+  template EXPORTGPUCORE size_t amin(cuNDArray<double>*);
+  template EXPORTGPUCORE size_t amax(cuNDArray<double>*);
   template EXPORTGPUCORE double asum(cuNDArray<double>*);
 
   template EXPORTGPUCORE float_complext dot(cuNDArray<float_complext>*,cuNDArray<float_complext>*,bool);
   template EXPORTGPUCORE float nrm2(cuNDArray<float_complext>*);
   template EXPORTGPUCORE void axpy(float_complext,cuNDArray<float_complext>*,cuNDArray<float_complext>*);
   template EXPORTGPUCORE void axpy(float,cuNDArray<float_complext>*,cuNDArray<float_complext>*);
-  template EXPORTGPUCORE int amin(cuNDArray<float_complext>*);
-  template EXPORTGPUCORE int amax(cuNDArray<float_complext>*);
+  template EXPORTGPUCORE size_t amin(cuNDArray<float_complext>*);
+  template EXPORTGPUCORE size_t amax(cuNDArray<float_complext>*);
   template EXPORTGPUCORE float asum(cuNDArray<float_complext>*);
 
   template EXPORTGPUCORE double_complext dot(cuNDArray<double_complext>*,cuNDArray<double_complext>*,bool);
   template EXPORTGPUCORE double nrm2(cuNDArray<double_complext>*);
   template EXPORTGPUCORE void axpy(double_complext,cuNDArray<double_complext>*,cuNDArray<double_complext>*);
   template EXPORTGPUCORE void axpy(double,cuNDArray<double_complext>*,cuNDArray<double_complext>*);
-  template EXPORTGPUCORE int amin(cuNDArray<double_complext>*);
-  template EXPORTGPUCORE int amax(cuNDArray<double_complext>*);
+  template EXPORTGPUCORE size_t amin(cuNDArray<double_complext>*);
+  template EXPORTGPUCORE size_t amax(cuNDArray<double_complext>*);
   template EXPORTGPUCORE double asum(cuNDArray<double_complext>*);
 }

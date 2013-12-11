@@ -2,6 +2,7 @@
 #include "SenseJob.h"
 #include "Gadgetron.h"
 #include "cuNDArray_utils.h"
+#include "cuNDArray_reductions.h"
 #include "vector_td_utilities.h"
 #include "hoNDArray_fileio.h"
 #include "vector_td.h"

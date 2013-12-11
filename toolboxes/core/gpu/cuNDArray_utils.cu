@@ -9,13 +9,12 @@
 namespace Gadgetron {
 
   template <class T> 
-  __global__ void cuNDArray_permute_kernel(
-                                           T* in, T* out, 
-                                           unsigned int ndim,
-                                           unsigned int* dims,
-                                           unsigned int* strides_out,
-                                           unsigned long int elements,
-                                           int shift_mode)
+  __global__ void cuNDArray_permute_kernel( T* in, T* out, 
+                                            unsigned int ndim,
+                                            unsigned int* dims,
+                                            unsigned int* strides_out,
+                                            unsigned int elements,
+                                            int shift_mode)
   {
     unsigned long idx_in = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
     unsigned long idx_out = 0;
@@ -40,12 +39,11 @@ namespace Gadgetron {
     }
   }
 
-  template <class T> void cuNDArray_permute(cuNDArray<T>* in,
-                                            cuNDArray<T>* out,
-                                            std::vector<unsigned int> *order,
-                                            int shift_mode)
-  {
-      
+  template <class T> void cuNDArray_permute( cuNDArray<T>* in,
+                                             cuNDArray<T>* out,
+                                             std::vector<size_t> *order,
+                                             int shift_mode)
+  {    
     if( out == 0x0 ){
       throw cuda_error("cuNDArray_permute(internal): 0x0 output");;
     }
@@ -138,13 +136,13 @@ namespace Gadgetron {
   }  
 
   template <class T> boost::shared_ptr< cuNDArray<T> >
-  permute( cuNDArray<T> *in, std::vector<unsigned int> *dim_order, int shift_mode )
+  permute( cuNDArray<T> *in, std::vector<size_t> *dim_order, int shift_mode )
   {
     if( in == 0x0 || dim_order == 0x0 ) {
       throw std::runtime_error("permute(): invalid pointer provided");;
     }    
 
-    std::vector<unsigned int> dims;
+    std::vector<size_t> dims;
     for (unsigned int i = 0; i < dim_order->size(); i++)
       dims.push_back(in->get_dimensions()->at(dim_order->at(i)));
     boost::shared_ptr< cuNDArray<T> > out( new cuNDArray<T>() );    
@@ -154,7 +152,7 @@ namespace Gadgetron {
   }
 
   template <class T> void
-  permute( cuNDArray<T> *in, cuNDArray<T> *out, std::vector<unsigned int> *dim_order, int shift_mode )
+  permute( cuNDArray<T> *in, cuNDArray<T> *out, std::vector<size_t> *dim_order, int shift_mode )
   {
     if( in == 0x0 || out == 0x0 || dim_order == 0x0 ) {
       throw std::runtime_error("permute(): invalid pointer provided");;
@@ -165,7 +163,7 @@ namespace Gadgetron {
       throw std::runtime_error("permute(): invalid length of dimension ordering array");;
     }
 
-    std::vector<unsigned int> dim_count(in->get_number_of_dimensions(),0);
+    std::vector<size_t> dim_count(in->get_number_of_dimensions(),0);
     for (unsigned int i = 0; i < dim_order->size(); i++) {
       if ((*dim_order)[i] >= in->get_number_of_dimensions()) {
         throw std::runtime_error("permute(): invalid dimension order array");;
@@ -174,7 +172,7 @@ namespace Gadgetron {
     }
 
     //Create an internal array to store the dimensions
-    std::vector<unsigned int> dim_order_int;
+    std::vector<size_t> dim_order_int;
 
     //Check that there are no duplicate dimensions
     for (unsigned int i = 0; i < dim_order->size(); i++) {
@@ -208,11 +206,11 @@ namespace Gadgetron {
       throw std::runtime_error("shift_dim(): invalid input pointer provided");;
     }    
 
-    std::vector<unsigned int> order;
+    std::vector<size_t> order;
     for (int i = 0; i < in->get_number_of_dimensions(); i++) {
       order.push_back(static_cast<unsigned int>((i+shift)%in->get_number_of_dimensions()));
     }
-    return permute(in,&order);
+    return permute(in, &order);
   }
 
   template<class T> 
@@ -222,22 +220,11 @@ namespace Gadgetron {
       throw std::runtime_error("shift_dim(): invalid pointer provided");;
     }    
 
-    std::vector<unsigned int> order;
+    std::vector<size_t> order;
     for (int i = 0; i < in->get_number_of_dimensions(); i++) {
       order.push_back(static_cast<unsigned int>((i+shift)%in->get_number_of_dimensions()));
     }
     permute(in,out,&order);
-  }
-
-  template<class T> static void find_stride( cuNDArray<T> *in, unsigned int dim, unsigned int *stride, std::vector<unsigned int> *dims )
-  {
-    *stride = 1;
-    for( unsigned int i=0; i<in->get_number_of_dimensions(); i++ ){
-      if( i != dim )
-        dims->push_back(in->get_size(i));
-      if( i < dim )
-        *stride *= in->get_size(i);
-    }
   }
 
   // Expand
@@ -256,7 +243,7 @@ namespace Gadgetron {
   // Expand
   //
   template<class T> boost::shared_ptr< cuNDArray<T> > 
-  expand( cuNDArray<T> *in, unsigned int new_dim_size )
+  expand( cuNDArray<T> *in, size_t new_dim_size )
   {
     unsigned int number_of_elements_out = in->get_number_of_elements()*new_dim_size;
 
@@ -265,7 +252,7 @@ namespace Gadgetron {
     setup_grid( number_of_elements_out, &blockDim, &gridDim );
 
     // Find element stride
-    std::vector<unsigned int> dims = *in->get_dimensions();
+    std::vector<size_t> dims = *in->get_dimensions();
     dims.push_back(new_dim_size);
 
     // Invoke kernel
@@ -279,74 +266,17 @@ namespace Gadgetron {
     return out;
   }
 
-  // Sum
-  //
-  template<class T> 
-  __global__ void sum_kernel( 
-                             T *in, T *out, 
-                             unsigned int stride, unsigned int number_of_batches, unsigned int number_of_elements )
-  {
-    const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
-
-    if( idx < number_of_elements ){
-
-      unsigned int in_idx = (idx/stride)*stride*number_of_batches+(idx%stride);
-
-      T val = in[in_idx];
-
-      for( unsigned int i=1; i<number_of_batches; i++ ) 
-        val += in[i*stride+in_idx];
-
-      out[idx] = val; 
-    }
-  }
-
-  // Sum
-  //
-  template<class T>  boost::shared_ptr< cuNDArray<T> > sum( cuNDArray<T> *in, unsigned int dim )
-  {
-    // Some validity checks
-    if( !(in->get_number_of_dimensions()>1) ){
-      throw std::runtime_error("sum: underdimensioned.");;
-    }
-
-    if( dim > in->get_number_of_dimensions()-1 ){
-      throw std::runtime_error( "sum: dimension out of range.");;
-    }
-
-    unsigned int number_of_batches = in->get_size(dim);
-    unsigned int number_of_elements = in->get_number_of_elements()/number_of_batches;
-
-    // Setup block/grid dimensions
-    dim3 blockDim; dim3 gridDim;
-    setup_grid( number_of_elements, &blockDim, &gridDim );
-
-    // Find element stride
-    unsigned int stride; std::vector<unsigned int> dims;
-    find_stride<T>( in, dim, &stride, &dims );
-
-    // Invoke kernel
-    boost::shared_ptr< cuNDArray<T> > out(new cuNDArray<T>());
-    out->create(&dims);
-
-    sum_kernel<T><<< gridDim, blockDim >>>( in->get_data_ptr(), out->get_data_ptr(), stride, number_of_batches, number_of_elements );
-
-    CHECK_FOR_CUDA_ERROR();
-    return out;
-  }
-
   // Crop
-  template<class T, unsigned int D> __global__ void crop_kernel( 
-                                                                vector_td<unsigned int,D> offset, vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
-                                                                T *in, T *out, unsigned int num_batches, unsigned int num_elements )
+  template<class T, unsigned int D> __global__ void crop_kernel
+  ( vector_td<unsigned int,D> offset, vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
+    T *in, T *out, unsigned int num_batches, unsigned int num_elements )
   {
-    typedef vector_td<unsigned int,D> uint64d;
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
     const unsigned int frame_offset = idx/num_elements;
-
+    
     if( idx < num_elements*num_batches ){
-      const uint64d co = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
-      const uint64d co_os = offset + co;
+      const typename uintd<D>::Type co = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
+      const typename uintd<D>::Type co_os = offset + co;
       const unsigned int in_idx = co_to_idx<D>(co_os, matrix_size_in)+frame_offset*prod(matrix_size_in);
       out[idx] = in[in_idx];
     }
@@ -375,21 +305,22 @@ namespace Gadgetron {
 
     unsigned int number_of_batches = 1;
     for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
-      number_of_batches *= in->get_size(d);
-    }
+        number_of_batches *= in->get_size(d);
+      }
 
-    if( weak_greater(offset+matrix_size_out, matrix_size_in) ){
-      throw std::runtime_error( "crop: cropping size mismatch");;
-    }
+           if( weak_greater(offset+matrix_size_out, matrix_size_in) ){
+             throw std::runtime_error( "crop: cropping size mismatch");
+           }
 
-    // Setup block/grid dimensions
-    dim3 blockDim; dim3 gridDim;
-    setup_grid( prod(matrix_size_out), &blockDim, &gridDim, number_of_batches );
+           // Setup block/grid dimensions
+           dim3 blockDim; dim3 gridDim;
+         setup_grid( prod(matrix_size_out), &blockDim, &gridDim, number_of_batches );
 
-    // Invoke kernel
-    crop_kernel<T,D><<< gridDim, blockDim >>>
-      ( offset, matrix_size_in, matrix_size_out, in->get_data_ptr(), out->get_data_ptr(), number_of_batches, prod(matrix_size_out) );
-
+         // Invoke kernel
+         crop_kernel<T,D><<< gridDim, blockDim >>>
+           ( to_uintd<size_t,D>(offset), to_uintd<size_t,D>(matrix_size_in), to_uintd<size_t,D>(matrix_size_out), 
+           in->get_data_ptr(), out->get_data_ptr(), number_of_batches, prod(matrix_size_out) );
+    
     CHECK_FOR_CUDA_ERROR();
   }
 
@@ -399,7 +330,7 @@ namespace Gadgetron {
     if( in == 0x0 ){
       throw std::runtime_error("crop: 0x0 array provided");;
     }
-    std::vector<unsigned int> dims = to_std_vector(size);
+    std::vector<size_t> dims = to_std_vector(size);
     for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
       dims.push_back(in->get_size(d));
     }
@@ -410,18 +341,16 @@ namespace Gadgetron {
 
   // Expand and zero fill
   template<class T, unsigned int D> 
-  __global__ void pad_kernel( 
-                             vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
-                             T *in, T *out, unsigned int number_of_batches, unsigned int num_elements, T val )
+  __global__ void pad_kernel( vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
+                              T *in, T *out, unsigned int number_of_batches, unsigned int num_elements, T val )
   {
-    typedef vector_td<unsigned int,D> uint64d;
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
     const unsigned int frame_offset = idx/num_elements;
 
     if( idx < num_elements*number_of_batches ){
 
-      const uint64d co_out = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
-      const uint64d offset = (matrix_size_out-matrix_size_in)>>1;
+      const typename uintd<D>::Type co_out = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
+      const typename uintd<D>::Type offset = (matrix_size_out-matrix_size_in)>>1;
       T _out;
       bool inside = (co_out>=offset) && (co_out<(matrix_size_in+offset));
 
@@ -470,7 +399,8 @@ namespace Gadgetron {
 
     // Invoke kernel
     pad_kernel<T,D><<< gridDim, blockDim >>> 
-      ( matrix_size_in, matrix_size_out, in->get_data_ptr(), out->get_data_ptr(), number_of_batches, prod(matrix_size_out), val );
+      ( to_uintd<size_t,D>(matrix_size_in), to_uintd<size_t,D>(matrix_size_out),
+        in->get_data_ptr(), out->get_data_ptr(), number_of_batches, prod(matrix_size_out), val );
 
     CHECK_FOR_CUDA_ERROR();
   }
@@ -481,7 +411,7 @@ namespace Gadgetron {
     if( in == 0x0 ){
       throw std::runtime_error("pad: 0x0 array provided");;
     }
-    std::vector<unsigned int> dims = to_std_vector(size);
+    std::vector<size_t> dims = to_std_vector(size);
     for( unsigned int d=D; d<in->get_number_of_dimensions(); d++ ){
       dims.push_back(in->get_size(d));
     }
@@ -491,9 +421,8 @@ namespace Gadgetron {
   }
 
   template<class T, unsigned int D> 
-  __global__ void fill_border_kernel( 
-                                     vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
-                                     T *image, unsigned int number_of_batches, unsigned int number_of_elements, T val )
+  __global__ void fill_border_kernel( vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
+                                      T *image, unsigned int number_of_batches, unsigned int number_of_elements, T val )
   {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
 
@@ -531,29 +460,15 @@ namespace Gadgetron {
 
     // Invoke kernel
     fill_border_kernel<T,D><<< gridDim, blockDim >>>
-      ( matrix_size_in, matrix_size_out, in_out->get_data_ptr(), number_of_batches, prod(matrix_size_out), val );
+      ( to_uintd<size_t,D>(matrix_size_in), to_uintd<size_t,D>(matrix_size_out), 
+        in_out->get_data_ptr(), number_of_batches, prod(matrix_size_out), val );
 
     CHECK_FOR_CUDA_ERROR();
   }
 
-  template<class T> T mean(cuNDArray<T>* in)
-  {
-    return thrust::reduce(in->begin(),in->end(),T(0),thrust::plus<T>())/T(in->get_number_of_elements());
-  }
-
-  template<class T> T min(cuNDArray<T>* in)
-	{
-  	return *thrust::min_element(in->begin(),in->end());
-	}
-
-  template<class T> T max(cuNDArray<T>* in)
-	{
-		return *thrust::max_element(in->begin(),in->end());
-	}
-
   template<class T, unsigned int D> __global__ void 
-  upsample_kernel( typename uint64d<D>::Type matrix_size_in,
-                   typename uint64d<D>::Type matrix_size_out,
+  upsample_kernel( typename uintd<D>::Type matrix_size_in,
+                   typename uintd<D>::Type matrix_size_out,
                    unsigned int num_batches,
                    T *image_in,
                    T *image_out )
@@ -568,11 +483,11 @@ namespace Gadgetron {
       const unsigned int batch = idx/num_elements_out;
       const unsigned int batch_offset_in = batch*prod(matrix_size_in);
       
-      const typename uint64d<D>::Type co_out = idx_to_co<D>( idx-batch*num_elements_out, matrix_size_out );
-      const typename uint64d<D>::Type co_in = co_out >> 1;
-      const typename uint64d<D>::Type ones = to_vector_td<unsigned int,D>(1);
-      const typename uint64d<D>::Type twos = to_vector_td<unsigned int,D>(2);
-      const typename uint64d<D>::Type offset = co_out%twos;
+      const typename uintd<D>::Type co_out = idx_to_co<D>( idx-batch*num_elements_out, matrix_size_out );
+      const typename uintd<D>::Type co_in = co_out >> 1;
+      const typename uintd<D>::Type ones = to_vector_td<unsigned int,D>(1);
+      const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
+      const typename uintd<D>::Type offset = co_out%twos;
       
       const unsigned int num_cells = 1 << D;
       
@@ -581,7 +496,7 @@ namespace Gadgetron {
       
       for( unsigned int i=0; i<num_cells; i++ ){
         
-        const typename uint64d<D>::Type stride = idx_to_co<D>( i, twos );
+        const typename uintd<D>::Type stride = idx_to_co<D>( i, twos );
         
         if( offset >= stride ){
           cellsum += image_in[batch_offset_in+co_to_idx(amin(co_in+stride, matrix_size_in-ones), matrix_size_in)];
@@ -604,7 +519,7 @@ namespace Gadgetron {
     if( in == 0x0 )
       throw std::runtime_error("upsample: illegal input pointer");
 
-    std::vector<unsigned int> dims_out = *in->get_dimensions();
+    std::vector<size_t> dims_out = *in->get_dimensions();
     for( unsigned int i=0; i<D; i++ ) dims_out[i] <<= 1;
     boost::shared_ptr< cuNDArray<T> > out(new cuNDArray<T>(&dims_out));
     upsample<T,D>( in, out.get() );
@@ -634,7 +549,8 @@ namespace Gadgetron {
 
     // Invoke kernel
     upsample_kernel<T,D><<< gridDim, blockDim >>>
-      ( matrix_size_in, matrix_size_out, number_of_batches, in->get_data_ptr(), out->get_data_ptr() );
+      ( to_uintd<size_t,D>(matrix_size_in), to_uintd<size_t,D>(matrix_size_out), 
+        number_of_batches, in->get_data_ptr(), out->get_data_ptr() );
 
     CHECK_FOR_CUDA_ERROR();    
   }
@@ -645,23 +561,23 @@ namespace Gadgetron {
   // 
 
   template<class T, unsigned int D> __global__ void 
-  downsample_kernel( typename uint64d<D>::Type matrix_size_in,
-                     typename uint64d<D>::Type matrix_size_out,
-                     unsigned int num_batches,
+  downsample_kernel( typename intd<D>::Type matrix_size_in,
+                     typename intd<D>::Type matrix_size_out,
+                     int num_batches,
                      T *image_in,
                      T *image_out )
   {
     typedef typename realType<T>::Type REAL;
     
     const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
-    const int num_elements_out = (int)prod(matrix_size_out);
+    const int num_elements_out = prod(matrix_size_out);
     
-    if( idx < num_elements_out*(int)num_batches ){
+    if( idx < num_elements_out*num_batches ){
       
       const int batch = idx/num_elements_out;
-      const int batch_offset_in = batch*(int)prod(matrix_size_in);
+      const int batch_offset_in = batch*prod(matrix_size_in);
       
-      const typename intd<D>::Type co_out = idx_to_co<D>( idx-batch*num_elements_out, to_intd(matrix_size_out) );
+      const typename intd<D>::Type co_out = idx_to_co<D>( idx-batch*num_elements_out, matrix_size_out );
       const typename intd<D>::Type co_in = co_out << 1;
       
       T cellsum[D+1];
@@ -706,7 +622,7 @@ namespace Gadgetron {
     if( in == 0x0 )
       throw std::runtime_error("downsample: illegal input pointer");
     
-    std::vector<unsigned int> dims_out = *in->get_dimensions();
+    std::vector<size_t> dims_out = *in->get_dimensions();
     for( unsigned int i=0; i<D; i++ ) dims_out[i] >>= 1;
     boost::shared_ptr< cuNDArray<T> > out(new cuNDArray<T>(&dims_out));
     downsample<T,D>( in, out.get() );
@@ -736,7 +652,8 @@ namespace Gadgetron {
 
     // Invoke kernel
     downsample_kernel<T,D><<< gridDim, blockDim >>>
-      ( matrix_size_in, matrix_size_out, number_of_batches, in->get_data_ptr(), out->get_data_ptr() );
+      ( to_intd<size_t,D>(matrix_size_in), to_intd<size_t,D>(matrix_size_out), 
+        (int)number_of_batches, in->get_data_ptr(), out->get_data_ptr() );
 
     CHECK_FOR_CUDA_ERROR();    
   }
@@ -745,15 +662,15 @@ namespace Gadgetron {
   // Instantiation
   //
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > permute( cuNDArray<float>*, std::vector<unsigned int>*, int );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > permute( cuNDArray<double>*, std::vector<unsigned int>*, int );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > permute( cuNDArray<float_complext>*, std::vector<unsigned int>*, int );
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > permute( cuNDArray<double_complext>*, std::vector<unsigned int>*, int );  
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > permute( cuNDArray<float>*, std::vector<size_t>*, int );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > permute( cuNDArray<double>*, std::vector<size_t>*, int );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > permute( cuNDArray<float_complext>*, std::vector<size_t>*, int );
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > permute( cuNDArray<double_complext>*, std::vector<size_t>*, int );  
 
-  template EXPORTGPUCORE void permute( cuNDArray<float>*, cuNDArray<float>*, std::vector<unsigned int>*, int);
-  template EXPORTGPUCORE void permute( cuNDArray<double>*, cuNDArray<double>*, std::vector<unsigned int>*, int);
-  template EXPORTGPUCORE void permute( cuNDArray<float_complext>*, cuNDArray<float_complext>*, std::vector<unsigned int>*, int);
-  template EXPORTGPUCORE void permute( cuNDArray<double_complext>*, cuNDArray<double_complext>*, std::vector<unsigned int>*, int);
+  template EXPORTGPUCORE void permute( cuNDArray<float>*, cuNDArray<float>*, std::vector<size_t>*, int);
+  template EXPORTGPUCORE void permute( cuNDArray<double>*, cuNDArray<double>*, std::vector<size_t>*, int);
+  template EXPORTGPUCORE void permute( cuNDArray<float_complext>*, cuNDArray<float_complext>*, std::vector<size_t>*, int);
+  template EXPORTGPUCORE void permute( cuNDArray<double_complext>*, cuNDArray<double_complext>*, std::vector<size_t>*, int);
 
   template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > shift_dim( cuNDArray<float>*, int );
   template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > shift_dim( cuNDArray<double>*, int );
@@ -765,15 +682,10 @@ namespace Gadgetron {
   template EXPORTGPUCORE void shift_dim( cuNDArray<float_complext>*, cuNDArray<float_complext>*, int shift );
   template EXPORTGPUCORE void shift_dim( cuNDArray<double_complext>*, cuNDArray<double_complext>*, int shift );
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > expand<float>( cuNDArray<float>*, unsigned int);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > expand<double>( cuNDArray<double>*, unsigned int);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > expand<float_complext>( cuNDArray<float_complext>*, unsigned int);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > expand<double_complext>( cuNDArray<double_complext>*, unsigned int);
-
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > sum<float>( cuNDArray<float>*, unsigned int);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > sum<double>( cuNDArray<double>*, unsigned int);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > sum<float_complext>( cuNDArray<float_complext>*, unsigned int);
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > sum<double_complext>( cuNDArray<double_complext>*, unsigned int);  
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > expand<float>( cuNDArray<float>*, size_t);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > expand<double>( cuNDArray<double>*, size_t);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float_complext> > expand<float_complext>( cuNDArray<float_complext>*, size_t);
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > expand<double_complext>( cuNDArray<double_complext>*, size_t);
 
   template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > crop<float,1>( typename uint64d<1>::Type, typename uint64d<1>::Type, cuNDArray<float>*);
   template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > crop<float,2>( typename uint64d<2>::Type, typename uint64d<2>::Type, cuNDArray<float>*);
@@ -875,16 +787,6 @@ namespace Gadgetron {
   template EXPORTGPUCORE void fill_border<double_complext,3>(uint64d3, cuNDArray<double_complext>*,double_complext);
   template EXPORTGPUCORE void fill_border<double_complext,4>(uint64d4, cuNDArray<double_complext>*,double_complext);
 
-  template EXPORTGPUCORE float mean<float>(cuNDArray<float>*);
-  template EXPORTGPUCORE float_complext mean<float_complext>(cuNDArray<float_complext>*);
-  template EXPORTGPUCORE double mean<double>(cuNDArray<double>*);
-  template EXPORTGPUCORE double_complext mean<double_complext>(cuNDArray<double_complext>*);
-
-  template EXPORTGPUCORE float min<float>(cuNDArray<float>*);
-  template EXPORTGPUCORE float max<float>(cuNDArray<float>*);
-  template EXPORTGPUCORE double min<double>(cuNDArray<double>*);
-	template EXPORTGPUCORE double max<double>(cuNDArray<double>*);
-
   template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > upsample<float,1>(cuNDArray<float>*);
   template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > upsample<float,2>(cuNDArray<float>*);
   template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > upsample<float,3>(cuNDArray<float>*);
@@ -970,5 +872,5 @@ namespace Gadgetron {
   // For now we just introduce what we have needed...
   //
 
-  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<floatd2> > expand<floatd2>( cuNDArray<floatd2>*, unsigned int);  
+  template EXPORTGPUCORE boost::shared_ptr< cuNDArray<floatd2> > expand<floatd2>( cuNDArray<floatd2>*, size_t);  
 }

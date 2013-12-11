@@ -12,8 +12,8 @@ namespace Gadgetron{
 
   template<class T, unsigned int D> __global__ void
   first_order_partial_derivative_kernel( typename intd<D>::Type stride, 
-					 typename intd<D>::Type dims, 
-					 T *in, T *out )
+                                         typename intd<D>::Type dims, 
+                                         T *in, T *out )
   {
     const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
     if( idx < prod(dims) ){
@@ -34,9 +34,9 @@ namespace Gadgetron{
 
   template<class T, unsigned int D> __global__ void
   second_order_partial_derivative_kernel( typename intd<D>::Type forwards_stride, 
-					  typename intd<D>::Type adjoint_stride, 
-					  typename intd<D>::Type dims, 
-					  T *in, T *out )
+                                          typename intd<D>::Type adjoint_stride, 
+                                          typename intd<D>::Type dims, 
+                                          T *in, T *out )
   {
     const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
     if( idx < prod(dims) ){
@@ -58,10 +58,10 @@ namespace Gadgetron{
   }
 
   template< class T, unsigned int D> void
-  cuPartialDerivativeOperator<T,D>::compute_partial_derivative( typename intd<D>::Type stride,
-								cuNDArray<T> *in, 
-								cuNDArray<T> *out, 
-								bool accumulate )
+  cuPartialDerivativeOperator<T,D>::compute_partial_derivative( typename int64d<D>::Type stride,
+                                                                cuNDArray<T> *in, 
+                                                                cuNDArray<T> *out, 
+                                                                bool accumulate )
   {
     if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
       throw std::runtime_error( "partialDerivativeOperator::compute_partial_derivative : array dimensions mismatch.");
@@ -71,7 +71,7 @@ namespace Gadgetron{
 
     if (!accumulate) clear(out);
     
-    typename intd<D>::Type dims = to_intd( from_std_vector<size_t,D>( *(in->get_dimensions().get()) ));     
+    typename int64d<D>::Type dims = to_int64d( from_std_vector<size_t,D>( *(in->get_dimensions().get()) ));     
     dim3 dimBlock( dims.vec[0] );
     dim3 dimGrid( 1, dims.vec[D-1] );
   
@@ -81,28 +81,27 @@ namespace Gadgetron{
     size_t elements = in->get_number_of_elements();
 
     // Invoke kernel
-    for (int i = 0; i < elements/prod(dims); i++)
-    	first_order_partial_derivative_kernel<T,D><<< dimGrid, dimBlock >>> ( stride, dims, in->get_data_ptr()+i*prod(dims), out->get_data_ptr()+i*prod(dims));
+    for (size_t i = 0; i < elements/prod(dims); i++)
+    	first_order_partial_derivative_kernel<T,D><<< dimGrid, dimBlock >>> 
+        ( to_intd<long long,D>(stride), to_intd<long long,D>(dims), 
+          in->get_data_ptr()+i*prod(dims), out->get_data_ptr()+i*prod(dims));
   
     CHECK_FOR_CUDA_ERROR();
   }
 
   template<class T, unsigned int D> void
-  cuPartialDerivativeOperator<T,D>::compute_second_order_partial_derivative( typename intd<D>::Type forwards_stride,
-									     typename intd<D>::Type adjoint_stride, 
-									     cuNDArray<T> *in, cuNDArray<T> *out, 
-									     bool accumulate )
+  cuPartialDerivativeOperator<T,D>::compute_second_order_partial_derivative( typename int64d<D>::Type forwards_stride,
+                                                                             typename int64d<D>::Type adjoint_stride, 
+                                                                             cuNDArray<T> *in, cuNDArray<T> *out, 
+                                                                             bool accumulate )
   {  
     if( !in || !out || in->get_number_of_elements() != out->get_number_of_elements() ){
       throw std::runtime_error( "partialDerivativeOperator::compute_second_order_partial_derivative : array dimensions mismatch.");
-
     }
-
-
-
+    
     if (!accumulate) clear(out);
 
-    typename intd<D>::Type dims = to_intd( from_std_vector<size_t,D>( *(in->get_dimensions().get()) ));
+    typename int64d<D>::Type dims = to_int64d( from_std_vector<size_t,D>( *(in->get_dimensions().get()) ));
     dim3 dimBlock( dims.vec[0] );
     dim3 dimGrid( 1, dims.vec[D-1] );
   
@@ -111,10 +110,12 @@ namespace Gadgetron{
   
     size_t elements = in->get_number_of_elements();
 
-        // Invoke kernel
-		for (int i = 0; i < elements/prod(dims); i++)
-			second_order_partial_derivative_kernel<T,D><<< dimGrid, dimBlock >>> ( forwards_stride, adjoint_stride, dims, in->get_data_ptr()+i*prod(dims), out->get_data_ptr()+i*prod(dims) );
-  
+    // Invoke kernel
+		for (size_t i = 0; i < elements/prod(dims); i++)
+			second_order_partial_derivative_kernel<T,D><<< dimGrid, dimBlock >>> 
+        ( to_intd<long long,D>(forwards_stride), to_intd<long long,D>(adjoint_stride), to_intd<long long,D>(dims), 
+          in->get_data_ptr()+i*prod(dims), out->get_data_ptr()+i*prod(dims) );
+    
     CHECK_FOR_CUDA_ERROR();
   }
 

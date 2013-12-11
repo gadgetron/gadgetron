@@ -1,6 +1,7 @@
 #include "cuSenseBufferCg.h"
 #include "vector_td_utilities.h"
 #include "cuNDArray_utils.h"
+#include "cuNDArray_reductions.h"
 #include "cuNDArray_elemwise.h"
 
 namespace Gadgetron{

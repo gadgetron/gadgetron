@@ -19,18 +19,18 @@ namespace Gadgetron{
     cuPartialDerivativeOperator() : 
       partialDerivativeOperator< D, cuNDArray<T> >(0) {}
     
-    cuPartialDerivativeOperator( unsigned int dimension ) : 
+    cuPartialDerivativeOperator( size_t dimension ) : 
       partialDerivativeOperator<D, cuNDArray<T> >( dimension ) {}
     
     virtual ~cuPartialDerivativeOperator() {}
     
-    virtual void compute_partial_derivative( typename intd<D>::Type stride, cuNDArray<T> *in,
-					     cuNDArray<T> *out, bool accumulate );  
-
-    virtual void compute_second_order_partial_derivative( typename intd<D>::Type forwards_stride,
-							  typename intd<D>::Type adjoint_stride, 
-							  cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate );  
-
+    virtual void compute_partial_derivative( typename int64d<D>::Type stride, cuNDArray<T> *in,
+                                             cuNDArray<T> *out, bool accumulate );  
+    
+    virtual void compute_second_order_partial_derivative( typename int64d<D>::Type forwards_stride,
+                                                          typename int64d<D>::Type adjoint_stride, 
+                                                          cuNDArray<T> *in, cuNDArray<T> *out, bool accumulate );  
+    
     virtual boost::shared_ptr< linearOperator< cuNDArray<T> > > clone() {
       return linearOperator< cuNDArray<T> >::clone(this);
     }    

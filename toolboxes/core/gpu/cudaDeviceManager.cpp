@@ -42,13 +42,13 @@ namespace Gadgetron{
     for( int device=0; device<_num_devices; device++ ){
 
       if( cudaSetDevice(device) != cudaSuccess ) {
-	throw cuda_error( "Error: unable to set device no");
+        throw cuda_error( "Error: unable to set device no");
       }
 
       cudaDeviceProp deviceProp;
 
       if( cudaGetDeviceProperties( &deviceProp, device ) != cudaSuccess) {
-	throw cuda_error("Error: unable to determine device properties.");
+        throw cuda_error("Error: unable to determine device properties.");
       }
 
       _warp_size[device] = deviceProp.warpSize;
@@ -70,7 +70,7 @@ namespace Gadgetron{
 
     for (int device = 0; device < _num_devices; device++){
       if (_handle[device] != NULL)
-	cublasDestroy(_handle[device]);
+        cublasDestroy(_handle[device]);
     }
   }
 
@@ -164,7 +164,7 @@ namespace Gadgetron{
       if (ret != CUBLAS_STATUS_SUCCESS) {
       	std::stringstream ss;
       	ss << "Error: unable to create cublas handle for device " << device << " : ";
-	ss << gadgetron_getCublasErrorString(ret) << std::endl;
+        ss << gadgetron_getCublasErrorString(ret) << std::endl;
       	throw cuda_error(ss.str());
       }
       cublasSetPointerMode( _handle[device], CUBLAS_POINTER_MODE_HOST );

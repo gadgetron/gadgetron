@@ -1,5 +1,5 @@
 /** \file vector_td_io.h
-    \brief Basic iostream "communication" of the vector_td class
+    \brief Basic iostream "communication" using the vector_td class
 */
 
 #pragma once

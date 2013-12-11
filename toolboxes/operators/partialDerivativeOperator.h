@@ -20,7 +20,7 @@ namespace Gadgetron{
     
   public:
     
-    partialDerivativeOperator( unsigned int dimension ) : 
+    partialDerivativeOperator( size_t dimension ) : 
       linearOperator<ARRAY_TYPE>() { compute_stride(dimension); }
     
     virtual ~partialDerivativeOperator() {}
@@ -50,17 +50,17 @@ namespace Gadgetron{
     
   protected:
     
-    virtual void compute_stride( unsigned int _dimension )
+    virtual void compute_stride( size_t _dimension )
     {
-      unsigned int dim = _dimension;
+      size_t dim = _dimension;
       
       if( _dimension > D-1 ){
-	throw std::runtime_error("Error: partialDerivativeOperator: dimension out of range");
+        throw std::runtime_error("Error: partialDerivativeOperator: dimension out of range");
       }
       
       for( unsigned int d=0; d<D; d++ ){
-	forwards_stride_.vec[d] = (d==dim) ? 1 : 0;
-	adjoint_stride_.vec[d] = (d==dim) ? -1 : 0;
+        forwards_stride_.vec[d] = (d==dim) ? 1 : 0;
+        adjoint_stride_.vec[d] = (d==dim) ? -1 : 0;
       }    
     }
     

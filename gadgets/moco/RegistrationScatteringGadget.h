@@ -176,7 +176,7 @@ namespace Gadgetron{
         // - just a plain 'write_nd_array' below for now...
         //
 
-        std::vector<unsigned int> reg_dims = this->image_dimensions_; // x,y
+        std::vector<size_t> reg_dims = this->image_dimensions_; // x,y
         reg_dims.push_back(num_images-1); // this many registrations 
         reg_dims.push_back(2); // 2d flow vectors
         reg_dims.push_back(this->number_of_phases_);
@@ -186,7 +186,7 @@ namespace Gadgetron{
         for( unsigned int phase=0; phase < this->number_of_phases_; phase++ ){
 	
           unsigned int num_image_elements = this->image_dimensions_[0]*image_dimensions_[1];
-          std::vector<unsigned int> fixed_dims = this->image_dimensions_;
+          std::vector<size_t> fixed_dims = this->image_dimensions_;
           fixed_dims.push_back(num_images-1);
 	
           std::vector< GadgetContainerMessage<ISMRMRD::ImageHeader>*> headers;
@@ -265,7 +265,7 @@ namespace Gadgetron{
             //
             
             {              
-              std::vector<unsigned int> phase_reg_dims = reg_dims; phase_reg_dims.pop_back();
+              std::vector<size_t> phase_reg_dims = reg_dims; phase_reg_dims.pop_back();
               ARRAY_TYPE tmp_in( &phase_reg_dims, deformations->get_data_ptr() ); // the vector field has an extra dimension for CK (to be discarded)
               ARRAY_TYPE tmp_out( &phase_reg_dims, reg_field.get_data_ptr()+phase*num_reg_elements_phase );
               tmp_out = tmp_in;
@@ -313,7 +313,7 @@ namespace Gadgetron{
                 }
               }
               else{                
-                std::vector<unsigned int> moving_dims = *moving_image.get_dimensions();
+                std::vector<size_t> moving_dims = *moving_image.get_dimensions();
                 cuNDArray<float> subimage( &moving_dims, deformed_moving->get_data_ptr()+(i-1)*num_image_elements);
                 
                 if( set_continuation( headers[i], &subimage ) < 0 ) {
@@ -338,7 +338,7 @@ namespace Gadgetron{
         // - to be betetr suited for a subsequent reconstruction pass
         //
         
-        std::vector<unsigned int> order;
+        std::vector<size_t> order;
         order.push_back(0); 
         order.push_back(1);
         order.push_back(4);
@@ -367,7 +367,7 @@ namespace Gadgetron{
     
   private:
     boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> > phase_images_;
-    std::vector<unsigned int> image_dimensions_;
+    std::vector<size_t> image_dimensions_;
     unsigned short number_of_phases_;    
   };
 }

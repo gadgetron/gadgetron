@@ -28,7 +28,7 @@ namespace Gadgetron{
     virtual void set_encoding_operator( boost::shared_ptr< linearOperator<ARRAY_TYPE> > op)
     {
       if( !op.get() ){
-	throw std::runtime_error( "Error: linearOperatorSolver::set_encoding_operator : NULL operator provided" );
+        throw std::runtime_error( "Error: linearOperatorSolver::set_encoding_operator : NULL operator provided" );
       }     
       encoding_operator_ = op;    
     }
@@ -43,7 +43,7 @@ namespace Gadgetron{
     virtual void add_regularization_operator( boost::shared_ptr< linearOperator< ARRAY_TYPE> > op)
     {
       if( !op.get() ){
-	throw std::runtime_error( "Error: linearOperatorSolver::add_regularization_operator : NULL operator provided" );
+        throw std::runtime_error( "Error: linearOperatorSolver::add_regularization_operator : NULL operator provided" );
       }    
       regularization_operators_.push_back(op);
     }
@@ -52,7 +52,7 @@ namespace Gadgetron{
     get_regularization_operator( unsigned int i )
     {
       if( i >= get_number_of_regularization_operators() ){
-	throw std::runtime_error( "Error: linearOperatorSolver::get_regularization_operator : index out of range" );
+        throw std::runtime_error( "Error: linearOperatorSolver::get_regularization_operator : index out of range" );
       }    
       return regularization_operators_[i];
     }  

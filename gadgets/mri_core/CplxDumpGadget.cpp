@@ -93,7 +93,7 @@ namespace Gadgetron{
     // Reshape to get the coil dimension as the last
     //
   
-    std::vector<unsigned int> order; order.push_back(0); order.push_back(2); order.push_back(1);
+    std::vector<size_t> order; order.push_back(0); order.push_back(2); order.push_back(1);
     result = *permute( &result, &order);
 
     // Write out the result

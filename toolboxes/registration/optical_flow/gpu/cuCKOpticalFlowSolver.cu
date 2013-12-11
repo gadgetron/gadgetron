@@ -8,7 +8,7 @@ namespace Gadgetron{
   //
 
   template<class REAL, unsigned int D> __global__ 
-  void CorneliusKanade_kernel(REAL*,REAL*,REAL*,REAL*,typename uint64d<D>::Type,unsigned int,REAL,REAL,REAL,unsigned int*);
+  void CorneliusKanade_kernel(REAL*,REAL*,REAL*,REAL*,typename uintd<D>::Type,unsigned int,REAL,REAL,REAL,unsigned int*);
 
   //
   // Reference to shared memory
@@ -100,7 +100,7 @@ namespace Gadgetron{
       CorneliusKanade_kernel<T,D><<< gridDim, blockDim, (blockDim.x*blockDim.y)*sizeof(T) >>>
         ( gradient_image->get_data_ptr(), (stencil_image) ? stencil_image->get_data_ptr() : 0x0,
           ping->get_data_ptr(), pong->get_data_ptr(), 
-          matrix_size, number_of_batches, alpha_, beta_, this->limit_*this->limit_, continue_flag );
+          to_uintd<size_t,D>(matrix_size), number_of_batches, alpha_, beta_, this->limit_*this->limit_, continue_flag );
       
       CHECK_FOR_CUDA_ERROR();
 
@@ -145,7 +145,7 @@ namespace Gadgetron{
   //
   
   template<unsigned int D> __device__ 
-  bool is_border_pixel_for_stride( typename intd<D>::Type stride, typename uint64d<D>::Type co, typename uint64d<D>::Type dims )
+  bool is_border_pixel_for_stride( typename intd<D>::Type stride, typename uintd<D>::Type co, typename uintd<D>::Type dims )
   {
     for( unsigned int d=0; d<D; d++ ){
       if( stride.vec[d] == -1 ){
@@ -178,7 +178,7 @@ namespace Gadgetron{
   template<class REAL, unsigned int D> __global__ void
   CorneliusKanade_kernel( REAL *gradient_image, REAL *stencil_image,
                           REAL *in_disp, REAL *out_disp, 
-                          typename uint64d<D>::Type matrix_size, unsigned int num_batches,
+                          typename uintd<D>::Type matrix_size, unsigned int num_batches,
                           REAL alpha, REAL beta, REAL disp_thresh_sqr, unsigned int *continue_signal )
   {  
     
@@ -218,11 +218,11 @@ namespace Gadgetron{
     if( legal_idx ){
 
       // Local co to the image
-      const typename uint64d<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
+      const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
     
-      const typename intd<D>::Type zeros  = to_vector_td<long long,D>(0);
-      const typename intd<D>::Type ones   = to_vector_td<long long,D>(1);
-      const typename intd<D>::Type threes = to_vector_td<long long,D>(3);
+      const typename intd<D>::Type zeros  = to_vector_td<int,D>(0);
+      const typename intd<D>::Type ones   = to_vector_td<int,D>(1);
+      const typename intd<D>::Type threes = to_vector_td<int,D>(3);
     
       const int num_neighbors = Pow<3,D>::Value;
       REAL num_contribs = REAL(0);

@@ -1,6 +1,7 @@
 // Gadgetron includes
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_utils.h"
+#include "cuNDArray_reductions.h"
 #include "hoNDArray_fileio.h"
 #include "vector_td_utilities.h"
 #include "cuImageOperator.h"

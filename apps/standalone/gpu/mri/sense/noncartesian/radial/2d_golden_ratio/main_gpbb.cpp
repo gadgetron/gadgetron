@@ -2,6 +2,7 @@
 #include "hoNDArray_fileio.h"
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_utils.h"
+#include "cuNDArray_reductions.h"
 #include "radial_utilities.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "cuSenseBuffer.h"

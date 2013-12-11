@@ -1,31 +1,27 @@
-/********************************************************************
-    created:    2013/09/30
-    created:    30:9:2013   16:55
-    author:     Hui Xue
+/** 
+    SerializeObject is the base class for serializable objects
+*/
 
-    purpose:    provide the interface for serializable objects
-*********************************************************************/
 #pragma once
+
+#include "GadgetronCommon.h"
+#include "GadgetronException.h"
+#include "cpucore_export.h"
 
 #include <complex>
 #include <iostream>
-#include "cpucore_export.h"
-#include "GadgetronCommon.h"
-#include "GadgetronException.h"
 
 namespace Gadgetron
 {
-
-class SerializableObject
-{
-public:
-
+  class SerializableObject
+  {
+  public:
+    
     SerializableObject() {}
     virtual ~SerializableObject() {}
-
+    
     // serialize and deserialize to/from the buffer
-    virtual bool serialize(char*& buf, size_t& len) const = 0;
-    virtual bool deserialize(char* buf, size_t& len) = 0;
-};
-
+    virtual void serialize(char*& buf, size_t& len) const = 0;
+    virtual void deserialize(char* buf, size_t& len) = 0;
+  };  
 }

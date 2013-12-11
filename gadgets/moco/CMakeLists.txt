@@ -22,11 +22,9 @@ elseif (ARMADILLO_FOUND)
 endif (ARMADILLO_FOUND)
 
 if(CUDA_FOUND)
-
   set(GPU_REG 1)
   list(APPEND GPU_GADGETS gpuRegistrationAveragingGadget.cpp gpuRegistrationScatteringGadget.cpp)
   list(APPEND GPU_LIBS gpucore gpureg ${CUDA_LIBRARIES})
-
 elseif (CUDA_FOUND)
   MESSAGE("Cuda not found, not compiling gpu-based registration gadgets")
 endif (CUDA_FOUND)

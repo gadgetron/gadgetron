@@ -405,7 +405,7 @@ Gadgetron::normalize( cuNDArray<T> *x, typename realType<T>::Type val )
   if( x == 0x0 )
     throw std::runtime_error("Gadgetron::normalize(): Invalid input array");
   
-  unsigned int max_idx = amax(x);
+  size_t max_idx = amax(x);
   T max_val_before;
   CUDA_CALL(cudaMemcpy(&max_val_before, &x->get_data_ptr()[max_idx], sizeof(T), cudaMemcpyDeviceToHost));
   typename realType<T>::Type scale = val/abs(max_val_before);

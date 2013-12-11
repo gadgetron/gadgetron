@@ -9,6 +9,7 @@
 #pragma once
 
 #include "core_defines.h"
+
 #include <complex>
 #include <cmath>
 #include <iostream>
@@ -17,10 +18,10 @@ namespace Gadgetron{
 
   using std::abs; // workaround for nvcc
 
-/** 
- * \class complext
- * \brief An implementation of complex numbers that works for both the cpu and gpu.
- */
+  /** 
+   * \class complext
+   * \brief An implementation of complex numbers that works for both the cpu and gpu.
+   */
   template< class T > class complext
   {
   public:
@@ -50,8 +51,8 @@ namespace Gadgetron{
     }
 
     __inline__ __host__ __device__  complext(const std::complex<T>& tmp){
-          vec[0] = tmp.real();
-          vec[1] = tmp.imag();
+      vec[0] = tmp.real();
+      vec[1] = tmp.imag();
 		}
     __inline__ __host__ __device__  complext(const T r){
       vec[0] = r;
@@ -133,26 +134,26 @@ namespace Gadgetron{
     }
   };
 
-    template <typename T> 
-    inline std::ostream & operator<< (std::ostream & os, const complext<T>& a )
-    {
-        os << a.real() << a.imag() << "i";
-        return os;
-    }
+  template <typename T> 
+  inline std::ostream & operator<< (std::ostream & os, const complext<T>& a )
+  {
+    os << a.real() << a.imag() << "i";
+    return os;
+  }
 
-    template <> 
-    inline std::ostream & operator<< (std::ostream & os, const complext<float>& a )
-    {
-        os << a.real() << a.imag() << "i";
-        return os;
-    }
+  template <> 
+  inline std::ostream & operator<< (std::ostream & os, const complext<float>& a )
+  {
+    os << a.real() << a.imag() << "i";
+    return os;
+  }
 
-    template <> 
-    inline std::ostream & operator<< (std::ostream & os, const complext<double>& a )
-    {
-        os << a.real() << a.imag() << "i";
-        return os;
-    }
+  template <> 
+  inline std::ostream & operator<< (std::ostream & os, const complext<double>& a )
+  {
+    os << a.real() << a.imag() << "i";
+    return os;
+  }
 
   typedef complext<float> float_complext;
   typedef complext<double> double_complext;
@@ -306,6 +307,4 @@ namespace Gadgetron{
     res.conj();
     return res;
   }
-
-
 }

@@ -3,6 +3,7 @@
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_blas.h"
 #include "cuNDArray_utils.h"
+#include "cuNDArray_reductions.h"
 #include "cuNDFFT.h"
 #include "Gadgetron.h"
 #include "GadgetMRIHeaders.h"

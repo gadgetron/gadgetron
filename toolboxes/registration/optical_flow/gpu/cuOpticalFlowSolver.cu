@@ -80,8 +80,8 @@ namespace Gadgetron{
   template<class T, unsigned int D> void
   cuOpticalFlowSolver<T,D>::core_grad_spatial( T *fixed_image, T *moving_image, T *gradient_image, 
 						  typename uint64d<D>::Type matrix_size_moving, 
-						  unsigned long number_of_batches_fixed, 
-						  unsigned long number_of_batches_moving )
+						  size_t number_of_batches_fixed, 
+						  size_t number_of_batches_moving )
   {        
     unsigned int number_of_elements = prod(matrix_size_moving);
     dim3 blockDim; dim3 gridDim;

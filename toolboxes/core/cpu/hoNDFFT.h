@@ -35,13 +35,13 @@ namespace Gadgetron{
 
         static hoNDFFT<T>* instance(); 
 
-        void fft(hoNDArray< ComplexType >* input, size_t dim_to_transform)
+        void fft(hoNDArray< ComplexType >* input, unsigned int dim_to_transform)
         {
             //-1 refers to the sign of the transform, -1 for FFTW_FORWARD
             fft_int(input,dim_to_transform,-1);
         }
 
-        void ifft(hoNDArray< ComplexType >* input, size_t dim_to_transform)
+        void ifft(hoNDArray< ComplexType >* input, unsigned int dim_to_transform)
         {
             //1 refers to the sign of the transform, +1 for FFTW_BACKWARD
             fft_int(input,dim_to_transform,1);

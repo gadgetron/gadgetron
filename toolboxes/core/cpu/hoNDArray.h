@@ -30,7 +30,14 @@ namespace Gadgetron{
     typedef NDArray<T> BaseClass;
 
     hoNDArray();
+
+    hoNDArray(std::vector<size_t> &dimensions);
     hoNDArray(std::vector<size_t> *dimensions);
+    hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions);
+
+    hoNDArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
+    hoNDArray(std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
+    hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
 
     hoNDArray(size_t len);
     hoNDArray(size_t sx, size_t sy);
@@ -41,7 +48,6 @@ namespace Gadgetron{
     hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr);
     hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss);
 
-    hoNDArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
     hoNDArray(size_t len, T* data, bool delete_data_on_destruct = false);
     hoNDArray(size_t sx, size_t sy, T* data, bool delete_data_on_destruct = false);
     hoNDArray(size_t sx, size_t sy, size_t sz, T* data, bool delete_data_on_destruct = false);
@@ -51,27 +57,21 @@ namespace Gadgetron{
     hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, T* data, bool delete_data_on_destruct = false);
     hoNDArray(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, T* data, bool delete_data_on_destruct = false);
 
-    hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions);
-    hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
-
     virtual ~hoNDArray();
 
-    // Copy constructor
-    hoNDArray(const hoNDArray<T>& a);
+    // Copy constructors
+    hoNDArray(const hoNDArray<T> &a);
+    hoNDArray(const hoNDArray<T> *a);
 
     // Assignment operator
     hoNDArray& operator=(const hoNDArray& rhs);
-    void fill(T value);
 
     virtual void create(std::vector<size_t>& dimensions);
-
-    virtual void create(std::vector<unsigned int> *dimensions);
     virtual void create(std::vector<size_t> *dimensions);
-
-    virtual void create(std::vector<unsigned int> *dimensions, T* data, bool delete_data_on_destruct = false);
-    virtual void create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
-
     virtual void create(boost::shared_ptr< std::vector<size_t> > dimensions);
+
+    virtual void create(std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
+    virtual void create(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
     virtual void create(boost::shared_ptr<std::vector<size_t>  > dimensions, T* data, bool delete_data_on_destruct = false);
 
     virtual void create(size_t len);
@@ -94,6 +94,8 @@ namespace Gadgetron{
     virtual void create(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, T* data, bool delete_data_on_destruct = false);
     virtual void create(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, size_t sq, size_t sr, size_t ss, size_t su, T* data, bool delete_data_on_destruct = false);
 
+    void fill(T value);
+
     T* begin();
     const T* begin() const;
 
@@ -103,8 +105,7 @@ namespace Gadgetron{
     T& at( size_t idx );
     const T& at( size_t idx ) const;
 
-    T operator[]( size_t idx );
-
+    T& operator[]( size_t idx );
     T& operator()( size_t idx );
     const T& operator()( size_t idx ) const;
 
@@ -112,35 +113,23 @@ namespace Gadgetron{
     const T& operator()( const std::vector<size_t>& ind ) const;
 
     template<typename T2> 
-    bool copyFrom(const hoNDArray<T2>& aArray)
+    void copyFrom(const hoNDArray<T2>& aArray)
     {
-        try
-        {
-            if ( !this->dimensions_equal(&aArray) )
-            {
-                this->create(aArray.get_dimensions());
-            }
-
-            for ( size_t ii=0; ii<elements_; ii++ )
-            {
-                data_[ii] = static_cast<T>(aArray(ii));
-            }
-        }
-        catch(...)
-        {
-            return false;
-        }
-
-        return true;
+      if ( !this->dimensions_equal(&aArray) ){
+        this->create(aArray.get_dimensions());
+      }      
+      for ( size_t i=0; i<elements_; i++ ){
+        data_[i] = static_cast<T>(aArray(i));
+      }
     }
-
+  
     void get_sub_array(const std::vector<size_t>& start, std::vector<size_t>& size, hoNDArray<T>& out);
 
     virtual void print(std::ostream& os) const;
     virtual void printContent(std::ostream& os) const;
 
-    virtual bool serialize(char*& buf, size_t& len) const;
-    virtual bool deserialize(char* buf, size_t& len);
+    virtual void serialize(char*& buf, size_t& len) const;
+    virtual void deserialize(char* buf, size_t& len);
 
   protected:
 
@@ -158,12 +147,12 @@ namespace Gadgetron{
 
     template<class X> void _allocate_memory( size_t size, X** data )
     {
-        *data = new (std::nothrow) X[size];
+      *data = new (std::nothrow) X[size];
     }
 
     template<class X> void _deallocate_memory( X* data )
     {
-        delete [] data;
+      delete [] data;
     }
 
     // Overload these instances to avoid invoking the element class constructor/destructor
@@ -189,12 +178,12 @@ namespace Gadgetron{
 
     template<class TYPE, unsigned int D> void _allocate_memory( size_t size, vector_td<TYPE,D>** data )
     {
-        *data = (vector_td<TYPE,D>*) malloc( size*sizeof(vector_td<TYPE,D>) );
+      *data = (vector_td<TYPE,D>*) malloc( size*sizeof(vector_td<TYPE,D>) );
     }
 
     template<class TYPE, unsigned int D>  void _deallocate_memory( vector_td<TYPE,D>* data )
     {
-        free( data );
+      free( data );
     }
   };
 }

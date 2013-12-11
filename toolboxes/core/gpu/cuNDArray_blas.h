@@ -33,7 +33,7 @@ namespace Gadgetron{
    * @param x Input data
    * @return index of absolute minimum values
    */
-  template<class T> EXPORTGPUCORE int amin( cuNDArray<T> *x );
+  template<class T> EXPORTGPUCORE size_t amin( cuNDArray<T> *x );
   
   /**
    * @brief Gets the index of the index of the element with maximum absolute
@@ -41,7 +41,7 @@ namespace Gadgetron{
    * @return index of absolute maximum values
    * @details Note that this returns the C-style index and NOT the Fortran index.
    */
-  template<class T> EXPORTGPUCORE int amax( cuNDArray<T> *x);
+  template<class T> EXPORTGPUCORE size_t amax( cuNDArray<T> *x);
   
   template<class T> EXPORTGPUCORE typename realType<T>::Type asum( cuNDArray<T> *x );
   
