@@ -55,14 +55,14 @@ bool hoMatrix<T>::createMatrix(size_t rows, size_t cols, T* data, bool delete_da
 }
 
 template <typename T> 
-inline T& hoMatrix<T>::operator()(long long r , long long c)
+inline T& hoMatrix<T>::operator()(size_t r, size_t c)
 {
     GADGET_DEBUG_CHECK_THROW(c>=0 && r>=0 && c<(*dimensions_)[0] && r<(*dimensions_)[1]);
     return accesser_[r][c];
 }
 
 template <typename T> 
-inline const T& hoMatrix<T>::operator()(long long r , long long c) const
+inline const T& hoMatrix<T>::operator()(size_t r, size_t c) const
 {
     GADGET_DEBUG_CHECK_THROW(c>=0 && r>=0 && c<(*dimensions_)[0] && r<(*dimensions_)[1]);
     return accesser_[r][c];
@@ -972,7 +972,8 @@ bool EigenAnalysis_syev_heev2(hoMatrix<T>& A, hoMatrix<T>& eigenValue)
 
         hoMatrix<typename realType<T>::Type> D(M, 1);
         GADGET_CHECK_RETURN_FALSE(EigenAnalysis_syev_heev(A, D));
-        GADGET_CHECK_RETURN_FALSE(eigenValue.copyFrom(D));
+        //GADGET_CHECK_RETURN_FALSE(eigenValue.copyFrom(D));
+	eigenValue.copyFrom(D);
     }
     catch (...)
     {

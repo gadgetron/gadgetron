@@ -1539,7 +1539,8 @@ namespace Gadgetron{
         vcAbs(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex8*>(x.begin()), rTmp.begin());
         GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
 
-        GADGET_CHECK_RETURN_FALSE(r.copyFrom(rTmp));
+        //GADGET_CHECK_RETURN_FALSE(r.copyFrom(rTmp));
+	r.copyFrom(rTmp);
 
         return true;
     }
@@ -1990,7 +1991,8 @@ namespace Gadgetron{
         vzAbs(x.get_number_of_elements(), reinterpret_cast<const MKL_Complex16*>(x.begin()), rTmp.begin());
         GADGET_CHECK_RETURN_FALSE(vmlGetErrStatus()==0);
 
-        GADGET_CHECK_RETURN_FALSE(r.copyFrom(rTmp));
+        //GADGET_CHECK_RETURN_FALSE(r.copyFrom(rTmp));
+	r.copyFrom(rTmp);
 
         return true;
     }

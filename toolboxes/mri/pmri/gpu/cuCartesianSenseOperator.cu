@@ -8,11 +8,11 @@ using namespace Gadgetron;
 template<class REAL> __global__ void 
 sample_array_kernel( complext<REAL> *in, complext<REAL> *out,
 		     unsigned int *idx, 
-		     unsigned long image_elements,
-		     unsigned long int samples,
+		     unsigned int image_elements,
+		     unsigned int samples,
 		     unsigned int coils )
 {
-  unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
+  unsigned int idx_in = blockIdx.x*blockDim.x+threadIdx.x;
   if (idx_in < samples) {
     for (unsigned int i = 0; i < coils; i++) {
       out[idx_in + i*samples].vec[0] += in[idx[idx_in] + i*image_elements].vec[0];
@@ -24,11 +24,11 @@ sample_array_kernel( complext<REAL> *in, complext<REAL> *out,
 template<class REAL> __global__ void 
 insert_samples_kernel( complext<REAL> *in, complext<REAL> *out,
 		       unsigned int *idx, 
-		       unsigned long image_elements,
-		       unsigned long int samples,
+		       unsigned int image_elements,
+		       unsigned int samples,
 		       unsigned int coils )
 {
-  unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
+  unsigned int idx_in = blockIdx.x*blockDim.x+threadIdx.x;
   if (idx_in < samples) {
     for (unsigned int i = 0; i < coils; i++) {
       out[idx[idx_in] + i*image_elements].vec[0] += in[idx_in + i*samples].vec[0];

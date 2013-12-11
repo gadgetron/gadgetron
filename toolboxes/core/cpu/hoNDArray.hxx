@@ -603,6 +603,17 @@ namespace Gadgetron
   }
 
   template <typename T> 
+  inline T& hoNDArray<T>::operator()( size_t idx )
+  {
+    /*if( idx >= this->get_number_of_elements() )
+      {
+      BOOST_THROW_EXCEPTION( runtime_error("hoNDArray::operator(): index out of range."));
+      }*/
+    GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+    return this->get_data_ptr()[idx];
+  }
+
+  template <typename T> 
   inline const T& hoNDArray<T>::operator()( size_t idx ) const
   {
     /*if( idx >= this->get_number_of_elements() )
@@ -867,7 +878,7 @@ namespace Gadgetron
   }
 
   template <typename T> 
-  void hoNDArray<T>::serialize(char*& buf, size_t& len) const
+  bool hoNDArray<T>::serialize(char*& buf, size_t& len) const
   {
     if ( buf != NULL ) delete[] buf;
     
@@ -884,10 +895,12 @@ namespace Gadgetron
         memcpy(buf+sizeof(size_t), &((*dimensions_)[0]), sizeof(size_t)*NDim);
         memcpy(buf+sizeof(size_t)+sizeof(size_t)*NDim, this->data_, sizeof(T)*elements_);
       }
+    
+    return true; // Temporary. Should not be a boolean function.
   }
 
   template <typename T> 
-  void hoNDArray<T>::deserialize(char* buf, size_t& len)
+  bool hoNDArray<T>::deserialize(char* buf, size_t& len)
   {
     size_t NDim;
     memcpy(&NDim, buf, sizeof(size_t));
@@ -909,5 +922,6 @@ namespace Gadgetron
       }
     
     len = sizeof(size_t)+sizeof(size_t)*NDim+sizeof(T)*elements_;
+    return true; // Temporary. Should not be a boolean function.
   }  
 }

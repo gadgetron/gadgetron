@@ -73,7 +73,7 @@ namespace Gadgetron{
       data_out = boost::shared_ptr< cuNDArray<complext<REAL> > >(_data_out);
 
       //Now copy one coil at a time
-      unsigned long elements_per_coil = data_in->get_number_of_elements()/ncoils;
+      unsigned int elements_per_coil = data_in->get_number_of_elements()/ncoils;
       for (unsigned int i = 0; i < target_coils_int; i++) {
 	cudaMemcpy(data_out.get()->get_data_ptr()+i*elements_per_coil,
 		   data_in->get_data_ptr()+i*elements_per_coil,

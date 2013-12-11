@@ -35,14 +35,14 @@ bool hoMatrix<T>::createMatrix(unsigned int rows, unsigned int cols)
 }
 
 template <typename T> 
-inline T& hoMatrix<T>::operator()(unsigned int r , unsigned int c)
+inline T& hoMatrix<T>::operator()(size_t r, size_t c)
 {
     GADGET_DEBUG_CHECK_THROW(c<(*dimensions_)[0] && r<(*dimensions_)[1]);
     return accesser_[r][c];
 }
 
 template <typename T> 
-inline const T& hoMatrix<T>::operator()(unsigned int r , unsigned int c) const
+inline const T& hoMatrix<T>::operator()(size_t r, size_t c) const
 {
     GADGET_DEBUG_CHECK_THROW(c<(*dimensions_)[0] && r<(*dimensions_)[1]);
     return accesser_[r][c];

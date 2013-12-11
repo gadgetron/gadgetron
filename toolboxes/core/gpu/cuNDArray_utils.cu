@@ -16,15 +16,15 @@ namespace Gadgetron {
                                             unsigned int elements,
                                             int shift_mode)
   {
-    unsigned long idx_in = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
-    unsigned long idx_out = 0;
-    unsigned long idx_in_tmp = idx_in;
+    unsigned int idx_in = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+    unsigned int idx_out = 0;
+    unsigned int idx_in_tmp = idx_in;
 
     if (idx_in < elements) {
 
       unsigned int cur_index;
       for (unsigned int i = 0; i < ndim; i++) {
-        unsigned long idx_in_remainder = idx_in_tmp / dims[i];
+        unsigned int idx_in_remainder = idx_in_tmp / dims[i];
         cur_index = idx_in_tmp-(idx_in_remainder*dims[i]); //cur_index = idx_in_tmp%dims[i];
         if (shift_mode < 0) { //IFFTSHIFT
           idx_out += ((cur_index+(dims[i]>>1))%dims[i])*strides_out[i];

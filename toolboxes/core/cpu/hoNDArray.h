@@ -106,6 +106,7 @@ namespace Gadgetron{
     const T& at( size_t idx ) const;
 
     T& operator[]( size_t idx );
+
     T& operator()( size_t idx );
     const T& operator()( size_t idx ) const;
 
@@ -113,7 +114,7 @@ namespace Gadgetron{
     const T& operator()( const std::vector<size_t>& ind ) const;
 
     template<typename T2> 
-    void copyFrom(const hoNDArray<T2>& aArray)
+      bool copyFrom(const hoNDArray<T2>& aArray) // Should be a void function
     {
       if ( !this->dimensions_equal(&aArray) ){
         this->create(aArray.get_dimensions());
@@ -121,6 +122,7 @@ namespace Gadgetron{
       for ( size_t i=0; i<elements_; i++ ){
         data_[i] = static_cast<T>(aArray(i));
       }
+      return true;
     }
   
     void get_sub_array(const std::vector<size_t>& start, std::vector<size_t>& size, hoNDArray<T>& out);
@@ -128,8 +130,8 @@ namespace Gadgetron{
     virtual void print(std::ostream& os) const;
     virtual void printContent(std::ostream& os) const;
 
-    virtual void serialize(char*& buf, size_t& len) const;
-    virtual void deserialize(char* buf, size_t& len);
+    virtual bool serialize(char*& buf, size_t& len) const;
+    virtual bool deserialize(char* buf, size_t& len);
 
   protected:
 

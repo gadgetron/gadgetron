@@ -21,7 +21,7 @@ namespace Gadgetron
     virtual ~SerializableObject() {}
     
     // serialize and deserialize to/from the buffer
-    virtual void serialize(char*& buf, size_t& len) const = 0;
-    virtual void deserialize(char* buf, size_t& len) = 0;
+    virtual bool serialize(char*& buf, size_t& len) const = 0; // Should be a void function
+    virtual bool deserialize(char* buf, size_t& len) = 0; // Should be a void function
   };  
 }

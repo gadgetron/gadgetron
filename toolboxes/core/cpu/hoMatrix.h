@@ -39,8 +39,8 @@ public:
     virtual bool createMatrix(size_t rows, size_t cols);
     virtual bool createMatrix(size_t rows, size_t cols, T* data, bool delete_data_on_destruct = false);
 
-    T& operator()(long long r , long long c);
-    const T& operator()(long long r , long long c) const;
+    T& operator()(size_t r , size_t c);
+    const T& operator()(size_t r , size_t c) const;
 
     size_t rows() const;
     size_t cols() const;
