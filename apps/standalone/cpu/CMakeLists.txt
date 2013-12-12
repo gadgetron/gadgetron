@@ -1,5 +1,6 @@
 include_directories( 
     ${ARMADILLO_INCLUDE_DIRS}
+    ${ISMRMRD_INCLUDE_DIR}
     ${Boost_INCLUDE_DIR}
     ${FFTW3_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
@@ -32,3 +33,4 @@ include_directories(
 add_subdirectory(denoising)
 #add_subdirectory(deblurring)
 add_subdirectory(registration)
+add_subdirectory(gtplus)
