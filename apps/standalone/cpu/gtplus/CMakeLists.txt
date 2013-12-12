@@ -14,12 +14,6 @@ if (MATLAB_FOUND)
                     cpucore 
                     cpucore_math)
 
-    if (APPLE)
-        if ( HAS_64_BIT )
-            SET(MATLAB_SUFFIX ".mexmaci64")
-        endif ( HAS_64_BIT )
-    endif(APPLE)
-
     if (WIN32)
         if ( HAS_64_BIT )
             SET(MATLAB_SUFFIX ".mexw64")
@@ -36,6 +30,12 @@ if (MATLAB_FOUND)
         endif ( HAS_64_BIT )
     endif (UNIX)
 
+    if (APPLE)
+        if ( HAS_64_BIT )
+            SET(MATLAB_SUFFIX ".mexmaci64")
+        endif ( HAS_64_BIT )
+    endif(APPLE)
+    
     if ( MKL_FOUND )
 
         # coil map 2D

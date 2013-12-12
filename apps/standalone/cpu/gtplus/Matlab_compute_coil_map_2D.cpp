@@ -1,7 +1,11 @@
 
 #include <matrix.h>
 #include <mat.h>
-#include <mexGT.h>
+#ifdef _WIN32
+    #include <mexGT.h>
+#else
+    #include <mex.h>
+#endif // _WIN32
 
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtMatlabConverter.h"
