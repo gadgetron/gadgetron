@@ -283,22 +283,40 @@ namespace Gadgetron
     }
     return *this;
   }
-  
+
   template <typename T> 
   void hoNDArray<T>::create(std::vector<size_t>& dimensions)
   {
+    if ( this->dimensions_equal(&dimensions) )
+    {
+        return;
+    }
+
+    this->clear();
     BaseClass::create(dimensions);
   }
 
   template <typename T> 
   void hoNDArray<T>::create(std::vector<size_t> *dimensions)
   {
+    if ( this->dimensions_equal(dimensions) )
+    {
+        return;
+    }
+
+    this->clear();
     BaseClass::create(dimensions);
   }
 
   template <typename T> 
   void hoNDArray<T>::create(boost::shared_ptr< std::vector<size_t> > dimensions)
   {
+    if ( this->dimensions_equal(dimensions.get()) )
+    {
+        return;
+    }
+
+    this->clear();
     BaseClass::create(dimensions);
   }
 

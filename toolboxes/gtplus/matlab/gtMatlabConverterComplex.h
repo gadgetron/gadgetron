@@ -52,13 +52,13 @@ hoNDArray2Matlab(const hoNDArray<T>& a, mxArray*& aMx)
         size_t ii;
         for ( ii=0; ii<ndim; ii++ )
         {
-            dims[ii] = static_cast<mwSize>( *dim[ii] );
+            dims[ii] = static_cast<mwSize>( (*dim)[ii] );
         }
 
         size_t N = a.get_number_of_elements();
         const T* pA = a.begin();
 
-        if ( typeid(T) == typeid(std::complex<float) )
+        if ( typeid(T) == typeid(std::complex<float>) )
         {
             aMx = mxCreateNumericArray(ndim, dims, mxSINGLE_CLASS, mxCOMPLEX);
             float* pr = static_cast<float*>(mxGetData(aMx));
@@ -70,7 +70,7 @@ hoNDArray2Matlab(const hoNDArray<T>& a, mxArray*& aMx)
                 pi[ii] = static_cast<float>(pA[ii].imag());
             }
         }
-        else if ( typeid(T) == typeid(std::complex<double) )
+        else if ( typeid(T) == typeid(std::complex<double>) )
         {
             aMx = mxCreateNumericArray(ndim, dims, mxDOUBLE_CLASS, mxCOMPLEX);
             double* pr = static_cast<double*>(mxGetData(aMx));
