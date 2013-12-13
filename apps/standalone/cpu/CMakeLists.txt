@@ -1,6 +1,5 @@
 include_directories( 
     ${ARMADILLO_INCLUDE_DIRS}
-    ${ISMRMRD_INCLUDE_DIR}
     ${Boost_INCLUDE_DIR}
     ${FFTW3_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
