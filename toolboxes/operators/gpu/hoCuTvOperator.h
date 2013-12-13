@@ -8,7 +8,7 @@
 
 namespace Gadgetron{
 
-template<class T, unsigned int D> class EXPORTGPUOPERATORS hoCuTvOperator :
+template<class T, size_t D> class EXPORTGPUOPERATORS hoCuTvOperator :
 public generalOperator< hoCuNDArray<T> >
 {
 
@@ -35,12 +35,12 @@ public:
 			throw std::runtime_error("hoCuTvOperator: input/output array dimensions mismatch");
 		}
 
-		const vector_td<unsigned int,D> dims = from_std_vector<unsigned int, D>(*(in->get_dimensions()));
+		const vector_td<size_t,D> dims = from_std_vector<size_t, D>(*(in->get_dimensions()));
 		int elements = in->get_number_of_elements();
 
 		for (int i=0; i < (elements/prod(dims)); i++){
 
-			std::vector<unsigned int> dimensions = to_std_vector(dims);
+			std::vector<size_t> dimensions = to_std_vector(dims);
 
 			hoNDArray<T> tmp_in;
 			tmp_in.create(&dimensions,in->get_data_ptr()+i*prod(dims));
@@ -59,11 +59,11 @@ public:
 
 	virtual REAL magnitude( hoCuNDArray<T> *in)
 	{
-		const vector_td<unsigned int,D> dims = from_std_vector<unsigned int, D>(*(in->get_dimensions()));
+		const vector_td<size_t,D> dims = from_std_vector<size_t, D>(*(in->get_dimensions()));
 		int elements = in->get_number_of_elements();
 		REAL result = 0;
 		for (int i=0; i < (elements/prod(dims)); i++){
-			std::vector<unsigned int> dimensions = to_std_vector(dims);
+			std::vector<size_t> dimensions = to_std_vector(dims);
 			hoNDArray<T> tmp_in;
 			tmp_in.create(&dimensions,in->get_data_ptr()+i*prod(dims));
 			cuNDArray<T> cuIn(&tmp_in);

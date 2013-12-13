@@ -113,19 +113,6 @@ namespace Gadgetron{
     return res;
   }
 
-  //
-  // Vectorize a scalar value
-  //
-
-  template<class T, unsigned int D> __inline__ __host__ __device__
-  vector_td<T,D> to_vector_td( const T scalar )
-  {
-    vector_td<T,D> res;
-    for (unsigned int i=0; i<D; i++) {
-      res[i] = scalar;
-    }
-    return res;
-  }
 
   //
   // Grid <-> index transformations
@@ -492,57 +479,4 @@ namespace Gadgetron{
     return ::sqrt(norm_squared<REAL,D>(vec));
   }
 
-  //
-  // Type conversion
-  //
-
-  template<class T, unsigned int D> __inline__ __host__ __device__ 
-  vector_td<unsigned int,D> to_uintd( const vector_td<T,D>& vec )
-  {
-    vector_td<unsigned int,D> res;
-    for (unsigned int i=0; i<D; i++){
-      res[i] = (unsigned int) vec[i];
-    }
-    return res;
-  }
-
-  template<class T, unsigned int D> __inline__ __host__ __device__ 
-  vector_td<size_t,D> to_uint64d( const vector_td<T,D>& vec )
-  {
-    vector_td<size_t,D> res;
-    for (unsigned int i=0; i<D; i++){
-      res[i] = (size_t) vec[i];
-    }
-    return res;
-  }
-
-  template<class T, unsigned int D> __inline__ __host__ __device__ 
-  vector_td<int,D> to_intd( const vector_td<T,D>& vec )
-  {
-    vector_td<int,D> res;
-    for (unsigned int i=0; i<D; i++){
-      res[i] = int(vec[i]);
-    }
-    return res;
-  }
-
-  template<class T, unsigned int D> __inline__ __host__ __device__ 
-  vector_td<long long,D> to_int64d( const vector_td<T,D>& vec )
-  {
-    vector_td<long long,D> res;
-    for (unsigned int i=0; i<D; i++){
-      res[i] = (long long)vec[i];
-    }
-    return res;
-  }
-
-  template<class REAL, class T, unsigned int D> __inline__ __host__ __device__ 
-  vector_td<REAL,D> to_reald( const vector_td<T,D>& vec )
-  {
-    vector_td<REAL,D> res;
-    for (unsigned int i=0; i<D; i++){
-      res[i] = (REAL) vec[i];
-    }
-    return res;
-  }
 }

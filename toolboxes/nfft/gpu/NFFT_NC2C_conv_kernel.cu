@@ -48,7 +48,7 @@ NFFT_H_convolve( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Typ
   REAL *shared_mem = (REAL*) _shared_mem;
 
   // Cell position as reald
-  vector_td<REAL,D> cell_pos = to_reald<REAL,unsigned int,D>( domainPos ); 
+  vector_td<REAL,D> cell_pos = vector_td<REAL,D>( domainPos );
   
   // Convolve samples onto the domain (shared memory)
   const unsigned int frame_offset = blockIdx.y*number_of_domains;
@@ -62,7 +62,7 @@ NFFT_H_convolve( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Typ
       
       // Calculate the distance between the cell and the sample
       vector_td<REAL,D> delta = abs(sample_pos-cell_pos);
-      vector_td<REAL,D> half_W_vec = to_vector_td<REAL,D>( half_W );
+      vector_td<REAL,D> half_W_vec( half_W );
   
       // Check if sample will contribute
       if( weak_greater(delta, half_W_vec ))

@@ -39,12 +39,12 @@ NFFT_output( unsigned int number_of_samples, unsigned int number_of_batches, com
   }
 }
 
-template<unsigned int D> __inline__ __device__ void
-resolve_wrap( vector_td<int,D> &grid_position, vector_td<int,D> &matrix_size_os )
+template<unsigned int D> __inline__ __device__ static void
+resolve_wrap( vector_td<int,D> &grid_position, vector_td<unsigned int,D> &matrix_size_os )
 {
-  vector_td<int,D> zero = to_vector_td<int,D>(0);
-  grid_position += (component_wise_mul<int,D>(vector_less<int,D>(grid_position, zero), matrix_size_os));
-  grid_position -= (component_wise_mul<int,D>(vector_greater_equal<int,D>(grid_position, matrix_size_os), matrix_size_os));
+  vector_td<int,D> zero(0);
+  grid_position += vector_less(grid_position, zero)*matrix_size_os;
+  grid_position -= vector_greater_equal(grid_position, matrix_size_os)* matrix_size_os;
 }
 
 template<class REAL, unsigned int D> __inline__ __device__ void
@@ -55,9 +55,9 @@ NFFT_iterate_body( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::T
 {
       
   // Calculate the distance between current sample and the grid cell
-  vector_td<REAL,D> grid_position_real = to_reald<REAL,int,D>(grid_position);
+  vector_td<REAL,D> grid_position_real = vector_td<REAL,D>(grid_position);
   const vector_td<REAL,D> delta = abs(sample_position-grid_position_real);
-  const vector_td<REAL,D> half_W_vec = to_vector_td<REAL,D>(half_W );
+  const vector_td<REAL,D> half_W_vec(half_W );
   
   // If cell too distant from sample then move on to the next cell
   if( weak_greater( delta, half_W_vec ))
@@ -71,7 +71,7 @@ NFFT_iterate_body( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::T
     return;
 
   // Resolve wrapping of grid position
-  resolve_wrap<D>( grid_position, *((vector_td<int,D>*)&matrix_size_os) );
+  resolve_wrap<D>( grid_position, matrix_size_os);
 
   REAL *shared_mem = (REAL*) _shared_mem;
   
@@ -79,7 +79,7 @@ NFFT_iterate_body( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::T
     
     // Read the grid cell value from global memory
     const complext<REAL> grid_value = 
-      image[ (batch*gridDim.y+blockIdx.y)*prod(matrix_size_os) + co_to_idx<D>( *((vector_td<unsigned int, D>*)&grid_position), matrix_size_os ) ];
+      image[ (batch*gridDim.y+blockIdx.y)*prod(matrix_size_os) + co_to_idx<D>( vector_td<unsigned int, D>(grid_position), matrix_size_os ) ];
     
     // Add 'weight*grid_value' to the samples in shared memory
     shared_mem[sharedMemFirstSampleIdx+(batch<<double_warp_size_power)] += (weight*grid_value.vec[0]);
@@ -189,15 +189,15 @@ NFFT_convolve( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Type 
   
   // Sample position to convolve onto
   // Computed in preprocessing, which included a wrap zone. Remove this wrapping.
-  const vector_td<REAL,D> half_wrap_real = to_reald<REAL,unsigned int,D>(matrix_size_wrap>>1);
+  const vector_td<REAL,D> half_wrap_real = vector_td<REAL,D>(matrix_size_wrap>>1);
   const vector_td<REAL,D> sample_position = traj_positions[globalThreadId+blockIdx.y*number_of_samples]-half_wrap_real;
   
   // Half the kernel width
-  const vector_td<REAL,D> half_W_vec = to_vector_td<REAL,D>( half_W );
+  const vector_td<REAL,D> half_W_vec( half_W );
   
   // Limits of the subgrid to consider
-  const vector_td<int,D> lower_limit = to_intd<REAL,D>( ceil(sample_position-half_W_vec));
-  const vector_td<int,D> upper_limit = to_intd<REAL,D>( floor(sample_position+half_W_vec));
+  const vector_td<int,D> lower_limit = vector_td<int,D>( ceil(sample_position-half_W_vec));
+  const vector_td<int,D> upper_limit = vector_td<int,D>( floor(sample_position+half_W_vec));
 
   // Accumulate contributions from the grid
   NFFT_iterate<REAL>( alpha, beta, W, matrix_size_os, number_of_batches, image, double_warp_size_power, 

@@ -67,7 +67,7 @@ namespace Gadgetron{
         throw std::runtime_error("multiresRegistrationSolver::solve : fixed/moving image base dimensions mismatch.");
       }
 
-      if( weak_less_equal(fixed_dims>>num_multires_levels_, to_vector_td<size_t, D>(1)) ){
+      if( weak_less_equal(fixed_dims>>num_multires_levels_, vector_td<size_t, D>(1)) ){
         throw std::runtime_error("multiresRegistrationSolver::solve : too many multiresolution levels for image dimensionality.");
       }
 
@@ -223,8 +223,8 @@ namespace Gadgetron{
     virtual bool padding_required( typename uint64d<D>::Type dims )
     {
       bool padding_required = false;
-      typename uint64d<D>::Type ones = to_vector_td<size_t, D>(1);
-      typename uint64d<D>::Type twos = to_vector_td<size_t, D>(2);
+      typename uint64d<D>::Type ones(1);
+      typename uint64d<D>::Type twos(2);
 
       for( unsigned int i=0; i<num_multires_levels_; i++ ){
 
@@ -248,7 +248,7 @@ namespace Gadgetron{
   private:
     typename uint64d<D>::Type round_pow2(typename uint64d<D>::Type v)
     {
-      typename uint64d<D>::Type ones = to_vector_td<size_t, D>(1);
+      typename uint64d<D>::Type ones(1);
       typename uint64d<D>::Type out = v-ones;
       for( unsigned int d=0; d<D; d++ ){
         out[d] |= out[d] >> 1;

@@ -318,7 +318,7 @@ namespace Gadgetron {
 
          // Invoke kernel
          crop_kernel<T,D><<< gridDim, blockDim >>>
-           ( to_uintd<size_t,D>(offset), to_uintd<size_t,D>(matrix_size_in), to_uintd<size_t,D>(matrix_size_out), 
+           ( vector_td<unsigned int,D>(offset), vector_td<unsigned int,D>(matrix_size_in), vector_td<unsigned int,D>(matrix_size_out),
            in->get_data_ptr(), out->get_data_ptr(), number_of_batches, prod(matrix_size_out) );
     
     CHECK_FOR_CUDA_ERROR();
@@ -399,7 +399,7 @@ namespace Gadgetron {
 
     // Invoke kernel
     pad_kernel<T,D><<< gridDim, blockDim >>> 
-      ( to_uintd<size_t,D>(matrix_size_in), to_uintd<size_t,D>(matrix_size_out),
+      ( vector_td<unsigned int,D>(matrix_size_in), vector_td<unsigned int,D>(matrix_size_out),
         in->get_data_ptr(), out->get_data_ptr(), number_of_batches, prod(matrix_size_out), val );
 
     CHECK_FOR_CUDA_ERROR();
@@ -460,12 +460,54 @@ namespace Gadgetron {
 
     // Invoke kernel
     fill_border_kernel<T,D><<< gridDim, blockDim >>>
-      ( to_uintd<size_t,D>(matrix_size_in), to_uintd<size_t,D>(matrix_size_out), 
+      ( vector_td<unsigned int,D>(matrix_size_in), vector_td<unsigned int,D>(matrix_size_out),
         in_out->get_data_ptr(), number_of_batches, prod(matrix_size_out), val );
 
     CHECK_FOR_CUDA_ERROR();
   }
 
+
+  template<class T, unsigned int D>
+  __global__ void fill_border_kernel( typename realType<T>::Type radius, vector_td<unsigned int,D> matrix_size,
+                                      T *image, unsigned int number_of_batches, unsigned int number_of_elements, T val )
+  {
+    const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+
+    if( idx < number_of_elements ){
+      const vector_td<typename realType<T>::Type,D> co_out( idx_to_co<D>( idx, matrix_size ));
+      if(  norm(co_out) > radius ){
+	      for( unsigned int batch=0; batch<number_of_batches; batch++ ){
+          image[idx+batch*number_of_elements] = val;
+        }
+      }
+      else
+	      ; // do nothing
+    }
+  }
+
+  // Zero fill border (radial)
+  template<class T, unsigned int D>
+  void fill_border( typename realType<T>::Type radius, cuNDArray<T> *in_out, T val )
+  {
+    typename uint64d<D>::Type matrix_size_out = from_std_vector<size_t,D>( *in_out->get_dimensions() );
+
+
+    unsigned int number_of_batches = 1;
+    for( unsigned int d=D; d<in_out->get_number_of_dimensions(); d++ ){
+      number_of_batches *= in_out->get_size(d);
+    }
+
+    // Setup block/grid dimensions
+    dim3 blockDim; dim3 gridDim;
+    setup_grid( prod(matrix_size_out), &blockDim, &gridDim );
+
+    // Invoke kernel
+    fill_border_kernel<T,D><<< gridDim, blockDim >>>
+      (radius, vector_td<unsigned int,D>(matrix_size_out),
+        in_out->get_data_ptr(), number_of_batches, prod(matrix_size_out), val );
+
+    CHECK_FOR_CUDA_ERROR();
+  }
   template<class T, unsigned int D> __global__ void 
   upsample_kernel( typename uintd<D>::Type matrix_size_in,
                    typename uintd<D>::Type matrix_size_out,
@@ -485,8 +527,8 @@ namespace Gadgetron {
       
       const typename uintd<D>::Type co_out = idx_to_co<D>( idx-batch*num_elements_out, matrix_size_out );
       const typename uintd<D>::Type co_in = co_out >> 1;
-      const typename uintd<D>::Type ones = to_vector_td<unsigned int,D>(1);
-      const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
+      const typename uintd<D>::Type ones(1);
+      const typename uintd<D>::Type twos(2);
       const typename uintd<D>::Type offset = co_out%twos;
       
       const unsigned int num_cells = 1 << D;
@@ -549,7 +591,7 @@ namespace Gadgetron {
 
     // Invoke kernel
     upsample_kernel<T,D><<< gridDim, blockDim >>>
-      ( to_uintd<size_t,D>(matrix_size_in), to_uintd<size_t,D>(matrix_size_out), 
+      ( vector_td<unsigned int,D>(matrix_size_in), vector_td<unsigned int,D>(matrix_size_out),
         number_of_batches, in->get_data_ptr(), out->get_data_ptr() );
 
     CHECK_FOR_CUDA_ERROR();    
@@ -593,9 +635,9 @@ namespace Gadgetron {
       
       for( int i=0; i<num_cells; i++ ){
         
-        const typename intd<D>::Type zeros  = to_vector_td<int,D>(0);
-        const typename intd<D>::Type ones   = to_vector_td<int,D>(1);
-        const typename intd<D>::Type threes = to_vector_td<int,D>(3);
+        const typename intd<D>::Type zeros(0);
+        const typename intd<D>::Type ones(1);
+        const typename intd<D>::Type threes(3);
         const typename intd<D>::Type stride = idx_to_co<D>(i,threes)-ones; // in the range [-1;1]^D
         
         int distance = 0;
@@ -652,7 +694,7 @@ namespace Gadgetron {
 
     // Invoke kernel
     downsample_kernel<T,D><<< gridDim, blockDim >>>
-      ( to_intd<size_t,D>(matrix_size_in), to_intd<size_t,D>(matrix_size_out), 
+      ( vector_td<int,D>(matrix_size_in), vector_td<int,D>(matrix_size_out),
         (int)number_of_batches, in->get_data_ptr(), out->get_data_ptr() );
 
     CHECK_FOR_CUDA_ERROR();    
@@ -731,11 +773,20 @@ namespace Gadgetron {
   template EXPORTGPUCORE void fill_border<float,2>(uint64d2, cuNDArray<float>*,float);
   template EXPORTGPUCORE void fill_border<float,3>(uint64d3, cuNDArray<float>*,float);
   template EXPORTGPUCORE void fill_border<float,4>(uint64d4, cuNDArray<float>*,float);
+  template EXPORTGPUCORE void fill_border<float,1>(float, cuNDArray<float>*,float);
+	template EXPORTGPUCORE void fill_border<float,2>(float, cuNDArray<float>*,float);
+	template EXPORTGPUCORE void fill_border<float,3>(float, cuNDArray<float>*,float);
+	template EXPORTGPUCORE void fill_border<float,4>(float, cuNDArray<float>*,float);
 
   template EXPORTGPUCORE void fill_border<float_complext,1>(uint64d1, cuNDArray<float_complext>*,float_complext);
   template EXPORTGPUCORE void fill_border<float_complext,2>(uint64d2, cuNDArray<float_complext>*,float_complext);
   template EXPORTGPUCORE void fill_border<float_complext,3>(uint64d3, cuNDArray<float_complext>*,float_complext);
   template EXPORTGPUCORE void fill_border<float_complext,4>(uint64d4, cuNDArray<float_complext>*,float_complext);
+  template EXPORTGPUCORE void fill_border<float_complext,1>(float, cuNDArray<float_complext>*,float_complext);
+	template EXPORTGPUCORE void fill_border<float_complext,2>(float, cuNDArray<float_complext>*,float_complext);
+	template EXPORTGPUCORE void fill_border<float_complext,3>(float, cuNDArray<float_complext>*,float_complext);
+	template EXPORTGPUCORE void fill_border<float_complext,4>(float, cuNDArray<float_complext>*,float_complext);
+
 
   template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > crop<double,1>( typename uint64d<1>::Type, typename uint64d<1>::Type, cuNDArray<double>*);
   template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > crop<double,2>( typename uint64d<2>::Type, typename uint64d<2>::Type, cuNDArray<double>*);
@@ -781,11 +832,20 @@ namespace Gadgetron {
   template EXPORTGPUCORE void fill_border<double,2>(uint64d2, cuNDArray<double>*,double);
   template EXPORTGPUCORE void fill_border<double,3>(uint64d3, cuNDArray<double>*,double);
   template EXPORTGPUCORE void fill_border<double,4>(uint64d4, cuNDArray<double>*,double);
+  template EXPORTGPUCORE void fill_border<double,1>(double, cuNDArray<double>*,double);
+	template EXPORTGPUCORE void fill_border<double,2>(double, cuNDArray<double>*,double);
+	template EXPORTGPUCORE void fill_border<double,3>(double, cuNDArray<double>*,double);
+	template EXPORTGPUCORE void fill_border<double,4>(double, cuNDArray<double>*,double);
 
   template EXPORTGPUCORE void fill_border<double_complext,1>(uint64d1, cuNDArray<double_complext>*,double_complext);
   template EXPORTGPUCORE void fill_border<double_complext,2>(uint64d2, cuNDArray<double_complext>*,double_complext);
   template EXPORTGPUCORE void fill_border<double_complext,3>(uint64d3, cuNDArray<double_complext>*,double_complext);
   template EXPORTGPUCORE void fill_border<double_complext,4>(uint64d4, cuNDArray<double_complext>*,double_complext);
+  template EXPORTGPUCORE void fill_border<double_complext,1>(double, cuNDArray<double_complext>*,double_complext);
+	template EXPORTGPUCORE void fill_border<double_complext,2>(double, cuNDArray<double_complext>*,double_complext);
+	template EXPORTGPUCORE void fill_border<double_complext,3>(double, cuNDArray<double_complext>*,double_complext);
+	template EXPORTGPUCORE void fill_border<double_complext,4>(double, cuNDArray<double_complext>*,double_complext);
+
 
   template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > upsample<float,1>(cuNDArray<float>*);
   template EXPORTGPUCORE boost::shared_ptr< cuNDArray<float> > upsample<float,2>(cuNDArray<float>*);

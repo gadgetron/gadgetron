@@ -100,7 +100,7 @@ namespace Gadgetron{
       CorneliusKanade_kernel<T,D><<< gridDim, blockDim, (blockDim.x*blockDim.y)*sizeof(T) >>>
         ( gradient_image->get_data_ptr(), (stencil_image) ? stencil_image->get_data_ptr() : 0x0,
           ping->get_data_ptr(), pong->get_data_ptr(), 
-          to_uintd<size_t,D>(matrix_size), number_of_batches, alpha_, beta_, this->limit_*this->limit_, continue_flag );
+          vector_td<unsigned int,D>(matrix_size), number_of_batches, alpha_, beta_, this->limit_*this->limit_, continue_flag );
       
       CHECK_FOR_CUDA_ERROR();
 
@@ -220,9 +220,9 @@ namespace Gadgetron{
       // Local co to the image
       const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
     
-      const typename intd<D>::Type zeros  = to_vector_td<int,D>(0);
-      const typename intd<D>::Type ones   = to_vector_td<int,D>(1);
-      const typename intd<D>::Type threes = to_vector_td<int,D>(3);
+      const typename intd<D>::Type zeros (0);
+      const typename intd<D>::Type ones(1);
+      const typename intd<D>::Type threes(3);
     
       const int num_neighbors = Pow<3,D>::Value;
       REAL num_contribs = REAL(0);
@@ -246,7 +246,7 @@ namespace Gadgetron{
         
         // Verify that the neighbor is not out of bounds (and not the thread itself)
         if( !is_border_pixel_for_stride<D>( stride, co, matrix_size ) && !(stride==zeros) ){	
-          neighbor_idx = (unsigned int) co_to_idx<D>( to_intd(co)+stride, to_intd(matrix_size)) + base_offset;
+          neighbor_idx = (unsigned int) co_to_idx<D>( vector_td<int,D>(co)+stride, vector_td<int,D>(matrix_size)) + base_offset;
         }
         else{
           neighbor_idx = idx_in_batch + base_offset;

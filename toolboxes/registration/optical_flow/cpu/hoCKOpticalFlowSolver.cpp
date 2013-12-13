@@ -137,9 +137,9 @@ namespace Gadgetron{
 
 	  // Local co to the image
 	  const typename uint64d<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );    
-	  const typename int64d<D>::Type zeros  = to_vector_td<long long,D>(0);
-	  const typename int64d<D>::Type ones   = to_vector_td<long long,D>(1);
-	  const typename int64d<D>::Type threes = to_vector_td<long long,D>(3);
+	  const typename int64d<D>::Type zeros(0);
+	  const typename int64d<D>::Type ones(1);
+	  const typename int64d<D>::Type threes(3);
 	  
 	  const int num_neighbors = Pow<3,D>::Value;
 	  T num_contribs = T(0);
@@ -160,7 +160,7 @@ namespace Gadgetron{
 	    
 	    // Verify that the neighbor is not out of bounds (and not the thread itself)
 	    if( !is_border_pixel_for_stride<D>( stride, co, matrix_size ) && !(stride==zeros) ){	
-	      neighbor_idx = (size_t) co_to_idx<D>( to_int64d(co)+stride, to_int64d(matrix_size)) + base_offset;
+	      neighbor_idx = (size_t) co_to_idx<D>( vector_td<long long,D>(co)+stride, vector_td<long long,D>(matrix_size)) + base_offset;
 	    }
 	    else{
 	      neighbor_idx = idx_in_batch + base_offset;

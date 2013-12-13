@@ -21,7 +21,20 @@ namespace Gadgetron{
   public:
 
     T vec[D];
+     __inline__ __host__ __device__ vector_td(const vector_td & other){
+       	for (unsigned int i = 0; i < D; i++)
+           	vec[i] = other[i];
+        }
 
+    template<class T2> __inline__ __host__ __device__ explicit vector_td(const vector_td<T2,D> & other){
+    	for (unsigned int i = 0; i < D; i++)
+        	vec[i] = (T) other[i];
+     }
+
+    __inline__ __host__ __device__ explicit vector_td(T x){
+    	for (unsigned int i = 0; i < D; i++)
+               	vec[i] = x;
+		 }
     __inline__ __host__ __device__ T& operator[](const unsigned int i)
     {
       return vec[i];
@@ -81,9 +94,16 @@ namespace Gadgetron{
 
     T vec[1];
 
+    __inline__ __host__ __device__ vector_td(const vector_td & other){
+					vec[0] = other[0];
+		 }
+    template<class T2> __inline__ __host__ __device__ explicit vector_td(const vector_td<T2,1> & other){
+    	vec[0] = (T) other[0];
+    }
+
     __inline__ __host__ __device__ vector_td(){}
 
-    __inline__ __host__ __device__ vector_td(T x){
+    __inline__ __host__ __device__ vector_td(T x){ // Not explicit because we actually want to be able to do implicit conversions here.
       vec[0]=x;
     }
 
@@ -110,6 +130,16 @@ namespace Gadgetron{
 
     T vec[2];
 
+    __inline__ __host__ __device__ vector_td(const vector_td & other){
+      	for (unsigned int i = 0; i < 2; i++)
+          	vec[i] = other[i];
+		 }
+
+
+    template<class T2> __inline__ __host__ __device__ explicit vector_td(const vector_td<T2,2> & other){
+    	for (unsigned int i = 0; i < 2; i++)
+        	vec[i] = (T) other[i];
+     }
     __inline__ __host__ __device__ vector_td(){}
 
     __inline__ __host__ __device__ vector_td(T x, T y){
@@ -117,7 +147,7 @@ namespace Gadgetron{
       vec[1]=y;
     }
 
-    __inline__ __host__ __device__ vector_td(T x){
+    __inline__ __host__ __device__ explicit vector_td(T x){
       vec[0]=x;
       vec[1]=x;
     }
@@ -144,6 +174,14 @@ namespace Gadgetron{
 
     T vec[3];
 
+    __inline__ __host__ __device__ vector_td(const vector_td & other){
+      	for (unsigned int i = 0; i < 3; i++)
+          	vec[i] = other[i];
+		 }
+    template<class T2> __inline__ __host__ __device__ explicit vector_td(const vector_td<T2,3> & other){
+    	for (unsigned int i = 0; i < 3; i++)
+        	vec[i] = (T) other[i];
+     }
     __inline__ __host__ __device__ vector_td(){}
 
     __inline__ __host__ __device__ vector_td(T x, T y,T z){
@@ -152,7 +190,7 @@ namespace Gadgetron{
       vec[2]=z;
     }
 
-    __inline__ __host__ __device__ vector_td(T x){
+    __inline__ __host__ __device__ explicit vector_td(T x){
       vec[0]=x;
       vec[1]=x;
       vec[2]=x;
@@ -181,6 +219,15 @@ namespace Gadgetron{
 
     T vec[4];
 
+    __inline__ __host__ __device__ vector_td(const vector_td & other){
+    	for (unsigned int i = 0; i < 4; i++)
+        	vec[i] = other[i];
+     }
+    template<class T2> __inline__ __host__ __device__ explicit vector_td(const vector_td<T2,4> & other){
+    	for (unsigned int i = 0; i < 4; i++)
+        	vec[i] = (T) other[i];
+     }
+
     __inline__ __host__ __device__ vector_td(){}
 
     __inline__ __host__ __device__ vector_td(T x, T y,T z,T w){
@@ -190,7 +237,7 @@ namespace Gadgetron{
       vec[3]=w;
     }
 
-    __inline__ __host__ __device__ vector_td(T x){
+    __inline__ __host__ __device__ explicit vector_td(T x){
       vec[0]=x;
       vec[1]=x;
       vec[2]=x;

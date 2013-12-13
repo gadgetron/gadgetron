@@ -86,7 +86,7 @@ namespace Gadgetron{
       const size_t idx_in_batch = idx-batch_no*num_elements_mat;
     
       const typename uint64d<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
-      typename reald<REAL,D>::Type co_disp = to_reald<REAL,size_t,D>(co);
+      typename reald<REAL,D>::Type co_disp = vector_td<REAL,D>(co);
       for( unsigned int dim=0; dim<D; dim++ ){
         REAL tmp = displacements->get_data_ptr()[dim*num_elements_ext+batch_no*num_elements_mat+idx_in_batch];
         co_disp.vec[dim] += tmp;
@@ -95,7 +95,7 @@ namespace Gadgetron{
       // Determine the number of neighbors
       //
     
-      const typename uint64d<D>::Type twos = to_vector_td<size_t,D>(2);
+      const typename uint64d<D>::Type twos(2);
     
       // Weights are non-zero only if all neighbors exist
       //
@@ -134,8 +134,8 @@ namespace Gadgetron{
         // Validate that the coordinate is within the expected range
         //
 
-        typename uint64d<D>::Type ones = to_vector_td<size_t,D>(1);
-        typename uint64d<D>::Type co_stride_uint64d = to_uint64d<REAL,D>(co_stride);
+        typename uint64d<D>::Type ones(1);
+        typename uint64d<D>::Type co_stride_uint64d = vector_td<size_t,D>(co_stride);
 
         if( weak_greater( co_stride_uint64d, matrix_size-ones ) ){
 

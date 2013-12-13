@@ -33,6 +33,15 @@ namespace Gadgetron{
   template<class T, unsigned int D> EXPORTGPUCORE
   void fill_border( typename uint64d<D>::Type matrix_size, cuNDArray<T> *image, T val = T(0) );
 
+  /***
+   * @brief Fills the image with a given value outside a radius from the center
+   * @param radius
+   * @param in_out
+   * @param val
+   */
+  template<class T, unsigned int D>
+  void fill_border( typename realType<T>::Type radius, cuNDArray<T> *in_out, T val= T(0) );
+
   // Expand array to new dimension
   template<class T> EXPORTGPUCORE boost::shared_ptr<cuNDArray<T> > 
   expand(cuNDArray<T> *data, size_t added_dim_size );

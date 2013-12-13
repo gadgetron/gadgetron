@@ -59,7 +59,7 @@ namespace Gadgetron{
     // Iterate over all neighbors
     //
 
-    const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
+    const typename uintd<D>::Type twos(2);
     const unsigned int num_neighbors = _get_num_neighbors<D>();
   
     for( unsigned int i=0; i<num_neighbors; i++ ){
@@ -87,7 +87,7 @@ namespace Gadgetron{
       // Read corresponding pixel value
       //
     
-      T image_value = image[co_to_idx<D>(to_uintd<REAL,D>(co_stride), matrix_size) + batch_no*prod(matrix_size)];
+      T image_value = image[co_to_idx<D>(vector_td<unsigned int,D>(co_stride), matrix_size) + batch_no*prod(matrix_size)];
     
       // Determine weight
       //
@@ -131,14 +131,14 @@ namespace Gadgetron{
     
       const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
 
-      typename reald<REAL,D>::Type co_disp = to_reald<REAL,unsigned int,D>(co);
+      typename reald<REAL,D>::Type co_disp = vector_td<REAL,D>(co);
       for( unsigned int dim=0; dim<D; dim++ )
         co_disp.vec[dim] +=  displacements[dim*num_elements_ext+batch_no*num_elements_mat+idx_in_batch];
     
       // Determine the number of neighbors
       //
     
-      const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
+      const typename uintd<D>::Type twos(2);
       const unsigned int num_neighbors = _get_num_neighbors<D>();
 
       // Weights are non-zero only if all neighbors exist
@@ -180,7 +180,7 @@ namespace Gadgetron{
           // Write out sort keys (moving image resampling indices).
           //
           
-          sort_keys[idx+i*num_elements_ext] = co_to_idx<D>(to_uintd<REAL,D>(co_stride), matrix_size) + batch_no*num_elements_mat;
+          sort_keys[idx+i*num_elements_ext] = co_to_idx<D>(vector_td<unsigned int,D>(co_stride), matrix_size) + batch_no*num_elements_mat;
         }
         else{
           sort_keys[idx+i*num_elements_ext] = idx; // Could be anything, weight is zero
@@ -219,7 +219,7 @@ namespace Gadgetron{
     setup_grid( prod(matrix_size)*extended_dim, &blockDim, &gridDim );
     
     write_sort_arrays_kernel<typename realType<T>::Type,D><<< gridDim, blockDim >>>
-      ( to_uintd<size_t,D>(matrix_size), extended_dim, this->offsets_->get_data_ptr(),
+      ( vector_td<unsigned int,D>(matrix_size), extended_dim, this->offsets_->get_data_ptr(),
         raw_pointer_cast(&(sort_keys[0])),
         raw_pointer_cast(&(this->indices_)[0]),
         raw_pointer_cast(&(this->weights_)[0]) );

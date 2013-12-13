@@ -142,9 +142,9 @@ namespace Gadgetron{
 
 	  // Local co to the image
 	  const typename uint64d<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );	  
-	  const typename int64d<D>::Type zeros  = to_vector_td<long long,D>(0);
-	  const typename int64d<D>::Type ones   = to_vector_td<long long,D>(1);
-	  const typename int64d<D>::Type threes = to_vector_td<long long,D>(3);
+	  const typename int64d<D>::Type zeros(0);
+	  const typename int64d<D>::Type ones(1);
+	  const typename int64d<D>::Type threes(3);
 	  
 	  const long long num_neighbors = Pow<3,D>::Value;
 	  T num_contribs = T(0);
@@ -161,7 +161,7 @@ namespace Gadgetron{
 	      //
 	      
 	      const size_t base_offset = dim*num_elements_per_dim + batch_idx*num_elements_per_batch;
-	      const size_t neighbor_idx = (size_t) co_to_idx<D>( to_int64d(co)+stride, to_int64d(matrix_size)) + base_offset;
+	      const size_t neighbor_idx = (size_t) co_to_idx<D>( vector_td<long long,D>(co)+stride, vector_td<long long,D>(matrix_size)) + base_offset;
 	  
 	      shared_mem[shared_idx] += in_disp[neighbor_idx];
 	      num_contribs += T(1);

@@ -75,7 +75,7 @@ namespace Gadgetron{
       const size_t frame_offset = idx/num_elements;
       const uint64d co_out = idx_to_co<D>( idx-frame_offset*num_elements, matrix_size_out );
       const uint64d co_in = co_out << 1;
-      const uint64d twos = to_vector_td<size_t,D>(2);
+      const uint64d twos(2);
       const size_t num_adds = 1 << D;
 
       size_t actual_adds = 0;
@@ -156,13 +156,13 @@ namespace Gadgetron{
 	  // Determine coordinate of neighbor in input
 	  //
 
-	  const uint64d twos = to_vector_td<size_t,D>(2);
+	  const uint64d twos(2);
 	  const uint64d stride = idx_to_co<D>( i, twos );
 
 	  if( weak_greater_equal( stride, matrix_size_out ) ) continue; // To allow array dimensions of 1
 
 	  // Be careful about dimensions of size 1
-	  uint64d ones = to_vector_td<size_t,D>(1);
+	  uint64d ones(1);
 	  for( size_t d=0; d<D; d++ ){
 	    if( matrix_size_out[d] == 1 )
 	      ones[d] = 0;

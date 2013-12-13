@@ -71,7 +71,7 @@ namespace Gadgetron{
 
     if (!accumulate) clear(out);
     
-    typename int64d<D>::Type dims = to_int64d( from_std_vector<size_t,D>( *(in->get_dimensions().get()) ));     
+    typename int64d<D>::Type dims = vector_td<long long,D>( from_std_vector<size_t,D>( *(in->get_dimensions().get()) ));
     dim3 dimBlock( dims.vec[0] );
     dim3 dimGrid( 1, dims.vec[D-1] );
   
@@ -83,7 +83,7 @@ namespace Gadgetron{
     // Invoke kernel
     for (size_t i = 0; i < elements/prod(dims); i++)
     	first_order_partial_derivative_kernel<T,D><<< dimGrid, dimBlock >>> 
-        ( to_intd<long long,D>(stride), to_intd<long long,D>(dims), 
+        ( vector_td<int,D>(stride), vector_td<int,D>(dims),
           in->get_data_ptr()+i*prod(dims), out->get_data_ptr()+i*prod(dims));
   
     CHECK_FOR_CUDA_ERROR();
@@ -101,7 +101,7 @@ namespace Gadgetron{
     
     if (!accumulate) clear(out);
 
-    typename int64d<D>::Type dims = to_int64d( from_std_vector<size_t,D>( *(in->get_dimensions().get()) ));
+    typename int64d<D>::Type dims = vector_td<long long,D>( from_std_vector<size_t,D>( *(in->get_dimensions().get()) ));
     dim3 dimBlock( dims.vec[0] );
     dim3 dimGrid( 1, dims.vec[D-1] );
   
@@ -113,7 +113,7 @@ namespace Gadgetron{
     // Invoke kernel
 		for (size_t i = 0; i < elements/prod(dims); i++)
 			second_order_partial_derivative_kernel<T,D><<< dimGrid, dimBlock >>> 
-        ( to_intd<long long,D>(forwards_stride), to_intd<long long,D>(adjoint_stride), to_intd<long long,D>(dims), 
+        ( vector_td<int,D>(forwards_stride), vector_td<int,D>(adjoint_stride), vector_td<int,D>(dims),
           in->get_data_ptr()+i*prod(dims), out->get_data_ptr()+i*prod(dims) );
     
     CHECK_FOR_CUDA_ERROR();

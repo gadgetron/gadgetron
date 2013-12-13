@@ -19,11 +19,11 @@ namespace Gadgetron{
         GPUTimer(const char* name) : GadgetronTimer(name) {}
 
         virtual void pre() {
-            cudaThreadSynchronize();
+            cudaDeviceSynchronize();
         }
 
         virtual void post() {
-            cudaThreadSynchronize();
+        		cudaDeviceSynchronize();
         }
     };
 }

@@ -30,7 +30,7 @@
       const unsigned int idx_in_batch = idx-batch_no*num_elements;      \
       const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size ); \
                                                                         \
-      typename reald<REAL,D>::Type co_disp = to_reald<REAL,unsigned int,D>(co); \
+      typename reald<REAL,D>::Type co_disp = vector_td<REAL,D>(co); \
       for( unsigned int dim=0; dim<D; dim++ )                           \
         co_disp.vec[dim] +=  displacements[dim*num_elements+idx_in_batch]; \
                                                                         \
@@ -57,7 +57,7 @@
                                                                         \
       const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size ); \
                                                                         \
-      typename reald<REAL,D>::Type co_disp = to_reald<REAL,unsigned int,D>(co); \
+      typename reald<REAL,D>::Type co_disp = vector_td<REAL,D>(co); \
       for( unsigned int dim=0; dim<D; dim++ )                           \
         co_disp.vec[dim] +=  displacements[dim*num_elements_ext+batch_no*num_elements_mat+idx_in_batch]; \
                                                                         \
@@ -124,12 +124,12 @@
     if( surplus == 1 ) {                                                \
       mult_M_kernel_batch<T,D><<< gridDim, blockDim >>>                 \
         ( in->get_data_ptr(), out->get_data_ptr(),                      \
-          this->offsets_->get_data_ptr(), to_uintd<size_t,D>(matrix_size), num_batches ); \
+          this->offsets_->get_data_ptr(), vector_td<unsigned int,D>(matrix_size), num_batches ); \
     }                                                                   \
     else{                                                               \
       mult_M_kernel_extended<T,D><<< gridDim, blockDim >>>              \
         ( in->get_data_ptr(), out->get_data_ptr(), this->offsets_->get_data_ptr(), \
-          to_uintd<size_t,D>(matrix_size), in->get_number_of_elements(), extended_dim ); \
+          vector_td<unsigned int,D>(matrix_size), in->get_number_of_elements(), extended_dim ); \
     }                                                                   \
                                                                         \
     CHECK_FOR_CUDA_ERROR();                                             \
