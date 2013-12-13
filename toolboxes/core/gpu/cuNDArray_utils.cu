@@ -474,7 +474,7 @@ namespace Gadgetron {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
 
     if( idx < number_of_elements ){
-      const vector_td<typename realType<T>::Type,D> co_out( idx_to_co<D>( idx, matrix_size ));
+      const vector_td<typename realType<T>::Type,D> co_out( (matrix_size>>1) - idx_to_co<D>( idx, matrix_size ));
       if(  norm(co_out) > radius ){
 	      for( unsigned int batch=0; batch<number_of_batches; batch++ ){
           image[idx+batch*number_of_elements] = val;
