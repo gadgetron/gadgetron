@@ -468,10 +468,10 @@ namespace Gadgetron {
 
 
   template<class T, unsigned int D>
-  __global__ void fill_border_kernel( typename realType<T>::Type radius, vector_td<unsigned int,D> matrix_size,
+  __global__ void fill_border_kernel( typename realType<T>::Type radius, vector_td<int,D> matrix_size,
                                       T *image, unsigned int number_of_batches, unsigned int number_of_elements, T val )
   {
-    const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
+    const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
 
     if( idx < number_of_elements ){
       const vector_td<typename realType<T>::Type,D> co_out( (matrix_size>>1) - idx_to_co<D>( idx, matrix_size ));
@@ -503,7 +503,7 @@ namespace Gadgetron {
 
     // Invoke kernel
     fill_border_kernel<T,D><<< gridDim, blockDim >>>
-      (radius, vector_td<unsigned int,D>(matrix_size_out),
+      (radius, vector_td<int,D>(matrix_size_out),
         in_out->get_data_ptr(), number_of_batches, prod(matrix_size_out), val );
 
     CHECK_FOR_CUDA_ERROR();
