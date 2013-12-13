@@ -171,7 +171,7 @@ int main( int argc, char** argv)
 	  return 0;
   }
 
-  vector<unsigned int> ndims;
+  vector<size_t> ndims;
   ndims.push_back(3);
 
 
@@ -185,7 +185,7 @@ int main( int argc, char** argv)
   boost::shared_ptr< cuOperatorPathBackprojection<_real> > E (new cuOperatorPathBackprojection<_real> );
 
 
-  vector<unsigned int> rhs_dims(&dimensions[0],&dimensions[3]);
+  vector<size_t> rhs_dims(&dimensions[0],&dimensions[3]);
 
   boost::shared_ptr<cuNDArray<_real > > weights;
   boost::shared_ptr<cuNDArray<_real > > uncertainties;

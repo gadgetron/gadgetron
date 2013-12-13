@@ -13,7 +13,7 @@ private:
 public:
 
 	subsetOperator(int _number_of_subsets) : number_of_subsets(_number_of_subsets),
-	subset_dimensions(number_of_subsets,std::vector<unsigned int>()){};
+	subset_dimensions(number_of_subsets,std::vector<size_t>()){};
 
 	virtual ~subsetOperator(){};
 	virtual void mult_M(ARRAY_TYPE* in, ARRAY_TYPE* out, int subset, bool accumulate)=0;
@@ -33,8 +33,8 @@ public:
 			for (int i = 0; i < number_of_subsets; i++) mult_MH(projections[i].get(),out,i,true);
 	}
 
-	virtual boost::shared_ptr< std::vector<unsigned int> > get_codomain_dimensions(int subset){
-		return boost::shared_ptr< std::vector<unsigned int> >(new std::vector<unsigned int>(subset_dimensions[subset]));
+	virtual boost::shared_ptr< std::vector<size_t> > get_codomain_dimensions(int subset){
+		return boost::shared_ptr< std::vector<size_t> >(new std::vector<size_t>(subset_dimensions[subset]));
 	}
 /*
  	virtual void set_codomain_subsets(std::vector< std::vector<unsigned int> > & _dims){
@@ -57,6 +57,6 @@ public:
 
 protected:
 	int number_of_subsets;
-	std::vector< std::vector<unsigned int> > subset_dimensions;
+	std::vector< std::vector<size_t> > subset_dimensions;
 };
 }

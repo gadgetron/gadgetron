@@ -36,14 +36,14 @@ template<class REAL> void cuOperatorPathBackprojection<REAL>
 		dim3 dimBlock( threadsPerBlock);
 		int totalBlocksPerGrid = (dims+threadsPerBlock-1)/threadsPerBlock;
 		dim3 dimGrid(std::min(totalBlocksPerGrid,MAX_BLOCKS));
-		typename uintd<3>::Type _dims = from_std_vector<unsigned int,3>( *(in->get_dimensions().get()) );
+		typename uint64d<3>::Type _dims = from_std_vector<size_t,3>( *(in->get_dimensions().get()) );
 
 		// Invoke kernel
 		int batchSize = dimGrid.x*dimBlock.x;
 		//std::cout << "Starting forward kernel with grid " << dimGrid.x << " " << dimGrid.y << " " << dimGrid.z << std::endl;
 		cudaFuncSetCacheConfig(forward_kernel<REAL>, cudaFuncCachePreferL1);
 		 for (int offset = 0; offset < (dims+batchSize); offset += batchSize){
-		  forward_kernel<REAL><<< dimGrid, dimBlock >>> (in->get_data_ptr(), out->get_data_ptr(),splines->get_data_ptr(),physical_dims, _dims, dims,offset);
+		  forward_kernel<REAL><<< dimGrid, dimBlock >>> (in->get_data_ptr(), out->get_data_ptr(),splines->get_data_ptr(),physical_dims, (vector_td<int,3>)_dims, dims,offset);
 	  }
 
 	  cudaDeviceSynchronize();
@@ -66,7 +66,7 @@ template<class REAL> void cuOperatorPathBackprojection<REAL>
 	 dim3 dimBlock( threadsPerBlock);
 	 int totalBlocksPerGrid = (dims+threadsPerBlock-1)/threadsPerBlock;
 	 dim3 dimGrid(std::min(totalBlocksPerGrid,MAX_BLOCKS));
-	 typename uintd<3>::Type _dims = from_std_vector<unsigned int,3>( *(out->get_dimensions().get()) );
+	 typename uint64d<3>::Type _dims = from_std_vector<size_t,3>( *(out->get_dimensions().get()) );
 
 	 // Invoke kernel
 	 int batchSize = dimBlock.x*dimGrid.x;
@@ -76,7 +76,7 @@ template<class REAL> void cuOperatorPathBackprojection<REAL>
 	 std::cout << "Elements: " << out->get_number_of_elements() << " "  << prod(_dims) << std::endl;
 	 cudaFuncSetCacheConfig(backwards_kernel<REAL>, cudaFuncCachePreferL1);
 	 for (int offset = 0; offset <  (dims+batchSize); offset += batchSize){
-		 backwards_kernel<REAL><<< dimGrid, dimBlock >>> (in->get_data_ptr(), out->get_data_ptr(),splines->get_data_ptr(),physical_dims, _dims, dims,offset);
+		 backwards_kernel<REAL><<< dimGrid, dimBlock >>> (in->get_data_ptr(), out->get_data_ptr(),splines->get_data_ptr(),physical_dims, (vector_td<int,3>)_dims, dims,offset);
 	 }
 
 	 cudaDeviceSynchronize();
@@ -88,7 +88,7 @@ template<class REAL> void cuOperatorPathBackprojection<REAL>
 
 	cuNDArray<REAL> tmp;
 
-	std::vector<unsigned int> tmp_dim = *(splines->get_dimensions().get());
+	std::vector<size_t> tmp_dim = *(splines->get_dimensions().get());
 	tmp_dim[0] /= 4;
 
 	tmp.create(&tmp_dim);

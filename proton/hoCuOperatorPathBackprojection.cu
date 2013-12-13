@@ -57,7 +57,7 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 	 for (size_t n = 0; n < (elements+max_batch_size-1)/max_batch_size; n++){
 
 		 size_t batch_size = std::min(max_batch_size,elements-offset);
-		 std::vector<unsigned int> batch_dim;
+		 std::vector<size_t> batch_dim;
 		 batch_dim.push_back(batch_size);
 
 		 hoCuNDArray<REAL> out_view(&batch_dim,out->get_data_ptr()+offset); //This creates a "view" of out
@@ -72,14 +72,14 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 		 dim3 dimBlock( threadsPerBlock);
 		 int totalBlocksPerGrid = (batch_size+threadsPerBlock-1)/threadsPerBlock;
 		 dim3 dimGrid(std::min(totalBlocksPerGrid,MAX_BLOCKS));
-		 typename uintd<3>::Type _dims = from_std_vector<unsigned int,3>( *(image.get_dimensions().get()) );
+		 typename uint64d<3>::Type _dims = from_std_vector<size_t,3>( *(image.get_dimensions().get()) );
 
 		 // Invoke kernel
 		 int offset_k = 0;
 		 //std::cout << "Starting forward kernel with grid " << dimGrid.x << " " << dimGrid.y << " " << dimGrid.z << std::endl;
 		 cudaFuncSetCacheConfig(forward_kernel<REAL>, cudaFuncCachePreferL1);
 		 for (int i = 0; i <= (totalBlocksPerGrid+dimGrid.x-1)/dimGrid.x; i++){
-			forward_kernel<REAL><<< dimGrid, dimBlock >>> (image.get_data_ptr(), out_dev.get_data_ptr(),splines_dev.get_data_ptr(),physical_dims, _dims, batch_size,offset_k);
+			forward_kernel<REAL><<< dimGrid, dimBlock >>> (image.get_data_ptr(), out_dev.get_data_ptr(),splines_dev.get_data_ptr(),physical_dims, (vector_td<int,3>)_dims, batch_size,offset_k);
 			offset_k += dimBlock.x*dimGrid.x;
 		 }
 		 //cudaDeviceSynchronize();
@@ -126,7 +126,7 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 
 	 for (size_t n = 0; n < (elements+max_batch_size-1)/max_batch_size; n++){
 		 size_t batch_size = std::min(max_batch_size,elements-offset);
-		 std::vector<unsigned int> batch_dim;
+		 std::vector<size_t> batch_dim;
 		 batch_dim.push_back(batch_size);
 
 		 hoCuNDArray<REAL> in_view(&batch_dim,in->get_data_ptr()+offset); //This creates a "view" of in
@@ -141,14 +141,14 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 		 dim3 dimBlock( threadsPerBlock);
 		 int totalBlocksPerGrid = (batch_size+threadsPerBlock-1)/threadsPerBlock;
 		 dim3 dimGrid(std::min(totalBlocksPerGrid,MAX_BLOCKS));
-		 typename uintd<3>::Type _dims = from_std_vector<unsigned int,3>( *(image.get_dimensions().get()) );
+		 typename uint64d<3>::Type _dims = from_std_vector<size_t,3>( *(image.get_dimensions().get()) );
 
 		// Invoke kernel
 		int offset_k = 0;
 		//std::cout << "Starting forward kernel with grid " << dimGrid.x << " " << dimGrid.y << " " << dimGrid.z << std::endl;
 		cudaFuncSetCacheConfig(backwards_kernel<REAL>, cudaFuncCachePreferL1);
 		for (int i = 0; i <= (totalBlocksPerGrid+dimGrid.x-1)/dimGrid.x; i++){
-			backwards_kernel<REAL><<< dimGrid, dimBlock >>> (in_dev.get_data_ptr(), image.get_data_ptr(),splines_dev.get_data_ptr(),physical_dims, _dims, batch_size, offset_k);
+			backwards_kernel<REAL><<< dimGrid, dimBlock >>> (in_dev.get_data_ptr(), image.get_data_ptr(),splines_dev.get_data_ptr(),physical_dims, (vector_td<int,3>)_dims, batch_size, offset_k);
 			offset_k += dimBlock.x*dimGrid.x;
 		}
 
@@ -203,7 +203,7 @@ template<class REAL> void hoCuOperatorPathBackprojection<REAL>
 
 
 		size_t batch_size = std::min(max_batch_size,elements-offset);
-		std::vector<unsigned int> batch_dim;
+		std::vector<size_t> batch_dim;
 		batch_dim.push_back(batch_size);
 
 		hoCuNDArray<REAL> projections_view(&batch_dim,projections->get_data_ptr()+offset); //This creates a "view" of out

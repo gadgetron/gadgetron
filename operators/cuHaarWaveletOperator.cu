@@ -165,10 +165,10 @@ template<typename T> inline T next_power2(T value)
 }
 
 
-template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::set_domain_dimensions(std::vector<unsigned int>* dims){
+template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::set_domain_dimensions(std::vector<size_t>* dims){
 
 	linearOperator<cuNDArray<T> >::set_domain_dimensions(dims);
-	std::vector<unsigned int> newdims;
+	std::vector<size_t> newdims;
 	for (int i = 0; i < dims->size(); i++){
 		if (isPowerOfTwo(dims->at(i)))
 			newdims.push_back(dims->at(i));
@@ -215,7 +215,7 @@ template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::mult_M(cuNDAr
 	else
 		tmp_out = out;
 
-	typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>(*(tmp_in->get_dimensions())));
+	typename intd<D>::Type dims = vector_td<int,D>( from_std_vector<size_t,D>(*(tmp_in->get_dimensions())));
 
 	typename intd<D>::Type dims2;
 	for (int i = 0; i < D; i++) dims2[i] = 2;
@@ -235,7 +235,7 @@ template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::mult_M(cuNDAr
 
 	dims2 /= 2;
 	if (dims != dims2){
-		std::vector<unsigned int> sdim = to_std_vector(to_uintd(dims));
+		std::vector<size_t> sdim = to_std_vector(vector_td<size_t,D>(dims));
 		cuNDArray<T> smallArray(&sdim,tmp_out->get_data_ptr());
 		smallArray.squeeze();
 		cuNDArray<T> smallTmp(smallArray);
@@ -279,13 +279,13 @@ template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::mult_MH(cuNDA
 	cuNDArray<T>* tmp_in = new cuNDArray<T>(*in);
 
 
-	const typename intd<D>::Type dims = to_intd( from_std_vector<unsigned int,D>(*(in->get_dimensions())));
+	const typename intd<D>::Type dims = vector_td<int,D>( from_std_vector<size_t,D>(*(in->get_dimensions())));
 
 	typename intd<D>::Type cur_dims = dims/min(dims);
 
 
 	if (prod(cur_dims) > 1){
-		std::vector<unsigned int> sdim = to_std_vector(to_uintd(cur_dims));
+		std::vector<size_t> sdim = to_std_vector(vector_td<size_t,D>(cur_dims));
 		cuNDArray<T> smallIn(&sdim,tmp_in->get_data_ptr());
 		smallIn.squeeze();
 		cuNDArray<T> smallOut(&sdim,tmp_out->get_data_ptr());
@@ -327,7 +327,7 @@ template<class T, unsigned int D> void cuHaarWaveletOperator<T,D>::mult_MH(cuNDA
 	if (!in->dimensions_equal(&this->domain_dims_)){
 		delete tmp_in;
 		tmp_in = new cuNDArray<T>(&this->domain_dims_);
-		vector_td<unsigned int,D> offset;
+		vector_td<size_t,D> offset;
 		for (int i = 0; i < D; i++ ) offset[i] = (this->codomain_dims_[i]-this->domain_dims_[i])/2;
 		crop<T,D>(offset,tmp_out,tmp_in);
 	}

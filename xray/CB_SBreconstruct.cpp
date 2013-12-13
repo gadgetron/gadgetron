@@ -165,7 +165,7 @@ int main(int argc, char** argv)
 	size_t numProjs = ps->get_projections()->get_size(2);
 	size_t needed_bytes = 2 * prod(imageSize) * sizeof(float);
 
-	std::vector<unsigned int> is_dims = to_std_vector(imageSize);
+	std::vector<size_t> is_dims = to_std_vector((uint64d3)imageSize);
 	std::cout << "IS dimensions " << is_dims[0] << " " << is_dims[1] << " " << is_dims[2] << std::endl;
 	std::cout << "Image size " << imageDimensions << std::endl;
 
@@ -224,7 +224,7 @@ int main(int argc, char** argv)
 		std::cout << "PICCS in used" << std::endl;
 		CBCT_binning *binning_pics = new CBCT_binning();
 		binning_pics->set_as_default_3d_bin(ps->get_projections()->get_size(2));
-		std::vector<unsigned int> is_dims3d = to_std_vector(imageSize);
+		std::vector<size_t> is_dims3d = to_std_vector((uint64d3)imageSize);
 		boost::shared_ptr< hoCuConebeamProjectionOperator >
 		Ep( new hoCuConebeamProjectionOperator() );
 		Ep->setup(ps,binning,imageDimensions);
