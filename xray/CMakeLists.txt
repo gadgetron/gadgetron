@@ -12,7 +12,7 @@ include_directories(
 #
 
 find_path(EIGEN_INCLUDE_DIR Eigen/Sparse 
-  HINTS /usr/local/include/eigen3)
+  HINTS /usr/local/include/eigen3 /usr/include/eigen3)
 
 if(EIGEN_INCLUDE_DIR)
   set(EIGEN_RESAMPLER hoLinearResampleOperator_eigen.cpp)

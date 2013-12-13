@@ -27,17 +27,17 @@ using namespace Gadgetron;
 boost::shared_ptr< hoNDArray<float> >
 perform_registration( boost::shared_ptr< hoNDArray<float> > volume, unsigned int phase, float of_alpha, float of_beta, unsigned int num_multires_levels )
 {
-	std::vector<unsigned int> volume_dims_3d = *volume->get_dimensions();
+	std::vector<size_t> volume_dims_3d = *volume->get_dimensions();
 	volume_dims_3d.pop_back();
-	std::vector<unsigned int> volume_dims_3d_3 = volume_dims_3d;
+	std::vector<size_t> volume_dims_3d_3 = volume_dims_3d;
 	volume_dims_3d_3.push_back(3);
 
-	unsigned int num_elements_3d = volume_dims_3d[0]* volume_dims_3d[1]* volume_dims_3d[2];
-	unsigned int num_phases = volume->get_size(3);
+	size_t num_elements_3d = volume_dims_3d[0]* volume_dims_3d[1]* volume_dims_3d[2];
+	size_t num_phases = volume->get_size(3);
 
 	boost::shared_ptr< hoNDArray<float> > host_result_field( new hoNDArray<float> );
 	{
-		std::vector<unsigned int> volume_dims_4d = volume_dims_3d;
+		std::vector<size_t> volume_dims_4d = volume_dims_3d;
 		volume_dims_4d.push_back(3);
 		volume_dims_4d.push_back(volume->get_size(3)-1);
 		host_result_field->create( &volume_dims_4d );
@@ -98,7 +98,7 @@ perform_registration( boost::shared_ptr< hoNDArray<float> > volume, unsigned int
 
 	{
 		// Permute the displacement field (temporal dimension before 'vector' dimension)
-		std::vector<unsigned int> order;
+		std::vector<size_t> order;
 		order.push_back(0); order.push_back(1); order.push_back(2);
 		order.push_back(4); order.push_back(3);
 		cuNDArray<float> tmp(host_result_field.get()); // permute is too slow on the host
@@ -218,14 +218,14 @@ int main(int argc, char** argv)
 	float of_beta = parms.get_parameter('B')->get_float_value();
 	float tv_weight = parms.get_parameter('T')->get_float_value();
 
-	std::vector<unsigned int> is_dims_3d;
+	std::vector<size_t> is_dims_3d;
 	is_dims_3d.push_back(is_dims_in_pixels[0]);
 	is_dims_3d.push_back(is_dims_in_pixels[1]);
 	is_dims_3d.push_back(is_dims_in_pixels[2]);
 
 	unsigned int num_elements_3d = is_dims_in_pixels[0]*is_dims_in_pixels[1]*is_dims_in_pixels[2];
 
-	std::vector<unsigned int> is_dims_4d = is_dims_3d;
+	std::vector<size_t> is_dims_4d = is_dims_3d;
 	is_dims_4d.push_back(num_phases);
 
   // Create mask to zero-out the areas of the images that ar enot fully sampled
@@ -268,7 +268,7 @@ int main(int argc, char** argv)
   if( num_reg_downsamples > 0 ) {
     GPUTimer timer("Downsampling TV reconstruction (and OF operator projections accordingly)");
 
-    std::vector<unsigned int> tmp_dims_3d = is_dims_3d;
+    std::vector<size_t> tmp_dims_3d = is_dims_3d;
     for( unsigned int i=0; i<tmp_dims_3d.size(); i++ ){
       for( unsigned int d=0; d<num_reg_downsamples; d++ ){
         if( (tmp_dims_3d[i]%2)==1 )
@@ -280,8 +280,8 @@ int main(int argc, char** argv)
     cuNDArray<float> tmp_image_in(tv_recon.get());
     cuNDArray<float> tmp_proj_in(OF_projections.get());
       
-    std::vector<unsigned int> volume_dims_4d = *tv_recon->get_dimensions();
-    std::vector<unsigned int> proj_dims_3d = *projections->get_dimensions();
+    std::vector<size_t> volume_dims_4d = *tv_recon->get_dimensions();
+    std::vector<size_t> proj_dims_3d = *projections->get_dimensions();
     
     for( unsigned int d=0; d<num_reg_downsamples; d++ ){
       
