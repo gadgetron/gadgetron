@@ -335,6 +335,12 @@ Gadgetron::clamp( cuNDArray<T> *x, typename realType<T>::Type min, typename real
   thrust::transform(xPtr,xPtr+x->get_number_of_elements(),xPtr,cuNDA_clamp<T>(min, max,min_val, max_val));
 }  
 
+template<class T> void 
+Gadgetron::clamp( cuNDArray<T> *x, typename realType<T>::Type min, typename realType<T>::Type max)
+{
+    clamp(x,min,max,T(min),T(max));
+}
+
 template<typename T> struct cuNDA_clamp_min : public thrust::unary_function<T,T>
 {
   cuNDA_clamp_min( T _min ) : min(_min) {}

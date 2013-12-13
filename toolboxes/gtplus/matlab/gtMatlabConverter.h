@@ -59,7 +59,7 @@ hoNDArray2Matlab(const hoNDArray<T>& a, mxArray*& aMx)
         size_t ii;
         for ( ii=0; ii<ndim; ii++ )
         {
-            dims[ii] = static_cast<mwSize>( *dim[ii] );
+            dims[ii] = static_cast<mwSize>( (*dim)[ii] );
         }
 
         size_t N = a.get_number_of_elements();
@@ -72,7 +72,7 @@ hoNDArray2Matlab(const hoNDArray<T>& a, mxArray*& aMx)
 
             for ( ii=0; ii<N; ii++ )
             {
-                ptr[ii] = static_cast<float>(pA[ii]);
+                ptr[ii] = pA[ii];
             }
         }
         else
@@ -82,7 +82,7 @@ hoNDArray2Matlab(const hoNDArray<T>& a, mxArray*& aMx)
 
             for ( ii=0; ii<N; ii++ )
             {
-                ptr[ii] = static_cast<double>(pA[ii]);
+                ptr[ii] = pA[ii];
             }
         }
     }
@@ -213,7 +213,7 @@ Matlab2Str(const mxArray* aMx, std::string& str)
 {
     int N = mxGetNumberOfElements(aMx) + 1;
 
-    std::vector<char> buf(buflen, '\0');
+    std::vector<char> buf(N, '\0');
     if (mxGetString(aMx, &buf[0], N) != 0)
     {
         return false;

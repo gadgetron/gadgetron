@@ -528,6 +528,11 @@ namespace Gadgetron{
         std::transform(x->begin(),x->end(),x->begin(),functor);
     }  
 
+    template<class T> void clamp( hoNDArray<T> *x, typename realType<T>::Type min, typename realType<T>::Type max )
+    {
+        clamp(x,min,max,T(min),T(max));
+    }
+
     template<typename T> struct hoNDA_clamp_min //: public thrust::unary_function<T,T>
     {
         hoNDA_clamp_min( T _min ) : min(_min) {}

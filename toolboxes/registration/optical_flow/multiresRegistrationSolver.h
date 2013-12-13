@@ -228,9 +228,9 @@ namespace Gadgetron{
 
       for( unsigned int i=0; i<num_multires_levels_; i++ ){
 
-        dims /= 2UL;
+        dims /= (size_t)2;
 
-        if( weak_less( dims, 12UL*ones ) ){
+        if( weak_less( dims, (size_t)12*ones ) ){
           throw std::runtime_error("multiresRegistrationSolver::padding_required : resolution too low. Too many multiresolution levels specified?");
         }
 
