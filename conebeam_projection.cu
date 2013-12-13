@@ -59,8 +59,8 @@ namespace Gadgetron
     if( data == 0x0 )
       throw std::runtime_error("CB FFT : illegal input pointer provided");
 
-    std::vector<unsigned int> in_dims = *data->get_dimensions();
-    std::vector<unsigned int> out_dims;
+    std::vector<size_t> in_dims = *data->get_dimensions();
+    std::vector<size_t> out_dims;
     out_dims.push_back((in_dims[0]>>1)+1);
     out_dims.push_back(in_dims[1]);
     out_dims.push_back(in_dims[2]);
@@ -88,8 +88,8 @@ namespace Gadgetron
     if( in_data == 0x0 || out_data == 0x0 )
       throw std::runtime_error("CB FFT : illegal input or output pointer provided");
 
-    std::vector<unsigned int> in_dims = *in_data->get_dimensions();
-    std::vector<unsigned int> out_dims = *out_data->get_dimensions();
+    std::vector<size_t> in_dims = *in_data->get_dimensions();
+    std::vector<size_t> out_dims = *out_data->get_dimensions();
 
     cufftHandle plan;
 
@@ -181,9 +181,9 @@ namespace Gadgetron
       throw std::runtime_error("Error: redundancy_correct: projections array must be three-dimensional");
     }
 
-    const unsigned int projection_res_x = projections->get_size(0);
-    const unsigned int projection_res_y = projections->get_size(1);
-    const unsigned int num_projections = projections->get_size(2);
+    const size_t projection_res_x = projections->get_size(0);
+    const size_t projection_res_y = projections->get_size(1);
+    const size_t num_projections = projections->get_size(2);
     uintd3 dims(projection_res_x, projection_res_y, num_projections);
 
     // Launch kernel
@@ -249,9 +249,9 @@ namespace Gadgetron
       throw std::runtime_error("Error: offset_correct: projections array must be three-dimensional");
     }
 
-    const unsigned int projection_res_x = projections->get_size(0);
-    const unsigned int projection_res_y = projections->get_size(1);
-    const unsigned int num_projections = projections->get_size(2);
+    const size_t projection_res_x = projections->get_size(0);
+    const size_t projection_res_y = projections->get_size(1);
+    const size_t num_projections = projections->get_size(2);
     uintd3 dims(projection_res_x, projection_res_y, num_projections);
 
     // Launch kernel
@@ -830,12 +830,12 @@ namespace Gadgetron
     
     int projections_in_batch = to_projection-from_projection;
     
-    std::vector<unsigned int> dims;
+    std::vector<size_t> dims;
     dims.push_back(projection_res_x);
     dims.push_back(projection_res_y);
     dims.push_back(projections_in_batch);
     
-    std::vector<unsigned int> dims_next;
+    std::vector<size_t> dims_next;
 
     cuNDArray<float> *projections_batch = new cuNDArray<float>(&dims, projections_DevPtr);
     
@@ -912,13 +912,13 @@ namespace Gadgetron
         // - use zero padding to avoid the cyclic boundary conditions induced by the fft
         //
 
-        std::vector<unsigned int> batch_dims = *projections_batch->get_dimensions(); 
-        uintd3 pad_dims(batch_dims[0]<<1, batch_dims[1], batch_dims[2]);        
+        std::vector<size_t> batch_dims = *projections_batch->get_dimensions();
+        uint64d3 pad_dims(batch_dims[0]<<1, batch_dims[1], batch_dims[2]);
         boost::shared_ptr< cuNDArray<float> > padded_projections = pad<float,3>( pad_dims, projections_batch );
         boost::shared_ptr< cuNDArray<complext<float> > > complex_projections = cb_fft( padded_projections.get() );
         *complex_projections *= *frequency_filter;
         cb_ifft( complex_projections.get(), padded_projections.get() );
-        uintd3 crop_offsets(batch_dims[0]>>1, 0, 0);
+        uint64d3 crop_offsets(batch_dims[0]>>1, 0, 0);
         crop<float,3>( crop_offsets, padded_projections.get(), projections_batch );      
       }
 

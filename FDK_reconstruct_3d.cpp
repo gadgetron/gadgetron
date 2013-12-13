@@ -100,7 +100,7 @@ int main(int argc, char** argv)
   // Allocate array to hold the result
   //
   
-  std::vector<unsigned int> is_dims;
+  std::vector<size_t> is_dims;
   is_dims.push_back(is_dims_in_pixels[0]);
   is_dims.push_back(is_dims_in_pixels[1]);
   is_dims.push_back(is_dims_in_pixels[2]);

@@ -24,7 +24,7 @@ namespace Gadgetron
     if( !preprocessed_ )
       throw std::runtime_error("Error: hoCuConebeamProjectionOperator::compute_default_frequency_filter() : setup not performed");
    
-    std::vector<unsigned int> dims;
+    std::vector<size_t> dims;
     dims.push_back(acquisition_->get_projections()->get_size(0)+1);
     
     hoCuNDArray<float> host_weights(&dims);
@@ -57,7 +57,7 @@ namespace Gadgetron
     double SAD = double(acquisition_->get_geometry()->get_SAD());
     double SDD = double(acquisition_->get_geometry()->get_SDD());
 
-    std::vector<unsigned int> dims;
+    std::vector<size_t> dims;
     dims.push_back(ps_dims_in_pixels[0]);
     dims.push_back(ps_dims_in_pixels[1]);
 
@@ -67,8 +67,8 @@ namespace Gadgetron
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-    for( unsigned int y=0; y<ps_dims_in_pixels[1]; y++ ) {
-      for( unsigned int x=0; x<ps_dims_in_pixels[0]; x++ ) {
+    for(  int y=0; y<ps_dims_in_pixels[1]; y++ ) {
+      for( int x=0; x<ps_dims_in_pixels[0]; x++ ) {
 
         double xx = (( double(x) / double(ps_dims_in_pixels[0])) - 0.5) * ps_dims_in_mm[0];
         double yy = (( double(y) / double(ps_dims_in_pixels[1])) - 0.5) * ps_dims_in_mm[1];
@@ -130,7 +130,7 @@ namespace Gadgetron
       float SDD = acquisition_->get_geometry()->get_SDD();
       float SAD = acquisition_->get_geometry()->get_SAD();
 
-      std::vector<unsigned int> dims_3d = *image->get_dimensions();
+      std::vector<size_t> dims_3d = *image->get_dimensions();
       if (dims_3d.size()==4)
       	dims_3d.pop_back();
       
@@ -196,7 +196,7 @@ namespace Gadgetron
       float SDD = acquisition_->get_geometry()->get_SDD();
       float SAD = acquisition_->get_geometry()->get_SAD();
 
-      std::vector<unsigned int> dims_3d = *image->get_dimensions();
+      std::vector<size_t> dims_3d = *image->get_dimensions();
       if (dims_3d.size() ==4)
       	dims_3d.pop_back();
 
