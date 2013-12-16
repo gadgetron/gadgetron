@@ -568,7 +568,7 @@ namespace Gadgetron{
 	}
 
 	acc_buffer->set_csm(csm_);
-	csm_host_[idx] = *(csm_->to_host());
+	csm_->to_host(&csm_host_[idx]);
 	
 	// Compute regularization image
 	//
@@ -603,7 +603,7 @@ namespace Gadgetron{
 	}
 
 	reg_image = acc_buffer->get_combined_coil_image();	
-	reg_host_[idx] = *(reg_image->to_host());
+  reg_image->to_host( &reg_host_[idx] );
 	
 	if( buffer_using_solver_ ){
 	  traj.reshape(&dims);
@@ -814,7 +814,7 @@ namespace Gadgetron{
     dims.push_back(samples_per_readout_);
     dims.push_back(readouts_buffered);
     
-    boost::shared_ptr< hoNDArray<float> > host_samples(new hoNDArray<float>(&dims));
+    boost::shared_ptr< hoNDArray<float> > host_traj(new hoNDArray<float>(&dims));
     
     for (unsigned int p=0; p<readouts_buffered; p++) {      
       ACE_Message_Block* mbq;
@@ -830,7 +830,7 @@ namespace Gadgetron{
 	throw std::runtime_error("gpuGenericSensePrepGadget::extract_trajectory_from_queue: failed to interpret data");	
       }
 
-      float *data_ptr = host_samples->get_data_ptr();
+      float *data_ptr = host_traj->get_data_ptr();
       data_ptr += 3*samples_per_readout_*p;
       
       float *r_ptr = daq->getObjectPtr()->get_data_ptr();
@@ -849,7 +849,7 @@ namespace Gadgetron{
 	mbq->release();
     } 
     
-    return host_samples;
+    return host_traj;
   }
   
   void gpuGenericSensePrepGadget::extract_trajectory_and_dcw_from_queue

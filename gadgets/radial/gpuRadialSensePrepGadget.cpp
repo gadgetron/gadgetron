@@ -523,7 +523,7 @@ namespace Gadgetron{
 	}            
 
 	acc_buffer->set_csm(csm);
-	csm_host_[set*slices_+slice] = *(csm->to_host());
+	csm->to_host( &csm_host_[set*slices_+slice] );
 	
 	// Compute regularization image
 	//
@@ -542,7 +542,7 @@ namespace Gadgetron{
 	  return GADGET_FAIL;
 	}            
 	
-	reg_host_[set*slices_+slice] = *(reg_image->to_host());
+	reg_image->to_host( &reg_host_[set*slices_+slice] );
 		
 	/*
 	static int counter = 0;
@@ -681,13 +681,13 @@ namespace Gadgetron{
 
 	  long local_frame = (profile_offset/profiles_per_frame_[set*slices_+slice])%frames_per_rotation_[set*slices_+slice];
 	  float angular_offset = M_PI/float(profiles_per_frame_[set*slices_+slice])*float(local_frame)/float(frames_per_rotation_[set*slices_+slice]);	  
-
-	  host_traj_recon_[set*slices_+slice] = *compute_radial_trajectory_fixed_angle_2d<float>
-	    ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], 1, angular_offset )->to_host();	
+    
+	  compute_radial_trajectory_fixed_angle_2d<float>
+	    ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], 1, angular_offset )->to_host( &host_traj_recon_[set*slices_+slice] );	
 	}
 	else{
-	  host_traj_recon_[set*slices_+slice] = *compute_radial_trajectory_fixed_angle_2d<float>
-	    ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], frames_per_rotation_[set*slices_+slice] )->to_host();
+    compute_radial_trajectory_fixed_angle_2d<float>
+	    ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], frames_per_rotation_[set*slices_+slice] )->to_host( &host_traj_recon_[set*slices_+slice] );
 	}
       }
       break;
@@ -696,14 +696,14 @@ namespace Gadgetron{
       {
 	if( rotations_per_reconstruction_ == 0 ){	  
 	  unsigned int first_profile_in_reconstruction = std::max(0L, profile_offset-profiles_per_frame_[set*slices_+slice]+1);
-	  host_traj_recon_[set*slices_+slice] = *compute_radial_trajectory_golden_ratio_2d<float>
-	    ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], 1, first_profile_in_reconstruction )->to_host();	
+    compute_radial_trajectory_golden_ratio_2d<float>
+	    ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], 1, first_profile_in_reconstruction )->to_host( &host_traj_recon_[set*slices_+slice] );	
 	}
 	else{
 	  unsigned int first_profile_in_reconstruction = 
 	    std::max(0L, profile_offset-profiles_per_frame_[set*slices_+slice]*frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_+1);
-	  host_traj_recon_[set*slices_+slice] = *compute_radial_trajectory_golden_ratio_2d<float>
-	    ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_, first_profile_in_reconstruction )->to_host();
+    compute_radial_trajectory_golden_ratio_2d<float>
+	    ( samples_per_profile_, profiles_per_frame_[set*slices_+slice], frames_per_rotation_[set*slices_+slice]*rotations_per_reconstruction_, first_profile_in_reconstruction )->to_host( &host_traj_recon_[set*slices_+slice] );
 	}	  
       }
       break;
@@ -725,15 +725,15 @@ namespace Gadgetron{
       
     case 0:
     case 1:
-      host_weights_recon_[set*slices_+slice] = *compute_radial_dcw_fixed_angle_2d<float>
+      compute_radial_dcw_fixed_angle_2d<float>
 	( samples_per_profile_, profiles_per_frame_[set*slices_+slice], oversampling_factor_, 
-	  1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) )->to_host();
+	  1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) )->to_host( &host_weights_recon_[set*slices_+slice] );
       break;
       
     case 2:
-      host_weights_recon_[set*slices_+slice] = *compute_radial_dcw_golden_ratio_2d<float>
+      compute_radial_dcw_golden_ratio_2d<float>
 	( samples_per_profile_, profiles_per_frame_[set*slices_+slice], oversampling_factor_, 
-	  1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) )->to_host();
+	  1.0f/(float(samples_per_profile_)/float(image_dimensions_recon_[0])) )->to_host( &host_weights_recon_[set*slices_+slice] );
       break;
       
     default:
