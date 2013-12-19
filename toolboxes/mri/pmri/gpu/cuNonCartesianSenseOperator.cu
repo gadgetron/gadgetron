@@ -3,27 +3,12 @@
 
 using namespace Gadgetron;
 
-/*
-static unsigned int prodv( std::vector<unsigned int> &vec )
-{
-  unsigned int result = 1;
-  for( unsigned int i=0; i<vec.size(); i++ ){
-    result *= vec[i];
-  }
-  return result;
-  }*/
-
 template<class REAL, unsigned int D, bool ATOMICS> void
 cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_M( cuNDArray< complext<REAL> >* in, cuNDArray< complext<REAL> >* out, bool accumulate )
 {
   if( !in || !out ){
     throw std::runtime_error("cuNonCartesianSenseOperator::mult_M : 0x0 input/output not accepted");
   }
-  /*  
-  if( (in->get_number_of_elements() != prodv(*this->get_domain_dimensions())) ||
-      (out->get_number_of_elements() != prodv(*this->get_codomain_dimensions())) ) {
-    throw std::runtime_error("cuNonCartesianSenseOperator::mult_M: dimensions mismatch");
-    }*/
 
   std::vector<size_t> full_dimensions = *this->get_domain_dimensions();
   full_dimensions.push_back(this->ncoils_);
@@ -47,11 +32,6 @@ cuNonCartesianSenseOperator<REAL,D,ATOMICS>::mult_MH( cuNDArray< complext<REAL> 
   if( !in || !out ){
     throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH : 0x0 input/output not accepted");
   }
-  /*  
-  if( (out->get_number_of_elements() != prodv(*this->get_domain_dimensions())) ||
-      (in->get_number_of_elements() != prodv(*this->get_codomain_dimensions())) ) {
-    throw std::runtime_error("cuNonCartesianSenseOperator::mult_MH: dimensions mismatch");
-    }*/
 
   std::vector<size_t> tmp_dimensions = *this->get_domain_dimensions();
   tmp_dimensions.push_back(this->ncoils_);

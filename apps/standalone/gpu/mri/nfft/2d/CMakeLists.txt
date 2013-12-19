@@ -2,16 +2,16 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
 )
 
-add_executable(nfft main_nfft.cpp)
-add_executable(nffth main_nffth.cpp)
+add_executable(nfft_2d_radial main_nfft.cpp)
+add_executable(nffth_2d_radial main_nffth.cpp)
 #add_executable(moco moco.cpp)
-add_executable(nffth_cg main_cg.cpp)
-add_executable(nffth_sb main_sb.cpp)
+add_executable(nffth_cg_2d_radial main_cg.cpp)
+add_executable(nffth_sb_2d_radial main_sb.cpp)
 
-target_link_libraries(nfft gpucore gpuoperators gpunfft hostutils ${CUDA_LIBRARIES})
-target_link_libraries(nffth gpucore gpuoperators gpunfft hostutils ${CUDA_LIBRARIES})
+target_link_libraries(nfft_2d_radial gpucore gpuoperators gpunfft hostutils ${CUDA_LIBRARIES})
+target_link_libraries(nffth_2d_radial gpucore gpuoperators gpunfft hostutils ${CUDA_LIBRARIES})
 #target_link_libraries(moco gpusolvers gpureg gpucore gpuparallelmri gpuoperators gpunfft hostutils ${CUDA_LIBRARIES})
-target_link_libraries(nffth_cg gpusolvers gpuoperators gpucore gpunfft hostutils ${CUDA_LIBRARIES})
-target_link_libraries(nffth_sb gpusolvers gpuoperators gpucore gpunfft hostutils ${CUDA_LIBRARIES})
+target_link_libraries(nffth_cg_2d_radial gpusolvers gpuoperators gpucore gpunfft hostutils ${CUDA_LIBRARIES})
+target_link_libraries(nffth_sb_2d_radial gpusolvers gpuoperators gpucore gpunfft hostutils ${CUDA_LIBRARIES})
 
-#install(TARGETS nfft moco nffth nffth_cg nffth_sb DESTINATION bin)
+install(TARGETS nfft_2d_radial nffth_2d_radial nffth_cg_2d_radial nffth_sb_2d_radial DESTINATION bin)

@@ -772,6 +772,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::check_consistency( cuNDArray<complext<RE
   
   if( (components & _NFFT_CONV_C2NC ) || (components & _NFFT_CONV_NC2C )){    
     if( (samples->get_number_of_elements() == 0) || (samples->get_number_of_elements() % (number_of_frames*number_of_samples)) ){
+      printf("\ncuNFFT::check_consistency() failed:\n#elements in the samples array: %ld.\n#samples from preprocessing: %d.\n#frames from preprocessing: %d.\n",samples->get_number_of_elements(), number_of_samples, number_of_frames ); fflush(stdout);
       throw std::runtime_error("Error: cuNFFT_plan: The number of samples is not a multiple of #samples/frame x #frames as requested through preprocessing");
     }
     
@@ -794,6 +795,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::check_consistency( cuNDArray<complext<RE
       if( weights->get_number_of_elements() == 0 ||
           !( weights->get_number_of_elements() == number_of_samples || 
              weights->get_number_of_elements() == number_of_frames*number_of_samples) ){
+        printf("\ncuNFFT::check_consistency() failed:\n#elements in the samples array: %ld.\n#samples from preprocessing: %d.\n#frames from preprocessing: %d.\n#weights: %ld.\n",samples->get_number_of_elements(), number_of_samples, number_of_frames, weights->get_number_of_elements() ); fflush(stdout);
         throw std::runtime_error("Error: cuNFFT_plan: The number of weights should match #samples/frame x #frames as requested through preprocessing");
       }
     }

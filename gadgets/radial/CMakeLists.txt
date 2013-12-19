@@ -11,6 +11,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/sense
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers
@@ -25,10 +26,11 @@ if(CUDA_FOUND)
   
   add_library(gadgetron_gpuradial SHARED 
     gpuRadialSensePrepGadget.cpp 
+    gpuRetroGatedSensePrepGadget.cpp
     ${ISMRMRD_XSD_SOURCE})
   
   target_link_libraries(gadgetron_gpuradial
-    gpunfft gpusolvers gpuoperators gpuparallelmri cpucore gpucore
+    gpunfft gpusolvers gpuoperators gpuparallelmri cpucore cpucore_math gpucore
     ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
     )

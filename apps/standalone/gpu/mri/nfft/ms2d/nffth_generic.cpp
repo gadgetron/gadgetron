@@ -44,20 +44,6 @@ typedef complext<_real> _complext;
 typedef reald<_real,2>::Type _reald2;
 typedef cuNFFT_plan<_real,2> plan_type;
 
-// Upload samples for one reconstruction from host to device
-boost::shared_ptr< cuNDArray<_complext> > 
-upload_data( unsigned int reconstruction, unsigned int samples_per_reconstruction,
-	     hoNDArray<_complext> *host_data )
-{
-  vector<size_t> dims; dims.push_back(samples_per_reconstruction);
-  cuNDArray<_complext> *data = new cuNDArray<_complext>( &dims );
-  cudaMemcpy( data->get_data_ptr(), 
-	      host_data->get_data_ptr()+reconstruction*samples_per_reconstruction, 
-	      samples_per_reconstruction*sizeof(_complext), cudaMemcpyHostToDevice );
-  
-  return boost::shared_ptr< cuNDArray<_complext> >(data);
-}
-
 int main( int argc, char** argv) 
 {
 
@@ -67,6 +53,8 @@ int main( int argc, char** argv)
 
   ParameterParser parms;
   parms.add_parameter( 'd', COMMAND_LINE_STRING, 1, "Input samples file name (.cplx)", true );
+  parms.add_parameter( 't', COMMAND_LINE_STRING, 1, "Input trajectories file name (.real)", true );
+  parms.add_parameter( 'w', COMMAND_LINE_STRING, 1, "Input density compensation weights file name (.real)", true );
   parms.add_parameter( 'r', COMMAND_LINE_STRING, 1, "Output image file name (.cplx)", true, "result.cplx" );
   parms.add_parameter( 'm', COMMAND_LINE_INT,    1, "Matrix size", true );
   parms.add_parameter( 'o', COMMAND_LINE_INT,    1, "Oversampled matrix size", true );
@@ -87,29 +75,33 @@ int main( int argc, char** argv)
   
   GPUTimer *timer;
   
-  // Load sample data from disk
-  timer = new GPUTimer("Loading samples from disk");
+  // Load data from disk
+  timer = new GPUTimer("Loading data from disk");
   boost::shared_ptr< hoNDArray<_complext> > host_samples = read_nd_array<_complext>((char*)parms.get_parameter('d')->get_string_value());
+  boost::shared_ptr< hoNDArray<_reald2> >   host_traj    = read_nd_array<_reald2>  ((char*)parms.get_parameter('t')->get_string_value());
+  boost::shared_ptr< hoNDArray<_real> >     host_dcw     = read_nd_array<_real>    ((char*)parms.get_parameter('w')->get_string_value());
   delete timer;
-   
-  if( !(host_samples->get_number_of_dimensions() == 3) ){
-    cout << endl << "Samples ndarray is not three-dimensional (samples/profile x #profiles/frame x #frames). Quitting.\n" << endl;
+
+  /* {
+    std::vector<size_t> dims;
+    dims.push_back(host_traj->get_size(0));
+    dims.push_back(host_samples->get_number_of_elements()/dims[0]);
+    host_samples->reshape(&dims);
+    } */
+  
+  if( !(host_samples->get_number_of_dimensions() == 2 && host_traj->get_number_of_dimensions() == 2) ){
+    cout << endl << "Samples/trajectory arrays must be two-dimensional: (dim 0: samples/profile x #profiles/frame; dim 1: #frames). Quitting.\n" << endl;
     return 1;
   }
-  
+
   // Configuration from the command line
   uint64d2 matrix_size = uint64d2(parms.get_parameter('m')->get_int_value(), parms.get_parameter('m')->get_int_value());
   uint64d2 matrix_size_os = uint64d2(parms.get_parameter('o')->get_int_value(), parms.get_parameter('o')->get_int_value());
   int frames_per_reconstruction = parms.get_parameter('f')->get_int_value();  
   _real kernel_width = parms.get_parameter('k')->get_float_value();
-  
-  unsigned int samples_per_profile = host_samples->get_size(0);  
-  unsigned int profiles_per_frame = host_samples->get_size(1);
-  unsigned int num_frames = host_samples->get_size(2);  
-  
-  unsigned int profiles_per_reconstruction = profiles_per_frame*frames_per_reconstruction;
-  unsigned int samples_per_reconstruction = profiles_per_reconstruction*samples_per_profile;
   _real alpha = (_real)matrix_size_os.vec[0]/(_real)matrix_size.vec[0];
+  
+  unsigned int num_frames = host_traj->get_size(1);  
 
   if( frames_per_reconstruction < 0 ) frames_per_reconstruction = num_frames;
   if( (unsigned int)frames_per_reconstruction > num_frames ) frames_per_reconstruction = num_frames;
@@ -125,37 +117,33 @@ int main( int argc, char** argv)
   plan_type plan( matrix_size, matrix_size_os, kernel_width );
   delete timer;
 
-  // Compute density compensation weights
-  timer = new GPUTimer("Computing density compensation weights");
-  boost::shared_ptr< cuNDArray<_real> > dcw = compute_radial_dcw_golden_ratio_2d
-    ( samples_per_profile, profiles_per_frame, alpha, _real(1)/((_real)samples_per_profile/(_real)matrix_size.vec[0]) );
-  delete timer;
+  // Upload arrays to device
+  cuNDArray<_complext> _samples(host_samples.get());
+  cuNDArray<_reald2> _trajectory(host_traj.get());
+  cuNDArray<_real> dcw(host_dcw.get());
+
+  std::vector<size_t> dims_recon;
+  dims_recon.push_back(host_samples->get_size(0));
+  dims_recon.push_back(frames_per_reconstruction);
 
   for( unsigned int iteration = 0; iteration < num_frames/frames_per_reconstruction; iteration++ ) {
     
-    // Compute trajectories
-    timer = new GPUTimer("Computing golden ratio radial trajectories");
-    boost::shared_ptr< cuNDArray<_reald2> > traj = compute_radial_trajectory_golden_ratio_2d<_real>
-      ( samples_per_profile, profiles_per_frame, frames_per_reconstruction, iteration*profiles_per_reconstruction );
-    delete timer;
-    
+    // Set samples/trajectory for sub-frames
+    cuNDArray<_complext> samples( dims_recon, _samples.get_data_ptr()+iteration*dims_recon[0]*dims_recon[1] );
+    cuNDArray<_reald2> trajectory( dims_recon, _trajectory.get_data_ptr()+iteration*dims_recon[0]*dims_recon[1] );
+
     // Preprocess
     timer = new GPUTimer("NFFT preprocessing");
-    plan.preprocess( traj.get(), plan_type::NFFT_PREP_NC2C );
+    plan.preprocess( &trajectory, plan_type::NFFT_PREP_NC2C );
     delete timer;
     
-    // Upload data
-    timer = new GPUTimer("Upload data");
-    boost::shared_ptr< cuNDArray<_complext> > data = upload_data
-      ( iteration, samples_per_reconstruction, host_samples.get() );
-    
-    vector<size_t> image_dims = to_std_vector(matrix_size); 
+    std::vector<size_t> image_dims = to_std_vector(matrix_size); 
     image_dims.push_back(frames_per_reconstruction);
     cuNDArray<_complext> tmp_image(&image_dims, image.get_data_ptr()+iteration*prod(matrix_size)*frames_per_reconstruction);
 
     // Gridder
     timer = new GPUTimer("Computing adjoint nfft (gridding)");
-    plan.compute( data.get(), &tmp_image, dcw.get(), plan_type::NFFT_BACKWARDS_NC2C );
+    plan.compute( &samples, &tmp_image, &dcw, plan_type::NFFT_BACKWARDS_NC2C );
     delete timer;
   }
   

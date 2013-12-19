@@ -113,7 +113,7 @@ int main( int argc, char** argv)
   // Setup resulting samples array
   vector<size_t> samples_dims; 
   samples_dims.push_back( samples_per_profile ); samples_dims.push_back( profiles_per_frame ); samples_dims.push_back(frames_per_reconstruction);
-  cuNDArray<_complext> samples; samples.create(&samples_dims);
+  cuNDArray<_complext> samples(&samples_dims);
   
   // Initialize plan
   timer = new GPUTimer("Initializing plan");
