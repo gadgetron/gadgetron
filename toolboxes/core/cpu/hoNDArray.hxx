@@ -274,6 +274,9 @@ namespace Gadgetron
       memcpy(this->data_, rhs.data_, this->elements_*sizeof(T));
     }
     else{
+    	if (!this->delete_data_on_destruct_){
+    		throw std::runtime_error("Array dimensions mismatch in hoNDArray::operator=. Cannot change dimensions of non-destructable array.");
+    	}
       deallocate_memory();
       this->data_ = 0;
       this->dimensions_ = rhs.dimensions_;

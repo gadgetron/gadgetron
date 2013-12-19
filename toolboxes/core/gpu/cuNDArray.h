@@ -174,7 +174,10 @@ namespace Gadgetron{
       } 
       else {	
         CUDA_CALL(cudaSetDevice(this->device_));
-        if( !dimensions_match ){	  
+        if( !dimensions_match ){
+        	if (!this->delete_data_on_destruct_){
+        		throw std::runtime_error("Array dimensions mismatch in cuNDArray::operator=. Cannot change dimensions of non-destructable array.");
+					}
           deallocate_memory();	  
           this->elements_ = rhs.elements_;
           this->dimensions_ = rhs.get_dimensions();
