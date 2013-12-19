@@ -20,7 +20,7 @@
   ------------------------------------------
   
   Mode 0 and Mode 1 are variants of 'fixed' radial trajectories with interframe rotation.
-  Mode 2 denotes a radial trajectory with an angular profile spacing based on the golden ratio (~111,25 degrees).
+  Mode 2 and Mode 3 denote radial trajectories with golden ratio based angular profile spacings.
   
   Let 
   'i' denote the number of profiles per (undersampled) frame
@@ -52,7 +52,7 @@
   <property><name>frames_per_rotation</name><value>8</value></property>
       
 
-  Mode 2:
+  Mode 2 and Mode 3:
   -------
   Profiles are numbered 
   0,1,2,...,i-1, 0,1,2,...,i-1, 0,1,2,...,i-1, ...
