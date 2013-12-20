@@ -236,7 +236,7 @@ public:
 		hsize_t vec_dim[3];
 		errCode=H5LTget_dataset_info(file_id,"/projections",vec_dim,NULL,NULL);
 		if (errCode < 0) 	throw std::runtime_error("Error getting /projections dataset info from file.");
-		std::vector<unsigned int> dims;
+		std::vector<size_t> dims;
 		dims.push_back(vec_dim[2]);
 		dims.push_back(vec_dim[1]);
 		dims.push_back(vec_dim[0]);
@@ -278,7 +278,7 @@ public:
 		hsize_t dims[1] = {1};
 		H5LTmake_dataset(file_id,"/projection_dataformat_version", 1, dims, H5T_NATIVE_UINT, &dataformat_version);
 
-		boost::shared_ptr<std::vector<unsigned int > > pdims = projections_->get_dimensions();
+		boost::shared_ptr<std::vector<size_t > > pdims = projections_->get_dimensions();
 		hsize_t *dims2 = new hsize_t[pdims->size()];
 		for (int i = 0; i < pdims->size(); i++)
 			dims2[i] = pdims->at(pdims->size()-i-1);

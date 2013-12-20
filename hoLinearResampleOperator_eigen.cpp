@@ -67,10 +67,10 @@ namespace Gadgetron{
             throw std::runtime_error("hoLinearResampleOperator_eigen::set_displacement_field : illegal tailing array dim" );
         }
 
-        const typename uintd<D>::Type matrix_size = from_std_vector<unsigned int,D>( *(displacements->get_dimensions()));
+        const typename uint64d<D>::Type matrix_size = from_std_vector<size_t,D>( *(displacements->get_dimensions()));
 
-        const unsigned int num_elements_mat = prod(matrix_size);
-        const unsigned int num_elements_ext = prod(matrix_size)*extended_dim;
+        const size_t num_elements_mat = prod(matrix_size);
+        const size_t num_elements_ext = prod(matrix_size)*extended_dim;
 
         R_ = boost::shared_ptr< Eigen::SparseMatrix<typename realType<T>::Type> >
           ( new Eigen::SparseMatrix<typename realType<T>::Type>( num_elements_mat, num_elements_ext ) );
@@ -85,9 +85,9 @@ namespace Gadgetron{
             const unsigned int batch_no = idx/num_elements_mat;
             const unsigned int idx_in_batch = idx-batch_no*num_elements_mat;
 
-            const typename uintd<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
+            const typename uint64d<D>::Type co = idx_to_co<D>( idx_in_batch, matrix_size );
 
-            typename reald<typename realType<T>::Type,D>::Type co_disp = to_reald<typename realType<T>::Type,unsigned int,D>(co);
+            typename reald<typename realType<T>::Type,D>::Type co_disp(co);
             for( unsigned int dim=0; dim<D; dim++ ){
                 typename realType<T>::Type tmp = displacements->get_data_ptr()[dim*num_elements_ext+batch_no*num_elements_mat+idx_in_batch];
                 co_disp.vec[dim] += tmp;
@@ -96,7 +96,7 @@ namespace Gadgetron{
             // Determine the number of neighbors
             //
 
-            const typename uintd<D>::Type twos = to_vector_td<unsigned int,D>(2);
+            const typename uint64d<D>::Type twos(2);
             const unsigned int num_neighbors = this->get_num_neighbors();
 
             // Weights are non-zero only if all neighbors exist
@@ -121,7 +121,7 @@ namespace Gadgetron{
                 // Determine image coordinate of current neighbor
                 //
 
-                const typename uintd<D>::Type stride = idx_to_co<D>( i, twos );
+                const typename uint64d<D>::Type stride = idx_to_co<D>( i, twos );
 
                 if( weak_greater_equal( stride, matrix_size ) ) continue; // For dimensions of size 1
 
@@ -141,8 +141,8 @@ namespace Gadgetron{
                 // Validate that the coordinate is within the expected range
                 //
 
-                typename uintd<D>::Type ones = to_vector_td<unsigned int,D>(1);
-                typename uintd<D>::Type co_stride_uintd = to_uintd<typename realType<T>::Type,D>(co_stride);
+                typename uint64d<D>::Type ones(1);
+                typename uint64d<D>::Type co_stride_uintd(co_stride);
 
                 if( weak_greater( co_stride_uintd, matrix_size-ones ) ){
 
@@ -183,7 +183,7 @@ namespace Gadgetron{
     }
 
     template <class T, unsigned int D> bool
-        hoLinearResampleOperator_eigen<T,D>::is_border_pixel( typename reald<typename realType<T>::Type,D>::Type co, typename uintd<D>::Type dims )
+        hoLinearResampleOperator_eigen<T,D>::is_border_pixel( typename reald<typename realType<T>::Type,D>::Type co, typename uint64d<D>::Type dims )
     {
         for( unsigned int dim=0; dim<D; dim++ ){
             if( dims[dim] > 1 && ( co[dim] < typename realType<T>::Type(0) || co[dim] >= (typename realType<T>::Type(dims[dim])-typename realType<T>::Type(1)) ) )
