@@ -33,14 +33,20 @@ public:
 		tc_tolerance_ = (REAL)1e-7;
 		non_negativity_constraint_=false;
 		dump_residual = false;
-		threshold= REAL(1e-8);
+		threshold= REAL(1e-7);
 		barrier_threshold=1e4;
+		rho = 0.5f;
 	}
 
 	virtual ~ncgSolver(){}
 
+
+	virtual void set_rho(REAL _rho){
+		rho = _rho;
+	}
+
 	virtual boost::shared_ptr<ARRAY_TYPE> solve(ARRAY_TYPE* in)
-									{
+											{
 		if( this->encoding_operator_.get() == 0 ){
 			throw std::runtime_error("Error: ncgSolver::compute_rhs : no encoding operator is set" );
 		}
@@ -69,9 +75,8 @@ public:
 			clear(x);
 		}
 
-		REAL rho = REAL(0.5);
-		REAL delta = REAL(0.001);
-		REAL sigma = REAL(0.4);
+		REAL delta = REAL(0.01);
+		//REAL sigma = REAL(0.4);
 
 		std::vector<ARRAY_TYPE> regEnc;
 
@@ -116,7 +121,10 @@ public:
 				this->add_gradient(x,g);
 				add_linear_gradient(regEnc,g);
 				reg_res=REAL(0);
-
+				if (this->precond_.get()){
+					this->precond_->apply(g,g);
+					this->precond_->apply(g,g);
+				}
 
 			}else {
 				data_res = real(dot(&encoding_space,&encoding_space));
@@ -125,8 +133,8 @@ public:
 
 
 			if (non_negativity_constraint_) solver_non_negativity_filter(x,g);
-			if (i==0) grad_norm0=dot(g,g);
-			REAL grad_norm = dot(g,g);
+			if (i==0) grad_norm0=nrm2(g);
+			REAL grad_norm = nrm2(g);
 			if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
 
 				std::cout << "Iteration " <<i << ". Realtive gradient norm: " <<  grad_norm << std::endl;
@@ -135,17 +143,17 @@ public:
 			if (i == 0){
 				d -= *g;
 			} else {
-				REAL g_old_norm = dot(g_old,g_old);
+				ELEMENT_TYPE g_old_norm = dot(g_old,g_old);
 				ELEMENT_TYPE ggold = dot(g,g_old);
 				*g_old -= *g;
-				ELEMENT_TYPE gg = dot(g,g);
+				REAL gg = real(dot(g,g));
 				ELEMENT_TYPE gy = -dot(&d,g_old);
 				//ELEMENT_TYPE beta = -dot(g,g_old)/g_old_norm; //PRP ste[
 				//ELEMENT_TYPE theta = gy/g_old_norm;
 
-				ELEMENT_TYPE betaDy = -gg/dot(&d,g_old);
-				ELEMENT_TYPE betaHS = dot(g,g_old)/dot(&d,g_old);
-				ELEMENT_TYPE beta = std::max(REAL(0),std::min(betaDy,betaHS)); //Hybrid step size from Dai and Yuan 2001
+				REAL betaDy = -gg/real(dot(&d,g_old));
+				REAL betaHS = real(dot(g,g_old))/real(dot(&d,g_old));
+				REAL beta = std::max(REAL(0),std::min(betaDy,betaHS)); //Hybrid step size from Dai and Yuan 2001
 
 				std::cout << "Beta " << beta << std::endl;
 				//ELEMENT_TYPE beta(0);
@@ -162,13 +170,13 @@ public:
 			calc_regMultM(&d,regEnc2);
 
 			REAL alpha0 = REAL(1);
-			if (this->operators.size() == 0) alpha0 = -(dot(&encoding_space,&encoding_space2)+calc_dot(regEnc,regEnc2))/(dot(&encoding_space2,&encoding_space2)+calc_dot(regEnc2,regEnc2));
+			if (this->operators.size() == 0) alpha0 = -real(dot(&encoding_space,&encoding_space2)+calc_dot(regEnc,regEnc2))/real(dot(&encoding_space2,&encoding_space2)+calc_dot(regEnc2,regEnc2));
 			//REAL alpha0 = REAL(1);
 			REAL alpha;
 			REAL alpha_old;
 			REAL old_norm = functionValue(&encoding_space,regEnc,x);
 
-			REAL gd = dot(g,&d);
+			REAL gd = real(dot(g,&d));
 
 			*g_old = *g;
 
@@ -186,16 +194,20 @@ public:
 				reg_axpy(alpha-alpha_old,regEnc2,regEnc);
 				axpy(alpha-alpha_old,&d,&x2);
 
-				axpy(alpha-alpha_old,&gtmp,g);
+				//axpy(alpha-alpha_old,&gtmp,g);
 
 				if (functionValue(&encoding_space,regEnc,&x2) <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
 				//if (functionValue(&encoding_space,regEnc,&x2) <= old_norm-alpha*alpha*delta*dot(&d,&d)) wolfe = true;
 				//if (non_negativity_constraint_ && (min(&x2) < 0)) wolfe = false;
-				if ((dot(g,&d)) >= sigma*gd) wolfe =false; //So... officially this is part of the strong Wolfe condition. For semi-linear problems our initial step size should be sufficient.
+				//if (real((dot(g,&d))) >= sigma*gd) wolfe =false; //So... officially this is part of the strong Wolfe condition. For semi-linear problems our initial step size should be sufficient.
 				k++;
 				//std::cout << "Res: " << dot(&encoding_space,&encoding_space)+calc_dot(regEnc,regEnc) << " Target: " << old_norm+alpha*delta*gd << std::endl;
 				//				std::cout << "Step2: " << dot(&gdiff,&d) << " Target " << sigma*gd  << std::endl;
-				if (alpha == 0) throw std::runtime_error("Wolfe line search failed");
+				if (alpha == 0){ throw std::runtime_error("NCGSolver: line-search failed, try using a rho-value closer to 1");
+
+
+
+				}
 				alpha_old = alpha;
 			}
 
@@ -208,10 +220,10 @@ public:
 				reg_axpy(-alpha,regEnc2,regEnc);
 
 
-				clamp_min(&x2,ELEMENT_TYPE(0));
+				clamp_min(&x2,REAL(0));
 				d = x2;
 				d -= *x;
-				gd = dot(g,&d);
+				gd = real(dot(g,&d));
 				x2 = *x;
 				alpha_old = 0;
 				alpha0 = 1;
@@ -220,15 +232,15 @@ public:
 				k=0;
 				wolfe = false;
 				while (not wolfe){
-							alpha=alpha0*std::pow(rho,k);
-							axpy(alpha-alpha_old,&encoding_space2,&encoding_space);
-							reg_axpy(alpha-alpha_old,regEnc2,regEnc);
-							axpy(alpha-alpha_old,&d,&x2);
-							if (functionValue(&encoding_space,regEnc,&x2) <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
-							k++;
-							if (alpha == 0) throw std::runtime_error("Wolfe line search failed");
-							alpha_old = alpha;
-						}
+					alpha=alpha0*std::pow(rho,k);
+					axpy(alpha-alpha_old,&encoding_space2,&encoding_space);
+					reg_axpy(alpha-alpha_old,regEnc2,regEnc);
+					axpy(alpha-alpha_old,&d,&x2);
+					if (functionValue(&encoding_space,regEnc,&x2) <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
+					k++;
+					if (alpha == 0) throw std::runtime_error("Wolfe line search failed");
+					alpha_old = alpha;
+				}
 				axpy(alpha,&d,x);
 			} else {
 				axpy(alpha,&d,x);
@@ -239,6 +251,11 @@ public:
 			this->encoding_operator_->mult_MH(&encoding_space,g);
 			this->add_gradient(x,g);
 			add_linear_gradient(regEnc,g);
+			if (this->precond_.get()){
+				this->precond_->apply(g,g);
+				this->precond_->apply(g,g);
+			}
+
 
 
 			iteration_callback(x,i,data_res,reg_res);
@@ -249,7 +266,7 @@ public:
 		delete g,g_old;
 
 		return boost::shared_ptr<ARRAY_TYPE>(x);
-	}
+											}
 
 
 
@@ -361,13 +378,13 @@ protected:
 	}
 
 	REAL functionValue(ARRAY_TYPE* encoding_space,std::vector<ARRAY_TYPE>& regEnc, ARRAY_TYPE * x){
-		REAL res= std::sqrt(this->encoding_operator_->get_weight())*dot(encoding_space,encoding_space);
+		REAL res= std::sqrt(this->encoding_operator_->get_weight())*real(dot(encoding_space,encoding_space));
 
 		for (int i = 0; i  < this->operators.size(); i++){
-					res += this->operators[i]->magnitude(x);
+			res += this->operators[i]->magnitude(x);
 		}
 
-		res += calc_dot(regEnc,regEnc);
+		res += real(calc_dot(regEnc,regEnc));
 		return res;
 
 	}
@@ -387,6 +404,7 @@ protected:
 	REAL tc_tolerance_;
 	REAL threshold;
 	bool dump_residual;
+	REAL rho;
 
 	REAL barrier_threshold;
 	// Preconditioner

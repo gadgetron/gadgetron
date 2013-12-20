@@ -77,5 +77,5 @@ add_subdirectory(operators)
 add_subdirectory(proton)
 add_subdirectory(xray)
 add_subdirectory(test)
-#add_subdirectory(mri)
+add_subdirectory(mri)
 
