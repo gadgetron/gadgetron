@@ -4,7 +4,11 @@ endif (WIN32)
 
 
 
-install(FILES 	
+cuda_add_library( tomography_solvers SHARED
+  cuNCGSolver.cu
+)
+install(FILES
+	cuNCGSolver.h 	
 	mlSolver.h
 	cuMLSolver.h
 	cuSARTSolver.h
