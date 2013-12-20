@@ -43,6 +43,7 @@ int main(int argc, char** argv)
   int device;
   unsigned int downsamples;
   unsigned int iterations;
+  float rho;
   po::options_description desc("Allowed options");
 
   desc.add_options()
@@ -60,6 +61,7 @@ int main(int argc, char** argv)
     ("PICS",po::value<float>(),"TV Weight of the prior image (Prior image compressed sensing)")
     ("device",po::value<int>(&device)->default_value(0),"Number of the device to use (0 indexed)")
     ("downsample,D",po::value<unsigned int>(&downsamples)->default_value(0),"Downsample projections this factor")
+    ("rho",po::value<float>(&rho)->default_value(0.9f),"Rho-value for line search. Must be between 0 and 1. Smaller value means faster runtime, but less stable algorithm.")
     ;
 
   po::variables_map vm;
@@ -149,6 +151,7 @@ int main(int argc, char** argv)
   solver.set_max_iterations(iterations);
   solver.set_output_mode(hoCuGPBBSolver<float>::OUTPUT_VERBOSE);
   solver.set_non_negativity_constraint(true);
+  solver.set_rho(rho);
 
   hoCuNDArray<float> projections = *ps->get_projections();
   
