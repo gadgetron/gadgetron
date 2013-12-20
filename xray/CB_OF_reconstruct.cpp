@@ -128,7 +128,7 @@ int main(int argc, char** argv)
 
 	parms.add_parameter( 'A', COMMAND_LINE_FLOAT, 1, "Alpha for OF term", true, "0.05" );
 	parms.add_parameter( 'B', COMMAND_LINE_FLOAT, 1, "Beta for OF term", true, "1.0" );
-	parms.add_parameter( 'T', COMMAND_LINE_FLOAT, 1, "TV regularization weight", true, "0.0" );
+	//parms.add_parameter( 'T', COMMAND_LINE_FLOAT, 1, "TV regularization weight", true, "0.0" );
 
 	parms.add_parameter( 'P', COMMAND_LINE_INT, 1, "Projections per batch", false );
 	parms.add_parameter( 'D', COMMAND_LINE_INT, 1, "Number of downsamples of projection plate", true, "0" );
@@ -216,7 +216,7 @@ int main(int argc, char** argv)
 
 	float of_alpha = parms.get_parameter('A')->get_float_value();
 	float of_beta = parms.get_parameter('B')->get_float_value();
-	float tv_weight = parms.get_parameter('T')->get_float_value();
+	//float tv_weight = parms.get_parameter('T')->get_float_value();
 
 	std::vector<unsigned int> is_dims_3d;
 	is_dims_3d.push_back(is_dims_in_pixels[0]);
@@ -327,6 +327,7 @@ int main(int argc, char** argv)
   OF->setup( acquisition, binning_4d, is_dims_in_mm );
 	OF->set_domain_dimensions(&is_dims_3d);
 	OF->set_codomain_dimensions(OF_projections->get_dimensions().get());
+	//OF->set_weight(1.0f/float(num_phases));
 
   // Combine the two operators in an operator container
   //
@@ -406,7 +407,7 @@ int main(int argc, char** argv)
 			char filename[256];
 			sprintf(&(filename[0]), "reconstruction_3d_%i.real", phase);
 			write_nd_array<float>( result_phase.get(), (char*)filename );
-      }*/
+			}*/
 	}
 
 	write_nd_array<float>( &image_4d, result_filename.c_str() );
