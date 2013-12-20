@@ -18,10 +18,10 @@ template<class REAL> class hoCuProtonBufferedSubsetOperator : public subsetOpera
 	typedef hoCuProtonBufferedSubsetOperator<REAL> Type;
 public:
 	hoCuProtonBufferedSubsetOperator() : subsetOperator<hoCuNDArray<REAL> >(1), loaded_subset(-1), loading_subset(-1){
-		this->subset_dimensions = std::vector<std::vector<unsigned int> > (1, std::vector<unsigned int>(1) );
+		this->subset_dimensions = std::vector<std::vector<size_t> > (1, std::vector<size_t>(1) );
 	}
 	hoCuProtonBufferedSubsetOperator(int subsets) : subsetOperator<hoCuNDArray<REAL> >(subsets), loaded_subset(-1), loading_subset(-1){
-		this->subset_dimensions = std::vector<std::vector<unsigned int> > (subsets, std::vector<unsigned int>(1) );
+		this->subset_dimensions = std::vector<std::vector<size_t> > (subsets, std::vector<size_t>(1) );
 	}
 
 	virtual ~hoCuProtonBufferedSubsetOperator(){};
@@ -101,7 +101,7 @@ protected:
 
 	boost::shared_ptr<hoCuNDArray<REAL> > loadProjections(hid_t file_id,std::vector<std::string>& groupnames, size_t elements){
 
-				std::vector<unsigned int> projection_dim(1,elements);
+				std::vector<size_t> projection_dim(1,elements);
 
 				boost::shared_ptr<hoCuNDArray<REAL> > projections(new hoCuNDArray<REAL>(&projection_dim));
 				hid_t strtype;                     /* Datatype ID */
@@ -146,7 +146,7 @@ protected:
 	  		HOFFSET( Spline, dirx ),HOFFSET( Spline, diry ),HOFFSET( Spline, dirz ),
 	  		HOFFSET( Spline, dirx2 ),HOFFSET( Spline, diry2 ),HOFFSET( Spline, dirz2 )};
 
-		std::vector<unsigned int> spline_dims;
+		std::vector<size_t> spline_dims;
 		spline_dims.push_back(4);
 		spline_dims.push_back(std::accumulate(this->subset_dimensions[subset].begin(),this->subset_dimensions[subset].end(),1,std::multiplies<unsigned int>()));
 

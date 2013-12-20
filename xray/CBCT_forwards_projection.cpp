@@ -107,7 +107,7 @@ int main(int argc, char** argv)
   //
 
   if( image->get_number_of_dimensions() == 3 ){
-    std::vector<unsigned int> dims = *image->get_dimensions();
+    std::vector<size_t> dims = *image->get_dimensions();
     dims.push_back(1);
     image->reshape(&dims);
   }
@@ -190,7 +190,7 @@ int main(int argc, char** argv)
   // Allocate and clear array to hold the result
   //
   
-  std::vector<unsigned int> ps_dims;
+  std::vector<size_t> ps_dims;
   ps_dims.push_back(ps_dims_in_pixels[0]);
   ps_dims.push_back(ps_dims_in_pixels[1]);
   ps_dims.push_back(number_of_projections);

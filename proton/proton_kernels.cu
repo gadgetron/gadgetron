@@ -55,7 +55,7 @@ template< class T, unsigned int D > __inline__ __host__ __device__ vector_td<T,D
 
 template <class REAL> __global__ void Gadgetron::forward_kernel(REAL* image, REAL* projections,
 		vector_td<REAL,3> * splines,  const vector_td<REAL,3> dims,
-		const typename uintd<3>::Type ndims, const int proj_dim, const int offset){
+		const typename intd<3>::Type ndims, const int proj_dim, const int offset){
 
 	const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x+offset;
 	if (idx < proj_dim){
@@ -79,7 +79,7 @@ template <class REAL> __global__ void Gadgetron::forward_kernel(REAL* image, REA
 
 		vector_td<REAL,3> p;
 		vector_td<REAL,3> p_old=d;
-		co = to_intd((p_old+dims/2)*ndims/dims);
+		co = vector_td<int,3>((p_old+dims/2)*ndims/dims);
 		co = amax(amin(co,ndims-1),0);
 		id_old=co_to_idx(co,ndims);
 
@@ -90,9 +90,9 @@ template <class REAL> __global__ void Gadgetron::forward_kernel(REAL* image, REA
 
 			//co = to_intd((p+dims/2)*ndims/dims);
 
-			co = to_intd((p+dims/2)*ndims/dims);
+			co = vector_td<int,3>((p+dims/2)*ndims/dims);
 			co = amax(amin(co,ndims-1),0);
-			id=co_to_idx(to_intd(co),ndims);
+			id=co_to_idx(vector_td<int,3>(co),ndims);
 			//id=co_to_idx(co,ndims);
 			//REAL step_length = norm((-1.0/(steps*steps*steps)-3*t*t/steps+3*t/(steps*steps))*a+(1.0/(steps*steps)-2*t/steps)*b-c/steps);
 			length += norm(p-p_old)/2;
@@ -116,7 +116,7 @@ template <class REAL> __global__ void Gadgetron::forward_kernel(REAL* image, REA
 
 template <class REAL> __global__ void Gadgetron::backwards_kernel(REAL* projections, REAL* image,
 		vector_td<REAL,3> * splines,  const vector_td<REAL,3> dims,
-		const typename uintd<3>::Type ndims, const int proj_dim, const int offset){
+		const typename intd<3>::Type ndims, const int proj_dim, const int offset){
 
 	const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x+offset;
 	if (idx < proj_dim){
@@ -138,7 +138,7 @@ template <class REAL> __global__ void Gadgetron::backwards_kernel(REAL* projecti
 
 		vector_td<REAL,3> p;
 		vector_td<REAL,3> p_old=d;
-		co = to_intd((d+dims/2)*ndims/dims);
+		co = vector_td<int,3>((d+dims/2)*ndims/dims);
 		co = amax(amin(co,ndims-1),0);
 		id_old=co_to_idx(co,ndims);
 
@@ -146,9 +146,9 @@ template <class REAL> __global__ void Gadgetron::backwards_kernel(REAL* projecti
 		for (int i = 1; i < steps; i++){
 			t = REAL(i)/(steps);
 			p = d+t*(c+t*(b+t*a));
-			co = to_intd((p+dims/2)*ndims/dims);
+			co = vector_td<int,3>((p+dims/2)*ndims/dims);
 			co = amax(amin(co,ndims-1),0);
-			id=co_to_idx(to_intd(co),ndims);
+			id=co_to_idx(co,ndims);
 			//REAL step_length = norm(((dt*dt*dt)+3*t*t*dt+3*t*dt*dt)*a+(dt*dt+2*t*dt)*b+c*dt);
 			length += norm(p-p_old)/2;
 
@@ -422,11 +422,11 @@ template <class REAL> __global__ void Gadgetron::length_correction_kernel(vector
 
 
 template __global__ void Gadgetron::forward_kernel<float>(float* , float* ,vector_td<float,3> * ,  const vector_td<float,3> ,
-		const typename uintd<3>::Type, const int , const int );
+		const typename intd<3>::Type, const int , const int );
 
 template __global__ void Gadgetron::backwards_kernel<float>(float* projections, float* image,
 		vector_td<float,3> * splines,  const vector_td<float,3> dims,
-		const typename uintd<3>::Type ndims, const int proj_dim, const int offset);
+		const typename intd<3>::Type ndims, const int proj_dim, const int offset);
 
 template __global__ void Gadgetron::crop_splines_kernel<float>(vector_td<float,3> * splines, float* projections, const  vector_td<float,3>  dims, const  vector_td<float,3>  origin,const int proj_dim,float background,int offset);
 template __global__ void Gadgetron::rescale_directions_kernel<float>(vector_td<float,3> * splines, float* projections, const  vector_td<float,3>  dims,  const int proj_dim, const int offset);

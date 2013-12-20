@@ -105,7 +105,7 @@ int main( int argc, char** argv)
   boost::shared_ptr< hoCuProtonBufferedSubsetOperator<_real> > E (new hoCuProtonBufferedSubsetOperator<_real>(subsets) );
   boost::shared_ptr<hoCuNDArray<_real> >  projections = E->load_data(dataName,physical_dims,origin,background);
 
-  std::vector<unsigned int> rhs_dims(&dimensions[0],&dimensions[3]); //Quick and dirty vector_td to vector
+  std::vector<size_t> rhs_dims(&dimensions[0],&dimensions[3]); //Quick and dirty vector_td to vector
   E->set_domain_dimensions(&rhs_dims);
   E->set_codomain_dimensions(projections->get_dimensions().get());
   boost::shared_ptr<hoCuNDArray<_real > > prior;

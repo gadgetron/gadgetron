@@ -129,7 +129,7 @@ int main( int argc, char** argv)
   boost::shared_ptr< hoCuOperatorPathBackprojection<_real> > E (new hoCuOperatorPathBackprojection<_real> );
   E->setup(splines,physical_dims,projections,origin,background);
 
-  std::vector<unsigned int> rhs_dims(&dimensions[0],&dimensions[3]); //Quick and dirty vector_td to vector
+  std::vector<size_t> rhs_dims(&dimensions[0],&dimensions[3]); //Quick and dirty vector_td to vector
   E->set_domain_dimensions(&rhs_dims);
   E->set_codomain_dimensions(projections->get_dimensions().get());
 

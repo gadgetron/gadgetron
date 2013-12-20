@@ -14,12 +14,12 @@ using testing::Types;
 template <typename T> class cuWaveletTest : public ::testing::Test {
 protected:
   virtual void SetUp() {
-    unsigned int vdims[] = {2,4}; //Using prime numbers for setup because they are messy
-    dims = std::vector<unsigned int>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
+    size_t vdims[] = {2,4}; //Using prime numbers for setup because they are messy
+    dims = std::vector<size_t>(vdims,vdims+sizeof(vdims)/sizeof(unsigned int));
     Array = cuNDArray<T>(&dims);
     op.set_domain_dimensions(&dims);
   }
-  std::vector<unsigned int> dims;
+  std::vector<size_t> dims;
   cuNDArray<T> Array;
   cuHaarWaveletOperator<T,2> op;
 

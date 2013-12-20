@@ -16,10 +16,10 @@ template<class REAL> class hoCuProtonSubsetOperator : public subsetOperator<hoCu
 
 public:
 	hoCuProtonSubsetOperator() : subsetOperator<hoCuNDArray<REAL> >(1){
-		this->subset_dimensions = std::vector<std::vector<unsigned int> > (1, std::vector<unsigned int>(1) );
+		this->subset_dimensions = std::vector<std::vector<size_t> > (1, std::vector<size_t>(1) );
 	}
 	hoCuProtonSubsetOperator(int subsets) : subsetOperator<hoCuNDArray<REAL> >(subsets){
-		this->subset_dimensions = std::vector<std::vector<unsigned int> > (subsets, std::vector<unsigned int>(1) );
+		this->subset_dimensions = std::vector<std::vector<size_t> > (subsets, std::vector<size_t>(1) );
 	}
 
 	virtual ~hoCuProtonSubsetOperator(){};
@@ -33,7 +33,7 @@ public:
 		calculate_subset_dimensions(file_id,groupnames);
 		size_t elements = 0;
 		for (int i = 0; i < this->number_of_subsets; i++)
-			elements += std::accumulate(this->subset_dimensions[i].begin(),this->subset_dimensions[i].end(),1,std::multiplies<unsigned int>());
+			elements += std::accumulate(this->subset_dimensions[i].begin(),this->subset_dimensions[i].end(),1,std::multiplies<size_t>());
 
 		loadSplines(file_id,groupnames,elements);
 
@@ -85,7 +85,7 @@ protected:
 
 	boost::shared_ptr<hoCuNDArray<REAL> > loadProjections(hid_t file_id,std::vector<std::string>& groupnames, size_t elements){
 
-			std::vector<unsigned int> projection_dim(1,elements);
+			std::vector<size_t> projection_dim(1,elements);
 
 			boost::shared_ptr<hoCuNDArray<REAL> > projections(new hoCuNDArray<REAL>(&projection_dim));
 			hid_t strtype;                     /* Datatype ID */
@@ -129,7 +129,7 @@ protected:
 	  		HOFFSET( Spline, dirx ),HOFFSET( Spline, diry ),HOFFSET( Spline, dirz ),
 	  		HOFFSET( Spline, dirx2 ),HOFFSET( Spline, diry2 ),HOFFSET( Spline, dirz2 )};
 
-		std::vector<unsigned int> spline_dims;
+		std::vector<size_t> spline_dims;
 		spline_dims.push_back(4);
 		spline_dims.push_back(elements);
 
@@ -138,12 +138,12 @@ protected:
 
 		vector_td<REAL,3>* splinePtr = splines->get_data_ptr();
 		for (int subset = 0; subset < this->number_of_subsets; subset++){
-			std::vector<unsigned int> subspline_dim =this->subset_dimensions[subset];
+			std::vector<size_t> subspline_dim =this->subset_dimensions[subset];
 			subspline_dim.insert(subspline_dim.begin(),4);
 
 			boost::shared_ptr<hoCuNDArray<vector_td<REAL,3> > > subSpline(new hoCuNDArray<vector_td<REAL,3> >(&subspline_dim,splinePtr));
 			spline_arrays.push_back(subSpline);
-			splinePtr += std::accumulate(subspline_dim.begin(),subspline_dim.end(),1,std::multiplies<unsigned int>());
+			splinePtr += std::accumulate(subspline_dim.begin(),subspline_dim.end(),1,std::multiplies<size_t>());
 		}
 
 		hid_t strtype;                     /* Datatype ID */

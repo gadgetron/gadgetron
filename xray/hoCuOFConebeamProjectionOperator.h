@@ -88,8 +88,8 @@ namespace Gadgetron{
         throw std::runtime_error("Error: hoCuRegistrationCBCT_RegularizationOperator::set_displacement_field : displacement field not five-dimensional (x,y,z,t,{3,4})");
       }
 
-      uintd4 dims( displacements->get_size(0), displacements->get_size(1), displacements->get_size(2), displacements->get_size(3) );
-      reg_is_dims_4d_ = to_std_vector<unsigned int,4>(dims);
+      uint64d4 dims( displacements->get_size(0), displacements->get_size(1), displacements->get_size(2), displacements->get_size(3) );
+      reg_is_dims_4d_ = to_std_vector<size_t,4>(dims);
 
       R_ = boost::shared_ptr< hoLinearResampleOperator_eigen<float,3> >( new hoLinearResampleOperator_eigen<float,3> );
       R_->set_displacement_field( displacements );
@@ -152,7 +152,7 @@ namespace Gadgetron{
         moving_image = image;
       else{
         // Downsampling required
-        std::vector<unsigned int> tmp_dims = *image->get_dimensions();
+        std::vector<size_t> tmp_dims = *image->get_dimensions();
         cuNDArray<float> tmp_in(image);
         for( unsigned int d=0; d<num_downsamples; d++ ){
           for( unsigned int i=0; i<tmp_dims.size(); i++ ) tmp_dims[i] /= 2;
@@ -169,7 +169,7 @@ namespace Gadgetron{
       hoCuNDArray<float> image_4d(&reg_is_dims_4d_);
       R_->mult_M( moving_image, &image_4d );
             
-      std::vector<unsigned int> is_dims_3d = reg_is_dims_4d_;
+      std::vector<size_t> is_dims_3d = reg_is_dims_4d_;
       is_dims_3d.pop_back();
 
       int num_3d_elements = is_dims_3d[0]*is_dims_3d[1]*is_dims_3d[2];
@@ -241,7 +241,7 @@ namespace Gadgetron{
 
       hoCuNDArray<float> image_4d(&reg_is_dims_4d_);
 
-      std::vector<unsigned int> is_dims_3d = reg_is_dims_4d_;
+      std::vector<size_t> is_dims_3d = reg_is_dims_4d_;
       is_dims_3d.pop_back();
       
       intd3 is_dims_lores( is_dims_3d[0], is_dims_3d[1], is_dims_3d[2]);
@@ -288,7 +288,7 @@ namespace Gadgetron{
       else{
         // Upsampling required
         unsigned int num_upsamples = log2l(image->get_size(0)/reg_is_dims_4d_[0]);
-        std::vector<unsigned int> dims_3d = reg_is_dims_4d_;
+        std::vector<size_t> dims_3d = reg_is_dims_4d_;
         dims_3d.pop_back();
         hoCuNDArray<float> image_lowres(&dims_3d);
         R_->mult_MH( &image_4d, &image_lowres );
@@ -315,7 +315,7 @@ namespace Gadgetron{
     boost::shared_ptr< hoLinearResampleOperator_eigen<float,3> > R_;
     boost::shared_ptr<CBCT_acquisition> acquisition_;
     boost::shared_ptr<CBCT_binning> binning_;
-    std::vector<unsigned int> reg_is_dims_4d_;
+    std::vector<size_t> reg_is_dims_4d_;
     int phase_;
     floatd3 is_dims_in_mm_;
     float samples_per_pixel_;
