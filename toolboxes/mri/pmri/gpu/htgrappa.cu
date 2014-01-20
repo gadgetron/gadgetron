@@ -540,7 +540,7 @@ namespace Gadgetron {
     int kernel_elements = gkernel.get_number_of_elements()/target_coils;
     int total_elements = tmp_mixing.get_number_of_elements()/source_coils;
     dkernel_size.y *= acceleration_factor;
-    cuNDFFT<typename realType<T>::Type> ft;
+
     std::vector<size_t> ft_dims(2,0);ft_dims[1] = 1;
     clear(out_mixing_coeff);
     unsigned int current_uncombined_index = 0;
@@ -567,7 +567,7 @@ namespace Gadgetron {
           return -1;
         }
 
-        ft.ifft(&tmp_mixing, &ft_dims);
+        cuNDFFT<typename realType<T>::Type>::instance()->ifft(&tmp_mixing, &ft_dims);
 
         float scale_factor = total_elements;
 

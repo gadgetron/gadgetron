@@ -254,7 +254,7 @@ int main(int argc, char** argv)
     cuNDArray<_complext> *reg_image = new cuNDArray<_complext>(&image_dims);
 
     E->mult_csm_conj_sum( image, reg_image );
-    cuNDFFT<_real>().ifft( reg_image, 2, true );
+    cuNDFFT<_real>::instance()->ifft( reg_image, 2, true );
 
 
     R->compute( reg_image );
@@ -287,7 +287,7 @@ int main(int argc, char** argv)
     }
 
     // Goto from x-f to x-t space
-    cuNDFFT<_real>().fft( cgresult.get(), 2 );
+    cuNDFFT<_real>::instance()->fft( cgresult.get(), 2 );
     
     // Copy cgresult to result
     cuNDArray<_complext> tmp(&image_dims, result.get_data_ptr()+reconstruction*prod(matrix_size)*frames_per_reconstruction);    

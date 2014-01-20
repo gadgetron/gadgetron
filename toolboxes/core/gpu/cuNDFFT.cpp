@@ -9,7 +9,15 @@
 #include <sstream>
 
 namespace Gadgetron{
-  
+
+
+	template<class T> cuNDFFT<T>* cuNDFFT<T>::instance(){
+		if (!__instance)
+			__instance = new cuNDFFT<T>;
+		return __instance;
+	}
+
+	template<class T> cuNDFFT<T>* cuNDFFT<T>::__instance = NULL;
   template<class T> cufftType_t get_transform_type();
   template<> cufftType_t get_transform_type<float>() { return CUFFT_C2C; }
   template<> cufftType_t get_transform_type<double>() { return CUFFT_Z2Z; }

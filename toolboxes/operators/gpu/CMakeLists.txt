@@ -41,6 +41,7 @@ install(FILES
   cuTvPicsOperator.h
   cuTv1dOperator.h
   cuDownsampleOperator.h
+  cuFFTOperator.h
   cuUpsampleOperator.h
   hoCuTvOperator.h
   hoCuTvPicsOperator.h

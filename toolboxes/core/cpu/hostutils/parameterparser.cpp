@@ -4,6 +4,7 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <stdexcept>
 
 namespace Gadgetron {
 
@@ -322,6 +323,8 @@ namespace Gadgetron {
         return m_parameter_list[i];
       }
     }
-    return 0;
+    std::stringstream ss;
+    ss << "Parameter " << com_switch << " is undefined";
+    throw std::runtime_error(ss.str());
   }
 }
