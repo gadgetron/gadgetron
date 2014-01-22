@@ -48,8 +48,9 @@ endif (WIN32)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/prod/bin/vc10 CACHE STRING "Where to put the executables")
-SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/prod/bin/vc10 CACHE STRING "Where to put the libraries")
+# uncomment these if all compiled targets are to be stored in the same directory
+#SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin CACHE STRING "Where to put the executables")
+#SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin CACHE STRING "Where to put the libraries")
 
 # whether to suppress compilation warnings
 OPTION(BUILD_SUPPRESS_WARNINGS "Build package while suppressing warnings" Off)
