@@ -76,10 +76,15 @@ struct gtPlusReconWorkOrderPara
     // for ISMRMRD_SOUHEIL
     size_t csm_kSize_;
     size_t csm_powermethod_num_;
+    // for 3D acquisition, whether to use the true 3D data correlation matrix
+    bool csm_true_3D_;
 
     // for ISMRMRD_SOUHEIL_ITER
     size_t csm_iter_num_;
     double csm_iter_thres_;
+
+    // whether to use gpu for csm estimation
+    bool csm_use_gpu_;
 
     // -------------------------------
     // parameters for variant reconstruction algorithms
@@ -92,6 +97,8 @@ struct gtPlusReconWorkOrderPara
     size_t grappa_kSize_E1_;
     size_t grappa_kSize_E2_;
     double grappa_reg_lamda_;
+    double grappa_calib_over_determine_ratio_;
+    bool grappa_use_gpu_;
 
     // sense
 
@@ -110,6 +117,8 @@ struct gtPlusReconWorkOrderPara
     size_t spirit_iter_max_;
     double spirit_iter_thres_;
     bool spirit_print_iter_;
+
+    bool spirit_use_gpu_;
 
     // L1 SPIRiT
     bool spirit_perform_linear_;
@@ -227,8 +236,10 @@ struct gtPlusReconWorkOrderPara
         coil_map_algorithm_ = ISMRMRD_SOUHEIL;
         csm_kSize_ = 7;
         csm_powermethod_num_ = 3;
+        csm_true_3D_ = false;
         csm_iter_num_ = 5;
         csm_iter_thres_ = 1e-3;
+        csm_use_gpu_ = true;
 
         recon_algorithm_ = ISMRMRD_GRAPPA;
         recon_auto_parameters_ = true;
@@ -237,6 +248,8 @@ struct gtPlusReconWorkOrderPara
         grappa_kSize_E1_ = 4;
         grappa_kSize_E2_ = 4;
         grappa_reg_lamda_ = 0.0005;
+        grappa_calib_over_determine_ratio_ = 0;
+        grappa_use_gpu_ = true;
 
         spirit_kSize_RO_ = 7;
         spirit_kSize_E1_ = 7;
@@ -244,6 +257,8 @@ struct gtPlusReconWorkOrderPara
 
         spirit_reg_lamda_ = 0.005;
         spirit_calib_over_determine_ratio_ = 0;
+
+        spirit_use_gpu_ = true;
 
         spirit_solve_symmetric_ = false;
 
@@ -504,8 +519,10 @@ void gtPlusReconWorkOrder<T>::duplicatePara(gtPlusReconWorkOrderPara& worder) co
     worder.coil_map_algorithm_ = coil_map_algorithm_;
     worder.csm_kSize_ = csm_kSize_;
     worder.csm_powermethod_num_ = csm_powermethod_num_;
+    worder.csm_true_3D_ = csm_true_3D_;
     worder.csm_iter_num_ = csm_iter_num_;
     worder.csm_iter_thres_ = csm_iter_thres_;
+    worder.csm_use_gpu_ = csm_use_gpu_;
 
     worder.start_RO_ = start_RO_;
     worder.end_RO_ = end_RO_;
@@ -524,11 +541,14 @@ void gtPlusReconWorkOrder<T>::duplicatePara(gtPlusReconWorkOrderPara& worder) co
     worder.grappa_kSize_E1_ = grappa_kSize_E1_;
     worder.grappa_kSize_E2_ = grappa_kSize_E2_;
     worder.grappa_reg_lamda_ = grappa_reg_lamda_;
+    worder.grappa_calib_over_determine_ratio_ = grappa_calib_over_determine_ratio_;
+    worder.grappa_use_gpu_ = grappa_use_gpu_;
 
     worder.spirit_kSize_RO_ = spirit_kSize_RO_;
     worder.spirit_kSize_E1_ = spirit_kSize_E1_;
     worder.spirit_kSize_E2_ = spirit_kSize_E2_;
     worder.spirit_reg_lamda_ = spirit_reg_lamda_;
+    worder.spirit_use_gpu_ = spirit_use_gpu_;
     worder.spirit_calib_over_determine_ratio_ = spirit_calib_over_determine_ratio_;
     worder.spirit_solve_symmetric_ = spirit_solve_symmetric_;
     worder.spirit_iter_max_ = spirit_iter_max_;
@@ -642,8 +662,10 @@ void gtPlusReconWorkOrder<T>::copyFromPara(const gtPlusReconWorkOrderPara& worde
     coil_map_algorithm_ = worder.coil_map_algorithm_;
     csm_kSize_ = worder.csm_kSize_;
     csm_powermethod_num_ = worder.csm_powermethod_num_;
+    csm_true_3D_ = worder.csm_true_3D_;
     csm_iter_num_ = worder.csm_iter_num_;
     csm_iter_thres_ = worder.csm_iter_thres_;
+    csm_use_gpu_ = worder.csm_use_gpu_;
 
     start_RO_ = worder.start_RO_;
     end_RO_ = worder.end_RO_;
@@ -662,11 +684,14 @@ void gtPlusReconWorkOrder<T>::copyFromPara(const gtPlusReconWorkOrderPara& worde
     grappa_kSize_E1_ = worder.grappa_kSize_E1_;
     grappa_kSize_E2_ = worder.grappa_kSize_E2_;
     grappa_reg_lamda_ = worder.grappa_reg_lamda_;
+    grappa_calib_over_determine_ratio_ = worder.grappa_calib_over_determine_ratio_;
+    grappa_use_gpu_ = worder.grappa_use_gpu_;
 
     spirit_kSize_RO_ = worder.spirit_kSize_RO_;
     spirit_kSize_E1_ = worder.spirit_kSize_E1_;
     spirit_kSize_E2_ = worder.spirit_kSize_E2_;
     spirit_reg_lamda_ = worder.spirit_reg_lamda_;
+    spirit_use_gpu_ = worder.spirit_use_gpu_;
     spirit_calib_over_determine_ratio_ = worder.spirit_calib_over_determine_ratio_;
     spirit_solve_symmetric_ = worder.spirit_solve_symmetric_;
     spirit_iter_max_ = worder.spirit_iter_max_;
@@ -749,8 +774,10 @@ void gtPlusReconWorkOrder<T>::printInfo(std::ostream& os) const
     GADGET_OSTREAM_PRINT(os, coil_map_algorithm_);
     GADGET_OSTREAM_PRINT(os, csm_kSize_);
     GADGET_OSTREAM_PRINT(os, csm_powermethod_num_);
+    GADGET_OSTREAM_PRINT(os, csm_true_3D_);
     GADGET_OSTREAM_PRINT(os, csm_iter_num_);
     GADGET_OSTREAM_PRINT(os, csm_iter_thres_);
+    GADGET_OSTREAM_PRINT(os, csm_use_gpu_);
     os << std::endl;
     GADGET_OSTREAM_PRINT(os, start_RO_);
     GADGET_OSTREAM_PRINT(os, end_RO_);
@@ -766,11 +793,14 @@ void gtPlusReconWorkOrder<T>::printInfo(std::ostream& os) const
     GADGET_OSTREAM_PRINT(os, grappa_kSize_E1_);
     GADGET_OSTREAM_PRINT(os, grappa_kSize_E2_);
     GADGET_OSTREAM_PRINT(os, grappa_reg_lamda_);
+    GADGET_OSTREAM_PRINT(os, grappa_calib_over_determine_ratio_);
+    GADGET_OSTREAM_PRINT(os, grappa_use_gpu_);
     os << std::endl;
     GADGET_OSTREAM_PRINT(os, spirit_kSize_RO_);
     GADGET_OSTREAM_PRINT(os, spirit_kSize_E1_);
     GADGET_OSTREAM_PRINT(os, spirit_kSize_E2_);
     GADGET_OSTREAM_PRINT(os, spirit_reg_lamda_);
+    GADGET_OSTREAM_PRINT(os, spirit_use_gpu_);
     GADGET_OSTREAM_PRINT(os, spirit_calib_over_determine_ratio_);
     GADGET_OSTREAM_PRINT(os, spirit_solve_symmetric_);
     GADGET_OSTREAM_PRINT(os, spirit_iter_max_);

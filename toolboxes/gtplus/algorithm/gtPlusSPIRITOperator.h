@@ -17,7 +17,7 @@ public:
 
     typedef gtPlusOperator<T> BaseClass;
 
-    gtPlusSPIRITOperator() : use_symmetric_spirit_(false), BaseClass() {}
+    gtPlusSPIRITOperator() : use_symmetric_spirit_(false), use_non_centered_fft_(false), BaseClass() {}
     virtual ~gtPlusSPIRITOperator() {}
 
     virtual void printInfo(std::ostream& os);
@@ -54,6 +54,10 @@ public:
     // non-symmetric equation: A = (G-I)Dc'
     bool use_symmetric_spirit_;
 
+    // if true, use the fft. not fftc
+    bool use_non_centered_fft_;
+
+    using gtPlusSPIRIT<T>::calib_use_gpu_;
     using BaseClass::gt_timer1_;
     using BaseClass::gt_timer2_;
     using BaseClass::gt_timer3_;

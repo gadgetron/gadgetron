@@ -48,6 +48,9 @@ endif (WIN32)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
+SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/prod/bin/vc10 CACHE STRING "Where to put the executables")
+SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/prod/bin/vc10 CACHE STRING "Where to put the libraries")
+
 # whether to suppress compilation warnings
 OPTION(BUILD_SUPPRESS_WARNINGS "Build package while suppressing warnings" Off)
 if (BUILD_SUPPRESS_WARNINGS)
@@ -95,6 +98,9 @@ else(ACE_FOUND)
 endif(ACE_FOUND)
 
 find_package(CUDA 4.1)
+if ( CUDA_FOUND )
+    ADD_DEFINITIONS(-DUSE_CUDA)
+endif ( CUDA_FOUND )
 
 find_package(GTest)
 #Add support for the default ubuntu package of gtest (which is not compiled
@@ -140,10 +146,10 @@ if (CUDA_FOUND)
   # Support compute model 3.0 from Cuda 4.2 and up
   # Support compute model 3.5 from Cuda 5 and up
 
-  set(CUDA_NVCC_FLAGS1 "-gencode arch=compute_10,code=sm_10")
-  set(CUDA_NVCC_FLAGS2 "-gencode arch=compute_20,code=sm_20")
+  #set(CUDA_NVCC_FLAGS1 "-gencode arch=compute_10,code=sm_10")
+  #set(CUDA_NVCC_FLAGS2 "-gencode arch=compute_20,code=sm_20")
   set(CUDA_NVCC_FLAGS3 "-gencode arch=compute_30,code=sm_30") 
-  set(CUDA_NVCC_FLAGS4 "-gencode arch=compute_35,code=sm_35")   
+  #set(CUDA_NVCC_FLAGS4 "-gencode arch=compute_35,code=sm_35")   
 
   if(${CUDA_VERSION} VERSION_GREATER "4.99")
     set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS1} ${CUDA_NVCC_FLAGS2} ${CUDA_NVCC_FLAGS3} ${CUDA_NVCC_FLAGS4})

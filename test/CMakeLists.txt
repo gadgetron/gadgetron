@@ -15,6 +15,13 @@ include_directories(
   ${GTEST_INCLUDE_DIRS}
   )
 
+link_libraries(cpucore 
+    cpucore_math
+    ${BOOST_LIBRARIES}
+    ${GTEST_LIBRARIES} 
+    ${ARMADILLO_LIBRARIES}
+    )
+    
 if ( CUDA_FOUND )
     cuda_add_executable(test_all 
       tests.cpp 
@@ -44,21 +51,9 @@ endif ( CUDA_FOUND )
 if ( CUDA_FOUND )
   target_link_libraries(test_all 
     gpucore
-    cpucore 
-    cpucore_math
-    ${CUDA_LIBRARIES} 
-    ${BOOST_LIBRARIES}
-    ${GTEST_LIBRARIES} 
-    ${ARMADILLO_LIBRARIES}
     )
 elseif ( CUDA_FOUND )  
-  target_link_libraries(test_all 
-    cpucore 
-    cpucore_math
-    ${BOOST_LIBRARIES}
-    ${GTEST_LIBRARIES} 
-    ${ARMADILLO_LIBRARIES}
-    )
+
 endif ( CUDA_FOUND )
 
 add_test(test_all test_all)

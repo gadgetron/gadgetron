@@ -386,7 +386,7 @@ bool gtPlusReconWorker<T>::splitReconJob(gtPlusReconWorkOrder<T>* workOrder2DT, 
         size_t refN = ker.get_size(4);
 
         size_t n, s;
-        size_t startN, endN;
+        int startN, endN;
 
         if ( splitByS )
         {
@@ -485,7 +485,10 @@ combineReconJob(gtPlusReconWorkOrder<T>* workOrder2DT, std::vector<gtPlusReconJo
         size_t refN = jobList[0].ker.get_size(4);
 
         workOrder2DT->complexIm_.create(RO, E1, N, S);
+        Gadgetron::clear(workOrder2DT->complexIm_);
+
         workOrder2DT->fullkspace_.create(RO, E1, dstCHA, N, S);
+        Gadgetron::clear(workOrder2DT->fullkspace_);
 
         size_t ii, n, s;
 

@@ -20,4 +20,13 @@ namespace Gadgetron{
    */
   template<class REAL, unsigned int D> EXPORTGPUPMRI boost::shared_ptr< cuNDArray<complext<REAL> > >
   estimate_b1_map( cuNDArray<complext<REAL> > *data, int target_coils = -1 );
+
+    /** 
+   * \brief Estimate b1 map (coil sensitivities) of single or double precision using the NIH Souheil method
+   * \param data [RO E1 CHA] for single 2D or [RO E1 N CHA] for multiple 2D reconstructed reference images from the individual coils. 
+   */
+  template<class REAL> EXPORTGPUPMRI bool
+  estimate_b1_map_2D_NIH_Souheil( cuNDArray<complext<REAL> >* data, cuNDArray<complext<REAL> >* csm, size_t ks, size_t power,
+                                  cuNDArray<complext<REAL> >& D, cuNDArray<complext<REAL> >& DH_D, 
+                                  cuNDArray<complext<REAL> >& V1, cuNDArray<complext<REAL> >& U1 );
 }

@@ -22,9 +22,20 @@ namespace Gadgetron{
   {
   public:
 
-    GadgetronTimer() : name_("GPUTimer"), timing_in_destruction_(true) { }
+    GadgetronTimer() : name_("GPUTimer"), timing_in_destruction_(true)
+    {
+        pre();
+        start();
+    }
 
-    GadgetronTimer(bool timing) : name_("GPUTimer"), timing_in_destruction_(timing) { }
+    GadgetronTimer(bool timing) : name_("GPUTimer"), timing_in_destruction_(timing)
+    {
+        if ( timing_in_destruction_ )
+        {
+            pre();
+            start();
+        }
+    }
 
     GadgetronTimer(const char* name, bool timing=false) : name_(name), timing_in_destruction_(timing) 
     {
@@ -47,7 +58,7 @@ namespace Gadgetron{
     virtual void pre() {}
     virtual void post() {}
 
-    void start()
+    virtual void start()
     {
 #ifdef WIN32
         QueryPerformanceFrequency(&frequency_);
@@ -63,7 +74,7 @@ namespace Gadgetron{
         start();
     }
 
-    void stop()
+    virtual void stop()
     {
         double time_in_us = 0.0;
 #ifdef WIN32

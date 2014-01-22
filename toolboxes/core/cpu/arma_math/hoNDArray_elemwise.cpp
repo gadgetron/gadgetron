@@ -1009,9 +1009,9 @@ namespace Gadgetron{
             start[2] = kerE2/2;
 
             MKL_INT kerStride[3], xstride[3], zstride[3];
-            kerStride[0] = 1; kerStride[1] = kerRO; kerStride[2] = kerE1;
-            xstride[0] = 1; xstride[1] = RO; xstride[2] = E1;
-            zstride[0] = 1; zstride[1] = RO; zstride[2] = E1;
+            kerStride[0] = 1; kerStride[1] = kerRO; kerStride[2] = kerRO*kerE1;
+            xstride[0] = 1; xstride[1] = RO; xstride[2] = RO*E1;
+            zstride[0] = 1; zstride[1] = RO; zstride[2] = RO*E1;
 
             const float* pX = x.begin();
             const float* pKer = ker.begin();
@@ -1386,9 +1386,9 @@ namespace Gadgetron{
             start[2] = kerE2/2;
 
             MKL_INT kerStride[3], xstride[3], zstride[3];
-            kerStride[0] = 1; kerStride[1] = kerRO; kerStride[2] = kerE1;
-            xstride[0] = 1; xstride[1] = RO; xstride[2] = E1;
-            zstride[0] = 1; zstride[1] = RO; zstride[2] = E1;
+            kerStride[0] = 1; kerStride[1] = kerRO; kerStride[2] = kerRO*kerE1;
+            xstride[0] = 1; xstride[1] = RO; xstride[2] = RO*E1;
+            zstride[0] = 1; zstride[1] = RO; zstride[2] = RO*E1;
 
             const double* pX = x.begin();
             const double* pKer = ker.begin();
@@ -1829,9 +1829,9 @@ namespace Gadgetron{
             start[2] = kerE2/2;
 
             MKL_INT kerStride[3], xstride[3], zstride[3];
-            kerStride[0] = 1; kerStride[1] = kerRO; kerStride[2] = kerE1;
-            xstride[0] = 1; xstride[1] = RO; xstride[2] = E1;
-            zstride[0] = 1; zstride[1] = RO; zstride[2] = E1;
+            kerStride[0] = 1; kerStride[1] = kerRO; kerStride[2] = kerRO*kerE1;
+            xstride[0] = 1; xstride[1] = RO; xstride[2] = RO*E1;
+            zstride[0] = 1; zstride[1] = RO; zstride[2] = RO*E1;
 
             const MKL_Complex8* pX = reinterpret_cast<const MKL_Complex8*>(x.begin());
             const MKL_Complex8* pKer = reinterpret_cast<const MKL_Complex8*>(ker.begin());
@@ -2281,9 +2281,9 @@ namespace Gadgetron{
             start[2] = kerE2/2;
 
             MKL_INT kerStride[3], xstride[3], zstride[3];
-            kerStride[0] = 1; kerStride[1] = kerRO; kerStride[2] = kerE1;
-            xstride[0] = 1; xstride[1] = RO; xstride[2] = E1;
-            zstride[0] = 1; zstride[1] = RO; zstride[2] = E1;
+            kerStride[0] = 1; kerStride[1] = kerRO; kerStride[2] = kerRO*kerE1;
+            xstride[0] = 1; xstride[1] = RO; xstride[2] = RO*E1;
+            zstride[0] = 1; zstride[1] = RO; zstride[2] = RO*E1;
 
             const MKL_Complex16* pX = reinterpret_cast<const MKL_Complex16*>(x.begin());
             const MKL_Complex16* pKer = reinterpret_cast<const MKL_Complex16*>(ker.begin());
@@ -2387,7 +2387,7 @@ namespace Gadgetron{
                 r.create(&dimR);
             }
 
-            Gadgetron::clear(&r);
+            // Gadgetron::clear(&r);
 
             if ( x.get_size(NDim-1) <= 1 )
             {
@@ -2478,15 +2478,20 @@ namespace Gadgetron{
             //}
 
             int l;
-            #pragma omp parallel for default(none) private(l) shared(lastDim, secondLastDim, NS, NR, pA, pR, dimRInternal)
-            for ( l=0; l<(int)lastDim; l++ )
+            #pragma omp parallel default(none) private(l) shared(lastDim, secondLastDim, NS, NR, pA, pR, dimRInternal)
             {
-                memcpy(pR+l*NR, pA+l*NS, sizeof(T)*NR);
-                hoNDArray<T> tmp(&dimRInternal, pR+l*NR);
-                for ( size_t s=1; s<secondLastDim; s++ )
+                hoNDArray<T> tmp, tmp2;
+
+                #pragma omp for
+                for ( l=0; l<(int)lastDim; l++ )
                 {
-                    hoNDArray<T> tmp2(&dimRInternal, pA+l*NS+s*NR);
-                    add(tmp, tmp2, tmp);
+                    memcpy(pR+l*NR, pA+l*NS, sizeof(T)*NR);
+                    tmp.create(&dimRInternal, pR+l*NR);
+                    for ( size_t s=1; s<secondLastDim; s++ )
+                    {
+                        tmp2.create(&dimRInternal, pA+l*NS+s*NR);
+                        add(tmp, tmp2, tmp);
+                    }
                 }
             }
         }
@@ -3654,6 +3659,121 @@ namespace Gadgetron{
     }*/
 
     template<typename T> 
+    bool cropOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r, size_t start, size_t end)
+    {
+        try
+        {
+            boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
+
+            size_t NDim = dimX->size();
+
+            if ( NDim <= 2 )
+            {
+                r = x;
+                return true;
+            }
+
+            size_t RO = x.get_size(0);
+            size_t E1 = x.get_size(1);
+            size_t E2 = x.get_size(2);
+
+            size_t E2_R = end-start+1;
+
+            if ( E2 <= E2_R )
+            {
+                r = x;
+                return true;
+            }
+
+            std::vector<size_t> dimR(*dimX);
+            dimR[2] = E2_R;
+
+            r.create(&dimR);
+
+            size_t N2D = RO*E1;
+            size_t N3D = RO*E1*E2;
+            size_t N3D_R = RO*E1*E2_R;
+
+            size_t N = x.get_number_of_elements()/N3D;
+
+            const T* pX = x.begin();
+            T* pR = r.begin();
+
+            size_t n;
+            for ( n=0; n<N; n++ )
+            {
+                int e2;
+                #pragma omp parallel for default(none) private(e2) shared(N2D, N3D, N3D_R, pX, pR, RO, E1, E2, n, start, end)
+                for ( e2=start; e2<=end; e2++ )
+                {
+                    memcpy(pR+n*N3D_R+(e2-start)*N2D, pX+n*N3D+e2*N2D, sizeof(T)*N2D);
+                }
+            }
+        }
+        catch (...)
+        {
+            GADGET_ERROR_MSG("Errors in cropOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r, size_t start, size_t end) ... ");
+            return false;
+        }
+        return true;
+    }
+
+    template<typename T> bool setSubArrayOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r, size_t start, size_t end)
+    {
+        try
+        {
+            boost::shared_ptr< std::vector<size_t> > dimR = r.get_dimensions();
+
+            size_t NDim = dimR->size();
+
+            if ( NDim <= 2 )
+            {
+                r = x;
+                return true;
+            }
+
+            size_t RO = r.get_size(0);
+            size_t E1 = r.get_size(1);
+            size_t E2 = r.get_size(2);
+
+            size_t E2_X = end-start+1;
+            GADGET_CHECK_RETURN_FALSE( E2_X == x.get_size(2) );
+
+            if ( E2_X >= E2 )
+            {
+                r = x;
+                return true;
+            }
+
+            size_t N2D = RO*E1;
+            size_t N3D = RO*E1*E2;
+            size_t N3D_X = RO*E1*E2_X;
+
+            size_t N = r.get_number_of_elements()/N3D;
+
+            const T* pX = x.begin();
+            T* pR = r.begin();
+
+            size_t n;
+            for ( n=0; n<N; n++ )
+            {
+                int e2;
+                #pragma omp parallel for default(none) private(e2) shared(N2D, N3D, N3D_X, pX, pR, RO, E1, E2, n, start, end)
+                for ( e2=start; e2<=end; e2++ )
+                {
+                    memcpy(pR+n*N3D+e2*N2D, pX+n*N3D_X+(e2-start)*N2D, sizeof(T)*N2D);
+                }
+            }
+        }
+        catch (...)
+        {
+            GADGET_ERROR_MSG("Errors in setSubArrayOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r, size_t start, size_t end) ... ");
+            return false;
+        }
+        return true;
+    }
+
+    template<typename T> 
     bool permuteE2To3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         try
@@ -3723,7 +3843,7 @@ namespace Gadgetron{
 
             size_t NDim = dimX->size();
 
-            if ( NDim <= 5 )
+            if ( NDim < 5 )
             {
                 r = x;
                 return true;
@@ -3973,6 +4093,68 @@ namespace Gadgetron{
     }
 
     template<typename T> 
+    bool permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
+    {
+        try
+        {
+            boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
+
+            size_t NDim = dimX->size();
+
+            if ( NDim < 3 )
+            {
+                r = x;
+                return true;
+            }
+
+            size_t RO = x.get_size(0);
+            size_t E1 = x.get_size(1);
+            size_t E2 = x.get_size(2);
+
+            std::vector<size_t> dimR(*dimX);
+            dimR[0] = E2;
+            dimR[1] = RO;
+            dimR[2] = E1;
+
+            r.create(&dimR);
+
+            size_t N3D = RO*E1*E2;
+
+            size_t N = x.get_number_of_elements()/N3D;
+
+            const T* pX = x.begin();
+            T* pR = r.begin();
+
+            long long n, e2;
+            for ( n=0; n<(long long)N; n++ )
+            {
+                T* pRn = pR + n*N3D;
+                T* pXn = const_cast<T*>(pX) + n*N3D;
+
+                #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, pXn, pRn)
+                for ( e2=0; e2<(long long)E2; e2++ )
+                {
+                    for ( size_t e1=0; e1<E1; e1++ )
+                    {
+                        size_t indRn = e2+e1*E2*RO;
+                        size_t indXn = e1*RO+e2*RO*E1;
+                        for ( size_t ro=0; ro<RO; ro++ )
+                        {
+                            pRn[ro*E2+indRn] = pXn[ro+indXn];
+                        }
+                    }
+                }
+            }
+        }
+        catch (...)
+        {
+            GADGET_ERROR_MSG("Errors in permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
+            return false;
+        }
+        return true;
+    }
+
+    template<typename T> 
     bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         try
@@ -4140,6 +4322,20 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH bool setSubArrayUpTo10DArray(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
     template EXPORTCPUCOREMATH bool setSubArrayUpTo10DArray(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
 
+    template EXPORTCPUCOREMATH bool cropOver3rdDimension(const hoNDArray<short>& x, hoNDArray<short>& r, size_t start, size_t end);
+    template EXPORTCPUCOREMATH bool cropOver3rdDimension(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, size_t start, size_t end);
+    template EXPORTCPUCOREMATH bool cropOver3rdDimension(const hoNDArray<float>& x, hoNDArray<float>& r, size_t start, size_t end);
+    template EXPORTCPUCOREMATH bool cropOver3rdDimension(const hoNDArray<double>& x, hoNDArray<double>& r, size_t start, size_t end);
+    template EXPORTCPUCOREMATH bool cropOver3rdDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r, size_t start, size_t end);
+    template EXPORTCPUCOREMATH bool cropOver3rdDimension(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r, size_t start, size_t end);
+
+    template EXPORTCPUCOREMATH bool setSubArrayOver3rdDimension(const hoNDArray<short>& x, hoNDArray<short>& r, size_t start, size_t end);
+    template EXPORTCPUCOREMATH bool setSubArrayOver3rdDimension(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, size_t start, size_t end);
+    template EXPORTCPUCOREMATH bool setSubArrayOver3rdDimension(const hoNDArray<float>& x, hoNDArray<float>& r, size_t start, size_t end);
+    template EXPORTCPUCOREMATH bool setSubArrayOver3rdDimension(const hoNDArray<double>& x, hoNDArray<double>& r, size_t start, size_t end);
+    template EXPORTCPUCOREMATH bool setSubArrayOver3rdDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r, size_t start, size_t end);
+    template EXPORTCPUCOREMATH bool setSubArrayOver3rdDimension(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r, size_t start, size_t end);
+
     template EXPORTCPUCOREMATH bool stdOver3rdDimension(const hoNDArray<float>& x, hoNDArray<float>& std, bool NMinusOne);
     template EXPORTCPUCOREMATH bool stdOver3rdDimension(const hoNDArray<double>& x, hoNDArray<double>& std, bool NMinusOne);
     template EXPORTCPUCOREMATH bool stdOver3rdDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& std, bool NMinusOne);
@@ -4174,6 +4370,11 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
     template EXPORTCPUCOREMATH bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
     template EXPORTCPUCOREMATH bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+
+    template EXPORTCPUCOREMATH bool permute3rdDimensionTo1stDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
+    template EXPORTCPUCOREMATH bool permute3rdDimensionTo1stDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
+    template EXPORTCPUCOREMATH bool permute3rdDimensionTo1stDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
+    template EXPORTCPUCOREMATH bool permute3rdDimensionTo1stDimension(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
 
     template EXPORTCPUCOREMATH bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTCPUCOREMATH bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);

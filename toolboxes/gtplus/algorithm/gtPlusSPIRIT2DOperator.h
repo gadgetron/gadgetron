@@ -26,6 +26,8 @@ public:
     virtual bool convertToKSpace(const hoNDArray<T>& im, hoNDArray<T>& x);
 
     using BaseClass::use_symmetric_spirit_;
+    using BaseClass::use_non_centered_fft_;
+    using BaseClass::calib_use_gpu_;
 
 protected:
 
@@ -62,12 +64,19 @@ void gtPlusSPIRIT2DOperator<T>::printInfo(std::ostream& os)
 template <typename T> 
 inline bool gtPlusSPIRIT2DOperator<T>::convertToImage(const hoNDArray<T>& x, hoNDArray<T>& im)
 {
-    if ( !complexIm_Managed_.dimensions_equal(&x) )
+    if ( this->use_non_centered_fft_ )
     {
-        complexIm_Managed_.create(x.get_dimensions());
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2(x, im));
     }
+    else
+    {
+        if ( !complexIm_Managed_.dimensions_equal(&x) )
+        {
+            complexIm_Managed_.create(x.get_dimensions());
+        }
 
-    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, complexIm_Managed_));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(x, im, complexIm_Managed_));
+    }
 
     return true;
 }
@@ -75,12 +84,19 @@ inline bool gtPlusSPIRIT2DOperator<T>::convertToImage(const hoNDArray<T>& x, hoN
 template <typename T> 
 inline bool gtPlusSPIRIT2DOperator<T>::convertToKSpace(const hoNDArray<T>& im, hoNDArray<T>& x)
 {
-    if ( !kspace_Managed_.dimensions_equal(&im) )
+    if ( this->use_non_centered_fft_ )
     {
-        kspace_Managed_.create(im.get_dimensions());
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2(im, x));
     }
+    else
+    {
+        if ( !kspace_Managed_.dimensions_equal(&im) )
+        {
+            kspace_Managed_.create(im.get_dimensions());
+        }
 
-    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, kspace_Managed_));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, kspace_Managed_));
+    }
 
     return true;
 }
