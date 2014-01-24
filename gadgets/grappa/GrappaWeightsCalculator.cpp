@@ -66,10 +66,9 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 		device_data.squeeze();
 
 		std::vector<size_t> ftdims(2,0); ftdims[1] = 1;
-		cuNDFFT<float> ft;
 
 		//Go to image space
-		ft.ifft( &device_data, &ftdims);
+		 cuNDFFT<float>::instance()->ifft( &device_data, &ftdims);
 
         size_t RO = device_data.get_size(0);
         size_t E1 = device_data.get_size(1);
@@ -95,7 +94,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 			//GADGET_DEBUG2("Coils in csm: %d\n", csm->get_size(2));
 		}
 		//Go back to kspace
-		ft.fft(&device_data, &ftdims);
+		cuNDFFT<float>::instance()->fft(&device_data, &ftdims);
 
 		cuNDArray<complext<float> > unmixing_dev;
 		boost::shared_ptr< std::vector<size_t> > data_dimensions = device_data.get_dimensions();

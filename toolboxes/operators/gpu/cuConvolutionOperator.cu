@@ -71,9 +71,9 @@ namespace Gadgetron {
   cuConvolutionOperator<REAL,D>::operator_fft( bool forwards_transform, cuNDArray< complext<REAL> > *image )
   {
     if( forwards_transform )
-      cuNDFFT<REAL>().fft(image);
+      cuNDFFT<REAL>::instance()->fft(image);
     else
-      cuNDFFT<REAL>().ifft(image);
+      cuNDFFT<REAL>::instance()->ifft(image);
   }    
   
   template EXPORTGPUOPERATORS class cuConvolutionOperator<float,1>;
