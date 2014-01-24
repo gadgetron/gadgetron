@@ -6,7 +6,7 @@ if (MATLAB_FOUND)
 
     SET(CMAKE_DEBUG_POSTFIX)
 
-    include_directories( ${MATLAB_INCLUDE_DIR} )
+    include_directories( ${MATLAB_INCLUDE_DIR}  ${ISMRMRD_INCLUDE_DIR} )
 
     link_directories(${Boost_LIBRARY_DIRS})
     link_libraries(${MATLAB_LIBRARIES} 

@@ -25,6 +25,12 @@ public:
     virtual bool convertToImage(const hoNDArray<T>& x, hoNDArray<T>& im);
     virtual bool convertToKSpace(const hoNDArray<T>& im, hoNDArray<T>& x);
 
+    // forward
+    virtual bool forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y);
+
+    // adjoint operator
+    virtual bool adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y);
+
     using BaseClass::use_symmetric_spirit_;
     using BaseClass::use_non_centered_fft_;
     using BaseClass::calib_use_gpu_;
@@ -98,6 +104,102 @@ inline bool gtPlusSPIRIT2DOperator<T>::convertToKSpace(const hoNDArray<T>& im, h
         GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(im, x, kspace_Managed_));
     }
 
+    return true;
+}
+
+template <typename T> 
+inline bool gtPlusSPIRIT2DOperator<T>::forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
+{
+    try
+    {
+        Gadgetron::multiply(unacquired_points_indicator_, x, y);
+
+        // x to image domain
+        this->convertToImage(y, complexIm_);
+
+        size_t ro = x.get_size(0);
+        size_t e1 = x.get_size(1);
+        size_t CHA = x.get_size(2);
+
+        if ( res_after_apply_kernel_sum_over_.get_number_of_elements() < ro*e1*CHA )
+        {
+            res_after_apply_kernel_sum_over_.create(ro, e1, CHA);
+        }
+
+        hoNDArray<T>* kerArray;
+        if ( use_symmetric_spirit_ )
+        {
+            kerArray = this->adjoint_forward_kernel_.get();
+        }
+        else
+        {
+            kerArray = this->forward_kernel_.get();
+        }
+
+        Gadgetron::imageDomainUnwrapping2D(complexIm_, *kerArray, res_after_apply_kernel_sum_over_, y);
+
+        this->convertToKSpace(y, res_after_apply_kernel_sum_over_);
+
+        // apply Dc
+        if ( use_symmetric_spirit_ )
+        {
+            Gadgetron::multiply(unacquired_points_indicator_, res_after_apply_kernel_sum_over_, y);
+        }
+        else
+        {
+            memcpy(y.begin(), res_after_apply_kernel_sum_over_.begin(), sizeof(T)*ro*e1*CHA);
+        }
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusSPIRIT2DOperator<T>::forwardOperator(...) ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T> 
+inline bool gtPlusSPIRIT2DOperator<T>::adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
+{
+    try
+    {
+        if ( use_symmetric_spirit_ )
+        {
+            // Dc(G-I)'(G-I)Dc' is symmetric
+            GADGET_CHECK_RETURN_FALSE(this->forwardOperator(x, y));
+        }
+        else
+        {
+            // Dc(G-I)'x
+
+            // x to image domain
+            this->convertToImage(x, complexIm_);
+
+            // apply kernel and sum
+            size_t ro = x.get_size(0);
+            size_t e1 = x.get_size(1);
+            size_t CHA = x.get_size(2);
+
+            if ( res_after_apply_kernel_sum_over_.get_number_of_elements() < ro*e1*CHA )
+            {
+                res_after_apply_kernel_sum_over_.create(ro, e1, CHA);
+            }
+
+            Gadgetron::imageDomainUnwrapping2D(complexIm_, *adjoint_kernel_, res_after_apply_kernel_sum_over_, y);
+
+            // go back to kspace 
+            this->convertToKSpace(y, res_after_apply_kernel_sum_over_);
+
+            // apply Dc
+            Gadgetron::multiply(unacquired_points_indicator_, res_after_apply_kernel_sum_over_, y);
+        }
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusSPIRITOperator<T>::adjointOperator(...) ... ");
+        return false;
+    }
     return true;
 }
 

@@ -90,6 +90,8 @@ protected:
     using BaseClass::res_after_apply_kernel_sum_over_;
 
     hoNDArray<T> wav_coeff_norm_;
+    hoNDArray<T> wav_coeff_norm_approx_;
+
     hoNDArray<T> kspace_wav_;
     hoNDArray<T> complexIm_wav_;
     hoNDArray<T> complexIm_norm_;
@@ -153,9 +155,9 @@ L1NormTotal(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm, T& L1Coeff
     {
         GADGET_CHECK_RETURN_FALSE(this->L1Norm(wavCoeff, wavCoeffNorm));
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sqrt(wavCoeffNorm, kspace_));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::sqrt(wavCoeffNorm, wav_coeff_norm_approx_));
 
-        L1CoeffNorm = Gadgetron::asum(&kspace_);
+        L1CoeffNorm = Gadgetron::asum(&wav_coeff_norm_approx_);
     }
     catch (...)
     {
@@ -176,16 +178,16 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
         size_t W = wavCoeff.get_size(2);
         size_t CHA = wavCoeff.get_size(3);
 
-        if ( !kspace_.dimensions_equal( &wavCoeffNorm ) )
+        if ( !wav_coeff_norm_approx_.dimensions_equal( &wavCoeffNorm ) )
         {
-            kspace_.create( wavCoeffNorm.get_dimensions() );
+            wav_coeff_norm_approx_.create( wavCoeffNorm.get_dimensions() );
         }
 
         long long ii;
         long long N = (long long)wavCoeffNorm.get_number_of_elements();
 
         const T* pCoeffNorm = wavCoeffNorm.begin();
-        T* pBuf = kspace_.begin();
+        T* pBuf = wav_coeff_norm_approx_.begin();
 
         if ( GT_ABS(std::abs(p) - 1.0) < 0.001 )
         {
@@ -206,11 +208,11 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
 
         if ( processApproxCoeff )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver4thDimension(kspace_, wavCoeff, wavCoeff));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver4thDimension(wav_coeff_norm_approx_, wavCoeff, wavCoeff));
         }
         else
         {
-            // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver4thDimensionExcept(kspace_, wavCoeff, 0, wavCoeff, true));
+            // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver4thDimensionExcept(wav_coeff_norm_approx_, wavCoeff, 0, wavCoeff, true));
             size_t num = wavCoeff.get_number_of_elements()/(RO*E1*W*CHA);
 
             #ifdef GCC_OLD_FLAG
@@ -223,7 +225,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
                 #pragma omp for
                 for ( ii=0; ii<num; ii++ )
                 {
-                    hoNDArray<T> wavCoeffNormCurr(RO, E1, W-1, kspace_.begin()+ii*RO*E1*W+RO*E1);
+                    hoNDArray<T> wavCoeffNormCurr(RO, E1, W-1, wav_coeff_norm_approx_.begin()+ii*RO*E1*W+RO*E1);
 
                     for ( size_t cha=0; cha<CHA; cha++ )
                     {
@@ -253,9 +255,9 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
         size_t W = wavCoeff.get_size(2);
         size_t CHA = wavCoeff.get_size(3);
 
-        if ( !kspace_.dimensions_equal(&wavCoeffNorm) )
+        if ( !wav_coeff_norm_approx_.dimensions_equal(&wavCoeffNorm) )
         {
-            kspace_.create(wavCoeffNorm.get_dimensions());
+            wav_coeff_norm_approx_.create(wavCoeffNorm.get_dimensions());
         }
 
         if ( !res_after_apply_kernel_.dimensions_equal(&wavCoeffNorm) )
@@ -270,7 +272,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
         long long num = N/N3D;
 
         const T* pCoeffNorm = wavCoeffNorm.begin();
-        T* pMag = kspace_.begin();
+        T* pMag = wav_coeff_norm_approx_.begin();
         T* pMagInv = res_after_apply_kernel_.begin();
 
         #pragma omp parallel for default(none) private(ii) shared(N, pMag, pMagInv, pCoeffNorm)
@@ -347,11 +349,11 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
 
         if ( processApproxCoeff )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver4thDimension(kspace_, complexIm_, wavCoeff));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver4thDimension(wav_coeff_norm_approx_, complexIm_, wavCoeff));
         }
         else
         {
-            // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver4thDimensionExcept(kspace_, complexIm_, 0, wavCoeff, false));
+            // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver4thDimensionExcept(wav_coeff_norm_approx_, complexIm_, 0, wavCoeff, false));
             num = wavCoeff.get_number_of_elements()/(RO*E1*W*CHA);
 
             #ifdef GCC_OLD_FLAG
@@ -363,7 +365,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
                 #pragma omp for
                 for ( ii=0; ii<num; ii++ )
                 {
-                    hoNDArray<T> MagCurr(RO, E1, W-1, kspace_.begin()+ii*RO*E1*W+RO*E1);
+                    hoNDArray<T> MagCurr(RO, E1, W-1, wav_coeff_norm_approx_.begin()+ii*RO*E1*W+RO*E1);
 
                     for ( size_t cha=0; cha<CHA; cha++ )
                     {
@@ -391,14 +393,25 @@ grad(const hoNDArray<T>& x, hoNDArray<T>& g)
     try
     {
         // D'y+Dc'x
+        //gt_timer1_.start("1");
+        //vcMul(unacquired_points_indicator_.get_number_of_elements(), 
+        //    reinterpret_cast<MKL_Complex8*>(unacquired_points_indicator_.begin()), 
+        //    reinterpret_cast<const MKL_Complex8*>(x.begin()), 
+        //    reinterpret_cast<MKL_Complex8*>(kspace_.begin()));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(unacquired_points_indicator_, x, kspace_));
+        //gt_timer1_.stop();
+
+        //gt_timer1_.start("2");
         GADGET_CHECK_RETURN_FALSE(Gadgetron::add(*acquired_points_, kspace_, kspace_));
+        //gt_timer1_.stop();
 
         // compute the gradient on assembled kspace
         GADGET_CHECK_RETURN_FALSE(this->gradTask(kspace_, g));
 
         // only unacquired points are kept
+        //gt_timer1_.start("12");
         GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(unacquired_points_indicator_, g, g));
+        //gt_timer1_.stop();
     }
     catch (...)
     {
@@ -416,8 +429,13 @@ obj(const hoNDArray<T>& x, T& obj)
     try
     {
         // D'y+Dc'x
+        //gt_timer1_.start("1");
         GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(unacquired_points_indicator_, x, kspace_));
+        //gt_timer1_.stop();
+
+        //gt_timer1_.start("2");
         GADGET_CHECK_RETURN_FALSE(Gadgetron::add(*acquired_points_, kspace_, kspace_));
+        //gt_timer1_.stop();
 
         // compute the objective function on assembled kspace
         GADGET_CHECK_RETURN_FALSE(this->objTask(kspace_, obj));
@@ -442,18 +460,26 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
         size_t CHA = x.get_size(2);
 
         // x to image domain
+        //gt_timer2_.start("3");
         GADGET_CHECK_RETURN_FALSE(this->convertToImage(x, complexIm_));
+        //gt_timer2_.stop();
 
         // compute the gradient
         if ( coil_senMap_ && coil_senMap_->get_size(0)==RO && coil_senMap_->get_size(1)==E1 && coil_senMap_->get_size(2)==CHA )
         {
             // perform coil combination
+            //gt_timer2_.start("4");
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_complex_.coilCombine(complexIm_, *coil_senMap_, res_after_apply_kernel_));
+            //gt_timer2_.stop();
 
+            //gt_timer2_.start("5");
             hoNDArray<T> combined(RO, E1, 1, res_after_apply_kernel_.begin());
+            //gt_timer2_.stop();
 
             // compute wavelet transform
+            //gt_timer2_.start("6");
             GADGET_CHECK_RETURN_FALSE(this->forwardOperator(combined, res_after_apply_kernel_sum_over_));
+            //gt_timer2_.stop();
         }
         else
         {
@@ -461,19 +487,30 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
         }
 
         // modify coefficients
+        //gt_timer2_.start("7");
         GADGET_CHECK_RETURN_FALSE(this->L1Norm(res_after_apply_kernel_sum_over_, wav_coeff_norm_));
+        //gt_timer2_.stop();
+
+        //gt_timer2_.start("8");
         GADGET_CHECK_RETURN_FALSE(this->divideWavCoeffByNorm(res_after_apply_kernel_sum_over_, wav_coeff_norm_, T(1e-15), T(1.0), with_approx_coeff_));
+        //gt_timer2_.stop();
 
         // go back to image
+        //gt_timer2_.start("9");
         GADGET_CHECK_RETURN_FALSE(this->adjointOperator(res_after_apply_kernel_sum_over_, complexIm_wav_));
+        //gt_timer2_.stop();
 
         if ( coil_senMap_ && coil_senMap_->get_size(0)==RO && coil_senMap_->get_size(1)==E1 && coil_senMap_->get_size(2)==CHA )
         {
             // apply coil sensivity
+            //gt_timer2_.start("10");
             GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(complexIm_wav_, *coil_senMap_, kspace_wav_));
+            //gt_timer2_.stop();
 
             // go to kspace
+            //gt_timer2_.start("11");
             GADGET_CHECK_RETURN_FALSE(this->convertToKSpace(kspace_wav_, g));
+            //gt_timer2_.stop();
         }
         else
         {
@@ -501,25 +538,35 @@ objTask(const hoNDArray<T>& x, T& obj)
         size_t CHA = x.get_size(2);
 
         // x to image domain
+        //gt_timer3_.start("3");
         GADGET_CHECK_RETURN_FALSE(this->convertToImage(x, complexIm_));
+        //gt_timer3_.stop();
 
         // apply sensitivity
         if ( coil_senMap_ && coil_senMap_->get_size(0)==RO && coil_senMap_->get_size(1)==E1 && coil_senMap_->get_size(2)==CHA )
         {
             // perform coil combination
+            //gt_timer3_.start("4");
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_complex_.coilCombine(complexIm_, *coil_senMap_, res_after_apply_kernel_));
+            //gt_timer3_.stop();
 
+            //gt_timer3_.start("5");
             hoNDArray<T> combined(RO, E1, 1, res_after_apply_kernel_.begin());
+            //gt_timer3_.stop();
 
             // compute wavelet transform
+            //gt_timer3_.start("6");
             GADGET_CHECK_RETURN_FALSE(this->forwardOperator(combined, res_after_apply_kernel_sum_over_));
+            //gt_timer3_.stop();
         }
         else
         {
             GADGET_CHECK_RETURN_FALSE(this->forwardOperator(complexIm_, res_after_apply_kernel_sum_over_));
         }
 
+        //gt_timer3_.start("7");
         GADGET_CHECK_RETURN_FALSE(this->L1NormTotal(res_after_apply_kernel_sum_over_, wav_coeff_norm_, obj));
+        //gt_timer3_.stop();
     }
     catch (...)
     {

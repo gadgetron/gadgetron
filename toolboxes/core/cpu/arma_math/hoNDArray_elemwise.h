@@ -388,5 +388,13 @@ namespace Gadgetron{
 
     template<typename T> EXPORTCPUCOREMATH bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r); // x : [RO E1 E2 srcCHA dstCHA ...], r: [E1 E2 srcCHA dstCHA RO ...]
 
+    /// x : [RO E1 srcCHA], ker [RO E1 srcCHA dstCHA], buf is a buffer for computer, need to be pre-allocated [RO E1 srcCHA], y [RO E1 dstCHA]
+    /// for the sake of speed, no check is made in this function
+    template<typename T> EXPORTCPUCOREMATH bool imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y);
+
+    /// x : [RO E1 srcCHA N], ker [RO E1 srcCHA dstCHA 1 or N], buf is a buffer for computer, need to be pre-allocated [RO E1 srcCHA], y [RO E1 dstCHA N]
+    /// for the sake of speed, no check is made in this function
+    template<typename T> EXPORTCPUCOREMATH bool imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y);
+
 #endif // USE_MKL
 }

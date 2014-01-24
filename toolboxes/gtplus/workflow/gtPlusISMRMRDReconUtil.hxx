@@ -5408,21 +5408,23 @@ coilCombine(const hoNDArray<T>& data, const hoNDArray<T>& coilMap, hoNDArray<T>&
         size_t NCombined = combined.get_number_of_elements()/num;
 
         long long nn;
-        #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(nn) shared(num, dimCoil, dimCombinedCurr, N, NCombined)
-        #else
-            #pragma omp parallel default(none) private(nn) shared(data, coilMap, num, dimCoil, dimCombinedCurr, combined, N, NCombined)
-        #endif
+        //#ifdef GCC_OLD_FLAG
+        //    #pragma omp parallel default(none) private(nn) shared(num, dimCoil, dimCombinedCurr, N, NCombined)
+        //#else
+        //    #pragma omp parallel default(none) private(nn) shared(data, coilMap, num, dimCoil, dimCombinedCurr, combined, N, NCombined)
+        //#endif
         {
             hoNDArray<T> dataTmp(coilMap);
+            hoNDArray<T> dataCurr;
+            hoNDArray<T> dataCombinedCurr;
 
-            #pragma omp for
+            //#pragma omp for
             for ( nn=0; nn<(long long)num; nn++ )
             {
-                hoNDArray<T> dataCurr(dimCoil.get(), const_cast<T*>(data.begin()+nn*N));
+                dataCurr.create(dimCoil.get(), const_cast<T*>(data.begin()+nn*N));
                 Gadgetron::multiplyConj(dataCurr, coilMap, dataTmp);
 
-                hoNDArray<T> dataCombinedCurr(&dimCombinedCurr, const_cast<T*>(combined.begin()+nn*NCombined));
+                dataCombinedCurr.create(&dimCombinedCurr, const_cast<T*>(combined.begin()+nn*NCombined));
                 Gadgetron::sumOver3rdDimension(dataTmp, dataCombinedCurr);
             }
         }

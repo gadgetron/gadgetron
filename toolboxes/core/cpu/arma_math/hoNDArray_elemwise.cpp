@@ -4228,6 +4228,226 @@ namespace Gadgetron{
         return true;
     }
 
+    template<typename T> 
+    bool imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& kernel, hoNDArray<T>& buf, hoNDArray<T>& y)
+    {
+        try
+        {
+            T* pX = const_cast<T*>(x.begin());
+            T* ker = const_cast<T*>(kernel.begin());
+            T* pY = y.begin();
+
+            size_t ro = x.get_size(0);
+            size_t e1 = x.get_size(1);
+            size_t srcCHA = x.get_size(2);
+            size_t dstCHA = kernel.get_size(3);
+
+            if ( buf.get_number_of_elements() < ro*e1*srcCHA )
+            {
+                buf.create(ro, e1, srcCHA);
+            }
+            T* pBuf = buf.begin();
+
+            long long dCha;
+
+            //#pragma omp parallel default(shared)
+            {
+                //#ifdef WIN32
+                //    int tid = omp_get_thread_num();
+                //    DWORD_PTR mask = (1 << tid);
+                //    // GADGET_MSG("thread id : " << tid << " - mask : " << mask);
+                //    SetThreadAffinityMask( GetCurrentThread(), mask );
+                //#endif // WIN32
+
+                //#pragma omp for
+
+                if ( typeid(T)==typeid(GT_Complex8) )
+                {
+                    for ( dCha=0; dCha<dstCHA; dCha++ )
+                    {
+                        vcMul(ro*e1*srcCHA, reinterpret_cast<MKL_Complex8*>(pX), 
+                            reinterpret_cast<MKL_Complex8*>(ker+dCha*ro*e1*srcCHA), 
+                            reinterpret_cast<MKL_Complex8*>(pBuf));
+
+                        memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
+                        for ( size_t sCha=1; sCha<srcCHA; sCha++ )
+                        {
+                            vcAdd(ro*e1, reinterpret_cast<MKL_Complex8*>(pY+dCha*ro*e1), 
+                                reinterpret_cast<MKL_Complex8*>(pBuf+sCha*ro*e1), 
+                                reinterpret_cast<MKL_Complex8*>(pY+dCha*ro*e1));
+                        }
+                    }
+                }
+                else if ( typeid(T)==typeid(GT_Complex16) )
+                {
+                    for ( dCha=0; dCha<dstCHA; dCha++ )
+                    {
+                        vzMul(ro*e1*srcCHA, reinterpret_cast<MKL_Complex16*>(pX), 
+                            reinterpret_cast<MKL_Complex16*>(ker+dCha*ro*e1*srcCHA), 
+                            reinterpret_cast<MKL_Complex16*>(pBuf));
+
+                        memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
+                        for ( size_t sCha=1; sCha<srcCHA; sCha++ )
+                        {
+                            vzAdd(ro*e1, reinterpret_cast<MKL_Complex16*>(pY+dCha*ro*e1), 
+                                reinterpret_cast<MKL_Complex16*>(pBuf+sCha*ro*e1), 
+                                reinterpret_cast<MKL_Complex16*>(pY+dCha*ro*e1));
+                        }
+                    }
+                }
+            }
+        }
+        catch (...)
+        {
+            GADGET_ERROR_MSG("Errors in imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y) ... ");
+            return false;
+        }
+        return true;
+    }
+
+    template<typename T> 
+    bool imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& kernel, hoNDArray<T>& buf, hoNDArray<T>& y)
+    {
+        try
+        {
+            size_t ro = x.get_size(0);
+            size_t e1 = x.get_size(1);
+            size_t srcCHA = x.get_size(2);
+            size_t N = x.get_size(3);
+
+            size_t dstCHA = kernel.get_size(3);
+            size_t kerN = kernel.get_size(4);
+
+            if ( buf.get_number_of_elements() < ro*e1*srcCHA )
+            {
+                buf.create(ro, e1, srcCHA);
+            }
+            T* pBuf = buf.begin();
+
+            long long n, dCha;
+
+            //#pragma omp parallel default(shared)
+            {
+                //#ifdef WIN32
+                //    int tid = omp_get_thread_num();
+                //    DWORD_PTR mask = (1 << tid);
+                //    // GADGET_MSG("thread id : " << tid << " - mask : " << mask);
+                //    SetThreadAffinityMask( GetCurrentThread(), mask );
+                //#endif // WIN32
+
+                //#pragma omp for
+
+                if ( typeid(T)==typeid(GT_Complex8) )
+                {
+                    const T* pXN = x.begin();
+                    T* pYN = y.begin();
+                    T* pBufN = buf.begin();
+                    const T* pKerN = kernel.begin();
+
+                    omp_set_nested(1);
+
+                    //#pragma omp parallel for default(none) private(n) shared(N, ro, e1, srcCHA, dstCHA, kerN, pXN, pYN, pBufN, pKerN)
+                    //for ( n=0; n<N; n++ )
+                    //{
+                    //    const T* ker = pKerN + n*ro*e1*srcCHA*dstCHA;
+                    //    if ( kerN <= n )
+                    //    {
+                    //        ker = pKerN + (kerN-1)*ro*e1*srcCHA*dstCHA;
+                    //    }
+
+                    //    const T* pX = pXN + n*ro*e1*srcCHA;
+                    //    T* pY = pYN + n*ro*e1*dstCHA;
+                    //    T* pBuf =pBufN + n*ro*e1*srcCHA;
+
+                    //    for ( size_t dCha=0; dCha<dstCHA; dCha++ )
+                    //    {
+                    //        vcMul(ro*e1*srcCHA, reinterpret_cast<const MKL_Complex8*>(pX), 
+                    //            reinterpret_cast<const MKL_Complex8*>(ker+dCha*ro*e1*srcCHA), 
+                    //            reinterpret_cast<MKL_Complex8*>(pBuf));
+
+                    //        memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
+                    //        for ( size_t sCha=1; sCha<srcCHA; sCha++ )
+                    //        {
+                    //            vcAdd(ro*e1, reinterpret_cast<MKL_Complex8*>(pY+dCha*ro*e1), 
+                    //                reinterpret_cast<MKL_Complex8*>(pBuf+sCha*ro*e1), 
+                    //                reinterpret_cast<MKL_Complex8*>(pY+dCha*ro*e1));
+                    //        }
+                    //    }
+                    //}
+
+                    // #pragma omp parallel for default(none) private(dCha, n) shared(N, ro, e1, srcCHA, dstCHA, kerN, pXN, pYN, pBufN, pKerN)
+                    for ( dCha=0; dCha<(long long)dstCHA; dCha++ )
+                    {
+                        for ( n=0; n<N; n++  )
+                        {
+                            const T* ker = pKerN + n*ro*e1*srcCHA*dstCHA;
+                            if ( kerN <= n )
+                            {
+                                ker = pKerN + (kerN-1)*ro*e1*srcCHA*dstCHA;
+                            }
+
+                            const T* pX = pXN + n*ro*e1*srcCHA;
+                            T* pBuf =pBufN + n*ro*e1*srcCHA;
+
+                            vcMul(ro*e1*srcCHA, reinterpret_cast<const MKL_Complex8*>(pX), 
+                                reinterpret_cast<const MKL_Complex8*>(ker+dCha*ro*e1*srcCHA), 
+                                reinterpret_cast<MKL_Complex8*>(pBuf));
+                        //}
+
+                        //for ( n=0; n<N; n++  )
+                        //{
+                            T* pY = pYN + n*ro*e1*dstCHA;
+                            //T* pBuf =pBufN + n*ro*e1*srcCHA;
+
+                            memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
+                            for ( size_t sCha=1; sCha<srcCHA; sCha++ )
+                            {
+                                vcAdd(ro*e1, reinterpret_cast<MKL_Complex8*>(pY+dCha*ro*e1), 
+                                    reinterpret_cast<MKL_Complex8*>(pBuf+sCha*ro*e1), 
+                                    reinterpret_cast<MKL_Complex8*>(pY+dCha*ro*e1));
+                            }
+                        }
+                    }
+                }
+                else if ( typeid(T)==typeid(GT_Complex16) )
+                {
+                    for ( n=0; n<N; n++ )
+                    {
+                        const T* ker = kernel.begin() + n*ro*e1*srcCHA*dstCHA;
+                        if ( kerN <= n )
+                        {
+                            ker = kernel.begin() + (kerN-1)*ro*e1*srcCHA*dstCHA;
+                        }
+
+                        const T* pX = x.begin() + n*ro*e1*srcCHA;
+                        T* pY = y.begin() + n*ro*e1*dstCHA;
+
+                        for ( size_t dCha=0; dCha<dstCHA; dCha++ )
+                        {
+                            vzMul(ro*e1*srcCHA, reinterpret_cast<const MKL_Complex16*>(pX), 
+                                reinterpret_cast<const MKL_Complex16*>(ker+dCha*ro*e1*srcCHA), 
+                                reinterpret_cast<MKL_Complex16*>(pBuf));
+
+                            memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
+                            for ( size_t sCha=1; sCha<srcCHA; sCha++ )
+                            {
+                                vzAdd(ro*e1, reinterpret_cast<MKL_Complex16*>(pY+dCha*ro*e1), 
+                                    reinterpret_cast<MKL_Complex16*>(pBuf+sCha*ro*e1), 
+                                    reinterpret_cast<MKL_Complex16*>(pY+dCha*ro*e1));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        catch (...)
+        {
+            GADGET_ERROR_MSG("Errors in imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y) ... ");
+            return false;
+        }
+        return true;
+    }
+
     template EXPORTCPUCOREMATH bool sumOverLastDimension(const hoNDArray<float>& x, hoNDArray<float>& r);
     template EXPORTCPUCOREMATH bool sumOverLastDimension(const hoNDArray<double>& x, hoNDArray<double>& r);
     template EXPORTCPUCOREMATH bool sumOverLastDimension(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
@@ -4380,6 +4600,12 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<double>& x, hoNDArray<double>& r);
     template EXPORTCPUCOREMATH bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
     template EXPORTCPUCOREMATH bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+
+    template EXPORTCPUCOREMATH bool imageDomainUnwrapping2D(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& ker, hoNDArray<GT_Complex8>& buf, hoNDArray<GT_Complex8>& y);
+    template EXPORTCPUCOREMATH bool imageDomainUnwrapping2D(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& ker, hoNDArray<GT_Complex16>& buf, hoNDArray<GT_Complex16>& y);
+
+    template EXPORTCPUCOREMATH bool imageDomainUnwrapping2DT(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& ker, hoNDArray<GT_Complex8>& buf, hoNDArray<GT_Complex8>& y);
+    template EXPORTCPUCOREMATH bool imageDomainUnwrapping2DT(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& ker, hoNDArray<GT_Complex16>& buf, hoNDArray<GT_Complex16>& y);
 
     #endif // USE_MKL
 

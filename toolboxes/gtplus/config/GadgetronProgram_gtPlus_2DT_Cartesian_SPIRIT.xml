@@ -265,7 +265,7 @@
 
         <property>
             <name>coil_compression_thres</name>
-            <value>0.001</value>
+            <value>0.005</value>
         </property>
 
         <property>
