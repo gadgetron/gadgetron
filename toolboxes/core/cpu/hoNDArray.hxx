@@ -273,6 +273,9 @@ namespace Gadgetron
       memcpy(this->data_, rhs.data_, this->elements_*sizeof(T));
     }
     else{
+      if (!this->delete_data_on_destruct_){
+        throw std::runtime_error("Array dimensions mismatch in hoNDArray::operator=. Cannot change dimensions of non-destructable array.");        
+      }
       deallocate_memory();
       this->data_ = 0;
       this->dimensions_ = rhs.dimensions_;
@@ -325,22 +328,20 @@ namespace Gadgetron
 
     if ( this->dimensions_equal(dimensions) )
       {
-        if ( this->delete_data_on_destruct_ )
-          {
-            this->deallocate_memory();
-          }
-
+        if ( this->delete_data_on_destruct_ ){
+          this->deallocate_memory();
+        }
+        
         this->data_ = data;
         this->delete_data_on_destruct_ = delete_data_on_destruct;
       }
     else
       {
-        if ( this->delete_data_on_destruct_ )
-          {
-            this->deallocate_memory();
-            this->data_ = NULL;
-          }
-
+        if ( this->delete_data_on_destruct_ ){
+          this->deallocate_memory();
+          this->data_ = NULL;
+        }
+        
         BaseClass::create(dimensions, data, delete_data_on_destruct);
       }
   }
@@ -352,22 +353,20 @@ namespace Gadgetron
 
     if ( this->dimensions_equal(&dimensions) )
       {
-        if ( this->delete_data_on_destruct_ )
-          {
-            this->deallocate_memory();
-          }
-
+        if ( this->delete_data_on_destruct_ ){
+          this->deallocate_memory();
+        }
+        
         this->data_ = data;
         this->delete_data_on_destruct_ = delete_data_on_destruct;
       }
     else
       {
-        if ( this->delete_data_on_destruct_ )
-          {
-            this->deallocate_memory();
-            this->data_ = NULL;
-          }
-
+        if ( this->delete_data_on_destruct_ ){
+          this->deallocate_memory();
+          this->data_ = NULL;
+        }
+        
         BaseClass::create(dimensions, data, delete_data_on_destruct);
       }
   }

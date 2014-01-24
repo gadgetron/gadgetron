@@ -267,6 +267,9 @@ namespace Gadgetron{
       else {
         CUDA_CALL(cudaSetDevice(this->device_));
         if( !dimensions_match ){
+          if(!this->delete_data_on_destruct_){
+            throw std::runtime_error("Array dimensions mismatch in cuNDArray::operator=. Cannot change dimensions of non-destructable array.");
+          }
           deallocate_memory();
           this->elements_ = rhs.elements_;
           this->dimensions_ = rhs.get_dimensions();
@@ -310,7 +313,8 @@ namespace Gadgetron{
       else {
         CUDA_CALL(cudaSetDevice(this->device_));
         if( !dimensions_match ){
-          deallocate_memory();
+          if (!this->delete_data_on_destruct_){
+            throw std::runtime_error("Array dimensions mismatch in cuNDArray::operator=. Cannot change dimensions of non-destructable array.");}          deallocate_memory();
           this->elements_ = rhs.get_number_of_elements();
           this->dimensions_ = rhs.get_dimensions();
           allocate_memory();
@@ -630,14 +634,15 @@ namespace Gadgetron{
     virtual void allocate_memory()
     {
       deallocate_memory();
-
       this->elements_ = 1;
+
       if (this->dimensions_->empty())
         throw std::runtime_error("cuNDArray::allocate_memory() : dimensions is empty.");
+      
       for (size_t i = 0; i < this->dimensions_->size(); i++) {
         this->elements_ *= (*this->dimensions_)[i];
       } 
-
+      
       size_t size = this->elements_ * sizeof(T);
 
       int device_no_old;
