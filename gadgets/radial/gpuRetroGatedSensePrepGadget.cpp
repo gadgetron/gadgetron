@@ -27,6 +27,7 @@ namespace Gadgetron{
   {
     // Set some default values in case the config does not contain a specification
     //
+
     set_parameter(std::string("mode").c_str(), "-1");
     set_parameter(std::string("deviceno").c_str(), "0");
     set_parameter(std::string("profiles_per_frame").c_str(), "16");
@@ -430,14 +431,14 @@ namespace Gadgetron{
         header->slice = base_head->idx.slice;
         header->set = base_head->idx.set;
         
-        header->acquisition_time_stamp = first_profile_acq_time_[set*slices_+slice] + 
+        header->acquisition_time_stamp = 
+          first_profile_acq_time_[set*slices_+slice] + 
           i*(base_head->acquisition_time_stamp-first_profile_acq_time_[set*slices_+slice])/frames_per_cardiac_cycle_;
 
-        uint32_t frame_phys_time_stamp = first_profile_phys_time_[set*slices_+slice] + 
+        header->physiology_time_stamp[phys_time_index_] = 
+          first_profile_phys_time_[set*slices_+slice] + 
           i*(base_head->physiology_time_stamp[phys_time_index_]-first_profile_phys_time_[set*slices_+slice])/frames_per_cardiac_cycle_;
 
-        memcpy(&header->physiology_time_stamp[phys_time_index_], &frame_phys_time_stamp, sizeof(uint32_t));
-        
         memcpy(header->position, base_head->position, sizeof(float)*3);
         memcpy(header->read_dir, base_head->read_dir, sizeof(float)*3);
         memcpy(header->phase_dir, base_head->phase_dir, sizeof(float)*3);
@@ -807,6 +808,18 @@ namespace Gadgetron{
       
       long first_profile = 
         (long)(float(frame)*float(profiles_buffered-profiles_per_frame_)/float(frames_per_cardiac_cycle_-1));
+      // Just to be sure we do run get out-of-bounds due to rounding errors in the float<->int math
+      //
+
+      if( first_profile < 0 ){
+        GADGET_DEBUG1("\nWARNING: first profile is negative. Corrected.");
+        first_profile = 0;
+      }
+
+      if (first_profile + profiles_per_frame_ - 1  > profiles_buffered -1 ){
+        GADGET_DEBUG1("\nWARNING: first profile is out of bounds for the last profile. Corrected.");
+        first_profile = profiles_buffered - profiles_per_frame_;
+      }
 
       //printf( "\nFor frame %ld: The first profile has index %ld (of %ld).", frame, first_profile, profiles_buffered );
         
@@ -815,6 +828,8 @@ namespace Gadgetron{
         for( long profile = 0; profile<profiles_per_frame_; profile++ ){
 
           // Copy samples for profile
+          //
+
           memcpy( samples->get_data_ptr() + 
                   coil*samples_per_profile_*profiles_per_frame_*frames_per_cardiac_cycle_ +
                   frame*samples_per_profile_*profiles_per_frame_ + 
@@ -827,6 +842,8 @@ namespace Gadgetron{
                   sizeof(std::complex<float>)*samples_per_profile_);
           
           // Copy trajectory for profile
+          //
+
           memcpy( trajectory->get_data_ptr() + 
                   frame*samples_per_profile_*profiles_per_frame_ + 
                   profile*samples_per_profile_,

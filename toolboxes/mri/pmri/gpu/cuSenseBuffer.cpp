@@ -192,7 +192,7 @@ namespace Gadgetron{
 
     if( acc_image_.get() == 0x0 ){
       if( get_accumulated_coil_images().get() == 0x0 ){ // This updates acc_image_
-	throw std::runtime_error("cuSenseBuffer::get_combined_coil_image: unable to acquire accumulated coil images");
+        throw std::runtime_error("cuSenseBuffer::get_combined_coil_image: unable to acquire accumulated coil images");
       }
     }
     
