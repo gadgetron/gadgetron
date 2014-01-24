@@ -9,7 +9,6 @@
 *.cplx
 inc/
 *.d
-*.txt
 !CMakeLists.txt
 bin/
 lib/*.py
@@ -19,6 +18,5 @@ lib/*.pyc
 build/
 *.pyc
 toolboxes/core/core_defines.h
-ut/
 prod/
 external/

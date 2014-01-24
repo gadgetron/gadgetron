@@ -148,7 +148,8 @@ solve(const Array_Type_I& b, Array_Type_O& x)
         size_t ii;
         for ( ii=0; ii<iterMax_; ii++ )
         {
-            z = v;
+            // z = v;
+            memcpy(z.begin(), v.begin(), v.get_number_of_bytes());
 
             // u = A(z, varargin{:},'notransp') - alpha*u;
             GADGET_CHECK_RETURN_FALSE(oper_->forwardOperator(z, dtmp));
@@ -177,11 +178,13 @@ solve(const Array_Type_I& b, Array_Type_O& x)
             phibar = s * phibar;
 
             // d = (z - thet * d) / rho;
-            dtmp = d;
+            //dtmp = d;
+            memcpy(dtmp.begin(), d.begin(), d.get_number_of_bytes());
             GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( thet, dtmp));
             GADGET_CHECK_RETURN_FALSE(Gadgetron::subtract( z, dtmp, ztmp));
             GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( value_type(1.0)/rho, ztmp));
-            d = ztmp;
+            //d = ztmp;
+            memcpy(d.begin(), ztmp.begin(), d.get_number_of_bytes());
 
             // sumnormd2 = sumnormd2 + (norm(d(:)))^2;
             Gadgetron::norm2(d, tmp);
@@ -225,7 +228,8 @@ solve(const Array_Type_I& b, Array_Type_O& x)
             //}
 
             // x = x + phi * d;
-            dtmp = d;
+            //dtmp = d;
+            memcpy(dtmp.begin(), d.begin(), d.get_number_of_bytes());
             GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( phi, dtmp));
             GADGET_CHECK_RETURN_FALSE(Gadgetron::add( x, dtmp, x));
 

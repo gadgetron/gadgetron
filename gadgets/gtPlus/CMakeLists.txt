@@ -37,12 +37,12 @@ include_directories(
   )
 
 IF (WIN32)
-  ADD_DEFINITIONS(-DTIXML_USE_STL)
-  ADD_DEFINITIONS(-D__BUILD_GADGETS__)
+    ADD_DEFINITIONS(-DTIXML_USE_STL)
+    ADD_DEFINITIONS(-D__BUILD_GADGETS__)
 ENDIF (WIN32)
 
 if(WIN32)
-  link_directories(${Boost_LIBRARY_DIRS})
+    link_directories(${Boost_LIBRARY_DIRS})
 endif(WIN32)
 
 find_package(Ismrmrd REQUIRED)
@@ -77,21 +77,23 @@ add_library(gadgetronPlus SHARED
             ${ISMRMRD_XSD_SOURCE} )
 
 target_link_libraries(gadgetronPlus 
-  cpucore 
-  cpucore_math 
-  gtplus 
-  gadgettools 
-  ${MKL_LIBRARIES} 
-  ${Boost_LIBRARIES}
-  ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
-  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
-  ${XERCESC_LIBRARIES} 
-  )
+    cpucore 
+    cpucore_math 
+    gtplus 
+    gadgettools 
+    ${MKL_LIBRARIES} 
+    ${Boost_LIBRARIES}
+    ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
+    optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
+    ${XERCESC_LIBRARIES} )
+
+    if (CUDA_FOUND)
+        target_link_libraries(gadgetronPlus gpuparallelmri)
+    endif (CUDA_FOUND)
 
 install (FILES 
-            GtPlusGadgetExport.h
-            DESTINATION include)
+        GtPlusGadgetExport.h
+        DESTINATION include)
 
 install(TARGETS gadgetronPlus DESTINATION lib)
 # install(FILES default.xml default_short.xml DESTINATION config)
-

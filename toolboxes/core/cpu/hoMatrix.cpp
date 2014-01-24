@@ -8,7 +8,7 @@ hoMatrix<T>::hoMatrix() : BaseClass(1, 1)
 }
 
 template <typename T> 
-hoMatrix<T>::hoMatrix(size_t rows, size_t cols) : BaseClass(cols, rows)
+hoMatrix<T>::hoMatrix(size_t rows, size_t cols) : BaseClass(rows, cols)
 {
     this->fill(T(0));
 }
@@ -17,8 +17,8 @@ template <typename T>
 hoMatrix<T>::hoMatrix(size_t rows, size_t cols, T* data, bool delete_data_on_destruct)
 {
     std::vector<size_t> dim(2);
-    dim[0] = cols;
-    dim[1] = rows;
+    dim[0] = rows;
+    dim[1] = cols;
     this->create(&dim,data,delete_data_on_destruct);
     GADGET_CHECK_THROW(this->init_accesser());
 }
@@ -45,41 +45,41 @@ hoMatrix<T>& hoMatrix<T>::operator=(const hoMatrix& rhs)
 template <typename T> 
 bool hoMatrix<T>::createMatrix(size_t rows, size_t cols)
 {
-    return this->createArray(cols, rows);
+    return this->createArray(rows, cols);
 }
 
 template <typename T> 
 bool hoMatrix<T>::createMatrix(size_t rows, size_t cols, T* data, bool delete_data_on_destruct)
 {
-    return this->createArray(cols, rows, data, delete_data_on_destruct);
+    return this->createArray(rows, cols, data, delete_data_on_destruct);
 }
 
 template <typename T> 
 inline T& hoMatrix<T>::operator()(size_t r, size_t c)
 {
-    GADGET_DEBUG_CHECK_THROW(c>=0 && r>=0 && c<(*dimensions_)[0] && r<(*dimensions_)[1]);
-    return accesser_[r][c];
+    GADGET_DEBUG_CHECK_THROW(c>=0 && r>=0 && r<(*dimensions_)[0] && c<(*dimensions_)[1]);
+    return accesser_[c][r];
 }
 
 template <typename T> 
 inline const T& hoMatrix<T>::operator()(size_t r, size_t c) const
 {
     GADGET_DEBUG_CHECK_THROW(c>=0 && r>=0 && c<(*dimensions_)[0] && r<(*dimensions_)[1]);
-    return accesser_[r][c];
+    return accesser_[c][r];
 }
 
 template <typename T> 
 inline size_t hoMatrix<T>::rows() const
 {
     if ( dimensions_->empty() ) return 0;
-    return (*dimensions_)[1];
+    return (*dimensions_)[0];
 }
 
 template <typename T> 
 inline size_t hoMatrix<T>::cols() const
 {
     if ( dimensions_->empty() ) return 0;
-    return (*dimensions_)[0];
+    return (*dimensions_)[1];
 }
 
 template <typename T> 
@@ -88,9 +88,9 @@ bool hoMatrix<T>::upperTri(const T& v)
     try
     {
         size_t r, c;
-        for (r=0; r<(*dimensions_)[1]; r++)
+        for (c=0; c<(*dimensions_)[1]; c++)
         {
-            for (c=0; c<(*dimensions_)[0]; c++)
+            for (r=0; r<(*dimensions_)[0]; r++)
             {
                 if ( c > r )
                 {
@@ -113,9 +113,9 @@ bool hoMatrix<T>::lowerTri(const T& v)
     try
     {
         size_t r, c;
-        for (r=0; r<(*dimensions_)[1]; r++)
+        for (c=0; c<(*dimensions_)[1]; c++)
         {
-            for (c=0; c<(*dimensions_)[0]; c++)
+            for (r=0; r<(*dimensions_)[0]; r++)
             {
                 if ( r > c )
                 {
@@ -145,12 +145,21 @@ bool hoMatrix<T>::sumOverRow(hoNDArray<T>& res) const
             res.create(ROW);
         }
 
+        T* pRes = res.begin();
+
         size_t r, c;
+
         for ( r=0; r<ROW; r++ )
         {
-            for ( c=0; c<COL; c++ )
+            pRes[r] = 0;
+        }
+
+        for ( c=0; c<COL; c++ )
+        {
+            for ( r=0; r<ROW; r++ )
             {
-                res(r) += (*this)(r, c);
+                // res(r) += (*this)(r, c);
+                pRes[r] += this->data_[r+c*ROW];
             }
         }
     }
@@ -176,24 +185,25 @@ bool hoMatrix<T>::sumOverCol(hoNDArray<T>& res) const
             res.create(COL);
         }
 
+        T* pRes = res.begin();
+
+        size_t r;
         long long c;
 
-        //#pragma omp parallel for default(none) private(c) shared(ROW, COL, res)
-        //for ( c=0; c<(long long)COL; c++ )
-        //{
-        //    for ( size_t r=0; r<ROW; r++ )
-        //    {
-        //        res(c) += (*this)(r, c);
-        //    }
-        //}
-
-        // #pragma omp parallel for default(none) private(c) shared(ROW, COL, res)
-        for ( size_t r=0; r<ROW; r++ )
+        for ( c=0; c<(long long)COL; c++ )
         {
-            for ( c=0; c<(long long)COL; c++ )
+            pRes[c] = 0;
+        }
+
+        #pragma omp parallel for default(none) private(c, r) shared(COL, ROW, pRes) if ( COL > 16 )
+        for ( c=0; c<(long long)COL; c++ )
+        {
+            T v(0);
+            for ( r=0; r<ROW; r++ )
             {
-                res(c) += (*this)(r, c);
+                v += this->data_[r+c*ROW];
             }
+            pRes[c] = v;
         }
     }
     catch (...)
@@ -266,12 +276,12 @@ void hoMatrix<T>::print(std::ostream& os) const
     using namespace std;
     os.unsetf(std::ios::scientific);
 
-    os << "hoMatrix : " << (*dimensions_)[1] << " " << (*dimensions_)[0] << " : " << std::string(typeid(T).name()) << endl;
+    os << "hoMatrix (row X col): " << this->rows() << " X " << this->cols() << " : " << std::string(typeid(T).name()) << endl;
     size_t r, c;
-    for (r=0; r<(*dimensions_)[1]; r++) 
+    for (r=0; r<(*dimensions_)[0]; r++) 
     {
         os << "r " << r << ":\t";
-        for (c=0; c<(*dimensions_)[0]; c++)
+        for (c=0; c<(*dimensions_)[1]; c++)
         {
             os << setprecision(10) << (*this)(r,c) << "\t";
         }
@@ -491,6 +501,78 @@ inline bool conjugatetrans(const hoMatrix<double>& A, hoMatrix<double>& AH)
     return trans(A, AH);
 }
 
+// C = A*B
+template<typename T> 
+bool GeneralMatrixProduct(hoNDArray<T>& C, const hoNDArray<T>& A, bool transA, const hoNDArray<T>& B, bool transB)
+{
+    try
+    {
+        size_t M = A.get_size(0);
+        size_t K = A.get_size(1);
+        if ( transA )
+        { 
+            M = A.get_size(1);
+            K = A.get_size(0);
+        }
+
+        size_t K2 = B.get_size(0);
+        size_t N = B.get_size(1);
+        if ( transB )
+        {
+            K2 = B.get_size(1);
+            N = B.get_size(0);
+        }
+
+        GADGET_CHECK_RETURN_FALSE(K==K2);
+        if ( (C.get_size(0)!=M) || (C.get_size(1)!=N) )
+        {
+            C.create(M, N);
+        }
+
+        const T* pA = A.begin();
+        const T* pB = B.begin();
+        T* pC = C.begin();
+
+        size_t m, n, k;
+
+        if ( !transA && !transB )
+        {
+            for ( m=0; m<M; m++ )
+            {
+                for ( n=0; n<N; n++ )
+                {
+                    pC[m+n*M] = 0;
+                    for ( k=0; k<K; k++ )
+                    {
+                        pC[m+n*M] += pA[m+k*M]*pB[k+n*K];
+                    }
+                }
+            }
+        }
+
+        if ( transA && !transB )
+        {
+            for ( m=0; m<M; m++ )
+            {
+                for ( n=0; n<N; n++ )
+                {
+                    pC[m+n*M] = 0;
+                    for ( k=0; k<K; k++ )
+                    {
+                        pC[m+n*M] += std::conj(pA[k+m*K])*pB[k+n*K];
+                    }
+                }
+            }
+        }
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct(hoNDArray<T>& C, const hoNDArray<T>& A, bool transA, const hoNDArray<T>& B, bool transB) ...");
+        return false;
+    }
+    return true;
+}
+
 // following matrix computation calls MKL functions
 #ifdef USE_MKL
 
@@ -501,162 +583,168 @@ bool GeneralMatrixProduct_gemm(hoNDArray<T>& C,
 {
     try
     {
-        CBLAS_TRANSPOSE TA, TB;
+        char TA, TB;
 
         MKL_INT lda = A.get_size(0);
         MKL_INT ldb = B.get_size(0);
         const T* pA = A.begin(); 
         const T* pB = B.begin(); 
 
-        MKL_INT M = A.get_size(1);
-        MKL_INT K = A.get_size(0);
+        MKL_INT M = A.get_size(0);
+        MKL_INT K = A.get_size(1);
         if ( transA )
         { 
-            M = A.get_size(0);
-            K = A.get_size(1);
+            M = A.get_size(1);
+            K = A.get_size(0);
         }
 
-        MKL_INT N = B.get_size(0);
-        MKL_INT K2 = B.get_size(1);
+        MKL_INT K2 = B.get_size(0);
+        MKL_INT N = B.get_size(1);
         if ( transB )
-        { 
-            N = B.get_size(1);
-            K2 = B.get_size(0);
+        {
+            K2 = B.get_size(1);
+            N = B.get_size(0);
         }
 
         GADGET_CHECK_RETURN_FALSE(K==K2);
-        if ( (C.get_size(1)!=M) || (C.get_size(0)!=N) )
+        if ( (C.get_size(0)!=M) || (C.get_size(1)!=N) )
         {
-            C.create(N, M);
+            C.create(M, N);
         }
 
         T* pC = C.begin();
         MKL_INT ldc = C.get_size(0);
 
-        T alpha(1), beta(0);
-
         if ( typeid(T)==typeid(float) )
         {
+            float alpha(1), beta(0);
+
             if ( transA )
             {
-                TA = CblasTrans;
+                TA = 'T';
             }
             else
             {
-                TA = CblasNoTrans;
+                TA = 'N';
             }
 
             if ( transB )
             {
-                TB = CblasTrans;
+                TB = 'T';
             }
             else
             {
-                TB = CblasNoTrans;
+                TB = 'N';
             }
 
             if ( &A != &C )
             {
-                cblas_sgemm(CblasRowMajor, TA, TB, M, N, K, 1, reinterpret_cast<const float*>(pA), lda, reinterpret_cast<const float*>(pB), ldb, 0, reinterpret_cast<float*>(pC), ldc);
+                sgemm(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pA), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
             }
             else
             {
                 hoNDArray<T> aTmp(A);
                 T* pATmp = aTmp.begin();
-                cblas_sgemm(CblasRowMajor, TA, TB, M, N, K, 1, reinterpret_cast<const float*>(pATmp), lda, reinterpret_cast<const float*>(pB), ldb, 0, reinterpret_cast<float*>(pC), ldc);
+                sgemm(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pATmp), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
             }
         }
         else if ( typeid(T)==typeid(double) )
         {
+            double alpha(1), beta(0);
+
             if ( transA )
             {
-                TA = CblasTrans;
+                TA = 'T';
             }
             else
             {
-                TA = CblasNoTrans;
+                TA = 'N';
             }
 
             if ( transB )
             {
-                TB = CblasTrans;
+                TB = 'T';
             }
             else
             {
-                TB = CblasNoTrans;
+                TB = 'N';
             }
 
             if ( &A != &C )
             {
-                cblas_dgemm(CblasRowMajor, TA, TB, M, N, K, 1, reinterpret_cast<const double*>(pA), lda, reinterpret_cast<const double*>(pB), ldb, 0, reinterpret_cast<double*>(pC), ldc);
+                dgemm(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pA), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
             }
             else
             {
                 hoNDArray<T> aTmp(A);
                 T* pATmp = aTmp.begin();
-                cblas_dgemm(CblasRowMajor, TA, TB, M, N, K, 1, reinterpret_cast<const double*>(pATmp), lda, reinterpret_cast<const double*>(pB), ldb, 0, reinterpret_cast<double*>(pC), ldc);
+                dgemm(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pATmp), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
             }
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
         {
+            GT_Complex8 alpha(1), beta(0);
+
             if ( transA )
             {
-                TA = CblasConjTrans;
+                TA = 'C';
             }
             else
             {
-                TA = CblasNoTrans;
+                TA = 'N';
             }
 
             if ( transB )
             {
-                TB = CblasConjTrans;
+                TB = 'C';
             }
             else
             {
-                TB = CblasNoTrans;
+                TB = 'N';
             }
 
             if ( &A != &C )
             {
-                cblas_cgemm(CblasRowMajor, TA, TB, M, N, K, &alpha, pA, lda, pB, ldb, &beta, pC, ldc);
+                cgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex8*>(&alpha), reinterpret_cast<const MKL_Complex8*>(pA), &lda, reinterpret_cast<const MKL_Complex8*>(pB), &ldb, reinterpret_cast<MKL_Complex8*>(&beta), reinterpret_cast<MKL_Complex8*>(pC), &ldc);
             }
             else
             {
                 hoNDArray<T> aTmp(A);
                 T* pATmp = aTmp.begin();
-                cblas_cgemm(CblasRowMajor, TA, TB, M, N, K, &alpha, pATmp, lda, pB, ldb, &beta, pC, ldc);
+                cgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex8*>(&alpha), reinterpret_cast<MKL_Complex8*>(pATmp), &lda, reinterpret_cast<const MKL_Complex8*>(pB), &ldb, reinterpret_cast<MKL_Complex8*>(&beta), reinterpret_cast<MKL_Complex8*>(pC), &ldc);
             }
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
         {
+            GT_Complex16 alpha(1), beta(0);
+
             if ( transA )
             {
-                TA = CblasConjTrans;
+                TA = 'C';
             }
             else
             {
-                TA = CblasNoTrans;
+                TA = 'N';
             }
 
             if ( transB )
             {
-                TB = CblasConjTrans;
+                TB = 'C';
             }
             else
             {
-                TB = CblasNoTrans;
+                TB = 'N';
             }
 
             if ( &A != &C )
             {
-                cblas_zgemm(CblasRowMajor, TA, TB, M, N, K, &alpha, pA, lda, pB, ldb, &beta, pC, ldc);
+                zgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex16*>(&alpha), reinterpret_cast<const MKL_Complex16*>(pA), &lda, reinterpret_cast<const MKL_Complex16*>(pB), &ldb, reinterpret_cast<MKL_Complex16*>(&beta), reinterpret_cast<MKL_Complex16*>(pC), &ldc);
             }
             else
             {
                 hoNDArray<T> aTmp(A);
                 T* pATmp = aTmp.begin();
-                cblas_zgemm(CblasRowMajor, TA, TB, M, N, K, &alpha, pATmp, lda, pB, ldb, &beta, pC, ldc);
+                zgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex16*>(&alpha), reinterpret_cast<MKL_Complex16*>(pATmp), &lda, reinterpret_cast<const MKL_Complex16*>(pB), &ldb, reinterpret_cast<MKL_Complex16*>(&beta), reinterpret_cast<MKL_Complex16*>(pC), &ldc);
             }
         }
         else
@@ -667,7 +755,7 @@ bool GeneralMatrixProduct_gemm(hoNDArray<T>& C,
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoNDArray<T>& C, const hoNDArray<T>& A, bool transA, const hoMatrix<T>& B, bool transB) ...");
+        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoNDArray<T>& C, const hoNDArray<T>& A, bool transA, const hoNDArray<T>& B, bool transB) ...");
         return false;
     }
     return true;
@@ -680,27 +768,27 @@ bool GeneralMatrixProduct_gemm(hoMatrix<T>& C,
 {
     try
     {
-        CBLAS_TRANSPOSE TA, TB;
+        char TA, TB;
 
-        MKL_INT lda = A.cols();
-        MKL_INT ldb = B.cols();
+        MKL_INT lda = A.rows();
+        MKL_INT ldb = B.rows();
         const T* pA = A.begin(); 
         const T* pB = B.begin(); 
 
         MKL_INT M = A.rows();
         MKL_INT K = A.cols();
         if ( transA )
-        { 
+        {
             M = A.cols();
             K = A.rows();
         }
 
-        MKL_INT N = B.cols();
         MKL_INT K2 = B.rows();
+        MKL_INT N = B.cols();
         if ( transB )
-        { 
-            N = B.rows();
+        {
             K2 = B.cols();
+            N = B.rows();
         }
 
         GADGET_CHECK_RETURN_FALSE(K==K2);
@@ -710,132 +798,138 @@ bool GeneralMatrixProduct_gemm(hoMatrix<T>& C,
         }
 
         T* pC = C.begin();
-        MKL_INT ldc = C.cols();
-
-        T alpha(1), beta(0);
+        MKL_INT ldc = C.rows();
 
         if ( typeid(T)==typeid(float) )
         {
+            float alpha(1), beta(0);
+
             if ( transA )
             {
-                TA = CblasTrans;
+                TA = 'T';
             }
             else
             {
-                TA = CblasNoTrans;
+                TA = 'N';
             }
 
             if ( transB )
             {
-                TB = CblasTrans;
+                TB = 'T';
             }
             else
             {
-                TB = CblasNoTrans;
+                TB = 'N';
             }
 
             if ( &A != &C )
             {
-                cblas_sgemm(CblasRowMajor, TA, TB, M, N, K, 1, reinterpret_cast<const float*>(pA), lda, reinterpret_cast<const float*>(pB), ldb, 0, reinterpret_cast<float*>(pC), ldc);
+                sgemm(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pA), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
             }
             else
             {
                 hoNDArray<T> aTmp(A);
                 T* pATmp = aTmp.begin();
-                cblas_sgemm(CblasRowMajor, TA, TB, M, N, K, 1, reinterpret_cast<const float*>(pATmp), lda, reinterpret_cast<const float*>(pB), ldb, 0, reinterpret_cast<float*>(pC), ldc);
+                sgemm(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const float*>(pATmp), &lda, reinterpret_cast<const float*>(pB), &ldb, &beta, reinterpret_cast<float*>(pC), &ldc);
             }
         }
         else if ( typeid(T)==typeid(double) )
         {
+            double alpha(1), beta(0);
+
             if ( transA )
             {
-                TA = CblasTrans;
+                TA = 'T';
             }
             else
             {
-                TA = CblasNoTrans;
+                TA = 'N';
             }
 
             if ( transB )
             {
-                TB = CblasTrans;
+                TB = 'T';
             }
             else
             {
-                TB = CblasNoTrans;
+                TB = 'N';
             }
 
             if ( &A != &C )
             {
-                cblas_dgemm(CblasRowMajor, TA, TB, M, N, K, 1, reinterpret_cast<const double*>(pA), lda, reinterpret_cast<const double*>(pB), ldb, 0, reinterpret_cast<double*>(pC), ldc);
+                dgemm(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pA), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
             }
             else
             {
                 hoNDArray<T> aTmp(A);
                 T* pATmp = aTmp.begin();
-                cblas_dgemm(CblasRowMajor, TA, TB, M, N, K, 1, reinterpret_cast<const double*>(pATmp), lda, reinterpret_cast<const double*>(pB), ldb, 0, reinterpret_cast<double*>(pC), ldc);
+                dgemm(&TA, &TB, &M, &N, &K, &alpha, reinterpret_cast<const double*>(pATmp), &lda, reinterpret_cast<const double*>(pB), &ldb, &beta, reinterpret_cast<double*>(pC), &ldc);
             }
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
         {
+            GT_Complex8 alpha(1), beta(0);
+
             if ( transA )
             {
-                TA = CblasConjTrans;
+                TA = 'C';
             }
             else
             {
-                TA = CblasNoTrans;
+                TA = 'N';
             }
 
             if ( transB )
             {
-                TB = CblasConjTrans;
+                TB = 'C';
             }
             else
             {
-                TB = CblasNoTrans;
+                TB = 'N';
             }
 
             if ( &A != &C )
             {
-                cblas_cgemm(CblasRowMajor, TA, TB, M, N, K, &alpha, pA, lda, pB, ldb, &beta, pC, ldc);
+                cgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex8*>(&alpha), reinterpret_cast<const MKL_Complex8*>(pA), &lda, reinterpret_cast<const MKL_Complex8*>(pB), &ldb, reinterpret_cast<MKL_Complex8*>(&beta), reinterpret_cast<MKL_Complex8*>(pC), &ldc);
             }
             else
             {
                 hoNDArray<T> aTmp(A);
                 T* pATmp = aTmp.begin();
-                cblas_cgemm(CblasRowMajor, TA, TB, M, N, K, &alpha, pATmp, lda, pB, ldb, &beta, pC, ldc);
+                cgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex8*>(&alpha), reinterpret_cast<MKL_Complex8*>(pATmp), &lda, reinterpret_cast<const MKL_Complex8*>(pB), &ldb, reinterpret_cast<MKL_Complex8*>(&beta), reinterpret_cast<MKL_Complex8*>(pC), &ldc);
             }
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
         {
+            GT_Complex16 alpha(1), beta(0);
+
             if ( transA )
             {
-                TA = CblasConjTrans;
+                TA = 'C';
             }
             else
             {
-                TA = CblasNoTrans;
+                TA = 'N';
             }
 
             if ( transB )
             {
-                TB = CblasConjTrans;
+                TB = 'C';
             }
             else
             {
-                TB = CblasNoTrans;
+                TB = 'N';
             }
 
             if ( &A != &C )
             {
-                cblas_zgemm(CblasRowMajor, TA, TB, M, N, K, &alpha, pA, lda, pB, ldb, &beta, pC, ldc);
+                zgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex16*>(&alpha), reinterpret_cast<const MKL_Complex16*>(pA), &lda, reinterpret_cast<const MKL_Complex16*>(pB), &ldb, reinterpret_cast<MKL_Complex16*>(&beta), reinterpret_cast<MKL_Complex16*>(pC), &ldc);
             }
             else
             {
                 hoNDArray<T> aTmp(A);
                 T* pATmp = aTmp.begin();
-                cblas_zgemm(CblasRowMajor, TA, TB, M, N, K, &alpha, pATmp, lda, pB, ldb, &beta, pC, ldc);
+                zgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex16*>(&alpha), reinterpret_cast<MKL_Complex16*>(pATmp), &lda, reinterpret_cast<const MKL_Complex16*>(pB), &ldb, reinterpret_cast<MKL_Complex16*>(&beta), reinterpret_cast<MKL_Complex16*>(pC), &ldc);
             }
         }
         else
@@ -863,23 +957,23 @@ bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<T>& A, char uplo)
         MKL_INT info;
         lapack_int n = (lapack_int)(A.rows());
         T* pA = A.begin();
-        lapack_int lda = (lapack_int)(A.cols());
+        lapack_int lda = (lapack_int)(A.rows());
 
         if ( typeid(T)==typeid(float) )
         {
-            info = LAPACKE_spotrf(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<float*>(pA), lda);
+            spotrf(&uplo, &n, reinterpret_cast<float*>(pA), &lda, &info);
         }
         else if ( typeid(T)==typeid(double) )
         {
-            info = LAPACKE_dpotrf(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<double*>(pA), lda);
+            dpotrf(&uplo, &n, reinterpret_cast<double*>(pA), &lda, &info);
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
         {
-            info = LAPACKE_cpotrf(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<MKL_Complex8*>(pA), lda);
+            cpotrf(&uplo, &n, reinterpret_cast<MKL_Complex8*>(pA), &lda, &info);
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
         {
-            info = LAPACKE_zpotrf(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<MKL_Complex16*>(pA), lda);
+            zpotrf(&uplo, &n, reinterpret_cast<MKL_Complex16*>(pA), &lda, &info);
         }
         else
         {
@@ -927,25 +1021,56 @@ bool EigenAnalysis_syev_heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type
 
         if ( typeid(T)==typeid(float) )
         {
-            info = LAPACKE_ssyev(LAPACK_ROW_MAJOR, jobz, uplo, M, reinterpret_cast<float*>(pA), M, reinterpret_cast<float*>(pEV));
+            info = LAPACKE_ssyev(LAPACK_COL_MAJOR, jobz, uplo, M, reinterpret_cast<float*>(pA), M, reinterpret_cast<float*>(pEV));
         }
         else if ( typeid(T)==typeid(double) )
         {
-            info = LAPACKE_dsyev(LAPACK_ROW_MAJOR, jobz, uplo, M, reinterpret_cast<double*>(pA), M, reinterpret_cast<double*>(pEV));
+            info = LAPACKE_dsyev(LAPACK_COL_MAJOR, jobz, uplo, M, reinterpret_cast<double*>(pA), M, reinterpret_cast<double*>(pEV));
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
         {
-            info = LAPACKE_cheev(LAPACK_ROW_MAJOR, jobz, uplo, M, reinterpret_cast<MKL_Complex8*>(pA), M, reinterpret_cast<float*>(pEV));
+            info = LAPACKE_cheev(LAPACK_COL_MAJOR, jobz, uplo, M, reinterpret_cast<MKL_Complex8*>(pA), M, reinterpret_cast<float*>(pEV));
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
         {
-            info = LAPACKE_zheev(LAPACK_ROW_MAJOR, jobz, uplo, M, reinterpret_cast<MKL_Complex16*>(pA), M, reinterpret_cast<double*>(pEV));
+            info = LAPACKE_zheev(LAPACK_COL_MAJOR, jobz, uplo, M, reinterpret_cast<MKL_Complex16*>(pA), M, reinterpret_cast<double*>(pEV));
         }
         else
         {
             GADGET_ERROR_MSG("EigenAnalysis_syev_heev : unsupported type " << typeid(T).name());
             return false;
         }
+
+        /*long long lwork;
+        lwork = M*M;
+
+        if ( typeid(T)==typeid(float) )
+        {
+            hoNDArray<float> work(M, M);
+            ssyev(&jobz, &uplo, &M, reinterpret_cast<float*>(pA), &M, reinterpret_cast<float*>(pEV), work.begin(), &lwork, &info);
+        }
+        else if ( typeid(T)==typeid(double) )
+        {
+            hoNDArray<double> work(M, M);
+            dsyev(&jobz, &uplo, &M, reinterpret_cast<double*>(pA), &M, reinterpret_cast<double*>(pEV), work.begin(), &lwork, &info);
+        }
+        else if ( typeid(T)==typeid(GT_Complex8) )
+        {
+            hoNDArray<GT_Complex8> work(M, M);
+            hoNDArray<float> rwork(3*M);
+            cheev(&jobz, &uplo, &M, reinterpret_cast<MKL_Complex8*>(pA), &M, reinterpret_cast<float*>(pEV), reinterpret_cast<MKL_Complex8*>(work.begin()), &lwork, rwork.begin(), &info);
+        }
+        else if ( typeid(T)==typeid(GT_Complex16) )
+        {
+            hoNDArray<GT_Complex16> work(M, M);
+            hoNDArray<double> rwork(3*M);
+            zheev(&jobz, &uplo, &M, reinterpret_cast<MKL_Complex16*>(pA), &M, reinterpret_cast<double*>(pEV), reinterpret_cast<MKL_Complex16*>(work.begin()), &lwork, rwork.begin(), &info);
+        }
+        else
+        {
+            GADGET_ERROR_MSG("EigenAnalysis_syev_heev : unsupported type " << typeid(T).name());
+            return false;
+        }*/
 
         GADGET_CHECK_RETURN_FALSE(info==0);
     }
@@ -973,7 +1098,7 @@ bool EigenAnalysis_syev_heev2(hoMatrix<T>& A, hoMatrix<T>& eigenValue)
         hoMatrix<typename realType<T>::Type> D(M, 1);
         GADGET_CHECK_RETURN_FALSE(EigenAnalysis_syev_heev(A, D));
         //GADGET_CHECK_RETURN_FALSE(eigenValue.copyFrom(D));
-	eigenValue.copyFrom(D);
+        eigenValue.copyFrom(D);
     }
     catch (...)
     {
@@ -995,38 +1120,38 @@ bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<T>& A)
         char uplo = 'L';
         lapack_int n = (lapack_int)A.rows();
         T* pA = A.begin();
-        lapack_int lda = (lapack_int)A.cols();
+        lapack_int lda = (lapack_int)A.rows();
 
         if ( typeid(T)==typeid(float) )
         {
-            info = LAPACKE_spotrf(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<float*>(pA), lda);
+            info = LAPACKE_spotrf(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<float*>(pA), lda);
             GADGET_CHECK_RETURN_FALSE(info==0);
 
-            info = LAPACKE_spotri(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<float*>(pA), lda);
+            info = LAPACKE_spotri(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<float*>(pA), lda);
             GADGET_CHECK_RETURN_FALSE(info==0);
         }
         else if ( typeid(T)==typeid(double) )
         {
-            info = LAPACKE_dpotrf(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<double*>(pA), lda);
+            info = LAPACKE_dpotrf(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<double*>(pA), lda);
             GADGET_CHECK_RETURN_FALSE(info==0);
 
-            info = LAPACKE_dpotri(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<double*>(pA), lda);
+            info = LAPACKE_dpotri(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<double*>(pA), lda);
             GADGET_CHECK_RETURN_FALSE(info==0);
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
         {
-            info = LAPACKE_cpotrf(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<MKL_Complex8*>(pA), lda);
+            info = LAPACKE_cpotrf(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<MKL_Complex8*>(pA), lda);
             GADGET_CHECK_RETURN_FALSE(info==0);
 
-            info = LAPACKE_cpotri(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<MKL_Complex8*>(pA), lda);
+            info = LAPACKE_cpotri(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<MKL_Complex8*>(pA), lda);
             GADGET_CHECK_RETURN_FALSE(info==0);
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
         {
-            info = LAPACKE_zpotrf(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<MKL_Complex16*>(pA), lda);
+            info = LAPACKE_zpotrf(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<MKL_Complex16*>(pA), lda);
             GADGET_CHECK_RETURN_FALSE(info==0);
 
-            info = LAPACKE_zpotri(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<MKL_Complex16*>(pA), lda);
+            info = LAPACKE_zpotri(LAPACK_COL_MAJOR, uplo, n, reinterpret_cast<MKL_Complex16*>(pA), lda);
             GADGET_CHECK_RETURN_FALSE(info==0);
         }
         else
@@ -1055,23 +1180,23 @@ bool TriangularInverse_trtri(hoMatrix<T>& A, char uplo)
         char diag = 'N';
         lapack_int n = (lapack_int)A.rows();
         T* pA = A.begin();
-        lapack_int lda = (lapack_int)A.cols();
+        lapack_int lda = (lapack_int)A.rows();
 
         if ( typeid(T)==typeid(float) )
         {
-            info = LAPACKE_strtri(LAPACK_ROW_MAJOR, uplo, diag, n, reinterpret_cast<float*>(pA), lda);
+            info = LAPACKE_strtri(LAPACK_COL_MAJOR, uplo, diag, n, reinterpret_cast<float*>(pA), lda);
         }
         else if ( typeid(T)==typeid(double) )
         {
-            info = LAPACKE_dtrtri(LAPACK_ROW_MAJOR, uplo, diag, n, reinterpret_cast<double*>(pA), lda);
+            info = LAPACKE_dtrtri(LAPACK_COL_MAJOR, uplo, diag, n, reinterpret_cast<double*>(pA), lda);
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
         {
-            info = LAPACKE_ctrtri(LAPACK_ROW_MAJOR, uplo, diag, n, reinterpret_cast<MKL_Complex8*>(pA), lda);
+            info = LAPACKE_ctrtri(LAPACK_COL_MAJOR, uplo, diag, n, reinterpret_cast<MKL_Complex8*>(pA), lda);
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
         {
-            info = LAPACKE_ztrtri(LAPACK_ROW_MAJOR, uplo, diag, n, reinterpret_cast<MKL_Complex16*>(pA), lda);
+            info = LAPACKE_ztrtri(LAPACK_COL_MAJOR, uplo, diag, n, reinterpret_cast<MKL_Complex16*>(pA), lda);
         }
         else
         {
@@ -1103,25 +1228,25 @@ bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<T>& A, hoMatri
         lapack_int n = (lapack_int)A.rows();
         lapack_int nrhs = (lapack_int)b.cols();
         T* pA = A.begin();
-        lapack_int lda = (lapack_int)A.cols();
+        lapack_int lda = (lapack_int)A.rows();
         T* pB = b.begin();
-        lapack_int ldb = (lapack_int)b.cols();
+        lapack_int ldb = (lapack_int)b.rows();
 
         if ( typeid(T)==typeid(float) )
         {
-            info = LAPACKE_sposv(LAPACK_ROW_MAJOR, uplo, n, nrhs, reinterpret_cast<float*>(pA), lda, reinterpret_cast<float*>(pB), ldb);
+            info = LAPACKE_sposv(LAPACK_COL_MAJOR, uplo, n, nrhs, reinterpret_cast<float*>(pA), lda, reinterpret_cast<float*>(pB), ldb);
         }
         else if ( typeid(T)==typeid(double) )
         {
-            info = LAPACKE_dposv(LAPACK_ROW_MAJOR, uplo, n, nrhs, reinterpret_cast<double*>(pA), lda, reinterpret_cast<double*>(pB), ldb);
+            info = LAPACKE_dposv(LAPACK_COL_MAJOR, uplo, n, nrhs, reinterpret_cast<double*>(pA), lda, reinterpret_cast<double*>(pB), ldb);
         }
         else if ( typeid(T)==typeid(GT_Complex8) )
         {
-            info = LAPACKE_cposv(LAPACK_ROW_MAJOR, uplo, n, nrhs, reinterpret_cast<MKL_Complex8*>(pA), lda, reinterpret_cast<MKL_Complex8*>(pB), ldb);
+            info = LAPACKE_cposv(LAPACK_COL_MAJOR, uplo, n, nrhs, reinterpret_cast<MKL_Complex8*>(pA), lda, reinterpret_cast<MKL_Complex8*>(pB), ldb);
         }
         else if ( typeid(T)==typeid(GT_Complex16) )
         {
-            info = LAPACKE_zposv(LAPACK_ROW_MAJOR, uplo, n, nrhs, reinterpret_cast<MKL_Complex16*>(pA), lda, reinterpret_cast<MKL_Complex16*>(pB), ldb);
+            info = LAPACKE_zposv(LAPACK_COL_MAJOR, uplo, n, nrhs, reinterpret_cast<MKL_Complex16*>(pA), lda, reinterpret_cast<MKL_Complex16*>(pB), ldb);
         }
         else
         {
@@ -1180,76 +1305,5 @@ bool SolveLinearSystem_Tikhonov(hoMatrix<T>& A, hoMatrix<T>& b, hoMatrix<T>& x, 
 }
 
 #endif // USE_MKL
-
-//    //
-//    // Instantiation
-//    //
-//
-//    template class hoMatrix<float>;
-//    template class hoMatrix<double>;
-//    template class hoMatrix<GT_Complex8>;
-//    template class hoMatrix<GT_Complex16>;
-//
-//    template EXPORTCPUCORE bool copyL2U(hoMatrix<float>& A);
-//    template EXPORTCPUCORE bool copyL2U(hoMatrix<double>& A);
-//    template EXPORTCPUCORE bool copyL2U(hoMatrix<GT_Complex8>& A, bool conj);
-//    template EXPORTCPUCORE bool copyL2U(hoMatrix<GT_Complex16>& A, bool conj);
-//
-//    template EXPORTCPUCORE bool copyU2L(hoMatrix<float>& A);
-//    template EXPORTCPUCORE bool copyU2L(hoMatrix<double>& A);
-//    template EXPORTCPUCORE bool copyU2L(hoMatrix<GT_Complex8>& A, bool conj);
-//    template EXPORTCPUCORE bool copyU2L(hoMatrix<GT_Complex16>& A, bool conj);
-//
-//    template EXPORTCPUCORE bool trans(const hoMatrix<float>& A, hoMatrix<float>& AT);
-//    template EXPORTCPUCORE bool trans(const hoMatrix<double>& A, hoMatrix<double>& AT);
-//    template EXPORTCPUCORE bool trans(const hoMatrix<GT_Complex8>& A, hoMatrix<GT_Complex8>& AT);
-//    template EXPORTCPUCORE bool trans(const hoMatrix<GT_Complex16>& A, hoMatrix<GT_Complex16>& AT);
-//
-//    template EXPORTCPUCORE bool conjugatetrans(const hoMatrix<GT_Complex8>& A, hoMatrix<GT_Complex8>& AH);
-//    template EXPORTCPUCORE bool conjugatetrans(const hoMatrix<GT_Complex16>& A, hoMatrix<GT_Complex16>& AH);
-//
-//#ifdef USE_MKL
-//
-//    template<> EXPORTCPUCORE bool GeneralMatrixProduct_gemm(hoMatrix<float>& C, const hoMatrix<float>& A, bool transA, const hoMatrix<float>& B, bool transB);
-//    template<> EXPORTCPUCORE bool GeneralMatrixProduct_gemm(hoMatrix<double>& C, const hoMatrix<double>& A, bool transA, const hoMatrix<double>& B, bool transB);
-//    template<> EXPORTCPUCORE bool GeneralMatrixProduct_gemm(hoMatrix<GT_Complex8>& C, const hoMatrix<GT_Complex8>& A, bool transA, const hoMatrix<GT_Complex8>& B, bool transB);
-//    template<> EXPORTCPUCORE bool GeneralMatrixProduct_gemm(hoMatrix<GT_Complex16>& C, const hoMatrix<GT_Complex16>& A, bool transA, const hoMatrix<GT_Complex16>& B, bool transB);
-//
-//    template<> EXPORTCPUCORE bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<float>& A, char uplo);
-//    template<> EXPORTCPUCORE bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<double>& A, char uplo);
-//    template<> EXPORTCPUCORE bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<GT_Complex8>& A, char uplo);
-//    template<> EXPORTCPUCORE bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<GT_Complex16>& A, char uplo);
-//
-//    template<> EXPORTCPUCORE bool EigenAnalysis_syev_heev(hoMatrix<float>& A, hoMatrix<float>& eigenValue);
-//    template<> EXPORTCPUCORE bool EigenAnalysis_syev_heev(hoMatrix<double>& A, hoMatrix<double>& eigenValue);
-//    template<> EXPORTCPUCORE bool EigenAnalysis_syev_heev(hoMatrix<GT_Complex8>& A, hoMatrix<float>& eigenValue);
-//    template<> EXPORTCPUCORE bool EigenAnalysis_syev_heev(hoMatrix<GT_Complex16>& A, hoMatrix<double>& eigenValue);
-//
-//    template<> EXPORTCPUCORE bool EigenAnalysis_syev_heev2(hoMatrix<float>& A, hoMatrix<float>& eigenValue);
-//    template<> EXPORTCPUCORE bool EigenAnalysis_syev_heev2(hoMatrix<double>& A, hoMatrix<double>& eigenValue);
-//    template<> EXPORTCPUCORE bool EigenAnalysis_syev_heev2(hoMatrix<GT_Complex8>& A, hoMatrix<GT_Complex8>& eigenValue);
-//    template<> EXPORTCPUCORE bool EigenAnalysis_syev_heev2(hoMatrix<GT_Complex16>& A, hoMatrix<GT_Complex16>& eigenValue);
-//
-//    template<> EXPORTCPUCORE bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<float>& A);
-//    template<> EXPORTCPUCORE bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<double>& A);
-//    template<> EXPORTCPUCORE bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<GT_Complex8>& A);
-//    template<> EXPORTCPUCORE bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<GT_Complex16>& A);
-//
-//    template<> EXPORTCPUCORE bool TriangularInverse_trtri(hoMatrix<float>& A, char uplo);
-//    template<> EXPORTCPUCORE bool TriangularInverse_trtri(hoMatrix<double>& A, char uplo);
-//    template<> EXPORTCPUCORE bool TriangularInverse_trtri(hoMatrix<GT_Complex8>& A, char uplo);
-//    template<> EXPORTCPUCORE bool TriangularInverse_trtri(hoMatrix<GT_Complex16>& A, char uplo);
-//
-//    template<> EXPORTCPUCORE bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<float>& A, hoMatrix<float>& b);
-//    template<> EXPORTCPUCORE bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<double>& A, hoMatrix<double>& b);
-//    template<> EXPORTCPUCORE bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<GT_Complex8>& A, hoMatrix<GT_Complex8>& b);
-//    template<> EXPORTCPUCORE bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<GT_Complex16>& A, hoMatrix<GT_Complex16>& b);
-//
-//    template<> EXPORTCPUCORE bool SolveLinearSystem_Tikhonov(hoMatrix<float>& A, hoMatrix<float>& b, hoMatrix<float>& x, double lamda);
-//    template<> EXPORTCPUCORE bool SolveLinearSystem_Tikhonov(hoMatrix<double>& A, hoMatrix<double>& b, hoMatrix<double>& x, double lamda);
-//    template<> EXPORTCPUCORE bool SolveLinearSystem_Tikhonov(hoMatrix<GT_Complex8>& A, hoMatrix<GT_Complex8>& b, hoMatrix<GT_Complex8>& x, double lamda);
-//    template<> EXPORTCPUCORE bool SolveLinearSystem_Tikhonov(hoMatrix<GT_Complex16>& A, hoMatrix<GT_Complex16>& b, hoMatrix<GT_Complex16>& x, double lamda);
-//
-//#endif // USE_MKL
 
 }

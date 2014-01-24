@@ -231,6 +231,8 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
 
     hoNDArray<T> ker(kRO, kE1, kE2, srcCHA, dstCHA, 1, 1, 1, workOrder3DT->kernel_->begin()+usedN*kRO*kE1*kE2*srcCHA*dstCHA);
 
+    spirit_.calib_use_gpu_ = workOrder3DT->spirit_use_gpu_;
+
     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 3D calibration ... "));
     GADGET_CHECK_RETURN_FALSE(spirit_.calib3D(acsSrc, acsDst, workOrder3DT->spirit_reg_lamda_, workOrder3DT->spirit_calib_over_determine_ratio_, kRO, kE1, kE2, 1, 1, 1, ker));
     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
@@ -302,6 +304,7 @@ splitJob(gtPlusReconWorkOrder3DT<T>* workOrder3DT, size_t& jobN)
             GADGET_MSG("SPIRIT - 3DT - size of largest job : " << jobN);
         }
     }
+    if ( jobN >= RO ) splitJobs = false;
 
     return splitJobs;
 }
@@ -637,7 +640,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                 size_t kernelN = n;
                 if ( kernelN >= refN ) kernelN = refN-1;
 
-                hoNDArray<T> kIm(RO, E1, E2, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin()+kernelN*RO*E1*E2*srcCHA*dstCHA);
+                hoNDArray<T> kIm(E1, E2, RO, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin()+kernelN*RO*E1*E2*srcCHA*dstCHA);
 
                 hoNDArray<T> aliasedKSpace(RO, E1, E2, srcCHA, const_cast<T*>(data_dst.begin())+n*RO*E1*E2*srcCHA);
 
@@ -751,15 +754,24 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
 
         long long t;
 
+        hoNDArray<T> ker_Shifted(kerIm);
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(*kerIm, ker_Shifted);
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker_Shifted, "ker_Shifted");
+
+        hoNDArray<T> kspace_Shifted(kspace);
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(kspace, kspace_Shifted);
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace_Shifted, "kspace_Shifted");
+
         #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(t) shared(RO, E1, E2, srcCHA, dstCHA, workOrder3DT, kerIm, NUM) if ( NUM > 1 ) num_threads( numThreads )
+            #pragma omp parallel default(none) private(t) shared(RO, E1, E2, srcCHA, dstCHA, workOrder3DT, kspace_Shifted, ker_Shifted, NUM) if ( NUM > 1 ) num_threads( numThreads )
         #else
-            #pragma omp parallel default(none) private(t) shared(RO, E1, E2, srcCHA, dstCHA, workOrder3DT, NUM, kspace, kerIm, res) if ( NUM > 1 ) num_threads( numThreads )
+            #pragma omp parallel default(none) private(t) shared(RO, E1, E2, srcCHA, dstCHA, workOrder3DT, NUM, kspace_Shifted, ker_Shifted, res) if ( NUM > 1 ) num_threads( numThreads )
         #endif
         {
             gtPlusSPIRIT2DOperator<T> spirit;
             spirit.setMemoryManager(gtPlus_mem_manager_);
             spirit.use_symmetric_spirit_ = false;
+            spirit.use_non_centered_fft_ = true;
 
             hoNDArray<T> x0(E1, E2, srcCHA);
             Gadgetron::clear(x0);
@@ -783,13 +795,13 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
             {
                 size_t ro = t;
 
-                hoNDArray<T> kspaceCurr(E1, E2, srcCHA, kspace.begin()+ro*E1*E2*srcCHA);
+                hoNDArray<T> kspaceCurr(E1, E2, srcCHA, kspace_Shifted.begin()+ro*E1*E2*srcCHA);
                 hoNDArray<T> resCurr(E1, E2, dstCHA, res.begin()+ro*E1*E2*dstCHA);
 
                 // solve the 2D spirit problem
                 Gadgetron::clear(x0);
 
-                boost::shared_ptr<hoNDArray<T> > kerCurr(new hoNDArray<T>(E1, E2, srcCHA, dstCHA, kerIm->begin()+ro*E1*E2*srcCHA*dstCHA));
+                boost::shared_ptr<hoNDArray<T> > kerCurr(new hoNDArray<T>(E1, E2, srcCHA, dstCHA, ker_Shifted.begin()+ro*E1*E2*srcCHA*dstCHA));
 
                 spirit.setForwardKernel(kerCurr, false);
 
@@ -817,6 +829,11 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
 
             delete pCGSolver;
         }
+
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "res_Shifted");
+
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fftshift2D(res, kspace_Shifted);
+        res = kspace_Shifted;
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "resPermuted");
     }

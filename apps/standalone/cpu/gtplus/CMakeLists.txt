@@ -1,6 +1,7 @@
 
 # matlab warpper
 if (MATLAB_FOUND)
+
     message("MATLAB FOUND: matlab wrapper for gtplus toolbox will be compiled.")
 
     SET(CMAKE_DEBUG_POSTFIX)
@@ -35,7 +36,7 @@ if (MATLAB_FOUND)
             SET(MATLAB_SUFFIX ".mexmaci64")
         endif ( HAS_64_BIT )
     endif(APPLE)
-    
+
     if ( MKL_FOUND )
 
         # coil map 2D

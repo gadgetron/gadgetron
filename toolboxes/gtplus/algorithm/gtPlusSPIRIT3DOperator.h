@@ -35,6 +35,7 @@ public:
     using BaseClass::gtPlus_util_complex_;
     using BaseClass::gtPlus_mem_manager_;
     using BaseClass::use_symmetric_spirit_;
+    using BaseClass::use_non_centered_fft_;
 
 protected:
 

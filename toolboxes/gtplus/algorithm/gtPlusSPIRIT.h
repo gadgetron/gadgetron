@@ -30,7 +30,7 @@ public:
 
     typedef typename realType<T>::Type ValueType;
 
-    gtPlusSPIRIT() : BaseClass() {}
+    gtPlusSPIRIT() : calib_use_gpu_(true), BaseClass() {}
     virtual ~gtPlusSPIRIT() {}
 
     virtual void printInfo(std::ostream& os);
@@ -80,6 +80,8 @@ public:
 
     // compute the (G-I)'*(G-I)
     bool AdjointForwardKernel(const hoNDArray<T>& kImS2D, const hoNDArray<T>& kImD2S, hoNDArray<T>& kIm);
+
+    bool calib_use_gpu_;
 
     using BaseClass::gt_timer1_;
     using BaseClass::gt_timer2_;
@@ -153,15 +155,19 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres, int 
         size_t colA = (kRO*kE1-1)*srcCHA;
         size_t colB = dstCHA;
 
-        hoMatrix<T> A;
-        hoMatrix<T> B;
+        bool useGPU = (typeid(typename realType<T>::Type)==typeid(float) && calib_use_gpu_);
+        if ( useGPU )
+        {
+            GADGET_MSG("spirit 2D - calling GPU kernel estimation ... "); 
+        }
+
+        hoMatrix<T> A(rowA, colA);
+        T* pA = A.begin();
+
+        hoMatrix<T> B(rowA, colB);
+        T* pB = B.begin();
+
         hoMatrix<T> x( A.cols(), B.cols() );
-
-        hoNDArrayMemoryManaged<T> A_mem(colA, rowA, gtPlus_mem_manager_);
-        A.createMatrix( rowA, colA, A_mem.begin() );
-
-        hoNDArrayMemoryManaged<T> B_mem(colB, rowA, gtPlus_mem_manager_);
-        B.createMatrix( A.rows(), colB, B_mem.begin() );
 
         int dRO, dE1;
 
@@ -185,7 +191,9 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres, int 
                         {
                             if ( kro!=0 || ke1!=0 )
                             {
-                                A(rInd, col++) = acsSrc(ro+kro, e1+ke1, src);
+                                //A(rInd, col++) = acsSrc(ro+kro, e1+ke1, src);
+                                pA[rInd + col*rowA] = acsSrc(ro+kro, e1+ke1, src);
+                                col++;
                             }
                         }
                     }
@@ -194,12 +202,61 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres, int 
                 // fill matrix B
                 for ( size_t dst=0; dst<dstCHA; dst++ )
                 {
-                    B(rInd, dst) = acsDst(dRO, dE1, dst);
+                    //B(rInd, dst) = acsDst(dRO, dE1, dst);
+                    pB[rInd+dst*rowA] = acsDst(dRO, dE1, dst);
                 }
             }
         }
 
-        SolveLinearSystem_Tikhonov(A, B, x, thres);
+        #ifdef USE_CUDA
+            // go to device
+            try
+            {
+                if ( useGPU )
+                {
+                    hoNDArray<float_complext> A_tmp(A.get_dimensions(), reinterpret_cast<float_complext*>(A.begin()));
+                    hoNDArray<float_complext> B_tmp(B.get_dimensions(), reinterpret_cast<float_complext*>(B.begin()));
+
+                    int ret(0);
+                    boost::shared_ptr< hoNDArray<complext<float> > > host_x;
+
+                    #pragma omp critical(inverse_spirit)
+                    {
+                        cuNDArray<float_complext> device_A(A_tmp);
+                        cuNDArray<float_complext> device_B(B_tmp);
+                        cuNDArray<float_complext> device_x;
+
+                        ret = Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres);
+                        if ( ret == 0 )
+                        {
+                            host_x = device_x.to_host();
+                        }
+                    }
+
+                    if ( ret != 0 )
+                    {
+                        GADGET_ERROR_MSG("failed in Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres) ... ");
+                        SolveLinearSystem_Tikhonov(A, B, x, thres);
+                    }
+                    else
+                    {
+                        memcpy(x.begin(), host_x->begin(), host_x->get_number_of_bytes());
+                    }
+                }
+                else
+                {
+                    GADGET_WARN_MSG("GPU inverse_clib_matrix is only available for single-precision, calling the CPU version ... ");
+                    SolveLinearSystem_Tikhonov(A, B, x, thres);
+                }
+            }
+            catch(...)
+            {
+                GADGET_ERROR_MSG("failed in GPU inverse_clib_matrix for grappa, calling the CPU version ... ");
+                SolveLinearSystem_Tikhonov(A, B, x, thres);
+            }
+        #else
+            SolveLinearSystem_Tikhonov(A, B, x, thres);
+        #endif // USE_CUDA
 
         int ind(0);
         for ( size_t src=0; src<srcCHA; src++ )
@@ -422,8 +479,18 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
         size_t rowA = lenRO*lenE1*lenE2;
         size_t colB = dstCHA;
 
+        bool useGPU = (typeid(typename realType<T>::Type)==typeid(float) && calib_use_gpu_);
+        if ( useGPU )
+        {
+            GADGET_MSG("spirit 3D - calling GPU kernel estimation ... ");
+        }
+
         hoMatrix<T> A(rowA, colA);
+        T* pA = A.begin();
+
         hoMatrix<T> B(rowA, colB);
+        T* pB = B.begin();
+
         hoMatrix<T> x( A.cols(), B.cols() );
 
         int dRO, dE1, dE2;
@@ -454,7 +521,9 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
                                 {
                                     if ( kro!=0 || ke1!=0 || ke2!=0 )
                                     {
-                                        A(rInd, col++) = acsSrc(ro+kro, e1+ke1, e2+ke2, src);
+                                        //A(rInd, col++) = acsSrc(ro+kro, e1+ke1, e2+ke2, src);
+                                        pA[rInd+col*rowA] = acsSrc(ro+kro, e1+ke1, e2+ke2, src);
+                                        col++;
                                     }
                                 }
                             }
@@ -464,13 +533,61 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
                     // fill matrix B
                     for ( size_t dst=0; dst<dstCHA; dst++ )
                     {
-                        B(rInd, dst) = acsDst(dRO, dE1, dE2, dst);
+                        //B(rInd, dst) = acsDst(dRO, dE1, dE2, dst);
+                        pB[rInd+dst*rowA] = acsDst(dRO, dE1, dE2, dst);
                     }
                 }
             }
         }
 
-        SolveLinearSystem_Tikhonov(A, B, x, thres);
+        #ifdef USE_CUDA
+            // go to device
+            try
+            {
+                if ( useGPU )
+                {
+                    hoNDArray<float_complext> A_tmp(A.get_dimensions(), reinterpret_cast<float_complext*>(A.begin()));
+                    hoNDArray<float_complext> B_tmp(B.get_dimensions(), reinterpret_cast<float_complext*>(B.begin()));
+
+                    int ret(0);
+                    boost::shared_ptr< hoNDArray<complext<float> > > host_x;
+                    #pragma omp critical(inverse_spirit3D)
+                    {
+                        cuNDArray<float_complext> device_A(A_tmp);
+                        cuNDArray<float_complext> device_B(B_tmp);
+                        cuNDArray<float_complext> device_x;
+
+                        ret = Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres);
+                        if ( ret == 0 )
+                        {
+                            host_x = device_x.to_host();
+                        }
+                    }
+
+                    if ( ret != 0 )
+                    {
+                        GADGET_ERROR_MSG("failed in Gadgetron::inverse_clib_matrix(&device_A, &device_B, &device_x, thres) ... ");
+                        SolveLinearSystem_Tikhonov(A, B, x, thres);
+                    }
+                    else
+                    {
+                        memcpy(x.begin(), host_x->begin(), x.get_number_of_bytes());
+                    }
+                }
+                else
+                {
+                    GADGET_WARN_MSG("GPU inverse_clib_matrix is only available for single-precision, calling the CPU version ... ");
+                    SolveLinearSystem_Tikhonov(A, B, x, thres);
+                }
+            }
+            catch(...)
+            {
+                GADGET_ERROR_MSG("failed in GPU inverse_clib_matrix for grappa, calling the CPU version ... ");
+                SolveLinearSystem_Tikhonov(A, B, x, thres);
+            }
+        #else
+            SolveLinearSystem_Tikhonov(A, B, x, thres);
+        #endif // USE_CUDA
 
         int ind(0);
 
