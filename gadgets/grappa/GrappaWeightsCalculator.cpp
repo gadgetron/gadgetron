@@ -6,6 +6,7 @@
 #include "b1_map.h"
 #include "hoNDArray_fileio.h"
 #include "htgrappa.h"
+#include "GadgetronTimer.h"
 #include "GPUTimer.h"
 #include "complext.h"
 
@@ -65,20 +66,35 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 		device_data.squeeze();
 
 		std::vector<size_t> ftdims(2,0); ftdims[1] = 1;
-		cuNDFFT<float> ft;
 
 		//Go to image space
-		ft.ifft( &device_data, &ftdims);
+		 cuNDFFT<float>::instance()->ifft( &device_data, &ftdims);
+
+        size_t RO = device_data.get_size(0);
+        size_t E1 = device_data.get_size(1);
+        size_t CHA = device_data.get_size(2);
+
+        size_t ks = 5;
+        size_t power = 3;
+
+        cuNDArray<complext<float> > D(RO*E1, ks*ks, CHA);
+        cuNDArray<complext<float> > DH_D(RO*E1, CHA, CHA); 
+        cuNDArray<complext<float> > V1(RO*E1, CHA);
+        cuNDArray<complext<float> > U1(RO*E1, ks*ks);
 
 		// Compute CSM
-		boost::shared_ptr< cuNDArray<float_complext> > csm;
+		cuNDArray<float_complext> csm;
+        csm.create(device_data.get_dimensions());
 		{
-			//GPUTimer unmix_timer("GRAPPA CSM");
-			csm = estimate_b1_map<float,2>( &device_data, target_coils_ );
+        	//GPUTimer timer("GRAPPA CSM");
+			// csm = estimate_b1_map<float,2>( &device_data, target_coils_ );
+
+            estimate_b1_map_2D_NIH_Souheil( &device_data, &csm, ks, power, D, DH_D, V1, U1 );
+
 			//GADGET_DEBUG2("Coils in csm: %d\n", csm->get_size(2));
 		}
 		//Go back to kspace
-		ft.fft(&device_data, &ftdims);
+		cuNDFFT<float>::instance()->fft(&device_data, &ftdims);
 
 		cuNDArray<complext<float> > unmixing_dev;
 		boost::shared_ptr< std::vector<size_t> > data_dimensions = device_data.get_dimensions();
@@ -95,14 +111,15 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 
 		{
 			//GPUTimer unmix_timer("GRAPPA Unmixing");
+            //GadgetronTimer timer("GRAPPA unmixing", true);
 			std::vector<unsigned int> kernel_size;
 
 			//TODO: Add parameters for kernel size
 			kernel_size.push_back(5);
 			kernel_size.push_back(4);
 			if ( htgrappa_calculate_grappa_unmixing(reinterpret_cast< cuNDArray<complext<float> >* >(&device_data),
-					reinterpret_cast< cuNDArray<complext<float> >* >(csm.get()),
-					mb1->getObjectPtr()->acceleration_factor,
+					&csm,
+					(unsigned int)(mb1->getObjectPtr()->acceleration_factor),
 					&kernel_size,
 					&unmixing_dev,
 					&(mb1->getObjectPtr()->sampled_region),

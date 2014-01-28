@@ -10,7 +10,10 @@
 #include "GadgetronTimer.h"
 #include "gadgetron_moco_export.h"
 #include "hoNDArray_fileio.h"
+
+#ifdef USE_CUDA
 #include "cuNDArray_reductions.h"
+#endif // USE_CUDA
 
 #include <ismrmrd.h>
 #include <complex>

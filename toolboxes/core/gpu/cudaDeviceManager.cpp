@@ -32,6 +32,8 @@ namespace Gadgetron{
       throw std::runtime_error( "Error: unable to get device no");
     }
 
+    _total_global_mem = std::vector<size_t>(_num_devices,0);
+    _shared_mem_per_block = std::vector<size_t>(_num_devices,0);
     _warp_size = std::vector<int>(_num_devices,0);
     _max_blockdim = std::vector<int>(_num_devices,0);
     _max_griddim = std::vector<int>(_num_devices,0);
@@ -51,6 +53,8 @@ namespace Gadgetron{
         throw cuda_error("Error: unable to determine device properties.");
       }
 
+      _total_global_mem[device] = deviceProp.totalGlobalMem;
+      _shared_mem_per_block[device] = deviceProp.sharedMemPerBlock;
       _warp_size[device] = deviceProp.warpSize;
       _max_blockdim[device] = deviceProp.maxThreadsDim[0];
       _max_griddim[device] = deviceProp.maxGridSize[0];
@@ -72,6 +76,20 @@ namespace Gadgetron{
       if (_handle[device] != NULL)
         cublasDestroy(_handle[device]);
     }
+  }
+
+  size_t cudaDeviceManager::total_global_mem()
+  {
+    int device;
+    CUDA_CALL(cudaGetDevice(&device));
+    return _total_global_mem[device];
+  }
+
+  size_t cudaDeviceManager::shared_mem_per_block()
+  {
+    int device;
+    CUDA_CALL(cudaGetDevice(&device));
+    return _shared_mem_per_block[device];
   }
 
   int cudaDeviceManager::max_blockdim()
@@ -189,6 +207,13 @@ namespace Gadgetron{
     int device;
     CUDA_CALL(cudaGetDevice(&device));
     return device;
+  }
+
+  int cudaDeviceManager::getTotalNumberOfDevice()
+  {
+    int number_of_devices;
+    CUDA_CALL(cudaGetDeviceCount(&number_of_devices));
+    return number_of_devices;
   }
 
   void cudaDeviceManager::CleanUp()

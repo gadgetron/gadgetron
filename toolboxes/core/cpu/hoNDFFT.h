@@ -63,11 +63,6 @@ namespace Gadgetron{
             }
         }
 
-        template <unsigned int D> 
-        bool fftshift(hoNDArray< ComplexType >& a)
-        {
-        }
-
         // 1D
         bool fftshift1D(hoNDArray< ComplexType >& a);
         bool fftshift1D(const hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r);

@@ -1,6 +1,7 @@
 #include "htgrappa.h"
 #include "hoNDArray_fileio.h"
 #include "cuNDFFT.h"
+#include "GadgetronTimer.h"
 #include "GPUTimer.h"
 
 #include "CUBLASContextProvider.h"
@@ -142,7 +143,6 @@ namespace Gadgetron {
                                                                      int2 dims,
                                                                      int2 kernel_size,
                                                                      int coils)
-
   {
 
     unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
@@ -160,7 +160,6 @@ namespace Gadgetron {
 
       out[coil*dims.x*dims.y + outy*dims.x + outx] = kernel[idx_in_tmp];
     }
-
   }
 
   __global__ void scale_and_add_unmixing_coeffs(complext<float> * unmixing,
@@ -228,7 +227,7 @@ namespace Gadgetron {
   }
 
 
-  template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data, 
+  template <class T> int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data,
                                                             cuNDArray<T>* b1,
                                                             unsigned int acceleration_factor,
                                                             std::vector<unsigned int>* kernel_size,
@@ -361,6 +360,10 @@ namespace Gadgetron {
 
     std::vector<size_t> AHA_dims(2,n);
     cuNDArray<T> AHA = cuNDArray<T>(&AHA_dims);
+    cuNDArray<T> AHA_set0 = cuNDArray<T>(&AHA_dims);
+
+    hoNDArray<T> AHA_host(n, n);
+    float2* pAHA = (float2*) AHA_host.get_data_ptr();
 
     //TODO: Use target coils here
     std::vector<size_t> AHrhs_dims;
@@ -385,6 +388,8 @@ namespace Gadgetron {
     gkernel_dims.push_back(target_coils);
     cuNDArray<T> gkernel = cuNDArray<T>(&gkernel_dims);
     clear(&gkernel);
+
+    //GadgetronTimer timer;
 
     for (unsigned int set = 0; set < acceleration_factor-1; set++)
       {
@@ -425,44 +430,101 @@ namespace Gadgetron {
         complext<float>  alpha = complext<float>(1);
         complext<float>  beta = complext<float>(0);
 
-        cublasStatus_t stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
-                                          n,n,m,(float2*) &alpha,
-                                          (float2*) system_matrix.get_data_ptr(), m,
-                                          (float2*) system_matrix.get_data_ptr(), m,
-                                          (float2*) &beta, (float2*) AHA.get_data_ptr(), n);
+        cublasStatus_t stat;
 
-        if (stat != CUBLAS_STATUS_SUCCESS) {
-          std::cerr << "htgrappa_calculate_grappa_unmixing: Failed to form AHA product using cublas gemm" << std::endl;
-          std::cerr << "---- cublas error code " << stat << std::endl;
-          return -1;
+        if ( set == 0 )
+        {
+            {
+                //GPUTimer t2("Cgemm call");
+                stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
+                                                n,n,m,(float2*) &alpha,
+                                                (float2*) system_matrix.get_data_ptr(), m,
+                                                (float2*) system_matrix.get_data_ptr(), m,
+                                                (float2*) &beta, (float2*) AHA.get_data_ptr(), n);
+
+                if (stat != CUBLAS_STATUS_SUCCESS) {
+                    std::cerr << "htgrappa_calculate_grappa_unmixing: Failed to form AHA product using cublas gemm" << std::endl;
+                    std::cerr << "---- cublas error code " << stat << std::endl;
+                    return -1;
+                }
+            }
+
+            {
+                //timer.start("copy AHA to host");
+                if (cudaMemcpy(pAHA, AHA.get_data_ptr(), AHA_host.get_number_of_bytes(), cudaMemcpyDeviceToHost) != cudaSuccess)
+                {
+                    std::cerr << "htgrappa_calculate_grappa_unmixing: Failed to copy AHA to host" << std::endl;
+                    std::cerr << "---- cublas error code " << stat << std::endl;
+                    return -1;
+                }
+                //timer.stop();
+
+                //timer.start("apply the regularization");
+                // apply the regularization
+                double lamda = 0.0005;
+
+                double trA = std::sqrt(pAHA[0].x*pAHA[0].x + pAHA[0].y*pAHA[0].y);
+                size_t c;
+                for ( c=1; c<n; c++ )
+                {
+                    float x = pAHA[c+c*n].x;
+                    float y = pAHA[c+c*n].y;
+                    trA += std::sqrt(x*x+y*y);
+                }
+
+                double value = trA*lamda/n;
+                for ( c=0; c<n; c++ )
+                {
+                    float x = pAHA[c+c*n].x;
+                    float y = pAHA[c+c*n].y;
+                    pAHA[c+c*n].x = std::sqrt(x*x+y*y) + value;
+                    pAHA[c+c*n].y = 0;
+                }
+                //timer.stop();
+
+                //timer.start("copy the AHA to device");
+                if (cudaMemcpy(AHA.get_data_ptr(), pAHA, AHA_host.get_number_of_bytes(), cudaMemcpyHostToDevice) != cudaSuccess)
+                {
+                    std::cerr << "htgrappa_calculate_grappa_unmixing: Failed to copy regularized AHA to device" << std::endl;
+                    std::cerr << "---- cublas error code " << stat << std::endl;
+                    return -1;
+                }
+                //timer.stop();
+            }
+
+            AHA_set0 = AHA;
+        }
+        else
+        {
+            AHA = AHA_set0;
         }
 
-        //  {
-        //      std::string filename = debugFolder+appendix+"AHA.cplx";
-		    //write_cuNDArray_to_disk(&AHA, filename.c_str());
-        //  }
+      //  {
+      //      std::string filename = debugFolder+appendix+"AHA.cplx";
+            //write_cuNDArray_to_disk(&AHA, filename.c_str());
+      //  }
 
         {
 
-          //GPUTimer timer("GRAPPA cublas gemm");
-          //TODO: Sort out arguments for source and target coils here.
-          stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
-                             n,target_coils,m,(float2*) &alpha,
-                             (float2*) system_matrix.get_data_ptr(), m,
-                             (float2*) b.get_data_ptr(), m,
-                             (float2*) &beta, (float2*)AHrhs.get_data_ptr(), n);
+            //GPUTimer timer("GRAPPA cublas gemm");
+            //TODO: Sort out arguments for source and target coils here.
+            stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
+                    n,target_coils,m,(float2*) &alpha,
+                    (float2*) system_matrix.get_data_ptr(), m,
+                    (float2*) b.get_data_ptr(), m,
+                    (float2*) &beta, (float2*)AHrhs.get_data_ptr(), n);
 
         }
 
-        //  {
-        //      std::string filename = debugFolder+appendix+"AHrhs.cplx";
-		    //write_cuNDArray_to_disk(&AHrhs, filename.c_str());
-        //  }
+      //  {
+      //      std::string filename = debugFolder+appendix+"AHrhs.cplx";
+            //write_cuNDArray_to_disk(&AHrhs, filename.c_str());
+      //  }
 
         if (stat != CUBLAS_STATUS_SUCCESS) {
-          std::cerr << "htgrappa_calculate_grappa_unmixing: Failed to form AHA product using cublas gemm" << std::endl;
-          std::cerr << "---- cublas error code " << stat << std::endl;
-          return -1;
+            std::cerr << "htgrappa_calculate_grappa_unmixing: Failed to form AHrhs product using cublas gemm" << std::endl;
+            std::cerr << "---- cublas error code " << stat << std::endl;
+            return -1;
         }
 
 
@@ -540,7 +602,7 @@ namespace Gadgetron {
     int kernel_elements = gkernel.get_number_of_elements()/target_coils;
     int total_elements = tmp_mixing.get_number_of_elements()/source_coils;
     dkernel_size.y *= acceleration_factor;
-    cuNDFFT<typename realType<T>::Type> ft;
+
     std::vector<size_t> ft_dims(2,0);ft_dims[1] = 1;
     clear(out_mixing_coeff);
     unsigned int current_uncombined_index = 0;
@@ -567,7 +629,7 @@ namespace Gadgetron {
           return -1;
         }
 
-        ft.ifft(&tmp_mixing, &ft_dims);
+        cuNDFFT<typename realType<T>::Type>::instance()->ifft(&tmp_mixing, &ft_dims);
 
         float scale_factor = total_elements;
 
@@ -605,10 +667,152 @@ namespace Gadgetron {
     return 0;
   }
 
+template <class T> int inverse_clib_matrix(cuNDArray<T>* A,
+                                cuNDArray<T>* b,
+                                cuNDArray<T>* coeff,
+                                double lamda)
+{
+    // A: M*N
+    // b: M*K
+    size_t M = A->get_size(0);
+    size_t N = A->get_size(1);
 
+    size_t K = b->get_size(1);
+
+    std::vector<size_t> AHA_dims(2,N);
+    cuNDArray<T> AHA = cuNDArray<T>(&AHA_dims);
+
+    std::vector<size_t> AHrhs_dims;
+    AHrhs_dims.push_back(N);
+    AHrhs_dims.push_back(K);
+
+    coeff->create(&AHrhs_dims);
+
+    cublasHandle_t handle = *CUBLASContextProvider::instance()->getCublasHandle();
+
+    complext<float>  alpha = complext<float>(1);
+    complext<float>  beta = complext<float>(0);
+
+    //{
+    //    std::string filename = debugFolder+"A.cplx";
+    //    write_cuNDArray_to_disk(A, filename.c_str());
+    //}
+
+    //{
+    //    std::string filename = debugFolder+"b.cplx";
+    //    write_cuNDArray_to_disk(b, filename.c_str());
+    //}
+
+    {
+        //GPUTimer t2("compute AHA ...");
+        cublasStatus_t stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
+                N,N,M,(float2*) &alpha,
+                (float2*) A->get_data_ptr(), M,
+                (float2*) A->get_data_ptr(), M,
+                (float2*) &beta, (float2*) AHA.get_data_ptr(), N);
+
+        if (stat != CUBLAS_STATUS_SUCCESS)
+        {
+            std::cerr << "inverse_clib_matrix: Failed to form AHA product using cublas gemm" << std::endl;
+            std::cerr << "---- cublas error code " << stat << std::endl;
+            return -1;
+        }
+    }
+
+    //{
+    //    std::string filename = debugFolder+"AHA.cplx";
+    //    write_cuNDArray_to_disk(&AHA, filename.c_str());
+    //}
+
+    {
+        //GPUTimer t2("compute AHrhs ...");
+        cublasStatus_t stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
+                N,K,M,(float2*) &alpha,
+                (float2*) A->get_data_ptr(), M,
+                (float2*) b->get_data_ptr(), M,
+                (float2*) &beta, (float2*)coeff->get_data_ptr(), N);
+
+        if (stat != CUBLAS_STATUS_SUCCESS)
+        {
+            std::cerr << "inverse_clib_matrix: Failed to form AHrhs product using cublas gemm" << std::endl;
+            std::cerr << "---- cublas error code " << stat << std::endl;
+            return -1;
+        }
+    }
+
+    //{
+    //    std::string filename = debugFolder+"AHrhs.cplx";
+    //    write_cuNDArray_to_disk(coeff, filename.c_str());
+    //}
+
+    // apply the regularization
+    if ( lamda > 0 )
+    {
+        hoNDArray<T> AHA_host(N, N);
+        float2* pAHA = (float2*) AHA_host.get_data_ptr();
+
+        //GadgetronTimer timer;
+
+        //timer.start("copy AHA to host");
+        if (cudaMemcpy(pAHA, AHA.get_data_ptr(), AHA_host.get_number_of_bytes(), cudaMemcpyDeviceToHost) != cudaSuccess)
+        {
+            std::cerr << "inverse_clib_matrix: Failed to copy AHA to host" << std::endl;
+            return -1;
+        }
+        //timer.stop();
+
+        //timer.start("apply the regularization");
+        // apply the regularization
+        double trA = std::sqrt(pAHA[0].x*pAHA[0].x + pAHA[0].y*pAHA[0].y);
+        size_t c;
+        for ( c=1; c<N; c++ )
+        {
+            float x = pAHA[c+c*N].x;
+            float y = pAHA[c+c*N].y;
+            trA += std::sqrt(x*x+y*y);
+        }
+
+        double value = trA*lamda/N;
+        for ( c=0; c<N; c++ )
+        {
+            float x = pAHA[c+c*N].x;
+            float y = pAHA[c+c*N].y;
+            pAHA[c+c*N].x = std::sqrt(x*x+y*y) + value;
+            pAHA[c+c*N].y = 0;
+        }
+        //timer.stop();
+
+        //timer.start("copy the AHA to device");
+        if (cudaMemcpy(AHA.get_data_ptr(), pAHA, AHA_host.get_number_of_bytes(), cudaMemcpyHostToDevice) != cudaSuccess)
+        {
+            std::cerr << "inverse_clib_matrix: Failed to copy regularized AHA to device" << std::endl;
+            return -1;
+        }
+        //timer.stop();
+    }
+
+    culaStatus s;
+    s = culaDeviceCgels( 'N', N, N, K,
+            (culaDeviceFloatComplex*)AHA.get_data_ptr(), N,
+            (culaDeviceFloatComplex*)coeff->get_data_ptr(), N);
+
+
+    //{
+    //    std::string filename = debugFolder+"coeff.cplx";
+    //    write_cuNDArray_to_disk(coeff, filename.c_str());
+    //}
+
+    if (s != culaNoError)
+    {
+        std::cout << "inverse_clib_matrix: linear solve failed" << std::endl;
+        return -1;
+    }
+
+    return 0;
+}
 
   //Template instanciation
-  template EXPORTGPUPMRI int htgrappa_calculate_grappa_unmixing(cuNDArray<complext<float> >* ref_data,
+    template EXPORTGPUPMRI int htgrappa_calculate_grappa_unmixing(cuNDArray<complext<float> >* ref_data,
                                                                 cuNDArray<complext<float> >* b1,
                                                                 unsigned int acceleration_factor,
                                                                 std::vector<unsigned int> *kernel_size,
@@ -616,4 +820,8 @@ namespace Gadgetron {
                                                                 std::vector< std::pair<unsigned int, unsigned int> >* sampled_region,
                                                                 std::list< unsigned int >* uncombined_channels);
 
+    template EXPORTGPUPMRI int inverse_clib_matrix(cuNDArray<complext<float> >* A,
+                                    cuNDArray<complext<float> >* b,
+                                    cuNDArray<complext<float> >* coeff,
+                                    double lamda);
 }

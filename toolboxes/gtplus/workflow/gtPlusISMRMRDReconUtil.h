@@ -4,7 +4,7 @@
             The ISMRMRD format is fully supported in this toolbox.
 
             Other functinalities implemented here include:
-            Karhunen-Loï¿½ve Transform (KLT) or Principle Component Analysis (PCA)
+            Karhunen-Loève Transform (KLT) or Principle Component Analysis (PCA)
             KSpace filter
             Several MR sensitivity map estimation methods
 
@@ -16,11 +16,13 @@
 
                 Inati SJ, Hansen MS, Kellman P. 
                 A solution to the phase problem in adaptive coil combination. 
-                In: ISMRM proceeding; 20ï¿½26 april; salt lake city, utah, USA. ; 2013. 2672.
+                In: ISMRM proceeding; 20–26 april; salt lake city, utah, USA. ; 2013. 2672.
 
                 Kellman P, McVeigh ER. 
                 Image reconstruction in SNR units: A general method for SNR measurement. 
                 Magnetic Resonance in Medicine 2005;54(6):1439-1447.
+
+            ISMRMRD_SOUHEIL_ITER coil map estimation is not implemented yet.
 
     \author Hui Xue
 */
@@ -49,6 +51,18 @@
 #include "hoNDArray_operators.h"
 #include "util/gtPlusIOAnalyze.h"
 #include "hoNDArrayMemoryManaged.h"
+#include "GadgetronTimer.h"
+
+#ifdef USE_OMP
+    #include <omp.h>
+#endif // USE_OMP
+
+#ifdef USE_CUDA
+    #include "GPUTimer.h"
+    #include "b1_map.h"
+    #include "cudaDeviceManager.h"
+    #include "cuNDArray_elemwise.h"
+#endif // USE_CUDA
 
 namespace Gadgetron { namespace gtPlus {
 
@@ -138,23 +152,24 @@ public:
     // coil compression and KarhunenLoeverTransform
     // ------------------------------------------------------------------------
     // data: M rows and N cols matrix
-    // eigenVectors: M*M eigen vectors, every column is a eigen vector
-    // eigenValues: M*1 eigen values, descending order
+    // the KLT direction is along the N
+    // eigenVectors: N*N eigen vectors, every column is a eigen vector
+    // eigenValues: N*1 eigen values, descending order
     bool KLT_eigenAnalysis(const hoMatrix<T>& data, hoMatrix<T>& eigenVectors, hoMatrix<T>& eigenValues);
 
     // apply the eigen transform
     // data: M*N data matrix
-    // eigenVectors: M*K eigen vector matrix, every column is a eigen vector
-    // dataEigen: K*N eigen data matrix
+    // eigenVectors: N*K eigen vector matrix, every column is a eigen vector
+    // dataEigen: M*K eigen data matrix
     bool KLT_applyEigen(const hoMatrix<T>& data, hoMatrix<T>& dataEigen, const hoMatrix<T>& eigenVectors);
     bool KLT_applyEigen(const hoNDArray<T>& data, hoNDArray<T>& dataEigen, const hoMatrix<T>& eigenVectors);
 
     // number of kept eigen modes
     // all modes with eigen values greater than thres*max(eigenValues) are kept
-    bool KLT_numberOfKeptModes(const hoMatrix<T>& eigenValues, double thres, int& numOfModesKept);
+    bool KLT_numberOfKeptModes(const hoMatrix<T>& eigenValues, double thres, long long& numOfModesKept);
 
     // prune the eigen vector matrixes to keep the last numOfModesKept columns
-    bool pruneEigenVectorMatrix(const hoMatrix<T>& eigenVectors, int numOfModesKept, hoMatrix<T>& eigenVectorsPruned);
+    bool pruneEigenVectorMatrix(const hoMatrix<T>& eigenVectors, long long numOfModesKept, hoMatrix<T>& eigenVectorsPruned);
 
     // KLT based coil compression
     // data: at least 3D [RO E1 CHA ...]
@@ -341,7 +356,7 @@ public:
     // this function is for the kspace
     //  [Ro E1 Cha Slice E2 Con Phase Rep Set Seg]
     //   0  1  2   3     4  5   6     7   8   9
-    bool getISMRMRDDimIndex(const ISMRMRDDIM& dim, int& ind);
+    bool getISMRMRDDimIndex(const ISMRMRDDIM& dim, long long& ind);
 
     // find the dimension indexes
     bool findDimIndex(const std::vector<DimensionRecordType>& dimStartingIndexes, ISMRMRDDIM dim, size_t ind);
@@ -383,13 +398,24 @@ public:
     // 1 : pre zeros
     // 2 : post zeros
     // 0 : no zeros
-    int addPrePostZeros(size_t centre_column, size_t samples);
+    long long addPrePostZeros(size_t centre_column, size_t samples);
 
     // find RO ranges from centre_column and number of samples
-    void findStartEndRO(size_t centre_column, size_t samples, int& startRO, int& endRO);
+    void findStartEndRO(size_t centre_column, size_t samples, long long& startRO, long long& endRO);
 
     // find RO ranges from centre_column and number of samples after zero-filling
     void findStartEndROAfterZeroFilling(size_t centre_column, size_t samples_zerofilled, int& startRO, int& endRO);
+
+    // ------------------------------------------------------------------------
+    // utility functions for various things
+    // ------------------------------------------------------------------------
+    // jobSchedule : for every valid device, it records the job allocated to it
+    // what is stored are valid device id and job packages allocated to it
+    // for one valid device, multiple job packages can be given to it
+    #ifdef USE_CUDA
+        bool cudaJobSplitter(const std::vector<unsigned int>& jobIDs, size_t jobSize, size_t minimalMemoryForValidDevice, std::vector< std::pair<unsigned int, std::vector<std::vector<unsigned int> > > >& jobSchedule);
+        bool cudaJobSplitter(unsigned int numOfJobs, size_t jobSize, size_t minimalMemoryForValidDevice, std::vector< std::pair<unsigned int, std::vector<std::vector<unsigned int> > > >& jobSchedule);
+    #endif // USE_CUDA
 };
 
 // utility functions only meaningful for complex data type
@@ -459,11 +485,23 @@ public:
     // ------------------------------------------------------------------------
     // coil estimation using NIH method
     // data: in image domain, at least 3D [RO E1 CHA], the coil map will be estimated for every 2D kspace
-    bool coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO algo, size_t ks=11, size_t power=3, size_t iterNum=5, typename realType<T>::Type thres=1e-3);
+    bool coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO algo, size_t ks=11, size_t power=3, size_t iterNum=5, typename realType<T>::Type thres=1e-3, bool useGPU=true);
+    bool coilMap2DNIHGPU(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO algo, size_t ks=11, size_t power=3, size_t iterNum=5, typename realType<T>::Type thres=1e-3);
+
     // data: in image domain, at least 4D [RO E1 E2 CHA], the coil map will be estimated for every 2D kspace [RO E1 CHA] across E2
-    bool coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO algo, size_t ks=7, size_t power=3, size_t iterNum=5, typename realType<T>::Type thres=1e-3);
+    bool coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO algo, size_t ks=7, size_t power=3, size_t iterNum=5, typename realType<T>::Type thres=1e-3, bool true3D=false);
+    // a gpu version of coil map 3D estimation, this function should only be used for the full-res coil map estimation
+    // if gpu is not available, it calls coilMap3DNIH
+    bool coilMap3DNIHGPU_FullResMap(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO algo, size_t ks=7, size_t power=3, size_t iterNum=5, typename realType<T>::Type thres=1e-3, bool true3D=false);
+
+    // the Souheil method
     // data: [RO E1 CHA], only 3D array
+    // these functions are using 2D data correlation matrix
     bool coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power);
+    bool coilMap2DNIHInner_2(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power);
+
+    // data: [RO E1 E2 CHA], this functions uses true 3D data correlation matrix
+    bool coilMap3DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power);
 
     // sum of square coil combination
     // data: in image domain, at least 3D [RO E1 CHA]

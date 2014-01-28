@@ -123,6 +123,8 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsSrc, "acsSrc");
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsDst, "acsDst");
 
+        grappa_.calib_use_gpu_  = workOrder2DT->grappa_use_gpu_;
+
         ho5DArray<T> ker(kRO, kNE1, srcCHA, dstCHA, oNE1, workOrder2DT->kernel_->begin()+n*kRO*kNE1*srcCHA*dstCHA*oNE1+usedS*kRO*kNE1*srcCHA*dstCHA*oNE1*refN);
         grappa_.calib(acsSrc, acsDst, workOrder2DT->grappa_reg_lamda_, kRO, kE1, oE1, ker);
 

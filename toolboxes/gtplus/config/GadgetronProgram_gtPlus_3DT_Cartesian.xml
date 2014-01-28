@@ -70,7 +70,7 @@
         <!-- debug and info mode -->
         <property>
             <name>verboseMode</name>
-            <value>true</value>
+            <value>false</value>
         </property>
 
         <!-- No acceleration mode -->
@@ -240,7 +240,7 @@
 
         <property>
             <name>upstream_coil_compression_thres</name>
-            <value>0.001</value>
+            <value>0.01</value>
         </property>
 
         <property>
@@ -272,7 +272,7 @@
         -->
         <property>
             <name>coil_map_algorithm</name>
-            <value>ISMRMRD_SOUHEIL</value>
+            <value>ISMRMRD_SOUHEIL_ITER</value>
         </property>
         <property>
             <name>csm_kSize</name>
@@ -285,6 +285,11 @@
         </property>
 
         <property>
+            <name>csm_true_3D</name>
+            <value>false</value>
+        </property>
+
+        <property>
             <name>csm_iter_num</name>
             <value>3</value>
         </property>
@@ -292,6 +297,11 @@
         <property>
             <name>csm_iter_thres</name>
             <value>0.001</value>
+        </property>
+
+        <property>
+            <name>csm_use_gpu</name>
+            <value>true</value>
         </property>
 
         <!-- algorithm -->
@@ -327,6 +337,14 @@
             <name>grappa_reg_lamda</name>
             <value>0.0005</value>
         </property>
+        <property>
+            <name>grappa_calib_over_determine_ratio</name>
+            <value>45</value>
+        </property>
+        <property>
+            <name>grappa_use_gpu</name>
+            <value>false</value>
+        </property>
 
         <!-- parameters for ISMRMRD_SPIRIT -->
         <property>
@@ -346,8 +364,12 @@
             <value>0.005</value>
         </property>
         <property>
+            <name>spirit_use_gpu</name>
+            <value>true</value>
+        </property>
+        <property>
             <name>spirit_calib_over_determine_ratio</name>
-            <value>0</value>
+            <value>15</value>
         </property>
         <property>
             <name>spirit_solve_symmetric</name>
@@ -682,11 +704,11 @@
         </property>
         <property>
             <name>job_num_of_N</name>
-            <value>0</value>
+            <value>32</value>
         </property>
         <property>
             <name>job_max_Megabytes</name>
-            <value>2499</value>
+            <value>13000</value>
         </property>
         <property>
             <name>job_overlap</name>

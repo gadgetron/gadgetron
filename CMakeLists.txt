@@ -48,6 +48,10 @@ endif (WIN32)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
+# uncomment these if all compiled targets are to be stored in the same directory
+#SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin CACHE STRING "Where to put the executables")
+#SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin CACHE STRING "Where to put the libraries")
+
 # whether to suppress compilation warnings
 OPTION(BUILD_SUPPRESS_WARNINGS "Build package while suppressing warnings" Off)
 if (BUILD_SUPPRESS_WARNINGS)
@@ -95,6 +99,9 @@ else(ACE_FOUND)
 endif(ACE_FOUND)
 
 find_package(CUDA 4.1)
+if ( CUDA_FOUND )
+    ADD_DEFINITIONS(-DUSE_CUDA)
+endif ( CUDA_FOUND )
 
 find_package(GTest)
 #Add support for the default ubuntu package of gtest (which is not compiled

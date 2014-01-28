@@ -372,9 +372,18 @@ estimateCoilMap(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& re
                     GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(refCoilMapN, buffer3DT));
 
                     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("coil map estimation ... "));
-                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, 
-                            coilMapN, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, 
-                            workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_));
+                    if ( workOrder3DT->csm_use_gpu_ )
+                    {
+                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(buffer3DT, 
+                                coilMapN, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, 
+                                workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                    }
+                    else
+                    {
+                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, 
+                                coilMapN, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, 
+                                workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                    }
                     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
                     memcpy(workOrder3DT->coilMap_->begin()+usedN*RO*E1*E2*dstCHA, coilMapN.begin(), coilMapN.get_number_of_bytes());
@@ -387,10 +396,20 @@ estimateCoilMap(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& re
                     GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(ref_coil_map_dst, buffer3DT));
 
                     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("coil map estimation ... "));
-                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, 
-                            *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, 
-                            workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, 
-                            workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_));
+                    if ( workOrder3DT->csm_use_gpu_ )
+                    {
+                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(buffer3DT, 
+                                *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, 
+                                workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, 
+                                workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                    }
+                    else
+                    {
+                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, 
+                                *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, 
+                                workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, 
+                                workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                    }
                     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
                 }
             }
@@ -636,8 +655,8 @@ bool gtPlusReconWorker3DT<T>::prepRefByAveragingCrossN(WorkOrderType* workOrder3
             hoNDArray<T> refKLF(RO, E1, E2, CHA, N);
             Gadgetron::clear(refKLF);
 
-            hoMatrix<T> A(N, RO*E1*E2*CHA, const_cast<T*>(ref.begin()));
-            hoMatrix<T> A_KLF(N, RO*E1*E2*CHA, refKLF.begin());
+            hoMatrix<T> A(RO*E1*E2*CHA, N, const_cast<T*>(ref.begin()));
+            hoMatrix<T> A_KLF(RO*E1*E2*CHA, N, refKLF.begin());
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLFilter(A, numOfModes, A_KLF));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, refKLF, "refKLF");
 
@@ -648,8 +667,8 @@ bool gtPlusReconWorker3DT<T>::prepRefByAveragingCrossN(WorkOrderType* workOrder3
             refRecon.create(RO, E1, E2, CHA, N);
             Gadgetron::clear(refRecon);
 
-            hoMatrix<T> A(N, RO*E1*E2*CHA, const_cast<T*>(ref.begin()));
-            hoMatrix<T> A_KLF(N, RO*E1*E2*CHA, refRecon.begin());
+            hoMatrix<T> A(RO*E1*E2*CHA, N, const_cast<T*>(ref.begin()));
+            hoMatrix<T> A_KLF(RO*E1*E2*CHA, N, refRecon.begin());
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLFilter(A, numOfModes, A_KLF));
         }
         else
@@ -803,9 +822,10 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, refCoilMap, "refCoilMap");
 
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("perform ref coil map filter ... "));
-                hoNDArray<T> refCoilMapTmp(refCoilMap);
+                // hoNDArray<T> refCoilMapTmp(refCoilMap);
 
-                GADGET_CHECK_RETURN_FALSE(performRefFilter(workOrder3DT, refCoilMapTmp, refCoilMap, startRO, endRO, startE1, endE1, startE2, endE2));
+                // GADGET_CHECK_RETURN_FALSE(performRefFilter(workOrder3DT, refCoilMapTmp, refCoilMap, startRO, endRO, startE1, endE1, startE2, endE2));
+                GADGET_CHECK_RETURN_FALSE(performRefFilter(workOrder3DT, refCoilMap, refCoilMap, startRO, endRO, startE1, endE1, startE2, endE2));
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, refCoilMap, "refCoilMap_filtered");
 
@@ -1586,16 +1606,30 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, aveComplexIm, "aveComplexIm");
 
                         GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("full res coil map : compute 3D coil map ...  "));
-                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(aveComplexIm, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_));
+                        if ( workOrder3DT->csm_use_gpu_ )
+                        {
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(aveComplexIm, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                        }
+                        else
+                        {
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(aveComplexIm, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                        }
                         GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->coilMap_, "coilMap");
+                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->coilMap_, "coilMap_fullres");
                     }
                     else
                     {
                         GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("full res coil map : compute 3D coil map ...  "));
-                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_));
+                        if ( workOrder3DT->csm_use_gpu_ )
+                        {
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                        }
+                        else
+                        {
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                        }
                         GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->coilMap_, "coilMap");
+                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->coilMap_, "coilMap_fullres");
                     }
 
                     GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("full res coil map : coil combine 3D ...  "));
@@ -1620,13 +1654,27 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                         hoNDArray<T> complexImN(RO, E1, E2, dstCHA, buffer3DT.begin()+whichN_coilmap*RO*E1*E2*dstCHA);
                         hoNDArray<T> coilMapN(RO, E1, E2, dstCHA, workOrder3DT->coilMap_->begin()+whichN_coilmap*RO*E1*E2*dstCHA);
 
-                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(complexImN, coilMapN, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_));
+                        if ( workOrder3DT->csm_use_gpu_ )
+                        {
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(complexImN, coilMapN, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                        }
+                        else
+                        {
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(complexImN, coilMapN, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                        }
                         GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder3DT->coilMap_, whichN_coilmap));
                         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->coilMap_, "coilMap_fullres");
                     }
                     else
                     {
-                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_));
+                        if ( workOrder3DT->csm_use_gpu_ )
+                        {
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                        }
+                        else
+                        {
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                        }
                         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->coilMap_, "coilMap_fullres");
                     }
 
@@ -2310,9 +2358,9 @@ bool gtPlusReconWorker3DT<T>::calibFengHuang(WorkOrderType& workOrder3DT, const 
             hoNDArrayMemoryManaged<T> B_mem(colB, rowB, gtPlus_mem_manager_);
             hoNDArrayMemoryManaged<T> K_mem(colB, colA, gtPlus_mem_manager_);*/
 
-            hoNDArray<T> A_mem(colA, rowA);
-            hoNDArray<T> B_mem(colB, rowB);
-            hoNDArray<T> K_mem(colB, colA);
+            hoNDArray<T> A_mem(rowA, colA);
+            hoNDArray<T> B_mem(rowB, colB);
+            hoNDArray<T> K_mem(colA, colB);
 
             hoMatrix<T> A(rowA, colA, A_mem.begin());
             hoMatrix<T> B(rowB, colB, B_mem.begin());
@@ -2584,7 +2632,7 @@ bool gtPlusReconWorker3DT<T>::performReconFangHuang(WorkOrderType& workOrder3DT,
             #pragma omp parallel default(none) private(ii) shared(num, RO, E1, E2, CHA, N, kerN, kspaceConj, kspace, kernel, rowD, colD, coeffX, coeffY, coeffZ, pCx, pCy, pCz) if ( num > 1 ) num_threads( numOfThreads )
         #endif
         {
-            hoNDArrayMemoryManaged<T> D_mem(colD, rowD, gtPlus_mem_manager_);
+            hoNDArrayMemoryManaged<T> D_mem(rowD, colD, gtPlus_mem_manager_);
 
             hoMatrix<T> D(rowD, colD, D_mem.begin());
             T* pD = D.begin();

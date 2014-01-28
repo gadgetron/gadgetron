@@ -28,12 +28,12 @@ namespace Gadgetron{
       
       if( accumulate ){
 	ARRAY_TYPE tmp(in);
-	FFT::instance().fft(tmp);
+	FFT::instance()->fft(&tmp);
     	*out += tmp;
       }
       else{
 	*out = *in;
-	FFT::instance().fft(out);
+	FFT::instance()->fft(out);
       }
     }
     
@@ -45,12 +45,12 @@ namespace Gadgetron{
       
       if( accumulate ){
 	ARRAY_TYPE tmp(in);
-	FFT::instance().ifft(tmp);
+	FFT::instance()->ifft(&tmp);
     	*out += tmp;
       }
       else{
 	*out = *in;
-	FFT::instance().ifft(out);
+	FFT::instance()->ifft(out);
       }
     }
     

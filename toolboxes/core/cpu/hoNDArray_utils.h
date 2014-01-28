@@ -179,7 +179,7 @@ namespace Gadgetron {
 #ifdef USE_OMP
 #pragma omp parallel for
 #endif
-    for( size_t idx=0; idx<number_of_elements_in*new_dim_size; idx++ ){
+    for( long long int idx=0; idx<number_of_elements_in*new_dim_size; idx++ ){
       (*out)[idx] = in->at(idx%number_of_elements_in);
     }
     return out;

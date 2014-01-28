@@ -50,6 +50,12 @@
 // MACROS FOR PRINTING
 #define GADGET_OSTREAM_PRINT(os, content) { os << #content << " is " << content << std::endl; }
 
+#define GADGET_CHECK_PERFORM(con, action) { if ( con ) { action; } }
+
+// MACROS for EXPORTING
+#define GADGET_EXPORT_ARRAY(debugFolder, exporter, a, filename) { if ( !debugFolder.empty() ) { exporter.exportArray(a, debugFolder+filename); } }
+#define GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, exporter, a, filename) { if ( !debugFolder.empty() ) { exporter.exportArrayComplex(a, debugFolder+filename); } }
+
 // MACROS FOR UTILITY
 #define GT_MIN(a,b)    (((a)<(b))?(a):(b))
 #define GT_MAX(a,b)    (((a)>(b))?(a):(b))
