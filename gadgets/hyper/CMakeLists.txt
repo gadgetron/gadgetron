@@ -11,6 +11,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+  ${CMAKE_SOURCE_DIR}/toolboxes/operators
+  ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
@@ -21,6 +23,7 @@ include_directories(
 
 add_library(gadgetron_hyper SHARED 
   NFFT2DGadget.h NFFT2DGadget.cpp
+  CMRT3DGadget.h CMRT3DGadget.cpp
   ${ISMRMRD_XSD_SOURCE}
   )
 
@@ -41,6 +44,6 @@ install(FILES
   gadgetron_hyper_export.h
   DESTINATION include)
 
-#install(FILES default.xml default_short.xml default_optimized.xml DESTINATION config)
+install(FILES NFFT2D.xml CMRT3D.xml DESTINATION config)
 
 install(TARGETS gadgetron_hyper DESTINATION lib)

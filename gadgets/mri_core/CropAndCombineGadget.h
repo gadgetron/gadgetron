@@ -15,11 +15,18 @@ namespace Gadgetron{
     {
     public:
       GADGET_DECLARE(CropAndCombineGadget);
+
+      CropAndCombineGadget();
       
     protected:
+
+      virtual int process_config( ACE_Message_Block* mb );
+
       virtual int process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
-			   GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);     
+                           GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);     
     };
+
+  bool no_cropping_;
 }
 
 #endif //CROPANDCOMBINEGADGET_H
