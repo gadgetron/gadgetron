@@ -10,10 +10,13 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${Boost_INCLUDE_DIR}
-  ${CUDA_INCLUDE_DIRS}
   ${ARMADILLO_INCLUDE_DIRS}
   ${GTEST_INCLUDE_DIRS}
   )
+
+if (CUDA_FOUND)
+    include_directories(${CUDA_INCLUDE_DIRS})
+endif (CUDA_FOUND)
 
 link_libraries(cpucore 
     cpucore_math
