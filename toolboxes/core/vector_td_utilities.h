@@ -19,6 +19,7 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
+#include <cmath>
 
 #ifdef max
 #undef max
@@ -30,8 +31,8 @@
 
 #ifndef __CUDA_ARCH__ // workaround for nvcc
 using std::ceil;  
-using std::abs;   
 using std::floor; 
+using std::abs;   
 using std::sqrt;
 #endif
 

@@ -772,6 +772,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::check_consistency( cuNDArray<complext<RE
   
   if( (components & _NFFT_CONV_C2NC ) || (components & _NFFT_CONV_NC2C )){    
     if( (samples->get_number_of_elements() == 0) || (samples->get_number_of_elements() % (number_of_frames*number_of_samples)) ){
+      printf("\ncuNFFT::check_consistency() failed:\n#elements in the samples array: %ld.\n#samples from preprocessing: %d.\n#frames from preprocessing: %d.\n",samples->get_number_of_elements(), number_of_samples, number_of_frames ); fflush(stdout);
       throw std::runtime_error("Error: cuNFFT_plan: The number of samples is not a multiple of #samples/frame x #frames as requested through preprocessing");
     }
     
@@ -794,6 +795,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::check_consistency( cuNDArray<complext<RE
       if( weights->get_number_of_elements() == 0 ||
           !( weights->get_number_of_elements() == number_of_samples || 
              weights->get_number_of_elements() == number_of_frames*number_of_samples) ){
+        printf("\ncuNFFT::check_consistency() failed:\n#elements in the samples array: %ld.\n#samples from preprocessing: %d.\n#frames from preprocessing: %d.\n#weights: %ld.\n",samples->get_number_of_elements(), number_of_samples, number_of_frames, weights->get_number_of_elements() ); fflush(stdout);
         throw std::runtime_error("Error: cuNFFT_plan: The number of weights should match #samples/frame x #frames as requested through preprocessing");
       }
     }
@@ -1410,31 +1412,6 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::image_wrap( cuNDArray<complext<REAL> > *
   
   CHECK_FOR_CUDA_ERROR();
 }	
-
-template<class REAL, unsigned int D, bool ATOMICS> typename uint64d<D>::Type
-Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::get_matrix_size()
-{
-  return matrix_size;
-}
-
-template<class REAL, unsigned int D, bool ATOMICS> typename uint64d<D>::Type
-Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::get_matrix_size_os()
-{
-  return matrix_size_os;
-}
-
-template<class REAL, unsigned int D, bool ATOMICS> REAL 
-Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::get_W()
-{
-  return W;
-}
-
-template<class REAL, unsigned int D, bool ATOMICS> unsigned int 
-Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::get_device()
-{
-  return device;
-}
-
 
 //
 // Template instantion

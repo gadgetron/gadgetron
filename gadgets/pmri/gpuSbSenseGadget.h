@@ -7,7 +7,7 @@
 
 #include "gadgetron_gpusense_export.h"
 #include "Gadget.h"
-#include "SenseJob.h"
+#include "GenericReconJob.h"
 #include "GadgetMRIHeaders.h"
 #include "cuSbcCgSolver.h"
 #include "cuNonCartesianSenseOperator.h"
@@ -21,7 +21,7 @@
 
 namespace Gadgetron{
 
-  class EXPORTGADGETS_GPUSENSE gpuSbSenseGadget : public Gadget2< ISMRMRD::ImageHeader, SenseJob >
+  class EXPORTGADGETS_GPUPMRI gpuSbSenseGadget : public Gadget2< ISMRMRD::ImageHeader, GenericReconJob >
   {
 
   public:
@@ -32,7 +32,7 @@ namespace Gadgetron{
 
   protected:
 
-    virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader >* m1, GadgetContainerMessage< SenseJob > * m2 );
+    virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader >* m1, GadgetContainerMessage< GenericReconJob > * m2 );
     virtual int process_config( ACE_Message_Block* mb );
 
     int channels_;

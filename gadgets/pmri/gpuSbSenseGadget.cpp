@@ -111,7 +111,7 @@ namespace Gadgetron{
     if (!is_configured_) {
 
       channels_ = cfg->acquisitionSystemInformation().present() ?
-	(cfg->acquisitionSystemInformation().get().receiverChannels().present() ? cfg->acquisitionSystemInformation().get().receiverChannels().get() : 1) : 1;
+        (cfg->acquisitionSystemInformation().get().receiverChannels().present() ? cfg->acquisitionSystemInformation().get().receiverChannels().get() : 1) : 1;
      
       // Allocate encoding operator for non-Cartesian Sense
       E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );
@@ -121,27 +121,27 @@ namespace Gadgetron{
       D_ = boost::shared_ptr< cuCgPreconditioner<float_complext> >( new cuCgPreconditioner<float_complext>() );
 
       Rx1_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
-	( new cuPartialDerivativeOperator<float_complext,3>(0) );
+        ( new cuPartialDerivativeOperator<float_complext,3>(0) );
       Rx1_->set_weight( (1.0-alpha_)*lambda_ );
 
       Ry1_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
-	( new cuPartialDerivativeOperator<float_complext,3>(1) );
+        ( new cuPartialDerivativeOperator<float_complext,3>(1) );
       Ry1_->set_weight( (1.0-alpha_)*lambda_ );
 
       Rz1_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
-	( new cuPartialDerivativeOperator<float_complext,3>(2) );
+        ( new cuPartialDerivativeOperator<float_complext,3>(2) );
       Rz1_->set_weight( (1.0-alpha_)*lambda_ );
 
       Rx2_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
-	( new cuPartialDerivativeOperator<float_complext,3>(0) );
+        ( new cuPartialDerivativeOperator<float_complext,3>(0) );
       Rx2_->set_weight( alpha_*lambda_ );
 
       Ry2_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
-	( new cuPartialDerivativeOperator<float_complext,3>(1) );
+        ( new cuPartialDerivativeOperator<float_complext,3>(1) );
       Ry2_->set_weight( alpha_*lambda_ );
 
       Rz2_ = boost::shared_ptr< cuPartialDerivativeOperator<float_complext,3> >
-	( new cuPartialDerivativeOperator<float_complext,3>(2) );
+        ( new cuPartialDerivativeOperator<float_complext,3>(2) );
       Rz2_->set_weight( alpha_*lambda_ );
 
       // Setup split-Bregman solver
@@ -164,7 +164,7 @@ namespace Gadgetron{
     return GADGET_OK;
   }
 
-  int gpuSbSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<SenseJob> *m2)
+  int gpuSbSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<GenericReconJob> *m2)
   {
     // Is this data for this gadget's set/slice?
     //
@@ -182,7 +182,7 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    SenseJob* j = m2->getObjectPtr();
+    GenericReconJob* j = m2->getObjectPtr();
 
     // Let's first check that this job has the required data...
     if (!j->csm_host_.get() || !j->dat_host_.get() || !j->tra_host_.get() || !j->dcw_host_.get()) {
@@ -197,7 +197,7 @@ namespace Gadgetron{
 
     if( samples%j->tra_host_->get_number_of_elements() ) {
       GADGET_DEBUG2("Mismatch between number of samples (%d) and number of k-space coordinates (%d).\nThe first should be a multiplum of the latter.\n", 
-		    samples, j->tra_host_->get_number_of_elements());
+                    samples, j->tra_host_->get_number_of_elements());
       return GADGET_FAIL;
     }
 
@@ -215,15 +215,15 @@ namespace Gadgetron{
       
       cudaDeviceProp deviceProp;
       if( cudaGetDeviceProperties( &deviceProp, device_number_ ) != cudaSuccess) {
-	GADGET_DEBUG1( "\nError: unable to query device properties.\n" );
-	return GADGET_FAIL;
+        GADGET_DEBUG1( "\nError: unable to query device properties.\n" );
+        return GADGET_FAIL;
       }
 
       unsigned int warp_size = deviceProp.warpSize;
 
       matrix_size_os_ =
-	uint64d2(((static_cast<unsigned int>(std::ceil(matrix_size_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
-	       ((static_cast<unsigned int>(std::ceil(matrix_size_[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
+        uint64d2(((static_cast<unsigned int>(std::ceil(matrix_size_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
+                 ((static_cast<unsigned int>(std::ceil(matrix_size_[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
       
       GADGET_DEBUG2("Matrix size    : [%d,%d] \n", matrix_size_[0], matrix_size_[1]);
       GADGET_DEBUG2("Matrix size OS : [%d,%d] \n", matrix_size_os_[0], matrix_size_os_[1]);
@@ -261,22 +261,22 @@ namespace Gadgetron{
       // 
       
       if( alpha_<1.0 ){
-	sb_.add_regularization_group_operator( Rx1_ ); 
-	sb_.add_regularization_group_operator( Ry1_ ); 
-	if(frames>1)
-	  sb_.add_regularization_group_operator( Rz1_ ); 
-	sb_.add_group();
+        sb_.add_regularization_group_operator( Rx1_ ); 
+        sb_.add_regularization_group_operator( Ry1_ ); 
+        if(frames>1)
+          sb_.add_regularization_group_operator( Rz1_ ); 
+        sb_.add_group();
       }
       
       // Add "PICCS" regularization
       //
 
       if( alpha_ > 0.0 ){
-	sb_.add_regularization_group_operator( Rx2_ ); 
-	sb_.add_regularization_group_operator( Ry2_ ); 
-	if(frames>1)
-	  sb_.add_regularization_group_operator( Rz2_ ); 
-	sb_.add_group(reg_image_);
+        sb_.add_regularization_group_operator( Rx2_ ); 
+        sb_.add_regularization_group_operator( Ry2_ ); 
+        if(frames>1)
+          sb_.add_regularization_group_operator( Rz2_ ); 
+        sb_.add_group(reg_image_);
       }
       
       prepared_ = true;
@@ -318,12 +318,12 @@ namespace Gadgetron{
       //
 
       if( exclusive_access_ )
-	_mutex[device_number_].lock();
+        _mutex[device_number_].lock();
 
       sbresult = sb_.solve(device_samples.get());
 
       if( exclusive_access_ )
-	_mutex[device_number_].unlock();
+        _mutex[device_number_].unlock();
     }
 
     // Provide some info about the scaling between the regularization and reconstruction.
@@ -344,11 +344,11 @@ namespace Gadgetron{
     }
     
     /*
-    static int counter = 0;
-    char filename[256];
-    sprintf((char*)filename, "recon_sb_%d.cplx", counter);
-    write_nd_array<float_complext>( sbresult->to_host().get(), filename );
-    counter++; */
+      static int counter = 0;
+      char filename[256];
+      sprintf((char*)filename, "recon_sb_%d.cplx", counter);
+      write_nd_array<float_complext>( sbresult->to_host().get(), filename );
+      counter++; */
 
     // If the recon matrix size exceeds the sequence matrix size then crop
     if( matrix_size_seq_ != matrix_size_ )
@@ -370,13 +370,13 @@ namespace Gadgetron{
 
       // Check if we should discard this frame
       if( rotation_idx < (rotations_to_discard_>>1) || rotation_idx >= rotations-(rotations_to_discard_>>1) )
-	continue;
+        continue;
 
       GadgetContainerMessage< hoNDArray< std::complex<float> > > *cm = 
-	new GadgetContainerMessage< hoNDArray< std::complex<float> > >();     
+        new GadgetContainerMessage< hoNDArray< std::complex<float> > >();     
 
       GadgetContainerMessage<ISMRMRD::ImageHeader> *m = 
-	new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+        new GadgetContainerMessage<ISMRMRD::ImageHeader>();
 
       *m->getObjectPtr() = j->image_headers_[frame];
       m->getObjectPtr()->matrix_size[0] = matrix_size_seq_[0];
@@ -392,15 +392,15 @@ namespace Gadgetron{
       size_t data_length = prod(matrix_size_seq_);
 
       cudaMemcpy(cm->getObjectPtr()->get_data_ptr(),
-		 sbresult->get_data_ptr()+frame*data_length,
-		 data_length*sizeof(std::complex<float>),
-		 cudaMemcpyDeviceToHost);
+                 sbresult->get_data_ptr()+frame*data_length,
+                 data_length*sizeof(std::complex<float>),
+                 cudaMemcpyDeviceToHost);
 
       cudaError_t err = cudaGetLastError();
       if( err != cudaSuccess ){
-	GADGET_DEBUG2("\nUnable to copy result from device to host: %s", cudaGetErrorString(err));
-	m->release();
-	return GADGET_FAIL;
+        GADGET_DEBUG2("\nUnable to copy result from device to host: %s", cudaGetErrorString(err));
+        m->release();
+        return GADGET_FAIL;
       }
 
       m->getObjectPtr()->matrix_size[0] = img_dims[0];
@@ -410,9 +410,9 @@ namespace Gadgetron{
       m->getObjectPtr()->image_index    = frame_counter_ + frame;
 
       if (this->next()->putq(m) < 0) {
-	GADGET_DEBUG1("\nFailed to result image on to Q\n");
-	m->release();
-	return GADGET_FAIL;
+        GADGET_DEBUG1("\nFailed to result image on to Q\n");
+        m->release();
+        return GADGET_FAIL;
       }
     }
 

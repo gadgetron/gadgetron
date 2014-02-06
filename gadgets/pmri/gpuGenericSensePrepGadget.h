@@ -16,7 +16,7 @@
 
 namespace Gadgetron{
 
-  class EXPORTGADGETS_GPUSENSE gpuGenericSensePrepGadget :
+  class EXPORTGADGETS_GPUPMRI gpuGenericSensePrepGadget :
     public Gadget3< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> >, hoNDArray<float> >
   {
     

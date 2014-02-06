@@ -9,12 +9,12 @@
 
 namespace Gadgetron{
   
-  class SenseJob
+  class GenericReconJob
   {
   public:
     
-    SenseJob() {}
-    ~SenseJob() {}
+    GenericReconJob() {}
+    ~GenericReconJob() {}
 
     boost::shared_array<ISMRMRD::ImageHeader> image_headers_;
 

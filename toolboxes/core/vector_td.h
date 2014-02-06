@@ -14,6 +14,8 @@
 
 #include "core_defines.h"
 
+#include <stdlib.h> // for size_t
+
 namespace Gadgetron{
 
   template<class T, unsigned int D> class vector_td

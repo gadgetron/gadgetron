@@ -99,7 +99,7 @@ namespace Gadgetron{
     if (!is_configured_) {
 
       channels_ = cfg->acquisitionSystemInformation().present() ?
-	(cfg->acquisitionSystemInformation().get().receiverChannels().present() ? cfg->acquisitionSystemInformation().get().receiverChannels().get() : 1) : 1;
+        (cfg->acquisitionSystemInformation().get().receiverChannels().present() ? cfg->acquisitionSystemInformation().get().receiverChannels().get() : 1) : 1;
 
       // Allocate encoding operator for non-Cartesian Sense
       E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );
@@ -125,7 +125,7 @@ namespace Gadgetron{
     return GADGET_OK;
   }
 
-  int gpuCgSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<SenseJob> *m2)
+  int gpuCgSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<GenericReconJob> *m2)
   {
     // Is this data for this gadget's set/slice?
     //
@@ -146,7 +146,7 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    SenseJob* j = m2->getObjectPtr();
+    GenericReconJob* j = m2->getObjectPtr();
 
     // Some basic validation of the incoming Sense job
     if (!j->csm_host_.get() || !j->dat_host_.get() || !j->tra_host_.get() || !j->dcw_host_.get() || !j->reg_host_.get()) {
@@ -161,7 +161,7 @@ namespace Gadgetron{
 
     if( samples%j->tra_host_->get_number_of_elements() ) {
       GADGET_DEBUG2("Mismatch between number of samples (%d) and number of k-space coordinates (%d).\nThe first should be a multiplum of the latter.\n", 
-		    samples, j->tra_host_->get_number_of_elements());
+                    samples, j->tra_host_->get_number_of_elements());
       return GADGET_FAIL;
     }
 
@@ -169,7 +169,7 @@ namespace Gadgetron{
     boost::shared_ptr< cuNDArray<float> > dcw(new cuNDArray<float> (j->dcw_host_.get()));
     boost::shared_ptr< cuNDArray<float_complext> > csm(new cuNDArray<float_complext> (j->csm_host_.get()));
     boost::shared_ptr< cuNDArray<float_complext> > device_samples(new cuNDArray<float_complext> (j->dat_host_.get()));
-
+    
     cudaDeviceProp deviceProp;
     if( cudaGetDeviceProperties( &deviceProp, device_number_ ) != cudaSuccess) {
       GADGET_DEBUG1( "Error: unable to query device properties.\n" );
@@ -182,7 +182,7 @@ namespace Gadgetron{
 
     matrix_size_os_ =
       uint64d2(((static_cast<unsigned int>(std::ceil(matrix_size_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
-	     ((static_cast<unsigned int>(std::ceil(matrix_size_[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
+               ((static_cast<unsigned int>(std::ceil(matrix_size_[1]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size);
 
     if( !matrix_size_reported_ ) {
       GADGET_DEBUG2("Matrix size    : [%d,%d] \n", matrix_size_[0], matrix_size_[1]);    
@@ -214,12 +214,28 @@ namespace Gadgetron{
     boost::shared_ptr< cuNDArray<float_complext> > precon_weights = real_to_complex<float_complext>( _precon_weights.get() );
     _precon_weights.reset();
     D_->set_weights( precon_weights );
-	
+    
+    {
+      static int counter = 0;
+      char filename[256];
+      sprintf((char*)filename, "_traj_%d.real", counter);
+      write_nd_array<floatd2>( traj->to_host().get(), filename );
+      sprintf((char*)filename, "_dcw_%d.real", counter);
+      write_nd_array<float>( dcw->to_host().get(), filename );
+      sprintf((char*)filename, "_csm_%d.cplx", counter);
+      write_nd_array<float_complext>( csm->to_host().get(), filename );
+      sprintf((char*)filename, "_samples_%d.cplx", counter);
+      write_nd_array<float_complext>( device_samples->to_host().get(), filename );
+      sprintf((char*)filename, "_reg_%d.cplx", counter);
+      write_nd_array<float_complext>( reg_image->to_host().get(), filename );
+      counter++; 
+      }
+
     // Invoke solver
     // 
 
     boost::shared_ptr< cuNDArray<float_complext> > cgresult;
-    
+
     {
       boost::shared_ptr<GPUTimer> solve_timer;
       if( output_timing_ )
