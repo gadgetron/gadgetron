@@ -4,7 +4,6 @@
 
 namespace Gadgetron
 {
-
   template <typename T> 
   hoNDArray<T>::hoNDArray() : NDArray<T>::NDArray() 
   {
@@ -237,7 +236,7 @@ namespace Gadgetron
       deallocate_memory();
     }
   }
-  
+
   template <typename T> 
   hoNDArray<T>::hoNDArray(const hoNDArray<T>  *a)
   {
@@ -268,12 +267,15 @@ namespace Gadgetron
       this->clear();
       return *this;
     }
-    
+
     // Are the dimensions the same? Then we can just memcpy
     if (this->dimensions_equal(&rhs)){
       memcpy(this->data_, rhs.data_, this->elements_*sizeof(T));
     }
     else{
+      if (!this->delete_data_on_destruct_){
+        throw std::runtime_error("Array dimensions mismatch in hoNDArray::operator=. Cannot change dimensions of non-destructable array.");        
+      }
       deallocate_memory();
       this->data_ = 0;
       this->dimensions_ = rhs.dimensions_;
@@ -288,9 +290,9 @@ namespace Gadgetron
   void hoNDArray<T>::create(std::vector<size_t>& dimensions)
   {
     if ( this->dimensions_equal(&dimensions) )
-    {
+      {
         return;
-    }
+      }
 
     this->clear();
     BaseClass::create(dimensions);
@@ -300,10 +302,9 @@ namespace Gadgetron
   void hoNDArray<T>::create(std::vector<size_t> *dimensions)
   {
     if ( this->dimensions_equal(dimensions) )
-    {
+      {
         return;
-    }
-
+      }
     this->clear();
     BaseClass::create(dimensions);
   }
@@ -312,10 +313,9 @@ namespace Gadgetron
   void hoNDArray<T>::create(boost::shared_ptr< std::vector<size_t> > dimensions)
   {
     if ( this->dimensions_equal(dimensions.get()) )
-    {
+      {
         return;
-    }
-
+      }
     this->clear();
     BaseClass::create(dimensions);
   }
@@ -325,14 +325,50 @@ namespace Gadgetron
   {
     if(!dimensions) throw std::runtime_error("hoNDArray<T>::create(): 0x0 pointer provided");
     if(!data) throw std::runtime_error("hoNDArray<T>::create(): 0x0 pointer provided");
-    BaseClass::create(dimensions, data, delete_data_on_destruct);
+
+    if ( this->dimensions_equal(dimensions) )
+      {
+        if ( this->delete_data_on_destruct_ ){
+          this->deallocate_memory();
+        }
+        
+        this->data_ = data;
+        this->delete_data_on_destruct_ = delete_data_on_destruct;
+      }
+    else
+      {
+        if ( this->delete_data_on_destruct_ ){
+          this->deallocate_memory();
+          this->data_ = NULL;
+        }
+        
+        BaseClass::create(dimensions, data, delete_data_on_destruct);
+      }
   }
 
   template <typename T> 
   void hoNDArray<T>::create(std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct) 
   {
     if(!data) throw std::runtime_error("hoNDArray<T>::create(): 0x0 pointer provided");
-    BaseClass::create(dimensions, data, delete_data_on_destruct);
+
+    if ( this->dimensions_equal(&dimensions) )
+      {
+        if ( this->delete_data_on_destruct_ ){
+          this->deallocate_memory();
+        }
+        
+        this->data_ = data;
+        this->delete_data_on_destruct_ = delete_data_on_destruct;
+      }
+    else
+      {
+        if ( this->delete_data_on_destruct_ ){
+          this->deallocate_memory();
+          this->data_ = NULL;
+        }
+        
+        BaseClass::create(dimensions, data, delete_data_on_destruct);
+      }
   }
 
   template <typename T> 
@@ -486,7 +522,6 @@ namespace Gadgetron
     dim[3] = st;
     this->create(&dim, data, delete_data_on_destruct);
   }
-
   template <typename T> 
   inline void hoNDArray<T>::create(size_t sx, size_t sy, size_t sz, size_t st, size_t sp, T* data, bool delete_data_on_destruct)
   {
@@ -620,51 +655,51 @@ namespace Gadgetron
     return this->get_data_ptr()[idx];
   }
 
-  template <typename T> 
-  inline T& hoNDArray<T>::operator()( size_t idx )
-  {
-    /*if( idx >= this->get_number_of_elements() )
-      {
-      BOOST_THROW_EXCEPTION( runtime_error("hoNDArray::operator(): index out of range."));
-      }*/
-    GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-    return this->get_data_ptr()[idx];
-  }
+  //template <typename T> 
+  //inline T& hoNDArray<T>::operator()( size_t idx )
+  //{
+  //    /*if( idx >= this->get_number_of_elements() )
+  //    {
+  //    BOOST_THROW_EXCEPTION( runtime_error("hoNDArray::operator(): index out of range."));
+  //    }*/
+  //    GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+  //    return this->get_data_ptr()[idx];
+  //}
 
-  template <typename T> 
-  inline const T& hoNDArray<T>::operator()( size_t idx ) const
-  {
-    /*if( idx >= this->get_number_of_elements() )
-      {
-      BOOST_THROW_EXCEPTION( runtime_error("hoNDArray::operator(): index out of range."));
-      }*/
-    GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-    return this->get_data_ptr()[idx];
-  }
+  //template <typename T> 
+  //inline const T& hoNDArray<T>::operator()( size_t idx ) const
+  //{
+  //    /*if( idx >= this->get_number_of_elements() )
+  //    {
+  //    BOOST_THROW_EXCEPTION( runtime_error("hoNDArray::operator(): index out of range."));
+  //    }*/
+  //    GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+  //    return this->get_data_ptr()[idx];
+  //}
 
-  template <typename T> 
-  inline T& hoNDArray<T>::operator()( const std::vector<size_t>& ind )
-  {
-    size_t idx = this->calculate_offset(ind);
-    /*if( idx >= this->get_number_of_elements() )
-      {
-      BOOST_THROW_EXCEPTION( runtime_error("hoNDArray::operator(): index out of range."));
-      }*/
-    GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-    return this->get_data_ptr()[idx];
-  }
+  //template <typename T> 
+  //inline T& hoNDArray<T>::operator()( const std::vector<size_t>& ind )
+  //{
+  //    size_t idx = this->calculate_offset(ind);
+  //    /*if( idx >= this->get_number_of_elements() )
+  //    {
+  //    BOOST_THROW_EXCEPTION( runtime_error("hoNDArray::operator(): index out of range."));
+  //    }*/
+  //    GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+  //    return this->get_data_ptr()[idx];
+  //}
 
-  template <typename T> 
-  inline const T& hoNDArray<T>::operator()( const std::vector<size_t>& ind ) const
-  {
-    size_t idx = this->calculate_offset(ind);
-    /*if( idx >= this->get_number_of_elements() )
-      {
-      BOOST_THROW_EXCEPTION( runtime_error("hoNDArray::operator(): index out of range."));
-      }*/
-    GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
-    return this->get_data_ptr()[idx];
-  }
+  //template <typename T> 
+  //inline const T& hoNDArray<T>::operator()( const std::vector<size_t>& ind ) const
+  //{
+  //    size_t idx = this->calculate_offset(ind);
+  //    /*if( idx >= this->get_number_of_elements() )
+  //    {
+  //    BOOST_THROW_EXCEPTION( runtime_error("hoNDArray::operator(): index out of range."));
+  //    }*/
+  //    GADGET_DEBUG_CHECK_THROW(idx < this->get_number_of_elements());
+  //    return this->get_data_ptr()[idx];
+  //}
 
   template <typename T> 
   void hoNDArray<T>::get_sub_array(const std::vector<size_t>& start, std::vector<size_t>& size, hoNDArray<T>& out)
@@ -672,18 +707,18 @@ namespace Gadgetron
     if ( start.size() != size.size() ){
       BOOST_THROW_EXCEPTION( runtime_error("hoNDArray<>::get_sub_array failed"));
     }
-    
+
     if ( start.size() != (*dimensions_).size() ){
       BOOST_THROW_EXCEPTION( runtime_error("hoNDArray<>::get_sub_array failed"));
     }
-    
+
     out.create(&size);
-    
+
     if ( out.get_number_of_elements() == this->get_number_of_elements() ){
       out = *this;
       return;
     }
-    
+
     std::vector<size_t> end(start.size());
 
     size_t ii;
@@ -694,7 +729,7 @@ namespace Gadgetron
       }
     }
   }
-  
+
   template <typename T> 
   void hoNDArray<T>::print(std::ostream& os) const
   {
@@ -790,7 +825,7 @@ namespace Gadgetron
       this->data_ = 0x0;
     }
   }
-  
+
   template <typename T> 
   inline void hoNDArray<T>::_allocate_memory( size_t size, float** data )
   {
@@ -899,21 +934,21 @@ namespace Gadgetron
   bool hoNDArray<T>::serialize(char*& buf, size_t& len) const
   {
     if ( buf != NULL ) delete[] buf;
-    
+
     size_t NDim = dimensions_->size();
-    
+
     // number of dimensions + dimension vector + contents
     len = sizeof(size_t) + sizeof(size_t)*NDim + sizeof(T)*elements_;
-    
+
     buf = new char[len];
-    
+
     memcpy(buf, &NDim, sizeof(size_t));
     if ( NDim > 0 )
       {
         memcpy(buf+sizeof(size_t), &((*dimensions_)[0]), sizeof(size_t)*NDim);
         memcpy(buf+sizeof(size_t)+sizeof(size_t)*NDim, this->data_, sizeof(T)*elements_);
       }
-    
+
     return true; // Temporary. Should not be a boolean function.
   }
 
@@ -922,15 +957,15 @@ namespace Gadgetron
   {
     size_t NDim;
     memcpy(&NDim, buf, sizeof(size_t));
-    
+
     if ( NDim > 0 )
       {
         std::vector<size_t> dimensions(NDim);
         memcpy(&dimensions[0], buf+sizeof(size_t), sizeof(size_t)*NDim);
-        
+
         // allocate memory
         this->create(&dimensions);
-        
+
         // copy the content
         memcpy(this->data_, buf+sizeof(size_t)+sizeof(size_t)*NDim, sizeof(T)*elements_);
       }
@@ -938,7 +973,7 @@ namespace Gadgetron
       {
         this->clear();
       }
-    
+
     len = sizeof(size_t)+sizeof(size_t)*NDim+sizeof(T)*elements_;
     return true; // Temporary. Should not be a boolean function.
   }  

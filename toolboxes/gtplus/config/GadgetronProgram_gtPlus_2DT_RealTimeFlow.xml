@@ -64,62 +64,6 @@
         <classname>RemoveROOversamplingGadget</classname>
     </gadget>
 
-    <!-- 
-    Data accumulation and trigger gadget 
-
-    /// ISMRMRDDIM definition
-    enum ISMRMRDDIM
-    {
-        DIM_ReadOut = 32,
-        DIM_Encoding1,
-        DIM_Channel,
-        DIM_Slice,
-        DIM_Encoding2,
-        DIM_Contrast,
-        DIM_Phase,
-        DIM_Repetition,
-        DIM_Set,
-        DIM_Segment,
-        DIM_Average,
-        DIM_other1,
-        DIM_other2,
-        DIM_other3,
-        DIM_NONE
-    };
-
-    // define the reconstruction algorithms
-    enum ISMRMRDALGO
-    {
-        ISMRMRD_GRAPPA = 16,
-        ISMRMRD_SENSE,
-        ISMRMRD_SPIRIT,
-        ISMRMRD_L1SPIRIT,
-        ISMRMRD_SOFTSENSE,
-        ISMRMRD_L1SOFTSENSE
-    };
-
-    // the triggering scheme for interleaved/embedded/separate mode is defined as:
-
-    // a) if triggerDim1_==DIM_NONE, and triggerDim2_ != DIM_NONE
-    // the trigger is performed whenever the triggerDim2_ is changed
-
-    // b) if triggerDim2_==NONE and triggerDim1_ != NONE, 
-    // the trigger is performed whenever the triggerDim1_ is changed
-
-    // c) if both triggerDim1_ and triggerDim2_ are NONE, the trigger is performed 
-    // in the close(flags) functions
-
-    // e) if both triggerDim1_ and triggerDim2_ are NOT NONE, the trigger is first performed
-    // when numOfKSpace_triggerDim1_ of triggerDim1_ kspace is buffered and then trigger is performed whenever a new 
-    // triggerDim1_ kspace arrives
-    // the new triggerDim1_ kspace will be reconed using the kernel estimated from numOfKSpace_triggerDim1_ of triggerDim1_
-    // when the triggerDim2_ changes, the status is resetted and the numOfKSpace_triggerDim1_ of triggerDim1_ kspace 
-    // will be buffered and then trigger the recon
-
-    // f) if numOfKSpace_triggerDim1_==0 and both triggerDim1_ and triggerDim2_ are NOT NONE,
-    // the trigger is performed whenever the triggerDim2_ is changed
-    -->
-
     <gadget>
         <name>Acc</name>
         <dll>gadgetronPlus</dll>
@@ -128,7 +72,7 @@
         <!-- debug and info mode -->
         <property>
             <name>verboseMode</name>
-            <value>true</value>
+            <value>false</value>
         </property>
 
         <!-- No acceleration mode -->
@@ -360,7 +304,7 @@
 
         <property>
             <name>coil_compression_num_modesKept</name>
-            <value>-1</value>
+            <value>8</value>
         </property>
 
         <!-- parameters for coil map estimation 
@@ -376,12 +320,17 @@
         </property>
         <property>
             <name>csm_kSize</name>
-            <value>11</value>
+            <value>7</value>
         </property>
 
         <property>
             <name>csm_powermethod_num</name>
             <value>3</value>
+        </property>
+
+        <property>
+            <name>csm_true_3D</name>
+            <value>false</value>
         </property>
 
         <property>
@@ -392,6 +341,11 @@
         <property>
             <name>csm_iter_thres</name>
             <value>0.001</value>
+        </property>
+
+        <property>
+            <name>csm_use_gpu</name>
+            <value>true</value>
         </property>
 
         <!-- algorithm -->
@@ -422,6 +376,14 @@
             <name>grappa_reg_lamda</name>
             <value>0.0005</value>
         </property>
+        <property>
+            <name>grappa_calib_over_determine_ratio</name>
+            <value>0</value>
+        </property>
+        <property>
+            <name>grappa_use_gpu</name>
+            <value>true</value>
+        </property>
 
         <!-- parameters for ISMRMRD_SPIRIT -->
         <property>
@@ -439,6 +401,10 @@
         <property>
             <name>spirit_reg_lamda</name>
             <value>0.005</value>
+        </property>
+        <property>
+            <name>spirit_use_gpu</name>
+            <value>true</value>
         </property>
         <property>
             <name>spirit_iter_max</name>

@@ -106,10 +106,12 @@ protected:
     // helper memory
     using BaseClass::kspace_;
     using BaseClass::complexIm_;
+    using BaseClass::complexIm_norm_;
     using BaseClass::res_after_apply_kernel_;
     using BaseClass::res_after_apply_kernel_sum_over_;
 
     using BaseClass::wav_coeff_norm_;
+    using BaseClass::wav_coeff_norm_approx_;
     using BaseClass::kspace_wav_;
     using BaseClass::complexIm_wav_;
 
@@ -319,9 +321,9 @@ L1Norm(const hoNDArray<T>& wavCoeff, hoNDArray<T>& wavCoeffNorm)
         size_t CHA = (*dims)[4];
 
         // square the coefficients
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(wavCoeff, wavCoeff, complexIm_));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(wavCoeff, wavCoeff, complexIm_norm_));
         // sum over CHA
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver5thDimension(complexIm_, wavCoeffNorm));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver5thDimension(complexIm_norm_, wavCoeffNorm));
     }
     catch (...)
     {
@@ -343,16 +345,16 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
         size_t W = wavCoeff.get_size(3);
         size_t CHA = wavCoeff.get_size(4);
 
-        if ( !kspace_.dimensions_equal( &wavCoeffNorm ) )
+        if ( !wav_coeff_norm_approx_.dimensions_equal( &wavCoeffNorm ) )
         {
-            kspace_.create( wavCoeffNorm.get_dimensions() );
+            wav_coeff_norm_approx_.create( wavCoeffNorm.get_dimensions() );
         }
 
         long long ii;
         long long N = (long long)wavCoeffNorm.get_number_of_elements();
 
         const T* pCoeffNorm = wavCoeffNorm.begin();
-        T* pBuf = kspace_.begin();
+        T* pBuf = wav_coeff_norm_approx_.begin();
 
         if ( GT_ABS(std::abs(p) - 1.0) < 0.001 )
         {
@@ -373,11 +375,11 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
 
         if ( processApproxCoeff )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimension(kspace_, wavCoeff, wavCoeff));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimension(wav_coeff_norm_approx_, wavCoeff, wavCoeff));
         }
         else
         {
-            // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimensionExcept(kspace_, wavCoeff, 0, wavCoeff, true));
+            // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimensionExcept(wav_coeff_norm_approx_, wavCoeff, 0, wavCoeff, true));
             size_t num = wavCoeff.get_number_of_elements()/(RO*E1*E2*W*CHA);
 
             #ifdef GCC_OLD_FLAG
@@ -390,7 +392,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
                 #pragma omp for
                 for ( ii=0; ii<num; ii++ )
                 {
-                    hoNDArray<T> wavCoeffNormCurr(RO, E1, E2, W-1, kspace_.begin()+ii*RO*E1*E2*W+RO*E1*E2);
+                    hoNDArray<T> wavCoeffNormCurr(RO, E1, E2, W-1, wav_coeff_norm_approx_.begin()+ii*RO*E1*E2*W+RO*E1*E2);
 
                     for ( size_t cha=0; cha<CHA; cha++ )
                     {
@@ -423,9 +425,9 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
         size_t W = (*dims)[3];
         size_t CHA = (*dims)[4];
 
-        if ( !kspace_.dimensions_equal(&wavCoeffNorm) )
+        if ( !wav_coeff_norm_approx_.dimensions_equal(&wavCoeffNorm) )
         {
-            kspace_.create(wavCoeffNorm.get_dimensions());
+            wav_coeff_norm_approx_.create(wavCoeffNorm.get_dimensions());
         }
 
         if ( !res_after_apply_kernel_.dimensions_equal(&wavCoeffNorm) )
@@ -440,7 +442,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
         long long num = N/N4D;
 
         const T* pCoeffNorm = wavCoeffNorm.begin();
-        T* pMag = kspace_.begin();
+        T* pMag = wav_coeff_norm_approx_.begin();
         T* pMagInv = res_after_apply_kernel_.begin();
 
         #pragma omp parallel for default(none) private(ii) shared(N, pMag, pMagInv, pCoeffNorm)
@@ -517,11 +519,11 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
 
         if ( processApproxCoeff )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimension(kspace_, complexIm_, wavCoeff));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimension(wav_coeff_norm_approx_, complexIm_, wavCoeff));
         }
         else
         {
-            // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimensionExcept(kspace_, complexIm_, 0, wavCoeff, false));
+            // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimensionExcept(wav_coeff_norm_approx_, complexIm_, 0, wavCoeff, false));
 
             size_t num = wavCoeff.get_number_of_elements()/(RO*E1*E2*W*CHA);
 
@@ -535,7 +537,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
                 #pragma omp for
                 for ( ii=0; ii<num; ii++ )
                 {
-                    hoNDArray<T> magCurr(RO, E1, E2, W-1, kspace_.begin()+ii*RO*E1*E2*W+RO*E1*E2);
+                    hoNDArray<T> magCurr(RO, E1, E2, W-1, wav_coeff_norm_approx_.begin()+ii*RO*E1*E2*W+RO*E1*E2);
 
                     for ( size_t cha=0; cha<CHA; cha++ )
                     {
@@ -883,7 +885,9 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
     try
     {
         // x to image domain
+        //gt_timer2_.start("3");
         GADGET_CHECK_RETURN_FALSE(this->convertToImage(x, complexIm_));
+        //gt_timer2_.stop();
 
         size_t RO = complexIm_.get_size(0);
         size_t E1 = complexIm_.get_size(1);
@@ -894,12 +898,18 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
         if ( coil_senMap_ && coil_senMap_->get_size(0)==RO && coil_senMap_->get_size(1)==E1 && coil_senMap_->get_size(2)==CHA )
         {
             // perform coil combination
+            //gt_timer2_.start("4");
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_complex_.coilCombine(complexIm_, *coil_senMap_, res_after_apply_kernel_));
+            //gt_timer2_.stop();
 
+            //gt_timer2_.start("5");
             hoNDArray<T> combined(RO, E1, 1, E2, res_after_apply_kernel_.begin());
+            //gt_timer2_.stop();
 
             // compute wavelet transform
+            //gt_timer2_.start("6");
             GADGET_CHECK_RETURN_FALSE(this->forwardOperator(combined, res_after_apply_kernel_sum_over_));
+            //gt_timer2_.stop();
         }
         else
         {
@@ -907,10 +917,16 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
         }
 
         // modify coefficients
+        //gt_timer2_.start("7");
         GADGET_CHECK_RETURN_FALSE(this->L1Norm(res_after_apply_kernel_sum_over_, wav_coeff_norm_));
+        //gt_timer2_.stop();
+
+        //gt_timer2_.start("8");
         GADGET_CHECK_RETURN_FALSE(this->divideWavCoeffByNorm(res_after_apply_kernel_sum_over_, wav_coeff_norm_, T(1e-15), T(1.0), with_approx_coeff_));
+        //gt_timer2_.stop();
 
         // first dimension scaling
+        //gt_timer2_.start("9");
         if ( GT_ABS(std::abs(scale_factor_first_dimension_)-1.0) > 1e-6 )
         {
             GADGET_CHECK_RETURN_FALSE(this->firstDimensionScale(res_after_apply_kernel_sum_over_, scale_factor_first_dimension_));
@@ -927,13 +943,17 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
         {
             GADGET_CHECK_RETURN_FALSE(this->thirdDimensionScale(res_after_apply_kernel_sum_over_, scale_factor_third_dimension_));
         }
+        //gt_timer2_.stop();
 
         // go back to image
+        //gt_timer2_.start("10");
         GADGET_CHECK_RETURN_FALSE(this->adjointOperator(res_after_apply_kernel_sum_over_, complexIm_wav_));
+        //gt_timer2_.stop();
 
         if ( coil_senMap_ && coil_senMap_->get_size(0)==RO && coil_senMap_->get_size(1)==E1 && coil_senMap_->get_size(2)==CHA )
         {
             // apply coil sensivity
+            //gt_timer2_.start("11");
             if ( !kspace_wav_.dimensions_equal(&complexIm_) )
             {
                 kspace_wav_.create(RO, E1, CHA, E2);
@@ -954,9 +974,12 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
                     GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(complexImE2, *coil_senMap_, kspace_wavE2));
                 }
             }
+            //gt_timer2_.stop();
 
             // go to kspace
+            //gt_timer2_.start("12");
             GADGET_CHECK_RETURN_FALSE(this->convertToKSpace(kspace_wav_, g));
+            //gt_timer2_.stop();
         }
         else
         {

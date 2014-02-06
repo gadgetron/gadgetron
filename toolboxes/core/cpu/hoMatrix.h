@@ -19,7 +19,8 @@ typedef std::complex<double> GT_Complex16;
 
 namespace Gadgetron{
 
-// the hoMatrix stores every row as the first dimension
+// the hoMatrix stores every column as the first dimension
+// it has the column-wise storage
 template <class T> class  hoMatrix : public ho2DArray<T>
 {
 public:
@@ -70,76 +71,6 @@ protected:
     using BaseClass::delete_data_on_destruct_;
     using BaseClass::accesser_;
 };
-
-// copy lower half of a matrix to its upper half
-//template<typename T>  bool copyL2U(hoMatrix<T>& A);
-//// conj: true, perform conjuate while copying
-//template<typename T>  bool copyL2U(hoMatrix<T>& A, bool conj);
-//
-//// copy upper half of a matrix to its lower half
-//template<typename T>  bool copyU2L(hoMatrix<T>& A);
-//template<typename T>  bool copyU2L(hoMatrix<T>& A, bool conj);
-//
-//// matrix transpose/conjugate transpose
-//template<typename T>  bool trans(const hoMatrix<T>& A, hoMatrix<T>& AT);
-//template<typename T>  bool conjugatetrans(const hoMatrix<T>& A, hoMatrix<T>& AH);
-//template<>  bool conjugatetrans(const hoMatrix<float>& A, hoMatrix<float>& AH);
-//template<>  bool conjugatetrans(const hoMatrix<double>& A, hoMatrix<double>& AH);
-//
-//// following matrix computation calls MKL functions
-//#ifdef USE_MKL
-//
-//    // All description below are from MKL manual!
-//
-//    // BLAS gemm : matrix-matrix product with general matrices
-//    // The gemm routines compute a scalar-matrix-matrix product and add the result to a scalar-matrix product, with general matrices. The operation is defined as
-//    // C := alpha*op(A)*op(B) + beta*C,
-//    // where:
-//    // op(X) is one of op(X) = X, or op(X) = XT, or op(X) = XH,
-//    // alpha and beta are scalars,
-//    // A, B and C are matrices:
-//    // op(A) is an m-by-k matrix,
-//    // op(B) is a k-by-n matrix,
-//    // C is an m-by-n matrix.
-//    template<typename T>  bool GeneralMatrixProduct_gemm(hoMatrix<T>& C, const hoMatrix<T>& A, bool transA, const hoMatrix<T>& B, bool transB);
-//
-//    // LAPACK potrf: Cholesky factorization of a symmetric (Hermitian) positive-definite matrix
-//    // description from MKL manual:
-//    // The routine forms the Cholesky factorization of a symmetric positive-definite or, for complex data, Hermitian positive-definite matrix A:
-//    // A = UT*U for real data, A = UH*U for complex data, if uplo='U'
-//    // A = L*LT for real data, A = L*LH for complex data, if uplo='L'
-//    // where L is a lower triangular matrix and U is upper triangular.
-//    // on return, the upper or lower triangular part of A is overwritten by the Cholesky factor U or L, as specified by uplo.
-//    template<typename T>  bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<T>& A, char uplo);
-//
-//    // LAPACK syev/heev
-//    // Computes all eigenvalues and, optionally, eigenvectors of a real symmetric/complex hermitian matrix.
-//    // on return, A stores the eigen vectors as column vectors, D stores the eigen values
-//    template<typename T>  bool EigenAnalysis_syev_heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type>& eigenValue);
-//    template<typename T>  bool EigenAnalysis_syev_heev2(hoMatrix<T>& A, hoMatrix<T>& eigenValue);
-//
-//    // LAPACK potri
-//    // Computes the inverse of a symmetric (Hermitian) positive-definite matrix.
-//    // on return, A holds the inverse matrix
-//    template<typename T>  bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<T>& A);
-//
-//    // LAPACK trtri
-//    // Computes the inverse of a triangular matrix.
-//    // on return, A holds the inverse matrix
-//    template<typename T>  bool TriangularInverse_trtri(hoMatrix<T>& A, char uplo);
-//
-//    // LAPACK posv
-//    // Computes the solution to the system of linear equations with a symmetric or Hermitian positive-definite matrix A and multiple right-hand sides.
-//    // Ax=b
-//    // on return, A is replaced by its Cholesky factorization and b holds the solution
-//    template<typename T>  bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<T>& A, hoMatrix<T>& b);
-//
-//    // Lineare equation solve with regularization
-//    // Ax = b
-//    // what is solved is (A'A+lamda*I)x = A'b
-//    template<typename T>  bool SolveLinearSystem_Tikhonov(hoMatrix<T>& A, hoMatrix<T>& b, hoMatrix<T>& x, double lamda);
-//
-//#endif // USE_MKL
 
 }
 

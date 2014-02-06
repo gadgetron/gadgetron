@@ -26,6 +26,7 @@ cuda_add_library(gpucore SHARED
     cuNDArray_utils.h
     cuNDArray_reductions.h
     cuNDFFT.h
+    cuNDFFT.cpp
     GadgetronCuException.h
     gpucore_export.h
     GPUTimer.h
@@ -42,7 +43,6 @@ cuda_add_library(gpucore SHARED
     cuNDArray_blas.cu
     cuNDArray_utils.cu
     cuNDArray_reductions.cu
-    cuNDFFT.cpp
     radial_utilities.cu
     hoCuNDArray_blas.cu
     CUBLASContextProvider.cpp

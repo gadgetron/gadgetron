@@ -6,16 +6,24 @@
 
 #include <list>
 
-namespace Gadgetron{
+namespace Gadgetron
+{
 
-  template <class T> EXPORTGPUPMRI 
-  int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data, 
-					 cuNDArray<T>* b1,
-					 unsigned int acceleration_factor,
-					 std::vector<unsigned int>* kernel_size,
-					 cuNDArray<T>* out_mixing_coeff,
-					 std::vector< std::pair<unsigned int, unsigned int> >* sampled_region = 0, 
-					 std::list< unsigned int >* uncombined_channels = 0);
+template <class T> EXPORTGPUPMRI 
+int htgrappa_calculate_grappa_unmixing(cuNDArray<T>* ref_data, 
+                                    cuNDArray<T>* b1,
+                                    unsigned int acceleration_factor,
+                                    std::vector<unsigned int>* kernel_size,
+                                    cuNDArray<T>* out_mixing_coeff,
+                                    std::vector< std::pair<unsigned int, unsigned int> >* sampled_region = 0, 
+                                    std::list< unsigned int >* uncombined_channels = 0);
+
+template <class T> EXPORTGPUPMRI 
+int inverse_clib_matrix(cuNDArray<T>* A, 
+                            cuNDArray<T>* b,
+                            cuNDArray<T>* out_mixing_coeff, 
+                            double lamda);
+
 }
 
 #endif //HTGRAPPA_H

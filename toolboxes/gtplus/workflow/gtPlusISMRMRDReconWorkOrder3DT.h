@@ -81,6 +81,10 @@ public:
     using BaseClass::coil_compression_num_modesKept_;
     using BaseClass::csm_kSize_;
     using BaseClass::csm_powermethod_num_;
+    using BaseClass::csm_true_3D_;
+    using BaseClass::csm_iter_num_;
+    using BaseClass::csm_iter_thres_;
+    using BaseClass::csm_use_gpu_;
     using BaseClass::start_RO_;
     using BaseClass::end_RO_;
     using BaseClass::start_E1_;
@@ -112,11 +116,14 @@ public:
     using BaseClass::grappa_kSize_E1_;
     using BaseClass::grappa_kSize_E2_;
     using BaseClass::grappa_reg_lamda_;
+    using BaseClass::grappa_calib_over_determine_ratio_;
+    using BaseClass::grappa_use_gpu_;
 
     using BaseClass::spirit_kSize_RO_;
     using BaseClass::spirit_kSize_E1_;
     using BaseClass::spirit_kSize_E2_;
     using BaseClass::spirit_reg_lamda_;
+    using BaseClass::spirit_use_gpu_;
     using BaseClass::spirit_iter_max_;
     using BaseClass::spirit_iter_thres_;
     using BaseClass::spirit_print_iter_;

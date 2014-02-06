@@ -7,7 +7,7 @@ if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
   set( HAS_64_BIT On CACHE BOOL "64bit build")
 else( CMAKE_SIZEOF_VOID_P EQUAL 8 )
   message(" 32bit system is found  ... ")
-  set( HAS_64_BIT Off CACHE BOOL "64bit build"e)
+  set( HAS_64_BIT Off CACHE BOOL "64bit build")
 endif( CMAKE_SIZEOF_VOID_P EQUAL 8 )
 
 # build options for OpenMP support
@@ -48,6 +48,10 @@ endif (WIN32)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
+# uncomment these if all compiled targets are to be stored in the same directory
+#SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin CACHE STRING "Where to put the executables")
+#SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin CACHE STRING "Where to put the libraries")
+
 # whether to suppress compilation warnings
 OPTION(BUILD_SUPPRESS_WARNINGS "Build package while suppressing warnings" Off)
 if (BUILD_SUPPRESS_WARNINGS)
@@ -73,7 +77,6 @@ else ( BUILD_TOOLBOX_STATIC )
     set(LIBTYPE SHARED)
 endif ( BUILD_TOOLBOX_STATIC )
 
-set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 set(Boost_NO_BOOST_CMAKE ON)
@@ -95,6 +98,9 @@ else(ACE_FOUND)
 endif(ACE_FOUND)
 
 find_package(CUDA 4.1)
+if ( CUDA_FOUND )
+    ADD_DEFINITIONS(-DUSE_CUDA)
+endif ( CUDA_FOUND )
 
 find_package(GTest)
 #Add support for the default ubuntu package of gtest (which is not compiled

@@ -164,6 +164,11 @@ int GtPlusRecon3DTGadget::process_config(ACE_Message_Block* mb)
         {
             numOfBytes = (double)matrix_size_encoding_[0]*kSpaceMaxAcqE1No_*kSpaceMaxAcqE2No_*num_acq_channels_*para_.workOrderPara_.coil_compression_num_modesKept_*sizeof(ValueType);
         }
+
+        if ( para_.workOrderPara_.recon_algorithm_ == Gadgetron::gtPlus::ISMRMRD_GRAPPA && para_.workOrderPara_.job_num_of_N_>0 )
+        {
+            numOfBytes = (double)para_.workOrderPara_.job_num_of_N_*kSpaceMaxAcqE1No_*kSpaceMaxAcqE2No_*num_acq_channels_*para_.workOrderPara_.coil_compression_num_modesKept_*sizeof(ValueType)*1.5;
+        }
     }
     else
     {

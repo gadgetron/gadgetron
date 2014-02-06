@@ -113,7 +113,7 @@ void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])
 
         Gadgetron::hoNDArray<ValueType> coilMap;
 
-        if ( !gtPlus_util_complex_.coilMap2DNIH(complexIm, coilMap, algo, ks, power, iterNum, thres) )
+        if ( !gtPlus_util_complex_.coilMap2DNIH(complexIm, coilMap, algo, ks, power, iterNum, thres, true) )
         {
             mexWarnMsgTxt("coilMap2DNIH(...) failed ... ");
             return;

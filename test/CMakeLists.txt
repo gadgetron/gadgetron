@@ -10,11 +10,21 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${Boost_INCLUDE_DIR}
-  ${CUDA_INCLUDE_DIRS}
   ${ARMADILLO_INCLUDE_DIRS}
   ${GTEST_INCLUDE_DIRS}
   )
 
+if (CUDA_FOUND)
+    include_directories(${CUDA_INCLUDE_DIRS})
+endif (CUDA_FOUND)
+
+link_libraries(cpucore 
+    cpucore_math
+    ${BOOST_LIBRARIES}
+    ${GTEST_LIBRARIES} 
+    ${ARMADILLO_LIBRARIES}
+    )
+    
 if ( CUDA_FOUND )
     cuda_add_executable(test_all 
       tests.cpp 
@@ -44,21 +54,9 @@ endif ( CUDA_FOUND )
 if ( CUDA_FOUND )
   target_link_libraries(test_all 
     gpucore
-    cpucore 
-    cpucore_math
-    ${CUDA_LIBRARIES} 
-    ${BOOST_LIBRARIES}
-    ${GTEST_LIBRARIES} 
-    ${ARMADILLO_LIBRARIES}
     )
 elseif ( CUDA_FOUND )  
-  target_link_libraries(test_all 
-    cpucore 
-    cpucore_math
-    ${BOOST_LIBRARIES}
-    ${GTEST_LIBRARIES} 
-    ${ARMADILLO_LIBRARIES}
-    )
+
 endif ( CUDA_FOUND )
 
 add_test(test_all test_all)

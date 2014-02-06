@@ -107,11 +107,11 @@ namespace Gadgetron{
 
     T& operator[]( size_t idx );
 
-    T& operator()( size_t idx );
-    const T& operator()( size_t idx ) const;
+    //T& operator()( size_t idx );
+    //const T& operator()( size_t idx ) const;
 
-    T& operator()( const std::vector<size_t>& ind );
-    const T& operator()( const std::vector<size_t>& ind ) const;
+    //T& operator()( const std::vector<size_t>& ind );
+    //const T& operator()( const std::vector<size_t>& ind ) const;
 
     template<typename T2> 
       bool copyFrom(const hoNDArray<T2>& aArray) // Should be a void function

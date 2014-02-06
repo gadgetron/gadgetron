@@ -68,8 +68,16 @@ bool gtPlusReconWorker2DTL1SPIRITNCG<T>::autoReconParameter(gtPlusReconWorkOrder
 
     if ( workOrder2DT->spirit_perform_linear_ )
     {
-        workOrder2DT->spirit_image_reg_lamda_ = 0.0025;
-        workOrder2DT->spirit_ncg_iter_thres_ = 0.0001;
+        if ( workOrder2DT->spirit_solve_symmetric_ )
+        {
+            workOrder2DT->spirit_image_reg_lamda_ = 0.0025;
+            workOrder2DT->spirit_ncg_iter_thres_ = 0.0001;
+        }
+        else
+        {
+            workOrder2DT->spirit_image_reg_lamda_ = 0.0025;
+            workOrder2DT->spirit_ncg_iter_thres_ = 0.0001;
+        }
     }
 
     return true;

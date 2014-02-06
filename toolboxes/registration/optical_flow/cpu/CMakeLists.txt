@@ -8,7 +8,7 @@ include_directories(
   ${ARMADILLO_INCLUDE_DIR}
 )
 
-add_library(cpureg SHARED 
+add_library(cpureg ${LIBTYPE} 
   hoOpticalFlowSolver.cpp
   hoHSOpticalFlowSolver.cpp
   hoCKOpticalFlowSolver.cpp

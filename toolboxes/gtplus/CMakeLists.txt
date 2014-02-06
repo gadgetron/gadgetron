@@ -114,6 +114,10 @@ if ( HAS_64_BIT )
                         solver/gtPlusLSQRSolver.h 
                         solver/gtPlusNCGSolver.h )
 
+    set( gtCloud_files config/gtCloud/myCloud_2DT.txt 
+                    config/gtCloud/myCloud_3DT.txt 
+                    config/gtCloud/myCloud_2DT_DualLayer.txt )
+
     set( config_files config/GadgetronProgram_gtPlus_2DT_Cartesian.xml
                     config/GadgetronProgram_gtPlus_2DT_Cartesian_L1SPIRIT.xml
                     config/GadgetronProgram_gtPlus_2DT_Cartesian_SPIRIT.xml
@@ -152,7 +156,10 @@ if ( HAS_64_BIT )
 
     source_group(util FILES ${util_files})
     source_group(workflow FILES ${workflow_files})
-    source_group(config FILES ${config_files})
+
+    set( config_gtCloud_files ${config_files} ${gtCloud_files} )
+    source_group(config FILES ${config_gtCloud_files})
+
     source_group(schema FILES ${schema_files})
     source_group(algorithm FILES ${algorithm_files})
     source_group(solver FILES ${solver_files})
@@ -162,6 +169,10 @@ if ( HAS_64_BIT )
     endif(MATLAB_FOUND)
 
     target_link_libraries(gtplus cpucore cpucore_math ${MKL_LIBRARIES} ${EXTRA_MKL_LIBRARIES})
+
+    if (CUDA_FOUND)
+        target_link_libraries(gtplus gpuparallelmri)
+    endif (CUDA_FOUND)
 
     install(TARGETS gtplus DESTINATION lib)
 
@@ -195,11 +206,18 @@ if ( HAS_64_BIT )
     install (FILES  ${config_files} 
                     DESTINATION config)
 
+    install (FILES  ${gtCloud_files} 
+                    DESTINATION config/gtCloud)
+
     install (FILES  ${schema_files} 
                     DESTINATION schema)
 
     if (MATLAB_FOUND)
         add_subdirectory(matlab)
     endif(MATLAB_FOUND)
+
+    if (GTEST_FOUND)
+        add_subdirectory(ut)
+    endif (GTEST_FOUND)
 
 endif ( HAS_64_BIT )

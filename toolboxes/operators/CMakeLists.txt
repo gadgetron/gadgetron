@@ -11,7 +11,7 @@ install(FILES
   diagonalOperator.h
   encodingOperatorContainer.h
   multiplicationOperatorContainer.h
-  FFToperator.h
+  FFTOperator.h
   imageOperator.h
   encodedImageOperator.h
   partialDerivativeOperator.h

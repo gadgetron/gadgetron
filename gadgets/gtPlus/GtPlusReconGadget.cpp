@@ -284,11 +284,17 @@ bool GtPlusReconGadget::readParameters()
         workOrderPara_.csm_powermethod_num_ = (size_t)(this->get_int_value("csm_powermethod_num"));
         GADGET_CONDITION_MSG(verboseMode_, "csm_powermethod_num_ is " << workOrderPara_.csm_powermethod_num_);
 
+        workOrderPara_.csm_true_3D_ = this->get_bool_value("csm_true_3D");
+        GADGET_CONDITION_MSG(verboseMode_, "csm_true_3D_ is " << workOrderPara_.csm_true_3D_);
+
         workOrderPara_.csm_iter_num_ = (size_t)(this->get_int_value("csm_iter_num"));
-        GADGET_CONDITION_MSG(verboseMode_, "csm_kSize_ is " << workOrderPara_.csm_iter_num_);
+        GADGET_CONDITION_MSG(verboseMode_, "csm_iter_num_ is " << workOrderPara_.csm_iter_num_);
 
         workOrderPara_.csm_iter_thres_ = this->get_double_value("csm_iter_thres");
         GADGET_CONDITION_MSG(verboseMode_, "csm_iter_thres_ is " << workOrderPara_.csm_iter_thres_);
+
+        workOrderPara_.csm_use_gpu_ = this->get_bool_value("csm_use_gpu");
+        GADGET_CONDITION_MSG(verboseMode_, "csm_use_gpu_ is " << workOrderPara_.csm_use_gpu_);
 
         GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
 
@@ -305,11 +311,15 @@ bool GtPlusReconGadget::readParameters()
         workOrderPara_.grappa_kSize_E1_ = (size_t)(this->get_int_value("grappa_kSize_E1"));
         workOrderPara_.grappa_kSize_E2_ = (size_t)(this->get_int_value("grappa_kSize_E2"));
         workOrderPara_.grappa_reg_lamda_ = this->get_double_value("grappa_reg_lamda");
+        workOrderPara_.grappa_calib_over_determine_ratio_ = this->get_double_value("grappa_calib_over_determine_ratio");
+        workOrderPara_.grappa_use_gpu_ = this->get_bool_value("grappa_use_gpu");
 
         GADGET_CONDITION_MSG(verboseMode_, "grappa_kSize_RO_ is " << workOrderPara_.grappa_kSize_RO_);
         GADGET_CONDITION_MSG(verboseMode_, "grappa_kSize_E1_ is " << workOrderPara_.grappa_kSize_E1_);
         GADGET_CONDITION_MSG(verboseMode_, "grappa_kSize_E2_ is " << workOrderPara_.grappa_kSize_E2_);
         GADGET_CONDITION_MSG(verboseMode_, "grappa_reg_lamda_ is " << workOrderPara_.grappa_reg_lamda_);
+        GADGET_CONDITION_MSG(verboseMode_, "grappa_calib_over_determine_ratio_ is " << workOrderPara_.grappa_calib_over_determine_ratio_);
+        GADGET_CONDITION_MSG(verboseMode_, "grappa_use_gpu_ is " << workOrderPara_.grappa_use_gpu_);
 
         GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
 
@@ -317,6 +327,7 @@ bool GtPlusReconGadget::readParameters()
         workOrderPara_.spirit_kSize_E1_ = (size_t)(this->get_int_value("spirit_kSize_E1"));
         workOrderPara_.spirit_kSize_E2_ = (size_t)(this->get_int_value("spirit_kSize_E2"));
         workOrderPara_.spirit_reg_lamda_ = this->get_double_value("spirit_reg_lamda");
+        workOrderPara_.spirit_use_gpu_ = this->get_bool_value("spirit_use_gpu");
         workOrderPara_.spirit_calib_over_determine_ratio_ = this->get_double_value("spirit_calib_over_determine_ratio");
         workOrderPara_.spirit_solve_symmetric_ = this->get_bool_value("spirit_solve_symmetric");
         workOrderPara_.spirit_iter_max_ = (size_t)(this->get_int_value("spirit_iter_max"));
@@ -327,6 +338,7 @@ bool GtPlusReconGadget::readParameters()
         GADGET_CONDITION_MSG(verboseMode_, "spirit_kSize_E1_ is " << workOrderPara_.spirit_kSize_E1_);
         GADGET_CONDITION_MSG(verboseMode_, "spirit_kSize_E2_ is " << workOrderPara_.spirit_kSize_E2_);
         GADGET_CONDITION_MSG(verboseMode_, "spirit_reg_lamda_ is " << workOrderPara_.spirit_reg_lamda_);
+        GADGET_CONDITION_MSG(verboseMode_, "spirit_use_gpu_ is " << workOrderPara_.spirit_use_gpu_);
         GADGET_CONDITION_MSG(verboseMode_, "spirit_calib_over_determine_ratio_ is " << workOrderPara_.spirit_calib_over_determine_ratio_);
         GADGET_CONDITION_MSG(verboseMode_, "spirit_solve_symmetric_ is " << workOrderPara_.spirit_solve_symmetric_);
         GADGET_CONDITION_MSG(verboseMode_, "spirit_iter_max_ is " << workOrderPara_.spirit_iter_max_);

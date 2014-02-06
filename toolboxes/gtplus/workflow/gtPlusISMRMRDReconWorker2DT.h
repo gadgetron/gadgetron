@@ -258,8 +258,8 @@ bool gtPlusReconWorker2DT<T>::prepRefByAveragingCrossN(gtPlusReconWorkOrder2DT<T
             size_t s;
             for ( s=0; s<S; s++ )
             {
-                hoMatrix<T> A(N, RO*E1*CHA, const_cast<T*>(ref.begin()+s*RO*E1*CHA*N));
-                hoMatrix<T> A_KLF(N, RO*E1*CHA, refKLF.begin()+s*RO*E1*CHA*N);
+                hoMatrix<T> A(RO*E1*CHA, N, const_cast<T*>(ref.begin()+s*RO*E1*CHA*N));
+                hoMatrix<T> A_KLF(RO*E1*CHA, N, refKLF.begin()+s*RO*E1*CHA*N);
 
                 GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLFilter(A, numOfModes, A_KLF));
             }
@@ -276,8 +276,8 @@ bool gtPlusReconWorker2DT<T>::prepRefByAveragingCrossN(gtPlusReconWorkOrder2DT<T
             size_t s;
             for ( s=0; s<S; s++ )
             {
-                hoMatrix<T> A(N, RO*E1*CHA, const_cast<T*>(ref.begin()+s*RO*E1*CHA*N));
-                hoMatrix<T> A_KLF(N, RO*E1*CHA, refRecon.begin()+s*RO*E1*CHA*N);
+                hoMatrix<T> A(RO*E1*CHA, N, const_cast<T*>(ref.begin()+s*RO*E1*CHA*N));
+                hoMatrix<T> A_KLF(RO*E1*CHA, N, refRecon.begin()+s*RO*E1*CHA*N);
 
                 GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLFilter(A, numOfModes, A_KLF));
             }
@@ -605,7 +605,7 @@ bool gtPlusReconWorker2DT<T>::coilCompression(gtPlusReconWorkOrder2DT<T>* workOr
                                             workOrder2DT->coil_compression_thres_, coeff, eigenValues));
                             }
 
-                            num_modesKept = coeff.get_size(0);
+                            num_modesKept = coeff.get_size(1);
                             workOrder2DT->coilCompressionCoef_->push_back(coeff);
                         }
                         else
@@ -798,7 +798,7 @@ estimateCoilMap(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& re
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(refCoilMapS, buffer2DT_));
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap2DNIH(buffer2DT_, 
                         coilMapS, workOrder2DT->coil_map_algorithm_, workOrder2DT->csm_kSize_, 
-                        workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, workOrder2DT->csm_iter_thres_));
+                        workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, workOrder2DT->csm_iter_thres_, workOrder2DT->csm_use_gpu_));
 
                 GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder2DT->coilMap_, usedS));
             }
@@ -807,7 +807,7 @@ estimateCoilMap(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& re
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(ref_coil_map_dst, buffer2DT_));
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap2DNIH(buffer2DT_, 
                         *workOrder2DT->coilMap_, workOrder2DT->coil_map_algorithm_, workOrder2DT->csm_kSize_, 
-                        workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, workOrder2DT->csm_iter_thres_));
+                        workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, workOrder2DT->csm_iter_thres_, workOrder2DT->csm_use_gpu_));
             }
         }
 
@@ -1320,8 +1320,8 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
 
                         buffer2DT_unwrapping_.create(RO, E1, dstCHA, N);
 
-                        hoMatrix<T> A(N, RO*E1*dstCHA, buffer2DT_.begin()+whichS_coilmap*RO*E1*dstCHA*N);
-                        hoMatrix<T> A_KLF(N, RO*E1*dstCHA, buffer2DT_unwrapping_.begin());
+                        hoMatrix<T> A(RO*E1*dstCHA, N, buffer2DT_.begin()+whichS_coilmap*RO*E1*dstCHA*N);
+                        hoMatrix<T> A_KLF(RO*E1*dstCHA, N, buffer2DT_unwrapping_.begin());
 
                         if ( numOfModesKept>0 && numOfModesKept<dstCHA )
                         {
@@ -1345,7 +1345,10 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
 
                         hoNDArray<T> coilMapS(RO, E1, dstCHA, 1, workOrder2DT->coilMap_->begin()+whichS_coilmap*RO*E1*dstCHA);
 
-                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap2DNIH(aveComplexImS, coilMapS, workOrder2DT->coil_map_algorithm_, workOrder2DT->csm_kSize_, workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, workOrder2DT->csm_iter_thres_));
+                        GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("coilMap2DNIH ...  "));
+                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap2DNIH(aveComplexImS, coilMapS, workOrder2DT->coil_map_algorithm_, workOrder2DT->csm_kSize_, workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, workOrder2DT->csm_iter_thres_, workOrder2DT->csm_use_gpu_));
+                        GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+
                         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, coilMapS, "coilMapS");
 
                         GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder2DT->coilMap_, whichS_coilmap));
@@ -1369,8 +1372,8 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
                         {
                             for ( s=0; s<S; s++ )
                             {
-                                hoMatrix<T> A(N, RO*E1*dstCHA, buffer2DT_.begin()+s*RO*E1*dstCHA*N);
-                                hoMatrix<T> A_KLF(N, RO*E1*dstCHA, buffer2DT_unwrapping_.begin()+s*RO*E1*dstCHA*N);
+                                hoMatrix<T> A(RO*E1*dstCHA, N, buffer2DT_.begin()+s*RO*E1*dstCHA*N);
+                                hoMatrix<T> A_KLF(RO*E1*dstCHA, N, buffer2DT_unwrapping_.begin()+s*RO*E1*dstCHA*N);
 
                                 GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLFilter(A, numOfModesKept, A_KLF));
                             }
@@ -1389,21 +1392,32 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
 
                         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, aveComplexIm, "aveComplexIm");
 
-                        for ( s=0; s<S; s++ )
-                        {
-                            hoNDArray<T> aveComplexImS(RO, E1, dstCHA, aveComplexIm.begin()+s*RO*E1*dstCHA);
+                        GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("coilMap2DNIH ...  "));
 
-                            hoNDArray<T> coilMapS(RO, E1, dstCHA, workOrder2DT->coilMap_->begin()+s*RO*E1*dstCHA);
+                        gtPlusISMRMRDReconUtilComplex<T>().coilMap2DNIH(aveComplexIm, *workOrder2DT->coilMap_, workOrder2DT->coil_map_algorithm_, workOrder2DT->csm_kSize_, workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, workOrder2DT->csm_iter_thres_, workOrder2DT->csm_use_gpu_);
 
-                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap2DNIH(aveComplexImS, coilMapS, workOrder2DT->coil_map_algorithm_, workOrder2DT->csm_kSize_, workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, workOrder2DT->csm_iter_thres_));
-                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, coilMapS, "coilMapS");
+                        gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer2DT_, *workOrder2DT->coilMap_, workOrder2DT->complexIm_);
 
-                            hoNDArray<T> complexImS(RO, E1, dstCHA, N, buffer2DT_.begin()+s*RO*E1*dstCHA*N);
-                            hoNDArray<T> complexImCombinedS(RO, E1, N, workOrder2DT->complexIm_.begin()+s*RO*E1*N);
+                        //long long ss;
+                        //#pragma omp parallel for private(s) if (S>2)
+                        //for ( ss=0; ss<S; ss++ )
+                        //{
+                        //    hoNDArray<T> aveComplexImS(RO, E1, dstCHA, aveComplexIm.begin()+ss*RO*E1*dstCHA);
+                        //    hoNDArray<T> coilMapS(RO, E1, dstCHA, workOrder2DT->coilMap_->begin()+ss*RO*E1*dstCHA);
 
-                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(complexImS, coilMapS, complexImCombinedS));
-                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, complexImCombinedS, "complexImCombinedS");
-                        }
+                        //    //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap2DNIH(aveComplexImS, coilMapS, workOrder2DT->coil_map_algorithm_, workOrder2DT->csm_kSize_, workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, workOrder2DT->csm_iter_thres_));
+                        //    gtPlusISMRMRDReconUtilComplex<T>().coilMap2DNIH(aveComplexImS, coilMapS, workOrder2DT->coil_map_algorithm_, workOrder2DT->csm_kSize_, workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, workOrder2DT->csm_iter_thres_);
+
+                        //    hoNDArray<T> complexImS(RO, E1, dstCHA, N, buffer2DT_.begin()+ss*RO*E1*dstCHA*N);
+                        //    hoNDArray<T> complexImCombinedS(RO, E1, N, workOrder2DT->complexIm_.begin()+ss*RO*E1*N);
+
+                        //    //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(complexImS, coilMapS, complexImCombinedS));
+                        //    gtPlusISMRMRDReconUtilComplex<T>().coilCombine(complexImS, coilMapS, complexImCombinedS);
+                        //}
+                        GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+
+                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder2DT->coilMap_, "coilMap_fullres");
+                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->complexIm_, "complexImCombined");
                     }
                 }
             }
@@ -1418,20 +1432,22 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
                 {
                     workOrder2DT->coilMap_->create(RO, E1, dstCHA, N, S);
 
+                    GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("coilMap2DNIH ...  "));
                     if ( same_coilmap_allS )
                     {
                         hoNDArray<T> complexImS(RO, E1, dstCHA, N, buffer2DT_.begin()+whichS_coilmap*RO*E1*dstCHA*N);
                         hoNDArray<T> coilMapS(RO, E1, dstCHA, N, workOrder2DT->coilMap_->begin()+whichS_coilmap*RO*E1*dstCHA*N);
 
-                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap2DNIH(complexImS, coilMapS, workOrder2DT->coil_map_algorithm_, workOrder2DT->csm_kSize_, workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, workOrder2DT->csm_iter_thres_));
+                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap2DNIH(complexImS, coilMapS, workOrder2DT->coil_map_algorithm_, workOrder2DT->csm_kSize_, workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, workOrder2DT->csm_iter_thres_, workOrder2DT->csm_use_gpu_));
                         GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder2DT->coilMap_, whichS_coilmap));
                         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder2DT->coilMap_, "coilMap_fullres");
                     }
                     else
                     {
-                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap2DNIH(buffer2DT_, *workOrder2DT->coilMap_, workOrder2DT->coil_map_algorithm_, workOrder2DT->csm_kSize_, workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, workOrder2DT->csm_iter_thres_));
+                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap2DNIH(buffer2DT_, *workOrder2DT->coilMap_, workOrder2DT->coil_map_algorithm_, workOrder2DT->csm_kSize_, workOrder2DT->csm_powermethod_num_, workOrder2DT->csm_iter_num_, workOrder2DT->csm_iter_thres_, workOrder2DT->csm_use_gpu_));
                         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder2DT->coilMap_, "coilMap_fullres");
                     }
+                    GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
 
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer2DT_, *workOrder2DT->coilMap_, workOrder2DT->complexIm_));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->complexIm_, "complexIm_");
@@ -2287,14 +2303,20 @@ bool gtPlusReconWorker2DT<T>::calibFengHuang(gtPlusReconWorkOrder2DT<T>& workOrd
         #endif
         {
             hoMatrix<T> A(rowA, colA);
+            T* pA = A.begin();
+
             hoMatrix<T> B(rowB, colB);
+            T* pB = B.begin();
+
             hoMatrix<T> K(colA, colB);
 
             #pragma omp for
             for ( ii=0; ii<num; ii ++ )
             {
-                ho2DArray<T> src2D(RO, E1, const_cast<T*>(src.begin())+ii*RO*E1);
-                ho2DArray<T> dst2D(RO, E1, const_cast<T*>(dst.begin())+ii*RO*E1);
+                T* pSrc2D = const_cast<T*>(src.begin())+ii*RO*E1;
+                T* pDst2D = const_cast<T*>(dst.begin())+ii*RO*E1;
+                //ho2DArray<T> src2D(RO, E1, const_cast<T*>(src.begin())+ii*RO*E1);
+                //ho2DArray<T> dst2D(RO, E1, const_cast<T*>(dst.begin())+ii*RO*E1);
 
                 size_t ro, e1, row(0);
                 int x, y;
@@ -2309,11 +2331,14 @@ bool gtPlusReconWorker2DT<T>::calibFengHuang(gtPlusReconWorkOrder2DT<T>& workOrd
                         {
                             for ( x=-halfKx; x<=halfKx; x++ )
                             {
-                                A(row, colInd++) = src2D(ro+x, e1+y);
+                                // A(row, colInd++) = src2D(ro+x, e1+y);
+                                pA[row + colInd*rowA] = pSrc2D[ro+x + (e1+y)*RO];
+                                colInd++;
                             }
                         }
 
-                        B(row, 0) = dst2D(ro, e1);
+                        // B(row, 0) = dst2D(ro, e1);
+                        pB[row] = pDst2D[ro + e1*RO];
 
                         row++;
                     }

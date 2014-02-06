@@ -36,6 +36,7 @@ cuda_add_library(gpuparallelmri SHARED
     senseOperator.h
     sense_utilities.h
     b1_map.cu
+    b1_map_NIH_Souheil.cu
     sense_utilities.cu
     cuSenseOperator.cu
     cuCartesianSenseOperator.cu

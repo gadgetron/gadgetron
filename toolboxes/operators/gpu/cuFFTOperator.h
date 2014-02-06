@@ -10,7 +10,7 @@
 
 #include "cuNDArray_math.h"
 #include "FFTOperator.h"
-#include "cuFFT.h"
+#include "cuNDFFT.h"
 
 namespace Gadgetron{
   
@@ -20,10 +20,10 @@ namespace Gadgetron{
       The class cuFFTOperator is a convienience wrapper for the device independent FFTOperator.
       It instantiates the FFTOperator for type cuNDArray<T>.
   */
-  template <class T> class cuFFTOperator : public FFTOperator< cuNDArray< complext<T> >, cuFFT<T> >
+  template <class T> class cuFFTOperator : public FFTOperator< cuNDArray< complext<T> >, cuNDFFT<T> >
   {
   public:    
-    cuFFTOperator() : FFTOperator< cuNDArray< complext<T> >, cuFFT<T> >() {}
+    cuFFTOperator() : FFTOperator< cuNDArray< complext<T> >, cuNDFFT<T> >() {}
     virtual ~cuFFTOperator() {}
   }; 
 }

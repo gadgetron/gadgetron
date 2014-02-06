@@ -226,7 +226,7 @@ namespace Gadgetron{
     }
 
     // Goto from x-f to x-t space
-    cuNDFFT<float>().fft( cgresult.get(), 2 );
+    cuNDFFT<float>::instance()->fft( cgresult.get(), 2 );
 
     /*
     static int counter = 0;
@@ -361,7 +361,7 @@ namespace Gadgetron{
     boost::shared_ptr< cuNDArray<float_complext> > reg_image( new cuNDArray<float_complext>(&dims) );
 
     E_->mult_csm_conj_sum( &image, reg_image.get() );
-    cuNDFFT<float>().ifft( reg_image.get(), 2, true );
+    cuNDFFT<float>::instance()->ifft( reg_image.get(), 2, true );
 
     return reg_image;
   }
