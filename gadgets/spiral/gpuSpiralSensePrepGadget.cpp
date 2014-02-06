@@ -1,5 +1,5 @@
 #include "gpuSpiralSensePrepGadget.h"
-#include "SenseJob.h"
+#include "GenericReconJob.h"
 #include "Gadgetron.h"
 #include "cuNDArray_utils.h"
 #include "cuNDArray_reductions.h"
@@ -622,7 +622,7 @@ namespace Gadgetron{
 	  mbq->release();
 	}
 
-	GadgetContainerMessage< SenseJob >* m4 = new GadgetContainerMessage< SenseJob >();
+	GadgetContainerMessage< GenericReconJob >* m4 = new GadgetContainerMessage< GenericReconJob >();
 
 	m4->getObjectPtr()->dat_host_ = data_host;
 	m4->getObjectPtr()->csm_host_ = csm_host;

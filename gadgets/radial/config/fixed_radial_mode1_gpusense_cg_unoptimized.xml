@@ -46,7 +46,7 @@
     
     <gadget>
       <name>gpuCgSenseGadget_slice0</name>
-      <dll>gadgetron_gpusense</dll>
+      <dll>gadgetron_gpuparallelmri</dll>
       <classname>gpuCgSenseGadget</classname>
       <property><name>pass_on_undesired_data</name>  <value>true</value></property>
       <property><name>deviceno</name>                <value>0</value></property>
@@ -61,7 +61,7 @@
 
     <gadget>
       <name>gpuCgSenseGadget_slice1</name>
-      <dll>gadgetron_gpusense</dll>
+      <dll>gadgetron_gpuparallelmri</dll>
       <classname>gpuCgSenseGadget</classname>
       <property><name>pass_on_undesired_data</name>  <value>true</value></property>
       <property><name>deviceno</name>                <value>0</value></property>
@@ -76,7 +76,7 @@
 
     <gadget>
       <name>gpuCgSenseGadget_slice2</name>
-      <dll>gadgetron_gpusense</dll>
+      <dll>gadgetron_gpuparallelmri</dll>
       <classname>gpuCgSenseGadget</classname>
       <property><name>pass_on_undesired_data</name>  <value>true</value></property>
       <property><name>deviceno</name>                <value>0</value></property>

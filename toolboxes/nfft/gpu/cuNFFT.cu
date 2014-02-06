@@ -1413,31 +1413,6 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::image_wrap( cuNDArray<complext<REAL> > *
   CHECK_FOR_CUDA_ERROR();
 }	
 
-template<class REAL, unsigned int D, bool ATOMICS> typename uint64d<D>::Type
-Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::get_matrix_size()
-{
-  return matrix_size;
-}
-
-template<class REAL, unsigned int D, bool ATOMICS> typename uint64d<D>::Type
-Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::get_matrix_size_os()
-{
-  return matrix_size_os;
-}
-
-template<class REAL, unsigned int D, bool ATOMICS> REAL 
-Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::get_W()
-{
-  return W;
-}
-
-template<class REAL, unsigned int D, bool ATOMICS> unsigned int 
-Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::get_device()
-{
-  return device;
-}
-
-
 //
 // Template instantion
 //

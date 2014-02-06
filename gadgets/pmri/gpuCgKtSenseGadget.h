@@ -1,13 +1,13 @@
-#ifndef gpuCgSenseGadget_H
-#define gpuCgSenseGadget_H
+#ifndef gpuCgKtSenseGadget_H
+#define gpuCgKtSenseGadget_H
 #pragma once
 
 #include "gadgetron_gpusense_export.h"
 #include "Gadget.h"
-#include "SenseJob.h"
+#include "GenericReconJob.h"
 #include "GadgetMRIHeaders.h"
 #include "cuCgSolver.h"
-#include "cuNonCartesianSenseOperator.h"
+#include "cuNonCartesianKtSenseOperator.h"
 #include "cuCgPreconditioner.h"
 #include "cuNFFT.h"
 #include "cuImageOperator.h"
@@ -17,20 +17,21 @@
 
 namespace Gadgetron{
 
-  class EXPORTGADGETS_GPUSENSE gpuCgSenseGadget : public Gadget2<ISMRMRD::ImageHeader, SenseJob>
+  class EXPORTGADGETS_GPUPMRI gpuCgKtSenseGadget : public Gadget2<ISMRMRD::ImageHeader, GenericReconJob>
   {
 
   public:
+    GADGET_DECLARE(gpuCgKtSenseGadget);
 
-    GADGET_DECLARE(gpuCgSenseGadget);
-
-    gpuCgSenseGadget();
-    virtual ~gpuCgSenseGadget();
+    gpuCgKtSenseGadget();
+    virtual ~gpuCgKtSenseGadget();
 
   protected:
 
-    virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader > *m1, GadgetContainerMessage< SenseJob > *m2 );
+    virtual int process( GadgetContainerMessage< ISMRMRD::ImageHeader > *m1, GadgetContainerMessage< GenericReconJob > *m2 );
     virtual int process_config( ACE_Message_Block* mb );
+
+    boost::shared_ptr< cuNDArray<float_complext> > compute_regularization_image( GenericReconJob *job );
 
     int channels_;
     int device_number_;
@@ -46,18 +47,17 @@ namespace Gadgetron{
     double oversampling_factor_;
     double kernel_width_;
     double kappa_;
+    double shutter_radius_;
     unsigned int rotations_to_discard_;
 
     bool output_convergence_;
-    bool output_timing_;
-    bool matrix_size_reported_;
     bool is_configured_;
 
     // Define conjugate gradient solver
     cuCgSolver<float_complext> cg_;
 
     // Define non-Cartesian Sense Encofing operator
-    boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E_;
+    boost::shared_ptr< cuNonCartesianKtSenseOperator<float,2> > E_;
 
     // Define preconditioner
     boost::shared_ptr< cuCgPreconditioner<float_complext> > D_;
@@ -65,7 +65,7 @@ namespace Gadgetron{
     // Define regularization image operator
     boost::shared_ptr< cuImageOperator<float_complext> > R_;
 
-    unsigned int frame_counter_;
+    int frame_counter_;
   };
 }
-#endif //gpuCgSenseGadget
+#endif //gpuCgKtSenseGadget

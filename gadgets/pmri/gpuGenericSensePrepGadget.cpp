@@ -2,7 +2,7 @@
 #include "Gadgetron.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "cuNonCartesianSenseOperator.h"
-#include "SenseJob.h"
+#include "GenericReconJob.h"
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_utils.h"
 #include "hoNDArray_utils.h"
@@ -641,7 +641,7 @@ namespace Gadgetron{
       // Set up the Sense job
       //
 
-      GadgetContainerMessage< SenseJob > *sj = new GadgetContainerMessage<SenseJob>();
+      GadgetContainerMessage< GenericReconJob > *sj = new GadgetContainerMessage<GenericReconJob>();
       	
       sj->getObjectPtr()->dat_host_ = samples_host;      
       sj->getObjectPtr()->tra_host_ = traj.to_host();

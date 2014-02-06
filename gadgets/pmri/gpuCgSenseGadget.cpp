@@ -125,7 +125,7 @@ namespace Gadgetron{
     return GADGET_OK;
   }
 
-  int gpuCgSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<SenseJob> *m2)
+  int gpuCgSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<GenericReconJob> *m2)
   {
     // Is this data for this gadget's set/slice?
     //
@@ -146,7 +146,7 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    SenseJob* j = m2->getObjectPtr();
+    GenericReconJob* j = m2->getObjectPtr();
 
     // Some basic validation of the incoming Sense job
     if (!j->csm_host_.get() || !j->dat_host_.get() || !j->tra_host_.get() || !j->dcw_host_.get() || !j->reg_host_.get()) {

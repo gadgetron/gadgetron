@@ -164,7 +164,7 @@ namespace Gadgetron{
     return GADGET_OK;
   }
 
-  int gpuSbSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<SenseJob> *m2)
+  int gpuSbSenseGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, GadgetContainerMessage<GenericReconJob> *m2)
   {
     // Is this data for this gadget's set/slice?
     //
@@ -182,7 +182,7 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    SenseJob* j = m2->getObjectPtr();
+    GenericReconJob* j = m2->getObjectPtr();
 
     // Let's first check that this job has the required data...
     if (!j->csm_host_.get() || !j->dat_host_.get() || !j->tra_host_.get() || !j->dcw_host_.get()) {

@@ -8,7 +8,7 @@ find_package(XercesC REQUIRED)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
-  ${CMAKE_SOURCE_DIR}/gadgets/sense
+  ${CMAKE_SOURCE_DIR}/gadgets/pmri
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu

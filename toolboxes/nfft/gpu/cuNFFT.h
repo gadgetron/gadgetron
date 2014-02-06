@@ -48,7 +48,7 @@ namespace Gadgetron{
   public: // Main interface
     
     /** 
-	Default constructor
+        Default constructor
     */
     cuNFFT_plan();
 
@@ -63,9 +63,9 @@ namespace Gadgetron{
        The larger W the better quality at the cost of increased runtime.
        \param device the device (GPU id) to use for the NFFT computation. 
        The default value of -1 indicates that the currently active device is used.
-     */
+    */
     cuNFFT_plan( typename uint64d<D>::Type matrix_size, typename uint64d<D>::Type matrix_size_os,
-	       REAL W, int device = -1 );
+                 REAL W, int device = -1 );
 
     /**
        Destructor
@@ -73,7 +73,7 @@ namespace Gadgetron{
     virtual ~cuNFFT_plan();
 
     /** 
-	Enum to specify the desired mode for cleaning up when using the wipe() method.
+        Enum to specify the desired mode for cleaning up when using the wipe() method.
     */
     enum NFFT_wipe_mode { 
       NFFT_WIPE_ALL, /**< delete all internal memory. */
@@ -81,19 +81,19 @@ namespace Gadgetron{
     };
 
     /** 
-	Clear internal storage
-	\param mode enum defining the wipe mode
+        Clear internal storage
+        \param mode enum defining the wipe mode
     */
     void wipe( NFFT_wipe_mode mode );
 
     /** 
-	Setup the plan. Please see the constructor taking similar arguments for a parameter description.
+        Setup the plan. Please see the constructor taking similar arguments for a parameter description.
     */
     void setup( typename uint64d<D>::Type matrix_size, typename uint64d<D>::Type matrix_size_os,
-		REAL W, int device = -1 );
+                REAL W, int device = -1 );
 
     /**
-      Enum to specify the preprocessing mode.
+       Enum to specify the preprocessing mode.
     */
     enum NFFT_prep_mode { 
       NFFT_PREP_C2NC, /**< preprocess to perform a Cartesian to non-Cartesian NFFT. */
@@ -119,31 +119,31 @@ namespace Gadgetron{
     };
 
     /**
-      Execute the NFFT.
-      \param[in] in the input array.
-      \param[out] out the output array.
-      \param[in] dcw optional density compensation weights weighing the input samples according to the sampling density. 
-      If an 0x0-pointer is provided no density compensation is used.
-      \param mode enum specifying the mode of operation.
+       Execute the NFFT.
+       \param[in] in the input array.
+       \param[out] out the output array.
+       \param[in] dcw optional density compensation weights weighing the input samples according to the sampling density. 
+       If an 0x0-pointer is provided no density compensation is used.
+       \param mode enum specifying the mode of operation.
     */
     void compute( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
-		  cuNDArray<REAL> *dcw, NFFT_comp_mode mode );
+                  cuNDArray<REAL> *dcw, NFFT_comp_mode mode );
 
     /**
-      Execute an NFFT iteraion (from Cartesian image space to non-Cartesian Fourier space and back to Cartesian image space).
-      \param[in] in the input array.
-      \param[out] out the output array.
-      \param[in] dcw optional density compensation weights weighing the input samples according to the sampling density. 
-      If an 0x0-pointer is provided no density compensation is used.
-      \param[in] halfway_dims specifies the dimensions of the intermediate Fourier space (codomain).
+       Execute an NFFT iteraion (from Cartesian image space to non-Cartesian Fourier space and back to Cartesian image space).
+       \param[in] in the input array.
+       \param[out] out the output array.
+       \param[in] dcw optional density compensation weights weighing the input samples according to the sampling density. 
+       If an 0x0-pointer is provided no density compensation is used.
+       \param[in] halfway_dims specifies the dimensions of the intermediate Fourier space (codomain).
     */
     void mult_MH_M( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out,
-		    cuNDArray<REAL> *dcw, std::vector<size_t> halfway_dims );
+                    cuNDArray<REAL> *dcw, std::vector<size_t> halfway_dims );
   
   public: // Utilities
   
     /**
-      Enum specifying the direction of the NFFT standalone convolution
+       Enum specifying the direction of the NFFT standalone convolution
     */
     enum NFFT_conv_mode { 
       NFFT_CONV_C2NC, /**< convolution: Cartesian to non-Cartesian. */
@@ -159,7 +159,7 @@ namespace Gadgetron{
        \param[in] accumulate specifies whether the result is added to the output (accumulation) or if the output is overwritten.
     */
     void convolve( cuNDArray<complext<REAL> > *in, cuNDArray<complext<REAL> > *out, cuNDArray<REAL> *dcw,
-		   NFFT_conv_mode mode, bool accumulate = false );
+                   NFFT_conv_mode mode, bool accumulate = false );
     
     /**
        Enum specifying the direction of the NFFT standalone FFT.
@@ -188,22 +188,37 @@ namespace Gadgetron{
     /**
        Get the matrix size.
     */
-    typename uint64d<D>::Type get_matrix_size();
+    inline typename uint64d<D>::Type get_matrix_size(){
+      return matrix_size;
+    }
 
     /**
        Get the oversampled matrix size.
     */
-    typename uint64d<D>::Type get_matrix_size_os();
+    inline typename uint64d<D>::Type get_matrix_size_os(){
+      return matrix_size_os;
+    }
 
     /**
        Get the convolution kernel size
     */
-    REAL get_W();
+    inline REAL get_W(){
+      return W;
+    }
     
     /**
        Get the assigned device id
     */
-    unsigned int get_device();
+    inline unsigned int get_device(){
+      return device;
+    }
+    
+    /**
+       Query of the plan has been setup
+    */
+    inline bool is_setup(){
+      return initialized;
+    }
     
   public: 
 
@@ -219,7 +234,7 @@ namespace Gadgetron{
     // Validate setup / arguments
     enum NFFT_components { _NFFT_CONV_C2NC = 1, _NFFT_CONV_NC2C = 2, _NFFT_FFT = 4, _NFFT_DEAPODIZATION = 8 };
     void check_consistency( cuNDArray<complext<REAL> > *samples, cuNDArray<complext<REAL> > *image,
-			    cuNDArray<REAL> *dcw, unsigned char components );
+                            cuNDArray<REAL> *dcw, unsigned char components );
 
     // Shared barebones constructor
     void barebones();
