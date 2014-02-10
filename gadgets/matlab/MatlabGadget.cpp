@@ -10,7 +10,7 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
 
     ISMRMRD::AcquisitionHeader *acq = m1->getObjectPtr();
 
-    mwSize acq_hdr_dims[2] = {1, sizeof(ISMRMRD::AcquisitionHeader)};
+    mwSize acq_hdr_dims[2] = {sizeof(ISMRMRD::AcquisitionHeader), 1};
     mxArray *acq_hdr_bytes = mxCreateNumericArray(2, acq_hdr_dims, mxUINT8_CLASS, mxREAL);
     memcpy(mxGetData(acq_hdr_bytes), acq, sizeof(ISMRMRD::AcquisitionHeader));
 
@@ -179,7 +179,7 @@ int ImageMatlabGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
     ISMRMRD::ImageHeader *img = m1->getObjectPtr();
 
     // Create a mxArray of bytes for the ISMRMRD::ImageHeader
-    mwSize img_hdr_dims[2] = {1, sizeof(ISMRMRD::ImageHeader)};
+    mwSize img_hdr_dims[2] = {sizeof(ISMRMRD::ImageHeader), 1};
     mxArray *img_hdr_bytes = mxCreateNumericArray(2, img_hdr_dims, mxUINT8_CLASS, mxREAL);
     memcpy(mxGetData(img_hdr_bytes), img, sizeof(ISMRMRD::ImageHeader));
 

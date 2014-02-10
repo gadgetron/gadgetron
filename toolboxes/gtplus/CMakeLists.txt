@@ -116,7 +116,8 @@ if ( HAS_64_BIT )
 
     set( gtCloud_files config/gtCloud/myCloud_2DT.txt 
                     config/gtCloud/myCloud_3DT.txt 
-                    config/gtCloud/myCloud_2DT_DualLayer.txt )
+                    config/gtCloud/myCloud_2DT_DualLayer.txt
+                    config/gtCloud/myCloud_2DT_DualLayer_FirstLayer.txt )
 
     set( config_files config/GadgetronProgram_gtPlus_2DT_Cartesian.xml
                     config/GadgetronProgram_gtPlus_2DT_Cartesian_L1SPIRIT.xml

@@ -322,7 +322,7 @@ bool GtPlusReconJob2DTGadgetCloud::parseGTCloudNodeFile(const std::string& filen
     std::ifstream fs(nodeFileName.c_str(), std::ios::in);
     if (!fs.is_open()) 
     {
-        GADGET_WARN_MSG("Cannot open " << nodeFileName << "; use the local setting instead ... ");
+        GADGET_WARN_MSG("Cannot open GT CloudNodeFile; use the local setting instead ... ");
         return false;
     }
 
@@ -334,12 +334,13 @@ bool GtPlusReconJob2DTGadgetCloud::parseGTCloudNodeFile(const std::string& filen
     fs >> portControlNode;
 
     // number of GadgetLevel nodes
-    unsigned int gadgetNodeNum;
-    fs >> gadgetNodeNum;
+    unsigned int num;
+    fs >> num;
 
-    std::vector<std::string> gadgetNodes(gadgetNodeNum);
+    gtCloud.resize(num);
+
     unsigned int n;
-    for ( n=0; n<gadgetNodeNum; n++ )
+    for ( n=0; n<num; n++ )
     {
         std::string gadgetNode;
         fs >> gadgetNode;
@@ -353,81 +354,12 @@ bool GtPlusReconJob2DTGadgetCloud::parseGTCloudNodeFile(const std::string& filen
         unsigned int computingPowerIndex;
         fs >> computingPowerIndex;
 
-        gadgetNodes[n] = gadgetNode;
-        GADGET_CONDITION_MSG(verboseMode_, "Gadget Node " << n << " : " << gadgetNode << ":" << portGadgetNode << ":" << xmlGadgetNode << ":" << computingPowerIndex << " ... ");
-    }
+        gtCloud[n].get<0>() = gadgetNode;
+        gtCloud[n].get<1>() = portGadgetNode;
+        gtCloud[n].get<2>() = xmlGadgetNode;
+        gtCloud[n].get<3>() = computingPowerIndex;
 
-    unsigned int algoNodeNum;
-    fs >> algoNodeNum;
-
-    if ( algoNodeNum == 0 )
-    {
-        gtCloud.clear();
-        return true;
-    }
-
-    unsigned int algoNodeNumPerGadgetNode = algoNodeNum/gadgetNodeNum;
-    std::vector<std::string> algoNodes(algoNodeNum);
-    std::vector<std::string> portAlgoNodes(algoNodeNum);
-    std::vector<std::string> xmlAlgoNodes(algoNodeNum);
-    std::vector<unsigned int> powerIndexAlgoNodes(algoNodeNum);
-    for ( n=0; n<algoNodeNum; n++ )
-    {
-        std::string algoNode;
-        fs >> algoNode;
-
-        std::string portAlgoNode;
-        fs >> portAlgoNode;
-
-        std::string xmlAlgoNode;
-        fs >> xmlAlgoNode;
-
-        unsigned int computingPowerIndex;
-        fs >> computingPowerIndex;
-
-        algoNodes[n] = algoNode;
-        portAlgoNodes[n] = portAlgoNode;
-        xmlAlgoNodes[n] = xmlAlgoNode;
-        powerIndexAlgoNodes[n] = computingPowerIndex;
-    }
-
-    // find which gadget node current node is
-    std::string hostname = ACE_OS::getenv("HOSTNAME");
-    if ( hostname.empty() )
-    {
-        GADGET_WARN_MSG("Cannot find HOSTNAME; use the local setting instead ... ");
-        return false;
-    }
-
-    GADGET_MSG("Current gadget node is " << hostname << " ... ");
-
-    unsigned int nodeID;
-    for ( n=0; n<gadgetNodeNum; n++ )
-    {
-        if ( gadgetNodes[n] == hostname )
-        {
-            GADGET_MSG("Current gadget node is node " << n << " ... ");
-            break;
-        }
-    }
-
-    if ( n == gadgetNodeNum )
-    {
-        GADGET_WARN_MSG("Cannot find corresponding hostname in the node file; use the local setting instead ... ");
-        return false;
-    }
-
-    nodeID = n;
-
-    gtCloud.resize(algoNodeNumPerGadgetNode);
-    for ( n=0; n<algoNodeNumPerGadgetNode; n++ )
-    {
-        gtCloud[n].get<0>() = algoNodes[n+nodeID*algoNodeNumPerGadgetNode];
-        gtCloud[n].get<1>() = portAlgoNodes[n+nodeID*algoNodeNumPerGadgetNode];
-        gtCloud[n].get<2>() = xmlAlgoNodes[n+nodeID*algoNodeNumPerGadgetNode];
-        gtCloud[n].get<3>() = powerIndexAlgoNodes[n+nodeID*algoNodeNumPerGadgetNode];
-
-        GADGET_CONDITION_MSG(verboseMode_, "Algo cloud Node " << n << " : " << gt_cloud_[n]);
+        GADGET_CONDITION_MSG(verboseMode_, "Gadget Node " << n << " : " << gt_cloud_[n]);
     }
 
     fs.close();

@@ -251,7 +251,7 @@
 
         <property>
             <name>cloudNodeFile</name>
-            <value>myCloud_2DT_DualLayer.txt</value>
+            <value>myCloud_2DT_DualLayer_FirstLayer.txt</value>
         </property>
 
         <property>

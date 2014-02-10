@@ -45,13 +45,17 @@ public:
             // Prepare a buffer for collecting Matlab's output
             char matlab_buffer_[2049] = "\0";
             engOutputBuffer(engine_, matlab_buffer_, 2048);
-            engEvalString(engine_, "javaaddpath(fullfile(getenv('ISMRMRD_HOME'),'lib','ismrmrd.jar'));");
+
+	    // Add the necessary paths to the matlab environment
+	    // Java matlab command server
             engEvalString(engine_, "javaaddpath(fullfile(getenv('GADGETRON_HOME'), 'matlab'));");
+            // Gadgetron matlab scripts
             engEvalString(engine_, "addpath(fullfile(getenv('GADGETRON_HOME'), 'matlab'));");
+            // ISMRMRD matlab library
             engEvalString(engine_, "addpath(fullfile(getenv('ISMRMRD_HOME'), 'matlab'));");
 
-            // Load the Java JNI library
-            engEvalString(engine_, "org.ismrm.ismrmrd.JNILibLoader.load();");
+            // Call the ISMRMRD utility function for setting the Java path for the XML header
+            engEvalString(engine_, "ismrmrd.util.includejar;");
 
 	    GADGET_DEBUG2("%s", matlab_buffer_);
         }
@@ -109,7 +113,7 @@ protected:
 
         // Instantiate the Matlab gadget object from the user specified class
         // Call matlab gadget's init method with the XML Header
-        // and the user definined config method
+        // and the user defined config method
         cmd = "matgadget = " + *classname_ + "();";
         cmd += "matgadget.init(xmlstring); matgadget.config();";
         if (send_matlab_command(cmd) != GADGET_OK) {
