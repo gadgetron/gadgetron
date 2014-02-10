@@ -389,7 +389,11 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                 GADGET_MSG("SPIRIT - 2DT - size of largest job : " << jobN);
             }
         }
-        if ( jobN >= N ) splitJobs = false;
+
+        if ( !workOrder2DT->CloudComputing_ )
+        {
+            if ( jobN >= N ) splitJobs = false;
+        }
 
         if ( splitJobs )
         {
