@@ -2,7 +2,7 @@
 #define gpuCgSenseGadget_H
 #pragma once
 
-#include "gadgetron_gpusense_export.h"
+#include "gadgetron_gpupmri_export.h"
 #include "Gadget.h"
 #include "GenericReconJob.h"
 #include "GadgetMRIHeaders.h"
@@ -56,7 +56,7 @@ namespace Gadgetron{
     // Define conjugate gradient solver
     cuCgSolver<float_complext> cg_;
 
-    // Define non-Cartesian Sense Encofing operator
+    // Define non-Cartesian Sense Encoding operator
     boost::shared_ptr< cuNonCartesianSenseOperator<float,2> > E_;
 
     // Define preconditioner

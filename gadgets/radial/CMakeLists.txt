@@ -26,6 +26,7 @@ include_directories(${CUDA_INCLUDE_DIRS})
 add_library(gadgetron_gpuradial SHARED 
   gpuRadialPrepGadget.h gpuRadialPrepGadget.cpp 
   gpuRadialSensePrepGadget.h gpuRadialSensePrepGadget.cpp 
+  gpuRadialSpiritPrepGadget.h gpuRadialSpiritPrepGadget.cpp 
   gpuRetroGatedSensePrepGadget.h gpuRetroGatedSensePrepGadget.cpp
   ${ISMRMRD_XSD_SOURCE})
 

@@ -9,6 +9,7 @@ install(FILES
   linearOperator.h
   identityOperator.h
   diagonalOperator.h
+  diagonalSumOperator.h
   encodingOperatorContainer.h
   multiplicationOperatorContainer.h
   FFTOperator.h

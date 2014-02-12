@@ -1,5 +1,5 @@
 /** \file cuDiagonalOperator.h
-    \brief Diagonal matrix regularization operator, GPU based.
+    \brief Diagonal matrix operator, GPU instantiation.
 */
 
 #pragma once

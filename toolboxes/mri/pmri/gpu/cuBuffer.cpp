@@ -79,9 +79,9 @@ namespace Gadgetron{
       throw std::runtime_error("cuBuffer::add_frame_data: unexpected number of coils according to setup");
     }
 
-    if( dcw_.get() == 0x0 ){
-      throw std::runtime_error("cuBuffer::density compensation weights not set");
-    }
+    //if( dcw_.get() == 0x0 ){
+    //throw std::runtime_error("cuBuffer::density compensation weights not set");
+    //}
     
     // Make array containing the "current" buffer from the cyclic buffer
     //

@@ -15,6 +15,8 @@ include_directories(
 install(FILES 	
   hoIdentityOperator.h
   hoImageOperator.h
+  hoDiagonalOperator.h
+  hoDiagonalSumOperator.h
   hoFFTOperator.h
   hoPartialDerivativeOperator.h
   hoTvOperator.h

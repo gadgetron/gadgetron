@@ -34,6 +34,7 @@ install(TARGETS gpuoperators DESTINATION lib)
 install(FILES 	
   cuImageOperator.h
   cuDiagonalOperator.h
+  cuDiagonalSumOperator.h
   cuPartialDerivativeOperator.h
   cuConvolutionOperator.h
   cuLaplaceOperator.h

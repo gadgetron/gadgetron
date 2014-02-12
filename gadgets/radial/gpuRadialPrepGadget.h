@@ -82,7 +82,7 @@ namespace Gadgetron{
     virtual int process(GadgetContainerMessage< ISMRMRD::AcquisitionHeader > *m1,
 			GadgetContainerMessage< hoNDArray< std::complex<float> > > *m2);
 
-    virtual void reconfigure(unsigned int set, unsigned int slice);
+    virtual void reconfigure(unsigned int set, unsigned int slice, bool use_dcw = true);
 
     virtual boost::shared_ptr< hoNDArray<float_complext> > compute_csm( unsigned int buffer_idx ) = 0;
 

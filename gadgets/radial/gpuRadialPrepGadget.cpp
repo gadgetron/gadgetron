@@ -9,6 +9,7 @@
 #include "GPUTimer.h"
 #include "check_CUDA.h"
 #include "radial_utilities.h"
+#include "hoNDArray_elemwise.h"
 #include "hoNDArray_fileio.h"
 
 #include <algorithm>
@@ -502,7 +503,7 @@ namespace Gadgetron{
         //
 
         csm_host_[set*slices_+slice] = *compute_csm( set*slices_+slice );
-	
+	        
         // Compute regularization image
         //
         
@@ -511,8 +512,8 @@ namespace Gadgetron{
         /*
           static int counter = 0;
           char filename[256];
-          sprintf((char*)filename, "reg_%d.cplx", counter);
-          write_nd_array<float_complext>( reg_host_[set*slices_+slice].get(), filename );
+          sprintf((char*)filename, "_reg_%d.real", counter);
+          write_nd_array<float>( abs(&reg_host_[set*slices_+slice]).get(), filename );
           counter++; */
 
         buffer_update_needed_[set*slices_+slice] = false;
@@ -923,7 +924,7 @@ namespace Gadgetron{
     return copy;
   }
 
-  void gpuRadialPrepGadget::reconfigure(unsigned int set, unsigned int slice)
+  void gpuRadialPrepGadget::reconfigure(unsigned int set, unsigned int slice, bool use_dcw)
   {    
     GADGET_DEBUG2("\nReconfiguring:\n#profiles/frame:%d\n#frames/rotation: %d\n#rotations/reconstruction:%d\n", 
                   profiles_per_frame_[set*slices_+slice], frames_per_rotation_[set*slices_+slice], rotations_per_reconstruction_);
@@ -947,9 +948,11 @@ namespace Gadgetron{
                        kernel_width_, num_coils_[set*slices_+slice], 
                        buffer_length_in_rotations_, buffer_frames_per_rotation_[set*slices_+slice] );
     
-    boost::shared_ptr< cuNDArray<float> > device_weights_frame = calculate_density_compensation_for_frame(set, slice);
-    acc_buffer->set_dcw(device_weights_frame);
-    
+    if(use_dcw){
+      boost::shared_ptr< cuNDArray<float> > device_weights_frame = calculate_density_compensation_for_frame(set, slice);
+      acc_buffer->set_dcw(device_weights_frame);
+    }
+
     reconfigure_[set*slices_+slice] = false;
   }
 }

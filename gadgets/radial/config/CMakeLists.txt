@@ -13,6 +13,7 @@ if (ARMADILLO_FOUND)
     fixed_radial_mode0_gpu_ktsense.xml 
     fixed_radial_mode1_gpu_ktsense.xml 
     golden_radial_mode2_gpu_ktsense.xml 
+    spirit.xml
     jcmrR4.xml
     jcmrR8.xml
     jcmrR12.xml

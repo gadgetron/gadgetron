@@ -27,6 +27,8 @@ cuda_add_library(gpuparallelmri SHARED
     cuCartesianSenseOperator.h
     cuNonCartesianKtSenseOperator.h
     cuNonCartesianSenseOperator.h
+    cuSpiritOperator.h
+    cuSpiritCalibrationOperator.h
     cuBuffer.h
     cuSenseBuffer.h
     cuSenseBufferCg.h
@@ -45,6 +47,7 @@ cuda_add_library(gpuparallelmri SHARED
     cuBuffer.cpp
     cuSenseBuffer.cpp
     cuSenseBufferCg.cpp
+    cuSpiritBuffer.cpp
     htgrappa.cu
   )
 
@@ -70,7 +73,11 @@ install(FILES
 	cuCartesianSenseOperator.h
 	cuNonCartesianSenseOperator.h
 	cuNonCartesianKtSenseOperator.h
+  cuSpiritOperator.h
+  cuSpiritCalibrationOperator.h
   cuBuffer.h
 	cuSenseBuffer.h
+	cuSenseBufferCg.h
+	cuSpiritBuffer.h
 	gpupmri_export.h
 DESTINATION include)

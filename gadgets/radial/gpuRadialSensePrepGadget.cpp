@@ -68,15 +68,15 @@ namespace Gadgetron{
       this->acc_buffer_ = boost::shared_array< cuBuffer<float,2> >(new cuSenseBuffer<float,2>[size]);
   }
 
-  void gpuRadialSensePrepGadget::reconfigure(unsigned int set, unsigned int slice)
+  void gpuRadialSensePrepGadget::reconfigure(unsigned int set, unsigned int slice, bool use_dcw)
   {    
-    gpuRadialPrepGadget::reconfigure(set, slice);
+    gpuRadialPrepGadget::reconfigure(set, slice, use_dcw);
     
     cuBuffer<float,2> *acc_buffer = &this->acc_buffer_[set*this->slices_+slice];
     
     if( buffer_using_solver_ ){
-      ((cuSenseBufferCg<float,2>*) acc_buffer)->set_dcw_for_rhs(calculate_density_compensation_for_rhs(set, slice));
-      ((cuSenseBufferCg<float,2>*) acc_buffer)->preprocess(calculate_trajectory_for_rhs(0, set, slice).get());
+      if(use_dcw) static_cast<cuSenseBufferCg<float,2>*>( acc_buffer )->set_dcw_for_rhs(calculate_density_compensation_for_rhs(set, slice));
+      static_cast<cuSenseBufferCg<float,2>*>( acc_buffer )->preprocess(calculate_trajectory_for_rhs(0, set, slice).get());
     }    
   }
 }

@@ -28,7 +28,7 @@ namespace Gadgetron{
     virtual void mult_MH_M( ARRAY_TYPE_OPERATOR *in, ARRAY_TYPE_OPERATOR *out, bool accumulate = false )
     {    
       if( !encoding_operator_.get() ){
-	throw std::runtime_error("encodedImageOperator::mult_MH_M failed : encoding operator not set");
+        throw std::runtime_error("encodedImageOperator::mult_MH_M failed : encoding operator not set");
       }
     
       ARRAY_TYPE_OPERATOR tmp(in->get_dimensions());

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "gadgetron_gpusense_export.h"
+#include "gadgetron_gpupmri_export.h"
 #include "Gadget.h"
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"

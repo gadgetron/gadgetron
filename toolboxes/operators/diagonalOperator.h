@@ -1,4 +1,4 @@
-/** \file laplaceOperator.h
+/** \file diagonalOperator.h
     \brief Base class for the diagonal matrix operators.
 */
 
@@ -25,48 +25,48 @@ namespace Gadgetron {
 
     virtual boost::shared_ptr<ARRAY_TYPE> get_diagonal() { return diagonal_; }
   
-    // Apply diagonal operator (twice)
-    virtual void mult_MH_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate )
-    {    
-      if( accumulate ) {
-	ARRAY_TYPE tmp(*in);
-	tmp *= *diagonal_;
-	tmp *= *diagonal_conj_;
-	*out += tmp;
-      }
-      else{
-	*out = *in;
-	*out *= *diagonal_;
-	*out *= *diagonal_conj_;
-      }
-    }
-  
     virtual void mult_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
     {
       if( accumulate ) {
-	ARRAY_TYPE tmp(*in);
-	tmp *= *diagonal_;
-	*out += tmp;
+        ARRAY_TYPE tmp(*in);
+        tmp *= *diagonal_;
+        *out += tmp;
       }
       else{
-	*out = *in;
-	*out *= *diagonal_;
+        *out = *in;
+        *out *= *diagonal_;
       }
     }
   
     virtual void mult_MH( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate = false )
     {
       if( accumulate ) {
-	ARRAY_TYPE tmp(*in);
-	tmp *= *diagonal_conj_;
-	*out += tmp;
+        ARRAY_TYPE tmp(*in);
+        tmp *= *diagonal_conj_;
+        *out += tmp;
       }
       else{
-	*out = *in;
-	*out *= *diagonal_conj_;
+        *out = *in;
+        *out *= *diagonal_conj_;
       }
     }
     
+    // Apply diagonal operator (twice)
+    virtual void mult_MH_M( ARRAY_TYPE *in, ARRAY_TYPE *out, bool accumulate )
+    {    
+      if( accumulate ) {
+        ARRAY_TYPE tmp(*in);
+        tmp *= *diagonal_;
+        tmp *= *diagonal_conj_;
+        *out += tmp;
+      }
+      else{
+        *out = *in;
+        *out *= *diagonal_;
+        *out *= *diagonal_conj_;
+      }
+    }
+  
     virtual boost::shared_ptr< linearOperator<ARRAY_TYPE> > clone() {
       return linearOperator<ARRAY_TYPE>::clone(this);
     }
