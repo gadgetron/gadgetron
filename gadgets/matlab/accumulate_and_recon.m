@@ -68,8 +68,8 @@ classdef accumulate_and_recon < handle & BaseGadget
                 img_head.slice_dir = head.slice_dir;
                 img_head.patient_table_position = head.patient_table_position;
                 img_head.acquisition_time_stamp = head.acquisition_time_stamp;
-                img_head.image_index = uint16(g.image_num);
-                img_head.image_series_index = uint16(g.series_num);
+                img_head.image_index = g.image_num;
+                img_head.image_series_index = g.series_num;
 
 		img_data = squeeze(g.accumulation(:,:,:,slind,:));
                 img_data = fftshift(ifftn(fftshift(img_data)));
