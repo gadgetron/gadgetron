@@ -558,7 +558,6 @@ extract_csm_kernel( complext<REAL> *corrm, complext<REAL> *csm, unsigned int num
 
 		complext<REAL> *data_out = (complext<REAL>*) shared_mem;
 		complext<REAL> *tmp_v = &(((complext<REAL>*) shared_mem)[num_batches*blockDim.x]);
-		REAL tmp;
 		const unsigned int iterations = 20;
 
 		for( unsigned int c=0; c<num_batches; c++){
@@ -577,7 +576,7 @@ extract_csm_kernel( complext<REAL> *corrm, complext<REAL> *csm, unsigned int num
 				}
 			}
 
-			tmp = REAL(0);
+			REAL tmp = REAL(0);
 
 			for (unsigned int c=0; c<num_batches; c++){
 				tmp += norm(tmp_v[c*blockDim.x+i]);
@@ -592,7 +591,6 @@ extract_csm_kernel( complext<REAL> *corrm, complext<REAL> *csm, unsigned int num
 			}
 		}
 
-		printf("Tmp: %f \n",tmp);
 
 		for (unsigned int c=0; c<num_batches; c++){
 			csm[c*num_elements+idx] = data_out[c*blockDim.x+i];
@@ -613,7 +611,6 @@ extract_csm_kernel( complext<REAL> *corrm, complext<REAL> *csm, unsigned int num
 		//  b_k+1 = A*b_k / ||A*b_k||
 
 		const unsigned int iterations = 20;
-		REAL tmp=0;
 		for( unsigned int c=0; c<num_batches; c++){
 			csm[c*num_elements+idx] = complext<REAL>(1);
 		}
@@ -631,7 +628,7 @@ extract_csm_kernel( complext<REAL> *corrm, complext<REAL> *csm, unsigned int num
 				}
 			}
 
-			tmp = REAL(0);
+			REAL tmp = REAL(0);
 
 			for (unsigned int c=0; c<num_batches; c++){
 				tmp += norm(tmp_v[c*num_elements+idx]);
@@ -645,7 +642,6 @@ extract_csm_kernel( complext<REAL> *corrm, complext<REAL> *csm, unsigned int num
 				csm[c*num_elements+idx] = res;
 			}
 		}
-		printf("Tmp: %f \n",tmp);
 	}
 }
 
