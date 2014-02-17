@@ -37,7 +37,7 @@ protected:
 		sbRegularizationOperator(boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op) { reg_op=op; }
 		virtual ~sbRegularizationOperator(){}
 
-		virtual void initialize(REAL normalization_factor = REAL(1))
+		virtual void initialize(boost::shared_ptr< std::vector<size_t> > image_dims, REAL normalization_factor = REAL(1))
 		{
 			d_k = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(reg_op->get_codomain_dimensions()));
 			b_k = boost::shared_ptr<ARRAY_TYPE_ELEMENT>(new ARRAY_TYPE_ELEMENT(reg_op->get_codomain_dimensions()));
@@ -161,7 +161,7 @@ protected:
 			}
 		}
 
-		virtual void initialize(REAL normalization_factor = REAL(1))
+		virtual void initialize(boost::shared_ptr< std::vector<size_t> > image_dims, REAL normalization_factor = REAL(1))
 		{
 			codom_dims = reg_ops.front()->get_codomain_dimensions();
 			d_ks = std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> >(reg_ops.size());
@@ -261,7 +261,7 @@ protected:
 			}
 		}
 
-		virtual void initialize(REAL normalization_factor = REAL(1))
+		virtual void initialize(boost::shared_ptr< std::vector<size_t> > image_dims, REAL normalization_factor = REAL(1))
 		{
 			codom_dims = reg_ops.front()->get_codomain_dimensions();
 			d_ks = std::vector< boost::shared_ptr<ARRAY_TYPE_ELEMENT> >(reg_ops.size());
@@ -369,9 +369,9 @@ protected:
 		virtual void initialize(boost::shared_ptr< std::vector<size_t> > image_dims,
 				REAL normalization_factor = REAL(1))
 		{
-			sbRegularizationOperator::initialize( normalization_factor);
 			this->reg_op->set_domain_dimensions(image_dims.get());
 			this->reg_op->set_codomain_dimensions(image_dims.get());
+			sbRegularizationOperator::initialize( image_dims, normalization_factor);
 		}
 
 		virtual void update_encoding_space(ARRAY_TYPE_ELEMENT* encoding_space){
@@ -626,6 +626,10 @@ protected:
 
 			boost::shared_ptr< linearOperator<ARRAY_TYPE_ELEMENT> > op = regularization_operators_[i]->reg_op;
 			boost::shared_ptr< std::vector<size_t> > op_dims = op->get_domain_dimensions();
+			boost::shared_ptr< std::vector<size_t> > op_codims = op->get_codomain_dimensions();
+			if (!op_codims.get()){
+				throw std::runtime_error("Error: sbSolver::validate_regularization_operators : operator codomain dimension not set");
+			}
 
 			if( !op.get() ){
 				throw std::runtime_error( "Error: sbSolver::validate_regularization_operators : invalid operator provided" );
@@ -671,7 +675,7 @@ protected:
 		//
 
 		for (int i=0; i < regularization_operators_.size(); i++){
-			regularization_operators_[i]->initialize(normalization_factor);
+			regularization_operators_[i]->initialize(image_dims, normalization_factor);
 			enc_op_container_->add_operator( regularization_operators_[i]->reg_op );
 		}
 	}
