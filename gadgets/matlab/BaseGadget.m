@@ -16,7 +16,7 @@ classdef BaseGadget < handle
         % Init function
         function init(g, xmlstr)
             % Convert the xml config string to an IsmrmrdHeader object
-            g.xml = org.ismrm.ismrmrd.xmlhdr.XMLString.StringToIsmrmrdHeader(xmlstr);
+            g.xml = org.ismrm.ismrmrd.XMLString.StringToIsmrmrdHeader(xmlstr);
             g.emptyQ();
         end
 
