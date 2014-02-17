@@ -96,11 +96,11 @@ estimate_b1_map( cuNDArray<complext<REAL> > *data_in, int target_coils)
 	boost::shared_ptr<cuNDArray<complext<REAL> > > corrm_smooth(_corrm_smooth);
 
 	smooth_correlation_matrices<REAL,D>( corrm.get(), corrm_smooth.get() );
-	//corrm.reset();
+	corrm.reset();
 
 	// Get the dominant eigenvector for each correlation matrix.
 boost::shared_ptr<cuNDArray<complext<REAL> > > csm = extract_csm<REAL>( corrm_smooth.get(), ncoils, pixels_per_coil );
-	//boost::shared_ptr<cuNDArray<complext<REAL> > > csm = extract_csm<REAL>( corrm.get(), ncoils, pixels_per_coil );
+
 	corrm_smooth.reset();
 
 	// Set phase according to reference (coil 0)
