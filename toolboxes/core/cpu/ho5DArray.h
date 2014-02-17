@@ -12,7 +12,7 @@ public:
 
     ho5DArray();
     ho5DArray(size_t sx, size_t sy, size_t sz, size_t ss, size_t sp);
-    ho5DArray(std::vector<size_t> *dimensions);
+    explicit ho5DArray(std::vector<size_t> *dimensions);
     ho5DArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
     ho5DArray(size_t sx, size_t sy, size_t sz, size_t ss, size_t sp, T* data, bool delete_data_on_destruct = false);
     ho5DArray(boost::shared_ptr< std::vector<size_t> > dimensions);

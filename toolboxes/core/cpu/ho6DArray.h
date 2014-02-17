@@ -12,7 +12,7 @@ public:
 
     ho6DArray();
     ho6DArray(size_t sx, size_t sy, size_t sz, size_t ss, size_t sp, size_t sr);
-    ho6DArray(std::vector<size_t> *dimensions);
+    explicit ho6DArray(std::vector<size_t> *dimensions);
     ho6DArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
     ho6DArray(size_t sx, size_t sy, size_t sz, size_t ss, size_t sp, size_t sr, T* data, bool delete_data_on_destruct = false);
     ho6DArray(boost::shared_ptr< std::vector<size_t> > dimensions);

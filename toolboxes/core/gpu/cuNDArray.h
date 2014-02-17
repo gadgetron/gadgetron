@@ -55,7 +55,7 @@ namespace Gadgetron{
       }
     }
 
-    cuNDArray(const cuNDArray<T> *a) : NDArray<T>::NDArray() 
+    explicit cuNDArray(const cuNDArray<T> *a) : NDArray<T>::NDArray()
     {
       cudaGetDevice(&this->device_);
       this->data_ = 0;
@@ -78,7 +78,7 @@ namespace Gadgetron{
       }
     }
 
-    cuNDArray(const hoNDArray<T> &a) : NDArray<T>::NDArray() 
+    explicit cuNDArray(const hoNDArray<T> &a) : NDArray<T>::NDArray()
     {
       cudaGetDevice(&this->device_);
       this->dimensions_ = a.get_dimensions();
@@ -90,7 +90,7 @@ namespace Gadgetron{
       }
     }
 
-    cuNDArray(hoNDArray<T> *a) : NDArray<T>::NDArray() 
+    explicit cuNDArray(hoNDArray<T> *a) : NDArray<T>::NDArray()
     {
       cudaGetDevice(&this->device_);
       this->dimensions_ = a->get_dimensions();
@@ -102,7 +102,7 @@ namespace Gadgetron{
       }
     }
 
-    cuNDArray(std::vector<size_t> *dimensions) : NDArray<T>::NDArray() 
+    explicit cuNDArray(std::vector<size_t> *dimensions) : NDArray<T>::NDArray()
     {
       cudaGetDevice(&this->device_);
       create(dimensions);
@@ -120,7 +120,7 @@ namespace Gadgetron{
       create(dimensions,data,delete_data_on_destruct);
     }
 
-    cuNDArray(std::vector<size_t> &dimensions) : NDArray<T>::NDArray() 
+    explicit cuNDArray(std::vector<size_t> &dimensions) : NDArray<T>::NDArray()
     {
       cudaGetDevice(&this->device_);
       create(dimensions);
@@ -138,7 +138,7 @@ namespace Gadgetron{
       create(dimensions,data,delete_data_on_destruct);
     }
 
-    cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions) : NDArray<T>::NDArray()
+    explicit cuNDArray(boost::shared_ptr<std::vector<size_t> > dimensions) : NDArray<T>::NDArray()
     {
       cudaGetDevice(&this->device_);
       create(dimensions.get());
@@ -156,7 +156,7 @@ namespace Gadgetron{
       create(dimensions.get(),data,delete_data_on_destruct);
     }
 
-    cuNDArray(size_t len)
+    explicit cuNDArray(size_t len)
     {
       std::vector<size_t> dim(1);
       dim[0] = len;

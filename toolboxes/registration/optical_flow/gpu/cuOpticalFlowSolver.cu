@@ -11,10 +11,10 @@ namespace Gadgetron{
   //
 
   template<class REAL, unsigned int D> __global__ 
-  void spatial_grad_kernel(REAL*,REAL*,REAL*,typename uint64d<D>::Type,unsigned int,unsigned int);
+  void spatial_grad_kernel(const REAL*, const REAL*,REAL*,typename uint64d<D>::Type,unsigned int,unsigned int);
 
   template<class REAL, unsigned int D> __global__ 
-  void temporal_grad_kernel(REAL*,REAL*,REAL*,typename uint64d<D>::Type,unsigned int,unsigned int);
+  void temporal_grad_kernel(const REAL*, const REAL*,REAL*,typename uint64d<D>::Type,unsigned int,unsigned int);
 
   // There is some issue about Cuda defining min/max incompatibly...
   //
@@ -150,7 +150,7 @@ namespace Gadgetron{
   //
 
   template<class REAL, unsigned int D> __global__ void
-  spatial_grad_kernel( REAL *fixed_image, REAL *moving_image, REAL *gradient_image, 
+  spatial_grad_kernel( const REAL * __restrict__ fixed_image, const REAL * __restrict__ moving_image, REAL * __restrict__ gradient_image,
                        typename uint64d<D>::Type matrix_size, 
                        unsigned int num_batches_fixed, unsigned int num_batches_moving )
   {
@@ -241,7 +241,7 @@ namespace Gadgetron{
   //
 
   template<class REAL, unsigned int D> __global__ void
-  temporal_grad_kernel( REAL *fixed_image, REAL *moving_image, REAL *gradient_image, 
+  temporal_grad_kernel( const REAL * __restrict__ fixed_image, const REAL * __restrict__ moving_image, REAL * __restrict__ gradient_image,
                         typename uint64d<D>::Type matrix_size, 
                         unsigned int num_batches_fixed, unsigned int num_batches_moving )
   { 

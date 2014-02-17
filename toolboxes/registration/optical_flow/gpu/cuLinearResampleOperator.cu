@@ -41,7 +41,7 @@ namespace Gadgetron{
   T interpolate( unsigned int batch_no, 
                  typename reald<typename realType<T>::Type,D>::Type co, 
                  typename uintd<D>::Type matrix_size, 
-                 T *image )
+                 const T * __restrict__ image )
   {
     typedef typename realType<T>::Type REAL;
 
@@ -117,8 +117,8 @@ namespace Gadgetron{
   }
 
   template<class REAL, unsigned int D> __global__ void
-  write_sort_arrays_kernel( typename uintd<D>::Type matrix_size, unsigned int extended_size, REAL *displacements,
-                            unsigned int *sort_keys, unsigned int *sort_values_indices, REAL *sort_values_weights )
+  write_sort_arrays_kernel( typename uintd<D>::Type matrix_size, unsigned int extended_size, const REAL * __restrict__ displacements,
+                            unsigned int * __restrict__ sort_keys,  unsigned int * __restrict__ sort_values_indices, REAL * __restrict__ sort_values_weights )
   {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
     const unsigned int num_elements_mat = prod(matrix_size);

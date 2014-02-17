@@ -8,7 +8,7 @@ namespace Gadgetron{
   //
 
   template<class REAL, unsigned int D> __global__ 
-  void CorneliusKanade_kernel(REAL*,REAL*,REAL*,REAL*,typename uintd<D>::Type,unsigned int,REAL,REAL,REAL,unsigned int*);
+  void CorneliusKanade_kernel(const REAL*,const REAL*,const REAL*,REAL*,typename uintd<D>::Type,unsigned int,REAL,REAL,REAL,unsigned int*);
 
   //
   // Reference to shared memory
@@ -176,10 +176,10 @@ namespace Gadgetron{
   //
 
   template<class REAL, unsigned int D> __global__ void
-  CorneliusKanade_kernel( REAL *gradient_image, REAL *stencil_image,
-                          REAL *in_disp, REAL *out_disp, 
+  CorneliusKanade_kernel( const REAL * __restrict__ gradient_image, const REAL * __restrict__ stencil_image,
+                          const REAL * __restrict__ in_disp, REAL * __restrict__ out_disp,
                           typename uintd<D>::Type matrix_size, unsigned int num_batches,
-                          REAL alpha, REAL beta, REAL disp_thresh_sqr, unsigned int *continue_signal )
+                          REAL alpha, REAL beta, REAL disp_thresh_sqr, unsigned int * __restrict__ continue_signal )
   {  
     
     // The overall flow dimension corresponding to this thread

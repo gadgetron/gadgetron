@@ -107,7 +107,7 @@ namespace Gadgetron{
 
     // assemble_D
     template<class T> __global__ void
-    assemble_D_kernel( T* pData, T* pD, int RO, int E1, int N, int CHA, int kss, int halfKs )
+    assemble_D_kernel( const T* __restrict__ pData, T* __restrict__ pD, int RO, int E1, int N, int CHA, int kss, int halfKs )
     {
         typedef typename realType<T>::Type REAL;
 
@@ -227,7 +227,7 @@ namespace Gadgetron{
 
     // compute DH_D
     template<class T> __global__ void
-    computeDH_D_kernel( T* pD, T* pDH_D, int RO, int E1, int N, int CHA, int kss )
+    computeDH_D_kernel( const T* __restrict__ pD, T* __restrict__ pDH_D, int RO, int E1, int N, int CHA, int kss )
     {
         typedef typename realType<T>::Type REAL;
 
@@ -258,7 +258,7 @@ namespace Gadgetron{
 
     // use the shared memory
     template<class T> __global__ void
-    computeDH_D_kernel3( T* pD, T* pDH_D, int RO, int E1, int N, int CHA, int kss, int ks, int num )
+    computeDH_D_kernel3( const T*  __restrict__ pD, T* __restrict__ pDH_D, int RO, int E1, int N, int CHA, int kss, int ks, int num )
     {
         typedef typename realType<T>::Type REAL;
 
@@ -374,7 +374,7 @@ namespace Gadgetron{
 
     // compute V1
     template<class T> __global__ void
-    computeV1_kernel( T* pD, T* pV1, int RO, int E1, int N, int CHA, int kss )
+    computeV1_kernel( const T* __restrict__ pD, T* __restrict__ pV1, int RO, int E1, int N, int CHA, int kss )
     {
         typedef typename realType<T>::Type REAL;
 
@@ -398,7 +398,7 @@ namespace Gadgetron{
     }
 
     template<class T> __global__ void
-    power_method_kernel( T* pDH_D, T* pV1, T* pV, unsigned int RO, unsigned int E1, unsigned int N, unsigned int CHA, unsigned int kss, unsigned int power )
+    power_method_kernel( const T* __restrict__ pDH_D, T* __restrict__ pV1,  T* __restrict__ pV, unsigned int RO, unsigned int E1, unsigned int N, unsigned int CHA, unsigned int kss, unsigned int power )
     {
         typedef typename realType<T>::Type REAL;
 
@@ -507,7 +507,7 @@ namespace Gadgetron{
 
     // compute U1
     template<class T> __global__ void
-    computeU1_kernel( T* pD, T* pV1, T* pU1, int RO, int E1, int N, int CHA, int kss )
+    computeU1_kernel(const  T* __restrict__ pD, const T* __restrict__ pV1, T* __restrict__ pU1, int RO, int E1, int N, int CHA, int kss )
     {
         typedef typename realType<T>::Type REAL;
 
@@ -581,7 +581,7 @@ namespace Gadgetron{
 
     // extract the csm
     template<class T> __global__ void
-    extract_csm_kernel( T* pV1, T* pU1, T* pCSM, unsigned int RO, unsigned int E1, unsigned int N, unsigned int CHA, unsigned int kss )
+    extract_csm_kernel( const T* __restrict__ pV1, const T* __restrict__ pU1, T* __restrict__ pCSM, unsigned int RO, unsigned int E1, unsigned int N, unsigned int CHA, unsigned int kss )
     {
         typedef typename realType<T>::Type REAL;
 

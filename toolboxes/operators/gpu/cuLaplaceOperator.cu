@@ -22,7 +22,7 @@ namespace Gadgetron{
 
   template<class T, unsigned int D, unsigned int dim> class inner_laplace_functor{
   public:
-		static __device__ __inline__ void apply(T& val,const T* in, const typename intd<D>::Type dims,const typename intd<D>::Type co, typename intd<D>::Type& stride){
+		static __device__ __inline__ void apply(T& val,const T* __restrict__ in, const typename intd<D>::Type dims,const typename intd<D>::Type co, typename intd<D>::Type& stride){
 			for (int d = -1; d < 2; d++)
 				stride[dim]=d;
 				inner_laplace_functor<T,D,dim-1>::apply(val,in,dims,co,stride);
@@ -30,14 +30,14 @@ namespace Gadgetron{
   };
   template<class T, unsigned int D> class inner_laplace_functor<T,D,0>{
   public:
-  	static __device__ __inline__ void apply(T& val,const T* in, const typename intd<D>::Type dims,const typename intd<D>::Type co, typename intd<D>::Type& stride){
+  	static __device__ __inline__ void apply(T& val,const T* __restrict__ in, const typename intd<D>::Type dims,const typename intd<D>::Type co, typename intd<D>::Type& stride){
   		typename intd<D>::Type coN = (co+dims+stride)%dims;
   		val -= in[co_to_idx<D>(coN,dims)];
   	}
   };
 
   template<class REAL, class T, unsigned int D> __global__ void
-  laplace_kernel( typename intd<D>::Type dims, T *in, T *out )
+  laplace_kernel( typename intd<D>::Type dims, const T * __restrict__ in, T * __restrict__ out )
   {  
     const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
     if( idx < prod(dims) ){

@@ -21,7 +21,7 @@
 //
 
 template<class REAL> __inline__ __device__ void 
-NFFT_output( unsigned int number_of_samples, unsigned int number_of_batches, complext<REAL> *samples,
+NFFT_output( unsigned int number_of_samples, unsigned int number_of_batches, complext<REAL> * __restrict__ samples,
 	     unsigned int double_warp_size_power, unsigned int globalThreadId, unsigned int sharedMemFirstSampleIdx, bool accumulate )
 {
   
@@ -49,7 +49,7 @@ resolve_wrap( vector_td<int,D> &grid_position, vector_td<unsigned int,D> &matrix
 
 template<class REAL, unsigned int D> __inline__ __device__ void
 NFFT_iterate_body( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Type beta, REAL W, 
-		   vector_td<unsigned int, D> matrix_size_os, unsigned int number_of_batches, complext<REAL> *image,
+		   vector_td<unsigned int, D> matrix_size_os, unsigned int number_of_batches, complext<REAL> * __restrict__ image,
 		   unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vector_td<REAL,D> matrix_size_os_real, unsigned int sharedMemFirstSampleIdx,
 		   vector_td<REAL,D> sample_position, vector_td<int,D> grid_position )
 {
@@ -93,7 +93,7 @@ NFFT_iterate_body( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::T
 
 template<class REAL> __inline__ __device__ void
 NFFT_iterate( typename reald<REAL,1>::Type alpha, typename reald<REAL,1>::Type beta, REAL W, 
-	      vector_td<unsigned int,1> matrix_size_os, unsigned int number_of_batches, complext<REAL> *image,
+	      vector_td<unsigned int,1> matrix_size_os, unsigned int number_of_batches, complext<REAL> * __restrict__ image,
 	      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vector_td<REAL,1> matrix_size_os_real, unsigned int sharedMemFirstSampleIdx,
 	      vector_td<REAL,1> sample_position, vector_td<int,1> lower_limit, vector_td<int,1> upper_limit )
 {
@@ -113,7 +113,7 @@ NFFT_iterate( typename reald<REAL,1>::Type alpha, typename reald<REAL,1>::Type b
 
 template<class REAL> __inline__ __device__ void
 NFFT_iterate( typename reald<REAL,2>::Type alpha, typename reald<REAL,2>::Type beta, REAL W, 
-	      vector_td<unsigned int,2> matrix_size_os, unsigned int number_of_batches, complext<REAL> *image,
+	      vector_td<unsigned int,2> matrix_size_os, unsigned int number_of_batches, complext<REAL> * __restrict__ image,
 	      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vector_td<REAL,2> matrix_size_os_real, unsigned int sharedMemFirstSampleIdx,
 	      vector_td<REAL,2> sample_position, vector_td<int,2> lower_limit, vector_td<int,2> upper_limit )
 {
@@ -135,7 +135,7 @@ NFFT_iterate( typename reald<REAL,2>::Type alpha, typename reald<REAL,2>::Type b
 
 template<class REAL> __inline__ __device__ void
 NFFT_iterate( typename reald<REAL,3>::Type alpha, typename reald<REAL,3>::Type beta, REAL W, 
-	      vector_td<unsigned int,3> matrix_size_os, unsigned int number_of_batches, complext<REAL> *image,
+	      vector_td<unsigned int,3> matrix_size_os, unsigned int number_of_batches, complext<REAL> * __restrict__ image,
 	      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vector_td<REAL,3> matrix_size_os_real, unsigned int sharedMemFirstSampleIdx,
 	      vector_td<REAL,3> sample_position, vector_td<int,3> lower_limit, vector_td<int,3> upper_limit )
 {
@@ -159,7 +159,7 @@ NFFT_iterate( typename reald<REAL,3>::Type alpha, typename reald<REAL,3>::Type b
 
 template<class REAL> __inline__ __device__ void
 NFFT_iterate( typename reald<REAL,4>::Type alpha, typename reald<REAL,4>::Type beta, REAL W, 
-	      vector_td<unsigned int,4> matrix_size_os, unsigned int number_of_batches, complext<REAL> *image,
+	      vector_td<unsigned int,4> matrix_size_os, unsigned int number_of_batches, complext<REAL> * __restrict__ image,
 	      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vector_td<REAL,4> matrix_size_os_real, unsigned int sharedMemFirstSampleIdx,
 	      vector_td<REAL,4> sample_position, vector_td<int,4> lower_limit, vector_td<int,4> upper_limit )
 {
@@ -182,7 +182,7 @@ NFFT_iterate( typename reald<REAL,4>::Type alpha, typename reald<REAL,4>::Type b
 template<class REAL, unsigned int D> __inline__ __device__ void
 NFFT_convolve( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Type beta, REAL W, 
 	       vector_td<unsigned int, D> matrix_size_os, vector_td<unsigned int, D> matrix_size_wrap, 
-	       unsigned int number_of_samples, unsigned int number_of_batches, vector_td<REAL,D> *traj_positions, complext<REAL> *image,
+	       unsigned int number_of_samples, unsigned int number_of_batches, const vector_td<REAL,D> * __restrict__ traj_positions, complext<REAL> * __restrict__ image,
 	       unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, vector_td<REAL,D> matrix_size_os_real,
 	       unsigned int globalThreadId, unsigned int sharedMemFirstSampleIdx )
 {
@@ -212,7 +212,7 @@ template<class REAL, unsigned int D> __global__ void
 NFFT_convolve_kernel( typename reald<REAL,D>::Type alpha, typename reald<REAL,D>::Type beta, REAL W, 
 		      vector_td<unsigned int, D> matrix_size_os, vector_td<unsigned int, D> matrix_size_wrap,
 		      unsigned int number_of_samples, unsigned int number_of_batches, 
-		      vector_td<REAL,D> *traj_positions, complext<REAL> *image, complext<REAL> *samples,
+		      const vector_td<REAL,D> * __restrict__ traj_positions, complext<REAL> *image,  complext<REAL> * __restrict__ samples,
 		      unsigned int double_warp_size_power, REAL half_W, REAL one_over_W, bool accumulate, vector_td<REAL,D> matrix_size_os_real )
 {
 

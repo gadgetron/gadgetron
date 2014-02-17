@@ -7,7 +7,7 @@ namespace Gadgetron {
 
   // Mirror, but keep the origin unchanged
   template<class T, unsigned int D> __global__ void
-  origin_mirror_kernel( vector_td<unsigned int,D> matrix_size, vector_td<unsigned int,D> origin, T *in, T *out, bool zero_fill )
+  origin_mirror_kernel( vector_td<unsigned int,D> matrix_size, vector_td<unsigned int,D> origin, const T * __restrict__ in, T * __restrict__ out, bool zero_fill )
   {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
     

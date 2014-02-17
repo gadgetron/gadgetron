@@ -12,7 +12,7 @@ public:
 
     ho4DArray();
     ho4DArray(size_t sx, size_t sy, size_t sz, size_t ss);
-    ho4DArray(std::vector<size_t> *dimensions);
+    explicit ho4DArray(std::vector<size_t> *dimensions);
     ho4DArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
     ho4DArray(size_t sx, size_t sy, size_t sz, size_t ss, T* data, bool delete_data_on_destruct = false);
     ho4DArray(boost::shared_ptr< std::vector<size_t> > dimensions);
