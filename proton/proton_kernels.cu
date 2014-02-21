@@ -53,8 +53,8 @@ template< class T, unsigned int D > __inline__ __host__ __device__ vector_td<T,D
 
 
 
-template <class REAL> __global__ void Gadgetron::forward_kernel(REAL* image, REAL* projections,
-		vector_td<REAL,3> * splines,  const vector_td<REAL,3> dims,
+template <class REAL> __global__ void Gadgetron::forward_kernel(const REAL*  __restrict__ image, REAL* __restrict__ projections,
+		const vector_td<REAL,3> * __restrict__ splines,  const vector_td<REAL,3> dims,
 		const typename intd<3>::Type ndims, const int proj_dim, const int offset){
 
 	const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x+offset;
@@ -114,8 +114,8 @@ template <class REAL> __global__ void Gadgetron::forward_kernel(REAL* image, REA
 
 }
 
-template <class REAL> __global__ void Gadgetron::backwards_kernel(REAL* projections, REAL* image,
-		vector_td<REAL,3> * splines,  const vector_td<REAL,3> dims,
+template <class REAL> __global__ void Gadgetron::backwards_kernel(const REAL* __restrict__ projections, REAL* __restrict__ image,
+		const vector_td<REAL,3> * __restrict__ splines,  const vector_td<REAL,3> dims,
 		const typename intd<3>::Type ndims, const int proj_dim, const int offset){
 
 	const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x+offset;
@@ -421,11 +421,11 @@ template <class REAL> __global__ void Gadgetron::length_correction_kernel(vector
 }
 
 
-template __global__ void Gadgetron::forward_kernel<float>(float* , float* ,vector_td<float,3> * ,  const vector_td<float,3> ,
+template __global__ void Gadgetron::forward_kernel<float>(const float * __restrict__, float* ,const vector_td<float,3>  * __restrict__ ,  const vector_td<float,3> ,
 		const typename intd<3>::Type, const int , const int );
 
-template __global__ void Gadgetron::backwards_kernel<float>(float* projections, float* image,
-		vector_td<float,3> * splines,  const vector_td<float,3> dims,
+template __global__ void Gadgetron::backwards_kernel<float>(const float* __restrict__ projections, float* __restrict__ image,
+		const vector_td<float,3> * __restrict__ splines,  const vector_td<float,3> dims,
 		const typename intd<3>::Type ndims, const int proj_dim, const int offset);
 
 template __global__ void Gadgetron::crop_splines_kernel<float>(vector_td<float,3> * splines, float* projections, const  vector_td<float,3>  dims, const  vector_td<float,3>  origin,const int proj_dim,float background,int offset);

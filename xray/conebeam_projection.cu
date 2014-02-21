@@ -138,7 +138,7 @@ namespace Gadgetron
 
   __global__ void
   redundancy_correct_kernel( float *projections,
-                             float *angles,
+                             const float * __restrict__ angles,
                              uintd3 dims, // Dimensions of the projections array
                              float delta  // The half-fan angle
                              )
@@ -202,7 +202,7 @@ namespace Gadgetron
    */
   __global__ void
   offset_correct_kernel( float *projections,
-                         floatd2 *offsets,
+                         const floatd2 * __restrict__ offsets,
                          uintd3 dims, // Dimensions of the projections array
                          floatd2 phys_dims, // Physical dimensions in mm
                          float SAD, // Source origin distance
@@ -269,8 +269,8 @@ namespace Gadgetron
   //
 
   __global__ void
-  conebeam_forwards_projection_kernel( float *projections,
-                                       float *angles,
+  conebeam_forwards_projection_kernel( float * __restrict__ projections,
+                                       float * __restrict__ angles,
                                        floatd2 *offsets,
                                        floatd3 is_dims_in_pixels,
                                        floatd3 is_dims_in_mm,
@@ -579,8 +579,8 @@ namespace Gadgetron
   }
 
   template <bool FBP> __global__ void
-  conebeam_backwards_projection_kernel( float *image,
-                                        float *angles,
+  conebeam_backwards_projection_kernel( float * __restrict__ image,
+                                        const float * __restrict__ angles,
                                         floatd2 *offsets,
                                         intd3 is_dims_in_pixels_int,
                                         floatd3 is_dims_in_mm,

@@ -19,6 +19,8 @@ namespace Gadgetron{
 
 template <class ARRAY_TYPE> class ncgSolver : public gpSolver<ARRAY_TYPE>
 {
+
+
 protected:
 	typedef typename ARRAY_TYPE::element_type ELEMENT_TYPE;
 	typedef typename realType<ELEMENT_TYPE>::Type REAL;
@@ -173,20 +175,25 @@ public:
 			if (this->operators.size() == 0) alpha0 = -real(dot(&encoding_space,&encoding_space2)+calc_dot(regEnc,regEnc2))/real(dot(&encoding_space2,&encoding_space2)+calc_dot(regEnc2,regEnc2));
 			//REAL alpha0 = REAL(1);
 			REAL alpha;
-			REAL alpha_old;
 			REAL old_norm = functionValue(&encoding_space,regEnc,x);
 
 			REAL gd = real(dot(g,&d));
 
 			*g_old = *g;
 
-			bool wolfe=false;
 
-			int k = 0;
 
-			alpha_old = 0;
-			ARRAY_TYPE x2(*x);
 
+			{
+				FunctionEstimator f(&encoding_space,&encoding_space2,&regEnc,&regEnc2,x,&d,this);
+				if (this->operators.size() != 0)
+					alpha=gold(f,0,alpha0);
+				else {
+					alpha = alpha0;
+					f(alpha);
+				}
+			}
+			/*
 			while (not wolfe){
 
 				alpha=alpha0*std::pow(rho,k);
@@ -210,10 +217,35 @@ public:
 				}
 				alpha_old = alpha;
 			}
+			*/
 
 
+			if (non_negativity_constraint_){
 
+				axpy(-alpha,&encoding_space2,&encoding_space);
+				reg_axpy(-alpha,regEnc2,regEnc);
 
+				ARRAY_TYPE x2 = *x;
+				axpy(alpha,&d,&x2);
+
+				clamp_min(&x2,REAL(0));
+
+				d = x2;
+				d -= *x;
+				gd = real(dot(g,&d));
+				x2 = *x;
+				alpha0 = 1;
+				this->encoding_operator_->mult_M(&d,&encoding_space2);
+				calc_regMultM(&d,regEnc2);
+				FunctionEstimator f(&encoding_space,&encoding_space2,&regEnc,&regEnc2,x,&d,this);
+				alpha=gold(f,0,alpha0);
+				axpy(alpha,&d,x);
+			} else {
+				axpy(alpha,&d,x);
+
+			}
+
+			/*
 			if (non_negativity_constraint_){
 
 				axpy(-alpha,&encoding_space2,&encoding_space);
@@ -246,6 +278,7 @@ public:
 				axpy(alpha,&d,x);
 
 			}
+			*/
 			std::cout << "Function value: " << functionValue(&encoding_space,regEnc,x) << std::endl;
 
 			this->encoding_operator_->mult_MH(&encoding_space,g);
@@ -376,6 +409,93 @@ protected:
 
 		}
 	}
+
+
+	class FunctionEstimator{
+	public:
+
+		FunctionEstimator(ARRAY_TYPE* _encoding_space,ARRAY_TYPE* _encoding_step,std::vector<ARRAY_TYPE>* _regEnc,std::vector<ARRAY_TYPE>* _regEnc_step, ARRAY_TYPE * _x, ARRAY_TYPE * _d, ncgSolver<ARRAY_TYPE> * _parent)
+		{
+			encoding_step = _encoding_step;
+			encoding_space = _encoding_space;
+			regEnc = _regEnc;
+			regEnc_step = _regEnc_step;
+			x = _x;
+			xtmp = *x;
+			d = _d;
+			parent = _parent;
+			alpha_old = 0;
+		}
+
+
+		REAL operator () (REAL alpha){
+			axpy(alpha-alpha_old,encoding_step,encoding_space);
+			parent->reg_axpy(alpha-alpha_old,*regEnc_step,*regEnc);
+			axpy(alpha-alpha_old,d,&xtmp);
+
+			alpha_old = alpha;
+			return parent->functionValue(encoding_space,*regEnc,&xtmp);
+
+		}
+
+
+
+
+	private:
+
+		REAL alpha_old;
+		ARRAY_TYPE* encoding_step;
+		ARRAY_TYPE * encoding_space;
+		std::vector<ARRAY_TYPE>* regEnc;
+		std::vector<ARRAY_TYPE>* regEnc_step;
+		ARRAY_TYPE* x, *d;
+		ncgSolver<ARRAY_TYPE>* parent;
+		ARRAY_TYPE xtmp;
+
+
+	};
+	friend class FunctionEstimator;
+
+
+	REAL gold(FunctionEstimator& f, REAL a, REAL d){
+		const REAL gold = 1.618;
+
+		REAL b = d-(d-a)/gold;
+		REAL c = (d-a)/gold-a;
+
+		REAL fb = f(b);
+		REAL fc = f(c);
+		REAL tol = 1e-6;
+
+		while (abs(a-d) < tol*(abs(b)+abs(c))){
+			if (fb < fc){
+				a = b;
+				b = c;
+				fb = fc;
+				c= (d-a)/gold-a;
+				fc = f(c);
+			} else {
+				d = c;
+				c = b;
+				fc = fb;
+				b = d-(d-a)/gold;
+				fb = f(b);
+			}
+		}
+		REAL r = (b+c)/2;
+		REAL fr=f(r);
+
+		return r;
+
+
+
+
+
+
+	}
+
+
+
 
 	REAL functionValue(ARRAY_TYPE* encoding_space,std::vector<ARRAY_TYPE>& regEnc, ARRAY_TYPE * x){
 		REAL res= std::sqrt(this->encoding_operator_->get_weight())*real(dot(encoding_space,encoding_space));
