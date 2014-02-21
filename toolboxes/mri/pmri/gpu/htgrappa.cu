@@ -1,10 +1,10 @@
 #include "htgrappa.h"
-#include "hoNDArray_fileio.h"
+#include "cuNDArray_elemwise.h"
 #include "cuNDFFT.h"
 #include "GadgetronTimer.h"
 #include "GPUTimer.h"
-
 #include "CUBLASContextProvider.h"
+#include "hoNDArray_fileio.h"
 
 #include <cublas_v2.h>
 #include <cula_lapack_device.h>
@@ -12,7 +12,7 @@
 
 namespace Gadgetron {
 
-  int2 vec_to_int2(std::vector<unsigned int> vec)
+  static int2 vec_to_int2(std::vector<unsigned int> vec)
   {
     int2 ret; ret.x = 0; ret.y = 0;
     if (vec.size() < 2) {
@@ -24,31 +24,7 @@ namespace Gadgetron {
     return ret;
   }
 
-  __global__ void clear_array(complext<float> * in, unsigned long int elements)
-  {
-    unsigned long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
-    if (idx_in < elements) {
-      in[idx_in] = complext<float>(0);
-    }
-  }
-
-  int clear(cuNDArray<complext<float> >* in)
-  {
-    dim3 blockDim(512,1,1);
-    dim3 gridDim((unsigned int) ceil((double)in->get_number_of_elements()/blockDim.x), 1, 1 );
-
-    clear_array<<< gridDim, blockDim >>>( in->get_data_ptr(), in->get_number_of_elements());
-
-    cudaError_t err = cudaGetLastError();
-    if( err != cudaSuccess ){
-      std::cerr << "clear : Error during kernel call: " << cudaGetErrorString(err) << std::endl;
-      return -1;
-    }
-
-    return 0;
-  }
-
-  template <class T> int write_cuNDArray_to_disk(cuNDArray<T>* a, const char* filename)
+  template <class T> static int write_cuNDArray_to_disk(cuNDArray<T>* a, const char* filename)
   {
     boost::shared_ptr< hoNDArray<T> > host = a->to_host();
     write_nd_array<complext<float> >(host.get(), filename);
@@ -668,9 +644,9 @@ namespace Gadgetron {
   }
 
 template <class T> int inverse_clib_matrix(cuNDArray<T>* A,
-                                cuNDArray<T>* b,
-                                cuNDArray<T>* coeff,
-                                double lamda)
+                                           cuNDArray<T>* b,
+                                           cuNDArray<T>* coeff,
+                                           double lamda)
 {
     // A: M*N
     // b: M*K
@@ -812,16 +788,16 @@ template <class T> int inverse_clib_matrix(cuNDArray<T>* A,
 }
 
   //Template instanciation
-    template EXPORTGPUPMRI int htgrappa_calculate_grappa_unmixing(cuNDArray<complext<float> >* ref_data,
+  template EXPORTGPUPMRI int htgrappa_calculate_grappa_unmixing(cuNDArray<complext<float> >* ref_data,
                                                                 cuNDArray<complext<float> >* b1,
                                                                 unsigned int acceleration_factor,
                                                                 std::vector<unsigned int> *kernel_size,
                                                                 cuNDArray<complext<float> >* out_mixing_coeff,
                                                                 std::vector< std::pair<unsigned int, unsigned int> >* sampled_region,
                                                                 std::list< unsigned int >* uncombined_channels);
-
-    template EXPORTGPUPMRI int inverse_clib_matrix(cuNDArray<complext<float> >* A,
-                                    cuNDArray<complext<float> >* b,
-                                    cuNDArray<complext<float> >* coeff,
-                                    double lamda);
+  
+  template EXPORTGPUPMRI int inverse_clib_matrix(cuNDArray<complext<float> >* A,
+                                                 cuNDArray<complext<float> >* b,
+                                                 cuNDArray<complext<float> >* coeff,
+                                                 double lamda);
 }
