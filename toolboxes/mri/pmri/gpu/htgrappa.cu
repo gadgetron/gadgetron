@@ -3,6 +3,7 @@
 #include "cuNDFFT.h"
 #include "GadgetronTimer.h"
 #include "GPUTimer.h"
+#include "cuNDArray_elemwise.h"
 #include "CUBLASContextProvider.h"
 #include "hoNDArray_fileio.h"
 
@@ -30,8 +31,8 @@ namespace Gadgetron {
     write_nd_array<complext<float> >(host.get(), filename);
     return 0;
   }
-
-  template <class T> __global__ void form_grappa_system_matrix_kernel_2d(T* ref_data,
+  
+  template <class T> __global__ void form_grappa_system_matrix_kernel_2d(const T* __restrict__ ref_data,
                                                                          int2 dims,
                                                                          int source_coils,
                                                                          int target_coils,
@@ -40,8 +41,8 @@ namespace Gadgetron {
                                                                          int2 kernel_size,
                                                                          int acceleration_factor,
                                                                          int set_number,
-                                                                         T* out_matrix,
-                                                                         T* b)
+                                                                         T* __restrict__ out_matrix,
+                                                                         T* __restrict__ b)
   {
     long idx_in = blockIdx.x*blockDim.x+threadIdx.x;
     int klocations = ros.x*ros.y;
@@ -79,8 +80,8 @@ namespace Gadgetron {
   }
 
   //TODO: This should take source and target coils into consideration
-  template <class T> __global__ void copy_grappa_coefficients_to_kernel_2d(T* coeffs,
-                                                                           T* kernel,
+  template <class T> __global__ void copy_grappa_coefficients_to_kernel_2d(const T* __restrict__ coeffs,
+                                                                           T* __restrict__ kernel,
                                                                            int source_coils,
                                                                            int target_coils,
                                                                            int2 kernel_size,
@@ -114,8 +115,8 @@ namespace Gadgetron {
     }
   }
 
-  template <class T> __global__ void copy_grappa_kernel_to_kspace_2d(T* kernel,
-                                                                     T* out,
+  template <class T> __global__ void copy_grappa_kernel_to_kspace_2d(const T* __restrict__ kernel,
+                                                                     T* __restrict__ out,
                                                                      int2 dims,
                                                                      int2 kernel_size,
                                                                      int coils)
@@ -138,9 +139,9 @@ namespace Gadgetron {
     }
   }
 
-  __global__ void scale_and_add_unmixing_coeffs(complext<float> * unmixing,
-                                                complext<float> * csm,
-                                                complext<float> * out,
+  __global__ void scale_and_add_unmixing_coeffs(const complext<float> * __restrict__ unmixing,
+                                                const complext<float> * __restrict__ csm,
+                                                complext<float> * __restrict__ out,
                                                 int elements,
                                                 int coils,
                                                 float scale_factor)
@@ -157,8 +158,8 @@ namespace Gadgetron {
     }
   }
 
-  __global__ void scale_and_copy_unmixing_coeffs(complext<float> * unmixing,
-                                                 complext<float> * out,
+  __global__ void scale_and_copy_unmixing_coeffs(const complext<float> * __restrict__ unmixing,
+                                                 complext<float> * __restrict__ out,
                                                  int elements,
                                                  int coils,
                                                  float scale_factor)
@@ -173,8 +174,8 @@ namespace Gadgetron {
     }
   }
 
-  __global__ void conj_csm_coeffs(complext<float> * csm,
-                                  complext<float> * out,
+  __global__ void conj_csm_coeffs(const complext<float> * __restrict__ csm,
+                                  complext<float> * __restrict__ out,
                                   int source_elements,
                                   int target_elements)
   {

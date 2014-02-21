@@ -9,7 +9,7 @@
 
 using namespace Gadgetron;
 
-template<class REAL, class T, unsigned int D> static inline  __device__ REAL gradient(const T* in, const vector_td<int,D>& dims, vector_td<int,D>& co)
+template<class REAL, class T, unsigned int D> static inline  __device__ REAL gradient(const T* __restrict__ in, const vector_td<int,D>& dims, vector_td<int,D>& co)
 {
   REAL grad = REAL(0);
   T xi = in[co_to_idx<D>((co+dims)%dims,dims)];
@@ -23,7 +23,7 @@ template<class REAL, class T, unsigned int D> static inline  __device__ REAL gra
 }
 
 
-template<class REAL, class T, unsigned int D> static __global__ void tvGradient_kernel(const T* in, T* out, const vector_td<int,D> dims,REAL limit,REAL weight)
+template<class REAL, class T, unsigned int D> static __global__ void tvGradient_kernel(const T* __restrict__ in, T* __restrict__ out, const vector_td<int,D> dims,REAL limit,REAL weight)
 {
   const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
   if( idx < prod(dims) ){

@@ -299,7 +299,7 @@ namespace Gadgetron{
   }
 
   template<class T, unsigned int D> inline
-  vector_td<T,D> from_std_vector( std::vector<T> _vector )
+  vector_td<T,D> from_std_vector( std::vector<T> &_vector )
   {
     vector_td<T,D> out;
     for( unsigned int i=0; i<D; i++ ){

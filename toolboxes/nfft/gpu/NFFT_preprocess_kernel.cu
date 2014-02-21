@@ -43,7 +43,7 @@ struct compute_num_cells_per_sample
 template<class REAL> __inline__ __device__ void
 output_pairs( unsigned int sample_idx, unsigned int frame, 
 	      typename reald<REAL,1>::Type &p, typename uintd<1>::Type &matrix_size_os, typename uintd<1>::Type &matrix_size_wrap, 
-	      REAL half_W, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
+	      REAL half_W, const unsigned int * __restrict__ write_offsets, unsigned int * __restrict__ tuples_first, unsigned int * __restrict__ tuples_last )
 {
   unsigned int lower_limit_x = (unsigned int)ceil(p.vec[0]-half_W);
   unsigned int upper_limit_x = (unsigned int)floor(p.vec[0]+half_W);
@@ -62,7 +62,7 @@ output_pairs( unsigned int sample_idx, unsigned int frame,
 template<class REAL> __inline__ __device__ void
 output_pairs( unsigned int sample_idx, unsigned int frame, 
 	      typename reald<REAL,2>::Type &p, typename uintd<2>::Type &matrix_size_os, typename uintd<2>::Type &matrix_size_wrap, 
-	      REAL half_W, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
+	      REAL half_W, const unsigned int * __restrict__ write_offsets, unsigned int * __restrict__ tuples_first, unsigned int * __restrict__ tuples_last )
 {
   unsigned int lower_limit_x = (unsigned int)ceil(p.vec[0]-half_W);
   unsigned int lower_limit_y = (unsigned int)ceil(p.vec[1]-half_W);
@@ -85,7 +85,7 @@ output_pairs( unsigned int sample_idx, unsigned int frame,
 template <class REAL> __inline__ __device__ void
 output_pairs( unsigned int sample_idx, unsigned int frame, 
 	      typename reald<REAL,3>::Type &p, typename uintd<3>::Type &matrix_size_os, typename uintd<3>::Type &matrix_size_wrap, 
-	      REAL half_W, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
+	      REAL half_W, const unsigned int * __restrict__ write_offsets, unsigned int * __restrict__ tuples_first, unsigned int * __restrict__ tuples_last )
 {
   unsigned int lower_limit_x = (unsigned int)ceil(p.vec[0]-half_W);
   unsigned int lower_limit_y = (unsigned int)ceil(p.vec[1]-half_W);
@@ -112,7 +112,7 @@ output_pairs( unsigned int sample_idx, unsigned int frame,
 template <class REAL> __inline__ __device__ void
 output_pairs( unsigned int sample_idx, unsigned int frame, 
 	      typename reald<REAL,4>::Type &p, typename uintd<4>::Type &matrix_size_os, typename uintd<4>::Type &matrix_size_wrap, 
-	      REAL half_W, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
+	      REAL half_W, const unsigned int * __restrict__ write_offsets, unsigned int * __restrict__ tuples_first, unsigned int * __restrict__ tuples_last )
 {
   unsigned int lower_limit_x = (unsigned int)ceil(p.vec[0]-half_W);
   unsigned int lower_limit_y = (unsigned int)ceil(p.vec[1]-half_W);
@@ -142,7 +142,7 @@ output_pairs( unsigned int sample_idx, unsigned int frame,
 
 template<class REAL, unsigned int D> __global__ void
 write_pairs_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type matrix_size_wrap, unsigned int num_samples_per_frame, REAL half_W, 
-		    typename reald<REAL,D>::Type *traj_positions, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
+		   const typename reald<REAL,D>::Type * __restrict__ traj_positions, unsigned int * __restrict__ write_offsets, unsigned int * __restrict__ tuples_first, unsigned int * __restrict__ tuples_last )
 {
   // Get sample idx
   unsigned int sample_idx = blockIdx.x*blockDim.x + threadIdx.x;
@@ -158,7 +158,7 @@ write_pairs_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::T
 
 template <class REAL, unsigned int D> void 
 write_pairs( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type matrix_size_wrap, unsigned int num_samples_per_frame, unsigned int num_frames, REAL W, 
-	     typename reald<REAL,D>::Type *traj_positions, unsigned int *write_offsets, unsigned int *tuples_first, unsigned int *tuples_last )
+	     const typename reald<REAL,D>::Type * __restrict__ traj_positions, unsigned int * __restrict__ write_offsets, unsigned int * __restrict__ tuples_first, unsigned int * __restrict__ tuples_last )
 {  
   dim3 blockDim(256);
   dim3 gridDim((int)ceil((double)num_samples_per_frame/(double)blockDim.x), num_frames);

@@ -872,7 +872,7 @@ void Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute_beta()
 template<class REAL, unsigned int D> __global__ void
 compute_deapodization_filter_kernel( typename uintd<D>::Type matrix_size_os, typename reald<REAL,D>::Type matrix_size_os_real, 
                                      REAL W, REAL half_W, REAL one_over_W, 
-                                     typename reald<REAL,D>::Type beta, complext<REAL> *image_os )
+                                     typename reald<REAL,D>::Type beta, complext<REAL> * __restrict__ image_os )
 {
   const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const unsigned int num_elements = prod(matrix_size_os);
@@ -1285,7 +1285,7 @@ _convolve_NFFT_NC2C<REAL,D,false>{ // False: use non-atomic operations variant
 
 template<class REAL, unsigned int D> __global__ void
 image_wrap_kernel( typename uintd<D>::Type matrix_size_os, typename uintd<D>::Type matrix_size_wrap, bool accumulate,
-                   complext<REAL> *in, complext<REAL> *out )
+                   const complext<REAL> * __restrict__ in, complext<REAL> * __restrict__ out )
 {
   unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
   const unsigned int num_elements_per_image_src = prod(matrix_size_os+matrix_size_wrap);

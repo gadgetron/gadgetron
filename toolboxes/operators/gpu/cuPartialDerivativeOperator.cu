@@ -13,7 +13,7 @@ namespace Gadgetron{
   template<class T, unsigned int D> __global__ void
   first_order_partial_derivative_kernel( typename intd<D>::Type stride, 
                                          typename intd<D>::Type dims, 
-                                         T *in, T *out )
+                                         const T  * __restrict__ in, T * __restrict__ out )
   {
     const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
     if( idx < prod(dims) ){
@@ -36,7 +36,7 @@ namespace Gadgetron{
   second_order_partial_derivative_kernel( typename intd<D>::Type forwards_stride, 
                                           typename intd<D>::Type adjoint_stride, 
                                           typename intd<D>::Type dims, 
-                                          T *in, T *out )
+                                          const T  * __restrict__ in, T * __restrict__ out )
   {
     const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
     if( idx < prod(dims) ){

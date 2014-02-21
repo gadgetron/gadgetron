@@ -149,10 +149,10 @@ namespace Gadgetron{
   compute_radial_neighbors( REAL sample_idx_on_profile, REAL angular_offset, REAL alpha, 
                             REAL one_over_radial_oversampling_factor, REAL one_over_num_profiles,
                             REAL bias, REAL samples_per_profile, REAL profile, REAL num_profiles,
-                            typename reald<REAL,2>::Type *p1, typename reald<REAL,2>::Type *p2, 
-                            typename reald<REAL,2>::Type *p3, typename reald<REAL,2>::Type *p4,
-                            typename reald<REAL,2>::Type *p5, typename reald<REAL,2>::Type *p6, 
-                            typename reald<REAL,2>::Type *p7, typename reald<REAL,2>::Type *p8  )
+                            typename reald<REAL,2>::Type * __restrict__ p1, typename reald<REAL,2>::Type * __restrict__ p2,
+                            typename reald<REAL,2>::Type * __restrict__ p3, typename reald<REAL,2>::Type * __restrict__ p4,
+                            typename reald<REAL,2>::Type * __restrict__ p5, typename reald<REAL,2>::Type * __restrict__ p6,
+                            typename reald<REAL,2>::Type * __restrict__ p7, typename reald<REAL,2>::Type * __restrict__ p8  )
   {
     // The sample positions (scales) can be either of the _local_ indices 'sample_idx_on_profile' or 'samples_per_projection'-'sample_idx_on_profile'
     // Beware of "skewness" around the origin, i.e. +1 sample one one side

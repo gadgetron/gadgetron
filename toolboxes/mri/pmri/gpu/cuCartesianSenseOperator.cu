@@ -6,7 +6,7 @@
 using namespace Gadgetron;
 
 template<class REAL> __global__ void 
-sample_array_kernel( complext<REAL> *in, complext<REAL> *out,
+sample_array_kernel( const complext<REAL> * __restrict__ in, complext<REAL> * __restrict__ out,
 		     unsigned int *idx, 
 		     unsigned int image_elements,
 		     unsigned int samples,
@@ -22,7 +22,7 @@ sample_array_kernel( complext<REAL> *in, complext<REAL> *out,
 }
 
 template<class REAL> __global__ void 
-insert_samples_kernel( complext<REAL> *in, complext<REAL> *out,
+insert_samples_kernel( const complext<REAL> * __restrict__ in, complext<REAL> * __restrict__ out,
 		       unsigned int *idx, 
 		       unsigned int image_elements,
 		       unsigned int samples,

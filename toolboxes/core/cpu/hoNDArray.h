@@ -31,15 +31,15 @@ namespace Gadgetron{
 
     hoNDArray();
 
-    hoNDArray(std::vector<size_t> &dimensions);
-    hoNDArray(std::vector<size_t> *dimensions);
-    hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions);
+    explicit hoNDArray(std::vector<size_t> &dimensions);
+    explicit hoNDArray(std::vector<size_t> *dimensions);
+    explicit hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions);
 
     hoNDArray(std::vector<size_t> *dimensions, T* data, bool delete_data_on_destruct = false);
     hoNDArray(std::vector<size_t> &dimensions, T* data, bool delete_data_on_destruct = false);
     hoNDArray(boost::shared_ptr< std::vector<size_t> > dimensions, T* data, bool delete_data_on_destruct = false);
 
-    hoNDArray(size_t len);
+    explicit hoNDArray(size_t len);
     hoNDArray(size_t sx, size_t sy);
     hoNDArray(size_t sx, size_t sy, size_t sz);
     hoNDArray(size_t sx, size_t sy, size_t sz, size_t st);
@@ -61,7 +61,7 @@ namespace Gadgetron{
 
     // Copy constructors
     hoNDArray(const hoNDArray<T> &a);
-    hoNDArray(const hoNDArray<T> *a);
+    explicit hoNDArray(const hoNDArray<T> *a);
 
     // Assignment operator
     hoNDArray& operator=(const hoNDArray& rhs);

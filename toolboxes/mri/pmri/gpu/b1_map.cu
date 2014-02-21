@@ -18,13 +18,13 @@ namespace Gadgetron{
 
   const int kernel_width = 7;
 
-  template<class REAL, unsigned int D> void smooth_correlation_matrices( cuNDArray<complext<REAL> >*, cuNDArray<complext<REAL> >*);
-  template<class REAL> boost::shared_ptr< cuNDArray<complext<REAL> > > extract_csm( cuNDArray<complext<REAL> >*, unsigned int, unsigned int);
-  template<class REAL> void set_phase_reference( cuNDArray<complext<REAL> >*, unsigned int, unsigned int);
-  template<class T> void find_stride( cuNDArray<T> *in, unsigned int dim, unsigned int *stride, std::vector<size_t> *dims );
-  template<class T> boost::shared_ptr< cuNDArray<T> > correlation( cuNDArray<T> *in );
-  template<class T> void rss_normalize( cuNDArray<T> *in_out, unsigned int dim );
-  
+  template<class REAL, unsigned int D> static void smooth_correlation_matrices( cuNDArray<complext<REAL> >*, cuNDArray<complext<REAL> >*);
+  template<class REAL> static boost::shared_ptr< cuNDArray<complext<REAL> > > extract_csm( cuNDArray<complext<REAL> >*, unsigned int, unsigned int);
+  template<class REAL> static void set_phase_reference( cuNDArray<complext<REAL> >*, unsigned int, unsigned int);
+  template<class T> static void find_stride( cuNDArray<T> *in, unsigned int dim, unsigned int *stride, std::vector<size_t> *dims );
+  template<class T> static boost::shared_ptr< cuNDArray<T> > correlation( cuNDArray<T> *in );
+  template<class T> static void rss_normalize( cuNDArray<T> *in_out, unsigned int dim );
+
   //
   // Main method
   //
@@ -120,7 +120,7 @@ namespace Gadgetron{
     }
   }
   
-  template<class REAL, class T> __inline__  __device__ REAL
+  template<class REAL, class T> __inline__  __device__ static REAL
   _rss( unsigned int idx, T *in, unsigned int stride, unsigned int number_of_batches )
   {
     unsigned int in_idx = (idx/stride)*stride*number_of_batches+(idx%stride);
@@ -134,7 +134,7 @@ namespace Gadgetron{
     return rss;
   }
   
-  template<class T> __global__ void
+  template<class T> __global__ static void
   rss_normalize_kernel( T *in_out, unsigned int stride, unsigned int number_of_batches, unsigned int number_of_elements )
   {
     typedef typename realType<T>::Type REAL;
@@ -156,7 +156,7 @@ namespace Gadgetron{
   }
   
   // Normalized RSS
-  template<class T>
+  template<class T> static
   void rss_normalize( cuNDArray<T> *in_out, unsigned int dim )
   {
     unsigned int number_of_batches = in_out->get_size(dim);
@@ -176,8 +176,8 @@ namespace Gadgetron{
     CHECK_FOR_CUDA_ERROR();    
   }
 
-  template<class REAL, class T> __global__ void
-  correlation_kernel( T *in, T *corrm, unsigned int num_batches, unsigned int num_elements )
+  template<class REAL, class T> __global__ static void
+  correlation_kernel( const T * __restrict__ in, T * __restrict__ corrm, unsigned int num_batches, unsigned int num_elements )
   {
     const unsigned int p = blockIdx.x*blockDim.x + threadIdx.x;
     const unsigned int i = threadIdx.y;
@@ -194,7 +194,7 @@ namespace Gadgetron{
   }
   
   // Build correlation matrix
-  template<class T> boost::shared_ptr< cuNDArray<T> > correlation( cuNDArray<T> *in )
+  template<class T> static boost::shared_ptr< cuNDArray<T> > correlation( cuNDArray<T> *in )
   {
     typedef typename realType<T>::Type REAL;
     // Prepare internal array
@@ -226,8 +226,8 @@ namespace Gadgetron{
   }
 
   // Smooth correlation matrices by box filter (1D)
-  template<class REAL> __global__ void
-  smooth_correlation_matrices_kernel( complext<REAL> *corrm, complext<REAL> *corrm_smooth, intd<1>::Type image_dims )
+  template<class REAL> __global__ static void
+  smooth_correlation_matrices_kernel( const complext<REAL> * __restrict__ corrm, complext<REAL> * __restrict__ corrm_smooth, intd<1>::Type image_dims )
   {
     const int idx = blockIdx.x*blockDim.x + threadIdx.x;
     const int batch = blockIdx.y;
@@ -262,8 +262,8 @@ namespace Gadgetron{
   }
 
   // Smooth correlation matrices by box filter (2D)
-  template<class REAL> __global__ void
-  smooth_correlation_matrices_kernel( complext<REAL> *corrm, complext<REAL> *corrm_smooth, intd<2>::Type image_dims )
+  template<class REAL> __global__ static  void
+  smooth_correlation_matrices_kernel( const complext<REAL> * __restrict__ corrm, complext<REAL> * __restrict__ corrm_smooth, intd<2>::Type image_dims )
   {
     const int idx = blockIdx.x*blockDim.x + threadIdx.x;
     const int batch = blockIdx.y;
@@ -317,8 +317,8 @@ namespace Gadgetron{
   }
 
   // Smooth correlation matrices by box filter (3D)
-  template<class REAL> __global__ void
-  smooth_correlation_matrices_kernel( complext<REAL> *corrm, complext<REAL> *corrm_smooth, intd<3>::Type image_dims )
+  template<class REAL> __global__ static  void
+  smooth_correlation_matrices_kernel( const  complext<REAL> * __restrict__ corrm, complext<REAL> * __restrict__ corrm_smooth, intd<3>::Type image_dims )
   {
     const int idx = blockIdx.x*blockDim.x + threadIdx.x;
     const int batch = blockIdx.y;
@@ -368,8 +368,8 @@ namespace Gadgetron{
   }
 
   // Smooth correlation matrices by box filter (3D)
-  template<class REAL> __global__ void
-  smooth_correlation_matrices_kernel( complext<REAL> *corrm, complext<REAL> *corrm_smooth, intd<4>::Type image_dims )
+  template<class REAL> __global__ static void
+  smooth_correlation_matrices_kernel( const complext<REAL> * __restrict__ corrm, complext<REAL> * __restrict__ corrm_smooth, intd<4>::Type image_dims )
   {
     const int idx = blockIdx.x*blockDim.x + threadIdx.x;
     const int batch = blockIdx.y;
@@ -430,8 +430,8 @@ namespace Gadgetron{
   }
 
   // Smooth correlation matrices border by box filter (2D)
-  template<class REAL> __global__ void
-  smooth_correlation_matrices_border_kernel( complext<REAL> *corrm, complext<REAL> *corrm_smooth, intd<2>::Type image_dims, unsigned int number_of_border_threads )
+  template<class REAL> __global__ static void
+  smooth_correlation_matrices_border_kernel( const complext<REAL> * __restrict__ corrm, complext<REAL> * __restrict__ corrm_smooth, intd<2>::Type image_dims, unsigned int number_of_border_threads )
   {
     const int idx = blockIdx.x*blockDim.x + threadIdx.x;
     const int batch = blockIdx.y;
@@ -504,8 +504,8 @@ namespace Gadgetron{
     }
   }
 
-  template<class REAL, unsigned int D> void
-  smooth_correlation_matrices( cuNDArray<complext<REAL> > *corrm, cuNDArray<complext<REAL> > *corrm_smooth )
+  template<class REAL, unsigned int D> static void
+  smooth_correlation_matrices( cuNDArray<complext<REAL> > * corrm, cuNDArray<complext<REAL> > * corrm_smooth )
   {
     typename intd<D>::Type image_dims;
 
@@ -543,8 +543,8 @@ namespace Gadgetron{
   extern __shared__ char shared_mem[];
 
   // Extract CSM
-  template<class REAL> __global__ void
-  extract_csm_kernel( complext<REAL> *corrm, complext<REAL> *csm, unsigned int num_batches, unsigned int num_elements )
+  template<class REAL> __global__ static void
+  extract_csm_kernel( const complext<REAL> * __restrict__ corrm, complext<REAL> * __restrict__ csm, unsigned int num_batches, unsigned int num_elements )
   {
     const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
     const unsigned int i = threadIdx.x;
@@ -598,8 +598,8 @@ namespace Gadgetron{
   }
 
   // Extract CSM
-  template<class REAL> __global__ void
-  extract_csm_kernel( complext<REAL> *corrm, complext<REAL> *csm, unsigned int num_batches, unsigned int num_elements, complext<REAL> *tmp_v )
+  template<class REAL> __global__ static void
+  extract_csm_kernel( const complext<REAL> * __restrict__ corrm, complext<REAL> * __restrict__ csm, unsigned int num_batches, unsigned int num_elements, complext<REAL> * __restrict__ tmp_v )
   {
     const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
 
@@ -646,7 +646,7 @@ namespace Gadgetron{
   }
 
   // Extract CSM
-  template<class REAL> __host__ 
+  template<class REAL> __host__ static
   boost::shared_ptr<cuNDArray<complext<REAL> > > extract_csm(cuNDArray<complext<REAL> > *corrm_in, unsigned int number_of_batches, unsigned int number_of_elements )
   {
     vector<size_t> image_dims;
@@ -681,7 +681,7 @@ namespace Gadgetron{
   }
 
   // Set refence phase
-  template<class REAL> __global__ void
+  template<class REAL> __global__ static void
   set_phase_reference_kernel( complext<REAL> *csm, unsigned int num_batches, unsigned int num_elements )
   {
     const unsigned int idx = blockIdx.x*blockDim.x + threadIdx.x;
@@ -704,7 +704,7 @@ namespace Gadgetron{
   }
   
   // Set reference phase
-  template<class REAL> __host__ 
+  template<class REAL> __host__ static
   void set_phase_reference(cuNDArray<complext<REAL> > *csm, unsigned int number_of_batches, unsigned int number_of_elements )
   {
     dim3 blockDim(128);

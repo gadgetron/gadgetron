@@ -44,6 +44,7 @@ install(FILES
   cuDownsampleOperator.h
   cuFFTOperator.h
   cuUpsampleOperator.h
+  hoCuIdentityOperator.h
   hoCuTvOperator.h
   hoCuTvPicsOperator.h
   hoCuEncodingOperatorContainer.h

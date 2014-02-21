@@ -9,10 +9,10 @@
 namespace Gadgetron {
 
   template <class T> 
-  __global__ void cuNDArray_permute_kernel( T* in, T* out, 
+  __global__ void cuNDArray_permute_kernel(const  T*  __restrict__ in, T* __restrict__ out,
                                             unsigned int ndim,
-                                            unsigned int* dims,
-                                            unsigned int* strides_out,
+                                            const unsigned int* __restrict__ dims,
+                                            const unsigned int* __restrict__ strides_out,
                                             unsigned int elements,
                                             int shift_mode)
   {
@@ -231,7 +231,7 @@ namespace Gadgetron {
   //
   template<class T> 
   __global__ void expand_kernel( 
-                                T *in, T *out, 
+                                const T * __restrict__ in, T * __restrict__ out,
                                 unsigned int number_of_elements_in, unsigned int number_of_elements_out, unsigned int new_dim_size )
   {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;    
@@ -269,7 +269,7 @@ namespace Gadgetron {
   // Crop
   template<class T, unsigned int D> __global__ void crop_kernel
   ( vector_td<unsigned int,D> offset, vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
-    T *in, T *out, unsigned int num_batches, unsigned int num_elements )
+    const T * __restrict__ in, T * __restrict__ out, unsigned int num_batches, unsigned int num_elements )
   {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
     const unsigned int frame_offset = idx/num_elements;
@@ -342,7 +342,7 @@ namespace Gadgetron {
   // Expand and zero fill
   template<class T, unsigned int D> 
   __global__ void pad_kernel( vector_td<unsigned int,D> matrix_size_in, vector_td<unsigned int,D> matrix_size_out,
-                              T *in, T *out, unsigned int number_of_batches, unsigned int num_elements, T val )
+                              const T * __restrict__ in, T * __restrict__ out, unsigned int number_of_batches, unsigned int num_elements, T val )
   {
     const unsigned int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x+threadIdx.x;
     const unsigned int frame_offset = idx/num_elements;
@@ -512,8 +512,8 @@ namespace Gadgetron {
   upsample_kernel( typename uintd<D>::Type matrix_size_in,
                    typename uintd<D>::Type matrix_size_out,
                    unsigned int num_batches,
-                   T *image_in,
-                   T *image_out )
+                   const T * __restrict__ image_in,
+                   T * __restrict__ image_out )
   {
     typedef typename realType<T>::Type REAL;
     
@@ -606,8 +606,8 @@ namespace Gadgetron {
   downsample_kernel( typename intd<D>::Type matrix_size_in,
                      typename intd<D>::Type matrix_size_out,
                      int num_batches,
-                     T *image_in,
-                     T *image_out )
+                     const T * __restrict__ image_in,
+                     T * __restrict__ image_out )
   {
     typedef typename realType<T>::Type REAL;
     
