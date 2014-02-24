@@ -48,7 +48,7 @@ public:
 	}
 
 	virtual boost::shared_ptr<ARRAY_TYPE> solve(ARRAY_TYPE* in)
-											{
+													{
 		if( this->encoding_operator_.get() == 0 ){
 			throw std::runtime_error("Error: ncgSolver::compute_rhs : no encoding operator is set" );
 		}
@@ -77,7 +77,7 @@ public:
 			clear(x);
 		}
 
-		REAL delta = REAL(0.01);
+		//REAL delta = REAL(0.01);
 		//REAL sigma = REAL(0.4);
 
 		std::vector<ARRAY_TYPE> regEnc;
@@ -217,7 +217,7 @@ public:
 				}
 				alpha_old = alpha;
 			}
-			*/
+			 */
 
 
 			if (non_negativity_constraint_){
@@ -238,7 +238,8 @@ public:
 				this->encoding_operator_->mult_M(&d,&encoding_space2);
 				calc_regMultM(&d,regEnc2);
 				FunctionEstimator f(&encoding_space,&encoding_space2,&regEnc,&regEnc2,x,&d,this);
-				alpha=gold(f,0,alpha0);
+				//alpha=gold(f,0,alpha0*1.5);
+				alpha = backtracking(f,alpha0,gd,rho,old_norm);
 				axpy(alpha,&d,x);
 			} else {
 				axpy(alpha,&d,x);
@@ -278,7 +279,7 @@ public:
 				axpy(alpha,&d,x);
 
 			}
-			*/
+			 */
 			std::cout << "Function value: " << functionValue(&encoding_space,regEnc,x) << std::endl;
 
 			this->encoding_operator_->mult_MH(&encoding_space,g);
@@ -299,7 +300,7 @@ public:
 		delete g,g_old;
 
 		return boost::shared_ptr<ARRAY_TYPE>(x);
-											}
+													}
 
 
 
@@ -415,7 +416,7 @@ protected:
 	public:
 
 		FunctionEstimator(ARRAY_TYPE* _encoding_space,ARRAY_TYPE* _encoding_step,std::vector<ARRAY_TYPE>* _regEnc,std::vector<ARRAY_TYPE>* _regEnc_step, ARRAY_TYPE * _x, ARRAY_TYPE * _d, ncgSolver<ARRAY_TYPE> * _parent)
-		{
+	{
 			encoding_step = _encoding_step;
 			encoding_space = _encoding_space;
 			regEnc = _regEnc;
@@ -425,7 +426,7 @@ protected:
 			d = _d;
 			parent = _parent;
 			alpha_old = 0;
-		}
+	}
 
 
 		REAL operator () (REAL alpha){
@@ -434,7 +435,8 @@ protected:
 			axpy(alpha-alpha_old,d,&xtmp);
 
 			alpha_old = alpha;
-			return parent->functionValue(encoding_space,*regEnc,&xtmp);
+			REAL res = parent->functionValue(encoding_space,*regEnc,&xtmp);
+			return res;
 
 		}
 
@@ -456,44 +458,67 @@ protected:
 	};
 	friend class FunctionEstimator;
 
-
+	/***
+	 * @brief Gold section search algorithm. Only works with unimodal functions, which we assume we're dealing with, at least locally
+	 * @param f Functor to calculate the function to minimize
+	 * @param a Start of the bracketing
+	 * @param d End of bracketing
+	 * @return Value minimizing the function f.
+	 */
 	REAL gold(FunctionEstimator& f, REAL a, REAL d){
-		const REAL gold = 1.618;
+		const REAL gold = 1.0/(1.0+std::sqrt(5.0))/2;
 
-		REAL b = d-(d-a)/gold;
-		REAL c = (d-a)/gold-a;
+		REAL b = d-(d-a)*gold;
+		REAL c = (d-a)*gold-a;
 
+		REAL fa = f(a);
 		REAL fb = f(b);
 		REAL fc = f(c);
+		REAL fd = f(d);
 		REAL tol = 1e-6;
 
-		while (abs(a-d) < tol*(abs(b)+abs(c))){
-			if (fb < fc){
+		while (abs(a-d) > tol*(abs(b)+abs(c))){
+			if (fb > fc){
 				a = b;
+				fa = fb;
 				b = c;
 				fb = fc;
-				c= (d-a)/gold-a;
+				c= b*gold+(1.0-gold)*d;
 				fc = f(c);
 			} else {
 				d = c;
+				fd = fc;
 				c = b;
 				fc = fb;
-				b = d-(d-a)/gold;
+				b = c*gold+(1-gold)*a;
 				fb = f(b);
 			}
 		}
-		REAL r = (b+c)/2;
-		REAL fr=f(r);
-
-		return r;
-
-
-
-
-
-
+		if (fb < fc){
+			f(b);
+			return b;
+		}else {
+			f(c);
+			return c;
+		}
 	}
 
+	REAL backtracking(FunctionEstimator& f, const REAL alpha0, const REAL gd, const REAL rho, const REAL old_norm){
+		REAL alpha;
+		REAL delta=0.01;
+		bool wolfe = false;
+		int  k=0;
+
+		while (not wolfe){
+			alpha=alpha0*std::pow(rho,k);
+			if (f(alpha) <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
+			k++;
+			if (alpha == 0) throw std::runtime_error("Wolfe line search failed");
+		}
+
+		return alpha;
+
+	}
 
 
 
