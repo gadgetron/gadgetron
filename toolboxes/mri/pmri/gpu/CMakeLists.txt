@@ -24,11 +24,11 @@ include_directories(
 
 cuda_add_library(gpuparallelmri SHARED 
     b1_map.h
+    spirit_calibration.h
     cuCartesianSenseOperator.h
     cuNonCartesianKtSenseOperator.h
     cuNonCartesianSenseOperator.h
     cuSpiritOperator.h
-    cuSpiritCalibrationOperator.h
     cuBuffer.h
     cuSenseBuffer.h
     cuSenseBufferCg.h
@@ -39,6 +39,7 @@ cuda_add_library(gpuparallelmri SHARED
     sense_utilities.h
     b1_map.cu
     b1_map_NIH_Souheil.cu
+    spirit_calibration.cu
     sense_utilities.cu
     cuSenseOperator.cu
     cuCartesianSenseOperator.cu
@@ -74,7 +75,6 @@ install(FILES
 	cuNonCartesianSenseOperator.h
 	cuNonCartesianKtSenseOperator.h
   cuSpiritOperator.h
-  cuSpiritCalibrationOperator.h
   cuBuffer.h
 	cuSenseBuffer.h
 	cuSenseBufferCg.h

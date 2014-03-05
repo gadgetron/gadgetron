@@ -305,16 +305,42 @@ namespace Gadgetron{
     unsigned int slice = m1->getObjectPtr()->idx.slice;
     unsigned int set = m1->getObjectPtr()->idx.set;
 
-    // Get a pointer to the accumulation buffer. 
+    // Only when the first profile arrives, do we know the #samples/profile
     //
-    
-    cuBuffer<float,2> *acc_buffer = &acc_buffer_[set*slices_+slice];
 
+    if( samples_per_profile_ == -1 )      
+      samples_per_profile_ = m1->getObjectPtr()->number_of_samples;
+    
+    if( samples_per_profile_ != m1->getObjectPtr()->number_of_samples ){
+      GADGET_DEBUG1("Unexpected change in the incoming profiles' lengths\n");
+      return GADGET_FAIL;
+    }
+    
     //GADGET_DEBUG1("gpuRadialPrepGadget::process\n");
 
     boost::shared_ptr<GPUTimer> process_timer;
     if( output_timing_ )
       process_timer = boost::shared_ptr<GPUTimer>( new GPUTimer("gpuRadialPrepGadget::process()") );
+
+    // Reconfigure at first pass
+    // - or if the number of coil changes
+    // - or if the reconfigure_ flag is set
+
+    if( num_coils_[set*slices_+slice] != m1->getObjectPtr()->active_channels ){
+      GADGET_DEBUG1("Reconfiguring due to change in the number of coils\n");
+      num_coils_[set*slices_+slice] = m1->getObjectPtr()->active_channels;
+      reconfigure(set, slice);
+    }
+
+    if( reconfigure_[set*slices_+slice] ){
+      GADGET_DEBUG1("Reconfiguring due to boolean indicator\n");
+      reconfigure(set, slice);
+    }
+
+    // Get a pointer to the accumulation buffer. 
+    //
+    
+    cuBuffer<float,2> *acc_buffer = get_buffer_ptr(set*slices_+slice);
 
     // Have the imaging plane changed?
     //
@@ -333,34 +359,8 @@ namespace Gadgetron{
       memcpy(phase_dir_[set*slices_+slice],m1->getObjectPtr()->phase_dir,3*sizeof(float));
       memcpy(slice_dir_[set*slices_+slice],m1->getObjectPtr()->slice_dir,3*sizeof(float));
     }
-    
-    // Only when the first profile arrives, do we know the #samples/profile
-    //
-
-    if( samples_per_profile_ == -1 )      
-      samples_per_profile_ = m1->getObjectPtr()->number_of_samples;
-    
-    if( samples_per_profile_ != m1->getObjectPtr()->number_of_samples ){
-      GADGET_DEBUG1("Unexpected change in the incoming profiles' lengths\n");
-      return GADGET_FAIL;
-    }
-    
+        
     bool new_frame_detected = false;
-
-    // Reconfigure at first pass
-    // - or if the number of coil changes
-    // - or if the reconfigure_ flag is set
-
-    if( num_coils_[set*slices_+slice] != m1->getObjectPtr()->active_channels ){
-      GADGET_DEBUG1("Reconfiguring due to change in the number of coils\n");
-      num_coils_[set*slices_+slice] = m1->getObjectPtr()->active_channels;
-      reconfigure(set, slice);
-    }
-
-    if( reconfigure_[set*slices_+slice] ){
-      GADGET_DEBUG1("Reconfiguring due to boolean indicator\n");
-      reconfigure(set, slice);
-    }
 
     // Keep track of the incoming profile ids (mode dependent)
     // - to determine the number of profiles per frame
@@ -503,7 +503,7 @@ namespace Gadgetron{
         //
 
         csm_host_[set*slices_+slice] = *compute_csm( set*slices_+slice );
-	        
+	                
         // Compute regularization image
         //
         
@@ -942,7 +942,7 @@ namespace Gadgetron{
         buffer_frames_per_rotation_[set*slices_+slice] = frames_per_rotation_[set*slices_+slice];
     }
     
-    cuBuffer<float,2> *acc_buffer = &acc_buffer_[set*slices_+slice];
+    cuBuffer<float,2> *acc_buffer = get_buffer_ptr(set*slices_+slice);
 
     acc_buffer->setup( from_std_vector<size_t,2>(image_dimensions_recon_), image_dimensions_recon_os_, 
                        kernel_width_, num_coils_[set*slices_+slice], 

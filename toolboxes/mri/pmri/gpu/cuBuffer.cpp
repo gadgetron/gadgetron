@@ -9,6 +9,9 @@ namespace Gadgetron{
   template<class REAL, unsigned int D, bool ATOMICS>
   cuBuffer<REAL,D,ATOMICS>::cuBuffer() 
   {
+    acc_buffer_ = boost::shared_ptr< cuNDArray<_complext> >(new cuNDArray<_complext>);
+    cyc_buffer_ = boost::shared_ptr< cuNDArray<_complext> >(new cuNDArray<_complext>);
+    nfft_plan_  = boost::shared_ptr< cuNFFT_plan<REAL,D,ATOMICS> >(new cuNFFT_plan<REAL,D,ATOMICS>);
     num_coils_ = 0;
     cur_idx_ = cur_sub_idx_ = 0;
     cycle_length_ = 0; sub_cycle_length_ = 0;
@@ -21,8 +24,8 @@ namespace Gadgetron{
   template<class REAL, unsigned int D, bool ATOMICS>
   void cuBuffer<REAL,D,ATOMICS>::clear()
   {
-    Gadgetron::clear(&acc_buffer_);
-    Gadgetron::clear(&cyc_buffer_);
+    Gadgetron::clear(acc_buffer_.get());
+    Gadgetron::clear(cyc_buffer_.get());
     cur_idx_ = cur_sub_idx_ = 0;
     acc_buffer_empty_ = true;
   }
@@ -45,22 +48,22 @@ namespace Gadgetron{
     cycle_length_ = num_cycles+1; // +1 as we need a "working buffer" in a addition to 'cycle_length' full ones
     sub_cycle_length_ = num_sub_cycles;
 
-    if( !nfft_plan_.is_setup() || matrix_size_changed || matrix_size_os_changed || kernel_changed ){
-      nfft_plan_.setup( matrix_size_, matrix_size_os_, W );
+    if( !nfft_plan_->is_setup() || matrix_size_changed || matrix_size_os_changed || kernel_changed ){
+      nfft_plan_->setup( matrix_size_, matrix_size_os_, W );
     }
     
     std::vector<size_t> dims = to_std_vector(matrix_size_os_);    
     dims.push_back(num_coils_);
 
-    if( acc_buffer_.get_number_of_elements() == 0 || matrix_size_os_changed || num_coils_changed ){
-      acc_buffer_.create(&dims);
-      Gadgetron::clear( &acc_buffer_ );
+    if( acc_buffer_->get_number_of_elements() == 0 || matrix_size_os_changed || num_coils_changed ){
+      acc_buffer_->create(&dims);
+      Gadgetron::clear( acc_buffer_.get() );
     }
 
     dims.push_back(cycle_length_);
-    if( cyc_buffer_.get_number_of_elements() == 0 || matrix_size_os_changed || num_coils_changed ){
-      cyc_buffer_.create(&dims);      
-      Gadgetron::clear( &cyc_buffer_);
+    if( cyc_buffer_->get_number_of_elements() == 0 || matrix_size_os_changed || num_coils_changed ){
+      cyc_buffer_->create(&dims);      
+      Gadgetron::clear( cyc_buffer_.get() );
     }
     else if( num_cycles_changed ){
       // Reuse the old buffer content in this case...
@@ -86,18 +89,18 @@ namespace Gadgetron{
     // Make array containing the "current" buffer from the cyclic buffer
     //
 
-    cuNDArray<_complext> cur_buffer(acc_buffer_.get_dimensions().get(),
-				    cyc_buffer_.get_data_ptr()+cur_idx_*acc_buffer_.get_number_of_elements());
+    cuNDArray<_complext> cur_buffer(acc_buffer_->get_dimensions().get(),
+				    cyc_buffer_->get_data_ptr()+cur_idx_*acc_buffer_->get_number_of_elements());
 
     // Preprocess frame
     //
 
-    nfft_plan_.preprocess( trajectory, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_NC2C );
+    nfft_plan_->preprocess( trajectory, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_PREP_NC2C );
     
     // Convolve to form k-space frame (accumulation mode)
     //
     
-    nfft_plan_.convolve( samples, &cur_buffer, dcw_.get(), cuNFFT_plan<REAL,D,ATOMICS>::NFFT_CONV_NC2C, true );
+    nfft_plan_->convolve( samples, &cur_buffer, dcw_.get(), cuNFFT_plan<REAL,D,ATOMICS>::NFFT_CONV_NC2C, true );
 
     // Update the accumulation buffer (if it is time...)
     //
@@ -111,7 +114,7 @@ namespace Gadgetron{
       // Buffer complete, add to accumulation buffer
       //
 
-      acc_buffer_ += cur_buffer;
+      *acc_buffer_ += cur_buffer;
       acc_buffer_empty_ = false;
 
       // Start filling the next buffer in the cycle ...
@@ -123,8 +126,8 @@ namespace Gadgetron{
       // ... but first subtract this next buffer from the accumulation buffer
       //
 
-      cur_buffer.create( acc_buffer_.get_dimensions().get(), cyc_buffer_.get_data_ptr()+cur_idx_*acc_buffer_.get_number_of_elements() );
-      acc_buffer_ -= cur_buffer;
+      cur_buffer.create( acc_buffer_->get_dimensions().get(), cyc_buffer_->get_data_ptr()+cur_idx_*acc_buffer_->get_number_of_elements() );
+      *acc_buffer_ -= cur_buffer;
 
       // Clear new buffer before refilling
       //
@@ -156,13 +159,13 @@ namespace Gadgetron{
     //
 
     // Copy accumulation buffer before in-place FFT
-    cuNDArray<_complext> acc_copy = acc_buffer_;
+    cuNDArray<_complext> acc_copy = *acc_buffer_;
 
     // FFT
-    nfft_plan_.fft( &acc_copy, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_BACKWARDS );
+    nfft_plan_->fft( &acc_copy, cuNFFT_plan<REAL,D,ATOMICS>::NFFT_BACKWARDS );
     
     // Deapodize
-    nfft_plan_.deapodize( &acc_copy );
+    nfft_plan_->deapodize( &acc_copy );
     
     // Remove oversampling
     crop<_complext,D>( (matrix_size_os_-matrix_size_)>>1, &acc_copy, acc_image_.get() );

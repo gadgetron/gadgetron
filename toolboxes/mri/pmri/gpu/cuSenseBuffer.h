@@ -3,6 +3,8 @@
 #include "cuBuffer.h"
 #include "cuNonCartesianSenseOperator.h"
 
+#include <stdio.h>
+
 namespace Gadgetron{
 
   template<class REAL, unsigned int D, bool ATOMICS = false> 

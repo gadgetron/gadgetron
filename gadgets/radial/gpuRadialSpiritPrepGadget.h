@@ -27,9 +27,9 @@ namespace Gadgetron{
     
     virtual void allocate_accumulation_buffer( unsigned int num_buffers );
 
-    unsigned int number_of_iterations_;
-    double cg_limit_;
-    double reg_weight_;
+    virtual cuBuffer<float,2>* get_buffer_ptr(int idx){
+      return &this->acc_buffer_spirit_[idx];
+    }
   };
 
   GADGET_FACTORY_DECLARE(gpuRadialSpiritPrepGadget)

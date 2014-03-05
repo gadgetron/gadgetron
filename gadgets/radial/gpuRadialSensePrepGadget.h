@@ -25,6 +25,9 @@ namespace Gadgetron{
     
     virtual void allocate_accumulation_buffer( unsigned int num_buffers );
     
+    virtual cuBuffer<float,2>* get_buffer_ptr(int idx){
+      return (this->buffer_using_solver_) ? &this->acc_buffer_sense_cg_[idx] : &this->acc_buffer_sense_[idx];
+    }
   };
 
   GADGET_FACTORY_DECLARE(gpuRadialSensePrepGadget)

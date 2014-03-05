@@ -8,6 +8,8 @@
 #include "cuNFFT.h"
 #include "cuCgPreconditioner.h"
 #include "cuBuffer.h"
+#include "cuSenseBufferCg.h"
+#include "cuSpiritBuffer.h"
 
 #include <ismrmrd.h>
 #include <complex>
@@ -173,7 +175,15 @@ namespace Gadgetron{
     boost::shared_array< hoNDArray<float_complext> > csm_host_;
     boost::shared_array< hoNDArray<float_complext> > reg_host_;
     
-    boost::shared_array< cuBuffer<float,2> > acc_buffer_;
+    // We would like to make a single array of the buffer base class
+    // but encounter yet unexplainable heap corruptions if we do.
+    // Hence this workaround:
+    //boost::shared_array< cuBuffer<float,2> > acc_buffer_;
+    boost::shared_array< cuSenseBuffer<float,2> > acc_buffer_sense_;
+    boost::shared_array< cuSenseBufferCg<float,2> > acc_buffer_sense_cg_;
+    boost::shared_array< cuSpiritBuffer<float,2> > acc_buffer_spirit_;
+    virtual cuBuffer<float,2>* get_buffer_ptr(int idx) = 0;
+    // <-- end of workaround
 
     std::vector<size_t> fov_;
     std::vector<size_t> image_dimensions_;

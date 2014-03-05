@@ -10,7 +10,8 @@ namespace Gadgetron{
     // Estimate and update csm related data structures
     //
   
-    cuBuffer<float,2> *acc_buffer = &this->acc_buffer_[idx];
+    cuSenseBuffer<float,2> *acc_buffer = 
+      (this->buffer_using_solver_) ? &this->acc_buffer_sense_cg_[idx] : &this->acc_buffer_sense_[idx];
   
     boost::shared_ptr< cuNDArray<float_complext> > csm_data = 
       acc_buffer->get_accumulated_coil_images();
@@ -28,7 +29,7 @@ namespace Gadgetron{
       return boost::shared_ptr< hoNDArray<float_complext> >();
     }            
     
-    static_cast<cuSenseBuffer<float,2>*>( acc_buffer )->set_csm(csm);
+    acc_buffer->set_csm(csm);
     return csm->to_host(); 
   }
   
@@ -38,7 +39,8 @@ namespace Gadgetron{
     // Estimate and update regularization image related data structures
     //
     
-    cuBuffer<float,2> *acc_buffer = &this->acc_buffer_[set*this->slices_+slice];
+    cuSenseBuffer<float,2> *acc_buffer = (this->buffer_using_solver_) ? 
+      &this->acc_buffer_sense_cg_[set*this->slices_+slice] : &this->acc_buffer_sense_[set*this->slices_+slice];
 
     if( buffer_using_solver_ && ( mode_ == 2 || mode_ == 3 ) ){
       static_cast<cuSenseBufferCg<float,2>*>( acc_buffer )->preprocess
@@ -62,21 +64,24 @@ namespace Gadgetron{
     // Allocate accumulation buffer
     //
   
-    if( this->buffer_using_solver_ )
-      this->acc_buffer_ = boost::shared_array< cuBuffer<float,2> >(new cuSenseBufferCg<float,2>[size]);
-    else
-      this->acc_buffer_ = boost::shared_array< cuBuffer<float,2> >(new cuSenseBuffer<float,2>[size]);
+    if( this->buffer_using_solver_ ){
+      this->acc_buffer_sense_cg_ = boost::shared_array< cuSenseBufferCg<float,2> >(new cuSenseBufferCg<float,2>[size]);
+    }
+    else{
+      this->acc_buffer_sense_ = boost::shared_array< cuSenseBuffer<float,2> >(new cuSenseBuffer<float,2>[size]);
+    }
   }
 
   void gpuRadialSensePrepGadget::reconfigure(unsigned int set, unsigned int slice, bool use_dcw)
   {    
     gpuRadialPrepGadget::reconfigure(set, slice, use_dcw);
     
-    cuBuffer<float,2> *acc_buffer = &this->acc_buffer_[set*this->slices_+slice];
-    
     if( buffer_using_solver_ ){
-      if(use_dcw) static_cast<cuSenseBufferCg<float,2>*>( acc_buffer )->set_dcw_for_rhs(calculate_density_compensation_for_rhs(set, slice));
-      static_cast<cuSenseBufferCg<float,2>*>( acc_buffer )->preprocess(calculate_trajectory_for_rhs(0, set, slice).get());
+
+      if(use_dcw) 
+        this->acc_buffer_sense_cg_[set*this->slices_+slice].set_dcw_for_rhs(calculate_density_compensation_for_rhs(set, slice));
+
+      this->acc_buffer_sense_cg_[set*this->slices_+slice].preprocess(calculate_trajectory_for_rhs(0, set, slice).get());
     }    
   }
 }

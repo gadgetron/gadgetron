@@ -32,6 +32,7 @@ namespace Gadgetron{
    * @brief Gets the index of the index of the element with minimum absolute
    * @param x Input data
    * @return index of absolute minimum values
+   * @details Note that this returns the C-style index and NOT the Fortran index.
    */
   template<class T> EXPORTGPUCORE size_t amin( cuNDArray<T> *x );
   

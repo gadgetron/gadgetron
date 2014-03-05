@@ -38,6 +38,8 @@ namespace Gadgetron{
     virtual bool add_frame_data( cuNDArray<_complext> *samples, cuNDArray<_reald> *trajectory ); 
 
     virtual boost::shared_ptr< cuNDArray< complext<REAL> > > get_accumulated_coil_images();
+
+    // Workaround for weird boost/g++ error
     virtual boost::shared_ptr< cuNDArray< complext<REAL> > > get_combined_coil_image() = 0;
     
   protected:
@@ -47,10 +49,11 @@ namespace Gadgetron{
     unsigned int cycle_length_, sub_cycle_length_;
     unsigned int cur_idx_, cur_sub_idx_;
     bool acc_buffer_empty_;
-    cuNDArray<_complext> acc_buffer_, cyc_buffer_;
+    boost::shared_ptr< cuNDArray<_complext> > acc_buffer_;
+    boost::shared_ptr< cuNDArray<_complext> > cyc_buffer_;
     boost::shared_ptr< cuNDArray<_complext> > acc_image_;
     boost::shared_ptr< cuNDArray<REAL> > dcw_;
-    cuNFFT_plan<REAL,D,ATOMICS> nfft_plan_;
+    boost::shared_ptr< cuNFFT_plan<REAL,D,ATOMICS> > nfft_plan_;
   };
 
   // To prevent the use of atomics with doubles.

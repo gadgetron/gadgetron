@@ -16,7 +16,7 @@ namespace Gadgetron {
     E_->setup( this->matrix_size_, this->matrix_size_os_, W );
 
     cg_.set_encoding_operator( this->E_ );
-    cg_.set_max_iterations( 3 );
+    cg_.set_max_iterations( 5 );
     cg_.set_tc_tolerance( 1e-8 );
     cg_.set_output_mode( cuCgSolver<_complext>::OUTPUT_VERBOSE);
   }

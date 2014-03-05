@@ -270,10 +270,9 @@ namespace Gadgetron {
     std::vector<size_t> rosTmp = *ref_data->get_dimensions();
 
     std::vector<unsigned int> ros(rosTmp.size());
-    for ( unsigned int ii=0; ii<rosTmp.size(); ii++ )
-      {
-        ros[ii ] = rosTmp[ii];
-      }
+    for ( unsigned int ii=0; ii<rosTmp.size(); ii++ ){
+      ros[ii] = rosTmp[ii];
+    }
 
     ros.pop_back(); //Remove the number of coils
     std::vector<unsigned int> ros_offset(ref_data->get_number_of_dimensions(),0);
@@ -350,13 +349,6 @@ namespace Gadgetron {
     cuNDArray<T> AHrhs = cuNDArray<T>(&AHrhs_dims);
 
     cublasHandle_t handle = *CUBLASContextProvider::instance()->getCublasHandle();
-    /*
-      if (cublasCreate_v2(&handle) != CUBLAS_STATUS_SUCCESS) {
-      std::cerr << "htgrappa_calculate_grappa_unmixing: unable to create cublas handle" << std::endl;
-      return -1;
-
-      }
-    */
 
     std::vector<size_t> gkernel_dims;
     gkernel_dims.push_back((*kernel_size)[0]);
@@ -410,98 +402,98 @@ namespace Gadgetron {
         cublasStatus_t stat;
 
         if ( set == 0 )
-        {
+          {
             {
-                //GPUTimer t2("Cgemm call");
-                stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
-                                                n,n,m,(float2*) &alpha,
-                                                (float2*) system_matrix.get_data_ptr(), m,
-                                                (float2*) system_matrix.get_data_ptr(), m,
-                                                (float2*) &beta, (float2*) AHA.get_data_ptr(), n);
-
-                if (stat != CUBLAS_STATUS_SUCCESS) {
-                    std::cerr << "htgrappa_calculate_grappa_unmixing: Failed to form AHA product using cublas gemm" << std::endl;
-                    std::cerr << "---- cublas error code " << stat << std::endl;
-                    return -1;
-                }
+              //GPUTimer t2("Cgemm call");
+              stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
+                                 n,n,m,(float2*) &alpha,
+                                 (float2*) system_matrix.get_data_ptr(), m,
+                                 (float2*) system_matrix.get_data_ptr(), m,
+                                 (float2*) &beta, (float2*) AHA.get_data_ptr(), n);
+                
+              if (stat != CUBLAS_STATUS_SUCCESS) {
+                std::cerr << "htgrappa_calculate_grappa_unmixing: Failed to form AHA product using cublas gemm" << std::endl;
+                std::cerr << "---- cublas error code " << stat << std::endl;
+                return -1;
+              }
             }
-
+            
             {
-                //timer.start("copy AHA to host");
-                if (cudaMemcpy(pAHA, AHA.get_data_ptr(), AHA_host.get_number_of_bytes(), cudaMemcpyDeviceToHost) != cudaSuccess)
+              //timer.start("copy AHA to host");
+              if (cudaMemcpy(pAHA, AHA.get_data_ptr(), AHA_host.get_number_of_bytes(), cudaMemcpyDeviceToHost) != cudaSuccess)
                 {
-                    std::cerr << "htgrappa_calculate_grappa_unmixing: Failed to copy AHA to host" << std::endl;
-                    std::cerr << "---- cublas error code " << stat << std::endl;
-                    return -1;
+                  std::cerr << "htgrappa_calculate_grappa_unmixing: Failed to copy AHA to host" << std::endl;
+                  std::cerr << "---- cublas error code " << stat << std::endl;
+                  return -1;
                 }
-                //timer.stop();
+              //timer.stop();
 
-                //timer.start("apply the regularization");
-                // apply the regularization
-                double lamda = 0.0005;
+              //timer.start("apply the regularization");
+              // apply the regularization
+              double lamda = 0.0005;
 
-                double trA = std::sqrt(pAHA[0].x*pAHA[0].x + pAHA[0].y*pAHA[0].y);
-                size_t c;
-                for ( c=1; c<n; c++ )
+              double trA = std::sqrt(pAHA[0].x*pAHA[0].x + pAHA[0].y*pAHA[0].y);
+              size_t c;
+              for ( c=1; c<n; c++ )
                 {
-                    float x = pAHA[c+c*n].x;
-                    float y = pAHA[c+c*n].y;
-                    trA += std::sqrt(x*x+y*y);
+                  float x = pAHA[c+c*n].x;
+                  float y = pAHA[c+c*n].y;
+                  trA += std::sqrt(x*x+y*y);
                 }
 
-                double value = trA*lamda/n;
-                for ( c=0; c<n; c++ )
+              double value = trA*lamda/n;
+              for ( c=0; c<n; c++ )
                 {
-                    float x = pAHA[c+c*n].x;
-                    float y = pAHA[c+c*n].y;
-                    pAHA[c+c*n].x = std::sqrt(x*x+y*y) + value;
-                    pAHA[c+c*n].y = 0;
+                  float x = pAHA[c+c*n].x;
+                  float y = pAHA[c+c*n].y;
+                  pAHA[c+c*n].x = std::sqrt(x*x+y*y) + value;
+                  pAHA[c+c*n].y = 0;
                 }
-                //timer.stop();
+              //timer.stop();
 
-                //timer.start("copy the AHA to device");
-                if (cudaMemcpy(AHA.get_data_ptr(), pAHA, AHA_host.get_number_of_bytes(), cudaMemcpyHostToDevice) != cudaSuccess)
+              //timer.start("copy the AHA to device");
+              if (cudaMemcpy(AHA.get_data_ptr(), pAHA, AHA_host.get_number_of_bytes(), cudaMemcpyHostToDevice) != cudaSuccess)
                 {
-                    std::cerr << "htgrappa_calculate_grappa_unmixing: Failed to copy regularized AHA to device" << std::endl;
-                    std::cerr << "---- cublas error code " << stat << std::endl;
-                    return -1;
+                  std::cerr << "htgrappa_calculate_grappa_unmixing: Failed to copy regularized AHA to device" << std::endl;
+                  std::cerr << "---- cublas error code " << stat << std::endl;
+                  return -1;
                 }
-                //timer.stop();
+              //timer.stop();
             }
 
             AHA_set0 = AHA;
-        }
+          }
         else
-        {
+          {
             AHA = AHA_set0;
-        }
+          }
 
-      //  {
-      //      std::string filename = debugFolder+appendix+"AHA.cplx";
-            //write_cuNDArray_to_disk(&AHA, filename.c_str());
-      //  }
+        //  {
+        //      std::string filename = debugFolder+appendix+"AHA.cplx";
+        //write_cuNDArray_to_disk(&AHA, filename.c_str());
+        //  }
 
         {
 
-            //GPUTimer timer("GRAPPA cublas gemm");
-            //TODO: Sort out arguments for source and target coils here.
-            stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
-                    n,target_coils,m,(float2*) &alpha,
-                    (float2*) system_matrix.get_data_ptr(), m,
-                    (float2*) b.get_data_ptr(), m,
-                    (float2*) &beta, (float2*)AHrhs.get_data_ptr(), n);
+          //GPUTimer timer("GRAPPA cublas gemm");
+          //TODO: Sort out arguments for source and target coils here.
+          stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
+                             n,target_coils,m,(float2*) &alpha,
+                             (float2*) system_matrix.get_data_ptr(), m,
+                             (float2*) b.get_data_ptr(), m,
+                             (float2*) &beta, (float2*)AHrhs.get_data_ptr(), n);
 
         }
 
-      //  {
-      //      std::string filename = debugFolder+appendix+"AHrhs.cplx";
-            //write_cuNDArray_to_disk(&AHrhs, filename.c_str());
-      //  }
+        //  {
+        //      std::string filename = debugFolder+appendix+"AHrhs.cplx";
+        //write_cuNDArray_to_disk(&AHrhs, filename.c_str());
+        //  }
 
         if (stat != CUBLAS_STATUS_SUCCESS) {
-            std::cerr << "htgrappa_calculate_grappa_unmixing: Failed to form AHrhs product using cublas gemm" << std::endl;
-            std::cerr << "---- cublas error code " << stat << std::endl;
-            return -1;
+          std::cerr << "htgrappa_calculate_grappa_unmixing: Failed to form AHrhs product using cublas gemm" << std::endl;
+          std::cerr << "---- cublas error code " << stat << std::endl;
+          return -1;
         }
 
 
@@ -644,11 +636,11 @@ namespace Gadgetron {
     return 0;
   }
 
-template <class T> int inverse_clib_matrix(cuNDArray<T>* A,
-                                           cuNDArray<T>* b,
-                                           cuNDArray<T>* coeff,
-                                           double lamda)
-{
+  template <class T> int inverse_clib_matrix(cuNDArray<T>* A,
+                                             cuNDArray<T>* b,
+                                             cuNDArray<T>* coeff,
+                                             double lamda)
+  {
     // A: M*N
     // b: M*K
     size_t M = A->get_size(0);
@@ -681,18 +673,18 @@ template <class T> int inverse_clib_matrix(cuNDArray<T>* A,
     //}
 
     {
-        //GPUTimer t2("compute AHA ...");
-        cublasStatus_t stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
-                N,N,M,(float2*) &alpha,
-                (float2*) A->get_data_ptr(), M,
-                (float2*) A->get_data_ptr(), M,
-                (float2*) &beta, (float2*) AHA.get_data_ptr(), N);
+      //GPUTimer t2("compute AHA ...");
+      cublasStatus_t stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
+                                        N,N,M,(float2*) &alpha,
+                                        (float2*) A->get_data_ptr(), M,
+                                        (float2*) A->get_data_ptr(), M,
+                                        (float2*) &beta, (float2*) AHA.get_data_ptr(), N);
 
-        if (stat != CUBLAS_STATUS_SUCCESS)
+      if (stat != CUBLAS_STATUS_SUCCESS)
         {
-            std::cerr << "inverse_clib_matrix: Failed to form AHA product using cublas gemm" << std::endl;
-            std::cerr << "---- cublas error code " << stat << std::endl;
-            return -1;
+          std::cerr << "inverse_clib_matrix: Failed to form AHA product using cublas gemm" << std::endl;
+          std::cerr << "---- cublas error code " << stat << std::endl;
+          return -1;
         }
     }
 
@@ -702,18 +694,18 @@ template <class T> int inverse_clib_matrix(cuNDArray<T>* A,
     //}
 
     {
-        //GPUTimer t2("compute AHrhs ...");
-        cublasStatus_t stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
-                N,K,M,(float2*) &alpha,
-                (float2*) A->get_data_ptr(), M,
-                (float2*) b->get_data_ptr(), M,
-                (float2*) &beta, (float2*)coeff->get_data_ptr(), N);
+      //GPUTimer t2("compute AHrhs ...");
+      cublasStatus_t stat = cublasCgemm(handle, CUBLAS_OP_C, CUBLAS_OP_N,
+                                        N,K,M,(float2*) &alpha,
+                                        (float2*) A->get_data_ptr(), M,
+                                        (float2*) b->get_data_ptr(), M,
+                                        (float2*) &beta, (float2*)coeff->get_data_ptr(), N);
 
-        if (stat != CUBLAS_STATUS_SUCCESS)
+      if (stat != CUBLAS_STATUS_SUCCESS)
         {
-            std::cerr << "inverse_clib_matrix: Failed to form AHrhs product using cublas gemm" << std::endl;
-            std::cerr << "---- cublas error code " << stat << std::endl;
-            return -1;
+          std::cerr << "inverse_clib_matrix: Failed to form AHrhs product using cublas gemm" << std::endl;
+          std::cerr << "---- cublas error code " << stat << std::endl;
+          return -1;
         }
     }
 
@@ -724,7 +716,7 @@ template <class T> int inverse_clib_matrix(cuNDArray<T>* A,
 
     // apply the regularization
     if ( lamda > 0 )
-    {
+      {
         hoNDArray<T> AHA_host(N, N);
         float2* pAHA = (float2*) AHA_host.get_data_ptr();
 
@@ -732,10 +724,10 @@ template <class T> int inverse_clib_matrix(cuNDArray<T>* A,
 
         //timer.start("copy AHA to host");
         if (cudaMemcpy(pAHA, AHA.get_data_ptr(), AHA_host.get_number_of_bytes(), cudaMemcpyDeviceToHost) != cudaSuccess)
-        {
+          {
             std::cerr << "inverse_clib_matrix: Failed to copy AHA to host" << std::endl;
             return -1;
-        }
+          }
         //timer.stop();
 
         //timer.start("apply the regularization");
@@ -743,35 +735,35 @@ template <class T> int inverse_clib_matrix(cuNDArray<T>* A,
         double trA = std::sqrt(pAHA[0].x*pAHA[0].x + pAHA[0].y*pAHA[0].y);
         size_t c;
         for ( c=1; c<N; c++ )
-        {
+          {
             float x = pAHA[c+c*N].x;
             float y = pAHA[c+c*N].y;
             trA += std::sqrt(x*x+y*y);
-        }
+          }
 
         double value = trA*lamda/N;
         for ( c=0; c<N; c++ )
-        {
+          {
             float x = pAHA[c+c*N].x;
             float y = pAHA[c+c*N].y;
             pAHA[c+c*N].x = std::sqrt(x*x+y*y) + value;
             pAHA[c+c*N].y = 0;
-        }
+          }
         //timer.stop();
 
         //timer.start("copy the AHA to device");
         if (cudaMemcpy(AHA.get_data_ptr(), pAHA, AHA_host.get_number_of_bytes(), cudaMemcpyHostToDevice) != cudaSuccess)
-        {
+          {
             std::cerr << "inverse_clib_matrix: Failed to copy regularized AHA to device" << std::endl;
             return -1;
-        }
+          }
         //timer.stop();
-    }
+      }
 
     culaStatus s;
     s = culaDeviceCgels( 'N', N, N, K,
-            (culaDeviceFloatComplex*)AHA.get_data_ptr(), N,
-            (culaDeviceFloatComplex*)coeff->get_data_ptr(), N);
+                         (culaDeviceFloatComplex*)AHA.get_data_ptr(), N,
+                         (culaDeviceFloatComplex*)coeff->get_data_ptr(), N);
 
 
     //{
@@ -780,13 +772,13 @@ template <class T> int inverse_clib_matrix(cuNDArray<T>* A,
     //}
 
     if (s != culaNoError)
-    {
+      {
         std::cout << "inverse_clib_matrix: linear solve failed" << std::endl;
         return -1;
-    }
+      }
 
     return 0;
-}
+  }
 
   //Template instanciation
   template EXPORTGPUPMRI int htgrappa_calculate_grappa_unmixing(cuNDArray<complext<float> >* ref_data,

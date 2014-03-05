@@ -151,7 +151,7 @@ namespace Gadgetron{
   //
 
   /**
-   * @brief Clears the array to all zeros ( in place). Faster than fill.
+   * @brief Clears the array to all zeros (in place). Faster than fill.
    * @param[in,out] x Input and output array.
    */
   template<class T> EXPORTGPUCORE void clear( cuNDArray<T> *x );

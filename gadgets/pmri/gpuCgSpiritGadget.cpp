@@ -115,7 +115,7 @@ namespace Gadgetron{
 
       // Setup solver
       cg_.set_encoding_operator( E_ );        // encoding matrix
-      cg_.add_regularization_operator( S_ );  // regularization matrix
+      if( kappa_ > 0.0f ) cg_.add_regularization_operator( S_ );  // regularization matrix
       //cg_.add_regularization_operator( R_ );  // regularization matrix
       //cg_.set_preconditioner( D_ );           // preconditioning matrix
       cg_.set_max_iterations( number_of_iterations_ );
