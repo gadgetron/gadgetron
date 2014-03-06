@@ -3,6 +3,8 @@
 #include "vector_td_utilities.h"
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_operators.h"
+#include "cuNDArray_reductions.h"
+#include "cuNDArray_utils.h"
 #include "cuNDArray_blas.h"
 #include "cuNDFFT.h"
 #include "cudaDeviceManager.h"
@@ -143,19 +145,28 @@ namespace Gadgetron {
       throw std::runtime_error("estimate_spirit_kernels: The kernel size should be odd");
     }
 
+
     // Normalize input array to an average intensity of one per element
     //
+    std::vector<size_t> old_dims = *_kspace->get_dimensions();
+    std::vector<size_t> dims= old_dims;
+    /*dims[0] /= 2;
+    dims[1] /= 2;*/
+    //dims[0]=36;
+    //dims[1]=36;
+    //cuNDArray<float_complext> kspace(_kspace);
+    cuNDArray<float_complext> kspace(dims);
 
-    cuNDArray<float_complext> kspace(_kspace);
+    vector_td<size_t,2> offset((old_dims[0]-dims[0])/2,(old_dims[1]-dims[1])/2);
+    crop<float_complext,2>(offset,_kspace,&kspace);
     float sum = nrm2(&kspace);    
     float_complext in_max = kspace[amax(&kspace)];
     kspace /= (float(kspace.get_number_of_elements())/sum);
-
     unsigned int num_coils = kspace.get_size(kspace.get_number_of_dimensions()-1);
     unsigned int elements_per_coil = kspace.get_number_of_elements()/num_coils;
     
     std::vector<size_t> out_dims;
-    out_dims.push_back(kspace.get_size(0)); out_dims.push_back(kspace.get_size(1));
+    out_dims.push_back(_kspace->get_size(0)); out_dims.push_back(_kspace->get_size(1));
     out_dims.push_back(num_coils*num_coils);
     
     boost::shared_ptr< cuNDArray<float_complext> > kernel_images
@@ -164,7 +175,7 @@ namespace Gadgetron {
     // Clear to ones in case we terminate early
     //
 
-    fill(kernel_images.get(), float_complext(1.0f));
+    fill(kernel_images.get(), float_complext(1.0f/num_coils));
 
     // Form m x n system matrix A
     //
@@ -215,7 +226,8 @@ namespace Gadgetron {
     CHECK_FOR_CUDA_ERROR();
 
     float_complext alpha(1.0f);
-    float_complext beta(0.1f*in_max); // Tikhonov regularization weight
+    //float_complext beta(0.1f*in_max); // Tikhonov regularization weight
+    float_complext beta(0.0f); // Tikhonov regularization weight
     
     stat = cublasCgemm( handle, CUBLAS_OP_C, CUBLAS_OP_N,
                         n,n,m,
@@ -267,35 +279,10 @@ namespace Gadgetron {
     counter++;
     */
 
-    // Use Cula solver to find 'x' such that A^TA x = rhs
-    //
-
-    std::vector<size_t> pivot_dims;
-    pivot_dims.push_back(n);
-
-    cuNDArray<int> pivots(&rhs_dims);
-    culaStatus s = 
-      culaDeviceCgetrf( n, n, (culaDeviceFloatComplex*) AHA.get_data_ptr(), n, pivots.get_data_ptr() ); 
-
-    if( s != culaNoError ) {
-      if( s == 8 ){
-        std::cerr << "CULA error code " << s << ": " << culaGetStatusString(s) << std::endl;
-        std::cerr << "Assuming that the buffer is not yet filled and return ones" << std::endl;
-        return kernel_images;
-      }
-      std::cerr << "CULA error code " << s << ": " << culaGetStatusString(s) << std::endl;
-      culaInfo i = culaGetErrorInfo();
-      char buf[2048];
-      culaGetErrorInfoString(s, i, buf, sizeof(buf));
-      printf("Error %d: %s\n", (int)i, buf);
-      throw std::runtime_error("estimate_spirit_kernels: CULA error computing 'getrf'");
-    }
-
-    s = culaDeviceCgetrs( 'N', n, num_coils,
-                          (culaDeviceFloatComplex*) AHA.get_data_ptr(), n,
-                          pivots.get_data_ptr(),
-                          (culaDeviceFloatComplex*) rhs.get_data_ptr(), n );
-    
+    //CGELS is used rather than a more conventional solver as it is part of CULA free.
+    culaStatus s = culaDeviceCgels( 'N', n, n, num_coils,
+                                 (culaDeviceFloatComplex*)AHA.get_data_ptr(), n,
+                                 (culaDeviceFloatComplex*)rhs.get_data_ptr(), n);
     if( s != culaNoError ) {
       if( s == 8 ){
         std::cerr << "CULA error code " << s << ": " << culaGetStatusString(s) << std::endl;
@@ -310,9 +297,13 @@ namespace Gadgetron {
       throw std::runtime_error("estimate_spirit_kernels: CULA error computing 'getrs'");
     }
 
+    //CULA will sometime return NaN without an explicit error. This code tests for NaNs and returns if found.
+    float nan_test = nrm2(&rhs);
+    if (nan_test != nan_test) return kernel_images;
+
     // Fill k-spaces with the computed kernels at the center
     //
-    
+
     setup_grid( kernel_images->get_number_of_elements(), &blockDim, &gridDim );
     
     write_convolution_masks_kernel<<< gridDim, blockDim >>>
@@ -323,10 +314,13 @@ namespace Gadgetron {
 
     // Batch FFT into image space
     //
+    A.clear();
+    AHA.clear();
+    rhs.clear();
 
     std::vector<size_t> dims_to_xform;
     dims_to_xform.push_back(0); dims_to_xform.push_back(1);    
-    cuNDFFT<float>::instance()->ifft( kernel_images.get(), &dims_to_xform );
+    cuNDFFT<float>::instance()->ifft( kernel_images.get(), &dims_to_xform, false );
     
     /*
     static int counter = 0;
