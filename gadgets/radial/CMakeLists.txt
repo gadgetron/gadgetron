@@ -19,15 +19,23 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
   ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
   ${ISMRMRD_XSD_INCLUDE_DIR}
+  ${ARMADILLO_INCLUDE_DIRS}
   )
 
 include_directories(${CUDA_INCLUDE_DIRS})
+
+if (ARMADILLO_FOUND)
+  list(APPEND PHASE_GADGET RadialPhaseCorrectionGadget.cpp)
+elseif (ARMADILLO_FOUND)
+  MESSAGE("Armadillo not found, not compiling radial phase correction gadget")
+endif (ARMADILLO_FOUND)
 
 add_library(gadgetron_gpuradial SHARED 
   gpuRadialPrepGadget.h gpuRadialPrepGadget.cpp 
   gpuRadialSensePrepGadget.h gpuRadialSensePrepGadget.cpp 
   gpuRadialSpiritPrepGadget.h gpuRadialSpiritPrepGadget.cpp 
   gpuRetroGatedSensePrepGadget.h gpuRetroGatedSensePrepGadget.cpp
+  ${PHASE_GADGET}
   ${ISMRMRD_XSD_SOURCE})
 
 target_link_libraries(gadgetron_gpuradial
