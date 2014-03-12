@@ -3,7 +3,7 @@ if (WIN32)
 endif (WIN32)
 
 if(WIN32)
-link_directories(${Boost_LIBRARY_DIRS})
+  link_directories(${Boost_LIBRARY_DIRS})
 endif(WIN32)
 
 include_directories(
@@ -16,6 +16,7 @@ include_directories(
 cuda_add_library(gpusolvers SHARED 
     cuCgPreconditioner.h
     cuCgSolver.h
+    cuNlcgSolver.h
     cuGpBbSolver.h
     cuLwSolver.h
     cuSbcCgSolver.h
@@ -23,6 +24,7 @@ cuda_add_library(gpusolvers SHARED
     cuSbcLwSolver.h
     cuSbLwSolver.h
     gpusolvers_export.h
+    cuNlcgSolver.cu
     cuGpBbSolver.cu
   )
 
@@ -43,7 +45,11 @@ install(FILES
   cuSbLwSolver.h
   cuSbcLwSolver.h
   cuCgSolver.h
+  cuNlcgSolver.h
   cuGpBbSolver.h
+  hoCuCgSolver.h
+  hoCuNlcgSolver.h
+  hoCuSbcCgSolver.h
   hoCuGpBbSolver.h
   gpusolvers_export.h
   DESTINATION include)

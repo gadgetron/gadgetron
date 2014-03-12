@@ -9,6 +9,7 @@ install(FILES
   solver.h
   linearOperatorSolver.h
   cgSolver.h
+  nlcgSolver.h
   sbSolver.h
   sbcSolver.h
   cgCallback.h	
