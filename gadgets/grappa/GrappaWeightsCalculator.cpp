@@ -77,19 +77,21 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
         size_t ks = 5;
         size_t power = 3;
 
-        cuNDArray<complext<float> > D(RO*E1, ks*ks, CHA);
+        /*cuNDArray<complext<float> > D(RO*E1, ks*ks, CHA);
         cuNDArray<complext<float> > DH_D(RO*E1, CHA, CHA); 
         cuNDArray<complext<float> > V1(RO*E1, CHA);
-        cuNDArray<complext<float> > U1(RO*E1, ks*ks);
+        cuNDArray<complext<float> > U1(RO*E1, ks*ks);*/
 
 		// Compute CSM
-		cuNDArray<float_complext> csm;
-        csm.create(device_data.get_dimensions());
+		/*cuNDArray<float_complext> csm;
+        csm.create(device_data.get_dimensions());*/
+
+        boost::shared_ptr< cuNDArray<float_complext> > csm;
 		{
         	//GPUTimer timer("GRAPPA CSM");
-			// csm = estimate_b1_map<float,2>( &device_data, target_coils_ );
+			csm = estimate_b1_map<float,2>( &device_data, target_coils_ );
 
-            estimate_b1_map_2D_NIH_Souheil( &device_data, &csm, ks, power, D, DH_D, V1, U1 );
+            // estimate_b1_map_2D_NIH_Souheil( &device_data, &csm, ks, power, D, DH_D, V1, U1 );
 
 			//GADGET_DEBUG2("Coils in csm: %d\n", csm->get_size(2));
 		}
@@ -118,7 +120,7 @@ template <class T> int GrappaWeightsCalculator<T>::svc(void)  {
 			kernel_size.push_back(5);
 			kernel_size.push_back(4);
 			if ( htgrappa_calculate_grappa_unmixing(reinterpret_cast< cuNDArray<complext<float> >* >(&device_data),
-					&csm,
+					csm.get(),
 					(unsigned int)(mb1->getObjectPtr()->acceleration_factor),
 					&kernel_size,
 					&unmixing_dev,
