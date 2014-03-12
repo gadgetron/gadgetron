@@ -6,6 +6,7 @@ IF(CUDA_FOUND OR ARMADILLO_FOUND)
 ENDIF(CUDA_FOUND OR ARMADILLO_FOUND)
 
 add_subdirectory(mri)
+add_subdirectory(ct)
 add_subdirectory(nfft)
 add_subdirectory(registration)
 

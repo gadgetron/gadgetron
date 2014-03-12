@@ -175,7 +175,7 @@ find_package(NumPy)
 find_package(GLEW)
 find_package(OpenGL)
 find_package(GLUT)
-find_package(HDF5 1.8 COMPONENTS C CXX)
+find_package(HDF5 1.8 COMPONENTS C CXX HL)
 
 find_package(Ismrmrd)
 if(ISMRMRD_FOUND)

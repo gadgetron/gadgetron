@@ -14,6 +14,7 @@ include_directories(
   )
 
 add_subdirectory(mri)
+add_subdirectory(ct)
 add_subdirectory(denoising)
 add_subdirectory(deblurring)
 add_subdirectory(registration)
