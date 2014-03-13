@@ -3,7 +3,6 @@
 
 #include "hoNDArray_operators.h"
 #include "hoNDArray_utils.h"
-#include "hoRegistration_utils.h"
 #include "hoCKOpticalFlowSolver.h"
 #include "RegistrationAveragingGadget.h"
 
