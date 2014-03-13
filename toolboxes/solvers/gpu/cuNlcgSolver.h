@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ncgSolver.h"
+#include "nlcgSolver.h"
 #include "cuNDArray_operators.h"
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_blas.h"
@@ -14,12 +14,12 @@
 
 namespace Gadgetron{
   
-  template <class T> class EXPORTGPUSOLVERS cuNCGSolver : public ncgSolver<cuNDArray<T> >
+  template <class T> class EXPORTGPUSOLVERS cuNlcgSolver : public nlcgSolver<cuNDArray<T> >
   {
   public:
     
-    cuNCGSolver() : ncgSolver<cuNDArray<T> >() {}
-    virtual ~cuNCGSolver() {}
+    cuNlcgSolver() : nlcgSolver<cuNDArray<T> >() {}
+    virtual ~cuNlcgSolver() {}
     
     virtual void solver_non_negativity_filter(cuNDArray<T> *x,cuNDArray<T> *g);    
   };

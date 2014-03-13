@@ -6,8 +6,6 @@
 #include "vector_td_utilities.h"
 #include "GPUTimer.h"
 #include "setup_grid.h"
-
-
 #include "cuNDArray_utils.h"
 
 #include <iostream>

@@ -16,11 +16,9 @@
 #include "encodingOperatorContainer.h"
 #include "vector_td_io.h"
 #include "hoPartialDerivativeOperator.h"
-#include "hoCuGPBBSolver.h"
 #include "hoCuTvOperator.h"
 #include "hoCuTvPicsOperator.h"
-#include "hoCuNCGSolver.h"
-#include "hoRegistration_utils.h"
+#include "hoCuNlcgSolver.h"
 #include "hoCuPartialDerivativeOperator.h"
 
 #include <iostream>
@@ -143,13 +141,12 @@ int main(int argc, char** argv)
   E->set_domain_dimensions(&is_dims);
   E->set_codomain_dimensions(ps->get_projections()->get_dimensions().get());
 
-  //hoCuGPBBSolver<float> solver;
-  hoCuNCGSolver<float> solver;
+  hoCuNlcgSolver<float> solver;
 
   solver.set_encoding_operator(E);
   solver.set_domain_dimensions(&is_dims);
   solver.set_max_iterations(iterations);
-  solver.set_output_mode(hoCuGPBBSolver<float>::OUTPUT_VERBOSE);
+  solver.set_output_mode(hoCuNlcgSolver<float>::OUTPUT_VERBOSE);
   solver.set_non_negativity_constraint(true);
   solver.set_rho(rho);
 

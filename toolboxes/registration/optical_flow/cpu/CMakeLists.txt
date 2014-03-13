@@ -13,7 +13,6 @@ add_library(cpureg ${LIBTYPE}
   hoHSOpticalFlowSolver.cpp
   hoCKOpticalFlowSolver.cpp
   hoLinearResampleOperator.cpp
-  hoRegistration_utils.cpp
   )
 
 target_link_libraries(cpureg 
@@ -28,7 +27,6 @@ install(FILES
   hoOpticalFlowSolver.h
   hoHSOpticalFlowSolver.h
   hoCKOpticalFlowSolver.h
-  hoRegistration_utils.h
   cpureg_export.h
   DESTINATION include)
 

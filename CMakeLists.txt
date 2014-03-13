@@ -83,9 +83,9 @@ set(Boost_NO_BOOST_CMAKE ON)
 
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono...
 if (WIN32)
-  find_package(Boost COMPONENTS system thread date_time chrono REQUIRED)
+  find_package(Boost COMPONENTS system thread date_time chrono program_options REQUIRED)
 else(WIN32)
-  find_package(Boost COMPONENTS system thread REQUIRED)
+  find_package(Boost COMPONENTS system thread program_options REQUIRED)
 endif(WIN32)
 
 find_package(FFTW3 COMPONENTS single double REQUIRED)

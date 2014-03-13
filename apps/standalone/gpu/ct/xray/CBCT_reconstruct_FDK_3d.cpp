@@ -5,7 +5,6 @@
 #include "hoNDArray_fileio.h"
 #include "hoCuNDArray_math.h"
 #include "vector_td_utilities.h"
-#include "hoRegistration_utils.h"
 #include "GPUTimer.h"
 
 #include <iostream>

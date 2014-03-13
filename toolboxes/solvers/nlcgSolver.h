@@ -17,7 +17,7 @@ namespace Gadgetron{
  *
  */
 
-template <class ARRAY_TYPE> class ncgSolver : public gpSolver<ARRAY_TYPE>
+template <class ARRAY_TYPE> class nlcgSolver : public gpSolver<ARRAY_TYPE>
 {
 
 
@@ -30,7 +30,7 @@ protected:
 
 public:
 
-	ncgSolver(): gpSolver<ARRAY_TYPE>() {
+	nlcgSolver(): gpSolver<ARRAY_TYPE>() {
 		iterations_ = 10;
 		tc_tolerance_ = (REAL)1e-7;
 		non_negativity_constraint_=false;
@@ -40,7 +40,7 @@ public:
 		rho = 0.5f;
 	}
 
-	virtual ~ncgSolver(){}
+	virtual ~nlcgSolver(){}
 
 
 	virtual void set_rho(REAL _rho){
@@ -50,7 +50,7 @@ public:
 	virtual boost::shared_ptr<ARRAY_TYPE> solve(ARRAY_TYPE* in)
 													{
 		if( this->encoding_operator_.get() == 0 ){
-			throw std::runtime_error("Error: ncgSolver::compute_rhs : no encoding operator is set" );
+			throw std::runtime_error("Error: nlcgSolver::compute_rhs : no encoding operator is set" );
 		}
 
 		// Get image space dimensions from the encoding operator
@@ -58,7 +58,7 @@ public:
 
 		boost::shared_ptr< std::vector<size_t> > image_dims = this->encoding_operator_->get_domain_dimensions();
 		if( image_dims->size() == 0 ){
-			throw std::runtime_error("Error: ncgSolver::compute_rhs : encoding operator has not set domain dimension" );
+			throw std::runtime_error("Error: nlcgSolver::compute_rhs : encoding operator has not set domain dimension" );
 		}
 
 		ARRAY_TYPE * x = new ARRAY_TYPE;
@@ -210,7 +210,7 @@ public:
 				k++;
 				//std::cout << "Res: " << dot(&encoding_space,&encoding_space)+calc_dot(regEnc,regEnc) << " Target: " << old_norm+alpha*delta*gd << std::endl;
 				//				std::cout << "Step2: " << dot(&gdiff,&d) << " Target " << sigma*gd  << std::endl;
-				if (alpha == 0){ throw std::runtime_error("NCGSolver: line-search failed, try using a rho-value closer to 1");
+				if (alpha == 0){ throw std::runtime_error("NlcgSolver: line-search failed, try using a rho-value closer to 1");
 
 
 
@@ -415,7 +415,7 @@ protected:
 	class FunctionEstimator{
 	public:
 
-		FunctionEstimator(ARRAY_TYPE* _encoding_space,ARRAY_TYPE* _encoding_step,std::vector<ARRAY_TYPE>* _regEnc,std::vector<ARRAY_TYPE>* _regEnc_step, ARRAY_TYPE * _x, ARRAY_TYPE * _d, ncgSolver<ARRAY_TYPE> * _parent)
+		FunctionEstimator(ARRAY_TYPE* _encoding_space,ARRAY_TYPE* _encoding_step,std::vector<ARRAY_TYPE>* _regEnc,std::vector<ARRAY_TYPE>* _regEnc_step, ARRAY_TYPE * _x, ARRAY_TYPE * _d, nlcgSolver<ARRAY_TYPE> * _parent)
 	{
 			encoding_step = _encoding_step;
 			encoding_space = _encoding_space;
@@ -451,7 +451,7 @@ protected:
 		std::vector<ARRAY_TYPE>* regEnc;
 		std::vector<ARRAY_TYPE>* regEnc_step;
 		ARRAY_TYPE* x, *d;
-		ncgSolver<ARRAY_TYPE>* parent;
+		nlcgSolver<ARRAY_TYPE>* parent;
 		ARRAY_TYPE xtmp;
 
 

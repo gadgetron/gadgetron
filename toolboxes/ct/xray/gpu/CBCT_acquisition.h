@@ -6,7 +6,7 @@
 
 #include "vector_td_io.h"
 #include "hoNDArray.h"
-#include "hoRegistration_utils.h"
+#include "hoNDArray_utils.h"
 
 #include <hdf5.h>
 #include <hdf5_hl.h>

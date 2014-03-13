@@ -15,10 +15,6 @@ if (ARMADILLO_FOUND)
     fixed_radial_mode1_gpu_ktsense.xml 
     golden_radial_mode2_gpu_ktsense.xml 
     spirit.xml
-    jcmrR4.xml
-    jcmrR8.xml
-    jcmrR12.xml
-    jcmrR16.xml
     DESTINATION config)
 elseif (ARMADILLO_FOUND)
   MESSAGE("Armadillo not found, only unoptimized radial config files will be available")

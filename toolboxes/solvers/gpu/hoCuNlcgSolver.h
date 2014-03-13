@@ -4,18 +4,18 @@
 #include "hoCuNDArray_blas.h"
 #include "hoNDArray_fileio.h"
 #include "complext.h"
-#include "ncgSolver.h"
+#include "nlcgSolver.h"
 
 namespace Gadgetron{
 
-template<class T> class hoCuNCGSolver: public ncgSolver<hoCuNDArray<T> >{
+template<class T> class hoCuNlcgSolver: public nlcgSolver<hoCuNDArray<T> >{
 	typedef typename realType<T>::Type REAL;
 public:
-	hoCuNCGSolver():ncgSolver<hoCuNDArray<T> >(){
+	hoCuNlcgSolver():nlcgSolver<hoCuNDArray<T> >(){
 
 	}
 
-	virtual ~hoCuNCGSolver(){};
+	virtual ~hoCuNlcgSolver(){};
 
 protected:
   virtual void solver_non_negativity_filter(hoCuNDArray<T> *x,hoCuNDArray<T> *g)
