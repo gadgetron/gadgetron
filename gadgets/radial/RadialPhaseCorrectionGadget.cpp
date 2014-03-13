@@ -124,7 +124,8 @@ namespace Gadgetron{
         //
         
         arma::mat b( profiles_, channels_ );
-        double prev_phase[channels_];
+        //double prev_phase[channels_];
+        std::vector<double> prev_phase(channels_);
         ACE_Message_Queue<ACE_MT_SYNCH>::ITERATOR iter(profiles_queue_[idx]);
         
         for( int m=0; m<profiles_; m++ ){                     

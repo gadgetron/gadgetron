@@ -205,13 +205,13 @@ namespace Gadgetron
       hoCuNDArray<float> image_3d(&dims_3d, image->get_data_ptr()+b*num_3d_elements);
 
       if( use_fbp_ ){
-        
+
         if( !cosine_weights_.get() )
           compute_cosine_weights();
-        
+
         if( !frequency_filter_.get() )
           compute_default_frequency_filter();
-        
+
         conebeam_backwards_projection<true>
           ( projections, &image_3d,
             acquisition_->get_geometry()->get_angles(), 
@@ -230,7 +230,7 @@ namespace Gadgetron
             binning_->get_bin(b),
             projections_per_batch_,
             is_dims_in_pixels, is_dims_in_mm_, ps_dims_in_mm,
-            SDD, SAD, short_scan_, use_offset_correction_, accumulate );      
+            SDD, SAD, short_scan_, use_offset_correction_, accumulate );
     }
   }
 }

@@ -127,7 +127,8 @@ namespace Gadgetron
 
   static __inline__ __device__ float B( float alpha, float delta )
   {
-    return 2.0f*(delta-alpha)+epsilon;
+    // return 2.0f*(delta-alpha)+epsilon;
+    return 2.0f*(delta-alpha)+0.001f;
  }
 
   static __inline__ __device__ float b( float alpha, float delta )
@@ -155,9 +156,9 @@ namespace Gadgetron
       const float beta = degrees2radians(angles[co[2]]);
 
       float omega = 0.5f*(S(beta/b(alpha, delta)-0.5f)+
-                          S((beta+2.0f*(alpha-delta)-epsilon)/b(alpha, delta)+0.5f)-
+                          S((beta+2.0f*(alpha-delta)-FLT_EPSILON)/b(alpha, delta)+0.5f)-
                           S((beta-CUDART_PI_F+2.0f*alpha)/b(-alpha, delta)-0.5f)-
-                          S((beta-CUDART_PI_F-2.0f*delta-epsilon)/b(-alpha, delta)+0.5f));
+                          S((beta-CUDART_PI_F-2.0f*delta-FLT_EPSILON)/b(-alpha, delta)+0.5f));
 
       projections[idx] = in*omega;
     }

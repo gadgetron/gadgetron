@@ -55,6 +55,8 @@ cuda_add_library(gpuparallelmri SHARED
 target_link_libraries(gpuparallelmri 
   gpucore 
   gpunfft 
+  cpucore
+  cpucore_math
   ${Boost_LIBRARIES}
   ${FFTW3_LIBRARIES} 
   ${CUDA_LIBRARIES} 

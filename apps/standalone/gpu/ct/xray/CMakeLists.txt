@@ -25,6 +25,9 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
   ${CUDA_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
+  ${ARMADILLO_INCLUDE_DIRS}
+  ${HDF5_INCLUDE_DIR}
+  ${HDF5_INCLUDE_DIR}/cpp
 )
 
 add_executable(CBCT_reconstruct_FDK_3d CBCT_reconstruct_FDK_3d.cpp)

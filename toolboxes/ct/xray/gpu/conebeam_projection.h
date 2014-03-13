@@ -30,8 +30,7 @@ namespace Gadgetron {
   // - depending on the provided binnning indices, just a subset of the projections can be included
   //
 
-  EXPORTGPUXRAY template <bool FBP>
-  void conebeam_backwards_projection( 
+  template <bool FBP> EXPORTGPUXRAY void conebeam_backwards_projection( 
         hoCuNDArray<float> *projections,
         hoCuNDArray<float> *image,
         std::vector<float> angles, 

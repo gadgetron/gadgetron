@@ -24,6 +24,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
   ${CUDA_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
+  ${HDF5_INCLUDE_DIR}
+  ${HDF5_INCLUDE_DIR}/cpp
 )
 
 cuda_add_library(gpuxray SHARED
@@ -33,6 +35,7 @@ cuda_add_library(gpuxray SHARED
 
 target_link_libraries(
   gpuxray gpucore gpunfft
+  cpucore_math
   ${CUDA_LIBRARIES}
 )
 
