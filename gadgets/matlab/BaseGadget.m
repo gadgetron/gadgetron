@@ -54,9 +54,11 @@ classdef BaseGadget < handle
             % put the type of the header and the bytes for the header on the queue
             if isa(head, 'ismrmrd.AcquisitionHeader')
                 g.Q(idx).type = int32(1);
+                head.check(); % fix the types
                 g.Q(idx).bytes = head.toBytes();
             elseif isa(head, 'ismrmrd.ImageHeader')
                 g.Q(idx).type = int32(2);
+                head.check(); % fix the types
                 g.Q(idx).bytes = head.toBytes();
             else
                 % TODO: do we throw an error here?

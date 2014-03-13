@@ -5,7 +5,7 @@
 
     <reader>
         <slot>1008</slot>
-        <dll>gadgetroncore</dll>
+        <dll>gadgetron_mricore</dll>
         <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
     </reader>
 
@@ -17,19 +17,19 @@
 
     <gadget>
         <name>Acc</name>
-        <dll>gadgetroncore</dll>
+        <dll>gadgetron_mricore</dll>
         <classname>AccumulatorGadget</classname>
     </gadget>
 
     <gadget>
         <name>FFT</name>
-        <dll>gadgetroncore</dll>
+        <dll>gadgetron_mricore</dll>
         <classname>FFTGadget</classname>
     </gadget>
 
     <gadget>
         <name>CoilCombinePython</name>
-        <dll>gadgetronpython</dll>
+        <dll>gadgetron_python</dll>
         <classname>ImagePythonGadget</classname>
         <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
         <property><name>python_module</name>                <value>rms_coil_combine</value></property>
@@ -40,13 +40,13 @@
 
     <gadget>
         <name>Extract</name>
-        <dll>gadgetroncore</dll>
+        <dll>gadgetron_mricore</dll>
         <classname>ExtractGadget</classname>
     </gadget>
 
     <gadget>
         <name>AutoScale</name>
-        <dll>gadgetroncore</dll>
+        <dll>gadgetron_mricore</dll>
         <classname>AutoScaleGadget</classname>
     </gadget>
 
