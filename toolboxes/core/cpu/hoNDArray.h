@@ -28,6 +28,8 @@ namespace Gadgetron{
   public:
 
     typedef NDArray<T> BaseClass;
+    typedef float coord_type;
+    typedef T value_type;
 
     hoNDArray();
 
@@ -114,17 +116,22 @@ namespace Gadgetron{
     //const T& operator()( const std::vector<size_t>& ind ) const;
 
     template<typename T2> 
-      bool copyFrom(const hoNDArray<T2>& aArray) // Should be a void function
+    bool copyFrom(const hoNDArray<T2>& aArray) // Should be a void function
     {
-      if ( !this->dimensions_equal(&aArray) ){
+      if ( !this->dimensions_equal(&aArray) )
+      {
         this->create(aArray.get_dimensions());
-      }      
-      for ( size_t i=0; i<elements_; i++ ){
+      }
+
+      long long i;
+      #pragma omp parallel for default(none) private(i) shared(aArray)
+      for ( i=0; i<(long long)elements_; i++ )
+      {
         data_[i] = static_cast<T>(aArray(i));
       }
       return true;
     }
-  
+
     void get_sub_array(const std::vector<size_t>& start, std::vector<size_t>& size, hoNDArray<T>& out);
 
     virtual void print(std::ostream& os) const;
