@@ -30,8 +30,11 @@ include_directories(
   ${HDF5_INCLUDE_DIR}/cpp
 )
 
+link_directories(${Boost_LIBRARY_DIR})
+
 if(WIN32)
-    link_libraries(optimized ${HDF5_hdf5_LIBRARY_RELEASE} ${HDF5_hdf5_cpp_LIBRARY_RELEASE} debug ${HDF5_hdf5_LIBRARY_DEBUG} ${HDF5_hdf5_cpp_LIBRARY_DEBUG})
+    link_libraries(optimized ${HDF5_hdf5_LIBRARY_RELEASE} optimized ${HDF5_hdf5_cpp_LIBRARY_RELEASE} optimized ${HDF5_hdf5_hl_LIBRARY_RELEASE} 
+	               debug ${HDF5_hdf5_LIBRARY_DEBUG} debug ${HDF5_hdf5_cpp_LIBRARY_DEBUG} debug ${HDF5_hdf5_hl_LIBRARY_DEBUG})
 else (WIN32)
     link_libraries(${HDF5_LIBRARIES})
 endif (WIN32)

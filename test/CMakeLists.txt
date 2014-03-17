@@ -18,7 +18,8 @@ if (CUDA_FOUND)
     include_directories(${CUDA_INCLUDE_DIRS})
 endif (CUDA_FOUND)
 
-link_libraries(cpucore 
+link_libraries(
+    cpucore 
     cpucore_math
     ${BOOST_LIBRARIES}
     ${GTEST_LIBRARIES} 

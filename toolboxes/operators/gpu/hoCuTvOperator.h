@@ -8,7 +8,7 @@
 
 namespace Gadgetron{
 
-template<class T, size_t D> class EXPORTGPUOPERATORS hoCuTvOperator :
+template<class T, size_t D> class hoCuTvOperator :
 public generalOperator< hoCuNDArray<T> >
 {
 

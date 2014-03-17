@@ -30,11 +30,15 @@ if (WIN32)
     ADD_DEFINITIONS(-DWIN32 -D_WIN32 -D_WINDOWS)
     ADD_DEFINITIONS(-DUNICODE -D_UNICODE)
     ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
+	ADD_DEFINITIONS(-D_VARIADIC_MAX=10) #to fix compiler limitations in Visual Studio Express
     if ( HAS_64_BIT )
         ADD_DEFINITIONS(-DWIN64 -D_WIN64)
     endif ( HAS_64_BIT )
     SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP")
     SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
+	# The two flags below is to fix Windows problems in relation to multiple defined operators new/delete and some constructors that are defined in our headers
+	SET (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE") 
+	SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /FORCE:MULTIPLE") 
 else (WIN32)
     if (UNIX)
         if (APPLE)
@@ -146,9 +150,9 @@ if (CUDA_FOUND)
   # Support compute model 3.0 from Cuda 4.2 and up
   # Support compute model 3.5 from Cuda 5 and up
 
-  set(CUDA_NVCC_FLAGS1 "-gencode arch=compute_10,code=sm_10")
-  set(CUDA_NVCC_FLAGS2 "-gencode arch=compute_20,code=sm_20")
-  set(CUDA_NVCC_FLAGS3 "-gencode arch=compute_30,code=sm_30") 
+ # set(CUDA_NVCC_FLAGS1 "-gencode arch=compute_10,code=sm_10")
+ # set(CUDA_NVCC_FLAGS2 "-gencode arch=compute_20,code=sm_20")
+ # set(CUDA_NVCC_FLAGS3 "-gencode arch=compute_30,code=sm_30") 
   set(CUDA_NVCC_FLAGS4 "-gencode arch=compute_35,code=sm_35")   
 
   if(${CUDA_VERSION} VERSION_GREATER "4.99")

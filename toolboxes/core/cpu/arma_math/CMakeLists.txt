@@ -23,17 +23,13 @@ add_library(cpucore_math ${LIBTYPE}
   )
 
 if (MKL_FOUND)
-  target_link_libraries(cpucore_math 
-    cpucore
-    ${ARMADILLO_LIBRARIES}
-    ${MKL_LIBRARIES}
-    )
-else (MKL_FOUND)
-  target_link_libraries(cpucore_math 
-    cpucore
-    ${ARMADILLO_LIBRARIES}
-    )
+  target_link_libraries(cpucore_math ${MKL_LIBRARIES})
 endif (MKL_FOUND)
+
+target_link_libraries(cpucore_math 
+    cpucore
+    ${ARMADILLO_LIBRARIES}
+    )
 
 install(TARGETS cpucore_math DESTINATION lib)
 
