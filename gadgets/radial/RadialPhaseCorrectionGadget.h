@@ -15,7 +15,6 @@ namespace Gadgetron {
     public Gadget2<ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
   {
   public:
-    GADGET_DECLARE(RadialPhaseCorrectionGadget);
     
     RadialPhaseCorrectionGadget();
     ~RadialPhaseCorrectionGadget() {};

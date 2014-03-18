@@ -77,11 +77,7 @@ namespace Gadgetron{
      * @return Weight of the operator
      */
     virtual REAL get_weight(){ return weight_; }
-    
-    void* operator new (size_t bytes) { return ::new char[bytes]; }
-    void operator delete (void *ptr) { delete [] static_cast <char *> (ptr); } 
-    void * operator new(size_t s, void * p) { return p; }
-    
+        
   protected:
     REAL weight_;
     std::vector<size_t> domain_dims_;

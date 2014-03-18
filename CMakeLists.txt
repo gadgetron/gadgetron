@@ -36,9 +36,12 @@ if (WIN32)
     endif ( HAS_64_BIT )
     SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP")
     SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
-	# The two flags below is to fix Windows problems in relation to multiple defined operators new/delete and some constructors that are defined in our headers
-	SET (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE") 
-	SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /FORCE:MULTIPLE") 
+
+	# The two flags below can be used to fix Windows problems in relation to multiple defined operators/constructors in our headers.
+	# It is somewhat unclear as to why this is necessary. Consider moving definitions to specific app/dll if the problem is encountered.
+	#SET (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE") 
+	#SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /FORCE:MULTIPLE") 
+
 else (WIN32)
     if (UNIX)
         if (APPLE)
@@ -84,6 +87,11 @@ endif ( BUILD_TOOLBOX_STATIC )
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
 set(Boost_NO_BOOST_CMAKE ON)
+
+if(WIN32)
+  add_definitions( -DBOOST_ALL_NO_LIB )
+  add_definitions( -DBOOST_ALL_DYN_LINK )
+endif(WIN32)
 
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono...
 if (WIN32)

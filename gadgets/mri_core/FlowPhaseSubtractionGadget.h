@@ -18,7 +18,6 @@ namespace Gadgetron{
     {
 
     public:
-        GADGET_DECLARE(FlowPhaseSubtractionGadget);
 
         FlowPhaseSubtractionGadget();
         virtual ~FlowPhaseSubtractionGadget();
