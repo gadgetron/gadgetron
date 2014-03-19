@@ -26,21 +26,6 @@ namespace Gadgetron{
         typedef T element_type;
         typedef T value_type;
 
-        void* operator new (size_t bytes)
-        {
-            return ::new char[bytes];
-        }
-
-        void operator delete (void *ptr)
-        {
-            delete [] static_cast <char *> (ptr);
-        } 
-
-        void * operator new(size_t s, void * p)
-        {
-            return p;
-        }
-
         NDArray () : data_(0), elements_(0), delete_data_on_destruct_(true)
         {
             dimensions_ = boost::shared_ptr< std::vector<size_t> >( new std::vector<size_t> );
