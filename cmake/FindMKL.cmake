@@ -13,7 +13,9 @@
 # in windows, try to find MKL at C:/Program Files (x86)/Intel/Composer XE/mkl
 
 if ( WIN32 )
+  if(NOT DEFINED ENV{MKLROOT_PATH})
     set(MKLROOT_PATH "C:/Program Files (x86)/Intel/Composer XE" CACHE PATH "Where the MKL are stored")
+  endif(NOT DEFINED ENV{MKLROOT_PATH}) 
 else ( WIN32 )
     set(MKLROOT_PATH "/opt/intel" CACHE PATH "Where the MKL are stored")
 endif ( WIN32 )
