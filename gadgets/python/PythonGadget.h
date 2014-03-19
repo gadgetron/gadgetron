@@ -83,17 +83,8 @@ namespace Gadgetron{
     };
   
   class EXPORTGADGETSPYTHON AcquisitionPythonGadget :
-  public PythonGadget<ISMRMRD::AcquisitionHeader>
-  {
-  public:
-    GADGET_DECLARE(AcquisitionPythonGadget);
-  
-  };
+  public PythonGadget<ISMRMRD::AcquisitionHeader> {};
 
   class EXPORTGADGETSPYTHON ImagePythonGadget :
-  public PythonGadget<ISMRMRD::ImageHeader>
-  {
-  public:
-    GADGET_DECLARE(ImagePythonGadget);    
-  };
+  public PythonGadget<ISMRMRD::ImageHeader> {};
 }

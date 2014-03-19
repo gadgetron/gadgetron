@@ -1,10 +1,8 @@
 if (WIN32)
   ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUPMRI__)
-
-  # I would REALLY like to know why this is necessary!
+  # The two flags below is to fix Windows problems in relation to multiple defined constructors in our headers
   SET (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE") 
   SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /FORCE:MULTIPLE") 
-
 endif (WIN32)
 
 find_package(Ismrmrd REQUIRED)
