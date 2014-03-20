@@ -50,7 +50,8 @@ END DEBUG */
 
     // Calculate size of DcmFileFormat and create a SUFFICIENTLY sized buffer
     long buffer_length = dcmFile->calcElementLength(EXS_LittleEndianExplicit, EET_ExplicitLength) * 2;
-    char buffer[buffer_length];
+    std::vector<char> bufferChar(buffer_length);
+    char* buffer = &bufferChar[0];
 
     DcmOutputBufferStream out_stream(buffer, buffer_length);
 

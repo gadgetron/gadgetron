@@ -1,15 +1,28 @@
 # DCMTK-necessary preprocessor flags
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_CONFIG_H -D_REENTRANT -D_OSF_SOURCE")
 
-set(GT_DICOM_LIBRARIES
-    z
-    ${DCMTK_dcmdata_LIBRARY}
-    ${DCMTK_oflog_LIBRARY}
-    ${DCMTK_ofstd_LIBRARY}
-    m
-    #rt
-    #nsl
-    pthread)
+if (WIN32)
+    set(GT_DICOM_LIBRARIES
+        #z
+        ${DCMTK_dcmdata_LIBRARY}
+        ${DCMTK_oflog_LIBRARY}
+        ${DCMTK_ofstd_LIBRARY}
+        #m
+        #rt
+        #nsl
+        #pthread
+        )
+else (WIN32)
+    set(GT_DICOM_LIBRARIES
+        z
+        ${DCMTK_dcmdata_LIBRARY}
+        ${DCMTK_oflog_LIBRARY}
+        ${DCMTK_ofstd_LIBRARY}
+        m
+        #rt
+        #nsl
+        pthread)
+endif (WIN32)
 
 # sanity check:
 #message("DCMTK ${DCMTK_HOME}")
@@ -28,6 +41,7 @@ add_library(${GT_DICOM_LIB} SHARED
 
 target_link_libraries(
     ${GT_DICOM_LIB}
+    cpucore 
     ${ISMRMRD_LIBRARIES}
     optimized ${ACE_LIBRARIES}
     debug ${ACE_DEBUG_LIBRARY}
