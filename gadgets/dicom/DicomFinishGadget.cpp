@@ -1,12 +1,3 @@
-// DICOM includes
-#include "dcmtk/config/osconfig.h"
-#include "dcmtk/ofstd/ofstdinc.h"
-#define INCLUDE_CSTDLIB
-#define INCLUDE_CSTDIO
-#define INCLUDE_CSTRING
-#include "dcmtk/dcmdata/dctk.h"
-#include "dcmtk/dcmdata/dcostrmb.h"
-
 #include <vector>
 
 #include "GadgetIsmrmrdReadWrite.h"
@@ -153,13 +144,13 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
 
     // Study Date
     key.set(0x0008, 0x0020);
-    snprintf(buf, BUFSIZE, "%04d%02d%02d", study_info.studyDate().year(),
+    ACE_OS::snprintf(buf, BUFSIZE, "%04d%02d%02d", study_info.studyDate().year(),
             study_info.studyDate().month(), study_info.studyDate().day());
     WRITE_DCM_STRING(key, buf);
 
     // Series Date
     key.set(0x0008, 0x0021);
-    snprintf(buf, BUFSIZE, "%04d%02d%02d", meas_info.seriesDate().year(),
+    ACE_OS::snprintf(buf, BUFSIZE, "%04d%02d%02d", meas_info.seriesDate().year(),
             meas_info.seriesDate().month(), meas_info.seriesDate().day());
     WRITE_DCM_STRING(key, buf);
     // Acquisition Date
@@ -171,13 +162,13 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
 
     // Study Time
     key.set(0x0008, 0x0030);
-    snprintf(buf, BUFSIZE, "%02d%02d%02d", study_info.studyTime().hours(),
+    ACE_OS::snprintf(buf, BUFSIZE, "%02d%02d%02d", study_info.studyTime().hours(),
             study_info.studyTime().minutes(), (int)study_info.studyTime().seconds());
     WRITE_DCM_STRING(key, buf);
 
     // Series Time
     key.set(0x0008, 0x0031);
-    snprintf(buf, BUFSIZE, "%02d%02d%02d", meas_info.seriesTime().hours(),
+    ACE_OS::snprintf(buf, BUFSIZE, "%02d%02d%02d", meas_info.seriesTime().hours(),
             meas_info.seriesTime().minutes(), (int)meas_info.seriesTime().seconds());
     WRITE_DCM_STRING(key, buf);
 
@@ -192,7 +183,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     // Accession Number
     key.set(0x0008, 0x0050);
     if (study_info.accessionNumber().present()) {
-        snprintf(buf, BUFSIZE, "%d", (int)study_info.accessionNumber().get());
+        ACE_OS::snprintf(buf, BUFSIZE, "%d", (int)study_info.accessionNumber().get());
         WRITE_DCM_STRING(key, buf);
     } else {
         WRITE_DCM_STRING(key, 0);
@@ -307,7 +298,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     // Patient Birthdate
     key.set(0x0010, 0x0030);
     if (patient_info.patientBirthdate().present()) {
-        snprintf(buf, BUFSIZE, "%04d%02d%02d", patient_info.patientBirthdate().get().year(),
+        ACE_OS::snprintf(buf, BUFSIZE, "%04d%02d%02d", patient_info.patientBirthdate().get().year(),
                 patient_info.patientBirthdate().get().month(), patient_info.patientBirthdate().get().day());
         WRITE_DCM_STRING(key, buf);
     } else {
@@ -330,7 +321,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     // Patient Age
     key.set(0x0010, 0x1010);
     if (patient_info.patientBirthdate().present()) {
-        snprintf(buf, BUFSIZE, "%03uY", meas_info.seriesDate().year() -
+        ACE_OS::snprintf(buf, BUFSIZE, "%03uY", meas_info.seriesDate().year() -
                 patient_info.patientBirthdate().get().year());
         WRITE_DCM_STRING(key, buf);
     } else {
@@ -340,7 +331,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     // Patient Weight
     key.set(0x0010, 0x1030);
     if (patient_info.patientWeight_kg().present()) {
-        snprintf(buf, BUFSIZE, "%f", patient_info.patientWeight_kg().get());
+        ACE_OS::snprintf(buf, BUFSIZE, "%f", patient_info.patientWeight_kg().get());
         WRITE_DCM_STRING(key, buf);
     } else {
         WRITE_DCM_STRING(key, "0.0");
@@ -395,33 +386,33 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     // This will need updated if the "reconSpace.fieldOfView_mm.z" field
     // is changed in the ISMRMRD populating code (client)
     key.set(0x0018, 0x0050);
-    snprintf(buf, BUFSIZE, "%f", cfg->encoding().front().reconSpace().fieldOfView_mm().z());
+    ACE_OS::snprintf(buf, BUFSIZE, "%f", cfg->encoding().front().reconSpace().fieldOfView_mm().z());
     WRITE_DCM_STRING(key, buf);
 
     // Repetition Time
     key.set(0x0018, 0x0080);
-    snprintf(buf, BUFSIZE, "%f", seq_info.TR().front());
+    ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TR().front());
     WRITE_DCM_STRING(key, buf);
 
     // Echo Time
     key.set(0x0018, 0x0081);
-    snprintf(buf, BUFSIZE, "%f", seq_info.TE().front());
+    ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TE().front());
     WRITE_DCM_STRING(key, buf);
 
     // Inversion Time
     key.set(0x0018, 0x0082);
-    snprintf(buf, BUFSIZE, "%f", seq_info.TI().front());
+    ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TI().front());
     WRITE_DCM_STRING(key, buf);
 
     // Imaging Frequency in tenths of MHz ???
     key.set(0x0018, 0x0084);
-    snprintf(buf, BUFSIZE, "%f", (float)exp_cond.H1resonanceFrequency_Hz() / 10000000.);
+    ACE_OS::snprintf(buf, BUFSIZE, "%f", (float)exp_cond.H1resonanceFrequency_Hz() / 10000000.);
     WRITE_DCM_STRING(key, buf);
 
     // Magnetic Field Strength (T)
     key.set(0x0018, 0x0087);
     if (sys_info.systemFieldStrength_T().present()) {
-        snprintf(buf, BUFSIZE, "%f", sys_info.systemFieldStrength_T().get());
+        ACE_OS::snprintf(buf, BUFSIZE, "%f", sys_info.systemFieldStrength_T().get());
         WRITE_DCM_STRING(key, buf);
     } else {
         WRITE_DCM_STRING(key, "3.0");
@@ -429,13 +420,13 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
 
     // Spacing Between Slices
     key.set(0x0018, 0x0088);
-    snprintf(buf, BUFSIZE, "%f", cfg->encoding().front().reconSpace().fieldOfView_mm().z());
+    ACE_OS::snprintf(buf, BUFSIZE, "%f", cfg->encoding().front().reconSpace().fieldOfView_mm().z());
     WRITE_DCM_STRING(key, buf);
 
     // Echo Train Length
     if (mr_image.echoTrainLength().present()) {
         key.set(0x0018, 0x0091);
-        snprintf(buf, BUFSIZE, "%ld", (long)mr_image.echoTrainLength().get());
+        ACE_OS::snprintf(buf, BUFSIZE, "%ld", (long)mr_image.echoTrainLength().get());
         WRITE_DCM_STRING(key, buf);
     } else {
         WRITE_DCM_STRING(key, "1");
@@ -462,7 +453,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     // Trigger Time
     if (mr_image.triggerTime().present()) {
         key.set(0x0018, 0x1060);
-        snprintf(buf, BUFSIZE, "%f", mr_image.triggerTime().get());
+        ACE_OS::snprintf(buf, BUFSIZE, "%f", mr_image.triggerTime().get());
         WRITE_DCM_STRING(key, buf);
     } else {
         WRITE_DCM_STRING(key, "0.0");
@@ -483,7 +474,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     // Flip Angle
     if (mr_image.flipAngle_deg().present()) {
         key.set(0x0018, 0x1314);
-        snprintf(buf, BUFSIZE, "%d", (int)mr_image.flipAngle_deg().get());
+        ACE_OS::snprintf(buf, BUFSIZE, "%d", (int)mr_image.flipAngle_deg().get());
         WRITE_DCM_STRING(key, buf);
     } else {
         WRITE_DCM_STRING(key, "0");
@@ -547,7 +538,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     key.set(0x0028, 0x0030);
     float pixel_spacing_X = r_space.fieldOfView_mm().x() / r_space.matrixSize().x();
     float pixel_spacing_Y = r_space.fieldOfView_mm().y() / r_space.matrixSize().y();
-    snprintf(buf, BUFSIZE, "%.3f\\%.3f", pixel_spacing_X, pixel_spacing_Y);
+    ACE_OS::snprintf(buf, BUFSIZE, "%.3f\\%.3f", pixel_spacing_X, pixel_spacing_Y);
     WRITE_DCM_STRING(key, buf);
 
     // Bits Allocated
@@ -565,7 +556,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
 
     //GADGET_DEBUG1("Finished populating DICOM fields\n");
 
-    /* clean up the buffer we created for snprintf */
+    /* clean up the buffer we created for ACE_OS::snprintf */
     delete[] buf;
 
     return GADGET_OK;
@@ -640,7 +631,7 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
     // TODO: it is often the case the img->contrast is not properly set
     // likely due to the allocated ISMRMRD::ImageHeader being uninitialized
     key.set(0x0018, 0x0086);
-    snprintf(buf, BUFSIZE, "%d", img->contrast);
+    ACE_OS::snprintf(buf, BUFSIZE, "%d", img->contrast);
     WRITE_DCM_STRING(key, buf);
 
     // Acquisition Matrix ... Image Dimensions
@@ -665,12 +656,12 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
     // Series Number
     // Only write a number if the image_series_index is positive and non-zero
     key.set(0x0020, 0x0011);
-    snprintf(buf, BUFSIZE, "%ld", this->initialSeriesNumber * 100 + img->image_series_index);
+    ACE_OS::snprintf(buf, BUFSIZE, "%ld", this->initialSeriesNumber * 100 + img->image_series_index);
     WRITE_DCM_STRING(key, buf);
 
     // Image Number
     key.set(0x0020, 0x0013);
-    snprintf(buf, BUFSIZE, "%d", img->image_index + 1);
+    ACE_OS::snprintf(buf, BUFSIZE, "%d", img->image_index + 1);
     WRITE_DCM_STRING(key, buf);
 
     // Image Position (Patient)
@@ -687,31 +678,31 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
             (img->field_of_view[1] / 2.0) * img->phase_dir[2];
 
     key.set(0x0020, 0x0032);
-    snprintf(buf, BUFSIZE, "%.4f\\%.4f\\%.4f", corner[0], corner[1], corner[2]);
+    ACE_OS::snprintf(buf, BUFSIZE, "%.4f\\%.4f\\%.4f", corner[0], corner[1], corner[2]);
     WRITE_DCM_STRING(key, buf);
 
     // Image Orientation
     // read_dir, phase_dir, and slice_dir were calculated in
     // a DICOM/patient coordinate system, so just plug them in
     key.set(0x0020, 0x0037);
-    snprintf(buf, BUFSIZE, "%.4f\\%.4f\\%.4f\\%.4f\\%.4f\\%.4f",
+    ACE_OS::snprintf(buf, BUFSIZE, "%.4f\\%.4f\\%.4f\\%.4f\\%.4f\\%.4f",
             img->read_dir[0], img->read_dir[1], img->read_dir[2],
             img->phase_dir[0], img->phase_dir[1], img->phase_dir[2]);
     WRITE_DCM_STRING(key, buf);
 
     // Slice Location
     key.set(0x0020, 0x1041);
-    snprintf(buf, BUFSIZE, "%f", img->position[2]);
+    ACE_OS::snprintf(buf, BUFSIZE, "%f", img->position[2]);
     WRITE_DCM_STRING(key, buf);
 
     // Columns
     key.set(0x0028, 0x0010);
-    snprintf(buf, BUFSIZE, "%d", img->matrix_size[0]);
+    ACE_OS::snprintf(buf, BUFSIZE, "%d", img->matrix_size[0]);
     WRITE_DCM_STRING(key, buf);
 
     // Rows
     key.set(0x0028, 0x0011);
-    snprintf(buf, BUFSIZE, "%d", img->matrix_size[1]);
+    ACE_OS::snprintf(buf, BUFSIZE, "%d", img->matrix_size[1]);
     WRITE_DCM_STRING(key, buf);
 
     // Simple windowing using pixel values calculated earlier...
@@ -724,12 +715,12 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
 
     // Window Center
     key.set(0x0028, 0x1050);
-    snprintf(buf, BUFSIZE, "%d", window_center);
+    ACE_OS::snprintf(buf, BUFSIZE, "%d", window_center);
     WRITE_DCM_STRING(key, buf);
 
     // Window Width
     key.set(0x0028, 0x1051);
-    snprintf(buf, BUFSIZE, "%d", window_width);
+    ACE_OS::snprintf(buf, BUFSIZE, "%d", window_width);
     WRITE_DCM_STRING(key, buf);
 
     // ACR_NEMA_2C_VariablePixelDataGroupLength
@@ -789,7 +780,7 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
     dcmGenerateUniqueIdentifier(newuid, root);
     WRITE_DCM_STRING(key, newuid);
 
-    /* clean up the char[] we created for snprintf */
+    /* clean up the char[] we created for ACE_OS::ACE_OS::snprintf */
     delete[] buf;
 
     GadgetContainerMessage<DcmFileFormat>* mdcm = new GadgetContainerMessage<DcmFileFormat>();
