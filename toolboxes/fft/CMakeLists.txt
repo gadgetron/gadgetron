@@ -1,0 +1,11 @@
+if(FFTW3_FOUND)
+  add_subdirectory(cpu)
+else(FFTW3_FOUND)
+  message("FFTW not found, not compiling cpu fft toolbox")
+endif(FFTW3_FOUND)
+
+if(CUDA_FOUND)
+  add_subdirectory(gpu)
+else(CUDA_FOUND)
+  message("CUDA not found, not compiling gpu fft toolbox")
+endif(CUDA_FOUND)

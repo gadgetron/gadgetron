@@ -6,7 +6,11 @@ if (MATLAB_FOUND)
 
     SET(CMAKE_DEBUG_POSTFIX)
 
-    include_directories( ${MATLAB_INCLUDE_DIR}  ${ISMRMRD_INCLUDE_DIR} )
+    include_directories( 
+	  ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
+	  ${MATLAB_INCLUDE_DIR}  
+	  ${ISMRMRD_INCLUDE_DIR} 
+	)
 
     link_directories(${Boost_LIBRARY_DIRS})
     link_libraries(${MATLAB_LIBRARIES} 
@@ -37,7 +41,7 @@ if (MATLAB_FOUND)
         endif ( HAS_64_BIT )
     endif(APPLE)
 
-    if ( MKL_FOUND )
+    if ( MKL_FOUND AND FFTW3_FOUND )
 
         # coil map 2D
         add_library(Matlab_compute_coil_map_2D SHARED Matlab_compute_coil_map_2D.cpp)
@@ -49,7 +53,7 @@ if (MATLAB_FOUND)
         SET_TARGET_PROPERTIES(Matlab_compute_coil_map_3D PROPERTIES SUFFIX ${MATLAB_SUFFIX})
         install(TARGETS Matlab_compute_coil_map_3D DESTINATION bin )
 
-    endif ( MKL_FOUND )
+    endif ( MKL_FOUND AND FFTW3_FOUND)
 
 else(MATLAB_FOUND)
     message("MATLAB NOT FOUND: matlab wrapper for gtplus toolbox will not be compiled.")

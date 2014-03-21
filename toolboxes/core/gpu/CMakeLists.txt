@@ -3,7 +3,7 @@ if (WIN32)
 endif (WIN32)
 
 if(WIN32)
-link_directories(${Boost_LIBRARY_DIRS})
+  link_directories(${Boost_LIBRARY_DIRS})
 endif(WIN32)
 
 find_package(CULA REQUIRED)
@@ -25,8 +25,6 @@ cuda_add_library(gpucore SHARED
     cuNDArray_operators.h
     cuNDArray_utils.h
     cuNDArray_reductions.h
-    cuNDFFT.h
-    cuNDFFT.cpp
     GadgetronCuException.h
     gpucore_export.h
     GPUTimer.h
@@ -49,7 +47,8 @@ cuda_add_library(gpucore SHARED
     cudaDeviceManager.cpp
   )
 
-target_link_libraries(gpucore cpucore 
+target_link_libraries(gpucore 
+  cpucore 
   ${Boost_LIBRARIES}
   ${CUDA_LIBRARIES} 
   ${CUDA_CUFFT_LIBRARIES} 
@@ -75,7 +74,6 @@ install(FILES
   hoCuNDArray_utils.h
   hoCuNDArray_math.h
   GPUTimer.h				
-  cuNDFFT.h
   GadgetronCuException.h
   radial_utilities.h
   real_utilities_device.h

@@ -1,5 +1,5 @@
 if (WIN32)
-ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUCORE__)
+  ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUCORE__)
 endif (WIN32)
 
 include_directories(
@@ -29,7 +29,6 @@ add_library(cpucore ${LIBTYPE}
   hoNDArray.hxx
   hoNDArray_utils.h
   hoNDArray_fileio.h
-  hoNDFFT.h
   ho2DArray.h
   ho2DArray.hxx
   ho3DArray.h
@@ -43,11 +42,10 @@ add_library(cpucore ${LIBTYPE}
   ho7DArray.h
   ho7DArray.hxx 
   hoMatrix.h
-  hoNDFFT.cpp
+  dummy.cpp
   )
 
 target_link_libraries(cpucore 
-  ${FFTW3_LIBRARIES} 
   ${Boost_LIBRARIES} 
   ${MKL_LIBRARIES} 
   )
@@ -60,7 +58,6 @@ install(FILES
   hoNDArray.hxx
   hoNDArray_utils.h
   hoNDArray_fileio.h
-  hoNDFFT.h
   ho2DArray.h
   ho2DArray.hxx
   ho3DArray.h

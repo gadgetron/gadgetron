@@ -30,10 +30,12 @@ include_directories( ${GTEST_INCLUDE_DIRS}
                      ${CMAKE_SOURCE_DIR}/toolboxes/core
                      ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
                      ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
-                     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools )
+                     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+					 ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools/ismrmrd
+					  )
 
 if (MKL_FOUND)
-    MESSAGE("MKL Found for gtPlus ... ")
+    MESSAGE("MKL Found for gtPlus")
     ADD_DEFINITIONS(-DUSE_MKL)
     list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
     if ( USE_OPENMP )
@@ -51,6 +53,7 @@ link_libraries(optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
                 ${MKL_LIBRARIES} 
                 cpucore 
                 cpucore_math 
+				cpufft
                 gtplus 
                 gadgettools 
                 gadgetronPlus)

@@ -47,14 +47,14 @@ ENDIF (WIN32 AND NOT CYGWIN)
  
 # Solaris needs some extra libraries that may not have been found already 
 IF(CMAKE_SYSTEM_NAME STREQUAL "SunOS") 
-  MESSAGE(STATUS "need to link solaris-specific libraries") 
+  #MESSAGE(STATUS "need to link solaris-specific libraries") 
   #  LINK_LIBRARIES(socket rt) 
   SET(ACE_LIBRARY ${ACE_LIBRARY} socket rt nsl) 
 ENDIF(CMAKE_SYSTEM_NAME STREQUAL "SunOS") 
  
 # Windows needs some extra libraries 
 IF (WIN32 AND NOT CYGWIN) 
-  MESSAGE(STATUS "need to link windows-specific libraries") 
+  #MESSAGE(STATUS "need to link windows-specific libraries") 
   #LINK_LIBRARIES(winmm) 
   SET(ACE_LIBRARY ${ACE_LIBRARY} winmm) 
 ENDIF (WIN32 AND NOT CYGWIN) 

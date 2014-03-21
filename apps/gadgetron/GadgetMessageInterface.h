@@ -1,15 +1,14 @@
 #ifndef GADGETMESSAGEINTERFACE_H
 #define GADGETMESSAGEINTERFACE_H
 
-#include "ace/SOCK_Stream.h"
-#include <ace/Basic_Types.h>
-
-#include <map>
-
 #include "GadgetContainerMessage.h"
 #include "Gadgetron.h"
 #include "GadgetronExport.h"
 #include "Gadget.h"
+
+#include <ace/SOCK_Stream.h>
+#include <ace/Basic_Types.h>
+#include <map>
 
 namespace Gadgetron
 {

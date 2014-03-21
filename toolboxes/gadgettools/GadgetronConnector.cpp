@@ -1,21 +1,14 @@
-/*
- * GadgetronConnector.cpp
- *
- *  Created on: Nov 1, 2011
- *      Author: hansenms
- */
-
-#include <ace/SOCK_Connector.h>
 #include "GadgetronConnector.h"
 
+#include <ace/SOCK_Connector.h>
 #include <iostream>
 
 using namespace Gadgetron;
+
 GadgetronConnector::GadgetronConnector()
     //: notifier_ (0, this, ACE_Event_Handler::WRITE_MASK)
     : writer_task_(&this->peer())
 {
-
 }
 
 GadgetronConnector::~GadgetronConnector() {

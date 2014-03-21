@@ -8,12 +8,13 @@ link_directories(${Boost_LIBRARY_DIRS})
 endif(WIN32)
 
 include_directories( 
-  ${CUDA_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
+  ${CUDA_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIR}
   )
 
 cuda_add_library(gpunfft SHARED 
@@ -24,8 +25,8 @@ cuda_add_library(gpunfft SHARED
     cuNFFTOperator.cu
   )
 
-target_link_libraries(
-  gpunfft 
+target_link_libraries(gpunfft 
+  gpufft
   gpucore 
   ${Boost_LIBRARIES}
   ${FFTW3_LIBRARIES} 

@@ -9,17 +9,18 @@ endif(WIN32)
 
 find_package(CULA REQUIRED)
 
-include_directories(
-  ${CUDA_INCLUDE_DIRS}
-  ${CULA_INCLUDE_DIR} 
-  ${Boost_INCLUDE_DIR} 
+include_directories(  
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
+  ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
+  ${CUDA_INCLUDE_DIRS}
+  ${CULA_INCLUDE_DIR} 
+  ${Boost_INCLUDE_DIR} 
   )
 
 cuda_add_library(gpuparallelmri SHARED 

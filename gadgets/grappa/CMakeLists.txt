@@ -11,6 +11,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
 )
 
 add_library(gadgetron_grappa SHARED 
@@ -23,7 +25,10 @@ add_library(gadgetron_grappa SHARED
     )
 
 target_link_libraries(gadgetron_grappa 
-  gpuparallelmri cpucore
+  gpuparallelmri 
+  cpucore
+  cpufft
+  gpufft
   ${Boost_LIBRARIES}
   ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
