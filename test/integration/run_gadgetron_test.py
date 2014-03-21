@@ -146,7 +146,7 @@ def main():
 
     myenv = dict()
     myenv["GADGETRON_HOME"] = os.path.realpath(sys.argv[1])
-    myenv["PYTHONPATH"] = os.environ["PYTHONPATH"]
+    myenv["PYTHONPATH"] = os.environ.get("PYTHONPATH", "")
     test_case = sys.argv[2]
 
     libpath = "LD_LIBRARY_PATH"
@@ -154,7 +154,7 @@ def main():
         libpath = "DYLD_FALLBACK_LIBRARY_PATH"
 
     if platform.system() == "Windows":
-        myenv[libpath] = os.environ['Path'];
+        myenv[libpath] = os.environ.get('Path', "");
     else:
         myenv[libpath] = myenv["GADGETRON_HOME"] + "/lib:"
         myenv[libpath] += myenv["GADGETRON_HOME"] + "/../ismrmrd/lib:"
