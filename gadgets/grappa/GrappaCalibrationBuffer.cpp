@@ -16,14 +16,17 @@ namespace Gadgetron{
     , weights_invalid_(true)
   {
     dimensions_ = dimensions;
-    try {buffer_.create(&dimensions_);}
-    catch (std::runtime_error & err){
+    try {
+      buffer_.create(&dimensions_);
+      buffer_.fill(std::complex<float>(0.0,0.0));
+    } catch (std::runtime_error & err){
       GADGET_DEBUG_EXCEPTION(err,"Unable to allocate memory for GRAPPA buffer");
     }
   
   }
 
-  int GrappaCalibrationBuffer::add_data(ISMRMRD::AcquisitionHeader* m1, hoNDArray< std::complex<float> >* m2)
+  int GrappaCalibrationBuffer::add_data(ISMRMRD::AcquisitionHeader* m1, hoNDArray< std::complex<float> >* m2,
+					 unsigned short line_offset, unsigned short partition_offset)
   {
     if (!buffer_.get_data_ptr()) {
       GADGET_DEBUG1("Buffer not allocated, cannot add data");
@@ -31,8 +34,8 @@ namespace Gadgetron{
     }
   
     unsigned int samples =  m1->number_of_samples;
-    unsigned int line = m1->idx.kspace_encode_step_1;
-    unsigned int partition = m1->idx.kspace_encode_step_2;
+    unsigned int line = m1->idx.kspace_encode_step_1 + line_offset;
+    unsigned int partition = m1->idx.kspace_encode_step_2 + partition_offset;
     unsigned int slice = m1->idx.slice; //We should probably check this
 
     if (samples != dimensions_[0]) {
