@@ -15,11 +15,21 @@ include_directories(
 
 add_executable(cpu_denoise_TV denoise_TV.cpp)
 
-target_link_libraries(cpu_denoise_TV 
-  cpucore 
-  cpucore_math 
-  hostutils
-  ${ARMADILLO_LIBRARIES}
+if(MKL_FOUND)
+  target_link_libraries(cpu_denoise_TV 
+    cpucore 
+    cpucore_math 
+    hostutils
+    ${ARMADILLO_LIBRARIES}
+    ${MKL_LIBRARIES}
   )
+else()
+  target_link_libraries(cpu_denoise_TV 
+    cpucore 
+    cpucore_math 
+    hostutils
+    ${ARMADILLO_LIBRARIES}
+)
+endif()
 
 install(TARGETS cpu_denoise_TV DESTINATION bin)

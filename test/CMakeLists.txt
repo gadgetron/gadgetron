@@ -56,8 +56,13 @@ if ( CUDA_FOUND )
   target_link_libraries(test_all 
     gpucore
     )
-elseif ( CUDA_FOUND )  
+endif()
 
-endif ( CUDA_FOUND )
+if(MKL_FOUND)
+  target_link_libraries(test_all 
+    ${MKL_LIBRARIES}    
+    )
+endif()
+
 
 add_test(test_all test_all)
