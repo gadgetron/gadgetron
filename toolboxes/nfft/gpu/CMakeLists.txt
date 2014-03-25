@@ -1,10 +1,10 @@
 if (WIN32)
-ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUNFFT__)
-ADD_DEFINITIONS(-D_USE_MATH_DEFINES)
+  ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUNFFT__)
+  ADD_DEFINITIONS(-D_USE_MATH_DEFINES)
 endif (WIN32)
 
 if(WIN32)
-link_directories(${Boost_LIBRARY_DIRS})
+  link_directories(${Boost_LIBRARY_DIRS})
 endif(WIN32)
 
 include_directories( 
@@ -29,7 +29,6 @@ target_link_libraries(gpunfft
   gpufft
   gpucore 
   ${Boost_LIBRARIES}
-  ${FFTW3_LIBRARIES} 
   ${CUDA_LIBRARIES} 
   ${CUDA_CUFFT_LIBRARIES} 
   ${CUDA_CUBLAS_LIBRARIES}

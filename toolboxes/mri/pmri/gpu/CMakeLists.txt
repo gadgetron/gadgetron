@@ -4,10 +4,8 @@ if (WIN32)
 endif (WIN32)
 
 if(WIN32)
-link_directories(${Boost_LIBRARY_DIRS})
+  link_directories(${Boost_LIBRARY_DIRS})
 endif(WIN32)
-
-find_package(CULA REQUIRED)
 
 include_directories(  
   ${CMAKE_SOURCE_DIR}/toolboxes/core
