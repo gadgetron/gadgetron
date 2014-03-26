@@ -325,7 +325,7 @@ namespace Gadgetron{
       if( weight<REAL(0) ) weight *= -REAL(1);
     }
   
-    dcw[index] = weight;
+    dcw[index] = ::sqrt(weight);
   }
 
   template<class REAL, unsigned int GOLDEN_RATIO_ANGULAR_STEP_SIZE, bool GR> boost::shared_ptr< cuNDArray<REAL> >

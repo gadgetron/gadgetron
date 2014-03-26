@@ -305,6 +305,9 @@ namespace Gadgetron{
     D_->set_weights( precon_weights );
     precon_weights.reset();
     
+    //Apply weights
+    *device_samples *= *dcw;
+
     // Invoke solver
     //
 

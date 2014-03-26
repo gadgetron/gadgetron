@@ -215,6 +215,10 @@ namespace Gadgetron{
     _precon_weights.reset();
     D_->set_weights( precon_weights );
     
+    //Apply dcw weights
+    *device_samples *= *dcw;
+
+
     /*{
       static int counter = 0;
       char filename[256];
