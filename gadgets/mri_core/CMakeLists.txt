@@ -20,6 +20,7 @@ endif (MKL_FOUND)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+  ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   ${HDF5_INCLUDE_DIR}
   ${HDF5_INCLUDE_DIR}/cpp
@@ -67,6 +68,7 @@ add_library(gadgetron_mricore SHARED
 
 target_link_libraries(gadgetron_mricore 
   cpucore
+  cpufft
   ${ISMRMRD_LIBRARIES} 
   ${FFTW3_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 

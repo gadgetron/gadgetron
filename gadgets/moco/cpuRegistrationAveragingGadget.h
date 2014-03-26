@@ -11,9 +11,7 @@ namespace Gadgetron{
   class EXPORTGADGETS_MOCO cpuRegistrationAveragingGadget2D :
     public RegistrationAveragingGadget< hoNDArray<float>, 2 >
   {    
-
   public:
-    GADGET_DECLARE(cpuRegistrationAveragingGadget2D);
     
     cpuRegistrationAveragingGadget2D() : RegistrationAveragingGadget< hoNDArray<float>, 2 >() {}
     virtual ~cpuRegistrationAveragingGadget2D() {}

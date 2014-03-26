@@ -23,8 +23,6 @@ namespace Gadgetron{
 
   public:
 
-    GADGET_DECLARE(gpuCgSpiritGadget);
-
     gpuCgSpiritGadget();
     virtual ~gpuCgSpiritGadget();
 

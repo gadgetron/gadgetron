@@ -18,7 +18,6 @@ namespace Gadgetron{
   {
 
   public:
-    GADGET_DECLARE(SpiralToGenericGadget);
 
     SpiralToGenericGadget();
     virtual ~SpiralToGenericGadget();

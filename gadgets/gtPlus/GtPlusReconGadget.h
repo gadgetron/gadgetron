@@ -35,8 +35,6 @@ namespace Gadgetron
 class EXPORTGTPLUSGADGET GtPlusReconGadget : public Gadgetron::Gadget2< GtPlusGadgetImageArray, Gadgetron::gtPlus::gtPlusReconWorkOrder<std::complex<float> > >
 {
 public:
-    GADGET_DECLARE(GtPlusReconGadget);
-
     typedef std::complex<float> ValueType;
 
     typedef Gadgetron::gtPlus::gtPlusReconWorkOrder<ValueType> WorkOrderType;

@@ -1,19 +1,20 @@
 add_subdirectory(core)
 
-IF(CUDA_FOUND OR ARMADILLO_FOUND)
-  add_subdirectory(operators)
-  add_subdirectory(solvers)
-ENDIF(CUDA_FOUND OR ARMADILLO_FOUND)
+add_subdirectory(operators)
+add_subdirectory(solvers)
+
+add_subdirectory(fft)
+add_subdirectory(nfft)
 
 add_subdirectory(mri)
 add_subdirectory(ct)
-add_subdirectory(nfft)
+
 add_subdirectory(registration)
 
-IF (ACE_FOUND AND XSD_FOUND)
+IF (ACE_FOUND AND XSD_FOUND AND XERCESC_FOUND)
   add_subdirectory(gadgettools)
-ENDIF (ACE_FOUND AND XSD_FOUND)
+ENDIF()
 
-IF (MKL_FOUND)
-    add_subdirectory(gtplus)
-ENDIF (MKL_FOUND)
+IF (MKL_FOUND AND FFTW3_FOUND AND ISMRMRD_FOUND)
+  add_subdirectory(gtplus)
+ENDIF()

@@ -1,6 +1,6 @@
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/pmri/gpu
-  )
+)
 
 add_subdirectory(2d_golden_ratio)
 add_subdirectory(2d_golden_ratio_kt)

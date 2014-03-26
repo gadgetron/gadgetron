@@ -4,7 +4,6 @@
 #include "complext.h"
 #include "hoArmadillo.h"
 
-
 #ifdef USE_OMP
 #include <omp.h>
 #endif

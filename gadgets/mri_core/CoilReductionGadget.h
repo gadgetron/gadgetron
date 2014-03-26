@@ -14,7 +14,6 @@ class EXPORTGADGETSMRICORE CoilReductionGadget :
   public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
     {
     public:
-      GADGET_DECLARE(CoilReductionGadget);
       
       CoilReductionGadget();
       virtual ~CoilReductionGadget();

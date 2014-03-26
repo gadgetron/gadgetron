@@ -16,8 +16,6 @@ class EXPORTGADGETSMRICORE PartialFourierAdjustROGadget : public Gadgetron::Gadg
 {
 public:
 
-    GADGET_DECLARE(PartialFourierAdjustROGadget);
-
     PartialFourierAdjustROGadget();
 
 protected:

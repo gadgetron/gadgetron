@@ -1,1 +1,3 @@
-add_subdirectory(xray)
+if(HDF5_FOUND)
+  add_subdirectory(xray)
+endif()

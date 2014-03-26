@@ -1,15 +1,14 @@
 #ifndef GADGETMESSAGEINTERFACE_H
 #define GADGETMESSAGEINTERFACE_H
 
-#include "ace/SOCK_Stream.h"
-#include <ace/Basic_Types.h>
-
-#include <map>
-
 #include "GadgetContainerMessage.h"
 #include "Gadgetron.h"
 #include "GadgetronExport.h"
 #include "Gadget.h"
+
+#include <ace/SOCK_Stream.h>
+#include <ace/Basic_Types.h>
+#include <map>
 
 namespace Gadgetron
 {
@@ -218,18 +217,11 @@ class GadgetMessageScriptReader : public GadgetMessageReader
 
 /* Macros for handling dyamic linking */
 
-#define GADGETRON_READER_DECLARE(READER) \
-  GADGETRON_LOADABLE_DECLARE(READER)
-
 #define GADGETRON_READER_FACTORY_DECLARE(READER)	\
   GADGETRON_LOADABLE_FACTORY_DECLARE(GadgetMessageReader, READER)
 
-#define GADGETRON_WRITER_DECLARE(WRITER) \
-  GADGETRON_LOADABLE_DECLARE(WRITER)
-
 #define GADGETRON_WRITER_FACTORY_DECLARE(WRITER)	\
   GADGETRON_LOADABLE_FACTORY_DECLARE(GadgetMessageWriter, WRITER)
-
 }
 
 #endif //GADGETMESSAGEINTERFACE_H

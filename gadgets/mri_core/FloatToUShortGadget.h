@@ -22,8 +22,8 @@ namespace Gadgetron{
   public Gadget2<ISMRMRD::ImageHeader,hoNDArray< float > >
     {
     public:
-      GADGET_DECLARE(FloatToUShortGadget);
-      FloatToUShortGadget();
+
+	  FloatToUShortGadget();
       virtual ~FloatToUShortGadget();
       
     protected:
