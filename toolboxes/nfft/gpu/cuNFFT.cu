@@ -667,6 +667,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::convolve( cuNDArray<complext<REAL> > *in
 
   case NFFT_CONV_C2NC:
   	convolve_NFFT_C2NC( in_int, out_int, accumulate );
+  	if( dcw_int ) *out_int *= *dcw_int;
     break;
     
   case NFFT_CONV_NC2C:
