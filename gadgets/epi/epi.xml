@@ -44,9 +44,9 @@
     </gadget>
 
     <gadget>
-      <name>FFT</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>FFTGadget</classname>
+      <name>FFTYZ</name>
+      <dll>gadgetron_epi</dll>
+      <classname>FFTYZGadget</classname>
     </gadget>
 
    <gadget>
