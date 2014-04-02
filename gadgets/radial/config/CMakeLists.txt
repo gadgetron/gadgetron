@@ -24,6 +24,7 @@ install (FILES
   fixed_radial_mode0_gpusense_cg_unoptimized.xml 
   fixed_radial_mode1_gpusense_cg_unoptimized.xml 
   golden_radial_mode2_gpusense_cg_unoptimized.xml 
+  golden_radial_mode2_gpusense_nlcg_unoptimized.xml
   fixed_radial_mode0_gpusense_sb_unoptimized.xml 
   fixed_radial_mode1_gpusense_sb_unoptimized.xml 
   golden_radial_mode2_gpusense_sb_unoptimized.xml 

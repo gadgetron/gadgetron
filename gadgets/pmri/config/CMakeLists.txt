@@ -3,6 +3,7 @@ if (ARMADILLO_FOUND)
     generic_gpusense_cg.xml 
     generic_gpusense_cg_singleshot.xml 
     generic_gpusense_sb_singleshot.xml 
+    generic_gpusense_nlcg_singleshot.xml
     generic_gpu_ktsense_singleshot.xml 
     DESTINATION config)
 elseif (ARMADILLO_FOUND)

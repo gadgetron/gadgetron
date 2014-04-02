@@ -34,7 +34,7 @@ namespace Gadgetron{
   // This transform support batch mode when the number of elements in x is a multiple of the number of elements in y
   //
   template<class T,class S,class F>  
-  void equals_transform(cuNDArray<T> &x, cuNDArray<S> &y){
+  static void equals_transform(cuNDArray<T> &x, cuNDArray<S> &y){
     if (x.dimensions_equal(&y)){
       thrust::transform(x.begin(), x.end(), y.begin(), x.begin(), F());
     } else if (compatible_dimensions(x,y))

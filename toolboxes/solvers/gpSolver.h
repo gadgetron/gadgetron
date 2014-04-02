@@ -247,7 +247,7 @@ namespace Gadgetron{
           op->mult_M(x2,tmp.get());
           data.push_back(tmp);
           ARRAY_TYPE tmp2 = *tmp;
-          tmp2 *= *tmp;
+          tmp2 *= *tmp; //Square data
           gData += tmp2;
         }
         if (this->prior.get()){

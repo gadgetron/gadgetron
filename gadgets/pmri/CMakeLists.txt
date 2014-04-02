@@ -25,7 +25,8 @@ include_directories(
 add_library(gadgetron_gpuparallelmri SHARED 
   gpuCgSenseGadget.cpp 
   gpuCgKtSenseGadget.cpp 
-  gpuSbSenseGadget.cpp 
+  gpuSbSenseGadget.cpp
+  gpuNlcgSenseGadget.cpp  
   gpuGenericSensePrepGadget.cpp
   gpuCgSpiritGadget.cpp 
   ${ISMRMRD_XSD_SOURCE}

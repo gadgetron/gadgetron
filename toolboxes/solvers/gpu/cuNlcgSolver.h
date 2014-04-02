@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nlcgSolver.h"
+#include "nlcg2Solver.h"
 #include "cuNDArray_operators.h"
 #include "cuNDArray_elemwise.h"
 #include "cuNDArray_blas.h"
