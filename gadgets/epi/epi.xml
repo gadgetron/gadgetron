@@ -38,6 +38,22 @@
     </gadget>
 
     <gadget>
+      <name>EPICorr</name>
+      <dll>gadgetron_epi</dll>
+      <classname>EPICorrGadget</classname>
+    </gadget>
+
+ <!--
+    <gadget>
+      <name>IsmrmrdDump</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>IsmrmrdDumpGadget</classname>
+      <property><name>file_prefix</name><value>ISMRMRD_DUMP</value></property>
+      <property><name>append_timestamp</name><value>1</value></property>
+    </gadget>
+-->
+
+    <gadget>
       <name>Acc</name>
       <dll>gadgetron_mricore</dll>
       <classname>AccumulatorGadget</classname>
@@ -48,16 +64,11 @@
       <dll>gadgetron_epi</dll>
       <classname>FFTYZGadget</classname>
     </gadget>
-
-   <gadget>
-      <name>CoilCombinePython</name>
-      <dll>gadgetron_python</dll>
-      <classname>ImagePythonGadget</classname>
-      <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
-      <property><name>python_module</name>                <value>rms_coil_combine</value></property>
-      <property><name>gadget_reference_function</name>    <value>set_gadget_reference</value></property>
-      <property><name>input_function</name>               <value>recon_function</value></property>
-      <property><name>config_function</name>              <value>config_function</value></property>
+    
+    <gadget>
+      <name>Combine</name>
+      <dll>gadgetron_epi</dll>
+      <classname>CombineGadget</classname>
     </gadget>
 
     <gadget>
@@ -65,10 +76,30 @@
       <dll>gadgetron_mricore</dll>
       <classname>ExtractGadget</classname>
     </gadget>  
-    <gadget>
+
+   <gadget>
+      <name>AutoScale</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>AutoScaleGadget</classname>
+    </gadget>
+
+<!--
+     <gadget>
       <name>ImageFinishFLOAT</name>
       <dll>gadgetron_mricore</dll>
       <classname>ImageFinishGadgetFLOAT</classname>
     </gadget>
+-->
 
+    <gadget>
+      <name>FloatToShort</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>FloatToUShortGadget</classname>
+    </gadget>
+ 
+     <gadget>
+      <name>ImageFinishUSHORT</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>ImageFinishGadgetUSHORT</classname>
+    </gadget>
 </gadgetronStreamConfiguration>

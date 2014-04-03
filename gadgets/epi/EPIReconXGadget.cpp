@@ -28,6 +28,8 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
     reconx.reconNx_   = r_space.matrixSize().x();
     reconx.reconFOV_  = r_space.fieldOfView_mm().x();
 
+    // TODO: we need a flag that says it's a balanced readout.
+
     for (ISMRMRD::trajectoryDescriptionType::userParameterLong_sequence::iterator i (traj_desc.userParameterLong().begin ()); i != traj_desc.userParameterLong().end(); ++i) {
       if (std::strcmp(i->name().c_str(),"rampUpTime") == 0) {
 	reconx.rampUpTime_ = i->value();
@@ -52,24 +54,8 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
       }
     }
 
+    // Compute the trajectory
     reconx.computeTrajectory();
-
-
-    //field_of_view_encoding_[0] = e_space.fieldOfView_mm().x();
-    //field_of_view_encoding_[1] = e_space.fieldOfView_mm().y();
-    //field_of_view_encoding_[2] = e_space.fieldOfView_mm().z();
-    //GADGET_CONDITION_MSG(verboseMode_, "Encoding field_of_view : " << field_of_view_encoding_[0] << " " << field_of_view_encoding_[1] << " " << field_of_view_encoding_[2]);
-
-    // find the recon space
-    //matrix_size_recon_[0] = r_space.matrixSize().x();
-    //matrix_size_recon_[1] = r_space.matrixSize().y();
-    //matrix_size_recon_[2] = r_space.matrixSize().z();
-    //GADGET_CONDITION_MSG(verboseMode_, "Recon matrix size : " << matrix_size_recon_[0] << " " << matrix_size_recon_[1] << " " << matrix_size_recon_[2]);
-
-    //field_of_view_recon_[0] = r_space.fieldOfView_mm().x();
-    //field_of_view_recon_[1] = r_space.fieldOfView_mm().y();
-    //field_of_view_recon_[2] = r_space.fieldOfView_mm().z();
-    //GADGET_CONDITION_MSG(verboseMode_, "Recon field_of_view :  " << field_of_view_recon_[0] << " " << field_of_view_recon_[1] << " " << field_of_view_recon_[2]);
 
   return 0;
 }

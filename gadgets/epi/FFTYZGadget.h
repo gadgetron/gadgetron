@@ -3,14 +3,14 @@
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "gadgetron_mricore_export.h"
+#include "gadgetron_epi_export.h"
 
 #include <ismrmrd.h>
 #include <complex>
 
 namespace Gadgetron{
 
-  class EXPORTGADGETSMRICORE FFTYZGadget : 
+  class  EXPORTGADGETS_EPI FFTYZGadget : 
   public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
   {
     public:

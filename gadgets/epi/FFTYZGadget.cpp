@@ -1,16 +1,18 @@
 #include "GadgetIsmrmrdReadWrite.h"
 #include "FFTYZGadget.h"
 #include "hoNDFFT.h"
+#include "hoNDArray_utils.h"
 
 namespace Gadgetron{
 
   int FFTYZGadget::process( GadgetContainerMessage< ISMRMRD::ImageHeader>* m1,
 			    GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
   {
-    // FFT along ky and kz
+
+    // FFT along 1st two dimensions (y and z)
     hoNDFFT<float>::instance()->ifft(m2->getObjectPtr(),1);
     hoNDFFT<float>::instance()->ifft(m2->getObjectPtr(),2);
-    
+
     if (this->next()->putq(m1) < 0) {
       return GADGET_FAIL;
     }
@@ -18,5 +20,5 @@ namespace Gadgetron{
     return GADGET_OK;    
   }
   
-  GADGET_FACTORY_DECLARE(FFTGadget)
+  GADGET_FACTORY_DECLARE(FFTYZGadget)
 }
