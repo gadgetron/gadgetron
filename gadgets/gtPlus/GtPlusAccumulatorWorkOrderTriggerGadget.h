@@ -36,8 +36,6 @@ struct ReadOutBuffer
 class EXPORTGTPLUSGADGET GtPlusAccumulatorWorkOrderTriggerGadget : public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 {
 public:
-    GADGET_DECLARE(GtPlusAccumulatorGadget);
-
     typedef std::complex<float> ValueType;
 
     typedef Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< ValueType > > BaseClass;

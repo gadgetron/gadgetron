@@ -129,7 +129,8 @@ class EXPORTGADGETSGRAPPA GrappaCalibrationBuffer
 			  GrappaWeightsCalculator<float>* weights_calculator);
   virtual ~GrappaCalibrationBuffer() {}
 
-  int add_data(ISMRMRD::AcquisitionHeader* m1, hoNDArray< std::complex<float> >* m2);
+  int add_data(ISMRMRD::AcquisitionHeader* m1, hoNDArray< std::complex<float> >* m2, 
+	       unsigned short line_offset = 0, unsigned short partition_offset = 0);
 
  private:
   hoNDArray< std::complex<float> > buffer_;

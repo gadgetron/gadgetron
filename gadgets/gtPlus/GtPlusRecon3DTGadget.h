@@ -61,8 +61,6 @@ struct EXPORTGTPLUSGADGET GtPlusRecon3DTPara
 class EXPORTGTPLUSGADGET GtPlusRecon3DTGadget : public GtPlusReconGadget
 {
 public:
-    GADGET_DECLARE(GtPlusRecon3DTGadget);
-
     typedef GtPlusReconGadget BaseClass;
 
     typedef BaseClass::ValueType ValueType;

@@ -26,8 +26,6 @@ namespace Gadgetron
 class EXPORTGTPLUSGADGET GtPlusRecon2DTGadgetCloud : public GtPlusRecon2DTGadget
 {
 public:
-    GADGET_DECLARE(GtPlusRecon2DTGadgetCloud);
-
     typedef GtPlusRecon2DTGadget BaseClass;
 
     typedef BaseClass::ValueType ValueType;

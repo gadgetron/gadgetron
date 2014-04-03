@@ -322,7 +322,7 @@ namespace Gadgetron{
       */
     }
 
-    if (buffers_[slice]->add_data(m1->getObjectPtr(),m2->getObjectPtr()) < 0) {
+    if (buffers_[slice]->add_data(m1->getObjectPtr(),m2->getObjectPtr(), line_offset_) < 0) {
       GADGET_DEBUG1("Failed to add incoming data to grappa calibration buffer\n");
       return GADGET_FAIL;
     }

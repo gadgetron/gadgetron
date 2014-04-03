@@ -1,10 +1,3 @@
-/*
- * GadgetronSlotContainer.h
- *
- *  Created on: Nov 1, 2011
- *      Author: hansenms
- */
-
 #ifndef GADGETRONSLOTCONTAINER_H_
 #define GADGETRONSLOTCONTAINER_H_
 

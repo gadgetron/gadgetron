@@ -8,7 +8,6 @@ namespace Gadgetron{
   {
     
   public:
-    GADGET_DECLARE(gpuRadialSensePrepGadget);
 
     gpuRadialSensePrepGadget() : gpuRadialPrepGadget() {}
     virtual ~gpuRadialSensePrepGadget() {}

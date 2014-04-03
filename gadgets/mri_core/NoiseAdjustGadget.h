@@ -13,7 +13,6 @@ namespace Gadgetron {
         public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
     {
     public:
-        GADGET_DECLARE(NoiseAdjustGadget);
 
         typedef std::complex<float> ValueType;
         typedef std::complex<double> PerwhitenerValueType;

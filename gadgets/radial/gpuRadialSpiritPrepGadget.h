@@ -8,7 +8,6 @@ namespace Gadgetron{
   {
     
   public:
-    GADGET_DECLARE(gpuRadialSpiritPrepGadget);
 
     gpuRadialSpiritPrepGadget();
     virtual ~gpuRadialSpiritPrepGadget() {}

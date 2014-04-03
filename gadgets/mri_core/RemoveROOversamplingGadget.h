@@ -13,7 +13,6 @@ namespace Gadgetron{
   public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
     {
     public:
-      GADGET_DECLARE(RemoveROOversamplingGadget);
       
     protected:
       virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,

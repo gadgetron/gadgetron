@@ -77,7 +77,7 @@ namespace Gadgetron{
      * @return Weight of the operator
      */
     virtual REAL get_weight(){ return weight_; }
-    
+
   protected:
     REAL weight_;
     std::vector<size_t> domain_dims_;

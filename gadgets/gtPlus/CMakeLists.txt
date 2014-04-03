@@ -16,6 +16,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+    ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/operators
     ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/solvers
@@ -31,6 +32,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+	${CMAKE_SOURCE_DIR}/toolboxes/gadgettools/ismrmrd
     ${CMAKE_SOURCE_DIR}/apps/gadgetron
     ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
     ${CMAKE_SOURCE_DIR}/gadgets/gtPlus 
@@ -79,6 +81,7 @@ add_library(gadgetronPlus SHARED
 target_link_libraries(gadgetronPlus 
     cpucore 
     cpucore_math 
+	cpufft
     gtplus 
     gadgettools 
     ${MKL_LIBRARIES} 

@@ -1,22 +1,17 @@
-
-IF (WIN32)
-    ADD_DEFINITIONS(-DTIXML_USE_STL)
-ENDIF (WIN32)
-
 find_package(XSD REQUIRED)
 find_package(XercesC REQUIRED)
 
-include_directories(${ACE_INCLUDE_DIR} 
-                    ${Boost_INCLUDE_DIR} 
-                    ${XSD_INCLUDE_DIR} 
+include_directories(
                     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
                     ${CMAKE_SOURCE_DIR}/toolboxes/core
                     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
                     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
                     ${CMAKE_SOURCE_DIR}/apps/gadgetron
                     ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
-                    ${ISMRMRD_XSD_INCLUDE_DIR} 
-                    ${ISMRMRD_INCLUDE_DIR} )
+                    ${ACE_INCLUDE_DIR} 
+                    ${Boost_INCLUDE_DIR} 
+                    ${XSD_INCLUDE_DIR} 
+ )
 
 #Process the XSD files
 SET(XSDS schema/gadgetron.xsd)
@@ -31,8 +26,6 @@ if (MKL_FOUND)
 endif (MKL_FOUND)
 
 add_library(gadgettools SHARED ${XSDS_SOURCES} 
-                               GadgetImageMessageReader.h 
-                               GadgetImageMessageWriter.h 
                                gadgettools_export.h 
                                GadgetronSlotContainer.h 
                                GadgetronConnector.h 
@@ -48,11 +41,14 @@ target_link_libraries(gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_L
 
 install(TARGETS gadgettools DESTINATION lib)
 
-install (FILES  GadgetImageMessageReader.h 
-            GadgetImageMessageWriter.h
+install (FILES 
             GadgetronConnector.h
             gadgettools_export.h
             GadgetronSlotContainer.h
             GadgetServerAcceptor.h
             GadgetStreamController.h
             DESTINATION include)
+
+if(ISMRMRD_FOUND)
+  add_subdirectory(ismrmrd)
+endif(ISMRMRD_FOUND)

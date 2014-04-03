@@ -15,8 +15,6 @@ namespace Gadgetron{
     {
       
     public:
-      GADGET_DECLARE(AccumulatorGadget);
-      
       AccumulatorGadget();
       ~AccumulatorGadget();
       

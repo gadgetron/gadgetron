@@ -32,4 +32,7 @@ include_directories(
 add_subdirectory(denoising)
 #add_subdirectory(deblurring)
 add_subdirectory(registration)
-add_subdirectory(gtplus)
+
+if(ISMRMRD_FOUND)
+  add_subdirectory(gtplus)
+endif()

@@ -16,7 +16,6 @@ namespace Gadgetron{
     {
 
     public:
-        GADGET_DECLARE(PhysioInterpolationGadget);
 
         PhysioInterpolationGadget();
         virtual ~PhysioInterpolationGadget();

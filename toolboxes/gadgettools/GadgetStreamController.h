@@ -1,27 +1,25 @@
 #ifndef GADGETSTREAMCONTROLLER_H
 #define GADGETSTREAMCONTROLLER_H
 
-#include "ace/Log_Msg.h"
-#include "ace/Reactor.h"
-#include "ace/SOCK_Stream.h"
-#include "ace/Stream.h"
-#include "ace/Message_Queue.h"
-#include "ace/Svc_Handler.h"
-#include "ace/Reactor_Notification_Strategy.h"
-
-#include <complex>
-#include <vector>
-#include "boost/tuple/tuple.hpp"
-#include "boost/tuple/tuple_comparison.hpp"
-#include "boost/tuple/tuple_io.hpp"
-
 #include "gadgettools_export.h"
 #include "Gadgetron.h"
 #include "Gadget.h"
 #include "GadgetMessageInterface.h"
 #include "GadgetronConnector.h"
-#include "GadgetImageMessageReader.h"
-#include "GadgetImageMessageWriter.h"
+
+#include <ace/Log_Msg.h>
+#include <ace/Reactor.h>
+#include <ace/SOCK_Stream.h>
+#include <ace/Stream.h>
+#include <ace/Message_Queue.h>
+#include <ace/Svc_Handler.h>
+#include <ace/Reactor_Notification_Strategy.h>
+
+#include <complex>
+#include <vector>
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
+#include <boost/tuple/tuple_io.hpp>
 
 typedef ACE_Module<ACE_MT_SYNCH> GadgetModule;
 

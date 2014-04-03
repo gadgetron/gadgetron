@@ -45,7 +45,7 @@ int ImageFinishGadget<T>
 }
 
 //Declare factories for the various template instances
-GADGET_FACTORY_DECLARE(ImageFinishGadgetFLOAT)
-GADGET_FACTORY_DECLARE(ImageFinishGadgetUSHORT)
-GADGET_FACTORY_DECLARE(ImageFinishGadgetCPLX)
+GADGET_FACTORY_DECLARE(ImageFinishGadgetFLOAT);
+GADGET_FACTORY_DECLARE(ImageFinishGadgetUSHORT);
+GADGET_FACTORY_DECLARE(ImageFinishGadgetCPLX);
 }
