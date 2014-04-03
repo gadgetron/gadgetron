@@ -15,7 +15,8 @@ namespace Gadgetron{
   public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
     {
     public:
-      GADGET_DECLARE(CombineGadget);
+      CombineGadget();
+      virtual ~CombineGadget();
       
     protected:
       virtual int process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,

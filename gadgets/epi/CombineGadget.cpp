@@ -2,6 +2,10 @@
 #include "CombineGadget.h"
 
 namespace Gadgetron{
+
+  CombineGadget::CombineGadget() {}
+  CombineGadget::~CombineGadget() {}
+
 int CombineGadget::
 process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 	 GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)

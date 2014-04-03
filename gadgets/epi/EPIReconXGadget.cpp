@@ -4,6 +4,9 @@
 
 namespace Gadgetron{
 
+  EPIReconXGadget::EPIReconXGadget() {}
+  EPIReconXGadget::~EPIReconXGadget() {}
+
 int EPIReconXGadget::process_config(ACE_Message_Block* mb)
 {
   boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));

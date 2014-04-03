@@ -18,7 +18,8 @@ namespace Gadgetron{
   public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
     {
     public:
-      GADGET_DECLARE(EPICorrGadget);
+      EPICorrGadget();
+      virtual ~EPICorrGadget();
       
     protected:
       virtual int process_config(ACE_Message_Block* mb);

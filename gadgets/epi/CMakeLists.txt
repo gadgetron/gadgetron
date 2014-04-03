@@ -9,6 +9,7 @@ find_package(XercesC REQUIRED)
 include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   ${CMAKE_SOURCE_DIR}/toolboxes/mri/epi
@@ -27,6 +28,7 @@ add_library(gadgetron_epi SHARED
 target_link_libraries(
   gadgetron_epi
   cpucore
+  cpufft
   cpucore_math
   ${ISMRMRD_LIBRARIES} 
   ${XERCESC_LIBRARIES} 

@@ -4,6 +4,9 @@
 
 namespace Gadgetron{
 
+  EPICorrGadget::EPICorrGadget() {}
+  EPICorrGadget::~EPICorrGadget() {}
+
 int EPICorrGadget::process_config(ACE_Message_Block* mb)
 {
   boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
@@ -120,11 +123,15 @@ int EPICorrGadget::process(
     // We use the armadillo notation that loops over all the columns
     if (ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_REVERSE).isSet(hdr.flags)) {
       // Negative readout
-      adata.each_col() %= corrneg_;
+      for (int p=0; p<adata.n_cols; p++) {
+	adata.col(p) %= corrneg_;
+      }
     } 
     else {
       // Positive readout
-      adata.each_col() %= corrpos_;
+      for (int p=0; p<adata.n_cols; p++) {
+	adata.col(p) %= corrpos_;
+      }
     }
   }
 
