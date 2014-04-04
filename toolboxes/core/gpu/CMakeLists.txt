@@ -2,15 +2,19 @@ if (WIN32)
   ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUCORE__)
 endif (WIN32)
 
-if(WIN32)
-link_directories(${Boost_LIBRARY_DIRS})
-endif(WIN32)
+find_package(CULA)
 
-find_package(CULA REQUIRED)
+if(CULA_FOUND)
+  add_definitions(-D_WITH_CULA_SUPPORT)
+  include_directories(${CULA_INCLUDE_DIR})
+endif()
+
+if(WIN32)
+  link_directories(${Boost_LIBRARY_DIRS})
+endif(WIN32)
 
 include_directories( 
   ${CUDA_INCLUDE_DIRS}
-  ${CULA_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
 )
@@ -25,8 +29,6 @@ cuda_add_library(gpucore SHARED
     cuNDArray_operators.h
     cuNDArray_utils.h
     cuNDArray_reductions.h
-    cuNDFFT.h
-    cuNDFFT.cpp
     GadgetronCuException.h
     gpucore_export.h
     GPUTimer.h
@@ -49,7 +51,8 @@ cuda_add_library(gpucore SHARED
     cudaDeviceManager.cpp
   )
 
-target_link_libraries(gpucore cpucore 
+target_link_libraries(gpucore 
+  cpucore 
   ${Boost_LIBRARIES}
   ${CUDA_LIBRARIES} 
   ${CUDA_CUFFT_LIBRARIES} 
@@ -75,7 +78,6 @@ install(FILES
   hoCuNDArray_utils.h
   hoCuNDArray_math.h
   GPUTimer.h				
-  cuNDFFT.h
   GadgetronCuException.h
   radial_utilities.h
   real_utilities_device.h

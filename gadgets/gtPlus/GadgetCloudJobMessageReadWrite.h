@@ -210,37 +210,20 @@ namespace Gadgetron
 
     typedef Gadgetron::gtPlus::gtPlusReconJob2DT< std::complex<float> > GtPlusReconJobTypeCPFL;
 
-    class EXPORTGTPLUSGADGET GtPlusCloudJobMessageReaderCPFL : public GadgetCloudJobMessageReader<GtPlusReconJobTypeCPFL>
-    {
-    public:
-        GADGETRON_WRITER_DECLARE(GtPlusCloudJobMessageReaderCPFL);
-    };
-
-    class EXPORTGTPLUSGADGET GtPlusCloudJobMessageWriterCPFL : public GadgetCloudJobMessageWriter<GtPlusReconJobTypeCPFL>
-    {
-    public:
-        GADGETRON_WRITER_DECLARE(GtPlusCloudJobMessageWriterCPFL);
-    };
+    class EXPORTGTPLUSGADGET GtPlusCloudJobMessageReaderCPFL : public GadgetCloudJobMessageReader<GtPlusReconJobTypeCPFL> {};
+    class EXPORTGTPLUSGADGET GtPlusCloudJobMessageWriterCPFL : public GadgetCloudJobMessageWriter<GtPlusReconJobTypeCPFL> {};
 
     // gadget level cloud computing
 
-    class EXPORTGTPLUSGADGET GtPlus2DTGadgetCloudJobMessageReaderCPFL : public GadgetCloudJobMessageReader<GtPlusRecon2DTCloudPackageCPFL>
-    {
-    public:
-        GADGETRON_WRITER_DECLARE(GtPlus2DTGadgetCloudJobMessageReaderCPFL);
-    };
-
+    class EXPORTGTPLUSGADGET GtPlus2DTGadgetCloudJobMessageReaderCPFL : public GadgetCloudJobMessageReader<GtPlusRecon2DTCloudPackageCPFL> {};
     class EXPORTGTPLUSGADGET GtPlus2DTGadgetCloudJobMessageWriterCPFL : public GadgetCloudJobMessageWriter<GtPlusRecon2DTCloudPackageCPFL>
     {
     public:
-
         typedef GadgetCloudJobMessageWriter<GtPlusRecon2DTCloudPackageCPFL> BaseClass;
 
         GtPlus2DTGadgetCloudJobMessageWriterCPFL() : BaseClass()
         {
             msg_id_ = GADGET_MESSAGE_GADGETCLOUD_JOB;
         }
-
-        GADGETRON_WRITER_DECLARE(GtPlus2DTGadgetCloudJobMessageWriterCPFL);
     };
 }

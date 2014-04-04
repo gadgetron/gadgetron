@@ -1,10 +1,3 @@
-/*
- * hoNDFFT.cpp
- *
- *  Created on: Nov 29, 2011
- *      Author: hansenms
- */
-
 #include "hoNDFFT.h"
 #include "hoMatrix.h"
 
@@ -1708,6 +1701,6 @@ namespace Gadgetron{
   // Instantiation
   //
   
-  template class hoNDFFT<float>;
-  template class hoNDFFT<double>;
+  template class EXPORTCPUFFT hoNDFFT<float>;
+  template class EXPORTCPUFFT hoNDFFT<double>;
 }

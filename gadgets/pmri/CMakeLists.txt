@@ -13,6 +13,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
   ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers

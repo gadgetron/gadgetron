@@ -16,7 +16,6 @@ namespace Gadgetron {
   {
     typedef Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > > inherited;
   public:
-    GADGET_DECLARE(PCACoilGadget);
 
     PCACoilGadget();
     virtual ~PCACoilGadget();

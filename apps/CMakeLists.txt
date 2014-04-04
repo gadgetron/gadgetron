@@ -1,7 +1,6 @@
-IF (ACE_FOUND AND XSD_FOUND)
+IF (ACE_FOUND AND XSD_FOUND AND XERCESC_FOUND )
   add_subdirectory(gadgetron)
-  IF (ISMRMRD_FOUND)
-    add_subdirectory(clients)
-  ENDIF (ISMRMRD_FOUND)	 
-ENDIF (ACE_FOUND AND XSD_FOUND)
+ENDIF (ACE_FOUND AND XSD_FOUND AND XERCESC_FOUND)
+
+add_subdirectory(clients)
 add_subdirectory(standalone)

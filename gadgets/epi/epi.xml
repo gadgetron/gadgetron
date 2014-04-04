@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
+        xmlns="http://gadgetron.sf.net/gadgetron"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        
+    <reader>
+      <slot>1008</slot>
+      <dll>gadgetron_mricore</dll>
+      <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
+    </reader>
+  
+    <writer>
+      <slot>1004</slot>
+      <dll>gadgetron_mricore</dll>
+      <classname>MRIImageWriterCPLX</classname>
+    </writer>
+    <writer>
+      <slot>1005</slot>
+      <dll>gadgetron_mricore</dll>
+      <classname>MRIImageWriterFLOAT</classname>
+    </writer>
+    <writer>
+      <slot>1006</slot>
+      <dll>gadgetron_mricore</dll>
+      <classname>MRIImageWriterUSHORT</classname>
+    </writer>
+  
+    <gadget>
+      <name>NoiseAdjust</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>NoiseAdjustGadget</classname>
+    </gadget>
+
+    <gadget>
+      <name>ReconX</name>
+      <dll>gadgetron_epi</dll>
+      <classname>EPIReconXGadget</classname>
+    </gadget>
+
+    <gadget>
+      <name>EPICorr</name>
+      <dll>gadgetron_epi</dll>
+      <classname>EPICorrGadget</classname>
+    </gadget>
+
+ <!--
+    <gadget>
+      <name>IsmrmrdDump</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>IsmrmrdDumpGadget</classname>
+      <property><name>file_prefix</name><value>ISMRMRD_DUMP</value></property>
+      <property><name>append_timestamp</name><value>1</value></property>
+    </gadget>
+-->
+
+    <gadget>
+      <name>Acc</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>AccumulatorGadget</classname>
+    </gadget>
+
+    <gadget>
+      <name>FFTYZ</name>
+      <dll>gadgetron_epi</dll>
+      <classname>FFTYZGadget</classname>
+    </gadget>
+    
+    <gadget>
+      <name>Combine</name>
+      <dll>gadgetron_epi</dll>
+      <classname>CombineGadget</classname>
+    </gadget>
+
+    <gadget>
+      <name>Extract</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>ExtractGadget</classname>
+    </gadget>  
+
+   <gadget>
+      <name>AutoScale</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>AutoScaleGadget</classname>
+    </gadget>
+
+<!--
+     <gadget>
+      <name>ImageFinishFLOAT</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>ImageFinishGadgetFLOAT</classname>
+    </gadget>
+-->
+
+    <gadget>
+      <name>FloatToShort</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>FloatToUShortGadget</classname>
+    </gadget>
+ 
+     <gadget>
+      <name>ImageFinishUSHORT</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>ImageFinishGadgetUSHORT</classname>
+    </gadget>
+</gadgetronStreamConfiguration>

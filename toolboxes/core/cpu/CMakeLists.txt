@@ -1,9 +1,8 @@
 if (WIN32)
-ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUCORE__)
+  ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUCORE__)
 endif (WIN32)
 
 include_directories(
-  ${FFTW3_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   )
@@ -29,7 +28,6 @@ add_library(cpucore ${LIBTYPE}
   hoNDArray.hxx
   hoNDArray_utils.h
   hoNDArray_fileio.h
-  hoNDFFT.h
   ho2DArray.h
   ho2DArray.hxx
   ho3DArray.h
@@ -43,11 +41,11 @@ add_library(cpucore ${LIBTYPE}
   ho7DArray.h
   ho7DArray.hxx 
   hoMatrix.h
-  hoNDFFT.cpp
+  gadgetronmath.h
+  dummy.cpp
   )
 
 target_link_libraries(cpucore 
-  ${FFTW3_LIBRARIES} 
   ${Boost_LIBRARIES} 
   ${MKL_LIBRARIES} 
   )
@@ -60,7 +58,6 @@ install(FILES
   hoNDArray.hxx
   hoNDArray_utils.h
   hoNDArray_fileio.h
-  hoNDFFT.h
   ho2DArray.h
   ho2DArray.hxx
   ho3DArray.h
@@ -75,6 +72,7 @@ install(FILES
   ho7DArray.hxx
   hoMatrix.h
   hoMatrix.cpp
+  gadgetronmath.h
   DESTINATION include)
 
 if (ARMADILLO_FOUND)

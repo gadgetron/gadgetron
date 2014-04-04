@@ -39,8 +39,6 @@ namespace Gadgetron
 class EXPORTGTPLUSGADGET GtPlusReconJob3DTGadget : public Gadgetron::Gadget2< int, GtPlusReconJobTypeCPFL >
 {
 public:
-    GADGET_DECLARE(GtPlusReconJob3DTGadget);
-
     typedef std::complex<float> ValueType;
 
     typedef Gadgetron::gtPlus::gtPlusReconWorkOrder<ValueType> WorkOrderType;

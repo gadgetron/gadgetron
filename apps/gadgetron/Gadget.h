@@ -370,11 +370,6 @@ namespace Gadgetron{
 
     };
 
-
-    /* Macros for handling dyamic linking */
-#define GADGET_DECLARE(GADGET)			\
-    GADGETRON_LOADABLE_DECLARE(GADGET)
-
 #define GADGET_FACTORY_DECLARE(GADGET)			\
     GADGETRON_LOADABLE_FACTORY_DECLARE(Gadget,GADGET)
 }

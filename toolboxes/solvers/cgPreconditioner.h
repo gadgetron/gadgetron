@@ -37,7 +37,7 @@ namespace Gadgetron{
       *out = *in;
       *out *= *weights_;
     };
-    
+
   protected:
     boost::shared_ptr<ARRAY_TYPE> weights_;    
   };

@@ -3,6 +3,13 @@ if (WIN32)
   link_directories(${Boost_LIBRARY_DIRS})
 endif (WIN32)
 
+# These dependencies should have been found already to even get in here, but we play safe
+find_package(ACE)
+find_package(FFTW3 COMPONENTS single double)
+find_package(Ismrmrd)
+find_package(XSD)
+find_package(XercesC)
+
 include_directories(   
   ${ACE_INCLUDE_DIR} 
   ${Boost_INCLUDE_DIR}
@@ -32,6 +39,12 @@ if (MKL_FOUND)
 endif (MKL_FOUND)
 
 add_subdirectory(mri_core)
+
+if (ARMADILLO_FOUND)
+  add_subdirectory(epi)
+elseif (ARMADILLO_FOUND)	
+  MESSAGE("Armadillo not found, NOT compiling EPI Gadgets")
+endif (ARMADILLO_FOUND)
 
 if (MKL_FOUND)
     add_subdirectory(gtPlus)

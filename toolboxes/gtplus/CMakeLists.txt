@@ -33,6 +33,7 @@ if ( HAS_64_BIT )
         ${CMAKE_SOURCE_DIR}/toolboxes/core
         ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+		${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
         ${CMAKE_SOURCE_DIR}/toolboxes/operators
@@ -169,7 +170,12 @@ if ( HAS_64_BIT )
         source_group(matlab FILES ${matlab_files})
     endif(MATLAB_FOUND)
 
-    target_link_libraries(gtplus cpucore cpucore_math ${MKL_LIBRARIES} ${EXTRA_MKL_LIBRARIES})
+    target_link_libraries(gtplus 
+	  cpucore 
+	  cpucore_math 
+	  cpufft
+	  ${MKL_LIBRARIES} 
+	  ${EXTRA_MKL_LIBRARIES})
 
     if (CUDA_FOUND)
         target_link_libraries(gtplus gpuparallelmri)
@@ -217,8 +223,11 @@ if ( HAS_64_BIT )
         add_subdirectory(matlab)
     endif(MATLAB_FOUND)
 
-    if (GTEST_FOUND)
+	# This one depends on the gadgets being compiled
+	if (ACE_FOUND AND ISMRMRD_FOUND AND XSD_FOUND AND XERCESC_FOUND AND FFTW3_FOUND)
+      if (GTEST_FOUND)
         add_subdirectory(ut)
-    endif (GTEST_FOUND)
+      endif (GTEST_FOUND)
+	endif (ACE_FOUND AND ISMRMRD_FOUND AND XSD_FOUND AND XERCESC_FOUND AND FFTW3_FOUND)
 
 endif ( HAS_64_BIT )

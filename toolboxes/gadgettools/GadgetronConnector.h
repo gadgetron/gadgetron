@@ -1,25 +1,20 @@
-/*
- * GadgetronConnector.h
- *
- *  Created on: Nov 1, 2011
- *      Author: Michael S. Hansen
- */
-
 #ifndef GADGETRONCONNECTOR_H_
 #define GADGETRONCONNECTOR_H_
+
+#include "GadgetronSlotContainer.h"
+#include "GadgetMessageInterface.h"
+#include "gadgettools_export.h"
 
 #include <ace/Svc_Handler.h>
 #include <ace/Reactor.h>
 #include <ace/SOCK_Stream.h>
 #include <ace/Reactor_Notification_Strategy.h>
 #include <string>
-#include "GadgetronSlotContainer.h"
-#include "GadgetMessageInterface.h"
-#include "gadgettools_export.h"
 
 #define MAXHOSTNAMELENGTH 1024
 
 namespace Gadgetron{
+
 class WriterTask : public ACE_Task<ACE_MT_SYNCH>
 {
 
@@ -51,11 +46,9 @@ public:
 	  return this->activate( THR_NEW_LWP | THR_JOINABLE, 1 );
 	}
 
-
 	int register_writer(size_t slot, GadgetMessageWriter* writer) {
 		return writers_.insert(slot,writer);
 	}
-
 
 	virtual int close(unsigned long flags)
 	{
@@ -120,7 +113,6 @@ public:
 
 	}
 
-
 protected:
 	ACE_SOCK_Stream* socket_;
 	GadgetronSlotContainer<GadgetMessageWriter> writers_;
@@ -165,7 +157,6 @@ protected:
 	GadgetronSlotContainer<GadgetMessageReader> readers_;
 	WriterTask writer_task_;
 	//GadgetronSlotContainer<GadgetMessageWriter> writers_;
-
 };
 
 }

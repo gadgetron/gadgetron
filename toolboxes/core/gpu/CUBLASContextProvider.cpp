@@ -1,13 +1,10 @@
-/*
- * CUBLASContextProvider.cpp
- *
- *  Created on: Mar 22, 2012
- *      Author: Michael S. Hansen
- */
-
 #include "CUBLASContextProvider.h"
+
 #include <cuda_runtime_api.h>
+
+#ifdef _WITH_CULA_SUPPORT
 #include <cula_lapack_device.h>
+#endif
 
 
 CUBLASContextProvider* CUBLASContextProvider::instance()
@@ -24,7 +21,10 @@ CUBLASContextProvider::~CUBLASContextProvider()
 		if (cudaSetDevice(it->first)!= cudaSuccess) {
 		    std::cerr << "Error: unable to set CUDA device." << std::endl;
 		}
+
+#ifdef _WITH_CULA_SUPPORT
 		culaShutdown();
+#endif
 
 		cublasDestroy_v2(it->second);
 		it++;
@@ -90,12 +90,14 @@ cublasHandle_t* CUBLASContextProvider::getCublasHandle(int device_no)
 
 	handles_[device_no] = handle;
 
+#ifdef _WITH_CULA_SUPPORT
 	culaStatus s;
 	s = culaInitialize();
 	if(s != culaNoError) {
 		std::cerr << "CUBLASContextProvider: failed to initialize CULA" << std::endl;
 		return 0;
 	}
+#endif
 
 	if (current_device_no != device_no) {
 		//We must switch context back

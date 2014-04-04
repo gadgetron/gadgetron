@@ -6,7 +6,7 @@
 #define hoNDFFT_H
 
 #include "hoNDArray.h"
-#include "cpucore_export.h"
+#include "cpufft_export.h"
 
 #include <boost/thread/mutex.hpp>
 #include <iostream>
@@ -27,7 +27,7 @@ namespace Gadgetron{
     Access using e.g.
     FFT<float>::instance()
     */
-    template <typename T> class EXPORTCPUCORE hoNDFFT
+    template <typename T> class EXPORTCPUFFT hoNDFFT
     {
     public:
 

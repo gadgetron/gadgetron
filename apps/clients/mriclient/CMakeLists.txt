@@ -20,6 +20,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+  ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools/ismrmrd
   ${ISMRMRD_SCHEMA_DIR}
   ${ISMRMRD_XSD_INCLUDE_DIR}
   ${ACE_INCLUDE_DIR} 
@@ -42,7 +43,7 @@ IF(WIN32)
     target_link_libraries(mriclient debug ${HDF5_hdf5_LIBRARY_DEBUG} debug ${HDF5_hdf5_cpp_LIBRARY_DEBUG})
     target_link_libraries(mriclient gadgetron_mricore gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
 ELSE (WIN32)
-    target_link_libraries(mriclient gadgettools  ${HDF5_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
+    target_link_libraries(mriclient gadgetron_mricore gadgettools ${HDF5_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
 ENDIF(WIN32)
 
 install(TARGETS mriclient gt_alive DESTINATION bin)

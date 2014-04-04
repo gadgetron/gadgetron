@@ -7,7 +7,7 @@
 #pragma once
 
 #include "cuNDArray.h"
-#include "gpucore_export.h"
+#include "gpufft_export.h"
 
 namespace Gadgetron{
 
@@ -18,7 +18,7 @@ namespace Gadgetron{
       The class' template type is a REAL, ie. float or double.
       The FFTs are performed in-place.
   */
-  template<class T> class EXPORTGPUCORE cuNDFFT
+  template<class T> class EXPORTGPUFFT cuNDFFT
   {
   public:
 

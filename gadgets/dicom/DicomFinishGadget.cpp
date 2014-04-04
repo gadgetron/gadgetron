@@ -780,7 +780,7 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
     dcmGenerateUniqueIdentifier(newuid, root);
     WRITE_DCM_STRING(key, newuid);
 
-    /* clean up the char[] we created for ACE_OS::ACE_OS::snprintf */
+    /* clean up the char[] we created for ACE_OS::snprintf */
     delete[] buf;
 
     GadgetContainerMessage<DcmFileFormat>* mdcm = new GadgetContainerMessage<DcmFileFormat>();

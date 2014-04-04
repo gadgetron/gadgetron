@@ -313,7 +313,7 @@
 
         <property>
             <name>csm_use_gpu</name>
-            <value>true</value>
+            <value>false</value>
         </property>
 
         <!-- algorithm -->
@@ -350,7 +350,7 @@
         </property>
         <property>
             <name>grappa_use_gpu</name>
-            <value>true</value>
+            <value>false</value>
         </property>
 
         <!-- parameters for ISMRMRD_SPIRIT -->
@@ -372,7 +372,7 @@
         </property>
         <property>
             <name>spirit_use_gpu</name>
-            <value>true</value>
+            <value>false</value>
         </property>
         <property>
             <name>spirit_iter_max</name>
