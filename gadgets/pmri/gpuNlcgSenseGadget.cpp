@@ -32,7 +32,7 @@ namespace Gadgetron{
     set_parameter(std::string("cg_limit").c_str(), "1e-6");
     set_parameter(std::string("oversampling_factor").c_str(), "1.5");
     set_parameter(std::string("kernel_width").c_str(), "5.5");
-    set_parameter(std::string("lambda").c_str(), "0.01");
+    set_parameter(std::string("lambda").c_str(), "1e-6");
     set_parameter(std::string("alpha").c_str(), "0.5");
     set_parameter(std::string("exclusive_access").c_str(), "false");
 
@@ -123,7 +123,8 @@ namespace Gadgetron{
       PICS_ = boost::shared_ptr<cuTvPicsOperator<float_complext,3> >(new cuTvPicsOperator<float_complext,3>);
 
 
-      // Setup split-Bregman solver
+      // Setup NLCG solver
+      solver_ = cuNlcgSolver<float_complext>();
       solver_.set_encoding_operator( E_ );
 
       solver_.set_output_mode( (output_convergence_) ? cuNlcgSolver<float_complext>::OUTPUT_VERBOSE : cuNlcgSolver<float_complext>::OUTPUT_SILENT );
@@ -206,6 +207,7 @@ namespace Gadgetron{
       std::vector<size_t> image_dims = to_std_vector(matrix_size_);
       image_dims.push_back(frames);
 
+
       E_->set_domain_dimensions(&image_dims);
       E_->set_codomain_dimensions(device_samples->get_dimensions().get());
 
@@ -265,8 +267,8 @@ namespace Gadgetron{
 
     boost::shared_ptr< cuNDArray<float_complext> > result;
     {
-      GADGET_DEBUG1("Running split Bregman solver\n");
-      GPUTimer timer("Running split Bregman solver");
+      GADGET_DEBUG1("Running NLCG solver\n");
+      GPUTimer timer("Running NLCG solver");
 
       // Optionally, allow exclusive (per device) access to the solver
       // This may not matter much in terms of speed, but it can in terms of memory consumption

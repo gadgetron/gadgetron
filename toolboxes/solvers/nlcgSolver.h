@@ -48,7 +48,7 @@ public:
 	}
 
 	virtual boost::shared_ptr<ARRAY_TYPE> solve(ARRAY_TYPE* in)
-																									{
+																											{
 		if( this->encoding_operator_.get() == 0 ){
 			throw std::runtime_error("Error: nlcgSolver::compute_rhs : no encoding operator is set" );
 		}
@@ -63,11 +63,11 @@ public:
 
 		ARRAY_TYPE * x = new ARRAY_TYPE(image_dims.get()); //The image. Will be returned inside a shared_ptr
 
-		ARRAY_TYPE * g = new ARRAY_TYPE(image_dims.get()); //Contains the gradient of the current step
-		ARRAY_TYPE *  g_old = new ARRAY_TYPE(image_dims.get()); //Contains the gradient of the previous step
+		ARRAY_TYPE g(image_dims.get()); //Contains the gradient of the current step
+		ARRAY_TYPE g_old(image_dims.get()); //Contains the gradient of the previous step
 
 
-		ARRAY_TYPE * g_linear = new ARRAY_TYPE(image_dims.get()); //Contains the linear part of the gradient;
+		ARRAY_TYPE g_linear(image_dims.get()); //Contains the linear part of the gradient;
 
 		//If a prior image was given, use it for the initial guess.
 		if (this->x0_.get()){
@@ -112,18 +112,18 @@ public:
 
 				} else clear(&encoding_space);
 				encoding_space -= *in;
-				this->encoding_operator_->mult_MH(&encoding_space,g_linear);
+				this->encoding_operator_->mult_MH(&encoding_space,&g_linear);
 
-				*g_linear *=  this->encoding_operator_->get_weight();
+				g_linear *=  this->encoding_operator_->get_weight();
 				data_res = std::sqrt(this->encoding_operator_->get_weight())*real(dot(&encoding_space,&encoding_space));
 
 				calc_regMultM(x,regEnc);
 				for (int n = 0; n < regEnc.size(); n++)
 					if (reg_priors[n].get())
 						axpy(-std::sqrt(this->regularization_operators_[n]->get_weight()),reg_priors[n].get(),&regEnc[n]);
-				add_linear_gradient(regEnc,g_linear);
-				*g = *g_linear;
-				this->add_gradient(x,g);
+				add_linear_gradient(regEnc,&g_linear);
+				g = g_linear;
+				this->add_gradient(x,&g);
 
 				reg_res=REAL(0);
 
@@ -133,16 +133,16 @@ public:
 
 
 
-			if (non_negativity_constraint_) solver_non_negativity_filter(x,g);
-			if (i==0) grad_norm0=nrm2(g);
-			REAL grad_norm = nrm2(g);
+			if (non_negativity_constraint_) solver_non_negativity_filter(x,&g);
+			if (i==0) grad_norm0=nrm2(&g);
+			REAL grad_norm = nrm2(&g);
 			if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
 
 				std::cout << "Iteration " <<i << ". Relative gradient norm: " <<  grad_norm/grad_norm0 << std::endl;
 			}
 
 			if (i == 0){
-				d -= *g;
+				d -= g;
 				if (this->precond_.get()){
 					this->precond_->apply(&d,&d);
 					this->precond_->apply(&d,&d);
@@ -150,22 +150,22 @@ public:
 
 			} else {
 
-				g_step = *g; //Not using g_step for anything right now, so let's use it for our beta calculation
+				g_step = g; //Not using g_step for anything right now, so let's use it for our beta calculation
 				if (this->precond_.get()){
 					this->precond_->apply(&g_step,&g_step); //Perform first half of the preconditioning
-					this->precond_->apply(g_old,g_old);
+					this->precond_->apply(&g_old,&g_old);
 				}
 
-				ELEMENT_TYPE g_old_norm = dot(g_old,g_old);
-				ELEMENT_TYPE ggold = dot(&g_step,g_old);
-				*g_old -= g_step;
+				ELEMENT_TYPE g_old_norm = dot(&g_old,&g_old);
+				ELEMENT_TYPE ggold = dot(&g_step,&g_old);
+				g_old -= g_step;
 				REAL gg = real(dot(&g_step,&g_step));
-				ELEMENT_TYPE gy = -dot(&d,g_old);
+				ELEMENT_TYPE gy = -dot(&d,&g_old);
 				//ELEMENT_TYPE beta = -dot(g,g_old)/g_old_norm; //PRP ste[
 				//ELEMENT_TYPE theta = gy/g_old_norm;
 
-				REAL betaDy = -gg/real(dot(&d,g_old));
-				REAL betaHS = real(dot(&g_step,g_old))/real(dot(&d,g_old));
+				REAL betaDy = -gg/real(dot(&d,&g_old));
+				REAL betaHS = real(dot(&g_step,&g_old))/real(dot(&d,&g_old));
 				REAL beta = std::max(REAL(0),std::min(betaDy,betaHS)); //Hybrid step size from Dai and Yuan 2001
 
 				d *= beta;
@@ -188,7 +188,7 @@ public:
 
 			add_linear_gradient(regEnc2,&g_step);
 
-			REAL gd = real(dot(g,&d));
+			REAL gd = real(dot(&g,&d));
 
 			REAL alpha0=REAL(1);
 
@@ -200,13 +200,13 @@ public:
 
 
 
-			*g_old = *g;
+			g_old = g;
 
 
 
 
 			{
-				FunctionEstimator f(&encoding_space,&encoding_space2,&regEnc,&regEnc2,x,&d,g_linear,&g_step,this);
+				FunctionEstimator f(&encoding_space,&encoding_space2,&regEnc,&regEnc2,x,&d,&g_linear,&g_step,this);
 				alpha=backtracking(f,alpha0,gd,rho,old_norm);
 				//alpha=cg_linesearch(f,alpha0,gd,old_norm);
 			}
@@ -247,9 +247,9 @@ public:
 
 			std::cout << "Function value: " << functionValue(&encoding_space,regEnc,x) << std::endl;
 
-			*g = *g_linear;
+			g = g_linear;
 
-			this->add_gradient(x,g);
+			this->add_gradient(x,&g);
 
 
 			iteration_callback(x,i,data_res,reg_res);
@@ -258,10 +258,9 @@ public:
 			if (grad_norm/grad_norm0 < tc_tolerance_)  break;
 
 		}
-		delete g,g_old,g_linear;
 
 		return boost::shared_ptr<ARRAY_TYPE>(x);
-																									}
+	}
 
 
 
@@ -619,7 +618,7 @@ protected:
 			REAL fb = f(b);
 			ELEMENT_TYPE dir_deriv = f.dir_deriv();
 			if ((((2*delta-1.0)*real(gd) >= real(dir_deriv)) && (fb < old_norm+precision)) && //Check Approximate Wolfe conditions
-						(abs(dir_deriv) <= sigma*abs(gd))) return b;
+					(abs(dir_deriv) <= sigma*abs(gd))) return b;
 
 			secant2(a,b,f,old_norm+precision);
 			if ((b-a) > nabla*(bk-ak)) {
