@@ -9,7 +9,8 @@ if (ARMADILLO_FOUND)
     golden_radial_mode3_gpusense_cg.xml 
     fixed_radial_mode0_gpusense_sb.xml 
     fixed_radial_mode1_gpusense_sb.xml 
-    golden_radial_mode2_gpusense_sb.xml 
+    golden_radial_mode2_gpusense_sb.xml
+    golden_radial_mode2_gpusense_nlcg.xml  
     golden_radial_mode3_gpusense_sb.xml 
     fixed_radial_mode0_gpu_ktsense.xml 
     fixed_radial_mode1_gpu_ktsense.xml 

@@ -210,7 +210,8 @@ namespace Gadgetron{
     boost::shared_ptr< cuNDArray<float_complext> > precon_weights = real_to_complex<float_complext>( _precon_weights.get() );
     __precon_weights.reset(); _precon_weights.reset();
     D_->set_weights( precon_weights );
-	
+
+    *device_samples *= *dcw;
     // Invoke solver
     // 
 
