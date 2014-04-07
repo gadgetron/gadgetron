@@ -48,7 +48,7 @@ public:
 	}
 
 	virtual boost::shared_ptr<ARRAY_TYPE> solve(ARRAY_TYPE* in)
-																											{
+																															{
 		if( this->encoding_operator_.get() == 0 ){
 			throw std::runtime_error("Error: nlcgSolver::compute_rhs : no encoding operator is set" );
 		}
@@ -209,16 +209,21 @@ public:
 				FunctionEstimator f(&encoding_space,&encoding_space2,&regEnc,&regEnc2,x,&d,&g_linear,&g_step,this);
 				alpha=backtracking(f,alpha0,gd,rho,old_norm);
 				//alpha=cg_linesearch(f,alpha0,gd,old_norm);
+				if (alpha == 0) {
+					std::cerr << "Linesearch failed, returning current iteration" << std::endl;
+					return boost::shared_ptr<ARRAY_TYPE>(x);
+				}
 			}
 
 			std::cout << "Alpha: " << alpha << std::endl;
 
 
-			/*
-			if (non_negativity_constraint_){
 
+			if (non_negativity_constraint_){
+				//Restore encoding space and gradient. Why not keep a copy? Memory!
 				axpy(-alpha,&encoding_space2,&encoding_space);
 				reg_axpy(-alpha,regEnc2,regEnc);
+				axpy(-alpha,&g_step,&g_linear);
 
 				ARRAY_TYPE x2 = *x;
 				axpy(alpha,&d,&x2);
@@ -227,21 +232,32 @@ public:
 
 				d = x2;
 				d -= *x;
-				gd = real(dot(g,&d));
+				gd = real(dot(&g,&d));
 				x2 = *x;
 				alpha0 = 1;
 				this->encoding_operator_->mult_M(&d,&encoding_space2);
 				calc_regMultM(&d,regEnc2);
-				FunctionEstimator f(&encoding_space,&encoding_space2,&regEnc,&regEnc2,x,&d,this);
+
+
+				this->encoding_operator_->mult_MH(&encoding_space2,&g_step);
+				g_step *= this->encoding_operator_->get_weight();
+				add_linear_gradient(regEnc2,&g_step);
+
+				FunctionEstimator f(&encoding_space,&encoding_space2,&regEnc,&regEnc2,x,&d,&g_linear,&g_step,this);
 				//alpha=gold(f,0,alpha0*1.5);
-				alpha = wolfesearch(f,alpha0,gd,rho,old_norm);
+				//alpha = wolfesearch(f,alpha0,gd,rho,old_norm);
+				alpha = backtracking(f,alpha0,gd,rho,old_norm);
+
+				//alpha = cg_linesearch(f,alpha0,gd,old_norm);
 				axpy(alpha,&d,x);
+				if (alpha == 0){
+					std::cerr << "Linesearch failed, returning current iteration" << std::endl;
+					return boost::shared_ptr<ARRAY_TYPE>(x);
+				}
 			} else {
 				axpy(alpha,&d,x);
 
 			}
-			 */
-			axpy(alpha,&d,x);
 
 
 
@@ -260,7 +276,7 @@ public:
 		}
 
 		return boost::shared_ptr<ARRAY_TYPE>(x);
-	}
+																															}
 
 
 
@@ -502,13 +518,13 @@ protected:
 			//if (f(alpha) <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
 			REAL fa = f(alpha);
 			ELEMENT_TYPE dir_deriv = f.dir_deriv();
-			if (((2*delta-1.0)*real(gd) >= real(dir_deriv)) && (fa < old_norm+precision)) wolfe=true; //Approx Wolfe condition from Hager, W. and Zhang, H.SIAM Journal on Optimization 2005 16:1, 170-192
-
+			if (((2*delta-1.0)*real(gd) >= real(dir_deriv)) && (fa < (old_norm+precision))) wolfe=true; //Approx Wolfe condition from Hager, W. and Zhang, H.SIAM Journal on Optimization 2005 16:1, 170-192
 			if (abs(dir_deriv) > sigma*abs(gd)) wolfe = false;//Strong Wolfe condition..
 			k++;
 			if (alpha == 0){
-				std::cout << "Backtracking search failed, switching to slow wolfe-search" << std::endl;
-				return wolfesearch(f,alpha0,gd,rho,old_norm);
+				//std::cout << "Backtracking search failed, switching to slow wolfe-search" << std::endl;
+				//return wolfesearch(f,alpha0,gd,rho,old_norm);
+				return 0;
 			}
 		}
 
@@ -613,25 +629,46 @@ protected:
 
 		REAL ak = a;
 		REAL bk = b;
+		REAL fa = old_norm;
+		ELEMENT_TYPE a_deriv = gd;
+		REAL fb = f(alpha0);
+		ELEMENT_TYPE b_deriv = f.dir_deriv();
 
 		while (abs(a-b) > 0){
-			REAL fb = f(b);
-			ELEMENT_TYPE dir_deriv = f.dir_deriv();
-			if ((((2*delta-1.0)*real(gd) >= real(dir_deriv)) && (fb < old_norm+precision)) && //Check Approximate Wolfe conditions
-					(abs(dir_deriv) <= sigma*abs(gd))) return b;
+			if ((((2*delta-1.0)*real(gd) >= real(b_deriv)) && (fb < old_norm+precision)) && //Check Approximate Wolfe conditions
+					(abs(b_deriv) <= sigma*abs(gd))){
+				f(b);
+				return b;
+			}
+
+			if ((((2*delta-1.0)*real(gd) >= real(a_deriv)) && (fa < old_norm+precision)) && //Check Approximate Wolfe conditions
+					(abs(a_deriv) <= sigma*abs(gd))){
+				f(a);
+				return a;
+			}
 
 			secant2(a,b,f,old_norm+precision);
 			if ((b-a) > nabla*(bk-ak)) {
 				REAL c = (a+b)/2;
 				interval_update(a,b,c,f,old_norm);
 			}
+			if (a != ak){
+				fa = f(a);
+				a_deriv = f.dir_deriv();
+			}
+
+			if (b != bk){
+				fb = f(b);
+				b_deriv = f.dir_deriv();
+			}
+
 			ak = a;
 			bk = b;
 
 			std::cout << "a: " << a << " b: " << b << std::endl;
 		}
-
-		throw std::runtime_error("CG_linesearch failed");
+		return 0;
+		//throw std::runtime_error("CG_linesearch failed");
 
 	}
 
@@ -702,13 +739,13 @@ protected:
 	}
 
 	REAL functionValue(ARRAY_TYPE* encoding_space,std::vector<ARRAY_TYPE>& regEnc, ARRAY_TYPE * x){
-		REAL res= std::sqrt(this->encoding_operator_->get_weight())*real(dot(encoding_space,encoding_space));
+		REAL res= std::sqrt(this->encoding_operator_->get_weight())*abs(dot(encoding_space,encoding_space));
 
 		for (int i = 0; i  < this->operators.size(); i++){
 			res += this->operators[i]->magnitude(x);
 		}
 
-		res += real(calc_dot(regEnc,regEnc));
+		res += abs(calc_dot(regEnc,regEnc));
 		return res;
 
 	}

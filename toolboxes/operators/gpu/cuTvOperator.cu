@@ -6,6 +6,7 @@
 #include <iostream>
 #include "check_CUDA.h"
 #include "cudaDeviceManager.h"
+#include <stdio.h>
 
 using namespace Gadgetron;
 
@@ -71,10 +72,12 @@ template<class T, unsigned int D> void cuTvOperator<T,D>::gradient (cuNDArray<T>
 	const typename intd<D>::Type dims = vector_td<int,D>( from_std_vector<size_t,D>(*(in->get_dimensions())));
 	int elements = in->get_number_of_elements();
 
-	int threadsPerBlock =std::min(prod(dims),cudaDeviceManager::Instance()->max_blockdim());
+	int threadsPerBlock =std::min(prod(dims),256); //Using hardcoded blockSize because we use quite a lot of registers
+
 	dim3 dimBlock( threadsPerBlock);
-	int totalBlocksPerGrid = std::max(1,prod(dims)/cudaDeviceManager::Instance()->max_blockdim());
-	dim3 dimGrid(totalBlocksPerGrid);
+	int totalBlocksPerGridx = std::min(std::max(1,prod(dims)/threadsPerBlock),cudaDeviceManager::Instance()->max_griddim());
+	int totalBlocksPerGridy = (prod(dims)-1)/(threadsPerBlock*totalBlocksPerGridx)+1;
+	dim3 dimGrid(totalBlocksPerGridx,totalBlocksPerGridy);
 
 	for (int i =0; i < (elements/prod(dims)); i++){
 		tvGradient_kernel<<<dimGrid,dimBlock>>>(in->get_data_ptr()+i*prod(dims),out->get_data_ptr()+i*prod(dims),dims,limit_,this->weight_);
@@ -84,7 +87,7 @@ template<class T, unsigned int D> void cuTvOperator<T,D>::gradient (cuNDArray<T>
 	//CHECK_FOR_CUDA_ERROR();
 }
 
-template<class REAL, class T, unsigned int D> static __global__ void tvMagnitude_kernel(const T* in,T* out,const vector_td<int,D> dims,REAL limit,REAL weight)
+template<class REAL, class T, unsigned int D> static __global__ void tvMagnitude_kernel(const  T* __restrict__  in,T* __restrict__ out,const vector_td<int,D> dims,REAL limit,REAL weight)
 {
 	const int idx = blockIdx.y*gridDim.x*blockDim.x + blockIdx.x*blockDim.x + threadIdx.x;
 	if( idx < prod(dims) ){
@@ -102,10 +105,11 @@ template<class T, unsigned int D> typename realType<T>::Type cuTvOperator<T,D>::
 	const typename intd<D>::Type dims = vector_td<int,D>( from_std_vector<size_t,D>(*(in->get_dimensions())));
 	int elements = in->get_number_of_elements();
 
-	int threadsPerBlock =std::min(prod(dims),cudaDeviceManager::Instance()->max_blockdim());
+	int threadsPerBlock =std::min(prod(dims),256); //Using hardcoded blockSize because we use quite a lot of registers
 	dim3 dimBlock( threadsPerBlock);
-	int totalBlocksPerGrid = std::max(1,prod(dims)/cudaDeviceManager::Instance()->max_blockdim());
-	dim3 dimGrid(totalBlocksPerGrid);
+	int totalBlocksPerGridx = std::min(std::max(1,prod(dims)/threadsPerBlock),cudaDeviceManager::Instance()->max_griddim());
+	int totalBlocksPerGridy = (prod(dims)-1)/(threadsPerBlock*totalBlocksPerGridx)+1;
+	dim3 dimGrid(totalBlocksPerGridx,totalBlocksPerGridy);
 
 	for (int i =0; i < (elements/prod(dims)); i++){
 		tvMagnitude_kernel<<<dimGrid,dimBlock>>>(in->get_data_ptr()+i*prod(dims),out.get_data_ptr()+i*prod(dims),dims,limit_,this->weight_);
