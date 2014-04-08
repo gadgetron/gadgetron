@@ -10,10 +10,13 @@ namespace Gadgetron{
 int EPIReconXGadget::process_config(ACE_Message_Block* mb)
 {
   boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
-  ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
   ISMRMRD::ismrmrdHeader::acquisitionSystemInformation_optional a_seq = cfg->acquisitionSystemInformation();
+  ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
 
-    verboseMode_ = this->get_bool_value("verboseMode");
+  verboseMode_ = this->get_bool_value("verboseMode");
+
+  // Loop over the encoding spaces and set up the X reconstruction operators
+  std::cout << "Number of encoding spaces = " << e_seq.size() << std::endl;
 
     // Get the encoding space and trajectory description
     ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();

@@ -28,8 +28,9 @@ namespace Gadgetron{
       // in verbose mode, more info is printed out
       bool verboseMode_;
 
-      // the reconstruction object
+      // A set of reconstruction objects
       EPI::EPIReconXObjectTrapezoid<std::complex<float> > reconx;
+      //std::vector< EPI::EPIReconXObjectTrapezoid<std::complex<float> > > reconx;
     };
 }
 #endif //EPIRECONXGADGET_H

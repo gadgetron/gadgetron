@@ -21,6 +21,7 @@ add_library(gadgetron_epi SHARED
   EPIReconXGadget.h EPIReconXGadget.cpp
   EPICorrGadget.h EPICorrGadget.cpp
   FFTYZGadget.h FFTYZGadget.cpp
+  FFTXGadget.h FFTXGadget.cpp
   CombineGadget.h   CombineGadget.cpp
   ${ISMRMRD_XSD_SOURCE}
 )
@@ -39,6 +40,7 @@ install(FILES
   EPIReconXGadget.h
   EPICorrGadget.h
   FFTYZGadget.h
+  FFTXGadget.h
   CombineGadget.h
   gadgetron_epi_export.h
   DESTINATION include)

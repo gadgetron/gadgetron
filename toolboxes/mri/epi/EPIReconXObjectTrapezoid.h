@@ -30,6 +30,7 @@ template <typename T> class EPIReconXObjectTrapezoid : public EPIReconXObject<T>
   using EPIReconXObject<T>::slicePosition;
   using EPIReconXObject<T>::rcvType_;
 
+  bool  balanced_;
   float rampUpTime_;
   float rampDownTime_;
   float flatTopTime_;
@@ -54,6 +55,7 @@ template <typename T> class EPIReconXObjectTrapezoid : public EPIReconXObject<T>
 template <typename T> EPIReconXObjectTrapezoid<T>::EPIReconXObjectTrapezoid()
 {
   rcvType_ = EVEN;
+  balanced_ = true;
   rampUpTime_ = 0.0;
   rampDownTime_ = 0.0;
   flatTopTime_ = 0.0;
@@ -94,9 +96,10 @@ template <typename T> int EPIReconXObjectTrapezoid<T>::computeTrajectory()
   float totTime = rampUpTime_ + flatTopTime_ + rampDownTime_;
   float readTime = dwellTime_ * numSamples_;
 
-  // TODO: we need a flag that says it's a balanced readout.
-  // Fix the acqDelayTime for balanced acquisitions 
-  acqDelayTime_ = 0.5 * (totTime - readTime);
+  // Fix the acqDelayTime for balanced acquisitions
+  if (balanced_) {
+    acqDelayTime_ = 0.5 * (totTime - readTime);
+  }
 
   // Some Areas
   float totArea = 0.5*rampUpTime_ + flatTopTime_ + 0.5*rampDownTime_;
