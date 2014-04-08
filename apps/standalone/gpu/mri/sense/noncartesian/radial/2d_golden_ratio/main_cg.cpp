@@ -124,8 +124,7 @@ int main(int argc, char** argv)
 
   E->setup( matrix_size, matrix_size_os, kernel_width );
 
-  // Notify encoding operator of dcw
-  E->set_dcw(dcw) ;
+
 
   // Define rhs buffer
   //
@@ -213,7 +212,9 @@ int main(int argc, char** argv)
   // 
   // Setup radial SENSE reconstructions
   //
-      
+  // Notify encoding operator of dcw
+  sqrt_inplace(dcw.get());
+	E->set_dcw(dcw);
   // Setup conjugate gradient solver
   cuCgSolver<_complext> cg;
   cg.set_preconditioner ( D );  // preconditioning matrix
@@ -253,6 +254,7 @@ int main(int argc, char** argv)
     // Set current trajectory and trigger NFFT preprocessing
     E->preprocess(traj.get());
     
+    *data *= *dcw;
     //
     // Invoke conjugate gradient solver
     //

@@ -131,7 +131,7 @@ int main(int argc, char** argv)
   boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );  
   E->set_weight( mu );
   E->setup( matrix_size, matrix_size_os, kernel_width );
-  E->set_dcw(dcw);
+
 
   // Define rhs buffer
   //
@@ -246,6 +246,8 @@ int main(int argc, char** argv)
   E->set_domain_dimensions(recon_dims.get());
   E->set_codomain_dimensions(&data_dims);
 
+  sqrt_inplace(dcw.get());
+  E->set_dcw(dcw);
   // Setup split-Bregman solver
   cuSbcCgSolver<_complext> sb;
   sb.set_encoding_operator( E );
@@ -297,6 +299,7 @@ int main(int argc, char** argv)
     // Set current trajectory and trigger NFFT preprocessing
     E->preprocess(traj.get());
         
+    *data *= *dcw;
     //
     // Split-Bregman solver
     //

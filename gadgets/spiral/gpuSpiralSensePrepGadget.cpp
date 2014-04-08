@@ -309,7 +309,7 @@ namespace Gadgetron{
 
       if( buffer_using_solver_ ){
 
-	E_->set_dcw(dcw_buffer_);
+	E_->set_dcw(sqrt(dcw_buffer_.get()));
 
 	D_ = boost::shared_ptr< cuCgPreconditioner<float_complext> >( new cuCgPreconditioner<float_complext>() );
 	cg_.set_encoding_operator( E_ );

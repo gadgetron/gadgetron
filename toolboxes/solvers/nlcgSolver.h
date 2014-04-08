@@ -36,7 +36,7 @@ public:
 		non_negativity_constraint_=false;
 		dump_residual = false;
 		threshold= REAL(1e-7);
-		barrier_threshold=1e4;
+
 		rho = 0.5f;
 	}
 
@@ -48,7 +48,7 @@ public:
 	}
 
 	virtual boost::shared_ptr<ARRAY_TYPE> solve(ARRAY_TYPE* in)
-													{
+																															{
 		if( this->encoding_operator_.get() == 0 ){
 			throw std::runtime_error("Error: nlcgSolver::compute_rhs : no encoding operator is set" );
 		}
@@ -61,27 +61,25 @@ public:
 			throw std::runtime_error("Error: nlcgSolver::compute_rhs : encoding operator has not set domain dimension" );
 		}
 
-		ARRAY_TYPE * x = new ARRAY_TYPE;
-		x->create(image_dims.get());
+		ARRAY_TYPE * x = new ARRAY_TYPE(image_dims.get()); //The image. Will be returned inside a shared_ptr
+
+		ARRAY_TYPE g(image_dims.get()); //Contains the gradient of the current step
+		ARRAY_TYPE g_old(image_dims.get()); //Contains the gradient of the previous step
 
 
+		ARRAY_TYPE g_linear(image_dims.get()); //Contains the linear part of the gradient;
 
-		ARRAY_TYPE * g = new ARRAY_TYPE;
-		g->create(image_dims.get());
-		ARRAY_TYPE *  g_old = new ARRAY_TYPE;
-		g_old->create(image_dims.get());
-
+		//If a prior image was given, use it for the initial guess.
 		if (this->x0_.get()){
 			*x = *(this->x0_.get());
 		} else  {
 			clear(x);
 		}
 
-		//REAL delta = REAL(0.01);
-		//REAL sigma = REAL(0.4);
-
+		// Contains the encoding space of the linear regularization operators
 		std::vector<ARRAY_TYPE> regEnc;
 
+		//Initialize encoding space
 		for (int i = 0; i < this->regularization_operators_.size(); i++){
 			regEnc.push_back(ARRAY_TYPE(this->regularization_operators_[i]->get_codomain_dimensions()));
 			if (reg_priors[i].get()){
@@ -92,11 +90,13 @@ public:
 		}
 		std::vector<ARRAY_TYPE> regEnc2 = regEnc;
 
-		ARRAY_TYPE d(image_dims.get());
+		ARRAY_TYPE d(image_dims.get()); //Search direction.
 		clear(&d);
-		ARRAY_TYPE encoding_space(in->get_dimensions().get());
 
-		ARRAY_TYPE gtmp(image_dims.get());
+		ARRAY_TYPE encoding_space(in->get_dimensions().get()); //Contains the encoding space, or, equivalently, the residual vector
+
+		ARRAY_TYPE g_step(image_dims.get()); //Linear part of the gradient of the step d will be stored here
+
 		ARRAY_TYPE encoding_space2(in->get_dimensions().get());
 		REAL reg_res,data_res;
 
@@ -104,6 +104,7 @@ public:
 			std::cout << "Iterating..." << std::endl;
 		}
 		REAL grad_norm0;
+
 		for (int i = 0; i < iterations_; i++){
 			if (i==0){
 				if (this->x0_.get()){
@@ -111,22 +112,20 @@ public:
 
 				} else clear(&encoding_space);
 				encoding_space -= *in;
-				this->encoding_operator_->mult_MH(&encoding_space,g);
+				this->encoding_operator_->mult_MH(&encoding_space,&g_linear);
 
-				*g *=  this->encoding_operator_->get_weight();
+				g_linear *=  this->encoding_operator_->get_weight();
 				data_res = std::sqrt(this->encoding_operator_->get_weight())*real(dot(&encoding_space,&encoding_space));
 
 				calc_regMultM(x,regEnc);
 				for (int n = 0; n < regEnc.size(); n++)
 					if (reg_priors[n].get())
 						axpy(-std::sqrt(this->regularization_operators_[n]->get_weight()),reg_priors[n].get(),&regEnc[n]);
-				this->add_gradient(x,g);
-				add_linear_gradient(regEnc,g);
+				add_linear_gradient(regEnc,&g_linear);
+				g = g_linear;
+				this->add_gradient(x,&g);
+
 				reg_res=REAL(0);
-				if (this->precond_.get()){
-					this->precond_->apply(g,g);
-					this->precond_->apply(g,g);
-				}
 
 			}else {
 				data_res = real(dot(&encoding_space,&encoding_space));
@@ -134,96 +133,97 @@ public:
 
 
 
-			if (non_negativity_constraint_) solver_non_negativity_filter(x,g);
-			if (i==0) grad_norm0=nrm2(g);
-			REAL grad_norm = nrm2(g);
+			if (non_negativity_constraint_) solver_non_negativity_filter(x,&g);
+			if (i==0) grad_norm0=nrm2(&g);
+			REAL grad_norm = nrm2(&g);
 			if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
 
-				std::cout << "Iteration " <<i << ". Realtive gradient norm: " <<  grad_norm << std::endl;
+				std::cout << "Iteration " <<i << ". Relative gradient norm: " <<  grad_norm/grad_norm0 << std::endl;
 			}
 
 			if (i == 0){
-				d -= *g;
+				d -= g;
+				if (this->precond_.get()){
+					this->precond_->apply(&d,&d);
+					this->precond_->apply(&d,&d);
+				}
+
 			} else {
-				ELEMENT_TYPE g_old_norm = dot(g_old,g_old);
-				ELEMENT_TYPE ggold = dot(g,g_old);
-				*g_old -= *g;
-				REAL gg = real(dot(g,g));
-				ELEMENT_TYPE gy = -dot(&d,g_old);
+
+				g_step = g; //Not using g_step for anything right now, so let's use it for our beta calculation
+				if (this->precond_.get()){
+					this->precond_->apply(&g_step,&g_step); //Perform first half of the preconditioning
+					this->precond_->apply(&g_old,&g_old);
+				}
+
+				ELEMENT_TYPE g_old_norm = dot(&g_old,&g_old);
+				ELEMENT_TYPE ggold = dot(&g_step,&g_old);
+				g_old -= g_step;
+				REAL gg = real(dot(&g_step,&g_step));
+				ELEMENT_TYPE gy = -dot(&d,&g_old);
 				//ELEMENT_TYPE beta = -dot(g,g_old)/g_old_norm; //PRP ste[
 				//ELEMENT_TYPE theta = gy/g_old_norm;
 
-				REAL betaDy = -gg/real(dot(&d,g_old));
-				REAL betaHS = real(dot(g,g_old))/real(dot(&d,g_old));
+				REAL betaDy = -gg/real(dot(&d,&g_old));
+				REAL betaHS = real(dot(&g_step,&g_old))/real(dot(&d,&g_old));
 				REAL beta = std::max(REAL(0),std::min(betaDy,betaHS)); //Hybrid step size from Dai and Yuan 2001
-
-				std::cout << "Beta " << beta << std::endl;
-				//ELEMENT_TYPE beta(0);
 
 				d *= beta;
 
-				d -= *g;
-				//axpy(theta,g_old,&d);
+				if (this->precond_.get()) this->precond_->apply(&g_step,&g_step); //Perform the rest of the preconditioning
 
+				d -= g_step;
+				std::cout << "Beta " << beta << std::endl;
 			}
 
 			this->encoding_operator_->mult_M(&d,&encoding_space2);
-			//this->encoding_operator_->mult_MH(&encoding_space2,&gtmp);
+
 			calc_regMultM(&d,regEnc2);
 
-			REAL alpha0 = REAL(1);
+
+
+			this->encoding_operator_->mult_MH(&encoding_space2,&g_step);
+			g_step *= this->encoding_operator_->get_weight();
+
+
+			add_linear_gradient(regEnc2,&g_step);
+
+			REAL gd = real(dot(&g,&d));
+
+			REAL alpha0=REAL(1);
+
+			//In the linear or semi-linear case, we can calculate the ideal step size.
 			if (this->operators.size() == 0) alpha0 = -real(dot(&encoding_space,&encoding_space2)+calc_dot(regEnc,regEnc2))/real(dot(&encoding_space2,&encoding_space2)+calc_dot(regEnc2,regEnc2));
-			//REAL alpha0 = REAL(1);
+
 			REAL alpha;
 			REAL old_norm = functionValue(&encoding_space,regEnc,x);
 
-			REAL gd = real(dot(g,&d));
 
-			*g_old = *g;
+
+			g_old = g;
 
 
 
 
 			{
-				FunctionEstimator f(&encoding_space,&encoding_space2,&regEnc,&regEnc2,x,&d,this);
-				if (this->operators.size() != 0)
-					alpha=gold(f,0,alpha0);
-				else {
-					alpha = alpha0;
-					f(alpha);
+				FunctionEstimator f(&encoding_space,&encoding_space2,&regEnc,&regEnc2,x,&d,&g_linear,&g_step,this);
+				alpha=backtracking(f,alpha0,gd,rho,old_norm);
+				//alpha=cg_linesearch(f,alpha0,gd,old_norm);
+				if (alpha == 0) {
+					std::cerr << "Linesearch failed, returning current iteration" << std::endl;
+					return boost::shared_ptr<ARRAY_TYPE>(x);
 				}
 			}
-			/*
-			while (not wolfe){
 
-				alpha=alpha0*std::pow(rho,k);
-				axpy(alpha-alpha_old,&encoding_space2,&encoding_space);
-				reg_axpy(alpha-alpha_old,regEnc2,regEnc);
-				axpy(alpha-alpha_old,&d,&x2);
+			std::cout << "Alpha: " << alpha << std::endl;
 
-				//axpy(alpha-alpha_old,&gtmp,g);
-
-				if (functionValue(&encoding_space,regEnc,&x2) <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
-				//if (functionValue(&encoding_space,regEnc,&x2) <= old_norm-alpha*alpha*delta*dot(&d,&d)) wolfe = true;
-				//if (non_negativity_constraint_ && (min(&x2) < 0)) wolfe = false;
-				//if (real((dot(g,&d))) >= sigma*gd) wolfe =false; //So... officially this is part of the strong Wolfe condition. For semi-linear problems our initial step size should be sufficient.
-				k++;
-				//std::cout << "Res: " << dot(&encoding_space,&encoding_space)+calc_dot(regEnc,regEnc) << " Target: " << old_norm+alpha*delta*gd << std::endl;
-				//				std::cout << "Step2: " << dot(&gdiff,&d) << " Target " << sigma*gd  << std::endl;
-				if (alpha == 0){ throw std::runtime_error("NlcgSolver: line-search failed, try using a rho-value closer to 1");
-
-
-
-				}
-				alpha_old = alpha;
-			}
-			 */
 
 
 			if (non_negativity_constraint_){
-
+				//Restore encoding space and gradient. Why not keep a copy? Memory!
 				axpy(-alpha,&encoding_space2,&encoding_space);
 				reg_axpy(-alpha,regEnc2,regEnc);
+				axpy(-alpha,&g_step,&g_linear);
 
 				ARRAY_TYPE x2 = *x;
 				axpy(alpha,&d,&x2);
@@ -232,75 +232,51 @@ public:
 
 				d = x2;
 				d -= *x;
-				gd = real(dot(g,&d));
+				gd = real(dot(&g,&d));
 				x2 = *x;
 				alpha0 = 1;
 				this->encoding_operator_->mult_M(&d,&encoding_space2);
 				calc_regMultM(&d,regEnc2);
-				FunctionEstimator f(&encoding_space,&encoding_space2,&regEnc,&regEnc2,x,&d,this);
+
+
+				this->encoding_operator_->mult_MH(&encoding_space2,&g_step);
+				g_step *= this->encoding_operator_->get_weight();
+				add_linear_gradient(regEnc2,&g_step);
+
+				FunctionEstimator f(&encoding_space,&encoding_space2,&regEnc,&regEnc2,x,&d,&g_linear,&g_step,this);
 				//alpha=gold(f,0,alpha0*1.5);
+				//alpha = wolfesearch(f,alpha0,gd,rho,old_norm);
 				alpha = backtracking(f,alpha0,gd,rho,old_norm);
+
+				//alpha = cg_linesearch(f,alpha0,gd,old_norm);
 				axpy(alpha,&d,x);
-			} else {
-				axpy(alpha,&d,x);
-
-			}
-
-			/*
-			if (non_negativity_constraint_){
-
-				axpy(-alpha,&encoding_space2,&encoding_space);
-				reg_axpy(-alpha,regEnc2,regEnc);
-
-
-				clamp_min(&x2,REAL(0));
-				d = x2;
-				d -= *x;
-				gd = real(dot(g,&d));
-				x2 = *x;
-				alpha_old = 0;
-				alpha0 = 1;
-				this->encoding_operator_->mult_M(&d,&encoding_space2);
-				calc_regMultM(&d,regEnc2);
-				k=0;
-				wolfe = false;
-				while (not wolfe){
-					alpha=alpha0*std::pow(rho,k);
-					axpy(alpha-alpha_old,&encoding_space2,&encoding_space);
-					reg_axpy(alpha-alpha_old,regEnc2,regEnc);
-					axpy(alpha-alpha_old,&d,&x2);
-					if (functionValue(&encoding_space,regEnc,&x2) <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
-					k++;
-					if (alpha == 0) throw std::runtime_error("Wolfe line search failed");
-					alpha_old = alpha;
+				if (alpha == 0){
+					std::cerr << "Linesearch failed, returning current iteration" << std::endl;
+					return boost::shared_ptr<ARRAY_TYPE>(x);
 				}
-				axpy(alpha,&d,x);
 			} else {
 				axpy(alpha,&d,x);
 
 			}
-			 */
+
+
+
 			std::cout << "Function value: " << functionValue(&encoding_space,regEnc,x) << std::endl;
 
-			this->encoding_operator_->mult_MH(&encoding_space,g);
-			this->add_gradient(x,g);
-			add_linear_gradient(regEnc,g);
-			if (this->precond_.get()){
-				this->precond_->apply(g,g);
-				this->precond_->apply(g,g);
-			}
+			g = g_linear;
 
+			this->add_gradient(x,&g);
 
 
 			iteration_callback(x,i,data_res,reg_res);
 
 
 			if (grad_norm/grad_norm0 < tc_tolerance_)  break;
+
 		}
-		delete g,g_old;
 
 		return boost::shared_ptr<ARRAY_TYPE>(x);
-													}
+																															}
 
 
 
@@ -415,7 +391,7 @@ protected:
 	class FunctionEstimator{
 	public:
 
-		FunctionEstimator(ARRAY_TYPE* _encoding_space,ARRAY_TYPE* _encoding_step,std::vector<ARRAY_TYPE>* _regEnc,std::vector<ARRAY_TYPE>* _regEnc_step, ARRAY_TYPE * _x, ARRAY_TYPE * _d, nlcgSolver<ARRAY_TYPE> * _parent)
+		FunctionEstimator(ARRAY_TYPE* _encoding_space,ARRAY_TYPE* _encoding_step,std::vector<ARRAY_TYPE>* _regEnc,std::vector<ARRAY_TYPE>* _regEnc_step, ARRAY_TYPE * _x, ARRAY_TYPE * _d, ARRAY_TYPE * _g, ARRAY_TYPE * _g_step, nlcgSolver<ARRAY_TYPE> * _parent)
 	{
 			encoding_step = _encoding_step;
 			encoding_space = _encoding_space;
@@ -426,11 +402,17 @@ protected:
 			d = _d;
 			parent = _parent;
 			alpha_old = 0;
+			g = _g;
+			g_step = _g_step;
+
 	}
+
 
 
 		REAL operator () (REAL alpha){
 			axpy(alpha-alpha_old,encoding_step,encoding_space);
+
+			axpy(alpha-alpha_old,g_step,g);
 			parent->reg_axpy(alpha-alpha_old,*regEnc_step,*regEnc);
 			axpy(alpha-alpha_old,d,&xtmp);
 
@@ -439,6 +421,14 @@ protected:
 			return res;
 
 		}
+
+		ELEMENT_TYPE dir_deriv(){
+			ARRAY_TYPE g_tmp = *g;
+			parent->add_gradient(&xtmp,&g_tmp);
+			return dot(d,&g_tmp);
+		}
+
+
 
 
 
@@ -451,6 +441,8 @@ protected:
 		std::vector<ARRAY_TYPE>* regEnc;
 		std::vector<ARRAY_TYPE>* regEnc_step;
 		ARRAY_TYPE* x, *d;
+		ARRAY_TYPE* g, *g_step;
+
 		nlcgSolver<ARRAY_TYPE>* parent;
 		ARRAY_TYPE xtmp;
 
@@ -503,33 +495,257 @@ protected:
 		}
 	}
 
+	/***
+	 * Armijo type linesearch
+	 * @param f
+	 * @param alpha0
+	 * @param gd
+	 * @param rho
+	 * @param old_norm
+	 * @return
+	 */
 	REAL backtracking(FunctionEstimator& f, const REAL alpha0, const REAL gd, const REAL rho, const REAL old_norm){
 		REAL alpha;
-		REAL delta=0.01;
+		REAL delta=0.1;
+		REAL sigma=0.9;
+		//REAL precision = 0.0003; //Estimated precision of function evaluation
+		REAL precision = 1e-4f; //Estimated precision of function evaluation
 		bool wolfe = false;
 		int  k=0;
 
-		while ( !wolfe ){
+		while (not wolfe){
 			alpha=alpha0*std::pow(rho,k);
-			if (f(alpha) <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
+			//if (f(alpha) <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
+			REAL fa = f(alpha);
+			ELEMENT_TYPE dir_deriv = f.dir_deriv();
+			if (((2*delta-1.0)*real(gd) >= real(dir_deriv)) && (fa < (old_norm+precision))) wolfe=true; //Approx Wolfe condition from Hager, W. and Zhang, H.SIAM Journal on Optimization 2005 16:1, 170-192
+			if (abs(dir_deriv) > sigma*abs(gd)) wolfe = false;//Strong Wolfe condition..
 			k++;
-			if (alpha == 0) throw std::runtime_error("Wolfe line search failed");
+			if (alpha == 0){
+				//std::cout << "Backtracking search failed, switching to slow wolfe-search" << std::endl;
+				//return wolfesearch(f,alpha0,gd,rho,old_norm);
+				return 0;
+			}
 		}
 
 		return alpha;
 
 	}
 
+	/***
+	 * Line search taken from Numerical Optimization (Wright and Nocedal 1999).
+	 * Adapted from the scipy optimize algorithm.
+	 * Like the gold-section method it works quite poorly in practice.
+	 * @param f
+	 * @param alpha0
+	 * @param gd
+	 * @param rho
+	 * @param old_norm
+	 * @return
+	 */
+	REAL wolfesearch(FunctionEstimator& f, const REAL alpha_init, const REAL gd, const REAL rho, const REAL old_norm){
+		using std::sqrt;
+		using std::abs;
+		REAL delta=0.01;
+		unsigned int k=0;
+		REAL alpha0 = alpha_init;
+		REAL f0 = f(alpha0);
 
+		if (f0 <= old_norm+alpha0*delta*gd){//Strong Wolfe condition..
+			return alpha0;
+		}
+
+
+		REAL alpha1 = -gd*alpha0*alpha0/2.0/(f0-old_norm-gd*alpha0);
+		//std::cout << "F0 " <<f0 << " old " << old_norm << " gd " << gd <<std::endl;
+		std::cout << "Alpha0: "  << alpha0 << std::endl;
+		//std::cout << "Alpha1: "  << alpha1 << std::endl;
+		REAL f1 = f(alpha1);
+
+
+		if (f1 <= old_norm+alpha1*delta*gd){//Strong Wolfe condition..
+			return alpha1;
+		}
+
+
+		while (alpha1 > 0){
+			double factor = alpha0*alpha0*alpha1*alpha1*(alpha1-alpha0);
+			double a = alpha0*alpha0*(f1-old_norm-gd*alpha1) - alpha1*alpha1*(f0-old_norm-gd*alpha0);
+			a /= factor;
+
+			double b = -alpha0*alpha0*alpha0*(f1-old_norm-gd*alpha1) + alpha1*alpha1*alpha1*(f0-old_norm-gd*alpha0);
+			b /= factor;
+
+			double alpha2 = (-b+std::sqrt(std::abs(b*b-3*a*gd)))/(3*a);
+			REAL f2 = f(alpha2);
+			//std::cout << "a " << a << "b " << b << std::endl;
+			std::cout << "Alpha1: "  << alpha1 << std::endl;
+			std::cout << "Alpha2: "  << alpha2 << std::endl;
+			if (f2 < old_norm+alpha2*delta*gd){//Strong Wolfe condition..
+				return alpha2;
+			}
+
+			if (((alpha1-alpha2) > (alpha1/2.0)) || ((1.0-alpha2/alpha1) < 0.96)){
+				alpha2 = alpha1 / 2.0;
+			}
+
+			alpha0 = alpha1;
+			alpha1 = alpha2;
+			f0 = f1;
+			f1 = f2;
+			k++;
+
+
+		}
+
+		throw std::runtime_error("Wolfe line search failed");
+
+
+	}
+
+
+
+	/***
+	 * CG linesearch adapted from  Hager, W. and Zhang, H.SIAM Journal on Optimization 2005 16:1, 170-192
+	 * @param f
+	 * @param alpha0
+	 * @param gd
+	 * @param rho
+	 * @param old_norm
+	 * @return
+	 */
+	REAL cg_linesearch(FunctionEstimator& f, const REAL alpha0, const REAL gd, const REAL old_norm){
+		REAL delta=0.1;
+		REAL sigma=0.9;
+		REAL nabla=0.66;
+		//REAL precision = 0.0003; //Estimated precision of function evaluation
+		REAL precision = 1e-4f; //Estimated precision of function evaluation
+
+
+
+
+		REAL a=0;
+		REAL b = alpha0;
+
+		REAL ak = a;
+		REAL bk = b;
+		REAL fa = old_norm;
+		ELEMENT_TYPE a_deriv = gd;
+		REAL fb = f(alpha0);
+		ELEMENT_TYPE b_deriv = f.dir_deriv();
+
+		while (abs(a-b) > 0){
+			if ((((2*delta-1.0)*real(gd) >= real(b_deriv)) && (fb < old_norm+precision)) && //Check Approximate Wolfe conditions
+					(abs(b_deriv) <= sigma*abs(gd))){
+				f(b);
+				return b;
+			}
+
+			if ((((2*delta-1.0)*real(gd) >= real(a_deriv)) && (fa < old_norm+precision)) && //Check Approximate Wolfe conditions
+					(abs(a_deriv) <= sigma*abs(gd))){
+				f(a);
+				return a;
+			}
+
+			secant2(a,b,f,old_norm+precision);
+			if ((b-a) > nabla*(bk-ak)) {
+				REAL c = (a+b)/2;
+				interval_update(a,b,c,f,old_norm);
+			}
+			if (a != ak){
+				fa = f(a);
+				a_deriv = f.dir_deriv();
+			}
+
+			if (b != bk){
+				fb = f(b);
+				b_deriv = f.dir_deriv();
+			}
+
+			ak = a;
+			bk = b;
+
+			std::cout << "a: " << a << " b: " << b << std::endl;
+		}
+		return 0;
+		//throw std::runtime_error("CG_linesearch failed");
+
+	}
+
+
+	void secant2(REAL& a, REAL& b,FunctionEstimator& f,REAL old_norm){
+		REAL fa = f(a);
+		ELEMENT_TYPE dfa = f.dir_deriv();
+		REAL fb = f(b);
+		ELEMENT_TYPE dfb = f.dir_deriv();
+
+		REAL c= real((a*dfb-b*dfa)/(dfb-dfa));
+
+		REAL fc = f(c);
+		ELEMENT_TYPE dfc = f.dir_deriv();
+
+		REAL A=a;
+		REAL B = b;
+
+		interval_update(A,B,c,f,old_norm);
+
+		if (c == B){
+			c= real((b*dfc-c*dfb)/(dfc-dfb));
+			interval_update(A,B,c,f,old_norm);
+		} if (c == A){
+			c= real((a*dfc-c*dfa)/(dfc-dfa));
+			interval_update(A,B,c,f,old_norm);
+		}
+
+		a= A;
+		b = B;
+	}
+
+	void interval_update(REAL & a, REAL & b, REAL c,FunctionEstimator& f,REAL old_norm){
+		REAL theta = 0.5;
+		if (c < a || c > b) return; // C not in interval
+		REAL fc = f(c);
+		ELEMENT_TYPE dfc = f.dir_deriv();
+
+		if (real(dfc) >= 0){
+			b =c;
+			return;
+		}
+		if (fc < old_norm){
+			a = c;
+			return;
+		}
+		b =c;
+		while(true){
+			REAL d = (1-theta)*a+theta*b;
+			REAL fd = f(d);
+			ELEMENT_TYPE dfd = f.dir_deriv();
+
+			if (real(dfd) >= 0){
+				b = d;
+				return;
+			}
+			if (fd < old_norm){
+				a = d;
+			} else 	b = d;
+
+			std::cout << "Interval a: " << a << " b: " << b << std::endl;
+
+		}
+
+
+
+
+	}
 
 	REAL functionValue(ARRAY_TYPE* encoding_space,std::vector<ARRAY_TYPE>& regEnc, ARRAY_TYPE * x){
-		REAL res= std::sqrt(this->encoding_operator_->get_weight())*real(dot(encoding_space,encoding_space));
+		REAL res= std::sqrt(this->encoding_operator_->get_weight())*abs(dot(encoding_space,encoding_space));
 
 		for (int i = 0; i  < this->operators.size(); i++){
 			res += this->operators[i]->magnitude(x);
 		}
 
-		res += real(calc_dot(regEnc,regEnc));
+		res += abs(calc_dot(regEnc,regEnc));
 		return res;
 
 	}
@@ -551,7 +767,6 @@ protected:
 	bool dump_residual;
 	REAL rho;
 
-	REAL barrier_threshold;
 	// Preconditioner
 
 	std::vector<boost::shared_ptr<ARRAY_TYPE> > reg_priors;

@@ -19,7 +19,7 @@ namespace Gadgetron{
     virtual ~cuSenseBufferCg() {}
 
     inline void set_dcw_for_rhs( boost::shared_ptr< cuNDArray<REAL> > dcw ){
-      this->E_->set_dcw(dcw);
+      this->E_->set_dcw(sqrt(dcw.get()));
     }
     
     virtual void preprocess( cuNDArray<_reald> *traj );
