@@ -345,9 +345,17 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             }
 
             // final cut
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(*pSrc, buffer2D));
-            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad2D(buffer2D, reconSizeRO_, reconSizeE1_, *pDst));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pDst));
+            if ( isKSpace )
+            {
+                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad2D(*pSrc, reconSizeRO_, reconSizeE1_, *pDst));
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pDst));
+            }
+            else
+            {
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(*pSrc, buffer2D));
+                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad2D(buffer2D, reconSizeRO_, reconSizeE1_, *pDst));
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pDst));
+            }
 
             if ( pDst != &output_ )
             {
