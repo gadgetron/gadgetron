@@ -165,6 +165,7 @@ namespace Gadgetron{
 
     boost::shared_ptr< cuNDArray<floatd2> > traj(new cuNDArray<floatd2> (j->tra_host_.get()));
     boost::shared_ptr< cuNDArray<float> > dcw(new cuNDArray<float> (j->dcw_host_.get()));
+    sqrt_inplace(dcw.get()); //Take square root to use for weighting
     boost::shared_ptr< cuNDArray<float_complext> > csm(new cuNDArray<float_complext> (j->csm_host_.get()));
     boost::shared_ptr< cuNDArray<float_complext> > device_samples(new cuNDArray<float_complext> (j->dat_host_.get()));
 
@@ -209,7 +210,8 @@ namespace Gadgetron{
     boost::shared_ptr< cuNDArray<float_complext> > precon_weights = real_to_complex<float_complext>( _precon_weights.get() );
     __precon_weights.reset(); _precon_weights.reset();
     D_->set_weights( precon_weights );
-	
+
+    *device_samples *= *dcw;
     // Invoke solver
     // 
 

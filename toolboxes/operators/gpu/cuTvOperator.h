@@ -22,7 +22,7 @@ namespace Gadgetron{
   public:
 
     cuTvOperator() : generalOperator<cuNDArray<T> >(){
-      limit_ = REAL(1e-8);
+      limit_ = REAL(0);
     }
 
     virtual ~cuTvOperator(){};

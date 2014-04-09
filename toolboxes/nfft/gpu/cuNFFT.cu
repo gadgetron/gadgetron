@@ -442,6 +442,9 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute( cuNDArray<complext<REAL> > *in,
     
     compute_NFFT_C2NC( working_image, out_int );
 
+    if( dcw_int )
+        	*out_int *= *dcw_int;
+
     if( !oversampled_image ){
       delete working_image; working_image = 0x0;
     }    
@@ -526,6 +529,11 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::compute( cuNDArray<complext<REAL> > *in,
     
     compute_NFFTH_C2NC( working_image, out_int );
     
+    if( dcw_int )
+    	*out_int *= *dcw_int;
+
+
+
     if( !oversampled_image ){
       delete working_image; working_image = 0x0;
     }
@@ -588,6 +596,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::mult_MH_M( cuNDArray<complext<REAL> > *i
   
   // Density compensation
   if( dcw ){
+    *working_samples *= *dcw_int;
     *working_samples *= *dcw_int;
   }
     
@@ -658,6 +667,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::convolve( cuNDArray<complext<REAL> > *in
 
   case NFFT_CONV_C2NC:
   	convolve_NFFT_C2NC( in_int, out_int, accumulate );
+  	if( dcw_int ) *out_int *= *dcw_int;
     break;
     
   case NFFT_CONV_NC2C:

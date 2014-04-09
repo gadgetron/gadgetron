@@ -41,6 +41,7 @@ add_library(cpucore ${LIBTYPE}
   ho7DArray.h
   ho7DArray.hxx 
   hoMatrix.h
+  gadgetronmath.h
   dummy.cpp
   )
 
@@ -71,6 +72,7 @@ install(FILES
   ho7DArray.hxx
   hoMatrix.h
   hoMatrix.cpp
+  gadgetronmath.h
   DESTINATION include)
 
 if (ARMADILLO_FOUND)

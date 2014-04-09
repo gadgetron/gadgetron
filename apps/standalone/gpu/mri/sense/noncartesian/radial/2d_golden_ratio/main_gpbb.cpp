@@ -127,7 +127,7 @@ int main(int argc, char** argv)
   // Define encoding matrix for non-Cartesian SENSE
   boost::shared_ptr< cuNonCartesianSenseOperator<_real,2> > E( new cuNonCartesianSenseOperator<_real,2>() );
   E->setup( matrix_size, matrix_size_os, kernel_width );
-  E->set_dcw(dcw);
+
 
   // Define rhs buffer
   //
@@ -199,6 +199,8 @@ int main(int argc, char** argv)
   vector<size_t> data_dims;
   data_dims.push_back(samples_per_reconstruction); data_dims.push_back(num_coils);
 
+  sqrt_inplace(dcw.get());
+  E->set_dcw(dcw);
   E->set_domain_dimensions(recon_dims.get());
   E->set_codomain_dimensions(&data_dims);
 
@@ -225,7 +227,7 @@ int main(int argc, char** argv)
   solver.set_preconditioner ( D );
   solver.set_max_iterations( num_iterations );
   solver.set_output_mode( cuGpBbSolver<_complext>::OUTPUT_VERBOSE );
-  solver.set_x0( reg_image );
+//  solver.set_x0( reg_image );
 
   unsigned int num_reconstructions = num_profiles / profiles_per_reconstruction;
 
@@ -252,7 +254,7 @@ int main(int argc, char** argv)
     //
     // Split-Bregman solver
     //
-
+    *data *= *dcw;
     boost::shared_ptr< cuNDArray<_complext> > solve_result;
     {
       GPUTimer timer("GPU constrained Split Bregman solve");
