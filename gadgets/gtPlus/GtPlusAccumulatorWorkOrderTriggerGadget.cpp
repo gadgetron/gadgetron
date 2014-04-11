@@ -246,7 +246,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     // ---------------------------------------------------------------------------------------------------------
     // encoding limits
 
-    meas_max_ro_ = e_space.matrixSize().x()/2;
+    meas_max_ro_ = r_space.matrixSize().x();
 
     if (e_limits.kspace_encoding_step_1().present()) 
     {

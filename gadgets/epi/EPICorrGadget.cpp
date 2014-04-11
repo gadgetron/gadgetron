@@ -142,6 +142,8 @@ int EPICorrGadget::process(
       for (int p=0; p<adata.n_cols; p++) {
 	adata.col(p) %= corrneg_;
       }
+      // Now that we have corrected we set the readout direction to positive
+      hdr.flags &= !(ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_REVERSE).bitmask_);
     } 
     else {
       // Positive readout

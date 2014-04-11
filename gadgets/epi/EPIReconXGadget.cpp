@@ -28,7 +28,8 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
       GADGET_DEBUG1("Expected trajectory description identifier 'ConventionalEPI', not found.");
       return GADGET_FAIL;
     }
-    
+
+    // Primary encoding space is for EPI
     reconx.encodeNx_  = e_space.matrixSize().x();
     reconx.encodeFOV_ = e_space.fieldOfView_mm().x();
     reconx.reconNx_   = r_space.matrixSize().x();
@@ -63,6 +64,15 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
     // Compute the trajectory
     reconx.computeTrajectory();
 
+    // Second encoding space is an even readout for PAT REF e.g. FLASH
+    reconx_other.encodeNx_  = e_space.matrixSize().x();
+    reconx_other.encodeFOV_ = e_space.fieldOfView_mm().x();
+    reconx_other.reconNx_   = r_space.matrixSize().x();
+    reconx_other.reconFOV_  = r_space.fieldOfView_mm().x();
+    reconx_other.numSamples_ = reconx.numSamples_;
+    reconx_other.dwellTime_ = 1.0;
+    reconx_other.computeTrajectory();
+
   return 0;
 }
 
@@ -71,11 +81,19 @@ int EPIReconXGadget::process(
 	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
+  ISMRMRD::AcquisitionHeader hdr_in;
   ISMRMRD::AcquisitionHeader hdr_out;
   hoNDArray<std::complex<float> > data_out;
-  data_out.create(reconx.reconNx_,m2->getObjectPtr()->get_size(1));
 
-  reconx.apply(*m1->getObjectPtr(), *m2->getObjectPtr(), hdr_out, data_out);
+  data_out.create(reconx.reconNx_, m2->getObjectPtr()->get_size(1));
+
+  // Switch the reconstruction based on the encoding space (e.g. for FLASH Calibration)
+  if (hdr_in.encoding_space_ref == 0) {
+    reconx.apply(*m1->getObjectPtr(), *m2->getObjectPtr(), hdr_out, data_out);
+  }
+  else {
+    reconx_other.apply(*m1->getObjectPtr(), *m2->getObjectPtr(), hdr_out, data_out);
+  }
 
   // Replace the contents of m1 with the new header and the contentes of m2 with the new data
   *m1->getObjectPtr() = hdr_out;

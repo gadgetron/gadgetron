@@ -49,5 +49,6 @@ install(TARGETS gadgetron_epi DESTINATION lib)
 
 install(FILES
   epi.xml
+  epi_gtplus_grappa.xml
   DESTINATION config)
 

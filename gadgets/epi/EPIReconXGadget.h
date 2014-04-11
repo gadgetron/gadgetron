@@ -9,6 +9,7 @@
 #include <ismrmrd.h>
 #include <complex>
 
+#include "EPIReconXObjectFlat.h"
 #include "EPIReconXObjectTrapezoid.h"
 
 namespace Gadgetron{
@@ -30,7 +31,8 @@ namespace Gadgetron{
 
       // A set of reconstruction objects
       EPI::EPIReconXObjectTrapezoid<std::complex<float> > reconx;
-      //std::vector< EPI::EPIReconXObjectTrapezoid<std::complex<float> > > reconx;
+      EPI::EPIReconXObjectFlat<std::complex<float> > reconx_other;
+
     };
 }
 #endif //EPIRECONXGADGET_H

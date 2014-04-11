@@ -43,6 +43,7 @@
     add_library(epi ${LIBTYPE}
      EPIExport.h
      EPIReconXObject.h
+     EPIReconXObjectFlat.h
      EPIReconXObjectTrapezoid.h)
 
     set_target_properties(epi PROPERTIES LINKER_LANGUAGE CXX)
@@ -52,6 +53,7 @@
     install (FILES 
     	    EPIExport.h 
 	    EPIReconXObject.h
+	    EPIReconXObjectFlat.h
 	    EPIReconXObjectTrapezoid.h
     	    DESTINATION include)
 

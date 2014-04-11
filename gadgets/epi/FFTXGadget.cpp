@@ -8,7 +8,7 @@ namespace Gadgetron{
   FFTXGadget::FFTXGadget() {}
   FFTXGadget::~FFTXGadget() {}
 
-  int FFTXGadget::process( GadgetContainerMessage< ISMRMRD::ImageHeader>* m1,
+  int FFTXGadget::process( GadgetContainerMessage< ISMRMRD::AcquisitionHeader>* m1,
 			    GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
   {
 
