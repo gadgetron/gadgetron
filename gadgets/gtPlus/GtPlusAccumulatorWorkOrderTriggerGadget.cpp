@@ -53,11 +53,27 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
 
     // seq object
     ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-    if (e_seq.size() != 1)
+    // This only supports two encoding spaces where the recon_space is the same size
+    // e.g. Parallel imaging reference scan collected with GRE and data with EPI
+    if (e_seq.size() > 2)
     {
-        GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
-        GADGET_DEBUG1("This simple GtPlusAccumulatorWorkOrderTriggerGadget only supports one encoding space\n");
-        return GADGET_FAIL;
+      GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
+      GADGET_DEBUG1("This simple GtPlusAccumulatorWorkOrderTriggerGadget only supports one encoding space\n");
+      return GADGET_FAIL;
+    } 
+    else if (e_seq.size() == 2)
+    {
+      if (! ((e_seq[0].reconSpace().matrixSize().x() == e_seq[1].reconSpace().matrixSize().x()) &
+             (e_seq[0].reconSpace().matrixSize().y() == e_seq[1].reconSpace().matrixSize().y()) &
+             (e_seq[0].reconSpace().matrixSize().z() == e_seq[1].reconSpace().matrixSize().z()) &
+             (e_seq[0].reconSpace().fieldOfView_mm().x() == e_seq[1].reconSpace().fieldOfView_mm().x()) &
+             (e_seq[0].reconSpace().fieldOfView_mm().y() == e_seq[1].reconSpace().fieldOfView_mm().y()) &
+             (e_seq[0].reconSpace().fieldOfView_mm().z() == e_seq[1].reconSpace().fieldOfView_mm().z())) )
+      {
+	GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
+	GADGET_DEBUG1("This simple GtPlusAccumulatorWorkOrderTriggerGadget only supports two encoding spaces with identical recon spaces.\n");
+	return GADGET_FAIL;
+      }
     }
 
     // find out the PAT mode
