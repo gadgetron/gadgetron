@@ -192,7 +192,8 @@ template<class T> int PythonCommunicator::process(Gadget* g,
 		} catch(boost::python::error_already_set const &) {
 			GADGET_DEBUG1("Passing data on to python module failed\n");
 			PyErr_Print();
-			/* PyGILState_Release(gstate); */
+                        mutex_.unlock();
+			PyGILState_Release(gstate);
 			return GADGET_FAIL;
 		}
 		PyGILState_Release(gstate);
