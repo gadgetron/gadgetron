@@ -166,6 +166,7 @@ template<class T> int PythonCommunicator::process(Gadget* g,
 
 	it = process_fnc_.find(g);
 	if (it != process_fnc_.end()) {
+                mutex_.lock();
 		gstate = PyGILState_Ensure();
 		try {
 			std::vector<size_t> dims = (*(m2->getObjectPtr()->get_dimensions().get()));
@@ -191,10 +192,11 @@ template<class T> int PythonCommunicator::process(Gadget* g,
 		} catch(boost::python::error_already_set const &) {
 			GADGET_DEBUG1("Passing data on to python module failed\n");
 			PyErr_Print();
-			PyGILState_Release(gstate);
+			/* PyGILState_Release(gstate); */
 			return GADGET_FAIL;
 		}
 		PyGILState_Release(gstate);
+                mutex_.unlock();
 	} else {
 		GADGET_DEBUG2("No registered process function found for Gadget %s\n", g->module()->name());
 		return GADGET_FAIL;

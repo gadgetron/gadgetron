@@ -9,10 +9,13 @@ ENDIF (WIN32)
 
 find_package(Ismrmrd REQUIRED)
 
+message(STATUS ${Boost_INCLUDE_DIR} ${Boost_LIBRARIES})
+
 include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${PYTHON_INCLUDE_PATH}
   ${NUMPY_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIR}
   )
 
 add_library(GadgetronPythonMRI MODULE GadgetronPythonMRI.cpp GadgetReference.cpp)
