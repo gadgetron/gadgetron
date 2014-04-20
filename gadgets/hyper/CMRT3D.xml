@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
+        xmlns="http://gadgetron.sf.net/gadgetron"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        
+    <reader>
+      <slot>1008</slot>
+      <dll>gadgetron_mricore</dll>
+      <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
+    </reader>
+    <writer>
+      <slot>1004</slot>
+      <dll>gadgetron_mricore</dll>
+      <classname>MRIImageWriterCPLX</classname>
+    </writer>
+    <writer>
+      <slot>1005</slot>
+      <dll>gadgetron_mricore</dll>
+      <classname>MRIImageWriterFLOAT</classname>
+    </writer>
+    <writer>
+      <slot>1006</slot>
+      <dll>gadgetron_mricore</dll>
+      <classname>MRIImageWriterUSHORT</classname>
+    </writer>
+
+    <gadget>
+      <name>NFFT</name>
+      <dll>gadgetron_hyper</dll>
+      <classname>NFFT2DGadget</classname>
+    </gadget>
+
+    <gadget>
+      <name>CMRT3S</name>
+      <dll>gadgetron_hyper</dll>
+      <classname>CMRT3DGadget</classname>
+      <property><name>projections_per_recon</name><value>64</value></property>
+      <property><name>projections_percentage</name><value>100</value></property>
+    </gadget>
+
+    <gadget>
+      <name>Extract</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>ExtractGadget</classname>
+    </gadget>  
+
+    <gadget>
+      <name>ImageFinishFLOAT</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>ImageFinishGadgetFLOAT</classname>
+    </gadget>
+
+</gadgetronStreamConfiguration>
