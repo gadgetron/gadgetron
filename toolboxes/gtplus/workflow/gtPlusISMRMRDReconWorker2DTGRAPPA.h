@@ -225,7 +225,25 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                     hoNDArray<T> unwarppedIm(RO, E1, dstCHA, N, workOrder2DT->fullkspace_.begin()+usedS*RO*E1*dstCHA*N);
 
                     this->applyImageDomainKernelImage(aliasedIm, kIm, buffer2DT_unwrapping_, unwarppedIm);
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedIm, "unwarppedIm");
+
+                    if ( !debugFolder_.empty() )
+                    {
+                        {
+                            std::ostringstream ostr;
+                            ostr << "kIm_" << usedS;
+                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, ostr.str());
+                        }
+
+                        {
+                            std::ostringstream ostr;
+                            ostr << "aliasedIm_" << usedS;
+                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, aliasedIm, ostr.str());
+                        }
+
+                        std::ostringstream ostr;
+                        ostr << "unwarppedIm_" << usedS;
+                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedIm, ostr.str());
+                    }
                 }
                 else
                 {
@@ -267,7 +285,9 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                     gtPlusISMRMRDReconUtilComplex<T>().coilCombine(unwarppedIm, coilMap, combined);
                 }
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, combined, "combined");
+                std::ostringstream ostr;
+                ostr << "combined_" << usedS;
+                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, combined, ostr.str());
             }
 
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(workOrder2DT->fullkspace_);

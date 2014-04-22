@@ -4343,7 +4343,9 @@ namespace Gadgetron{
                     T* pBufN = buf.begin();
                     const T* pKerN = kernel.begin();
 
-                    omp_set_nested(1);
+                    #ifdef USE_OMP
+                        omp_set_nested(1);
+                    #endif // USE_OMP
 
                     //#pragma omp parallel for default(none) private(n) shared(N, ro, e1, srcCHA, dstCHA, kerN, pXN, pYN, pBufN, pKerN)
                     //for ( n=0; n<N; n++ )

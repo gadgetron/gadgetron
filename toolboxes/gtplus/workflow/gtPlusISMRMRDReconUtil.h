@@ -4,7 +4,7 @@
             The ISMRMRD format is fully supported in this toolbox.
 
             Other functinalities implemented here include:
-            Karhunen-Loève Transform (KLT) or Principle Component Analysis (PCA)
+            Karhunen-Loï¿½ve Transform (KLT) or Principle Component Analysis (PCA)
             KSpace filter
             Several MR sensitivity map estimation methods
 
@@ -16,7 +16,7 @@
 
                 Inati SJ, Hansen MS, Kellman P. 
                 A solution to the phase problem in adaptive coil combination. 
-                In: ISMRM proceeding; 20–26 april; salt lake city, utah, USA. ; 2013. 2672.
+                In: ISMRM proceeding; 20ï¿½26 april; salt lake city, utah, USA. ; 2013. 2672.
 
                 Kellman P, McVeigh ER. 
                 Image reconstruction in SNR units: A general method for SNR measurement. 

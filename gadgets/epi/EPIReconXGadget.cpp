@@ -81,7 +81,7 @@ int EPIReconXGadget::process(
 	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
-  ISMRMRD::AcquisitionHeader hdr_in;
+  ISMRMRD::AcquisitionHeader hdr_in = *(m1->getObjectPtr());
   ISMRMRD::AcquisitionHeader hdr_out;
   hoNDArray<std::complex<float> > data_out;
 
