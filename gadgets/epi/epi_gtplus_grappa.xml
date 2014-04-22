@@ -4,16 +4,10 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <!-- 
-        GT Plus configuratin file for general 2D or 2D+T cartesian reconstruction
+        GT Plus configuration file for general 2D epi reconstruction
 
-        Author: Hui Xue
-        Magnetic Resonance Technology Program
-        National Heart, Lung and Blood Institute
-        National Institutes of Health
-        10 Center Drive, Bethesda
-        MD 20814
-        USA
-        Email: hui.xue@nih.gov
+        Author: Souheil Inati
+        Email: souheil.inati@nih.gov
     -->
 
     <!-- reader -->
@@ -68,6 +62,16 @@
       <classname>FFTXGadget</classname>
     </gadget>
 
+
+    <gadget>
+      <name>IsmrmrdDump</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>IsmrmrdDumpGadget</classname>
+      <property><name>file_prefix</name><value>ISMRMRD_DUMP</value></property>
+      <property><name>append_timestamp</name><value>1</value></property>
+    </gadget>
+
+
     <!-- Data accumulation and trigger gadget -->
     <gadget>
         <name>Acc</name>
@@ -77,13 +81,13 @@
         <!-- debug and info mode -->
         <property>
             <name>verboseMode</name>
-            <value>false</value>
+            <value>true</value>
         </property>
 
         <!-- No acceleration mode -->
         <property>
             <name>noacceleration_triggerDim1</name>
-            <value>DIM_Repetition</value>
+            <value>DIM_NONE</value>
         </property>
 
         <property>
@@ -99,7 +103,7 @@
         <!-- Separate mode -->
         <property>
             <name>separate_triggerDim1</name>
-            <value>DIM_Repetition</value>
+            <value>DIM_NONE</value>
         </property>
 
         <property>
@@ -115,7 +119,7 @@
         <!-- if 'other' kspace data presents, enforce its dimension matches the image data-->
         <property>
             <name>other_kspace_matching_Dim</name>
-            <value>DIM_NONE</value>
+            <value>DIM_Repetition</value>
         </property>
 
     </gadget>
@@ -153,7 +157,7 @@
         </property>
         <property>
             <name>no_acceleration_same_combinationcoeff_allS</name>
-            <value>false</value>
+            <value>true</value>
         </property>
         <property>
             <name>no_acceleration_whichS_combinationcoeff</name>
@@ -171,11 +175,11 @@
         </property>
         <property>
             <name>separate_fullres_coilmap</name>
-            <value>false</value>
+            <value>true</value>
         </property>
         <property>
             <name>separate_same_combinationcoeff_allS</name>
-            <value>false</value>
+            <value>true</value>
         </property>
         <property>
             <name>separate_whichS_combinationcoeff</name>
@@ -185,12 +189,12 @@
         <!-- coil compression -->
         <property>
             <name>same_coil_compression_coeff_allS</name>
-            <value>false</value>
+            <value>true</value>
         </property>
 
         <property>
             <name>downstream_coil_compression</name>
-            <value>false</value>
+            <value>true</value>
         </property>
 
         <property>
@@ -200,7 +204,7 @@
 
         <property>
             <name>coil_compression_num_modesKept</name>
-            <value>-1</value>
+            <value>8</value>
         </property>
 
         <!-- parameters for coil map estimation 
@@ -289,7 +293,7 @@
         <!-- parameters for scaling and image sending -->
         <property>
             <name>min_intensity_value</name>
-            <value>0</value>
+            <value>64</value>
         </property>
 
         <property>
@@ -299,7 +303,7 @@
 
         <property>
             <name>scalingFactor</name>
-            <value>1.0</value>
+            <value>-1.0</value>
         </property>
 
         <property>
@@ -390,12 +394,12 @@
         <!-- parameters for debug and timing -->
         <property>
             <name>debugFolder</name>
-            <value></value>
+            <value>DebugOut</value>
         </property>
 
         <property>
             <name>debugFolder2</name>
-            <value></value>
+            <value>DebugOut</value>
         </property>
 
         <property>
@@ -499,6 +503,7 @@
       <classname>ImageFinishGadgetFLOAT</classname>
     </gadget>
     -->
+
 
     <gadget>
         <name>ImageFinishUSHORT</name>

@@ -159,7 +159,7 @@ template <typename T> int EPIReconXObjectFlat<T>::apply(const ISMRMRD::Acquisiti
         Mneg_(p,q) = Mn(p,q);
       }
     }
-    
+
     // set the operator computed flag
     operatorComputed_ = true;
   }

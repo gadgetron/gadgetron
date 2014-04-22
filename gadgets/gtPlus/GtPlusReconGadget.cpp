@@ -529,12 +529,6 @@ int GtPlusReconGadget::process_config(ACE_Message_Block* mb)
     GADGET_CONDITION_MSG(verboseMode_, "Number of acquisition channels : " << num_acq_channels_);
 
     ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-    if (e_seq.size() != 1)
-    {
-        GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
-        GADGET_DEBUG1("This simple GtPlusReconGadget only supports one encoding space\n");
-        return GADGET_FAIL;
-    }
 
     // find out the encoding space 
     ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
@@ -562,6 +556,44 @@ int GtPlusReconGadget::process_config(ACE_Message_Block* mb)
     field_of_view_recon_[2] = r_space.fieldOfView_mm().z();
     GADGET_CONDITION_MSG(verboseMode_, "Recon field_of_view :  " << field_of_view_recon_[0] << " " << field_of_view_recon_[1] << " " << field_of_view_recon_[2]);
 
+    // this gadget supports two encoding spaces only if the
+    // second encoding space has the same field of view and resolution as the first
+    // e.g. for FLASH PAT reference scans.
+    if (e_seq.size() > 2) {
+        GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
+        GADGET_DEBUG1("This simple GtPlusReconGadget only supports two encoding spaces\n");
+        return GADGET_FAIL;
+    }
+    else if (e_seq.size() == 2) {
+      // two encoding spaces only if they have the same fov and recon matrix size
+      ISMRMRD::encodingSpaceType r_space2 = e_seq[1].reconSpace();
+      
+      if (r_space.matrixSize().x() != r_space2.matrixSize().x()) {
+        GADGET_DEBUG1("Two recon spaces do not have matching matrix x size.\n");
+        return GADGET_FAIL;
+      }
+      if (r_space.matrixSize().y() != r_space2.matrixSize().y()) {
+        GADGET_DEBUG1("Two recon spaces do not have matching matrix y size.\n");
+        return GADGET_FAIL;
+      }
+      if (r_space.matrixSize().z() != r_space2.matrixSize().z()) {
+        GADGET_DEBUG1("Two recon spaces do not have matching matrix z size.\n");
+        return GADGET_FAIL;
+      }
+      if (r_space.fieldOfView_mm().x() != r_space2.fieldOfView_mm().x()) {
+        GADGET_DEBUG1("Two recon spaces do not have matching x field of view.\n");
+        return GADGET_FAIL;
+      }
+      if (r_space.fieldOfView_mm().y() != r_space2.fieldOfView_mm().y()) {
+        GADGET_DEBUG1("Two recon spaces do not have matching y field of view.\n");
+        return GADGET_FAIL;
+      }
+      if (r_space.fieldOfView_mm().z() != r_space2.fieldOfView_mm().z()) {
+        GADGET_DEBUG1("Two recon spaces do not have matching z field of view.\n");
+        return GADGET_FAIL;
+      }
+    }
+    
     reconE1_ = matrix_size_recon_[1];
     GADGET_CONDITION_MSG(verboseMode_, "reconE1_ is " << reconE1_);
 
