@@ -87,7 +87,7 @@
         <!-- No acceleration mode -->
         <property>
             <name>noacceleration_triggerDim1</name>
-            <value>DIM_NONE</value>
+            <value>DIM_Repetition</value>
         </property>
 
         <property>
@@ -103,7 +103,7 @@
         <!-- Separate mode -->
         <property>
             <name>separate_triggerDim1</name>
-            <value>DIM_NONE</value>
+            <value>DIM_Repetition</value>
         </property>
 
         <property>
@@ -157,7 +157,7 @@
         </property>
         <property>
             <name>no_acceleration_same_combinationcoeff_allS</name>
-            <value>true</value>
+            <value>false</value>
         </property>
         <property>
             <name>no_acceleration_whichS_combinationcoeff</name>
@@ -175,11 +175,11 @@
         </property>
         <property>
             <name>separate_fullres_coilmap</name>
-            <value>true</value>
+            <value>false</value>
         </property>
         <property>
             <name>separate_same_combinationcoeff_allS</name>
-            <value>true</value>
+            <value>false</value>
         </property>
         <property>
             <name>separate_whichS_combinationcoeff</name>
@@ -194,17 +194,17 @@
 
         <property>
             <name>downstream_coil_compression</name>
-            <value>true</value>
+            <value>false</value>
         </property>
 
         <property>
             <name>coil_compression_thres</name>
-            <value>0.001</value>
+            <value>-1</value>
         </property>
 
         <property>
             <name>coil_compression_num_modesKept</name>
-            <value>8</value>
+            <value>-1</value>
         </property>
 
         <!-- parameters for coil map estimation 
