@@ -93,6 +93,8 @@ typedef Types<float_complext, double_complext> cplxtImplementations;
 
 TYPED_TEST_CASE(gtPlus_IO_Test, cpfloatImplementations);
 
+#ifdef USE_CUDA
+
 TYPED_TEST(gtPlus_IO_Test, recon2DCoilMapGPU)
 {
     typedef GT_Complex8 T;
@@ -221,6 +223,8 @@ TYPED_TEST(gtPlus_IO_Test, recon3DCoilMapGPU)
 
     cudaDeviceReset();
 }
+
+#endif // USE_CUDA
 
 //TYPED_TEST(gtPlus_IO_Test, reconCoilCompression)
 //{

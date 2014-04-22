@@ -57,7 +57,7 @@
 	    EPIReconXObjectTrapezoid.h
     	    DESTINATION include)
 
-    install(TARGETS epi DESTINATION lib)
+    # install(TARGETS epi DESTINATION lib)
 
     #if (GTEST_FOUND)
     #    add_subdirectory(ut)

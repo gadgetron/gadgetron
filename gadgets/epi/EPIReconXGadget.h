@@ -3,7 +3,7 @@
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "gadgetron_mricore_export.h"
+#include "gadgetron_epi_export.h"
 #include "hoArmadillo.h"
 
 #include <ismrmrd.h>
@@ -14,7 +14,7 @@
 
 namespace Gadgetron{
 
-  class EXPORTGADGETSMRICORE EPIReconXGadget : 
+  class EXPORTGADGETS_EPI EPIReconXGadget : 
   public Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
     {
     public:

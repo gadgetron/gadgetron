@@ -42,7 +42,7 @@ add_subdirectory(mri_core)
 
 if (ARMADILLO_FOUND)
   add_subdirectory(epi)
-elseif (ARMADILLO_FOUND)	
+elseif (ARMADILLO_FOUND)
   MESSAGE("Armadillo not found, NOT compiling EPI Gadgets")
 endif (ARMADILLO_FOUND)
 
@@ -71,7 +71,11 @@ if (MATLAB_FOUND)
 endif(MATLAB_FOUND)
 
 # nest the find_package checks to provide more useful error messages
-find_package(Boost COMPONENTS python system thread REQUIRED)
+if (PYTHON_FOUND)
+    find_package(Boost COMPONENTS python system thread REQUIRED)
+else (PYTHON_FOUND)
+    find_package(Boost COMPONENTS system thread REQUIRED)
+endif (PYTHON_FOUND)
 
 if (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
     MESSAGE("PYTHON_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIRS}")
