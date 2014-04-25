@@ -1205,15 +1205,15 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
         }
 
         // if necessary, shift the E1/E2 indexes
-        if ( workOrder_.start_E1_ > 0 )
-        {
-            idx.kspace_encode_step_1 += workOrder_.start_E1_;
-        }
+        //if ( workOrder_.start_E1_ > 0 )
+        //{
+        //    idx.kspace_encode_step_1 += workOrder_.start_E1_;
+        //}
 
-        if ( workOrder_.start_E2_ > 0 )
-        {
-            idx.kspace_encode_step_2 += workOrder_.start_E2_;
-        }
+        //if ( workOrder_.start_E2_ > 0 )
+        //{
+        //    idx.kspace_encode_step_2 += workOrder_.start_E2_;
+        //}
 
         std::complex<float>* b = workOrder_.data_.begin();
         std::complex<float>* d = m2->getObjectPtr()->get_data_ptr();
@@ -1360,18 +1360,18 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
         }
 
         // if necessary, shift the E1/E2 indexes
-        if ( workOrder_.CalibMode_ == ISMRMRD_embedded )
-        {
-            if ( workOrder_.start_E1_ > 0 )
-            {
-                idx.kspace_encode_step_1 += workOrder_.start_E1_;
-            }
+        //if ( workOrder_.CalibMode_ == ISMRMRD_embedded )
+        //{
+        //    if ( workOrder_.start_E1_ > 0 )
+        //    {
+        //        idx.kspace_encode_step_1 += workOrder_.start_E1_;
+        //    }
 
-            if ( workOrder_.start_E2_ > 0 )
-            {
-                idx.kspace_encode_step_2 += workOrder_.start_E2_;
-            }
-        }
+        //    if ( workOrder_.start_E2_ > 0 )
+        //    {
+        //        idx.kspace_encode_step_2 += workOrder_.start_E2_;
+        //    }
+        //}
 
         // for the seperate or external mode, store the maximal idx
         if ( (workOrder_.CalibMode_ == ISMRMRD_separate) || (workOrder_.CalibMode_ == ISMRMRD_external) )
