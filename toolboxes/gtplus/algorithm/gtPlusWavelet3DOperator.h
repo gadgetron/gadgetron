@@ -90,7 +90,7 @@ public:
     using BaseClass::gtPlus_util_complex_;
     using BaseClass::gtPlus_mem_manager_;
 
-protected:
+public:
 
     // compute gradient on the assembled kspace
     virtual bool gradTask(const hoNDArray<T>& x, hoNDArray<T>& g);
@@ -607,8 +607,8 @@ dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
                 }
             }
 
-            Gadgetron::scal( 0.5, lll, N3D);
-            Gadgetron::scal( 0.5, llh, N3D);
+            Gadgetron::scal( T(0.5), lll, N3D);
+            Gadgetron::scal( T(0.5), llh, N3D);
 
             #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, N2D, lll, llh, lhh, lhl)
             for (e2=0; e2<E2; e2++)
@@ -642,16 +642,16 @@ dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
             #pragma omp parallel sections
             {
                 #pragma omp section
-                Gadgetron::scal( 0.5, lll, N3D);
+                Gadgetron::scal( T(0.5), lll, N3D);
 
                 #pragma omp section
-                Gadgetron::scal( 0.5, lhl, N3D);
+                Gadgetron::scal( T(0.5), lhl, N3D);
 
                 #pragma omp section
-                Gadgetron::scal( 0.5, llh, N3D);
+                Gadgetron::scal( T(0.5), llh, N3D);
 
                 #pragma omp section
-                Gadgetron::scal( 0.5, lhh, N3D);
+                Gadgetron::scal( T(0.5), lhh, N3D);
             }
 
             long long e1;
@@ -705,28 +705,28 @@ dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
             #pragma omp parallel sections
             {
                 #pragma omp section
-                Gadgetron::scal( 0.5, lll, N3D);
+                Gadgetron::scal( T(0.5), lll, N3D);
 
                 #pragma omp section
-                Gadgetron::scal( 0.5, hll, N3D);
+                Gadgetron::scal( T(0.5), hll, N3D);
 
                 #pragma omp section
-                Gadgetron::scal( 0.5, lhl, N3D);
+                Gadgetron::scal( T(0.5), lhl, N3D);
 
                 #pragma omp section
-                Gadgetron::scal( 0.5, hhl, N3D);
+                Gadgetron::scal( T(0.5), hhl, N3D);
 
                 #pragma omp section
-                Gadgetron::scal( 0.5, llh, N3D);
+                Gadgetron::scal( T(0.5), llh, N3D);
 
                 #pragma omp section
-                Gadgetron::scal( 0.5, hlh, N3D);
+                Gadgetron::scal( T(0.5), hlh, N3D);
 
                 #pragma omp section
-                Gadgetron::scal( 0.5, lhh, N3D);
+                Gadgetron::scal( T(0.5), lhh, N3D);
 
                 #pragma omp section
-                Gadgetron::scal( 0.5, hhh, N3D);
+                Gadgetron::scal( T(0.5), hhh, N3D);
             }
         }
     }
@@ -811,16 +811,16 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
             #pragma omp parallel sections
             {
                 #pragma omp section
-                Gadgetron::scal( 0.5, pLL, N3D);
+                Gadgetron::scal( T(0.5), pLL, N3D);
 
                 #pragma omp section
-                Gadgetron::scal( 0.5, pHL, N3D);
+                Gadgetron::scal( T(0.5), pHL, N3D);
 
                 #pragma omp section
-                Gadgetron::scal( 0.5, pLH, N3D);
+                Gadgetron::scal( T(0.5), pLH, N3D);
 
                 #pragma omp section
-                Gadgetron::scal( 0.5, pHH, N3D);
+                Gadgetron::scal( T(0.5), pHH, N3D);
             }
 
             long long e2;
@@ -847,8 +847,8 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
                 }
             }
 
-            Gadgetron::scal( 0.5, pLL, N3D);
-            Gadgetron::scal( 0.5, pLH, N3D);
+            Gadgetron::scal( T(0.5), pLL, N3D);
+            Gadgetron::scal( T(0.5), pLH, N3D);
 
             #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, N2D, pLL,pLH, pOut) 
             for (e2=0; e2<E2; e2++)
@@ -867,7 +867,7 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
                 }
             }
 
-            Gadgetron::scal( 0.5, pOut, N3D);
+            Gadgetron::scal( T(0.5), pOut, N3D);
         }
     }
     catch (...)

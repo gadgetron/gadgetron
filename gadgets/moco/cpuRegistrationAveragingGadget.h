@@ -12,7 +12,7 @@ namespace Gadgetron{
     public RegistrationAveragingGadget< hoNDArray<float>, 2 >
   {    
   public:
-    
+    GADGET_DECLARE(cpuRegistrationAveragingGadget2D);
     cpuRegistrationAveragingGadget2D() : RegistrationAveragingGadget< hoNDArray<float>, 2 >() {}
     virtual ~cpuRegistrationAveragingGadget2D() {}
 

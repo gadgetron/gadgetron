@@ -43,6 +43,8 @@ namespace Gadgetron
 class EXPORTGTPLUSGADGET GtPlusReconJob2DTGadgetCloud : public Gadgetron::Gadget2< int, GtPlusRecon2DTCloudPackageCPFL >
 {
 public:
+    GADGET_DECLARE(GtPlusReconJob2DTGadgetCloud);
+
     typedef std::complex<float> ValueType;
     typedef Gadgetron::Gadget2< int, GtPlusRecon2DTCloudPackageCPFL > BaseClass;
 

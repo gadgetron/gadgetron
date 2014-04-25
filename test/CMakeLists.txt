@@ -7,11 +7,14 @@ endif(WIN32)
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${Boost_INCLUDE_DIR}
   ${ARMADILLO_INCLUDE_DIRS}
   ${GTEST_INCLUDE_DIRS}
+  ${ACE_INCLUDE_DIR}
+  ${ISMRMRD_INCLUDE_DIR}
   )
 
 if (CUDA_FOUND)
@@ -24,10 +27,14 @@ link_libraries(
     ${BOOST_LIBRARIES}
     ${GTEST_LIBRARIES} 
     ${ARMADILLO_LIBRARIES}
+    ${MKL_LIBRARIES}
     )
-    
+
 if ( CUDA_FOUND )
-    cuda_add_executable(test_all 
+
+    include_directories( ${CUDA_INCLUDE_DIRS} )
+
+  cuda_add_executable(test_all 
       tests.cpp 
       hoNDArray_elemwise_test.cpp 
       hoNDArray_operators_test.cpp 
@@ -64,5 +71,6 @@ if(MKL_FOUND)
     )
 endif()
 
-
 add_test(test_all test_all)
+
+add_subdirectory(integration)

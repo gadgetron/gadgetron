@@ -83,7 +83,7 @@ struct GtPlusRecon2DTCloudPackage : public SerializableObject
 
     GtPlusRecon2DTCloudPackage<T>& operator=(const GtPlusRecon2DTCloudPackage<T>& pack);
 
-    virtual bool serialize(char*& buf, size_t& len) const;
+    virtual bool serialize(char*& buf, size_t& len);
     virtual bool deserialize(char* buf, size_t& len);
 };
 
@@ -127,7 +127,7 @@ GtPlusRecon2DTCloudPackage<T>& GtPlusRecon2DTCloudPackage<T>::operator=(const Gt
 }
 
 template <typename T> 
-bool GtPlusRecon2DTCloudPackage<T>::serialize(char*& buf, size_t& len) const
+bool GtPlusRecon2DTCloudPackage<T>::serialize(char*& buf, size_t& len)
 {
     char *bufKSpace(NULL), *bufRef(NULL), *bufComplexIm(NULL), *bufRes(NULL);
     try

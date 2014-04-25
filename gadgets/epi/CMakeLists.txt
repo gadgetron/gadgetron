@@ -24,6 +24,8 @@ add_library(gadgetron_epi SHARED
   FFTXGadget.h FFTXGadget.cpp
   CombineGadget.h   CombineGadget.cpp
   ${ISMRMRD_XSD_SOURCE}
+  epi.xml
+  epi_gtplus_grappa.xml
 )
 
 target_link_libraries(

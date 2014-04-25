@@ -213,7 +213,7 @@ int GadgetronConnector::svc(void)
 
 int GadgetronConnector::register_reader(size_t slot, GadgetMessageReader *reader)
 {
-    return readers_.insert(slot,reader);
+    return readers_.insert( (unsigned short)slot,reader);
 }
 
 /*
@@ -252,7 +252,7 @@ int GadgetronConnector::send_gadgetron_configuration_script(std::string config_x
     id.id = GADGET_MESSAGE_CONFIG_SCRIPT;
 
     GadgetMessageScript ini;
-    ini.script_length = config_xml.size()+1;
+    ini.script_length = (ACE_UINT32)config_xml.size()+1;
 
     if (this->peer().send_n(&id, sizeof(GadgetMessageIdentifier)) != sizeof(GadgetMessageIdentifier)) {
         ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send GadgetMessageIdentifier\n")));
@@ -278,7 +278,7 @@ int GadgetronConnector::send_gadgetron_parameters(std::string xml_string)
     id.id = GADGET_MESSAGE_PARAMETER_SCRIPT;
 
     GadgetMessageScript conf;
-    conf.script_length = xml_string.size()+1;
+    conf.script_length = (ACE_UINT32)xml_string.size()+1;
     if (this->peer().send_n(&id, sizeof(GadgetMessageIdentifier)) != sizeof(GadgetMessageIdentifier)) {
         ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send GadgetMessageIdentifier\n")));
         return -1;

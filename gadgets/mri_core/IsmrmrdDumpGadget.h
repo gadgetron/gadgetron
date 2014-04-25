@@ -16,6 +16,7 @@ namespace Gadgetron{
   public Gadgetron::Gadget2<ISMRMRD::AcquisitionHeader,hoNDArray< std::complex<float> > >
     {
     public:
+      GADGET_DECLARE(IsmrmrdDumpGadget);
 
       IsmrmrdDumpGadget();
 

@@ -22,7 +22,9 @@
                 Image reconstruction in SNR units: A general method for SNR measurement. 
                 Magnetic Resonance in Medicine 2005;54(6):1439-1447.
 
-            ISMRMRD_SOUHEIL_ITER coil map estimation is not implemented yet.
+            ISMRMRD_SOUHEIL_ITER coil map estimation is based on:
+
+                Inati SJ, Hansen MS, Kellman P. Unpublished algorithm.
 
     \author Hui Xue
 */
@@ -32,6 +34,7 @@
 #include "GtPlusExport.h"
 
 #include "ismrmrd.h"
+#include "hoNDMetaAttributes.h"
 
 #include "boost/tuple/tuple.hpp"
 #include "boost/tuple/tuple_comparison.hpp"
@@ -46,10 +49,9 @@
 #include "hoMatrix.h"
 #include "hoNDFFT.h"
 #include "hoNDArray_utils.h"
-#include "hoNDArray_blas.h"
-#include "hoNDArray_elemwise.h"
-#include "hoNDArray_operators.h"
-#include "util/gtPlusIOAnalyze.h"
+#include "hoNDArray_math_util.h"
+#include "hoNDImage_util.h"
+#include "gtPlusIOAnalyze.h"
 #include "hoNDArrayMemoryManaged.h"
 #include "GadgetronTimer.h"
 
@@ -64,77 +66,11 @@
     #include "cuNDArray_elemwise.h"
 #endif // USE_CUDA
 
+#include "GtPlusDefinition.h"
+
 namespace Gadgetron { namespace gtPlus {
 
-// define the dimensions of ISMRMRD
-enum ISMRMRDDIM
-{
-    DIM_ReadOut = 32,
-    DIM_Encoding1,
-    DIM_Channel,
-    DIM_Slice,
-    DIM_Encoding2,
-    DIM_Contrast,
-    DIM_Phase,
-    DIM_Repetition,
-    DIM_Set,
-    DIM_Segment,
-    DIM_Average,
-    DIM_other1,
-    DIM_other2,
-    DIM_other3,
-    DIM_NONE
-};
-
-// define the reconstruction algorithms
-enum ISMRMRDALGO
-{
-    ISMRMRD_GRAPPA = 64,
-    ISMRMRD_SENSE,
-    ISMRMRD_SPIRIT,
-    ISMRMRD_L1SPIRIT,
-    ISMRMRD_SOFTSENSE,
-    ISMRMRD_L1SOFTSENSE,
-    ISMRMRD_NONE
-};
-
-// define the coil sensitivity map estimation algorithms
-enum ISMRMRDCOILMAPALGO
-{
-    ISMRMRD_SOUHEIL = 96,
-    ISMRMRD_SOUHEIL_ITER
-};
-
-// define the partial fourier/asymmetric echo handling algorithms
-enum ISMRMRDPFALGO
-{
-    ISMRMRD_PF_HOMODYNE = 128,          // iterative homodyne
-    ISMRMRD_PF_POCS,                    // POCS
-    ISMRMRD_PF_FENGHUANG,               // convolution based method
-    ISMRMRD_PF_ZEROFILLING_FILTER,      // zero-filling with partial fourier filter
-    ISMRMRD_PF_ZEROFILLING              // zero-filling without partial fourier filter
-};
-
-// define the kspace filter type
-enum ISMRMRDKSPACEFILTER
-{
-    ISMRMRD_FILTER_GAUSSIAN = 160,
-    ISMRMRD_FILTER_HANNING,
-    ISMRMRD_FILTER_TUKEY,
-    ISMRMRD_FILTER_TAPERED_HANNING,
-    ISMRMRD_FILTER_NONE
-};
-
-// define the calibration mode of ISMRMRD
-enum ISMRMRDCALIBMODE
-{
-    ISMRMRD_embedded = 256,
-    ISMRMRD_interleaved,
-    ISMRMRD_separate,
-    ISMRMRD_external,
-    ISMRMRD_other,
-    ISMRMRD_noacceleration
-};
+// ================================================================================================== //
 
 template <typename T> 
 class gtPlusISMRMRDReconUtil
@@ -258,7 +194,7 @@ public:
     // symmetric filter, used for image filtering
     // sigma: for Gaussian, in the unit of pixel
     // width: for Tukey filter etc., the length of transition band
-    bool generateSymmetricFilter(size_t len, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, double sigma, size_t width);
+    bool generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, double sigma, size_t width);
 
     // asymmetric filter, used for partial fourier/asymmetric echo filtering
     // start, end: the data range
@@ -407,6 +343,15 @@ public:
     void findStartEndROAfterZeroFilling(size_t centre_column, size_t samples_zerofilled, int& startRO, int& endRO);
 
     // ------------------------------------------------------------------------
+    // ISMRMRD image header
+    // ------------------------------------------------------------------------
+    // set the meta attributes from the ISMRMRD image header
+    bool setMetaAttributesFromImageHeaderISMRMRD(const ISMRMRD::ImageHeader& imgHeader, GtImageAttribType& attrib);
+
+    // compute the image geometry for two acquisition header
+    bool setImageHeaderISMRMRDFromMetaAttributes(const GtImageAttribType& attrib, ISMRMRD::ImageHeader& imgHeader);
+
+    // ------------------------------------------------------------------------
     // utility functions for various things
     // ------------------------------------------------------------------------
     // jobSchedule : for every valid device, it records the job allocated to it
@@ -416,6 +361,33 @@ public:
         bool cudaJobSplitter(const std::vector<unsigned int>& jobIDs, size_t jobSize, size_t minimalMemoryForValidDevice, std::vector< std::pair<unsigned int, std::vector<std::vector<unsigned int> > > >& jobSchedule);
         bool cudaJobSplitter(unsigned int numOfJobs, size_t jobSize, size_t minimalMemoryForValidDevice, std::vector< std::pair<unsigned int, std::vector<std::vector<unsigned int> > > >& jobSchedule);
     #endif // USE_CUDA
+
+    // load two hoNDArray and compute differences
+    void compareAgainstGroundTruthArray(const std::string& gt_filename, const hoNDArray<T>& x, typename realType<T>::Type& normDiff, typename realType<T>::Type& maxNormDiff);
+    void compareAgainstGroundTruthArray(const hoNDArray<T>& gt, const hoNDArray<T>& x, typename realType<T>::Type& normDiff, typename realType<T>::Type& maxNormDiff);
+
+    template <typename T2, unsigned int D> void compareAgainstGroundTruthImage(const std::string& gt_filename, const hoNDImage<T2, D>& x, typename realType<T2>::Type& normDiff, typename realType<T2>::Type& maxNormDiff)
+    {
+        hoNDImage<T2, D> gt;
+
+        gtPlusIOAnalyze gt_io;
+        gt_io.importImage(gt, gt_filename);
+
+        compareAgainstGroundTruthImage(gt, x, normDiff, maxNormDiff);
+    }
+
+    template <typename T2, unsigned int D> void compareAgainstGroundTruthImage(const hoNDImage<T2, D>& gt, const hoNDImage<T2, D>& x, typename realType<T2>::Type& normDiff, typename realType<T2>::Type& maxNormDiff)
+    {
+        hoNDImage<T2, D> diff(x);
+        Gadgetron::subtract(gt, x, diff);
+
+        Gadgetron::norm2(diff, normDiff);
+
+        T2 maxV;
+        size_t ind;
+        Gadgetron::maxAbsolute(diff, maxV, ind);
+        maxNormDiff = std::abs(maxV);
+    }
 };
 
 // utility functions only meaningful for complex data type
@@ -423,6 +395,8 @@ template <typename T>
 class gtPlusISMRMRDReconUtilComplex : public gtPlusISMRMRDReconUtil<T>
 {
 public:
+
+    typedef typename realType<T>::Type value_type;
 
     gtPlusISMRMRDReconUtilComplex();
     virtual ~gtPlusISMRMRDReconUtilComplex();
@@ -502,6 +476,14 @@ public:
 
     // data: [RO E1 E2 CHA], this functions uses true 3D data correlation matrix
     bool coilMap3DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power);
+
+    // the Souheil iteration method
+    // data: [RO E1 CHA], only 3D array
+    bool coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t iterNum, typename realType<T>::Type thres);
+    bool coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, const hoNDArray<T>& kerKSpace, size_t iterNum);
+
+    // data: [RO E1 E2 CHA], true 3D coil map estimation
+    bool coilMap3DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t kz, size_t iterNum, typename realType<T>::Type thres);
 
     // sum of square coil combination
     // data: in image domain, at least 3D [RO E1 CHA]

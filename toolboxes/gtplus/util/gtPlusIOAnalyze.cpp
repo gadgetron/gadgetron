@@ -13,87 +13,36 @@
 
 namespace Gadgetron { namespace gtPlus {
 
-gtPlusIOAnalyze::gtPlusIOAnalyze(float px, float py)
+gtPlusIOAnalyze::gtPlusIOAnalyze() : BaseClass()
 {
-    pixelSize_.resize(2);
-    pixelSize_[0] = px;
-    pixelSize_[1] = py;
 }
 
-gtPlusIOAnalyze::gtPlusIOAnalyze(float px, float py, float pz)
+gtPlusIOAnalyze::gtPlusIOAnalyze(float px, float py) : BaseClass(px, py)
 {
-    pixelSize_.resize(3);
-    pixelSize_[0] = px;
-    pixelSize_[1] = py;
-    pixelSize_[2] = pz;
 }
 
-gtPlusIOAnalyze::gtPlusIOAnalyze(float px, float py, float pz, float pt)
+gtPlusIOAnalyze::gtPlusIOAnalyze(float px, float py, float pz) : BaseClass(px, py, pz)
 {
-    pixelSize_.resize(4);
-    pixelSize_[0] = px;
-    pixelSize_[1] = py;
-    pixelSize_[2] = pz;
-    pixelSize_[3] = pt;
 }
 
-gtPlusIOAnalyze::gtPlusIOAnalyze(float px, float py, float pz, float pt, float pr)
+gtPlusIOAnalyze::gtPlusIOAnalyze(float px, float py, float pz, float pt) : BaseClass(px, py, pz, pt)
 {
-    pixelSize_.resize(5);
-    pixelSize_[0] = px;
-    pixelSize_[1] = py;
-    pixelSize_[2] = pz;
-    pixelSize_[3] = pt;
-    pixelSize_[4] = pr;
 }
 
-gtPlusIOAnalyze::gtPlusIOAnalyze(float px, float py, float pz, float pt, float pr, float ps)
+gtPlusIOAnalyze::gtPlusIOAnalyze(float px, float py, float pz, float pt, float pr) : BaseClass(px, py, pz, pt, pr)
 {
-    pixelSize_.resize(6);
-    pixelSize_[0] = px;
-    pixelSize_[1] = py;
-    pixelSize_[2] = pz;
-    pixelSize_[3] = pt;
-    pixelSize_[4] = pr;
-    pixelSize_[5] = ps;
 }
 
-gtPlusIOAnalyze::gtPlusIOAnalyze(float px, float py, float pz, float pt, float pr, float ps, float pp)
+gtPlusIOAnalyze::gtPlusIOAnalyze(float px, float py, float pz, float pt, float pr, float ps) : BaseClass(px, py, pz, pt, pr, ps)
 {
-    pixelSize_.resize(7);
-    pixelSize_[0] = px;
-    pixelSize_[1] = py;
-    pixelSize_[2] = pz;
-    pixelSize_[3] = pt;
-    pixelSize_[4] = pr;
-    pixelSize_[5] = ps;
-    pixelSize_[6] = pp;
 }
 
-gtPlusIOAnalyze::gtPlusIOAnalyze(float px, float py, float pz, float pt, float pr, float ps, float pp, float pq)
+gtPlusIOAnalyze::gtPlusIOAnalyze(float px, float py, float pz, float pt, float pr, float ps, float pp) : BaseClass(px, py, pz, pt, pr, ps, pp)
 {
-    pixelSize_.resize(8);
-    pixelSize_[0] = px;
-    pixelSize_[1] = py;
-    pixelSize_[2] = pz;
-    pixelSize_[3] = pt;
-    pixelSize_[4] = pr;
-    pixelSize_[5] = ps;
-    pixelSize_[6] = pp;
-    pixelSize_[7] = pq;
 }
 
-void gtPlusIOAnalyze::setPixelSize(float px, float py, float pz, float pt, float pr, float ps, float pp, float pq)
+gtPlusIOAnalyze::gtPlusIOAnalyze(float px, float py, float pz, float pt, float pr, float ps, float pp, float pq) : BaseClass(px, py, pz, pt, pr, ps, pp, pq)
 {
-    pixelSize_.resize(8);
-    pixelSize_[0] = px;
-    pixelSize_[1] = py;
-    pixelSize_[2] = pz;
-    pixelSize_[3] = pt;
-    pixelSize_[4] = pr;
-    pixelSize_[5] = ps;
-    pixelSize_[6] = pp;
-    pixelSize_[7] = pq;
 }
 
 void gtPlusIOAnalyze::printInfo(std::ostream& os)
@@ -104,108 +53,7 @@ void gtPlusIOAnalyze::printInfo(std::ostream& os)
     os << "--------------------------------------------------------------------------" << endl;
 }
 
-std::string gtPlusIOAnalyze::getRTTIFromAnalyzeDataType(AnalyzeDataType aDT)
-{
-    std::string rttiID;
-
-    switch (aDT)
-    {
-    case DT_UNSIGNED_CHAR :
-        rttiID = typeid(unsigned char).name();
-        break;
-
-    case DT_SIGNED_SHORT :
-        rttiID = typeid(short).name();
-        break;
-
-    case DT_UNSIGNED_SHORT :
-        rttiID = typeid(unsigned short).name();
-        break;
-
-    case DT_SIGNED_INT :
-        rttiID = typeid(int).name();
-        break;
-
-    case DT_UNSIGNED_INT :
-        rttiID = typeid(size_t).name();
-        break;
-
-    case DT_FLOAT :
-        rttiID = typeid(float).name();
-        break;
-
-    case DT_DOUBLE :
-        rttiID = typeid(double).name();
-        break;
-
-    case DT_COMPLEX :
-        rttiID = typeid(GT_Complex8).name();
-        break;
-
-    case DT_DOUBLECOMPLEX :
-        rttiID = typeid(GT_Complex16).name();
-        break;
-
-    default:
-        rttiID = "UNKOWN TYPE";
-    }
-
-    return rttiID;
-}
-
-AnalyzeDataType gtPlusIOAnalyze::getAnalyzeDataTypeFromRTTI(const std::string& name)
-{
-    AnalyzeDataType analyzeDT = DT_ANA_UNKNOWN;
-
-    if ( name == typeid(unsigned char).name() )
-    {
-        analyzeDT = DT_UNSIGNED_CHAR;
-    }
-
-    if ( name == typeid(short).name() )
-    {
-        analyzeDT = DT_SIGNED_SHORT;
-    }
-
-    if ( name == typeid(unsigned short).name() )
-    {
-        analyzeDT = DT_UNSIGNED_SHORT;
-    }
-
-    if ( name == typeid(int).name() )
-    {
-        analyzeDT = DT_SIGNED_INT;
-    }
-
-    if ( name == typeid(size_t).name() )
-    {
-        analyzeDT = DT_UNSIGNED_INT;
-    }
-
-    if ( name == typeid(float).name() )
-    {
-        analyzeDT = DT_FLOAT;
-    }
-
-    if ( name == typeid(double).name() )
-    {
-        analyzeDT = DT_DOUBLE;
-    }
-
-    if ( name == typeid(GT_Complex8).name() )
-    {
-        analyzeDT = DT_COMPLEX;
-    }
-
-    if ( name == typeid(GT_Complex16).name() )
-    {
-        analyzeDT = DT_DOUBLECOMPLEX;
-    }
-
-    return analyzeDT;
-}
-
-bool gtPlusIOAnalyze::readAnalyzeHeader(const std::string& filename, dsr& header)
+bool gtPlusIOAnalyze::readHeader(const std::string& filename, HeaderType& header)
 {
     try
     {
@@ -220,14 +68,14 @@ bool gtPlusIOAnalyze::readAnalyzeHeader(const std::string& filename, dsr& header
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::readAnalyzeHeader(const std::string& filename, dsr& header) ... ");
+        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::readHeader(const std::string& filename, dsr& header) ... ");
         return false;
     }
 
     return true;
 }
 
-bool gtPlusIOAnalyze::writeAnalyzeHeader(const std::string& filename, const dsr& header)
+bool gtPlusIOAnalyze::writeHeader(const std::string& filename, const HeaderType& header)
 {
     try
     {
@@ -242,7 +90,7 @@ bool gtPlusIOAnalyze::writeAnalyzeHeader(const std::string& filename, const dsr&
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::writeAnalyzeHeader(const std::string& filename, const dsr& header) ... ");
+        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::writeHeader(const std::string& filename, const dsr& header) ... ");
         return false;
     }
 

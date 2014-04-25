@@ -57,7 +57,7 @@ KLT_eigenAnalysis(const hoMatrix<T>& data, hoMatrix<T>& eigenVectors, hoMatrix<T
         hoMatrix<T> EH(eigenVectors);
         GADGET_CHECK_RETURN_FALSE(conjugatetrans(eigenVectors, EH));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::add(eigenVectors, EH, eigenVectors));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(0.5, eigenVectors));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (ValueType)(0.5), eigenVectors));
 
         //eigenVectors.print(std::cout);
 
@@ -695,7 +695,7 @@ zeropad3D(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, size_t sizeZ, ho
 
             long long z;
             // #pragma omp parallel for default(none) private(z) shared(pDst, pSrc, sE2, eE2, sE1, eE1, sRO, RO, E1, E2, sizeX, sizeY, sizeZ) num_threads(2)
-            for ( z=sE2; z<=eE2; z++ )
+            for ( z=(long long)sE2; z<=(long long)eE2; z++ )
             {
                 long long o1 = z*sizeX*sizeY + sRO;
                 long long o2 = (z-sE2)*RO*E1;
@@ -763,7 +763,7 @@ zeropad3DNoPresetZeros(const hoNDArray<T>& data, size_t sizeX, size_t sizeY, siz
 
             long long z;
             //#pragma omp parallel for default(none) private(z) shared(pDst, pSrc, sE2, eE2, sE1, eE1, sRO, RO, E1, E2, sizeX, sizeY, sizeZ) num_threads(2)
-            for ( z=sE2; z<=eE2; z++ )
+            for ( z=(long long)sE2; z<=(long long)eE2; z++ )
             {
                 long long o1 = z*sizeX*sizeY + sRO;
                 long long o2 = (z-sE2)*RO*E1;
@@ -1493,11 +1493,20 @@ kspace3DfilterROE1E2(const hoNDArray<T>& data, const hoNDArray<T>& fRO, const ho
 
 template <typename T> 
 bool gtPlusISMRMRDReconUtil<T>::
-generateSymmetricFilter(size_t len, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, double sigma, size_t width)
+generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, double sigma, size_t width)
 {
     try
     {
         if ( len == 0 ) return true;
+
+        if ( start > len-1 ) start = 0;
+        if ( end > len-1 ) end = len-1;
+
+        if ( start > end )
+        {
+            start = 0;
+            end = len-1;
+        }
 
         filter.create(len);
         Gadgetron::fill(&filter, T(1.0));
@@ -1622,7 +1631,7 @@ generateSymmetricFilter(size_t len, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER fi
         {
             sos += filter(ii)*filter(ii);
         }
-        T r = 1.0/std::sqrt( std::abs(sos)/len );
+        T r = 1.0/std::sqrt( std::abs(sos)/(len) );
         for ( ii=0; ii<len; ii++ )
         {
             filter(ii) *= r;
@@ -1815,7 +1824,8 @@ generateAsymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& fil
         {
             sos += filter(ii)*filter(ii);
         }
-        T r = 1.0/std::sqrt( std::abs(sos)/len );
+        // T r = 1.0/std::sqrt( std::abs(sos)/len );
+        T r = 1.0/std::sqrt( std::abs(sos)/(end-start+1) ); // SNR unit filter
         for ( ii=0; ii<len; ii++ )
         {
             filter(ii) *= r;
@@ -1843,7 +1853,7 @@ generateSymmetricFilterForRef(size_t len, size_t start, size_t end,
 
         if ( start==0 && end==len-1 )
         {
-            GADGET_CHECK_RETURN_FALSE(generateSymmetricFilter(len, filter, filterType, sigma, width));
+            GADGET_CHECK_RETURN_FALSE(generateSymmetricFilter(len, 0, len-1, filter, filterType, sigma, width));
             return true;
         }
 
@@ -1873,7 +1883,7 @@ generateSymmetricFilterForRef(size_t len, size_t start, size_t end,
         GADGET_CHECK_RETURN_FALSE(lenFilter>0);
 
         hoNDArray<T> filterSym(lenFilter);
-        GADGET_CHECK_RETURN_FALSE(generateSymmetricFilter(lenFilter, filterSym, filterType, sigma, width));
+        GADGET_CHECK_RETURN_FALSE(generateSymmetricFilter(lenFilter, 0, lenFilter-1, filterSym, filterType, sigma, width));
 
         filter.create(len);
         Gadgetron::clear(&filter);
@@ -2760,6 +2770,14 @@ copyAlongROE1TransitionBand(const hoNDArray<T>& src, hoNDArray<T>& dst, size_t s
             filter_dst_E1(ii) = T(1.0) - filter_src_E1(ii);
         }
 
+        //std::string debugFolder_ = "D:/software/Gadgetron/20130114/install/gadgetron/DebugOutput/";
+        //Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
+
+        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, filter_src_RO, "filter_src_RO");
+        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, filter_dst_RO, "filter_dst_RO");
+        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, filter_src_E1, "filter_src_E1");
+        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, filter_dst_E1, "filter_dst_E1");
+
         hoNDArray<T> srcFiltered(src), dstFiltered(dst);
         if ( startRO==0 && endRO==RO-1 )
         {
@@ -3510,6 +3528,233 @@ void gtPlusISMRMRDReconUtil<T>::findStartEndROAfterZeroFilling(size_t centre_col
     return;
 }
 
+template <typename T> 
+bool gtPlusISMRMRDReconUtil<T>::setMetaAttributesFromImageHeaderISMRMRD(const ISMRMRD::ImageHeader& imgHeader, GtImageAttribType& attrib)
+{
+    try
+    {
+        unsigned int ii;
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_version,                 imgHeader.version));
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_flags,                   imgHeader.flags));
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_measurement_uid,         imgHeader.measurement_uid));
+
+        std::vector<typename GtImageAttribType::AttribIntegerType> attributeInteger(3);
+        attributeInteger[0] = imgHeader.matrix_size[0];
+        attributeInteger[1] = imgHeader.matrix_size[1];
+        attributeInteger[2] = imgHeader.matrix_size[2];
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_matrix_size, attributeInteger));
+
+        std::vector<typename GtImageAttribType::AttribFloatType> attributeFloat(3);
+        attributeFloat[0] = imgHeader.field_of_view[0];
+        attributeFloat[1] = imgHeader.field_of_view[1];
+        attributeFloat[2] = imgHeader.field_of_view[2];
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.set(ISMRMRD_IMAGE_field_of_view, attributeFloat));
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_channels,                imgHeader.channels));
+
+        attributeFloat.resize(ISMRMRD_POSITION_LENGTH);
+        for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
+        {
+            attributeFloat[ii] = imgHeader.position[ii];
+        }
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.set(ISMRMRD_IMAGE_position, attributeFloat));
+
+        attributeFloat.resize(ISMRMRD_DIRECTION_LENGTH);
+        for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
+        {
+            attributeFloat[ii] = imgHeader.read_dir[ii];
+        }
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.set(ISMRMRD_IMAGE_read_dir, attributeFloat));
+
+        for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
+        {
+            attributeFloat[ii] = imgHeader.phase_dir[ii];
+        }
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.set(ISMRMRD_IMAGE_phase_dir, attributeFloat));
+
+        for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
+        {
+            attributeFloat[ii] = imgHeader.slice_dir[ii];
+        }
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.set(ISMRMRD_IMAGE_slice_dir, attributeFloat));
+
+        attributeFloat.resize(ISMRMRD_POSITION_LENGTH);
+        for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
+        {
+            attributeFloat[ii] = imgHeader.patient_table_position[ii];
+        }
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.set(ISMRMRD_IMAGE_patient_table_position, attributeFloat));
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_average,     imgHeader.average));
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_slice,       imgHeader.slice));
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_contrast,    imgHeader.contrast));
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_phase,       imgHeader.phase));
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_repetition,  imgHeader.repetition));
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_set,         imgHeader.set));
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_acquisition_time_stamp, imgHeader.acquisition_time_stamp));
+
+        attributeInteger.resize(ISMRMRD_PHYS_STAMPS);
+        for ( ii=0; ii<ISMRMRD_PHYS_STAMPS; ii++ )
+        {
+            attributeInteger[ii] = imgHeader.physiology_time_stamp[ii];
+        }
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_physiology_time_stamp, attributeInteger));
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_image_data_type, imgHeader.image_data_type));
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_image_type, imgHeader.image_type));
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_image_series_index, imgHeader.image_series_index));
+
+        attributeInteger.resize(ISMRMRD_USER_INTS);
+        for ( ii=0; ii<ISMRMRD_USER_INTS; ii++ )
+        {
+            attributeInteger[ii] = imgHeader.user_int[ii];
+        }
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_user_int, attributeInteger));
+
+        attributeFloat.resize(ISMRMRD_USER_FLOATS);
+        for ( ii=0; ii<ISMRMRD_USER_FLOATS; ii++ )
+        {
+            attributeFloat[ii] = imgHeader.user_float[ii];
+        }
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.set(ISMRMRD_IMAGE_user_float, attributeFloat));
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::setMetaAttributesFromImageHeaderISMRMRD(const ISMRMRD::ImageHeader& imgHeader, GtImageAttribType& attrib) ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T> 
+bool gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const GtImageAttribType& attrib, ISMRMRD::ImageHeader& imgHeader)
+{
+    try
+    {
+        unsigned int ii;
+
+        typename GtImageAttribType::AttribIntegerType vInteger;
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_version, 0, vInteger));
+        imgHeader.version = (uint16_t)vInteger;
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_flags, 0, vInteger));
+        imgHeader.flags = (uint64_t)vInteger;
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_measurement_uid, 0, vInteger));
+        imgHeader.measurement_uid = (uint32_t)vInteger;
+
+        std::vector<typename GtImageAttribType::AttribIntegerType> attributeInteger(3);
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_matrix_size, attributeInteger));
+        imgHeader.matrix_size[0] = (uint16_t)attributeInteger[0];
+        imgHeader.matrix_size[1] = (uint16_t)attributeInteger[1];
+        imgHeader.matrix_size[2] = (uint16_t)attributeInteger[2];
+
+        std::vector<typename GtImageAttribType::AttribFloatType> attributeFloat(3);
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.get(ISMRMRD_IMAGE_field_of_view, attributeFloat));
+        imgHeader.field_of_view[0] = (float)attributeFloat[0];
+        imgHeader.field_of_view[1] = (float)attributeFloat[1];
+        imgHeader.field_of_view[2] = (float)attributeFloat[2];
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_channels, 0, vInteger));
+        imgHeader.channels = (uint16_t)vInteger;
+
+        attributeFloat.resize(ISMRMRD_POSITION_LENGTH);
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.get(ISMRMRD_IMAGE_position, attributeFloat));
+        for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
+        {
+            imgHeader.position[ii] = (float)attributeFloat[ii];
+        }
+
+        attributeFloat.resize(ISMRMRD_DIRECTION_LENGTH);
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.get(ISMRMRD_IMAGE_read_dir, attributeFloat));
+        for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
+        {
+            imgHeader.read_dir[ii] = attributeFloat[ii];
+        }
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.get(ISMRMRD_IMAGE_phase_dir, attributeFloat));
+        for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
+        {
+            imgHeader.phase_dir[ii] = attributeFloat[ii];
+        }
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.get(ISMRMRD_IMAGE_slice_dir, attributeFloat));
+        for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
+        {
+            imgHeader.slice_dir[ii] = attributeFloat[ii];
+        }
+
+        attributeFloat.resize(ISMRMRD_POSITION_LENGTH);
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.get(ISMRMRD_IMAGE_patient_table_position, attributeFloat));
+        for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
+        {
+            imgHeader.patient_table_position[ii] = attributeFloat[ii];
+        }
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_average, 0, vInteger));
+        imgHeader.average = (uint16_t)vInteger;
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_slice, 0, vInteger));
+        imgHeader.slice = (uint16_t)vInteger;
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_contrast, 0, vInteger));
+        imgHeader.contrast = (uint16_t)vInteger;
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_phase, 0, vInteger));
+        imgHeader.phase = (uint16_t)vInteger;
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_repetition, 0, vInteger));
+        imgHeader.repetition = (uint16_t)vInteger;
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_set, 0, vInteger));
+        imgHeader.set = (uint16_t)vInteger;
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_acquisition_time_stamp, 0, vInteger));
+        imgHeader.acquisition_time_stamp = (uint32_t)vInteger;
+
+        attributeInteger.resize(ISMRMRD_PHYS_STAMPS);
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_physiology_time_stamp, attributeInteger));
+        for ( ii=0; ii<ISMRMRD_PHYS_STAMPS; ii++ )
+        {
+            imgHeader.physiology_time_stamp[ii] = (uint32_t)attributeInteger[ii];
+        }
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_image_data_type, 0, vInteger));
+        imgHeader.image_data_type = (uint16_t)vInteger;
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_image_type, 0, vInteger));
+        imgHeader.image_type = (uint16_t)vInteger;
+
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_image_series_index, 0, vInteger));
+        imgHeader.image_series_index = (uint16_t)vInteger;
+
+        attributeInteger.resize(ISMRMRD_USER_INTS);
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_user_int, attributeInteger));
+        for ( ii=0; ii<ISMRMRD_USER_INTS; ii++ )
+        {
+            imgHeader.user_int[ii] = (int32_t)attributeInteger[ii];
+        }
+
+        attributeFloat.resize(ISMRMRD_USER_FLOATS);
+        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.get(ISMRMRD_IMAGE_user_float, attributeFloat));
+        for ( ii=0; ii<ISMRMRD_USER_FLOATS; ii++ )
+        {
+            imgHeader.user_float[ii] = (float)attributeFloat[ii];
+        }
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const GtImageAttribType& attrib, ISMRMRD::ImageHeader& imgHeader) ... ");
+        return false;
+    }
+
+    return true;
+}
+
 #ifdef USE_CUDA
 
 template <typename T> 
@@ -3643,6 +3888,35 @@ cudaJobSplitter(unsigned int numOfJobs, size_t jobSize, size_t minimalMemoryForV
 
 #endif // USE_CUDA
 
+template <typename T> 
+void gtPlusISMRMRDReconUtil<T>::
+compareAgainstGroundTruthArray(const std::string& gt_filename, const hoNDArray<T>& x, typename realType<T>::Type& normDiff, typename realType<T>::Type& maxNormDiff)
+{
+    hoNDArray<T> gt;
+
+    gtPlusIOAnalyze gt_io;
+    gt_io.importArray(gt, gt_filename);
+
+    compareAgainstGroundTruthArray(gt, x, normDiff, maxNormDiff);
+}
+
+template <typename T> 
+void gtPlusISMRMRDReconUtil<T>::
+compareAgainstGroundTruthArray(const hoNDArray<T>& gt, const hoNDArray<T>& x, typename realType<T>::Type& normDiff, typename realType<T>::Type& maxNormDiff)
+{
+    hoNDArray<T> diff(x);
+    Gadgetron::subtract(gt, x, diff);
+
+    typename realType<T>::Type v;
+    Gadgetron::norm2(diff, v);
+    normDiff = v;
+
+    T maxV;
+    size_t ind;
+    Gadgetron::maxAbsolute(diff, maxV, ind);
+    maxNormDiff = std::abs(maxV);
+}
+
 // ========================================================================================== //
 
 template <typename T> 
@@ -3695,11 +3969,11 @@ computeNoisePrewhiteningMatrix(const hoNDArray<T>& noise, double noiseBandWidth,
         hoMatrix<T> RH(prewhiteningMatrix);
         GADGET_CHECK_RETURN_FALSE(conjugatetrans(prewhiteningMatrix, RH));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::add(prewhiteningMatrix, RH, prewhiteningMatrix));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(0.5, prewhiteningMatrix));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (ValueType)0.5, prewhiteningMatrix));
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::CholeskyHermitianPositiveDefinite_potrf(prewhiteningMatrix, 'L'));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::TriangularInverse_trtri(prewhiteningMatrix, 'L'));
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(std::sqrt((double)2.0), prewhiteningMatrix));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::CholeskyHermitianPositiveDefinite_potrf(prewhiteningMatrix, 'U'));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::TriangularInverse_trtri(prewhiteningMatrix, 'U'));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (value_type)(std::sqrt((double)2.0)), prewhiteningMatrix));
     }
     catch(...)
     {
@@ -4244,25 +4518,27 @@ coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
                     // compute V1
                     D.sumOverCol(V1);
                     norm2(V1, v1Norm);
-                    scal(1.0/v1Norm, V1);
+                    scal( (value_type)1.0/v1Norm, V1);
 
                     GeneralMatrixProduct_gemm(DH_D, D, true, D, false);
 
                     for ( po=0; po<power; po++ )
                     {
                         GeneralMatrixProduct_gemm(V, DH_D, false, V1, false);
+                        // V1 = V;
                         memcpy(V1.begin(), V.begin(), V.get_number_of_bytes());
                         norm2(V1, v1Norm);
-                        scal(1.0/v1Norm, V1);
+                        scal( (value_type)1.0/v1Norm, V1);
                     }
 
                     // compute U1
                     GeneralMatrixProduct_gemm(U1, D, false, V1, false);
 
+                    //phaseU1 = U1(0, 0);
                     phaseU1 = pU1[0];
                     for ( po=1; po<kss; po++ )
                     {
-                        // phaseU1 += U1(po, 0);
+                        //phaseU1 += U1(po, 0);
                         phaseU1 += pU1[po];
                     }
                     phaseU1 /= std::abs(phaseU1);
@@ -4704,7 +4980,7 @@ coilMap3DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
                         // compute V1
                         D.sumOverCol(V1);
                         norm2(V1, v1Norm);
-                        scal(1.0/v1Norm, V1);
+                        scal( (value_type)1.0/v1Norm, V1);
 
                         GeneralMatrixProduct_gemm(DH_D, D, true, D, false);
 
@@ -4713,7 +4989,7 @@ coilMap3DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
                             GeneralMatrixProduct_gemm(V, DH_D, false, V1, false);
                             V1 = V;
                             norm2(V1, v1Norm);
-                            scal(1.0/v1Norm, V1);
+                            scal( (value_type)1.0/v1Norm, V1);
                         }
 
                         // compute U1
@@ -4742,6 +5018,263 @@ coilMap3DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
     catch(...)
     {
         GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap3DNIHInner(...) ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T> 
+bool gtPlusISMRMRDReconUtilComplex<T>::
+coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t iterNum, typename realType<T>::Type thres)
+{
+    try
+    {
+        //std::string debugFolder = "D:/software/Gadgetron/20130114/install_debug/gadgetron/DebugOutput/";
+        //gtPlusIOAnalyze gt_io;
+
+        //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, data, "data");
+
+        typedef typename realType<T>::Type value_type;
+
+        long long RO = data.get_size(0);
+        long long E1 = data.get_size(1);
+        long long CHA = data.get_size(2);
+
+        long long N = data.get_number_of_elements()/(RO*E1*CHA);
+        GADGET_CHECK_RETURN_FALSE(N==1);
+
+        const T* pData = data.begin();
+
+        if ( !data.dimensions_equal(&coilMap) )
+        {
+            coilMap = data;
+        }
+
+        // create convolution kernel
+        hoNDArray<T> ker(ks, ks);
+        Gadgetron::fill( &ker, T( (value_type)1.0/(ks*ks)) );
+
+        hoNDArray<T> prevR(RO, E1, 1), R(RO, E1, 1), imT(RO, E1, 1), magT(RO, E1, 1), diffR(RO, E1, 1);
+        hoNDArray<T> coilMapConv(RO, E1, CHA);
+        hoNDArray<T> D(RO, E1, CHA);
+        hoNDArray<T> D_sum(1, E1, CHA);
+        hoNDArray<T> D_sum_1st_2nd(1, 1, CHA);
+        typename realType<T>::Type v, vR, vDiffR;
+        T vCha;
+        size_t iter;
+        long long cha;
+
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver1stDimension(data, D_sum));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver2ndDimension(D_sum, D_sum_1st_2nd));
+        Gadgetron::norm2(D_sum_1st_2nd, v);
+        Gadgetron::scal( (value_type)1.0/v, D_sum_1st_2nd);
+
+        Gadgetron::clear(R);
+        for ( cha=0; cha<CHA; cha++ )
+        {
+            hoNDArray<T> dataCHA(RO, E1, const_cast<T*>(data.begin())+cha*RO*E1);
+            vCha = D_sum_1st_2nd(cha);
+            Gadgetron::axpy( std::conj(vCha), dataCHA, R, R);
+        }
+
+        for ( iter=0; iter<iterNum; iter++ )
+        {
+            prevR = R;
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::conjugate(R, R));
+            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "R");
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, data, coilMap));
+            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, coilMap, "coilMap");
+
+            //Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(coilMap, coilMapConv);
+            //GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(kerKSpace, coilMapConv, D));
+            //Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(D, coilMapConv);
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::conv2(coilMap, ker, coilMapConv));
+            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, coilMapConv, "coilMapConv");
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(coilMapConv, coilMapConv, D));
+            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, D, "D");
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver3rdDimension(D, R));
+            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "D_R");
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::sqrt(R, R));
+            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "D_R2");
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::addEpsilon(R));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::inv(R, R));
+            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "D_R_inv");
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, coilMapConv, coilMap));
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(data, coilMap, D));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver3rdDimension(D, R));
+            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, R, "R2");
+
+            //if ( iter < iterNum - 1 )
+            //{
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, coilMap, D));
+            //}
+            //else
+            //{
+            //    D = coilMap;
+            //}
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver1stDimension(D, D_sum));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver2ndDimension(D_sum, D_sum_1st_2nd));
+
+            Gadgetron::norm2(D_sum_1st_2nd, v);
+            Gadgetron::scal( (value_type)1.0/v, D_sum_1st_2nd);
+
+            Gadgetron::clear(imT);
+            for ( cha=0; cha<CHA; cha++ )
+            {
+                hoNDArray<T> coilMapCHA(RO, E1, coilMap.begin()+cha*RO*E1);
+                vCha = D_sum_1st_2nd(cha);
+                Gadgetron::axpy( std::conj(vCha), coilMapCHA, imT, imT);
+            }
+
+            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, imT, "imT");
+
+            Gadgetron::absolute(imT, magT);
+            Gadgetron::divide(imT, magT, imT);
+
+            //GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, gt_io, imT, "imT2");
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(R, imT, R));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::conjugate(imT, imT));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(imT, coilMap, coilMap));
+
+            Gadgetron::subtract(prevR, R, diffR);
+            Gadgetron::norm2(diffR, vDiffR);
+            Gadgetron::norm2(R, vR);
+
+            // GADGET_MSG("coilMap2DNIH2Inner - iter : " << iter << " - norm(prevR-R)/norm(R) : " << vDiffR/vR);
+
+            if ( vDiffR/vR < thres ) break;
+        }
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap2DNIH2Inner(...) ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T> 
+bool gtPlusISMRMRDReconUtilComplex<T>::
+coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, const hoNDArray<T>& kerKSpace, size_t iterNum)
+{
+    try
+    {
+        typedef typename realType<T>::Type value_type;
+
+        long long RO = data.get_size(0);
+        long long E1 = data.get_size(1);
+        long long CHA = data.get_size(2);
+
+        long long N = data.get_number_of_elements()/(RO*E1*CHA);
+        GADGET_CHECK_RETURN_FALSE(N==1);
+
+        const T* pData = data.begin();
+
+        if ( !data.dimensions_equal(&coilMap) )
+        {
+            coilMap = data;
+        }
+
+        hoNDArray<T> prevR(RO, E1, 1), R(RO, E1, 1), imT(RO, E1, 1), magT(RO, E1, 1), diffR(RO, E1, 1);
+        hoNDArray<T> coilMapConv(RO, E1, CHA);
+        hoNDArray<T> D(RO, E1, CHA);
+        hoNDArray<T> D_sum(1, E1, CHA);
+        hoNDArray<T> D_sum_1st_2nd(1, 1, CHA);
+        typename realType<T>::Type v, vR, vDiffR;
+        T vCha;
+        size_t iter;
+        long long cha;
+
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver1stDimension(data, D_sum));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver2ndDimension(D_sum, D_sum_1st_2nd));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::norm2(D_sum_1st_2nd, v));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (value_type)1.0/v, D_sum_1st_2nd));
+
+        Gadgetron::clear(R);
+        for ( cha=0; cha<CHA; cha++ )
+        {
+            hoNDArray<T> dataCHA(RO, E1, const_cast<T*>(data.begin())+cha*RO*E1);
+            vCha = D_sum_1st_2nd(cha);
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::axpy( std::conj(vCha), dataCHA, R, R));
+        }
+
+        for ( iter=0; iter<iterNum; iter++ )
+        {
+            prevR = R;
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::conjugate(R, R));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, data, coilMap));
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(coilMap, coilMapConv));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(kerKSpace, coilMapConv, D));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(D, coilMapConv));
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(coilMapConv, coilMapConv, D));
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver3rdDimension(D, R));
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::sqrt(R, R));
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::addEpsilon(R));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::inv(R, R));
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, coilMapConv, coilMap));
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(data, coilMap, D));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver3rdDimension(D, R));
+
+            //if ( iter < iterNum - 1 )
+            //{
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, coilMap, D));
+            //}
+            //else
+            //{
+            //    D = coilMap;
+            //}
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver1stDimension(D, D_sum));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver2ndDimension(D_sum, D_sum_1st_2nd));
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::norm2(D_sum_1st_2nd, v));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (value_type)1.0/v, D_sum_1st_2nd));
+
+            Gadgetron::clear(imT);
+            for ( cha=0; cha<CHA; cha++ )
+            {
+                hoNDArray<T> coilMapCHA(RO, E1, coilMap.begin()+cha*RO*E1);
+                vCha = D_sum_1st_2nd(cha);
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::axpy( std::conj(vCha), coilMapCHA, imT, imT));
+            }
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(imT, magT));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::divide(imT, magT, imT));
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(R, imT, R));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::conjugate(imT, imT));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(imT, coilMap, coilMap));
+
+            Gadgetron::subtract(prevR, R, diffR);
+            Gadgetron::norm2(diffR, vDiffR);
+            Gadgetron::norm2(R, vR);
+
+            // GADGET_MSG("coilMap2DNIH2Inner - iter : " << iter << " - norm(prevR-R)/norm(R) : " << vDiffR/vR);
+        }
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap2DNIH2Inner(...) ... ");
         return false;
     }
 
@@ -4813,7 +5346,7 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
 
                         if ( algo == ISMRMRD_SOUHEIL_ITER )
                         {
-                            coilMap2DNIHInner(dataCurr, coilMapCurr, ks, power);
+                            coilMap2DNIH2Inner(dataCurr, coilMapCurr, ks, iterNum, thres);
                         }
                         else
                         {
@@ -4827,7 +5360,7 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
             {
                 if ( algo == ISMRMRD_SOUHEIL_ITER )
                 {
-                    GADGET_CHECK_RETURN_FALSE(coilMap2DNIHInner(data, coilMap, ks, power));
+                    GADGET_CHECK_RETURN_FALSE(coilMap2DNIH2Inner(data, coilMap, ks, iterNum, thres));
                 }
                 else
                 {
@@ -4843,7 +5376,7 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
                     hoNDArray<T> coilMapCurr(RO, E1, CHA, coilMap.begin()+n*num);
                     if ( algo == ISMRMRD_SOUHEIL_ITER )
                     {
-                        GADGET_CHECK_RETURN_FALSE(coilMap2DNIHInner(dataCurr, coilMapCurr, ks, power));
+                        GADGET_CHECK_RETURN_FALSE(coilMap2DNIH2Inner(dataCurr, coilMapCurr, ks, iterNum, thres));
                     }
                     else
                     {
@@ -5075,6 +5608,117 @@ coilMap2DNIHGPU(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPA
 
 template <typename T> 
 bool gtPlusISMRMRDReconUtilComplex<T>::
+coilMap3DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t kz, size_t iterNum, typename realType<T>::Type thres)
+{
+    try
+    {
+        typedef typename realType<T>::Type value_type;
+
+        size_t RO = data.get_size(0);
+        size_t E1 = data.get_size(1);
+        size_t E2 = data.get_size(2);
+        size_t CHA = data.get_size(3);
+
+        size_t N = data.get_number_of_elements()/(RO*E1*E2*CHA);
+        GADGET_CHECK_RETURN_FALSE(N==1);
+
+        const T* pData = data.begin();
+
+        if ( !data.dimensions_equal(&coilMap) )
+        {
+            coilMap = data;
+        }
+
+        // create convolution kernel
+        hoNDArray<T> ker(ks, ks, kz);
+        Gadgetron::fill( &ker, T( (value_type)1.0/(ks*ks*kz)) );
+
+        hoNDArray<T> R(RO, E1, E2, 1), imT(RO, E1, E2, 1), magT(RO, E1, E2, 1);
+        hoNDArray<T> coilMapConv(RO, E1, E2, CHA);
+        hoNDArray<T> D(RO, E1, E2, CHA);
+        hoNDArray<T> D_sum(1, CHA);
+        typename realType<T>::Type v;
+        T vCha;
+        size_t iter, cha;
+
+        hoNDArray<T> dataByCha(RO*E1*E2, CHA, const_cast<T*>(data.begin()));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver1stDimension(data, D_sum));
+        Gadgetron::norm2(D_sum, v);
+        Gadgetron::scal( (value_type)1.0/v, D_sum);
+
+        Gadgetron::clear(R);
+        for ( cha=0; cha<CHA; cha++ )
+        {
+            hoNDArray<T> dataCHA(RO, E1, E2, const_cast<T*>(data.begin())+cha*RO*E1*E2);
+            vCha = D_sum(cha);
+            Gadgetron::axpy( std::conj(vCha), dataCHA, R, R);
+        }
+
+        for ( iter=0; iter<iterNum; iter++ )
+        {
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::conjugate(R, R));
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, data, coilMap));
+
+            // use corr2, instead of corr3
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::conv2(coilMap, ker, coilMapConv));
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(coilMapConv, coilMapConv, D));
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver4thDimension(D, R));
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::sqrt(R, R));
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::addEpsilon(R));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::inv(R, R));
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, coilMapConv, coilMap));
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(data, coilMap, D));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver4thDimension(D, R));
+
+            //if ( iter < iterNum - 1 )
+            //{
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(R, coilMap, D));
+            //}
+            //else
+            //{
+            //    D = coilMap;
+            //}
+
+            hoNDArray<T> DByCha(RO*E1*E2, CHA, D.begin());
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver1stDimension(DByCha, D_sum));
+
+            Gadgetron::norm2(D_sum, v);
+            Gadgetron::scal( (value_type)1.0/v, D_sum);
+
+            Gadgetron::clear(imT);
+            for ( cha=0; cha<CHA; cha++ )
+            {
+                hoNDArray<T> coilMapCHA(RO, E1, E2, 1, coilMap.begin()+cha*RO*E1*E2);
+                vCha = D_sum(cha);
+                Gadgetron::axpy( std::conj(vCha), coilMapCHA, imT, imT);
+            }
+
+            Gadgetron::absolute(imT, magT);
+            Gadgetron::divide(imT, magT, imT);
+
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(R, imT, R));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::conjugate(imT, imT));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::multipleMultiply(imT, coilMap, coilMap));
+        }
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconUtilComplex<T>::coilMap3DNIH2Inner(...) ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T> 
+bool gtPlusISMRMRDReconUtilComplex<T>::
 coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO algo, size_t ks, size_t power, size_t iterNum, typename realType<T>::Type thres, bool true3D)
 {
     try
@@ -5098,6 +5742,9 @@ coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
             ks++;
         }
 
+        //std::string debugFolder = "D:/software/Gadgetron/20130114/install/gadgetron/DebugOutput/";
+        //gtPlusIOAnalyze gt_io;
+
         hoNDArray<T> data2D, coilMap2D;
 
         if ( algo == ISMRMRD_SOUHEIL )
@@ -5109,7 +5756,12 @@ coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
         int n, e2;
         for ( n=0; n<(long long)N; n++ )
         {
-            if ( algo==ISMRMRD_SOUHEIL && E2>5*ks && true3D )
+            if ( algo == ISMRMRD_SOUHEIL_ITER )
+            {
+                GADGET_MSG("calling 3D version of Souhiel iterative coil map estimation ... ");
+                GADGET_CHECK_RETURN_FALSE(this->coilMap3DNIH2Inner(data, coilMap, ks, ks, iterNum, thres));
+            }
+            else if ( algo==ISMRMRD_SOUHEIL && E2>5*ks && true3D )
             {
                 GADGET_MSG("calling 3D version of Souhiel coil map estimation ... ");
                 GADGET_CHECK_RETURN_FALSE(this->coilMap3DNIHInner(data, coilMap, ks, power));
@@ -5144,7 +5796,7 @@ coilMap3DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
                         GADGET_CHECK_PERFORM(timing, gt_timer3_.start("coilMap2DNIHInner"));
                         if ( algo == ISMRMRD_SOUHEIL_ITER )
                         {
-                            coilMap2DNIHInner(data2D, coilMap2D, ks, power);
+                            coilMap2DNIH2Inner(data2D, coilMap2D, ks, iterNum, thres);
                         }
                         else
                         {

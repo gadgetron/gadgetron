@@ -209,11 +209,20 @@ bool gtPlusSPIRIT2DTOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g)
         // 2*Dc*(G-I)'(G-I)(D'y+Dc'x)
 
         // D'y+Dc'x
+        //gt_timer1_.start("1");
         GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(this->unacquired_points_indicator_, x, this->kspace_));
+        //gt_timer1_.stop();
+
+        //gt_timer1_.start("2");
         GADGET_CHECK_RETURN_FALSE(Gadgetron::add(*this->acquired_points_, this->kspace_, this->kspace_));
+        //gt_timer1_.stop();
 
         // x to image domain
+        //gt_timer1_.start("3");
         GADGET_CHECK_RETURN_FALSE(this->convertToImage(this->kspace_, this->complexIm_));
+        //gt_timer1_.stop();
+
+        //gt_timer1_.start("4");
 
         // apply kernel and sum
         size_t RO = x.get_size(0);
@@ -224,7 +233,12 @@ bool gtPlusSPIRIT2DTOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g)
         size_t dstCHA = this->adjoint_forward_kernel_->get_size(3);
         size_t kernelN = this->adjoint_forward_kernel_->get_size(4);
 
-        this->res_after_apply_kernel_sum_over_.create(RO, E1, dstCHA, N);
+        if ( this->res_after_apply_kernel_sum_over_.get_number_of_elements() < RO*E1*dstCHA*N )
+        {
+            this->res_after_apply_kernel_sum_over_.create(RO, E1, dstCHA, N);
+        }
+
+        //Gadgetron::imageDomainUnwrapping2DT(this->complexIm_, *(this->adjoint_forward_kernel_), this->res_after_apply_kernel_sum_over_, g);
 
         size_t n;
         for ( n=0; n<N; n++)
@@ -248,14 +262,22 @@ bool gtPlusSPIRIT2DTOperator<T>::grad(const hoNDArray<T>& x, hoNDArray<T>& g)
             GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverSecondLastDimension(this->res_after_apply_kernel_, sumResCurr));
         }
 
+        //gt_timer1_.stop();
+
         // go back to kspace 
+        //gt_timer1_.start("5");
         GADGET_CHECK_RETURN_FALSE(this->convertToKSpace(this->res_after_apply_kernel_sum_over_, g));
+        //gt_timer1_.stop();
 
         // apply Dc
+        //gt_timer1_.start("6");
         GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(this->unacquired_points_indicator_, g, g));
+        //gt_timer1_.stop();
 
         // multiply by 2
+        //gt_timer1_.start("7");
         GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(T(2.0), g));
+        //gt_timer1_.stop();
     }
     catch(...)
     {
@@ -290,7 +312,12 @@ bool gtPlusSPIRIT2DTOperator<T>::obj(const hoNDArray<T>& x, T& obj)
         size_t dstCHA = this->forward_kernel_->get_size(3);
         size_t kernelN = this->forward_kernel_->get_size(4);
 
-        this->res_after_apply_kernel_sum_over_.create(RO, E1, dstCHA, N);
+        if ( this->res_after_apply_kernel_sum_over_.get_number_of_elements() < RO*E1*dstCHA*N )
+        {
+            this->res_after_apply_kernel_sum_over_.create(RO, E1, dstCHA, N);
+        }
+
+        //Gadgetron::imageDomainUnwrapping2DT(this->complexIm_, *(this->forward_kernel_), this->res_after_apply_kernel_sum_over_, this->kspace_);
 
         size_t n;
         for ( n=0; n<N; n++)

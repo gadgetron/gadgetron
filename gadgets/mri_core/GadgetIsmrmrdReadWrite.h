@@ -85,8 +85,9 @@ namespace Gadgetron{
     {
 
     public:
+        GADGETRON_READER_DECLARE(GadgetIsmrmrdAcquisitionMessageReader);
 
-		virtual ACE_Message_Block* read(ACE_SOCK_Stream* stream)
+        virtual ACE_Message_Block* read(ACE_SOCK_Stream* stream)
         {
 
             GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1 =

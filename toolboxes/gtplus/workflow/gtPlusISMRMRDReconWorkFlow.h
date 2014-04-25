@@ -111,6 +111,10 @@ public:
     // ----------------------------------
     hoNDArray<T> res_;
 
+    // gfactor, not all reconstruction fills the gfactor
+    // 8D array [RO E1 SLC E2 CON PHS REP SET]
+    hoNDArray<T> gfactor_;
+
     // ----------------------------------
     // debug and timing
     // ----------------------------------
@@ -141,6 +145,7 @@ protected:
     // internal helper memory allocated for computation
     hoNDArray<T> dataCurr_;
     hoNDArray<T> refCurr_;
+    hoNDArray<T> gfactorCurr_;
 
     // size of dimensions for image data
     DimensionRecordType RO_;

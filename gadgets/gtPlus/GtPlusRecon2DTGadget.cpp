@@ -225,7 +225,7 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     dimensions_ = *dims;
 
     // fill in more parameters
-    para_.reconSizeRO_ = (*dims)[0];
+    para_.reconSizeRO_ = GT_MAX(matrix_size_recon_[0], (*dims)[0]);
     para_.reconSizeE1_ = reconE1_;
     para_.reconSizeE2_ = reconE2_;
     para_.encodingFOV_RO_ = field_of_view_encoding_[0];
@@ -333,7 +333,8 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
         //GADGET_CHECK_RETURN(gtPlus_util_complex_.zpadResize2D(workflow_.res_, workflow_.reconSizeRO_, workflow_.reconSizeE1_, resResized), GADGET_FAIL);
         //GADGET_CHECK_RETURN(this->sendOutRecon(images, resResized, image_series_+1, workOrder->dataDimStartingIndexes_, "Other"), GADGET_FAIL);
 
-       GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.res_, image_series_+1, workOrder->dataDimStartingIndexes_, "Other"), GADGET_FAIL);
+        GADGET_CHECK_RETURN(this->scalingImages(workflow_.res_), GADGET_FAIL);
+        GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.res_, image_series_+1, workOrder->dataDimStartingIndexes_, "Other", GTPLUS_IMAGE_OTHER), GADGET_FAIL);
 
         workflow_.res_.clear();
         workflow_.data_ = NULL;
@@ -390,6 +391,12 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
         workflow_.worker_ = &worker_noacceleration_;
     }
 
+    if ( workflow_.worker_ != &worker_grappa_ )
+    {
+        GADGET_WARN_MSG("The gfactor computation is currently only avaialbe for grappa reconstruction ... ");
+        workflow_.workOrder_->gfactor_needed_ = false;
+    }
+
     GADGET_CHECK_RETURN(workflow_.preProcessing(), GADGET_FAIL);
     GADGET_CHECK_RETURN(workflow_.recon(), GADGET_FAIL);
     GADGET_CHECK_RETURN(workflow_.postProcessing(), GADGET_FAIL);
@@ -404,10 +411,66 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
         hoNDArray<GT_Complex8> res = workflow_.res_;
         res.squeeze();
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+
+        if ( workflow_.workOrder_->gfactor_needed_ )
+        {
+            std::ostringstream ostr;
+            ostr << "Recon2DT_GFactor_" << processed_called_times_;
+
+            hoNDArray<GT_Complex8> gfactor = workflow_.gfactor_;
+            gfactor.squeeze();
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, gfactor, ostr.str());
+        }
+    }
+
+    // compute SNR image and stdmap
+    hoNDArray<ValueType> snrImage, stdMap;
+    bool snrImageComputed = false;
+    bool stdMapComputed = false;
+
+    if ( workflow_.workOrder_->gfactor_needed_ || workOrder->acceFactorE1_==1 )
+    {
+        if ( scalingFactor_snr_image_>0 || scalingFactor_std_map_>0)
+        {
+            bool withAcceleration = (workOrder->acceFactorE1_>1);
+
+            if ( !this->computeSNRImage(workflow_.res_, workflow_.gfactor_, 
+                    start_frame_for_std_map_, withAcceleration, snrImage, stdMap) )
+            {
+                snrImage.clear();
+                stdMap.clear();
+            }
+            else
+            {
+                snrImageComputed = true;
+                stdMapComputed = true;
+            }
+
+            if ( workOrder->acceFactorE1_==1 ) snrImageComputed = false;
+        }
     }
 
     // send out the results
-    GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.res_, image_series_, workOrder->dataDimStartingIndexes_, "Image"), GADGET_FAIL);
+    GADGET_CHECK_RETURN(this->scalingImages(workflow_.res_), GADGET_FAIL);
+    GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.res_, image_series_, workOrder->dataDimStartingIndexes_, "Image", GTPLUS_IMAGE_REGULAR), GADGET_FAIL);
+
+    if ( workflow_.workOrder_->gfactor_needed_ )
+    {
+        GADGET_CHECK_RETURN(Gadgetron::scal((float)scalingFactor_gfactor_, workflow_.gfactor_), GADGET_FAIL);
+        GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.gfactor_, image_series_+1, workOrder->dataDimStartingIndexes_, "gfactor", GTPLUS_IMAGE_GFACTOR), GADGET_FAIL);
+    }
+
+    if ( scalingFactor_snr_image_>0 && snrImage.get_number_of_elements()>0 && snrImageComputed )
+    {
+        GADGET_CHECK_RETURN(Gadgetron::scal((float)scalingFactor_snr_image_, snrImage), GADGET_FAIL);
+        GADGET_CHECK_RETURN(this->sendOutRecon(images, snrImage, image_series_+2, workOrder->dataDimStartingIndexes_, "snr_map", GTPLUS_IMAGE_SNR_MAP), GADGET_FAIL);
+    }
+
+    if ( scalingFactor_std_map_>0 && stdMap.get_number_of_elements()>0 && stdMapComputed )
+    {
+        GADGET_CHECK_RETURN(Gadgetron::scal((float)scalingFactor_std_map_, stdMap), GADGET_FAIL);
+        GADGET_CHECK_RETURN(this->sendOutRecon(images, stdMap, image_series_+3, workOrder->dataDimStartingIndexes_, "std_map", GTPLUS_IMAGE_STD_MAP), GADGET_FAIL);
+    }
 
     GADGET_CONDITION_MSG(verboseMode_, "GtPlusRecon2DTGadget::process(...) ends ... ");
 

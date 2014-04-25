@@ -68,7 +68,7 @@ public:
         {
             this->autoReconParameter(workOrder2DT);
             GADGET_MSG("Gt Plus 2DT -- automatic paramter selection ---");
-            workOrder2DT->print(std::cout);
+            if ( !this->debugFolder_.empty() ) { workOrder2DT->print(std::cout); }
         }
 
         return this->performRecon(workOrder2DT);
@@ -501,6 +501,173 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
         {
             GADGET_ERROR_MSG("CalibMode is not supported in gtPlusReconWorker2DT<T>::prepRef(...) : " << workOrder2DT->CalibMode_);
             return false;
+        }
+
+        // if the upstream coil compression is needed
+        if ( workOrder2DT->upstream_coil_compression_ )
+        {
+            GADGET_CHECK_PERFORM(!debugFolder_.empty(), "Upstream coil compression ... ");
+
+            std::vector<hoMatrix<T> > upstreamCoilCoeffRef(workOrder2DT->ref_.get_size(4)), upstreamCoilCoeffRefRecon(refRecon.get_size(4)), upstreamCoilCoeffData(workOrder2DT->data_.get_size(4));
+
+            if ( workOrder2DT->same_coil_compression_coeff_allS_ )
+            {
+                hoNDArray<T> aveAllS;
+
+                std::vector<size_t> allSDim(4);
+                allSDim[0] = refRecon.get_size(0);
+                allSDim[1] = refRecon.get_size(1);
+                allSDim[2] = refRecon.get_size(2);
+                allSDim[3] = refRecon.get_size(3)*refRecon.get_size(4);
+
+                hoNDArray<T> dataAllS(&allSDim, refRecon.begin(), false);
+                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.averageKSpace4D(dataAllS, aveAllS));
+
+                hoMatrix<T> coeff, eigenValues;
+                if ( workOrder2DT->coil_compression_num_modesKept_ > 0 )
+                {
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLCoilCompressionCoeff(aveAllS, 
+                                workOrder2DT->upstream_coil_compression_num_modesKept_, coeff, eigenValues));
+                }
+                else
+                {
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLCoilCompressionCoeff(aveAllS, 
+                                workOrder2DT->upstream_coil_compression_thres_, coeff, eigenValues));
+                }
+
+                eigenValues.print(std::cout);
+                GADGET_MSG("Upstream coil compression, number of channel kept is " << coeff.cols());
+
+                size_t n;
+                for ( n=0; n<upstreamCoilCoeffRef.size(); n++ )
+                {
+                    upstreamCoilCoeffRef[n] = coeff;
+                }
+
+                for ( n=0; n<upstreamCoilCoeffRefRecon.size(); n++ )
+                {
+                    upstreamCoilCoeffRefRecon[n] = coeff;
+                }
+
+                for ( n=0; n<upstreamCoilCoeffData.size(); n++ )
+                {
+                    upstreamCoilCoeffData[n] = coeff;
+                }
+            }
+            else
+            {
+                std::vector<size_t> allSDim(4);
+                allSDim[0] = refRecon.get_size(0);
+                allSDim[1] = refRecon.get_size(1);
+                allSDim[2] = refRecon.get_size(2);
+                allSDim[3] = refRecon.get_size(3);
+
+                size_t N_refRecon = allSDim[0]*allSDim[1]*allSDim[2]*allSDim[3];
+
+                size_t num_modesKept = srcCHA;
+
+                size_t s;
+                for ( s=0; s<refRecon.get_size(4); s++ )
+                {
+                    hoNDArray<T> dataCurrS(&allSDim, refRecon.begin()+s*N_refRecon, false);
+
+                    hoMatrix<T> coeff, eigenValues;
+
+                    if ( s == 0 )
+                    {
+                        if ( workOrder2DT->coil_compression_num_modesKept_ > 0 )
+                        {
+                            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLCoilCompressionCoeff(dataCurrS, 
+                                        workOrder2DT->upstream_coil_compression_num_modesKept_, coeff, eigenValues));
+                        }
+                        else
+                        {
+                            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLCoilCompressionCoeff(dataCurrS, 
+                                        workOrder2DT->upstream_coil_compression_thres_, coeff, eigenValues));
+                        }
+
+                        num_modesKept = coeff.get_size(1);
+                    }
+                    else
+                    {
+                        GADGET_CHECK_RETURN_FALSE(gtPlus_util_.computeKLCoilCompressionCoeff(dataCurrS, 
+                                        (int)num_modesKept, coeff, eigenValues));
+                    }
+
+                    GADGET_CHECK_PERFORM(!debugFolder_.empty(), eigenValues.print(std::cout));
+                    GADGET_MSG("Upstream coil compression, number of channel kept is " << coeff.cols());
+
+                    if ( s < upstreamCoilCoeffRef.size() )
+                    {
+                        upstreamCoilCoeffRef[s] = coeff;
+                    }
+
+                    upstreamCoilCoeffRefRecon[s] = coeff;
+                    upstreamCoilCoeffData[s] = coeff;
+                }
+            }
+
+            // apply the coil compression
+            #ifdef USE_OMP
+                omp_set_nested(1);
+            #endif // USE_OMP
+
+            GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("apply upstream coil compression ... "));
+            #pragma omp parallel sections default(shared)
+            {
+
+                #pragma omp section
+                {
+                    //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("apply the coil compression on data ... "));
+                    // GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->data_, upstreamCoilCoeffData, data_dst_, true));
+                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("applyKLCoilCompressionCoeff ... "));
+                    gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder2DT->data_, upstreamCoilCoeffData, data_dst_);
+                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+
+                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("copy data ... "));
+                    workOrder2DT->data_ = data_dst_;
+                    GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
+
+                    //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+                }
+
+                #pragma omp section
+                {
+                    //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("apply the coil compression on ref ... "));
+                    //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->ref_, upstreamCoilCoeff, ref_dst_, true));
+                    gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder2DT->ref_, upstreamCoilCoeffRef, ref_dst_);
+                    workOrder2DT->ref_ = ref_dst_;
+                    //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+                }
+
+                #pragma omp section
+                {
+                    //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("apply the coil compression on refRecon ... "));
+                    hoNDArray<T> refRecon_upstream;
+                    //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refRecon, upstreamCoilCoeff, refRecon_upstream, true));
+                    gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refRecon, upstreamCoilCoeffRefRecon, refRecon_upstream);
+                    refRecon = refRecon_upstream;
+                    refRecon_upstream.clear();
+                    //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+                }
+
+                #pragma omp section
+                {
+                    //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("apply the coil compression on ref for coil map ... "));
+                    hoNDArray<T> refCoilMap_upstream;
+                    //GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refCoilMap, upstreamCoilCoeff, refCoilMap_upstream, true));
+                    gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(refCoilMap, upstreamCoilCoeffRefRecon, refCoilMap_upstream);
+                    refCoilMap = refCoilMap_upstream;
+                    refCoilMap_upstream.clear();
+                    //GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+                }
+            }
+
+            GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+
+            #ifdef USE_OMP
+                omp_set_nested(0);
+            #endif // USE_OMP
         }
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, refRecon, "refRecon");
@@ -997,7 +1164,7 @@ bool gtPlusReconWorker2DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDAr
         hoNDArray<T> conjUnmixCoeff(unmixCoeff);
         GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(unmixCoeff, conjUnmixCoeff, conjUnmixCoeff));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(conjUnmixCoeff, gFactor));
-        Gadgetron::sqrt_inplace(&gFactor);
+        Gadgetron::sqrt(gFactor, gFactor);
     }
     catch(...)
     {
@@ -1205,6 +1372,12 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
         size_t N = workOrder2DT->data_.get_size(3);
         size_t S = workOrder2DT->data_.get_size(4);
 
+        if ( workOrder2DT->CalibMode_ == ISMRMRD_noacceleration )
+        {
+            fullres_coilmap = false;
+            ref_fillback = false;
+        }
+
         if ( workOrder2DT->CalibMode_ == ISMRMRD_embedded )
         {
             if ( workOrder2DT->embedded_fullres_coilmap_ )
@@ -1287,7 +1460,8 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
         if ( fullres_coilmap )
         {
             GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("full res coil map : allocate buffer 2DT ...  "));
-            hoNDArrayMemoryManaged<T> buffer2DT_Two(workOrder2DT->fullkspace_.get_dimensions(), gtPlus_mem_manager_);
+            //hoNDArrayMemoryManaged<T> buffer2DT_Two(workOrder2DT->fullkspace_.get_dimensions(), gtPlus_mem_manager_);
+            hoNDArray<T> buffer2DT_Two(workOrder2DT->fullkspace_.get_dimensions());
             GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
 
             GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->fullkspace_, buffer2DT_, buffer2DT_Two));
@@ -1311,14 +1485,17 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
                 else
                 {
                     workOrder2DT->coilMap_->create(RO, E1, dstCHA, 1, S);
+                    //Gadgetron::clear( *(workOrder2DT->coilMap_) );
 
                     size_t s;
 
                     if ( same_coilmap_allS )
                     {
                         hoNDArray<T> aveComplexImS(RO, E1, dstCHA, 1);
+                        //Gadgetron::clear(aveComplexImS);
 
                         buffer2DT_unwrapping_.create(RO, E1, dstCHA, N);
+                        //Gadgetron::clear(aveComplexImS);
 
                         hoMatrix<T> A(RO*E1*dstCHA, N, buffer2DT_.begin()+whichS_coilmap*RO*E1*dstCHA*N);
                         hoMatrix<T> A_KLF(RO*E1*dstCHA, N, buffer2DT_unwrapping_.begin());
@@ -1366,7 +1543,10 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
                     else
                     {
                         hoNDArray<T> aveComplexIm(RO, E1, dstCHA, 1, S);
+                        //Gadgetron::clear(aveComplexIm);
+
                         buffer2DT_unwrapping_ = buffer2DT_;
+                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer2DT_unwrapping_, "buffer2DT_unwrapping");
 
                         if ( numOfModesKept>0 && numOfModesKept<dstCHA )
                         {
@@ -1518,10 +1698,32 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
 {
     try
     {
-        if ( workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING ) return true;
+        // compensate for the partial fourier to preserve the SNR unit
+        value_type partialFourierCompensationFactor = 1;
+
+        size_t RO = workOrder2DT->data_.get_size(0);
+        size_t E1 = workOrder2DT->data_.get_size(1);
+
+        if ( !( workOrder2DT->start_RO_<0 || workOrder2DT->end_RO_<0 || (workOrder2DT->end_RO_-workOrder2DT->start_RO_+1==RO) ) )
+        {
+            partialFourierCompensationFactor *= (value_type)(RO)/(value_type)(workOrder2DT->end_RO_-workOrder2DT->start_RO_+1);
+        }
+
+        if ( !( workOrder2DT->start_E1_<0 || workOrder2DT->end_E1_<0 || (workOrder2DT->end_E1_-workOrder2DT->start_E1_+1==E1) ) )
+        {
+            partialFourierCompensationFactor *= (value_type)(E1)/(value_type)(workOrder2DT->end_E1_-workOrder2DT->start_E1_+1);
+        }
+
+        partialFourierCompensationFactor = std::sqrt(partialFourierCompensationFactor);
+        GADGET_CHECK_PERFORM(performTiming_, GADGET_MSG("Partial fourier scaling factor : " << partialFourierCompensationFactor));
 
         if ( workOrder2DT->acceFactorE1_==1 && workOrder2DT->acceFactorE2_==1 )
         {
+            if ( workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
+            {
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder2DT->data_));
+            }
+
             if ( workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
             {
                 GADGET_CHECK_RETURN_FALSE(performPartialFourierFilter(*workOrder2DT, workOrder2DT->data_));
@@ -1544,6 +1746,11 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
         }
         else if ( workOrder2DT->fullkspace_.get_number_of_elements() > 0 )
         {
+            if ( workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
+            {
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder2DT->fullkspace_));
+            }
+
             if ( workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
             {
                 GADGET_CHECK_RETURN_FALSE(performPartialFourierFilter(*workOrder2DT, workOrder2DT->fullkspace_));
@@ -1569,6 +1776,11 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
             // perform partial fourier handling on the complex images after coil combination
             hoNDArray<T> kspace(workOrder2DT->complexIm_);
             GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(workOrder2DT->complexIm_, kspace));
+
+            if ( workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
+            {
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, kspace));
+            }
 
             if ( workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
             {
@@ -1655,9 +1867,9 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierFilter(gtPlusReconWorkOrder2D
             {
                 kspace = buffer2DT_partial_fourier_;
             }
-
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace, "kspace_after_PF_Filter");
         }
+
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace, "kspace_after_PF_Filter");
     }
     catch(...)
     {
@@ -2442,7 +2654,7 @@ bool gtPlusReconWorker2DT<T>::performReconFangHuang(gtPlusReconWorkOrder2DT<T>& 
                 ho2DArray<T> src2D(RO, E1, const_cast<T*>(kspaceConj.begin())+ii*RO*E1);
                 ho2DArray<T> dst2D(RO, E1, kspace.begin()+ii*RO*E1);
 
-                size_t ro, e1, row, col;
+                size_t row, col;
                 for ( col=0; col<colD; col++ )
                 {
                     for ( row=0; row<rowD; row++ )

@@ -21,7 +21,9 @@
 #include <string>
 #include <limits>
 
-#include <mkl.h>
+#ifdef USE_MKL
+    #include <mkl.h>
+#endif // USE_MKL
 
 // the memory manager for large chunk allocation
 

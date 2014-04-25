@@ -9,6 +9,7 @@
 #include "GtPlusGadgetExport.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
+#include "hoNDMetaAttributes.h"
 #include "ismrmrd.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "GadgetronTimer.h"
@@ -35,7 +36,10 @@ namespace Gadgetron
 class EXPORTGTPLUSGADGET GtPlusReconGadget : public Gadgetron::Gadget2< GtPlusGadgetImageArray, Gadgetron::gtPlus::gtPlusReconWorkOrder<std::complex<float> > >
 {
 public:
-    typedef std::complex<float> ValueType;
+    GADGET_DECLARE(GtPlusReconGadget);
+
+    typedef float real_value_type;
+    typedef std::complex<real_value_type> ValueType;
 
     typedef Gadgetron::gtPlus::gtPlusReconWorkOrder<ValueType> WorkOrderType;
 
@@ -61,6 +65,18 @@ public:
 
     // scaling factor for recon results
     double scalingFactor_;
+
+    // scaling factor for gfactor images
+    double scalingFactor_gfactor_;
+
+    // scaling factor for snr images
+    double scalingFactor_snr_image_;
+
+    // scaling factor for std map
+    double scalingFactor_std_map_;
+
+    // start frame to compute std map, to avoid transitional signal
+    unsigned int start_frame_for_std_map_;
 
     // whether to use the fixed intensity scaling factor
     bool use_constant_scalingFactor_;
@@ -114,6 +130,12 @@ public:
     // find the dimension index
     bool findStartingDimIndex(const std::vector<DimensionRecordType>& dimStartingIndexes, Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t ind);
 
+    // compute SNR image and std map
+    bool computeSNRImage(const hoNDArray<ValueType>& res, const hoNDArray<ValueType>& gfactor, unsigned int startInd, bool withAcceleration, hoNDArray<ValueType>& snrImage, hoNDArray<ValueType>& stdMap);
+
+    // scale the recon images
+    bool scalingImages(hoNDArray<ValueType>& res);
+
     // scale the magnitude images
     bool scalingMagnitude(hoNDArray<float>& mag);
 
@@ -121,8 +143,7 @@ public:
     bool recomputeImageGeometry(GtPlusGadgetImageArray* images, GtPlusGadgetImageExt& imageHeader, int slc, int e2, int con, int phs, int rep, int set, int seg, int maxE2);
 
     // send out the recon results
-    virtual bool sendOutReconMag(GtPlusGadgetImageArray* images, const hoNDArray<float>& res, int seriesNum, const std::vector<DimensionRecordType>& dimStartingIndexes, const std::string& prefix);
-    virtual bool sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, int seriesNum, const std::vector<DimensionRecordType>& dimStartingIndexes, const std::string& prefix);
+    virtual bool sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, int seriesNum, const std::vector<DimensionRecordType>& dimStartingIndexes, const std::string& prefix, const std::string& dataRole);
 
     // special sending function for the interactive cases
     virtual bool sendOutRecon2D(GtPlusGadgetImageArray* images, const hoNDArray<float>& res, int seriesNum, int imageNum);

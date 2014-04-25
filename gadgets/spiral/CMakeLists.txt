@@ -22,9 +22,10 @@ include_directories(
   )
 
 add_library(gadgetron_spiral SHARED 
+  gadgetron_spiral_export.h 
   vds.cpp 
-  gpuSpiralSensePrepGadget.cpp 
-  SpiralToGenericGadget.cpp
+  gpuSpiralSensePrepGadget.h gpuSpiralSensePrepGadget.cpp 
+  SpiralToGenericGadget.h SpiralToGenericGadget.cpp
   ${ISMRMRD_XSD_SOURCE})
 
 target_link_libraries(gadgetron_spiral
@@ -34,6 +35,9 @@ target_link_libraries(gadgetron_spiral
   )
 
 install (TARGETS gadgetron_spiral DESTINATION lib)
-install (FILES vds.h DESTINATION include)
+install (FILES vds.h gadgetron_spiral_export.h 
+                     gpuSpiralSensePrepGadget.h 
+                     SpiralToGenericGadget.h 
+                     DESTINATION include)
 
 add_subdirectory(config)

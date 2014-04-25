@@ -71,7 +71,7 @@ public:
     gtPlusISMRMRDReconUtil<T> gtPlus_util_;
     gtPlusISMRMRDReconUtilComplex<T> gtPlus_util_complex_;
 
-protected:
+public:
 
     // acquired kspace (unacquired points are zeros)
     boost::shared_ptr< hoNDArray<T> > acquired_points_;

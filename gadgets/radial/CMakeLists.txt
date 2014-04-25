@@ -26,12 +26,14 @@ include_directories(
 include_directories(${CUDA_INCLUDE_DIRS})
 
 if (ARMADILLO_FOUND)
-  list(APPEND PHASE_GADGET RadialPhaseCorrectionGadget.cpp)
+  list(APPEND PHASE_GADGET RadialPhaseCorrectionGadget.h RadialPhaseCorrectionGadget.cpp)
+  install (FILES  RadialPhaseCorrectionGadget.h DESTINATION include)
 elseif (ARMADILLO_FOUND)
   MESSAGE("Armadillo not found, not compiling radial phase correction gadget")
 endif (ARMADILLO_FOUND)
 
 add_library(gadgetron_gpuradial SHARED 
+  gadgetron_radial_export.h
   gpuRadialPrepGadget.h gpuRadialPrepGadget.cpp 
   gpuRadialSensePrepGadget.h gpuRadialSensePrepGadget.cpp 
   gpuRadialSpiritPrepGadget.h gpuRadialSpiritPrepGadget.cpp 
@@ -44,6 +46,13 @@ target_link_libraries(gadgetron_gpuradial
   ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
+
+install (FILES  gadgetron_radial_export.h
+                gpuRadialPrepGadget.h 
+                gpuRadialSensePrepGadget.h 
+                gpuRadialSpiritPrepGadget.h 
+                gpuRetroGatedSensePrepGadget.h 
+                DESTINATION include)
 
 install (TARGETS gadgetron_gpuradial DESTINATION lib)
 

@@ -51,11 +51,11 @@
     target_link_libraries(epi cpucore cpucore_math ${ARMADILLO_LIBRARIES})
 
     install (FILES 
-    	    EPIExport.h 
-	    EPIReconXObject.h
-	    EPIReconXObjectFlat.h
-	    EPIReconXObjectTrapezoid.h
-    	    DESTINATION include)
+        EPIExport.h 
+        EPIReconXObject.h
+        EPIReconXObjectFlat.h
+        EPIReconXObjectTrapezoid.h
+        DESTINATION include)
 
     # install(TARGETS epi DESTINATION lib)
 

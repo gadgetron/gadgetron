@@ -13,9 +13,10 @@ namespace Gadgetron{
   {
 
     // FFT along 1st dimensions (x)
-    hoNDFFT<float>::instance()->fft(m2->getObjectPtr(),0);
+    hoNDFFT<float>::instance()->fft1c( *m2->getObjectPtr() );
 
-    if (this->next()->putq(m1) < 0) {
+    if (this->next()->putq(m1) < 0)
+    {
       return GADGET_FAIL;
     }
     

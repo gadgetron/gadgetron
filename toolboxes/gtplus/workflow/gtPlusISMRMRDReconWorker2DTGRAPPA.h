@@ -19,6 +19,7 @@ class gtPlusReconWorker2DTGRAPPA : public gtPlusReconWorker2DT<T>
 public:
 
     typedef gtPlusReconWorker2DT<T> BaseClass;
+    typedef typename BaseClass::value_type value_type;
 
     gtPlusReconWorker2DTGRAPPA() : BaseClass() {}
     virtual ~gtPlusReconWorker2DTGRAPPA() {}
@@ -140,7 +141,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         hoNDArray<T> gFactor(RO, E1, workOrder2DT->gfactor_.begin()+n*RO*E1+usedS*RO*E1*refN);
 
         this->unmixCoeff(kIm, coilMap, unmixC, gFactor);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(1.0/workOrder2DT->acceFactorE1_, gFactor));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (value_type)(1.0/workOrder2DT->acceFactorE1_), gFactor));
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unmixC, "unmixC");
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gFactor, "gFactor");
@@ -182,6 +183,25 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
         {
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(data_dst, buffer2DT_);
         }
+
+        double effectiveAcceFactor = workOrder2DT->acceFactorE1_;
+        if ( workOrder2DT->start_E1_>0 && workOrder2DT->end_E1_>0 )
+        {
+            size_t num = workOrder2DT->end_E1_ - workOrder2DT->start_E1_ + 1;
+            size_t res = (size_t)( num % (size_t)(std::ceil(workOrder2DT->acceFactorE1_)) );
+            double N = std::floor( (double)(num-res)/(double)workOrder2DT->acceFactorE1_);
+            effectiveAcceFactor = (double)num/N;
+        }
+        else
+        {
+            size_t num = E1;
+            size_t res = (size_t)( num % (size_t)(std::ceil(workOrder2DT->acceFactorE1_)) );
+            double N = std::floor( (double)(num-res)/(double)workOrder2DT->acceFactorE1_);
+            effectiveAcceFactor = (double)num/N;
+        }
+
+        typename realType<T>::Type fftCompensationRatio = (typename realType<T>::Type)(1.0/std::sqrt(effectiveAcceFactor));
+        Gadgetron::scal( fftCompensationRatio, buffer2DT_);
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer2DT_, "buffer2DT_");
 

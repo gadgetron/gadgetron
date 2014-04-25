@@ -8,7 +8,7 @@ namespace Gadgetron{
   {
     
   public:
-
+    GADGET_DECLARE(gpuRadialSpiritPrepGadget);
     gpuRadialSpiritPrepGadget();
     virtual ~gpuRadialSpiritPrepGadget() {}
     
@@ -30,6 +30,4 @@ namespace Gadgetron{
       return &this->acc_buffer_spirit_[idx];
     }
   };
-
-  GADGET_FACTORY_DECLARE(gpuRadialSpiritPrepGadget)
 }

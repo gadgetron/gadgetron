@@ -34,6 +34,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
   ${CMAKE_SOURCE_DIR}/gadgets/moco
   ${CMAKE_SOURCE_DIR}/toolboxes/core
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers
@@ -60,9 +61,15 @@ if(GPU_REG)
 endif(GPU_REG)
 
 add_library(gadgetron_moco SHARED
-  ${CPU_GADGETS}
-  ${GPU_GADGETS}
-  ${ISMRMRD_XSD_SOURCE}
+    cpuRegistrationAveragingGadget.h
+    gadgetron_moco_export.h
+    gpuRegistrationAveragingGadget.h
+    gpuRegistrationScatteringGadget.h
+    RegistrationAveragingGadget.h
+    RegistrationScatteringGadget.h
+    ${CPU_GADGETS}
+    ${GPU_GADGETS}
+    ${ISMRMRD_XSD_SOURCE}
   )
 
 target_link_libraries(gadgetron_moco
@@ -70,6 +77,14 @@ target_link_libraries(gadgetron_moco
   ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
   )
+
+install(FILES   cpuRegistrationAveragingGadget.h
+                gadgetron_moco_export.h
+                gpuRegistrationAveragingGadget.h
+                gpuRegistrationScatteringGadget.h
+                RegistrationAveragingGadget.h
+                RegistrationScatteringGadget.h
+                DESTINATION include)
 
 install (TARGETS gadgetron_moco DESTINATION lib)
 

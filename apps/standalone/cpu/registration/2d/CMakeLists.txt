@@ -1,3 +1,9 @@
+include_directories( 
+        ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
+        ${ACE_INCLUDE_DIR}
+        ${ISMRMRD_INCLUDE_DIR}
+    )
+
 add_executable(register_HS_2d_cpu register_HS_2d.cpp)
 add_executable(register_CK_2d_cpu register_CK_2d.cpp)
 

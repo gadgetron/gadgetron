@@ -92,6 +92,8 @@ struct gtPlusReconWorkOrderPara
     Gadgetron::gtPlus::ISMRMRDALGO recon_algorithm_;
     bool recon_auto_parameters_;
 
+    bool gfactor_needed_;
+
     // grappa
     size_t grappa_kSize_RO_;
     size_t grappa_kSize_E1_;
@@ -239,17 +241,18 @@ struct gtPlusReconWorkOrderPara
         csm_true_3D_ = false;
         csm_iter_num_ = 5;
         csm_iter_thres_ = 1e-3;
-        csm_use_gpu_ = true;
+        csm_use_gpu_ = false;
 
         recon_algorithm_ = ISMRMRD_GRAPPA;
         recon_auto_parameters_ = true;
+        gfactor_needed_ = false;
 
         grappa_kSize_RO_ = 5;
         grappa_kSize_E1_ = 4;
         grappa_kSize_E2_ = 4;
         grappa_reg_lamda_ = 0.0005;
         grappa_calib_over_determine_ratio_ = 0;
-        grappa_use_gpu_ = true;
+        grappa_use_gpu_ = false;
 
         spirit_kSize_RO_ = 7;
         spirit_kSize_E1_ = 7;
@@ -258,7 +261,7 @@ struct gtPlusReconWorkOrderPara
         spirit_reg_lamda_ = 0.005;
         spirit_calib_over_determine_ratio_ = 0;
 
-        spirit_use_gpu_ = true;
+        spirit_use_gpu_ = false;
 
         spirit_solve_symmetric_ = false;
 
@@ -535,6 +538,7 @@ void gtPlusReconWorkOrder<T>::duplicatePara(gtPlusReconWorkOrderPara& worder) co
 
     worder.recon_algorithm_ = recon_algorithm_;
     worder.recon_auto_parameters_ = recon_auto_parameters_;
+    worder.gfactor_needed_ = gfactor_needed_;
 
     worder.grappa_kSize_RO_ = grappa_kSize_RO_;
     worder.grappa_kSize_RO_ = grappa_kSize_RO_;
@@ -678,6 +682,7 @@ void gtPlusReconWorkOrder<T>::copyFromPara(const gtPlusReconWorkOrderPara& worde
 
     recon_algorithm_ = worder.recon_algorithm_;
     recon_auto_parameters_ = worder.recon_auto_parameters_;
+    gfactor_needed_ = worder.gfactor_needed_;
 
     grappa_kSize_RO_ = worder.grappa_kSize_RO_;
     grappa_kSize_RO_ = worder.grappa_kSize_RO_;
@@ -788,6 +793,7 @@ void gtPlusReconWorkOrder<T>::printInfo(std::ostream& os) const
     os << std::endl;
     GADGET_OSTREAM_PRINT(os, recon_algorithm_);
     GADGET_OSTREAM_PRINT(os, recon_auto_parameters_);
+    GADGET_OSTREAM_PRINT(os, gfactor_needed_);
     os << std::endl;
     GADGET_OSTREAM_PRINT(os, grappa_kSize_RO_);
     GADGET_OSTREAM_PRINT(os, grappa_kSize_E1_);

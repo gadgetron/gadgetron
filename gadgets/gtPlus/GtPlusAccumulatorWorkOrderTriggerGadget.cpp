@@ -141,10 +141,10 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
 
     if ( calib == ISMRMRD::calibrationModeType::other && workOrder_.acceFactorE1_==1 && workOrder_.acceFactorE2_==1 )
     {
-        // workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_noacceleration;
-        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
-        workOrder_.acceFactorE1_=2;
-        workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Phase;
+        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_noacceleration;
+        // workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
+        workOrder_.acceFactorE1_=1;
+        // workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Phase;
     }
 
     if ( calib == ISMRMRD::calibrationModeType::other && (workOrder_.acceFactorE1_>1 || workOrder_.acceFactorE2_>1) )
@@ -191,14 +191,32 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     //workOrder_.kSpaceCenterEncode2_ = e_limits.kspace_encoding_step_2().get().center();
     //GADGET_CONDITION_MSG(verboseMode_, "kSpaceCenterEncode2_ is " << workOrder_.kSpaceCenterEncode2_);
 
-    workOrder_.kSpaceMaxEncode1_ = e_limits.kspace_encoding_step_1().get().maximum();
-    GADGET_CONDITION_MSG(verboseMode_, "kSpaceMaxEncode1_ is " << workOrder_.kSpaceMaxEncode1_);
+    workOrder_.kSpaceMaxEncode1_ = matrix_size_encoding_[1]-1; // e_limits.kspace_encoding_step_1().get().maximum();
+    GADGET_CONDITION_MSG(verboseMode_, "matrix size kSpaceMaxEncode1_ is " << workOrder_.kSpaceMaxEncode1_);
 
-    workOrder_.kSpaceMaxEncode2_ = e_limits.kspace_encoding_step_2().get().maximum();
-    GADGET_CONDITION_MSG(verboseMode_, "kSpaceMaxEncode2_ is " << workOrder_.kSpaceMaxEncode2_);
+    workOrder_.kSpaceMaxEncode2_ = matrix_size_encoding_[2]-1; // e_limits.kspace_encoding_step_2().get().maximum();
+    GADGET_CONDITION_MSG(verboseMode_, "matrix size kSpaceMaxEncode2_ is " << workOrder_.kSpaceMaxEncode2_);
 
     space_size_[1] = workOrder_.kSpaceMaxEncode1_+1;
     space_size_[2] = workOrder_.kSpaceMaxEncode2_+1;
+
+    max_sampled_E1_ = e_limits.kspace_encoding_step_1().get().maximum();
+    max_sampled_E2_ = e_limits.kspace_encoding_step_2().get().maximum();
+
+    GADGET_CONDITION_MSG(verboseMode_, "max_sampled_E1_ is " << max_sampled_E1_);
+    GADGET_CONDITION_MSG(verboseMode_, "max_sampled_E2_ is " << max_sampled_E2_);
+
+    center_line_E1_ = e_limits.kspace_encoding_step_1().get().center();
+    center_line_E2_ = e_limits.kspace_encoding_step_2().get().center();
+
+    GADGET_CONDITION_MSG(verboseMode_, "center_line_E1_ is " << center_line_E1_);
+    GADGET_CONDITION_MSG(verboseMode_, "center_line_E2_ is " << center_line_E2_);
+
+    workOrder_.kSpaceCenterEncode1_ = center_line_E1_;
+    GADGET_CONDITION_MSG(verboseMode_, "kSpaceCenterEncode1_ is " << workOrder_.kSpaceCenterEncode1_);
+
+    workOrder_.kSpaceCenterEncode2_ = center_line_E2_;
+    GADGET_CONDITION_MSG(verboseMode_, "kSpaceCenterEncode2_ is " << workOrder_.kSpaceCenterEncode2_);
 
     // if partial fourier or asymmetric echo is used, correct the kSpaceCenter
     //if ( space_size_[1]-matrix_size_encoding_[1] > workOrder_.acceFactorE1_ )
@@ -262,11 +280,18 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     // ---------------------------------------------------------------------------------------------------------
     // encoding limits
 
-    meas_max_ro_ = r_space.matrixSize().x();
+    if ( GT_ABS(2*field_of_view_recon_[0]-field_of_view_encoding_[0]) < 1.0 )
+    {
+        meas_max_ro_ = e_space.matrixSize().x()/2;
+    }
+    else
+    {
+        meas_max_ro_ = r_space.matrixSize().x();
+    }
 
     if (e_limits.kspace_encoding_step_1().present()) 
     {
-        meas_max_idx_.kspace_encode_step_1 = e_limits.kspace_encoding_step_1().get().maximum();
+        meas_max_idx_.kspace_encode_step_1 = matrix_size_encoding_[1]-1; // e_limits.kspace_encoding_step_1().get().maximum();
     }
     else
     {
@@ -307,7 +332,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
 
     if (e_limits.kspace_encoding_step_2().present())
     {
-        meas_max_idx_.kspace_encode_step_2 = e_limits.kspace_encoding_step_2().get().maximum();
+        meas_max_idx_.kspace_encode_step_2 = matrix_size_encoding_[2]-1; // e_limits.kspace_encoding_step_2().get().maximum();
     }
     else
     {
@@ -409,27 +434,26 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
             workOrder_.kSpaceMaxRO_ = m1->getObjectPtr()->number_of_samples;
         }
 
-        workOrder_.kSpaceCenterEncode1_ = m1->getObjectPtr()->idx.user[5];
-        GADGET_CONDITION_MSG(verboseMode_, "kSpaceCenterEncode1_ is " << workOrder_.kSpaceCenterEncode1_);
-
-        workOrder_.kSpaceCenterEncode2_ = m1->getObjectPtr()->idx.user[6];
-        GADGET_CONDITION_MSG(verboseMode_, "kSpaceCenterEncode2_ is " << workOrder_.kSpaceCenterEncode2_);
-
         // if partial fourier or asymmetric echo is used, correct the kSpaceCenter
-        if ( space_size_[1]-matrix_size_encoding_[1] > workOrder_.acceFactorE1_ )
+        if ( space_size_[1]-max_sampled_E1_ > workOrder_.acceFactorE1_ )
         {
             GADGET_CONDITION_MSG(verboseMode_, "Partial fourier along E1 ... ");
 
-            if ( 2*workOrder_.kSpaceCenterEncode1_ > (matrix_size_encoding_[1]+1) )
+            if ( m1->getObjectPtr()->idx.user[5]>0 && GT_ABS(m1->getObjectPtr()->idx.user[5] - space_size_[1]/2 )<2 )
+            {
+                workOrder_.kSpaceCenterEncode1_ = m1->getObjectPtr()->idx.user[5];
+            }
+
+            if ( 2*workOrder_.kSpaceCenterEncode1_ > (max_sampled_E1_+1) )
             {
                 space_matrix_offset_E1_ = 0;
 
-                workOrder_.start_E2_ = 0;
-                workOrder_.end_E2_ = matrix_size_encoding_[1];
+                workOrder_.start_E1_ = 0;
+                workOrder_.end_E1_ = max_sampled_E1_;
             }
             else
             {
-                space_matrix_offset_E1_ = space_size_[1] - matrix_size_encoding_[1];
+                space_matrix_offset_E1_ = space_size_[1] - max_sampled_E1_ -1;
 
                 workOrder_.start_E1_ = space_matrix_offset_E1_;
                 workOrder_.end_E1_ = workOrder_.kSpaceMaxEncode1_;
@@ -440,20 +464,25 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
             space_matrix_offset_E1_ = 0;
         }
 
-        if ( space_size_[2]-matrix_size_encoding_[2] > workOrder_.acceFactorE2_ )
+        if ( space_size_[2]-max_sampled_E2_ > workOrder_.acceFactorE2_ )
         {
             GADGET_CONDITION_MSG(verboseMode_, "Partial fourier along E2 ... ");
 
-            if ( 2*workOrder_.kSpaceCenterEncode2_ > (matrix_size_encoding_[2]+1) )
+            if ( m1->getObjectPtr()->idx.user[6]>0 && GT_ABS(m1->getObjectPtr()->idx.user[6] - space_size_[2]/2 )<2 )
+            {
+                workOrder_.kSpaceCenterEncode2_ = m1->getObjectPtr()->idx.user[6];
+            }
+
+            if ( 2*workOrder_.kSpaceCenterEncode2_ > (max_sampled_E2_+1) )
             {
                 space_matrix_offset_E2_ = 0;
 
                 workOrder_.start_E2_ = 0;
-                workOrder_.end_E2_ = matrix_size_encoding_[2];
+                workOrder_.end_E2_ = max_sampled_E2_;
             }
             else
             {
-                space_matrix_offset_E2_ = space_size_[2] - matrix_size_encoding_[2];
+                space_matrix_offset_E2_ = space_size_[2] - max_sampled_E2_-1;
 
                 workOrder_.start_E2_ = space_matrix_offset_E2_;
                 workOrder_.end_E2_ = workOrder_.kSpaceMaxEncode2_;

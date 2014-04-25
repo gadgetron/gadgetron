@@ -84,4 +84,6 @@ namespace Gadgetron{
       this->acc_buffer_sense_cg_[set*this->slices_+slice].preprocess(calculate_trajectory_for_rhs(0, set, slice).get());
     }    
   }
+
+  GADGET_FACTORY_DECLARE(gpuRadialSensePrepGadget)
 }

@@ -670,21 +670,21 @@ generateKSpaceFilter(WorkOrderType& workOrder)
         if ( RO>1 && filterRO_type_ != ISMRMRD_FILTER_NONE )
         {
             workOrder.filterRO_.create(RO);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(RO, workOrder.filterRO_, filterRO_type_, filterRO_sigma_, std::ceil(filterRO_width_*RO)));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(RO, workOrder.start_RO_, workOrder.end_RO_, workOrder.filterRO_, filterRO_type_, filterRO_sigma_, std::ceil(filterRO_width_*RO)));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterRO_, "filterRO");
         }
 
         if ( E1>1 && filterE1_type_ != ISMRMRD_FILTER_NONE )
         {
             workOrder.filterE1_.create(E1);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E1, workOrder.filterE1_, filterE1_type_, filterE1_sigma_, std::ceil(filterE1_width_*E1)));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E1, workOrder.start_E1_, workOrder.end_E1_, workOrder.filterE1_, filterE1_type_, filterE1_sigma_, std::ceil(filterE1_width_*E1)));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE1_, "filterE1");
         }
 
         if ( E2>1 && filterE2_type_ != ISMRMRD_FILTER_NONE )
         {
             workOrder.filterE2_.create(E2);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E2, workOrder.filterE2_, filterE2_type_, filterE2_sigma_, std::ceil(filterE2_width_*E2)));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E2, workOrder.start_E2_, workOrder.end_E2_, workOrder.filterE2_, filterE2_type_, filterE2_sigma_, std::ceil(filterE2_width_*E2)));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE2_, "filterE2");
         }
 
@@ -721,7 +721,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
                 {
                     size_t len = endE1-startE1+1;
                     workOrder.filterE1_ref_.create(len);
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, workOrder.filterE1_ref_, filterE1_ref_type_, filterE1_ref_sigma_, std::ceil(filterE1_ref_width_*len)));
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, 0, len-1, workOrder.filterE1_ref_, filterE1_ref_type_, filterE1_ref_sigma_, std::ceil(filterE1_ref_width_*len)));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE1_ref_, "filterE1_ref");
                 }
 
@@ -729,7 +729,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
                 {
                     size_t len = endE2-startE2+1;
                     workOrder.filterE2_ref_.create(len);
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, workOrder.filterE2_ref_, filterE2_ref_type_, filterE2_ref_sigma_, std::ceil(filterE2_ref_width_*len)));
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, 0, len-1, workOrder.filterE2_ref_, filterE2_ref_type_, filterE2_ref_sigma_, std::ceil(filterE2_ref_width_*len)));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE2_ref_, "filterE2_ref");
                 }
             }

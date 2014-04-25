@@ -2,6 +2,7 @@
 
 #include "ho2DArray.h"
 #include "complext.h"
+#include <algorithm>
 
 #ifdef USE_MKL
     #include "mkl.h"
@@ -57,6 +58,12 @@ public:
     // get the sub matrix
     bool subMatrix(Self& res, size_t startR, size_t endR, size_t startC, size_t endC) const;
 
+    // set the matrix to be identity
+    bool setIdentity();
+
+    // normalize the matrix, so the L2 norm of matrix is 1
+    bool normalize();
+
     bool operator == (const Self& m) const;
     bool operator != (const Self& m) const;
 
@@ -72,6 +79,38 @@ protected:
     using BaseClass::accesser_;
 };
 
+/// for real matrix
+template <class T> class hoMatrixReal : public hoMatrix<T>
+{
+public:
+
+    typedef hoMatrixReal<T> Self;
+    typedef hoMatrix<T> BaseClass;
+
+    hoMatrixReal();
+    hoMatrixReal(size_t rows, size_t cols);
+    hoMatrixReal(size_t rows, size_t cols, T* data, bool delete_data_on_destruct = false);
+
+    virtual ~hoMatrixReal();
+
+    hoMatrixReal(const hoMatrixReal<T>& a);
+
+    /// sort along the row direction (sort along the 1st dimension)
+    bool sort_ascending_along_row();
+
+    /// sort along the column direction (sort along the 2nd dimension)
+    bool sort_ascending_along_column();
+
+protected:
+
+    using BaseClass::dimensions_;
+    using BaseClass::offsetFactors_;
+    using BaseClass::data_;
+    using BaseClass::elements_;
+    using BaseClass::delete_data_on_destruct_;
+    using BaseClass::accesser_;
+};
+
 }
 
-#include <hoMatrix.cpp>
+#include <hoMatrix.hxx>

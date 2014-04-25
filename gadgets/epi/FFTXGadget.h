@@ -16,10 +16,10 @@ namespace Gadgetron{
     public:
       FFTXGadget();
       virtual ~FFTXGadget();
-	
+
     protected:
       virtual int process( GadgetContainerMessage< ISMRMRD::AcquisitionHeader>* m1,
-      		           GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);      
+                       GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
   };
 }
 #endif //FFTXGADGET_H

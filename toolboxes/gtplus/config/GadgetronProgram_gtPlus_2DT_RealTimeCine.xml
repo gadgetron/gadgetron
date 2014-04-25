@@ -43,11 +43,27 @@
         <classname>MRIImageWriterUSHORT</classname>
     </writer>
 
+    <writer>
+        <slot>1015</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>MRIImageAttribWriterCPLX</classname>
+    </writer>
+    <writer>
+        <slot>1016</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>MRIImageAttribWriterFLOAT</classname>
+    </writer>
+    <writer>
+        <slot>1017</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>MRIImageAttribWriterUSHORT</classname>
+    </writer>
+
     <!-- RO asymmetric echo handling -->
     <gadget>
-        <name>PartialFourierAdjust</name>
+        <name>AsymmetricEcho</name>
         <dll>gadgetron_mricore</dll>
-        <classname>PartialFourierAdjustROGadget</classname>
+        <classname>AsymmetricEchoAdjustROGadget</classname>
     </gadget>
 
     <!-- Noise prewhitening -->
@@ -62,6 +78,11 @@
         <name>RemoveROOversampling</name>
         <dll>gadgetron_mricore</dll>
         <classname>RemoveROOversamplingGadget</classname>
+
+        <property>
+            <name>constant_noise_variance</name>
+            <value>true</value>
+        </property>
     </gadget>
 
     <!-- Data accumulation and trigger gadget -->
@@ -324,6 +345,11 @@
 
         <property>
             <name>recon_kspace_needed</name>
+            <value>false</value>
+        </property>
+
+        <property>
+            <name>gfactor_needed</name>
             <value>false</value>
         </property>
 
@@ -711,31 +737,37 @@
 
     <!-- after recon processing -->
     <gadget>
-        <name>FloatToShort</name>
+        <name>ComplexToFloatAttrib</name>
         <dll>gadgetron_mricore</dll>
-        <classname>FloatToUShortGadget</classname>
+        <classname>ComplexToFloatAttribGadget</classname>
+    </gadget>
+
+    <gadget>
+        <name>FloatToShortAttrib</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>FloatToUShortAttribGadget</classname>
     </gadget>
 
     <!--
     <gadget>
-      <name>ImageFinishCPLX</name>
+      <name>ImageFinishAttribCPLX</name>
       <dll>gadgetron_mricore</dll>
-      <classname>ImageFinishGadgetCPLX</classname>
+      <classname>ImageFinishAttribGadgetCPLX</classname>
     </gadget>
     -->
 
     <!--
     <gadget>
-      <name>ImageFinishFLOAT</name>
+      <name>ImageFinishAttribFLOAT</name>
       <dll>gadgetron_mricore</dll>
-      <classname>ImageFinishGadgetFLOAT</classname>
+      <classname>ImageFinishAttribGadgetFLOAT</classname>
     </gadget>
     -->
 
     <gadget>
-        <name>ImageFinishUSHORT</name>
+        <name>ImageFinishAttribUSHORT</name>
         <dll>gadgetron_mricore</dll>
-        <classname>ImageFinishGadgetUSHORT</classname>
+        <classname>ImageFinishAttribGadgetUSHORT</classname>
     </gadget>
 
 </gadgetronStreamConfiguration>

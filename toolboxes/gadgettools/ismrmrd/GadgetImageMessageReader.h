@@ -11,6 +11,7 @@
 #include "ismrmrd.h"
 #include "hoNDArray.h"
 #include "GadgetMessageInterface.h"
+#include "hoNDMetaAttributes.h"
 
 namespace Gadgetron
 {
@@ -59,6 +60,126 @@ public:
         if ((recv_count = stream->recv_n(data->getObjectPtr()->get_data_ptr(), sizeof(T)*data->getObjectPtr()->get_number_of_elements())) <= 0) {
             ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageMessageReader, failed to read data from socket\n")) );
             imgh->release();
+            return 0;
+        }
+
+        return imgh;
+    }
+};
+
+// for images with attributes
+template <typename T> class GadgetImageAttribMessageReader : public GadgetMessageReader
+{
+public:
+
+    typedef typename GtImageAttribType::size_t_type size_t_type;
+
+    virtual ACE_Message_Block* read(ACE_SOCK_Stream* stream) 
+    {
+        GadgetContainerMessage<ISMRMRD::ImageHeader>* imgh = 
+            new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+
+        GadgetContainerMessage<GtImageAttribType>* imgAttrib = 
+            new GadgetContainerMessage<GtImageAttribType>();
+
+        // read in ISMRMRD image header
+        ssize_t recv_count = 0;
+        if ((recv_count = stream->recv_n( imgh->getObjectPtr(), sizeof(ISMRMRD::ImageHeader))) <= 0)
+        {
+            ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageAttribMessageReader, failed to read IMAGE Header\n")) );
+            imgh->release();
+            imgAttrib->release();
+            return 0;
+        }
+
+        // read in gadgetron image meta attributes
+        size_t_type len(0);
+        if ( ( recv_count = stream->recv_n( &len, sizeof(size_t_type)) ) <= 0 )
+        {
+            ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageAttribMessageReader, failed to read IMAGE Meta Attributes length\n")) );
+            imgh->release();
+            imgAttrib->release();
+            return 0;
+        }
+
+        char* buf = NULL;
+        try
+        {
+            buf = new char[len];
+            if ( buf == NULL )
+            {
+                ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageAttribMessageReader, failed to allocate IMAGE Meta Attributes buffer\n")) );
+                imgh->release();
+                imgAttrib->release();
+                return 0;
+            }
+
+            memset(buf, '\0', len);
+            memcpy(buf, &len, sizeof(size_t_type));
+        }
+        catch (std::runtime_error &err)
+        {
+            GADGET_DEBUG_EXCEPTION(err,"GadgetImageAttribMessageReader, failed to allocate IMAGE Meta Attributes buffer\n");
+            imgh->release();
+            imgAttrib->release();
+            return 0;
+        }
+
+        if ( ( recv_count = stream->recv_n( buf+sizeof(size_t_type), len-sizeof(size_t_type)) ) <= 0 )
+        {
+            ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageAttribMessageReader, failed to read IMAGE Meta Attributes\n")) );
+            imgh->release();
+            imgAttrib->release();
+            delete [] buf;
+            return 0;
+        }
+
+        if ( !imgAttrib->getObjectPtr()->deserialize(buf, len) )
+        {
+            ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageAttribMessageReader, failed to deserialize IMAGE Meta Attributes\n")) );
+            imgh->release();
+            imgAttrib->release();
+            delete [] buf;
+            return 0;
+        }
+
+        delete [] buf;
+
+        // read in image content
+        std::vector<size_t> dims(3);
+        dims[0] = imgh->getObjectPtr()->matrix_size[0];
+        dims[1] = imgh->getObjectPtr()->matrix_size[1];
+        dims[2] = imgh->getObjectPtr()->matrix_size[2];
+
+        if (imgh->getObjectPtr()->channels > 1)
+        {
+            dims.push_back(imgh->getObjectPtr()->channels);
+        }
+
+        GadgetContainerMessage< hoNDArray< T > >* data = new GadgetContainerMessage< hoNDArray< T > >();
+
+        try
+        {
+            data->getObjectPtr()->create(&dims);
+        }
+        catch (std::runtime_error &err)
+        {
+            GADGET_DEBUG_EXCEPTION(err,"GadgetImageAttribMessageReader, failed to allocate memory\n");
+            imgh->release();
+            imgAttrib->release();
+            data->release();
+            return 0;
+        }
+
+        imgh->cont(data);
+        data->cont(imgAttrib);
+
+        if ((recv_count = stream->recv_n(data->getObjectPtr()->get_data_ptr(), sizeof(T)*data->getObjectPtr()->get_number_of_elements())) <= 0)
+        {
+            ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageAttribMessageReader, failed to read data from socket\n")) );
+            imgh->release();
+            imgAttrib->release();
+            data->release();
             return 0;
         }
 

@@ -6,7 +6,8 @@ if(WIN32)
 link_directories(${Boost_LIBRARY_DIRS})
 endif(WIN32)
 
-include_directories(		
+include_directories(
+  ${CUDA_INCLUDE_DIRS}
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
@@ -15,6 +16,13 @@ include_directories(
   )
 
 cuda_add_library(gpuoperators SHARED 
+  ../generalOperator.h
+  ../linearOperator.h
+  cuPartialDerivativeOperator.h
+  cuLaplaceOperator.h
+  cuTvOperator.h
+  cuTv1dOperator.h
+  cuConvolutionOperator.h
   cuPartialDerivativeOperator.cu
   cuLaplaceOperator.cu
   cuTvOperator.cu
@@ -32,7 +40,7 @@ target_link_libraries(gpuoperators
 
 install(TARGETS gpuoperators DESTINATION lib)
 
-install(FILES 	
+install(FILES 
   cuImageOperator.h
   cuDiagonalOperator.h
   cuDiagonalSumOperator.h

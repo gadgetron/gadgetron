@@ -33,9 +33,12 @@ if ( HAS_64_BIT )
         ${CMAKE_SOURCE_DIR}/toolboxes/core
         ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-		${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
+        ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
         ${CMAKE_SOURCE_DIR}/toolboxes/operators
         ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
         ${CMAKE_SOURCE_DIR}/toolboxes/solvers
@@ -45,11 +48,19 @@ if ( HAS_64_BIT )
         ${HDF5_INCLUDE_DIR}/cpp
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
         ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
+        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
+        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/transformation
+        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/solver
+        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/warper
+        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/dissimilarity
+        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/register
+        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/application
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
+        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/application
         ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
         ${CMAKE_SOURCE_DIR}/apps/gadgetron
         ${CMAKE_SOURCE_DIR}/apps/matlab
@@ -57,87 +68,121 @@ if ( HAS_64_BIT )
         ${CMAKE_SOURCE_DIR}/gadgets/gtPlus 
     )
 
-    set( util_files util/gtPlusIOBase.h
-        util/gtPlusIOBase.cpp
+    set( util_header_files 
+        util/gtPlusIOBase.h
         util/gtPlusIOAnalyze.h
-        util/gtPlusIOAnalyze.cpp
+        util/gtPlusIONifti.h
         util/gtPlusMemoryManager.h
-        util/gtPlusMemoryManager.cpp 
         util/hoNDArrayMemoryManaged.h 
-        util/hoNDArrayMemoryManaged.hxx )
+        util/hoNDArrayMemoryManaged.hxx 
+        util/gtPlusUtil.h 
+        util/gtPlusUtil.hxx )
 
-    set( workflow_files workflow/gtPlusISMRMRDReconWorkFlow.h
-        workflow/gtPlusISMRMRDReconWorkFlowCartesian.h
-        workflow/gtPlusISMRMRDReconWorkFlowCartesian2DT.h
-        workflow/gtPlusISMRMRDReconWorkFlowCartesian3DT.h
-        workflow/gtPlusISMRMRDReconUtil.h
-        workflow/gtPlusISMRMRDReconUtil.cpp
-        workflow/gtPlusISMRMRDReconUtil.hxx
-        workflow/gtPlusISMRMRDReconWorkOrder.h
-        workflow/gtPlusISMRMRDReconWorkOrder2DT.h
-        workflow/gtPlusISMRMRDReconWorkOrder3DT.h
-        workflow/gtPlusISMRMRDReconWorker.h
-        workflow/gtPlusISMRMRDReconWorker2DT.h
-        workflow/gtPlusISMRMRDReconWorker3DT.h
-        workflow/gtPlusISMRMRDReconWorker2DTGRAPPA.h
-        workflow/gtPlusISMRMRDReconWorker2DTSPIRIT.h
-        workflow/gtPlusISMRMRDReconWorker2DTL1SPIRITNCG.h
-        workflow/gtPlusISMRMRDReconWorker2DTNoAcceleration.h
-        workflow/gtPlusISMRMRDReconWorker3DTGRAPPA.h
-        workflow/gtPlusISMRMRDReconWorker3DTSPIRIT.h
-        workflow/gtPlusISMRMRDReconWorker3DTL1SPIRITNCG.h
-        workflow/gtPlusISMRMRDReconWorker3DTNoAcceleration.h
-        workflow/gtPlusCloudScheduler.h
-        workflow/gtPlusCloudScheduler.cpp )
+    set( util_src_files 
+        util/gtPlusIOBase.cpp
+        util/gtPlusIOAnalyze.cpp
+        util/gtPlusIONifti.cpp
+        util/gtPlusMemoryManager.cpp )
 
-    set( algorithm_files algorithm/gtPlusAlgorithmBase.h 
-                        algorithm/gtPlusGRAPPA.h 
-                        algorithm/gtPlusSPIRIT.h
-                        algorithm/gtPlusOperator.h 
-                        algorithm/gtPlusSPIRITOperator.h 
-                        algorithm/gtPlusSPIRIT2DOperator.h 
-                        algorithm/gtPlusSPIRIT3DOperator.h 
-                        algorithm/gtPlusSPIRIT2DTOperator.h 
-                        algorithm/gtPlusSPIRITNoNullSpaceOperator.h 
-                        algorithm/gtPlusSPIRITNoNullSpace2DOperator.h 
-                        algorithm/gtPlusSPIRITNoNullSpace3DOperator.h 
-                        algorithm/gtPlusSPIRITNoNullSpace2DTOperator.h 
-                        algorithm/gtPlusWaveletOperator.h 
-                        algorithm/gtPlusWavelet2DOperator.h 
-                        algorithm/gtPlusWavelet3DOperator.h 
-                        algorithm/gtPlusWaveletNoNullSpace2DOperator.h 
-                        algorithm/gtPlusWaveletNoNullSpace3DOperator.h 
-                        algorithm/gtPlusDataFidelityOperator.h )
+    if (MKL_FOUND OR ARMADILLO_FOUND)
+        set( workflow_header_files 
+            workflow/gtPlusISMRMRDReconWorkFlow.h
+            workflow/gtPlusISMRMRDReconWorkFlowCartesian.h
+            workflow/gtPlusISMRMRDReconWorkFlowCartesian2DT.h
+            workflow/gtPlusISMRMRDReconWorkFlowCartesian3DT.h
+            workflow/gtPlusISMRMRDReconUtil.h
+            workflow/gtPlusISMRMRDReconUtil.hxx
+            workflow/gtPlusISMRMRDReconWorkOrder.h
+            workflow/gtPlusISMRMRDReconWorkOrder2DT.h
+            workflow/gtPlusISMRMRDReconWorkOrder3DT.h
+            workflow/gtPlusISMRMRDReconWorker.h
+            workflow/gtPlusISMRMRDReconWorker2DT.h
+            workflow/gtPlusISMRMRDReconWorker3DT.h
+            workflow/gtPlusISMRMRDReconWorker2DTGRAPPA.h
+            workflow/gtPlusISMRMRDReconWorker2DTSPIRIT.h
+            workflow/gtPlusISMRMRDReconWorker2DTL1SPIRITNCG.h
+            workflow/gtPlusISMRMRDReconWorker2DTNoAcceleration.h
+            workflow/gtPlusISMRMRDReconWorker3DTGRAPPA.h
+            workflow/gtPlusISMRMRDReconWorker3DTSPIRIT.h
+            workflow/gtPlusISMRMRDReconWorker3DTL1SPIRITNCG.h
+            workflow/gtPlusISMRMRDReconWorker3DTNoAcceleration.h
+            workflow/gtPlusCloudScheduler.h )
 
-    set( solver_files solver/gtPlusSolver.h 
-                        solver/gtPlusLinearSolver.h 
-                        solver/gtPlusNonLinearSolver.h
-                        solver/gtPlusLSQRSolver.h 
-                        solver/gtPlusNCGSolver.h )
+        set( workflow_src_files 
+            workflow/gtPlusISMRMRDReconUtil.cpp
+            workflow/gtPlusCloudScheduler.cpp )
 
-    set( gtCloud_files config/gtCloud/myCloud_2DT.txt 
-                    config/gtCloud/myCloud_3DT.txt 
-                    config/gtCloud/myCloud_2DT_DualLayer.txt
-                    config/gtCloud/myCloud_2DT_DualLayer_FirstLayer.txt )
+        set( algorithm_header_files 
+            algorithm/gtPlusAlgorithmBase.h 
+            algorithm/gtPlusGRAPPA.h 
+            algorithm/gtPlusSPIRIT.h
+            algorithm/gtPlusOperator.h 
+            algorithm/gtPlusSPIRITOperator.h 
+            algorithm/gtPlusSPIRIT2DOperator.h 
+            algorithm/gtPlusSPIRIT3DOperator.h 
+            algorithm/gtPlusSPIRIT2DTOperator.h 
+            algorithm/gtPlusSPIRITNoNullSpaceOperator.h 
+            algorithm/gtPlusSPIRITNoNullSpace2DOperator.h 
+            algorithm/gtPlusSPIRITNoNullSpace3DOperator.h 
+            algorithm/gtPlusSPIRITNoNullSpace2DTOperator.h 
+            algorithm/gtPlusWaveletOperator.h 
+            algorithm/gtPlusWavelet2DOperator.h 
+            algorithm/gtPlusWavelet3DOperator.h 
+            algorithm/gtPlusWaveletNoNullSpace2DOperator.h 
+            algorithm/gtPlusWaveletNoNullSpace3DOperator.h 
+            algorithm/gtPlusDataFidelityOperator.h )
 
-    set( config_files config/GadgetronProgram_gtPlus_2DT_Cartesian.xml
-                    config/GadgetronProgram_gtPlus_2DT_Cartesian_L1SPIRIT.xml
-                    config/GadgetronProgram_gtPlus_2DT_Cartesian_SPIRIT.xml
-                    config/GadgetronProgram_gtPlus_2DT_Cartesian_CloudNode.xml
-                    config/GadgetronProgram_gtPlus_2DT_Cartesian_DualLayer_Gateway_L1SPIRIT.xml
-                    config/GadgetronProgram_gtPlus_2DT_Cartesian_DualLayer_Gateway_SPIRIT.xml
-                    config/GadgetronProgram_gtPlus_2DT_Cartesian_FirstLayer_CloudNode.xml
-                    config/GadgetronProgram_gtPlus_2DT_FatWater.xml
-                    config/GadgetronProgram_gtPlus_2DT_LGE.xml
-                    config/GadgetronProgram_gtPlus_2DT_MOLLI.xml
-                    config/GadgetronProgram_gtPlus_2DT_Perfusion.xml
-                    config/GadgetronProgram_gtPlus_2DT_RealTimeCine.xml
-                    config/GadgetronProgram_gtPlus_2DT_RealTimeFlow.xml
-                    config/GadgetronProgram_gtPlus_2DT_T2W.xml
-                    config/GadgetronProgram_gtPlus_3DT_Cartesian.xml
-                    config/GadgetronProgram_gtPlus_3DT_Cartesian_CloudNode.xml
-                    config/GadgetronProgram_gtPlus_3DT_Cartesian_L1SPIRIT.xml
-                    config/GadgetronProgram_gtPlus_3DT_Cartesian_SPIRIT.xml )
+        set( algorithm_src_files )
+
+        set( solver_header_files 
+            solver/gtPlusSolver.h 
+            solver/gtPlusLinearSolver.h 
+            solver/gtPlusNonLinearSolver.h
+            solver/gtPlusLSQRSolver.h 
+            solver/gtPlusNCGSolver.h )
+
+        set( solver_src_files )
+
+        set( application_header_files 
+        application/gtPlusMoCoAveraging.h 
+        application/gtPlusPhaseSensitiveRecon.h )
+
+        set( application_src_files )
+
+    endif (MKL_FOUND OR ARMADILLO_FOUND)
+
+    set( gtCloud_files 
+        config/gtCloud/myCloud_2DT.txt 
+        config/gtCloud/myCloud_3DT.txt 
+        config/gtCloud/myCloud_2DT_DualLayer.txt 
+        config/gtCloud/myCloud_2DT_DualLayer_FirstLayer.txt )
+
+    set( config_files 
+        config/GadgetronProgram_gtPlus_2DT_Cartesian.xml
+        config/GadgetronProgram_gtPlus_2DT_Cartesian_L1SPIRIT.xml
+        config/GadgetronProgram_gtPlus_2DT_Cartesian_SPIRIT.xml
+        config/GadgetronProgram_gtPlus_2DT_Cartesian_CloudNode.xml
+        config/GadgetronProgram_gtPlus_2DT_Cartesian_DualLayer_Gateway_L1SPIRIT.xml
+        config/GadgetronProgram_gtPlus_2DT_Cartesian_DualLayer_Gateway_SPIRIT.xml
+        config/GadgetronProgram_gtPlus_2DT_Cartesian_FirstLayer_CloudNode.xml
+        config/GadgetronProgram_gtPlus_2DT_FatWater.xml
+        config/GadgetronProgram_gtPlus_2DT_LGE.xml
+        config/GadgetronProgram_gtPlus_2DT_MOLLI.xml
+        config/GadgetronProgram_gtPlus_2DT_Perfusion.xml
+        config/GadgetronProgram_gtPlus_2DT_RealTimeCine.xml
+        config/GadgetronProgram_gtPlus_2DT_RealTimeFlow.xml
+        config/GadgetronProgram_gtPlus_2DT_T2W.xml
+        config/GadgetronProgram_gtPlus_2DT_Cartesian_GFactor.xml
+        config/GadgetronProgram_gtPlus_2DT_Cartesian_Dicom.xml
+        config/GadgetronProgram_gtPlus_2DT_Cartesian_ImageTrigger_Dicom.xml
+        config/GadgetronProgram_gtPlus_3DT_Cartesian.xml
+        config/GadgetronProgram_gtPlus_3DT_Cartesian_GFactor.xml
+        config/GadgetronProgram_gtPlus_3DT_Cartesian_CloudNode.xml
+        config/GadgetronProgram_gtPlus_3DT_Cartesian_L1SPIRIT.xml
+        config/GadgetronProgram_gtPlus_3DT_Cartesian_SingleLayer_L1SPIRIT.xml
+        config/GadgetronProgram_gtPlus_3DT_Cartesian_SPIRIT.xml 
+        config/GadgetronProgram_gtPlus_PseudoReplica_SNRUnitRecon_DataExport.xml 
+        config/GadgetronProgram_gtPlus_2DT_Cartesian_PseudoReplica_SNRUnitRecon.xml )
 
     set( schema_files )
 
@@ -146,68 +191,74 @@ if ( HAS_64_BIT )
         message("MATLAB FOUND: ${MATLAB_INCLUDE_DIR}, Matlab gt interface is being compiled.")
         SET(CMAKE_DEBUG_POSTFIX)
         include_directories( ${MATLAB_INCLUDE_DIR} )
-        set( matlab_files matlab/gtMatlabConverter.h
-                          matlab/gtMatlabConverterComplex.h )
+        set( matlab_files matlab/gtMatlab.h 
+                          matlab/gtMatlabConverter.h
+                          matlab/gtMatlabConverterComplex.h 
+                          matlab/gtMatlabImage.h )
 
     else(MATLAB_FOUND)
         message("MATLAB NOT FOUND ...")
         set( matlab_files )
     endif(MATLAB_FOUND)
 
-    add_library(gtplus ${LIBTYPE} GtPlusExport.h ${util_files} ${workflow_files} ${algorithm_files} ${solver_files} ${config_files} ${schema_files} ${matlab_files})
+    set(gtplus_files GtPlusExport.h 
+                GtPlusDefinition.h 
+                ${util_header_files} 
+                ${util_src_files} )
 
-    source_group(util FILES ${util_files})
-    source_group(workflow FILES ${workflow_files})
-
+    source_group(util FILES         ${util_header_files}        ${util_src_files})
     set( config_gtCloud_files ${config_files} ${gtCloud_files} )
     source_group(config FILES ${config_gtCloud_files})
-
     source_group(schema FILES ${schema_files})
-    source_group(algorithm FILES ${algorithm_files})
-    source_group(solver FILES ${solver_files})
 
-    if (MATLAB_FOUND)
-        source_group(matlab FILES ${matlab_files})
-    endif(MATLAB_FOUND)
+    if (MKL_FOUND OR ARMADILLO_FOUND)
+        set(gtplus_files ${gtplus_files} 
+                ${workflow_header_files} 
+                ${workflow_src_files} 
+                ${algorithm_header_files} 
+                ${algorithm_src_files} 
+                ${solver_header_files} 
+                ${solver_src_files} 
+                ${application_header_files} 
+                ${application_src_files} 
+                ${config_files} 
+                ${matlab_files})
+
+        source_group(workflow FILES     ${workflow_header_files}    ${workflow_src_files})
+        source_group(algorithm FILES    ${algorithm_header_files}   ${algorithm_src_files})
+        source_group(solver FILES       ${solver_header_files}      ${solver_src_files})
+        source_group(application FILES  ${application_header_files} ${application_src_files})
+
+        if (MATLAB_FOUND)
+            source_group(matlab FILES ${matlab_files})
+        endif(MATLAB_FOUND)
+    endif (MKL_FOUND OR ARMADILLO_FOUND)
+
+    add_library(gtplus ${LIBTYPE} 
+                ${gtplus_files} )
 
     target_link_libraries(gtplus 
-	  cpucore 
-	  cpucore_math 
-	  cpufft
-	  ${MKL_LIBRARIES} 
-	  ${EXTRA_MKL_LIBRARIES})
+                          cpucore 
+                          cpufft
+                          ${MKL_LIBRARIES} 
+                          ${EXTRA_MKL_LIBRARIES})
 
     if (CUDA_FOUND)
-        target_link_libraries(gtplus gpuparallelmri)
+        target_link_libraries(gtplus gpuparallelmri cpucore_math)
     endif (CUDA_FOUND)
 
     install(TARGETS gtplus DESTINATION lib)
 
     # install gtplus files
-    install (FILES  GtPlusExport.h
-                    util/gtPlusIOBase.h 
-                    util/gtPlusIOAnalyze.h 
-                    util/hoNDArrayMemoryManaged.h 
-                    util/hoNDArrayMemoryManaged.hxx 
-                    util/gtPlusMemoryManager.h 
-                    workflow/gtPlusISMRMRDReconWorkFlow.h
-                    workflow/gtPlusISMRMRDReconWorkFlowCartesian.h
-                    workflow/gtPlusISMRMRDReconWorkFlowCartesian2DT.h
-                    workflow/gtPlusISMRMRDReconWorkFlowCartesian3DT.h
-                    workflow/gtPlusISMRMRDReconUtil.h
-                    workflow/gtPlusISMRMRDReconUtil.hxx
-                    workflow/gtPlusISMRMRDReconWorkOrder.h
-                    workflow/gtPlusISMRMRDReconWorker.h
-                    workflow/gtPlusISMRMRDReconWorker2DT.h
-                    workflow/gtPlusISMRMRDReconWorker3DT.h
-                    workflow/gtPlusISMRMRDReconWorker2DTGRAPPA.h
-                    workflow/gtPlusISMRMRDReconWorker2DTNoAcceleration.h
-                    workflow/gtPlusISMRMRDReconWorker3DTGRAPPA.h
-                    workflow/gtPlusISMRMRDReconWorker3DTNoAcceleration.h
-                    algorithm/gtPlusAlgorithmBase.h
-                    algorithm/gtPlusGRAPPA.h
-                    algorithm/gtPlusSPIRIT.h
-                    DESTINATION include)
+    install (FILES  
+            GtPlusExport.h 
+            GtPlusDefinition.h 
+            ${util_header_files} 
+            ${workflow_header_files} 
+            ${algorithm_header_files} 
+            ${solver_header_files} 
+            ${application_header_files} 
+            DESTINATION include)
 
     # install gadgetron program files
     install (FILES  ${config_files} 
@@ -219,15 +270,11 @@ if ( HAS_64_BIT )
     install (FILES  ${schema_files} 
                     DESTINATION schema)
 
-    if (MATLAB_FOUND)
-        add_subdirectory(matlab)
-    endif(MATLAB_FOUND)
-
-	# This one depends on the gadgets being compiled
-	if (ACE_FOUND AND ISMRMRD_FOUND AND XSD_FOUND AND XERCESC_FOUND AND FFTW3_FOUND)
+    # This one depends on the gadgets being compiled
+    if (ACE_FOUND AND ISMRMRD_FOUND AND XSD_FOUND AND XERCESC_FOUND AND FFTW3_FOUND)
       if (GTEST_FOUND)
         add_subdirectory(ut)
       endif (GTEST_FOUND)
-	endif (ACE_FOUND AND ISMRMRD_FOUND AND XSD_FOUND AND XERCESC_FOUND AND FFTW3_FOUND)
+    endif (ACE_FOUND AND ISMRMRD_FOUND AND XSD_FOUND AND XERCESC_FOUND AND FFTW3_FOUND)
 
 endif ( HAS_64_BIT )

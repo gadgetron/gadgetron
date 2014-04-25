@@ -4,10 +4,9 @@
 
 #pragma once
 
+#include "gpuoperators_export.h"
 #include "cuNDArray_math.h"
 #include "laplaceOperator.h"
-
-#include "gpuoperators_export.h"
 
 namespace Gadgetron{
 

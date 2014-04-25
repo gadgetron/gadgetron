@@ -294,7 +294,11 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
                 }
                 else
                 {
-                    GADGET_WARN_MSG("GPU inverse_clib_matrix for grappa is only available for single-precision, calling the CPU version ... ");
+                    if ( calib_use_gpu_ )
+                    {
+                        GADGET_WARN_MSG("GPU inverse_clib_matrix for grappa is only available for single-precision, calling the CPU version ... ");
+                    }
+
                     GADGET_CHECK_RETURN_FALSE(SolveLinearSystem_Tikhonov(A, B, x, thres));
                 }
             }

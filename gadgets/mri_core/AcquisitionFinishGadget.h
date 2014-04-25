@@ -14,6 +14,8 @@ namespace Gadgetron{
   class EXPORTGADGETSMRICORE AcquisitionFinishGadget : 
   public Gadget2<ISMRMRD::AcquisitionHeader, NDArray< std::complex<float> > >
     {
+    public:
+      GADGET_DECLARE(AcquisitionFinishGadget);
       
     protected:
       virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,

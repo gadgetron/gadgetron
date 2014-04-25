@@ -137,7 +137,7 @@ namespace Gadgetron{
     virtual void print(std::ostream& os) const;
     virtual void printContent(std::ostream& os) const;
 
-    virtual bool serialize(char*& buf, size_t& len) const;
+    virtual bool serialize(char*& buf, size_t& len);
     virtual bool deserialize(char* buf, size_t& len);
 
   protected:

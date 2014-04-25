@@ -63,7 +63,7 @@ public:
         {
             this->autoReconParameter(workOrder3DT);
             GADGET_MSG("Gt Plus 3DT -- automatic paramter selection ---");
-            workOrder3DT->print(std::cout);
+            if ( !this->debugFolder_.empty() ) { workOrder3DT->print(std::cout); }
         }
 
         return this->performRecon(workOrder3DT);
@@ -473,8 +473,6 @@ performCalib(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& ref_s
         {
            GADGET_CHECK_RETURN_FALSE(this->performCalibPrep(ref_src, ref_dst, workOrder3DT));
 
-            size_t n;
-
             // perform calibration
             if ( same_combinationcoeff_allN )
             {
@@ -531,7 +529,7 @@ performCalib(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& ref_s
 
 template <typename T> 
 bool gtPlusReconWorker3DT<T>::
-performCalibPrep(const hoNDArray<T>& , const hoNDArray<T>& , WorkOrderType* /*workOrder2DT*/)
+performCalibPrep(const hoNDArray<T>& , const hoNDArray<T>& , WorkOrderType* /*workOrder3DT*/)
 {
     return true;
 }
@@ -1213,7 +1211,7 @@ bool gtPlusReconWorker3DT<T>::unmixCoeff(const hoNDArray<T>& kerIm, const hoNDAr
         hoNDArray<T> conjUnmixCoeff(unmixCoeff);
         GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(unmixCoeff, conjUnmixCoeff, conjUnmixCoeff));
         GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOverLastDimension(conjUnmixCoeff, gFactor));
-        Gadgetron::sqrt_inplace(&gFactor);
+        Gadgetron::sqrt(gFactor, gFactor);
     }
     catch(...)
     {
@@ -1755,10 +1753,40 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
 {
     try
     {
-        if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING ) return true;
+        value_type partialFourierCompensationFactor = 1;
+
+        size_t RO = workOrder3DT->data_.get_size(0);
+        size_t E1 = workOrder3DT->data_.get_size(1);
+        size_t E2 = workOrder3DT->data_.get_size(2);
+
+        if ( !( workOrder3DT->start_RO_<0 || workOrder3DT->end_RO_<0 || (workOrder3DT->end_RO_-workOrder3DT->start_RO_+1==RO) ) )
+        {
+            partialFourierCompensationFactor *= (value_type)(RO)/(value_type)(workOrder3DT->end_RO_-workOrder3DT->start_RO_+1);
+        }
+
+        if ( !( workOrder3DT->start_E1_<0 || workOrder3DT->end_E1_<0 || (workOrder3DT->end_E1_-workOrder3DT->start_E1_+1==E1) ) )
+        {
+            partialFourierCompensationFactor *= (value_type)(E1)/(value_type)(workOrder3DT->end_E1_-workOrder3DT->start_E1_+1);
+        }
+
+        if ( !( workOrder3DT->start_E2_<0 || workOrder3DT->end_E2_<0 || (workOrder3DT->end_E2_-workOrder3DT->start_E2_+1==E2) ) )
+        {
+            partialFourierCompensationFactor *= (value_type)(E2)/(value_type)(workOrder3DT->end_E2_-workOrder3DT->start_E2_+1);
+        }
+
+        partialFourierCompensationFactor = std::sqrt(partialFourierCompensationFactor);
+        GADGET_CHECK_PERFORM(performTiming_, GADGET_MSG("Partial fourier scaling factor : " << partialFourierCompensationFactor));
+
+        // if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING ) return true;
 
         if ( workOrder3DT->acceFactorE1_==1 && workOrder3DT->acceFactorE2_==1 )
         {
+            if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING 
+                || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
+            {
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder3DT->data_));
+            }
+
             if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
             {
                 GADGET_CHECK_RETURN_FALSE(performPartialFourierFilter(*workOrder3DT, workOrder3DT->data_));
@@ -1776,6 +1804,12 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
         }
         else if ( workOrder3DT->fullkspace_.get_number_of_elements() > 0 )
         {
+            if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING 
+                || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
+            {
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder3DT->fullkspace_));
+            }
+
             if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
             {
                 GADGET_CHECK_RETURN_FALSE(performPartialFourierFilter(*workOrder3DT, workOrder3DT->fullkspace_));
@@ -1796,6 +1830,12 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
             // perform partial fourier handling on the complex images after coil combination
             hoNDArrayMemoryManaged<T> kspace(workOrder3DT->complexIm_.get_dimensions(), gtPlus_mem_manager_);
             GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(workOrder3DT->complexIm_, kspace));
+
+            if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING 
+                || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
+            {
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, kspace));
+            }
 
             if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
             {

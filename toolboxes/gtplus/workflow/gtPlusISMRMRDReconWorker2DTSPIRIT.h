@@ -165,8 +165,8 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
 
         ho6DArray<T> ker(kRO, kE1, srcCHA, dstCHA, 1, 1, 
                             workOrder2DT->kernel_->begin()
-                            +n*kRO*kE1*srcCHA*dstCHA
-                            +usedS*kRO*kE1*srcCHA*dstCHA*refN);
+                            +n*kRO*kE1*srcCHA*dstCHA*1*1
+                            +usedS*kRO*kE1*srcCHA*dstCHA*1*1*refN);
 
         gtPlusSPIRIT2DOperator<T> spirit;
         spirit.setMemoryManager(gtPlus_mem_manager_);

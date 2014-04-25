@@ -13,6 +13,8 @@ namespace Gadgetron{
   class EXPORTGADGETSMRICORE CropAndCombineGadget : 
   public Gadget2<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> > >
     {
+    public:
+      GADGET_DECLARE(CropAndCombineGadget);
       
     protected:
       virtual int process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,

@@ -76,10 +76,10 @@ long gtPlusIOWorker::tell()
 
     if ( readFlag_ )
     {
-        return fid_.tellg();
+        return (long)fid_.tellg();
     }
 
-    return fid_.tellp();
+    return (long)fid_.tellp();
 }
 
 bool gtPlusIOWorker::seek(long long offset)
@@ -125,76 +125,76 @@ bool gtPlusIOWorker::write(const char* data, long long len)
 
 // --------------------------------------------------------------------------
 
-void gtPlusIOBase::printInfo(std::ostream& os)
-{
-    using namespace std;
-
-    os << "-------------- GTPlus IO Util ---------------" << endl;
-    os << "Implementation of file input/output operations" << endl;
-    os << "---------------------------------------------" << endl;
-}
-
-bool gtPlusIOBase::readFromFile(const std::string& filename, char*& data, long long& length)
-{
-    try
-    {
-        if (data!=NULL) delete [] data;
-
-        gtPlusIOWorker ioworker_(filename, true);
-
-        GADGET_CHECK_RETURN_FALSE(ioworker_.open());
-
-        // read the total length
-        long long totalLen;
-        GADGET_CHECK_RETURN_FALSE(ioworker_.read(reinterpret_cast<char*>(&totalLen), sizeof(long long)));
-
-        length = totalLen - sizeof(long long);
-
-        data = new char[length];
-        GADGET_CHECK_RETURN_FALSE(data!=NULL);
-
-        GADGET_CHECK_RETURN_FALSE(ioworker_.read(data, length));
-
-        GADGET_CHECK_RETURN_FALSE(ioworker_.close());
-    }
-    catch (...)
-    {
-        GADGET_ERROR_MSG("Errors in gtPlusIOBase::readFromFile(const std::string& filename, char*& data, long long& length) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-bool gtPlusIOBase::writeToFile(const std::string& filename, char* data, long long length)
-{
-    try
-    {
-        if ( length == 0 ) return true;
-
-        GADGET_CHECK_RETURN_FALSE(data!=NULL);
-
-        gtPlusIOWorker ioworker_(filename, false);
-
-        GADGET_CHECK_RETURN_FALSE(ioworker_.open());
-
-        // write the total lengh
-        const long long totalLen = length+sizeof(long long);
-        GADGET_CHECK_RETURN_FALSE(ioworker_.write(reinterpret_cast<const char*>(&totalLen), sizeof(long long)));
-
-        // write the data
-        GADGET_CHECK_RETURN_FALSE(ioworker_.write(data, length));
-
-        // close the file
-        GADGET_CHECK_RETURN_FALSE(ioworker_.close());
-    }
-    catch (...)
-    {
-        GADGET_ERROR_MSG("Errors in gtPlusIOBase::writeToFile(const std::string& filename, char* data, long long length) ... ");
-        return false;
-    }
-
-    return true;
-}
+//void gtPlusIOBase::printInfo(std::ostream& os)
+//{
+//    using namespace std;
+//
+//    os << "-------------- GTPlus IO Util ---------------" << endl;
+//    os << "Implementation of file input/output operations" << endl;
+//    os << "---------------------------------------------" << endl;
+//}
+//
+//bool gtPlusIOBase::readFromFile(const std::string& filename, char*& data, long long& length)
+//{
+//    try
+//    {
+//        if (data!=NULL) delete [] data;
+//
+//        gtPlusIOWorker ioworker_(filename, true);
+//
+//        GADGET_CHECK_RETURN_FALSE(ioworker_.open());
+//
+//        // read the total length
+//        long long totalLen;
+//        GADGET_CHECK_RETURN_FALSE(ioworker_.read(reinterpret_cast<char*>(&totalLen), sizeof(long long)));
+//
+//        length = totalLen - sizeof(long long);
+//
+//        data = new char[length];
+//        GADGET_CHECK_RETURN_FALSE(data!=NULL);
+//
+//        GADGET_CHECK_RETURN_FALSE(ioworker_.read(data, length));
+//
+//        GADGET_CHECK_RETURN_FALSE(ioworker_.close());
+//    }
+//    catch (...)
+//    {
+//        GADGET_ERROR_MSG("Errors in gtPlusIOBase::readFromFile(const std::string& filename, char*& data, long long& length) ... ");
+//        return false;
+//    }
+//
+//    return true;
+//}
+//
+//bool gtPlusIOBase::writeToFile(const std::string& filename, char* data, long long length)
+//{
+//    try
+//    {
+//        if ( length == 0 ) return true;
+//
+//        GADGET_CHECK_RETURN_FALSE(data!=NULL);
+//
+//        gtPlusIOWorker ioworker_(filename, false);
+//
+//        GADGET_CHECK_RETURN_FALSE(ioworker_.open());
+//
+//        // write the total lengh
+//        const long long totalLen = length+sizeof(long long);
+//        GADGET_CHECK_RETURN_FALSE(ioworker_.write(reinterpret_cast<const char*>(&totalLen), sizeof(long long)));
+//
+//        // write the data
+//        GADGET_CHECK_RETURN_FALSE(ioworker_.write(data, length));
+//
+//        // close the file
+//        GADGET_CHECK_RETURN_FALSE(ioworker_.close());
+//    }
+//    catch (...)
+//    {
+//        GADGET_ERROR_MSG("Errors in gtPlusIOBase::writeToFile(const std::string& filename, char* data, long long length) ... ");
+//        return false;
+//    }
+//
+//    return true;
+//}
 
 }}

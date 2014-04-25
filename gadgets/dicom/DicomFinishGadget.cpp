@@ -1,3 +1,4 @@
+
 #include <vector>
 
 #include "GadgetIsmrmrdReadWrite.h"
@@ -35,7 +36,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     // Parse ISMRMRD XML header
     boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(string(mb->rd_ptr()));
 
-    //GADGET_DEBUG1("Processing XML config in DicomFinishGadget\n");
+    //GADGET_DEBUG1("Processing XML config in DicomFinishAttribGadget\n");
 
     // Ensure DICOM dictionary is loaded
     if (!dcmDataDict.isDictionaryLoaded()) {
@@ -144,14 +145,12 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
 
     // Study Date
     key.set(0x0008, 0x0020);
-    ACE_OS::snprintf(buf, BUFSIZE, "%04d%02d%02d", study_info.studyDate().year(),
-            study_info.studyDate().month(), study_info.studyDate().day());
+    ACE_OS::snprintf(buf, BUFSIZE, "%04d%02d%02d", study_info.studyDate().get().year(), study_info.studyDate().get().month(), study_info.studyDate().get().day());
     WRITE_DCM_STRING(key, buf);
 
     // Series Date
     key.set(0x0008, 0x0021);
-    ACE_OS::snprintf(buf, BUFSIZE, "%04d%02d%02d", meas_info.seriesDate().year(),
-            meas_info.seriesDate().month(), meas_info.seriesDate().day());
+    ACE_OS::snprintf(buf, BUFSIZE, "%04d%02d%02d", meas_info.seriesDate().get().year(), meas_info.seriesDate().get().month(), meas_info.seriesDate().get().day());
     WRITE_DCM_STRING(key, buf);
     // Acquisition Date
     key.set(0x0008, 0x0022);
@@ -162,14 +161,12 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
 
     // Study Time
     key.set(0x0008, 0x0030);
-    ACE_OS::snprintf(buf, BUFSIZE, "%02d%02d%02d", study_info.studyTime().hours(),
-            study_info.studyTime().minutes(), (int)study_info.studyTime().seconds());
+    ACE_OS::snprintf(buf, BUFSIZE, "%02d%02d%02d", study_info.studyTime().get().hours(), study_info.studyTime().get().minutes(), (int)study_info.studyTime().get().seconds());
     WRITE_DCM_STRING(key, buf);
 
     // Series Time
     key.set(0x0008, 0x0031);
-    ACE_OS::snprintf(buf, BUFSIZE, "%02d%02d%02d", meas_info.seriesTime().hours(),
-            meas_info.seriesTime().minutes(), (int)meas_info.seriesTime().seconds());
+    ACE_OS::snprintf(buf, BUFSIZE, "%02d%02d%02d", meas_info.seriesTime().get().hours(), meas_info.seriesTime().get().minutes(), (int)meas_info.seriesTime().get().seconds());
     WRITE_DCM_STRING(key, buf);
 
     // Acquisition Time
@@ -321,8 +318,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     // Patient Age
     key.set(0x0010, 0x1010);
     if (patient_info.patientBirthdate().present()) {
-        ACE_OS::snprintf(buf, BUFSIZE, "%03uY", meas_info.seriesDate().year() -
-                patient_info.patientBirthdate().get().year());
+        ACE_OS::snprintf(buf, BUFSIZE, "%03uY", meas_info.seriesDate().get().year() - patient_info.patientBirthdate().get().year());
         WRITE_DCM_STRING(key, buf);
     } else {
         WRITE_DCM_STRING(key, "000Y");
@@ -468,7 +464,7 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
         key.set(0x0018, 0x1312);
         WRITE_DCM_STRING(key, mr_image.freqEncodingDirection().get().c_str());
     } else {
-        WRITE_DCM_STRING(key, "ROW");
+        WRITE_DCM_STRING(key, "COL");
     }
 
     // Flip Angle
@@ -563,10 +559,10 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
 }
 
 template <typename T>
-int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
-        GadgetContainerMessage< hoNDArray< T > >* m2)
+int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< T > >* m2)
 {
-    if (!this->controller_) {
+    if (!this->controller_)
+    {
         ACE_DEBUG( (LM_DEBUG,
                     ACE_TEXT("Cannot return result to controller, no controller set")) );
         return -1;
@@ -636,15 +632,9 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
 
     // Acquisition Matrix ... Image Dimensions
     // Defined as: [frequency rows, frequency columns, phase rows, phase columns]
-    // But at this point in the gadget I don't know the frequency encode direction
     key.set(0x0018, 0x1310);
     ACE_UINT16 im_dim[4] = {0,0,0,0};
-    /* if (frequence_encode_dir == "ROW")) {
-        // frequency encoding direction is ROW
-        im_dim[1] = img->matrix_size[0];
-        im_dim[2] = img->matrix_size[1];
-    } */
-    // frequency encoding direction is COLUMN
+    // frequency encoding direction is always the COLUMN
     im_dim[0] = img->matrix_size[0];
     im_dim[3] = img->matrix_size[1];
     status = dataset->putAndInsertUint16Array(key, im_dim, 4);
@@ -806,10 +796,8 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
     return GADGET_OK;
 }
 
-
 //Declare factories for the various template instances
 GADGET_FACTORY_DECLARE(DicomFinishGadgetFLOAT)
 GADGET_FACTORY_DECLARE(DicomFinishGadgetUSHORT)
-//GADGET_FACTORY_DECLARE(DicomFinishGadgetCPLX)
 
 } /* namespace Gadgetron */

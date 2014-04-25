@@ -66,7 +66,7 @@ public:
     using BaseClass::gtPlus_util_complex_;
     using BaseClass::gtPlus_mem_manager_;
 
-protected:
+public:
 
     // convert to image domain or back to kspace
     virtual bool convertToImage(const hoNDArray<T>& x, hoNDArray<T>& im);

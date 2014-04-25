@@ -55,6 +55,10 @@
 // MACROS for EXPORTING
 #define GADGET_EXPORT_ARRAY(debugFolder, exporter, a, filename) { if ( !debugFolder.empty() ) { exporter.exportArray(a, debugFolder+filename); } }
 #define GADGET_EXPORT_ARRAY_COMPLEX(debugFolder, exporter, a, filename) { if ( !debugFolder.empty() ) { exporter.exportArrayComplex(a, debugFolder+filename); } }
+#define GADGET_EXPORT_ARRAY_COMPLEX_REAL_IMAG(debugFolder, exporter, a, filename) { if ( !debugFolder.empty() ) { exporter.exportArrayComplexRealImag(a, debugFolder+filename); } }
+
+#define GADGET_EXPORT_IMAGE(debugFolder, exporter, a, filename) { if ( !debugFolder.empty() ) { exporter.exportImage(a, debugFolder+filename); } }
+#define GADGET_EXPORT_IMAGE_COMPLEX(debugFolder, exporter, a, filename) { if ( !debugFolder.empty() ) { exporter.exportImageComplex(a, debugFolder+filename); } }
 
 // MACROS FOR UTILITY
 #define GT_MIN(a,b)    (((a)<(b))?(a):(b))
@@ -63,5 +67,18 @@
 #define GT_SGN(a)      (((a)>=0)?(1):(-1))
 #define GT_PI          3.141592653589793238462
 #define GT_IMAGING_GEOMETRY_DELTA 0.001
+
+namespace Gadgetron
+{
+// array index type
+#ifdef gt_index_type
+    #undef gt_index_type
+#endif // gt_index_type
+#define gt_index_type long long
+
+struct rgb_type { unsigned char r,g,b; };
+struct rgba_type { unsigned char r,g,b,a; };
+
+}
 
 #endif  //GADGETRONCOMMON_H

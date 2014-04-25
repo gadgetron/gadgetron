@@ -35,7 +35,7 @@ public:
     using BaseClass::use_non_centered_fft_;
     using BaseClass::calib_use_gpu_;
 
-protected:
+public:
 
     // [RO E1 srcCHA dstCHA]
     using BaseClass::forward_kernel_;
@@ -138,6 +138,55 @@ inline bool gtPlusSPIRIT2DOperator<T>::forwardOperator(const hoNDArray<T>& x, ho
 
         Gadgetron::imageDomainUnwrapping2D(complexIm_, *kerArray, res_after_apply_kernel_sum_over_, y);
 
+        /*
+        //long long dCha;
+
+        //#pragma omp parallel
+        {
+            //#ifdef WIN32
+            //    int tid = omp_get_thread_num();
+            //    DWORD_PTR mask = (1 << tid);
+            //    // GADGET_MSG("thread id : " << tid << " - mask : " << mask);
+            //    SetThreadAffinityMask( GetCurrentThread(), mask );
+            //#endif // WIN32
+
+            //#pragma omp for
+            if ( typeid(T)==typeid(GT_Complex8) )
+            {
+                for ( dCha=0; dCha<CHA; dCha++ )
+                {
+                    vcMul(ro*e1*CHA, reinterpret_cast<MKL_Complex8*>(pIm), 
+                        reinterpret_cast<MKL_Complex8*>(ker+dCha*ro*e1*CHA), 
+                        reinterpret_cast<MKL_Complex8*>(ptt));
+
+                    memcpy(pY+dCha*ro*e1, ptt, sizeof(T)*ro*e1);
+                    for ( size_t sCha=1; sCha<CHA; sCha++ )
+                    {
+                        vcAdd(ro*e1, reinterpret_cast<MKL_Complex8*>(pY+dCha*ro*e1), 
+                            reinterpret_cast<MKL_Complex8*>(ptt+sCha*ro*e1), 
+                            reinterpret_cast<MKL_Complex8*>(pY+dCha*ro*e1));
+                    }
+                }
+            }
+            else if ( typeid(T)==typeid(GT_Complex16) )
+            {
+                for ( dCha=0; dCha<CHA; dCha++ )
+                {
+                    vzMul(ro*e1*CHA, reinterpret_cast<MKL_Complex16*>(pIm), 
+                        reinterpret_cast<MKL_Complex16*>(ker+dCha*ro*e1*CHA), 
+                        reinterpret_cast<MKL_Complex16*>(ptt));
+
+                    memcpy(pY+dCha*ro*e1, ptt, sizeof(T)*ro*e1);
+                    for ( size_t sCha=1; sCha<CHA; sCha++ )
+                    {
+                        vzAdd(ro*e1, reinterpret_cast<MKL_Complex16*>(pY+dCha*ro*e1), 
+                            reinterpret_cast<MKL_Complex16*>(ptt+sCha*ro*e1), 
+                            reinterpret_cast<MKL_Complex16*>(pY+dCha*ro*e1));
+                    }
+                }
+            }
+        }*/
+
         this->convertToKSpace(y, res_after_apply_kernel_sum_over_);
 
         // apply Dc
@@ -177,6 +226,9 @@ inline bool gtPlusSPIRIT2DOperator<T>::adjointOperator(const hoNDArray<T>& x, ho
             this->convertToImage(x, complexIm_);
 
             // apply kernel and sum
+            //Gadgetron::multipleMultiply(complexIm_, *adjoint_kernel_, res_after_apply_kernel_);
+            //Gadgetron::sumOverSecondLastDimension(res_after_apply_kernel_, res_after_apply_kernel_sum_over_);
+
             size_t ro = x.get_size(0);
             size_t e1 = x.get_size(1);
             size_t CHA = x.get_size(2);
@@ -187,6 +239,39 @@ inline bool gtPlusSPIRIT2DOperator<T>::adjointOperator(const hoNDArray<T>& x, ho
             }
 
             Gadgetron::imageDomainUnwrapping2D(complexIm_, *adjoint_kernel_, res_after_apply_kernel_sum_over_, y);
+
+            //long long dCha;
+
+            ////#pragma omp parallel default(shared)
+            //{
+            //    //#ifdef WIN32
+            //    //    int tid = omp_get_thread_num();
+            //    //    DWORD_PTR mask = (1 << tid);
+            //    //    // GADGET_MSG("thread id : " << tid << " - mask : " << mask);
+            //    //    SetThreadAffinityMask( GetCurrentThread(), mask );
+            //    //#endif // WIN32
+
+            //    //#pragma omp for
+
+            //    if ( typeid(T)==typeid(GT_Complex8) )
+            //    {
+            //        for ( dCha=0; dCha<CHA; dCha++ )
+            //        {
+            //            vcMul(ro*e1*CHA, reinterpret_cast<MKL_Complex8*>(pIm), 
+            //                reinterpret_cast<MKL_Complex8*>(ker+dCha*ro*e1*CHA), 
+            //                reinterpret_cast<MKL_Complex8*>(ptt));
+
+            //            memcpy(pY+dCha*ro*e1, ptt, sizeof(T)*ro*e1);
+            //            for ( size_t sCha=1; sCha<CHA; sCha++ )
+            //            {
+            //                vcAdd(ro*e1, reinterpret_cast<MKL_Complex8*>(pY+dCha*ro*e1), 
+            //                    reinterpret_cast<MKL_Complex8*>(ptt+sCha*ro*e1), 
+            //                    reinterpret_cast<MKL_Complex8*>(pY+dCha*ro*e1));
+            //            }
+            //        }
+            //    }
+
+            //}
 
             // go back to kspace 
             this->convertToKSpace(y, res_after_apply_kernel_sum_over_);

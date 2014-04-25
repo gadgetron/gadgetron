@@ -19,7 +19,7 @@ namespace Gadgetron{
   {
 
   public:
-
+    GADGET_DECLARE(CartesianToGenericGadget);
     CartesianToGenericGadget();
     virtual ~CartesianToGenericGadget();
 

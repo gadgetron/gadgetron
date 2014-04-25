@@ -39,7 +39,7 @@ namespace Gadgetron
 
     // Invoke solver
     virtual boost::shared_ptr<ARRAY_TYPE_OUT> solve( ARRAY_TYPE_IN* ) = 0;
- 
+
   protected:
     int output_mode_;
     boost::shared_ptr<ARRAY_TYPE_OUT> x0_;

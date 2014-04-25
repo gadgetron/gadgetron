@@ -42,7 +42,7 @@ struct gtPlusReconJob2DT : public SerializableObject
 
     ~gtPlusReconJob2DT();
 
-    virtual bool serialize(char*& buf, size_t& len) const;
+    virtual bool serialize(char*& buf, size_t& len);
     virtual bool deserialize(char* buf, size_t& len);
 };
 
@@ -74,7 +74,7 @@ gtPlusReconJob2DT<T>::gtPlusReconJob2DT(const gtPlusReconJob2DT& job)
 }
 
 template <typename T> 
-bool gtPlusReconJob2DT<T>::serialize(char*& buf, size_t& len) const
+bool gtPlusReconJob2DT<T>::serialize(char*& buf, size_t& len)
 {
     char *bufKSpace(NULL), *bufKernel(NULL), *bufCoilMap(NULL), *bufComplexIm(NULL), *bufRes(NULL);
     try
@@ -385,14 +385,14 @@ bool gtPlusReconWorker<T>::splitReconJob(gtPlusReconWorkOrder<T>* workOrder2DT, 
         size_t dstCHA = ker.get_size(3);
         size_t refN = ker.get_size(4);
 
-        size_t n, s;
+        size_t s;
         int startN, endN;
 
         if ( splitByS )
         {
             jobList.resize(S);
             startN = 0;
-            endN = N-1;
+            endN = (int)N-1;
             for ( s=0; s<S; s++ )
             {
                 GADGET_CHECK_RETURN_FALSE(createAReconJob(workOrder2DT, kspace, ker, startN, endN, s, jobList[s]));
@@ -418,12 +418,12 @@ bool gtPlusReconWorker<T>::splitReconJob(gtPlusReconWorkOrder<T>* workOrder2DT, 
         startN = 0;
         while ( startN < N )
         {
-            endN = startN+jobN+overlapN-1;
+            endN = (int)(startN+jobN+overlapN-1);
             numPerN++;
 
             if ( endN >= N )
             {
-                endN = N-1;
+                endN = (int)N-1;
                 break;
             }
 
@@ -439,16 +439,16 @@ bool gtPlusReconWorker<T>::splitReconJob(gtPlusReconWorkOrder<T>* workOrder2DT, 
             startN = 0;
             while ( startN < N )
             {
-                endN = startN+jobN+overlapN-1;
+                endN = (int)(startN+jobN+overlapN-1);
                 num++;
 
                 if ( endN >= N )
                 {
-                    endN = N-1;
+                    endN = (int)N-1;
 
                     if ( endN-startN+1 < jobN )
                     {
-                        startN = endN-jobN+1;
+                        startN = endN-(int)jobN+1;
                         if ( startN < 0 ) startN = 0;
                     }
 
@@ -458,7 +458,7 @@ bool gtPlusReconWorker<T>::splitReconJob(gtPlusReconWorkOrder<T>* workOrder2DT, 
 
                 GADGET_CHECK_RETURN_FALSE(createAReconJob(workOrder2DT, kspace, ker, startN, endN, s, jobList[s*numPerN+num-1]));
 
-                startN = endN-overlapN+1;
+                startN = endN-(int)overlapN+1;
             }
         }
     }
@@ -528,10 +528,10 @@ combineReconJob(gtPlusReconWorkOrder<T>* workOrder2DT, std::vector<gtPlusReconJo
                 if ( fillingTimes(n, s).real() > 1 )
                 {
                     hoNDArray<T> complexIm(RO, E1, workOrder2DT->complexIm_.begin()+s*RO*E1*N+n*RO*E1);
-                    Gadgetron::scal(1.0/fillingTimes(n, s).real(), complexIm);
+                    Gadgetron::scal( (value_type)(1.0)/fillingTimes(n, s).real(), complexIm);
 
                     hoNDArray<T> fullkspace(RO, E1, dstCHA, workOrder2DT->fullkspace_.begin()+s*RO*E1*dstCHA*N+n*RO*E1*dstCHA);
-                    Gadgetron::scal(1.0/fillingTimes(n, s).real(), fullkspace);
+                    Gadgetron::scal( (value_type)(1.0)/fillingTimes(n, s).real(), fullkspace);
                 }
             }
         }

@@ -36,6 +36,8 @@ struct ReadOutBuffer
 class EXPORTGTPLUSGADGET GtPlusAccumulatorWorkOrderTriggerGadget : public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 {
 public:
+    GADGET_DECLARE(GtPlusAccumulatorWorkOrderTriggerGadget);
+
     typedef std::complex<float> ValueType;
 
     typedef Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< ValueType > > BaseClass;
@@ -198,6 +200,14 @@ protected:
 
     // encoding matrix size (the real sampled size)
     size_t matrix_size_encoding_[3];
+
+    // maximal sampled line along E1 and E2
+    size_t max_sampled_E1_;
+    size_t max_sampled_E2_;
+
+    // index of center line along E1 and E2
+    size_t center_line_E1_;
+    size_t center_line_E2_;
 
     // encoding space size (the logic kspace size)
     size_t space_size_[3];

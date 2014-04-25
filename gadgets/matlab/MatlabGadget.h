@@ -176,6 +176,7 @@ class EXPORTGADGETSMATLAB AcquisitionMatlabGadget :
     public MatlabGadget<ISMRMRD::AcquisitionHeader>
 {
     public:
+        GADGET_DECLARE(AcquisitionMatlabGadget);
         int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
                 GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
@@ -185,6 +186,7 @@ class EXPORTGADGETSMATLAB ImageMatlabGadget :
     public MatlabGadget<ISMRMRD::ImageHeader>
 {
     public:
+        GADGET_DECLARE(ImageMatlabGadget);
         int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
                 GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 

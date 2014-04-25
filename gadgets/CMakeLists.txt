@@ -24,31 +24,22 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   )
-
-if (MKL_FOUND)
-    MESSAGE("MKL Found for gtPlus ... ")
-    list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
-    if ( USE_OPENMP )
-        list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
-    endif ( USE_OPENMP )
-
-    INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
-    LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
-endif (MKL_FOUND)
 
 add_subdirectory(mri_core)
 
 if (ARMADILLO_FOUND)
-  add_subdirectory(epi)
+    add_subdirectory(epi)
 elseif (ARMADILLO_FOUND)
-  MESSAGE("Armadillo not found, NOT compiling EPI Gadgets")
+    MESSAGE("Armadillo not found, NOT compiling EPI Gadgets")
 endif (ARMADILLO_FOUND)
 
-if (MKL_FOUND)
+if (MKL_FOUND OR ARMADILLO_FOUND)
     add_subdirectory(gtPlus)
-endif (MKL_FOUND)
+endif (MKL_FOUND OR ARMADILLO_FOUND)
 
 if (CUDA_FOUND)
   message("Cuda found, compiling gpu accelerated gadgets")
@@ -100,4 +91,7 @@ else(DCMTK_FOUND)
 endif(DCMTK_FOUND)
 
 add_subdirectory(cartesian)
-add_subdirectory(moco)
+
+if(ARMADILLO_FOUND)
+    add_subdirectory(moco)
+endif(ARMADILLO_FOUND)

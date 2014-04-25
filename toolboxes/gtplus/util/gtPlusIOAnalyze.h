@@ -17,23 +17,6 @@
 
 // the following Analyze75 data structured is defined as this online document eeg.sourceforge.net/ANALYZE75.pdf‎
 
-enum AnalyzeDataType
-{
-    DT_ANA_UNKNOWN=0,
-    DT_BINARY=1, 
-    DT_UNSIGNED_CHAR=2,
-    DT_SIGNED_SHORT=4,
-    DT_UNSIGNED_SHORT=5,
-    DT_SIGNED_INT=8,
-    DT_UNSIGNED_INT=9,
-    DT_FLOAT=16,
-    DT_COMPLEX=32,
-    DT_DOUBLE=64,
-    DT_DOUBLECOMPLEX=96, // this type is added to support complex doulbe
-    DT_RGB=128,
-    DT_ALL=255
-};
-
 // the official definition of Analyze 7.5 file format
 struct header_key
 {
@@ -104,11 +87,14 @@ struct dsr
 
 namespace Gadgetron { namespace gtPlus {
 
-class EXPORTGTPLUS gtPlusIOAnalyze
+class EXPORTGTPLUS gtPlusIOAnalyze : public gtPlusIOBase<dsr>
 {
 public:
 
-    gtPlusIOAnalyze() { pixelSize_.resize(10, 1.0); }
+    typedef gtPlusIOBase<dsr> BaseClass;
+    typedef BaseClass::THeaderType HeaderType;
+
+    gtPlusIOAnalyze();
     gtPlusIOAnalyze(float px, float py);
     gtPlusIOAnalyze(float px, float py, float pz);
     gtPlusIOAnalyze(float px, float py, float pz, float pt);
@@ -117,310 +103,132 @@ public:
     gtPlusIOAnalyze(float px, float py, float pz, float pt, float pr, float ps, float pp);
     gtPlusIOAnalyze(float px, float py, float pz, float pt, float pr, float ps, float pp, float pq);
 
-    void setPixelSize(float px, float py, float pz=1.0f, float pt=1.0f, float pr=1.0f, float ps=1.0f, float pp=1.0f, float pq=1.0f);
-
     virtual ~gtPlusIOAnalyze() {}
 
-public:
+    virtual void printInfo(std::ostream& os);
 
-    void printInfo(std::ostream& os);
+    virtual bool exportArray(const hoNDArray<short>& a, const std::string& filename) { return this->exportArrayImpl(a, filename); }
 
-    // export/input for 2D/3D/4D array
-    // filename should be given without .hdr extension
-    // the .hdr and .img extension will be added internally
+    virtual bool exportArray(const hoNDArray<unsigned short>& a, const std::string& filename) { return this->exportArrayImpl(a, filename); }
+    virtual bool exportArray(const hoNDArray<int>& a, const std::string& filename) { return this->exportArrayImpl(a, filename); }
+    virtual bool exportArray(const hoNDArray<unsigned int>& a, const std::string& filename) { return this->exportArrayImpl(a, filename); }
+    virtual bool exportArray(const hoNDArray<float>& a, const std::string& filename) { return this->exportArrayImpl(a, filename); }
+    virtual bool exportArray(const hoNDArray<double>& a, const std::string& filename) { return this->exportArrayImpl(a, filename); }
+    virtual bool exportArray(const hoNDArray< std::complex<float> >& a, const std::string& filename) { return this->exportArrayImpl(a, filename); }
+    virtual bool exportArray(const hoNDArray< std::complex<double> >& a, const std::string& filename) { return this->exportArrayImpl(a, filename); }
 
-    template <typename T> bool exportArray(const hoNDArray<T>& a, const std::string& filename);
-    template <typename T> bool importArray(hoNDArray<T>& a, const std::string& filename);
+    virtual bool importArray(hoNDArray<short>& a, const std::string& filename) { return this->importArrayImpl(a, filename); }
+    virtual bool importArray(hoNDArray<unsigned short>& a, const std::string& filename) { return this->importArrayImpl(a, filename); }
+    virtual bool importArray(hoNDArray<int>& a, const std::string& filename) { return this->importArrayImpl(a, filename); }
+    virtual bool importArray(hoNDArray<unsigned int>& a, const std::string& filename) { return this->importArrayImpl(a, filename); }
+    virtual bool importArray(hoNDArray<float>& a, const std::string& filename) { return this->importArrayImpl(a, filename); }
+    virtual bool importArray(hoNDArray<double>& a, const std::string& filename) { return this->importArrayImpl(a, filename); }
+    virtual bool importArray(hoNDArray< std::complex<float> >& a, const std::string& filename) { return this->importArrayImpl(a, filename); }
+    virtual bool importArray(hoNDArray< std::complex<double> >& a, const std::string& filename) { return this->importArrayImpl(a, filename); }
 
-    template <typename T> bool exportArrayComplex(const hoNDArray<T>& a, const std::string& filename);
-    template <typename T> bool importArrayComplex(hoNDArray<T>& a, const std::string& filename);
+    template <typename T> 
+    bool exportArrayImpl(const hoNDArray<T>& a, const std::string& filename)
+    {
+        try
+        {
+            HeaderType header;
+            GADGET_CHECK_RETURN_FALSE(this->array2Header(a, header));
+            GADGET_CHECK_RETURN_FALSE(this->writeHeader(filename, header));
 
-    template <typename T> bool importArrayComplex(hoNDArray<T>& a, const std::string& filename_real, const std::string& filename_imag);
+            std::string filenameData = filename;
+            filenameData.append(".img");
+            GADGET_CHECK_RETURN_FALSE(this->writeData(filenameData, a.begin(), a.get_number_of_bytes()));
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::exportArrayImpl(const hoNDArray<T>& a, const std::string& filename) ... ");
+            return false;
+        }
 
-    // 2D array is exported as a 2D image
-    template <typename T> bool export2DArray(const hoNDArray<T>& a, const std::string& filename);
-    template <typename T> bool import2DArray(hoNDArray<T>& a, const std::string& filename);
+        return true;
+    }
 
-    template <typename T> bool export2DArrayComplex(const hoNDArray<T>& a, const std::string& filename);
-    template <typename T> bool import2DArrayComplex(hoNDArray<T>& a, const std::string& filename);
+    template <typename T> 
+    bool importArrayImpl(hoNDArray<T>& a, const std::string& filename)
+    {
+        try
+        {
+            HeaderType header;
+            GADGET_CHECK_RETURN_FALSE(this->readHeader(filename, header));
+            GADGET_CHECK_RETURN_FALSE(this->header2Array(a, header));
 
-    // 3D array is exported as a 3D volume
-    template <typename T> bool export3DArray(const hoNDArray<T>& a, const std::string& filename);
-    template <typename T> bool import3DArray(hoNDArray<T>& a, const std::string& filename);
+            std::string filenameData = filename;
+            filenameData.append(".img");
+            GADGET_CHECK_RETURN_FALSE(this->readData(filenameData, a.begin(), a.get_number_of_bytes()));
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::importArrayImpl(const hoNDArray<T>& a, const std::string& filename) ... ");
+            return false;
+        }
 
-    template <typename T> bool export3DArrayComplex(const hoNDArray<T>& a, const std::string& filename);
-    template <typename T> bool import3DArrayComplex(hoNDArray<T>& a, const std::string& filename);
+        return true;
+    }
 
-    // 4D array is exported as multiple 3D volume
-    template <typename T> bool export4DArray(const hoNDArray<T>& a, const std::string& filename);
-    template <typename T> bool export4DArrayComplex(const hoNDArray<T>& a, const std::string& filename);
+    template <typename T, unsigned int D> 
+    bool exportImage(const hoNDImage<T,D>& a, const std::string& filename)
+    {
+        try
+        {
+            HeaderType header;
+            GADGET_CHECK_RETURN_FALSE(this->image2Header(a, header));
+            GADGET_CHECK_RETURN_FALSE(this->writeHeader(filename, header));
+
+            std::string filenameData = filename;
+            filenameData.append(".img");
+            GADGET_CHECK_RETURN_FALSE(this->writeData(filenameData, a.begin(), a.get_number_of_bytes()));
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in exportImage(const hoNDImage<T,D>& a, const std::string& filename) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template <typename T, unsigned int D> 
+    bool importImage(hoNDImage<T,D>& a, const std::string& filename)
+    {
+        try
+        {
+            HeaderType header;
+            GADGET_CHECK_RETURN_FALSE(this->readHeader(filename, header));
+            GADGET_CHECK_RETURN_FALSE(this->header2Image(a, header));
+
+            std::string filenameData = filename;
+            filenameData.append(".img");
+            GADGET_CHECK_RETURN_FALSE(this->readData(filenameData, a.begin(), a.get_number_of_bytes()));
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in importImage(const hoNDImage<T,D>& a, const std::string& filename) ... ");
+            return false;
+        }
+
+        return true;
+    }
 
 protected:
 
-    std::vector<float> pixelSize_;
+    template <typename T> bool array2Header(const hoNDArray<T>& a, HeaderType& header);
+    template <typename T> bool header2Array(hoNDArray<T>& a, const HeaderType& header);
 
-    template <typename T> bool array2Analyze(const hoNDArray<T>& a, dsr& header);
-    template <typename T> bool analyze2Array(hoNDArray<T>& a, const dsr& header);
-
-    // get the run-time type ID from analyze data type or vice versa
-    std::string getRTTIFromAnalyzeDataType(AnalyzeDataType aDT);
-    AnalyzeDataType getAnalyzeDataTypeFromRTTI(const std::string& name);
+    template <typename T, unsigned int D> bool image2Header(const hoNDImage<T, D>& a, HeaderType& header);
+    template <typename T, unsigned int D> bool header2Image(hoNDImage<T, D>& a, const HeaderType& header);
 
     // read/write the analyze header
-    bool readAnalyzeHeader(const std::string& filename, dsr& header);
-    bool writeAnalyzeHeader(const std::string& filename, const dsr& header);
-
-    // read/write the analyze data file
-    // len is the number of bytes
-    template <typename T> bool readAnalyzeData(const std::string& filename, T* data, long long len);
-    template <typename T> bool writeAnalyzeData(const std::string& filename, const T* data, long long len);
+    bool readHeader(const std::string& filename, HeaderType& header);
+    bool writeHeader(const std::string& filename, const HeaderType& header);
 };
 
 template <typename T> 
-bool gtPlusIOAnalyze::exportArray(const hoNDArray<T>& a, const std::string& filename)
-{
-    try
-    {
-        dsr header;
-        GADGET_CHECK_RETURN_FALSE(array2Analyze(a, header));
-        GADGET_CHECK_RETURN_FALSE(writeAnalyzeHeader(filename, header));
-        GADGET_CHECK_RETURN_FALSE(writeAnalyzeData(filename, a.begin(), a.get_number_of_bytes()));
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::exportArray(const hoNDArray<T>& a, const std::string& filename) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusIOAnalyze::importArray(hoNDArray<T>& a, const std::string& filename)
-{
-    try
-    {
-        dsr header;
-        GADGET_CHECK_RETURN_FALSE(readAnalyzeHeader(filename, header));
-        GADGET_CHECK_RETURN_FALSE(analyze2Array(a, header));
-        GADGET_CHECK_RETURN_FALSE(readAnalyzeData(filename, a.begin(), a.get_number_of_bytes()));
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::importArray(const hoNDArray<T>& a, const std::string& filename) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusIOAnalyze::exportArrayComplex(const hoNDArray<T>& a, const std::string& filename)
-{
-    try
-    {
-        typedef typename Gadgetron::realType<T>::Type value_type;
-
-        hoNDArray<value_type> buf;
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::complex_to_real(a, buf));
-
-        std::string filenameReal = filename;
-        filenameReal.append("_REAL");
-        GADGET_CHECK_RETURN_FALSE(exportArray(buf, filenameReal));
-
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::complex_to_imag(a, buf));
-        std::string filenameImag = filename;
-        filenameImag.append("_IMAG");
-        GADGET_CHECK_RETURN_FALSE(exportArray(buf, filenameImag));
-
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(a, buf));
-        std::string filenameMag = filename;
-        filenameMag.append("_MAG");
-        GADGET_CHECK_RETURN_FALSE(exportArray(buf, filenameMag));
-
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::argument(a, buf));
-        std::string filenamePhase = filename;
-        filenamePhase.append("_PHASE");
-        GADGET_CHECK_RETURN_FALSE(exportArray(buf, filenamePhase));
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::exportArrayComplex(const hoNDArray<T>& a, const std::string& filename) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusIOAnalyze::importArrayComplex(hoNDArray<T>& a, const std::string& filename)
-{
-    try
-    {
-        typedef typename T::value_type value_type;
-        hoNDArray<value_type> real, imag;
-
-        std::string filenameReal = filename;
-        filenameReal.append("_REAL");
-        GADGET_CHECK_RETURN_FALSE(importArray(real, filenameReal));
-
-        std::string filenameImag = filename;
-        filenameImag.append("_IMAG");
-        GADGET_CHECK_RETURN_FALSE(importArray(imag, filenameImag));
-
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::real_imag_to_complex(real, imag, a));
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::importArrayComplex(const hoNDArray<T>& a, const std::string& filename) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusIOAnalyze::importArrayComplex(hoNDArray<T>& a, const std::string& filename_real, const std::string& filename_imag)
-{
-    try
-    {
-        typedef typename realType<T>::Type value_type;
-        hoNDArray<value_type> real, imag;
-
-        GADGET_CHECK_RETURN_FALSE(importArray(real, filename_real));
-        GADGET_CHECK_RETURN_FALSE(importArray(imag, filename_imag));
-
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::real_imag_to_complex(real, imag, a));
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::importArrayComplex(hoNDArray<T>& a, const std::string& filename_real, const std::string& filename_imag) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusIOAnalyze::export2DArray(const hoNDArray<T>& a, const std::string& filename)
-{
-    return exportArray(a, filename);
-}
-
-template <typename T> 
-bool gtPlusIOAnalyze::import2DArray(hoNDArray<T>& a, const std::string& filename)
-{
-    return importArray(a, filename);
-}
-
-template <typename T> 
-bool gtPlusIOAnalyze::export2DArrayComplex(const hoNDArray<T>& a, const std::string& filename)
-{
-    return exportArrayComplex(a, filename);
-}
-
-template <typename T> 
-bool gtPlusIOAnalyze::import2DArrayComplex(hoNDArray<T>& a, const std::string& filename)
-{
-    return importArrayComplex(a, filename);
-}
-
-template <typename T> 
-bool gtPlusIOAnalyze::export3DArray(const hoNDArray<T>& a, const std::string& filename)
-{
-    return exportArray(a, filename);
-}
-
-template <typename T> 
-bool gtPlusIOAnalyze::import3DArray(hoNDArray<T>& a, const std::string& filename)
-{
-    return importArray(a, filename);
-}
-
-template <typename T> 
-bool gtPlusIOAnalyze::export3DArrayComplex(const hoNDArray<T>& a, const std::string& filename)
-{
-    return exportArrayComplex(a, filename);
-}
-
-template <typename T> 
-bool gtPlusIOAnalyze::import3DArrayComplex(hoNDArray<T>& a, const std::string& filename)
-{
-    return importArrayComplex(a, filename);
-}
-
-template <typename T> 
-bool gtPlusIOAnalyze::export4DArray(const hoNDArray<T>& a, const std::string& filename)
-{
-    try
-    {
-        size_t RO     = a.get_size(0);
-        size_t E1     = a.get_size(1);
-        size_t CHA    = a.get_size(2);
-        size_t N      = a.get_size(3);
-
-        size_t ii;
-        for (ii=0; ii<N; ii++ )
-        {
-            std::vector<size_t> dim(3);
-            dim[0] = RO;
-            dim[1] = E1;
-            dim[2] = CHA;
-
-            boost::shared_ptr< std::vector<size_t> > sDim(&dim);
-            hoNDArray<T> a3D(sDim, const_cast<T*>(a.begin()+ii*RO*E1*CHA), false);
-
-            std::ostringstream ostr;
-            ostr << filename << "_" << ii << std::ends;
-            GADGET_CHECK_RETURN_FALSE(export3DArray(a3D, ostr.str()));
-        }
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::export4DArray(const hoNDArray<T>& a, const std::string& filename) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusIOAnalyze::export4DArrayComplex(const hoNDArray<T>& a, const std::string& filename)
-{
-    try
-    {
-        size_t RO     = a.get_size(0);
-        size_t E1     = a.get_size(1);
-        size_t CHA    = a.get_size(2);
-        size_t N      = a.get_size(3);
-
-        size_t ii;
-        for (ii=0; ii<N; ii++ )
-        {
-            std::vector<size_t> dim(3);
-            dim[0] = RO;
-            dim[1] = E1;
-            dim[2] = CHA;
-
-            boost::shared_ptr< std::vector<size_t> > sDim(&dim);
-            hoNDArray<T> a3D(sDim, const_cast<T*>(a.begin()+ii*RO*E1*CHA), false);
-
-            std::ostringstream ostr;
-            ostr << filename << "_" << ii << std::ends;
-            GADGET_CHECK_RETURN_FALSE(export3DArrayComplex(a3D, ostr.str()));
-        }
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::export4DArrayComplex(const hoNDArray<T>& a, const std::string& filename) ... ");
-        return false;
-    }
-
-    return true;
-}
-
-template <typename T> 
-bool gtPlusIOAnalyze::array2Analyze(const hoNDArray<T>& a, dsr& header)
+bool gtPlusIOAnalyze::array2Header(const hoNDArray<T>& a, HeaderType& header)
 {
     try
     {
@@ -494,7 +302,7 @@ bool gtPlusIOAnalyze::array2Analyze(const hoNDArray<T>& a, dsr& header)
         header.dime.unused14 = 0;
 
         std::string rttiID = std::string(typeid(T).name());
-        header.dime.datatype = (short)getAnalyzeDataTypeFromRTTI(rttiID);
+        header.dime.datatype = (short)getDataTypeFromRTTI(rttiID);
         header.dime.bitpix = (short)(8*sizeof(T));
         header.dime.dim_un0 = 0;
 
@@ -556,12 +364,12 @@ bool gtPlusIOAnalyze::array2Analyze(const hoNDArray<T>& a, dsr& header)
 }
 
 template <typename T> 
-bool gtPlusIOAnalyze::analyze2Array(hoNDArray<T>& a, const dsr& header)
+bool gtPlusIOAnalyze::header2Array(hoNDArray<T>& a, const HeaderType& header)
 {
     try
     {
         std::string rttiID = std::string(typeid(T).name());
-        GADGET_CHECK_RETURN_FALSE(rttiID==getRTTIFromAnalyzeDataType( (AnalyzeDataType)header.dime.datatype));
+        GADGET_CHECK_RETURN_FALSE(rttiID==getRTTIFromDataType( (GtDataType)header.dime.datatype));
 
         std::vector<size_t> dim(header.dime.dim[0]);
         size_t ii;
@@ -605,44 +413,258 @@ bool gtPlusIOAnalyze::analyze2Array(hoNDArray<T>& a, const dsr& header)
     return true;
 }
 
-template <typename T> 
-bool gtPlusIOAnalyze::readAnalyzeData(const std::string& filename, T* data, long long len)
+template <typename T, unsigned int D> 
+bool gtPlusIOAnalyze::image2Header(const hoNDImage<T,D>& a, HeaderType& header)
 {
     try
     {
-        std::string filenameData = filename;
-        filenameData.append(".img");
-        gtPlusIOWorker ioworker(filenameData, true);
+        typedef typename hoNDImage<T,D>::coord_type coord_type;
 
-        GADGET_CHECK_RETURN_FALSE(ioworker.open());
-        GADGET_CHECK_RETURN_FALSE(ioworker.read(reinterpret_cast<char*>(data), len));
-        GADGET_CHECK_RETURN_FALSE(ioworker.close());
+        // set everything to zero
+        memset(&header, 0, sizeof(dsr));
+
+        // header_key
+        header.hk.sizeof_hdr = 348;
+        size_t i;
+        for (i=0; i<10; i++ ) header.hk.data_type[i] = 0;
+        for (i=0; i<18; i++ ) header.hk.db_name[i] = 0;
+        header.hk.extents = 16384;
+        header.hk.session_error = 0;
+        header.hk.regular = 'r';
+        header.hk.hkey_un0 = 0;
+
+        // image_dimension
+        size_t NDim = D;
+
+        header.dime.dim[0] = (short)(NDim);
+        header.dime.dim[1] = (short)(a.get_size(0));
+
+        if ( NDim > 1 )
+            header.dime.dim[2] = (short)(a.get_size(1));
+        else
+            header.dime.dim[2] = 1;
+
+        if ( NDim > 2 )
+            header.dime.dim[3] = (short)(a.get_size(2));
+        else
+            header.dime.dim[3] = 1;
+
+        if ( NDim > 3 )
+            header.dime.dim[4] = (short)(a.get_size(3));
+        else
+            header.dime.dim[4] = 1;
+
+        if ( NDim > 4 )
+            header.dime.dim[5] = (short)(a.get_size(4));
+        else
+            header.dime.dim[5] = 1;
+
+        if ( NDim > 5 )
+            header.dime.dim[6] = (short)(a.get_size(5));
+        else
+            header.dime.dim[6] = 1;
+
+        if ( NDim > 6 )
+            header.dime.dim[7] = (short)(a.get_size(6));
+        else
+            header.dime.dim[7] = 1;
+
+        if ( NDim > 7 )
+            header.dime.unused8 = (short)(a.get_size(7));
+        else
+            header.dime.unused8 = 1;
+
+        if ( NDim > 8 )
+            header.dime.unused9 = (short)(a.get_size(8));
+        else
+            header.dime.unused9 = 1;
+
+        if ( NDim > 9 )
+            header.dime.unused10 = (short)(a.get_size(9));
+        else
+            header.dime.unused10 = 1;
+
+        header.dime.unused11 = 0;
+        header.dime.unused12 = 0;
+        header.dime.unused13 = 0;
+        header.dime.unused14 = 0;
+
+        std::string rttiID = std::string(typeid(T).name());
+        header.dime.datatype = (short)getDataTypeFromRTTI(rttiID);
+        header.dime.bitpix = (short)(8*sizeof(T));
+        header.dime.dim_un0 = 0;
+
+        header.dime.pixdim[0] = 0;
+        header.dime.pixdim[1] = a.get_pixel_size(0);
+        header.dime.pixdim[2] = 1;
+        header.dime.pixdim[3] = 1;
+        if ( NDim > 1 )
+            header.dime.pixdim[2] = a.get_pixel_size(1);
+        if ( NDim > 2 )
+            header.dime.pixdim[3] = a.get_pixel_size(2);
+        if ( NDim > 3 )
+            header.dime.pixdim[4] = a.get_pixel_size(3);
+        if ( NDim > 4 )
+            header.dime.pixdim[5] = a.get_pixel_size(4);
+        if ( NDim > 5 )
+            header.dime.pixdim[6] = a.get_pixel_size(5);
+        if ( NDim > 6 )
+            header.dime.pixdim[7] = a.get_pixel_size(6);
+
+        header.dime.vox_offset = 0;
+        header.dime.funused1 = 0;
+        header.dime.funused2 = 0;
+        header.dime.funused3 = 0;
+        header.dime.cal_max = 0;
+        header.dime.cal_min = 0;
+        header.dime.compressed = 0;
+        header.dime.verified = 0;
+        header.dime.glmax = 0;
+        header.dime.glmin = 0;
+
+        // data history
+        for (i=0; i<80; i++ ) header.hist.descrip[i] = 0;
+        for (i=0; i<24; i++ ) header.hist.aux_file[i] = 0;
+        header.hist.orient = 0;
+        for (i=0; i<10; i++ ) header.hist.originator[i] = 0;
+        for (i=0; i<10; i++ ) header.hist.generated[i] = 0;
+        for (i=0; i<10; i++ ) header.hist.scannum[i] = 0;
+        for (i=0; i<10; i++ ) header.hist.patient_id[i] = 0;
+        for (i=0; i<10; i++ ) header.hist.exp_date[i] = 0;
+        for (i=0; i<10; i++ ) header.hist.exp_time[i] = 0;
+        for (i=0; i<3; i++ ) header.hist.hist_un0[i] = 0;
+        header.hist.views = 0;
+        header.hist.vols_added = 0;
+        header.hist.start_field = 0;
+        header.hist.field_skip = 0;
+        header.hist.omax = 0;
+        header.hist.omin = 0;
+        header.hist.smax = 0;
+        header.hist.smin = 0;
+
+        // store image origin and axis
+        // total number of bytes are
+        size_t numOfBytes = sizeof(float)*(D+D*D);
+        if ( numOfBytes <= sizeof(data_history) )
+        {
+            std::vector<float> buf(D+D*D, 0);
+
+            unsigned int ii;
+            for ( ii=0; ii<D; ii++ )
+            {
+                buf[ii] = (float)a.get_origin(ii);
+            }
+
+            unsigned int jj;
+            for ( ii=0; ii<D; ii++ )
+            {
+                for ( jj=0; jj<D; jj++ )
+                {
+                    buf[D+ii*D+jj] = (float)a.get_axis(ii, jj);
+                }
+            }
+
+            memcpy(&header.hist, &buf[0], numOfBytes);
+        }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::readAnalyzeData(const std::string& filename, T* data, long long len) ... ");
+        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::image2Analyze(const hoNDImage<T>& a, dsr& header) ... ");
         return false;
     }
 
     return true;
 }
 
-template <typename T> 
-bool gtPlusIOAnalyze::writeAnalyzeData(const std::string& filename, const T* data, long long len)
+template <typename T, unsigned int D> 
+bool gtPlusIOAnalyze::header2Image(hoNDImage<T,D>& a, const HeaderType& header)
 {
     try
     {
-        std::string filenameData = filename;
-        filenameData.append(".img");
-        gtPlusIOWorker ioworker(filenameData, false);
+        std::string rttiID = std::string(typeid(T).name());
+        GADGET_CHECK_RETURN_FALSE(rttiID==getRTTIFromDataType( (GtDataType)header.dime.datatype));
 
-        GADGET_CHECK_RETURN_FALSE(ioworker.open());
-        GADGET_CHECK_RETURN_FALSE(ioworker.write(reinterpret_cast<const char*>(data), len));
-        GADGET_CHECK_RETURN_FALSE(ioworker.close());
+        std::vector<size_t> dim(header.dime.dim[0]);
+
+        if ( D != dim.size() ) return false;
+
+        size_t ii;
+        for ( ii=0; ii<dim.size(); ii++ )
+        {
+            if ( ii == 7 )
+            {
+                dim[ii] = header.dime.unused8;
+            }
+            else if ( ii == 8 )
+            {
+                dim[ii] = header.dime.unused9;
+            }
+            else if ( ii == 9 ) 
+            {
+                dim[ii] = header.dime.unused10;
+            }
+            else
+            {
+                dim[ii] = header.dime.dim[ii+1];
+            }
+        }
+
+        a.create(dim);
+
+        for ( ii=0; ii<dim.size(); ii++ )
+        {
+            if ( ii < 7 )
+            {
+                a.set_pixel_size(ii, header.dime.pixdim[ii+1]);
+            }
+        }
+
+        // get origin and axis
+        size_t numOfBytes = sizeof(float)*(D+D*D);
+        if ( numOfBytes <= sizeof(data_history) )
+        {
+            std::vector<float> buf(D+D*D);
+            memcpy(&buf[0], &header.hist, numOfBytes);
+
+            unsigned int ii;
+            for ( ii=0; ii<D; ii++ )
+            {
+                a.set_origin(ii, buf[ii]);
+            }
+
+            unsigned int jj;
+            for ( ii=0; ii<D; ii++ )
+            {
+                typename hoNDImage<T,D>::coord_type v(0);
+                typename hoNDImage<T,D>::coord_type mag(0);
+
+                for ( jj=0; jj<D; jj++ )
+                {
+                    v = buf[D+ii*D+jj];
+                    mag += v*v;
+                    a.set_axis(ii, jj, v);
+                }
+
+                if ( mag < FLT_EPSILON )
+                {
+                    for ( jj=0; jj<D; jj++ )
+                    {
+                        if ( ii != jj )
+                        {
+                            a.set_axis(ii, jj, 0);
+                        }
+                        else
+                        {
+                            a.set_axis(ii, jj, (typename hoNDImage<T,D>::coord_type)(1.0) );
+                        }
+                    }
+                }
+            }
+        }
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::writeAnalyzeData(const std::string& filename, const T* data, long long len) ... ");
+        GADGET_ERROR_MSG("Errors in gtPlusIOAnalyze::analyze2Image(hoNDImage<T,D>& a, const dsr& header) ... ");
         return false;
     }
 

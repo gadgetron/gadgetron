@@ -19,6 +19,8 @@ class gtPlusReconWorker3DTGRAPPA : public gtPlusReconWorker3DT<T>
 public:
 
     typedef gtPlusReconWorker3DT<T> BaseClass;
+    typedef typename BaseClass::value_type value_type;
+
     typedef gtPlusReconWorkOrder3DT<T> WorkOrderType;
 
     gtPlusReconWorker3DTGRAPPA() : BaseClass() {}
@@ -294,7 +296,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
             hoNDArray<T> gFactor(RO, E1, E2, workOrder3DT->gfactor_.begin()+usedN*RO*E1*E2);
 
             this->unmixCoeff(kIm, coilMap, unmixC, gFactor);
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(1.0/workOrder3DT->acceFactorE1_/workOrder3DT->acceFactorE2_, gFactor));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (value_type)(1.0/workOrder3DT->acceFactorE1_/workOrder3DT->acceFactorE2_), gFactor));
 
             memcpy(workOrder3DT->unmixingCoeffIm_->begin()+usedN*RO*E1*E2*srcCHA, unmixC.begin(), unmixC.get_number_of_bytes());
 
@@ -367,6 +369,10 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             aliasedIm.create(data_dst.get_dimensions());
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(data_dst, aliasedIm);
         }
+
+        typename realType<T>::Type fftCompensationRatio = (typename realType<T>::Type)(1.0/std::sqrt( (double)workOrder3DT->acceFactorE1_ * (double)workOrder3DT->acceFactorE2_ ));
+        Gadgetron::scal( fftCompensationRatio, aliasedIm);
+
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, aliasedIm, "aliasedIm");

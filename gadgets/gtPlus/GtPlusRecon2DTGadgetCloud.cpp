@@ -424,7 +424,8 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
                 {
                     if ( !packages_passed_to_next_gadget_[ii].second )
                     {
-                        GADGET_CHECK_RETURN(this->sendOutRecon(&image_headers_[ii], packages_received_[ii].complexIm, image_series_, dataDimStartingIndexes, "Image"), GADGET_FAIL);
+                        GADGET_CHECK_RETURN(this->scalingImages(packages_received_[ii].complexIm), GADGET_FAIL);
+                        GADGET_CHECK_RETURN(this->sendOutRecon(&image_headers_[ii], packages_received_[ii].complexIm, image_series_, dataDimStartingIndexes, "Image", GTPLUS_IMAGE_REGULAR), GADGET_FAIL);
                     }
                 }
 
@@ -479,8 +480,10 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
             if ( !gadget_->packages_passed_to_next_gadget_[jobID].second )
             {
                 gadget_->packages_passed_to_next_gadget_[jobID].second = true;
+
+                GADGET_CHECK_RETURN(gadget_->scalingImages(gadget_->packages_received_[jobID].complexIm), false);
                 GADGET_CHECK_RETURN(gadget_->sendOutRecon(&gadget_->image_headers_[jobID], 
-                    gadget_->packages_received_[jobID].complexIm, gadget_->image_series_, dataDimStartingIndexes, "Image"), false);
+                    gadget_->packages_received_[jobID].complexIm, gadget_->image_series_, dataDimStartingIndexes, "Image", GTPLUS_IMAGE_REGULAR), false);
 
                 if ( !gadget_->debugFolder2_fullPath_.empty() )
                 {

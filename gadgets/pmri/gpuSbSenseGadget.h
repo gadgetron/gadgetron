@@ -25,6 +25,7 @@ namespace Gadgetron{
   {
 
   public:
+    GADGET_DECLARE(gpuSbSenseGadget);
 
     gpuSbSenseGadget();
     virtual ~gpuSbSenseGadget();

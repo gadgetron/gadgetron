@@ -58,6 +58,7 @@ target_link_libraries(gpucore
   ${CUDA_CUFFT_LIBRARIES} 
   ${CUDA_CUBLAS_LIBRARIES} 
   ${CULA_LIBRARIES}
+  ${MKL_LIBRARIES}
   )
 
 install(TARGETS gpucore DESTINATION lib)

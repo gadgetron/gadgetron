@@ -299,7 +299,7 @@ namespace Gadgetron{
     }
     profiles_counter_++;
   }
-    
+
   GADGET_FACTORY_DECLARE(RadialPhaseCorrectionGadget)
-  
+
 } // namespace Gadgetron

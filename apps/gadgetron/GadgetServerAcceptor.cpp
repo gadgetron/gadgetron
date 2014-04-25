@@ -19,14 +19,22 @@ int GadgetServerAcceptor::open (const ACE_INET_Addr &listen_addr)
     (this, ACE_Event_Handler::ACCEPT_MASK);
 }
 
-
-
-
 int GadgetServerAcceptor::handle_input (ACE_HANDLE)
 {
   GadgetStreamController *controller;
   ACE_NEW_RETURN (controller, GadgetStreamController, -1);
   auto_ptr<GadgetStreamController> p (controller);
+
+  if ( working_directory_.empty() )
+  {
+    #ifdef _WIN32
+        working_directory_ = "c:\\temp\gadgetron\\";
+    #else
+        working_directory_ = "/tmp/gadgetron/";
+    #endif // _WIN32
+  }
+
+  controller->set_working_directory(working_directory_);
 
   if (this->acceptor_.accept (controller->peer ()) == -1)
     ACE_ERROR_RETURN ((LM_ERROR,

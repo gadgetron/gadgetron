@@ -26,13 +26,15 @@ include_directories(
     ${HDF5_INCLUDE_DIR}
     ${HDF5_INCLUDE_DIR}/cpp
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
+    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/application
     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-	${CMAKE_SOURCE_DIR}/toolboxes/gadgettools/ismrmrd
+    ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools/ismrmrd
     ${CMAKE_SOURCE_DIR}/apps/gadgetron
     ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
     ${CMAKE_SOURCE_DIR}/gadgets/gtPlus 
@@ -51,37 +53,41 @@ find_package(Ismrmrd REQUIRED)
 find_package(XSD REQUIRED)
 find_package(XercesC REQUIRED)
 
+set( gadgetronPlus_header_files GtPlusGadgetImageArray.h
+                                GtPlusAccumulatorWorkOrderTriggerGadget.h
+                                GtPlusGadgetOpenMP.h
+                                GtPlusReconGadget.h
+                                GtPlusRecon2DTGadget.h
+                                GtPlusRecon3DTGadget.h
+                                GtPlusRecon2DTGadgetCloud.h
+                                GtPlusRecon2DTCloudPackage.h
+                                GadgetCloudJobMessageReadWrite.h
+                                GtPlusReconJob2DTGadget.h 
+                                GtPlusReconJob3DTGadget.h 
+                                GtPlusReconJob2DTGadgetCloud.h )
+
+set( gadgetronPlus_src_files GtPlusGadgetImageArray.cpp
+                            GtPlusAccumulatorWorkOrderTriggerGadget.cpp
+                            GtPlusGadgetOpenMP.cpp
+                            GtPlusReconGadget.cpp
+                            GtPlusRecon2DTGadget.cpp
+                            GtPlusRecon3DTGadget.cpp
+                            GtPlusRecon2DTGadgetCloud.cpp
+                            GadgetCloudJobMessageReadWrite.cpp
+                            GtPlusReconJob2DTGadget.cpp 
+                            GtPlusReconJob3DTGadget.cpp 
+                            GtPlusReconJob2DTGadgetCloud.cpp )
+
 add_library(gadgetronPlus SHARED
-            GtPlusGadgetExport.h
-            GtPlusGadgetImageArray.h
-            GtPlusGadgetImageArray.cpp
-            GtPlusAccumulatorWorkOrderTriggerGadget.h
-            GtPlusAccumulatorWorkOrderTriggerGadget.cpp
-            GtPlusGadgetOpenMP.h
-            GtPlusGadgetOpenMP.cpp
-            GtPlusReconGadget.h
-            GtPlusReconGadget.cpp
-            GtPlusRecon2DTGadget.h
-            GtPlusRecon2DTGadget.cpp
-            GtPlusRecon3DTGadget.h
-            GtPlusRecon3DTGadget.cpp
-            GtPlusRecon2DTGadgetCloud.h
-            GtPlusRecon2DTGadgetCloud.cpp
-            GtPlusRecon2DTCloudPackage.h
-            GadgetCloudJobMessageReadWrite.h
-            GadgetCloudJobMessageReadWrite.cpp
-            GtPlusReconJob2DTGadget.h 
-            GtPlusReconJob2DTGadget.cpp 
-            GtPlusReconJob3DTGadget.h 
-            GtPlusReconJob3DTGadget.cpp 
-            GtPlusReconJob2DTGadgetCloud.h 
-            GtPlusReconJob2DTGadgetCloud.cpp 
+            GtPlusGadgetExport.h 
+            ${gadgetronPlus_header_files} 
+            ${gadgetronPlus_src_files} 
             ${ISMRMRD_XSD_SOURCE} )
 
 target_link_libraries(gadgetronPlus 
     cpucore 
     cpucore_math 
-	cpufft
+    cpufft
     gtplus 
     gadgettools 
     ${MKL_LIBRARIES} 
@@ -90,13 +96,13 @@ target_link_libraries(gadgetronPlus
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
     ${XERCESC_LIBRARIES} )
 
-    if (CUDA_FOUND)
-        target_link_libraries(gadgetronPlus gpuparallelmri)
-    endif (CUDA_FOUND)
+if (CUDA_FOUND)
+    target_link_libraries(gadgetronPlus gpuparallelmri)
+endif (CUDA_FOUND)
 
 install (FILES 
-        GtPlusGadgetExport.h
+        GtPlusGadgetExport.h 
+        ${gadgetronPlus_header_files} 
         DESTINATION include)
 
 install(TARGETS gadgetronPlus DESTINATION lib)
-# install(FILES default.xml default_short.xml DESTINATION config)

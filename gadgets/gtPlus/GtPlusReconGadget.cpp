@@ -17,6 +17,12 @@ GtPlusReconGadget::GtPlusReconGadget() : mem_manager_(new Gadgetron::gtPlus::gtP
     max_intensity_value_US_ = 2048;
 
     scalingFactor_ = -1;
+    scalingFactor_gfactor_ = 100;
+    scalingFactor_snr_image_ = 10;
+    scalingFactor_std_map_ = 1000;
+
+    start_frame_for_std_map_ = 5;
+
     use_constant_scalingFactor_ = false;
 
     timeStampResolution_ = 0.0025f;
@@ -111,6 +117,22 @@ bool GtPlusReconGadget::readParameters()
 
         scalingFactor_ = this->get_double_value("scalingFactor");
         GADGET_CONDITION_MSG(verboseMode_, "scalingFactor_ is " << scalingFactor_);
+
+        scalingFactor_gfactor_ = this->get_double_value("scalingFactor_gfactor");
+        if ( scalingFactor_gfactor_ == 0 ) scalingFactor_gfactor_ = 100;
+        GADGET_CONDITION_MSG(verboseMode_, "scalingFactor_gfactor_ is " << scalingFactor_gfactor_);
+
+        scalingFactor_snr_image_ = this->get_double_value("scalingFactor_snr_image");
+        if ( scalingFactor_snr_image_ == 0 ) scalingFactor_snr_image_ = 10;
+        GADGET_CONDITION_MSG(verboseMode_, "scalingFactor_snr_image_ is " << scalingFactor_snr_image_);
+
+        scalingFactor_std_map_ = this->get_double_value("scalingFactor_std_map");
+        if ( scalingFactor_std_map_ == 0 ) scalingFactor_std_map_ = 1000;
+        GADGET_CONDITION_MSG(verboseMode_, "scalingFactor_std_map_ is " << scalingFactor_std_map_);
+
+        start_frame_for_std_map_ = this->get_int_value("start_frame_for_std_map");
+        if ( start_frame_for_std_map_ == 0 ) start_frame_for_std_map_ = 5;
+        GADGET_CONDITION_MSG(verboseMode_, "start_frame_for_std_map_ is " << start_frame_for_std_map_);
 
         use_constant_scalingFactor_ = this->get_bool_value("use_constant_scalingFactor");
         GADGET_CONDITION_MSG(verboseMode_, "use_constant_scalingFactor_ is " << use_constant_scalingFactor_);
@@ -267,9 +289,17 @@ bool GtPlusReconGadget::readParameters()
         GADGET_CONDITION_MSG(verboseMode_, "downstream_coil_compression_ is " << workOrderPara_.downstream_coil_compression_);
 
         workOrderPara_.coil_compression_thres_ = this->get_double_value("coil_compression_thres");
+
+        if ( workOrderPara_.upstream_coil_compression_ && (workOrderPara_.coil_compression_thres_ > workOrderPara_.upstream_coil_compression_thres_) )
+            workOrderPara_.coil_compression_thres_ = workOrderPara_.upstream_coil_compression_thres_;
+
         GADGET_CONDITION_MSG(verboseMode_, "coil_compression_thres_ is " << workOrderPara_.coil_compression_thres_);
 
         workOrderPara_.coil_compression_num_modesKept_ = this->get_int_value("coil_compression_num_modesKept");
+
+        if ( workOrderPara_.upstream_coil_compression_ && (workOrderPara_.coil_compression_num_modesKept_ > workOrderPara_.upstream_coil_compression_num_modesKept_) )
+            workOrderPara_.coil_compression_num_modesKept_ = workOrderPara_.upstream_coil_compression_num_modesKept_;
+
         GADGET_CONDITION_MSG(verboseMode_, "coil_compression_num_modesKept_ is " << workOrderPara_.coil_compression_num_modesKept_);
 
         GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
@@ -304,6 +334,9 @@ bool GtPlusReconGadget::readParameters()
 
         workOrderPara_.recon_auto_parameters_ = this->get_bool_value("recon_auto_parameters");
         GADGET_CONDITION_MSG(verboseMode_, "recon_auto_parameters_ is " << workOrderPara_.recon_auto_parameters_);
+
+        workOrderPara_.gfactor_needed_ = this->get_bool_value("gfactor_needed");
+        GADGET_CONDITION_MSG(verboseMode_, "gfactor_needed_ is " << workOrderPara_.gfactor_needed_);
 
         GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
 
@@ -600,10 +633,10 @@ int GtPlusReconGadget::process_config(ACE_Message_Block* mb)
     reconE2_ = matrix_size_recon_[2];
     GADGET_CONDITION_MSG(verboseMode_, "reconE2_ is " << reconE2_);
 
-    kSpaceMaxAcqE1No_ = e_limits.kspace_encoding_step_1().get().maximum();
+    kSpaceMaxAcqE1No_ = matrix_size_encoding_[1]-1; // e_limits.kspace_encoding_step_1().get().maximum();
     GADGET_CONDITION_MSG(verboseMode_, "kSpaceMaxAcqE1No_ is " << kSpaceMaxAcqE1No_);
 
-    kSpaceMaxAcqE2No_ = e_limits.kspace_encoding_step_2().get().maximum();
+    kSpaceMaxAcqE2No_ = matrix_size_encoding_[2]-1; // e_limits.kspace_encoding_step_2().get().maximum();
     GADGET_CONDITION_MSG(verboseMode_, "kSpaceMaxAcqE2No_ is " << kSpaceMaxAcqE2No_);
 
     aSpacing_[0] = field_of_view_recon_[0]/matrix_size_recon_[0];
@@ -615,7 +648,7 @@ int GtPlusReconGadget::process_config(ACE_Message_Block* mb)
     // find the maximal encoding size
     if (e_limits.kspace_encoding_step_1().present()) 
     {
-        meas_max_idx_.kspace_encode_step_1 = e_limits.kspace_encoding_step_1().get().maximum();
+        meas_max_idx_.kspace_encode_step_1 = matrix_size_encoding_[1]-1; // e_limits.kspace_encoding_step_1().get().maximum();
     }
     else
     {
@@ -646,7 +679,7 @@ int GtPlusReconGadget::process_config(ACE_Message_Block* mb)
 
     if (e_limits.kspace_encoding_step_2().present())
     {
-        meas_max_idx_.kspace_encode_step_2 = e_limits.kspace_encoding_step_2().get().maximum();
+        meas_max_idx_.kspace_encode_step_2 = matrix_size_encoding_[2]-1; // e_limits.kspace_encoding_step_2().get().maximum();
     }
     else
     {
@@ -721,12 +754,12 @@ int GtPlusReconGadget::process_config(ACE_Message_Block* mb)
     if ( interleaved_ ) { GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is interleaved"); }
     if ( other_ ) { GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is other"); }
 
-    if ( other_ && acceFactorE1_==1 && acceFactorE2_==1 )
-    {
-        GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is changed to ISMRMRD_interleaved");
-        CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
-        acceFactorE1_ = 2;
-    }
+    //if ( other_ && acceFactorE1_==1 && acceFactorE2_==1 )
+    //{
+    //    GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is changed to ISMRMRD_interleaved");
+    //    CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
+    //    acceFactorE1_ = 2;
+    //}
 
     if ( interleaved_ )
     {
@@ -901,6 +934,21 @@ addPrePostZeros(int centreNo, int sampleNo, int& PrePostZeros)
 }
 
 bool GtPlusReconGadget::
+scalingImages(hoNDArray<ValueType>& res)
+{
+    if ( scalingFactor_ < 0 && !use_constant_scalingFactor_ )
+    {
+        hoNDArray<float> mag(res.get_dimensions());
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(res, mag));
+        GADGET_CHECK_RETURN_FALSE(this->scalingMagnitude(mag));
+    }
+
+    GADGET_CHECK_RETURN_FALSE(scal((float)scalingFactor_, res));
+
+    return true;
+}
+
+bool GtPlusReconGadget::
 scalingMagnitude(hoNDArray<float>& mag)
 {
     if ( scalingFactor_ < 0 && !use_constant_scalingFactor_ )
@@ -984,21 +1032,21 @@ generateKSpaceFilter(WorkOrderType& workOrder)
         if ( RO>1 && filterRO_type_ != ISMRMRD_FILTER_NONE )
         {
             workOrder.filterRO_.create(RO);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(RO, workOrder.filterRO_, filterRO_type_, filterRO_sigma_, std::ceil(filterRO_width_*RO)));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(RO, workOrder.start_RO_, workOrder.end_RO_, workOrder.filterRO_, filterRO_type_, filterRO_sigma_, std::ceil(filterRO_width_*RO)));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterRO_, "filterRO");
         }
 
         if ( E1>1 && filterE1_type_ != ISMRMRD_FILTER_NONE )
         {
             workOrder.filterE1_.create(E1);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E1, workOrder.filterE1_, filterE1_type_, filterE1_sigma_, std::ceil(filterE1_width_*E1)));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E1, workOrder.start_E1_, workOrder.end_E1_, workOrder.filterE1_, filterE1_type_, filterE1_sigma_, std::ceil(filterE1_width_*E1)));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE1_, "filterE1");
         }
 
         if ( E2>1 && filterE2_type_ != ISMRMRD_FILTER_NONE )
         {
             workOrder.filterE2_.create(E2);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E2, workOrder.filterE2_, filterE2_type_, filterE2_sigma_, std::ceil(filterE2_width_*E2)));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E2, workOrder.start_E2_, workOrder.end_E2_, workOrder.filterE2_, filterE2_type_, filterE2_sigma_, std::ceil(filterE2_width_*E2)));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE2_, "filterE2");
         }
 
@@ -1035,7 +1083,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
                 {
                     size_t len = endE1-startE1+1;
                     workOrder.filterE1_ref_.create(len);
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, workOrder.filterE1_ref_, filterE1_ref_type_, filterE1_ref_sigma_, std::ceil(filterE1_ref_width_*len)));
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, 0, len-1, workOrder.filterE1_ref_, filterE1_ref_type_, filterE1_ref_sigma_, std::ceil(filterE1_ref_width_*len)));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE1_ref_, "filterE1_ref");
                 }
 
@@ -1043,7 +1091,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
                 {
                     size_t len = endE2-startE2+1;
                     workOrder.filterE2_ref_.create(len);
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, workOrder.filterE2_ref_, filterE2_ref_type_, filterE2_ref_sigma_, std::ceil(filterE2_ref_width_*len)));
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, 0, len-1, workOrder.filterE2_ref_, filterE2_ref_type_, filterE2_ref_sigma_, std::ceil(filterE2_ref_width_*len)));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE2_ref_, "filterE2_ref");
                 }
             }
@@ -1104,151 +1152,68 @@ recomputeImageGeometry(GtPlusGadgetImageArray* images, GtPlusGadgetImageExt& ima
 {
     size_t E2 = images->matrix_size[4];
 
-    // if FOV are the same, return the stored image header, take care of E2 resizing
-    //if ( GT_ABS(field_of_view_recon_[2]-field_of_view_encoding_[2])<0.1 )
-    //{
-    //    if ( maxE2 == E2 ) // no E2 resizing
-    //    {
-    //        int offset = images->get_offset(slc, e2, con, phs, rep, set, 0);
-    //        imageHeader = images->imageArray_[offset];
-    //    }
-    //    else
-    //    {
-    //        double e2_sampled = e2*E2/(double)maxE2;
+    // need to recompute image geometry
+    // no need to consider RO and E1, because image position vector points to the image center
 
-    //        size_t e2_lower = std::floor(e2_sampled);
-    //        if ( e2_lower >= E2 ) e2_lower = E2-1;
+    if ( e2 >= E2 ) e2 = E2/2;
 
-    //        size_t e2_higher = std::ceil(e2_sampled);
-    //        if ( e2_higher >= E2 ) e2_higher = E2-1;
+    int offsetCurr = images->get_offset(slc, e2, con, phs, rep, set, 0);
+    imageHeader = images->imageArray_[offsetCurr];
 
-    //        GtPlusGadgetImageExt imageHeader_lower, imageHeader_higher;
+    // find the center partition
+    if ( E2 > 1 )
+    {
+        int midE2 = E2/2;
+        int offset = images->get_offset(slc, midE2, con, phs, rep, set, 0);
 
-    //        if ( e2_lower == e2_higher )
-    //        {
-    //            int offset = images->get_offset(slc, e2_lower, con, phs, rep, set, 0);
-    //            imageHeader.copy(images->imageArray_[offset]);
-    //        }
-    //        else
-    //        {
-    //            int offset_lower = images->get_offset(slc, e2_lower, con, phs, rep, set, 0);
-    //            imageHeader_lower.copy(images->imageArray_[offset_lower]);
-
-    //            int offset_higher = images->get_offset(slc, e2_higher, con, phs, rep, set, 0);
-    //            imageHeader_higher.copy(images->imageArray_[offset_higher]);
-
-    //            imageHeader = imageHeader_lower;
-    //            imageHeader.recomputeHeader(imageHeader_higher, e2_higher-e2_sampled);
-    //        }
-    //    }
-    //}
-    //else
-    //{
-        // need to recompute image geometry
-        // no need to consider RO and E1, because image position vector points to the image center
-
-        if ( e2 >= E2 ) e2 = E2/2;
-
-        int offsetCurr = images->get_offset(slc, e2, con, phs, rep, set, 0);
-        imageHeader = images->imageArray_[offsetCurr];
-
-        // find the center partition
-        if ( E2 > 1 )
+        while ( GT_ABS(imageHeader.slice_dir[0])<1e-6 && GT_ABS(imageHeader.slice_dir[1])<1e-6 && GT_ABS(imageHeader.slice_dir[2])<1e-6 )
         {
-            int midE2 = E2/2;
-            int offset = images->get_offset(slc, midE2, con, phs, rep, set, 0);
-
-            while ( GT_ABS(imageHeader.slice_dir[0])<1e-6 && GT_ABS(imageHeader.slice_dir[1])<1e-6 && GT_ABS(imageHeader.slice_dir[2])<1e-6 )
-            {
-                imageHeader = images->imageArray_[offset];
-                midE2++;
-                offset = images->get_offset(slc, midE2, con, phs, rep, set, 0);
-            }
-
-            // position vector for the center partition
-            float posVec[3];
-            posVec[0] = imageHeader.position[0];
-            posVec[1] = imageHeader.position[1];
-            posVec[2] = imageHeader.position[2];
-
-            // slice direction
-            float sliceVec[3];
-            sliceVec[0] = imageHeader.slice_dir[0];
-            sliceVec[1] = imageHeader.slice_dir[1];
-            sliceVec[2] = imageHeader.slice_dir[2];
-
-            midE2 = E2/2;
-
-            // comput slice postion vector for this partition
-            float posVecCurr[3];
-            posVecCurr[0] = posVec[0] + aSpacing_[2]*sliceVec[0]*(e2-midE2+0.5);
-            posVecCurr[1] = posVec[1] + aSpacing_[2]*sliceVec[1]*(e2-midE2+0.5);
-            posVecCurr[2] = posVec[2] + aSpacing_[2]*sliceVec[2]*(e2-midE2+0.5);
-
-            imageHeader.position[0] = posVecCurr[0];
-            imageHeader.position[1] = posVecCurr[1];
-            imageHeader.position[2] = posVecCurr[2];
-
-            GADGET_CONDITION_MSG(verboseMode_, "--> image position : [" << imageHeader.position[0] << " , " << imageHeader.position[1] << " , " << imageHeader.position[2] << "]");
-
-            imageHeader.field_of_view[2] = aSpacing_[2];
-
-            imageHeader.user_int[0] = e2;
+            imageHeader = images->imageArray_[offset];
+            midE2++;
+            offset = images->get_offset(slc, midE2, con, phs, rep, set, 0);
         }
 
-        if ( imageHeader.measurement_uid == 0 )
-        {
-            GADGET_WARN_MSG("imageHeader.measurement_uid == 0");
-        }
+        // position vector for the center partition
+        float posVec[3];
+        posVec[0] = imageHeader.position[0];
+        posVec[1] = imageHeader.position[1];
+        posVec[2] = imageHeader.position[2];
 
-        /*double e2_sampled = 0;
-        double coord_in_encoding_space = field_of_view_recon_[2]*e2/maxE2 + (field_of_view_encoding_[2]/2-field_of_view_recon_[2]/2);
-        e2_sampled = E2 * coord_in_encoding_space/field_of_view_encoding_[2];
+        // slice direction
+        float sliceVec[3];
+        sliceVec[0] = imageHeader.slice_dir[0];
+        sliceVec[1] = imageHeader.slice_dir[1];
+        sliceVec[2] = imageHeader.slice_dir[2];
 
-        if ( e2_sampled < 0 )
-        {
-            int offset = images->get_offset(slc, 0, con, phs, rep, set, 0);
-            imageHeader.copy(images->imageArray_[offset]);
-        }
-        else if ( e2_sampled > E2-1 )
-        {
-            int offset = images->get_offset(slc, E2-1, con, phs, rep, set, 0);
-            imageHeader.copy(images->imageArray_[offset]);
-        }
-        else
-        {
-            size_t e2_lower = std::floor(e2_sampled);
-            if ( e2_lower >= E2 ) e2_lower = E2-1;
+        midE2 = E2/2;
 
-            size_t e2_higher = std::ceil(e2_sampled);
-            if ( e2_higher >= E2 ) e2_higher = E2-1;
+        // comput slice postion vector for this partition
+        float posVecCurr[3];
+        posVecCurr[0] = posVec[0] + aSpacing_[2]*sliceVec[0]*(e2-midE2+0.5);
+        posVecCurr[1] = posVec[1] + aSpacing_[2]*sliceVec[1]*(e2-midE2+0.5);
+        posVecCurr[2] = posVec[2] + aSpacing_[2]*sliceVec[2]*(e2-midE2+0.5);
 
-            GtPlusGadgetImageExt imageHeader_lower, imageHeader_higher;
+        imageHeader.position[0] = posVecCurr[0];
+        imageHeader.position[1] = posVecCurr[1];
+        imageHeader.position[2] = posVecCurr[2];
 
-            if ( e2_lower == e2_higher )
-            {
-                int offset = images->get_offset(slc, e2_lower, con, phs, rep, set, 0);
-                imageHeader.copy(images->imageArray_[offset]);
-            }
-            else
-            {
-                int offset_lower = images->get_offset(slc, e2_lower, con, phs, rep, set, 0);
-                imageHeader_lower.copy(images->imageArray_[offset_lower]);
+        GADGET_CONDITION_MSG(verboseMode_, "--> image position : [" << imageHeader.position[0] << " , " << imageHeader.position[1] << " , " << imageHeader.position[2] << "]");
 
-                int offset_higher = images->get_offset(slc, e2_higher, con, phs, rep, set, 0);
-                imageHeader_higher.copy(images->imageArray_[offset_higher]);
+        imageHeader.field_of_view[2] = aSpacing_[2];
 
-                imageHeader.copy(imageHeader_lower);
-                imageHeader.recomputeHeader(imageHeader_higher, e2_higher-e2_sampled);
-            }
-        }*/
-    //}
+        imageHeader.user_int[0] = e2;
+    }
+
+    if ( imageHeader.measurement_uid == 0 )
+    {
+        GADGET_WARN_MSG("imageHeader.measurement_uid == 0");
+    }
 
     return true;
 }
 
 bool GtPlusReconGadget::
-sendOutReconMag(GtPlusGadgetImageArray* images, const hoNDArray<float>& res, int seriesNum, const std::vector<DimensionRecordType>& dimStartingIndexes, const std::string& prefix)
+sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, int seriesNum, const std::vector<DimensionRecordType>& dimStartingIndexes, const std::string& prefix, const std::string& dataRole)
 {
     try
     {
@@ -1268,38 +1233,36 @@ sendOutReconMag(GtPlusGadgetImageArray* images, const hoNDArray<float>& res, int
                                                                       << SLC << " " << E2 << " " << CON << " " 
                                                                       << PHS << " " << REP << " " << SET << "] " );
 
-        size_t set(0), rep(0), phs(0), con(0), e2(0), slc(0), cha(0), seg(0);
-        // size_t set_sInd(0), rep_sInd(0), phs_sInd(0), con_sInd(0), e2_sInd(0), slc_sInd(0);
+        // info string for gfactor, snr map and std map
+        std::ostringstream ostr_gfactor;
+        ostr_gfactor << "x" << this->scalingFactor_gfactor_;
+        std::string gfactorInfo = ostr_gfactor.str();
 
+        std::ostringstream ostr_snr;
+        ostr_snr << "x" << this->scalingFactor_snr_image_;
+        std::string snrMapInfo = ostr_snr.str();
+
+        std::ostringstream ostr_std;
+        ostr_std << "x" << this->scalingFactor_std_map_;
+        std::string stdMapInfo = ostr_std.str();
+
+        // ------------------------------------------------------------- //
+
+        size_t set(0), rep(0), phs(0), con(0), e2(0), slc(0), cha(0), seg(0);
         for ( set=0; set<SET; set++ )
         {
-            // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.findDimIndex(dimStartingIndexes, DIM_Set, set_sInd));
-
             for ( rep=0; rep<REP; rep++ )
             {
-                // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.findDimIndex(dimStartingIndexes, DIM_Repetition, rep_sInd));
-
                 for ( phs=0; phs<PHS; phs++ )
                 {
-                    // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.findDimIndex(dimStartingIndexes, DIM_Phase, phs_sInd));
-
                     for ( con=0; con<CON; con++ )
                     {
-                        // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.findDimIndex(dimStartingIndexes, DIM_Contrast, con_sInd));
-
                         for ( e2=0; e2<E2; e2++ )
                         {
-                            // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.findDimIndex(dimStartingIndexes, DIM_Encoding2, e2_sInd));
-
                             for ( slc=0; slc<SLC; slc++ )
                             {
-                                // GADGET_CHECK_RETURN_FALSE(gtPlus_util_.findDimIndex(dimStartingIndexes, DIM_Slice, slc_sInd));
-
                                 GtPlusGadgetImageExt imageHeaderSent;
                                 GADGET_CHECK_RETURN_FALSE(recomputeImageGeometry(images, imageHeaderSent, slc, e2, con, phs, rep, set, 0, E2));
-
-                                //int offset = images->get_offset(slc, e2, con, phs, rep, set, 0);
-                                //imageHeaderSent = images->imageArray_[offset];
 
                                 if ( imageHeaderSent.measurement_uid == 0 )
                                 {
@@ -1309,22 +1272,110 @@ sendOutReconMag(GtPlusGadgetImageArray* images, const hoNDArray<float>& res, int
                                 for ( cha=0; cha<CHA; cha++ )
                                 {
                                     Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = new Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>();
-                                    *cm1->getObjectPtr() = imageHeaderSent;
+                                    Gadgetron::GadgetContainerMessage<GtImageAttribType>* cm3 = new Gadgetron::GadgetContainerMessage<GtImageAttribType>();
+
+                                    *(cm1->getObjectPtr()) = imageHeaderSent;
 
                                     cm1->getObjectPtr()->flags = 0;
-                                    cm1->getObjectPtr()->image_data_type = ISMRMRD::DATA_FLOAT;
-                                    cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
+                                    cm1->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
 
                                     // image number and image series
-                                    cm1->getObjectPtr()->image_index = computeSeriesImageNumber (*cm1->getObjectPtr(), CHA, cha, E2, e2);
+                                    cm1->getObjectPtr()->image_index = computeSeriesImageNumber ( *(cm1->getObjectPtr()), CHA, cha, E2, e2);
                                     cm1->getObjectPtr()->image_series_index = seriesNum;
                                     // GADGET_CONDITION_MSG(verboseMode_, "image number " << cm1->getObjectPtr()->image_index << "    image series " << cm1->getObjectPtr()->image_series_index << " ... ");
+
+                                    // ----------------------------------------------------------
+                                    // set the image attributes
+                                    cm3->getObjectPtr()->attribute1_.set(GTPLUS_IMAGENUMBER, cm1->getObjectPtr()->image_index);
+
+                                    cm3->getObjectPtr()->attribute1_.set(GTPLUS_CHA,        cha);
+                                    cm3->getObjectPtr()->attribute1_.set(GTPLUS_SLC,        cm1->getObjectPtr()->slice);
+                                    cm3->getObjectPtr()->attribute1_.set(GTPLUS_E2,         e2);
+                                    cm3->getObjectPtr()->attribute1_.set(GTPLUS_CONTRAST,   cm1->getObjectPtr()->contrast);
+                                    cm3->getObjectPtr()->attribute1_.set(GTPLUS_PHASE,      cm1->getObjectPtr()->phase);
+                                    cm3->getObjectPtr()->attribute1_.set(GTPLUS_REP,        cm1->getObjectPtr()->repetition);
+                                    cm3->getObjectPtr()->attribute1_.set(GTPLUS_SET,        cm1->getObjectPtr()->set);
+
+                                    cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGEPROCESSINGHISTORY, "GTPLUS");
+
+                                    if ( dataRole == GTPLUS_IMAGE_REGULAR )
+                                    {
+                                        cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
+
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, "GTPLUS");
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_GTPLUS");
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_REGULAR);
+                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, this->scalingFactor_);
+                                    }
+                                    else if ( dataRole == GTPLUS_IMAGE_PHASE )
+                                    {
+                                        cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_PHASE;
+
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, "PHS_GTPLUS");
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "PHS_GTPLUS");
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_PHASE);
+                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, this->scalingFactor_);
+                                    }
+                                    else if ( dataRole == GTPLUS_IMAGE_GFACTOR )
+                                    {
+                                        cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
+
+                                        std::string comment = gfactorInfo;
+                                        comment.append("_");
+                                        comment.append("gfactor_GTPLUS");
+
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, comment);
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_gfactor_GTPLUS");
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_GFACTOR);
+                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, this->scalingFactor_gfactor_);
+                                    }
+                                    else if ( dataRole == GTPLUS_IMAGE_SNR_MAP )
+                                    {
+                                        cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
+
+                                        std::string comment = snrMapInfo;
+                                        comment.append("_");
+                                        comment.append("SNR_Map_GTPLUS");
+
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, comment);
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_SNR_Map_GTPLUS");
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_SNR_MAP);
+                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, this->scalingFactor_snr_image_);
+                                    }
+                                    else if ( dataRole == GTPLUS_IMAGE_STD_MAP )
+                                    {
+                                        cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
+
+                                        std::string comment = stdMapInfo;
+                                        comment.append("_");
+                                        comment.append("Std_Map_GTPLUS");
+
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, comment);
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_Std_Map_GTPLUS");
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_STD_MAP);
+                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, this->scalingFactor_std_map_);
+
+                                        cm3->getObjectPtr()->attribute1_.set(GTPLUS_IMAGE_WINDOWCENTER, this->scalingFactor_std_map_);
+                                        cm3->getObjectPtr()->attribute1_.set(GTPLUS_IMAGE_WINDOWWIDTH, 2*this->scalingFactor_std_map_);
+                                    }
+                                    else if ( dataRole == GTPLUS_IMAGE_OTHER )
+                                    {
+                                        cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
+
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, "GTPLUS");
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_GTPLUS");
+                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_OTHER);
+                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, this->scalingFactor_);
+                                    }
+
+                                    // ----------------------------------------------------------
 
                                     // set the time stamp
                                     // the time stamp of the first readout line in this 2D kspace is used
 
-                                    Gadgetron::GadgetContainerMessage< Gadgetron::hoNDArray<float> >* cm2 = new Gadgetron::GadgetContainerMessage< Gadgetron::hoNDArray<float> >();
+                                    Gadgetron::GadgetContainerMessage< Gadgetron::hoNDArray<ValueType> >* cm2 = new Gadgetron::GadgetContainerMessage< Gadgetron::hoNDArray<ValueType> >();
                                     cm1->cont(cm2);
+                                    cm2->cont(cm3);
 
                                     std::vector<size_t> img_dims(2);
                                     img_dims[0] = RO;
@@ -1357,22 +1408,16 @@ sendOutReconMag(GtPlusGadgetImageArray* images, const hoNDArray<float>& res, int
                                     ind[7] = rep;
                                     ind[8] = set;
 
-                                    memcpy(cm2->getObjectPtr()->begin(), res.begin()+res.calculate_offset(ind), sizeof(float)*RO*E1);
+                                    memcpy(cm2->getObjectPtr()->begin(), res.begin()+res.calculate_offset(ind), sizeof(ValueType)*RO*E1);
 
                                     if ( !debugFolder2_fullPath_.empty() )
                                     {
                                         std::ostringstream ostr;
                                         ostr << prefix << "_" << cm1->getObjectPtr()->image_index;
-                                        GADGET_EXPORT_ARRAY(debugFolder2_fullPath_, gt_exporter_, *cm2->getObjectPtr(), ostr.str());
-
-                                        //hoNDArray<unsigned short> imageUS2D;
-                                        //imageUS2D.copyFrom(*cm2->getObjectPtr());
-                                        //std::ostringstream ostr2;
-                                        //ostr2 << prefix << "_US_" << cm1->getObjectPtr()->image_index;
-                                        //GADGET_EXPORT_ARRAY(debugFolder2_fullPath_, gt_exporter_, imageUS2D, ostr2.str());
+                                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, *cm2->getObjectPtr(), ostr.str());
                                     }
 
-                                    GADGET_CONDITION_MSG(true, "sending out 2D image [CHA SLC E2 CON PHS REP SET] = [" 
+                                    GADGET_CONDITION_MSG(true, "sending out " << dataRole << " image [CHA SLC E2 CON PHS REP SET] = [" 
                                                                       << cha << " " 
                                                                       << cm1->getObjectPtr()->slice << " " 
                                                                       << e2 << " " 
@@ -1397,31 +1442,13 @@ sendOutReconMag(GtPlusGadgetImageArray* images, const hoNDArray<float>& res, int
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GtPlusReconGadget::sendOutReconMag(float) ... ");
+        GADGET_ERROR_MSG("Errors in GtPlusReconGadget::sendOutRecon(complex float) ... ");
         return false;
     }
 
     return true;
 }
 
-bool GtPlusReconGadget::
-sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, int seriesNum, const std::vector<DimensionRecordType>& dimStartingIndexes, const std::string& prefix)
-{
-    try
-    {
-        hoNDArray<float> mag(res.get_dimensions());
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(res, mag));
-        GADGET_CHECK_RETURN_FALSE(scalingMagnitude(mag));
-        GADGET_CHECK_RETURN_FALSE(this->sendOutReconMag(images, mag, seriesNum, dimStartingIndexes, prefix));
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in GtPlusReconGadget::sendOutRecon(ValueType) ... ");
-        return false;
-    }
-
-    return true;
-}
 
 bool GtPlusReconGadget::sendOutRecon2D(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, int seriesNum, int imageNum)
 {
@@ -1447,7 +1474,9 @@ bool GtPlusReconGadget::sendOutRecon2D(GtPlusGadgetImageArray* images, const hoN
     try
     {
         Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = new Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>();
-        *cm1->getObjectPtr() = images->imageArray_[0];
+        Gadgetron::GadgetContainerMessage<GtImageAttribType>* cm3 = new Gadgetron::GadgetContainerMessage<GtImageAttribType>();
+
+        *(cm1->getObjectPtr()) = images->imageArray_[0];
 
         cm1->getObjectPtr()->flags = 0;
         cm1->getObjectPtr()->image_data_type = ISMRMRD::DATA_FLOAT;
@@ -1459,10 +1488,26 @@ bool GtPlusReconGadget::sendOutRecon2D(GtPlusGadgetImageArray* images, const hoN
 
         Gadgetron::GadgetContainerMessage< Gadgetron::hoNDArray<float> >* cm2 = new Gadgetron::GadgetContainerMessage< Gadgetron::hoNDArray<float> >();
         cm1->cont(cm2);
+        cm2->cont(cm3);
 
         std::vector<size_t> img_dims(2);
         img_dims[0] = res.get_size(0);
         img_dims[1] = res.get_size(1);
+
+        // set the image attributes
+        cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, "GTPLUS");
+        cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_GTPLUS");
+        cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_REGULAR);
+
+        cm3->getObjectPtr()->attribute1_.set(GTPLUS_CHA,        0);
+        cm3->getObjectPtr()->attribute1_.set(GTPLUS_SLC,        cm1->getObjectPtr()->slice);
+        cm3->getObjectPtr()->attribute1_.set(GTPLUS_E2,         0);
+        cm3->getObjectPtr()->attribute1_.set(GTPLUS_CONTRAST,   cm1->getObjectPtr()->contrast);
+        cm3->getObjectPtr()->attribute1_.set(GTPLUS_PHASE,      cm1->getObjectPtr()->phase);
+        cm3->getObjectPtr()->attribute1_.set(GTPLUS_REP,        cm1->getObjectPtr()->repetition);
+        cm3->getObjectPtr()->attribute1_.set(GTPLUS_SET,        cm1->getObjectPtr()->set);
+
+        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, this->scalingFactor_);
 
         //Fixing array dimensions (MSH)
         cm1->getObjectPtr()->matrix_size[0] = res.get_size(0);
@@ -1499,6 +1544,120 @@ bool GtPlusReconGadget::sendOutRecon2D(GtPlusGadgetImageArray* images, const hoN
     catch(...)
     {
         GADGET_ERROR_MSG("Errors in GtPlusReconGadget::sendOutRecon2D(float) ... ");
+        return false;
+    }
+
+    return true;
+}
+
+bool GtPlusReconGadget::computeSNRImage(const hoNDArray<ValueType>& res, const hoNDArray<ValueType>& gfactor, unsigned int startInd, bool withAcceleration, hoNDArray<ValueType>& snrImage, hoNDArray<ValueType>& stdMap)
+{
+    try
+    {
+        boost::shared_ptr< std::vector<size_t> > dims = res.get_dimensions();
+        size_t RO = (*dims)[0];
+        size_t E1 = (*dims)[1];
+        size_t CHA = (*dims)[2];
+        size_t SLC = (*dims)[3];
+        size_t E2 = (*dims)[4];
+        size_t CON = (*dims)[5];
+        size_t PHS = (*dims)[6];
+        size_t REP = (*dims)[7];
+        size_t SET = (*dims)[8];
+
+        snrImage = gfactor;
+
+        if ( withAcceleration )
+        {
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::addEpsilon(snrImage));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::divide(res, snrImage, snrImage));
+        }
+        else
+        {
+            snrImage = res;
+        }
+
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, snrImage, "snrImage");
+
+        std::vector<size_t> dimStdMap(*dims);
+        dimStdMap[7] = 1;
+
+        if ( REP > startInd+2 )
+        {
+            stdMap.create(dimStdMap);
+            Gadgetron::clear(stdMap);
+
+            size_t numOfIm = REP - startInd;
+
+            hoNDArray<ValueType> repBuf(RO, E1, numOfIm);
+            hoNDArray<real_value_type> repBufMag(RO, E1, numOfIm);
+            hoNDArray<real_value_type> stdMap2D(RO, E1);
+
+            std::vector<size_t> ind(9, 0);
+
+            size_t set(0), rep(0), phs(0), con(0), e2(0), slc(0), cha(0), seg(0);
+            for ( set=0; set<SET; set++ )
+            {
+                for ( phs=0; phs<PHS; phs++ )
+                {
+                    for ( con=0; con<CON; con++ )
+                    {
+                        for ( e2=0; e2<E2; e2++ )
+                        {
+                            for ( slc=0; slc<SLC; slc++ )
+                            {
+                                for ( cha=0; cha<CHA; cha++ )
+                                {
+                                    Gadgetron::clear(repBuf);
+
+                                    for ( rep=startInd; rep<REP; rep++ )
+                                    {
+                                        ind[2] = cha;
+                                        ind[3] = slc;
+                                        ind[4] = e2;
+                                        ind[5] = con;
+                                        ind[6] = phs;
+                                        ind[7] = rep;
+                                        ind[8] = set;
+
+                                        size_t offset = snrImage.calculate_offset(ind);
+
+                                        memcpy(repBuf.begin()+(rep-startInd)*RO*E1, 
+                                               snrImage.begin()+offset, sizeof(ValueType)*RO*E1);
+                                    }
+
+                                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, repBuf, "repBuf");
+
+                                    GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(repBuf, repBufMag));
+                                    GADGET_EXPORT_ARRAY(debugFolder2_fullPath_, gt_exporter_, repBufMag, "repBufMag");
+
+                                    // compute std
+                                    GADGET_CHECK_RETURN_FALSE(Gadgetron::stdOver3rdDimension(repBufMag, stdMap2D, true));
+                                    GADGET_EXPORT_ARRAY(debugFolder2_fullPath_, gt_exporter_, stdMap2D, "stdMap2D");
+
+                                    // copy it to the std map
+                                    ind[2] = cha;
+                                    ind[3] = slc;
+                                    ind[4] = e2;
+                                    ind[5] = con;
+                                    ind[6] = phs;
+                                    ind[7] = 0;
+                                    ind[8] = set;
+
+                                    size_t offset = stdMap.calculate_offset(ind);
+                                    hoNDArray<ValueType> stdMapCurr(RO, E1, stdMap.begin()+offset, false);
+                                    stdMapCurr.copyFrom(stdMap2D);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in GtPlusReconGadget::computeSNRImage(res, gfactor, snrImage, stdmap) ... ");
         return false;
     }
 

@@ -19,6 +19,7 @@ include_directories( ${GTEST_INCLUDE_DIRS}
                      ${CMAKE_SOURCE_DIR}/toolboxes/core
                      ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
                      ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+                     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
                      ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
                      ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
                      ${CMAKE_SOURCE_DIR}/toolboxes/operators
@@ -30,9 +31,11 @@ include_directories( ${GTEST_INCLUDE_DIRS}
                      ${CMAKE_SOURCE_DIR}/toolboxes/core
                      ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
                      ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
+                     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools 
+                     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
+                     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
                      ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-					 ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools/ismrmrd
-					  )
+                     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools/ismrmrd )
 
 if (MKL_FOUND)
     MESSAGE("MKL Found for gtPlus")
@@ -53,7 +56,8 @@ link_libraries(optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
                 ${MKL_LIBRARIES} 
                 cpucore 
                 cpucore_math 
-				cpufft
+                # cpureg
+                cpufft
                 gtplus 
                 gadgettools 
                 gadgetronPlus)
@@ -62,16 +66,8 @@ if (CUDA_FOUND)
     link_libraries(gtplus gpuparallelmri gpucore)
 endif (CUDA_FOUND)
 
-add_executable(gtplus_ut_util 
-    gtplus_ut.cpp 
-    util_test.cpp )
-
 add_executable(gtplus_ut_grappa 
     gtplus_ut.cpp 
     grappa_test.cpp )
-
-add_executable(gtplus_ut_spirit 
-    gtplus_ut.cpp 
-    spirit_test.cpp )
 
 #add_test(gtplus_ut gtplus_ut_util)

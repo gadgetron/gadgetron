@@ -159,6 +159,10 @@ namespace Gadgetron{
   typedef complext<double> double_complext;
 
   template <class T> struct realType {};
+  template<> struct realType<short> {typedef double Type; };
+  template<> struct realType<unsigned short> {typedef double Type; };
+  template<> struct realType<int> {typedef double Type; };
+  template<> struct realType<unsigned int> {typedef double Type; };
   template<> struct realType<float_complext> {typedef float Type; };
   template<> struct realType<double_complext> {typedef double Type; };
   template<> struct realType<float> {typedef float Type; };

@@ -16,6 +16,10 @@
 
 #include <stdlib.h> // for size_t
 
+#ifdef max
+#undef max
+#endif // max
+
 namespace Gadgetron{
 
   template<class T, unsigned int D> class vector_td

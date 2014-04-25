@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
+                  xmlns="http://gadgetron.sf.net/gadgetron"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <reader>
+        <slot>1008</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
+    </reader>
+
+    <!-- SNR unit noise adjust gadget 
+         If the scan has asymmetric readout, the center of echo will shifted to the index 0
+         Zeros will be filled into the readout data
+    -->
+    <gadget>
+        <name>NoiseAdjust</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>NoiseAdjustGadget</classname>
+
+        <!-- File prefix for stored noise prewhitener matrix -->
+        <property>
+            <name>noise_dependency_prefix</name>
+            <value>GadgetronNoisePreWhitener</value>
+        </property>
+
+        <!-- Preset noise dwell time; for noise dependency measurements -->
+        <property>
+            <name>noise_dwell_time_us_preset</name>
+            <value>5.0</value>
+        </property>
+    </gadget>
+
+</gadgetronStreamConfiguration>

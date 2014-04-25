@@ -88,7 +88,7 @@ int GtPlusReconJob3DTGadget::process_config(ACE_Message_Block* mb)
     }
 
     GADGET_START_TIMING_CONDITION(gt_timer1_, "Pre-allocate memory ... ", performTiming_);
-    mem_manager_->increase(6.0*1024*1024*1024);
+    mem_manager_->increase( (size_t)(6.0*1024*1024*1024) );
     GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
 
     worker_grappa_.gtPlus_mem_manager_ = mem_manager_;

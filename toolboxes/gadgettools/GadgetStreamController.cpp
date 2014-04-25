@@ -208,6 +208,11 @@ Gadget* GadgetStreamController::find_gadget(std::string gadget_name)
 	return 0;
 }
 
+void GadgetStreamController::set_working_directory(const std::string& workingdirectory)
+{
+    working_directory_ = workingdirectory;
+}
+
 int GadgetStreamController::configure_from_file(std::string config_xml_filename)
 {
 
@@ -367,6 +372,9 @@ int GadgetStreamController::configure(std::string config_xml_string)
 			GADGET_DEBUG2("Setting parameter %s = %s\n", pname.c_str(),pval.c_str());
 			g->set_parameter(pname.c_str(),pval.c_str(),false);
 		}
+
+        // set the working directory for every gadget
+        g->set_parameter("workingdirectory", working_directory_.c_str(), false);
 
 		if (stream_.push(m) < 0) {
 			GADGET_DEBUG2("Failed to push Gadget %s onto stream\n", gadgetname.c_str());

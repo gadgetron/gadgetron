@@ -1,33 +1,91 @@
-if (WIN32)
-ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUREG__)
-endif (WIN32)
+    if (WIN32)
+        ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUREG__)
+    endif (WIN32)
 
-include_directories(   
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
-  ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
-  ${ARMADILLO_INCLUDE_DIR}
-)
+    if(WIN32)
+        link_directories(${Boost_LIBRARY_DIRS})
+    endif(WIN32)
 
-add_library(cpureg ${LIBTYPE} 
-  hoOpticalFlowSolver.cpp
-  hoHSOpticalFlowSolver.cpp
-  hoCKOpticalFlowSolver.cpp
-  hoLinearResampleOperator.cpp
-  )
+    if (MKL_FOUND)
+        list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
+        if ( USE_OPENMP )
+            list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
+        endif ( USE_OPENMP )
 
-target_link_libraries(cpureg 
-  cpucore
-  cpucore_math 
-  ${ARMADILLO_LIBRARIES}
-  )
+        INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
+        LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
+    endif (MKL_FOUND)
 
-install(TARGETS cpureg DESTINATION lib)
+    include_directories(
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
+        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
+        ${CMAKE_SOURCE_DIR}/toolboxes/core
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
+        ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
+        ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
+        ${CMAKE_SOURCE_DIR}/toolboxes/core
+        ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
+        ${CMAKE_SOURCE_DIR}/toolboxes/operators
+        ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
+        ${CMAKE_SOURCE_DIR}/toolboxes/solvers
+        ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
+        ${CMAKE_SOURCE_DIR}/gadgets/core
+        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
+        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
+        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
+        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
+        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
+        ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+        ${CMAKE_SOURCE_DIR}/apps/gadgetron
+        ${CMAKE_SOURCE_DIR}/apps/matlab
+        ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
+        ${CMAKE_SOURCE_DIR}/gadgets/gtPlus
+        ${Boost_INCLUDE_DIR}
+        ${MKL_INCLUDE_DIR}
+        ${ARMADILLO_INCLUDE_DIR} 
+        ${ACE_INCLUDE_DIR}
+        ${ISMRMRD_INCLUDE_DIR} )
 
-install(FILES
-  hoOpticalFlowSolver.h
-  hoHSOpticalFlowSolver.h
-  hoCKOpticalFlowSolver.h
-  cpureg_export.h
-  DESTINATION include)
+    set(opticalflow_files 
+                hoCKOpticalFlowSolver.cpp
+                hoCKOpticalFlowSolver.h
+                hoHSOpticalFlowSolver.cpp
+                hoHSOpticalFlowSolver.h
+                hoLinearResampleOperator.cpp
+                hoLinearResampleOperator.h
+                hoOpticalFlowSolver.cpp
+                hoOpticalFlowSolver.h )
 
-install(FILES hoLinearResampleOperator.h DESTINATION include)
+    if ( BUILD_CPU_OPTIMAL_FLOW_REG )
+
+        add_library(cpureg ${LIBTYPE} 
+                    cpureg_export.h
+                    ${opticalflow_files} )
+
+        target_link_libraries(cpureg 
+                cpucore
+                cpucore_math 
+                gtplus
+                ${MKL_LIBRARIES}
+                ${EXTRA_MKL_LIBRARIES}
+                ${ARMADILLO_LIBRARIES}
+                optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
+
+    else ( BUILD_CPU_OPTIMAL_FLOW_REG )
+        message("cpureg library will not be built ... ")
+    endif ( BUILD_CPU_OPTIMAL_FLOW_REG )
+   
+    if ( BUILD_CPU_OPTIMAL_FLOW_REG )
+        source_group(opticalflow FILES ${opticalflow_files})
+        install(FILES ${opticalflow_files} DESTINATION include)
+    endif ( BUILD_CPU_OPTIMAL_FLOW_REG )
+
+    if ( BUILD_CPU_OPTIMAL_FLOW_REG )
+        install(TARGETS cpureg DESTINATION lib)
+    endif ( BUILD_CPU_OPTIMAL_FLOW_REG )

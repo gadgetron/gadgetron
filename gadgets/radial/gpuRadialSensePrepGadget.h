@@ -8,7 +8,7 @@ namespace Gadgetron{
   {
     
   public:
-
+    GADGET_DECLARE(gpuRadialSensePrepGadget);
     gpuRadialSensePrepGadget() : gpuRadialPrepGadget() {}
     virtual ~gpuRadialSensePrepGadget() {}
     
@@ -28,6 +28,4 @@ namespace Gadgetron{
       return (this->buffer_using_solver_) ? &this->acc_buffer_sense_cg_[idx] : &this->acc_buffer_sense_[idx];
     }
   };
-
-  GADGET_FACTORY_DECLARE(gpuRadialSensePrepGadget)
 }

@@ -14,29 +14,34 @@ find_package(HDF5 REQUIRED HL)
   endif(${CUDA_VERSION} VERSION_GREATER "4.99")
 
 include_directories(
-  ${CMAKE_SOURCE_DIR}/toolboxes/core
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/solvers
-  ${CMAKE_SOURCE_DIR}/toolboxes/operators
-  ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/ct/xray/gpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
-  ${CUDA_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIR}
-  ${ARMADILLO_INCLUDE_DIRS}
-  ${HDF5_INCLUDE_DIR}
-  ${HDF5_INCLUDE_DIR}/cpp
+    ${CMAKE_SOURCE_DIR}/toolboxes/core
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/solvers
+    ${CMAKE_SOURCE_DIR}/toolboxes/operators
+    ${CMAKE_SOURCE_DIR}/toolboxes/operators/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/ct/xray/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
+    ${CUDA_INCLUDE_DIRS}
+    ${Boost_INCLUDE_DIR}
+    ${ARMADILLO_INCLUDE_DIRS}
+    ${HDF5_INCLUDE_DIR}
+    ${HDF5_INCLUDE_DIR}/cpp
+    ${ISMRMRD_INCLUDE_DIR}
 )
 
 link_directories(${Boost_LIBRARY_DIR})
 
 if(WIN32)
+    link_directories(${Boost_LIBRARY_DIR})
+endif(WIN32)
+
+if(WIN32)
     link_libraries(optimized ${HDF5_hdf5_LIBRARY_RELEASE} optimized ${HDF5_hdf5_cpp_LIBRARY_RELEASE} optimized ${HDF5_hdf5_hl_LIBRARY_RELEASE} debug ${HDF5_hdf5_LIBRARY_DEBUG} debug ${HDF5_hdf5_cpp_LIBRARY_DEBUG} debug ${HDF5_hdf5_hl_LIBRARY_DEBUG})
-    link_libraries(debug ${HDF5_hdf5_LIBRARY_DEBUG} debug ${HDF5_hdf5_cpp_LIBRARY_DEBUG} debug ${HDF5_hdf5_hl_LIBRARY_DEBUG})
 else (WIN32)
-    link_libraries(${HDF5_LIBRARIES})
+    link_libraries(${HDF5_LIBRARIES} hdf5_hl)
 endif (WIN32)
 
 add_executable(CBCT_reconstruct_FDK_3d CBCT_reconstruct_FDK_3d.cpp)

@@ -119,7 +119,7 @@ bool gtPlusReconWorker3DTSPIRIT<T>::autoReconParameter(gtPlusReconWorkOrder<T>* 
         workOrder3DT->spirit_iter_thres_ = 0.005;
         workOrder3DT->spirit_reg_lamda_ = 0.01;
 
-        if ( workOrder3DT->recon_algorithm_ == ISMRMRD_embedded )
+        if ( workOrder3DT->recon_algorithm_ == ISMRMRD_SPIRIT )
         {
             workOrder3DT->spirit_iter_thres_ = 0.005;
         }

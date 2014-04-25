@@ -1,5 +1,5 @@
 IF (WIN32)
-  ADD_DEFINITIONS(-D__BUILD_GADGETRON_MRICORE__)
+    ADD_DEFINITIONS(-D__BUILD_GADGETRON_MRICORE__)
 ENDIF (WIN32)
 
 find_package(Ismrmrd REQUIRED)
@@ -19,96 +19,138 @@ if (MKL_FOUND)
 endif (MKL_FOUND)
 
 include_directories(
-  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
-  ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
-  ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-  ${HDF5_INCLUDE_DIR}
-  ${HDF5_INCLUDE_DIR}/cpp
-  ${ARMADILLO_INCLUDE_DIRS}
-  ${MKL_INCLUDE_DIR}
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+    ${CMAKE_SOURCE_DIR}/toolboxes/core
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
+    ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/fft/cpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/fft/gpu
+    ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
+    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
+    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
+    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
+    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
+    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
+    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/application
+    ${HDF5_INCLUDE_DIR}
+    ${HDF5_INCLUDE_DIR}/cpp
+    ${ARMADILLO_INCLUDE_DIRS}
+    ${MKL_INCLUDE_DIR}
+    ${ISMRMRD_INCLUDE_DIR}
 )
 
 if (ARMADILLO_FOUND)
-  list(APPEND OPTIMIZED_GADGETS NoiseAdjustGadget.cpp)
-  list(APPEND OPTIMIZED_GADGETS PCACoilGadget.cpp)
-  list(APPEND OPTIMIZED_GADGET_HEADERS NoiseAdjustGadget.h)
-  list(APPEND OPTIMIZED_GADGET_HEADERS PCACoilGadget.h)
-  list(APPEND OPTIMIZED_GADGET_LIBS cpucore_math ${ARMADILLO_LIBRARIES})
+    list(APPEND OPTIMIZED_GADGETS NoiseAdjustGadget.cpp)
+    list(APPEND OPTIMIZED_GADGETS PCACoilGadget.cpp)
+    list(APPEND OPTIMIZED_GADGET_HEADERS NoiseAdjustGadget.h)
+    list(APPEND OPTIMIZED_GADGET_HEADERS PCACoilGadget.h)
+    list(APPEND OPTIMIZED_GADGET_LIBS cpucore_math ${ARMADILLO_LIBRARIES})
 elseif (ARMADILLO_FOUND)
-  MESSAGE("Armadillo not found, i.e. not compiling Blas/Lapack optimized MRI Gadgets")
+    MESSAGE("Armadillo not found, i.e. not compiling Blas/Lapack optimized MRI Gadgets")
 endif (ARMADILLO_FOUND)
 
+set( gadgetron_mricore_header_files GadgetMRIHeaders.h 
+                                    AcquisitionPassthroughGadget.h 
+                                    AcquisitionFinishGadget.h 
+                                    AccumulatorGadget.h 
+                                    FFTGadget.h 
+                                    ImageFinishGadget.h 
+                                    ImageFinishAttribGadget.h 
+                                    CropAndCombineGadget.h 
+                                    ImageWriterGadget.h 
+                                    MRIImageWriter.h 
+                                    MRIImageAttribWriter.h 
+                                    NoiseAdjustGadget_unoptimized.h 
+                                    ExtractGadget.h 
+                                    FloatToUShortGadget.h 
+                                    FloatToUShortAttribGadget.h 
+                                    RemoveROOversamplingGadget.h 
+                                    CoilReductionGadget.h 
+                                    AutoScaleGadget.h 
+                                    FlowPhaseSubtractionGadget.h 
+                                    GadgetIsmrmrdReadWrite.h 
+                                    PhysioInterpolationGadget.h 
+                                    IsmrmrdDumpGadget.h 
+                                    AsymmetricEchoAdjustROGadget.h 
+                                    MaxwellCorrectionGadget.h 
+                                    CplxDumpGadget.h 
+                                    DependencyQueryGadget.h 
+                                    DependencyQueryWriter.h 
+                                    ComplexToFloatAttribGadget.h )
+
+set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
+                                AcquisitionFinishGadget.cpp 
+                                AccumulatorGadget.cpp 
+                                FFTGadget.cpp 
+                                ImageFinishGadget.cpp 
+                                ImageFinishAttribGadget.cpp 
+                                CropAndCombineGadget.cpp 
+                                ImageWriterGadget.cpp 
+                                MRIImageWriter.cpp 
+                                MRIImageAttribWriter.cpp 
+                                NoiseAdjustGadget_unoptimized.cpp 
+                                ExtractGadget.cpp 
+                                FloatToUShortGadget.cpp 
+                                FloatToUShortAttribGadget.cpp 
+                                RemoveROOversamplingGadget.cpp
+                                CoilReductionGadget.cpp
+                                AutoScaleGadget.cpp
+                                FlowPhaseSubtractionGadget.cpp
+                                GadgetIsmrmrdReadWrite.cpp
+                                PhysioInterpolationGadget.cpp
+                                IsmrmrdDumpGadget.cpp
+                                AsymmetricEchoAdjustROGadget.cpp
+                                MaxwellCorrectionGadget.cpp
+                                CplxDumpGadget.cpp 
+                                DependencyQueryGadget.cpp 
+                                DependencyQueryWriter.cpp 
+                                ComplexToFloatAttribGadget.cpp )
+
+if (WIN32)
+    set( gadgetron_mricore_header_files ${gadgetron_mricore_header_files} WhiteNoiseInjectorGadget.h )
+    set( gadgetron_mricore_src_files ${gadgetron_mricore_src_files} WhiteNoiseInjectorGadget.cpp )
+endif (WIN32)
+
+set( gadgetron_mricore_config_files default.xml default_short.xml default_optimized.xml default_measurement_dependencies.xml)
+
 add_library(gadgetron_mricore SHARED 
-  GadgetMRIHeaders.h 
-  AcquisitionPassthroughGadget.h AcquisitionPassthroughGadget.cpp
-  AcquisitionFinishGadget.h AcquisitionFinishGadget.cpp 
-  AccumulatorGadget.h AccumulatorGadget.cpp
-  FFTGadget.h FFTGadget.cpp
-  ImageFinishGadget.h ImageFinishGadget.cpp
-  CropAndCombineGadget.h CropAndCombineGadget.cpp
-  ImageWriterGadget.h ImageWriterGadget.cpp
-  MRIImageWriter.h MRIImageWriter.cpp
-  NoiseAdjustGadget_unoptimized.h NoiseAdjustGadget_unoptimized.cpp
-  ExtractGadget.h ExtractGadget.cpp
-  FloatToUShortGadget.h FloatToUShortGadget.cpp
-  RemoveROOversamplingGadget.h RemoveROOversamplingGadget.cpp
-  CoilReductionGadget.h CoilReductionGadget.cpp
-  AutoScaleGadget.h AutoScaleGadget.cpp
-  FlowPhaseSubtractionGadget.h FlowPhaseSubtractionGadget.cpp
-  GadgetIsmrmrdReadWrite.h GadgetIsmrmrdReadWrite.cpp
-  PhysioInterpolationGadget.h PhysioInterpolationGadget.cpp
-  IsmrmrdDumpGadget.h IsmrmrdDumpGadget.cpp
-  PartialFourierAdjustROGadget.h PartialFourierAdjustROGadget.cpp
-  MaxwellCorrectionGadget.h MaxwellCorrectionGadget.cpp
-  CplxDumpGadget.h CplxDumpGadget.cpp
-  ${OPTIMIZED_GADGETS}
-  ${OPTIMIZED_GADGET_HEADERS}
-  ${ISMRMRD_XSD_SOURCE}
-  )
+    gadgetron_mricore_export.h 
+    ${gadgetron_mricore_header_files} 
+    ${gadgetron_mricore_src_files}
+    ${gadgetron_mricore_config_files}
+    ${OPTIMIZED_GADGETS}
+    ${OPTIMIZED_GADGET_HEADERS}
+    ${ISMRMRD_XSD_SOURCE}
+)
 
 target_link_libraries(gadgetron_mricore 
-  cpucore
-  cpufft
-  ${ISMRMRD_LIBRARIES} 
-  ${FFTW3_LIBRARIES} 
-  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
-  ${BOOST_LIBRARIES}
-  ${XERCESC_LIBRARIES} 
-  ${OPTIMIZED_GADGET_LIBS}
-  ${MKL_LIBRARIES}
-  ${EXTRA_MKL_LIBRARIES}
-  )
+    cpucore
+    cpufft
+    ${ISMRMRD_LIBRARIES} 
+    ${FFTW3_LIBRARIES} 
+    optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
+    ${BOOST_LIBRARIES}
+    ${XERCESC_LIBRARIES} 
+    ${OPTIMIZED_GADGET_LIBS}
+)
+
+if (MKL_FOUND)
+    target_link_libraries(gadgetron_mricore gtplus ${MKL_LIBRARIES} ${EXTRA_MKL_LIBRARIES})
+endif (MKL_FOUND)
 
 install(FILES 
-  AccumulatorGadget.h
-  AcquisitionFinishGadget.h
-  AcquisitionPassthroughGadget.h
-  CropAndCombineGadget.h
-  ExtractGadget.h
-  FloatToUShortGadget.h
-  FFTGadget.h
-  GadgetMRIHeaders.h
-  ImageFinishGadget.h
-  ImageWriterGadget.h
-  MRIImageWriter.h
-  MaxwellCorrectionGadget.h
-  NoiseAdjustGadget.h
-  RemoveROOversamplingGadget.h
-  CoilReductionGadget.h
-  AutoScaleGadget.h
-  FlowPhaseSubtractionGadget.h
-  GadgetIsmrmrdReadWrite.h
-  PhysioInterpolationGadget.h
-  IsmrmrdDumpGadget.h
-  CplxDumpGadget.h
-  MaxwellCorrectionGadget.h
-  PartialFourierAdjustROGadget.h
-  gadgetron_mricore_export.h
-  ${OPTIMIZED_GADGET_HEADERS}
-  DESTINATION include)
+    gadgetron_mricore_export.h
+    ${gadgetron_mricore_header_files}
+    ${OPTIMIZED_GADGET_HEADERS}
+DESTINATION include)
 
 if (ARMADILLO_FOUND)
-  install(FILES default.xml default_short.xml default_optimized.xml DESTINATION config)
+    install(FILES ${gadgetron_mricore_config_files} DESTINATION config)
 endif (ARMADILLO_FOUND)
 
 install(FILES ismrmrd_dump.xml DESTINATION config)

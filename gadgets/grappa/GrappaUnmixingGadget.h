@@ -18,6 +18,7 @@ namespace Gadgetron{
 
   class EXPORTGADGETSGRAPPA GrappaUnmixingGadget: public Gadget3<GrappaUnmixingJob, ISMRMRD::ImageHeader, hoNDArray<std::complex<float> > > {
   public:
+    GADGET_DECLARE(GrappaUnmixingGadget);
 
     GrappaUnmixingGadget();
     virtual ~GrappaUnmixingGadget();

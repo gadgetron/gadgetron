@@ -16,6 +16,7 @@ find_package(HDF5 REQUIRED HL)
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
@@ -26,6 +27,8 @@ include_directories(
   ${Boost_INCLUDE_DIR}
   ${HDF5_INCLUDE_DIR}
   ${HDF5_INCLUDE_DIR}/cpp
+  ${ISMRMRD_INCLUDE_DIR}
+  ${ARMADILLO_INCLUDE_DIRS}
 )
 
 cuda_add_library(gpuxray SHARED
