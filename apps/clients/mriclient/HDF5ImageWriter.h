@@ -168,11 +168,11 @@ namespace Gadgetron
 
                 std::string attrib = std::string(buf+sizeof(size_t_type));
 
-                if (dataset_.appendImageAttrib(attrib, meta_varname.c_str()) < 0)
+                /*if (dataset_.appendImageAttrib(attrib, meta_varname.c_str()) < 0)
                 {
                     GADGET_DEBUG1("Failed to write image attributes\n");
                     return GADGET_FAIL;
-                }
+		}*/
 
                 delete [] buf;
 
