@@ -30,37 +30,6 @@ namespace Gadgetron
         *this = attrib;
     }
 
-    template <typename TInteger, typename TFloat, typename TComplexFloat> 
-    inline hoNDMetaAttributes<TInteger, TFloat, TComplexFloat>& hoNDMetaAttributes<TInteger, TFloat, TComplexFloat>::operator=(const Self& attrib)
-    {
-        if ( this == &attrib ) return *this;
-        attribute1_ = attrib.attribute1_;
-        attribute2_ = attrib.attribute2_;
-        attribute3_ = attrib.attribute3_;
-        attribute4_ = attrib.attribute4_;
-        return *this;
-    }
-
-    template <typename TInteger, typename TFloat, typename TComplexFloat> 
-    inline bool hoNDMetaAttributes<TInteger, TFloat, TComplexFloat>::clear()
-    {
-        GADGET_CHECK_RETURN_FALSE(attribute1_.clear());
-        GADGET_CHECK_RETURN_FALSE(attribute2_.clear());
-        GADGET_CHECK_RETURN_FALSE(attribute3_.clear());
-        GADGET_CHECK_RETURN_FALSE(attribute4_.clear());
-        return true;
-    }
-
-    template <typename TInteger, typename TFloat, typename TComplexFloat> 
-    inline bool hoNDMetaAttributes<TInteger, TFloat, TComplexFloat>::swap(Self& attrib)
-    {
-        GADGET_CHECK_RETURN_FALSE(attribute1_.swap(attrib.attribute1_));
-        GADGET_CHECK_RETURN_FALSE(attribute2_.swap(attrib.attribute2_));
-        GADGET_CHECK_RETURN_FALSE(attribute3_.swap(attrib.attribute3_));
-        GADGET_CHECK_RETURN_FALSE(attribute4_.swap(attrib.attribute4_));
-        return true;
-    }
-
     template <typename TInteger, typename TFloat, typename TComplexFloat>
     bool hoNDMetaAttributes<TInteger, TFloat, TComplexFloat>::serialize(char*& buf, size_t_type& len)
     {
@@ -185,7 +154,7 @@ namespace Gadgetron
     }
 
     template <typename TInteger, typename TFloat, typename TComplexFloat>
-    inline bool hoNDMetaAttributes<TInteger, TFloat, TComplexFloat>::deserialize(char* buf, size_t_type& len)
+    bool hoNDMetaAttributes<TInteger, TFloat, TComplexFloat>::deserialize(char* buf, size_t_type& len)
     {
         try
         {
@@ -204,7 +173,7 @@ namespace Gadgetron
     }
 
     template <typename TInteger, typename TFloat, typename TComplexFloat>
-    inline bool hoNDMetaAttributes<TInteger, TFloat, TComplexFloat>::deserializeContent(char* buf, size_t_type& xmlLen)
+    bool hoNDMetaAttributes<TInteger, TFloat, TComplexFloat>::deserializeContent(char* buf, size_t_type& xmlLen)
     {
         // ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, mtx_, false);
 
@@ -213,8 +182,9 @@ namespace Gadgetron
             // clear the attributes
             GADGET_CHECK_RETURN_FALSE(this->clear());
 
-            char * gadgetron_home = ::getenv("GADGETRON_HOME");
-            std::string schema_file_name = std::string(gadgetron_home) + std::string("/schema/gadgetronMetaAttributes.xsd");
+            char * gadgetron_home = std::getenv("GADGETRON_HOME");
+            std::string schema_file_name = std::string(gadgetron_home);
+            schema_file_name.append("/schema/gadgetronMetaAttributes.xsd");
 
             std::string tmp(schema_file_name);
             tmp = url_encode(tmp);
@@ -434,7 +404,7 @@ namespace Gadgetron
     }
 
     template <typename TInteger, typename TFloat, typename TComplexFloat>
-    inline void hoNDMetaAttributes<TInteger, TFloat, TComplexFloat>::print(std::ostream& os) const
+    void hoNDMetaAttributes<TInteger, TFloat, TComplexFloat>::print(std::ostream& os) const
     {
         using namespace std;
         os << "-------------- Gagdgetron attributes -------------" << endl;
@@ -452,13 +422,13 @@ namespace Gadgetron
         os << "--------------------------------------------------" << endl;
     }
 
-    template class hoNDMetaAttributes<int, float, std::complex<float> >;
-    template class hoNDMetaAttributes<int, double, std::complex<double> >;
-    template class hoNDMetaAttributes<int, float, std::complex<double> >;
-    template class hoNDMetaAttributes<int, double, std::complex<float> >;
+    EXPORTCPUCORE template class hoNDMetaAttributes<int, float, std::complex<float> >;
+    EXPORTCPUCORE template class hoNDMetaAttributes<int, double, std::complex<double> >;
+    EXPORTCPUCORE template class hoNDMetaAttributes<int, float, std::complex<double> >;
+    EXPORTCPUCORE template class hoNDMetaAttributes<int, double, std::complex<float> >;
 
-    template class hoNDMetaAttributes<long long, float, std::complex<float> >;
-    template class hoNDMetaAttributes<long long, double, std::complex<double> >;
-    template class hoNDMetaAttributes<long long, float, std::complex<double> >;
-    template class hoNDMetaAttributes<long long, double, std::complex<float> >;
+    EXPORTCPUCORE template class hoNDMetaAttributes<long long, float, std::complex<float> >;
+    EXPORTCPUCORE template class hoNDMetaAttributes<long long, double, std::complex<double> >;
+    EXPORTCPUCORE template class hoNDMetaAttributes<long long, float, std::complex<double> >;
+    EXPORTCPUCORE template class hoNDMetaAttributes<long long, double, std::complex<float> >;
 }
