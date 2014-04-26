@@ -1240,7 +1240,7 @@ namespace Gadgetron
             const T* pX = x.begin();
             const T* pY = y.begin();
 
-            #pragma omp parallel for default(none) private(n) shared(N, pX, pY, r) reductions(+:r)
+            #pragma omp parallel for default(none) private(n) shared(N, pX, pY) reduction(+:r)
             for ( n=0; n<N; n++ )
             {
                 r = r + std::conj(pX[n]) *pY[n];
@@ -1270,7 +1270,7 @@ namespace Gadgetron
             const T* pX = x.begin();
             const T* pY = y.begin();
 
-            #pragma omp parallel for default(none) private(n) shared(N, pX, pY, r) reductions(+:r)
+            #pragma omp parallel for default(none) private(n) shared(N, pX, pY) reduction(+:r)
             for ( n=0; n<N; n++ )
             {
                 r = r + pX[n]*pY[n];

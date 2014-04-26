@@ -26,13 +26,13 @@ if(MKL_FOUND)
     ${ARMADILLO_LIBRARIES}
     ${MKL_LIBRARIES}
   )
-else()
+else(MKL_FOUND)
   target_link_libraries(cpu_denoise_TV 
     cpucore 
     cpucore_math 
     hostutils
     ${ARMADILLO_LIBRARIES}
 )
-endif()
+endif(MKL_FOUND)
 
 install(TARGETS cpu_denoise_TV DESTINATION bin)

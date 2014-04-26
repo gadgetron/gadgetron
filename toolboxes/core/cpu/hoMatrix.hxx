@@ -1763,9 +1763,9 @@ bool InverseGeneralMatrix_getri(hoMatrix<T>& A)
             GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
 
             arma::Mat<typename stdType<T>::Type> armaA = as_arma_matrix(&A);
-            arma::Mat<typename stdType<T>::Type> invA = arma::inv_sympd(armaA);
+            arma::Mat<typename stdType<T>::Type> invA = arma::inv(armaA);
 
-            memcpy(A.begin(), invA,memptr(), A.get_number_of_bytes());
+            memcpy(A.begin(), invA.memptr(), A.get_number_of_bytes());
         }
         catch(...)
         {
