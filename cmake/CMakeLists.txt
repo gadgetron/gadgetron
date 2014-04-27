@@ -12,4 +12,5 @@ FindXalanC.cmake
 FindIsmrmrd.cmake
 FindGMatlab.cmake
 FindDCMTK.cmake
+FindMKL.cmake
 DESTINATION cmake)
