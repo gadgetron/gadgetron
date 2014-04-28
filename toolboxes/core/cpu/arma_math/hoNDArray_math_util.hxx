@@ -1403,7 +1403,6 @@ namespace Gadgetron
     {
         try
         {
-            long long N = (long long)x.get_number_of_elements();
             long long n;
 
             #pragma omp parallel for default(none) private(n) shared(N, x, a)

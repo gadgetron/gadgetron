@@ -80,6 +80,10 @@ protected:
     bool readFlag_;
 };
 
+#ifdef DT_UNKNOWN
+    #undef DT_UNKNOWN
+#endif // DT_UNKNOWN
+
 enum GtDataType
 {
     DT_ANA_UNKNOWN=0,

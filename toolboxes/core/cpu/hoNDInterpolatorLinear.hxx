@@ -6,7 +6,11 @@
     \author     Hui Xue
 */
 
-#include "malloc.h"
+#ifdef _WIN32
+    #include "malloc.h"
+#else
+    #include "alloca.h"
+#endif // _WIN32
 
 namespace Gadgetron
 {

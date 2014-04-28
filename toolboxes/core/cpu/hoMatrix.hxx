@@ -315,7 +315,7 @@ bool hoMatrix<T>::normalize()
 
         dist = std::sqrt(dist);
 
-        if ( std::abs(dist) < DBL_EPSILON ) return;
+        if ( std::abs(dist) < DBL_EPSILON ) return false;
 
         for ( ii=0; ii<this->element_; ii++ )
         {
