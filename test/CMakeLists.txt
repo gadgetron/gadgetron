@@ -27,7 +27,6 @@ link_libraries(
     ${BOOST_LIBRARIES}
     ${GTEST_LIBRARIES} 
     ${ARMADILLO_LIBRARIES}
-    ${MKL_LIBRARIES}
     )
 
 if ( CUDA_FOUND )
@@ -63,13 +62,7 @@ if ( CUDA_FOUND )
   target_link_libraries(test_all 
     gpucore
     )
-endif()
-
-if(MKL_FOUND)
-  target_link_libraries(test_all 
-    ${MKL_LIBRARIES}    
-    )
-endif()
+endif( CUDA_FOUND )
 
 add_test(test_all test_all)
 

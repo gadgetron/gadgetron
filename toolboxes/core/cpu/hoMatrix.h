@@ -1,12 +1,9 @@
 #pragma once
 
+#include "cpucore_export.h"
 #include "ho2DArray.h"
 #include "complext.h"
 #include <algorithm>
-
-#ifdef USE_MKL
-    #include "mkl.h"
-#endif // USE_MKL
 
 #ifdef GT_Complex8
     #undef GT_Complex8

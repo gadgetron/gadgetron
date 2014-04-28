@@ -278,6 +278,26 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     hoNDImage<T, D>::hoNDImage(const Self& a) : data_(0), elements_(0), delete_data_on_destruct_(true)
     {
+        unsigned int ii;
+        for (ii=0;ii<D; ii++)
+        {
+            dimensions_[ii] = 0;
+            offsetFactors_[ii] = 0;
+            pixelSize_[ii] = 1;
+            pixelSize_reciprocal_[ii] = 1;
+            origin_[ii] = 0;
+            axis_[ii].fill(0);
+            axis_[ii][ii] = coord_type(1.0);
+        }
+
+        image_position_patient_[0] = 0;
+        image_position_patient_[1] = 0;
+        image_position_patient_[2] = 0;
+
+        image_orientation_patient_[0][0] = 1; image_orientation_patient_[0][1] = 0; image_orientation_patient_[0][2] = 0;
+        image_orientation_patient_[1][0] = 0; image_orientation_patient_[1][1] = 1; image_orientation_patient_[1][2] = 0;
+        image_orientation_patient_[2][0] = 0; image_orientation_patient_[2][1] = 0; image_orientation_patient_[2][2] = 1;
+
         *this = a;
     }
 
@@ -2392,13 +2412,13 @@ namespace Gadgetron
         {
             translation(ii, D) = this->origin_[ii];
         }
-#if defined(USE_MKL) || defined(USE_ARMADILLO)
-        Gadgetron::GeneralMatrixProduct_gemm(image2world, rotation, false, scaling, false);
-        Gadgetron::GeneralMatrixProduct_gemm(rotation, translation, false, image2world, false);
-#else
+//#if defined(USE_MKL) || defined(USE_ARMADILLO)
+//        Gadgetron::GeneralMatrixProduct_gemm(image2world, rotation, false, scaling, false);
+//        Gadgetron::GeneralMatrixProduct_gemm(rotation, translation, false, image2world, false);
+//#else
         Gadgetron::GeneralMatrixProduct(image2world, rotation, false, scaling, false);
         Gadgetron::GeneralMatrixProduct(rotation, translation, false, image2world, false);
-#endif // USE_MKL
+//#endif // USE_MKL
         image2world = rotation;
     }
 
@@ -2414,11 +2434,11 @@ namespace Gadgetron
 
         hoMatrix<coord_type> res(D+1, 1);
 
-#if defined(USE_MKL) || defined(USE_ARMADILLO)
-        Gadgetron::GeneralMatrixProduct_gemm(res, image2world, false, pt, false);
-#else
+//#if defined(USE_MKL) || defined(USE_ARMADILLO)
+//        Gadgetron::GeneralMatrixProduct_gemm(res, image2world, false, pt, false);
+//#else
         Gadgetron::GeneralMatrixProduct(res, image2world, false, pt, false);
-#endif // USE_MKL
+//#endif // USE_MKL
         memcpy(this->origin_, res.begin(), sizeof(coord_type)*D);
 
         // rotation
@@ -2428,11 +2448,11 @@ namespace Gadgetron
         	memset(pt.get_data_ptr(), 0, sizeof(coord_type)*(D+1));
             pt(D, 0) = 1.0;
             pt(ii, 0) = 1.0;
-#if defined(USE_MKL) || defined(USE_ARMADILLO)
-            Gadgetron::GeneralMatrixProduct_gemm(res, image2world, false, pt, false);
-#else
+//#if defined(USE_MKL) || defined(USE_ARMADILLO)
+//            Gadgetron::GeneralMatrixProduct_gemm(res, image2world, false, pt, false);
+//#else
             Gadgetron::GeneralMatrixProduct(res, image2world, false, pt, false);
-#endif // USE_MKL
+//#endif // USE_MKL
             for ( jj=0; jj<D; jj++ )
             {
                 this->axis_[ii][jj] = res(jj, 0) - this->origin_[jj];
@@ -2663,26 +2683,26 @@ namespace Gadgetron
             translation(ii, D) = -this->origin_[ii];
         }
 
-#if defined(USE_MKL) || defined(USE_ARMADILLO)
-        Gadgetron::GeneralMatrixProduct_gemm(world2image, rotation, false, translation, false);
-        Gadgetron::GeneralMatrixProduct_gemm(rotation, scaling, false, world2image, false);
-#else
+//#if defined(USE_MKL) || defined(USE_ARMADILLO)
+//        Gadgetron::GeneralMatrixProduct_gemm(world2image, rotation, false, translation, false);
+//        Gadgetron::GeneralMatrixProduct_gemm(rotation, scaling, false, world2image, false);
+//#else
         Gadgetron::GeneralMatrixProduct(world2image, rotation, false, translation, false);
         Gadgetron::GeneralMatrixProduct(rotation, scaling, false, world2image, false);
-#endif // USE_MKL
+//#endif // USE_MKL
         world2image = rotation;
     }
 
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::set_world_to_image_matrix(const hoMatrix<coord_type>& world2image)
     {
-        hoMatrix<coord_type> image2world(world2image);
-        #if defined(USE_MKL) || defined(USE_ARMADILLO)
-            Gadgetron::SymmetricHermitianPositiveDefiniteInverse_potri(image2world);
-        #else
+        //hoMatrix<coord_type> image2world(world2image);
+        //#if defined(USE_MKL) || defined(USE_ARMADILLO)
+        //    Gadgetron::SymmetricHermitianPositiveDefiniteInverse_potri(image2world);
+        //#else
             GADGET_THROW("This function is not implemented ... ");
-        #endif // USE_MKL
-        this->set_image_to_world_matrix(image2world);
+        //#endif // USE_MKL
+        //this->set_image_to_world_matrix(image2world);
     }
 
     template <typename T, unsigned int D> 
@@ -3050,81 +3070,81 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::_allocate_memory( size_t size, float** data )
     {
-#ifdef USE_MKL
-        *data = (float*) mkl_malloc(size*sizeof(float), 4);
-#else
+//#ifdef USE_MKL
+//        *data = (float*) mkl_malloc(size*sizeof(float), 4);
+//#else
         *data = (float*) malloc( size*sizeof(float) );
-#endif
+//#endif
     }
 
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::_deallocate_memory( float* data )
     {
-#ifdef USE_MKL
-        mkl_free(data);
-#else
+//#ifdef USE_MKL
+//        mkl_free(data);
+//#else
         free(data);
-#endif
+//#endif
     }
 
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::_allocate_memory( size_t size, double** data )
     {
-#ifdef USE_MKL
-        *data = (double*) mkl_malloc(size*sizeof(double), 4);
-#else
+//#ifdef USE_MKL
+//        *data = (double*) mkl_malloc(size*sizeof(double), 4);
+//#else
         *data = (double*) malloc( size*sizeof(double) );
-#endif
+//#endif
     }
 
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::_deallocate_memory( double* data )
     {
-#ifdef USE_MKL
-        mkl_free(data);
-#else
+//#ifdef USE_MKL
+//        mkl_free(data);
+//#else
         free(data);
-#endif
+//#endif
     }
 
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::_allocate_memory( size_t size, std::complex<float>** data )
     {
-#ifdef USE_MKL
-        *data = (std::complex<float>*) mkl_malloc(size*sizeof(std::complex<float>), 4);
-#else
+//#ifdef USE_MKL
+//        *data = (std::complex<float>*) mkl_malloc(size*sizeof(std::complex<float>), 4);
+//#else
         *data = (std::complex<float>*) malloc( size*sizeof(std::complex<float>) );
-#endif
+//#endif
     }
 
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::_deallocate_memory( std::complex<float>* data )
     {
-#ifdef USE_MKL
-        mkl_free(data);
-#else
+//#ifdef USE_MKL
+//        mkl_free(data);
+//#else
         free(data);
-#endif
+//#endif
     }
 
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::_allocate_memory( size_t size, std::complex<double>** data )
     {
-#ifdef USE_MKL
-        *data = (std::complex<double>*) mkl_malloc(size*sizeof(std::complex<double>), 4);
-#else
+//#ifdef USE_MKL
+//        *data = (std::complex<double>*) mkl_malloc(size*sizeof(std::complex<double>), 4);
+//#else
         *data = (std::complex<double>*) malloc( size*sizeof(std::complex<double>) );
-#endif
+//#endif
     }
 
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::_deallocate_memory( std::complex<double>* data )
     {
-#ifdef USE_MKL
-        mkl_free(data);
-#else
+//#ifdef USE_MKL
+//        mkl_free(data);
+//#else
         free(data);
-#endif
+//#endif
     }
 
     template <typename T, unsigned int D> 

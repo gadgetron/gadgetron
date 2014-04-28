@@ -68,10 +68,17 @@ if ( HAS_64_BIT )
         ${CMAKE_SOURCE_DIR}/gadgets/gtPlus 
     )
 
-    set( util_header_files 
+    set( gtplus_io_header_files 
         util/gtPlusIOBase.h
         util/gtPlusIOAnalyze.h
-        util/gtPlusIONifti.h
+        util/gtPlusIONifti.h)
+
+    set( gtplus_io_src_files 
+        util/gtPlusIOBase.cpp
+        util/gtPlusIOAnalyze.cpp
+        util/gtPlusIONifti.cpp )
+
+    set( util_header_files 
         util/gtPlusMemoryManager.h
         util/hoNDArrayMemoryManaged.h 
         util/hoNDArrayMemoryManaged.hxx 
@@ -79,9 +86,6 @@ if ( HAS_64_BIT )
         util/gtPlusUtil.hxx )
 
     set( util_src_files 
-        util/gtPlusIOBase.cpp
-        util/gtPlusIOAnalyze.cpp
-        util/gtPlusIONifti.cpp
         util/gtPlusMemoryManager.cpp )
 
     if (MKL_FOUND OR ARMADILLO_FOUND)
@@ -206,7 +210,7 @@ if ( HAS_64_BIT )
                 ${util_header_files} 
                 ${util_src_files} )
 
-    source_group(util FILES         ${util_header_files}        ${util_src_files})
+    source_group(util FILES ${util_header_files} ${util_src_files})
     set( config_gtCloud_files ${config_files} ${gtCloud_files} )
     source_group(config FILES ${config_gtCloud_files})
     source_group(schema FILES ${schema_files})
@@ -234,30 +238,34 @@ if ( HAS_64_BIT )
         endif(MATLAB_FOUND)
     endif (MKL_FOUND OR ARMADILLO_FOUND)
 
+    add_library(gtplus_io ${LIBTYPE} ${gtplus_io_header_files} ${gtplus_io_src_files} )
+
     add_library(gtplus ${LIBTYPE} 
                 ${gtplus_files} )
 
     target_link_libraries(gtplus 
                           cpucore 
                           cpufft
-                          ${MKL_LIBRARIES} 
-                          ${EXTRA_MKL_LIBRARIES})
+                          gtplus_io )
 
     if (CUDA_FOUND)
         target_link_libraries(gtplus gpuparallelmri cpucore_math)
     endif (CUDA_FOUND)
 
     install(TARGETS gtplus DESTINATION lib)
+    install(TARGETS gtplus_io DESTINATION lib)
 
     # install gtplus files
     install (FILES  
             GtPlusExport.h 
+            GtPlusIOExport.h 
             GtPlusDefinition.h 
             ${util_header_files} 
             ${workflow_header_files} 
             ${algorithm_header_files} 
             ${solver_header_files} 
             ${application_header_files} 
+            ${gtplus_io_header_files} 
             DESTINATION include)
 
     # install gadgetron program files

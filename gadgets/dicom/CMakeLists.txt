@@ -77,8 +77,7 @@ target_link_libraries(
     optimized ${ACE_LIBRARIES}
     debug ${ACE_DEBUG_LIBRARY}
     ${XERCESC_LIBRARIES}
-    ${GT_DICOM_LIBRARIES}
-    ${MKL_LIBRARIES})
+    ${GT_DICOM_LIBRARIES} )
 
 if(ARMADILLO_FOUND)
     target_link_libraries(${GT_DICOM_LIB} cpucore_math )

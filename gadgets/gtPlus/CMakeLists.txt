@@ -1,5 +1,5 @@
 
-include_directories(   
+include_directories( 
     ${CMAKE_SOURCE_DIR}/gadgets/core
     ${ACE_INCLUDE_DIR} 
     ${Boost_INCLUDE_DIR}
@@ -90,7 +90,6 @@ target_link_libraries(gadgetronPlus
     cpufft
     gtplus 
     gadgettools 
-    ${MKL_LIBRARIES} 
     ${Boost_LIBRARIES}
     ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}

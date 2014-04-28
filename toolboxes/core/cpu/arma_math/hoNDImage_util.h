@@ -78,6 +78,10 @@ namespace Gadgetron
     /// the central difference is computed, the border-value boundary condition is used
     template<class T, unsigned int D> EXPORTCPUCOREMATH bool gradient(const hoNDImage<T, D>& x, hoNDImage<T, D> gx[]);
 
+    /// perform the gaussian filter for every dimension
+    /// sigma is in the unit of pixel
+    template<class ArrayType, class T2> EXPORTCPUCOREMATH bool filterGaussian(ArrayType& x, T2 sigma[]);
+
     /// perform midian filter
     /// w is the window size
     template<class ArrayType> bool filterMedian(const ArrayType& img, unsigned int w[], ArrayType& img_out);
@@ -235,93 +239,93 @@ namespace Gadgetron
 #ifdef USE_MKL
 
     // r = x + y
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool add(const hoNDImage<float, D>& x, const hoNDImage<float, D>& y, hoNDImage<float, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool add(const hoNDImage<float, D>& x, const hoNDImage<float, D>& y, hoNDImage<float, D>& r);
     // r = x - y
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool subtract(const hoNDImage<float, D>& x, const hoNDImage<float, D>& y, hoNDImage<float, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool subtract(const hoNDImage<float, D>& x, const hoNDImage<float, D>& y, hoNDImage<float, D>& r);
     // r = x * y
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool multiply(const hoNDImage<float, D>& x, const hoNDImage<float, D>& y, hoNDImage<float, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool multiply(const hoNDImage<float, D>& x, const hoNDImage<float, D>& y, hoNDImage<float, D>& r);
     // r = x / y
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool divide(const hoNDImage<float, D>& x, const hoNDImage<float, D>& y, hoNDImage<float, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool divide(const hoNDImage<float, D>& x, const hoNDImage<float, D>& y, hoNDImage<float, D>& r);
     // r = abs(x)
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool absolute(const hoNDImage<float, D>& x, hoNDImage<float, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool absolute(const hoNDImage<float, D>& x, hoNDImage<float, D>& r);
     // r = angle(x)
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool argument(const hoNDImage<float, D>& x, hoNDImage<float, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool argument(const hoNDImage<float, D>& x, hoNDImage<float, D>& r);
     // r = sqrt(x)
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool sqrt(const hoNDImage<float, D>& x, hoNDImage<float, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool sqrt(const hoNDImage<float, D>& x, hoNDImage<float, D>& r);
     // minimal absolute value and index
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool minAbsolute(const hoNDImage<float, D>& x, float& r, size_t& ind);
+    template <unsigned int D> EXPORTCPUCOREMATH bool minAbsolute(const hoNDImage<float, D>& x, float& r, size_t& ind);
     // maximal absolute value and index
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool maxAbsolute(const hoNDImage<float, D>& x, float& r, size_t& ind);
+    template <unsigned int D> EXPORTCPUCOREMATH bool maxAbsolute(const hoNDImage<float, D>& x, float& r, size_t& ind);
     // x = x + Epsilon if x==0, prepare for division
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool addEpsilon(hoNDImage<float, D>& x);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool norm2(const hoNDImage<float, D>& x, float& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool norm1(const hoNDImage<float, D>& x, float& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool addEpsilon(hoNDImage<float, D>& x);
+    template <unsigned int D> EXPORTCPUCOREMATH bool norm2(const hoNDImage<float, D>& x, float& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool norm1(const hoNDImage<float, D>& x, float& r);
     // x: input data, y: convolution kernel, z: output; each 2D slice is convolved
     template <unsigned int D> EXPORTCPUCOREMATH bool conv2(const hoNDImage<float, D>& x, const hoNDImage<float, D>& y, hoNDImage<float, D>& z);
     // x: input data, y: convolution kernel, z: output; each 3D volume is convolved
     template <unsigned int D> EXPORTCPUCOREMATH bool conv3(const hoNDImage<float, D>& x, const hoNDImage<float, D>& y, hoNDImage<float, D>& z);
     // r = 1/x
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool inv(const hoNDImage<float, D>& x, hoNDImage<float, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool inv(const hoNDImage<float, D>& x, hoNDImage<float, D>& r);
 
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool add(const hoNDImage<double, D>& x, const hoNDImage<double, D>& y, hoNDImage<double, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool subtract(const hoNDImage<double, D>& x, const hoNDImage<double, D>& y, hoNDImage<double, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool multiply(const hoNDImage<double, D>& x, const hoNDImage<double, D>& y, hoNDImage<double, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool divide(const hoNDImage<double, D>& x, const hoNDImage<double, D>& y, hoNDImage<double, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool absolute(const hoNDImage<double, D>& x, hoNDImage<double, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool argument(const hoNDImage<double, D>& x, hoNDImage<double, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool sqrt(const hoNDImage<double, D>& x, hoNDImage<double, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool minAbsolute(const hoNDImage<double, D>& x, double& r, size_t& ind);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool maxAbsolute(const hoNDImage<double, D>& x, double& r, size_t& ind);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool addEpsilon(hoNDImage<double, D>& x);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool norm2(const hoNDImage<double, D>& x, double& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool norm1(const hoNDImage<double, D>& x, double& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool add(const hoNDImage<double, D>& x, const hoNDImage<double, D>& y, hoNDImage<double, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool subtract(const hoNDImage<double, D>& x, const hoNDImage<double, D>& y, hoNDImage<double, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool multiply(const hoNDImage<double, D>& x, const hoNDImage<double, D>& y, hoNDImage<double, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool divide(const hoNDImage<double, D>& x, const hoNDImage<double, D>& y, hoNDImage<double, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool absolute(const hoNDImage<double, D>& x, hoNDImage<double, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool argument(const hoNDImage<double, D>& x, hoNDImage<double, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool sqrt(const hoNDImage<double, D>& x, hoNDImage<double, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool minAbsolute(const hoNDImage<double, D>& x, double& r, size_t& ind);
+    template <unsigned int D> EXPORTCPUCOREMATH bool maxAbsolute(const hoNDImage<double, D>& x, double& r, size_t& ind);
+    template <unsigned int D> EXPORTCPUCOREMATH bool addEpsilon(hoNDImage<double, D>& x);
+    template <unsigned int D> EXPORTCPUCOREMATH bool norm2(const hoNDImage<double, D>& x, double& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool norm1(const hoNDImage<double, D>& x, double& r);
     template <unsigned int D> EXPORTCPUCOREMATH bool conv2(const hoNDImage<double, D>& x, const hoNDImage<double, D>& y, hoNDImage<double, D>& z);
     template <unsigned int D> EXPORTCPUCOREMATH bool conv3(const hoNDImage<double, D>& x, const hoNDImage<double, D>& y, hoNDImage<double, D>& z);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool inv(const hoNDImage<double, D>& x, hoNDImage<double, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool inv(const hoNDImage<double, D>& x, hoNDImage<double, D>& r);
 
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool add(const hoNDImage<GT_Complex8, D>& x, const hoNDImage<GT_Complex8, D>& y, hoNDImage<GT_Complex8, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool subtract(const hoNDImage<GT_Complex8, D>& x, const hoNDImage<GT_Complex8, D>& y, hoNDImage<GT_Complex8, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool multiply(const hoNDImage<GT_Complex8, D>& x, const hoNDImage<GT_Complex8, D>& y, hoNDImage<GT_Complex8, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool divide(const hoNDImage<GT_Complex8, D>& x, const hoNDImage<GT_Complex8, D>& y, hoNDImage<GT_Complex8, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool absolute(const hoNDImage<GT_Complex8, D>& x, hoNDImage<float, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool absolute(const hoNDImage<GT_Complex8, D>& x, hoNDImage<GT_Complex8, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool sqrt(const hoNDImage<GT_Complex8, D>& x, hoNDImage<GT_Complex8, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool minAbsolute(const hoNDImage<GT_Complex8, D>& x, GT_Complex8& r, size_t& ind);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool maxAbsolute(const hoNDImage<GT_Complex8, D>& x, GT_Complex8& r, size_t& ind);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool multiplyConj(const hoNDImage<GT_Complex8, D>& x, const hoNDImage<GT_Complex8, D>& y, hoNDImage<GT_Complex8, D>& r); // r = x * conj(y)
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool argument(const hoNDImage<GT_Complex8, D>& x, hoNDImage<float, D>& r); // r = angle(x)
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool conjugate(const hoNDImage<GT_Complex8, D>& x, hoNDImage<GT_Complex8, D>& r); // r = conj(x)
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool addEpsilon(hoNDImage<GT_Complex8, D>& x);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool norm2(const hoNDImage<GT_Complex8, D>& x, float& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool norm1(const hoNDImage<GT_Complex8, D>& x, float& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool dotc(const hoNDImage<GT_Complex8, D>& x, const hoNDImage<GT_Complex8, D>& y, GT_Complex8& r); // x'*y, x and y are N*1 vector
+    template <unsigned int D> EXPORTCPUCOREMATH bool add(const hoNDImage<GT_Complex8, D>& x, const hoNDImage<GT_Complex8, D>& y, hoNDImage<GT_Complex8, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool subtract(const hoNDImage<GT_Complex8, D>& x, const hoNDImage<GT_Complex8, D>& y, hoNDImage<GT_Complex8, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool multiply(const hoNDImage<GT_Complex8, D>& x, const hoNDImage<GT_Complex8, D>& y, hoNDImage<GT_Complex8, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool divide(const hoNDImage<GT_Complex8, D>& x, const hoNDImage<GT_Complex8, D>& y, hoNDImage<GT_Complex8, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool absolute(const hoNDImage<GT_Complex8, D>& x, hoNDImage<float, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool absolute(const hoNDImage<GT_Complex8, D>& x, hoNDImage<GT_Complex8, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool sqrt(const hoNDImage<GT_Complex8, D>& x, hoNDImage<GT_Complex8, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool minAbsolute(const hoNDImage<GT_Complex8, D>& x, GT_Complex8& r, size_t& ind);
+    template <unsigned int D> EXPORTCPUCOREMATH bool maxAbsolute(const hoNDImage<GT_Complex8, D>& x, GT_Complex8& r, size_t& ind);
+    template <unsigned int D> EXPORTCPUCOREMATH bool multiplyConj(const hoNDImage<GT_Complex8, D>& x, const hoNDImage<GT_Complex8, D>& y, hoNDImage<GT_Complex8, D>& r); // r = x * conj(y)
+    template <unsigned int D> EXPORTCPUCOREMATH bool argument(const hoNDImage<GT_Complex8, D>& x, hoNDImage<float, D>& r); // r = angle(x)
+    template <unsigned int D> EXPORTCPUCOREMATH bool conjugate(const hoNDImage<GT_Complex8, D>& x, hoNDImage<GT_Complex8, D>& r); // r = conj(x)
+    template <unsigned int D> EXPORTCPUCOREMATH bool addEpsilon(hoNDImage<GT_Complex8, D>& x);
+    template <unsigned int D> EXPORTCPUCOREMATH bool norm2(const hoNDImage<GT_Complex8, D>& x, float& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool norm1(const hoNDImage<GT_Complex8, D>& x, float& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool dotc(const hoNDImage<GT_Complex8, D>& x, const hoNDImage<GT_Complex8, D>& y, GT_Complex8& r); // x'*y, x and y are N*1 vector
     template <unsigned int D> EXPORTCPUCOREMATH bool conv2(const hoNDImage<GT_Complex8, D>& x, const hoNDImage<GT_Complex8, D>& y, hoNDImage<GT_Complex8, D>& z);
     template <unsigned int D> EXPORTCPUCOREMATH bool conv3(const hoNDImage<GT_Complex8, D>& x, const hoNDImage<GT_Complex8, D>& y, hoNDImage<GT_Complex8, D>& z);
     template <unsigned int D> EXPORTCPUCOREMATH bool corr2(const hoNDImage<GT_Complex8, D>& x, const hoNDImage<GT_Complex8, D>& y, hoNDImage<GT_Complex8, D>& z); // x: input data [RO E1 ...], y: corr kernel [kro ke1], z: output; each 2D slice is correlated
     template <unsigned int D> EXPORTCPUCOREMATH bool corr3(const hoNDImage<GT_Complex8, D>& x, const hoNDImage<GT_Complex8, D>& y, hoNDImage<GT_Complex8, D>& z); // x: input data [RO E1 E2 ...], y: corr kernel [kro ke1 ke2], z: output; each 3D volume is correlated
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool inv(const hoNDImage<GT_Complex8, D>& x, hoNDImage<GT_Complex8, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool inv(const hoNDImage<GT_Complex8, D>& x, hoNDImage<GT_Complex8, D>& r);
 
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool add(const hoNDImage<GT_Complex16, D>& x, const hoNDImage<GT_Complex16, D>& y, hoNDImage<GT_Complex16, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool subtract(const hoNDImage<GT_Complex16, D>& x, const hoNDImage<GT_Complex16, D>& y, hoNDImage<GT_Complex16, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool multiply(const hoNDImage<GT_Complex16, D>& x, const hoNDImage<GT_Complex16, D>& y, hoNDImage<GT_Complex16, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool divide(const hoNDImage<GT_Complex16, D>& x, const hoNDImage<GT_Complex16, D>& y, hoNDImage<GT_Complex16, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool absolute(const hoNDImage<GT_Complex16, D>& x, hoNDImage<double, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool absolute(const hoNDImage<GT_Complex16, D>& x, hoNDImage<GT_Complex16, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool sqrt(const hoNDImage<GT_Complex16, D>& x, hoNDImage<GT_Complex16, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool minAbsolute(const hoNDImage<GT_Complex16, D>& x, GT_Complex16& r, size_t& ind);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool maxAbsolute(const hoNDImage<GT_Complex16, D>& x, GT_Complex16& r, size_t& ind);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool multiplyConj(const hoNDImage<GT_Complex16, D>& x, const hoNDImage<GT_Complex16, D>& y, hoNDImage<GT_Complex16, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool argument(const hoNDImage<GT_Complex16, D>& x, hoNDImage<double, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool conjugate(const hoNDImage<GT_Complex16, D>& x, hoNDImage<GT_Complex16, D>& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool addEpsilon(hoNDImage<GT_Complex16, D>& x);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool norm2(const hoNDImage<GT_Complex16, D>& x, double& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool norm1(const hoNDImage<GT_Complex16, D>& x, double& r);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool dotc(const hoNDImage<GT_Complex16, D>& x, const hoNDImage<GT_Complex16, D>& y, GT_Complex16& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool add(const hoNDImage<GT_Complex16, D>& x, const hoNDImage<GT_Complex16, D>& y, hoNDImage<GT_Complex16, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool subtract(const hoNDImage<GT_Complex16, D>& x, const hoNDImage<GT_Complex16, D>& y, hoNDImage<GT_Complex16, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool multiply(const hoNDImage<GT_Complex16, D>& x, const hoNDImage<GT_Complex16, D>& y, hoNDImage<GT_Complex16, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool divide(const hoNDImage<GT_Complex16, D>& x, const hoNDImage<GT_Complex16, D>& y, hoNDImage<GT_Complex16, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool absolute(const hoNDImage<GT_Complex16, D>& x, hoNDImage<double, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool absolute(const hoNDImage<GT_Complex16, D>& x, hoNDImage<GT_Complex16, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool sqrt(const hoNDImage<GT_Complex16, D>& x, hoNDImage<GT_Complex16, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool minAbsolute(const hoNDImage<GT_Complex16, D>& x, GT_Complex16& r, size_t& ind);
+    template <unsigned int D> EXPORTCPUCOREMATH bool maxAbsolute(const hoNDImage<GT_Complex16, D>& x, GT_Complex16& r, size_t& ind);
+    template <unsigned int D> EXPORTCPUCOREMATH bool multiplyConj(const hoNDImage<GT_Complex16, D>& x, const hoNDImage<GT_Complex16, D>& y, hoNDImage<GT_Complex16, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool argument(const hoNDImage<GT_Complex16, D>& x, hoNDImage<double, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool conjugate(const hoNDImage<GT_Complex16, D>& x, hoNDImage<GT_Complex16, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool addEpsilon(hoNDImage<GT_Complex16, D>& x);
+    template <unsigned int D> EXPORTCPUCOREMATH bool norm2(const hoNDImage<GT_Complex16, D>& x, double& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool norm1(const hoNDImage<GT_Complex16, D>& x, double& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool dotc(const hoNDImage<GT_Complex16, D>& x, const hoNDImage<GT_Complex16, D>& y, GT_Complex16& r);
     template <unsigned int D> EXPORTCPUCOREMATH bool conv2(const hoNDImage<GT_Complex16, D>& x, const hoNDImage<GT_Complex16, D>& y, hoNDImage<GT_Complex16, D>& z);
     template <unsigned int D> EXPORTCPUCOREMATH bool conv3(const hoNDImage<GT_Complex16, D>& x, const hoNDImage<GT_Complex16, D>& y, hoNDImage<GT_Complex16, D>& z);
     template <unsigned int D> EXPORTCPUCOREMATH bool corr2(const hoNDImage<GT_Complex16, D>& x, const hoNDImage<GT_Complex16, D>& y, hoNDImage<GT_Complex16, D>& z);
     template <unsigned int D> EXPORTCPUCOREMATH bool corr3(const hoNDImage<GT_Complex16, D>& x, const hoNDImage<GT_Complex16, D>& y, hoNDImage<GT_Complex16, D>& z);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool inv(const hoNDImage<GT_Complex16, D>& x, hoNDImage<GT_Complex16, D>& r);
+    template <unsigned int D> EXPORTCPUCOREMATH bool inv(const hoNDImage<GT_Complex16, D>& x, hoNDImage<GT_Complex16, D>& r);
 
 #endif // USE_MKL
 }

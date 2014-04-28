@@ -422,13 +422,12 @@ namespace Gadgetron
         os << "--------------------------------------------------" << endl;
     }
 
-    EXPORTCPUCORE template class hoNDMetaAttributes<int, float, std::complex<float> >;
-    EXPORTCPUCORE template class hoNDMetaAttributes<int, double, std::complex<double> >;
-    EXPORTCPUCORE template class hoNDMetaAttributes<int, float, std::complex<double> >;
-    EXPORTCPUCORE template class hoNDMetaAttributes<int, double, std::complex<float> >;
-
-    EXPORTCPUCORE template class hoNDMetaAttributes<long long, float, std::complex<float> >;
-    EXPORTCPUCORE template class hoNDMetaAttributes<long long, double, std::complex<double> >;
-    EXPORTCPUCORE template class hoNDMetaAttributes<long long, float, std::complex<double> >;
-    EXPORTCPUCORE template class hoNDMetaAttributes<long long, double, std::complex<float> >;
+    template EXPORTCPUCORE class hoNDMetaAttributes<int, float, std::complex<float> >;
+    template EXPORTCPUCORE class hoNDMetaAttributes<int, double, std::complex<double> >;
+    template EXPORTCPUCORE class hoNDMetaAttributes<int, float, std::complex<double> >;
+    template EXPORTCPUCORE class hoNDMetaAttributes<int, double, std::complex<float> >;
+    template EXPORTCPUCORE class hoNDMetaAttributes<long long, float, std::complex<float> >;
+    template EXPORTCPUCORE class hoNDMetaAttributes<long long, double, std::complex<double> >;
+    template EXPORTCPUCORE class hoNDMetaAttributes<long long, float, std::complex<double> >;
+    template EXPORTCPUCORE class hoNDMetaAttributes<long long, double, std::complex<float> >;
 }

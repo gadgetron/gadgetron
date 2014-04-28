@@ -218,66 +218,68 @@ namespace Gadgetron
     // ------------------------------------------------------------------
     // float
     // ------------------------------------------------------------------
-    EXPORTCPUCOREMATH inline bool add(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r); // r = x + y
-    EXPORTCPUCOREMATH inline bool subtract(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r); // r = x - y
-    EXPORTCPUCOREMATH inline bool multiply(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r); // r = x * y
-    EXPORTCPUCOREMATH inline bool divide(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r); // r = x / y
-    EXPORTCPUCOREMATH inline bool absolute(const hoNDArray<float>& x, hoNDArray<float>& r); // r = abs(x)
-    EXPORTCPUCOREMATH inline bool argument(const hoNDArray<float>& x, hoNDArray<float>& r); // r = angle(x)
-    EXPORTCPUCOREMATH inline bool sqrt(const hoNDArray<float>& x, hoNDArray<float>& r); // r = sqrt(x)
-    EXPORTCPUCOREMATH inline bool minAbsolute(const hoNDArray<float>& x, float& r, size_t& ind); // minimal absolute value and index
-    EXPORTCPUCOREMATH inline bool maxAbsolute(const hoNDArray<float>& x, float& r, size_t& ind); // maximal absolute value and index
-    EXPORTCPUCOREMATH inline bool addEpsilon(hoNDArray<float>& x); // x = x + Epsilon if x==0, prepare for division
-    EXPORTCPUCOREMATH inline bool norm2(const hoNDArray<float>& x, float& r);
-    EXPORTCPUCOREMATH inline bool norm1(const hoNDArray<float>& x, float& r);
+    EXPORTCPUCOREMATH bool add(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r); // r = x + y
+    EXPORTCPUCOREMATH bool add(size_t N, const float* x, const float* y, float* r);
+    EXPORTCPUCOREMATH bool subtract(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r); // r = x - y
+    EXPORTCPUCOREMATH bool multiply(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r); // r = x * y
+    EXPORTCPUCOREMATH bool divide(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r); // r = x / y
+    EXPORTCPUCOREMATH bool absolute(const hoNDArray<float>& x, hoNDArray<float>& r); // r = abs(x)
+    EXPORTCPUCOREMATH bool argument(const hoNDArray<float>& x, hoNDArray<float>& r); // r = angle(x)
+    EXPORTCPUCOREMATH bool sqrt(const hoNDArray<float>& x, hoNDArray<float>& r); // r = sqrt(x)
+    EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<float>& x, float& r, size_t& ind); // minimal absolute value and index
+    EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<float>& x, float& r, size_t& ind); // maximal absolute value and index
+    EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<float>& x); // x = x + Epsilon if x==0, prepare for division
+    EXPORTCPUCOREMATH bool norm2(const hoNDArray<float>& x, float& r);
+    EXPORTCPUCOREMATH bool norm1(const hoNDArray<float>& x, float& r);
     EXPORTCPUCOREMATH bool conv2(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& z); // x: input data, y: convolution kernel, z: output; each 2D slice is convolved
     EXPORTCPUCOREMATH bool conv3(const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& z); // x: input data, y: convolution kernel, z: output; each 3D volume is convolved
-    EXPORTCPUCOREMATH inline bool inv(const hoNDArray<float>& x, hoNDArray<float>& r); // r = 1/x
-    EXPORTCPUCOREMATH inline bool axpy(float a, const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r); // r = a*x+y
+    EXPORTCPUCOREMATH bool inv(const hoNDArray<float>& x, hoNDArray<float>& r); // r = 1/x
+    EXPORTCPUCOREMATH bool axpy(float a, const hoNDArray<float>& x, const hoNDArray<float>& y, hoNDArray<float>& r); // r = a*x+y
 
     // ------------------------------------------------------------------
     // double
     // ------------------------------------------------------------------
-    EXPORTCPUCOREMATH inline bool add(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    EXPORTCPUCOREMATH inline bool subtract(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    EXPORTCPUCOREMATH inline bool multiply(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    EXPORTCPUCOREMATH inline bool divide(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
-    EXPORTCPUCOREMATH inline bool absolute(const hoNDArray<double>& x, hoNDArray<double>& r);
-    EXPORTCPUCOREMATH inline bool argument(const hoNDArray<double>& x, hoNDArray<double>& r);
-    EXPORTCPUCOREMATH inline bool sqrt(const hoNDArray<double>& x, hoNDArray<double>& r);
-    EXPORTCPUCOREMATH inline bool minAbsolute(const hoNDArray<double>& x, double& r, size_t& ind);
-    EXPORTCPUCOREMATH inline bool maxAbsolute(const hoNDArray<double>& x, double& r, size_t& ind);
-    EXPORTCPUCOREMATH inline bool addEpsilon(hoNDArray<double>& x);
-    EXPORTCPUCOREMATH inline bool norm2(const hoNDArray<double>& x, double& r);
-    EXPORTCPUCOREMATH inline bool norm1(const hoNDArray<double>& x, double& r);
+    EXPORTCPUCOREMATH bool add(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
+    EXPORTCPUCOREMATH bool add(size_t N, const double* x, const double* y, double* r);
+    EXPORTCPUCOREMATH bool subtract(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
+    EXPORTCPUCOREMATH bool multiply(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
+    EXPORTCPUCOREMATH bool divide(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
+    EXPORTCPUCOREMATH bool absolute(const hoNDArray<double>& x, hoNDArray<double>& r);
+    EXPORTCPUCOREMATH bool argument(const hoNDArray<double>& x, hoNDArray<double>& r);
+    EXPORTCPUCOREMATH bool sqrt(const hoNDArray<double>& x, hoNDArray<double>& r);
+    EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<double>& x, double& r, size_t& ind);
+    EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<double>& x, double& r, size_t& ind);
+    EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<double>& x);
+    EXPORTCPUCOREMATH bool norm2(const hoNDArray<double>& x, double& r);
+    EXPORTCPUCOREMATH bool norm1(const hoNDArray<double>& x, double& r);
     EXPORTCPUCOREMATH bool conv2(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& z);
     EXPORTCPUCOREMATH bool conv3(const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& z);
-    EXPORTCPUCOREMATH inline bool inv(const hoNDArray<double>& x, hoNDArray<double>& r);
-    EXPORTCPUCOREMATH inline bool axpy(double a, const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
+    EXPORTCPUCOREMATH bool inv(const hoNDArray<double>& x, hoNDArray<double>& r);
+    EXPORTCPUCOREMATH bool axpy(double a, const hoNDArray<double>& x, const hoNDArray<double>& y, hoNDArray<double>& r);
 
     // ------------------------------------------------------------------
     // complex float
     // ------------------------------------------------------------------
-    EXPORTCPUCOREMATH inline bool add(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
-    EXPORTCPUCOREMATH inline bool add(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r);
-    EXPORTCPUCOREMATH inline bool subtract(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
-    EXPORTCPUCOREMATH inline bool subtract(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r);
-    EXPORTCPUCOREMATH inline bool multiply(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
-    EXPORTCPUCOREMATH inline bool multiply(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r);
-    EXPORTCPUCOREMATH inline bool divide(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
-    EXPORTCPUCOREMATH inline bool absolute(const hoNDArray<GT_Complex8>& x, hoNDArray<float>& r);
-    EXPORTCPUCOREMATH inline bool sqrt(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    EXPORTCPUCOREMATH inline bool minAbsolute(const hoNDArray<GT_Complex8>& x, GT_Complex8& r, size_t& ind);
-    EXPORTCPUCOREMATH inline bool maxAbsolute(const hoNDArray<GT_Complex8>& x, GT_Complex8& r, size_t& ind);
-    EXPORTCPUCOREMATH inline bool multiplyConj(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
-    EXPORTCPUCOREMATH inline bool argument(const hoNDArray<GT_Complex8>& x, hoNDArray<float>& r);
-    EXPORTCPUCOREMATH inline bool conjugate(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    EXPORTCPUCOREMATH inline bool addEpsilon(hoNDArray<GT_Complex8>& x);
-    EXPORTCPUCOREMATH inline bool norm2(const hoNDArray<GT_Complex8>& x, float& r);
-    EXPORTCPUCOREMATH inline bool norm1(const hoNDArray<GT_Complex8>& x, float& r);
-    EXPORTCPUCOREMATH inline bool dotc(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, GT_Complex8& r);
-    EXPORTCPUCOREMATH inline GT_Complex8 dotc(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y);
-    EXPORTCPUCOREMATH inline GT_Complex8 dotu(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y); // res = x dot y
+    EXPORTCPUCOREMATH bool add(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
+    EXPORTCPUCOREMATH bool add(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r);
+    EXPORTCPUCOREMATH bool subtract(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
+    EXPORTCPUCOREMATH bool subtract(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r);
+    EXPORTCPUCOREMATH bool multiply(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
+    EXPORTCPUCOREMATH bool multiply(size_t N, const GT_Complex8* x, const GT_Complex8* y, GT_Complex8* r);
+    EXPORTCPUCOREMATH bool divide(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
+    EXPORTCPUCOREMATH bool absolute(const hoNDArray<GT_Complex8>& x, hoNDArray<float>& r);
+    EXPORTCPUCOREMATH bool sqrt(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
+    EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<GT_Complex8>& x, GT_Complex8& r, size_t& ind);
+    EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<GT_Complex8>& x, GT_Complex8& r, size_t& ind);
+    EXPORTCPUCOREMATH bool multiplyConj(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
+    EXPORTCPUCOREMATH bool argument(const hoNDArray<GT_Complex8>& x, hoNDArray<float>& r);
+    EXPORTCPUCOREMATH bool conjugate(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
+    EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<GT_Complex8>& x);
+    EXPORTCPUCOREMATH bool norm2(const hoNDArray<GT_Complex8>& x, float& r);
+    EXPORTCPUCOREMATH bool norm1(const hoNDArray<GT_Complex8>& x, float& r);
+    EXPORTCPUCOREMATH bool dotc(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, GT_Complex8& r);
+    EXPORTCPUCOREMATH GT_Complex8 dotc(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y);
+    EXPORTCPUCOREMATH GT_Complex8 dotu(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y); // res = x dot y
 
     EXPORTCPUCOREMATH bool conv2(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& z);
     EXPORTCPUCOREMATH bool conv3(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& z);
@@ -285,68 +287,68 @@ namespace Gadgetron
     EXPORTCPUCOREMATH bool corr2(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& z); // x: input data [RO E1 ...], y: corr kernel [kro ke1], z: output; each 2D slice is correlated
     EXPORTCPUCOREMATH bool corr3(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& z); // x: input data [RO E1 E2 ...], y: corr kernel [kro ke1 ke2], z: output; each 3D volume is correlated
 
-    EXPORTCPUCOREMATH inline bool inv(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
-    EXPORTCPUCOREMATH inline bool axpy(const GT_Complex8& a, const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
+    EXPORTCPUCOREMATH bool inv(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r);
+    EXPORTCPUCOREMATH bool axpy(const GT_Complex8& a, const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
 
     // ------------------------------------------------------------------
     // complex double
     // ------------------------------------------------------------------
-    EXPORTCPUCOREMATH inline bool add(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
-    EXPORTCPUCOREMATH inline bool add(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r);
-    EXPORTCPUCOREMATH inline bool subtract(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
-    EXPORTCPUCOREMATH inline bool subtract(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r);
-    EXPORTCPUCOREMATH inline bool multiply(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
-    EXPORTCPUCOREMATH inline bool multiply(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r);
-    EXPORTCPUCOREMATH inline bool divide(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
-    EXPORTCPUCOREMATH inline bool absolute(const hoNDArray<GT_Complex16>& x, hoNDArray<double>& r);
-    EXPORTCPUCOREMATH inline bool sqrt(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
-    EXPORTCPUCOREMATH inline bool minAbsolute(const hoNDArray<GT_Complex16>& x, GT_Complex16& r, size_t& ind);
-    EXPORTCPUCOREMATH inline bool maxAbsolute(const hoNDArray<GT_Complex16>& x, GT_Complex16& r, size_t& ind);
-    EXPORTCPUCOREMATH inline bool multiplyConj(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
-    EXPORTCPUCOREMATH inline bool argument(const hoNDArray<GT_Complex16>& x, hoNDArray<double>& r);
-    EXPORTCPUCOREMATH inline bool conjugate(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
-    EXPORTCPUCOREMATH inline bool addEpsilon(hoNDArray<GT_Complex16>& x);
-    EXPORTCPUCOREMATH inline bool norm2(const hoNDArray<GT_Complex16>& x, double& r);
-    EXPORTCPUCOREMATH inline bool norm1(const hoNDArray<GT_Complex16>& x, double& r);
-    EXPORTCPUCOREMATH inline bool dotc(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, GT_Complex16& r);
-    EXPORTCPUCOREMATH inline GT_Complex16 dotc(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y);
-    EXPORTCPUCOREMATH inline GT_Complex16 dotu(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y);
+    EXPORTCPUCOREMATH bool add(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+    EXPORTCPUCOREMATH bool add(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r);
+    EXPORTCPUCOREMATH bool subtract(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+    EXPORTCPUCOREMATH bool subtract(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r);
+    EXPORTCPUCOREMATH bool multiply(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+    EXPORTCPUCOREMATH bool multiply(size_t N, const GT_Complex16* x, const GT_Complex16* y, GT_Complex16* r);
+    EXPORTCPUCOREMATH bool divide(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+    EXPORTCPUCOREMATH bool absolute(const hoNDArray<GT_Complex16>& x, hoNDArray<double>& r);
+    EXPORTCPUCOREMATH bool sqrt(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    EXPORTCPUCOREMATH bool minAbsolute(const hoNDArray<GT_Complex16>& x, GT_Complex16& r, size_t& ind);
+    EXPORTCPUCOREMATH bool maxAbsolute(const hoNDArray<GT_Complex16>& x, GT_Complex16& r, size_t& ind);
+    EXPORTCPUCOREMATH bool multiplyConj(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+    EXPORTCPUCOREMATH bool argument(const hoNDArray<GT_Complex16>& x, hoNDArray<double>& r);
+    EXPORTCPUCOREMATH bool conjugate(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    EXPORTCPUCOREMATH bool addEpsilon(hoNDArray<GT_Complex16>& x);
+    EXPORTCPUCOREMATH bool norm2(const hoNDArray<GT_Complex16>& x, double& r);
+    EXPORTCPUCOREMATH bool norm1(const hoNDArray<GT_Complex16>& x, double& r);
+    EXPORTCPUCOREMATH bool dotc(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, GT_Complex16& r);
+    EXPORTCPUCOREMATH GT_Complex16 dotc(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y);
+    EXPORTCPUCOREMATH GT_Complex16 dotu(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y);
 
     EXPORTCPUCOREMATH bool conv2(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& z);
     EXPORTCPUCOREMATH bool conv3(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& z);
     EXPORTCPUCOREMATH bool corr2(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& z);
     EXPORTCPUCOREMATH bool corr3(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& z);
 
-    EXPORTCPUCOREMATH inline bool inv(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
-    EXPORTCPUCOREMATH inline bool axpy(const GT_Complex16& a, const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
+    EXPORTCPUCOREMATH bool inv(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r);
+    EXPORTCPUCOREMATH bool axpy(const GT_Complex16& a, const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
 
     // vector-scalar product
     // r = a*x
-    EXPORTCPUCOREMATH inline bool scal(float a, hoNDArray<float>& x);
-    EXPORTCPUCOREMATH inline bool scal(double a, hoNDArray<double>& x);
-    EXPORTCPUCOREMATH inline bool scal(float a, hoNDArray<GT_Complex8>& x);
-    EXPORTCPUCOREMATH inline bool scal(double a, hoNDArray<GT_Complex16>& x);
-    EXPORTCPUCOREMATH inline bool scal(GT_Complex8 a, hoNDArray<GT_Complex8>& x);
-    EXPORTCPUCOREMATH inline bool scal(GT_Complex16 a, hoNDArray<GT_Complex16>& x);
+    EXPORTCPUCOREMATH bool scal(float a, hoNDArray<float>& x);
+    EXPORTCPUCOREMATH bool scal(double a, hoNDArray<double>& x);
+    EXPORTCPUCOREMATH bool scal(float a, hoNDArray<GT_Complex8>& x);
+    EXPORTCPUCOREMATH bool scal(double a, hoNDArray<GT_Complex16>& x);
+    EXPORTCPUCOREMATH bool scal(GT_Complex8 a, hoNDArray<GT_Complex8>& x);
+    EXPORTCPUCOREMATH bool scal(GT_Complex16 a, hoNDArray<GT_Complex16>& x);
 
-    EXPORTCPUCOREMATH inline bool scal(float a, float*x, long long N);
-    EXPORTCPUCOREMATH inline bool scal(double a, double*x, long long N);
-    EXPORTCPUCOREMATH inline bool scal(float a, GT_Complex8*x, long long N);
-    EXPORTCPUCOREMATH inline bool scal(double a, GT_Complex16*x, long long N);
-    EXPORTCPUCOREMATH inline bool scal(GT_Complex8 a, GT_Complex8*x, long long N);
-    EXPORTCPUCOREMATH inline bool scal(GT_Complex16 a, GT_Complex16*x, long long N);
+    EXPORTCPUCOREMATH bool scal(float a, float*x, long long N);
+    EXPORTCPUCOREMATH bool scal(double a, double*x, long long N);
+    EXPORTCPUCOREMATH bool scal(float a, GT_Complex8*x, long long N);
+    EXPORTCPUCOREMATH bool scal(double a, GT_Complex16*x, long long N);
+    EXPORTCPUCOREMATH bool scal(GT_Complex8 a, GT_Complex8*x, long long N);
+    EXPORTCPUCOREMATH bool scal(GT_Complex16 a, GT_Complex16*x, long long N);
 
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool scal(float a, hoNDImage<float, D>& x);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool scal(double a, hoNDImage<double, D>& x);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool scal(float a, hoNDImage<GT_Complex8, D>& x);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool scal(double a, hoNDImage<GT_Complex16, D>& x);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool scal(GT_Complex8 a, hoNDImage<GT_Complex8, D>& x);
-    template <unsigned int D> EXPORTCPUCOREMATH inline bool scal(GT_Complex16 a, hoNDImage<GT_Complex16, D>& x);
+    template <unsigned int D> EXPORTCPUCOREMATH bool scal(float a, hoNDImage<float, D>& x);
+    template <unsigned int D> EXPORTCPUCOREMATH bool scal(double a, hoNDImage<double, D>& x);
+    template <unsigned int D> EXPORTCPUCOREMATH bool scal(float a, hoNDImage<GT_Complex8, D>& x);
+    template <unsigned int D> EXPORTCPUCOREMATH bool scal(double a, hoNDImage<GT_Complex16, D>& x);
+    template <unsigned int D> EXPORTCPUCOREMATH bool scal(GT_Complex8 a, hoNDImage<GT_Complex8, D>& x);
+    template <unsigned int D> EXPORTCPUCOREMATH bool scal(GT_Complex16 a, hoNDImage<GT_Complex16, D>& x);
 
     // sort the vector
     // isascending: true for ascending and false for descending
-    EXPORTCPUCOREMATH inline bool sort(const hoNDArray<float>& x, hoNDArray<float>& r, bool isascending);
-    EXPORTCPUCOREMATH inline bool sort(const hoNDArray<double>& x, hoNDArray<double>& r, bool isascending);
+    EXPORTCPUCOREMATH bool sort(const hoNDArray<float>& x, hoNDArray<float>& r, bool isascending);
+    EXPORTCPUCOREMATH bool sort(const hoNDArray<double>& x, hoNDArray<double>& r, bool isascending);
 
 #endif // USE_MKL
 

@@ -47,6 +47,7 @@
 #include "ho6DArray.h"
 #include "ho7DArray.h"
 #include "hoMatrix.h"
+#include "hoMatrix_util.h"
 #include "hoNDFFT.h"
 #include "hoNDArray_utils.h"
 #include "hoNDArray_math_util.h"

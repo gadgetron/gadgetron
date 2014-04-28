@@ -194,7 +194,7 @@ typedef struct nifti1_extension nifti1_extension ;
 
 namespace Gadgetron { namespace gtPlus {
 
-    class EXPORTGTPLUS gtPlusIONifti : public gtPlusIOBase<nifti_1_header>
+    class EXPORTGTPLUSIO gtPlusIONifti : public gtPlusIOBase<nifti_1_header>
     {
     public:
 

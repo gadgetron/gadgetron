@@ -45,19 +45,25 @@ include_directories(
     ${ARMADILLO_INCLUDE_DIRS}
     )
 
-add_executable(mriclient main.cpp ImageWriter.h HDF5ImageWriter.h BlobFileWriter.h BlobFileWithAttribWriter.h )
+add_executable(mriclient main.cpp ImageWriter.h HDF5ImageWriter.h ImageAttribWriter.h HDF5ImageAttribWriter.h BlobFileWriter.h BlobFileWithAttribWriter.h )
 
 add_executable(gt_alive gt_alive.cpp)
 
 add_executable(gtdependencyquery gt_query.cpp DependencyQueryReader.h gtquery.xml)
 
-target_link_libraries(mriclient cpucore gtplus)
-if (MKL_FOUND)
-    target_link_libraries(mriclient ${MKL_LIBRARIES})
-endif (MKL_FOUND)
+target_link_libraries(mriclient cpucore gtplus_io)
 
-target_link_libraries(gt_alive cpucore gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}  ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES} ${MKL_LIBRARIES})
-target_link_libraries(gtdependencyquery cpucore gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}  ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES} ${MKL_LIBRARIES})
+target_link_libraries(gt_alive cpucore 
+                               gadgettools 
+                               optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
+                               ${Boost_LIBRARIES} 
+                               ${ISMRMRD_LIBRARIES} )
+
+target_link_libraries(gtdependencyquery cpucore 
+                                        gadgettools 
+                                        optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
+                                        ${Boost_LIBRARIES} 
+                                        ${ISMRMRD_LIBRARIES} )
 
 IF(WIN32)
     target_link_libraries(mriclient optimized ${HDF5_hdf5_LIBRARY_RELEASE} optimized ${HDF5_hdf5_cpp_LIBRARY_RELEASE})
@@ -70,6 +76,6 @@ ENDIF(WIN32)
 target_link_libraries(mriclient gadgetron_mricore)
 
 install(TARGETS mriclient gt_alive gtdependencyquery DESTINATION bin)
-install(FILES ImageWriter.h HDF5ImageWriter.h BlobFileWriter.h BlobFileWithAttribWriter.h DependencyQueryReader.h DESTINATION include)
+install(FILES ImageWriter.h HDF5ImageWriter.h ImageAttribWriter.h HDF5ImageAttribWriter.h BlobFileWriter.h BlobFileWithAttribWriter.h DependencyQueryReader.h DESTINATION include)
 install(FILES ${ISMRMRD_LIBRARIES} DESTINATION lib)
 install(FILES isalive.xml gtquery.xml DESTINATION config)

@@ -8,6 +8,8 @@
 #include "hoNDArray.h"
 #include "ImageWriter.h"
 #include "HDF5ImageWriter.h"
+#include "ImageAttribWriter.h"
+#include "HDF5ImageAttribWriter.h"
 #include "FileInfo.h"
 #include "ismrmrd_hdf5.h"
 #include "GadgetIsmrmrdReadWrite.h"

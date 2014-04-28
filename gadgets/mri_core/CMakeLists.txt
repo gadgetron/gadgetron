@@ -139,15 +139,11 @@ target_link_libraries(gadgetron_mricore
     ${OPTIMIZED_GADGET_LIBS}
 )
 
-if (MKL_FOUND)
-    target_link_libraries(gadgetron_mricore gtplus ${MKL_LIBRARIES} ${EXTRA_MKL_LIBRARIES})
-endif (MKL_FOUND)
-
 install(FILES 
     gadgetron_mricore_export.h
     ${gadgetron_mricore_header_files}
     ${OPTIMIZED_GADGET_HEADERS}
-DESTINATION include)
+    DESTINATION include)
 
 if (ARMADILLO_FOUND)
     install(FILES ${gadgetron_mricore_config_files} DESTINATION config)

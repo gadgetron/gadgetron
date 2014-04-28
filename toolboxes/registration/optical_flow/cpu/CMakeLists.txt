@@ -6,16 +6,6 @@
         link_directories(${Boost_LIBRARY_DIRS})
     endif(WIN32)
 
-    if (MKL_FOUND)
-        list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
-        if ( USE_OPENMP )
-            list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
-        endif ( USE_OPENMP )
-
-        INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
-        LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
-    endif (MKL_FOUND)
-
     include_directories(
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
         ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
@@ -72,8 +62,6 @@
                 cpucore
                 cpucore_math 
                 gtplus
-                ${MKL_LIBRARIES}
-                ${EXTRA_MKL_LIBRARIES}
                 ${ARMADILLO_LIBRARIES}
                 optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
 

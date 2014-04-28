@@ -37,23 +37,10 @@ include_directories( ${GTEST_INCLUDE_DIRS}
                      ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
                      ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools/ismrmrd )
 
-if (MKL_FOUND)
-    MESSAGE("MKL Found for gtPlus")
-    ADD_DEFINITIONS(-DUSE_MKL)
-    list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
-    if ( USE_OPENMP )
-        list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
-    endif ( USE_OPENMP )
-
-    INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
-    LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
-endif (MKL_FOUND)
-
 link_libraries(optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
                 ${GTEST_LIBRARIES} 
                 ${Boost_LIBRARIES} 
                 ${ISMRMRD_LIBRARIES} 
-                ${MKL_LIBRARIES} 
                 cpucore 
                 cpucore_math 
                 # cpureg

@@ -22,10 +22,10 @@ if(WIN32)
     link_directories(${Boost_LIBRARY_DIRS})
 endif(WIN32)
 
-if (MKL_FOUND)
-    INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
-    LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
-endif (MKL_FOUND)
+#if (MKL_FOUND)
+#    INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
+#    LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
+#endif (MKL_FOUND)
 
 #Process the XSD files
 SET(XSDS image/schema/gadgetronMetaAttributes.xsd)
@@ -84,10 +84,10 @@ source_group(image FILES ${image_files})
 
 add_library(cpucore ${LIBTYPE}
                     ${XSDS_SOURCES} 
-                    ${header_files}
-                    ${image_files}
-                    ${algorithm_files}
-)
+                    hoMatrix.cpp 
+                    ${header_files} 
+                    ${image_files}  
+                    ${algorithm_files} )
 
 target_link_libraries(cpucore 
                     ${ISMRMRD_LIBRARIES}

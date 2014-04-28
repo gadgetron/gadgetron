@@ -87,7 +87,7 @@ struct dsr
 
 namespace Gadgetron { namespace gtPlus {
 
-class EXPORTGTPLUS gtPlusIOAnalyze : public gtPlusIOBase<dsr>
+class EXPORTGTPLUSIO gtPlusIOAnalyze : public gtPlusIOBase<dsr>
 {
 public:
 
@@ -586,7 +586,7 @@ bool gtPlusIOAnalyze::header2Image(hoNDImage<T,D>& a, const HeaderType& header)
 
         std::vector<size_t> dim(header.dime.dim[0]);
 
-        if ( D != dim.size() ) return false;
+        if ( D > dim.size() ) return false;
 
         size_t ii;
         for ( ii=0; ii<dim.size(); ii++ )

@@ -833,81 +833,81 @@ namespace Gadgetron
     template <typename T> 
     inline void hoNDArray<T>::_allocate_memory( size_t size, float** data )
     {
-#ifdef USE_MKL
-        *data = (float*) mkl_malloc(size*sizeof(float), 4);
-#else
+//#ifdef USE_MKL
+//        *data = (float*) mkl_malloc(size*sizeof(float), 4);
+//#else
         *data = (float*) malloc( size*sizeof(float) );
-#endif
+//#endif
     }
 
     template <typename T> 
     inline void hoNDArray<T>::_deallocate_memory( float* data )
     {
-#ifdef USE_MKL
-        mkl_free(data);
-#else
+//#ifdef USE_MKL
+//        mkl_free(data);
+//#else
         free(data);
-#endif
+//#endif
     }
 
     template <typename T> 
     inline void hoNDArray<T>::_allocate_memory( size_t size, double** data )
     {
-#ifdef USE_MKL
-        *data = (double*) mkl_malloc(size*sizeof(double), 4);
-#else
+//#ifdef USE_MKL
+//        *data = (double*) mkl_malloc(size*sizeof(double), 4);
+//#else
         *data = (double*) malloc( size*sizeof(double) );
-#endif
+//#endif
     }
 
     template <typename T> 
     inline void hoNDArray<T>::_deallocate_memory( double* data )
     {
-#ifdef USE_MKL
-        mkl_free(data);
-#else
+//#ifdef USE_MKL
+//        mkl_free(data);
+//#else
         free(data);
-#endif
+//#endif
     }
 
     template <typename T> 
     inline void hoNDArray<T>::_allocate_memory( size_t size, std::complex<float>** data )
     {
-#ifdef USE_MKL
-        *data = (std::complex<float>*) mkl_malloc(size*sizeof(std::complex<float>), 4);
-#else
+//#ifdef USE_MKL
+//        *data = (std::complex<float>*) mkl_malloc(size*sizeof(std::complex<float>), 4);
+//#else
         *data = (std::complex<float>*) malloc( size*sizeof(std::complex<float>) );
-#endif
+//#endif
     }
 
     template <typename T> 
     inline void hoNDArray<T>::_deallocate_memory( std::complex<float>* data )
     {
-#ifdef USE_MKL
-        mkl_free(data);
-#else
+//#ifdef USE_MKL
+//        mkl_free(data);
+//#else
         free(data);
-#endif
+//#endif
     }
 
     template <typename T> 
     inline void hoNDArray<T>::_allocate_memory( size_t size, std::complex<double>** data )
     {
-#ifdef USE_MKL
-        *data = (std::complex<double>*) mkl_malloc(size*sizeof(std::complex<double>), 4);
-#else
+//#ifdef USE_MKL
+//        *data = (std::complex<double>*) mkl_malloc(size*sizeof(std::complex<double>), 4);
+//#else
         *data = (std::complex<double>*) malloc( size*sizeof(std::complex<double>) );
-#endif
+//#endif
     }
 
     template <typename T> 
     inline void hoNDArray<T>::_deallocate_memory( std::complex<double>* data )
     {
-#ifdef USE_MKL
-        mkl_free(data);
-#else
+//#ifdef USE_MKL
+//        mkl_free(data);
+//#else
         free(data);
-#endif
+//#endif
     }
 
     template <typename T> 

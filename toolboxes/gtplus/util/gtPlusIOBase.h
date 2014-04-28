@@ -8,7 +8,7 @@
 #include <iostream>
 #include <typeinfo>
 
-#include "GtPlusExport.h"
+#include "GtPlusIOExport.h"
 #include "GadgetronCommon.h"
 
 #include "NDArray.h"
@@ -23,11 +23,9 @@
 #include "ho5DArray.h"
 #include "ho6DArray.h"
 #include "ho7DArray.h"
+#include "hoNDImage.h"
 
 #include "hoNDArray_fileio.h"
-#include "hoNDImage_util.h"
-
-// the file input/output utility functions
 
 #ifdef GT_Complex8
     #undef GT_Complex8
@@ -39,9 +37,12 @@ typedef std::complex<float> GT_Complex8;
 #endif // GT_Complex16
 typedef std::complex<double> GT_Complex16;
 
+#include "hoNDArray_math_util.h"
+#include "hoNDImage_util.h"
+
 namespace Gadgetron { namespace gtPlus {
 
-class EXPORTGTPLUS gtPlusIOWorker
+class EXPORTGTPLUSIO gtPlusIOWorker
 {
 public:
 
@@ -293,7 +294,7 @@ public:
         {
             typedef typename Gadgetron::realType<T>::Type value_type;
 
-            hoNDArray<value_type> buf;
+            /*hoNDArray<value_type> buf;
             GADGET_CHECK_RETURN_FALSE(Gadgetron::complex_to_real(a, buf));
 
             std::string filenameReal = filename;
@@ -313,7 +314,42 @@ public:
             GADGET_CHECK_RETURN_FALSE(Gadgetron::argument(a, buf));
             std::string filenamePhase = filename;
             filenamePhase.append("_PHASE");
-            GADGET_CHECK_RETURN_FALSE(exportArray(buf, filenamePhase));
+            GADGET_CHECK_RETURN_FALSE(exportArray(buf, filenamePhase));*/
+
+            hoNDArray<value_type> rpart, ipart, mag, phs;
+            rpart.create(a.get_dimensions());
+            ipart.create(a.get_dimensions());
+            mag.create(a.get_dimensions());
+            phs.create(a.get_dimensions());
+
+            long long num = (long long)a.get_number_of_elements();
+
+            long long n;
+
+            #pragma omp parallel for default(none) private(n) shared(num, a, rpart, ipart, mag, phs)
+            for ( n=0; n<num; n++ )
+            {
+                rpart(n) = a(n).real();
+                ipart(n) = a(n).imag();
+                mag(n) = std::abs( a(n) );
+                phs(n) = std::arg( a(n) );
+            }
+
+            std::string filenameReal = filename;
+            filenameReal.append("_REAL");
+            GADGET_CHECK_RETURN_FALSE(exportArray(rpart, filenameReal));
+
+            std::string filenameImag = filename;
+            filenameImag.append("_IMAG");
+            GADGET_CHECK_RETURN_FALSE(exportArray(ipart, filenameImag));
+
+            std::string filenameMag = filename;
+            filenameMag.append("_MAG");
+            GADGET_CHECK_RETURN_FALSE(exportArray(mag, filenameMag));
+
+            std::string filenamePhase = filename;
+            filenamePhase.append("_PHASE");
+            GADGET_CHECK_RETURN_FALSE(exportArray(phs, filenamePhase));
         }
         catch(...)
         {
@@ -512,27 +548,62 @@ public:
         {
             typedef typename Gadgetron::realType<T>::Type value_type;
 
-            hoNDImage<value_type, D> buf;
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::complex_to_real(a, buf));
+            //hoNDImage<value_type, D> buf;
+            //GADGET_CHECK_RETURN_FALSE(Gadgetron::complex_to_real(a, buf));
+
+            //std::string filenameReal = filename;
+            //filenameReal.append("_REAL");
+            //GADGET_CHECK_RETURN_FALSE(exportImage(buf, filenameReal));
+
+            //GADGET_CHECK_RETURN_FALSE(Gadgetron::complex_to_imag(a, buf));
+            //std::string filenameImag = filename;
+            //filenameImag.append("_IMAG");
+            //GADGET_CHECK_RETURN_FALSE(exportImage(buf, filenameImag));
+
+            //GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(a, buf));
+            //std::string filenameMag = filename;
+            //filenameMag.append("_MAG");
+            //GADGET_CHECK_RETURN_FALSE(exportImage(buf, filenameMag));
+
+            //GADGET_CHECK_RETURN_FALSE(Gadgetron::argument(a, buf));
+            //std::string filenamePhase = filename;
+            //filenamePhase.append("_PHASE");
+            //GADGET_CHECK_RETURN_FALSE(exportImage(buf, filenamePhase));
+
+            long long num = (long long)a.get_number_of_elements();
+
+            long long n;
+
+            hoNDImage<value_type, D> rpart, ipart, mag, phs;
+            rpart.create(a.get_dimensions());
+            ipart.create(a.get_dimensions());
+            mag.create(a.get_dimensions());
+            phs.create(a.get_dimensions());
+
+            #pragma omp parallel for default(none) private(n) shared(num, a, rpart, ipart, mag, phs)
+            for ( n=0; n<num; n++ )
+            {
+                rpart(n) = a(n).real();
+                ipart(n) = a(n).imag();
+                mag(n) = std::abs( a(n) );
+                phs(n) = std::arg( a(n) );
+            }
 
             std::string filenameReal = filename;
             filenameReal.append("_REAL");
-            GADGET_CHECK_RETURN_FALSE(exportImage(buf, filenameReal));
+            GADGET_CHECK_RETURN_FALSE(exportImage(rpart, filenameReal));
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::complex_to_imag(a, buf));
             std::string filenameImag = filename;
             filenameImag.append("_IMAG");
-            GADGET_CHECK_RETURN_FALSE(exportImage(buf, filenameImag));
+            GADGET_CHECK_RETURN_FALSE(exportImage(ipart, filenameImag));
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(a, buf));
             std::string filenameMag = filename;
             filenameMag.append("_MAG");
-            GADGET_CHECK_RETURN_FALSE(exportImage(buf, filenameMag));
+            GADGET_CHECK_RETURN_FALSE(exportImage(mag, filenameMag));
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::argument(a, buf));
             std::string filenamePhase = filename;
             filenamePhase.append("_PHASE");
-            GADGET_CHECK_RETURN_FALSE(exportImage(buf, filenamePhase));
+            GADGET_CHECK_RETURN_FALSE(exportImage(phs, filenamePhase));
         }
         catch(...)
         {

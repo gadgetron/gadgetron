@@ -17,10 +17,6 @@
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
 
-#ifdef USE_MKL
-#include "mkl.h"
-#endif
-
 namespace Gadgetron{
 
   template <typename T> class hoNDArray : public NDArray<T>, public SerializableObject
