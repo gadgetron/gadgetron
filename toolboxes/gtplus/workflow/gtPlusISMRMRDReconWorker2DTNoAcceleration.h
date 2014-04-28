@@ -57,7 +57,7 @@ bool gtPlusReconWorker2DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder2DT
         if ( !workOrder2DT->workFlow_use_BufferedKernel_ )
         {
             GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("prepRef"));
-            GADGET_CHECK_RETURN_FALSE(prepRef(workOrder2DT, workOrder2DT->ref_, workOrder2DT->ref_recon_, workOrder2DT->ref_coil_map_, 
+            GADGET_CHECK_RETURN_FALSE(this->prepRef(workOrder2DT, workOrder2DT->ref_, workOrder2DT->ref_recon_, workOrder2DT->ref_coil_map_, 
                         workOrder2DT->start_RO_, workOrder2DT->end_RO_, workOrder2DT->start_E1_, workOrder2DT->end_E1_, workOrder2DT->data_.get_size(1)));
             GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
         }
