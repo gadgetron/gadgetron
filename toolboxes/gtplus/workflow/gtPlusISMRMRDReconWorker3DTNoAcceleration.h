@@ -57,7 +57,7 @@ bool gtPlusReconWorker3DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder3DT
         if ( !workOrder3DT->workFlow_use_BufferedKernel_ )
         {
             GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("prepRef"));
-            GADGET_CHECK_RETURN_FALSE(prepRef(workOrder3DT, workOrder3DT->ref_, 
+            GADGET_CHECK_RETURN_FALSE(this->prepRef(workOrder3DT, workOrder3DT->ref_, 
                                             workOrder3DT->ref_recon_, 
                                             workOrder3DT->ref_coil_map_, 
                                             workOrder3DT->start_RO_, workOrder3DT->end_RO_, 
