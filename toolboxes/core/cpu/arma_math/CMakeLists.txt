@@ -50,8 +50,6 @@ endif (ARMADILLO_FOUND)
 
 add_library(cpucore_math ${LIBTYPE} ${cpucore_math_header_files} ${cpucore_math_src_files})
 
-message(STATUS "arma: ${ARMADILLO_LIBRARIES}")
-
 if (MKL_FOUND)
     target_link_libraries(cpucore_math 
         cpucore

@@ -605,7 +605,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::needTriggerWorkOrderAllInClose()
     {
         return ((separate_triggerDim1_==DIM_NONE)&&(separate_triggerDim2_==DIM_NONE));
     }
-    else if ( workOrder_.CalibMode_ == ISMRMRD_noacceleration )
+    else if ( (workOrder_.CalibMode_ == ISMRMRD_noacceleration) )
     {
         return ((noacceleration_triggerDim1_==DIM_NONE)&&(noacceleration_triggerDim2_==DIM_NONE));
     }

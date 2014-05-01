@@ -506,7 +506,7 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
         // if the upstream coil compression is needed
         if ( workOrder2DT->upstream_coil_compression_ )
         {
-            GADGET_CHECK_PERFORM(!debugFolder_.empty(), std::cout << "Upstream coil compression ... ");
+            GADGET_CHECK_PERFORM(!debugFolder_.empty(), "Upstream coil compression ... ");
 
             std::vector<hoMatrix<T> > upstreamCoilCoeffRef(workOrder2DT->ref_.get_size(4)), upstreamCoilCoeffRefRecon(refRecon.get_size(4)), upstreamCoilCoeffData(workOrder2DT->data_.get_size(4));
 

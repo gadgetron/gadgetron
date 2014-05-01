@@ -1052,8 +1052,7 @@ namespace Gadgetron
                 const T* pX = x.begin() + n*RO*E1;
                 T* pZ = z.begin() + n*RO*E1;
 
-                size_t kro, ke1;
-                intmax_t dro, de1;
+                size_t kro, ke1, dro, de1;
 
                 for ( e1=0; e1<E1; e1++ )
                 {
@@ -1156,8 +1155,7 @@ namespace Gadgetron
                 const T* pX = x.begin() + n*RO*E1*E2;
                 T* pZ = z.begin() + n*RO*E1*E2;
 
-                size_t kro, ke1, ke2;
-                intmax_t dro, de1, de2;
+                size_t kro, ke1, ke2, dro, de1, de2;
 
                 #pragma omp parallel for default(none) private(ro, e1, e2, kro, ke1, ke2, dro, de1, de2) shared(pX, RO, E1, E2, pZ, halfKRO, halfKE1, halfKE2, pKer)
                 for ( e2=0; e2<(long long)E2; e2++ )
