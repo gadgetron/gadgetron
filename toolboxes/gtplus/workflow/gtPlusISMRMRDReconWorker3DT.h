@@ -915,7 +915,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
         // if the upstream coil compression is needed
         if ( workOrder3DT->upstream_coil_compression_ )
         {
-            GADGET_CHECK_PERFORM(!debugFolder_.empty(), "Upstream coil compression ... ");
+            GADGET_CHECK_PERFORM(!debugFolder_.empty(), std::cout << "Upstream coil compression ... ");
 
             GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("average along N ... "));
             hoNDArray<T> aveAll;

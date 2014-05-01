@@ -560,14 +560,14 @@ computeEffectiveNodeNumberBasedOnComputingPowerIndex(gtPlusReconWorkOrder<T>* wo
             return true;
         }
 
-        double minPowerIndex = workOrder->gt_cloud_[0].get<3>();
+        double minPowerIndex = workOrder->gt_cloud_[0].template get<3>();
         double totalPowerIndex = minPowerIndex;
 
         size_t ii;
         for ( ii=1; ii<numOfNodes; ii++ )
         {
-            totalPowerIndex += workOrder->gt_cloud_[ii].get<3>();
-            if ( workOrder->gt_cloud_[ii].get<3>() < minPowerIndex ) minPowerIndex = workOrder->gt_cloud_[ii].get<3>();
+            totalPowerIndex += workOrder->gt_cloud_[ii].template get<3>();
+            if ( workOrder->gt_cloud_[ii].template get<3>() < minPowerIndex ) minPowerIndex = workOrder->gt_cloud_[ii].template get<3>();
         }
 
         numOfEffectiveNodes = (size_t)(std::floor(totalPowerIndex/minPowerIndex));
@@ -595,7 +595,7 @@ scheduleJobForNodes(gtPlusReconWorkOrder<T>* workOrder, size_t numOfJobs, std::v
         std::vector<double> powerIndexes(numOfNodes);
         for ( size_t ii=0; ii<numOfNodes; ii++ )
         {
-            powerIndexes[ii] = workOrder->gt_cloud_[ii].get<3>();
+            powerIndexes[ii] = workOrder->gt_cloud_[ii].template get<3>();
         }
 
         scheduler.setUpNodes(powerIndexes);

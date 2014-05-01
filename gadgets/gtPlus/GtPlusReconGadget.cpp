@@ -643,7 +643,7 @@ int GtPlusReconGadget::process_config(ACE_Message_Block* mb)
     aSpacing_[1] = field_of_view_recon_[1]/reconE1_;
     aSpacing_[2] = field_of_view_recon_[2]/reconE2_;
 
-    gt_exporter_.setPixelSize(aSpacing_[0], aSpacing_[1], aSpacing_[2], aSpacing_[3], aSpacing_[4], aSpacing_[5], aSpacing_[6]);
+    gt_exporter_.setPixelSize(aSpacing_[0], aSpacing_[1], aSpacing_[2], aSpacing_[3], aSpacing_[4], aSpacing_[5]);
 
     // find the maximal encoding size
     if (e_limits.kspace_encoding_step_1().present()) 
@@ -1066,8 +1066,8 @@ generateKSpaceFilter(WorkOrderType& workOrder)
             if ( (workOrder.CalibMode_ == ISMRMRD_interleaved) || (workOrder.CalibMode_ == ISMRMRD_embedded) )
             {
                 // use the image data sample range
-                startRO = workOrder.start_RO_; if ( startRO < 0 ) startRO=0;
-                endRO = workOrder.end_RO_; if ( endRO < 0 ) endRO = RO_ref-1;
+                startRO = workOrder.start_RO_;
+                endRO = workOrder.end_RO_;
             }
 
             if ( RO_ref > 1 && filterRO_ref_type_ != ISMRMRD_FILTER_NONE )
