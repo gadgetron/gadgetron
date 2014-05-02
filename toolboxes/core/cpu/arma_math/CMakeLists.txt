@@ -57,7 +57,7 @@ if (MKL_FOUND)
         ${FFTW3_LIBRARIES} 
         ${MKL_LIBRARIES}
     )
-elseif (MKL_FOUND)
+else (MKL_FOUND)
     target_link_libraries(cpucore_math 
         cpucore
         ${ARMADILLO_LIBRARIES}
