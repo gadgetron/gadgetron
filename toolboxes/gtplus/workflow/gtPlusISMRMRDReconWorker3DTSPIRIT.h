@@ -25,6 +25,7 @@ public:
 
     typedef gtPlusReconWorker3DT<T> BaseClass;
     typedef gtPlusReconWorkOrder3DT<T> WorkOrderType;
+    typedef typename BaseClass::value_type value_type;
 
     gtPlusReconWorker3DTSPIRIT() : spirit_kernelIm_permuted_(false), BaseClass() {}
     virtual ~gtPlusReconWorker3DTSPIRIT() {}

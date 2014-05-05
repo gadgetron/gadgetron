@@ -25,6 +25,7 @@ public:
 
     typedef gtPlusReconWorker3DTSPIRIT<T> BaseClass;
     typedef gtPlusReconWorkOrder3DT<T> WorkOrderType;
+    typedef typename BaseClass::value_type value_type;
 
     gtPlusReconWorker3DTL1SPIRITNCG() : BaseClass() {}
     virtual ~gtPlusReconWorker3DTL1SPIRITNCG() {}

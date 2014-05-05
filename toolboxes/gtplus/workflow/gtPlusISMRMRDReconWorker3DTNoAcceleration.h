@@ -20,6 +20,7 @@ class gtPlusReconWorker3DTNoAcceleration : public gtPlusReconWorker3DT<T>
 public:
 
     typedef gtPlusReconWorker3DT<T> BaseClass;
+    typedef typename BaseClass::value_type value_type;
 
     gtPlusReconWorker3DTNoAcceleration() : BaseClass() {}
     virtual ~gtPlusReconWorker3DTNoAcceleration() {}
