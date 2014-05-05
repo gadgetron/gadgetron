@@ -376,13 +376,13 @@ estimateCoilMap(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& re
                     {
                         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(buffer3DT, 
                                 coilMapN, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, 
-                                workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                                workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                     }
                     else
                     {
                         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, 
                                 coilMapN, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, 
-                                workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                                workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                     }
                     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
@@ -401,14 +401,14 @@ estimateCoilMap(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& re
                         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(buffer3DT, 
                                 *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, 
                                 workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, 
-                                workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                                workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                     }
                     else
                     {
                         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, 
                                 *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, 
                                 workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, 
-                                workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                                workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                     }
                     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
                 }
@@ -1358,9 +1358,9 @@ bool gtPlusReconWorker3DT<T>::applyImageDomainKernelImage(const hoNDArray<T>& al
             //}
 
             #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(n) shared(num, dim4D, RO, E1, E2, srcCHA, dstCHA) num_threads( ((num<16) ? num : 16) )
+                #pragma omp parallel default(none) private(n) shared(num, dim4D, RO, E1, E2, srcCHA, dstCHA) num_threads( (int)((num<16) ? num : 16) )
             #else
-                #pragma omp parallel default(none) private(n) shared(num, dim4D, aliasedIm, RO, E1, E2, srcCHA, dstCHA, kerIm, complexIm) num_threads( ((num<16) ? num : 16) )
+                #pragma omp parallel default(none) private(n) shared(num, dim4D, aliasedIm, RO, E1, E2, srcCHA, dstCHA, kerIm, complexIm) num_threads( (int)((num<16) ? num : 16) )
             #endif
             {
                 hoNDArrayMemoryManaged<T> unwrapped4D(RO, E1, E2, srcCHA, gtPlus_mem_manager_);
@@ -1606,11 +1606,11 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                         GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("full res coil map : compute 3D coil map ...  "));
                         if ( workOrder3DT->csm_use_gpu_ )
                         {
-                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(aveComplexIm, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(aveComplexIm, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                         }
                         else
                         {
-                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(aveComplexIm, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(aveComplexIm, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                         }
                         GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
                         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->coilMap_, "coilMap_fullres");
@@ -1620,11 +1620,11 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                         GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("full res coil map : compute 3D coil map ...  "));
                         if ( workOrder3DT->csm_use_gpu_ )
                         {
-                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                         }
                         else
                         {
-                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                         }
                         GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
                         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->coilMap_, "coilMap_fullres");
@@ -1654,11 +1654,11 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
 
                         if ( workOrder3DT->csm_use_gpu_ )
                         {
-                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(complexImN, coilMapN, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(complexImN, coilMapN, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                         }
                         else
                         {
-                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(complexImN, coilMapN, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(complexImN, coilMapN, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                         }
                         GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder3DT->coilMap_, whichN_coilmap));
                         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->coilMap_, "coilMap_fullres");
@@ -1667,11 +1667,11 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
                     {
                         if ( workOrder3DT->csm_use_gpu_ )
                         {
-                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                         }
                         else
                         {
-                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                         }
                         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *workOrder3DT->coilMap_, "coilMap_fullres");
                     }
@@ -1710,28 +1710,14 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
         {
             for ( cha=0; cha<imCHA; cha++ )
             {
-                int offset = n*imRO*imE1*imE2*imCHA+cha*imRO*imE1*imE2;
+                size_t offset = n*imRO*imE1*imE2*imCHA+cha*imRO*imE1*imE2;
 
-                for ( int e2=0; e2<(int)imE2; e2++ )
+                for ( size_t e2=0; e2<imE2; e2++ )
                 {
-                    int e2_from = 2*mid_E2-e2;
+                    size_t e2_from = 2*mid_E2-e2;
                     if ( e2_from >= imE2 ) e2_from -= imE2;
 
                     memcpy(pDst+offset+e2*imRO*imE1, pSrc+offset+e2_from*imRO*imE1, sizeof(T)*imRO*imE1);
-
-                    //for ( int e1=0; e1<(int)imE1; e1++ )
-                    //{
-                    //    int e1_from = 2*mid_E1-e1;
-                    //    if ( e1_from >= imE1 ) e1_from -= imE1;
-
-                    //    for ( int ro=0; ro<(int)imRO; ro++ )
-                    //    {
-                    //        int ro_from = 2*mid_RO-ro;
-                    //        if ( ro_from >= imRO ) ro_from -= imRO;
-
-                    //        pDst[offset+e2*imRO*imE1+e1*imRO+ro] = pSrc[offset+e2_from*imRO*imE1+e1_from*imRO+ro_from];
-                    //    }
-                    //}
                 }
             }
         }
@@ -1978,17 +1964,17 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
         double filter_ref_sigma_ = 1.5;
         double filter_ref_width_ = 0.15;
 
-        int startRO(0), endRO(RO-1);
+        size_t startRO(0), endRO(RO-1);
         hoNDArray<T> filterRO(RO);
         if ( (workOrder3DT.start_RO_<0 || workOrder3DT.end_RO_<0) )
         {
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO, 0, RO-1, 
-                filterRO, filter_ref_type_, filter_ref_sigma_, std::ceil(filter_ref_width_*RO)));
+                filterRO, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*RO)));
         }
         else
         {
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO, workOrder3DT.start_RO_, workOrder3DT.end_RO_, 
-                filterRO, filter_ref_type_, filter_ref_sigma_, std::ceil(filter_ref_width_*RO)));
+                filterRO, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*RO)));
 
             startRO = workOrder3DT.start_RO_;
             endRO = workOrder3DT.end_RO_;
@@ -1996,17 +1982,17 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, filterRO, "filterRO_POCS");
 
-        int startE1(0), endE1(E1-1);
+        size_t startE1(0), endE1(E1-1);
         hoNDArray<T> filterE1(E1);
         if ( (workOrder3DT.start_E1_<0 || workOrder3DT.end_E1_<0) )
         {
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E1, 0, E1-1, 
-                filterE1, filter_ref_type_, filter_ref_sigma_, std::ceil(filter_ref_width_*E1)));
+                filterE1, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E1)));
         }
         else
         {
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E1, workOrder3DT.start_E1_, workOrder3DT.end_E1_, 
-                filterE1, filter_ref_type_, filter_ref_sigma_, std::ceil(filter_ref_width_*E1)));
+                filterE1, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E1)));
 
             startE1 = workOrder3DT.start_E1_;
             endE1 = workOrder3DT.end_E1_;
@@ -2014,17 +2000,17 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierPOCSRecon(WorkOrderType& work
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, filterE1, "filterE1_POCS");
 
-        int startE2(0), endE2(E2-1);
+        size_t startE2(0), endE2(E2-1);
         hoNDArray<T> filterE2(E1);
         if ( (workOrder3DT.start_E2_<0 || workOrder3DT.end_E2_<0) )
         {
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E2, 0, E2-1, 
-                filterE2, filter_ref_type_, filter_ref_sigma_, std::ceil(filter_ref_width_*E2)));
+                filterE2, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E2)));
         }
         else
         {
             GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(E2, workOrder3DT.start_E2_, workOrder3DT.end_E2_, 
-                filterE2, filter_ref_type_, filter_ref_sigma_, std::ceil(filter_ref_width_*E2)));
+                filterE2, filter_ref_type_, filter_ref_sigma_, (size_t)std::ceil(filter_ref_width_*E2)));
 
             startE2 = workOrder3DT.start_E2_;
             endE2 = workOrder3DT.end_E2_;
@@ -2157,21 +2143,21 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace, "kspace_before_FengHuang");
 
-        int startRO(0), endRO(RO-1);
+        size_t startRO(0), endRO(RO-1);
         if ( workOrder3DT.start_RO_>=0 && workOrder3DT.end_RO_<RO )
         {
             startRO = workOrder3DT.start_RO_;
             endRO = workOrder3DT.end_RO_;
         }
 
-        int startE1(0), endE1(E1-1);
+        size_t startE1(0), endE1(E1-1);
         if ( workOrder3DT.start_E1_>=0 && workOrder3DT.end_E1_<E1 )
         {
             startE1 = workOrder3DT.start_E1_;
             endE1 = workOrder3DT.end_E1_;
         }
 
-        int startE2(0), endE2(E2-1);
+        size_t startE2(0), endE2(E2-1);
         if ( workOrder3DT.start_E2_>=0 && workOrder3DT.end_E2_<E2 )
         {
             startE2 = workOrder3DT.start_E2_;
@@ -2242,16 +2228,16 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
         if ( workOrder3DT.partialFourier_FengHuang_transitBand_==0 )
         {
             GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("performReconFangHuang"));
-            GADGET_CHECK_RETURN_FALSE(this->performReconFangHuang(workOrder3DT, buffer3DT, kspace, startRO, endRO, startE1, endE1, startE2, endE2, kernel));
+            GADGET_CHECK_RETURN_FALSE(this->performReconFangHuang(workOrder3DT, buffer3DT, kspace, (int)startRO, (int)endRO, (int)startE1, (int)endE1, (int)startE2, (int)endE2, kernel));
             GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
         }
         else
         {
             GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("performReconFangHuang with transition band"));
 
-            int tb =  (int)workOrder3DT.partialFourier_FengHuang_transitBand_;
+            long long tb =  (long long)workOrder3DT.partialFourier_FengHuang_transitBand_;
 
-            int sRO(startRO), eRO(endRO), sE1(startE1), eE1(endE1), sE2(startE2), eE2(endE2);
+            long long sRO(startRO), eRO(endRO), sE1(startE1), eE1(endE1), sE2(startE2), eE2(endE2);
 
             if ( startRO > 0 )
             {
@@ -2309,7 +2295,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
 
             hoNDArrayMemoryManaged<T> buffer3DT_partial_fourier_kspaceIter(kspace.get_dimensions(), gtPlus_mem_manager_);
             GADGET_CHECK_RETURN_FALSE(this->performReconFangHuang(workOrder3DT, buffer3DT, 
-                    buffer3DT_partial_fourier_kspaceIter, startRO, endRO, startE1, endE1, startE2, endE2, kernel));
+                    buffer3DT_partial_fourier_kspaceIter, (int)startRO, (int)endRO, (int)startE1, (int)endE1, (int)startE2, (int)endE2, kernel));
 
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer3DT_partial_fourier_kspaceIter, "kspace_FengHuang_recon");
 
@@ -2342,40 +2328,40 @@ bool gtPlusReconWorker3DT<T>::calibFengHuang(WorkOrderType& workOrder3DT, const 
     {
         GADGET_CHECK_RETURN_FALSE(src.dimensions_equal(&dst));
 
-        size_t RO = src.get_size(0);
-        size_t E1 = src.get_size(1);
-        size_t E2 = src.get_size(2);
-        size_t srcCHA = src.get_size(3);
-        size_t N = src.get_size(4);
+        long long RO = (long long)src.get_size(0);
+        long long E1 = (long long)src.get_size(1);
+        long long E2 = (long long)src.get_size(2);
+        long long srcCHA = (long long)src.get_size(3);
+        long long N = (long long)src.get_size(4);
 
-        size_t kx = workOrder3DT.partialFourier_FengHuang_kSize_RO_;
-        size_t ky = workOrder3DT.partialFourier_FengHuang_kSize_E1_;
-        size_t kz = workOrder3DT.partialFourier_FengHuang_kSize_E2_;
+        long long kx = (long long)workOrder3DT.partialFourier_FengHuang_kSize_RO_;
+        long long ky = (long long)workOrder3DT.partialFourier_FengHuang_kSize_E1_;
+        long long kz = (long long)workOrder3DT.partialFourier_FengHuang_kSize_E2_;
 
         if ( kx%2 == 0 ) kx++;
         if ( ky%2 == 0 ) ky++;
         if ( kz%2 == 0 ) kz++;
 
-        int halfKx = (int)kx/2;
-        int halfKy = (int)ky/2;
-        int halfKz = (int)kz/2;
+        long long halfKx = (long long)kx/2;
+        long long halfKy = (long long)ky/2;
+        long long halfKz = (long long)kz/2;
 
         // the cross-channel kernel is not estimated
         kernel.createArray(kx, ky, kz, srcCHA, 1, N);
 
-        int ii=0;
-        int num = N*srcCHA;
+        long long ii=0;
+        long long num = N*srcCHA;
 
-        int startRO = halfKx;
-        int endRO = RO - halfKx - 1;
+        long long startRO = halfKx;
+        long long endRO = RO - halfKx - 1;
 
-        int startE1 = halfKy;
-        int endE1 = E1 - halfKy - 1;
+        long long startE1 = halfKy;
+        long long endE1 = E1 - halfKy - 1;
 
-        int startE2 = halfKz;
-        int endE2 = E2 - halfKz - 1;
+        long long startE2 = halfKz;
+        long long endE2 = E2 - halfKz - 1;
 
-        int rowA, colA, rowB, colB;
+        long long rowA, colA, rowB, colB;
         rowA = (endE2-startE2+1)*(endE1-startE1+1)*(endRO-startRO+1); 
         colA = kx*ky*kz;
 
@@ -2389,9 +2375,9 @@ bool gtPlusReconWorker3DT<T>::calibFengHuang(WorkOrderType& workOrder3DT, const 
         #endif // USE_OMP
 
         #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(ii) shared(num, RO, E1, E2, srcCHA, N, kx, ky, kz, rowA, colA, rowB, colB, startRO, endRO, startE1, endE1, startE2, endE2, halfKx, halfKy, halfKz, thresReg) if ( num > 1 ) num_threads( (num<16 ? num : 16) )
+            #pragma omp parallel default(none) private(ii) shared(num, RO, E1, E2, srcCHA, N, kx, ky, kz, rowA, colA, rowB, colB, startRO, endRO, startE1, endE1, startE2, endE2, halfKx, halfKy, halfKz, thresReg) if ( num > 1 ) num_threads( (int)(num<16 ? num : 16) )
         #else
-            #pragma omp parallel default(none) private(ii) shared(num, RO, E1, E2, srcCHA, N, kx, ky, kz, src, dst, kernel, rowA, colA, rowB, colB, startRO, endRO, startE1, endE1, startE2, endE2, halfKx, halfKy, halfKz, thresReg) if ( num > 1 ) num_threads( (num<16 ? num : 16) )
+            #pragma omp parallel default(none) private(ii) shared(num, RO, E1, E2, srcCHA, N, kx, ky, kz, src, dst, kernel, rowA, colA, rowB, colB, startRO, endRO, startE1, endE1, startE2, endE2, halfKx, halfKy, halfKz, thresReg) if ( num > 1 ) num_threads( (int)(num<16 ? num : 16) )
         #endif
         {
            /* hoNDArrayMemoryManaged<T> A_mem(colA, rowA, gtPlus_mem_manager_);
@@ -2412,8 +2398,8 @@ bool gtPlusReconWorker3DT<T>::calibFengHuang(WorkOrderType& workOrder3DT, const 
                 ho3DArray<T> src3D(RO, E1, E2, const_cast<T*>(src.begin())+ii*RO*E1*E2);
                 ho3DArray<T> dst3D(RO, E1, E2, const_cast<T*>(dst.begin())+ii*RO*E1*E2);
 
-                size_t ro, e1, e2, row(0);
-                int x, y, z;
+                long long ro, e1, e2, row(0);
+                long long x, y, z;
 
                 for ( e2=startE2; e2<=endE2; e2++ )
                 {
@@ -2470,54 +2456,54 @@ bool gtPlusReconWorker3DT<T>::performReconFangHuang(WorkOrderType& workOrder3DT,
     {
         GADGET_CHECK_RETURN_FALSE(kspaceConj.dimensions_equal(&kspace));
 
-        short RO = (short)kspace.get_size(0);
-        short E1 = (short)kspace.get_size(1);
-        short E2 = (short)kspace.get_size(2);
-        size_t CHA = kspace.get_size(3);
-        size_t N = kspace.get_size(4);
+        long long RO = (long long)kspace.get_size(0);
+        long long E1 = (long long)kspace.get_size(1);
+        long long E2 = (long long)kspace.get_size(2);
+        long long CHA = (long long)kspace.get_size(3);
+        long long N = (long long)kspace.get_size(4);
 
-        size_t kx = kernel.get_size(0);
-        size_t ky = kernel.get_size(1);
-        size_t kz = kernel.get_size(2);
+        long long kx = (long long)kernel.get_size(0);
+        long long ky = (long long)kernel.get_size(1);
+        long long kz = (long long)kernel.get_size(2);
 
-        int halfKx = kx/2;
-        int halfKy = ky/2;
-        int halfKz = kz/2;
+        long long halfKx = kx/2;
+        long long halfKy = ky/2;
+        long long halfKz = kz/2;
 
-        size_t kerN = kernel.get_size(5);
+        long long kerN = kernel.get_size(5);
         GADGET_CHECK_RETURN_FALSE( (kerN==1) || (kerN==N) );
 
-        int num = CHA*N;
+        long long num = CHA*N;
 
         long long rowD = RO*E1*E2 - ( (endE2-startE2+1) * (endE1-startE1+1) * (endRO-startRO+1) );
-        int colD = kx*ky*kz;
+        long long colD = kx*ky*kz;
 
-        ho2DArray<short> coeffX(colD, rowD);
-        short* pCx = coeffX.begin();
+        ho2DArray<long long> coeffX(colD, rowD);
+        long long* pCx = coeffX.begin();
 
-        ho2DArray<short> coeffY(colD, rowD);
-        short* pCy = coeffY.begin();
+        ho2DArray<long long> coeffY(colD, rowD);
+        long long* pCy = coeffY.begin();
 
-        ho2DArray<short> coeffZ(colD, rowD);
-        short* pCz = coeffZ.begin();
+        ho2DArray<long long> coeffZ(colD, rowD);
+        long long* pCz = coeffZ.begin();
 
-        short ro, e1, e2;
+        long long ro, e1, e2;
         long long row(0);
-        int x, y, z, dx, dy, dz;
+        long long x, y, z;
 
-        ho2DArray<short> rowInd(3, rowD);
-        short* pRowInd = rowInd.begin();
+        ho2DArray<long long> rowInd(3, rowD);
+        long long* pRowInd = rowInd.begin();
 
-        hoNDArray<short> offsetX(colD);
-        short* pOffsetX = offsetX.begin();
+        hoNDArray<long long> offsetX(colD);
+        long long* pOffsetX = offsetX.begin();
 
-        hoNDArray<short> offsetY(colD);
-        short* pOffsetY = offsetY.begin();
+        hoNDArray<long long> offsetY(colD);
+        long long* pOffsetY = offsetY.begin();
 
-        hoNDArray<short> offsetZ(colD);
-        short* pOffsetZ = offsetZ.begin();
+        hoNDArray<long long> offsetZ(colD);
+        long long* pOffsetZ = offsetZ.begin();
 
-        int colInd(0);
+        long long colInd(0);
         for ( z=-halfKz; z<=halfKz; z++ )
         {
             for ( y=-halfKy; y<=halfKy; y++ )
@@ -2536,7 +2522,7 @@ bool gtPlusReconWorker3DT<T>::performReconFangHuang(WorkOrderType& workOrder3DT,
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("performReconFangHuang - compute coeff array - internal"));
 
-        short* pRowIndCurr;
+        long long* pRowIndCurr;
         for ( e2=0; e2<E2; e2++ )
         {
             for ( e1=0; e1<E1; e1++ )
@@ -2664,8 +2650,8 @@ bool gtPlusReconWorker3DT<T>::performReconFangHuang(WorkOrderType& workOrder3DT,
         }*/
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
-        int ii;
-        int numOfThreads = ((num>4) ? 4 : num);
+        long long ii;
+        int numOfThreads = (int)((num>4) ? 4 : num);
         #ifdef GCC_OLD_FLAG
             #pragma omp parallel default(none) private(ii) shared(num, RO, E1, E2, CHA, N, kerN, rowD, colD, coeffX, coeffY, coeffZ, pCx, pCy, pCz) if ( num > 1 ) num_threads( numOfThreads ) 
         #else
@@ -2686,14 +2672,13 @@ bool gtPlusReconWorker3DT<T>::performReconFangHuang(WorkOrderType& workOrder3DT,
                 ho3DArray<T> src3D(RO, E1, E2, const_cast<T*>(kspaceConj.begin())+ii*RO*E1*E2);
                 ho3DArray<T> dst3D(RO, E1, E2, kspace.begin()+ii*RO*E1*E2);
 
-                size_t ro, e1, e2;
-                long long row, col;
+                long long row;
 
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("fill data matrix ... "));
                 #pragma omp parallel for private(row) shared(colD, rowD, D, src3D, pD)
                 for ( row=0; row<rowD; row++ )
                 {
-                    for ( int col=0; col<colD; col++ )
+                    for ( long long col=0; col<colD; col++ )
                     {
                         long long offset = col + row*colD;
                         pD[offset] = src3D(pCx[offset], pCy[offset], pCz[offset]);
@@ -2703,10 +2688,10 @@ bool gtPlusReconWorker3DT<T>::performReconFangHuang(WorkOrderType& workOrder3DT,
 
                 if ( kerN == 1 )
                 {
-                    int ind = ii;
-                    int currS = ind/(CHA*N);
+                    long long ind = ii;
+                    long long currS = ind/(CHA*N);
                     ind %= CHA*N;
-                    int currN = ind/CHA;
+                    long long currN = ind/CHA;
                     ind %= CHA;
                     memcpy(K.begin(), kernel.begin()+(ind+currS*CHA)*colD, sizeof(T)*colD);
                 }
@@ -2763,7 +2748,7 @@ estimateJobSize(gtPlusReconWorkOrder<T>* workOrder3DT, size_t maxNumOfBytesPerJo
         size_t dstCHA = workOrder3DT->kernelIm_->get_size(4);
 
         size_t totalJobNum = RO;
-        jobSize = std::ceil( (double)(totalJobNum+overlapBetweenJobs*(nodeN-1))/(double)nodeN );
+        jobSize = (size_t)std::ceil( (double)(totalJobNum+overlapBetweenJobs*(nodeN-1))/(double)nodeN );
 
         size_t numOfBytesPerJob = sizeof(T)*( E1*E2*srcCHA*dstCHA*jobSize + 2*E1*E2*srcCHA*jobSize );
 
@@ -2771,7 +2756,7 @@ estimateJobSize(gtPlusReconWorkOrder<T>* workOrder3DT, size_t maxNumOfBytesPerJo
         while ( numOfBytesPerJob > maxNumOfBytesPerJob-64.0*1024*1024 )
         {
             nodeN *= 2;
-            jobSize = std::ceil( (double)(totalJobNum+overlapBetweenJobs*(nodeN-1))/(double)nodeN );
+            jobSize = (size_t)std::ceil( (double)(totalJobNum+overlapBetweenJobs*(nodeN-1))/(double)nodeN );
             numOfBytesPerJob = sizeof(T)*( E1*E2*srcCHA*dstCHA*jobSize + 2*E1*E2*srcCHA*jobSize );
         }
 

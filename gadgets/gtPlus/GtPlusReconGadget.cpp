@@ -648,7 +648,7 @@ int GtPlusReconGadget::process_config(ACE_Message_Block* mb)
     // find the maximal encoding size
     if (e_limits.kspace_encoding_step_1().present()) 
     {
-        meas_max_idx_.kspace_encode_step_1 = matrix_size_encoding_[1]-1; // e_limits.kspace_encoding_step_1().get().maximum();
+        meas_max_idx_.kspace_encode_step_1 = (uint16_t)matrix_size_encoding_[1]-1; // e_limits.kspace_encoding_step_1().get().maximum();
     }
     else
     {
@@ -679,7 +679,7 @@ int GtPlusReconGadget::process_config(ACE_Message_Block* mb)
 
     if (e_limits.kspace_encoding_step_2().present())
     {
-        meas_max_idx_.kspace_encode_step_2 = matrix_size_encoding_[2]-1; // e_limits.kspace_encoding_step_2().get().maximum();
+        meas_max_idx_.kspace_encode_step_2 = (uint16_t)matrix_size_encoding_[2]-1; // e_limits.kspace_encoding_step_2().get().maximum();
     }
     else
     {
@@ -883,16 +883,16 @@ int GtPlusReconGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadgetIm
     return GADGET_OK;
 }
 
-int GtPlusReconGadget::computeSeriesImageNumber (ISMRMRD::ImageHeader& imheader, size_t nCHA, size_t cha, size_t nE2, size_t e2)
+size_t GtPlusReconGadget::computeSeriesImageNumber (ISMRMRD::ImageHeader& imheader, size_t nCHA, size_t cha, size_t nE2, size_t e2)
 {
-    int nSET = meas_max_idx_.set+1;
-    int nREP = meas_max_idx_.repetition+1;
-    int nPHS = meas_max_idx_.phase+1;
-    int nSLC = meas_max_idx_.slice+1;
-    int nCON = meas_max_idx_.contrast+1;
+    size_t nSET = meas_max_idx_.set+1;
+    size_t nREP = meas_max_idx_.repetition+1;
+    size_t nPHS = meas_max_idx_.phase+1;
+    size_t nSLC = meas_max_idx_.slice+1;
+    size_t nCON = meas_max_idx_.contrast+1;
     if ( nE2 == 0 ) nE2 = 1;
 
-    int imageNum = imheader.repetition*nSET*nPHS*nCON*nSLC*nE2*nCHA 
+    size_t imageNum = imheader.repetition*nSET*nPHS*nCON*nSLC*nE2*nCHA 
                     + imheader.set*nPHS*nCON*nSLC*nE2*nCHA 
                     + imheader.phase*nCON*nSLC*nE2*nCHA 
                     + imheader.contrast*nSLC*nE2*nCHA
@@ -1032,21 +1032,21 @@ generateKSpaceFilter(WorkOrderType& workOrder)
         if ( RO>1 && filterRO_type_ != ISMRMRD_FILTER_NONE )
         {
             workOrder.filterRO_.create(RO);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(RO, workOrder.start_RO_, workOrder.end_RO_, workOrder.filterRO_, filterRO_type_, filterRO_sigma_, std::ceil(filterRO_width_*RO)));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(RO, workOrder.start_RO_, workOrder.end_RO_, workOrder.filterRO_, filterRO_type_, filterRO_sigma_, (size_t)std::ceil(filterRO_width_*RO)));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterRO_, "filterRO");
         }
 
         if ( E1>1 && filterE1_type_ != ISMRMRD_FILTER_NONE )
         {
             workOrder.filterE1_.create(E1);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E1, workOrder.start_E1_, workOrder.end_E1_, workOrder.filterE1_, filterE1_type_, filterE1_sigma_, std::ceil(filterE1_width_*E1)));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E1, workOrder.start_E1_, workOrder.end_E1_, workOrder.filterE1_, filterE1_type_, filterE1_sigma_, (size_t)std::ceil(filterE1_width_*E1)));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE1_, "filterE1");
         }
 
         if ( E2>1 && filterE2_type_ != ISMRMRD_FILTER_NONE )
         {
             workOrder.filterE2_.create(E2);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E2, workOrder.start_E2_, workOrder.end_E2_, workOrder.filterE2_, filterE2_type_, filterE2_sigma_, std::ceil(filterE2_width_*E2)));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E2, workOrder.start_E2_, workOrder.end_E2_, workOrder.filterE2_, filterE2_type_, filterE2_sigma_, (size_t)std::ceil(filterE2_width_*E2)));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE2_, "filterE2");
         }
 
@@ -1073,7 +1073,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
             if ( RO_ref > 1 && filterRO_ref_type_ != ISMRMRD_FILTER_NONE )
             {
                 workOrder.filterRO_ref_.create(RO_ref);
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO_ref, startRO, endRO, workOrder.filterRO_ref_, filterRO_ref_type_, filterRO_ref_sigma_, std::ceil(filterRO_ref_width_*RO_ref)));
+                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO_ref, startRO, endRO, workOrder.filterRO_ref_, filterRO_ref_type_, filterRO_ref_sigma_, (size_t)std::ceil(filterRO_ref_width_*RO_ref)));
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterRO_ref_, "filterRO_ref");
             }
 
@@ -1083,7 +1083,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
                 {
                     size_t len = endE1-startE1+1;
                     workOrder.filterE1_ref_.create(len);
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, 0, len-1, workOrder.filterE1_ref_, filterE1_ref_type_, filterE1_ref_sigma_, std::ceil(filterE1_ref_width_*len)));
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, 0, len-1, workOrder.filterE1_ref_, filterE1_ref_type_, filterE1_ref_sigma_, (size_t)std::ceil(filterE1_ref_width_*len)));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE1_ref_, "filterE1_ref");
                 }
 
@@ -1091,7 +1091,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
                 {
                     size_t len = endE2-startE2+1;
                     workOrder.filterE2_ref_.create(len);
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, 0, len-1, workOrder.filterE2_ref_, filterE2_ref_type_, filterE2_ref_sigma_, std::ceil(filterE2_ref_width_*len)));
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, 0, len-1, workOrder.filterE2_ref_, filterE2_ref_type_, filterE2_ref_sigma_, (size_t)std::ceil(filterE2_ref_width_*len)));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE2_ref_, "filterE2_ref");
                 }
             }
@@ -1102,7 +1102,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
                 {
                     size_t len = E1_ref;
                     workOrder.filterE1_ref_.create(len);
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(len, startE1, endE1, workOrder.filterE1_ref_, filterE1_ref_type_, filterE1_ref_sigma_, std::ceil(filterE1_ref_width_*len)));
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(len, startE1, endE1, workOrder.filterE1_ref_, filterE1_ref_type_, filterE1_ref_sigma_, (size_t)std::ceil(filterE1_ref_width_*len)));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE1_ref_, "filterE1_ref");
                 }
 
@@ -1110,7 +1110,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
                 {
                     size_t len = E2_ref;
                     workOrder.filterE2_ref_.create(len);
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(len, startE2, endE2, workOrder.filterE2_ref_, filterE2_ref_type_, filterE2_ref_sigma_, std::ceil(filterE2_ref_width_*len)));
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(len, startE2, endE2, workOrder.filterE2_ref_, filterE2_ref_type_, filterE2_ref_sigma_, (size_t)std::ceil(filterE2_ref_width_*len)));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE2_ref_, "filterE2_ref");
                 }
             }
@@ -1120,21 +1120,21 @@ generateKSpaceFilter(WorkOrderType& workOrder)
         if ( RO>1 && workOrder.start_RO_>=0 && workOrder.end_RO_>0 )
         {
             workOrder.filterRO_partialfourier_.create(RO);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(RO, workOrder.start_RO_, workOrder.end_RO_, workOrder.filterRO_partialfourier_, filterRO_pf_type_, std::ceil(filterRO_pf_width_*RO), filterRO_pf_densityComp_));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(RO, workOrder.start_RO_, workOrder.end_RO_, workOrder.filterRO_partialfourier_, filterRO_pf_type_, (size_t)std::ceil(filterRO_pf_width_*RO), filterRO_pf_densityComp_));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterRO_partialfourier_, "filterRO_partialfourier");
         }
 
         if ( E1>1 && workOrder.start_E1_>=0 && workOrder.end_E1_>0 )
         {
             workOrder.filterE1_partialfourier_.create(E1);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E1, workOrder.start_E1_, workOrder.end_E1_, workOrder.filterE1_partialfourier_, filterE1_pf_type_, std::ceil(filterE1_pf_width_*E1), filterE1_pf_densityComp_));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E1, workOrder.start_E1_, workOrder.end_E1_, workOrder.filterE1_partialfourier_, filterE1_pf_type_, (size_t)std::ceil(filterE1_pf_width_*E1), filterE1_pf_densityComp_));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE1_partialfourier_, "filterE1_partialfourier");
         }
 
         if ( E2>1 && workOrder.start_E2_>=0 && workOrder.end_E2_>0 )
         {
             workOrder.filterE2_partialfourier_.create(E2);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E2, workOrder.start_E2_, workOrder.end_E2_, workOrder.filterE2_partialfourier_, filterE2_pf_type_, std::ceil(filterE2_pf_width_*E2), filterE2_pf_densityComp_));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E2, workOrder.start_E2_, workOrder.end_E2_, workOrder.filterE2_partialfourier_, filterE2_pf_type_, (size_t)std::ceil(filterE2_pf_width_*E2), filterE2_pf_densityComp_));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE2_partialfourier_, "filterE2_partialfourier");
         }
     }
@@ -1148,7 +1148,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
 }
 
 bool GtPlusReconGadget::
-recomputeImageGeometry(GtPlusGadgetImageArray* images, GtPlusGadgetImageExt& imageHeader, int slc, int e2, int con, int phs, int rep, int set, int seg, int maxE2)
+recomputeImageGeometry(GtPlusGadgetImageArray* images, GtPlusGadgetImageExt& imageHeader, size_t slc, size_t e2, size_t con, size_t phs, size_t rep, size_t set, size_t seg, size_t maxE2)
 {
     size_t E2 = images->matrix_size[4];
 
@@ -1157,14 +1157,14 @@ recomputeImageGeometry(GtPlusGadgetImageArray* images, GtPlusGadgetImageExt& ima
 
     if ( e2 >= E2 ) e2 = E2/2;
 
-    int offsetCurr = images->get_offset(slc, e2, con, phs, rep, set, 0);
+    size_t offsetCurr = images->get_offset(slc, e2, con, phs, rep, set, 0);
     imageHeader = images->imageArray_[offsetCurr];
 
     // find the center partition
     if ( E2 > 1 )
     {
-        int midE2 = E2/2;
-        int offset = images->get_offset(slc, midE2, con, phs, rep, set, 0);
+        size_t midE2 = E2/2;
+        size_t offset = images->get_offset(slc, midE2, con, phs, rep, set, 0);
 
         while ( GT_ABS(imageHeader.slice_dir[0])<1e-6 && GT_ABS(imageHeader.slice_dir[1])<1e-6 && GT_ABS(imageHeader.slice_dir[2])<1e-6 )
         {
@@ -1189,9 +1189,9 @@ recomputeImageGeometry(GtPlusGadgetImageArray* images, GtPlusGadgetImageExt& ima
 
         // comput slice postion vector for this partition
         float posVecCurr[3];
-        posVecCurr[0] = posVec[0] + aSpacing_[2]*sliceVec[0]*(e2-midE2+0.5);
-        posVecCurr[1] = posVec[1] + aSpacing_[2]*sliceVec[1]*(e2-midE2+0.5);
-        posVecCurr[2] = posVec[2] + aSpacing_[2]*sliceVec[2]*(e2-midE2+0.5);
+        posVecCurr[0] = (float)(posVec[0] + aSpacing_[2]*sliceVec[0]*(e2-midE2+0.5f));
+        posVecCurr[1] = (float)(posVec[1] + aSpacing_[2]*sliceVec[1]*(e2-midE2+0.5f));
+        posVecCurr[2] = (float)(posVec[2] + aSpacing_[2]*sliceVec[2]*(e2-midE2+0.5f));
 
         imageHeader.position[0] = posVecCurr[0];
         imageHeader.position[1] = posVecCurr[1];
@@ -1199,7 +1199,7 @@ recomputeImageGeometry(GtPlusGadgetImageArray* images, GtPlusGadgetImageExt& ima
 
         GADGET_CONDITION_MSG(verboseMode_, "--> image position : [" << imageHeader.position[0] << " , " << imageHeader.position[1] << " , " << imageHeader.position[2] << "]");
 
-        imageHeader.field_of_view[2] = aSpacing_[2];
+        imageHeader.field_of_view[2] = (float)(aSpacing_[2]);
 
         imageHeader.user_int[0] = e2;
     }
@@ -1280,7 +1280,7 @@ sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, in
                                     cm1->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
 
                                     // image number and image series
-                                    cm1->getObjectPtr()->image_index = computeSeriesImageNumber ( *(cm1->getObjectPtr()), CHA, cha, E2, e2);
+                                    cm1->getObjectPtr()->image_index = (uint16_t)computeSeriesImageNumber ( *(cm1->getObjectPtr()), CHA, cha, E2, e2);
                                     cm1->getObjectPtr()->image_series_index = seriesNum;
                                     // GADGET_CONDITION_MSG(verboseMode_, "image number " << cm1->getObjectPtr()->image_index << "    image series " << cm1->getObjectPtr()->image_series_index << " ... ");
 
@@ -1305,7 +1305,7 @@ sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, in
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, "GTPLUS");
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_GTPLUS");
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_REGULAR);
-                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, this->scalingFactor_);
+                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_));
                                     }
                                     else if ( dataRole == GTPLUS_IMAGE_PHASE )
                                     {
@@ -1314,7 +1314,7 @@ sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, in
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, "PHS_GTPLUS");
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "PHS_GTPLUS");
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_PHASE);
-                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, this->scalingFactor_);
+                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_));
                                     }
                                     else if ( dataRole == GTPLUS_IMAGE_GFACTOR )
                                     {
@@ -1327,7 +1327,7 @@ sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, in
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, comment);
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_gfactor_GTPLUS");
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_GFACTOR);
-                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, this->scalingFactor_gfactor_);
+                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_gfactor_));
                                     }
                                     else if ( dataRole == GTPLUS_IMAGE_SNR_MAP )
                                     {
@@ -1340,7 +1340,7 @@ sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, in
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, comment);
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_SNR_Map_GTPLUS");
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_SNR_MAP);
-                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, this->scalingFactor_snr_image_);
+                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_snr_image_));
                                     }
                                     else if ( dataRole == GTPLUS_IMAGE_STD_MAP )
                                     {
@@ -1353,10 +1353,10 @@ sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, in
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, comment);
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_Std_Map_GTPLUS");
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_STD_MAP);
-                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, this->scalingFactor_std_map_);
+                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_std_map_));
 
-                                        cm3->getObjectPtr()->attribute1_.set(GTPLUS_IMAGE_WINDOWCENTER, this->scalingFactor_std_map_);
-                                        cm3->getObjectPtr()->attribute1_.set(GTPLUS_IMAGE_WINDOWWIDTH, 2*this->scalingFactor_std_map_);
+                                        cm3->getObjectPtr()->attribute1_.set(GTPLUS_IMAGE_WINDOWCENTER, (long long)(this->scalingFactor_std_map_));
+                                        cm3->getObjectPtr()->attribute1_.set(GTPLUS_IMAGE_WINDOWWIDTH, (long long)(2*this->scalingFactor_std_map_));
                                     }
                                     else if ( dataRole == GTPLUS_IMAGE_OTHER )
                                     {
@@ -1365,7 +1365,7 @@ sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, in
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, "GTPLUS");
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_GTPLUS");
                                         cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_OTHER);
-                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, this->scalingFactor_);
+                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_));
                                     }
 
                                     // ----------------------------------------------------------
@@ -1382,8 +1382,8 @@ sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, in
                                     img_dims[1] = E1;
 
                                     //Fixing array dimensions (MSH)
-                                    cm1->getObjectPtr()->matrix_size[0] = RO;
-                                    cm1->getObjectPtr()->matrix_size[1] = E1;
+                                    cm1->getObjectPtr()->matrix_size[0] = (uint16_t)RO;
+                                    cm1->getObjectPtr()->matrix_size[1] = (uint16_t)E1;
                                     cm1->getObjectPtr()->matrix_size[2] = 1;
                                     cm1->getObjectPtr()->channels = 1;
 
@@ -1507,11 +1507,11 @@ bool GtPlusReconGadget::sendOutRecon2D(GtPlusGadgetImageArray* images, const hoN
         cm3->getObjectPtr()->attribute1_.set(GTPLUS_REP,        cm1->getObjectPtr()->repetition);
         cm3->getObjectPtr()->attribute1_.set(GTPLUS_SET,        cm1->getObjectPtr()->set);
 
-        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, this->scalingFactor_);
+        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_));
 
         //Fixing array dimensions (MSH)
-        cm1->getObjectPtr()->matrix_size[0] = res.get_size(0);
-        cm1->getObjectPtr()->matrix_size[1] = res.get_size(1);
+        cm1->getObjectPtr()->matrix_size[0] = (uint16_t)res.get_size(0);
+        cm1->getObjectPtr()->matrix_size[1] = (uint16_t)res.get_size(1);
         cm1->getObjectPtr()->matrix_size[2] = 1;
         cm1->getObjectPtr()->channels = 1;
 

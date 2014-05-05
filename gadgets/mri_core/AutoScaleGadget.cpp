@@ -47,10 +47,10 @@ int AutoScaleGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, G
 		}
 
 		//Find 99th percentile
-		long cumsum = 0;
+		long long cumsum = 0;
 		size_t counter = 0;
 		while (cumsum < (0.99*m2->getObjectPtr()->get_number_of_elements())) {
-			cumsum += histogram_[counter++];
+			cumsum += (long long)(histogram_[counter++]);
 		}
 		max = (counter+1)*(max/histogram_bins_);
 

@@ -939,7 +939,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::get_image_position(coord_type pos[3])
+    inline void hoNDImage<T, D>::get_image_position(coord_type pos[3]) const 
     {
         pos[0] = image_position_patient_[0];
         pos[1] = image_position_patient_[1];
@@ -947,14 +947,14 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::get_image_position(unsigned int d, coord_type& pos)
+    inline void hoNDImage<T, D>::get_image_position(unsigned int d, coord_type& pos) const 
     {
         GADGET_DEBUG_CHECK_THROW(d<3);
         pos = image_position_patient_[d];
     }
 
     template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::get_image_position(a_axis_image_patient_type& pos)
+    inline void hoNDImage<T, D>::get_image_position(a_axis_image_patient_type& pos) const 
     {
         pos = image_position_patient_;
     }
@@ -981,7 +981,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::get_image_orientation(unsigned int d, coord_type ori[3])
+    inline void hoNDImage<T, D>::get_image_orientation(unsigned int d, coord_type ori[3]) const 
     {
         GADGET_DEBUG_CHECK_THROW(d<3);
         ori[0] = image_orientation_patient_[d][0];
@@ -990,14 +990,14 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::get_image_orientation(unsigned int d, a_axis_image_patient_type& ori)
+    inline void hoNDImage<T, D>::get_image_orientation(unsigned int d, a_axis_image_patient_type& ori) const 
     {
         GADGET_DEBUG_CHECK_THROW(d<3);
         ori = image_orientation_patient_[d];
     }
 
     template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::get_image_orientation(unsigned int d, unsigned int ind, coord_type& ori)
+    inline void hoNDImage<T, D>::get_image_orientation(unsigned int d, unsigned int ind, coord_type& ori) const 
     {
         GADGET_DEBUG_CHECK_THROW(d<3);
         GADGET_DEBUG_CHECK_THROW(ind<3);
@@ -1005,12 +1005,88 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    inline void hoNDImage<T, D>::get_image_orientation(coord_type quat[4])
+    inline void hoNDImage<T, D>::get_image_orientation(coord_type quat[4]) const 
     {
-        ISMRMRD::directions_to_quaternion(image_orientation_patient_[0].begin(), 
-                                          image_orientation_patient_[1].begin(), 
-                                          image_orientation_patient_[2].begin(), 
-                                          quat);
+        coord_type r11 = image_orientation_patient_[0][0], r12 = image_orientation_patient_[1][0], r13 = image_orientation_patient_[2][0];
+        coord_type r21 = image_orientation_patient_[0][1], r22 = image_orientation_patient_[1][1], r23 = image_orientation_patient_[2][1];
+        coord_type r31 = image_orientation_patient_[0][2], r32 = image_orientation_patient_[1][2], r33 = image_orientation_patient_[2][2];
+
+        double a = 1, b = 0, c = 0, d = 0, s = 0;
+        double trace = 0;
+        double xd, yd, zd;
+
+        /* verify the sign of the rotation*/
+        coord_type deti = (r11 * r22 * r33) + (r12 * r23 * r31) + (r21 * r32 * r13) -
+            (r13 * r22 * r31) - (r12 * r21 * r33) - (r11 * r23 * r32);
+
+        if (deti < 0)
+        {
+            /* flip 3rd column */
+            r13 = -r13;
+            r23 = -r23;
+            r33 = -r33;
+        }
+
+        /* Compute quaternion parameters */
+        /* http://www.cs.princeton.edu/~gewang/projects/darth/stuff/quat_faq.html#Q55 */
+        trace = 1.0l + r11 + r22 + r33;
+        if (trace > 0.00001l)
+        {                /* simplest case */
+            s = std::sqrt(trace) * 2;
+            a = (r32 - r23) / s;
+            b = (r13 - r31) / s;
+            c = (r21 - r12) / s;
+            d = 0.25l * s;
+        }
+        else
+        {
+            /* trickier case...
+             * determine which major diagonal element has
+             * the greatest value... */
+            xd = 1.0 + r11 - (r22 + r33);  /* 4**b**b */
+            yd = 1.0 + r22 - (r11 + r33);  /* 4**c**c */
+            zd = 1.0 + r33 - (r11 + r22);  /* 4**d**d */
+            /* if r11 is the greatest */
+            if (xd > 1.0)
+            {
+                s = 2.0 * std::sqrt(xd);
+                a = 0.25l * s;
+                b = (r21 + r12) / s;
+                c = (r31 + r13) / s;
+                d = (r32 - r23) / s;
+            }
+            /* else if r22 is the greatest */
+            else if (yd > 1.0)
+            {
+                s = 2.0 * std::sqrt(yd);
+                a = (r21 + r12) / s;
+                b = 0.25l * s;
+                c = (r32 + r23) / s;
+                d = (r13 - r31) / s;
+            }
+            /* else, r33 must be the greatest */
+            else
+            {
+                s = 2.0 * std::sqrt(zd);
+                a = (r13 + r31) / s;
+                b = (r23 + r32) / s;
+                c = 0.25l * s;
+                d = (r21 - r12) / s;
+            }
+
+            if (a < 0.0l)
+            {
+                b = -b;
+                c = -c;
+                d = -d;
+                a = -a;
+            }
+        }
+
+        quat[0] = (coord_type)a; 
+        quat[1] = (coord_type)b; 
+        quat[2] = (coord_type)c; 
+        quat[3] = (coord_type)d;
     }
 
     template <typename T, unsigned int D> 
@@ -1040,9 +1116,19 @@ namespace Gadgetron
     template <typename T, unsigned int D> 
     inline void hoNDImage<T, D>::set_image_orientation(coord_type quat[4])
     {
-        ISMRMRD::quaternion_to_directions(quat, image_orientation_patient_[0].begin(),
-                                                image_orientation_patient_[1].begin(),
-                                                image_orientation_patient_[2].begin());
+        coord_type a = quat[0], b = quat[1], c = quat[2], d = quat[3];
+
+        image_orientation_patient_[0][0] = 1 - 2*( b*b + c*c );
+        image_orientation_patient_[1][0] = 2*( a*b - c*d );
+        image_orientation_patient_[2][0] = 2*( a*c + b*d );
+
+        image_orientation_patient_[0][1] = 2*( a*b + c*d );
+        image_orientation_patient_[1][1] = 1 - 2*( a*a + c*c );
+        image_orientation_patient_[2][1] = 2*( b*c - a*d );
+
+        image_orientation_patient_[0][2] = 2*( a*c - b*d );
+        image_orientation_patient_[1][2] = 2*( b*c + a*d );
+        image_orientation_patient_[2][2] = 1 - 2*( a*a + b*b );
     }
 
     template <typename T, unsigned int D> 
@@ -2780,7 +2866,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    bool hoNDImage<T, D>::serializeImage(char*& buf, size_t& len)
+    bool hoNDImage<T, D>::serializeImage(char*& buf, size_t& len) const 
     {
         try
         {
@@ -2894,7 +2980,7 @@ namespace Gadgetron
     }
 
     template <typename T, unsigned int D> 
-    bool hoNDImage<T, D>::serialize(char*& buf, size_t& len) 
+    bool hoNDImage<T, D>::serialize(char*& buf, size_t& len) const 
     {
         char* bufImage = NULL;
         char* bufAttrib = NULL;

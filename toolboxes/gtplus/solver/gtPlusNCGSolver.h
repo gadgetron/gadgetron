@@ -42,26 +42,26 @@ public:
     size_t iterMax_;
 
     /// threshold for detla change of gradient
-    double gradThres_;
+    value_type gradThres_;
 
     /// threshold for detla change of objective function
-    double objThres_;
+    value_type objThres_;
 
     /// scale factor of initial step size of linear search 
-    double beta_;
+    value_type beta_;
 
     /// initial step size of linear search
-    double t0_;
+    value_type t0_;
 
     /// number of max linear search iterations (secant linear search)
     size_t secantIterMax_;
 
     /// gradient threshold for secant linear search
-    double secantThres_;
+    value_type secantThres_;
 
     /// sometimes the secantThres can increase during line search
     /// the maximal allowed secantThres increments compared to previous secant iteration
-    double secantRatio_;
+    value_type secantRatio_;
 
     /// initial guess for the solver
     Array_Type_O* x0_;
@@ -90,12 +90,12 @@ gtPlusNCGSolver<Array_Type_I, Array_Type_O, Oper_Type>::
 gtPlusNCGSolver() : BaseClass()
 {
     iterMax_ = 10;
-    gradThres_ = 1e-4;
-    objThres_ = 0.1;
-    beta_ = 0.5;
-    t0_ = 2.0;
+    gradThres_ = (value_type)1e-4;
+    objThres_ = (value_type)0.1;
+    beta_ = (value_type)0.5;
+    t0_ = (value_type)2.0;
     secantIterMax_ = 10;
-    secantThres_ = 1e-3;
+    secantThres_ = (value_type)1e-3;
     secantRatio_ = 2;
 }
 
@@ -175,8 +175,6 @@ solve(const Array_Type_I& /*b*/, Array_Type_O& x)
     try
     {
         if ( operList_.empty() ) return true;
-
-        value_type v;
 
         // initial gradient
         Array_Type_I g0(*x0_);
@@ -308,7 +306,7 @@ solve(const Array_Type_I& /*b*/, Array_Type_O& x)
             // Fletcher - Reeves updates
             Gadgetron::dotc(g1, g1, v1);
             Gadgetron::dotc(g0, g0, v2);
-            bk = v1.real()/(v2.real()+DBL_EPSILON);
+            bk = (value_type)(v1.real()/(v2.real()+DBL_EPSILON));
 
             g0 = g1;
 

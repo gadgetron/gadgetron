@@ -78,6 +78,8 @@ class gtPlusISMRMRDReconUtil
 {
 public:
 
+    typedef typename realType<T>::Type value_type;
+
     gtPlusISMRMRDReconUtil();
     virtual ~gtPlusISMRMRDReconUtil();
 

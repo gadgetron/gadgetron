@@ -244,9 +244,10 @@ if ( HAS_64_BIT )
                 ${gtplus_files} )
 
     target_link_libraries(gtplus 
-                          cpucore 
+                          cpucore
                           cpufft
-                          gtplus_io )
+                          gtplus_io 
+                          cpucore_math )
 
     if (CUDA_FOUND)
         target_link_libraries(gtplus gpuparallelmri cpucore_math)

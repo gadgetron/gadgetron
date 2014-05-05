@@ -80,8 +80,8 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     ISMRMRD::ismrmrdHeader::parallelImaging_optional p_imaging_type = cfg->parallelImaging();
     ISMRMRD::parallelImagingType p_imaging = *p_imaging_type;
 
-    workOrder_.acceFactorE1_ = (size_t)(p_imaging.accelerationFactor().kspace_encoding_step_1());
-    workOrder_.acceFactorE2_ = (size_t)(p_imaging.accelerationFactor().kspace_encoding_step_2());
+    workOrder_.acceFactorE1_ = (double)(p_imaging.accelerationFactor().kspace_encoding_step_1());
+    workOrder_.acceFactorE2_ = (double)(p_imaging.accelerationFactor().kspace_encoding_step_2());
     GADGET_CONDITION_MSG(verboseMode_, "acceFactorE1_ is " << workOrder_.acceFactorE1_);
     GADGET_CONDITION_MSG(verboseMode_, "acceFactorE2_ is " << workOrder_.acceFactorE2_);
 
@@ -291,7 +291,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
 
     if (e_limits.kspace_encoding_step_1().present()) 
     {
-        meas_max_idx_.kspace_encode_step_1 = matrix_size_encoding_[1]-1; // e_limits.kspace_encoding_step_1().get().maximum();
+        meas_max_idx_.kspace_encode_step_1 = (uint16_t)matrix_size_encoding_[1]-1; // e_limits.kspace_encoding_step_1().get().maximum();
     }
     else
     {
@@ -332,7 +332,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
 
     if (e_limits.kspace_encoding_step_2().present())
     {
-        meas_max_idx_.kspace_encode_step_2 = matrix_size_encoding_[2]-1; // e_limits.kspace_encoding_step_2().get().maximum();
+        meas_max_idx_.kspace_encode_step_2 = (uint16_t)matrix_size_encoding_[2]-1; // e_limits.kspace_encoding_step_2().get().maximum();
     }
     else
     {
@@ -439,7 +439,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
         {
             GADGET_CONDITION_MSG(verboseMode_, "Partial fourier along E1 ... ");
 
-            if ( m1->getObjectPtr()->idx.user[5]>0 && GT_ABS(m1->getObjectPtr()->idx.user[5] - space_size_[1]/2 )<2 )
+            if ( (m1->getObjectPtr()->idx.user[5]>0) && (GT_ABS( (long long)m1->getObjectPtr()->idx.user[5] - (long long)space_size_[1]/2 )<2) )
             {
                 workOrder_.kSpaceCenterEncode1_ = m1->getObjectPtr()->idx.user[5];
             }
@@ -449,14 +449,14 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
                 space_matrix_offset_E1_ = 0;
 
                 workOrder_.start_E1_ = 0;
-                workOrder_.end_E1_ = max_sampled_E1_;
+                workOrder_.end_E1_ = (int)max_sampled_E1_;
             }
             else
             {
                 space_matrix_offset_E1_ = space_size_[1] - max_sampled_E1_ -1;
 
-                workOrder_.start_E1_ = space_matrix_offset_E1_;
-                workOrder_.end_E1_ = workOrder_.kSpaceMaxEncode1_;
+                workOrder_.start_E1_ = (int)space_matrix_offset_E1_;
+                workOrder_.end_E1_ = (int)workOrder_.kSpaceMaxEncode1_;
             }
         }
         else
@@ -468,7 +468,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
         {
             GADGET_CONDITION_MSG(verboseMode_, "Partial fourier along E2 ... ");
 
-            if ( m1->getObjectPtr()->idx.user[6]>0 && GT_ABS(m1->getObjectPtr()->idx.user[6] - space_size_[2]/2 )<2 )
+            if ( (m1->getObjectPtr()->idx.user[6]>0) && (GT_ABS( (long long)m1->getObjectPtr()->idx.user[6] - (long long)space_size_[2]/2 )<2) )
             {
                 workOrder_.kSpaceCenterEncode2_ = m1->getObjectPtr()->idx.user[6];
             }
@@ -478,14 +478,14 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
                 space_matrix_offset_E2_ = 0;
 
                 workOrder_.start_E2_ = 0;
-                workOrder_.end_E2_ = max_sampled_E2_;
+                workOrder_.end_E2_ = (int)max_sampled_E2_;
             }
             else
             {
                 space_matrix_offset_E2_ = space_size_[2] - max_sampled_E2_-1;
 
-                workOrder_.start_E2_ = space_matrix_offset_E2_;
-                workOrder_.end_E2_ = workOrder_.kSpaceMaxEncode2_;
+                workOrder_.start_E2_ = (int)space_matrix_offset_E2_;
+                workOrder_.end_E2_ = (int)workOrder_.kSpaceMaxEncode2_;
             }
         }
         else
@@ -792,7 +792,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     int numOfAcquiredKSpaceForTriggerDim1 = numOfKSpace_triggerDim1_;
     if ( workOrder_.CalibMode_ == ISMRMRD_interleaved )
     {
-        numOfAcquiredKSpaceForTriggerDim1 = numOfKSpace_triggerDim1_ * workOrder_.acceFactorE1_ * workOrder_.acceFactorE2_;
+        numOfAcquiredKSpaceForTriggerDim1 = (int)(numOfKSpace_triggerDim1_ * workOrder_.acceFactorE1_ * workOrder_.acceFactorE2_);
     }
 
     // trigger whenever the Dim2 is changed
@@ -801,7 +801,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
         prev_dim1_ = curr_dim1_;
         prev_acq_header_ = *(m1->getObjectPtr());
 
-        int prev_dim2_local_ = prev_dim2_;
+        size_t prev_dim2_local_ = prev_dim2_;
         prev_dim2_ = curr_dim2_;
 
         if ( curr_dim2_!= prev_dim2_local_ )
@@ -817,7 +817,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     {
         prev_dim2_ = curr_dim2_;
 
-        int prev_dim1_local_ = prev_dim1_;
+        size_t prev_dim1_local_ = prev_dim1_;
         prev_dim1_ = curr_dim1_;
 
         if ( numOfKSpace_triggerDim1_ > 0 )
@@ -872,8 +872,8 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
 
     if (  triggerDim1_!=DIM_NONE && triggerDim2_!=DIM_NONE  )
     {
-        int prev_dim1_local_ = prev_dim1_;
-        int prev_dim2_local_ = prev_dim2_;
+        size_t prev_dim1_local_ = prev_dim1_;
+        size_t prev_dim2_local_ = prev_dim2_;
 
         prev_dim1_ = curr_dim1_;
         prev_dim2_ = curr_dim2_;
@@ -954,11 +954,11 @@ triggerWorkOrderLastCountInClose(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1_, Ga
     int numOfAcquiredKSpaceForTriggerDim1 = numOfKSpace_triggerDim1_;
     if ( workOrder_.CalibMode_ == ISMRMRD_interleaved )
     {
-        numOfAcquiredKSpaceForTriggerDim1 = numOfKSpace_triggerDim1_ * workOrder_.acceFactorE1_ * workOrder_.acceFactorE2_;
+        numOfAcquiredKSpaceForTriggerDim1 = (int)(numOfKSpace_triggerDim1_ * workOrder_.acceFactorE1_ * workOrder_.acceFactorE2_);
     }
 
-    int prev_dim1_local_ = prev_dim1_;
-    int prev_dim2_local_ = prev_dim2_;
+    size_t prev_dim1_local_ = prev_dim1_;
+    size_t prev_dim2_local_ = prev_dim2_;
 
     prev_dim1_ = curr_dim1_;
     prev_dim2_ = curr_dim2_;
@@ -1134,8 +1134,8 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
         {
             meas_max_channel_ = m1->getObjectPtr()->active_channels;
 
-            int E1 = workOrder_.kSpaceMaxEncode1_+1;
-            int E2 = workOrder_.kSpaceMaxEncode2_+1;
+            size_t E1 = workOrder_.kSpaceMaxEncode1_+1;
+            size_t E2 = workOrder_.kSpaceMaxEncode2_+1;
             if ( E2 == 0 ) E2 = 1;
 
             if ( E1 < matrix_size_encoding_[1] ) E1 = matrix_size_encoding_[1];
@@ -1191,7 +1191,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
             }
 
             // allocate message buffer
-            int matrix_size[10];
+            size_t matrix_size[10];
             for ( ii=0; ii<10; ii++ )
             {
                 matrix_size[ii] = dimensions_[ii];
@@ -1215,9 +1215,10 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
             idx.kspace_encode_step_2 += workOrder_.start_E2_;
         }
 
+        size_t dataN = workOrder_.data_.get_number_of_elements();
         std::complex<float>* b = workOrder_.data_.begin();
         std::complex<float>* d = m2->getObjectPtr()->get_data_ptr();
-        if (samples != static_cast<int>(dimensions_[0])) 
+        if (samples != static_cast<size_t>(dimensions_[0])) 
         {
             GADGET_DEBUG1("Wrong number of samples received\n");
             return false;
@@ -1231,7 +1232,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
         }
 
         std::vector<size_t> pos(10);
-        for (int c = 0; c < m1->getObjectPtr()->active_channels; c++) 
+        for (size_t c = 0; c < m1->getObjectPtr()->active_channels; c++) 
         {
             pos[0] = 0;
             pos[1] = idx.kspace_encode_step_1;
@@ -1243,11 +1244,16 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
             pos[7] = idx.repetition;
             pos[8] = idx.set;
             pos[9] = idx.segment;
-            long long offsetBuffer = workOrder_.data_.calculate_offset(pos);
+            size_t offsetBuffer = workOrder_.data_.calculate_offset(pos);
+
+            if ( offsetBuffer >= dataN )
+            {
+                break;
+            }
 
             if ( isReflect )
             {
-                for ( int s=0; s<samples; s++ )
+                for ( size_t s=0; s<samples; s++ )
                 {
                     reflectBuf(samples-1-s) = d[c*samples+s];
                 }
@@ -1294,8 +1300,8 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
         {
             meas_max_channel_ = m1->getObjectPtr()->active_channels;
 
-            int E1 = workOrder_.kSpaceMaxEncode1_+1;
-            int E2 = workOrder_.kSpaceMaxEncode2_+1;
+            size_t E1 = workOrder_.kSpaceMaxEncode1_+1;
+            size_t E2 = workOrder_.kSpaceMaxEncode2_+1;
             if ( E2 == 0 ) E2 = 1;
 
             if ( E1 < matrix_size_encoding_[1] ) E1 = matrix_size_encoding_[1];
@@ -1393,9 +1399,10 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
             }
         }
 
+        size_t refN = workOrder_.ref_.get_number_of_elements();
         std::complex<float>* b = workOrder_.ref_.begin();
         std::complex<float>* d = m2->getObjectPtr()->get_data_ptr();
-        if (samples != static_cast<int>(dimensions_[0])) 
+        if (samples != static_cast<size_t>(dimensions_[0])) 
         {
             GADGET_DEBUG1("Wrong number of samples received\n");
             return false;
@@ -1409,7 +1416,7 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
         }
 
         std::vector<size_t> pos(10);
-        for (int c = 0; c < m1->getObjectPtr()->active_channels; c++) 
+        for (uint16_t c = 0; c < m1->getObjectPtr()->active_channels; c++) 
         {
             pos[0] = 0;
             pos[1] = idx.kspace_encode_step_1;
@@ -1421,11 +1428,16 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
             pos[7] = idx.repetition;
             pos[8] = idx.set;
             pos[9] = idx.segment;
-            long long offsetBuffer = workOrder_.ref_.calculate_offset(pos);
+
+            size_t offsetBuffer = workOrder_.ref_.calculate_offset(pos);
+            if ( offsetBuffer >= refN )
+            {
+                break;
+            }
 
             if ( isReflect )
             {
-                for ( int s=0; s<samples; s++ )
+                for ( size_t s=0; s<samples; s++ )
                 {
                     reflectBuf(samples-1-s) = d[c*samples+s];
                 }
@@ -1468,8 +1480,8 @@ fillBuffer(ReadOutBufferType& readOutBuffer, BufferType& buf, ReflectBufferType&
         max_idx.repetition = 0;
         max_idx.set = 0;
         max_idx.segment = 0;
-        int max_channel = 0;
-        int max_col = 0;
+        size_t max_channel = 0;
+        size_t max_col = 0;
 
         size_t a;
         for (a = 0; a < numOfReadOuts; a++) 
@@ -1552,7 +1564,7 @@ fillBuffer(ReadOutBufferType& readOutBuffer, BufferType& buf, ReflectBufferType&
         std::complex<float>* b = buf.begin();
 
         // copy the data
-        int c;
+        uint16_t c;
         std::vector<size_t> pos(10);
 
         for ( a=0; a<numOfReadOuts; a++) 
@@ -1596,7 +1608,14 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(GadgetContainerMessa
     try
     {
         // fill the message info
-        int offset = messageImage->get_offset(idx.slice, idx.kspace_encode_step_2, idx.contrast, idx.phase, idx.repetition, idx.set, idx.segment);
+        size_t offset = messageImage->get_offset(idx.slice, idx.kspace_encode_step_2, idx.contrast, idx.phase, idx.repetition, idx.set, idx.segment);
+
+        if( offset >= messageImage->max_num_of_images_ )
+        {
+            GADGET_WARN_MSG("Incoming image is over the boundary of buffer [SLC E2 CON PHS REP SET SEG] = [ " 
+                                                                            << idx.slice << " " << idx.kspace_encode_step_2 << " " << idx.contrast << " " << idx.phase << " " << idx.repetition << " " << idx.set << " " << idx.segment << " ] ");
+            return true;
+        }
 
         // if it is the first acq in a slice, fill in all information
         bool is_first_acq_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_FIRST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
@@ -1677,8 +1696,8 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(GadgetContainerMessa
 
             messageImage->imageArray_[offset].image_type = ISMRMRD::TYPE_MAGNITUDE;
 
-            messageImage->imageArray_[offset].image_index = ++image_counter_;
-            messageImage->imageArray_[offset].image_series_index = image_series_;
+            messageImage->imageArray_[offset].image_index = (uint16_t)(++image_counter_);
+            messageImage->imageArray_[offset].image_series_index = (uint16_t)image_series_;
 
             // need to store the free user parameters
             memcpy(messageImage->imageArray_[offset].user_int, m1->getObjectPtr()->user_int, sizeof(int32_t)*8);
@@ -1701,7 +1720,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(GadgetContainerMessa
 size_t GtPlusAccumulatorWorkOrderTriggerGadget::
 computeEncodedSizeE1(size_t centerE1, size_t maxE1)
 {
-    int E1;
+    size_t E1;
     if ( (maxE1+1)%2 == 0 )
     {
         E1 = 2*centerE1;
@@ -1717,7 +1736,7 @@ computeEncodedSizeE1(size_t centerE1, size_t maxE1)
 size_t GtPlusAccumulatorWorkOrderTriggerGadget::
 computeEncodedSizeE2(size_t centerE2, size_t maxE2)
 {
-    int E2;
+    size_t E2;
     if ( (maxE2+1)%2 == 0 )
     {
         E2 = 2*centerE2;
@@ -2201,7 +2220,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrderAllInClose()
             {
                 GADGET_DEBUG1("fillBuffer(phaseCorrBuffer_) failed ... \n");
                 cm1->release();
-                return GADGET_FAIL;
+                return false;
             }
 
             cm2->getObjectPtr()->phaseCorr_ = workOrder_.phaseCorr_;
@@ -2217,7 +2236,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrderAllInClose()
             {
                 GADGET_DEBUG1("fillBuffer(noiseBuffer_) failed ... \n");
                 cm1->release();
-                return GADGET_FAIL;
+                return false;
             }
 
             cm2->getObjectPtr()->noise_ = workOrder_.noise_;
@@ -2231,7 +2250,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrderAllInClose()
             {
                 GADGET_DEBUG1("fillBuffer(otherBuffer_) failed ... \n");
                 cm1->release();
-                return GADGET_FAIL;
+                return false;
             }
 
             cm2->getObjectPtr()->other_ = workOrder_.other_;
@@ -2241,7 +2260,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrderAllInClose()
         // send to next gadget
         if (this->next()->putq(cm1) < 0) 
         {
-            return GADGET_FAIL;
+            return false;
         }
     }
     catch(...)
@@ -2256,15 +2275,15 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrderAllInClose()
 size_t GtPlusAccumulatorWorkOrderTriggerGadget::
 getDimValue(const ISMRMRD::AcquisitionHeader& acqHeader, Gadgetron::gtPlus::ISMRMRDDIM& dim)
 {
-    if ( dim == DIM_Encoding1 ) return acqHeader.idx.kspace_encode_step_1;
-    if ( dim == DIM_Slice ) return acqHeader.idx.slice;
-    if ( dim == DIM_Encoding2 ) return acqHeader.idx.kspace_encode_step_2;
-    if ( dim == DIM_Contrast ) return acqHeader.idx.contrast;
-    if ( dim == DIM_Phase ) return acqHeader.idx.phase;
-    if ( dim == DIM_Repetition ) return acqHeader.idx.repetition;
-    if ( dim == DIM_Set ) return acqHeader.idx.set;
-    if ( dim == DIM_Segment ) return acqHeader.idx.segment;
-    if ( dim == DIM_Average ) return acqHeader.idx.average;
+    if ( dim == DIM_Encoding1 )             return acqHeader.idx.kspace_encode_step_1;
+    if ( dim == DIM_Slice )                 return acqHeader.idx.slice;
+    if ( dim == DIM_Encoding2 )             return acqHeader.idx.kspace_encode_step_2;
+    if ( dim == DIM_Contrast )              return acqHeader.idx.contrast;
+    if ( dim == DIM_Phase )                 return acqHeader.idx.phase;
+    if ( dim == DIM_Repetition )            return acqHeader.idx.repetition;
+    if ( dim == DIM_Set )                   return acqHeader.idx.set;
+    if ( dim == DIM_Segment )               return acqHeader.idx.segment;
+    if ( dim == DIM_Average )               return acqHeader.idx.average;
 
     return 0;
 }
@@ -2272,15 +2291,15 @@ getDimValue(const ISMRMRD::AcquisitionHeader& acqHeader, Gadgetron::gtPlus::ISMR
 void GtPlusAccumulatorWorkOrderTriggerGadget::
 setDimValue(ISMRMRD::AcquisitionHeader& acqHeader, Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t value)
 {
-    if ( dim == DIM_Encoding1 ) acqHeader.idx.kspace_encode_step_1 = value;
-    if ( dim == DIM_Slice ) acqHeader.idx.slice = value;
-    if ( dim == DIM_Encoding2 ) acqHeader.idx.kspace_encode_step_2 = value;
-    if ( dim == DIM_Contrast ) acqHeader.idx.contrast = value;
-    if ( dim == DIM_Phase ) acqHeader.idx.phase = value;
-    if ( dim == DIM_Repetition ) acqHeader.idx.repetition = value;
-    if ( dim == DIM_Set ) acqHeader.idx.set = value;
-    if ( dim == DIM_Segment ) acqHeader.idx.segment = value;
-    if ( dim == DIM_Average ) acqHeader.idx.average = value;
+    if ( dim == DIM_Encoding1 ) acqHeader.idx.kspace_encode_step_1  = (uint16_t)value;
+    if ( dim == DIM_Slice ) acqHeader.idx.slice                     = (uint16_t)value;
+    if ( dim == DIM_Encoding2 ) acqHeader.idx.kspace_encode_step_2  = (uint16_t)value;
+    if ( dim == DIM_Contrast ) acqHeader.idx.contrast               = (uint16_t)value;
+    if ( dim == DIM_Phase ) acqHeader.idx.phase                     = (uint16_t)value;
+    if ( dim == DIM_Repetition ) acqHeader.idx.repetition           = (uint16_t)value;
+    if ( dim == DIM_Set ) acqHeader.idx.set                         = (uint16_t)value;
+    if ( dim == DIM_Segment ) acqHeader.idx.segment                 = (uint16_t)value;
+    if ( dim == DIM_Average ) acqHeader.idx.average                 = (uint16_t)value;
 
     return;
 }

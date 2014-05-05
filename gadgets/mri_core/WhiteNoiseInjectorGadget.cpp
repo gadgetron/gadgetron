@@ -32,8 +32,8 @@ WhiteNoiseInjectorGadget::~WhiteNoiseInjectorGadget()
 
 int WhiteNoiseInjectorGadget::process_config(ACE_Message_Block* mb)
 {
-    noise_mean_ = this->get_double_value("noise_mean");
-    noise_std_ = this->get_double_value("noise_std");
+    noise_mean_ = (float)this->get_double_value("noise_mean");
+    noise_std_ = (float)this->get_double_value("noise_std");
     add_noise_ref_ = this->get_bool_value("add_noise_ref");
 
     GADGET_MSG("noise mean is " << noise_mean_);
@@ -48,26 +48,26 @@ int WhiteNoiseInjectorGadget::process_config(ACE_Message_Block* mb)
     time ( &rawtime );
     timeinfo = localtime ( &rawtime );
 
-    long long seed = 1e10*(timeinfo->tm_year+1900) + 1e8*(timeinfo->tm_mon+1) + 1e6*timeinfo->tm_mday + 1e4*timeinfo->tm_hour + 1e2*timeinfo->tm_min + timeinfo->tm_sec + std::rand();
+    long long seed = (long long)(1e10*(timeinfo->tm_year+1900) + 1e8*(timeinfo->tm_mon+1) + 1e6*timeinfo->tm_mday + 1e4*timeinfo->tm_hour + 1e2*timeinfo->tm_min + timeinfo->tm_sec + std::rand());
 
     std::array<unsigned int, 10> sequence;
-    sequence[0] = 1e10*(timeinfo->tm_year+1900);
-    sequence[1] = 1e8*(timeinfo->tm_mon+1);
-    sequence[2] = 1e6*timeinfo->tm_mday;
-    sequence[3] = 1e4*timeinfo->tm_hour;
-    sequence[4] = 1e2*timeinfo->tm_min;
-    sequence[5] = timeinfo->tm_sec;
+    sequence[0] = (unsigned int)(1e10*(timeinfo->tm_year+1900));
+    sequence[1] = (unsigned int)(1e8*(timeinfo->tm_mon+1));
+    sequence[2] = (unsigned int)(1e6*timeinfo->tm_mday);
+    sequence[3] = (unsigned int)(1e4*timeinfo->tm_hour);
+    sequence[4] = (unsigned int)(1e2*timeinfo->tm_min);
+    sequence[5] = (unsigned int)(timeinfo->tm_sec);
 
-    std::srand(seed);
-    sequence[6] = std::rand();
-    sequence[7] = std::rand();
-    sequence[8] = std::rand();
-    sequence[9] = std::rand();
+    std::srand( (unsigned int)seed );
+    sequence[6] = (unsigned int)(std::rand());
+    sequence[7] = (unsigned int)(std::rand());
+    sequence[8] = (unsigned int)(std::rand());
+    sequence[9] = (unsigned int)(std::rand());
 
     std::seed_seq seedSeq(sequence.begin(), sequence.end());
     randn_->getRandomer().seed(seedSeq);
 
-    randn_->seed(seed);
+    randn_->seed( (unsigned long)seed );
 
 // ---------------------------------------------------------------------------------------------------------
     // pass the xml file

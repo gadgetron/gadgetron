@@ -56,15 +56,15 @@ namespace Gadgetron{
             noise_dependency_prefix_ = *str;
         }
 
-        noise_dwell_time_us_preset_ = this->get_double_value("noise_dwell_time_us_preset");
+        noise_dwell_time_us_preset_ = (float)this->get_double_value("noise_dwell_time_us_preset");
         if ( noise_dwell_time_us_preset_ == 0 ) noise_dwell_time_us_preset_ = 5;
 
         boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
         if ( cfg->acquisitionSystemInformation().present() )
         {
-            receiver_noise_bandwidth_ = cfg->acquisitionSystemInformation().get().relativeReceiverNoiseBandwidth().present() ?
-                cfg->acquisitionSystemInformation().get().relativeReceiverNoiseBandwidth().get() : 0.793;
+            receiver_noise_bandwidth_ = (float)(cfg->acquisitionSystemInformation().get().relativeReceiverNoiseBandwidth().present() ?
+                cfg->acquisitionSystemInformation().get().relativeReceiverNoiseBandwidth().get() : 0.793f);
 
             GADGET_MSG("receiver_noise_bandwidth_ is " << receiver_noise_bandwidth_);
         }
@@ -326,7 +326,7 @@ namespace Gadgetron{
 
                     {
                         noise_covf = arma::conv_to<arma::cx_fmat>::from
-                            (arma::inv(arma::trimatu(arma::chol(noise_cov/(number_of_noise_samples_-1)))));
+                            (arma::inv(arma::trimatu(arma::chol(noise_cov/( (double)number_of_noise_samples_-1)))));
                     }
 
                     // save the noise prewhitener
@@ -372,7 +372,7 @@ namespace Gadgetron{
                     }
                     else
                     {
-                        noise_bw_scale_factor_ = std::sqrt(2.0*acquisition_dwell_time_us_/noise_dwell_time_us_*receiver_noise_bandwidth_);
+                        noise_bw_scale_factor_ = (float)std::sqrt(2.0*acquisition_dwell_time_us_/noise_dwell_time_us_*receiver_noise_bandwidth_);
                     }
 
                     GADGET_MSG("Noise dwell time: " << noise_dwell_time_us_);
@@ -469,11 +469,11 @@ namespace Gadgetron{
                         if ( fixed_noise_bandwidth_ > 0 )
                         {
                             GADGET_MSG("Use the preset noise bandwidth : " << fixed_noise_bandwidth_);
-                            noise_dwell_time_us_ = 10e6/number_of_noise_samples_per_acquisition_/fixed_noise_bandwidth_;
+                            noise_dwell_time_us_ = (float)(10e6/number_of_noise_samples_per_acquisition_/fixed_noise_bandwidth_);
                         }
                         else
                         {
-                            noise_dwell_time_us_ = ((long)(76800.0/number_of_noise_samples_per_acquisition_)) / 10.0;
+                            noise_dwell_time_us_ = (float)( ((long)(76800.0/number_of_noise_samples_per_acquisition_)) / 10.0 );
                         }
                     }
                     else
@@ -494,7 +494,7 @@ namespace Gadgetron{
                         }
                         else
                         {
-                            noise_bw_scale_factor_ = std::sqrt(2.0*acquisition_dwell_time_us_/noise_dwell_time_us_*receiver_noise_bandwidth_);
+                            noise_bw_scale_factor_ = (float)std::sqrt(2.0*acquisition_dwell_time_us_/noise_dwell_time_us_*receiver_noise_bandwidth_);
                         }
 
                         GADGET_MSG("Noise dwell time: " << noise_dwell_time_us_);

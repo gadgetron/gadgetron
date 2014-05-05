@@ -34,22 +34,22 @@ namespace Gadgetron{
         T* data_ptr = 0;
 
         //Set sizes
-        length = input->get_size(dim_to_transform);
+        length = (int)input->get_size(dim_to_transform);
 
         if (sign == 1)
         {
-            scale = 1.0/length;
+            scale = (T)(1.0/length);
         }
         else
         {
-            scale = 1.0;
+            scale = (T)1.0;
         }
 
         if (dim_to_transform != 0)
         {
             for (size_t i = 0; i < dim_to_transform; i++)
             {
-                chunk_size *= input->get_size(i);
+                chunk_size *= (int)input->get_size(i);
             }
             stride = chunk_size;
             trafos = chunk_size;
@@ -57,14 +57,14 @@ namespace Gadgetron{
 
             for (size_t i = dim_to_transform+1; i < input->get_number_of_dimensions(); i++)
             {
-                chunks *= input->get_size(i);
+                chunks *= (int)input->get_size(i);
             }
         }
         else
         {
             for (size_t i = 1; i < input->get_number_of_dimensions(); i++)
             {
-                trafos *= input->get_size(i);
+                trafos *= (int)input->get_size(i);
             }
             chunk_size = trafos*length;
 
@@ -367,7 +367,7 @@ namespace Gadgetron{
     }
 
     template<typename T> 
-    bool hoNDFFT<T>::fftshiftPivot2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n, unsigned pivotx, unsigned pivoty)
+    bool hoNDFFT<T>::fftshiftPivot2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n, size_t pivotx, size_t pivoty)
     {
         try
         {
@@ -401,7 +401,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::fftshiftPivot2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n, unsigned pivotx, unsigned pivoty) ...");
+            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::fftshiftPivot2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n, size_t pivotx, size_t pivoty) ...");
             return false;
         }
 
@@ -409,7 +409,7 @@ namespace Gadgetron{
     }
 
     template<typename T> 
-    bool hoNDFFT<T>::fftshiftPivot2D(ComplexType* a, size_t x, size_t y, size_t n, unsigned pivotx, unsigned pivoty)
+    bool hoNDFFT<T>::fftshiftPivot2D(ComplexType* a, size_t x, size_t y, size_t n, size_t pivotx, size_t pivoty)
     {
         try
         {
@@ -449,7 +449,7 @@ namespace Gadgetron{
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::fftshiftPivot2D(ComplexType* a, size_t x, size_t y, size_t n, unsigned pivotx, unsigned pivoty) ...");
+            GADGET_ERROR_MSG("Errors in hoNDFFT<T>::fftshiftPivot2D(ComplexType* a, size_t x, size_t y, size_t n, size_t pivotx, size_t pivoty) ...");
             return false;
         }
 
@@ -464,8 +464,8 @@ namespace Gadgetron{
             GADGET_CHECK_RETURN_FALSE(a!=NULL);
             GADGET_CHECK_RETURN_FALSE(r!=NULL);
 
-            unsigned pivotx = fftshiftPivot(x);
-            unsigned pivoty = fftshiftPivot(y);
+            size_t pivotx = fftshiftPivot(x);
+            size_t pivoty = fftshiftPivot(y);
 
             GADGET_CHECK_RETURN_FALSE(fftshiftPivot2D(a, r, x, y, n, pivotx, pivoty));
         }
@@ -486,8 +486,8 @@ namespace Gadgetron{
             GADGET_CHECK_RETURN_FALSE(a!=NULL);
             GADGET_CHECK_RETURN_FALSE(r!=NULL);
 
-            unsigned pivotx = ifftshiftPivot(x);
-            unsigned pivoty = ifftshiftPivot(y);
+            size_t pivotx = ifftshiftPivot(x);
+            size_t pivoty = ifftshiftPivot(y);
 
             GADGET_CHECK_RETURN_FALSE(fftshiftPivot2D(a, r, x, y, n, pivotx, pivoty));
         }
@@ -507,8 +507,8 @@ namespace Gadgetron{
         {
             GADGET_CHECK_RETURN_FALSE(a!=NULL);
 
-            unsigned pivotx = fftshiftPivot(x);
-            unsigned pivoty = fftshiftPivot(y);
+            size_t pivotx = fftshiftPivot(x);
+            size_t pivoty = fftshiftPivot(y);
 
             GADGET_CHECK_RETURN_FALSE(fftshiftPivot2D(a, x, y, n, pivotx, pivoty));
         }
@@ -528,8 +528,8 @@ namespace Gadgetron{
         {
             GADGET_CHECK_RETURN_FALSE(a!=NULL);
 
-            unsigned pivotx = ifftshiftPivot(x);
-            unsigned pivoty = ifftshiftPivot(y);
+            size_t pivotx = ifftshiftPivot(x);
+            size_t pivoty = ifftshiftPivot(y);
 
             GADGET_CHECK_RETURN_FALSE(fftshiftPivot2D(a, x, y, n, pivotx, pivoty));
         }
@@ -581,7 +581,7 @@ namespace Gadgetron{
     }
 
     template<typename T> 
-    bool hoNDFFT<T>::fftshiftPivot3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n, unsigned pivotx, unsigned pivoty,  unsigned pivotz)
+    bool hoNDFFT<T>::fftshiftPivot3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n, size_t pivotx, size_t pivoty,  size_t pivotz)
     {
         try
         {
@@ -650,7 +650,7 @@ namespace Gadgetron{
     }
 
     template<typename T> 
-    bool hoNDFFT<T>::fftshiftPivot3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n, unsigned pivotx, unsigned pivoty,  unsigned pivotz)
+    bool hoNDFFT<T>::fftshiftPivot3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n, size_t pivotx, size_t pivoty,  size_t pivotz)
     {
         try
         {
@@ -732,9 +732,9 @@ namespace Gadgetron{
             GADGET_CHECK_RETURN_FALSE(a!=NULL);
             GADGET_CHECK_RETURN_FALSE(r!=NULL);
 
-            unsigned pivotx = fftshiftPivot(x);
-            unsigned pivoty = fftshiftPivot(y);
-            unsigned pivotz = fftshiftPivot(z);
+            size_t pivotx = fftshiftPivot(x);
+            size_t pivoty = fftshiftPivot(y);
+            size_t pivotz = fftshiftPivot(z);
 
             GADGET_CHECK_RETURN_FALSE(fftshiftPivot3D(a, r, x, y, z, n, pivotx, pivoty, pivotz));
         }
@@ -755,9 +755,9 @@ namespace Gadgetron{
             GADGET_CHECK_RETURN_FALSE(a!=NULL);
             GADGET_CHECK_RETURN_FALSE(r!=NULL);
 
-            unsigned pivotx = ifftshiftPivot(x);
-            unsigned pivoty = ifftshiftPivot(y);
-            unsigned pivotz = ifftshiftPivot(z);
+            size_t pivotx = ifftshiftPivot(x);
+            size_t pivoty = ifftshiftPivot(y);
+            size_t pivotz = ifftshiftPivot(z);
 
             GADGET_CHECK_RETURN_FALSE(fftshiftPivot3D(a, r, x, y, z, n, pivotx, pivoty, pivotz));
         }
@@ -777,9 +777,9 @@ namespace Gadgetron{
         {
             GADGET_CHECK_RETURN_FALSE(a!=NULL);
 
-            unsigned pivotx = fftshiftPivot(x);
-            unsigned pivoty = fftshiftPivot(y);
-            unsigned pivotz = fftshiftPivot(z);
+            size_t pivotx = fftshiftPivot(x);
+            size_t pivoty = fftshiftPivot(y);
+            size_t pivotz = fftshiftPivot(z);
 
             GADGET_CHECK_RETURN_FALSE(fftshiftPivot3D(a, x, y, z, n, pivotx, pivoty, pivotz));
         }
@@ -799,9 +799,9 @@ namespace Gadgetron{
         {
             GADGET_CHECK_RETURN_FALSE(a!=NULL);
 
-            unsigned pivotx = ifftshiftPivot(x);
-            unsigned pivoty = ifftshiftPivot(y);
-            unsigned pivotz = ifftshiftPivot(z);
+            size_t pivotx = ifftshiftPivot(x);
+            size_t pivoty = ifftshiftPivot(y);
+            size_t pivotz = ifftshiftPivot(z);
 
             GADGET_CHECK_RETURN_FALSE(fftshiftPivot3D(a, x, y, z, n, pivotx, pivoty, pivotz));
         }
@@ -1606,6 +1606,44 @@ namespace Gadgetron{
     template<typename T> 
     bool hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, bool forward)
     {
+        hoNDArray< ComplexType > res(a);
+        if ( !fft1(res, a, forward) )
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    template<typename T> 
+    bool hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a, bool forward)
+    {
+        hoNDArray< ComplexType > res(a);
+        if ( !fft2(res, a, forward) )
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    template<typename T> 
+    bool hoNDFFT<T>::fft3(hoNDArray< ComplexType >& a, bool forward)
+    {
+        hoNDArray< ComplexType > res(a);
+        if ( !fft3(res, a, forward) )
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    template<typename T> 
+    bool hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
+    {
+        r = a;
+
         int n0 = a.get_size(0);
         T fftRatio = 1.0/std::sqrt( T(n0) );
 
@@ -1622,14 +1660,14 @@ namespace Gadgetron{
                 {
                     p = fftwf_plan_dft_1d(n0, 
                             reinterpret_cast<fftwf_complex*>(a.begin()), 
-                            reinterpret_cast<fftwf_complex*>(a.begin()),
+                            reinterpret_cast<fftwf_complex*>(r.begin()),
                             FFTW_FORWARD, FFTW_ESTIMATE);
                 }
                 else
                 {
                     p = fftwf_plan_dft_1d(n0, 
                             reinterpret_cast<fftwf_complex*>(a.begin()), 
-                            reinterpret_cast<fftwf_complex*>(a.begin()),
+                            reinterpret_cast<fftwf_complex*>(r.begin()),
                             FFTW_BACKWARD, FFTW_ESTIMATE);
                 }
                 mutex_.unlock();
@@ -1638,7 +1676,7 @@ namespace Gadgetron{
             for ( n=0; n<num; n++ )
             {
                 fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0), 
-                    reinterpret_cast<fftwf_complex*>(a.begin()+n*n0));
+                    reinterpret_cast<fftwf_complex*>(r.begin()+n*n0));
             }
 
             {
@@ -1657,14 +1695,14 @@ namespace Gadgetron{
                 {
                     p = fftw_plan_dft_1d(n0, 
                             reinterpret_cast<fftw_complex*>(a.begin()), 
-                            reinterpret_cast<fftw_complex*>(a.begin()),
+                            reinterpret_cast<fftw_complex*>(r.begin()),
                             FFTW_FORWARD, FFTW_ESTIMATE);
                 }
                 else
                 {
                     p = fftw_plan_dft_1d(n0, 
                             reinterpret_cast<fftw_complex*>(a.begin()), 
-                            reinterpret_cast<fftw_complex*>(a.begin()),
+                            reinterpret_cast<fftw_complex*>(r.begin()),
                             FFTW_BACKWARD, FFTW_ESTIMATE);
                 }
                 mutex_.unlock();
@@ -1673,7 +1711,7 @@ namespace Gadgetron{
             for ( n=0; n<num; n++ )
             {
                 fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0), 
-                    reinterpret_cast<fftw_complex*>(a.begin()+n*n0));
+                    reinterpret_cast<fftw_complex*>(r.begin()+n*n0));
             }
 
             {
@@ -1683,16 +1721,18 @@ namespace Gadgetron{
             }
         }
 
-        Gadgetron::scal( (typename realType<T>::Type)(fftRatio), a);
+        Gadgetron::scal( (typename realType<T>::Type)(fftRatio), r);
 
         return true;
     }
 
     template<typename T> 
-    bool hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a, bool forward)
+    bool hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
     {
-        int n0 = a.get_size(0);
-        int n1 = a.get_size(1);
+        r = a;
+
+        int n0 = a.get_size(1);
+        int n1 = a.get_size(0);
 
         T fftRatio = 1.0/std::sqrt( T(n0*n1) );
 
@@ -1709,14 +1749,14 @@ namespace Gadgetron{
                 {
                     p = fftwf_plan_dft_2d(n0, n1,
                             reinterpret_cast<fftwf_complex*>(a.begin()), 
-                            reinterpret_cast<fftwf_complex*>(a.begin()),
+                            reinterpret_cast<fftwf_complex*>(r.begin()),
                             FFTW_FORWARD, FFTW_ESTIMATE);
                 }
                 else
                 {
                     p = fftwf_plan_dft_2d(n0, n1,
                             reinterpret_cast<fftwf_complex*>(a.begin()), 
-                            reinterpret_cast<fftwf_complex*>(a.begin()),
+                            reinterpret_cast<fftwf_complex*>(r.begin()),
                             FFTW_BACKWARD, FFTW_ESTIMATE);
                 }
                 mutex_.unlock();
@@ -1725,7 +1765,7 @@ namespace Gadgetron{
             for ( n=0; n<num; n++ )
             {
                 fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0*n1), 
-                    reinterpret_cast<fftwf_complex*>(a.begin()+n*n0*n1));
+                    reinterpret_cast<fftwf_complex*>(r.begin()+n*n0*n1));
             }
 
             {
@@ -1744,14 +1784,14 @@ namespace Gadgetron{
                 {
                     p = fftw_plan_dft_2d(n0, n1,
                             reinterpret_cast<fftw_complex*>(a.begin()), 
-                            reinterpret_cast<fftw_complex*>(a.begin()),
+                            reinterpret_cast<fftw_complex*>(r.begin()),
                             FFTW_FORWARD, FFTW_ESTIMATE);
                 }
                 else
                 {
                     p = fftw_plan_dft_2d(n0, n1,
                             reinterpret_cast<fftw_complex*>(a.begin()), 
-                            reinterpret_cast<fftw_complex*>(a.begin()),
+                            reinterpret_cast<fftw_complex*>(r.begin()),
                             FFTW_BACKWARD, FFTW_ESTIMATE);
                 }
                 mutex_.unlock();
@@ -1760,7 +1800,7 @@ namespace Gadgetron{
             for ( n=0; n<num; n++ )
             {
                 fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0*n1), 
-                    reinterpret_cast<fftw_complex*>(a.begin()+n*n0*n1));
+                    reinterpret_cast<fftw_complex*>(r.begin()+n*n0*n1));
             }
 
             {
@@ -1770,17 +1810,19 @@ namespace Gadgetron{
             }
         }
 
-        Gadgetron::scal( (typename realType<T>::Type)(fftRatio), a);
+        Gadgetron::scal( (typename realType<T>::Type)(fftRatio), r);
 
         return true;
     }
 
     template<typename T> 
-    bool hoNDFFT<T>::fft3(hoNDArray< ComplexType >& a, bool forward)
+    bool hoNDFFT<T>::fft3(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
     {
-        int n0 = a.get_size(0);
+        r = a;
+
+        int n2 = a.get_size(0);
         int n1 = a.get_size(1);
-        int n2 = a.get_size(2);
+        int n0 = a.get_size(2);
 
         T fftRatio = 1.0/std::sqrt( T(n0*n1*n2) );
 
@@ -1797,14 +1839,14 @@ namespace Gadgetron{
                 {
                     p = fftwf_plan_dft_3d(n0, n1, n2, 
                             reinterpret_cast<fftwf_complex*>(a.begin()), 
-                            reinterpret_cast<fftwf_complex*>(a.begin()),
+                            reinterpret_cast<fftwf_complex*>(r.begin()),
                             FFTW_FORWARD, FFTW_ESTIMATE);
                 }
                 else
                 {
                     p = fftwf_plan_dft_3d(n0, n1, n2, 
                             reinterpret_cast<fftwf_complex*>(a.begin()), 
-                            reinterpret_cast<fftwf_complex*>(a.begin()),
+                            reinterpret_cast<fftwf_complex*>(r.begin()),
                             FFTW_BACKWARD, FFTW_ESTIMATE);
                 }
                 mutex_.unlock();
@@ -1813,7 +1855,7 @@ namespace Gadgetron{
             for ( n=0; n<num; n++ )
             {
                 fftwf_execute_dft(p, reinterpret_cast<fftwf_complex*>(a.begin()+n*n0*n1*n2), 
-                    reinterpret_cast<fftwf_complex*>(a.begin()+n*n0*n1*n2));
+                    reinterpret_cast<fftwf_complex*>(r.begin()+n*n0*n1*n2));
             }
 
             {
@@ -1832,14 +1874,14 @@ namespace Gadgetron{
                 {
                     p = fftw_plan_dft_3d(n0, n1, n2, 
                             reinterpret_cast<fftw_complex*>(a.begin()), 
-                            reinterpret_cast<fftw_complex*>(a.begin()),
+                            reinterpret_cast<fftw_complex*>(r.begin()),
                             FFTW_FORWARD, FFTW_ESTIMATE);
                 }
                 else
                 {
                     p = fftw_plan_dft_3d(n0, n1, n2, 
                             reinterpret_cast<fftw_complex*>(a.begin()), 
-                            reinterpret_cast<fftw_complex*>(a.begin()),
+                            reinterpret_cast<fftw_complex*>(r.begin()),
                             FFTW_BACKWARD, FFTW_ESTIMATE);
                 }
                 mutex_.unlock();
@@ -1848,7 +1890,7 @@ namespace Gadgetron{
             for ( n=0; n<num; n++ )
             {
                 fftw_execute_dft(p, reinterpret_cast<fftw_complex*>(a.begin()+n*n0*n1*n2), 
-                    reinterpret_cast<fftw_complex*>(a.begin()+n*n0*n1*n2));
+                    reinterpret_cast<fftw_complex*>(r.begin()+n*n0*n1*n2));
             }
 
             {
@@ -1858,55 +1900,7 @@ namespace Gadgetron{
             }
         }
 
-        Gadgetron::scal( (typename realType<T>::Type)(fftRatio), a);
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft1(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
-    {
-        r = a;
-        if ( forward )
-        {
-            fft(&r, 1);
-        }
-        else
-        {
-            ifft(&r, 1);
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft2(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
-    {
-        r = a;
-        if ( forward )
-        {
-            fft(&a);
-        }
-        else
-        {
-            ifft(&a);
-        }
-
-        return true;
-    }
-
-    template<typename T> 
-    bool hoNDFFT<T>::fft3(hoNDArray< ComplexType >& a, hoNDArray< ComplexType >& r, bool forward)
-    {
-        r = a;
-        if ( forward )
-        {
-            fft(&a);
-        }
-        else
-        {
-            ifft(&a);
-        }
+        Gadgetron::scal( (typename realType<T>::Type)(fftRatio), r);
 
         return true;
     }

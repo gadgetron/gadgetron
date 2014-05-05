@@ -15,7 +15,6 @@
 #include "hoNDPoint.h"
 #include "hoMatrix.h"
 #include "hoNDMetaAttributes.h"
-#include "ismrmrd.h"
 
 namespace Gadgetron
 {
@@ -283,22 +282,22 @@ namespace Gadgetron
         void set_axis(const axis_type& axis);
 
         /// get image position patient
-        void get_image_position(coord_type pos[3]);
-        void get_image_position(unsigned int d, coord_type& pos);
-        void get_image_position(a_axis_image_patient_type& pos);
+        void get_image_position(coord_type pos[3]) const;
+        void get_image_position(unsigned int d, coord_type& pos) const;
+        void get_image_position(a_axis_image_patient_type& pos) const;
 
         void set_image_position(coord_type pos[3]);
         void set_image_position(unsigned int d, coord_type pos);
         void set_image_position(const a_axis_image_patient_type& pos);
 
         /// get image orientation patient
-        void get_image_orientation(unsigned int d, coord_type ori[3]);
-        void get_image_orientation(unsigned int d, a_axis_image_patient_type& ori);
+        void get_image_orientation(unsigned int d, coord_type ori[3]) const;
+        void get_image_orientation(unsigned int d, a_axis_image_patient_type& ori) const;
         
         /// for dimension d and index ind
-        void get_image_orientation(unsigned int d, unsigned int ind, coord_type& ori);
+        void get_image_orientation(unsigned int d, unsigned int ind, coord_type& ori) const;
         /// get image orientation as a quaternion
-        void get_image_orientation(coord_type quat[4]);
+        void get_image_orientation(coord_type quat[4]) const;
 
         void set_image_orientation(unsigned int d, coord_type ori[3]);
         void set_image_orientation(unsigned int d, const a_axis_image_patient_type& ori);
@@ -534,11 +533,11 @@ namespace Gadgetron
         GtImageAttribType attrib_;
 
         /// serialize/deserialize image content
-        virtual bool serializeImage(char*& buf, size_t& len);
+        virtual bool serializeImage(char*& buf, size_t& len) const;
         virtual bool deserializeImage(char* buf, size_t& len);
 
         /// serialize/deserialize image content and meta attributes
-        virtual bool serialize(char*& buf, size_t& len);
+        virtual bool serialize(char*& buf, size_t& len) const;
         virtual bool deserialize(char* buf, size_t& len);
 
         /// print out the image information

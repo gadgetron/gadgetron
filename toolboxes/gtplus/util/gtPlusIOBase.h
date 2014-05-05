@@ -230,6 +230,19 @@ public:
         pixelSize_[7] = pq;
     }
 
+    void setPixelSize(double px, double py, double pz=1.0, double pt=1.0, double pr=1.0, double ps=1.0, double pp=1.0, double pq=1.0)
+    {
+        pixelSize_.resize(8);
+        pixelSize_[0] = (float)px;
+        pixelSize_[1] = (float)py;
+        pixelSize_[2] = (float)pz;
+        pixelSize_[3] = (float)pt;
+        pixelSize_[4] = (float)pr;
+        pixelSize_[5] = (float)ps;
+        pixelSize_[6] = (float)pp;
+        pixelSize_[7] = (float)pq;
+    }
+
     void printInfo(std::ostream& os)
     {
         using namespace std;

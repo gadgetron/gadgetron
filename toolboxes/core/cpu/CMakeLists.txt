@@ -8,7 +8,6 @@ find_package(XercesC REQUIRED)
 include_directories(
     ${XSD_INCLUDE_DIR}
     ${FFTW3_INCLUDE_DIR}
-    ${ISMRMRD_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/toolboxes/core
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
@@ -90,16 +89,8 @@ add_library(cpucore ${LIBTYPE}
                     ${algorithm_files} )
 
 target_link_libraries(cpucore 
-                    ${ISMRMRD_LIBRARIES}
                     ${Boost_LIBRARIES} 
-                    ${XERCESC_LIBRARIES} 
-                    #optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
-                    )
-
-if (ARMADILLO_FOUND)
-    target_link_libraries(cpucore 
-                        ${ARMADILLO_LIBRARIES} )
-endif (ARMADILLO_FOUND)
+                    ${XERCESC_LIBRARIES} )
 
 install(TARGETS cpucore DESTINATION lib)
 

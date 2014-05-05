@@ -935,7 +935,7 @@ namespace Gadgetron
     }
 
     template <typename T> 
-    bool hoNDArray<T>::serialize(char*& buf, size_t& len)
+    bool hoNDArray<T>::serialize(char*& buf, size_t& len) const 
     {
         if ( buf != NULL ) delete[] buf;
 

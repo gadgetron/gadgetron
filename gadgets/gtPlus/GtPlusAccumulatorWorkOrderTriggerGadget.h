@@ -225,8 +225,8 @@ protected:
     // recon filed of view [mm]
     float field_of_view_recon_[3];
 
-    int image_counter_;
-    int image_series_;
+    size_t image_counter_;
+    size_t image_series_;
 
     // mark the first kspace line
     bool first_kspace_scan_;
@@ -241,28 +241,31 @@ protected:
     // if so, extra triggering in close(...) is not needed
     bool triggered_in_process_last_acq_;
 
-    int meas_max_ro_;
+    size_t meas_max_ro_;
     ISMRMRD::EncodingCounters meas_max_idx_;
-    int meas_max_channel_;
+    size_t meas_max_channel_;
 
     // maximal idx for reference data
     ISMRMRD::EncodingCounters meas_max_idx_ref_;
 
     // track the trigger dim1 and dim2
-    int prev_dim1_;
-    int curr_dim1_;
+    size_t prev_dim1_;
+    size_t curr_dim1_;
 
-    int prev_dim2_;
-    int curr_dim2_;
+    size_t prev_dim2_;
+    size_t curr_dim2_;
 
     // store the previous acquisition head
     ISMRMRD::AcquisitionHeader prev_acq_header_;
 
     // for trigger dim1, need to count its times
-    int count_dim1_;
+    size_t count_dim1_;
 
     // a general workorder to store the buffered data
     WorkOrderType workOrder_;
+
+    // exporter
+    Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
 
     // util for gtplus
     Gadgetron::gtPlus::gtPlusISMRMRDReconUtil<GT_Complex8> gtPlus_util_;

@@ -34,7 +34,7 @@ int GtPlusRecon2DTGadgetCloud::process_config(ACE_Message_Block* mb)
         bool parseSuccess = this->parseGTCloudNodeFile(cloud_node_file_, gt_cloud_);
         if ( parseSuccess )
         {
-            CloudSize_ = gt_cloud_.size();
+            CloudSize_ = (unsigned int)gt_cloud_.size();
             if ( CloudSize_ == 0 ) CloudComputing_ = false;
         }
 
@@ -291,7 +291,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
         // perform the recon
         GADGET_START_TIMING_CONDITION(gt_timer1_, "Recon 2DT workorder on master node ... ", performTiming_);
 
-        GADGET_CHECK_RETURN(this->generateKSpaceFilter(workOrder), GADGET_FAIL);
+        GADGET_CHECK_RETURN_FALSE(this->generateKSpaceFilter(workOrder));
 
         workOrder.duplicate(workOrder_recon_);
         this->setWorkOrder2DTParameters(&workOrder_recon_);
@@ -408,7 +408,7 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
 
             // if some jobs are not completed successfully, reprocess them; otherwise, send out images
             std::vector<DimensionRecordType> dataDimStartingIndexes;
-            unsigned int N = image_headers_.size();
+            unsigned int N = (unsigned int)image_headers_.size();
             unsigned int ii;
             for ( ii=0; ii<N; ii++ )
             {

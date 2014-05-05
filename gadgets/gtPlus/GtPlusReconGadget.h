@@ -121,7 +121,7 @@ public:
     void getCurrentMoment(std::string& procTime);
 
     // compute image number using ICE way
-    int computeSeriesImageNumber (ISMRMRD::ImageHeader& imheader, size_t nCHA=1, size_t cha=0, size_t nE2=1, size_t e2=0);
+    size_t computeSeriesImageNumber (ISMRMRD::ImageHeader& imheader, size_t nCHA=1, size_t cha=0, size_t nE2=1, size_t e2=0);
 
     // to handle partial fourier, add pre or post zeros
     // PrePostZeros: 0 no zeros; 1 pre zeros; 2 post zeros
@@ -140,7 +140,7 @@ public:
     bool scalingMagnitude(hoNDArray<float>& mag);
 
     // recompute the image geometry parameters if the recon FOV is different from encoding FOV
-    bool recomputeImageGeometry(GtPlusGadgetImageArray* images, GtPlusGadgetImageExt& imageHeader, int slc, int e2, int con, int phs, int rep, int set, int seg, int maxE2);
+    bool recomputeImageGeometry(GtPlusGadgetImageArray* images, GtPlusGadgetImageExt& imageHeader, size_t slc, size_t e2, size_t con, size_t phs, size_t rep, size_t set, size_t seg, size_t maxE2);
 
     // send out the recon results
     virtual bool sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, int seriesNum, const std::vector<DimensionRecordType>& dimStartingIndexes, const std::string& prefix, const std::string& dataRole);

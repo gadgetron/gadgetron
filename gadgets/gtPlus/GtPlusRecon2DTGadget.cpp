@@ -194,7 +194,7 @@ int GtPlusRecon2DTGadget::process_config(ACE_Message_Block* mb)
         bool parseSuccess = this->parseGTCloudNodeFile(cloud_node_file_, gt_cloud_);
         if ( parseSuccess )
         {
-            CloudSize_ = gt_cloud_.size();
+            CloudSize_ = (unsigned int)gt_cloud_.size();
             if ( CloudSize_ == 0 ) CloudComputing_ = false;
         }
         else

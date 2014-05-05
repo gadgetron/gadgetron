@@ -115,7 +115,7 @@ bool gtMatlabImageHeader<T, D>::toMatlab(mxArray*& header)
         unsigned int ii, jj;
 
         mwSize num[2] = {1, 1};
-        header = mxCreateStructArray(2, num, header_fields_.size(), const_cast<const char**>(&header_fields_[0]));
+        header = mxCreateStructArray(2, num, (int)header_fields_.size(), const_cast<const char**>(&header_fields_[0]));
 
         mwSize dims[1];
         dims[0] = D;
@@ -181,7 +181,7 @@ bool gtMatlabImageHeader<T, D>::fromMatlab(const mxArray* header)
 
             for ( ii=0; ii<GT_MIN(D, N); ii++ )
             {
-                origin_[ii] = pr[ii];
+                origin_[ii] = (coord_type)pr[ii];
             }
         }
         else
@@ -190,7 +190,7 @@ bool gtMatlabImageHeader<T, D>::fromMatlab(const mxArray* header)
 
             for ( ii=0; ii<GT_MIN(D, N); ii++ )
             {
-                origin_[ii] = pr[ii];
+                origin_[ii] = (coord_type)pr[ii];
             }
         }
 
@@ -203,7 +203,7 @@ bool gtMatlabImageHeader<T, D>::fromMatlab(const mxArray* header)
 
             for ( ii=0; ii<GT_MIN(D, N); ii++ )
             {
-                pixelSize_[ii] = pr[ii];
+                pixelSize_[ii] = (coord_type)pr[ii];
             }
         }
         else
@@ -212,7 +212,7 @@ bool gtMatlabImageHeader<T, D>::fromMatlab(const mxArray* header)
 
             for ( ii=0; ii<GT_MIN(D, N); ii++ )
             {
-                pixelSize_[ii] = pr[ii];
+                pixelSize_[ii] = (coord_type)pr[ii];
             }
         }
 
@@ -226,7 +226,7 @@ bool gtMatlabImageHeader<T, D>::fromMatlab(const mxArray* header)
             {
                 for ( ii=0; ii<GT_MIN(D, N); ii++ )
                 {
-                    axis_[jj][ii] = pr[jj + ii*D];
+                    axis_[jj][ii] = (coord_type)pr[jj + ii*D];
                 }
             }
         }
@@ -238,7 +238,7 @@ bool gtMatlabImageHeader<T, D>::fromMatlab(const mxArray* header)
             {
                 for ( ii=0; ii<GT_MIN(D, N); ii++ )
                 {
-                    axis_[jj][ii] = pr[jj + ii*D];
+                    axis_[jj][ii] = (coord_type)pr[jj + ii*D];
                 }
             }
         }

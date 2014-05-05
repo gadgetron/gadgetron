@@ -61,7 +61,7 @@ gtPlusLSQRSolver<Array_Type_I, Array_Type_O, Oper_Type>::
 gtPlusLSQRSolver() : BaseClass()
 {
     iterMax_ = 70;
-    thres_ = 1e-4;
+    thres_ = (value_type)1e-4;
 }
 
 template <typename Array_Type_I, typename Array_Type_O, typename Oper_Type>
@@ -104,8 +104,8 @@ solve(const Array_Type_I& b, Array_Type_O& x)
             GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( value_type(1.0)/beta, u));
         }
 
-        double c = 1;
-        double s = 0;
+        value_type c = 1;
+        value_type s = 0;
         value_type phibar = beta;
 
         // v = A(u, varargin{:},'transp');
@@ -233,7 +233,7 @@ solve(const Array_Type_I& b, Array_Type_O& x)
             GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( phi, dtmp));
             GADGET_CHECK_RETURN_FALSE(Gadgetron::add( x, dtmp, x));
 
-            normr = std::abs( (double)s) * normr;
+            normr = (value_type)(std::abs( (double)s) * normr);
 
             // vt = A(u, varargin{:},'transp');
             GADGET_CHECK_RETURN_FALSE(oper_->adjointOperator(u, vt));

@@ -1224,7 +1224,7 @@ template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<GT_Complex16
 
             arma::Mat<typename stdType<T>::Type> X = arma::solve(armaA, armaB);
 
-            memcpy(A.begin(), X.begin(), A.get_number_of_bytes());
+            memcpy(b.begin(), X.begin(), b.get_number_of_bytes());
         }
         catch(...)
         {

@@ -154,7 +154,7 @@ int GadgetCloudController<JobType>::open(void* p)
     GADGET_DEBUG1("GadgetCloudController::open\n");
 
     // set the high water mark of message queue to be 2GB
-    this->msg_queue()->high_water_mark(24.0*1024*1024*1024);
+    this->msg_queue()->high_water_mark( (size_t)(24.0*1024*1024*1024) );
 
     return 0;
 }
@@ -186,7 +186,7 @@ int GadgetCloudController<JobType>::createConnector(const CloudType& cloud,
     size_t msgID_reader, std::vector<GadgetMessageReader*>& readers, 
     size_t msgID_writer, std::vector<GadgetMessageWriter*>& writers)
 {
-    number_of_nodes_ = cloud.size();
+    number_of_nodes_ = (unsigned int)cloud.size();
 
     if ( readers.size() != number_of_nodes_ ) return -1;
     if ( writers.size() != number_of_nodes_ ) return -1;
@@ -219,7 +219,7 @@ template <typename JobType>
 int GadgetCloudController<JobType>::
 connectToCloud(const CloudType& cloud)
 {
-    number_of_nodes_ = cloud.size();
+    number_of_nodes_ = (unsigned int)cloud.size();
     if ( cloud_connectors_.size() != number_of_nodes_ ) return -1;
 
     node_status_.resize(number_of_nodes_, -1);
@@ -236,7 +236,7 @@ connectToCloud(const CloudType& cloud)
         {
             cloud_connectors_[ii]->set_status(false);
 
-            ACE_Time_Value tv(GADGETRON_TIMEOUT_PERIOD);
+            ACE_Time_Value tv( (time_t)GADGETRON_TIMEOUT_PERIOD );
             ACE_OS::sleep(tv);
 
             GADGET_DEBUG2("Open connection to (%s):%s failed ... \n", host.c_str(), port.c_str());
@@ -249,7 +249,7 @@ connectToCloud(const CloudType& cloud)
             // send the xml file
             if (cloud_connectors_[ii]->send_gadgetron_configuration_file(cloud[ii].get<2>()) != 0)
             {
-                ACE_Time_Value tv(GADGETRON_TIMEOUT_PERIOD);
+                ACE_Time_Value tv( (time_t)GADGETRON_TIMEOUT_PERIOD );
                 ACE_OS::sleep(tv);
 
                 GADGET_DEBUG2("Unable to send XML configuration to the Gadgetron cloud host (%s):%s ... \n", host.c_str(), port.c_str());
@@ -323,10 +323,10 @@ runJobsOnCloud(std::vector<JobType*>& job_list, std::vector<JobType*>& completed
 
     std::vector<int> node_ids_used(node_ids);
 
-    unsigned int numOfJobs = job_list.size();
+    size_t numOfJobs = job_list.size();
     std::vector<int> job_status(numOfJobs, -1);
 
-    unsigned int ii;
+    size_t ii;
     for( ii=0; ii<numOfJobs; ii++ )
     {
         int nodeID = node_ids_used[ii];
@@ -336,9 +336,9 @@ runJobsOnCloud(std::vector<JobType*>& job_list, std::vector<JobType*>& completed
             continue;
         }
 
-        if ( nodeID > number_of_nodes_ )
+        if ( nodeID > (int)number_of_nodes_ )
         {
-            nodeID %= number_of_nodes_;
+            nodeID %= (int)number_of_nodes_;
         }
 
         /*while ( node_status_[nodeID] < 0 )
@@ -359,7 +359,7 @@ runJobsOnCloud(std::vector<JobType*>& job_list, std::vector<JobType*>& completed
     }
 
     // append incoming jobs into the list
-    unsigned int startJobID = job_list_.size();
+    size_t startJobID = job_list_.size();
 
     if ( this->appendJobList(job_list, completed_job_list, node_ids_used, job_status) == -1 )
     {
@@ -380,12 +380,12 @@ runJobsOnCloud(std::vector<JobType*>& job_list, std::vector<JobType*>& completed
         GadgetContainerMessage<GadgetMessageIdentifier>* m1 =
                 new GadgetContainerMessage<GadgetMessageIdentifier>();
 
-        m1->getObjectPtr()->id = cloud_msg_id_writer_;
+        m1->getObjectPtr()->id = (ACE_UINT16)cloud_msg_id_writer_;
 
         GadgetContainerMessage<int>* m2 =
                 new GadgetContainerMessage<int>();
 
-        *(m2->getObjectPtr()) = ii+startJobID;
+        *(m2->getObjectPtr()) = (int)(ii+startJobID);
 
         GadgetContainerMessage<JobType>* m3 =
                 new GadgetContainerMessage<JobType>();
@@ -579,8 +579,8 @@ int GadgetCloudController<JobType>::setJobsTobeCompleted(unsigned int nodeID, in
     ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, cloud_controller_mutex_, -1);
     try
     {
-        unsigned int N = this->node_id_used_.size();
-        unsigned int ii;
+        size_t N = this->node_id_used_.size();
+        size_t ii;
         for ( ii=0; ii<N; ii++ )
         {
             if ( this->node_id_used_[ii] == nodeID )
@@ -613,7 +613,7 @@ int GadgetCloudController<JobType>::appendJobList(std::vector<JobType*>& job_lis
     ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, cloud_controller_mutex_, -1);
     try
     {
-        unsigned int N = job_list.size();
+        size_t N = job_list.size();
 
         if ( completed_job_list.size() != N )
         {
@@ -633,7 +633,7 @@ int GadgetCloudController<JobType>::appendJobList(std::vector<JobType*>& job_lis
             return -1;
         }
 
-        unsigned int ii;
+        size_t ii;
         for ( ii=0; ii<N; ii++ )
         {
             job_list_.push_back(job_list[ii]);

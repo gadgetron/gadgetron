@@ -99,7 +99,7 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
 
     // Store initial Series Number for later
     if (meas_info.initialSeriesNumber().present()) {
-        this->initialSeriesNumber = meas_info.initialSeriesNumber().get();
+        this->initialSeriesNumber = (long)meas_info.initialSeriesNumber().get();
     } else {
         this->initialSeriesNumber = 0;
     }
@@ -636,7 +636,7 @@ int DicomFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHea
 
     try {
         pixels->getObjectPtr()->create(dims.get());
-    } catch (bad_alloc& err) {
+    } catch (bad_alloc& ) {
         GADGET_DEBUG1("Unable to create short storage in DicomFinishAttribGadget");
         return GADGET_FAIL;
     }
@@ -669,7 +669,7 @@ int DicomFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHea
         // copy/cast the pixel value to a short int
         dst[i] = static_cast<ACE_INT16>(pix_val);
     }
-    T mean_pix_val = (sum_pix_val * 4) / pixels->getObjectPtr()->get_number_of_elements();
+    T mean_pix_val = (T)((sum_pix_val * 4) / (T)pixels->getObjectPtr()->get_number_of_elements());
 
     // export data
     /*Gadgetron::gtPlus::gtPlusIOAnalyze gt_io;
@@ -735,14 +735,14 @@ int DicomFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHea
     float corner[3];
 
     corner[0] = img->position[0] -
-            (img->field_of_view[0] / 2.0) * img->read_dir[0] -
-            (img->field_of_view[1] / 2.0) * img->phase_dir[0];
+            (img->field_of_view[0] / 2.0f) * img->read_dir[0] -
+            (img->field_of_view[1] / 2.0f) * img->phase_dir[0];
     corner[1] = img->position[1] -
-            (img->field_of_view[0] / 2.0) * img->read_dir[1] -
-            (img->field_of_view[1] / 2.0) * img->phase_dir[1];
+            (img->field_of_view[0] / 2.0f) * img->read_dir[1] -
+            (img->field_of_view[1] / 2.0f) * img->phase_dir[1];
     corner[2] = img->position[2] -
-            (img->field_of_view[0] / 2.0) * img->read_dir[2] -
-            (img->field_of_view[1] / 2.0) * img->phase_dir[2];
+            (img->field_of_view[0] / 2.0f) * img->read_dir[2] -
+            (img->field_of_view[1] / 2.0f) * img->phase_dir[2];
 
     key.set(0x0020, 0x0032);
     ACE_OS::snprintf(buf, BUFSIZE, "%.4f\\%.4f\\%.4f", corner[0], corner[1], corner[2]);
@@ -773,10 +773,10 @@ int DicomFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHea
     WRITE_DCM_STRING(key, buf);
 
     // Simple windowing using pixel values calculated earlier...
-    int mid_pix_val = (max_pix_val + min_pix_val) / 2;
-    int window_center = (mid_pix_val + mean_pix_val) / 2;
-    int window_width_left = window_center - min_pix_val;
-    int window_width_right = max_pix_val - window_center;
+    int mid_pix_val = (int)(max_pix_val + min_pix_val) / 2;
+    int window_center = (int)(mid_pix_val + mean_pix_val) / 2;
+    int window_width_left = (int)(window_center - min_pix_val);
+    int window_width_right = (int)(max_pix_val - window_center);
     int window_width = (window_width_right > window_width_left) ?
             window_width_right : window_width_left;
 
@@ -805,8 +805,7 @@ int DicomFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHea
         return GADGET_FAIL;
     }
     key.set(0x7fe0, 0x0010);
-    status = dataset->putAndInsertUint16Array(key, (unsigned short *)data->get_data_ptr(),
-            data->get_number_of_elements());
+    status = dataset->putAndInsertUint16Array(key, (unsigned short *)data->get_data_ptr(), (unsigned long)data->get_number_of_elements());
     if (!status.good()) {
         GADGET_DEBUG1("Failed to stuff Pixel Data\n");
         return GADGET_FAIL;

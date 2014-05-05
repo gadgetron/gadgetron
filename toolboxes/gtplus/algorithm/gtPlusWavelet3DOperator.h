@@ -17,6 +17,7 @@ class gtPlusWavelet3DOperator : public gtPlusWaveletOperator<T>
 public:
 
     typedef gtPlusWaveletOperator<T> BaseClass;
+    typedef typename BaseClass::value_type value_type;
 
     gtPlusWavelet3DOperator();
     virtual ~gtPlusWavelet3DOperator();
@@ -268,7 +269,7 @@ adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
         }
         else
         {
-            #pragma omp parallel default(none) private(t) shared(num, RO, E1, CHA, E2, W, pX, pY) if ( num > 1 ) num_threads( ((num>16) ? 16 : num))
+            #pragma omp parallel default(none) private(t) shared(num, RO, E1, CHA, E2, W, pX, pY) if ( num > 1 ) num_threads( (int)((num>16) ? 16 : num))
             {
                 hoNDArray<T> outPermute(RO, E1, E2, CHA);
 
@@ -339,11 +340,11 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
 {
     try
     {
-        size_t RO = wavCoeff.get_size(0);
-        size_t E1 = wavCoeff.get_size(1);
-        size_t E2 = wavCoeff.get_size(2);
-        size_t W = wavCoeff.get_size(3);
-        size_t CHA = wavCoeff.get_size(4);
+        long long RO = (long long)wavCoeff.get_size(0);
+        long long E1 = (long long)wavCoeff.get_size(1);
+        long long E2 = (long long)wavCoeff.get_size(2);
+        long long W = (long long)wavCoeff.get_size(3);
+        long long CHA = (long long)wavCoeff.get_size(4);
 
         if ( !wav_coeff_norm_approx_.dimensions_equal( &wavCoeffNorm ) )
         {
@@ -361,7 +362,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
             #pragma omp parallel for default(none) private(ii) shared(N, pBuf, pCoeffNorm, mu)
             for ( ii=0; ii<N; ii++ )
             {
-                pBuf[ii] = 1.0 / std::sqrt( pCoeffNorm[ii].real() + mu.real() );
+                pBuf[ii] = (value_type)( 1.0 / std::sqrt( pCoeffNorm[ii].real() + mu.real() ) );
             }
         }
         else
@@ -369,7 +370,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
             #pragma omp parallel for default(none) private(ii) shared(N, pBuf, pCoeffNorm, mu, p)
             for ( ii=0; ii<N; ii++ )
             {
-                pBuf[ii] = std::pow( (double)(pCoeffNorm[ii].real() + mu.real()), (double)(p.real()/2.0-1.0) );
+                pBuf[ii] = (value_type)std::pow( (double)(pCoeffNorm[ii].real() + mu.real()), (double)(p.real()/2.0-1.0) );
             }
         }
 
@@ -380,7 +381,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
         else
         {
             // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimensionExcept(wav_coeff_norm_approx_, wavCoeff, 0, wavCoeff, true));
-            size_t num = wavCoeff.get_number_of_elements()/(RO*E1*E2*W*CHA);
+            long long num = wavCoeff.get_number_of_elements()/(RO*E1*E2*W*CHA);
 
             #ifdef GCC_OLD_FLAG
                 #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, num, W, CHA) if ( num > 1 )
@@ -394,7 +395,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
                 {
                     hoNDArray<T> wavCoeffNormCurr(RO, E1, E2, W-1, wav_coeff_norm_approx_.begin()+ii*RO*E1*E2*W+RO*E1*E2);
 
-                    for ( size_t cha=0; cha<CHA; cha++ )
+                    for ( long long cha=0; cha<CHA; cha++ )
                     {
                         hoNDArray<T> wavCoeffCurr(RO, E1, E2, W-1, wavCoeff.begin()+ii*RO*E1*E2*W*CHA+cha*RO*E1*E2*W+RO*E1*E2);
                         Gadgetron::multiply(wavCoeffNormCurr, wavCoeffCurr, wavCoeffCurr);
@@ -419,11 +420,11 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
     {
         boost::shared_ptr< std::vector<size_t> > dims = wavCoeff.get_dimensions();
 
-        size_t RO = (*dims)[0];
-        size_t E1 = (*dims)[1];
-        size_t E2 = (*dims)[2];
-        size_t W = (*dims)[3];
-        size_t CHA = (*dims)[4];
+        long long RO = (long long)(*dims)[0];
+        long long E1 = (long long)(*dims)[1];
+        long long E2 = (long long)(*dims)[2];
+        long long W = (long long)(*dims)[3];
+        long long CHA = (long long)(*dims)[4];
 
         if ( !wav_coeff_norm_approx_.dimensions_equal(&wavCoeffNorm) )
         {
@@ -449,7 +450,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
         for ( ii=0; ii<N; ii++ )
         {
             pMag[ii] = std::sqrt( pCoeffNorm[ii].real() );
-            pMagInv[ii] = 1.0/(pMag[ii].real()+DBL_EPSILON);
+            pMagInv[ii] = (value_type)(1.0/(pMag[ii].real()+DBL_EPSILON));
         }
 
         // phase does not change
@@ -525,7 +526,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
         {
             // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimensionExcept(wav_coeff_norm_approx_, complexIm_, 0, wavCoeff, false));
 
-            size_t num = wavCoeff.get_number_of_elements()/(RO*E1*E2*W*CHA);
+            long long num = wavCoeff.get_number_of_elements()/(RO*E1*E2*W*CHA);
 
             #ifdef GCC_OLD_FLAG
                 #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, num, W, CHA) if ( num > 1 )
@@ -539,7 +540,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
                 {
                     hoNDArray<T> magCurr(RO, E1, E2, W-1, wav_coeff_norm_approx_.begin()+ii*RO*E1*E2*W+RO*E1*E2);
 
-                    for ( size_t cha=0; cha<CHA; cha++ )
+                    for ( long long cha=0; cha<CHA; cha++ )
                     {
                         hoNDArray<T> phaseCurr(RO, E1, E2, W-1, complexIm_.begin()+ii*RO*E1*E2*W*CHA+cha*RO*E1*E2*W+RO*E1*E2);
                         hoNDArray<T> wavCoeffCurr(RO, E1, E2, W-1, wavCoeff.begin()+ii*RO*E1*E2*W*CHA+cha*RO*E1*E2*W+RO*E1*E2);
@@ -564,15 +565,15 @@ dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
 {
     try
     {
-        size_t RO = in.get_size(0);
-        size_t E1 = in.get_size(1);
-        size_t E2 = in.get_size(2);
+        long long RO = (long long)in.get_size(0);
+        long long E1 = (long long)in.get_size(1);
+        long long E2 = (long long)in.get_size(2);
 
         T* pOut = out.begin();
         memcpy(pOut, in.begin(), sizeof(T)*RO*E1*E2);
 
-        size_t N2D = RO*E1;
-        size_t N3D = RO*E1*E2;
+        long long N2D = RO*E1;
+        long long N3D = RO*E1*E2;
 
         for (size_t n=0; n<level; n++)
         {
@@ -744,16 +745,16 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
 {
     try
     {
-        size_t RO = in.get_size(0);
-        size_t E1 = in.get_size(1);
-        size_t E2 = in.get_size(2);
+        long long RO = (long long)in.get_size(0);
+        long long E1 = (long long)in.get_size(1);
+        long long E2 = (long long)in.get_size(2);
 
         T* pIn = const_cast<T*>(in.begin());
         T* pOut = out.begin();
         memcpy(pOut, in.begin(), sizeof(T)*RO*E1*E2);
 
-        size_t N2D = RO*E1;
-        size_t N3D = RO*E1*E2;
+        long long N2D = RO*E1;
+        long long N3D = RO*E1*E2;
 
         hoNDArray<T> LL(N3D);
         T* pLL = LL.begin();
@@ -767,8 +768,8 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
         hoNDArray<T> HH(N3D);
         T* pHH = HH.begin();
 
-        int n;
-        for (n=level-1; n>=0; n--)
+        long long n;
+        for (n=(long long)level-1; n>=0; n--)
         {
             T* lll = pOut;
             T* llh = pIn + n*7*N3D + N3D;
@@ -825,17 +826,17 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
 
             long long e2;
             #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, N2D, pLL, pHL, pLH, pHH) 
-            for (e2=0; e2<E2; e2++)
+            for (e2=0; e2<(long long)E2; e2++)
             {
-                int ind3D = e2*N2D;
-                for (long long e1=0; e1<E1; e1++)
+                long long ind3D = e2*N2D;
+                for (long long e1=0; e1<(long long)E1; e1++)
                 {
-                    int ind = e1*RO + RO-1 + ind3D;
+                    long long ind = e1*RO + RO-1 + ind3D;
 
                     T v1 = pLL[ind];
                     T v2 = pLH[ind];
 
-                    for (long long ro=RO-1; ro>0; ro--)
+                    for (long long ro=(long long)RO-1; ro>0; ro--)
                     {
                         pLL[ind] = pLL[ind]+pLL[ind-1] + pHL[ind]-pHL[ind-1];
                         pLH[ind] = pLH[ind]+pLH[ind-1] + pHH[ind]-pHH[ind-1];
@@ -851,13 +852,13 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
             Gadgetron::scal( T(0.5), pLH, N3D);
 
             #pragma omp parallel for default(none) private(e2) shared(RO, E1, E2, N2D, pLL,pLH, pOut) 
-            for (e2=0; e2<E2; e2++)
+            for (e2=0; e2<(long long)E2; e2++)
             {
-                int ind3D = e2*N2D;
-                for (long long ro=0; ro<RO; ro++)
+                long long ind3D = e2*N2D;
+                for (long long ro=0; ro<(long long)RO; ro++)
                 {
-                    int ind = (E1-1)*RO + ro + ind3D;
-                    for (long long e1=E1-1; e1>0; e1--)
+                    long long ind = (E1-1)*RO + ro + ind3D;
+                    for (long long e1=(long long)E1-1; e1>0; e1--)
                     {
                         pOut[ind] = pLL[ind]+pLL[ind-RO] + pLH[ind]-pLH[ind-RO];
                         ind -= RO;
@@ -922,7 +923,7 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
         //gt_timer2_.stop();
 
         //gt_timer2_.start("8");
-        GADGET_CHECK_RETURN_FALSE(this->divideWavCoeffByNorm(res_after_apply_kernel_sum_over_, wav_coeff_norm_, T(1e-15), T(1.0), with_approx_coeff_));
+        GADGET_CHECK_RETURN_FALSE(this->divideWavCoeffByNorm(res_after_apply_kernel_sum_over_, wav_coeff_norm_, (value_type)(1e-15), (value_type)(1.0), with_approx_coeff_));
         //gt_timer2_.stop();
 
         // first dimension scaling

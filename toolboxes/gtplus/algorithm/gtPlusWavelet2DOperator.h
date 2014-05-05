@@ -17,6 +17,7 @@ class gtPlusWavelet2DOperator : public gtPlusWaveletOperator<T>
 public:
 
     typedef gtPlusWaveletOperator<T> BaseClass;
+    typedef typename BaseClass::value_type value_type;
 
     gtPlusWavelet2DOperator();
     virtual ~gtPlusWavelet2DOperator();
@@ -121,10 +122,10 @@ forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
         T* pX = const_cast<T*>(x.begin());
         T* pY = y.begin();
 
-        int t;
+        long long t;
 
         #pragma omp parallel for default(none) private(t) shared(num, RO, E1, W, pX, pY)
-        for ( t=0; t<num; t++ )
+        for ( t=0; t<(long long)num; t++ )
         {
             hoNDArray<T> in(RO, E1, pX+t*RO*E1);
             hoNDArray<T> out(RO, E1, W, pY+t*RO*E1*W);
@@ -172,10 +173,10 @@ adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
         T* pX = const_cast<T*>(x.begin());
         T* pY = y.begin();
 
-        int t;
+        long long t;
 
         #pragma omp parallel for default(none) private(t) shared(num, RO, E1, W, pX, pY)
-        for ( t=0; t<num; t++ )
+        for ( t=0; t<(long long)num; t++ )
         {
             hoNDArray<T> in(RO, E1, W, pX+t*RO*E1*W);
             hoNDArray<T> out(RO, E1, pY+t*RO*E1);
@@ -208,14 +209,14 @@ dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
         {
             T* LH = pOut + (3*n+1)*RO*E1;
 
-            int ro;
+            long long ro;
             #pragma omp parallel for default(none) private(ro) shared(RO, E1, pOut, LH)
-            for (ro=0; ro<RO; ro++)
+            for (ro=0; ro<(long long)RO; ro++)
             {
                 T v1 = pOut[ro];
 
-                int ii=ro, e1;
-                for (e1=0; e1<E1-1; e1++)
+                long long ii=ro, e1;
+                for (e1=0; e1<(long long)E1-1; e1++)
                 {
                     LH[ii] = pOut[ii] - pOut[ii+RO];
                     pOut[ii] += pOut[ii+RO];
@@ -232,15 +233,15 @@ dwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
             T* HL = LH + RO*E1;
             T* HH = HL + RO*E1;
 
-            int e1;
+            long long e1;
             #pragma omp parallel for default(none) private(e1) shared(RO, E1, pOut, LH, HL, HH)
-            for (e1=0; e1<E1; e1++)
+            for (e1=0; e1<(long long)E1; e1++)
             {
                 T v1 = pOut[e1*RO];
                 T v2 = LH[e1*RO];
 
                 size_t ii = e1*RO;
-                for (int ro=0; ro<RO-1; ro++)
+                for (long long ro=0; ro<(long long)RO-1; ro++)
                 {
                     HH[ii] = LH[ii] - LH[ii+1];
                     LH[ii] += LH[ii+1];
@@ -290,16 +291,16 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
 
         T scaleFactor = 0.5;
 
-        int n;
-        for (n=level-1; n>=0; n--)
+        long long n;
+        for (n=(long long)level-1; n>=0; n--)
         {
             T* LH = pIn + (3*n+1)*RO*E1;
             T* HL = LH + RO*E1;
             T* HH = HL + RO*E1;
 
-            int e1;
+            long long e1;
             #pragma omp parallel for default(none) private(e1) shared(RO, E1, pOut, LH, HL, HH, pTmp)
-            for (e1=0; e1<E1; e1++)
+            for (e1=0; e1<(long long)E1; e1++)
             {
                 size_t ii = e1*RO+RO-1;
 
@@ -308,7 +309,7 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
                 T vHL = HL[ii];
                 T vHH = HH[ii];
 
-                for (int ro=RO-1; ro>0; ro--)
+                for (long long ro=RO-1; ro>0; ro--)
                 {
                     // ii = e1*RO + ro;
                     pOut[ii] += pOut[ii-1] + HL[ii] - HL[ii-1];
@@ -328,15 +329,15 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
             Gadgetron::scal( scaleFactor, pOut, RO*E1);
             Gadgetron::scal( scaleFactor, pTmp, RO*E1);
 
-            int ro;
+            long long ro;
             #pragma omp parallel for default(none) private(ro) shared(RO, E1, pOut, pTmp)
-            for (ro=0; ro<RO; ro++)
+            for (ro=0; ro<(long long)RO; ro++)
             {
                 size_t ii = (E1-1)*RO+ro;
                 T vLL = pOut[ii];
                 T vLH = pTmp [ii];
 
-                for (int e1=E1-1; e1>0; e1--)
+                for (long long e1=E1-1; e1>0; e1--)
                 {
                     // ii = e1*RO + ro;
                     pOut[ii] += pTmp[ii] + pOut[ii-RO] - pTmp[ii-RO];

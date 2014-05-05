@@ -72,7 +72,7 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
 
         std::vector<int> kE1, oE1;
         bool fitItself = true;
-        GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, workOrder2DT->acceFactorE1_, workOrder2DT->grappa_kSize_E1_, fitItself));
+        GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, (int)workOrder2DT->acceFactorE1_, workOrder2DT->grappa_kSize_E1_, fitItself));
 
         size_t kRO = workOrder2DT->grappa_kSize_RO_;
         size_t kNE1 = workOrder2DT->grappa_kSize_E1_;
@@ -112,7 +112,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
 
         std::vector<int> kE1, oE1;
         bool fitItself = true;
-        GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, workOrder2DT->acceFactorE1_, workOrder2DT->grappa_kSize_E1_, fitItself));
+        GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, (int)workOrder2DT->acceFactorE1_, workOrder2DT->grappa_kSize_E1_, fitItself));
 
         size_t kRO = workOrder2DT->grappa_kSize_RO_;
         size_t kNE1 = workOrder2DT->grappa_kSize_E1_;
@@ -127,12 +127,12 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         grappa_.calib_use_gpu_  = workOrder2DT->grappa_use_gpu_;
 
         ho5DArray<T> ker(kRO, kNE1, srcCHA, dstCHA, oNE1, workOrder2DT->kernel_->begin()+n*kRO*kNE1*srcCHA*dstCHA*oNE1+usedS*kRO*kNE1*srcCHA*dstCHA*oNE1*refN);
-        grappa_.calib(acsSrc, acsDst, workOrder2DT->grappa_reg_lamda_, kRO, kE1, oE1, ker);
+        grappa_.calib(acsSrc, acsDst, workOrder2DT->grappa_reg_lamda_, (int)kRO, kE1, oE1, ker);
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker");
 
         hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, workOrder2DT->kernelIm_->begin()+n*RO*E1*srcCHA*dstCHA+usedS*RO*E1*srcCHA*dstCHA*refN);
-        grappa_.imageDomainKernel(ker, kRO, kE1, oE1, RO, E1, kIm);
+        grappa_.imageDomainKernel(ker, (int)kRO, kE1, oE1, (int)RO, (int)E1, kIm);
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, "kIm");
 

@@ -42,7 +42,7 @@ struct gtPlusReconJob2DT : public SerializableObject
 
     ~gtPlusReconJob2DT();
 
-    virtual bool serialize(char*& buf, size_t& len);
+    virtual bool serialize(char*& buf, size_t& len) const;
     virtual bool deserialize(char* buf, size_t& len);
 };
 
@@ -74,7 +74,7 @@ gtPlusReconJob2DT<T>::gtPlusReconJob2DT(const gtPlusReconJob2DT& job)
 }
 
 template <typename T> 
-bool gtPlusReconJob2DT<T>::serialize(char*& buf, size_t& len)
+bool gtPlusReconJob2DT<T>::serialize(char*& buf, size_t& len) const 
 {
     char *bufKSpace(NULL), *bufKernel(NULL), *bufCoilMap(NULL), *bufComplexIm(NULL), *bufRes(NULL);
     try
@@ -427,7 +427,7 @@ bool gtPlusReconWorker<T>::splitReconJob(gtPlusReconWorkOrder<T>* workOrder2DT, 
                 break;
             }
 
-            startN = endN-overlapN+1;
+            startN = endN-(int)overlapN+1;
         }
 
         jobList.resize(S*numPerN);
@@ -439,7 +439,7 @@ bool gtPlusReconWorker<T>::splitReconJob(gtPlusReconWorkOrder<T>* workOrder2DT, 
             startN = 0;
             while ( startN < N )
             {
-                endN = (int)(startN+jobN+overlapN-1);
+                endN = (int)(startN+jobN+(int)overlapN-1);
                 num++;
 
                 if ( endN >= N )

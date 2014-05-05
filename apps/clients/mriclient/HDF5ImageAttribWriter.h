@@ -125,7 +125,7 @@ namespace Gadgetron
                 size_t ii;
                 for ( ii=0; ii<dim.size(); ii++ )
                 {
-                    dim2[ii] = dim[ii];
+                    dim2[ii] = (unsigned int)dim[ii];
                 }
 
                 if (dataset_.appendArray(dim2, data->get_data_ptr(), img_varname.c_str())  < 0)

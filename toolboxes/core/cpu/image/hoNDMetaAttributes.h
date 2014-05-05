@@ -83,7 +83,7 @@ namespace Gadgetron
         }
 
         // serialize and deserialize to/from the buffer
-        virtual bool serialize(char*& buf, size_t_type& len);
+        virtual bool serialize(char*& buf, size_t_type& len) const;
         virtual bool deserialize(char* buf, size_t_type& len);
         // deserialize the content of attributes
         virtual bool deserializeContent(char* buf, size_t_type& xmlLen);

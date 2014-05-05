@@ -103,15 +103,12 @@ NoiseAdjustGadget_unoptimized::NoiseAdjustGadget_unoptimized()
 
 int NoiseAdjustGadget_unoptimized::process_config(ACE_Message_Block* mb)
 {
+    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
-	boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
+    receiver_noise_bandwidth_ = (float)(cfg->acquisitionSystemInformation().get().relativeReceiverNoiseBandwidth().present() ?
+                            cfg->acquisitionSystemInformation().get().relativeReceiverNoiseBandwidth().get() : 1.0);
 
-
-	receiver_noise_bandwidth_ = cfg->acquisitionSystemInformation().get().relativeReceiverNoiseBandwidth().present() ?
-								cfg->acquisitionSystemInformation().get().relativeReceiverNoiseBandwidth().get() : 1.0;
-
-
-	return GADGET_OK;
+    return GADGET_OK;
 }
 
 int NoiseAdjustGadget_unoptimized

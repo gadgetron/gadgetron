@@ -855,7 +855,7 @@ namespace Gadgetron
             #pragma omp parallel for default(none) private(i, v) shared(n, pX) reduction(+:sqrNormSum)
             for (i=0; i<(long long)n; i++ )
             {
-                v = std::abs(pX[n]);
+                v = std::abs(pX[i]);
                 sqrNormSum = sqrNormSum + v*v;
             }
 
@@ -885,7 +885,7 @@ namespace Gadgetron
             #pragma omp parallel for default(none) private(i, v) shared(n, pX) reduction(+:norm1Sum)
             for (i=0; i<(long long)n; i++ )
             {
-                norm1Sum = norm1Sum + std::abs(pX[n]);
+                norm1Sum = norm1Sum + std::abs(pX[i]);
             }
 
             r = norm1Sum;

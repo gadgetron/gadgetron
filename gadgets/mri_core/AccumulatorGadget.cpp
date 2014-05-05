@@ -139,13 +139,13 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     memcpy(cm2->getObjectPtr()->get_data_ptr(),b+offset,
 	   sizeof(std::complex<float>)*data_length);
     
-    cm1->getObjectPtr()->matrix_size[0]     = img_dims[0];
-    cm1->getObjectPtr()->matrix_size[1]     = img_dims[1];
-    cm1->getObjectPtr()->matrix_size[2]     = img_dims[2];
+    cm1->getObjectPtr()->matrix_size[0]     = (uint16_t)img_dims[0];
+    cm1->getObjectPtr()->matrix_size[1]     = (uint16_t)img_dims[1];
+    cm1->getObjectPtr()->matrix_size[2]     = (uint16_t)img_dims[2];
     cm1->getObjectPtr()->field_of_view[0]   = field_of_view_[0];
     cm1->getObjectPtr()->field_of_view[1]   = field_of_view_[1];
     cm1->getObjectPtr()->field_of_view[2]   = field_of_view_[2];
-    cm1->getObjectPtr()->channels           = img_dims[3];
+    cm1->getObjectPtr()->channels           = (uint16_t)img_dims[3];
     cm1->getObjectPtr()->slice   = m1->getObjectPtr()->idx.slice;
 
     memcpy(cm1->getObjectPtr()->position,
@@ -168,8 +168,8 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     		m1->getObjectPtr()->patient_table_position, sizeof(float)*3);
 
     cm1->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
-    cm1->getObjectPtr()->image_index = ++image_counter_;
-    cm1->getObjectPtr()->image_series_index = image_series_;
+    cm1->getObjectPtr()->image_index = (uint16_t)(++image_counter_);
+    cm1->getObjectPtr()->image_series_index = (uint16_t)image_series_;
 
     if (this->next()->putq(cm1) < 0) {
     	return GADGET_FAIL;

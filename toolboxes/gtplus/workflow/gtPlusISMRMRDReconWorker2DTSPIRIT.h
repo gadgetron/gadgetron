@@ -173,14 +173,14 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
 
         spirit.calib_use_gpu_ = workOrder2DT->spirit_use_gpu_;
 
-        spirit.calib(acsSrc, acsDst, workOrder2DT->spirit_reg_lamda_, kRO, kE1, 1, 1, ker);
+        spirit.calib(acsSrc, acsDst, workOrder2DT->spirit_reg_lamda_, (int)kRO, (int)kE1, 1, 1, ker);
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker");
 
         bool minusI = true;
 
         hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, workOrder2DT->kernelIm_->begin()+n*RO*E1*srcCHA*dstCHA+usedS*RO*E1*srcCHA*dstCHA*refN);
-        GADGET_CHECK_RETURN_FALSE(spirit.imageDomainKernel(ker, kRO, kE1, 1, 1, RO, E1, kIm, minusI));
+        GADGET_CHECK_RETURN_FALSE(spirit.imageDomainKernel(ker, (int)kRO, (int)kE1, 1, 1, (int)RO, (int)E1, kIm, minusI));
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, "kIm");
     }
@@ -210,10 +210,10 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
 
         res.create(kspace.get_dimensions());
 
-        int n;
+        long long n;
 
         #ifdef USE_OMP
-            int numThreads = (N<64) ? N : 64;
+            int numThreads = (int)( (N<64) ? N : 64 );
 
             int numOpenMPProcs = omp_get_num_procs();
             GADGET_MSG("gtPlusReconWorker2DTSPIRIT, numOpenMPProcs : " << numOpenMPProcs);
@@ -268,7 +268,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
             gtPlusLSQRSolver<hoNDArray<T>, hoNDArray<T>, gtPlusSPIRIT2DOperator<T> > cgSolver;
 
             cgSolver.iterMax_ = workOrder2DT->spirit_iter_max_;
-            cgSolver.thres_ = workOrder2DT->spirit_iter_thres_;
+            cgSolver.thres_ = (value_type)workOrder2DT->spirit_iter_thres_;
             cgSolver.printIter_ = workOrder2DT->spirit_print_iter_;
 
             cgSolver.set(spirit);
@@ -276,12 +276,12 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
             hoNDArray<T> b(RO, E1, srcCHA);
 
             #pragma omp for
-            for ( n=0; n<(int)N; n++ )
+            for ( n=0; n<(long long)N; n++ )
             {
                 hoNDArray<T> unwarppedKSpace(RO, E1, dstCHA, res.begin()+n*RO*E1*dstCHA);
 
-                int kernelN = n;
-                if ( kernelN >= refN ) kernelN = refN-1;
+                long long kernelN = n;
+                if ( kernelN >= (long long)refN ) kernelN = (long long)refN-1;
 
                 boost::shared_ptr<hoNDArray<T> > acq(new hoNDArray<T>(RO, E1, srcCHA, kspace_Shifted.begin()+n*RO*E1*srcCHA));
                 spirit.setAcquiredPoints(acq);
@@ -357,12 +357,12 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
         {
             hoNDArray<T> kspaceForScaleFactor(RO, E1, srcCHA, numOfNForScaling, const_cast<T*>(data_dst.begin()));
             Gadgetron::norm2(kspaceForScaleFactor, scaleFactor);
-            scaleFactor /= (numOfNForScaling*std::sqrt(double(srcCHA)));
+            scaleFactor /= (value_type)(numOfNForScaling*std::sqrt(double(srcCHA)));
         }
         else
         {
             Gadgetron::norm2(data_dst, scaleFactor);
-            scaleFactor /= (N*std::sqrt(double(srcCHA)));
+            scaleFactor /= (value_type)(N*std::sqrt(double(srcCHA)));
         }
 
         workOrder2DT->spirit_ncg_scale_factor_ = scaleFactor;
@@ -453,8 +453,8 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 
                 GADGET_MSG("SPIRIT - 2DT - total job : " << jobList.size() << " - job N : " << jobN << " - cloud size : " << cloudSize);
 
-                unsigned int numOfJobRunOnCloud = jobList.size() - jobList.size()/(cloudSize+1);
-                if ( !runJobsOnLocalNode ) numOfJobRunOnCloud = jobList.size();
+                unsigned int numOfJobRunOnCloud = (unsigned int)(jobList.size() - jobList.size()/(cloudSize+1));
+                if ( !runJobsOnLocalNode ) numOfJobRunOnCloud = (unsigned int)jobList.size();
                 GADGET_MSG("SPIRIT - 2DT - numOfJobRunOnCloud : " << numOfJobRunOnCloud << " ... ");
 
                 typedef Gadgetron::GadgetCloudController< gtPlusReconJob2DT<T> > GTCloudControllerType;

@@ -17,6 +17,7 @@ public:
     typedef gtPlusSolver<Array_Type_I, Array_Type_O> BaseClass;
 
     typedef typename BaseClass::ValueType ValueType;
+    typedef typename realType<ValueType>::Type value_type;
 
     gtPlusLinearSolver();
     virtual ~gtPlusLinearSolver();
@@ -32,7 +33,7 @@ public:
     size_t iterMax_;
 
     // threshold for detla change of residual
-    double thres_;
+    value_type thres_;
 
     // initial guess for the solver
     Array_Type_O* x0_;

@@ -169,25 +169,25 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres, int 
 
         hoMatrix<T> x( A.cols(), B.cols() );
 
-        int dRO, dE1;
+        long long dRO, dE1;
 
-        for ( int e1=(int)sE1; e1<=(int)eE1; e1++ )
+        for ( long long e1=(long long)sE1; e1<=(long long)eE1; e1++ )
         {
             dE1 = e1;
 
-            for ( int ro=sRO; ro<=(int)eRO; ro++ )
+            for ( long long ro=sRO; ro<=(long long)eRO; ro++ )
             {
                 dRO = ro;
 
-                int rInd = (e1-sE1)*lenRO+ro-sRO;
+                long long rInd = (e1-sE1)*lenRO+ro-sRO;
 
                 // fill matrix A
                 size_t col = 0;
                 for ( size_t src=0; src<srcCHA; src++ )
                 {
-                    for ( int ke1=-kE1half; ke1<=kE1half; ke1++ )
+                    for ( long long ke1=-kE1half; ke1<=kE1half; ke1++ )
                     {
-                        for ( int kro=-kROhalf; kro<=kROhalf; kro++ )
+                        for ( long long kro=-kROhalf; kro<=kROhalf; kro++ )
                         {
                             if ( kro!=0 || ke1!=0 )
                             {
@@ -442,7 +442,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
         size_t colA = (kRO*kE1*kE2-1)*srcCHA;
         if ( overDetermineRatio > 1.0 )
         {
-            size_t maxRowA = std::ceil(overDetermineRatio*colA);
+            size_t maxRowA = (size_t)std::ceil(overDetermineRatio*colA);
             size_t maxROUsed = maxRowA/(lenE1*lenE2);
             if ( maxROUsed < lenRO )
             {
@@ -455,11 +455,27 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
                     if ( Gadgetron::sumOver2ndDimension(acsSrc1stChaSumE2, acsSrc1stChaSumE2E1) )
                     {
                         T maxSignal;
-                        size_t roInd;
+                        size_t roInd(0);
                         if ( Gadgetron::maxAbsolute(acsSrc1stChaSumE2E1, maxSignal, roInd) )
                         {
-                            sRO = roInd - maxROUsed/2;
-                            eRO = sRO + maxROUsed - 1;
+                            if ( roInd > maxROUsed/2+kROhalf )
+                            {
+                                sRO = roInd - maxROUsed/2;
+                            }
+                            else
+                            {
+                                sRO = kROhalf;
+                            }
+
+                            if( sRO+maxROUsed-1 <= RO-kROhalf-1 )
+                            {
+                                eRO = sRO + maxROUsed - 1;
+                            }
+                            else
+                            {
+                                eRO = RO - kROhalf -1;
+                            }
+
                             lenRO = eRO-sRO+1;
                             GADGET_MSG("gtPlusSPIRIT<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
                         }
@@ -493,31 +509,31 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst, double thres, do
 
         hoMatrix<T> x( A.cols(), B.cols() );
 
-        int dRO, dE1, dE2;
+        long long dRO, dE1, dE2;
 
-        for ( int e2=(int)sE2; e2<=(int)eE2; e2++ )
+        for ( long long e2=(long long)sE2; e2<=(long long)eE2; e2++ )
         {
             dE2 = e2;
 
-            for ( int e1=(int)sE1; e1<=(int)eE1; e1++ )
+            for ( long long e1=(long long)sE1; e1<=(long long)eE1; e1++ )
             {
                 dE1 = e1;
 
-                for ( int ro=sRO; ro<=(int)eRO; ro++ )
+                for ( long long ro=sRO; ro<=(long long)eRO; ro++ )
                 {
                     dRO = ro;
 
-                    int rInd = (e2-sE2)*lenRO*lenE1 + (e1-sE1)*lenRO + ro-sRO;
+                    long long rInd = (e2-sE2)*lenRO*lenE1 + (e1-sE1)*lenRO + ro-sRO;
 
                     // fill matrix A
                     size_t col = 0;
                     for ( size_t src=0; src<srcCHA; src++ )
                     {
-                        for ( int ke2=-kE2half; ke2<=kE2half; ke2++ )
+                        for ( long long ke2=-kE2half; ke2<=kE2half; ke2++ )
                         {
-                            for ( int ke1=-kE1half; ke1<=kE1half; ke1++ )
+                            for ( long long ke1=-kE1half; ke1<=kE1half; ke1++ )
                             {
-                                for ( int kro=-kROhalf; kro<=kROhalf; kro++ )
+                                for ( long long kro=-kROhalf; kro<=kROhalf; kro++ )
                                 {
                                     if ( kro!=0 || ke1!=0 || ke2!=0 )
                                     {
@@ -1010,9 +1026,9 @@ bool gtPlusSPIRIT<T>::AdjointForwardKernel(const hoNDArray<T>& kImS2D, const hoN
 
         long long d;
         #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(d) shared(N, dstCHA, srcCHA) num_threads(dstCHA) if (dstCHA > 4)
+            #pragma omp parallel default(none) private(d) shared(N, dstCHA, srcCHA) num_threads( (int)dstCHA ) if (dstCHA > 4)
         #else
-            #pragma omp parallel default(none) private(d) shared(N, dstCHA, srcCHA, kIm, kImS2D, kImD2S) num_threads(dstCHA) if (dstCHA > 4)
+            #pragma omp parallel default(none) private(d) shared(N, dstCHA, srcCHA, kIm, kImS2D, kImD2S) num_threads( (int)dstCHA ) if (dstCHA > 4)
         #endif
         {
             hoNDArray<T> ker(N);
@@ -1020,11 +1036,11 @@ bool gtPlusSPIRIT<T>::AdjointForwardKernel(const hoNDArray<T>& kImS2D, const hoN
             #pragma omp for
             for ( d=0; d<dstCHA; d++ )
             {
-                for ( size_t dprime=0; dprime<dstCHA; dprime++ )
+                for ( long long dprime=0; dprime<dstCHA; dprime++ )
                 {
                     hoNDArray<T> dKer(N, kIm.begin()+d*N+dprime*N*dstCHA);
 
-                    for ( size_t s=0; s<srcCHA; s++ )
+                    for ( long long s=0; s<srcCHA; s++ )
                     {
                         hoNDArray<T> kerS2D(N, const_cast<T*>(kImS2D.begin())+s*N+dprime*N*srcCHA);
                         hoNDArray<T> kerD2S(N, const_cast<T*>(kImD2S.begin())+d*N+s*N*dstCHA);

@@ -119,7 +119,7 @@ int AsymmetricEchoAdjustROGadget
             m2->release(); //We are done with this data
 
             m1->cont(m3);
-            m1->getObjectPtr()->number_of_samples = data_out_dims[0];
+            m1->getObjectPtr()->number_of_samples = (uint16_t)data_out_dims[0];
         }
 
         if (this->next()->putq(m1) == -1) 

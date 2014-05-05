@@ -141,10 +141,10 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
 
     std::vector<int> kE1, oE1;
     bool fitItself = true;
-    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, workOrder3DT->acceFactorE1_, workOrder3DT->grappa_kSize_E1_, fitItself));
+    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, (int)workOrder3DT->acceFactorE1_, workOrder3DT->grappa_kSize_E1_, fitItself));
 
     std::vector<int> kE2, oE2;
-    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE2, oE2, workOrder3DT->acceFactorE2_, workOrder3DT->grappa_kSize_E2_, fitItself));
+    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE2, oE2, (int)workOrder3DT->acceFactorE2_, workOrder3DT->grappa_kSize_E2_, fitItself));
 
     size_t kRO = workOrder3DT->grappa_kSize_RO_;
     size_t kNE1 = workOrder3DT->grappa_kSize_E1_;
@@ -252,10 +252,10 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
 
     std::vector<int> kE1, oE1;
     bool fitItself = true;
-    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, workOrder3DT->acceFactorE1_, workOrder3DT->grappa_kSize_E1_, fitItself));
+    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, (int)workOrder3DT->acceFactorE1_, workOrder3DT->grappa_kSize_E1_, fitItself));
 
     std::vector<int> kE2, oE2;
-    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE2, oE2, workOrder3DT->acceFactorE2_, workOrder3DT->grappa_kSize_E2_, fitItself));
+    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE2, oE2, (int)workOrder3DT->acceFactorE2_, workOrder3DT->grappa_kSize_E2_, fitItself));
 
     size_t kRO = workOrder3DT->grappa_kSize_RO_;
     size_t kNE1 = workOrder3DT->grappa_kSize_E1_;
@@ -274,7 +274,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
 
     ho7DArray<T> ker(kRO, kNE1, kNE2, srcCHA, dstCHA, oNE1, oNE2, workOrder3DT->kernel_->begin()+usedN*kRO*kNE1*kNE2*srcCHA*dstCHA*oNE1*oNE2);
     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration ... "));
-    grappa_.calib3D(acsSrc, acsDst, workOrder3DT->grappa_reg_lamda_, workOrder3DT->grappa_calib_over_determine_ratio_, kRO, kE1, kE2, oE1, oE2, ker);
+    grappa_.calib3D(acsSrc, acsDst, workOrder3DT->grappa_reg_lamda_, workOrder3DT->grappa_calib_over_determine_ratio_, (int)kRO, kE1, kE2, oE1, oE2, ker);
     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker");
@@ -286,7 +286,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
     {
         hoNDArray<T> kIm(RO, E1, E2, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin()+usedN*RO*E1*E2*srcCHA*dstCHA);
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D image domain kernel ... "));
-        grappa_.imageDomainKernel3D(ker, kRO, kE1, kE2, oE1, oE2, RO, E1, E2, kIm);
+        grappa_.imageDomainKernel3D(ker, (int)kRO, kE1, kE2, oE1, oE2, (int)RO, (int)E1, (int)E2, kIm);
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         if ( !reconKSpace )
@@ -323,7 +323,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
         hoNDArray<T> kIm(convKE1, convKE2, RO, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin()+usedN*convKE1*convKE2*RO*srcCHA*dstCHA);
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D image domain kernel only along RO ... "));
-        GADGET_CHECK_RETURN_FALSE(grappa_.imageDomainKernelRO3D(ker, kRO, kE1, kE2, oE1, oE2, RO, kIm));
+        GADGET_CHECK_RETURN_FALSE(grappa_.imageDomainKernelRO3D(ker, (int)kRO, kE1, kE2, oE1, oE2, (int)RO, kIm));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         if ( !debugFolder_.empty() )
@@ -393,7 +393,6 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                 size_t kE2 = workOrder3DT->kernelIm_->get_size(1);
                 size_t kRO = workOrder3DT->kernelIm_->get_size(2);
 
-                size_t usedN;
                 if ( (refN<N) || (refN==1) )
                 {
                     hoNDArray<T> kImPermuted(kE1, kE2, RO, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin());
@@ -449,7 +448,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                             GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
                             GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("imageDomainKernelE1E2RO ... "));
-                            GADGET_CHECK_RETURN_FALSE(grappa_.imageDomainKernelE1E2RO(kImPermutedJob, E1, E2, kImPermutedZeroFilledJob));
+                            GADGET_CHECK_RETURN_FALSE(grappa_.imageDomainKernelE1E2RO(kImPermutedJob, (int)E1, (int)E2, kImPermutedZeroFilledJob));
                             GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
                             GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("cropOver3rdDimension aliased images ... "));
@@ -475,7 +474,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                                 GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
                                 GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("imageDomainKernelE1E2RO ... "));
-                                GADGET_CHECK_RETURN_FALSE(grappa_.imageDomainKernelE1E2RO(kImPermutedJob, E1, E2, kImPermutedZeroFilledJob));
+                                GADGET_CHECK_RETURN_FALSE(grappa_.imageDomainKernelE1E2RO(kImPermutedJob, (int)E1, (int)E2, kImPermutedZeroFilledJob));
                                 GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
                                 hoNDArray<T> aliasedImPermutedN(E1, E2, RO, srcCHA, aliasedImPermuted.begin()+n*E1*E2*RO*srcCHA);
@@ -511,7 +510,6 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             }
             else
             {
-                size_t usedN;
                 if ( (refN<N) || (refN==1) )
                 {
                     hoNDArray<T> kIm(RO, E1, E2, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin());

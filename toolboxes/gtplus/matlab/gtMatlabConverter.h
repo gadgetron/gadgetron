@@ -84,16 +84,16 @@ hoNDArray2Matlab(const hoNDArray<T>& a, mxArray*& aMx)
     {
         boost::shared_ptr< std::vector<size_t> > dim = a.get_dimensions();
 
-        int ndim = dim->size();
+        mwSize ndim = dim->size();
         mwSize* dims = new mwSize[ndim];
 
-        size_t ii;
+        mwSize ii;
         for ( ii=0; ii<ndim; ii++ )
         {
             dims[ii] = static_cast<mwSize>( (*dim)[ii] );
         }
 
-        size_t N = a.get_number_of_elements();
+        mwSize N = a.get_number_of_elements();
         const T* pA = a.begin();
 
         if ( typeid(T) == typeid(float) )
@@ -103,7 +103,7 @@ hoNDArray2Matlab(const hoNDArray<T>& a, mxArray*& aMx)
 
             for ( ii=0; ii<N; ii++ )
             {
-                ptr[ii] = pA[ii];
+                ptr[ii] = (float)(pA[ii]);
             }
         }
         else
@@ -113,7 +113,7 @@ hoNDArray2Matlab(const hoNDArray<T>& a, mxArray*& aMx)
 
             for ( ii=0; ii<N; ii++ )
             {
-                ptr[ii] = pA[ii];
+                ptr[ii] = (float)(pA[ii]);
             }
         }
     }
@@ -242,7 +242,7 @@ template <typename T>
 bool gtMatlabConverter<T>::
 Matlab2Str(const mxArray* aMx, std::string& str)
 {
-    int N = mxGetNumberOfElements(aMx) + 1;
+    mwSize N = mxGetNumberOfElements(aMx) + 1;
 
     std::vector<char> buf(N, '\0');
     if (mxGetString(aMx, &buf[0], N) != 0)

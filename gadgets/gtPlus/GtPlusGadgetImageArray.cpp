@@ -44,11 +44,11 @@ GtPlusGadgetImageExt::~GtPlusGadgetImageExt()
 {
 }
 
-void GtPlusGadgetImageExt::set_matrix_size(size_t index, ACE_UINT16 size)
+void GtPlusGadgetImageExt::set_matrix_size(size_t index, size_t size)
 {
     if (index < 3) 
     {
-        matrix_size[index] = size;
+        matrix_size[index] = (uint16_t)size;
     }
 
     if ( index == 1 )
@@ -110,8 +110,8 @@ void GtPlusGadgetImageExt::recomputeHeader(const GtPlusGadgetImageExt& aMessageI
     size_t ii;
     for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
     {
-        position[ii] = (position[ii]*weight) + (1.0-weight)*aMessageImage.position[ii];
-        patient_table_position[ii] = (patient_table_position[ii]*weight) + (1.0-weight)*aMessageImage.patient_table_position[ii];
+        position[ii] = (float)((position[ii]*weight) + (1.0-weight)*aMessageImage.position[ii]);
+        patient_table_position[ii] = (float)((patient_table_position[ii]*weight) + (1.0-weight)*aMessageImage.patient_table_position[ii]);
     }
 
     acquisition_time_stamp = (uint32_t)((acquisition_time_stamp*weight) + (1.0-weight)*aMessageImage.acquisition_time_stamp + 0.5);
@@ -220,6 +220,8 @@ GtPlusGadgetImageArray::GtPlusGadgetImageArray()
     {
         matrix_size[ii] = 0;
     }
+
+    max_num_of_images_ = 0;
 }
 
 GtPlusGadgetImageArray::GtPlusGadgetImageArray(const GtPlusGadgetImageArray& imArray) : imageArray_(0) 
@@ -227,7 +229,7 @@ GtPlusGadgetImageArray::GtPlusGadgetImageArray(const GtPlusGadgetImageArray& imA
     this->copy(imArray);
 }
 
-GtPlusGadgetImageArray::GtPlusGadgetImageArray(int aSize[10])
+GtPlusGadgetImageArray::GtPlusGadgetImageArray(size_t aSize[10])
 {
     try
     {
@@ -242,6 +244,8 @@ GtPlusGadgetImageArray::GtPlusGadgetImageArray(int aSize[10])
         {
             len *= matrix_size[ii];
         }
+
+        max_num_of_images_ = len;
 
         if ( len > 0 )
         {
@@ -262,7 +266,7 @@ GtPlusGadgetImageArray::~GtPlusGadgetImageArray()
     }
 }
 
-void GtPlusGadgetImageArray::resize(int aSize[10])
+void GtPlusGadgetImageArray::resize(size_t aSize[10])
 {
     try
     {
@@ -284,6 +288,8 @@ void GtPlusGadgetImageArray::resize(int aSize[10])
             imageArray_ = NULL;
         }
 
+        max_num_of_images_ = len;
+
         if ( len > 0 )
         {
             imageArray_ = new GtPlusGadgetImageExt[len];
@@ -300,6 +306,7 @@ bool GtPlusGadgetImageArray::copy(const GtPlusGadgetImageArray& imageArray)
     try
     {
         if (imageArray_) delete [] imageArray_;
+        max_num_of_images_ = 0;
 
         size_t ii;
         for ( ii=0; ii<10; ii++ )
@@ -312,6 +319,8 @@ bool GtPlusGadgetImageArray::copy(const GtPlusGadgetImageArray& imageArray)
         {
             len *= matrix_size[ii];
         }
+
+        max_num_of_images_ = len;
 
         if ( len > 0 )
         {
@@ -332,9 +341,9 @@ bool GtPlusGadgetImageArray::copy(const GtPlusGadgetImageArray& imageArray)
     return true;
 }
 
-int GtPlusGadgetImageArray::get_offset(int slc, int e2, int con, int phs, int rep, int set, int seg)
+size_t GtPlusGadgetImageArray::get_offset(size_t slc, size_t e2, size_t con, size_t phs, size_t rep, size_t set, size_t seg)
 {
-    int offset = seg*matrix_size[8]*matrix_size[7]*matrix_size[6]*matrix_size[5]*matrix_size[4]*matrix_size[3]
+    size_t offset = seg*matrix_size[8]*matrix_size[7]*matrix_size[6]*matrix_size[5]*matrix_size[4]*matrix_size[3]
                     + set*matrix_size[7]*matrix_size[6]*matrix_size[5]*matrix_size[4]*matrix_size[3]
                     + rep*matrix_size[6]*matrix_size[5]*matrix_size[4]*matrix_size[3]
                     + phs*matrix_size[5]*matrix_size[4]*matrix_size[3]
@@ -345,7 +354,7 @@ int GtPlusGadgetImageArray::get_offset(int slc, int e2, int con, int phs, int re
 }
 
 // Slice E2 Con Phase Rep Set Seg
-void GtPlusGadgetImageArray::findDimIndex(Gadgetron::gtPlus::ISMRMRDDIM& dim, int& ind)
+void GtPlusGadgetImageArray::findDimIndex(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t& ind)
 {
     switch (dim)
     {
@@ -389,7 +398,7 @@ extractGadgetImageArrayEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t value, G
 {
     try
     {
-        int dimInd;
+        size_t dimInd;
         findDimIndex(dim, dimInd);
 
         GADGET_DEBUG_CHECK_RETURN_FALSE( value >= matrix_size[dimInd] );
@@ -397,7 +406,7 @@ extractGadgetImageArrayEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t value, G
         size_t startInd[7];
         size_t endInd[7];
 
-        for ( int d=Gadgetron::gtPlus::DIM_Slice; d<=Gadgetron::gtPlus::DIM_Segment; d++ )
+        for ( size_t d=Gadgetron::gtPlus::DIM_Slice; d<=Gadgetron::gtPlus::DIM_Segment; d++ )
         {
             if ( d == dim )
             {
@@ -427,19 +436,19 @@ extractGadgetImageArrayEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim1, size_t value1,
 {
     try
     {
-        int dimInd1;
+        size_t dimInd1;
         findDimIndex(dim1, dimInd1);
         GADGET_DEBUG_CHECK_RETURN_FALSE( value1 >= matrix_size[dimInd1] );
 
 
-        int dimInd2;
+        size_t dimInd2;
         findDimIndex(dim2, dimInd2);
         GADGET_DEBUG_CHECK_RETURN_FALSE( value2 >= matrix_size[dimInd2] );
 
         size_t startInd[7];
         size_t endInd[7];
 
-        for ( int d=Gadgetron::gtPlus::DIM_Slice; d<=Gadgetron::gtPlus::DIM_Segment; d++ )
+        for ( size_t d=Gadgetron::gtPlus::DIM_Slice; d<=Gadgetron::gtPlus::DIM_Segment; d++ )
         {
             if ( d == dim1 )
             {
@@ -474,14 +483,14 @@ extractGadgetImageArrayLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t valu
 {
     try
     {
-        int dimInd;
+        size_t dimInd;
         findDimIndex(dim, dimInd);
         GADGET_DEBUG_CHECK_RETURN_FALSE( value >= matrix_size[dimInd] );
 
         size_t startInd[7];
         size_t endInd[7];
 
-        for ( int d=Gadgetron::gtPlus::DIM_Slice; d<=Gadgetron::gtPlus::DIM_Segment; d++ )
+        for ( size_t d=Gadgetron::gtPlus::DIM_Slice; d<=Gadgetron::gtPlus::DIM_Segment; d++ )
         {
             if ( d == dim )
             {
@@ -512,10 +521,10 @@ extractGadgetImageArray_Dim1LessEqual_Dim2Equal(Gadgetron::gtPlus::ISMRMRDDIM& d
 {
     try
     {
-        int dimInd1;
+        size_t dimInd1;
         findDimIndex(dim1, dimInd1);
 
-        int dimInd2;
+        size_t dimInd2;
         findDimIndex(dim2, dimInd2);
 
         GADGET_DEBUG_CHECK_RETURN_FALSE( value1 >= matrix_size[dimInd1] );
@@ -524,7 +533,7 @@ extractGadgetImageArray_Dim1LessEqual_Dim2Equal(Gadgetron::gtPlus::ISMRMRDDIM& d
         size_t startInd[7];
         size_t endInd[7];
 
-        for ( int d=Gadgetron::gtPlus::DIM_Slice; d<=Gadgetron::gtPlus::DIM_Segment; d++ )
+        for ( size_t d=Gadgetron::gtPlus::DIM_Slice; d<=Gadgetron::gtPlus::DIM_Segment; d++ )
         {
             if ( d == dim1 )
             {
@@ -559,7 +568,7 @@ getSubImageArray(size_t* startInd, size_t* endInd, GtPlusGadgetImageArray& image
 {
     try
     {
-        int aSize[10];
+        size_t aSize[10];
         aSize[0] = matrix_size[0];
         aSize[1] = matrix_size[1];
         aSize[2] = matrix_size[2];
@@ -588,8 +597,8 @@ getSubImageArray(size_t* startInd, size_t* endInd, GtPlusGadgetImageArray& image
                             {
                                 for ( slc=startInd[0]; slc<endInd[0]; slc++ )
                                 {
-                                    int offset = this->get_offset(slc, e2, con, phs, rep, set, seg);
-                                    int offsetDst= imageArray.get_offset(slc-startInd[0], e2-startInd[1], con-startInd[2], phs-startInd[3], rep-startInd[4], set-startInd[5], seg-startInd[6]);
+                                    size_t offset = this->get_offset(slc, e2, con, phs, rep, set, seg);
+                                    size_t offsetDst= imageArray.get_offset(slc-startInd[0], e2-startInd[1], con-startInd[2], phs-startInd[3], rep-startInd[4], set-startInd[5], seg-startInd[6]);
 
                                     imageArray.imageArray_[offsetDst] = imageArray_[offset];
                                 }
@@ -638,7 +647,7 @@ void GtPlusGadgetImageArray::dump()
                             {
                                 for ( slc=0; slc<matrix_size[3]; slc++ )
                                 {
-                                    int offset = get_offset(slc, e2, con, phs, rep, set, seg);
+                                    size_t offset = get_offset(slc, e2, con, phs, rep, set, seg);
                                     std::cout << "[Slice E2 Contrast Phase Rep Set Seg] = [" 
                                                 << " " << slc 
                                                 << " " << e2 

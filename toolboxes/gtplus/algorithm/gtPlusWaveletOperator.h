@@ -15,6 +15,7 @@ class gtPlusWaveletOperator : public gtPlusOperator<T>
 public:
 
     typedef gtPlusOperator<T> BaseClass;
+    typedef typename BaseClass::value_type value_type;
 
     gtPlusWaveletOperator();
     virtual ~gtPlusWaveletOperator();
@@ -194,7 +195,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
             #pragma omp parallel for default(none) private(ii) shared(N, pBuf, pCoeffNorm, mu)
             for ( ii=0; ii<N; ii++ )
             {
-                pBuf[ii] = 1.0 / std::sqrt( pCoeffNorm[ii].real() + mu.real() );
+                pBuf[ii] = (value_type)(1.0 / std::sqrt( pCoeffNorm[ii].real() + mu.real() ));
             }
         }
         else
@@ -202,7 +203,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
             #pragma omp parallel for default(none) private(ii) shared(N, pBuf, pCoeffNorm, mu, p)
             for ( ii=0; ii<N; ii++ )
             {
-                pBuf[ii] = std::pow( (double)(pCoeffNorm[ii].real() + mu.real()), (double)(p.real()/2.0-1.0) );
+                pBuf[ii] = (value_type)std::pow( (double)(pCoeffNorm[ii].real() + mu.real()), (double)(p.real()/2.0-1.0) );
             }
         }
 
@@ -223,7 +224,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
             {
 
                 #pragma omp for
-                for ( ii=0; ii<num; ii++ )
+                for ( ii=0; ii<(long long)num; ii++ )
                 {
                     hoNDArray<T> wavCoeffNormCurr(RO, E1, W-1, wav_coeff_norm_approx_.begin()+ii*RO*E1*W+RO*E1);
 
@@ -278,8 +279,8 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
         #pragma omp parallel for default(none) private(ii) shared(N, pMag, pMagInv, pCoeffNorm)
         for ( ii=0; ii<N; ii++ )
         {
-            pMag[ii] = std::sqrt( pCoeffNorm[ii].real() );
-            pMagInv[ii] = 1.0/(pMag[ii].real()+DBL_EPSILON);
+            pMag[ii] = (value_type)std::sqrt( pCoeffNorm[ii].real() );
+            pMagInv[ii] = (value_type)(1.0/(pMag[ii].real()+DBL_EPSILON));
         }
 
         // phase does not change
@@ -492,7 +493,7 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
         //gt_timer2_.stop();
 
         //gt_timer2_.start("8");
-        GADGET_CHECK_RETURN_FALSE(this->divideWavCoeffByNorm(res_after_apply_kernel_sum_over_, wav_coeff_norm_, T(1e-15), T(1.0), with_approx_coeff_));
+        GADGET_CHECK_RETURN_FALSE(this->divideWavCoeffByNorm(res_after_apply_kernel_sum_over_, wav_coeff_norm_, T( (value_type)1e-15), T( (value_type)1.0 ), with_approx_coeff_));
         //gt_timer2_.stop();
 
         // go back to image

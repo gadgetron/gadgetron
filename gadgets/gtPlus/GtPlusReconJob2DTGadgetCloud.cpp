@@ -260,7 +260,7 @@ int GtPlusReconJob2DTGadgetCloud::process_config(ACE_Message_Block* mb)
     }
 
     GADGET_START_TIMING_CONDITION(gt_timer1_, "Pre-allocate memory ... ", performTiming_);
-    mem_manager_->increase(2.0*1024*1024*1024);
+    mem_manager_->increase( (size_t)(2.0*1024*1024*1024) );
     GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
 
     worker_grappa_.gtPlus_mem_manager_ = mem_manager_;
@@ -381,7 +381,7 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
             if ( parseSuccess )
             {
                 CloudComputing_ = true;
-                CloudSize_ = gt_cloud_.size();
+                CloudSize_ = (int)gt_cloud_.size();
 
                 if ( CloudSize_ == 0 )
                 {
@@ -670,21 +670,21 @@ generateKSpaceFilter(WorkOrderType& workOrder)
         if ( RO>1 && filterRO_type_ != ISMRMRD_FILTER_NONE )
         {
             workOrder.filterRO_.create(RO);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(RO, workOrder.start_RO_, workOrder.end_RO_, workOrder.filterRO_, filterRO_type_, filterRO_sigma_, std::ceil(filterRO_width_*RO)));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(RO, workOrder.start_RO_, workOrder.end_RO_, workOrder.filterRO_, filterRO_type_, filterRO_sigma_, (size_t)std::ceil(filterRO_width_*RO)));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterRO_, "filterRO");
         }
 
         if ( E1>1 && filterE1_type_ != ISMRMRD_FILTER_NONE )
         {
             workOrder.filterE1_.create(E1);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E1, workOrder.start_E1_, workOrder.end_E1_, workOrder.filterE1_, filterE1_type_, filterE1_sigma_, std::ceil(filterE1_width_*E1)));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E1, workOrder.start_E1_, workOrder.end_E1_, workOrder.filterE1_, filterE1_type_, filterE1_sigma_, (size_t)std::ceil(filterE1_width_*E1)));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE1_, "filterE1");
         }
 
         if ( E2>1 && filterE2_type_ != ISMRMRD_FILTER_NONE )
         {
             workOrder.filterE2_.create(E2);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E2, workOrder.start_E2_, workOrder.end_E2_, workOrder.filterE2_, filterE2_type_, filterE2_sigma_, std::ceil(filterE2_width_*E2)));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E2, workOrder.start_E2_, workOrder.end_E2_, workOrder.filterE2_, filterE2_type_, filterE2_sigma_, (size_t)std::ceil(filterE2_width_*E2)));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE2_, "filterE2");
         }
 
@@ -711,7 +711,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
             if ( RO_ref > 1 && filterRO_ref_type_ != ISMRMRD_FILTER_NONE )
             {
                 workOrder.filterRO_ref_.create(RO_ref);
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO_ref, startRO, endRO, workOrder.filterRO_ref_, filterRO_ref_type_, filterRO_ref_sigma_, std::ceil(filterRO_ref_width_*RO_ref)));
+                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO_ref, startRO, endRO, workOrder.filterRO_ref_, filterRO_ref_type_, filterRO_ref_sigma_, (size_t)std::ceil(filterRO_ref_width_*RO_ref)));
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterRO_ref_, "filterRO_ref");
             }
 
@@ -721,7 +721,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
                 {
                     size_t len = endE1-startE1+1;
                     workOrder.filterE1_ref_.create(len);
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, 0, len-1, workOrder.filterE1_ref_, filterE1_ref_type_, filterE1_ref_sigma_, std::ceil(filterE1_ref_width_*len)));
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, 0, len-1, workOrder.filterE1_ref_, filterE1_ref_type_, filterE1_ref_sigma_, (size_t)std::ceil(filterE1_ref_width_*len)));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE1_ref_, "filterE1_ref");
                 }
 
@@ -729,7 +729,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
                 {
                     size_t len = endE2-startE2+1;
                     workOrder.filterE2_ref_.create(len);
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, 0, len-1, workOrder.filterE2_ref_, filterE2_ref_type_, filterE2_ref_sigma_, std::ceil(filterE2_ref_width_*len)));
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, 0, len-1, workOrder.filterE2_ref_, filterE2_ref_type_, filterE2_ref_sigma_, (size_t)std::ceil(filterE2_ref_width_*len)));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE2_ref_, "filterE2_ref");
                 }
             }
@@ -740,7 +740,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
                 {
                     size_t len = E1_ref;
                     workOrder.filterE1_ref_.create(len);
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(len, startE1, endE1, workOrder.filterE1_ref_, filterE1_ref_type_, filterE1_ref_sigma_, std::ceil(filterE1_ref_width_*len)));
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(len, startE1, endE1, workOrder.filterE1_ref_, filterE1_ref_type_, filterE1_ref_sigma_, (size_t)std::ceil(filterE1_ref_width_*len)));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE1_ref_, "filterE1_ref");
                 }
 
@@ -748,7 +748,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
                 {
                     size_t len = E2_ref;
                     workOrder.filterE2_ref_.create(len);
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(len, startE2, endE2, workOrder.filterE2_ref_, filterE2_ref_type_, filterE2_ref_sigma_, std::ceil(filterE2_ref_width_*len)));
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(len, startE2, endE2, workOrder.filterE2_ref_, filterE2_ref_type_, filterE2_ref_sigma_, (size_t)std::ceil(filterE2_ref_width_*len)));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE2_ref_, "filterE2_ref");
                 }
             }
@@ -758,21 +758,21 @@ generateKSpaceFilter(WorkOrderType& workOrder)
         if ( RO>1 && workOrder.start_RO_>=0 && workOrder.end_RO_>0 )
         {
             workOrder.filterRO_partialfourier_.create(RO);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(RO, workOrder.start_RO_, workOrder.end_RO_, workOrder.filterRO_partialfourier_, filterRO_pf_type_, std::ceil(filterRO_pf_width_*RO), filterRO_pf_densityComp_));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(RO, workOrder.start_RO_, workOrder.end_RO_, workOrder.filterRO_partialfourier_, filterRO_pf_type_, (size_t)std::ceil(filterRO_pf_width_*RO), filterRO_pf_densityComp_));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterRO_partialfourier_, "filterRO_partialfourier");
         }
 
         if ( E1>1 && workOrder.start_E1_>=0 && workOrder.end_E1_>0 )
         {
             workOrder.filterE1_partialfourier_.create(E1);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E1, workOrder.start_E1_, workOrder.end_E1_, workOrder.filterE1_partialfourier_, filterE1_pf_type_, std::ceil(filterE1_pf_width_*E1), filterE1_pf_densityComp_));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E1, workOrder.start_E1_, workOrder.end_E1_, workOrder.filterE1_partialfourier_, filterE1_pf_type_, (size_t)std::ceil(filterE1_pf_width_*E1), filterE1_pf_densityComp_));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE1_partialfourier_, "filterE1_partialfourier");
         }
 
         if ( E2>1 && workOrder.start_E2_>=0 && workOrder.end_E2_>0 )
         {
             workOrder.filterE2_partialfourier_.create(E2);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E2, workOrder.start_E2_, workOrder.end_E2_, workOrder.filterE2_partialfourier_, filterE2_pf_type_, std::ceil(filterE2_pf_width_*E2), filterE2_pf_densityComp_));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E2, workOrder.start_E2_, workOrder.end_E2_, workOrder.filterE2_partialfourier_, filterE2_pf_type_, (size_t)std::ceil(filterE2_pf_width_*E2), filterE2_pf_densityComp_));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE2_partialfourier_, "filterE2_partialfourier");
         }
     }

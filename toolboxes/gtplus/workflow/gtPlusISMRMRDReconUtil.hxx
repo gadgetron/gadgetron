@@ -1533,7 +1533,7 @@ generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filt
 
                         for ( ii=0; ii<len-1; ii++ )
                         {
-                            filter(ii+1) = T( std::exp(r*(x[ii]*x[ii])) );
+                            filter(ii+1) = T( (value_type)(std::exp(r*(x[ii]*x[ii]))) );
                         }
 
                         filter(0) = T(0);
@@ -1550,7 +1550,7 @@ generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filt
 
                         for ( ii=0; ii<len; ii++ )
                         {
-                            filter(ii) = T( std::exp(r*(x[ii]*x[ii])) );
+                            filter(ii) = T( (value_type)(std::exp(r*(x[ii]*x[ii]))) );
                         }
                     }
                 }
@@ -1562,7 +1562,7 @@ generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filt
 
                     for ( ii=1; ii<=width; ii++ )
                     {
-                        w(ii-1) = T(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(2*width+1) ) ));
+                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(2*width+1) ) )) );
                     }
 
                     if ( len%2 == 0 )
@@ -1593,13 +1593,13 @@ generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filt
                     if ( len%2 == 0 )
                     {
                         size_t N = len-1;
-                        double halfLen = (N+1)/2;
+                        double halfLen = (double)( (N+1)/2 );
                         for ( ii=1; ii<=halfLen; ii++ )
                         {
-                            filter(ii) = T(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(N+1) ) ));
+                            filter(ii) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(N+1) ) )) );
                         }
 
-                        for ( ii=halfLen; ii<N; ii++ )
+                        for ( ii=(size_t)halfLen; ii<N; ii++ )
                         {
                             filter(ii+1) = filter(N-ii);
                         }
@@ -1608,13 +1608,13 @@ generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filt
                     }
                     else
                     {
-                        double halfLen = (len+1)/2;
-                        for ( ii=1; ii<=halfLen; ii++ )
+                        double halfLen = (double)( (len+1)/2 );
+                        for ( ii=1; ii<=(size_t)halfLen; ii++ )
                         {
-                            filter(ii-1) = T(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(len+1) ) ));
+                            filter(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(len+1) ) )) );
                         }
 
-                        for ( ii=halfLen; ii<len; ii++ )
+                        for ( ii=(size_t)halfLen; ii<len; ii++ )
                         {
                             filter(ii) = filter(len-1-ii);
                         }
@@ -1631,7 +1631,7 @@ generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filt
         {
             sos += filter(ii)*filter(ii);
         }
-        T r = 1.0/std::sqrt( std::abs(sos)/(len) );
+        T r = (value_type)( 1.0/std::sqrt( std::abs(sos)/(len) ) );
         for ( ii=0; ii<len; ii++ )
         {
             filter(ii) *= r;
@@ -1682,7 +1682,7 @@ generateAsymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& fil
                  {
                     for ( ii=1; ii<=width; ii++ )
                     {
-                        w(ii-1) = T(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(2*width+1) ) ));
+                        w(ii-1) = T( (value_type)(0.5 * ( 1 - std::cos( 2.0*GT_PI*ii/(2*width+1) ) )) );
                     }
                 }
             break;
@@ -1825,7 +1825,7 @@ generateAsymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& fil
             sos += filter(ii)*filter(ii);
         }
         // T r = 1.0/std::sqrt( std::abs(sos)/len );
-        T r = 1.0/std::sqrt( std::abs(sos)/(end-start+1) ); // SNR unit filter
+        T r = (value_type)( 1.0/std::sqrt( std::abs(sos)/(end-start+1) ) ); // SNR unit filter
         for ( ii=0; ii<len; ii++ )
         {
             filter(ii) *= r;
@@ -1968,7 +1968,7 @@ bool gtPlusISMRMRDReconUtil<T>::computeFilterSNRUnitScaleFactor(const hoNDArray<
         sos += filter(ii)*filter(ii);
     }
 
-    scalFactor = T(1.0/std::sqrt( std::abs(sos)/len ));
+    scalFactor = (value_type)(1.0/std::sqrt( std::abs(sos)/len ));
 
     return true;
 }
@@ -2208,12 +2208,12 @@ averageKSpace4D(const hoNDArray<T>& data, hoNDArray<T>& ave, std::vector<size_t>
         size_t ro, e1;
         for ( e1=0; e1<E1; e1++ )
         {
-            double t = sampledTimes[e1];
+            double t = (double)sampledTimes[e1];
             if ( t == 0 ) t = 1;
 
             for ( ro=0; ro<RO; ro++ )
             {
-                pTimes[e1*RO+ro] = T(1.0/t);
+                pTimes[e1*RO+ro] = (value_type)(1.0/t);
             }
         }
 
@@ -2279,12 +2279,12 @@ averageKSpace5D(const hoNDArray<T>& data, hoNDArray<T>& ave, hoNDArray<size_t>& 
         {
             for ( e1=0; e1<E1; e1++ )
             {
-                double t = sampledTimes(e1+e2*E1);
+                double t = (double)sampledTimes(e1+e2*E1);
                 if ( t == 0 ) t = 1;
 
                 for ( ro=0; ro<RO; ro++ )
                 {
-                    pTimes[e2*RO*E1+e1*RO+ro] = T(1.0/t);
+                    pTimes[e2*RO*E1+e1*RO+ro] = (value_type)(1.0/t);
                 }
             }
         }
@@ -4516,7 +4516,18 @@ coilMap2DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, si
                     }
 
                     // compute V1
-                    D.sumOverCol(V1);
+                    // D.sumOverCol(V1);
+                    T* pTmp;
+                    for ( cha=0; cha<CHA; cha++ )
+                    {
+                        pTmp = pD + cha*kss;
+                        pV1[cha] = pTmp[0];
+                        for ( po=1; po<kss; po++ )
+                        {
+                            pV1[cha] += pTmp[po];
+                        }
+                    }
+
                     norm2(V1, v1Norm);
                     scal( (value_type)1.0/v1Norm, V1);
 

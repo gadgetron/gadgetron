@@ -58,7 +58,7 @@ public:
             if ( retval == -1 )
             {
                 GADGET_DEBUG1("CloudWriterTask svcImpl failed ... \n");
-                ACE_OS::sleep(ACE_Time_Value(GADGETRON_TIMEOUT_PERIOD));
+                ACE_OS::sleep(ACE_Time_Value( (time_t)GADGETRON_TIMEOUT_PERIOD ));
                 return -1;
             }
         }
@@ -166,7 +166,7 @@ public:
 
     int register_reader(size_t slot, GadgetMessageReader* reader)
     {
-        return readers_.insert(slot,reader);
+        return readers_.insert( (unsigned short)slot,reader);
     }
 
     virtual int close(unsigned long flags)
@@ -200,7 +200,7 @@ public:
             if ((recv_count = cloud_connector_->peer().recv_n(&mid, sizeof(GadgetMessageIdentifier))) <= 0)
             {
                 ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, CloudReaderTask, failed to read message identifier\n")) );
-                ACE_OS::sleep(ACE_Time_Value(GADGETRON_TIMEOUT_PERIOD));
+                ACE_OS::sleep(ACE_Time_Value( (time_t)GADGETRON_TIMEOUT_PERIOD ));
                 cloud_connector_->set_status(false);
                 cloud_connector_->setJobTobeCompletedAndNoticeController();
                 return -1;
@@ -227,7 +227,7 @@ public:
             if (!mb)
             {
                 ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, CloudReaderTask, Failed to read message\n")) );
-                ACE_OS::sleep(ACE_Time_Value(GADGETRON_TIMEOUT_PERIOD));
+                ACE_OS::sleep(ACE_Time_Value( (time_t)GADGETRON_TIMEOUT_PERIOD ));
                 cloud_connector_->set_status(false);
                 cloud_connector_->setJobTobeCompletedAndNoticeController();
                 return -1;

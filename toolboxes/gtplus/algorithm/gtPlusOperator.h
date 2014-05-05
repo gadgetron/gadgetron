@@ -22,6 +22,8 @@ class gtPlusOperator
 {
 public:
 
+    typedef typename realType<T>::Type value_type;
+
     gtPlusOperator();
     virtual ~gtPlusOperator();
 

@@ -12,10 +12,10 @@ process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
 {
 
   // Get the dimensions
-  int nx = m2->getObjectPtr()->get_size(0);
-  int ny = m2->getObjectPtr()->get_size(1);
-  int nz = m2->getObjectPtr()->get_size(2);
-  int nc = m2->getObjectPtr()->get_size(3);
+  size_t nx = m2->getObjectPtr()->get_size(0);
+  size_t ny = m2->getObjectPtr()->get_size(1);
+  size_t nz = m2->getObjectPtr()->get_size(2);
+  size_t nc = m2->getObjectPtr()->get_size(3);
 
   // Create a new message with an hoNDArray for the combined image
   GadgetContainerMessage< hoNDArray<std::complex<float> > >* m3 = 

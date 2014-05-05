@@ -121,7 +121,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
             {
                 typename realType<T>::Type scaleFactor = 1.0;
                 Gadgetron::norm2(kspace, scaleFactor);
-                scaleFactor /= (RO*std::sqrt(double(srcCHA)));
+                scaleFactor /= (typename realType<T>::Type)( (RO*std::sqrt(double(srcCHA))) );
 
                 workOrder2DT->spirit_ncg_scale_factor_ = scaleFactor;
             }
@@ -171,9 +171,9 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     gtPlusWavelet3DOperator<T> wavNullSpace3DOperator;
                     wavNullSpace3DOperator.setMemoryManager(gtPlus_mem_manager_);
                     wavNullSpace3DOperator.setAcquiredPoints(acq);
-                    wavNullSpace3DOperator.scale_factor_first_dimension_ = workOrder2DT->spirit_RO_enhancement_ratio_;
-                    wavNullSpace3DOperator.scale_factor_second_dimension_ = workOrder2DT->spirit_E1_enhancement_ratio_;
-                    wavNullSpace3DOperator.scale_factor_third_dimension_ = workOrder2DT->spirit_temporal_enhancement_ratio_;
+                    wavNullSpace3DOperator.scale_factor_first_dimension_ = (value_type)workOrder2DT->spirit_RO_enhancement_ratio_;
+                    wavNullSpace3DOperator.scale_factor_second_dimension_ = (value_type)workOrder2DT->spirit_E1_enhancement_ratio_;
+                    wavNullSpace3DOperator.scale_factor_third_dimension_ = (value_type)workOrder2DT->spirit_temporal_enhancement_ratio_;
 
                     if ( workOrder2DT->spirit_use_coil_sen_map_ && workOrder2DT->coilMap_ )
                     {
@@ -181,8 +181,8 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     }
 
                     // set operators
-                    ncgsolver.add(spirit, T(workOrder2DT->spirit_parallel_imaging_lamda_) );
-                    ncgsolver.add(wavNullSpace3DOperator, T(workOrder2DT->spirit_image_reg_lamda_) );
+                    ncgsolver.add(spirit, T( (value_type)workOrder2DT->spirit_parallel_imaging_lamda_ ) );
+                    ncgsolver.add(wavNullSpace3DOperator, T( (value_type)workOrder2DT->spirit_image_reg_lamda_ ) );
 
                     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit solver for 2DT ... "));
                     ncgsolver.solve(b, res);
@@ -208,18 +208,18 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     gtPlusWaveletNoNullSpace3DOperator<T> wavNoNullSpace3DOperator;
                     wavNoNullSpace3DOperator.setMemoryManager(gtPlus_mem_manager_);
                     wavNoNullSpace3DOperator.setAcquiredPoints(acq);
-                    wavNoNullSpace3DOperator.scale_factor_first_dimension_ = workOrder2DT->spirit_RO_enhancement_ratio_;
-                    wavNoNullSpace3DOperator.scale_factor_second_dimension_ = workOrder2DT->spirit_E1_enhancement_ratio_;
-                    wavNoNullSpace3DOperator.scale_factor_third_dimension_ = workOrder2DT->spirit_temporal_enhancement_ratio_;
+                    wavNoNullSpace3DOperator.scale_factor_first_dimension_ = (value_type)workOrder2DT->spirit_RO_enhancement_ratio_;
+                    wavNoNullSpace3DOperator.scale_factor_second_dimension_ = (value_type)workOrder2DT->spirit_E1_enhancement_ratio_;
+                    wavNoNullSpace3DOperator.scale_factor_third_dimension_ = (value_type)workOrder2DT->spirit_temporal_enhancement_ratio_;
 
                     if ( workOrder2DT->spirit_use_coil_sen_map_ && workOrder2DT->coilMap_ )
                     {
                         wavNoNullSpace3DOperator.setCoilSenMap(coilMapS);
                     }
 
-                    ncgsolver.add(spirit_noNullSpace, T(workOrder2DT->spirit_parallel_imaging_lamda_) );
-                    ncgsolver.add(wavNoNullSpace3DOperator, T(workOrder2DT->spirit_image_reg_lamda_) );
-                    ncgsolver.add(dataOper, T(workOrder2DT->spirit_data_fidelity_lamda_) );
+                    ncgsolver.add(spirit_noNullSpace, T( (value_type)workOrder2DT->spirit_parallel_imaging_lamda_ ) );
+                    ncgsolver.add(wavNoNullSpace3DOperator, T( (value_type)workOrder2DT->spirit_image_reg_lamda_ ) );
+                    ncgsolver.add(dataOper, T( (value_type)workOrder2DT->spirit_data_fidelity_lamda_ ) );
 
                     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit solver for 2DT without null space ... "));
                     ncgsolver.solve(b, res);
@@ -262,8 +262,8 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                     }
 
                     // set operators
-                    ncgsolver.add(spirit, T(workOrder2DT->spirit_parallel_imaging_lamda_) );
-                    ncgsolver.add(wavNullSpace2DOperator, T(workOrder2DT->spirit_image_reg_lamda_) );
+                    ncgsolver.add(spirit, T( (value_type)workOrder2DT->spirit_parallel_imaging_lamda_ ) );
+                    ncgsolver.add(wavNullSpace2DOperator, T( (value_type)workOrder2DT->spirit_image_reg_lamda_ ) );
 
                     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit solver for 2D ... "));
                     ncgsolver.solve(b, res);
@@ -295,9 +295,9 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                         wavNoNullSpace2DOperator.setCoilSenMap(coilMapS);
                     }
 
-                    ncgsolver.add(spirit_noNullSpace, T(workOrder2DT->spirit_parallel_imaging_lamda_) );
-                    ncgsolver.add(wavNoNullSpace2DOperator, T(workOrder2DT->spirit_image_reg_lamda_) );
-                    ncgsolver.add(dataOper, T(workOrder2DT->spirit_data_fidelity_lamda_) );
+                    ncgsolver.add(spirit_noNullSpace, T( (value_type)workOrder2DT->spirit_parallel_imaging_lamda_ ) );
+                    ncgsolver.add(wavNoNullSpace2DOperator, T( (value_type)workOrder2DT->spirit_image_reg_lamda_ ) );
+                    ncgsolver.add(dataOper, T( (value_type)workOrder2DT->spirit_data_fidelity_lamda_ ) );
 
                     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("NCG spirit solver for 2D without null space ... "));
                     ncgsolver.solve(b, res);
@@ -307,7 +307,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
                 }
             }
 
-            Gadgetron::scal(T(workOrder2DT->spirit_ncg_scale_factor_), res);
+            Gadgetron::scal(T( (value_type)workOrder2DT->spirit_ncg_scale_factor_ ), res);
         }
         else
         {

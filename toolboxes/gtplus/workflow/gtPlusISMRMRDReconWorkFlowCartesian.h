@@ -190,7 +190,7 @@ preProcessing()
         if ( overSamplingRatioRO_ > 1.0 )
         {
             GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(*data_));
-            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().cutpad2D(*data_, data_->get_size(0)/overSamplingRatioRO_, data_->get_size(1), dataCurr_));
+            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().cutpad2D(*data_, (size_t)(data_->get_size(0)/overSamplingRatioRO_), data_->get_size(1), dataCurr_));
             GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(dataCurr_));
             *data_ = dataCurr_;
             RO_.second = data_->get_size(0);
@@ -200,7 +200,7 @@ preProcessing()
             if ( ref_ != NULL && ref_remove_oversampling_RO_ )
             {
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft1c(*ref_));
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().cutpad2D(*ref_, ref_->get_size(0)/overSamplingRatioRO_, ref_->get_size(1), refCurr_));
+                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().cutpad2D(*ref_, (size_t)(ref_->get_size(0)/overSamplingRatioRO_), ref_->get_size(1), refCurr_));
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft1c(refCurr_));
                 *ref_ = refCurr_;
                 RO_ref_.second = ref_->get_size(0);
@@ -210,8 +210,8 @@ preProcessing()
 
             if ( workOrder_->start_RO_>=0 && workOrder_->end_RO_>=0 )
             {
-                workOrder_->start_RO_ /= overSamplingRatioRO_;
-                workOrder_->end_RO_ /= overSamplingRatioRO_;
+                workOrder_->start_RO_ = (int)(workOrder_->start_RO_/overSamplingRatioRO_);
+                workOrder_->end_RO_ = (int)(workOrder_->end_RO_/overSamplingRatioRO_);
             }
         }
 
@@ -298,7 +298,7 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             if ( encodingFOV_E1_ > reconFOV_E1_ )
             {
                 float spacingE1 = reconFOV_E1_/reconSizeE1_;
-                encodingE1 = encodingFOV_E1_/spacingE1;
+                encodingE1 = (size_t)(encodingFOV_E1_/spacingE1);
             }
 
             hoNDArray<T>* pSrc = &input_;
@@ -431,14 +431,14 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             if ( encodingFOV_E1_ > reconFOV_E1_ )
             {
                 float spacingE1 = reconFOV_E1_/reconSizeE1_;
-                encodingE1 = std::floor(encodingFOV_E1_/spacingE1+0.5);
+                encodingE1 = (size_t)std::floor(encodingFOV_E1_/spacingE1+0.5);
             }
 
             size_t encodingE2 = reconSizeE2_;
             if ( encodingFOV_E2_ > reconFOV_E2_ )
             {
                 float spacingE2 = reconFOV_E2_/reconSizeE2_;
-                encodingE2 = std::floor(encodingFOV_E2_/spacingE2+0.5);
+                encodingE2 = (size_t)std::floor(encodingFOV_E2_/spacingE2+0.5);
             }
 
             hoNDArray<T>* pSrc = &input_;

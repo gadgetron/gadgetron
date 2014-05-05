@@ -28,7 +28,7 @@ int GadgetServerAcceptor::handle_input (ACE_HANDLE)
   if ( working_directory_.empty() )
   {
     #ifdef _WIN32
-        working_directory_ = "c:\\temp\gadgetron\\";
+        working_directory_ = "c:\\temp\\gadgetron\\";
     #else
         working_directory_ = "/tmp/gadgetron/";
     #endif // _WIN32

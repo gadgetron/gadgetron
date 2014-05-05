@@ -32,7 +32,7 @@ struct  EXPORTGTPLUSGADGET GtPlusGadgetImageExt : public ISMRMRD::ImageHeader
     ~GtPlusGadgetImageExt();
 
     void copy(GtPlusGadgetImageExt& aMessageImage);
-    void set_matrix_size(size_t index, ACE_UINT16 size);
+    void set_matrix_size(size_t index, size_t size);
 
     // interpolation is performed
     // this = weight * this + (1-weight)*aMessageImage
@@ -46,21 +46,23 @@ struct  EXPORTGTPLUSGADGET GtPlusGadgetImageExt : public ISMRMRD::ImageHeader
 struct  EXPORTGTPLUSGADGET GtPlusGadgetImageArray
 {
     // size of the image array
-    ACE_UINT16 matrix_size[10];
+    size_t matrix_size[10];
+
+    size_t max_num_of_images_;
 
     // message information for every 2D image [RO E1 Cha Slice E2 Contrast Phase Rep Set Seg]
     GtPlusGadgetImageExt* imageArray_;
 
     GtPlusGadgetImageArray();
     GtPlusGadgetImageArray(const GtPlusGadgetImageArray& imArray);
-    GtPlusGadgetImageArray(int aSize[10]);
+    GtPlusGadgetImageArray(size_t aSize[10]);
     ~GtPlusGadgetImageArray();
 
-    void findDimIndex(Gadgetron::gtPlus::ISMRMRDDIM& dim, int& ind);
+    void findDimIndex(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t& ind);
     bool getSubImageArray(size_t* startInd, size_t* endInd, GtPlusGadgetImageArray& imageArray);
-    void resize(int aSize[10]);
+    void resize(size_t aSize[10]);
     bool copy(const GtPlusGadgetImageArray& imageArray);
-    int get_offset(int slc, int e2, int con, int phs, int rep, int set, int seg);
+    size_t get_offset(size_t slc, size_t e2, size_t con, size_t phs, size_t rep, size_t set, size_t seg);
     bool extractGadgetImageArrayEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t value, GtPlusGadgetImageArray& imageArray);
     bool extractGadgetImageArrayEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim1, size_t value1, Gadgetron::gtPlus::ISMRMRDDIM& dim2, size_t value2, GtPlusGadgetImageArray& imageArray);
     bool extractGadgetImageArrayLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t value, GtPlusGadgetImageArray& imageArray);

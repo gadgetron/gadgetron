@@ -411,7 +411,7 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
 
     workOrder->CalibMode_ = ISMRMRD_separate;
     workOrder->start_RO_ = 34;
-    workOrder->end_RO_ = RO-1;
+    workOrder->end_RO_ = (int)RO-1;
     workOrder->acceFactorE1_ = 4;
     workOrder->acceFactorE2_ = 1;
 
@@ -572,7 +572,7 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
 
     ho5DArray<T> ker(kRO, kNE1, srcCHA, dstCHA, oE1.size());
     timer.start("grappa.calib");
-    grappa.grappa_.calib(acsSrc, acsDst, grappa_reg_lamda_, kRO, kE1, oE1, ker);
+    grappa.grappa_.calib(acsSrc, acsDst, grappa_reg_lamda_, (int)kRO, kE1, oE1, ker);
     timer.stop();
 
     Gadgetron::norm2(ker, v);
@@ -581,7 +581,7 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
 
     ho4DArray<T> kIm(RO, E1, srcCHA, dstCHA);
     timer.start("grappa.imageDomainKernel");
-    grappa.grappa_.imageDomainKernel(ker, kRO, kE1, oE1, RO, E1, kIm);
+    grappa.grappa_.imageDomainKernel(ker, (int)kRO, kE1, oE1, (int)RO, (int)E1, kIm);
     timer.stop();
     gt_io.exportArrayComplex(kIm, this->gtPluse_ut_res_folder_ + "kIm");
 

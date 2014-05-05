@@ -251,7 +251,7 @@ bool gtPlusISMRMRDReconWorkFlowCartesian2DT<T>::recon()
 
                 if ( dim == WorkOrderShareDim_ )
                 {
-                    indWorkOrderSharingDim = dims.size()-1;
+                    indWorkOrderSharingDim = (int)(dims.size()-1);
                 }
             }
         }

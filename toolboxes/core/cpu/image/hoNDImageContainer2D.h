@@ -152,7 +152,7 @@ namespace Gadgetron
         bool has_identical_image_geometry(unsigned int row) const;
 
         /// serialize/deserialize
-        virtual bool serialize(char*& buf, size_t& len);
+        virtual bool serialize(char*& buf, size_t& len) const;
         virtual bool deserialize(char* buf, size_t& len);
 
         /// print out the image container information
@@ -1012,7 +1012,7 @@ namespace Gadgetron
     }
 
     template <typename ImageType> 
-    inline bool hoNDImageContainer2D<ImageType>::serialize(char*& buf, size_t& totalLen)
+    inline bool hoNDImageContainer2D<ImageType>::serialize(char*& buf, size_t& totalLen) const 
     {
         try
         {

@@ -178,8 +178,8 @@ namespace Gadgetron{
         bool fftshiftPivot1D(const ComplexType* a, ComplexType* r, size_t x, size_t n, size_t pivot);
 
         // 2D
-        bool fftshiftPivot2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n, unsigned pivotx, unsigned pivoty);
-        bool fftshiftPivot2D(ComplexType* a, size_t x, size_t y, size_t n, unsigned pivotx, unsigned pivoty);
+        bool fftshiftPivot2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n, size_t pivotx, size_t pivoty);
+        bool fftshiftPivot2D(ComplexType* a, size_t x, size_t y, size_t n, size_t pivotx, size_t pivoty);
 
         bool fftshift2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n);
         bool ifftshift2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n);
@@ -188,8 +188,8 @@ namespace Gadgetron{
         bool ifftshift2D(ComplexType* a, size_t x, size_t y, size_t n);
 
         // 3D
-        bool fftshiftPivot3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n, unsigned pivotx, unsigned pivoty, unsigned pivotz);
-        bool fftshiftPivot3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n, unsigned pivotx, unsigned pivoty, unsigned pivotz);
+        bool fftshiftPivot3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n, size_t pivotx, size_t pivoty, size_t pivotz);
+        bool fftshiftPivot3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n, size_t pivotx, size_t pivoty, size_t pivotz);
 
         bool fftshift3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n);
         bool ifftshift3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n);

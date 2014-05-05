@@ -31,7 +31,7 @@ namespace Gadgetron
     }
 
     template <typename TInteger, typename TFloat, typename TComplexFloat>
-    bool hoNDMetaAttributes<TInteger, TFloat, TComplexFloat>::serialize(char*& buf, size_t_type& len)
+    bool hoNDMetaAttributes<TInteger, TFloat, TComplexFloat>::serialize(char*& buf, size_t_type& len) const 
     {
         // ACE_GUARD_RETURN(ACE_Thread_Mutex, guard, mtx_, false);
 

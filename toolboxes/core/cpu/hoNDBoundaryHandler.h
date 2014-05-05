@@ -134,7 +134,7 @@ namespace Gadgetron
         typedef hoNDBoundaryHandlerFixedValue<ArrayType> Self;
         typedef typename BaseClass::T T;
 
-        hoNDBoundaryHandlerFixedValue(T v=T(0)) : BaseClass(), value_(v) {}
+        hoNDBoundaryHandlerFixedValue(T v=0) : BaseClass(), value_(v) {}
         hoNDBoundaryHandlerFixedValue(ArrayType& a, T v=T(0)) : BaseClass(a), value_(v) {}
         virtual ~hoNDBoundaryHandlerFixedValue() {}
 

@@ -84,7 +84,7 @@ namespace Gadgetron
                 for (i=0; i<numOfPixels; i++)
                 {
                     float pix_val = src[i];
-                    pix_val *= intensity_offset_value_/3.14159265;
+                    pix_val *= (float)(intensity_offset_value_/3.14159265);
                     pix_val += intensity_offset_value_;
                     if (pix_val < 0) pix_val = 0;
                     if (pix_val > max_intensity_value_) pix_val = max_intensity_value_;
