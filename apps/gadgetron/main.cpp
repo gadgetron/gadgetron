@@ -31,7 +31,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
 
     char * gadgetron_home = ACE_OS::getenv("GADGETRON_HOME");
 
-    if (std::string(gadgetron_home).size() == 0) {
+    if (!gadgetron_home || (std::string(gadgetron_home).size() == 0)) {
         ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("GADGETRON_HOME variable not set.\n")),-1);
     }
 

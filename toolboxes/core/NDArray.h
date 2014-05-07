@@ -12,7 +12,7 @@
 #include <new>
 #include <vector>
 #include <iostream>
-#include <strstream>
+#include <sstream>
 #include <stdexcept>
 
 #include <boost/shared_ptr.hpp>
@@ -20,11 +20,9 @@
 
 namespace Gadgetron{
 
-#include <strstream>
-
     template <typename ObjType> void printInfo(const ObjType& obj)
     {
-        std::ostrstream outs;
+        std::ostringstream outs;
         obj.print(outs);
         outs << std::ends;
         std::string msg(outs.str());

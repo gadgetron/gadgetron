@@ -15,7 +15,7 @@
 #include <map>
 #include <vector>
 #include <iostream>
-#include <strstream>
+#include <ostream>
 
 namespace Gadgetron
 {

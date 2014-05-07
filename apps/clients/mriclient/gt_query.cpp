@@ -12,13 +12,14 @@
 #include <fstream>
 #include <time.h>
 #include <iomanip>
+#include <sstream>
 
 using namespace Gadgetron;
 
 static void usage()
 {
     using namespace std;
-    std::ostrstream outs;
+    std::ostringstream outs;
 
     outs << "Query the gadgetron server for the stored dependency measurements" << endl;
     outs << "gtdependencyquery   -p <PORT>                      (default 9002)" << endl;
