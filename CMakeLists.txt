@@ -121,7 +121,7 @@ if (CUDA_FOUND)
   # Support compute model 3.0 from Cuda 4.2 and up
   # Support compute model 3.5 from Cuda 5 and up
 
-  set(CUDA_NVCC_FLAGS1 "-gencode arch=compute_10,code=sm_10")
+  #set(CUDA_NVCC_FLAGS1 "-gencode arch=compute_10,code=sm_10")
   set(CUDA_NVCC_FLAGS2 "-gencode arch=compute_20,code=sm_20")
   set(CUDA_NVCC_FLAGS3 "-gencode arch=compute_30,code=sm_30") 
   set(CUDA_NVCC_FLAGS4 "-gencode arch=compute_35,code=sm_35")   
@@ -209,6 +209,6 @@ endif()
 add_subdirectory(cmake)
 add_subdirectory(doc)
 
-if (GTEST_FOUND AND ARMADILLO_FOUND)
+if (GTEST_FOUND AND ARMADILLO_FOUND AND CUDA_FOUND)
   add_subdirectory(test)
-endif (GTEST_FOUND AND ARMADILLO_FOUND)
+endif (GTEST_FOUND AND ARMADILLO_FOUND AND CUDA_FOUND)

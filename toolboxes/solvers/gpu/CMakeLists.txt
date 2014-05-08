@@ -17,6 +17,7 @@ cuda_add_library(gpusolvers SHARED
     cuCgPreconditioner.h
     cuCgSolver.h
     cuNlcgSolver.h
+    cuLbfgsSolver.h
     cuGpBbSolver.h
     cuLwSolver.h
     cuSbcCgSolver.h
@@ -26,6 +27,7 @@ cuda_add_library(gpusolvers SHARED
     gpusolvers_export.h
     cuNlcgSolver.cu
     cuGpBbSolver.cu
+    cuLbfgsSolver.cu
   )
 
 target_link_libraries(gpusolvers 
@@ -46,9 +48,11 @@ install(FILES
   cuSbcLwSolver.h
   cuCgSolver.h
   cuNlcgSolver.h
+  cuLbfgsSolver.h
   cuGpBbSolver.h
   hoCuCgSolver.h
   hoCuNlcgSolver.h
+  hoCuLbfgsSolver.h
   hoCuSbcCgSolver.h
   hoCuGpBbSolver.h
   gpusolvers_export.h

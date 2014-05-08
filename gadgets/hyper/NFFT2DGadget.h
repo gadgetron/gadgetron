@@ -10,12 +10,12 @@
 
 namespace Gadgetron{
 
-  class EXPORTGADGETSHYPER NFFT2DGadget : 
+  class EXPORTGADGETSHYPER NFFT2DGadget :
     public Gadget3< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> >, hoNDArray<float> >
   {
     
   public:
-    GADGET_DECLARE(NFFT2DGadget);
+    //GADGET_DECLARE(NFFT2DGadget);
     
     NFFT2DGadget() {}
     ~NFFT2DGadget() {}
