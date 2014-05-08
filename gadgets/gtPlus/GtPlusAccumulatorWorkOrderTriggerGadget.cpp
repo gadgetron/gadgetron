@@ -7,7 +7,7 @@ namespace Gadgetron
 
 GtPlusAccumulatorWorkOrderTriggerGadget::GtPlusAccumulatorWorkOrderTriggerGadget()
 : image_counter_(0), image_series_(100), first_kspace_scan_(true), triggered_in_close_(false), triggered_in_process_(false), triggered_in_process_last_acq_(false), 
-    prev_dim1_(-1), curr_dim1_(-1), prev_dim2_(-1), curr_dim2_(-1), count_dim1_(0), verboseMode_(false), other_kspace_matching_Dim_(DIM_NONE)
+    triggered_in_process_by_numOfKSpace_triggerDim1_(false), prev_dim1_(-1), curr_dim1_(-1), prev_dim2_(-1), curr_dim2_(-1), count_dim1_(0), verboseMode_(false), other_kspace_matching_Dim_(DIM_NONE)
 {
     space_matrix_offset_E1_ = 0;
     space_matrix_offset_E2_ = 0;
@@ -894,7 +894,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
                     GADGET_CHECK_RETURN_FALSE(triggerByDimEqual(triggerDim1_, prev_dim1_local_, triggerDim2_, prev_dim2_local_, workFlow_BufferKernel_, workFlow_use_BufferedKernel_));
                 }
 
-                if ( count_dim1_ < numOfAcquiredKSpaceForTriggerDim1 ) // the trigger never happened
+                if ( count_dim1_ <= numOfAcquiredKSpaceForTriggerDim1 && !triggered_in_process_by_numOfKSpace_triggerDim1_ ) // the trigger never happened
                 {
                     count_dim1_ = 0;
                     GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_ 
@@ -907,6 +907,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
                 }
 
                 triggered_in_process_ = true;
+                triggered_in_process_by_numOfKSpace_triggerDim1_ = false; // reset this flag to be false for next dim2
             }
 
             if (curr_dim1_!=prev_dim1_local_)
@@ -920,6 +921,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
                     workFlow_use_BufferedKernel_ = false;
                     GADGET_CHECK_RETURN_FALSE(triggerByDim1LessEqualDim2Equal(triggerDim1_, prev_dim1_local_, triggerDim2_, prev_dim2_local_, workFlow_BufferKernel_, workFlow_use_BufferedKernel_));
                     triggered_in_process_ = true;
+                    triggered_in_process_by_numOfKSpace_triggerDim1_ = true;
                 }
                 else if ( count_dim1_ > numOfAcquiredKSpaceForTriggerDim1 )
                 {
@@ -930,6 +932,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
                     workFlow_use_BufferedKernel_ = true;
                     GADGET_CHECK_RETURN_FALSE(triggerByDimEqual(triggerDim1_, prev_dim1_local_, triggerDim2_, prev_dim2_local_, workFlow_BufferKernel_, workFlow_use_BufferedKernel_));
                     triggered_in_process_ = true;
+                    triggered_in_process_by_numOfKSpace_triggerDim1_ = true;
                 }
             }
 

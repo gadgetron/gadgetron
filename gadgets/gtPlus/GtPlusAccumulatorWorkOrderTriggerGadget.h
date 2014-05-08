@@ -237,6 +237,10 @@ protected:
     // whether the next gadget has been triggered in process(...)
     bool triggered_in_process_;
 
+    // whether the next gadget has been triggered becasue the triggerDim1 changes meet the required number of kspace
+    // only used for triggerDim1!=DIM_NONE && triggerDim2!=DIM_NONE
+    bool triggered_in_process_by_numOfKSpace_triggerDim1_;
+
     // whether the next gadget has been triggered in process(...) for the last acquisition
     // if so, extra triggering in close(...) is not needed
     bool triggered_in_process_last_acq_;
