@@ -20,15 +20,6 @@
 
 namespace Gadgetron{
 
-    template <typename ObjType> void printInfo(const ObjType& obj)
-    {
-        std::ostringstream outs;
-        obj.print(outs);
-        outs << std::ends;
-        std::string msg(outs.str());
-        GADGET_MSG(msg.c_str());
-    }
-
     template <typename T> class NDArray
     {
     public:

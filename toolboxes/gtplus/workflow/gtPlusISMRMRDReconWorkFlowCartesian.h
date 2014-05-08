@@ -278,6 +278,9 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
         size_t RO = res_.get_size(0);
         size_t E1 = res_.get_size(1);
 
+        size_t inputRO = input_.get_size(0);
+        size_t inputE1 = input_.get_size(1);
+
         output_ = input_;
 
         // if encoded FOV are the same as recon FOV
@@ -308,7 +311,7 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             hoNDArray<T> buffer2D;
 
             // adjust E1
-            if ( encodingE1 > E1 )
+            if ( encodingE1>E1 && encodingE1>inputE1 )
             {
                 if ( isKSpace )
                 {

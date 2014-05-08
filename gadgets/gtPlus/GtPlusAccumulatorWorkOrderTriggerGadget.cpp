@@ -882,14 +882,29 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
         {
             if ( (curr_dim2_!=prev_dim2_local_) || resetTriggerStatus(m1) )
             {
-                count_dim1_ = 0;
-                GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_ 
-                    << "; Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << prev_dim2_local_);
+                if ( count_dim1_ > numOfAcquiredKSpaceForTriggerDim1 )
+                {
+                    count_dim1_ = 0;
+                    GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_ 
+                        << "; Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << prev_dim2_local_);
 
-                workFlow_BufferKernel_ = false;
-                workFlow_use_BufferedKernel_ = true;
+                    workFlow_BufferKernel_ = false;
+                    workFlow_use_BufferedKernel_ = true;
 
-                GADGET_CHECK_RETURN_FALSE(triggerByDimEqual(triggerDim1_, prev_dim1_local_, triggerDim2_, prev_dim2_local_, workFlow_BufferKernel_, workFlow_use_BufferedKernel_));
+                    GADGET_CHECK_RETURN_FALSE(triggerByDimEqual(triggerDim1_, prev_dim1_local_, triggerDim2_, prev_dim2_local_, workFlow_BufferKernel_, workFlow_use_BufferedKernel_));
+                }
+
+                if ( count_dim1_ < numOfAcquiredKSpaceForTriggerDim1 ) // the trigger never happened
+                {
+                    count_dim1_ = 0;
+                    GADGET_CONDITION_MSG(verboseMode_, "Trigger Dim1 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << prev_dim1_local_ 
+                        << "; Dim2 : " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << prev_dim2_local_);
+
+                    workFlow_BufferKernel_ = false;
+                    workFlow_use_BufferedKernel_ = false;
+
+                    GADGET_CHECK_RETURN_FALSE(triggerByDim1LessEqualDim2Equal(triggerDim1_, prev_dim1_local_, triggerDim2_, prev_dim2_local_, workFlow_BufferKernel_, workFlow_use_BufferedKernel_));
+                }
 
                 triggered_in_process_ = true;
             }
@@ -1215,6 +1230,11 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
             idx.kspace_encode_step_2 += workOrder_.start_E2_;
         }
 
+        if ( idx.kspace_encode_step_1 >= dimensions_[1] )
+        {
+            return true;
+        }
+
         size_t dataN = workOrder_.data_.get_number_of_elements();
         std::complex<float>* b = workOrder_.data_.begin();
         std::complex<float>* d = m2->getObjectPtr()->get_data_ptr();
@@ -1245,6 +1265,11 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
             pos[8] = idx.set;
             pos[9] = idx.segment;
             size_t offsetBuffer = workOrder_.data_.calculate_offset(pos);
+
+            if ( offsetBuffer >= dataN )
+            {
+                break;
+            }
 
             if ( offsetBuffer >= dataN )
             {
@@ -1617,6 +1642,13 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(GadgetContainerMessa
             return true;
         }
 
+        if( offset >= messageImage->max_num_of_images_ )
+        {
+            GADGET_WARN_MSG("Incoming image is over the boundary of buffer [SLC E2 CON PHS REP SET SEG] = [ " 
+                                                                            << idx.slice << " " << idx.kspace_encode_step_2 << " " << idx.contrast << " " << idx.phase << " " << idx.repetition << " " << idx.set << " " << idx.segment << " ] ");
+            return true;
+        }
+
         // if it is the first acq in a slice, fill in all information
         bool is_first_acq_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_FIRST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
 
@@ -1705,8 +1737,11 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(GadgetContainerMessa
         }
 
         // whether or not this acq is the first in a slice, we need to fill the TimeStamps and PMUTimeStamps
-        messageImage->imageArray_[offset].time_stamps[idx.kspace_encode_step_1] = m1->getObjectPtr()->acquisition_time_stamp;
-        messageImage->imageArray_[offset].pmu_time_stamps[idx.kspace_encode_step_1] = m1->getObjectPtr()->physiology_time_stamp[0];
+        if ( idx.kspace_encode_step_1 < messageImage->imageArray_[offset].time_stamps.size() )
+        {
+            messageImage->imageArray_[offset].time_stamps[idx.kspace_encode_step_1] = m1->getObjectPtr()->acquisition_time_stamp;
+            messageImage->imageArray_[offset].pmu_time_stamps[idx.kspace_encode_step_1] = m1->getObjectPtr()->physiology_time_stamp[0];
+        }
     }
     catch(...)
     {
