@@ -1,3 +1,5 @@
+# gtplus is a toolbox for general reconstruction to support all ISMRMRD dimensions
+
 if ( HAS_64_BIT )
 
     if (WIN32)
