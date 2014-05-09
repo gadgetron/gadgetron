@@ -116,7 +116,6 @@ namespace Gadgetron
   // and (for the implementation) "Parker weights revisited", Wesarg et al, Med. Phys. 29(3) 2002.
   //
   
-  static const float epsilon = 0.001f;
 
   static __inline__ __device__ float S( float beta )
   {
