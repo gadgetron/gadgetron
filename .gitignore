@@ -20,3 +20,4 @@ build/
 toolboxes/core/core_defines.h
 prod/
 external/
+test/integration/test_cases.txt

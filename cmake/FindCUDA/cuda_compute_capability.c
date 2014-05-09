@@ -21,23 +21,18 @@ int main() {
   /* machines with no GPUs can still report one emulation device */
   for (device = 0; device < deviceCount; ++device) {
     cudaGetDeviceProperties(&properties, device);
-    if (properties.major != 9999) {/* 9999 means emulation only */
+    if (properties.major != 9999 && properties.major > 1) {/* 9999 means emulation only and we do not support compute model 1.x*/
       ++gpuDeviceCount;
+      if (gpuDeviceCount > 1)
+      	printf(";");
+      printf("%d%d",properties.major, properties.minor);
       /*  get minimum compute capability of all devices */
-      if (major > properties.major) {
-       major = properties.major;
-        minor = properties.minor;
-      } else if (minor > properties.minor) {
-        minor = properties.minor;
-      }
     }
   }
-
   /* don't just return the number of gpus, because other runtime cuda
      errors can also yield non-zero return values */
   if (gpuDeviceCount > 0) {
     /* this output will be parsed by FindCUDA.cmake */
-    printf("%d%d", major, minor);
     return 0; /* success */
   }
   return 1; /* failure */

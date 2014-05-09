@@ -32,7 +32,6 @@ else()
 	foreach(code ${CUDA_COMPUTE_CAPABILITY})
 	   set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -gencode arch=compute_${code},code=sm_${code} ")
 	endforeach()
-	MESSAGE("GENERATING ${CUDA_NVCC_FLAGS}")
 endif()
 
 endif(CUDA_FOUND)
