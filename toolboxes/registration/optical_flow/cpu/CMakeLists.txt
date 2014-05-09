@@ -26,18 +26,8 @@
         ${CMAKE_SOURCE_DIR}/toolboxes/solvers
         ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
         ${CMAKE_SOURCE_DIR}/gadgets/core
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
         ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-        ${CMAKE_SOURCE_DIR}/apps/gadgetron
-        ${CMAKE_SOURCE_DIR}/apps/matlab
-        ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
-        ${CMAKE_SOURCE_DIR}/gadgets/gtPlus
         ${Boost_INCLUDE_DIR}
-        ${MKL_INCLUDE_DIR}
         ${ARMADILLO_INCLUDE_DIR} 
         ${ACE_INCLUDE_DIR}
         ${ISMRMRD_INCLUDE_DIR} )
@@ -61,7 +51,6 @@
         target_link_libraries(cpureg 
                 cpucore
                 cpucore_math 
-                gtplus
                 ${ARMADILLO_LIBRARIES}
                 optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} )
 

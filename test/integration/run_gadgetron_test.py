@@ -68,7 +68,7 @@ def run_test(environment, testcase_cfg_file):
     success = True
     with open(gadgetron_log_filename, "w") as gf:
         if platform.system() != "Windows":
-            p = subprocess.Popen(["gadgetron", "-p", "9003"], env=environment,
+            p = subprocess.Popen(["gadgetron", "-p", "9003"], 
                 stdout=gf, stderr=gf)
         else:
             p = subprocess.Popen(["gadgetron", "-p", "9003"], stdout=gf, stderr=gf)

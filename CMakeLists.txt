@@ -113,12 +113,10 @@ if(NOT ACE_FOUND)
   MESSAGE("ACE not found. Only toolboxes and standalone applications are compiled. The streaming framework will NOT be compiled.")
 endif(NOT ACE_FOUND)
 
-find_package(CUDA 4.1)
-if (CUDA_FOUND)
-  ADD_DEFINITIONS(-DUSE_CUDA)
-endif (CUDA_FOUND)
+find_package(CUDA_advanced)
 
 if (CUDA_FOUND)
+  ADD_DEFINITIONS(-DUSE_CUDA)
   MESSAGE("CUDA found, GPU components are compiled if CULA is also found")
   SET( GADGETRON_CUDA_FOUND_BOOL 1 )
   include_directories( ${CUDA_INCLUDE_DIRS} )
@@ -128,23 +126,9 @@ if (CUDA_FOUND)
   # Support compute model 3.0 from Cuda 4.2 and up
   # Support compute model 3.5 from Cuda 5 and up
 
-  set(CUDA_NVCC_FLAGS1 "-gencode arch=compute_10,code=sm_10")
-  set(CUDA_NVCC_FLAGS2 "-gencode arch=compute_20,code=sm_20")
-  set(CUDA_NVCC_FLAGS3 "-gencode arch=compute_30,code=sm_30") 
-  set(CUDA_NVCC_FLAGS4 "-gencode arch=compute_35,code=sm_35")   
 
-  if(${CUDA_VERSION} VERSION_GREATER "4.99")
-    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS1} ${CUDA_NVCC_FLAGS2} ${CUDA_NVCC_FLAGS3} ${CUDA_NVCC_FLAGS4})
-  else(${CUDA_VERSION} VERSION_GREATER "4.99")    
-
-    if(${CUDA_VERSION} VERSION_GREATER "4.1")
-      set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS1} ${CUDA_NVCC_FLAGS2} ${CUDA_NVCC_FLAGS3})
-    else(${CUDA_VERSION} VERSION_GREATER "4.1")      
-
-      set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS1} ${CUDA_NVCC_FLAGS2})          
-
-    endif(${CUDA_VERSION} VERSION_GREATER "4.1")
-  endif(${CUDA_VERSION} VERSION_GREATER "4.99")
+  MESSAGE("Compiling with ${CUDA_NVCC_FLAGS}")
+  
 
 else (CUDA_FOUND)
   MESSAGE("CUDA not found. CUDA components will not be compiled.")
@@ -185,9 +169,25 @@ else()
   message("Armadillo not found. This will disable many toolboxes and gadgets.")
 endif()
 
+
 find_package(HDF5 1.8 COMPONENTS C CXX HL)
+if (HDF5_FOUND)
+message("HDF5 Found")
+else()
+message("HDF5 not found")
+endif()
 find_package(FFTW3 COMPONENTS single double)
+if (FFTW3_FOUND)
+message("FFTW3 Found")
+else()
+message("FFTW3 not found")
+endif()
 find_package(Ismrmrd)
+if (ISMRMRD_FOUND)
+message("ISMRMRD Found")
+else()
+message("ISMRMRD not found")
+endif()
 find_package(XSD)
 find_package(XercesC)
 find_package(MKL)
