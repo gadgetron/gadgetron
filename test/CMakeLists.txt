@@ -1,3 +1,5 @@
+if (GTEST_FOUND AND ARMADILLO_FOUND)
+
 ENABLE_TESTING()
 
 if(WIN32)
@@ -65,5 +67,7 @@ if ( CUDA_FOUND )
 endif( CUDA_FOUND )
 
 add_test(test_all test_all)
+
+endif (GTEST_FOUND AND ARMADILLO_FOUND)
 
 add_subdirectory(integration)

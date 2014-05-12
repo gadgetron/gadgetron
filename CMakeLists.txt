@@ -217,9 +217,6 @@ else()
   message("Required dependencies for gadget compilation not found (ACE, ISMRMRD, XSD, XERCESC, FFTW3, HDF5).")
 endif()
 
+add_subdirectory(test)
 add_subdirectory(cmake)
 add_subdirectory(doc)
-
-if (GTEST_FOUND AND ARMADILLO_FOUND)
-  add_subdirectory(test)
-endif (GTEST_FOUND AND ARMADILLO_FOUND)
