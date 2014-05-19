@@ -27,8 +27,9 @@ namespace Gadgetron {
 
     protected:
         bool noise_decorrelation_calculated_;
-        hoNDArray< PerwhitenerValueType > noise_covariance_matrix_;
         hoNDArray< ValueType > noise_covariance_matrixf_;
+        hoNDArray< ValueType > noise_covariance_matrixf_once_;
+
         unsigned long long number_of_noise_samples_;
         unsigned long long number_of_noise_samples_per_acquisition_;
         float noise_dwell_time_us_;

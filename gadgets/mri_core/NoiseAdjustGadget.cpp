@@ -5,6 +5,8 @@
 #include "hoNDArray_elemwise.h"
 #include "GadgetronCommon.h"
 #include "hoMatrix.h"
+#include "hoMatrix_util.h"
+#include "hoNDArray_math_util.h"
 
 namespace Gadgetron{
 
@@ -303,30 +305,15 @@ namespace Gadgetron{
                 {
                     GADGET_MSG("Calculating noise decorrelation");
 
-                    size_t channels = noise_covariance_matrix_.get_size(0);
-
-                    std::vector<size_t> dims(2, channels);
-                    try
-                    {
-                        noise_covariance_matrixf_.create(&dims);
-                    }
-                    catch (std::runtime_error& err)
-                    {
-                        GADGET_DEBUG_EXCEPTION(err,"Unable to allocate storage for noise covariance matrix (float)\n");
-                        return;
-                    }
-
                     // Armadillo can best do its template magic when we concatenate all the operations...
                     // 1. scale for number of samples
                     // 2. Cholesky decomposition
                     // 3. Invert lower triangular
 
-                    arma::cx_mat noise_cov = as_arma_matrix(&noise_covariance_matrix_);
                     arma::cx_fmat noise_covf = as_arma_matrix(&noise_covariance_matrixf_);
 
                     {
-                        noise_covf = arma::conv_to<arma::cx_fmat>::from
-                            (arma::inv(arma::trimatu(arma::chol(noise_cov/( (double)number_of_noise_samples_-1)))));
+                        noise_covf = arma::inv(arma::trimatu(arma::chol(noise_covf/( (float)number_of_noise_samples_-1))));
                     }
 
                     // save the noise prewhitener
@@ -424,38 +411,46 @@ namespace Gadgetron{
                 }
 
                 //If noise covariance matrix is not allocated
-                if (noise_covariance_matrix_.get_number_of_elements() != channels*channels)
+                if (noise_covariance_matrixf_.get_number_of_elements() != channels*channels)
                 {
                     std::vector<size_t> dims(2, channels);
 
                     try
                     {
-                        noise_covariance_matrix_.create(&dims);
+                        noise_covariance_matrixf_.create(&dims);
+                        noise_covariance_matrixf_once_.create(&dims);
                     }
                     catch (std::runtime_error& err)
                     {
                         GADGET_DEBUG_EXCEPTION(err, "Unable to allocate storage for noise covariance matrix\n" );
                         return GADGET_FAIL;
                     }
-                    noise_covariance_matrix_.fill(std::complex<double>(0.0,0.0));
+                    Gadgetron::clear(noise_covariance_matrixf_);
+                    Gadgetron::clear(noise_covariance_matrixf_once_);
                     number_of_noise_samples_ = 0;
                 }
 
-                std::complex<double>* cc_ptr = noise_covariance_matrix_.get_data_ptr();
+                std::complex<float>* cc_ptr = noise_covariance_matrixf_.get_data_ptr();
                 std::complex<float>* data_ptr = m2->getObjectPtr()->get_data_ptr();
 
-                for (unsigned int s = 0; s < samples; s++)
-                {
-                    for (unsigned int i = 0; i < channels; i++)
+                #ifdef USE_MKL
+                    GADGET_CHECK_RETURN(GeneralMatrixProduct_gemm(noise_covariance_matrixf_once_, *m2->getObjectPtr(), true, *m2->getObjectPtr(), false), GADGET_FAIL);
+                    GADGET_CHECK_RETURN(Gadgetron::add(noise_covariance_matrixf_once_, noise_covariance_matrixf_, noise_covariance_matrixf_), GADGET_FAIL);
+                    Gadgetron::clear(noise_covariance_matrixf_once_);
+                #else
+                    for (unsigned int s = 0; s < samples; s++)
                     {
-                        for (unsigned int j = 0; j < channels; j++)
+                        for (unsigned int i = 0; i < channels; i++)
                         {
-                            cc_ptr[i*channels + j] += (data_ptr[i * samples + s] * conj(data_ptr[j * samples + s]));
+                            for (unsigned int j = 0; j < channels; j++)
+                            {
+                                cc_ptr[i*channels + j] += (data_ptr[i * samples + s] * conj(data_ptr[j * samples + s]));
+                            }
                         }
                     }
-                    number_of_noise_samples_++;
-                }
+                #endif // USE_MKL
 
+                number_of_noise_samples_ += samples;
                 m1->release();
             }
             else
