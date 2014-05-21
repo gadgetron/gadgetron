@@ -275,8 +275,8 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
 {
     try
     {
-        size_t RO = res_.get_size(0);
-        size_t E1 = res_.get_size(1);
+        size_t RO = data_->get_size(0);
+        size_t E1 = data_->get_size(1);
 
         size_t inputRO = input_.get_size(0);
         size_t inputE1 = input_.get_size(1);
