@@ -38,8 +38,6 @@ namespace Gadgetron
 {
 #ifndef USE_MKL
 
-    #pragma message("Compile general implementation of math util functions ... ")
-
     /**
     * @brief add two vectors of values, r = x + y
     support in-place computation, e.g. x==r or y==r
@@ -210,8 +208,6 @@ namespace Gadgetron
 #endif // USE_MKL
 
 #ifdef USE_MKL
-
-    #pragma message("Compile MKL implementation of math util functions ... ")
 
     // besides the arma calls, some functions are implemented with the MKL vector utilities
 
