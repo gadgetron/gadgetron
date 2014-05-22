@@ -87,8 +87,6 @@ template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<GT_Complex16
 // following matrix computation calls MKL functions
 #ifdef USE_MKL
 
-#pragma message("Compile MKL implementation of hoMatrix functions ... ")
-
 template<typename T> 
 bool GeneralMatrixProduct_gemm(hoNDArray<T>& C, 
                             const hoNDArray<T>& A, bool transA, 
