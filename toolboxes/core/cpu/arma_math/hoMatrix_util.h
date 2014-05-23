@@ -38,8 +38,6 @@ bool SolveLinearSystem_Tikhonov(hoMatrix<T>& A, hoMatrix<T>& b, hoMatrix<T>& x, 
 // following matrix computation calls MKL functions
 #ifdef USE_MKL
 
-#pragma message("Compile MKL implementation of hoMatrix functions ... ")
-
 template<typename T> EXPORTCPUCOREMATH
 bool GeneralMatrixProduct_gemm(hoNDArray<T>& C, 
                             const hoNDArray<T>& A, bool transA, 
@@ -78,8 +76,6 @@ bool InverseGeneralMatrix_getri(hoMatrix<T>& A);
 
     // matrix computation calls armadillo
     #ifdef USE_ARMADILLO
-
-    #pragma message("Compile armadillo implementation of hoMatrix functions ... ")
 
     template<typename T> EXPORTCPUCOREMATH 
     bool GeneralMatrixProduct_gemm(hoNDArray<T>& C, 

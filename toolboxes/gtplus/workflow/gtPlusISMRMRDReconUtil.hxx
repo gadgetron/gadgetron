@@ -5304,21 +5304,24 @@ coilMap2DNIH(const hoNDArray<T>& data, hoNDArray<T>& coilMap, ISMRMRDCOILMAPALGO
         long long E1 = data.get_size(1);
         long long CHA = data.get_size(2);
 
-        #ifdef USE_CUDA
-            int cur_device = cudaDeviceManager::Instance()->getCurrentDevice();
-            int warp_size = cudaDeviceManager::Instance()->warp_size(cur_device);
-            int max_blockdim = cudaDeviceManager::Instance()->max_blockdim(cur_device);
+        if ( useGPU )
+        {
+            #ifdef USE_CUDA
+                int cur_device = cudaDeviceManager::Instance()->getCurrentDevice();
+                int warp_size = cudaDeviceManager::Instance()->warp_size(cur_device);
+                int max_blockdim = cudaDeviceManager::Instance()->max_blockdim(cur_device);
 
-            int numOfDevices = cudaDeviceManager::Instance()->getTotalNumberOfDevice();
+                int numOfDevices = cudaDeviceManager::Instance()->getTotalNumberOfDevice();
 
-            if ( (numOfDevices==0) || (CHA>32) )
-            {
+                if ( (numOfDevices==0) || (CHA>32) )
+                {
+                    useGPU = false;
+                }
+
+            #else
                 useGPU = false;
-            }
-
-        #else
-            useGPU = false;
-        #endif // USE_CUDA
+            #endif // USE_CUDA
+        }
 
         if ( useGPU )
         {
