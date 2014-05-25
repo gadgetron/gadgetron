@@ -30,6 +30,9 @@ namespace Gadgetron{
         noise_dwell_time_us_preset_ = 5;
 
         fixed_noise_bandwidth_ = -1;
+
+        gt_timer_.set_timing_in_destruction(false);
+        performTiming_ = false;
     }
 
     NoiseAdjustGadget::~NoiseAdjustGadget()
@@ -57,6 +60,8 @@ namespace Gadgetron{
         {
             noise_dependency_prefix_ = *str;
         }
+
+        performTiming_ = this->get_bool_value("performTiming");
 
         noise_dwell_time_us_preset_ = (float)this->get_double_value("noise_dwell_time_us_preset");
         if ( noise_dwell_time_us_preset_ == 0 ) noise_dwell_time_us_preset_ = 5;
@@ -294,6 +299,8 @@ namespace Gadgetron{
 
     void NoiseAdjustGadget::computeNoisePrewhitener(bool savePrewhitener)
     {
+        GADGET_START_TIMING_CONDITION(gt_timer_, "compute noise prewhitener ... ", performTiming_);
+
         if ( noise_dwell_time_us_ > 0 )
         {
             if (number_of_noise_samples_ > 1)
@@ -328,10 +335,14 @@ namespace Gadgetron{
                 }
             }
         }
+
+        GADGET_STOP_TIMING_CONDITION(gt_timer_, performTiming_);
     }
 
     int NoiseAdjustGadget::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
     {
+        // GADGET_START_TIMING_CONDITION(gt_timer_, "in noise process ... ", performTiming_);
+
         bool is_scc_correction = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_SURFACECOILCORRECTIONSCAN_DATA).isSet(m1->getObjectPtr()->flags);
         bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
 
@@ -378,6 +389,8 @@ namespace Gadgetron{
 
                 if (noise_decorrelation_calculated_)
                 {
+                    // GADGET_START_TIMING_CONDITION(gt_timer_, "apply noise prewhitener ... ", performTiming_);
+
                     //#ifdef USE_MKL
                     //    GeneralMatrixProduct_gemm(*m2->getObjectPtr(), *m2->getObjectPtr(), false, noise_covariance_matrixf_, false);
                     //#else
@@ -385,6 +398,8 @@ namespace Gadgetron{
                         arma::cx_fmat am2 = as_arma_matrix(m2->getObjectPtr());
                         am2 = am2*arma::trimatu(noise_covf);
                     //#endif // USE_MKL
+
+                    // GADGET_STOP_TIMING_CONDITION(gt_timer_, performTiming_);
                 }
 
                 if (this->next()->putq(m1) == -1)
@@ -408,6 +423,18 @@ namespace Gadgetron{
                 if ( number_of_noise_samples_per_acquisition_ == 0 )
                 {
                     number_of_noise_samples_per_acquisition_ = samples;
+                }
+
+                if ( noise_dwell_time_us_ < 0 )
+                {
+                    if ( !is_scc_correction && number_of_noise_samples_per_acquisition_>0 )
+                    {
+                        noise_dwell_time_us_ = m1->getObjectPtr()->sample_time_us;
+                    }
+                    else
+                    {
+                        noise_dwell_time_us_ = noise_dwell_time_us_preset_;
+                    }
                 }
 
                 //If noise covariance matrix is not allocated
@@ -436,7 +463,6 @@ namespace Gadgetron{
                 #ifdef USE_MKL
                     GADGET_CHECK_RETURN(GeneralMatrixProduct_gemm(noise_covariance_matrixf_once_, *m2->getObjectPtr(), true, *m2->getObjectPtr(), false), GADGET_FAIL);
                     GADGET_CHECK_RETURN(Gadgetron::add(noise_covariance_matrixf_once_, noise_covariance_matrixf_, noise_covariance_matrixf_), GADGET_FAIL);
-                    Gadgetron::clear(noise_covariance_matrixf_once_);
                 #else
                     for (unsigned int s = 0; s < samples; s++)
                     {
@@ -455,29 +481,6 @@ namespace Gadgetron{
             }
             else
             {
-                if ( noise_dwell_time_us_ < 0 )
-                {
-                    // this noise can be from a noise scan or it can be from the built-in noise
-                    if ( !is_scc_correction )
-                    {
-                        // let's assume it is from the built-in noise for now
-                        if ( fixed_noise_bandwidth_ > 0 )
-                        {
-                            GADGET_MSG("Use the preset noise bandwidth : " << fixed_noise_bandwidth_);
-                            noise_dwell_time_us_ = (float)(10e6/number_of_noise_samples_per_acquisition_/fixed_noise_bandwidth_);
-                        }
-                        else
-                        {
-                            noise_dwell_time_us_ = (float)( ((long)(76800.0/number_of_noise_samples_per_acquisition_)) / 10.0 );
-                        }
-                    }
-                    else
-                    {
-                        // if the data is from a pre-scan, the noise should be from the pre-scan too
-                        noise_dwell_time_us_ = noise_dwell_time_us_preset_;
-                    }
-                }
-
                 if ( noise_dwell_time_us_ > 0 )
                 {
                     acquisition_dwell_time_us_ = m1->getObjectPtr()->sample_time_us;
@@ -543,6 +546,8 @@ namespace Gadgetron{
             }
         }
 
+        // GADGET_STOP_TIMING_CONDITION(gt_timer_, performTiming_);
+
         return GADGET_OK;
     }
 
@@ -555,7 +560,7 @@ namespace Gadgetron{
             computed_in_close_ = true;
             if ( !this->use_stored_noise_prewhitener_ )
             {
-                noise_dwell_time_us_ = noise_dwell_time_us_preset_; // this scan is a noise measurement
+                if ( noise_dwell_time_us_ < 0 ) noise_dwell_time_us_ = noise_dwell_time_us_preset_; // this scan is a noise measurement
                 this->computeNoisePrewhitener(true);
             }
         }

@@ -3,6 +3,7 @@
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "gadgetron_mricore_export.h"
+#include "GadgetronTimer.h"
 
 #include <ismrmrd.h>
 #include <complex>
@@ -66,5 +67,8 @@ namespace Gadgetron {
         bool saveNoisePrewhitener(const std::string& full_name_stored_noise_dependency, float& noise_dwell_time_us, hoNDArray< ValueType >& noise_covariance_matrixf);
 
         void computeNoisePrewhitener(bool savePrewhitener=true);
+
+        Gadgetron::GadgetronTimer gt_timer_;
+        bool performTiming_;
     };
 }
