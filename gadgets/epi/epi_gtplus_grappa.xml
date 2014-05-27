@@ -498,7 +498,6 @@
     </gadget>
 
     <!-- after recon processing -->
-    <!--
     <gadget>
         <name>ComplexToFloatAttrib</name>
         <dll>gadgetron_mricore</dll>
@@ -509,24 +508,15 @@
         <name>FloatToShortAttrib</name>
         <dll>gadgetron_mricore</dll>
         <classname>FloatToUShortAttribGadget</classname>
+    </gadget>
 
-        <property>
-            <name>max_intensity</name>
-            <value>32767</value>
-        </property>
-
-        <property>
-            <name>intensity_offset</name>
-            <value>16384</value>
-        </property>
+    <!--
+    <gadget>
+      <name>ImageFinishAttribCPLX</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>ImageFinishAttribGadgetCPLX</classname>
     </gadget>
     -->
-
-    <gadget>
-        <name>ImageFinishAttribCPLX</name>
-        <dll>gadgetron_mricore</dll>
-        <classname>ImageFinishAttribGadgetCPLX</classname>
-    </gadget>
 
     <!--
     <gadget>
@@ -534,13 +524,12 @@
       <dll>gadgetron_mricore</dll>
       <classname>ImageFinishAttribGadgetFLOAT</classname>
     </gadget>
-
+    -->
 
     <gadget>
-        <name>DicomFinishAttribGadget</name>
-        <dll>gadgetron_dicom</dll>
-        <classname>DicomFinishAttribGadgetUSHORT</classname>
+        <name>ImageFinishAttribUSHORT</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ImageFinishAttribGadgetUSHORT</classname>
     </gadget>
-    -->
 
 </gadgetronStreamConfiguration>

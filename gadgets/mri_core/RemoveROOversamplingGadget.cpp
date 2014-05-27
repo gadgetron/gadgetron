@@ -16,6 +16,17 @@ namespace Gadgetron{
     int RemoveROOversamplingGadget::process_config(ACE_Message_Block* mb)
     {
         constant_noise_variance_ = this->get_bool_value("constant_noise_variance");
+
+        boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
+        ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
+
+        // Get the encoding space and trajectory description
+        ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
+        ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
+
+        encodeFOV_ = e_space.fieldOfView_mm().x();
+        reconFOV_  = r_space.fieldOfView_mm().x();
+
         return GADGET_OK;
     }
 
@@ -32,7 +43,20 @@ namespace Gadgetron{
         }
 
         std::vector<size_t> data_out_dims = *m2->getObjectPtr()->get_dimensions();
-        data_out_dims[0] = data_out_dims[0]/2;
+        if ( !ifft_buf_.dimensions_equal(&data_out_dims) )
+        {
+            ifft_buf_.create(data_out_dims);
+            ifft_res_.create(data_out_dims);
+        }
+
+        float ratioFOV = encodeFOV_/reconFOV_;
+
+        data_out_dims[0] = (size_t)(data_out_dims[0]/ratioFOV);
+        if ( !fft_buf_.dimensions_equal(&data_out_dims) )
+        {
+            fft_buf_.create(data_out_dims);
+            fft_res_.create(data_out_dims);
+        }
 
         try{ m3->getObjectPtr()->create(&data_out_dims);}
         catch (std::runtime_error &err)
@@ -41,40 +65,45 @@ namespace Gadgetron{
             return GADGET_FAIL;
         }
 
-        if ( constant_noise_variance_ )
-        {
-            hoNDFFT<float>::instance()->ifft1c(*m2->getObjectPtr());
-        }
-        else
-        {
-            hoNDFFT<float>::instance()->ifft(m2->getObjectPtr(), 0);
-        }
+        size_t sRO = m2->getObjectPtr()->get_size(0);
+        size_t start = (size_t)( (m2->getObjectPtr()->get_size(0)-data_out_dims[0])/ratioFOV );
 
-        std::complex<float>* data_in  = m2->getObjectPtr()->get_data_ptr();
-        std::complex<float>* data_out = m3->getObjectPtr()->get_data_ptr();
+        size_t dRO = m3->getObjectPtr()->get_size(0);
+        size_t numOfBytes = data_out_dims[0]*sizeof(std::complex<float>);
 
         int c;
 
         int CHA = (int)(data_out_dims[1]);
 
-        size_t sRO = m2->getObjectPtr()->get_size(0);
-        size_t start = (m2->getObjectPtr()->get_size(0)-data_out_dims[0])/2;
-
-        size_t dRO = m3->getObjectPtr()->get_size(0);
-        size_t numOfBytes = data_out_dims[0]*sizeof(std::complex<float>);
-
-        #pragma omp parallel for default(none) private(c) shared(CHA, sRO, start, dRO, data_in, data_out, numOfBytes)
-        for ( c=0; c<CHA; c++)
-        {
-            memcpy( data_out+c*dRO, data_in+c*sRO+start, numOfBytes );
-        }
+        std::complex<float>* data_in, *data_out;
 
         if ( constant_noise_variance_ )
         {
-            hoNDFFT<float>::instance()->fft1c(*m3->getObjectPtr());
+            hoNDFFT<float>::instance()->ifft1c(*m2->getObjectPtr(), ifft_res_, ifft_buf_);
+
+            data_in  = ifft_res_.get_data_ptr();
+            data_out = fft_res_.get_data_ptr();
+
+            #pragma omp parallel for default(none) private(c) shared(CHA, sRO, start, dRO, data_in, data_out, numOfBytes)
+            for ( c=0; c<CHA; c++)
+            {
+                memcpy( data_out+c*dRO, data_in+c*sRO+start, numOfBytes );
+            }
+
+            hoNDFFT<float>::instance()->fft1c(fft_res_, *m3->getObjectPtr(), fft_buf_);
         }
         else
         {
+            hoNDFFT<float>::instance()->ifft(m2->getObjectPtr(), 0);
+            data_in  = m2->getObjectPtr()->get_data_ptr();
+            data_out = m3->getObjectPtr()->get_data_ptr();
+
+            #pragma omp parallel for default(none) private(c) shared(CHA, sRO, start, dRO, data_in, data_out, numOfBytes)
+            for ( c=0; c<CHA; c++)
+            {
+                memcpy( data_out+c*dRO, data_in+c*sRO+start, numOfBytes );
+            }
+
             hoNDFFT<float>::instance()->fft(m3->getObjectPtr(), 0);
         }
 
@@ -82,7 +111,7 @@ namespace Gadgetron{
 
         m1->cont(m3);
         m1->getObjectPtr()->number_of_samples = data_out_dims[0];
-        m1->getObjectPtr()->center_sample /= 2;
+        m1->getObjectPtr()->center_sample = (uint16_t)(m1->getObjectPtr()->center_sample/ratioFOV);
 
         if (this->next()->putq(m1) == -1)
         {

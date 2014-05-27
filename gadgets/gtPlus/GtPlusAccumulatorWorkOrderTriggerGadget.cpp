@@ -286,7 +286,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     }
     else
     {
-        meas_max_ro_ = r_space.matrixSize().x();
+        meas_max_ro_ = e_space.matrixSize().x();
     }
 
     if (e_limits.kspace_encoding_step_1().present()) 
@@ -1159,6 +1159,8 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
             if ( E1 < matrix_size_encoding_[1] ) E1 = matrix_size_encoding_[1];
             if ( E2 < matrix_size_encoding_[2] ) E2 = matrix_size_encoding_[2];
 
+            if ( samples > meas_max_ro_ ) meas_max_ro_ = samples;
+
             // find the loop counter boundary and allocate the buffer
             GADGET_CONDITION_MSG(verboseMode_, "[RO E1 Cha Slice E2 Con Phase Rep Set Seg] = [" 
                                << meas_max_ro_ 
@@ -1342,6 +1344,8 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
             {
                 RO = samples;
             }
+
+            if ( RO < samples ) RO = samples;
 
             // find the loop counter boundary and allocate the buffer
             GADGET_CONDITION_MSG(verboseMode_, "[RO E1 Cha Slice E2 Con Phase Rep Set Seg] = [" 

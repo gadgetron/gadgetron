@@ -39,25 +39,25 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
 
     for (ISMRMRD::trajectoryDescriptionType::userParameterLong_sequence::iterator i (traj_desc.userParameterLong().begin ()); i != traj_desc.userParameterLong().end(); ++i) {
       if (std::strcmp(i->name().c_str(),"rampUpTime") == 0) {
-	reconx.rampUpTime_ = i->value();
+    reconx.rampUpTime_ = i->value();
       } else if (std::strcmp(i->name().c_str(),"rampDownTime") == 0) {
-	reconx.rampDownTime_ = i->value();
+    reconx.rampDownTime_ = i->value();
       } else if (std::strcmp(i->name().c_str(),"flatTopTime") == 0) {
-	reconx.flatTopTime_ = i->value();
+    reconx.flatTopTime_ = i->value();
       } else if (std::strcmp(i->name().c_str(),"acqDelayTime") == 0) {
-	reconx.acqDelayTime_ = i->value();
+    reconx.acqDelayTime_ = i->value();
       } else if (std::strcmp(i->name().c_str(),"numSamples") == 0) {
-	reconx.numSamples_ = i->value();
+    reconx.numSamples_ = i->value();
       } else {
-	GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name().c_str());
+    GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name().c_str());
       }
     }
 
     for (ISMRMRD::trajectoryDescriptionType::userParameterDouble_sequence::iterator i (traj_desc.userParameterDouble().begin ()); i != traj_desc.userParameterDouble().end(); ++i) {
       if (std::strcmp(i->name().c_str(),"dwellTime") == 0) {
-	reconx.dwellTime_ = i->value();
+    reconx.dwellTime_ = i->value();
       } else {
-	GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name().c_str());
+    GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name().c_str());
       }
     }
 
@@ -65,20 +65,25 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
     reconx.computeTrajectory();
 
     // Second encoding space is an even readout for PAT REF e.g. FLASH
-    reconx_other.encodeNx_  = e_space.matrixSize().x();
-    reconx_other.encodeFOV_ = e_space.fieldOfView_mm().x();
-    reconx_other.reconNx_   = r_space.matrixSize().x();
-    reconx_other.reconFOV_  = r_space.fieldOfView_mm().x();
-    reconx_other.numSamples_ = reconx.numSamples_;
-    reconx_other.dwellTime_ = 1.0;
-    reconx_other.computeTrajectory();
+    if ( e_seq.size() > 1 )
+    {
+        ISMRMRD::encodingSpaceType e_space2 = e_seq[1].encodedSpace();
+        ISMRMRD::encodingSpaceType r_space2 = e_seq[1].reconSpace();
+        reconx_other.encodeNx_  = e_space2.matrixSize().x();
+        reconx_other.encodeFOV_ = e_space2.fieldOfView_mm().x();
+        reconx_other.reconNx_   = r_space2.matrixSize().x();
+        reconx_other.reconFOV_  = r_space2.fieldOfView_mm().x();
+        reconx_other.numSamples_ = 2*e_space2.matrixSize().x();
+        reconx_other.dwellTime_ = 1.0;
+        reconx_other.computeTrajectory();
+    }
 
   return 0;
 }
 
 int EPIReconXGadget::process(
           GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
+      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
   ISMRMRD::AcquisitionHeader hdr_in = *(m1->getObjectPtr());
@@ -103,9 +108,9 @@ int EPIReconXGadget::process(
   if (this->next()->putq(m1) == -1) {
     m1->release();
     ACE_ERROR_RETURN( (LM_ERROR,
-		       ACE_TEXT("%p\n"),
-		       ACE_TEXT("EPIReconXGadget::process, passing data on to next gadget")),
-		      -1);
+               ACE_TEXT("%p\n"),
+               ACE_TEXT("EPIReconXGadget::process, passing data on to next gadget")),
+              -1);
   }
 
   return 0;

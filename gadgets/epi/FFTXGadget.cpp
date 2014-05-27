@@ -9,7 +9,7 @@ namespace Gadgetron{
   FFTXGadget::~FFTXGadget() {}
 
   int FFTXGadget::process( GadgetContainerMessage< ISMRMRD::AcquisitionHeader>* m1,
-			    GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
+                GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
   {
 
     // FFT along 1st dimensions (x)
@@ -20,8 +20,8 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
     
-    return GADGET_OK;    
+    return GADGET_OK;
   }
-  
+
   GADGET_FACTORY_DECLARE(FFTXGadget)
 }

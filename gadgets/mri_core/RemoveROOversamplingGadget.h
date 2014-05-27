@@ -27,5 +27,14 @@ namespace Gadgetron{
 
         // if true, the noise variance is kept unchanged in this process
         bool constant_noise_variance_;
+
+        hoNDArray< std::complex<float> > fft_res_;
+        hoNDArray< std::complex<float> > ifft_res_;
+
+        hoNDArray< std::complex<float> > fft_buf_;
+        hoNDArray< std::complex<float> > ifft_buf_;
+
+        float encodeFOV_;
+        float reconFOV_;
     };
 }

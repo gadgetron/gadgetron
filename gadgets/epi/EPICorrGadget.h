@@ -20,11 +20,11 @@ namespace Gadgetron{
     public:
       EPICorrGadget();
       virtual ~EPICorrGadget();
-      
+
     protected:
       virtual int process_config(ACE_Message_Block* mb);
       virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+              GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
       // in verbose mode, more info is printed out
       bool verboseMode_;

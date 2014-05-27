@@ -1711,7 +1711,10 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
 
         if ( !( workOrder2DT->start_E1_<0 || workOrder2DT->end_E1_<0 || (workOrder2DT->end_E1_-workOrder2DT->start_E1_+1==E1) ) )
         {
-            partialFourierCompensationFactor *= (value_type)(E1)/(value_type)(workOrder2DT->end_E1_-workOrder2DT->start_E1_+1);
+            if ( workOrder2DT->end_E1_-workOrder2DT->start_E1_+1 <= E1 )
+            {
+                partialFourierCompensationFactor *= (value_type)(E1)/(value_type)(workOrder2DT->end_E1_-workOrder2DT->start_E1_+1);
+            }
         }
 
         partialFourierCompensationFactor = std::sqrt(partialFourierCompensationFactor);

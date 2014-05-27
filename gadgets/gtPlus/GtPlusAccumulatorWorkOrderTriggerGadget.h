@@ -23,8 +23,8 @@
 namespace Gadgetron
 {
 
-// [Ro E1 Cha Slice E2 Con Phase Rep Set Seg]
-//   0  1  2   3    4   5    6     7  8   9
+// [Ro E1 Cha Slice E2 Con Phase Rep Set Seg AVE]
+//   0  1  2   3    4   5    6     7  8   9  10
 
 struct ReadOutBuffer
 {
@@ -267,6 +267,9 @@ protected:
 
     // a general workorder to store the buffered data
     WorkOrderType workOrder_;
+
+    // indicator for the arrival of last acq
+    bool last_acq_arrived_;
 
     // exporter
     Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;

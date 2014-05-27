@@ -37,7 +37,7 @@ int EPICorrGadget::process_config(ACE_Message_Block* mb)
 
 int EPICorrGadget::process(
           GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
-	  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
+      GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
   //std::cout << "Nav: " << navNumber_ << "    " << "Echo: " << epiEchoNumber_ << std::endl;
@@ -51,9 +51,9 @@ int EPICorrGadget::process(
     if (this->next()->putq(m1) == -1) {
       m1->release();
       ACE_ERROR_RETURN( (LM_ERROR,
-			 ACE_TEXT("%p\n"),
-			 ACE_TEXT("EPICorrGadget::process, passing data on to next gadget")),
-			-1);
+             ACE_TEXT("%p\n"),
+             ACE_TEXT("EPICorrGadget::process, passing data on to next gadget")),
+            -1);
     }
     return 0;
   }
@@ -101,7 +101,7 @@ int EPICorrGadget::process(
       // Accumulate over navigator triplets and sum over coils
       // this is the average phase difference between odd and even navigators
       for (p=0; p<numNavigators_-2; p=p+2) {
-	ctemp += arma::sum(arma::conj(navdata_.slice(p)+navdata_.slice(p+2)) % navdata_.slice(p+1),1);
+    ctemp += arma::sum(arma::conj(navdata_.slice(p)+navdata_.slice(p+2)) % navdata_.slice(p+1),1);
       }
       
       // TODO: Add a configuration toggle to switch between correction types
@@ -121,8 +121,8 @@ int EPICorrGadget::process(
       
       // Odd and even phase corrections
       if (!startNegative_) {
-	// if the first navigator is a positive readout, we need to flip the sign of our correction
-	tvec = -1.0*tvec;
+    // if the first navigator is a positive readout, we need to flip the sign of our correction
+    tvec = -1.0*tvec;
       }
       corrpos_ = arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>(x.n_rows), -0.5*tvec));
       corrneg_ = arma::exp(arma::cx_fvec(arma::zeros<arma::fvec>(x.n_rows), +0.5*tvec));
@@ -140,7 +140,7 @@ int EPICorrGadget::process(
     if (ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_REVERSE).isSet(hdr.flags)) {
       // Negative readout
       for (int p=0; p<adata.n_cols; p++) {
-	adata.col(p) %= corrneg_;
+    adata.col(p) %= corrneg_;
       }
       // Now that we have corrected we set the readout direction to positive
       hdr.flags &= ~(ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_REVERSE).bitmask_);
@@ -148,7 +148,7 @@ int EPICorrGadget::process(
     else {
       // Positive readout
       for (int p=0; p<adata.n_cols; p++) {
-	adata.col(p) %= corrpos_;
+    adata.col(p) %= corrpos_;
       }
     }
   }
@@ -163,9 +163,9 @@ int EPICorrGadget::process(
     if (this->next()->putq(m1) == -1) {
       m1->release();
       ACE_ERROR_RETURN( (LM_ERROR,
-			 ACE_TEXT("%p\n"),
-			 ACE_TEXT("EPICorrGadget::process, passing data on to next gadget")),
-			-1);
+             ACE_TEXT("%p\n"),
+             ACE_TEXT("EPICorrGadget::process, passing data on to next gadget")),
+            -1);
     }
   }
 

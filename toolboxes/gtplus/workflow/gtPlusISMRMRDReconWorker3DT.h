@@ -1752,12 +1752,18 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
 
         if ( !( workOrder3DT->start_E1_<0 || workOrder3DT->end_E1_<0 || (workOrder3DT->end_E1_-workOrder3DT->start_E1_+1==E1) ) )
         {
-            partialFourierCompensationFactor *= (value_type)(E1)/(value_type)(workOrder3DT->end_E1_-workOrder3DT->start_E1_+1);
+            if ( workOrder3DT->end_E1_-workOrder3DT->start_E1_+1 <= E1 )
+            {
+                partialFourierCompensationFactor *= (value_type)(E1)/(value_type)(workOrder3DT->end_E1_-workOrder3DT->start_E1_+1);
+            }
         }
 
         if ( !( workOrder3DT->start_E2_<0 || workOrder3DT->end_E2_<0 || (workOrder3DT->end_E2_-workOrder3DT->start_E2_+1==E2) ) )
         {
-            partialFourierCompensationFactor *= (value_type)(E2)/(value_type)(workOrder3DT->end_E2_-workOrder3DT->start_E2_+1);
+            if ( workOrder3DT->end_E2_-workOrder3DT->start_E2_+1 <= E2 )
+            {
+                partialFourierCompensationFactor *= (value_type)(E2)/(value_type)(workOrder3DT->end_E2_-workOrder3DT->start_E2_+1);
+            }
         }
 
         partialFourierCompensationFactor = std::sqrt(partialFourierCompensationFactor);
