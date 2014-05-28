@@ -78,16 +78,6 @@
         <classname>FFTXGadget</classname>
     </gadget>
 
-
-    <gadget>
-      <name>IsmrmrdDump</name>
-      <dll>gadgetron_mricore</dll>
-      <classname>IsmrmrdDumpGadget</classname>
-      <property><name>file_prefix</name><value>ISMRMRD_DUMP</value></property>
-      <property><name>append_timestamp</name><value>1</value></property>
-    </gadget>
-
-
     <!-- Data accumulation and trigger gadget -->
     <gadget>
         <name>Acc</name>
@@ -324,7 +314,7 @@
 
         <property>
             <name>use_constant_scalingFactor</name>
-            <value>true</value>
+            <value>false</value>
         </property>
 
         <!-- parameters for kspace filter, image data -->
@@ -410,12 +400,12 @@
         <!-- parameters for debug and timing -->
         <property>
             <name>debugFolder</name>
-            <value>DebugOutput</value>
+            <value></value>
         </property>
 
         <property>
             <name>debugFolder2</name>
-            <value>DebugOutput</value>
+            <value></value>
         </property>
 
         <property>
