@@ -1634,6 +1634,26 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
                 }
             }
         }
+        else
+        {
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->complexIm_, "complexIm_origin_noFullResCoilMap_");
+
+            // if the partial fourier handling is performed on the fullkspace, an extra coil combination is needed
+            if ( workOrder2DT->acceFactorE1_==1 && workOrder2DT->acceFactorE2_==1 )
+            {
+                hoNDArray<T> buffer2DT_Two(workOrder2DT->data_.get_dimensions());
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->data_, buffer2DT_, buffer2DT_Two));
+                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer2DT_, *workOrder2DT->coilMap_, workOrder2DT->complexIm_));
+                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->complexIm_, "complexIm_noFullResCoilMap_");
+            }
+            else if ( workOrder2DT->fullkspace_.get_number_of_elements() > 0 )
+            {
+                hoNDArray<T> buffer2DT_Two(workOrder2DT->fullkspace_.get_dimensions());
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->fullkspace_, buffer2DT_, buffer2DT_Two));
+                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer2DT_, *workOrder2DT->coilMap_, workOrder2DT->complexIm_));
+                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->complexIm_, "complexIm_noFullResCoilMap_");
+            }
+        }
     }
     catch(...)
     {
@@ -1720,6 +1740,8 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
         partialFourierCompensationFactor = std::sqrt(partialFourierCompensationFactor);
         GADGET_CHECK_PERFORM(performTiming_, GADGET_MSG("Partial fourier scaling factor : " << partialFourierCompensationFactor));
 
+        GADGET_CHECK_PERFORM(performTiming_, GADGET_MSG("Partial fourier algorithm : " << workOrder2DT->partialFourier_algo_));
+        
         if ( workOrder2DT->acceFactorE1_==1 && workOrder2DT->acceFactorE2_==1 )
         {
             if ( workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
