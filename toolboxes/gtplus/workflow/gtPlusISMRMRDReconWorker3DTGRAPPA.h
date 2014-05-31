@@ -267,8 +267,12 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
     ho4DArray<T> acsSrc(refRO, refE1, refE2, srcCHA, const_cast<T*>(ref_src.begin()+usedN*refRO*refE1*refE2*srcCHA));
     ho4DArray<T> acsDst(refRO, refE1, refE2, dstCHA, const_cast<T*>(ref_dst.begin()+usedN*refRO*refE1*refE2*dstCHA));
 
-    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsSrc, "acsSrc");
-    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsDst, "acsDst");
+    std::ostringstream ostr;
+    ostr << "_n_" << usedN;
+    std::string suffix = ostr.str();
+
+    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsSrc, "acsSrc"+suffix);
+    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsDst, "acsDst"+suffix);
 
     grappa_.calib_use_gpu_  = workOrder3DT->grappa_use_gpu_;
 
@@ -277,7 +281,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
     grappa_.calib3D(acsSrc, acsDst, workOrder3DT->grappa_reg_lamda_, workOrder3DT->grappa_calib_over_determine_ratio_, (int)kRO, kE1, kE2, oE1, oE2, ker);
     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
-    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker");
+    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker"+suffix);
 
     size_t jobN;
     bool splitJobs = this->splitJob(workOrder3DT, jobN);
@@ -286,7 +290,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
     {
         hoNDArray<T> kIm(RO, E1, E2, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin()+usedN*RO*E1*E2*srcCHA*dstCHA);
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D image domain kernel ... "));
-        grappa_.imageDomainKernel3D(ker, (int)kRO, kE1, kE2, oE1, oE2, (int)RO, (int)E1, (int)E2, kIm);
+        grappa_.imageDomainKernel3D(ker, (int)kRO, kE1, kE2, oE1, oE2, (int)RO, E1, E2, kIm);
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         if ( !reconKSpace )
@@ -300,8 +304,8 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
 
             memcpy(workOrder3DT->unmixingCoeffIm_->begin()+usedN*RO*E1*E2*srcCHA, unmixC.begin(), unmixC.get_number_of_bytes());
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unmixC, "unmixC");
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gFactor, "gFactor");
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unmixC, "unmixC"+suffix);
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gFactor, "gFactor"+suffix);
         }
     }
     else
@@ -329,7 +333,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
         if ( !debugFolder_.empty() )
         {
             hoNDArray<T> kImROACha(convKE1, convKE2, RO, srcCHA, kIm.begin());
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImROACha, "kImROACha");
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImROACha, "kImROACha"+suffix);
         }
     }
 
@@ -372,6 +376,16 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
 
         typename realType<T>::Type fftCompensationRatio = (typename realType<T>::Type)(1.0/std::sqrt( (double)workOrder3DT->acceFactorE1_ * (double)workOrder3DT->acceFactorE2_ ));
         Gadgetron::scal( fftCompensationRatio, aliasedIm);
+
+        // if the image data is scaled and ref lines are going to be filled back to the data, 
+        // the reference lines should be scaled too
+        if ( workOrder3DT->CalibMode_ == ISMRMRD_embedded )
+        {
+            if ( workOrder3DT->embedded_ref_fillback_ )
+            {
+                Gadgetron::scal( fftCompensationRatio, workOrder3DT->ref_);
+            }
+        }
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 

@@ -110,9 +110,11 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         size_t refN = ref_dst.get_size(3);
         size_t dstCHA = ref_dst.get_size(2);
 
+        gtPlusGRAPPA<T> grappa_local;
+
         std::vector<int> kE1, oE1;
         bool fitItself = true;
-        GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, (int)workOrder2DT->acceFactorE1_, workOrder2DT->grappa_kSize_E1_, fitItself));
+        GADGET_CHECK_RETURN_FALSE(grappa_local.kerPattern(kE1, oE1, (int)workOrder2DT->acceFactorE1_, workOrder2DT->grappa_kSize_E1_, fitItself));
 
         size_t kRO = workOrder2DT->grappa_kSize_RO_;
         size_t kNE1 = workOrder2DT->grappa_kSize_E1_;
@@ -121,20 +123,29 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         ho3DArray<T> acsSrc(refRO, refE1, srcCHA, const_cast<T*>(ref_src.begin()+n*refRO*refE1*srcCHA+usedS*refRO*refE1*srcCHA*refN));
         ho3DArray<T> acsDst(refRO, refE1, dstCHA, const_cast<T*>(ref_dst.begin()+n*refRO*refE1*dstCHA+usedS*refRO*refE1*dstCHA*refN));
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsSrc, "acsSrc");
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsDst, "acsDst");
+        std::ostringstream ostr;
+        ostr << "_n_" << n << "s_" << usedS;
+        std::string suffix = ostr.str();
 
-        grappa_.calib_use_gpu_  = workOrder2DT->grappa_use_gpu_;
+        std::string filename = "acsSrc";
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsSrc, filename+suffix);
+
+        filename = "acsDst";
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsDst, filename+suffix);
+
+        grappa_local.calib_use_gpu_  = workOrder2DT->grappa_use_gpu_;
 
         ho5DArray<T> ker(kRO, kNE1, srcCHA, dstCHA, oNE1, workOrder2DT->kernel_->begin()+n*kRO*kNE1*srcCHA*dstCHA*oNE1+usedS*kRO*kNE1*srcCHA*dstCHA*oNE1*refN);
-        grappa_.calib(acsSrc, acsDst, workOrder2DT->grappa_reg_lamda_, (int)kRO, kE1, oE1, ker);
+        grappa_local.calib(acsSrc, acsDst, workOrder2DT->grappa_reg_lamda_, (int)kRO, kE1, oE1, ker);
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker");
+        filename = "ker";
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, filename+suffix);
 
         hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, workOrder2DT->kernelIm_->begin()+n*RO*E1*srcCHA*dstCHA+usedS*RO*E1*srcCHA*dstCHA*refN);
-        grappa_.imageDomainKernel(ker, (int)kRO, kE1, oE1, (int)RO, (int)E1, kIm);
+        grappa_local.imageDomainKernel(ker, (int)kRO, kE1, oE1, (int)RO, E1, kIm);
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, "kIm");
+        filename = "kIm";
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, filename+suffix);
 
         hoNDArray<T> coilMap(RO, E1, dstCHA, workOrder2DT->coilMap_->begin()+n*RO*E1*dstCHA+usedS*RO*E1*dstCHA*refN);
         hoNDArray<T> unmixC(RO, E1, srcCHA, workOrder2DT->unmixingCoeffIm_->begin()+n*RO*E1*srcCHA+usedS*RO*E1*srcCHA*refN);
@@ -143,8 +154,11 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         this->unmixCoeff(kIm, coilMap, unmixC, gFactor);
         GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (value_type)(1.0/workOrder2DT->acceFactorE1_), gFactor));
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unmixC, "unmixC");
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gFactor, "gFactor");
+        filename = "unmixC";
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unmixC, filename+suffix);
+
+        filename = "gFactor";
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gFactor, filename+suffix);
     }
     catch(...)
     {
@@ -202,6 +216,16 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 
         typename realType<T>::Type fftCompensationRatio = (typename realType<T>::Type)(1.0/std::sqrt(effectiveAcceFactor));
         Gadgetron::scal( fftCompensationRatio, buffer2DT_);
+
+        // if the image data is scaled and ref lines are going to be filled back to the data, 
+        // the reference lines should be scaled too
+        if ( workOrder2DT->CalibMode_ == ISMRMRD_embedded )
+        {
+            if ( workOrder2DT->embedded_ref_fillback_ )
+            {
+                Gadgetron::scal( fftCompensationRatio, workOrder2DT->ref_);
+            }
+        }
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer2DT_, "buffer2DT_");
 

@@ -69,11 +69,11 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
     {
         ISMRMRD::encodingSpaceType e_space2 = e_seq[1].encodedSpace();
         ISMRMRD::encodingSpaceType r_space2 = e_seq[1].reconSpace();
-        reconx_other.encodeNx_  = e_space2.matrixSize().x();
-        reconx_other.encodeFOV_ = e_space2.fieldOfView_mm().x();
+        reconx_other.encodeNx_  = r_space2.matrixSize().x();
+        reconx_other.encodeFOV_ = r_space2.fieldOfView_mm().x();
         reconx_other.reconNx_   = r_space2.matrixSize().x();
         reconx_other.reconFOV_  = r_space2.fieldOfView_mm().x();
-        reconx_other.numSamples_ = 2*e_space2.matrixSize().x();
+        reconx_other.numSamples_ = e_space2.matrixSize().x();
         reconx_other.dwellTime_ = 1.0;
         reconx_other.computeTrajectory();
     }
