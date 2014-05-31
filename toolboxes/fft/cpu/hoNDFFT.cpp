@@ -1,6 +1,7 @@
 #include "hoNDFFT.h"
 #include "hoMatrix.h"
 #include "hoNDArray_math_util.h"
+#include "hoNDArray_math.h"
 
 namespace Gadgetron{
 
@@ -12,7 +13,7 @@ namespace Gadgetron{
 
     template<class T> hoNDFFT<T>* hoNDFFT<T>::instance_ = NULL;
 
-    template<class T> void hoNDFFT<T>::fft_int(hoNDArray< std::complex<T> >* input, size_t dim_to_transform, int sign)
+    template<class T> void hoNDFFT<T>::fft_int(hoNDArray< ComplexType >* input, size_t dim_to_transform, int sign)
     {
         if (sign != -1 && sign != 1) return;
         if (dim_to_transform >= input->get_number_of_dimensions()) return;
@@ -1721,7 +1722,8 @@ namespace Gadgetron{
             }
         }
 
-        Gadgetron::scal( (typename realType<T>::Type)(fftRatio), r);
+        r *= fftRatio;
+
 
         return true;
     }
@@ -1810,7 +1812,7 @@ namespace Gadgetron{
             }
         }
 
-        Gadgetron::scal( (typename realType<T>::Type)(fftRatio), r);
+        r *= fftRatio;
 
         return true;
     }
@@ -1900,7 +1902,7 @@ namespace Gadgetron{
             }
         }
 
-        Gadgetron::scal( (typename realType<T>::Type)(fftRatio), r);
+        r *= fftRatio;
 
         return true;
     }
