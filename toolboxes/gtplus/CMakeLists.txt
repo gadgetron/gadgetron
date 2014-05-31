@@ -174,6 +174,7 @@ if ( HAS_64_BIT )
         config/GadgetronProgram_gtPlus_2DT_FatWater.xml
         config/GadgetronProgram_gtPlus_2DT_LGE.xml
         config/GadgetronProgram_gtPlus_2DT_MOLLI.xml
+        config/GadgetronProgram_gtPlus_2DT_HASTE
         config/GadgetronProgram_gtPlus_2DT_Perfusion.xml
         config/GadgetronProgram_gtPlus_2DT_RealTimeCine.xml
         config/GadgetronProgram_gtPlus_2DT_RealTimeFlow.xml
