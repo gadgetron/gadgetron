@@ -54,5 +54,3 @@ gtplus/snr_unit_recon_tpat3/gtplus_snr_unit_recon_ref.h5: 71a665565321165be3c0ce
 gtplus/snr_unit_recon_tpat3/meas_MID00171_FID02908_GRE_reps=150_TPAT=3.dat: 21e219f663a27c22fec4b56216b2f3ed
 gtplus/T2W/gtplus_T2W_ref.h5: 646496067fca502f86f2770f39a71be1
 gtplus/T2W/meas_MID00057_T2w.dat: 46aa75c471a41c793006328a224a4001
-gtplus/TSE/gtplus_TSE_ref.h5: d594791607508e81b9c1b2c201130b76
-gtplus/TSE/meas_MID00060_FID01992_QQQ_SAX_TE60_DIR_TSE.dat: e05a76aed40ec569bbff11734ac19343
