@@ -108,6 +108,17 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
         {
             ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Error creating the working directory %s.\n"), workingdirectory.c_str()),-1);
         }
+
+        // set the permission for the folder
+        try
+        {
+            boost::filesystem::permissions(workingPath, boost::filesystem::perms::all_all);
+        }
+        catch(...)
+        {
+            ACE_ERROR((LM_ERROR, ACE_TEXT("Error changing the permission of the working directory %s.\n"), workingdirectory.c_str()));
+        }
+
     }
 
     ACE_DEBUG(( LM_DEBUG, ACE_TEXT("%IConfiguring services, Running on port %s\n"), port_no ));
