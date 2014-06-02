@@ -10,8 +10,7 @@
 #include <ace/OS_NS_string.h>
 #include <iostream>
 
-#include <boost/filesystem.hpp>
-using namespace boost::filesystem;
+#include "GadgetronOSUtil.h"
 
 using namespace Gadgetron;
 
@@ -101,24 +100,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[])
     }
 
     // check and create workingdirectory
-    if ( !boost::filesystem::exists(workingdirectory) )
+    if ( !Gadgetron::create_folder_with_all_permissions(workingdirectory) )
     {
-        boost::filesystem::path workingPath(workingdirectory);
-        if ( !boost::filesystem::create_directory(workingPath) )
-        {
-            ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Error creating the working directory %s.\n"), workingdirectory.c_str()),-1);
-        }
-
-        // set the permission for the folder
-        try
-        {
-            boost::filesystem::permissions(workingPath, boost::filesystem::perms::all_all);
-        }
-        catch(...)
-        {
-            ACE_ERROR((LM_ERROR, ACE_TEXT("Error changing the permission of the working directory %s.\n"), workingdirectory.c_str()));
-        }
-
+        ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Gadgetron creating working directory %s failed ... \n"), workingdirectory.c_str()),-1);
     }
 
     ACE_DEBUG(( LM_DEBUG, ACE_TEXT("%IConfiguring services, Running on port %s\n"), port_no ));
