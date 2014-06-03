@@ -53,16 +53,6 @@ namespace Gadgetron{
         return realT(arma::norm(xM,2));
     }
 
-    template<class T> typename realType<T>::Type nrm1( hoNDArray<T> *x )
-    {
-        if( x == 0x0 )
-            BOOST_THROW_EXCEPTION(runtime_error("Gadgetron::nrm1(): Invalid input array"));
-
-        typedef typename realType<T>::Type realT;
-        arma::Col<typename stdType<T>::Type> xM = as_arma_col(x);
-        return realT(arma::norm(xM,1));
-    }
-
     template<class T> size_t amin( hoNDArray<T> *x )
     {
         if( x == 0x0 )
@@ -153,6 +143,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH float dot<float>( hoNDArray<float>*, hoNDArray<float>*, bool );
     template EXPORTCPUCOREMATH float asum<float>( hoNDArray<float>* );
     template EXPORTCPUCOREMATH float nrm2<float>( hoNDArray<float>* );
+
     template EXPORTCPUCOREMATH size_t amin<float>( hoNDArray<float>* );
     template EXPORTCPUCOREMATH size_t amax<float>( hoNDArray<float>* );
     template EXPORTCPUCOREMATH void axpy<float>( float, hoNDArray<float>*, hoNDArray<float>* );
@@ -160,6 +151,7 @@ namespace Gadgetron{
     template EXPORTCPUCOREMATH double dot<double>( hoNDArray<double>*, hoNDArray<double>*, bool );
     template EXPORTCPUCOREMATH double asum<double>( hoNDArray<double>* );
     template EXPORTCPUCOREMATH double nrm2<double>( hoNDArray<double>* );
+
     template EXPORTCPUCOREMATH size_t amin<double>( hoNDArray<double>* );
     template EXPORTCPUCOREMATH size_t amax<double>( hoNDArray<double>* );
     template EXPORTCPUCOREMATH void axpy<double>( double, hoNDArray<double>*, hoNDArray<double>* );
