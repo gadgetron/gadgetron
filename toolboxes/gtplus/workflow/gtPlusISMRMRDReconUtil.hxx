@@ -6078,7 +6078,7 @@ coilCombine(const hoNDArray<T>& data, const hoNDArray<T>& coilMap, hoNDArray<T>&
 
             std::vector<size_t> dataInd, coilMapInd(NDimCoil, 0), coimbinedInd(dimCombined.size(), 0);
 
-            long long nn;
+            size_t nn;
             size_t d;
             hoNDArray<T> dataTmp(RO, E1, CHA);
             hoNDArray<T> combinedCurr(RO, E1, 1);
@@ -6123,7 +6123,7 @@ coilCombine(const hoNDArray<T>& data, const hoNDArray<T>& coilMap, hoNDArray<T>&
 
             std::vector<size_t> dataInd, coilMapInd(NDimCoil, 0), coimbinedInd(dimCombined.size(), 0);
 
-            long long nn;
+            size_t nn;
             size_t d;
             hoNDArray<T> dataTmp(RO, E1, CHA, N);
             hoNDArray<T> combinedCurr(RO, E1, 1, N);
