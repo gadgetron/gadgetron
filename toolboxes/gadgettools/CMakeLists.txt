@@ -37,12 +37,6 @@ add_library(gadgettools SHARED ${XSDS_SOURCES}
                                GadgetronSlotContainer.h 
                                GadgetronConnector.h 
                                GadgetronConnector.cpp 
-                               GadgetServerAcceptor.h 
-                               GadgetServerAcceptor.cpp 
-                               GadgetStreamController.h 
-                               GadgetStreamController.cpp
-                               GadgetronOSUtil.h 
-                               GadgetronOSUtil.cpp
                                GadgetCloudController.h 
                                GadgetronCloudConnector.h 
                                schema/gadgetron.xsd )
@@ -55,8 +49,6 @@ install (FILES
             GadgetronConnector.h
             gadgettools_export.h
             GadgetronSlotContainer.h
-            GadgetServerAcceptor.h
-            GadgetStreamController.h
             DESTINATION include)
 
 if(ISMRMRD_FOUND)

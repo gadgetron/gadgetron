@@ -19,6 +19,8 @@ INCLUDE_DIRECTORIES(${XSD_INCLUDES} ${XERCESC_INCLUDE_DIR})
 add_executable(gadgetron 
   ${XSDS_SOURCES} 
   main.cpp 
+  GadgetServerAcceptor.cpp 
+  GadgetStreamController.cpp 
   EndGadget.h 
   Gadget.h 
   GadgetContainerMessage.h 
@@ -42,6 +44,8 @@ install(FILES
   Gadgetron.h
   GadgetMessageInterface.h
   EndGadget.h
+  GadgetServerAcceptor.h
+  GadgetStreamController.h
   GadgetronExport.h
   DESTINATION include) 
 

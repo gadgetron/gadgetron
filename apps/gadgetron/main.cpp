@@ -9,10 +9,57 @@
 #include <ace/Get_Opt.h>
 #include <ace/OS_NS_string.h>
 #include <iostream>
+#include <string>
 
-#include "GadgetronOSUtil.h"
+#ifdef _WIN32
+    #include <windows.h>
+#else
+    #include <sys/types.h>
+    #include <sys/stat.h>
+#endif // _WIN32
+
+#include <boost/filesystem.hpp>
+using namespace boost::filesystem;
 
 using namespace Gadgetron;
+
+namespace Gadgetron {
+
+bool create_folder_with_all_permissions(const std::string& workingdirectory)
+{
+    if ( !boost::filesystem::exists(workingdirectory) )
+    {
+        boost::filesystem::path workingPath(workingdirectory);
+        if ( !boost::filesystem::create_directory(workingPath) )
+        {
+            ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Error creating the working directory.\n")), false);
+        }
+
+        // set the permission for the folder
+        #ifdef _WIN32
+            try
+            {
+                boost::filesystem::permissions(workingPath, all_all);
+            }
+            catch(...)
+            {
+                ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Error changing the permission of the working directory.\n")), false);
+            }
+        #else
+            // in case an older version of boost is used in non-win system
+            // the system call is used
+            int res = chmod(workingPath.c_str(), S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
+            if ( res != 0 )
+            {
+                ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Error changing the permission of the working directory.\n")), false);
+            }
+        #endif // _WIN32
+    }
+
+    return true;
+}
+
+}
 
 void print_usage()
 {
