@@ -208,9 +208,9 @@ Gadget* GadgetStreamController::find_gadget(std::string gadget_name)
 	return 0;
 }
 
-void GadgetStreamController::set_working_directory(const std::string& workingdirectory)
+void GadgetStreamController::set_global_gadget_parameters(const std::map<std::string, std::string>& globalGadgetPara)
 {
-    working_directory_ = workingdirectory;
+    global_gadget_parameters_ = globalGadgetPara;
 }
 
 int GadgetStreamController::configure_from_file(std::string config_xml_filename)
@@ -249,7 +249,6 @@ int GadgetStreamController::configure_from_file(std::string config_xml_filename)
 
 int GadgetStreamController::configure(std::string config_xml_string)
 {
-
 	char * gadgetron_home = ACE_OS::getenv("GADGETRON_HOME");
 	ACE_TCHAR schema_file_name[4096];
 	ACE_OS::sprintf(schema_file_name, "%s/schema/gadgetron.xsd", gadgetron_home);
@@ -374,8 +373,14 @@ int GadgetStreamController::configure(std::string config_xml_string)
 			g->set_parameter(pname.c_str(),pval.c_str(),false);
 		}
 
-        // set the working directory for every gadget
-        g->set_parameter("workingdirectory", working_directory_.c_str(), false);
+        // set the global gadget parameters for every gadget
+        std::map<std::string, std::string>::const_iterator iter;
+        for ( iter=global_gadget_parameters_.begin(); iter!=global_gadget_parameters_.end(); iter++ )
+        {
+            std::string key = iter->first;
+            std::string value = iter->second;
+            g->set_parameter(key.c_str(), value.c_str(), false);
+        }
 
 		if (stream_.push(m) < 0) {
 			GADGET_DEBUG2("Failed to push Gadget %s onto stream\n", gadgetname.c_str());

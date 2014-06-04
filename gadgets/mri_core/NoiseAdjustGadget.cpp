@@ -42,15 +42,18 @@ namespace Gadgetron{
 
     int NoiseAdjustGadget::process_config(ACE_Message_Block* mb)
     {
-        boost::shared_ptr<std::string> str = this->get_string_value("workingdirectory");
+        boost::shared_ptr<std::string> str = this->get_string_value("workingDirectory");
         if ( !str->empty() )
         {
             noise_dependency_folder_ = *str;
         }
         else
         {
-            noise_dependency_folder_ = ACE_OS::getenv("GADGETRON_HOME");
-            noise_dependency_folder_.append("/dependencies/noise");
+            #ifdef _WIN32
+                noise_dependency_folder_ = std::string("c:\\temp\\gadgetron\\");
+            #else
+                noise_dependency_folder_ =  std::string("/tmp/gadgetron/");
+            #endif // _WIN32
         }
         GADGET_MSG("Folder to store noise dependencies is " << noise_dependency_folder_);
 

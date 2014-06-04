@@ -31,11 +31,6 @@ public:
     , notifier_ (0, this, ACE_Event_Handler::WRITE_MASK)
   	, writer_task_(&this->peer())
     {
-        #ifdef _WIN32
-            working_directory_ = "c:\\temp\\gadgetron\\";
-        #else
-            working_directory_ = "/tmp/gadgetron/";
-        #endif // _WIN32
     }
 
   virtual ~GadgetStreamController()
@@ -62,7 +57,7 @@ public:
 
   virtual Gadget* find_gadget(std::string gadget_name);
 
-  void set_working_directory(const std::string& workingdirectory);
+  void set_global_gadget_parameters(const std::map<std::string, std::string>& globalGadgetPara);
 
 private:
   ACE_Stream<ACE_MT_SYNCH> stream_;
@@ -75,7 +70,7 @@ private:
   
   std::vector<ACE_DLL_Handle*> dll_handles_;
 
-  std::string working_directory_;
+  std::map<std::string, std::string> global_gadget_parameters_;
 
   virtual int configure(std::string config_xml_string);
   virtual int configure_from_file(std::string config_xml_filename);

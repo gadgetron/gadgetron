@@ -25,16 +25,7 @@ int GadgetServerAcceptor::handle_input (ACE_HANDLE)
   ACE_NEW_RETURN (controller, GadgetStreamController, -1);
   auto_ptr<GadgetStreamController> p (controller);
 
-  if ( working_directory_.empty() )
-  {
-    #ifdef _WIN32
-        working_directory_ = "c:\\temp\\gadgetron\\";
-    #else
-        working_directory_ = "/tmp/gadgetron/";
-    #endif // _WIN32
-  }
-
-  controller->set_working_directory(working_directory_);
+  controller->set_global_gadget_parameters(global_gadget_parameters_);
 
   if (this->acceptor_.accept (controller->peer ()) == -1)
     ACE_ERROR_RETURN ((LM_ERROR,
