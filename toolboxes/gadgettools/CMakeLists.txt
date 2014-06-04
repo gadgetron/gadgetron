@@ -24,9 +24,9 @@ INCLUDE_DIRECTORIES( ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
 
 message("XSDS_SOURCES is " ${XSDS_SOURCES})
 
-if (MKL_FOUND)
-    INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
-endif (MKL_FOUND)
+if(WIN32)
+    link_directories(${Boost_LIBRARY_DIRS})
+endif(WIN32)
 
 if(WIN32)
     link_directories(${Boost_LIBRARY_DIRS})
@@ -37,10 +37,6 @@ add_library(gadgettools SHARED ${XSDS_SOURCES}
                                GadgetronSlotContainer.h 
                                GadgetronConnector.h 
                                GadgetronConnector.cpp 
-                               GadgetServerAcceptor.h 
-                               GadgetServerAcceptor.cpp 
-                               GadgetStreamController.h 
-                               GadgetStreamController.cpp
                                GadgetCloudController.h 
                                GadgetronCloudConnector.h 
                                schema/gadgetron.xsd )
@@ -53,8 +49,6 @@ install (FILES
             GadgetronConnector.h
             gadgettools_export.h
             GadgetronSlotContainer.h
-            GadgetServerAcceptor.h
-            GadgetStreamController.h
             DESTINATION include)
 
 if(ISMRMRD_FOUND)

@@ -2,10 +2,11 @@
 <xs:schema xmlns="http://gadgetron.sf.net/gadgetron" xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://gadgetron.sf.net/gadgetron">
 
     <!--
-    Gadgetron configuration xml includes two elements: port and workingdirectory
-    The 'port' is where gadgetron is listening to. This 'workingdirectory' is 
-    the directory which gadgetron uses to store the temporary files, 
-    e.g. the dependency measurements. If 'workingdirectory' is not set, the default
+    Gadgetron configuration xml includes two sections: port and globalGadgetParameters
+    The 'port' is where gadgetron is listening to. The 'globalGadgetParameters' section 
+    lists the parameters which will be pre-set for all gadgets
+    e.g. if 'workingDirectory' in the globalGadgetParameters is set, the dependency measurements
+    will be stored and read from this directory. If it is not set, the default
     directory will be used ('/tmp/gadgetron' in linux and 'c:/temp/gadgetron' in windows).
     -->
 
@@ -13,7 +14,16 @@
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="port" type="xs:string"/>
-                <xs:element maxOccurs="1" minOccurs="0" name="workingdirectory" type="xs:string"/>
+
+                <xs:element maxOccurs="unbounded" minOccurs="0" name="globalGadgetParameter">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element maxOccurs="1" minOccurs="1" name="name" type="xs:string"/>
+                            <xs:element maxOccurs="1" minOccurs="1" name="value" type="xs:string"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
             </xs:sequence>
         </xs:complexType>
     </xs:element>

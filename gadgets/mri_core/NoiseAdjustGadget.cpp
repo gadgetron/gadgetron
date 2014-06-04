@@ -8,6 +8,11 @@
 #include "hoMatrix_util.h"
 #include "hoNDArray_math_util.h"
 
+#ifndef _WIN32
+    #include <sys/types.h>
+    #include <sys/stat.h>
+#endif // _WIN32
+
 namespace Gadgetron{
 
     NoiseAdjustGadget::NoiseAdjustGadget()
@@ -42,15 +47,18 @@ namespace Gadgetron{
 
     int NoiseAdjustGadget::process_config(ACE_Message_Block* mb)
     {
-        boost::shared_ptr<std::string> str = this->get_string_value("workingdirectory");
+        boost::shared_ptr<std::string> str = this->get_string_value("workingDirectory");
         if ( !str->empty() )
         {
             noise_dependency_folder_ = *str;
         }
         else
         {
-            noise_dependency_folder_ = ACE_OS::getenv("GADGETRON_HOME");
-            noise_dependency_folder_.append("/dependencies/noise");
+            #ifdef _WIN32
+                noise_dependency_folder_ = std::string("c:\\temp\\gadgetron\\");
+            #else
+                noise_dependency_folder_ =  std::string("/tmp/gadgetron/");
+            #endif // _WIN32
         }
         GADGET_MSG("Folder to store noise dependencies is " << noise_dependency_folder_);
 
@@ -285,6 +293,15 @@ namespace Gadgetron{
             outfile.write( reinterpret_cast<char*>(&len), sizeof(size_t));
             outfile.write(buf, len);
             outfile.close();
+
+            // set the permission for the noise file to be rewritable
+            #ifndef _WIN32
+                int res = chmod(full_name_stored_noise_dependency.c_str(), S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
+                if ( res != 0 )
+                {
+                    GADGET_ERROR_MSG("Changing noise prewhitener file permission failed ...");
+                }
+            #endif // _WIN32
         }
         else
         {

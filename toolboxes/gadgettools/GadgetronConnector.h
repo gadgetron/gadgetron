@@ -41,8 +41,6 @@ public:
 	virtual int open(void* = 0)
 	{
 	  ACE_TRACE(( ACE_TEXT("WriterTask::open") ));
-      this->msg_queue()->high_water_mark( (size_t)(24.0*1024*1024*1024) );
-
 	  return this->activate( THR_NEW_LWP | THR_JOINABLE, 1 );
 	}
 

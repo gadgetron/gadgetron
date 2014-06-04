@@ -1201,7 +1201,7 @@ recomputeImageGeometry(GtPlusGadgetImageArray* images, GtPlusGadgetImageExt& ima
 
         imageHeader.field_of_view[2] = (float)(aSpacing_[2]);
 
-        imageHeader.user_int[0] = e2;
+        imageHeader.user_int[0] = (int32_t)e2;
     }
 
     if ( imageHeader.measurement_uid == 0 )
