@@ -8,6 +8,11 @@
 #include "hoMatrix_util.h"
 #include "hoNDArray_math_util.h"
 
+#ifndef _WIN32
+    #include <sys/types.h>
+    #include <sys/stat.h>
+#endif // _WIN32
+
 namespace Gadgetron{
 
     NoiseAdjustGadget::NoiseAdjustGadget()
@@ -288,6 +293,15 @@ namespace Gadgetron{
             outfile.write( reinterpret_cast<char*>(&len), sizeof(size_t));
             outfile.write(buf, len);
             outfile.close();
+
+            // set the permission for the noise file to be rewritable
+            #ifndef _WIN32
+                int res = chmod(full_name_stored_noise_dependency.c_str(), S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
+                if ( res != 0 )
+                {
+                    GADGET_ERROR_MSG("Changing noise prewhitener file permission failed ...");
+                }
+            #endif // _WIN32
         }
         else
         {
