@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 2.8)
 project(GADGETRON)
 
+#Set the build type to Release if not specified
+IF(NOT CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE Release CACHE STRING
+      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      FORCE)
+ENDIF(NOT CMAKE_BUILD_TYPE)
+
 # build options for 64 bits system
 if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
   message("64bit system is found")
