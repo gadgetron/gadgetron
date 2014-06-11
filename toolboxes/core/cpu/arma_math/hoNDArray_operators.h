@@ -17,7 +17,6 @@
 #pragma once
 
 #include "hoNDArray.h"
-#include "hoNDImage.h"
 #include "cpucore_math_export.h"
 
 namespace Gadgetron{
