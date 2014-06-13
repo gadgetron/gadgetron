@@ -33,8 +33,8 @@
 #define GADGET_CONDITION_MSG(con, message) { if ( con ) GADGET_MSG(message) }
 #define GADGET_CONDITION_WARN_MSG(con, message) { if ( con ) GADGET_WARN_MSG(message) }
 
-#define GADGET_THROW(msg) { GADGET_ERROR_MSG(msg); BOOST_THROW_EXCEPTION( runtime_error(msg)); }
-#define GADGET_CHECK_THROW(con) { if ( !(con) ) { GADGET_ERROR_MSG(#con); BOOST_THROW_EXCEPTION( runtime_error(#con)); } }
+#define GADGET_THROW(msg) { GADGET_ERROR_MSG(msg); throw std::runtime_error(msg); }
+#define GADGET_CHECK_THROW(con) { if ( !(con) ) { GADGET_ERROR_MSG(#con); throw std::runtime_error(#con); } }
 
 #define GADGET_CHECK_RETURN(con, value) { if ( ! (con) ) { GADGET_ERROR_MSG("Returning '" << value << "' due to failed check: '" << #con << "'"); return (value); } }
 #define GADGET_CHECK_RETURN_FALSE(con) { if ( ! (con) ) { GADGET_ERROR_MSG("Returning false due to failed check: '" << #con << "'"); return false; } }
