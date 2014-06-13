@@ -218,6 +218,8 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
             int numOpenMPProcs = omp_get_num_procs();
             GADGET_MSG("gtPlusReconWorker2DTSPIRIT, numOpenMPProcs : " << numOpenMPProcs);
 
+            if ( numThreads > numOpenMPProcs ) numThreads = numOpenMPProcs;
+
             int maxOpenMPThreads = omp_get_max_threads();
             GADGET_MSG("gtPlusReconWorker2DTSPIRIT, maxOpenMPThreads : " << maxOpenMPThreads);
 
