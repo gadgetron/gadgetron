@@ -141,7 +141,11 @@ namespace Gadgetron
 
                         for (vec::const_iterator it (v.begin()); it != v.end(); ++it)
                         {
+#                       if BOOST_VERSION < 104600
+                            filename = it->filename();
+#                       else
                             filename = it->filename().string();
+#                       endif
                             ind = filename.find(noise_dependency_prefix_);
 
                             if ( ind != std::string::npos )

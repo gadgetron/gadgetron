@@ -29,10 +29,14 @@ add_library(gadgetron_spiral SHARED
   ${ISMRMRD_XSD_SOURCE})
 
 target_link_libraries(gadgetron_spiral
-  cpucore gpucore gpunfft gpusolvers gpuoperators gpuparallelmri
+  cpucore gpucore gpunfft gpusolvers gpuoperators
   ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
+
+if (CULA_FOUND)
+    target_link_libraries(gadgetron_spiral gpuparallelmri)
+endif (CULA_FOUND)
 
 install (TARGETS gadgetron_spiral DESTINATION lib)
 install (FILES vds.h gadgetron_spiral_export.h 

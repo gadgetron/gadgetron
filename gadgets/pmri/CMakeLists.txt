@@ -40,10 +40,15 @@ add_library(gadgetron_gpuparallelmri SHARED
   )
 
 target_link_libraries(gadgetron_gpuparallelmri 
-  cpucore gpucore gpusolvers gpuoperators gpuparallelmri 
+  cpucore gpucore gpusolvers gpuoperators
   ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
+
+if (CULA_FOUND)
+    target_link_libraries(gadgetron_gpuparallelmri gpuparallelmri)
+endif (CULA_FOUND)
+
 
 install (TARGETS gadgetron_gpuparallelmri DESTINATION lib)
 

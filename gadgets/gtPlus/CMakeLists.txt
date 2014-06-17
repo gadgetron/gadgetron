@@ -95,9 +95,9 @@ target_link_libraries(gadgetronPlus
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
     ${XERCESC_LIBRARIES} )
 
-if (CUDA_FOUND)
+if (CUDA_FOUND AND CULA_FOUND)
     target_link_libraries(gadgetronPlus gpuparallelmri)
-endif (CUDA_FOUND)
+endif (CUDA_FOUND AND CULA_FOUND)
 
 install (FILES 
         GtPlusGadgetExport.h 

@@ -42,10 +42,14 @@ add_library(gadgetron_gpuradial SHARED
   ${ISMRMRD_XSD_SOURCE})
 
 target_link_libraries(gadgetron_gpuradial
-  gpunfft gpusolvers gpuoperators gpuparallelmri cpucore cpucore_math gpucore
+  gpunfft gpusolvers gpuoperators cpucore cpucore_math gpucore
   ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
+
+if (CULA_FOUND)
+    target_link_libraries(gadgetron_gpuradial gpuparallelmri )
+endif (CULA_FOUND)
 
 install (FILES  gadgetron_radial_export.h
                 gpuRadialPrepGadget.h 

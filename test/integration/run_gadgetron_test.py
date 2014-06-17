@@ -261,6 +261,7 @@ def main():
         myenv[libpath] += "/usr/local/cula/lib64:"
         myenv[libpath] += "/opt/intel/mkl/lib/intel64:"
         myenv[libpath] += "/opt/intel/lib/intel64:"
+        myenv[libpath] += os.environ[libpath]
 
     if platform.system() == "Windows":
         myenv["PATH"] = myenv[libpath]
