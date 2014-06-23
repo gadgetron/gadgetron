@@ -17,6 +17,7 @@ install(FILES
   GadgetronException.h
   GadgetronTimer.h
   SerializableObject.h
+  Gadgetron_enable_types.h
   DESTINATION include)
 
 add_subdirectory(cpu)

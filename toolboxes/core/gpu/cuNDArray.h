@@ -11,7 +11,7 @@
 #include "complext.h"
 #include "GadgetronCuException.h"
 #include "check_CUDA.h"
-
+#include "hoCuNDArray.h"
 #include <boost/shared_ptr.hpp>
 #include <cuda.h>
 #include <cuda_runtime_api.h>
@@ -94,6 +94,7 @@ namespace Gadgetron{
 
         T at( size_t idx );
         T operator[]( size_t idx );
+
 
     protected:
 
@@ -818,6 +819,9 @@ namespace Gadgetron{
             this->data_ = 0;
         }
     }
+
+
+
 }
 
 #endif //CUNDARRAY_H
