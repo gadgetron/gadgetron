@@ -50,7 +50,7 @@ bool create_folder_with_all_permissions(const std::string& workingdirectory)
         #else
             // in case an older version of boost is used in non-win system
             // the system call is used
-            int res = chmod(workingPath.c_str(), S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
+            int res = chmod(workingPath.string().c_str(), S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
             if ( res != 0 )
             {
                 ACE_ERROR_RETURN((LM_ERROR, ACE_TEXT("Error changing the permission of the working directory.\n")), false);

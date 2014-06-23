@@ -19,7 +19,8 @@ MESSAGE("CULA_INCLUDE_DIR = ${CULA_INCLUDE_DIR}")
 
 FIND_LIBRARY( CULA_LIBRARY
               NAMES "cula"
-              PATH_SUFFIXES "cula/lib64" )
+              HINTS $ENV{CULA_HOME}
+              PATH_SUFFIXES "cula/lib64" "lib64" )
 
 FIND_LIBRARY( CULA_LAPACK_LIBRARY
               NAMES "cula_lapack"

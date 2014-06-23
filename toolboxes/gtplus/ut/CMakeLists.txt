@@ -49,12 +49,14 @@ link_libraries(optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
                 gadgettools 
                 gadgetronPlus)
 
-if (CUDA_FOUND)
+if (CUDA_FOUND AND CULA_FOUND)
     link_libraries(gtplus gpuparallelmri gpucore)
-endif (CUDA_FOUND)
+endif (CUDA_FOUND AND CULA_FOUND)
 
-add_executable(gtplus_ut_grappa 
-    gtplus_ut.cpp 
-    grappa_test.cpp )
+if (CUDA_FOUND AND CULA_FOUND)
+    add_executable(gtplus_ut_grappa 
+        gtplus_ut.cpp 
+        grappa_test.cpp )
+endif (CUDA_FOUND AND CULA_FOUND)
 
 #add_test(gtplus_ut gtplus_ut_util)

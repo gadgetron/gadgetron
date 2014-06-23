@@ -865,7 +865,7 @@ template EXPORTCPUCOREMATH bool GeneralMatrixProduct_gemm(hoMatrix<float>& C,
 
 template EXPORTCPUCOREMATH bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<float>& A, char uplo);
 
-template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev(hoMatrix<float>& A, hoMatrix<typename realType<float>::Type>& eigenValue);
+template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev(hoMatrix<float>& A, hoMatrix<realType<float>::Type>& eigenValue);
 
 template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<float>& A);
 
@@ -889,7 +889,7 @@ template EXPORTCPUCOREMATH bool GeneralMatrixProduct_gemm(hoMatrix<double>& C,
 
 template EXPORTCPUCOREMATH bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<double>& A, char uplo);
 
-template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev(hoMatrix<double>& A, hoMatrix<typename realType<double>::Type>& eigenValue);
+template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev(hoMatrix<double>& A, hoMatrix<realType<double>::Type>& eigenValue);
 
 template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<double>& A);
 
@@ -914,7 +914,7 @@ template EXPORTCPUCOREMATH bool GeneralMatrixProduct_gemm(hoMatrix<GT_Complex8>&
 
 template EXPORTCPUCOREMATH bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<GT_Complex8>& A, char uplo);
 
-template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev(hoMatrix<GT_Complex8>& A, hoMatrix<typename realType<GT_Complex8>::Type>& eigenValue);
+template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev(hoMatrix<GT_Complex8>& A, hoMatrix<realType<GT_Complex8>::Type>& eigenValue);
 
 template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<GT_Complex8>& A);
 
@@ -938,7 +938,7 @@ template EXPORTCPUCOREMATH bool GeneralMatrixProduct_gemm(hoMatrix<GT_Complex16>
 
 template EXPORTCPUCOREMATH bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<GT_Complex16>& A, char uplo);
 
-template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev(hoMatrix<GT_Complex16>& A, hoMatrix<typename realType<GT_Complex16>::Type>& eigenValue);
+template EXPORTCPUCOREMATH bool EigenAnalysis_syev_heev(hoMatrix<GT_Complex16>& A, hoMatrix<realType<GT_Complex16>::Type>& eigenValue);
 
 template EXPORTCPUCOREMATH bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<GT_Complex16>& A);
 

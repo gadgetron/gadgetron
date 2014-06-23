@@ -97,9 +97,8 @@ endif ( BUILD_TOOLBOX_STATIC )
 set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
-if(WIN32)
-    set(Boost_NO_BOOST_CMAKE ON)
-endif(WIN32)
+# necessary for Windows and RHEL <=6 systems
+set(Boost_NO_BOOST_CMAKE ON)
 
 if(WIN32)
   add_definitions( -DBOOST_ALL_NO_LIB )
