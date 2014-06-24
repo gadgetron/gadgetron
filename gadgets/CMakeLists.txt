@@ -9,6 +9,7 @@ find_package(FFTW3 COMPONENTS single double)
 find_package(Ismrmrd)
 find_package(XSD)
 find_package(XercesC)
+find_package(CULA)
 
 include_directories(   
   ${ACE_INCLUDE_DIR} 
@@ -44,7 +45,9 @@ endif (MKL_FOUND OR ARMADILLO_FOUND)
 if (CUDA_FOUND)
   message("Cuda found, compiling gpu accelerated gadgets")
   add_subdirectory(pmri)
-  add_subdirectory(grappa)
+  if (CULA_FOUND)
+    add_subdirectory(grappa)
+  endif(CULA_FOUND)
   add_subdirectory(radial)
   add_subdirectory(spiral)
 else (CUDA_FOUND)
