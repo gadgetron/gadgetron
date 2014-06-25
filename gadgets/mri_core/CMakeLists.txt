@@ -61,7 +61,8 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     FFTGadget.h 
                                     ImageFinishGadget.h 
                                     ImageFinishAttribGadget.h 
-                                    CropAndCombineGadget.h 
+                                    CombineGadget.h
+                                    CropAndCombineGadget.h  
                                     ImageWriterGadget.h 
                                     MRIImageWriter.h 
                                     MRIImageAttribWriter.h 
@@ -89,6 +90,7 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 FFTGadget.cpp 
                                 ImageFinishGadget.cpp 
                                 ImageFinishAttribGadget.cpp 
+                                CombineGadget.cpp 
                                 CropAndCombineGadget.cpp 
                                 ImageWriterGadget.cpp 
                                 MRIImageWriter.cpp 

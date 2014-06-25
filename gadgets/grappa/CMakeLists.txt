@@ -35,18 +35,15 @@ add_library(gadgetron_grappa SHARED
     )
 
 target_link_libraries(gadgetron_grappa 
-    cpucore
-    cpufft
-    gpufft
-    ${Boost_LIBRARIES}
-    ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
-    optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
-    ${XERCESC_LIBRARIES} 
+  gpuparallelmri
+  cpucore
+  cpufft
+  gpufft
+  ${Boost_LIBRARIES}
+  ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
+  optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
+  ${XERCESC_LIBRARIES} 
   )
-
-if (CULA_FOUND)
-    target_link_libraries(gadgetron_grappa gpuparallelmri)
-endif (CULA_FOUND)
 
 install (FILES  gadgetron_grappa_export.h
                 GrappaCalibrationBuffer.h

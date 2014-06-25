@@ -32,18 +32,26 @@ process( GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
     return -1;
   }
 
-  // Warp the input and output in armadillo column vectors
-  // Reshape the input into a 2D array (coil is the outermost dimension)
-  arma::cx_fmat adata_in  = arma::cx_fmat( m2->getObjectPtr()->get_data_ptr(), nx*ny*nz, nc, false, true );
-  arma::cx_fmat adata_out = arma::cx_fmat( m3->getObjectPtr()->get_data_ptr(), nx*ny*nz, 1,  false, true );
+  std::complex<float>* d1 = m2->getObjectPtr()->get_data_ptr();
+  std::complex<float>* d2 = m3->getObjectPtr()->get_data_ptr();
 
-  // Initialize the output to zero
-  adata_out.zeros();
+  size_t img_block = nx*ny*nz;
 
-  // Square root of the sum of squares over the coil dimension
-  // divide by the number of channels to keep noise variance scaled properly
-  // TODO: check the scale
-  adata_out.set_real((1.0/((float)nc)) * arma::sqrt(arma::sum(arma::square(arma::abs(adata_in)),1)));
+  for (size_t z = 0; z < nz; z++) {
+    for (size_t y = 0; y < ny; y++) {
+      for (size_t x = 0; x < nx; x++) {
+	float mag = 0;
+	float phase = 0;
+	size_t offset = z*ny*nx+y*nx+x;
+	for (size_t c = 0; c < nc; c++) {
+	  float mag_tmp = norm(d1[offset + c*img_block]);
+	  phase += mag_tmp*arg(d1[offset + c*img_block]);
+	  mag += mag_tmp;
+	}
+	d2[offset] = std::polar(std::sqrt(mag),phase);
+      }
+    }
+  }
 
   // Modify header to match the size and change the type to real
   m1->getObjectPtr()->channels = 1;

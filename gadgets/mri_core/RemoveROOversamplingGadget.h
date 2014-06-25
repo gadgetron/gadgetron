@@ -34,7 +34,13 @@ namespace Gadgetron{
         hoNDArray< std::complex<float> > fft_buf_;
         hoNDArray< std::complex<float> > ifft_buf_;
 
+        int   encodeNx_;
         float encodeFOV_;
+        int   reconNx_;
         float reconFOV_;
+
+	// if true the gadget performs the operation
+	// otherwise, it just passes the data on
+	bool dowork_;
     };
 }

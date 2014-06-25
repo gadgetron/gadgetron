@@ -35,15 +35,15 @@ int AccumulatorGadget::process_config(ACE_Message_Block* mb)
 	ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
 	ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
 
-	GADGET_DEBUG2("Matrix size: %d, %d, %d\n", e_space.matrixSize().x(), e_space.matrixSize().y(), e_space.matrixSize().z());
-	dimensions_.push_back(e_space.matrixSize().x());
+	GADGET_DEBUG2("Matrix size: %d, %d, %d\n", r_space.matrixSize().x(), e_space.matrixSize().y(), e_space.matrixSize().z());
+	dimensions_.push_back(r_space.matrixSize().x());
 	dimensions_.push_back(e_space.matrixSize().y());
 	dimensions_.push_back(e_space.matrixSize().z());
 
-    field_of_view_.push_back(e_space.fieldOfView_mm().x());
-    field_of_view_.push_back(e_space.fieldOfView_mm().y());
-    field_of_view_.push_back(e_space.fieldOfView_mm().z());
-    GADGET_DEBUG2("FOV: %f, %f, %f\n", e_space.fieldOfView_mm().x(), e_space.fieldOfView_mm().y(), e_space.fieldOfView_mm().z());
+	field_of_view_.push_back(r_space.fieldOfView_mm().x());
+	field_of_view_.push_back(e_space.fieldOfView_mm().y());
+	field_of_view_.push_back(e_space.fieldOfView_mm().z());
+	GADGET_DEBUG2("FOV: %f, %f, %f\n", r_space.fieldOfView_mm().x(), e_space.fieldOfView_mm().y(), e_space.fieldOfView_mm().z());
 
 	slices_ = e_limits.slice().present() ? e_limits.slice().get().maximum()+1 : 1;
 
