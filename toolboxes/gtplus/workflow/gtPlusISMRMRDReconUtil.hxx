@@ -1,5 +1,6 @@
 
 #include "gtPlusISMRMRDReconUtil.h"
+#include "hoNDArray_elemwise.h"
 
 namespace Gadgetron { namespace gtPlus {
 

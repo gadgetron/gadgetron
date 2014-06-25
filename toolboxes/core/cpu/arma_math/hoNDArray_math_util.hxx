@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "hoNDArray_elemwise.h"
 namespace Gadgetron
 {
     template<typename T> inline void fill( size_t N, T* pX, T val)
@@ -14,20 +15,6 @@ namespace Gadgetron
         {
             pX[n] = val;
         }
-    }
-
-	template<typename T> inline void fill( hoNDArray<T>* x, T val)
-    {
-        size_t N = x->get_number_of_elements();
-        T* pX = x->begin();
-        Gadgetron::fill(N, pX, val);
-    }
-
-    template<typename T> inline void fill( hoNDArray<T>& x, T val )
-    {
-        size_t N = x.get_number_of_elements();
-        T* pX = x.begin();
-        Gadgetron::fill(N, pX, val);
     }
 
     template<typename T, unsigned int D> inline void fill( hoNDImage<T, D>* x, T val )
@@ -44,21 +31,7 @@ namespace Gadgetron
         Gadgetron::fill(N, pX, val);
     }
 
-    template<typename T> inline void clear( hoNDArray<T>* x )
-    {
-        if ( x->get_number_of_elements() > 0 )
-        {
-            memset( x->get_data_ptr(), 0, x->get_number_of_elements()*sizeof(T));
-        }
-    }
 
-    template<typename T> inline void clear( hoNDArray<T>& x )
-    {
-        if ( x.get_number_of_elements() > 0 )
-        {
-            memset( x.get_data_ptr(), 0, x.get_number_of_elements()*sizeof(T));
-        }
-    }
 
     template<typename T, unsigned int D> inline void clear( hoNDImage<T, D>* x )
     {

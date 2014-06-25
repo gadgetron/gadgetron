@@ -353,15 +353,8 @@ namespace Gadgetron
     // fill in an array
     template<typename T> void fill( size_t N, T* pX, T val );
 
-    template<typename T> void fill( hoNDArray<T>* x, T val );
-    template<typename T> void fill( hoNDArray<T>& x, T val );
-
     template<typename T, unsigned int D> void fill( hoNDImage<T, D>* x, T val );
     template<typename T, unsigned int D> void fill( hoNDImage<T, D>& x, T val );
-
-    // clear an array to be all zeros
-    template<typename T> void clear( hoNDArray<T>* x );
-    template<typename T> void clear( hoNDArray<T>& x );
 
     template<typename T, unsigned int D> void clear( hoNDImage<T, D>* x );
     template<typename T, unsigned int D> void clear( hoNDImage<T, D>& x );

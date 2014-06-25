@@ -161,19 +161,19 @@ namespace Gadgetron{
     * @brief Clears the array to all zeros ( in place). Faster than fill.
     * @param[in,out] x Input and output array.
     */
-    template<class ArrayType> void clear( ArrayType* x )
+    template<class T> void clear( hoNDArray<T>* x )
     {
         if ( x->get_number_of_elements() > 0 )
         {
-            memset( x->get_data_ptr(), 0, x->get_number_of_elements()*sizeof(typename ArrayType::value_type));
+            memset( x->get_data_ptr(), 0, x->get_number_of_elements()*sizeof(T));
         }
     }
 
-    template<class ArrayType> void clear( ArrayType& x )
+    template<class T> void clear( hoNDArray<T>& x )
     {
         if ( x.get_number_of_elements() > 0 )
         {
-            memset( x.get_data_ptr(), 0, x.get_number_of_elements()*sizeof(typename ArrayType::value_type));
+            memset( x.get_data_ptr(), 0, x.get_number_of_elements()*sizeof(T));
         }
     }
 
@@ -182,7 +182,7 @@ namespace Gadgetron{
     * @param[in,out] x Input and output array.
     * @param[in] val Fill value.
     */
-    template<class ArrayType> EXPORTCPUCOREMATH void fill( ArrayType *x, typename ArrayType::value_type val );
+    template<class T> EXPORTCPUCOREMATH void fill( hoNDArray<T> *x, T val );
 
     /**
     * @brief Clamps all values in the array to the minimum and maximum values specified (in place).
