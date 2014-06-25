@@ -24,8 +24,21 @@ namespace Gadgetron{
         ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
         ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
 
+        encodeNx_  = e_space.matrixSize().x();
         encodeFOV_ = e_space.fieldOfView_mm().x();
+        reconNx_   = r_space.matrixSize().x();
         reconFOV_  = r_space.fieldOfView_mm().x();
+
+	// If the encoding and recon matrix size and FOV are the same
+	// then the data is not oversampled and we can safely pass
+	// the data onto the next gadget
+	if ( (encodeNx_ == reconNx_) && (encodeFOV_ == reconFOV_) )
+	{
+	  dowork_ = false;
+	}
+	else {
+	  dowork_ = true;
+	}
 
         return GADGET_OK;
     }
@@ -34,6 +47,10 @@ namespace Gadgetron{
         ::process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
         GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
     {
+
+      // If we have work to do, do it, otherwise do nothing
+      if (dowork_) {
+
         GadgetContainerMessage< hoNDArray< std::complex<float> > >* m3 
             = new GadgetContainerMessage< hoNDArray< std::complex<float> > >();
 
@@ -113,15 +130,17 @@ namespace Gadgetron{
         m1->getObjectPtr()->number_of_samples = data_out_dims[0];
         m1->getObjectPtr()->center_sample = (uint16_t)(m1->getObjectPtr()->center_sample/ratioFOV);
 
-        if (this->next()->putq(m1) == -1)
-        {
-            ACE_ERROR_RETURN( (LM_ERROR,
+      } // end if (dowork_)
+
+      if (this->next()->putq(m1) == -1)
+      {
+	ACE_ERROR_RETURN( (LM_ERROR,
                 ACE_TEXT("%p\n"),
                 ACE_TEXT("RemoveROOversamplingGadget::process, passing data on to next gadget")),
                 GADGET_FAIL);
-        }
+      }
 
-        return GADGET_OK;
+      return GADGET_OK;
     }
 
 

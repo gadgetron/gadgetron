@@ -26,6 +26,15 @@
     </writer>
   
     <gadget>
+        <name>RemoveROOversampling</name>
+        <dll>gadgetron_mricore</dll>
+	<classname>RemoveROOversamplingGadget</classname>
+        <property>
+            <name>constant_noise_variance</name>
+            <value>false</value>
+        </property>
+    </gadget>
+    <gadget>
       <name>Acc</name>
       <dll>gadgetron_mricore</dll>
       <classname>AccumulatorGadget</classname>
@@ -36,9 +45,9 @@
       <classname>FFTGadget</classname>
     </gadget>
     <gadget>
-      <name>CropCombine</name>
+      <name>Combine</name>
       <dll>gadgetron_mricore</dll>
-      <classname>CropAndCombineGadget</classname>
+      <classname>CombineGadget</classname>
     </gadget>
     <gadget>
       <name>Extract</name>

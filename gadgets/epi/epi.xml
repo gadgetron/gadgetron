@@ -67,7 +67,7 @@
     
     <gadget>
       <name>Combine</name>
-      <dll>gadgetron_epi</dll>
+      <dll>gadgetron_mricore</dll>
       <classname>CombineGadget</classname>
     </gadget>
 

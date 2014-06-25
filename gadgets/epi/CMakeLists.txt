@@ -23,7 +23,6 @@ add_library(gadgetron_epi SHARED
   FFTYZGadget.h FFTYZGadget.cpp
   FFTXGadget.h FFTXGadget.cpp
   CutXGadget.h CutXGadget.cpp
-  CombineGadget.h   CombineGadget.cpp
   ${ISMRMRD_XSD_SOURCE}
   epi.xml
   epi_gtplus_grappa.xml
@@ -44,7 +43,6 @@ install(FILES
   EPICorrGadget.h
   FFTYZGadget.h
   FFTXGadget.h
-  CombineGadget.h
   gadgetron_epi_export.h
   DESTINATION include)
 
