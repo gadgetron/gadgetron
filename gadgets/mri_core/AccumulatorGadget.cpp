@@ -110,6 +110,9 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
   if (is_last_scan_in_slice) {
     GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = 
       new GadgetContainerMessage<ISMRMRD::ImageHeader>();
+
+    // On some platforms, it is necessary to initialize the image header
+    memset(cm1->getObjectPtr(),0,sizeof(ISMRMRD::ImageHeader));
     
     cm1->getObjectPtr()->flags = 0;
 
