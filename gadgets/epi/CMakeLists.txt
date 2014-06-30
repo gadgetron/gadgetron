@@ -20,7 +20,6 @@ include_directories(
 add_library(gadgetron_epi SHARED 
   EPIReconXGadget.h EPIReconXGadget.cpp
   EPICorrGadget.h EPICorrGadget.cpp
-  FFTYZGadget.h FFTYZGadget.cpp
   FFTXGadget.h FFTXGadget.cpp
   CutXGadget.h CutXGadget.cpp
   ${ISMRMRD_XSD_SOURCE}
@@ -41,7 +40,6 @@ target_link_libraries(
 install(FILES 
   EPIReconXGadget.h
   EPICorrGadget.h
-  FFTYZGadget.h
   FFTXGadget.h
   gadgetron_epi_export.h
   DESTINATION include)

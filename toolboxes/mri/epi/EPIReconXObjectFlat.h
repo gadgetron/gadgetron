@@ -129,11 +129,12 @@ template <typename T> int EPIReconXObjectFlat<T>::apply(const ISMRMRD::Acquisiti
     arma::vec x = arma::linspace<arma::vec>(-0.5,(reconNx_-1.)/(2.*reconNx_),reconNx_);
 
     // DFT operator
+    // Going from k space to image space, we use the IFFT sign convention
     arma::cx_mat F(reconNx_, Ne);
     double fftscale = 1.0 / std::sqrt((double)Ne);
     for (p=0; p<reconNx_; p++) {
       for (q=0; q<Ne; q++) {
-	F(p,q) = fftscale * std::exp(std::complex<double>(0.0,-1.0*2*M_PI*keven(q)*x(p)));
+	F(p,q) = fftscale * std::exp(std::complex<double>(0.0,1.0*2*M_PI*keven(q)*x(p)));
       }
     }
 

@@ -169,11 +169,12 @@ template <typename T> int EPIReconXObjectTrapezoid<T>::apply(const ISMRMRD::Acqu
     //x.print("x =");
 
     // DFT operator
+    // Going from k space to image space, we use the IFFT sign convention
     arma::cx_mat F(reconNx_, Ne);
     double fftscale = 1.0 / std::sqrt((double)Ne);
     for (p=0; p<reconNx_; p++) {
       for (q=0; q<Ne; q++) {
-	F(p,q) = fftscale * std::exp(std::complex<double>(0.0,-1.0*2*M_PI*keven(q)*x(p)));
+	F(p,q) = fftscale * std::exp(std::complex<double>(0.0,1.0*2*M_PI*keven(q)*x(p)));
       }
     }
     //F.print("F =");

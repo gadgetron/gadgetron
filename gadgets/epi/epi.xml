@@ -43,6 +43,13 @@
       <classname>EPICorrGadget</classname>
     </gadget>
 
+    <!-- FFT in X back to k -->
+    <gadget>
+        <name>FFTX</name>
+        <dll>gadgetron_epi</dll>
+        <classname>FFTXGadget</classname>
+    </gadget>
+
 <!--
     <gadget>
       <name>IsmrmrdDump</name>
@@ -60,9 +67,9 @@
     </gadget>
 
     <gadget>
-      <name>FFTYZ</name>
-      <dll>gadgetron_epi</dll>
-      <classname>FFTYZGadget</classname>
+      <name>FFT</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>FFTGadget</classname>
     </gadget>
     
     <gadget>
