@@ -72,13 +72,11 @@ if ( HAS_64_BIT )
 
     set( gtplus_io_header_files 
         util/gtPlusIOBase.h
-        util/gtPlusIOAnalyze.h
-        util/gtPlusIONifti.h)
+        util/gtPlusIOAnalyze.h )
 
     set( gtplus_io_src_files 
         util/gtPlusIOBase.cpp
-        util/gtPlusIOAnalyze.cpp
-        util/gtPlusIONifti.cpp )
+        util/gtPlusIOAnalyze.cpp )
 
     set( util_header_files 
         util/gtPlusMemoryManager.h

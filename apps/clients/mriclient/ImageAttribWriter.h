@@ -6,7 +6,6 @@
 #include "GadgetImageMessageReader.h"
 #include "GadgetronCommon.h"
 #include "gtPlusIOAnalyze.h"
-#include "gtPlusIONifti.h"
 #include "GtPlusDefinition.h"
 
 namespace Gadgetron
@@ -286,66 +285,6 @@ namespace Gadgetron
         virtual void write_image(hoNDArray< T >* data, const std::string& filename)
         {
             GADGET_EXPORT_ARRAY_COMPLEX_REAL_IMAG(dst_folder_, gtplus_exporter_, *data, filename);
-        }
-
-    protected:
-
-        using BaseClass::number_of_calls_;
-        using BaseClass::dst_folder_;
-    };
-
-    template <typename T> class NiftiImageAttribWriter : public AnalyzeImageAttribWriter<T>
-    {
-    public:
-
-        typedef AnalyzeImageAttribWriter<T> BaseClass;
-        typedef typename BaseClass::size_t_type size_t_type;
-
-        NiftiImageAttribWriter() : BaseClass()
-        {
-        }
-
-        NiftiImageAttribWriter(const std::string& prefix, const std::string& dst_folder="./") : BaseClass(prefix, dst_folder)
-        {
-        }
-
-        virtual ~NiftiImageAttribWriter() {}
-
-        Gadgetron::gtPlus::gtPlusIONifti gtplus_nifiti_exporter_;
-
-        virtual void write_image(hoNDArray< T >* data, const std::string& filename)
-        {
-            GADGET_EXPORT_ARRAY(dst_folder_, gtplus_nifiti_exporter_, *data, filename);
-        }
-
-    protected:
-
-        using BaseClass::number_of_calls_;
-        using BaseClass::dst_folder_;
-    };
-
-    template <typename T> class NiftiComplexImageAttribWriter : public AnalyzeImageAttribWriter<T>
-    {
-    public:
-
-        typedef AnalyzeImageAttribWriter<T> BaseClass;
-        typedef typename BaseClass::size_t_type size_t_type;
-
-        NiftiComplexImageAttribWriter() : BaseClass()
-        {
-        }
-
-        NiftiComplexImageAttribWriter(const std::string& prefix, const std::string& dst_folder="./") : BaseClass(prefix, dst_folder)
-        {
-        }
-
-        virtual ~NiftiComplexImageAttribWriter() {}
-
-        Gadgetron::gtPlus::gtPlusIONifti gtplus_nifiti_exporter_;
-
-        virtual void write_image(hoNDArray< T >* data, const std::string& filename)
-        {
-            GADGET_EXPORT_ARRAY_COMPLEX(dst_folder_, gtplus_nifiti_exporter_, *data, filename);
         }
 
     protected:
