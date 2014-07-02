@@ -32,7 +32,7 @@ void print_usage()
     ACE_DEBUG((LM_INFO, ACE_TEXT("          -l <LOOPS>                                                                   (default 1)\n") ));
     ACE_DEBUG((LM_INFO, ACE_TEXT("          -o <HDF5 OUT FILE>                                                           (out.h5)\n") ));
     ACE_DEBUG((LM_INFO, ACE_TEXT("          -G <HDF5 OUT GROUP>                                                          (default date and time)\n") ));
-    ACE_DEBUG((LM_INFO, ACE_TEXT("          -F <OUT FILE FORMAT, 'h5 or hdf5' or 'hdf or analyze' or 'nii or nifti'>     (default 'h5' format)\n") ));
+    ACE_DEBUG((LM_INFO, ACE_TEXT("          -F <OUT FILE FORMAT, 'h5 or hdf5' or 'hdf or analyze' >                      (default 'h5' format)\n") ));
 }
 
 
@@ -189,17 +189,11 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT, new HDF5ImageWriter<float>(std::string(hdf5_out_file), std::string(hdf5_out_group)));
         con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT, new HDF5ImageWriter< std::complex<float> >(std::string(hdf5_out_file), std::string(hdf5_out_group)));
 
-        if ( out_format_str == "analyze" )
+        if ( (out_format_str == "analyze") || (out_format_str == "hdr") )
         {
             con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT, new AnalyzeImageAttribWriter<ACE_UINT16>(prefix));
             con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT, new AnalyzeImageAttribWriter<float>(prefix));
             con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_CPLX_FLOAT, new AnalyzeComplexImageAttribWriter< std::complex<float> >(prefix));
-        }
-        else if ( out_format_str == "nifti" )
-        {
-            con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT, new NiftiImageAttribWriter<ACE_UINT16>(prefix));
-            con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT, new NiftiImageAttribWriter<float>(prefix));
-            con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_CPLX_FLOAT, new NiftiComplexImageAttribWriter< std::complex<float> >(prefix));
         }
         else
         {
@@ -238,7 +232,6 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
                 *(acq->getObjectPtr()) = *acq_tmp; //We are copying the data into the container message
 
             }
-
 
             GadgetContainerMessage<GadgetMessageIdentifier>* m1 =
                     new GadgetContainerMessage<GadgetMessageIdentifier>();
