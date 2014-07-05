@@ -8,7 +8,8 @@
  *****************************************/
 
 //TODO:
-// -Image with attributes
+// -Image with attributes.
+//    - First simple implementation is in, but it is untested and likely to have problems.
 // -Blobs (for DICOM image support)
 // -NIFTI and Analyze output
 // -Windows compile
@@ -140,7 +141,8 @@ class GadgetronClientMessageReader
 };
 
 
-template <typename T> class GadgetronClientImageMessageReader : public GadgetronClientMessageReader
+template <typename T> class GadgetronClientImageMessageReader 
+  : public GadgetronClientMessageReader
 {
 
 public:
@@ -156,7 +158,7 @@ public:
 
   virtual void read(tcp::socket* stream) 
   {
-    std::cout << "Receiving image image." << std::endl;
+    std::cout << "Receiving image." << std::endl;
     //Read the image from the socket
     ISMRMRD::ImageHeader h;
     boost::asio::read(*stream, boost::asio::buffer(&h,sizeof(ISMRMRD::ImageHeader)));
@@ -201,6 +203,86 @@ protected:
   std::string file_name_;
   boost::shared_ptr<ISMRMRD::IsmrmrdDataset> dataset_;
 };
+
+template <typename T> class GadgetronClientAttribImageMessageReader 
+  : public GadgetronClientMessageReader
+{
+
+public:
+  GadgetronClientAttribImageMessageReader(std::string filename, std::string groupname)
+    : file_name_(filename)
+    , group_name_(groupname)
+  {
+
+  }
+
+  ~GadgetronClientAttribImageMessageReader() {
+  } 
+
+  virtual void read(tcp::socket* stream) 
+  {
+    std::cout << "Receiving image with attributes." << std::endl;
+    //Read the image headerfrom the socket
+    ISMRMRD::ImageHeader h;
+    boost::asio::read(*stream, boost::asio::buffer(&h,sizeof(ISMRMRD::ImageHeader)));
+    ISMRMRD::Image<T> im; 
+    im.setHead(h);
+
+    //Read meta attributes
+    size_t meta_attrib_length;
+    boost::asio::read(*stream, boost::asio::buffer(&meta_attrib_length,sizeof(size_t)));
+    std::string meta_attrib(meta_attrib_length,0);
+    boost::asio::read(*stream, boost::asio::buffer(const_cast<char*>(meta_attrib.c_str()),
+						   meta_attrib.size()));
+    //Read image data
+    boost::asio::read(*stream, boost::asio::buffer(const_cast<T*>(&im.getData()[0]),
+						   sizeof(T)*im.getData().size()));
+    {
+      //Write it to the HDF5 out file
+      ISMRMRD::HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
+
+      if (!dataset_) {
+	dataset_ = boost::shared_ptr<ISMRMRD::IsmrmrdDataset>(new ISMRMRD::IsmrmrdDataset(file_name_.c_str(), group_name_.c_str())); 
+      }
+
+      std::stringstream st1;
+      st1 << "image_" << h.image_series_index << ".head";
+      std::string head_varname = st1.str();
+    
+      std::stringstream st2;
+      st2 << "image_" << h.image_series_index << ".img";
+      std::string img_varname = st2.str();
+    
+      std::stringstream st3;
+      st3 << "image_" << h.image_series_index << ".attrib";
+      std::string meta_varname = st3.str();
+
+      if (dataset_->appendImageHeader(h, head_varname.c_str()) < 0) {
+	throw GadgetronClientException("Unable to append header to ISMRMRD HDF5 dataset");
+      }
+
+      if (dataset_->appendImageAttrib(meta_attrib, meta_varname.c_str()) < 0) {
+	throw GadgetronClientException("Unable to append meta attributes to ISMRMRD HDF5 dataset");
+      }
+
+      std::vector<unsigned int> dim(4);
+      dim[0] = h.matrix_size[0];
+      dim[1] = h.matrix_size[1];
+      dim[2] = h.matrix_size[2];
+      dim[3] = h.channels;
+    
+      if (dataset_->appendArray(dim, const_cast<T*>(&im.getData()[0]), img_varname.c_str())  < 0) {
+	throw GadgetronClientException("Unable to append image array to ISMRMRD HDF5 dataset");
+      }
+    }
+  }
+
+protected:
+  std::string group_name_;
+  std::string file_name_;
+  boost::shared_ptr<ISMRMRD::IsmrmrdDataset> dataset_;
+};
+
 
 class GadgetronClientConnector
 {
@@ -481,19 +563,16 @@ int main(int argc, char **argv)
 
 
   GadgetronClientConnector con;
+
   con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_USHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientImageMessageReader<uint16_t>(out_filename, hdf5_out_group)));
   con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_REAL_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientImageMessageReader<float>(out_filename, hdf5_out_group)));
   con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGE_CPLX_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientImageMessageReader< std::complex<float> >(out_filename, hdf5_out_group)));
 
+  //Image with attributes 
+  con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribImageMessageReader<uint16_t>(out_filename, hdf5_out_group)));
+  con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribImageMessageReader<float>(out_filename, hdf5_out_group)));
+  con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_CPLX_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribImageMessageReader< std::complex<float> >(out_filename, hdf5_out_group)));
 
-/*
-
-{
-            con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_USHORT, new HDF5ImageAttribWriter<ACE_UINT16>(std::string(hdf5_out_file), std::string(hdf5_out_group), prefix));
-            con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT, new HDF5ImageAttribWriter<float>(std::string(hdf5_out_file), std::string(hdf5_out_group), prefix));
-            con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_CPLX_FLOAT, new HDF5ImageAttribWriter< std::complex<float> >(std::string(hdf5_out_file), std::string(hdf5_out_group), prefix));
-        }
-*/
 
   try {
     con.connect(host_name,port);
