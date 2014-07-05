@@ -9,15 +9,12 @@
 
 //TODO:
 // -Image with attributes
-// -Blobs (for DICOM image support(
+// -Blobs (for DICOM image support)
 // -NIFTI and Analyze output
 // -Windows compile
-// -Mac OSX compile
 // -Check with newer versions of Boost (some asio syntax may have changed)
 // -Check on potential threading problem with asio socket 
 //    - having and reading and writing thread is supposedly not safe, but seems to work here
-// -Implement function for sending xml configuration
-// -Add command line switch for accepting an XML file for Gadgetron config
 // -Add command line switch for controlling verbosity of output
 // -Static linking for standalone executable. 
 
@@ -30,12 +27,14 @@
 #include <ismrmrd_hdf5.h>
 
 #include <fstream>
+#include <streambuf>
 #include <time.h>
 #include <iomanip>
 #include <sstream>
 #include <iostream>
 #include <exception>
 #include <map>
+
 
 std::string get_date_time_string()
 {
@@ -309,35 +308,22 @@ public:
 
   }
 
-  void send_gadgetron_configuration_script(std::string config_xml_string)
+  void send_gadgetron_configuration_script(std::string xml_string)
   {
     if (!socket_) {
       throw GadgetronClientException("Invalid socket.");
     }
 
-    /*
     GadgetMessageIdentifier id;
     id.id = GADGET_MESSAGE_CONFIG_SCRIPT;
 
-    GadgetMessageScript ini;
-    ini.script_length = (ACE_UINT32)config_xml.size()+1;
+    GadgetMessageScript conf;
+    conf.script_length = (uint32_t)xml_string.size()+1;
+    
+    boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
+    boost::asio::write(*socket_, boost::asio::buffer(&conf, sizeof(GadgetMessageScript)));
+    boost::asio::write(*socket_, boost::asio::buffer(xml_string.c_str(), conf.script_length));    
 
-    if (this->peer().send_n(&id, sizeof(GadgetMessageIdentifier)) != sizeof(GadgetMessageIdentifier)) {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send GadgetMessageIdentifier\n")));
-        return -1;
-    }
-
-    if (this->peer().send_n(&ini, sizeof(GadgetMessageScript)) != sizeof(GadgetMessageScript)) {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send GadgetMessageScript\n")));
-        return -1;
-    }
-
-    if (this->peer().send_n(config_xml.c_str(), ini.script_length) != ini.script_length) {
-        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send parameter xml\n")));
-        return -1;
-    }
-    */
-    throw GadgetronClientException("Method send_gadgetron_configuration_script is not implemented yet.");
   }
 
 
@@ -423,6 +409,8 @@ int main(int argc, char **argv)
   std::string hdf5_in_group;
   std::string hdf5_out_group;
   std::string config_file;
+  std::string config_file_local;
+  std::string config_xml_local;
   unsigned int loops;
 
   po::options_description desc("Allowed options");
@@ -434,9 +422,10 @@ int main(int argc, char **argv)
     ("filename,f", po::value<std::string>(&in_filename), "Input file")
     ("outfile,o", po::value<std::string>(&out_filename)->default_value("out.h5"), "Output file")
     ("in-group,g", po::value<std::string>(&hdf5_in_group)->default_value("/dataset"), "Input data group")
-    ("out-group,G", po::value<std::string>(&hdf5_out_group)->default_value(get_date_time_string()), "Output group name")
+    ("out-group,G", po::value<std::string>(&hdf5_out_group)->default_value(get_date_time_string()), "Output group name")  
     ("config,c", po::value<std::string>(&config_file)->default_value("default.xml"), "Configuration file (remote)")
-    ("loops,l", po::value<unsigned int>(&loops)->default_value(1), "Loops")
+    ("config-local,C", po::value<std::string>(&config_file_local), "Configuration file (local)")
+  ("loops,l", po::value<unsigned int>(&loops)->default_value(1), "Loops")
     ;
 
   po::variables_map vm;
@@ -452,6 +441,18 @@ int main(int argc, char **argv)
     std::cout << std::endl << std::endl << "\tYou must supply a filename" << std::endl << std::endl;
     std::cout << desc << std::endl;
     return -1;
+  }
+
+  if (vm.count("config-local")) {
+    std::ifstream t(config_file_local.c_str());
+    if (t) {
+      //Read in the file.
+      config_xml_local = std::string((std::istreambuf_iterator<char>(t)),
+				     std::istreambuf_iterator<char>());
+    } else {
+      std::cout << "Unable to read local xml configuration: " << config_file_local  << std::endl;
+      return -1;
+    }
   }
 
   std::cout << "Gadgetron ISMRMRD client" << std::endl;
@@ -496,7 +497,11 @@ int main(int argc, char **argv)
 
   try {
     con.connect(host_name,port);
-    con.send_gadgetron_configuration_file(config_file);
+      if (vm.count("config-local")) {
+	con.send_gadgetron_configuration_script(config_xml_local);
+      } else {
+	con.send_gadgetron_configuration_file(config_file);
+      }
     con.send_gadgetron_parameters(*xml_config);
 
     unsigned long acquisitions = ismrmrd_dataset->getNumberOfAcquisitions();
