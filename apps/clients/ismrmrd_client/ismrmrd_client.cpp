@@ -248,7 +248,7 @@ public:
       std::stringstream st1;
       st1 << "image_" << h.image_series_index << ".head";
       std::string head_varname = st1.str();
-    
+   
       std::stringstream st2;
       st2 << "image_" << h.image_series_index << ".img";
       std::string img_varname = st2.str();
@@ -283,6 +283,149 @@ protected:
   boost::shared_ptr<ISMRMRD::IsmrmrdDataset> dataset_;
 };
 
+
+#define MAX_BLOBS_LOG_10    6
+
+class GadgetronClientBlobMessageReader 
+  : public GadgetronClientMessageReader
+{
+
+public:
+  GadgetronClientBlobMessageReader(std::string fileprefix, std::string filesuffix)
+    : number_of_calls_(0)
+    , file_prefix(fileprefix)
+    , file_suffix(filesuffix)
+
+  {
+
+  }
+
+  virtual ~GadgetronClientBlobMessageReader() {}
+
+  virtual void read(tcp::socket* socket) 
+  {
+    
+    // MUST READ 32-bits
+    uint32_t nbytes;
+    boost::asio::read(*socket, boost::asio::buffer(&nbytes,sizeof(uint32_t)));
+
+    std::vector<char> data(nbytes,0);
+    boost::asio::read(*socket, boost::asio::buffer(&data[0],nbytes));
+
+    std::stringstream filename;
+
+    // Create the filename: (prefix_%06.suffix)
+    filename << file_prefix << "_";
+    filename << std::setfill('0') << std::setw(MAX_BLOBS_LOG_10) << number_of_calls_;
+    filename << "." << file_suffix;
+
+    std::ofstream outfile;
+    outfile.open (filename.str().c_str(), std::ios::out|std::ios::binary);
+
+    std::cout << "Writing image " << filename.str() << std::endl;
+
+    if (outfile.good()) {
+      /* write 'size' bytes starting at 'data's pointer */
+      outfile.write(&data[0], nbytes);
+      outfile.close();
+      number_of_calls_++;
+    } else {
+      throw GadgetronClientException("Unable to write blob to output file\n");
+    }
+  }
+
+protected:
+  size_t number_of_calls_;
+  std::string file_prefix;
+  std::string file_suffix;
+
+};
+
+class GadgetronClientBlobAttribMessageReader 
+  : public GadgetronClientMessageReader
+{
+
+public:
+  GadgetronClientBlobAttribMessageReader(std::string fileprefix, std::string filesuffix)
+    : number_of_calls_(0)
+    , file_prefix(fileprefix)
+    , file_suffix(filesuffix)
+
+  {
+
+  }
+
+  virtual ~GadgetronClientBlobAttribMessageReader() {}
+
+  virtual void read(tcp::socket* socket) 
+  {
+    
+    // MUST READ 32-bits
+    uint32_t nbytes;
+    boost::asio::read(*socket, boost::asio::buffer(&nbytes,sizeof(uint32_t)));
+
+    std::vector<char> data(nbytes,0);
+    boost::asio::read(*socket, boost::asio::buffer(&data[0],nbytes));
+
+    
+    unsigned long long fileNameLen;
+    boost::asio::read(*socket, boost::asio::buffer(&fileNameLen,sizeof(unsigned long long)));
+
+    std::string filenameBuf(fileNameLen,0);
+    boost::asio::read(*socket, boost::asio::buffer(const_cast<char*>(filenameBuf.c_str()),fileNameLen));
+
+		      size_t meta_attrib_length;
+    boost::asio::read(*socket, boost::asio::buffer(&meta_attrib_length,sizeof(size_t)));
+    std::string meta_attrib(meta_attrib_length,0);
+    boost::asio::read(*socket, boost::asio::buffer(const_cast<char*>(meta_attrib.c_str()),
+						   meta_attrib.size()));
+		      
+
+    std::string filename_image, filename_attrib;
+    
+    // Create the filename: (prefix_%06.suffix)
+    if ( file_prefix.empty() )
+      {
+	filename_image =  filenameBuf + "." + file_suffix;
+	filename_attrib =  filenameBuf + "_attrib.xml";
+      }
+    else
+      {
+	filename_image = file_prefix + "_" + filenameBuf + "." + file_suffix;
+	filename_attrib = file_prefix + "_" + filenameBuf + "_attrib.xml";
+      }
+    
+    std::cout << "Writing image " << filename_image.c_str() << std::endl;
+    
+    std::ofstream outfile;
+    outfile.open (filename_image.c_str(), std::ios::out|std::ios::binary);
+    
+    std::ofstream outfile_attrib;
+    outfile_attrib.open (filename_attrib.c_str(), std::ios::out|std::ios::binary);
+    
+    if (outfile.good())
+      {
+	/* write 'size' bytes starting at 'data's pointer */
+	outfile.write(&data[0], nbytes);
+	outfile.close();
+	
+	outfile_attrib.write(meta_attrib.c_str(), meta_attrib.length());
+	outfile_attrib.close();
+	
+	number_of_calls_++;
+      }
+    else
+      {
+	throw GadgetronClientException("Unable to write blob to output file\n");
+      }
+  }
+
+protected:
+  size_t number_of_calls_;
+  std::string file_prefix;
+  std::string file_suffix;
+
+};
 
 class GadgetronClientConnector
 {
@@ -573,6 +716,8 @@ int main(int argc, char **argv)
   con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_REAL_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribImageMessageReader<float>(out_filename, hdf5_out_group)));
   con.register_reader(GADGET_MESSAGE_ISMRMRD_IMAGEWITHATTRIB_CPLX_FLOAT, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientAttribImageMessageReader< std::complex<float> >(out_filename, hdf5_out_group)));
 
+  con.register_reader(GADGET_MESSAGE_DICOM, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientBlobMessageReader(std::string(hdf5_out_group), std::string("dcm"))));
+  con.register_reader(GADGET_MESSAGE_DICOM_WITHNAME, boost::shared_ptr<GadgetronClientMessageReader>(new GadgetronClientBlobAttribMessageReader(std::string(), std::string("dcm"))));
 
   try {
     con.connect(host_name,port);
