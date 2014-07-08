@@ -228,12 +228,15 @@ public:
     ISMRMRD::Image<T> im; 
     im.setHead(h);
 
+    typedef unsigned long long size_t_type;
+
     //Read meta attributes
-    size_t meta_attrib_length;
-    boost::asio::read(*stream, boost::asio::buffer(&meta_attrib_length,sizeof(size_t)));
-    std::string meta_attrib(meta_attrib_length,0);
-    boost::asio::read(*stream, boost::asio::buffer(const_cast<char*>(meta_attrib.c_str()),
-						   meta_attrib.size()));
+    size_t_type meta_attrib_length;
+    boost::asio::read(*stream, boost::asio::buffer(&meta_attrib_length, sizeof(size_t_type)));
+
+    std::string meta_attrib(meta_attrib_length-sizeof(size_t_type),0);
+    boost::asio::read(*stream, boost::asio::buffer(const_cast<char*>(meta_attrib.c_str()), meta_attrib_length-sizeof(size_t_type)));
+
     //Read image data
     boost::asio::read(*stream, boost::asio::buffer(const_cast<T*>(&im.getData()[0]),
 						   sizeof(T)*im.getData().size()));
