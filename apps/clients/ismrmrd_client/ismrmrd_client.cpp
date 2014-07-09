@@ -377,12 +377,14 @@ public:
     std::string filenameBuf(fileNameLen,0);
     boost::asio::read(*socket, boost::asio::buffer(const_cast<char*>(filenameBuf.c_str()),fileNameLen));
 
-		      size_t meta_attrib_length;
-    boost::asio::read(*socket, boost::asio::buffer(&meta_attrib_length,sizeof(size_t)));
-    std::string meta_attrib(meta_attrib_length,0);
-    boost::asio::read(*socket, boost::asio::buffer(const_cast<char*>(meta_attrib.c_str()),
-						   meta_attrib.size()));
-		      
+    typedef unsigned long long size_t_type;
+
+    size_t_type meta_attrib_length;
+    boost::asio::read(*socket, boost::asio::buffer(&meta_attrib_length, sizeof(size_t_type)));
+
+    std::string meta_attrib(meta_attrib_length-sizeof(size_t_type),0);
+    boost::asio::read(*socket, boost::asio::buffer(const_cast<char*>(meta_attrib.c_str()), meta_attrib_length-sizeof(size_t_type)));
+
 
     std::string filename_image, filename_attrib;
     
