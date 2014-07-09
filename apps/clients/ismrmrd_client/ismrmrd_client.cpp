@@ -8,12 +8,9 @@
  *****************************************/
 
 //TODO:
-// -Image with attributes.
-//    - First simple implementation is in, but it is untested and likely to have problems.
 // -Blobs (for DICOM image support)
+//  - First implementation is in, but testing needed
 // -NIFTI and Analyze output
-// -Windows compile
-// -Check with newer versions of Boost (some asio syntax may have changed)
 // -Check on potential threading problem with asio socket 
 //    - having and reading and writing thread is supposedly not safe, but seems to work here
 // -Add command line switch for controlling verbosity of output
@@ -532,7 +529,6 @@ public:
     memset(&ini,0,sizeof(GadgetMessageConfigurationFile));
     strncpy(ini.configuration_file, config_xml_name.c_str(),config_xml_name.size());
 
-    //TODO: Add some error checking
     boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
     boost::asio::write(*socket_, boost::asio::buffer(&ini, sizeof(GadgetMessageConfigurationFile)));
 
@@ -569,7 +565,6 @@ public:
     GadgetMessageScript conf;
     conf.script_length = (uint32_t)xml_string.size()+1;
     
-    //TODO: Add some error checking
     boost::asio::write(*socket_, boost::asio::buffer(&id, sizeof(GadgetMessageIdentifier)));
     boost::asio::write(*socket_, boost::asio::buffer(&conf, sizeof(GadgetMessageScript)));
     boost::asio::write(*socket_, boost::asio::buffer(xml_string.c_str(), conf.script_length));    
