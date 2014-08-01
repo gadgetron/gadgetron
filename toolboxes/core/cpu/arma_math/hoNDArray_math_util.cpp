@@ -115,7 +115,7 @@ namespace Gadgetron
         {
             MKL_INT n = x.get_number_of_elements();
             MKL_INT incx = 1;
-            ind = (size_t)(cblas_isamin(n, x.begin(), incx));
+            ind = (size_t)(isamin(&n, x.begin(), &incx));
             r = x.at(ind);
         }
         catch(...)
@@ -132,7 +132,7 @@ namespace Gadgetron
         {
             MKL_INT n = x.get_number_of_elements();
             MKL_INT incx = 1;
-            ind = (size_t)(cblas_isamax(n, x.begin(), incx));
+            ind = (size_t)(isamax(&n, x.begin(), &incx));
             r = x.at(ind);
         }
         catch(...)
@@ -333,7 +333,7 @@ namespace Gadgetron
         {
             MKL_INT n = x.get_number_of_elements();
             MKL_INT incx = 1;
-            ind = (size_t)(cblas_idamin(n, x.begin(), incx));
+            ind = (size_t)(idamin(&n, x.begin(), &incx));
             r = x.at(ind);
         }
         catch(...)
@@ -350,7 +350,7 @@ namespace Gadgetron
         {
             MKL_INT n = x.get_number_of_elements();
             MKL_INT incx = 1;
-            ind = (size_t)(cblas_idamax(n, x.begin(), incx));
+            ind = (size_t)(idamax(&n, x.begin(), &incx));
             r = x.at(ind);
         }
         catch(...)
@@ -542,7 +542,7 @@ namespace Gadgetron
         {
             MKL_INT n = x.get_number_of_elements();
             MKL_INT incx = 1;
-            ind = (size_t)(cblas_icamin(n, reinterpret_cast<const MKL_Complex8*>(x.begin()), incx));
+            ind = (size_t)(icamin(&n, reinterpret_cast<const MKL_Complex8*>(x.begin()), &incx));
             r = x.at(ind);
         }
         catch(...)
@@ -559,7 +559,7 @@ namespace Gadgetron
         {
             MKL_INT n = x.get_number_of_elements();
             MKL_INT incx = 1;
-            ind = (size_t)(cblas_icamax(n, reinterpret_cast<const MKL_Complex8*>(x.begin()), incx));
+            ind = (size_t)(icamax(&n, reinterpret_cast<const MKL_Complex8*>(x.begin()), &incx));
             r = x.at(ind);
         }
         catch(...)
@@ -866,7 +866,7 @@ namespace Gadgetron
         {
             MKL_INT n = x.get_number_of_elements();
             MKL_INT incx = 1;
-            ind = (size_t)(cblas_izamin(n, reinterpret_cast<const MKL_Complex16*>(x.begin()), incx));
+            ind = (size_t)(izamin(&n, reinterpret_cast<const MKL_Complex16*>(x.begin()), &incx));
             r = x.at(ind);
         }
         catch(...)
@@ -883,7 +883,7 @@ namespace Gadgetron
         {
             MKL_INT n = x.get_number_of_elements();
             MKL_INT incx = 1;
-            ind = (size_t)(cblas_izamax(n, reinterpret_cast<const MKL_Complex16*>(x.begin()), incx));
+            ind = (size_t)(izamax(&n, reinterpret_cast<const MKL_Complex16*>(x.begin()), &incx));
             r = x.at(ind);
         }
         catch(...)
