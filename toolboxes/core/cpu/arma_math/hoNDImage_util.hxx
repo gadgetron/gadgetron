@@ -194,6 +194,31 @@ namespace Gadgetron
     }
 
     template<class T, unsigned int D> 
+    bool complex_to_real(hoNDImage<T, D>& cplx)
+    {
+        try
+        {
+            T* pRes = cplx.begin();
+
+            size_t N = cplx.get_number_of_elements();
+
+            long long n;
+            #pragma omp parallel for default(none) private(n) shared(N, pRes)
+            for ( n=0; n<(long long)N; n++ )
+            {
+                pRes[n] = pRes[n].real();
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in complex_to_real(...) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template<class T, unsigned int D> 
     bool complex_to_imag(const hoNDImage<T, D>& cplx, 
                         hoNDImage<typename realType<T>::Type, D>& imag)
     {
@@ -1458,7 +1483,7 @@ namespace Gadgetron
     }
 
     template<class ArrayType> 
-    bool filterMedian(const ArrayType& img, unsigned int w[], ArrayType& img_out)
+    bool filterMedian(const ArrayType& img, size_t w[], ArrayType& img_out)
     {
         try
         {
@@ -1569,7 +1594,7 @@ namespace Gadgetron
                     }
                 }
 
-                for ( y=sx-halfY; y<sx; y++ )
+                for ( y=sy-halfY; y<sy; y++ )
                 {
                     for ( x=0; x<sx; x++ )
                     {
@@ -1728,7 +1753,7 @@ namespace Gadgetron
         }
         catch(...)
         {
-            GADGET_ERROR_MSG("Errors happened in filterMedian(const ArrayType& img, unsigned int w[], ArrayType& img_out) ... ");
+            GADGET_ERROR_MSG("Errors happened in filterMedian(const ArrayType& img, size_t w[], ArrayType& img_out) ... ");
             return false;
         }
 

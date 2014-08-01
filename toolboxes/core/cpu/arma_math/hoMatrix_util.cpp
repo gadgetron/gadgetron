@@ -87,6 +87,48 @@ template EXPORTCPUCOREMATH bool SolveLinearSystem_Tikhonov(hoMatrix<GT_Complex16
 // following matrix computation calls MKL functions
 #ifdef USE_MKL
 
+bool GeneralMatrixProduct_gemm_CXFL(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B)
+{
+    typedef std::complex<float> T;
+    try
+    {
+        char TA, TB;
+
+        MKL_INT lda = A.get_size(0);
+        MKL_INT ldb = B.get_size(0);
+        const T* pA = A.begin(); 
+        const T* pB = B.begin(); 
+
+        MKL_INT M = A.get_size(0);
+        MKL_INT K = A.get_size(1);
+
+        MKL_INT K2 = B.get_size(0);
+        MKL_INT N = B.get_size(1);
+
+        GADGET_CHECK_RETURN_FALSE(K==K2);
+        if ( (C.get_size(0)!=M) || (C.get_size(1)!=N) )
+        {
+            C.create(M, N);
+        }
+
+        T* pC = C.begin();
+        MKL_INT ldc = C.get_size(0);
+
+        GT_Complex8 alpha(1), beta(0);
+
+        TA = 'N';
+        TB = 'N';
+
+        cgemm(&TA, &TB, &M, &N, &K, reinterpret_cast<MKL_Complex8*>(&alpha), reinterpret_cast<const MKL_Complex8*>(pA), &lda, reinterpret_cast<const MKL_Complex8*>(pB), &ldb, reinterpret_cast<MKL_Complex8*>(&beta), reinterpret_cast<MKL_Complex8*>(pC), &ldc);
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm_CXFL(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B) ...");
+        return false;
+    }
+    return true;
+}
+
 template<typename T> 
 bool GeneralMatrixProduct_gemm(hoNDArray<T>& C, 
                             const hoNDArray<T>& A, bool transA, 
@@ -996,19 +1038,15 @@ template EXPORTCPUCOREMATH bool InverseGeneralMatrix_getri(hoMatrix<GT_Complex16
             }
             else if ( transA && !transB )
             {
-                arma::Mat<typename stdType<T>::Type> AT = arma::trans(armaA);
-                armaC = AT * armaB;
+                armaC = arma::trans(armaA) * armaB;
             }
             else if ( !transA && transB )
             {
-                arma::Mat<typename stdType<T>::Type> BT = arma::trans(armaB);
-                armaC = armaA * BT;
+                armaC = armaA * arma::trans(armaB);
             }
             else
             {
-                arma::Mat<typename stdType<T>::Type> AT = arma::trans(armaA);
-                arma::Mat<typename stdType<T>::Type> BT = arma::trans(armaB);
-                armaC = AT * BT;
+                armaC = arma::trans(armaA) * arma::trans(armaB);
             }
         }
         catch(...)

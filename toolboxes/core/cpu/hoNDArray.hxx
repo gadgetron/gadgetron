@@ -251,8 +251,15 @@ namespace Gadgetron
         this->offsetFactors_ = boost::shared_ptr< std::vector<size_t> >(tmp);
         *(this->offsetFactors_) = *(a->offsetFactors_);
 
-        allocate_memory();
-        memcpy( this->data_, a->data_, this->elements_*sizeof(T) );
+        if ( !this->dimensions_->empty() )
+        {
+            allocate_memory();
+            memcpy( this->data_, a->data_, this->elements_*sizeof(T) );
+        }
+        else
+        {
+            this->elements_ = 0;
+        }
     }
 
     template <typename T> 
@@ -268,8 +275,15 @@ namespace Gadgetron
         this->offsetFactors_ = boost::shared_ptr< std::vector<size_t> >(tmp);
         *(this->offsetFactors_) = *(a.offsetFactors_);
 
-        allocate_memory();
-        memcpy( this->data_, a.data_, this->elements_*sizeof(T) );
+        if ( !this->dimensions_->empty() )
+        {
+            allocate_memory();
+            memcpy( this->data_, a.data_, this->elements_*sizeof(T) );
+        }
+        else
+        {
+            this->elements_ = 0;
+        }
     }
 
     template <typename T> 
@@ -800,24 +814,31 @@ namespace Gadgetron
     {
         deallocate_memory();
 
-        this->elements_ = (*this->dimensions_)[0];
-        for (size_t i = 1; i < this->dimensions_->size(); i++)
+        if ( !this->dimensions_->empty() )
         {
-            this->elements_ *= (*this->dimensions_)[i];
-        }
-
-        if ( this->elements_ > 0 )
-        {
-            this->_allocate_memory(this->elements_, &this->data_);
-
-            if( this->data_ == 0x0 )
+            this->elements_ = (*this->dimensions_)[0];
+            for (size_t i = 1; i < this->dimensions_->size(); i++)
             {
-                BOOST_THROW_EXCEPTION( bad_alloc("hoNDArray<>::allocate memory failed"));
+                this->elements_ *= (*this->dimensions_)[i];
             }
 
-            this->delete_data_on_destruct_ = true;
+            if ( this->elements_ > 0 )
+            {
+                this->_allocate_memory(this->elements_, &this->data_);
 
-            // memset(this->data_, 0, sizeof(T)*this->elements_);
+                if( this->data_ == 0x0 )
+                {
+                    BOOST_THROW_EXCEPTION( bad_alloc("hoNDArray<>::allocate memory failed"));
+                }
+
+                this->delete_data_on_destruct_ = true;
+
+                // memset(this->data_, 0, sizeof(T)*this->elements_);
+            }
+        }
+        else
+        {
+            this->elements_ = 0;
         }
     }
 

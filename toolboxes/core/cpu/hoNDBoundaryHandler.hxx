@@ -209,7 +209,7 @@ namespace Gadgetron
     template <typename ArrayType> 
     inline typename hoNDBoundaryHandlerPeriodic<ArrayType>::T hoNDBoundaryHandlerPeriodic<ArrayType>::operator()( const std::vector<gt_index_type>& ind )
     {
-        unsigned int D = array_->get_number_of_dimensions();
+        unsigned int D = (unsigned int)array_->get_number_of_dimensions();
         std::vector<size_t> indInside(D);
         unsigned int ii;
         for ( ii=0; ii<D; ii++ )

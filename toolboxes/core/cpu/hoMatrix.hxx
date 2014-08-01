@@ -204,13 +204,16 @@ bool hoMatrix<T>::sumOverCol(hoNDArray<T>& res) const
         //    }
         //}
 
-        #pragma omp parallel for default(none) private(c, r) shared(COL, ROW, pRes) if ( COL > 16 )
+        T* pCurr = NULL;
+        T v(0);
+        // #pragma omp parallel for default(none) private(c, r) shared(COL, ROW, pRes) if ( COL > 16 )
         for ( c=0; c<(long long)COL; c++ )
         {
-            T v(0);
+            v = 0;
+            pCurr = this->data_ + c*ROW;
             for ( r=0; r<ROW; r++ )
             {
-                v += this->data_[r+c*ROW];
+                v += pCurr[r];
             }
             pRes[c] = v;
         }

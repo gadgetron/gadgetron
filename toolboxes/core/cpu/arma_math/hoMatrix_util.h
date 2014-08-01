@@ -38,6 +38,9 @@ bool SolveLinearSystem_Tikhonov(hoMatrix<T>& A, hoMatrix<T>& b, hoMatrix<T>& x, 
 // following matrix computation calls MKL functions
 #ifdef USE_MKL
 
+/// C = A*B for complex float
+EXPORTCPUCOREMATH bool GeneralMatrixProduct_gemm_CXFL(hoNDArray< std::complex<float> >& C, const hoNDArray< std::complex<float> >& A, const hoNDArray< std::complex<float> >& B);
+
 template<typename T> EXPORTCPUCOREMATH
 bool GeneralMatrixProduct_gemm(hoNDArray<T>& C, 
                             const hoNDArray<T>& A, bool transA, 

@@ -312,7 +312,7 @@ namespace Gadgetron
             return *this;
         }
 
-        if (this->dimensions_equal(rhs))
+        if ( this->dimensions_equal(rhs) && this->data_!=NULL )
         {
             memcpy(this->data_, rhs.data_, rhs.elements_*sizeof(T));
         }

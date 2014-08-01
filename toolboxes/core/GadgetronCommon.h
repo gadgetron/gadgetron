@@ -76,6 +76,8 @@
 #define GT_SGN(a)      (((a)>=0)?(1):(-1))
 #define GT_PI          3.141592653589793238462
 #define GT_IMAGING_GEOMETRY_DELTA 0.001
+#define GT_MKINT(a)    (((a)>=0)?((int)((a)+0.5)):((int)((a)-0.5)))
+#define GT_SQR(a)      ((a)*(a))
 
 namespace Gadgetron
 {

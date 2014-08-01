@@ -84,7 +84,7 @@ namespace Gadgetron
 
     /// perform midian filter
     /// w is the window size
-    template<class ArrayType> bool filterMedian(const ArrayType& img, unsigned int w[], ArrayType& img_out);
+    template<class ArrayType> bool filterMedian(const ArrayType& img, size_t w[], ArrayType& img_out);
 
     /// downsample the image by a ratio
     /// new image size = image size / ratio

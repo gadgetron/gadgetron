@@ -442,9 +442,9 @@ namespace Gadgetron
                         }
                     }
                 }
-
-                image_container_.clear();
             }
+
+            image_container_.clear();
         }
         catch(...)
         {
@@ -873,7 +873,7 @@ namespace Gadgetron
             size_t col = this->cols(row);
             if ( col == 0 ) return true;
 
-            GADGET_CHECK_RETURN_FALSE(this->has_identical_dimensions(row));
+            GADGET_CHECK_RETURN_FALSE(this->has_identical_dimensions( (unsigned int)row));
 
             std::vector<size_t> dim;
             image_container_[row][0]->get_dimensions(dim);

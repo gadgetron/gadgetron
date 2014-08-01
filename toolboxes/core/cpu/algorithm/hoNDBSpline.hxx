@@ -1685,13 +1685,13 @@ namespace Gadgetron
 
         T Sum;
         bspline_float_type zn, z2n, iz;
-        long n, Horizon;
+        size_t n, Horizon;
 
         /* this initialization corresponds to mirror boundaries */
         Horizon = DataLength;
         if (Tolerance > 0.0)
         {
-            Horizon = (long)std::ceil(log(Tolerance) / log(fabs(z)));
+            Horizon = (size_t)std::ceil(log(Tolerance) / log(fabs(z)));
         }
 
         if (Horizon < DataLength)
@@ -1699,7 +1699,7 @@ namespace Gadgetron
             /* accelerated loop */
             zn = z;
             Sum = c[0];
-            for (n = 1L; n < Horizon; n++) {
+            for (n = 1; n < Horizon; n++) {
                 Sum += zn * c[n];
                 zn *= z;
             }
@@ -1709,7 +1709,7 @@ namespace Gadgetron
         {
             /* full loop */
             zn = z;
-            iz = 1.0 / z;
+            iz = (bspline_float_type)(1.0) / z;
             z2n = pow(z, (bspline_float_type)(DataLength - 1L));
             Sum = c[0] + z2n * c[DataLength - 1L];
             z2n *= z2n * iz;
@@ -1825,7 +1825,7 @@ namespace Gadgetron
                     v2 *= t;
                 }
 
-                value += ( std::pow(double(-1), double(j) ) * (SplineDegree+1) / (v2 * v1) ) * std::pow(x-j+0.5*(SplineDegree+1), double(SplineDegree) );
+                value += (bspline_float_type)( ( std::pow(double(-1), double(j) ) * (SplineDegree+1) / (v2 * v1) ) * std::pow(x-j+0.5*(SplineDegree+1), double(SplineDegree) ) );
             }
         }
 

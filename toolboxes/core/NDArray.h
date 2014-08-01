@@ -12,7 +12,6 @@
 #include <new>
 #include <vector>
 #include <iostream>
-#include <sstream>
 #include <stdexcept>
 
 #include <boost/shared_ptr.hpp>
@@ -756,7 +755,7 @@ namespace Gadgetron{
         unsigned int ii;
         for ( ii=0; ii<D; ii++ )
         {
-            if ( (ind[ii]>=(*dimensions_)[ii]) || (ind[ii]<0) )
+            if ( (ind[ii]>= (gt_index_type)(*dimensions_)[ii]) || (ind[ii]<0) )
             {
                 return false;
             }
