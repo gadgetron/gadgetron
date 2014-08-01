@@ -30,19 +30,19 @@ namespace Gadgetron
 
         typedef typename TComplexFloat::value_type cx_value_type;
 
-        typedef hoNDMetaAttributesBase<TInteger> AttributeType1;
-        typedef typename AttributeType1::AttributeStorageType AttributeStorageType1;
+        typedef hoNDMetaAttributesBase<TInteger> AttributeTypeInteger;
+        typedef typename AttributeTypeInteger::AttributeStorageType AttributeTypeStringAttributeTypeInteger;
 
-        typedef hoNDMetaAttributesBase<TFloat> AttributeType2;
-        typedef typename AttributeType2::AttributeStorageType AttributeStorageType2;
+        typedef hoNDMetaAttributesBase<TFloat> AttributeTypeFloat;
+        typedef typename AttributeTypeFloat::AttributeStorageType AttributeTypeStringAttributeTypeFloat;
 
-        typedef hoNDMetaAttributesBase<TComplexFloat> AttributeType3;
-        typedef typename AttributeType3::AttributeStorageType AttributeStorageType3;
+        typedef hoNDMetaAttributesBase<TComplexFloat> AttributeTypeComplexFloat;
+        typedef typename AttributeTypeComplexFloat::AttributeStorageType AttributeTypeStringAttributeTypeComplexFloat;
 
-        typedef hoNDMetaAttributesBase<std::string> AttributeType4;
-        typedef typename AttributeType4::AttributeStorageType AttributeStorageType4;
+        typedef hoNDMetaAttributesBase<std::string> AttributeTypeString;
+        typedef typename AttributeTypeString::AttributeStorageType AttributeTypeStringAttributeTypeString;
 
-        typedef typename AttributeType1::size_t_type size_t_type;
+        typedef typename AttributeTypeInteger::size_t_type size_t_type;
 
         typedef TInteger AttribIntegerType;
         typedef TFloat AttribFloatType;
@@ -56,29 +56,29 @@ namespace Gadgetron
         Self& operator=(const Self& attrib)
         {
             if ( this == &attrib ) return *this;
-            attribute1_ = attrib.attribute1_;
-            attribute2_ = attrib.attribute2_;
-            attribute3_ = attrib.attribute3_;
-            attribute4_ = attrib.attribute4_;
+            attributeInteger_ = attrib.attributeInteger_;
+            attributeFloat_ = attrib.attributeFloat_;
+            attributeComplexFloat_ = attrib.attributeComplexFloat_;
+            attributeString_ = attrib.attributeString_;
             return *this;
         }
 
         bool clear()
         {
-            GADGET_CHECK_RETURN_FALSE(attribute1_.clear());
-            GADGET_CHECK_RETURN_FALSE(attribute2_.clear());
-            GADGET_CHECK_RETURN_FALSE(attribute3_.clear());
-            GADGET_CHECK_RETURN_FALSE(attribute4_.clear());
+            GADGET_CHECK_RETURN_FALSE(attributeInteger_.clear());
+            GADGET_CHECK_RETURN_FALSE(attributeFloat_.clear());
+            GADGET_CHECK_RETURN_FALSE(attributeComplexFloat_.clear());
+            GADGET_CHECK_RETURN_FALSE(attributeString_.clear());
             return true;
         }
 
         /// swap the attributes
         bool swap(Self& attrib)
         {
-            GADGET_CHECK_RETURN_FALSE(attribute1_.swap(attrib.attribute1_));
-            GADGET_CHECK_RETURN_FALSE(attribute2_.swap(attrib.attribute2_));
-            GADGET_CHECK_RETURN_FALSE(attribute3_.swap(attrib.attribute3_));
-            GADGET_CHECK_RETURN_FALSE(attribute4_.swap(attrib.attribute4_));
+            GADGET_CHECK_RETURN_FALSE(attributeInteger_.swap(attrib.attributeInteger_));
+            GADGET_CHECK_RETURN_FALSE(attributeFloat_.swap(attrib.attributeFloat_));
+            GADGET_CHECK_RETURN_FALSE(attributeComplexFloat_.swap(attrib.attributeComplexFloat_));
+            GADGET_CHECK_RETURN_FALSE(attributeString_.swap(attrib.attributeString_));
             return true;
         }
 
@@ -92,10 +92,10 @@ namespace Gadgetron
         virtual void print(std::ostream& os) const;
 
         /// all other operations should be performed directly on attribute itself
-        AttributeType1 attribute1_;
-        AttributeType2 attribute2_;
-        AttributeType3 attribute3_;
-        AttributeType4 attribute4_;
+        AttributeTypeInteger attributeInteger_;
+        AttributeTypeFloat attributeFloat_;
+        AttributeTypeComplexFloat attributeComplexFloat_;
+        AttributeTypeString attributeString_;
     private:
 
         // ACE_Thread_Mutex mtx_;

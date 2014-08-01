@@ -3536,90 +3536,90 @@ bool gtPlusISMRMRDReconUtil<T>::setMetaAttributesFromImageHeaderISMRMRD(const IS
     {
         unsigned int ii;
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_version,                 imgHeader.version));
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_flags,                   imgHeader.flags));
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_measurement_uid,         imgHeader.measurement_uid));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_version,                 imgHeader.version));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_flags,                   imgHeader.flags));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_measurement_uid,         imgHeader.measurement_uid));
 
         std::vector<typename GtImageAttribType::AttribIntegerType> attributeInteger(3);
         attributeInteger[0] = imgHeader.matrix_size[0];
         attributeInteger[1] = imgHeader.matrix_size[1];
         attributeInteger[2] = imgHeader.matrix_size[2];
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_matrix_size, attributeInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_matrix_size, attributeInteger));
 
         std::vector<typename GtImageAttribType::AttribFloatType> attributeFloat(3);
         attributeFloat[0] = imgHeader.field_of_view[0];
         attributeFloat[1] = imgHeader.field_of_view[1];
         attributeFloat[2] = imgHeader.field_of_view[2];
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.set(ISMRMRD_IMAGE_field_of_view, attributeFloat));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.set(ISMRMRD_IMAGE_field_of_view, attributeFloat));
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_channels,                imgHeader.channels));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_channels,                imgHeader.channels));
 
         attributeFloat.resize(ISMRMRD_POSITION_LENGTH);
         for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
         {
             attributeFloat[ii] = imgHeader.position[ii];
         }
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.set(ISMRMRD_IMAGE_position, attributeFloat));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.set(ISMRMRD_IMAGE_position, attributeFloat));
 
         attributeFloat.resize(ISMRMRD_DIRECTION_LENGTH);
         for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
         {
             attributeFloat[ii] = imgHeader.read_dir[ii];
         }
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.set(ISMRMRD_IMAGE_read_dir, attributeFloat));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.set(ISMRMRD_IMAGE_read_dir, attributeFloat));
 
         for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
         {
             attributeFloat[ii] = imgHeader.phase_dir[ii];
         }
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.set(ISMRMRD_IMAGE_phase_dir, attributeFloat));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.set(ISMRMRD_IMAGE_phase_dir, attributeFloat));
 
         for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
         {
             attributeFloat[ii] = imgHeader.slice_dir[ii];
         }
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.set(ISMRMRD_IMAGE_slice_dir, attributeFloat));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.set(ISMRMRD_IMAGE_slice_dir, attributeFloat));
 
         attributeFloat.resize(ISMRMRD_POSITION_LENGTH);
         for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
         {
             attributeFloat[ii] = imgHeader.patient_table_position[ii];
         }
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.set(ISMRMRD_IMAGE_patient_table_position, attributeFloat));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.set(ISMRMRD_IMAGE_patient_table_position, attributeFloat));
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_average,     imgHeader.average));
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_slice,       imgHeader.slice));
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_contrast,    imgHeader.contrast));
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_phase,       imgHeader.phase));
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_repetition,  imgHeader.repetition));
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_set,         imgHeader.set));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_average,     imgHeader.average));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_slice,       imgHeader.slice));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_contrast,    imgHeader.contrast));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_phase,       imgHeader.phase));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_repetition,  imgHeader.repetition));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_set,         imgHeader.set));
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_acquisition_time_stamp, imgHeader.acquisition_time_stamp));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_acquisition_time_stamp, imgHeader.acquisition_time_stamp));
 
         attributeInteger.resize(ISMRMRD_PHYS_STAMPS);
         for ( ii=0; ii<ISMRMRD_PHYS_STAMPS; ii++ )
         {
             attributeInteger[ii] = imgHeader.physiology_time_stamp[ii];
         }
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_physiology_time_stamp, attributeInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_physiology_time_stamp, attributeInteger));
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_image_data_type, imgHeader.image_data_type));
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_image_type, imgHeader.image_type));
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_image_series_index, imgHeader.image_series_index));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_image_data_type, imgHeader.image_data_type));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_image_type, imgHeader.image_type));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_image_series_index, imgHeader.image_series_index));
 
         attributeInteger.resize(ISMRMRD_USER_INTS);
         for ( ii=0; ii<ISMRMRD_USER_INTS; ii++ )
         {
             attributeInteger[ii] = imgHeader.user_int[ii];
         }
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.set(ISMRMRD_IMAGE_user_int, attributeInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_user_int, attributeInteger));
 
         attributeFloat.resize(ISMRMRD_USER_FLOATS);
         for ( ii=0; ii<ISMRMRD_USER_FLOATS; ii++ )
         {
             attributeFloat[ii] = imgHeader.user_float[ii];
         }
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.set(ISMRMRD_IMAGE_user_float, attributeFloat));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.set(ISMRMRD_IMAGE_user_float, attributeFloat));
     }
     catch(...)
     {
@@ -3639,109 +3639,109 @@ bool gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const Gt
 
         typename GtImageAttribType::AttribIntegerType vInteger;
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_version, 0, vInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_version, 0, vInteger));
         imgHeader.version = (uint16_t)vInteger;
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_flags, 0, vInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_flags, 0, vInteger));
         imgHeader.flags = (uint64_t)vInteger;
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_measurement_uid, 0, vInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_measurement_uid, 0, vInteger));
         imgHeader.measurement_uid = (uint32_t)vInteger;
 
         std::vector<typename GtImageAttribType::AttribIntegerType> attributeInteger(3);
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_matrix_size, attributeInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_matrix_size, attributeInteger));
         imgHeader.matrix_size[0] = (uint16_t)attributeInteger[0];
         imgHeader.matrix_size[1] = (uint16_t)attributeInteger[1];
         imgHeader.matrix_size[2] = (uint16_t)attributeInteger[2];
 
         std::vector<typename GtImageAttribType::AttribFloatType> attributeFloat(3);
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.get(ISMRMRD_IMAGE_field_of_view, attributeFloat));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.get(ISMRMRD_IMAGE_field_of_view, attributeFloat));
         imgHeader.field_of_view[0] = (float)attributeFloat[0];
         imgHeader.field_of_view[1] = (float)attributeFloat[1];
         imgHeader.field_of_view[2] = (float)attributeFloat[2];
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_channels, 0, vInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_channels, 0, vInteger));
         imgHeader.channels = (uint16_t)vInteger;
 
         attributeFloat.resize(ISMRMRD_POSITION_LENGTH);
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.get(ISMRMRD_IMAGE_position, attributeFloat));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.get(ISMRMRD_IMAGE_position, attributeFloat));
         for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
         {
             imgHeader.position[ii] = (float)attributeFloat[ii];
         }
 
         attributeFloat.resize(ISMRMRD_DIRECTION_LENGTH);
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.get(ISMRMRD_IMAGE_read_dir, attributeFloat));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.get(ISMRMRD_IMAGE_read_dir, attributeFloat));
         for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
         {
             imgHeader.read_dir[ii] = attributeFloat[ii];
         }
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.get(ISMRMRD_IMAGE_phase_dir, attributeFloat));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.get(ISMRMRD_IMAGE_phase_dir, attributeFloat));
         for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
         {
             imgHeader.phase_dir[ii] = attributeFloat[ii];
         }
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.get(ISMRMRD_IMAGE_slice_dir, attributeFloat));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.get(ISMRMRD_IMAGE_slice_dir, attributeFloat));
         for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
         {
             imgHeader.slice_dir[ii] = attributeFloat[ii];
         }
 
         attributeFloat.resize(ISMRMRD_POSITION_LENGTH);
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.get(ISMRMRD_IMAGE_patient_table_position, attributeFloat));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.get(ISMRMRD_IMAGE_patient_table_position, attributeFloat));
         for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
         {
             imgHeader.patient_table_position[ii] = attributeFloat[ii];
         }
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_average, 0, vInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_average, 0, vInteger));
         imgHeader.average = (uint16_t)vInteger;
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_slice, 0, vInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_slice, 0, vInteger));
         imgHeader.slice = (uint16_t)vInteger;
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_contrast, 0, vInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_contrast, 0, vInteger));
         imgHeader.contrast = (uint16_t)vInteger;
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_phase, 0, vInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_phase, 0, vInteger));
         imgHeader.phase = (uint16_t)vInteger;
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_repetition, 0, vInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_repetition, 0, vInteger));
         imgHeader.repetition = (uint16_t)vInteger;
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_set, 0, vInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_set, 0, vInteger));
         imgHeader.set = (uint16_t)vInteger;
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_acquisition_time_stamp, 0, vInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_acquisition_time_stamp, 0, vInteger));
         imgHeader.acquisition_time_stamp = (uint32_t)vInteger;
 
         attributeInteger.resize(ISMRMRD_PHYS_STAMPS);
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_physiology_time_stamp, attributeInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_physiology_time_stamp, attributeInteger));
         for ( ii=0; ii<ISMRMRD_PHYS_STAMPS; ii++ )
         {
             imgHeader.physiology_time_stamp[ii] = (uint32_t)attributeInteger[ii];
         }
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_image_data_type, 0, vInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_image_data_type, 0, vInteger));
         imgHeader.image_data_type = (uint16_t)vInteger;
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_image_type, 0, vInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_image_type, 0, vInteger));
         imgHeader.image_type = (uint16_t)vInteger;
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_image_series_index, 0, vInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_image_series_index, 0, vInteger));
         imgHeader.image_series_index = (uint16_t)vInteger;
 
         attributeInteger.resize(ISMRMRD_USER_INTS);
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(ISMRMRD_IMAGE_user_int, attributeInteger));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_user_int, attributeInteger));
         for ( ii=0; ii<ISMRMRD_USER_INTS; ii++ )
         {
             imgHeader.user_int[ii] = (int32_t)attributeInteger[ii];
         }
 
         attributeFloat.resize(ISMRMRD_USER_FLOATS);
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute2_.get(ISMRMRD_IMAGE_user_float, attributeFloat));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.get(ISMRMRD_IMAGE_user_float, attributeFloat));
         for ( ii=0; ii<ISMRMRD_USER_FLOATS; ii++ )
         {
             imgHeader.user_float[ii] = (float)attributeFloat[ii];

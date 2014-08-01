@@ -1286,35 +1286,35 @@ sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, in
 
                                     // ----------------------------------------------------------
                                     // set the image attributes
-                                    cm3->getObjectPtr()->attribute1_.set(GTPLUS_IMAGENUMBER, cm1->getObjectPtr()->image_index);
+                                    cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGENUMBER, cm1->getObjectPtr()->image_index);
 
-                                    cm3->getObjectPtr()->attribute1_.set(GTPLUS_CHA,        cha);
-                                    cm3->getObjectPtr()->attribute1_.set(GTPLUS_SLC,        cm1->getObjectPtr()->slice);
-                                    cm3->getObjectPtr()->attribute1_.set(GTPLUS_E2,         e2);
-                                    cm3->getObjectPtr()->attribute1_.set(GTPLUS_CONTRAST,   cm1->getObjectPtr()->contrast);
-                                    cm3->getObjectPtr()->attribute1_.set(GTPLUS_PHASE,      cm1->getObjectPtr()->phase);
-                                    cm3->getObjectPtr()->attribute1_.set(GTPLUS_REP,        cm1->getObjectPtr()->repetition);
-                                    cm3->getObjectPtr()->attribute1_.set(GTPLUS_SET,        cm1->getObjectPtr()->set);
+                                    cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_CHA,        cha);
+                                    cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_SLC,        cm1->getObjectPtr()->slice);
+                                    cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_E2,         e2);
+                                    cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_CONTRAST,   cm1->getObjectPtr()->contrast);
+                                    cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_PHASE,      cm1->getObjectPtr()->phase);
+                                    cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_REP,        cm1->getObjectPtr()->repetition);
+                                    cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_SET,        cm1->getObjectPtr()->set);
 
-                                    cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGEPROCESSINGHISTORY, "GTPLUS");
+                                    cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGEPROCESSINGHISTORY, "GTPLUS");
 
                                     if ( dataRole == GTPLUS_IMAGE_REGULAR )
                                     {
                                         cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
 
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, "GTPLUS");
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_GTPLUS");
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_REGULAR);
-                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_));
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, "GTPLUS");
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "_GTPLUS");
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_REGULAR);
+                                        cm3->getObjectPtr()->attributeFloat_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_));
                                     }
                                     else if ( dataRole == GTPLUS_IMAGE_PHASE )
                                     {
                                         cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_PHASE;
 
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, "PHS_GTPLUS");
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "PHS_GTPLUS");
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_PHASE);
-                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_));
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, "PHS_GTPLUS");
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "PHS_GTPLUS");
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_PHASE);
+                                        cm3->getObjectPtr()->attributeFloat_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_));
                                     }
                                     else if ( dataRole == GTPLUS_IMAGE_GFACTOR )
                                     {
@@ -1324,10 +1324,10 @@ sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, in
                                         comment.append("_");
                                         comment.append("gfactor_GTPLUS");
 
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, comment);
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_gfactor_GTPLUS");
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_GFACTOR);
-                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_gfactor_));
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, comment);
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "_gfactor_GTPLUS");
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_GFACTOR);
+                                        cm3->getObjectPtr()->attributeFloat_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_gfactor_));
                                     }
                                     else if ( dataRole == GTPLUS_IMAGE_SNR_MAP )
                                     {
@@ -1337,10 +1337,10 @@ sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, in
                                         comment.append("_");
                                         comment.append("SNR_Map_GTPLUS");
 
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, comment);
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_SNR_Map_GTPLUS");
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_SNR_MAP);
-                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_snr_image_));
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, comment);
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "_SNR_Map_GTPLUS");
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_SNR_MAP);
+                                        cm3->getObjectPtr()->attributeFloat_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_snr_image_));
                                     }
                                     else if ( dataRole == GTPLUS_IMAGE_STD_MAP )
                                     {
@@ -1350,22 +1350,22 @@ sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, in
                                         comment.append("_");
                                         comment.append("Std_Map_GTPLUS");
 
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, comment);
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_Std_Map_GTPLUS");
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_STD_MAP);
-                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_std_map_));
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, comment);
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "_Std_Map_GTPLUS");
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_STD_MAP);
+                                        cm3->getObjectPtr()->attributeFloat_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_std_map_));
 
-                                        cm3->getObjectPtr()->attribute1_.set(GTPLUS_IMAGE_WINDOWCENTER, (long long)(this->scalingFactor_std_map_));
-                                        cm3->getObjectPtr()->attribute1_.set(GTPLUS_IMAGE_WINDOWWIDTH, (long long)(2*this->scalingFactor_std_map_));
+                                        cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWCENTER, (long long)(this->scalingFactor_std_map_));
+                                        cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWWIDTH, (long long)(2*this->scalingFactor_std_map_));
                                     }
                                     else if ( dataRole == GTPLUS_IMAGE_OTHER )
                                     {
                                         cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
 
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, "GTPLUS");
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_GTPLUS");
-                                        cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_OTHER);
-                                        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_));
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, "GTPLUS");
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "_GTPLUS");
+                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_OTHER);
+                                        cm3->getObjectPtr()->attributeFloat_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_));
                                     }
 
                                     // ----------------------------------------------------------
@@ -1495,19 +1495,19 @@ bool GtPlusReconGadget::sendOutRecon2D(GtPlusGadgetImageArray* images, const hoN
         img_dims[1] = res.get_size(1);
 
         // set the image attributes
-        cm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, "GTPLUS");
-        cm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_GTPLUS");
-        cm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_REGULAR);
+        cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, "GTPLUS");
+        cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "_GTPLUS");
+        cm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_REGULAR);
 
-        cm3->getObjectPtr()->attribute1_.set(GTPLUS_CHA,        0);
-        cm3->getObjectPtr()->attribute1_.set(GTPLUS_SLC,        cm1->getObjectPtr()->slice);
-        cm3->getObjectPtr()->attribute1_.set(GTPLUS_E2,         0);
-        cm3->getObjectPtr()->attribute1_.set(GTPLUS_CONTRAST,   cm1->getObjectPtr()->contrast);
-        cm3->getObjectPtr()->attribute1_.set(GTPLUS_PHASE,      cm1->getObjectPtr()->phase);
-        cm3->getObjectPtr()->attribute1_.set(GTPLUS_REP,        cm1->getObjectPtr()->repetition);
-        cm3->getObjectPtr()->attribute1_.set(GTPLUS_SET,        cm1->getObjectPtr()->set);
+        cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_CHA,        0);
+        cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_SLC,        cm1->getObjectPtr()->slice);
+        cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_E2,         0);
+        cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_CONTRAST,   cm1->getObjectPtr()->contrast);
+        cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_PHASE,      cm1->getObjectPtr()->phase);
+        cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_REP,        cm1->getObjectPtr()->repetition);
+        cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_SET,        cm1->getObjectPtr()->set);
 
-        cm3->getObjectPtr()->attribute2_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_));
+        cm3->getObjectPtr()->attributeFloat_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_));
 
         //Fixing array dimensions (MSH)
         cm1->getObjectPtr()->matrix_size[0] = (uint16_t)res.get_size(0);

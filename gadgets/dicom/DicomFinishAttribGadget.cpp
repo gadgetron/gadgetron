@@ -580,22 +580,22 @@ int DicomFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHea
 
     // image data role
     std::vector<std::string> dataRole;
-    if ( !m3->getObjectPtr()->attribute4_.get(GTPLUS_DATA_ROLE, dataRole) )
+    if ( !m3->getObjectPtr()->attributeString_.get(GTPLUS_DATA_ROLE, dataRole) )
     {
         dataRole.push_back("Image");
     }
 
     long long imageNumber;
-    m3->getObjectPtr()->attribute1_.get(GTPLUS_IMAGENUMBER, 0, imageNumber);
+    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_IMAGENUMBER, 0, imageNumber);
 
     long long cha, slc, e2, con, phs, rep, set;
-    m3->getObjectPtr()->attribute1_.get(GTPLUS_CHA,        0, cha);
-    m3->getObjectPtr()->attribute1_.get(GTPLUS_SLC,        0, slc);
-    m3->getObjectPtr()->attribute1_.get(GTPLUS_E2,         0, e2);
-    m3->getObjectPtr()->attribute1_.get(GTPLUS_CONTRAST,   0, con);
-    m3->getObjectPtr()->attribute1_.get(GTPLUS_PHASE,      0, phs);
-    m3->getObjectPtr()->attribute1_.get(GTPLUS_REP,        0, rep);
-    m3->getObjectPtr()->attribute1_.get(GTPLUS_SET,        0, set);
+    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_CHA,        0, cha);
+    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_SLC,        0, slc);
+    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_E2,         0, e2);
+    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_CONTRAST,   0, con);
+    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_PHASE,      0, phs);
+    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_REP,        0, rep);
+    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_SET,        0, set);
 
     std::ostringstream ostr;
 

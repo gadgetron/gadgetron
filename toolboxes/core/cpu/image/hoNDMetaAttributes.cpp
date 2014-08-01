@@ -42,8 +42,8 @@ namespace Gadgetron
             gadgetron::gadgetronMetaAttributes attrib;
 
             // attribute1
-            const AttributeStorageType1& stroage1 = attribute1_.get_attrib_storage();
-            typename AttributeStorageType1::const_iterator iter1;
+            const AttributeTypeStringAttributeTypeInteger& stroage1 = attributeInteger_.get_attrib_storage();
+            typename AttributeTypeStringAttributeTypeInteger::const_iterator iter1;
             for ( iter1=stroage1.begin(); iter1!=stroage1.end(); iter1++ )
             {
                 gadgetron::AttributeInteger item(iter1->first);
@@ -62,8 +62,8 @@ namespace Gadgetron
             }
 
             // attribute2
-            const AttributeStorageType2& stroage2 = attribute2_.get_attrib_storage();
-            typename AttributeStorageType2::const_iterator iter2;
+            const AttributeTypeStringAttributeTypeFloat& stroage2 = attributeFloat_.get_attrib_storage();
+            typename AttributeTypeStringAttributeTypeFloat::const_iterator iter2;
             for ( iter2=stroage2.begin(); iter2!=stroage2.end(); iter2++ )
             {
                 gadgetron::AttributeFloat item(iter2->first);
@@ -82,8 +82,8 @@ namespace Gadgetron
             }
 
             // attribute3
-            const AttributeStorageType3& stroage3 = attribute3_.get_attrib_storage();
-            typename AttributeStorageType3::const_iterator iter3;
+            const AttributeTypeStringAttributeTypeComplexFloat& stroage3 = attributeComplexFloat_.get_attrib_storage();
+            typename AttributeTypeStringAttributeTypeComplexFloat::const_iterator iter3;
             for ( iter3=stroage3.begin(); iter3!=stroage3.end(); iter3++ )
             {
                 gadgetron::AttributeComplex item(iter3->first);
@@ -105,8 +105,8 @@ namespace Gadgetron
             }
 
             // attribute4
-            const AttributeStorageType4& stroage4 = attribute4_.get_attrib_storage();
-            typename AttributeStorageType4::const_iterator iter4;
+            const AttributeTypeStringAttributeTypeString& stroage4 = attributeString_.get_attrib_storage();
+            typename AttributeTypeStringAttributeTypeString::const_iterator iter4;
             for ( iter4=stroage4.begin(); iter4!=stroage4.end(); iter4++ )
             {
                 gadgetron::AttributeString item(iter4->first);
@@ -224,7 +224,7 @@ namespace Gadgetron
                     item.push_back( (TInteger)(*iter_s) );
                 }
 
-                attribute1_.set(name, item);
+                attributeInteger_.set(name, item);
             }
 
             gadgetron::gadgetronMetaAttributes::AttributeFloat_sequence& floatSeq = cfg->AttributeFloat();
@@ -242,7 +242,7 @@ namespace Gadgetron
                     item.push_back( (TFloat)(*iter_s) );
                 }
 
-                attribute2_.set(name, item);
+                attributeFloat_.set(name, item);
             }
 
             gadgetron::gadgetronMetaAttributes::AttributeComplex_sequence& complexSeq = cfg->AttributeComplex();
@@ -270,7 +270,7 @@ namespace Gadgetron
                     item.push_back( v );
                 }
 
-                attribute3_.set(name, item);
+                attributeComplexFloat_.set(name, item);
             }
 
             gadgetron::gadgetronMetaAttributes::AttributeString_sequence& StringSeq = cfg->AttributeString();
@@ -288,7 +288,7 @@ namespace Gadgetron
                     item.push_back( *iter_s );
                 }
 
-                attribute4_.set(name, item);
+                attributeString_.set(name, item);
             }
 
             //// parse the xml
@@ -324,7 +324,7 @@ namespace Gadgetron
             //            while ( value != NULL );
             //        }
 
-            //        attribute1_.set(name, item);
+            //        attributeInteger_.set(name, item);
             //    }
             //    else if ( elemStr == "AttributeFloat" )
             //    {
@@ -342,7 +342,7 @@ namespace Gadgetron
             //            while ( value != NULL );
             //        }
 
-            //        attribute2_.set(name, item);
+            //        attributeFloat_.set(name, item);
             //    }
             //    else if ( elemStr == "AttributeComplex" )
             //    {
@@ -370,7 +370,7 @@ namespace Gadgetron
             //            while ( value_real!=NULL && value_imag!=NULL );
             //        }
 
-            //        attribute3_.set(name, item);
+            //        attributeComplexFloat_.set(name, item);
             //    }
             //    else if ( elemStr == "AttributeString" )
             //    {
@@ -390,7 +390,7 @@ namespace Gadgetron
             //            while ( value != NULL );
             //        }
 
-            //        attribute4_.set(name, item);
+            //        attributeString_.set(name, item);
             //    }
             //}
         }
@@ -409,16 +409,16 @@ namespace Gadgetron
         using namespace std;
         os << "-------------- Gagdgetron attributes -------------" << endl;
         os << "Attribute 1 : " << std::endl;
-        attribute1_.printContent(os);
+        attributeInteger_.printContent(os);
         os << "--------------------------------------------------" << endl;
         os << "Attribute 2 : " << std::endl;
-        attribute2_.printContent(os);
+        attributeFloat_.printContent(os);
         os << "--------------------------------------------------" << endl;
         os << "Attribute 3 : " << std::endl;
-        attribute3_.printContent(os);
+        attributeComplexFloat_.printContent(os);
         os << "--------------------------------------------------" << endl;
         os << "Attribute 4 : " << std::endl;
-        attribute4_.printContent(os);
+        attributeString_.printContent(os);
         os << "--------------------------------------------------" << endl;
     }
 

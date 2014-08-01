@@ -250,14 +250,14 @@ namespace Gadgetron{
                         (*tmpm3->getObjectPtr()) = (*attribptrs[0]);
                         out_attrib.push_back(tmpm3);
 
-                        tmpm3->getObjectPtr()->attribute1_.set(GTPLUS_PHASE,      0, tmpm1->getObjectPtr()->phase);
-                        tmpm3->getObjectPtr()->attribute1_.set(GTPLUS_IMAGENUMBER, 0, tmpm1->getObjectPtr()->image_index);
+                        tmpm3->getObjectPtr()->attributeInteger_.set(GTPLUS_PHASE,      0, tmpm1->getObjectPtr()->phase);
+                        tmpm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGENUMBER, 0, tmpm1->getObjectPtr()->image_index);
 
-                        tmpm3->getObjectPtr()->attribute4_.set(GTPLUS_DATA_ROLE, "PhysioInterp");
-                        tmpm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGECOMMENT, "PhysioInterp");
-                        tmpm3->getObjectPtr()->attribute4_.set(GTPLUS_SEQUENCEDESCRIPTION, "_PhysioInterp");
+                        tmpm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, "PhysioInterp");
+                        tmpm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, "PhysioInterp");
+                        tmpm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "_PhysioInterp");
 
-                        tmpm3->getObjectPtr()->attribute4_.set(GTPLUS_IMAGEPROCESSINGHISTORY, "Interp");
+                        tmpm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGEPROCESSINGHISTORY, "Interp");
                     }
                 }
 

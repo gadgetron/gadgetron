@@ -40,22 +40,22 @@ namespace Gadgetron
 
                 // image data role
                 std::vector<std::string> dataRole;
-                if ( !img_attrib->attribute4_.get(GTPLUS_DATA_ROLE, dataRole) )
+                if ( !img_attrib->attributeString_.get(GTPLUS_DATA_ROLE, dataRole) )
                 {
                     dataRole.push_back("Image");
                 }
 
                 long long imageNumber;
-                img_attrib->attribute1_.get(GTPLUS_IMAGENUMBER, 0, imageNumber);
+                img_attrib->attributeInteger_.get(GTPLUS_IMAGENUMBER, 0, imageNumber);
 
                 long long cha, slc, e2, con, phs, rep, set;
-                img_attrib->attribute1_.get(GTPLUS_CHA,        0, cha);
-                img_attrib->attribute1_.get(GTPLUS_SLC,        0, slc);
-                img_attrib->attribute1_.get(GTPLUS_E2,         0, e2);
-                img_attrib->attribute1_.get(GTPLUS_CONTRAST,   0, con);
-                img_attrib->attribute1_.get(GTPLUS_PHASE,      0, phs);
-                img_attrib->attribute1_.get(GTPLUS_REP,        0, rep);
-                img_attrib->attribute1_.get(GTPLUS_SET,        0, set);
+                img_attrib->attributeInteger_.get(GTPLUS_CHA,        0, cha);
+                img_attrib->attributeInteger_.get(GTPLUS_SLC,        0, slc);
+                img_attrib->attributeInteger_.get(GTPLUS_E2,         0, e2);
+                img_attrib->attributeInteger_.get(GTPLUS_CONTRAST,   0, con);
+                img_attrib->attributeInteger_.get(GTPLUS_PHASE,      0, phs);
+                img_attrib->attributeInteger_.get(GTPLUS_REP,        0, rep);
+                img_attrib->attributeInteger_.get(GTPLUS_SET,        0, set);
 
                 std::ostringstream ostr;
 

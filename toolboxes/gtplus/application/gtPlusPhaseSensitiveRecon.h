@@ -384,7 +384,7 @@ namespace Gadgetron { namespace gtPlus {
     {
         try
         {
-            if ( !PSIRImage.attrib_.attribute2_.get(GTPLUS_IMAGE_SCALE_RATIO, 0, intensity_scale_factor_) )
+            if ( !PSIRImage.attrib_.attributeFloat_.get(GTPLUS_IMAGE_SCALE_RATIO, 0, intensity_scale_factor_) )
             {
                 intensity_scale_factor_ = 8;
             }

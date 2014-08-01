@@ -151,7 +151,7 @@ namespace Gadgetron
 
                             if ( ind != std::string::npos )
                             {
-                                m1->getObjectPtr()->attribute4_.set(noise_dependency_attrib_name_, filename);
+                                m1->getObjectPtr()->attributeString_.set(noise_dependency_attrib_name_, filename);
                                 count++;
                             }
                         }
@@ -161,7 +161,7 @@ namespace Gadgetron
                         if ( count == 0 )
                         {
                             // put into a dummy item
-                            m1->getObjectPtr()->attribute4_.set(noise_dependency_attrib_name_, "Dummy");
+                            m1->getObjectPtr()->attributeString_.set(noise_dependency_attrib_name_, "Dummy");
                         }
 
                         // send the found dependencies
