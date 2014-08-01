@@ -20,7 +20,7 @@ namespace Gadgetron
 {
 
     template <typename T, unsigned int D>
-    class hoNDImage : public SerializableObject
+    class hoNDImage
     {
     public:
 

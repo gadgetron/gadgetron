@@ -39,7 +39,6 @@ set(header_files ../NDArray.h
                 ../GadgetronException.h
                 ../GadgetronCommon.h
                 ../GadgetronTimer.h
-                ../SerializableObject.h
                 cpucore_export.h 
                 hoNDArray.h
                 hoNDArray.hxx

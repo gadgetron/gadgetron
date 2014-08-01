@@ -12,8 +12,6 @@
 
 #pragma once
 
-#include "SerializableObject.h"
-
 namespace Gadgetron
 {
 
@@ -66,7 +64,7 @@ struct EXPORTGTPLUSGADGET GtPlusRecon2DTPara
 };
 
 template <typename T> 
-struct GtPlusRecon2DTCloudPackage : public SerializableObject
+struct GtPlusRecon2DTCloudPackage
 {
     GtPlusRecon2DTPara para;
 

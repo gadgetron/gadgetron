@@ -13,7 +13,6 @@
 #include "gtPlusISMRMRDReconWorkOrder.h"
 #include "gtPlusMemoryManager.h"
 #include "hoNDArrayMemoryManaged.h"
-#include "SerializableObject.h"
 #include "gtPlusCloudScheduler.h"
 
 #ifdef USE_OMP
@@ -23,7 +22,7 @@
 namespace Gadgetron { namespace gtPlus {
 
 template <typename T> 
-struct gtPlusReconJob2DT : public SerializableObject
+struct gtPlusReconJob2DT
 {
     gtPlusReconWorkOrder<T> workOrder2DT;
     hoNDArray<T> kspace;

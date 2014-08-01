@@ -19,7 +19,7 @@ namespace Gadgetron
 {
 
     template <typename ImageType>
-    class hoNDImageContainer2D : public SerializableObject
+    class hoNDImageContainer2D
     {
     public:
 

@@ -4,7 +4,7 @@ include_directories(
 
 configure_file(core_defines.h.in ${CMAKE_CURRENT_SOURCE_DIR}/core_defines.h)
 
-install(FILES 	
+install(FILES 
   core_defines.h
   NDArray.h
   complext.h
@@ -16,7 +16,6 @@ install(FILES
   GadgetronCommon.h
   GadgetronException.h
   GadgetronTimer.h
-  SerializableObject.h
   Gadgetron_enable_types.h
   DESTINATION include)
 
