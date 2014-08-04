@@ -17,21 +17,16 @@ def run_test(environment, testcase_cfg_file):
 
     out_folder = config.get('FILES', 'out_folder')
     siemens_dat = os.path.join(pwd, config.get('FILES', 'siemens_dat'))
-    siemens_h5 = os.path.join(pwd, out_folder, config.get('FILES', 'siemens_h5'))
     ismrmrd = os.path.join(pwd, out_folder, config.get('FILES', 'ismrmrd'))
     result_h5 = os.path.join(pwd, out_folder, config.get('FILES', 'result_h5'))
     reference_h5 = os.path.join(pwd, config.get('FILES', 'reference_h5'))
-    siemens_parameter_xml = os.path.join(environment['GADGETRON_HOME'],
-            "schema", config.get('FILES', 'siemens_parameter_xml'))
-    siemens_parameter_xsl = os.path.join(environment['GADGETRON_HOME'],
-            "schema", config.get('FILES', 'siemens_parameter_xsl'))
+    siemens_parameter_xml = config.get('FILES', 'siemens_parameter_xml')
+    siemens_parameter_xsl = config.get('FILES', 'siemens_parameter_xsl')
     siemens_dependency_measurement1 = config.getint('FILES', 'siemens_dependency_measurement1')
     siemens_dependency_measurement2 = config.getint('FILES', 'siemens_dependency_measurement2')
     siemens_dependency_measurement3 = config.getint('FILES', 'siemens_dependency_measurement3')
-    siemens_dependency_parameter_xml = os.path.join(environment['GADGETRON_HOME'],
-            "schema", config.get('FILES', 'siemens_dependency_parameter_xml'))
-    siemens_dependency_parameter_xsl = os.path.join(environment['GADGETRON_HOME'],
-            "schema", config.get('FILES', 'siemens_dependency_parameter_xsl'))
+    siemens_dependency_parameter_xml = config.get('FILES', 'siemens_dependency_parameter_xml')
+    siemens_dependency_parameter_xsl = config.get('FILES', 'siemens_dependency_parameter_xsl')
     siemens_data_measurement = config.getint('FILES', 'siemens_data_measurement')
     gadgetron_log_filename = os.path.join(pwd, out_folder, "gadgetron.log")
     client_log_filename = os.path.join(pwd, out_folder, "client.log")
@@ -76,27 +71,19 @@ def run_test(environment, testcase_cfg_file):
         time.sleep(2)
 
         with open(client_log_filename, "w") as cf:
-            print("Converting Siemens *.dat file to Siemens HDF5")
-            r = subprocess.call(["siemens_to_HDF5", siemens_dat, siemens_h5],
-                    env=environment, stdout=cf, stderr=cf)
-            if r != 0:
-                print("Failed to run siemens_to_HDF5!")
-                success = False
-
-            # ---------------------------------------------------------------------------------------------
             # if there are dependencies
             if siemens_data_measurement > 0:
 
                 # ------------------------------------------------------------
                 # first dependency
                 if siemens_dependency_measurement1 >= 0:
-                    print("Converting Siemens HDF5 to ISMRMRD for the first dependency measurement.")
-                    r = subprocess.call(["siemens_mriclient", "-f", siemens_h5, "-m",
+                    print("Converting Siemens .dat file to ISMRMRD for the first dependency measurement.")
+                    r = subprocess.call(["siemens_to_ismrmrd", "-f", siemens_dat, "-m",
                                     siemens_dependency_parameter_xml, "-x", siemens_dependency_parameter_xsl, "-o",
-                                    dependency_1, "-d", str(siemens_dependency_measurement1), "-w"],
+                                    dependency_1, "-z", str(siemens_dependency_measurement1+1)],
                             env=environment, stdout=cf, stderr=cf)
                     if r != 0:
-                        print("Failed to run siemens_mriclient for the first dependency measurement!")
+                        print("Failed to run siemens_to_ismrmrd for the first dependency measurement!")
                         success = False
 
                     print("Running Gadgetron recon on the first dependency measurement")
@@ -116,13 +103,13 @@ def run_test(environment, testcase_cfg_file):
                 # ------------------------------------------------------------
                 # second dependency
                 if siemens_dependency_measurement2 >= 0:
-                    print("Converting Siemens HDF5 to ISMRMRD for the second dependency measurement.")
-                    r = subprocess.call(["siemens_mriclient", "-f", siemens_h5, "-m",
+                    print("Converting Siemens .dat file to ISMRMRD for the second dependency measurement.")
+                    r = subprocess.call(["siemens_to_ismrmrd", "-f", siemens_dat, "-m",
                                     siemens_dependency_parameter_xml, "-x", siemens_dependency_parameter_xsl, "-o",
-                                    dependency_2, "-d", str(siemens_dependency_measurement2), "-w"],
+                                    dependency_2, "-z", str(siemens_dependency_measurement2+1)],
                             env=environment, stdout=cf, stderr=cf)
                     if r != 0:
-                        print("Failed to run siemens_mriclient for the second dependency measurement!")
+                        print("Failed to run siemens_to_ismrmrd for the second dependency measurement!")
                         success = False
 
                     print("Running Gadgetron recon on the second dependency measurement")
@@ -142,13 +129,13 @@ def run_test(environment, testcase_cfg_file):
                 # ------------------------------------------------------------
                 # third dependency
                 if siemens_dependency_measurement3 >= 0:
-                    print("Converting Siemens HDF5 to ISMRMRD for the third dependency measurement.")
-                    r = subprocess.call(["siemens_mriclient", "-f", siemens_h5, "-m",
+                    print("Converting Siemens .dat file to ISMRMRD for the third dependency measurement.")
+                    r = subprocess.call(["siemens_to_ismrmrd", "-f", siemens_dat, "-m",
                                     siemens_dependency_parameter_xml, "-x", siemens_dependency_parameter_xsl, "-o",
-                                    dependency_3, "-d", str(siemens_dependency_measurement3), "-w"],
+                                    dependency_3, "-z", str(siemens_dependency_measurement3+1)],
                             env=environment, stdout=cf, stderr=cf)
                     if r != 0:
-                        print("Failed to run siemens_mriclient for the third dependency measurement!")
+                        print("Failed to run siemens_to_ismrmrd for the third dependency measurement!")
                         success = False
 
                     print("Running Gadgetron recon on the third dependency measurement")
@@ -167,13 +154,14 @@ def run_test(environment, testcase_cfg_file):
 
             # ---------------------------------------------------------------------------------------------
             # now run the data measurement
-            print("Converting Siemens HDF5 to ISMRMRD for data measurement.")
-            r = subprocess.call(["siemens_mriclient", "-f", siemens_h5, "-m",
-                            siemens_parameter_xml, "-x", siemens_parameter_xsl, "-o",
-                            ismrmrd, "-d", str(siemens_data_measurement), "-w"],
-                    env=environment, stdout=cf, stderr=cf)
+            print("Converting Siemens .dat file to ISMRMRD for data measurement.")
+            cmd = ["siemens_to_ismrmrd", "-f", siemens_dat, "-m",
+                    siemens_parameter_xml, "-x", siemens_parameter_xsl,
+                    "-o", ismrmrd, "-z", str(siemens_data_measurement+1)]
+
+            r = subprocess.call(cmd, env=environment, stdout=cf, stderr=cf)
             if r != 0:
-                print("Failed to run siemens_mriclient!")
+                print("Failed to run siemens_to_ismrmrd!")
                 success = False
 
             print("Running Gadgetron recon on data measurement")
@@ -235,17 +223,18 @@ def run_test(environment, testcase_cfg_file):
     return result
 
 def main():
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 4:
         sys.stderr.write("Missing arguments\n")
         prog = os.path.basename(sys.argv[0])
-        help = "Usage: %s <gadgetron home> <test case config>\n" % prog
+        help = "Usage: %s <ismrmrd home> <gadgetron home> <test case config>\n" % prog
         sys.stderr.write(help)
         sys.exit(1)
 
     myenv = dict()
-    myenv["GADGETRON_HOME"] = os.path.realpath(sys.argv[1])
+    myenv["ISMRMRD_HOME"] = os.path.realpath(sys.argv[1])
+    myenv["GADGETRON_HOME"] = os.path.realpath(sys.argv[2])
     myenv["PYTHONPATH"] = os.environ.get("PYTHONPATH", "")
-    test_case = sys.argv[2]
+    test_case = sys.argv[3]
 
     libpath = "LD_LIBRARY_PATH"
     if platform.system() == "Darwin":
@@ -254,8 +243,8 @@ def main():
     if platform.system() == "Windows":
         myenv[libpath] = os.environ.get('Path', "");
     else:
-        myenv[libpath] = myenv["GADGETRON_HOME"] + "/lib:"
-        myenv[libpath] += myenv["GADGETRON_HOME"] + "/../ismrmrd/lib:"
+        myenv[libpath] = myenv["ISMRMRD_HOME"] + "/lib:"
+        myenv[libpath] += myenv["GADGETRON_HOME"] + "/lib:"
         myenv[libpath] += myenv["GADGETRON_HOME"] + "/../arma/lib:"
         myenv[libpath] += "/usr/local/cuda/lib64:"
         myenv[libpath] += "/usr/local/cula/lib64:"
@@ -267,11 +256,12 @@ def main():
     if platform.system() == "Windows":
         myenv["PATH"] = myenv[libpath]
     else:
-        myenv["PATH"] = myenv["GADGETRON_HOME"] + "/bin"
+        myenv["PATH"] = myenv["ISMRMRD_HOME"] + "/bin" + ":" + myenv["GADGETRON_HOME"] + "/bin"
 
     myenv["ACE_DEBUG"] = "1"
 
     print("Running Gadgetron test with: ")
+    print("  -- ISMRMRD_HOME  : " +  myenv["ISMRMRD_HOME"])
     print("  -- GADGETRON_HOME  : " +  myenv["GADGETRON_HOME"])
     print("  -- PATH            : " +  myenv["PATH"])
     print("  -- " + libpath + " : " +  myenv[libpath])
