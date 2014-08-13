@@ -12,7 +12,7 @@ if(NOT DEFINED XSD_DIR AND DEFINED ENV{XSD_DIR})
     set(XSD_DIR $ENV{XSD_DIR})
 endif(NOT DEFINED XSD_DIR AND DEFINED ENV{XSD_DIR})
 
-find_program(XSD_EXECUTABLE NAMES xsd xsdcxx xsd.exe
+find_program(XSD_EXECUTABLE NAMES xsdcxx xsd xsd.exe
     PATHS ${XSD_DIR} /usr /usr/local
     PATH_SUFFIXES bin
 )
