@@ -1,6 +1,6 @@
 import os
 import sys
-import urllib
+import urllib2
 import hashlib
 
 DATAFILE = "data.txt"
@@ -16,7 +16,7 @@ def md5sum(filename, blocksize=64*1024):
             buf = f.read(blocksize)
     return hsh.hexdigest()
 
-def load_data_file(datafile):
+def load_checksums(datafile):
     checksums = {}
     with open(datafile) as f:
         for line in f:
@@ -25,11 +25,12 @@ def load_data_file(datafile):
     return checksums
 
 def download(url, dest):
-    fname = os.path.basename(dest)
-    print("Downloading: %s..." % fname)
-    urllib.urlretrieve(url, dest)
+    furl = urllib2.urlopen(url)
+    with open(dest, 'wb') as fdest:
+        fdest.write(furl.read())
 
 def main():
+    # determine test dir from full path to this script
     testdir = os.path.dirname(os.path.realpath(sys.argv[0]))
     datadir = os.path.join(testdir, DATADIR)
     datafile = os.path.join(testdir, DATAFILE)
@@ -37,24 +38,31 @@ def main():
         os.mkdir(datadir)
 
     print("Reading list of data from %s" % datafile)
-    checksums = load_data_file(datafile)
+    try:
+        checksums = load_checksums(datafile)
+    except IOError:
+        print("Failed to read %s" % datafile)
+        return
 
     print("Storing test data in %s" % datadir)
 
-    # if file exists, verify it. if that fails, download it
-    # if file does not exist, download it.
     for dataname,checksum in checksums.items():
         datapath = os.path.join(datadir, dataname)
         parent = os.path.dirname(datapath)
+        if not os.path.isdir(parent):
+            os.makedirs(parent)
         url = '%s/%s' % (HOST, dataname)
-        if os.path.isfile(datapath):
-            print("Verifying: %s..." % dataname)
-            if md5sum(datapath) != checksum:
+
+        print("Verifying: %s..." % dataname)
+        # if file is missing or its checksum doesn't match, download it
+        if not os.path.isfile(datapath) or md5sum(datapath) != checksum:
+            print("Downloading: %s..." % dataname)
+            try:
                 download(url, datapath)
-        else:
-            if not os.path.isdir(parent):
-                os.makedirs(parent)
-            download(url, datapath)
+            except urllib2.HTTPError, e:
+                print("HTTP Error: %d %s" % (e.code, url))
+            except urllib2.URLError, e:
+                print("URL Error: %s - %s" % (e.reason, url))
 
 if __name__ == '__main__':
     main()
