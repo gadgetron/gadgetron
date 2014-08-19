@@ -74,6 +74,7 @@ protected:
     using BaseClass::elements_;
     using BaseClass::delete_data_on_destruct_;
     using BaseClass::accesser_;
+    
 };
 
 /// for real matrix

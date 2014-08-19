@@ -45,22 +45,22 @@ else (WIN32)
 endif (WIN32)
 
 add_executable(CBCT_reconstruct_FDK_3d CBCT_reconstruct_FDK_3d.cpp)
-target_link_libraries(CBCT_reconstruct_FDK_3d gpuxray cpucore cpucore_math gpucore hostutils ${CUDA_LIBRARIES} ${CULA_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(CBCT_reconstruct_FDK_3d gpuxray cpucore cpucore_math gpucore hostutils ${CUDA_LIBRARIES} ${Boost_LIBRARIES})
 
 add_executable(CBCT_reconstruct_FDK_4d CBCT_reconstruct_FDK_4d.cpp)
-target_link_libraries(CBCT_reconstruct_FDK_4d gpuxray cpucore cpucore_math gpucore hostutils ${CUDA_LIBRARIES} ${CULA_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(CBCT_reconstruct_FDK_4d gpuxray cpucore cpucore_math gpucore hostutils ${CUDA_LIBRARIES} ${Boost_LIBRARIES})
 
 add_executable(CBCT_reconstruct_CG CBCT_reconstruct_CG.cpp)
-target_link_libraries(CBCT_reconstruct_CG gpuxray cpucore cpucore_math gpucore gpuoperators hostutils ${CUDA_LIBRARIES} ${CULA_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(CBCT_reconstruct_CG gpuxray cpucore cpucore_math gpucore gpuoperators hostutils ${CUDA_LIBRARIES} ${Boost_LIBRARIES})
 
 add_executable(CBCT_reconstruct_NLCG CBCT_reconstruct_NLCG.cpp)
-target_link_libraries(CBCT_reconstruct_NLCG gpuxray cpucore cpucore_math gpucore gpuoperators hostutils ${CUDA_LIBRARIES} ${CULA_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(CBCT_reconstruct_NLCG gpuxray cpucore cpucore_math gpucore gpuoperators hostutils ${CUDA_LIBRARIES} ${Boost_LIBRARIES})
 
 add_executable(CBCT_reconstruct_SB CBCT_reconstruct_SB.cpp)
-target_link_libraries(CBCT_reconstruct_SB gpuxray cpucore cpucore_math gpucore gpuoperators hostutils ${CUDA_LIBRARIES} ${CULA_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(CBCT_reconstruct_SB gpuxray cpucore cpucore_math gpucore gpuoperators hostutils ${CUDA_LIBRARIES} ${Boost_LIBRARIES})
 
 add_executable(CBCT_forwards_projection CBCT_forwards_projection.cpp)
-target_link_libraries(CBCT_forwards_projection gpuxray cpucore cpucore_math gpucore hostutils ${CUDA_LIBRARIES} ${CULA_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(CBCT_forwards_projection gpuxray cpucore cpucore_math gpucore hostutils ${CUDA_LIBRARIES} ${Boost_LIBRARIES})
 
 install(TARGETS 
   CBCT_reconstruct_FDK_3d

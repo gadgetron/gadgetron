@@ -10,6 +10,8 @@ public:
 
     typedef hoNDArray<T> BaseClass;
 
+    using BaseClass::create;
+
     ho2DArray();
     ho2DArray(size_t sx, size_t sy);
     explicit ho2DArray(std::vector<size_t> *dimensions);

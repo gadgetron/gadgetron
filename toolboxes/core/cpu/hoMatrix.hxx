@@ -247,10 +247,10 @@ bool hoMatrix<T>::subMatrix(Self& res, size_t startR, size_t endR, size_t startC
         size_t ROW = rows();
         size_t COL = cols();
 
-        GADGET_CHECK_RETURN_FALSE(startR>=0&&startR<ROW);
-        GADGET_CHECK_RETURN_FALSE(startC>=0&&startC<COL);
-        GADGET_CHECK_RETURN_FALSE(endR>=0&&endR<ROW);
-        GADGET_CHECK_RETURN_FALSE(endC>=0&&endC<COL);
+        GADGET_CHECK_RETURN_FALSE(startR<ROW);
+        GADGET_CHECK_RETURN_FALSE(startC<COL);
+        GADGET_CHECK_RETURN_FALSE(endR<ROW);
+        GADGET_CHECK_RETURN_FALSE(endC<COL);
         GADGET_CHECK_RETURN_FALSE(endR>=startR);
         GADGET_CHECK_RETURN_FALSE(endC>=startC);
 

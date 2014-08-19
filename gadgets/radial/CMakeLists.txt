@@ -47,9 +47,7 @@ target_link_libraries(gadgetron_gpuradial
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 
-if (CULA_FOUND)
-    target_link_libraries(gadgetron_gpuradial gpuparallelmri )
-endif (CULA_FOUND)
+target_link_libraries(gadgetron_gpuradial gpuparallelmri )
 
 install (FILES  gadgetron_radial_export.h
                 gpuRadialPrepGadget.h 

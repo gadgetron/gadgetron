@@ -34,9 +34,7 @@ target_link_libraries(gadgetron_spiral
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 
-if (CULA_FOUND)
-    target_link_libraries(gadgetron_spiral gpuparallelmri)
-endif (CULA_FOUND)
+target_link_libraries(gadgetron_spiral gpuparallelmri)
 
 install (TARGETS gadgetron_spiral DESTINATION lib)
 install (FILES vds.h gadgetron_spiral_export.h 

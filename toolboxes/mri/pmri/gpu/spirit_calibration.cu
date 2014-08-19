@@ -13,9 +13,11 @@
 #include "CUBLASContextProvider.h"
 #include "GPUTimer.h"
 #include "hoNDArray_fileio.h"
+#include "hoMatrix_util.h"
+#include "hoNDArray_utils.h"
 
 #include <cublas_v2.h>
-#include <cula_lapack_device.h>
+//#include <cula_lapack_device.h>
 
 namespace Gadgetron {
 
@@ -279,10 +281,39 @@ namespace Gadgetron {
     counter++;
     */
 
+
+
     //CGELS is used rather than a more conventional solver as it is part of CULA free.
+    /*
     culaStatus s = culaDeviceCgels( 'N', n, n, num_coils,
                                  (culaDeviceFloatComplex*)AHA.get_data_ptr(), n,
                                  (culaDeviceFloatComplex*)rhs.get_data_ptr(), n);
+    */
+    {
+      //It actually turns out to be faster to do this inversion on the CPU. Problem is probably too small for GPU to make sense
+      //GPUTimer cpu_invert_time("CPU Inversion time");
+      boost::shared_ptr< hoNDArray<float_complext> > AHA_h = AHA.to_host();
+      boost::shared_ptr< hoNDArray<float_complext> > AHrhs_h = rhs.to_host();
+      
+      std::vector<size_t> perm_dim;
+      perm_dim.push_back(1);
+      perm_dim.push_back(0);
+      
+      permute(AHA_h.get(),&perm_dim);
+      permute(AHrhs_h.get(),&perm_dim);
+      
+      hoMatrix< std::complex<float> > AHAm(AHA_h->get_size(0),AHA_h->get_size(1),(std::complex<float>*)AHA_h->get_data_ptr(),false);
+      
+      hoMatrix< std::complex<float> > AHrhsm(AHrhs_h->get_size(0),AHrhs_h->get_size(1),(std::complex<float>*)AHrhs_h->get_data_ptr(),false);
+      
+      SymmetricHermitianPositiveDefiniteLinearSystem_posv(AHAm, AHrhsm);
+      
+      permute(AHrhs_h.get(),&perm_dim);
+      rhs = cuNDArray<float_complext>(*AHrhs_h);
+    }
+
+
+    /*
     if( s != culaNoError ) {
       if( s == 8 ){
         std::cerr << "CULA error code " << s << ": " << culaGetStatusString(s) << std::endl;
@@ -296,6 +327,7 @@ namespace Gadgetron {
       printf("Error %d: %s\n", (int)i, buf);      
       throw std::runtime_error("estimate_spirit_kernels: CULA error computing 'getrs'");
     }
+    */
 
     //CULA will sometime return NaN without an explicit error. This code tests for NaNs and returns if found.
     float nan_test = nrm2(&rhs);

@@ -126,7 +126,6 @@ find_package(CUDA_advanced)
 
 if (CUDA_FOUND)
   ADD_DEFINITIONS(-DUSE_CUDA)
-  MESSAGE("CUDA found, GPU components are compiled if CULA is also found")
   SET( GADGETRON_CUDA_FOUND_BOOL 1 )
   include_directories( ${CUDA_INCLUDE_DIRS} )
   #set(CUDA_VERBOSE_BUILD ON)

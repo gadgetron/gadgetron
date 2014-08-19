@@ -250,9 +250,9 @@ if ( HAS_64_BIT )
                           gtplus_io 
                           cpucore_math )
 
-    if (CUDA_FOUND AND CULA_FOUND)
-        target_link_libraries(gtplus gpuparallelmri cpucore_math)
-    endif (CUDA_FOUND AND CULA_FOUND)
+    if (CUDA_FOUND)
+      target_link_libraries(gtplus gpuparallelmri cpucore_math)
+    endif (CUDA_FOUND)
 
     install(TARGETS gtplus DESTINATION lib)
     install(TARGETS gtplus_io DESTINATION lib)

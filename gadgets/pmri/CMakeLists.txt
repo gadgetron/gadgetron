@@ -45,10 +45,7 @@ target_link_libraries(gadgetron_gpuparallelmri
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 
-if (CULA_FOUND)
-    target_link_libraries(gadgetron_gpuparallelmri gpuparallelmri)
-endif (CULA_FOUND)
-
+target_link_libraries(gadgetron_gpuparallelmri gpuparallelmri)
 
 install (TARGETS gadgetron_gpuparallelmri DESTINATION lib)
 

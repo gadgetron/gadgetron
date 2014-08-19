@@ -16,8 +16,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   ${CUDA_INCLUDE_DIRS}
-  ${CULA_INCLUDE_DIR} 
   ${Boost_INCLUDE_DIR} 
   )
 
@@ -61,7 +61,6 @@ target_link_libraries(gpuparallelmri
   ${CUDA_LIBRARIES} 
   ${CUDA_CUFFT_LIBRARIES} 
   ${CUDA_CUBLAS_LIBRARIES} 
-  ${CULA_LIBRARIES}
   )
 
 install(TARGETS gpuparallelmri DESTINATION lib)
