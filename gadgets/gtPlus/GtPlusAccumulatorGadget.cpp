@@ -444,6 +444,7 @@ int GtPlusAccumulatorGadget::process_config(ACE_Message_Block* mb)
         return GADGET_FAIL;
     }
 
+
     kspaceBuffer_->kSpaceCentreEncode1_ = e_limits.kspace_encoding_step_1().get().center();
     GADGET_MSG("kSpaceCentreEncode1_ is " << kspaceBuffer_->kSpaceCentreEncode1_);
 

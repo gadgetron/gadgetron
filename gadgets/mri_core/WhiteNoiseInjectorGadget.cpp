@@ -1,10 +1,7 @@
-
 #include "WhiteNoiseInjectorGadget.h"
-#include "GadgetIsmrmrdReadWrite.h"
-
 #include "gtPlusUtil.h"
-
 #include <array>
+#includ "ismrmrd_xml.h"
 
 namespace Gadgetron
 {
@@ -70,64 +67,57 @@ int WhiteNoiseInjectorGadget::process_config(ACE_Message_Block* mb)
     randn_->seed( (unsigned long)seed );
 
 // ---------------------------------------------------------------------------------------------------------
-    // pass the xml file
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
-
-    // seq object
-    ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-    if (e_seq.size() != 1)
-    {
-        GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
-        GADGET_DEBUG1("This simple WhiteNoiseInjectorGadget only supports one encoding space\n");
-        return GADGET_FAIL;
+    ISMRMRD::IsmrmrdHeader h;
+    try {
+      deserialize(mb->rd_ptr(),h);
+    } catch (...) {
+      GADGET_DEBUG1("Error parsing ISMRMRD Header");
+      throw;
+      return GADGET_FAIL;
     }
 
-    // find out the PAT mode
-    ISMRMRD::ismrmrdHeader::parallelImaging_optional p_imaging_type = cfg->parallelImaging();
-    ISMRMRD::parallelImagingType p_imaging = *p_imaging_type;
+    if( h.encoding.size() != 1)
+    {
+      GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
+      GADGET_DEBUG1("This simple WhiteNoiseInjectorGadget only supports one encoding space\n");
+      return GADGET_FAIL;
+    }
+    if (!h.encoding[0].parallelImaging) {
+      GADGET_DEBUG1("Parallel Imaging section not found in header");
+      return GADGET_FAIL;
+    }
 
-    acceFactorE1_ = (size_t)(p_imaging.accelerationFactor().kspace_encoding_step_1());
-    acceFactorE2_ = (size_t)(p_imaging.accelerationFactor().kspace_encoding_step_2());
+    ISMRMRD::ParallelImaging p_imaging = *h.encoding[0].parallelImaging;
+
+    acceFactorE1_ = (double)(p_imaging.accelerationFactor.kspace_encoding_step_1);
+    acceFactorE2_ = (double)(p_imaging.accelerationFactor.kspace_encoding_step_2);
+
     GADGET_MSG("acceFactorE1_ is " << acceFactorE1_);
     GADGET_MSG("acceFactorE2_ is " << acceFactorE2_);
 
-    ISMRMRD::calibrationModeType calib = *(p_imaging.calibrationMode());
-    if ( calib == ISMRMRD::calibrationModeType::interleaved )
+    //XUE-TODO: calibrationMode is optional, so appropriate checks should be added
+    std::string calib = *p_imaging.calibrationMode;
+    if ( calib.compare("interleaved") == 0 )
     {
-        is_interleaved_ = true;
-        GADGET_MSG("Calibration mode is interleaved");
+      is_interleaved_ = true;
+      GADGET_MSG("Calibration mode is interleaved");
+    } else if ( calib.compare("embedded") == 0 ) {
+      is_embeded_ = true;
+      GADGET_MSG("Calibration mode is embedded");
+    } else if ( calib.compare("separate") == 0 ) {
+      is_seperate_ = true;
+      GADGET_MSG("Calibration mode is separate");
+    } else if ( calib.compare("external") == 0 ) {
+      is_external_ = true;
+      GADGET_MSG("Calibration mode is external");
+    } else if ( (calib.compare("other") == 0)) {
+      is_other_ = true;
+      GADGET_MSG("Calibration mode is other");
+    } else {
+      GADGET_DEBUG1("Failed to process parallel imaging calibration mode");
+      return GADGET_FAIL;
     }
-
-    if ( calib == ISMRMRD::calibrationModeType::embedded )
-    {
-        is_embeded_ = true;
-        GADGET_MSG("Calibration mode is embedded");
-    }
-
-    if ( calib == ISMRMRD::calibrationModeType::separate )
-    {
-        is_seperate_ = true;
-        GADGET_MSG("Calibration mode is separate");
-    }
-
-    if ( calib == ISMRMRD::calibrationModeType::external )
-    {
-        is_external_ = true;
-        GADGET_MSG("Calibration mode is external");
-    }
-
-    if ( calib == ISMRMRD::calibrationModeType::other )
-    {
-        is_other_ = true;
-        GADGET_MSG("Calibration mode is other");
-
-        if ( acceFactorE1_==1 && acceFactorE2_==1 )
-        {
-            is_no_acceleration_ = true;
-            GADGET_MSG("No acceleration is used ... ");
-        }
-    }
-
+    
     return GADGET_OK;
 }
 

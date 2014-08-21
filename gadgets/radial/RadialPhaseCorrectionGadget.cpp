@@ -1,9 +1,9 @@
 #include "RadialPhaseCorrectionGadget.h"
 #include "Gadgetron.h"
-#include "GadgetIsmrmrdReadWrite.h"
 #include "hoNDArray_elemwise.h"
 #include "hoArmadillo.h"
 #include "hoNDArray_fileio.h"
+#include "ismrmrd_xml.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -29,17 +29,26 @@ namespace Gadgetron{
   int RadialPhaseCorrectionGadget::
   process_config( ACE_Message_Block *mb )
   {
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr())); 
-    ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-    ISMRMRD::ismrmrdHeader::acquisitionSystemInformation_optional a_seq = cfg->acquisitionSystemInformation();
+    ISMRMRD::IsmrmrdHeader h;
+    ISMRMRD::deserialize(mb->rd_ptr(),h);
+    
+    
+    if (h.encoding.size() != 1) {
+      GADGET_DEBUG1("This Gadget only supports one encoding space\n");
+      return GADGET_FAIL;
+    }
+    
+    // Get the encoding space and trajectory description
+    ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+    ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
+    ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
 
-    ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
-    ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
+    slices_ = e_limits.slice ? e_limits.slice->maximum + 1 : 1;
+    sets_ = e_limits.set ? e_limits.set->maximum + 1 : 1;
 
-    slices_ = e_limits.slice().present() ? e_limits.slice().get().maximum() + 1 : 1;
-    sets_ = e_limits.set().present() ? e_limits.set().get().maximum() + 1 : 1;
-    channels_ = 34;//a_seq.receiverChannels().get(); // !!!!FIXME!!!!
+    if (h.acquisitionSystemInformation) {
+      channels_ = h.acquisitionSystemInformation->receiverChannels ? *h.acquisitionSystemInformation->receiverChannels : 128;
+    }
 
     mode_ = get_int_value(std::string("mode").c_str());
     order_ = get_int_value(std::string("order").c_str());

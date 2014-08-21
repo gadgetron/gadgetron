@@ -1,7 +1,7 @@
 #include "NoiseAdjustGadget_unoptimized.h"
 #include "Gadgetron.h"
-#include "GadgetIsmrmrdReadWrite.h"
 #include "hoNDArray_fileio.h"
+#include "ismrmrd_xml.h"
 
 namespace Gadgetron{
 
@@ -103,12 +103,17 @@ NoiseAdjustGadget_unoptimized::NoiseAdjustGadget_unoptimized()
 
 int NoiseAdjustGadget_unoptimized::process_config(ACE_Message_Block* mb)
 {
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
-
-    receiver_noise_bandwidth_ = (float)(cfg->acquisitionSystemInformation().get().relativeReceiverNoiseBandwidth().present() ?
-                            cfg->acquisitionSystemInformation().get().relativeReceiverNoiseBandwidth().get() : 1.0);
-
-    return GADGET_OK;
+  ISMRMRD::IsmrmrdHeader h;
+  ISMRMRD::deserialize(mb->rd_ptr(),h);
+  
+  if ( h.acquisitionSystemInformation ) {
+    receiver_noise_bandwidth_ = (float)(h.acquisitionSystemInformation->relativeReceiverNoiseBandwidth ?
+					*h.acquisitionSystemInformation->relativeReceiverNoiseBandwidth : 1.0f);
+    
+    GADGET_MSG("receiver_noise_bandwidth_ is " << receiver_noise_bandwidth_);
+  }
+  
+  return GADGET_OK;
 }
 
 int NoiseAdjustGadget_unoptimized

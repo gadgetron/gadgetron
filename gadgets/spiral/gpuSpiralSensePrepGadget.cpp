@@ -10,8 +10,8 @@
 #include "check_CUDA.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
-#include "GadgetIsmrmrdReadWrite.h"
 #include "vds.h"
+#include "ismrmrd_xml.h"
 
 #include <algorithm>
 #include <vector>
@@ -93,24 +93,20 @@ namespace Gadgetron{
     // Start parsing the ISMRMRD XML header
     //
 
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
-
-    if( cfg.get() == 0x0 ){
-      GADGET_DEBUG1("Unable to parse Ismrmrd header\n");
-      return GADGET_FAIL;
-    }
-
-    ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-
-    if (e_seq.size() != 1) {
-      GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
+    ISMRMRD::IsmrmrdHeader h;
+    ISMRMRD::deserialize(mb->rd_ptr(),h);
+    
+    
+    if (h.encoding.size() != 1) {
       GADGET_DEBUG1("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
-
-    ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
-    ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
+    
+    // Get the encoding space and trajectory description
+    ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+    ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
+    ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
+    ISMRMRD::TrajectoryDescription traj_desc;
 
     // Determine reconstruction matrix sizes
     //
@@ -118,8 +114,8 @@ namespace Gadgetron{
     kernel_width_ = get_double_value(std::string("buffer_convolution_kernel_width").c_str());
     oversampling_factor_ = get_double_value(std::string("buffer_convolution_oversampling_factor").c_str());
     
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize().x()*get_double_value(std::string("reconstruction_os_factor_x").c_str())))+warp_size-1)/warp_size)*warp_size);  
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize().y()*get_double_value(std::string("reconstruction_os_factor_y").c_str())))+warp_size-1)/warp_size)*warp_size);
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.x*get_double_value(std::string("reconstruction_os_factor_x").c_str())))+warp_size-1)/warp_size)*warp_size);  
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.y*get_double_value(std::string("reconstruction_os_factor_y").c_str())))+warp_size-1)/warp_size)*warp_size);
       
     image_dimensions_recon_os_ = uint64d2
       (((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
@@ -127,23 +123,21 @@ namespace Gadgetron{
     
     // In case the warp_size constraint kicked in
     oversampling_factor_ = float(image_dimensions_recon_os_[0])/float(image_dimensions_recon_[0]);
-    
-    //
-    // Setup the spiral trajectory
-    //
 
-    if (!(*e_seq.begin()).trajectoryDescription().present()) {
-      GADGET_DEBUG1("Trajectory description needed to calculate trajectory");
+
+    if (h.encoding[0].trajectoryDescription) {
+      traj_desc = *h.encoding[0].trajectoryDescription;
+    } else {
+      GADGET_DEBUG1("Trajectory description missing");
       return GADGET_FAIL;
     }
-
-    ISMRMRD::trajectoryDescriptionType traj_desc = (*e_seq.begin()).trajectoryDescription().get();
-
-    if (std::strcmp(traj_desc.identifier().c_str(), "HargreavesVDS2000")) {
+    
+    if (std::strcmp(traj_desc.identifier.c_str(), "HargreavesVDS2000")) {
       GADGET_DEBUG1("Expected trajectory description identifier 'HargreavesVDS2000', not found.");
       return GADGET_FAIL;
     }
-
+    
+    
     long interleaves = -1;
     long fov_coefficients = -1;
     long sampling_time_ns = -1;
@@ -151,38 +145,40 @@ namespace Gadgetron{
     double max_slew = -1.0;
     double fov_coeff = -1.0;
     double kr_max = -1.0;
-
-    for (ISMRMRD::trajectoryDescriptionType::userParameterLong_sequence::iterator i (traj_desc.userParameterLong().begin ()); i != traj_desc.userParameterLong().end(); ++i) {
-      if (std::strcmp(i->name().c_str(),"interleaves") == 0) {
-	interleaves = i->value();
-      } else if (std::strcmp(i->name().c_str(),"fov_coefficients") == 0) {
-	fov_coefficients = i->value();
-      } else if (std::strcmp(i->name().c_str(),"SamplingTime_ns") == 0) {
-	sampling_time_ns = i->value();
+    
+    
+    for (std::vector<ISMRMRD::UserParameterLong>::iterator i (traj_desc.userParameterLong.begin()); i != traj_desc.userParameterLong.end(); ++i) {
+      if (std::strcmp(i->name.c_str(),"interleaves") == 0) {
+	interleaves = i->value;
+      } else if (std::strcmp(i->name.c_str(),"fov_coefficients") == 0) {
+	fov_coefficients = i->value;
+      } else if (std::strcmp(i->name.c_str(),"SamplingTime_ns") == 0) {
+	sampling_time_ns = i->value;
       } else {
-	GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name().c_str());
+	GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
       }
     }
 
-    for (ISMRMRD::trajectoryDescriptionType::userParameterDouble_sequence::iterator i (traj_desc.userParameterDouble().begin ()); i != traj_desc.userParameterDouble().end(); ++i) {
-      if (std::strcmp(i->name().c_str(),"MaxGradient_G_per_cm") == 0) {
-	max_grad = i->value();
-      } else if (std::strcmp(i->name().c_str(),"MaxSlewRate_G_per_cm_per_s") == 0) {
-	max_slew = i->value();
-      } else if (std::strcmp(i->name().c_str(),"FOVCoeff_1_cm") == 0) {
-	fov_coeff = i->value();
-      } else if (std::strcmp(i->name().c_str(),"krmax_per_cm") == 0) {
-	kr_max= i->value();
+    for (std::vector<ISMRMRD::UserParameterDouble>::iterator i (traj_desc.userParameterDouble.begin()); i != traj_desc.userParameterDouble.end(); ++i) {
+      if (std::strcmp(i->name.c_str(),"MaxGradient_G_per_cm") == 0) {
+	max_grad = i->value;
+      } else if (std::strcmp(i->name.c_str(),"MaxSlewRate_G_per_cm_per_s") == 0) {
+	max_slew = i->value;
+      } else if (std::strcmp(i->name.c_str(),"FOVCoeff_1_cm") == 0) {
+	fov_coeff = i->value;
+      } else if (std::strcmp(i->name.c_str(),"krmax_per_cm") == 0) {
+	kr_max= i->value;
       } else {
-	GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name().c_str());
+	GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
       }
     }
-
+    
     if ((interleaves < 0) || (fov_coefficients < 0) || (sampling_time_ns < 0) || (max_grad < 0) || (max_slew < 0) || (fov_coeff < 0) || (kr_max < 0)) {
       GADGET_DEBUG1("Appropriate parameters for calculating spiral trajectory not found in XML configuration\n");
       return GADGET_FAIL;
     }
-
+    
+    
     Tsamp_ns_ = sampling_time_ns;
     Nints_ = interleaves;
     interleaves_ = static_cast<int>(Nints_);
@@ -195,12 +191,12 @@ namespace Gadgetron{
     samples_to_skip_start_  = 0; //n.get<int>(std::string("samplestoskipstart.value"))[0];
     samples_to_skip_end_    = -1; //n.get<int>(std::string("samplestoskipend.value"))[0];
 
-    fov_vec_.push_back(r_space.fieldOfView_mm().x());
-    fov_vec_.push_back(r_space.fieldOfView_mm().y());
-    fov_vec_.push_back(r_space.fieldOfView_mm().z());
+    fov_vec_.push_back(r_space.fieldOfView_mm.x);
+    fov_vec_.push_back(r_space.fieldOfView_mm.y);
+    fov_vec_.push_back(r_space.fieldOfView_mm.z);
 
-    slices_ = e_limits.slice().present() ? e_limits.slice().get().maximum() + 1 : 1;
-    sets_ = e_limits.set().present() ? e_limits.set().get().maximum() + 1 : 1;
+    slices_ = e_limits.slice ? e_limits.slice->maximum + 1 : 1;
+    sets_ = e_limits.set ? e_limits.set->maximum + 1 : 1;
 
     buffer_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[slices_*sets_]);
 

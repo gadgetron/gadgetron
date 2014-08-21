@@ -1,6 +1,5 @@
-
 #include "AsymmetricEchoAdjustROGadget.h"
-#include "GadgetIsmrmrdReadWrite.h"
+#include "ismrmrd_xml.h"
 
 namespace Gadgetron
 {
@@ -12,25 +11,19 @@ AsymmetricEchoAdjustROGadget::AsymmetricEchoAdjustROGadget() : maxRO_(0)
 
 int AsymmetricEchoAdjustROGadget::process_config(ACE_Message_Block* mb)
 {
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
+  ISMRMRD::IsmrmrdHeader h;
+  deserialize(mb->rd_ptr(),h);
 
-    ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-    if (e_seq.size() != 1)
-    {
-        GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
-        GADGET_DEBUG1("This simple partial fourier gadget only supports one encoding space\n");
-        return GADGET_FAIL;
-    }
+  if (h.encoding.size() != 1) {
+    GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
+    GADGET_DEBUG1("This partial fourier gadget only supports one encoding space\n");
+    return GADGET_FAIL;
+  }
 
-    ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
-    ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
-
-    maxRO_ = e_space.matrixSize().x();
-
-    GADGET_MSG("max RO : " << maxRO_);
-
-    return GADGET_OK;
+  ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+  maxRO_ = e_space.matrixSize.x;
+  GADGET_MSG("max RO : " << maxRO_);
+  return GADGET_OK;
 }
 
 int addPrePostZeros(size_t centre_column, size_t samples)

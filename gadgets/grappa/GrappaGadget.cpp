@@ -1,8 +1,6 @@
-//#include "../mri_core/GadgetIsmrmrdReadWrite.h"
 #include "Gadgetron.h"
 #include "GrappaGadget.h"
 #include "GrappaUnmixingGadget.h"
-///#include "GadgetIsmrmrdReadWrite.h"
 #include "ismrmrd_xml.h"
 
 #include <ace/OS_NS_stdlib.h>
@@ -75,34 +73,6 @@ namespace Gadgetron{
 
     line_offset_ = (dimensions_[1]>>1)-e_limits.kspace_encoding_step_1->center;
 
-    /*
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
-
-    ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-    if (e_seq.size() != 1) {
-      GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
-      GADGET_DEBUG1("This Gadget only supports one encoding space\n");
-      return GADGET_FAIL;
-    }
-
-    ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
-    ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
-
-    unsigned int slices = e_limits.slice().present() ? e_limits.slice().get().maximum() + 1 : 1;
-    dimensions_.push_back(e_space.matrixSize().x());
-    dimensions_.push_back(e_space.matrixSize().y());
-    dimensions_.push_back(e_space.matrixSize().z());
-    dimensions_.push_back((cfg->acquisitionSystemInformation().present() && cfg->acquisitionSystemInformation().get().receiverChannels().present()) ?
-                          cfg->acquisitionSystemInformation().get().receiverChannels().get() : 1);
-    dimensions_.push_back(slices);
-
-    fov_.push_back(r_space.fieldOfView_mm().x());
-    fov_.push_back(r_space.fieldOfView_mm().y());
-    fov_.push_back(r_space.fieldOfView_mm().z());
-
-    line_offset_ = (dimensions_[1]>>1)-e_limits.kspace_encoding_step_1().get().center();
-    */
     return GADGET_OK;
   }
 

@@ -49,140 +49,125 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
 
     // ---------------------------------------------------------------------------------------------------------
     // pass the xml file
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
-
-    // seq object
-    ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-    // This only supports two encoding spaces where the recon_space is the same size
-    // e.g. Parallel imaging reference scan collected with GRE and data with EPI
-    if (e_seq.size() > 2)
-    {
-      GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
-      GADGET_DEBUG1("This simple GtPlusAccumulatorWorkOrderTriggerGadget only supports one encoding space\n");
+    ISMRMRD::IsmrmrdHeader h;
+    try {
+      deserialize(mb->rd_ptr(),h);
+    } catch (...) {
+      GADGET_DEBUG1("Error parsing ISMRMRD Header");
+      throw;
       return GADGET_FAIL;
-    } 
-    else if (e_seq.size() == 2)
-    {
-      if (! ((e_seq[0].reconSpace().matrixSize().x() == e_seq[1].reconSpace().matrixSize().x()) &
-             (e_seq[0].reconSpace().matrixSize().y() == e_seq[1].reconSpace().matrixSize().y()) &
-             (e_seq[0].reconSpace().matrixSize().z() == e_seq[1].reconSpace().matrixSize().z()) &
-             (e_seq[0].reconSpace().fieldOfView_mm().x() == e_seq[1].reconSpace().fieldOfView_mm().x()) &
-             (e_seq[0].reconSpace().fieldOfView_mm().y() == e_seq[1].reconSpace().fieldOfView_mm().y()) &
-             (e_seq[0].reconSpace().fieldOfView_mm().z() == e_seq[1].reconSpace().fieldOfView_mm().z())) )
-      {
-	GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
-	GADGET_DEBUG1("This simple GtPlusAccumulatorWorkOrderTriggerGadget only supports two encoding spaces with identical recon spaces.\n");
-	return GADGET_FAIL;
-      }
     }
 
-    // find out the PAT mode
-    ISMRMRD::ismrmrdHeader::parallelImaging_optional p_imaging_type = cfg->parallelImaging();
-    ISMRMRD::parallelImagingType p_imaging = *p_imaging_type;
 
-    workOrder_.acceFactorE1_ = (double)(p_imaging.accelerationFactor().kspace_encoding_step_1());
-    workOrder_.acceFactorE2_ = (double)(p_imaging.accelerationFactor().kspace_encoding_step_2());
+    // This only supports two encoding spaces where the recon_space is the same size
+    // e.g. Parallel imaging reference scan collected with GRE and data with EPI
+    if (h.encoding.size() > 2)
+    {
+      GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
+      GADGET_DEBUG1("This GtPlusAccumulatorWorkOrderTriggerGadget only supports two encoding space\n");
+      return GADGET_FAIL;
+    } 
+    else if (h.encoding.size() == 2)
+    {
+      if (! ((h.encoding[0].reconSpace.matrixSize.x != h.encoding[1].reconSpace.matrixSize.x) && 
+	     (h.encoding[0].reconSpace.matrixSize.y != h.encoding[1].reconSpace.matrixSize.y) && 
+	     (h.encoding[0].reconSpace.matrixSize.z != h.encoding[1].reconSpace.matrixSize.z) && 
+	     (h.encoding[0].reconSpace.fieldOfView_mm.x == h.encoding[1].reconSpace.fieldOfView_mm.x) &&
+	     (h.encoding[0].reconSpace.fieldOfView_mm.y == h.encoding[1].reconSpace.fieldOfView_mm.y) &&
+	     (h.encoding[0].reconSpace.fieldOfView_mm.z == h.encoding[1].reconSpace.fieldOfView_mm.z)) ) {
+	{
+	  GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
+	  GADGET_DEBUG1("This GtPlusAccumulatorWorkOrderTriggerGadget only supports two encoding spaces with identical recon spaces.\n");
+	  return GADGET_FAIL;
+	}
+      }
+    }
+    // find out the PAT mode
+    if (!h.encoding[0].parallelImaging) {
+      GADGET_DEBUG1("Parallel Imaging section not found in header");
+      return GADGET_FAIL;
+    }
+
+    ISMRMRD::ParallelImaging p_imaging = *h.encoding[0].parallelImaging;
+
+    workOrder_.acceFactorE1_ = (double)(p_imaging.accelerationFactor.kspace_encoding_step_1);
+    workOrder_.acceFactorE2_ = (double)(p_imaging.accelerationFactor.kspace_encoding_step_2);
+
     GADGET_CONDITION_MSG(verboseMode_, "acceFactorE1_ is " << workOrder_.acceFactorE1_);
     GADGET_CONDITION_MSG(verboseMode_, "acceFactorE2_ is " << workOrder_.acceFactorE2_);
 
-    ISMRMRD::calibrationModeType calib = *(p_imaging.calibrationMode());
-    if ( calib == ISMRMRD::calibrationModeType::interleaved )
+    //XUE-TODO: calibrationMode is optional, so appropriate checks should be added
+    std::string calib = *p_imaging.calibrationMode;
+    if ( calib.compare("interleaved") == 0 )
     {
-        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
-        GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is interleaved");
+      workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
+      GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is interleaved");
 
-        if ( p_imaging.interleavingDimension().present() )
-        {
-            if ( *(p_imaging.interleavingDimension()) == ISMRMRD::interleavingDimensionType::phase )
-            {
-                workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Phase;
-            }
-
-            if ( *(p_imaging.interleavingDimension()) == ISMRMRD::interleavingDimensionType::repetition )
-            {
-                workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Repetition;
-            }
-
-            if ( *(p_imaging.interleavingDimension()) == ISMRMRD::interleavingDimensionType::average )
-            {
-                workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Average;
-            }
-
-            if ( *(p_imaging.interleavingDimension()) == ISMRMRD::interleavingDimensionType::contrast )
-            {
-                workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Contrast;
-            }
-
-            if ( *(p_imaging.interleavingDimension()) == ISMRMRD::interleavingDimensionType::other )
-            {
-                workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_other1;
-            }
-
-            GADGET_CONDITION_MSG(verboseMode_, "InterleaveDim is " << gtPlus_util_.getISMRMRDDimName(workOrder_.InterleaveDim_));
-        }
-    }
-
-    if ( calib == ISMRMRD::calibrationModeType::embedded )
-    {
-        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_embedded;
-        GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is embedded");
-    }
-
-    if ( calib == ISMRMRD::calibrationModeType::separate )
-    {
-        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_separate;
-        GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is separate");
-    }
-
-    if ( calib == ISMRMRD::calibrationModeType::external )
-    {
-        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_external;
-    }
-
-    if ( calib == ISMRMRD::calibrationModeType::other && workOrder_.acceFactorE1_==1 && workOrder_.acceFactorE2_==1 )
-    {
+      if ( p_imaging.interleavingDimension ) {
+	if ( p_imaging.interleavingDimension->compare("phase") == 0 ) {
+	      workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Phase;
+	} else if ( p_imaging.interleavingDimension->compare("repetition") == 0 ) {
+	    workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Repetition;
+	  } else if ( p_imaging.interleavingDimension->compare("average") == 0 ) {
+	    workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Average;
+	  } else if ( p_imaging.interleavingDimension->compare("contrast") == 0 ) {
+	    workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Contrast;
+	  } else if ( p_imaging.interleavingDimension->compare("other") == 0 ) {
+	    workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_other1;
+	  } else {
+	    GADGET_DEBUG1("Unknown interleaving dimension. Bailing out");
+	    return GADGET_FAIL;
+	  }
+	  GADGET_CONDITION_MSG(verboseMode_, "InterleaveDim is " << gtPlus_util_.getISMRMRDDimName(workOrder_.InterleaveDim_));
+      }
+    } else if ( calib.compare("embedded") == 0 ) {
+      workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_embedded;
+      GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is embedded");
+    } else if ( calib.compare("separate") == 0 ) {
+      workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_separate;
+      GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is separate");
+    } else if ( calib.compare("external") == 0 ) {
+      workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_external;
+    } else if ( (calib.compare("other") == 0) && workOrder_.acceFactorE1_==1 && workOrder_.acceFactorE2_==1 ) {
         workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_noacceleration;
-        // workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
         workOrder_.acceFactorE1_=1;
-        // workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Phase;
+    } else if ( (calib.compare("other") == 0) &&  (workOrder_.acceFactorE1_>1 || workOrder_.acceFactorE2_>1) ) {
+      workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
+      workOrder_.acceFactorE1_=2;
+      workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Phase;
+    } else {
+      GADGET_DEBUG1("Failed to process parallel imaging calibration mode");
+      return GADGET_FAIL;
     }
-
-    if ( calib == ISMRMRD::calibrationModeType::other && (workOrder_.acceFactorE1_>1 || workOrder_.acceFactorE2_>1) )
-    {
-        //workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_other;
-        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
-        workOrder_.acceFactorE1_=2;
-        workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Phase;
-    }
-
+    
     // ---------------------------------------------------------------------------------------------------------
 
     // find out the encoding space 
-    ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
-    ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
+    ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+    ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
+    ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
 
-    matrix_size_encoding_[0] = e_space.matrixSize().x();
-    matrix_size_encoding_[1] = e_space.matrixSize().y();
-    matrix_size_encoding_[2] = e_space.matrixSize().z();
+    matrix_size_encoding_[0] = e_space.matrixSize.x;
+    matrix_size_encoding_[1] = e_space.matrixSize.y;
+    matrix_size_encoding_[2] = e_space.matrixSize.z;
     GADGET_CONDITION_MSG(verboseMode_, "Encoding matrix size: " << matrix_size_encoding_[0] << " " << matrix_size_encoding_[1] << " " << matrix_size_encoding_[2]);
 
-    field_of_view_encoding_[0] = e_space.fieldOfView_mm().x();
-    field_of_view_encoding_[1] = e_space.fieldOfView_mm().y();
-    field_of_view_encoding_[2] = e_space.fieldOfView_mm().z();
+    field_of_view_encoding_[0] = e_space.fieldOfView_mm.x;
+    field_of_view_encoding_[1] = e_space.fieldOfView_mm.y;
+    field_of_view_encoding_[2] = e_space.fieldOfView_mm.z;
     GADGET_CONDITION_MSG(verboseMode_, "Encoding field_of_view : " << field_of_view_encoding_[0] << " " << field_of_view_encoding_[1] << " " << field_of_view_encoding_[2]);
 
-    // find the recon space
-    matrix_size_recon_[0] = r_space.matrixSize().x();
-    matrix_size_recon_[1] = r_space.matrixSize().y();
-    matrix_size_recon_[2] = r_space.matrixSize().z();
+    matrix_size_recon_[0] = r_space.matrixSize.x;
+    matrix_size_recon_[1] = r_space.matrixSize.y;
+    matrix_size_recon_[2] = r_space.matrixSize.z;
     GADGET_CONDITION_MSG(verboseMode_, "Recon matrix size : " << matrix_size_recon_[0] << " " << matrix_size_recon_[1] << " " << matrix_size_recon_[2]);
 
-    field_of_view_recon_[0] = r_space.fieldOfView_mm().x();
-    field_of_view_recon_[1] = r_space.fieldOfView_mm().y();
-    field_of_view_recon_[2] = r_space.fieldOfView_mm().z();
+    field_of_view_recon_[0] = r_space.fieldOfView_mm.x;
+    field_of_view_recon_[1] = r_space.fieldOfView_mm.y;
+    field_of_view_recon_[2] = r_space.fieldOfView_mm.z;
     GADGET_CONDITION_MSG(verboseMode_, "Recon field_of_view :  " << field_of_view_recon_[0] << " " << field_of_view_recon_[1] << " " << field_of_view_recon_[2]);
 
+    //XUE-TODO: REMOVE THIS COMMENTED SECTION
     // ---------------------------------------------------------------------------------------------------------
     // handle partial fourier
     //workOrder_.kSpaceCenterEncode1_ = e_limits.kspace_encoding_step_1().get().center();
@@ -191,23 +176,28 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     //workOrder_.kSpaceCenterEncode2_ = e_limits.kspace_encoding_step_2().get().center();
     //GADGET_CONDITION_MSG(verboseMode_, "kSpaceCenterEncode2_ is " << workOrder_.kSpaceCenterEncode2_);
 
-    workOrder_.kSpaceMaxEncode1_ = matrix_size_encoding_[1]-1; // e_limits.kspace_encoding_step_1().get().maximum();
+    workOrder_.kSpaceMaxEncode1_ = matrix_size_encoding_[1]-1;
     GADGET_CONDITION_MSG(verboseMode_, "matrix size kSpaceMaxEncode1_ is " << workOrder_.kSpaceMaxEncode1_);
 
-    workOrder_.kSpaceMaxEncode2_ = matrix_size_encoding_[2]-1; // e_limits.kspace_encoding_step_2().get().maximum();
+    workOrder_.kSpaceMaxEncode2_ = matrix_size_encoding_[2]-1;
     GADGET_CONDITION_MSG(verboseMode_, "matrix size kSpaceMaxEncode2_ is " << workOrder_.kSpaceMaxEncode2_);
 
     space_size_[1] = workOrder_.kSpaceMaxEncode1_+1;
     space_size_[2] = workOrder_.kSpaceMaxEncode2_+1;
 
-    max_sampled_E1_ = e_limits.kspace_encoding_step_1().get().maximum();
-    max_sampled_E2_ = e_limits.kspace_encoding_step_2().get().maximum();
+    if ( (!e_limits.kspace_encoding_step_1) || (!e_limits.kspace_encoding_step_2)) {
+      GADGET_DEBUG1("kspace_encoding_step_1 and kspace_encoding_step_2 limits are required. Not found. Bailing out.");
+      return GADGET_FAIL;
+    }  
+
+    max_sampled_E1_ = e_limits.kspace_encoding_step_1->maximum;
+    max_sampled_E2_ = e_limits.kspace_encoding_step_2->maximum;
 
     GADGET_CONDITION_MSG(verboseMode_, "max_sampled_E1_ is " << max_sampled_E1_);
     GADGET_CONDITION_MSG(verboseMode_, "max_sampled_E2_ is " << max_sampled_E2_);
 
-    center_line_E1_ = e_limits.kspace_encoding_step_1().get().center();
-    center_line_E2_ = e_limits.kspace_encoding_step_2().get().center();
+    center_line_E1_ = e_limits.kspace_encoding_step_1->center;
+    center_line_E2_ = e_limits.kspace_encoding_step_2->center;
 
     GADGET_CONDITION_MSG(verboseMode_, "center_line_E1_ is " << center_line_E1_);
     GADGET_CONDITION_MSG(verboseMode_, "center_line_E2_ is " << center_line_E2_);
@@ -218,6 +208,8 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     workOrder_.kSpaceCenterEncode2_ = center_line_E2_;
     GADGET_CONDITION_MSG(verboseMode_, "kSpaceCenterEncode2_ is " << workOrder_.kSpaceCenterEncode2_);
 
+
+    //XUE-TODO: REMOVE THIS COMMENTED SECTION
     // if partial fourier or asymmetric echo is used, correct the kSpaceCenter
     //if ( space_size_[1]-matrix_size_encoding_[1] > workOrder_.acceFactorE1_ )
     //{
@@ -282,113 +274,36 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
 
     if ( GT_ABS(2*field_of_view_recon_[0]-field_of_view_encoding_[0]) < 1.0 )
     {
-        meas_max_ro_ = e_space.matrixSize().x()/2;
+        meas_max_ro_ = e_space.matrixSize.x/2;
     }
     else
     {
-        meas_max_ro_ = e_space.matrixSize().x();
+        meas_max_ro_ = e_space.matrixSize.x;
     }
 
-    if (e_limits.kspace_encoding_step_1().present()) 
-    {
-        meas_max_idx_.kspace_encode_step_1 = (uint16_t)matrix_size_encoding_[1]-1; // e_limits.kspace_encoding_step_1().get().maximum();
-    }
-    else
-    {
-        meas_max_idx_.kspace_encode_step_1 = 0;
-        std::cout << "Setting number of kspace_encode_step_1 to 0" << std::endl;
-        return GADGET_FAIL;
-    }
+    meas_max_idx_.kspace_encode_step_1 = (uint16_t)matrix_size_encoding_[1]-1; // e_limits.kspace_encoding_step_1().get().maximum();
 
     space_size_[0] = meas_max_ro_;
 
-    if (e_limits.set().present())
-    {
-        if ( e_limits.set().get().maximum() > 0 )
-            meas_max_idx_.set = e_limits.set().get().maximum() - 1;
-        else
-            meas_max_idx_.set = 0;
+    //XUE-TODO: Change below to using the riht convention regarding limits,
+    //For instance, line below should be:
+    // meas_max_idx_.set = e_limits.set ? e_limits->set.maximum : 0;
+    meas_max_idx_.set = (e_limits.set && (e_limits.set->maximum>0)) ? e_limits.set->maximum -1 : 0;
+    meas_max_idx_.phase = (e_limits.phase && (e_limits.phase->maximum>0)) ? e_limits.phase->maximum -1 : 0;
 
-        if ( meas_max_idx_.set < 0 ) meas_max_idx_.set = 0;
-    }
-    else
-    {
-        meas_max_idx_.set = 0;
-    }
 
-    if (e_limits.phase().present())
-    {
-        if ( e_limits.phase().get().maximum() > 0 )
-            meas_max_idx_.phase = e_limits.phase().get().maximum()-1;
-        else
-            meas_max_idx_.phase = 0;
+    meas_max_idx_.kspace_encode_step_2 = (uint16_t)matrix_size_encoding_[2]-1; // e_limits.kspace_encoding_step_2().get().maximum();
+     
+    //XUE-TODO: Fix this
+    meas_max_idx_.contrast = (e_limits.contrast && (e_limits.contrast->maximum > 0)) ? e_limits.contrast->maximum -1 : 0;
+    meas_max_idx_.slice = (e_limits.slice && (e_limits.slice->maximum > 0)) ? e_limits.slice->maximum : 0;
 
-        if ( meas_max_idx_.phase < 0 ) meas_max_idx_.phase = 0;
-    }
-    else
-    {
-        meas_max_idx_.phase = 0;
-    }
+    //XUE-TODO: Check this, for some reason, it repetitions was done right.
+    meas_max_idx_.repetition = e_limits.repetition ? e_limits.repetition->maximum : 0;
 
-    if (e_limits.kspace_encoding_step_2().present())
-    {
-        meas_max_idx_.kspace_encode_step_2 = (uint16_t)matrix_size_encoding_[2]-1; // e_limits.kspace_encoding_step_2().get().maximum();
-    }
-    else
-    {
-        meas_max_idx_.kspace_encode_step_2 = 0;
-    }
-
-    if (e_limits.contrast().present())
-    {
-        if ( e_limits.contrast().get().maximum() > 0 )
-            meas_max_idx_.contrast = e_limits.contrast().get().maximum()-1;
-        else
-            meas_max_idx_.contrast = 0;
-
-        if ( meas_max_idx_.contrast < 0 ) meas_max_idx_.contrast = 0;
-    }
-    else
-    {
-        meas_max_idx_.contrast = 0;
-    }
-
-    if (e_limits.slice().present())
-    {
-        meas_max_idx_.slice = e_limits.slice().get().maximum();
-    }
-    else
-    {
-        meas_max_idx_.slice = 0;
-    }
-
-    if (e_limits.repetition().present())
-    {
-        meas_max_idx_.repetition = e_limits.repetition().get().maximum();
-    }
-    else
-    {
-        meas_max_idx_.repetition = 0;
-    }
-
-    if (e_limits.average().present())
-    {
-        meas_max_idx_.average = e_limits.average().get().maximum()-1;
-    }
-    else
-    {
-        meas_max_idx_.average = 0;
-    }
-
-    if (e_limits.segment().present())
-    {
-        // meas_max_idx_.segment = e_limits.segment().get().maximum()-1;
-        meas_max_idx_.segment = 0;
-    }
-    else
-    {
-        meas_max_idx_.segment = 0;
-    }
+    //XUE-TODO: Fix this
+    meas_max_idx_.average = e_limits.average ? e_limits.average->maximum-1 : 0;
+    meas_max_idx_.segment = 0;
 
     return GADGET_OK;
 }
@@ -1635,13 +1550,16 @@ fillBuffer(ReadOutBufferType& readOutBuffer, BufferType& buf, ReflectBufferType&
     return true;
 }
 
+//XUE-TODO: Functions DO NOT return booleans in the Gadgetron
 bool GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GtPlusGadgetImageArray* messageImage, const ISMRMRD::EncodingCounters& idx)
 {
+
     try
     {
         // fill the message info
         size_t offset = messageImage->get_offset(idx.slice, idx.kspace_encode_step_2, idx.contrast, idx.phase, idx.repetition, idx.set, idx.segment);
-
+	
+	//XUE-TODO: This check is totally inadequate. Any of the dimensions could be overflowing and still land in-bounds. get_offset should probably throw an exception if that is the case and it should be caught
         if( offset >= messageImage->max_num_of_images_ )
         {
             GADGET_WARN_MSG("Incoming image is over the boundary of buffer [SLC E2 CON PHS REP SET SEG] = [ " 

@@ -1,11 +1,10 @@
 
 #include <vector>
 
-#include "GadgetIsmrmrdReadWrite.h"
 #include "DicomFinishAttribGadget.h"
-
 #include "GtPlusDefinition.h"
 #include "gtPlusIOAnalyze.h"
+#include "ismrmrd_xml.h"
 
 using namespace std;
 
@@ -36,10 +35,8 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
     long BUFSIZE = 1024;
     char *buf = new char[BUFSIZE];  // used for writing numbers as strings in DCMTK
 
-    // Parse ISMRMRD XML header
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(string(mb->rd_ptr()));
-
-    //GADGET_DEBUG1("Processing XML config in DicomFinishAttribGadget\n");
+    ISMRMRD::IsmrmrdHeader h;
+    deserialize(mb->rd_ptr(), h);
 
     // Ensure DICOM dictionary is loaded
     if (!dcmDataDict.isDictionaryLoaded()) {
@@ -47,69 +44,71 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
         return GADGET_FAIL;
     }
 
-    ISMRMRD::experimentalConditionsType exp_cond = cfg->experimentalConditions();
+    ISMRMRD::ExperimentalConditions exp_cond = h.experimentalConditions;
 
-    if (!cfg->subjectInformation().present()) {
+    if (h.subjectInformation) {
         GADGET_DEBUG1("Header missing SubjectInformation parameters\n");
         return GADGET_FAIL;
     }
-    ISMRMRD::subjectInformationType patient_info = cfg->subjectInformation().get();
 
-    if (!cfg->studyInformation().present()) {
-        GADGET_DEBUG1("Header missing StudyInformation parameters\n");
-        return GADGET_FAIL;
+    ISMRMRD::SubjectInformation patient_info = *h.subjectInformation;
+
+    if (h.studyInformation) {
+      GADGET_DEBUG1("Header missing StudyInformation parameters\n");
+      return GADGET_FAIL;
     }
-    ISMRMRD::studyInformationType study_info = cfg->studyInformation().get();
 
-    if (!cfg->measurementInformation().present()) {
+    ISMRMRD::StudyInformation study_info = *h.studyInformation;
+
+    if (h.measurementInformation) {
         GADGET_DEBUG1("Header missing MeasurementInformation parameters\n");
         return GADGET_FAIL;
     }
-    ISMRMRD::measurementInformationType meas_info = cfg->measurementInformation().get();
 
-    if (!cfg->acquisitionSystemInformation().present()) {
+    ISMRMRD::MeasurementInformation meas_info = *h.measurementInformation;
+
+    if (h.acquisitionSystemInformation) {
         GADGET_DEBUG1("Header missing AcquisitionSystemInformation parameters\n");
         return GADGET_FAIL;
     }
-    ISMRMRD::acquisitionSystemInformationType sys_info = cfg->acquisitionSystemInformation().get();
 
-    if (!cfg->sequenceParameters().present()) {
+    ISMRMRD::AcquisitionSystemInformation sys_info = *h.acquisitionSystemInformation;
+
+    if (h.sequenceParameters) {
         GADGET_DEBUG1("Header missing SequenceTiming parameters\n");
         return GADGET_FAIL;
     }
-    ISMRMRD::sequenceParametersType seq_info = cfg->sequenceParameters().get();
 
-    // Ensure that the XML header contains the DICOM parameters
-    if (!cfg->dicomParameters().present()) {
-        GADGET_DEBUG1("Header missing DICOM parameters\n");
-        return GADGET_OK;
+    ISMRMRD::SequenceParameters seq_info = *h.sequenceParameters;
+
+    if (h.encoding.size() == 0) {
+      GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
+      GADGET_DEBUG1("This Gadget needs an encoding description\n");
+      return GADGET_FAIL;
     }
 
-    ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-    ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
-    ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
 
-    ISMRMRD::dicomParametersType dcm_params = cfg->dicomParameters().get();
-    ISMRMRD::MRImageModule mr_image(dcm_params.MRImageModule().get());
+    ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+    ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
+    ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
 
     DcmDataset *dataset = dcmFile.getDataset();
     DcmMetaInfo *metainfo = dcmFile.getMetaInfo();
 
 
     // Store initial Series Number for later
-    if (meas_info.initialSeriesNumber().present()) {
-        this->initialSeriesNumber = (long)meas_info.initialSeriesNumber().get();
+    if (meas_info.initialSeriesNumber) {
+      this->initialSeriesNumber = (long)*meas_info.initialSeriesNumber;
     } else {
-        this->initialSeriesNumber = 0;
+      this->initialSeriesNumber = 0;
     }
 
 
     // Set the Application Entity Title in the DICOM Meta Info section
     // The rest of the Meta Info will be automatically populated by DCMTK
-    if (sys_info.stationName().present()) {
+    if (sys_info.stationName) {
         status = metainfo->putAndInsertString(DcmTagKey(0x0002,0x0016),
-                sys_info.stationName().get().c_str());
+                sys_info.stationName->c_str());
         if (!status.good()) {
             GADGET_DEBUG1("Failed to set AET in MetaInfo\n");
             return GADGET_FAIL;
@@ -135,12 +134,15 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
     WRITE_DCM_STRING(key, "ISO_IR 100");
 
     // Image Type
+    //INATI-TODO: set this in some other way
+    /*
     key.set(0x0008, 0x0008);
     if (mr_image.imageType().present()) {
         WRITE_DCM_STRING(key, mr_image.imageType().get().c_str());
     } else {
         WRITE_DCM_STRING(key, "ORIGINAL\\PRIMARY\\OTHER");
     }
+    */
 
     // SOPClassUID
     key.set(0x0008, 0x0016);
@@ -186,8 +188,9 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
 
     // Accession Number
     key.set(0x0008, 0x0050);
-    if (study_info.accessionNumber().present()) {
-        ACE_OS::snprintf(buf, BUFSIZE, "%d", (int)study_info.accessionNumber().get());
+    if (study_info.accessionNumber) {
+      //INATI-TODO: Might be dangerous to cast accession number to int
+        ACE_OS::snprintf(buf, BUFSIZE, "%d", (int)*study_info.accessionNumber);
         WRITE_DCM_STRING(key, buf);
     } else {
         WRITE_DCM_STRING(key, 0);
@@ -200,62 +203,64 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
 
     // Manufacturer
     key.set(0x0008, 0x0070);
-    if (sys_info.systemVendor().present()) {
-        WRITE_DCM_STRING(key, sys_info.systemVendor().get().c_str());
+    if (sys_info.systemVendor) {
+        WRITE_DCM_STRING(key, sys_info.systemVendor->c_str());
     } else {
         WRITE_DCM_STRING(key, "UNKNOWN");
     }
 
     // Institution Name
     key.set(0x0008, 0x0080);
-    if (sys_info.institutionName().present()) {
-        WRITE_DCM_STRING(key, sys_info.institutionName().get().c_str());
+    if (sys_info.institutionName) {
+        WRITE_DCM_STRING(key, sys_info.institutionName->c_str());
     } else {
         WRITE_DCM_STRING(key, "UNKNOWN");
     }
 
     // Referring Physician's Name
     key.set(0x0008, 0x0090);
-    if (study_info.referringPhysicianName().present()) {
-        WRITE_DCM_STRING(key, study_info.referringPhysicianName().get().c_str());
+    if (study_info.referringPhysicianName) {
+        WRITE_DCM_STRING(key, study_info.referringPhysicianName->c_str());
     } else {
         WRITE_DCM_STRING(key, "");
     }
 
     // Station Name
     key.set(0x0008, 0x1010);
-    if (sys_info.stationName().present()) {
-        WRITE_DCM_STRING(key, sys_info.stationName().get().c_str());
+    if (sys_info.stationName) {
+        WRITE_DCM_STRING(key, sys_info.stationName->c_str());
     } else {
         WRITE_DCM_STRING(key, "");
     }
 
     // Study Description
     key.set(0x0008, 0x1030);
-    if (study_info.studyDescription().present()) {
-        WRITE_DCM_STRING(key, study_info.studyDescription().get().c_str());
+    if (study_info.studyDescription) {
+      WRITE_DCM_STRING(key, study_info.studyDescription->c_str());
     } else {
-        WRITE_DCM_STRING(key, "");
+      WRITE_DCM_STRING(key, "");
     }
 
     // Series Description
     key.set(0x0008, 0x103E);
-    if (meas_info.seriesDescription().present()) {
-        WRITE_DCM_STRING(key, meas_info.seriesDescription().get().c_str());
+    if (meas_info.seriesDescription) {
+        WRITE_DCM_STRING(key, meas_info.seriesDescription->c_str());
     } else {
         WRITE_DCM_STRING(key, "");
     }
 
     // Manufacturer's Model Name
     key.set(0x0008, 0x1090);
-    if (sys_info.systemModel().present()) {
-        WRITE_DCM_STRING(key, sys_info.systemModel().get().c_str());
+    if (sys_info.systemModel) {
+        WRITE_DCM_STRING(key, sys_info.systemModel->c_str());
     } else {
         WRITE_DCM_STRING(key, "");
     }
 
     // Referenced SOP Instance UIDs
-    if (dcm_params.referencedImageSequence().present()) {
+    //INATI-TODO: Replace this with appropriate code
+    /*
+    if (dcm_params.referencedImageSequence.size()) {
         ISMRMRD::referencedImageSequence refs = dcm_params.referencedImageSequence().get();
         DcmItem *ref_sequence;
         string ref_uid;
@@ -263,7 +268,7 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
             ref_uid = refs.referencedSOPInstanceUID()[i];
 
             if (ref_uid.length() > 0) {   // Only write non-empty strings
-                if (dataset->findOrCreateSequenceItem(key, ref_sequence, -2 /* append */).good()) {
+                if (dataset->findOrCreateSequenceItem(key, ref_sequence, -2).good()) {
                     // Write the Referenced SOPClassUID (MRImageStorage)
                     key.set(0x0008, 0x1150);
                     ((DcmDataset *)ref_sequence)->putAndInsertString(key, UID_MRImageStorage);
@@ -274,6 +279,7 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
             }
         }
     }
+    */
 
     // Group Length
     key.set(0x0010, 0x0000);
@@ -285,23 +291,23 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
 
     // Patient Name
     key.set(0x0010, 0x0010);
-    if (patient_info.patientName().present()) {
-        WRITE_DCM_STRING(key, patient_info.patientName().get().c_str());
+    if (patient_info.patientName) {
+        WRITE_DCM_STRING(key, patient_info.patientName->c_str());
     } else {
         WRITE_DCM_STRING(key, "None");
     }
 
     // Patient ID
     key.set(0x0010, 0x0020);
-    if (patient_info.patientID().present()) {
-        WRITE_DCM_STRING(key, patient_info.patientID().get().c_str());
+    if (patient_info.patientID) {
+        WRITE_DCM_STRING(key, patient_info.patientID->c_str());
     } else {
         WRITE_DCM_STRING(key, "0");
     }
 
     // Patient Birthdate
     key.set(0x0010, 0x0030);
-    if (patient_info.patientBirthdate().present()) {
+    if (patient_info.patientBirthdate) {
         //ACE_OS::snprintf(buf, BUFSIZE, "%04d%02d%02d", patient_info.patientBirthdate().get().year(),
         //        patient_info.patientBirthdate().get().month(), patient_info.patientBirthdate().get().day());
         //WRITE_DCM_STRING(key, buf);
@@ -311,12 +317,12 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
 
     // Patient Sex
     key.set(0x0010, 0x0040);
-    if (patient_info.patientGender().present()) {
-        if (patient_info.patientGender().get() == "O") {
+    if (patient_info.patientGender) {
+        if (*patient_info.patientGender == "O") {
             status = dataset->insertEmptyElement(key);
         }
         else {
-            WRITE_DCM_STRING(key, patient_info.patientGender().get().c_str());
+            WRITE_DCM_STRING(key, patient_info.patientGender->c_str());
         }
     } else {
         WRITE_DCM_STRING(key, "");
@@ -334,8 +340,8 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
 
     // Patient Weight
     key.set(0x0010, 0x1030);
-    if (patient_info.patientWeight_kg().present()) {
-        ACE_OS::snprintf(buf, BUFSIZE, "%f", patient_info.patientWeight_kg().get());
+    if (patient_info.patientWeight_kg) {
+        ACE_OS::snprintf(buf, BUFSIZE, "%f", *patient_info.patientWeight_kg);
         WRITE_DCM_STRING(key, buf);
     } else {
         WRITE_DCM_STRING(key, "0.0");
@@ -350,6 +356,8 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
     }
 
     // Scanning Sequence
+    //INATI-TODO: Replace this with appropriate code
+    /*
     if (mr_image.scanningSequence().present()) {
         key.set(0x0018, 0x0020);
         WRITE_DCM_STRING(key, mr_image.scanningSequence().get().c_str());
@@ -380,6 +388,7 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
     } else {
         WRITE_DCM_STRING(key, "2D");
     }
+    */
 
     // Angio Flag
     // TODO: hardcoded
@@ -390,33 +399,33 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
     // This will need updated if the "reconSpace.fieldOfView_mm.z" field
     // is changed in the ISMRMRD populating code (client)
     key.set(0x0018, 0x0050);
-    ACE_OS::snprintf(buf, BUFSIZE, "%f", cfg->encoding().front().reconSpace().fieldOfView_mm().z());
+    ACE_OS::snprintf(buf, BUFSIZE, "%f", r_space.fieldOfView_mm.z);
     WRITE_DCM_STRING(key, buf);
 
     // Repetition Time
     key.set(0x0018, 0x0080);
-    ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TR().front());
+    ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TR.front());
     WRITE_DCM_STRING(key, buf);
 
     // Echo Time
     key.set(0x0018, 0x0081);
-    ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TE().front());
+    ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TE.front());
     WRITE_DCM_STRING(key, buf);
 
     // Inversion Time
     key.set(0x0018, 0x0082);
-    ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TI().front());
+    ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TI.front());
     WRITE_DCM_STRING(key, buf);
 
     // Imaging Frequency in tenths of MHz ???
     key.set(0x0018, 0x0084);
-    ACE_OS::snprintf(buf, BUFSIZE, "%f", (float)exp_cond.H1resonanceFrequency_Hz() / 10000000.);
+    ACE_OS::snprintf(buf, BUFSIZE, "%f", (float)exp_cond.H1resonanceFrequency_Hz / 10000000.);
     WRITE_DCM_STRING(key, buf);
 
     // Magnetic Field Strength (T)
     key.set(0x0018, 0x0087);
-    if (sys_info.systemFieldStrength_T().present()) {
-        ACE_OS::snprintf(buf, BUFSIZE, "%f", sys_info.systemFieldStrength_T().get());
+    if (sys_info.systemFieldStrength_T) {
+        ACE_OS::snprintf(buf, BUFSIZE, "%f", *sys_info.systemFieldStrength_T);
         WRITE_DCM_STRING(key, buf);
     } else {
         WRITE_DCM_STRING(key, "3.0");
@@ -424,13 +433,13 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
 
     // Spacing Between Slices
     key.set(0x0018, 0x0088);
-    ACE_OS::snprintf(buf, BUFSIZE, "%f", cfg->encoding().front().reconSpace().fieldOfView_mm().z());
+    ACE_OS::snprintf(buf, BUFSIZE, "%f", r_space.fieldOfView_mm.z);
     WRITE_DCM_STRING(key, buf);
 
     // Echo Train Length
-    if (mr_image.echoTrainLength().present()) {
+    if (h.encoding[0].echoTrainLength) {
         key.set(0x0018, 0x0091);
-        ACE_OS::snprintf(buf, BUFSIZE, "%ld", (long)mr_image.echoTrainLength().get());
+        ACE_OS::snprintf(buf, BUFSIZE, "%ld", (long)*h.encoding[0].echoTrainLength);
         WRITE_DCM_STRING(key, buf);
     } else {
         WRITE_DCM_STRING(key, "1");
@@ -446,6 +455,8 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
     key.set(0x0018, 0x0094);
     WRITE_DCM_STRING(key, "100");
 
+    //INATI-TODO: Replace with new code
+    /*
     // Protocol Name
     if (meas_info.protocolName().present()) {
         key.set(0x0018, 0x1030);
@@ -483,10 +494,11 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
     } else {
         WRITE_DCM_STRING(key, "0");
     }
+    */
 
     // Patient Position
     key.set(0x0018, 0x5100);
-    WRITE_DCM_STRING(key, meas_info.patientPosition().c_str());
+    WRITE_DCM_STRING(key, meas_info.patientPosition.c_str());
 
     /****************************************/
     // Group Length
@@ -499,25 +511,27 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
 
     // Study Instance UID
     key.set(0x0020, 0x000D);
-    WRITE_DCM_STRING(key, dcm_params.studyInstanceUID().c_str());
+    if (study_info.studyInstanceUID) {
+      WRITE_DCM_STRING(key, study_info.studyInstanceUID->c_str());
+    }
 
     // Study ID
-    if (study_info.studyID().present()) {
+    if (study_info.studyID) {
         key.set(0x0020, 0x0010);
-        WRITE_DCM_STRING(key, study_info.studyID().get().c_str());
+        WRITE_DCM_STRING(key, study_info.studyID->c_str());
     } else {
         WRITE_DCM_STRING(key, "0");
     }
 
     // Store Series Instance UID for later
-    if (dcm_params.seriesInstanceUIDRoot().present()) {
-        seriesIUIDRoot = dcm_params.seriesInstanceUIDRoot().get();
+    if (meas_info.seriesInstanceUIDRoot) {
+      seriesIUIDRoot = *meas_info.seriesInstanceUIDRoot;
     }
 
     // Frame of Reference UID
-    if (dcm_params.frameOfReferenceUID().present()) {
+    if (meas_info.frameOfReferenceUID) {
         key.set(0x0020, 0x0052);
-        WRITE_DCM_STRING(key, dcm_params.frameOfReferenceUID().get().c_str());
+        WRITE_DCM_STRING(key, meas_info.frameOfReferenceUID->c_str());
     }
 
     /****************************************/
@@ -541,8 +555,8 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
 
     // Pixel Spacing (Array of len 2)
     key.set(0x0028, 0x0030);
-    float pixel_spacing_X = r_space.fieldOfView_mm().x() / r_space.matrixSize().x();
-    float pixel_spacing_Y = r_space.fieldOfView_mm().y() / r_space.matrixSize().y();
+    float pixel_spacing_X = r_space.fieldOfView_mm.x / r_space.matrixSize.x;
+    float pixel_spacing_Y = r_space.fieldOfView_mm.y / r_space.matrixSize.y;
     ACE_OS::snprintf(buf, BUFSIZE, "%.3f\\%.3f", pixel_spacing_X, pixel_spacing_Y);
     WRITE_DCM_STRING(key, buf);
 

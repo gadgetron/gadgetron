@@ -8,10 +8,9 @@
 #include "GadgetMRIHeaders.h"
 #include "b1_map.h"
 #include "GPUTimer.h"
-#include "GadgetIsmrmrdReadWrite.h"
 #include "vector_td_utilities.h"
 #include "hoNDArray_fileio.h"
-
+#include "ismrmrd_xml.h"
 #include <boost/thread/mutex.hpp>
 
 namespace Gadgetron{
@@ -90,26 +89,31 @@ namespace Gadgetron{
       return GADGET_FAIL;
     }
 
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
-
-    std::vector<long> dims;
-    ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-    if (e_seq.size() != 1) {
-      GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
+    // Get the Ismrmrd header
+    //
+    ISMRMRD::IsmrmrdHeader h;
+    ISMRMRD::deserialize(mb->rd_ptr(),h);
+    
+    
+    if (h.encoding.size() != 1) {
       GADGET_DEBUG1("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
+    
+    // Get the encoding space and trajectory description
+    ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+    ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
+    ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
 
-    //ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
-    //ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
-
-    matrix_size_seq_ = uint64d2( r_space.matrixSize().x(), r_space.matrixSize().y() );
+    matrix_size_seq_ = uint64d2( r_space.matrixSize.x, r_space.matrixSize.y );
 
     if (!is_configured_) {
 
-      channels_ = cfg->acquisitionSystemInformation().present() ?
-        (cfg->acquisitionSystemInformation().get().receiverChannels().present() ? cfg->acquisitionSystemInformation().get().receiverChannels().get() : 1) : 1;
+      if (h.acquisitionSystemInformation) {
+	channels_ = h.acquisitionSystemInformation->receiverChannels ? *h.acquisitionSystemInformation->receiverChannels : 1;
+      } else {
+	channels_ = 1;
+      }
 
       // Allocate encoding operator for non-Cartesian Sense
       E_ = boost::shared_ptr< cuNonCartesianSenseOperator<float,2> >( new cuNonCartesianSenseOperator<float,2>() );

@@ -6,10 +6,9 @@
 */
 
 #include "CoilReductionGadget.h"
-#include "GadgetIsmrmrdReadWrite.h"
-
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include "ismrmrd_xml.h"
 
 namespace Gadgetron{
 
@@ -21,52 +20,53 @@ namespace Gadgetron{
 
     int CoilReductionGadget::process_config(ACE_Message_Block *mb)
     {
-        boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
+      ISMRMRD::IsmrmrdHeader h;
+      ISMRMRD::deserialize(mb->rd_ptr(),h);
+      
+      coils_in_ = h.acquisitionSystemInformation->receiverChannels ? *h.acquisitionSystemInformation->receiverChannels : 128;
 
-        coils_in_ = cfg->acquisitionSystemInformation().get().receiverChannels().present() ? cfg->acquisitionSystemInformation().get().receiverChannels().get() : 128;
+      boost::shared_ptr<std::string> coil_mask = this->get_string_value("coil_mask");
 
-        boost::shared_ptr<std::string> coil_mask = this->get_string_value("coil_mask");
-
-        if (coil_mask->compare(std::string("")) == 0) {
-            int coils_out = this->get_int_value("coils_out");
-            if (coils_out <= 0) {
-                GADGET_DEBUG2("Invalid number of output coils %d\n", coils_out);
-                return GADGET_FAIL;
-            }
-            coil_mask_ = std::vector<unsigned short>(coils_out,1);
-        } else {
-            std::vector<std::string> chm;
-            boost::split(chm, *coil_mask, boost::is_any_of(" "));
-            for (size_t i = 0; i < chm.size(); i++) {
-                std::string ch = boost::algorithm::trim_copy(chm[i]);
-                if (ch.size() > 0) {
-                    size_t mv = static_cast<size_t>(ACE_OS::atoi(ch.c_str()));
-                    //GADGET_DEBUG2("Coil mask value: %d\n", mv);
-                    if (mv > 0) {
-                        coil_mask_.push_back(1);
-                    } else {
-                        coil_mask_.push_back(0);
-                    }
-                }
-            }
-        }
-
-        while (coil_mask_.size() < coils_in_) coil_mask_.push_back(0);
-        while (coil_mask_.size() > coils_in_) coil_mask_.pop_back();
-
-        if (coil_mask_.size() != coils_in_) {
-            GADGET_DEBUG1("Error configuring coils for coil reduction\n");
-            return GADGET_FAIL;
-        }
-
-        coils_out_ = 0;
-        for (size_t i = 0; i < coil_mask_.size(); i++) {
-            if (coil_mask_[i]) coils_out_++;
-        }
-
-        GADGET_DEBUG2("Coil reduction from %d to %d\n", coils_in_, coils_out_);
-
-        return GADGET_OK;
+      if (coil_mask->compare(std::string("")) == 0) {
+	int coils_out = this->get_int_value("coils_out");
+	if (coils_out <= 0) {
+	  GADGET_DEBUG2("Invalid number of output coils %d\n", coils_out);
+	  return GADGET_FAIL;
+	}
+	coil_mask_ = std::vector<unsigned short>(coils_out,1);
+      } else {
+	std::vector<std::string> chm;
+	boost::split(chm, *coil_mask, boost::is_any_of(" "));
+	for (size_t i = 0; i < chm.size(); i++) {
+	  std::string ch = boost::algorithm::trim_copy(chm[i]);
+	  if (ch.size() > 0) {
+	    size_t mv = static_cast<size_t>(ACE_OS::atoi(ch.c_str()));
+	    //GADGET_DEBUG2("Coil mask value: %d\n", mv);
+	    if (mv > 0) {
+	      coil_mask_.push_back(1);
+	    } else {
+	      coil_mask_.push_back(0);
+	    }
+	  }
+	}
+      }
+      
+      while (coil_mask_.size() < coils_in_) coil_mask_.push_back(0);
+      while (coil_mask_.size() > coils_in_) coil_mask_.pop_back();
+      
+      if (coil_mask_.size() != coils_in_) {
+	GADGET_DEBUG1("Error configuring coils for coil reduction\n");
+	return GADGET_FAIL;
+      }
+      
+      coils_out_ = 0;
+      for (size_t i = 0; i < coil_mask_.size(); i++) {
+	if (coil_mask_[i]) coils_out_++;
+      }
+      
+      GADGET_DEBUG2("Coil reduction from %d to %d\n", coils_in_, coils_out_);
+      
+      return GADGET_OK;
     }
 
 

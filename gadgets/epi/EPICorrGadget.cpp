@@ -1,6 +1,6 @@
-#include "GadgetIsmrmrdReadWrite.h"
 #include "EPICorrGadget.h"
 #include "Gadgetron.h"
+#include "ismrmrd_xml.h"
 
 namespace Gadgetron{
 
@@ -9,20 +9,39 @@ namespace Gadgetron{
 
 int EPICorrGadget::process_config(ACE_Message_Block* mb)
 {
-  boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
-  ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-  ISMRMRD::trajectoryDescriptionType traj_desc = (*e_seq.begin()).trajectoryDescription().get();
+  ISMRMRD::IsmrmrdHeader h;
+  ISMRMRD::deserialize(mb->rd_ptr(),h);
 
-  if (std::strcmp(traj_desc.identifier().c_str(), "ConventionalEPI")) {
+  if (h.encoding.size() == 0) {
+    GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
+    GADGET_DEBUG1("This Gadget needs an encoding description\n");
+    return GADGET_FAIL;
+  }
+
+  // Get the encoding space and trajectory description
+  ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+  ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
+  ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
+  ISMRMRD::TrajectoryDescription traj_desc;
+
+  if (h.encoding[0].trajectoryDescription) {
+    traj_desc = *h.encoding[0].trajectoryDescription;
+  } else {
+    GADGET_DEBUG1("Trajectory description missing");
+    return GADGET_FAIL;
+  }
+
+  if (std::strcmp(traj_desc.identifier.c_str(), "ConventionalEPI")) {
     GADGET_DEBUG1("Expected trajectory description identifier 'ConventionalEPI', not found.");
     return GADGET_FAIL;
   }
 
-  for (ISMRMRD::trajectoryDescriptionType::userParameterLong_sequence::iterator i (traj_desc.userParameterLong().begin ()); i != traj_desc.userParameterLong().end(); ++i) {
-    if (std::strcmp(i->name().c_str(),"numberOfNavigators") == 0) {
-      numNavigators_ = i->value();
-    } else if (std::strcmp(i->name().c_str(),"etl") == 0) {
-      etl_ = i->value();
+
+  for (std::vector<ISMRMRD::UserParameterLong>::iterator i (traj_desc.userParameterLong.begin()); i != traj_desc.userParameterLong.end(); ++i) {
+    if (std::strcmp(i->name.c_str(),"numberOfNavigators") == 0) {
+      numNavigators_ = i->value;
+    } else if (std::strcmp(i->name.c_str(),"etl") == 0) {
+      etl_ = i->value;
     }
   }
 

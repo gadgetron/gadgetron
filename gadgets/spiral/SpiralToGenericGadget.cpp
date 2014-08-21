@@ -1,5 +1,5 @@
 #include "SpiralToGenericGadget.h"
-#include "GadgetIsmrmrdReadWrite.h"
+#include "ismrmrd_xml.h"
 #include "vds.h"
 
 #include <algorithm>
@@ -21,105 +21,98 @@ namespace Gadgetron{
   {
     // Start parsing the ISMRMRD XML header
     //
-
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
-
-    if( cfg.get() == 0x0 ){
-      GADGET_DEBUG1("Unable to parse Ismrmrd header\n");
-      return GADGET_FAIL;
-    }
-
-    ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-
-    if (e_seq.size() != 1) {
-      GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
-      GADGET_DEBUG1("This Gadget only supports one encoding space\n");
-      return GADGET_FAIL;
-    }
-
-    //ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
-    ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
-
-    //
-    // Setup the spiral trajectory
-    //
-
-    if (!(*e_seq.begin()).trajectoryDescription().present()) {
-      GADGET_DEBUG1("Trajectory description needed to calculate trajectory");
-      return GADGET_FAIL;
-    }
-
-    ISMRMRD::trajectoryDescriptionType traj_desc = (*e_seq.begin()).trajectoryDescription().get();
-
-    if (std::strcmp(traj_desc.identifier().c_str(), "HargreavesVDS2000")) {
-      GADGET_DEBUG1("Expected trajectory description identifier 'HargreavesVDS2000', not found.");
-      return GADGET_FAIL;
-    }
-
-    long interleaves = -1;
-    long fov_coefficients = -1;
-    long sampling_time_ns = -1;
-    double max_grad = -1.0;
-    double max_slew = -1.0;
-    double fov_coeff = -1.0;
-    double kr_max = -1.0;
-
-    for (ISMRMRD::trajectoryDescriptionType::userParameterLong_sequence::iterator i (traj_desc.userParameterLong().begin ()); i != traj_desc.userParameterLong().end(); ++i) {
-      if (std::strcmp(i->name().c_str(),"interleaves") == 0) {
-	interleaves = i->value();
-      } else if (std::strcmp(i->name().c_str(),"fov_coefficients") == 0) {
-	fov_coefficients = i->value();
-      } else if (std::strcmp(i->name().c_str(),"SamplingTime_ns") == 0) {
-	sampling_time_ns = i->value();
-      } else {
-	GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name().c_str());
-      }
-    }
-
-    for (ISMRMRD::trajectoryDescriptionType::userParameterDouble_sequence::iterator i (traj_desc.userParameterDouble().begin ()); i != traj_desc.userParameterDouble().end(); ++i) {
-      if (std::strcmp(i->name().c_str(),"MaxGradient_G_per_cm") == 0) {
-	max_grad = i->value();
-      } else if (std::strcmp(i->name().c_str(),"MaxSlewRate_G_per_cm_per_s") == 0) {
-	max_slew = i->value();
-      } else if (std::strcmp(i->name().c_str(),"FOVCoeff_1_cm") == 0) {
-	fov_coeff = i->value();
-      } else if (std::strcmp(i->name().c_str(),"krmax_per_cm") == 0) {
-	kr_max= i->value();
-      } else {
-	GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name().c_str());
-      }
-    }
-
-    if ((interleaves < 0) || (fov_coefficients < 0) || (sampling_time_ns < 0) || (max_grad < 0) || (max_slew < 0) || (fov_coeff < 0) || (kr_max < 0)) {
-      GADGET_DEBUG1("Appropriate parameters for calculating spiral trajectory not found in XML configuration\n");
-      return GADGET_FAIL;
-    }
-
-    Tsamp_ns_ = sampling_time_ns;
-    Nints_ = interleaves;
-    interleaves_ = static_cast<int>(Nints_);
-
-    gmax_ = max_grad;
-    smax_ = max_slew;
-    krmax_ = kr_max;
-    fov_ = fov_coeff;
-
-    samples_to_skip_start_  =  0; //n.get<int>(std::string("samplestoskipstart.value"))[0];
-    samples_to_skip_end_    = -1; //n.get<int>(std::string("samplestoskipend.value"))[0];
-
-    GADGET_DEBUG2("smax:                    %f\n", smax_);
-    GADGET_DEBUG2("gmax:                    %f\n", gmax_);
-    GADGET_DEBUG2("Tsamp_ns:                %d\n", Tsamp_ns_);
-    GADGET_DEBUG2("Nints:                   %d\n", Nints_);
-    GADGET_DEBUG2("fov:                     %f\n", fov_);
-    GADGET_DEBUG2("krmax:                   %f\n", krmax_);
-    GADGET_DEBUG2("samples_to_skip_start_ : %d\n", samples_to_skip_start_);
-    GADGET_DEBUG2("samples_to_skip_end_   : %d\n", samples_to_skip_end_);
-
-    return GADGET_OK;
+  ISMRMRD::IsmrmrdHeader h;
+  ISMRMRD::deserialize(mb->rd_ptr(),h);
+  
+  
+  if (h.encoding.size() != 1) {
+    GADGET_DEBUG1("This Gadget only supports one encoding space\n");
+    return GADGET_FAIL;
   }
 
+  // Get the encoding space and trajectory description
+  ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+  ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
+  ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
+  ISMRMRD::TrajectoryDescription traj_desc;
+
+  if (h.encoding[0].trajectoryDescription) {
+    traj_desc = *h.encoding[0].trajectoryDescription;
+  } else {
+    GADGET_DEBUG1("Trajectory description missing");
+    return GADGET_FAIL;
+  }
+
+  if (std::strcmp(traj_desc.identifier.c_str(), "HargreavesVDS2000")) {
+    GADGET_DEBUG1("Expected trajectory description identifier 'HargreavesVDS2000', not found.");
+    return GADGET_FAIL;
+  }
+
+
+  long interleaves = -1;
+  long fov_coefficients = -1;
+  long sampling_time_ns = -1;
+  double max_grad = -1.0;
+  double max_slew = -1.0;
+  double fov_coeff = -1.0;
+  double kr_max = -1.0;
+
+  
+  for (std::vector<ISMRMRD::UserParameterLong>::iterator i (traj_desc.userParameterLong.begin()); i != traj_desc.userParameterLong.end(); ++i) {
+    if (std::strcmp(i->name.c_str(),"interleaves") == 0) {
+      interleaves = i->value;
+    } else if (std::strcmp(i->name.c_str(),"fov_coefficients") == 0) {
+	fov_coefficients = i->value;
+      } else if (std::strcmp(i->name.c_str(),"SamplingTime_ns") == 0) {
+	sampling_time_ns = i->value;
+    } else {
+      GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
+    }
+  }
+
+  for (std::vector<ISMRMRD::UserParameterDouble>::iterator i (traj_desc.userParameterDouble.begin()); i != traj_desc.userParameterDouble.end(); ++i) {
+    if (std::strcmp(i->name.c_str(),"MaxGradient_G_per_cm") == 0) {
+	max_grad = i->value;
+      } else if (std::strcmp(i->name.c_str(),"MaxSlewRate_G_per_cm_per_s") == 0) {
+	max_slew = i->value;
+      } else if (std::strcmp(i->name.c_str(),"FOVCoeff_1_cm") == 0) {
+	fov_coeff = i->value;
+      } else if (std::strcmp(i->name.c_str(),"krmax_per_cm") == 0) {
+	kr_max= i->value;
+      } else {
+	GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
+      }
+  }
+  
+  if ((interleaves < 0) || (fov_coefficients < 0) || (sampling_time_ns < 0) || (max_grad < 0) || (max_slew < 0) || (fov_coeff < 0) || (kr_max < 0)) {
+    GADGET_DEBUG1("Appropriate parameters for calculating spiral trajectory not found in XML configuration\n");
+    return GADGET_FAIL;
+  }
+
+  Tsamp_ns_ = sampling_time_ns;
+  Nints_ = interleaves;
+  interleaves_ = static_cast<int>(Nints_);
+  
+  gmax_ = max_grad;
+  smax_ = max_slew;
+  krmax_ = kr_max;
+  fov_ = fov_coeff;
+  
+  samples_to_skip_start_  =  0; //n.get<int>(std::string("samplestoskipstart.value"))[0];
+  samples_to_skip_end_    = -1; //n.get<int>(std::string("samplestoskipend.value"))[0];
+  
+  GADGET_DEBUG2("smax:                    %f\n", smax_);
+  GADGET_DEBUG2("gmax:                    %f\n", gmax_);
+  GADGET_DEBUG2("Tsamp_ns:                %d\n", Tsamp_ns_);
+  GADGET_DEBUG2("Nints:                   %d\n", Nints_);
+  GADGET_DEBUG2("fov:                     %f\n", fov_);
+  GADGET_DEBUG2("krmax:                   %f\n", krmax_);
+  GADGET_DEBUG2("samples_to_skip_start_ : %d\n", samples_to_skip_start_);
+  GADGET_DEBUG2("samples_to_skip_end_   : %d\n", samples_to_skip_end_);
+  
+  return GADGET_OK;
+  }
+  
   int SpiralToGenericGadget::
   process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader> *m1,
 	  GadgetContainerMessage< hoNDArray< std::complex<float> > > *m2)

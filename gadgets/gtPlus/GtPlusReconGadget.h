@@ -11,7 +11,7 @@
 #include "hoNDArray.h"
 #include "hoNDMetaAttributes.h"
 #include "ismrmrd.h"
-#include "GadgetIsmrmrdReadWrite.h"
+#include "ismrmrd_xml.h"
 #include "GadgetronTimer.h"
 
 #include "hoNDArray_utils.h"

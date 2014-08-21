@@ -1,8 +1,8 @@
 #include "MaxwellCorrectionGadget.h"
 #include "Gadgetron.h"
-#include "GadgetIsmrmrdReadWrite.h"
 #include "GadgetronTimer.h"
 #include "Spline.h"
+#include "ismrmrd_xml.h"
 
 #include <numeric>
 #ifdef USE_OMP
@@ -26,29 +26,23 @@ namespace Gadgetron{
 
   int MaxwellCorrectionGadget::process_config(ACE_Message_Block* mb)
   {
-    // Start parsing the ISMRMRD XML header
-    //
 
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
+    ISMRMRD::IsmrmrdHeader h;
+    ISMRMRD::deserialize(mb->rd_ptr(),h);
 
-    if( cfg.get() == 0x0 ){
-      GADGET_DEBUG1("Unable to parse Ismrmrd header\n");
-      return GADGET_FAIL;
-    }
-
-    if (cfg->userParameters().present()) {
-      for (ISMRMRD::userParameters::userParameterDouble_iterator 
-	     i (cfg->userParameters().get().userParameterDouble().begin ()); i != cfg->userParameters().get().userParameterDouble().end(); ++i) {
-	if (std::strcmp(i->name().c_str(),"MaxwellCoefficient_0") == 0) {
-	  maxwell_coefficients_[0] = i->value();
-	} else if (std::strcmp(i->name().c_str(),"MaxwellCoefficient_1") == 0) {
-	  maxwell_coefficients_[1] = i->value();
-	} else if (std::strcmp(i->name().c_str(),"MaxwellCoefficient_2") == 0) {
-	  maxwell_coefficients_[2] = i->value();
-	} else if (std::strcmp(i->name().c_str(),"MaxwellCoefficient_3") == 0) {
-	  maxwell_coefficients_[3] = i->value();
+    if (h.userParameters) {
+      for (std::vector<ISMRMRD::UserParameterDouble>::const_iterator i (h.userParameters->userParameterDouble.begin()); 
+	   i != h.userParameters->userParameterDouble.end(); i++) {
+	if (std::strcmp(i->name.c_str(),"MaxwellCoefficient_0") == 0) {
+	  maxwell_coefficients_[0] = i->value;
+	} else if (std::strcmp(i->name.c_str(),"MaxwellCoefficient_1") == 0) {
+	  maxwell_coefficients_[1] = i->value;
+	} else if (std::strcmp(i->name.c_str(),"MaxwellCoefficient_2") == 0) {
+	  maxwell_coefficients_[2] = i->value;
+	} else if (std::strcmp(i->name.c_str(),"MaxwellCoefficient_3") == 0) {
+	  maxwell_coefficients_[3] = i->value;
 	} else {
-	  GADGET_DEBUG2("WARNING: unused user parameter parameter %s found\n", i->name().c_str());
+	  GADGET_DEBUG2("WARNING: unused user parameter parameter %s found\n", i->name.c_str());
 	}
       }
     } else {

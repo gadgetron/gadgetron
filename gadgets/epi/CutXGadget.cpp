@@ -1,7 +1,7 @@
-#include "GadgetIsmrmrdReadWrite.h"
 #include "CutXGadget.h"
 #include "hoNDFFT.h"
 #include "hoNDArray_utils.h"
+#include "ismrmrd_xml.h"
 
 namespace Gadgetron{
 
@@ -10,25 +10,31 @@ namespace Gadgetron{
 
     int CutXGadget::process_config(ACE_Message_Block* mb)
     {
-        boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
-        ISMRMRD::ismrmrdHeader::acquisitionSystemInformation_optional a_seq = cfg->acquisitionSystemInformation();
-        ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
+      ISMRMRD::IsmrmrdHeader h;
+      ISMRMRD::deserialize(mb->rd_ptr(),h);
+      
+      
+      if (h.encoding.size() == 0) {
+	GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
+	GADGET_DEBUG1("This Gadget needs an encoding description\n");
+	return GADGET_FAIL;
+      }
+      
+      // Get the encoding space and trajectory description
+      ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+      ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
+      ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
+      ISMRMRD::TrajectoryDescription traj_desc;
+      
+      // Primary encoding space is for EPI
+      encodeNx_  = e_space.matrixSize.x;
+      encodeFOV_ = e_space.fieldOfView_mm.x;
+      reconNx_   = r_space.matrixSize.x;
+      reconFOV_  = r_space.fieldOfView_mm.x;
+      
+      cutNx_ = encodeNx_;
 
-        // Get the encoding space and trajectory description
-        ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-        ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
-        ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
-        ISMRMRD::trajectoryDescriptionType traj_desc = (*e_seq.begin()).trajectoryDescription().get();
-
-        // Primary encoding space is for EPI
-        encodeNx_  = e_space.matrixSize().x();
-        encodeFOV_ = e_space.fieldOfView_mm().x();
-        reconNx_   = r_space.matrixSize().x();
-        reconFOV_  = r_space.fieldOfView_mm().x();
-
-        cutNx_ = encodeNx_;
-
-        return 0;
+      return 0;
     }
 
     int CutXGadget::process( GadgetContainerMessage< ISMRMRD::AcquisitionHeader>* m1,

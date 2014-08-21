@@ -1,12 +1,12 @@
 #include "NoiseAdjustGadget.h"
 #include "Gadgetron.h"
-#include "GadgetIsmrmrdReadWrite.h"
 #include "hoArmadillo.h"
 #include "hoNDArray_elemwise.h"
 #include "GadgetronCommon.h"
 #include "hoMatrix.h"
 #include "hoMatrix_util.h"
 #include "hoNDArray_math_util.h"
+#include "ismrmrd_xml.h"
 
 #ifndef _WIN32
     #include <sys/types.h>
@@ -74,22 +74,23 @@ namespace Gadgetron{
         noise_dwell_time_us_preset_ = (float)this->get_double_value("noise_dwell_time_us_preset");
         if ( noise_dwell_time_us_preset_ == 0 ) noise_dwell_time_us_preset_ = 5;
 
-        boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
-
-        if ( cfg->acquisitionSystemInformation().present() )
+	ISMRMRD::IsmrmrdHeader h;
+	ISMRMRD::deserialize(mb->rd_ptr(),h);
+ 
+        if ( h.acquisitionSystemInformation )
         {
-            receiver_noise_bandwidth_ = (float)(cfg->acquisitionSystemInformation().get().relativeReceiverNoiseBandwidth().present() ?
-                cfg->acquisitionSystemInformation().get().relativeReceiverNoiseBandwidth().get() : 0.793f);
+            receiver_noise_bandwidth_ = (float)(h.acquisitionSystemInformation->relativeReceiverNoiseBandwidth ?
+                *h.acquisitionSystemInformation->relativeReceiverNoiseBandwidth : 0.793f);
 
             GADGET_MSG("receiver_noise_bandwidth_ is " << receiver_noise_bandwidth_);
         }
 
         // find the patient ID
-        if ( cfg->subjectInformation().present() )
+        if ( h.subjectInformation )
         {
-            if ( cfg->subjectInformation().get().patientID().present() )
+            if ( h.subjectInformation->patientID )
             {
-                patient_id_ = cfg->subjectInformation().get().patientID().get();
+                patient_id_ = *h.subjectInformation->patientID;
                 GADGET_MSG("Patient ID is " << patient_id_);
 
                 size_t len = patient_id_.length();
@@ -102,11 +103,11 @@ namespace Gadgetron{
         }
 
         // find the study ID
-        if ( cfg->studyInformation().present() )
+        if ( h.studyInformation )
         {
-            if ( cfg->studyInformation().get().studyID().present() )
+            if ( h.studyInformation->studyID )
             {
-                study_id_ = cfg->studyInformation().get().studyID().get();
+                study_id_ = *h.studyInformation->studyID;
                 GADGET_MSG("Study ID is " << study_id_);
 
                 size_t len = study_id_.length();
@@ -119,38 +120,37 @@ namespace Gadgetron{
         }
 
         // find the measurementID of this scan
-        if ( cfg->measurementInformation().present() )
+        if ( h.measurementInformation )
         {
-            if ( cfg->measurementInformation().get().measurementID().present() )
+            if ( h.measurementInformation->measurementID )
             {
-                measurement_id_ = cfg->measurementInformation().get().measurementID().get();
+                measurement_id_ = *h.measurementInformation->measurementID;
                 GADGET_MSG("Measurement ID is " << measurement_id_);
             }
 
             // find the noise depencies if any
-            if ( cfg->measurementInformation().get().measurementDependency().size() > 0 )
+            if ( h.measurementInformation->measurementDependency.size() > 0 )
             {
                 measurement_id_of_noise_dependency_.clear();
 
-                ISMRMRD::measurementInformationType::measurementDependency_sequence& measDependency = cfg->measurementInformation().get().measurementDependency();
-                ISMRMRD::measurementInformationType::measurementDependency_sequence::const_iterator iter = measDependency.begin();
-                for ( ; iter!=measDependency.end(); iter++ )
+		std::vector<ISMRMRD::MeasurementDependency>::const_iterator iter = h.measurementInformation->measurementDependency.begin();
+                for ( ; iter!= h.measurementInformation->measurementDependency.end(); iter++ )
                 {
-                    std::string dependencyType = iter->dependencyType();
-                    std::string dependencyID = iter->measurementID();
+                    std::string dependencyType = iter->dependencyType;
+                    std::string dependencyID = iter->measurementID;
 
                     GADGET_MSG("Found dependency measurement : " << dependencyType << " with ID " << dependencyID);
-
+		    
                     if ( dependencyType=="Noise" || dependencyType=="noise" )
-                    {
+		      {
                         measurement_id_of_noise_dependency_ = dependencyID;
                     }
                 }
-
+		
                 if ( !measurement_id_of_noise_dependency_.empty() )
-                {
+		  {
                     GADGET_MSG("Measurement ID of noise dependency is " << measurement_id_of_noise_dependency_);
-
+		    
                     full_name_stored_noise_dependency_ = this->generateFullNameWhenLoadNoiseDependency(measurement_id_of_noise_dependency_);
                     GADGET_MSG("Stored noise dependency is " << full_name_stored_noise_dependency_);
 
@@ -174,30 +174,16 @@ namespace Gadgetron{
         }
 
         // find out the system version if possible
-        if ( cfg->userParameters().present() )
-        {
-            if ( cfg->userParameters().get().userParameterDouble().size() > 0 )
-            {
-                ISMRMRD::userParameters::userParameterDouble_sequence& userPara = cfg->userParameters().get().userParameterDouble();
-                ISMRMRD::userParameters::userParameterDouble_sequence::const_iterator iter = userPara.begin();
-
-                for ( ; iter!=userPara.end(); iter++ )
-                {
-                    std::string usrParaName = iter->name();
-                    double usrParaValue = iter->value();
-
-                    GADGET_MSG("Found user parameter double : " << usrParaName << " with value : " << usrParaValue);
-
-                    if ( usrParaName == "NoiseBandWidth" )
-                    {
-                        if ( usrParaValue > 0 )
-                        {
-                            fixed_noise_bandwidth_ = usrParaValue;
-                        }
-                    }
-                }
-            }
-        }
+	//XUE-TODO: We should not rely on this sort of hack to figure out the bandwidth. This should be in the data of the noise data
+	if (h.userParameters) {
+	  for (std::vector<ISMRMRD::UserParameterDouble>::const_iterator i (h.userParameters->userParameterDouble.begin()); 
+	       i != h.userParameters->userParameterDouble.end(); i++) 
+	    {
+	      if (std::strcmp(i->name.c_str(),"NoiseBandwidth") == 0) {
+		fixed_noise_bandwidth_ = i->value;
+	      }
+	    }
+	}
 
         return GADGET_OK;
     }

@@ -1,10 +1,10 @@
 #include "PhysioInterpolationGadget.h"
 #include "Gadgetron.h"
-#include "GadgetIsmrmrdReadWrite.h"
 #include "GadgetronTimer.h"
 #include "Spline.h"
 #include "GtPlusDefinition.h"
 #include "hoNDMetaAttributes.h"
+#include "ismrmrd_xml.h"
 
 #include <numeric>
 #ifdef USE_OMP
@@ -32,20 +32,17 @@ namespace Gadgetron{
         phases_to_reconstruct_ = get_int_value("phases");
         mode_ = get_int_value("mode");
         first_beat_on_trigger_ = get_bool_value("first_beat_on_trigger");
+	
+	ISMRMRD::IsmrmrdHeader h;
+	ISMRMRD::deserialize(mb->rd_ptr(),h);
 
-        boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = Gadgetron::parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
+	if (h.encoding.size() == 0) {
+	  GADGET_DEBUG1("Missing encoding section");
+	  return GADGET_FAIL;
+	}
 
-        ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-        ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
-
-        if (e_limits.slice().present())
-        {
-            slc_limit_ = e_limits.slice().get().maximum() + 1;
-        }
-        else
-        {
-            slc_limit_ = 1;
-        }
+        ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
+	slc_limit_ = e_limits.slice ? e_limits.slice->maximum+1 : 1; 
 
         buffer_.resize(slc_limit_);
 

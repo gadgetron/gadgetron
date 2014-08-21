@@ -1,6 +1,6 @@
 #include "FlowPhaseSubtractionGadget.h"
 #include "Gadgetron.h"
-#include "GadgetIsmrmrdReadWrite.h"
+#include "ismrmrd_xml.h"
 
 #ifdef USE_OMP
 #include <omp.h>
@@ -14,38 +14,38 @@ namespace Gadgetron{
 
   int FlowPhaseSubtractionGadget::process_config(ACE_Message_Block* mb)
   {
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
-    std::vector<long> dims;
-    ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-    if (e_seq.size() != 1) {
-      GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
+    ISMRMRD::IsmrmrdHeader h;
+    ISMRMRD::deserialize(mb->rd_ptr(),h);
+    
+    if (h.encoding.size() != 1) {
+      GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
       GADGET_DEBUG1("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
 
-    ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
-    ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
-
-    sets_ = e_limits.set().present() ? e_limits.set().get().maximum() + 1 : 1;
-
-    if (sets_ > 2) {
-      GADGET_DEBUG1("Phase subtraction only implemented for two sets for now\n");
-      GADGET_DEBUG2("Number of sets detected: %d, bailing out.\n", sets_);
-      return GADGET_FAIL;
-    }
-
-    buffer_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[sets_]); 
-
-    size_t bsize = sizeof(GadgetContainerMessage< GadgetContainerMessage<ISMRMRD::ImageHeader> >)*10000;
-
-    for( size_t i=0; i<sets_; i++ ){
-      buffer_[i].high_water_mark(bsize);
-      buffer_[i].low_water_mark(bsize);
-    }
-
-    return GADGET_OK;
+  ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+  ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
+  ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
+  
+  sets_ = e_limits.set ? e_limits.set->maximum + 1 : 1;
+  
+  if (sets_ > 2) {
+    GADGET_DEBUG1("Phase subtraction only implemented for two sets for now\n");
+    GADGET_DEBUG2("Number of sets detected: %d, bailing out.\n", sets_);
+    return GADGET_FAIL;
+  }
+  
+  buffer_ = boost::shared_array< ACE_Message_Queue<ACE_MT_SYNCH> >(new ACE_Message_Queue<ACE_MT_SYNCH>[sets_]); 
+  
+  size_t bsize = sizeof(GadgetContainerMessage< GadgetContainerMessage<ISMRMRD::ImageHeader> >)*10000;
+  
+  for( size_t i=0; i<sets_; i++ ){
+    buffer_[i].high_water_mark(bsize);
+    buffer_[i].low_water_mark(bsize);
+  }
+  
+  return GADGET_OK;
   }
 
   int FlowPhaseSubtractionGadget::

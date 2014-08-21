@@ -544,6 +544,11 @@ bool GtPlusReconGadget::parseGTCloudNodeFile(const std::string& filename, CloudT
 
 int GtPlusReconGadget::process_config(ACE_Message_Block* mb)
 {
+  //XUE-TODO: Much of the code (including all the bugs) in this section is replicated from 
+  //gtPlusAccumulatorWorkOrderTriggerGadget. Suggest making a single function 
+  //for parsing the header into that structure so that it only has to be written
+  //and fixed once. 
+ 
     // [Ro E1 Cha Slice E2 Con Phase Rep Set Seg]
     //   0  1  2   3    4   5    6     7  8   9
 
@@ -555,88 +560,80 @@ int GtPlusReconGadget::process_config(ACE_Message_Block* mb)
     // read in parameters from the xml
     GADGET_CHECK_RETURN(this->readParameters(), GADGET_FAIL);
 
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = Gadgetron::parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
+    ISMRMRD::IsmrmrdHeader h;
+    try {
+      deserialize(mb->rd_ptr(),h);
+    } catch (...) {
+      GADGET_DEBUG1("Error parsing ISMRMRD Header");
+    }
 
-    ISMRMRD::ismrmrdHeader::acquisitionSystemInformation_optional e_acq = cfg->acquisitionSystemInformation();
-    num_acq_channels_ = e_acq->receiverChannels().get();
+
+    if (!h.acquisitionSystemInformation) {
+      GADGET_DEBUG1("acquisitionSystemInformation not found in header. Bailing out");
+      return GADGET_FAIL;
+    }
+    num_acq_channels_ = h.acquisitionSystemInformation->receiverChannels;
+
     GADGET_CONDITION_MSG(verboseMode_, "Number of acquisition channels : " << num_acq_channels_);
 
-    ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
+    if (h.encoding.size() < 1 || h.encoding.size() > 2) {
+      GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
+      GADGET_DEBUG1("This GtPlusReconGadget only supports one or two encoding spaces\n");
+      return GADGET_FAIL;
+    }
 
     // find out the encoding space 
-    ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
-    ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
+    ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+    ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
+    ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
 
-    matrix_size_encoding_[0] = e_space.matrixSize().x();
-    matrix_size_encoding_[1] = e_space.matrixSize().y();
-    matrix_size_encoding_[2] = e_space.matrixSize().z();
+    matrix_size_encoding_[0] = e_space.matrixSize.x;
+    matrix_size_encoding_[1] = e_space.matrixSize.y;
+    matrix_size_encoding_[2] = e_space.matrixSize.z;
     GADGET_CONDITION_MSG(verboseMode_, "Encoding matrix size: " << matrix_size_encoding_[0] << " " << matrix_size_encoding_[1] << " " << matrix_size_encoding_[2]);
 
-    field_of_view_encoding_[0] = e_space.fieldOfView_mm().x();
-    field_of_view_encoding_[1] = e_space.fieldOfView_mm().y();
-    field_of_view_encoding_[2] = e_space.fieldOfView_mm().z();
+    field_of_view_encoding_[0] = e_space.fieldOfView_mm.x;
+    field_of_view_encoding_[1] = e_space.fieldOfView_mm.y;
+    field_of_view_encoding_[2] = e_space.fieldOfView_mm.z;
     GADGET_CONDITION_MSG(verboseMode_, "Encoding field_of_view : " << field_of_view_encoding_[0] << " " << field_of_view_encoding_[1] << " " << field_of_view_encoding_[2]);
 
     // find the recon space
-    matrix_size_recon_[0] = r_space.matrixSize().x();
-    matrix_size_recon_[1] = r_space.matrixSize().y();
-    matrix_size_recon_[2] = r_space.matrixSize().z();
+    matrix_size_recon_[0] = r_space.matrixSize.x;
+    matrix_size_recon_[1] = r_space.matrixSize.y;
+    matrix_size_recon_[2] = r_space.matrixSize.z;
     GADGET_CONDITION_MSG(verboseMode_, "Recon matrix size : " << matrix_size_recon_[0] << " " << matrix_size_recon_[1] << " " << matrix_size_recon_[2]);
 
-    field_of_view_recon_[0] = r_space.fieldOfView_mm().x();
-    field_of_view_recon_[1] = r_space.fieldOfView_mm().y();
-    field_of_view_recon_[2] = r_space.fieldOfView_mm().z();
+    field_of_view_recon_[0] = r_space.fieldOfView_mm.x;
+    field_of_view_recon_[1] = r_space.fieldOfView_mm.y;
+    field_of_view_recon_[2] = r_space.fieldOfView_mm.z;
     GADGET_CONDITION_MSG(verboseMode_, "Recon field_of_view :  " << field_of_view_recon_[0] << " " << field_of_view_recon_[1] << " " << field_of_view_recon_[2]);
 
     // this gadget supports two encoding spaces only if the
     // second encoding space has the same field of view and resolution as the first
     // e.g. for FLASH PAT reference scans.
-    if (e_seq.size() > 2) {
-        GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
-        GADGET_DEBUG1("This simple GtPlusReconGadget only supports two encoding spaces\n");
-        return GADGET_FAIL;
-    }
-    else if (e_seq.size() == 2) {
-      // two encoding spaces only if they have the same fov and recon matrix size
-      ISMRMRD::encodingSpaceType r_space2 = e_seq[1].reconSpace();
-      
-      if (r_space.matrixSize().x() != r_space2.matrixSize().x()) {
-        GADGET_DEBUG1("Two recon spaces do not have matching matrix x size.\n");
-        return GADGET_FAIL;
-      }
-      if (r_space.matrixSize().y() != r_space2.matrixSize().y()) {
-        GADGET_DEBUG1("Two recon spaces do not have matching matrix y size.\n");
-        return GADGET_FAIL;
-      }
-      if (r_space.matrixSize().z() != r_space2.matrixSize().z()) {
-        GADGET_DEBUG1("Two recon spaces do not have matching matrix z size.\n");
-        return GADGET_FAIL;
-      }
-      if (r_space.fieldOfView_mm().x() != r_space2.fieldOfView_mm().x()) {
-        GADGET_DEBUG1("Two recon spaces do not have matching x field of view.\n");
-        return GADGET_FAIL;
-      }
-      if (r_space.fieldOfView_mm().y() != r_space2.fieldOfView_mm().y()) {
-        GADGET_DEBUG1("Two recon spaces do not have matching y field of view.\n");
-        return GADGET_FAIL;
-      }
-      if (r_space.fieldOfView_mm().z() != r_space2.fieldOfView_mm().z()) {
-        GADGET_DEBUG1("Two recon spaces do not have matching z field of view.\n");
-        return GADGET_FAIL;
-      }
-    }
-    
+    if (h.encoding.size() == 2) {
+      if (! ((h.encoding[0].reconSpace.matrixSize.x != h.encoding[1].reconSpace.matrixSize.x) && 
+	     (h.encoding[0].reconSpace.matrixSize.y != h.encoding[1].reconSpace.matrixSize.y) && 
+	     (h.encoding[0].reconSpace.matrixSize.z != h.encoding[1].reconSpace.matrixSize.z) && 
+	     (h.encoding[0].reconSpace.fieldOfView_mm.x == h.encoding[1].reconSpace.fieldOfView_mm.x) &&
+	     (h.encoding[0].reconSpace.fieldOfView_mm.y == h.encoding[1].reconSpace.fieldOfView_mm.y) &&
+	     (h.encoding[0].reconSpace.fieldOfView_mm.z == h.encoding[1].reconSpace.fieldOfView_mm.z)) ) {
+	GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
+	GADGET_DEBUG1("This GtPlusAccumulatorWorkOrderTriggerGadget only supports two encoding spaces with identical recon spaces.\n");
+	return GADGET_FAIL;	
+      } 
+    }  
+  
     reconE1_ = matrix_size_recon_[1];
     GADGET_CONDITION_MSG(verboseMode_, "reconE1_ is " << reconE1_);
 
     reconE2_ = matrix_size_recon_[2];
     GADGET_CONDITION_MSG(verboseMode_, "reconE2_ is " << reconE2_);
 
-    kSpaceMaxAcqE1No_ = matrix_size_encoding_[1]-1; // e_limits.kspace_encoding_step_1().get().maximum();
+    kSpaceMaxAcqE1No_ = matrix_size_encoding_[1]-1;
     GADGET_CONDITION_MSG(verboseMode_, "kSpaceMaxAcqE1No_ is " << kSpaceMaxAcqE1No_);
 
-    kSpaceMaxAcqE2No_ = matrix_size_encoding_[2]-1; // e_limits.kspace_encoding_step_2().get().maximum();
+    kSpaceMaxAcqE2No_ = matrix_size_encoding_[2]-1;
     GADGET_CONDITION_MSG(verboseMode_, "kSpaceMaxAcqE2No_ is " << kSpaceMaxAcqE2No_);
 
     aSpacing_[0] = field_of_view_recon_[0]/matrix_size_recon_[0];
@@ -645,109 +642,50 @@ int GtPlusReconGadget::process_config(ACE_Message_Block* mb)
 
     gt_exporter_.setPixelSize(aSpacing_[0], aSpacing_[1], aSpacing_[2], aSpacing_[3], aSpacing_[4], aSpacing_[5], aSpacing_[6]);
 
-    // find the maximal encoding size
-    if (e_limits.kspace_encoding_step_1().present()) 
-    {
-        meas_max_idx_.kspace_encode_step_1 = (uint16_t)matrix_size_encoding_[1]-1; // e_limits.kspace_encoding_step_1().get().maximum();
-    }
-    else
-    {
-        meas_max_idx_.kspace_encode_step_1 = 0;
-        std::cout << "Setting number of kspace_encode_step_1 to 0" << std::endl;
-        return GADGET_FAIL;
-    }
+    //XUE-TODO: This is actually wrong. This assumes that you always zeropad, which is probably bad practice
+    meas_max_idx_.kspace_encode_step_1 = (uint16_t)matrix_size_encoding_[1]-1;
+    meas_max_idx_.set = (e_limits.set && (e_limits.set->maximum>0)) ? e_limits.set->maximum -1 : 0;
+    meas_max_idx_.phase = (e_limits.phase && (e_limits.phase->maximum>0)) ? e_limits.phase->maximum -1 : 0;
 
-    if (e_limits.set().present())
-    {
-        meas_max_idx_.set = e_limits.set().get().maximum() - 1;
-        if ( meas_max_idx_.set < 0 ) meas_max_idx_.set = 0;
-    }
-    else
-    {
-        meas_max_idx_.set = 0;
-    }
+    meas_max_idx_.kspace_encode_step_2 = (uint16_t)matrix_size_encoding_[2]-1; 
 
-    if (e_limits.phase().present())
-    {
-        meas_max_idx_.phase = e_limits.phase().get().maximum()-1;
-        if ( meas_max_idx_.phase < 0 ) meas_max_idx_.phase = 0;
-    }
-    else
-    {
-        meas_max_idx_.phase = 0;
-    }
 
-    if (e_limits.kspace_encoding_step_2().present())
-    {
-        meas_max_idx_.kspace_encode_step_2 = (uint16_t)matrix_size_encoding_[2]-1; // e_limits.kspace_encoding_step_2().get().maximum();
-    }
-    else
-    {
-        meas_max_idx_.kspace_encode_step_2 = 0;
-    }
+    //XUE-TODO: Fix this
+    meas_max_idx_.contrast = (e_limits.contrast && (e_limits.contrast->maximum > 0)) ? e_limits.contrast->maximum -1 : 0;
+    meas_max_idx_.slice = (e_limits.slice && (e_limits.slice->maximum > 0)) ? e_limits.slice->maximum : 0;
+    meas_max_idx_.repetition = e_limits.repetition ? e_limits.repetition->maximum : 0;
+    meas_max_idx_.slice = (e_limits.slice && (e_limits.slice->maximum > 0)) ? e_limits.slice->maximum -1 : 0;
+    meas_max_idx_.average = e_limits.average ? e_limits.average->maximum-1 : 0;
+    meas_max_idx_.segment = 0;
 
-    if (e_limits.contrast().present())
-    {
-        meas_max_idx_.contrast = e_limits.contrast().get().maximum()-1;
-        if ( meas_max_idx_.contrast < 0 ) meas_max_idx_.contrast = 0;
-    }
-    else
-    {
-        meas_max_idx_.contrast = 0;
-    }
-
-    if (e_limits.slice().present())
-    {
-        meas_max_idx_.slice = e_limits.slice().get().maximum();
-    }
-    else
-    {
-        meas_max_idx_.slice = 0;
-    }
-
-    if (e_limits.repetition().present())
-    {
-        meas_max_idx_.repetition = e_limits.repetition().get().maximum();
-    }
-    else
-    {
-        meas_max_idx_.repetition = 0;
-    }
-
-    if (e_limits.average().present())
-    {
-        meas_max_idx_.average = e_limits.average().get().maximum()-1;
-    }
-    else
-    {
-        meas_max_idx_.average = 0;
-    }
-
-    if (e_limits.segment().present())
-    {
-        // meas_max_idx_.segment = e_limits.segment().get().maximum()-1;
-        meas_max_idx_.segment = 0;
-    }
-    else
-    {
-        meas_max_idx_.segment = 0;
-    }
 
     // find out the PAT mode
-    ISMRMRD::ismrmrdHeader::parallelImaging_optional p_imaging_type = cfg->parallelImaging();
-    ISMRMRD::parallelImagingType p_imaging = *p_imaging_type;
+    // find out the PAT mode
+    if (!h.encoding[0].parallelImaging) {
+      GADGET_DEBUG1("Parallel Imaging section not found in header");
+      return GADGET_FAIL;
+    }
 
-    acceFactorE1_ = (long)(p_imaging.accelerationFactor().kspace_encoding_step_1());
-    acceFactorE2_ = (long)(p_imaging.accelerationFactor().kspace_encoding_step_2());
+    ISMRMRD::ParallelImaging p_imaging = *h.encoding[0].parallelImaging;
+
+    acceFactorE1_ = (long)(p_imaging.accelerationFactor.kspace_encoding_step_1);
+    acceFactorE2_ = (long)(p_imaging.accelerationFactor.kspace_encoding_step_2);
     GADGET_CONDITION_MSG(verboseMode_, "acceFactorE1 is " << acceFactorE1_);
     GADGET_CONDITION_MSG(verboseMode_, "acceFactorE2 is " << acceFactorE2_);
 
-    ISMRMRD::calibrationModeType::value calib = *(p_imaging.calibrationMode());
+    std::string calib = *p_imaging.calibrationMode;
 
-    bool separate_ = (calib == ISMRMRD::calibrationModeType::separate);
-    bool embedded_ = (calib == ISMRMRD::calibrationModeType::embedded);
-    bool interleaved_ = (calib == ISMRMRD::calibrationModeType::interleaved);
-    bool other_ = (calib == ISMRMRD::calibrationModeType::other);
+    
+    //XUE-TODO: The underscore at the end of a variable typically means it is a member,
+    //but here these are local. Should be changed. More importantly, not sure these variables are needed. 
+    bool separate_ = (calib.compare("separate") == 0);
+    bool embedded_ = (calib.compare("embedded") == 0);
+    bool interleaved_ = (calib.compare("interleaved") == 0);
+    bool other_ = (calib.compare("other") == 0);
+
+    //XUE-TODO: I see this a lot in your code. All of these "if" statements have to be evaluated.
+    //They should really be "else if" statements. It is not a huge performance critical thing here
+    //it is just bad practice. 
 
     if ( separate_ ) { GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is separate"); }
     if ( embedded_ ) { GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is embedded"); }
@@ -765,35 +703,22 @@ int GtPlusReconGadget::process_config(ACE_Message_Block* mb)
     {
         CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
 
-        if ( p_imaging.interleavingDimension().present() )
-        {
-            if ( *(p_imaging.interleavingDimension()) == ISMRMRD::interleavingDimensionType::phase )
-            {
-                InterleaveDim_ = Gadgetron::gtPlus::DIM_Phase;
-            }
-
-            if ( *(p_imaging.interleavingDimension()) == ISMRMRD::interleavingDimensionType::repetition )
-            {
-                InterleaveDim_ = Gadgetron::gtPlus::DIM_Repetition;
-            }
-
-            if ( *(p_imaging.interleavingDimension()) == ISMRMRD::interleavingDimensionType::average )
-            {
-                InterleaveDim_ = Gadgetron::gtPlus::DIM_Average;
-            }
-
-            if ( *(p_imaging.interleavingDimension()) == ISMRMRD::interleavingDimensionType::contrast )
-            {
-                InterleaveDim_ = Gadgetron::gtPlus::DIM_Contrast;
-            }
-
-            if ( *(p_imaging.interleavingDimension()) == ISMRMRD::interleavingDimensionType::other )
-            {
-                InterleaveDim_ = Gadgetron::gtPlus::DIM_other1;
-            }
-
-            GADGET_CONDITION_MSG(verboseMode_, "InterleaveDim is " << gtPlus_util_.getISMRMRDDimName(InterleaveDim_));
-        }
+	if ( p_imaging.interleavingDimension ) {
+	  if ( p_imaging.interleavingDimension->compare("phase") == 0 ) {
+	    InterleaveDim_ = Gadgetron::gtPlus::DIM_Phase;
+	  } else if ( p_imaging.interleavingDimension->compare("repetition") == 0 ) {
+	    InterleaveDim_ = Gadgetron::gtPlus::DIM_Repetition;
+	  } else if ( p_imaging.interleavingDimension->compare("average") == 0 ) {
+	    InterleaveDim_ = Gadgetron::gtPlus::DIM_Average;
+	  } else if ( p_imaging.interleavingDimension->compare("contrast") == 0 ) {
+	    InterleaveDim_ = Gadgetron::gtPlus::DIM_Contrast;
+	  } else if ( p_imaging.interleavingDimension->compare("other") == 0 ) {
+	    InterleaveDim_ = Gadgetron::gtPlus::DIM_other1;
+	  } else {
+	    GADGET_DEBUG1("Unknown interleaving dimension. Bailing out");
+	    return GADGET_FAIL;
+	  }
+	}
     }
 
     if ( embedded_ )
@@ -806,12 +731,14 @@ int GtPlusReconGadget::process_config(ACE_Message_Block* mb)
         CalibMode_ = Gadgetron::gtPlus::ISMRMRD_separate;
     }
 
-    if ( calib == ISMRMRD::calibrationModeType::external )
+    //XUE-TODO: Why does this one not have a boolean defined as the others?
+    //Or maybe more importantly, why do the others
+    if ( calib.compare("external") == 0 )
     {
         CalibMode_ = Gadgetron::gtPlus::ISMRMRD_external;
     }
 
-    if ( calib == ISMRMRD::calibrationModeType::other )
+    if ( other_ )
     {
         CalibMode_ = Gadgetron::gtPlus::ISMRMRD_other;
     }

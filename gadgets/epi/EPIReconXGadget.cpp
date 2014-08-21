@@ -1,6 +1,6 @@
-#include "GadgetIsmrmrdReadWrite.h"
 #include "EPIReconXGadget.h"
 #include "Gadgetron.h"
+#include "ismrmrd_xml.h"
 
 namespace Gadgetron{
 
@@ -9,74 +9,86 @@ namespace Gadgetron{
 
 int EPIReconXGadget::process_config(ACE_Message_Block* mb)
 {
-  boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
-  ISMRMRD::ismrmrdHeader::acquisitionSystemInformation_optional a_seq = cfg->acquisitionSystemInformation();
-  ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-
+  ISMRMRD::IsmrmrdHeader h;
+  ISMRMRD::deserialize(mb->rd_ptr(),h);
+  
+  
   verboseMode_ = this->get_bool_value("verboseMode");
 
-  // Loop over the encoding spaces and set up the X reconstruction operators
-  std::cout << "Number of encoding spaces = " << e_seq.size() << std::endl;
+  if (h.encoding.size() == 0) {
+    GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
+    GADGET_DEBUG1("This Gadget needs an encoding description\n");
+    return GADGET_FAIL;
+  }
 
-    // Get the encoding space and trajectory description
-    ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
-    ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
-    ISMRMRD::trajectoryDescriptionType traj_desc = (*e_seq.begin()).trajectoryDescription().get();
+  GADGET_DEBUG2("Number of encoding spaces = %d\n", h.encoding.size());
 
-    if (std::strcmp(traj_desc.identifier().c_str(), "ConventionalEPI")) {
-      GADGET_DEBUG1("Expected trajectory description identifier 'ConventionalEPI', not found.");
-      return GADGET_FAIL;
+  // Get the encoding space and trajectory description
+  ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+  ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
+  ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
+  ISMRMRD::TrajectoryDescription traj_desc;
+
+  if (h.encoding[0].trajectoryDescription) {
+    traj_desc = *h.encoding[0].trajectoryDescription;
+  } else {
+    GADGET_DEBUG1("Trajectory description missing");
+    return GADGET_FAIL;
+  }
+
+  if (std::strcmp(traj_desc.identifier.c_str(), "ConventionalEPI")) {
+    GADGET_DEBUG1("Expected trajectory description identifier 'ConventionalEPI', not found.");
+    return GADGET_FAIL;
+  }
+
+  // Primary encoding space is for EPI
+  reconx.encodeNx_  = e_space.matrixSize.x;
+  reconx.encodeFOV_ = e_space.fieldOfView_mm.x;
+  reconx.reconNx_   = r_space.matrixSize.x;
+  reconx.reconFOV_  = r_space.fieldOfView_mm.x;
+  
+  // TODO: we need a flag that says it's a balanced readout.
+  //INATI-TODO: is it right that pre-increment is used, ++i??
+  for (std::vector<ISMRMRD::UserParameterLong>::iterator i (traj_desc.userParameterLong.begin()); i != traj_desc.userParameterLong.end(); ++i) {
+    if (std::strcmp(i->name.c_str(),"rampUpTime") == 0) {
+      reconx.rampUpTime_ = i->value;
+    } else if (std::strcmp(i->name.c_str(),"rampDownTime") == 0) {
+      reconx.rampDownTime_ = i->value;
+    } else if (std::strcmp(i->name.c_str(),"flatTopTime") == 0) {
+      reconx.flatTopTime_ = i->value;
+    } else if (std::strcmp(i->name.c_str(),"acqDelayTime") == 0) {
+      reconx.acqDelayTime_ = i->value;
+    } else if (std::strcmp(i->name.c_str(),"numSamples") == 0) {
+      reconx.numSamples_ = i->value;
+    } else {
+      GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
     }
+  }
 
-    // Primary encoding space is for EPI
-    reconx.encodeNx_  = e_space.matrixSize().x();
-    reconx.encodeFOV_ = e_space.fieldOfView_mm().x();
-    reconx.reconNx_   = r_space.matrixSize().x();
-    reconx.reconFOV_  = r_space.fieldOfView_mm().x();
 
-    // TODO: we need a flag that says it's a balanced readout.
-
-    for (ISMRMRD::trajectoryDescriptionType::userParameterLong_sequence::iterator i (traj_desc.userParameterLong().begin ()); i != traj_desc.userParameterLong().end(); ++i) {
-      if (std::strcmp(i->name().c_str(),"rampUpTime") == 0) {
-    reconx.rampUpTime_ = i->value();
-      } else if (std::strcmp(i->name().c_str(),"rampDownTime") == 0) {
-    reconx.rampDownTime_ = i->value();
-      } else if (std::strcmp(i->name().c_str(),"flatTopTime") == 0) {
-    reconx.flatTopTime_ = i->value();
-      } else if (std::strcmp(i->name().c_str(),"acqDelayTime") == 0) {
-    reconx.acqDelayTime_ = i->value();
-      } else if (std::strcmp(i->name().c_str(),"numSamples") == 0) {
-    reconx.numSamples_ = i->value();
-      } else {
-    GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name().c_str());
-      }
+  for (std::vector<ISMRMRD::UserParameterDouble>::iterator i (traj_desc.userParameterDouble.begin()); i != traj_desc.userParameterDouble.end(); ++i) {
+    if (std::strcmp(i->name.c_str(),"dwellTime") == 0) {
+      reconx.dwellTime_ = i->value;
+    } else {
+      GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name.c_str());
     }
+  }
 
-    for (ISMRMRD::trajectoryDescriptionType::userParameterDouble_sequence::iterator i (traj_desc.userParameterDouble().begin ()); i != traj_desc.userParameterDouble().end(); ++i) {
-      if (std::strcmp(i->name().c_str(),"dwellTime") == 0) {
-    reconx.dwellTime_ = i->value();
-      } else {
-    GADGET_DEBUG2("WARNING: unused trajectory parameter %s found\n", i->name().c_str());
-      }
-    }
+  // Compute the trajectory
+  reconx.computeTrajectory();
 
-    // Compute the trajectory
-    reconx.computeTrajectory();
-
-    // Second encoding space is an even readout for PAT REF e.g. FLASH
-    if ( e_seq.size() > 1 )
-    {
-        ISMRMRD::encodingSpaceType e_space2 = e_seq[1].encodedSpace();
-        ISMRMRD::encodingSpaceType r_space2 = e_seq[1].reconSpace();
-        reconx_other.encodeNx_  = r_space2.matrixSize().x();
-        reconx_other.encodeFOV_ = r_space2.fieldOfView_mm().x();
-        reconx_other.reconNx_   = r_space2.matrixSize().x();
-        reconx_other.reconFOV_  = r_space2.fieldOfView_mm().x();
-        reconx_other.numSamples_ = e_space2.matrixSize().x();
-        reconx_other.dwellTime_ = 1.0;
-        reconx_other.computeTrajectory();
-    }
+  // Second encoding space is an even readout for PAT REF e.g. FLASH
+  if ( h.encoding.size() > 1 ) {
+    ISMRMRD::EncodingSpace e_space2 = h.encoding[1].encodedSpace;
+    ISMRMRD::EncodingSpace r_space2 = h.encoding[1].reconSpace;
+    reconx_other.encodeNx_  = r_space2.matrixSize.x;
+    reconx_other.encodeFOV_ = r_space2.fieldOfView_mm.x;
+    reconx_other.reconNx_   = r_space2.matrixSize.x;
+    reconx_other.reconFOV_  = r_space2.fieldOfView_mm.x;
+    reconx_other.numSamples_ = e_space2.matrixSize.x;
+    reconx_other.dwellTime_ = 1.0;
+    reconx_other.computeTrajectory();
+  }
 
   return 0;
 }

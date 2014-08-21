@@ -1,7 +1,7 @@
-#include "GadgetIsmrmrdReadWrite.h"
 #include "RemoveROOversamplingGadget.h"
 #include "Gadgetron.h"
 #include "hoNDFFT.h"
+#include "ismrmrd_xml.h"
 
 namespace Gadgetron{
 
@@ -17,17 +17,23 @@ namespace Gadgetron{
     {
         constant_noise_variance_ = this->get_bool_value("constant_noise_variance");
 
-        boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
-        ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
+	ISMRMRD::IsmrmrdHeader h;
+	ISMRMRD::deserialize(mb->rd_ptr(),h);
 
-        // Get the encoding space and trajectory description
-        ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-        ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
+	if (h.encoding.size() == 0) {
+	  GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
+	  GADGET_DEBUG1("This Gadget needs an encoding description\n");
+	  return GADGET_FAIL;
+	}
 
-        encodeNx_  = e_space.matrixSize().x();
-        encodeFOV_ = e_space.fieldOfView_mm().x();
-        reconNx_   = r_space.matrixSize().x();
-        reconFOV_  = r_space.fieldOfView_mm().x();
+	
+	ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+	ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
+
+        encodeNx_  = e_space.matrixSize.x;
+        encodeFOV_ = e_space.fieldOfView_mm.x;
+        reconNx_   = r_space.matrixSize.x;
+        reconFOV_  = r_space.fieldOfView_mm.x;
 
 	// If the encoding and recon matrix size and FOV are the same
 	// then the data is not oversampled and we can safely pass

@@ -78,7 +78,7 @@ def run_test(environment, testcase_cfg_file):
                 # first dependency
                 if siemens_dependency_measurement1 >= 0:
                     print("Converting Siemens .dat file to ISMRMRD for the first dependency measurement.")
-                    r = subprocess.call(["siemens_to_ismrmrd", "-f", siemens_dat, "-m",
+                    r = subprocess.call(["siemens_to_ismrmrd", "-X","-f", siemens_dat, "-m",
                                     siemens_dependency_parameter_xml, "-x", siemens_dependency_parameter_xsl, "-o",
                                     dependency_1, "-z", str(siemens_dependency_measurement1+1)],
                             env=environment, stdout=cf, stderr=cf)
@@ -104,7 +104,7 @@ def run_test(environment, testcase_cfg_file):
                 # second dependency
                 if siemens_dependency_measurement2 >= 0:
                     print("Converting Siemens .dat file to ISMRMRD for the second dependency measurement.")
-                    r = subprocess.call(["siemens_to_ismrmrd", "-f", siemens_dat, "-m",
+                    r = subprocess.call(["siemens_to_ismrmrd", "-X", "-f", siemens_dat, "-m",
                                     siemens_dependency_parameter_xml, "-x", siemens_dependency_parameter_xsl, "-o",
                                     dependency_2, "-z", str(siemens_dependency_measurement2+1)],
                             env=environment, stdout=cf, stderr=cf)
@@ -130,7 +130,7 @@ def run_test(environment, testcase_cfg_file):
                 # third dependency
                 if siemens_dependency_measurement3 >= 0:
                     print("Converting Siemens .dat file to ISMRMRD for the third dependency measurement.")
-                    r = subprocess.call(["siemens_to_ismrmrd", "-f", siemens_dat, "-m",
+                    r = subprocess.call(["siemens_to_ismrmrd", "-X", "-f", siemens_dat, "-m",
                                     siemens_dependency_parameter_xml, "-x", siemens_dependency_parameter_xsl, "-o",
                                     dependency_3, "-z", str(siemens_dependency_measurement3+1)],
                             env=environment, stdout=cf, stderr=cf)
@@ -155,7 +155,7 @@ def run_test(environment, testcase_cfg_file):
             # ---------------------------------------------------------------------------------------------
             # now run the data measurement
             print("Converting Siemens .dat file to ISMRMRD for data measurement.")
-            cmd = ["siemens_to_ismrmrd", "-f", siemens_dat, "-m",
+            cmd = ["siemens_to_ismrmrd", "-X", "-f", siemens_dat, "-m",
                     siemens_parameter_xml, "-x", siemens_parameter_xsl,
                     "-o", ismrmrd, "-z", str(siemens_data_measurement+1)]
 
