@@ -1,10 +1,9 @@
 
 #include <vector>
+#include "boost/date_time/gregorian/gregorian.hpp"            
 
 #include "DicomFinishGadget.h"
 #include "ismrmrd_xml.h"
-
-using namespace std;
 
 // Used for windowing using short ints
 #define PIX_RANGE_MAX    (+32767)
@@ -44,35 +43,35 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
 
     ISMRMRD::ExperimentalConditions exp_cond = h.experimentalConditions;
 
-    if (h.subjectInformation) {
+    if (!h.subjectInformation) {
         GADGET_DEBUG1("Header missing SubjectInformation parameters\n");
         return GADGET_FAIL;
     }
 
     ISMRMRD::SubjectInformation patient_info = *h.subjectInformation;
 
-    if (h.studyInformation) {
+    if (!h.studyInformation) {
       GADGET_DEBUG1("Header missing StudyInformation parameters\n");
       return GADGET_FAIL;
     }
 
     ISMRMRD::StudyInformation study_info = *h.studyInformation;
 
-    if (h.measurementInformation) {
+    if (!h.measurementInformation) {
         GADGET_DEBUG1("Header missing MeasurementInformation parameters\n");
         return GADGET_FAIL;
     }
 
     ISMRMRD::MeasurementInformation meas_info = *h.measurementInformation;
 
-    if (h.acquisitionSystemInformation) {
+    if (!h.acquisitionSystemInformation) {
         GADGET_DEBUG1("Header missing AcquisitionSystemInformation parameters\n");
         return GADGET_FAIL;
     }
 
     ISMRMRD::AcquisitionSystemInformation sys_info = *h.acquisitionSystemInformation;
 
-    if (h.sequenceParameters) {
+    if (!h.sequenceParameters) {
         GADGET_DEBUG1("Header missing SequenceTiming parameters\n");
         return GADGET_FAIL;
     }
@@ -92,7 +91,6 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
 
     DcmDataset *dataset = dcmFile.getDataset();
     DcmMetaInfo *metainfo = dcmFile.getMetaInfo();
-
 
     // Store initial Series Number for later
     if (meas_info.initialSeriesNumber) {
@@ -132,64 +130,64 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     WRITE_DCM_STRING(key, "ISO_IR 100");
 
     // Image Type
-    //INATI-TODO: set this in some other way
-    /*
+    // ORIGINAL or DERIVED describes origin of pixel data
+    // PRIMARY or SECONDARY describes image creation time (during or after exam)
+    // OTHER, etc. are implementation-specific
     key.set(0x0008, 0x0008);
-    if (mr_image.imageType().present()) {
-        WRITE_DCM_STRING(key, mr_image.imageType().get().c_str());
-    } else {
-        WRITE_DCM_STRING(key, "ORIGINAL\\PRIMARY\\OTHER");
-    }
-    */
+    WRITE_DCM_STRING(key, "ORIGINAL\\PRIMARY\\OTHER");
 
     // SOPClassUID
     key.set(0x0008, 0x0016);
     WRITE_DCM_STRING(key, UID_MRImageStorage);
 
-    //INATI-TODO: All of these time calculations need to be fixed.
     // Study Date
-    key.set(0x0008, 0x0020);
-    // ACE_OS::snprintf(buf, BUFSIZE, "%04d%02d%02d", study_info.studyDate().year(), study_info.studyDate().month(), study_info.studyDate().day());
-    ACE_OS::snprintf(buf, BUFSIZE, "%04d%02d%02d", 2014, 3, 21);
-    WRITE_DCM_STRING(key, buf);
+    if (study_info.studyDate) {
+        key.set(0x0008, 0x0020);
+        std::string d(study_info.studyDate.get());
+        d.erase(std::remove(d.begin(), d.end(), '-'), d.end());     // erase all occurrences of '-'
+        WRITE_DCM_STRING(key, d.c_str());
+    }
 
-    // Series Date
-    key.set(0x0008, 0x0021);
-    // ACE_OS::snprintf(buf, BUFSIZE, "%04d%02d%02d", meas_info.seriesDate().year(), meas_info.seriesDate().month(), meas_info.seriesDate().day());
-    ACE_OS::snprintf(buf, BUFSIZE, "%04d%02d%02d", 2014, 3, 21);
-    WRITE_DCM_STRING(key, buf);
-    // Acquisition Date
-    key.set(0x0008, 0x0022);
-    WRITE_DCM_STRING(key, buf);
-    // Content Date
-    key.set(0x0008, 0x0023);
-    WRITE_DCM_STRING(key, buf);
+    // Series, Acquisition, Content Date
+    if (meas_info.seriesDate) {
+        key.set(0x0008, 0x0021);
+        std::string d(meas_info.seriesDate.get());
+        d.erase(std::remove(d.begin(), d.end(), '-'), d.end());
+        WRITE_DCM_STRING(key, d.c_str());
+
+        key.set(0x0008, 0x0022);
+        WRITE_DCM_STRING(key, d.c_str());
+
+        key.set(0x0008, 0x0023);
+        WRITE_DCM_STRING(key, d.c_str());
+    }
 
     // Study Time
-    key.set(0x0008, 0x0030);
-    //ACE_OS::snprintf(buf, BUFSIZE, "%02d%02d%02d", study_info.studyTime().hours(), study_info.studyTime().minutes(), (int)study_info.studyTime().seconds());
-    ACE_OS::snprintf(buf, BUFSIZE, "%02d%02d%02d", 12, 12, 12);
-    WRITE_DCM_STRING(key, buf);
+    if (study_info.studyTime) {
+        key.set(0x0008, 0x0030);
+        std::string t(study_info.studyTime.get());
+        t.erase(std::remove(t.begin(), t.end(), ':'), t.end());
+        WRITE_DCM_STRING(key, t.c_str());
+    }
 
-    // Series Time
-    key.set(0x0008, 0x0031);
-    // ACE_OS::snprintf(buf, BUFSIZE, "%02d%02d%02d", meas_info.seriesTime().hours(), meas_info.seriesTime().minutes(), (int)meas_info.seriesTime().seconds());
-    ACE_OS::snprintf(buf, BUFSIZE, "%02d%02d%02d", 12, 12, 12);
-    WRITE_DCM_STRING(key, buf);
+    // Series, Acquisition, Content Time
+    if (meas_info.seriesTime) {
+        key.set(0x0008, 0x0031);
+        std::string t(meas_info.seriesTime.get());
+        t.erase(std::remove(t.begin(), t.end(), ':'), t.end());
+        WRITE_DCM_STRING(key, t.c_str());
 
-    // Acquisition Time
-    key.set(0x0008, 0x0032);
-    WRITE_DCM_STRING(key, buf);
+        key.set(0x0008, 0x0032);
+        WRITE_DCM_STRING(key, t.c_str());
 
-    // Content Time
-    key.set(0x0008, 0x0033);
-    WRITE_DCM_STRING(key, buf);
+        key.set(0x0008, 0x0033);
+        WRITE_DCM_STRING(key, t.c_str());
+    }
 
     // Accession Number
     key.set(0x0008, 0x0050);
     if (study_info.accessionNumber) {
-      //INATI-TODO: Might be dangerous to cast accession number to int
-        ACE_OS::snprintf(buf, BUFSIZE, "%d", (int)*study_info.accessionNumber);
+        ACE_OS::snprintf(buf, BUFSIZE, "%ld", *study_info.accessionNumber);
         WRITE_DCM_STRING(key, buf);
     } else {
         WRITE_DCM_STRING(key, 0);
@@ -257,15 +255,12 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     }
 
     // Referenced SOP Instance UIDs
-    //INATI-TODO: Replace this with appropriate code
-    /*
-    if (dcm_params.referencedImageSequence.size()) {
-        ISMRMRD::referencedImageSequence refs = dcm_params.referencedImageSequence().get();
+    std::vector<ISMRMRD::ReferencedImageSequence> refs(meas_info.referencedImageSequence);
+    if (refs.size() > 0) {
         DcmItem *ref_sequence;
-        string ref_uid;
-        for (unsigned int i = 0; i < refs.referencedSOPInstanceUID().size(); i++) {
-            ref_uid = refs.referencedSOPInstanceUID()[i];
-
+        std::vector<ISMRMRD::ReferencedImageSequence>::iterator it;
+        for (it = refs.begin(); it != refs.end(); ++it) {
+            std::string ref_uid(it->referencedSOPInstanceUID);
             if (ref_uid.length() > 0) {   // Only write non-empty strings
                 if (dataset->findOrCreateSequenceItem(key, ref_sequence, -2).good()) {
                     // Write the Referenced SOPClassUID (MRImageStorage)
@@ -278,7 +273,6 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
             }
         }
     }
-    */
 
     // Group Length
     key.set(0x0010, 0x0000);
@@ -328,14 +322,20 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     }
 
     // Patient Age
-    /*key.set(0x0010, 0x1010);
-    if (patient_info.patientBirthdate().present()) {
-        ACE_OS::snprintf(buf, BUFSIZE, "%03uY", meas_info.seriesDate().year() -
-                patient_info.patientBirthdate().get().year());
+    key.set(0x0010, 0x1010);
+    if (patient_info.patientBirthdate && meas_info.seriesDate) {
+        boost::gregorian::date bday(boost::gregorian::from_simple_string(patient_info.patientBirthdate.get()));
+        boost::gregorian::date seriesDate(boost::gregorian::from_simple_string(meas_info.seriesDate.get()));
+
+        boost::gregorian::days age = seriesDate - bday;
+
+        long age_in_years = age.days() / 365;
+
+        ACE_OS::snprintf(buf, BUFSIZE, "%03ldY", age_in_years);
         WRITE_DCM_STRING(key, buf);
     } else {
         WRITE_DCM_STRING(key, "000Y");
-    }*/
+    }
 
     // Patient Weight
     key.set(0x0010, 0x1030);
@@ -354,40 +354,36 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
         return GADGET_FAIL;
     }
 
-    // Scanning Sequence
-    //INATI-TODO: Replace this with appropriate code
-    /*
-    if (mr_image.scanningSequence().present()) {
-        key.set(0x0018, 0x0020);
-        WRITE_DCM_STRING(key, mr_image.scanningSequence().get().c_str());
-    } else {
-        WRITE_DCM_STRING(key, "RM");
-    }
+    // Scanning Sequence, Sequence Variant, Scan Options, Acquisition Type
+    std::string scanningSequence("RM");
+    std::string sequenceVariant("NONE");
+    std::string scanOptions("NONE");
+    std::string mrAcquisitionType("2D");
+    if (h.userParameters) {
+        ISMRMRD::UserParameters user_params = h.userParameters.get();
+        std::vector<ISMRMRD::UserParameterString> strings = user_params.userParameterString;
+        std::vector<ISMRMRD::UserParameterString>::iterator it;
 
-    // Sequence Variant
-    if (mr_image.sequenceVariant().present()) {
-        key.set(0x0018, 0x0021);
-        WRITE_DCM_STRING(key, mr_image.sequenceVariant().get().c_str());
-    } else {
-        WRITE_DCM_STRING(key, "NONE");
+        for (it = strings.begin(); it != strings.end(); ++it) {
+            if (it->name == "scanningSequence") {
+                scanningSequence = it->value;
+            } else if (it->name == "sequenceVariant") {
+                sequenceVariant = it->value;
+            } else if (it->name == "scanOptions") {
+                scanOptions = it->value;
+            } else if (it->name == "mrAcquisitionType") {
+                mrAcquisitionType = it->value;
+            }
+        }
     }
-
-    // Scan Options
-    if (mr_image.scanOptions().present()) {
-        key.set(0x0018, 0x0022);
-        WRITE_DCM_STRING(key, mr_image.scanOptions().get().c_str());
-    } else {
-        WRITE_DCM_STRING(key, "NONE");
-    }
-
-    // Acquisition Type
-    if (mr_image.mrAcquisitionType().present()) {
-        key.set(0x0018, 0x0023);
-        WRITE_DCM_STRING(key, mr_image.mrAcquisitionType().get().c_str());
-    } else {
-        WRITE_DCM_STRING(key, "2D");
-    }
-    */
+    key.set(0x0018, 0x0020);
+    WRITE_DCM_STRING(key, scanningSequence.c_str());
+    key.set(0x0018, 0x0021);
+    WRITE_DCM_STRING(key, sequenceVariant.c_str());
+    key.set(0x0018, 0x0022);
+    WRITE_DCM_STRING(key, scanOptions.c_str());
+    key.set(0x0018, 0x0023);
+    WRITE_DCM_STRING(key, mrAcquisitionType.c_str());
 
     // Angio Flag
     // TODO: hardcoded
@@ -414,6 +410,11 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     // Inversion Time
     key.set(0x0018, 0x0082);
     ACE_OS::snprintf(buf, BUFSIZE, "%f", seq_info.TI.front());
+    WRITE_DCM_STRING(key, buf);
+
+    // Flip Angle
+    key.set(0x0018, 0x1314);
+    ACE_OS::snprintf(buf, BUFSIZE, "%ld", (long)seq_info.flipAngle_deg.front());
     WRITE_DCM_STRING(key, buf);
 
     // Imaging Frequency in tenths of MHz ???
@@ -454,46 +455,24 @@ int DicomFinishGadget<T>::process_config(ACE_Message_Block* mb)
     key.set(0x0018, 0x0094);
     WRITE_DCM_STRING(key, "100");
 
-    //INATI-TODO: Replace with new code
-    /*
     // Protocol Name
-    if (meas_info.protocolName().present()) {
+    if (meas_info.protocolName) {
         key.set(0x0018, 0x1030);
-        WRITE_DCM_STRING(key, meas_info.protocolName().get().c_str());
+        WRITE_DCM_STRING(key, meas_info.protocolName.get().c_str());
     } else {
         WRITE_DCM_STRING(key, "");
     }
 
-    // Trigger Time
-    if (mr_image.triggerTime().present()) {
-        key.set(0x0018, 0x1060);
-        ACE_OS::snprintf(buf, BUFSIZE, "%f", mr_image.triggerTime().get());
-        WRITE_DCM_STRING(key, buf);
-    } else {
-        WRITE_DCM_STRING(key, "0.0");
-    }
+    // Trigger Time - TODO: use Image Meta Data
+    key.set(0x0018, 0x1060);
+    WRITE_DCM_STRING(key, "0.0");
 
-    // Reconstruction Diameter (FOV)
-    // TODO: hmm
+    // Reconstruction Diameter (FOV) - TODO: ?
     key.set(0x0018, 0x1100);
 
-    // Frequency Encoding Direction
-    if (mr_image.freqEncodingDirection().present()) {
-        key.set(0x0018, 0x1312);
-        WRITE_DCM_STRING(key, mr_image.freqEncodingDirection().get().c_str());
-    } else {
-        WRITE_DCM_STRING(key, "ROW");
-    }
-
-    // Flip Angle
-    if (mr_image.flipAngle_deg().present()) {
-        key.set(0x0018, 0x1314);
-        ACE_OS::snprintf(buf, BUFSIZE, "%d", (int)mr_image.flipAngle_deg().get());
-        WRITE_DCM_STRING(key, buf);
-    } else {
-        WRITE_DCM_STRING(key, "0");
-    }
-    */
+    // Frequency Encoding Direction - TODO: use Image Meta Data
+    key.set(0x0018, 0x1312);
+    WRITE_DCM_STRING(key, "ROW");
 
     // Patient Position
     key.set(0x0018, 0x5100);
@@ -762,7 +741,7 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
     unsigned short series_number = img->image_series_index + 1;
 
     // Try to find an already-generated Series Instance UID in our map
-    std::map<unsigned int, string>::iterator it = seriesIUIDs.find(series_number);
+    std::map<unsigned int, std::string>::iterator it = seriesIUIDs.find(series_number);
 
     if (it == seriesIUIDs.end()) {
         // Didn't find a Series Instance UID for this series number
@@ -775,7 +754,7 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
         } else {
             dcmGenerateUniqueIdentifier(newuid);
         }
-        seriesIUIDs[series_number] = string(newuid);
+        seriesIUIDs[series_number] = std::string(newuid);
     }
     WRITE_DCM_STRING(key, seriesIUIDs[series_number].c_str());
 
@@ -784,7 +763,7 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
     key.set(0x0008, 0x0018);        // SOPInstanceUID
     const char *root;
     if (seriesIUIDRoot.length() > 0) {
-        root = string(seriesIUIDRoot, 0, 20).c_str();
+        root = std::string(seriesIUIDRoot, 0, 20).c_str();
     } else {
        root = "1.2.840.113619.2.156";
     }

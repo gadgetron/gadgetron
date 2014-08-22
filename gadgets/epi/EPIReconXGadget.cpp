@@ -48,7 +48,6 @@ int EPIReconXGadget::process_config(ACE_Message_Block* mb)
   reconx.reconFOV_  = r_space.fieldOfView_mm.x;
   
   // TODO: we need a flag that says it's a balanced readout.
-  //INATI-TODO: is it right that pre-increment is used, ++i??
   for (std::vector<ISMRMRD::UserParameterLong>::iterator i (traj_desc.userParameterLong.begin()); i != traj_desc.userParameterLong.end(); ++i) {
     if (std::strcmp(i->name.c_str(),"rampUpTime") == 0) {
       reconx.rampUpTime_ = i->value;
