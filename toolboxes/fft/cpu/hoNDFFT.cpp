@@ -234,7 +234,7 @@ namespace Gadgetron{
         {
             long long counter;
 
-            #pragma omp parallel private(counter) shared(n, x, pivot, a)
+            #pragma omp parallel private(counter) shared(n, x, pivot, a) if ( n > 256 )
             {
                 hoNDArray< ComplexType > aTmp(x);
 
@@ -262,7 +262,7 @@ namespace Gadgetron{
         {
             long long counter;
 
-            #pragma omp parallel for private(counter) shared(n, x, pivot, a, r)
+            #pragma omp parallel for private(counter) shared(n, x, pivot, a, r) if ( n > 256 )
             for ( counter=0; counter<(long long)n; counter++ )
             {
                 fftshift1D(a+counter*x, r+counter*x, x, pivot);

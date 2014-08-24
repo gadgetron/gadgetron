@@ -43,6 +43,7 @@ public:
     using BaseClass::gt_timer2_;
     using BaseClass::gt_timer3_;
     using BaseClass::performTiming_;
+    using BaseClass::verbose_;
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
@@ -754,7 +755,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
 
 template <typename T> 
 bool gtPlusReconWorker3DTL1SPIRITNCG<T>::
-    performUnwarppingImpl(gtPlusReconJob2DT<T>& job)
+performUnwarppingImpl(gtPlusReconJob2DT<T>& job)
 {
     try
     {

@@ -39,6 +39,7 @@ public:
     using BaseClass::gt_timer2_;
     using BaseClass::gt_timer3_;
     using BaseClass::performTiming_;
+    using BaseClass::verbose_;
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
@@ -103,6 +104,18 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
             GADGET_CHECK_RETURN_FALSE(BaseClass::performUnwarppingImpl(workOrder2DT, kspace, adj_forward_G_I, kspaceLinear, s));
             GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
         }
+        else
+        {
+            if ( workOrder2DT->kspace_initial_.get_number_of_elements() == kspace.get_number_of_elements() )
+            {
+                GADGET_MSG("Start the iteration with the input initial kspace ... ");
+                memcpy(kspaceLinear.begin(), workOrder2DT->kspace_initial_.begin(), kspace.get_number_of_bytes());
+            }
+            else
+            {
+                GADGET_MSG("Start the iteration with the input kspace ... ");
+            }
+        }
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspaceLinear, "kspaceLinear");
 
@@ -127,8 +140,11 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
             }
 
             // apply the scale
-            Gadgetron::scal( static_cast<value_type>(1.0/workOrder2DT->spirit_ncg_scale_factor_), kspaceLinear);
-            Gadgetron::scal( static_cast<value_type>(1.0/workOrder2DT->spirit_ncg_scale_factor_), kspace);
+            if ( workOrder2DT->spirit_ncg_scale_factor_ > 0 )
+            {
+                Gadgetron::scal( static_cast<value_type>(1.0/workOrder2DT->spirit_ncg_scale_factor_), kspaceLinear);
+                Gadgetron::scal( static_cast<value_type>(1.0/workOrder2DT->spirit_ncg_scale_factor_), kspace);
+            }
 
             boost::shared_ptr< hoNDArray<T> > coilMapS;
             

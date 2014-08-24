@@ -161,10 +161,13 @@ public:
     // estimate the job size, given the maximal memory usage for every job
     virtual bool estimateJobSize(gtPlusReconWorkOrder<T>* workOrder, size_t maxNumOfBytesPerJob, size_t overlapBetweenJobs, size_t numOfNodes, size_t& jobSize);
 
+    using BaseClass::partial_fourier_handling_;
+
     using BaseClass::gt_timer1_;
     using BaseClass::gt_timer2_;
     using BaseClass::gt_timer3_;
     using BaseClass::performTiming_;
+    using BaseClass::verbose_;
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
@@ -360,7 +363,7 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
                 }
 
                 hoNDArray<T> croppedRef;
-                GADGET_CHECK_RETURN_FALSE(cropUpTo10DArray(refRecon, croppedRef, crop_offset, crop_size));
+                GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(refRecon, croppedRef, crop_offset, crop_size));
                 refRecon = croppedRef;
             }
         }
@@ -405,7 +408,7 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
             if ( workOrder2DT->CalibMode_ == ISMRMRD_embedded )
             {
                 hoNDArray<T> croppedRef;
-                GADGET_CHECK_RETURN_FALSE(cropUpTo10DArray(refRecon, croppedRef, crop_offset, crop_size));
+                GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(refRecon, croppedRef, crop_offset, crop_size));
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, croppedRef, "refRecon_afterCrop");
 
                 if ( workOrder2DT->recon_algorithm_ == ISMRMRD_SPIRIT || workOrder2DT->recon_algorithm_ == ISMRMRD_L1SPIRIT )
@@ -422,7 +425,7 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
                 crop_size[3] = refRecon.get_size(3);
 
                 refCoilMap.create(RO, E1, srcCHA, refRecon.get_size(3), S);
-                GADGET_CHECK_RETURN_FALSE(setSubArrayUpTo10DArray(refRecon, refCoilMap, crop_offset, crop_size));
+                GADGET_CHECK_RETURN_FALSE(setSubArrayUpTo11DArray(refRecon, refCoilMap, crop_offset, crop_size));
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, refCoilMap, "refCoilMap");
 
                 hoNDArray<T> refCoilMapTmp(refCoilMap);
@@ -441,13 +444,13 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
                     }
                 }
 
-                GADGET_CHECK_RETURN_FALSE(cropUpTo10DArray(refRecon, croppedRef, crop_offset, crop_size));
+                GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(refRecon, croppedRef, crop_offset, crop_size));
                 refRecon = croppedRef;
             }
             else
             {
                 hoNDArray<T> croppedRef;
-                GADGET_CHECK_RETURN_FALSE(cropUpTo10DArray(refRecon, croppedRef, crop_offset, crop_size));
+                GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(refRecon, croppedRef, crop_offset, crop_size));
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, croppedRef, "croppedRef");
 
                 GADGET_CHECK_RETURN_FALSE(performRefFilter(workOrder2DT, croppedRef, refCoilMap, startRO, endRO, startE1, endE1));
@@ -469,7 +472,7 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
                         crop_offset[1] = 0;
                         crop_size[1] = refRecon.get_size(1);
 
-                        GADGET_CHECK_RETURN_FALSE(cropUpTo10DArray(refRecon, croppedRef, crop_offset, crop_size));
+                        GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(refRecon, croppedRef, crop_offset, crop_size));
                         refRecon = croppedRef;
                     }
                 }
@@ -1050,10 +1053,14 @@ performCalib(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& ref_s
                     GADGET_CHECK_RETURN_FALSE(this->performCalibImpl(ref_src, ref_dst, workOrder2DT, n, usedS));
                 }
 
-                GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder2DT->kernel_, usedS));
-                GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder2DT->kernelIm_, usedS));
-                GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder2DT->unmixingCoeffIm_, usedS));
-                GADGET_CHECK_RETURN_FALSE(repmatLastDimension(workOrder2DT->gfactor_, usedS));
+                if ( S > 1 )
+                {
+                    GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder2DT->kernel_, usedS));
+                    GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder2DT->kernelIm_, usedS));
+                    GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder2DT->unmixingCoeffIm_, usedS));
+                    if ( workOrder2DT->gfactor_needed_ ) { GADGET_CHECK_RETURN_FALSE(repmatLastDimension(workOrder2DT->gfactor_, usedS)); }
+                    if ( workOrder2DT->wrap_around_map_needed_ ) { GADGET_CHECK_RETURN_FALSE(repmatLastDimension(workOrder2DT->wrap_around_map_, usedS)); }
+                }
             }
             else
             {
@@ -1432,6 +1439,8 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
 
         if ( ref_fillback )
         {
+            GADGET_MSG("Fill back the reference kspace lines to the reconstruction ");
+
             hoNDArray<T> ref_dst;
             if ( workOrder2DT->coil_compression_ )
             {
@@ -1455,7 +1464,10 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
         }
 
         // partial fourier handling
-        GADGET_CHECK_RETURN_FALSE(this->performPartialFourierHandling(workOrder2DT));
+        if ( partial_fourier_handling_ )
+        {
+            GADGET_CHECK_RETURN_FALSE(this->performPartialFourierHandling(workOrder2DT));
+        }
 
         if ( fullres_coilmap )
         {
@@ -1636,22 +1648,39 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
         }
         else
         {
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->complexIm_, "complexIm_origin_noFullResCoilMap_");
+            if ( partial_fourier_handling_ )
+            {
+                bool partialFourierHandling = true;
+                if ( (workOrder2DT->start_RO_<0 || workOrder2DT->end_RO_<0 || (workOrder2DT->end_RO_-workOrder2DT->start_RO_+1==RO) ) 
+                        && (workOrder2DT->start_E1_<0 || workOrder2DT->end_E1_<0 || (workOrder2DT->end_E1_-workOrder2DT->start_E1_+1==E1) ) )
+                {
+                    partialFourierHandling = false;
+                }
 
-            // if the partial fourier handling is performed on the fullkspace, an extra coil combination is needed
-            if ( workOrder2DT->acceFactorE1_==1 && workOrder2DT->acceFactorE2_==1 )
-            {
-                hoNDArray<T> buffer2DT_Two(workOrder2DT->data_.get_dimensions());
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->data_, buffer2DT_, buffer2DT_Two));
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer2DT_, *workOrder2DT->coilMap_, workOrder2DT->complexIm_));
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->complexIm_, "complexIm_noFullResCoilMap_");
-            }
-            else if ( workOrder2DT->fullkspace_.get_number_of_elements() > 0 )
-            {
-                hoNDArray<T> buffer2DT_Two(workOrder2DT->fullkspace_.get_dimensions());
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->fullkspace_, buffer2DT_, buffer2DT_Two));
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer2DT_, *workOrder2DT->coilMap_, workOrder2DT->complexIm_));
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->complexIm_, "complexIm_noFullResCoilMap_");
+                // if the partial fourier handling is used to compute updated full kspace, the coil combination needs to be repeated
+                if ( partialFourierHandling )
+                {
+                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->complexIm_, "complexIm_origin_noFullResCoilMap_");
+
+                    // if the partial fourier handling is performed on the fullkspace, an extra coil combination is needed
+                    if ( workOrder2DT->acceFactorE1_==1 && workOrder2DT->acceFactorE2_==1 )
+                    {
+                        hoNDArray<T> buffer2DT_Two(workOrder2DT->data_.get_dimensions());
+                        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->data_, buffer2DT_, buffer2DT_Two));
+                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer2DT_, *workOrder2DT->coilMap_, workOrder2DT->complexIm_));
+                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->complexIm_, "complexIm_noFullResCoilMap_");
+                    }
+                    else if ( workOrder2DT->fullkspace_.get_number_of_elements() > 0 )
+                    {
+                        if ( workOrder2DT->fullkspace_.get_size(2) == workOrder2DT->coilMap_->get_size(2) )
+                        {
+                            hoNDArray<T> buffer2DT_Two(workOrder2DT->fullkspace_.get_dimensions());
+                            GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->fullkspace_, buffer2DT_, buffer2DT_Two));
+                            GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer2DT_, *workOrder2DT->coilMap_, workOrder2DT->complexIm_));
+                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->complexIm_, "complexIm_noFullResCoilMap_");
+                        }
+                    }
+                }
             }
         }
     }
@@ -1740,11 +1769,11 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
         partialFourierCompensationFactor = std::sqrt(partialFourierCompensationFactor);
         GADGET_CHECK_PERFORM(performTiming_, GADGET_MSG("Partial fourier scaling factor : " << partialFourierCompensationFactor));
 
-        GADGET_CHECK_PERFORM(performTiming_, GADGET_MSG("Partial fourier algorithm : " << workOrder2DT->partialFourier_algo_));
-        
+        GADGET_CHECK_PERFORM(performTiming_, GADGET_MSG("Partial fourier algorithm : " << gtPlus_util_.getNameFromISMRMRDPartialFourierReconAlgo(workOrder2DT->partialFourier_algo_) ));
+
         if ( workOrder2DT->acceFactorE1_==1 && workOrder2DT->acceFactorE2_==1 )
         {
-            if ( workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
+            if ( (workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (GT_ABS(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder2DT->data_));
             }
@@ -1771,7 +1800,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
         }
         else if ( workOrder2DT->fullkspace_.get_number_of_elements() > 0 )
         {
-            if ( workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
+            if ( (workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (GT_ABS(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder2DT->fullkspace_));
             }
@@ -1802,7 +1831,7 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierHandling(gtPlusReconWorkOrder
             hoNDArray<T> kspace(workOrder2DT->complexIm_);
             GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(workOrder2DT->complexIm_, kspace));
 
-            if ( workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
+            if ( (workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder2DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (GT_ABS(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, kspace));
             }
@@ -2387,8 +2416,8 @@ bool gtPlusReconWorker2DT<T>::performPartialFourierFengHuangRecon(gtPlusReconWor
         size[3] = N;
         size[4] = S;
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::cropUpTo10DArray(buffer2DT_, src, start, size));
-        GADGET_CHECK_RETURN_FALSE(cropUpTo10DArray(kspace, dst, start, size));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::cropUpTo11DArray(buffer2DT_, src, start, size));
+        GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(kspace, dst, start, size));
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, src, "src_FengHuang");
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, dst, "dst_FengHuang");

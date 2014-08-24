@@ -16,6 +16,7 @@ public:
 
     typedef gtPlusISMRMRDReconWorkFlow<T> BaseClass;
     typedef typename BaseClass::DimensionRecordType DimensionRecordType;
+    typedef typename BaseClass::real_value_type real_value_type;
 
     gtPlusISMRMRDReconWorkFlowCartesian();
     virtual ~gtPlusISMRMRDReconWorkFlowCartesian();
@@ -25,6 +26,7 @@ public:
     virtual bool preProcessing();
 
     virtual bool postProcessing();
+    virtual bool postProcessing(hoNDArray<T>& res, bool process_gfactor=true, bool process_wrap_around_map=true);
 
     virtual bool configureWorkOrder(const std::vector<ISMRMRDDIM>& dims);
 
@@ -38,8 +40,11 @@ public:
     virtual bool predictDimensions() = 0;
 
     using BaseClass::data_;
+    using BaseClass::time_stamp_;
+    using BaseClass::physio_time_stamp_;
     using BaseClass::ref_;
     using BaseClass::gfactor_;
+    using BaseClass::wrap_around_map_;
     using BaseClass::noise_;
     using BaseClass::noiseBW_;
     using BaseClass::receriverBWRatio_;
@@ -56,6 +61,11 @@ public:
     using BaseClass::reconFOV_E2_;
 
     using BaseClass::res_;
+    using BaseClass::res_second_;
+    using BaseClass::res_time_stamp_;
+    using BaseClass::res_physio_time_stamp_;
+    using BaseClass::res_time_stamp_second_;
+    using BaseClass::res_physio_time_stamp_second_;
 
     using BaseClass::worker_;
     using BaseClass::workOrder_;
@@ -96,6 +106,7 @@ protected:
     using BaseClass::dataCurr_;
     using BaseClass::refCurr_;
     using BaseClass::gfactorCurr_;
+    using BaseClass::wrap_around_mapCurr_;
 
     using BaseClass::RO_;
     using BaseClass::E1_;
@@ -107,6 +118,7 @@ protected:
     using BaseClass::REP_;
     using BaseClass::SET_;
     using BaseClass::SEG_;
+    using BaseClass::AVE_;
 
     using BaseClass::RO_ref_;
     using BaseClass::E1_ref_;
@@ -118,8 +130,33 @@ protected:
     using BaseClass::REP_ref_;
     using BaseClass::SET_ref_;
     using BaseClass::SEG_ref_;
+    using BaseClass::AVE_ref_;
 
     using BaseClass::gtPlus_util_;
+
+    /// permute the array to the fixed order
+    template <typename T2> 
+    bool permuteArrayOrder(hoNDArray<T2>& data, std::vector<size_t>& order)
+    {
+        try
+        {
+            boost::shared_ptr< hoNDArray<T2> > data_permuted = Gadgetron::permute(&data, &order);
+            data.reshape(data_permuted->get_dimensions());
+            memcpy(data.begin(), data_permuted->begin(), data_permuted->get_number_of_bytes());
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::permuteArrayOrder(hoNDArray<T>& data, const std::vector<int>& order) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    /// copy workOrder results to workflow
+    bool copyReconResultsSecond(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9);
+    bool copyGFactor(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, bool gfactor_needed);
+    bool copyWrapAroundMap(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, bool wrap_around_map_needed);
 };
 
 template <typename T> 
@@ -151,8 +188,8 @@ void gtPlusISMRMRDReconWorkFlowCartesian<T>::printInfo(std::ostream& os)
     os << "b) Perform the zero-padding resize if required" << endl;
     os << endl;
     os << "Data buffers are named to reflect the typical nature of MR acquisition" << endl;
-    os << "data: image kspace data, 10D array [RO E1 CHA SLC E2 CON PHS REP SET SEG]" << endl;
-    os << "ref: calibration data, 10D array [RO E1 CHA SLC E2 CON PHS REP SET SEG]" << endl;
+    os << "data: image kspace data, 10D array [RO E1 CHA SLC E2 CON PHS REP SET SEG AVE]" << endl;
+    os << "ref: calibration data, 10D array [RO E1 CHA SLC E2 CON PHS REP SET SEG AVE]" << endl;
     os << "----------------------------------------------------------" << endl;
 }
 
@@ -301,7 +338,7 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             if ( encodingFOV_E1_ > reconFOV_E1_ )
             {
                 float spacingE1 = reconFOV_E1_/reconSizeE1_;
-                encodingE1 = (size_t)(encodingFOV_E1_/spacingE1);
+                encodingE1 = (size_t)std::floor(encodingFOV_E1_/spacingE1+0.5);
             }
 
             hoNDArray<T>* pSrc = &input_;
@@ -322,6 +359,8 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().zpadResize2D(*pSrc, RO, encodingE1, *pDst));
                 }
 
+                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *pDst, "complexIm_zpadResize2D_enlarged");
+
                 isKSpace = false;
                 pTmp = pSrc; pSrc = pDst; pDst = pTmp;
             }
@@ -338,6 +377,8 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
                 }
 
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pDst));
+
+                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, *pDst, "complexIm_zpadResize2D_cut");
 
                 isKSpace = false;
                 pTmp = pSrc; pSrc = pDst; pDst = pTmp;
@@ -379,14 +420,12 @@ convertToReconSpace2D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
             // final cut
             if ( isKSpace )
             {
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad2D(*pSrc, reconSizeRO_, reconSizeE1_, *pDst));
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pDst));
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pSrc, buffer2D));
+                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad2D(buffer2D, reconSizeRO_, reconSizeE1_, *pDst));
             }
             else
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(*pSrc, buffer2D));
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad2D(buffer2D, reconSizeRO_, reconSizeE1_, *pDst));
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(*pDst));
+                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().cutpad2D(*pSrc, reconSizeRO_, reconSizeE1_, *pDst));
             }
 
             if ( pDst != &output_ )
@@ -582,49 +621,52 @@ convertToReconSpace3D(hoNDArray<T>& input_, hoNDArray<T>& output_, bool isKSpace
 
 template <typename T> 
 bool gtPlusISMRMRDReconWorkFlowCartesian<T>::
-postProcessing()
+postProcessing(hoNDArray<T>& res, bool process_gfactor, bool process_wrap_around_map)
 {
     try
     {
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_, "complexIm_afterRecon");
+        size_t RO = res.get_size(0);
+        size_t E1 = res.get_size(1);
+        size_t E2 = res.get_size(4);
 
-        size_t RO = res_.get_size(0);
-        size_t E1 = res_.get_size(1);
-        size_t E2 = res_.get_size(4);
-
+        // whether to process gfactor
         bool has_gfactor = false;
         if ( (gfactor_.get_size(0)==RO) && (gfactor_.get_size(1)==E1) )
         {
             has_gfactor = true;
         }
 
+        if ( !process_gfactor )
+        {
+            has_gfactor = false;
+        }
+
+        // whehter to process wrap_around map
+        bool has_wrap_around = false;
+        if ( (wrap_around_map_.get_size(0)==RO) && (wrap_around_map_.get_size(1)==E1) )
+        {
+            has_wrap_around = true;
+        }
+
+        if ( !process_wrap_around_map )
+        {
+            has_wrap_around = false;
+        }
+
         if ( E2_.second > 1 )
         {
-            // dataCurr_ = res_;
-
-            // need to permute the matrix order
-            //size_t NDim = dataCurr_.get_number_of_dimensions();
-            //std::vector<size_t> order(NDim, 1);
-
-            //size_t ii;
-            //for ( ii=0; ii<NDim; ii++ )
-            //{
-            //    order[ii] = ii;
-            //}
-
-            //order[0] = 0;
-            //order[1] = 1;
-            //order[2] = 4;
-            //order[3] = 2;
-            //order[4] = 3;
-
             GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("postProcessing - permute res array ... "));
             // boost::shared_ptr< hoNDArray<T> > data_permuted = Gadgetron::permute(const_cast<hoNDArray<T>*>(&dataCurr_), &order);
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To3rdDimension(res_, dataCurr_));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To3rdDimension(res, dataCurr_));
 
             if ( has_gfactor )
             {
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To3rdDimension(gfactor_, gfactorCurr_));
+            }
+
+            if ( has_wrap_around )
+            {
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To3rdDimension(wrap_around_map_, wrap_around_mapCurr_));
             }
 
             GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
@@ -633,7 +675,7 @@ postProcessing()
 
             // dataCurr_ = *data_permuted;
 
-            res_.reshape(dataCurr_.get_dimensions());
+            res.reshape(dataCurr_.get_dimensions());
 
             bool inKSpace = false;
 
@@ -641,8 +683,8 @@ postProcessing()
                     && workOrder_->filterROE1E2_.get_size(1)==E1 
                     && workOrder_->filterROE1E2_.get_size(2)==E2 )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(dataCurr_, res_));
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspace3DfilterROE1E2(res_, workOrder_->filterROE1E2_, dataCurr_));
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(dataCurr_, res));
+                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspace3DfilterROE1E2(res, workOrder_->filterROE1E2_, dataCurr_));
                 inKSpace = true;
             }
             else if ( (workOrder_->filterRO_.get_number_of_elements() == RO) 
@@ -650,13 +692,13 @@ postProcessing()
                         && (workOrder_->filterE2_.get_number_of_elements() == E2) )
             {
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("postProcessing - fft3c ... "));
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(dataCurr_, res_));
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(dataCurr_, res));
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_, "kspace_beforefiltered");
+                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "kspace_beforefiltered");
 
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("postProcessing - 3D kspace filter ... "));
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspace3DfilterROE1E2(res_, workOrder_->filterRO_, workOrder_->filterE1_, workOrder_->filterE2_, dataCurr_));
+                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspace3DfilterROE1E2(res, workOrder_->filterRO_, workOrder_->filterE1_, workOrder_->filterE2_, dataCurr_));
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
 
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, dataCurr_, "kspace_afterfiltered");
@@ -664,7 +706,7 @@ postProcessing()
             }
             else
             {
-                hoNDArray<T>* pSrc = &res_;
+                hoNDArray<T>* pSrc = &res;
                 hoNDArray<T>* pDst = &dataCurr_;
 
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(*pDst, *pSrc));
@@ -701,7 +743,7 @@ postProcessing()
                 }
                 else
                 {
-                    dataCurr_ = res_;
+                    dataCurr_ = res;
                 }
 
                 inKSpace = true;
@@ -718,12 +760,12 @@ postProcessing()
             }
             else
             {
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_, "complexIm_filtered");
+                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "complexIm_filtered");
             }
 
-            GADGET_CHECK_RETURN_FALSE(convertToReconSpace3D(dataCurr_, res_, inKSpace));
+            GADGET_CHECK_RETURN_FALSE(convertToReconSpace3D(dataCurr_, res, inKSpace));
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To5thDimension(res_, dataCurr_));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To5thDimension(res, dataCurr_));
 
             //order[0] = 0;
             //order[1] = 1;
@@ -731,13 +773,13 @@ postProcessing()
             //order[3] = 4;
             //order[4] = 2;
 
-            //data_permuted = Gadgetron::permute(const_cast<hoNDArray<T>*>(&res_), &order);
-            //res_ = *data_permuted;
+            //data_permuted = Gadgetron::permute(const_cast<hoNDArray<T>*>(&res), &order);
+            //res = *data_permuted;
 
-            res_.reshape(dataCurr_.get_dimensions());
-            memcpy(res_.begin(), dataCurr_.begin(), res_.get_number_of_bytes());
+            res.reshape(dataCurr_.get_dimensions());
+            memcpy(res.begin(), dataCurr_.begin(), res.get_number_of_bytes());
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_, "complexIm_zpadResize3D");
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "complexIm_zpadResize3D");
 
             if ( has_gfactor )
             {
@@ -749,39 +791,50 @@ postProcessing()
 
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gfactor_, "gfactor_zpadResize3D");
             }
+
+            if ( has_wrap_around )
+            {
+                GADGET_CHECK_RETURN_FALSE(convertToReconSpace3D(wrap_around_mapCurr_, wrap_around_map_, false));
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::permuteE2To5thDimension(wrap_around_map_, wrap_around_mapCurr_));
+
+                wrap_around_map_.reshape(wrap_around_mapCurr_.get_dimensions());
+                memcpy(wrap_around_map_.begin(), wrap_around_mapCurr_.begin(), wrap_around_map_.get_number_of_bytes());
+
+                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, wrap_around_map_, "wrap_around_map_zpadResize3D");
+            }
         }
         else
         {
-            dataCurr_ = res_;
+            dataCurr_ = res;
             bool inKSpace = false;
 
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, dataCurr_, "complexIm_before_filtered");
 
             if ( workOrder_->filterROE1_.get_size(0)==RO && workOrder_->filterROE1_.get_size(1)==E1 )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res_));
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterROE1(res_, workOrder_->filterROE1_, dataCurr_));
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res));
+                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterROE1(res, workOrder_->filterROE1_, dataCurr_));
                 inKSpace = true;
             }
             else if ( (workOrder_->filterRO_.get_number_of_elements() == RO) && (workOrder_->filterE1_.get_number_of_elements() == E1) )
             {
-                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res_));
-                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterROE1(res_, workOrder_->filterRO_, workOrder_->filterE1_, dataCurr_));
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res));
+                GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterROE1(res, workOrder_->filterRO_, workOrder_->filterE1_, dataCurr_));
                 inKSpace = true;
             }
             else
             {
                 if ( (workOrder_->filterRO_.get_number_of_elements() == RO) && (workOrder_->filterE1_.get_number_of_elements() != E1) )
                 {
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res_));
-                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterRO(res_, workOrder_->filterRO_, dataCurr_));
+                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res));
+                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterRO(res, workOrder_->filterRO_, dataCurr_));
                     inKSpace = true;
                 }
 
                 if ( (workOrder_->filterRO_.get_number_of_elements() != RO) && (workOrder_->filterE1_.get_number_of_elements() == E1) )
                 {
-                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res_));
-                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterE1(res_, workOrder_->filterE1_, dataCurr_));
+                    GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(dataCurr_, res));
+                    GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().kspacefilterE1(res, workOrder_->filterE1_, dataCurr_));
                     inKSpace = true;
                 }
             }
@@ -797,12 +850,12 @@ postProcessing()
             }
             else
             {
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_, "complexIm_after_filtered");
+                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "complexIm_after_filtered");
             }
 
-            GADGET_CHECK_RETURN_FALSE(convertToReconSpace2D(dataCurr_, res_, inKSpace));
+            GADGET_CHECK_RETURN_FALSE(convertToReconSpace2D(dataCurr_, res, inKSpace));
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_, "complexIm_zpadResize2D");
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res, "complexIm_zpadResize2D");
 
             if ( has_gfactor )
             {
@@ -811,6 +864,38 @@ postProcessing()
 
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gfactor_, "gfactor_zpadResize2D");
             }
+
+            if ( has_wrap_around )
+            {
+                wrap_around_mapCurr_ = wrap_around_map_;
+                GADGET_CHECK_RETURN_FALSE(convertToReconSpace2D(wrap_around_mapCurr_, wrap_around_map_, false));
+
+                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, wrap_around_map_, "wrap_around_map_zpadResize2D");
+            }
+        }
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::postProcessing(res) ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T> 
+bool gtPlusISMRMRDReconWorkFlowCartesian<T>::
+postProcessing()
+{
+    try
+    {
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_, "complexIm_afterRecon");
+        GADGET_CHECK_RETURN_FALSE(this->postProcessing(res_, true, true));
+
+        if ( this->res_second_.get_number_of_elements() > 0 )
+        {
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_second_, "complexImSecond_afterRecon");
+            GADGET_CHECK_RETURN_FALSE(this->postProcessing(res_second_, false, false));
         }
     }
     catch(...)
@@ -862,6 +947,7 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
         GADGET_CONDITION_MSG(!debugFolder_.empty(), "Recon ref size   : " << this->printISMRMRDDimensionSize(dimSizeRef));
 
         bool gfactor_needed = workOrder_->gfactor_needed_;
+        bool wrap_around_map_needed = workOrder_->wrap_around_map_needed_;
 
         // recon workOrder size
         std::vector<size_t> dimReconSize(5);
@@ -870,6 +956,10 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
         dimReconSize[2] = dimSize[2];
         dimReconSize[3] = dimSize[3];
         dimReconSize[4] = dimSize[4];
+
+        std::vector<size_t> dimReconTimeStampSize(dimReconSize);
+        dimReconTimeStampSize[0] = 1; // RO = 1
+        dimReconTimeStampSize[2] = 1; // CHA = 1
 
         std::vector<size_t> dimReconSizeRef(5);
         dimReconSizeRef[0] = dimSizeRef[0];
@@ -896,8 +986,43 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
             gfactor_.create(&dimResSize);
         }
 
+        if ( wrap_around_map_needed )
+        {
+            if ( workOrder_->acceFactorE2_ > 1 ) // 3D acquisition
+            {
+                dimResSize[indChannelDim] = 3;
+            }
+            else
+            {
+                dimResSize[indChannelDim] = 2;
+            }
+
+            wrap_around_map_.create(&dimResSize);
+        }
+
         dimResSize[indChannelDim] = num_channels_res;
         res_.create(&dimResSize);
+        Gadgetron::clear(res_);
+
+        res_second_.create(&dimResSize);
+        Gadgetron::clear(res_second_);
+
+        std::vector<size_t> dimReconResTimeStampSize(dimResSize);
+        dimReconResTimeStampSize[0] = 1;
+        dimReconResTimeStampSize[1] = 1;
+        dimReconResTimeStampSize[2] = 1;
+
+        res_time_stamp_.create(dimReconResTimeStampSize);
+        Gadgetron::fill(res_time_stamp_, (real_value_type)(-1) );
+
+        res_physio_time_stamp_.create(dimReconResTimeStampSize);
+        Gadgetron::fill(res_physio_time_stamp_, (real_value_type)(-1) );
+
+        res_time_stamp_second_.create(dimReconResTimeStampSize);
+        Gadgetron::fill(res_time_stamp_second_, (real_value_type)(-1) );
+
+        res_physio_time_stamp_second_.create(dimReconResTimeStampSize);
+        Gadgetron::fill(res_physio_time_stamp_second_, (real_value_type)(-1) );
 
         std::vector<ISMRMRDDIM> dimsRes(dims);
 
@@ -910,289 +1035,344 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
         {
             gt_exporter_.exportArrayComplex(*data_, debugFolder_ + "data_");
             gt_exporter_.exportArrayComplex(*ref_, debugFolder_ + "ref_");
+
+            if ( time_stamp_ != NULL )
+            {
+                gt_exporter_.exportArray(*time_stamp_, debugFolder_ + "time_stamp_");
+            }
+
+            if ( physio_time_stamp_ != NULL )
+            {
+                gt_exporter_.exportArray(*physio_time_stamp_, debugFolder_ + "physio_time_stamp_");
+            }
         }
 
         bool workFlow_use_BufferedKernel_ = workOrder_->workFlow_use_BufferedKernel_;
 
+        bool has_second_res = false;
+        bool has_recon_time_stamp = false;
+        bool has_recon_physio_time_stamp = false;
+        bool has_recon_time_stamp_second = false;
+        bool has_recon_physio_time_stamp_second = false;
+
         // call up the recon
-        size_t dim8, dim7, dim6, dim5, dim4, dim3, dim2;
-        for ( dim8=0; dim8<dimSize[8]; dim8++ )
+        size_t dim9, dim8, dim7, dim6, dim5, dim4, dim3, dim2;
+        for ( dim9=0; dim9<dimSize[9]; dim9++ )
         {
-            for ( dim7=0; dim7<dimSize[7]; dim7++ )
+            for ( dim8=0; dim8<dimSize[8]; dim8++ )
             {
-                for ( dim6=0; dim6<dimSize[6]; dim6++ )
+                for ( dim7=0; dim7<dimSize[7]; dim7++ )
                 {
-                    for ( dim5=0; dim5<dimSize[5]; dim5++ )
+                    for ( dim6=0; dim6<dimSize[6]; dim6++ )
                     {
-                        std::vector<size_t> ind(10, 0);
-                        this->ismrmrdDimIndex9D(ind, dims[8], dim8);
-                        this->ismrmrdDimIndex9D(ind, dims[7], dim7);
-                        this->ismrmrdDimIndex9D(ind, dims[6], dim6);
-                        this->ismrmrdDimIndex9D(ind, dims[5], dim5);
-
-                        if ( !workOrder_->data_.dimensions_equal(&dimReconSize) )
+                        for ( dim5=0; dim5<dimSize[5]; dim5++ )
                         {
-                            workOrder_->data_.create(&dimReconSize);
-                        }
+                            std::vector<size_t> ind(11, 0);
+                            this->ismrmrdDimIndex10D(ind, dims[9], dim9);
+                            this->ismrmrdDimIndex10D(ind, dims[8], dim8);
+                            this->ismrmrdDimIndex10D(ind, dims[7], dim7);
+                            this->ismrmrdDimIndex10D(ind, dims[6], dim6);
+                            this->ismrmrdDimIndex10D(ind, dims[5], dim5);
 
-                        std::vector<size_t> indWorkOrder(5, 0);
-                        for ( dim4=0; dim4<dimSize[4]; dim4++ )
-                        {
-                            this->ismrmrdDimIndex9D(ind, dims[4], dim4);
-                            indWorkOrder[4] = dim4;
-
-                            for ( dim3=0; dim3<dimSize[3]; dim3++ )
+                            // ---------------------------
+                            // prepare the data in workOrder
+                            // ---------------------------
+                            if ( !workOrder_->data_.dimensions_equal(&dimReconSize) )
                             {
-                                this->ismrmrdDimIndex9D(ind, dims[3], dim3);
-                                indWorkOrder[3] = dim3;
+                                workOrder_->data_.create(&dimReconSize);
+                                workOrder_->time_stamp_.create(&dimReconTimeStampSize);
+                                Gadgetron::clear(workOrder_->time_stamp_);
 
-                                if ( dims[2] == DIM_Channel )
-                                {
-                                    long long offset = data_->calculate_offset(ind);
-
-                                    long long offsetWorkOrder = workOrder_->data_.calculate_offset(indWorkOrder);
-
-                                    memcpy(workOrder_->data_.begin()+offsetWorkOrder, data_->begin()+offset, sizeof(T)*N3D);
-                                }
-                                else
-                                {
-                                    for ( dim2=0; dim2<dimSize[2]; dim2++ )
-                                    {
-                                        this->ismrmrdDimIndex9D(ind, dims[2], dim2);
-                                        indWorkOrder[2] = dim2;
-
-                                        long long offset = data_->calculate_offset(ind);
-
-                                        long long offsetWorkOrder = workOrder_->data_.calculate_offset(indWorkOrder);
-
-                                        memcpy(workOrder_->data_.begin()+offsetWorkOrder, data_->begin()+offset, sizeof(T)*N2D);
-                                    }
-                                }
-                            }
-                        }
-
-                        if ( (ref_ != NULL) && (ref_->get_number_of_elements()>0) )
-                        {
-                            std::vector<size_t> indRef(10, 0);
-                            if ( dim8 < dimSizeRef[8] )
-                            {
-                                this->ismrmrdDimIndex9D(indRef, dims[8], dim8);
-                            }
-                            else
-                            {
-                                this->ismrmrdDimIndex9D(indRef, dims[8], dimSizeRef[8]-1);
+                                workOrder_->physio_time_stamp_.create(&dimReconTimeStampSize);
+                                Gadgetron::clear(workOrder_->physio_time_stamp_);
                             }
 
-                            if ( dim7 < dimSizeRef[7] )
-                            {
-                                this->ismrmrdDimIndex9D(indRef, dims[7], dim7);
-                            }
-                            else
-                            {
-                                this->ismrmrdDimIndex9D(indRef, dims[7], dimSizeRef[7]-1);
-                            }
-
-                            if ( dim6 < dimSizeRef[6] )
-                            {
-                                this->ismrmrdDimIndex9D(indRef, dims[6], dim6);
-                            }
-                            else
-                            {
-                                this->ismrmrdDimIndex9D(indRef, dims[6], dimSizeRef[6]-1);
-                            }
-
-                            if ( dim5 < dimSizeRef[5] )
-                            {
-                                this->ismrmrdDimIndex9D(indRef, dims[5], dim5);
-                            }
-                            else
-                            {
-                                this->ismrmrdDimIndex9D(indRef, dims[5], dimSizeRef[5]-1);
-                            }
-
-                            if ( !workOrder_->ref_.dimensions_equal(&dimReconSizeRef) )
-                            {
-                                workOrder_->ref_.create(&dimReconSizeRef);
-                            }
-
-                            std::vector<size_t> indRefWorkOrder(10, 0);
+                            std::vector<size_t> indWorkOrder(5, 0);
                             for ( dim4=0; dim4<dimSize[4]; dim4++ )
                             {
-                                size_t dim4_ref = dim4;
-                                if ( dim4 < dimSizeRef[4] )
-                                {
-                                    this->ismrmrdDimIndex9D(indRef, dims[4], dim4);
-                                }
-                                else
-                                {
-                                    this->ismrmrdDimIndex9D(indRef, dims[4], dimSizeRef[4]-1);
-                                    dim4_ref = dimSizeRef[4]-1;
-                                }
-                                indRefWorkOrder[4] = dim4_ref;
+                                this->ismrmrdDimIndex10D(ind, dims[4], dim4);
+                                indWorkOrder[4] = dim4;
 
                                 for ( dim3=0; dim3<dimSize[3]; dim3++ )
                                 {
-                                    size_t dim3_ref = dim3;
-                                    if ( dim3 < dimSizeRef[3] )
-                                    {
-                                        this->ismrmrdDimIndex9D(indRef, dims[3], dim3);
-                                    }
-                                    else
-                                    {
-                                        this->ismrmrdDimIndex9D(indRef, dims[3], dimSizeRef[3]-1);
-                                        dim3_ref = dimSizeRef[3]-1;
-                                    }
-                                    indRefWorkOrder[3] = dim3_ref;
+                                    this->ismrmrdDimIndex10D(ind, dims[3], dim3);
+                                    indWorkOrder[3] = dim3;
 
                                     if ( dims[2] == DIM_Channel )
                                     {
-                                        long long offset = ref_->calculate_offset(indRef);
-                                        long long offsetWorkOrder = workOrder_->ref_.calculate_offset(indRefWorkOrder);
-                                        memcpy(workOrder_->ref_.begin()+offsetWorkOrder, ref_->begin()+offset, sizeof(T)*N3DRef);
+                                        long long offset = data_->calculate_offset(ind);
+                                        long long offsetWorkOrder = workOrder_->data_.calculate_offset(indWorkOrder);
+                                        memcpy(workOrder_->data_.begin()+offsetWorkOrder, data_->begin()+offset, sizeof(T)*N3D);
+
+                                        if ( time_stamp_ != NULL )
+                                        {
+                                            offset = time_stamp_->calculate_offset(ind);
+                                            offsetWorkOrder = workOrder_->time_stamp_.calculate_offset(indWorkOrder);
+                                            memcpy(workOrder_->time_stamp_.begin()+offsetWorkOrder, time_stamp_->begin()+offset, sizeof(real_value_type)*dimReconSize[1]);
+                                            if ( physio_time_stamp_ != NULL )
+                                            {
+                                                memcpy(workOrder_->physio_time_stamp_.begin()+offsetWorkOrder, physio_time_stamp_->begin()+offset, sizeof(real_value_type)*dimReconSize[1]);
+                                            }
+                                        }
                                     }
                                     else
                                     {
+                                        GADGET_WARN_MSG("dims[2] != DIM_Channel, the time stamps will not be copied ... ");
+
                                         for ( dim2=0; dim2<dimSize[2]; dim2++ )
                                         {
-                                            size_t dim2_ref = dim2;
-                                            if ( dim2 < dimSizeRef[2] )
-                                            {
-                                                this->ismrmrdDimIndex9D(indRef, dims[2], dim2);
-                                            }
-                                            else
-                                            {
-                                                this->ismrmrdDimIndex9D(indRef, dims[2], dimSizeRef[2]-1);
-                                                dim2_ref = dimSizeRef[2]-1;
-                                            }
-                                            indRefWorkOrder[2] = dim2_ref;
+                                            this->ismrmrdDimIndex10D(ind, dims[2], dim2);
+                                            indWorkOrder[2] = dim2;
 
+                                            long long offset = data_->calculate_offset(ind);
+                                            long long offsetWorkOrder = workOrder_->data_.calculate_offset(indWorkOrder);
+                                            memcpy(workOrder_->data_.begin()+offsetWorkOrder, data_->begin()+offset, sizeof(T)*N2D);
+                                        }
+                                    }
+                                }
+                            }
+
+                            // ---------------------------
+                            // prepare the ref in workOrder
+                            // ---------------------------
+                            if ( (ref_ != NULL) && (ref_->get_number_of_elements()>0) )
+                            {
+                                std::vector<size_t> indRef(11, 0);
+
+                                if ( dim9 < dimSizeRef[9] )
+                                {
+                                    this->ismrmrdDimIndex10D(indRef, dims[9], dim9);
+                                }
+                                else
+                                {
+                                    this->ismrmrdDimIndex10D(indRef, dims[9], dimSizeRef[9]-1);
+                                }
+
+                                if ( dim8 < dimSizeRef[8] )
+                                {
+                                    this->ismrmrdDimIndex10D(indRef, dims[8], dim8);
+                                }
+                                else
+                                {
+                                    this->ismrmrdDimIndex10D(indRef, dims[8], dimSizeRef[8]-1);
+                                }
+
+                                if ( dim7 < dimSizeRef[7] )
+                                {
+                                    this->ismrmrdDimIndex10D(indRef, dims[7], dim7);
+                                }
+                                else
+                                {
+                                    this->ismrmrdDimIndex10D(indRef, dims[7], dimSizeRef[7]-1);
+                                }
+
+                                if ( dim6 < dimSizeRef[6] )
+                                {
+                                    this->ismrmrdDimIndex10D(indRef, dims[6], dim6);
+                                }
+                                else
+                                {
+                                    this->ismrmrdDimIndex10D(indRef, dims[6], dimSizeRef[6]-1);
+                                }
+
+                                if ( dim5 < dimSizeRef[5] )
+                                {
+                                    this->ismrmrdDimIndex10D(indRef, dims[5], dim5);
+                                }
+                                else
+                                {
+                                    this->ismrmrdDimIndex10D(indRef, dims[5], dimSizeRef[5]-1);
+                                }
+
+                                if ( !workOrder_->ref_.dimensions_equal(&dimReconSizeRef) )
+                                {
+                                    workOrder_->ref_.create(&dimReconSizeRef);
+                                }
+
+                                std::vector<size_t> indRefWorkOrder(11, 0);
+                                for ( dim4=0; dim4<dimSize[4]; dim4++ )
+                                {
+                                    size_t dim4_ref = dim4;
+                                    if ( dim4 < dimSizeRef[4] )
+                                    {
+                                        this->ismrmrdDimIndex10D(indRef, dims[4], dim4);
+                                    }
+                                    else
+                                    {
+                                        this->ismrmrdDimIndex10D(indRef, dims[4], dimSizeRef[4]-1);
+                                        dim4_ref = dimSizeRef[4]-1;
+                                    }
+                                    indRefWorkOrder[4] = dim4_ref;
+
+                                    for ( dim3=0; dim3<dimSize[3]; dim3++ )
+                                    {
+                                        size_t dim3_ref = dim3;
+                                        if ( dim3 < dimSizeRef[3] )
+                                        {
+                                            this->ismrmrdDimIndex10D(indRef, dims[3], dim3);
+                                        }
+                                        else
+                                        {
+                                            this->ismrmrdDimIndex10D(indRef, dims[3], dimSizeRef[3]-1);
+                                            dim3_ref = dimSizeRef[3]-1;
+                                        }
+                                        indRefWorkOrder[3] = dim3_ref;
+
+                                        if ( dims[2] == DIM_Channel )
+                                        {
                                             long long offset = ref_->calculate_offset(indRef);
                                             long long offsetWorkOrder = workOrder_->ref_.calculate_offset(indRefWorkOrder);
-                                            memcpy(workOrder_->ref_.begin()+offsetWorkOrder, ref_->begin()+offset, sizeof(T)*N2DRef);
+                                            memcpy(workOrder_->ref_.begin()+offsetWorkOrder, ref_->begin()+offset, sizeof(T)*N3DRef);
+                                        }
+                                        else
+                                        {
+                                            for ( dim2=0; dim2<dimSize[2]; dim2++ )
+                                            {
+                                                size_t dim2_ref = dim2;
+                                                if ( dim2 < dimSizeRef[2] )
+                                                {
+                                                    this->ismrmrdDimIndex10D(indRef, dims[2], dim2);
+                                                }
+                                                else
+                                                {
+                                                    this->ismrmrdDimIndex10D(indRef, dims[2], dimSizeRef[2]-1);
+                                                    dim2_ref = dimSizeRef[2]-1;
+                                                }
+                                                indRefWorkOrder[2] = dim2_ref;
+
+                                                long long offset = ref_->calculate_offset(indRef);
+                                                long long offsetWorkOrder = workOrder_->ref_.calculate_offset(indRefWorkOrder);
+                                                memcpy(workOrder_->ref_.begin()+offsetWorkOrder, ref_->begin()+offset, sizeof(T)*N2DRef);
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
 
-                        if ( !shareAcrossWorkOrders && workOrder_->workFlow_BufferKernel_ && !workOrder_->workFlow_use_BufferedKernel_ )
-                        {
-                            GADGET_CHECK_RETURN_FALSE(workOrder_->reset());
-                        }
-
-                        if ( shareAcrossWorkOrders && !workOrder_->workFlow_use_BufferedKernel_ )
-                        {
-                            if ( dim5==0 )
+                            // ---------------------------
+                            // handle shared work order
+                            // ---------------------------
+                            if ( !shareAcrossWorkOrders && workOrder_->workFlow_BufferKernel_ && !workOrder_->workFlow_use_BufferedKernel_ )
                             {
-                                workOrder_->workFlow_use_BufferedKernel_ = false;
+                                GADGET_CHECK_RETURN_FALSE(workOrder_->reset());
                             }
-                            else
+
+                            if ( shareAcrossWorkOrders && !workOrder_->workFlow_use_BufferedKernel_ )
                             {
-                                workOrder_->workFlow_use_BufferedKernel_ = true;
-                            }
-                        }
-
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder_->data_, "workOrder_data");
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder_->ref_, "workOrder_ref");
-
-                        // trigger the recon
-                        GADGET_CHECK_RETURN_FALSE(worker_->performRecon(workOrder_));
-
-                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder_->complexIm_, "workOrder_complexIm");
-
-                        if ( shareAcrossWorkOrders )
-                        {
-                            workOrder_->workFlow_use_BufferedKernel_ = workFlow_use_BufferedKernel_;
-                        }
-
-                        // copy the results
-                        std::vector<size_t> indRes(ind);
-                        indRes[0] = 0;
-                        indRes[1] = 0;
-                        indRes[2] = 0;
-                        indRes[3] = 0;
-                        indRes[4] = 0;
-                        indRes[5] = dim5;
-                        indRes[6] = dim6;
-                        indRes[7] = dim7;
-                        indRes[8] = dim8;
-
-                        long long offset = res_.calculate_offset(indRes);
-                        memcpy(res_.begin()+offset, workOrder_->complexIm_.begin(), workOrder_->complexIm_.get_number_of_bytes());
-
-                        if ( gfactor_needed && (workOrder_->gfactor_.get_size(0)==res_.get_size(0)) && (workOrder_->gfactor_.get_size(1) == res_.get_size(1)) )
-                        {
-                            size_t RO = gfactor_.get_size(0);
-                            size_t E1 = gfactor_.get_size(1);
-                            size_t N = gfactor_.get_size(3);
-                            size_t S = gfactor_.get_size(4);
-
-                            size_t gfactor_N = workOrder_->gfactor_.get_size(2);
-                            size_t gfactor_S = workOrder_->gfactor_.get_size(3);
-
-                            if ( (gfactor_N == N) && (gfactor_S == S) )
-                            {
-                                offset = gfactor_.calculate_offset(indRes);
-                                memcpy(gfactor_.begin()+offset, workOrder_->gfactor_.begin(), workOrder_->gfactor_.get_number_of_bytes());
-                            }
-                            else
-                            {
-                                std::vector<size_t> indGfactor(8);
-                                indGfactor[0] = 0;
-                                indGfactor[1] = 0;
-                                indGfactor[2] = 0;
-                                indGfactor[3] = 0;
-                                indGfactor[4] = dim5;
-                                indGfactor[5] = dim6;
-                                indGfactor[6] = dim7;
-                                indGfactor[7] = dim8;
-
-                                size_t n, s;
-                                for ( s=0; s<S; s++ )
+                                if ( dim5==0 )
                                 {
-                                    for ( n=0; n<N; n++ )
-                                    {
-                                        indRes[3] = n;
-                                        indRes[4] = s;
-                                        offset = gfactor_.calculate_offset(indRes);
-
-                                        if ( n < gfactor_N )
-                                        {
-                                            indGfactor[2] = n;
-                                        }
-                                        else
-                                        {
-                                            indGfactor[2] = gfactor_N-1;
-                                        }
-
-                                        if ( s < gfactor_S )
-                                        {
-                                            indGfactor[3] = s;
-                                        }
-                                        else
-                                        {
-                                            indGfactor[3] = gfactor_S-1;
-                                        }
-
-                                        size_t offset2 = workOrder_->gfactor_.calculate_offset(indGfactor);
-
-                                        memcpy(gfactor_.begin()+offset, workOrder_->gfactor_.begin()+offset2, sizeof(T)*RO*E1);
-                                    }
+                                    workOrder_->workFlow_use_BufferedKernel_ = false;
                                 }
+                                else
+                                {
+                                    workOrder_->workFlow_use_BufferedKernel_ = true;
+                                }
+                            }
+
+                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder_->data_, "workOrder_data");
+                            GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, workOrder_->time_stamp_, "workOrder_time_stamp");
+                            GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, workOrder_->physio_time_stamp_, "workOrder_physio_time_stamp");
+                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder_->ref_, "workOrder_ref");
+
+                            // ---------------------------
+                            // perform the recon
+                            // ---------------------------
+                            GADGET_CHECK_RETURN_FALSE(worker_->performRecon(workOrder_));
+
+                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder_->complexIm_, "workOrder_complexIm");
+
+                            if ( workOrder_->complexIm_second_.get_number_of_elements()>0 )
+                            {
+                                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder_->complexIm_second_, "workOrder_complexImSecond");
+                            }
+
+                            if ( shareAcrossWorkOrders )
+                            {
+                                workOrder_->workFlow_use_BufferedKernel_ = workFlow_use_BufferedKernel_;
+                            }
+
+                            // ---------------------------
+                            // copy the recon complexIm
+                            // ---------------------------
+                            std::vector<size_t> indRes(ind);
+                            indRes[0] = 0;
+                            indRes[1] = 0;
+                            indRes[2] = 0;
+                            indRes[3] = 0;
+                            indRes[4] = 0;
+                            indRes[5] = dim5;
+                            indRes[6] = dim6;
+                            indRes[7] = dim7;
+                            indRes[8] = dim8;
+                            indRes[9] = dim9;
+
+                            long long offset = res_.calculate_offset(indRes);
+                            memcpy(res_.begin()+offset, workOrder_->complexIm_.begin(), workOrder_->complexIm_.get_number_of_bytes());
+
+                            // ---------------------------
+                            // copy the recon time stamp
+                            // ---------------------------
+                            if ( workOrder_->recon_time_stamp_.get_number_of_elements()>0 )
+                            {
+                                has_recon_time_stamp = true;
+
+                                offset = res_time_stamp_.calculate_offset(indRes);
+                                memcpy(res_time_stamp_.begin()+offset, workOrder_->recon_time_stamp_.begin(), workOrder_->recon_time_stamp_.get_number_of_bytes());
+                            }
+
+                            // ---------------------------
+                            // copy the recon physio time stamp
+                            // ---------------------------
+                            if ( workOrder_->recon_physio_time_stamp_.get_number_of_elements()>0 )
+                            {
+                                has_recon_physio_time_stamp = true;
+
+                                offset = res_physio_time_stamp_.calculate_offset(indRes);
+                                memcpy(res_physio_time_stamp_.begin()+offset, workOrder_->recon_physio_time_stamp_.begin(), workOrder_->recon_physio_time_stamp_.get_number_of_bytes());
+                            }
+
+                            // ---------------------------
+                            // copy the second set of recon complexIm
+                            // ---------------------------
+                            GADGET_CHECK_RETURN_FALSE(this->copyReconResultsSecond(dim5, dim6, dim7, dim8, dim9));
+
+                            if ( workOrder_->complexIm_second_.get_number_of_elements()>0 )
+                            {
+                                has_second_res = true;
+                            }
+
+                            if ( workOrder_->recon_time_stamp_second_.get_number_of_elements()>0 )
+                            {
+                                has_recon_time_stamp_second = true;
+                            }
+
+                            if ( workOrder_->recon_physio_time_stamp_second_.get_number_of_elements()>0 )
+                            {
+                                has_recon_physio_time_stamp_second = true;
+                            }
+
+                            // ---------------------------
+                            // copy the gfactor
+                            // ---------------------------
+                            GADGET_CHECK_RETURN_FALSE(this->copyGFactor(dim5, dim6, dim7, dim8, dim9, gfactor_needed));
+
+                            // ---------------------------
+                            // copy the wrap-round map
+                            // ---------------------------
+                            GADGET_CHECK_RETURN_FALSE(this->copyWrapAroundMap(dim5, dim6, dim7, dim8, dim9, wrap_around_map_needed));
+
+                            // if not sharing across work order
+                            if ( !shareAcrossWorkOrders && !workOrder_->workFlow_use_BufferedKernel_ && !workOrder_->workFlow_BufferKernel_ )
+                            {
+                                GADGET_CHECK_RETURN_FALSE(workOrder_->reset());
                             }
                         }
 
-                        // if not sharing across work order
-                        if ( !shareAcrossWorkOrders && !workOrder_->workFlow_use_BufferedKernel_ && !workOrder_->workFlow_BufferKernel_ )
+                        // in the outter dimensions, the work order is always reset
+                        if ( !workOrder_->workFlow_use_BufferedKernel_ && !workOrder_->workFlow_BufferKernel_ )
                         {
                             GADGET_CHECK_RETURN_FALSE(workOrder_->reset());
                         }
-                    }
-
-                    // in the outter dimensions, the work order is always reset
-                    if ( !workOrder_->workFlow_use_BufferedKernel_ && !workOrder_->workFlow_BufferKernel_ )
-                    {
-                        GADGET_CHECK_RETURN_FALSE(workOrder_->reset());
                     }
                 }
             }
@@ -1200,9 +1380,39 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_, "res_afterunwrapping");
 
+        if ( has_second_res )
+        {
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_second_, "res_second_afterunwrapping");
+        }
+
+        if ( has_recon_time_stamp )
+        {
+            GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, res_time_stamp_, "res_time_stamp");
+        }
+
+        if ( has_recon_physio_time_stamp )
+        {
+            GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, res_physio_time_stamp_, "res_physio_time_stamp");
+        }
+
+        if ( has_recon_time_stamp_second )
+        {
+            GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, res_time_stamp_second_, "res_time_stamp_second");
+        }
+
+        if ( has_recon_physio_time_stamp_second )
+        {
+            GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, res_physio_time_stamp_second_, "res_physio_time_stamp_second");
+        }
+
         if ( gfactor_needed )
         {
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gfactor_, "gfactor_afterunwrapping");
+        }
+
+        if ( wrap_around_map_needed )
+        {
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, wrap_around_map_, "wrap_around_map_afterunwrapping");
         }
 
         // permute the res_ to the correct dimension order
@@ -1212,25 +1422,364 @@ configureWorkOrder(const std::vector<ISMRMRDDIM>& dims)
             std::vector<size_t> order;
             GADGET_CHECK_RETURN_FALSE(this->findISMRMRDPermuteOrder(dimsRes, dimsRes_, order));
 
-            boost::shared_ptr< hoNDArray<T> > res_permuted = Gadgetron::permute(&res_, &order);
-            res_.reshape(res_permuted->get_dimensions());
-            memcpy(res_.begin(), res_permuted->begin(), res_permuted->get_number_of_bytes());
-
+            GADGET_CHECK_RETURN_FALSE(this->permuteArrayOrder(res_, order));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_, "res_afterPermute");
+
+            if ( has_recon_time_stamp )
+            {
+                GADGET_CHECK_RETURN_FALSE(this->permuteArrayOrder(res_time_stamp_, order));
+                GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, res_time_stamp_, "res_time_stamp_afterPermute");
+            }
+
+            if ( has_recon_physio_time_stamp )
+            {
+                GADGET_CHECK_RETURN_FALSE(this->permuteArrayOrder(res_physio_time_stamp_, order));
+                GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, res_physio_time_stamp_, "res_physio_time_stamp_afterPermute");
+            }
 
             if ( gfactor_needed )
             {
-                boost::shared_ptr< hoNDArray<T> > gfactor_permuted = Gadgetron::permute(&gfactor_, &order);
-                gfactor_.reshape(gfactor_permuted->get_dimensions());
-                memcpy(gfactor_.begin(), gfactor_permuted->begin(), gfactor_permuted->get_number_of_bytes());
-
+                GADGET_CHECK_RETURN_FALSE(this->permuteArrayOrder(gfactor_, order));
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gfactor_, "gfactor_afterPermute");
             }
+
+            if ( wrap_around_map_needed )
+            {
+                GADGET_CHECK_RETURN_FALSE(this->permuteArrayOrder(wrap_around_map_, order));
+                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, wrap_around_map_, "wrap_around_map_afterPermute");
+            }
+        }
+
+        if ( has_second_res )
+        {
+            if (   ( (res_second_.get_number_of_elements()>dimResSize[0]*dimResSize[1]) && (dims[2]!=DIM_Channel) ) 
+                || ( (res_second_.get_number_of_elements()>dimResSize[0]*dimResSize[1]*dimResSize[2])             ) )
+            {
+                std::vector<size_t> order;
+                GADGET_CHECK_RETURN_FALSE(this->findISMRMRDPermuteOrder(dimsRes, dimsRes_, order));
+
+                GADGET_CHECK_RETURN_FALSE(this->permuteArrayOrder(res_second_, order));
+                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, res_second_, "res_second_afterPermute");
+
+                if ( has_recon_time_stamp_second )
+                {
+                    GADGET_CHECK_RETURN_FALSE(this->permuteArrayOrder(res_time_stamp_second_, order));
+                    GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, res_time_stamp_, "res_time_stamp_second_afterPermute");
+                }
+
+                if ( has_recon_physio_time_stamp_second )
+                {
+                    GADGET_CHECK_RETURN_FALSE(this->permuteArrayOrder(res_physio_time_stamp_second_, order));
+                    GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, res_physio_time_stamp_second_, "res_physio_time_stamp_second_afterPermute");
+                }
+            }
+        }
+        else
+        {
+            res_second_.clear();
+        }
+
+        if ( !has_recon_time_stamp )
+        {
+            res_time_stamp_.clear();
+        }
+
+        if ( !has_recon_physio_time_stamp )
+        {
+            res_physio_time_stamp_.clear();
+        }
+
+        if ( !has_recon_time_stamp_second )
+        {
+            res_time_stamp_second_.clear();
+        }
+
+        if ( !has_recon_physio_time_stamp_second )
+        {
+            res_physio_time_stamp_second_.clear();
         }
     }
     catch(...)
     {
         GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::configureWorkOrder(const std::vector<ISMRMRDDIM>& dims) ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T> 
+bool gtPlusISMRMRDReconWorkFlowCartesian<T>::
+copyReconResultsSecond(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9)
+{
+    try
+    {
+
+        if ( workOrder_->complexIm_second_.get_number_of_elements()>0 )
+        {
+            std::vector<size_t> indRes(10);
+
+            size_t RO = workOrder_->complexIm_second_.get_size(0);
+            size_t E1 = workOrder_->complexIm_second_.get_size(1);
+            size_t N = workOrder_->complexIm_second_.get_size(2);
+            size_t S = workOrder_->complexIm_second_.get_size(3);
+
+            std::vector<size_t> dims;
+
+            bool hasTimeStamp = false;
+            if ( workOrder_->recon_time_stamp_second_.get_number_of_elements()>0 )
+            {
+                hasTimeStamp = true;
+
+                res_time_stamp_second_.get_dimensions(dims);
+                if ( dims[3] != N ) dims[3] = N;
+                if ( dims[4] != S ) dims[4] = S;
+
+                res_time_stamp_second_.create(dims);
+                Gadgetron::clear(res_time_stamp_second_);
+            }
+
+            bool hasPhysioTimeStamp = false;
+            if ( workOrder_->recon_physio_time_stamp_second_.get_number_of_elements()>0 )
+            {
+                hasPhysioTimeStamp = true;
+
+                res_physio_time_stamp_second_.get_dimensions(dims);
+                if ( dims[3] != N ) dims[3] = N;
+                if ( dims[4] != S ) dims[4] = S;
+
+                res_physio_time_stamp_second_.create(dims);
+                Gadgetron::clear(res_physio_time_stamp_second_);
+            }
+
+            res_second_.get_dimensions(dims);
+            if ( dims[3] != N ) dims[3] = N;
+            if ( dims[4] != S ) dims[4] = S;
+
+            res_second_.create(dims);
+            Gadgetron::clear(res_second_);
+
+            size_t n, s;
+            for ( s=0; s<S; s++ )
+            {
+                for ( n=0; n<N; n++ )
+                {
+                    indRes[0] = 0;
+                    indRes[1] = 0;
+                    indRes[2] = 0;
+                    indRes[3] = n;
+                    indRes[4] = s;
+                    indRes[5] = dim5;
+                    indRes[6] = dim6;
+                    indRes[7] = dim7;
+                    indRes[8] = dim8;
+                    indRes[9] = dim9;
+
+                    size_t offset = res_second_.calculate_offset(indRes);
+                    memcpy(res_second_.begin()+offset, workOrder_->complexIm_second_.begin()+n*RO*E1+s*RO*E1*N, sizeof(T)*RO*E1);
+
+                    if ( hasTimeStamp )
+                    {
+                        offset = res_time_stamp_second_.calculate_offset(indRes);
+                        res_time_stamp_second_(offset) = workOrder_->recon_time_stamp_second_(0, 0, 0, n, s);
+                    }
+
+                    if ( hasPhysioTimeStamp )
+                    {
+                        offset = res_physio_time_stamp_second_.calculate_offset(indRes);
+                        res_physio_time_stamp_second_(offset) = workOrder_->recon_physio_time_stamp_second_(0, 0, 0, n, s);
+                    }
+                }
+            }
+        }
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::copyReconResultsSecond() ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T> 
+bool gtPlusISMRMRDReconWorkFlowCartesian<T>::
+copyGFactor(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, bool gfactor_needed)
+{
+    try
+    {
+        if ( gfactor_needed && (workOrder_->gfactor_.get_size(0)==res_.get_size(0)) && (workOrder_->gfactor_.get_size(1) == res_.get_size(1)) )
+        {
+            size_t RO = gfactor_.get_size(0);
+            size_t E1 = gfactor_.get_size(1);
+            size_t N = gfactor_.get_size(3);
+            size_t S = gfactor_.get_size(4);
+
+            size_t gfactor_N = workOrder_->gfactor_.get_size(2);
+            size_t gfactor_S = workOrder_->gfactor_.get_size(3);
+
+            std::vector<size_t> indRes(10);
+            indRes[0] = 0;
+            indRes[1] = 0;
+            indRes[2] = 0;
+            indRes[3] = 0;
+            indRes[4] = 0;
+            indRes[5] = dim5;
+            indRes[6] = dim6;
+            indRes[7] = dim7;
+            indRes[8] = dim8;
+            indRes[9] = dim9;
+
+            if ( (gfactor_N == N) && (gfactor_S == S) )
+            {
+                size_t offset = gfactor_.calculate_offset(indRes);
+                memcpy(gfactor_.begin()+offset, workOrder_->gfactor_.begin(), workOrder_->gfactor_.get_number_of_bytes());
+            }
+            else
+            {
+                std::vector<size_t> indGfactor(9);
+                indGfactor[0] = 0;
+                indGfactor[1] = 0;
+                indGfactor[2] = 0;
+                indGfactor[3] = 0;
+                indGfactor[4] = dim5;
+                indGfactor[5] = dim6;
+                indGfactor[6] = dim7;
+                indGfactor[7] = dim8;
+                indGfactor[8] = dim9;
+
+                size_t n, s;
+                for ( s=0; s<S; s++ )
+                {
+                    for ( n=0; n<N; n++ )
+                    {
+                        indRes[3] = n;
+                        indRes[4] = s;
+                        size_t offset = gfactor_.calculate_offset(indRes);
+
+                        if ( n < gfactor_N )
+                        {
+                            indGfactor[2] = n;
+                        }
+                        else
+                        {
+                            indGfactor[2] = gfactor_N-1;
+                        }
+
+                        if ( s < gfactor_S )
+                        {
+                            indGfactor[3] = s;
+                        }
+                        else
+                        {
+                            indGfactor[3] = gfactor_S-1;
+                        }
+
+                        size_t offset2 = workOrder_->gfactor_.calculate_offset(indGfactor);
+
+                        memcpy(gfactor_.begin()+offset, workOrder_->gfactor_.begin()+offset2, sizeof(T)*RO*E1);
+                    }
+                }
+            }
+        }
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::copyGFactor() ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T> 
+bool gtPlusISMRMRDReconWorkFlowCartesian<T>::
+copyWrapAroundMap(size_t dim5, size_t dim6, size_t dim7, size_t dim8, size_t dim9, bool wrap_around_map_needed)
+{
+    try
+    {
+        if ( wrap_around_map_needed && (workOrder_->wrap_around_map_.get_size(0)==res_.get_size(0)) && (workOrder_->wrap_around_map_.get_size(1) == res_.get_size(1)) )
+        {
+            size_t RO = wrap_around_map_.get_size(0);
+            size_t E1 = wrap_around_map_.get_size(1);
+            size_t N = wrap_around_map_.get_size(3);
+            size_t S = wrap_around_map_.get_size(4);
+
+            size_t wrap_around_map_CHA = workOrder_->wrap_around_map_.get_size(2);
+            size_t wrap_around_map_N = workOrder_->wrap_around_map_.get_size(3);
+            size_t wrap_around_map_S = workOrder_->wrap_around_map_.get_size(4);
+
+            std::vector<size_t> indRes(10);
+            size_t offset;
+
+            indRes[0] = 0;
+            indRes[1] = 0;
+            indRes[2] = 0;
+            indRes[3] = 0;
+            indRes[4] = 0;
+            indRes[5] = dim5;
+            indRes[6] = dim6;
+            indRes[7] = dim7;
+            indRes[8] = dim8;
+            indRes[9] = dim9;
+
+            if ( (wrap_around_map_N == N) && (wrap_around_map_S == S) )
+            {
+                offset = wrap_around_map_.calculate_offset(indRes);
+                memcpy(wrap_around_map_.begin()+offset, workOrder_->wrap_around_map_.begin(), workOrder_->wrap_around_map_.get_number_of_bytes());
+            }
+            else
+            {
+                std::vector<size_t> indWrapAroundMap(10);
+                indWrapAroundMap[0] = 0;
+                indWrapAroundMap[1] = 0;
+                indWrapAroundMap[2] = 0;
+                indWrapAroundMap[3] = 0;
+                indWrapAroundMap[4] = 0;
+                indWrapAroundMap[5] = dim5;
+                indWrapAroundMap[6] = dim6;
+                indWrapAroundMap[7] = dim7;
+                indWrapAroundMap[8] = dim8;
+                indWrapAroundMap[9] = dim9;
+
+                size_t n, s;
+                for ( s=0; s<S; s++ )
+                {
+                    for ( n=0; n<N; n++ )
+                    {
+                        indRes[3] = n;
+                        indRes[4] = s;
+                        offset = wrap_around_map_.calculate_offset(indRes);
+
+                        if ( n < wrap_around_map_N )
+                        {
+                            indWrapAroundMap[3] = n;
+                        }
+                        else
+                        {
+                            indWrapAroundMap[3] = wrap_around_map_N-1;
+                        }
+
+                        if ( s < wrap_around_map_S )
+                        {
+                            indWrapAroundMap[4] = s;
+                        }
+                        else
+                        {
+                            indWrapAroundMap[4] = wrap_around_map_S-1;
+                        }
+
+                        size_t offset2 = workOrder_->wrap_around_map_.calculate_offset(indWrapAroundMap);
+
+                        memcpy(wrap_around_map_.begin()+offset, workOrder_->wrap_around_map_.begin()+offset2, sizeof(T)*RO*E1*wrap_around_map_CHA);
+                    }
+                }
+            }
+        }
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusISMRMRDReconWorkFlowCartesian<T>::copyWrapAroundMap() ... ");
         return false;
     }
 

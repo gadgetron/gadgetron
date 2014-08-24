@@ -243,7 +243,7 @@ int GtPlusReconJob2DTGadgetCloud::process_config(ACE_Message_Block* mb)
     // generate the destination folder
     if ( !debugFolder_.empty() )
     {
-        GADGET_CHECK_RETURN_FALSE(generateDebugFolderPath(debugFolder_, debugFolder_fullPath_));
+        getDebugFolderPath(debugFolder_, debugFolder_fullPath_, verboseMode_);
     }
     else
     {
@@ -252,7 +252,7 @@ int GtPlusReconJob2DTGadgetCloud::process_config(ACE_Message_Block* mb)
 
     if ( !debugFolder2_.empty() )
     {
-        GADGET_CHECK_RETURN_FALSE(generateDebugFolderPath(debugFolder2_, debugFolder2_fullPath_));
+        getDebugFolderPath(debugFolder2_, debugFolder2_fullPath_, verboseMode_);
     }
     else
     {
@@ -441,7 +441,17 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
     workOrder.CloudSize_ = CloudSize_;
     workOrder.gt_cloud_ = gt_cloud_;
 
-    workOrder.data_ = job->kspace;
+    if ( workOrder.acceFactorE1_>1 && workOrder.CalibMode_==Gadgetron::gtPlus::ISMRMRD_interleaved )
+    {
+        Gadgetron::fillSampledLinesUpTo11DArray(job->kspace, workOrder.data_, job->timeStamp);
+    }
+    else
+    {
+        workOrder.data_ = job->kspace;
+    }
+
+    workOrder.time_stamp_ = job->timeStamp;
+    workOrder.physio_time_stamp_ = job->physioTimeStamp;
     workOrder.ref_ = job->ref;
 
     // ---------------------------------------------------------
@@ -461,24 +471,6 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
 
     if ( !debugFolder_fullPath_.empty() ) workflow_.debugFolder_ = debugFolder_fullPath_;
 
-    // set the worker
-    worker_grappa_.performTiming_ = performTiming_;
-    if ( !debugFolder_fullPath_.empty() ) worker_grappa_.debugFolder_ = debugFolder_fullPath_;
-
-    worker_noacceleration_.performTiming_ = performTiming_;
-    if ( !debugFolder_fullPath_.empty() ) worker_noacceleration_.debugFolder_ = debugFolder_fullPath_;
-
-    worker_spirit_.performTiming_ = performTiming_;
-    if ( !debugFolder_fullPath_.empty() ) worker_spirit_.debugFolder_ = debugFolder_fullPath_;
-
-    worker_spirit_L1_ncg_.performTiming_ = performTiming_;
-    if ( !debugFolder_fullPath_.empty() ) worker_spirit_L1_ncg_.debugFolder_ = debugFolder_fullPath_;
-
-    if ( verboseMode_ )
-    {
-        workOrder.print(std::cout);
-    }
-
     // perform the recon
     GADGET_START_TIMING_CONDITION(gt_timer1_, "Recon 2DT workorder on cloud node ... ", performTiming_);
 
@@ -488,12 +480,13 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
     setWorkOrder2DTParameters(para, &workOrder_recon_);
 
     workflow_.workOrder_ = &workOrder_recon_;
+
     if ( verboseMode_ )
     {
         workflow_.workOrder_->print(std::cout);
     }
 
-    workflow_.setDataArray(workOrder.data_);
+    workflow_.setDataArray(workOrder.data_, workOrder.time_stamp_, workOrder.physio_time_stamp_);
 
     if ( workOrder.ref_.get_number_of_elements() > 0 )
     {
@@ -537,6 +530,11 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
         }
     }
 
+    if ( !succeed )
+    {
+        GADGET_ERROR_MSG("GtPlusReconJob2DTGadgetCloud::process(...) failed... ");
+    }
+
     GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
 
     if ( !debugFolder2_fullPath_.empty() )
@@ -547,19 +545,40 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
         hoNDArray<GT_Complex8> res = workflow_.res_;
         res.squeeze();
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+
+        if ( workflow_.res_second_.get_number_of_elements() > 0 )
+        {
+            hoNDArray<GT_Complex8> res = workflow_.res_second_;
+            res.squeeze();
+
+            std::ostringstream ostr;
+            ostr << "Node_Recon2DT_second_" << *jobID;
+
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+        }
     }
 
     // clean the kspace and ker and coil map
     job->kspace.clear();
+    job->timeStamp.clear();
+    job->physioTimeStamp.clear();
+    job->ref.clear();
 
     if ( succeed )
     {
         job->complexIm = workflow_.res_;
+        job->complexImSecond = workflow_.res_second_;
+        job->resTimeStampSecond = workflow_.res_time_stamp_second_;
+        job->resPhysioTimeStampSecond = workflow_.res_physio_time_stamp_second_;
     }
     else
     {
         job->complexIm.clear();
         job->res.clear();
+
+        job->complexImSecond.clear();
+        job->resTimeStampSecond.clear();
+        job->resPhysioTimeStampSecond.clear();
     }
 
     // send out the results
@@ -569,12 +588,24 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
 
     // reset the status
     workflow_.data_ = NULL;
+    workflow_.time_stamp_ = NULL;
+    workflow_.physio_time_stamp_ = NULL;
     workflow_.ref_ = NULL;
     workflow_.noise_ = NULL;
     workflow_.workOrder_ = NULL;
     // Gadgetron::clear(&workflow_.res_);
 
     m1->release();
+
+    if ( this->verboseMode_ )
+    {
+        std::string procTime;
+        gtPlus_util_.getCurrentMoment(procTime);
+
+        GADGET_MSG("* ============================================================================== *");
+        GADGET_MSG("---> MR recon 2DT gadget cloud, Currnt processing time : " << procTime << " <---");
+        GADGET_MSG("* ============================================================================== *");
+    }
 
     return GADGET_OK;
 }
@@ -621,29 +652,6 @@ sendOutJob(int jobID, GtPlusRecon2DTCloudPackageCPFL* job)
     }
 
     return true;
-}
-
-bool GtPlusReconJob2DTGadgetCloud::
-    generateDebugFolderPath(const std::string& debugFolder, std::string& debugFolderPath)
-{
-    debugFolderPath = ACE_OS::getenv("GADGETRON_HOME");
-    debugFolderPath.append("/");
-    debugFolderPath.append(debugFolder);
-    debugFolderPath.append("/");
-    GADGET_CONDITION_MSG(verboseMode_, "Debug folder is " << debugFolderPath);
-    return true;
-}
-
-void GtPlusReconJob2DTGadgetCloud::
-    getCurrentMoment(std::string& procTime)
-{
-    char timestamp[100];
-    time_t mytime;
-    struct tm *mytm;
-    mytime=time(NULL);
-    mytm=localtime(&mytime);
-    strftime(timestamp, sizeof(timestamp),"_%a_%d_%b_%Y_%H_%M_%S",mytm);
-    procTime = timestamp;
 }
 
 bool GtPlusReconJob2DTGadgetCloud::

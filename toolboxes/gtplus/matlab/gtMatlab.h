@@ -8,6 +8,7 @@
 
 #pragma once 
 
+#include <sstream>
 #include <strstream>
 
 #ifdef GADGET_MSG
@@ -60,7 +61,7 @@ template <typename ObjType> void matlab_printInfo(const ObjType& obj)
     GADGET_MSG(msg.c_str());
 }
 
-inline void printAuthorInfo(std::ostrstream& outs)
+inline void printAuthorInfo(std::stringstream& outs)
 {
     using namespace std;
     outs << "---------------------------------------------------------------------" << endl;

@@ -99,14 +99,14 @@ int GtPlusRecon2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< GtPlus
 
         boost::shared_ptr< std::vector<size_t> > dims = workOrder->data_.get_dimensions();
 
-        GADGET_CONDITION_MSG(verboseMode_, "[Ro E1 Cha Slice E2 Con Phase Rep Set Seg] = [" 
+        GADGET_CONDITION_MSG(verboseMode_, "[Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
             << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " << (*dims)[3] << " " << (*dims)[4] 
-            << " " << (*dims)[5] << " " << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " << (*dims)[9] << "]");
+            << " " << (*dims)[5] << " " << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " << (*dims)[9] << " " << (*dims)[10] << "]");
 
         dimensions_ = *dims;
 
         // fill in more parameters
-        para_.reconSizeRO_ = (*dims)[0];
+        para_.reconSizeRO_ = GT_MAX(matrix_size_recon_[0], (*dims)[0]);
         para_.reconSizeE1_ = reconE1_;
         para_.reconSizeE2_ = reconE2_;
         para_.encodingFOV_RO_ = field_of_view_encoding_[0];
@@ -169,14 +169,27 @@ int GtPlusRecon2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< GtPlus
         completedJobListCloud[0] = &packages_received_[num_of_jobs_];
 
         // set the data and ref arrays
-        jobListCloud[0]->kspace = workOrder->data_;
+
+        // get the data to be compressed format
+        if ( workOrder->acceFactorE1_>1 && workOrder->CalibMode_==Gadgetron::gtPlus::ISMRMRD_interleaved )
+        {
+            Gadgetron::extractSampledLinesUpTo11DArray(workOrder->data_, jobListCloud[0]->kspace, workOrder->time_stamp_, workOrder->acceFactorE1_, workOrder->acceFactorE2_);
+        }
+        else
+        {
+            jobListCloud[0]->kspace = workOrder->data_;
+        }
+
+        jobListCloud[0]->timeStamp = workOrder->time_stamp_;
+        jobListCloud[0]->physioTimeStamp = workOrder->physio_time_stamp_;
         if ( workOrder->ref_.get_number_of_elements() > 0 )
         {
             jobListCloud[0]->ref = workOrder->ref_;
         }
         else if ( CalibMode_==Gadgetron::gtPlus::ISMRMRD_interleaved )
         {
-            jobListCloud[0]->ref = workOrder->data_;
+            // jobListCloud[0]->ref = workOrder->data_;
+            jobListCloud[0]->ref.clear();
         }
 
         num_of_jobs_++;
@@ -214,9 +227,9 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
 
         boost::shared_ptr< std::vector<size_t> > dims = job->kspace.get_dimensions();
 
-        GADGET_CONDITION_MSG(verboseMode_, "job array size : [Ro E1 Cha Slice E2 Con Phase Rep Set Seg] = [" 
+        GADGET_CONDITION_MSG(verboseMode_, "job array size : [Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
             << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " << (*dims)[3] << " " << (*dims)[4] 
-            << " " << (*dims)[5] << " " << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " << (*dims)[9] << "]");
+            << " " << (*dims)[5] << " " << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " << (*dims)[9] << " " << (*dims)[10] << "]");
 
         GtPlusRecon2DTPara& para = job->para;
 
@@ -250,38 +263,39 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
         workOrder.CloudSize_ = CloudSize_;
         workOrder.gt_cloud_ = gt_cloud_;
 
-        workOrder.data_ = job->kspace;
+        if ( workOrder.acceFactorE1_ <= 1 )
+        {
+            workOrder.data_ = job->kspace;
+        }
+        else
+        {
+            Gadgetron::fillSampledLinesUpTo11DArray(job->kspace, workOrder.data_, job->timeStamp);
+        }
+
+        workOrder.time_stamp_ = job->timeStamp;
+        workOrder.physio_time_stamp_ = job->physioTimeStamp;
         workOrder.ref_ = job->ref;
 
         // ---------------------------------------------------------
         // set the worker
         // ---------------------------------------------------------
+        worker_grappa_.verbose_ = verboseMode_;
         worker_grappa_.performTiming_ = performTiming_;
         if ( !debugFolder_fullPath_.empty() ) worker_grappa_.debugFolder_ = debugFolder_fullPath_;
 
+        worker_noacceleration_.verbose_ = verboseMode_;
         worker_noacceleration_.performTiming_ = performTiming_;
         if ( !debugFolder_fullPath_.empty() ) worker_noacceleration_.debugFolder_ = debugFolder_fullPath_;
 
+        worker_spirit_.verbose_ = verboseMode_;
         worker_spirit_.performTiming_ = performTiming_;
         if ( !debugFolder_fullPath_.empty() ) worker_spirit_.debugFolder_ = debugFolder_fullPath_;
 
+        worker_spirit_L1_ncg_.verbose_ = verboseMode_;
         worker_spirit_L1_ncg_.performTiming_ = performTiming_;
         if ( !debugFolder_fullPath_.empty() ) worker_spirit_L1_ncg_.debugFolder_ = debugFolder_fullPath_;
 
         if ( !debugFolder_fullPath_.empty() ) workflow_.debugFolder_ = debugFolder_fullPath_;
-
-        // set the worker
-        worker_grappa_.performTiming_ = performTiming_;
-        if ( !debugFolder_fullPath_.empty() ) worker_grappa_.debugFolder_ = debugFolder_fullPath_;
-
-        worker_noacceleration_.performTiming_ = performTiming_;
-        if ( !debugFolder_fullPath_.empty() ) worker_noacceleration_.debugFolder_ = debugFolder_fullPath_;
-
-        worker_spirit_.performTiming_ = performTiming_;
-        if ( !debugFolder_fullPath_.empty() ) worker_spirit_.debugFolder_ = debugFolder_fullPath_;
-
-        worker_spirit_L1_ncg_.performTiming_ = performTiming_;
-        if ( !debugFolder_fullPath_.empty() ) worker_spirit_L1_ncg_.debugFolder_ = debugFolder_fullPath_;
 
         if ( verboseMode_ )
         {
@@ -302,7 +316,7 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
             workflow_.workOrder_->print(std::cout);
         }
 
-        workflow_.setDataArray(workOrder.data_);
+        workflow_.setDataArray(workOrder.data_, workOrder.time_stamp_, workOrder.physio_time_stamp_);
 
         if ( workOrder.ref_.get_number_of_elements() > 0 )
         {
@@ -356,15 +370,52 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
             hoNDArray<GT_Complex8> res = workflow_.res_;
             res.squeeze();
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, res, ostr.str());
+
+            if ( workflow_.res_second_.get_number_of_elements() > 0 )
+            {
+                hoNDArray<GT_Complex8> res = workflow_.res_second_;
+                res.squeeze();
+
+                std::ostringstream ostr;
+                ostr << "Recon2DT_Second_" << processed_called_times_;
+
+                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, res, ostr.str());
+
+                if ( workflow_.res_time_stamp_second_.get_number_of_elements() > 0 )
+                {
+                    std::ostringstream ostr;
+                    ostr << "Recon2DT_Second_TimeStamp_" << processed_called_times_;
+
+                    hoNDArray<float> res = workflow_.res_time_stamp_second_;
+                    res.squeeze();
+                    GADGET_EXPORT_ARRAY(debugFolder_fullPath_, gt_exporter_, res, ostr.str());
+                }
+
+                if ( workflow_.res_physio_time_stamp_second_.get_number_of_elements() > 0 )
+                {
+                    std::ostringstream ostr;
+                    ostr << "Recon2DT_Second_PhysioTimeStamp_" << processed_called_times_;
+
+                    hoNDArray<float> res = workflow_.res_physio_time_stamp_second_;
+                    res.squeeze();
+                    GADGET_EXPORT_ARRAY(debugFolder_fullPath_, gt_exporter_, res, ostr.str());
+                }
+            }
         }
 
         if ( succeed )
         {
             jobReceived.complexIm = workflow_.res_;
+            jobReceived.complexImSecond = workflow_.res_second_;
+            jobReceived.resTimeStampSecond = workflow_.res_time_stamp_second_;
+            jobReceived.resPhysioTimeStampSecond = workflow_.res_physio_time_stamp_second_;
         }
         else
         {
             jobReceived.complexIm.clear();
+            jobReceived.complexImSecond.clear();
+            jobReceived.resTimeStampSecond.clear();
+            jobReceived.resPhysioTimeStampSecond.clear();
             jobReceived.res.clear();
         }
 
@@ -372,6 +423,8 @@ bool GtPlusRecon2DTGadgetCloud::processJob(CloudPackageType& jobSent, CloudPacka
 
         // reset the status
         workflow_.data_ = NULL;
+        workflow_.time_stamp_ = NULL;
+        workflow_.physio_time_stamp_ = NULL;
         workflow_.ref_ = NULL;
         workflow_.noise_ = NULL;
         workflow_.workOrder_ = NULL;
@@ -413,7 +466,33 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
             for ( ii=0; ii<N; ii++ )
             {
                 bool jobIsOk = true;
-                if ( (packages_received_[ii].complexIm.get_number_of_elements() == 0) && (packages_received_[ii].res.get_number_of_elements() == 0) )
+
+                bool recomputeJob = (packages_received_[ii].complexIm.get_number_of_elements() == 0);
+
+                // special check if the second set of recon results is needed
+                if ( recon_res_second_required_ )
+                {
+                    GADGET_MSG("Check received recon results (second set) ... ");
+
+                    if (packages_received_[ii].complexImSecond.get_number_of_elements() == 0)
+                    {
+                        recomputeJob = true;
+                    }
+                    else
+                    {
+                        // check the images are not empty
+                        real_value_type v(0);
+                        Gadgetron::norm2(packages_received_[ii].complexImSecond, v);
+
+                        if ( GT_ABS(v) < FLT_EPSILON )
+                        {
+                            recomputeJob = true;
+                            GADGET_WARN_MSG("Received recon results (second set) contain no content ... ");
+                        }
+                    }
+                }
+
+                if ( recomputeJob )
                 {
                     // if the cloud goes wrong, do not try again
                     CloudComputing_ = false;
@@ -425,7 +504,38 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
                     if ( !packages_passed_to_next_gadget_[ii].second )
                     {
                         GADGET_CHECK_RETURN(this->scalingImages(packages_received_[ii].complexIm), GADGET_FAIL);
-                        GADGET_CHECK_RETURN(this->sendOutRecon(&image_headers_[ii], packages_received_[ii].complexIm, image_series_, dataDimStartingIndexes, "Image", GTPLUS_IMAGE_REGULAR), GADGET_FAIL);
+
+                        if ( this->send_out_recon_ )
+                        {
+                            GADGET_CHECK_RETURN(this->sendOutRecon(&image_headers_[ii], packages_received_[ii].complexIm, image_series_, dataDimStartingIndexes, "Image", GTPLUS_IMAGE_REGULAR), GADGET_FAIL);
+                        }
+
+                        if ( this->send_out_recon_second_ )
+                        {
+                            if ( packages_received_[ii].complexImSecond.get_number_of_elements() > 0 )
+                            {
+                                GADGET_CHECK_RETURN(Gadgetron::scal((float)scalingFactor_, packages_received_[ii].complexImSecond), GADGET_FAIL);
+
+                                if ( this->para_.workOrderPara_.retro_gated_images_>0 )
+                                {
+                                    GADGET_CHECK_RETURN(this->sendOutRecon(&image_headers_[ii], 
+                                                                            packages_received_[ii].complexImSecond, 
+                                                                            packages_received_[ii].resTimeStampSecond, 
+                                                                            packages_received_[ii].resPhysioTimeStampSecond, 
+                                                                            image_series_+1, dataDimStartingIndexes, 
+                                                                            "ImageRetro", GTPLUS_IMAGE_RETRO), GADGET_FAIL);
+                                }
+                                else
+                                {
+                                    GADGET_CHECK_RETURN(this->sendOutRecon(&image_headers_[ii], 
+                                                                            packages_received_[ii].complexImSecond, 
+                                                                            packages_received_[ii].resTimeStampSecond, 
+                                                                            packages_received_[ii].resPhysioTimeStampSecond, 
+                                                                            image_series_+1, dataDimStartingIndexes, 
+                                                                            "Image", GTPLUS_IMAGE_REGULAR), GADGET_FAIL);
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -437,6 +547,37 @@ int GtPlusRecon2DTGadgetCloud::close(unsigned long flags)
                     hoNDArray<GT_Complex8> res = packages_received_[ii].complexIm;
                     res.squeeze();
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+
+                    if (packages_received_[ii].complexImSecond.get_number_of_elements() > 0 )
+                    {
+                        hoNDArray<GT_Complex8> res = packages_received_[ii].complexImSecond;
+                        res.squeeze();
+
+                        std::ostringstream ostr;
+                        ostr << "GadgetCloud_Recon2DT_Second_" << ii;
+
+                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+
+                        if ( packages_received_[ii].resTimeStampSecond.get_number_of_elements() > 0 )
+                        {
+                            std::ostringstream ostr;
+                            ostr << "GadgetCloud_Recon2DT_Second_TimeStamp_" << ii;
+
+                            hoNDArray<float> res = packages_received_[ii].resTimeStampSecond;
+                            res.squeeze();
+                            GADGET_EXPORT_ARRAY(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+                        }
+
+                        if ( packages_received_[ii].resPhysioTimeStampSecond.get_number_of_elements() > 0 )
+                        {
+                            std::ostringstream ostr;
+                            ostr << "GadgetCloud_Recon2DT_Second_PhysioTimeStamp_" << ii;
+
+                            hoNDArray<float> res = packages_received_[ii].resPhysioTimeStampSecond;
+                            res.squeeze();
+                            GADGET_EXPORT_ARRAY(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+                        }
+                    }
                 }
             }
         }
@@ -482,8 +623,54 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
                 gadget_->packages_passed_to_next_gadget_[jobID].second = true;
 
                 GADGET_CHECK_RETURN(gadget_->scalingImages(gadget_->packages_received_[jobID].complexIm), false);
-                GADGET_CHECK_RETURN(gadget_->sendOutRecon(&gadget_->image_headers_[jobID], 
-                    gadget_->packages_received_[jobID].complexIm, gadget_->image_series_, dataDimStartingIndexes, "Image", GTPLUS_IMAGE_REGULAR), false);
+
+                if ( gadget_->send_out_recon_ )
+                {
+                    GADGET_CHECK_RETURN(gadget_->sendOutRecon(&gadget_->image_headers_[jobID], 
+                        gadget_->packages_received_[jobID].complexIm, gadget_->image_series_, dataDimStartingIndexes, "Image", GTPLUS_IMAGE_REGULAR), false);
+                }
+
+                if ( gadget_->send_out_recon_second_ )
+                {
+                    if ( gadget_->packages_received_[jobID].complexImSecond.get_number_of_elements() > 0 )
+                    {
+                        GADGET_MSG("Check received recon results (second set) in cloud sender ... ");
+
+                        // check the images are not empty
+                        float v(0);
+                        Gadgetron::norm2(gadget_->packages_received_[jobID].complexImSecond, v);
+
+                        bool reconResSecondValid = true;
+                        if ( GT_ABS(v) < FLT_EPSILON )
+                        {
+                            reconResSecondValid = false;
+                            GADGET_WARN_MSG("Received recon results (second set) contain no content ... ");
+                        }
+
+                        if ( reconResSecondValid )
+                        {
+                            GADGET_CHECK_RETURN(Gadgetron::scal((float)gadget_->scalingFactor_, gadget_->packages_received_[jobID].complexImSecond), false);
+                            if ( gadget_->para_.workOrderPara_.retro_gated_images_ > 0 )
+                            {
+                                GADGET_CHECK_RETURN(gadget_->sendOutRecon(&gadget_->image_headers_[jobID], 
+                                                                        gadget_->packages_received_[jobID].complexImSecond, 
+                                                                        gadget_->packages_received_[jobID].resTimeStampSecond,
+                                                                        gadget_->packages_received_[jobID].resPhysioTimeStampSecond,
+                                                                        gadget_->image_series_+1, dataDimStartingIndexes, 
+                                                                        "ImageRetro", GTPLUS_IMAGE_RETRO), false);
+                            }
+                            else
+                            {
+                                GADGET_CHECK_RETURN(gadget_->sendOutRecon(&gadget_->image_headers_[jobID], 
+                                                                        gadget_->packages_received_[jobID].complexImSecond, 
+                                                                        gadget_->packages_received_[jobID].resTimeStampSecond,
+                                                                        gadget_->packages_received_[jobID].resPhysioTimeStampSecond,
+                                                                        gadget_->image_series_+1, dataDimStartingIndexes, 
+                                                                        "Image", GTPLUS_IMAGE_REGULAR), false);
+                            }
+                        }
+                    }
+                }
 
                 if ( !gadget_->debugFolder2_fullPath_.empty() )
                 {
@@ -493,6 +680,36 @@ bool GtPlusRecon2DTGadgetCloudSender::processJob(int jobID, GtPlusRecon2DTCloudP
                     hoNDArray<GT_Complex8> res = gadget_->packages_received_[jobID].complexIm;
                     res.squeeze();
                     GADGET_EXPORT_ARRAY_COMPLEX(gadget_->debugFolder2_fullPath_, gadget_->gt_exporter_, res, ostr.str());
+
+                    if ( gadget_->packages_received_[jobID].complexImSecond.get_number_of_elements() > 0 )
+                    {
+                        std::ostringstream ostr;
+                        ostr << "Recon2DT_Second_" << jobID;
+
+                        hoNDArray<GT_Complex8> res = gadget_->packages_received_[jobID].complexImSecond;
+                        res.squeeze();
+                        GADGET_EXPORT_ARRAY_COMPLEX(gadget_->debugFolder2_fullPath_, gadget_->gt_exporter_, res, ostr.str());
+
+                        if ( gadget_->packages_received_[jobID].resTimeStampSecond.get_number_of_elements() > 0 )
+                        {
+                            std::ostringstream ostr;
+                            ostr << "Recon2DT_Second_TimeStamp_" << jobID;
+
+                            hoNDArray<float> res = gadget_->packages_received_[jobID].resTimeStampSecond;
+                            res.squeeze();
+                            GADGET_EXPORT_ARRAY(gadget_->debugFolder2_fullPath_, gadget_->gt_exporter_, res, ostr.str());
+                        }
+
+                        if ( gadget_->packages_received_[jobID].resPhysioTimeStampSecond.get_number_of_elements() > 0 )
+                        {
+                            std::ostringstream ostr;
+                            ostr << "Recon2DT_Second_PhysioTimeStamp_" << jobID;
+
+                            hoNDArray<float> res = gadget_->packages_received_[jobID].resPhysioTimeStampSecond;
+                            res.squeeze();
+                            GADGET_EXPORT_ARRAY(gadget_->debugFolder2_fullPath_, gadget_->gt_exporter_, res, ostr.str());
+                        }
+                    }
                 }
             }
         }

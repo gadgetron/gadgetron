@@ -38,7 +38,8 @@ class EXPORTGTPLUSGADGET GtPlusAccumulatorWorkOrderTriggerGadget : public Gadget
 public:
     GADGET_DECLARE(GtPlusAccumulatorWorkOrderTriggerGadget);
 
-    typedef std::complex<float> ValueType;
+    typedef float real_value_type;
+    typedef std::complex<real_value_type> ValueType;
 
     typedef Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< ValueType > > BaseClass;
 
@@ -225,6 +226,10 @@ protected:
     // recon filed of view [mm]
     float field_of_view_recon_[3];
 
+    // for the embedded mode
+    size_t embedded_ref_lines_E1_;
+    size_t embedded_ref_lines_E2_;
+
     size_t image_counter_;
     size_t image_series_;
 
@@ -271,6 +276,9 @@ protected:
     // indicator for the arrival of last acq
     bool last_acq_arrived_;
 
+    // time stamp resolution (default, 0.0025s)
+    float timeStampResolution_;
+
     // exporter
     Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
 
@@ -279,6 +287,11 @@ protected:
 
     // in verbose mode, more info is printed out
     bool verboseMode_;
+
+private:
+
+    // index for the time stamp
+    std::vector<size_t> ind_time_stamp_;
 };
 
 }

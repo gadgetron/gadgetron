@@ -16,6 +16,7 @@ public:
 
     typedef gtPlusISMRMRDReconWorkFlowCartesian<T> BaseClass;
     typedef typename BaseClass::DimensionRecordType DimensionRecordType;
+    typedef typename BaseClass::real_value_type real_value_type;
 
     gtPlusISMRMRDReconWorkFlowCartesian3DT();
     virtual ~gtPlusISMRMRDReconWorkFlowCartesian3DT();
@@ -27,6 +28,8 @@ public:
     virtual bool predictDimensions();
 
     using BaseClass::data_;
+    using BaseClass::time_stamp_;
+    using BaseClass::physio_time_stamp_;
     using BaseClass::ref_;
     using BaseClass::noise_;
     using BaseClass::noiseBW_;
@@ -42,6 +45,11 @@ public:
     using BaseClass::reconFOV_E1_;
     using BaseClass::reconFOV_E2_;
     using BaseClass::res_;
+    using BaseClass::res_second_;
+    using BaseClass::res_time_stamp_;
+    using BaseClass::res_physio_time_stamp_;
+    using BaseClass::res_time_stamp_second_;
+    using BaseClass::res_physio_time_stamp_second_;
 
     using BaseClass::worker_;
     using BaseClass::workOrder_;
@@ -78,6 +86,7 @@ protected:
     using BaseClass::REP_;
     using BaseClass::SET_;
     using BaseClass::SEG_;
+    using BaseClass::AVE_;
 
     using BaseClass::RO_ref_;
     using BaseClass::E1_ref_;
@@ -89,6 +98,7 @@ protected:
     using BaseClass::REP_ref_;
     using BaseClass::SET_ref_;
     using BaseClass::SEG_ref_;
+    using BaseClass::AVE_ref_;
 
     using BaseClass::gtPlus_util_;
 };
@@ -203,8 +213,13 @@ bool gtPlusISMRMRDReconWorkFlowCartesian3DT<T>::recon()
         size_t dd;
 
         int indWorkOrderSharingDim = -1;
-        for ( dim=DIM_Slice; dim<=DIM_Set; dim++ )
+        for ( dim=DIM_Slice; dim<=DIM_Average; dim++ )
         {
+            if ( dim == DIM_Segment )
+            {
+                continue;
+            }
+
             bool exist = false;
             for ( dd=0; dd<dims.size(); dd++ )
             {

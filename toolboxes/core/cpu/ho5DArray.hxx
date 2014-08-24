@@ -168,7 +168,7 @@ bool ho5DArray<T>::createArray(size_t sx, size_t sy, size_t sz, size_t ss, size_
         dim[3] = ss;
         dim[4] = sp;
 
-        this->create(&dim);
+        this->create(&dim, data, delete_data_on_destruct);
         GADGET_CHECK_RETURN_FALSE(init_accesser());
     }
     catch(...)

@@ -19,7 +19,7 @@ namespace Gadgetron{
         PhysioInterpolationGadget();
         virtual ~PhysioInterpolationGadget();
 
-    inline unsigned short get_number_of_phases() { return phases_to_reconstruct_; }
+        inline unsigned short get_number_of_phases() { return phases_to_reconstruct_; }
 
     protected:
         virtual int process_config(ACE_Message_Block* mb);
@@ -36,6 +36,9 @@ namespace Gadgetron{
         // true, if the first beat is on trigger
         /// false, the first beat will be ignored
         bool first_beat_on_trigger_;
+
+        // interpolation method, "Spline" or "BSpline"
+        std::string interp_method_;
 
     private:
 

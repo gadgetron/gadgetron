@@ -23,7 +23,7 @@ namespace Gadgetron {
     // templated functions
     // ----------------------------------------------------------------------------------------
 
-    template<typename T>
+    template<typename T> 
     bool sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         try
@@ -75,7 +75,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T>
+    template<typename T> 
     bool sumOverSecondLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         try
@@ -141,7 +141,7 @@ namespace Gadgetron {
     }
 
     // e.g. x is 3D and y is 4D array, r(:,:,:,n) = y(:,:,:,n) .* x
-    template<typename T>
+    template<typename T> 
     bool multiplyOverLastDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
         try
@@ -198,7 +198,7 @@ namespace Gadgetron {
     }
 
     // e.g. x is 3D and y is 4D array, r(:,:,:,n) = y(:,:,:,n) ./ x
-    template<typename T>
+    template<typename T> 
     bool divideOverLastDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
         try
@@ -253,7 +253,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T>
+    template<typename T> 
     bool sumOver1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         try
@@ -292,7 +292,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T>
+    template<typename T> 
     bool sumOver2ndDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         try
@@ -343,7 +343,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T>
+    template<typename T> 
     bool sumOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         try
@@ -507,7 +507,7 @@ namespace Gadgetron {
     }
 
     // e.g. x is 3D and y is 4D array, r(:,:,n,:) = y(:,:,n,:) .* x3D
-    template<typename T>
+    template<typename T> 
     bool multiplyOver3rdDimension(const hoNDArray<T>& x3D, const hoNDArray<T>& y4D, hoNDArray<T>& r)
     {
         try
@@ -567,7 +567,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T>
+    template<typename T> 
     bool multiplyOver4thDimension(const hoNDArray<T>& x4D, const hoNDArray<T>& y5D, hoNDArray<T>& r)
     {
         try
@@ -627,7 +627,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T>
+    template<typename T> 
     bool multiplyOver4thDimensionExcept(const hoNDArray<T>& x4D, const hoNDArray<T>& y5D, size_t n, hoNDArray<T>& r, bool copyY2R)
     {
         try
@@ -765,7 +765,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T>
+    template<typename T> 
     bool multiplyOver5thDimensionExcept(const hoNDArray<T>& x, const hoNDArray<T>& y, size_t n, hoNDArray<T>& r, bool copyY2R)
     {
         try
@@ -843,7 +843,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template <typename T>
+    template <typename T> 
     bool multipleAdd(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
         GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()<=y.get_number_of_elements());
@@ -934,7 +934,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template <typename T>
+    template <typename T> 
     bool multipleMultiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r)
     {
         GADGET_DEBUG_CHECK_RETURN_FALSE(x.get_number_of_elements()<=y.get_number_of_elements());
@@ -1025,11 +1025,11 @@ namespace Gadgetron {
         return true;
     }
 
-    template <typename T>
-    bool cropUpTo10DArray(const hoNDArray<T>& x, hoNDArray<T>& r, const std::vector<size_t>& startND, std::vector<size_t>& size)
+    template <typename T> 
+    bool cropUpTo11DArray(const hoNDArray<T>& x, hoNDArray<T>& r, const std::vector<size_t>& startND, std::vector<size_t>& size)
     {
         GADGET_CHECK_RETURN_FALSE( startND.size() == size.size() );
-        GADGET_CHECK_RETURN_FALSE( startND.size() <= 10 );
+        GADGET_CHECK_RETURN_FALSE( startND.size() <= 11 );
 
         r.create(&size);
         if ( r.get_number_of_elements() == x.get_number_of_elements() )
@@ -1038,8 +1038,8 @@ namespace Gadgetron {
             return true;
         }
 
-        std::vector<size_t> start(10, 0);
-        std::vector<size_t> end(10, 0);
+        std::vector<size_t> start(11, 0);
+        std::vector<size_t> end(11, 0);
 
         size_t ii;
         for ( ii=0; ii<startND.size(); ii++ )
@@ -1049,65 +1049,70 @@ namespace Gadgetron {
             GADGET_CHECK_RETURN_FALSE(end[ii] < x.get_size(ii));
         }
 
-        // [Ro E1 Cha Slice E2 Con Phase Rep Set Seg]
-        size_t e1, cha, n, s, con, phs, rep, set, seg;
+        // [Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave]
+        size_t e1, cha, n, s, con, phs, rep, set, seg, ave;
 
-        std::vector<size_t> srcInd(10), dstInd(10);
+        std::vector<size_t> srcInd(11), dstInd(11);
 
-        for ( seg=start[9]; seg<=end[9]; seg++ )
+        for ( ave=start[10]; ave<=end[10]; ave++ )
         {
-            srcInd[9] = seg; dstInd[9] = seg-start[9];
+            srcInd[10] = ave; dstInd[10] = ave-start[10];
 
-            for ( set=start[8]; set<=end[8]; set++ )
+            for ( seg=start[9]; seg<=end[9]; seg++ )
             {
-                srcInd[8] = set; dstInd[8] = set-start[8];
+                srcInd[9] = seg; dstInd[9] = seg-start[9];
 
-                for ( rep=start[7]; rep<=end[7]; rep++ )
+                for ( set=start[8]; set<=end[8]; set++ )
                 {
-                    srcInd[7] = rep; dstInd[7] = rep-start[7];
+                    srcInd[8] = set; dstInd[8] = set-start[8];
 
-                    for ( phs=start[6]; phs<=end[6]; phs++ )
+                    for ( rep=start[7]; rep<=end[7]; rep++ )
                     {
-                        srcInd[6] = phs; dstInd[6] = phs-start[6];
+                        srcInd[7] = rep; dstInd[7] = rep-start[7];
 
-                        for ( con=start[5]; con<=end[5]; con++ )
+                        for ( phs=start[6]; phs<=end[6]; phs++ )
                         {
-                            srcInd[5] = con; dstInd[5] = con-start[5];
+                            srcInd[6] = phs; dstInd[6] = phs-start[6];
 
-                            for ( s=start[4]; s<=end[4]; s++ )
+                            for ( con=start[5]; con<=end[5]; con++ )
                             {
-                                srcInd[4] = s; dstInd[4] = s-start[4];
+                                srcInd[5] = con; dstInd[5] = con-start[5];
 
-                                for ( n=start[3]; n<=end[3]; n++ )
+                                for ( s=start[4]; s<=end[4]; s++ )
                                 {
-                                    srcInd[3] = n; dstInd[3] = n-start[3];
+                                    srcInd[4] = s; dstInd[4] = s-start[4];
 
-                                    for ( cha=start[2]; cha<=end[2]; cha++ )
+                                    for ( n=start[3]; n<=end[3]; n++ )
                                     {
-                                        srcInd[2] = cha; dstInd[2] = cha-start[2];
+                                        srcInd[3] = n; dstInd[3] = n-start[3];
 
-                                        for ( e1=start[1]; e1<=end[1]; e1++ )
+                                        for ( cha=start[2]; cha<=end[2]; cha++ )
                                         {
-                                            srcInd[1] = e1; dstInd[1] = e1-start[1];
+                                            srcInd[2] = cha; dstInd[2] = cha-start[2];
 
-                                            srcInd[0] = start[0];
-                                            dstInd[0] = 0;
-
-                                            size_t offsetSrc = x.calculate_offset(srcInd);
-                                            size_t offsetDst = r.calculate_offset(dstInd);
-
-                                            memcpy(r.begin()+offsetDst, x.begin()+offsetSrc, sizeof(T)*(end[0]-start[0]+1));
-
-                                            /*for ( ro=start[0]; ro<=end[0]; ro++ )
+                                            for ( e1=start[1]; e1<=end[1]; e1++ )
                                             {
-                                                srcInd[0] = ro;
-                                                dstInd[0] = ro-start[0];
+                                                srcInd[1] = e1; dstInd[1] = e1-start[1];
 
-                                                int offsetSrc = x.calculate_offset(srcInd);
-                                                int offsetDst = r.calculate_offset(dstInd);
+                                                srcInd[0] = start[0];
+                                                dstInd[0] = 0;
 
-                                                r(offsetDst) = x(offsetSrc);
-                                            }*/
+                                                size_t offsetSrc = x.calculate_offset(srcInd);
+                                                size_t offsetDst = r.calculate_offset(dstInd);
+
+                                                memcpy(r.begin()+offsetDst, x.begin()+offsetSrc, sizeof(T)*(end[0]-start[0]+1));
+
+                                                /*for ( ro=start[0]; ro<=end[0]; ro++ )
+                                                {
+                                                    srcInd[0] = ro;
+                                                    dstInd[0] = ro-start[0];
+
+                                                    int offsetSrc = x.calculate_offset(srcInd);
+                                                    int offsetDst = r.calculate_offset(dstInd);
+
+                                                    r(offsetDst) = x(offsetSrc);
+                                                }*/
+                                            }
                                         }
                                     }
                                 }
@@ -1121,11 +1126,11 @@ namespace Gadgetron {
         return true;
     }
 
-    template <typename T>
-    bool setSubArrayUpTo10DArray(const hoNDArray<T>& x, hoNDArray<T>& r, const std::vector<size_t>& startND, std::vector<size_t>& size)
+    template <typename T> 
+    bool setSubArrayUpTo11DArray(const hoNDArray<T>& x, hoNDArray<T>& r, const std::vector<size_t>& startND, std::vector<size_t>& size)
     {
         GADGET_CHECK_RETURN_FALSE( startND.size() == size.size() );
-        GADGET_CHECK_RETURN_FALSE( startND.size() <= 10 );
+        GADGET_CHECK_RETURN_FALSE( startND.size() <= 11 );
 
         if ( r.get_number_of_elements() == x.get_number_of_elements() )
         {
@@ -1133,8 +1138,8 @@ namespace Gadgetron {
             return true;
         }
 
-        std::vector<size_t> start(10, 0);
-        std::vector<size_t> end(10, 0);
+        std::vector<size_t> start(11, 0);
+        std::vector<size_t> end(11, 0);
 
         size_t ii;
         for ( ii=0; ii<startND.size(); ii++ )
@@ -1144,54 +1149,59 @@ namespace Gadgetron {
             GADGET_CHECK_RETURN_FALSE(end[ii] < r.get_size(ii));
         }
 
-        // [Ro E1 Cha Slice E2 Con Phase Rep Set Seg]
-        size_t e1, cha, n, s, con, phs, rep, set, seg;
+        // [Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave]
+        size_t e1, cha, n, s, con, phs, rep, set, seg, ave;
 
-        std::vector<size_t> srcInd(10), dstInd(10);
+        std::vector<size_t> srcInd(11), dstInd(11);
 
-        for ( seg=start[9]; seg<=end[9]; seg++ )
+        for ( ave=start[10]; ave<=end[10]; ave++ )
         {
-            dstInd[9] = seg; srcInd[9] = seg-start[9];
+            dstInd[10] = ave; srcInd[10] = ave-start[10];
 
-            for ( set=start[8]; set<=end[8]; set++ )
+            for ( seg=start[9]; seg<=end[9]; seg++ )
             {
-                dstInd[8] = set; srcInd[8] = set-start[8];
+                dstInd[9] = seg; srcInd[9] = seg-start[9];
 
-                for ( rep=start[7]; rep<=end[7]; rep++ )
+                for ( set=start[8]; set<=end[8]; set++ )
                 {
-                    dstInd[7] = rep; srcInd[7] = rep-start[7];
+                    dstInd[8] = set; srcInd[8] = set-start[8];
 
-                    for ( phs=start[6]; phs<=end[6]; phs++ )
+                    for ( rep=start[7]; rep<=end[7]; rep++ )
                     {
-                        dstInd[6] = phs; srcInd[6] = phs-start[6];
+                        dstInd[7] = rep; srcInd[7] = rep-start[7];
 
-                        for ( con=start[5]; con<=end[5]; con++ )
+                        for ( phs=start[6]; phs<=end[6]; phs++ )
                         {
-                            dstInd[5] = con; srcInd[5] = con-start[5];
+                            dstInd[6] = phs; srcInd[6] = phs-start[6];
 
-                            for ( s=start[4]; s<=end[4]; s++ )
+                            for ( con=start[5]; con<=end[5]; con++ )
                             {
-                                dstInd[4] = s; srcInd[4] = s-start[4];
+                                dstInd[5] = con; srcInd[5] = con-start[5];
 
-                                for ( n=start[3]; n<=end[3]; n++ )
+                                for ( s=start[4]; s<=end[4]; s++ )
                                 {
-                                    dstInd[3] = n; srcInd[3] = n-start[3];
+                                    dstInd[4] = s; srcInd[4] = s-start[4];
 
-                                    for ( cha=start[2]; cha<=end[2]; cha++ )
+                                    for ( n=start[3]; n<=end[3]; n++ )
                                     {
-                                        dstInd[2] = cha; srcInd[2] = cha-start[2];
+                                        dstInd[3] = n; srcInd[3] = n-start[3];
 
-                                        for ( e1=start[1]; e1<=end[1]; e1++ )
+                                        for ( cha=start[2]; cha<=end[2]; cha++ )
                                         {
-                                            dstInd[1] = e1; srcInd[1] = e1-start[1];
+                                            dstInd[2] = cha; srcInd[2] = cha-start[2];
 
-                                            dstInd[0] = start[0];
-                                            srcInd[0] = 0;
+                                            for ( e1=start[1]; e1<=end[1]; e1++ )
+                                            {
+                                                dstInd[1] = e1; srcInd[1] = e1-start[1];
 
-                                            size_t offsetSrc = x.calculate_offset(srcInd);
-                                            size_t offsetDst = r.calculate_offset(dstInd);
+                                                dstInd[0] = start[0];
+                                                srcInd[0] = 0;
 
-                                            memcpy(r.begin()+offsetDst, x.begin()+offsetSrc, sizeof(T)*(end[0]-start[0]+1));
+                                                size_t offsetSrc = x.calculate_offset(srcInd);
+                                                size_t offsetDst = r.calculate_offset(dstInd);
+
+                                                memcpy(r.begin()+offsetDst, x.begin()+offsetSrc, sizeof(T)*(end[0]-start[0]+1));
+                                            }
                                         }
                                     }
                                 }
@@ -1205,7 +1215,248 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T>
+    template<typename T> 
+    bool extractSampledLinesUpTo11DArray(const hoNDArray<T>& x, hoNDArray<T>& r, const hoNDArray<float>& timeStamp, double acceFactorE1, double acceFactorE2)
+    {
+        try
+        {
+            std::vector<size_t> dim;
+            x.get_dimensions(dim);
+
+            size_t RO = x.get_size(0);
+            size_t E1 = x.get_size(1);
+            size_t CHA = x.get_size(2);
+            size_t SLC = x.get_size(3);
+            size_t E2 = x.get_size(4);
+            size_t CON = x.get_size(5);
+            size_t PHS = x.get_size(6);
+            size_t REP = x.get_size(7);
+            size_t SET = x.get_size(8);
+            size_t SEG = x.get_size(9);
+            size_t AVE = x.get_size(10);
+
+            size_t Num = AVE*SEG*SET*REP*PHS*SLC;
+
+            std::vector<size_t> dimRes(dim);
+
+            if ( acceFactorE1>1 && E1>1 )
+            {
+                dimRes[1] = (size_t)(E1/acceFactorE1) + 1;
+            }
+
+            size_t dstE1 = dimRes[1];
+
+            if ( acceFactorE2>1 && E2>1 )
+            {
+                dimRes[4] = (size_t)(E2/acceFactorE2) + 1;
+            }
+
+            r.create(&dimRes);
+            Gadgetron::clear(r);
+
+            // [Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave]
+
+            size_t ROLen = sizeof(T)*RO;
+            hoNDArray<T> dummyArray(SLC, CON, PHS, REP, SET, SEG, AVE);
+
+            long long n;
+            #pragma omp parallel default(none) private(n) shared(Num, dummyArray, RO, E1, CHA, SLC, E2, CON, PHS, REP, SET, SEG, AVE, timeStamp, x, r, ROLen, dstE1)
+            {
+
+                std::vector<size_t> indN;
+                std::vector<size_t> srcInd(11, 0), dstInd(11, 0);
+                size_t e1, cha, slc, e2, con, rep, phs, set, seg, ave;
+
+                #pragma omp for
+                for ( n=0; n<(long long)Num; n++ )
+                {
+                    indN = dummyArray.calculate_index(n);
+
+                    ave = indN[6];
+                    seg = indN[5];
+                    set = indN[4];
+                    rep = indN[3];
+                    phs = indN[2];
+                    con = indN[1];
+                    slc = indN[0];
+
+                    srcInd[10] = ave; dstInd[10] = ave;
+                    srcInd[9] = seg; dstInd[9] = seg;
+                    srcInd[8] = set; dstInd[8] = set;
+                    srcInd[7] = rep; dstInd[7] = rep;
+                    srcInd[6] = phs; dstInd[6] = phs;
+                    srcInd[5] = con; dstInd[5] = con;
+                    srcInd[4] = slc; dstInd[4] = slc;
+
+                    // ------------------
+                    size_t indE2(0);
+                    size_t prevE2(0);
+                    for ( e2=0; e2<E2; e2++ )
+                    {
+                        srcInd[3] = e2; dstInd[3] = indE2;
+
+                        size_t indE1(0);
+                        for ( e1=0; e1<E1; e1++ )
+                        {
+                            srcInd[1] = e1; 
+
+                            srcInd[2] = 0;
+                            if ( timeStamp(srcInd) > 0 )
+                            {
+                                dstInd[1] = indE1;
+                                indE1++;
+
+                                if ( e2 != prevE2 )
+                                {
+                                    prevE2 = e2;
+                                    indE2++;
+                                }
+
+                                // ------------------
+                                srcInd[2] = 0; dstInd[2] = 0;
+                                size_t offsetSrc = x.calculate_offset(srcInd);
+                                size_t offsetDst = r.calculate_offset(dstInd);
+
+                                for ( cha=0; cha<CHA; cha++ )
+                                {
+                                    memcpy(r.begin()+offsetDst, x.begin()+offsetSrc, ROLen);
+
+                                    offsetSrc += RO*E1;
+                                    offsetDst += RO*dstE1;
+                                }
+                                // ------------------
+                            }
+                        }
+                        // ------------------
+                    }
+                }
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in extractSampledLinesUpTo11DArray(...) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template<typename T> 
+    bool fillSampledLinesUpTo11DArray(const hoNDArray<T>& x, hoNDArray<T>& r, const hoNDArray<float>& timeStamp)
+    {
+        try
+        {
+            size_t RO = x.get_size(0);
+            size_t E1 = timeStamp.get_size(1);
+            size_t CHA = x.get_size(2);
+            size_t SLC = timeStamp.get_size(3);
+            size_t E2 = timeStamp.get_size(4);
+            size_t CON = timeStamp.get_size(5);
+            size_t PHS = timeStamp.get_size(6);
+            size_t REP = timeStamp.get_size(7);
+            size_t SET = timeStamp.get_size(8);
+            size_t SEG = timeStamp.get_size(9);
+            size_t AVE = timeStamp.get_size(10);
+
+            size_t srcE1 = x.get_size(1);
+
+            size_t Num = AVE*SEG*SET*REP*PHS*SLC;
+
+            std::vector<size_t> dimRes;
+            timeStamp.get_dimensions(dimRes);
+
+            dimRes[0] = RO;
+            dimRes[2] = CHA;
+            r.create(&dimRes);
+            Gadgetron::clear(r);
+
+            size_t ROLen = sizeof(T)*RO;
+            hoNDArray<T> dummyArray(SLC, CON, PHS, REP, SET, SEG, AVE);
+
+            long long n;
+            #pragma omp parallel default(none) private(n) shared(Num, dummyArray, RO, E1, CHA, SLC, E2, CON, PHS, REP, SET, SEG, AVE, timeStamp, x, r, ROLen, srcE1)
+            {
+
+                std::vector<size_t> indN;
+                std::vector<size_t> srcInd(11, 0), dstInd(11, 0);
+                size_t e1, cha, slc, e2, con, rep, phs, set, seg, ave;
+
+                #pragma omp for
+                for ( n=0; n<(long long)Num; n++ )
+                {
+                    indN = dummyArray.calculate_index(n);
+
+                    ave = indN[6];
+                    seg = indN[5];
+                    set = indN[4];
+                    rep = indN[3];
+                    phs = indN[2];
+                    con = indN[1];
+                    slc = indN[0];
+
+                    srcInd[10] = ave; dstInd[10] = ave;
+                    srcInd[9] = seg; dstInd[9] = seg;
+                    srcInd[8] = set; dstInd[8] = set;
+                    srcInd[7] = rep; dstInd[7] = rep;
+                    srcInd[6] = phs; dstInd[6] = phs;
+                    srcInd[5] = con; dstInd[5] = con;
+                    srcInd[4] = slc; dstInd[4] = slc;
+
+                    // ------------------
+                    size_t indE2(0);
+                    size_t prevE2(0);
+                    for ( e2=0; e2<E2; e2++ )
+                    {
+                        srcInd[3] = indE2; dstInd[3] = e2;
+
+                        size_t indE1(0);
+                        for ( e1=0; e1<E1; e1++ )
+                        {
+                            dstInd[1] = e1; 
+
+                            dstInd[2] = 0;
+                            if ( timeStamp(dstInd) > 0 )
+                            {
+                                srcInd[1] = indE1;
+                                indE1++;
+
+                                if ( e2 != prevE2 )
+                                {
+                                    prevE2 = e2;
+                                    indE2++;
+                                }
+
+                                // ------------------
+
+                                srcInd[2] = 0; dstInd[2] = 0;
+                                size_t offsetSrc = x.calculate_offset(srcInd);
+                                size_t offsetDst = r.calculate_offset(dstInd);
+
+                                for ( cha=0; cha<CHA; cha++ )
+                                {
+                                    memcpy(r.begin()+offsetDst, x.begin()+offsetSrc, ROLen);
+
+                                    offsetSrc += RO*srcE1;
+                                    offsetDst += RO*E1;
+                                }
+                                // ------------------
+                            }
+                        }
+                        // ------------------
+                    }
+                }
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Errors in fillSampledLinesUpTo11DArray(...) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template<typename T> 
     bool stdOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& std, bool NMinusOne)
     {
         try
@@ -1294,55 +1545,7 @@ namespace Gadgetron {
         return true;
     }
 
-    /*template<typename T>
-    bool permuteLastTwoDimensions(const hoNDArray<T>& x, hoNDArray<T>& r)
-    {
-        try
-        {
-            boost::shared_ptr< std::vector<size_t> > dimX = x.get_dimensions();
-
-            size_t NDim = dimX->size();
-
-            if ( NDim <= 2 )
-            {
-                r = x;
-                return true;
-            }
-
-            size_t E1 = x.get_size(NDim-2);
-            size_t E2 = x.get_size(NDim-1);
-
-            std::vector<size_t> dimR(*dimX);
-            dimR[NDim-2] = E2;
-            dimR[NDim-1] = E1;
-
-            r.create(&dimR);
-
-            size_t N = x.get_number_of_elements()/E1/E2;
-
-            const T* pX = x.begin();
-            T* pR = r.begin();
-
-            int e2;
-
-            #pragma omp parallel for default(none) private(e2) shared(E2, E1, pR, pX, N)
-            for ( e2=0; e2<(int)E2; e2++ )
-            {
-                for ( size_t e1=0; e1<E1; e1++ )
-                {
-                    memcpy(pR+e1*N*E2+e2*N, pX+e2*N*E1+e1*N, sizeof(T)*N);
-                }
-            }
-        }
-        catch (...)
-        {
-            GADGET_ERROR_MSG("Errors in permuteLastTwoDimensions(const hoNDArray<T>& x, hoNDArray<T>& r) ... ");
-            return false;
-        }
-        return true;
-    }*/
-
-    template<typename T>
+    template<typename T> 
     bool cropOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r, size_t start, size_t end)
     {
         try
@@ -1457,7 +1660,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T>
+    template<typename T> 
     bool permuteE2To3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         try
@@ -1518,7 +1721,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T>
+    template<typename T> 
     bool permuteE2To5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         try
@@ -1579,7 +1782,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T>
+    template<typename T> 
     bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         try
@@ -1640,7 +1843,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T>
+    template<typename T> 
     bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         try
@@ -1707,7 +1910,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T>
+    template<typename T> 
     bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         try
@@ -1776,7 +1979,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T>
+    template<typename T> 
     bool permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         try
@@ -1838,7 +2041,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T>
+    template<typename T> 
     bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r)
     {
         try
@@ -1912,7 +2115,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T>
+    template<typename T> 
     bool imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& kernel, hoNDArray<T>& buf, hoNDArray<T>& y)
     {
         try
@@ -1949,19 +2152,11 @@ namespace Gadgetron {
                 {
                     for ( dCha=0; dCha<dstCHA; dCha++ )
                     {
-                        /*vcMul(ro*e1*srcCHA, reinterpret_cast<MKL_Complex8*>(pX),
-                            reinterpret_cast<MKL_Complex8*>(ker+dCha*ro*e1*srcCHA),
-                            reinterpret_cast<MKL_Complex8*>(pBuf));*/
-
                         Gadgetron::multiply(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
 
                         memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
                         for ( size_t sCha=1; sCha<srcCHA; sCha++ )
                         {
-                            //vcAdd(ro*e1, reinterpret_cast<MKL_Complex8*>(pY+dCha*ro*e1),
-                            //    reinterpret_cast<MKL_Complex8*>(pBuf+sCha*ro*e1),
-                            //    reinterpret_cast<MKL_Complex8*>(pY+dCha*ro*e1));
-
                             Gadgetron::add(ro*e1, pY+dCha*ro*e1, pBuf+sCha*ro*e1, pY+dCha*ro*e1);
                         }
                     }
@@ -1970,19 +2165,11 @@ namespace Gadgetron {
                 {
                     for ( dCha=0; dCha<dstCHA; dCha++ )
                     {
-                        /*vzMul(ro*e1*srcCHA, reinterpret_cast<MKL_Complex16*>(pX),
-                            reinterpret_cast<MKL_Complex16*>(ker+dCha*ro*e1*srcCHA),
-                            reinterpret_cast<MKL_Complex16*>(pBuf));*/
-
                         Gadgetron::multiply(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
 
                         memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
                         for ( size_t sCha=1; sCha<srcCHA; sCha++ )
                         {
-                            /*vzAdd(ro*e1, reinterpret_cast<MKL_Complex16*>(pY+dCha*ro*e1),
-                                reinterpret_cast<MKL_Complex16*>(pBuf+sCha*ro*e1),
-                                reinterpret_cast<MKL_Complex16*>(pY+dCha*ro*e1));*/
-
                             Gadgetron::add(ro*e1, pY+dCha*ro*e1, pBuf+sCha*ro*e1, pY+dCha*ro*e1);
                         }
                     }
@@ -1997,7 +2184,7 @@ namespace Gadgetron {
         return true;
     }
 
-    template<typename T>
+    template<typename T> 
     bool imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& kernel, hoNDArray<T>& buf, hoNDArray<T>& y)
     {
         try
@@ -2036,37 +2223,6 @@ namespace Gadgetron {
                     T* pBufN = buf.begin();
                     const T* pKerN = kernel.begin();
 
-                    // omp_set_nested(1);
-
-                    //#pragma omp parallel for default(none) private(n) shared(N, ro, e1, srcCHA, dstCHA, kerN, pXN, pYN, pBufN, pKerN)
-                    //for ( n=0; n<N; n++ )
-                    //{
-                    //    const T* ker = pKerN + n*ro*e1*srcCHA*dstCHA;
-                    //    if ( kerN <= n )
-                    //    {
-                    //        ker = pKerN + (kerN-1)*ro*e1*srcCHA*dstCHA;
-                    //    }
-
-                    //    const T* pX = pXN + n*ro*e1*srcCHA;
-                    //    T* pY = pYN + n*ro*e1*dstCHA;
-                    //    T* pBuf =pBufN + n*ro*e1*srcCHA;
-
-                    //    for ( size_t dCha=0; dCha<dstCHA; dCha++ )
-                    //    {
-                    //        vcMul(ro*e1*srcCHA, reinterpret_cast<const MKL_Complex8*>(pX),
-                    //            reinterpret_cast<const MKL_Complex8*>(ker+dCha*ro*e1*srcCHA),
-                    //            reinterpret_cast<MKL_Complex8*>(pBuf));
-
-                    //        memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
-                    //        for ( size_t sCha=1; sCha<srcCHA; sCha++ )
-                    //        {
-                    //            vcAdd(ro*e1, reinterpret_cast<MKL_Complex8*>(pY+dCha*ro*e1),
-                    //                reinterpret_cast<MKL_Complex8*>(pBuf+sCha*ro*e1),
-                    //                reinterpret_cast<MKL_Complex8*>(pY+dCha*ro*e1));
-                    //        }
-                    //    }
-                    //}
-
                     // #pragma omp parallel for default(none) private(dCha, n) shared(N, ro, e1, srcCHA, dstCHA, kerN, pXN, pYN, pBufN, pKerN)
                     for ( dCha=0; dCha<(long long)dstCHA; dCha++ )
                     {
@@ -2081,10 +2237,6 @@ namespace Gadgetron {
                             const T* pX = pXN + n*ro*e1*srcCHA;
                             T* pBuf =pBufN + n*ro*e1*srcCHA;
 
-                            /*vcMul(ro*e1*srcCHA, reinterpret_cast<const MKL_Complex8*>(pX),
-                                reinterpret_cast<const MKL_Complex8*>(ker+dCha*ro*e1*srcCHA),
-                                reinterpret_cast<MKL_Complex8*>(pBuf));*/
-
                             Gadgetron::multiply(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
                         //}
 
@@ -2096,10 +2248,6 @@ namespace Gadgetron {
                             memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
                             for ( long long sCha=1; sCha<srcCHA; sCha++ )
                             {
-                                /*vcAdd(ro*e1, reinterpret_cast<MKL_Complex8*>(pY+dCha*ro*e1),
-                                    reinterpret_cast<MKL_Complex8*>(pBuf+sCha*ro*e1),
-                                    reinterpret_cast<MKL_Complex8*>(pY+dCha*ro*e1));*/
-
                                 Gadgetron::add(ro*e1, pY+dCha*ro*e1, pBuf+sCha*ro*e1, pY+dCha*ro*e1);
                             }
                         }
@@ -2120,19 +2268,11 @@ namespace Gadgetron {
 
                         for ( long long dCha=0; dCha<dstCHA; dCha++ )
                         {
-                            /*vzMul(ro*e1*srcCHA, reinterpret_cast<const MKL_Complex16*>(pX),
-                                reinterpret_cast<const MKL_Complex16*>(ker+dCha*ro*e1*srcCHA),
-                                reinterpret_cast<MKL_Complex16*>(pBuf));*/
-
                             Gadgetron::multiply(ro*e1*srcCHA, pX, ker+dCha*ro*e1*srcCHA, pBuf);
 
                             memcpy(pY+dCha*ro*e1, pBuf, sizeof(T)*ro*e1);
                             for ( long long sCha=1; sCha<srcCHA; sCha++ )
                             {
-                                /*vzAdd(ro*e1, reinterpret_cast<MKL_Complex16*>(pY+dCha*ro*e1),
-                                    reinterpret_cast<MKL_Complex16*>(pBuf+sCha*ro*e1),
-                                    reinterpret_cast<MKL_Complex16*>(pY+dCha*ro*e1));*/
-
                                 Gadgetron::add(ro*e1, pY+dCha*ro*e1, pBuf+sCha*ro*e1, pY+dCha*ro*e1);
                             }
                         }
@@ -2143,6 +2283,68 @@ namespace Gadgetron {
         catch (...)
         {
             GADGET_ERROR_MSG("Errors in imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y) ... ");
+            return false;
+        }
+        return true;
+    }
+
+    template<typename CoordType, typename T> 
+    bool computePeriodicBoundaryValues(const hoNDArray<CoordType>& x, const hoNDArray<T>& y, CoordType start, CoordType end, hoNDArray<CoordType>& vx, hoNDArray<T>& vy)
+    {
+        try
+        {
+            typedef typename realType<T>::Type real_value_type;
+
+            size_t N = x.get_size(0);
+            size_t M = y.get_size(1);
+
+            GADGET_CHECK_RETURN_FALSE(y.get_size(0)==N);
+            GADGET_CHECK_RETURN_FALSE(start<=x(0));
+            GADGET_CHECK_RETURN_FALSE(end>=x(N-1));
+
+            vx.create(N+2);
+            vy.create(N+2, M);
+
+            size_t m, n;
+
+            vx(0) = start;
+            for ( n=0; n<N; n++ )
+            {
+                vx(n+1) = x(n);
+            }
+            vx(N+1) = end;
+
+            CoordType dS = x(0) - start;
+            CoordType dE = end - x(N-1);
+
+            // start, end
+            CoordType wS;
+            if ( dE+dS > FLT_EPSILON )
+                wS = dE/(dE+dS);
+            else
+                wS = dE/FLT_EPSILON;
+
+            for ( m=0; m<M; m++ )
+            {
+                T a = y(0, m);
+                T b = y(N-1, m);
+
+                vy(0, m) = b + (real_value_type)wS * ( a - b );
+                vy(N+1, m) = vy(0, m);
+            }
+
+            // middle
+            for ( n=0; n<N; n++ )
+            {
+                for ( m=0; m<M; m++ )
+                {
+                    vy(n+1, m) = y(n, m);
+                }
+            }
+        }
+        catch (...)
+        {
+            GADGET_ERROR_MSG("Errors in computePeriodicBoundaryValues(const hoNDArray<CoordType>& x, const hoNDArray<T>& y, CoordType& start, CoordType& end, hoNDArray<T>& r) ... ");
             return false;
         }
         return true;
@@ -2228,19 +2430,33 @@ namespace Gadgetron {
     template EXPORTGTPLUS bool multipleMultiply(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& y, hoNDArray<GT_Complex8>& r);
     template EXPORTGTPLUS bool multipleMultiply(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& y, hoNDArray<GT_Complex16>& r);
 
-    template EXPORTGTPLUS bool cropUpTo10DArray(const hoNDArray<short>& x, hoNDArray<short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
-    template EXPORTGTPLUS bool cropUpTo10DArray(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
-    template EXPORTGTPLUS bool cropUpTo10DArray(const hoNDArray<float>& x, hoNDArray<float>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
-    template EXPORTGTPLUS bool cropUpTo10DArray(const hoNDArray<double>& x, hoNDArray<double>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
-    template EXPORTGTPLUS bool cropUpTo10DArray(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
-    template EXPORTGTPLUS bool cropUpTo10DArray(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
+    template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<short>& x, hoNDArray<short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
+    template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
+    template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<float>& x, hoNDArray<float>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
+    template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<double>& x, hoNDArray<double>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
+    template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
+    template EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
 
-    template EXPORTGTPLUS bool setSubArrayUpTo10DArray(const hoNDArray<short>& x, hoNDArray<short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
-    template EXPORTGTPLUS bool setSubArrayUpTo10DArray(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
-    template EXPORTGTPLUS bool setSubArrayUpTo10DArray(const hoNDArray<float>& x, hoNDArray<float>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
-    template EXPORTGTPLUS bool setSubArrayUpTo10DArray(const hoNDArray<double>& x, hoNDArray<double>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
-    template EXPORTGTPLUS bool setSubArrayUpTo10DArray(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
-    template EXPORTGTPLUS bool setSubArrayUpTo10DArray(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
+    template EXPORTGTPLUS bool setSubArrayUpTo11DArray(const hoNDArray<short>& x, hoNDArray<short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
+    template EXPORTGTPLUS bool setSubArrayUpTo11DArray(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
+    template EXPORTGTPLUS bool setSubArrayUpTo11DArray(const hoNDArray<float>& x, hoNDArray<float>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
+    template EXPORTGTPLUS bool setSubArrayUpTo11DArray(const hoNDArray<double>& x, hoNDArray<double>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
+    template EXPORTGTPLUS bool setSubArrayUpTo11DArray(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
+    template EXPORTGTPLUS bool setSubArrayUpTo11DArray(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r, const std::vector<size_t>& start, std::vector<size_t>& size);
+
+    template EXPORTGTPLUS bool extractSampledLinesUpTo11DArray(const hoNDArray<short>& x, hoNDArray<short>& r, const hoNDArray<float>& timeStamp, double acceFactorE1, double acceFactorE2);
+    template EXPORTGTPLUS bool extractSampledLinesUpTo11DArray(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, const hoNDArray<float>& timeStamp, double acceFactorE1, double acceFactorE2);
+    template EXPORTGTPLUS bool extractSampledLinesUpTo11DArray(const hoNDArray<float>& x, hoNDArray<float>& r, const hoNDArray<float>& timeStamp, double acceFactorE1, double acceFactorE2);
+    template EXPORTGTPLUS bool extractSampledLinesUpTo11DArray(const hoNDArray<double>& x, hoNDArray<double>& r, const hoNDArray<float>& timeStamp, double acceFactorE1, double acceFactorE2);
+    template EXPORTGTPLUS bool extractSampledLinesUpTo11DArray(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r, const hoNDArray<float>& timeStamp, double acceFactorE1, double acceFactorE2);
+    template EXPORTGTPLUS bool extractSampledLinesUpTo11DArray(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r, const hoNDArray<float>& timeStamp, double acceFactorE1, double acceFactorE2);
+
+    template EXPORTGTPLUS bool fillSampledLinesUpTo11DArray(const hoNDArray<short>& x, hoNDArray<short>& r, const hoNDArray<float>& timeStamp);
+    template EXPORTGTPLUS bool fillSampledLinesUpTo11DArray(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, const hoNDArray<float>& timeStamp);
+    template EXPORTGTPLUS bool fillSampledLinesUpTo11DArray(const hoNDArray<float>& x, hoNDArray<float>& r, const hoNDArray<float>& timeStamp);
+    template EXPORTGTPLUS bool fillSampledLinesUpTo11DArray(const hoNDArray<double>& x, hoNDArray<double>& r, const hoNDArray<float>& timeStamp);
+    template EXPORTGTPLUS bool fillSampledLinesUpTo11DArray(const hoNDArray<GT_Complex8>& x, hoNDArray<GT_Complex8>& r, const hoNDArray<float>& timeStamp);
+    template EXPORTGTPLUS bool fillSampledLinesUpTo11DArray(const hoNDArray<GT_Complex16>& x, hoNDArray<GT_Complex16>& r, const hoNDArray<float>& timeStamp);
 
     template EXPORTGTPLUS bool cropOver3rdDimension(const hoNDArray<short>& x, hoNDArray<short>& r, size_t start, size_t end);
     template EXPORTGTPLUS bool cropOver3rdDimension(const hoNDArray<unsigned short>& x, hoNDArray<unsigned short>& r, size_t start, size_t end);
@@ -2302,4 +2518,13 @@ namespace Gadgetron {
     template EXPORTGTPLUS bool imageDomainUnwrapping2DT(const hoNDArray<GT_Complex8>& x, const hoNDArray<GT_Complex8>& ker, hoNDArray<GT_Complex8>& buf, hoNDArray<GT_Complex8>& y);
     template EXPORTGTPLUS bool imageDomainUnwrapping2DT(const hoNDArray<GT_Complex16>& x, const hoNDArray<GT_Complex16>& ker, hoNDArray<GT_Complex16>& buf, hoNDArray<GT_Complex16>& y);
 
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray<float>& y, float start, float end, hoNDArray<float>& vx, hoNDArray<float>& vy);
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray<double>& y, float start, float end, hoNDArray<float>& vx, hoNDArray<double>& vy);
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray<GT_Complex8>& y, float start, float end, hoNDArray<float>& vx, hoNDArray<GT_Complex8>& vy);
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<float>& x, const hoNDArray<GT_Complex16>& y, float start, float end, hoNDArray<float>& vx, hoNDArray<GT_Complex16>& vy);
+
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray<double>& y, double start, double end, hoNDArray<double>& vx, hoNDArray<double>& vy);
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray<float>& y, double start, double end, hoNDArray<double>& vx, hoNDArray<float>& vy);
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray<GT_Complex8>& y, double start, double end, hoNDArray<double>& vx, hoNDArray<GT_Complex8>& vy);
+    template EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<double>& x, const hoNDArray<GT_Complex16>& y, double start, double end, hoNDArray<double>& vx, hoNDArray<GT_Complex16>& vy);
 }

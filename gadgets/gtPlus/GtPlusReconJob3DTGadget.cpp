@@ -71,7 +71,7 @@ int GtPlusReconJob3DTGadget::process_config(ACE_Message_Block* mb)
     // generate the destination folder
     if ( !debugFolder_.empty() )
     {
-        GADGET_CHECK_RETURN_FALSE(generateDebugFolderPath(debugFolder_, debugFolder_fullPath_));
+        getDebugFolderPath(debugFolder_, debugFolder_fullPath_, verboseMode_);
     }
     else
     {
@@ -80,7 +80,7 @@ int GtPlusReconJob3DTGadget::process_config(ACE_Message_Block* mb)
 
     if ( !debugFolder2_.empty() )
     {
-        GADGET_CHECK_RETURN_FALSE(generateDebugFolderPath(debugFolder2_, debugFolder2_fullPath_));
+        getDebugFolderPath(debugFolder2_, debugFolder2_fullPath_, verboseMode_);
     }
     else
     {
@@ -232,29 +232,6 @@ sendOutJob(int jobID, GtPlusReconJobTypeCPFL* job)
     }
 
     return true;
-}
-
-bool GtPlusReconJob3DTGadget::
-    generateDebugFolderPath(const std::string& debugFolder, std::string& debugFolderPath)
-{
-    debugFolderPath = ACE_OS::getenv("GADGETRON_HOME");
-    debugFolderPath.append("/");
-    debugFolderPath.append(debugFolder);
-    debugFolderPath.append("/");
-    GADGET_CONDITION_MSG(verboseMode_, "Debug folder is " << debugFolderPath);
-    return true;
-}
-
-void GtPlusReconJob3DTGadget::
-    getCurrentMoment(std::string& procTime)
-{
-    char timestamp[100];
-    time_t mytime;
-    struct tm *mytm;
-    mytime=time(NULL);
-    mytm=localtime(&mytime);
-    strftime(timestamp, sizeof(timestamp),"_%a_%d_%b_%Y_%H_%M_%S",mytm);
-    procTime = timestamp;
 }
 
 GADGET_FACTORY_DECLARE(GtPlusReconJob3DTGadget)

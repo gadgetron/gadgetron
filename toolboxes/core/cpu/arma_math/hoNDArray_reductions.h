@@ -25,4 +25,9 @@ namespace Gadgetron{
    * Calculates the sum of the array
    */
   template<class T> EXPORTCPUCOREMATH T sum(hoNDArray<T>* data);
+
+  /***
+   * Calculates the std of the array
+   */
+  template<class T> EXPORTCPUCOREMATH T stddev(hoNDArray<T>* data);
 }

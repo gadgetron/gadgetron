@@ -109,7 +109,7 @@ solve(const Array_Type_I& b, Array_Type_O& x)
         value_type phibar = beta;
 
         // v = A(u, varargin{:},'transp');
-        Array_Type_I v(b);
+        Array_Type_I v(x);
         GADGET_CHECK_RETURN_FALSE(oper_->adjointOperator(u, v));
 
         value_type alpha;
@@ -119,7 +119,7 @@ solve(const Array_Type_I& b, Array_Type_O& x)
             GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( value_type(1.0)/alpha, v));
         }
 
-        Array_Type_I d(b);
+        Array_Type_I d(x);
         Gadgetron::clear(d);
 
         value_type normar;
@@ -140,7 +140,7 @@ solve(const Array_Type_I& b, Array_Type_O& x)
 
         // loop over maxit iterations (unless convergence or failure)
 
-        Array_Type_I z(v), dtmp(d), ztmp(d), vt(v);
+        Array_Type_I z(v), dtmp(d), ztmp(v), vt(v), utmp(u);
         Array_Type_I normaVec(3);
 
         value_type thet, rhot, rho, phi, tmp, tmp2;
@@ -152,9 +152,9 @@ solve(const Array_Type_I& b, Array_Type_O& x)
             memcpy(z.begin(), v.begin(), v.get_number_of_bytes());
 
             // u = A(z, varargin{:},'notransp') - alpha*u;
-            GADGET_CHECK_RETURN_FALSE(oper_->forwardOperator(z, dtmp));
+            GADGET_CHECK_RETURN_FALSE(oper_->forwardOperator(z, utmp));
             GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( alpha, u));
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::subtract( dtmp, u, u));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::subtract( utmp, u, u));
 
             Gadgetron::norm2(u, beta);
             GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( value_type(1.0)/beta, u));

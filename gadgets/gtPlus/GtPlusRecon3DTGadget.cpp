@@ -94,7 +94,7 @@ bool GtPlusRecon3DTGadget::readParameters()
         GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
 
         // get the parameters from base class
-        BaseClass::readParameters();
+        // BaseClass::readParameters();
 
         para_.recon_kspace_needed_ = recon_kspace_needed_;
         para_.workOrderPara_ = workOrderPara_;
@@ -232,9 +232,9 @@ int GtPlusRecon3DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
     boost::shared_ptr< std::vector<size_t> > dims = workOrder->data_.get_dimensions();
 
-    GADGET_CONDITION_MSG(verboseMode_, "[Ro E1 Cha Slice E2 Con Phase Rep Set Seg] = [" 
+    GADGET_CONDITION_MSG(verboseMode_, "[Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
         << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " << (*dims)[3] << " " << (*dims)[4] 
-        << " " << (*dims)[5] << " " << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " << (*dims)[9] << "]");
+        << " " << (*dims)[5] << " " << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " << (*dims)[9] << " " << (*dims)[10] << "]");
 
     dimensions_ = *dims;
 
@@ -306,15 +306,19 @@ int GtPlusRecon3DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     // ---------------------------------------------------------
     // set the worker
     // ---------------------------------------------------------
+    worker_grappa_.verbose_ = verboseMode_;
     worker_grappa_.performTiming_ = performTiming_;
     if ( !debugFolder_fullPath_.empty() ) worker_grappa_.debugFolder_ = debugFolder_fullPath_;
 
+    worker_noacceleration_.verbose_ = verboseMode_;
     worker_noacceleration_.performTiming_ = performTiming_;
     if ( !debugFolder_fullPath_.empty() ) worker_noacceleration_.debugFolder_ = debugFolder_fullPath_;
 
+    worker_spirit_.verbose_ = verboseMode_;
     worker_spirit_.performTiming_ = performTiming_;
     if ( !debugFolder_fullPath_.empty() ) worker_spirit_.debugFolder_ = debugFolder_fullPath_;
 
+    worker_spirit_L1_ncg_.verbose_ = verboseMode_;
     worker_spirit_L1_ncg_.performTiming_ = performTiming_;
     if ( !debugFolder_fullPath_.empty() ) worker_spirit_L1_ncg_.debugFolder_ = debugFolder_fullPath_;
 
@@ -367,7 +371,7 @@ int GtPlusRecon3DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
         workflow_.workOrder_->print(std::cout);
     }
 
-    workflow_.setDataArray(workOrder->data_);
+    workflow_.setDataArray(workOrder->data_, workOrder->time_stamp_, workOrder->physio_time_stamp_);
 
     if ( workOrder->ref_.get_number_of_elements() > 0 )
     {

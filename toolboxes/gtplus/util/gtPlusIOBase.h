@@ -13,16 +13,9 @@
 
 #include "NDArray.h"
 #include "complext.h"
-#include "vector_td.h"
 #include "GadgetronException.h"
 
 #include "hoNDArray.h"
-#include "ho2DArray.h"
-#include "ho3DArray.h"
-#include "ho4DArray.h"
-#include "ho5DArray.h"
-#include "ho6DArray.h"
-#include "ho7DArray.h"
 #include "hoNDImage.h"
 
 #include "hoNDArray_fileio.h"
@@ -36,9 +29,6 @@ typedef std::complex<float> GT_Complex8;
     #undef GT_Complex16
 #endif // GT_Complex16
 typedef std::complex<double> GT_Complex16;
-
-#include "hoNDArray_math_util.h"
-#include "hoNDImage_util.h"
 
 namespace Gadgetron { namespace gtPlus {
 
@@ -283,14 +273,27 @@ public:
         {
             typedef typename Gadgetron::realType<T>::Type value_type;
 
-            hoNDArray<value_type> buf;
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::complex_to_real(a, buf));
+            hoNDArray<value_type> buf(a.get_dimensions());
+
+            long long num = (long long)a.get_number_of_elements();
+
+            long long n;
+            #pragma omp parallel for default(none) private(n) shared(num, a, buf)
+            for ( n=0; n<num; n++ )
+            {
+                buf(n) = a(n).real();
+            }
 
             std::string filenameReal = filename;
             filenameReal.append("_REAL");
             GADGET_CHECK_RETURN_FALSE(exportArray(buf, filenameReal));
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::complex_to_imag(a, buf));
+            #pragma omp parallel for default(none) private(n) shared(num, a, buf)
+            for ( n=0; n<num; n++ )
+            {
+                buf(n) = a(n).imag();
+            }
+
             std::string filenameImag = filename;
             filenameImag.append("_IMAG");
             GADGET_CHECK_RETURN_FALSE(exportArray(buf, filenameImag));
@@ -393,7 +396,15 @@ public:
             filenameImag.append("_IMAG");
             GADGET_CHECK_RETURN_FALSE(importArray(imag, filenameImag));
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::real_imag_to_complex(real, imag, a));
+            a.create(real.get_dimensions());
+            long long num = (long long)real.get_number_of_elements();
+
+            long long n;
+            #pragma omp parallel for private(n) shared(num, a, real, imag)
+            for ( n=0; n<num; n++ )
+            {
+                a(n) = T(real(n), imag(n));
+            }
         }
         catch(...)
         {
@@ -415,7 +426,15 @@ public:
             GADGET_CHECK_RETURN_FALSE(importArray(real, filename_real));
             GADGET_CHECK_RETURN_FALSE(importArray(imag, filename_imag));
 
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::real_imag_to_complex(real, imag, a));
+            a.create(real.get_dimensions());
+            long long num = (long long)real.get_number_of_elements();
+
+            long long n;
+            #pragma omp parallel for private(n) shared(num, a, real, imag)
+            for ( n=0; n<num; n++ )
+            {
+                a(n) = T(real(n), imag(n));
+            }
         }
         catch(...)
         {
@@ -538,258 +557,6 @@ public:
         catch(...)
         {
             GADGET_ERROR_MSG("Errors in export4DArrayComplex(const hoNDArray<T>& a, const std::string& filename) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    /// image functions
-
-    template <typename T, unsigned int D> 
-    bool exportImage(const hoNDImage<T,D>& a, const std::string& filename)
-    {
-        return true;
-    }
-
-    template <typename T, unsigned int D> 
-    bool importImage(hoNDImage<T,D>& a, const std::string& filename)
-    {
-        return true;
-    }
-
-    template <typename T, unsigned int D> 
-    bool exportImageComplex(const hoNDImage<T,D>& a, const std::string& filename)
-    {
-        try
-        {
-            typedef typename Gadgetron::realType<T>::Type value_type;
-
-            //hoNDImage<value_type, D> buf;
-            //GADGET_CHECK_RETURN_FALSE(Gadgetron::complex_to_real(a, buf));
-
-            //std::string filenameReal = filename;
-            //filenameReal.append("_REAL");
-            //GADGET_CHECK_RETURN_FALSE(exportImage(buf, filenameReal));
-
-            //GADGET_CHECK_RETURN_FALSE(Gadgetron::complex_to_imag(a, buf));
-            //std::string filenameImag = filename;
-            //filenameImag.append("_IMAG");
-            //GADGET_CHECK_RETURN_FALSE(exportImage(buf, filenameImag));
-
-            //GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(a, buf));
-            //std::string filenameMag = filename;
-            //filenameMag.append("_MAG");
-            //GADGET_CHECK_RETURN_FALSE(exportImage(buf, filenameMag));
-
-            //GADGET_CHECK_RETURN_FALSE(Gadgetron::argument(a, buf));
-            //std::string filenamePhase = filename;
-            //filenamePhase.append("_PHASE");
-            //GADGET_CHECK_RETURN_FALSE(exportImage(buf, filenamePhase));
-
-            long long num = (long long)a.get_number_of_elements();
-
-            long long n;
-
-            hoNDImage<value_type, D> rpart, ipart, mag, phs;
-            rpart.create(a.get_dimensions());
-            ipart.create(a.get_dimensions());
-            mag.create(a.get_dimensions());
-            phs.create(a.get_dimensions());
-
-            #pragma omp parallel for default(none) private(n) shared(num, a, rpart, ipart, mag, phs)
-            for ( n=0; n<num; n++ )
-            {
-                rpart(n) = a(n).real();
-                ipart(n) = a(n).imag();
-                mag(n) = std::abs( a(n) );
-                phs(n) = std::arg( a(n) );
-            }
-
-            std::string filenameReal = filename;
-            filenameReal.append("_REAL");
-            GADGET_CHECK_RETURN_FALSE(exportImage(rpart, filenameReal));
-
-            std::string filenameImag = filename;
-            filenameImag.append("_IMAG");
-            GADGET_CHECK_RETURN_FALSE(exportImage(ipart, filenameImag));
-
-            std::string filenameMag = filename;
-            filenameMag.append("_MAG");
-            GADGET_CHECK_RETURN_FALSE(exportImage(mag, filenameMag));
-
-            std::string filenamePhase = filename;
-            filenamePhase.append("_PHASE");
-            GADGET_CHECK_RETURN_FALSE(exportImage(phs, filenamePhase));
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in exportImageComplex(const hoNDImage<T,D>& a, const std::string& filename) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    template <typename T, unsigned int D> 
-    bool importImageComplex(hoNDImage<T,D>& a, const std::string& filename)
-    {
-        try
-        {
-            typedef typename T::value_type value_type;
-            hoNDImage<value_type, D> real, imag;
-
-            std::string filenameReal = filename;
-            filenameReal.append("_REAL");
-            GADGET_CHECK_RETURN_FALSE(importImage(real, filenameReal));
-
-            std::string filenameImag = filename;
-            filenameImag.append("_IMAG");
-            GADGET_CHECK_RETURN_FALSE(importImage(imag, filenameImag));
-
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::real_imag_to_complex(real, imag, a));
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in importImageComplex(const hoNDImage<T,D>& a, const std::string& filename) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    template <typename T, unsigned int D> 
-    bool importImageComplex(hoNDImage<T,D>& a, const std::string& filename_real, const std::string& filename_imag)
-    {
-        try
-        {
-            typedef typename realType<T>::Type value_type;
-            hoNDImage<value_type, D> real, imag;
-
-            GADGET_CHECK_RETURN_FALSE(importImage(real, filename_real));
-            GADGET_CHECK_RETURN_FALSE(importImage(imag, filename_imag));
-
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::real_imag_to_complex(real, imag, a));
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in importImageComplex(hoNDImage<T,D>& a, const std::string& filename_real, const std::string& filename_imag) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    template <typename T> 
-    bool export2DImage(const hoNDImage<T,2>& a, const std::string& filename)
-    {
-        return exportImage(a, filename);
-    }
-
-    template <typename T> 
-    bool import2DImage(hoNDImage<T,2>& a, const std::string& filename)
-    {
-        return importImage(a, filename);
-    }
-
-    template <typename T> 
-    bool export2DImageComplex(const hoNDImage<T,2>& a, const std::string& filename)
-    {
-        return exportImageComplex(a, filename);
-    }
-
-    template <typename T> 
-    bool import2DImageComplex(hoNDImage<T,2>& a, const std::string& filename)
-    {
-        return importImageComplex(a, filename);
-    }
-
-    template <typename T> 
-    bool export3DImage(const hoNDImage<T,3>& a, const std::string& filename)
-    {
-        return exportImage(a, filename);
-    }
-
-    template <typename T> 
-    bool import3DImage(hoNDImage<T,3>& a, const std::string& filename)
-    {
-        return importImage(a, filename);
-    }
-
-    template <typename T> 
-    bool export3DImageComplex(const hoNDImage<T,3>& a, const std::string& filename)
-    {
-        return exportImageComplex(a, filename);
-    }
-
-    template <typename T> 
-    bool import3DImageComplex(hoNDImage<T,3>& a, const std::string& filename)
-    {
-        return importImageComplex(a, filename);
-    }
-
-    template <typename T> 
-    bool export4DImage(const hoNDImage<T,4>& a, const std::string& filename)
-    {
-        try
-        {
-            size_t RO     = a.get_size(0);
-            size_t E1     = a.get_size(1);
-            size_t CHA    = a.get_size(2);
-            size_t N      = a.get_size(3);
-
-            size_t ii;
-            for (ii=0; ii<N; ii++ )
-            {
-                std::vector<size_t> dim(3);
-                dim[0] = RO;
-                dim[1] = E1;
-                dim[2] = CHA;
-
-                hoNDImage<T, 3> a3D(dim, const_cast<T*>(a.begin()+ii*RO*E1*CHA), false);
-
-                std::ostringstream ostr;
-                ostr << filename << "_" << ii << std::ends;
-                GADGET_CHECK_RETURN_FALSE(export3DImage(a3D, ostr.str()));
-            }
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in export4DImage(const hoNDImage<T>& a, const std::string& filename) ... ");
-            return false;
-        }
-
-        return true;
-    }
-
-    template <typename T> 
-    bool export4DImageComplex(const hoNDImage<T,4>& a, const std::string& filename)
-    {
-        try
-        {
-            size_t RO     = a.get_size(0);
-            size_t E1     = a.get_size(1);
-            size_t CHA    = a.get_size(2);
-            size_t N      = a.get_size(3);
-
-            size_t ii;
-            for (ii=0; ii<N; ii++ )
-            {
-                std::vector<size_t> dim(3);
-                dim[0] = RO;
-                dim[1] = E1;
-                dim[2] = CHA;
-
-                hoNDImage<T, 3> a3D(dim, const_cast<T*>(a.begin()+ii*RO*E1*CHA), false);
-
-                std::ostringstream ostr;
-                ostr << filename << "_" << ii << std::ends;
-                GADGET_CHECK_RETURN_FALSE(export3DImageComplex(a3D, ostr.str()));
-            }
-        }
-        catch(...)
-        {
-            GADGET_ERROR_MSG("Errors in export4DImageComplex(const hoNDImage<T>& a, const std::string& filename) ... ");
             return false;
         }
 

@@ -42,6 +42,10 @@ public:
     // in : [RO E1 1+3*level], out : [RO E1]
     bool idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level);
 
+    virtual bool unitary() const { return true; }
+
+    using BaseClass::scale_factor_first_dimension_;
+    using BaseClass::scale_factor_second_dimension_;
     using BaseClass::numOfWavLevels_;
     using BaseClass::with_approx_coeff_;
     using BaseClass::gt_timer1_;

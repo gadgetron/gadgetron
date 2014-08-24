@@ -1,7 +1,7 @@
 #include "WhiteNoiseInjectorGadget.h"
 #include "gtPlusUtil.h"
 #include <array>
-#includ "ismrmrd_xml.h"
+#include "ismrmrd_xml.h"
 
 namespace Gadgetron
 {
@@ -78,7 +78,7 @@ int WhiteNoiseInjectorGadget::process_config(ACE_Message_Block* mb)
 
     if( h.encoding.size() != 1)
     {
-      GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
+      GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
       GADGET_DEBUG1("This simple WhiteNoiseInjectorGadget only supports one encoding space\n");
       return GADGET_FAIL;
     }

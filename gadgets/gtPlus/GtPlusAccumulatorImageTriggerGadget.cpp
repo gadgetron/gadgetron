@@ -1,5 +1,6 @@
 
 #include "GtPlusAccumulatorImageTriggerGadget.h"
+#include "GtPlusReconGadgetUtil.h"
 
 using namespace Gadgetron::gtPlus;
 
@@ -15,8 +16,9 @@ GtPlusAccumulatorImageTriggerGadget::GtPlusAccumulatorImageTriggerGadget() : ima
     phs_trigger_ = false;
     rep_trigger_ = false;
     set_trigger_ = false;
+    ave_trigger_ = false;
 
-    num_of_dimensions_ = 7; // [CHA SLC E2 CON PHS REP SET]
+    num_of_dimensions_ = 8; // [CHA SLC E2 CON PHS REP SET AVE]
 
     // this may be changed later if multi-channel image workflow are used
     meas_max_channel_ = 1;
@@ -42,18 +44,25 @@ int GtPlusAccumulatorImageTriggerGadget::process_config(ACE_Message_Block* mb)
     phs_trigger_ = this->get_bool_value("TriggerPhase");
     rep_trigger_ = this->get_bool_value("TriggerRepetition");
     set_trigger_ = this->get_bool_value("TriggerSet");
+    ave_trigger_ = this->get_bool_value("TriggerAverage");
 
     pass_image_immediate_ = this->get_bool_value("PassImageImmediately");
 
     // ---------------------------------------------------------------------------------------------------------
     // pass the xml file
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
+    ISMRMRD::IsmrmrdHeader h;
+    try {
+      deserialize(mb->rd_ptr(),h);
+    } catch (...) {
+      GADGET_DEBUG1("Error parsing ISMRMRD Header");
+      throw;
+      return GADGET_FAIL;
+    }
 
     // seq object
-    ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-    if (e_seq.size() != 1)
+    if (h.encoding.size() != 1)
     {
-        GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
+        GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
         GADGET_DEBUG1("This simple GtPlusAccumulatorImageTriggerGadget only supports one encoding space\n");
         return GADGET_FAIL;
     }
@@ -61,139 +70,130 @@ int GtPlusAccumulatorImageTriggerGadget::process_config(ACE_Message_Block* mb)
     // ---------------------------------------------------------------------------------------------------------
 
     // find out the encoding space 
-    ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
-    ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
+    findMatrixSizeEncoding(h, matrix_size_encoding_);
+    findFOVEncoding(h, field_of_view_encoding_);
 
-    matrix_size_encoding_[0] = e_space.matrixSize().x();
-    matrix_size_encoding_[1] = e_space.matrixSize().y();
-    matrix_size_encoding_[2] = e_space.matrixSize().z();
+    findMatrixSizeRecon(h, matrix_size_recon_);
+    findFOVRecon(h, field_of_view_recon_);
+
     GADGET_CONDITION_MSG(verboseMode_, "Encoding matrix size: " << matrix_size_encoding_[0] << " " << matrix_size_encoding_[1] << " " << matrix_size_encoding_[2]);
-
-    field_of_view_encoding_[0] = e_space.fieldOfView_mm().x();
-    field_of_view_encoding_[1] = e_space.fieldOfView_mm().y();
-    field_of_view_encoding_[2] = e_space.fieldOfView_mm().z();
     GADGET_CONDITION_MSG(verboseMode_, "Encoding field_of_view : " << field_of_view_encoding_[0] << " " << field_of_view_encoding_[1] << " " << field_of_view_encoding_[2]);
-
-    // find the recon space
-    matrix_size_recon_[0] = r_space.matrixSize().x();
-    matrix_size_recon_[1] = r_space.matrixSize().y();
-    matrix_size_recon_[2] = r_space.matrixSize().z();
     GADGET_CONDITION_MSG(verboseMode_, "Recon matrix size : " << matrix_size_recon_[0] << " " << matrix_size_recon_[1] << " " << matrix_size_recon_[2]);
-
-    field_of_view_recon_[0] = r_space.fieldOfView_mm().x();
-    field_of_view_recon_[1] = r_space.fieldOfView_mm().y();
-    field_of_view_recon_[2] = r_space.fieldOfView_mm().z();
     GADGET_CONDITION_MSG(verboseMode_, "Recon field_of_view :  " << field_of_view_recon_[0] << " " << field_of_view_recon_[1] << " " << field_of_view_recon_[2]);
 
     // ---------------------------------------------------------------------------------------------------------
     // encoding limits
+    GADGET_CHECK_RETURN(findEncodingLimits(h, meas_max_idx_, verboseMode_), GADGET_FAIL);
 
-    if (e_limits.kspace_encoding_step_1().present()) 
-    {
-        meas_max_idx_.kspace_encode_step_1 = matrix_size_encoding_[1]-1; // e_limits.kspace_encoding_step_1().get().maximum();
-    }
-    else
-    {
-        meas_max_idx_.kspace_encode_step_1 = 0;
-        std::cout << "Setting number of kspace_encode_step_1 to 0" << std::endl;
-        return GADGET_FAIL;
-    }
+    //ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
 
-    if (e_limits.set().present())
-    {
-        if ( e_limits.set().get().maximum() > 0 )
-            meas_max_idx_.set = e_limits.set().get().maximum() - 1;
-        else
-            meas_max_idx_.set = 0;
+    //if (e_limits.kspace_encoding_step_1) 
+    //{
+    //    meas_max_idx_.kspace_encode_step_1 = (uint16_t)(matrix_size_encoding_[1]-1); // e_limits.kspace_encoding_step_1().get().maximum();
+    //}
+    //else
+    //{
+    //    meas_max_idx_.kspace_encode_step_1 = 0;
+    //    std::cout << "Setting number of kspace_encode_step_1 to 0" << std::endl;
+    //    return GADGET_FAIL;
+    //}
 
-        if ( meas_max_idx_.set < 0 ) meas_max_idx_.set = 0;
-    }
-    else
-    {
-        meas_max_idx_.set = 0;
-    }
+    //if (e_limits.set)
+    //{
+    //    if ( e_limits.set->maximum > 0 )
+    //        meas_max_idx_.set = e_limits.set->maximum - 1;
+    //    else
+    //        meas_max_idx_.set = 0;
 
-    if (e_limits.phase().present())
-    {
-        if ( e_limits.phase().get().maximum() > 0 )
-            meas_max_idx_.phase = e_limits.phase().get().maximum()-1;
-        else
-            meas_max_idx_.phase = 0;
+    //    if ( meas_max_idx_.set < 0 ) meas_max_idx_.set = 0;
+    //}
+    //else
+    //{
+    //    meas_max_idx_.set = 0;
+    //}
 
-        if ( meas_max_idx_.phase < 0 ) meas_max_idx_.phase = 0;
-    }
-    else
-    {
-        meas_max_idx_.phase = 0;
-    }
+    //if (e_limits.phase)
+    //{
+    //    if ( e_limits.phase->maximum > 0 )
+    //        meas_max_idx_.phase = e_limits.phase->maximum-1;
+    //    else
+    //        meas_max_idx_.phase = 0;
 
-    if (e_limits.kspace_encoding_step_2().present())
-    {
-        meas_max_idx_.kspace_encode_step_2 = matrix_size_encoding_[2] - 1; // e_limits.kspace_encoding_step_2().get().maximum();
-    }
-    else
-    {
-        meas_max_idx_.kspace_encode_step_2 = 0;
-    }
-    meas_max_idx_.kspace_encode_step_2 = matrix_size_recon_[2];
+    //    if ( meas_max_idx_.phase < 0 ) meas_max_idx_.phase = 0;
+    //}
+    //else
+    //{
+    //    meas_max_idx_.phase = 0;
+    //}
 
-    if (e_limits.contrast().present())
-    {
-        if ( e_limits.contrast().get().maximum() > 0 )
-            meas_max_idx_.contrast = e_limits.contrast().get().maximum()-1;
-        else
-            meas_max_idx_.contrast = 0;
+    //if (e_limits.kspace_encoding_step_2)
+    //{
+    //    meas_max_idx_.kspace_encode_step_2 = (uint16_t)(matrix_size_encoding_[2] - 1); // e_limits.kspace_encoding_step_2().get().maximum();
+    //}
+    //else
+    //{
+    //    meas_max_idx_.kspace_encode_step_2 = 0;
+    //}
+    //meas_max_idx_.kspace_encode_step_2 = (uint16_t)(matrix_size_recon_[2]);
 
-        if ( meas_max_idx_.contrast < 0 ) meas_max_idx_.contrast = 0;
-    }
-    else
-    {
-        meas_max_idx_.contrast = 0;
-    }
+    //if (e_limits.contrast)
+    //{
+    //    if ( e_limits.contrast->maximum > 0 )
+    //        meas_max_idx_.contrast = e_limits.contrast->maximum-1;
+    //    else
+    //        meas_max_idx_.contrast = 0;
 
-    if (e_limits.slice().present())
-    {
-        meas_max_idx_.slice = e_limits.slice().get().maximum();
-    }
-    else
-    {
-        meas_max_idx_.slice = 0;
-    }
+    //    if ( meas_max_idx_.contrast < 0 ) meas_max_idx_.contrast = 0;
+    //}
+    //else
+    //{
+    //    meas_max_idx_.contrast = 0;
+    //}
 
-    if (e_limits.repetition().present())
-    {
-        meas_max_idx_.repetition = e_limits.repetition().get().maximum();
-    }
-    else
-    {
-        meas_max_idx_.repetition = 0;
-    }
+    //if (e_limits.slice)
+    //{
+    //    meas_max_idx_.slice = e_limits.slice->maximum;
+    //}
+    //else
+    //{
+    //    meas_max_idx_.slice = 0;
+    //}
 
-    if (e_limits.average().present())
-    {
-        meas_max_idx_.average = e_limits.average().get().maximum()-1;
-    }
-    else
-    {
-        meas_max_idx_.average = 0;
-    }
+    //if (e_limits.repetition)
+    //{
+    //    meas_max_idx_.repetition = e_limits.repetition->maximum;
+    //}
+    //else
+    //{
+    //    meas_max_idx_.repetition = 0;
+    //}
 
-    if (e_limits.segment().present())
-    {
-        // meas_max_idx_.segment = e_limits.segment().get().maximum()-1;
-        meas_max_idx_.segment = 0;
-    }
-    else
-    {
-        meas_max_idx_.segment = 0;
-    }
+    //if (e_limits.average)
+    //{
+    //    meas_max_idx_.average = e_limits.average->maximum-1;
+    //}
+    //else
+    //{
+    //    meas_max_idx_.average = 0;
+    //}
+
+    //if (e_limits.segment)
+    //{
+    //    // meas_max_idx_.segment = e_limits.segment().get().maximum()-1;
+    //    meas_max_idx_.segment = 0;
+    //}
+    //else
+    //{
+    //    meas_max_idx_.segment = 0;
+    //}
 
     // allocate the image buffers
-    // [Cha Slice E2 Con Phase Rep Set]
-    //   0    1    2   3   4    5   6
+    // [Cha Slice E2 Con Phase Rep Set Ave]
+    //   0    1    2   3   4    5   6   7
 
-    dimensions_.resize(7, 0);
+    meas_max_idx_.kspace_encode_step_2 = (uint16_t)(matrix_size_recon_[2]);
+
+    dimensions_.resize(GT_DIM_NUM_IMAGE, 0);
     dimensions_[0] = meas_max_channel_;
     dimensions_[1] = meas_max_idx_.slice+1;
     dimensions_[2] = meas_max_idx_.kspace_encode_step_2;
@@ -201,6 +201,7 @@ int GtPlusAccumulatorImageTriggerGadget::process_config(ACE_Message_Block* mb)
     dimensions_[4] = meas_max_idx_.phase+1;
     dimensions_[5] = meas_max_idx_.repetition+1;
     dimensions_[6] = meas_max_idx_.set+1;
+    dimensions_[7] = meas_max_idx_.average+1;
 
     imageBuffer_.create(dimensions_);
     imageSent_.create(dimensions_);
@@ -221,50 +222,55 @@ int GtPlusAccumulatorImageTriggerGadget::process_config(ACE_Message_Block* mb)
     // set the dimensions under/not under trigger
     this->setDimensionsUnderTrigger();
 
-    GADGET_CONDITION_MSG(verboseMode_, "dimension limits                [Cha Slice E2 Con Phase Rep Set] = [" 
+    GADGET_CONDITION_MSG(verboseMode_, "dimension limits                [Cha Slice E2 Con Phase Rep Set Ave] = [" 
                                << " " << dimensions_[0] 
                                << " " << dimensions_[1] 
                                << " " << dimensions_[2] 
                                << " " << dimensions_[3]
                                << " " << dimensions_[4]
                                << " " << dimensions_[5]
-                               << " " << dimensions_[6] << "]");
+                               << " " << dimensions_[6] 
+                               << " " << dimensions_[7] << "]");
 
-    GADGET_CONDITION_MSG(verboseMode_, "dimension under trigger         [Cha Slice E2 Con Phase Rep Set] = [" 
+    GADGET_CONDITION_MSG(verboseMode_, "dimension under trigger         [Cha Slice E2 Con Phase Rep Set Ave] = [" 
                                << " " << dim_under_trigger_[0] 
                                << " " << dim_under_trigger_[1] 
                                << " " << dim_under_trigger_[2] 
                                << " " << dim_under_trigger_[3]
                                << " " << dim_under_trigger_[4]
                                << " " << dim_under_trigger_[5]
-                               << " " << dim_under_trigger_[6] << "]");
+                               << " " << dim_under_trigger_[6] 
+                               << " " << dim_under_trigger_[7] << "]");
 
-    GADGET_CONDITION_MSG(verboseMode_, "dimension limits under trigger  [Cha Slice E2 Con Phase Rep Set] = [" 
+    GADGET_CONDITION_MSG(verboseMode_, "dimension limits under trigger  [Cha Slice E2 Con Phase Rep Set Ave] = [" 
                                << " " << dim_limit_under_trigger_[0] 
                                << " " << dim_limit_under_trigger_[1] 
                                << " " << dim_limit_under_trigger_[2] 
                                << " " << dim_limit_under_trigger_[3]
                                << " " << dim_limit_under_trigger_[4]
                                << " " << dim_limit_under_trigger_[5]
-                               << " " << dim_limit_under_trigger_[6] << "]");
+                               << " " << dim_limit_under_trigger_[6] 
+                               << " " << dim_limit_under_trigger_[7] << "]");
 
-    GADGET_CONDITION_MSG(verboseMode_, "dimension NOT under trigger     [Cha Slice E2 Con Phase Rep Set] = [" 
+    GADGET_CONDITION_MSG(verboseMode_, "dimension NOT under trigger     [Cha Slice E2 Con Phase Rep Set Ave] = [" 
                                << " " << dim_not_under_trigger_[0] 
                                << " " << dim_not_under_trigger_[1] 
                                << " " << dim_not_under_trigger_[2] 
                                << " " << dim_not_under_trigger_[3]
                                << " " << dim_not_under_trigger_[4]
                                << " " << dim_not_under_trigger_[5]
-                               << " " << dim_not_under_trigger_[6] << "]");
+                               << " " << dim_not_under_trigger_[6] 
+                               << " " << dim_not_under_trigger_[7] << "]");
 
-    GADGET_CONDITION_MSG(verboseMode_, "dimension limits NOT under trigger [Cha Slice E2 Con Phase Rep Set] = [" 
+    GADGET_CONDITION_MSG(verboseMode_, "dimension limits NOT under trigger [Cha Slice E2 Con Phase Rep Set Ave] = [" 
                                << " " << dim_limit_not_under_trigger_[0] 
                                << " " << dim_limit_not_under_trigger_[1] 
                                << " " << dim_limit_not_under_trigger_[2] 
                                << " " << dim_limit_not_under_trigger_[3]
                                << " " << dim_limit_not_under_trigger_[4]
                                << " " << dim_limit_not_under_trigger_[5]
-                               << " " << dim_limit_not_under_trigger_[6] << "]");
+                               << " " << dim_limit_not_under_trigger_[6] 
+                               << " " << dim_limit_not_under_trigger_[7] << "]");
 
     return GADGET_OK;
 }
@@ -354,6 +360,17 @@ void GtPlusAccumulatorImageTriggerGadget::setDimensionsUnderTrigger()
         dim_limit_not_under_trigger_[6] = dimensions_[6];
     }
 
+    if (ave_trigger_)
+    {
+        dim_under_trigger_[7] = true;
+        dim_limit_under_trigger_[7] = dimensions_[7];
+    }
+    else
+    {
+        dim_not_under_trigger_[7] = true;
+        dim_limit_not_under_trigger_[7] = dimensions_[7];
+    }
+
     imageSentBuffer_.create(dim_limit_under_trigger_);
     imageSentBuffer_.delete_data_on_destruct(false);
 }
@@ -362,7 +379,7 @@ int GtPlusAccumulatorImageTriggerGadget::process(GadgetContainerMessage<ISMRMRD:
 {
     // find the data role
     std::string dataRole;
-    GADGET_CHECK_RETURN(m3->getObjectPtr()->attribute4_.get(GTPLUS_DATA_ROLE, 0, dataRole), GADGET_FAIL);
+    GADGET_CHECK_RETURN(m3->getObjectPtr()->attributeString_.get(GTPLUS_DATA_ROLE, 0, dataRole), GADGET_FAIL);
 
     GADGET_CONDITION_MSG(verboseMode_, "--> receive image : " << m1->getObjectPtr()->image_index << " -- " << dataRole);
 
@@ -417,10 +434,10 @@ bool GtPlusAccumulatorImageTriggerGadget::trigger(ImageBufferType& buf, ImageSen
         // scan the buffered images, if the trigger dimensions are complete, sent out this package
 
         // not under trigger
-        size_t cha, slc, e2, con, phs, rep, set;
+        size_t cha, slc, e2, con, phs, rep, set, ave;
 
         // under trigger
-        size_t cha_t, slc_t, e2_t, con_t, phs_t, rep_t, set_t;
+        size_t cha_t, slc_t, e2_t, con_t, phs_t, rep_t, set_t, ave_t;
 
         std::vector<size_t> image_ind(num_of_dimensions_, 0);
         std::vector<size_t> image_sent_ind(num_of_dimensions_, 0);
@@ -429,101 +446,118 @@ bool GtPlusAccumulatorImageTriggerGadget::trigger(ImageBufferType& buf, ImageSen
         size_t ii;
         for ( ii=0; ii<numOfElem; ii++ ) { imageSentBuffer_(ii) = NULL; }
 
-        for ( set=0; set<dim_limit_not_under_trigger_[6]; set++ )
+        for ( ave=0; ave<dim_limit_not_under_trigger_[7]; ave++ )
         {
-            if ( dim_not_under_trigger_[6] ) image_ind[6] = set;
+            if ( dim_not_under_trigger_[7] ) image_ind[7] = ave;
             // -------------------
-            for ( rep=0; rep<dim_limit_not_under_trigger_[5]; rep++ )
+            for ( set=0; set<dim_limit_not_under_trigger_[6]; set++ )
             {
-                if ( dim_not_under_trigger_[5] ) image_ind[5] = rep;
+                if ( dim_not_under_trigger_[6] ) image_ind[6] = set;
                 // -------------------
-                for ( phs=0; phs<dim_limit_not_under_trigger_[4]; phs++ )
+                for ( rep=0; rep<dim_limit_not_under_trigger_[5]; rep++ )
                 {
-                    if ( dim_not_under_trigger_[4] ) image_ind[4] = phs;
+                    if ( dim_not_under_trigger_[5] ) image_ind[5] = rep;
                     // -------------------
-                    for ( con=0; con<dim_limit_not_under_trigger_[3]; con++ )
+                    for ( phs=0; phs<dim_limit_not_under_trigger_[4]; phs++ )
                     {
-                        if ( dim_not_under_trigger_[3] ) image_ind[3] = con;
+                        if ( dim_not_under_trigger_[4] ) image_ind[4] = phs;
                         // -------------------
-                        for ( e2=0; e2<dim_limit_not_under_trigger_[2]; e2++ )
+                        for ( con=0; con<dim_limit_not_under_trigger_[3]; con++ )
                         {
-                            if ( dim_not_under_trigger_[2] ) image_ind[2] = e2;
+                            if ( dim_not_under_trigger_[3] ) image_ind[3] = con;
                             // -------------------
-                            for ( slc=0; slc<dim_limit_not_under_trigger_[1]; slc++ )
+                            for ( e2=0; e2<dim_limit_not_under_trigger_[2]; e2++ )
                             {
-                                if ( dim_not_under_trigger_[1] ) image_ind[1] = slc;
+                                if ( dim_not_under_trigger_[2] ) image_ind[2] = e2;
                                 // -------------------
-                                for ( cha=0; cha<dim_limit_not_under_trigger_[0]; cha++ )
+                                for ( slc=0; slc<dim_limit_not_under_trigger_[1]; slc++ )
                                 {
-                                    if ( dim_not_under_trigger_[0] ) image_ind[0] = cha;
+                                    if ( dim_not_under_trigger_[1] ) image_ind[1] = slc;
                                     // -------------------
-
-                                    // loop over under triggered dimensions and check whether every images are there
-                                    bool needTrigger = true;
+                                    for ( cha=0; cha<dim_limit_not_under_trigger_[0]; cha++ )
                                     {
-                                        for ( ii=0; ii<numOfElem; ii++ ) { imageSentBuffer_(ii) = NULL; }
+                                        if ( dim_not_under_trigger_[0] ) image_ind[0] = cha;
+                                        // -------------------
 
-                                        // =================================================
-
-                                        for ( set_t=0; set_t<dim_limit_under_trigger_[6]; set_t++ )
+                                        // loop over under triggered dimensions and check whether every images are there
+                                        bool needTrigger = true;
+                                        if ( inClose )
                                         {
-                                            if ( dim_under_trigger_[6] ) image_ind[6] = set_t;
-                                            image_sent_ind[6] = set_t;
-                                            // -------------------
-                                            for ( rep_t=0; rep_t<dim_limit_under_trigger_[5]; rep_t++ )
+                                            needTrigger = false;
+                                        }
+
+                                        {
+                                            for ( ii=0; ii<numOfElem; ii++ ) { imageSentBuffer_(ii) = NULL; }
+
+                                            // =================================================
+
+                                            for ( ave_t=0; ave_t<dim_limit_under_trigger_[7]; ave_t++ )
                                             {
-                                                if ( dim_under_trigger_[5] ) image_ind[5] = rep_t;
-                                                image_sent_ind[5] = rep_t;
+                                                if ( dim_under_trigger_[7] ) image_ind[7] = ave_t;
+                                                image_sent_ind[7] = ave_t;
                                                 // -------------------
-                                                for ( phs_t=0; phs_t<dim_limit_under_trigger_[4]; phs_t++ )
+                                                for ( set_t=0; set_t<dim_limit_under_trigger_[6]; set_t++ )
                                                 {
-                                                    if ( dim_under_trigger_[4] ) image_ind[4] = phs_t;
-                                                    image_sent_ind[4] = phs_t;
+                                                    if ( dim_under_trigger_[6] ) image_ind[6] = set_t;
+                                                    image_sent_ind[6] = set_t;
                                                     // -------------------
-                                                    for ( con_t=0; con_t<dim_limit_under_trigger_[3]; con_t++ )
+                                                    for ( rep_t=0; rep_t<dim_limit_under_trigger_[5]; rep_t++ )
                                                     {
-                                                        if ( dim_under_trigger_[3] ) image_ind[3] = con_t;
-                                                        image_sent_ind[3] = con_t;
+                                                        if ( dim_under_trigger_[5] ) image_ind[5] = rep_t;
+                                                        image_sent_ind[5] = rep_t;
                                                         // -------------------
-                                                        for ( e2_t=0; e2_t<dim_limit_under_trigger_[2]; e2_t++ )
+                                                        for ( phs_t=0; phs_t<dim_limit_under_trigger_[4]; phs_t++ )
                                                         {
-                                                            if ( dim_under_trigger_[2] ) image_ind[2] = e2_t;
-                                                            image_sent_ind[2] = e2_t;
+                                                            if ( dim_under_trigger_[4] ) image_ind[4] = phs_t;
+                                                            image_sent_ind[4] = phs_t;
                                                             // -------------------
-                                                            for ( slc_t=0; slc_t<dim_limit_under_trigger_[1]; slc_t++ )
+                                                            for ( con_t=0; con_t<dim_limit_under_trigger_[3]; con_t++ )
                                                             {
-                                                                if ( dim_under_trigger_[1] ) image_ind[1] = slc_t;
-                                                                image_sent_ind[1] = slc_t;
+                                                                if ( dim_under_trigger_[3] ) image_ind[3] = con_t;
+                                                                image_sent_ind[3] = con_t;
                                                                 // -------------------
-                                                                for ( cha_t=0; cha_t<dim_limit_under_trigger_[0]; cha_t++ )
+                                                                for ( e2_t=0; e2_t<dim_limit_under_trigger_[2]; e2_t++ )
                                                                 {
-                                                                    if ( dim_under_trigger_[0] ) image_ind[0] = cha_t;
-                                                                    image_sent_ind[0] = cha_t;
+                                                                    if ( dim_under_trigger_[2] ) image_ind[2] = e2_t;
+                                                                    image_sent_ind[2] = e2_t;
                                                                     // -------------------
-
-                                                                    ImageType* pImage = buf(image_ind);
-                                                                    bool sentFlag = sentFlagBuf(image_ind);
-
-                                                                    if ( inClose )
+                                                                    for ( slc_t=0; slc_t<dim_limit_under_trigger_[1]; slc_t++ )
                                                                     {
-                                                                        // if in close call, send out all unsent images
-                                                                        if ( pImage != NULL && !sentFlag )
+                                                                        if ( dim_under_trigger_[1] ) image_ind[1] = slc_t;
+                                                                        image_sent_ind[1] = slc_t;
+                                                                        // -------------------
+                                                                        for ( cha_t=0; cha_t<dim_limit_under_trigger_[0]; cha_t++ )
                                                                         {
-                                                                            imageSentBuffer_(image_sent_ind) = pImage;
-                                                                            buf(image_ind) = NULL;
-                                                                        }
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        if ( pImage != NULL && !sentFlag )
-                                                                        {
-                                                                            imageSentBuffer_(image_sent_ind) = pImage;
-                                                                            buf(image_ind) = NULL;
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            needTrigger = false; // if all images for current under-trigger dimensions are filled, trigger
-                                                                            break;
+                                                                            if ( dim_under_trigger_[0] ) image_ind[0] = cha_t;
+                                                                            image_sent_ind[0] = cha_t;
+                                                                            // -------------------
+
+                                                                            ImageType* pImage = buf(image_ind);
+                                                                            bool sentFlag = sentFlagBuf(image_ind);
+
+                                                                            if ( inClose )
+                                                                            {
+                                                                                // if in close call, send out all unsent images
+                                                                                if ( pImage != NULL && !sentFlag )
+                                                                                {
+                                                                                    imageSentBuffer_(image_sent_ind) = pImage;
+                                                                                    buf(image_ind) = NULL;
+                                                                                    needTrigger = true;
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                if ( pImage != NULL && !sentFlag )
+                                                                                {
+                                                                                    imageSentBuffer_(image_sent_ind) = pImage;
+                                                                                    // buf(image_ind) = NULL;
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    needTrigger = false; // if all images for current under-trigger dimensions are filled, trigger
+                                                                                    break;
+                                                                                }
+                                                                            }
                                                                         }
                                                                     }
                                                                 }
@@ -532,41 +566,47 @@ bool GtPlusAccumulatorImageTriggerGadget::trigger(ImageBufferType& buf, ImageSen
                                                     }
                                                 }
                                             }
-                                        }
 
-                                        if ( needTrigger )
-                                        {
-                                            // if a image has been sent, not sent again
-                                            for ( set_t=0; set_t<dim_limit_under_trigger_[6]; set_t++ )
+                                            if ( needTrigger )
                                             {
-                                                if ( dim_under_trigger_[6] ) image_ind[6] = set_t;
-                                                for ( rep_t=0; rep_t<dim_limit_under_trigger_[5]; rep_t++ )
+                                                // if a image has been sent, not sent again
+                                                for ( ave_t=0; ave_t<dim_limit_under_trigger_[7]; ave_t++ )
                                                 {
-                                                    if ( dim_under_trigger_[5] ) image_ind[5] = rep_t;
-                                                    for ( phs_t=0; phs_t<dim_limit_under_trigger_[4]; phs_t++ )
+                                                    if ( dim_under_trigger_[7] ) image_ind[7] = ave_t;
+                                                    for ( set_t=0; set_t<dim_limit_under_trigger_[6]; set_t++ )
                                                     {
-                                                        if ( dim_under_trigger_[4] ) image_ind[4] = phs_t;
-                                                        for ( con_t=0; con_t<dim_limit_under_trigger_[3]; con_t++ )
+                                                        if ( dim_under_trigger_[6] ) image_ind[6] = set_t;
+                                                        for ( rep_t=0; rep_t<dim_limit_under_trigger_[5]; rep_t++ )
                                                         {
-                                                            if ( dim_under_trigger_[3] ) image_ind[3] = con_t;
-                                                            for ( e2_t=0; e2_t<dim_limit_under_trigger_[2]; e2_t++ )
+                                                            if ( dim_under_trigger_[5] ) image_ind[5] = rep_t;
+                                                            for ( phs_t=0; phs_t<dim_limit_under_trigger_[4]; phs_t++ )
                                                             {
-                                                                if ( dim_under_trigger_[2] ) image_ind[2] = e2_t;
-                                                                for ( slc_t=0; slc_t<dim_limit_under_trigger_[1]; slc_t++ )
+                                                                if ( dim_under_trigger_[4] ) image_ind[4] = phs_t;
+                                                                for ( con_t=0; con_t<dim_limit_under_trigger_[3]; con_t++ )
                                                                 {
-                                                                    if ( dim_under_trigger_[1] ) image_ind[1] = slc_t;
-                                                                    for ( cha_t=0; cha_t<dim_limit_under_trigger_[0]; cha_t++ )
+                                                                    if ( dim_under_trigger_[3] ) image_ind[3] = con_t;
+                                                                    for ( e2_t=0; e2_t<dim_limit_under_trigger_[2]; e2_t++ )
                                                                     {
-                                                                        if ( dim_under_trigger_[0] ) image_ind[0] = cha_t;
+                                                                        if ( dim_under_trigger_[2] ) image_ind[2] = e2_t;
+                                                                        for ( slc_t=0; slc_t<dim_limit_under_trigger_[1]; slc_t++ )
+                                                                        {
+                                                                            if ( dim_under_trigger_[1] ) image_ind[1] = slc_t;
+                                                                            for ( cha_t=0; cha_t<dim_limit_under_trigger_[0]; cha_t++ )
+                                                                            {
+                                                                                if ( dim_under_trigger_[0] ) image_ind[0] = cha_t;
 
-                                                                        bool sentFlag = sentFlagBuf(image_ind);
-                                                                        if ( sentFlag )
-                                                                        {
-                                                                            imageSentBuffer_(cha_t, slc_t, e2_t, con_t, phs_t, rep_t, set_t) = NULL;
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            sentFlagBuf(image_ind) = true;
+                                                                                bool sentFlag = sentFlagBuf(image_ind);
+                                                                                if ( sentFlag )
+                                                                                {
+                                                                                    imageSentBuffer_(cha_t, slc_t, e2_t, con_t, phs_t, rep_t, set_t) = NULL;
+                                                                                }
+                                                                                else
+                                                                                {
+                                                                                    sentFlagBuf(image_ind) = true;
+                                                                                }
+
+                                                                                buf(image_ind) = NULL;
+                                                                            }
                                                                         }
                                                                     }
                                                                 }
@@ -574,30 +614,38 @@ bool GtPlusAccumulatorImageTriggerGadget::trigger(ImageBufferType& buf, ImageSen
                                                         }
                                                     }
                                                 }
+
+                                                GADGET_MSG("--> Accumulator image trigger for [CHA SLC E2 CON PHS REP SET AVE] : [" 
+                                                                                                                            << image_ind[0] << " " 
+                                                                                                                            << image_ind[1] << " " 
+                                                                                                                            << image_ind[2] << " " 
+                                                                                                                            << image_ind[3] << " " 
+                                                                                                                            << image_ind[4] << " " 
+                                                                                                                            << image_ind[5] << " " 
+                                                                                                                            << image_ind[6] << " " 
+                                                                                                                            << image_ind[7] << "]" );
+
+                                                Gadgetron::GadgetContainerMessage<ImageBufferType>* cm1 = new Gadgetron::GadgetContainerMessage<ImageBufferType>();
+                                                ImageBufferType& imgBuf = *(cm1->getObjectPtr());
+                                                imgBuf = imageSentBuffer_;
+                                                imgBuf.delete_data_on_destruct(true);
+
+                                                if (this->next()->putq(cm1) < 0) 
+                                                {
+                                                    cm1->release();
+                                                    return false;
+                                                }
                                             }
-
-                                            GADGET_MSG("--> Accumulator image trigger for [CHA SLC E2 CON PHS REP SET] : [" 
-                                                                                                                        << image_ind[0] << " " 
-                                                                                                                        << image_ind[1] << " " 
-                                                                                                                        << image_ind[2] << " " 
-                                                                                                                        << image_ind[3] << " " 
-                                                                                                                        << image_ind[4] << " " 
-                                                                                                                        << image_ind[5] << " " 
-                                                                                                                        << image_ind[6] << "]" );
-
-                                            Gadgetron::GadgetContainerMessage<ImageBufferType>* cm1 = new Gadgetron::GadgetContainerMessage<ImageBufferType>();
-                                            ImageBufferType& imgBuf = *(cm1->getObjectPtr());
-                                            imgBuf = imageSentBuffer_;
-                                            imgBuf.delete_data_on_destruct(true);
-
-                                            if (this->next()->putq(cm1) < 0) 
+                                            else
                                             {
-                                                cm1->release();
-                                                return false;
+                                                for ( ii=0; ii<numOfElem; ii++ )
+                                                {
+                                                    imageSentBuffer_(ii) = NULL;
+                                                }
                                             }
-                                        }
 
-                                        // =================================================
+                                            // =================================================
+                                        }
                                     }
                                 }
                             }
@@ -621,17 +669,18 @@ bool GtPlusAccumulatorImageTriggerGadget::storeImage(const ISMRMRD::ImageHeader&
     try
     {
         long long cha;
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(GTPLUS_CHA, 0, cha));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(GTPLUS_CHA, 0, cha));
 
         size_t slc = imgHeader.slice;
 
         long long e2;
-        GADGET_CHECK_RETURN_FALSE(attrib.attribute1_.get(GTPLUS_E2, 0, e2));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(GTPLUS_E2, 0, e2));
 
         size_t con = imgHeader.contrast;
         size_t phs = imgHeader.phase;
         size_t rep = imgHeader.repetition;
         size_t set = imgHeader.set;
+        size_t ave = imgHeader.average;
 
         // create image
         ImageType* storedImage = new ImageType();
@@ -641,8 +690,8 @@ bool GtPlusAccumulatorImageTriggerGadget::storeImage(const ISMRMRD::ImageHeader&
         storedImage->attrib_ = attrib;
         GADGET_CHECK_RETURN_FALSE(gtPlus_util_.setMetaAttributesFromImageHeaderISMRMRD(imgHeader, storedImage->attrib_));
 
-        storedImage->attrib_.attribute1_.set(GTPLUS_PASS_IMMEDIATE, 0);
-        buf(cha, slc, e2, con, phs, rep, set) = storedImage;
+        storedImage->attrib_.attributeInteger_.set(GTPLUS_PASS_IMMEDIATE, 0);
+        buf(cha, slc, e2, con, phs, rep, set, ave) = storedImage;
 
         if ( pass_image_immediate_ )
         {
@@ -657,7 +706,7 @@ bool GtPlusAccumulatorImageTriggerGadget::storeImage(const ISMRMRD::ImageHeader&
             *imgBuf(0) = *storedImage;
 
             // set the pass_image flag, so next gadget knows
-            imgBuf(0)->attrib_.attribute1_.set(GTPLUS_PASS_IMMEDIATE, 1);
+            imgBuf(0)->attrib_.attributeInteger_.set(GTPLUS_PASS_IMMEDIATE, 1);
 
             if (this->next()->putq(cm1) < 0) 
             {
@@ -681,8 +730,7 @@ int GtPlusAccumulatorImageTriggerGadget::close(unsigned long flags)
 
     if ( BaseClass::close(flags) != GADGET_OK ) return GADGET_FAIL;
 
-    // if ( flags!=0 && !triggered_in_close_ )
-    if ( !triggered_in_close_ )
+    if ( flags!=0 && !triggered_in_close_ )
     {
         triggered_in_close_ = true;
 

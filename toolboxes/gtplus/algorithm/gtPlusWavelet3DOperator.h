@@ -40,6 +40,8 @@ public:
     // in : [RO E1 E2 1+7*level], out : [RO E1 E2]
     bool idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level);
 
+    virtual bool unitary() const { return true; }
+
     // compute L1 norm of wavelet coefficients across CHA
     // waveCoeff: [RO E1 E2 W CHA ...], W is the wavelet coefficient dimension (e.g. for 1 level wavelet decomposition, W=4 for 2D and W=8 for 3D)
     // the W=1 wavelet coefficient is the most low frequent coefficients
@@ -51,7 +53,8 @@ public:
 
     // soft-threshold or shrink the wavelet coefficients
     // the really applied threshold is mask.*thres
-    virtual bool shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres, const hoNDArray<T>& mask, bool processApproxCoeff=false);
+    virtual bool shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<value_type>& wavCoeffNorm, value_type thres, const hoNDArray<T>& mask, bool processApproxCoeff=false);
+    virtual bool proximity(hoNDArray<T>& wavCoeff, value_type thres);
 
     // if the sensitivity S is set, compute gradient of ||wav*F'*S'*(Dc'x+D'y)||1
     // if not, compute gradient of ||wav*F'*(Dc'x+D'y)||1
@@ -75,10 +78,13 @@ public:
     // More generally, a weighting matrix can be concatenated with wavelet coefficients to enhance or suppress regularization effects as needed
     // the regularization term can become ||W*wav*F'*(Dc'x+D'y)||1, W is the general weighting matrix
     // in the next version, we shall extend this class with more geneal weighting strategy
-    T scale_factor_first_dimension_;
-    T scale_factor_second_dimension_;
     T scale_factor_third_dimension_;
 
+    // in some cases, the boundary high frequency coefficients of the 3rd dimension should not be changed
+    bool change_coeffcients_third_dimension_boundary_;
+
+    using BaseClass::scale_factor_first_dimension_;
+    using BaseClass::scale_factor_second_dimension_;
     using BaseClass::numOfWavLevels_;
     using BaseClass::with_approx_coeff_;
     using BaseClass::gt_timer1_;
@@ -99,6 +105,11 @@ public:
     // compute the obj on the assembled kspace
     virtual bool objTask(const hoNDArray<T>& x, T& obj);
 
+    // help memory
+    hoNDArray<T> mask_;
+    hoNDArray<T> forward_buf_;
+    hoNDArray<T> adjoint_buf_;
+
     using BaseClass::acquired_points_;
     using BaseClass::acquired_points_indicator_;
     using BaseClass::unacquired_points_indicator_;
@@ -112,7 +123,11 @@ public:
     using BaseClass::res_after_apply_kernel_sum_over_;
 
     using BaseClass::wav_coeff_norm_;
+    using BaseClass::wav_coeff_norm_mag_;
     using BaseClass::wav_coeff_norm_approx_;
+
+    hoNDArray<value_type> wav_coeff_norm_mag_sumCHA_;
+
     using BaseClass::kspace_wav_;
     using BaseClass::complexIm_wav_;
 
@@ -124,9 +139,8 @@ public:
 
 template <typename T> 
 gtPlusWavelet3DOperator<T>::gtPlusWavelet3DOperator() : 
-        scale_factor_first_dimension_(1.0), 
-        scale_factor_second_dimension_(1.0), 
         scale_factor_third_dimension_(1.0), 
+        change_coeffcients_third_dimension_boundary_(true), 
         BaseClass()
 {
 
@@ -189,19 +203,23 @@ forwardOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
         }
         else
         {
-            #pragma omp parallel default(none) private(t) shared(num, RO, E1, CHA, E2, W, pX, pY) if ( num > 1 )
+            // #pragma omp parallel default(none) private(t) shared(num, RO, E1, CHA, E2, W, pX, pY) if ( num > 1 )
             {
-                hoNDArray<T> inPermute(RO, E1, E2, CHA);
+                // hoNDArray<T> inPermute(RO, E1, E2, CHA);
+                forward_buf_.create(RO, E1, E2, CHA);
 
-                #pragma omp for
+                // #pragma omp for
                 for ( t=0; t<num; t++ )
                 {
                     hoNDArray<T> in(RO, E1, CHA, E2, pX+t*RO*E1*CHA*E2);
-                    Gadgetron::permuteLastTwoDimensions(in, inPermute);
+                    Gadgetron::permuteLastTwoDimensions(in, forward_buf_);
 
-                    for ( size_t cha=0; cha<CHA; cha++ )
+                    long long cha;
+
+                    #pragma omp parallel for default(none) private(cha) shared(num, RO, E1, CHA, E2, W, pY, t) if ( CHA > 4 )
+                    for ( cha=0; cha<CHA; cha++ )
                     {
-                        hoNDArray<T> in_dwt(RO, E1, E2, inPermute.begin()+cha*RO*E1*E2);
+                        hoNDArray<T> in_dwt(RO, E1, E2, forward_buf_.begin()+cha*RO*E1*E2);
                         hoNDArray<T> out(RO, E1, E2, W, pY+t*RO*E1*E2*W*CHA+cha*RO*E1*E2*W);
 
                         this->dwtRedundantHaar(in_dwt, out, numOfWavLevels_);
@@ -269,24 +287,27 @@ adjointOperator(const hoNDArray<T>& x, hoNDArray<T>& y)
         }
         else
         {
-            #pragma omp parallel default(none) private(t) shared(num, RO, E1, CHA, E2, W, pX, pY) if ( num > 1 ) num_threads( (int)((num>16) ? 16 : num))
+            // #pragma omp parallel default(none) private(t) shared(num, RO, E1, CHA, E2, W, pX, pY) if ( num > 1 ) num_threads( (int)((num>16) ? 16 : num))
             {
-                hoNDArray<T> outPermute(RO, E1, E2, CHA);
+                // hoNDArray<T> outPermute(RO, E1, E2, CHA);
+                adjoint_buf_.create(RO, E1, E2, CHA);
 
-                #pragma omp for
+                // #pragma omp for
                 for ( t=0; t<num; t++ )
                 {
                     hoNDArray<T> out(RO, E1, CHA, E2, pY+t*RO*E1*CHA*E2);
 
-                    for ( size_t cha=0; cha<CHA; cha++ )
+                    long long cha;
+                    #pragma omp parallel for default(none) private(cha) shared(RO, E1, CHA, E2, W, pX) if ( CHA > 4 )
+                    for ( cha=0; cha<CHA; cha++ )
                     {
                         hoNDArray<T> in(RO, E1, E2, W, pX+cha*RO*E1*E2*W);
-                        hoNDArray<T> out_idwt(RO, E1, E2, outPermute.begin()+cha*RO*E1*E2);
+                        hoNDArray<T> out_idwt(RO, E1, E2, adjoint_buf_.begin()+cha*RO*E1*E2);
 
                         this->idwtRedundantHaar(in, out_idwt, numOfWavLevels_);
                     }
 
-                    Gadgetron::permuteLastTwoDimensions(outPermute, out);
+                    Gadgetron::permuteLastTwoDimensions(adjoint_buf_, out);
                 }
             }
         }
@@ -414,7 +435,50 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
 
 template <typename T> 
 bool gtPlusWavelet3DOperator<T>::
-shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres, const hoNDArray<T>& mask, bool processApproxCoeff)
+proximity(hoNDArray<T>& wavCoeff, value_type thres)
+{
+    try
+    {
+        // GADGET_CHECK_RETURN_FALSE(this->L1Norm(wavCoeff, wav_coeff_norm_));
+
+        // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyConj(wavCoeff, wavCoeff, wav_coeff_norm_));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::absolute(wavCoeff, wav_coeff_norm_mag_));
+
+        if ( !mask_.dimensions_equal(&wavCoeff) )
+        {
+            mask_.create(wavCoeff.get_dimensions());
+        }
+
+        Gadgetron::fill(mask_, T(thres) );
+
+        if ( GT_ABS(std::abs(scale_factor_first_dimension_)-1.0) > 1e-6 )
+        {
+            GADGET_CHECK_RETURN_FALSE(this->firstDimensionScale(mask_, scale_factor_first_dimension_));
+        }
+
+        if ( GT_ABS(std::abs(scale_factor_second_dimension_)-1.0) > 1e-6 )
+        {
+            GADGET_CHECK_RETURN_FALSE(this->secondDimensionScale(mask_, scale_factor_second_dimension_));
+        }
+
+        if ( GT_ABS(std::abs(scale_factor_third_dimension_)-1.0) > 1e-6 )
+        {
+            GADGET_CHECK_RETURN_FALSE(this->thirdDimensionScale(mask_, scale_factor_third_dimension_));
+        }
+
+        GADGET_CHECK_RETURN_FALSE(this->shrinkWavCoeff(wavCoeff, wav_coeff_norm_mag_, thres, mask_, this->with_approx_coeff_));
+    }
+    catch (...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusWavelet3DOperator<T>::proximity(hoNDArray<T>& wavCoeff, T thres) ... ");
+        return false;
+    }
+    return true;
+}
+
+template <typename T> 
+bool gtPlusWavelet3DOperator<T>::
+shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<value_type>& wavCoeffNorm, value_type thres, const hoNDArray<T>& mask, bool processApproxCoeff)
 {
     try
     {
@@ -431,10 +495,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
             wav_coeff_norm_approx_.create(wavCoeffNorm.get_dimensions());
         }
 
-        if ( !res_after_apply_kernel_.dimensions_equal(&wavCoeffNorm) )
-        {
-            res_after_apply_kernel_.create(wavCoeffNorm.get_dimensions());
-        }
+        // GADGET_CHECK_RETURN_FALSE(Gadgetron::sumOver5thDimension(wavCoeffNorm, wav_coeff_norm_mag_sumCHA_));
 
         long long ii;
         long long N = (long long)wavCoeffNorm.get_number_of_elements();
@@ -442,29 +503,59 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
 
         long long num = N/N4D;
 
-        const T* pCoeffNorm = wavCoeffNorm.begin();
+        value_type* pCoeffNorm = const_cast<value_type*>(wavCoeffNorm.begin());
         T* pMag = wav_coeff_norm_approx_.begin();
-        T* pMagInv = res_after_apply_kernel_.begin();
 
-        #pragma omp parallel for default(none) private(ii) shared(N, pMag, pMagInv, pCoeffNorm)
-        for ( ii=0; ii<N; ii++ )
+        if ( wavCoeffNorm.dimensions_equal(&wavCoeff) )
         {
-            pMag[ii] = std::sqrt( pCoeffNorm[ii].real() );
-            pMagInv[ii] = (value_type)(1.0/(pMag[ii].real()+DBL_EPSILON));
-        }
+            #pragma omp parallel for default(none) private(ii) shared(N, pMag, pCoeffNorm)
+            for ( ii=0; ii<N; ii++ )
+            {
+                pMag[ii] = pCoeffNorm[ii];
+            }
 
-        // phase does not change
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimension(res_after_apply_kernel_, wavCoeff, complexIm_));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::divide(wavCoeff, wav_coeff_norm_approx_, complexIm_));
+        }
+        else
+        {
+            if ( !res_after_apply_kernel_.dimensions_equal(&wavCoeffNorm) )
+            {
+                res_after_apply_kernel_.create(wavCoeffNorm.get_dimensions());
+            }
+
+            T* pMagInv = res_after_apply_kernel_.begin();
+
+            #pragma omp parallel for default(none) private(ii) shared(N, pMag, pMagInv, pCoeffNorm)
+            for ( ii=0; ii<N; ii++ )
+            {
+                pMag[ii] = pCoeffNorm[ii];
+                pMagInv[ii] = 1/(pCoeffNorm[ii]+FLT_EPSILON);
+            }
+
+            // Gadgetron::inv(wav_coeff_norm_approx_, res_after_apply_kernel_);
+
+            // phase does not change
+            if ( res_after_apply_kernel_.dimensions_equal(&wavCoeff) )
+            {
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(res_after_apply_kernel_, wavCoeff, complexIm_));
+            }
+            else
+            {
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimension(res_after_apply_kernel_, wavCoeff, complexIm_));
+            }
+        }
 
         // shrink the magnitude
         if ( mask.dimensions_equal(&wavCoeffNorm) )
         {
             const T* pMask = mask.begin();
 
+            // value_type* pMagCHA = wav_coeff_norm_mag_sumCHA_.begin();
+
             long long n = 0;
             for ( n=0; n<num; n++ )
             {
-                long long s=RO*E1; 
+                long long s=RO*E1*E2; 
                 if ( processApproxCoeff )
                 {
                     s = 0;
@@ -473,18 +564,74 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
                 const T* pMaskCurr = pMask + n*N4D;
                 T* pMagCurr = pMag + n*N4D;
 
-                long long nn;
-
-                #pragma omp parallel for private(nn) shared(s, N4D, pMagCurr, pMaskCurr, thres)
-                for ( nn=s; nn<N4D; nn++ )
+                if ( change_coeffcients_third_dimension_boundary_ )
                 {
-                    if ( std::abs(pMagCurr[nn]) < std::abs(thres*pMaskCurr[nn]) )
+                    long long nn;
+                    #pragma omp parallel for private(nn) shared(s, N4D, pMagCurr, pMaskCurr, thres)
+                    for ( nn=s; nn<N4D; nn++ )
                     {
-                        pMagCurr[nn] = 0;
+                        // if ( std::abs(pMagCurr[nn]) < std::abs(thres*pMaskCurr[nn]) )
+                        if ( pMagCurr[nn].real() < pMaskCurr[nn].real() )
+                        // if ( pMagCHA[nn] < pMaskCurr[nn].real() )
+                        {
+                            pMagCurr[nn] = 0;
+                        }
+                        else
+                        {
+                            pMagCurr[nn] -= pMaskCurr[nn];
+                        }
                     }
-                    else
+                }
+                else
+                {
+                    // approx coefficents
+                    long long nn;
+                    #pragma omp parallel for private(nn) shared(s, N4D, pMagCurr, pMaskCurr, thres)
+                    for ( nn=s; nn<RO*E1*E2; nn++ )
                     {
-                        pMagCurr[nn] -= thres;
+                        //if ( std::abs(pMagCurr[nn]) < std::abs(thres*pMaskCurr[nn]) )
+                        if ( pMagCurr[nn].real() < pMaskCurr[nn].real() )
+                        {
+                            pMagCurr[nn] = 0;
+                        }
+                        else
+                        {
+                            pMagCurr[nn] -= pMaskCurr[nn];
+                        }
+                    }
+
+                    size_t level;
+                    for ( level=0; level<numOfWavLevels_; level++ )
+                    {
+                        size_t start = RO*E1*E2 + 7*level;
+
+                        size_t w;
+                        for ( w=0; w<7; w++ )
+                        {
+                            size_t startW = start+w*RO*E1*E2;
+                            size_t endW = startW+RO*E1*E2;
+
+                            if ( w >= 3 )
+                            {
+                                startW += RO*E1;
+                                endW -= RO*E1;
+                            }
+
+                            long long nn;
+                            #pragma omp parallel for private(nn) shared(s, N4D, pMagCurr, pMaskCurr, thres)
+                            for ( nn=startW; nn<endW; nn++ )
+                            {
+                                // if ( std::abs(pMagCurr[nn]) < std::abs(thres*pMaskCurr[nn]) )
+                                if ( pMagCurr[nn].real() < pMaskCurr[nn].real() )
+                                {
+                                    pMagCurr[nn] = 0;
+                                }
+                                else
+                                {
+                                    pMagCurr[nn] -= pMaskCurr[nn];
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -494,7 +641,7 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
             long long n = 0;
             for ( n=0; n<num; n++ )
             {
-                long long s=RO*E1; 
+                long long s=RO*E1*E2; 
                 if ( processApproxCoeff )
                 {
                     s = 0;
@@ -502,17 +649,73 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
 
                 T* pMagCurr = pMag + n*N4D;
 
-                long long nn;
-                #pragma omp parallel for private(nn) shared(s, N4D, pMagCurr, thres)
-                for ( nn=s; nn<N4D; nn++ )
+                if ( change_coeffcients_third_dimension_boundary_ )
                 {
-                    if ( std::abs(pMagCurr[nn]) < std::abs(thres) )
+                    long long nn;
+                    #pragma omp parallel for private(nn) shared(s, N4D, pMagCurr, thres)
+                    for ( nn=s; nn<N4D; nn++ )
                     {
-                        pMagCurr[nn] = 0;
+                        // if ( std::abs(pMagCurr[nn]) < std::abs(thres) )
+                        if ( pMagCurr[nn].real() < thres )
+                        {
+                            pMagCurr[nn] = 0;
+                        }
+                        else
+                        {
+                            pMagCurr[nn] -= thres;
+                        }
                     }
-                    else
+                }
+                else
+                {
+                    // approx coefficents
+                    long long nn;
+                    #pragma omp parallel for private(nn) shared(s, N4D, pMagCurr, thres)
+                    for ( nn=s; nn<RO*E1*E2; nn++ )
                     {
-                        pMagCurr[nn] -= thres;
+                        // if ( std::abs(pMagCurr[nn]) < std::abs(thres) )
+                        if ( pMagCurr[nn].real() < thres )
+                        {
+                            pMagCurr[nn] = 0;
+                        }
+                        else
+                        {
+                            pMagCurr[nn] -= thres;
+                        }
+                    }
+
+                    size_t level;
+                    for ( level=0; level<numOfWavLevels_; level++ )
+                    {
+                        size_t start = RO*E1*E2 + 7*level;
+
+                        size_t w;
+                        for ( w=0; w<7; w++ )
+                        {
+                            size_t startW = start+w*RO*E1*E2;
+                            size_t endW = startW+RO*E1*E2;
+
+                            if ( w >= 3 )
+                            {
+                                startW += RO*E1;
+                                endW -= RO*E1;
+                            }
+
+                            long long nn;
+                            #pragma omp parallel for private(nn) shared(s, N4D, pMagCurr, thres)
+                            for ( nn=startW; nn<endW; nn++ )
+                            {
+                                // if ( std::abs(pMagCurr[nn]) < std::abs(thres) )
+                                if ( pMagCurr[nn].real() < thres )
+                                {
+                                    pMagCurr[nn] = 0;
+                                }
+                                else
+                                {
+                                    pMagCurr[nn] -= thres;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -520,32 +723,62 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
 
         if ( processApproxCoeff )
         {
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimension(wav_coeff_norm_approx_, complexIm_, wavCoeff));
+            if ( wav_coeff_norm_approx_.dimensions_equal(&complexIm_) )
+            {
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::multiply(wav_coeff_norm_approx_, complexIm_, wavCoeff));
+            }
+            else
+            {
+                GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimension(wav_coeff_norm_approx_, complexIm_, wavCoeff));
+            }
         }
         else
         {
             // GADGET_CHECK_RETURN_FALSE(Gadgetron::multiplyOver5thDimensionExcept(wav_coeff_norm_approx_, complexIm_, 0, wavCoeff, false));
 
-            long long num = wavCoeff.get_number_of_elements()/(RO*E1*E2*W*CHA);
-
-            #ifdef GCC_OLD_FLAG
-                #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, num, W, CHA) if ( num > 1 )
-            #else
-                #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, num, wavCoeffNorm, wavCoeff, W, CHA) if ( num > 1 )
-            #endif
+            if ( wav_coeff_norm_approx_.dimensions_equal(&wavCoeff) )
             {
-
-                #pragma omp for
-                for ( ii=0; ii<num; ii++ )
+                #ifdef GCC_OLD_FLAG
+                    #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, W, CHA) if ( CHA > 1 )
+                #else
+                    #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, wavCoeffNorm, wavCoeff, W, CHA) if ( CHA > 1 )
+                #endif
                 {
-                    hoNDArray<T> magCurr(RO, E1, E2, W-1, wav_coeff_norm_approx_.begin()+ii*RO*E1*E2*W+RO*E1*E2);
 
-                    for ( long long cha=0; cha<CHA; cha++ )
+                    #pragma omp for
+                    for ( ii=0; ii<CHA; ii++ )
                     {
-                        hoNDArray<T> phaseCurr(RO, E1, E2, W-1, complexIm_.begin()+ii*RO*E1*E2*W*CHA+cha*RO*E1*E2*W+RO*E1*E2);
-                        hoNDArray<T> wavCoeffCurr(RO, E1, E2, W-1, wavCoeff.begin()+ii*RO*E1*E2*W*CHA+cha*RO*E1*E2*W+RO*E1*E2);
+                        hoNDArray<T> magCurr(RO, E1, E2, W-1, wav_coeff_norm_approx_.begin()+ii*RO*E1*E2*W+RO*E1*E2);
+                        hoNDArray<T> phaseCurr(RO, E1, E2, W-1, complexIm_.begin()+ii*RO*E1*E2*W+RO*E1*E2);
+                        hoNDArray<T> wavCoeffCurr(RO, E1, E2, W-1, wavCoeff.begin()+ii*RO*E1*E2*W+RO*E1*E2);
 
                         Gadgetron::multiply(magCurr, phaseCurr, wavCoeffCurr);
+                    }
+                }
+            }
+            else
+            {
+                long long num = wavCoeff.get_number_of_elements()/(RO*E1*E2*W*CHA);
+
+                #ifdef GCC_OLD_FLAG
+                    #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, num, W, CHA) if ( num > 1 )
+                #else
+                    #pragma omp parallel default(none) private(ii) shared(RO, E1, E2, num, wavCoeffNorm, wavCoeff, W, CHA) if ( num > 1 )
+                #endif
+                {
+
+                    #pragma omp for
+                    for ( ii=0; ii<num; ii++ )
+                    {
+                        hoNDArray<T> magCurr(RO, E1, E2, W-1, wav_coeff_norm_approx_.begin()+ii*RO*E1*E2*W+RO*E1*E2);
+
+                        for ( long long cha=0; cha<CHA; cha++ )
+                        {
+                            hoNDArray<T> phaseCurr(RO, E1, E2, W-1, complexIm_.begin()+ii*RO*E1*E2*W*CHA+cha*RO*E1*E2*W+RO*E1*E2);
+                            hoNDArray<T> wavCoeffCurr(RO, E1, E2, W-1, wavCoeff.begin()+ii*RO*E1*E2*W*CHA+cha*RO*E1*E2*W+RO*E1*E2);
+
+                            Gadgetron::multiply(magCurr, phaseCurr, wavCoeffCurr);
+                        }
                     }
                 }
             }
@@ -792,19 +1025,19 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
                     for (long long e2=E2-1; e2>0; e2--)
                     {
                         ind = ind2D + e2*N2D;
-                        pLL[ind] = lll[ind]+lll[ind-N2D] + hll[ind]-hll[ind-N2D];
-                        pHL[ind] = lhl[ind]+lhl[ind-N2D] + hhl[ind]-hhl[ind-N2D];
-                        pLH[ind] = llh[ind]+llh[ind-N2D] + hlh[ind]-hlh[ind-N2D];
-                        pHH[ind] = lhh[ind]+lhh[ind-N2D] + hhh[ind]-hhh[ind-N2D];
+                        pLL[ind] = (lll[ind]+lll[ind-N2D]) + (hll[ind]-hll[ind-N2D]);
+                        pHL[ind] = (lhl[ind]+lhl[ind-N2D]) + (hhl[ind]-hhl[ind-N2D]);
+                        pLH[ind] = (llh[ind]+llh[ind-N2D]) + (hlh[ind]-hlh[ind-N2D]);
+                        pHH[ind] = (lhh[ind]+lhh[ind-N2D]) + (hhh[ind]-hhh[ind-N2D]);
                     }
 
                     if ( E2 > 1 )
                     {
                         ind = ind2D + (E2-1)*N2D;
-                        pLL[ind2D] = lll[ind2D]+lll[ind] + hll[ind2D]-hll[ind];
-                        pHL[ind2D] = lhl[ind2D]+lhl[ind] + hhl[ind2D]-hhl[ind];
-                        pLH[ind2D] = llh[ind2D]+llh[ind] + hlh[ind2D]-hlh[ind];
-                        pHH[ind2D] = lhh[ind2D]+lhh[ind] + hhh[ind2D]-hhh[ind];
+                        pLL[ind2D] = (lll[ind2D]+lll[ind]) + (hll[ind2D]-hll[ind]);
+                        pHL[ind2D] = (lhl[ind2D]+lhl[ind]) + (hhl[ind2D]-hhl[ind]);
+                        pLH[ind2D] = (llh[ind2D]+llh[ind]) + (hlh[ind2D]-hlh[ind]);
+                        pHH[ind2D] = (lhh[ind2D]+lhh[ind]) + (hhh[ind2D]-hhh[ind]);
                     }
                 }
             }
@@ -838,13 +1071,13 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
 
                     for (long long ro=(long long)RO-1; ro>0; ro--)
                     {
-                        pLL[ind] = pLL[ind]+pLL[ind-1] + pHL[ind]-pHL[ind-1];
-                        pLH[ind] = pLH[ind]+pLH[ind-1] + pHH[ind]-pHH[ind-1];
+                        pLL[ind] = (pLL[ind]+pLL[ind-1]) + (pHL[ind]-pHL[ind-1]);
+                        pLH[ind] = (pLH[ind]+pLH[ind-1]) + (pHH[ind]-pHH[ind-1]);
                         ind--;
                     }
 
-                    pLL[ind] = pLL[ind]+v1 + pHL[ind]-pHL[ind+RO-1];
-                    pLH[ind] = pLH[ind]+v2 + pHH[ind]-pHH[ind+RO-1];
+                    pLL[ind] = (pLL[ind]+v1) + (pHL[ind]-pHL[ind+RO-1]);
+                    pLH[ind] = (pLH[ind]+v2) + (pHH[ind]-pHH[ind+RO-1]);
                 }
             }
 
@@ -860,11 +1093,11 @@ idwtRedundantHaar(const hoNDArray<T>& in, hoNDArray<T>& out, size_t level)
                     long long ind = (E1-1)*RO + ro + ind3D;
                     for (long long e1=(long long)E1-1; e1>0; e1--)
                     {
-                        pOut[ind] = pLL[ind]+pLL[ind-RO] + pLH[ind]-pLH[ind-RO];
+                        pOut[ind] = (pLL[ind]+pLL[ind-RO]) + (pLH[ind]-pLH[ind-RO]);
                         ind -= RO;
                     }
 
-                    pOut[ind] = pLL[ind]+pLL[ind+(E1-1)*RO] + pLH[ind]-pLH[ind+(E1-1)*RO];
+                    pOut[ind] = (pLL[ind]+pLL[ind+(E1-1)*RO]) + (pLH[ind]-pLH[ind+(E1-1)*RO]);
                 }
             }
 

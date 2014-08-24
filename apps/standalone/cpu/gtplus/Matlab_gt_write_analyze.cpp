@@ -27,7 +27,7 @@
 static void usage()
 {
     using namespace std;
-    std::ostrstream outs;
+    std::stringstream outs;
 
     outs << "==============================================================================================" << endl;
     outs << "Usage: Matlab_gt_write_analyze \n";

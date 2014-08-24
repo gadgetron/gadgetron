@@ -32,7 +32,7 @@ bool prepOpenMP()
             omp_set_num_threads(numOpenMPProcs);
         }
 
-        omp_set_nested(1);
+        // omp_set_nested(1);
         int allowOpenMPNested = omp_get_nested();
         GADGET_MSG("GtPlusRecon, allowOpenMPNested : " << allowOpenMPNested);
 

@@ -40,14 +40,15 @@ public:
 
     // soft-threshold or shrink the wavelet coefficients
     // the really applied threshold is mask.*thres
-    virtual bool shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres, const hoNDArray<T>& mask, bool processApproxCoeff=false);
+    virtual bool shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, value_type thres, const hoNDArray<T>& mask, bool processApproxCoeff=false);
+    virtual bool proximity(hoNDArray<T>& wavCoeff, value_type thres);
 
-    // if the sensitivity S is set, compute gradient of ||wav*F'*S'*(Dc'x+D'y)||1
+    // if the sensitivity S is set, compute gradient of ||wav*S'*F'*(Dc'x+D'y)||1
     // if not, compute gradient of ||wav*F'*(Dc'x+D'y)||1
     // x represents the unacquired kspace points [RO E1 CHA]
     virtual bool grad(const hoNDArray<T>& x, hoNDArray<T>& g);
 
-    // if the sensitivity S is set, compute cost value of L2 norm ||wav*F'*S'*(Dc'x+D'y)||1
+    // if the sensitivity S is set, compute cost value of L2 norm ||wav*S'*F'*(Dc'x+D'y)||1
     // if not, compute cost value of L2 norm ||wav*F'*(Dc'x+D'y)||1
     virtual bool obj(const hoNDArray<T>& x, T& obj);
 
@@ -56,6 +57,9 @@ public:
 
     // whether to include low frequency approximation coefficients
     bool with_approx_coeff_;
+
+    T scale_factor_first_dimension_;
+    T scale_factor_second_dimension_;
 
     using BaseClass::gt_timer1_;
     using BaseClass::gt_timer2_;
@@ -93,6 +97,8 @@ public:
     hoNDArray<T> wav_coeff_norm_;
     hoNDArray<T> wav_coeff_norm_approx_;
 
+    hoNDArray<value_type> wav_coeff_norm_mag_;
+
     hoNDArray<T> kspace_wav_;
     hoNDArray<T> complexIm_wav_;
     hoNDArray<T> complexIm_norm_;
@@ -104,7 +110,7 @@ public:
 };
 
 template <typename T> 
-gtPlusWaveletOperator<T>::gtPlusWaveletOperator() : numOfWavLevels_(1), with_approx_coeff_(false), BaseClass()
+gtPlusWaveletOperator<T>::gtPlusWaveletOperator() : numOfWavLevels_(1), with_approx_coeff_(false), scale_factor_first_dimension_(1.0), scale_factor_second_dimension_(1.0), BaseClass()
 {
 
 }
@@ -247,7 +253,26 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
 
 template <typename T> 
 bool gtPlusWaveletOperator<T>::
-shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres, const hoNDArray<T>& mask, bool processApproxCoeff)
+proximity(hoNDArray<T>& wavCoeff, value_type thres)
+{
+    try
+    {
+        GADGET_CHECK_RETURN_FALSE(this->L1Norm(wavCoeff, wav_coeff_norm_));
+        hoNDArray<T> mask;
+
+        GADGET_CHECK_RETURN_FALSE(this->shrinkWavCoeff(wavCoeff, wav_coeff_norm_, thres, mask, with_approx_coeff_));
+    }
+    catch (...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::proximity(hoNDArray<T>& wavCoeff, value_type thres) ... ");
+        return false;
+    }
+    return true;
+}
+
+template <typename T> 
+bool gtPlusWaveletOperator<T>::
+shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, value_type thres, const hoNDArray<T>& mask, bool processApproxCoeff)
 {
     try
     {
@@ -308,13 +333,14 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
                 #pragma omp parallel for private(nn) shared(s, N3D, pMagCurr, pMaskCurr, thres)
                 for ( nn=s; nn<N3D; nn++ )
                 {
-                    if ( std::abs(pMagCurr[nn]) < std::abs(thres*pMaskCurr[nn]) )
+                    // if ( std::abs(pMagCurr[nn]) < std::abs(thres*pMaskCurr[nn]) )
+                    if ( pMagCurr[nn].real() < thres*pMaskCurr[nn].real() )
                     {
                         pMagCurr[nn] = 0;
                     }
                     else
                     {
-                        pMagCurr[nn] -= thres;
+                        pMagCurr[nn] -= thres*pMaskCurr[nn];
                     }
                 }
             }
@@ -336,7 +362,8 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
                 #pragma omp parallel for private(nn) shared(s, N3D, pMagCurr, thres)
                 for ( nn=s; nn<N3D; nn++ )
                 {
-                    if ( std::abs(pMagCurr[nn]) < std::abs(thres) )
+                    // if ( std::abs(pMagCurr[nn]) < std::abs(thres) )
+                    if ( pMagCurr[nn].real() < thres )
                     {
                         pMagCurr[nn] = 0;
                     }

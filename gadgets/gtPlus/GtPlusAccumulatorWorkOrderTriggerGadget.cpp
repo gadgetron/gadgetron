@@ -1,19 +1,34 @@
 #include "GtPlusAccumulatorWorkOrderTriggerGadget.h"
+#include "GtPlusReconGadgetUtil.h"
 
 using namespace Gadgetron::gtPlus;
 
 namespace Gadgetron
 {
 
-GtPlusAccumulatorWorkOrderTriggerGadget::GtPlusAccumulatorWorkOrderTriggerGadget()
-: image_counter_(0), image_series_(100), first_kspace_scan_(true), triggered_in_close_(false), triggered_in_process_(false), triggered_in_process_last_acq_(false), 
-    triggered_in_process_by_numOfKSpace_triggerDim1_(false), prev_dim1_(-1), curr_dim1_(-1), prev_dim2_(-1), curr_dim2_(-1), count_dim1_(0), verboseMode_(false), other_kspace_matching_Dim_(DIM_NONE)
+GtPlusAccumulatorWorkOrderTriggerGadget::GtPlusAccumulatorWorkOrderTriggerGadget() : 
+                                            image_counter_(0), image_series_(100), first_kspace_scan_(true), 
+                                            triggered_in_close_(false), triggered_in_process_(false), triggered_in_process_last_acq_(false), 
+                                            triggered_in_process_by_numOfKSpace_triggerDim1_(false), 
+                                            prev_dim1_(-1), curr_dim1_(-1), 
+                                            prev_dim2_(-1), curr_dim2_(-1), 
+                                            count_dim1_(0), 
+                                            last_acq_arrived_(false), 
+                                            verboseMode_(false), 
+                                            other_kspace_matching_Dim_(DIM_NONE)
 {
     space_matrix_offset_E1_ = 0;
     space_matrix_offset_E2_ = 0;
 
     gtPlusISMRMRDReconUtil<ValueType>().clearAcquisitionHeaderISMRMRD(prev_acq_header_);
     memset(&meas_max_idx_ref_, 0, sizeof(ISMRMRD::EncodingCounters));
+
+    ind_time_stamp_.resize(GT_DIM_NUM, 0);
+
+    embedded_ref_lines_E1_ = 0;
+    embedded_ref_lines_E2_ = 0;
+
+    timeStampResolution_ = 0.0025f;
 }
 
 GtPlusAccumulatorWorkOrderTriggerGadget::~GtPlusAccumulatorWorkOrderTriggerGadget()
@@ -47,6 +62,10 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
 
     verboseMode_ = this->get_bool_value("verboseMode");
 
+    timeStampResolution_ = (float)this->get_double_value("timeStampResolution");
+    if ( timeStampResolution_ < FLT_EPSILON ) timeStampResolution_ = 0.0025f;
+    GADGET_CONDITION_MSG(verboseMode_, "timeStampResolution_ is " << timeStampResolution_);
+
     // ---------------------------------------------------------------------------------------------------------
     // pass the xml file
     ISMRMRD::IsmrmrdHeader h;
@@ -63,27 +82,28 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     // e.g. Parallel imaging reference scan collected with GRE and data with EPI
     if (h.encoding.size() > 2)
     {
-      GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-      GADGET_DEBUG1("This GtPlusAccumulatorWorkOrderTriggerGadget only supports two encoding space\n");
-      return GADGET_FAIL;
+        GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
+        GADGET_DEBUG1("This GtPlusAccumulatorWorkOrderTriggerGadget only supports two encoding space\n");
+        return GADGET_FAIL;
     } 
     else if (h.encoding.size() == 2)
     {
-      if (! ((h.encoding[0].reconSpace.matrixSize.x != h.encoding[1].reconSpace.matrixSize.x) && 
-	     (h.encoding[0].reconSpace.matrixSize.y != h.encoding[1].reconSpace.matrixSize.y) && 
-	     (h.encoding[0].reconSpace.matrixSize.z != h.encoding[1].reconSpace.matrixSize.z) && 
-	     (h.encoding[0].reconSpace.fieldOfView_mm.x == h.encoding[1].reconSpace.fieldOfView_mm.x) &&
-	     (h.encoding[0].reconSpace.fieldOfView_mm.y == h.encoding[1].reconSpace.fieldOfView_mm.y) &&
-	     (h.encoding[0].reconSpace.fieldOfView_mm.z == h.encoding[1].reconSpace.fieldOfView_mm.z)) ) {
-	{
-	  GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
-	  GADGET_DEBUG1("This GtPlusAccumulatorWorkOrderTriggerGadget only supports two encoding spaces with identical recon spaces.\n");
-	  return GADGET_FAIL;
-	}
-      }
+        if (! ((h.encoding[0].reconSpace.matrixSize.x != h.encoding[1].reconSpace.matrixSize.x) && 
+            (h.encoding[0].reconSpace.matrixSize.y != h.encoding[1].reconSpace.matrixSize.y) && 
+            (h.encoding[0].reconSpace.matrixSize.z != h.encoding[1].reconSpace.matrixSize.z) && 
+            (h.encoding[0].reconSpace.fieldOfView_mm.x == h.encoding[1].reconSpace.fieldOfView_mm.x) &&
+            (h.encoding[0].reconSpace.fieldOfView_mm.y == h.encoding[1].reconSpace.fieldOfView_mm.y) &&
+            (h.encoding[0].reconSpace.fieldOfView_mm.z == h.encoding[1].reconSpace.fieldOfView_mm.z)) )
+        {
+            GADGET_DEBUG2("Number of encoding spaces: %d\n", h.encoding.size());
+            GADGET_DEBUG1("This GtPlusAccumulatorWorkOrderTriggerGadget only supports two encoding spaces with identical recon spaces.\n");
+            return GADGET_FAIL;
+        }
     }
+
     // find out the PAT mode
-    if (!h.encoding[0].parallelImaging) {
+    if (!h.encoding[0].parallelImaging)
+    {
       GADGET_DEBUG1("Parallel Imaging section not found in header");
       return GADGET_FAIL;
     }
@@ -97,84 +117,95 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     GADGET_CONDITION_MSG(verboseMode_, "acceFactorE2_ is " << workOrder_.acceFactorE2_);
 
     //XUE-TODO: calibrationMode is optional, so appropriate checks should be added
+    workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_NONE;
+
     std::string calib = *p_imaging.calibrationMode;
     if ( calib.compare("interleaved") == 0 )
     {
-      workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
-      GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is interleaved");
+        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
+        GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is interleaved");
 
-      if ( p_imaging.interleavingDimension ) {
-	if ( p_imaging.interleavingDimension->compare("phase") == 0 ) {
-	      workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Phase;
-	} else if ( p_imaging.interleavingDimension->compare("repetition") == 0 ) {
-	    workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Repetition;
-	  } else if ( p_imaging.interleavingDimension->compare("average") == 0 ) {
-	    workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Average;
-	  } else if ( p_imaging.interleavingDimension->compare("contrast") == 0 ) {
-	    workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Contrast;
-	  } else if ( p_imaging.interleavingDimension->compare("other") == 0 ) {
-	    workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_other1;
-	  } else {
-	    GADGET_DEBUG1("Unknown interleaving dimension. Bailing out");
-	    return GADGET_FAIL;
-	  }
-	  GADGET_CONDITION_MSG(verboseMode_, "InterleaveDim is " << gtPlus_util_.getISMRMRDDimName(workOrder_.InterleaveDim_));
-      }
-    } else if ( calib.compare("embedded") == 0 ) {
-      workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_embedded;
-      GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is embedded");
-    } else if ( calib.compare("separate") == 0 ) {
-      workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_separate;
-      GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is separate");
-    } else if ( calib.compare("external") == 0 ) {
-      workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_external;
-    } else if ( (calib.compare("other") == 0) && workOrder_.acceFactorE1_==1 && workOrder_.acceFactorE2_==1 ) {
+        if ( p_imaging.interleavingDimension )
+        {
+            if ( p_imaging.interleavingDimension->compare("phase") == 0 )
+            {
+                workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Phase;
+            }
+            else if ( p_imaging.interleavingDimension->compare("repetition") == 0 )
+            {
+                workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Repetition;
+            }
+            else if ( p_imaging.interleavingDimension->compare("average") == 0 )
+            {
+                workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Average;
+            }
+            else if ( p_imaging.interleavingDimension->compare("contrast") == 0 )
+            {
+                workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Contrast;
+            }
+            else if ( p_imaging.interleavingDimension->compare("other") == 0 )
+            {
+                workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_other1;
+            }
+            else
+            {
+                GADGET_DEBUG1("Unknown interleaving dimension. Bailing out");
+                return GADGET_FAIL;
+            }
+            GADGET_CONDITION_MSG(verboseMode_, "InterleaveDim is " << gtPlus_util_.getISMRMRDDimName(workOrder_.InterleaveDim_));
+        }
+    }
+    else if ( calib.compare("embedded") == 0 )
+    {
+        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_embedded;
+        GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is embedded");
+    }
+    else if ( calib.compare("separate") == 0 )
+    {
+        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_separate;
+        GADGET_CONDITION_MSG(verboseMode_, "Calibration mode is separate");
+    }
+    else if ( calib.compare("external") == 0 )
+    {
+        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_external;
+    }
+    else if ( (calib.compare("other") == 0) && workOrder_.acceFactorE1_==1 && workOrder_.acceFactorE2_==1 )
+    {
         workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_noacceleration;
         workOrder_.acceFactorE1_=1;
-    } else if ( (calib.compare("other") == 0) &&  (workOrder_.acceFactorE1_>1 || workOrder_.acceFactorE2_>1) ) {
-      workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
-      workOrder_.acceFactorE1_=2;
-      workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Phase;
-    } else {
-      GADGET_DEBUG1("Failed to process parallel imaging calibration mode");
-      return GADGET_FAIL;
+    }
+    else if ( (calib.compare("other") == 0) &&  (workOrder_.acceFactorE1_>1 || workOrder_.acceFactorE2_>1) )
+    {
+        workOrder_.CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
+        workOrder_.acceFactorE1_=2;
+        workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_Phase;
+    }
+    else
+    {
+        GADGET_DEBUG1("Failed to process parallel imaging calibration mode");
+        return GADGET_FAIL;
     }
     
     // ---------------------------------------------------------------------------------------------------------
 
     // find out the encoding space 
-    ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
-    ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
-    ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
 
-    matrix_size_encoding_[0] = e_space.matrixSize.x;
-    matrix_size_encoding_[1] = e_space.matrixSize.y;
-    matrix_size_encoding_[2] = e_space.matrixSize.z;
+    findMatrixSizeEncoding(h, matrix_size_encoding_);
+    findFOVEncoding(h, field_of_view_encoding_);
+
+    findMatrixSizeRecon(h, matrix_size_recon_);
+    findFOVRecon(h, field_of_view_recon_);
+
     GADGET_CONDITION_MSG(verboseMode_, "Encoding matrix size: " << matrix_size_encoding_[0] << " " << matrix_size_encoding_[1] << " " << matrix_size_encoding_[2]);
-
-    field_of_view_encoding_[0] = e_space.fieldOfView_mm.x;
-    field_of_view_encoding_[1] = e_space.fieldOfView_mm.y;
-    field_of_view_encoding_[2] = e_space.fieldOfView_mm.z;
     GADGET_CONDITION_MSG(verboseMode_, "Encoding field_of_view : " << field_of_view_encoding_[0] << " " << field_of_view_encoding_[1] << " " << field_of_view_encoding_[2]);
-
-    matrix_size_recon_[0] = r_space.matrixSize.x;
-    matrix_size_recon_[1] = r_space.matrixSize.y;
-    matrix_size_recon_[2] = r_space.matrixSize.z;
     GADGET_CONDITION_MSG(verboseMode_, "Recon matrix size : " << matrix_size_recon_[0] << " " << matrix_size_recon_[1] << " " << matrix_size_recon_[2]);
-
-    field_of_view_recon_[0] = r_space.fieldOfView_mm.x;
-    field_of_view_recon_[1] = r_space.fieldOfView_mm.y;
-    field_of_view_recon_[2] = r_space.fieldOfView_mm.z;
     GADGET_CONDITION_MSG(verboseMode_, "Recon field_of_view :  " << field_of_view_recon_[0] << " " << field_of_view_recon_[1] << " " << field_of_view_recon_[2]);
 
-    //XUE-TODO: REMOVE THIS COMMENTED SECTION
     // ---------------------------------------------------------------------------------------------------------
     // handle partial fourier
-    //workOrder_.kSpaceCenterEncode1_ = e_limits.kspace_encoding_step_1().get().center();
-    //GADGET_CONDITION_MSG(verboseMode_, "kSpaceCenterEncode1_ is " << workOrder_.kSpaceCenterEncode1_);
 
-    //workOrder_.kSpaceCenterEncode2_ = e_limits.kspace_encoding_step_2().get().center();
-    //GADGET_CONDITION_MSG(verboseMode_, "kSpaceCenterEncode2_ is " << workOrder_.kSpaceCenterEncode2_);
+    ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+    ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
 
     workOrder_.kSpaceMaxEncode1_ = matrix_size_encoding_[1]-1;
     GADGET_CONDITION_MSG(verboseMode_, "matrix size kSpaceMaxEncode1_ is " << workOrder_.kSpaceMaxEncode1_);
@@ -185,10 +216,11 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     space_size_[1] = workOrder_.kSpaceMaxEncode1_+1;
     space_size_[2] = workOrder_.kSpaceMaxEncode2_+1;
 
-    if ( (!e_limits.kspace_encoding_step_1) || (!e_limits.kspace_encoding_step_2)) {
-      GADGET_DEBUG1("kspace_encoding_step_1 and kspace_encoding_step_2 limits are required. Not found. Bailing out.");
-      return GADGET_FAIL;
-    }  
+    if ( (!e_limits.kspace_encoding_step_1) || (!e_limits.kspace_encoding_step_2))
+    {
+        GADGET_DEBUG1("kspace_encoding_step_1 and kspace_encoding_step_2 limits are required. Not found. Bailing out.");
+        return GADGET_FAIL;
+    }
 
     max_sampled_E1_ = e_limits.kspace_encoding_step_1->maximum;
     max_sampled_E2_ = e_limits.kspace_encoding_step_2->maximum;
@@ -208,66 +240,30 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     workOrder_.kSpaceCenterEncode2_ = center_line_E2_;
     GADGET_CONDITION_MSG(verboseMode_, "kSpaceCenterEncode2_ is " << workOrder_.kSpaceCenterEncode2_);
 
-
-    //XUE-TODO: REMOVE THIS COMMENTED SECTION
-    // if partial fourier or asymmetric echo is used, correct the kSpaceCenter
-    //if ( space_size_[1]-matrix_size_encoding_[1] > workOrder_.acceFactorE1_ )
-    //{
-    //    GADGET_CONDITION_MSG(verboseMode_, "Partial fourier along E1 ... ");
-    //    //if ( GT_ABS(matrix_size_encoding_[1]/workOrder_.acceFactorE1_ - std::floor(matrix_size_encoding_[1]/workOrder_.acceFactorE1_)) > FLT_EPSILON )
-    //    //{
-    //    //    GADGET_WARN_MSG("matrix_size_[1] is not multiplied by acceFactorE1_ ... ");
-    //    //    matrix_size_encoding_[1] = (std::floor(matrix_size_encoding_[1]/workOrder_.acceFactorE1_)+1)*workOrder_.acceFactorE1_;
-    //    //}
-
-    //    if ( 2*workOrder_.kSpaceCenterEncode1_ > (matrix_size_encoding_[1]+1) )
-    //    {
-    //        space_matrix_offset_E1_ = 0;
-
-    //        workOrder_.start_E2_ = 0;
-    //        workOrder_.end_E2_ = matrix_size_encoding_[1];
-    //    }
-    //    else
-    //    {
-    //        space_matrix_offset_E1_ = space_size_[1] - matrix_size_encoding_[1];
-
-    //        workOrder_.start_E1_ = space_matrix_offset_E1_;
-    //        workOrder_.end_E1_ = workOrder_.kSpaceMaxEncode1_;
-    //    }
-    //}
-    //else
-    //{
-    //    space_matrix_offset_E1_ = 0;
-    //}
-
-    //if ( space_size_[2]-matrix_size_encoding_[2] > workOrder_.acceFactorE2_ )
-    //{
-    //    GADGET_CONDITION_MSG(verboseMode_, "Partial fourier along E2 ... ");
-    //    //if ( GT_ABS(matrix_size_encoding_[2]/workOrder_.acceFactorE2_ - std::floor(matrix_size_encoding_[2]/workOrder_.acceFactorE2_)) > FLT_EPSILON )
-    //    //{
-    //    //    GADGET_WARN_MSG("matrix_size_[2] is not multiplied by acceFactorE2_ ... ");
-    //    //    matrix_size_[2] = (std::floor(matrix_size_[2]/workOrder_.acceFactorE2_)+1)*workOrder_.acceFactorE2_;
-    //    //}
-
-    //    if ( 2*workOrder_.kSpaceCenterEncode2_ > (matrix_size_encoding_[2]+1) )
-    //    {
-    //        space_matrix_offset_E2_ = 0;
-
-    //        workOrder_.start_E2_ = 0;
-    //        workOrder_.end_E2_ = matrix_size_encoding_[2];
-    //    }
-    //    else
-    //    {
-    //        space_matrix_offset_E2_ = space_size_[2] - matrix_size_encoding_[2];
-
-    //        workOrder_.start_E2_ = space_matrix_offset_E2_;
-    //        workOrder_.end_E2_ = workOrder_.kSpaceMaxEncode2_;
-    //    }
-    //}
-    //else
-    //{
-    //    space_matrix_offset_E2_ = 0;
-    //}
+    // ---------------------------------------------------------------------------------------------------------
+    // handle retro-gating
+    if (h.userParameters)
+    {
+        for (std::vector<ISMRMRD::UserParameterLong>::const_iterator  i = h.userParameters->userParameterLong.begin (); i != h.userParameters->userParameterLong.end(); ++i)
+        {
+            if (std::strcmp(i->name.c_str(),"RetroGatedImages") == 0)
+            {
+                workOrder_.retro_gated_images_ = i->value;
+            }
+            else if ( std::strcmp(i->name.c_str(),"RetroGatedSegmentSize") == 0 )
+            {
+                workOrder_.retro_gated_segment_size_ = i->value;
+            }
+            else if ( std::strcmp(i->name.c_str(),"EmbeddedRefLinesE1") == 0 )
+            {
+                embedded_ref_lines_E1_ = i->value;
+            }
+            else if ( std::strcmp(i->name.c_str(),"EmbeddedRefLinesE2") == 0 )
+            {
+                embedded_ref_lines_E2_ = i->value;
+            }
+        }
+    }
 
     // ---------------------------------------------------------------------------------------------------------
     // encoding limits
@@ -280,29 +276,29 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     {
         meas_max_ro_ = e_space.matrixSize.x;
     }
-
-    meas_max_idx_.kspace_encode_step_1 = (uint16_t)matrix_size_encoding_[1]-1; // e_limits.kspace_encoding_step_1().get().maximum();
-
     space_size_[0] = meas_max_ro_;
 
-    //XUE-TODO: Change below to using the riht convention regarding limits,
-    //For instance, line below should be:
-    // meas_max_idx_.set = e_limits.set ? e_limits->set.maximum : 0;
-    meas_max_idx_.set = (e_limits.set && (e_limits.set->maximum>0)) ? e_limits.set->maximum -1 : 0;
-    meas_max_idx_.phase = (e_limits.phase && (e_limits.phase->maximum>0)) ? e_limits.phase->maximum -1 : 0;
+    meas_max_idx_.kspace_encode_step_1 = (uint16_t)matrix_size_encoding_[1]-1;
 
+    meas_max_idx_.set = (e_limits.set && (e_limits.set->maximum>0)) ? e_limits.set->maximum : 0;
+    meas_max_idx_.phase = (e_limits.phase && (e_limits.phase->maximum>0)) ? e_limits.phase->maximum : 0;
 
-    meas_max_idx_.kspace_encode_step_2 = (uint16_t)matrix_size_encoding_[2]-1; // e_limits.kspace_encoding_step_2().get().maximum();
-     
-    //XUE-TODO: Fix this
-    meas_max_idx_.contrast = (e_limits.contrast && (e_limits.contrast->maximum > 0)) ? e_limits.contrast->maximum -1 : 0;
+    // if it is retro-gating
+    if ( workOrder_.retro_gated_images_ > 0 )
+    {
+        meas_max_idx_.phase = (uint16_t)(workOrder_.retro_gated_images_ - 1);
+    }
+
+    meas_max_idx_.kspace_encode_step_2 = (uint16_t)matrix_size_encoding_[2]-1;
+
+    meas_max_idx_.contrast = (e_limits.contrast && (e_limits.contrast->maximum > 0)) ? e_limits.contrast->maximum : 0;
+
     meas_max_idx_.slice = (e_limits.slice && (e_limits.slice->maximum > 0)) ? e_limits.slice->maximum : 0;
 
-    //XUE-TODO: Check this, for some reason, it repetitions was done right.
     meas_max_idx_.repetition = e_limits.repetition ? e_limits.repetition->maximum : 0;
 
-    //XUE-TODO: Fix this
-    meas_max_idx_.average = e_limits.average ? e_limits.average->maximum-1 : 0;
+    meas_max_idx_.average = e_limits.average ? e_limits.average->maximum : 0;
+
     meas_max_idx_.segment = 0;
 
     return GADGET_OK;
@@ -328,7 +324,10 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
     }
 
     // combine the segmentes
-    m1->getObjectPtr()->idx.segment = 0;
+    //if ( workOrder_.retro_gated_images_ == 0 )
+    //{
+        m1->getObjectPtr()->idx.segment = 0;
+    //}
 
     if ( (bIsNavigator || bIsRTFeedback || bIsHPFeedback || bIsDummyScan) && !bIsKSpace && !bIsRef )
     {
@@ -350,16 +349,17 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
         }
 
         // if partial fourier or asymmetric echo is used, correct the kSpaceCenter
-        if ( space_size_[1]-max_sampled_E1_ > workOrder_.acceFactorE1_ )
+        if ( GT_ABS(space_size_[1]-max_sampled_E1_) > workOrder_.acceFactorE1_ )
         {
             GADGET_CONDITION_MSG(verboseMode_, "Partial fourier along E1 ... ");
 
-            if ( (m1->getObjectPtr()->idx.user[5]>0) && (GT_ABS( (long long)m1->getObjectPtr()->idx.user[5] - (long long)space_size_[1]/2 )<2) )
+            // if ( (m1->getObjectPtr()->idx.user[5]>0) && (GT_ABS( (long long)m1->getObjectPtr()->idx.user[5] - (long long)space_size_[1]/2 )<2) )
+            if ( (m1->getObjectPtr()->idx.user[5]>0) )
             {
                 workOrder_.kSpaceCenterEncode1_ = m1->getObjectPtr()->idx.user[5];
             }
 
-            if ( 2*workOrder_.kSpaceCenterEncode1_ > (max_sampled_E1_+1) )
+            if ( 2*workOrder_.kSpaceCenterEncode1_ >= (max_sampled_E1_+1) )
             {
                 space_matrix_offset_E1_ = 0;
 
@@ -373,22 +373,25 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
                 workOrder_.start_E1_ = (int)space_matrix_offset_E1_;
                 workOrder_.end_E1_ = (int)workOrder_.kSpaceMaxEncode1_;
             }
+
+            workOrder_.kSpaceMaxEncode1_ = 2*workOrder_.kSpaceCenterEncode1_-1;
         }
         else
         {
             space_matrix_offset_E1_ = 0;
         }
 
-        if ( space_size_[2]-max_sampled_E2_ > workOrder_.acceFactorE2_ )
+        if ( GT_ABS(space_size_[2]-max_sampled_E2_) > workOrder_.acceFactorE2_ )
         {
             GADGET_CONDITION_MSG(verboseMode_, "Partial fourier along E2 ... ");
 
-            if ( (m1->getObjectPtr()->idx.user[6]>0) && (GT_ABS( (long long)m1->getObjectPtr()->idx.user[6] - (long long)space_size_[2]/2 )<2) )
+            // if ( (m1->getObjectPtr()->idx.user[6]>0) && (GT_ABS( (long long)m1->getObjectPtr()->idx.user[6] - (long long)space_size_[2]/2 )<2) )
+            if ( (m1->getObjectPtr()->idx.user[6]>0) )
             {
                 workOrder_.kSpaceCenterEncode2_ = m1->getObjectPtr()->idx.user[6];
             }
 
-            if ( 2*workOrder_.kSpaceCenterEncode2_ > (max_sampled_E2_+1) )
+            if ( 2*workOrder_.kSpaceCenterEncode2_ >= (max_sampled_E2_+1) )
             {
                 space_matrix_offset_E2_ = 0;
 
@@ -402,6 +405,8 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
                 workOrder_.start_E2_ = (int)space_matrix_offset_E2_;
                 workOrder_.end_E2_ = (int)workOrder_.kSpaceMaxEncode2_;
             }
+
+            workOrder_.kSpaceMaxEncode2_ = 2*workOrder_.kSpaceCenterEncode2_-1;
         }
         else
         {
@@ -431,7 +436,7 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process(GadgetContainerMessage<ISMR
     }
 
     // store ref read out
-    if ( bIsRef )
+    if ( bIsRef && (workOrder_.CalibMode_ != Gadgetron::gtPlus::ISMRMRD_interleaved) )
     {
         if ( !storeRefData(m1, m2, bIsReflect) )
         {
@@ -504,8 +509,9 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::needTriggerWorkOrderAllInClose()
     // already triggered for last acquisition
     if ( triggered_in_process_last_acq_ ) return false;
 
-    // if never triggered in process(...)
-    if ( !triggered_in_process_ && !triggered_in_process_last_acq_ ) return true;
+    // if never triggered in process(...) and the last acqusition does arrive
+    // if the last acquisition does not arrive, the user may has cancel the scan
+    if ( !triggered_in_process_ && !triggered_in_process_last_acq_ && last_acq_arrived_ ) return true;
 
     if ( workOrder_.CalibMode_ == ISMRMRD_interleaved )
     {
@@ -617,19 +623,26 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     //bool is_first_acq_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_FIRST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
     //if ( !is_first_acq_in_slice ) return true;
 
-    bool is_last_acq = ((ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_REPETITION).isSet(m1->getObjectPtr()->flags)) 
-                    || (ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags)) ) 
-                    && (m1->getObjectPtr()->idx.repetition==meas_max_idx_.repetition)
-                    && (m1->getObjectPtr()->idx.slice==meas_max_idx_.slice)
-                    && (m1->getObjectPtr()->idx.set==meas_max_idx_.set)
-                    && (m1->getObjectPtr()->idx.contrast==meas_max_idx_.contrast)
-                    && (m1->getObjectPtr()->idx.phase==meas_max_idx_.phase);
+    bool is_last_acq = ( ((ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_REPETITION).isSet(m1->getObjectPtr()->flags)) || (ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags)) ) 
+                                && (m1->getObjectPtr()->idx.repetition==meas_max_idx_.repetition)
+                                && (m1->getObjectPtr()->idx.slice==meas_max_idx_.slice)
+                                && (m1->getObjectPtr()->idx.set==meas_max_idx_.set)
+                                && (m1->getObjectPtr()->idx.contrast==meas_max_idx_.contrast)
+                                && (m1->getObjectPtr()->idx.phase==meas_max_idx_.phase)
+                                && (m1->getObjectPtr()->idx.average==meas_max_idx_.average) );
+
+    // if retro gating, use the end of acq flag
+    if ( !is_last_acq && (workOrder_.retro_gated_images_ > 0) )
+    {
+        is_last_acq = (ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_MEASUREMENT).isSet(m1->getObjectPtr()->flags));
+    }
+
+    if ( is_last_acq ) last_acq_arrived_ = true;
 
     curr_dim1_ = getDimValue(*(m1->getObjectPtr()), triggerDim1_);
     curr_dim2_ = getDimValue(*(m1->getObjectPtr()), triggerDim2_);
 
-    if ( is_last_acq 
-            && ( (triggerDim1_!=DIM_NONE) || (triggerDim2_!=DIM_NONE) ) )
+    if ( is_last_acq && ( (triggerDim1_!=DIM_NONE) || (triggerDim2_!=DIM_NONE) ) )
     {
         GADGET_CONDITION_MSG(true, "Last scan in measurement - " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim1_ ) << " = " << curr_dim1_ << " - " << gtPlusISMRMRDReconUtil<ValueType>().getISMRMRDDimName(triggerDim2_ ) << " = " << curr_dim2_);
 
@@ -1061,7 +1074,10 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
         size_t samples =  m1->getObjectPtr()->number_of_samples;
         ISMRMRD::EncodingCounters idx = m1->getObjectPtr()->idx;
 
-        idx.segment = 0; // combine the segments
+        /*if ( workOrder_.retro_gated_images_ == 0 )
+        {*/
+            idx.segment = 0; // combine the segments
+        //}
 
         if ( workOrder_.data_.get_number_of_elements() <= 0 )
         {
@@ -1077,7 +1093,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
             if ( samples > meas_max_ro_ ) meas_max_ro_ = samples;
 
             // find the loop counter boundary and allocate the buffer
-            GADGET_CONDITION_MSG(verboseMode_, "[RO E1 Cha Slice E2 Con Phase Rep Set Seg] = [" 
+            GADGET_CONDITION_MSG(verboseMode_, "[RO E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
                                << meas_max_ro_ 
                                << " " << E1 
                                << " " << meas_max_channel_ 
@@ -1087,7 +1103,8 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
                                << " " << meas_max_idx_.phase+1 
                                << " " << meas_max_idx_.repetition+1 
                                << " " << meas_max_idx_.set+1 
-                               << " " << meas_max_idx_.segment+1 << "]");
+                               << " " << meas_max_idx_.segment+1 
+                               << " " << meas_max_idx_.average+1 << "]");
 
             dimensions_.clear();
             dimensions_.push_back(meas_max_ro_);
@@ -1100,6 +1117,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
             dimensions_.push_back(meas_max_idx_.repetition+1);
             dimensions_.push_back(meas_max_idx_.set+1);
             dimensions_.push_back(meas_max_idx_.segment+1);
+            dimensions_.push_back(meas_max_idx_.average+1);
 
             size_t N = dimensions_.size();
             for ( ii=0; ii<N; ii++ )
@@ -1118,6 +1136,15 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
                 reflect_dimensions_[2] = 1;
                 workOrder_.reflect_.create(&reflect_dimensions_);
                 Gadgetron::clear(workOrder_.reflect_);
+
+                std::vector<size_t> dim(dimensions_);
+                dim[0] = 1;
+                dim[2] = 1;
+                workOrder_.time_stamp_.create(dim);
+                Gadgetron::fill(workOrder_.time_stamp_, (real_value_type)(-1) );
+
+                workOrder_.physio_time_stamp_.create(dim);
+                Gadgetron::fill(workOrder_.physio_time_stamp_, (real_value_type)(-1) );
             }
             catch(...)
             {
@@ -1126,8 +1153,8 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
             }
 
             // allocate message buffer
-            size_t matrix_size[10];
-            for ( ii=0; ii<10; ii++ )
+            size_t matrix_size[GT_DIM_NUM];
+            for ( ii=0; ii<GT_DIM_NUM; ii++ )
             {
                 matrix_size[ii] = dimensions_[ii];
             }
@@ -1171,7 +1198,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
             reflectBuf.create(samples);
         }
 
-        std::vector<size_t> pos(10);
+        std::vector<size_t> pos(GT_DIM_NUM);
         for (size_t c = 0; c < m1->getObjectPtr()->active_channels; c++) 
         {
             pos[0] = 0;
@@ -1184,6 +1211,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::storeImageData(GadgetContainerMess
             pos[7] = idx.repetition;
             pos[8] = idx.set;
             pos[9] = idx.segment;
+            pos[10] = idx.average;
             size_t offsetBuffer = workOrder_.data_.calculate_offset(pos);
 
             if ( offsetBuffer >= dataN )
@@ -1239,7 +1267,10 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
         size_t samples =  m1->getObjectPtr()->number_of_samples;
         ISMRMRD::EncodingCounters idx = m1->getObjectPtr()->idx;
 
-        idx.segment = 0; // combine the segments
+        /*if ( workOrder_.retro_gated_images_ == 0 )
+        {*/
+            idx.segment = 0; // combine the segments
+        //}
 
         if ( workOrder_.ref_.get_number_of_elements() <= 0 )
         {
@@ -1263,7 +1294,7 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
             if ( RO < samples ) RO = samples;
 
             // find the loop counter boundary and allocate the buffer
-            GADGET_CONDITION_MSG(verboseMode_, "[RO E1 Cha Slice E2 Con Phase Rep Set Seg] = [" 
+            GADGET_CONDITION_MSG(verboseMode_, "[RO E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
                                << RO 
                                << " " << E1 
                                << " " << meas_max_channel_ 
@@ -1273,7 +1304,8 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
                                << " " << meas_max_idx_.phase+1 
                                << " " << meas_max_idx_.repetition+1 
                                << " " << meas_max_idx_.set+1 
-                               << " " << meas_max_idx_.segment+1 << "]");
+                               << " " << meas_max_idx_.segment+1 
+                               << " " << meas_max_idx_.average+1 << "]");
 
             dimensions_.clear();
             dimensions_.push_back(RO);
@@ -1286,6 +1318,7 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
             dimensions_.push_back(meas_max_idx_.repetition+1);
             dimensions_.push_back(meas_max_idx_.set+1);
             dimensions_.push_back(meas_max_idx_.segment+1);
+            dimensions_.push_back(meas_max_idx_.average+1);
 
             size_t N = dimensions_.size();
             for ( ii=0; ii<N; ii++ )
@@ -1338,6 +1371,7 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
             if ( idx.repetition > meas_max_idx_ref_.repetition )                        meas_max_idx_ref_.repetition = idx.repetition;
             if ( idx.set > meas_max_idx_ref_.set )                                      meas_max_idx_ref_.set = idx.set;
             if ( idx.segment > meas_max_idx_ref_.segment )                              meas_max_idx_ref_.segment = idx.segment;
+            if ( idx.average > meas_max_idx_ref_.average )                              meas_max_idx_ref_.average = idx.average;
 
             size_t ii;
             for ( ii=0; ii<ISMRMRD_USER_INTS; ii++ )
@@ -1349,7 +1383,7 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
         size_t refN = workOrder_.ref_.get_number_of_elements();
         std::complex<float>* b = workOrder_.ref_.begin();
         std::complex<float>* d = m2->getObjectPtr()->get_data_ptr();
-        if (samples != static_cast<size_t>(dimensions_[0])) 
+        if (samples != static_cast<size_t>(workOrder_.ref_.get_size(0))) 
         {
             GADGET_DEBUG1("Wrong number of samples received\n");
             return false;
@@ -1362,7 +1396,7 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
             reflectBuf.create(samples);
         }
 
-        std::vector<size_t> pos(10);
+        std::vector<size_t> pos(GT_DIM_NUM);
         for (uint16_t c = 0; c < m1->getObjectPtr()->active_channels; c++) 
         {
             pos[0] = 0;
@@ -1375,6 +1409,7 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
             pos[7] = idx.repetition;
             pos[8] = idx.set;
             pos[9] = idx.segment;
+            pos[10] = idx.average;
 
             size_t offsetBuffer = workOrder_.ref_.calculate_offset(pos);
             if ( offsetBuffer >= refN )
@@ -1399,6 +1434,25 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
             pos[2] = 0;
             offsetBuffer = workOrder_.reflect_ref_.calculate_offset(pos);
             workOrder_.reflect_ref_.at(offsetBuffer) = isReflect;
+        }
+
+        // if it is embedded mode, store the acquisition and physio time stamp
+        if ( workOrder_.CalibMode_ == ISMRMRD_embedded )
+        {
+            ind_time_stamp_[0] = 0;
+            ind_time_stamp_[1] = idx.kspace_encode_step_1;
+            ind_time_stamp_[2] = 0;
+            ind_time_stamp_[3] = idx.slice;
+            ind_time_stamp_[4] = idx.kspace_encode_step_2;
+            ind_time_stamp_[5] = idx.contrast;
+            ind_time_stamp_[6] = idx.phase;
+            ind_time_stamp_[7] = idx.repetition;
+            ind_time_stamp_[8] = idx.set;
+            ind_time_stamp_[9] = idx.segment;
+            ind_time_stamp_[10] = idx.average;
+
+            workOrder_.time_stamp_(ind_time_stamp_) = (real_value_type)(m1->getObjectPtr()->acquisition_time_stamp) * timeStampResolution_;
+            workOrder_.physio_time_stamp_(ind_time_stamp_) = (real_value_type)(m1->getObjectPtr()->physiology_time_stamp[0]) * timeStampResolution_;
         }
     }
     catch(...)
@@ -1427,6 +1481,7 @@ fillBuffer(ReadOutBufferType& readOutBuffer, BufferType& buf, ReflectBufferType&
         max_idx.repetition = 0;
         max_idx.set = 0;
         max_idx.segment = 0;
+        max_idx.average = 0;
         size_t max_channel = 0;
         size_t max_col = 0;
 
@@ -1462,11 +1517,14 @@ fillBuffer(ReadOutBufferType& readOutBuffer, BufferType& buf, ReflectBufferType&
             if ( idx.segment > max_idx.segment ) 
                 max_idx.segment = idx.segment;
 
+            if ( idx.average > max_idx.average ) 
+                max_idx.average = idx.average;
+
             if ( readOutBuffer[a].acqHead_.active_channels > max_channel ) 
                 max_channel = readOutBuffer[a].acqHead_.active_channels;
         }
 
-        GADGET_CONDITION_MSG(verboseMode_, "[RO E1 Cha Slice E2 Contrast Phase Rep Set Seg] = [" 
+        GADGET_CONDITION_MSG(verboseMode_, "[RO E1 Cha Slice E2 Contrast Phase Rep Set Seg Ave] = [" 
                                << max_col 
                                << " " << max_idx.kspace_encode_step_1+1 
                                << " " << max_channel 
@@ -1476,10 +1534,11 @@ fillBuffer(ReadOutBufferType& readOutBuffer, BufferType& buf, ReflectBufferType&
                                << " " << max_idx.phase+1 
                                << " " << max_idx.repetition+1 
                                << " " << max_idx.set+1 
-                               << " " << max_idx.segment+1 << "]");
+                               << " " << max_idx.segment+1 
+                               << " " << max_idx.average+1 << "]");
 
         // alloate buffer for data
-        std::vector<size_t> dims(10);
+        std::vector<size_t> dims(GT_DIM_NUM);
         dims[0] = max_col;
         dims[1] = max_idx.kspace_encode_step_1+1;
         dims[2] = max_channel;
@@ -1490,6 +1549,7 @@ fillBuffer(ReadOutBufferType& readOutBuffer, BufferType& buf, ReflectBufferType&
         dims[7] = max_idx.repetition+1;
         dims[8] = max_idx.set+1;
         dims[9] = max_idx.segment+1;
+        dims[10] = max_idx.average+1;
 
         try
         {
@@ -1512,7 +1572,7 @@ fillBuffer(ReadOutBufferType& readOutBuffer, BufferType& buf, ReflectBufferType&
 
         // copy the data
         uint16_t c;
-        std::vector<size_t> pos(10);
+        std::vector<size_t> pos(GT_DIM_NUM);
 
         for ( a=0; a<numOfReadOuts; a++) 
         {
@@ -1531,6 +1591,7 @@ fillBuffer(ReadOutBufferType& readOutBuffer, BufferType& buf, ReflectBufferType&
                 pos[7] = idx.repetition;
                 pos[8] = idx.set;
                 pos[9] = idx.segment;
+                pos[10] = idx.average;
                 long long offsetBuffer = buf.calculate_offset(pos);
 
                 memcpy(b+offsetBuffer, d+c*readOutBuffer[a].acqHead_.number_of_samples, sizeof(std::complex<float>)*readOutBuffer[a].acqHead_.number_of_samples);
@@ -1557,20 +1618,25 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(GadgetContainerMessa
     try
     {
         // fill the message info
-        size_t offset = messageImage->get_offset(idx.slice, idx.kspace_encode_step_2, idx.contrast, idx.phase, idx.repetition, idx.set, idx.segment);
-	
-	//XUE-TODO: This check is totally inadequate. Any of the dimensions could be overflowing and still land in-bounds. get_offset should probably throw an exception if that is the case and it should be caught
+        size_t offset = messageImage->get_offset(idx.slice, idx.kspace_encode_step_2, idx.contrast, idx.phase, idx.repetition, idx.set, idx.segment, idx.average);
+
+        //XUE-TODO: This check is totally inadequate. Any of the dimensions could be overflowing and still land in-bounds. get_offset should probably throw an exception if that is the case and it should be caught
         if( offset >= messageImage->max_num_of_images_ )
         {
-            GADGET_WARN_MSG("Incoming image is over the boundary of buffer [SLC E2 CON PHS REP SET SEG] = [ " 
-                                                                            << idx.slice << " " << idx.kspace_encode_step_2 << " " << idx.contrast << " " << idx.phase << " " << idx.repetition << " " << idx.set << " " << idx.segment << " ] ");
+            GADGET_WARN_MSG("Incoming image is over the boundary of buffer [SLC E2 CON PHS REP SET SEG AVE] = [ " 
+                                                                            << idx.slice << " " << idx.kspace_encode_step_2 << " " 
+                                                                            << idx.contrast << " " << idx.phase << " " 
+                                                                            << idx.repetition << " " << idx.set << " " 
+                                                                            << idx.segment << " " << idx.average << " ] ");
             return true;
         }
 
         if( offset >= messageImage->max_num_of_images_ )
         {
-            GADGET_WARN_MSG("Incoming image is over the boundary of buffer [SLC E2 CON PHS REP SET SEG] = [ " 
-                                                                            << idx.slice << " " << idx.kspace_encode_step_2 << " " << idx.contrast << " " << idx.phase << " " << idx.repetition << " " << idx.set << " " << idx.segment << " ] ");
+            GADGET_WARN_MSG("Incoming image is over the boundary of buffer [SLC E2 CON PHS REP SET SEG AVE] = [ " 
+                                                                            << idx.slice << " " << idx.kspace_encode_step_2 << " " 
+                                                                            << idx.contrast << " " << idx.phase << " " << idx.repetition << " " 
+                                                                            << idx.set << " " << idx.segment << " " << idx.average << " ] ");
             return true;
         }
 
@@ -1585,13 +1651,15 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(GadgetContainerMessa
                     && messageImage->imageArray_[offset].flags==0 
                     && messageImage->imageArray_[offset].measurement_uid==0 )
         {
-            GADGET_CONDITION_MSG(verboseMode_, "--> buffer image header - offset = " << offset << " - [SLC E2 CON PHS REP SET] = [" 
+            GADGET_CONDITION_MSG(verboseMode_, "--> buffer image header - offset = " << offset << " - [SLC E2 CON PHS REP SET SEG AVE] = [" 
                                                                       << idx.slice << " " 
                                                                       << idx.kspace_encode_step_2 << " " 
                                                                       << idx.contrast << " " 
                                                                       << idx.phase << " " 
                                                                       << idx.repetition << " " 
-                                                                      << idx.set << "]");
+                                                                      << idx.set << " " 
+                                                                      << idx.segment << " " 
+                                                                      << idx.average << "]");
 
             messageImage->imageArray_[offset].version = m1->getObjectPtr()->version;
             messageImage->imageArray_[offset].flags = m1->getObjectPtr()->flags;
@@ -1642,6 +1710,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(GadgetContainerMessa
             messageImage->imageArray_[offset].phase = m1->getObjectPtr()->idx.phase;
             messageImage->imageArray_[offset].repetition = m1->getObjectPtr()->idx.repetition;
             messageImage->imageArray_[offset].set = m1->getObjectPtr()->idx.set;
+            messageImage->imageArray_[offset].average = m1->getObjectPtr()->idx.average;
 
             messageImage->imageArray_[offset].acquisition_time_stamp = m1->getObjectPtr()->acquisition_time_stamp;
 
@@ -1666,6 +1735,21 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(GadgetContainerMessa
         {
             messageImage->imageArray_[offset].time_stamps[idx.kspace_encode_step_1] = m1->getObjectPtr()->acquisition_time_stamp;
             messageImage->imageArray_[offset].pmu_time_stamps[idx.kspace_encode_step_1] = m1->getObjectPtr()->physiology_time_stamp[0];
+
+            ind_time_stamp_[0] = 0;
+            ind_time_stamp_[1] = idx.kspace_encode_step_1;
+            ind_time_stamp_[2] = 0;
+            ind_time_stamp_[3] = idx.slice;
+            ind_time_stamp_[4] = idx.kspace_encode_step_2;
+            ind_time_stamp_[5] = idx.contrast;
+            ind_time_stamp_[6] = idx.phase;
+            ind_time_stamp_[7] = idx.repetition;
+            ind_time_stamp_[8] = idx.set;
+            ind_time_stamp_[9] = idx.segment;
+            ind_time_stamp_[10] = idx.average;
+
+            workOrder_.time_stamp_(ind_time_stamp_) = (real_value_type)(m1->getObjectPtr()->acquisition_time_stamp) * timeStampResolution_;
+            workOrder_.physio_time_stamp_(ind_time_stamp_) = (real_value_type)(m1->getObjectPtr()->physiology_time_stamp[0]) * timeStampResolution_;
         }
     }
     catch(...)
@@ -1729,6 +1813,8 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, bool 
         // copy the image content
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<ValueType>().extractSubArrayForDim(workOrder_.data_, cm2->getObjectPtr()->data_, triggerDim, value, lessEqual));
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<unsigned short>().extractSubArrayForDim(workOrder_.reflect_, cm2->getObjectPtr()->reflect_, triggerDim, value, lessEqual));
+        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<real_value_type>().extractSubArrayForDim(workOrder_.time_stamp_, cm2->getObjectPtr()->time_stamp_, triggerDim, value, lessEqual));
+        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<real_value_type>().extractSubArrayForDim(workOrder_.physio_time_stamp_, cm2->getObjectPtr()->physio_time_stamp_, triggerDim, value, lessEqual));
 
         // copy the ref
         if ( workOrder_.ref_.get_number_of_elements()>0 
@@ -1835,6 +1921,8 @@ triggerByDimLessEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim, size_t value, b
         // copy the image content
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<ValueType>().extractSubArrayForDim(workOrder_.data_, cm2->getObjectPtr()->data_, triggerDim, value, lessEqual));
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<unsigned short>().extractSubArrayForDim(workOrder_.reflect_, cm2->getObjectPtr()->reflect_, triggerDim, value, lessEqual));
+        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<real_value_type>().extractSubArrayForDim(workOrder_.time_stamp_, cm2->getObjectPtr()->time_stamp_, triggerDim, value, lessEqual));
+        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<real_value_type>().extractSubArrayForDim(workOrder_.physio_time_stamp_, cm2->getObjectPtr()->physio_time_stamp_, triggerDim, value, lessEqual));
 
         // copy the ref
         if ( workOrder_.ref_.get_number_of_elements()>0 
@@ -1941,6 +2029,8 @@ triggerByDimEqual(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size_t value1, Gad
         // copy the image content
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<ValueType>().extractSubArrayForDim(workOrder_.data_, cm2->getObjectPtr()->data_, triggerDim1, value1, triggerDim2, value2, lessEqual));
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<unsigned short>().extractSubArrayForDim(workOrder_.reflect_, cm2->getObjectPtr()->reflect_, triggerDim1, value1, triggerDim2, value2, lessEqual));
+        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<real_value_type>().extractSubArrayForDim(workOrder_.time_stamp_, cm2->getObjectPtr()->time_stamp_, triggerDim1, value1, triggerDim2, value2, lessEqual));
+        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<real_value_type>().extractSubArrayForDim(workOrder_.physio_time_stamp_, cm2->getObjectPtr()->physio_time_stamp_, triggerDim1, value1, triggerDim2, value2, lessEqual));
 
         // copy the ref
         if ( workOrder_.ref_.get_number_of_elements()>0 
@@ -2047,6 +2137,8 @@ triggerByDim1LessEqualDim2Equal(Gadgetron::gtPlus::ISMRMRDDIM& triggerDim1, size
         // copy the image content
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<ValueType>().extractSubArrayForDim1LessEqualDim2Equal(workOrder_.data_, cm2->getObjectPtr()->data_, triggerDim1, value1, triggerDim2, value2));
         GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<unsigned short>().extractSubArrayForDim1LessEqualDim2Equal(workOrder_.reflect_, cm2->getObjectPtr()->reflect_, triggerDim1, value1, triggerDim2, value2));
+        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<real_value_type>().extractSubArrayForDim1LessEqualDim2Equal(workOrder_.time_stamp_, cm2->getObjectPtr()->time_stamp_, triggerDim1, value1, triggerDim2, value2));
+        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<real_value_type>().extractSubArrayForDim1LessEqualDim2Equal(workOrder_.physio_time_stamp_, cm2->getObjectPtr()->physio_time_stamp_, triggerDim1, value1, triggerDim2, value2));
 
         // copy the ref
         if ( workOrder_.ref_.get_number_of_elements()>0 
@@ -2150,6 +2242,8 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::triggerWorkOrderAllInClose()
 
         // copy the image content
         cm2->getObjectPtr()->data_ = workOrder_.data_;
+        cm2->getObjectPtr()->time_stamp_ = workOrder_.time_stamp_;
+        cm2->getObjectPtr()->physio_time_stamp_ = workOrder_.physio_time_stamp_;
         cm2->getObjectPtr()->reflect_ = workOrder_.reflect_;
 
         // copy the ref
@@ -2270,8 +2364,8 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::close(unsigned long flags)
 
     if ( BaseClass::close(flags) != GADGET_OK ) return GADGET_FAIL;
 
-    // if ( flags!=0 && !triggered_in_close_ )
-    if ( !triggered_in_close_ )
+    if ( flags!=0 && !triggered_in_close_ )
+    // if ( !triggered_in_close_ )
     {
         triggered_in_close_ = true;
 

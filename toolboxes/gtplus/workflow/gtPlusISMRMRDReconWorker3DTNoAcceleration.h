@@ -33,6 +33,7 @@ public:
     using BaseClass::gt_timer2_;
     using BaseClass::gt_timer3_;
     using BaseClass::performTiming_;
+    using BaseClass::verbose_;
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;

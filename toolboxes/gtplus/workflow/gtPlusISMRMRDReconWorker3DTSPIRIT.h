@@ -50,6 +50,7 @@ public:
     using BaseClass::gt_timer2_;
     using BaseClass::gt_timer3_;
     using BaseClass::performTiming_;
+    using BaseClass::verbose_;
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
@@ -235,7 +236,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
     spirit_.calib_use_gpu_ = workOrder3DT->spirit_use_gpu_;
 
     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 3D calibration ... "));
-    GADGET_CHECK_RETURN_FALSE(spirit_.calib3D(acsSrc, acsDst, workOrder3DT->spirit_reg_lamda_, workOrder3DT->spirit_calib_over_determine_ratio_, (int)kRO, (int)kE1, (int)kE2, 1, 1, 1, ker));
+    GADGET_CHECK_RETURN_FALSE(spirit_.calib3D(acsSrc, acsDst, workOrder3DT->spirit_reg_lamda_, workOrder3DT->spirit_calib_over_determine_ratio_, kRO, kE1, kE2, 1, 1, 1, ker));
     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker");
@@ -250,7 +251,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
         hoNDArray<T> kIm(E1, E2, RO, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin()+usedN*E1*E2*RO*srcCHA*dstCHA);
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 3D image domain kernel ... "));
-        GADGET_CHECK_RETURN_FALSE(spirit_.imageDomainKernel3D(ker, (int)kRO, (int)kE1, (int)kE2, 1, 1, 1, (int)RO, (int)E1, (int)E2, kIm, minusI));
+        GADGET_CHECK_RETURN_FALSE(spirit_.imageDomainKernel3D(ker, kRO, kE1, kE2, 1, 1, 1, RO, E1, E2, kIm, minusI));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         if ( !debugFolder_.empty() )
@@ -267,7 +268,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
         hoNDArray<T> kIm(convKE1, convKE2, RO, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin()+usedN*convKE1*convKE2*RO*srcCHA*dstCHA);
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 3D image domain kernel only along RO ... "));
-        GADGET_CHECK_RETURN_FALSE(spirit_.imageDomainKernelRO3D(ker, (int)kRO, (int)kE1, (int)kE2, 1, 1, 1, (int)RO, kIm, minusI));
+        GADGET_CHECK_RETURN_FALSE(spirit_.imageDomainKernelRO3D(ker, kRO, kE1, kE2, 1, 1, 1, RO, kIm, minusI));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         if ( !debugFolder_.empty() )

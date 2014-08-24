@@ -36,6 +36,8 @@ namespace Gadgetron{
 
         fixed_noise_bandwidth_ = -1;
 
+        perform_noise_adjust_ = true;
+
         gt_timer_.set_timing_in_destruction(false);
         performTiming_ = false;
     }
@@ -70,6 +72,17 @@ namespace Gadgetron{
         }
 
         performTiming_ = this->get_bool_value("performTiming");
+
+        str = get_string_value("perform_noise_adjust");
+        if ( !str->empty() )
+        {
+            perform_noise_adjust_ = this->get_bool_value("perform_noise_adjust");
+        }
+        else
+        {
+            perform_noise_adjust_ = true;
+        }
+        GADGET_MSG("NoiseAdjustGadget::perform_noise_adjust_ is " << perform_noise_adjust_);
 
         noise_dwell_time_us_preset_ = (float)this->get_double_value("noise_dwell_time_us_preset");
         if ( noise_dwell_time_us_preset_ == 0 ) noise_dwell_time_us_preset_ = 5;
@@ -184,6 +197,12 @@ namespace Gadgetron{
 	      }
 	    }
 	}
+
+        // if MKL is used, limit the number of threads used to be 2
+#ifdef USE_MKL
+        int save_nt = mkl_set_num_threads_local(1);
+        GADGET_MSG("NoiseAdjustGadget:mkl_set_num_threads_local(1) : " << save_nt);
+#endif // USE_MKL
 
         return GADGET_OK;
     }
@@ -360,6 +379,26 @@ namespace Gadgetron{
             measurement_id_ = ostr.str();
         }
 
+        if ( !perform_noise_adjust_ )
+        {
+            if ( !is_noise )
+            {
+                if (this->next()->putq(m1) == -1)
+                {
+                    ACE_ERROR_RETURN( (LM_ERROR,
+                        ACE_TEXT("%p\n"),
+                        ACE_TEXT("NoiseAdjustGadget::process, passing data on to next gadget")),
+                        -1);
+                }
+            }
+            else
+            {
+                m1->release();
+            }
+
+            return GADGET_OK;
+        }
+
         if ( use_stored_noise_prewhitener_ )
         {
             if ( !is_noise )
@@ -394,13 +433,21 @@ namespace Gadgetron{
                 {
                     // GADGET_START_TIMING_CONDITION(gt_timer_, "apply noise prewhitener ... ", performTiming_);
 
-                    //#ifdef USE_MKL
-                    //    GeneralMatrixProduct_gemm(*m2->getObjectPtr(), *m2->getObjectPtr(), false, noise_covariance_matrixf_, false);
-                    //#else
+                    if ( data_prewhitened_.get_size(0)!=m2->getObjectPtr()->get_size(0) 
+                        || data_prewhitened_.get_size(1)!=m2->getObjectPtr()->get_size(1) )
+                    {
+                        data_prewhitened_.create(m2->getObjectPtr()->get_dimensions());
+                    }
+
+                    memcpy(data_prewhitened_.begin(), m2->getObjectPtr()->begin(), m2->getObjectPtr()->get_number_of_bytes());
+
+                    #ifdef USE_MKL
+                        GeneralMatrixProduct_gemm_CXFL(*m2->getObjectPtr(), data_prewhitened_, noise_covariance_matrixf_);
+                    #else
                         arma::cx_fmat noise_covf = as_arma_matrix(&noise_covariance_matrixf_);
                         arma::cx_fmat am2 = as_arma_matrix(m2->getObjectPtr());
                         am2 = am2*arma::trimatu(noise_covf);
-                    //#endif // USE_MKL
+                    #endif // USE_MKL
 
                     // GADGET_STOP_TIMING_CONDITION(gt_timer_, performTiming_);
                 }
@@ -526,13 +573,21 @@ namespace Gadgetron{
                         {
                             if ( m2->getObjectPtr()->get_size(1) == noise_covariance_matrixf_.get_size(0) )
                             {
-                                //#ifdef USE_MKL
-                                //    GeneralMatrixProduct_gemm(*m2->getObjectPtr(), *m2->getObjectPtr(), false, noise_covariance_matrixf_, false);
-                                //#else
+                                if ( data_prewhitened_.get_size(0)!=m2->getObjectPtr()->get_size(0) 
+                                    || data_prewhitened_.get_size(1)!=m2->getObjectPtr()->get_size(1) )
+                                {
+                                    data_prewhitened_.create(m2->getObjectPtr()->get_dimensions());
+                                }
+
+                                memcpy(data_prewhitened_.begin(), m2->getObjectPtr()->begin(), m2->getObjectPtr()->get_number_of_bytes());
+
+                                #ifdef USE_MKL
+                                    GeneralMatrixProduct_gemm_CXFL(*m2->getObjectPtr(), data_prewhitened_, noise_covariance_matrixf_);
+                                #else
                                     arma::cx_fmat noise_covf = as_arma_matrix(&noise_covariance_matrixf_);
                                     arma::cx_fmat am2 = as_arma_matrix(m2->getObjectPtr());
                                     am2 = am2*arma::trimatu(noise_covf);
-                                //#endif // USE_MKL
+                                #endif // USE_MKL
                             }
                         }
                     }

@@ -50,7 +50,7 @@ namespace Gadgetron
         {
             processed_in_close_ = true;
 
-            boost::shared_ptr<std::string> str = this->get_string_value("workingdirectory");
+            boost::shared_ptr<std::string> str = this->get_string_value("workingDirectory");
             if ( !str->empty() )
             {
                 noise_dependency_folder_ = *str;

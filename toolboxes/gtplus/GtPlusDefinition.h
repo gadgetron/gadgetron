@@ -60,7 +60,8 @@ namespace Gadgetron
             ISMRMRD_PF_POCS,                    // POCS
             ISMRMRD_PF_FENGHUANG,               // convolution based method
             ISMRMRD_PF_ZEROFILLING_FILTER,      // zero-filling with partial fourier filter
-            ISMRMRD_PF_ZEROFILLING              // zero-filling without partial fourier filter
+            ISMRMRD_PF_ZEROFILLING,             // zero-filling without partial fourier filter
+            ISMRMRD_PF_NONE
         };
 
         // define the kspace filter type
@@ -84,6 +85,22 @@ namespace Gadgetron
             ISMRMRD_noacceleration
         };
 
+        // define the interpolation method
+        enum ISMRMRDINTERP
+        {
+            ISMRMRD_INTERP_LINEAR = 512,
+            ISMRMRD_INTERP_SPLINE,
+            ISMRMRD_INTERP_BSPLINE
+        };
+
+        // define the interpolation method for retro-gating
+        enum ISMRMRDINTERPRETROGATING
+        {
+            ISMRMRD_INTERP_RETRO_GATING_LINEAR = 600,
+            ISMRMRD_INTERP_RETRO_GATING_CUBIC, 
+            ISMRMRD_INTERP_RETRO_GATING_BSPLINE
+        };
+
         /// defination of image meta attributes
         /// user can set these attributes to record some properties of generated imaging results
         /// how to interpret these attributes depends on the client side
@@ -103,10 +120,13 @@ namespace Gadgetron
         /// role of image data
         #define GTPLUS_DATA_ROLE                            "GT_DataRole"
         #define GTPLUS_IMAGE_REGULAR                        "GT_Image"
+        #define GTPLUS_IMAGE_RETRO                          "GT_ImageRetro"
         #define GTPLUS_IMAGE_GFACTOR                        "GT_Gfactor"
         #define GTPLUS_IMAGE_SNR_MAP                        "GT_SNR_MAP"
         #define GTPLUS_IMAGE_STD_MAP                        "GT_STD_MAP"
+        #define GTPLUS_IMAGE_WRAPAROUNDMAP                  "GT_WrapAround_MAP"
         #define GTPLUS_IMAGE_PHASE                          "GT_Phase"
+        #define GTPLUS_IMAGE_INTENSITY_UNCHANGED            "GT_Image_Intensity_Unchanged"
         // other images than the regular reconstruction results
         #define GTPLUS_IMAGE_OTHER                          "GT_Image_Other"
         // other data roles
@@ -114,12 +134,22 @@ namespace Gadgetron
         #define GTPLUS_IMAGE_PD                             "PD"
         #define GTPLUS_IMAGE_MAGIR                          "MAGIR"
         #define GTPLUS_IMAGE_PSIR                           "PSIR"
-        #define GTPLUS_IMAGE_T1MAP                          "T1MAP"
-        #define GTPLUS_IMAGE_T2MAP                          "T2MAP"
-        #define GTPLUS_IMAGE_T2STARMAP                      "T2STARMAP"
+
+        #define GTPLUS_IMAGE_T1MAP                          "T1"
+        #define GTPLUS_IMAGE_T1SDMAP                        "T1SD"
+        #define GTPLUS_IMAGE_T2MAP                          "T2"
+        #define GTPLUS_IMAGE_T2SDMAP                        "T2SD"
+        #define GTPLUS_IMAGE_T2STARMAP                      "T2STAR"
+        #define GTPLUS_IMAGE_T2STARMASKMAP                  "T2SMASKMAP"
+        #define GTPLUS_IMAGE_T2STARSDMAP                    "T2STARSD"
+        #define GTPLUS_IMAGE_T2STARAMAP                     "T2STARAMAP"
+        #define GTPLUS_IMAGE_T2STARTRUNCMAP                 "T2STARTRUNCMAP"
+
         #define GTPLUS_IMAGE_FAT                            "FAT"
         #define GTPLUS_IMAGE_WATER                          "WATER"
         #define GTPLUS_IMAGE_FREQMAP                        "FREQMAP"
+        #define GTPLUS_IMAGE_B1MAP                          "B1MAP"
+        #define GTPLUS_IMAGE_FLIPANGLEMAP                   "FLIPANGLEMAP"
 
         /// data flow tag
         /// if this flag is set to be 1 for a image, the image is immediately passed to the next gadget

@@ -41,7 +41,7 @@ struct gtPlusReconJob2DT
 
     ~gtPlusReconJob2DT();
 
-    virtual bool serialize(char*& buf, size_t& len) const;
+    virtual bool serialize(char*& buf, size_t& len) const ;
     virtual bool deserialize(char* buf, size_t& len);
 };
 
@@ -243,7 +243,7 @@ public:
 
     typedef typename realType<T>::Type value_type;
 
-    gtPlusReconWorker() : performTiming_(false)
+    gtPlusReconWorker() : partial_fourier_handling_(true), performTiming_(false), verbose_(false)
     {
         gt_timer1_.set_timing_in_destruction(false);
         gt_timer2_.set_timing_in_destruction(false);
@@ -262,6 +262,9 @@ public:
         return true;
     }
 
+    // whether to apply partial fourier processing
+    bool partial_fourier_handling_;
+
     // clock for timing
     Gadgetron::GadgetronTimer gt_timer1_;
     Gadgetron::GadgetronTimer gt_timer2_;
@@ -274,6 +277,9 @@ public:
 
     // debug folder
     std::string debugFolder_;
+
+    // verbose mode
+    bool verbose_;
 
     // util
     gtPlusISMRMRDReconUtil<T> gtPlus_util_;

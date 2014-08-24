@@ -27,7 +27,7 @@
 static void usage()
 {
     using namespace std;
-    std::ostrstream outs;
+    std::stringstream outs;
 
     outs << "==============================================================================================" << endl;
     outs << "Usage: Matlab_gt_read_analyze \n";
@@ -42,8 +42,9 @@ static void usage()
     outs << '\t' << "header     : image header" << endl;
     outs << "==============================================================================================" << endl;
     outs << std::ends; 
-    
-    mexPrintf("%s\n", outs.str() );
+
+    std::string msg = outs.str();
+    mexPrintf("%s\n", msg.c_str() );
 }
 
 void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])

@@ -123,7 +123,7 @@ namespace Gadgetron
         gt_index_type ix = static_cast<gt_index_type>(std::floor(x));
         coord_type dx = x - ix;
 
-        if ( ix>=0 && ix<(gt_index_type)array_->get_size(0)-1 )
+        if ( ix>=0 && ix<(gt_index_type)sx_-1 )
         {
             return ( (*array_)( size_t(ix) )*(1-dx) + (*array_)( size_t(ix)+1 )*dx );
         }
@@ -144,11 +144,9 @@ namespace Gadgetron
         coord_type dy = y - iy;
         coord_type dy_prime = coord_type(1.0)-dy;
 
-        size_t sx = array_->get_size(0);
-
-        if ( ix>=0 && ix<sx-1 && iy>=0 && iy<(gt_index_type)array_->get_size(1)-1 )
+        if ( ix>=0 && ix<sx_-1 && iy>=0 && iy<sy_-1 )
         {
-            size_t offset = ix + iy*sx;
+            size_t offset = ix + iy*sx_;
             T* data = array_->begin();
 
             //return (    ( data_[offset]   *   dx_prime     *dy_prime 
@@ -161,10 +159,10 @@ namespace Gadgetron
                     +   ((*array_)(size_t(ix), size_t(iy)+1     )   *   dx_prime     *dy
                     +   (*array_)(size_t(ix)+1, size_t(iy)+1    )   *   dx           *dy) );*/
 
-            return (    (data[offset]   *   dx_prime     *dy_prime
-                    +   data[offset+1]   *   dx           *dy_prime)
-                    +   (data[offset+sx]   *   dx_prime     *dy
-                    +   data[offset+sx+1]   *   dx           *dy) );
+            return (    (data[offset]       *   dx_prime     *dy_prime
+                    +   data[offset+1]      *   dx           *dy_prime)
+                    +   (data[offset+sx_]   *   dx_prime     *dy
+                    +   data[offset+sx_+1]  *   dx           *dy) );
         }
         else
         {
@@ -190,13 +188,9 @@ namespace Gadgetron
         coord_type dz = z - iz;
         coord_type dz_prime = coord_type(1.0)-dz;
 
-        gt_index_type sx = (gt_index_type)array_->get_size(0);
-        gt_index_type sy = (gt_index_type)array_->get_size(1);
-        gt_index_type sz = (gt_index_type)array_->get_size(2);
-
-        if ( ix>=0 && ix<sx-1 
-            && iy>=0 && iy<sy-1 
-            && iz>=0 && iz<sz-1 )
+        if ( ix>=0 && ix<sx_-1 
+            && iy>=0 && iy<sy_-1 
+            && iz>=0 && iz<sz_-1 )
         {
             /*return (    ((*array_)(size_t(ix),   size_t(iy),     size_t(iz)   )   *   dx_prime     *dy_prime   *dz_prime 
                     +   (*array_)(size_t(ix)+1, size_t(iy),     size_t(iz)    )   *   dx           *dy_prime   *dz_prime) 
@@ -207,16 +201,16 @@ namespace Gadgetron
                     +   ((*array_)(size_t(ix),   size_t(iy)+1,   size_t(iz)+1 )   *   dx_prime     *dy         *dz 
                     +   (*array_)(size_t(ix)+1, size_t(iy)+1,   size_t(iz)+1  )   *   dx           *dy         *dz) );*/
 
-            size_t offset = ix + iy*sx + iz*sx*sy;
+            size_t offset = ix + iy*sx_ + iz*sx_*sy_;
 
-            return (    (data_[offset]   *   dx_prime     *dy_prime   *dz_prime 
-                    +   data_[offset+1]   *   dx           *dy_prime   *dz_prime) 
-                    +   (data_[offset+sx]   *   dx_prime     *dy         *dz_prime 
-                    +   data_[offset+sx+1]   *   dx           *dy         *dz_prime) 
-                    +   (data_[offset+sx*sy]   *   dx_prime     *dy_prime   *dz 
-                    +   data_[offset+sx*sy+1]   *   dx           *dy_prime   *dz) 
-                    +   (data_[offset+sx*sy+sx]   *   dx_prime     *dy         *dz 
-                    +   data_[offset+sx*sy+sx+1]   *   dx           *dy         *dz) );
+            return (    (data_[offset]              *   dx_prime     *dy_prime   *dz_prime 
+                    +   data_[offset+1]             *   dx           *dy_prime   *dz_prime) 
+                    +   (data_[offset+sx_]          *   dx_prime     *dy         *dz_prime 
+                    +   data_[offset+sx_+1]         *   dx           *dy         *dz_prime) 
+                    +   (data_[offset+sx_*sy_]      *   dx_prime     *dy_prime   *dz 
+                    +   data_[offset+sx_*sy_+1]     *   dx           *dy_prime   *dz) 
+                    +   (data_[offset+sx_*sy_+sx_]  *   dx_prime     *dy         *dz 
+                    +   data_[offset+sx_*sy_+sx_+1] *   dx           *dy         *dz) );
         }
         else
         {

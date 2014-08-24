@@ -42,6 +42,7 @@ public:
     using BaseClass::gt_timer2_;
     using BaseClass::gt_timer3_;
     using BaseClass::performTiming_;
+    using BaseClass::verbose_;
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
@@ -165,23 +166,22 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
 
         ho6DArray<T> ker(kRO, kE1, srcCHA, dstCHA, 1, 1, 
                             workOrder2DT->kernel_->begin()
-                            +n*kRO*kE1*srcCHA*dstCHA*1*1
-                            +usedS*kRO*kE1*srcCHA*dstCHA*1*1*refN);
+                            +n*kRO*kE1*srcCHA*dstCHA
+                            +usedS*kRO*kE1*srcCHA*dstCHA*refN);
 
         gtPlusSPIRIT2DOperator<T> spirit;
         spirit.setMemoryManager(gtPlus_mem_manager_);
 
         spirit.calib_use_gpu_ = workOrder2DT->spirit_use_gpu_;
 
-        spirit.calib(acsSrc, acsDst, workOrder2DT->spirit_reg_lamda_, (int)kRO, (int)kE1, 1, 1, ker);
+        spirit.calib(acsSrc, acsDst, workOrder2DT->spirit_reg_lamda_, kRO, kE1, 1, 1, ker);
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker");
 
         bool minusI = true;
 
         hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, workOrder2DT->kernelIm_->begin()+n*RO*E1*srcCHA*dstCHA+usedS*RO*E1*srcCHA*dstCHA*refN);
-        GADGET_CHECK_RETURN_FALSE(spirit.imageDomainKernel(ker, (int)kRO, (int)kE1, 1, 1, (int)RO, (int)E1, kIm, minusI));
-
+        GADGET_CHECK_RETURN_FALSE(spirit.imageDomainKernel(ker, kRO, kE1, 1, 1, RO, E1, kIm, minusI));
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, "kIm");
     }
     catch(...)
@@ -246,14 +246,25 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(adj_forward_G_I, ker_Shifted);
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker_Shifted, "ker_Shifted");
 
-        hoNDArray<T> kspace_Shifted(kspace);
+        hoNDArray<T> kspace_Shifted;
+        kspace_Shifted = kspace;
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(kspace, kspace_Shifted);
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace_Shifted, "kspace_Shifted");
 
+        hoNDArray<T> kspace_initial_Shifted;
+        bool hasInitial = false;
+        if ( workOrder2DT->kspace_initial_.dimensions_equal(&kspace) )
+        {
+            kspace_initial_Shifted = workOrder2DT->kspace_initial_;
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(workOrder2DT->kspace_initial_, kspace_initial_Shifted);
+            hasInitial = true;
+        }
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace_initial_Shifted, "kspace_initial_Shifted");
+
         #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(n) shared(RO, E1, srcCHA, dstCHA, kspace_Shifted, ker_Shifted, workOrder2DT, refN, N) num_threads(numThreads)
+            #pragma omp parallel default(none) private(n) shared(RO, E1, srcCHA, dstCHA, kspace, kspace_Shifted, kspace_initial_Shifted, ker_Shifted, workOrder2DT, refN, N, hasInitial) num_threads(numThreads)
         #else
-            #pragma omp parallel default(none) private(n) shared(RO, E1, srcCHA, dstCHA, kspace_Shifted, ker_Shifted, workOrder2DT, res, refN, N) num_threads(numThreads)
+            #pragma omp parallel default(none) private(n) shared(RO, E1, srcCHA, dstCHA, kspace, kspace_Shifted, kspace_initial_Shifted, ker_Shifted, workOrder2DT, res, refN, N, hasInitial) num_threads(numThreads)
         #endif
         {
             gtPlusSPIRIT2DOperator<T> spirit;
@@ -276,19 +287,45 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
             cgSolver.set(spirit);
 
             hoNDArray<T> b(RO, E1, srcCHA);
+            hoNDArray<T> unwarppedKSpace(RO, E1, dstCHA);
 
             #pragma omp for
             for ( n=0; n<(long long)N; n++ )
             {
-                hoNDArray<T> unwarppedKSpace(RO, E1, dstCHA, res.begin()+n*RO*E1*dstCHA);
+                // check whether the kspace is undersampled
+                bool undersampled = false;
+                for ( size_t e1=0; e1<E1; e1++ )
+                {
+                    if ( (std::abs( kspace(RO/2, e1, srcCHA-1, n) ) == 0)
+                        && (std::abs( kspace(RO/2, e1, 0, n) ) == 0) )
+                    {
+                        undersampled = true;
+                        break;
+                    }
+                }
+
+                if ( !undersampled )
+                {
+                    memcpy(res.begin()+n*RO*E1*dstCHA, kspace_Shifted.begin()+n*RO*E1*srcCHA, sizeof(T)*RO*E1*dstCHA);
+                    continue;
+                }
 
                 long long kernelN = n;
                 if ( kernelN >= (long long)refN ) kernelN = (long long)refN-1;
 
-                boost::shared_ptr<hoNDArray<T> > acq(new hoNDArray<T>(RO, E1, srcCHA, kspace_Shifted.begin()+n*RO*E1*srcCHA));
+                boost::shared_ptr< hoNDArray<T> > acq(new hoNDArray<T>(RO, E1, srcCHA, kspace_Shifted.begin()+n*RO*E1*srcCHA));
                 spirit.setAcquiredPoints(acq);
 
-                cgSolver.x0_ = acq.get();
+                boost::shared_ptr< hoNDArray<T> > initialAcq;
+                if ( hasInitial )
+                {
+                    initialAcq = boost::shared_ptr< hoNDArray<T> >(new hoNDArray<T>(RO, E1, srcCHA, kspace_initial_Shifted.begin()+n*RO*E1*srcCHA));
+                    cgSolver.x0_ = initialAcq.get();
+                }
+                else
+                {
+                    cgSolver.x0_ = acq.get();
+                }
 
                 if ( refN > 1 )
                 {
@@ -314,6 +351,8 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
 
                 // restore the acquired points
                 spirit.restoreAcquiredKSpace(*acq, unwarppedKSpace);
+
+                memcpy(res.begin()+n*RO*E1*dstCHA, unwarppedKSpace.begin(), unwarppedKSpace.get_number_of_bytes());
 
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedKSpace, "unwarppedKSpace_n_setAcq");
             }
@@ -367,7 +406,14 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
             scaleFactor /= (value_type)(N*std::sqrt(double(srcCHA)));
         }
 
-        workOrder2DT->spirit_ncg_scale_factor_ = scaleFactor;
+        if ( workOrder2DT->spirit_ncg_scale_factor_ < 0 )
+        {
+            workOrder2DT->spirit_ncg_scale_factor_ = scaleFactor;
+        }
+        else
+        {
+            GADGET_MSG("SPIRIT - 2DT - spirit_ncg_scale_factor_ is preset : " << workOrder2DT->spirit_ncg_scale_factor_ << " ... ");
+        }
 
         // split the jobs
         bool splitByS = workOrder2DT->job_split_by_S_;

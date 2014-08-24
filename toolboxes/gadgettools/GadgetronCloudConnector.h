@@ -13,7 +13,7 @@
 #include "gadgettools_export.h"
 #include "GadgetMRIHeaders.h"
 
-#define GADGETRON_TIMEOUT_PERIOD 1.0
+#define GADGETRON_TIMEOUT_PERIOD 1.5
 
 namespace Gadgetron
 {
@@ -234,6 +234,8 @@ public:
             }
             else
             {
+                ACE_OS::sleep(ACE_Time_Value( (time_t)(0.5) ));
+
                 if (cloud_connector_->process(mid.id, mb) < 0)
                 {
                     ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, ReaderTask, Failed to process message\n")) );
@@ -417,6 +419,7 @@ int GadgetronCloudConnector<JobType>::open(std::string hostname, std::string por
     else
     {
         status_ = false;
+        return -1;
     }
 
     return 0;
@@ -429,10 +432,16 @@ int GadgetronCloudConnector<JobType>::process(size_t messageid, ACE_Message_Bloc
     if ( cloud_controller_ == NULL )
     {
         ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) GadgetronCloudConnector, pointer of could controller is null ...\n")));
+        mb->release();
         return -1;
     }
 
-    cloud_controller_->putq(mb);
+    if ( cloud_controller_->putq(mb) == -1)
+    {
+        ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to put received message into the queue of cloud controller %d \n"), messageid));
+        mb->release();
+        return -1;
+    }
 
     return 0;
 }
@@ -475,6 +484,7 @@ int GadgetronCloudConnector<JobType>::setJobTobeCompletedAndNoticeController(int
 
     ACE_DEBUG( (LM_INFO, ACE_TEXT("%P, %l, GadgetronCloudConnector, into setJobTobeCompletedAndNoticeController(...) ... \n")) );
 
+    // set the job to be completed and invalidate the node
     if ( cloud_controller_->setJobsTobeCompleted(nodeID_, jobID) < 0 )
     {
         ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetronCloudConnector, cloud_controller_->setJobsTobeCompleted(%d, %d) failed ... \n"), nodeID_, jobID) );

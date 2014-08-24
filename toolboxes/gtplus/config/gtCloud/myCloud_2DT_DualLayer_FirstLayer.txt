@@ -3,6 +3,6 @@ localhost
 1
 localhost
 9004
-GadgetronProgram_gtPlus_2DT_Cartesian_CloudNode.xml
+GT_2DT_Cartesian_CloudNode.xml
 1
 0

@@ -17,6 +17,20 @@ namespace Gadgetron
         }
     }
 
+    template<typename T> inline void fill( hoNDArray<T>* x, T val)
+    {
+        size_t N = x->get_number_of_elements();
+        T* pX = x->begin();
+        Gadgetron::fill(N, pX, val);
+    }
+
+    template<typename T> inline void fill( hoNDArray<T>& x, T val )
+    {
+        size_t N = x.get_number_of_elements();
+        T* pX = x.begin();
+        Gadgetron::fill(N, pX, val);
+    }
+
     template<typename T, unsigned int D> inline void fill( hoNDImage<T, D>* x, T val )
     {
         size_t N = x->get_number_of_elements();
@@ -30,8 +44,6 @@ namespace Gadgetron
         T* pX = x.begin();
         Gadgetron::fill(N, pX, val);
     }
-
-
 
     template<typename T, unsigned int D> inline void clear( hoNDImage<T, D>* x )
     {

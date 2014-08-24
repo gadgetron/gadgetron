@@ -29,6 +29,12 @@
             <name>noise_dwell_time_us_preset</name>
             <value>5.0</value>
         </property>
+
+        <!-- Whether to perform timing -->
+        <property>
+            <name>performTiming</name>
+            <value>true</value>
+        </property>
     </gadget>
 
 </gadgetronStreamConfiguration>

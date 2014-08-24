@@ -20,17 +20,21 @@ template<class T> T sum(hoNDArray<T>* data){
 	return (typename stdType<T>::Type) arma::sum(as_arma_col(data));
 }
 
+template<class T> T stddev(hoNDArray<T>* data){
+	return (typename stdType<T>::Type) arma::stddev(as_arma_col(data));
+}
 
 template EXPORTCPUCOREMATH float max(hoNDArray<float>*);
 template EXPORTCPUCOREMATH float min(hoNDArray<float>*);
 template EXPORTCPUCOREMATH float mean(hoNDArray<float>*);
 template EXPORTCPUCOREMATH float sum(hoNDArray<float>*);
+template EXPORTCPUCOREMATH float stddev(hoNDArray<float>*);
 
 template EXPORTCPUCOREMATH double max(hoNDArray<double>*);
 template EXPORTCPUCOREMATH double min(hoNDArray<double>*);
 template EXPORTCPUCOREMATH double mean(hoNDArray<double>*);
 template EXPORTCPUCOREMATH double sum(hoNDArray<double>*);
-
+template EXPORTCPUCOREMATH double stddev(hoNDArray<double>*);
 
 template EXPORTCPUCOREMATH complext<double> mean(hoNDArray<complext<double> >*);
 template EXPORTCPUCOREMATH complext<double> sum(hoNDArray<complext<double> >*);

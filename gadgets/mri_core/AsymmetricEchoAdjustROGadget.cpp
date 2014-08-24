@@ -93,7 +93,7 @@ int AsymmetricEchoAdjustROGadget
 
             if ( az == 1 ) // pre zeros
             {
-                #pragma omp parallel for default(none) private(c) shared(channels, pM3, pM2, samples, numOfBytes)
+                //#pragma omp parallel for default(none) private(c) shared(channels, pM3, pM2, samples, numOfBytes)
                 for ( c=0; c<channels; c++ )
                 {
                     memcpy(pM3+c*maxRO_+maxRO_-samples, pM2+c*samples, numOfBytes);
@@ -102,7 +102,7 @@ int AsymmetricEchoAdjustROGadget
 
             if ( az == 2 ) // post zeros
             {
-                #pragma omp parallel for default(none) private(c) shared(channels, pM3, pM2, samples, numOfBytes)
+                //#pragma omp parallel for default(none) private(c) shared(channels, pM3, pM2, samples, numOfBytes)
                 for ( c=0; c<channels; c++ )
                 {
                     memcpy(pM3+c*maxRO_, pM2+c*samples, numOfBytes);
@@ -112,7 +112,7 @@ int AsymmetricEchoAdjustROGadget
             m2->release(); //We are done with this data
 
             m1->cont(m3);
-            m1->getObjectPtr()->number_of_samples = (uint16_t)data_out_dims[0];
+            m1->getObjectPtr()->number_of_samples = data_out_dims[0];
         }
 
         if (this->next()->putq(m1) == -1) 

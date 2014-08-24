@@ -7,8 +7,8 @@
             Ref to: 
 
             Hui Xue, Souheil Inati, Thomas Sangild Sorensen, Peter Kellman, Michael S. Hansen. 
-            Distributed MRI Reconstruction using Gadgetron based Cloud Computing. Submitted to
-            Magenetic Resonance in Medicine on Dec 2013.
+            Distributed MRI Reconstruction using Gadgetron based Cloud Computing. 
+            Magenetic Resonance in Medicine, doi: 10.1002/mrm.25213.
 
     \author Hui Xue
 */
@@ -22,6 +22,7 @@
 #include "GadgetCloudJobMessageReadWrite.h"
 #include "GadgetronTimer.h"
 
+#include "GadgetronCommon.h"
 #include "gtPlusIOAnalyze.h"
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusISMRMRDReconWorkOrder.h"
@@ -31,6 +32,7 @@
 #include "gtPlusISMRMRDReconWorker2DTSPIRIT.h"
 #include "gtPlusISMRMRDReconWorker2DTL1SPIRITNCG.h"
 #include "gtPlusMemoryManager.h"
+#include "GtPlusReconGadgetUtil.h"
 
 #ifdef USE_OMP
     #include "omp.h"
@@ -61,17 +63,6 @@ public:
     bool performTiming_;
 
 protected:
-
-    // --------------------------------------------------
-    // utility functions
-    // --------------------------------------------------
-
-    // generate the debug folder path
-    // debugFolderPath = ${GADGETRON_HOME}/debugFolder
-    virtual bool generateDebugFolderPath(const std::string& debugFolder, std::string& debugFolderPath);
-
-    // get the current moment
-    void getCurrentMoment(std::string& procTime);
 
     // --------------------------------------------------
     // functional functions

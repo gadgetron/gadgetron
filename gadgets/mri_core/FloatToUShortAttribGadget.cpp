@@ -7,6 +7,7 @@
 
 #include "GadgetIsmrmrdReadWrite.h"
 #include "FloatToUShortAttribGadget.h"
+#include "GtPlusDefinition.h"
 
 namespace Gadgetron
 {
@@ -58,7 +59,7 @@ namespace Gadgetron
                     float pix_val = src[i];
                     pix_val = std::abs(pix_val);
                     if (pix_val > max_intensity_value_) pix_val = max_intensity_value_;
-                    dst[i] = static_cast<unsigned short>(pix_val);
+                    dst[i] = static_cast<unsigned short>(pix_val+0.5);
                 }
             }
             break;
@@ -73,7 +74,14 @@ namespace Gadgetron
                     pix_val = pix_val + intensity_offset_value_;
                     if (pix_val < 0) pix_val = 0;
                     if (pix_val > max_intensity_value_) pix_val = max_intensity_value_;
-                    dst[i] = static_cast<unsigned short>(pix_val);
+                    dst[i] = static_cast<unsigned short>(pix_val+0.5);
+                }
+
+                if ( m3->getObjectPtr()->attributeInteger_.exist(GTPLUS_IMAGE_WINDOWCENTER) )
+                {
+                    long long windowCenter;
+                    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_IMAGE_WINDOWCENTER, 0, windowCenter);
+                    m3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWCENTER, 0, windowCenter+intensity_offset_value_);
                 }
             }
             break;

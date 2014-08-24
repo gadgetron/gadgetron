@@ -9,6 +9,8 @@ include_directories(
     ${XSD_INCLUDE_DIR}
     ${FFTW3_INCLUDE_DIR}
     ${ARMADILLO_INCLUDE_DIRS}
+    ${CUDA_INCLUDE_DIRS}
+    ${CULA_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core
@@ -55,6 +57,7 @@ find_package(XercesC REQUIRED)
 
 set( gadgetronPlus_header_files GtPlusGadgetImageArray.h
                                 GtPlusAccumulatorWorkOrderTriggerGadget.h
+                                GtPlusAccumulatorImageTriggerGadget.h
                                 GtPlusGadgetOpenMP.h
                                 GtPlusReconGadget.h
                                 GtPlusRecon2DTGadget.h
@@ -64,10 +67,14 @@ set( gadgetronPlus_header_files GtPlusGadgetImageArray.h
                                 GadgetCloudJobMessageReadWrite.h
                                 GtPlusReconJob2DTGadget.h 
                                 GtPlusReconJob3DTGadget.h 
-                                GtPlusReconJob2DTGadgetCloud.h )
+                                GtPlusReconJob2DTGadgetCloud.h 
+                                GtPlusImageReconGadget.h 
+                                GtPlusReconGadgetUtil.h 
+                                )
 
 set( gadgetronPlus_src_files GtPlusGadgetImageArray.cpp
                             GtPlusAccumulatorWorkOrderTriggerGadget.cpp
+                            GtPlusAccumulatorImageTriggerGadget.cpp
                             GtPlusGadgetOpenMP.cpp
                             GtPlusReconGadget.cpp
                             GtPlusRecon2DTGadget.cpp
@@ -76,7 +83,10 @@ set( gadgetronPlus_src_files GtPlusGadgetImageArray.cpp
                             GadgetCloudJobMessageReadWrite.cpp
                             GtPlusReconJob2DTGadget.cpp 
                             GtPlusReconJob3DTGadget.cpp 
-                            GtPlusReconJob2DTGadgetCloud.cpp )
+                            GtPlusReconJob2DTGadgetCloud.cpp 
+                            GtPlusImageReconGadget.cpp 
+                            GtPlusReconGadgetUtil.cpp 
+                            )
 
 add_library(gadgetronPlus SHARED
             GtPlusGadgetExport.h 

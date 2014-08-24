@@ -24,7 +24,7 @@ public:
 
     typedef gtPlusNonLinearSolver<Array_Type_I, Array_Type_O, Oper_Type> BaseClass;
     typedef typename BaseClass::ValueType ValueType;
-    typedef typename realType<ValueType>::Type value_type;
+    typedef typename BaseClass::value_type value_type;
     typedef typename BaseClass::Oper_Elem_Type Oper_Elem_Type;
     typedef typename BaseClass::Oper_List_Type Oper_List_Type;
 
@@ -213,11 +213,25 @@ solve(const Array_Type_I& /*b*/, Array_Type_O& x)
         }
 
         unsigned int numOfTries = 0;
-        while ( (std::abs(currF.real() - oriF.real())/currF.real() < 0.05) && (numOfTries < 3) )
+
+        value_type changeRatio = std::abs(currF.real() - oriF.real())/currF.real();
+        value_type changeRatio2 = std::abs(currF.real() - oriF.real())/oriF.real();
+        value_type minChangeRatio = (value_type)0.05;
+        value_type maxChangeRatio = (value_type)6.0;
+        unsigned int maxNumOfTries = 4;
+
+        while ( ( (changeRatio<minChangeRatio)||(changeRatio2>maxChangeRatio) ) && (numOfTries < maxNumOfTries) )
         {
             numOfTries++;
 
-            t0 /= beta_;
+            if ( changeRatio<minChangeRatio )
+            {
+                t0 /= beta_;
+            }
+            else if ( changeRatio2>maxChangeRatio )
+            {
+                t0 *= beta_;
+            }
 
             dxTmp = dx;
             Gadgetron::scal(t0, dxTmp);
@@ -227,6 +241,9 @@ solve(const Array_Type_I& /*b*/, Array_Type_O& x)
 
             GADGET_MSG("t0 is " << t0 << " ... ");
             GADGET_MSG("To determine t0, --- ori and curr obj: " << oriF << " - " << currF << " ... ");
+
+            changeRatio = std::abs(currF.real() - oriF.real())/currF.real();
+            changeRatio2 = std::abs(currF.real() - oriF.real())/oriF.real();
         }
 
         prevF = oriF;

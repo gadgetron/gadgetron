@@ -31,6 +31,7 @@ public:
     using BaseClass::gt_timer2_;
     using BaseClass::gt_timer3_;
     using BaseClass::performTiming_;
+    using BaseClass::verbose_;
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
@@ -86,7 +87,7 @@ bool gtPlusReconWorker2DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder2DT
                 usedS = workOrder2DT->no_acceleration_whichS_combinationcoeff_;
                 if ( usedS >= S ) usedS = S-1;
 
-                hoNDArray<T> refCoilMapS(RO, E1, refN, workOrder2DT->ref_coil_map_.begin()+usedS*RO*E1*refN);
+                hoNDArray<T> refCoilMapS(RO, E1, CHA, refN, workOrder2DT->ref_coil_map_.begin()+usedS*RO*E1*CHA*refN);
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(refCoilMapS, buffer2DT_));
 
                 hoNDArray<T> coilMapS(RO, E1, CHA, refN, workOrder2DT->coilMap_->begin()+usedS*RO*E1*CHA*refN);
@@ -114,23 +115,31 @@ bool gtPlusReconWorker2DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder2DT
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("perform coil combination"));
 
-        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->data_, buffer2DT_);
-        for ( usedS=0; usedS<S; usedS++ )
-        {
-            hoNDArray<T> unwarppedIm(RO, E1, CHA, N, buffer2DT_.begin()+usedS*RO*E1*CHA*N);
-            hoNDArray<T> combined(RO, E1, N, workOrder2DT->complexIm_.begin()+usedS*RO*E1*N);
+        Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(workOrder2DT->data_, buffer2DT_unwrapping_);
 
-            if ( refN == N )
+        /*if ( refN == N )
+        {*/
+            gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer2DT_unwrapping_, *(workOrder2DT->coilMap_), workOrder2DT->complexIm_ );
+        /*}
+        else
+        {
+            for ( usedS=0; usedS<S; usedS++ )
             {
-                hoNDArray<T> coilMap(RO, E1, CHA, refN, workOrder2DT->coilMap_->begin()+usedS*RO*E1*CHA*refN);
-                gtPlusISMRMRDReconUtilComplex<T>().coilCombine(unwarppedIm, coilMap, combined);
+                hoNDArray<T> unwarppedIm(RO, E1, CHA, N, buffer2DT_unwrapping_.begin()+usedS*RO*E1*CHA*N);
+                hoNDArray<T> combined(RO, E1, N, workOrder2DT->complexIm_.begin()+usedS*RO*E1*N);
+
+                if ( refN == N )
+                {
+                    hoNDArray<T> coilMap(RO, E1, CHA, refN, workOrder2DT->coilMap_->begin()+usedS*RO*E1*CHA*refN);
+                    gtPlusISMRMRDReconUtilComplex<T>().coilCombine(unwarppedIm, coilMap, combined);
+                }
+                else
+                {
+                    hoNDArray<T> coilMap(RO, E1, CHA, workOrder2DT->coilMap_->begin()+usedS*RO*E1*CHA*N);
+                    gtPlusISMRMRDReconUtilComplex<T>().coilCombine(unwarppedIm, coilMap, combined);
+                }
             }
-            else
-            {
-                hoNDArray<T> coilMap(RO, E1, CHA, workOrder2DT->coilMap_->begin()+usedS*RO*E1*CHA*refN);
-                gtPlusISMRMRDReconUtilComplex<T>().coilCombine(unwarppedIm, coilMap, combined);
-            }
-        }
+        }*/
         GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->complexIm_, "combined");

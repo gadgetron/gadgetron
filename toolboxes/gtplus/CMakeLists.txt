@@ -51,16 +51,10 @@ if ( HAS_64_BIT )
         ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
         ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
         ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
-        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/transformation
-        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/solver
-        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/warper
-        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/dissimilarity
-        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/register
-        ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu/application
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
-        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
+        ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm 
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
         ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/application
         ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
@@ -71,6 +65,7 @@ if ( HAS_64_BIT )
     )
 
     set( gtplus_io_header_files 
+        GtPlusIOExport.h 
         util/gtPlusIOBase.h
         util/gtPlusIOAnalyze.h)
 
@@ -96,6 +91,7 @@ if ( HAS_64_BIT )
             workflow/gtPlusISMRMRDReconWorkFlowCartesian3DT.h
             workflow/gtPlusISMRMRDReconUtil.h
             workflow/gtPlusISMRMRDReconUtil.hxx
+            workflow/gtPlusISMRMRDReconCoilMapEstimation.h
             workflow/gtPlusISMRMRDReconWorkOrder.h
             workflow/gtPlusISMRMRDReconWorkOrder2DT.h
             workflow/gtPlusISMRMRDReconWorkOrder3DT.h
@@ -147,9 +143,7 @@ if ( HAS_64_BIT )
 
         set( solver_src_files )
 
-        set( application_header_files 
-        application/gtPlusMoCoAveraging.h 
-        application/gtPlusPhaseSensitiveRecon.h )
+        set( application_header_files )
 
         set( application_src_files )
 
@@ -162,32 +156,44 @@ if ( HAS_64_BIT )
         config/gtCloud/myCloud_2DT_DualLayer_FirstLayer.txt )
 
     set( config_files 
-        config/GadgetronProgram_gtPlus_2DT_Cartesian.xml
-        config/GadgetronProgram_gtPlus_2DT_Cartesian_L1SPIRIT.xml
-        config/GadgetronProgram_gtPlus_2DT_Cartesian_SPIRIT.xml
-        config/GadgetronProgram_gtPlus_2DT_Cartesian_CloudNode.xml
-        config/GadgetronProgram_gtPlus_2DT_Cartesian_DualLayer_Gateway_L1SPIRIT.xml
-        config/GadgetronProgram_gtPlus_2DT_Cartesian_DualLayer_Gateway_SPIRIT.xml
-        config/GadgetronProgram_gtPlus_2DT_Cartesian_FirstLayer_CloudNode.xml
-        config/GadgetronProgram_gtPlus_2DT_FatWater.xml
-        config/GadgetronProgram_gtPlus_2DT_LGE.xml
-        config/GadgetronProgram_gtPlus_2DT_MOLLI.xml
-        config/GadgetronProgram_gtPlus_2DT_HASTE.xml
-        config/GadgetronProgram_gtPlus_2DT_Perfusion.xml
-        config/GadgetronProgram_gtPlus_2DT_RealTimeCine.xml
-        config/GadgetronProgram_gtPlus_2DT_RealTimeFlow.xml
-        config/GadgetronProgram_gtPlus_2DT_T2W.xml
-        config/GadgetronProgram_gtPlus_2DT_Cartesian_GFactor.xml
-        config/GadgetronProgram_gtPlus_2DT_Cartesian_Dicom.xml
-        config/GadgetronProgram_gtPlus_2DT_Cartesian_ImageTrigger_Dicom.xml
-        config/GadgetronProgram_gtPlus_3DT_Cartesian.xml
-        config/GadgetronProgram_gtPlus_3DT_Cartesian_GFactor.xml
-        config/GadgetronProgram_gtPlus_3DT_Cartesian_CloudNode.xml
-        config/GadgetronProgram_gtPlus_3DT_Cartesian_L1SPIRIT.xml
-        config/GadgetronProgram_gtPlus_3DT_Cartesian_SingleLayer_L1SPIRIT.xml
-        config/GadgetronProgram_gtPlus_3DT_Cartesian_SPIRIT.xml 
-        config/GadgetronProgram_gtPlus_PseudoReplica_SNRUnitRecon_DataExport.xml 
-        config/GadgetronProgram_gtPlus_2DT_Cartesian_PseudoReplica_SNRUnitRecon.xml )
+
+        config/GT_2DT_Cartesian.xml
+        config/GT_2DT_Cartesian_CloudNode.xml
+        config/GT_2DT_Cartesian_Dicom.xml
+        config/GT_2DT_Cartesian_DualLayer_Gateway_L1SPIRIT.xml
+        config/GT_2DT_Cartesian_DualLayer_Gateway_SPIRIT.xml
+        config/GT_2DT_Cartesian_FirstLayer_CloudNode.xml
+        config/GT_2DT_Cartesian_GFactor.xml
+        config/GT_2DT_Cartesian_ImageTrigger_Dicom.xml
+        config/GT_2DT_Cartesian_L1SPIRIT.xml
+        config/GT_2DT_Cartesian_PseudoReplica_SNRUnitRecon.xml
+        config/GT_2DT_Cartesian_SingleLayer_CloudNode.xml
+        config/GT_2DT_Cartesian_SPIRIT.xml
+        config/GT_2DT_FatWater.xml
+
+        config/GT_2DT_HASTE.xml
+        config/GT_2DT_HASTE_MOCO_AVE.xml
+
+        config/GT_2DT_LGE.xml
+
+        config/GT_2DT_MOLLI.xml
+        config/GT_2DT_MOLLI_Offline.xml
+
+        config/GT_2DT_Perfusion.xml
+
+        config/GT_2DT_PseudoReplica_SNRUnitRecon_DataExport.xml
+
+        config/GT_2DT_RealTimeCine.xml
+        config/GT_2DT_RealTimeFlow.xml
+
+        config/GT_2DT_RTCine_L1SPIRIT_PhysioInterp.xml
+        config/GT_2DT_RTCine_L1SPIRIT_PhysioInterp_DualLayer_Gateway.xml
+
+        config/GT_3DT_Cartesian.xml
+        config/GT_3DT_Cartesian_CloudNode.xml
+        config/GT_3DT_Cartesian_GFactor.xml
+        config/GT_3DT_Cartesian_L1SPIRIT.xml
+        config/GT_3DT_Cartesian_SingleLayer_L1SPIRIT.xml )
 
     set( schema_files )
 
@@ -245,7 +251,8 @@ if ( HAS_64_BIT )
                 ${gtplus_files} )
 
     target_link_libraries(gtplus 
-                          cpucore
+                          cpucore 
+                          cpucore_math 
                           cpufft
                           gtplus_io 
                           cpucore_math )
@@ -260,7 +267,6 @@ if ( HAS_64_BIT )
     # install gtplus files
     install (FILES  
             GtPlusExport.h 
-            GtPlusIOExport.h 
             GtPlusDefinition.h 
             ${util_header_files} 
             ${workflow_header_files} 

@@ -4,11 +4,12 @@
 #include "Spline.h"
 #include "GtPlusDefinition.h"
 #include "hoNDMetaAttributes.h"
+#include "hoNDBSpline.h"
 #include "ismrmrd_xml.h"
 
 #include <numeric>
 #ifdef USE_OMP
-    #include <omp.h>
+#include <omp.h>
 #endif 
 
 namespace Gadgetron{
@@ -18,6 +19,7 @@ namespace Gadgetron{
         , phases_to_reconstruct_(30)
         , image_with_attrib_(false)
         , first_beat_on_trigger_(false)
+        , interp_method_("Spline")
     {
         set_parameter(std::string("physiology_time_index").c_str(), "0");
         set_parameter(std::string("mode").c_str(), "0");
@@ -32,17 +34,21 @@ namespace Gadgetron{
         phases_to_reconstruct_ = get_int_value("phases");
         mode_ = get_int_value("mode");
         first_beat_on_trigger_ = get_bool_value("first_beat_on_trigger");
-	
-	ISMRMRD::IsmrmrdHeader h;
-	ISMRMRD::deserialize(mb->rd_ptr(),h);
 
-	if (h.encoding.size() == 0) {
-	  GADGET_DEBUG1("Missing encoding section");
-	  return GADGET_FAIL;
-	}
+        ISMRMRD::IsmrmrdHeader h;
+        ISMRMRD::deserialize(mb->rd_ptr(),h);
+
+        boost::shared_ptr<std::string> str = get_string_value("interp_method");
+        interp_method_ = *str;
+        if ( interp_method_.empty() ) interp_method_ = "Spline";
+
+        if (h.encoding.size() == 0) {
+            GADGET_DEBUG1("Missing encoding section");
+            return GADGET_FAIL;
+        }
 
         ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
-	slc_limit_ = e_limits.slice ? e_limits.slice->maximum+1 : 1; 
+        slc_limit_ = e_limits.slice ? e_limits.slice->maximum+1 : 1; 
 
         buffer_.resize(slc_limit_);
 
@@ -113,6 +119,13 @@ namespace Gadgetron{
                     cycle_lengths.push_back(clength);
                 }
 
+                if ( cycle_lengths.empty() )
+                {
+                    size_t phs = time_stamps_[slc].size();
+                    float clength = time_stamps_[slc][phs-1];
+                    cycle_lengths.push_back(clength);
+                }
+
                 std::sort(cycle_lengths.begin(),cycle_lengths.end());
                 float mean_cycle_length = std::accumulate(cycle_lengths.begin(), cycle_lengths.end(), 0.0f)/cycle_lengths.size();
                 float median_cycle_length = cycle_lengths[(cycle_lengths.size()>>1)];
@@ -145,7 +158,7 @@ namespace Gadgetron{
                     {
                         current_cycle++;
                     }
-                    relative_cycle_time.push_back(time_stamps_[slc][i]/cycle_lengths[current_cycle] + current_cycle);
+                    relative_cycle_time.push_back(time_stamps_[slc][i]/cycle_lengths[current_cycle-1] + current_cycle);
                 }
 
                 //Make a temporary list of all the data pointers from the Q
@@ -263,12 +276,13 @@ namespace Gadgetron{
                 size_t outelem = recon_cycle_time.size();
                 size_t imageelem = aptrs[0]->get_number_of_elements();
 
+                if ( (interp_method_ == "Spline") || (mode_ != 1) )
                 {
                     GadgetronTimer interptime("Interpolation Time");
 
-        #ifdef USE_OMP
-        #pragma omp parallel for
-        #endif
+#ifdef USE_OMP
+#pragma omp parallel for
+#endif
                     for (long long p = 0; p < (long long)imageelem; p++)
                     {
                         std::vector< std::complex<float> > data_in(inelem);
@@ -282,6 +296,47 @@ namespace Gadgetron{
 
                         //Copy it to the images
                         for (size_t i = 0; i < outelem; i++) out_data[i]->getObjectPtr()->get_data_ptr()[p] = data_out[i];
+                    }
+                }
+                else
+                {
+                    GadgetronTimer interptime("Interpolation Time using BSpline");
+
+                    size_t SplineDegree = 5;
+
+                    long long p;
+#pragma omp parallel default(none) shared(SplineDegree, imageelem, inelem, outelem, aptrs, relative_cycle_time, recon_cycle_time, out_data) private(p)
+                    {
+                        hoNDArray< std::complex<float> > data_in(inelem);
+                        hoNDArray< std::complex<float> > data_out(outelem);
+
+                        hoNDArray< std::complex<float> > coeff(inelem);
+
+                        hoNDBSpline< std::complex<float>, 1 > interp;
+
+                        size_t i;
+
+                        size_t num = relative_cycle_time.size();
+
+#pragma omp for
+                        for (p = 0; p < (long long)imageelem; p++)
+                        {
+                            //Get the input data for this pixel
+                            for (i = 0; i < inelem; i++) data_in(i) = aptrs[i]->get_data_ptr()[p];
+
+                            // compute the coefficient
+                            interp.computeBSplineCoefficients(data_in, SplineDegree, coeff);
+
+                            //Interpolate the data
+                            for (i = 0; i < outelem; i++)
+                            {
+                                float x = (num-1)*(recon_cycle_time[i]-relative_cycle_time[0])/(relative_cycle_time[num-1] - relative_cycle_time[0]);
+                                data_out(i) = interp.evaluateBSpline(coeff.begin(), inelem, SplineDegree, 0, x);
+                            }
+
+                            //Copy it to the images
+                            for (i = 0; i < outelem; i++) out_data[i]->getObjectPtr()->get_data_ptr()[p] = data_out[i];
+                        }
                     }
                 }
 

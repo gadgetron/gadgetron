@@ -35,16 +35,22 @@ namespace Gadgetron{
         reconNx_   = r_space.matrixSize.x;
         reconFOV_  = r_space.fieldOfView_mm.x;
 
-	// If the encoding and recon matrix size and FOV are the same
-	// then the data is not oversampled and we can safely pass
-	// the data onto the next gadget
-	if ( (encodeNx_ == reconNx_) && (encodeFOV_ == reconFOV_) )
-	{
-	  dowork_ = false;
-	}
-	else {
-	  dowork_ = true;
-	}
+        // if MKL is used, limit the number of threads used
+#ifdef USE_MKL
+        int save_nt = mkl_set_num_threads_local(1);
+        GADGET_MSG("RemoveROOversamplingGadget:mkl_set_num_threads_local(1) : " << save_nt);
+#endif // USE_MKL
+
+    // If the encoding and recon matrix size and FOV are the same
+    // then the data is not oversampled and we can safely pass
+    // the data onto the next gadget
+    if ( (encodeNx_ == reconNx_) && (encodeFOV_ == reconFOV_) )
+    {
+      dowork_ = false;
+    }
+    else {
+      dowork_ = true;
+    }
 
         return GADGET_OK;
     }
@@ -107,7 +113,7 @@ namespace Gadgetron{
             data_in  = ifft_res_.get_data_ptr();
             data_out = fft_res_.get_data_ptr();
 
-            #pragma omp parallel for default(none) private(c) shared(CHA, sRO, start, dRO, data_in, data_out, numOfBytes)
+            // #pragma omp parallel for default(none) private(c) shared(CHA, sRO, start, dRO, data_in, data_out, numOfBytes)
             for ( c=0; c<CHA; c++)
             {
                 memcpy( data_out+c*dRO, data_in+c*sRO+start, numOfBytes );
@@ -121,7 +127,7 @@ namespace Gadgetron{
             data_in  = m2->getObjectPtr()->get_data_ptr();
             data_out = m3->getObjectPtr()->get_data_ptr();
 
-            #pragma omp parallel for default(none) private(c) shared(CHA, sRO, start, dRO, data_in, data_out, numOfBytes)
+            // #pragma omp parallel for default(none) private(c) shared(CHA, sRO, start, dRO, data_in, data_out, numOfBytes)
             for ( c=0; c<CHA; c++)
             {
                 memcpy( data_out+c*dRO, data_in+c*sRO+start, numOfBytes );
@@ -140,7 +146,7 @@ namespace Gadgetron{
 
       if (this->next()->putq(m1) == -1)
       {
-	ACE_ERROR_RETURN( (LM_ERROR,
+    ACE_ERROR_RETURN( (LM_ERROR,
                 ACE_TEXT("%p\n"),
                 ACE_TEXT("RemoveROOversamplingGadget::process, passing data on to next gadget")),
                 GADGET_FAIL);

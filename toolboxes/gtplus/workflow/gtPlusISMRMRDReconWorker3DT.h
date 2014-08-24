@@ -159,10 +159,13 @@ public:
     // estimate job size for 3DT recon
     virtual bool estimateJobSize(gtPlusReconWorkOrder<T>* workOrder3DT, size_t maxNumOfBytesPerJob, size_t overlapBetweenJobs, size_t numOfNodes, size_t& jobSize);
 
+    using BaseClass::partial_fourier_handling_;
+
     using BaseClass::gt_timer1_;
     using BaseClass::gt_timer2_;
     using BaseClass::gt_timer3_;
     using BaseClass::performTiming_;
+    using BaseClass::verbose_;
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
@@ -754,7 +757,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                 }
 
                 hoNDArray<T> croppedRef;
-                GADGET_CHECK_RETURN_FALSE(cropUpTo10DArray(refRecon, croppedRef, crop_offset, crop_size));
+                GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(refRecon, croppedRef, crop_offset, crop_size));
                 refRecon = croppedRef;
             }
         }
@@ -796,7 +799,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
             {
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("crop sampled region ... "));
                 hoNDArray<T> croppedRef;
-                GADGET_CHECK_RETURN_FALSE(cropUpTo10DArray(refRecon, croppedRef, crop_offset, crop_size));
+                GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(refRecon, croppedRef, crop_offset, crop_size));
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, croppedRef, "refRecon_afterCrop");
 
@@ -814,7 +817,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
 
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("set up ref for coil map ... "));
                 refCoilMap.create(RO, E1, E2, srcCHA, refRecon.get_size(4));
-                GADGET_CHECK_RETURN_FALSE(setSubArrayUpTo10DArray(refRecon, refCoilMap, crop_offset, crop_size));
+                GADGET_CHECK_RETURN_FALSE(setSubArrayUpTo11DArray(refRecon, refCoilMap, crop_offset, crop_size));
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
 
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, refCoilMap, "refCoilMap");
@@ -842,13 +845,13 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                     }
                 }
 
-                GADGET_CHECK_RETURN_FALSE(cropUpTo10DArray(refRecon, croppedRef, crop_offset, crop_size));
+                GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(refRecon, croppedRef, crop_offset, crop_size));
                 refRecon = croppedRef;
             }
             else
             {
                 hoNDArray<T> croppedRef;
-                GADGET_CHECK_RETURN_FALSE(cropUpTo10DArray(refRecon, croppedRef, crop_offset, crop_size));
+                GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(refRecon, croppedRef, crop_offset, crop_size));
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, croppedRef, "croppedRef");
 
                 GADGET_CHECK_RETURN_FALSE(performRefFilter(workOrder3DT, croppedRef, refCoilMap, startRO, endRO, startE1, endE1, startE2, endE2));
@@ -873,7 +876,7 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                         crop_offset[2] = 0;
                         crop_size[2] = refRecon.get_size(2);
 
-                        GADGET_CHECK_RETURN_FALSE(cropUpTo10DArray(refRecon, croppedRef, crop_offset, crop_size));
+                        GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(refRecon, croppedRef, crop_offset, crop_size));
                         refRecon = croppedRef;
                     }
                 }
@@ -1569,7 +1572,10 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
         }
 
         // partial fourier handling
-        GADGET_CHECK_RETURN_FALSE(this->performPartialFourierHandling(workOrder3DT));
+        if ( partial_fourier_handling_ )
+        {
+            GADGET_CHECK_RETURN_FALSE(this->performPartialFourierHandling(workOrder3DT));
+        }
 
         if ( this->computeKSpace(workOrder3DT) || fullres_coilmap )
         {
@@ -1686,6 +1692,44 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
             GADGET_CHECK_RETURN_FALSE(workOrder3DT->complexIm_.get_size(0)==RO);
             GADGET_CHECK_RETURN_FALSE(workOrder3DT->complexIm_.get_size(1)==E1);
             GADGET_CHECK_RETURN_FALSE(workOrder3DT->complexIm_.get_size(2)==E2);
+
+            if ( partial_fourier_handling_ )
+            {
+                bool partialFourierHandling = true;
+                if ( (workOrder3DT->start_RO_<0 || workOrder3DT->end_RO_<0 || (workOrder3DT->end_RO_-workOrder3DT->start_RO_+1==RO) ) 
+                        && (workOrder3DT->start_E1_<0 || workOrder3DT->end_E1_<0 || (workOrder3DT->end_E1_-workOrder3DT->start_E1_+1==E1) ) 
+                        && (workOrder3DT->start_E2_<0 || workOrder3DT->end_E2_<0 || (workOrder3DT->end_E2_-workOrder3DT->start_E2_+1==E2) ) )
+                {
+                    partialFourierHandling = false;
+                }
+
+                // if the partial fourier handling is used to compute updated full kspace, the coil combination needs to be repeated
+                if ( partialFourierHandling )
+                {
+                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->complexIm_, "complexIm_origin_noFullResCoilMap_");
+
+                    GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("after partial fourier handling, allocate buffer 3DT ...  "));
+                    hoNDArrayMemoryManaged<T> buffer3DT(workOrder3DT->fullkspace_.get_dimensions(), gtPlus_mem_manager_);
+                    hoNDArrayMemoryManaged<T> buffer3DT_Two(workOrder3DT->fullkspace_.get_dimensions(), gtPlus_mem_manager_);
+                    GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
+
+                    // if the partial fourier handling is performed on the fullkspace, an extra coil combination is needed
+                    if ( workOrder3DT->acceFactorE1_==1 && workOrder3DT->acceFactorE2_==1 )
+                    {
+                        hoNDArray<T> buffer3DT_Two(workOrder3DT->data_.get_dimensions());
+                        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->data_, buffer3DT, buffer3DT_Two));
+                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
+                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->complexIm_, "complexIm_noFullResCoilMap_");
+                    }
+                    else if ( workOrder3DT->fullkspace_.get_number_of_elements() > 0 )
+                    {
+                        hoNDArray<T> buffer3DT_Two(workOrder3DT->fullkspace_.get_dimensions());
+                        GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(workOrder3DT->fullkspace_, buffer3DT, buffer3DT_Two));
+                        GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilCombine(buffer3DT, *workOrder3DT->coilMap_, workOrder3DT->complexIm_));
+                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->complexIm_, "complexIm_noFullResCoilMap_");
+                    }
+                }
+            }
         }
 
         // flip along E2
@@ -1773,8 +1817,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
 
         if ( workOrder3DT->acceFactorE1_==1 && workOrder3DT->acceFactorE2_==1 )
         {
-            if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING 
-                || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
+            if ( (workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (GT_ABS(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder3DT->data_));
             }
@@ -1796,8 +1839,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
         }
         else if ( workOrder3DT->fullkspace_.get_number_of_elements() > 0 )
         {
-            if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING 
-                || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
+            if ( (workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (GT_ABS(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, workOrder3DT->fullkspace_));
             }
@@ -1823,8 +1865,7 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierHandling(WorkOrderType* workO
             hoNDArrayMemoryManaged<T> kspace(workOrder3DT->complexIm_.get_dimensions(), gtPlus_mem_manager_);
             GADGET_CHECK_RETURN_FALSE(Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft3c(workOrder3DT->complexIm_, kspace));
 
-            if ( workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING 
-                || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER )
+            if ( (workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING || workOrder3DT->partialFourier_algo_ == ISMRMRD_PF_ZEROFILLING_FILTER) && (GT_ABS(partialFourierCompensationFactor-1)>FLT_EPSILON) )
             {
                 GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(partialFourierCompensationFactor, kspace));
             }
@@ -2205,8 +2246,8 @@ bool gtPlusReconWorker3DT<T>::performPartialFourierFengHuangRecon(WorkOrderType&
         size[3] = CHA;
         size[4] = N;
 
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::cropUpTo10DArray(buffer3DT, src, start, size));
-        GADGET_CHECK_RETURN_FALSE(cropUpTo10DArray(kspace, dst, start, size));
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::cropUpTo11DArray(buffer3DT, src, start, size));
+        GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(kspace, dst, start, size));
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, src, "src_FengHuang");
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, dst, "dst_FengHuang");

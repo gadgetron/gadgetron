@@ -21,16 +21,19 @@ public:
 
     virtual void printInfo(std::ostream& os);
 
-    // if the sensitivity S is set, compute gradient of ||wav*F'*S'*x||1
+    // if the sensitivity S is set, compute gradient of ||wav*S'*F'*x||1
     // if not, compute gradient of ||wav*F'*x||1
     // x represents the unacquired kspace points [RO E1 CHA E2]
     virtual bool grad(const hoNDArray<T>& x, hoNDArray<T>& g);
 
-    // if the sensitivity S is set, compute cost value of L2 norm ||wav*F'*S'*x||1
+    // if the sensitivity S is set, compute cost value of L2 norm ||wav*S'*F'*x||1
     // if not, compute cost value of L2 norm ||wav*F'*x||1
     virtual bool obj(const hoNDArray<T>& x, T& obj);
 
+    using BaseClass::scale_factor_first_dimension_;
+    using BaseClass::scale_factor_second_dimension_;
     using BaseClass::scale_factor_third_dimension_;
+    using BaseClass::change_coeffcients_third_dimension_boundary_;
     using BaseClass::numOfWavLevels_;
     using BaseClass::with_approx_coeff_;
     using BaseClass::gt_timer1_;

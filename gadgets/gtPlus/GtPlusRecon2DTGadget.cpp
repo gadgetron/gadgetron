@@ -113,7 +113,7 @@ bool GtPlusRecon2DTGadget::readParameters()
         GADGET_CONDITION_MSG(verboseMode_, "-----------------------------------------------");
 
         // get the parameters from base class
-        BaseClass::readParameters();
+        // BaseClass::readParameters();
 
         para_.recon_kspace_needed_ = recon_kspace_needed_;
         para_.workOrderPara_ = workOrderPara_;
@@ -212,15 +212,20 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
     processed_called_times_++;
 
+
     GtPlusGadgetImageArray* images = m1->getObjectPtr();
 
     WorkOrderType* workOrder = m2->getObjectPtr();
 
     boost::shared_ptr< std::vector<size_t> > dims = workOrder->data_.get_dimensions();
 
-    GADGET_CONDITION_MSG(verboseMode_, "[Ro E1 Cha Slice E2 Con Phase Rep Set Seg] = [" 
-        << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " << (*dims)[3] << " " << (*dims)[4] 
-        << " " << (*dims)[5] << " " << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " << (*dims)[9] << "]");
+    size_t SEG = (*dims)[9];
+
+    GADGET_CONDITION_MSG(verboseMode_, "[Ro E1 Cha Slice E2 Con Phase Rep Set Seg Ave] = [" 
+                                                << (*dims)[0] << " " << (*dims)[1] << " " << (*dims)[2] << " " 
+                                                << (*dims)[3] << " " << (*dims)[4] << " " << (*dims)[5] << " " 
+                                                << (*dims)[6] << " " << (*dims)[7] << " " << (*dims)[8] << " " 
+                                                << (*dims)[9] << " " << (*dims)[10] << "]");
 
     dimensions_ = *dims;
 
@@ -258,9 +263,14 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     para_.workOrderPara_.start_E2_ = workOrder->start_E2_;
     para_.workOrderPara_.end_E2_ = workOrder->end_E2_;
 
+    para_.workOrderPara_.retro_gated_images_ = workOrder->retro_gated_images_;
+    para_.workOrderPara_.retro_gated_segment_size_ = workOrder->retro_gated_segment_size_;
+
     para_.workOrderPara_.workFlow_BufferKernel_ = workOrder->workFlow_BufferKernel_;
     para_.workOrderPara_.workFlow_use_BufferedKernel_ = workOrder->workFlow_use_BufferedKernel_;
     para_.workOrderPara_.num_channels_res_ = workOrder->num_channels_res_;
+
+    bool perform_retro_gating = (para_.workOrderPara_.retro_gated_images_>0);
 
     // ---------------------------------------------------------
     // set the work flow
@@ -293,15 +303,19 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     // ---------------------------------------------------------
     // set the worker
     // ---------------------------------------------------------
+    worker_grappa_.verbose_ = verboseMode_;
     worker_grappa_.performTiming_ = performTiming_;
     if ( !debugFolder_fullPath_.empty() ) worker_grappa_.debugFolder_ = debugFolder_fullPath_;
 
+    worker_noacceleration_.verbose_ = verboseMode_;
     worker_noacceleration_.performTiming_ = performTiming_;
     if ( !debugFolder_fullPath_.empty() ) worker_noacceleration_.debugFolder_ = debugFolder_fullPath_;
 
+    worker_spirit_.verbose_ = verboseMode_;
     worker_spirit_.performTiming_ = performTiming_;
     if ( !debugFolder_fullPath_.empty() ) worker_spirit_.debugFolder_ = debugFolder_fullPath_;
 
+    worker_spirit_L1_ncg_.verbose_ = verboseMode_;
     worker_spirit_L1_ncg_.performTiming_ = performTiming_;
     if ( !debugFolder_fullPath_.empty() ) worker_spirit_L1_ncg_.debugFolder_ = debugFolder_fullPath_;
 
@@ -344,21 +358,26 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
         workOrder_recon_other_.reset();
     }
 
+    // ------------------------------------------------------------------
     // perform the recon
+    // ------------------------------------------------------------------
     GADGET_START_TIMING_CONDITION(gt_timer1_, "Recon 2DT workorder ... ", performTiming_);
 
     GADGET_CHECK_RETURN(this->generateKSpaceFilter(*workOrder), GADGET_FAIL);
 
+    /// set the work order
     workOrder->duplicate(workOrder_recon_);
     setWorkOrder2DTParameters(&workOrder_recon_);
 
     workflow_.workOrder_ = &workOrder_recon_;
+
     if ( verboseMode_ )
     {
         workflow_.workOrder_->print(std::cout);
     }
 
-    workflow_.setDataArray(workOrder->data_);
+    /// set the data
+    workflow_.setDataArray(workOrder->data_, workOrder->time_stamp_, workOrder->physio_time_stamp_);
 
     if ( workOrder->ref_.get_number_of_elements() > 0 )
     {
@@ -395,8 +414,12 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
     {
         GADGET_WARN_MSG("The gfactor computation is currently only avaialbe for grappa reconstruction ... ");
         workflow_.workOrder_->gfactor_needed_ = false;
+
+        GADGET_WARN_MSG("The wrap-around map computation is currently only avaialbe for grappa reconstruction ... ");
+        workflow_.workOrder_->wrap_around_map_needed_ = false;
     }
 
+    /// perform the recon
     GADGET_CHECK_RETURN(workflow_.preProcessing(), GADGET_FAIL);
     GADGET_CHECK_RETURN(workflow_.recon(), GADGET_FAIL);
     GADGET_CHECK_RETURN(workflow_.postProcessing(), GADGET_FAIL);
@@ -420,6 +443,27 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
             hoNDArray<GT_Complex8> gfactor = workflow_.gfactor_;
             gfactor.squeeze();
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, gfactor, ostr.str());
+        }
+
+        if ( workflow_.workOrder_->wrap_around_map_needed_ )
+        {
+            std::ostringstream ostr;
+            ostr << "Recon2DT_WrapAroundMap_" << processed_called_times_;
+
+            hoNDArray<GT_Complex8> wrap_around_map = workflow_.wrap_around_map_;
+            wrap_around_map.squeeze();
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, wrap_around_map, ostr.str());
+        }
+
+        if ( workflow_.res_second_.get_number_of_elements() > 0 )
+        {
+            hoNDArray<GT_Complex8> res = workflow_.res_second_;
+            res.squeeze();
+
+            std::ostringstream ostr;
+            ostr << "Recon2DT_second_" << processed_called_times_;
+
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
         }
     }
 
@@ -452,30 +496,58 @@ int GtPlusRecon2DTGadget::process(Gadgetron::GadgetContainerMessage< GtPlusGadge
 
     // send out the results
     GADGET_CHECK_RETURN(this->scalingImages(workflow_.res_), GADGET_FAIL);
-    GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.res_, image_series_, workOrder->dataDimStartingIndexes_, "Image", GTPLUS_IMAGE_REGULAR), GADGET_FAIL);
 
-    if ( workflow_.workOrder_->gfactor_needed_ )
+    if ( send_out_recon_ )
     {
-        GADGET_CHECK_RETURN(Gadgetron::scal((float)scalingFactor_gfactor_, workflow_.gfactor_), GADGET_FAIL);
-        GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.gfactor_, image_series_+1, workOrder->dataDimStartingIndexes_, "gfactor", GTPLUS_IMAGE_GFACTOR), GADGET_FAIL);
+        if ( perform_retro_gating )
+        {
+            GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.res_, workflow_.res_time_stamp_, workflow_.res_physio_time_stamp_, image_series_, workOrder->dataDimStartingIndexes_, "ImageRetro", GTPLUS_IMAGE_RETRO), GADGET_FAIL);
+        }
+        else
+        {
+            GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.res_, workflow_.res_time_stamp_, workflow_.res_physio_time_stamp_, image_series_, workOrder->dataDimStartingIndexes_, "Image", GTPLUS_IMAGE_REGULAR), GADGET_FAIL);
+        }
+
+        if ( workflow_.workOrder_->gfactor_needed_ )
+        {
+            GADGET_CHECK_RETURN(Gadgetron::scal((float)scalingFactor_gfactor_, workflow_.gfactor_), GADGET_FAIL);
+            GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.gfactor_, workflow_.res_time_stamp_, workflow_.res_physio_time_stamp_, image_series_+1, workOrder->dataDimStartingIndexes_, "gfactor", GTPLUS_IMAGE_GFACTOR), GADGET_FAIL);
+        }
+
+        if ( workflow_.workOrder_->wrap_around_map_needed_ )
+        {
+            GADGET_CHECK_RETURN(Gadgetron::scal((float)scalingFactor_wrap_around_map_, workflow_.wrap_around_map_), GADGET_FAIL);
+            GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.wrap_around_map_, workflow_.res_time_stamp_, workflow_.res_physio_time_stamp_, image_series_+2, workOrder->dataDimStartingIndexes_, "wrap_around_map", GTPLUS_IMAGE_WRAPAROUNDMAP), GADGET_FAIL);
+        }
+
+        if ( scalingFactor_snr_image_>0 && snrImage.get_number_of_elements()>0 && snrImageComputed )
+        {
+            GADGET_CHECK_RETURN(Gadgetron::scal((float)scalingFactor_snr_image_, snrImage), GADGET_FAIL);
+            GADGET_CHECK_RETURN(this->sendOutRecon(images, snrImage, workflow_.res_time_stamp_, workflow_.res_physio_time_stamp_, image_series_+3, workOrder->dataDimStartingIndexes_, "snr_map", GTPLUS_IMAGE_SNR_MAP), GADGET_FAIL);
+        }
+
+        if ( scalingFactor_std_map_>0 && stdMap.get_number_of_elements()>0 && stdMapComputed )
+        {
+            GADGET_CHECK_RETURN(Gadgetron::scal((float)scalingFactor_std_map_, stdMap), GADGET_FAIL);
+            GADGET_CHECK_RETURN(this->sendOutRecon(images, stdMap, workflow_.res_time_stamp_, workflow_.res_physio_time_stamp_, image_series_+4, workOrder->dataDimStartingIndexes_, "std_map", GTPLUS_IMAGE_STD_MAP), GADGET_FAIL);
+        }
     }
 
-    if ( scalingFactor_snr_image_>0 && snrImage.get_number_of_elements()>0 && snrImageComputed )
+    if ( send_out_recon_second_ )
     {
-        GADGET_CHECK_RETURN(Gadgetron::scal((float)scalingFactor_snr_image_, snrImage), GADGET_FAIL);
-        GADGET_CHECK_RETURN(this->sendOutRecon(images, snrImage, image_series_+2, workOrder->dataDimStartingIndexes_, "snr_map", GTPLUS_IMAGE_SNR_MAP), GADGET_FAIL);
-    }
-
-    if ( scalingFactor_std_map_>0 && stdMap.get_number_of_elements()>0 && stdMapComputed )
-    {
-        GADGET_CHECK_RETURN(Gadgetron::scal((float)scalingFactor_std_map_, stdMap), GADGET_FAIL);
-        GADGET_CHECK_RETURN(this->sendOutRecon(images, stdMap, image_series_+3, workOrder->dataDimStartingIndexes_, "std_map", GTPLUS_IMAGE_STD_MAP), GADGET_FAIL);
+        if ( workflow_.res_second_.get_number_of_elements() > 0 )
+        {
+            GADGET_CHECK_RETURN(Gadgetron::scal((float)scalingFactor_, workflow_.res_second_), GADGET_FAIL);
+            GADGET_CHECK_RETURN(this->sendOutRecon(images, workflow_.res_second_, workflow_.res_time_stamp_second_, workflow_.res_physio_time_stamp_second_, image_series_+5, workOrder->dataDimStartingIndexes_, "ImageSecond", GTPLUS_IMAGE_REGULAR), GADGET_FAIL);
+        }
     }
 
     GADGET_CONDITION_MSG(verboseMode_, "GtPlusRecon2DTGadget::process(...) ends ... ");
 
     // reset the status
     workflow_.data_ = NULL;
+    workflow_.time_stamp_ = NULL;
+    workflow_.physio_time_stamp_ = NULL;
     workflow_.ref_ = NULL;
     workflow_.noise_ = NULL;
     workflow_.workOrder_ = NULL;

@@ -69,6 +69,9 @@ namespace Gadgetron
     bool complex_to_real(const hoNDImage<T, D>& cplx, hoNDImage<typename realType<T>::Type, D>& real);
 
     template<class T, unsigned int D> 
+    bool complex_to_real(hoNDImage<T, D>& cplx);
+
+    template<class T, unsigned int D> 
     bool complex_to_imag(const hoNDImage<T, D>& cplx, hoNDImage<typename realType<T>::Type, D>& imag);
 
     template<class T, unsigned int D> 

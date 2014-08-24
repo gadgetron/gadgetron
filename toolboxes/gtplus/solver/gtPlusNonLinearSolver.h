@@ -17,6 +17,7 @@ public:
     typedef gtPlusSolver<Array_Type_I, Array_Type_O> BaseClass;
 
     typedef typename BaseClass::ValueType ValueType;
+    typedef typename realType<ValueType>::Type value_type;
 
     // one operator is related to a weight
     typedef std::pair<Oper_Type*, ValueType> Oper_Elem_Type;

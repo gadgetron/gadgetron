@@ -45,6 +45,10 @@ public:
     // compute cost value of L2 norm ||(G-I)(Dc'x+D'y)||2
     virtual bool obj(const hoNDArray<T>& x, T& obj);
 
+    // indicate the operator is unitary or not
+    // unitary operator, AA' = I
+    virtual bool unitary() const { return false; }
+
     // convert to image domain or back to kspace
     virtual bool convertToImage(const hoNDArray<T>& x, hoNDArray<T>& im) = 0;
     virtual bool convertToKSpace(const hoNDArray<T>& im, hoNDArray<T>& x) = 0;

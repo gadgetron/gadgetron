@@ -187,7 +187,7 @@ namespace Gadgetron
             long long imageNumber;
             img_attrib->attributeInteger_.get(GTPLUS_IMAGENUMBER, 0, imageNumber);
 
-            long long cha, slc, e2, con, phs, rep, set;
+            long long cha, slc, e2, con, phs, rep, set, ave;
             img_attrib->attributeInteger_.get(GTPLUS_CHA,        0, cha);
             img_attrib->attributeInteger_.get(GTPLUS_SLC,        0, slc);
             img_attrib->attributeInteger_.get(GTPLUS_E2,         0, e2);
@@ -195,6 +195,7 @@ namespace Gadgetron
             img_attrib->attributeInteger_.get(GTPLUS_PHASE,      0, phs);
             img_attrib->attributeInteger_.get(GTPLUS_REP,        0, rep);
             img_attrib->attributeInteger_.get(GTPLUS_SET,        0, set);
+            img_attrib->attributeInteger_.get(GTPLUS_AVERAGE,    0, ave);
 
             std::ostringstream ostr;
 
@@ -210,11 +211,14 @@ namespace Gadgetron
             }
 
             ostr << "SLC" << slc << "_"
-                 << "E2" << e2 << "_"
+                 << "E2"  << e2  << "_"
                  << "CON" << con << "_"
                  << "PHS" << phs << "_"
                  << "REP" << rep << "_"
-                 << "SET" << set;
+                 << "SET" << set << "_"
+                 << "AVE" << ave << "_"
+                 << "CHA" << cha << "_" 
+                 << "ImageSeries" << img_head->image_series_index;
 
             std::string filename = ostr.str();
 

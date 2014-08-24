@@ -31,6 +31,8 @@ namespace Gadgetron {
         hoNDArray< ValueType > noise_covariance_matrixf_;
         hoNDArray< ValueType > noise_covariance_matrixf_once_;
 
+        hoNDArray< ValueType > data_prewhitened_;
+
         unsigned long long number_of_noise_samples_;
         unsigned long long number_of_noise_samples_per_acquisition_;
         float noise_dwell_time_us_;
@@ -54,6 +56,8 @@ namespace Gadgetron {
         std::string full_name_stored_noise_dependency_;
 
         float noise_dwell_time_us_preset_;
+
+        bool perform_noise_adjust_;
 
         virtual int process_config(ACE_Message_Block* mb);
         virtual int process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,

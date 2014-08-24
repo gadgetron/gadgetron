@@ -16,7 +16,7 @@
 
                 Inati SJ, Hansen MS, Kellman P. 
                 A solution to the phase problem in adaptive coil combination. 
-                In: ISMRM proceeding; 20�26 april; salt lake city, utah, USA. ; 2013. 2672.
+                In: ISMRM proceeding; april; salt lake city, utah, USA. ; 2013. 2672.
 
                 Kellman P, McVeigh ER. 
                 Image reconstruction in SNR units: A general method for SNR measurement. 
@@ -52,6 +52,8 @@
 #include "hoNDArray_utils.h"
 #include "hoNDArray_math_util.h"
 #include "hoNDImage_util.h"
+#include "hoNDArray_reductions.h"
+#include "hoMatrix_util.h"
 #include "gtPlusIOAnalyze.h"
 #include "hoNDArrayMemoryManaged.h"
 #include "GadgetronTimer.h"
@@ -64,6 +66,7 @@
     #include "GPUTimer.h"
     #include "b1_map.h"
     #include "cudaDeviceManager.h"
+    #include "cuda_runtime_api.h"
     #include "cuNDArray_elemwise.h"
 #endif // USE_CUDA
 
@@ -75,7 +78,7 @@ namespace Gadgetron {
     * @brief sum over last dimension of an array
              e.g. for a 4D array, sum over the 4th dimension and get a 3D array
     */
-    template<typename T> EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r); //
+    template<typename T> EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r); // 
 
     /**
     * @brief sum over the second last dimension of an array
@@ -154,13 +157,27 @@ namespace Gadgetron {
     * @brief copy the sub-array of x to r
              the sub-array is defined by its starting index and array size
     */
-    template<typename T> EXPORTGTPLUS bool cropUpTo10DArray(const hoNDArray<T>& x, hoNDArray<T>& r, const std::vector<size_t>& startND, std::vector<size_t>& size);
+    template<typename T> EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<T>& x, hoNDArray<T>& r, const std::vector<size_t>& startND, std::vector<size_t>& size);
 
     /**
     * @brief set the sub-array of r from x
              the sub-array is defined by its starting index and array size
     */
-    template<typename T> EXPORTGTPLUS bool setSubArrayUpTo10DArray(const hoNDArray<T>& x, hoNDArray<T>& r, const std::vector<size_t>& startND, std::vector<size_t>& size);
+    template<typename T> EXPORTGTPLUS bool setSubArrayUpTo11DArray(const hoNDArray<T>& x, hoNDArray<T>& r, const std::vector<size_t>& startND, std::vector<size_t>& size);
+
+    /**
+    * @brief extract sampled lines from an NDArray
+             timeStamp indicates sampled lines; -1 for unsampled lines
+             x : [Ro E1 Cha Slice E2 Con Phase Rep Set Seg AVE]
+             timeStamp: [1 E1 1 Slice E2 Con Phase Rep Set Seg AVE]
+    */
+    template<typename T> EXPORTGTPLUS bool extractSampledLinesUpTo11DArray(const hoNDArray<T>& x, hoNDArray<T>& r, const hoNDArray<float>& timeStamp, double acceFactorE1, double acceFactorE2);
+
+    /**
+    * @brief fill sampled lines to an NDArray
+             timeStamp indicates sampled lines; -1 for unsampled lines
+    */
+    template<typename T> EXPORTGTPLUS bool fillSampledLinesUpTo11DArray(const hoNDArray<T>& x, hoNDArray<T>& r, const hoNDArray<float>& timeStamp);
 
     /**
     * @brief copy the sub-array of x to r only along the 3rd dimensions
@@ -229,11 +246,18 @@ namespace Gadgetron {
 
     /**
     * @brief Image domain unwrapping for 2D
-             x : [RO E1 srcCHA N], ker [RO E1 srcCHA dstCHA 1 or N],
+             x : [RO E1 srcCHA N], ker [RO E1 srcCHA dstCHA 1 or N], 
              buf is a buffer for computer, need to be pre-allocated [RO E1 srcCHA], y [RO E1 dstCHA N]
              for the sake of speed, no check is made in this function
     */
     template<typename T> EXPORTGTPLUS bool imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y);
+
+    /**
+    * @brief compute periodic boundary values for an array
+             x : [N 1] the data point location, y[N M] data point values at x
+             r : [N+2 M], the data point values with computed boundaries
+    */
+    template<typename CoordType, typename T> EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<CoordType>& x, const hoNDArray<T>& y, CoordType start, CoordType end, hoNDArray<CoordType>& vx, hoNDArray<T>& vy);
 }
 
 namespace Gadgetron { namespace gtPlus {
@@ -476,8 +500,14 @@ public:
     // get the partial fourier/asymmetric echo handling algorithm from name
     ISMRMRDPFALGO getISMRMRDPartialFourierReconAlgoFromName(const std::string& name);
 
+    // get the partial fourier/asymmetric echo handling algorithm name from algorithm
+    std::string getNameFromISMRMRDPartialFourierReconAlgo(ISMRMRDPFALGO algo);
+
     // get the kspace filter algorithm from name
     ISMRMRDKSPACEFILTER getISMRMRDKSpaceFilterFromName(const std::string& name);
+
+    // get retro-gating interpolation method from name
+    ISMRMRDINTERPRETROGATING getISMRMRDRetroGatingInterpFromName(const std::string& name);
 
     // extract sub array for a dimension
     // if lessEqual ==  true, [0:value] are extracted for dim
@@ -551,12 +581,39 @@ public:
         hoNDImage<T2, D> diff(x);
         Gadgetron::subtract(gt, x, diff);
 
+        hoNDImage<T2, D> gtEps(gt);
+        Gadgetron::addEpsilon(gtEps);
+
         Gadgetron::norm2(diff, normDiff);
+
+        Gadgetron::divide(diff, gtEps, diff);
 
         T2 maxV;
         size_t ind;
         Gadgetron::maxAbsolute(diff, maxV, ind);
         maxNormDiff = std::abs(maxV);
+    }
+
+    void getCurrentMoment(std::string& procTime)
+    {
+        char timestamp[100];
+        time_t mytime;
+        struct tm *mytm;
+        mytime=time(NULL);
+        mytm=localtime(&mytime);
+        strftime(timestamp, sizeof(timestamp),"%a, %b %d %Y, %H:%M:%S",mytm);
+        procTime = timestamp;
+    }
+
+    void getCurrentMomentForFileName(std::string& procTime)
+    {
+        char timestamp[100];
+        time_t mytime;
+        struct tm *mytm;
+        mytime=time(NULL);
+        mytm=localtime(&mytime);
+        strftime(timestamp, sizeof(timestamp),"%a_%b_%d_%Y_%H_%M_%S",mytm);
+        procTime = timestamp;
     }
 };
 
