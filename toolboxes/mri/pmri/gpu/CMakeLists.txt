@@ -48,6 +48,7 @@ cuda_add_library(gpuparallelmri SHARED
     cuSenseBuffer.cpp
     cuSenseBufferCg.cpp
     cuSpiritBuffer.cpp
+    htgrappa.cpp
     htgrappa.cu
   )
 

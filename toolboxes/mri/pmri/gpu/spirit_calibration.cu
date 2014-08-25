@@ -13,8 +13,8 @@
 #include "CUBLASContextProvider.h"
 #include "GPUTimer.h"
 #include "hoNDArray_fileio.h"
-#include "hoMatrix_util.h"
 #include "hoNDArray_utils.h"
+#include "htgrappa.h"
 
 #include <cublas_v2.h>
 //#include <cula_lapack_device.h>
@@ -302,12 +302,8 @@ namespace Gadgetron {
       permute(AHA_h.get(),&perm_dim);
       permute(AHrhs_h.get(),&perm_dim);
       
-      hoMatrix< std::complex<float> > AHAm(AHA_h->get_size(0),AHA_h->get_size(1),(std::complex<float>*)AHA_h->get_data_ptr(),false);
-      
-      hoMatrix< std::complex<float> > AHrhsm(AHrhs_h->get_size(0),AHrhs_h->get_size(1),(std::complex<float>*)AHrhs_h->get_data_ptr(),false);
-      
-      SymmetricHermitianPositiveDefiniteLinearSystem_posv(AHAm, AHrhsm);
-      
+      ht_grappa_solve_spd_system(AHA_h.get(), AHrhs_h.get());	  
+
       permute(AHrhs_h.get(),&perm_dim);
       rhs = cuNDArray<float_complext>(*AHrhs_h);
     }

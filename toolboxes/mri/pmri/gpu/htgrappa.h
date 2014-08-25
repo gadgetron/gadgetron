@@ -28,6 +28,9 @@ namespace Gadgetron
                           cuNDArray<T>* b,
                           cuNDArray<T>* out_mixing_coeff, 
                           double lamda);  
+
+  template <class T> void ht_grappa_solve_spd_system(hoNDArray<T> *A, hoNDArray<T> *B);
+
 }
 
 #endif //HTGRAPPA_H
