@@ -7,7 +7,11 @@
 /*
   This file is used to hide certain Armadillo calls from the nvcc compiler. If Armadillo functions need to 
   be called in a *.cu file, it is preferably to wrap the calls in a function and place that function in 
-  a *.cpp file so that Armadillo code will not be compiled by nvcc. 
+  a *.cpp file so that Armadillo code will not be compiled by nvcc.
+
+  Some error handling may be needed in these functions, but eventually SymmetricHermitianPositiveDefiniteLinearSystem_posv
+  will be renamed and made to throw exceptions and then it should be handled. 
+
  */
 
 namespace Gadgetron
