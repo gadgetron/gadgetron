@@ -14,8 +14,6 @@ if(WIN32)
 endif(WIN32)
 
 include_directories(
-  ${ISMRMRD_SCHEMA_DIR}
-  ${ISMRMRD_XSD_INCLUDE_DIR}
   ${ACE_INCLUDE_DIR} 
   ${Boost_INCLUDE_DIR} 
   ${HDF5_CXX_INCLUDE_DIR} 

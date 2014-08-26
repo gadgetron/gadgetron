@@ -3,8 +3,6 @@ IF (WIN32)
 ENDIF (WIN32)
 
 find_package(Ismrmrd REQUIRED)
-find_package(XSD REQUIRED)
-find_package(XercesC REQUIRED)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
@@ -19,7 +17,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
   ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
-  ${ISMRMRD_XSD_INCLUDE_DIR}
   ${ARMADILLO_INCLUDE_DIRS}
   )
 
@@ -38,12 +35,11 @@ add_library(gadgetron_gpuradial SHARED
   gpuRadialSensePrepGadget.h gpuRadialSensePrepGadget.cpp 
   gpuRadialSpiritPrepGadget.h gpuRadialSpiritPrepGadget.cpp 
   gpuRetroGatedSensePrepGadget.h gpuRetroGatedSensePrepGadget.cpp
-  ${PHASE_GADGET}
-  ${ISMRMRD_XSD_SOURCE})
+  ${PHASE_GADGET})
 
 target_link_libraries(gadgetron_gpuradial
   gpunfft gpusolvers gpuoperators cpucore cpucore_math gpucore
-  ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
+  ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 

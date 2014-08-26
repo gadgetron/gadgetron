@@ -7,17 +7,9 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
   ${Boost_INCLUDE_DIR}
   ${ACE_INCLUDE_DIR} 
-  ${XSD_INCLUDE_DIR}
   )
 
-#Process the XSD files
-SET(XSDS schema/gadgetron.xsd)
-SET(XSD_ARGS cxx-tree --generate-serialization)
-WRAP_XSD(XSDS_SOURCES XSD_INCLUDES ${CMAKE_CURRENT_BINARY_DIR}/schema ${XSDS} OPTIONS ${XSD_ARGS})
-INCLUDE_DIRECTORIES(${XSD_INCLUDES} ${XERCESC_INCLUDE_DIR})
-
 add_executable(gadgetron 
-  ${XSDS_SOURCES} 
   main.cpp 
   GadgetServerAcceptor.h
   GadgetServerAcceptor.cpp 
@@ -29,13 +21,14 @@ add_executable(gadgetron
   GadgetMessageInterface.h 
   Gadgetron.h 
   GadgetronExport.h 
-  schema/gadgetron.xsd 
+  gadgetron_xml.h
+  gadgetron_xml.cpp
+  pugixml.cpp
   )
 
 target_link_libraries(gadgetron 
   gadgettools 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
-  ${XERCESC_LIBRARIES}
  )
 
 install(TARGETS gadgetron DESTINATION bin)
