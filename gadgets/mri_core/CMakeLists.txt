@@ -3,8 +3,6 @@ IF (WIN32)
 ENDIF (WIN32)
 
 find_package(Ismrmrd REQUIRED)
-find_package(XSD REQUIRED)
-find_package(XercesC REQUIRED)
 
 if (MKL_FOUND)
     # This is a fix for the bug in SVD when MKL is multi-threaded
@@ -127,7 +125,6 @@ add_library(gadgetron_mricore SHARED
     ${gadgetron_mricore_config_files}
     ${OPTIMIZED_GADGETS}
     ${OPTIMIZED_GADGET_HEADERS}
-    ${ISMRMRD_XSD_SOURCE}
 )
 
 target_link_libraries(gadgetron_mricore 
@@ -137,7 +134,6 @@ target_link_libraries(gadgetron_mricore
     ${FFTW3_LIBRARIES} 
     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
     ${BOOST_LIBRARIES}
-    ${XERCESC_LIBRARIES} 
     ${OPTIMIZED_GADGET_LIBS}
 )
 
@@ -154,4 +150,3 @@ endif (ARMADILLO_FOUND)
 install(FILES ismrmrd_dump.xml DESTINATION config)
 
 install(TARGETS gadgetron_mricore DESTINATION lib)
-install(FILES ${ISMRMRD_SCHEMA_DIR}/ismrmrd.xsd DESTINATION schema)

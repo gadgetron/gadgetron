@@ -74,8 +74,7 @@ set(GT_DICOM_LIB gadgetron_dicom)
 add_library(${GT_DICOM_LIB} SHARED
     DicomFinishGadget.h DicomFinishGadget.cpp
     DicomFinishAttribGadget.h DicomFinishAttribGadget.cpp
-    DicomImageWriter.h DicomImageWriter.cpp
-    ${ISMRMRD_XSD_SOURCE})
+    DicomImageWriter.h DicomImageWriter.cpp)
 
 target_link_libraries(
     ${GT_DICOM_LIB}
@@ -83,7 +82,6 @@ target_link_libraries(
     ${ISMRMRD_LIBRARIES}
     optimized ${ACE_LIBRARIES}
     debug ${ACE_DEBUG_LIBRARY}
-    ${XERCESC_LIBRARIES}
     ${Boost_LIBRARIES}
     ${GT_DICOM_LIBRARIES} )
 

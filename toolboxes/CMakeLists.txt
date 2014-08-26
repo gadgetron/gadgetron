@@ -1,3 +1,6 @@
+find_package(XSD)
+find_package(XercesC)
+
 if (WIN32)
     ADD_DEFINITIONS(-DTIXML_USE_STL)
 endif (WIN32)

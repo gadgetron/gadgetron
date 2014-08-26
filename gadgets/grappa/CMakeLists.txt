@@ -3,8 +3,6 @@ if (WIN32)
 endif (WIN32)
 
 find_package(Ismrmrd REQUIRED)
-find_package(XSD REQUIRED)
-find_package(XercesC REQUIRED)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/gadgets/mri_core
@@ -31,7 +29,6 @@ add_library(gadgetron_grappa SHARED
     GrappaWeights.cpp
     GrappaWeightsCalculator.cpp
     GrappaUnmixingGadget.cpp
-    ${ISMRMRD_XSD_SOURCE}
     )
 
 target_link_libraries(gadgetron_grappa 
@@ -42,7 +39,6 @@ target_link_libraries(gadgetron_grappa
   ${Boost_LIBRARIES}
   ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
-  ${XERCESC_LIBRARIES} 
   )
 
 install (FILES  gadgetron_grappa_export.h

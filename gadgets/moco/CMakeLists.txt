@@ -41,7 +41,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/
   ${HDF5_INCLUDE_DIR}
   ${HDF5_INCLUDE_DIR}/cpp
-  ${ISMRMRD_XSD_INCLUDE_DIR}
 )
 
 if(CPU_REG)
@@ -69,12 +68,11 @@ add_library(gadgetron_moco SHARED
     RegistrationScatteringGadget.h
     ${CPU_GADGETS}
     ${GPU_GADGETS}
-    ${ISMRMRD_XSD_SOURCE}
   )
 
 target_link_libraries(gadgetron_moco
   cpucore gadgetron_mricore ${CPU_LIBS} ${GPU_LIBS}
-  ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES}
+  ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
   )
 

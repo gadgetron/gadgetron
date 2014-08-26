@@ -7,18 +7,12 @@ endif (WIN32)
 find_package(ACE)
 find_package(FFTW3 COMPONENTS single double)
 find_package(Ismrmrd)
-find_package(XSD)
-find_package(XercesC)
 
 include_directories(   
   ${ACE_INCLUDE_DIR} 
   ${Boost_INCLUDE_DIR}
   ${FFTW3_INCLUDE_DIR}
   ${ISMRMRD_INCLUDE_DIR}
-  ${ISMRMRD_SCHEMA_DIR}
-  ${ISMRMRD_XSD_INCLUDE_DIR}
-  ${XSD_INCLUDE_DIR}
-  ${XERCESC_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/dependencies/tinyxml
   ${CMAKE_SOURCE_DIR}/apps/gadgetron 
   ${CMAKE_SOURCE_DIR}/toolboxes/core

@@ -33,15 +33,11 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/application
-    ${ISMRMRD_SCHEMA_DIR}
-    ${ISMRMRD_XSD_INCLUDE_DIR}
     ${ACE_INCLUDE_DIR} 
     ${Boost_INCLUDE_DIR} 
     ${HDF5_CXX_INCLUDE_DIR} 
     ${HDF5_C_INCLUDE_DIR} 
     ${ISMRMRD_INCLUDE_DIR}
-    ${XSD_INCLUDE_DIR}
-    ${XERCESC_INCLUDE_DIR}
     ${ARMADILLO_INCLUDE_DIRS}
     )
 

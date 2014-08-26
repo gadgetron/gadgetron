@@ -19,7 +19,6 @@ target_link_libraries(
     cpucore_math
     ${MATLAB_LIBRARIES}
     ${ISMRMRD_LIBRARIES}
-    ${ISMRMRD_XSD_LIBRARIES}
     optimized ${ACE_LIBRARIES}
     debug ${ACE_DEBUG_LIBRARY}
 )

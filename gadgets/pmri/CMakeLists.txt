@@ -20,7 +20,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
   ${HDF5_INCLUDE_DIR}
   ${HDF5_INCLUDE_DIR}/cpp
-  ${ISMRMRD_XSD_INCLUDE_DIR}
 )
 
 add_library(gadgetron_gpuparallelmri SHARED 
@@ -36,12 +35,11 @@ add_library(gadgetron_gpuparallelmri SHARED
     gpuSbSenseGadget.cpp 
     gpuGenericSensePrepGadget.cpp
     gpuCgSpiritGadget.cpp 
-    ${ISMRMRD_XSD_SOURCE}
   )
 
 target_link_libraries(gadgetron_gpuparallelmri 
   cpucore gpucore gpusolvers gpuoperators
-  ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} 
+  ${Boost_LIBRARIES} ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 
