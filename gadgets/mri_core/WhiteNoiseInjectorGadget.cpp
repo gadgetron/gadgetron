@@ -95,7 +95,12 @@ int WhiteNoiseInjectorGadget::process_config(ACE_Message_Block* mb)
     GADGET_MSG("acceFactorE1_ is " << acceFactorE1_);
     GADGET_MSG("acceFactorE2_ is " << acceFactorE2_);
 
-    //XUE-TODO: calibrationMode is optional, so appropriate checks should be added
+    if ( !p_imaging.calibrationMode.is_present() )
+    {
+        GADGET_DEBUG1("Parallel Imaging calibrationMode not found in header");
+        return GADGET_FAIL;
+    }
+
     std::string calib = *p_imaging.calibrationMode;
     if ( calib.compare("interleaved") == 0 )
     {

@@ -116,8 +116,13 @@ int GtPlusAccumulatorWorkOrderTriggerGadget::process_config(ACE_Message_Block* m
     GADGET_CONDITION_MSG(verboseMode_, "acceFactorE1_ is " << workOrder_.acceFactorE1_);
     GADGET_CONDITION_MSG(verboseMode_, "acceFactorE2_ is " << workOrder_.acceFactorE2_);
 
-    //XUE-TODO: calibrationMode is optional, so appropriate checks should be added
     workOrder_.InterleaveDim_ = Gadgetron::gtPlus::DIM_NONE;
+
+    if ( !p_imaging.calibrationMode.is_present() )
+    {
+        GADGET_DEBUG1("Parallel Imaging calibrationMode not found in header");
+        return GADGET_FAIL;
+    }
 
     std::string calib = *p_imaging.calibrationMode;
     if ( calib.compare("interleaved") == 0 )
@@ -1620,8 +1625,15 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(GadgetContainerMessa
         // fill the message info
         size_t offset = messageImage->get_offset(idx.slice, idx.kspace_encode_step_2, idx.contrast, idx.phase, idx.repetition, idx.set, idx.segment, idx.average);
 
-        //XUE-TODO: This check is totally inadequate. Any of the dimensions could be overflowing and still land in-bounds. get_offset should probably throw an exception if that is the case and it should be caught
-        if( offset >= messageImage->max_num_of_images_ )
+        if( (offset >= messageImage->max_num_of_images_)
+            || (idx.slice>=messageImage->matrix_size[3])
+            || (idx.kspace_encode_step_2>=messageImage->matrix_size[4])
+            || (idx.contrast>=messageImage->matrix_size[5])
+            || (idx.phase>=messageImage->matrix_size[6])
+            || (idx.repetition>=messageImage->matrix_size[7])
+            || (idx.set>=messageImage->matrix_size[8])
+            || (idx.segment>=messageImage->matrix_size[9])
+            || (idx.average>=messageImage->matrix_size[10]) )
         {
             GADGET_WARN_MSG("Incoming image is over the boundary of buffer [SLC E2 CON PHS REP SET SEG AVE] = [ " 
                                                                             << idx.slice << " " << idx.kspace_encode_step_2 << " " 

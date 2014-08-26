@@ -174,6 +174,8 @@ if ( HAS_64_BIT )
         config/GT_2DT_HASTE.xml
         config/GT_2DT_HASTE_MOCO_AVE.xml
 
+        config/GT_2DT_T2W.xml
+
         config/GT_2DT_LGE.xml
 
         config/GT_2DT_MOLLI.xml

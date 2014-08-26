@@ -714,7 +714,6 @@ namespace Gadgetron
 
         meas_max_idx_.kspace_encode_step_2 = (uint16_t)matrix_size_encoding_[2]-1; 
 
-        //XUE-TODO: Fix this
         meas_max_idx_.contrast = (e_limits.contrast && (e_limits.contrast->maximum > 0)) ? e_limits.contrast->maximum -1 : 0;
         meas_max_idx_.slice = (e_limits.slice && (e_limits.slice->maximum > 0)) ? e_limits.slice->maximum : 0;
         meas_max_idx_.repetition = e_limits.repetition ? e_limits.repetition->maximum : 0;
@@ -737,21 +736,32 @@ namespace Gadgetron
 
         std::string calib = *p_imaging.calibrationMode;
 
-        //XUE-TODO: The underscore at the end of a variable typically means it is a member,
-        //but here these are local. Should be changed. More importantly, not sure these variables are needed. 
         bool separate = (calib.compare("separate") == 0);
         bool embedded = (calib.compare("embedded") == 0);
+        bool external = (calib.compare("external") == 0);
         bool interleaved = (calib.compare("interleaved") == 0);
         bool other = (calib.compare("other") == 0);
 
-        //XUE-TODO: I see this a lot in your code. All of these "if" statements have to be evaluated.
-        //They should really be "else if" statements. It is not a huge performance critical thing here
-        //it is just bad practice. 
-
-        if ( separate ) { GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is separate"); }
-        if ( embedded ) { GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is embedded"); }
-        if ( interleaved ) { GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is interleaved"); }
-        if ( other ) { GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is other"); }
+        if ( separate )
+        {
+            GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is separate");
+        }
+        else if ( embedded )
+        {
+            GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is embedded");
+        }
+        else if ( interleaved )
+        {
+            GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is interleaved");
+        }
+        else if ( external )
+        {
+            GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is external");
+        }
+        else if ( other )
+        {
+            GADGET_CONDITION_MSG(verboseMode_, "Colibration mode is other");
+        }
 
         //if ( other_ && acceFactorE1_==1 && acceFactorE2_==1 )
         //{
@@ -782,25 +792,19 @@ namespace Gadgetron
                 }
             }
         }
-
-        if ( embedded )
+        else if ( embedded )
         {
             CalibMode_ = Gadgetron::gtPlus::ISMRMRD_embedded;
         }
-
-        if ( separate )
+        else if ( separate )
         {
             CalibMode_ = Gadgetron::gtPlus::ISMRMRD_separate;
         }
-
-        //XUE-TODO: Why does this one not have a boolean defined as the others?
-        //Or maybe more importantly, why do the others
-        if ( calib.compare("external") == 0 )
+        else if ( external )
         {
             CalibMode_ = Gadgetron::gtPlus::ISMRMRD_external;
         }
-
-        if ( other )
+        else if ( other )
         {
             CalibMode_ = Gadgetron::gtPlus::ISMRMRD_other;
         }

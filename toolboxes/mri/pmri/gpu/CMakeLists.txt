@@ -18,7 +18,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   ${CUDA_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIR} 
+  ${Boost_INCLUDE_DIR}
+  ${ARMADILLO_INCLUDE_DIRS} 
   )
 
 cuda_add_library(gpuparallelmri SHARED 
