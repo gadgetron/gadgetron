@@ -34,8 +34,6 @@ namespace Gadgetron{
 
         noise_dwell_time_us_preset_ = 5;
 
-        fixed_noise_bandwidth_ = -1;
-
         perform_noise_adjust_ = true;
 
         gt_timer_.set_timing_in_destruction(false);
@@ -185,18 +183,6 @@ namespace Gadgetron{
                 }
             }
         }
-
-        // find out the system version if possible
-	//XUE-TODO: We should not rely on this sort of hack to figure out the bandwidth. This should be in the data of the noise data
-	if (h.userParameters) {
-	  for (std::vector<ISMRMRD::UserParameterDouble>::const_iterator i (h.userParameters->userParameterDouble.begin()); 
-	       i != h.userParameters->userParameterDouble.end(); i++) 
-	    {
-	      if (std::strcmp(i->name.c_str(),"NoiseBandwidth") == 0) {
-		fixed_noise_bandwidth_ = i->value;
-	      }
-	    }
-	}
 
         // if MKL is used, limit the number of threads used to be 2
 #ifdef USE_MKL

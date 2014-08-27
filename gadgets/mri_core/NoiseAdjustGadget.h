@@ -51,8 +51,6 @@ namespace Gadgetron {
         std::string measurement_id_;
         std::string measurement_id_of_noise_dependency_;
 
-        double fixed_noise_bandwidth_;
-
         std::string full_name_stored_noise_dependency_;
 
         float noise_dwell_time_us_preset_;
