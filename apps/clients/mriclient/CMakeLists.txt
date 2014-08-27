@@ -61,13 +61,7 @@ target_link_libraries(gtdependencyquery cpucore
                                         ${Boost_LIBRARIES} 
                                         ${ISMRMRD_LIBRARIES} )
 
-IF(WIN32)
-    target_link_libraries(mriclient optimized ${HDF5_hdf5_LIBRARY_RELEASE} optimized ${HDF5_hdf5_cpp_LIBRARY_RELEASE})
-    target_link_libraries(mriclient debug ${HDF5_hdf5_LIBRARY_DEBUG} debug ${HDF5_hdf5_cpp_LIBRARY_DEBUG})
-    target_link_libraries(mriclient gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
-ELSE (WIN32)
-    target_link_libraries(mriclient gadgettools ${HDF5_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
-ENDIF(WIN32)
+target_link_libraries(mriclient gadgettools ${HDF5_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
 
 target_link_libraries(mriclient gadgetron_mricore)
 

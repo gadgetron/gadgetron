@@ -23,13 +23,6 @@ include_directories(
 
 add_executable(ismrmrd_client ismrmrd_client.cpp)
 
-IF(WIN32)
-    target_link_libraries(ismrmrd_client optimized ${HDF5_hdf5_LIBRARY_RELEASE} optimized ${HDF5_hdf5_cpp_LIBRARY_RELEASE})
-    target_link_libraries(ismrmrd_client debug ${HDF5_hdf5_LIBRARY_DEBUG} debug ${HDF5_hdf5_cpp_LIBRARY_DEBUG})
-    target_link_libraries(ismrmrd_client ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
-ELSE (WIN32)
-    target_link_libraries(ismrmrd_client ${HDF5_LIBRARIES} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
-ENDIF(WIN32)
-
+target_link_libraries(ismrmrd_client ${HDF5_LIBRARIES} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
 
 install(TARGETS ismrmrd_client DESTINATION bin)
