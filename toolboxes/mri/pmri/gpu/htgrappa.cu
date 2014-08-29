@@ -6,7 +6,6 @@
 #include "cuNDArray_elemwise.h"
 #include "CUBLASContextProvider.h"
 #include "hoNDArray_fileio.h"
-#include "hoMatrix_util.h"
 #include "hoNDArray_utils.h"
 
 #include <cublas_v2.h>
@@ -529,13 +528,9 @@ namespace Gadgetron {
 	  
 	  permute(AHA_h.get(),&perm_dim);
 	  permute(AHrhs_h.get(),&perm_dim);
-	  
-	  hoMatrix< std::complex<float> > AHAm(AHA_h->get_size(0),AHA_h->get_size(1),(std::complex<float>*)AHA_h->get_data_ptr(),false);
-	  
-	  hoMatrix< std::complex<float> > AHrhsm(AHrhs_h->get_size(0),AHrhs_h->get_size(1),(std::complex<float>*)AHrhs_h->get_data_ptr(),false);
-	  
-	  SymmetricHermitianPositiveDefiniteLinearSystem_posv(AHAm, AHrhsm);
-	  
+
+	  ht_grappa_solve_spd_system(AHA_h.get(), AHrhs_h.get());	  
+
 	  permute(AHrhs_h.get(),&perm_dim);
 	  AHrhs = cuNDArray<T>(*AHrhs_h);
 	}
@@ -803,12 +798,8 @@ namespace Gadgetron {
       permute(AHA_h.get(),&perm_dim);
       permute(AHrhs_h.get(),&perm_dim);
       
-      hoMatrix< std::complex<float> > AHAm(AHA_h->get_size(0),AHA_h->get_size(1),(std::complex<float>*)AHA_h->get_data_ptr(),false);
-      
-      hoMatrix< std::complex<float> > AHrhsm(AHrhs_h->get_size(0),AHrhs_h->get_size(1),(std::complex<float>*)AHrhs_h->get_data_ptr(),false);
-      
-      SymmetricHermitianPositiveDefiniteLinearSystem_posv(AHAm, AHrhsm);
-      
+      ht_grappa_solve_spd_system(AHA_h.get(), AHrhs_h.get());	  
+
       permute(AHrhs_h.get(),&perm_dim);
       *coeff = cuNDArray<T>(*AHrhs_h);
     }
