@@ -50,7 +50,7 @@ find_package(Ismrmrd REQUIRED)
 
 set( gadgetronPlus_header_files GtPlusGadgetImageArray.h
                                 GtPlusAccumulatorWorkOrderTriggerGadget.h
-                                Gtplusaccumulatorimagetriggergadget.h
+                                GtPlusAccumulatorImageTriggerGadget.h
                                 GtPlusGadgetOpenMP.h
                                 GtPlusReconGadget.h
                                 GtPlusRecon2DTGadget.h
