@@ -6,8 +6,6 @@ include_directories(
     ${ISMRMRD_INCLUDE_DIR}
     ${FFTW3_INCLUDE_DIR}
     ${ARMADILLO_INCLUDE_DIRS}
-    ${CUDA_INCLUDE_DIRS}
-    ${CULA_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core
@@ -52,7 +50,7 @@ find_package(Ismrmrd REQUIRED)
 
 set( gadgetronPlus_header_files GtPlusGadgetImageArray.h
                                 GtPlusAccumulatorWorkOrderTriggerGadget.h
-                                GtPlusAccumulatorImageTriggerGadget.h
+                                Gtplusaccumulatorimagetriggergadget.h
                                 GtPlusGadgetOpenMP.h
                                 GtPlusReconGadget.h
                                 GtPlusRecon2DTGadget.h
@@ -101,7 +99,10 @@ target_link_libraries(gadgetronPlus
     )
 
 if (CUDA_FOUND)  
-   target_link_libraries(gadgetronPlus gpuparallelmri)
+  include_directories( 
+    ${CUDA_INCLUDE_DIRS}
+    )
+  target_link_libraries(gadgetronPlus gpuparallelmri)
 endif(CUDA_FOUND)
 
 install (FILES 
