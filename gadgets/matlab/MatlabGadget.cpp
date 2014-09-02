@@ -164,6 +164,10 @@ int AcquisitionMatlabGadget::process(GadgetContainerMessage<ISMRMRD::Acquisition
     mxDestroyArray(acq_hdr_bytes);
     mxDestroyArray(acq_data);
 
+    //OJ Match engGetVariable with mxDestroy___s
+    mxDestroyArray(Q);
+
+
     return GADGET_OK;
 }
 
@@ -278,6 +282,14 @@ int ImageMatlabGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
     // Match all mxCreate___s with mxDestroy___s
     mxDestroyArray(img_hdr_bytes);
     mxDestroyArray(img_data);
+
+    //OJ Match engGetVariable with mxDestroy___s
+    mxDestroyArray(Q);
+
+
+    //OJ I think we've finished with m1 and m2, now.
+    m1->release();
+
 
     return GADGET_OK;
 }
