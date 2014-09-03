@@ -36,7 +36,6 @@ namespace Gadgetron
         {
             try
             {
-                ISMRMRD::HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
 
                 // image data role
                 std::vector<std::string> dataRole;
