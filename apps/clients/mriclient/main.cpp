@@ -11,7 +11,7 @@
 #include "ImageAttribWriter.h"
 #include "HDF5ImageAttribWriter.h"
 #include "FileInfo.h"
-#include "ismrmrd_hdf5.h"
+#include "ismrmrd_dataset.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "BlobFileWriter.h"
 #include "BlobFileWithAttribWriter.h"

@@ -35,25 +35,25 @@ namespace Gadgetron
 
         switch (m1->getObjectPtr()->image_type)
         {
-            case ISMRMRD::TYPE_MAGNITUDE:
+            case ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE:
             {
                 GADGET_CHECK_RETURN(Gadgetron::absolute(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
             }
             break;
 
-            case ISMRMRD::TYPE_REAL:
+            case ISMRMRD::ISMRMRD_IMTYPE_REAL:
             {
                 GADGET_CHECK_RETURN(Gadgetron::complex_to_real(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
             }
             break;
 
-            case ISMRMRD::TYPE_IMAG:
+            case ISMRMRD::ISMRMRD_IMTYPE_IMAG:
             {
                 GADGET_CHECK_RETURN(Gadgetron::complex_to_imag(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
             }
             break;
 
-            case ISMRMRD::TYPE_PHASE:
+            case ISMRMRD::ISMRMRD_IMTYPE_PHASE:
             {
                 GADGET_CHECK_RETURN(Gadgetron::argument(*m2->getObjectPtr(), *cm2->getObjectPtr()), GADGET_FAIL);
             }
@@ -72,7 +72,7 @@ namespace Gadgetron
         m2->cont(NULL);
         m2->release();
 
-        m1->getObjectPtr()->image_data_type = ISMRMRD::DATA_FLOAT;
+        m1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_FLOAT;
 
         if (this->next()->putq(m1) == -1)
         {

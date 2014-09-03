@@ -443,7 +443,7 @@ namespace Gadgetron
                                                             // double check the image type
                                                             if ( isRealImage )
                                                             {
-                                                                cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_REAL;
+                                                                cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_REAL;
                                                             }
 
                                                             // image comment

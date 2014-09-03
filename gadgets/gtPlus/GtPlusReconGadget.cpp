@@ -1371,7 +1371,7 @@ namespace Gadgetron
                                             *(cm1->getObjectPtr()) = imageHeaderSent;
 
                                             cm1->getObjectPtr()->flags = 0;
-                                            cm1->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
+                                            cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
 
                                             // image number and image series
                                             cm1->getObjectPtr()->image_index = (uint16_t)computeSeriesImageNumber ( *(cm1->getObjectPtr()), CHA, cha, E2, e2);
@@ -1395,7 +1395,7 @@ namespace Gadgetron
 
                                             if ( dataRole == GTPLUS_IMAGE_REGULAR )
                                             {
-                                                cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
+                                                cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
 
                                                 cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, "GT");
                                                 cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, imageInfo);
@@ -1406,7 +1406,7 @@ namespace Gadgetron
                                             }
                                             else if ( dataRole == GTPLUS_IMAGE_RETRO )
                                             {
-                                                cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
+                                                cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
 
                                                 cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, "GT");
                                                 cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, "RETRO");
@@ -1420,7 +1420,7 @@ namespace Gadgetron
                                             }
                                             else if ( dataRole == GTPLUS_IMAGE_PHASE )
                                             {
-                                                cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_PHASE;
+                                                cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_PHASE;
 
                                                 cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, "PHS_GT");
                                                 cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "PHS_GT");
@@ -1429,7 +1429,7 @@ namespace Gadgetron
                                             }
                                             else if ( dataRole == GTPLUS_IMAGE_GFACTOR )
                                             {
-                                                cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
+                                                cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
 
                                                 std::string comment = gfactorInfo;
                                                 comment.append("_");
@@ -1442,7 +1442,7 @@ namespace Gadgetron
                                             }
                                             else if ( dataRole == GTPLUS_IMAGE_WRAPAROUNDMAP )
                                             {
-                                                cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
+                                                cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
 
                                                 std::string comment = wrapAroundMapInfo;
                                                 comment.append("_");
@@ -1455,7 +1455,7 @@ namespace Gadgetron
                                             }
                                             else if ( dataRole == GTPLUS_IMAGE_SNR_MAP )
                                             {
-                                                cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
+                                                cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
 
                                                 std::string comment = snrMapInfo;
                                                 comment.append("_");
@@ -1468,7 +1468,7 @@ namespace Gadgetron
                                             }
                                             else if ( dataRole == GTPLUS_IMAGE_STD_MAP )
                                             {
-                                                cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
+                                                cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
 
                                                 std::string comment = stdMapInfo;
                                                 comment.append("_");
@@ -1484,7 +1484,7 @@ namespace Gadgetron
                                             }
                                             else if ( dataRole == GTPLUS_IMAGE_OTHER )
                                             {
-                                                cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
+                                                cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
 
                                                 cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, "GT");
                                                 cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "_GT");
@@ -1596,8 +1596,8 @@ namespace Gadgetron
             *(cm1->getObjectPtr()) = images->imageArray_[0];
 
             cm1->getObjectPtr()->flags = 0;
-            cm1->getObjectPtr()->image_data_type = ISMRMRD::DATA_FLOAT;
-            cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
+            cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_FLOAT;
+            cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
 
             // image number and image series
             cm1->getObjectPtr()->image_index = imageNum;

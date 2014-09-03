@@ -105,7 +105,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     	sizeof(std::complex<float>)*samples);
   }
   
-  bool is_last_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
+  bool is_last_scan_in_slice = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
   
   if (is_last_scan_in_slice) {
     GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = 
@@ -114,7 +114,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     // On some platforms, it is necessary to initialize the image header
     memset(cm1->getObjectPtr(),0,sizeof(ISMRMRD::ImageHeader));
     
-    cm1->getObjectPtr()->flags = 0;
+    cm1->getObjectPtr()->clearAllFlags();
 
     GadgetContainerMessage< hoNDArray< std::complex<float> > >* cm2 = 
       new GadgetContainerMessage<hoNDArray< std::complex<float> > >();
@@ -170,7 +170,7 @@ process(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     memcpy(cm1->getObjectPtr()->patient_table_position,
     		m1->getObjectPtr()->patient_table_position, sizeof(float)*3);
 
-    cm1->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
+    cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
     cm1->getObjectPtr()->image_index = (uint16_t)(++image_counter_);
     cm1->getObjectPtr()->image_series_index = (uint16_t)image_series_;
 

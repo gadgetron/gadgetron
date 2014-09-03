@@ -3474,13 +3474,13 @@ bool gtPlusISMRMRDReconUtil<T>::hasIdenticalGeometryISMRMRD(const ISMRMRD::Acqui
 {
     long long ii;
 
-    for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
+    for ( ii=0; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
     {
         if ( std::abs(acqHeader1.position[ii]-acqHeader2.position[ii]) > GT_IMAGING_GEOMETRY_DELTA ) return false;
         if ( std::abs(acqHeader1.patient_table_position[ii]-acqHeader2.patient_table_position[ii]) > GT_IMAGING_GEOMETRY_DELTA ) return false;
     }
 
-    for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
+    for ( ii=0; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
     {
         if ( std::abs(acqHeader1.read_dir[ii]-acqHeader2.read_dir[ii]) > GT_IMAGING_GEOMETRY_DELTA ) return false;
         if ( std::abs(acqHeader1.phase_dir[ii]-acqHeader2.phase_dir[ii]) > GT_IMAGING_GEOMETRY_DELTA ) return false;
@@ -3591,34 +3591,34 @@ bool gtPlusISMRMRDReconUtil<T>::setMetaAttributesFromImageHeaderISMRMRD(const IS
 
         GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_channels, imgHeader.channels));
 
-        attributeFloat.resize(ISMRMRD_POSITION_LENGTH);
-        for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
+        attributeFloat.resize(ISMRMRD::ISMRMRD_POSITION_LENGTH);
+        for ( ii=0; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
         {
             attributeFloat[ii] = imgHeader.position[ii];
         }
         GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.set(ISMRMRD_IMAGE_position, attributeFloat));
 
-        attributeFloat.resize(ISMRMRD_DIRECTION_LENGTH);
-        for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
+        attributeFloat.resize(ISMRMRD::ISMRMRD_DIRECTION_LENGTH);
+        for ( ii=0; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
         {
             attributeFloat[ii] = imgHeader.read_dir[ii];
         }
         GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.set(ISMRMRD_IMAGE_read_dir, attributeFloat));
 
-        for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
+        for ( ii=0; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
         {
             attributeFloat[ii] = imgHeader.phase_dir[ii];
         }
         GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.set(ISMRMRD_IMAGE_phase_dir, attributeFloat));
 
-        for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
+        for ( ii=0; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
         {
             attributeFloat[ii] = imgHeader.slice_dir[ii];
         }
         GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.set(ISMRMRD_IMAGE_slice_dir, attributeFloat));
 
-        attributeFloat.resize(ISMRMRD_POSITION_LENGTH);
-        for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
+        attributeFloat.resize(ISMRMRD::ISMRMRD_POSITION_LENGTH);
+        for ( ii=0; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
         {
             attributeFloat[ii] = imgHeader.patient_table_position[ii];
         }
@@ -3633,26 +3633,26 @@ bool gtPlusISMRMRDReconUtil<T>::setMetaAttributesFromImageHeaderISMRMRD(const IS
 
         GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_acquisition_time_stamp, imgHeader.acquisition_time_stamp));
 
-        attributeInteger.resize(ISMRMRD_PHYS_STAMPS);
-        for ( ii=0; ii<ISMRMRD_PHYS_STAMPS; ii++ )
+        attributeInteger.resize(ISMRMRD::ISMRMRD_PHYS_STAMPS);
+        for ( ii=0; ii<ISMRMRD::ISMRMRD_PHYS_STAMPS; ii++ )
         {
             attributeInteger[ii] = imgHeader.physiology_time_stamp[ii];
         }
         GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_physiology_time_stamp, attributeInteger));
 
-        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_image_data_type, imgHeader.image_data_type));
+        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_image_data_type, imgHeader.data_type));
         GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_image_type, imgHeader.image_type));
         GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_image_series_index, imgHeader.image_series_index));
 
-        attributeInteger.resize(ISMRMRD_USER_INTS);
-        for ( ii=0; ii<ISMRMRD_USER_INTS; ii++ )
+        attributeInteger.resize(ISMRMRD::ISMRMRD_USER_INTS);
+        for ( ii=0; ii<ISMRMRD::ISMRMRD_USER_INTS; ii++ )
         {
             attributeInteger[ii] = imgHeader.user_int[ii];
         }
         GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.set(ISMRMRD_IMAGE_user_int, attributeInteger));
 
-        attributeFloat.resize(ISMRMRD_USER_FLOATS);
-        for ( ii=0; ii<ISMRMRD_USER_FLOATS; ii++ )
+        attributeFloat.resize(ISMRMRD::ISMRMRD_USER_FLOATS);
+        for ( ii=0; ii<ISMRMRD::ISMRMRD_USER_FLOATS; ii++ )
         {
             attributeFloat[ii] = imgHeader.user_float[ii];
         }
@@ -3700,35 +3700,35 @@ bool gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const Gt
         GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_channels, 0, vInteger));
         imgHeader.channels = (uint16_t)vInteger;
 
-        attributeFloat.resize(ISMRMRD_POSITION_LENGTH);
+        attributeFloat.resize(ISMRMRD::ISMRMRD_POSITION_LENGTH);
         GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.get(ISMRMRD_IMAGE_position, attributeFloat));
-        for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
+        for ( ii=0; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
         {
             imgHeader.position[ii] = (float)attributeFloat[ii];
         }
 
-        attributeFloat.resize(ISMRMRD_DIRECTION_LENGTH);
+        attributeFloat.resize(ISMRMRD::ISMRMRD_DIRECTION_LENGTH);
         GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.get(ISMRMRD_IMAGE_read_dir, attributeFloat));
-        for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
+        for ( ii=0; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
         {
             imgHeader.read_dir[ii] = attributeFloat[ii];
         }
 
         GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.get(ISMRMRD_IMAGE_phase_dir, attributeFloat));
-        for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
+        for ( ii=0; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
         {
             imgHeader.phase_dir[ii] = attributeFloat[ii];
         }
 
         GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.get(ISMRMRD_IMAGE_slice_dir, attributeFloat));
-        for ( ii=0; ii<ISMRMRD_DIRECTION_LENGTH; ii++ )
+        for ( ii=0; ii<ISMRMRD::ISMRMRD_DIRECTION_LENGTH; ii++ )
         {
             imgHeader.slice_dir[ii] = attributeFloat[ii];
         }
 
-        attributeFloat.resize(ISMRMRD_POSITION_LENGTH);
+        attributeFloat.resize(ISMRMRD::ISMRMRD_POSITION_LENGTH);
         GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.get(ISMRMRD_IMAGE_patient_table_position, attributeFloat));
-        for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
+        for ( ii=0; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
         {
             imgHeader.patient_table_position[ii] = attributeFloat[ii];
         }
@@ -3754,15 +3754,15 @@ bool gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const Gt
         GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_acquisition_time_stamp, 0, vInteger));
         imgHeader.acquisition_time_stamp = (uint32_t)vInteger;
 
-        attributeInteger.resize(ISMRMRD_PHYS_STAMPS);
+        attributeInteger.resize(ISMRMRD::ISMRMRD_PHYS_STAMPS);
         GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_physiology_time_stamp, attributeInteger));
-        for ( ii=0; ii<ISMRMRD_PHYS_STAMPS; ii++ )
+        for ( ii=0; ii<ISMRMRD::ISMRMRD_PHYS_STAMPS; ii++ )
         {
             imgHeader.physiology_time_stamp[ii] = (uint32_t)attributeInteger[ii];
         }
 
         GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_image_data_type, 0, vInteger));
-        imgHeader.image_data_type = (uint16_t)vInteger;
+        imgHeader.data_type = (uint16_t)vInteger;
 
         GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_image_type, 0, vInteger));
         imgHeader.image_type = (uint16_t)vInteger;
@@ -3770,16 +3770,16 @@ bool gtPlusISMRMRDReconUtil<T>::setImageHeaderISMRMRDFromMetaAttributes(const Gt
         GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_image_series_index, 0, vInteger));
         imgHeader.image_series_index = (uint16_t)vInteger;
 
-        attributeInteger.resize(ISMRMRD_USER_INTS);
+        attributeInteger.resize(ISMRMRD::ISMRMRD_USER_INTS);
         GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(ISMRMRD_IMAGE_user_int, attributeInteger));
-        for ( ii=0; ii<ISMRMRD_USER_INTS; ii++ )
+        for ( ii=0; ii<ISMRMRD::ISMRMRD_USER_INTS; ii++ )
         {
             imgHeader.user_int[ii] = (int32_t)attributeInteger[ii];
         }
 
-        attributeFloat.resize(ISMRMRD_USER_FLOATS);
+        attributeFloat.resize(ISMRMRD::ISMRMRD_USER_FLOATS);
         GADGET_CHECK_RETURN_FALSE(attrib.attributeFloat_.get(ISMRMRD_IMAGE_user_float, attributeFloat));
-        for ( ii=0; ii<ISMRMRD_USER_FLOATS; ii++ )
+        for ( ii=0; ii<ISMRMRD::ISMRMRD_USER_FLOATS; ii++ )
         {
             imgHeader.user_float[ii] = (float)attributeFloat[ii];
         }

@@ -179,15 +179,15 @@ namespace Gadgetron
     {
         try
         {
-            bIsNoise = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NOISE_MEASUREMENT).isSet(flag);
-            bool is_ref = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_PARALLEL_CALIBRATION).isSet(flag);
-            bool is_ref_kspace = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_PARALLEL_CALIBRATION_AND_IMAGING).isSet(flag);
-            bIsReflect = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_REVERSE).isSet(flag);
-            bIsPhaseCorr = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_PHASECORR_DATA).isSet(flag);
-            bIsNavigator = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NAVIGATION_DATA).isSet(flag);
-            bIsRTFeedback = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_RTFEEDBACK_DATA).isSet(flag);
-            bIsHPFeedback = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_HPFEEDBACK_DATA).isSet(flag);
-            bIsDummyScan = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_DUMMYSCAN_DATA).isSet(flag);
+            bIsNoise = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT).isSet(flag);
+            bool is_ref = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION).isSet(flag);
+            bool is_ref_kspace = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION_AND_IMAGING).isSet(flag);
+            bIsReflect = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_REVERSE).isSet(flag);
+            bIsPhaseCorr = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PHASECORR_DATA).isSet(flag);
+            bIsNavigator = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_NAVIGATION_DATA).isSet(flag);
+            bIsRTFeedback = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_RTFEEDBACK_DATA).isSet(flag);
+            bIsHPFeedback = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_HPFEEDBACK_DATA).isSet(flag);
+            bIsDummyScan = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_DUMMYSCAN_DATA).isSet(flag);
 
             bIsKSpace = false;
             bIsRef = false;

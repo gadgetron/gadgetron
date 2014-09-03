@@ -5,7 +5,6 @@
 #include "gadgetron_mricore_export.h"
 
 #include <ismrmrd.h>
-#include <ismrmrd_hdf5.h>
 
 namespace Gadgetron{
 

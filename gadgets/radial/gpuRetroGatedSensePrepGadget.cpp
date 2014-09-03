@@ -266,7 +266,7 @@ namespace Gadgetron{
     // Noise should have been consumed by the noise adjust (if in the gadget chain)
     //
     
-    bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
+    bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
     if (is_noise) { 
       m1->release();
       return GADGET_OK;
@@ -409,7 +409,7 @@ namespace Gadgetron{
         
         {
           // Initialize header to all zeroes (there is a few fields we do not set yet)
-          ISMRMRD::ImageHeader tmp = {0};
+          ISMRMRD::ImageHeader tmp;
           *header = tmp;
         }
         
@@ -441,7 +441,7 @@ namespace Gadgetron{
         memcpy(header->slice_dir, base_head->slice_dir, sizeof(float)*3);
         memcpy(header->patient_table_position, base_head->patient_table_position, sizeof(float)*3);
         
-        header->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
+        header->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
         header->image_index = image_counter_[set*slices_+slice]++; 
         header->image_series_index = set*slices_+slice;        
       }

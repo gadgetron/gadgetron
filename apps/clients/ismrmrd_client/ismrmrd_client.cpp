@@ -22,7 +22,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <ismrmrd.h>
-#include <ismrmrd_hdf5.h>
+#include <ismrmrd_dataset.h>
 
 #include <fstream>
 #include <streambuf>
@@ -164,11 +164,8 @@ public:
     boost::asio::read(*stream, boost::asio::buffer(const_cast<T*>(&im.getData()[0]),
 						   sizeof(T)*im.getData().size()));
     {
-      //Write it to the HDF5 out file
-      ISMRMRD::HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
-
       if (!dataset_) {
-	dataset_ = boost::shared_ptr<ISMRMRD::IsmrmrdDataset>(new ISMRMRD::IsmrmrdDataset(file_name_.c_str(), group_name_.c_str())); 
+	dataset_ = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(file_name_.c_str(), group_name_.c_str())); 
       }
 
       std::stringstream st1;
@@ -198,7 +195,7 @@ public:
 protected:
   std::string group_name_;
   std::string file_name_;
-  boost::shared_ptr<ISMRMRD::IsmrmrdDataset> dataset_;
+  boost::shared_ptr<ISMRMRD::Dataset> dataset_;
 };
 
 template <typename T> class GadgetronClientAttribImageMessageReader 
@@ -238,11 +235,8 @@ public:
     boost::asio::read(*stream, boost::asio::buffer(const_cast<T*>(&im.getData()[0]),
 						   sizeof(T)*im.getData().size()));
     {
-      //Write it to the HDF5 out file
-      ISMRMRD::HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
-
       if (!dataset_) {
-	dataset_ = boost::shared_ptr<ISMRMRD::IsmrmrdDataset>(new ISMRMRD::IsmrmrdDataset(file_name_.c_str(), group_name_.c_str())); 
+	dataset_ = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(file_name_.c_str(), group_name_.c_str())); 
       }
 
       std::stringstream st1;
@@ -280,7 +274,7 @@ public:
 protected:
   std::string group_name_;
   std::string file_name_;
-  boost::shared_ptr<ISMRMRD::IsmrmrdDataset> dataset_;
+  boost::shared_ptr<ISMRMRD::Dataset> dataset_;
 };
 
 

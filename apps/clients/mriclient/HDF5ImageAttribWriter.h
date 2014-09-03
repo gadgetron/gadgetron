@@ -10,7 +10,7 @@
 
 #include "ImageAttribWriter.h"
 
-#include <ismrmrd_hdf5.h>
+#include <ismrmrd_dataset.h>
 #include <sstream>
 
 namespace Gadgetron
@@ -160,7 +160,7 @@ namespace Gadgetron
         std::string group_name_;
         std::string file_name_;
         std::string prefix_;
-        ISMRMRD::IsmrmrdDataset dataset_;
+        ISMRMRD::Dataset dataset_;
     };
 }
 

@@ -10,7 +10,7 @@
 
 #include "ImageWriter.h"
 
-#include <ismrmrd_hdf5.h>
+#include <ismrmrd_dataset.h>
 #include <sstream>
 
 namespace Gadgetron
@@ -31,7 +31,6 @@ namespace Gadgetron
             hoNDArray< T >* data)
         {
             try {
-                ISMRMRD::HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
                 std::stringstream st1;
                 st1 << "image_" << img_head->image_series_index << ".head";
                 std::string head_varname = st1.str();
@@ -69,7 +68,7 @@ namespace Gadgetron
     protected:
         std::string group_name_;
         std::string file_name_;
-        ISMRMRD::IsmrmrdDataset dataset_;
+        ISMRMRD::Dataset dataset_;
     };
 }
 
