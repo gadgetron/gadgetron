@@ -11,7 +11,7 @@
 #include "ismrmrd.h"
 #include "hoNDArray.h"
 #include "GadgetMessageInterface.h"
-#include "hoNDMetaAttributes.h"
+#include "ismrmrd_meta.h"
 
 namespace Gadgetron
 {
@@ -72,15 +72,15 @@ template <typename T> class GadgetImageAttribMessageReader : public GadgetMessag
 {
 public:
 
-    typedef typename GtImageAttribType::size_t_type size_t_type;
+    typedef unsigned long long size_t_type;
 
     virtual ACE_Message_Block* read(ACE_SOCK_Stream* stream) 
     {
         GadgetContainerMessage<ISMRMRD::ImageHeader>* imgh = 
             new GadgetContainerMessage<ISMRMRD::ImageHeader>();
 
-        GadgetContainerMessage<GtImageAttribType>* imgAttrib = 
-            new GadgetContainerMessage<GtImageAttribType>();
+        GadgetContainerMessage<ISMRMRD::MetaContainer>* imgAttrib = 
+            new GadgetContainerMessage<ISMRMRD::MetaContainer>();
 
         // read in ISMRMRD image header
         ssize_t recv_count = 0;
@@ -125,7 +125,7 @@ public:
             return 0;
         }
 
-        if ( ( recv_count = stream->recv_n( buf+sizeof(size_t_type), len-sizeof(size_t_type)) ) <= 0 )
+        if ( ( recv_count = stream->recv_n( buf, len) ) <= 0 )
         {
             ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageAttribMessageReader, failed to read IMAGE Meta Attributes\n")) );
             imgh->release();
@@ -134,7 +134,11 @@ public:
             return 0;
         }
 
-        if ( !imgAttrib->getObjectPtr()->deserialize(buf, len) )
+        try
+        {
+            ISMRMRD::deserialize(buf, *imgAttrib->getObjectPtr());
+        }
+        catch(...)
         {
             ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetImageAttribMessageReader, failed to deserialize IMAGE Meta Attributes\n")) );
             imgh->release();

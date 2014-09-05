@@ -16,6 +16,7 @@ if (MATLAB_FOUND)
     link_directories(${Boost_LIBRARY_DIRS})
     link_libraries(${MATLAB_LIBRARIES} 
                     optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
+                    ${ISMRMRD_LIBRARIES} 
                     gtplus 
                     cpucore 
                     cpucore_math

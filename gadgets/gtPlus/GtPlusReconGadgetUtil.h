@@ -13,6 +13,7 @@
 
 #include "ismrmrd.h"
 #include "ismrmrd_xml.h"
+#include "ismrmrd_meta.h"
 
 namespace Gadgetron
 {
@@ -58,4 +59,14 @@ namespace Gadgetron
     // create a folder with all permissions for all users
     bool EXPORTGTPLUSGADGET createFolderWithAllPermissions(const std::string& workingdirectory);
 
+    // get a vector of values from ismrmrd meta
+    bool EXPORTGTPLUSGADGET getISMRMRMetaValues(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<long>& v);
+    bool EXPORTGTPLUSGADGET getISMRMRMetaValues(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<double>& v);
+    bool EXPORTGTPLUSGADGET getISMRMRMetaValues(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<std::string>& v);
+
+    template <typename T> EXPORTGTPLUSGADGET bool setISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v);
+    bool EXPORTGTPLUSGADGET setISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v);
+
+    template <typename T> EXPORTGTPLUSGADGET bool appendISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v);
+    bool EXPORTGTPLUSGADGET appendISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v);
 }

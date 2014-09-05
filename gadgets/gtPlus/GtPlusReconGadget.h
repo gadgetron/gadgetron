@@ -9,9 +9,9 @@
 #include "GtPlusGadgetExport.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "hoNDMetaAttributes.h"
 #include "ismrmrd.h"
 #include "ismrmrd_xml.h"
+#include "ismrmrd_meta.h"
 #include "GadgetronTimer.h"
 
 #include "hoNDArray_utils.h"

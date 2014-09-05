@@ -8,7 +8,8 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
-    ${ARMADILLO_INCLUDE_DIRS} )
+    ${ARMADILLO_INCLUDE_DIRS} 
+    ${ISMRMRD_INCLUDE_DIR} )
 
 if (MKL_FOUND)
     INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
@@ -55,6 +56,7 @@ if (MKL_FOUND)
     target_link_libraries(cpucore_math 
         cpucore
         ${ARMADILLO_LIBRARIES}
+        ${ISMRMRD_LIBRARIES}
         ${FFTW3_LIBRARIES} 
         ${MKL_LIBRARIES}
     )
@@ -62,6 +64,7 @@ else (MKL_FOUND)
     target_link_libraries(cpucore_math 
         cpucore
         ${ARMADILLO_LIBRARIES}
+        ${ISMRMRD_LIBRARIES}
         ${FFTW3_LIBRARIES}
     )
 endif (MKL_FOUND)

@@ -34,7 +34,7 @@
 #include "GtPlusExport.h"
 
 #include "ismrmrd.h"
-#include "hoNDMetaAttributes.h"
+#include "ismrmrd_meta.h"
 
 #include "boost/tuple/tuple.hpp"
 #include "boost/tuple/tuple_comparison.hpp"
@@ -546,10 +546,10 @@ public:
     // ISMRMRD image header
     // ------------------------------------------------------------------------
     // set the meta attributes from the ISMRMRD image header
-    bool setMetaAttributesFromImageHeaderISMRMRD(const ISMRMRD::ImageHeader& imgHeader, GtImageAttribType& attrib);
+    bool setMetaAttributesFromImageHeaderISMRMRD(const ISMRMRD::ImageHeader& imgHeader, ISMRMRD::MetaContainer& attrib);
 
     // compute the image geometry for two acquisition header
-    bool setImageHeaderISMRMRDFromMetaAttributes(const GtImageAttribType& attrib, ISMRMRD::ImageHeader& imgHeader);
+    bool setImageHeaderISMRMRDFromMetaAttributes(const ISMRMRD::MetaContainer& attrib, ISMRMRD::ImageHeader& imgHeader);
 
     // ------------------------------------------------------------------------
     // utility functions for various things

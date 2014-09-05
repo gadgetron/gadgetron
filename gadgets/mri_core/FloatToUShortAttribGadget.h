@@ -3,7 +3,7 @@
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "hoNDMetaAttributes.h"
+#include "ismrmrd_meta.h"
 #include "gadgetron_mricore_export.h"
 
 #include <ismrmrd.h>
@@ -21,7 +21,7 @@ namespace Gadgetron
     *
     */
 
-    class EXPORTGADGETSMRICORE FloatToUShortAttribGadget:public Gadget3<ISMRMRD::ImageHeader, hoNDArray< float >, GtImageAttribType >
+    class EXPORTGADGETSMRICORE FloatToUShortAttribGadget:public Gadget3<ISMRMRD::ImageHeader, hoNDArray< float >, ISMRMRD::MetaContainer >
     {
     public:
 
@@ -36,7 +36,7 @@ namespace Gadgetron
         ACE_UINT16 intensity_offset_value_;
 
         virtual int process_config(ACE_Message_Block* mb);
-        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< float > >* m2, GadgetContainerMessage<GtImageAttribType>* m3);
+        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< float > >* m2, GadgetContainerMessage<ISMRMRD::MetaContainer>* m3);
     };
 }
 

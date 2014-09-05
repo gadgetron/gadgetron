@@ -8,7 +8,7 @@
 
 #include "GadgetMessageInterface.h"
 #include "GadgetMRIHeaders.h"
-#include "hoNDMetaAttributes.h"
+#include "ismrmrd_meta.h"
 #include "gadgetron_mricore_export.h"
 
 #include <ismrmrd.h>

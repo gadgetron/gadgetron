@@ -107,7 +107,6 @@ protected:
     size_t computeSeriesImageNumber (ISMRMRD::ImageHeader& imheader, size_t nCHA, size_t cha, size_t nE2, size_t e2);
 
     /// send out the images as a Gadget3 message
-    /// ISMRMRD::ImageHeader, hoNDArray< std::complex<float> >, GtImageAttribType
     /// windowCenter and windowWidth is for every SLC
     virtual bool sendOutImages(ImageBufferType& images, int seriesNum, const std::vector<std::string>& processStr, const std::vector<std::string>& dataRole, const std::vector<float>& windowCenter=std::vector<float>(), const std::vector<float>& windowWidth=std::vector<float>());
 

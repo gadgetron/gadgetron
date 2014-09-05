@@ -10,7 +10,7 @@
 #include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
 #include "GadgetStreamController.h"
-#include "hoNDMetaAttributes.h"
+#include "ismrmrd_meta.h"
 #include "gadgetron_mricore_export.h"
 
 #include <ismrmrd.h>
@@ -18,10 +18,10 @@
 
 namespace Gadgetron{
 
-    template <typename T> class EXPORTGADGETSMRICORE ImageFinishAttribGadget : public Gadget3<ISMRMRD::ImageHeader, hoNDArray< T >, GtImageAttribType >
+    template <typename T> class EXPORTGADGETSMRICORE ImageFinishAttribGadget : public Gadget3<ISMRMRD::ImageHeader, hoNDArray< T >, ISMRMRD::MetaContainer >
     {
     protected:
-        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< T > >* m2, GadgetContainerMessage<GtImageAttribType>* m3);
+        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< T > >* m2, GadgetContainerMessage<ISMRMRD::MetaContainer>* m3);
     };
 
     class EXPORTGADGETSMRICORE ImageFinishAttribGadgetUSHORT :

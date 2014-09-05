@@ -17,7 +17,7 @@ namespace Gadgetron
     {
     }
 
-    int ComplexToFloatAttribGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< ValueType > >* m2, GadgetContainerMessage<GtImageAttribType>* m3)
+    int ComplexToFloatAttribGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< ValueType > >* m2, GadgetContainerMessage<ISMRMRD::MetaContainer>* m3)
     {
         GadgetContainerMessage<hoNDArray< float > > *cm2 = new GadgetContainerMessage<hoNDArray< float > >();
 

@@ -556,7 +556,7 @@ int DicomFinishAttribGadget<T>::process_config(ACE_Message_Block* mb)
 }
 
 template <typename T>
-int DicomFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< T > >* m2, GadgetContainerMessage<GtImageAttribType>* m3)
+int DicomFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< T > >* m2, GadgetContainerMessage<ISMRMRD::MetaContainer>* m3)
 {
     if (!this->controller_) {
         ACE_DEBUG( (LM_DEBUG,
@@ -566,28 +566,41 @@ int DicomFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHea
 
     // --------------------------------------------------
 
+    ISMRMRD::MetaContainer* img_attrib = m3->getObjectPtr();
+
     // image data role
+    size_t n;
+
+    size_t num = img_attrib->length(GTPLUS_DATA_ROLE);
+
     std::vector<std::string> dataRole;
-    if ( !m3->getObjectPtr()->attributeString_.get(GTPLUS_DATA_ROLE, dataRole) )
+    if ( num == 0 )
     {
         dataRole.push_back("Image");
     }
+    else
+    {
+        dataRole.resize(num);
+        for ( n=0; n<num; n++ )
+        {
+            dataRole[n] = std::string( img_attrib->as_str(GTPLUS_DATA_ROLE, n) );
+        }
+    }
 
-    long long imageNumber;
-    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_IMAGENUMBER, 0, imageNumber);
+    long imageNumber = img_attrib->as_long(GTPLUS_IMAGENUMBER, 0);
 
-    long long cha, slc, e2, con, phs, rep, set;
-    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_CHA,        0, cha);
-    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_SLC,        0, slc);
-    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_E2,         0, e2);
-    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_CONTRAST,   0, con);
-    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_PHASE,      0, phs);
-    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_REP,        0, rep);
-    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_SET,        0, set);
+    long cha, slc, e2, con, phs, rep, set, ave;
+    cha = img_attrib->as_long(GTPLUS_CHA,        0);
+    slc = img_attrib->as_long(GTPLUS_SLC,        0);
+    e2  = img_attrib->as_long(GTPLUS_E2,         0);
+    con = img_attrib->as_long(GTPLUS_CONTRAST,   0);
+    phs = img_attrib->as_long(GTPLUS_PHASE,      0);
+    rep = img_attrib->as_long(GTPLUS_REP,        0);
+    set = img_attrib->as_long(GTPLUS_SET,        0);
+    ave = img_attrib->as_long(GTPLUS_AVERAGE,    0);
 
     std::ostringstream ostr;
 
-    size_t n;
     for ( n=0; n<dataRole.size(); n++ )
     {
         ostr << dataRole[n] << "_";
@@ -598,14 +611,15 @@ int DicomFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHea
          << "CON" << con << "_"
          << "PHS" << phs << "_"
          << "REP" << rep << "_"
-         << "SET" << set << std::ends;
+         << "SET" << set << "_"
+         << "AVE" << ave << std::ends;
 
     std::string filename = ostr.str();
 
     GadgetContainerMessage<std::string>* mfilename = new GadgetContainerMessage<std::string>();
     *(mfilename->getObjectPtr()) = filename;
 
-    //typedef GtImageAttribType::size_t_type size_t_type;
+    //typedef ISMRMRD::MetaContainer::size_t_type size_t_type;
     //char* meta_buf = NULL;
     //size_t_type len(0);
     //{

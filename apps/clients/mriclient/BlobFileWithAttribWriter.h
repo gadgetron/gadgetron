@@ -10,7 +10,7 @@
 #include <iomanip>
 
 #include "GadgetMessageInterface.h"
-#include "hoNDMetaAttributes.h"
+#include "ismrmrd_meta.h"
 
 namespace Gadgetron
 {

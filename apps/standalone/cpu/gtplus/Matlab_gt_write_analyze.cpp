@@ -42,8 +42,9 @@ static void usage()
     outs << "0 Output para" << endl;
     outs << "==============================================================================================" << endl;
     outs << std::ends; 
-    
-    mexPrintf("%s\n", outs.str() );
+
+    std::string msg = outs.str();
+    mexPrintf("%s\n", msg.c_str() );
 }
 
 void mexFunction(int nlhs,mxArray *plhs[],int nrhs,const mxArray *prhs[])

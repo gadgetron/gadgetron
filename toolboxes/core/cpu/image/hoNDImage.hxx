@@ -271,7 +271,7 @@ namespace Gadgetron
     hoNDImage<T, D>::hoNDImage(const hoNDArray<T>& a) : data_(0), elements_(0), delete_data_on_destruct_(true)
     {
          boost::shared_ptr< std::vector<size_t> > dim = a.get_dimensions();
-         this->create(&dim);
+         this->create(*dim);
          memcpy(this->data_, a.begin(), this->get_number_of_bytes());
     }
 
@@ -385,7 +385,7 @@ namespace Gadgetron
         image_orientation_patient_[1][0] = 0; image_orientation_patient_[1][1] = 1; image_orientation_patient_[1][2] = 0;
         image_orientation_patient_[2][0] = 0; image_orientation_patient_[2][1] = 0; image_orientation_patient_[2][2] = 1;
 
-        this->attrib_.clear();
+        this->attrib_ = ISMRMRD::MetaContainer();
     }
 
     template <typename T, unsigned int D> 
@@ -2991,7 +2991,17 @@ namespace Gadgetron
             GADGET_CHECK_THROW(this->serializeImage(bufImage, lenImage));
 
             unsigned long long lenAttrib(0);
-            GADGET_CHECK_THROW(attrib_.serialize(bufAttrib, lenAttrib));
+
+            std::stringstream str;
+            ISMRMRD::serialize( const_cast<ISMRMRD::MetaContainer&>(attrib_), str);
+            std::string attribContent = str.str();
+            lenAttrib = attribContent.length()+1;
+
+            bufAttrib = new char[lenAttrib];
+            GADGET_CHECK_THROW(bufAttrib != NULL);
+
+            memset(bufAttrib, '\0', sizeof(char)*lenAttrib);
+            memcpy(bufAttrib, attribContent.c_str(), lenAttrib-1);
 
             len = sizeof(unsigned long long) + lenImage + sizeof(unsigned long long) + lenAttrib;
 
@@ -3050,7 +3060,7 @@ namespace Gadgetron
             memcpy(&lenAttrib, buf+offset, sizeof(size_t));
             offset += sizeof(size_t);
 
-            GADGET_CHECK_RETURN_FALSE(attrib_.deserialize(buf+offset, lenAttrib));
+            ISMRMRD::deserialize(buf+offset, attrib_);
             offset += lenAttrib;
         }
         catch(...)
@@ -3116,7 +3126,7 @@ namespace Gadgetron
         }
         os << endl << ends;
 
-        this->attrib_.print(os);
+        ISMRMRD::serialize( const_cast<ISMRMRD::MetaContainer&>(this->attrib_), os);
     }
 
     template <typename T, unsigned int D> 

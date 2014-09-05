@@ -22,7 +22,6 @@ add_library(gadgetron_epi SHARED
   EPICorrGadget.h EPICorrGadget.cpp
   FFTXGadget.h FFTXGadget.cpp
   CutXGadget.h CutXGadget.cpp
-  ${ISMRMRD_XSD_SOURCE}
   epi.xml
   epi_gtplus_grappa.xml
 )

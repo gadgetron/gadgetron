@@ -10,7 +10,7 @@ namespace Gadgetron{
 template <typename T>
 int MRIImageAttribWriter<T>::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
 {
-    typedef typename GtImageAttribType::size_t_type size_t_type;
+    typedef unsigned long long size_t_type;
 
     GadgetContainerMessage<ISMRMRD::ImageHeader>* imagemb =
             AsContainerMessage<ISMRMRD::ImageHeader>(mb);
@@ -30,8 +30,8 @@ int MRIImageAttribWriter<T>::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
         return -1;
     }
 
-    GadgetContainerMessage<GtImageAttribType>* attribmb =
-            AsContainerMessage<GtImageAttribType>(datamb->cont());
+    GadgetContainerMessage<ISMRMRD::MetaContainer>* attribmb =
+            AsContainerMessage<ISMRMRD::MetaContainer>(datamb->cont());
 
     if (!attribmb)
     {
@@ -96,10 +96,30 @@ int MRIImageAttribWriter<T>::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
     char* buf = NULL;
     size_t_type len(0);
 
-    if ( !attribmb->getObjectPtr()->serialize(buf, len) )
+    try
+    {
+        std::stringstream str;
+        ISMRMRD::serialize( *attribmb->getObjectPtr(), str);
+        std::string attribContent = str.str();
+        len = attribContent.length()+1;
+
+        buf = new char[len];
+        GADGET_CHECK_THROW(buf != NULL);
+
+        memset(buf, '\0', sizeof(char)*len);
+        memcpy(buf, attribContent.c_str(), len-1);
+    }
+    catch(...)
     {
         ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to serialize image meta attributes \n")));
 
+        return -1;
+    }
+
+    if ( (send_cnt = sock->send_n (&len, sizeof(size_t_type))) <= 0 )
+    {
+        ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to send image meta attributes length \n")));
+        if ( buf != NULL ) delete [] buf;
         return -1;
     }
 

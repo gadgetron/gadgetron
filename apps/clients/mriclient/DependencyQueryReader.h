@@ -10,7 +10,7 @@
 #include <iomanip>
 
 #include "GadgetMessageInterface.h"
-#include "hoNDMetaAttributes.h"
+#include "ismrmrd_meta.h"
 
 namespace Gadgetron
 {
@@ -59,7 +59,7 @@ class DependencyQueryReader : public GadgetMessageReader
                 return 0;
             }
 
-            if ( ( recv_count = socket->recv_n( buf+sizeof(size_t_type), len-sizeof(size_t_type)) ) <= 0 )
+            if ( ( recv_count = socket->recv_n( buf, len) ) <= 0 )
             {
                 ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, DependencyQueryReader, failed to read query results\n")) );
                 delete [] buf;
@@ -71,7 +71,7 @@ class DependencyQueryReader : public GadgetMessageReader
 
             if (outfile.good())
             {
-                outfile.write(buf+sizeof(size_t_type), len-sizeof(size_t_type));
+                outfile.write(buf, len);
                 outfile.close();
                 number_of_calls_++;
             }

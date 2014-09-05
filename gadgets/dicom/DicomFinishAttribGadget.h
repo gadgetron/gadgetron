@@ -12,7 +12,7 @@
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "hoNDMetaAttributes.h"
+#include "ismrmrd_meta.h"
 #include "GadgetMRIHeaders.h"
 #include "ismrmrd.h"
 #include "GadgetStreamController.h"
@@ -33,11 +33,11 @@ namespace Gadgetron
 {
 
 template <typename T>
-class EXPORTGADGETSDICOM DicomFinishAttribGadget : public Gadget3<ISMRMRD::ImageHeader, hoNDArray< T >, GtImageAttribType >
+class EXPORTGADGETSDICOM DicomFinishAttribGadget : public Gadget3<ISMRMRD::ImageHeader, hoNDArray< T >, ISMRMRD::MetaContainer >
 {
     public:
 
-        typedef Gadget3<ISMRMRD::ImageHeader, hoNDArray< T >, GtImageAttribType > BaseClass;
+        typedef Gadget3<ISMRMRD::ImageHeader, hoNDArray< T >, ISMRMRD::MetaContainer > BaseClass;
 
         DicomFinishAttribGadget<T>()
             : BaseClass()
@@ -48,7 +48,7 @@ class EXPORTGADGETSDICOM DicomFinishAttribGadget : public Gadget3<ISMRMRD::Image
     protected:
 
         virtual int process_config(ACE_Message_Block * mb);
-        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< T > >* m2, GadgetContainerMessage<GtImageAttribType>* m3);
+        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< T > >* m2, GadgetContainerMessage<ISMRMRD::MetaContainer>* m3);
 
     private:
         DcmFileFormat dcmFile;

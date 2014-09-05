@@ -87,7 +87,7 @@
         <!-- debug and info mode -->
         <property>
             <name>verboseMode</name>
-            <value>true</value>
+            <value>false</value>
         </property>
 
         <!-- No acceleration mode -->
@@ -195,7 +195,7 @@
         <!-- coil compression -->
         <property>
             <name>same_coil_compression_coeff_allS</name>
-            <value>true</value>
+            <value>false</value>
         </property>
 
         <property>
@@ -477,7 +477,7 @@
 
         <property>
             <name>CloudNode0_XMLConfiguration</name>
-            <value>GadgetronProgram_gtPlus_2DT_Cartesian_CloudNode.xml</value>
+            <value>GtProg_2DT_Cartesian_CloudNode.xml</value>
         </property>
 
         <property>

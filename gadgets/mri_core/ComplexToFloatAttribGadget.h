@@ -8,14 +8,14 @@
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "hoNDMetaAttributes.h"
+#include "ismrmrd_meta.h"
 #include "gadgetron_mricore_export.h"
 
 #include <ismrmrd.h>
 
 namespace Gadgetron
 {
-    class EXPORTGADGETSMRICORE ComplexToFloatAttribGadget:public Gadget3<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> >, GtImageAttribType >
+    class EXPORTGADGETSMRICORE ComplexToFloatAttribGadget:public Gadget3<ISMRMRD::ImageHeader, hoNDArray< std::complex<float> >, ISMRMRD::MetaContainer >
     {
     public:
 
@@ -27,7 +27,7 @@ namespace Gadgetron
         virtual ~ComplexToFloatAttribGadget();
 
     protected:
-        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< ValueType > >* m2, GadgetContainerMessage<GtImageAttribType>* m3);
+        virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< ValueType > >* m2, GadgetContainerMessage<ISMRMRD::MetaContainer>* m3);
     };
 }
 

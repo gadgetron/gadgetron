@@ -375,4 +375,210 @@ namespace Gadgetron
         return true;
     }
 
+    bool getISMRMRMetaValues(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<long>& v)
+    {
+        try
+        {
+            size_t num = attrib.length(name.c_str());
+            if ( num == 0 )
+            {
+                v.clear();
+                GADGET_WARN_MSG("getISMRMRMetaValues, can not find field : " << name);
+                return true;
+            }
+
+            v.resize(num);
+
+            size_t ii;
+            for ( ii=0; ii<num; ii++ )
+            {
+                v[ii] = attrib.as_long(name.c_str(), ii);
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in getISMRMRMetaValues(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<long>& v) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool getISMRMRMetaValues(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<double>& v)
+    {
+        try
+        {
+            size_t num = attrib.length(name.c_str());
+            if ( num == 0 )
+            {
+                v.clear();
+                GADGET_WARN_MSG("getISMRMRMetaValues, can not find field : " << name);
+                return true;
+            }
+
+            v.resize(num);
+
+            size_t ii;
+            for ( ii=0; ii<num; ii++ )
+            {
+                v[ii] = attrib.as_double(name.c_str(), ii);
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in getISMRMRMetaValues(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<double>& v) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    bool getISMRMRMetaValues(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<std::string>& v)
+    {
+        try
+        {
+            size_t num = attrib.length(name.c_str());
+            if ( num == 0 )
+            {
+                v.clear();
+                GADGET_WARN_MSG("getISMRMRMetaValues, can not find field : " << name);
+                return true;
+            }
+
+            v.resize(num);
+
+            size_t ii;
+            for ( ii=0; ii<num; ii++ )
+            {
+                v[ii] = std::string( attrib.as_str(name.c_str(), ii) );
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in getISMRMRMetaValues(const ISMRMRD::MetaContainer& attrib, const std::string& name, std::vector<std::string>& v) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template <typename T>
+    bool setISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v)
+    {
+        try
+        {
+            size_t num = v.size();
+            if ( num == 0 )
+            {
+                GADGET_WARN_MSG("setISMRMRMetaValues, input vector is empty ... " << name);
+                return true;
+            }
+
+            attrib.set(name.c_str(), v[0]);
+
+            size_t ii;
+            for ( ii=1; ii<v.size(); ii++ )
+            {
+                attrib.append(name.c_str(), v[ii]);
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in setISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTGTPLUSGADGET bool setISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<long>& v);
+    template EXPORTGTPLUSGADGET bool setISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<double>& v);
+
+    bool setISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v)
+    {
+        try
+        {
+            size_t num = v.size();
+            if ( num == 0 )
+            {
+                GADGET_WARN_MSG("setISMRMRMetaValues, input vector is empty ... " << name);
+                return true;
+            }
+
+            attrib.set(name.c_str(), v[0].c_str());
+
+            size_t ii;
+            for ( ii=1; ii<v.size(); ii++ )
+            {
+                attrib.append(name.c_str(), v[ii].c_str());
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in setISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template <typename T>
+    bool appendISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v)
+    {
+        try
+        {
+            size_t num = v.size();
+            if ( num == 0 )
+            {
+                GADGET_WARN_MSG("appendISMRMRMetaValues, input vector is empty ... " << name);
+                return true;
+            }
+
+            attrib.append(name.c_str(), v[0]);
+
+            size_t ii;
+            for ( ii=1; ii<v.size(); ii++ )
+            {
+                attrib.append(name.c_str(), v[ii]);
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in appendISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<T>& v) ... ");
+            return false;
+        }
+
+        return true;
+    }
+
+    template EXPORTGTPLUSGADGET bool appendISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<long>& v);
+    template EXPORTGTPLUSGADGET bool appendISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<double>& v);
+
+    bool appendISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v)
+    {
+        try
+        {
+            size_t num = v.size();
+            if ( num == 0 )
+            {
+                GADGET_WARN_MSG("appendISMRMRMetaValues, input vector is empty ... " << name);
+                return true;
+            }
+
+            attrib.append(name.c_str(), v[0].c_str());
+
+            size_t ii;
+            for ( ii=1; ii<v.size(); ii++ )
+            {
+                attrib.append(name.c_str(), v[ii].c_str());
+            }
+        }
+        catch(...)
+        {
+            GADGET_ERROR_MSG("Error happened in appendISMRMRMetaValues(ISMRMRD::MetaContainer& attrib, const std::string& name, const std::vector<std::string>& v) ... ");
+            return false;
+        }
+
+        return true;
+    }
 }

@@ -30,7 +30,7 @@ namespace Gadgetron
         return GADGET_OK;
     }
 
-    int FloatToUShortAttribGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< float > >* m2, GadgetContainerMessage<GtImageAttribType>* m3)
+    int FloatToUShortAttribGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< float > >* m2, GadgetContainerMessage<ISMRMRD::MetaContainer>* m3)
     {
         GadgetContainerMessage<hoNDArray< ACE_UINT16 > > *cm2 =
             new GadgetContainerMessage<hoNDArray< ACE_UINT16 > >();
@@ -77,11 +77,11 @@ namespace Gadgetron
                     dst[i] = static_cast<unsigned short>(pix_val+0.5);
                 }
 
-                if ( m3->getObjectPtr()->attributeInteger_.exist(GTPLUS_IMAGE_WINDOWCENTER) )
+                if ( m3->getObjectPtr()->length(GTPLUS_IMAGE_WINDOWCENTER) > 0 )
                 {
-                    long long windowCenter;
-                    m3->getObjectPtr()->attributeInteger_.get(GTPLUS_IMAGE_WINDOWCENTER, 0, windowCenter);
-                    m3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWCENTER, 0, windowCenter+intensity_offset_value_);
+                    long windowCenter;
+                    windowCenter = m3->getObjectPtr()->as_long(GTPLUS_IMAGE_WINDOWCENTER, 0);
+                    m3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWCENTER, windowCenter+(long)intensity_offset_value_);
                 }
             }
             break;

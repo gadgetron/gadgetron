@@ -50,7 +50,7 @@ namespace Gadgetron
                 return 0;
             }
 
-            GadgetContainerMessage<GtImageAttribType> * img_attrib_mb = dynamic_cast<GadgetContainerMessage<GtImageAttribType> *>(img_data_mb->cont());
+            GadgetContainerMessage<ISMRMRD::MetaContainer> * img_attrib_mb = dynamic_cast<GadgetContainerMessage<ISMRMRD::MetaContainer> *>(img_data_mb->cont());
 
             if (!img_head_mb)
             {
@@ -69,7 +69,7 @@ namespace Gadgetron
             return mb;
         }
 
-        virtual int process_image(ISMRMRD::ImageHeader* img_head, hoNDArray< T >* data, GtImageAttribType* img_attrib)
+        virtual int process_image(ISMRMRD::ImageHeader* img_head, hoNDArray< T >* data, ISMRMRD::MetaContainer* img_attrib)
         {
             ACE_DEBUG( (LM_DEBUG, ACE_TEXT("ImageAttrib Writer writing image\n")) );
 
@@ -125,7 +125,21 @@ namespace Gadgetron
             {
                 char* buf = NULL;
                 size_t_type len;
-                if ( !img_attrib->serialize(buf, len) )
+
+                try
+                {
+                    std::stringstream str;
+                    ISMRMRD::serialize( *img_attrib, str);
+                    std::string attribContent = str.str();
+                    len = attribContent.length()+1;
+
+                    buf = new char[len];
+                    GADGET_CHECK_THROW(buf != NULL);
+
+                    memset(buf, '\0', sizeof(char)*len);
+                    memcpy(buf, attribContent.c_str(), len-1);
+                }
+                catch(...)
                 {
                     GADGET_DEBUG1("Image meta attributes serialization failed\n");
                     return GADGET_FAIL;
@@ -175,27 +189,39 @@ namespace Gadgetron
             GADGET_EXPORT_ARRAY(dst_folder_, gtplus_exporter_, *data, filename);
         }
 
-        virtual int process_image(ISMRMRD::ImageHeader* img_head, hoNDArray< T >* data, GtImageAttribType* img_attrib)
+        virtual int process_image(ISMRMRD::ImageHeader* img_head, hoNDArray< T >* data, ISMRMRD::MetaContainer* img_attrib)
         {
             // image data role
             std::vector<std::string> dataRole;
-            if ( !img_attrib->attributeString_.get(GTPLUS_DATA_ROLE, dataRole) )
+
+            size_t n;
+
+            size_t num = img_attrib->length(GTPLUS_DATA_ROLE);
+
+            if ( num == 0 )
             {
                 dataRole.push_back("Image");
             }
+            else
+            {
+                dataRole.resize(num);
+                for ( n=0; n<num; n++ )
+                {
+                    dataRole[n] = std::string( img_attrib->as_str(GTPLUS_DATA_ROLE, n) );
+                }
+            }
 
-            long long imageNumber;
-            img_attrib->attributeInteger_.get(GTPLUS_IMAGENUMBER, 0, imageNumber);
+            long imageNumber = img_attrib->as_long(GTPLUS_IMAGENUMBER, 0);
 
-            long long cha, slc, e2, con, phs, rep, set, ave;
-            img_attrib->attributeInteger_.get(GTPLUS_CHA,        0, cha);
-            img_attrib->attributeInteger_.get(GTPLUS_SLC,        0, slc);
-            img_attrib->attributeInteger_.get(GTPLUS_E2,         0, e2);
-            img_attrib->attributeInteger_.get(GTPLUS_CONTRAST,   0, con);
-            img_attrib->attributeInteger_.get(GTPLUS_PHASE,      0, phs);
-            img_attrib->attributeInteger_.get(GTPLUS_REP,        0, rep);
-            img_attrib->attributeInteger_.get(GTPLUS_SET,        0, set);
-            img_attrib->attributeInteger_.get(GTPLUS_AVERAGE,    0, ave);
+            long cha, slc, e2, con, phs, rep, set, ave;
+            cha = img_attrib->as_long(GTPLUS_CHA,        0);
+            slc = img_attrib->as_long(GTPLUS_SLC,        0);
+            e2  = img_attrib->as_long(GTPLUS_E2,         0);
+            con = img_attrib->as_long(GTPLUS_CONTRAST,   0);
+            phs = img_attrib->as_long(GTPLUS_PHASE,      0);
+            rep = img_attrib->as_long(GTPLUS_REP,        0);
+            set = img_attrib->as_long(GTPLUS_SET,        0);
+            ave = img_attrib->as_long(GTPLUS_AVERAGE,    0);
 
             std::ostringstream ostr;
 
@@ -204,7 +230,6 @@ namespace Gadgetron
                 ostr << prefix_ << "_";
             }
 
-            size_t n;
             for ( n=0; n<dataRole.size(); n++ )
             {
                 ostr << dataRole[n] << "_";
@@ -238,7 +263,21 @@ namespace Gadgetron
             {
                 char* buf = NULL;
                 size_t_type len;
-                if ( !img_attrib->serialize(buf, len) )
+
+                try
+                {
+                    std::stringstream str;
+                    ISMRMRD::serialize( *img_attrib, str);
+                    std::string attribContent = str.str();
+                    len = attribContent.length()+1;
+
+                    buf = new char[len];
+                    GADGET_CHECK_THROW(buf != NULL);
+
+                    memset(buf, '\0', sizeof(char)*len);
+                    memcpy(buf, attribContent.c_str(), len-1);
+                }
+                catch(...)
                 {
                     GADGET_DEBUG1("Image meta attributes serialization failed\n");
                     return GADGET_FAIL;

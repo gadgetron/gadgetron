@@ -770,6 +770,8 @@ namespace Gadgetron
         //    acceFactorE1_ = 2;
         //}
 
+        CalibMode_ = Gadgetron::gtPlus::ISMRMRD_noacceleration;
+
         if ( interleaved )
         {
             CalibMode_ = Gadgetron::gtPlus::ISMRMRD_interleaved;
@@ -809,6 +811,7 @@ namespace Gadgetron
             CalibMode_ = Gadgetron::gtPlus::ISMRMRD_other;
         }
 
+        // ---------------------------------------------------------------------------------------------------------
         // generate the destination folder
         if ( !debugFolder_.empty() )
         {
@@ -828,6 +831,7 @@ namespace Gadgetron
             GADGET_MSG("GtPlusRecon, debugFolder2 is not set ...");
         }
 
+        // ---------------------------------------------------------------------------------------------------------
         // set the maximal number of threads used
         if ( thread_number_ratio_>0 && thread_number_ratio_<1 )
         {
@@ -1366,7 +1370,8 @@ namespace Gadgetron
                                             hoNDArray<ValueType> currIm(dim2D, const_cast<ValueType*>(res.begin()+res.calculate_offset(ind)) );
 
                                             Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = new Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>();
-                                            Gadgetron::GadgetContainerMessage<GtImageAttribType>* cm3 = new Gadgetron::GadgetContainerMessage<GtImageAttribType>();
+
+                                            Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>* cm3 = new Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>();
 
                                             *(cm1->getObjectPtr()) = imageHeaderSent;
 
@@ -1380,52 +1385,52 @@ namespace Gadgetron
 
                                             // ----------------------------------------------------------
                                             // set the image attributes
-                                            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGENUMBER, cm1->getObjectPtr()->image_index);
+                                            cm3->getObjectPtr()->set(GTPLUS_IMAGENUMBER, (long)cm1->getObjectPtr()->image_index);
 
-                                            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_CHA,        cha);
-                                            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_SLC,        cm1->getObjectPtr()->slice);
-                                            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_E2,         e2);
-                                            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_CONTRAST,   cm1->getObjectPtr()->contrast);
-                                            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_PHASE,      cm1->getObjectPtr()->phase);
-                                            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_REP,        cm1->getObjectPtr()->repetition);
-                                            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_SET,        cm1->getObjectPtr()->set);
-                                            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_AVERAGE,    cm1->getObjectPtr()->average);
+                                            cm3->getObjectPtr()->set(GTPLUS_CHA,        (long)cha);
+                                            cm3->getObjectPtr()->set(GTPLUS_SLC,        (long)cm1->getObjectPtr()->slice);
+                                            cm3->getObjectPtr()->set(GTPLUS_E2,         (long)e2);
+                                            cm3->getObjectPtr()->set(GTPLUS_CONTRAST,   (long)cm1->getObjectPtr()->contrast);
+                                            cm3->getObjectPtr()->set(GTPLUS_PHASE,      (long)cm1->getObjectPtr()->phase);
+                                            cm3->getObjectPtr()->set(GTPLUS_REP,        (long)cm1->getObjectPtr()->repetition);
+                                            cm3->getObjectPtr()->set(GTPLUS_SET,        (long)cm1->getObjectPtr()->set);
+                                            cm3->getObjectPtr()->set(GTPLUS_AVERAGE,    (long)cm1->getObjectPtr()->average);
 
-                                            cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGEPROCESSINGHISTORY, "GT");
+                                            cm3->getObjectPtr()->set(GTPLUS_IMAGEPROCESSINGHISTORY, "GT");
 
                                             if ( dataRole == GTPLUS_IMAGE_REGULAR )
                                             {
                                                 cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
 
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, "GT");
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, imageInfo);
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, "GT");
+                                                cm3->getObjectPtr()->append(GTPLUS_IMAGECOMMENT, imageInfo.c_str());
 
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "_GT");
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_REGULAR);
-                                                cm3->getObjectPtr()->attributeFloat_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_));
+                                                cm3->getObjectPtr()->append(GTPLUS_SEQUENCEDESCRIPTION, "_GT");
+                                                cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_REGULAR);
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_));
                                             }
                                             else if ( dataRole == GTPLUS_IMAGE_RETRO )
                                             {
                                                 cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
 
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, "GT");
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, "RETRO");
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, imageInfo);
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, "GT");
+                                                cm3->getObjectPtr()->append(GTPLUS_IMAGECOMMENT, "RETRO");
+                                                cm3->getObjectPtr()->append(GTPLUS_IMAGECOMMENT, imageInfo.c_str());
 
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGEPROCESSINGHISTORY, "RETRO");
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGEPROCESSINGHISTORY, "RETRO");
 
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "_GT_RETRO");
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_RETRO);
-                                                cm3->getObjectPtr()->attributeFloat_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_));
+                                                cm3->getObjectPtr()->set(GTPLUS_SEQUENCEDESCRIPTION, "_GT_RETRO");
+                                                cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_RETRO);
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_));
                                             }
                                             else if ( dataRole == GTPLUS_IMAGE_PHASE )
                                             {
                                                 cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_PHASE;
 
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, "PHS_GT");
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "PHS_GT");
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_PHASE);
-                                                cm3->getObjectPtr()->attributeFloat_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_));
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, "PHS_GT");
+                                                cm3->getObjectPtr()->set(GTPLUS_SEQUENCEDESCRIPTION, "PHS_GT");
+                                                cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_PHASE);
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_));
                                             }
                                             else if ( dataRole == GTPLUS_IMAGE_GFACTOR )
                                             {
@@ -1435,10 +1440,10 @@ namespace Gadgetron
                                                 comment.append("_");
                                                 comment.append("gfactor_GT");
 
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, comment);
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "_gfactor_GT");
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_GFACTOR);
-                                                cm3->getObjectPtr()->attributeFloat_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_gfactor_));
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, comment.c_str());
+                                                cm3->getObjectPtr()->set(GTPLUS_SEQUENCEDESCRIPTION, "_gfactor_GT");
+                                                cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_GFACTOR);
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_gfactor_));
                                             }
                                             else if ( dataRole == GTPLUS_IMAGE_WRAPAROUNDMAP )
                                             {
@@ -1448,10 +1453,10 @@ namespace Gadgetron
                                                 comment.append("_");
                                                 comment.append("WrapAround_Map_GT");
 
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, comment);
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "_WrapAround_Map_GT");
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_WRAPAROUNDMAP);
-                                                cm3->getObjectPtr()->attributeFloat_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_wrap_around_map_));
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, comment.c_str());
+                                                cm3->getObjectPtr()->set(GTPLUS_SEQUENCEDESCRIPTION, "_WrapAround_Map_GT");
+                                                cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_WRAPAROUNDMAP);
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_wrap_around_map_));
                                             }
                                             else if ( dataRole == GTPLUS_IMAGE_SNR_MAP )
                                             {
@@ -1461,10 +1466,10 @@ namespace Gadgetron
                                                 comment.append("_");
                                                 comment.append("SNR_Map_GT");
 
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, comment);
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "_SNR_Map_GT");
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_SNR_MAP);
-                                                cm3->getObjectPtr()->attributeFloat_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_snr_image_));
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, comment.c_str());
+                                                cm3->getObjectPtr()->set(GTPLUS_SEQUENCEDESCRIPTION, "_SNR_Map_GT");
+                                                cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_SNR_MAP);
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_snr_image_));
                                             }
                                             else if ( dataRole == GTPLUS_IMAGE_STD_MAP )
                                             {
@@ -1474,22 +1479,22 @@ namespace Gadgetron
                                                 comment.append("_");
                                                 comment.append("Std_Map_GT");
 
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, comment);
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "_Std_Map_GT");
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_STD_MAP);
-                                                cm3->getObjectPtr()->attributeFloat_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_std_map_));
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, comment.c_str());
+                                                cm3->getObjectPtr()->set(GTPLUS_SEQUENCEDESCRIPTION, "_Std_Map_GT");
+                                                cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_STD_MAP);
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_std_map_));
 
-                                                cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWCENTER, (long long)(this->scalingFactor_std_map_));
-                                                cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWWIDTH, (long long)(2*this->scalingFactor_std_map_));
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWCENTER, (long)(this->scalingFactor_std_map_));
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWWIDTH, (long)(2*this->scalingFactor_std_map_));
                                             }
                                             else if ( dataRole == GTPLUS_IMAGE_OTHER )
                                             {
                                                 cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;
 
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, "GT");
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "_GT");
-                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_OTHER);
-                                                cm3->getObjectPtr()->attributeFloat_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_));
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, "GT");
+                                                cm3->getObjectPtr()->set(GTPLUS_SEQUENCEDESCRIPTION, "_GT");
+                                                cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_OTHER);
+                                                cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_));
                                             }
 
                                             // ----------------------------------------------------------
@@ -1591,7 +1596,7 @@ namespace Gadgetron
         try
         {
             Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = new Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>();
-            Gadgetron::GadgetContainerMessage<GtImageAttribType>* cm3 = new Gadgetron::GadgetContainerMessage<GtImageAttribType>();
+            Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>* cm3 = new Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>();
 
             *(cm1->getObjectPtr()) = images->imageArray_[0];
 
@@ -1612,21 +1617,21 @@ namespace Gadgetron
             img_dims[1] = res.get_size(1);
 
             // set the image attributes
-            cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, "GT");
-            cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "_GT");
-            cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGEPROCESSINGHISTORY, "GT");
-            cm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_REGULAR);
+            cm3->getObjectPtr()->set(GTPLUS_IMAGECOMMENT, "GT");
+            cm3->getObjectPtr()->set(GTPLUS_SEQUENCEDESCRIPTION, "_GT");
+            cm3->getObjectPtr()->set(GTPLUS_IMAGEPROCESSINGHISTORY, "GT");
+            cm3->getObjectPtr()->set(GTPLUS_DATA_ROLE, GTPLUS_IMAGE_REGULAR);
 
-            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_CHA,        0);
-            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_SLC,        cm1->getObjectPtr()->slice);
-            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_E2,         0);
-            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_CONTRAST,   cm1->getObjectPtr()->contrast);
-            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_PHASE,      cm1->getObjectPtr()->phase);
-            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_REP,        cm1->getObjectPtr()->repetition);
-            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_SET,        cm1->getObjectPtr()->set);
-            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_AVERAGE,    cm1->getObjectPtr()->average);
+            cm3->getObjectPtr()->set(GTPLUS_CHA,        (long)0);
+            cm3->getObjectPtr()->set(GTPLUS_SLC,        (long)cm1->getObjectPtr()->slice);
+            cm3->getObjectPtr()->set(GTPLUS_E2,         (long)0);
+            cm3->getObjectPtr()->set(GTPLUS_CONTRAST,   (long)cm1->getObjectPtr()->contrast);
+            cm3->getObjectPtr()->set(GTPLUS_PHASE,      (long)cm1->getObjectPtr()->phase);
+            cm3->getObjectPtr()->set(GTPLUS_REP,        (long)cm1->getObjectPtr()->repetition);
+            cm3->getObjectPtr()->set(GTPLUS_SET,        (long)cm1->getObjectPtr()->set);
+            cm3->getObjectPtr()->set(GTPLUS_AVERAGE,    (long)cm1->getObjectPtr()->average);
 
-            cm3->getObjectPtr()->attributeFloat_.set(GTPLUS_IMAGE_SCALE_RATIO, (float)(this->scalingFactor_));
+            cm3->getObjectPtr()->set(GTPLUS_IMAGE_SCALE_RATIO, (double)(this->scalingFactor_));
 
             //Fixing array dimensions (MSH)
             cm1->getObjectPtr()->matrix_size[0] = (uint16_t)res.get_size(0);

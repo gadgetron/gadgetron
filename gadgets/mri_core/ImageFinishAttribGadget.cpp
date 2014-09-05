@@ -4,7 +4,7 @@
 namespace Gadgetron
 {
     template <typename T>
-    int ImageFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< T > >* m2, GadgetContainerMessage<GtImageAttribType>* m3)
+    int ImageFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< T > >* m2, GadgetContainerMessage<ISMRMRD::MetaContainer>* m3)
     {
         if (!this->controller_)
         {

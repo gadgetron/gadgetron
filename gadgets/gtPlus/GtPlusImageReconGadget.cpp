@@ -107,9 +107,20 @@ namespace Gadgetron
 
         if ( ori.get_number_of_elements() == 1 )
         {
-            GADGET_CHECK_RETURN( (*ori(0)).attrib_.attributeString_.get(GTPLUS_DATA_ROLE, dataRole), GADGET_FAIL);
+            size_t num = (*ori(0)).attrib_.length(GTPLUS_DATA_ROLE);
+            GADGET_CHECK_RETURN(num>0, GADGET_FAIL);
 
-            if ( dataRole[0] == GTPLUS_IMAGE_GFACTOR )
+            dataRole.resize(num);
+
+            for ( size_t ii=0; ii<num; ii++ )
+            {
+                dataRole[ii] = std::string( (*ori(0)).attrib_.as_str(GTPLUS_DATA_ROLE, ii) );
+            }
+
+            if ( (dataRole[0] == GTPLUS_IMAGE_GFACTOR) 
+                || (dataRole[0] == GTPLUS_IMAGE_SNR_MAP) 
+                || (dataRole[0] == GTPLUS_IMAGE_STD_MAP) 
+                || (dataRole[0] == GTPLUS_IMAGE_WRAPAROUNDMAP) )
             {
                 GADGET_CHECK_RETURN(this->sendOutImages(ori, image_series_num_++, processStr, dataRole), GADGET_FAIL);
                 GADGET_CHECK_RETURN(this->releaseImageBuffer(ori), GADGET_FAIL);
@@ -301,7 +312,7 @@ namespace Gadgetron
                                             {
                                                 Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>* cm1 = new Gadgetron::GadgetContainerMessage<ISMRMRD::ImageHeader>();
                                                 Gadgetron::GadgetContainerMessage<ImgArrayType>* cm2 = new Gadgetron::GadgetContainerMessage<ImgArrayType>();
-                                                Gadgetron::GadgetContainerMessage<GtImageAttribType>* cm3 = new Gadgetron::GadgetContainerMessage<GtImageAttribType>();
+                                                Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>* cm3 = new Gadgetron::GadgetContainerMessage<ISMRMRD::MetaContainer>();
 
                                                 try
                                                 {
@@ -319,7 +330,7 @@ namespace Gadgetron
 
                                                     long long imageNum = this->computeSeriesImageNumber (*cm1->getObjectPtr(), CHA, cha, E2, e2);
                                                     cm1->getObjectPtr()->image_index = (uint16_t)imageNum;
-                                                    pImage->attrib_.attributeInteger_.set(GTPLUS_IMAGENUMBER, 0, imageNum);
+                                                    pImage->attrib_.set(GTPLUS_IMAGENUMBER, (long)imageNum);
 
                                                     cm1->getObjectPtr()->image_series_index = seriesNum;
 
@@ -426,7 +437,7 @@ namespace Gadgetron
                                                             }
 
                                                             std::vector<std::string> dataRoleAll;
-                                                            cm3->getObjectPtr()->attributeString_.get(GTPLUS_DATA_ROLE, dataRoleAll);
+                                                            Gadgetron::getISMRMRMetaValues(*cm3->getObjectPtr(), GTPLUS_DATA_ROLE, dataRoleAll);
 
                                                             if ( !debugFolder_fullPath_.empty() )
                                                             {
@@ -459,16 +470,18 @@ namespace Gadgetron
                                                                     commentStr[n+1] = dataRole[n];
                                                                 }
 
-                                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, commentStr);
+                                                                Gadgetron::setISMRMRMetaValues(*cm3->getObjectPtr(), GTPLUS_IMAGECOMMENT, commentStr);
 
                                                                 // get the scaling ratio
-                                                                float scalingRatio = 0;
-                                                                if ( cm3->getObjectPtr()->attributeFloat_.get(GTPLUS_IMAGE_SCALE_RATIO, 0, scalingRatio) )
+                                                                float scalingRatio = 1;
+                                                                try
                                                                 {
+                                                                    scalingRatio = (float)(cm3->getObjectPtr()->as_double(GTPLUS_IMAGE_SCALE_RATIO, 0));
+
                                                                     std::ostringstream ostr;
                                                                     ostr << "x" << scalingRatio;
                                                                     std::string scalingStr = ostr.str();
-                                                                    cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, scalingStr);
+                                                                    cm3->getObjectPtr()->append(GTPLUS_IMAGECOMMENT, scalingStr.c_str());
 
                                                                     if ( isParametricT1Map || isParametricT1SDMap || isParametricT2Map || isParametricT2SDMap || isParametricT2StarMap || isParametricT2StarSDMap )
                                                                     {
@@ -476,26 +489,31 @@ namespace Gadgetron
                                                                         ostr << std::setprecision(3) << 1.0f/scalingRatio << "ms";
                                                                         std::string unitStr = ostr.str();
 
-                                                                        cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, unitStr);
+                                                                        cm3->getObjectPtr()->append(GTPLUS_IMAGECOMMENT, unitStr.c_str());
                                                                     }
+                                                                }
+                                                                catch(...)
+                                                                {
+                                                                    GADGET_WARN_MSG("Image attrib does not have the scale ratio ...");
+                                                                    scalingRatio = 1;
                                                                 }
 
                                                                 if ( isParametricT1Map || isParametricT2Map || isParametricT2StarMap )
                                                                 {
-                                                                    cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWCENTER, 0, (long long)((this->get_double_value("window_center"))*scalingRatio) );
-                                                                    cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWWIDTH, 0, (long long)((this->get_double_value("window_width"))*scalingRatio) );
+                                                                    cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWCENTER, (long)((this->get_double_value("window_center"))*scalingRatio) );
+                                                                    cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWWIDTH, (long)((this->get_double_value("window_width"))*scalingRatio) );
                                                                 }
 
                                                                 if ( isParametricT1SDMap || isParametricT2SDMap || isParametricT2StarSDMap || isParametricT2StarAMap )
                                                                 {
-                                                                    cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWCENTER, 0, (long long)((this->get_double_value("sd_window_center"))*scalingRatio) );
-                                                                    cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWWIDTH, 0, (long long)((this->get_double_value("sd_window_width"))*scalingRatio) );
+                                                                    cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWCENTER, (long)((this->get_double_value("sd_window_center"))*scalingRatio) );
+                                                                    cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWWIDTH, (long)((this->get_double_value("sd_window_width"))*scalingRatio) );
                                                                 }
 
                                                                 if ( isParametricT2StarTruncMap )
                                                                 {
-                                                                    cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWCENTER, 0, (long long)(4) );
-                                                                    cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWWIDTH, 0, (long long)(8) );
+                                                                    cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWCENTER, (long)(4) );
+                                                                    cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWWIDTH, (long)(8) );
                                                                 }
 
                                                                 /* if ( isParametricT2Map )
@@ -514,12 +532,12 @@ namespace Gadgetron
                                                             {
                                                                 for ( n=0; n<dataRole.size(); n++ )
                                                                 {
-                                                                    cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, dataRole[n]);
+                                                                    cm3->getObjectPtr()->append(GTPLUS_IMAGECOMMENT, dataRole[n].c_str());
                                                                 }
                                                             }
 
                                                             // seq description
-                                                            cm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, dataRoleAll);
+                                                            Gadgetron::appendISMRMRMetaValues(*cm3->getObjectPtr(), GTPLUS_SEQUENCEDESCRIPTION, dataRoleAll);
                                                         }
 
                                                         GADGET_CONDITION_MSG(verboseMode_, "--> GtPlusImageReconGadget, sending out 2D image [CHA SLC E2 CON PHS REP SET AVE] = [" 
@@ -539,14 +557,14 @@ namespace Gadgetron
                                                             size_t n;
                                                             for ( n=0; n<processStr.size(); n++ )
                                                             {
-                                                                cm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGEPROCESSINGHISTORY, processStr[n]);
+                                                                cm3->getObjectPtr()->append(GTPLUS_IMAGEPROCESSINGHISTORY, processStr[n].c_str());
                                                             }
                                                         }
 
                                                         if ( windowCenter.size()==SLC && windowWidth.size()==SLC )
                                                         {
-                                                            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWCENTER, (long long)windowCenter[slc]);
-                                                            cm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGE_WINDOWWIDTH, (long long)windowWidth[slc]);
+                                                            cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWCENTER, (long)windowCenter[slc]);
+                                                            cm3->getObjectPtr()->set(GTPLUS_IMAGE_WINDOWWIDTH, (long)windowWidth[slc]);
                                                         }
                                                     }
 

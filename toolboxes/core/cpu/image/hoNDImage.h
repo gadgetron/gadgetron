@@ -14,7 +14,7 @@
 
 #include "hoNDPoint.h"
 #include "hoMatrix.h"
-#include "hoNDMetaAttributes.h"
+#include "ismrmrd_meta.h"
 
 namespace Gadgetron
 {
@@ -530,7 +530,7 @@ namespace Gadgetron
         void get_sub_image(const std::vector<size_t>& start, std::vector<size_t>& size, Self& out);
 
         /// meta attributes
-        GtImageAttribType attrib_;
+        ISMRMRD::MetaContainer attrib_;
 
         /// serialize/deserialize image content
         virtual bool serializeImage(char*& buf, size_t& len) const;

@@ -11,6 +11,7 @@
 #include "hoNDArray.h"
 #include "hoNDObjectArray.h"
 #include "ismrmrd.h"
+#include "ismrmrd_meta.h"
 #include "GadgetIsmrmrdReadWrite.h"
 
 #include "hoNDArray_utils.h"
@@ -29,14 +30,14 @@ namespace Gadgetron
 //   0    1    2   3   4    5   6   7
 #define GT_DIM_NUM_IMAGE 8
 
-class EXPORTGTPLUSGADGET GtPlusAccumulatorImageTriggerGadget : public Gadget3< ISMRMRD::ImageHeader, hoNDArray< std::complex<float> >, GtImageAttribType  >
+class EXPORTGTPLUSGADGET GtPlusAccumulatorImageTriggerGadget : public Gadget3< ISMRMRD::ImageHeader, hoNDArray< std::complex<float> >, ISMRMRD::MetaContainer >
 {
 public:
     GADGET_DECLARE(GtPlusAccumulatorImageTriggerGadget);
 
     typedef std::complex<float> ValueType;
 
-    typedef Gadget3< ISMRMRD::ImageHeader, hoNDArray< ValueType >, GtImageAttribType > BaseClass;
+    typedef Gadget3< ISMRMRD::ImageHeader, hoNDArray< ValueType >, ISMRMRD::MetaContainer > BaseClass;
 
     typedef hoNDImage<ValueType, 2> ImageType;
 
@@ -80,14 +81,14 @@ public:
 protected:
 
     virtual int process_config(ACE_Message_Block* mb);
-    virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray<ValueType> >* m2, GadgetContainerMessage<GtImageAttribType>* m3);
+    virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray<ValueType> >* m2, GadgetContainerMessage<ISMRMRD::MetaContainer>* m3);
 
     // perform the triggering
     virtual bool trigger(ImageBufferType& buf, ImageSentFlagBufferType& sentFlagBuf, bool inClose);
 
     // store the incoming image
     // if pass_image_immediate_==true, the image will be immediately passed to the next gadget with 
-    virtual bool storeImage(const ISMRMRD::ImageHeader& imgHeader, const hoNDArray<ValueType>& img, const GtImageAttribType& attrib, ImageBufferType& buf);
+    virtual bool storeImage(const ISMRMRD::ImageHeader& imgHeader, const hoNDArray<ValueType>& img, const ISMRMRD::MetaContainer& attrib, ImageBufferType& buf);
 
     // set dimensions under trigger
     void setDimensionsUnderTrigger();

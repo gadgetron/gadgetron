@@ -7,7 +7,7 @@
 #include "DicomImageWriter.h"
 #include "GadgetContainerMessage.h"
 #include "hoNDArray.h"
-#include "hoNDMetaAttributes.h"
+#include "ismrmrd_meta.h"
 
 // DCMTK includes
 #include "dcmtk/config/osconfig.h"
@@ -168,18 +168,30 @@ int DicomImageAttribWriter::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
             return -1;
         }
 
-        GadgetContainerMessage<GtImageAttribType>* dcm_meta_message = AsContainerMessage<GtImageAttribType>(dcm_filename_message->cont());
+        GadgetContainerMessage<ISMRMRD::MetaContainer>* dcm_meta_message = AsContainerMessage<ISMRMRD::MetaContainer>(dcm_filename_message->cont());
         if (dcm_meta_message)
         {
-            typedef GtImageAttribType::size_t_type size_t_type;
+            typedef unsigned long long size_t_type;
 
             char* buf = NULL;
             size_t_type len(0);
 
-            if ( !dcm_meta_message->getObjectPtr()->serialize(buf, len) )
+            try
+            {
+                std::stringstream str;
+                ISMRMRD::serialize( *dcm_meta_message->getObjectPtr(), str);
+                std::string attribContent = str.str();
+                len = attribContent.length()+1;
+
+                buf = new char[len];
+                GADGET_CHECK_THROW(buf != NULL);
+
+                memset(buf, '\0', sizeof(char)*len);
+                memcpy(buf, attribContent.c_str(), len-1);
+            }
+            catch(...)
             {
                 ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to serialize dicom image meta attributes \n")));
-
                 return -1;
             }
 

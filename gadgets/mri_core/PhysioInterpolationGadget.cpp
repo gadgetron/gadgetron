@@ -3,7 +3,7 @@
 #include "GadgetronTimer.h"
 #include "Spline.h"
 #include "GtPlusDefinition.h"
-#include "hoNDMetaAttributes.h"
+#include "ismrmrd_meta.h"
 #include "hoNDBSpline.h"
 #include "ismrmrd_xml.h"
 
@@ -164,7 +164,7 @@ namespace Gadgetron{
                 //Make a temporary list of all the data pointers from the Q
                 std::vector< ISMRMRD::ImageHeader* > hptrs;
                 std::vector< hoNDArray< std::complex<float> > * > aptrs;
-                std::vector< GtImageAttribType* > attribptrs;
+                std::vector< ISMRMRD::MetaContainer* > attribptrs;
 
                 ACE_Message_Queue<ACE_MT_SYNCH>::ITERATOR it( *buffer_[slc] );
                 for (ACE_Message_Block* entry = 0;
@@ -189,8 +189,8 @@ namespace Gadgetron{
 
                     if ( image_with_attrib_ )
                     {
-                        GadgetContainerMessage< GtImageAttribType > * tmpm3 = 
-                            AsContainerMessage< GtImageAttribType >(entry->cont()->cont());
+                        GadgetContainerMessage< ISMRMRD::MetaContainer > * tmpm3 = 
+                            AsContainerMessage< ISMRMRD::MetaContainer >(entry->cont()->cont());
 
                         if ( !tmpm3 )
                         {
@@ -223,7 +223,7 @@ namespace Gadgetron{
                 //Now we can loop over each pixel and estimate the new frames, but first we have to have somewhere to put the data
                 std::vector< GadgetContainerMessage< ISMRMRD::ImageHeader >* > out_heads;
                 std::vector< GadgetContainerMessage< hoNDArray< std::complex<float> > > * > out_data;
-                std::vector< GadgetContainerMessage< GtImageAttribType> * > out_attrib;
+                std::vector< GadgetContainerMessage< ISMRMRD::MetaContainer> * > out_attrib;
 
                 for (size_t i = 0; i < recon_cycle_time.size(); i++)
                 {
@@ -254,20 +254,20 @@ namespace Gadgetron{
 
                     if ( image_with_attrib_ )
                     {
-                        GadgetContainerMessage< GtImageAttribType >* tmpm3 = new GadgetContainerMessage< GtImageAttribType >;
+                        GadgetContainerMessage< ISMRMRD::MetaContainer >* tmpm3 = new GadgetContainerMessage< ISMRMRD::MetaContainer >;
 
                         tmpm2->cont(tmpm3);
                         (*tmpm3->getObjectPtr()) = (*attribptrs[0]);
                         out_attrib.push_back(tmpm3);
 
-                        tmpm3->getObjectPtr()->attributeInteger_.set(GTPLUS_PHASE,      0, tmpm1->getObjectPtr()->phase);
-                        tmpm3->getObjectPtr()->attributeInteger_.set(GTPLUS_IMAGENUMBER, 0, tmpm1->getObjectPtr()->image_index);
+                        tmpm3->getObjectPtr()->set(GTPLUS_PHASE,      (long)tmpm1->getObjectPtr()->phase);
+                        tmpm3->getObjectPtr()->set(GTPLUS_IMAGENUMBER, (long)tmpm1->getObjectPtr()->image_index);
 
-                        tmpm3->getObjectPtr()->attributeString_.set(GTPLUS_DATA_ROLE, "PhysioInterp");
-                        tmpm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGECOMMENT, "PhysioInterp");
-                        tmpm3->getObjectPtr()->attributeString_.set(GTPLUS_SEQUENCEDESCRIPTION, "_PhysioInterp");
+                        tmpm3->getObjectPtr()->append(GTPLUS_DATA_ROLE, "PhysioInterp");
+                        tmpm3->getObjectPtr()->append(GTPLUS_IMAGECOMMENT, "PhysioInterp");
+                        tmpm3->getObjectPtr()->append(GTPLUS_SEQUENCEDESCRIPTION, "_PhysioInterp");
 
-                        tmpm3->getObjectPtr()->attributeString_.set(GTPLUS_IMAGEPROCESSINGHISTORY, "Interp");
+                        tmpm3->getObjectPtr()->append(GTPLUS_IMAGEPROCESSINGHISTORY, "Interp");
                     }
                 }
 
@@ -368,10 +368,10 @@ namespace Gadgetron{
         (*img->getObjectPtr()) = (*m2->getObjectPtr());
         header->cont(img);
 
-        GadgetContainerMessage<GtImageAttribType>* m3 = 0;
+        GadgetContainerMessage<ISMRMRD::MetaContainer>* m3 = 0;
         if (m2)
         {
-            m3 = AsContainerMessage<GtImageAttribType>(m2->cont());
+            m3 = AsContainerMessage<ISMRMRD::MetaContainer>(m2->cont());
         }
 
         if ( m3 )
@@ -385,7 +385,7 @@ namespace Gadgetron{
 
         if ( image_with_attrib_ )
         {
-            GadgetContainerMessage< GtImageAttribType >* attrib = new GadgetContainerMessage< GtImageAttribType >;
+            GadgetContainerMessage< ISMRMRD::MetaContainer >* attrib = new GadgetContainerMessage< ISMRMRD::MetaContainer >;
             (*attrib->getObjectPtr()) = *m3->getObjectPtr();
             img->cont(attrib);
         }

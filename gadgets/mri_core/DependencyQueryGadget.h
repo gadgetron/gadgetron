@@ -7,7 +7,7 @@
 #include <ismrmrd.h>
 #include <complex>
 #include "GadgetMRIHeaders.h"
-#include "hoNDMetaAttributes.h"
+#include "ismrmrd_meta.h"
 #include "GadgetStreamController.h"
 
 namespace Gadgetron

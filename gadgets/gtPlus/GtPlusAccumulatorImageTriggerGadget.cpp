@@ -375,11 +375,11 @@ void GtPlusAccumulatorImageTriggerGadget::setDimensionsUnderTrigger()
     imageSentBuffer_.delete_data_on_destruct(false);
 }
 
-int GtPlusAccumulatorImageTriggerGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2, GadgetContainerMessage<GtImageAttribType>* m3)
+int GtPlusAccumulatorImageTriggerGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1, GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2, GadgetContainerMessage<ISMRMRD::MetaContainer>* m3)
 {
     // find the data role
     std::string dataRole;
-    GADGET_CHECK_RETURN(m3->getObjectPtr()->attributeString_.get(GTPLUS_DATA_ROLE, 0, dataRole), GADGET_FAIL);
+    dataRole = std::string(m3->getObjectPtr()->as_str(GTPLUS_DATA_ROLE, 0));
 
     GADGET_CONDITION_MSG(verboseMode_, "--> receive image : " << m1->getObjectPtr()->image_index << " -- " << dataRole);
 
@@ -664,17 +664,15 @@ bool GtPlusAccumulatorImageTriggerGadget::trigger(ImageBufferType& buf, ImageSen
     return true;
 }
 
-bool GtPlusAccumulatorImageTriggerGadget::storeImage(const ISMRMRD::ImageHeader& imgHeader, const hoNDArray<ValueType>& img, const GtImageAttribType& attrib, ImageBufferType& buf)
+bool GtPlusAccumulatorImageTriggerGadget::storeImage(const ISMRMRD::ImageHeader& imgHeader, const hoNDArray<ValueType>& img, const ISMRMRD::MetaContainer& attrib, ImageBufferType& buf)
 {
     try
     {
-        long long cha;
-        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(GTPLUS_CHA, 0, cha));
+        long long cha = attrib.as_long(GTPLUS_CHA, 0);
 
         size_t slc = imgHeader.slice;
 
-        long long e2;
-        GADGET_CHECK_RETURN_FALSE(attrib.attributeInteger_.get(GTPLUS_E2, 0, e2));
+        long long e2 = attrib.as_long(GTPLUS_E2, 0);
 
         size_t con = imgHeader.contrast;
         size_t phs = imgHeader.phase;
@@ -690,7 +688,7 @@ bool GtPlusAccumulatorImageTriggerGadget::storeImage(const ISMRMRD::ImageHeader&
         storedImage->attrib_ = attrib;
         GADGET_CHECK_RETURN_FALSE(gtPlus_util_.setMetaAttributesFromImageHeaderISMRMRD(imgHeader, storedImage->attrib_));
 
-        storedImage->attrib_.attributeInteger_.set(GTPLUS_PASS_IMMEDIATE, 0);
+        storedImage->attrib_.set(GTPLUS_PASS_IMMEDIATE, (long)0);
         buf(cha, slc, e2, con, phs, rep, set, ave) = storedImage;
 
         if ( pass_image_immediate_ )
@@ -706,7 +704,7 @@ bool GtPlusAccumulatorImageTriggerGadget::storeImage(const ISMRMRD::ImageHeader&
             *imgBuf(0) = *storedImage;
 
             // set the pass_image flag, so next gadget knows
-            imgBuf(0)->attrib_.attributeInteger_.set(GTPLUS_PASS_IMMEDIATE, 1);
+            imgBuf(0)->attrib_.set(GTPLUS_PASS_IMMEDIATE, (long)1);
 
             if (this->next()->putq(cm1) < 0) 
             {
@@ -717,7 +715,7 @@ bool GtPlusAccumulatorImageTriggerGadget::storeImage(const ISMRMRD::ImageHeader&
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Error happens in GtPlusAccumulatorImageTriggerGadget::storeImage(const ISMRMRD::ImageHeader& imgHeader, const hoNDArray<ValueType>& img, const GtImageAttribType& attrib, ImageBufferType& buf) ... ");
+        GADGET_ERROR_MSG("Error happens in GtPlusAccumulatorImageTriggerGadget::storeImage(const ISMRMRD::ImageHeader& imgHeader, const hoNDArray<ValueType>& img, const ISMRMRD::MetaContainer& attrib, ImageBufferType& buf) ... ");
         return false;
     }
 
