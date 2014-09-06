@@ -26,14 +26,6 @@ endif(WIN32)
 #    LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
 #endif (MKL_FOUND)
 
-#Process the XSD files
-SET(XSDS image/schema/gadgetronMetaAttributes.xsd)
-SET(XSD_ARGS cxx-tree --generate-serialization)
-WRAP_XSD(XSDS_SOURCES XSD_INCLUDES ${CMAKE_CURRENT_BINARY_DIR}/schema ${XSDS} OPTIONS ${XSD_ARGS})
-INCLUDE_DIRECTORIES(${XSD_INCLUDES} ${XERCESC_INCLUDE_DIR})
-
-message("XSDS_SOURCES is " ${XSDS_SOURCES})
-
 set(header_files ../NDArray.h
                 ../complext.h
                 ../GadgetronException.h
@@ -69,11 +61,7 @@ set(header_files ../NDArray.h
 
 set(image_files image/hoNDImage.h 
             image/hoNDImage.hxx 
-            image/hoNDImageContainer2D.h 
-            image/hoNDMetaAttributesBase.h 
-            image/hoNDMetaAttributes.h 
-            image/hoNDMetaAttributes.cpp 
-            image/schema/gadgetronMetaAttributes.xsd )
+            image/hoNDImageContainer2D.h )
 
 set(algorithm_files algorithm/hoNDBSpline.h algorithm/hoNDBSpline.hxx)
 
@@ -98,13 +86,9 @@ install(FILES
         image/hoNDImage.h 
         image/hoNDImage.hxx 
         image/hoNDImageContainer2D.h 
-        image/hoNDMetaAttributesBase.h 
-        image/hoNDMetaAttributes.h 
         algorithm/hoNDBSpline.h
         algorithm/hoNDBSpline.hxx 
         DESTINATION include)
-
-install(FILES image/schema/gadgetronMetaAttributes.xsd DESTINATION schema)
 
 add_subdirectory(arma_math)
 add_subdirectory(hostutils)
