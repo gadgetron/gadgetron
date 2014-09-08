@@ -25,8 +25,6 @@ if ( HAS_64_BIT )
         ${ACE_INCLUDE_DIR} 
         ${Boost_INCLUDE_DIR}
         ${ISMRMRD_INCLUDE_DIR}
-        ${ISMRMRD_XSD_INCLUDE_DIR}
-        ${XSD_INCLUDE_DIR}
         ${FFTW3_INCLUDE_DIR}
         ${ARMADILLO_INCLUDE_DIRS}
         ${MKL_INCLUDE_DIR}
@@ -289,10 +287,10 @@ if ( HAS_64_BIT )
                     DESTINATION schema)
 
     # This one depends on the gadgets being compiled
-    if (ACE_FOUND AND ISMRMRD_FOUND AND XSD_FOUND AND XERCESC_FOUND AND FFTW3_FOUND)
+    if (ACE_FOUND AND ISMRMRD_FOUND AND FFTW3_FOUND)
       if (GTEST_FOUND)
         add_subdirectory(ut)
       endif (GTEST_FOUND)
-    endif (ACE_FOUND AND ISMRMRD_FOUND AND XSD_FOUND AND XERCESC_FOUND AND FFTW3_FOUND)
+    endif (ACE_FOUND AND ISMRMRD_FOUND AND FFTW3_FOUND)
 
 endif ( HAS_64_BIT )

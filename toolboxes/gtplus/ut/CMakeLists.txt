@@ -10,9 +10,6 @@ include_directories( ${GTEST_INCLUDE_DIRS}
                      ${Boost_INCLUDE_DIR}
                      ${FFTW3_INCLUDE_DIR}
                      ${ISMRMRD_INCLUDE_DIR}
-                     ${ISMRMRD_XSD_INCLUDE_DIR}
-                     ${XSD_INCLUDE_DIR}
-                     ${XERCESC_INCLUDE_DIR}
                      ${CMAKE_SOURCE_DIR}/dependencies/tinyxml
                      ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
                      ${CMAKE_SOURCE_DIR}/toolboxes/nfft/gpu

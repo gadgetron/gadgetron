@@ -2,11 +2,7 @@ if (WIN32)
     ADD_DEFINITIONS(-D__BUILD_GADGETRON_CPUCORE__)
 endif (WIN32)
 
-find_package(XSD REQUIRED)
-find_package(XercesC REQUIRED)
-
 include_directories(
-    ${XSD_INCLUDE_DIR}
     ${FFTW3_INCLUDE_DIR}
     ${CMAKE_SOURCE_DIR}/toolboxes/core
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
@@ -69,15 +65,13 @@ source_group(algorithm FILES ${algorithm_files})
 source_group(image FILES ${image_files})
 
 add_library(cpucore ${LIBTYPE}
-                    ${XSDS_SOURCES} 
                     hoMatrix.cpp 
                     ${header_files} 
                     ${image_files}  
                     ${algorithm_files} )
 
 target_link_libraries(cpucore 
-                    ${Boost_LIBRARIES} 
-                    ${XERCESC_LIBRARIES} )
+                    ${Boost_LIBRARIES})
 
 install(TARGETS cpucore DESTINATION lib)
 

@@ -3,8 +3,6 @@ IF (WIN32)
 ENDIF (WIN32)
 
 find_package(Ismrmrd REQUIRED)
-find_package(XSD REQUIRED)
-find_package(XercesC REQUIRED)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
@@ -13,7 +11,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   ${CMAKE_SOURCE_DIR}/toolboxes/mri/epi
-  ${ISMRMRD_XSD_INCLUDE_DIR}
   ${ARMADILLO_INCLUDE_DIRS}
 )
 
@@ -31,8 +28,6 @@ target_link_libraries(
   cpucore
   cpufft
   cpucore_math
-  ${ISMRMRD_LIBRARIES} 
-  ${XERCESC_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
 )
 

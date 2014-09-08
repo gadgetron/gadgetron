@@ -1,6 +1,3 @@
-find_package(XSD)
-find_package(XercesC)
-
 if (WIN32)
     ADD_DEFINITIONS(-DTIXML_USE_STL)
 endif (WIN32)
@@ -24,7 +21,7 @@ add_subdirectory(ct)
 
 add_subdirectory(registration)
 
-IF (ACE_FOUND AND XSD_FOUND AND XERCESC_FOUND)
+IF (ACE_FOUND)
   add_subdirectory(gadgettools)
 ENDIF()
 

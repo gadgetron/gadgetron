@@ -6,7 +6,6 @@
     include_directories(
         ${ACE_INCLUDE_DIR} 
         ${Boost_INCLUDE_DIR}
-        ${XSD_INCLUDE_DIR}
         ${FFTW3_INCLUDE_DIR}
         ${ARMADILLO_INCLUDE_DIRS}
         ${MKL_INCLUDE_DIR}

@@ -1,6 +1,3 @@
-find_package(XSD REQUIRED)
-find_package(XercesC REQUIRED)
-
 include_directories(
                     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
                     ${CMAKE_SOURCE_DIR}/toolboxes/core
@@ -11,7 +8,6 @@ include_directories(
                     ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
                     ${ACE_INCLUDE_DIR} 
                     ${Boost_INCLUDE_DIR} 
-                    ${XSD_INCLUDE_DIR} 
  )
 
 

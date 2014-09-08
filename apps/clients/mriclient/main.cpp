@@ -1,6 +1,9 @@
-#include "ace/Log_Msg.h"
-#include "ace/Get_Opt.h"
-#include "ace/OS_NS_string.h"
+#include <ace/SOCK_Acceptor.h>
+#include <ace/Addr.h>
+#include <ace/INET_Addr.h>
+#include <ace/Log_Msg.h>
+#include <ace/Get_Opt.h>
+#include <ace/OS_NS_string.h>
 
 #include "GadgetronConnector.h"
 #include "GadgetMRIHeaders.h"
@@ -70,7 +73,11 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
     ACE_OS_String::strncpy(port_no, "9002", 1024);
 
     ACE_TCHAR hostname[1024];
-    ACE_OS_String::strncpy(hostname, "localhost", 1024);
+    //We will do a little trick to figure out what the hostname would be accoring to ACE
+    ACE_SOCK_Acceptor listener (ACE_Addr::sap_any);
+    ACE_INET_Addr addr;
+    listener.get_local_addr (addr);
+    ACE_OS_String::strncpy(hostname, addr.get_host_name(), 1024);
 
     ACE_TCHAR hdf5_in_data_file[4096];
     ACE_OS_String::strncpy(hdf5_in_data_file, "./data.h5", 4096);
