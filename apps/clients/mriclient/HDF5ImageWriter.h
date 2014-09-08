@@ -32,31 +32,20 @@ namespace Gadgetron
         {
             try {
                 std::stringstream st1;
-                st1 << "image_" << img_head->image_series_index << ".head";
-                std::string head_varname = st1.str();
+                st1 << "image_" << img_head->image_series_index;
+                std::string image_varname = st1.str();
 
-                std::stringstream st2;
-                st2 << "image_" << img_head->image_series_index << ".img";
-                std::string img_varname = st2.str();
+		// TODO this makes a copy of the data
+		// what's the best way to do it without copies?
+		ISMRMRD::Image img;
+                img.setHead(*img_head);
+                memcpy(img.getData(), data->get_data_ptr(), img.getDataSize());
 
-                if (dataset_.appendImageHeader(*img_head, head_varname.c_str()) < 0) {
-                    GADGET_DEBUG1("Failed to write image header\n");
+                if (dataset_.appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, img) < 0) {
+                    GADGET_DEBUG1("Failed to write image.\n");
                     return GADGET_FAIL;
                 }
 
-                std::vector<size_t> dim = *data->get_dimensions();
-                std::vector<unsigned int> dim2(dim.size());
-
-                size_t ii;
-                for ( ii=0; ii<dim.size(); ii++ )
-                {
-                    dim2[ii] = dim[ii];
-                }
-
-                if (dataset_.appendArray(dim2,data->get_data_ptr(), img_varname.c_str())  < 0) {
-                    GADGET_DEBUG1("Failed to write image data\n");
-                    return GADGET_FAIL;
-                };
             } catch (...) {
                 GADGET_DEBUG1("Error attempting to append images to HDF5 file\n");
                 return GADGET_FAIL;
