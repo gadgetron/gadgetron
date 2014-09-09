@@ -33,16 +33,7 @@ include_directories(
 )
 
 link_directories(${Boost_LIBRARY_DIR})
-
-if(WIN32)
-    link_directories(${Boost_LIBRARY_DIR})
-endif(WIN32)
-
-if(WIN32)
-    link_libraries(optimized ${HDF5_hdf5_LIBRARY_RELEASE} optimized ${HDF5_hdf5_cpp_LIBRARY_RELEASE} optimized ${HDF5_hdf5_hl_LIBRARY_RELEASE} debug ${HDF5_hdf5_LIBRARY_DEBUG} debug ${HDF5_hdf5_cpp_LIBRARY_DEBUG} debug ${HDF5_hdf5_hl_LIBRARY_DEBUG})
-else (WIN32)
-    link_libraries(${HDF5_LIBRARIES} hdf5_hl)
-endif (WIN32)
+link_libraries(${HDF5_LIBRARIES})
 
 add_executable(CBCT_reconstruct_FDK_3d CBCT_reconstruct_FDK_3d.cpp)
 target_link_libraries(CBCT_reconstruct_FDK_3d gpuxray cpucore cpucore_math gpucore hostutils ${CUDA_LIBRARIES} ${Boost_LIBRARIES})
