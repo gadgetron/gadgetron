@@ -227,7 +227,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 
         for (unsigned long int i = 0; i < acquisitions; i++) {
             GadgetContainerMessage<ISMRMRD::Acquisition>* acq = new GadgetContainerMessage<ISMRMRD::Acquisition>();
-	    ismrmrd_dataset->readAcquisition(i, acq->getObjectPtr());
+	    ismrmrd_dataset->readAcquisition(i, *acq->getObjectPtr());
             
             GadgetContainerMessage<GadgetMessageIdentifier>* m1 =
                     new GadgetContainerMessage<GadgetMessageIdentifier>();
