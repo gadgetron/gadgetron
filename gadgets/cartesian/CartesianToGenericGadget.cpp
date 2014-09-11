@@ -46,7 +46,7 @@ namespace Gadgetron{
     // Noise should have been consumed by the noise adjust, but just in case...
     //
 
-    bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
+    bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
     if (is_noise) {
       m1->release();
       return GADGET_OK;

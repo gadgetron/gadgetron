@@ -614,9 +614,9 @@ int DicomFinishGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHeader>* 
     m1->cont(pixels);
     /* release the old data array */
     m2->release();
-    /* update the image_data_type.
+    /* update the image data_type.
      * There is currently no SIGNED SHORT type so this will have to suffice */
-    m1->getObjectPtr()->image_data_type = ISMRMRD::DATA_UNSIGNED_SHORT;
+    m1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_USHORT;
 
     unsigned int BUFSIZE = 1024;
     char *buf = new char[BUFSIZE];

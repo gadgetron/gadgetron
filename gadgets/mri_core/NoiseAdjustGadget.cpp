@@ -351,8 +351,8 @@ namespace Gadgetron{
     {
         // GADGET_START_TIMING_CONDITION(gt_timer_, "in noise process ... ", performTiming_);
 
-        bool is_scc_correction = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_SURFACECOILCORRECTIONSCAN_DATA).isSet(m1->getObjectPtr()->flags);
-        bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
+        bool is_scc_correction = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_SURFACECOILCORRECTIONSCAN_DATA);
+        bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
 
         unsigned int channels = m1->getObjectPtr()->active_channels;
         unsigned int samples = m1->getObjectPtr()->number_of_samples;

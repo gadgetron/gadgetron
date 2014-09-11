@@ -398,7 +398,7 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
 			.def_readwrite("average", &ISMRMRD::ImageHeader::average)
 			.def_readwrite("repetition", &ISMRMRD::ImageHeader::repetition)
 			.def_readwrite("acquisition_time_stamp", &ISMRMRD::ImageHeader::acquisition_time_stamp)
-			.def_readwrite("image_data_type", &ISMRMRD::ImageHeader::image_data_type)
+			.def_readwrite("data_type", &ISMRMRD::ImageHeader::data_type)
 			.def_readwrite("image_type", &ISMRMRD::ImageHeader::image_type)
 			.def_readwrite("image_index", &ISMRMRD::ImageHeader::image_index)
 			.def_readwrite("image_series_index", &ISMRMRD::ImageHeader::image_series_index)
@@ -410,18 +410,18 @@ BOOST_PYTHON_MODULE(GadgetronPythonMRI)
 
     		;
 
-	enum_<ISMRMRD::ImageDataType>("ImageDataType")
-    		   .value("DATA_COMPLEX_FLOAT", ISMRMRD::DATA_COMPLEX_FLOAT)
-    		   .value("DATA_FLOAT", ISMRMRD::DATA_FLOAT)
-    		   .value("DATA_UNSIGNED_SHORT", ISMRMRD::DATA_UNSIGNED_SHORT)
+	enum_<ISMRMRD::ISMRMRD_DataTypes>("ISMRMRD_DataTypes")
+    		   .value("ISMRMRD_CXFLOAT", ISMRMRD::ISMRMRD_CXFLOAT)
+	           .value("ISMRMRD_FLOAT", ISMRMRD::ISMRMRD_FLOAT)
+    		   .value("ISMRMRD_USHORT", ISMRMRD::ISMRMRD_USHORT)
     		   ;
 
 
-	enum_<ISMRMRD::ImageType>("ImageType")
-				  .value("TYPE_MAGNITUDE",ISMRMRD::TYPE_MAGNITUDE)
-				  .value("TYPE_PHASE", ISMRMRD::TYPE_PHASE)
-				  .value("TYPE_REAL",ISMRMRD::TYPE_REAL)
-				  .value("TYPE_IMAG",ISMRMRD::TYPE_IMAG)
+	enum_<ISMRMRD::ISMRMRD_ImageTypes>("ISMRMRD_ImageTypes")
+				  .value("TYPE_MAGNITUDE",ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE)
+				  .value("TYPE_PHASE", ISMRMRD::ISMRMRD_IMTYPE_PHASE)
+				  .value("TYPE_REAL",ISMRMRD::ISMRMRD_IMTYPE_REAL)
+				  .value("TYPE_IMAG",ISMRMRD::ISMRMRD_IMTYPE_IMAG)
 				  ;
 
 	enum_<Gadgetron::GadgetMessageID>("GadgetMessageID")

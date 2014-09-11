@@ -192,7 +192,13 @@ def run_test(environment, testcase_cfg_file):
     d1 = f1[result_dataset]
     d2 = f2[reference_dataset]
 
-    shapes_match = (d1.shape == d2.shape)
+    # The shape stored by the 1.0 API is always N x Nchan x Nz x Ny x Nx
+    # Prior to 1.0, if a dimension was a singleton, it could be missing
+    # TODO: fix the shapes in the reference data
+    # shapes_match = (d1.shape == d2.shape)
+    a1 = numpy.asarray(d1.shape).tolist().remove(1)
+    a2 = numpy.asarray(d2.shape).tolist().remove(1)
+    shapes_match = (a1 == a2)
 
     # If the types in the hdf5 are unsigned short numpy produces norms, dot products etc. in unsigned short. And that _will_ overflow...
     norm_diff = (numpy.linalg.norm(d1[...].flatten().astype('float32') -

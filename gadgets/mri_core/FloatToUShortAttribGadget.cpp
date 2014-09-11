@@ -51,7 +51,7 @@ namespace Gadgetron
 
         switch (m1->getObjectPtr()->image_type)
         {
-            case ISMRMRD::TYPE_MAGNITUDE:
+            case ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE:
             {
                 #pragma omp parallel for default(none) private(i) shared(numOfPixels, src, dst)
                 for (i=0; i<numOfPixels; i++)
@@ -64,8 +64,8 @@ namespace Gadgetron
             }
             break;
 
-            case ISMRMRD::TYPE_REAL:
-            case ISMRMRD::TYPE_IMAG:
+            case ISMRMRD::ISMRMRD_IMTYPE_REAL:
+            case ISMRMRD::ISMRMRD_IMTYPE_IMAG:
             {
                 #pragma omp parallel for default(none) private(i) shared(numOfPixels, src, dst)
                 for (i=0; i<numOfPixels; i++)
@@ -86,7 +86,7 @@ namespace Gadgetron
             }
             break;
 
-            case ISMRMRD::TYPE_PHASE:
+            case ISMRMRD::ISMRMRD_IMTYPE_PHASE:
             {
                 #pragma omp parallel for default(none) private(i) shared(numOfPixels, src, dst)
                 for (i=0; i<numOfPixels; i++)
@@ -114,7 +114,7 @@ namespace Gadgetron
         m2->cont(NULL);
         m2->release();
 
-        m1->getObjectPtr()->image_data_type = ISMRMRD::DATA_UNSIGNED_SHORT;
+        m1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_USHORT;
 
         if (this->next()->putq(m1) == -1)
         {
