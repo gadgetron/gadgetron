@@ -32,29 +32,44 @@ namespace Gadgetron
 
         }
 
-        virtual int process_image(ISMRMRD::ImageHeader* img_head, hoNDArray< T >* data, GtImageAttribType* img_attrib)
+        virtual int process_image(ISMRMRD::ImageHeader* img_head, hoNDArray< T >* data, ISMRMRD::MetaContainer* img_attrib)
         {
             try
             {
+                ISMRMRD::HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
+
+                size_t n;
+
                 // image data role
                 std::vector<std::string> dataRole;
-                if ( !img_attrib->attributeString_.get(GTPLUS_DATA_ROLE, dataRole) )
+
+                size_t num = img_attrib->length(GTPLUS_DATA_ROLE);
+
+                if ( num == 0 )
                 {
                     dataRole.push_back("Image");
                 }
+                else
+                {
+                    dataRole.resize(num);
+                    for ( n=0; n<num; n++ )
+                    {
+                        dataRole[n] = std::string( img_attrib->as_str(GTPLUS_DATA_ROLE, n) );
+                    }
+                }
 
-                long long imageNumber;
-                img_attrib->attributeInteger_.get(GTPLUS_IMAGENUMBER, 0, imageNumber);
+                long imageNumber;
+                imageNumber = img_attrib->as_long(GTPLUS_IMAGENUMBER, 0);
 
-                long long cha, slc, e2, con, phs, rep, set, ave;
-                img_attrib->attributeInteger_.get(GTPLUS_CHA,        0, cha);
-                img_attrib->attributeInteger_.get(GTPLUS_SLC,        0, slc);
-                img_attrib->attributeInteger_.get(GTPLUS_E2,         0, e2);
-                img_attrib->attributeInteger_.get(GTPLUS_CONTRAST,   0, con);
-                img_attrib->attributeInteger_.get(GTPLUS_PHASE,      0, phs);
-                img_attrib->attributeInteger_.get(GTPLUS_REP,        0, rep);
-                img_attrib->attributeInteger_.get(GTPLUS_SET,        0, set);
-                img_attrib->attributeInteger_.get(GTPLUS_AVERAGE,    0, ave);
+                long cha, slc, e2, con, phs, rep, set, ave;
+                cha = img_attrib->as_long(GTPLUS_CHA,        0);
+                slc = img_attrib->as_long(GTPLUS_SLC,        0);
+                e2  = img_attrib->as_long(GTPLUS_E2,         0);
+                con = img_attrib->as_long(GTPLUS_CONTRAST,   0);
+                phs = img_attrib->as_long(GTPLUS_PHASE,      0);
+                rep = img_attrib->as_long(GTPLUS_REP,        0);
+                set = img_attrib->as_long(GTPLUS_SET,        0);
+                ave = img_attrib->as_long(GTPLUS_AVERAGE,    0);
 
                 std::ostringstream ostr;
 
@@ -63,7 +78,6 @@ namespace Gadgetron
                     ostr << prefix_ << "_";
                 }
 
-                size_t n;
                 for ( n=0; n<dataRole.size(); n++ )
                 {
                     ostr << dataRole[n] << "_";
@@ -80,12 +94,13 @@ namespace Gadgetron
 
                 std::string filename = ostr.str();
 
-		// TODO: maybe give the user some debug info.
+                ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Writing image %s\n"), filename.c_str()) );
 		// Otherwise the above should be removed
 
                 char* buf = NULL;
                 size_t_type len(0);
-                if ( !img_attrib->serialize(buf, len) )
+
+                try
                 {
                     GADGET_DEBUG1("Failed to serialize image attributes\n");
                     return GADGET_FAIL;
