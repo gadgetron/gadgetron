@@ -36,8 +36,6 @@ namespace Gadgetron
         {
             try
             {
-                ISMRMRD::HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
-
                 size_t n;
 
                 // image data role
@@ -102,10 +100,25 @@ namespace Gadgetron
 
                 try
                 {
+                    std::stringstream str;
+                    ISMRMRD::serialize( *img_attrib, str);
+                    std::string attribContent = str.str();
+                    len = attribContent.length()+1;
+
+                    buf = new char[len];
+                    GADGET_CHECK_THROW(buf != NULL);
+
+                    memset(buf, '\0', sizeof(char)*len);
+                    memcpy(buf, attribContent.c_str(), len-1);
+                }
+                catch(...)
+                {
                     GADGET_DEBUG1("Failed to serialize image attributes\n");
                     return GADGET_FAIL;
                 }
+
                 std::string attrib = std::string(buf+sizeof(size_t_type));
+
                 delete [] buf;
 
                 std::stringstream st1;
