@@ -72,18 +72,39 @@ endif(_use_threads)
 set(_check_list)
 
 # Search for all requested libraries.
-foreach(_lib ${_libraries})
-  string(TOUPPER ${_lib} _LIB)
-  find_library(${_LIB}_LIBRARY ${_lib}
-    HINTS ${FFTW3_ROOT_DIR} PATH_SUFFIXES lib)
-  mark_as_advanced(${_LIB}_LIBRARY)
-  list(APPEND FFTW3_LIBRARIES ${${_LIB}_LIBRARY})
-  list(APPEND _check_list ${_LIB}_LIBRARY)
-endforeach(_lib ${_libraries})
+if (WIN32)
+
+    foreach(_lib ${_libraries})
+
+      string(TOUPPER ${_lib} _LIB)
+
+      find_library(${_LIB}_LIBRARY lib${_lib}-3
+        HINTS $ENV{FFTW3_ROOT_DIR} PATH_SUFFIXES lib)
+      mark_as_advanced(${_LIB}_LIBRARY)
+      list(APPEND FFTW3_LIBRARIES ${${_LIB}_LIBRARY})
+      list(APPEND _check_list ${_LIB}_LIBRARY)
+    endforeach(_lib ${_libraries})
+
+    message("FFTW3 WINDOWS libraries: " ${FFTW3_LIBRARIES})
+
+else (WIN32)
+    foreach(_lib ${_libraries})
+
+      string(TOUPPER ${_lib} _LIB)
+
+      find_library(${_LIB}_LIBRARY ${_lib}
+        HINTS $ENV{FFTW3_ROOT_DIR} PATH_SUFFIXES lib)
+      mark_as_advanced(${_LIB}_LIBRARY)
+      list(APPEND FFTW3_LIBRARIES ${${_LIB}_LIBRARY})
+      list(APPEND _check_list ${_LIB}_LIBRARY)
+    endforeach(_lib ${_libraries})
+
+    message("FFTW3 UNIX libraries: " ${FFTW3_LIBRARIES})
+endif (WIN32)
 
 # Search for the header file.
 find_path(FFTW3_INCLUDE_DIR fftw3.h 
-  HINTS ${FFTW3_ROOT_DIR} PATH_SUFFIXES include)
+  HINTS $ENV{FFTW3_ROOT_DIR} PATH_SUFFIXES include)
 mark_as_advanced(FFTW3_INCLUDE_DIR)
 list(APPEND _check_list FFTW3_INCLUDE_DIR)
 
