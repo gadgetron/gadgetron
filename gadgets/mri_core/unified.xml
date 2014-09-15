@@ -31,7 +31,11 @@
 	<classname>AcquisitionAccumulateTriggerGadget</classname>
         <property>
             <name>trigger_dimension</name>
-            <value>slice</value>
+            <value>repetition</value>
+        </property>
+        <property>
+          <name>sorting_dimension</name>
+          <value>slice</value>
         </property>
     </gadget>
 
