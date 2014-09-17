@@ -19,6 +19,7 @@ endif (MKL_FOUND)
 include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
     ${CMAKE_SOURCE_DIR}/toolboxes/core
+    ${CMAKE_SOURCE_DIR}/toolboxes/mri_core
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
     ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
@@ -80,7 +81,8 @@ set( gadgetron_mricore_header_files GadgetMRIHeaders.h
                                     CplxDumpGadget.h 
                                     DependencyQueryGadget.h 
                                     DependencyQueryWriter.h 
-                                    ComplexToFloatAttribGadget.h )
+                                    ComplexToFloatAttribGadget.h
+				    AcquisitionAccumulateTriggerGadget.h )
 
 set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp 
                                 AcquisitionFinishGadget.cpp 
@@ -109,14 +111,15 @@ set( gadgetron_mricore_src_files AcquisitionPassthroughGadget.cpp
                                 CplxDumpGadget.cpp 
                                 DependencyQueryGadget.cpp 
                                 DependencyQueryWriter.cpp 
-                                ComplexToFloatAttribGadget.cpp )
+                                ComplexToFloatAttribGadget.cpp 
+				AcquisitionAccumulateTriggerGadget.cpp )
 
 if (WIN32)
     set( gadgetron_mricore_header_files ${gadgetron_mricore_header_files} WhiteNoiseInjectorGadget.h )
     set( gadgetron_mricore_src_files ${gadgetron_mricore_src_files} WhiteNoiseInjectorGadget.cpp )
 endif (WIN32)
 
-set( gadgetron_mricore_config_files default.xml default_short.xml default_optimized.xml default_measurement_dependencies.xml)
+set( gadgetron_mricore_config_files default.xml default_short.xml default_optimized.xml default_measurement_dependencies.xml unified.xml)
 
 add_library(gadgetron_mricore SHARED 
     gadgetron_mricore_export.h 

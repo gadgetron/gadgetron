@@ -4,6 +4,7 @@
 
 #include <ace/Message_Block.h>
 #include <string>
+#include "Gadgetron.h"
 
 namespace Gadgetron{
 /**
@@ -25,6 +26,13 @@ class GadgetContainerMessageBase : public ACE_Message_Block
   {
     set_flags(CONTAINER_MESSAGE_BLOCK); //Mark this message block as a container, so that we know it is safe to type cast it.
   }
+
+  GadgetContainerMessageBase(ACE_Data_Block* d)
+    : base(d)
+  {
+    set_flags(CONTAINER_MESSAGE_BLOCK);
+  }
+  
 
 #ifdef WIN32
   std::string getTypeID() { return type_magic_id_; }
@@ -74,17 +82,41 @@ public:
     type_magic_id_ = magic_number_for_type<T>(); 
   }
 
+  GadgetContainerMessage(ACE_Data_Block* d)
+    : base(d)
+  {
+    type_magic_id_ = magic_number_for_type<T>();
+    content_ = reinterpret_cast<T*>(this->rd_ptr());
+  }
+
   virtual ~GadgetContainerMessage() 
   {
-    //In case the object contained in this object has allocated memory on the heap, it must be destroyed
-    if (content_) content_->~T();
-
     //ACE_Message_Block will take care of deallocating space for the object itself;
+  }
+
+  virtual ACE_Message_Block* release()
+  {    
+    //In case the object contained in this object has allocated memory on the heap, it must be destroyed
+    if (this->reference_count() == 1) {
+      if (content_) content_->~T();
+    } 
+    return ACE_Message_Block::release();
   }
 
   T* getObjectPtr() 
   {
     return content_;
+  }
+
+  virtual GadgetContainerMessage<T>* duplicate() 
+  {
+    GadgetContainerMessage<T>* nb = new GadgetContainerMessage<T>(this->data_block()->duplicate());
+    nb->rd_ptr (this->rd_ptr_);
+    nb->wr_ptr (this->wr_ptr_);
+    if (this->cont_) {
+      nb->cont_ = this->cont_->duplicate();
+    }
+    return nb;
   }
 
 protected:

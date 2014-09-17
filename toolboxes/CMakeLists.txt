@@ -9,6 +9,7 @@ if (MKL_FOUND)
 endif (MKL_FOUND)
 
 add_subdirectory(core)
+add_subdirectory(mri_core)
 
 add_subdirectory(operators)
 add_subdirectory(solvers)
