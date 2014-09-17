@@ -1,5 +1,5 @@
 #include "SpiralToGenericGadget.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 #include "vds.h"
 
 #include <algorithm>

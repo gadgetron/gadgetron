@@ -3,9 +3,9 @@
 #include "GadgetronTimer.h"
 #include "Spline.h"
 #include "GtPlusDefinition.h"
-#include "ismrmrd_meta.h"
+#include "ismrmrd/meta.h"
 #include "hoNDBSpline.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 #include <numeric>
 #ifdef USE_OMP

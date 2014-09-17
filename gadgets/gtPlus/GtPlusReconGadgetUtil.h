@@ -11,9 +11,9 @@
 #include "GtPlusDefinition.h"
 #include "GadgetIsmrmrdReadWrite.h"
 
-#include "ismrmrd.h"
-#include "ismrmrd_xml.h"
-#include "ismrmrd_meta.h"
+#include "ismrmrd/ismrmrd.h"
+#include "ismrmrd/xml.h"
+#include "ismrmrd/meta.h"
 
 namespace Gadgetron
 {

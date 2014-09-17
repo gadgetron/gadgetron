@@ -13,7 +13,7 @@
 #include "cuNFFT.h"
 #include "cuImageOperator.h"
 
-#include <ismrmrd.h>
+#include <ismrmrd/ismrmrd.h>
 #include <complex>
 
 namespace Gadgetron{

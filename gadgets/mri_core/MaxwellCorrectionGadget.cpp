@@ -2,7 +2,7 @@
 #include "Gadgetron.h"
 #include "GadgetronTimer.h"
 #include "Spline.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 #include <numeric>
 #ifdef USE_OMP

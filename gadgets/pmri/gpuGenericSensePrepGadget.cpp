@@ -10,7 +10,7 @@
 #include "GPUTimer.h"
 #include "check_CUDA.h"
 #include "hoNDArray_fileio.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 #include <algorithm>
 #include <vector>

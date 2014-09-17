@@ -7,7 +7,7 @@
 
 #include "EPIExport.h"
 
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 #include "hoNDArray.h"
 
 namespace Gadgetron { namespace EPI {

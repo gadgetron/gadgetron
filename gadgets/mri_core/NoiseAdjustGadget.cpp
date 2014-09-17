@@ -6,7 +6,7 @@
 #include "hoMatrix.h"
 #include "hoMatrix_util.h"
 #include "hoNDArray_math_util.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 #ifndef _WIN32
     #include <sys/types.h>

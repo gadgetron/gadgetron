@@ -4,7 +4,7 @@
 #include "hoNDArray.h"
 #include "gadgetron_mricore_export.h"
 
-#include <ismrmrd.h>
+#include <ismrmrd/ismrmrd.h>
 
 namespace Gadgetron{
 

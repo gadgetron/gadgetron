@@ -6,7 +6,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
-#include <ismrmrd.h>
+#include <ismrmrd/ismrmrd.h>
 #include <complex>
 
 namespace Gadgetron {

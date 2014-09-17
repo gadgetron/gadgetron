@@ -7,7 +7,7 @@
 #include "PythonCommunicator.h"
 #include "gadgetronpython_export.h"
 
-#include <ismrmrd.h>
+#include <ismrmrd/ismrmrd.h>
 #include <boost/python.hpp>
 #include <boost/algorithm/string.hpp>
 #include <stdio.h>

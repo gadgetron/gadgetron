@@ -10,7 +10,7 @@
 
 #include "ImageAttribWriter.h"
 
-#include <ismrmrd_dataset.h>
+#include <ismrmrd/dataset.h>
 #include <sstream>
 
 namespace Gadgetron

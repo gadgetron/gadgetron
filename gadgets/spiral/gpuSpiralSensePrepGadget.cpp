@@ -11,7 +11,7 @@
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "vds.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 #include <algorithm>
 #include <vector>

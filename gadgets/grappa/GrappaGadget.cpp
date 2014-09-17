@@ -1,7 +1,7 @@
 #include "Gadgetron.h"
 #include "GrappaGadget.h"
 #include "GrappaUnmixingGadget.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 #include <ace/OS_NS_stdlib.h>
 #include <boost/algorithm/string.hpp>

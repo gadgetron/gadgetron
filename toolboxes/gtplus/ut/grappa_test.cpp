@@ -4,7 +4,7 @@
 #endif // USE_OMP
 
 #include "Gadget.h"
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 #include "complext.h"
 
 #include <gtest/gtest.h>

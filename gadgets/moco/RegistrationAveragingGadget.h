@@ -15,7 +15,7 @@
 #include "cuNDArray_reductions.h"
 #endif // USE_CUDA
 
-#include <ismrmrd.h>
+#include <ismrmrd/ismrmrd.h>
 #include <complex>
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>

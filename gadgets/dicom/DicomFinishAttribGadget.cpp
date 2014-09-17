@@ -4,7 +4,7 @@
 #include "DicomFinishAttribGadget.h"
 #include "GtPlusDefinition.h"
 #include "gtPlusIOAnalyze.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 // Used for windowing using short ints
 #define PIX_RANGE_MAX    (+32767)

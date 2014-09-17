@@ -3,7 +3,7 @@
 #include "boost/date_time/gregorian/gregorian.hpp"            
 
 #include "DicomFinishGadget.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 // Used for windowing using short ints
 #define PIX_RANGE_MAX    (+32767)

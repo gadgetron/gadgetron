@@ -4,15 +4,14 @@
 #   ISMRMRD_LIBRARIES        - libismrmrd.so and libismrmrd_xml.so
 #   ISMRMRD_SCHEMA_DIR       - where to find ismrmrd.xsd       
 
-FIND_PATH( ISMRMRD_INCLUDE_DIR ismrmrd.h 
-HINTS $ENV{ISMRMRD_HOME} PATHS /usr/local /usr PATH_SUFFIXES include ismrmrd ismrmrd/include)
+FIND_PATH( ISMRMRD_INCLUDE_DIR ismrmrd/ismrmrd.h 
+HINTS $ENV{ISMRMRD_HOME} PATHS /usr/local /usr PATH_SUFFIXES include)
 
 FIND_PATH( ISMRMRD_SCHEMA_DIR ismrmrd.xsd 
-HINTS $ENV{ISMRMRD_HOME} PATHS /usr/local /usr PATH_SUFFIXES schema ismrmrd ismrmrd/schema)
+HINTS $ENV{ISMRMRD_HOME} PATHS /usr/local /usr PATH_SUFFIXES share/ismrmrd/schema)
 
-FIND_LIBRARY( ISMRMRD_LIBRARY
-              NAMES ismrmrd
-              PATHS  /usr/local/lib ${ISMRMRD_INCLUDE_DIR}/../lib /usr/lib )
+FIND_LIBRARY( ISMRMRD_LIBRARY NAMES ismrmrd
+HINTS ${ISMRMRD_HOME} /usr/local /usr PATH_SUFFIXES lib)
 
 SET(ISMRMRD_LIBRARIES ${ISMRMRD_LIBRARY})
 

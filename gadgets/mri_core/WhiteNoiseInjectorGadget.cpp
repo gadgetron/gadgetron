@@ -1,7 +1,7 @@
 #include "WhiteNoiseInjectorGadget.h"
 #include "gtPlusUtil.h"
 #include <array>
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 namespace Gadgetron
 {

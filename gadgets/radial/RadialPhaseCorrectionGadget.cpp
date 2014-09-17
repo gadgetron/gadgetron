@@ -3,7 +3,7 @@
 #include "hoNDArray_elemwise.h"
 #include "hoArmadillo.h"
 #include "hoNDArray_fileio.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>

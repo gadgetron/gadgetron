@@ -4,7 +4,7 @@
 
 #include "../mri_core/GadgetMRIHeaders.h"
 
-#include <ismrmrd.h>
+#include <ismrmrd/ismrmrd.h>
 
 using namespace boost::python;
 

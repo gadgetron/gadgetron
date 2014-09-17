@@ -1,7 +1,7 @@
 #include "NoiseAdjustGadget_unoptimized.h"
 #include "Gadgetron.h"
 #include "hoNDArray_fileio.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 namespace Gadgetron{
 

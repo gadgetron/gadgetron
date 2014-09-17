@@ -10,7 +10,7 @@
 #include "radial_utilities.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_fileio.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 #include <algorithm>
 #include <vector>
