@@ -11,16 +11,14 @@
 #include <thrust/device_vector.h>
 #include <thrust/transform.h>
 #include <thrust/functional.h>
+#include "cuSolverUtils.h"
 
 namespace Gadgetron{
   
-  template <class T> class EXPORTGPUSOLVERS cuNlcgSolver : public nlcgSolver<cuNDArray<T> >
+  template <class T> class cuNlcgSolver : public nlcgSolver<cuNDArray<T> >
   {
   public:
-    
     cuNlcgSolver() : nlcgSolver<cuNDArray<T> >() {}
     virtual ~cuNlcgSolver() {}
-    
-    virtual void solver_non_negativity_filter(cuNDArray<T> *x,cuNDArray<T> *g);    
   };
 }

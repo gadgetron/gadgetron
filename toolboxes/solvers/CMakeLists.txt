@@ -15,6 +15,7 @@ install(FILES
   cgCallback.h	
   cgPreconditioner.h
   lwSolver.h
+  lbfgsSolver.h
   gpSolver.h
   gpBbSolver.h
   DESTINATION include)

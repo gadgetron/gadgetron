@@ -9,15 +9,14 @@
 #include <vector>
 #include <iostream>
 #include <numeric>
+#include <list>
 
 namespace Gadgetron{
-/** Nonlinear conjugate gradient solver.
- * Adapted from Y.H. Dai & Y. Yuan 2001 "An Efficient Hybrid Conjugate Gradient Method for Unconstrained Optimization"
- * Annals of Operations Research, March 2001, Volume 103, Issue 1-4, pp 33-47
+/** Memory Limited BFGS Solver Adapted from Numerical Optimization (Wright and Nocedal 1999).
  *
  */
 
-template <class ARRAY_TYPE> class nlcgSolver : public gpSolver<ARRAY_TYPE>
+template <class ARRAY_TYPE> class lbfgsSolver : public gpSolver<ARRAY_TYPE>
 {
 
 
@@ -30,27 +29,35 @@ protected:
 
 public:
 
-	nlcgSolver(): gpSolver<ARRAY_TYPE>() {
+	lbfgsSolver(): gpSolver<ARRAY_TYPE>() {
 		iterations_ = 10;
 		tc_tolerance_ = (REAL)1e-7;
 		non_negativity_constraint_=false;
 		dump_residual = false;
 		threshold= REAL(1e-7);
-
+		m_ = 3;
 		rho = 0.5f;
 	}
 
-	virtual ~nlcgSolver(){}
+	virtual ~lbfgsSolver(){}
 
 
 	virtual void set_rho(REAL _rho){
 		rho = _rho;
 	}
 
+	/***
+	 * @brief Sets the number of iterations to use for estimating the Hessian. Memory usage increases linearly with m_;
+	 * @param m
+	 */
+	virtual void set_m(unsigned int m){
+		m_ = m;
+	}
+
 	virtual boost::shared_ptr<ARRAY_TYPE> solve(ARRAY_TYPE* in)
-																															{
+																																	{
 		if( this->encoding_operator_.get() == 0 ){
-			throw std::runtime_error("Error: nlcgSolver::compute_rhs : no encoding operator is set" );
+			throw std::runtime_error("Error: lbfgsSolver::compute_rhs : no encoding operator is set" );
 		}
 
 		// Get image space dimensions from the encoding operator
@@ -58,7 +65,7 @@ public:
 
 		boost::shared_ptr< std::vector<size_t> > image_dims = this->encoding_operator_->get_domain_dimensions();
 		if( image_dims->size() == 0 ){
-			throw std::runtime_error("Error: nlcgSolver::compute_rhs : encoding operator has not set domain dimension" );
+			throw std::runtime_error("Error: lbfgsSolver::compute_rhs : encoding operator has not set domain dimension" );
 		}
 
 		ARRAY_TYPE * x = new ARRAY_TYPE(image_dims.get()); //The image. Will be returned inside a shared_ptr
@@ -99,6 +106,9 @@ public:
 
 		ARRAY_TYPE encoding_space2(in->get_dimensions().get());
 		REAL reg_res,data_res;
+
+
+		std::list<bfgsPair> subspace;
 
 		if( this->output_mode_ >= solver<ARRAY_TYPE,ARRAY_TYPE>::OUTPUT_VERBOSE ){
 			std::cout << "Iterating..." << std::endl;
@@ -141,40 +151,13 @@ public:
 				std::cout << "Iteration " <<i << ". Relative gradient norm: " <<  grad_norm/grad_norm0 << std::endl;
 			}
 
-			if (i == 0){
-				d -= g;
-				if (this->precond_.get()){
-					this->precond_->apply(&d,&d);
-					this->precond_->apply(&d,&d);
-				}
+			lbfgs_update(&g,&d,subspace);
 
-			} else {
-
-				g_step = g; //Not using g_step for anything right now, so let's use it for our beta calculation
-				if (this->precond_.get()){
-					this->precond_->apply(&g_step,&g_step); //Perform first half of the preconditioning
-					this->precond_->apply(&g_old,&g_old);
-				}
-
-				ELEMENT_TYPE g_old_norm = dot(&g_old,&g_old);
-				ELEMENT_TYPE ggold = dot(&g_step,&g_old);
-				g_old -= g_step;
-				REAL gg = real(dot(&g_step,&g_step));
-				ELEMENT_TYPE gy = -dot(&d,&g_old);
-				//ELEMENT_TYPE beta = -dot(g,g_old)/g_old_norm; //PRP ste[
-				//ELEMENT_TYPE theta = gy/g_old_norm;
-
-				REAL betaDy = -gg/real(dot(&d,&g_old));
-				REAL betaHS = real(dot(&g_step,&g_old))/real(dot(&d,&g_old));
-				REAL beta = std::max(REAL(0),std::min(betaDy,betaHS)); //Hybrid step size from Dai and Yuan 2001
-
-				d *= beta;
-
-				if (this->precond_.get()) this->precond_->apply(&g_step,&g_step); //Perform the rest of the preconditioning
-
-				d -= g_step;
-				std::cout << "Beta " << beta << std::endl;
+			if (this->precond_.get()){
+				this->precond_->apply(&d,&d);
+				this->precond_->apply(&d,&d);
 			}
+
 
 			this->encoding_operator_->mult_M(&d,&encoding_space2);
 
@@ -207,15 +190,15 @@ public:
 
 			{
 				FunctionEstimator f(&encoding_space,&encoding_space2,&regEnc,&regEnc2,x,&d,&g_linear,&g_step,this);
-				alpha=backtracking(f,alpha0,gd,rho,old_norm);
-				//alpha=cg_linesearch(f,alpha0,gd,old_norm);
+				//alpha=backtracking(f,alpha0,gd,rho,old_norm);
+					alpha=cg_linesearch(f,alpha0,gd,old_norm);
 				if (alpha == 0) {
 					std::cerr << "Linesearch failed, returning current iteration" << std::endl;
 					return boost::shared_ptr<ARRAY_TYPE>(x);
 				}
 			}
 
-			std::cout << "Alpha: " << alpha << std::endl;
+			std::cout << "Alpha : " << alpha << std::endl;
 
 
 
@@ -246,9 +229,9 @@ public:
 				FunctionEstimator f(&encoding_space,&encoding_space2,&regEnc,&regEnc2,x,&d,&g_linear,&g_step,this);
 				//alpha=gold(f,0,alpha0*1.5);
 				//alpha = wolfesearch(f,alpha0,gd,rho,old_norm);
-				alpha = backtracking(f,alpha0,gd,rho,old_norm);
+				//alpha = backtracking(f,alpha0,gd,rho,old_norm);
 
-				//alpha = cg_linesearch(f,alpha0,gd,old_norm);
+				alpha = cg_linesearch(f,alpha0,gd,old_norm);
 				axpy(alpha,&d,x);
 				if (alpha == 0){
 					std::cerr << "Linesearch failed, returning current iteration" << std::endl;
@@ -261,14 +244,37 @@ public:
 
 
 
-			std::cout << "Function value: " << functionValue(&encoding_space,regEnc,x) << std::endl;
+
+
+
+			REAL f = functionValue(&encoding_space,regEnc,x);
+			std::cout << "Function value: " << f << std::endl;
 
 			g = g_linear;
 
 			this->add_gradient(x,&g);
 
 
-			iteration_callback(x,i,data_res,reg_res);
+			//Expand current BFGS subspace with new pair
+			bfgsPair pair;
+			if (subspace.size() == m_){
+				pair=subspace.back();
+				subspace.pop_back();
+				*(pair.s) = d;
+				*(pair.y) = g;
+			} else {
+				pair.s = boost::shared_ptr<ARRAY_TYPE>(new ARRAY_TYPE(d));
+				pair.y = boost::shared_ptr<ARRAY_TYPE>(new ARRAY_TYPE(g));
+			}
+			*(pair.s) *= alpha;
+			*(pair.y) -= g_old;
+
+			pair.rho = dot(pair.s.get(),pair.y.get());
+
+			subspace.push_front(pair);
+
+
+			iteration_callback(x,i,f);
 
 
 			if (grad_norm/grad_norm0 < tc_tolerance_)  break;
@@ -276,7 +282,7 @@ public:
 		}
 
 		return boost::shared_ptr<ARRAY_TYPE>(x);
-																															}
+																																	}
 
 
 
@@ -352,7 +358,8 @@ protected:
 	typedef typename std::vector<boost::shared_ptr<linearOperator<ARRAY_TYPE> > >::iterator  csIterator;
 	typedef typename std::vector< std::vector<boost::shared_ptr<linearOperator<ARRAY_TYPE> > > >::iterator csGroupIterator;
 
-	virtual void iteration_callback(ARRAY_TYPE*,int i,REAL,REAL){};
+	virtual void solver_non_negativity_filter(ARRAY_TYPE*,ARRAY_TYPE*)=0;
+	virtual void iteration_callback(ARRAY_TYPE* x ,int iteration,REAL value){};
 
 
 
@@ -385,12 +392,53 @@ protected:
 
 		}
 	}
+	struct bfgsPair{
+		boost::shared_ptr<ARRAY_TYPE> s;
+		boost::shared_ptr<ARRAY_TYPE> y;
+		ELEMENT_TYPE rho;
+	};
+
+	/***
+	 * @brief L-BFGS update, following algorithm 9.2 in Numerical Optimization
+	 * @param[in] g gradient
+	 * @param[out] d search direction
+	 * @param[in] pairs
+	 */
+	void lbfgs_update(ARRAY_TYPE* g, ARRAY_TYPE* d, std::list<bfgsPair>& pairs){
+		*d = *g;
+
+		if (pairs.size() > 0){
+			std::list<ELEMENT_TYPE> alpha_list;
+			for (typename std::list<bfgsPair>::iterator it = pairs.begin(); it != pairs.end(); ++it){
+				ELEMENT_TYPE alpha = dot(it->s.get(),d)/it->rho;
+				axpy(-alpha,it->y.get(),d);
+				alpha_list.push_back(alpha);
+			}
+
+			bfgsPair front = pairs.front();
+			ELEMENT_TYPE gamma = front.rho/dot(front.y.get(),front.y.get());
+			*d *= gamma;
+
+			typename std::list<ELEMENT_TYPE>::reverse_iterator alpha_it = alpha_list.rbegin();
+			//Reverse iteration
+			for (typename std::list<bfgsPair>::reverse_iterator it = pairs.rbegin(); it != pairs.rend(); ++it, ++alpha_it){
+				ELEMENT_TYPE beta = dot(it->y.get(),d)/it->rho;
+				ELEMENT_TYPE alpha = *alpha_it;
+				axpy(alpha-beta,it->s.get(),d);
+			}
+		}
+		*d *= REAL(-1);
+
+	}
+
+
+
 
 
 	class FunctionEstimator{
 	public:
 
-		FunctionEstimator(ARRAY_TYPE* _encoding_space,ARRAY_TYPE* _encoding_step,std::vector<ARRAY_TYPE>* _regEnc,std::vector<ARRAY_TYPE>* _regEnc_step, ARRAY_TYPE * _x, ARRAY_TYPE * _d, ARRAY_TYPE * _g, ARRAY_TYPE * _g_step, nlcgSolver<ARRAY_TYPE> * _parent)
+		FunctionEstimator(ARRAY_TYPE* _encoding_space,ARRAY_TYPE* _encoding_step,std::vector<ARRAY_TYPE>* _regEnc,std::vector<ARRAY_TYPE>* _regEnc_step, ARRAY_TYPE * _x, ARRAY_TYPE * _d, ARRAY_TYPE * _g, ARRAY_TYPE * _g_step, lbfgsSolver<ARRAY_TYPE> * _parent)
 	{
 			encoding_step = _encoding_step;
 			encoding_space = _encoding_space;
@@ -442,7 +490,7 @@ protected:
 		ARRAY_TYPE* x, *d;
 		ARRAY_TYPE* g, *g_step;
 
-		nlcgSolver<ARRAY_TYPE>* parent;
+		lbfgsSolver<ARRAY_TYPE>* parent;
 		ARRAY_TYPE xtmp;
 
 
@@ -505,15 +553,14 @@ protected:
 	 */
 	REAL backtracking(FunctionEstimator& f, const REAL alpha0, const REAL gd, const REAL rho, const REAL old_norm){
 		REAL alpha;
-		REAL delta=0.1;
+		REAL delta=1e-4;
 		REAL sigma=0.9;
 		//REAL precision = 0.0003; //Estimated precision of function evaluation
 		REAL precision = 1e-4f; //Estimated precision of function evaluation
 		bool wolfe = false;
 		int  k=0;
 
-		while ( !wolfe)
-        {
+		while (not wolfe){
 			alpha=alpha0*std::pow(rho,k);
 			//if (f(alpha) <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
 			REAL fa = f(alpha);
@@ -766,6 +813,8 @@ protected:
 	REAL threshold;
 	bool dump_residual;
 	REAL rho;
+
+	unsigned int m_; // Number of copies to use.
 
 	// Preconditioner
 
