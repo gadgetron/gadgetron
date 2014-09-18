@@ -35,6 +35,7 @@ target_link_libraries(gadgetron_python
     ${MKL_LIBRARIES})
 	
 target_link_libraries(GadgetronPythonMRI
+    ${ISMRMRD_LIBRARIES}
 	optimized ${ACE_LIBRARIES}  
 	debug ${ACE_DEBUG_LIBRARY} 
 	${PYTHON_LIBRARIES} 
@@ -43,7 +44,7 @@ target_link_libraries(GadgetronPythonMRI
 
 IF (WIN32)
     SET_TARGET_PROPERTIES(GadgetronPythonMRI PROPERTIES SUFFIX .pyd)
-	SET_TARGET_PROPERTIES(gadgetron_python PROPERTIES LINK_FLAGS "/LIBPATH:${PYTHON_INCLUDE_DIR}/../libs" )
+    SET_TARGET_PROPERTIES(gadgetron_python PROPERTIES LINK_FLAGS "/LIBPATH:${PYTHON_INCLUDE_DIR}/../libs" )
 ENDIF(WIN32)
 
 set_target_properties(GadgetronPythonMRI PROPERTIES PREFIX "")
