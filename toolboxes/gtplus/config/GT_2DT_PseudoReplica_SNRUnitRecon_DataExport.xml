@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
+        xmlns="http://gadgetron.sf.net/gadgetron"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <!--
+       _____              _____     _____   ______   _______   _____     ____    _   _ 
+      / ____|     /\     |  __ \   / ____| |  ____| |__   __| |  __ \   / __ \  | \ | |
+     | |  __     /  \    | |  | | | |  __  | |__       | |    | |__) | | |  | | |  \| |
+     | | |_ |   / /\ \   | |  | | | | |_ | |  __|      | |    |  _  /  | |  | | | . ` |
+     | |__| |  / ____ \  | |__| | | |__| | | |____     | |    | | \ \  | |__| | | |\  |
+      \_____| /_/    \_\ |_____/   \_____| |______|    |_|    |_|  \_\  \____/  |_| \_|
+                                                                                       
+    -->
+
+    <!-- 
+        GtProg_PseudoRplica_SNRUnitRecon_DataExport.xml
+
+        Hui Xue
+        hui.xue@nih.gov
+
+        To export the SNR unit scaled ISMRMRD data
+        This is the first step for pseudo-replica SNR measurements
+    -->
+
+    <!-- reader -->
+    <reader>
+        <slot>1008</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
+    </reader>
+
+    <!-- Noise prewhitening 
+         The SNR unit scaling is performed
+    -->
+    <gadget>
+        <name>NoiseAdjust</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>NoiseAdjustGadget</classname>
+
+        <!-- File prefix for stored noise prewhitener matrix -->
+        <property>
+            <name>noise_dependency_prefix</name>
+            <value>GadgetronNoisePreWhitener</value>
+        </property>
+
+        <!-- Preset noise dwell time; for noise dependency measurements -->
+        <property>
+            <name>noise_dwell_time_us_preset</name>
+            <value>5.0</value>
+        </property>
+    </gadget>
+
+    <!-- Dump the noise scaled data to an ismrmd dataset 
+    -->
+    <gadget>
+        <name>IsmrmrdDump</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>IsmrmrdDumpGadget</classname>
+
+        <!-- File prefix for the data set -->
+        <property>
+            <name>file_prefix</name>
+            <value>ISMRMRD_PseudoReplica</value>
+        </property>
+
+        <!-- Whether to append time stamp to the file name -->
+        <property>
+            <name>append_timestamp</name>
+            <value>false</value>
+        </property>
+    </gadget>
+
+</gadgetronStreamConfiguration>

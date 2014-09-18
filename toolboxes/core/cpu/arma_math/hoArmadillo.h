@@ -1,6 +1,9 @@
 #pragma once
 #define ARMA_64BIT_WORD
 #include "hoNDArray.h"
+
+#ifdef USE_ARMADILLO
+
 #include <armadillo>
 
 /** \file hoArmadillo.h
@@ -82,3 +85,5 @@ namespace Gadgetron{
       return arma::Row<typename stdType<T>::Type>( (typename stdType<T>::Type*) x->get_data_ptr(), x->get_number_of_elements(), false, true );
     }
 }
+
+#endif // USE_ARMADILLO

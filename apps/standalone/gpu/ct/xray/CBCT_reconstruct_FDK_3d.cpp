@@ -5,6 +5,7 @@
 #include "hoNDArray_fileio.h"
 #include "hoCuNDArray_math.h"
 #include "vector_td_utilities.h"
+#include "hoNDArray_utils.h"
 #include "GPUTimer.h"
 
 #include <iostream>
@@ -70,6 +71,7 @@ int main(int argc, char** argv)
     std::string binningdata_filename = (char*)parms.get_parameter('b')->get_string_value();
     std::cout << "Using binning data file: " << binningdata_filename << std::endl;
     binning->load(binningdata_filename);
+    binning = boost::shared_ptr<CBCT_binning>(new CBCT_binning(binning->get_3d_binning()));
   } 
   else 
     binning->set_as_default_3d_bin(acquisition->get_projections()->get_size(2));

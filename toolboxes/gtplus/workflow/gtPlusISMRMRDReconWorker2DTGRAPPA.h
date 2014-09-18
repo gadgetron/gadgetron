@@ -8,6 +8,7 @@
 #include "ismrmrd.h"
 #include "GadgetronTimer.h"
 #include "gtPlusISMRMRDReconUtil.h"
+#include "gtPlusISMRMRDReconCoilMapEstimation.h"
 #include "gtPlusISMRMRDReconWorker2DT.h"
 #include "gtPlusGRAPPA.h"
 
@@ -19,6 +20,7 @@ class gtPlusReconWorker2DTGRAPPA : public gtPlusReconWorker2DT<T>
 public:
 
     typedef gtPlusReconWorker2DT<T> BaseClass;
+    typedef typename BaseClass::value_type value_type;
 
     gtPlusReconWorker2DTGRAPPA() : BaseClass() {}
     virtual ~gtPlusReconWorker2DTGRAPPA() {}
@@ -32,6 +34,7 @@ public:
     using BaseClass::gt_timer2_;
     using BaseClass::gt_timer3_;
     using BaseClass::performTiming_;
+    using BaseClass::verbose_;
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
@@ -71,7 +74,7 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
 
         std::vector<int> kE1, oE1;
         bool fitItself = true;
-        GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, workOrder2DT->acceFactorE1_, workOrder2DT->grappa_kSize_E1_, fitItself));
+        GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, (int)workOrder2DT->acceFactorE1_, workOrder2DT->grappa_kSize_E1_, fitItself));
 
         size_t kRO = workOrder2DT->grappa_kSize_RO_;
         size_t kNE1 = workOrder2DT->grappa_kSize_E1_;
@@ -81,6 +84,11 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         workOrder2DT->kernelIm_->create(RO, E1, srcCHA, dstCHA, refN, S);
         workOrder2DT->unmixingCoeffIm_->create(RO, E1, srcCHA, refN, S);
         workOrder2DT->gfactor_.create(RO, E1, refN, S);
+
+        if ( workOrder2DT->wrap_around_map_needed_ )
+        {
+            workOrder2DT->wrap_around_map_.create(RO, E1, 2, refN, S);
+        }
     }
     catch(...)
     {
@@ -109,9 +117,11 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         size_t refN = ref_dst.get_size(3);
         size_t dstCHA = ref_dst.get_size(2);
 
+        gtPlusGRAPPA<T> grappa_local;
+
         std::vector<int> kE1, oE1;
         bool fitItself = true;
-        GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, workOrder2DT->acceFactorE1_, workOrder2DT->grappa_kSize_E1_, fitItself));
+        GADGET_CHECK_RETURN_FALSE(grappa_local.kerPattern(kE1, oE1, (size_t)workOrder2DT->acceFactorE1_, workOrder2DT->grappa_kSize_E1_, fitItself));
 
         size_t kRO = workOrder2DT->grappa_kSize_RO_;
         size_t kNE1 = workOrder2DT->grappa_kSize_E1_;
@@ -120,30 +130,61 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
         ho3DArray<T> acsSrc(refRO, refE1, srcCHA, const_cast<T*>(ref_src.begin()+n*refRO*refE1*srcCHA+usedS*refRO*refE1*srcCHA*refN));
         ho3DArray<T> acsDst(refRO, refE1, dstCHA, const_cast<T*>(ref_dst.begin()+n*refRO*refE1*dstCHA+usedS*refRO*refE1*dstCHA*refN));
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsSrc, "acsSrc");
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsDst, "acsDst");
+        std::ostringstream ostr;
+        ostr << "_n_" << n << "s_" << usedS;
+        std::string suffix = ostr.str();
 
-        grappa_.calib_use_gpu_  = workOrder2DT->grappa_use_gpu_;
+        std::string filename = "acsSrc";
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsSrc, filename+suffix);
+
+        filename = "acsDst";
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsDst, filename+suffix);
+
+        grappa_local.calib_use_gpu_  = workOrder2DT->grappa_use_gpu_;
 
         ho5DArray<T> ker(kRO, kNE1, srcCHA, dstCHA, oNE1, workOrder2DT->kernel_->begin()+n*kRO*kNE1*srcCHA*dstCHA*oNE1+usedS*kRO*kNE1*srcCHA*dstCHA*oNE1*refN);
-        grappa_.calib(acsSrc, acsDst, workOrder2DT->grappa_reg_lamda_, kRO, kE1, oE1, ker);
+        GADGET_CHECK_RETURN_FALSE(grappa_local.calib(acsSrc, acsDst, workOrder2DT->grappa_reg_lamda_, kRO, kE1, oE1, ker));
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker");
+        filename = "ker";
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, filename+suffix);
 
         hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, workOrder2DT->kernelIm_->begin()+n*RO*E1*srcCHA*dstCHA+usedS*RO*E1*srcCHA*dstCHA*refN);
-        grappa_.imageDomainKernel(ker, kRO, kE1, oE1, RO, E1, kIm);
+        GADGET_CHECK_RETURN_FALSE(grappa_local.imageDomainKernel(ker, kRO, kE1, oE1, RO, E1, kIm));
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, "kIm");
+        filename = "kIm";
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, filename+suffix);
 
         hoNDArray<T> coilMap(RO, E1, dstCHA, workOrder2DT->coilMap_->begin()+n*RO*E1*dstCHA+usedS*RO*E1*dstCHA*refN);
         hoNDArray<T> unmixC(RO, E1, srcCHA, workOrder2DT->unmixingCoeffIm_->begin()+n*RO*E1*srcCHA+usedS*RO*E1*srcCHA*refN);
         hoNDArray<T> gFactor(RO, E1, workOrder2DT->gfactor_.begin()+n*RO*E1+usedS*RO*E1*refN);
 
-        this->unmixCoeff(kIm, coilMap, unmixC, gFactor);
-        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(1.0/workOrder2DT->acceFactorE1_, gFactor));
+        GADGET_CHECK_RETURN_FALSE(this->unmixCoeff(kIm, coilMap, unmixC, gFactor));
 
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unmixC, "unmixC");
-        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gFactor, "gFactor");
+        GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (value_type)(1.0/workOrder2DT->acceFactorE1_), gFactor));
+
+        filename = "unmixC";
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unmixC, filename+suffix);
+
+        filename = "gFactor";
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gFactor, filename+suffix);
+
+        if ( workOrder2DT->wrap_around_map_needed_ )
+        {
+            hoNDArray<T> wrapAroundMap(RO, E1, 2, workOrder2DT->wrap_around_map_.begin()+n*RO*E1*2+usedS*RO*E1*2*refN);
+
+            gtPlusISMRMRDReconCoilMapEstimation<T> coil_map_util;
+
+            hoNDArray<T> coilMap(RO, E1, acsDst.get_size(2));
+            hoNDArray<value_type> eigD(RO, E1, 2);
+
+            value_type thres = workOrder2DT->spirit_reg_lamda_;
+
+            GADGET_CHECK_RETURN_FALSE(coil_map_util.coilMap2DSPIRIT(acsDst, coilMap, eigD, workOrder2DT->spirit_kSize_RO_, workOrder2DT->spirit_kSize_E1_, thres));
+            GADGET_CHECK_RETURN_FALSE(wrapAroundMap.copyFrom(eigD));
+
+            filename = "wrapAroundMap";
+            GADGET_EXPORT_ARRAY(debugFolder_, gt_exporter_, eigD, filename+suffix);
+        }
     }
     catch(...)
     {
@@ -181,6 +222,35 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
         else
         {
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft2c(data_dst, buffer2DT_);
+        }
+
+        double effectiveAcceFactor = workOrder2DT->acceFactorE1_;
+        if ( workOrder2DT->start_E1_>0 && workOrder2DT->end_E1_>0 )
+        {
+            size_t num = workOrder2DT->end_E1_ - workOrder2DT->start_E1_ + 1;
+            size_t res = (size_t)( num % (size_t)(std::ceil(workOrder2DT->acceFactorE1_)) );
+            double N = std::floor( (double)(num-res)/(double)workOrder2DT->acceFactorE1_);
+            effectiveAcceFactor = (double)num/N;
+        }
+        else
+        {
+            size_t num = E1;
+            size_t res = (size_t)( num % (size_t)(std::ceil(workOrder2DT->acceFactorE1_)) );
+            double N = std::floor( (double)(num-res)/(double)workOrder2DT->acceFactorE1_);
+            effectiveAcceFactor = (double)num/N;
+        }
+
+        typename realType<T>::Type fftCompensationRatio = (typename realType<T>::Type)(1.0/std::sqrt(effectiveAcceFactor));
+        Gadgetron::scal( fftCompensationRatio, buffer2DT_);
+
+        // if the image data is scaled and ref lines are going to be filled back to the data, 
+        // the reference lines should be scaled too
+        if ( workOrder2DT->CalibMode_ == ISMRMRD_embedded )
+        {
+            if ( workOrder2DT->embedded_ref_fillback_ )
+            {
+                Gadgetron::scal( fftCompensationRatio, workOrder2DT->ref_);
+            }
         }
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, buffer2DT_, "buffer2DT_");
@@ -225,7 +295,25 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                     hoNDArray<T> unwarppedIm(RO, E1, dstCHA, N, workOrder2DT->fullkspace_.begin()+usedS*RO*E1*dstCHA*N);
 
                     this->applyImageDomainKernelImage(aliasedIm, kIm, buffer2DT_unwrapping_, unwarppedIm);
-                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedIm, "unwarppedIm");
+
+                    if ( !debugFolder_.empty() )
+                    {
+                        {
+                            std::ostringstream ostr;
+                            ostr << "kIm_" << usedS;
+                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, ostr.str());
+                        }
+
+                        {
+                            std::ostringstream ostr;
+                            ostr << "aliasedIm_" << usedS;
+                            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, aliasedIm, ostr.str());
+                        }
+
+                        std::ostringstream ostr;
+                        ostr << "unwarppedIm_" << usedS;
+                        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedIm, ostr.str());
+                    }
                 }
                 else
                 {
@@ -267,10 +355,22 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                     gtPlusISMRMRDReconUtilComplex<T>().coilCombine(unwarppedIm, coilMap, combined);
                 }
 
-                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, combined, "combined");
+                if ( !debugFolder_.empty() )
+                {
+                    std::ostringstream ostr;
+                    ostr << "combined_" << usedS;
+                    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, combined, ostr.str());
+                }
             }
 
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(workOrder2DT->fullkspace_);
+
+            if ( !debugFolder_.empty() )
+            {
+                std::ostringstream ostr;
+                ostr << "fullkspace_" << usedS;
+                GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder2DT->fullkspace_, ostr.str());
+            }
         }
         else
         {
@@ -302,6 +402,10 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
                     }
                 }
             }
+
+            workOrder2DT->fullkspace_.create(RO, E1, 1, N, S);
+            memcpy(workOrder2DT->fullkspace_.begin(), workOrder2DT->complexIm_.begin(), workOrder2DT->complexIm_.get_number_of_bytes());
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->fft2c(workOrder2DT->fullkspace_);
         }
     }
     catch(...)

@@ -11,23 +11,12 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers
+  ${CMAKE_SOURCE_DIR}/toolboxes/solvers/cpu
   )
 
 cuda_add_library(gpusolvers SHARED 
-    cuCgPreconditioner.h
-    cuCgSolver.h
-    cuNlcgSolver.h
-    cuLbfgsSolver.h
-    cuGpBbSolver.h
-    cuLwSolver.h
-    cuSbcCgSolver.h
-    cuSbCgSolver.h
-    cuSbcLwSolver.h
-    cuSbLwSolver.h
     gpusolvers_export.h
-    cuNlcgSolver.cu
-    cuGpBbSolver.cu
-    cuLbfgsSolver.cu
+    cuSolverUtils.cu
   )
 
 target_link_libraries(gpusolvers 
@@ -44,16 +33,16 @@ install(FILES
   cuSbcCgSolver.h
   cuCgPreconditioner.h
   cuLwSolver.h
+  cuLbfgsSolver.h
   cuSbLwSolver.h
   cuSbcLwSolver.h
   cuCgSolver.h
   cuNlcgSolver.h
-  cuLbfgsSolver.h
   cuGpBbSolver.h
   hoCuCgSolver.h
   hoCuNlcgSolver.h
-  hoCuLbfgsSolver.h
   hoCuSbcCgSolver.h
   hoCuGpBbSolver.h
+  cuSolverUtils.h
   gpusolvers_export.h
   DESTINATION include)

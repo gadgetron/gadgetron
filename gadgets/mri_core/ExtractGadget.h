@@ -21,41 +21,42 @@
 
 namespace Gadgetron{
 
-	class EXPORTGADGETSMRICORE ExtractGadget:
-		public Gadget2<ISMRMRD::ImageHeader,hoNDArray< std::complex<float> > >
-	{
+  class EXPORTGADGETSMRICORE ExtractGadget:
+  public Gadget2<ISMRMRD::ImageHeader,hoNDArray< std::complex<float> > >
+    {
 
-	public:
+    public:
+      GADGET_DECLARE(ExtractGadget);
 
-		ExtractGadget();
-		virtual ~ExtractGadget();
+      ExtractGadget();
+      virtual ~ExtractGadget();
 
-		void set_extract_mask(unsigned short mask) {
-			extract_mask_ = mask;
-		}
+      void set_extract_mask(unsigned short mask) {
+	extract_mask_ = mask;
+      }
 
-		bool extract_magnitude() {
-			return (extract_mask_ & GADGET_EXTRACT_MAGNITUDE);
-		}
+      bool extract_magnitude() {
+	return (extract_mask_ & GADGET_EXTRACT_MAGNITUDE);
+      }
 
-		bool extract_real() {
-			return (extract_mask_ & GADGET_EXTRACT_REAL);
-		}
+      bool extract_real() {
+	return (extract_mask_ & GADGET_EXTRACT_REAL);
+      }
 
-		bool extract_imag() {
-			return (extract_mask_ & GADGET_EXTRACT_IMAG);
-		}
+      bool extract_imag() {
+	return (extract_mask_ & GADGET_EXTRACT_IMAG);
+      }
 
-		bool extract_phase() {
-			return (extract_mask_ & GADGET_EXTRACT_PHASE);
-		}
+      bool extract_phase() {
+	return (extract_mask_ & GADGET_EXTRACT_PHASE);
+      }
 
-	protected:
-		virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
-			GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+    protected:
+      virtual int process(GadgetContainerMessage<ISMRMRD::ImageHeader>* m1,
+			  GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
 
-		unsigned short extract_mask_;
-	};
+      unsigned short extract_mask_;
+    };
 }
 
 #endif /* EXTRACTGADGET_H_ */

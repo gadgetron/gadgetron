@@ -7,48 +7,33 @@ endif (WIN32)
 find_package(ACE)
 find_package(FFTW3 COMPONENTS single double)
 find_package(Ismrmrd)
-find_package(XSD)
-find_package(XercesC)
 
 include_directories(   
   ${ACE_INCLUDE_DIR} 
   ${Boost_INCLUDE_DIR}
   ${FFTW3_INCLUDE_DIR}
   ${ISMRMRD_INCLUDE_DIR}
-  ${ISMRMRD_SCHEMA_DIR}
-  ${ISMRMRD_XSD_INCLUDE_DIR}
-  ${XSD_INCLUDE_DIR}
-  ${XERCESC_INCLUDE_DIR}
   ${CMAKE_SOURCE_DIR}/dependencies/tinyxml
   ${CMAKE_SOURCE_DIR}/apps/gadgetron 
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/hostutils
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/algorithm
   ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
   )
-
-if (MKL_FOUND)
-    MESSAGE("MKL Found for gtPlus ... ")
-    list(APPEND EXTRA_MKL_LIBRARIES mkl_core)
-    if ( USE_OPENMP )
-        list(APPEND EXTRA_MKL_LIBRARIES mkl_intel_thread)
-    endif ( USE_OPENMP )
-
-    INCLUDE_DIRECTORIES( ${MKL_INCLUDE_DIR} )
-    LINK_DIRECTORIES( ${MKL_LIB_DIR} ${MKL_COMPILER_LIB_DIR} )
-endif (MKL_FOUND)
 
 add_subdirectory(mri_core)
 
 if (ARMADILLO_FOUND)
-  add_subdirectory(epi)
-elseif (ARMADILLO_FOUND)	
-  MESSAGE("Armadillo not found, NOT compiling EPI Gadgets")
+    add_subdirectory(epi)
+elseif (ARMADILLO_FOUND)
+    MESSAGE("Armadillo not found, NOT compiling EPI Gadgets")
 endif (ARMADILLO_FOUND)
 
-if (MKL_FOUND)
+if (MKL_FOUND OR ARMADILLO_FOUND)
     add_subdirectory(gtPlus)
-endif (MKL_FOUND)
+endif (MKL_FOUND OR ARMADILLO_FOUND)
 
 if (CUDA_FOUND)
   message("Cuda found, compiling gpu accelerated gadgets")
@@ -72,7 +57,8 @@ if (MATLAB_FOUND)
 endif(MATLAB_FOUND)
 
 # nest the find_package checks to provide more useful error messages
-find_package(Boost COMPONENTS python)
+find_package(Boost COMPONENTS python system thread REQUIRED)
+
 if (Boost_PYTHON_FOUND AND PYTHONLIBS_FOUND AND NUMPY_FOUND)
     MESSAGE("PYTHON_INCLUDE_DIRS: ${PYTHON_INCLUDE_DIRS}")
     MESSAGE("PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")
@@ -100,4 +86,7 @@ else(DCMTK_FOUND)
 endif(DCMTK_FOUND)
 
 add_subdirectory(cartesian)
-add_subdirectory(moco)
+
+if(ARMADILLO_FOUND)
+    add_subdirectory(moco)
+endif(ARMADILLO_FOUND)

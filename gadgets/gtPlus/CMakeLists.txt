@@ -1,12 +1,9 @@
 
-include_directories(   
+include_directories( 
     ${CMAKE_SOURCE_DIR}/gadgets/core
     ${ACE_INCLUDE_DIR} 
     ${Boost_INCLUDE_DIR}
     ${ISMRMRD_INCLUDE_DIR}
-    ${ISMRMRD_SCHEMA_DIR}
-    ${ISMRMRD_XSD_INCLUDE_DIR}
-    ${XSD_INCLUDE_DIR}
     ${FFTW3_INCLUDE_DIR}
     ${ARMADILLO_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/toolboxes/mri/pmri/gpu
@@ -26,13 +23,15 @@ include_directories(
     ${HDF5_INCLUDE_DIR}
     ${HDF5_INCLUDE_DIR}/cpp
     ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow
+    ${CMAKE_SOURCE_DIR}/toolboxes/registration/optical_flow/cpu
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/util
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/workflow
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/algorithm
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/solver
+    ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/application
     ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools
-	${CMAKE_SOURCE_DIR}/toolboxes/gadgettools/ismrmrd
+    ${CMAKE_SOURCE_DIR}/toolboxes/gadgettools/ismrmrd
     ${CMAKE_SOURCE_DIR}/apps/gadgetron
     ${CMAKE_SOURCE_DIR}/gadgets/mri_core 
     ${CMAKE_SOURCE_DIR}/gadgets/gtPlus 
@@ -48,55 +47,67 @@ if(WIN32)
 endif(WIN32)
 
 find_package(Ismrmrd REQUIRED)
-find_package(XSD REQUIRED)
-find_package(XercesC REQUIRED)
+
+set( gadgetronPlus_header_files GtPlusGadgetImageArray.h
+                                GtPlusAccumulatorWorkOrderTriggerGadget.h
+                                GtPlusAccumulatorImageTriggerGadget.h
+                                GtPlusGadgetOpenMP.h
+                                GtPlusReconGadget.h
+                                GtPlusRecon2DTGadget.h
+                                GtPlusRecon3DTGadget.h
+                                GtPlusRecon2DTGadgetCloud.h
+                                GtPlusRecon2DTCloudPackage.h
+                                GadgetCloudJobMessageReadWrite.h
+                                GtPlusReconJob2DTGadget.h 
+                                GtPlusReconJob3DTGadget.h 
+                                GtPlusReconJob2DTGadgetCloud.h 
+                                GtPlusImageReconGadget.h 
+                                GtPlusReconGadgetUtil.h 
+                                )
+
+set( gadgetronPlus_src_files GtPlusGadgetImageArray.cpp
+                            GtPlusAccumulatorWorkOrderTriggerGadget.cpp
+                            GtPlusAccumulatorImageTriggerGadget.cpp
+                            GtPlusGadgetOpenMP.cpp
+                            GtPlusReconGadget.cpp
+                            GtPlusRecon2DTGadget.cpp
+                            GtPlusRecon3DTGadget.cpp
+                            GtPlusRecon2DTGadgetCloud.cpp
+                            GadgetCloudJobMessageReadWrite.cpp
+                            GtPlusReconJob2DTGadget.cpp 
+                            GtPlusReconJob3DTGadget.cpp 
+                            GtPlusReconJob2DTGadgetCloud.cpp 
+                            GtPlusImageReconGadget.cpp 
+                            GtPlusReconGadgetUtil.cpp 
+                            )
 
 add_library(gadgetronPlus SHARED
-            GtPlusGadgetExport.h
-            GtPlusGadgetImageArray.h
-            GtPlusGadgetImageArray.cpp
-            GtPlusAccumulatorWorkOrderTriggerGadget.h
-            GtPlusAccumulatorWorkOrderTriggerGadget.cpp
-            GtPlusGadgetOpenMP.h
-            GtPlusGadgetOpenMP.cpp
-            GtPlusReconGadget.h
-            GtPlusReconGadget.cpp
-            GtPlusRecon2DTGadget.h
-            GtPlusRecon2DTGadget.cpp
-            GtPlusRecon3DTGadget.h
-            GtPlusRecon3DTGadget.cpp
-            GtPlusRecon2DTGadgetCloud.h
-            GtPlusRecon2DTGadgetCloud.cpp
-            GtPlusRecon2DTCloudPackage.h
-            GadgetCloudJobMessageReadWrite.h
-            GadgetCloudJobMessageReadWrite.cpp
-            GtPlusReconJob2DTGadget.h 
-            GtPlusReconJob2DTGadget.cpp 
-            GtPlusReconJob3DTGadget.h 
-            GtPlusReconJob3DTGadget.cpp 
-            GtPlusReconJob2DTGadgetCloud.h 
-            GtPlusReconJob2DTGadgetCloud.cpp 
-            ${ISMRMRD_XSD_SOURCE} )
+            GtPlusGadgetExport.h 
+            ${gadgetronPlus_header_files} 
+            ${gadgetronPlus_src_files} 
+	    )
 
 target_link_libraries(gadgetronPlus 
     cpucore 
     cpucore_math 
-	cpufft
+    cpufft
     gtplus 
     gadgettools 
-    ${MKL_LIBRARIES} 
     ${Boost_LIBRARIES}
     ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} 
-    optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
-    ${XERCESC_LIBRARIES} )
+    optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
+    )
 
-    if (CUDA_FOUND)
-        target_link_libraries(gadgetronPlus gpuparallelmri)
-    endif (CUDA_FOUND)
+if (CUDA_FOUND)  
+  include_directories( 
+    ${CUDA_INCLUDE_DIRS}
+    )
+  target_link_libraries(gadgetronPlus gpuparallelmri)
+endif(CUDA_FOUND)
 
 install (FILES 
-        GtPlusGadgetExport.h
+        GtPlusGadgetExport.h 
+        ${gadgetronPlus_header_files} 
         DESTINATION include)
 
 install(TARGETS gadgetronPlus DESTINATION lib)
-# install(FILES default.xml default_short.xml DESTINATION config)

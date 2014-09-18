@@ -43,7 +43,7 @@ void gtPlusCloudScheduler::setUpNodes(size_t numOfNodes)
         node_id_computing_power_indexes_.resize(num_of_nodes_);
         for ( size_t ii=0; ii<num_of_nodes_; ii++ )
         {
-            node_id_computing_power_indexes_[ii].first = ii;
+            node_id_computing_power_indexes_[ii].first = (int)ii;
             node_id_computing_power_indexes_[ii].second = 1.0;
         }
     }

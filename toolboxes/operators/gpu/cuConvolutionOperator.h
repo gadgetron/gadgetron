@@ -4,12 +4,11 @@
 
 #pragma once
 
-
+#include "gpuoperators_export.h"
 #include "cuNDArray_math.h"
 #include "cuNDFFT.h"
 #include "vector_td_utilities.h"
 #include "convolutionOperator.h"
-#include "gpuoperators_export.h"
 
 namespace Gadgetron{
 

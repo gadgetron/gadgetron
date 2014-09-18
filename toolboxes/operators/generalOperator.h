@@ -20,13 +20,13 @@ namespace Gadgetron{
     typedef typename ARRAY::element_type ELEMENT_TYPE;
     typedef typename realType<ELEMENT_TYPE>::Type REAL;
 
-    generalOperator() : weight_(REAL(1)){};
+    generalOperator() : weight_(REAL(1)){}
 
     generalOperator(std::vector<size_t> *dims) : weight_(REAL(1)){
       set_domain_dimensions(dims);
     }
-    
-    virtual ~generalOperator(){};
+
+    virtual ~generalOperator();
 
     /**
      * @brief Calculates the gradient of the operator at point "in"
@@ -35,7 +35,6 @@ namespace Gadgetron{
      * @param[in] accumulate If false, overrides the output array. Otherwise adds result.
      */
     virtual void gradient(ARRAY* in, ARRAY* out, bool accumulate = false ) = 0;
-    
 
     /**
      * @brief Calculates the function value of the operator
@@ -43,7 +42,6 @@ namespace Gadgetron{
      * @return Function value at point "in"
      */
     virtual REAL magnitude(ARRAY* in)=0;
-
 
     /**
      * Set the domain dimension (image size) of the operator
@@ -54,7 +52,7 @@ namespace Gadgetron{
       if( dims == 0x0 ) throw std::runtime_error("Null pointer provided");
       domain_dims_ = *dims;  
     }
-    
+
     /**
      *
      * @return The domain dimensions (image size) of the operator
@@ -65,7 +63,7 @@ namespace Gadgetron{
       *dims = domain_dims_;
       return boost::shared_ptr< std::vector<size_t> >(dims);
     }
-    
+
     /**
      * Sets the weight of the operator
      * @param[in] weight
@@ -81,5 +79,10 @@ namespace Gadgetron{
   protected:
     REAL weight_;
     std::vector<size_t> domain_dims_;
-  };  
+  };
+
+  template <class ARRAY> 
+  generalOperator<ARRAY>::~generalOperator()
+  {
+  }
 }

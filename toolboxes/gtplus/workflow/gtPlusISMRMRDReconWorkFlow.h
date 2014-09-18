@@ -24,12 +24,19 @@ struct DimensionRecordCompare
     }
 };
 
+// [RO E1 CHA SLC E2 CON PHS REP SET SEG AVE]
+#define GTPLUS_RECON_KSPACE_DIM_NUM 11
+// [RO E1 CHA SLC E2 CON PHS REP SET AVE]
+#define GTPLUS_RECON_IMAGE_DIM_NUM 10
+
 template <typename T> 
 class gtPlusISMRMRDReconWorkFlow
 {
 public:
 
     typedef std::pair<ISMRMRDDIM, size_t> DimensionRecordType;
+
+    typedef typename realType<T>::Type real_value_type;
 
     gtPlusISMRMRDReconWorkFlow();
     gtPlusISMRMRDReconWorkFlow(gtPlusReconWorker<T>& worker, gtPlusReconWorkOrder<T>& workOrder);
@@ -44,8 +51,8 @@ public:
     virtual bool postProcessing() = 0;
 
     // assemble the ISMRMRD dimension index
-    // ind must have 9 elements
-    bool ismrmrdDimIndex9D(std::vector<size_t>& ind, const ISMRMRDDIM& dim, size_t value);
+    // ind must have 10 elements
+    bool ismrmrdDimIndex10D(std::vector<size_t>& ind, const ISMRMRDDIM& dim, size_t value);
 
     // find the permute order for ISMRMRD
     bool findISMRMRDPermuteOrder(const std::vector<ISMRMRDDIM>& dimsSrc, const std::vector<ISMRMRDDIM>& dimsDst, std::vector<size_t>& order);
@@ -57,6 +64,7 @@ public:
     std::string printISMRMRDDimensionSize(const std::vector<size_t>& sizes);
 
     bool setDataArray(hoNDArray<T>& data);
+    bool setDataArray(hoNDArray<T>& data, hoNDArray<real_value_type>& time_stamp, hoNDArray<real_value_type>& physio_time_stamp);
     bool setRefArray(hoNDArray<T>& ref);
 
     // -------- these member variables are made as public ------------- //
@@ -107,9 +115,25 @@ public:
     std::vector< DimensionRecordType > dataDimStartingIndexes_;
 
     // ----------------------------------
-    // reconstruction results, complex images, 8D array [RO E1 SLC E2 CON PHS REP SET]
+    // reconstruction results, complex images, 10D array [RO E1 CHA SLC E2 CON PHS REP SET AVE]
     // ----------------------------------
     hoNDArray<T> res_;
+    // optional time stamps for the recon results, in the unit of seconds, 10D array [1 1 1 SLC E2 CON PHS REP SET AVE]
+    // if not set, the stored image header will be used for time stamps
+    hoNDArray<real_value_type> res_time_stamp_;
+    hoNDArray<real_value_type> res_physio_time_stamp_;
+
+    hoNDArray<T> res_second_;
+    hoNDArray<real_value_type> res_time_stamp_second_;
+    hoNDArray<real_value_type> res_physio_time_stamp_second_;
+
+    // gfactor, not all reconstruction fills the gfactor
+    // 10D array [RO E1 CHA SLC E2 CON PHS REP SET AVE]
+    hoNDArray<T> gfactor_;
+
+    // warp-around map, not all reconstruction fills the gfactor
+    // 10D array [RO E1 2 SLC E2 CON PHS REP SET AVE]
+    hoNDArray<T> wrap_around_map_;
 
     // ----------------------------------
     // debug and timing
@@ -127,20 +151,26 @@ public:
     // debug folder
     std::string debugFolder_;
 
-protected:
-
     // ----------------------------------
     // input data array
     // ----------------------------------
-    // image data, [RO E1 CHA SLC E2 CON PHS REP SET SEG]
+    // image data, 11D [RO E1 CHA SLC E2 CON PHS REP SET SEG AVE]
     hoNDArray<T>* data_;
+    // time stamp, 11D [1 E1 1 SLC E2 CON PHS REP SET SEG AVE]
+    // these are set with data array
+    hoNDArray<real_value_type>* time_stamp_;
+    hoNDArray<real_value_type>* physio_time_stamp_;
 
-    // reference calibration, [RO E1 CHA SLC E2 CON PHS REP SET SEG]
+    // reference calibration, 11D [RO E1 CHA SLC E2 CON PHS REP SET SEG AVE]
     hoNDArray<T>* ref_;
+
+protected:
 
     // internal helper memory allocated for computation
     hoNDArray<T> dataCurr_;
     hoNDArray<T> refCurr_;
+    hoNDArray<T> gfactorCurr_;
+    hoNDArray<T> wrap_around_mapCurr_;
 
     // size of dimensions for image data
     DimensionRecordType RO_;
@@ -153,6 +183,7 @@ protected:
     DimensionRecordType REP_;
     DimensionRecordType SET_;
     DimensionRecordType SEG_;
+    DimensionRecordType AVE_;
 
     // size of dimensions for ref data
     DimensionRecordType RO_ref_;
@@ -165,6 +196,7 @@ protected:
     DimensionRecordType REP_ref_;
     DimensionRecordType SET_ref_;
     DimensionRecordType SEG_ref_;
+    DimensionRecordType AVE_ref_;
 
     // expected dimensions for results
     std::vector<ISMRMRDDIM> dimsRes_;
@@ -175,7 +207,7 @@ protected:
 
 template <typename T> 
 gtPlusISMRMRDReconWorkFlow<T>::gtPlusISMRMRDReconWorkFlow() 
-: data_(NULL), ref_(NULL), worker_(NULL), workOrder_(NULL), noise_(NULL), noiseBW_(1.0), receriverBWRatio_(1.0), overSamplingRatioRO_(1.0), ADCSamplingTimeinSecond_(1.0) , performTiming_(false)
+: data_(NULL), time_stamp_(NULL), physio_time_stamp_(NULL), ref_(NULL), worker_(NULL), workOrder_(NULL), noise_(NULL), noiseBW_(1.0), receriverBWRatio_(1.0), overSamplingRatioRO_(1.0), ADCSamplingTimeinSecond_(1.0) , performTiming_(false)
 {
     RO_.first = DIM_ReadOut;
     RO_.second = 1;
@@ -207,6 +239,9 @@ gtPlusISMRMRDReconWorkFlow<T>::gtPlusISMRMRDReconWorkFlow()
     SEG_.first = DIM_Segment;
     SEG_.second = 1;
 
+    AVE_.first = DIM_Average;
+    AVE_.second = 1;
+
     RO_ref_.first = DIM_ReadOut;
     RO_ref_.second = 1;
 
@@ -237,7 +272,10 @@ gtPlusISMRMRDReconWorkFlow<T>::gtPlusISMRMRDReconWorkFlow()
     SEG_ref_.first = DIM_Segment;
     SEG_ref_.second = 1;
 
-    dimsRes_.resize(9);
+    AVE_ref_.first = DIM_Average;
+    AVE_ref_.second = 1;
+
+    dimsRes_.resize(GTPLUS_RECON_IMAGE_DIM_NUM);
     dimsRes_[0] = DIM_ReadOut;
     dimsRes_[1] = DIM_Encoding1;
     dimsRes_[2] = DIM_Channel;
@@ -247,8 +285,9 @@ gtPlusISMRMRDReconWorkFlow<T>::gtPlusISMRMRDReconWorkFlow()
     dimsRes_[6] = DIM_Phase;
     dimsRes_[7] = DIM_Repetition;
     dimsRes_[8] = DIM_Set;
+    dimsRes_[9] = DIM_Average;
 
-    dataDimStartingIndexes_.resize(10);
+    dataDimStartingIndexes_.resize(GTPLUS_RECON_KSPACE_DIM_NUM);
     dataDimStartingIndexes_[0] = DimensionRecordType(DIM_ReadOut, 0);
     dataDimStartingIndexes_[1] = DimensionRecordType(DIM_Encoding1, 0);
     dataDimStartingIndexes_[2] = DimensionRecordType(DIM_Channel, 0);
@@ -259,6 +298,7 @@ gtPlusISMRMRDReconWorkFlow<T>::gtPlusISMRMRDReconWorkFlow()
     dataDimStartingIndexes_[7] = DimensionRecordType(DIM_Repetition, 0);
     dataDimStartingIndexes_[8] = DimensionRecordType(DIM_Set, 0);
     dataDimStartingIndexes_[9] = DimensionRecordType(DIM_Segment, 0);
+    dataDimStartingIndexes_[10] = DimensionRecordType(DIM_Average, 0);
 
     gt_timer1_.set_timing_in_destruction(false);
     gt_timer2_.set_timing_in_destruction(false);
@@ -280,6 +320,7 @@ gtPlusISMRMRDReconWorkFlow<T>::gtPlusISMRMRDReconWorkFlow(gtPlusReconWorker<T>& 
     REP_.second = 1;
     SET_.second = 1;
     SEG_.second = 1;
+    AVE_.second = 1;
 
     RO_ref_.second = 1;
     E1_ref_.second = 1;
@@ -291,8 +332,9 @@ gtPlusISMRMRDReconWorkFlow<T>::gtPlusISMRMRDReconWorkFlow(gtPlusReconWorker<T>& 
     REP_ref_.second = 1;
     SET_ref_.second = 1;
     SEG_ref_.second = 1;
+    AVE_ref_.second = 1;
 
-    dimsRes_.resize(9);
+    dimsRes_.resize(GTPLUS_RECON_IMAGE_DIM_NUM);
     dimsRes_[0] = DIM_ReadOut;
     dimsRes_[1] = DIM_Encoding1;
     dimsRes_[2] = DIM_Channel;
@@ -302,8 +344,9 @@ gtPlusISMRMRDReconWorkFlow<T>::gtPlusISMRMRDReconWorkFlow(gtPlusReconWorker<T>& 
     dimsRes_[6] = DIM_Phase;
     dimsRes_[7] = DIM_Repetition;
     dimsRes_[8] = DIM_Set;
+    dimsRes_[9] = DIM_Average;
 
-    dataDimStartingIndexes_.resize(10);
+    dataDimStartingIndexes_.resize(GTPLUS_RECON_KSPACE_DIM_NUM);
     dataDimStartingIndexes_[0] = DimensionRecordType(DIM_ReadOut, 0);
     dataDimStartingIndexes_[1] = DimensionRecordType(DIM_Encoding1, 0);
     dataDimStartingIndexes_[2] = DimensionRecordType(DIM_Channel, 0);
@@ -314,6 +357,7 @@ gtPlusISMRMRDReconWorkFlow<T>::gtPlusISMRMRDReconWorkFlow(gtPlusReconWorker<T>& 
     dataDimStartingIndexes_[7] = DimensionRecordType(DIM_Repetition, 0);
     dataDimStartingIndexes_[8] = DimensionRecordType(DIM_Set, 0);
     dataDimStartingIndexes_[9] = DimensionRecordType(DIM_Segment, 0);
+    dataDimStartingIndexes_[10] = DimensionRecordType(DIM_Average, 0);
 
     gt_timer1_.set_timing_in_destruction(false);
     gt_timer2_.set_timing_in_destruction(false);
@@ -344,7 +388,7 @@ void gtPlusISMRMRDReconWorkFlow<T>::printInfo(std::ostream& os)
 
 template <typename T> 
 inline bool gtPlusISMRMRDReconWorkFlow<T>::
-ismrmrdDimIndex9D(std::vector<size_t>& ind, const ISMRMRDDIM& dim, size_t value)
+ismrmrdDimIndex10D(std::vector<size_t>& ind, const ISMRMRDDIM& dim, size_t value)
 {
     GADGET_CHECK_RETURN_FALSE(ind.size()>(size_t)(dim-DIM_ReadOut));
     ind[dim-DIM_ReadOut] = value;
@@ -435,6 +479,10 @@ printISMRMRDDimensions(const std::vector<ISMRMRDDIM>& dims)
                 os << "Segment ";
             break;
 
+            case DIM_Average:
+                os << "Average ";
+            break;
+
             default:
                 os << " Other";
         }
@@ -487,6 +535,36 @@ bool gtPlusISMRMRDReconWorkFlow<T>::setDataArray(hoNDArray<T>& data)
         REP_.second = data.get_size(7);
         SET_.second = data.get_size(8);
         SEG_.second = data.get_size(9);
+        AVE_.second = data.get_size(10);
+    }
+    catch(...)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T> 
+bool gtPlusISMRMRDReconWorkFlow<T>::setDataArray(hoNDArray<T>& data, hoNDArray<real_value_type>& time_stamp, hoNDArray<real_value_type>& physio_time_stamp)
+{
+    try
+    {
+        data_ = &data;
+        time_stamp_ = &time_stamp;
+        physio_time_stamp_ = &physio_time_stamp;
+
+        RO_.second = data.get_size(0);
+        E1_.second = data.get_size(1);
+        CHA_.second = data.get_size(2);
+        SLC_.second = data.get_size(3);
+        E2_.second = data.get_size(4);
+        CON_.second = data.get_size(5);
+        PHS_.second = data.get_size(6);
+        REP_.second = data.get_size(7);
+        SET_.second = data.get_size(8);
+        SEG_.second = data.get_size(9);
+        AVE_.second = data.get_size(10);
     }
     catch(...)
     {
@@ -513,6 +591,7 @@ bool gtPlusISMRMRDReconWorkFlow<T>::setRefArray(hoNDArray<T>& ref)
         REP_ref_.second    = ref.get_size(7);
         SET_ref_.second    = ref.get_size(8);
         SEG_ref_.second    = ref.get_size(9);
+        AVE_ref_.second    = ref.get_size(10);
     }
     catch(...)
     {

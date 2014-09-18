@@ -352,7 +352,6 @@ protected:
 	typedef typename std::vector<boost::shared_ptr<linearOperator<ARRAY_TYPE> > >::iterator  csIterator;
 	typedef typename std::vector< std::vector<boost::shared_ptr<linearOperator<ARRAY_TYPE> > > >::iterator csGroupIterator;
 
-	virtual void solver_non_negativity_filter(ARRAY_TYPE*,ARRAY_TYPE*)=0;
 	virtual void iteration_callback(ARRAY_TYPE*,int i,REAL,REAL){};
 
 
@@ -513,7 +512,8 @@ protected:
 		bool wolfe = false;
 		int  k=0;
 
-		while (not wolfe){
+		while ( !wolfe)
+        {
 			alpha=alpha0*std::pow(rho,k);
 			//if (f(alpha) <= old_norm+alpha*delta*gd) wolfe = true;//Strong Wolfe condition..
 			REAL fa = f(alpha);

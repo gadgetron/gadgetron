@@ -75,7 +75,7 @@ namespace Gadgetron{
     dim3 dimBlock( dims.vec[0] );
     dim3 dimGrid( 1, dims.vec[D-1] );
   
-    for( unsigned int d=1; d<D-1; d++ )
+    for(int d=1; d<D-1; d++ )
       dimGrid.x *= dims.vec[d];
   
     size_t elements = in->get_number_of_elements();
@@ -105,7 +105,7 @@ namespace Gadgetron{
     dim3 dimBlock( dims.vec[0] );
     dim3 dimGrid( 1, dims.vec[D-1] );
   
-    for( unsigned int d=1; d<D-1; d++ )
+    for(int d=1; d<D-1; d++ )
       dimGrid.x *= dims.vec[d];
   
     size_t elements = in->get_number_of_elements();

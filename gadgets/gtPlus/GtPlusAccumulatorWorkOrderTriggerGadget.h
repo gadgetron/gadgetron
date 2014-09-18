@@ -10,7 +10,7 @@
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "ismrmrd.h"
-#include "GadgetIsmrmrdReadWrite.h"
+#include "ismrmrd_xml.h"
 
 #include "hoNDArray_utils.h"
 
@@ -23,8 +23,8 @@
 namespace Gadgetron
 {
 
-// [Ro E1 Cha Slice E2 Con Phase Rep Set Seg]
-//   0  1  2   3    4   5    6     7  8   9
+// [Ro E1 Cha Slice E2 Con Phase Rep Set Seg AVE]
+//   0  1  2   3    4   5    6     7  8   9  10
 
 struct ReadOutBuffer
 {
@@ -36,7 +36,10 @@ struct ReadOutBuffer
 class EXPORTGTPLUSGADGET GtPlusAccumulatorWorkOrderTriggerGadget : public Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< std::complex<float> > >
 {
 public:
-    typedef std::complex<float> ValueType;
+    GADGET_DECLARE(GtPlusAccumulatorWorkOrderTriggerGadget);
+
+    typedef float real_value_type;
+    typedef std::complex<real_value_type> ValueType;
 
     typedef Gadget2< ISMRMRD::AcquisitionHeader, hoNDArray< ValueType > > BaseClass;
 
@@ -199,6 +202,14 @@ protected:
     // encoding matrix size (the real sampled size)
     size_t matrix_size_encoding_[3];
 
+    // maximal sampled line along E1 and E2
+    size_t max_sampled_E1_;
+    size_t max_sampled_E2_;
+
+    // index of center line along E1 and E2
+    size_t center_line_E1_;
+    size_t center_line_E2_;
+
     // encoding space size (the logic kspace size)
     size_t space_size_[3];
 
@@ -215,8 +226,12 @@ protected:
     // recon filed of view [mm]
     float field_of_view_recon_[3];
 
-    int image_counter_;
-    int image_series_;
+    // for the embedded mode
+    size_t embedded_ref_lines_E1_;
+    size_t embedded_ref_lines_E2_;
+
+    size_t image_counter_;
+    size_t image_series_;
 
     // mark the first kspace line
     bool first_kspace_scan_;
@@ -227,38 +242,56 @@ protected:
     // whether the next gadget has been triggered in process(...)
     bool triggered_in_process_;
 
+    // whether the next gadget has been triggered becasue the triggerDim1 changes meet the required number of kspace
+    // only used for triggerDim1!=DIM_NONE && triggerDim2!=DIM_NONE
+    bool triggered_in_process_by_numOfKSpace_triggerDim1_;
+
     // whether the next gadget has been triggered in process(...) for the last acquisition
     // if so, extra triggering in close(...) is not needed
     bool triggered_in_process_last_acq_;
 
-    int meas_max_ro_;
+    size_t meas_max_ro_;
     ISMRMRD::EncodingCounters meas_max_idx_;
-    int meas_max_channel_;
+    size_t meas_max_channel_;
 
     // maximal idx for reference data
     ISMRMRD::EncodingCounters meas_max_idx_ref_;
 
     // track the trigger dim1 and dim2
-    int prev_dim1_;
-    int curr_dim1_;
+    size_t prev_dim1_;
+    size_t curr_dim1_;
 
-    int prev_dim2_;
-    int curr_dim2_;
+    size_t prev_dim2_;
+    size_t curr_dim2_;
 
     // store the previous acquisition head
     ISMRMRD::AcquisitionHeader prev_acq_header_;
 
     // for trigger dim1, need to count its times
-    int count_dim1_;
+    size_t count_dim1_;
 
     // a general workorder to store the buffered data
     WorkOrderType workOrder_;
+
+    // indicator for the arrival of last acq
+    bool last_acq_arrived_;
+
+    // time stamp resolution (default, 0.0025s)
+    float timeStampResolution_;
+
+    // exporter
+    Gadgetron::gtPlus::gtPlusIOAnalyze gt_exporter_;
 
     // util for gtplus
     Gadgetron::gtPlus::gtPlusISMRMRDReconUtil<GT_Complex8> gtPlus_util_;
 
     // in verbose mode, more info is printed out
     bool verboseMode_;
+
+private:
+
+    // index for the time stamp
+    std::vector<size_t> ind_time_stamp_;
 };
 
 }

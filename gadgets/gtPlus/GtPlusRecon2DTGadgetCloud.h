@@ -7,8 +7,8 @@
             Ref to: 
 
             Hui Xue, Souheil Inati, Thomas Sangild Sorensen, Peter Kellman, Michael S. Hansen. 
-            Distributed MRI Reconstruction using Gadgetron based Cloud Computing. Submitted to
-            Magenetic Resonance in Medicine on Dec 2013.
+            Distributed MRI Reconstruction using Gadgetron based Cloud Computing. 
+            Magenetic Resonance in Medicine, doi: 10.1002/mrm.25213.
 
     \author Hui Xue
 */
@@ -26,6 +26,8 @@ namespace Gadgetron
 class EXPORTGTPLUSGADGET GtPlusRecon2DTGadgetCloud : public GtPlusRecon2DTGadget
 {
 public:
+    GADGET_DECLARE(GtPlusRecon2DTGadgetCloud);
+
     typedef GtPlusRecon2DTGadget BaseClass;
 
     typedef BaseClass::ValueType ValueType;

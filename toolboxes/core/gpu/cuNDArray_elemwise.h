@@ -146,6 +146,20 @@ namespace Gadgetron{
    */
   template<class T> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T> > real_to_complex( cuNDArray<typename realType<T>::Type> *x );
   
+  /**
+   * Converts array from type T to type T2
+   * @param[in] x Input array
+   * @return A copy of x with the type T2
+   */
+  template<class T,class T2> EXPORTGPUCORE boost::shared_ptr< cuNDArray<T2> > convert_to( cuNDArray<T> *x );
+
+  /**
+   * Converts array from type T to type T2. Input and output array must be same size.
+   * @param[in] x Input array
+   * @param[out] y Output array, will contain a copy of x with type T2
+   */
+  template<class T,class T2> EXPORTGPUCORE void convert_to( cuNDArray<T> *x, cuNDArray<T2> *y );
+
   //
   // From hereon the functions are all in-place although without the _inplace suffix...
   //

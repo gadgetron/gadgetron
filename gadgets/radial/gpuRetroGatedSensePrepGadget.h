@@ -26,7 +26,7 @@ namespace Gadgetron{
   {
 
   public:
-
+    GADGET_DECLARE(gpuRetroGatedSensePrepGadget);
     gpuRetroGatedSensePrepGadget();
     virtual ~gpuRetroGatedSensePrepGadget();
 

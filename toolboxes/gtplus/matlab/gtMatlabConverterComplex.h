@@ -8,16 +8,7 @@
 
 #pragma once
 
-#include <matrix.h>
-#include <mat.h>
-#include <mexGT.h>
-#include <cmath>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <strstream>
-
-#include "hoNDArray.h"
+#include "gtMatlabImage.h"
 
 namespace Gadgetron
 {
@@ -32,6 +23,44 @@ public:
 
     virtual bool hoNDArray2Matlab(const hoNDArray<T>& a, mxArray*& aMx);
     virtual bool Matlab2hoNDArray(const mxArray* aMx, hoNDArray<T>& a);
+
+    template <unsigned int D> 
+    bool hoNDImage2Matlab(const hoNDImage<T, D>& a, mxArray*& aMx, mxArray*& aHeader)
+    {
+        std::vector<size_t> dim(D);
+        a.get_dimensions(dim);
+
+        hoNDArray<T> buf(dim, const_cast<T*>(a.get_data_ptr()), false);
+        GADGET_CHECK_RETURN_FALSE(hoNDArray2Matlab(buf, aMx));
+
+        gtMatlabImageHeader<T, D> header(a);
+        GADGET_CHECK_RETURN_FALSE(header.toMatlab(aHeader));
+
+        return true;
+    }
+
+    template <unsigned int D> 
+    bool Matlab2hoNDImage(const mxArray* aMx, const mxArray* aHeader, hoNDImage<T, D>& a)
+    {
+        hoNDArray<T> buf;
+        GADGET_CHECK_RETURN_FALSE(Matlab2hoNDArray(aMx, buf));
+        GADGET_CHECK_RETURN_FALSE(buf.get_number_of_dimensions()==D);
+
+        a.from_NDArray(buf);
+
+        gtMatlabImageHeader<T, D> header;
+        GADGET_CHECK_RETURN_FALSE(header.fromMatlab(aHeader));
+
+        unsigned int ii;
+        for ( ii=0; ii<D; ii++ )
+        {
+            a.set_pixel_size(ii, header.pixelSize_[ii]);
+            a.set_origin(ii, header.origin_[ii]);
+            a.set_axis(ii, header.axis_[ii]);
+        }
+
+        return true;
+    }
 
     virtual void printInfo(std::ostream& os) const;
 

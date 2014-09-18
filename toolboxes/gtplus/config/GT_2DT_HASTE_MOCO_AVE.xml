@@ -1,0 +1,1085 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gadgetronStreamConfiguration xsi:schemaLocation="http://gadgetron.sf.net/gadgetron gadgetron.xsd"
+        xmlns="http://gadgetron.sf.net/gadgetron"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <!--
+       _____              _____     _____   ______   _______   _____     ____    _   _ 
+      / ____|     /\     |  __ \   / ____| |  ____| |__   __| |  __ \   / __ \  | \ | |
+     | |  __     /  \    | |  | | | |  __  | |__       | |    | |__) | | |  | | |  \| |
+     | | |_ |   / /\ \   | |  | | | | |_ | |  __|      | |    |  _  /  | |  | | | . ` |
+     | |__| |  / ____ \  | |__| | | |__| | | |____     | |    | | \ \  | |__| | | |\  |
+      \_____| /_/    \_\ |_____/   \_____| |______|    |_|    |_|  \_\  \____/  |_| \_|
+                                                                                       
+    -->
+
+    <!-- 
+        GT Plus configuratin file for HASTE imaging with MOCO+ACE
+
+        Author: Hui Xue
+        Magnetic Resonance Technology Program
+        National Heart, Lung and Blood Institute
+        National Institutes of Health
+        10 Center Drive, Bethesda
+        MD 20814
+        USA
+        Email: hui.xue@nih.gov
+    -->
+
+    <!-- reader -->
+    <reader>
+        <slot>1008</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>GadgetIsmrmrdAcquisitionMessageReader</classname>
+    </reader>
+
+    <!-- writer -->
+    <writer>
+        <slot>1004</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>MRIImageWriterCPLX</classname>
+    </writer>
+    <writer>
+        <slot>1005</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>MRIImageWriterFLOAT</classname>
+    </writer>
+    <writer>
+        <slot>1006</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>MRIImageWriterUSHORT</classname>
+    </writer>
+
+    <writer>
+        <slot>1015</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>MRIImageAttribWriterCPLX</classname>
+    </writer>
+    <writer>
+        <slot>1016</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>MRIImageAttribWriterFLOAT</classname>
+    </writer>
+    <writer>
+        <slot>1017</slot>
+        <dll>gadgetron_mricore</dll>
+        <classname>MRIImageAttribWriterUSHORT</classname>
+    </writer>
+
+    <!--
+    <writer>
+        <slot>1012</slot>
+        <dll>gadgetron_dicom</dll>
+        <classname>DicomImageWriter</classname>
+    </writer>
+
+    <writer>
+        <slot>1018</slot>
+        <dll>gadgetron_dicom</dll>
+        <classname>DicomImageAttribWriter</classname>
+    </writer>
+    -->
+
+    <!-- RO asymmetric echo handling -->
+    <gadget>
+        <name>AsymmetricEcho</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>AsymmetricEchoAdjustROGadget</classname>
+    </gadget>
+
+    <!-- RO oversampling removal -->
+    <gadget>
+        <name>RemoveROOversampling</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>RemoveROOversamplingGadget</classname>
+
+        <property>
+            <name>constant_noise_variance</name>
+            <value>true</value>
+        </property>
+    </gadget>
+
+    <!-- Noise prewhitening -->
+    <gadget>
+        <name>NoiseAdjust</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>NoiseAdjustGadget</classname>
+
+        <!-- File prefix for stored noise prewhitener matrix -->
+        <property>
+            <name>noise_dependency_prefix</name>
+            <value>GadgetronNoisePreWhitener</value>
+        </property>
+
+        <!-- Preset noise dwell time; for noise dependency measurements -->
+        <property>
+            <name>noise_dwell_time_us_preset</name>
+            <value>5.0</value>
+        </property>
+
+        <!-- Whether to perform timing -->
+        <property>
+            <name>performTiming</name>
+            <value>true</value>
+        </property>
+    </gadget>
+
+    <!-- Data accumulation and trigger gadget -->
+    <gadget>
+        <name>Acc</name>
+        <dll>gadgetronPlus</dll>
+        <classname>GtPlusAccumulatorWorkOrderTriggerGadget</classname>
+
+        <!-- debug and info mode -->
+        <property>
+            <name>verboseMode</name>
+            <value>false</value>
+        </property>
+
+        <!-- No acceleration mode -->
+        <property>
+            <name>noacceleration_triggerDim1</name>
+            <value>DIM_NONE</value>
+        </property>
+
+        <property>
+            <name>noacceleration_triggerDim2</name>
+            <value>DIM_NONE</value>
+        </property>
+
+        <property>
+            <name>noacceleration_numOfKSpace_triggerDim1</name>
+            <value>1</value>
+        </property>
+
+        <!-- Interleaved mode -->
+        <property>
+            <name>interleaved_triggerDim1</name>
+            <value>DIM_NONE</value>
+        </property>
+
+        <property>
+            <name>interleaved_triggerDim2</name>
+            <value>DIM_NONE</value>
+        </property>
+
+        <property>
+            <name>interleaved_numOfKSpace_triggerDim1</name>
+            <value>4</value>
+        </property>
+
+        <!-- Embedded mode -->
+        <property>
+            <name>embedded_triggerDim1</name>
+            <value>DIM_NONE</value>
+        </property>
+
+        <property>
+            <name>embedded_triggerDim2</name>
+            <value>DIM_NONE</value>
+        </property>
+
+        <property>
+            <name>embedded_numOfKSpace_triggerDim1</name>
+            <value>1</value>
+        </property>
+
+        <!-- Separate mode -->
+        <property>
+            <name>separate_triggerDim1</name>
+            <value>DIM_NONE</value>
+        </property>
+
+        <property>
+            <name>separate_triggerDim2</name>
+            <value>DIM_NONE</value>
+        </property>
+
+        <property>
+            <name>separate_numOfKSpace_triggerDim1</name>
+            <value>1</value>
+        </property>
+
+        <!-- if 'other' kspace data presents, enforce its dimension matches the image data-->
+        <property>
+            <name>other_kspace_matching_Dim</name>
+            <value>DIM_Repetition</value>
+        </property>
+
+    </gadget>
+
+    <!--Recon computation for 2DT cases -->
+    <gadget>
+        <name>Recon</name>
+        <dll>gadgetronPlus</dll>
+        <classname>GtPlusRecon2DTGadget</classname>
+
+        <!-- kspace data -->
+        <property>
+            <name>dim_4th</name>
+            <value>DIM_Repetition</value>
+        </property>
+        <property>
+            <name>dim_5th</name>
+            <value>DIM_Slice</value>
+        </property>
+
+        <!-- work flow -->
+        <property>
+            <name>workOrder_ShareDim</name>
+            <value>DIM_NONE</value>
+        </property>
+
+        <!-- No acceleration mode -->
+        <property>
+            <name>no_acceleration_averageall_ref</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>no_acceleration_ref_numOfModes</name>
+            <value>0</value>
+        </property>
+        <property>
+            <name>no_acceleration_same_combinationcoeff_allS</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>no_acceleration_whichS_combinationcoeff</name>
+            <value>0</value>
+        </property>
+
+        <!-- Interleaved mode -->
+        <property>
+            <name>interleaved_same_combinationcoeff_allS</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>interleaved_whichS_combinationcoeff</name>
+            <value>0</value>
+        </property>
+        <property>
+            <name>interleaved_ref_numOfModes</name>
+            <value>0</value>
+        </property>
+
+        <!-- Embedded mode -->
+        <property>
+            <name>embedded_averageall_ref</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>embedded_ref_numOfModes</name>
+            <value>0</value>
+        </property>
+        <property>
+            <name>embedded_fullres_coilmap</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>embedded_fullres_coilmap_useHighestSignal</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>embedded_same_combinationcoeff_allS</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>embedded_whichS_combinationcoeff</name>
+            <value>0</value>
+        </property>
+        <property>
+            <name>embedded_ref_fillback</name>
+            <value>true</value>
+        </property>
+
+        <!-- Separate mode -->
+        <property>
+            <name>separate_averageall_ref</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>separate_ref_numOfModes</name>
+            <value>0</value>
+        </property>
+        <property>
+            <name>separate_fullres_coilmap</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>separate_same_combinationcoeff_allS</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>separate_whichS_combinationcoeff</name>
+            <value>0</value>
+        </property>
+
+        <!-- coil compression -->
+        <property>
+            <name>same_coil_compression_coeff_allS</name>
+            <value>false</value>
+        </property>
+
+        <property>
+            <name>upstream_coil_compression</name>
+            <value>false</value>
+        </property>
+
+        <property>
+            <name>upstream_coil_compression_thres</name>
+            <value>-1</value>
+        </property>
+
+        <property>
+            <name>upstream_coil_compression_num_modesKept</name>
+            <value>-1</value>
+        </property>
+
+        <property>
+            <name>downstream_coil_compression</name>
+            <value>true</value>
+        </property>
+
+        <property>
+            <name>coil_compression_thres</name>
+            <value>-1</value>
+        </property>
+
+        <property>
+            <name>coil_compression_num_modesKept</name>
+            <value>8</value>
+        </property>
+
+        <!-- parameters for coil map estimation, ISMRMRD_SOUHEIL, ISMRMRD_SOUHEIL_ITER -->
+        <property>
+            <name>coil_map_algorithm</name>
+            <value>ISMRMRD_SOUHEIL</value>
+        </property>
+        <property>
+            <name>csm_kSize</name>
+            <value>7</value>
+        </property>
+
+        <property>
+            <name>csm_powermethod_num</name>
+            <value>3</value>
+        </property>
+
+        <property>
+            <name>csm_true_3D</name>
+            <value>false</value>
+        </property>
+
+        <property>
+            <name>csm_iter_num</name>
+            <value>5</value>
+        </property>
+
+        <property>
+            <name>csm_iter_thres</name>
+            <value>0.001</value>
+        </property>
+
+        <property>
+            <name>csm_use_gpu</name>
+            <value>false</value>
+        </property>
+
+        <!-- algorithm -->
+        <property>
+            <name>recon_algorithm</name>
+            <value>ISMRMRD_GRAPPA</value>
+        </property>
+
+        <property>
+            <name>recon_kspace_needed</name>
+            <value>false</value>
+        </property>
+
+        <property>
+            <name>recon_auto_parameters</name>
+            <value>true</value>
+        </property>
+
+        <property>
+            <name>gfactor_needed</name>
+            <value>false</value>
+        </property>
+
+        <!-- parameters for ISMRMRD_GRAPPA -->
+        <property>
+            <name>grappa_kSize_RO</name>
+            <value>5</value>
+        </property>
+        <property>
+            <name>grappa_kSize_E1</name>
+            <value>4</value>
+        </property>
+        <property>
+            <name>grappa_kSize_E2</name>
+            <value>4</value>
+        </property>
+        <property>
+            <name>grappa_reg_lamda</name>
+            <value>0.0005</value>
+        </property>
+        <property>
+            <name>grappa_calib_over_determine_ratio</name>
+            <value>0</value>
+        </property>
+        <property>
+            <name>grappa_use_gpu</name>
+            <value>false</value>
+        </property>
+
+        <!-- parameters for scaling and image sending -->
+        <property>
+            <name>min_intensity_value</name>
+            <value>64</value>
+        </property>
+
+        <property>
+            <name>max_intensity_value</name>
+            <value>4095</value>
+        </property>
+
+        <property>
+            <name>scalingFactor</name>
+            <value>10</value>
+        </property>
+
+        <property>
+            <name>scalingFactor_gfactor</name>
+            <value>100</value>
+        </property>
+
+        <property>
+            <name>scalingFactor_snr_image</name>
+            <value>10</value>
+        </property>
+
+        <property>
+            <name>scalingFactor_std_map</name>
+            <value>1000</value>
+        </property>
+
+        <property>
+            <name>start_frame_for_std_map</name>
+            <value>5</value>
+        </property>
+
+        <property>
+            <name>use_constant_scalingFactor</name>
+            <value>true</value>
+        </property>
+
+        <!-- parameters for kspace filter, image data -->
+        <!-- 
+             ISMRMRD_FILTER_GAUSSIAN,
+             ISMRMRD_FILTER_HANNING,
+             ISMRMRD_FILTER_TUKEY,
+             ISMRMRD_FILTER_TAPERED_HANNING,
+             ISMRMRD_FILTER_NONE 
+        -->
+        <property>
+            <name>filterRO</name>
+            <value>ISMRMRD_FILTER_GAUSSIAN</value>
+        </property>
+        <property>
+            <name>filterRO_sigma</name>
+            <value>1.0</value>
+        </property>
+        <property>
+            <name>filterRO_width</name>
+            <value>0.15</value>
+        </property>
+
+        <property>
+            <name>filterE1</name>
+            <value>ISMRMRD_FILTER_GAUSSIAN</value>
+        </property>
+        <property>
+            <name>filterE1_sigma</name>
+            <value>1.0</value>
+        </property>
+        <property>
+            <name>filterE1_width</name>
+            <value>0.15</value>
+        </property>
+
+        <property>
+            <name>filterE2</name>
+            <value>ISMRMRD_FILTER_GAUSSIAN</value>
+        </property>
+        <property>
+            <name>filterE2_sigma</name>
+            <value>1.0</value>
+        </property>
+        <property>
+            <name>filterE2_width</name>
+            <value>0.15</value>
+        </property>
+
+        <!-- parameters for kspace filter, ref data -->
+        <!-- 
+             ISMRMRD_FILTER_GAUSSIAN,
+             ISMRMRD_FILTER_HANNING,
+             ISMRMRD_FILTER_TUKEY,
+             ISMRMRD_FILTER_TAPERED_HANNING,
+             ISMRMRD_FILTER_NONE 
+        -->
+        <property>
+            <name>filterRefRO</name>
+            <value>ISMRMRD_FILTER_HANNING</value>
+        </property>
+        <property>
+            <name>filterRefRO_sigma</name>
+            <value>1.5</value>
+        </property>
+        <property>
+            <name>filterRefRO_width</name>
+            <value>0.15</value>
+        </property>
+
+        <property>
+            <name>filterRefE1</name>
+            <value>ISMRMRD_FILTER_HANNING</value>
+        </property>
+        <property>
+            <name>filterRefE1_sigma</name>
+            <value>1.5</value>
+        </property>
+        <property>
+            <name>filterRefE1_width</name>
+            <value>0.15</value>
+        </property>
+
+        <property>
+            <name>filterRefE2</name>
+            <value>ISMRMRD_FILTER_HANNING</value>
+        </property>
+        <property>
+            <name>filterRefE2_sigma</name>
+            <value>1.5</value>
+        </property>
+        <property>
+            <name>filterRefE2_width</name>
+            <value>0.15</value>
+        </property>
+
+        <!-- parameters for kspace filter, partial fourier/asymmetric echo filter -->
+        <!-- only ISMRMRD_FILTER_TAPERED_HANNING is available for the moment -->
+        <property>
+            <name>filterPartialFourierRO</name>
+            <value>ISMRMRD_FILTER_TAPERED_HANNING</value>
+        </property>
+        <property>
+            <name>filterPartialFourierRO_sigma</name>
+            <value>1.5</value>
+        </property>
+        <property>
+            <name>filterPartialFourierRO_width</name>
+            <value>0.15</value>
+        </property>
+        <property>
+            <name>filterPartialFourierRO_densityComp</name>
+            <value>false</value>
+        </property>
+
+        <property>
+            <name>filterPartialFourierE1</name>
+            <value>ISMRMRD_FILTER_TAPERED_HANNING</value>
+        </property>
+        <property>
+            <name>filterPartialFourierE1_sigma</name>
+            <value>1.5</value>
+        </property>
+        <property>
+            <name>filterPartialFourierE1_width</name>
+            <value>0.15</value>
+        </property>
+        <property>
+            <name>filterPartialFourierE1_densityComp</name>
+            <value>false</value>
+        </property>
+
+        <property>
+            <name>filterPartialFourierE2</name>
+            <value>ISMRMRD_FILTER_TAPERED_HANNING</value>
+        </property>
+        <property>
+            <name>filterPartialFourierE2_sigma</name>
+            <value>1.5</value>
+        </property>
+        <property>
+            <name>filterPartialFourierE2_width</name>
+            <value>0.15</value>
+        </property>
+        <property>
+            <name>filterPartialFourierE2_densityComp</name>
+            <value>false</value>
+        </property>
+
+        <!-- parameters for partial fourier handling algorithm, ISMRMRD_PF_HOMODYNE, ISMRMRD_PF_POCS, ISMRMRD_PF_FENGHUANG, ISMRMRD_PF_ZEROFILLING_FILTER, ISMRMRD_PF_ZEROFILLING -->
+        <property>
+            <name>partialFourier_algo</name>
+            <value>ISMRMRD_PF_POCS</value>
+        </property>
+
+        <!-- parameters for partial fourier homodyne algorithm -->
+        <property>
+            <name>partialFourier_homodyne_iters</name>
+            <value>6</value>
+        </property>
+        <property>
+            <name>partialFourier_homodyne_thres</name>
+            <value>0.01</value>
+        </property>
+        <property>
+            <name>partialFourier_homodyne_densityComp</name>
+            <value>false</value>
+        </property>
+
+        <!-- parameters for partial fourier POCS algorithm -->
+        <property>
+            <name>partialFourier_POCS_iters</name>
+            <value>6</value>
+        </property>
+        <property>
+            <name>partialFourier_POCS_thres</name>
+            <value>0.01</value>
+        </property>
+        <property>
+            <name>partialFourier_POCS_transitBand</name>
+            <value>6</value>
+        </property>
+
+        <!-- parameters for partial fourier FengHuang algorithm -->
+        <property>
+            <name>partialFourier_FengHuang_kSize_RO</name>
+            <value>5</value>
+        </property>
+        <property>
+            <name>partialFourier_FengHuang_kSize_E1</name>
+            <value>5</value>
+        </property>
+        <property>
+            <name>partialFourier_FengHuang_kSize_E2</name>
+            <value>5</value>
+        </property>
+        <property>
+            <name>partialFourier_FengHuang_thresReg</name>
+            <value>0.01</value>
+        </property>
+        <property>
+            <name>partialFourier_FengHuang_sameKernel_allN</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>partialFourier_FengHuang_transitBand</name>
+            <value>6</value>
+        </property>
+
+        <!-- parameters for debug and timing -->
+        <property>
+            <name>debugFolder</name>
+            <value></value>
+        </property>
+
+        <property>
+            <name>debugFolder2</name>
+            <value></value>
+        </property>
+
+        <property>
+            <name>cloudNodeFile</name>
+            <value>myCloud_2DT.txt</value>
+        </property>
+
+        <property>
+            <name>performTiming</name>
+            <value>true</value>
+        </property>
+
+        <property>
+            <name>verboseMode</name>
+            <value>true</value>
+        </property>
+
+        <!-- parameters for system acquisition -->
+        <property>
+            <name>timeStampResolution</name>
+            <value>0.0025</value>
+        </property>
+
+        <!-- parameters for recon job split -->
+        <property>
+            <name>job_split_by_S</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>job_num_of_N</name>
+            <value>32</value>
+        </property>
+        <property>
+            <name>job_max_Megabytes</name>
+            <value>10240</value>
+        </property>
+        <property>
+            <name>job_overlap</name>
+            <value>2</value>
+        </property>
+        <property>
+            <name>job_perform_on_control_node</name>
+            <value>true</value>
+        </property>
+
+        <!-- parameters for the cloud computation 
+             The cloud should be defined as the following: CloudNodeX_IP/Port/XMLConfiguration etc.
+        -->
+        <property>
+            <name>CloudComputing</name>
+            <value>false</value>
+        </property>
+
+        <property>
+            <name>CloudSize</name>
+            <value>1</value>
+        </property>
+
+        <!-- node 0 -->
+        <property>
+            <name>CloudNode0_IP</name>
+            <value>localhost</value>
+        </property>
+
+        <property>
+            <name>CloudNode0_Port</name>
+            <value>9003</value>
+        </property>
+
+        <property>
+            <name>CloudNode0_XMLConfiguration</name>
+            <value>GtProg_2DT_Cartesian_CloudNode.xml</value>
+        </property>
+
+        <property>
+            <name>CloudNode0_ComputingPowerIndex</name>
+            <value>1</value>
+        </property>
+
+    </gadget>
+
+    <!-- Image recon accummulator -->
+    <gadget>
+        <name>ImageAcc</name>
+        <dll>gadgetronPlus</dll>
+        <classname>GtPlusAccumulatorImageTriggerGadget</classname>
+
+        <!-- triggered dimensions -->
+        <property>
+            <name>TriggerChannel</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>TriggerSlice</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>TriggerE2</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>TriggerContrast</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>TriggerPhase</name>
+            <value>false</value>
+        </property>
+        <property>
+            <name>TriggerRepetition</name>
+            <value>true</value>
+        </property>
+        <property>
+            <name>TriggerSet</name>
+            <value>false</value>
+        </property>
+
+        <!-- work flow -->
+        <property>
+            <name>PassImageImmediately</name>
+            <value>false</value>
+        </property>
+
+        <!-- debug and info mode -->
+        <property>
+            <name>verboseMode</name>
+            <value>true</value>
+        </property>
+    </gadget>
+
+    <!-- MOCO AVE, PSIR recon -->
+    <gadget>
+        <name>MoCoAve</name>
+        <dll>gadgetronPlus</dll>
+        <classname>GtPlusImageMoCoAveGadget</classname>
+
+        <!-- ===================================================================================== -->
+        <!-- dimension to perform MOCO -->
+        <property>
+            <name>moco_dim</name>
+            <value>DIM_Repetition</value>
+        </property>
+
+        <!-- dimension to perform cross-row MOCO, e.g. MOCO between PD and IR images -->
+        <property>
+            <name>moco_cross_row_dim</name>
+            <value>DIM_Set</value>
+        </property>
+
+        <!-- whether to perform averaging -->
+        <property>
+            <name>moco_ave</name>
+            <value>true</value>
+        </property>
+
+        <!-- whether to perform cross-row MOCO -->
+        <property>
+            <name>moco_cross_row</name>
+            <value>false</value>
+        </property>
+
+        <!-- whether all rows have the same reference -->
+        <property>
+            <name>cross_row_same_reference</name>
+            <value>false</value>
+        </property>
+
+        <!-- whether to perform 3D MOCO -->
+        <property>
+            <name>moco_ave_3D</name>
+            <value>false</value>
+        </property>
+
+        <!-- If cross-row MOCO is performed, which row is selected as the reference -->
+        <property>
+            <name>ref_moco_cross_row</name>
+            <value>0</value>
+        </property>
+
+        <!-- Strategy to pick reference for rows, "SSD" or "Deformation" -->
+        <property>
+            <name>row_ref_pick_strategy</name>
+            <value>SSD</value>
+        </property>
+
+        <!-- ===================================================================================== -->
+        <!-- Parameters for image sending -->
+        <!-- Whether to send original images -->
+        <property>
+            <name>send_ori</name>
+            <value>true</value>
+        </property>
+
+        <!-- Whether to send MOCO images -->
+        <property>
+            <name>send_moco</name>
+            <value>true</value>
+        </property>
+
+        <!-- Whether to send averaged images -->
+        <property>
+            <name>send_moco_ave</name>
+            <value>true</value>
+        </property>
+
+        <!-- Whether to keep original image number -->
+        <property>
+            <name>moco_ave_keep_origial_image_number</name>
+            <value>false</value>
+        </property>
+
+        <!-- ===================================================================================== -->
+        <!-- Parameters for MOCO -->
+        <!-- MOCO strategy, 'FixedReference', or 'Progressive' -->
+        <property>
+            <name>strategy</name>
+            <value>FixedReference</value>
+        </property>
+        <!-- Image dissimilarity measures, 'SSD' or 'LocalCCR' or 'MutualInformation' -->
+        <property>
+            <name>dissimilarity</name>
+            <value>LocalCCR</value>
+        </property>
+        <!-- Number of levels for the multi-resolution pyramid -->
+        <property>
+            <name>level</name>
+            <value>4</value>
+        </property>
+        <!-- Number of iterations for every pyramid level, level 0 is for the highest resolution -->
+        <property>
+            <name>iter_0</name>
+            <value>16</value>
+        </property>
+        <property>
+            <name>iter_1</name>
+            <value>32</value>
+        </property>
+        <property>
+            <name>iter_2</name>
+            <value>64</value>
+        </property>
+        <property>
+            <name>iter_3</name>
+            <value>64</value>
+        </property>
+        <!-- Strength of registration regularization, in the unit of pixel -->
+        <property>
+            <name>regularization_hilbert_strength</name>
+            <value>12.0</value>
+        </property>
+        <!-- Whether to perform bidirectional MOCO -->
+        <property>
+            <name>bidirectional_moco</name>
+            <value>false</value>
+        </property>
+
+        <!-- ========================================= -->
+        <!-- Image dissimilarity measures for the cross-row MOCO, 'SSD' or 'LocalCCR' or 'MutualInformation' -->
+        <property>
+            <name>dissimilarity_cross_row</name>
+            <value>LocalCCR</value>
+        </property>
+        <!-- Number of levels for the multi-resolution pyramid for the cross-row MOCO -->
+        <property>
+            <name>level_cross_row</name>
+            <value>3</value>
+        </property>
+        <!-- Number of iterations for every pyramid level for the cross-row MOCO, level 0 is for the highest resolution -->
+        <property>
+            <name>iter_cross_row_0</name>
+            <value>8</value>
+        </property>
+        <property>
+            <name>iter_cross_row_1</name>
+            <value>32</value>
+        </property>
+        <property>
+            <name>iter_cross_row_2</name>
+            <value>64</value>
+        </property>
+        <!-- Strength of registration regularization for the cross-row MOCO, in the unit of pixel -->
+        <property>
+            <name>regularization_hilbert_strength_cross_row</name>
+            <value>32.0</value>
+        </property>
+        <!-- Whether to perform bidirectional MOCO for the cross-row MOCO -->
+        <property>
+            <name>bidirectional_moco_cross_row</name>
+            <value>true</value>
+        </property>
+
+        <!-- ========================================= -->
+
+        <!-- Threshold for image dissimilarity minimization -->
+        <property>
+            <name>dissimilarity_thres</name>
+            <value>1e-5</value>
+        </property>
+        <!-- Number of sub-division search in minimization -->
+        <property>
+            <name>div_num</name>
+            <value>2</value>
+        </property>
+        <!-- For the bidirectional MOCO, the number of bidirectional iteration -->
+        <property>
+            <name>inverse_deform_enforce_iter</name>
+            <value>10</value>
+        </property>
+        <!-- For the bidirectional MOCO, the weight between forward and inverse MOCO -->
+        <property>
+            <name>inverse_deform_enforce_weight</name>
+            <value>0.5</value>
+        </property>
+
+        <!-- ===================================================================================== -->
+
+        <!-- Fraction of images kept for averaging -->
+        <property>
+            <name>percentage_kept_for_averaging</name>
+            <value>0.5</value>
+        </property>
+
+        <!-- Whether to perform soft averaging -->
+        <property>
+            <name>soft_averaging</name>
+            <value>true</value>
+        </property>
+
+        <!-- ===================================================================================== -->
+        <!-- parameters for debug and timing -->
+        <property>
+            <name>debugFolder</name>
+            <value></value>
+        </property>
+
+        <property>
+            <name>performTiming</name>
+            <value>true</value>
+        </property>
+
+        <property>
+            <name>verboseModeMOCO</name>
+            <value>false</value>
+        </property>
+
+        <property>
+            <name>verboseMode</name>
+            <value>true</value>
+        </property>
+    </gadget>
+
+    <!-- after recon processing -->
+    <gadget>
+        <name>ComplexToFloatAttrib</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ComplexToFloatAttribGadget</classname>
+    </gadget>
+
+    <gadget>
+        <name>FloatToShortAttrib</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>FloatToUShortAttribGadget</classname>
+    </gadget>
+
+    <!--
+    <gadget>
+      <name>ImageFinishAttribCPLX</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>ImageFinishAttribGadgetCPLX</classname>
+    </gadget>
+    -->
+
+    <!--
+    <gadget>
+      <name>ImageFinishAttribFLOAT</name>
+      <dll>gadgetron_mricore</dll>
+      <classname>ImageFinishAttribGadgetFLOAT</classname>
+    </gadget>
+    -->
+
+    <gadget>
+        <name>ImageFinishAttribUSHORT</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>ImageFinishAttribGadgetUSHORT</classname>
+    </gadget>
+
+    <!--
+    <gadget>
+        <name>DicomFinishAttribGadget</name>
+        <dll>gadgetron_dicom</dll>
+        <classname>DicomFinishAttribGadgetUSHORT</classname>
+    </gadget>
+    -->
+</gadgetronStreamConfiguration>

@@ -4,15 +4,13 @@
             Ref to: 
 
             Hui Xue, Souheil Inati, Thomas Sangild Sorensen, Peter Kellman, Michael S. Hansen. 
-            Distributed MRI Reconstruction using Gadgetron based Cloud Computing. Submitted to
-            Magenetic Resonance in Medicine on Dec 2013.
+            Distributed MRI Reconstruction using Gadgetron based Cloud Computing. 
+            Magenetic Resonance in Medicine, doi: 10.1002/mrm.25213.
 
     \author Hui Xue
 */
 
 #pragma once
-
-#include "SerializableObject.h"
 
 namespace Gadgetron
 {
@@ -66,15 +64,26 @@ struct EXPORTGTPLUSGADGET GtPlusRecon2DTPara
 };
 
 template <typename T> 
-struct GtPlusRecon2DTCloudPackage : public SerializableObject
+struct GtPlusRecon2DTCloudPackage
 {
+    typedef typename realType<T>::Type real_value_type;
+
     GtPlusRecon2DTPara para;
 
     hoNDArray<T> kspace;
+    hoNDArray<real_value_type> timeStamp;
+    hoNDArray<real_value_type> physioTimeStamp;
+
     hoNDArray<T> ref;
 
     hoNDArray<T> complexIm;
     hoNDArray<T> res;
+
+    // extra recon images
+    hoNDArray<T> complexImSecond;
+    // optional time stamps for the secod recon images, in the unit of seconds
+    hoNDArray<real_value_type> resTimeStampSecond;
+    hoNDArray<real_value_type> resPhysioTimeStampSecond;
 
     GtPlusRecon2DTCloudPackage();
     GtPlusRecon2DTCloudPackage(const GtPlusRecon2DTCloudPackage& pack);
@@ -83,7 +92,7 @@ struct GtPlusRecon2DTCloudPackage : public SerializableObject
 
     GtPlusRecon2DTCloudPackage<T>& operator=(const GtPlusRecon2DTCloudPackage<T>& pack);
 
-    virtual bool serialize(char*& buf, size_t& len) const;
+    virtual bool serialize(char*& buf, size_t& len) const ;
     virtual bool deserialize(char* buf, size_t& len);
 };
 
@@ -91,8 +100,13 @@ template <typename T>
 GtPlusRecon2DTCloudPackage<T>::GtPlusRecon2DTCloudPackage()
 {
     kspace.clear();
+    timeStamp.clear();
+    physioTimeStamp.clear();
     ref.clear();
     complexIm.clear();
+    complexImSecond.clear();
+    resTimeStampSecond.clear();
+    resPhysioTimeStampSecond.clear();
     res.clear();
 }
 
@@ -107,8 +121,13 @@ GtPlusRecon2DTCloudPackage<T>::GtPlusRecon2DTCloudPackage(const GtPlusRecon2DTCl
 {
     para = pack.para;
     kspace = pack.kspace;
+    timeStamp = pack.timeStamp;
+    physioTimeStamp = pack.physioTimeStamp;
     ref = pack.ref;
     complexIm = pack.complexIm;
+    complexImSecond = pack.complexImSecond;
+    resTimeStampSecond = pack.resTimeStampSecond;
+    resPhysioTimeStampSecond = pack.resPhysioTimeStampSecond;
     res = pack.res;
 }
 
@@ -119,31 +138,41 @@ GtPlusRecon2DTCloudPackage<T>& GtPlusRecon2DTCloudPackage<T>::operator=(const Gt
 
     para = pack.para;
     kspace = pack.kspace;
+    timeStamp = pack.timeStamp;
+    physioTimeStamp = pack.physioTimeStamp;
     ref = pack.ref;
     complexIm = pack.complexIm;
+    complexImSecond = pack.complexImSecond;
+    resTimeStampSecond = pack.resTimeStampSecond;
+    resPhysioTimeStampSecond = pack.resPhysioTimeStampSecond;
     res = pack.res;
 
     return *this;
 }
 
 template <typename T> 
-bool GtPlusRecon2DTCloudPackage<T>::serialize(char*& buf, size_t& len) const
+bool GtPlusRecon2DTCloudPackage<T>::serialize(char*& buf, size_t& len) const 
 {
-    char *bufKSpace(NULL), *bufRef(NULL), *bufComplexIm(NULL), *bufRes(NULL);
+    char *bufKSpace(NULL), *bufTimeStamp(NULL), *bufPhysioTimeStamp(NULL), *bufRef(NULL), *bufComplexIm(NULL), *bufRes(NULL), *bufComplexImSecond(NULL), *bufResTimeStampSecond(NULL), *bufResPhysioTimeStampSecond(NULL);
     try
     {
         if ( buf != NULL ) delete[] buf;
 
         // find the total len
-        size_t lenKSpace, lenRef, lenComplexIm, lenRes;
+        size_t lenKSpace, lenTimeStamp, lenPhysioTimeStamp, lenRef, lenComplexIm, lenRes, lenComplexImSecond, lenResTimeStampSecond, lenResPhyisoTimeStampSecond;
 
         GADGET_CHECK_THROW(kspace.serialize(bufKSpace, lenKSpace));
-        GADGET_CHECK_THROW(kspace.serialize(bufRef, lenRef));
+        GADGET_CHECK_THROW(timeStamp.serialize(bufTimeStamp, lenTimeStamp));
+        GADGET_CHECK_THROW(physioTimeStamp.serialize(bufPhysioTimeStamp, lenPhysioTimeStamp));
+        GADGET_CHECK_THROW(ref.serialize(bufRef, lenRef));
         GADGET_CHECK_THROW(complexIm.serialize(bufComplexIm, lenComplexIm));
         GADGET_CHECK_THROW(res.serialize(bufRes, lenRes));
+        GADGET_CHECK_THROW(complexImSecond.serialize(bufComplexImSecond, lenComplexImSecond));
+        GADGET_CHECK_THROW(resTimeStampSecond.serialize(bufResTimeStampSecond, lenResTimeStampSecond));
+        GADGET_CHECK_THROW(resPhysioTimeStampSecond.serialize(bufResPhysioTimeStampSecond, lenResPhyisoTimeStampSecond));
 
         // total length
-        len = sizeof(GtPlusRecon2DTPara) + lenKSpace + lenRef + lenComplexIm + lenRes;
+        len = sizeof(GtPlusRecon2DTPara) + lenTimeStamp + lenPhysioTimeStamp + lenKSpace + lenRef + lenComplexIm + lenRes + lenComplexImSecond + lenResTimeStampSecond + lenResPhyisoTimeStampSecond;
 
         buf = new char[len];
         GADGET_CHECK_RETURN_FALSE( buf != NULL );
@@ -159,6 +188,16 @@ bool GtPlusRecon2DTCloudPackage<T>::serialize(char*& buf, size_t& len) const
         offset += currLen;
         delete [] bufKSpace;
 
+        currLen = lenTimeStamp;
+        memcpy(buf+offset, bufTimeStamp, currLen);
+        offset += currLen;
+        delete [] bufTimeStamp;
+
+        currLen = lenPhysioTimeStamp;
+        memcpy(buf+offset, bufPhysioTimeStamp, currLen);
+        offset += currLen;
+        delete [] bufPhysioTimeStamp;
+
         currLen = lenRef;
         memcpy(buf+offset, bufRef, currLen);
         offset += currLen;
@@ -173,15 +212,35 @@ bool GtPlusRecon2DTCloudPackage<T>::serialize(char*& buf, size_t& len) const
         memcpy(buf+offset, bufRes, currLen);
         offset += currLen;
         delete [] bufRes;
+
+        currLen = lenComplexImSecond;
+        memcpy(buf+offset, bufComplexImSecond, currLen);
+        offset += currLen;
+        delete [] bufComplexImSecond;
+
+        currLen = lenResTimeStampSecond;
+        memcpy(buf+offset, bufResTimeStampSecond, currLen);
+        offset += currLen;
+        delete [] bufResTimeStampSecond;
+
+        currLen = lenResPhyisoTimeStampSecond;
+        memcpy(buf+offset, bufResPhysioTimeStampSecond, currLen);
+        offset += currLen;
+        delete [] bufResPhysioTimeStampSecond;
     }
     catch (...)
     {
         GADGET_ERROR_MSG("Errors happened in GtPlusRecon2DTCloudPackage<T>::serialize(...) ... ");
 
         if ( bufKSpace != NULL ) delete [] bufKSpace;
+        if ( bufTimeStamp != NULL ) delete [] bufTimeStamp;
+        if ( bufPhysioTimeStamp != NULL ) delete [] bufPhysioTimeStamp;
         if ( bufRef != NULL ) delete [] bufRef;
         if ( bufComplexIm != NULL ) delete [] bufComplexIm;
         if ( bufRes != NULL ) delete [] bufRes;
+        if ( bufComplexImSecond != NULL ) delete [] bufComplexImSecond;
+        if ( bufResTimeStampSecond != NULL ) delete [] bufResTimeStampSecond;
+        if ( bufResPhysioTimeStampSecond != NULL ) delete [] bufResPhysioTimeStampSecond;
 
         return false;
     }
@@ -201,6 +260,12 @@ bool GtPlusRecon2DTCloudPackage<T>::deserialize(char* buf, size_t& len)
         GADGET_CHECK_RETURN_FALSE(kspace.deserialize(buf+offset, currLen));
         offset += currLen;
 
+        GADGET_CHECK_RETURN_FALSE(timeStamp.deserialize(buf+offset, currLen));
+        offset += currLen;
+
+        GADGET_CHECK_RETURN_FALSE(physioTimeStamp.deserialize(buf+offset, currLen));
+        offset += currLen;
+
         GADGET_CHECK_RETURN_FALSE(ref.deserialize(buf+offset, currLen));
         offset += currLen;
 
@@ -208,6 +273,15 @@ bool GtPlusRecon2DTCloudPackage<T>::deserialize(char* buf, size_t& len)
         offset += currLen;
 
         GADGET_CHECK_RETURN_FALSE(res.deserialize(buf+offset, currLen));
+        offset += currLen;
+
+        GADGET_CHECK_RETURN_FALSE(complexImSecond.deserialize(buf+offset, currLen));
+        offset += currLen;
+
+        GADGET_CHECK_RETURN_FALSE(resTimeStampSecond.deserialize(buf+offset, currLen));
+        offset += currLen;
+
+        GADGET_CHECK_RETURN_FALSE(resPhysioTimeStampSecond.deserialize(buf+offset, currLen));
         offset += currLen;
 
         // total length

@@ -22,6 +22,8 @@ class gtPlusOperator
 {
 public:
 
+    typedef typename realType<T>::Type value_type;
+
     gtPlusOperator();
     virtual ~gtPlusOperator();
 
@@ -42,8 +44,16 @@ public:
     // compute cost value
     virtual bool obj(const hoNDArray<T>& x, T& obj) = 0;
 
+    // perform the proximity operation
+    virtual bool proximity(hoNDArray<T>& x, value_type thres);
+
+    // indicate the operator is unitary or not
+    // unitary operator, AA' = I
+    virtual bool unitary() const = 0;
+
     // restore acquired kspace points to x
     virtual bool restoreAcquiredKSpace(const hoNDArray<T>& acquired, hoNDArray<T>& y);
+    virtual bool restoreAcquiredKSpace(hoNDArray<T>& y);
 
     // set the memory manager
     void setMemoryManager(boost::shared_ptr<gtPlusMemoryManager>& memManager);
@@ -71,7 +81,7 @@ public:
     gtPlusISMRMRDReconUtil<T> gtPlus_util_;
     gtPlusISMRMRDReconUtilComplex<T> gtPlus_util_complex_;
 
-protected:
+public:
 
     // acquired kspace (unacquired points are zeros)
     boost::shared_ptr< hoNDArray<T> > acquired_points_;
@@ -143,6 +153,12 @@ bool gtPlusOperator<T>::adjointforwardOperator(const hoNDArray<T>& x, hoNDArray<
 }
 
 template <typename T> 
+bool gtPlusOperator<T>::restoreAcquiredKSpace(hoNDArray<T>& y)
+{
+    return this->restoreAcquiredKSpace(*acquired_points_, y);
+}
+
+template <typename T> 
 bool gtPlusOperator<T>::restoreAcquiredKSpace(const hoNDArray<T>& acquired, hoNDArray<T>& y)
 {
     try
@@ -158,7 +174,8 @@ bool gtPlusOperator<T>::restoreAcquiredKSpace(const hoNDArray<T>& acquired, hoND
         #pragma omp parallel for default(none) private(n) shared(N, pA, pY)
         for ( n=0; n<(int)N; n++ )
         {
-            if ( std::abs(pA[n]) > 0 )
+            // if ( std::abs(pA[n]) > 0 )
+            if ( GT_ABS(pA[n].real()) > 0 )
             {
                 pY[n] = pA[n];
             }
@@ -198,7 +215,8 @@ setAcquiredPoints(boost::shared_ptr< hoNDArray<T> >& kspace)
         #endif
         for ( ii=0; ii<(long long)N; ii++ )
         {
-            if ( std::abs( (*kspace)(ii) ) < DBL_EPSILON )
+            // if ( std::abs( (*kspace)(ii) ) < DBL_EPSILON )
+            if ( GT_ABS((*kspace)(ii).real()) < DBL_EPSILON )
             {
                 unacquired_points_indicator_(ii) = T(1.0);
             }
@@ -234,5 +252,11 @@ setCoilSenMap(boost::shared_ptr< hoNDArray<T> >& senMap)
     return true;
 }
 
+template <typename T> 
+bool gtPlusOperator<T>::
+proximity(hoNDArray<T>& /*x*/, value_type /*thres*/)
+{
+    return true;
+}
 
 }}

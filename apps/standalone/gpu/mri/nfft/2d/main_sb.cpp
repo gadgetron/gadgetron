@@ -96,7 +96,12 @@ int main( int argc, char** argv)
   timer = new GPUTimer("Computing density compensation weights");
   boost::shared_ptr< cuNDArray<_real> > dcw = compute_radial_dcw_golden_ratio_2d
     ( samples_per_profile, num_profiles, alpha, _real(1)/((_real)samples_per_profile/(_real)matrix_size.vec[0]) );
+  sqrt_inplace(dcw.get());
+
+  samples *= *dcw;
+
   delete timer;
+
 
   // Define and setup NFFT encoding operator
   boost::shared_ptr< cuNFFTOperator<_real,2> > E( new cuNFFTOperator<_real,2>() );

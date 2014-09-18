@@ -212,15 +212,15 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
         B.createMatrix( A.rows(), colB, B_mem.begin() );
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
-        int e1;
-        for ( e1=(int)sE1; e1<=(int)eE1; e1++ )
+        long long e1;
+        for ( e1=(long long)sE1; e1<=(long long)eE1; e1++ )
         {
-            for ( int ro=kROhalf; ro<=(int)eRO; ro++ )
+            for ( long long ro=kROhalf; ro<=(long long)eRO; ro++ )
             {
-                int rInd = (e1-sE1)*lenRO+ro-kROhalf;
+                long long rInd = (e1-sE1)*lenRO+ro-kROhalf;
 
                 size_t src, dst, ke1, oe1;
-                int kro;
+                long long kro;
 
                 // fill matrix A
                 size_t col = 0;
@@ -294,7 +294,11 @@ calib(const ho3DArray<T>& acsSrc, const ho3DArray<T>& acsDst, double thres,
                 }
                 else
                 {
-                    GADGET_WARN_MSG("GPU inverse_clib_matrix for grappa is only available for single-precision, calling the CPU version ... ");
+                    if ( calib_use_gpu_ )
+                    {
+                        GADGET_WARN_MSG("GPU inverse_clib_matrix for grappa is only available for single-precision, calling the CPU version ... ");
+                    }
+
                     GADGET_CHECK_RETURN_FALSE(SolveLinearSystem_Tikhonov(A, B, x, thres));
                 }
             }
@@ -471,7 +475,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
 
         if ( overDetermineRatio > 1.0 )
         {
-            size_t maxRowA = std::ceil(overDetermineRatio*colA);
+            size_t maxRowA = (size_t)std::ceil(overDetermineRatio*colA);
             size_t maxROUsed = maxRowA/(lenE1*lenE2);
             if ( maxROUsed < lenRO )
             {
@@ -484,11 +488,27 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
                     if ( Gadgetron::sumOver2ndDimension(acsSrc1stChaSumE2, acsSrc1stChaSumE2E1) )
                     {
                         T maxSignal;
-                        size_t roInd;
+                        size_t roInd(0);
                         if ( Gadgetron::maxAbsolute(acsSrc1stChaSumE2E1, maxSignal, roInd) )
                         {
-                            sRO = roInd - maxROUsed/2;
-                            eRO = sRO + maxROUsed - 1;
+                            if ( roInd > maxROUsed/2+kROhalf )
+                            {
+                                sRO = roInd - maxROUsed/2;
+                            }
+                            else
+                            {
+                                sRO = kROhalf;
+                            }
+
+                            if( sRO+maxROUsed-1 <= RO-kROhalf-1 )
+                            {
+                                eRO = sRO + maxROUsed - 1;
+                            }
+                            else
+                            {
+                                eRO = RO - kROhalf -1;
+                            }
+
                             lenRO = eRO-sRO+1;
                             GADGET_MSG("gtPlusGRAPPA<T>::calib3D(...) - overDetermineRatio = " << overDetermineRatio << " ; RO data range used : [" << sRO << " " << eRO << "] ...");
                         }
@@ -519,7 +539,7 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
         T* pB = B.begin();
 
-        int e2;
+        long long e2;
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("grappa 3D calibration - fill calib matrixes ... "));
         #ifdef GCC_OLD_FLAG
@@ -527,17 +547,17 @@ calib3D(const ho4DArray<T>& acsSrc, const ho4DArray<T>& acsDst,
         #else
             #pragma omp parallel for default(none) private(e2) shared(sE2, eE2, sE1, eE1, kROhalf, sRO, eRO, lenRO, lenE1, srcCHA, kNE2, kNE1, A, rowA, pA, acsSrc, kE1, kE2, oNE2, oNE1, dstCHA, B, pB, acsDst, oE1, oE2)
         #endif
-        for ( e2=(int)sE2; e2<=(int)eE2; e2++ )
+        for ( e2=(long long)sE2; e2<=(long long)eE2; e2++ )
         {
-            int e1;
-            for ( e1=(int)sE1; e1<=(int)eE1; e1++ )
+            long long e1;
+            for ( e1=(long long)sE1; e1<=(long long)eE1; e1++ )
             {
-                for ( int ro=(int)sRO; ro<=(int)eRO; ro++ )
+                for ( long long ro=(long long)sRO; ro<=(long long)eRO; ro++ )
                 {
-                    int rInd = (e2-sE2)*lenRO*lenE1 + (e1-sE1)*lenRO + ro-sRO;
+                    size_t rInd = (e2-sE2)*lenRO*lenE1 + (e1-sE1)*lenRO + ro-sRO;
 
                     size_t src, dst, ke1, ke2, oe1, oe2;
-                    int kro;
+                    long long kro;
 
                     // fill matrix A
                     size_t col = 0;

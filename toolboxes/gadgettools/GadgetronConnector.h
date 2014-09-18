@@ -41,13 +41,11 @@ public:
 	virtual int open(void* = 0)
 	{
 	  ACE_TRACE(( ACE_TEXT("WriterTask::open") ));
-      this->msg_queue()->high_water_mark(24.0*1024*1024*1024);
-
 	  return this->activate( THR_NEW_LWP | THR_JOINABLE, 1 );
 	}
 
 	int register_writer(size_t slot, GadgetMessageWriter* writer) {
-		return writers_.insert(slot,writer);
+		return writers_.insert( (unsigned int)slot,writer);
 	}
 
 	virtual int close(unsigned long flags)

@@ -55,7 +55,7 @@ main(int argc, char** argv)
     ("voxelSize,v",po::value<floatd3>(&voxelSize)->default_value(floatd3(0.488f,0.488f,1.0f)),"Voxel size in mm")
     ("dimensions,d",po::value<floatd3>(),"Image dimensions in mm. Overwrites voxelSize.")
     ("iterations,i",po::value<unsigned int>(&iterations)->default_value(10),"Number of iterations")
-    ("weight,w",po::value<float>(&reg_weight)->default_value(float(0.1f)),"Regularization weight")
+    ("weight,w",po::value<float>(&reg_weight)->default_value(float(0.0f)),"Regularization weight")
     ("device",po::value<int>(&device)->default_value(0),"Number of the device to use (0 indexed)")
     ("downsample,D",po::value<unsigned int>(&downsamples)->default_value(0),"Downsample projections this factor")
     ;
@@ -140,6 +140,9 @@ main(int argc, char** argv)
   E->setup(ps,binning,imageDimensions);
   E->set_domain_dimensions(&is_dims);
   E->set_codomain_dimensions(ps->get_projections()->get_dimensions().get());
+
+  if (E->get_use_offset_correction())
+    	E->offset_correct(&projections);
 
   // Define regularization operator
   boost::shared_ptr< hoCuIdentityOperator<float> >

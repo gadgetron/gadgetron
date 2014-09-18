@@ -12,13 +12,13 @@ else(UNIX)
     SET(MATLAB_SUFFIX ".dll")
 endif(UNIX)
 
-add_library(gadgetron_matlab SHARED MatlabGadget.cpp)
+add_library(gadgetron_matlab SHARED gadgetron_matlab_export.h MatlabGadget.h MatlabGadget.cpp)
 target_link_libraries(
     gadgetron_matlab
     cpucore
+    cpucore_math
     ${MATLAB_LIBRARIES}
     ${ISMRMRD_LIBRARIES}
-    ${ISMRMRD_XSD_LIBRARIES}
     optimized ${ACE_LIBRARIES}
     debug ${ACE_DEBUG_LIBRARY}
 )

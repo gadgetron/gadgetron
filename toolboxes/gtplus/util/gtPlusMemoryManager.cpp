@@ -313,7 +313,7 @@ bool gtPlusMemoryManager::increase(size_t added_bytes)
 void gtPlusMemoryManager::_allocate_memory( size_t size, void*& data )
 {
     #ifdef USE_MKL
-        data = mkl_calloc(size, 1, aligned_bytes_);
+        data = mkl_calloc(size, 1, (int)aligned_bytes_);
     #else
         data = calloc(size, 1);
     #endif // USE_MKL

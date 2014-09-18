@@ -36,6 +36,8 @@ public:
     // L2 norm of ||Dx-y||2
     virtual bool obj(const hoNDArray<T>& x, T& obj);
 
+    virtual bool unitary() const { return true; }
+
     using BaseClass::gt_timer1_;
     using BaseClass::gt_timer2_;
     using BaseClass::gt_timer3_;

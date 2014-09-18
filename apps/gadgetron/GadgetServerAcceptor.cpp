@@ -19,14 +19,13 @@ int GadgetServerAcceptor::open (const ACE_INET_Addr &listen_addr)
     (this, ACE_Event_Handler::ACCEPT_MASK);
 }
 
-
-
-
 int GadgetServerAcceptor::handle_input (ACE_HANDLE)
 {
   GadgetStreamController *controller;
   ACE_NEW_RETURN (controller, GadgetStreamController, -1);
   auto_ptr<GadgetStreamController> p (controller);
+
+  controller->set_global_gadget_parameters(global_gadget_parameters_);
 
   if (this->acceptor_.accept (controller->peer ()) == -1)
     ACE_ERROR_RETURN ((LM_ERROR,

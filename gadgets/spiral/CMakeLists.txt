@@ -3,8 +3,6 @@ IF (WIN32)
 ENDIF (WIN32)
 
 find_package(Ismrmrd REQUIRED)
-find_package(XSD REQUIRED)
-find_package(XercesC REQUIRED)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/gadgets/mri_core
@@ -17,23 +15,27 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/solvers/gpu
   ${CMAKE_SOURCE_DIR}/toolboxes/operators
   ${CMAKE_SOURCE_DIR}/toolboxes/operators/gpu
-  ${ISMRMRD_XSD_INCLUDE_DIR}
   ${CUDA_INCLUDE_DIRS}
   )
 
 add_library(gadgetron_spiral SHARED 
+  gadgetron_spiral_export.h 
   vds.cpp 
-  gpuSpiralSensePrepGadget.cpp 
-  SpiralToGenericGadget.cpp
-  ${ISMRMRD_XSD_SOURCE})
+  gpuSpiralSensePrepGadget.h gpuSpiralSensePrepGadget.cpp 
+  SpiralToGenericGadget.h SpiralToGenericGadget.cpp)
 
 target_link_libraries(gadgetron_spiral
-  cpucore gpucore gpunfft gpusolvers gpuoperators gpuparallelmri
-  ${ISMRMRD_LIBRARIES} ${XERCESC_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
+  cpucore gpucore gpunfft gpusolvers gpuoperators
+  ${ISMRMRD_LIBRARIES} ${FFTW3_LIBRARIES} ${CUDA_LIBRARIES}
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY}
   )
 
+target_link_libraries(gadgetron_spiral gpuparallelmri)
+
 install (TARGETS gadgetron_spiral DESTINATION lib)
-install (FILES vds.h DESTINATION include)
+install (FILES vds.h gadgetron_spiral_export.h 
+                     gpuSpiralSensePrepGadget.h 
+                     SpiralToGenericGadget.h 
+                     DESTINATION include)
 
 add_subdirectory(config)

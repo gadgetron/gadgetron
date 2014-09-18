@@ -1,5 +1,5 @@
 #include "CartesianToGenericGadget.h"
-#include "GadgetIsmrmrdReadWrite.h"
+#include "ismrmrd_xml.h"
 
 namespace Gadgetron{
 
@@ -12,31 +12,29 @@ namespace Gadgetron{
   
   int CartesianToGenericGadget::process_config(ACE_Message_Block* mb)
   {
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
-
-    if( cfg.get() == 0x0 ){
-      GADGET_DEBUG1("Unable to parse Ismrmrd header\n");
-      return GADGET_FAIL;
-    }
-
-    ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-
-    if (e_seq.size() != 1) {
-      GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
+    // Get the Ismrmrd header
+    //
+    ISMRMRD::IsmrmrdHeader h;
+    ISMRMRD::deserialize(mb->rd_ptr(),h);
+    
+    
+    if (h.encoding.size() != 1) {
       GADGET_DEBUG1("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
+    
+    // Get the encoding space and trajectory description
+    ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+    ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
+    ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
 
     // Enforcement of the matrix size being a multiple of the "warp size"
     warp_size_ = get_int_value(std::string("matrix_size_as_a_multipluple_of").c_str());
 
-    ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
+    matrix_size_.push_back( (e_space.matrixSize.x+warp_size_-1)/warp_size_*warp_size_);
+    matrix_size_.push_back( (e_space.matrixSize.y+warp_size_-1)/warp_size_*warp_size_);
 
-    matrix_size_.push_back( (e_space.matrixSize().x()+warp_size_-1)/warp_size_*warp_size_);
-    matrix_size_.push_back( (e_space.matrixSize().y()+warp_size_-1)/warp_size_*warp_size_);
-
-    center_phase_ = e_limits.kspace_encoding_step_1().get().center();
+    center_phase_ = e_limits.kspace_encoding_step_1 ? e_limits.kspace_encoding_step_1->center : 0;
 
     return GADGET_OK;
   }

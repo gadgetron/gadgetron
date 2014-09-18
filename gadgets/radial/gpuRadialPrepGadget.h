@@ -74,6 +74,7 @@ namespace Gadgetron{
   {
 
   public:
+
     gpuRadialPrepGadget();
     virtual ~gpuRadialPrepGadget();
 

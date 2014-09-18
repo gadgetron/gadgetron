@@ -10,9 +10,6 @@
 #include "gadgetron_mricore_export.h"
 
 #include <ismrmrd.h>
-#ifndef EXCLUDE_ISMRMRD_XSD
-#include <ismrmrd.hxx>
-#endif
 
 #include <ace/SOCK_Stream.h>
 #include <ace/Task.h>
@@ -85,8 +82,9 @@ namespace Gadgetron{
     {
 
     public:
+        GADGETRON_READER_DECLARE(GadgetIsmrmrdAcquisitionMessageReader);
 
-		virtual ACE_Message_Block* read(ACE_SOCK_Stream* stream)
+        virtual ACE_Message_Block* read(ACE_SOCK_Stream* stream)
         {
 
             GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1 =
@@ -168,34 +166,5 @@ namespace Gadgetron{
 
     };
 
-#ifndef EXCLUDE_ISMRMRD_XSD
-    inline boost::shared_ptr<ISMRMRD::ismrmrdHeader> parseIsmrmrdXMLHeader(std::string xml) {
-        char * gadgetron_home = ACE_OS::getenv("GADGETRON_HOME");
-        ACE_TCHAR schema_file_name[4096];
-        ACE_OS::sprintf(schema_file_name, "%s/schema/ismrmrd.xsd", gadgetron_home);
-
-        std::string tmp(schema_file_name);
-        tmp = url_encode(tmp);
-        ACE_OS_String::strncpy(schema_file_name,tmp.c_str(), 4096);
-
-        xml_schema::properties props;
-        props.schema_location (
-            "http://www.ismrm.org/ISMRMRD",
-            std::string (schema_file_name));
-
-
-        std::istringstream str_stream(xml, std::stringstream::in);
-
-        boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg;
-
-        try {
-            cfg = boost::shared_ptr<ISMRMRD::ismrmrdHeader>(ISMRMRD::ismrmrdHeader_ (str_stream,0,props));
-        }  catch (const xml_schema::exception& e) {
-            GADGET_DEBUG2("Failed to parse XML Parameters: %s\n", e.what());
-        }
-
-        return cfg;
-    }
-#endif
 }
 #endif //GADGETISMRMRDREADWRITE_H

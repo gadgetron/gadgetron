@@ -10,6 +10,8 @@
 
 namespace Gadgetron { namespace gtPlus {
 
+#define MAX_MOCO_LEVEL 16
+
 struct gtPlusReconWorkOrderPara
 {
     ISMRMRDCALIBMODE CalibMode_;
@@ -92,7 +94,14 @@ struct gtPlusReconWorkOrderPara
     Gadgetron::gtPlus::ISMRMRDALGO recon_algorithm_;
     bool recon_auto_parameters_;
 
+    bool gfactor_needed_;
+
+    bool wrap_around_map_needed_;
+
+    /// --------------
     // grappa
+    /// --------------
+
     size_t grappa_kSize_RO_;
     size_t grappa_kSize_E1_;
     size_t grappa_kSize_E2_;
@@ -100,11 +109,9 @@ struct gtPlusReconWorkOrderPara
     double grappa_calib_over_determine_ratio_;
     bool grappa_use_gpu_;
 
-    // sense
-
-    // soft sense
-
+    /// --------------
     // SPIRiT
+    /// --------------
     size_t spirit_kSize_RO_;
     size_t spirit_kSize_E1_;
     size_t spirit_kSize_E2_;
@@ -120,7 +127,9 @@ struct gtPlusReconWorkOrderPara
 
     bool spirit_use_gpu_;
 
+    /// --------------
     // L1 SPIRiT
+    /// --------------
     bool spirit_perform_linear_;
     bool spirit_perform_nonlinear_;
 
@@ -145,7 +154,18 @@ struct gtPlusReconWorkOrderPara
     double spirit_E2_enhancement_ratio_;
     double spirit_temporal_enhancement_ratio_;
 
-    // L1 soft sense
+    /// --------------
+    /// parameters for retro-gating
+    /// --------------
+    // number of retro-gated phases
+    // if 0, retro-gating is not prescribed
+    size_t retro_gated_images_;
+
+    // how many readout lines in each segment for retro-gating
+    size_t retro_gated_segment_size_;
+
+    // which method used for retro-gating
+    ISMRMRDINTERPRETROGATING retro_gated_interp_method_;
 
     // -------------------------------
     // job split
@@ -225,6 +245,8 @@ struct gtPlusReconWorkOrderPara
 
         num_channels_res_ = 1;
 
+        // ----------------------------------------------
+
         upstream_coil_compression_ = false;
         upstream_coil_compression_thres_ = 1e-3;
         upstream_coil_compression_num_modesKept_ = -1;
@@ -239,17 +261,25 @@ struct gtPlusReconWorkOrderPara
         csm_true_3D_ = false;
         csm_iter_num_ = 5;
         csm_iter_thres_ = 1e-3;
-        csm_use_gpu_ = true;
+        csm_use_gpu_ = false;
+
+        // ----------------------------------------------
 
         recon_algorithm_ = ISMRMRD_GRAPPA;
         recon_auto_parameters_ = true;
+        gfactor_needed_ = false;
+        wrap_around_map_needed_ = false;
+
+        // ----------------------------------------------
 
         grappa_kSize_RO_ = 5;
         grappa_kSize_E1_ = 4;
         grappa_kSize_E2_ = 4;
         grappa_reg_lamda_ = 0.0005;
         grappa_calib_over_determine_ratio_ = 0;
-        grappa_use_gpu_ = true;
+        grappa_use_gpu_ = false;
+
+        // ----------------------------------------------
 
         spirit_kSize_RO_ = 7;
         spirit_kSize_E1_ = 7;
@@ -258,13 +288,15 @@ struct gtPlusReconWorkOrderPara
         spirit_reg_lamda_ = 0.005;
         spirit_calib_over_determine_ratio_ = 0;
 
-        spirit_use_gpu_ = true;
+        spirit_use_gpu_ = false;
 
         spirit_solve_symmetric_ = false;
 
         spirit_iter_max_ = 70;
         spirit_iter_thres_ = 1e-5;
         spirit_print_iter_ = false;
+
+        // ----------------------------------------------
 
         spirit_perform_linear_ = true;
         spirit_perform_nonlinear_ = true;
@@ -276,7 +308,7 @@ struct gtPlusReconWorkOrderPara
         spirit_ncg_iter_max_ = 10;
         spirit_ncg_iter_thres_ = 1e-3;
         spirit_ncg_print_iter_ = false;
-        spirit_ncg_scale_factor_ = 1.0;
+        spirit_ncg_scale_factor_ = -1.0;
 
         spirit_use_coil_sen_map_ = true;
         spirit_use_moco_enhancement_ = false;
@@ -290,11 +322,21 @@ struct gtPlusReconWorkOrderPara
         spirit_2D_scale_per_chunk_ = false;
         spirit_3D_scale_per_chunk_ = true;
 
+        // ----------------------------------------------
+
+        retro_gated_images_ = 0;
+        retro_gated_segment_size_ = 0;
+        retro_gated_interp_method_ = ISMRMRD_INTERP_RETRO_GATING_BSPLINE;
+
+        // ----------------------------------------------
+
         job_split_by_S_ = false;
         job_num_of_N_ = 0;
         job_max_Megabytes_ = 20*1024;
         job_overlap_ = 2;
         job_perform_on_control_node_ = true;
+
+        // ----------------------------------------------
 
         partialFourier_algo_ = ISMRMRD_PF_ZEROFILLING_FILTER;
 
@@ -319,12 +361,12 @@ struct gtPlusReconWorkOrderPara
     ~gtPlusReconWorkOrderPara() {}
 };
 
-
-
 template <typename T> 
 class gtPlusReconWorkOrder : public gtPlusReconWorkOrderPara
 {
 public:
+
+    typedef typename realType<T>::Type real_value_type;
 
     gtPlusReconWorkOrder();
     virtual ~gtPlusReconWorkOrder();
@@ -365,6 +407,17 @@ public:
     // other data
     hoNDArray<T> other_;
 
+    // sometime, the initial kspace can be provided
+    hoNDArray<T> kspace_initial_;
+
+    // acqusition time stamp in the unit of second for kspace data lines
+    // for the embedded mode, the time stamps of ref lines are also stored
+    hoNDArray<real_value_type> time_stamp_;
+
+    // physio time stamp in the unit of second for kspace data lines
+    // for the embedded mode, the physio time stamps of ref lines are also stored
+    hoNDArray<real_value_type> physio_time_stamp_;
+
     // dimension starting indexes for the data_
     std::vector< DimensionRecordType > dataDimStartingIndexes_;
 
@@ -384,8 +437,23 @@ public:
     // reconstructed images
     hoNDArray<T> complexIm_;
 
+    // time stamp and physio stamp for reconed images, in the unit of seconds
+    // if these fields are not set, the buffered image header will be used
+    hoNDArray<real_value_type> recon_time_stamp_;
+    hoNDArray<real_value_type> recon_physio_time_stamp_;
+
+    // extra reconstructed results
+    // some methods can generate more than one set of reconstruction results
+    hoNDArray<T> fullkspace_second_;
+    hoNDArray<T> complexIm_second_;
+    hoNDArray<real_value_type> recon_time_stamp_second_;
+    hoNDArray<real_value_type> recon_physio_time_stamp_second_;
+
     // gfactor
     hoNDArray<T> gfactor_;
+
+    // wrap-around eig map
+    hoNDArray<T> wrap_around_map_;
 
     // -------------------------------
     // buffers for computation
@@ -490,114 +558,120 @@ bool gtPlusReconWorkOrder<T>::enforceConsistency(ISMRMRDDIM& /*lastDim*/)
 template <typename T> 
 void gtPlusReconWorkOrder<T>::duplicatePara(gtPlusReconWorkOrderPara& worder) const
 {
-    worder.CalibMode_ = CalibMode_;
-    worder.InterleaveDim_ = InterleaveDim_;
+    worder.CalibMode_                                  = CalibMode_;
+    worder.InterleaveDim_                              = InterleaveDim_;
 
-    worder.acceFactorE1_ = acceFactorE1_;
-    worder.acceFactorE2_ = acceFactorE2_;
+    worder.acceFactorE1_                               = acceFactorE1_;
+    worder.acceFactorE2_                               = acceFactorE2_;
 
-    worder.kSpaceCenterRO_ = kSpaceCenterRO_;
-    worder.kSpaceCenterEncode1_ = kSpaceCenterEncode1_;
-    worder.kSpaceCenterEncode2_ = kSpaceCenterEncode2_;
+    worder.kSpaceCenterRO_                             = kSpaceCenterRO_;
+    worder.kSpaceCenterEncode1_                        = kSpaceCenterEncode1_;
+    worder.kSpaceCenterEncode2_                        = kSpaceCenterEncode2_;
 
-    worder.kSpaceMaxRO_ = kSpaceMaxRO_;
-    worder.kSpaceMaxEncode1_ = kSpaceMaxEncode1_;
-    worder.kSpaceMaxEncode2_ = kSpaceMaxEncode2_;
+    worder.kSpaceMaxRO_                                = kSpaceMaxRO_;
+    worder.kSpaceMaxEncode1_                           = kSpaceMaxEncode1_;
+    worder.kSpaceMaxEncode2_                           = kSpaceMaxEncode2_;
 
-    worder.workFlow_BufferKernel_ = workFlow_BufferKernel_;
-    worder.workFlow_use_BufferedKernel_ = workFlow_use_BufferedKernel_;
-    worder.num_channels_res_ = num_channels_res_;
+    worder.workFlow_BufferKernel_                      = workFlow_BufferKernel_;
+    worder.workFlow_use_BufferedKernel_                = workFlow_use_BufferedKernel_;
+    worder.num_channels_res_                           = num_channels_res_;
 
-    worder.upstream_coil_compression_ = upstream_coil_compression_;
-    worder.upstream_coil_compression_thres_ = upstream_coil_compression_thres_;
-    worder.upstream_coil_compression_num_modesKept_ = upstream_coil_compression_num_modesKept_;
+    worder.upstream_coil_compression_                  = upstream_coil_compression_;
+    worder.upstream_coil_compression_thres_            = upstream_coil_compression_thres_;
+    worder.upstream_coil_compression_num_modesKept_    = upstream_coil_compression_num_modesKept_;
 
-    worder.downstream_coil_compression_ = downstream_coil_compression_;
-    worder.coil_compression_thres_ = coil_compression_thres_;
-    worder.coil_compression_num_modesKept_ = coil_compression_num_modesKept_;
+    worder.downstream_coil_compression_                = downstream_coil_compression_;
+    worder.coil_compression_thres_                     = coil_compression_thres_;
+    worder.coil_compression_num_modesKept_             = coil_compression_num_modesKept_;
 
-    worder.coil_map_algorithm_ = coil_map_algorithm_;
-    worder.csm_kSize_ = csm_kSize_;
-    worder.csm_powermethod_num_ = csm_powermethod_num_;
-    worder.csm_true_3D_ = csm_true_3D_;
-    worder.csm_iter_num_ = csm_iter_num_;
-    worder.csm_iter_thres_ = csm_iter_thres_;
-    worder.csm_use_gpu_ = csm_use_gpu_;
+    worder.coil_map_algorithm_                         = coil_map_algorithm_;
+    worder.csm_kSize_                                  = csm_kSize_;
+    worder.csm_powermethod_num_                        = csm_powermethod_num_;
+    worder.csm_true_3D_                                = csm_true_3D_;
+    worder.csm_iter_num_                               = csm_iter_num_;
+    worder.csm_iter_thres_                             = csm_iter_thres_;
+    worder.csm_use_gpu_                                = csm_use_gpu_;
 
-    worder.start_RO_ = start_RO_;
-    worder.end_RO_ = end_RO_;
+    worder.start_RO_                                   = start_RO_;
+    worder.end_RO_                                     = end_RO_;
 
-    worder.start_E1_ = start_E1_;
-    worder.end_E1_ = end_E1_;
+    worder.start_E1_                                   = start_E1_;
+    worder.end_E1_                                     = end_E1_;
 
-    worder.start_E2_ = start_E2_;
-    worder.end_E2_ = end_E2_;
+    worder.start_E2_                                   = start_E2_;
+    worder.end_E2_                                     = end_E2_;
 
-    worder.recon_algorithm_ = recon_algorithm_;
-    worder.recon_auto_parameters_ = recon_auto_parameters_;
+    worder.recon_algorithm_                            = recon_algorithm_;
+    worder.recon_auto_parameters_                      = recon_auto_parameters_;
+    worder.gfactor_needed_                             = gfactor_needed_;
+    worder.wrap_around_map_needed_                     = wrap_around_map_needed_;
 
-    worder.grappa_kSize_RO_ = grappa_kSize_RO_;
-    worder.grappa_kSize_RO_ = grappa_kSize_RO_;
-    worder.grappa_kSize_E1_ = grappa_kSize_E1_;
-    worder.grappa_kSize_E2_ = grappa_kSize_E2_;
-    worder.grappa_reg_lamda_ = grappa_reg_lamda_;
-    worder.grappa_calib_over_determine_ratio_ = grappa_calib_over_determine_ratio_;
-    worder.grappa_use_gpu_ = grappa_use_gpu_;
+    worder.grappa_kSize_RO_                            = grappa_kSize_RO_;
+    worder.grappa_kSize_RO_                            = grappa_kSize_RO_;
+    worder.grappa_kSize_E1_                            = grappa_kSize_E1_;
+    worder.grappa_kSize_E2_                            = grappa_kSize_E2_;
+    worder.grappa_reg_lamda_                           = grappa_reg_lamda_;
+    worder.grappa_calib_over_determine_ratio_          = grappa_calib_over_determine_ratio_;
+    worder.grappa_use_gpu_                             = grappa_use_gpu_;
 
-    worder.spirit_kSize_RO_ = spirit_kSize_RO_;
-    worder.spirit_kSize_E1_ = spirit_kSize_E1_;
-    worder.spirit_kSize_E2_ = spirit_kSize_E2_;
-    worder.spirit_reg_lamda_ = spirit_reg_lamda_;
-    worder.spirit_use_gpu_ = spirit_use_gpu_;
-    worder.spirit_calib_over_determine_ratio_ = spirit_calib_over_determine_ratio_;
-    worder.spirit_solve_symmetric_ = spirit_solve_symmetric_;
-    worder.spirit_iter_max_ = spirit_iter_max_;
-    worder.spirit_iter_thres_ = spirit_iter_thres_;
-    worder.spirit_print_iter_ = spirit_print_iter_;
+    worder.spirit_kSize_RO_                            = spirit_kSize_RO_;
+    worder.spirit_kSize_E1_                            = spirit_kSize_E1_;
+    worder.spirit_kSize_E2_                            = spirit_kSize_E2_;
+    worder.spirit_reg_lamda_                           = spirit_reg_lamda_;
+    worder.spirit_use_gpu_                             = spirit_use_gpu_;
+    worder.spirit_calib_over_determine_ratio_          = spirit_calib_over_determine_ratio_;
+    worder.spirit_solve_symmetric_                     = spirit_solve_symmetric_;
+    worder.spirit_iter_max_                            = spirit_iter_max_;
+    worder.spirit_iter_thres_                          = spirit_iter_thres_;
+    worder.spirit_print_iter_                          = spirit_print_iter_;
 
-    worder.spirit_perform_linear_ = spirit_perform_linear_;
-    worder.spirit_perform_nonlinear_ = spirit_perform_nonlinear_;
-    worder.spirit_parallel_imaging_lamda_ = spirit_parallel_imaging_lamda_;
-    worder.spirit_image_reg_lamda_ = spirit_image_reg_lamda_;
-    worder.spirit_data_fidelity_lamda_ = spirit_data_fidelity_lamda_;
-    worder.spirit_ncg_iter_max_ = spirit_ncg_iter_max_;
-    worder.spirit_ncg_iter_thres_ = spirit_ncg_iter_thres_;
-    worder.spirit_ncg_scale_factor_ = spirit_ncg_scale_factor_;
-    worder.spirit_ncg_print_iter_ = spirit_ncg_print_iter_;
-    worder.spirit_use_coil_sen_map_ = spirit_use_coil_sen_map_;
-    worder.spirit_use_moco_enhancement_ = spirit_use_moco_enhancement_;
-    worder.spirit_recon_moco_images_ = spirit_recon_moco_images_;
-    worder.spirit_RO_enhancement_ratio_ = spirit_RO_enhancement_ratio_;
-    worder.spirit_E1_enhancement_ratio_ = spirit_E1_enhancement_ratio_;
-    worder.spirit_E2_enhancement_ratio_ = spirit_E2_enhancement_ratio_;
-    worder.spirit_temporal_enhancement_ratio_ = spirit_temporal_enhancement_ratio_;
-    worder.spirit_2D_scale_per_chunk_ = spirit_2D_scale_per_chunk_;
-    worder.spirit_3D_scale_per_chunk_ = spirit_3D_scale_per_chunk_;
+    worder.spirit_perform_linear_                      = spirit_perform_linear_;
+    worder.spirit_perform_nonlinear_                   = spirit_perform_nonlinear_;
+    worder.spirit_parallel_imaging_lamda_              = spirit_parallel_imaging_lamda_;
+    worder.spirit_image_reg_lamda_                     = spirit_image_reg_lamda_;
+    worder.spirit_data_fidelity_lamda_                 = spirit_data_fidelity_lamda_;
+    worder.spirit_ncg_iter_max_                        = spirit_ncg_iter_max_;
+    worder.spirit_ncg_iter_thres_                      = spirit_ncg_iter_thres_;
+    worder.spirit_ncg_scale_factor_                    = spirit_ncg_scale_factor_;
+    worder.spirit_ncg_print_iter_                      = spirit_ncg_print_iter_;
+    worder.spirit_use_coil_sen_map_                    = spirit_use_coil_sen_map_;
+    worder.spirit_use_moco_enhancement_                = spirit_use_moco_enhancement_;
+    worder.spirit_recon_moco_images_                   = spirit_recon_moco_images_;
+    worder.spirit_RO_enhancement_ratio_                = spirit_RO_enhancement_ratio_;
+    worder.spirit_E1_enhancement_ratio_                = spirit_E1_enhancement_ratio_;
+    worder.spirit_E2_enhancement_ratio_                = spirit_E2_enhancement_ratio_;
+    worder.spirit_temporal_enhancement_ratio_          = spirit_temporal_enhancement_ratio_;
+    worder.spirit_2D_scale_per_chunk_                  = spirit_2D_scale_per_chunk_;
+    worder.spirit_3D_scale_per_chunk_                  = spirit_3D_scale_per_chunk_;
 
-    worder.job_split_by_S_ = job_split_by_S_;
-    worder.job_num_of_N_ = job_num_of_N_;
-    worder.job_max_Megabytes_ = job_max_Megabytes_;
-    worder.job_overlap_ = job_overlap_;
-    worder.job_perform_on_control_node_ = job_perform_on_control_node_;
+    worder.retro_gated_images_                         = retro_gated_images_;
+    worder.retro_gated_segment_size_                   = retro_gated_segment_size_;
+    worder.retro_gated_interp_method_                  = retro_gated_interp_method_;
 
-    worder.partialFourier_algo_ = partialFourier_algo_;
+    worder.job_split_by_S_                             = job_split_by_S_;
+    worder.job_num_of_N_                               = job_num_of_N_;
+    worder.job_max_Megabytes_                          = job_max_Megabytes_;
+    worder.job_overlap_                                = job_overlap_;
+    worder.job_perform_on_control_node_                = job_perform_on_control_node_;
 
-    worder.partialFourier_homodyne_iters_ = partialFourier_homodyne_iters_;
-    worder.partialFourier_homodyne_thres_ = partialFourier_homodyne_thres_;
-    worder.partialFourier_homodyne_densityComp_ = partialFourier_homodyne_densityComp_;
+    worder.partialFourier_algo_                        = partialFourier_algo_;
 
-    worder.partialFourier_POCS_iters_ = partialFourier_POCS_iters_;
-    worder.partialFourier_POCS_thres_ = partialFourier_POCS_thres_;
-    worder.partialFourier_POCS_transitBand_ = partialFourier_POCS_transitBand_;
-    worder.partialFourier_POCS_transitBand_E2_ = partialFourier_POCS_transitBand_E2_;
+    worder.partialFourier_homodyne_iters_              = partialFourier_homodyne_iters_;
+    worder.partialFourier_homodyne_thres_              = partialFourier_homodyne_thres_;
+    worder.partialFourier_homodyne_densityComp_        = partialFourier_homodyne_densityComp_;
 
-    worder.partialFourier_FengHuang_kSize_RO_ = partialFourier_FengHuang_kSize_RO_;
-    worder.partialFourier_FengHuang_kSize_E1_ = partialFourier_FengHuang_kSize_E1_;
-    worder.partialFourier_FengHuang_kSize_E2_ = partialFourier_FengHuang_kSize_E2_;
-    worder.partialFourier_FengHuang_thresReg_ = partialFourier_FengHuang_thresReg_;
-    worder.partialFourier_FengHuang_sameKernel_allN_ = partialFourier_FengHuang_sameKernel_allN_;
-    worder.partialFourier_FengHuang_transitBand_ = partialFourier_FengHuang_transitBand_;
-    worder.partialFourier_FengHuang_transitBand_E2_ = partialFourier_FengHuang_transitBand_E2_;
+    worder.partialFourier_POCS_iters_                  = partialFourier_POCS_iters_;
+    worder.partialFourier_POCS_thres_                  = partialFourier_POCS_thres_;
+    worder.partialFourier_POCS_transitBand_            = partialFourier_POCS_transitBand_;
+    worder.partialFourier_POCS_transitBand_E2_         = partialFourier_POCS_transitBand_E2_;
+
+    worder.partialFourier_FengHuang_kSize_RO_          = partialFourier_FengHuang_kSize_RO_;
+    worder.partialFourier_FengHuang_kSize_E1_          = partialFourier_FengHuang_kSize_E1_;
+    worder.partialFourier_FengHuang_kSize_E2_          = partialFourier_FengHuang_kSize_E2_;
+    worder.partialFourier_FengHuang_thresReg_          = partialFourier_FengHuang_thresReg_;
+    worder.partialFourier_FengHuang_sameKernel_allN_   = partialFourier_FengHuang_sameKernel_allN_;
+    worder.partialFourier_FengHuang_transitBand_       = partialFourier_FengHuang_transitBand_;
+    worder.partialFourier_FengHuang_transitBand_E2_    = partialFourier_FengHuang_transitBand_E2_;
 }
 
 template <typename T> 
@@ -605,142 +679,148 @@ void gtPlusReconWorkOrder<T>::duplicate(gtPlusReconWorkOrder<T>& worder) const
 {
     this->duplicatePara(worder);
 
-    worder.dataDimStartingIndexes_ = dataDimStartingIndexes_;
+    worder.dataDimStartingIndexes_      = dataDimStartingIndexes_;
 
-    worder.filterRO_ = filterRO_;
-    worder.filterE1_ = filterE1_;
-    worder.filterE2_ = filterE2_;
-    worder.filterROE1_ = filterROE1_;
-    worder.filterROE1E2_ = filterROE1E2_;
+    worder.filterRO_                    = filterRO_;
+    worder.filterE1_                    = filterE1_;
+    worder.filterE2_                    = filterE2_;
+    worder.filterROE1_                  = filterROE1_;
+    worder.filterROE1E2_                = filterROE1E2_;
 
-    worder.filterRO_ref_ = filterRO_ref_;
-    worder.filterE1_ref_ = filterE1_ref_;
-    worder.filterE2_ref_ = filterE2_ref_;
-    worder.filterROE1_ref_ = filterROE1_ref_;
-    worder.filterROE1E2_ref_ = filterROE1E2_ref_;
+    worder.filterRO_ref_                = filterRO_ref_;
+    worder.filterE1_ref_                = filterE1_ref_;
+    worder.filterE2_ref_                = filterE2_ref_;
+    worder.filterROE1_ref_              = filterROE1_ref_;
+    worder.filterROE1E2_ref_            = filterROE1E2_ref_;
 
-    worder.filterRO_partialfourier_ = filterRO_partialfourier_;
-    worder.filterE1_partialfourier_ = filterE1_partialfourier_;
-    worder.filterE2_partialfourier_ = filterE2_partialfourier_;
-    worder.filterROE1_partialfourier_ = filterROE1_partialfourier_;
+    worder.filterRO_partialfourier_     = filterRO_partialfourier_;
+    worder.filterE1_partialfourier_     = filterE1_partialfourier_;
+    worder.filterE2_partialfourier_     = filterE2_partialfourier_;
+    worder.filterROE1_partialfourier_   = filterROE1_partialfourier_;
     worder.filterROE1E2_partialfourier_ = filterROE1E2_partialfourier_;
 
-    worder.CloudComputing_ = CloudComputing_;
-    worder.CloudSize_ = CloudSize_;
-    worder.gt_cloud_ = gt_cloud_;
+    worder.CloudComputing_              = CloudComputing_;
+    worder.CloudSize_                   = CloudSize_;
+    worder.gt_cloud_                    = gt_cloud_;
 }
 
 template <typename T> 
 void gtPlusReconWorkOrder<T>::copyFromPara(const gtPlusReconWorkOrderPara& worder)
 {
-    CalibMode_ = worder.CalibMode_;
-    InterleaveDim_ = worder.InterleaveDim_;
+    CalibMode_                                  = worder.CalibMode_;
+    InterleaveDim_                              = worder.InterleaveDim_;
 
-    acceFactorE1_ = worder.acceFactorE1_;
-    acceFactorE2_ = worder.acceFactorE2_;
+    acceFactorE1_                               = worder.acceFactorE1_;
+    acceFactorE2_                               = worder.acceFactorE2_;
 
-    kSpaceCenterRO_ = worder.kSpaceCenterRO_;
-    kSpaceCenterEncode1_ = worder.kSpaceCenterEncode1_;
-    kSpaceCenterEncode2_ = worder.kSpaceCenterEncode2_;
+    kSpaceCenterRO_                             = worder.kSpaceCenterRO_;
+    kSpaceCenterEncode1_                        = worder.kSpaceCenterEncode1_;
+    kSpaceCenterEncode2_                        = worder.kSpaceCenterEncode2_;
 
-    kSpaceMaxRO_ = worder.kSpaceMaxRO_;
-    kSpaceMaxEncode1_ = worder.kSpaceMaxEncode1_;
-    kSpaceMaxEncode2_ = worder.kSpaceMaxEncode2_;
+    kSpaceMaxRO_                                = worder.kSpaceMaxRO_;
+    kSpaceMaxEncode1_                           = worder.kSpaceMaxEncode1_;
+    kSpaceMaxEncode2_                           = worder.kSpaceMaxEncode2_;
 
-    workFlow_BufferKernel_ = worder.workFlow_BufferKernel_;
-    workFlow_use_BufferedKernel_ = worder.workFlow_use_BufferedKernel_;
-    num_channels_res_ = worder.num_channels_res_;
+    workFlow_BufferKernel_                      = worder.workFlow_BufferKernel_;
+    workFlow_use_BufferedKernel_                = worder.workFlow_use_BufferedKernel_;
+    num_channels_res_                           = worder.num_channels_res_;
 
-    upstream_coil_compression_ = worder.upstream_coil_compression_;
-    upstream_coil_compression_thres_ = worder.upstream_coil_compression_thres_;
-    upstream_coil_compression_num_modesKept_ = worder.upstream_coil_compression_num_modesKept_;
+    upstream_coil_compression_                  = worder.upstream_coil_compression_;
+    upstream_coil_compression_thres_            = worder.upstream_coil_compression_thres_;
+    upstream_coil_compression_num_modesKept_    = worder.upstream_coil_compression_num_modesKept_;
 
-    downstream_coil_compression_ = worder.downstream_coil_compression_;
-    coil_compression_thres_ = worder.coil_compression_thres_;
-    coil_compression_num_modesKept_ = worder.coil_compression_num_modesKept_;
+    downstream_coil_compression_                = worder.downstream_coil_compression_;
+    coil_compression_thres_                     = worder.coil_compression_thres_;
+    coil_compression_num_modesKept_             = worder.coil_compression_num_modesKept_;
 
-    coil_map_algorithm_ = worder.coil_map_algorithm_;
-    csm_kSize_ = worder.csm_kSize_;
-    csm_powermethod_num_ = worder.csm_powermethod_num_;
-    csm_true_3D_ = worder.csm_true_3D_;
-    csm_iter_num_ = worder.csm_iter_num_;
-    csm_iter_thres_ = worder.csm_iter_thres_;
-    csm_use_gpu_ = worder.csm_use_gpu_;
+    coil_map_algorithm_                         = worder.coil_map_algorithm_;
+    csm_kSize_                                  = worder.csm_kSize_;
+    csm_powermethod_num_                        = worder.csm_powermethod_num_;
+    csm_true_3D_                                = worder.csm_true_3D_;
+    csm_iter_num_                               = worder.csm_iter_num_;
+    csm_iter_thres_                             = worder.csm_iter_thres_;
+    csm_use_gpu_                                = worder.csm_use_gpu_;
 
-    start_RO_ = worder.start_RO_;
-    end_RO_ = worder.end_RO_;
+    start_RO_                                   = worder.start_RO_;
+    end_RO_                                     = worder.end_RO_;
 
-    start_E1_ = worder.start_E1_;
-    end_E1_ = worder.end_E1_;
+    start_E1_                                   = worder.start_E1_;
+    end_E1_                                     = worder.end_E1_;
 
-    start_E2_ = worder.start_E2_;
-    end_E2_ = worder.end_E2_;
+    start_E2_                                   = worder.start_E2_;
+    end_E2_                                     = worder.end_E2_;
 
-    recon_algorithm_ = worder.recon_algorithm_;
-    recon_auto_parameters_ = worder.recon_auto_parameters_;
+    recon_algorithm_                            = worder.recon_algorithm_;
+    recon_auto_parameters_                      = worder.recon_auto_parameters_;
+    gfactor_needed_                             = worder.gfactor_needed_;
+    wrap_around_map_needed_                     = worder.wrap_around_map_needed_;
 
-    grappa_kSize_RO_ = worder.grappa_kSize_RO_;
-    grappa_kSize_RO_ = worder.grappa_kSize_RO_;
-    grappa_kSize_E1_ = worder.grappa_kSize_E1_;
-    grappa_kSize_E2_ = worder.grappa_kSize_E2_;
-    grappa_reg_lamda_ = worder.grappa_reg_lamda_;
-    grappa_calib_over_determine_ratio_ = worder.grappa_calib_over_determine_ratio_;
-    grappa_use_gpu_ = worder.grappa_use_gpu_;
+    grappa_kSize_RO_                            = worder.grappa_kSize_RO_;
+    grappa_kSize_RO_                            = worder.grappa_kSize_RO_;
+    grappa_kSize_E1_                            = worder.grappa_kSize_E1_;
+    grappa_kSize_E2_                            = worder.grappa_kSize_E2_;
+    grappa_reg_lamda_                           = worder.grappa_reg_lamda_;
+    grappa_calib_over_determine_ratio_          = worder.grappa_calib_over_determine_ratio_;
+    grappa_use_gpu_                             = worder.grappa_use_gpu_;
 
-    spirit_kSize_RO_ = worder.spirit_kSize_RO_;
-    spirit_kSize_E1_ = worder.spirit_kSize_E1_;
-    spirit_kSize_E2_ = worder.spirit_kSize_E2_;
-    spirit_reg_lamda_ = worder.spirit_reg_lamda_;
-    spirit_use_gpu_ = worder.spirit_use_gpu_;
-    spirit_calib_over_determine_ratio_ = worder.spirit_calib_over_determine_ratio_;
-    spirit_solve_symmetric_ = worder.spirit_solve_symmetric_;
-    spirit_iter_max_ = worder.spirit_iter_max_;
-    spirit_iter_thres_ = worder.spirit_iter_thres_;
-    spirit_print_iter_ = worder.spirit_print_iter_;
+    spirit_kSize_RO_                            = worder.spirit_kSize_RO_;
+    spirit_kSize_E1_                            = worder.spirit_kSize_E1_;
+    spirit_kSize_E2_                            = worder.spirit_kSize_E2_;
+    spirit_reg_lamda_                           = worder.spirit_reg_lamda_;
+    spirit_use_gpu_                             = worder.spirit_use_gpu_;
+    spirit_calib_over_determine_ratio_          = worder.spirit_calib_over_determine_ratio_;
+    spirit_solve_symmetric_                     = worder.spirit_solve_symmetric_;
+    spirit_iter_max_                            = worder.spirit_iter_max_;
+    spirit_iter_thres_                          = worder.spirit_iter_thres_;
+    spirit_print_iter_                          = worder.spirit_print_iter_;
 
-    spirit_perform_linear_ = worder.spirit_perform_linear_;
-    spirit_perform_nonlinear_ = worder.spirit_perform_nonlinear_;
-    spirit_parallel_imaging_lamda_ = worder.spirit_parallel_imaging_lamda_;
-    spirit_image_reg_lamda_ = worder.spirit_image_reg_lamda_;
-    spirit_data_fidelity_lamda_ = worder.spirit_data_fidelity_lamda_;
-    spirit_ncg_iter_max_ = worder.spirit_ncg_iter_max_;
-    spirit_ncg_iter_thres_ = worder.spirit_ncg_iter_thres_;
-    spirit_ncg_scale_factor_ = worder.spirit_ncg_scale_factor_;
-    spirit_ncg_print_iter_ = worder.spirit_ncg_print_iter_;
-    spirit_use_coil_sen_map_ = worder.spirit_use_coil_sen_map_;
-    spirit_use_moco_enhancement_ = worder.spirit_use_moco_enhancement_;
-    spirit_recon_moco_images_ = worder.spirit_recon_moco_images_;
-    spirit_RO_enhancement_ratio_ = worder.spirit_RO_enhancement_ratio_;
-    spirit_E1_enhancement_ratio_ = worder.spirit_E1_enhancement_ratio_;
-    spirit_E2_enhancement_ratio_ = worder.spirit_E2_enhancement_ratio_;
-    spirit_temporal_enhancement_ratio_ = worder.spirit_temporal_enhancement_ratio_;
-    spirit_2D_scale_per_chunk_ = worder.spirit_2D_scale_per_chunk_;
-    spirit_3D_scale_per_chunk_ = worder.spirit_3D_scale_per_chunk_;
+    spirit_perform_linear_                      = worder.spirit_perform_linear_;
+    spirit_perform_nonlinear_                   = worder.spirit_perform_nonlinear_;
+    spirit_parallel_imaging_lamda_              = worder.spirit_parallel_imaging_lamda_;
+    spirit_image_reg_lamda_                     = worder.spirit_image_reg_lamda_;
+    spirit_data_fidelity_lamda_                 = worder.spirit_data_fidelity_lamda_;
+    spirit_ncg_iter_max_                        = worder.spirit_ncg_iter_max_;
+    spirit_ncg_iter_thres_                      = worder.spirit_ncg_iter_thres_;
+    spirit_ncg_scale_factor_                    = worder.spirit_ncg_scale_factor_;
+    spirit_ncg_print_iter_                      = worder.spirit_ncg_print_iter_;
+    spirit_use_coil_sen_map_                    = worder.spirit_use_coil_sen_map_;
+    spirit_use_moco_enhancement_                = worder.spirit_use_moco_enhancement_;
+    spirit_recon_moco_images_                   = worder.spirit_recon_moco_images_;
+    spirit_RO_enhancement_ratio_                = worder.spirit_RO_enhancement_ratio_;
+    spirit_E1_enhancement_ratio_                = worder.spirit_E1_enhancement_ratio_;
+    spirit_E2_enhancement_ratio_                = worder.spirit_E2_enhancement_ratio_;
+    spirit_temporal_enhancement_ratio_          = worder.spirit_temporal_enhancement_ratio_;
+    spirit_2D_scale_per_chunk_                  = worder.spirit_2D_scale_per_chunk_;
+    spirit_3D_scale_per_chunk_                  = worder.spirit_3D_scale_per_chunk_;
 
-    job_split_by_S_ = worder.job_split_by_S_;
-    job_num_of_N_ = worder.job_num_of_N_;
-    job_max_Megabytes_ = worder.job_max_Megabytes_;
-    job_overlap_ = worder.job_overlap_;
-    job_perform_on_control_node_ = worder.job_perform_on_control_node_;
+    retro_gated_images_                         = worder.retro_gated_images_;
+    retro_gated_segment_size_                   = worder.retro_gated_segment_size_;
+    retro_gated_interp_method_                  = worder.retro_gated_interp_method_;
 
-    partialFourier_algo_ = worder.partialFourier_algo_;
+    job_split_by_S_                             = worder.job_split_by_S_;
+    job_num_of_N_                               = worder.job_num_of_N_;
+    job_max_Megabytes_                          = worder.job_max_Megabytes_;
+    job_overlap_                                = worder.job_overlap_;
+    job_perform_on_control_node_                = worder.job_perform_on_control_node_;
 
-    partialFourier_homodyne_iters_ = worder.partialFourier_homodyne_iters_;
-    partialFourier_homodyne_thres_ = worder.partialFourier_homodyne_thres_;
-    partialFourier_homodyne_densityComp_ = worder.partialFourier_homodyne_densityComp_;
+    partialFourier_algo_                        = worder.partialFourier_algo_;
 
-    partialFourier_POCS_iters_ = worder.partialFourier_POCS_iters_;
-    partialFourier_POCS_thres_ = worder.partialFourier_POCS_thres_;
-    partialFourier_POCS_transitBand_ = worder.partialFourier_POCS_transitBand_;
-    partialFourier_POCS_transitBand_E2_ = worder.partialFourier_POCS_transitBand_E2_;
+    partialFourier_homodyne_iters_              = worder.partialFourier_homodyne_iters_;
+    partialFourier_homodyne_thres_              = worder.partialFourier_homodyne_thres_;
+    partialFourier_homodyne_densityComp_        = worder.partialFourier_homodyne_densityComp_;
 
-    partialFourier_FengHuang_kSize_RO_ = worder.partialFourier_FengHuang_kSize_RO_;
-    partialFourier_FengHuang_kSize_E1_ = worder.partialFourier_FengHuang_kSize_E1_;
-    partialFourier_FengHuang_kSize_E2_ = worder.partialFourier_FengHuang_kSize_E2_;
-    partialFourier_FengHuang_thresReg_ = worder.partialFourier_FengHuang_thresReg_;
-    partialFourier_FengHuang_sameKernel_allN_ = worder.partialFourier_FengHuang_sameKernel_allN_;
-    partialFourier_FengHuang_transitBand_ = worder.partialFourier_FengHuang_transitBand_;
-    partialFourier_FengHuang_transitBand_E2_ = worder.partialFourier_FengHuang_transitBand_E2_;
+    partialFourier_POCS_iters_                  = worder.partialFourier_POCS_iters_;
+    partialFourier_POCS_thres_                  = worder.partialFourier_POCS_thres_;
+    partialFourier_POCS_transitBand_            = worder.partialFourier_POCS_transitBand_;
+    partialFourier_POCS_transitBand_E2_         = worder.partialFourier_POCS_transitBand_E2_;
+
+    partialFourier_FengHuang_kSize_RO_          = worder.partialFourier_FengHuang_kSize_RO_;
+    partialFourier_FengHuang_kSize_E1_          = worder.partialFourier_FengHuang_kSize_E1_;
+    partialFourier_FengHuang_kSize_E2_          = worder.partialFourier_FengHuang_kSize_E2_;
+    partialFourier_FengHuang_thresReg_          = worder.partialFourier_FengHuang_thresReg_;
+    partialFourier_FengHuang_sameKernel_allN_   = worder.partialFourier_FengHuang_sameKernel_allN_;
+    partialFourier_FengHuang_transitBand_       = worder.partialFourier_FengHuang_transitBand_;
+    partialFourier_FengHuang_transitBand_E2_    = worder.partialFourier_FengHuang_transitBand_E2_;
 }
 
 template <typename T> 
@@ -788,6 +868,8 @@ void gtPlusReconWorkOrder<T>::printInfo(std::ostream& os) const
     os << std::endl;
     GADGET_OSTREAM_PRINT(os, recon_algorithm_);
     GADGET_OSTREAM_PRINT(os, recon_auto_parameters_);
+    GADGET_OSTREAM_PRINT(os, gfactor_needed_);
+    GADGET_OSTREAM_PRINT(os, wrap_around_map_needed_);
     os << std::endl;
     GADGET_OSTREAM_PRINT(os, grappa_kSize_RO_);
     GADGET_OSTREAM_PRINT(os, grappa_kSize_E1_);
@@ -825,6 +907,10 @@ void gtPlusReconWorkOrder<T>::printInfo(std::ostream& os) const
     GADGET_OSTREAM_PRINT(os, spirit_temporal_enhancement_ratio_);
     GADGET_OSTREAM_PRINT(os, spirit_2D_scale_per_chunk_);
     GADGET_OSTREAM_PRINT(os, spirit_3D_scale_per_chunk_);
+    os << std::endl;
+    GADGET_OSTREAM_PRINT(os, retro_gated_images_);
+    GADGET_OSTREAM_PRINT(os, retro_gated_segment_size_);
+    GADGET_OSTREAM_PRINT(os, retro_gated_interp_method_);
     os << std::endl;
     GADGET_OSTREAM_PRINT(os, job_split_by_S_);
     GADGET_OSTREAM_PRINT(os, job_num_of_N_);

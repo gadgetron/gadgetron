@@ -1,25 +1,26 @@
+
 namespace Gadgetron
 {
 
 template <typename T> 
-hoMatrix<T>::hoMatrix() : BaseClass()
+hoMatrix<T>::hoMatrix() : BaseClass(1, 1)
 {
 }
 
 template <typename T> 
-hoMatrix<T>::hoMatrix(unsigned int rows, unsigned int cols) : BaseClass(cols, rows)
+hoMatrix<T>::hoMatrix(size_t rows, size_t cols) : BaseClass(rows, cols)
 {
     this->fill(T(0));
 }
 
 template <typename T> 
-hoMatrix<T>::hoMatrix(unsigned int rows, unsigned int cols, T* data, bool delete_data_on_destruct)
+hoMatrix<T>::hoMatrix(size_t rows, size_t cols, T* data, bool delete_data_on_destruct)
 {
-    std::vector<unsigned int> dim(2);
-    dim[0] = sx;
-    dim[1] = sy;
-    this->create(dimensions,data,delete_data_on_destruct);
-    GADGET_CHECK_THROW(init_accesser());
+    std::vector<size_t> dim(2);
+    dim[0] = rows;
+    dim[1] = cols;
+    this->create(&dim,data,delete_data_on_destruct);
+    GADGET_CHECK_THROW(this->init_accesser());
 }
 
 template <typename T> 
@@ -29,35 +30,56 @@ hoMatrix<T>::~hoMatrix()
 }
 
 template <typename T> 
-bool hoMatrix<T>::createMatrix(unsigned int rows, unsigned int cols)
+hoMatrix<T>::hoMatrix(const hoMatrix<T>& a) : BaseClass(a)
 {
-    return this->createArray(cols, rows);
+}
+
+template <typename T> 
+hoMatrix<T>& hoMatrix<T>::operator=(const hoMatrix& rhs)
+{
+    if ( this == &rhs ) return *this;
+    BaseClass::operator=(rhs);
+    return *this;
+}
+
+template <typename T> 
+bool hoMatrix<T>::createMatrix(size_t rows, size_t cols)
+{
+    return this->createArray(rows, cols);
+}
+
+template <typename T> 
+bool hoMatrix<T>::createMatrix(size_t rows, size_t cols, T* data, bool delete_data_on_destruct)
+{
+    return this->createArray(rows, cols, data, delete_data_on_destruct);
 }
 
 template <typename T> 
 inline T& hoMatrix<T>::operator()(size_t r, size_t c)
 {
-    GADGET_DEBUG_CHECK_THROW(c<(*dimensions_)[0] && r<(*dimensions_)[1]);
-    return accesser_[r][c];
+    GADGET_DEBUG_CHECK_THROW(c>=0 && r>=0 && r<(*dimensions_)[0] && c<(*dimensions_)[1]);
+    return accesser_[c][r];
 }
 
 template <typename T> 
 inline const T& hoMatrix<T>::operator()(size_t r, size_t c) const
 {
-    GADGET_DEBUG_CHECK_THROW(c<(*dimensions_)[0] && r<(*dimensions_)[1]);
-    return accesser_[r][c];
+    GADGET_DEBUG_CHECK_THROW(c>=0 && r>=0 && c<(*dimensions_)[0] && r<(*dimensions_)[1]);
+    return accesser_[c][r];
 }
 
 template <typename T> 
-inline unsigned int hoMatrix<T>::rows() const
+inline size_t hoMatrix<T>::rows() const
 {
-    return (*dimensions_)[1];
-}
-
-template <typename T> 
-inline unsigned int hoMatrix<T>::cols() const
-{
+    if ( dimensions_->empty() ) return 0;
     return (*dimensions_)[0];
+}
+
+template <typename T> 
+inline size_t hoMatrix<T>::cols() const
+{
+    if ( dimensions_->empty() ) return 0;
+    return (*dimensions_)[1];
 }
 
 template <typename T> 
@@ -65,10 +87,10 @@ bool hoMatrix<T>::upperTri(const T& v)
 {
     try
     {
-        unsigned int r, c;
-        for (r=0; r<(*dimensions_)[1]; r++)
+        size_t r, c;
+        for (c=0; c<(*dimensions_)[1]; c++)
         {
-            for (c=0; c<(*dimensions_)[0]; c++)
+            for (r=0; r<(*dimensions_)[0]; r++)
             {
                 if ( c > r )
                 {
@@ -90,10 +112,10 @@ bool hoMatrix<T>::lowerTri(const T& v)
 {
     try
     {
-        unsigned int r, c;
-        for (r=0; r<(*dimensions_)[1]; r++)
+        size_t r, c;
+        for (c=0; c<(*dimensions_)[1]; c++)
         {
-            for (c=0; c<(*dimensions_)[0]; c++)
+            for (r=0; r<(*dimensions_)[0]; r++)
             {
                 if ( r > c )
                 {
@@ -111,12 +133,214 @@ bool hoMatrix<T>::lowerTri(const T& v)
 }
 
 template <typename T> 
+bool hoMatrix<T>::sumOverRow(hoNDArray<T>& res) const
+{
+    try
+    {
+        size_t ROW = rows();
+        size_t COL = cols();
+
+        if ( res.get_number_of_elements() != ROW )
+        {
+            res.create(ROW);
+        }
+
+        T* pRes = res.begin();
+
+        size_t r, c;
+
+        for ( r=0; r<ROW; r++ )
+        {
+            pRes[r] = 0;
+        }
+
+        for ( c=0; c<COL; c++ )
+        {
+            for ( r=0; r<ROW; r++ )
+            {
+                // res(r) += (*this)(r, c);
+                pRes[r] += this->data_[r+c*ROW];
+            }
+        }
+    }
+    catch (...)
+    {
+        GADGET_ERROR_MSG("Errors in hoMatrix<T>::sumOverRow(hoNDArray<T>& r) ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T> 
+bool hoMatrix<T>::sumOverCol(hoNDArray<T>& res) const
+{
+    try
+    {
+        size_t ROW = rows();
+        size_t COL = cols();
+
+        if ( res.get_number_of_elements() != COL )
+        {
+            res.create(COL);
+        }
+
+        T* pRes = res.begin();
+
+        size_t r;
+        long long c;
+
+        for ( c=0; c<(long long)COL; c++ )
+        {
+            pRes[c] = 0;
+        }
+
+        //for ( r=0; r<ROW; r++ )
+        //{
+        //    for ( c=0; c<COL; c++ )
+        //    {
+        //        // res(c) += (*this)(r, c);
+        //        pRes[c] += this->data_[r+c*ROW];
+        //    }
+        //}
+
+        T* pCurr = NULL;
+        T v(0);
+        // #pragma omp parallel for default(none) private(c, r) shared(COL, ROW, pRes) if ( COL > 16 )
+        for ( c=0; c<(long long)COL; c++ )
+        {
+            v = 0;
+            pCurr = this->data_ + c*ROW;
+            for ( r=0; r<ROW; r++ )
+            {
+                v += pCurr[r];
+            }
+            pRes[c] = v;
+        }
+
+        //size_t r, c;
+        //for ( c=0; c<COL; c++ )
+        //{
+        //    T v = (*this)(0, c);
+        //    for ( r=1; r<ROW; r++ )
+        //    {
+        //        v += (*this)(r, c);
+        //        //v += this->data_[r+c*ROW];
+        //    }
+        //    res(c) = v;
+        //}
+    }
+    catch (...)
+    {
+        GADGET_ERROR_MSG("Errors in hoMatrix<T>::sumOverCol(hoNDArray<T>& r) ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T> 
+bool hoMatrix<T>::subMatrix(Self& res, size_t startR, size_t endR, size_t startC, size_t endC) const
+{
+    try
+    {
+        size_t ROW = rows();
+        size_t COL = cols();
+
+        GADGET_CHECK_RETURN_FALSE(startR<ROW);
+        GADGET_CHECK_RETURN_FALSE(startC<COL);
+        GADGET_CHECK_RETURN_FALSE(endR<ROW);
+        GADGET_CHECK_RETURN_FALSE(endC<COL);
+        GADGET_CHECK_RETURN_FALSE(endR>=startR);
+        GADGET_CHECK_RETURN_FALSE(endC>=startC);
+
+        GADGET_CHECK_RETURN_FALSE(res.createMatrix(endR-startR+1, endC-startC+1));
+
+        size_t r, c;
+        for ( r=startR; r<=endR; r++ )
+        {
+            for ( c=startC; c<=endC; c++ )
+            {
+                res(r-startR, c-startC) = (*this)(r, c);
+            }
+        }
+    }
+    catch (...)
+    {
+        GADGET_ERROR_MSG("Errors in hoMatrix<T>::subMatrix(Self& res, size_t startR, size_t endR, size_t startC, size_t endC) ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T> 
+bool hoMatrix<T>::setIdentity()
+{
+    try
+    {
+        size_t ROW = this->rows();
+        size_t COL = this->cols();
+
+        size_t N = GT_MIN(ROW, COL);
+
+        this->fill(T(0));
+
+        size_t r;
+        for ( r=0; r<N; r++ )
+        {
+            (*this)(r, r) = T(1.0);
+        }
+    }
+    catch (...)
+    {
+        GADGET_ERROR_MSG("Errors in hoMatrix<T>::setIdentity() ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T> 
+bool hoMatrix<T>::normalize()
+{
+    try
+    {
+        T dist = std::abs(this->data_[0]);
+        dist *= dist;
+
+        unsigned int ii;
+        for ( ii=1; ii<this->element_; ii++ )
+        {
+            T v = std::abs(this->data_[ii]);
+            dist += v*v;
+        }
+
+        dist = std::sqrt(dist);
+
+        if ( std::abs(dist) < DBL_EPSILON ) return false;
+
+        for ( ii=0; ii<this->element_; ii++ )
+        {
+            this->data_[ii] /= dist;
+        }
+    }
+    catch (...)
+    {
+        GADGET_ERROR_MSG("Errors in hoMatrix<T>::normalize() ... ");
+        return false;
+    }
+
+    return true;
+}
+
+template <typename T> 
 bool hoMatrix<T>::operator == (const Self& m) const
 {
     GADGET_CHECK_RETURN_FALSE(this->dimensions_equal(&m));
     for ( size_t i=0; i<elements_; i++ )
     { 
-        if (std::abs(data_[i]-m.data_[i])>DBL_EPSILON) 
+        if (std::abs(data_[i]-m.data_[i])>DBL_EPSILON)
         {
             return false;
         }
@@ -136,18 +360,103 @@ void hoMatrix<T>::print(std::ostream& os) const
     using namespace std;
     os.unsetf(std::ios::scientific);
 
-    os << "hoMatrix : " << (*dimensions_)[1] << " " << (*dimensions_)[0] << " : " << std::string(typeid(T).name()) << endl;
-    unsigned int r, c;
-    for (r=0; r<(*dimensions_)[1]; r++) 
+    os << "hoMatrix (row X col): " << this->rows() << " X " << this->cols() << " : " << std::string(typeid(T).name()) << endl;
+    size_t r, c;
+    for (r=0; r<(*dimensions_)[0]; r++) 
     {
         os << "r " << r << ":\t";
-        for (c=0; c<(*dimensions_)[0]; c++)
+        for (c=0; c<(*dimensions_)[1]; c++)
         {
-            os << setprecision(16) << (*this)(r,c) << "\t";
+            os << setprecision(10) << (*this)(r,c) << "\t";
         }
         os << endl; 
     }
 }
+
+// --------------------------------------------------------------------------------------------------------
+
+template <typename T> 
+hoMatrixReal<T>::hoMatrixReal() : BaseClass()
+{
+}
+
+template <typename T> 
+hoMatrixReal<T>::hoMatrixReal(size_t rows, size_t cols) : BaseClass(rows, cols)
+{
+}
+
+template <typename T> 
+hoMatrixReal<T>::hoMatrixReal(size_t rows, size_t cols, T* data, bool delete_data_on_destruct) : BaseClass(rows, cols, delete_data_on_destruct)
+{
+}
+
+template <typename T> 
+hoMatrixReal<T>::~hoMatrixReal()
+{
+}
+
+template <typename T> 
+hoMatrixReal<T>::hoMatrixReal(const hoMatrixReal<T>& a) : BaseClass(a)
+{
+}
+
+template <typename T> 
+bool hoMatrixReal<T>::sort_ascending_along_row()
+{
+    try
+    {
+        size_t R = this->rows();
+        size_t C = this->cols();
+
+        size_t col;
+        for(col=0; col<C; col++) 
+        {
+            std::sort(data_+col*R, data_+(col+1)*R);
+        }
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in hoMatrixReal<T>::sort_ascending_along_row() ... ");
+        return false;
+    }
+    return true;
+}
+
+template <typename T> 
+bool hoMatrixReal<T>::sort_ascending_along_column()
+{
+    try
+    {
+        size_t R = this->rows();
+        size_t C = this->cols();
+
+        std::vector<T> buf(C);
+
+        size_t col, row;
+        for(row=0; row<R; row++) 
+        {
+            for(col=0; col<C; col++)
+            {
+                buf[col] = data_[row + col*R];
+            }
+
+            std::sort(buf.begin(), buf.end());
+
+            for(col=0; col<C; col++)
+            {
+                data_[row + col*R] = buf[col];
+            }
+        }
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors in hoMatrixReal<T>::sort_ascending_along_column() ... ");
+        return false;
+    }
+    return true;
+}
+
+// --------------------------------------------------------------------------------------------------------
 
 template <typename T> 
 bool copyL2U(hoMatrix<T>& A)
@@ -156,10 +465,10 @@ bool copyL2U(hoMatrix<T>& A)
     {
         GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
 
-        unsigned int R = A.rows();
-        unsigned int C = A.cols();
+        size_t R = A.rows();
+        size_t C = A.cols();
 
-        unsigned int row, col;
+        size_t row, col;
         for(row=0; row<R; row++) 
         {
             for(col=0; col<row; col++ )
@@ -183,8 +492,8 @@ bool copyL2U(hoMatrix<T>& A, bool conj)
     {
         GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
 
-        unsigned int R = A.rows();
-        unsigned int row, col;
+        size_t R = A.rows();
+        size_t row, col;
 
         if ( conj )
         {
@@ -222,10 +531,10 @@ bool copyU2L(hoMatrix<T>& A)
     {
         GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
 
-        unsigned int R = A.rows();
-        unsigned int C = A.cols();
+        size_t R = A.rows();
+        size_t C = A.cols();
 
-        unsigned int row, col;
+        size_t row, col;
         for(row=0; row<R; row++) 
         {
             for(col=row+1; col<C; col++ )
@@ -249,10 +558,10 @@ bool copyU2L(hoMatrix<T>& A, bool conj)
     {
         GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
 
-        unsigned int R = A.rows();
-        unsigned int C = A.cols();
+        size_t R = A.rows();
+        size_t C = A.cols();
 
-        unsigned int row, col;
+        size_t row, col;
 
         if ( conj )
         {
@@ -290,16 +599,20 @@ bool trans(const hoMatrix<T>& A, hoMatrix<T>& AT)
     {
         if ( A.get_number_of_elements() == 0 ) return true;
 
-        if ( !AT.dimensions_equal(&A) )
+        if ( AT.rows()!=A.cols() || AT.cols()!=A.rows() )
         {
-            AT.createMatrix(A.rows(), A.cols());
+            AT.createMatrix(A.cols(), A.rows());
         }
 
-        int r, c;
-        #pragma omp parallel for default(none) private(r, c) shared(A, AT)
-        for ( c=0; c<(int)A.cols(); c++ )
+        long long r, c;
+        #ifdef GCC_OLD_FLAG
+            #pragma omp parallel for default(none) private(r, c)
+        #else
+            #pragma omp parallel for default(none) private(r, c) shared(A, AT)
+        #endif
+        for ( c=0; c<(long long)A.cols(); c++ )
         {
-            for ( r=0; r<(int)A.rows(); r++ )
+            for ( r=0; r<(long long)A.rows(); r++ )
             {
                 AT(c,r) = A(r,c);
             }
@@ -320,16 +633,20 @@ bool conjugatetrans(const hoMatrix<T>& A, hoMatrix<T>& AH)
     {
         if ( A.get_number_of_elements() == 0 ) return true;
 
-        if ( !AH.dimensions_equal(&A) )
+        if ( AH.rows()!=A.cols() || AH.cols()!=A.rows() )
         {
-            AH.createMatrix(A.rows(), A.cols());
+            AH.createMatrix(A.cols(), A.rows());
         }
 
-        int r, c;
-        #pragma omp parallel for default(none) private(r, c) shared(A, AH)
-        for ( c=0; c<(int)A.cols(); c++ )
+        long long r, c;
+        #ifdef GCC_OLD_FLAG
+            #pragma omp parallel for default(none) private(r, c)
+        #else
+            #pragma omp parallel for default(none) private(r, c) shared(A, AH)
+        #endif
+        for ( c=0; c<(long long)A.cols(); c++ )
         {
-            for ( r=0; r<(int)A.rows(); r++ )
+            for ( r=0; r<(long long)A.rows(); r++ )
             {
                 AH(c,r) = std::conj(A(r,c));
             }
@@ -343,449 +660,39 @@ bool conjugatetrans(const hoMatrix<T>& A, hoMatrix<T>& AH)
     return true;
 }
 
-// following matrix computation calls MKL functions
-#ifdef USE_MKL
+inline bool conjugatetrans(const hoMatrix<float>& A, hoMatrix<float>& AH)
+{
+    return trans(A, AH);
+}
+
+inline bool conjugatetrans(const hoMatrix<double>& A, hoMatrix<double>& AH)
+{
+    return trans(A, AH);
+}
+
+// C = A*B
+EXPORTCPUCORE bool GeneralMatrixProduct(hoNDArray<float>& C, const hoNDArray<float>& A, bool transA, const hoNDArray<float>& B, bool transB);
+EXPORTCPUCORE bool GeneralMatrixProduct(hoNDArray<double>& C, const hoNDArray<double>& A, bool transA, const hoNDArray<double>& B, bool transB);
+EXPORTCPUCORE bool GeneralMatrixProduct(hoNDArray<GT_Complex8>& C, const hoNDArray<GT_Complex8>& A, bool transA, const hoNDArray<GT_Complex8>& B, bool transB);
+EXPORTCPUCORE bool GeneralMatrixProduct(hoNDArray<GT_Complex16>& C, const hoNDArray<GT_Complex16>& A, bool transA, const hoNDArray<GT_Complex16>& B, bool transB);
 
 template<typename T> 
-bool GeneralMatrixProduct_gemm(hoMatrix<T>& C, 
-                            const hoMatrix<T>& A, bool transA, 
-                            const hoMatrix<T>& B, bool transB)
+bool GeneralMatrixProduct(hoMatrix<T>& C, const hoMatrix<T>& A, bool transA, const hoMatrix<T>& B, bool transB)
 {
     try
     {
-        CBLAS_TRANSPOSE TA, TB;
+        hoNDArray<T> mC(C.get_dimensions(), C.begin(), false);
+        hoNDArray<T> mA(A.get_dimensions(), const_cast<T*>(A.begin()), false);
+        hoNDArray<T> mB(B.get_dimensions(), const_cast<T*>(B.begin()), false);
 
-        MKL_INT lda = A.cols();
-        MKL_INT ldb = B.cols();
-        const T* pA = A.begin(); 
-        const T* pB = B.begin(); 
-
-        MKL_INT M = A.rows();
-        MKL_INT K = A.cols();
-        if ( transA )
-        { 
-            M = A.cols();
-            K = A.rows();
-        }
-
-        MKL_INT N = B.cols();
-        MKL_INT K2 = B.rows();
-        if ( transB )
-        { 
-            N = B.rows();
-            K2 = B.cols();
-        }
-
-        GADGET_CHECK_RETURN_FALSE(K==K2);
-        if ( (C.rows()!=M) || (C.cols()!=N) )
-        {
-            GADGET_CHECK_RETURN_FALSE(C.createMatrix(M, N));
-        }
-
-        T* pC = C.begin();
-        MKL_INT ldc = C.cols();
-
-        T alpha(1), beta(0);
-
-        if ( typeid(T)==typeid(float) )
-        {
-            if ( transA )
-            {
-                TA = CblasTrans;
-            }
-            else
-            {
-                TA = CblasNoTrans;
-            }
-
-            if ( transB )
-            {
-                TB = CblasTrans;
-            }
-            else
-            {
-                TB = CblasNoTrans;
-            }
-
-            if ( &A != &C )
-            {
-                cblas_sgemm(CblasRowMajor, TA, TB, M, N, K, 1, reinterpret_cast<const float*>(pA), lda, reinterpret_cast<const float*>(pB), ldb, 0, reinterpret_cast<float*>(pC), ldc);
-            }
-            else
-            {
-                hoMatrix<T> aTmp(A);
-                T* pATmp = aTmp.begin();
-                cblas_sgemm(CblasRowMajor, TransA, TransB, M, N, K, 1, reinterpret_cast<const float*>(pATmp), lda, reinterpret_cast<const float*>(pB), ldb, 0, reinterpret_cast<float*>(pC), ldc);
-            }
-        }
-        else if ( typeid(T)==typeid(double) )
-        {
-            if ( transA )
-            {
-                TA = CblasTrans;
-            }
-            else
-            {
-                TA = CblasNoTrans;
-            }
-
-            if ( transB )
-            {
-                TB = CblasTrans;
-            }
-            else
-            {
-                TB = CblasNoTrans;
-            }
-
-            if ( &A != &C )
-            {
-                cblas_dgemm(CblasRowMajor, TA, TB, M, N, K, 1, reinterpret_cast<const double*>(pA), lda, reinterpret_cast<const double*>(pB), ldb, 0, reinterpret_cast<double*>(pC), ldc);
-            }
-            else
-            {
-                hoMatrix<T> aTmp(A);
-                T* pATmp = aTmp.begin();
-                cblas_dgemm(CblasRowMajor, TransA, TransB, M, N, K, 1, reinterpret_cast<const double*>(pATmp), lda, reinterpret_cast<const double*>(pB), ldb, 0, reinterpret_cast<double*>(pC), ldc);
-            }
-        }
-        else if ( typeid(T)==typeid(GT_Complex8) )
-        {
-            if ( transA )
-            {
-                TA = CblasConjTrans;
-            }
-            else
-            {
-                TA = CblasNoTrans;
-            }
-
-            if ( transB )
-            {
-                TB = CblasConjTrans;
-            }
-            else
-            {
-                TB = CblasNoTrans;
-            }
-
-            if ( &A != &C )
-            {
-                cblas_cgemm(CblasRowMajor, TA, TB, M, N, K, &alpha, pA, lda, pB, ldb, &beta, pC, ldc);
-            }
-            else
-            {
-                hoMatrix<T> aTmp(A);
-                T* pATmp = aTmp.begin();
-                cblas_cgemm(CblasRowMajor, TransA, TransB, M, N, K, &alpha, pATmp, lda, pB, ldb, &beta, pC, ldc);
-            }
-        }
-        else if ( typeid(T)==typeid(GT_Complex16) )
-        {
-            if ( transA )
-            {
-                TA = CblasConjTrans;
-            }
-            else
-            {
-                TA = CblasNoTrans;
-            }
-
-            if ( transB )
-            {
-                TB = CblasConjTrans;
-            }
-            else
-            {
-                TB = CblasNoTrans;
-            }
-
-            if ( &A != &C )
-            {
-                cblas_zgemm(CblasRowMajor, TA, TB, M, N, K, &alpha, pA, lda, pB, ldb, &beta, pC, ldc);
-            }
-            else
-            {
-                hoMatrix<T> aTmp(A);
-                T* pATmp = aTmp.begin();
-                cblas_zgemm(CblasRowMajor, TransA, TransB, M, N, K, &alpha, pATmp, lda, pB, ldb, &beta, pC, ldc);
-            }
-        }
-        else
-        {
-            GADGET_ERROR_MSG("GeneralMatrixProduct_gemm : unsupported type " << typeid(T));
-            return false;
-        }
+        Gadgetron::GeneralMatrixProduct(mC, mA, transA, mB, transB);
     }
     catch(...)
     {
-        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct_gemm(hoMatrix<T>& C, const hoMatrix<T>& A, bool transA, const hoMatrix<T>& B, bool transB) ...");
+        GADGET_ERROR_MSG("Errors in GeneralMatrixProduct(hoMatrix<T>& C, const hoMatrix<T>& A, bool transA, const hoMatrix<T>& B, bool transB) ...");
         return false;
     }
     return true;
 }
-
-template<typename T> 
-bool CholeskyHermitianPositiveDefinite_potrf(hoMatrix<T>& A, char uplo)
-{
-    try
-    {
-        if( A.get_number_of_elements()==0 ) return true;
-        GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
-
-        int info;
-        lapack_int n = (lapack_int)(A.rows());
-        T* pA = A.begin();
-        lapack_int lda = (lapack_int)(A.cols());
-
-        if ( typeid(T)==typeid(float) )
-        {
-            info = LAPACKE_spotrf(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<float*>(pA), lda);
-        }
-        else if ( typeid(T)==typeid(double) )
-        {
-            info = LAPACKE_dpotrf(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<double*>(pA), lda);
-        }
-        else if ( typeid(T)==typeid(GT_Complex8) )
-        {
-            info = LAPACKE_cpotrf(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<MKL_Complex8*>(pA), lda);
-        }
-        else if ( typeid(T)==typeid(GT_Complex16) )
-        {
-            info = LAPACKE_zpotrf(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<MKL_Complex16*>(pA), lda);
-        }
-        else
-        {
-            GADGET_ERROR_MSG("CholeskyHermitianPositiveDefinite_potrf : unsupported type " << typeid(T));
-            return false;
-        }
-
-        GADGET_CHECK_RETURN_FALSE(info==0);
-
-        if ( uplo == 'U' )
-        {
-            GADGET_CHECK_RETURN_FALSE(A.lowerTri(0));
-        }
-        else
-        {
-            GADGET_CHECK_RETURN_FALSE(A.upperTri(0));
-        }
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in CholeskyHermitianPositiveDefinite_potrf(hoMatrix<T>& A, char uplo) ...");
-        return false;
-    }
-    return true;
-}
-
-template<typename T> 
-bool EigenAnalysis_syev_heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type>& eigenValue)
-{
-    try
-    {
-        int M = (int)A.rows();
-        GADGET_CHECK_RETURN_FALSE(A.cols() == M));
-
-        if ( (eigenValue.rows()!=M) || (eigenValue.cols()!=1) )
-        {
-            GADGET_CHECK_RETURN_FALSE(D.createMatrix(M, 1));
-        }
-
-        int info;
-        char jobz = 'V';
-        char uplo = 'L';
-        T* pA = A.begin();
-        typename realType<T>::Type* pEV = eigenValue.begin();
-
-        if ( typeid(T)==typeid(float) )
-        {
-            info = LAPACKE_ssyev(LAPACK_ROW_MAJOR, jobz, uplo, M, reinterpret_cast<float*>(pA), M, reinterpret_cast<float*>(pEV));
-        }
-        else if ( typeid(T)==typeid(double) )
-        {
-            info = LAPACKE_dsyev(LAPACK_ROW_MAJOR, jobz, uplo, M, reinterpret_cast<double*>(pA), M, reinterpret_cast<double*>(pEV));
-        }
-        else if ( typeid(T)==typeid(GT_Complex8) )
-        {
-            info = LAPACKE_cheev(LAPACK_ROW_MAJOR, jobz, uplo, M, reinterpret_cast<MKL_Complex8*>(pA), M, reinterpret_cast<float*>(pEV));
-        }
-        else if ( typeid(T)==typeid(GT_Complex16) )
-        {
-            info = LAPACKE_zheev(LAPACK_ROW_MAJOR, jobz, uplo, M, reinterpret_cast<MKL_Complex16*>(pA), M, reinterpret_cast<double*>(pEV));
-        }
-        else
-        {
-            GADGET_ERROR_MSG("EigenAnalysis_syev_heev : unsupported type " << typeid(T));
-            return false;
-        }
-
-        GADGET_CHECK_RETURN_FALSE(info==0);
-    }
-    catch (...)
-    {
-        GADGET_ERROR_MSG("Errors in EigenAnalysis_syev_heev(hoMatrix<T>& A, hoMatrix<typename realType<T>::Type>& eigenValue) ... ");
-        return false;
-    }
-    return true;
-}
-
-template<typename T> 
-bool SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<T>& A)
-{
-    try
-    {
-        if( A.get_number_of_elements()==0 ) return true;
-        GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
-
-        int info;
-        char uplo = 'L';
-        lapack_int n = (lapack_int)A.rows();
-        T* pA = A.begin();
-        lapack_int lda = (lapack_int)A.cols();
-
-        if ( typeid(T)==typeid(float) )
-        {
-            info = LAPACKE_spotrf(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<float*>(pA), lda);
-            GADGET_CHECK_RETURN_FALSE(info==0);
-
-            info = LAPACKE_spotri(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<float*>(pA), lda);
-            GADGET_CHECK_RETURN_FALSE(info==0);
-        }
-        else if ( typeid(T)==typeid(double) )
-        {
-            info = LAPACKE_dpotrf(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<double*>(pA), lda);
-            GADGET_CHECK_RETURN_FALSE(info==0);
-
-            info = LAPACKE_dpotri(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<double*>(pA), lda);
-            GADGET_CHECK_RETURN_FALSE(info==0);
-        }
-        else if ( typeid(T)==typeid(GT_Complex8) )
-        {
-            info = LAPACKE_cpotrf(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<MKL_Complex8*>(pA), lda);
-            GADGET_CHECK_RETURN_FALSE(info==0);
-
-            info = LAPACKE_cpotri(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<MKL_Complex8*>(pA), lda);
-            GADGET_CHECK_RETURN_FALSE(info==0);
-        }
-        else if ( typeid(T)==typeid(GT_Complex16) )
-        {
-            info = LAPACKE_zpotrf(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<MKL_Complex16*>(pA), lda);
-            GADGET_CHECK_RETURN_FALSE(info==0);
-
-            info = LAPACKE_zpotri(LAPACK_ROW_MAJOR, uplo, n, reinterpret_cast<MKL_Complex16*>(pA), lda);
-            GADGET_CHECK_RETURN_FALSE(info==0);
-        }
-        else
-        {
-            GADGET_ERROR_MSG("SymmetricHermitianPositiveDefiniteInverse_potri : unsupported type " << typeid(T));
-            return false;
-        }
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in SymmetricHermitianPositiveDefiniteInverse_potri(hoMatrix<T>& A) ...");
-        return false;
-    }
-    return true;
-}
-
-template<typename T> 
-bool TriangularInverse_trtri(hoMatrix<T>& A, char uplo)
-{
-    try
-    {
-        if( A.get_number_of_elements()==0 ) return true;
-        GADGET_CHECK_RETURN_FALSE(A.rows()==A.cols());
-
-        int info;
-        char diag = 'N';
-        lapack_int n = (lapack_int)A.rows();
-        T* pA = A.begin();
-        lapack_int lda = (lapack_int)A.cols();
-
-        if ( typeid(T)==typeid(float) )
-        {
-            info = LAPACKE_strtri(LAPACK_ROW_MAJOR, uplo, diag, n, reinterpret_cast<float*>(pA), lda);
-        }
-        else if ( typeid(T)==typeid(double) )
-        {
-            info = LAPACKE_dtrtri(LAPACK_ROW_MAJOR, uplo, diag, n, reinterpret_cast<double*>(pA), lda);
-        }
-        else if ( typeid(T)==typeid(GT_Complex8) )
-        {
-            info = LAPACKE_ctrtri(LAPACK_ROW_MAJOR, uplo, diag, n, reinterpret_cast<MKL_Complex8*>(pA), lda);
-        }
-        else if ( typeid(T)==typeid(GT_Complex16) )
-        {
-            info = LAPACKE_ztrtri(LAPACK_ROW_MAJOR, uplo, diag, n, reinterpret_cast<MKL_Complex16*>(pA), lda);
-        }
-        else
-        {
-            GADGET_ERROR_MSG("TriangularInverse_trtri : unsupported type " << typeid(T));
-            return false;
-        }
-
-        GADGET_CHECK_RETURN_FALSE(info==0);
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in TriangularInverse_trtri(hoMatrix<float>& A, char uplo) ...");
-        return false;
-    }
-    return true;
-}
-
-template<typename T> 
-bool SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<T>& A, hoMatrix<T>& b)
-{
-    try
-    {
-        if( A.get_number_of_elements()==0 ) return true;
-        if( b.get_number_of_elements()==0 ) return true;
-        GADGET_CHECK_RETURN_FALSE(A.rows()==b.rows());
-
-        int info;
-        char uplo = 'L';
-        lapack_int n = (lapack_int)A.rows();
-        lapack_int nrhs = (lapack_int)b.cols();
-        T* pA = A.begin();
-        lapack_int lda = (lapack_int)A.cols();
-        T* pB = b.begin();
-        lapack_int ldb = (lapack_int)b.cols();
-
-        if ( typeid(T)==typeid(float) )
-        {
-            info = LAPACKE_sposv(LAPACK_ROW_MAJOR, uplo, n, nrhs, reinterpret_cast<float*>(pA), lda, reinterpret_cast<float*>(pB), ldb);
-        }
-        else if ( typeid(T)==typeid(double) )
-        {
-            info = LAPACKE_dposv(LAPACK_ROW_MAJOR, uplo, n, nrhs, reinterpret_cast<double*>(pA), lda, reinterpret_cast<double*>(pB), ldb);
-        }
-        else if ( typeid(T)==typeid(GT_Complex8) )
-        {
-            info = LAPACKE_cposv(LAPACK_ROW_MAJOR, uplo, n, nrhs, reinterpret_cast<MKL_Complex8*>(pA), lda, reinterpret_cast<MKL_Complex8*>(pB), ldb);
-        }
-        else if ( typeid(T)==typeid(GT_Complex16) )
-        {
-            info = LAPACKE_zposv(LAPACK_ROW_MAJOR, uplo, n, nrhs, reinterpret_cast<MKL_Complex16*>(pA), lda, reinterpret_cast<MKL_Complex16*>(pB), ldb);
-        }
-        else
-        {
-            GADGET_ERROR_MSG("SymmetricHermitianPositiveDefiniteLinearSystem_posv : unsupported type " << typeid(T));
-            return false;
-        }
-
-        GADGET_CHECK_RETURN_FALSE(info==0);
-    }
-    catch(...)
-    {
-        GADGET_ERROR_MSG("Errors in SymmetricHermitianPositiveDefiniteLinearSystem_posv(hoMatrix<float>& A, hoMatrix<float>& b) ...");
-        return false;
-    }
-    return true;
-}
-
-#endif // USE_MKL
 
 }

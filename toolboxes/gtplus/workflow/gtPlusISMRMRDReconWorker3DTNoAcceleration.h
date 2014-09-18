@@ -20,6 +20,7 @@ class gtPlusReconWorker3DTNoAcceleration : public gtPlusReconWorker3DT<T>
 public:
 
     typedef gtPlusReconWorker3DT<T> BaseClass;
+    typedef typename BaseClass::value_type value_type;
 
     gtPlusReconWorker3DTNoAcceleration() : BaseClass() {}
     virtual ~gtPlusReconWorker3DTNoAcceleration() {}
@@ -32,6 +33,7 @@ public:
     using BaseClass::gt_timer2_;
     using BaseClass::gt_timer3_;
     using BaseClass::performTiming_;
+    using BaseClass::verbose_;
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
@@ -57,13 +59,13 @@ bool gtPlusReconWorker3DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder3DT
         if ( !workOrder3DT->workFlow_use_BufferedKernel_ )
         {
             GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.start("prepRef"));
-            GADGET_CHECK_RETURN_FALSE(prepRef(workOrder3DT, workOrder3DT->ref_, 
-                                            workOrder3DT->ref_recon_, 
-                                            workOrder3DT->ref_coil_map_, 
-                                            workOrder3DT->start_RO_, workOrder3DT->end_RO_, 
-                                            workOrder3DT->start_E1_, workOrder3DT->end_E1_, 
-                                            workOrder3DT->start_E2_, workOrder3DT->end_E2_, 
-                                            workOrder3DT->data_.get_size(1), workOrder3DT->data_.get_size(2)));
+            GADGET_CHECK_RETURN_FALSE(this->prepRef(workOrder3DT, workOrder3DT->ref_, 
+                                                workOrder3DT->ref_recon_, 
+                                                workOrder3DT->ref_coil_map_, 
+                                                workOrder3DT->start_RO_, workOrder3DT->end_RO_, 
+                                                workOrder3DT->start_E1_, workOrder3DT->end_E1_, 
+                                                workOrder3DT->start_E2_, workOrder3DT->end_E2_, 
+                                                workOrder3DT->data_.get_size(1), workOrder3DT->data_.get_size(2)));
             GADGET_CHECK_PERFORM(performTiming_, gt_timer1_.stop());
         }
 
@@ -100,12 +102,12 @@ bool gtPlusReconWorker3DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder3DT
                 if ( workOrder3DT->csm_use_gpu_ )
                 {
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(buffer3DT, 
-                            coilMapN, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                            coilMapN, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                 }
                 else
                 {
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, 
-                            coilMapN, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                            coilMapN, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                 }
                 GADGET_CHECK_RETURN_FALSE(repmatLastDimension(*workOrder3DT->coilMap_, usedN));
             }
@@ -118,12 +120,12 @@ bool gtPlusReconWorker3DTNoAcceleration<T>::performRecon(gtPlusReconWorkOrder3DT
                 if ( workOrder3DT->csm_use_gpu_ )
                 {
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIHGPU_FullResMap(buffer3DT, 
-                            *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                            *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                 }
                 else
                 {
                     GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtilComplex<T>().coilMap3DNIH(buffer3DT, 
-                            *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
+                            *workOrder3DT->coilMap_, workOrder3DT->coil_map_algorithm_, workOrder3DT->csm_kSize_, workOrder3DT->csm_powermethod_num_, workOrder3DT->csm_iter_num_, (value_type)workOrder3DT->csm_iter_thres_, workOrder3DT->csm_true_3D_));
                 }
             }
 

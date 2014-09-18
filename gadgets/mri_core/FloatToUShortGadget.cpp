@@ -51,7 +51,7 @@ int FloatToUShortGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m
 			if (pix_val > 4095) pix_val = 4095;
 			break;
 		case ISMRMRD::TYPE_PHASE:
-			pix_val *= 2048.0/3.14159265;
+			pix_val *= (float)(2048.0/3.14159265);
 			pix_val += 2048;
 			if (pix_val < 0) pix_val = 0;
 			if (pix_val > 4095) pix_val = 4095;

@@ -8,7 +8,6 @@
 #include "complext.h"
 #include "vector_td.h"
 #include "GadgetronCommon.h"
-#include "SerializableObject.h"
 
 #include "cpucore_export.h"
 
@@ -17,13 +16,9 @@
 #include <boost/shared_ptr.hpp>
 #include <stdexcept>
 
-#ifdef USE_MKL
-#include "mkl.h"
-#endif
-
 namespace Gadgetron{
 
-  template <typename T> class hoNDArray : public NDArray<T>, public SerializableObject
+  template <typename T> class hoNDArray : public NDArray<T>
   {
   public:
 

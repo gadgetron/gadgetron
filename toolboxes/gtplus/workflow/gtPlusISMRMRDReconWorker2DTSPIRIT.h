@@ -42,6 +42,7 @@ public:
     using BaseClass::gt_timer2_;
     using BaseClass::gt_timer3_;
     using BaseClass::performTiming_;
+    using BaseClass::verbose_;
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
@@ -181,7 +182,6 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, gtPlu
 
         hoNDArray<T> kIm(RO, E1, srcCHA, dstCHA, workOrder2DT->kernelIm_->begin()+n*RO*E1*srcCHA*dstCHA+usedS*RO*E1*srcCHA*dstCHA*refN);
         GADGET_CHECK_RETURN_FALSE(spirit.imageDomainKernel(ker, kRO, kE1, 1, 1, RO, E1, kIm, minusI));
-
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kIm, "kIm");
     }
     catch(...)
@@ -210,13 +210,15 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
 
         res.create(kspace.get_dimensions());
 
-        int n;
+        long long n;
 
         #ifdef USE_OMP
-            int numThreads = (N<64) ? N : 64;
+            int numThreads = (int)( (N<64) ? N : 64 );
 
             int numOpenMPProcs = omp_get_num_procs();
             GADGET_MSG("gtPlusReconWorker2DTSPIRIT, numOpenMPProcs : " << numOpenMPProcs);
+
+            if ( numThreads > numOpenMPProcs ) numThreads = numOpenMPProcs;
 
             int maxOpenMPThreads = omp_get_max_threads();
             GADGET_MSG("gtPlusReconWorker2DTSPIRIT, maxOpenMPThreads : " << maxOpenMPThreads);
@@ -244,14 +246,25 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(adj_forward_G_I, ker_Shifted);
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker_Shifted, "ker_Shifted");
 
-        hoNDArray<T> kspace_Shifted(kspace);
+        hoNDArray<T> kspace_Shifted;
+        kspace_Shifted = kspace;
         Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(kspace, kspace_Shifted);
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace_Shifted, "kspace_Shifted");
 
+        hoNDArray<T> kspace_initial_Shifted;
+        bool hasInitial = false;
+        if ( workOrder2DT->kspace_initial_.dimensions_equal(&kspace) )
+        {
+            kspace_initial_Shifted = workOrder2DT->kspace_initial_;
+            Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifftshift2D(workOrder2DT->kspace_initial_, kspace_initial_Shifted);
+            hasInitial = true;
+        }
+        GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kspace_initial_Shifted, "kspace_initial_Shifted");
+
         #ifdef GCC_OLD_FLAG
-            #pragma omp parallel default(none) private(n) shared(RO, E1, srcCHA, dstCHA, kspace_Shifted, ker_Shifted, workOrder2DT, refN, N) num_threads(numThreads)
+            #pragma omp parallel default(none) private(n) shared(RO, E1, srcCHA, dstCHA, kspace, kspace_Shifted, kspace_initial_Shifted, ker_Shifted, workOrder2DT, refN, N, hasInitial) num_threads(numThreads)
         #else
-            #pragma omp parallel default(none) private(n) shared(RO, E1, srcCHA, dstCHA, kspace_Shifted, ker_Shifted, workOrder2DT, res, refN, N) num_threads(numThreads)
+            #pragma omp parallel default(none) private(n) shared(RO, E1, srcCHA, dstCHA, kspace, kspace_Shifted, kspace_initial_Shifted, ker_Shifted, workOrder2DT, res, refN, N, hasInitial) num_threads(numThreads)
         #endif
         {
             gtPlusSPIRIT2DOperator<T> spirit;
@@ -268,25 +281,51 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
             gtPlusLSQRSolver<hoNDArray<T>, hoNDArray<T>, gtPlusSPIRIT2DOperator<T> > cgSolver;
 
             cgSolver.iterMax_ = workOrder2DT->spirit_iter_max_;
-            cgSolver.thres_ = workOrder2DT->spirit_iter_thres_;
+            cgSolver.thres_ = (value_type)workOrder2DT->spirit_iter_thres_;
             cgSolver.printIter_ = workOrder2DT->spirit_print_iter_;
 
             cgSolver.set(spirit);
 
             hoNDArray<T> b(RO, E1, srcCHA);
+            hoNDArray<T> unwarppedKSpace(RO, E1, dstCHA);
 
             #pragma omp for
-            for ( n=0; n<(int)N; n++ )
+            for ( n=0; n<(long long)N; n++ )
             {
-                hoNDArray<T> unwarppedKSpace(RO, E1, dstCHA, res.begin()+n*RO*E1*dstCHA);
+                // check whether the kspace is undersampled
+                bool undersampled = false;
+                for ( size_t e1=0; e1<E1; e1++ )
+                {
+                    if ( (std::abs( kspace(RO/2, e1, srcCHA-1, n) ) == 0)
+                        && (std::abs( kspace(RO/2, e1, 0, n) ) == 0) )
+                    {
+                        undersampled = true;
+                        break;
+                    }
+                }
 
-                int kernelN = n;
-                if ( kernelN >= refN ) kernelN = refN-1;
+                if ( !undersampled )
+                {
+                    memcpy(res.begin()+n*RO*E1*dstCHA, kspace_Shifted.begin()+n*RO*E1*srcCHA, sizeof(T)*RO*E1*dstCHA);
+                    continue;
+                }
 
-                boost::shared_ptr<hoNDArray<T> > acq(new hoNDArray<T>(RO, E1, srcCHA, kspace_Shifted.begin()+n*RO*E1*srcCHA));
+                long long kernelN = n;
+                if ( kernelN >= (long long)refN ) kernelN = (long long)refN-1;
+
+                boost::shared_ptr< hoNDArray<T> > acq(new hoNDArray<T>(RO, E1, srcCHA, kspace_Shifted.begin()+n*RO*E1*srcCHA));
                 spirit.setAcquiredPoints(acq);
 
-                cgSolver.x0_ = acq.get();
+                boost::shared_ptr< hoNDArray<T> > initialAcq;
+                if ( hasInitial )
+                {
+                    initialAcq = boost::shared_ptr< hoNDArray<T> >(new hoNDArray<T>(RO, E1, srcCHA, kspace_initial_Shifted.begin()+n*RO*E1*srcCHA));
+                    cgSolver.x0_ = initialAcq.get();
+                }
+                else
+                {
+                    cgSolver.x0_ = acq.get();
+                }
 
                 if ( refN > 1 )
                 {
@@ -312,6 +351,8 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder2DT, hoNDArray<T>& kspac
 
                 // restore the acquired points
                 spirit.restoreAcquiredKSpace(*acq, unwarppedKSpace);
+
+                memcpy(res.begin()+n*RO*E1*dstCHA, unwarppedKSpace.begin(), unwarppedKSpace.get_number_of_bytes());
 
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unwarppedKSpace, "unwarppedKSpace_n_setAcq");
             }
@@ -357,15 +398,22 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
         {
             hoNDArray<T> kspaceForScaleFactor(RO, E1, srcCHA, numOfNForScaling, const_cast<T*>(data_dst.begin()));
             Gadgetron::norm2(kspaceForScaleFactor, scaleFactor);
-            scaleFactor /= (numOfNForScaling*std::sqrt(double(srcCHA)));
+            scaleFactor /= (value_type)(numOfNForScaling*std::sqrt(double(srcCHA)));
         }
         else
         {
             Gadgetron::norm2(data_dst, scaleFactor);
-            scaleFactor /= (N*std::sqrt(double(srcCHA)));
+            scaleFactor /= (value_type)(N*std::sqrt(double(srcCHA)));
         }
 
-        workOrder2DT->spirit_ncg_scale_factor_ = scaleFactor;
+        if ( workOrder2DT->spirit_ncg_scale_factor_ < 0 )
+        {
+            workOrder2DT->spirit_ncg_scale_factor_ = scaleFactor;
+        }
+        else
+        {
+            GADGET_MSG("SPIRIT - 2DT - spirit_ncg_scale_factor_ is preset : " << workOrder2DT->spirit_ncg_scale_factor_ << " ... ");
+        }
 
         // split the jobs
         bool splitByS = workOrder2DT->job_split_by_S_;
@@ -453,8 +501,8 @@ performUnwrapping(gtPlusReconWorkOrder2DT<T>* workOrder2DT, const hoNDArray<T>& 
 
                 GADGET_MSG("SPIRIT - 2DT - total job : " << jobList.size() << " - job N : " << jobN << " - cloud size : " << cloudSize);
 
-                unsigned int numOfJobRunOnCloud = jobList.size() - jobList.size()/(cloudSize+1);
-                if ( !runJobsOnLocalNode ) numOfJobRunOnCloud = jobList.size();
+                unsigned int numOfJobRunOnCloud = (unsigned int)(jobList.size() - jobList.size()/(cloudSize+1));
+                if ( !runJobsOnLocalNode ) numOfJobRunOnCloud = (unsigned int)jobList.size();
                 GADGET_MSG("SPIRIT - 2DT - numOfJobRunOnCloud : " << numOfJobRunOnCloud << " ... ");
 
                 typedef Gadgetron::GadgetCloudController< gtPlusReconJob2DT<T> > GTCloudControllerType;

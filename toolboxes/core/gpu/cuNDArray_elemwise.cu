@@ -278,6 +278,40 @@ Gadgetron::real_to_complex( cuNDArray<typename realType<T>::Type> *x )
   return result;
 }
 
+template <typename T,typename T2> struct cuNDA_convert_to : public thrust::unary_function<T,T2>
+{
+  __device__ T2 operator()(T &x) const {return T2(x);}
+};
+
+template <typename T,typename T2> struct cuNDA_convert_to<complext<T>,complext<T2> > : public thrust::unary_function<complext<T>,complext<T2> >
+{
+  __device__ complext<T2> operator()(complext<T> &x) const {return complext<T2>(x.vec[0],x.vec[1]);}
+};
+
+template<class T, class T2> boost::shared_ptr< cuNDArray<T2> >
+Gadgetron::convert_to( cuNDArray<T> *x )
+{
+  if( x == 0x0 )
+    throw std::runtime_error("Gadgetron::convert_to(): Invalid input array");
+
+  boost::shared_ptr< cuNDArray<T2> > result(new cuNDArray<T2>());
+  result->create(x->get_dimensions());
+  thrust::device_ptr<T2> resPtr = result->get_device_ptr();
+  thrust::device_ptr<T> xPtr = x->get_device_ptr();
+  thrust::transform(xPtr,xPtr+x->get_number_of_elements(),resPtr,cuNDA_convert_to<T,T2>());
+  return result;
+}
+
+template<class T, class T2> void
+Gadgetron::convert_to( cuNDArray<T> *x ,cuNDArray<T2> * y)
+{
+  if( x == 0x0 || !x->dimensions_equal(y))
+    throw std::runtime_error("Gadgetron::convert_to(): Invalid input array");
+  thrust::device_ptr<T2> resPtr = y->get_device_ptr();
+  thrust::device_ptr<T> xPtr = x->get_device_ptr();
+  thrust::transform(xPtr,xPtr+x->get_number_of_elements(),resPtr,cuNDA_convert_to<T,T2>());
+}
+
 template<class T> void Gadgetron::clear( cuNDArray<T> *x )
 {
   if( x == 0x0 )
@@ -654,3 +688,13 @@ template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > Gadgetron::real<do
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double> > Gadgetron::imag<double_complext>( cuNDArray<double_complext>* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > Gadgetron::conj<double_complext>( cuNDArray<double_complext>* );
 template EXPORTGPUCORE boost::shared_ptr< cuNDArray<double_complext> > Gadgetron::real_to_complex<double_complext>( cuNDArray<double>* );
+
+template boost::shared_ptr< cuNDArray<double> > Gadgetron::convert_to<float,double>( cuNDArray<float>* );
+template boost::shared_ptr< cuNDArray<float> > Gadgetron::convert_to<double,float>( cuNDArray<double>* );
+template boost::shared_ptr< cuNDArray<double_complext> > Gadgetron::convert_to<float_complext,double_complext>( cuNDArray<float_complext>* );
+template boost::shared_ptr< cuNDArray<float_complext> > Gadgetron::convert_to<double_complext,float_complext>( cuNDArray<double_complext>* );
+
+template void Gadgetron::convert_to<float,double>( cuNDArray<float>*,cuNDArray<double>* );
+template void Gadgetron::convert_to<double,float>( cuNDArray<double>*, cuNDArray<float>* );
+template void Gadgetron::convert_to<float_complext,double_complext>( cuNDArray<float_complext>*,cuNDArray<double_complext>*  );
+template void Gadgetron::convert_to<double_complext,float_complext>( cuNDArray<double_complext>*, cuNDArray<float_complext>*);

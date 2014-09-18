@@ -1,6 +1,5 @@
 #include "gpuRadialPrepGadget.h"
 #include "Gadgetron.h"
-#include "GadgetIsmrmrdReadWrite.h"
 #include "cuNonCartesianSenseOperator.h"
 #include "GenericReconJob.h"
 #include "cuNDArray_elemwise.h"
@@ -11,6 +10,7 @@
 #include "radial_utilities.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_fileio.h"
+#include "ismrmrd_xml.h"
 
 #include <algorithm>
 #include <vector>
@@ -116,34 +116,28 @@ namespace Gadgetron{
 
     // Get the Ismrmrd header
     //
-
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
+    ISMRMRD::IsmrmrdHeader h;
+    ISMRMRD::deserialize(mb->rd_ptr(),h);
     
-    if( cfg.get() == 0x0 ){
-      GADGET_DEBUG1("Unable to parse Ismrmrd header\n");
-      return GADGET_FAIL;
-    }
-
-    ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-
-    if (e_seq.size() != 1) {
-      GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
+    
+    if (h.encoding.size() != 1) {
       GADGET_DEBUG1("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
     
-    ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
-    ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
-
+    // Get the encoding space and trajectory description
+    ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+    ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
+    ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
+    ISMRMRD::TrajectoryDescription traj_desc;
     // Matrix sizes (as a multiple of the GPU's warp size)
     //
     
-    image_dimensions_.push_back(((e_space.matrixSize().x()+warp_size-1)/warp_size)*warp_size);
-    image_dimensions_.push_back(((e_space.matrixSize().y()+warp_size-1)/warp_size)*warp_size);
+    image_dimensions_.push_back(((e_space.matrixSize.x+warp_size-1)/warp_size)*warp_size);
+    image_dimensions_.push_back(((e_space.matrixSize.y+warp_size-1)/warp_size)*warp_size);
 
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize().x()*get_double_value(std::string("reconstruction_os_factor_x").c_str())))+warp_size-1)/warp_size)*warp_size);  
-    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize().y()*get_double_value(std::string("reconstruction_os_factor_y").c_str())))+warp_size-1)/warp_size)*warp_size);
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.x*get_double_value(std::string("reconstruction_os_factor_x").c_str())))+warp_size-1)/warp_size)*warp_size);  
+    image_dimensions_recon_.push_back(((static_cast<unsigned int>(std::ceil(e_space.matrixSize.y*get_double_value(std::string("reconstruction_os_factor_y").c_str())))+warp_size-1)/warp_size)*warp_size);
     
     image_dimensions_recon_os_ = uint64d2
       (((static_cast<unsigned int>(std::ceil(image_dimensions_recon_[0]*oversampling_factor_))+warp_size-1)/warp_size)*warp_size,
@@ -158,12 +152,12 @@ namespace Gadgetron{
     GADGET_DEBUG2("matrix_size_y : %d, recon: %d, recon_os: %d\n", 
                   image_dimensions_[1], image_dimensions_recon_[1], image_dimensions_recon_os_[1]);
     
-    fov_.push_back(r_space.fieldOfView_mm().x());
-    fov_.push_back(r_space.fieldOfView_mm().y());
-    fov_.push_back(r_space.fieldOfView_mm().z());
+    fov_.push_back(r_space.fieldOfView_mm.x);
+    fov_.push_back(r_space.fieldOfView_mm.y);
+    fov_.push_back(r_space.fieldOfView_mm.z);
 
-    slices_ = e_limits.slice().present() ? e_limits.slice().get().maximum() + 1 : 1;
-    sets_ = e_limits.set().present() ? e_limits.set().get().maximum() + 1 : 1;
+    slices_ = e_limits.slice ? e_limits.slice->maximum + 1 : 1;
+    sets_ = e_limits.set ? e_limits.set->maximum + 1 : 1;
     
     // Allocate profile queues
     // - one queue for the currently incoming frame

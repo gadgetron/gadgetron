@@ -30,6 +30,7 @@ template <typename T> class EPIReconXObjectTrapezoid : public EPIReconXObject<T>
   using EPIReconXObject<T>::slicePosition;
   using EPIReconXObject<T>::rcvType_;
 
+  bool  balanced_;
   float rampUpTime_;
   float rampDownTime_;
   float flatTopTime_;
@@ -54,6 +55,7 @@ template <typename T> class EPIReconXObjectTrapezoid : public EPIReconXObject<T>
 template <typename T> EPIReconXObjectTrapezoid<T>::EPIReconXObjectTrapezoid()
 {
   rcvType_ = EVEN;
+  balanced_ = true;
   rampUpTime_ = 0.0;
   rampDownTime_ = 0.0;
   flatTopTime_ = 0.0;
@@ -94,9 +96,10 @@ template <typename T> int EPIReconXObjectTrapezoid<T>::computeTrajectory()
   float totTime = rampUpTime_ + flatTopTime_ + rampDownTime_;
   float readTime = dwellTime_ * numSamples_;
 
-  // TODO: we need a flag that says it's a balanced readout.
-  // Fix the acqDelayTime for balanced acquisitions 
-  acqDelayTime_ = 0.5 * (totTime - readTime);
+  // Fix the acqDelayTime for balanced acquisitions
+  if (balanced_) {
+    acqDelayTime_ = 0.5 * (totTime - readTime);
+  }
 
   // Some Areas
   float totArea = 0.5*rampUpTime_ + flatTopTime_ + 0.5*rampDownTime_;
@@ -166,11 +169,12 @@ template <typename T> int EPIReconXObjectTrapezoid<T>::apply(const ISMRMRD::Acqu
     //x.print("x =");
 
     // DFT operator
+    // Going from k space to image space, we use the IFFT sign convention
     arma::cx_mat F(reconNx_, Ne);
     double fftscale = 1.0 / std::sqrt((double)Ne);
     for (p=0; p<reconNx_; p++) {
       for (q=0; q<Ne; q++) {
-	F(p,q) = fftscale * std::exp(std::complex<double>(0.0,-1.0*2*M_PI*keven(q)*x(p)));
+	F(p,q) = fftscale * std::exp(std::complex<double>(0.0,1.0*2*M_PI*keven(q)*x(p)));
       }
     }
     //F.print("F =");

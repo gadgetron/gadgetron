@@ -6,9 +6,6 @@
     include_directories(
         ${ACE_INCLUDE_DIR} 
         ${Boost_INCLUDE_DIR}
-        ${ISMRMRD_INCLUDE_DIR}
-        ${ISMRMRD_XSD_INCLUDE_DIR}
-        ${XSD_INCLUDE_DIR}
         ${FFTW3_INCLUDE_DIR}
         ${ARMADILLO_INCLUDE_DIRS}
         ${MKL_INCLUDE_DIR}
@@ -43,6 +40,7 @@
     add_library(epi ${LIBTYPE}
      EPIExport.h
      EPIReconXObject.h
+     EPIReconXObjectFlat.h
      EPIReconXObjectTrapezoid.h)
 
     set_target_properties(epi PROPERTIES LINKER_LANGUAGE CXX)
@@ -50,12 +48,13 @@
     target_link_libraries(epi cpucore cpucore_math ${ARMADILLO_LIBRARIES})
 
     install (FILES 
-    	    EPIExport.h 
-	    EPIReconXObject.h
-	    EPIReconXObjectTrapezoid.h
-    	    DESTINATION include)
+        EPIExport.h 
+        EPIReconXObject.h
+        EPIReconXObjectFlat.h
+        EPIReconXObjectTrapezoid.h
+        DESTINATION include)
 
-    install(TARGETS epi DESTINATION lib)
+    # install(TARGETS epi DESTINATION lib)
 
     #if (GTEST_FOUND)
     #    add_subdirectory(ut)

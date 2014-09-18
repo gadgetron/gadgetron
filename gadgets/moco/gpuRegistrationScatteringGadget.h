@@ -12,7 +12,7 @@ namespace Gadgetron{
     public RegistrationScatteringGadget< cuNDArray<float>, 2 >
   {    
   public:
-    
+    GADGET_DECLARE(gpuRegistrationScatteringGadget2D);
     gpuRegistrationScatteringGadget2D() : RegistrationScatteringGadget< cuNDArray<float>, 2 >() {}
     virtual ~gpuRegistrationScatteringGadget2D() {}
 

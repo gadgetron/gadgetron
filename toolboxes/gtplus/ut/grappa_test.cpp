@@ -5,7 +5,6 @@
 
 #include "Gadget.h"
 #include "ismrmrd.h"
-#include "hoNDArray_elemwise.h"
 #include "complext.h"
 
 #include <gtest/gtest.h>
@@ -297,12 +296,13 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
     gt_io.importArray(imag_data, filename);
     imag_data.print(std::cout);
 
-    boost::shared_ptr< hoNDArray<GT_Complex8> > tmp = real_imag_to_complex<GT_Complex8>(&real_data, &imag_data);
+    hoNDArray<GT_Complex8> tmp;
+    Gadgetron::real_imag_to_complex<GT_Complex8>(real_data, imag_data, tmp);
 
-    unsigned long long RO = tmp->get_size(0);
-    unsigned long long E1 = tmp->get_size(1);
-    unsigned long long CHA = tmp->get_size(2);
-    unsigned long long PHS = tmp->get_size(3);
+    unsigned long long RO = tmp.get_size(0);
+    unsigned long long E1 = tmp.get_size(1);
+    unsigned long long CHA = tmp.get_size(2);
+    unsigned long long PHS = tmp.get_size(3);
 
     unsigned long long reconE1 = 120;
 
@@ -314,7 +314,7 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
     unsigned long long SET = 1;
     unsigned long long SEG = 1;
 
-    hoNDArray<GT_Complex8> kspace(RO, E1, CHA, SLC, E2, CON, PHS, tmp->begin());
+    hoNDArray<GT_Complex8> kspace(RO, E1, CHA, SLC, E2, CON, PHS, tmp.begin());
 
     Gadgetron::norm2(kspace, v);
     GADGET_MSG("kspace = " << v);
@@ -411,7 +411,7 @@ TYPED_TEST(gtPlus_grappa_Test, reconWorker2DTGRAPPA)
 
     workOrder->CalibMode_ = ISMRMRD_separate;
     workOrder->start_RO_ = 34;
-    workOrder->end_RO_ = RO-1;
+    workOrder->end_RO_ = (int)RO-1;
     workOrder->acceFactorE1_ = 4;
     workOrder->acceFactorE2_ = 1;
 
@@ -483,14 +483,15 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
     gt_io.importArray(imag_data, filename);
     imag_data.print(std::cout);
 
-    boost::shared_ptr< hoNDArray<GT_Complex8> > tmp = real_imag_to_complex<GT_Complex8>(&real_data, &imag_data);
+    hoNDArray<GT_Complex8> tmp;
+    Gadgetron::real_imag_to_complex<GT_Complex8>(real_data, imag_data, tmp);
 
-    unsigned long long RO = tmp->get_size(0);
-    unsigned long long E1 = tmp->get_size(1);
-    unsigned long long CHA = tmp->get_size(2);
-    unsigned long long PHS = tmp->get_size(3);
+    unsigned long long RO = tmp.get_size(0);
+    unsigned long long E1 = tmp.get_size(1);
+    unsigned long long CHA = tmp.get_size(2);
+    unsigned long long PHS = tmp.get_size(3);
 
-    hoNDArray<GT_Complex8> kspace(RO, E1, CHA, PHS, tmp->begin());
+    hoNDArray<GT_Complex8> kspace(RO, E1, CHA, PHS, tmp.begin());
 
     // ref
     hoNDArray<float> real_ref;
@@ -571,7 +572,7 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
 
     ho5DArray<T> ker(kRO, kNE1, srcCHA, dstCHA, oE1.size());
     timer.start("grappa.calib");
-    grappa.grappa_.calib(acsSrc, acsDst, grappa_reg_lamda_, kRO, kE1, oE1, ker);
+    grappa.grappa_.calib(acsSrc, acsDst, grappa_reg_lamda_, (int)kRO, kE1, oE1, ker);
     timer.stop();
 
     Gadgetron::norm2(ker, v);
@@ -580,7 +581,7 @@ TYPED_TEST(gtPlus_grappa_Test, grappa2D)
 
     ho4DArray<T> kIm(RO, E1, srcCHA, dstCHA);
     timer.start("grappa.imageDomainKernel");
-    grappa.grappa_.imageDomainKernel(ker, kRO, kE1, oE1, RO, E1, kIm);
+    grappa.grappa_.imageDomainKernel(ker, (int)kRO, kE1, oE1, (int)RO, (int)E1, kIm);
     timer.stop();
     gt_io.exportArrayComplex(kIm, this->gtPluse_ut_res_folder_ + "kIm");
 

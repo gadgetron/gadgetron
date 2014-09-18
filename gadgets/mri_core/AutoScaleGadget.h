@@ -13,6 +13,7 @@ namespace Gadgetron{
     public Gadget2<ISMRMRD::ImageHeader,hoNDArray< float > >
   {
   public:
+    GADGET_DECLARE(AutoScaleGadget);
 
     AutoScaleGadget();
     virtual ~AutoScaleGadget();

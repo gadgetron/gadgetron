@@ -70,7 +70,16 @@ public:
     using BaseClass::coilMap_;
     using BaseClass::fullkspace_;
     using BaseClass::complexIm_;
+    using BaseClass::recon_time_stamp_;
+    using BaseClass::recon_physio_time_stamp_;
+
+    using BaseClass::fullkspace_second_;
+    using BaseClass::complexIm_second_;
+    using BaseClass::recon_time_stamp_second_;
+    using BaseClass::recon_physio_time_stamp_second_;
+
     using BaseClass::gfactor_;
+    using BaseClass::wrap_around_map_;
 
     using BaseClass::upstream_coil_compression_;
     using BaseClass::upstream_coil_compression_thres_;
@@ -262,6 +271,14 @@ bool gtPlusReconWorkOrder3DT<T>::reset()
 
         fullkspace_.clear();
         complexIm_.clear();
+        recon_time_stamp_.clear();
+        recon_physio_time_stamp_.clear();
+
+        fullkspace_second_.clear();
+        complexIm_second_.clear();
+        recon_time_stamp_second_.clear();
+        recon_physio_time_stamp_second_.clear();
+
         gfactor_.clear();
     }
     catch(...)

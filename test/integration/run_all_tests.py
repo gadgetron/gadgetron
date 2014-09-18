@@ -5,24 +5,26 @@ import glob
 import subprocess
 
 def main():
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 4:
         sys.stderr.write("Missing arguments\n")
         prog = os.path.basename(sys.argv[0])
-        help = "Usage: %s <gadgetron home> <test case directory>\n" % prog
+        help = "Usage: %s <ismrmrd_home> <gadgetron home> <test case list file>\n" % prog
         sys.stderr.write(help)
         sys.exit(1)
-    gadgetron_home = sys.argv[1]
-    test_case_folder = sys.argv[2]
+    ismrmrd_home = sys.argv[1]
+    gadgetron_home = sys.argv[2]
+    test_case_list = sys.argv[3]
     pwd = os.getcwd()
 
-    test_cases = glob.glob(os.path.join(test_case_folder, "*.cfg"))
+    test_cases = open( test_case_list, 'r' )
+    content = test_cases.read().splitlines()
 
     test_result = True
 
     gadgetron_outfile = open('gadgetron.log', 'w')
     client_outfile    = open('client.log', 'w')
 
-    for t in test_cases:
+    for t in content:
         print("Grabbing test case: " + t)
 
         # We need to figure out where this test dumps log files
@@ -33,7 +35,7 @@ def main():
         client_log_filename = os.path.join(pwd, out_folder, "client.log")
 
         # Now run the test
-        r = subprocess.call(["python", "run_gadgetron_test.py", gadgetron_home, t])
+        r = subprocess.call(["python", "run_gadgetron_test.py", ismrmrd_home, gadgetron_home, t])
 
         # Grab the log files and append to master logs
         gadgetron_outfile.write("==============================================\n")

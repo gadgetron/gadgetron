@@ -5,8 +5,13 @@ endif (WIN32)
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/image
+  ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu/arma_math
   ${FFTW3_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
+  # ${ACE_INCLUDE_DIR}
+  ${ISMRMRD_INCLUDE_DIR}
+  ${ARMADILLO_INCLUDE_DIRS}
   )
 
 add_library(cpufft ${LIBTYPE} 
@@ -17,6 +22,7 @@ add_library(cpufft ${LIBTYPE}
 
 target_link_libraries(cpufft
   cpucore
+  cpucore_math
   ${FFTW3_LIBRARIES} 
   ${Boost_LIBRARIES} 
   )

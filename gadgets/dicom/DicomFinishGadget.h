@@ -2,24 +2,25 @@
 #define DICOMFINISHGADGET_H
 
 #include "gadgetron_dicom_export.h"
+
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "GadgetMRIHeaders.h"
 #include "ismrmrd.h"
 #include "GadgetStreamController.h"
 
-// DICOM includes
-#include <dcmtk/config/osconfig.h>
-#include <dcmtk/ofstd/ofstdinc.h>
+#include "dcmtk/config/osconfig.h"
+#include "dcmtk/ofstd/ofstdinc.h"
 #define INCLUDE_CSTDLIB
 #define INCLUDE_CSTDIO
 #define INCLUDE_CSTRING
-#include <dcmtk/dcmdata/dctk.h>
-#include <dcmtk/dcmdata/dcostrmb.h>
+#include "dcmtk/dcmdata/dctk.h"
+#include "dcmtk/dcmdata/dcostrmb.h"
 
 #include <string>
 #include <map>
 #include <complex>
+
 
 namespace Gadgetron {
 
@@ -50,12 +51,14 @@ class EXPORTGADGETSDICOM DicomFinishGadgetUSHORT :
     public DicomFinishGadget<ACE_UINT16>
 {
     public:
+        GADGET_DECLARE(DicomFinishGadgetUSHORT);
 };
 
 class EXPORTGADGETSDICOM DicomFinishGadgetFLOAT :
     public DicomFinishGadget<float>
 {
     public:
+        GADGET_DECLARE(DicomFinishGadgetFLOAT);
 };
 
 /*

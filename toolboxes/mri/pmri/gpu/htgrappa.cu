@@ -6,9 +6,10 @@
 #include "cuNDArray_elemwise.h"
 #include "CUBLASContextProvider.h"
 #include "hoNDArray_fileio.h"
+#include "hoNDArray_utils.h"
 
 #include <cublas_v2.h>
-#include <cula_lapack_device.h>
+//#include <cula_lapack_device.h>
 #include <iostream>
 
 namespace Gadgetron {
@@ -236,7 +237,7 @@ namespace Gadgetron {
 
     if (acceleration_factor == 1) {
       dim3 blockDim(512,1,1);
-      dim3 gridDim((unsigned int) ceil((1.0f*elements_per_coil*source_coils)/blockDim.x), 1, 1 );
+      dim3 gridDim((unsigned int) std::ceil((1.0f*elements_per_coil*source_coils)/blockDim.x), 1, 1 );
 
       conj_csm_coeffs<<< gridDim, blockDim >>>( b1->get_data_ptr(),
                                                 out_mixing_coeff->get_data_ptr(),
@@ -244,7 +245,7 @@ namespace Gadgetron {
                                                 b1->get_number_of_elements());
 
       std::list<unsigned int>::iterator it;
-      gridDim = dim3((unsigned int) ceil((1.0f*(elements_per_coil))/blockDim.x), 1, 1 );
+      gridDim = dim3((unsigned int) std::ceil((1.0f*(elements_per_coil))/blockDim.x), 1, 1 );
       int uncombined_channel_no = 0;
       for ( it = uncombined_channels->begin(); it != uncombined_channels->end(); it++ ) {
         uncombined_channel_no++;
@@ -371,7 +372,7 @@ namespace Gadgetron {
         std::string appendix = ostr.str();
 
         dim3 blockDim(512,1,1);
-        dim3 gridDim((unsigned int) ceil((1.0f*kspace_locations)/blockDim.x), 1, 1 );
+        dim3 gridDim((unsigned int) std::ceil((1.0f*kspace_locations)/blockDim.x), 1, 1 );
 
         form_grappa_system_matrix_kernel_2d<<< gridDim, blockDim >>>( ref_data->get_data_ptr(), dims,
                                                                       source_coils, target_coils, dros, dros_offset,
@@ -497,24 +498,42 @@ namespace Gadgetron {
         }
 
 
-        culaStatus s;
-        /*
-          s = culaInitialize();
-          if(s != culaNoError) {
-          std::cerr << "htgrappa: failed to initialize CULA" << std::endl;
-          return -1;
-          }
-        */
-
-        s = culaDeviceCgels( 'N', n, n, target_coils,
+	/*
+	{
+	  //This is the OLD GPU code using CULA
+	  GPUTimer gpu_invert_time("GPU Inversion time"); 
+	  culaStatus s;
+	  s = culaDeviceCgels( 'N', n, n, target_coils,
                              (culaDeviceFloatComplex*)AHA.get_data_ptr(), n,
                              (culaDeviceFloatComplex*)AHrhs.get_data_ptr(), n);
 
 
-        if (s != culaNoError) {
-          std::cout << "htgrappa_calculate_grappa_unmixing: linear solve failed" << std::endl;
-          return -1;
-        }
+	  if (s != culaNoError) {
+	    std::cout << "htgrappa_calculate_grappa_unmixing: linear solve failed" << std::endl;
+	    return -1;
+	  }
+	}
+	*/
+      
+
+	{
+	  //It actually turns out to be faster to do this inversion on the CPU. Problem is probably too small for GPU to make sense
+	  //GPUTimer cpu_invert_time("CPU Inversion time");
+	  boost::shared_ptr< hoNDArray<T> > AHA_h = AHA.to_host();
+	  boost::shared_ptr< hoNDArray<T> > AHrhs_h = AHrhs.to_host();
+	  
+	  std::vector<size_t> perm_dim;
+	  perm_dim.push_back(1);
+	  perm_dim.push_back(0);
+	  
+	  permute(AHA_h.get(),&perm_dim);
+	  permute(AHrhs_h.get(),&perm_dim);
+
+	  ht_grappa_solve_spd_system(AHA_h.get(), AHrhs_h.get());	  
+
+	  permute(AHrhs_h.get(),&perm_dim);
+	  AHrhs = cuNDArray<T>(*AHrhs_h);
+	}
 
 #if 0
         size_t free = 0, total = 0;
@@ -535,7 +554,7 @@ namespace Gadgetron {
 		    //write_cuNDArray_to_disk(&AHrhs, filename.c_str());
         //  }
 
-        gridDim = dim3((unsigned int) ceil((1.0f*n*source_coils)/blockDim.x), 1, 1 );
+        gridDim = dim3((unsigned int) std::ceil((1.0f*n*source_coils)/blockDim.x), 1, 1 );
 
         //TODO: This should be target coils used as argument here.
         copy_grappa_coefficients_to_kernel_2d<<< gridDim, blockDim >>>( AHrhs.get_data_ptr(),
@@ -582,7 +601,7 @@ namespace Gadgetron {
         clear(&tmp_mixing);
 
         dim3 blockDim(512,1,1);
-        dim3 gridDim((unsigned int) ceil((1.0f*kernel_elements)/blockDim.x), 1, 1 );
+        dim3 gridDim((unsigned int) std::ceil((1.0f*kernel_elements)/blockDim.x), 1, 1 );
 
         //TODO: Take source and target into consideration
         copy_grappa_kernel_to_kspace_2d<<< gridDim, blockDim >>>((gkernel.get_data_ptr()+(c*kernel_elements)),
@@ -602,7 +621,7 @@ namespace Gadgetron {
 
         float scale_factor = total_elements;
 
-        gridDim = dim3((unsigned int) ceil(1.0f*total_elements/blockDim.x), 1, 1 );
+        gridDim = dim3((unsigned int) std::ceil(1.0f*total_elements/blockDim.x), 1, 1 );
         scale_and_add_unmixing_coeffs<<< gridDim, blockDim >>>(tmp_mixing.get_data_ptr(),
                                                                (b1->get_data_ptr()+ c*total_elements),
                                                                out_mixing_coeff->get_data_ptr(),
@@ -760,10 +779,30 @@ namespace Gadgetron {
         //timer.stop();
       }
 
-    culaStatus s;
-    s = culaDeviceCgels( 'N', N, N, K,
-                         (culaDeviceFloatComplex*)AHA.get_data_ptr(), N,
-                         (culaDeviceFloatComplex*)coeff->get_data_ptr(), N);
+    /*
+      culaStatus s;
+      s = culaDeviceCgels( 'N', N, N, K,
+      (culaDeviceFloatComplex*)AHA.get_data_ptr(), N,
+      (culaDeviceFloatComplex*)coeff->get_data_ptr(), N);
+    */
+    {
+      //It actually turns out to be faster to do this inversion on the CPU. Problem is probably too small for GPU to make sense
+      //GPUTimer cpu_invert_time("CPU Inversion time");
+      boost::shared_ptr< hoNDArray<T> > AHA_h = AHA.to_host();
+      boost::shared_ptr< hoNDArray<T> > AHrhs_h = coeff->to_host();
+      
+      std::vector<size_t> perm_dim;
+      perm_dim.push_back(1);
+      perm_dim.push_back(0);
+      
+      permute(AHA_h.get(),&perm_dim);
+      permute(AHrhs_h.get(),&perm_dim);
+      
+      ht_grappa_solve_spd_system(AHA_h.get(), AHrhs_h.get());	  
+
+      permute(AHrhs_h.get(),&perm_dim);
+      *coeff = cuNDArray<T>(*AHrhs_h);
+    }
 
 
     //{
@@ -771,12 +810,13 @@ namespace Gadgetron {
     //    write_cuNDArray_to_disk(coeff, filename.c_str());
     //}
 
+    /*
     if (s != culaNoError)
       {
         std::cout << "inverse_clib_matrix: linear solve failed" << std::endl;
         return -1;
       }
-
+    */
     return 0;
   }
 

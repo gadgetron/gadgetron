@@ -25,6 +25,7 @@ public:
 
     typedef gtPlusReconWorker3DT<T> BaseClass;
     typedef gtPlusReconWorkOrder3DT<T> WorkOrderType;
+    typedef typename BaseClass::value_type value_type;
 
     gtPlusReconWorker3DTSPIRIT() : spirit_kernelIm_permuted_(false), BaseClass() {}
     virtual ~gtPlusReconWorker3DTSPIRIT() {}
@@ -49,6 +50,7 @@ public:
     using BaseClass::gt_timer2_;
     using BaseClass::gt_timer3_;
     using BaseClass::performTiming_;
+    using BaseClass::verbose_;
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
@@ -119,7 +121,7 @@ bool gtPlusReconWorker3DTSPIRIT<T>::autoReconParameter(gtPlusReconWorkOrder<T>* 
         workOrder3DT->spirit_iter_thres_ = 0.005;
         workOrder3DT->spirit_reg_lamda_ = 0.01;
 
-        if ( workOrder3DT->recon_algorithm_ == ISMRMRD_embedded )
+        if ( workOrder3DT->recon_algorithm_ == ISMRMRD_SPIRIT )
         {
             workOrder3DT->spirit_iter_thres_ = 0.005;
         }
@@ -340,7 +342,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
         typename realType<T>::Type scaleFactor = 1.0;
         hoNDArray<T> kspaceForScaleFactor(RO, E1, E2, srcCHA, const_cast<T*>(data_dst.begin()));
         Gadgetron::norm2(kspaceForScaleFactor, scaleFactor);
-        scaleFactor /= (RO*std::sqrt(double(srcCHA)));
+        scaleFactor /= (value_type)(RO*std::sqrt(double(srcCHA)));
 
         workOrder3DT->spirit_ncg_scale_factor_ = scaleFactor;
 
@@ -478,8 +480,8 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
 
                 GADGET_MSG("SPIRIT - 3DT - total job : " << jobList.size() << " - job N : " << jobN << " - cloud size : " << cloudSize);
 
-                unsigned int numOfJobRunOnCloud = jobList.size() - jobList.size()/(cloudSize+1);
-                if ( !runJobsOnLocalNode ) numOfJobRunOnCloud = jobList.size();
+                unsigned int numOfJobRunOnCloud = (unsigned int)(jobList.size() - jobList.size()/(cloudSize+1));
+                if ( !runJobsOnLocalNode ) numOfJobRunOnCloud = (unsigned int)jobList.size();
 
                 typedef Gadgetron::GadgetCloudController< gtPlusReconJob2DT<T> > GTCloudControllerType;
                 GTCloudControllerType controller;
@@ -716,7 +718,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
                 Gadgetron::clear(kerImE1E2RO);
             }
 
-            GADGET_CHECK_RETURN_FALSE(spirit_.imageDomainKernelE1E2RO(ker, E1, E2, kerImE1E2RO));
+            GADGET_CHECK_RETURN_FALSE(spirit_.imageDomainKernelE1E2RO(ker, (int)E1, (int)E2, kerImE1E2RO));
             kerIm = &kerImE1E2RO;
 
             GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
@@ -727,7 +729,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
         long long NUM = (long long)RO;
 
         #ifdef USE_OMP
-            int numThreads = (NUM<16) ? NUM : 16;
+            int numThreads = (int)( (NUM<16) ? NUM : 16 );
 
             int numOpenMPProcs = omp_get_num_procs();
             GADGET_MSG("gtPlusReconWorker3DTSPIRIT, numOpenMPProcs : " << numOpenMPProcs);
@@ -783,7 +785,7 @@ performUnwarppingImplROPermuted(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray
             gtPlusLinearSolver<hoNDArray<T>, hoNDArray<T>, gtPlusSPIRIT2DOperator<T> >& cgSolver = *pCGSolver;
 
             cgSolver.iterMax_ = workOrder3DT->spirit_iter_max_;
-            cgSolver.thres_ = workOrder3DT->spirit_iter_thres_;
+            cgSolver.thres_ = (value_type)workOrder3DT->spirit_iter_thres_;
             cgSolver.printIter_ = workOrder3DT->spirit_print_iter_;
 
             cgSolver.set(spirit);
@@ -882,7 +884,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
 
         long long t;
 
-        #pragma omp parallel default(none) private(t) shared(RO, E1, E2, srcCHA, dstCHA, workOrder3DT, NUM, resDecoupled, pKspaceIfftROPermuted, pG_I) if ( NUM > 6 ) num_threads( (NUM<16) ? NUM : 16 )
+        #pragma omp parallel default(none) private(t) shared(RO, E1, E2, srcCHA, dstCHA, workOrder3DT, NUM, resDecoupled, pKspaceIfftROPermuted, pG_I) if ( NUM > 6 ) num_threads( (int)((NUM<16) ? NUM : 16) )
         {
             hoNDArrayMemoryManaged<T> adjForG_I_Decoupled(E1, E2, srcCHA, dstCHA, gtPlus_mem_manager_);
             T* pDecoupledG_I = adjForG_I_Decoupled.begin();
@@ -899,7 +901,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
             gtPlusLinearSolver<hoNDArray<T>, hoNDArray<T>, gtPlusSPIRIT2DOperator<T> >& cgSolver = *pCGSolver;
 
             cgSolver.iterMax_ = workOrder3DT->spirit_iter_max_;
-            cgSolver.thres_ = workOrder3DT->spirit_iter_thres_;
+            cgSolver.thres_ = (value_type)workOrder3DT->spirit_iter_thres_;
             cgSolver.printIter_ = workOrder3DT->spirit_print_iter_;
 
             cgSolver.set(spirit);
@@ -915,7 +917,7 @@ performUnwarppingImpl(gtPlusReconWorkOrder<T>* workOrder3DT, hoNDArray<T>& kspac
                 hoNDArray<T> resCurr(E1, E2, dstCHA, resDecoupled.begin()+ro*E1*E2*dstCHA);
 
                 // fill in kernel and kspace
-                size_t e1, e2, scha, dcha;
+                size_t scha, dcha;
 
                 for ( dcha=0; dcha<dstCHA; dcha++)
                 {

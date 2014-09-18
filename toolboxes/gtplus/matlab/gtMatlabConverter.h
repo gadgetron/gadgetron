@@ -8,17 +8,7 @@
 
 #pragma once
 
-#include <matrix.h>
-#include <mat.h>
-#include <mexGT.h>
-#include <cmath>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <strstream>
-
-#include "hoNDArray.h"
-#include "gtMatlab.h"
+#include "gtMatlabImage.h"
 
 namespace Gadgetron
 {
@@ -42,6 +32,47 @@ public:
     virtual bool Str2Matlab(const std::string& str, mxArray*& aMx);
     virtual bool Matlab2Str(const mxArray* aMx, std::string& str);
 
+    template <unsigned int D> 
+    bool hoNDImage2Matlab(const hoNDImage<T, D>& a, mxArray*& aMx, mxArray*& aHeader)
+    {
+        std::vector<size_t> dim(D);
+        a.get_dimensions(dim);
+
+        hoNDArray<T> buf(dim, const_cast<T*>(a.get_data_ptr()), false);
+        GADGET_CHECK_RETURN_FALSE(hoNDArray2Matlab(buf, aMx));
+
+        gtMatlabImageHeader<T, D> header(a);
+        GADGET_CHECK_RETURN_FALSE(header.toMatlab(aHeader));
+
+        return true;
+    }
+
+    template <unsigned int D> 
+    bool Matlab2hoNDImage(const mxArray* aMx, const mxArray* aHeader, hoNDImage<T, D>& a)
+    {
+        mwSize ndim = mxGetNumberOfDimensions(aMx);
+        if ( ndim != D ) return false;
+
+        hoNDArray<T> buf;
+        GADGET_CHECK_RETURN_FALSE(Matlab2hoNDArray(aMx, buf));
+        GADGET_CHECK_RETURN_FALSE(buf.get_number_of_dimensions()<=D);
+
+        a.from_NDArray(buf);
+
+        gtMatlabImageHeader<T, D> header;
+        GADGET_CHECK_RETURN_FALSE(header.fromMatlab(aHeader));
+
+        unsigned int ii;
+        for ( ii=0; ii<D; ii++ )
+        {
+            a.set_pixel_size(ii, header.pixelSize_[ii]);
+            a.set_origin(ii, header.origin_[ii]);
+            a.set_axis(ii, header.axis_[ii]);
+        }
+
+        return true;
+    }
+
     virtual void printInfo(std::ostream& os) const;
 };
 
@@ -53,16 +84,16 @@ hoNDArray2Matlab(const hoNDArray<T>& a, mxArray*& aMx)
     {
         boost::shared_ptr< std::vector<size_t> > dim = a.get_dimensions();
 
-        int ndim = dim->size();
+        mwSize ndim = dim->size();
         mwSize* dims = new mwSize[ndim];
 
-        size_t ii;
+        mwSize ii;
         for ( ii=0; ii<ndim; ii++ )
         {
             dims[ii] = static_cast<mwSize>( (*dim)[ii] );
         }
 
-        size_t N = a.get_number_of_elements();
+        mwSize N = a.get_number_of_elements();
         const T* pA = a.begin();
 
         if ( typeid(T) == typeid(float) )
@@ -72,7 +103,7 @@ hoNDArray2Matlab(const hoNDArray<T>& a, mxArray*& aMx)
 
             for ( ii=0; ii<N; ii++ )
             {
-                ptr[ii] = pA[ii];
+                ptr[ii] = (float)(pA[ii]);
             }
         }
         else
@@ -82,7 +113,7 @@ hoNDArray2Matlab(const hoNDArray<T>& a, mxArray*& aMx)
 
             for ( ii=0; ii<N; ii++ )
             {
-                ptr[ii] = pA[ii];
+                ptr[ii] = (float)(pA[ii]);
             }
         }
     }
@@ -211,7 +242,7 @@ template <typename T>
 bool gtMatlabConverter<T>::
 Matlab2Str(const mxArray* aMx, std::string& str)
 {
-    int N = mxGetNumberOfElements(aMx) + 1;
+    mwSize N = mxGetNumberOfElements(aMx) + 1;
 
     std::vector<char> buf(N, '\0');
     if (mxGetString(aMx, &buf[0], N) != 0)

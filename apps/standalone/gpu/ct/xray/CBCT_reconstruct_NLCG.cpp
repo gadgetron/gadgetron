@@ -155,6 +155,10 @@ int main(int argc, char** argv)
 
   hoCuNDArray<float> projections = *ps->get_projections();
   
+  if (E->get_use_offset_correction())
+    	E->offset_correct(&projections);
+
+
   if (vm.count("TV")){
     std::cout << "Total variation regularization in use" << std::endl;
     boost::shared_ptr<hoCuTvOperator<float,4> > tv(new hoCuTvOperator<float,4>);

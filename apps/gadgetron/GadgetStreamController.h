@@ -30,7 +30,8 @@ public:
     : stream_configured_(false)
     , notifier_ (0, this, ACE_Event_Handler::WRITE_MASK)
   	, writer_task_(&this->peer())
-    { }
+    {
+    }
 
   virtual ~GadgetStreamController()
     { 
@@ -56,6 +57,8 @@ public:
 
   virtual Gadget* find_gadget(std::string gadget_name);
 
+  void set_global_gadget_parameters(const std::map<std::string, std::string>& globalGadgetPara);
+
 private:
   ACE_Stream<ACE_MT_SYNCH> stream_;
   bool stream_configured_;
@@ -66,6 +69,8 @@ private:
   GadgetMessageReaderContainer readers_;
   
   std::vector<ACE_DLL_Handle*> dll_handles_;
+
+  std::map<std::string, std::string> global_gadget_parameters_;
 
   virtual int configure(std::string config_xml_string);
   virtual int configure_from_file(std::string config_xml_filename);

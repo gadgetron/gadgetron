@@ -6,17 +6,13 @@
 #define GPUFFT_EXPORT_H_
 
 #if defined (WIN32)
-    #ifdef BUILD_TOOLBOX_STATIC
-        #define EXPORTGPUFFT
+    #if defined (__BUILD_GADGETRON_GPUFFT__) || defined (gpufft_EXPORTS)
+        #define EXPORTGPUFFT __declspec(dllexport)
     #else
-        #if defined (__BUILD_GADGETRON_GPUFFT__) || defined (gpufft_EXPORTS)
-            #define EXPORTGPUFFT __declspec(dllexport)
-        #else
-            #define EXPORTGPUFFT __declspec(dllimport)
-        #endif
+        #define EXPORTGPUFFT __declspec(dllimport)
     #endif
 #else
-#define EXPORTGPUFFT
+    #define EXPORTGPUFFT
 #endif
 
 #endif

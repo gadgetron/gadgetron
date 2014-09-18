@@ -58,15 +58,26 @@ public:
     using BaseClass::ref_;
     using BaseClass::ref_recon_;
     using BaseClass::ref_coil_map_;
+    using BaseClass::kspace_initial_;
     using BaseClass::CalibMode_;
     using BaseClass::InterleaveDim_;
     using BaseClass::acceFactorE1_;
     using BaseClass::acceFactorE2_;
     using BaseClass::num_channels_res_;
     using BaseClass::coilMap_; // [RO E1 dstCHA 1 or N S]
+
     using BaseClass::fullkspace_; // [RO E1 dstCHA N S]
     using BaseClass::complexIm_; // [RO E1 N S]
+    using BaseClass::recon_time_stamp_; // [1 1 1 N S]
+    using BaseClass::recon_physio_time_stamp_; // [1 1 1 N S]
+
+    using BaseClass::fullkspace_second_; // [RO E1 dstCHA N S]
+    using BaseClass::complexIm_second_; // [RO E1 N S]
+    using BaseClass::recon_time_stamp_second_; // [1 1 1 N S]
+    using BaseClass::recon_physio_time_stamp_second_; // [1 1 1 N S]
+
     using BaseClass::gfactor_; // [RO E1 1 or N S]
+    using BaseClass::wrap_around_map_; // [RO E1 2 1 or N S]
 
     using BaseClass::downstream_coil_compression_;
     using BaseClass::coil_compression_thres_;
@@ -275,6 +286,14 @@ bool gtPlusReconWorkOrder2DT<T>::reset()
 
         fullkspace_.clear();
         complexIm_.clear();
+        recon_time_stamp_.clear();
+        recon_physio_time_stamp_.clear();
+
+        fullkspace_second_.clear();
+        complexIm_second_.clear();
+        recon_time_stamp_second_.clear();
+        recon_physio_time_stamp_second_.clear();
+
         gfactor_.clear();
     }
     catch(...)

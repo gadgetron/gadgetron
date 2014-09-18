@@ -6,6 +6,7 @@
 #define hoNDFFT_H
 
 #include "hoNDArray.h"
+#include "hoNDArray_blas.h"
 #include "cpufft_export.h"
 
 #include <boost/thread/mutex.hpp>
@@ -62,6 +63,28 @@ namespace Gadgetron{
                 fft_int(input,i,1);
             }
         }
+
+
+        void fft(hoNDArray< complext<T> >* input, unsigned int dim_to_transform)
+        {
+           fft((hoNDArray<ComplexType>*) input, dim_to_transform);
+        }
+
+        void ifft(hoNDArray< complext<T> >* input, unsigned int dim_to_transform)
+        {
+        		ifft((hoNDArray<ComplexType>*) input, dim_to_transform);
+        }
+
+        void fft(hoNDArray< complext<T> >* input)
+        {
+        	fft((hoNDArray<ComplexType>*) input);
+        }
+
+        void ifft(hoNDArray< complext<T> >* input)
+        {
+        	ifft((hoNDArray<ComplexType>*) input);
+        }
+
 
         // 1D
         bool fftshift1D(hoNDArray< ComplexType >& a);
@@ -150,6 +173,7 @@ namespace Gadgetron{
 
         void fft_int(hoNDArray< ComplexType >* input, size_t dim_to_transform, int sign);
 
+
         void set_function_pointers();
 
         int   (*fftw_import_wisdom_from_file_ptr_)(FILE*);
@@ -177,8 +201,8 @@ namespace Gadgetron{
         bool fftshiftPivot1D(const ComplexType* a, ComplexType* r, size_t x, size_t n, size_t pivot);
 
         // 2D
-        bool fftshiftPivot2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n, unsigned pivotx, unsigned pivoty);
-        bool fftshiftPivot2D(ComplexType* a, size_t x, size_t y, size_t n, unsigned pivotx, unsigned pivoty);
+        bool fftshiftPivot2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n, size_t pivotx, size_t pivoty);
+        bool fftshiftPivot2D(ComplexType* a, size_t x, size_t y, size_t n, size_t pivotx, size_t pivoty);
 
         bool fftshift2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n);
         bool ifftshift2D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t n);
@@ -187,8 +211,8 @@ namespace Gadgetron{
         bool ifftshift2D(ComplexType* a, size_t x, size_t y, size_t n);
 
         // 3D
-        bool fftshiftPivot3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n, unsigned pivotx, unsigned pivoty, unsigned pivotz);
-        bool fftshiftPivot3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n, unsigned pivotx, unsigned pivoty, unsigned pivotz);
+        bool fftshiftPivot3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n, size_t pivotx, size_t pivoty, size_t pivotz);
+        bool fftshiftPivot3D(ComplexType* a, size_t x, size_t y, size_t z, size_t n, size_t pivotx, size_t pivoty, size_t pivotz);
 
         bool fftshift3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n);
         bool ifftshift3D(const ComplexType* a, ComplexType* r, size_t x, size_t y, size_t z, size_t n);

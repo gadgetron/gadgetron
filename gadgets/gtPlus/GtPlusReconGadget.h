@@ -10,18 +10,22 @@
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "ismrmrd.h"
-#include "GadgetIsmrmrdReadWrite.h"
+#include "ismrmrd_xml.h"
+#include "ismrmrd_meta.h"
 #include "GadgetronTimer.h"
 
 #include "hoNDArray_utils.h"
 
 #include "GtPlusGadgetImageArray.h"
 
+#include "GadgetronCommon.h"
 #include "gtPlusIOAnalyze.h"
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusISMRMRDReconWorkOrder.h"
 
 #include "GadgetStreamController.h"
+
+#include "GtPlusReconGadgetUtil.h"
 
 #ifdef USE_OMP
     #include "omp.h"
@@ -35,7 +39,10 @@ namespace Gadgetron
 class EXPORTGTPLUSGADGET GtPlusReconGadget : public Gadgetron::Gadget2< GtPlusGadgetImageArray, Gadgetron::gtPlus::gtPlusReconWorkOrder<std::complex<float> > >
 {
 public:
-    typedef std::complex<float> ValueType;
+    GADGET_DECLARE(GtPlusReconGadget);
+
+    typedef float real_value_type;
+    typedef std::complex<real_value_type> ValueType;
 
     typedef Gadgetron::gtPlus::gtPlusReconWorkOrder<ValueType> WorkOrderType;
 
@@ -61,6 +68,21 @@ public:
 
     // scaling factor for recon results
     double scalingFactor_;
+
+    // scaling factor for gfactor images
+    double scalingFactor_gfactor_;
+
+    // scaling factor for wrap around map
+    double scalingFactor_wrap_around_map_;
+
+    // scaling factor for snr images
+    double scalingFactor_snr_image_;
+
+    // scaling factor for std map
+    double scalingFactor_std_map_;
+
+    // start frame to compute std map, to avoid transitional signal
+    unsigned int start_frame_for_std_map_;
 
     // whether to use the fixed intensity scaling factor
     bool use_constant_scalingFactor_;
@@ -90,6 +112,13 @@ public:
     // whether to recon kspace
     bool recon_kspace_needed_;
 
+    // whether the second set of recon results is required
+    bool recon_res_second_required_;
+
+    // whether to send out recon results
+    bool send_out_recon_;
+    bool send_out_recon_second_;
+
     // parameters for gt-plus recon
     Gadgetron::gtPlus::gtPlusReconWorkOrderPara workOrderPara_;
 
@@ -97,15 +126,8 @@ public:
     // utility functions
     // --------------------------------------------------
 
-    // generate the debug folder path
-    // debugFolderPath = ${GADGETRON_HOME}/debugFolder
-    virtual bool generateDebugFolderPath(const std::string& debugFolder, std::string& debugFolderPath);
-
-    // get the current moment
-    void getCurrentMoment(std::string& procTime);
-
     // compute image number using ICE way
-    int computeSeriesImageNumber (ISMRMRD::ImageHeader& imheader, size_t nCHA=1, size_t cha=0, size_t nE2=1, size_t e2=0);
+    size_t computeSeriesImageNumber (ISMRMRD::ImageHeader& imheader, size_t nCHA=1, size_t cha=0, size_t nE2=1, size_t e2=0);
 
     // to handle partial fourier, add pre or post zeros
     // PrePostZeros: 0 no zeros; 1 pre zeros; 2 post zeros
@@ -114,15 +136,24 @@ public:
     // find the dimension index
     bool findStartingDimIndex(const std::vector<DimensionRecordType>& dimStartingIndexes, Gadgetron::gtPlus::ISMRMRDDIM& dim, size_t ind);
 
+    // compute SNR image and std map
+    bool computeSNRImage(const hoNDArray<ValueType>& res, const hoNDArray<ValueType>& gfactor, unsigned int startInd, bool withAcceleration, hoNDArray<ValueType>& snrImage, hoNDArray<ValueType>& stdMap);
+
+    // scale the recon images
+    bool scalingImages(hoNDArray<ValueType>& res);
+
     // scale the magnitude images
     bool scalingMagnitude(hoNDArray<float>& mag);
 
     // recompute the image geometry parameters if the recon FOV is different from encoding FOV
-    bool recomputeImageGeometry(GtPlusGadgetImageArray* images, GtPlusGadgetImageExt& imageHeader, int slc, int e2, int con, int phs, int rep, int set, int seg, int maxE2);
+    bool recomputeImageGeometry(GtPlusGadgetImageArray* images, GtPlusGadgetImageExt& imageHeader, size_t slc, size_t e2, size_t con, size_t phs, size_t rep, size_t set, size_t seg, size_t ave, size_t maxE2);
+
+    // get the acquisition and PMU time stamps
+    bool getTimeStamp(GtPlusGadgetImageArray* images, WorkOrderType& workOrder, hoNDArray<real_value_type>& timeStamp,  hoNDArray<real_value_type>& pmuTimeStamp);
 
     // send out the recon results
-    virtual bool sendOutReconMag(GtPlusGadgetImageArray* images, const hoNDArray<float>& res, int seriesNum, const std::vector<DimensionRecordType>& dimStartingIndexes, const std::string& prefix);
-    virtual bool sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, int seriesNum, const std::vector<DimensionRecordType>& dimStartingIndexes, const std::string& prefix);
+    virtual bool sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, int seriesNum, const std::vector<DimensionRecordType>& dimStartingIndexes, const std::string& prefix, const std::string& dataRole);
+    virtual bool sendOutRecon(GtPlusGadgetImageArray* images, const hoNDArray<ValueType>& res, const hoNDArray<real_value_type>& timeStamp, const hoNDArray<real_value_type>& physioTimeStamp, int seriesNum, const std::vector<DimensionRecordType>& dimStartingIndexes, const std::string& prefix, const std::string& dataRole);
 
     // special sending function for the interactive cases
     virtual bool sendOutRecon2D(GtPlusGadgetImageArray* images, const hoNDArray<float>& res, int seriesNum, int imageNum);
@@ -130,6 +161,7 @@ public:
 
     // compute the kspace filter
     bool generateKSpaceFilter(WorkOrderType& workOrder);
+    //void GADGET_CONDITION_MSG(bool verboseMode_, const char* arg2);
 
 protected:
 
@@ -146,6 +178,9 @@ protected:
 
     // parse the cloud file if any
     virtual bool parseGTCloudNodeFile(const std::string& filename, CloudType& gtCloud);
+
+    // close call
+    int close(unsigned long flags);
 
 public:
 
@@ -247,6 +282,11 @@ public:
 
     // encoding space size
     ISMRMRD::EncodingCounters meas_max_idx_;
+
+    // define the maximal number of threads used
+    // number_of_used_threads = thread_number_ratio_ * max_available_threads_number
+    // 0 means all threads are used
+    float thread_number_ratio_;
 
     Gadgetron::gtPlus::gtPlusISMRMRDReconUtil<ValueType> gtPlus_util_;
     Gadgetron::gtPlus::gtPlusISMRMRDReconUtilComplex<ValueType> gtPlus_util_complex_;

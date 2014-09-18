@@ -10,6 +10,7 @@
 #include <ace/Singleton.h>
 #include <ace/Synch.h>
 
+#include <boost/thread/mutex.hpp>
 #include <boost/python.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -36,6 +37,8 @@ class EXPORTGADGETSPYTHON PythonCommunicator
   template<class T> int process(Gadget* g, 
 				GadgetContainerMessage<T>* m1,
 				GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2);
+
+    boost::mutex mutex_;
 
  private:
   std::map<Gadget*, boost::python::object> module_;

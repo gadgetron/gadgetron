@@ -15,6 +15,7 @@ class gtPlusWaveletOperator : public gtPlusOperator<T>
 public:
 
     typedef gtPlusOperator<T> BaseClass;
+    typedef typename BaseClass::value_type value_type;
 
     gtPlusWaveletOperator();
     virtual ~gtPlusWaveletOperator();
@@ -39,14 +40,15 @@ public:
 
     // soft-threshold or shrink the wavelet coefficients
     // the really applied threshold is mask.*thres
-    virtual bool shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres, const hoNDArray<T>& mask, bool processApproxCoeff=false);
+    virtual bool shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, value_type thres, const hoNDArray<T>& mask, bool processApproxCoeff=false);
+    virtual bool proximity(hoNDArray<T>& wavCoeff, value_type thres);
 
-    // if the sensitivity S is set, compute gradient of ||wav*F'*S'*(Dc'x+D'y)||1
+    // if the sensitivity S is set, compute gradient of ||wav*S'*F'*(Dc'x+D'y)||1
     // if not, compute gradient of ||wav*F'*(Dc'x+D'y)||1
     // x represents the unacquired kspace points [RO E1 CHA]
     virtual bool grad(const hoNDArray<T>& x, hoNDArray<T>& g);
 
-    // if the sensitivity S is set, compute cost value of L2 norm ||wav*F'*S'*(Dc'x+D'y)||1
+    // if the sensitivity S is set, compute cost value of L2 norm ||wav*S'*F'*(Dc'x+D'y)||1
     // if not, compute cost value of L2 norm ||wav*F'*(Dc'x+D'y)||1
     virtual bool obj(const hoNDArray<T>& x, T& obj);
 
@@ -55,6 +57,9 @@ public:
 
     // whether to include low frequency approximation coefficients
     bool with_approx_coeff_;
+
+    T scale_factor_first_dimension_;
+    T scale_factor_second_dimension_;
 
     using BaseClass::gt_timer1_;
     using BaseClass::gt_timer2_;
@@ -66,7 +71,7 @@ public:
     using BaseClass::gtPlus_util_complex_;
     using BaseClass::gtPlus_mem_manager_;
 
-protected:
+public:
 
     // convert to image domain or back to kspace
     virtual bool convertToImage(const hoNDArray<T>& x, hoNDArray<T>& im);
@@ -92,6 +97,8 @@ protected:
     hoNDArray<T> wav_coeff_norm_;
     hoNDArray<T> wav_coeff_norm_approx_;
 
+    hoNDArray<value_type> wav_coeff_norm_mag_;
+
     hoNDArray<T> kspace_wav_;
     hoNDArray<T> complexIm_wav_;
     hoNDArray<T> complexIm_norm_;
@@ -103,7 +110,7 @@ protected:
 };
 
 template <typename T> 
-gtPlusWaveletOperator<T>::gtPlusWaveletOperator() : numOfWavLevels_(1), with_approx_coeff_(false), BaseClass()
+gtPlusWaveletOperator<T>::gtPlusWaveletOperator() : numOfWavLevels_(1), with_approx_coeff_(false), scale_factor_first_dimension_(1.0), scale_factor_second_dimension_(1.0), BaseClass()
 {
 
 }
@@ -194,7 +201,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
             #pragma omp parallel for default(none) private(ii) shared(N, pBuf, pCoeffNorm, mu)
             for ( ii=0; ii<N; ii++ )
             {
-                pBuf[ii] = 1.0 / std::sqrt( pCoeffNorm[ii].real() + mu.real() );
+                pBuf[ii] = (value_type)(1.0 / std::sqrt( pCoeffNorm[ii].real() + mu.real() ));
             }
         }
         else
@@ -202,7 +209,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
             #pragma omp parallel for default(none) private(ii) shared(N, pBuf, pCoeffNorm, mu, p)
             for ( ii=0; ii<N; ii++ )
             {
-                pBuf[ii] = std::pow( (double)(pCoeffNorm[ii].real() + mu.real()), (double)(p.real()/2.0-1.0) );
+                pBuf[ii] = (value_type)std::pow( (double)(pCoeffNorm[ii].real() + mu.real()), (double)(p.real()/2.0-1.0) );
             }
         }
 
@@ -223,7 +230,7 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
             {
 
                 #pragma omp for
-                for ( ii=0; ii<num; ii++ )
+                for ( ii=0; ii<(long long)num; ii++ )
                 {
                     hoNDArray<T> wavCoeffNormCurr(RO, E1, W-1, wav_coeff_norm_approx_.begin()+ii*RO*E1*W+RO*E1);
 
@@ -246,7 +253,26 @@ divideWavCoeffByNorm(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T
 
 template <typename T> 
 bool gtPlusWaveletOperator<T>::
-shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres, const hoNDArray<T>& mask, bool processApproxCoeff)
+proximity(hoNDArray<T>& wavCoeff, value_type thres)
+{
+    try
+    {
+        GADGET_CHECK_RETURN_FALSE(this->L1Norm(wavCoeff, wav_coeff_norm_));
+        hoNDArray<T> mask;
+
+        GADGET_CHECK_RETURN_FALSE(this->shrinkWavCoeff(wavCoeff, wav_coeff_norm_, thres, mask, with_approx_coeff_));
+    }
+    catch (...)
+    {
+        GADGET_ERROR_MSG("Errors in gtPlusWaveletOperator<T>::proximity(hoNDArray<T>& wavCoeff, value_type thres) ... ");
+        return false;
+    }
+    return true;
+}
+
+template <typename T> 
+bool gtPlusWaveletOperator<T>::
+shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, value_type thres, const hoNDArray<T>& mask, bool processApproxCoeff)
 {
     try
     {
@@ -278,8 +304,8 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
         #pragma omp parallel for default(none) private(ii) shared(N, pMag, pMagInv, pCoeffNorm)
         for ( ii=0; ii<N; ii++ )
         {
-            pMag[ii] = std::sqrt( pCoeffNorm[ii].real() );
-            pMagInv[ii] = 1.0/(pMag[ii].real()+DBL_EPSILON);
+            pMag[ii] = (value_type)std::sqrt( pCoeffNorm[ii].real() );
+            pMagInv[ii] = (value_type)(1.0/(pMag[ii].real()+DBL_EPSILON));
         }
 
         // phase does not change
@@ -307,13 +333,14 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
                 #pragma omp parallel for private(nn) shared(s, N3D, pMagCurr, pMaskCurr, thres)
                 for ( nn=s; nn<N3D; nn++ )
                 {
-                    if ( std::abs(pMagCurr[nn]) < std::abs(thres*pMaskCurr[nn]) )
+                    // if ( std::abs(pMagCurr[nn]) < std::abs(thres*pMaskCurr[nn]) )
+                    if ( pMagCurr[nn].real() < thres*pMaskCurr[nn].real() )
                     {
                         pMagCurr[nn] = 0;
                     }
                     else
                     {
-                        pMagCurr[nn] -= thres;
+                        pMagCurr[nn] -= thres*pMaskCurr[nn];
                     }
                 }
             }
@@ -335,7 +362,8 @@ shrinkWavCoeff(hoNDArray<T>& wavCoeff, const hoNDArray<T>& wavCoeffNorm, T thres
                 #pragma omp parallel for private(nn) shared(s, N3D, pMagCurr, thres)
                 for ( nn=s; nn<N3D; nn++ )
                 {
-                    if ( std::abs(pMagCurr[nn]) < std::abs(thres) )
+                    // if ( std::abs(pMagCurr[nn]) < std::abs(thres) )
+                    if ( pMagCurr[nn].real() < thres )
                     {
                         pMagCurr[nn] = 0;
                     }
@@ -492,7 +520,7 @@ gradTask(const hoNDArray<T>& x, hoNDArray<T>& g)
         //gt_timer2_.stop();
 
         //gt_timer2_.start("8");
-        GADGET_CHECK_RETURN_FALSE(this->divideWavCoeffByNorm(res_after_apply_kernel_sum_over_, wav_coeff_norm_, T(1e-15), T(1.0), with_approx_coeff_));
+        GADGET_CHECK_RETURN_FALSE(this->divideWavCoeffByNorm(res_after_apply_kernel_sum_over_, wav_coeff_norm_, T( (value_type)1e-15), T( (value_type)1.0 ), with_approx_coeff_));
         //gt_timer2_.stop();
 
         // go back to image

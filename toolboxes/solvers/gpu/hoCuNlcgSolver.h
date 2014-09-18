@@ -5,6 +5,7 @@
 #include "hoNDArray_fileio.h"
 #include "complext.h"
 #include "nlcgSolver.h"
+#include "hoSolverUtils.h"
 
 namespace Gadgetron{
 
@@ -16,17 +17,6 @@ public:
 	}
 
 	virtual ~hoCuNlcgSolver(){};
-
-protected:
-  virtual void solver_non_negativity_filter(hoCuNDArray<T> *x,hoCuNDArray<T> *g)
-  {
-    T* x_ptr = x->get_data_ptr();
-    T* g_ptr = g->get_data_ptr();
-    for (int i =0; i < x->get_number_of_elements(); i++){
-      if ( real(x_ptr[i]) <= REAL(0) && real(g_ptr[i]) > 0) g_ptr[i]=T(0);
-    }
-
-  }
 
   virtual void iteration_callback(hoCuNDArray<T>* x,int i,REAL data_res,REAL reg_res){
 	  /*

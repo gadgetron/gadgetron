@@ -19,6 +19,8 @@ class gtPlusReconWorker3DTGRAPPA : public gtPlusReconWorker3DT<T>
 public:
 
     typedef gtPlusReconWorker3DT<T> BaseClass;
+    typedef typename BaseClass::value_type value_type;
+
     typedef gtPlusReconWorkOrder3DT<T> WorkOrderType;
 
     gtPlusReconWorker3DTGRAPPA() : BaseClass() {}
@@ -39,6 +41,7 @@ public:
     using BaseClass::gt_timer2_;
     using BaseClass::gt_timer3_;
     using BaseClass::performTiming_;
+    using BaseClass::verbose_;
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
@@ -139,10 +142,10 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
 
     std::vector<int> kE1, oE1;
     bool fitItself = true;
-    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, workOrder3DT->acceFactorE1_, workOrder3DT->grappa_kSize_E1_, fitItself));
+    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, (int)workOrder3DT->acceFactorE1_, workOrder3DT->grappa_kSize_E1_, fitItself));
 
     std::vector<int> kE2, oE2;
-    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE2, oE2, workOrder3DT->acceFactorE2_, workOrder3DT->grappa_kSize_E2_, fitItself));
+    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE2, oE2, (int)workOrder3DT->acceFactorE2_, workOrder3DT->grappa_kSize_E2_, fitItself));
 
     size_t kRO = workOrder3DT->grappa_kSize_RO_;
     size_t kNE1 = workOrder3DT->grappa_kSize_E1_;
@@ -250,10 +253,10 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
 
     std::vector<int> kE1, oE1;
     bool fitItself = true;
-    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, workOrder3DT->acceFactorE1_, workOrder3DT->grappa_kSize_E1_, fitItself));
+    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE1, oE1, (size_t)workOrder3DT->acceFactorE1_, workOrder3DT->grappa_kSize_E1_, fitItself));
 
     std::vector<int> kE2, oE2;
-    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE2, oE2, workOrder3DT->acceFactorE2_, workOrder3DT->grappa_kSize_E2_, fitItself));
+    GADGET_CHECK_RETURN_FALSE(grappa_.kerPattern(kE2, oE2, (size_t)workOrder3DT->acceFactorE2_, workOrder3DT->grappa_kSize_E2_, fitItself));
 
     size_t kRO = workOrder3DT->grappa_kSize_RO_;
     size_t kNE1 = workOrder3DT->grappa_kSize_E1_;
@@ -265,8 +268,12 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
     ho4DArray<T> acsSrc(refRO, refE1, refE2, srcCHA, const_cast<T*>(ref_src.begin()+usedN*refRO*refE1*refE2*srcCHA));
     ho4DArray<T> acsDst(refRO, refE1, refE2, dstCHA, const_cast<T*>(ref_dst.begin()+usedN*refRO*refE1*refE2*dstCHA));
 
-    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsSrc, "acsSrc");
-    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsDst, "acsDst");
+    std::ostringstream ostr;
+    ostr << "_n_" << usedN;
+    std::string suffix = ostr.str();
+
+    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsSrc, "acsSrc"+suffix);
+    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsDst, "acsDst"+suffix);
 
     grappa_.calib_use_gpu_  = workOrder3DT->grappa_use_gpu_;
 
@@ -275,7 +282,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
     grappa_.calib3D(acsSrc, acsDst, workOrder3DT->grappa_reg_lamda_, workOrder3DT->grappa_calib_over_determine_ratio_, kRO, kE1, kE2, oE1, oE2, ker);
     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
-    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker");
+    GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker"+suffix);
 
     size_t jobN;
     bool splitJobs = this->splitJob(workOrder3DT, jobN);
@@ -294,12 +301,12 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
             hoNDArray<T> gFactor(RO, E1, E2, workOrder3DT->gfactor_.begin()+usedN*RO*E1*E2);
 
             this->unmixCoeff(kIm, coilMap, unmixC, gFactor);
-            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal(1.0/workOrder3DT->acceFactorE1_/workOrder3DT->acceFactorE2_, gFactor));
+            GADGET_CHECK_RETURN_FALSE(Gadgetron::scal( (value_type)(1.0/workOrder3DT->acceFactorE1_/workOrder3DT->acceFactorE2_), gFactor));
 
             memcpy(workOrder3DT->unmixingCoeffIm_->begin()+usedN*RO*E1*E2*srcCHA, unmixC.begin(), unmixC.get_number_of_bytes());
 
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unmixC, "unmixC");
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gFactor, "gFactor");
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, unmixC, "unmixC"+suffix);
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, gFactor, "gFactor"+suffix);
         }
     }
     else
@@ -327,7 +334,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
         if ( !debugFolder_.empty() )
         {
             hoNDArray<T> kImROACha(convKE1, convKE2, RO, srcCHA, kIm.begin());
-            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImROACha, "kImROACha");
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, kImROACha, "kImROACha"+suffix);
         }
     }
 
@@ -367,6 +374,20 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             aliasedIm.create(data_dst.get_dimensions());
             Gadgetron::hoNDFFT<typename realType<T>::Type>::instance()->ifft3c(data_dst, aliasedIm);
         }
+
+        typename realType<T>::Type fftCompensationRatio = (typename realType<T>::Type)(1.0/std::sqrt( (double)workOrder3DT->acceFactorE1_ * (double)workOrder3DT->acceFactorE2_ ));
+        Gadgetron::scal( fftCompensationRatio, aliasedIm);
+
+        // if the image data is scaled and ref lines are going to be filled back to the data, 
+        // the reference lines should be scaled too
+        if ( workOrder3DT->CalibMode_ == ISMRMRD_embedded )
+        {
+            if ( workOrder3DT->embedded_ref_fillback_ )
+            {
+                Gadgetron::scal( fftCompensationRatio, workOrder3DT->ref_);
+            }
+        }
+
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, aliasedIm, "aliasedIm");
@@ -387,7 +408,6 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                 size_t kE2 = workOrder3DT->kernelIm_->get_size(1);
                 size_t kRO = workOrder3DT->kernelIm_->get_size(2);
 
-                size_t usedN;
                 if ( (refN<N) || (refN==1) )
                 {
                     hoNDArray<T> kImPermuted(kE1, kE2, RO, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin());
@@ -443,7 +463,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                             GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
                             GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("imageDomainKernelE1E2RO ... "));
-                            GADGET_CHECK_RETURN_FALSE(grappa_.imageDomainKernelE1E2RO(kImPermutedJob, E1, E2, kImPermutedZeroFilledJob));
+                            GADGET_CHECK_RETURN_FALSE(grappa_.imageDomainKernelE1E2RO(kImPermutedJob, (int)E1, (int)E2, kImPermutedZeroFilledJob));
                             GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
                             GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("cropOver3rdDimension aliased images ... "));
@@ -469,7 +489,7 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
                                 GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
                                 GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("imageDomainKernelE1E2RO ... "));
-                                GADGET_CHECK_RETURN_FALSE(grappa_.imageDomainKernelE1E2RO(kImPermutedJob, E1, E2, kImPermutedZeroFilledJob));
+                                GADGET_CHECK_RETURN_FALSE(grappa_.imageDomainKernelE1E2RO(kImPermutedJob, (int)E1, (int)E2, kImPermutedZeroFilledJob));
                                 GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
                                 hoNDArray<T> aliasedImPermutedN(E1, E2, RO, srcCHA, aliasedImPermuted.begin()+n*E1*E2*RO*srcCHA);
@@ -505,7 +525,6 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
             }
             else
             {
-                size_t usedN;
                 if ( (refN<N) || (refN==1) )
                 {
                     hoNDArray<T> kIm(RO, E1, E2, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin());

@@ -16,6 +16,16 @@
     </writer>
 
     <gadget>
+      <name>RemoveROOversampling</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>RemoveROOversamplingGadget</classname>
+        <property>
+            <name>constant_noise_variance</name>
+            <value>false</value>
+        </property>
+    </gadget>
+
+    <gadget>
         <name>Acc</name>
         <dll>gadgetron_mricore</dll>
         <classname>AccumulatorGadget</classname>
@@ -28,14 +38,9 @@
     </gadget>
 
     <gadget>
-        <name>CoilCombinePython</name>
-        <dll>gadgetron_python</dll>
-        <classname>ImagePythonGadget</classname>
-        <property><name>python_path</name>                  <value>/home/myuser/scripts/python</value></property>
-        <property><name>python_module</name>                <value>rms_coil_combine</value></property>
-        <property><name>gadget_reference_function</name>    <value>set_gadget_reference</value></property>
-        <property><name>input_function</name>               <value>recon_function</value></property>
-        <property><name>config_function</name>              <value>config_function</value></property>
+        <name>Combine</name>
+        <dll>gadgetron_mricore</dll>
+        <classname>CombineGadget</classname>
     </gadget>
 
     <gadget>

@@ -10,14 +10,28 @@
 
 namespace Gadgetron{
 
-  template<typename T> class MRIImageWriter : public GadgetMessageWriter {
-  public:
-    virtual int write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb);
-  };
+    template<typename T> class MRIImageWriter : public GadgetMessageWriter
+    {
+    public:
+        virtual int write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb);
+    };
 
-  class EXPORTGADGETSMRICORE MRIImageWriterUSHORT : public MRIImageWriter<ACE_UINT16> {};
-  class EXPORTGADGETSMRICORE MRIImageWriterFLOAT : public MRIImageWriter<float> {};
-  class EXPORTGADGETSMRICORE MRIImageWriterCPLX : public MRIImageWriter< std::complex<float> > {};
+    class EXPORTGADGETSMRICORE MRIImageWriterUSHORT : public MRIImageWriter<ACE_UINT16>
+    {
+    public:
+        GADGETRON_WRITER_DECLARE(MRIImageWriterUSHORT);
+    };
+
+    class EXPORTGADGETSMRICORE MRIImageWriterFLOAT : public MRIImageWriter<float>
+    {
+    public:
+        GADGETRON_WRITER_DECLARE(MRIImageWriterFLOAT);
+    };
+
+    class EXPORTGADGETSMRICORE MRIImageWriterCPLX : public MRIImageWriter< std::complex<float> >
+    {
+    public:
+        GADGETRON_WRITER_DECLARE(MRIImageWriterCPLX);
+    };
 }
-
 #endif

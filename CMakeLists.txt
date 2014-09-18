@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 2.8)
 project(GADGETRON)
 
+#Set the build type to Release if not specified
+IF(NOT CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE Release CACHE STRING
+      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+      FORCE)
+ENDIF(NOT CMAKE_BUILD_TYPE)
+
 # build options for 64 bits system
 if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
   message("64bit system is found")
@@ -36,6 +43,12 @@ if (WIN32)
     endif ( HAS_64_BIT )
     SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc /MP")
     SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
+    SET (CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} /INCREMENTAL:NO")
+    SET (CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} /INCREMENTAL:NO")
+    SET (CMAKE_EXE_LINKER_FLAGS_DEBUG "/debug /INCREMENTAL:NO")
+    SET (CMAKE_SHARED_LINKER_FLAGS_DEBUG "/debug /INCREMENTAL:NO")
+    SET (CMAKE_STATIC_LINKER_FLAGS_DEBUG "/debug /INCREMENTAL:NO")
+    SET (CMAKE_MODULE_LINKER_FLAGS_DEBUG "/debug /INCREMENTAL:NO")
     # The two flags below is to fix Windows problems in relation to multiple defined operators new/delete and some constructors that are defined in our headers
     #SET (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /FORCE:MULTIPLE") 
     #SET (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} /FORCE:MULTIPLE") 
@@ -46,15 +59,15 @@ else (WIN32)
             SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
             SET (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc -static-libgfortran")
         endif (APPLE)
-  endif (UNIX)
+    endif (UNIX)
 endif (WIN32)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX}/gadgetron)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # uncomment these if all compiled targets are to be stored in the same directory
-#SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin CACHE STRING "Where to put the executables")
-#SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin CACHE STRING "Where to put the libraries")
+# SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/prod/bin/vc10 CACHE STRING "Where to put the executables")
+# SET(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/prod/bin/vc10 CACHE STRING "Where to put the libraries")
 
 # whether to suppress compilation warnings
 OPTION(BUILD_SUPPRESS_WARNINGS "Build package while suppressing warnings" Off)
@@ -81,9 +94,12 @@ else ( BUILD_TOOLBOX_STATIC )
     set(LIBTYPE SHARED)
 endif ( BUILD_TOOLBOX_STATIC )
 
+set(Boost_USE_STATIC_LIBS OFF)
 set(Boost_USE_MULTITHREADED ON)
 set(Boost_USE_STATIC_RUNTIME OFF)
+# necessary for Windows and RHEL <=6 systems
 set(Boost_NO_BOOST_CMAKE ON)
+
 if(WIN32)
   add_definitions( -DBOOST_ALL_NO_LIB )
   add_definitions( -DBOOST_ALL_DYN_LINK )
@@ -96,9 +112,9 @@ endif(WIN32)
 
 # We actually only use system and thread explicitly, but they require linking in date_time and chrono
 if (WIN32)
-  find_package(Boost COMPONENTS system thread date_time chrono program_options REQUIRED)
+  find_package(Boost COMPONENTS system thread date_time chrono program_options filesystem REQUIRED)
 else(WIN32)
-  find_package(Boost COMPONENTS system thread program_options REQUIRED)
+  find_package(Boost COMPONENTS system thread program_options filesystem REQUIRED)
 endif(WIN32)
 
 find_package(ACE)
@@ -106,13 +122,10 @@ if(NOT ACE_FOUND)
   MESSAGE("ACE not found. Only toolboxes and standalone applications are compiled. The streaming framework will NOT be compiled.")
 endif(NOT ACE_FOUND)
 
-find_package(CUDA 4.1)
-if (CUDA_FOUND)
-  ADD_DEFINITIONS(-DUSE_CUDA)
-endif (CUDA_FOUND)
+find_package(CUDA_advanced)
 
 if (CUDA_FOUND)
-  MESSAGE("CUDA found, GPU components are compiled if CULA is also found")
+  ADD_DEFINITIONS(-DUSE_CUDA)
   SET( GADGETRON_CUDA_FOUND_BOOL 1 )
   include_directories( ${CUDA_INCLUDE_DIRS} )
   #set(CUDA_VERBOSE_BUILD ON)
@@ -121,23 +134,9 @@ if (CUDA_FOUND)
   # Support compute model 3.0 from Cuda 4.2 and up
   # Support compute model 3.5 from Cuda 5 and up
 
-  #set(CUDA_NVCC_FLAGS1 "-gencode arch=compute_10,code=sm_10")
-  set(CUDA_NVCC_FLAGS2 "-gencode arch=compute_20,code=sm_20")
-  set(CUDA_NVCC_FLAGS3 "-gencode arch=compute_30,code=sm_30") 
-  set(CUDA_NVCC_FLAGS4 "-gencode arch=compute_35,code=sm_35")   
 
-  if(${CUDA_VERSION} VERSION_GREATER "4.99")
-    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS1} ${CUDA_NVCC_FLAGS2} ${CUDA_NVCC_FLAGS3} ${CUDA_NVCC_FLAGS4})
-  else(${CUDA_VERSION} VERSION_GREATER "4.99")    
-
-    if(${CUDA_VERSION} VERSION_GREATER "4.1")
-      set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS1} ${CUDA_NVCC_FLAGS2} ${CUDA_NVCC_FLAGS3})
-    else(${CUDA_VERSION} VERSION_GREATER "4.1")      
-
-      set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS1} ${CUDA_NVCC_FLAGS2})          
-
-    endif(${CUDA_VERSION} VERSION_GREATER "4.1")
-  endif(${CUDA_VERSION} VERSION_GREATER "4.99")
+  MESSAGE("Compiling with ${CUDA_NVCC_FLAGS}")
+  
 
 else (CUDA_FOUND)
   MESSAGE("CUDA not found. CUDA components will not be compiled.")
@@ -161,6 +160,7 @@ endif (NOT GTEST_FOUND)
 find_package(Armadillo)
 # check whether ILP64 MKL should is used
 if(ARMADILLO_FOUND)
+    ADD_DEFINITIONS(-DUSE_ARMADILLO)
     set(ARMADILLO_BLAS_LONG_LONG FALSE)
     if(EXISTS "${ARMADILLO_INCLUDE_DIR}/armadillo_bits/config.hpp")
         # Read and parse armadillo config.hpp to find out whether BLAS uses long long
@@ -177,15 +177,32 @@ else()
   message("Armadillo not found. This will disable many toolboxes and gadgets.")
 endif()
 
+
 find_package(HDF5 1.8 COMPONENTS C CXX HL)
+if (HDF5_FOUND)
+message("HDF5 Found")
+else()
+message("HDF5 not found")
+endif()
 find_package(FFTW3 COMPONENTS single double)
+if (FFTW3_FOUND)
+message("FFTW3 Found")
+else()
+message("FFTW3 not found")
+endif()
 find_package(Ismrmrd)
-find_package(XSD)
-find_package(XercesC)
+if (ISMRMRD_FOUND)
+message("ISMRMRD Found")
+else()
+message("ISMRMRD not found")
+endif()
 find_package(MKL)
 find_package(PythonLibs)
 find_package(NumPy)
 find_package(GMatlab)
+if (MATLAB_FOUND)
+    ADD_DEFINITIONS(-DUSE_MATLAB)
+endif (MATLAB_FOUND)
 
 message("Searching for OpenGL, GLEW, GLUT, and Qt. These libraries are only used in a single standalone application and are thus non-essential.")
 if(WIN32)
@@ -200,15 +217,12 @@ find_package(Qt4 4.6)
 add_subdirectory(toolboxes)
 add_subdirectory(apps)
 
-if (ACE_FOUND AND ISMRMRD_FOUND AND XSD_FOUND AND XERCESC_FOUND AND FFTW3_FOUND AND HDF5_FOUND)
+if (ACE_FOUND AND ISMRMRD_FOUND AND FFTW3_FOUND AND HDF5_FOUND)
   add_subdirectory(gadgets)
 else()
-  message("Required dependencies for gadget compilation not found (ACE, ISMRMRD, XSD, XERCESC, FFTW3, HDF5).")
+  message("Required dependencies for gadget compilation not found (ACE, ISMRMRD, FFTW3, HDF5).")
 endif()
 
+add_subdirectory(test)
 add_subdirectory(cmake)
 add_subdirectory(doc)
-
-if (GTEST_FOUND AND ARMADILLO_FOUND AND CUDA_FOUND)
-  add_subdirectory(test)
-endif (GTEST_FOUND AND ARMADILLO_FOUND AND CUDA_FOUND)

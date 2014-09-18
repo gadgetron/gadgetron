@@ -243,7 +243,7 @@ int GtPlusReconJob2DTGadgetCloud::process_config(ACE_Message_Block* mb)
     // generate the destination folder
     if ( !debugFolder_.empty() )
     {
-        GADGET_CHECK_RETURN_FALSE(generateDebugFolderPath(debugFolder_, debugFolder_fullPath_));
+        getDebugFolderPath(debugFolder_, debugFolder_fullPath_, verboseMode_);
     }
     else
     {
@@ -252,7 +252,7 @@ int GtPlusReconJob2DTGadgetCloud::process_config(ACE_Message_Block* mb)
 
     if ( !debugFolder2_.empty() )
     {
-        GADGET_CHECK_RETURN_FALSE(generateDebugFolderPath(debugFolder2_, debugFolder2_fullPath_));
+        getDebugFolderPath(debugFolder2_, debugFolder2_fullPath_, verboseMode_);
     }
     else
     {
@@ -260,7 +260,7 @@ int GtPlusReconJob2DTGadgetCloud::process_config(ACE_Message_Block* mb)
     }
 
     GADGET_START_TIMING_CONDITION(gt_timer1_, "Pre-allocate memory ... ", performTiming_);
-    mem_manager_->increase(2.0*1024*1024*1024);
+    mem_manager_->increase( (size_t)(2.0*1024*1024*1024) );
     GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
 
     worker_grappa_.gtPlus_mem_manager_ = mem_manager_;
@@ -381,7 +381,7 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
             if ( parseSuccess )
             {
                 CloudComputing_ = true;
-                CloudSize_ = gt_cloud_.size();
+                CloudSize_ = (int)gt_cloud_.size();
 
                 if ( CloudSize_ == 0 )
                 {
@@ -441,7 +441,17 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
     workOrder.CloudSize_ = CloudSize_;
     workOrder.gt_cloud_ = gt_cloud_;
 
-    workOrder.data_ = job->kspace;
+    if ( workOrder.acceFactorE1_>1 && workOrder.CalibMode_==Gadgetron::gtPlus::ISMRMRD_interleaved )
+    {
+        Gadgetron::fillSampledLinesUpTo11DArray(job->kspace, workOrder.data_, job->timeStamp);
+    }
+    else
+    {
+        workOrder.data_ = job->kspace;
+    }
+
+    workOrder.time_stamp_ = job->timeStamp;
+    workOrder.physio_time_stamp_ = job->physioTimeStamp;
     workOrder.ref_ = job->ref;
 
     // ---------------------------------------------------------
@@ -461,24 +471,6 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
 
     if ( !debugFolder_fullPath_.empty() ) workflow_.debugFolder_ = debugFolder_fullPath_;
 
-    // set the worker
-    worker_grappa_.performTiming_ = performTiming_;
-    if ( !debugFolder_fullPath_.empty() ) worker_grappa_.debugFolder_ = debugFolder_fullPath_;
-
-    worker_noacceleration_.performTiming_ = performTiming_;
-    if ( !debugFolder_fullPath_.empty() ) worker_noacceleration_.debugFolder_ = debugFolder_fullPath_;
-
-    worker_spirit_.performTiming_ = performTiming_;
-    if ( !debugFolder_fullPath_.empty() ) worker_spirit_.debugFolder_ = debugFolder_fullPath_;
-
-    worker_spirit_L1_ncg_.performTiming_ = performTiming_;
-    if ( !debugFolder_fullPath_.empty() ) worker_spirit_L1_ncg_.debugFolder_ = debugFolder_fullPath_;
-
-    if ( verboseMode_ )
-    {
-        workOrder.print(std::cout);
-    }
-
     // perform the recon
     GADGET_START_TIMING_CONDITION(gt_timer1_, "Recon 2DT workorder on cloud node ... ", performTiming_);
 
@@ -488,12 +480,13 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
     setWorkOrder2DTParameters(para, &workOrder_recon_);
 
     workflow_.workOrder_ = &workOrder_recon_;
+
     if ( verboseMode_ )
     {
         workflow_.workOrder_->print(std::cout);
     }
 
-    workflow_.setDataArray(workOrder.data_);
+    workflow_.setDataArray(workOrder.data_, workOrder.time_stamp_, workOrder.physio_time_stamp_);
 
     if ( workOrder.ref_.get_number_of_elements() > 0 )
     {
@@ -537,6 +530,11 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
         }
     }
 
+    if ( !succeed )
+    {
+        GADGET_ERROR_MSG("GtPlusReconJob2DTGadgetCloud::process(...) failed... ");
+    }
+
     GADGET_STOP_TIMING_CONDITION(gt_timer1_, performTiming_);
 
     if ( !debugFolder2_fullPath_.empty() )
@@ -547,19 +545,40 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
         hoNDArray<GT_Complex8> res = workflow_.res_;
         res.squeeze();
         GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+
+        if ( workflow_.res_second_.get_number_of_elements() > 0 )
+        {
+            hoNDArray<GT_Complex8> res = workflow_.res_second_;
+            res.squeeze();
+
+            std::ostringstream ostr;
+            ostr << "Node_Recon2DT_second_" << *jobID;
+
+            GADGET_EXPORT_ARRAY_COMPLEX(debugFolder2_fullPath_, gt_exporter_, res, ostr.str());
+        }
     }
 
     // clean the kspace and ker and coil map
     job->kspace.clear();
+    job->timeStamp.clear();
+    job->physioTimeStamp.clear();
+    job->ref.clear();
 
     if ( succeed )
     {
         job->complexIm = workflow_.res_;
+        job->complexImSecond = workflow_.res_second_;
+        job->resTimeStampSecond = workflow_.res_time_stamp_second_;
+        job->resPhysioTimeStampSecond = workflow_.res_physio_time_stamp_second_;
     }
     else
     {
         job->complexIm.clear();
         job->res.clear();
+
+        job->complexImSecond.clear();
+        job->resTimeStampSecond.clear();
+        job->resPhysioTimeStampSecond.clear();
     }
 
     // send out the results
@@ -569,12 +588,24 @@ int GtPlusReconJob2DTGadgetCloud::process(Gadgetron::GadgetContainerMessage< int
 
     // reset the status
     workflow_.data_ = NULL;
+    workflow_.time_stamp_ = NULL;
+    workflow_.physio_time_stamp_ = NULL;
     workflow_.ref_ = NULL;
     workflow_.noise_ = NULL;
     workflow_.workOrder_ = NULL;
     // Gadgetron::clear(&workflow_.res_);
 
     m1->release();
+
+    if ( this->verboseMode_ )
+    {
+        std::string procTime;
+        gtPlus_util_.getCurrentMoment(procTime);
+
+        GADGET_MSG("* ============================================================================== *");
+        GADGET_MSG("---> MR recon 2DT gadget cloud, Currnt processing time : " << procTime << " <---");
+        GADGET_MSG("* ============================================================================== *");
+    }
 
     return GADGET_OK;
 }
@@ -624,29 +655,6 @@ sendOutJob(int jobID, GtPlusRecon2DTCloudPackageCPFL* job)
 }
 
 bool GtPlusReconJob2DTGadgetCloud::
-    generateDebugFolderPath(const std::string& debugFolder, std::string& debugFolderPath)
-{
-    debugFolderPath = ACE_OS::getenv("GADGETRON_HOME");
-    debugFolderPath.append("/");
-    debugFolderPath.append(debugFolder);
-    debugFolderPath.append("/");
-    GADGET_CONDITION_MSG(verboseMode_, "Debug folder is " << debugFolderPath);
-    return true;
-}
-
-void GtPlusReconJob2DTGadgetCloud::
-    getCurrentMoment(std::string& procTime)
-{
-    char timestamp[100];
-    time_t mytime;
-    struct tm *mytm;
-    mytime=time(NULL);
-    mytm=localtime(&mytime);
-    strftime(timestamp, sizeof(timestamp),"_%a_%d_%b_%Y_%H_%M_%S",mytm);
-    procTime = timestamp;
-}
-
-bool GtPlusReconJob2DTGadgetCloud::
 generateKSpaceFilter(WorkOrderType& workOrder)
 {
     try
@@ -670,21 +678,21 @@ generateKSpaceFilter(WorkOrderType& workOrder)
         if ( RO>1 && filterRO_type_ != ISMRMRD_FILTER_NONE )
         {
             workOrder.filterRO_.create(RO);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(RO, workOrder.filterRO_, filterRO_type_, filterRO_sigma_, std::ceil(filterRO_width_*RO)));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(RO, workOrder.start_RO_, workOrder.end_RO_, workOrder.filterRO_, filterRO_type_, filterRO_sigma_, (size_t)std::ceil(filterRO_width_*RO)));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterRO_, "filterRO");
         }
 
         if ( E1>1 && filterE1_type_ != ISMRMRD_FILTER_NONE )
         {
             workOrder.filterE1_.create(E1);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E1, workOrder.filterE1_, filterE1_type_, filterE1_sigma_, std::ceil(filterE1_width_*E1)));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E1, workOrder.start_E1_, workOrder.end_E1_, workOrder.filterE1_, filterE1_type_, filterE1_sigma_, (size_t)std::ceil(filterE1_width_*E1)));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE1_, "filterE1");
         }
 
         if ( E2>1 && filterE2_type_ != ISMRMRD_FILTER_NONE )
         {
             workOrder.filterE2_.create(E2);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E2, workOrder.filterE2_, filterE2_type_, filterE2_sigma_, std::ceil(filterE2_width_*E2)));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(E2, workOrder.start_E2_, workOrder.end_E2_, workOrder.filterE2_, filterE2_type_, filterE2_sigma_, (size_t)std::ceil(filterE2_width_*E2)));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE2_, "filterE2");
         }
 
@@ -711,7 +719,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
             if ( RO_ref > 1 && filterRO_ref_type_ != ISMRMRD_FILTER_NONE )
             {
                 workOrder.filterRO_ref_.create(RO_ref);
-                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO_ref, startRO, endRO, workOrder.filterRO_ref_, filterRO_ref_type_, filterRO_ref_sigma_, std::ceil(filterRO_ref_width_*RO_ref)));
+                GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(RO_ref, startRO, endRO, workOrder.filterRO_ref_, filterRO_ref_type_, filterRO_ref_sigma_, (size_t)std::ceil(filterRO_ref_width_*RO_ref)));
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterRO_ref_, "filterRO_ref");
             }
 
@@ -721,7 +729,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
                 {
                     size_t len = endE1-startE1+1;
                     workOrder.filterE1_ref_.create(len);
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, workOrder.filterE1_ref_, filterE1_ref_type_, filterE1_ref_sigma_, std::ceil(filterE1_ref_width_*len)));
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, 0, len-1, workOrder.filterE1_ref_, filterE1_ref_type_, filterE1_ref_sigma_, (size_t)std::ceil(filterE1_ref_width_*len)));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE1_ref_, "filterE1_ref");
                 }
 
@@ -729,7 +737,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
                 {
                     size_t len = endE2-startE2+1;
                     workOrder.filterE2_ref_.create(len);
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, workOrder.filterE2_ref_, filterE2_ref_type_, filterE2_ref_sigma_, std::ceil(filterE2_ref_width_*len)));
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilter(len, 0, len-1, workOrder.filterE2_ref_, filterE2_ref_type_, filterE2_ref_sigma_, (size_t)std::ceil(filterE2_ref_width_*len)));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE2_ref_, "filterE2_ref");
                 }
             }
@@ -740,7 +748,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
                 {
                     size_t len = E1_ref;
                     workOrder.filterE1_ref_.create(len);
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(len, startE1, endE1, workOrder.filterE1_ref_, filterE1_ref_type_, filterE1_ref_sigma_, std::ceil(filterE1_ref_width_*len)));
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(len, startE1, endE1, workOrder.filterE1_ref_, filterE1_ref_type_, filterE1_ref_sigma_, (size_t)std::ceil(filterE1_ref_width_*len)));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE1_ref_, "filterE1_ref");
                 }
 
@@ -748,7 +756,7 @@ generateKSpaceFilter(WorkOrderType& workOrder)
                 {
                     size_t len = E2_ref;
                     workOrder.filterE2_ref_.create(len);
-                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(len, startE2, endE2, workOrder.filterE2_ref_, filterE2_ref_type_, filterE2_ref_sigma_, std::ceil(filterE2_ref_width_*len)));
+                    GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateSymmetricFilterForRef(len, startE2, endE2, workOrder.filterE2_ref_, filterE2_ref_type_, filterE2_ref_sigma_, (size_t)std::ceil(filterE2_ref_width_*len)));
                     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE2_ref_, "filterE2_ref");
                 }
             }
@@ -758,21 +766,21 @@ generateKSpaceFilter(WorkOrderType& workOrder)
         if ( RO>1 && workOrder.start_RO_>=0 && workOrder.end_RO_>0 )
         {
             workOrder.filterRO_partialfourier_.create(RO);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(RO, workOrder.start_RO_, workOrder.end_RO_, workOrder.filterRO_partialfourier_, filterRO_pf_type_, std::ceil(filterRO_pf_width_*RO), filterRO_pf_densityComp_));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(RO, workOrder.start_RO_, workOrder.end_RO_, workOrder.filterRO_partialfourier_, filterRO_pf_type_, (size_t)std::ceil(filterRO_pf_width_*RO), filterRO_pf_densityComp_));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterRO_partialfourier_, "filterRO_partialfourier");
         }
 
         if ( E1>1 && workOrder.start_E1_>=0 && workOrder.end_E1_>0 )
         {
             workOrder.filterE1_partialfourier_.create(E1);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E1, workOrder.start_E1_, workOrder.end_E1_, workOrder.filterE1_partialfourier_, filterE1_pf_type_, std::ceil(filterE1_pf_width_*E1), filterE1_pf_densityComp_));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E1, workOrder.start_E1_, workOrder.end_E1_, workOrder.filterE1_partialfourier_, filterE1_pf_type_, (size_t)std::ceil(filterE1_pf_width_*E1), filterE1_pf_densityComp_));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE1_partialfourier_, "filterE1_partialfourier");
         }
 
         if ( E2>1 && workOrder.start_E2_>=0 && workOrder.end_E2_>0 )
         {
             workOrder.filterE2_partialfourier_.create(E2);
-            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E2, workOrder.start_E2_, workOrder.end_E2_, workOrder.filterE2_partialfourier_, filterE2_pf_type_, std::ceil(filterE2_pf_width_*E2), filterE2_pf_densityComp_));
+            GADGET_CHECK_RETURN_FALSE(gtPlus_util_.generateAsymmetricFilter(E2, workOrder.start_E2_, workOrder.end_E2_, workOrder.filterE2_partialfourier_, filterE2_pf_type_, (size_t)std::ceil(filterE2_pf_width_*E2), filterE2_pf_densityComp_));
             GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_fullPath_, gt_exporter_, workOrder.filterE2_partialfourier_, "filterE2_partialfourier");
         }
     }

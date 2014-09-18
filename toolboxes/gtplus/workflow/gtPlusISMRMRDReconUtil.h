@@ -4,7 +4,7 @@
             The ISMRMRD format is fully supported in this toolbox.
 
             Other functinalities implemented here include:
-            Karhunen-Loève Transform (KLT) or Principle Component Analysis (PCA)
+            Karhunen-Loï¿½ve Transform (KLT) or Principle Component Analysis (PCA)
             KSpace filter
             Several MR sensitivity map estimation methods
 
@@ -16,13 +16,15 @@
 
                 Inati SJ, Hansen MS, Kellman P. 
                 A solution to the phase problem in adaptive coil combination. 
-                In: ISMRM proceeding; 20–26 april; salt lake city, utah, USA. ; 2013. 2672.
+                In: ISMRM proceeding; april; salt lake city, utah, USA. ; 2013. 2672.
 
                 Kellman P, McVeigh ER. 
                 Image reconstruction in SNR units: A general method for SNR measurement. 
                 Magnetic Resonance in Medicine 2005;54(6):1439-1447.
 
-            ISMRMRD_SOUHEIL_ITER coil map estimation is not implemented yet.
+            ISMRMRD_SOUHEIL_ITER coil map estimation is based on:
+
+                Inati SJ, Hansen MS, Kellman P. Unpublished algorithm.
 
     \author Hui Xue
 */
@@ -32,6 +34,7 @@
 #include "GtPlusExport.h"
 
 #include "ismrmrd.h"
+#include "ismrmrd_meta.h"
 
 #include "boost/tuple/tuple.hpp"
 #include "boost/tuple/tuple_comparison.hpp"
@@ -44,12 +47,14 @@
 #include "ho6DArray.h"
 #include "ho7DArray.h"
 #include "hoMatrix.h"
+#include "hoMatrix_util.h"
 #include "hoNDFFT.h"
 #include "hoNDArray_utils.h"
-#include "hoNDArray_blas.h"
-#include "hoNDArray_elemwise.h"
-#include "hoNDArray_operators.h"
-#include "util/gtPlusIOAnalyze.h"
+#include "hoNDArray_math_util.h"
+#include "hoNDImage_util.h"
+#include "hoNDArray_reductions.h"
+#include "hoMatrix_util.h"
+#include "gtPlusIOAnalyze.h"
 #include "hoNDArrayMemoryManaged.h"
 #include "GadgetronTimer.h"
 
@@ -61,85 +66,210 @@
     #include "GPUTimer.h"
     #include "b1_map.h"
     #include "cudaDeviceManager.h"
+    #include "cuda_runtime_api.h"
     #include "cuNDArray_elemwise.h"
 #endif // USE_CUDA
 
+#include "GtPlusDefinition.h"
+
+namespace Gadgetron {
+
+    /**
+    * @brief sum over last dimension of an array
+             e.g. for a 4D array, sum over the 4th dimension and get a 3D array
+    */
+    template<typename T> EXPORTGTPLUS bool sumOverLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r); // 
+
+    /**
+    * @brief sum over the second last dimension of an array
+             e.g. for a 4D array, sum over the 3rd dimension and get a 3D array
+    */
+    template<typename T> EXPORTGTPLUS bool sumOverSecondLastDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /**
+    * @brief multiply over the last dimension of y by x
+             e.g. x is 3D and y is 4D array, r(:,:,:,n) = y(:,:,:,n) .* x
+    */
+    template<typename T> EXPORTGTPLUS bool multiplyOverLastDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+
+    /**
+    * @brief divide the last dimension of y by x
+             e.g. x is 3D and y is 4D array, r(:,:,:,n) = y(:,:,:,n) ./ x
+    */
+    template<typename T> EXPORTGTPLUS bool divideOverLastDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+
+    /**
+    * @brief sum over the 1st dimension of an array
+             e.g. for a 2D array, sum over the 1st dimension and get an array of [1 E1]
+    */
+    template<typename T> EXPORTGTPLUS bool sumOver1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /**
+    * @brief sum over the 2nd dimension of an array
+             e.g. for a 3D array, sum over the 2nd dimension and get an array of [RO 1 CHA]
+    */
+    template<typename T> EXPORTGTPLUS bool sumOver2ndDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /**
+    * @brief sum over the 3rd dimension of an array
+             e.g. for a 4D array, sum over the 3rd dimension and get an array of [RO E1 1 N]
+    */
+    template<typename T> EXPORTGTPLUS bool sumOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /**
+    * @brief sum over the 4th dimension of an array
+             e.g. for a 5D array [RO E1 CHA N S], sum over the 4th dimension and get an array of [RO E1 CHA 1 S]
+    */
+    template<typename T> EXPORTGTPLUS bool sumOver4thDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /**
+    * @brief sum over the 5th dimension of an array
+             e.g. for a 6D array, sum over the 5th dimension and get an array [RO E1 CHA N 1 P]
+    */
+    template<typename T> EXPORTGTPLUS bool sumOver5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /**
+    * @brief multiply over the 3rd/4th/5th dimension of y by x
+             e.g. x is 3D and y is 4D array, r(:,:,n,:) = y(:,:,n,:) .* x
+             e.g. x is 4D and y is 5D array, r(:,:,:,n,:) = y(:,:,:,n,:) .* x
+             e.g. x is 5D and y is 6D array, r(:,:,:,:, n,:) = y(:,:,:,:,n,:) .* x
+    */
+    template<typename T> EXPORTGTPLUS bool multiplyOver3rdDimension(const hoNDArray<T>& x3D, const hoNDArray<T>& y4D, hoNDArray<T>& r);
+    template<typename T> EXPORTGTPLUS bool multiplyOver4thDimension(const hoNDArray<T>& x4D, const hoNDArray<T>& y5D, hoNDArray<T>& r);
+    template<typename T> EXPORTGTPLUS bool multiplyOver5thDimension(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+
+    /**
+    * @brief multiply over the 4th/5th dimension of y by x except for dimension index n
+             e.g. x is 4D and y is 5D array, r(:,:,:,t,:) = y(:,:,:,t,:) .* x, except for r(:,:,:,n,:) = y(:,:,:,n,:)
+             e.g. x is 5D and y is 6D array, r(:,:,:,:,t,:) = y(:,:,:,:,t,:) .* x, except for r(:,:,:,:,n,:) = y(:,:,:,:,n,:)
+    */
+    template<typename T> EXPORTGTPLUS bool multiplyOver4thDimensionExcept(const hoNDArray<T>& x4D, const hoNDArray<T>& y5D, size_t n, hoNDArray<T>& r, bool copyY2R=true);
+    template<typename T> EXPORTGTPLUS bool multiplyOver5thDimensionExcept(const hoNDArray<T>& x, const hoNDArray<T>& y, size_t n, hoNDArray<T>& r, bool copyY2R=true);
+
+    /**
+    * @brief r = x add/multiply/divide y for every part of y
+    */
+    template<typename T> EXPORTGTPLUS bool multipleAdd(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+    template<typename T> EXPORTGTPLUS bool multipleMultiply(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+    template<typename T> EXPORTGTPLUS bool multipleDivide(const hoNDArray<T>& x, const hoNDArray<T>& y, hoNDArray<T>& r);
+
+    /**
+    * @brief copy the sub-array of x to r
+             the sub-array is defined by its starting index and array size
+    */
+    template<typename T> EXPORTGTPLUS bool cropUpTo11DArray(const hoNDArray<T>& x, hoNDArray<T>& r, const std::vector<size_t>& startND, std::vector<size_t>& size);
+
+    /**
+    * @brief set the sub-array of r from x
+             the sub-array is defined by its starting index and array size
+    */
+    template<typename T> EXPORTGTPLUS bool setSubArrayUpTo11DArray(const hoNDArray<T>& x, hoNDArray<T>& r, const std::vector<size_t>& startND, std::vector<size_t>& size);
+
+    /**
+    * @brief extract sampled lines from an NDArray
+             timeStamp indicates sampled lines; -1 for unsampled lines
+             x : [Ro E1 Cha Slice E2 Con Phase Rep Set Seg AVE]
+             timeStamp: [1 E1 1 Slice E2 Con Phase Rep Set Seg AVE]
+    */
+    template<typename T> EXPORTGTPLUS bool extractSampledLinesUpTo11DArray(const hoNDArray<T>& x, hoNDArray<T>& r, const hoNDArray<float>& timeStamp, double acceFactorE1, double acceFactorE2);
+
+    /**
+    * @brief fill sampled lines to an NDArray
+             timeStamp indicates sampled lines; -1 for unsampled lines
+    */
+    template<typename T> EXPORTGTPLUS bool fillSampledLinesUpTo11DArray(const hoNDArray<T>& x, hoNDArray<T>& r, const hoNDArray<float>& timeStamp);
+
+    /**
+    * @brief copy the sub-array of x to r only along the 3rd dimensions
+             e.g. x is [RO E1 D3 ...], r will be [RO E1 end-start+1 ... ]
+    */
+    template<typename T> EXPORTGTPLUS bool cropOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r, size_t start, size_t end);
+
+    /**
+    * @brief set the sub-array of r from x only along the 3rd dimensions
+             e.g. r(:, :, start:end, :, ...) will be replaced by x
+    */
+    template<typename T> EXPORTGTPLUS bool setSubArrayOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r, size_t start, size_t end);
+
+    /**
+    * @brief compute the standard deviation along the 3rd dimension, if NMinusOne == true, divided by N-1; otherwise, divided by N
+    */
+    template<typename T> EXPORTGTPLUS bool stdOver3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& std, bool NMinusOne);
+
+    /**
+    * @brief permute E2 dimension of x : [RO E1 CHA SLC E2 ...] to r: [RO E1 E2 CHA SLC ...]
+    */
+    template<typename T> EXPORTGTPLUS bool permuteE2To3rdDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /**
+    * @brief permute E2 dimension of x : [RO E1 E2 CHA SLC ...] to r: [RO E1 CHA SLC E2 ...]
+    */
+    template<typename T> EXPORTGTPLUS bool permuteE2To5thDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /**
+    * @brief permute RO dimension of x to the 3rd dimension
+             x : [RO E1 E2 ...], r: [E1 E2 RO ...]
+    */
+    template<typename T> EXPORTGTPLUS bool permuteROTo3rdDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /**
+    * @brief permute RO dimension of x to the 4th dimension
+             x : [RO E1 E2 CHA ...], r: [E1 E2 CHA RO ...]
+    */
+    template<typename T> EXPORTGTPLUS bool permuteROTo4thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /**
+    * @brief permute RO dimension of x back to the 1st dimension
+             x : [E1 E2 CHA RO ...], r: [RO E1 E2 CHA ...]
+    */
+    template<typename T> EXPORTGTPLUS bool permuteROTo1stDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /**
+    * @brief permute the 3rd dimension of x to the 1st dimension
+             x : [RO E1 E2 CHA ...], r: [E2 RO E1 CHA ...]
+    */
+    template<typename T> EXPORTGTPLUS bool permute3rdDimensionTo1stDimension(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /**
+    * @brief permute RO dimension of x to the 5th dimension
+             x : [RO E1 E2 srcCHA dstCHA ...], r: [E1 E2 srcCHA dstCHA RO ...]
+    */
+    template<typename T> EXPORTGTPLUS bool permuteROTo5thDimensionFor3DRecon(const hoNDArray<T>& x, hoNDArray<T>& r);
+
+    /**
+    * @brief Image domain unwrapping for 2D
+             x : [RO E1 srcCHA], ker [RO E1 srcCHA dstCHA]
+             buf is a buffer for computer, need to be pre-allocated [RO E1 srcCHA], y [RO E1 dstCHA]
+             for the sake of speed, no check is made in this function
+    */
+    template<typename T> EXPORTGTPLUS bool imageDomainUnwrapping2D(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y);
+
+    /**
+    * @brief Image domain unwrapping for 2D
+             x : [RO E1 srcCHA N], ker [RO E1 srcCHA dstCHA 1 or N], 
+             buf is a buffer for computer, need to be pre-allocated [RO E1 srcCHA], y [RO E1 dstCHA N]
+             for the sake of speed, no check is made in this function
+    */
+    template<typename T> EXPORTGTPLUS bool imageDomainUnwrapping2DT(const hoNDArray<T>& x, const hoNDArray<T>& ker, hoNDArray<T>& buf, hoNDArray<T>& y);
+
+    /**
+    * @brief compute periodic boundary values for an array
+             x : [N 1] the data point location, y[N M] data point values at x
+             r : [N+2 M], the data point values with computed boundaries
+    */
+    template<typename CoordType, typename T> EXPORTGTPLUS bool computePeriodicBoundaryValues(const hoNDArray<CoordType>& x, const hoNDArray<T>& y, CoordType start, CoordType end, hoNDArray<CoordType>& vx, hoNDArray<T>& vy);
+}
+
 namespace Gadgetron { namespace gtPlus {
 
-// define the dimensions of ISMRMRD
-enum ISMRMRDDIM
-{
-    DIM_ReadOut = 32,
-    DIM_Encoding1,
-    DIM_Channel,
-    DIM_Slice,
-    DIM_Encoding2,
-    DIM_Contrast,
-    DIM_Phase,
-    DIM_Repetition,
-    DIM_Set,
-    DIM_Segment,
-    DIM_Average,
-    DIM_other1,
-    DIM_other2,
-    DIM_other3,
-    DIM_NONE
-};
-
-// define the reconstruction algorithms
-enum ISMRMRDALGO
-{
-    ISMRMRD_GRAPPA = 64,
-    ISMRMRD_SENSE,
-    ISMRMRD_SPIRIT,
-    ISMRMRD_L1SPIRIT,
-    ISMRMRD_SOFTSENSE,
-    ISMRMRD_L1SOFTSENSE,
-    ISMRMRD_NONE
-};
-
-// define the coil sensitivity map estimation algorithms
-enum ISMRMRDCOILMAPALGO
-{
-    ISMRMRD_SOUHEIL = 96,
-    ISMRMRD_SOUHEIL_ITER
-};
-
-// define the partial fourier/asymmetric echo handling algorithms
-enum ISMRMRDPFALGO
-{
-    ISMRMRD_PF_HOMODYNE = 128,          // iterative homodyne
-    ISMRMRD_PF_POCS,                    // POCS
-    ISMRMRD_PF_FENGHUANG,               // convolution based method
-    ISMRMRD_PF_ZEROFILLING_FILTER,      // zero-filling with partial fourier filter
-    ISMRMRD_PF_ZEROFILLING              // zero-filling without partial fourier filter
-};
-
-// define the kspace filter type
-enum ISMRMRDKSPACEFILTER
-{
-    ISMRMRD_FILTER_GAUSSIAN = 160,
-    ISMRMRD_FILTER_HANNING,
-    ISMRMRD_FILTER_TUKEY,
-    ISMRMRD_FILTER_TAPERED_HANNING,
-    ISMRMRD_FILTER_NONE
-};
-
-// define the calibration mode of ISMRMRD
-enum ISMRMRDCALIBMODE
-{
-    ISMRMRD_embedded = 256,
-    ISMRMRD_interleaved,
-    ISMRMRD_separate,
-    ISMRMRD_external,
-    ISMRMRD_other,
-    ISMRMRD_noacceleration
-};
+// ================================================================================================== //
 
 template <typename T> 
 class gtPlusISMRMRDReconUtil
 {
 public:
+
+    typedef typename realType<T>::Type value_type;
 
     gtPlusISMRMRDReconUtil();
     virtual ~gtPlusISMRMRDReconUtil();
@@ -258,7 +388,7 @@ public:
     // symmetric filter, used for image filtering
     // sigma: for Gaussian, in the unit of pixel
     // width: for Tukey filter etc., the length of transition band
-    bool generateSymmetricFilter(size_t len, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, double sigma, size_t width);
+    bool generateSymmetricFilter(size_t len, size_t start, size_t end, hoNDArray<T>& filter, ISMRMRDKSPACEFILTER filterType, double sigma, size_t width);
 
     // asymmetric filter, used for partial fourier/asymmetric echo filtering
     // start, end: the data range
@@ -370,8 +500,14 @@ public:
     // get the partial fourier/asymmetric echo handling algorithm from name
     ISMRMRDPFALGO getISMRMRDPartialFourierReconAlgoFromName(const std::string& name);
 
+    // get the partial fourier/asymmetric echo handling algorithm name from algorithm
+    std::string getNameFromISMRMRDPartialFourierReconAlgo(ISMRMRDPFALGO algo);
+
     // get the kspace filter algorithm from name
     ISMRMRDKSPACEFILTER getISMRMRDKSpaceFilterFromName(const std::string& name);
+
+    // get retro-gating interpolation method from name
+    ISMRMRDINTERPRETROGATING getISMRMRDRetroGatingInterpFromName(const std::string& name);
 
     // extract sub array for a dimension
     // if lessEqual ==  true, [0:value] are extracted for dim
@@ -407,6 +543,15 @@ public:
     void findStartEndROAfterZeroFilling(size_t centre_column, size_t samples_zerofilled, int& startRO, int& endRO);
 
     // ------------------------------------------------------------------------
+    // ISMRMRD image header
+    // ------------------------------------------------------------------------
+    // set the meta attributes from the ISMRMRD image header
+    bool setMetaAttributesFromImageHeaderISMRMRD(const ISMRMRD::ImageHeader& imgHeader, ISMRMRD::MetaContainer& attrib);
+
+    // compute the image geometry for two acquisition header
+    bool setImageHeaderISMRMRDFromMetaAttributes(const ISMRMRD::MetaContainer& attrib, ISMRMRD::ImageHeader& imgHeader);
+
+    // ------------------------------------------------------------------------
     // utility functions for various things
     // ------------------------------------------------------------------------
     // jobSchedule : for every valid device, it records the job allocated to it
@@ -416,6 +561,60 @@ public:
         bool cudaJobSplitter(const std::vector<unsigned int>& jobIDs, size_t jobSize, size_t minimalMemoryForValidDevice, std::vector< std::pair<unsigned int, std::vector<std::vector<unsigned int> > > >& jobSchedule);
         bool cudaJobSplitter(unsigned int numOfJobs, size_t jobSize, size_t minimalMemoryForValidDevice, std::vector< std::pair<unsigned int, std::vector<std::vector<unsigned int> > > >& jobSchedule);
     #endif // USE_CUDA
+
+    // load two hoNDArray and compute differences
+    void compareAgainstGroundTruthArray(const std::string& gt_filename, const hoNDArray<T>& x, typename realType<T>::Type& normDiff, typename realType<T>::Type& maxNormDiff);
+    void compareAgainstGroundTruthArray(const hoNDArray<T>& gt, const hoNDArray<T>& x, typename realType<T>::Type& normDiff, typename realType<T>::Type& maxNormDiff);
+
+    template <typename T2, unsigned int D> void compareAgainstGroundTruthImage(const std::string& gt_filename, const hoNDImage<T2, D>& x, typename realType<T2>::Type& normDiff, typename realType<T2>::Type& maxNormDiff)
+    {
+        hoNDImage<T2, D> gt;
+
+        gtPlusIOAnalyze gt_io;
+        gt_io.importImage(gt, gt_filename);
+
+        compareAgainstGroundTruthImage(gt, x, normDiff, maxNormDiff);
+    }
+
+    template <typename T2, unsigned int D> void compareAgainstGroundTruthImage(const hoNDImage<T2, D>& gt, const hoNDImage<T2, D>& x, typename realType<T2>::Type& normDiff, typename realType<T2>::Type& maxNormDiff)
+    {
+        hoNDImage<T2, D> diff(x);
+        Gadgetron::subtract(gt, x, diff);
+
+        hoNDImage<T2, D> gtEps(gt);
+        Gadgetron::addEpsilon(gtEps);
+
+        Gadgetron::norm2(diff, normDiff);
+
+        Gadgetron::divide(diff, gtEps, diff);
+
+        T2 maxV;
+        size_t ind;
+        Gadgetron::maxAbsolute(diff, maxV, ind);
+        maxNormDiff = std::abs(maxV);
+    }
+
+    void getCurrentMoment(std::string& procTime)
+    {
+        char timestamp[100];
+        time_t mytime;
+        struct tm *mytm;
+        mytime=time(NULL);
+        mytm=localtime(&mytime);
+        strftime(timestamp, sizeof(timestamp),"%a, %b %d %Y, %H:%M:%S",mytm);
+        procTime = timestamp;
+    }
+
+    void getCurrentMomentForFileName(std::string& procTime)
+    {
+        char timestamp[100];
+        time_t mytime;
+        struct tm *mytm;
+        mytime=time(NULL);
+        mytm=localtime(&mytime);
+        strftime(timestamp, sizeof(timestamp),"%a_%b_%d_%Y_%H_%M_%S",mytm);
+        procTime = timestamp;
+    }
 };
 
 // utility functions only meaningful for complex data type
@@ -423,6 +622,8 @@ template <typename T>
 class gtPlusISMRMRDReconUtilComplex : public gtPlusISMRMRDReconUtil<T>
 {
 public:
+
+    typedef typename realType<T>::Type value_type;
 
     gtPlusISMRMRDReconUtilComplex();
     virtual ~gtPlusISMRMRDReconUtilComplex();
@@ -502,6 +703,14 @@ public:
 
     // data: [RO E1 E2 CHA], this functions uses true 3D data correlation matrix
     bool coilMap3DNIHInner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t power);
+
+    // the Souheil iteration method
+    // data: [RO E1 CHA], only 3D array
+    bool coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t iterNum, typename realType<T>::Type thres);
+    bool coilMap2DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, const hoNDArray<T>& kerKSpace, size_t iterNum);
+
+    // data: [RO E1 E2 CHA], true 3D coil map estimation
+    bool coilMap3DNIH2Inner(const hoNDArray<T>& data, hoNDArray<T>& coilMap, size_t ks, size_t kz, size_t iterNum, typename realType<T>::Type thres);
 
     // sum of square coil combination
     // data: in image domain, at least 3D [RO E1 CHA]

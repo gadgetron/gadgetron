@@ -3,6 +3,8 @@
 
 #include "ace/SOCK_Acceptor.h"
 #include "ace/Reactor.h"
+#include <string>
+#include <map>
 
 namespace Gadgetron{
 class GadgetServerAcceptor : public ACE_Event_Handler
@@ -19,6 +21,9 @@ public:
 
   virtual int handle_close (ACE_HANDLE handle,
                             ACE_Reactor_Mask close_mask);
+
+  std::map<std::string, std::string> global_gadget_parameters_;
+
 protected:
   ACE_SOCK_Acceptor acceptor_;
 };
