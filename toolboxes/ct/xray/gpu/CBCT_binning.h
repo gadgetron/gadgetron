@@ -9,6 +9,7 @@
 #include <hdf5.h>
 #include <hdf5_hl.h>
 #include <vector>
+#include <set>
 #include <stdexcept>
 #include <boost/iterator/counting_iterator.hpp>
 
@@ -85,6 +86,17 @@ namespace Gadgetron {
     {
       binning_.push_back( std::vector<unsigned int>( boost::counting_iterator<unsigned int>(0),
                                                      boost::counting_iterator<unsigned int>(num_projections) ));
+    }
+
+    CBCT_binning get_3d_binning(){
+    	std::vector<std::vector<unsigned int> > bin_3d;
+    	std::set<unsigned int> uniques;
+    	for (int i = 0; i < binning_.size(); i++){
+    		uniques.insert(binning_[i].begin(),binning_[i].end());
+    	}
+
+    	bin_3d.push_back(std::vector<unsigned int>(uniques.begin(),uniques.end()));
+    	return CBCT_binning(bin_3d);
     }
 
     void load( std::string filename )

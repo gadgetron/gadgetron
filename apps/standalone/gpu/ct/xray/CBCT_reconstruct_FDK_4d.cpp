@@ -60,13 +60,6 @@ int main(int argc, char** argv)
 		acquisition->downsample(num_downsamples);
 	}
 
-	// Load the binning data
-	//
-
-	boost::shared_ptr<CBCT_binning> binning( new CBCT_binning() );
-	binning->set_as_default_3d_bin(acquisition->get_projections()->get_size(2));
-	binning->print();
-
 	// Configuring...
 	//
 
@@ -91,6 +84,16 @@ int main(int argc, char** argv)
 	bool use_fbp_os = parms.get_parameter('O')->get_int_value();
 	float half_scan_max_angle = parms.get_parameter('H')->get_float_value();
 	unsigned int projections_per_batch = parms.get_parameter('P')->get_int_value();
+	boost::shared_ptr<CBCT_binning> ps_bd4d(  new CBCT_binning());
+
+	std::cout << "binning data file: " << binning_filename << std::endl;
+	ps_bd4d->load(binning_filename);
+	ps_bd4d->print(std::cout);
+
+	// Load the binning data
+		//
+
+		boost::shared_ptr<CBCT_binning> binning( new CBCT_binning(ps_bd4d->get_3d_binning()) );
 
 	// Allocate array to hold the result
 	//
@@ -128,11 +131,7 @@ int main(int argc, char** argv)
 	 * doi: 10.1109/TBME.1981.324785
 	 */
 
-	boost::shared_ptr<CBCT_binning> ps_bd4d(  new CBCT_binning());
 
-	std::cout << "binning data file: " << binning_filename << std::endl;
-	ps_bd4d->load(binning_filename);
-	ps_bd4d->print(std::cout);
 
 	size_t numBins = ps_bd4d->get_number_of_bins();
 	is_dims.push_back(numBins);
