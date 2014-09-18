@@ -116,7 +116,7 @@ static void cb_ifft( cuNDArray<float_complext> *in_data, cuNDArray<float> *out_d
 // and (for the implementation) "Parker weights revisited", Wesarg et al, Med. Phys. 29(3) 2002.
 //
 
-static const float epsilon = 0.001f;
+static __device__ const float epsilon = 0.001f;
 
 static __inline__ __device__ float S( float beta )
 {

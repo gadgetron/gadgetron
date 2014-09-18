@@ -141,6 +141,9 @@ main(int argc, char** argv)
   E->set_domain_dimensions(&is_dims);
   E->set_codomain_dimensions(ps->get_projections()->get_dimensions().get());
 
+  if (E->get_use_offset_correction())
+    	E->offset_correct(&projections);
+
   // Define regularization operator
   boost::shared_ptr< hoCuIdentityOperator<float> >
     I( new hoCuIdentityOperator<float>() );
