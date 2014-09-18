@@ -54,7 +54,7 @@ int PartialFourierAdjustROGadget
         GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
-    bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
+    bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
     size_t channels = m1->getObjectPtr()->active_channels;
     size_t samples = m1->getObjectPtr()->number_of_samples;
     size_t centre_column = m1->getObjectPtr()->center_sample;
