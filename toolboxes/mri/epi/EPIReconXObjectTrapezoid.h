@@ -22,7 +22,7 @@ template <typename T> class EPIReconXObjectTrapezoid : public EPIReconXObject<T>
 
   virtual int computeTrajectory();
 
-  virtual int apply(const ISMRMRD::AcquisitionHeader &hdr_in, const hoNDArray <T> &data_in, 
+  virtual int apply(ISMRMRD::AcquisitionHeader &hdr_in, hoNDArray <T> &data_in, 
 		    ISMRMRD::AcquisitionHeader &hdr_out, hoNDArray <T> &data_out);
 
   using EPIReconXObject<T>::filterPos_;
@@ -147,7 +147,7 @@ template <typename T> int EPIReconXObjectTrapezoid<T>::computeTrajectory()
 }
 
 
-template <typename T> int EPIReconXObjectTrapezoid<T>::apply(const ISMRMRD::AcquisitionHeader &hdr_in, const hoNDArray <T> &data_in, 
+template <typename T> int EPIReconXObjectTrapezoid<T>::apply(ISMRMRD::AcquisitionHeader &hdr_in, hoNDArray <T> &data_in, 
 		    ISMRMRD::AcquisitionHeader &hdr_out, hoNDArray <T> &data_out)
 {
   if (!operatorComputed_) {
@@ -217,7 +217,7 @@ template <typename T> int EPIReconXObjectTrapezoid<T>::apply(const ISMRMRD::Acqu
   arma::Mat<typename stdType<T>::Type> adata_out = as_arma_matrix(&data_out);
 
   // Apply it
-  if (ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_REVERSE).isSet(hdr_in.flags)) {
+  if (hdr_in.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_REVERSE)) {
     // Negative readout
     adata_out = as_arma_matrix(&Mneg_) * adata_in;
   } else {

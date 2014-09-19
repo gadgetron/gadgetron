@@ -4,7 +4,7 @@
 #include "DicomFinishAttribGadget.h"
 #include "GtPlusDefinition.h"
 #include "gtPlusIOAnalyze.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 // Used for windowing using short ints
 #define PIX_RANGE_MAX    (+32767)
@@ -682,9 +682,9 @@ int DicomFinishAttribGadget<T>::process(GadgetContainerMessage<ISMRMRD::ImageHea
     /* release the old data array */
     m2->cont(NULL);
     m2->release();
-    /* update the image_data_type.
+    /* update the image data_type.
      * There is currently no SIGNED SHORT type so this will have to suffice */
-    m1->getObjectPtr()->image_data_type = ISMRMRD::DATA_UNSIGNED_SHORT;
+    m1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_USHORT;
 
     unsigned int BUFSIZE = 1024;
     char *buf = new char[BUFSIZE];

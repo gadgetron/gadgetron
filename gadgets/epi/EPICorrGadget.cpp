@@ -1,6 +1,6 @@
 #include "EPICorrGadget.h"
 #include "Gadgetron.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 namespace Gadgetron{
 
@@ -83,7 +83,7 @@ int EPICorrGadget::process(
   arma::cx_fmat adata = as_arma_matrix(m2->getObjectPtr());
 
   // Check to see if the data is a navigator line or an imaging line
-  if (ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_PHASECORR_DATA).isSet(hdr.flags)) {
+  if (hdr.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_PHASECORR_DATA)) {
 
     // Increment the navigator counter
     navNumber_ += 1;
@@ -103,7 +103,7 @@ int EPICorrGadget::process(
       corrneg_.set_size( adata.n_rows );
       navdata_.set_size( adata.n_rows, hdr.active_channels, numNavigators_);
       // Store the first navigator's polarity
-      startNegative_ = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_REVERSE).isSet(hdr.flags);
+      startNegative_ = hdr.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_REVERSE);
     }
 
     // Store the navigator data
@@ -156,13 +156,13 @@ int EPICorrGadget::process(
 
     // Apply the correction
     // We use the armadillo notation that loops over all the columns
-    if (ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_REVERSE).isSet(hdr.flags)) {
+    if (hdr.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_REVERSE)) {
       // Negative readout
       for (int p=0; p<adata.n_cols; p++) {
     adata.col(p) %= corrneg_;
       }
       // Now that we have corrected we set the readout direction to positive
-      hdr.flags &= ~(ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_REVERSE).bitmask_);
+      hdr.clearFlag(ISMRMRD::ISMRMRD_ACQ_IS_REVERSE);
     } 
     else {
       // Positive readout
@@ -174,7 +174,7 @@ int EPICorrGadget::process(
 
   // Pass on the imaging data
   // TODO: this should be controlled by a flag
-  if (ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_PHASECORR_DATA).isSet(hdr.flags)) {
+  if (hdr.isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_PHASECORR_DATA)) {
     m1->release();
   } 
   else {

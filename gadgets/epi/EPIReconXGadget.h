@@ -6,7 +6,7 @@
 #include "gadgetron_epi_export.h"
 #include "hoArmadillo.h"
 
-#include <ismrmrd.h>
+#include <ismrmrd/ismrmrd.h>
 #include <complex>
 
 #include "EPIReconXObjectFlat.h"

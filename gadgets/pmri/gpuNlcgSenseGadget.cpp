@@ -10,7 +10,7 @@
 #include "GPUTimer.h"
 #include "vector_td_utilities.h"
 #include "hoNDArray_fileio.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 #include <boost/thread/mutex.hpp>
 
 namespace Gadgetron{

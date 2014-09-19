@@ -13,11 +13,11 @@ GtPlusGadgetImageExt::GtPlusGadgetImageExt() : ISMRMRD::ImageHeader()
     matrix_size[0] = 0; matrix_size[1] = 0; matrix_size[2] = 0;
     field_of_view[0] = 0; field_of_view[1] = 0; field_of_view[2] = 0;
     channels = 0;
-    memset(position, 0, sizeof(float)*ISMRMRD_POSITION_LENGTH);
-    memset(read_dir, 0, sizeof(float)*ISMRMRD_POSITION_LENGTH);
-    memset(phase_dir, 0, sizeof(float)*ISMRMRD_POSITION_LENGTH);
-    memset(slice_dir, 0, sizeof(float)*ISMRMRD_POSITION_LENGTH);
-    memset(patient_table_position, 0, sizeof(float)*ISMRMRD_POSITION_LENGTH);
+    memset(position, 0, sizeof(float)*ISMRMRD::ISMRMRD_POSITION_LENGTH);
+    memset(read_dir, 0, sizeof(float)*ISMRMRD::ISMRMRD_POSITION_LENGTH);
+    memset(phase_dir, 0, sizeof(float)*ISMRMRD::ISMRMRD_POSITION_LENGTH);
+    memset(slice_dir, 0, sizeof(float)*ISMRMRD::ISMRMRD_POSITION_LENGTH);
+    memset(patient_table_position, 0, sizeof(float)*ISMRMRD::ISMRMRD_POSITION_LENGTH);
 
     average = 0;
     slice = 0;
@@ -26,15 +26,15 @@ GtPlusGadgetImageExt::GtPlusGadgetImageExt() : ISMRMRD::ImageHeader()
     repetition = 0;
     set = 0;
     acquisition_time_stamp = 0;
-    memset(physiology_time_stamp, 0, sizeof(uint32_t)*ISMRMRD_PHYS_STAMPS);
+    memset(physiology_time_stamp, 0, sizeof(uint32_t)*ISMRMRD::ISMRMRD_PHYS_STAMPS);
 
-    image_data_type = 0;
+    data_type = 0;
     image_type = 0;
     image_index = 0;
     image_series_index = 0;
 
-    memset(user_int, 0, sizeof(int32_t)*ISMRMRD_USER_INTS);
-    memset(user_float, 0, sizeof(float)*ISMRMRD_USER_FLOATS);
+    memset(user_int, 0, sizeof(int32_t)*ISMRMRD::ISMRMRD_USER_INTS);
+    memset(user_float, 0, sizeof(float)*ISMRMRD::ISMRMRD_USER_FLOATS);
 
     time_stamps.clear();
     pmu_time_stamps.clear();
@@ -76,11 +76,11 @@ void GtPlusGadgetImageExt::copy(GtPlusGadgetImageExt& aMessageImage)
 
     channels = aMessageImage.channels;
 
-    memcpy(position, aMessageImage.position, sizeof(float)*ISMRMRD_POSITION_LENGTH);
-    memcpy(read_dir, aMessageImage.read_dir, sizeof(float)*ISMRMRD_DIRECTION_LENGTH);
-    memcpy(phase_dir, aMessageImage.phase_dir, sizeof(float)*ISMRMRD_DIRECTION_LENGTH);
-    memcpy(slice_dir, aMessageImage.slice_dir, sizeof(float)*ISMRMRD_DIRECTION_LENGTH);
-    memcpy(patient_table_position, aMessageImage.patient_table_position, sizeof(float)*ISMRMRD_POSITION_LENGTH);
+    memcpy(position, aMessageImage.position, sizeof(float)*ISMRMRD::ISMRMRD_POSITION_LENGTH);
+    memcpy(read_dir, aMessageImage.read_dir, sizeof(float)*ISMRMRD::ISMRMRD_DIRECTION_LENGTH);
+    memcpy(phase_dir, aMessageImage.phase_dir, sizeof(float)*ISMRMRD::ISMRMRD_DIRECTION_LENGTH);
+    memcpy(slice_dir, aMessageImage.slice_dir, sizeof(float)*ISMRMRD::ISMRMRD_DIRECTION_LENGTH);
+    memcpy(patient_table_position, aMessageImage.patient_table_position, sizeof(float)*ISMRMRD::ISMRMRD_POSITION_LENGTH);
 
     average = aMessageImage.average;
     slice = aMessageImage.slice;
@@ -91,15 +91,15 @@ void GtPlusGadgetImageExt::copy(GtPlusGadgetImageExt& aMessageImage)
 
     acquisition_time_stamp = aMessageImage.acquisition_time_stamp;
 
-    memcpy(physiology_time_stamp, aMessageImage.physiology_time_stamp, sizeof(uint32_t)*ISMRMRD_PHYS_STAMPS);
+    memcpy(physiology_time_stamp, aMessageImage.physiology_time_stamp, sizeof(uint32_t)*ISMRMRD::ISMRMRD_PHYS_STAMPS);
 
-    image_data_type = aMessageImage.image_data_type;
+    data_type = aMessageImage.data_type;
     image_type = aMessageImage.image_type;
     image_index = aMessageImage.image_index;
     image_series_index = aMessageImage.image_series_index;
 
-    memcpy(user_int, aMessageImage.user_int, sizeof(int32_t)*ISMRMRD_USER_INTS);
-    memcpy(user_float, aMessageImage.user_float, sizeof(float)*ISMRMRD_USER_FLOATS);
+    memcpy(user_int, aMessageImage.user_int, sizeof(int32_t)*ISMRMRD::ISMRMRD_USER_INTS);
+    memcpy(user_float, aMessageImage.user_float, sizeof(float)*ISMRMRD::ISMRMRD_USER_FLOATS);
 
     time_stamps = aMessageImage.time_stamps;
     pmu_time_stamps = aMessageImage.pmu_time_stamps;
@@ -108,7 +108,7 @@ void GtPlusGadgetImageExt::copy(GtPlusGadgetImageExt& aMessageImage)
 void GtPlusGadgetImageExt::recomputeHeader(const GtPlusGadgetImageExt& aMessageImage, double weight)
 {
     size_t ii;
-    for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
+    for ( ii=0; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
     {
         position[ii] = (float)((position[ii]*weight) + (1.0-weight)*aMessageImage.position[ii]);
         patient_table_position[ii] = (float)((patient_table_position[ii]*weight) + (1.0-weight)*aMessageImage.patient_table_position[ii]);
@@ -116,7 +116,7 @@ void GtPlusGadgetImageExt::recomputeHeader(const GtPlusGadgetImageExt& aMessageI
 
     acquisition_time_stamp = (uint32_t)((acquisition_time_stamp*weight) + (1.0-weight)*aMessageImage.acquisition_time_stamp + 0.5);
 
-    for ( ii=0; ii<ISMRMRD_PHYS_STAMPS; ii++ )
+    for ( ii=0; ii<ISMRMRD::ISMRMRD_PHYS_STAMPS; ii++ )
     {
         physiology_time_stamp[ii] = (uint32_t)((physiology_time_stamp[ii]*weight) + (1.0-weight)*aMessageImage.physiology_time_stamp[ii] + 0.5);
     }
@@ -137,36 +137,36 @@ void GtPlusGadgetImageExt::dump()
 
     size_t ii;
 
-    cout << "position[ISMRMRD_POSITION_LENGTH]      : ";
-    for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
+    cout << "position[ISMRMRD::ISMRMRD_POSITION_LENGTH]      : ";
+    for ( ii=0; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
     {
         cout << position[ii] << " ";
     }
     cout << endl;
 
-    cout << "read_dir[ISMRMRD_POSITION_LENGTH]      : ";
-    for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
+    cout << "read_dir[ISMRMRD::ISMRMRD_POSITION_LENGTH]      : ";
+    for ( ii=0; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
     {
         cout << read_dir[ii] << " ";
     }
     cout << endl;
 
-    cout << "phase_dir[ISMRMRD_POSITION_LENGTH]      : ";
-    for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
+    cout << "phase_dir[ISMRMRD::ISMRMRD_POSITION_LENGTH]      : ";
+    for ( ii=0; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
     {
         cout << phase_dir[ii] << " ";
     }
     cout << endl;
 
-    cout << "slice_dir[ISMRMRD_POSITION_LENGTH]      : ";
-    for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
+    cout << "slice_dir[ISMRMRD::ISMRMRD_POSITION_LENGTH]      : ";
+    for ( ii=0; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
     {
         cout << slice_dir[ii] << " ";
     }
     cout << endl;
 
-    cout << "patient_table_position[ISMRMRD_POSITION_LENGTH]      : ";
-    for ( ii=0; ii<ISMRMRD_POSITION_LENGTH; ii++ )
+    cout << "patient_table_position[ISMRMRD::ISMRMRD_POSITION_LENGTH]      : ";
+    for ( ii=0; ii<ISMRMRD::ISMRMRD_POSITION_LENGTH; ii++ )
     {
         cout << patient_table_position[ii] << " ";
     }
@@ -180,27 +180,27 @@ void GtPlusGadgetImageExt::dump()
     cout << "set                : " << set << endl;
     cout << "acquisition_time_stamp : " << acquisition_time_stamp << endl;
 
-    cout << "physiology_time_stamp[ISMRMRD_PHYS_STAMPS] : ";
-    for ( ii=0; ii<ISMRMRD_PHYS_STAMPS; ii++ )
+    cout << "physiology_time_stamp[ISMRMRD::ISMRMRD_PHYS_STAMPS] : ";
+    for ( ii=0; ii<ISMRMRD::ISMRMRD_PHYS_STAMPS; ii++ )
     {
         cout << physiology_time_stamp[ii] << " ";
     }
     cout << endl;
 
-    cout << "image_data_type    : " << image_data_type << endl;
+    cout << "data_type          : " << data_type << endl;
     cout << "image_type         : " << image_type << endl;
     cout << "image_index        : " << image_index << endl;
     cout << "image_series_index : " << image_series_index << endl;
 
-    cout << "user_int[ISMRMRD_USER_INTS]        : ";
-    for ( ii=0; ii<ISMRMRD_USER_INTS; ii++ )
+    cout << "user_int[ISMRMRD::ISMRMRD_USER_INTS]        : ";
+    for ( ii=0; ii<ISMRMRD::ISMRMRD_USER_INTS; ii++ )
     {
         cout << user_int[ii] << " ";
     }
     cout << endl;
 
-    cout << "user_float[ISMRMRD_USER_FLOATS]    : ";
-    for ( ii=0; ii<ISMRMRD_USER_FLOATS; ii++ )
+    cout << "user_float[ISMRMRD::ISMRMRD_USER_FLOATS]    : ";
+    for ( ii=0; ii<ISMRMRD::ISMRMRD_USER_FLOATS; ii++ )
     {
         cout << user_float[ii] << " ";
     }

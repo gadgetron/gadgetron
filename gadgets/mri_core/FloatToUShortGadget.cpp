@@ -40,17 +40,17 @@ int FloatToUShortGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m
 	for (unsigned long i = 0; i < cm2->getObjectPtr()->get_number_of_elements(); i++) {
 		float pix_val = src[i];
 		switch (m1->getObjectPtr()->image_type) {
-		case ISMRMRD::TYPE_MAGNITUDE:
+		case ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE:
 			pix_val = std::abs(pix_val);
 			if (pix_val > 4095) pix_val = 4095;
 			break;
-		case ISMRMRD::TYPE_REAL:
-		case ISMRMRD::TYPE_IMAG:
+		case ISMRMRD::ISMRMRD_IMTYPE_REAL:
+		case ISMRMRD::ISMRMRD_IMTYPE_IMAG:
 			pix_val = pix_val + 2048;
 			if (pix_val < 0) pix_val = 0;
 			if (pix_val > 4095) pix_val = 4095;
 			break;
-		case ISMRMRD::TYPE_PHASE:
+		case ISMRMRD::ISMRMRD_IMTYPE_PHASE:
 			pix_val *= (float)(2048.0/3.14159265);
 			pix_val += 2048;
 			if (pix_val < 0) pix_val = 0;
@@ -67,7 +67,7 @@ int FloatToUShortGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m
 
 	m1->cont(cm2);
 	m2->release();
-	m1->getObjectPtr()->image_data_type = ISMRMRD::DATA_UNSIGNED_SHORT;
+	m1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_USHORT;
 
 	if (this->next()->putq(m1) == -1) {
 		m1->release();

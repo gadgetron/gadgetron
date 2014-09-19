@@ -1,7 +1,7 @@
 #include "RemoveROOversamplingGadget.h"
 #include "Gadgetron.h"
 #include "hoNDFFT.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 namespace Gadgetron{
 
