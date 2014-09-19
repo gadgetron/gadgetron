@@ -22,7 +22,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <ismrmrd.h>
-#include <ismrmrd_hdf5.h>
+#include <ismrmrd_dataset.h>
 
 #include <fstream>
 #include <streambuf>
@@ -159,46 +159,29 @@ public:
     //Read the image from the socket
     ISMRMRD::ImageHeader h;
     boost::asio::read(*stream, boost::asio::buffer(&h,sizeof(ISMRMRD::ImageHeader)));
-    ISMRMRD::Image<T> im; 
+    ISMRMRD::Image im; 
     im.setHead(h);
-    boost::asio::read(*stream, boost::asio::buffer(const_cast<T*>(&im.getData()[0]),
-						   sizeof(T)*im.getData().size()));
+    boost::asio::read(*stream, boost::asio::buffer(im.getData(), im.getDataSize()));
     {
-      //Write it to the HDF5 out file
-      ISMRMRD::HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
-
       if (!dataset_) {
-	dataset_ = boost::shared_ptr<ISMRMRD::IsmrmrdDataset>(new ISMRMRD::IsmrmrdDataset(file_name_.c_str(), group_name_.c_str())); 
+	dataset_ = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(file_name_.c_str(), group_name_.c_str())); 
       }
 
       std::stringstream st1;
-      st1 << "image_" << h.image_series_index << ".head";
-      std::string head_varname = st1.str();
+      st1 << "image_" << h.image_series_index;
+      std::string image_varname = st1.str();
     
-      std::stringstream st2;
-      st2 << "image_" << h.image_series_index << ".img";
-      std::string img_varname = st2.str();
-    
-      if (dataset_->appendImageHeader(h, head_varname.c_str()) < 0) {
+      if (dataset_->appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, im) < 0) {
 	throw GadgetronClientException("Unable to append header to ISMRMRD HDF5 dataset");
       }
     
-      std::vector<unsigned int> dim(4);
-      dim[0] = h.matrix_size[0];
-      dim[1] = h.matrix_size[1];
-      dim[2] = h.matrix_size[2];
-      dim[3] = h.channels;
-    
-      if (dataset_->appendArray(dim, const_cast<T*>(&im.getData()[0]), img_varname.c_str())  < 0) {
-	throw GadgetronClientException("Unable to append image array to ISMRMRD HDF5 dataset");
-      }
     }
   }
 
 protected:
   std::string group_name_;
   std::string file_name_;
-  boost::shared_ptr<ISMRMRD::IsmrmrdDataset> dataset_;
+  boost::shared_ptr<ISMRMRD::Dataset> dataset_;
 };
 
 template <typename T> class GadgetronClientAttribImageMessageReader 
@@ -222,7 +205,7 @@ public:
     //Read the image headerfrom the socket
     ISMRMRD::ImageHeader h;
     boost::asio::read(*stream, boost::asio::buffer(&h,sizeof(ISMRMRD::ImageHeader)));
-    ISMRMRD::Image<T> im; 
+    ISMRMRD::Image im;
     im.setHead(h);
 
     typedef unsigned long long size_t_type;
@@ -231,18 +214,15 @@ public:
     size_t_type meta_attrib_length;
     boost::asio::read(*stream, boost::asio::buffer(&meta_attrib_length, sizeof(size_t_type)));
 
-    std::string meta_attrib(meta_attrib_length,0);
-    boost::asio::read(*stream, boost::asio::buffer(const_cast<char*>(meta_attrib.c_str()), meta_attrib_length));
+    std::string meta_attrib(meta_attrib_length-sizeof(size_t_type),0);
+    boost::asio::read(*stream, boost::asio::buffer(const_cast<char*>(meta_attrib.c_str()), meta_attrib_length-sizeof(size_t_type)));
+    im.setAttributeString(meta_attrib);
 
     //Read image data
-    boost::asio::read(*stream, boost::asio::buffer(const_cast<T*>(&im.getData()[0]),
-						   sizeof(T)*im.getData().size()));
+    boost::asio::read(*stream, boost::asio::buffer(im.getData(), im.getDataSize()));
     {
-      //Write it to the HDF5 out file
-      ISMRMRD::HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
-
       if (!dataset_) {
-	dataset_ = boost::shared_ptr<ISMRMRD::IsmrmrdDataset>(new ISMRMRD::IsmrmrdDataset(file_name_.c_str(), group_name_.c_str())); 
+	dataset_ = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(file_name_.c_str(), group_name_.c_str())); 
       }
 
       std::stringstream st1;
@@ -280,7 +260,7 @@ public:
 protected:
   std::string group_name_;
   std::string file_name_;
-  boost::shared_ptr<ISMRMRD::IsmrmrdDataset> dataset_;
+  boost::shared_ptr<ISMRMRD::Dataset> dataset_;
 };
 
 
@@ -691,8 +671,10 @@ int main(int argc, char **argv)
   // Add check to see if input file exists
  
   //Let's open the input file
-  boost::shared_ptr<ISMRMRD::IsmrmrdDataset> ismrmrd_dataset(new ISMRMRD::IsmrmrdDataset(in_filename.c_str(),hdf5_in_group.c_str()));
-  boost::shared_ptr<std::string> xml_config = ismrmrd_dataset->readHeader();
+  ISMRMRD::Dataset ismrmrd_dataset(in_filename.c_str(), hdf5_in_group.c_str(), false);
+  // Read the header
+  std::string xml_config;
+  ismrmrd_dataset.readHeader(xml_config);
 
 
   std::cout << "  -- host            :      " << host_name << std::endl;
@@ -726,15 +708,15 @@ int main(int argc, char **argv)
       } else {
 	con.send_gadgetron_configuration_file(config_file);
       }
-    con.send_gadgetron_parameters(*xml_config);
+    con.send_gadgetron_parameters(xml_config);
 
-    unsigned long acquisitions = ismrmrd_dataset->getNumberOfAcquisitions();
+    uint32_t acquisitions = ismrmrd_dataset.getNumberOfAcquisitions();
 
-    for (unsigned long int i = 0; i < acquisitions; i++) {
+    for (uint32_t i = 0; i < acquisitions; i++) {
       {
-	ISMRMRD::HDF5Exclusive lock; //This will ensure thread-safe access to HDF5
-	boost::shared_ptr<ISMRMRD::Acquisition> acq_tmp = ismrmrd_dataset->readAcquisition(i);
+	ISMRMRD::Acquisition * acq_tmp = ismrmrd_dataset.readAcquisition(i);
 	con.send_ismrmrd_acquisition(*acq_tmp);
+	delete acq_tmp;
       }
     }
 
@@ -744,12 +726,6 @@ int main(int argc, char **argv)
   } catch (std::exception& ex) {
     std::cout << "Error caught: " << ex.what() << std::endl;
   }
-
-  {
-    ISMRMRD::HDF5Exclusive lock; //This will ensure thread-safe access to HDF5
-    ismrmrd_dataset->close();
-  }
-  
 
   return 0;
 }

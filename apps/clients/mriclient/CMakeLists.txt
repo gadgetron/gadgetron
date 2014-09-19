@@ -1,5 +1,4 @@
 find_package(Ismrmrd REQUIRED)
-find_package(HDF5 1.8 COMPONENTS C CXX REQUIRED)
 
 set(Boost_NO_BOOST_CMAKE ON)
 
@@ -35,8 +34,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/toolboxes/gtplus/application
     ${ACE_INCLUDE_DIR} 
     ${Boost_INCLUDE_DIR} 
-    ${HDF5_CXX_INCLUDE_DIR} 
-    ${HDF5_C_INCLUDE_DIR} 
     ${ISMRMRD_INCLUDE_DIR}
     ${ARMADILLO_INCLUDE_DIRS}
     )
@@ -61,7 +58,7 @@ target_link_libraries(gtdependencyquery cpucore
                                         ${Boost_LIBRARIES} 
                                         ${ISMRMRD_LIBRARIES} )
 
-target_link_libraries(mriclient gadgettools ${HDF5_LIBRARIES} optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
+target_link_libraries(mriclient gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} ${ISMRMRD_LIBRARIES} ${Boost_LIBRARIES})
 
 target_link_libraries(mriclient gadgetron_mricore)
 

@@ -13,7 +13,7 @@
 #include "vector_td.h"
 #include "cuNFFT.h"
 
-#include <ismrmrd.h>
+#include <ismrmrd/ismrmrd.h>
 #include <complex>
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>

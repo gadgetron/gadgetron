@@ -1,7 +1,7 @@
 #include "CutXGadget.h"
 #include "hoNDFFT.h"
 #include "hoNDArray_utils.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 namespace Gadgetron{
 

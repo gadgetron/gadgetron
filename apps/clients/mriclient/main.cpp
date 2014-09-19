@@ -14,7 +14,7 @@
 #include "ImageAttribWriter.h"
 #include "HDF5ImageAttribWriter.h"
 #include "FileInfo.h"
-#include "ismrmrd_hdf5.h"
+#include "ismrmrd/dataset.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "BlobFileWriter.h"
 #include "BlobFileWithAttribWriter.h"
@@ -157,8 +157,9 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
         return -1;
     }
 
-    boost::shared_ptr<ISMRMRD::IsmrmrdDataset> ismrmrd_dataset(new ISMRMRD::IsmrmrdDataset(hdf5_in_data_file,hdf5_in_group));
-    boost::shared_ptr<std::string> xml_config = ismrmrd_dataset->readHeader();
+    boost::shared_ptr<ISMRMRD::Dataset> ismrmrd_dataset(new ISMRMRD::Dataset(hdf5_in_data_file,hdf5_in_group));
+    std::string xml_config;
+    ismrmrd_dataset->readHeader(xml_config);
 
     if (repetition_loops < 1) {
         ACE_DEBUG((LM_INFO, ACE_TEXT("Invalid number of repetition loops (%d).\n"), repetition_loops));
@@ -224,7 +225,7 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
             return -1;
         }
 
-        if (con.send_gadgetron_parameters(*xml_config) != 0) {
+        if (con.send_gadgetron_parameters(xml_config) != 0) {
             ACE_DEBUG((LM_ERROR, ACE_TEXT("Unable to send XML parameters to the Gadgetron host")));
             return -1;
         }
@@ -233,13 +234,8 @@ int ACE_TMAIN(int argc, ACE_TCHAR *argv[] )
 
         for (unsigned long int i = 0; i < acquisitions; i++) {
             GadgetContainerMessage<ISMRMRD::Acquisition>* acq = new GadgetContainerMessage<ISMRMRD::Acquisition>();
-            {
-                ISMRMRD::HDF5Exclusive lock; //This will ensure thread-safe access to HDF5
-                boost::shared_ptr<ISMRMRD::Acquisition> acq_tmp = ismrmrd_dataset->readAcquisition(i);
-                *(acq->getObjectPtr()) = *acq_tmp; //We are copying the data into the container message
-
-            }
-
+	    ismrmrd_dataset->readAcquisition(i, *acq->getObjectPtr());
+            
             GadgetContainerMessage<GadgetMessageIdentifier>* m1 =
                     new GadgetContainerMessage<GadgetMessageIdentifier>();
 

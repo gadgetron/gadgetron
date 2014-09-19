@@ -3,7 +3,7 @@
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 #include "gadgetron_mricore_export.h"
 
 namespace Gadgetron

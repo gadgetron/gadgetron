@@ -12,9 +12,9 @@
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "ismrmrd_meta.h"
+#include "ismrmrd/meta.h"
 #include "GadgetMRIHeaders.h"
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 #include "GadgetStreamController.h"
 
 #include "dcmtk/config/osconfig.h"

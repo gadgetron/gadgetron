@@ -4,7 +4,7 @@
 #include "Gadget.h"
 #include "Gadgetron.h"
 #include "hoNDArray.h"
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 #include "engine.h"     // Matlab Engine header
 
 #include "ace/Synch.h"  // For the MatlabCommandServer

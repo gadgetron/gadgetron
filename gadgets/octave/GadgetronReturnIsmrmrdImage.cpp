@@ -2,7 +2,7 @@
 #include <octave/ov-struct.h>
 
 #include "OctaveCommunicator.h"
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 #include "hoNDArray.h"
 
 using namespace Gadgetron;
