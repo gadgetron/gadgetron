@@ -155,7 +155,11 @@ performCalibPrep(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
     size_t kE1 = workOrder3DT->spirit_kSize_E1_;
     size_t kE2 = workOrder3DT->spirit_kSize_E2_;
 
-    workOrder3DT->kernel_->create(kRO, kE1, kE2, srcCHA, dstCHA, 1, 1, 1, refN);
+    size_t oRO = workOrder3DT->spirit_oSize_RO_;
+    size_t oE1 = workOrder3DT->spirit_oSize_E1_;
+    size_t oE2 = workOrder3DT->spirit_oSize_E2_;
+
+    workOrder3DT->kernel_->create(kRO, kE1, kE2, srcCHA, dstCHA, oRO, oE1, oE2, refN);
 
     size_t jobN;
     bool splitJobs = this->splitJob(workOrder3DT, jobN);
@@ -225,18 +229,22 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
     size_t kE1 = workOrder3DT->spirit_kSize_E1_;
     size_t kE2 = workOrder3DT->spirit_kSize_E2_;
 
+    size_t oRO = workOrder3DT->spirit_oSize_RO_;
+    size_t oE1 = workOrder3DT->spirit_oSize_E1_;
+    size_t oE2 = workOrder3DT->spirit_oSize_E2_;
+
     ho4DArray<T> acsSrc(refRO, refE1, refE2, srcCHA, const_cast<T*>(ref_src.begin()+usedN*refRO*refE1*refE2*srcCHA));
     ho4DArray<T> acsDst(refRO, refE1, refE2, dstCHA, const_cast<T*>(ref_dst.begin()+usedN*refRO*refE1*refE2*dstCHA));
 
     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsSrc, "acsSrc");
     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, acsDst, "acsDst");
 
-    hoNDArray<T> ker(kRO, kE1, kE2, srcCHA, dstCHA, 1, 1, 1, workOrder3DT->kernel_->begin()+usedN*kRO*kE1*kE2*srcCHA*dstCHA);
+    hoNDArray<T> ker(kRO, kE1, kE2, srcCHA, dstCHA, oRO, oE1, oE2, workOrder3DT->kernel_->begin()+usedN*kRO*kE1*kE2*srcCHA*dstCHA*oRO*oE1*oE2);
 
     spirit_.calib_use_gpu_ = workOrder3DT->spirit_use_gpu_;
 
     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 3D calibration ... "));
-    GADGET_CHECK_RETURN_FALSE(spirit_.calib3D(acsSrc, acsDst, workOrder3DT->spirit_reg_lamda_, workOrder3DT->spirit_calib_over_determine_ratio_, kRO, kE1, kE2, 1, 1, 1, ker));
+    GADGET_CHECK_RETURN_FALSE(spirit_.calib3D(acsSrc, acsDst, workOrder3DT->spirit_reg_lamda_, workOrder3DT->spirit_calib_over_determine_ratio_, kRO, kE1, kE2, oRO, oE1, oE2, ker));
     GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
     GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ker, "ker");
@@ -251,7 +259,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
         hoNDArray<T> kIm(E1, E2, RO, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin()+usedN*E1*E2*RO*srcCHA*dstCHA);
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 3D image domain kernel ... "));
-        GADGET_CHECK_RETURN_FALSE(spirit_.imageDomainKernel3D(ker, kRO, kE1, kE2, 1, 1, 1, RO, E1, E2, kIm, minusI));
+        GADGET_CHECK_RETURN_FALSE(spirit_.imageDomainKernel3D(ker, kRO, kE1, kE2, oRO, oE1, oE2, RO, E1, E2, kIm, minusI));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         if ( !debugFolder_.empty() )
@@ -268,7 +276,7 @@ performCalibImpl(const hoNDArray<T>& ref_src, const hoNDArray<T>& ref_dst, WorkO
         hoNDArray<T> kIm(convKE1, convKE2, RO, srcCHA, dstCHA, workOrder3DT->kernelIm_->begin()+usedN*convKE1*convKE2*RO*srcCHA*dstCHA);
 
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.start("SPIRIT 3D image domain kernel only along RO ... "));
-        GADGET_CHECK_RETURN_FALSE(spirit_.imageDomainKernelRO3D(ker, kRO, kE1, kE2, 1, 1, 1, RO, kIm, minusI));
+        GADGET_CHECK_RETURN_FALSE(spirit_.imageDomainKernelRO3D(ker, kRO, kE1, kE2, oRO, oE1, oE2, RO, kIm, minusI));
         GADGET_CHECK_PERFORM(performTiming_, gt_timer3_.stop());
 
         if ( !debugFolder_.empty() )
@@ -345,6 +353,13 @@ performUnwrapping(gtPlusReconWorkOrder3DT<T>* workOrder3DT, const hoNDArray<T>& 
         scaleFactor /= (value_type)(RO*std::sqrt(double(srcCHA)));
 
         workOrder3DT->spirit_ncg_scale_factor_ = scaleFactor;
+
+        size_t indMax;
+        hoNDArray<value_type> mag;
+        Gadgetron::absolute(kspaceForScaleFactor, mag);
+        value_type maxMag;
+        Gadgetron::maxAbsolute(mag, maxMag, indMax);
+        workOrder3DT->spirit_slep_scale_factor_ = maxMag;
 
         // split the jobs
         size_t jobMegaBytes = workOrder3DT->job_max_Megabytes_;

@@ -62,14 +62,6 @@
     #include <omp.h>
 #endif // USE_OMP
 
-#ifdef USE_CUDA
-    #include "GPUTimer.h"
-    #include "b1_map.h"
-    #include "cudaDeviceManager.h"
-    #include "cuda_runtime_api.h"
-    #include "cuNDArray_elemwise.h"
-#endif // USE_CUDA
-
 #include "GtPlusDefinition.h"
 
 namespace Gadgetron {
@@ -557,10 +549,6 @@ public:
     // jobSchedule : for every valid device, it records the job allocated to it
     // what is stored are valid device id and job packages allocated to it
     // for one valid device, multiple job packages can be given to it
-    #ifdef USE_CUDA
-        bool cudaJobSplitter(const std::vector<unsigned int>& jobIDs, size_t jobSize, size_t minimalMemoryForValidDevice, std::vector< std::pair<unsigned int, std::vector<std::vector<unsigned int> > > >& jobSchedule);
-        bool cudaJobSplitter(unsigned int numOfJobs, size_t jobSize, size_t minimalMemoryForValidDevice, std::vector< std::pair<unsigned int, std::vector<std::vector<unsigned int> > > >& jobSchedule);
-    #endif // USE_CUDA
 
     // load two hoNDArray and compute differences
     void compareAgainstGroundTruthArray(const std::string& gt_filename, const hoNDArray<T>& x, typename realType<T>::Type& normDiff, typename realType<T>::Type& maxNormDiff);

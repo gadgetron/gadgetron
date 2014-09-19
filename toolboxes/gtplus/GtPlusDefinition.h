@@ -43,6 +43,10 @@ namespace Gadgetron
             ISMRMRD_L1SPIRIT,
             ISMRMRD_SOFTSENSE,
             ISMRMRD_L1SOFTSENSE,
+            ISMRMRD_2DTBINNING,
+            ISMRMRD_2DTBINNING_FLOW,
+            ISMRMRD_L1SPIRIT_SLEP,
+            ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP,
             ISMRMRD_NONE
         };
 
@@ -121,12 +125,14 @@ namespace Gadgetron
         #define GTPLUS_DATA_ROLE                            "GT_DataRole"
         #define GTPLUS_IMAGE_REGULAR                        "GT_Image"
         #define GTPLUS_IMAGE_RETRO                          "GT_ImageRetro"
+        #define GTPLUS_IMAGE_MOCORECON                      "GT_ImageMoCo"
         #define GTPLUS_IMAGE_GFACTOR                        "GT_Gfactor"
         #define GTPLUS_IMAGE_SNR_MAP                        "GT_SNR_MAP"
         #define GTPLUS_IMAGE_STD_MAP                        "GT_STD_MAP"
         #define GTPLUS_IMAGE_WRAPAROUNDMAP                  "GT_WrapAround_MAP"
         #define GTPLUS_IMAGE_PHASE                          "GT_Phase"
         #define GTPLUS_IMAGE_INTENSITY_UNCHANGED            "GT_Image_Intensity_Unchanged"
+        #define GTPLUS_IMAGE_AIF                            "GT_AIF"
         // other images than the regular reconstruction results
         #define GTPLUS_IMAGE_OTHER                          "GT_Image_Other"
         // other data roles

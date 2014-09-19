@@ -237,6 +237,39 @@ bool gradient(const hoNDImage<T, D>& x, hoNDImage<T, D> gx[])
 }
 
 template <typename T> 
+bool gaussianKernel(T sigma, double kerWidthInUnitOfSigma, double deltaKer, hoNDArray<T>& ker)
+{
+    try
+    {
+        long long N  =  (long long)(2*std::ceil(kerWidthInUnitOfSigma*sigma/deltaKer) + 1);
+
+        ker.create(N);
+
+        T kerSum = 0;
+
+        T D = (deltaKer*deltaKer)/(2*sigma*sigma);
+
+        long long ii;
+        for ( ii=-N/2; ii<=N/2; ii++ )
+        {
+            ker(ii+N/2) = exp( -(ii*ii*D) );
+            kerSum += ker(ii+N/2);
+        }
+
+        T GNorm = 1/std::sqrt(2*3.141592653579*sigma*sigma);
+        GNorm /= kerSum;
+
+        Gadgetron::scal(GNorm, ker);
+    }
+    catch(...)
+    {
+        GADGET_ERROR_MSG("Errors happened in gaussianKernel(T sigma, double kerWidthInUnitOfSigma, double deltaKer, hoNDArray<T>& ker) ... ");
+        return false;
+    }
+    return true;
+}
+
+template <typename T> 
 struct gaussianPara
 {
     T alpha, ea, e2a, k; 
@@ -2282,6 +2315,9 @@ template <unsigned int D> bool inv(const hoNDImage<GT_Complex16, D>& x, hoNDImag
 }
 
 #endif // USE_MKL
+
+template EXPORTCPUCOREMATH bool gaussianKernel(float sigma, double kerWidthInUnitOfSigma, double deltaKer, hoNDArray<float>& ker);
+template EXPORTCPUCOREMATH bool gaussianKernel(double sigma, double kerWidthInUnitOfSigma, double deltaKer, hoNDArray<double>& ker);
 
 #define DimImage 1
 #include "hoNDImage_util_instantiate.hxx"

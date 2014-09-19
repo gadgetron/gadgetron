@@ -171,6 +171,7 @@ public:
     using BaseClass::gt_exporter_;
     using BaseClass::debugFolder_;
     using BaseClass::gtPlus_util_;
+    using BaseClass::gtPlus_util_cplx_;
     using BaseClass::gtPlus_mem_manager_;
 
 protected:
@@ -411,7 +412,10 @@ bool gtPlusReconWorker2DT<T>::prepRef(gtPlusReconWorkOrder2DT<T>* workOrder2DT, 
                 GADGET_CHECK_RETURN_FALSE(cropUpTo11DArray(refRecon, croppedRef, crop_offset, crop_size));
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, croppedRef, "refRecon_afterCrop");
 
-                if ( workOrder2DT->recon_algorithm_ == ISMRMRD_SPIRIT || workOrder2DT->recon_algorithm_ == ISMRMRD_L1SPIRIT )
+                if ( workOrder2DT->recon_algorithm_ == ISMRMRD_SPIRIT 
+                    || workOrder2DT->recon_algorithm_ == ISMRMRD_L1SPIRIT 
+                    || workOrder2DT->recon_algorithm_ == ISMRMRD_L1SPIRIT_SLEP 
+                    || workOrder2DT->recon_algorithm_ == ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
                 {
                     // copy the ref into the data
                     GADGET_CHECK_RETURN_FALSE(gtPlus_util_.copyAlongE1(refRecon, workOrder2DT->data_, startE1_, endE1_));
@@ -868,7 +872,11 @@ bool gtPlusReconWorker2DT<T>::performRecon(gtPlusReconWorkOrder2DT<T>* workOrder
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder2DT->ref_coil_map_, *workOrder2DT->coilCompressionCoef_, ref_coil_map_dst_));
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, ref_coil_map_dst_, "ref_coil_map_dst_");
 
-                if ( !workOrder2DT->downstream_coil_compression_ || workOrder2DT->recon_algorithm_==ISMRMRD_SPIRIT || workOrder2DT->recon_algorithm_==ISMRMRD_L1SPIRIT )
+                if ( !workOrder2DT->downstream_coil_compression_ 
+                    || workOrder2DT->recon_algorithm_==ISMRMRD_SPIRIT 
+                    || workOrder2DT->recon_algorithm_==ISMRMRD_L1SPIRIT 
+                    || workOrder2DT->recon_algorithm_==ISMRMRD_L1SPIRIT_SLEP 
+                    || workOrder2DT->recon_algorithm_==ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
                 {
                     ref_src_ = ref_dst_;
                 }
@@ -1395,7 +1403,9 @@ bool gtPlusReconWorker2DT<T>::afterUnwrapping(gtPlusReconWorkOrder2DT<T>* workOr
 
             if ( workOrder2DT->embedded_ref_fillback_ 
                 && (workOrder2DT->recon_algorithm_!=ISMRMRD_SPIRIT) 
-                && (workOrder2DT->recon_algorithm_!=ISMRMRD_L1SPIRIT) )
+                && (workOrder2DT->recon_algorithm_!=ISMRMRD_L1SPIRIT)
+                && (workOrder2DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP)
+                && (workOrder2DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP) )
             {
                 ref_fillback = true;
             }

@@ -15,10 +15,6 @@
     #include "omp.h"
 #endif // USE_OMP
 
-#ifdef USE_CUDA
-    #include "htgrappa.h"
-#endif // USE_CUDA
-
 namespace Gadgetron { namespace gtPlus {
 
 template <typename T> 

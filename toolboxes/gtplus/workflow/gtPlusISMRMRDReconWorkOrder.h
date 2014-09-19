@@ -116,6 +116,10 @@ struct gtPlusReconWorkOrderPara
     size_t spirit_kSize_E1_;
     size_t spirit_kSize_E2_;
 
+    size_t spirit_oSize_RO_;
+    size_t spirit_oSize_E1_;
+    size_t spirit_oSize_E2_;
+
     double spirit_reg_lamda_;
     double spirit_calib_over_determine_ratio_;
 
@@ -142,6 +146,13 @@ struct gtPlusReconWorkOrderPara
     bool spirit_ncg_print_iter_;
     double spirit_ncg_scale_factor_;
 
+    size_t spirit_slep_iter_max_;
+    double spirit_slep_iter_thres_;
+    bool spirit_slep_print_iter_;
+    bool spirit_slep_keep_third_dimension_coeff_;
+    bool spirit_slep_keep_approx_coeff_;
+    double spirit_slep_scale_factor_;
+
     bool spirit_use_coil_sen_map_;
     bool spirit_use_moco_enhancement_;
     bool spirit_recon_moco_images_;
@@ -166,6 +177,91 @@ struct gtPlusReconWorkOrderPara
 
     // which method used for retro-gating
     ISMRMRDINTERPRETROGATING retro_gated_interp_method_;
+
+    /// --------------
+    /// parameters for binning
+    /// --------------
+
+    // number of target cardiac phases
+    size_t kspace_binning_number_of_cardiac_phases_;
+
+    // minimal allowed cardiac phase width used for binning, in ms
+    // if the binned temporal window is smaller than this threshold,
+    // the binned window will be increased
+    // if <=0, then this value will not take effect
+    double kspace_binning_minimal_cardiac_phase_width_;
+
+    // whether to perform binning recon with multiple channel complex data
+    bool kspace_binning_multiple_channel_recon_;
+
+    // whether to perform non-linear recon
+    bool kspace_binning_iterative_non_linear_recon_;
+
+    // non-linear recon using slep optimizer
+    bool kspace_binning_iterative_non_linear_recon_slep_;
+
+    // whether to use coil map when warpping multiple channel images
+    bool kspace_binning_multiple_channel_recon_with_coil_map_;
+
+    // whether to compute navigator signal
+    bool kspace_binning_compute_navigator_signal_;
+
+    // for navigator detection
+    size_t kspace_binning_navigator_moco_level_;
+    size_t kspace_binning_navigator_moco_iter_[MAX_MOCO_LEVEL];
+    double kspace_binning_navigator_hilbert_strength_;
+    double kspace_binning_navigator_dissimilarity_sigma_;
+    bool  kspace_binning_navigator_bidirectional_moco_;
+
+    // parameters for the moco in kspace binning
+    size_t kspace_binning_moco_level_;
+    size_t kspace_binning_moco_iter_[MAX_MOCO_LEVEL];
+    double kspace_binning_moco_hilbert_strength_;
+    double kspace_binning_moco_dissimilarity_sigma_;
+    bool  kspace_binning_bidirectional_moco_;
+
+    // whether to perform soft combination
+    bool kspace_binning_soft_combination_;
+
+    // navigator signal acceptance window
+    double kspace_binning_navigator_window_wide_;
+    double kspace_binning_navigator_window_narrow_;
+
+    // method for warpping the complex images ("BSpline", "Linear")
+    ISMRMRDINTERP kspace_binning_method_warpping_;
+
+    // whether to exclude the last cardiac cycle for binning
+    bool kspace_binning_exclude_last_cardiac_cycle_;
+
+    // some blocks around central kspace must be filled
+    size_t kspace_binning_number_of_central_kspace_blocks_;
+
+    // maximal allowed temporal ratio window
+    double kspace_binning_max_temporal_window_;
+
+    // temporal ratio window used for binning
+    double kspace_binning_temporal_window_;
+
+    // interpolation method to generate best cardiac cycle ('Linear', 'Spline')
+    ISMRMRDINTERP kspace_binning_best_cardiac_cycle_interpolator_;
+
+    // recon using certain length of data (if <=0, use the whole data), in the unit of seconds
+    double kspace_binning_data_length_used_for_recon_;
+
+    // fill hole with nearest neighbor
+    bool kspace_binning_fill_kspace_with_neighbors_;
+
+    // for the flow binning, whether the flow encoding is performed insided every e1
+    bool kspace_binning_flow_in_e1_;
+
+    // whether to jointly recon all flow encoding directions
+    // if false, every flow encoding direction will be reconed seperately
+    bool kspace_binning_flow_recon_jointly_;
+
+    /// --------------
+    /// parameters for motion compensated recon
+    /// --------------
+    size_t motion_comp_num_of_PD_images_;
 
     // -------------------------------
     // job split
@@ -285,6 +381,10 @@ struct gtPlusReconWorkOrderPara
         spirit_kSize_E1_ = 7;
         spirit_kSize_E2_ = 7;
 
+        spirit_oSize_RO_ = 1;
+        spirit_oSize_E1_ = 1;
+        spirit_oSize_E2_ = 1;
+
         spirit_reg_lamda_ = 0.005;
         spirit_calib_over_determine_ratio_ = 0;
 
@@ -310,6 +410,13 @@ struct gtPlusReconWorkOrderPara
         spirit_ncg_print_iter_ = false;
         spirit_ncg_scale_factor_ = -1.0;
 
+        spirit_slep_iter_max_ = 5;
+        spirit_slep_iter_thres_ = 1e-5;
+        spirit_slep_print_iter_ = false;
+        spirit_slep_keep_third_dimension_coeff_ = false;
+        spirit_slep_keep_approx_coeff_ = true;
+        spirit_slep_scale_factor_ = -1.0;
+
         spirit_use_coil_sen_map_ = true;
         spirit_use_moco_enhancement_ = false;
         spirit_recon_moco_images_ = false;
@@ -327,6 +434,59 @@ struct gtPlusReconWorkOrderPara
         retro_gated_images_ = 0;
         retro_gated_segment_size_ = 0;
         retro_gated_interp_method_ = ISMRMRD_INTERP_RETRO_GATING_BSPLINE;
+
+        // ----------------------------------------------
+
+        kspace_binning_number_of_cardiac_phases_ = 30;
+        kspace_binning_minimal_cardiac_phase_width_ = 33; // 33ms, 30 phases for the heart rate of 60
+
+        kspace_binning_multiple_channel_recon_ = true;
+        kspace_binning_iterative_non_linear_recon_ = true;
+        kspace_binning_iterative_non_linear_recon_slep_ = true;
+        kspace_binning_multiple_channel_recon_with_coil_map_ = false;
+        kspace_binning_compute_navigator_signal_ = true;
+
+        kspace_binning_navigator_moco_level_ = 4;
+
+        size_t ii;
+        for ( ii=0; ii<MAX_MOCO_LEVEL; ii++ ) kspace_binning_navigator_moco_iter_[ii] = 0;
+        kspace_binning_navigator_moco_iter_[0] = 1;
+        kspace_binning_navigator_moco_iter_[1] = 100;
+        kspace_binning_navigator_moco_iter_[2] = 100;
+        kspace_binning_navigator_moco_iter_[3] = 100;
+
+        kspace_binning_navigator_hilbert_strength_ = 6.0;
+        kspace_binning_navigator_dissimilarity_sigma_ = 2.0;
+        kspace_binning_navigator_bidirectional_moco_ = false;
+
+        kspace_binning_moco_level_ = 5;
+        for ( ii=0; ii<MAX_MOCO_LEVEL; ii++ ) kspace_binning_moco_iter_[ii] = 0;
+        kspace_binning_moco_iter_[0] = 100;
+        kspace_binning_moco_iter_[1] = 100;
+        kspace_binning_moco_iter_[2] = 100;
+        kspace_binning_moco_iter_[3] = 100;
+        kspace_binning_moco_iter_[4] = 100;
+
+        kspace_binning_moco_hilbert_strength_ = 12.0;
+        kspace_binning_moco_dissimilarity_sigma_ = 2.0;
+        kspace_binning_bidirectional_moco_ = false;
+        kspace_binning_soft_combination_ = true;
+        kspace_binning_navigator_window_wide_ = 0.75;
+        kspace_binning_navigator_window_narrow_ = 0.5;
+        kspace_binning_method_warpping_ = ISMRMRD_INTERP_BSPLINE;
+        kspace_binning_exclude_last_cardiac_cycle_ = false;
+        kspace_binning_number_of_central_kspace_blocks_ = 0;
+        kspace_binning_max_temporal_window_ = 1.0;
+        kspace_binning_temporal_window_ = 4.0;
+        kspace_binning_best_cardiac_cycle_interpolator_= ISMRMRD_INTERP_SPLINE;
+        kspace_binning_data_length_used_for_recon_ = 0;
+        kspace_binning_fill_kspace_with_neighbors_ = false;
+        kspace_binning_flow_in_e1_ = true;
+        kspace_binning_flow_recon_jointly_ = true;
+
+        // ----------------------------------------------
+
+        motion_comp_num_of_PD_images_ = 0;
 
         // ----------------------------------------------
 
@@ -617,6 +777,9 @@ void gtPlusReconWorkOrder<T>::duplicatePara(gtPlusReconWorkOrderPara& worder) co
     worder.spirit_kSize_RO_                            = spirit_kSize_RO_;
     worder.spirit_kSize_E1_                            = spirit_kSize_E1_;
     worder.spirit_kSize_E2_                            = spirit_kSize_E2_;
+    worder.spirit_oSize_RO_                            = spirit_oSize_RO_;
+    worder.spirit_oSize_E1_                            = spirit_oSize_E1_;
+    worder.spirit_oSize_E2_                            = spirit_oSize_E2_;
     worder.spirit_reg_lamda_                           = spirit_reg_lamda_;
     worder.spirit_use_gpu_                             = spirit_use_gpu_;
     worder.spirit_calib_over_determine_ratio_          = spirit_calib_over_determine_ratio_;
@@ -634,6 +797,12 @@ void gtPlusReconWorkOrder<T>::duplicatePara(gtPlusReconWorkOrderPara& worder) co
     worder.spirit_ncg_iter_thres_                      = spirit_ncg_iter_thres_;
     worder.spirit_ncg_scale_factor_                    = spirit_ncg_scale_factor_;
     worder.spirit_ncg_print_iter_                      = spirit_ncg_print_iter_;
+    worder.spirit_slep_iter_max_                       = spirit_slep_iter_max_;
+    worder.spirit_slep_iter_thres_                     = spirit_slep_iter_thres_;
+    worder.spirit_slep_print_iter_                     = spirit_slep_print_iter_;
+    worder.spirit_slep_keep_third_dimension_coeff_     = spirit_slep_keep_third_dimension_coeff_;
+    worder.spirit_slep_keep_approx_coeff_              = spirit_slep_keep_approx_coeff_;
+    worder.spirit_slep_scale_factor_                   = spirit_slep_scale_factor_;
     worder.spirit_use_coil_sen_map_                    = spirit_use_coil_sen_map_;
     worder.spirit_use_moco_enhancement_                = spirit_use_moco_enhancement_;
     worder.spirit_recon_moco_images_                   = spirit_recon_moco_images_;
@@ -647,6 +816,39 @@ void gtPlusReconWorkOrder<T>::duplicatePara(gtPlusReconWorkOrderPara& worder) co
     worder.retro_gated_images_                         = retro_gated_images_;
     worder.retro_gated_segment_size_                   = retro_gated_segment_size_;
     worder.retro_gated_interp_method_                  = retro_gated_interp_method_;
+
+    worder.kspace_binning_number_of_cardiac_phases_                 = kspace_binning_number_of_cardiac_phases_;
+    worder.kspace_binning_minimal_cardiac_phase_width_              = kspace_binning_minimal_cardiac_phase_width_;
+    worder.kspace_binning_multiple_channel_recon_                   = kspace_binning_multiple_channel_recon_;
+    worder.kspace_binning_iterative_non_linear_recon_               = kspace_binning_iterative_non_linear_recon_;
+    worder.kspace_binning_iterative_non_linear_recon_slep_          = kspace_binning_iterative_non_linear_recon_slep_;
+    worder.kspace_binning_multiple_channel_recon_with_coil_map_     = kspace_binning_multiple_channel_recon_with_coil_map_;
+    worder.kspace_binning_compute_navigator_signal_                 = kspace_binning_compute_navigator_signal_;
+    worder.kspace_binning_navigator_moco_level_                     = kspace_binning_navigator_moco_level_;
+    memcpy(worder.kspace_binning_navigator_moco_iter_, kspace_binning_navigator_moco_iter_, sizeof(size_t)*MAX_MOCO_LEVEL);
+    worder.kspace_binning_navigator_hilbert_strength_               = kspace_binning_navigator_hilbert_strength_;
+    worder.kspace_binning_navigator_dissimilarity_sigma_            = kspace_binning_navigator_dissimilarity_sigma_;
+    worder.kspace_binning_navigator_bidirectional_moco_             = kspace_binning_navigator_bidirectional_moco_;
+    worder.kspace_binning_moco_level_                               = kspace_binning_moco_level_;
+    memcpy(worder.kspace_binning_moco_iter_, kspace_binning_moco_iter_, sizeof(size_t)*MAX_MOCO_LEVEL);
+    worder.kspace_binning_moco_hilbert_strength_                    = kspace_binning_moco_hilbert_strength_;
+    worder.kspace_binning_moco_dissimilarity_sigma_                 = kspace_binning_moco_dissimilarity_sigma_;
+    worder.kspace_binning_bidirectional_moco_                       = kspace_binning_bidirectional_moco_;
+    worder.kspace_binning_soft_combination_                         = kspace_binning_soft_combination_;
+    worder.kspace_binning_navigator_window_wide_                    = kspace_binning_navigator_window_wide_;
+    worder.kspace_binning_navigator_window_narrow_                  = kspace_binning_navigator_window_narrow_;
+    worder.kspace_binning_method_warpping_                          = kspace_binning_method_warpping_;
+    worder.kspace_binning_exclude_last_cardiac_cycle_               = kspace_binning_exclude_last_cardiac_cycle_;
+    worder.kspace_binning_number_of_central_kspace_blocks_          = kspace_binning_number_of_central_kspace_blocks_;
+    worder.kspace_binning_max_temporal_window_                      = kspace_binning_max_temporal_window_;
+    worder.kspace_binning_temporal_window_                          = kspace_binning_temporal_window_;
+    worder.kspace_binning_best_cardiac_cycle_interpolator_          = kspace_binning_best_cardiac_cycle_interpolator_;
+    worder.kspace_binning_data_length_used_for_recon_               = kspace_binning_data_length_used_for_recon_;
+    worder.kspace_binning_fill_kspace_with_neighbors_               = kspace_binning_fill_kspace_with_neighbors_;
+    worder.kspace_binning_flow_in_e1_                               = kspace_binning_flow_in_e1_;
+    worder.kspace_binning_flow_recon_jointly_                       = kspace_binning_flow_recon_jointly_;
+
+    worder.motion_comp_num_of_PD_images_                            = motion_comp_num_of_PD_images_;
 
     worder.job_split_by_S_                             = job_split_by_S_;
     worder.job_num_of_N_                               = job_num_of_N_;
@@ -766,6 +968,9 @@ void gtPlusReconWorkOrder<T>::copyFromPara(const gtPlusReconWorkOrderPara& worde
     spirit_kSize_RO_                            = worder.spirit_kSize_RO_;
     spirit_kSize_E1_                            = worder.spirit_kSize_E1_;
     spirit_kSize_E2_                            = worder.spirit_kSize_E2_;
+    spirit_oSize_RO_                            = worder.spirit_oSize_RO_;
+    spirit_oSize_E1_                            = worder.spirit_oSize_E1_;
+    spirit_oSize_E2_                            = worder.spirit_oSize_E2_;
     spirit_reg_lamda_                           = worder.spirit_reg_lamda_;
     spirit_use_gpu_                             = worder.spirit_use_gpu_;
     spirit_calib_over_determine_ratio_          = worder.spirit_calib_over_determine_ratio_;
@@ -783,6 +988,12 @@ void gtPlusReconWorkOrder<T>::copyFromPara(const gtPlusReconWorkOrderPara& worde
     spirit_ncg_iter_thres_                      = worder.spirit_ncg_iter_thres_;
     spirit_ncg_scale_factor_                    = worder.spirit_ncg_scale_factor_;
     spirit_ncg_print_iter_                      = worder.spirit_ncg_print_iter_;
+    spirit_slep_iter_max_                       = worder.spirit_slep_iter_max_;
+    spirit_slep_iter_thres_                     = worder.spirit_slep_iter_thres_;
+    spirit_slep_print_iter_                     = worder.spirit_slep_print_iter_;
+    spirit_slep_keep_third_dimension_coeff_     = worder.spirit_slep_keep_third_dimension_coeff_;
+    spirit_slep_keep_approx_coeff_              = worder.spirit_slep_keep_approx_coeff_;
+    spirit_slep_scale_factor_                   = worder.spirit_slep_scale_factor_;
     spirit_use_coil_sen_map_                    = worder.spirit_use_coil_sen_map_;
     spirit_use_moco_enhancement_                = worder.spirit_use_moco_enhancement_;
     spirit_recon_moco_images_                   = worder.spirit_recon_moco_images_;
@@ -796,6 +1007,39 @@ void gtPlusReconWorkOrder<T>::copyFromPara(const gtPlusReconWorkOrderPara& worde
     retro_gated_images_                         = worder.retro_gated_images_;
     retro_gated_segment_size_                   = worder.retro_gated_segment_size_;
     retro_gated_interp_method_                  = worder.retro_gated_interp_method_;
+
+    kspace_binning_number_of_cardiac_phases_          = worder.kspace_binning_number_of_cardiac_phases_;
+    kspace_binning_minimal_cardiac_phase_width_          = worder.kspace_binning_minimal_cardiac_phase_width_;
+    kspace_binning_multiple_channel_recon_         = worder.kspace_binning_multiple_channel_recon_;
+    kspace_binning_iterative_non_linear_recon_              = worder.kspace_binning_iterative_non_linear_recon_;
+    kspace_binning_iterative_non_linear_recon_slep_              = worder.kspace_binning_iterative_non_linear_recon_slep_;
+    kspace_binning_multiple_channel_recon_with_coil_map_ = worder.kspace_binning_multiple_channel_recon_with_coil_map_;
+    kspace_binning_compute_navigator_signal_       = worder.kspace_binning_compute_navigator_signal_;
+    kspace_binning_navigator_moco_level_                = worder.kspace_binning_navigator_moco_level_;
+    memcpy(kspace_binning_navigator_moco_iter_, worder.kspace_binning_navigator_moco_iter_, sizeof(size_t)*MAX_MOCO_LEVEL);
+    kspace_binning_navigator_hilbert_strength_                    = worder.kspace_binning_navigator_hilbert_strength_;
+    kspace_binning_navigator_dissimilarity_sigma_                 = worder.kspace_binning_navigator_dissimilarity_sigma_;
+    kspace_binning_navigator_bidirectional_moco_         = worder.kspace_binning_navigator_bidirectional_moco_;
+    kspace_binning_moco_level_                   = worder.kspace_binning_moco_level_;
+    memcpy(kspace_binning_moco_iter_, worder.kspace_binning_moco_iter_, sizeof(size_t)*MAX_MOCO_LEVEL);
+    kspace_binning_moco_hilbert_strength_                       = worder.kspace_binning_moco_hilbert_strength_;
+    kspace_binning_moco_dissimilarity_sigma_                    = worder.kspace_binning_moco_dissimilarity_sigma_;
+    kspace_binning_bidirectional_moco_            = worder.kspace_binning_bidirectional_moco_;
+    kspace_binning_soft_combination_            = worder.kspace_binning_soft_combination_;
+    kspace_binning_navigator_window_wide_                  = worder.kspace_binning_navigator_window_wide_;
+    kspace_binning_navigator_window_narrow_                = worder.kspace_binning_navigator_window_narrow_;
+    kspace_binning_method_warpping_              = worder.kspace_binning_method_warpping_;
+    kspace_binning_exclude_last_cardiac_cycle_            = worder.kspace_binning_exclude_last_cardiac_cycle_;
+    kspace_binning_number_of_central_kspace_blocks_         = worder.kspace_binning_number_of_central_kspace_blocks_;
+    kspace_binning_max_temporal_window_    = worder.kspace_binning_max_temporal_window_;
+    kspace_binning_temporal_window_    = worder.kspace_binning_temporal_window_;
+    kspace_binning_best_cardiac_cycle_interpolator_        = worder.kspace_binning_best_cardiac_cycle_interpolator_;
+    kspace_binning_data_length_used_for_recon_            = worder.kspace_binning_data_length_used_for_recon_;
+    kspace_binning_fill_kspace_with_neighbors_ = worder.kspace_binning_fill_kspace_with_neighbors_;
+    kspace_binning_flow_in_e1_ = worder.kspace_binning_flow_in_e1_;
+    kspace_binning_flow_recon_jointly_ = worder.kspace_binning_flow_recon_jointly_;
+
+    motion_comp_num_of_PD_images_ = worder.motion_comp_num_of_PD_images_;
 
     job_split_by_S_                             = worder.job_split_by_S_;
     job_num_of_N_                               = worder.job_num_of_N_;
@@ -881,6 +1125,9 @@ void gtPlusReconWorkOrder<T>::printInfo(std::ostream& os) const
     GADGET_OSTREAM_PRINT(os, spirit_kSize_RO_);
     GADGET_OSTREAM_PRINT(os, spirit_kSize_E1_);
     GADGET_OSTREAM_PRINT(os, spirit_kSize_E2_);
+    GADGET_OSTREAM_PRINT(os, spirit_oSize_RO_);
+    GADGET_OSTREAM_PRINT(os, spirit_oSize_E1_);
+    GADGET_OSTREAM_PRINT(os, spirit_oSize_E2_);
     GADGET_OSTREAM_PRINT(os, spirit_reg_lamda_);
     GADGET_OSTREAM_PRINT(os, spirit_use_gpu_);
     GADGET_OSTREAM_PRINT(os, spirit_calib_over_determine_ratio_);
@@ -898,6 +1145,12 @@ void gtPlusReconWorkOrder<T>::printInfo(std::ostream& os) const
     GADGET_OSTREAM_PRINT(os, spirit_ncg_iter_thres_);
     GADGET_OSTREAM_PRINT(os, spirit_ncg_scale_factor_);
     GADGET_OSTREAM_PRINT(os, spirit_ncg_print_iter_);
+    GADGET_OSTREAM_PRINT(os, spirit_slep_iter_max_);
+    GADGET_OSTREAM_PRINT(os, spirit_slep_iter_thres_);
+    GADGET_OSTREAM_PRINT(os, spirit_slep_print_iter_);
+    GADGET_OSTREAM_PRINT(os, spirit_slep_keep_third_dimension_coeff_);
+    GADGET_OSTREAM_PRINT(os, spirit_slep_keep_approx_coeff_);
+    GADGET_OSTREAM_PRINT(os, spirit_slep_scale_factor_);
     GADGET_OSTREAM_PRINT(os, spirit_use_coil_sen_map_);
     GADGET_OSTREAM_PRINT(os, spirit_use_moco_enhancement_);
     GADGET_OSTREAM_PRINT(os, spirit_recon_moco_images_);
@@ -911,6 +1164,55 @@ void gtPlusReconWorkOrder<T>::printInfo(std::ostream& os) const
     GADGET_OSTREAM_PRINT(os, retro_gated_images_);
     GADGET_OSTREAM_PRINT(os, retro_gated_segment_size_);
     GADGET_OSTREAM_PRINT(os, retro_gated_interp_method_);
+    os << std::endl;
+    GADGET_OSTREAM_PRINT(os, kspace_binning_number_of_cardiac_phases_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_minimal_cardiac_phase_width_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_multiple_channel_recon_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_iterative_non_linear_recon_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_iterative_non_linear_recon_slep_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_multiple_channel_recon_with_coil_map_);
+    os << std::endl;
+    GADGET_OSTREAM_PRINT(os, kspace_binning_compute_navigator_signal_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_navigator_moco_level_);
+    os << " [ ";
+    size_t ii;
+    for ( ii=0; ii<kspace_binning_navigator_moco_level_; ii++ )
+    {
+        os << kspace_binning_navigator_moco_iter_[ii] << " ";
+    }
+    os << " ] " << std::endl;
+
+    GADGET_OSTREAM_PRINT(os, kspace_binning_navigator_hilbert_strength_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_navigator_dissimilarity_sigma_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_navigator_bidirectional_moco_);
+    os << std::endl;
+    GADGET_OSTREAM_PRINT(os, kspace_binning_moco_level_);
+    os << " [ ";
+    for ( ii=0; ii<kspace_binning_moco_level_; ii++ )
+    {
+        os << kspace_binning_moco_iter_[ii] << " ";
+    }
+    os << " ] " << std::endl;
+
+    GADGET_OSTREAM_PRINT(os, kspace_binning_moco_hilbert_strength_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_moco_dissimilarity_sigma_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_bidirectional_moco_);
+    os << std::endl;
+    GADGET_OSTREAM_PRINT(os, kspace_binning_soft_combination_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_navigator_window_wide_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_navigator_window_narrow_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_method_warpping_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_exclude_last_cardiac_cycle_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_number_of_central_kspace_blocks_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_max_temporal_window_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_temporal_window_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_best_cardiac_cycle_interpolator_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_data_length_used_for_recon_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_fill_kspace_with_neighbors_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_flow_in_e1_);
+    GADGET_OSTREAM_PRINT(os, kspace_binning_flow_recon_jointly_);
+    os << std::endl;
+    GADGET_OSTREAM_PRINT(os, motion_comp_num_of_PD_images_);
     os << std::endl;
     GADGET_OSTREAM_PRINT(os, job_split_by_S_);
     GADGET_OSTREAM_PRINT(os, job_num_of_N_);
