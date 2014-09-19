@@ -109,7 +109,16 @@ namespace Gadgetron
         y = (y<0) ? 0 : y;
         y = (y>array_->get_size(1)-1) ? array_->get_size(1)-1 : y;*/
 
-        if ( ix>=0 && ix<(gt_index_type)array_->get_size(0)-1 && iy>=0 && iy<(gt_index_type)array_->get_size(1)-1 )
+        /*if ( ix>=0 && ix<(gt_index_type)array_->get_size(0)-1 && iy>=0 && iy<(gt_index_type)array_->get_size(1)-1 )
+        {
+            return bspline_.evaluateBSpline(coeff_.begin(), dimension_[0], dimension_[1], order_, derivative_[0], derivative_[1], x, y);
+        }
+        else
+        {
+            return (*bh_)(ix, iy);
+        }*/
+
+        if ( ix>=0 && ix<sx_-1 && iy>=0 && iy<sy_-1 )
         {
             return bspline_.evaluateBSpline(coeff_.begin(), dimension_[0], dimension_[1], order_, derivative_[0], derivative_[1], x, y);
         }

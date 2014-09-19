@@ -15,7 +15,7 @@
 namespace Gadgetron
 {
 
-struct EXPORTGTPLUSGADGET GtPlusRecon2DTPara
+struct GtPlusRecon2DTPara
 {
     size_t reconSizeRO_;
     size_t reconSizeE1_;

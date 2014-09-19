@@ -34,6 +34,8 @@ target_link_libraries(gadgettools optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_L
 install(TARGETS gadgettools DESTINATION lib)
 
 install (FILES 
+            GadgetCloudController.h 
+            GadgetronCloudConnector.h 
             GadgetronConnector.h
             gadgettools_export.h
             GadgetronSlotContainer.h

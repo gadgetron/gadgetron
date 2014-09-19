@@ -215,7 +215,11 @@ bool gtPlusReconWorker3DT<T>::performRecon(WorkOrderType* workOrder3DT)
         // apply coil compression coefficients
         if ( workOrder3DT->workFlow_use_BufferedKernel_ )
         {
-            if ( workOrder3DT->coil_compression_ && workOrder3DT->recon_algorithm_!=ISMRMRD_SPIRIT && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT )
+            if ( workOrder3DT->coil_compression_ 
+                && workOrder3DT->recon_algorithm_!=ISMRMRD_SPIRIT 
+                && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT 
+                && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP 
+                && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
             {
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, workOrder3DT->data_, "data_");
                 GADGET_CHECK_RETURN_FALSE(gtPlusISMRMRDReconUtil<T>().applyKLCoilCompressionCoeff(workOrder3DT->data_, *workOrder3DT->coilCompressionCoef_, data_dst_, true));
@@ -231,6 +235,8 @@ bool gtPlusReconWorker3DT<T>::performRecon(WorkOrderType* workOrder3DT)
             if ( workOrder3DT->coil_compression_ 
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_SPIRIT 
                 && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT 
+                && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP 
+                && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP 
                 && (workOrder3DT->acceFactorE1_>1 || workOrder3DT->acceFactorE2_>1) )
             {
                 ref_src_ = workOrder3DT->ref_recon_;
@@ -266,7 +272,11 @@ bool gtPlusReconWorker3DT<T>::performRecon(WorkOrderType* workOrder3DT)
 
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
 
-                if ( !workOrder3DT->downstream_coil_compression_ || workOrder3DT->recon_algorithm_==ISMRMRD_SPIRIT || workOrder3DT->recon_algorithm_==ISMRMRD_L1SPIRIT )
+                if ( !workOrder3DT->downstream_coil_compression_ 
+                    || workOrder3DT->recon_algorithm_==ISMRMRD_SPIRIT 
+                    || workOrder3DT->recon_algorithm_==ISMRMRD_L1SPIRIT 
+                    || workOrder3DT->recon_algorithm_==ISMRMRD_L1SPIRIT_SLEP 
+                    || workOrder3DT->recon_algorithm_==ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
                 {
                     ref_src_ = ref_dst_;
                 }
@@ -803,7 +813,10 @@ bool gtPlusReconWorker3DT<T>::prepRef(WorkOrderType* workOrder3DT, const hoNDArr
                 GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.stop());
                 GADGET_EXPORT_ARRAY_COMPLEX(debugFolder_, gt_exporter_, croppedRef, "refRecon_afterCrop");
 
-                if ( workOrder3DT->recon_algorithm_ == ISMRMRD_SPIRIT || workOrder3DT->recon_algorithm_ == ISMRMRD_L1SPIRIT )
+                if ( workOrder3DT->recon_algorithm_ == ISMRMRD_SPIRIT 
+                    || workOrder3DT->recon_algorithm_ == ISMRMRD_L1SPIRIT 
+                    || workOrder3DT->recon_algorithm_ == ISMRMRD_L1SPIRIT_SLEP 
+                    || workOrder3DT->recon_algorithm_ == ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
                 {
                     // copy the ref into the data
                     GADGET_CHECK_RETURN_FALSE(gtPlus_util_.copyAlongROE1E2(refRecon, workOrder3DT->data_, 0, refRecon.get_size(0)-1, startE1_, endE1_, startE2_, endE2_));
@@ -1052,7 +1065,11 @@ bool gtPlusReconWorker3DT<T>::coilCompression(WorkOrderType* workOrder3DT)
         if ( workOrder3DT->acceFactorE1_==1 && workOrder3DT->acceFactorE2_==1 ) return true;
 
         // compute coil compression coeff
-        if ( workOrder3DT->coil_compression_ && workOrder3DT->recon_algorithm_!=ISMRMRD_SPIRIT && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT )
+        if ( workOrder3DT->coil_compression_ 
+            && workOrder3DT->recon_algorithm_!=ISMRMRD_SPIRIT 
+            && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT 
+            && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP 
+            && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
         {
             // check whether coil compression coeff has been preset
             if ( workOrder3DT->coilCompressionCoef_->size()!=dataN )
@@ -1548,7 +1565,11 @@ bool gtPlusReconWorker3DT<T>::afterUnwrapping(WorkOrderType* workOrder3DT)
             GADGET_CHECK_PERFORM(performTiming_, gt_timer2_.start("ref fill back ... "));
 
             hoNDArray<T> ref_dst;
-            if ( workOrder3DT->coil_compression_ && workOrder3DT->recon_algorithm_!=ISMRMRD_SPIRIT && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT )
+            if ( workOrder3DT->coil_compression_ 
+                && workOrder3DT->recon_algorithm_!=ISMRMRD_SPIRIT 
+                && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT 
+                && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP 
+                && workOrder3DT->recon_algorithm_!=ISMRMRD_L1SPIRIT_SLEP_MOTION_COMP )
             {
                 GADGET_CHECK_RETURN_FALSE(gtPlus_util_.applyKLCoilCompressionCoeff(workOrder3DT->ref_, *workOrder3DT->coilCompressionCoef_, ref_dst, true));
             }

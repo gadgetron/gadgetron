@@ -7,7 +7,7 @@
 
 #include "ismrmrd/ismrmrd.h"
 
-#include "util/gtPlusIOAnalyze.h"
+#include "gtPlusIOAnalyze.h"
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusISMRMRDReconWorker.h"
 
