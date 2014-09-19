@@ -6,6 +6,7 @@
 #include "CBCT_binning.h"
 #include "hoCuNDArray_math.h"
 #include "hoCuNDArray_operators.h"
+#include "gpuxray_export.h"
 
 #include <numeric>
 #include <math_constants.h>
@@ -13,7 +14,7 @@
 
 namespace Gadgetron{
   
-  class hoCuConebeamProjectionOperator : public linearOperator< hoCuNDArray<float> >
+  class EXPORTGPUXRAY hoCuConebeamProjectionOperator : public linearOperator< hoCuNDArray<float> >
   {
   public:
     hoCuConebeamProjectionOperator() : linearOperator< hoCuNDArray<float> >()
