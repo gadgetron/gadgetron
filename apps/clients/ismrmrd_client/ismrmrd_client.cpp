@@ -21,8 +21,8 @@
 #include <boost/thread/thread.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <ismrmrd.h>
-#include <ismrmrd_dataset.h>
+#include <ismrmrd/ismrmrd.h>
+#include <ismrmrd/dataset.h>
 
 #include <fstream>
 #include <streambuf>
@@ -164,7 +164,7 @@ public:
     boost::asio::read(*stream, boost::asio::buffer(im.getData(), im.getDataSize()));
     {
       if (!dataset_) {
-	dataset_ = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(file_name_.c_str(), group_name_.c_str())); 
+          dataset_ = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(file_name_.c_str(), group_name_.c_str(), true)); // create if necessary 
       }
 
       std::stringstream st1;
@@ -172,7 +172,7 @@ public:
       std::string image_varname = st1.str();
     
       if (dataset_->appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, im) < 0) {
-	throw GadgetronClientException("Unable to append header to ISMRMRD HDF5 dataset");
+	throw GadgetronClientException("Unable to append image to ISMRMRD dataset");
       }
     
     }
@@ -222,38 +222,26 @@ public:
     boost::asio::read(*stream, boost::asio::buffer(im.getData(), im.getDataSize()));
     {
       if (!dataset_) {
-	dataset_ = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(file_name_.c_str(), group_name_.c_str())); 
+          dataset_ = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(file_name_.c_str(), group_name_.c_str(), true)); // create if necessary 
       }
 
       std::stringstream st1;
-      st1 << "image_" << h.image_series_index << ".head";
-      std::string head_varname = st1.str();
+      st1 << "image_" << h.image_series_index;
+      std::string image_varname = st1.str();
    
-      std::stringstream st2;
-      st2 << "image_" << h.image_series_index << ".img";
-      std::string img_varname = st2.str();
-    
-      std::stringstream st3;
-      st3 << "image_" << h.image_series_index << ".attrib";
-      std::string meta_varname = st3.str();
-
-      if (dataset_->appendImageHeader(h, head_varname.c_str()) < 0) {
-	throw GadgetronClientException("Unable to append header to ISMRMRD HDF5 dataset");
-      }
-
-      if (dataset_->appendImageAttrib(meta_attrib, meta_varname.c_str()) < 0) {
-	throw GadgetronClientException("Unable to append meta attributes to ISMRMRD HDF5 dataset");
-      }
-
       std::vector<unsigned int> dim(4);
       dim[0] = h.matrix_size[0];
       dim[1] = h.matrix_size[1];
       dim[2] = h.matrix_size[2];
       dim[3] = h.channels;
     
-      if (dataset_->appendArray(dim, const_cast<T*>(&im.getData()[0]), img_varname.c_str())  < 0) {
-	throw GadgetronClientException("Unable to append image array to ISMRMRD HDF5 dataset");
+      //if (dataset_->appendArray(dim, const_cast<T*>(&im.getData()[0]), img_varname.c_str())  < 0) {
+      //throw GadgetronClientException("Unable to append image to ISMRMRD dataset");
+      //}
+      if (dataset_->appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, im) < 0) {
+	throw GadgetronClientException("Unable to append header to ISMRMRD HDF5 dataset");
       }
+
     }
   }
 
@@ -712,11 +700,11 @@ int main(int argc, char **argv)
 
     uint32_t acquisitions = ismrmrd_dataset.getNumberOfAcquisitions();
 
+    ISMRMRD::Acquisition acq_tmp;
     for (uint32_t i = 0; i < acquisitions; i++) {
       {
-	ISMRMRD::Acquisition * acq_tmp = ismrmrd_dataset.readAcquisition(i);
-	con.send_ismrmrd_acquisition(*acq_tmp);
-	delete acq_tmp;
+        ismrmrd_dataset.readAcquisition(i, acq_tmp);
+	con.send_ismrmrd_acquisition(acq_tmp);
       }
     }
 
