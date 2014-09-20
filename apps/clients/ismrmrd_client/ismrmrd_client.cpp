@@ -229,15 +229,6 @@ public:
       st1 << "image_" << h.image_series_index;
       std::string image_varname = st1.str();
    
-      std::vector<unsigned int> dim(4);
-      dim[0] = h.matrix_size[0];
-      dim[1] = h.matrix_size[1];
-      dim[2] = h.matrix_size[2];
-      dim[3] = h.channels;
-    
-      //if (dataset_->appendArray(dim, const_cast<T*>(&im.getData()[0]), img_varname.c_str())  < 0) {
-      //throw GadgetronClientException("Unable to append image to ISMRMRD dataset");
-      //}
       if (dataset_->appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, im) < 0) {
 	throw GadgetronClientException("Unable to append header to ISMRMRD HDF5 dataset");
       }
