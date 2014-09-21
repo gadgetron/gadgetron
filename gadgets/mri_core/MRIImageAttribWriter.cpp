@@ -85,7 +85,10 @@ int MRIImageAttribWriter<T>::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
         return -1;
     }
 
-    if ((send_cnt = sock->send_n ( imagemb->getObjectPtr(), sizeof(ISMRMRD::ImageHeader))) <= 0)
+    ISMRMRD::ISMRMRD_ImageHeader imgHeader;
+    imgHeader = *imagemb->getObjectPtr();
+
+    if ((send_cnt = sock->send_n ( &imgHeader, sizeof(ISMRMRD::ISMRMRD_ImageHeader))) <= 0)
     {
         ACE_DEBUG ((LM_ERROR,
                 ACE_TEXT ("(%P|%t) Unable to send image header\n")));
