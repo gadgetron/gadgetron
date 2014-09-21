@@ -98,14 +98,11 @@ namespace Gadgetron{
 
             ssize_t recv_count = 0;
 
-            ISMRMRD::ISMRMRD_AcquisitionHeader acqHead;
-            if ((recv_count = stream->recv_n(&acqHead, sizeof(ISMRMRD::ISMRMRD_AcquisitionHeader))) <= 0) {
+            if ((recv_count = stream->recv_n(m1->getObjectPtr(), sizeof(ISMRMRD::AcquisitionHeader))) <= 0) {
                 ACE_DEBUG( (LM_ERROR, ACE_TEXT("%P, %l, GadgetIsmrmrdAcquisitionMessageReader, failed to read ISMRMRDACQ Header\n")) );
                 m1->release();
                 return 0;
             }
-
-            m1->getObjectPtr()->set(acqHead);
 
             if (m1->getObjectPtr()->trajectory_dimensions) {
                 GadgetContainerMessage<hoNDArray< float > >* m3 =
