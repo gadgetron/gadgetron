@@ -43,7 +43,8 @@ namespace Gadgetron{
                 return -1;
             }
 
-            if ((send_cnt = sock->send_n (&acqmb->getObjectPtr()->getHead(), sizeof(ISMRMRD::ISMRMRD_AcquisitionHeader))) <= 0) {
+            ISMRMRD::ISMRMRD_AcquisitionHeader acqHead = acqmb->getObjectPtr()->getHead();
+            if ((send_cnt = sock->send_n (&acqHead, sizeof(ISMRMRD::ISMRMRD_AcquisitionHeader))) <= 0) {
                 ACE_DEBUG ((LM_ERROR,
                     ACE_TEXT ("(%P|%t) Unable to send acquisition header\n")));
 
