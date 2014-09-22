@@ -1065,7 +1065,7 @@ Gadgetron::cuNFFT_plan<REAL,D,ATOMICS>::convolve_NFFT_C2NC( cuNDArray<complext<R
 
   for( unsigned int repetition = 0; repetition<num_repetitions; repetition++ ){
     NFFT_convolve_kernel<REAL,D>
-      <<<dimGrid, dimBlock, (repetition==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
+      <<<dimGrid, dimBlock, ((repetition==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread)>>>
       ( alpha, beta, W, vector_td<unsigned int,D>(matrix_size_os), vector_td<unsigned int,D>(matrix_size_wrap), number_of_samples,
         (repetition==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils, 
         raw_pointer_cast(&(*trajectory_positions)[0]), 
@@ -1165,7 +1165,7 @@ _convolve_NFFT_NC2C<float,D,true>{ // True: use atomic operations variant
     for( unsigned int repetition = 0; repetition<num_repetitions; repetition++ ){
       
       NFFT_H_atomic_convolve_kernel<float,D>
-        <<<dimGrid, dimBlock, (repetition==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
+        <<<dimGrid, dimBlock, ((repetition==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread)>>>
         ( alpha, beta, W, vector_td<unsigned int,D>(matrix_size_os), vector_td<unsigned int,D>(matrix_size_wrap), number_of_samples,
           (repetition==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils,
           raw_pointer_cast(&(*trajectory_positions)[0]), 
@@ -1275,7 +1275,7 @@ _convolve_NFFT_NC2C<REAL,D,false>{ // False: use non-atomic operations variant
     for( unsigned int repetition = 0; repetition<num_repetitions; repetition++ ){
       
       NFFT_H_convolve_kernel<REAL,D>
-        <<<dimGrid, dimBlock, (repetition==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread>>>
+        <<<dimGrid, dimBlock, ((repetition==num_repetitions-1) ? dimBlock.x*bytes_per_thread_tail : dimBlock.x*bytes_per_thread)>>>
         ( alpha, beta, W, vector_td<unsigned int,D>(matrix_size_os+matrix_size_wrap), number_of_samples,
           (repetition==num_repetitions-1) ? domain_size_coils_tail : domain_size_coils, 
           raw_pointer_cast(&(*trajectory_positions)[0]), 

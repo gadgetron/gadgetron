@@ -4,7 +4,7 @@
 #include "GadgetMRIHeaders.h"
 #include "gadgetronpython_export.h"
 
-#include <ismrmrd.h>
+#include <ismrmrd/ismrmrd.h>
 #include <boost/python.hpp>
 #include <boost/python/tuple.hpp>
 

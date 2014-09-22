@@ -10,7 +10,7 @@
 
 #include "ImageAttribWriter.h"
 
-#include <ismrmrd_hdf5.h>
+#include <ismrmrd/dataset.h>
 #include <sstream>
 
 namespace Gadgetron
@@ -36,8 +36,6 @@ namespace Gadgetron
         {
             try
             {
-                ISMRMRD::HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
-
                 size_t n;
 
                 // image data role
@@ -95,24 +93,7 @@ namespace Gadgetron
                 std::string filename = ostr.str();
 
                 ACE_DEBUG( (LM_DEBUG, ACE_TEXT("Writing image %s\n"), filename.c_str()) );
-
-                std::stringstream st1;
-                st1 << filename << img_head->image_index << ".head";
-                std::string head_varname = st1.str();
-
-                std::stringstream st2;
-                st2 << filename << img_head->image_index << ".img";
-                std::string img_varname = st2.str();
-
-                std::stringstream st3;
-                st3 << filename << img_head->image_index << ".attrib";
-                std::string meta_varname = st3.str();
-
-                if (dataset_.appendImageHeader( *img_head, head_varname.c_str()) < 0)
-                {
-                    GADGET_DEBUG1("Failed to write image header\n");
-                    return GADGET_FAIL;
-                }
+		// Otherwise the above should be removed
 
                 char* buf = NULL;
                 size_t_type len(0);
@@ -138,39 +119,24 @@ namespace Gadgetron
 
                 std::string attrib = std::string(buf+sizeof(size_t_type));
 
-                if (dataset_.appendImageAttrib(attrib, meta_varname.c_str()) < 0)
-                {
-                    GADGET_DEBUG1("Failed to write image attributes\n");
-                    return GADGET_FAIL;
-                }
-
                 delete [] buf;
 
-                std::vector<size_t> dim = *data->get_dimensions();
-                std::vector<unsigned int> dim2(dim.size());
+                std::stringstream st1;
+                st1 << "image_" << img_head->image_series_index;
+                std::string image_varname = st1.str();
 
-                size_t ii;
-                for ( ii=0; ii<dim.size(); ii++ )
-                {
-                    dim2[ii] = (unsigned int)dim[ii];
-                }
+		// TODO this makes a copy of the data
+		// what's the best way to do it without copies?
+		ISMRMRD::Image img;
+		img.setHead(*img_head);
+		img.setAttributeString(attrib);
+                memcpy(img.getData(), data->get_data_ptr(), img.getDataSize());
 
-                if (dataset_.appendArray(dim2, data->get_data_ptr(), img_varname.c_str())  < 0)
-                {
-                    GADGET_DEBUG1("Failed to write image data\n");
+                if (dataset_.appendImage(image_varname, ISMRMRD::ISMRMRD_BLOCKMODE_ARRAY, img) < 0) {
+                    GADGET_DEBUG1("Failed to write image.\n");
                     return GADGET_FAIL;
                 }
 
-                // still store in the conventional way
-                std::stringstream st5;
-                st5 << "image_" << img_head->image_series_index << ".img";
-                img_varname = st5.str();
-
-                if (dataset_.appendArray(dim2, data->get_data_ptr(), img_varname.c_str())  < 0)
-                {
-                    GADGET_DEBUG1("Failed to write image data\n");
-                    return GADGET_FAIL;
-                }
             }
             catch (...)
             {
@@ -185,7 +151,7 @@ namespace Gadgetron
         std::string group_name_;
         std::string file_name_;
         std::string prefix_;
-        ISMRMRD::IsmrmrdDataset dataset_;
+        ISMRMRD::Dataset dataset_;
     };
 }
 

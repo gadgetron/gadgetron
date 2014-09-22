@@ -10,8 +10,8 @@
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "hoNDObjectArray.h"
-#include "ismrmrd.h"
-#include "ismrmrd_meta.h"
+#include "ismrmrd/ismrmrd.h"
+#include "ismrmrd/meta.h"
 #include "GadgetIsmrmrdReadWrite.h"
 
 #include "hoNDArray_utils.h"

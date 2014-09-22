@@ -33,8 +33,8 @@
 
 #include "GtPlusExport.h"
 
-#include "ismrmrd.h"
-#include "ismrmrd_meta.h"
+#include "ismrmrd/ismrmrd.h"
+#include "ismrmrd/meta.h"
 
 #include "boost/tuple/tuple.hpp"
 #include "boost/tuple/tuple_comparison.hpp"

@@ -2,7 +2,7 @@
 #define MRI_CORE_DATA_H
 
 #include "GadgetContainerMessage.h"
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 #include "Gadgetron.h"
 #include <vector>
 

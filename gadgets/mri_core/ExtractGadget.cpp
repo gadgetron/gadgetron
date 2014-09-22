@@ -76,22 +76,22 @@ int ExtractGadget::process(GadgetContainerMessage<ISMRMRD::ImageHeader> *m1, Gad
 			}
 
 			cm1->cont(cm2);
-			cm1->getObjectPtr()->image_data_type = ISMRMRD::DATA_FLOAT;//GADGET_IMAGE_REAL_FLOAT;
+			cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_FLOAT;//GADGET_IMAGE_REAL_FLOAT;
 
 			switch (m) {
 			case GADGET_EXTRACT_MAGNITUDE:
-				cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_MAGNITUDE;//GADGET_IMAGE_MAGNITUDE;
+				cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;//GADGET_IMAGE_MAGNITUDE;
 				break;
 			case GADGET_EXTRACT_REAL:
-				cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_REAL;
+				cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_REAL;
 				cm1->getObjectPtr()->image_series_index += 1000; //Ensure that this will go in a different series
 				break;
 			case GADGET_EXTRACT_IMAG:
-				cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_IMAG;
+				cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_IMAG;
 				cm1->getObjectPtr()->image_series_index += 2000; //Ensure that this will go in a different series
 				break;
 			case GADGET_EXTRACT_PHASE:
-				cm1->getObjectPtr()->image_type = ISMRMRD::TYPE_PHASE;
+				cm1->getObjectPtr()->image_type = ISMRMRD::ISMRMRD_IMTYPE_PHASE;
 				cm1->getObjectPtr()->image_series_index += 3000; //Ensure that this will go in a different series
 				break;
 			default:

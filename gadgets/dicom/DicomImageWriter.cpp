@@ -7,7 +7,7 @@
 #include "DicomImageWriter.h"
 #include "GadgetContainerMessage.h"
 #include "hoNDArray.h"
-#include "ismrmrd_meta.h"
+#include "ismrmrd/meta.h"
 
 // DCMTK includes
 #include "dcmtk/config/osconfig.h"

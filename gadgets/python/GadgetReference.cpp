@@ -3,7 +3,7 @@
 #include "GadgetReference.h"
 #include "GadgetContainerMessage.h"
 #include "hoNDArray.h"
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 #include <boost/preprocessor/stringize.hpp>
 #include <boost/python.hpp>
 #include <numpy/numpyconfig.h>

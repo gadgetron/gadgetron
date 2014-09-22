@@ -10,7 +10,7 @@
 #include "b1_map.h"
 #include "GPUTimer.h"
 #include "vector_td_utilities.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 namespace Gadgetron{
 

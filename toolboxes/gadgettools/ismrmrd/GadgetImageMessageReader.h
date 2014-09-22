@@ -8,10 +8,10 @@
 #include <iostream>
 
 #include "GadgetMRIHeaders.h"
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 #include "hoNDArray.h"
 #include "GadgetMessageInterface.h"
-#include "ismrmrd_meta.h"
+#include "ismrmrd/meta.h"
 
 namespace Gadgetron
 {

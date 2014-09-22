@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 #include "GadgetronTimer.h"
 #include "gtPlusISMRMRDReconUtil.h"
 #include "gtPlusISMRMRDReconWorker2DT.h"

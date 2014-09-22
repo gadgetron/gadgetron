@@ -4,7 +4,7 @@
 #include "gadgetron_dicom_export.h"
 #include "GadgetMessageInterface.h"
 #include "GadgetMRIHeaders.h"
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 
 
 namespace Gadgetron {

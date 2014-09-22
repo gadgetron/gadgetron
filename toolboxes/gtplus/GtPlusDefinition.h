@@ -8,7 +8,7 @@
 
 #include "GtPlusExport.h"
 
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 
 namespace Gadgetron
 {

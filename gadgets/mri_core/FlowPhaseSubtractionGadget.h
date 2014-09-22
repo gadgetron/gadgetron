@@ -6,7 +6,7 @@
 #include "hoNDArray.h"
 #include "gadgetron_mricore_export.h"
 
-#include <ismrmrd.h>
+#include <ismrmrd/ismrmrd.h>
 #include <complex>
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>

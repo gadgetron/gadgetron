@@ -308,10 +308,13 @@ namespace Gadgetron{
     }
     IsmrmrdAcquisitionBucket* bucket = buckets_[sorting_index]->getObjectPtr();
 
-    bucket->data_.push_back(d);
+    if (!ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION).isSet(m1->getObjectPtr()->flags))
+      {
+	bucket->data_.push_back(d);
+      }
 
-    if ( ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_PARALLEL_CALIBRATION).isSet(m1->getObjectPtr()->flags) ||
-	 ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_PARALLEL_CALIBRATION_AND_IMAGING).isSet(m1->getObjectPtr()->flags) )
+    if ( ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION).isSet(m1->getObjectPtr()->flags) ||
+	 ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION_AND_IMAGING).isSet(m1->getObjectPtr()->flags) )
       {
 	bucket->ref_.push_back(d);
       }

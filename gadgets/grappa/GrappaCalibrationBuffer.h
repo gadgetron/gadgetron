@@ -2,7 +2,7 @@
 #define GRAPPACALIBRATIONBUFFER_H
 
 #include "gadgetron_grappa_export.h"
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 #include "hoNDArray.h"
 #include "GrappaWeights.h"
 #include "GrappaWeightsCalculator.h"

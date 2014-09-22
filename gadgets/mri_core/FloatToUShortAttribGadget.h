@@ -3,10 +3,10 @@
 
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "ismrmrd_meta.h"
+#include "ismrmrd/meta.h"
 #include "gadgetron_mricore_export.h"
 
-#include <ismrmrd.h>
+#include <ismrmrd/ismrmrd.h>
 
 namespace Gadgetron
 {

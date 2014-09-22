@@ -7,7 +7,7 @@
 #include "GadgetMRIHeaders.h"
 #include "hoNDArray.h"
 
-#include <ismrmrd.h>
+#include <ismrmrd/ismrmrd.h>
 #include <complex>
 #include <boost/shared_ptr.hpp>
 
