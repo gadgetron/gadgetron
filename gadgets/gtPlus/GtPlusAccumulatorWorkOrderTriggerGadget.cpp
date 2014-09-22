@@ -625,10 +625,10 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
             Gadgetron::gtPlus::ISMRMRDDIM& triggerDim2_,
             int numOfKSpace_triggerDim1_)
 {
-    //bool is_first_acq_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_FIRST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
+    //bool is_first_acq_in_slice = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_FIRST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
     //if ( !is_first_acq_in_slice ) return true;
 
-    bool is_last_acq = ( ((ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_REPETITION).isSet(m1->getObjectPtr()->flags)) || (ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags)) ) 
+    bool is_last_acq = ( ((ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_LAST_IN_REPETITION).isSet(m1->getObjectPtr()->flags)) || (ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags)) ) 
                                 && (m1->getObjectPtr()->idx.repetition==meas_max_idx_.repetition)
                                 && (m1->getObjectPtr()->idx.slice==meas_max_idx_.slice)
                                 && (m1->getObjectPtr()->idx.set==meas_max_idx_.set)
@@ -639,7 +639,7 @@ triggerWorkOrder(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1,
     // if retro gating, use the end of acq flag
     if ( !is_last_acq && (workOrder_.retro_gated_images_ > 0) )
     {
-        is_last_acq = (ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_MEASUREMENT).isSet(m1->getObjectPtr()->flags));
+        is_last_acq = (ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_LAST_IN_MEASUREMENT).isSet(m1->getObjectPtr()->flags));
     }
 
     if ( is_last_acq ) last_acq_arrived_ = true;
@@ -981,15 +981,15 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::checkStatus(uint64_t flag, int sam
     bool& bIsKSpace, bool& bIsRef, bool& bIsNoise, bool& bIsPhaseCorr, bool& bIsReflect, bool& bIsOther,
     bool& bIsNavigator, bool& bIsRTFeedback, bool& bIsHPFeedback, bool& bIsDummyScan)
 {
-    bIsNoise = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NOISE_MEASUREMENT).isSet(flag);
-    bool is_ref = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_PARALLEL_CALIBRATION).isSet(flag);
-    bool is_ref_kspace = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_PARALLEL_CALIBRATION_AND_IMAGING).isSet(flag);
-    bIsReflect = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_REVERSE).isSet(flag);
-    bIsPhaseCorr = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_PHASECORR_DATA).isSet(flag);
-    bIsNavigator = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NAVIGATION_DATA).isSet(flag);
-    bIsRTFeedback = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_RTFEEDBACK_DATA).isSet(flag);
-    bIsHPFeedback = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_HPFEEDBACK_DATA).isSet(flag);
-    bIsDummyScan = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_DUMMYSCAN_DATA).isSet(flag);
+    bIsNoise = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT).isSet(flag);
+    bool is_ref = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION).isSet(flag);
+    bool is_ref_kspace = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PARALLEL_CALIBRATION_AND_IMAGING).isSet(flag);
+    bIsReflect = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_REVERSE).isSet(flag);
+    bIsPhaseCorr = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_PHASECORR_DATA).isSet(flag);
+    bIsNavigator = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_NAVIGATION_DATA).isSet(flag);
+    bIsRTFeedback = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_RTFEEDBACK_DATA).isSet(flag);
+    bIsHPFeedback = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_HPFEEDBACK_DATA).isSet(flag);
+    bIsDummyScan = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_DUMMYSCAN_DATA).isSet(flag);
 
     bIsKSpace = false;
     bIsRef = false;
@@ -1379,7 +1379,7 @@ storeRefData(GadgetContainerMessage<ISMRMRD::AcquisitionHeader>* m1, GadgetConta
             if ( idx.average > meas_max_idx_ref_.average )                              meas_max_idx_ref_.average = idx.average;
 
             size_t ii;
-            for ( ii=0; ii<ISMRMRD_USER_INTS; ii++ )
+            for ( ii=0; ii<ISMRMRD::ISMRMRD_USER_INTS; ii++ )
             {
                 if ( idx.user[ii] > meas_max_idx_ref_.user[ii] ) meas_max_idx_ref_.user[ii] = idx.user[ii];
             }
@@ -1653,7 +1653,7 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(GadgetContainerMessa
         }
 
         // if it is the first acq in a slice, fill in all information
-        bool is_first_acq_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_FIRST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
+        bool is_first_acq_in_slice = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_FIRST_IN_SLICE).isSet(m1->getObjectPtr()->flags);
 
         /*if ( is_first_acq_in_slice 
             || ( messageImage->imageArray_[offset].version==0 
@@ -1730,9 +1730,9 @@ bool GtPlusAccumulatorWorkOrderTriggerGadget::fillImageInfo(GadgetContainerMessa
             messageImage->imageArray_[offset].physiology_time_stamp[1] = m1->getObjectPtr()->physiology_time_stamp[1];
             messageImage->imageArray_[offset].physiology_time_stamp[2] = m1->getObjectPtr()->physiology_time_stamp[2];
 
-            messageImage->imageArray_[offset].image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
+            messageImage->imageArray_[offset].data_type = ISMRMRD::ISMRMRD_CXFLOAT;
 
-            messageImage->imageArray_[offset].image_type = ISMRMRD::TYPE_MAGNITUDE;
+            messageImage->imageArray_[offset].image_type = ISMRMRD::ISMRMRD_IMTYPE_MAGNITUDE;
 
             messageImage->imageArray_[offset].image_index = (uint16_t)(++image_counter_);
             messageImage->imageArray_[offset].image_series_index = (uint16_t)image_series_;

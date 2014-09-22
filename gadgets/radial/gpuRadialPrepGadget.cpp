@@ -10,7 +10,7 @@
 #include "radial_utilities.h"
 #include "hoNDArray_elemwise.h"
 #include "hoNDArray_fileio.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 #include <algorithm>
 #include <vector>
@@ -289,7 +289,7 @@ namespace Gadgetron{
     // Noise should have been consumed by the noise adjust (if in the gadget chain)
     //
     
-    bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
+    bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
     if (is_noise) { 
       m1->release();
       return GADGET_OK;
@@ -447,7 +447,7 @@ namespace Gadgetron{
 
       {
         // Initialize header to all zeroes (there is a few fields we do not set yet)
-        ISMRMRD::ImageHeader tmp = {0};
+        ISMRMRD::ImageHeader tmp;
         *(header->getObjectPtr()) = tmp;
       }
 
@@ -466,7 +466,7 @@ namespace Gadgetron{
       header->getObjectPtr()->set = base_head->idx.set;
 
       header->getObjectPtr()->acquisition_time_stamp = base_head->acquisition_time_stamp;
-      memcpy(header->getObjectPtr()->physiology_time_stamp, base_head->physiology_time_stamp, sizeof(uint32_t)*ISMRMRD_PHYS_STAMPS);
+      memcpy(header->getObjectPtr()->physiology_time_stamp, base_head->physiology_time_stamp, sizeof(uint32_t)*ISMRMRD::ISMRMRD_PHYS_STAMPS);
 
       memcpy(header->getObjectPtr()->position, base_head->position, sizeof(float)*3);
       memcpy(header->getObjectPtr()->read_dir, base_head->read_dir, sizeof(float)*3);
@@ -474,7 +474,7 @@ namespace Gadgetron{
       memcpy(header->getObjectPtr()->slice_dir, base_head->slice_dir, sizeof(float)*3);
       memcpy(header->getObjectPtr()->patient_table_position, base_head->patient_table_position, sizeof(float)*3);
 
-      header->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
+      header->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
       header->getObjectPtr()->image_index = image_counter_[set*slices_+slice]++; 
       header->getObjectPtr()->image_series_index = set*slices_+slice;
 

@@ -7,7 +7,7 @@
 
 #include "EPIExport.h"
 
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 #include "hoNDArray.h"
 
 namespace Gadgetron { namespace EPI {
@@ -42,7 +42,7 @@ template <typename T> class EPIReconXObject
 
   virtual int computeTrajectory()=0;
 
-  virtual int apply(const ISMRMRD::AcquisitionHeader &hdr_in, const hoNDArray <T> &data_in, 
+  virtual int apply(ISMRMRD::AcquisitionHeader &hdr_in,  hoNDArray <T> &data_in, 
 		    ISMRMRD::AcquisitionHeader &hdr_out, hoNDArray <T> &data_out)=0;
   EPIReceiverPhaseType rcvType_;
 

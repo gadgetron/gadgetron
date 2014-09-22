@@ -1,12 +1,7 @@
 #include "GadgetronConnector.h"
 #include "GadgetMRIHeaders.h"
 #include "GadgetContainerMessage.h"
-#include "hoNDArray.h"
-#include "ImageWriter.h"
-#include "HDF5ImageWriter.h"
 #include "FileInfo.h"
-#include "ismrmrd_hdf5.h"
-#include "GadgetIsmrmrdReadWrite.h"
 
 #include <ace/Log_Msg.h>
 #include <ace/Get_Opt.h>

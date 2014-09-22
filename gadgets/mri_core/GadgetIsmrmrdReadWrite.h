@@ -9,7 +9,7 @@
 #include "url_encode.h"
 #include "gadgetron_mricore_export.h"
 
-#include <ismrmrd.h>
+#include <ismrmrd/ismrmrd.h>
 
 #include <ace/SOCK_Stream.h>
 #include <ace/Task.h>

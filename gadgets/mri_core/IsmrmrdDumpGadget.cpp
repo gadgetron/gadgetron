@@ -55,8 +55,7 @@ namespace Gadgetron
             ismrmrd_file_name_ = file_prefix_ + std::string(".h5");
         }
 
-        ISMRMRD::HDF5Exclusive lock; //This will ensure threadsafe access to HDF5
-        ismrmrd_dataset_ = boost::shared_ptr<ISMRMRD::IsmrmrdDataset>(new ISMRMRD::IsmrmrdDataset(ismrmrd_file_name_.c_str(), "dataset"));
+        ismrmrd_dataset_ = boost::shared_ptr<ISMRMRD::Dataset>(new ISMRMRD::Dataset(ismrmrd_file_name_.c_str(), "dataset"));
 
         std::string xml_config(mb->rd_ptr());
 
@@ -75,15 +74,13 @@ namespace Gadgetron
 
         ismrmrd_acq.setHead(*m1->getObjectPtr());
 
-        std::valarray<float> d(reinterpret_cast<float*>(m2->getObjectPtr()->get_data_ptr()),
-            m2->getObjectPtr()->get_number_of_elements()*2);
-
-        ismrmrd_acq.setData(d);
+        memcpy(ismrmrd_acq.getData(), m2->getObjectPtr()->get_data_ptr(), 
+               sizeof(float)*m2->getObjectPtr()->get_number_of_elements()*2);
 
         if (m2->cont())
         {
             //Write trajectory
-            if (ismrmrd_acq.getTrajectoryDimensions() == 0)
+            if (ismrmrd_acq.trajectory_dimensions() == 0)
             {
                 GADGET_DEBUG1("Malformed dataset. Trajectory attached but trajectory dimensions == 0\n");
                 return GADGET_FAIL;
@@ -97,15 +94,13 @@ namespace Gadgetron
                 return GADGET_FAIL;
             } 
 
-            std::valarray<float> t(m3->getObjectPtr()->get_data_ptr(),
-                m3->getObjectPtr()->get_number_of_elements());
-
-            ismrmrd_acq.setTraj(t);
+            memcpy(ismrmrd_acq.getTraj(), m3->getObjectPtr()->get_data_ptr(),
+		   sizeof(float)*m3->getObjectPtr()->get_number_of_elements());
 
         }
         else
         {
-            if (ismrmrd_acq.getTrajectoryDimensions() != 0)
+            if (ismrmrd_acq.trajectory_dimensions() != 0)
             {
                 GADGET_DEBUG1("Malformed dataset. Trajectory dimensions not zero but no trajectory attached\n");
                 return GADGET_FAIL;
@@ -113,8 +108,7 @@ namespace Gadgetron
         }
 
         {
-            ISMRMRD::HDF5Exclusive lock;
-            if (ismrmrd_dataset_->appendAcquisition(&ismrmrd_acq) < 0)
+            if (ismrmrd_dataset_->appendAcquisition(ismrmrd_acq) < 0)
             {
                 GADGET_DEBUG1("Error appending ISMRMRD Dataset\n");
                 return GADGET_FAIL;

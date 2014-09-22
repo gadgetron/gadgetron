@@ -9,7 +9,7 @@
 #include "Gadget.h"
 #include "Gadgetron.h"
 #include "hoNDArray.h"
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 
 #include "OctaveCommunicator.h"
 #include "GadgetStreamController.h"

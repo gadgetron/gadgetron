@@ -2,7 +2,7 @@
 #include <octave/ov-struct.h>
 
 #include "GadgetContainerMessage.h"
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 #include "hoNDArray.h"
 #include "OctaveCommunicator.h"
 

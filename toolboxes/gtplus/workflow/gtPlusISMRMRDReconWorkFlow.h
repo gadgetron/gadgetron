@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 
 #include "util/gtPlusIOAnalyze.h"
 #include "gtPlusISMRMRDReconUtil.h"

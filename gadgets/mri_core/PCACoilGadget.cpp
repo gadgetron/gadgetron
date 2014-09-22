@@ -49,7 +49,7 @@ namespace Gadgetron {
     {
         std::map<int, bool>::iterator it;
         int location = m1->getObjectPtr()->idx.slice;
-        bool is_last_scan_in_slice = (ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_SLICE).isSet(m1->getObjectPtr()->flags));
+        bool is_last_scan_in_slice = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
         int samples_per_profile = m1->getObjectPtr()->number_of_samples;
         int channels = m1->getObjectPtr()->active_channels;
 

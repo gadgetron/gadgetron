@@ -71,7 +71,7 @@ namespace Gadgetron{
       weights_invalid_ = true;
     }
 
-    bool is_first_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_FIRST_IN_SLICE).isSet(m1->flags);
+    bool is_first_scan_in_slice = m1->isFlagSet(ISMRMRD::ISMRMRD_ACQ_FIRST_IN_SLICE);
 
 
     //Depending on the sequence used, we could get into trouble if the sequence switches slice acquisition scheme before finishing a slice.
@@ -88,7 +88,7 @@ namespace Gadgetron{
     last_line_ = line;
 
 
-    bool is_last_scan_in_slice = ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_SLICE).isSet(m1->flags);
+    bool is_last_scan_in_slice = m1->isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_SLICE);
 
     if (is_last_scan_in_slice && acquiring_sequentially) {
       unsigned int min_ky, max_ky;

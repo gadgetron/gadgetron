@@ -1,5 +1,10 @@
 find_package(HDF5 REQUIRED HL)
 
+if (WIN32)
+  ADD_DEFINITIONS(-D__BUILD_GADGETRON_GPUXRAY__)
+endif (WIN32)
+
+
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
   ${CMAKE_SOURCE_DIR}/toolboxes/core/cpu

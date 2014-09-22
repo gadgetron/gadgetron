@@ -1,5 +1,5 @@
 #include "AsymmetricEchoAdjustROGadget.h"
-#include "ismrmrd_xml.h"
+#include "ismrmrd/xml.h"
 
 namespace Gadgetron
 {
@@ -54,7 +54,7 @@ int AsymmetricEchoAdjustROGadget
         GadgetContainerMessage< hoNDArray< std::complex<float> > >* m2)
 {
 
-    bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
+    bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
     long long channels = (long long)m1->getObjectPtr()->active_channels;
     size_t samples = m1->getObjectPtr()->number_of_samples;
     size_t centre_column = m1->getObjectPtr()->center_sample;

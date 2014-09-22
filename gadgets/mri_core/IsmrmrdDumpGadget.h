@@ -5,8 +5,8 @@
 #include "hoNDArray.h"
 #include "gadgetron_mricore_export.h"
 
-#include <ismrmrd.h>
-#include <ismrmrd_hdf5.h>
+#include <ismrmrd/ismrmrd.h>
+#include <ismrmrd/dataset.h>
 
 #include <complex>
 
@@ -29,7 +29,7 @@ namespace Gadgetron{
     private:
       std::string file_prefix_;
       std::string ismrmrd_file_name_;
-      boost::shared_ptr<ISMRMRD::IsmrmrdDataset>  ismrmrd_dataset_;
+      boost::shared_ptr<ISMRMRD::Dataset>  ismrmrd_dataset_;
       bool append_timestamp_;
     };
 }

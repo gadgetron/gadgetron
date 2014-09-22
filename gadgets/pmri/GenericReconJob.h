@@ -3,7 +3,7 @@
 #include "hoNDArray.h"
 #include "vector_td.h"
 
-#include <ismrmrd.h>
+#include <ismrmrd/ismrmrd.h>
 #include <boost/shared_ptr.hpp>
 #include <boost/shared_array.hpp>
 

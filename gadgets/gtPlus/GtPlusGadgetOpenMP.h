@@ -9,7 +9,7 @@
 #include "GtPlusGadgetExport.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 #include "GadgetIsmrmrdReadWrite.h"
 #include "GadgetronTimer.h"
 #include "gtPlusISMRMRDReconUtil.h"

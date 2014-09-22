@@ -4,7 +4,7 @@
 #include "gadgetron_grappa_export.h"
 #include "Gadget.h"
 #include "hoNDArray.h"
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 #include "GrappaWeights.h"
 
 #include <complex>

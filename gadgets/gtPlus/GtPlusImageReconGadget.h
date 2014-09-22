@@ -10,7 +10,7 @@
 #include "Gadget.h"
 #include "hoNDArray.h"
 #include "hoNDObjectArray.h"
-#include "ismrmrd.h"
+#include "ismrmrd/ismrmrd.h"
 #include "GadgetIsmrmrdReadWrite.h"
 
 #include "hoNDImageContainer2D.h"
