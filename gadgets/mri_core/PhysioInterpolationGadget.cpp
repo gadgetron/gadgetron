@@ -105,6 +105,8 @@ namespace Gadgetron{
                     previous = time_stamps_[slc][i];
                 }
 
+                if ( intervals.empty() ) continue;
+
                 std::sort(intervals.begin(),intervals.end());
 
                 float mean_interval = sum_int/int_count;

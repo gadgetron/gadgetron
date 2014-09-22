@@ -85,14 +85,6 @@ int MRIImageAttribWriter<T>::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
         return -1;
     }
 
-    if ((send_cnt = sock->send_n ( imagemb->getObjectPtr(), sizeof(ISMRMRD::ImageHeader))) <= 0)
-    {
-        ACE_DEBUG ((LM_ERROR,
-                ACE_TEXT ("(%P|%t) Unable to send image header\n")));
-
-        return -1;
-    }
-
     char* buf = NULL;
     size_t_type len(0);
 
@@ -112,6 +104,16 @@ int MRIImageAttribWriter<T>::write(ACE_SOCK_Stream* sock, ACE_Message_Block* mb)
     catch(...)
     {
         ACE_DEBUG ((LM_ERROR, ACE_TEXT ("(%P|%t) Unable to serialize image meta attributes \n")));
+
+        return -1;
+    }
+
+    imagemb->getObjectPtr()->attribute_string_len = len;
+
+    if ((send_cnt = sock->send_n ( imagemb->getObjectPtr(), sizeof(ISMRMRD::ImageHeader))) <= 0)
+    {
+        ACE_DEBUG ((LM_ERROR,
+                ACE_TEXT ("(%P|%t) Unable to send image header\n")));
 
         return -1;
     }

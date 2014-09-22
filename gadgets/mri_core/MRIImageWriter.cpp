@@ -66,7 +66,7 @@ namespace Gadgetron{
 			return -1;
 		}
 
-		if ((send_cnt = sock->send_n (imagemb->getObjectPtr(), sizeof(ISMRMRD::ImageHeader))) <= 0) {
+        if ((send_cnt = sock->send_n ( imagemb->getObjectPtr(), sizeof(ISMRMRD::ImageHeader))) <= 0) {
 			ACE_DEBUG ((LM_ERROR,
 				ACE_TEXT ("(%P|%t) Unable to send image header\n")));
 
