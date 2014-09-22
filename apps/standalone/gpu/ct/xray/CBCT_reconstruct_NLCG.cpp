@@ -21,8 +21,6 @@
 #include "hoCuNlcgSolver.h"
 #include "hoCuPartialDerivativeOperator.h"
 
-#include "hoCuLbfgsSolver.h"
-
 #include <iostream>
 #include <algorithm>
 #include <sstream>
@@ -143,8 +141,7 @@ int main(int argc, char** argv)
   E->set_domain_dimensions(&is_dims);
   E->set_codomain_dimensions(ps->get_projections()->get_dimensions().get());
 
-  //hoCuNlcgSolver<float> solver;
-  hoCuLbfgsSolver<float> solver;
+  hoCuNlcgSolver<float> solver;
 
   solver.set_encoding_operator(E);
   solver.set_domain_dimensions(&is_dims);

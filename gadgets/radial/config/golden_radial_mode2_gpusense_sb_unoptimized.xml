@@ -60,7 +60,7 @@
       <property><name>oversampling_factor</name>     <value>1.25</value></property>
       <property><name>kernel_width</name>            <value>5.5</value></property>
       <property><name>mu</name>                      <value>1.0</value></property>
-      <property><name>lambda</name>                  <value>0.05</value></property>
+      <property><name>lambda</name>                  <value>2.0</value></property>
       <property><name>alpha</name>                   <value>0.5</value></property>
       <property><name>output_convergence</name><value>true</value></property>
     </gadget>
@@ -78,7 +78,7 @@
       <property><name>oversampling_factor</name>     <value>1.25</value></property>
       <property><name>kernel_width</name>            <value>5.5</value></property>
       <property><name>mu</name>                      <value>1.0</value></property>
-      <property><name>lambda</name>                  <value>0.05</value></property>
+      <property><name>lambda</name>                  <value>2.0</value></property>
       <property><name>alpha</name>                   <value>0.5</value></property>
       <property><name>output_convergence</name><value>true</value></property>
     </gadget>
@@ -96,7 +96,7 @@
       <property><name>oversampling_factor</name>     <value>1.25</value></property>
       <property><name>kernel_width</name>            <value>5.5</value></property>
       <property><name>mu</name>                      <value>1.0</value></property>
-      <property><name>lambda</name>                  <value>0.05</value></property>
+      <property><name>lambda</name>                  <value>2.0</value></property>
       <property><name>alpha</name>                   <value>0.5</value></property>
       <property><name>output_convergence</name><value>true</value></property>
     </gadget>

@@ -1,8 +1,7 @@
 #pragma once
 
-#include "cuNDArray_blas.h"
-#include "cuNFFT.h"
 #include "linearOperator.h"
+#include "cuNFFT.h"
 #include "gpunfft_export.h"
 
 namespace Gadgetron{

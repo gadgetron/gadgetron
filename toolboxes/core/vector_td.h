@@ -16,6 +16,10 @@
 
 #include <stdlib.h> // for size_t
 
+#ifdef max
+#undef max
+#endif // max
+
 namespace Gadgetron{
 
   template<class T, unsigned int D> class vector_td
@@ -23,12 +27,9 @@ namespace Gadgetron{
   public:
 
     T vec[D];
+    __inline__ __host__ __device__ vector_td(){};
 
-	__inline__ __host__ __device__ vector_td(){
-		for (unsigned int i = 0; i < D; i++)
-			vec[i] = T(0);
-	}
-     __inline__ __host__ __device__ vector_td(const vector_td & other){
+    __inline__ __host__ __device__ vector_td(const vector_td & other){
        	for (unsigned int i = 0; i < D; i++)
            	vec[i] = other[i];
         }

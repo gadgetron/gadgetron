@@ -299,8 +299,6 @@ namespace Gadgetron{
     {
       cuNDArray<float_complext> tmp(*j->reg_host_);
       *reg_image_ = *expand( &tmp, frames );
-      boost::shared_ptr< hoNDArray<float> > host_norm = abs(reg_image_.get())->to_host();
-      write_nd_array<float>( host_norm.get(), "reg_image.real" );
     }
 
     // Define preconditioning weights
