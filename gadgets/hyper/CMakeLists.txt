@@ -3,8 +3,6 @@ IF (WIN32)
 ENDIF (WIN32)
 
 find_package(Ismrmrd REQUIRED)
-find_package(XSD REQUIRED)
-find_package(XercesC REQUIRED)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/toolboxes/core
@@ -30,7 +28,6 @@ add_library(gadgetron_hyper SHARED
   NFFT2DGadget.h NFFT2DGadget.cpp
   CMRT3DGadget.h CMRT3DGadget.cpp
   CMRTGadget.h CMRTGadget.cpp
-  ${ISMRMRD_XSD_SOURCE}
   )
 
 target_link_libraries(gadgetron_hyper 
@@ -43,7 +40,6 @@ target_link_libraries(gadgetron_hyper
   ${FFTW3_LIBRARIES} 
   optimized ${ACE_LIBRARIES} debug ${ACE_DEBUG_LIBRARY} 
   ${BOOST_LIBRARIES}
-  ${XERCESC_LIBRARIES} 
   )
 
 install(FILES 

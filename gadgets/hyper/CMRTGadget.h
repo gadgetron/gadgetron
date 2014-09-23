@@ -6,7 +6,7 @@
 #include "gadgetron_hyper_export.h"
 
 #include "CMRTOperator.h"
-#include <ismrmrd.h>
+#include <ismrmrd/ismrmrd.h>
 #include <complex>
 
 namespace Gadgetron{

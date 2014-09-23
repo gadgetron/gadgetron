@@ -5,35 +5,37 @@
 #include "hoNDArray_fileio.h"
 #include "cuNDArray_utils.h"
 #include "GadgetIsmrmrdReadWrite.h"
-
+#include "ismrmrd/xml.h"
 #include <cmath>
 
 namespace Gadgetron{
 
   int NFFT2DGadget::process_config(ACE_Message_Block* mb)
   {
-    boost::shared_ptr<ISMRMRD::ismrmrdHeader> cfg = parseIsmrmrdXMLHeader(std::string(mb->rd_ptr()));
 
-    ISMRMRD::ismrmrdHeader::encoding_sequence e_seq = cfg->encoding();
-    if (e_seq.size() != 1) {
-      GADGET_DEBUG2("Number of encoding spaces: %d\n", e_seq.size());
-      GADGET_DEBUG1("This simple NFFT2DGadget only supports one encoding space\n");
+  	ISMRMRD::IsmrmrdHeader h;
+  	ISMRMRD::deserialize(mb->rd_ptr(),h);
+
+
+    if (h.encoding.size() != 1) {
+      GADGET_DEBUG1("This Gadget only supports one encoding space\n");
       return GADGET_FAIL;
     }
 
-    ISMRMRD::encodingSpaceType e_space = (*e_seq.begin()).encodedSpace();
-    ISMRMRD::encodingSpaceType r_space = (*e_seq.begin()).reconSpace();
-    ISMRMRD::encodingLimitsType e_limits = (*e_seq.begin()).encodingLimits();
+    ISMRMRD::EncodingSpace e_space = h.encoding[0].encodedSpace;
+    ISMRMRD::EncodingSpace r_space = h.encoding[0].reconSpace;
+    ISMRMRD::EncodingLimits e_limits = h.encoding[0].encodingLimits;
 
-    GADGET_DEBUG2("Matrix size: %d, %d\n", e_space.matrixSize().x(), e_space.matrixSize().y(), e_space.matrixSize().z());
-    dimensions_.push_back(r_space.matrixSize().x());
-    dimensions_.push_back(r_space.matrixSize().y());
 
-    field_of_view_.push_back(e_space.fieldOfView_mm().x());
-    field_of_view_.push_back(e_space.fieldOfView_mm().y());
-    GADGET_DEBUG2("FOV: %f, %f\n", r_space.fieldOfView_mm().x(), r_space.fieldOfView_mm().y());
+    GADGET_DEBUG2("Matrix size: %d, %d\n", e_space.matrixSize.x, e_space.matrixSize.y, e_space.matrixSize.z);
+    dimensions_.push_back(r_space.matrixSize.x);
+    dimensions_.push_back(r_space.matrixSize.y);
 
-    repetitions_ = e_limits.repetition().present() ? e_limits.repetition().get().maximum() + 1 : 1;
+    field_of_view_.push_back(e_space.fieldOfView_mm.x);
+    field_of_view_.push_back(e_space.fieldOfView_mm.y);
+    GADGET_DEBUG2("FOV: %f, %f\n", r_space.fieldOfView_mm.x, r_space.fieldOfView_mm.y);
+
+    repetitions_ = e_limits.repetition.is_present() ? e_limits.repetition.get().maximum + 1 : 1;
     GADGET_DEBUG2("#Repetitions: %d\n", repetitions_);
 
     // Allocate readout and trajectory/dcw queues
@@ -59,7 +61,7 @@ namespace Gadgetron{
     // Throw away any noise samples if they have been allowed to pass this far down the chain...
     //
     
-    bool is_noise = ISMRMRD::FlagBit(ISMRMRD::ACQ_IS_NOISE_MEASUREMENT).isSet(m1->getObjectPtr()->flags);
+  	bool is_noise = m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_IS_NOISE_MEASUREMENT);
     if (is_noise) { 
       m1->release();
       return GADGET_OK;
@@ -90,7 +92,7 @@ namespace Gadgetron{
     //
 
     bool is_last_scan_in_repetition = 
-      ISMRMRD::FlagBit(ISMRMRD::ACQ_LAST_IN_REPETITION).isSet(m1->getObjectPtr()->flags);
+    		m1->getObjectPtr()->isFlagSet(ISMRMRD::ISMRMRD_ACQ_LAST_IN_REPETITION);
   
     if (is_last_scan_in_repetition) {
 
@@ -133,7 +135,7 @@ namespace Gadgetron{
       memcpy(cm1->getObjectPtr()->patient_table_position,
              m1->getObjectPtr()->patient_table_position, sizeof(float)*3);
 
-      cm1->getObjectPtr()->image_data_type = ISMRMRD::DATA_COMPLEX_FLOAT;
+      cm1->getObjectPtr()->data_type = ISMRMRD::ISMRMRD_CXFLOAT;
       cm1->getObjectPtr()->image_index = 0;
       cm1->getObjectPtr()->image_series_index = 0;
 

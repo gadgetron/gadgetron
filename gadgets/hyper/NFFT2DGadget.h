@@ -5,7 +5,7 @@
 #include "cuNDArray.h"
 #include "gadgetron_hyper_export.h"
 
-#include <ismrmrd.h>
+#include <ismrmrd/ismrmrd.h>
 #include <complex>
 
 namespace Gadgetron{

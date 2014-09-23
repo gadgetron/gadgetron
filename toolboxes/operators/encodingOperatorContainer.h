@@ -113,7 +113,8 @@ namespace Gadgetron{
 
 	ARRAY_TYPE slice;
 	slice.create(codoms[i]->get_dimensions().get(),codomain->get_data_ptr()+offset);
-	slice = *codoms[i];
+	if (codoms[i])
+		slice = *codoms[i];
 	offset += slice.get_number_of_elements();
       }
 
